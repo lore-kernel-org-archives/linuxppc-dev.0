@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-15579-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15580-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BEEA7CF45C5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jan 2026 19:26:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 908EECF45C9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jan 2026 19:26:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dqj3b0ktHz3bps;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dqj3b51zJz3bx5;
 	Tue, 13 Jan 2026 06:23:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768245835;
-	cv=none; b=eT79GgXOifowEHMgsQSXZjZhOB45bMx2a9zAkCN/U66UmJmO8w7NCysvcJvyH1y83qF6LnhUL+JUfBsVRGmmiDU/ohoUN5/4Srb+PmJtH/1DsyP5bsk0pq1wVFGGl4pLQt4EFlO1ePUDcgxblPU4XYIfFygZ9Q1NKDmB8u1epYdi6YyopCs9Iw5ddPsnd2+VFNztIqBDPwrcf9iJ1SJIFUXcbNGWjFhdK0Qdpw0h0okwBY/BSUgr5D5qI0NyI6c0c3W3vtMsR7SCki38KY6zh858iJy6IOvQrnONYWPsbR6G8uyAxRagNcxFLeWdSELpfTSKMm6aY0nR796j3jEUOQ==
+	cv=none; b=O4hJG9lQdmAGhDCHkQUsddgAHZfJcNmKiHYwQQrDWuqMtIioZxnX2ZW6KaaeJSr5b2CSamXUv+q0Y71XhpuEk7/9BUtw6/YxUqjLMVN76iAJrQ4tY45Qupr192Ksup5TYg8MbNLk/v4kv4xWnFy88OAU1os1DQIl2bFe5jqNIogHCBUBheJktdaKSAc1H2j4+7RtnDK5H3qhhsEAxxO7QSPyGvcENg+qeOerPJC5/DKzLpIycPJPmvYhKnFrZ31uPa9y3Bl3Mh2brR8fc3f3KfQha4HmnQZlTC5fx+6t9LiX3swKwwViUy8hmsU/kXmD7RFfaq9Ug1uCciwenurk/A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1768245835; c=relaxed/relaxed;
-	bh=hHIdkrNjenKerl7v9oZhF52XZ21ubgCrF9s2N2VySnE=;
+	bh=y/Th55q5dVBMST0fTWaQzI7Ofl3ngmKKCydJxKi9Iyw=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=O8meLE95bWRKjOjnrSipLQF92UOC/HKJK3RgaMI8/ioiYZlq99RUCGfiArKJM5Gz0OI2+f4eINPMm98mVcBxi5Od02XdwwSCu4T6Zo/P2L81szULFP52H4gf92aCXovWsJrKnrj41JmGXRU9uwdyAOoxQI+rhA/hTWPl/xgB6X43FDq4zjmeZkIGQVjO3Z+golY3bhlIXXjrg3Fs/w8rc74PL0/+SoTZB+CoZ8T0lYN3RQgQ7t+fSESe0gm3Bq7h1bwm3HBeC/unH5Vy9i8y8D67R6f4u/svt+I2gAaYfZYiSQs4FR62yiyw6DtOa7suWgzQw+qIqNrIQGcMRYECIA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oSEzCq+j; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=mjDnNB0agXiSnid3kkzM3SfOH+ItuzJRSMVFka38rTYpqmerem3FOaVgeyA0pix+KBGDZV1lYiPPyy8VViNV95ndlvOqjgXIGZdgd5djLbxshnPjEN7+eJOgsQCX4M8YmS9e+058IkLoVER3eMu1QhH7TrFXpw/cis+YTt7Y4X4DVg+Hi3fDaLZl/pmwJF1RAVeqvkiIywls+rG+QmW1Mh8ttd3bmjXhlpkj02X56oSeWcz6RVGYAh2Q69K9hcAH9Bosw8XzQYQuxxW8GYMTOcIWwAgf2rc76rZ+xmmziThgXu8H1u9o1UD7jndJ2oTPN+qMmxp6BGSIBa9fsQNP3Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=T6XOwGdA; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oSEzCq+j;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=T6XOwGdA;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dqj3Z2nmcz3bsn
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dqj3Z6wNtz2xKx
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 06:23:54 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 4931F4374B;
+	by sea.source.kernel.org (Postfix) with ESMTP id 66BFD44397;
+	Mon, 12 Jan 2026 19:23:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D96D0C2BCB3;
 	Mon, 12 Jan 2026 19:23:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B85EEC2BCB1;
-	Mon, 12 Jan 2026 19:23:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1768245802;
-	bh=eqf3Or+nI3+CRqy3oJpCv5lnMY4rP3QtNL7pdFy6UrY=;
+	s=k20201202; t=1768245803;
+	bh=FwXk6qzmED9IHMLKZVvaNSrqXpAJP04gsJRrHuxtscM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=oSEzCq+jiR/8DC6FoKeyoJUpLSs0Yo3HfXBOqh7IEsEBy8rFgYOzBPo5leCndVDx5
-	 E/J7T4QYTGi8wBoTu9aLADQhjO5Xz+FYOhbbtIF27ehNwgyNcNkz89ywCt9q+SrLj1
-	 XiIqWs+FGgJI9XiMjudkcB4xRRLkd6rDDZCgQ3YLDJ6yJ+/p9hL8Mm7g2C3W5jNcXE
-	 tGM01jJ9jQRUosrS0/AzLS/QXtAOs1a/89jHs2rvpxNVvDHvaBQXLjt7cM0PdYhxiR
-	 fDZTm2SNAlxKf9JngwcHUG/bNnGc2D4U/DYcddPlqRTVgW+Wzq0f3jV8ovaNyvUV9K
-	 LMbfoUhzvVraw==
+	b=T6XOwGdAbWoGHdHy+Y4BgnWKCcYrOmC+y4OkpFDwJHFGKhq9i+qfmsRVaKApbVbcW
+	 rh3VKOapM+pB17ZRCYk4BN2kCtxJxlNpJ9VtBnCfWPS0vR9yQKcyfopOxw04RqG0I2
+	 TfLQVKOHklQ93owDHFohw/vnbBgF33b6vrbGJ1C0Akz4/0w9p6HM1Wqk3bMsUw/2e/
+	 fzF4o3OGHNySbleeGl558Y8e52GQFBkgNHg3i+fEHkhogebMieLuokzcV511aMIaF7
+	 uwKXYMs9UCM+PmrgG1tZh4/uvbqo+/MIPGA/p5mYTpMIDxEi49aztNEkC+cz+WDs8c
+	 poqbqDIfaPnSQ==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -59,9 +59,9 @@ Cc: linux-kernel@vger.kernel.org,
 	Holger Dengler <dengler@linux.ibm.com>,
 	Harald Freudenberger <freude@linux.ibm.com>,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH v2 08/35] crypto: aes - Remove aes-fixed-time / CONFIG_CRYPTO_AES_TI
-Date: Mon, 12 Jan 2026 11:20:06 -0800
-Message-ID: <20260112192035.10427-9-ebiggers@kernel.org>
+Subject: [PATCH v2 10/35] lib/crypto: arm/aes: Migrate optimized code into library
+Date: Mon, 12 Jan 2026 11:20:08 -0800
+Message-ID: <20260112192035.10427-11-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260112192035.10427-1-ebiggers@kernel.org>
 References: <20260112192035.10427-1-ebiggers@kernel.org>
@@ -80,404 +80,205 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Remove aes-fixed-time, i.e. CONFIG_CRYPTO_AES_TI.  This was a wrapper
-around the 256-byte-table-based AES implementation in lib/crypto/aes.c,
-with extra code to enable and disable IRQs for constant-time hardening.
+Move the ARM optimized single-block AES en/decryption code into
+lib/crypto/, wire it up to the AES library API, and remove the
+superseded "aes-arm" crypto_cipher algorithm.
 
-While nice in theory, in practice this had the following issues:
-
-- For bulk en/decryption it was 2-4 times slower than aes-generic.  This
-  resulted in aes-generic still being needed, creating fragmentation.
-
-- Having both aes-generic and aes-fixed-time punted an AES
-  implementation decision to distros and users who are generally
-  unprepared to handle it.  In practice, whether aes-fixed-time gets
-  used tends to be incidental and not match an explicit distro or user
-  intent.  (While aes-fixed-time has a higher priority than aes-generic,
-  whether it actually gets enabled, loaded, and used depends on the
-  kconfig and whether a modprobe of "aes" happens to be done.  It also
-  has a lower priority than aes-arm and aes-arm64.)
-
-- My changes to the generic AES code (in other commits) significantly
-  close the gap with aes-fixed-time anyway.  The table size is reduced
-  from 8192 bytes to 1024 bytes, and prefetching is added.
-
-- While AES code *should* be constant-time, the real solutions for that
-  are AES instructions (which most CPUs have now) or bit-slicing.  arm
-  and arm64 already have bit-sliced AES code for many modes; generic
-  bit-sliced code could be written but would be very slow for single
-  blocks.  Overall, I suggest that trying to write constant-time
-  table-based AES code is a bit futile anyway, and in the rare cases
-  where a proper AES implementation is still unavailable it's reasonable
-  to compromise with an implementation that simply prefetches the table.
-
-Thus, this commit removes aes-fixed-time and CONFIG_CRYPTO_AES_TI.  The
-replacement is just the existing CONFIG_CRYPTO_AES, which for now maps
-to the existing aes-generic code, but I'll soon be changing to use the
-improved AES library code instead.
+The result is that both the AES library and crypto_cipher APIs are now
+optimized for ARM, whereas previously only crypto_cipher was (and the
+optimizations weren't enabled by default, which this fixes as well).
 
 Acked-by: Ard Biesheuvel <ardb@kernel.org>
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- arch/m68k/configs/amiga_defconfig    |  1 -
- arch/m68k/configs/apollo_defconfig   |  1 -
- arch/m68k/configs/atari_defconfig    |  1 -
- arch/m68k/configs/bvme6000_defconfig |  1 -
- arch/m68k/configs/hp300_defconfig    |  1 -
- arch/m68k/configs/mac_defconfig      |  1 -
- arch/m68k/configs/multi_defconfig    |  1 -
- arch/m68k/configs/mvme147_defconfig  |  1 -
- arch/m68k/configs/mvme16x_defconfig  |  1 -
- arch/m68k/configs/q40_defconfig      |  1 -
- arch/m68k/configs/sun3_defconfig     |  1 -
- arch/m68k/configs/sun3x_defconfig    |  1 -
- arch/s390/configs/debug_defconfig    |  2 +-
- arch/s390/configs/defconfig          |  2 +-
- crypto/Kconfig                       | 21 -------
- crypto/Makefile                      |  1 -
- crypto/aes_ti.c                      | 83 ----------------------------
- 17 files changed, 2 insertions(+), 119 deletions(-)
- delete mode 100644 crypto/aes_ti.c
+ arch/arm/configs/milbeaut_m10v_defconfig      |  1 -
+ arch/arm/configs/multi_v7_defconfig           |  2 +-
+ arch/arm/configs/omap2plus_defconfig          |  2 +-
+ arch/arm/configs/pxa_defconfig                |  2 +-
+ arch/arm/crypto/Kconfig                       | 18 -----
+ arch/arm/crypto/Makefile                      |  2 -
+ arch/arm/crypto/aes-cipher-glue.c             | 77 -------------------
+ arch/arm/crypto/aes-cipher.h                  | 13 ----
+ lib/crypto/Kconfig                            |  1 +
+ lib/crypto/Makefile                           |  3 +
+ .../crypto/arm}/aes-cipher-core.S             |  0
+ lib/crypto/arm/aes.h                          | 56 ++++++++++++++
+ 12 files changed, 63 insertions(+), 114 deletions(-)
+ delete mode 100644 arch/arm/crypto/aes-cipher-glue.c
+ delete mode 100644 arch/arm/crypto/aes-cipher.h
+ rename {arch/arm/crypto => lib/crypto/arm}/aes-cipher-core.S (100%)
+ create mode 100644 lib/crypto/arm/aes.h
 
-diff --git a/arch/m68k/configs/amiga_defconfig b/arch/m68k/configs/amiga_defconfig
-index bfc1ee7c8158..bffcc417f44c 100644
---- a/arch/m68k/configs/amiga_defconfig
-+++ b/arch/m68k/configs/amiga_defconfig
-@@ -553,11 +553,10 @@ CONFIG_CRYPTO_RSA=m
- CONFIG_CRYPTO_DH=m
- CONFIG_CRYPTO_ECDH=m
- CONFIG_CRYPTO_ECDSA=m
- CONFIG_CRYPTO_ECRDSA=m
+diff --git a/arch/arm/configs/milbeaut_m10v_defconfig b/arch/arm/configs/milbeaut_m10v_defconfig
+index a2995eb390c6..77b69d672d40 100644
+--- a/arch/arm/configs/milbeaut_m10v_defconfig
++++ b/arch/arm/configs/milbeaut_m10v_defconfig
+@@ -96,11 +96,10 @@ CONFIG_KEYS=y
+ CONFIG_CRYPTO_SELFTESTS=y
+ # CONFIG_CRYPTO_ECHAINIV is not set
  CONFIG_CRYPTO_AES=y
--CONFIG_CRYPTO_AES_TI=m
- CONFIG_CRYPTO_ANUBIS=m
- CONFIG_CRYPTO_ARIA=m
- CONFIG_CRYPTO_BLOWFISH=m
- CONFIG_CRYPTO_CAMELLIA=m
- CONFIG_CRYPTO_CAST5=m
-diff --git a/arch/m68k/configs/apollo_defconfig b/arch/m68k/configs/apollo_defconfig
-index d9d1f3c4c70d..3f894c20b132 100644
---- a/arch/m68k/configs/apollo_defconfig
-+++ b/arch/m68k/configs/apollo_defconfig
-@@ -510,11 +510,10 @@ CONFIG_CRYPTO_RSA=m
- CONFIG_CRYPTO_DH=m
- CONFIG_CRYPTO_ECDH=m
- CONFIG_CRYPTO_ECDSA=m
- CONFIG_CRYPTO_ECRDSA=m
- CONFIG_CRYPTO_AES=y
--CONFIG_CRYPTO_AES_TI=m
- CONFIG_CRYPTO_ANUBIS=m
- CONFIG_CRYPTO_ARIA=m
- CONFIG_CRYPTO_BLOWFISH=m
- CONFIG_CRYPTO_CAMELLIA=m
- CONFIG_CRYPTO_CAST5=m
-diff --git a/arch/m68k/configs/atari_defconfig b/arch/m68k/configs/atari_defconfig
-index 523205adccc8..5c5603ca16aa 100644
---- a/arch/m68k/configs/atari_defconfig
-+++ b/arch/m68k/configs/atari_defconfig
-@@ -530,11 +530,10 @@ CONFIG_CRYPTO_RSA=m
- CONFIG_CRYPTO_DH=m
- CONFIG_CRYPTO_ECDH=m
- CONFIG_CRYPTO_ECDSA=m
- CONFIG_CRYPTO_ECRDSA=m
- CONFIG_CRYPTO_AES=y
--CONFIG_CRYPTO_AES_TI=m
- CONFIG_CRYPTO_ANUBIS=m
- CONFIG_CRYPTO_ARIA=m
- CONFIG_CRYPTO_BLOWFISH=m
- CONFIG_CRYPTO_CAMELLIA=m
- CONFIG_CRYPTO_CAST5=m
-diff --git a/arch/m68k/configs/bvme6000_defconfig b/arch/m68k/configs/bvme6000_defconfig
-index 7b0a4ef0b010..37c747ee395e 100644
---- a/arch/m68k/configs/bvme6000_defconfig
-+++ b/arch/m68k/configs/bvme6000_defconfig
-@@ -502,11 +502,10 @@ CONFIG_CRYPTO_RSA=m
- CONFIG_CRYPTO_DH=m
- CONFIG_CRYPTO_ECDH=m
- CONFIG_CRYPTO_ECDSA=m
- CONFIG_CRYPTO_ECRDSA=m
- CONFIG_CRYPTO_AES=y
--CONFIG_CRYPTO_AES_TI=m
- CONFIG_CRYPTO_ANUBIS=m
- CONFIG_CRYPTO_ARIA=m
- CONFIG_CRYPTO_BLOWFISH=m
- CONFIG_CRYPTO_CAMELLIA=m
- CONFIG_CRYPTO_CAST5=m
-diff --git a/arch/m68k/configs/hp300_defconfig b/arch/m68k/configs/hp300_defconfig
-index 089c5c394c62..1a376c2b8c45 100644
---- a/arch/m68k/configs/hp300_defconfig
-+++ b/arch/m68k/configs/hp300_defconfig
-@@ -512,11 +512,10 @@ CONFIG_CRYPTO_RSA=m
- CONFIG_CRYPTO_DH=m
- CONFIG_CRYPTO_ECDH=m
- CONFIG_CRYPTO_ECDSA=m
- CONFIG_CRYPTO_ECRDSA=m
- CONFIG_CRYPTO_AES=y
--CONFIG_CRYPTO_AES_TI=m
- CONFIG_CRYPTO_ANUBIS=m
- CONFIG_CRYPTO_ARIA=m
- CONFIG_CRYPTO_BLOWFISH=m
- CONFIG_CRYPTO_CAMELLIA=m
- CONFIG_CRYPTO_CAST5=m
-diff --git a/arch/m68k/configs/mac_defconfig b/arch/m68k/configs/mac_defconfig
-index 5f2484c36733..2b26450692a5 100644
---- a/arch/m68k/configs/mac_defconfig
-+++ b/arch/m68k/configs/mac_defconfig
-@@ -529,11 +529,10 @@ CONFIG_CRYPTO_RSA=m
- CONFIG_CRYPTO_DH=m
- CONFIG_CRYPTO_ECDH=m
- CONFIG_CRYPTO_ECDSA=m
- CONFIG_CRYPTO_ECRDSA=m
- CONFIG_CRYPTO_AES=y
--CONFIG_CRYPTO_AES_TI=m
- CONFIG_CRYPTO_ANUBIS=m
- CONFIG_CRYPTO_ARIA=m
- CONFIG_CRYPTO_BLOWFISH=m
- CONFIG_CRYPTO_CAMELLIA=m
- CONFIG_CRYPTO_CAST5=m
-diff --git a/arch/m68k/configs/multi_defconfig b/arch/m68k/configs/multi_defconfig
-index 74f0a1f6d871..012e0e1f506f 100644
---- a/arch/m68k/configs/multi_defconfig
-+++ b/arch/m68k/configs/multi_defconfig
-@@ -616,11 +616,10 @@ CONFIG_CRYPTO_RSA=m
- CONFIG_CRYPTO_DH=m
- CONFIG_CRYPTO_ECDH=m
- CONFIG_CRYPTO_ECDSA=m
- CONFIG_CRYPTO_ECRDSA=m
- CONFIG_CRYPTO_AES=y
--CONFIG_CRYPTO_AES_TI=m
- CONFIG_CRYPTO_ANUBIS=m
- CONFIG_CRYPTO_ARIA=m
- CONFIG_CRYPTO_BLOWFISH=m
- CONFIG_CRYPTO_CAMELLIA=m
- CONFIG_CRYPTO_CAST5=m
-diff --git a/arch/m68k/configs/mvme147_defconfig b/arch/m68k/configs/mvme147_defconfig
-index 4bee18c820e4..37634b35bfbd 100644
---- a/arch/m68k/configs/mvme147_defconfig
-+++ b/arch/m68k/configs/mvme147_defconfig
-@@ -502,11 +502,10 @@ CONFIG_CRYPTO_RSA=m
- CONFIG_CRYPTO_DH=m
- CONFIG_CRYPTO_ECDH=m
- CONFIG_CRYPTO_ECDSA=m
- CONFIG_CRYPTO_ECRDSA=m
- CONFIG_CRYPTO_AES=y
--CONFIG_CRYPTO_AES_TI=m
- CONFIG_CRYPTO_ANUBIS=m
- CONFIG_CRYPTO_ARIA=m
- CONFIG_CRYPTO_BLOWFISH=m
- CONFIG_CRYPTO_CAMELLIA=m
- CONFIG_CRYPTO_CAST5=m
-diff --git a/arch/m68k/configs/mvme16x_defconfig b/arch/m68k/configs/mvme16x_defconfig
-index 322c17e55c9a..a0d2e0070afa 100644
---- a/arch/m68k/configs/mvme16x_defconfig
-+++ b/arch/m68k/configs/mvme16x_defconfig
-@@ -503,11 +503,10 @@ CONFIG_CRYPTO_RSA=m
- CONFIG_CRYPTO_DH=m
- CONFIG_CRYPTO_ECDH=m
- CONFIG_CRYPTO_ECDSA=m
- CONFIG_CRYPTO_ECRDSA=m
- CONFIG_CRYPTO_AES=y
--CONFIG_CRYPTO_AES_TI=m
- CONFIG_CRYPTO_ANUBIS=m
- CONFIG_CRYPTO_ARIA=m
- CONFIG_CRYPTO_BLOWFISH=m
- CONFIG_CRYPTO_CAMELLIA=m
- CONFIG_CRYPTO_CAST5=m
-diff --git a/arch/m68k/configs/q40_defconfig b/arch/m68k/configs/q40_defconfig
-index 82f9baab8fea..62cc3964fc34 100644
---- a/arch/m68k/configs/q40_defconfig
-+++ b/arch/m68k/configs/q40_defconfig
-@@ -519,11 +519,10 @@ CONFIG_CRYPTO_RSA=m
- CONFIG_CRYPTO_DH=m
- CONFIG_CRYPTO_ECDH=m
- CONFIG_CRYPTO_ECDSA=m
- CONFIG_CRYPTO_ECRDSA=m
- CONFIG_CRYPTO_AES=y
--CONFIG_CRYPTO_AES_TI=m
- CONFIG_CRYPTO_ANUBIS=m
- CONFIG_CRYPTO_ARIA=m
- CONFIG_CRYPTO_BLOWFISH=m
- CONFIG_CRYPTO_CAMELLIA=m
- CONFIG_CRYPTO_CAST5=m
-diff --git a/arch/m68k/configs/sun3_defconfig b/arch/m68k/configs/sun3_defconfig
-index f94ad226cb5b..13107aa4a1b4 100644
---- a/arch/m68k/configs/sun3_defconfig
-+++ b/arch/m68k/configs/sun3_defconfig
-@@ -500,11 +500,10 @@ CONFIG_CRYPTO_RSA=m
- CONFIG_CRYPTO_DH=m
- CONFIG_CRYPTO_ECDH=m
- CONFIG_CRYPTO_ECDSA=m
- CONFIG_CRYPTO_ECRDSA=m
- CONFIG_CRYPTO_AES=y
--CONFIG_CRYPTO_AES_TI=m
- CONFIG_CRYPTO_ANUBIS=m
- CONFIG_CRYPTO_ARIA=m
- CONFIG_CRYPTO_BLOWFISH=m
- CONFIG_CRYPTO_CAMELLIA=m
- CONFIG_CRYPTO_CAST5=m
-diff --git a/arch/m68k/configs/sun3x_defconfig b/arch/m68k/configs/sun3x_defconfig
-index a5ecfc505ab2..eaab0ba08989 100644
---- a/arch/m68k/configs/sun3x_defconfig
-+++ b/arch/m68k/configs/sun3x_defconfig
-@@ -500,11 +500,10 @@ CONFIG_CRYPTO_RSA=m
- CONFIG_CRYPTO_DH=m
- CONFIG_CRYPTO_ECDH=m
- CONFIG_CRYPTO_ECDSA=m
- CONFIG_CRYPTO_ECRDSA=m
- CONFIG_CRYPTO_AES=y
--CONFIG_CRYPTO_AES_TI=m
- CONFIG_CRYPTO_ANUBIS=m
- CONFIG_CRYPTO_ARIA=m
- CONFIG_CRYPTO_BLOWFISH=m
- CONFIG_CRYPTO_CAMELLIA=m
- CONFIG_CRYPTO_CAST5=m
-diff --git a/arch/s390/configs/debug_defconfig b/arch/s390/configs/debug_defconfig
-index 0713914b25b4..09f4bdb9e64f 100644
---- a/arch/s390/configs/debug_defconfig
-+++ b/arch/s390/configs/debug_defconfig
-@@ -768,11 +768,11 @@ CONFIG_CRYPTO_CRYPTD=m
- CONFIG_CRYPTO_BENCHMARK=m
- CONFIG_CRYPTO_DH=m
- CONFIG_CRYPTO_ECDH=m
- CONFIG_CRYPTO_ECDSA=m
- CONFIG_CRYPTO_ECRDSA=m
--CONFIG_CRYPTO_AES_TI=m
+ CONFIG_CRYPTO_SEQIV=m
+ CONFIG_CRYPTO_GHASH_ARM_CE=m
+-CONFIG_CRYPTO_AES_ARM=m
+ CONFIG_CRYPTO_AES_ARM_BS=m
+ CONFIG_CRYPTO_AES_ARM_CE=m
+ # CONFIG_CRYPTO_HW is not set
+ CONFIG_DMA_CMA=y
+ CONFIG_CMA_SIZE_MBYTES=64
+diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
+index 7f1fa9dd88c9..b6d3e20926bb 100644
+--- a/arch/arm/configs/multi_v7_defconfig
++++ b/arch/arm/configs/multi_v7_defconfig
+@@ -1284,11 +1284,11 @@ CONFIG_CRYPTO_USER=m
+ CONFIG_CRYPTO_USER_API_HASH=m
+ CONFIG_CRYPTO_USER_API_SKCIPHER=m
+ CONFIG_CRYPTO_USER_API_RNG=m
+ CONFIG_CRYPTO_USER_API_AEAD=m
+ CONFIG_CRYPTO_GHASH_ARM_CE=m
+-CONFIG_CRYPTO_AES_ARM=m
 +CONFIG_CRYPTO_AES=m
- CONFIG_CRYPTO_ANUBIS=m
- CONFIG_CRYPTO_ARIA=m
- CONFIG_CRYPTO_BLOWFISH=m
- CONFIG_CRYPTO_CAST5=m
- CONFIG_CRYPTO_CAST6=m
-diff --git a/arch/s390/configs/defconfig b/arch/s390/configs/defconfig
-index c064e0cacc98..823193b9f4c6 100644
---- a/arch/s390/configs/defconfig
-+++ b/arch/s390/configs/defconfig
-@@ -752,11 +752,11 @@ CONFIG_CRYPTO_CRYPTD=m
- CONFIG_CRYPTO_BENCHMARK=m
- CONFIG_CRYPTO_DH=m
- CONFIG_CRYPTO_ECDH=m
- CONFIG_CRYPTO_ECDSA=m
- CONFIG_CRYPTO_ECRDSA=m
--CONFIG_CRYPTO_AES_TI=m
+ CONFIG_CRYPTO_AES_ARM_BS=m
+ CONFIG_CRYPTO_AES_ARM_CE=m
+ CONFIG_CRYPTO_DEV_SUN4I_SS=m
+ CONFIG_CRYPTO_DEV_FSL_CAAM=m
+ CONFIG_CRYPTO_DEV_EXYNOS_RNG=m
+diff --git a/arch/arm/configs/omap2plus_defconfig b/arch/arm/configs/omap2plus_defconfig
+index 4e53c331cd84..0464f6552169 100644
+--- a/arch/arm/configs/omap2plus_defconfig
++++ b/arch/arm/configs/omap2plus_defconfig
+@@ -704,11 +704,11 @@ CONFIG_ROOT_NFS=y
+ CONFIG_NLS_CODEPAGE_437=y
+ CONFIG_NLS_ISO8859_1=y
+ CONFIG_SECURITY=y
+ CONFIG_CRYPTO_MICHAEL_MIC=y
+ CONFIG_CRYPTO_GHASH_ARM_CE=m
+-CONFIG_CRYPTO_AES_ARM=m
 +CONFIG_CRYPTO_AES=m
+ CONFIG_CRYPTO_AES_ARM_BS=m
+ CONFIG_CRYPTO_DEV_OMAP=m
+ CONFIG_CRYPTO_DEV_OMAP_SHAM=m
+ CONFIG_CRYPTO_DEV_OMAP_AES=m
+ CONFIG_CRYPTO_DEV_OMAP_DES=m
+diff --git a/arch/arm/configs/pxa_defconfig b/arch/arm/configs/pxa_defconfig
+index 3ea189f1f42f..eacd08fd87ad 100644
+--- a/arch/arm/configs/pxa_defconfig
++++ b/arch/arm/configs/pxa_defconfig
+@@ -655,11 +655,11 @@ CONFIG_CRYPTO_TGR192=m
+ CONFIG_CRYPTO_WP512=m
  CONFIG_CRYPTO_ANUBIS=m
- CONFIG_CRYPTO_ARIA=m
- CONFIG_CRYPTO_BLOWFISH=m
- CONFIG_CRYPTO_CAST5=m
- CONFIG_CRYPTO_CAST6=m
-diff --git a/crypto/Kconfig b/crypto/Kconfig
-index 443fe8e016fd..db6b0c2fb50e 100644
---- a/crypto/Kconfig
-+++ b/crypto/Kconfig
-@@ -364,31 +364,10 @@ config CRYPTO_AES
- 	  demonstrates excellent performance. Rijndael's operations are
- 	  among the easiest to defend against power and timing attacks.
+ CONFIG_CRYPTO_XCBC=m
+ CONFIG_CRYPTO_DEFLATE=y
+ CONFIG_CRYPTO_LZO=y
+-CONFIG_CRYPTO_AES_ARM=m
++CONFIG_CRYPTO_AES=m
+ CONFIG_FONTS=y
+ CONFIG_FONT_8x8=y
+ CONFIG_FONT_8x16=y
+ CONFIG_FONT_6x11=y
+ CONFIG_FONT_MINI_4x6=y
+diff --git a/arch/arm/crypto/Kconfig b/arch/arm/crypto/Kconfig
+index 167a648a9def..b9c28c818b7c 100644
+--- a/arch/arm/crypto/Kconfig
++++ b/arch/arm/crypto/Kconfig
+@@ -21,28 +21,10 @@ config CRYPTO_GHASH_ARM_CE
+ 	  Use an implementation of GHASH (used by the GCM AEAD chaining mode)
+ 	  that uses the 64x64 to 128 bit polynomial multiplication (vmull.p64)
+ 	  that is part of the ARMv8 Crypto Extensions, or a slower variant that
+ 	  uses the vmull.p8 instruction that is part of the basic NEON ISA.
  
- 	  The AES specifies three key sizes: 128, 192 and 256 bits
- 
--config CRYPTO_AES_TI
--	tristate "AES (Advanced Encryption Standard) (fixed time)"
+-config CRYPTO_AES_ARM
+-	tristate "Ciphers: AES"
 -	select CRYPTO_ALGAPI
--	select CRYPTO_LIB_AES
+-	select CRYPTO_AES
 -	help
--	  AES cipher algorithms (Rijndael)(FIPS-197, ISO/IEC 18033-3)
+-	  Block ciphers: AES cipher algorithms (FIPS-197)
 -
--	  This is a generic implementation of AES that attempts to eliminate
--	  data dependent latencies as much as possible without affecting
--	  performance too much. It is intended for use by the generic CCM
--	  and GCM drivers, and other CTR or CMAC/XCBC based modes that rely
--	  solely on encryption (although decryption is supported as well, but
--	  with a more dramatic performance hit)
+-	  Architecture: arm
 -
--	  Instead of using 16 lookup tables of 1 KB each, (8 for encryption and
--	  8 for decryption), this implementation only uses just two S-boxes of
--	  256 bytes each, and attempts to eliminate data dependent latencies by
--	  prefetching the entire table into the cache at the start of each
--	  block. Interrupts are also disabled to avoid races where cachelines
--	  are evicted when the CPU is interrupted to do something else.
+-	  On ARM processors without the Crypto Extensions, this is the
+-	  fastest AES implementation for single blocks.  For multiple
+-	  blocks, the NEON bit-sliced implementation is usually faster.
 -
- config CRYPTO_ANUBIS
- 	tristate "Anubis"
- 	depends on CRYPTO_USER_API_ENABLE_OBSOLETE
- 	select CRYPTO_ALGAPI
- 	help
-diff --git a/crypto/Makefile b/crypto/Makefile
-index 23d3db7be425..be403dc20645 100644
---- a/crypto/Makefile
-+++ b/crypto/Makefile
-@@ -132,11 +132,10 @@ obj-$(CONFIG_CRYPTO_SERPENT) += serpent_generic.o
- CFLAGS_serpent_generic.o := $(call cc-option,-fsched-pressure)  # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79149
- obj-$(CONFIG_CRYPTO_AES) += aes_generic.o
- CFLAGS_aes_generic.o := $(call cc-option,-fno-code-hoisting) # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83356
- obj-$(CONFIG_CRYPTO_SM4) += sm4.o
- obj-$(CONFIG_CRYPTO_SM4_GENERIC) += sm4_generic.o
--obj-$(CONFIG_CRYPTO_AES_TI) += aes_ti.o
- obj-$(CONFIG_CRYPTO_CAMELLIA) += camellia_generic.o
- obj-$(CONFIG_CRYPTO_CAST_COMMON) += cast_common.o
- obj-$(CONFIG_CRYPTO_CAST5) += cast5_generic.o
- obj-$(CONFIG_CRYPTO_CAST6) += cast6_generic.o
- obj-$(CONFIG_CRYPTO_ARC4) += arc4.o
-diff --git a/crypto/aes_ti.c b/crypto/aes_ti.c
+-	  This implementation may be vulnerable to cache timing attacks,
+-	  since it uses lookup tables.  However, as countermeasures it
+-	  disables IRQs and preloads the tables; it is hoped this makes
+-	  such attacks very difficult.
+-
+ config CRYPTO_AES_ARM_BS
+ 	tristate "Ciphers: AES, modes: ECB/CBC/CTR/XTS (bit-sliced NEON)"
+ 	depends on KERNEL_MODE_NEON
+ 	select CRYPTO_SKCIPHER
+ 	select CRYPTO_LIB_AES
+diff --git a/arch/arm/crypto/Makefile b/arch/arm/crypto/Makefile
+index d6683e9d4992..e73099e120b3 100644
+--- a/arch/arm/crypto/Makefile
++++ b/arch/arm/crypto/Makefile
+@@ -1,15 +1,13 @@
+ # SPDX-License-Identifier: GPL-2.0
+ #
+ # Arch-specific CryptoAPI modules.
+ #
+ 
+-obj-$(CONFIG_CRYPTO_AES_ARM) += aes-arm.o
+ obj-$(CONFIG_CRYPTO_AES_ARM_BS) += aes-arm-bs.o
+ 
+ obj-$(CONFIG_CRYPTO_AES_ARM_CE) += aes-arm-ce.o
+ obj-$(CONFIG_CRYPTO_GHASH_ARM_CE) += ghash-arm-ce.o
+ 
+-aes-arm-y	:= aes-cipher-core.o aes-cipher-glue.o
+ aes-arm-bs-y	:= aes-neonbs-core.o aes-neonbs-glue.o
+ aes-arm-ce-y	:= aes-ce-core.o aes-ce-glue.o
+ ghash-arm-ce-y	:= ghash-ce-core.o ghash-ce-glue.o
+diff --git a/arch/arm/crypto/aes-cipher-glue.c b/arch/arm/crypto/aes-cipher-glue.c
 deleted file mode 100644
-index a3b342f92fab..000000000000
---- a/crypto/aes_ti.c
+index f302db808cd3..000000000000
+--- a/arch/arm/crypto/aes-cipher-glue.c
 +++ /dev/null
-@@ -1,83 +0,0 @@
+@@ -1,77 +0,0 @@
 -// SPDX-License-Identifier: GPL-2.0-only
 -/*
-- * Scalar fixed time AES core transform
+- * Scalar AES core transform
 - *
-- * Copyright (C) 2017 Linaro Ltd <ard.biesheuvel@linaro.org>
+- * Copyright (C) 2017 Linaro Ltd.
+- * Author: Ard Biesheuvel <ard.biesheuvel@linaro.org>
 - */
 -
 -#include <crypto/aes.h>
 -#include <crypto/algapi.h>
 -#include <linux/module.h>
+-#include "aes-cipher.h"
 -
--static int aesti_set_key(struct crypto_tfm *tfm, const u8 *in_key,
--			 unsigned int key_len)
+-EXPORT_SYMBOL_GPL(__aes_arm_encrypt);
+-EXPORT_SYMBOL_GPL(__aes_arm_decrypt);
+-
+-static int aes_arm_setkey(struct crypto_tfm *tfm, const u8 *in_key,
+-			  unsigned int key_len)
 -{
 -	struct crypto_aes_ctx *ctx = crypto_tfm_ctx(tfm);
 -
 -	return aes_expandkey(ctx, in_key, key_len);
 -}
 -
--static void aesti_encrypt(struct crypto_tfm *tfm, u8 *out, const u8 *in)
+-static void aes_arm_encrypt(struct crypto_tfm *tfm, u8 *out, const u8 *in)
 -{
--	const struct crypto_aes_ctx *ctx = crypto_tfm_ctx(tfm);
--	unsigned long flags;
+-	struct crypto_aes_ctx *ctx = crypto_tfm_ctx(tfm);
+-	int rounds = 6 + ctx->key_length / 4;
 -
--	/*
--	 * Temporarily disable interrupts to avoid races where cachelines are
--	 * evicted when the CPU is interrupted to do something else.
--	 */
--	local_irq_save(flags);
--
--	aes_encrypt(ctx, out, in);
--
--	local_irq_restore(flags);
+-	__aes_arm_encrypt(ctx->key_enc, rounds, in, out);
 -}
 -
--static void aesti_decrypt(struct crypto_tfm *tfm, u8 *out, const u8 *in)
+-static void aes_arm_decrypt(struct crypto_tfm *tfm, u8 *out, const u8 *in)
 -{
--	const struct crypto_aes_ctx *ctx = crypto_tfm_ctx(tfm);
--	unsigned long flags;
+-	struct crypto_aes_ctx *ctx = crypto_tfm_ctx(tfm);
+-	int rounds = 6 + ctx->key_length / 4;
 -
--	/*
--	 * Temporarily disable interrupts to avoid races where cachelines are
--	 * evicted when the CPU is interrupted to do something else.
--	 */
--	local_irq_save(flags);
--
--	aes_decrypt(ctx, out, in);
--
--	local_irq_restore(flags);
+-	__aes_arm_decrypt(ctx->key_dec, rounds, in, out);
 -}
 -
 -static struct crypto_alg aes_alg = {
 -	.cra_name			= "aes",
--	.cra_driver_name		= "aes-fixed-time",
--	.cra_priority			= 100 + 1,
+-	.cra_driver_name		= "aes-arm",
+-	.cra_priority			= 200,
 -	.cra_flags			= CRYPTO_ALG_TYPE_CIPHER,
 -	.cra_blocksize			= AES_BLOCK_SIZE,
 -	.cra_ctxsize			= sizeof(struct crypto_aes_ctx),
@@ -485,9 +286,13 @@ index a3b342f92fab..000000000000
 -
 -	.cra_cipher.cia_min_keysize	= AES_MIN_KEY_SIZE,
 -	.cra_cipher.cia_max_keysize	= AES_MAX_KEY_SIZE,
--	.cra_cipher.cia_setkey		= aesti_set_key,
--	.cra_cipher.cia_encrypt		= aesti_encrypt,
--	.cra_cipher.cia_decrypt		= aesti_decrypt
+-	.cra_cipher.cia_setkey		= aes_arm_setkey,
+-	.cra_cipher.cia_encrypt		= aes_arm_encrypt,
+-	.cra_cipher.cia_decrypt		= aes_arm_decrypt,
+-
+-#ifndef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+-	.cra_alignmask			= 3,
+-#endif
 -};
 -
 -static int __init aes_init(void)
@@ -503,9 +308,129 @@ index a3b342f92fab..000000000000
 -module_init(aes_init);
 -module_exit(aes_fini);
 -
--MODULE_DESCRIPTION("Generic fixed time AES");
+-MODULE_DESCRIPTION("Scalar AES cipher for ARM");
 -MODULE_AUTHOR("Ard Biesheuvel <ard.biesheuvel@linaro.org>");
 -MODULE_LICENSE("GPL v2");
+-MODULE_ALIAS_CRYPTO("aes");
+diff --git a/arch/arm/crypto/aes-cipher.h b/arch/arm/crypto/aes-cipher.h
+deleted file mode 100644
+index d5db2b87eb69..000000000000
+--- a/arch/arm/crypto/aes-cipher.h
++++ /dev/null
+@@ -1,13 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-only */
+-#ifndef ARM_CRYPTO_AES_CIPHER_H
+-#define ARM_CRYPTO_AES_CIPHER_H
+-
+-#include <linux/linkage.h>
+-#include <linux/types.h>
+-
+-asmlinkage void __aes_arm_encrypt(const u32 rk[], int rounds,
+-				  const u8 *in, u8 *out);
+-asmlinkage void __aes_arm_decrypt(const u32 rk[], int rounds,
+-				  const u8 *in, u8 *out);
+-
+-#endif /* ARM_CRYPTO_AES_CIPHER_H */
+diff --git a/lib/crypto/Kconfig b/lib/crypto/Kconfig
+index 4efad77daa24..60420b421e04 100644
+--- a/lib/crypto/Kconfig
++++ b/lib/crypto/Kconfig
+@@ -12,10 +12,11 @@ config CRYPTO_LIB_AES
+ 	tristate
+ 
+ config CRYPTO_LIB_AES_ARCH
+ 	bool
+ 	depends on CRYPTO_LIB_AES && !UML && !KMSAN
++	default y if ARM
+ 
+ config CRYPTO_LIB_AESCFB
+ 	tristate
+ 	select CRYPTO_LIB_AES
+ 	select CRYPTO_LIB_UTILS
+diff --git a/lib/crypto/Makefile b/lib/crypto/Makefile
+index 01193b3f47ba..2f6b0f59eb1b 100644
+--- a/lib/crypto/Makefile
++++ b/lib/crypto/Makefile
+@@ -19,10 +19,13 @@ libcryptoutils-y				:= memneq.o utils.o
+ 
+ obj-$(CONFIG_CRYPTO_LIB_AES) += libaes.o
+ libaes-y := aes.o
+ ifeq ($(CONFIG_CRYPTO_LIB_AES_ARCH),y)
+ CFLAGS_aes.o += -I$(src)/$(SRCARCH)
++
++libaes-$(CONFIG_ARM) += arm/aes-cipher-core.o
++
+ endif # CONFIG_CRYPTO_LIB_AES_ARCH
+ 
+ ################################################################################
+ 
+ obj-$(CONFIG_CRYPTO_LIB_AESCFB)			+= libaescfb.o
+diff --git a/arch/arm/crypto/aes-cipher-core.S b/lib/crypto/arm/aes-cipher-core.S
+similarity index 100%
+rename from arch/arm/crypto/aes-cipher-core.S
+rename to lib/crypto/arm/aes-cipher-core.S
+diff --git a/lib/crypto/arm/aes.h b/lib/crypto/arm/aes.h
+new file mode 100644
+index 000000000000..1dd7dfa657bb
+--- /dev/null
++++ b/lib/crypto/arm/aes.h
+@@ -0,0 +1,56 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * AES block cipher, optimized for ARM
++ *
++ * Copyright (C) 2017 Linaro Ltd.
++ * Copyright 2026 Google LLC
++ */
++
++asmlinkage void __aes_arm_encrypt(const u32 rk[], int rounds,
++				  const u8 in[AES_BLOCK_SIZE],
++				  u8 out[AES_BLOCK_SIZE]);
++asmlinkage void __aes_arm_decrypt(const u32 inv_rk[], int rounds,
++				  const u8 in[AES_BLOCK_SIZE],
++				  u8 out[AES_BLOCK_SIZE]);
++
++static void aes_preparekey_arch(union aes_enckey_arch *k,
++				union aes_invkey_arch *inv_k,
++				const u8 *in_key, int key_len, int nrounds)
++{
++	aes_expandkey_generic(k->rndkeys, inv_k ? inv_k->inv_rndkeys : NULL,
++			      in_key, key_len);
++}
++
++static void aes_encrypt_arch(const struct aes_enckey *key,
++			     u8 out[AES_BLOCK_SIZE],
++			     const u8 in[AES_BLOCK_SIZE])
++{
++	if (!IS_ENABLED(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS) &&
++	    !IS_ALIGNED((uintptr_t)out | (uintptr_t)in, 4)) {
++		u8 bounce_buf[AES_BLOCK_SIZE] __aligned(4);
++
++		memcpy(bounce_buf, in, AES_BLOCK_SIZE);
++		__aes_arm_encrypt(key->k.rndkeys, key->nrounds, bounce_buf,
++				  bounce_buf);
++		memcpy(out, bounce_buf, AES_BLOCK_SIZE);
++		return;
++	}
++	__aes_arm_encrypt(key->k.rndkeys, key->nrounds, in, out);
++}
++
++static void aes_decrypt_arch(const struct aes_key *key,
++			     u8 out[AES_BLOCK_SIZE],
++			     const u8 in[AES_BLOCK_SIZE])
++{
++	if (!IS_ENABLED(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS) &&
++	    !IS_ALIGNED((uintptr_t)out | (uintptr_t)in, 4)) {
++		u8 bounce_buf[AES_BLOCK_SIZE] __aligned(4);
++
++		memcpy(bounce_buf, in, AES_BLOCK_SIZE);
++		__aes_arm_decrypt(key->inv_k.inv_rndkeys, key->nrounds,
++				  bounce_buf, bounce_buf);
++		memcpy(out, bounce_buf, AES_BLOCK_SIZE);
++		return;
++	}
++	__aes_arm_decrypt(key->inv_k.inv_rndkeys, key->nrounds, in, out);
++}
 -- 
 2.52.0
 
