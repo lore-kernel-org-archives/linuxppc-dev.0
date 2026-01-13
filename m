@@ -1,60 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-15607-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15608-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0A5ECF45D4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jan 2026 02:38:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06F35CF45DB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jan 2026 02:38:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dqthX1Rc2z2yS0;
-	Tue, 13 Jan 2026 13:38:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=52.101.125.133 arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768271884;
-	cv=pass; b=oj7XsfifRkO/Vv5uYk49HzDx44tAy8r1WakP9AoDGcnI/UoUA3Wk9ns2iHgXTyRF/zEeibHxSZ4OOukX/hRZ5dqamS3YhzryolbKSqzvaVAo96RvudOaBcXXDKgA3bjDzCIMwX6E3ZKX5XbWECmWLa2JOKp/8OPbXXehvuJky3KsUVQ79lE0Vhs6s2Voil4xu4t1bZPdNHR8AmBjaa3wlOW9MmMriWzVfG3Rris3JipJ0VnJxNeWSnRxVy3hpNIgYir9OHRQWbuEBaRsLZJakT5bbP302lTy0mcZafRLCx8g8f6zM+T4jmnieyCa0fJGkWguv40DQptq/jzVVQO9IA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dqthZ6Xs2z2yZc;
+	Tue, 13 Jan 2026 13:38:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=52.101.125.143 arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768271886;
+	cv=pass; b=fW6WvqZ5pUXyi9l9frz9cFs6Xw1nXnejhQXTrlCDLTLWiEC4ybOxEDLe+T8/HCmMjHF7ivSsR5UMpsjx3rEkQCL/W5Uvty0MQERYaElXq5AmP5qN8B3gMAlbtFlKNXIf4art1T/UGjfDAzq4zqfYszp75Y2WpNIg/tJv7FRlP4/oUMC4Ga+SJJZ/d95iU2ReecSLUxfeXI/woP+OlEi+662iamvB4cF1UskoRA9e0597jPsHhh3JAHA49Jom8Ph5s674pl6k7a5n+FK8TDoHEUvzQ1XaDb7jtHD7Gg03he+hJnmlewNzXL5NR/jXMzs/1o5VvZHihcUBkxenm5bHCA==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768271884; c=relaxed/relaxed;
-	bh=FExY/XjqZ10rc1mRAqygS9qh2D9I+rGxRxKi8EKlBig=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=EFwise4ZqvWDo6qRFT9JEmS5k4jgizIENWeCmqw+rZSeO65g2p8+Y7TARjW8nXHaVcnLhPgJ8Pg0x5k4qCbKJrGQVCUF+OVfPuQwTxwQJXaeNSX3TpI9pAcc8UBdnHjUNxWqD8P08I5mh3ai5HbKVqPgoppsH+Yf9FSU+KKrO/S8cpdadRAQC74jn/TI+fivnqat6HgJvMBuE6AUdbAXMksvGeUDZ80hU4tIspuUeOXZjfaYi4tD5vmg60tt2SvkOL9S+ebfrTQ3001I/zlDm/Uz9wxHZ3RwJBHmme/moFlMlm4Rb8Wth/ojgjhaMnBucxre/nADNrWShN4HyBhWtg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=valinux.co.jp; dkim=pass (1024-bit key; unprotected) header.d=valinux.co.jp header.i=@valinux.co.jp header.a=rsa-sha256 header.s=selector1 header.b=RcnKzWGw; dkim-atps=neutral; spf=pass (client-ip=52.101.125.133; helo=tyvp286cu001.outbound.protection.outlook.com; envelope-from=den@valinux.co.jp; receiver=lists.ozlabs.org) smtp.mailfrom=valinux.co.jp
+	t=1768271886; c=relaxed/relaxed;
+	bh=FHdCwclZ92YvSuAnIfg0L9liBqe0Nkcq+I87Oq+wAj4=;
+	h=From:To:Cc:Subject:Date:Message-ID:Content-Type:MIME-Version; b=dJlvYq+xw6p7f/3/4+UU2kUVP6TSd14cmAgipopHnlu0iweZaZ0HM039e3D6TZCNJ0l/Z5wBKXG0DlTbhwPyHA/JVRJvUME9QkqYZOKTFEKz/K2Mn0LsmFtIfIbhz8ZOM73i8mVln4NJABPvOBlunj4rshWL9ZoDJwtL1WPKfzPlJ1bk4cpbMW+/debaF6h6SIOiDOlFy50v/DdN3KgZzzLJ2jIexMngpwQ58pFMAnppZbN5viKbChH+Uyih56Fwic95t4n+pm1izoOMdu6T5eINJP+fpNe6Lp2FmF6C9ANPjDFJXYgW+aqFx1Hp7FsS1bzEQex4o1sZQoyH09IU2w==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=valinux.co.jp; dkim=pass (1024-bit key; unprotected) header.d=valinux.co.jp header.i=@valinux.co.jp header.a=rsa-sha256 header.s=selector1 header.b=WN6qDeE6; dkim-atps=neutral; spf=pass (client-ip=52.101.125.143; helo=tyvp286cu001.outbound.protection.outlook.com; envelope-from=den@valinux.co.jp; receiver=lists.ozlabs.org) smtp.mailfrom=valinux.co.jp
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=valinux.co.jp
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=valinux.co.jp header.i=@valinux.co.jp header.a=rsa-sha256 header.s=selector1 header.b=RcnKzWGw;
+	dkim=pass (1024-bit key; unprotected) header.d=valinux.co.jp header.i=@valinux.co.jp header.a=rsa-sha256 header.s=selector1 header.b=WN6qDeE6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=valinux.co.jp (client-ip=52.101.125.133; helo=tyvp286cu001.outbound.protection.outlook.com; envelope-from=den@valinux.co.jp; receiver=lists.ozlabs.org)
-Received: from TYVP286CU001.outbound.protection.outlook.com (mail-japaneastazon11021133.outbound.protection.outlook.com [52.101.125.133])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=valinux.co.jp (client-ip=52.101.125.143; helo=tyvp286cu001.outbound.protection.outlook.com; envelope-from=den@valinux.co.jp; receiver=lists.ozlabs.org)
+Received: from TYVP286CU001.outbound.protection.outlook.com (mail-japaneastazon11021143.outbound.protection.outlook.com [52.101.125.143])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dqthW3n1wz2yNv
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 13:38:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dqthZ2GRKz2yNv
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 13:38:06 +1100 (AEDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=DwI+sPeieTYA4YtbbpyBeFtF79VdLm8tGBCQiW6oXMtikdm8Bs8GtDd05zF91thjFmOTvojwdDVeDrAES/dpDBre2/kTJQQA/5TgLcHYSlvGqcXTfM8F67rZQA1a7vdj1UELk5tpE58UV6NzRPd/vlM9l74w7MqafcN3S8g7m+ZL5p19aD43/7qwPgMx9/HHGJwLnp3o6DMXSvHE2p+wsY9Jpt9OskLxx4H9frjW5okKFLmc7SdJKk7jYFLE1H0B0EbqkKIa0nvcPivFSSV15re4bz9pddCwynQPxQ0s+EdD9YM5oWRE0hjpxpK8GxkaLZpT4ht3Y0U1dxTSv5s3bA==
+ b=Z/43iQL2xZi7gaf3EQ5yE23kT4NE9yojCjZix1LKEHhQofKRGxyrSiypC0InFS+pKh+Mr0ZnjMlfqZvCLdTMJutGso4AjbiAJ3U9yaMcCb9P+8e6exRlpFnF3kBIgt4VbiPtc1xdgu1AQd+WD+hdF6gBNYLRcnfq2MKZg3Kguoax9GLGmvWbBbKLWUqeMEhwg1UCtrhEh5kqW8BQQuKwnXCW7Jka6glLkdQ/gUNgZNRu8sucsgcZ/AO4Oo+VPQ0nWQrrm8s5LG7NcwFZbMhT12E2/yurppixn5eepUEDb+AAnDw/ESVUH1fEkwNFICOXGE7TiSCsE0JYSzpUBczhjw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=FExY/XjqZ10rc1mRAqygS9qh2D9I+rGxRxKi8EKlBig=;
- b=clXzk5OQwm+o263MQV0zA6Jp7lt9mkn0AW6ze1xITeFP/ldRC9jtebUDdeyR+RNPiDA3bS3wBbicefwUX/ODErg+G56uhmF+h1v/9VddX9gYrp2oDMCnR1Sgr5RH13eZ1kkckyZ1ihBGdBcggLWmCYMGdkttXACZtsYE9JBg0gSnI8RpB1ryI7JRXaZSrvsQsIMIvOg+F33EOGQkGYCEQFaLuzq9Jmf9aRlmUeZVsUHQGoHS1mjgm/H4jSjcBxj0ERBoJVnCjYjpjSDd8iKuKiJ0ZE3iwWZbIs6t7yqBrDxwY8TMig1qwRmSa6gFIlT97FVnhjHbSCHhoTCvNynm4A==
+ bh=FHdCwclZ92YvSuAnIfg0L9liBqe0Nkcq+I87Oq+wAj4=;
+ b=rfKy2KwUcvlMdbmnJbN/3NPQNczt83XRt52ta5dLrtALjODzTFOPShqOF1Z0o/GfiBMXokeog8LBl9j2VSw0kyiRI8Zc33admO/9od4QIUjoSLlck+iLGDadf8zRohZS5wtGqHWLoThrCQAw9UlrpL333Xj8CxQED6W/dOCNNI3AqDHtQJ/p8BLn/wXdR4AMU+oxw6B8MYcabQUXsOzRh2ovykobUe/YP8yw1GlHhP/jFOQ6XdpkJWq+KSaYiLEU3DYVkkrX4pdTKfVdxrimW9Mve8HYBP9ZQDBnR+GujNwGXHWEWc7qg9b/UEoAhNH0JQ0BatYg7aUfRSzUsMEL3Q==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=valinux.co.jp; dmarc=pass action=none
  header.from=valinux.co.jp; dkim=pass header.d=valinux.co.jp; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=valinux.co.jp;
  s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=FExY/XjqZ10rc1mRAqygS9qh2D9I+rGxRxKi8EKlBig=;
- b=RcnKzWGw/zCoXoEQWr62xeIs0TGF2Kvtu1ygdDICRTY7hmf/qH3wqwCl7iFPTpLVywc95YAQ/vsg1GgUjT9AjpIBOJLJ8V/5UI+zNVPZMp6FJamtfv2ksZP79OiFXuyS6YfSNt1kGqu2KxLPLlTzeB1wZi/K0eKiJt+YFppVMgo=
+ bh=FHdCwclZ92YvSuAnIfg0L9liBqe0Nkcq+I87Oq+wAj4=;
+ b=WN6qDeE6tNSVQXmREzfQcQIyV5ssFVsB5ydoMpkwqUuoHcjIxm2Alz8riNyttzvdEzq1Kgqc5qnCZR3XTrJwvJWJcavy4jcL6aPensH4laJhaxLXKAfVzs8yJsVV6OkyFM2o8hGsvvg1/DXbvbszCGgHkyNSAuudN9Z5cLbZhGQ=
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=valinux.co.jp;
 Received: from TY7P286MB7722.JPNP286.PROD.OUTLOOK.COM (2603:1096:405:38f::10)
  by TY7P286MB6708.JPNP286.PROD.OUTLOOK.COM (2603:1096:405:323::10) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9499.7; Tue, 13 Jan
- 2026 02:37:23 +0000
+ 2026 02:37:18 +0000
 Received: from TY7P286MB7722.JPNP286.PROD.OUTLOOK.COM
  ([fe80::2305:327c:28ec:9b32]) by TY7P286MB7722.JPNP286.PROD.OUTLOOK.COM
  ([fe80::2305:327c:28ec:9b32%5]) with mapi id 15.20.9499.005; Tue, 13 Jan 2026
- 02:37:23 +0000
+ 02:37:18 +0000
 From: Koichiro Den <den@valinux.co.jp>
 To: jingoohan1@gmail.com,
 	mani@kernel.org,
@@ -109,16 +108,14 @@ Cc: vigneshr@ti.com,
 	linux-renesas-soc@vger.kernel.org,
 	linux-stm32@st-md-mailman.stormreply.com,
 	linux-tegra@vger.kernel.org
-Subject: [PATCH v6 5/5] Documentation: PCI: endpoint: Clarify pci_epc_set_bar() usage
-Date: Tue, 13 Jan 2026 11:37:15 +0900
-Message-ID: <20260113023715.3463724-6-den@valinux.co.jp>
+Subject: [PATCH v6 0/5] PCI: endpoint: BAR subrange mapping support
+Date: Tue, 13 Jan 2026 11:37:10 +0900
+Message-ID: <20260113023715.3463724-1-den@valinux.co.jp>
 X-Mailer: git-send-email 2.51.0
-In-Reply-To: <20260113023715.3463724-1-den@valinux.co.jp>
-References: <20260113023715.3463724-1-den@valinux.co.jp>
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-ClientProxiedBy: TY4P286CA0136.JPNP286.PROD.OUTLOOK.COM
- (2603:1096:405:37f::13) To TY7P286MB7722.JPNP286.PROD.OUTLOOK.COM
+X-ClientProxiedBy: TYCPR01CA0091.jpnprd01.prod.outlook.com
+ (2603:1096:405:3::31) To TY7P286MB7722.JPNP286.PROD.OUTLOOK.COM
  (2603:1096:405:38f::10)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -135,135 +132,199 @@ Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: TY7P286MB7722:EE_|TY7P286MB6708:EE_
-X-MS-Office365-Filtering-Correlation-Id: a50bc101-480a-4150-9159-08de524cae62
+X-MS-Office365-Filtering-Correlation-Id: e9d4b94e-93a2-405d-d287-08de524cab9f
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
 	BCL:0;ARA:13230040|1800799024|10070799003|7416014|376014|366016;
 X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?k9L08/gG1ZfrkVeV+YdayJ4SZSPK5+4Z//13JxosFgmwAz092jL3Q8lQB3p8?=
- =?us-ascii?Q?f0r6NxKkdX+Oh05Uwf70A/BwNhRlB5Q1xvQTYiKGdinHuHSF+aEZCk09gaOq?=
- =?us-ascii?Q?Tkyz1D8+sfZ7rr0eC/MaL+pn2h21e9UQFi60hMb2tddne7LTZa9OMWR9xBQn?=
- =?us-ascii?Q?5WMJpMbY0BJZLWBjX5z7aH0KyYj3cMSmS4nsDOjE3IiImXcDWGQCvKDPKBY5?=
- =?us-ascii?Q?IOk+gk78v/uxtmClz1/cGm9F3vQehe3WfyebCRLXzyK8I0LBIpiNcSzEXfi1?=
- =?us-ascii?Q?b2U7Cj93x0VW9GJchOPyM4xjuh/G9NjKJlB9jJ8E9YwBzGiNpRx4YWy9g2oW?=
- =?us-ascii?Q?i1YT70kSfa3QwQ1S57UYokbzMcmFtN1f0HjpZKpPVrRp6tXBntuxi3aSnQdK?=
- =?us-ascii?Q?vNH0EkEMuWOH/AMN51hWz6lwyVO+Jxw9jxppgxRBmMTHY+qOq2tdy38BXWte?=
- =?us-ascii?Q?WCajQvuYh0zsc6G9YD/4+pwepvg8DGkeqVtVKeDNB6tN6gS91OssWWzKtYZo?=
- =?us-ascii?Q?0dwSlBvCW9iIjtROCpwpae3L7rLSTsOQsZBnAcd0sC7M/ZoXpGrd8XHGoBCX?=
- =?us-ascii?Q?2SFrlHmqHqLCafAlfzCnweZhcjMLXgAn2uKaeC0h20yOIIh3lSP4eXqpqB2b?=
- =?us-ascii?Q?iZn2lnG6H9leeyo3a/rX0qHPwm2bk7adwHQeYsg44W4fyerKPbDtu3c1AAiO?=
- =?us-ascii?Q?h0ThiysYEMeh2CZMjiWQ5IUoqJnARD0PeRZgMqkZcN85pi5zjdVRfIwkJOX+?=
- =?us-ascii?Q?I40Dd98Z/rG+tYMv5Ff++fwbmrTc+vmfZFUCb3E/r1fdmeNw7m2E0m3R4tUL?=
- =?us-ascii?Q?mneQNoCWU6ByGl0Fdaq3i5KaGWd9V6yXkC1VTE1IcvhCwpLNPrj82S6IPgVc?=
- =?us-ascii?Q?g8P36hq57P31P0a69K3CwZZZS3nGTxkliUpc8jgofDkksMAdOerGQzg5ESJK?=
- =?us-ascii?Q?h9nt+sCl10qadBlLNlE89eT3PtDg8L1Ls6oyrhSprFOZJ1QyjCDrWaX8uler?=
- =?us-ascii?Q?1scPUfDv2Eel1qQOdcv7OpaNUhT6IX+eo8R4L+TPYDc/qM1zIb/zMq8OOMEo?=
- =?us-ascii?Q?7k6bqKhcvaT/3TsQ7qVCeCEWuRrxn9idXq4BlNKPisGVXd6SyrzaP+f5THYz?=
- =?us-ascii?Q?/NIXS33e7o73eB1EOj+3km1DkYC2zlSm76cViYGqwwVET429zhAIqeiV3ZQs?=
- =?us-ascii?Q?/WPX7tdXrBhjQhfwjpSzJofGv6Zkjzypyns3p3BaX3l5eXsIXAzKbZWZUQ33?=
- =?us-ascii?Q?4yltNDyiaDpvvYXypO0DOegvrtP+7T47k5H7ElxyWTLhLyuKYHEYFor1Vi3N?=
- =?us-ascii?Q?so2QJOThDuPnDhALPtutzJthB63tiUeVEI5PmKpxHidBIXMDhvMludJPUu56?=
- =?us-ascii?Q?Tn39rWt9gCtGq/nqvaVBRrAvFvF/nKU6L+h8Yr5bh4sfSbAjidTKMi2Z5Zjw?=
- =?us-ascii?Q?uIFBmJDiKi5OoYx2RwooO7PI+l1/qXc3?=
+	=?us-ascii?Q?1jdG7yVk5dcZm8OMSZpzew7EhVtAHhHvF/QOM4LPCEQGykHM145ybMenZdAJ?=
+ =?us-ascii?Q?cCUoJ5kKM17BqbN2YkW/AdgNchlG4OSz3OUrgafxF3saUt6IjKfECmyh5AaN?=
+ =?us-ascii?Q?H4f1YFf0zMK5tnW57Lc95PJDcWyqYIRyVb+xDTs2pEQ2V3S+TKszVI7PnZEG?=
+ =?us-ascii?Q?v1wcgNSBW6CrVfctHedHNsI8xBYn8f9b25rjg+ON9gJHCHhjFOJCwUZ5qstx?=
+ =?us-ascii?Q?HecjzdgVkC5dQdRvQQ4FcFrPpziRVPYmqiOYLsTa9dw0BVHNjvDy6jxfF7dq?=
+ =?us-ascii?Q?QUYBC7Z39DlyxN3Ppxix0MfcyJOlRFOrekWTG4+D8r0gBn9Za+uI5Q8bw+vQ?=
+ =?us-ascii?Q?1ZItgaH6jynJTtblnGPO/+CC8Og/y+zQhQ6AnBx5x5xIdzTQvE4QzCGYZvjG?=
+ =?us-ascii?Q?vU58NICJlMaZVXFcjIoKGpPxC6Wab6Z8r7xvjrfNKybaUG6KSZqW3+oCLwxY?=
+ =?us-ascii?Q?WS1pcy93K8ICwr+EGa5cWFmlStuyO9ybdxO2sAAUKsTgGMrLj4OyjVYJeyyF?=
+ =?us-ascii?Q?Gw03diGenao+drDvciqCNXq6235BmYfpyhZMc8pVndJL9TF1wYFlz7M+u0wT?=
+ =?us-ascii?Q?jj7/jUy1v1eo4we4Minem8rZ6VH7qzVEUmutmOjNKCZRnryM+tN36pSTzKNr?=
+ =?us-ascii?Q?jALMIoGDzr7+NiwB4oG9wGjRq/86qOkgrSYtsbRG9e2VuP9FKHgEORq9zOmX?=
+ =?us-ascii?Q?2R0djZ3XsjcUaeWWRvSNvEsfqvjaB9ij6DOvi/GCBYBI9DGVP3zxaQ0Qfv7c?=
+ =?us-ascii?Q?mKULWOOmSKP4sK3Lc9lOWrx8ghp/YKRl6zUXppoBmCR1PbHh9fyg2yarcZ2Y?=
+ =?us-ascii?Q?QkGgG/2E6jFobR3Rs+VimcltDTu/Ax/PvN7fBaPzBX12aaiSC44mJ3gbQoxP?=
+ =?us-ascii?Q?6R7FpJ1CfLaRd2E3B7zuIe5WlbNjoUiA8NnPEZds+wUQu7yFY8UYZF5BXf55?=
+ =?us-ascii?Q?aiOECbxRm3K9DcqQqMNDTano/TNzobMLkIMNCFFQp0Z+MA3+UYGEbXZrAqO5?=
+ =?us-ascii?Q?ZpM02jxTfWs7EVkqDm6FE+Xi5b4iyFEX5KQYyKgmhG4/BVKRRBXtOeQ8xVsk?=
+ =?us-ascii?Q?ku7d++Me9se7q3Rn2bEFHqshLXMpXkiwtjJZU2qxg5ZJuJO0FRSNiKQs2fIN?=
+ =?us-ascii?Q?6oJYB2kNcdfndWx3fSdZDec1/iiwWaJeWayhWTa8X7xRDO6FCRIqZklMixhr?=
+ =?us-ascii?Q?05F0dDJUdzM++9jNIbywX0+GSSfi2aBaIZ62JOctA0wFlb7vL0YBMSF84Mom?=
+ =?us-ascii?Q?3c6xZktppWaMAaJTk6x8lAQguMKr4nH/u1vu6MxkJsdoInL7vxjyHKJo6MPO?=
+ =?us-ascii?Q?TCmDxsoYXiouv3fOsd9s/k9btDf+oqU8uAF2KF64lkTAWqDLUybr8qH6fEWd?=
+ =?us-ascii?Q?PO/Z+3gkRJFBi9P3bNsfzn/9ijCZmhiMkFS96+uVIrPGu8yGkEBtsdEUc8d0?=
+ =?us-ascii?Q?KDJlO+QnfErdEvxhCsKb/J1gk+qqcKgE?=
 X-Forefront-Antispam-Report:
 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TY7P286MB7722.JPNP286.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(10070799003)(7416014)(376014)(366016);DIR:OUT;SFP:1102;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?Fiw5YgmeNsqJp718Y3m3214IdjtY4HdUMZIB1f0dL8H1V1XjgE5ZSuTAimX7?=
- =?us-ascii?Q?Ciw/EOVdPWQVudh9ZYXa4T9znUGPKXTIIgAPKARZ8WNGQ6eCo9wQ/LGNBd0Z?=
- =?us-ascii?Q?nbjdjVDDcJCxpGYovYsOCA39Ef/1u7CFTbLbENLpEadsJeyTIJD66X0kXxuo?=
- =?us-ascii?Q?kFNgYmmG1a4/Li1H/RcNrZfAFR1OoROKRiFH2BT7GqYItfGahM9/6gnJjggZ?=
- =?us-ascii?Q?q90tD263LyAYPyRiuNPgxZkRS1sK5J7GMpm98J7tSx0ltc37kSl6DWi5t+jH?=
- =?us-ascii?Q?dTK5vfLhl/nwc5CUgqXdGipCguS1SD364CrjnMSzpwL6P9cnoWYIp7Yuga8P?=
- =?us-ascii?Q?vm3YCdZxCGRFqug20Aqeva12BmF7EDUOSfG0Ei21cNrHq9T4dAwTCg61Ex7O?=
- =?us-ascii?Q?H1y2j07d3OFqu1idXTdoB8dO8V/3gG1oi6wxkcLKDyePsU0IiLWx9mKGt3oK?=
- =?us-ascii?Q?TzwkSqqZNhAmWDE2aNCECoF8SB1mnxYGUp1ID/qAWrDoSgk/tasljYmw/Y/y?=
- =?us-ascii?Q?OEbMclmWPw2Rr0+M9bExGoaFCZVTL3m4M3kYPWp9p356dsLh6q31wzkX8gEj?=
- =?us-ascii?Q?Q7kMqd7O0LL2wPzWhpi216PikhZF3h+6DZy+Br0HG0pWaxCzQkc0XnVm95Fu?=
- =?us-ascii?Q?TGsHeJj5ftG5TBgW4Nba6/4755+RAQHmPXJG4ME+7wKucULDoO1KE0QxkYSQ?=
- =?us-ascii?Q?BEaj+IYGUZfnZXgb0Fwl4Ptiz1TqxNOBbYJOYZgIPVuaa8C+6EpJ1tPMHfit?=
- =?us-ascii?Q?KsnYXHmjjY1L8Tmp/Uj70Juwhx46oqkt0dpp5a0C8+a22R/FPrU5oSGbgt5J?=
- =?us-ascii?Q?snvxf0ttoGJPENkX8N0p1oPmvoTDHFVOfBvDxi/YGLdq4VqGn+RJq2C9gpNl?=
- =?us-ascii?Q?zUz9LQmpCi+EUlq6SF5kbZk7mhpzKvFn3CaTSS9VE1/I5KOd+TTou82fbC6i?=
- =?us-ascii?Q?n3hwrPI407Oe1bcMtAHCB4o2RYCBcZFt7qpXuS1h6gdhSPLGlEE9Dcyluh3q?=
- =?us-ascii?Q?1TISGrK74T4tw4JeceVFUZDvZBrQk5bwBHOy8B70vvpJJd5ZMbiC59AUOqf1?=
- =?us-ascii?Q?31/13daXY4t/j14ca+J9Roo1xn5Jd3+NsAmiHY4DqQmfYraFyB8apqE4JFdl?=
- =?us-ascii?Q?M4Bc6ESwRpr8+UZDlkJ+AdbyB56is7GBHVdpLfsRy0jChFGUYRpRHjh+ARoE?=
- =?us-ascii?Q?T6YNawPn4zdZ3WDH2QHio1LwjtlLX2tvzwsIcXemA5eZqjbrzFvYqgTwwcPL?=
- =?us-ascii?Q?LQQTO6GL6GRwOe7xO/3Uze2hFH2rEW/rYZWKEDLPdddhhW7F3oujYnY6n3JN?=
- =?us-ascii?Q?iPk8etk6k39K4gqwrKLLeNZ6mYpQ+14sGtgnaV5Zpu3cDa40HvEM9mXOEi24?=
- =?us-ascii?Q?15U7dYmG3c3XFAt2tcc4mg7xeLQ8ZFAdikMAtJDCMNq3bpxNbnmtUPAhnw89?=
- =?us-ascii?Q?dM4w6MYE4hWgf4/yCMdH+VZqSFEeaF3Cr3BqT8K19RsgZ8RQkmFVs9sitmC+?=
- =?us-ascii?Q?LRyFngU36RcdVvWTHUMPWF1Su/O1OXO2XVr1wm0/RR2Hp9BQN83GKProjddS?=
- =?us-ascii?Q?hFxE/P3RqbuWQNabfV7mZY35r+5CRGMP3ZHUNYk/RkaMsJhZhB6K0GaQORQP?=
- =?us-ascii?Q?jzqQ8HixfMZIootnkydr10QlOLEWdzxOjKHd2zaOHSQjxOTSDxTraNhEg1+U?=
- =?us-ascii?Q?eC/37THnuu00io3ed1mEPLiDu8qsb74Trzs7XVnhtcjvOesK6T1djk8itJTr?=
- =?us-ascii?Q?5F5t5iUrKCWyMAB7puUglXtci2i+k9B15gqXE17NiAOeaoczNGdi?=
+	=?us-ascii?Q?Nsb1BISxhA7fAGB9+whGbD8bDOlziyrm/Xw1MV7B8fAq0tgbECUU4IQGEEKy?=
+ =?us-ascii?Q?IYXecI65oKRlYZ9bIDPHoE39V2KdQFhsXnDlNvpHmbpETalbS9KB7SOdDsIx?=
+ =?us-ascii?Q?9NFrbfX+esvOKugKkfg3rp0aHsFoUsAtIuFJYBMOrbpN+si+6vppaXFdRg5o?=
+ =?us-ascii?Q?IpH/NyIC18uZNB2hEFNeUKKcVsN57VjCwmjTLCMdTDxvx9/GhHxh1M3poCPF?=
+ =?us-ascii?Q?Iu3eFgOi7Ol+Gq9oezHnP1Y0Xu7GPKi9pPop4gGGzAtrYGkg62ZEWVY2TjA8?=
+ =?us-ascii?Q?ISFkIpx4URwYB+PzwUIEE+xVFO4+8Zh+MbQdR3VZkqK9t+VzhcV1yrfDroeO?=
+ =?us-ascii?Q?UEzPQde5l4Bo+rCHQLS4IyFM7AaKyPmVinxsr/pz3RM/v6dgZyls98fqA8+W?=
+ =?us-ascii?Q?EdyB1I3N0xDb7wZ3m6ipbFsOUDmEEF1UyaxVil37cNa+ouYvErdT72G9kTZg?=
+ =?us-ascii?Q?U+fcNF0/5+8Kk3x/WpJNKvDM/JEBgfDx4v84uUfm8nCcvSue7MruzsNQYlMc?=
+ =?us-ascii?Q?1n50lFnJFy1TfKN3EvRKrmONbLxsB0cAu/A6LEbsheq4aLWc9G+tX2hO7kDs?=
+ =?us-ascii?Q?/PFTsBoti9Z88fIVjpycarnG/W8aSGndvXxAsNzgwTdcc88UZ1Iz6Z4Rcm8R?=
+ =?us-ascii?Q?w6cMSDGAjPMRBcQwt6f0/yWlldZBAJFAH19EDxQEUdr2docqHi776WQn54bY?=
+ =?us-ascii?Q?DNijbLbvKalFJBSbq8a2PaRJiHa+L/L7kITEjBoIh3gMkG2r739kT8AnNP49?=
+ =?us-ascii?Q?zoQJvgsSwevR1pnvkY4ICrUCrqq1jhRfqJGPAr7gJVkVPZXvBfsw/xjhl+tY?=
+ =?us-ascii?Q?d4RcqnAeM5QoOef1N7leTT8spOLL53fIWbqeuTM7tgmRTyn0myLowt6OQKkh?=
+ =?us-ascii?Q?LgGnmmJkn3ChAwID90PM01taUjvHHtemxcNjB0BrQU3R3d/FUu2B0LfZzc+b?=
+ =?us-ascii?Q?teD17KXDXyZec48OBZo1wxKvrzJJwidQNyrI7DB5ntDfh6mgfCEDpITyXQ3U?=
+ =?us-ascii?Q?q9cuOfjTG8qJBlCbXVUqcHq4Rk6sPolM3a6Nh0afAG68KMNmNCoJCbmqR0zP?=
+ =?us-ascii?Q?e3tJ8IiKELaTaYpezB31qyi6FYyFctvcwfyTt/GCQ9Vw/ur1w4wNj9i99cbs?=
+ =?us-ascii?Q?ndNAjIbu8BlDLYEE/rXrcXwR+k7ptLn/qUvxGFAUfU9A1HchlEDJr1L25eq2?=
+ =?us-ascii?Q?2jG69GfMghj2jKn01OskmZ0WZGOOOcE9e8Wv93ru1f1E/2CavJwHNuX71R5i?=
+ =?us-ascii?Q?1BtxHaosr/C8V48V9/nXmxmwncMlByLx7u1ZMrbsGkZxNO3zPne/iCm1awmc?=
+ =?us-ascii?Q?R86nd94+oyEBxeeYAVf3W4cz/ecJXvYyOFqgJEOVKsy2K2LarWZvM+vyvubJ?=
+ =?us-ascii?Q?H9xprd0VNoQZ7myZEsvpbqOiHTcDZh7kMZuIci4IZh8ufIp/j9pJ1PbpO4oT?=
+ =?us-ascii?Q?CFbJHxXRNv1Clsn7O5shjz+VezGbilRDC6ICjrMeUXgoAO2CN7jN2vJ5CLjk?=
+ =?us-ascii?Q?JPkj8dU4EwsUmLKgS8oItsU1kmxdpGEaZBmhqEIbXpGVCSH2rUIVCoNEZzSt?=
+ =?us-ascii?Q?+HNYLUnI2+s39vppVt3Z0Yk5sfDQuLvMT7P2kg2zwxPVqpLtvIVRq8JkKby6?=
+ =?us-ascii?Q?gvTTngELWqA6t4mUIoc8lyRyRJC8rHHhD886yyFlYRiTvKmqgNySKj118t/0?=
+ =?us-ascii?Q?5VXDZP6CM4aZT4uLwX9NaUVbZ5mAQrXUtORXVholjZwtEWOhWEvJKMfjyCvv?=
+ =?us-ascii?Q?Z3+EEUV+PFwVCawueX4rnUS7tRnFvze3UOdL/0LsDgKrc9gx8OFP?=
 X-OriginatorOrg: valinux.co.jp
-X-MS-Exchange-CrossTenant-Network-Message-Id: a50bc101-480a-4150-9159-08de524cae62
+X-MS-Exchange-CrossTenant-Network-Message-Id: e9d4b94e-93a2-405d-d287-08de524cab9f
 X-MS-Exchange-CrossTenant-AuthSource: TY7P286MB7722.JPNP286.PROD.OUTLOOK.COM
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Jan 2026 02:37:23.0555
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Jan 2026 02:37:18.4302
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 7a57bee8-f73d-4c5f-a4f7-d72c91c8c111
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: iD21qc3SHetmEjYawQISyj22zhOGTp6qtL7rZNZ+nA/2HKLWbxw2GJqc5Fsba/Rh+DIXherQHu9YGqmxu+jZeQ==
+X-MS-Exchange-CrossTenant-UserPrincipalName: UlO8ROWIkamA+f58Zjye8Cal7dLGsrL1jKlt3Jgjw6KuX9iSjjbHSmCu1jSCw7z/hkufYIIO48kE4F7WN/kq4w==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: TY7P286MB6708
 
-The current documentation implies that pci_epc_set_bar() is only used
-before the host enumerates the endpoint.
+This series proposes support for mapping subranges within a PCIe endpoint
+BAR and enables controllers to program inbound address translation for
+those subranges.
 
-In practice, some Endpoint Controllers support calling pci_epc_set_bar()
-multiple times for the same BAR (without clearing it) in order to update
-inbound address translations after the host has programmed the BAR base
-address, which some Endpoint Functions such as vNTB already relies on.
-Add document text for that.
+- Patch 1/5 introduces generic BAR subrange mapping support in the PCI
+  endpoint core.
 
-Also document the expected call flow for BAR subrange mapping
-(pci_epf_bar.use_submap / pci_epf_bar.submap), which may require
-a second pci_epc_set_bar() call after the host has programmed the BAR base
-address.
+- Patch 2/5 changes dw_pcie_ep_ops.get_features() to return a mutable
+  struct pci_epc_features * and updates all DWC-based glue drivers
+  accordingly. This is preparatory work for subsequent patches.
 
-Signed-off-by: Koichiro Den <den@valinux.co.jp>
----
- Documentation/PCI/endpoint/pci-endpoint.rst | 22 +++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+- Patch 3/5 introduces dynamic_inbound_mapping feature bit. This can be
+  used as a safeguard to check whether a BAR can really be reconfigured
+  without clearing/resetting it.
 
-diff --git a/Documentation/PCI/endpoint/pci-endpoint.rst b/Documentation/PCI/endpoint/pci-endpoint.rst
-index 0741c8cbd74e..d3d9abbbc71e 100644
---- a/Documentation/PCI/endpoint/pci-endpoint.rst
-+++ b/Documentation/PCI/endpoint/pci-endpoint.rst
-@@ -95,6 +95,28 @@ by the PCI endpoint function driver.
-    Register space of the function driver is usually configured
-    using this API.
- 
-+   Some endpoint controllers also support calling pci_epc_set_bar() again
-+   for the same BAR (without calling pci_epc_clear_bar()) to update inbound
-+   address translations after the host has programmed the BAR base address.
-+   Endpoint function drivers can check this capability via the
-+   dynamic_inbound_mapping EPC feature bit.
-+
-+   When pci_epf_bar.use_submap is set, the endpoint function driver is
-+   requesting BAR subrange mapping using pci_epf_bar.submap. This requires
-+   the EPC to advertise support via the subrange_mapping EPC feature bit.
-+
-+   If the EPF driver wants to program inbound subrange mappings that are
-+   based on the BAR base address programmed by the host during enumeration,
-+   it needs to call pci_epc_set_bar() twice for the same BAR (requires
-+   dynamic_inbound_mapping): first with use_submap cleared to configure the
-+   BAR size, then after the PCIe link is up and the host enumerates the
-+   endpoint and programs the BAR base address, again with use_submap set.
-+
-+   Note that in this flow, the EPF driver must not call pci_epc_clear_bar()
-+   between the two pci_epc_set_bar() calls, because clearing the BAR can
-+   clear/disable the BAR register or BAR decode on the endpoint while the
-+   host still expects the assigned BAR address to remain valid.
-+
- * pci_epc_clear_bar()
- 
-    The PCI endpoint function driver should use pci_epc_clear_bar() to reset
+- Patch 4/5 adds an implementation for the DesignWare PCIe endpoint
+  controller using Address Match Mode IB iATU. It also advertises
+  subrange_mapping support from the DWC EP midlayer.
+
+- Patch 5/5 updates a documentation for pci_epc_set_bar().
+
+This series is originally a spin-off from a larger RFC series posted
+earlier:
+https://lore.kernel.org/all/20251217151609.3162665-4-den@valinux.co.jp/
+The first user will likely be Remote eDMA-backed NTB transport,
+demonstrated in that RFC series.
+
+Kernel base:
+  - repo: git://git.kernel.org/pub/scm/linux/kernel/git/pci/pci.git
+  - branch: controller/dwc
+  - commit: 68ac85fb42cf ("PCI: dwc: Use cfg0_base as iMSI-RX target address
+                           to support 32-bit MSI devices")
+
+Changelog:
+* v5->v6 changes:
+  - Added a new feature bit dynamic_inbound_mapping and set it centrally
+    in dw_pcie_ep_get_features() for all DWC-based glue drivers.
+  - Updated documentation for pci_epc_set_bar().
+  - Dropped a needless and harmful dw_pcie_ep_clear_bar() call on the error
+    path.
+  - Fixed "Bar Match Mode" to "BAR Match Mode" in a source code comment.
+
+* v4->v5 changes:
+  - Added subrange_mapping to struct pci_epc_features and enforced a
+    strict capability check in pci_epc_set_bar() (reject use_submap when
+    unsupported).
+  - Changed DWC-based glue drivers to return a mutable features pointer
+    and set subrange_mapping centrally at the DWC midlayer.
+  - Split the series into 3 patches accordingly.
+
+* v3->v4 changes:
+  - Drop unused includes that should have been removed in v3
+
+* v2->v3 changes:
+  - Remove submap copying and sorting from dw_pcie_ep_ib_atu_addr(), and
+    require callers to pass a sorted submap. The related source code
+    comments are updated accordingly.
+  - Refine source code comments and commit messages, including normalizing
+    "Address Match Mode" wording.
+  - Add const qualifiers where applicable.
+
+* v1->v2 changes:
+  - Introduced stricter submap validation: no holes/overlaps and the
+    subranges must exactly cover the whole BAR. Added
+    dw_pcie_ep_validate_submap() to enforce alignment and full-coverage
+    constraints.
+  - Enforced one-shot (all-or-nothing) submap programming to avoid leaving
+    half-programmed BAR state:
+    * Dropped incremental/overwrite logic that is no longer needed with the
+      one-shot design.
+    * Added dw_pcie_ep_clear_ib_maps() and used it from multiple places to
+      tear down BAR match / address match inbound mappings without code
+      duplication.
+  - Updated kernel source code comments and commit messages, including a
+    small refinement made along the way.
+  - Changed num_submap type to unsigned int.
+
+v5: https://lore.kernel.org/all/20260108172403.2629671-1-den@valinux.co.jp/
+v4: https://lore.kernel.org/all/20260108044148.2352800-1-den@valinux.co.jp/
+v3: https://lore.kernel.org/all/20260108024829.2255501-1-den@valinux.co.jp/
+v2: https://lore.kernel.org/all/20260107041358.1986701-1-den@valinux.co.jp/
+v1: https://lore.kernel.org/all/20260105080214.1254325-1-den@valinux.co.jp/
+
+
+Thank you for reviewing,
+
+
+Koichiro Den (5):
+  PCI: endpoint: Add BAR subrange mapping support
+  PCI: dwc: Allow glue drivers to return mutable EPC features
+  PCI: endpoint: Add dynamic_inbound_mapping EPC feature
+  PCI: dwc: ep: Support BAR subrange inbound mapping via Address Match
+    Mode iATU
+  Documentation: PCI: endpoint: Clarify pci_epc_set_bar() usage
+
+ Documentation/PCI/endpoint/pci-endpoint.rst   |  22 ++
+ drivers/pci/controller/dwc/pci-dra7xx.c       |   4 +-
+ drivers/pci/controller/dwc/pci-imx6.c         |  10 +-
+ drivers/pci/controller/dwc/pci-keystone.c     |   4 +-
+ .../pci/controller/dwc/pci-layerscape-ep.c    |   2 +-
+ drivers/pci/controller/dwc/pcie-artpec6.c     |   4 +-
+ .../pci/controller/dwc/pcie-designware-ep.c   | 240 +++++++++++++++++-
+ .../pci/controller/dwc/pcie-designware-plat.c |   4 +-
+ drivers/pci/controller/dwc/pcie-designware.h  |   4 +-
+ drivers/pci/controller/dwc/pcie-dw-rockchip.c |   8 +-
+ drivers/pci/controller/dwc/pcie-keembay.c     |   4 +-
+ drivers/pci/controller/dwc/pcie-qcom-ep.c     |   4 +-
+ drivers/pci/controller/dwc/pcie-rcar-gen4.c   |   4 +-
+ drivers/pci/controller/dwc/pcie-stm32-ep.c    |   4 +-
+ drivers/pci/controller/dwc/pcie-tegra194.c    |   4 +-
+ drivers/pci/controller/dwc/pcie-uniphier-ep.c |  58 +++--
+ drivers/pci/endpoint/pci-epc-core.c           |   3 +
+ include/linux/pci-epc.h                       |   8 +
+ include/linux/pci-epf.h                       |  31 +++
+ 19 files changed, 355 insertions(+), 67 deletions(-)
+
 -- 
 2.51.0
 
