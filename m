@@ -1,45 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-15640-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15641-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96A4FD2D0E9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jan 2026 12:47:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83B3ED2D0EA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jan 2026 12:47:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dr8Bw6WSXz2ynZ;
-	Tue, 13 Jan 2026 23:46:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dr8C02TPwz2yv1;
+	Tue, 13 Jan 2026 23:46:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768308408;
-	cv=none; b=Ka0UpRIgDtSsgFXs/iMcGq1TB6uTYu3zCeYxhrJ1emNF0+MBKEMP/NDqONLXpMfGu5VFkcvcn2aCjTpLXXToIHCCWyFiBD4GddixbRBmH7h4wOoi3CZVlOV4rze3JTcOoT4LUY1AWxNz+pC+wXgPbIbir2kTKon5f6yDgHkDjSbcVmGaHhX7vKUXZJWvEXSK83XoMO1dX/xHhrUU6KQw2B3n21RyISQLVZJQagcQNnC9cG9hTWJEGg1Gf3NUDEqQ8ErZHGJrNXyirxLvwAccJ/fLUeX3E295jYR57apk76wzvBsEcCbeE8q2ari7+eGIIgz5z6/zcZT8hdZ3C+ifbQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768308412;
+	cv=none; b=WvnEjBqF6pdsRlGhhlQfJHBJxugN1zkMmfMik1dmFCSA/+BYtQ0GiZUuKjMfYFWR7eItwfGFq1y11vu9ArVe07510wkKr8a/vJCUblid3T94akP1RBPXqeH8E1OHeQ+yazk1O8WgY4us4N42NIQfgAzfMsHN0RPjEk8+lx0ytV5+NjvoIWDCpjX996WeksKxQuPDHJt0inrzo6wu+MYORseyZgWL27paEO69r0m6MA+a/Ee22eLEq7SXFcCUFsL18UHFLXC8oPbwSGWIyODKvsKcxRRGeNipODN66LOCstxptBfJ8A+rxZ+LjiiA5hwt3zV81vGYQPr+Ex/seopXaA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768308408; c=relaxed/relaxed;
-	bh=PrDLwPyl2RVdIvUDPsJ865p2Ac6MRsDTAB7xMkqdBJI=;
+	t=1768308412; c=relaxed/relaxed;
+	bh=sjvZ6ExXZKIsGr0LtGmK9CiSA8CcuTr0wY4xdHiLd6E=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=aaP6xbQC1ew77DRVkQlQT/Hdnp3LNsYcEGNTgBRph2CSaiWQiyXzRhHbITuo/qBcLPjgcXb5zUMFjHqFCTh+WpnU62hBMkt64UXfiZy3cnvQ7qIpixbp/kDwXcPApF8a+5O+KOV02fZjwKfQyQA74tnu7ln8T1FVkySflM80Zoyw/jvujgR1cqEa58zV3d8rUorYljLASQKKDWb/if9NxLg6PB6lQ/08FBKthRiKivsaMd7L+cDabZvv6tgFj2JBMtGHTP+AFjT1Wn8+7YzvQT3E2qxlTY3swWl7PNRGhOA/hg6gtZH120WK4AQ7oXYJY4eyEA/pxE6VY3Oj0+H4aw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=c11joj4q; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+	 In-Reply-To:To:Cc; b=ZeiIXUCmC0Fsk3xX3ytp316iI0KmSUFMa8XmsEou5ayRl8sF82opPSYCUouq4/5EVO/t9OAyrNybJK/5AhJmWj78/pBmBiQjRawvvV3MoEqOz0jaD249/cTcnVljpBcnshbDSfNt04ZCXlrNx6otHsbojRN2c9s0sg7JJ5KUWDop5BLjQjzDClsTxJL3XwZpGO6OnwZqG4ZoADFtPNWmGUU4trQZ3RYGXAPOVkF7BKUiSlFRwWrbVPUX57hK66VXAQSvx/ZLqJtP27iPmR+0eK7rOS1cm3WwS7Ndczn1nZw0UTcqJ/zZsoPjmdWR9ztlkSW/893pq6dKx04ovRD5+Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=U1KnkUqV; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=c11joj4q;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=U1KnkUqV;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dr8Bw1MGvz2yks
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 23:46:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dr8Bz5rgmz2yks
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 23:46:51 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1768307860;
-	bh=AQXwlX52KxlPEn4u0pj+ZozDxqAQgmwa0bwnrtMfO2o=;
+	s=mail; t=1768307861;
+	bh=b2TM6fz30nYE4pXc7lphgAZV10HkjJO6Y6M5OUfLXpI=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=c11joj4qS+McPfr25fP7A7kNvS54i2wodhNwGm8BF8MCHBCTbxTURec2JoyZDdRLa
-	 Kw17+gExC9oSprSJCnNAf0nQsgFYPfgN6utQbd3WSPey3DtHOjtQxfI3MZ2PKPf3+h
-	 eArjJN7G84s4hKv5pQDHE51Nz9g0vsrfcVsPQXdw=
+	b=U1KnkUqV1THtBM/FnYjupYo4PNuIDXrDa9wv1DZZEcE2tF6N/S6c6EF/7n1DbgEIo
+	 qOks4JyottD1KEeI5d5Su4cVMYj6/huuFG1gQCYx8NWdP5UZzwImedmtvEXcdV9YUP
+	 QToV2OswA9J3WiLqB4jdefpF4mhb4HxgZoFv100U=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Tue, 13 Jan 2026 13:28:55 +0100
-Subject: [PATCH v4 11/17] module: Move lockdown check into generic module
- loader
+Date: Tue, 13 Jan 2026 13:29:00 +0100
+Subject: [PATCH v4 16/17] kbuild: move handling of module stripping to
+ Makefile.lib
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -55,7 +55,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260113-module-hashes-v4-11-0b932db9b56b@weissschuh.net>
+Message-Id: <20260113-module-hashes-v4-16-0b932db9b56b@weissschuh.net>
 References: <20260113-module-hashes-v4-0-0b932db9b56b@weissschuh.net>
 In-Reply-To: <20260113-module-hashes-v4-0-0b932db9b56b@weissschuh.net>
 To: Nathan Chancellor <nathan@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
@@ -87,60 +87,142 @@ Cc: =?utf-8?q?Fabian_Gr=C3=BCnbichler?= <f.gruenbichler@proxmox.com>,
  linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1768307859; l=1463;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1768307859; l=3531;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=AQXwlX52KxlPEn4u0pj+ZozDxqAQgmwa0bwnrtMfO2o=;
- b=6Vy1azrI605whNaZMGmixiJa2Dmq7kFxo81sevB94fs40VlaNg6/O/Qz3rsQ10vnnq984b5K0
- ZZT91klbjx1D5nQcLz0zpYHmdyhSDmffrqm+1UCDCPp4hIbzpVmoMks
+ bh=b2TM6fz30nYE4pXc7lphgAZV10HkjJO6Y6M5OUfLXpI=;
+ b=Xez2lBrIjdFMFK8Oh5pBpyprlmOXfIFf5MbbX1IYj3vnIscUbHikzrmsTG8b9pMw9G8LxfD6v
+ TVK+2le9j2rBEgHkmELEMe8iyvQ9/x6dQX0oXApfSpXVDLL5sLXzdtE
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-The lockdown check buried in module_sig_check() will not compose well
-with the introduction of hash-based module validation.
-Move it into module_integrity_check() which will work better.
+To allow CONFIG_MODULE_HASHES in combination with INSTALL_MOD_STRIP,
+this logc will also be used by Makefile.modfinal.
+
+Move it to a shared location to enable reuse.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- kernel/module/main.c    | 6 +++++-
- kernel/module/signing.c | 3 +--
- 2 files changed, 6 insertions(+), 3 deletions(-)
+ scripts/Makefile.lib     | 32 ++++++++++++++++++++++++++++++++
+ scripts/Makefile.modinst | 37 +++++--------------------------------
+ 2 files changed, 37 insertions(+), 32 deletions(-)
 
-diff --git a/kernel/module/main.c b/kernel/module/main.c
-index 9c570078aa9c..c09b25c0166a 100644
---- a/kernel/module/main.c
-+++ b/kernel/module/main.c
-@@ -3351,7 +3351,11 @@ static int module_integrity_check(struct load_info *info, int flags)
- 	if (IS_ENABLED(CONFIG_MODULE_SIG))
- 		err = module_sig_check(info, flags);
+diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+index 28a1c08e3b22..7fcf3c43e408 100644
+--- a/scripts/Makefile.lib
++++ b/scripts/Makefile.lib
+@@ -474,6 +474,38 @@ define sed-offsets
+ 	s:->::; p;}'
+ endef
  
--	return err;
-+	if (err)
-+		return err;
-+	if (info->sig_ok)
-+		return 0;
-+	return security_locked_down(LOCKDOWN_MODULE_SIGNATURE);
- }
++#
++# Module Installation
++#
++quiet_cmd_install_mod = INSTALL $@
++      cmd_install_mod = cp $< $@
++
++# Module Strip
++# ---------------------------------------------------------------------------
++#
++# INSTALL_MOD_STRIP, if defined, will cause modules to be stripped after they
++# are installed. If INSTALL_MOD_STRIP is '1', then the default option
++# --strip-debug will be used. Otherwise, INSTALL_MOD_STRIP value will be used
++# as the options to the strip command.
++ifeq ($(INSTALL_MOD_STRIP),1)
++mod-strip-option := --strip-debug
++else
++mod-strip-option := $(INSTALL_MOD_STRIP)
++endif
++
++# Strip
++ifdef INSTALL_MOD_STRIP
++
++quiet_cmd_strip_mod = STRIP   $@
++      cmd_strip_mod = $(STRIP) $(mod-strip-option) $@
++
++else
++
++quiet_cmd_strip_mod =
++      cmd_strip_mod = :
++
++endif
++
+ # Use filechk to avoid rebuilds when a header changes, but the resulting file
+ # does not
+ define filechk_offsets
+diff --git a/scripts/Makefile.modinst b/scripts/Makefile.modinst
+index ba4343b40497..07380c7233a0 100644
+--- a/scripts/Makefile.modinst
++++ b/scripts/Makefile.modinst
+@@ -8,6 +8,7 @@ __modinst:
  
- /*
-diff --git a/kernel/module/signing.c b/kernel/module/signing.c
-index 66d90784de89..8a5f66389116 100644
---- a/kernel/module/signing.c
-+++ b/kernel/module/signing.c
-@@ -11,7 +11,6 @@
- #include <linux/module_signature.h>
- #include <linux/string.h>
- #include <linux/verification.h>
--#include <linux/security.h>
- #include <crypto/public_key.h>
- #include <uapi/linux/module.h>
- #include "internal.h"
-@@ -68,5 +67,5 @@ int module_sig_check(struct load_info *info, int flags)
- 		return -EKEYREJECTED;
- 	}
+ include $(objtree)/include/config/auto.conf
+ include $(srctree)/scripts/Kbuild.include
++include $(srctree)/scripts/Makefile.lib
  
--	return security_locked_down(LOCKDOWN_MODULE_SIGNATURE);
-+	return 0;
- }
+ install-y :=
+ 
+@@ -36,7 +37,7 @@ install-y += $(addprefix $(MODLIB)/, modules.builtin modules.builtin.modinfo)
+ install-$(CONFIG_BUILTIN_MODULE_RANGES) += $(MODLIB)/modules.builtin.ranges
+ 
+ $(addprefix $(MODLIB)/, modules.builtin modules.builtin.modinfo modules.builtin.ranges): $(MODLIB)/%: % FORCE
+-	$(call cmd,install)
++	$(call cmd,install_mod)
+ 
+ endif
+ 
+@@ -65,40 +66,12 @@ install-$(CONFIG_MODULES) += $(modules)
+ __modinst: $(install-y)
+ 	@:
+ 
+-#
+-# Installation
+-#
+-quiet_cmd_install = INSTALL $@
+-      cmd_install = cp $< $@
+-
+-# Strip
+-#
+-# INSTALL_MOD_STRIP, if defined, will cause modules to be stripped after they
+-# are installed. If INSTALL_MOD_STRIP is '1', then the default option
+-# --strip-debug will be used. Otherwise, INSTALL_MOD_STRIP value will be used
+-# as the options to the strip command.
+-ifdef INSTALL_MOD_STRIP
+-
+ ifdef CONFIG_MODULE_HASHES
+ ifeq ($(KBUILD_EXTMOD),)
++ifdef INSTALL_MOD_STRIP
+ $(error CONFIG_MODULE_HASHES and INSTALL_MOD_STRIP are mutually exclusive)
+ endif
+ endif
+-
+-ifeq ($(INSTALL_MOD_STRIP),1)
+-strip-option := --strip-debug
+-else
+-strip-option := $(INSTALL_MOD_STRIP)
+-endif
+-
+-quiet_cmd_strip = STRIP   $@
+-      cmd_strip = $(STRIP) $(strip-option) $@
+-
+-else
+-
+-quiet_cmd_strip =
+-      cmd_strip = :
+-
+ endif
+ 
+ #
+@@ -133,8 +106,8 @@ endif
+ $(foreach dir, $(sort $(dir $(install-y))), $(shell mkdir -p $(dir)))
+ 
+ $(dst)/%.ko: %.ko FORCE
+-	$(call cmd,install)
+-	$(call cmd,strip)
++	$(call cmd,install_mod)
++	$(call cmd,strip_mod)
+ 	$(call cmd,sign)
+ 
+ ifdef CONFIG_MODULES
 
 -- 
 2.52.0
