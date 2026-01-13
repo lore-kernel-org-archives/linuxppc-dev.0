@@ -1,79 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-15620-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15621-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8FC4D29DFE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jan 2026 10:18:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D19ED29DFE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jan 2026 10:18:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dr4vY1fKWz2xWJ;
-	Tue, 13 Jan 2026 21:18:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.208.173
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768299497;
-	cv=none; b=n+ElE2suXelGM2rR3orounKdQQ4mO00IqwTTR8O3GnbGPGSITwpr35kU12u2L4xEWmDhajwnH67lzhSli9ln9sR0XcsgVgNKkszckyikBvQEBvf373nOaDfl5uS8Zt6cf0kpN4RNbzy56rkrI9qQsCwWeeZ2tIuf0iPF1r+MIR7jltByQZvpkpRNVftTOoP8rGJcjMVYdIfg2R4rKhlzVNEbuxMJf+uQuBTypmr6xg9/wO/b0PMh7lxelWkHWyrxpezRzXzKlhw42G+lvTnmim9wi9PaJFUlu/a/s7r17gtkg2+3NuWJesZZFVjr5AUotkSblPwJ77+WGJjNNqr11w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dr4vx5gCDz2xWP;
+	Tue, 13 Jan 2026 21:18:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768299517;
+	cv=none; b=nbmCh3LuJbQmxgthsOtV3BVSOGKtU5KDrIg8B1KKveoLcmbnBkNIN4v4ngu7dX//pHxJAZ3bI5amOTLCdBGGj4G8lUaVXxrQ/ZmXYHAhF9nM+bxcZwxbUo0xslvL/OhjNlpWoNN3kXfBKmdMJfIzHKmIYA/v1Z3EtUEUPNckTPoSBAzSMJ2wSSKx1Tnce52IsHk0zrPCsByCaEKk5KXYDFy6i96mw0OiUAkk9W0xxsUNohRgTC18ErKM008bLk3B8UcXxpP4okmNJuGpAFUU+C/f3g/6757mm65Sc0ze+I6CUEsCWhnLG16I3e1UhqKW2m58WfQBdp7D6bOq8dVrpw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768299497; c=relaxed/relaxed;
-	bh=VgnN5gtqEe3Q1O0kTTet9lBrugKrM6JP8dsQeWrl1xo=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=KkFoVnwgRP+pZxMVt8+Zs+kbclWnEP7INq4u3X8YlKqNSvAqN2C1PR/EYe6TvvodouiOkzmMLfnRb+4gZjG1808vWh3TXImeApUcPNJ2L2wX7PjpmNKc9dXGdakC9IJKdlpmn5Aq54e7N2GiO5QoUAFH+S3pBu540Cq7bO2rf/JBmVnEFIQsBRyzmNBP3Bxa6l14eRq2KkXWxADUNxGgLrohgDNAVscmCdIW6UTBG/Xw2gNWIiBX8P0yIse4TF0c7Cjrqy/gGsCqh09ut3poIm8zfu1ypQmzsfOdijZg5jJ9qOe2nZb1Jt07mhn09485PeBwf6CQKezH49ilFnxqJg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=U86/vW8p; dkim-atps=neutral; spf=pass (client-ip=209.85.208.173; helo=mail-lj1-f173.google.com; envelope-from=kaleposti@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1768299517; c=relaxed/relaxed;
+	bh=7/Ue9IQWKT/lmz8kyZhADFs3Z/lJ99p8FNaLzYAMxRk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=DjTySf4BmOvFEtKO6Q/Up+VbqRgx55CB18/IhZNjafRtY1+lwhG0kxeOslLRK+0xlf/GHVuloqq2zB0DyCWuy23nC1hN+yhUcB3DouF+Ao5qTxoTAftM3gd074ObFKfB8wognR1CK9aBY0Crkll3yt70nft6NC9ry+d2KAshDrLX4xG0bP2MIerc0HvLEEkptAQe8xxZJUmjQMGf86n84Ik6LiW1GT/z6DaW6SZZtA6LYWAmXLyn/52+ZX9WpMSjNYhv3wmq5OqtOcAJBdG8adIC6htioJH8s/krkHW2gJ5PxY5Klh7FE8RcaqCVqfT0mznFkJgJn5Qr0mLUzGo4IA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SRp9YMAN; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=cassel@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=U86/vW8p;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SRp9YMAN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.208.173; helo=mail-lj1-f173.google.com; envelope-from=kaleposti@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-lj1-f173.google.com (mail-lj1-f173.google.com [209.85.208.173])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=cassel@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dr4vW3gPnz2xQB
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 21:18:15 +1100 (AEDT)
-Received: by mail-lj1-f173.google.com with SMTP id 38308e7fff4ca-382f4aa8dd1so57032431fa.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 02:18:15 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1768299432; x=1768904232; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:content-language:references
-         :cc:to:from:subject:user-agent:mime-version:date:message-id:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=VgnN5gtqEe3Q1O0kTTet9lBrugKrM6JP8dsQeWrl1xo=;
-        b=U86/vW8pZEHV61EYZLOPjVR4cWnULT3uOELcuedyX09vsROMpIPgsT/+KtarPkYAIm
-         QqNZsnJHrQ+9FJCU9adl8vb2e/t5sIEaEgHHxSFOF/YMCt3KMtfls2oSH5VrR4X8Pc31
-         8ae4DxeQ9Luvdx4fxWI789dApBvw0cjpkmSWe3WgAELV69BMVBUmSNPmsQ2WtewD9Z+C
-         rLJ6JffFDAIAAecM9QmYfx9OQv0N8LsEQBSjd4yw1jBy1gwygXFl9SKzKTL2hpDj+CrG
-         /Tdnx2kHKcpJpiBcQk6kzDtkzSW728nZ2AYH7WJYWkk2dOEfjjKdnJMzVNaLXkfVin75
-         kM8g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1768299432; x=1768904232;
-        h=content-transfer-encoding:in-reply-to:content-language:references
-         :cc:to:from:subject:user-agent:mime-version:date:message-id:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=VgnN5gtqEe3Q1O0kTTet9lBrugKrM6JP8dsQeWrl1xo=;
-        b=Vg0pzMleviyevQtN4DjJVbycvvNISYw5CBqoz+enXsxBDlBDKPtct0djgnoEZk8ZAt
-         /0ERnSvgZQTC7iOYK8OUI8QlGfM0wWeDPrsWeVCTw06b395W336n6WERq88SoyQdMd/h
-         0Lfo0NwtD/o15tTXAItPYxkXc17lZ5kDlrQMegQk69MXRiy2tWhG1L6vE6hy/bknZIeD
-         53Uq8WDq00UUttaqgwqfLaM8m802dzFQGJ5VsCM2bAYNtP0S5JKXnSkkumYRoHIIvWBs
-         t1qGAIvncLrR3gQWiUtol4ENsil64BGrjvK2YkheDE8h9mB4gj82ZAfaSGQH9uzKcjpE
-         5WLg==
-X-Forwarded-Encrypted: i=1; AJvYcCWoPu93GanrHmFANQRI/ywXKk+aporJvfiGa1XmZy/wCD4Lt73qeZ0kmckOXr12Q3Tske6GfiCvAAfCzX8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Ywq0nn7Gf2G2Sdsrrb9wtmmY1qcL2XTMOPDPval5k+MSCzlo4cf
-	rOpippXXtmPlXcnpNyuoI1h014meIWfc5SdBMLODFkBtI/cUHLPRhqjlO81idA==
-X-Gm-Gg: AY/fxX6BMnu9YLrHKstHEk8do9CTCNPqjFERADI0J0qtIF9nASZA5DgK3lLY9Kbu+pU
-	0NyblVQQGnxLtHAvNnqb3+RaPRrwRWoF7gjpzr+S/qtwcpPBD09zev+g+zQr5hp7eNFFB9O8Zad
-	fB8iUZ1Q7a34B9vGoXSN17DInEKE50P5XunU9OwsQhS4otQYQobgt2WhLnFTLwlTDNSQEybZSx4
-	7YOsDydwZ8AiBQBo+hOt0GF5kzeT0B6jDUy1hTB9Qp9cBGu/woqbk9WR/2pc0bz35DDrGXlm9q8
-	m2ZVMT657loQJJ46tG+aNdrgd/C8bUplVGAXrS3jY6FxzPSotTW18Nb+5wv6jTS3R2OYUz2qyao
-	3NNIx9CWiAIszCC1BtvrptuE6NHPlwChRKlp6IuKThibz9pJ2jF+RfVEekfizu8tP4gYrWk+N2Q
-	5zjXysvZCSgVFZb6qw3wAfPj59JiE5+VrWH7or2LhCsj2tuzZzsoO/aT1/mQ==
-X-Google-Smtp-Source: AGHT+IEOoK2sWcGzQ5k4NJjsFR/RmdeWAB9vvZrFfNJ0u+S6dsEFK74/fdYnqiqEV2XmHMt6sJ390w==
-X-Received: by 2002:a05:6512:138b:b0:598:e851:1db3 with SMTP id 2adb3069b0e04-59b6ef05760mr8236951e87.11.1768293628066;
-        Tue, 13 Jan 2026 00:40:28 -0800 (PST)
-Received: from [172.20.10.9] (mobile-access-c1d2ca-216.dhcp.inet.fi. [193.210.202.216])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-59b72f3ae82sm4416299e87.71.2026.01.13.00.40.23
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 13 Jan 2026 00:40:27 -0800 (PST)
-Message-ID: <f861a1c6-7ec7-477c-bc42-f9aaf6724bed@gmail.com>
-Date: Tue, 13 Jan 2026 10:40:22 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dr4vx07ZBz2xQB
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 21:18:37 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 9FFCB6000A;
+	Tue, 13 Jan 2026 10:18:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6EE25C116C6;
+	Tue, 13 Jan 2026 10:17:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1768299484;
+	bh=0fpbeQGAJF9xjq5Byej/gkDKIoAX4CGtzrNcpesJoYY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=SRp9YMANteq690cw3Tc7KijMkA6B5f5vSRAv1KYS88CI6bYfRan3AunIB+7E3+4Zf
+	 mH6JR+bx1yw1zxCxKPf3N1DLKskJu82uTfBstubAf28agXhdqU772iiBJkM5LgXEpy
+	 plOKWgaX4KN/pF6w30vo35DCBordFKJeLgvSIIfExlQb5H2XThPtbweNqsw40BnW02
+	 gumS3q0YECyjFfZOW1nnxfwdEnGYxO1CC4ikdXYnd7c3XwQmF7m/5skQdCXx7sdxre
+	 E0Rgup+mH27I+3bpVVUf7q1WahO6w+oqQMKt64/Evzkesa8eBewcfSH5ATrS9liPkS
+	 BVWMV4ydfdzuQ==
+Date: Tue, 13 Jan 2026 11:17:51 +0100
+From: Niklas Cassel <cassel@kernel.org>
+To: Koichiro Den <den@valinux.co.jp>
+Cc: jingoohan1@gmail.com, mani@kernel.org, lpieralisi@kernel.org,
+	kwilczynski@kernel.org, robh@kernel.org, bhelgaas@google.com,
+	vigneshr@ti.com, s-vadapalli@ti.com, hongxing.zhu@nxp.com,
+	l.stach@pengutronix.de, shawnguo@kernel.org, s.hauer@pengutronix.de,
+	kernel@pengutronix.de, festevam@gmail.com, minghuan.Lian@nxp.com,
+	mingkai.hu@nxp.com, roy.zang@nxp.com, jesper.nilsson@axis.com,
+	heiko@sntech.de, srikanth.thokala@intel.com,
+	marek.vasut+renesas@gmail.com, yoshihiro.shimoda.uh@renesas.com,
+	geert+renesas@glider.be, magnus.damm@gmail.com,
+	christian.bruel@foss.st.com, mcoquelin.stm32@gmail.com,
+	alexandre.torgue@foss.st.com, thierry.reding@gmail.com,
+	jonathanh@nvidia.com, hayashi.kunihiko@socionext.com,
+	mhiramat@kernel.org, kishon@kernel.org, jirislaby@kernel.org,
+	rongqianfeng@vivo.com, 18255117159@163.com,
+	shawn.lin@rock-chips.com, nicolas.frattaroli@collabora.com,
+	linux.amoon@gmail.com, vidyas@nvidia.com, Frank.Li@nxp.com,
+	linux-omap@vger.kernel.org, linux-pci@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	imx@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@axis.com, linux-rockchip@lists.infradead.org,
+	linux-arm-msm@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
+	linux-stm32@st-md-mailman.stormreply.com,
+	linux-tegra@vger.kernel.org
+Subject: Re: [PATCH v6 5/5] Documentation: PCI: endpoint: Clarify
+ pci_epc_set_bar() usage
+Message-ID: <aWYbzzAeDSLYJJcB@ryzen>
+References: <20260113023715.3463724-1-den@valinux.co.jp>
+ <20260113023715.3463724-6-den@valinux.co.jp>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,88 +88,85 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 00/29] arch, mm: consolidate hugetlb early reservation
-From: Kalle Niemi <kaleposti@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Mike Rapoport <rppt@kernel.org>
-Cc: Alex Shi <alexs@kernel.org>, Alexander Gordeev <agordeev@linux.ibm.com>,
- Andreas Larsson <andreas@gaisler.com>, Borislav Petkov <bp@alien8.de>,
- Brian Cain <bcain@kernel.org>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- "David S. Miller" <davem@davemloft.net>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- David Hildenbrand <david@kernel.org>, Dinh Nguyen <dinguyen@kernel.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Guo Ren <guoren@kernel.org>,
- Heiko Carstens <hca@linux.ibm.com>, Helge Deller <deller@gmx.de>,
- Huacai Chen <chenhuacai@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Johannes Berg <johannes@sipsolutions.net>,
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
- Jonathan Corbet <corbet@lwn.net>, Klara Modin <klarasmodin@gmail.com>,
- "Liam R. Howlett" <Liam.Howlett@oracle.com>,
- Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
- Magnus Lindholm <linmag7@gmail.com>, Matt Turner <mattst88@gmail.com>,
- Max Filippov <jcmvbkbc@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Michal Hocko <mhocko@suse.com>, Michal Simek <monstr@monstr.eu>,
- Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>,
- Palmer Dabbelt <palmer@dabbelt.com>, Pratyush Yadav <pratyush@kernel.org>,
- Richard Weinberger <richard@nod.at>, Ritesh Harjani <ritesh.list@gmail.com>,
- Russell King <linux@armlinux.org.uk>, Stafford Horne <shorne@gmail.com>,
- Suren Baghdasaryan <surenb@google.com>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Thomas Gleixner <tglx@linutronix.de>, Vasily Gorbik <gor@linux.ibm.com>,
- Vineet Gupta <vgupta@kernel.org>, Vlastimil Babka <vbabka@suse.cz>,
- Will Deacon <will@kernel.org>, x86@kernel.org, linux-alpha@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org,
- linux-cxl@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-hexagon@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
- linux-mm@kvack.org, linux-openrisc@vger.kernel.org,
- linux-parisc@vger.kernel.org, linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- linux-snps-arc@lists.infradead.org, linux-um@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev,
- sparclinux@vger.kernel.org
-References: <20260111082105.290734-1-rppt@kernel.org>
- <20260112142323.495fc43e662e7d276b0fa371@linux-foundation.org>
- <86b974d7-cabd-4913-b5f2-5b62b520e023@gmail.com>
-Content-Language: en-US
-In-Reply-To: <86b974d7-cabd-4913-b5f2-5b62b520e023@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260113023715.3463724-6-den@valinux.co.jp>
 
-On 1/13/26 08:50, Kalle Niemi wrote:
-> On 1/13/26 00:23, Andrew Morton wrote:
->> On Sun, 11 Jan 2026 10:20:34 +0200 Mike Rapoport <rppt@kernel.org> wrote:
->>
->>> v3 changes:
->>> * fix empty_zero_page initialization on arm
->>> * fix ZONE_DMA limit calculation on powerpc
->>> * add Acks
->>
->> updated, thanks.  I'll suppress the ensuing email flood.
->>
->> Kalle, can you please retest sometime, see if the BeagleBone Black boot
->> failure was fixed?
->>
->> Seems we haven't heard back from rmk regarding
->> https://lkml.kernel.org/r/aVrUDeSkqqY9ZCtS@shell.armlinux.org.uk.
+On Tue, Jan 13, 2026 at 11:37:15AM +0900, Koichiro Den wrote:
+> The current documentation implies that pci_epc_set_bar() is only used
+> before the host enumerates the endpoint.
 > 
-> Hello!
+> In practice, some Endpoint Controllers support calling pci_epc_set_bar()
+> multiple times for the same BAR (without clearing it) in order to update
+> inbound address translations after the host has programmed the BAR base
+> address, which some Endpoint Functions such as vNTB already relies on.
+> Add document text for that.
 > 
-> I will test this v3 patch ASAP and reply results here.
-> Collective sorry for the delay; I have been busy!
+> Also document the expected call flow for BAR subrange mapping
+> (pci_epf_bar.use_submap / pci_epf_bar.submap), which may require
+> a second pci_epc_set_bar() call after the host has programmed the BAR base
+> address.
 > 
-> BR
-> Kalle
+> Signed-off-by: Koichiro Den <den@valinux.co.jp>
+> ---
+>  Documentation/PCI/endpoint/pci-endpoint.rst | 22 +++++++++++++++++++++
+>  1 file changed, 22 insertions(+)
+> 
+> diff --git a/Documentation/PCI/endpoint/pci-endpoint.rst b/Documentation/PCI/endpoint/pci-endpoint.rst
+> index 0741c8cbd74e..d3d9abbbc71e 100644
+> --- a/Documentation/PCI/endpoint/pci-endpoint.rst
+> +++ b/Documentation/PCI/endpoint/pci-endpoint.rst
+> @@ -95,6 +95,28 @@ by the PCI endpoint function driver.
+>     Register space of the function driver is usually configured
+>     using this API.
+>  
+> +   Some endpoint controllers also support calling pci_epc_set_bar() again
+> +   for the same BAR (without calling pci_epc_clear_bar()) to update inbound
+> +   address translations after the host has programmed the BAR base address.
+> +   Endpoint function drivers can check this capability via the
+> +   dynamic_inbound_mapping EPC feature bit.
+> +
+> +   When pci_epf_bar.use_submap is set, the endpoint function driver is
+> +   requesting BAR subrange mapping using pci_epf_bar.submap. This requires
+> +   the EPC to advertise support via the subrange_mapping EPC feature bit.
+> +
+> +   If the EPF driver wants to program inbound subrange mappings that are
+> +   based on the BAR base address programmed by the host during enumeration,
+> +   it needs to call pci_epc_set_bar() twice for the same BAR (requires
+> +   dynamic_inbound_mapping): first with use_submap cleared to configure the
+> +   BAR size, then after the PCIe link is up and the host enumerates the
+> +   endpoint and programs the BAR base address, again with use_submap set.
 
-Hello!
+"If the EPF driver wants to ..."
 
-I tried this patch by cloning 
-https://git.kernel.org/pub/scm/linux/kernel/git/rppt/linux.git/log/?h=hugetlb-init/v3
+Here you have phrased it in a way where it almost seems like this is an
+alternative way that you could use this feature.
 
-Boots succesfully on BeagleBone Black!
+But in reality, dw_pcie_ep_ib_atu_addr() will return an error if
+dw_pcie_ep_read_bar_assigned() does not return an assigned PCI address.
 
-BR
-Kalle
+So perhaps write it something like:
+"When an EPF driver wants to make use of the inbound subrange mapping
+feature, it requires that the BAR base address has been programmed by
+the host during enumeration. Thus, it needs to ..."
+
+
+> +
+> +   Note that in this flow, the EPF driver must not call pci_epc_clear_bar()
+> +   between the two pci_epc_set_bar() calls, because clearing the BAR can
+> +   clear/disable the BAR register or BAR decode on the endpoint while the
+> +   host still expects the assigned BAR address to remain valid.
+
+"Note that in this flow, ..."
+
+This also somehow sounds like this is an alternative way, when it is the
+only way.
+
+Perhaps simply something like:
+"Note that when making use of the inbound subrange mapping feature,
+the EPF driver must not call pci_epc_clear_bar() ..."
+
+
+With that fixed, this looks good to me:
+Reviewed-by: Niklas Cassel <cassel@kernel.org>
 
