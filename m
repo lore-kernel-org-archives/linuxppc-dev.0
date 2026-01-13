@@ -1,44 +1,44 @@
-Return-Path: <linuxppc-dev+bounces-15643-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15644-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BA9FD2D0EA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jan 2026 12:47:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFF76D2D0E9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jan 2026 12:47:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dr8C35kkxz2ywy;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dr8C36ywXz2yxf;
 	Tue, 13 Jan 2026 23:46:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768308415;
-	cv=none; b=L9q8BaNswMErWQHqKXIeYPbIV8sZq78zXZ+BFr9WAzGjT4v0bw5Vb4exEaquA427QpmAs57y2CyrVtKl6inhMkNBz2RurC+pu7/v2b5aV/g1BnBiXQFOvncnEBEvtJinE61AkEVL6JDquES9Z6wAUIGHLUS85/kBX6wO0pRB4A7JeSlZ+wV/T61OqbtDMVb463AjiEKni98Hjsidy2u88qTGMv1zicdp9YgPG2vwYm+2KJipZsjWSDiJ5fOUIXGYLuAjivx3j1/9O2QlNTMzP3I6QNUx8j73ox+/OA9qqNELu37Ve5z+/JAlAWqC2GurHcpQ/H9ER0EwMHgBAlzfAw==
+	cv=none; b=Ici3yBlUAQyOcw3I+Q3wrKZ0RBdPwRn4/vYbwgRjsdvjDpB5LkhxbINUZgBtYDJsZ5VSvRoRYI+zgNZ98ST5wupVKuXa/CzrXen2E1Kx2oSocb+hqINb2WplZ6NxcXjrNpVztWoXlIJsdyHvSb0PUWbUBzyh8gDwhZSkVUKjlbABhvZHffVslcwncgpCo/st/1y2NmPfjHe5NxFFEH0wwJeivVvK6xu+QPkw5GjGopucQMWUerrHLpAReS91tH4hjXjrvmj/YfZweLIhuGRLaBFun/slJgZes5oO/a9Uee9de4p45LlHCNxu/65Hf3tk3FqvzqhDCSePTnb0Ob5wWg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1768308415; c=relaxed/relaxed;
-	bh=/aC6ag1nNDmMQKdtCr4Cj4PI15G0rdprL/1nbvHgeSU=;
+	bh=usnWAMXl7pbEMNKZcHZDrxdM8T47Z3a6SASbvVfXI6s=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=E9gdkyu+dIWORnk7tkrL6A0k95Hj1WCNbJA2SZHkTJ1aIayxY9P378oUSOVbT8KYhpdt8oT7uFWBJvefWW+3WtTA8m3jrC6bhiv7BU/6ek/J2OASNLGALW0fofVoMW9PJhk2tGdugQUstrmnuz8ShUU5ittlNdg1618zvAHbejauoALengCNcG+0EcoIxpnxh5C0ZoRDRZEgTFSZyZEFlgWEpwd/PYk3bL1AkMWuPEVOlpBdOlrGXTCj2uRmRUoypJqUvr/GSyyNQNzIaeNTR8w/nizStESOHTZqsqRXlaLLWqvXXfzGTZMUrnnGMA41BLXe1hikYBxswm3w0nOL4A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=mSKhjy2c; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+	 In-Reply-To:To:Cc; b=jFGCBKEU4dS8RCU/Zqgb/UFmuRIMmrvdFebrTnyyQ+1d0hecU4LQNs3qoDI8LLMauIajvVfak5jQGnjE9xXPesRMIzh0lSCZzD65R4dhZ1A69Rt6DxIObeo7TAMEn3zAk4ghtlqIdG1lv3DFryNJIwyyrW3LoB0TSyJLCCX2SCrB4tazA75lJc9xGKGYnxGQoNszuObMWpCDSPi9xqX7kLdEoQXKr4Uhtol1eMlCbgNaFGxpz3bsZtzY6pIgispdIhOotWAr9uF+Vk5Y+sLAiUGQBieJD9eq78FhTC8nBLbv0MMP4PeK+zLsi3phg0uoxE6/7DmFN7ZvH6Dyv13QlQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=WFMGTKFM; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=mSKhjy2c;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=WFMGTKFM;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dr8C30pnnz2yv0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dr8C31lXyz2ywS
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 23:46:55 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1768307860;
-	bh=jMY1zKU+259Wp+a3wq7CZ+K7/FJMp48oaCmjQIniFCk=;
+	s=mail; t=1768307861;
+	bh=mjGdw2yxzWxgtsTNEl1bBGcD2Uicfy0x+S+3g1xrhKs=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=mSKhjy2cG0SoILQv6Sr5rIyz5sWn5E0wLY3SYbLLDS9EqPxMJhvK5dceTJALZmcP6
-	 IJkkOs4Z59ynVOtBwrDVgxIv2mk6V5U9lnCDBdvLQ8fszOFsxgyMUabiC78EePjOKs
-	 izVG9zxTIbRTSmJkQHf/uqmX6k7wqCIvs2VkWc/k=
+	b=WFMGTKFMSCsakSKivcHT5zu72mKHJYU+l6hZ0Ds8YZP6nlir5oVmNph2sjIDlclnG
+	 +y3O47iXttG/2e2trcAME/dynWcEVSqoRVgGfwQn4M071eJAIdD7sx4q2lIzsfxZ8h
+	 SEtYLkde87SzPAkZ9Mq72QmsJzaGe7nQdHrm0Q20=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Tue, 13 Jan 2026 13:28:49 +0100
-Subject: [PATCH v4 05/17] module: Switch load_info::len to size_t
+Date: Tue, 13 Jan 2026 13:28:56 +0100
+Subject: [PATCH v4 12/17] module: Move signature splitting up
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -54,7 +54,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260113-module-hashes-v4-5-0b932db9b56b@weissschuh.net>
+Message-Id: <20260113-module-hashes-v4-12-0b932db9b56b@weissschuh.net>
 References: <20260113-module-hashes-v4-0-0b932db9b56b@weissschuh.net>
 In-Reply-To: <20260113-module-hashes-v4-0-0b932db9b56b@weissschuh.net>
 To: Nathan Chancellor <nathan@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
@@ -86,52 +86,103 @@ Cc: =?utf-8?q?Fabian_Gr=C3=BCnbichler?= <f.gruenbichler@proxmox.com>,
  linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1768307859; l=1455;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1768307859; l=3025;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=jMY1zKU+259Wp+a3wq7CZ+K7/FJMp48oaCmjQIniFCk=;
- b=DVDR4kzvvUtq8+nWgk5cczzRSYZuy7YfCXuw3SJMcR55420EdKvv7LI9IbT3Q+CEQVjFib1SB
- YS60h4NLSKWBX+FrCbwVXvEXOnGXehLwzKKNc6JZZOu+013x24N04AZ
+ bh=mjGdw2yxzWxgtsTNEl1bBGcD2Uicfy0x+S+3g1xrhKs=;
+ b=awMfsURUOFCD2iZVVxJ0L7EbCCDNlOcWxUEUE7J742mmPYLUEoPlh9tuteXrcLXkmbAsJ5IEp
+ W8BKKGMM5JdC9G+RCkMV/mRthjFNtlf97D2xKTMLMHkvxfe/OH8pPvq
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-Switching the types will make some later changes cleaner.
-size_t is also the semantically correct type for this field.
+The signature splitting will also be used by CONFIG_MODULE_HASHES.
 
-As both 'size_t' and 'unsigned int' are always the same size, this
-should be risk-free.
+Move it up the callchain, so the result can be reused.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- kernel/module/internal.h | 2 +-
- kernel/module/main.c     | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ kernel/module/internal.h |  2 +-
+ kernel/module/main.c     | 13 ++++++++++++-
+ kernel/module/signing.c  | 21 +++++++--------------
+ 3 files changed, 20 insertions(+), 16 deletions(-)
 
 diff --git a/kernel/module/internal.h b/kernel/module/internal.h
-index e68fbcd60c35..037fbb3b7168 100644
+index e053c29a5d08..e2d49122c2a1 100644
 --- a/kernel/module/internal.h
 +++ b/kernel/module/internal.h
-@@ -66,7 +66,7 @@ struct load_info {
- 	/* pointer to module in temporary copy, freed at end of load_module() */
- 	struct module *mod;
- 	Elf_Ehdr *hdr;
--	unsigned long len;
-+	size_t len;
- 	Elf_Shdr *sechdrs;
- 	char *secstrings, *strtab;
- 	unsigned long symoffs, stroffs, init_typeoffs, core_typeoffs;
+@@ -337,7 +337,7 @@ int module_enforce_rwx_sections(const Elf_Ehdr *hdr, const Elf_Shdr *sechdrs,
+ void module_mark_ro_after_init(const Elf_Ehdr *hdr, Elf_Shdr *sechdrs,
+ 			       const char *secstrings);
+ 
+-int module_sig_check(struct load_info *info, int flags);
++int module_sig_check(struct load_info *info, const u8 *sig, size_t sig_len);
+ 
+ #ifdef CONFIG_DEBUG_KMEMLEAK
+ void kmemleak_load_module(const struct module *mod, const struct load_info *info);
 diff --git a/kernel/module/main.c b/kernel/module/main.c
-index 710ee30b3bea..a88f95a13e06 100644
+index c09b25c0166a..d65bc300a78c 100644
 --- a/kernel/module/main.c
 +++ b/kernel/module/main.c
-@@ -1838,7 +1838,7 @@ static int validate_section_offset(const struct load_info *info, Elf_Shdr *shdr)
- static int elf_validity_ehdr(const struct load_info *info)
+@@ -3346,10 +3346,21 @@ static int early_mod_check(struct load_info *info, int flags)
+ 
+ static int module_integrity_check(struct load_info *info, int flags)
  {
- 	if (info->len < sizeof(*(info->hdr))) {
--		pr_err("Invalid ELF header len %lu\n", info->len);
-+		pr_err("Invalid ELF header len %zu\n", info->len);
- 		return -ENOEXEC;
++	bool mangled_module = flags & (MODULE_INIT_IGNORE_MODVERSIONS |
++				       MODULE_INIT_IGNORE_VERMAGIC);
++	size_t sig_len;
++	const u8 *sig;
+ 	int err = 0;
+ 
++	if (IS_ENABLED(CONFIG_MODULE_SIG_POLICY)) {
++		err = mod_split_sig(info->hdr, &info->len, mangled_module,
++				    &sig_len, &sig, "module");
++		if (err)
++			return err;
++	}
++
+ 	if (IS_ENABLED(CONFIG_MODULE_SIG))
+-		err = module_sig_check(info, flags);
++		err = module_sig_check(info, sig, sig_len);
+ 
+ 	if (err)
+ 		return err;
+diff --git a/kernel/module/signing.c b/kernel/module/signing.c
+index 8a5f66389116..86164761cac7 100644
+--- a/kernel/module/signing.c
++++ b/kernel/module/signing.c
+@@ -15,26 +15,19 @@
+ #include <uapi/linux/module.h>
+ #include "internal.h"
+ 
+-int module_sig_check(struct load_info *info, int flags)
++int module_sig_check(struct load_info *info, const u8 *sig, size_t sig_len)
+ {
+ 	int err;
+ 	const char *reason;
+ 	const void *mod = info->hdr;
+-	size_t sig_len;
+-	const u8 *sig;
+-	bool mangled_module = flags & (MODULE_INIT_IGNORE_MODVERSIONS |
+-				       MODULE_INIT_IGNORE_VERMAGIC);
+ 
+-	err = mod_split_sig(info->hdr, &info->len, mangled_module, &sig_len, &sig, "module");
++	err = verify_pkcs7_signature(mod, info->len, sig, sig_len,
++				     VERIFY_USE_SECONDARY_KEYRING,
++				     VERIFYING_MODULE_SIGNATURE,
++				     NULL, NULL);
+ 	if (!err) {
+-		err = verify_pkcs7_signature(mod, info->len, sig, sig_len,
+-					     VERIFY_USE_SECONDARY_KEYRING,
+-					     VERIFYING_MODULE_SIGNATURE,
+-					     NULL, NULL);
+-		if (!err) {
+-			info->sig_ok = true;
+-			return 0;
+-		}
++		info->sig_ok = true;
++		return 0;
  	}
- 	if (memcmp(info->hdr->e_ident, ELFMAG, SELFMAG) != 0) {
+ 
+ 	/*
 
 -- 
 2.52.0
