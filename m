@@ -1,54 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-15614-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15615-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48B4DD29DE9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jan 2026 08:25:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5845D29DFE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jan 2026 10:10:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dr2Nz5KMQz2xKx;
-	Tue, 13 Jan 2026 19:25:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.246.85.4
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768292707;
-	cv=none; b=nEDuKk6b63Y/nUhXmwR3qvJ3mizOfSL0b5RtxWEwtBgaf3LrMg5zbn8DwDvVfv16EgieDJp3+ebRX9cfTBCvZSP2FAfff7dx/Yho1LLzENu2q4gKiIQaDgUX+CX+LDGhaeJbfYhP9weAzmsXrSu4H21ImSywPl6WNgBTPqDk9pHjVHhvOrZYkj/wcMaZpgBvacCxCsNmbrMotx/l+KheF1tGXRVdmf//xgweniPdMLcNcA3Uf/qsczVl8iAUmW83OGgquvc7UGLdsu0VtmvmlQi9wLhXPIPpcXcgDX3X/qqZ0hIg3TvY5etTUWIXVlw+dIs4HPtn7+3SEIJD3C9MTQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dr4k83kMpz2xWJ;
+	Tue, 13 Jan 2026 21:10:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=194.117.254.33
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768299008;
+	cv=none; b=CbRhjxTmQOZzB801HVY9cF9PTBUnLzARRVRYk4jQeb8xgC+53M3W//RaVQxunPnObM+/W6NLTPKjtUKfBJfaTtY1XE4xwZ1TsT5xDf1KFC62A7wWl6Hf0I+t45rGeZ8Xz1jFj6AkBrsTizEd0T49W9v0Z9YrnyYfxUhbbuDi8HthUkk1UbuzHhXbelZ4DUwSbsT+NsKFoXVqTz9Cqs78BgQg4kpN/pDjkZenglStKuNpjzdaLSxTjMVICxmYIva4E9B5wOibu0wFuQGgbAGbwpQeHiyc68MjP0rCwL9lKUSvZvGUjE1kZOSDtS6reWSjkvuzWlobT8bkDXP0JcZIig==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768292707; c=relaxed/relaxed;
-	bh=DFTdcQRu3RLZAeHzvdzPMi9ROu5HP5BsElgCTN/ghV8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=aI0bOY7CgocJlCayXCDlpHqsU1Y8F+mWdK1A9Rsehf/N1FhD6aR45xctM4UKf73NSDMYde8hpyeFMSaMN4Xd9J5cZZHC0ldYvE9PipxdUBpflESbymZBlnrHDfEbtPxYTVPtdCKMyiBtobxABl3f9zBn2ui7jCqEFFSdzno3gXm016nzbqRHaML2k2CJlPxGCXA6w1lVXqGly/+wyqnakHp6DWSEBLmzZtRmHZIzkd5+OwiY0Fl61cgT6QRPAL2Q1uT5JpZx8Gi0uPEQ5JGjR7kQBE3RfZRKM20LzcEsAQVvm0FOvJudJXFQLQAnUvS5mS8dzUsEF2wOMrx0O6Z3ig==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=nhGdNeqa; dkim-atps=neutral; spf=pass (client-ip=185.246.85.4; helo=smtpout-03.galae.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+	t=1768299008; c=relaxed/relaxed;
+	bh=YwgYABMUC2TvlP+jRUvO7d92limdvKOaBOk3hHKu1Ho=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=oxvdUhDTHJMFd3aDd/mx8YeKlDdvbhakrW8AnmFHjEyWs8bOiHQ+z4DEL9O3bHc3cIz5Nvl5A2iX8+c1OO+5RxSmPoqIU5r7cW4EQA/2rmYn+XObh6atkDZi6wGhxJgyzT9ciVTzSB/vUbGhk3Xn5WYb+5r+0QDir0S5bBmWO33oh4+9+xC24CGg5Zy5tzFpevRwcHzYap5hpCjyYzEN+aYLHdYFMv6Np776AoJjl/P22EHSiDPsUQG4B1MKggwcErIfukQ4T9Ucq7irqL3ZIvkMea+wo5cvWuLcdCPb72BZrjWLSEcIaSTsrCLU+nVXLkZH6t2lLcGjJbS7rKqsCg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=sang-engineering.com; dkim=pass (2048-bit key; secure) header.d=sang-engineering.com header.i=@sang-engineering.com header.a=rsa-sha256 header.s=k1 header.b=InDqdP/y; dkim-atps=neutral; spf=pass (client-ip=194.117.254.33; helo=mail.zeus03.de; envelope-from=wsa+renesas@sang-engineering.com; receiver=lists.ozlabs.org) smtp.mailfrom=sang-engineering.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=sang-engineering.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=nhGdNeqa;
+	dkim=pass (2048-bit key; secure) header.d=sang-engineering.com header.i=@sang-engineering.com header.a=rsa-sha256 header.s=k1 header.b=InDqdP/y;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=185.246.85.4; helo=smtpout-03.galae.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 501 seconds by postgrey-1.37 at boromir; Tue, 13 Jan 2026 19:25:06 AEDT
-Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sang-engineering.com (client-ip=194.117.254.33; helo=mail.zeus03.de; envelope-from=wsa+renesas@sang-engineering.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 397 seconds by postgrey-1.37 at boromir; Tue, 13 Jan 2026 21:10:02 AEDT
+Received: from mail.zeus03.de (zeus03.de [194.117.254.33])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dr2Ny5P1Fz2xJF
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 19:25:05 +1100 (AEDT)
-Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-03.galae.net (Postfix) with ESMTPS id 8B8944E4209D;
-	Tue, 13 Jan 2026 08:16:39 +0000 (UTC)
-Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id 5E5CC60732;
-	Tue, 13 Jan 2026 08:16:39 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 8C142103C816C;
-	Tue, 13 Jan 2026 09:16:30 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1768292198; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 content-transfer-encoding:content-language:in-reply-to:references;
-	bh=DFTdcQRu3RLZAeHzvdzPMi9ROu5HP5BsElgCTN/ghV8=;
-	b=nhGdNeqaXVycptEVEE4Yc70hcOUGXufWSKfT8wu4gtRcq1WzO1mSuNqGnQFH2LGDr2R+gP
-	6ElUs7mWC8j5+vUMk8Jyr/8fNmuzbIOxmd+Bztwe6wY8eZjbNTC6GB7GP2uIFtJ5J+05Cf
-	sgkSlBt2PzCMDjl5/ImNyT4Or2uf35cbaplHI7XuXn5p7Ehq/BsQrjCGlSLyE4An5kAI2l
-	3DhD+QBqlcyfBivJT/baNrVvco2aAs3v1gRLQrXIGSYe0vHULlTT1UphRZRG40TFq34Ya/
-	dnMljSfbdtH6HFcDz+KX0iPsfhao+Etf+jb8FNXBXl78/mdzC/FNAWy9YttLQg==
-Message-ID: <d89cb3a7-3a55-4bdf-805a-b3386572b220@bootlin.com>
-Date: Tue, 13 Jan 2026 09:16:29 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dr4k24zr0z2xQB
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 21:10:02 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	sang-engineering.com; h=date:from:to:cc:subject:message-id
+	:references:mime-version:content-type:in-reply-to; s=k1; bh=YwgY
+	ABMUC2TvlP+jRUvO7d92limdvKOaBOk3hHKu1Ho=; b=InDqdP/yV0uKcw4qWt90
+	GgKu/Zem8CaPzrKy7P3o5LDdvi4II9brMZQCjCafrEDy2yGt4/P4m4hbEd2TX71a
+	pHTSM1tbS4cfhrIsENI/JynCBuLOT8G/OoQyKdjvN/eywkBidnxr8j7howQwISq4
+	A21WgAzIUN2ydHMBddIu55ZkFnAwL591j1EDXGC3TppcCQM/Tsu76K4LcPKjJh4G
+	bXrnki9aTIHPR7OgISJt0W3gMKwOw7b15rV5E42mOtFyHUkMRpiOuieMO38rVMfZ
+	pEZe6QYyoyPpVTOHnN5d3k1w46SpuaPheVVxniG0Rt4S06PyiY3QqExmS6DeJyxu
+	XA==
+Received: (qmail 1631988 invoked from network); 13 Jan 2026 11:03:16 +0100
+Received: by mail.zeus03.de with UTF8SMTPSA (TLS_AES_256_GCM_SHA384 encrypted, authenticated); 13 Jan 2026 11:03:16 +0100
+X-UD-Smtp-Session: l3s3148p1@sbW2GUJIiN4ujnvx
+Date: Tue, 13 Jan 2026 11:03:16 +0100
+From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+To: Johan Hovold <johan@kernel.org>
+Cc: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
+	Andi Shyti <andi.shyti@kernel.org>, Chen-Yu Tsai <wens@kernel.org>,
+	Jernej Skrabec <jernej.skrabec@gmail.com>,
+	Samuel Holland <samuel@sholland.org>,
+	Khalil Blaiech <kblaiech@nvidia.com>,
+	Asmaa Mnebhi <asmaa@nvidia.com>, Jean Delvare <jdelvare@suse.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Andreas =?utf-8?Q?F=C3=A4rber?= <afaerber@suse.de>,
+	Manivannan Sadhasivam <mani@kernel.org>, linux-i2c@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-sunxi@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+	linux-actions@lists.infradead.org,
+	Bartosz Golaszewski <brgl@kernel.org>
+Subject: Big I2C core changes coming up this year (was: Re: [PATCH 00/12]
+ i2c: add and start using i2c_adapter-specific printk helpers
+Message-ID: <aWYYZEPX-_1GfQtL@ninjato>
+References: <20251223-i2c-printk-helpers-v1-0-46a08306afdb@oss.qualcomm.com>
+ <aUql_tZisfH8E1bq@hovoldconsulting.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,69 +80,84 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH net] net: freescale: ucc_geth: Return early when TBI found
- can't be found
-To: Andrew Lunn <andrew+netdev@lunn.ch>, davem@davemloft.net,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Pei Xiao <xiaopei01@kylinos.cn>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Russell King <linux@armlinux.org.uk>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, thomas.petazzoni@bootlin.com,
- Dan Carpenter <dan.carpenter@linaro.org>, kernel test robot <lkp@intel.com>
-References: <20260113074316.145077-1-maxime.chevallier@bootlin.com>
-From: Maxime Chevallier <maxime.chevallier@bootlin.com>
-Content-Language: en-US
-In-Reply-To: <20260113074316.145077-1-maxime.chevallier@bootlin.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Last-TLS-Session-Version: TLSv1.3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <aUql_tZisfH8E1bq@hovoldconsulting.com>
 
-Hi,
+Johan, (and all future readers I have pointed to this mail)
 
-On 13/01/2026 08:43, Maxime Chevallier wrote:
-> In ucc_geth's .mac_config(), we configure the TBI block represented by a
-> struct phy_device that we get from firmware.
-> 
-> While porting to phylink, a check was missed to make sure we don't try
-> to access the TBI PHY if we can't get it. Let's add it and return early
-> in case of error
-> 
-> Reported-by: kernel test robot <lkp@intel.com>
-> Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
-> Closes: https://lore.kernel.org/r/202601130843.rFGNXA5a-lkp@intel.com/
-> Fixes: 53036aa8d031 ("net: freescale: ucc_geth: phylink conversion")
-> Signed-off-by: Maxime Chevallier <maxime.chevallier@bootlin.com>
+> No, this is not the way to do it. You start with designing and showing
+> what the end result will look like *before* you start rewriting world
+> like you are doing here.
 
-Heh that's what I get from sending patches while having mild fever, the
-patch title is all wrong and should be :
+In general, this is correct. It does not apply here, though. I will
+describe it in detail, so I can also point other people to this mail who
+wonder about quite some intrusive changes to I2C core this year.
 
-net: freescale: ucc_geth: Return early when TBI PHY can't be found
+> We should not be making driver code less readable just to address some
+> really niche corner cases like hot pluggable i2c controllers.
 
-I'll wait for the 24h cooldown, grab some honey + milk and resend after :)
+It is not a niche-case for hot-plugging. Hot-plugging (which still
+should be avoided for I2C) just makes a subsystem-inherent lifecycle
+problem more obvious. All of Bart's patch series basically prepare to
+tackle this comment from the I2C core:
 
-Maxime
+1805         /* wait until all references to the device are gone
+1806          *
+1807          * FIXME: This is old code and should ideally be replaced by an
+1808          * alternative which results in decoupling the lifetime of the struct
+1809          * device from the i2c_adapter, like spi or netdev do. Any solution
+1810          * should be thoroughly tested with DEBUG_KOBJECT_RELEASE enabled!
+1811          */
+1812         init_completion(&adap->dev_released);
+1813         device_unregister(&adap->dev);
+1814         wait_for_completion(&adap->dev_released);
 
-> ---
->  drivers/net/ethernet/freescale/ucc_geth.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-> index affd5a6c44e7..131d1210dc4a 100644
-> --- a/drivers/net/ethernet/freescale/ucc_geth.c
-> +++ b/drivers/net/ethernet/freescale/ucc_geth.c
-> @@ -1602,8 +1602,10 @@ static void ugeth_mac_config(struct phylink_config *config, unsigned int mode,
->  			pr_warn("TBI mode requires that the device tree specify a tbi-handle\n");
->  
->  		tbiphy = of_phy_find_device(ug_info->tbi_node);
-> -		if (!tbiphy)
-> +		if (!tbiphy) {
->  			pr_warn("Could not get TBI device\n");
-> +			return;
-> +		}
->  
->  		value = phy_read(tbiphy, ENET_TBI_MII_CR);
->  		value &= ~0x1000;	/* Turn off autonegotiation */
+This has been in the I2C core since switching to the driver model and
+the underlying problem applies to *all* i2c adapters. Simply unbind an
+I2C controller while you still have a reference to its i2c-dev
+counterpart and you are right in the problem space.
+
+The problem is known for decades(!) and nobody dared to touch it, so
+far. Even worse, the above pattern is not only present in I2C but also
+other subsystems. Bart and I have been talking about potential solutions
+for three years now. Bart brought in SRCU as a generic solution and at a
+Plumbers 2024 session with many experienced maintainers present, it was
+decided that this path is worth exploring. Greg suggested to try SRCU
+with GPIO and I2C subsystems, and if this works well, we can try to
+abstract it into something useful for other canidates as well. Now,
+recently, the 'revocable' patch series was introduced which might be
+helpful in our case. I am *extremly* thankful that Bartosz took the
+initiative to prepare the I2C core for the SRCU approach so we can
+research 'revocable'. I currently have zero time for implementing any of
+this. At least, from now on, I can reserve time for discussing, testing,
+reviewing patches.
+
+It is also perfectly okay to work incrementally here, in my book. It is
+such an intrusive change that we need to touch a lot of drivers in any
+case. Yet, with the I2C core being a moving target, all the I2C drivers,
+the 'revocable' patch series, and Linux in general, I think requesting a
+fully complete patch series now is neither efficient nor maintainable.
+
+Bartosz and I do have a plan. We are happy to discuss it with other
+interested people, of course. Still, despite all our efforts it might be
+a bumpy ride. Because it is such a crucial and deep-inside change to the
+subsystem core. This is part of development, though. If something
+breaks, we will fix or revert. The alternative is stagnation which I
+don't want. The above code was fine back in the days but now we have
+better mechanisms to handle lifecycle issues. And I really do not want
+Linux to have lifecycle issues. Especially not ones we *know of*.
+
+And who knows, maybe it is not a bumpy ride after all...
+
+> But in any case, don't get ahead of things by posting changes that we
+> most likely don't want in the end anyway.
+
+We want helpers accessing that specific 'struct device', so we have
+central place to implement access to a protected version of it.
+
+Happy hacking,
+
+   Wolfram
 
 
