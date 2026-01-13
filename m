@@ -1,113 +1,46 @@
-Return-Path: <linuxppc-dev+bounces-15627-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15628-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C7DFD2D0E4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jan 2026 12:34:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5642D2D0E4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jan 2026 12:38:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dr7wl4qtdz2xWP;
-	Tue, 13 Jan 2026 23:34:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.216.53
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768307671;
-	cv=none; b=jEuJoPRygeeoqjWXM6bRYz5A6GPtOSEfOk7aT/f+RXGDAL+bCJZGeraj+ma1nwgVu3v7Niv4UjXrVLPwOaPF/tWDQKe8VHBRqxfi3Da6p8rgyQJWkSh7QB+eJb4AqxKAp+QudjtxwUpSmDJn8i8A6BsRaYpGrORfRMaL8pmTxZvTQAUsU77BW9dtCTSzZXAURNuMnTARxM4wZJngnoVT0hfK90pO7D6A3MkwY365GOh10AbCExVDS+SbubRK/OdU30gwhrivFJV060EnGel7eKdzB2JdcXEWa0GYKzJKMu3+IJsjcPX+qkPQ12VmWrQ/jHbyv+pQwMBNFFGgatZUbg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dr81n26f7z2xjK;
+	Tue, 13 Jan 2026 23:38:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768307933;
+	cv=none; b=Thb9qCEh/xkqkL+9oS0c8RI7Q6cUDHBHfiS12C3d2oZrteJ5XZ9njhnfNUM7VFyXa9/R4zVTECzM0bRi9PyWjFRMo69D5AePDeM6NC7hh8t3raGFvUpn3Q5WipnnDdUXWwmar6ltcJQfdgRI+DPmrJnjM9ofLmvEpr1agc0NTgdsc0T6e78kP+gd2yNB0gB+dDhIfXUGbbLCNSXU55dMTeuf2yZfkmE0DCCxulKK/0gBJL2k+VmS/LoKO+u+BAX99MKdTW9iWEU6gUR8CvHM90wX3n1C6lliC0RiuIkMrpns49gzsQ0p9uTMyV0k3uCWJ3PztJnMHIkx61c1VDyHlw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768307671; c=relaxed/relaxed;
-	bh=j4BCb4tuwUydlXX/lekB/MWAbo5xTWmBY98lhxIZgCk=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
-	 MIME-Version:Content-Type; b=iwXPn7o6gDc8vGHCk8zw17QY0UQmJHLqTqqzzaz7CQpOJc6Sh/o6iQqekl0MicvWuY5SIEDRL0cuo62SQAGWAVpiQomvV3naVzd1BVbZQVFht6mrvngdvzMNwAs8tEddVcIqwLNvx4q2//sDdSD4agBr0kXPlmjw2aAQYl4DhbYABnJQQrZmApZEghdOqu2YlI1VQ1JbmDGfQSgO0AqGze672YcxSQ+hgv1xNpAozJEzLXh5XOyzVeNAS6fvLdGtU9NpIpHwPbfTbGBRTWW3mslJrrahHB5K1mrX6FKFNdwPHSFFgQFld7I23b6ChaUr5cGkagZFFM77gUAk8Rd37w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=jE9GNsyS; dkim-atps=neutral; spf=pass (client-ip=209.85.216.53; helo=mail-pj1-f53.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1768307933; c=relaxed/relaxed;
+	bh=M8Uuhk6Zc1zAv+Ymxa7AKJE41n6AAfs7ydHAG9bUfvE=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=oPk1j77jpN03fJgJpP88/OxYq4FChopZOwRB2TNZLgHQsYYzptHohBXb9lzbKw3RE0jxN+cVelohPAxzlefuk3Q4snKUCXXqtEH+ThKTLq1WNs/E9wgc+gpsVy2edE/rZHu0IO3LL3Ujh/d6XsoJAGdUeHs+C4gxx3mt+cb8lKxJXo0bcAUnJo/6ziV8Q34C+iCHWf8bb9/HtUz8Sv5qUFSU9YFbkl5eg+fCwzZTsj206nBjEg1rkh7A+T9FpK9dRr/pCJGA3rqnOiWzg8KjTwR2TrtWvqDTRkoqcYigOppLMuMxuChF4sD5OjOB90Cm6hPtY7pSeqS0tBVV3JEmhA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=AgYCI5R9; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=jE9GNsyS;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=AgYCI5R9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.216.53; helo=mail-pj1-f53.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-f53.google.com (mail-pj1-f53.google.com [209.85.216.53])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
+X-Greylist: delayed 63 seconds by postgrey-1.37 at boromir; Tue, 13 Jan 2026 23:38:50 AEDT
+Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dr7wk3p5wz2xQB
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 23:34:29 +1100 (AEDT)
-Received: by mail-pj1-f53.google.com with SMTP id 98e67ed59e1d1-34c30f0f12eso4361773a91.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 04:34:29 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1768307607; x=1768912407; darn=lists.ozlabs.org;
-        h=mime-version:references:message-id:date:in-reply-to:subject:cc:to
-         :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=j4BCb4tuwUydlXX/lekB/MWAbo5xTWmBY98lhxIZgCk=;
-        b=jE9GNsySPX5eQrPi6BmmjPl7MNwrCbV1lcA7jdTJhD+AL60j12mWjVOhtv1pd8xVsI
-         iiCd6hBuKQkjzPPiO7ha+BKqxXXgZsq7KqzkXoe9WAj743HWdUzdGucNwpd8VVfgeXE8
-         1rNaemOXooHhzUYP9Ojx7hQfLdEyg9NwLWymrcrWop1lyW54uJ40bgMTgpe0aigfrQN/
-         V20xe7WYgmvsLFZS3eI+41sY58X4LJO3B+awmtnH1PBjt/o74SQDIYbmabPIUyhZGezM
-         H8mFjoV5zCLMQigEn12LBPsP+QdWjkIdCGfrhh9198MVsfz/jUvnFw+U8lcXcg7pjCuW
-         N0tw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1768307607; x=1768912407;
-        h=mime-version:references:message-id:date:in-reply-to:subject:cc:to
-         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=j4BCb4tuwUydlXX/lekB/MWAbo5xTWmBY98lhxIZgCk=;
-        b=VRii+AgPFTw8XalHyY3cmfjQGdt/csqgoLiklbEpvyXMwwi2+jmMvhOq0C2TTLwYU/
-         NjIn+SHVQqcnBZCYhXc/9fmlOPZ2zP6GaAeXd2gpfBEYwiP9aeEvbDvKJSX0uRPnT9LJ
-         zFdDt3k5nG+jmsSyb3r+HhuJGoAE6qMwplH3JjoSgzxHFn7kssZ24BTkAdsmPzHf+faj
-         p3hvCWE3HuN1YYWIoNGXTfAw7roGyoSTD5F2hWmUPZbtKZuPR4hAWUKDYt0oYZjpQKcB
-         FzkQ7aKhp09tD8AfyNnCuDYJki75M9b47cGV/4IqX46XFhFWQbQ+kx2OI3a46WQ9HR37
-         qT+w==
-X-Forwarded-Encrypted: i=1; AJvYcCUy0k6JM8/+2dWU2fGwz4MuWv7u/NbfCD7Yovyyb2TNaeoU8j+RsRr13BtHz4/jxfPZU5lPzhJa4+m2AfQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzlIYg8Z/HIw6MCgAvf0YEOOJ4+a87n3OkGSRyaMfqM5wXBAuhU
-	uXzCiZl1B3+kP29B8JbnvhpTJukMliPuSVcFJZHCqVRechqdEskstxcd
-X-Gm-Gg: AY/fxX4OWx4+WN/nYX8OElq2vEwCCTCBzMpr6tNa8q3z4kFbwCKV+fXrVZXF5pKxgw4
-	i4xJEhIOCOnkWdSUdWA2sSG9yY77ms9TlF493zfxfcr9n7vibNy+tdSjBABOrmgRso9XWHgxrtU
-	kxnHCKdIeSzLscAfzTYUFj3a8zu69c7afw4i0hxEfZAdazBucBGW3TnypUlEwOat3o9a6qZ87Ew
-	dNU/TUBzEHQ8iMuH9oQGT1+WNVbtxHAKkmyZfl0tfZUdjqv/yitN7CCZW2ygM1zrQsLG7y9/yHL
-	zz06Ea9kIkV2IJxKyFSx4dTFhEN9EDooUsalDsPpF2/JHq1QK8di4HwxSVVhQ+mFa5AUb+n9W6D
-	1g6IciY+SsRomZo5D4WmVWU9ns+dwxOl1Gb+8oweiSvT+7d3omxvgw62XKwzwxXp4EA2IGTF+f1
-	sc4n5+
-X-Google-Smtp-Source: AGHT+IFw8NQUhXWsNFLNcy9VnhtaeqSccMp4bageDierszWlx1Kxyih6osyfD1+uAcqTN4o2oK4SYQ==
-X-Received: by 2002:a17:90b:3ccc:b0:340:9ba6:8af4 with SMTP id 98e67ed59e1d1-34f68c47f0amr18570023a91.35.1768307607428;
-        Tue, 13 Jan 2026 04:33:27 -0800 (PST)
-Received: from dw-tp ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-350fd6e343bsm1428958a91.1.2026.01.13.04.33.06
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 13 Jan 2026 04:33:26 -0800 (PST)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Mike Rapoport <rppt@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Alex Shi <alexs@kernel.org>, Alexander Gordeev <agordeev@linux.ibm.com>, 
-	Andreas Larsson <andreas@gaisler.com>, Borislav Petkov <bp@alien8.de>, Brian Cain <bcain@kernel.org>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, 
-	"David S. Miller" <davem@davemloft.net>, Dave Hansen <dave.hansen@linux.intel.com>, 
-	David Hildenbrand <david@kernel.org>, Dinh Nguyen <dinguyen@kernel.org>, 
-	Geert Uytterhoeven <geert@linux-m68k.org>, Guo Ren <guoren@kernel.org>, 
-	Heiko Carstens <hca@linux.ibm.com>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, 
-	Ingo Molnar <mingo@redhat.com>, Johannes Berg <johannes@sipsolutions.net>, 
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Jonathan Corbet <corbet@lwn.net>, 
-	Klara Modin <klarasmodin@gmail.com>, "Liam R. Howlett" <Liam.Howlett@oracle.com>, 
-	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, Magnus Lindholm <linmag7@gmail.com>, 
-	Matt Turner <mattst88@gmail.com>, Max Filippov <jcmvbkbc@gmail.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>, Michal Simek <monstr@monstr.eu>, 
-	Mike Rapoport <rppt@kernel.org>, Muchun Song <muchun.song@linux.dev>, 
-	Oscar Salvador <osalvador@suse.de>, Palmer Dabbelt <palmer@dabbelt.com>, 
-	Pratyush Yadav <pratyush@kernel.org>, Richard Weinberger <richard@nod.at>, 
-	Russell King <linux@armlinux.org.uk>, Stafford Horne <shorne@gmail.com>, 
-	Suren Baghdasaryan <surenb@google.com>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
-	Thomas Gleixner <tglx@linutronix.de>, Vasily Gorbik <gor@linux.ibm.com>, Vineet Gupta <vgupta@kernel.org>, 
-	Vlastimil Babka <vbabka@suse.cz>, Will Deacon <will@kernel.org>, x86@kernel.org, 
-	linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-csky@vger.kernel.org, linux-cxl@vger.kernel.org, 
-	linux-doc@vger.kernel.org, linux-hexagon@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
-	linux-mips@vger.kernel.org, linux-mm@kvack.org, 
-	linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org, 
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
-	linux-sh@vger.kernel.org, linux-snps-arc@lists.infradead.org, 
-	linux-um@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, 
-	loongarch@lists.linux.dev, sparclinux@vger.kernel.org
-Subject: Re: [PATCH v3 15/29] powerpc: introduce arch_zone_limits_init()
-In-Reply-To: <20260111082105.290734-16-rppt@kernel.org>
-Date: Tue, 13 Jan 2026 17:59:49 +0530
-Message-ID: <87zf6hu24i.ritesh.list@gmail.com>
-References: <20260111082105.290734-1-rppt@kernel.org> <20260111082105.290734-16-rppt@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dr81k6KzNz2xQB
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 23:38:50 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
+	s=mail; t=1768307861;
+	bh=NC/OO27F4y33AwnsUK1UgiJc9IBnwzGy7eK0nVFHjZg=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
+	b=AgYCI5R9LpSoJyTXMvTIAgayIlcVm6fKXJaMRcPNzD6ZChkkhpsmCspHhyvT/wRt0
+	 r2A2sYDAv+HV4VO9S6NhvDe82s4Iq1jpUM2q/EUwPywnwUH/HUqYIeveQ6kcj/QULj
+	 pwxGDBSlpXCztDFg/YCdbKX9Kcxw35OQdzp+Tn/c=
+From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+Date: Tue, 13 Jan 2026 13:28:58 +0100
+Subject: [PATCH v4 14/17] lockdown: Make the relationship to MODULE_SIG a
+ dependency
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -121,28 +54,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Message-Id: <20260113-module-hashes-v4-14-0b932db9b56b@weissschuh.net>
+References: <20260113-module-hashes-v4-0-0b932db9b56b@weissschuh.net>
+In-Reply-To: <20260113-module-hashes-v4-0-0b932db9b56b@weissschuh.net>
+To: Nathan Chancellor <nathan@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
+ Luis Chamberlain <mcgrof@kernel.org>, Petr Pavlu <petr.pavlu@suse.com>, 
+ Sami Tolvanen <samitolvanen@google.com>, 
+ Daniel Gomez <da.gomez@samsung.com>, Paul Moore <paul@paul-moore.com>, 
+ James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, 
+ Jonathan Corbet <corbet@lwn.net>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+ Naveen N Rao <naveen@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>, 
+ Roberto Sassu <roberto.sassu@huawei.com>, 
+ Dmitry Kasatkin <dmitry.kasatkin@gmail.com>, 
+ Eric Snowberg <eric.snowberg@oracle.com>, 
+ Nicolas Schier <nicolas.schier@linux.dev>, 
+ Daniel Gomez <da.gomez@kernel.org>, Aaron Tomlin <atomlin@atomlin.com>, 
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+ Nicolas Schier <nsc@kernel.org>, 
+ Nicolas Bouchinet <nicolas.bouchinet@oss.cyber.gouv.fr>, 
+ Xiu Jianfeng <xiujianfeng@huawei.com>, Nicolas Schier <nsc@kernel.org>, 
+ Christophe Leroy <chleroy@kernel.org>
+Cc: =?utf-8?q?Fabian_Gr=C3=BCnbichler?= <f.gruenbichler@proxmox.com>, 
+ Arnout Engelen <arnout@bzzt.net>, Mattia Rizzolo <mattia@mapreri.org>, 
+ kpcyrd <kpcyrd@archlinux.org>, Christian Heusel <christian@heusel.eu>, 
+ =?utf-8?q?C=C3=A2ju_Mihai-Drosi?= <mcaju95@gmail.com>, 
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>, 
+ linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-arch@vger.kernel.org, linux-modules@vger.kernel.org, 
+ linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org, 
+ linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org, 
+ =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1768307859; l=818;
+ i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
+ bh=NC/OO27F4y33AwnsUK1UgiJc9IBnwzGy7eK0nVFHjZg=;
+ b=whnyma/h0t/rLvPiiVgW2QazugD64J2qmm54nGxJEUn52D2Uhg93xQhjG9IWw62Wsy/Kck9gG
+ NGxmuX36RlYD9QmNa4U/SZm822fXAG+a85BnQRjLyq6/k6I3VNwuzEA
+X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
+ pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-Mike Rapoport <rppt@kernel.org> writes:
+The new hash-based module integrity checking will also be able to
+satisfy the requirements of lockdown.
+Such an alternative is not representable with "select", so use
+"depends on" instead.
 
-> From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
->
-> Move calculations of zone limits to a dedicated arch_zone_limits_init()
-> function.
->
-> Later MM core will use this function as an architecture specific callback
-> during nodes and zones initialization and thus there won't be a need to
-> call free_area_init() from every architecture.
->
-> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> ---
->  arch/powerpc/mm/mem.c | 22 ++++++++++++----------
->  1 file changed, 12 insertions(+), 10 deletions(-)
+Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
+---
+ security/lockdown/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-This v2 looks good to me. 
-I have also done a basic bootup testing using Linux PPC CI.
+diff --git a/security/lockdown/Kconfig b/security/lockdown/Kconfig
+index e84ddf484010..155959205b8e 100644
+--- a/security/lockdown/Kconfig
++++ b/security/lockdown/Kconfig
+@@ -1,7 +1,7 @@
+ config SECURITY_LOCKDOWN_LSM
+ 	bool "Basic module for enforcing kernel lockdown"
+ 	depends on SECURITY
+-	select MODULE_SIG if MODULES
++	depends on !MODULES || MODULE_SIG
+ 	help
+ 	  Build support for an LSM that enforces a coarse kernel lockdown
+ 	  behaviour.
 
-Please feel free to add:
+-- 
+2.52.0
 
-Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 
