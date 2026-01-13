@@ -1,45 +1,44 @@
-Return-Path: <linuxppc-dev+bounces-15635-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15636-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9DDBD2D0EA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jan 2026 12:46:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0412D2D0E9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jan 2026 12:46:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dr8BQ2xlJz2yR5;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dr8BQ6qY8z2ySC;
 	Tue, 13 Jan 2026 23:46:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768308382;
-	cv=none; b=n99w2moe2yVWXpdLqmQyitZUERkUIjh2YvgwnTxDl2zEU1NI2g8wJAD7BCaNhYCmekx37ImKcbOU4PP2OZOmUOW+2HoMhMzwr5czy428ydPwxx5Qx8e2vpMozvR4Uffjr9XWSiB0JBIeJrRRbSOHbZwy7BitoDEhaU6mjfhVnfW23t3SH57NYiLu4kQwcTK+oggey25FZJwLaOHJjScxAGew4v/Kyvf/B9GsK4OkeFsiViMGExwTrpzuIh+tM3hCXeWrT/uBeXYWWbUUJcRtYh2UBeINLrD9k3eqdUA8d7ezX3eomOC/DZCAFO/Y8I2yv2mIIXBAMMQag2iTqqRPbQ==
+	cv=none; b=HmK1HOjrMY0xEmN7RgUXlCyv+rwqBCrd7BwwZG4aH2Myd8v3zWJqHIUYSgW/KAqD5z9f68+HhNKMun4gOu63iNP430dPee/OOXHu9x6O+GMJNEiWOpUUeZoZyTVgotoa9/+qu5pxb68iUZmb0T/OUJMzFi0rRxDa9CWcL2DOyIyU3RhQiNZ8LsvJM/O414B+TjrMysOc9+vyyc6/+3nsmXFyU+2EGhQW3toS7YhO5X+60JeHK8g/NwaBjjVDyMhhyxi3cBi82/Y8XRnPG92AyGCBOH9bZ8FU2JzFIfvGYPbFReydVRyMU/mOfO/2N/2wONLo8Vpmu6Rdes0uoI45rQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1768308382; c=relaxed/relaxed;
-	bh=JLfQ93ordRTDsTPx+LC+83v3+tYhsvui6tA+KjQgqkQ=;
+	bh=kMn3B7qp34OWeHCmn2/bD8nIHWQBi0sO8Qb6N4wdW48=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=B8eFODoocKTd5ld/7Xqae2lzLmPBrG70DVXzIO0cdek4YMdrJOtVtq7kx1VtXExEY/ykN57o+vjZSpVPH9XLLjELj4Mg0E3/LVcRpMqTfBvbq7STZToa0kQlVJ3rLjDJrcbtcgUru/ZhE2/mZy0oAG4g2OBkJHwWLFJg+SMaD1p1fHXdkxludmYAw0NOnN4MBvFdeSZLff3flkibLTCgkWqdj54y7WLlCdOHQdv47C1ze7xh8e/NBPmDmnM3JrXMa9CTPOiYQX+o439PFikVxklpc0JXlYTqVswqXJ76vJcRA3PNQwzESeTyDWPg4vB7WQoa68FpFzVcAegZ9oi1+A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=O9Xe+RO7; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+	 In-Reply-To:To:Cc; b=E5KEXJxZWykSdj+klCT1sAqSdepGEiWfoRWCqGWdrGytGrOPP2FOnqBOqH8yS7BazgFnNrbZOE7h+2P/pAnIYHtqDqzUWsVjjqX47/DE94xl1r3Sd/WxKFebifCHjzppChhr/Na8FNSI1guwJX2WgSthGQvpm9G/cCt4f0FGO6Qvr4K3bJactZ+iJc+wWN0k/LzrLO8RNlWUz/VgwxkY+Up+am8w2Fs7mywvahvDu+RqSjsO/8P8nctuIiG+hBgA+5GLwOZV0IiAXjg9N9WI69G18ez2HRhKtISWNYTEMixA35cpMZj6sMJ/LfW9CauoxsvgsUKUjNQrcSkyCStp3A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=SQt5bsbc; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=O9Xe+RO7;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=SQt5bsbc;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dr8BP6FThz2xWJ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 23:46:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dr8BQ2Ff4z2xWP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 23:46:22 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1768307861;
-	bh=Ws8Eb0NwBaSsIELRvPFLQCi4wI4t0JSg+rOArDpr4jQ=;
+	s=mail; t=1768307860;
+	bh=CQhD/KGKFcEkKh29q46LO6yIz88u0jgba+z/o0psTK8=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=O9Xe+RO75UPCb36u5nzxwzV4aFggvjHY0s8dnC9SRndh/IQGhUfIuuT5vLRHHP6Mc
-	 K1sGiiSW4ebwVx+7Utb4cgjie5ndXNJBjH7Lg49kYigRXnXpkxRbcHBRO0bqcmXgZj
-	 MgNncGcUilz/vm19oRV49rtYw8DPUlXsLyytbp+Y=
+	b=SQt5bsbcTnZS6yVdJ+LbYNoNhZEev1knGv0MjS71iiJfYlcuZyQ0aclRnK2Kr2PEq
+	 pavJTbLtAToGXld4GXml/FzTK76fJkWiqqk/Kz8PX+XPWi3Lxu2deHodM7LlKElFYY
+	 diHZjbVi1BV4pnlweGQP0Xpvny06OHosoDM+JiQE=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Tue, 13 Jan 2026 13:29:01 +0100
-Subject: [PATCH v4 17/17] kbuild: make CONFIG_MODULE_HASHES compatible with
- module stripping
+Date: Tue, 13 Jan 2026 13:28:52 +0100
+Subject: [PATCH v4 08/17] module: Deduplicate signature extraction
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -55,7 +54,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260113-module-hashes-v4-17-0b932db9b56b@weissschuh.net>
+Message-Id: <20260113-module-hashes-v4-8-0b932db9b56b@weissschuh.net>
 References: <20260113-module-hashes-v4-0-0b932db9b56b@weissschuh.net>
 In-Reply-To: <20260113-module-hashes-v4-0-0b932db9b56b@weissschuh.net>
 To: Nathan Chancellor <nathan@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
@@ -87,117 +86,227 @@ Cc: =?utf-8?q?Fabian_Gr=C3=BCnbichler?= <f.gruenbichler@proxmox.com>,
  linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1768307859; l=3767;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1768307859; l=6766;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=Ws8Eb0NwBaSsIELRvPFLQCi4wI4t0JSg+rOArDpr4jQ=;
- b=oEsyx/jtBizezIcvSkje+0qtObz/4ddhy8qPoVzSRgXe5bKNpF2FVLAcW5REc98tF23qYcGl2
- oWzLDhETAiYD5GsTguxB0tE2w91SHoXCLNfs4qDbap5w+MSSx88FHYp
+ bh=CQhD/KGKFcEkKh29q46LO6yIz88u0jgba+z/o0psTK8=;
+ b=Lgwo+6a5vIb8KpZTzvY+IyZL0lz4STVveaUDYDrKMqidgIHufGS8BuIXNHMAXiv7IHzs4yXTq
+ YDRiGJTfok3AifwJoS+EQEosFVHWUVaOei8HsTi+t5sMgtnUNgIVDKo
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-CONFIG_MODULE_HASHES needs to process the modules at build time in the
-exact form they will be loaded at runtime. If the modules are stripped
-afterwards they will not be loadable anymore.
+The logic to extract the signature bits from a module file are
+duplicated between the module core and IMA modsig appraisal.
 
-Also evaluate INSTALL_MOD_STRIP at build time and build the hashes based
-on modules stripped this way.
-
-If users specify inconsistent values of INSTALL_MOD_STRIP between build
-and installation time, an error is reported.
+Unify the implementation.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- .gitignore                | 1 +
- kernel/module/Kconfig     | 5 +++++
- scripts/Makefile.modfinal | 9 +++++++--
- scripts/Makefile.modinst  | 4 ++--
- scripts/Makefile.vmlinux  | 1 +
- 5 files changed, 16 insertions(+), 4 deletions(-)
+ include/linux/module_signature.h    |  4 +--
+ kernel/module/signing.c             | 52 +++++++------------------------------
+ kernel/module_signature.c           | 41 +++++++++++++++++++++++++++--
+ security/integrity/ima/ima_modsig.c | 24 ++++-------------
+ 4 files changed, 56 insertions(+), 65 deletions(-)
 
-diff --git a/.gitignore b/.gitignore
-index 299c54083672..900251c72ade 100644
---- a/.gitignore
-+++ b/.gitignore
-@@ -29,6 +29,7 @@
- *.gz
- *.i
- *.ko
-+*.ko.stripped
- *.lex.c
- *.ll
- *.lst
-diff --git a/kernel/module/Kconfig b/kernel/module/Kconfig
-index c00ca830330c..9fd34765ce2c 100644
---- a/kernel/module/Kconfig
-+++ b/kernel/module/Kconfig
-@@ -425,6 +425,11 @@ config MODULE_HASHES
+diff --git a/include/linux/module_signature.h b/include/linux/module_signature.h
+index 7eb4b00381ac..186a55effa30 100644
+--- a/include/linux/module_signature.h
++++ b/include/linux/module_signature.h
+@@ -40,7 +40,7 @@ struct module_signature {
+ 	__be32	sig_len;	/* Length of signature data */
+ };
  
- 	  Also see the warning in MODULE_SIG about stripping modules.
+-int mod_check_sig(const struct module_signature *ms, size_t file_len,
+-		  const char *name);
++int mod_split_sig(const void *buf, size_t *buf_len, bool mangled,
++		  size_t *sig_len, const u8 **sig, const char *name);
  
-+# To validate the consistency of INSTALL_MOD_STRIP for MODULE_HASHES
-+config MODULE_INSTALL_STRIP
-+	string
-+	default "$(INSTALL_MOD_STRIP)"
+ #endif /* _LINUX_MODULE_SIGNATURE_H */
+diff --git a/kernel/module/signing.c b/kernel/module/signing.c
+index fe3f51ac6199..6d64c0d18d0a 100644
+--- a/kernel/module/signing.c
++++ b/kernel/module/signing.c
+@@ -37,54 +37,22 @@ void set_module_sig_enforced(void)
+ 	sig_enforce = true;
+ }
+ 
+-/*
+- * Verify the signature on a module.
+- */
+-static int mod_verify_sig(const void *mod, struct load_info *info)
+-{
+-	struct module_signature ms;
+-	size_t sig_len, modlen = info->len;
+-	int ret;
+-
+-	pr_devel("==>%s(,%zu)\n", __func__, modlen);
+-
+-	if (modlen <= sizeof(ms))
+-		return -EBADMSG;
+-
+-	memcpy(&ms, mod + (modlen - sizeof(ms)), sizeof(ms));
+-
+-	ret = mod_check_sig(&ms, modlen, "module");
+-	if (ret)
+-		return ret;
+-
+-	sig_len = be32_to_cpu(ms.sig_len);
+-	modlen -= sig_len + sizeof(ms);
+-	info->len = modlen;
+-
+-	return verify_pkcs7_signature(mod, modlen, mod + modlen, sig_len,
+-				      VERIFY_USE_SECONDARY_KEYRING,
+-				      VERIFYING_MODULE_SIGNATURE,
+-				      NULL, NULL);
+-}
+-
+ int module_sig_check(struct load_info *info, int flags)
+ {
+-	int err = -ENODATA;
+-	const unsigned long markerlen = sizeof(MODULE_SIG_STRING) - 1;
++	int err;
+ 	const char *reason;
+ 	const void *mod = info->hdr;
++	size_t sig_len;
++	const u8 *sig;
+ 	bool mangled_module = flags & (MODULE_INIT_IGNORE_MODVERSIONS |
+ 				       MODULE_INIT_IGNORE_VERMAGIC);
+-	/*
+-	 * Do not allow mangled modules as a module with version information
+-	 * removed is no longer the module that was signed.
+-	 */
+-	if (!mangled_module &&
+-	    info->len > markerlen &&
+-	    memcmp(mod + info->len - markerlen, MODULE_SIG_STRING, markerlen) == 0) {
+-		/* We truncate the module to discard the signature */
+-		info->len -= markerlen;
+-		err = mod_verify_sig(mod, info);
 +
- config MODULE_ALLOW_MISSING_NAMESPACE_IMPORTS
- 	bool "Allow loading of modules with missing namespace imports"
- 	help
-diff --git a/scripts/Makefile.modfinal b/scripts/Makefile.modfinal
-index 5b8e94170beb..890724edac69 100644
---- a/scripts/Makefile.modfinal
-+++ b/scripts/Makefile.modfinal
-@@ -63,10 +63,14 @@ ifdef CONFIG_DEBUG_INFO_BTF_MODULES
- endif
- 	+$(call cmd,check_tracepoint)
++	err = mod_split_sig(info->hdr, &info->len, mangled_module, &sig_len, &sig, "module");
++	if (!err) {
++		err = verify_pkcs7_signature(mod, info->len, sig, sig_len,
++					     VERIFY_USE_SECONDARY_KEYRING,
++					     VERIFYING_MODULE_SIGNATURE,
++					     NULL, NULL);
+ 		if (!err) {
+ 			info->sig_ok = true;
+ 			return 0;
+diff --git a/kernel/module_signature.c b/kernel/module_signature.c
+index 00132d12487c..b2384a73524c 100644
+--- a/kernel/module_signature.c
++++ b/kernel/module_signature.c
+@@ -8,6 +8,7 @@
  
-+%.ko.stripped: %.ko $(wildcard include/config/MODULE_INSTALL_STRIP)
-+	$(call cmd,install_mod)
-+	$(call cmd,strip_mod)
+ #include <linux/errno.h>
+ #include <linux/printk.h>
++#include <linux/string.h>
+ #include <linux/module_signature.h>
+ #include <asm/byteorder.h>
+ 
+@@ -18,8 +19,8 @@
+  * @file_len:	Size of the file to which @ms is appended.
+  * @name:	What is being checked. Used for error messages.
+  */
+-int mod_check_sig(const struct module_signature *ms, size_t file_len,
+-		  const char *name)
++static int mod_check_sig(const struct module_signature *ms, size_t file_len,
++			 const char *name)
+ {
+ 	if (be32_to_cpu(ms->sig_len) >= file_len - sizeof(*ms))
+ 		return -EBADMSG;
+@@ -44,3 +45,39 @@ int mod_check_sig(const struct module_signature *ms, size_t file_len,
+ 
+ 	return 0;
+ }
 +
- quiet_cmd_merkle = MERKLE  $@
--      cmd_merkle = $(objtree)/scripts/modules-merkle-tree $@ .ko
-+      cmd_merkle = $(objtree)/scripts/modules-merkle-tree $@ $(if $(CONFIG_MODULE_INSTALL_STRIP),.ko.stripped,.ko)
++int mod_split_sig(const void *buf, size_t *buf_len, bool mangled,
++		  size_t *sig_len, const u8 **sig, const char *name)
++{
++	const unsigned long markerlen = sizeof(MODULE_SIG_STRING) - 1;
++	struct module_signature ms;
++	size_t modlen = *buf_len;
++	int ret;
++
++	/*
++	 * Do not allow mangled modules as a module with version information
++	 * removed is no longer the module that was signed.
++	 */
++	if (!mangled &&
++	    *buf_len > markerlen &&
++	    memcmp(buf + modlen - markerlen, MODULE_SIG_STRING, markerlen) == 0) {
++		/* We truncate the module to discard the signature */
++		modlen -= markerlen;
++	}
++
++	if (modlen <= sizeof(ms))
++		return -EBADMSG;
++
++	memcpy(&ms, buf + (modlen - sizeof(ms)), sizeof(ms));
++
++	ret = mod_check_sig(&ms, modlen, name);
++	if (ret)
++		return ret;
++
++	*sig_len = be32_to_cpu(ms.sig_len);
++	modlen -= *sig_len + sizeof(ms);
++	*buf_len = modlen;
++	*sig = buf + modlen;
++
++	return 0;
++}
+diff --git a/security/integrity/ima/ima_modsig.c b/security/integrity/ima/ima_modsig.c
+index 3265d744d5ce..a57342d39b07 100644
+--- a/security/integrity/ima/ima_modsig.c
++++ b/security/integrity/ima/ima_modsig.c
+@@ -40,44 +40,30 @@ struct modsig {
+ int ima_read_modsig(enum ima_hooks func, const void *buf, loff_t buf_len,
+ 		    struct modsig **modsig)
+ {
+-	const size_t marker_len = strlen(MODULE_SIG_STRING);
+-	const struct module_signature *sig;
++	size_t buf_len_sz = buf_len;
+ 	struct modsig *hdr;
+ 	size_t sig_len;
+-	const void *p;
++	const u8 *sig;
+ 	int rc;
  
--.tmp_module_hashes.c: $(modules:%.o=%.ko) $(objtree)/scripts/modules-merkle-tree FORCE
-+.tmp_module_hashes.c: $(if $(CONFIG_MODULE_INSTALL_STRIP),$(modules:%.o=%.ko.stripped),$(modules:%.o=%.ko)) $(objtree)/scripts/modules-merkle-tree $(wildcard include/config/MODULE_INSTALL_STRIP) FORCE
- 	$(call cmd,merkle)
+-	if (buf_len <= marker_len + sizeof(*sig))
+-		return -ENOENT;
+-
+-	p = buf + buf_len - marker_len;
+-	if (memcmp(p, MODULE_SIG_STRING, marker_len))
+-		return -ENOENT;
+-
+-	buf_len -= marker_len;
+-	sig = (const struct module_signature *)(p - sizeof(*sig));
+-
+-	rc = mod_check_sig(sig, buf_len, func_tokens[func]);
++	rc = mod_split_sig(buf, &buf_len_sz, true, &sig_len, &sig, func_tokens[func]);
+ 	if (rc)
+ 		return rc;
  
- ifdef CONFIG_MODULE_HASHES
-@@ -75,6 +79,7 @@ endif
+-	sig_len = be32_to_cpu(sig->sig_len);
+-	buf_len -= sig_len + sizeof(*sig);
+-
+ 	/* Allocate sig_len additional bytes to hold the raw PKCS#7 data. */
+ 	hdr = kzalloc(struct_size(hdr, raw_pkcs7, sig_len), GFP_KERNEL);
+ 	if (!hdr)
+ 		return -ENOMEM;
  
- targets += $(modules:%.o=%.ko) $(modules:%.o=%.mod.o) .module-common.o
- targets += $(modules:%.o=%.merkle) .tmp_module_hashes.c
-+targets += $(modules:%.o=%.ko.stripped)
+ 	hdr->raw_pkcs7_len = sig_len;
+-	hdr->pkcs7_msg = pkcs7_parse_message(buf + buf_len, sig_len);
++	hdr->pkcs7_msg = pkcs7_parse_message(sig, sig_len);
+ 	if (IS_ERR(hdr->pkcs7_msg)) {
+ 		rc = PTR_ERR(hdr->pkcs7_msg);
+ 		kfree(hdr);
+ 		return rc;
+ 	}
  
- # Add FORCE to the prerequisites of a target to force it to be always rebuilt.
- # ---------------------------------------------------------------------------
-diff --git a/scripts/Makefile.modinst b/scripts/Makefile.modinst
-index 07380c7233a0..45606f994ad9 100644
---- a/scripts/Makefile.modinst
-+++ b/scripts/Makefile.modinst
-@@ -68,8 +68,8 @@ __modinst: $(install-y)
+-	memcpy(hdr->raw_pkcs7, buf + buf_len, sig_len);
++	memcpy(hdr->raw_pkcs7, sig, sig_len);
  
- ifdef CONFIG_MODULE_HASHES
- ifeq ($(KBUILD_EXTMOD),)
--ifdef INSTALL_MOD_STRIP
--$(error CONFIG_MODULE_HASHES and INSTALL_MOD_STRIP are mutually exclusive)
-+ifneq ($(INSTALL_MOD_STRIP),$(CONFIG_MODULE_INSTALL_STRIP))
-+$(error Inconsistent values for INSTALL_MOD_STRIP between build and installation)
- endif
- endif
- endif
-diff --git a/scripts/Makefile.vmlinux b/scripts/Makefile.vmlinux
-index f4e38b953b01..4ce849f6253a 100644
---- a/scripts/Makefile.vmlinux
-+++ b/scripts/Makefile.vmlinux
-@@ -81,6 +81,7 @@ endif
- ifdef CONFIG_MODULE_HASHES
- vmlinux.unstripped: $(objtree)/scripts/modules-merkle-tree
- vmlinux.unstripped: modules.order
-+vmlinux.unstripped: $(wildcard include/config/MODULE_INSTALL_STRIP)
- endif
- 
- # vmlinux
+ 	/* We don't know the hash algorithm yet. */
+ 	hdr->hash_algo = HASH_ALGO__LAST;
 
 -- 
 2.52.0
