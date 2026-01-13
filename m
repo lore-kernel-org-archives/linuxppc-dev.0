@@ -1,45 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-15646-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15647-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12CAAD2D0EA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jan 2026 12:51:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 001B2D2D11F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Jan 2026 14:57:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dr8Jh4RgGz2yRG;
-	Tue, 13 Jan 2026 23:51:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768308708;
-	cv=none; b=fgOxYFsTa4eMIOkYktXbekX8pzH4Kn6D8bXPW5RsHY5hEGT7VEj36JPQatr+jw3DiCdB/aZi6bDyofX50cS3AuDQLqewwAxtaJAW8HITdMPsI5v3HKGsxsL88rmUS/A2ZNXBxIp7zS/S+BwdUZYCAdGXS8Hoyh7YvxxwwGIic2t1zXVBKrwxjyO+p8yqRiw9/PEmB3DTk9NXMr8dF3bQXW/2GWx4w9ZDR9eZEufpeCl4rUc+dU/OPm7bc/L5Hk4EOzvarRxhnX3+xYR0N0qzmRQcEGZx7krz9cnq5D/kNTJTtJ4jpYjM7StIYSOQXpQuM/4Lyf1fFqLUJnN54R1qvA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4drC5X47lDz2xWJ;
+	Wed, 14 Jan 2026 01:57:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768316240;
+	cv=none; b=j0NJBsUcG4ZGEYbktfRoEaR12dqpEhJmkbSdvOXynBD3XRiOjLoSUqlTcyXe/szU5IqPXV1V+zc6AV4wg6PR9klqM6m8XB1+r+CcOwCP3UoEKgQyJ7ajvmr4DznnCl9EyNPfNddETW7FEpd9cJFIBon+vhzgLZm/nzzin7ePjZQ9kugzTx51zKXB78OKaROxETaUFI97qeio/G0FUp/+vOI9/JWz3H4NRWxFLOeBntWYpoeZJlAn4rJfPp8PNpztT3ypWQ31424gLcy/CUp7AodwhSebhiq/6oEibooea9JhluHu7Xd1QEGxbIyvLuS2cBRBDObrnmbxzMRzY40mFA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768308708; c=relaxed/relaxed;
-	bh=V7U5y8vUaJA0QCZSjAbN2Iyzb8hbj08GOYWeTDivizI=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=hpnoL0LpKtRJwhtLduKQ28o+F6dNh2Sribx4J+MQhSy/eNA0biUsHjHfD+fKP1M2PeFAHHGQ3u2vGLELMpwlTuXidWwfR2m77qqPMrSSjSK8k8Vujqs68k7KfYxhVl6nOpoYHBy9YmLUPN37b/T+RNmqlYrrMIpDdkytvw7HnDvsaVs76mP/Kj3xzZ6B3Nw8lR+E9Rjto7jMI94dy+IAqc1xnn+eakNQ5Ntz4MtKtTq0Xp+0bcfL6ykgLiO8qcgvZ8159kFrufX+EgsE+pXzEfNC+Zpn+7SG4l9Pf1vstwU+lVIX0zFne/tx6NZDePzwsO64XGLT8pqamVGH4xI9Pw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=R9PUdq/6; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
+	t=1768316240; c=relaxed/relaxed;
+	bh=7sfzPEDYda0fB777q3Y+R5qIxdXTsgJj2IRA+hNFGpw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=BK35JbM77iM3StzTGJ+OOc7bHqx0KkpfXWGh4XvSQYC6FdTOJL/3WsILUfgqXqoP+WXvUDyxk+VARxVFZnqmcAizeetEoVSifOGQ1SiYoipm7Krl+xHsH9jlgousoo0w5ulGgF8l56ERgZc+5ibwMy+CXk38LMGUtP9+JuOcSfvA7gx/pSJXf8AnrZM5h3Ph3WsyHnqGbAI3uehD3o2e7GKZaQdjmB9zRZalKEpqD93wtHfPNnnitdifaSz4JeCBYep1QA2+g/JsG3qukVJ4MZVq1qd7WtNVqxQiURwgQNJX+Pt5IC4WZIfEY5hnnEj3i4Ap/uy4ZMrV2MS5aSotYA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=sSx4mOU4; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=EElHHGGH; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=R9PUdq/6;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=sSx4mOU4;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=EElHHGGH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dr8Jg6Wrbz2xWJ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 23:51:47 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1768307859;
-	bh=C8ZnR8aqoKvJkB4QCMCRFoAe/2le+A5GtPBqy+Qa43c=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=R9PUdq/6C+yJVnO0ybvezWnXHMQKPKihc6b7mgRo1Ui/aV55w+gpn8aorgG2O0rN1
-	 vtIBjPzynlpD6eesPKHWZ1oMERg8xbGy6qq+7yhu1l/iaJpRglA2TfWK7jquq3STNn
-	 ovi55oV7d0liWgCuciPaYvSpgyHVHyg8xLH8qSqs=
-From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Tue, 13 Jan 2026 13:28:46 +0100
-Subject: [PATCH v4 02/17] powerpc/ima: Drop unnecessary check for
- CONFIG_MODULE_SIG
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4drC5V4R0cz2xQB
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2026 01:57:18 +1100 (AEDT)
+Date: Tue, 13 Jan 2026 15:56:35 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1768316198;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=7sfzPEDYda0fB777q3Y+R5qIxdXTsgJj2IRA+hNFGpw=;
+	b=sSx4mOU4qkDYzkkx/o4BEtWyl3KyxW3euTuarzApOzTpXlaTS++4XY/zozFEdwI+2D4gqc
+	X/2YYXHPhJ39OiUekNo9mxCgbd3mRKVP6iJ5LixKaumKVEOue7aHTdj2/SSw9AIA7xysiw
+	khwRiBeHIgbbxPJE6nsPK4snz9MXXmwk6QsCaNwglaoU9+6Hv1fw7AOuDtH/SrsWBwtrSs
+	Zpm5UWEXMa1w74IQw5HzaMgnRUPa2rwJxDOUlrasiueQFGxKTnhVEfsy49uPFRY/wFDjFK
+	OtlrNM9syil5J8J1N2p2o6zWC7xe4RZ5ft3jv1L7pqgXQLYRRkdUm/6V+g4TPg==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1768316198;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=7sfzPEDYda0fB777q3Y+R5qIxdXTsgJj2IRA+hNFGpw=;
+	b=EElHHGGH26sj8RjZyTS7MzBbQHDhVABCJGxSUKy3ePFAS2cW41IbJqoE/+HSbaCGe4llt6
+	VlRf7PDMccGp4EBA==
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+To: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>
+Cc: Nathan Chancellor <nathan@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+	Luis Chamberlain <mcgrof@kernel.org>,
+	Petr Pavlu <petr.pavlu@suse.com>,
+	Sami Tolvanen <samitolvanen@google.com>,
+	Daniel Gomez <da.gomez@samsung.com>,
+	Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
+	"Serge E. Hallyn" <serge@hallyn.com>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Naveen N Rao <naveen@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>,
+	Roberto Sassu <roberto.sassu@huawei.com>,
+	Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+	Eric Snowberg <eric.snowberg@oracle.com>,
+	Nicolas Schier <nicolas.schier@linux.dev>,
+	Daniel Gomez <da.gomez@kernel.org>,
+	Aaron Tomlin <atomlin@atomlin.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Nicolas Schier <nsc@kernel.org>,
+	Nicolas Bouchinet <nicolas.bouchinet@oss.cyber.gouv.fr>,
+	Xiu Jianfeng <xiujianfeng@huawei.com>,
+	Fabian =?utf-8?Q?Gr=C3=BCnbichler?= <f.gruenbichler@proxmox.com>,
+	Arnout Engelen <arnout@bzzt.net>,
+	Mattia Rizzolo <mattia@mapreri.org>, kpcyrd <kpcyrd@archlinux.org>,
+	Christian Heusel <christian@heusel.eu>,
+	=?utf-8?B?Q8OianU=?= Mihai-Drosi <mcaju95@gmail.com>,
+	linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-arch@vger.kernel.org, linux-modules@vger.kernel.org,
+	linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
+Subject: Re: [PATCH v4 15/17] module: Introduce hash-based integrity checking
+Message-ID: <20260113145635.YfSTBhVs@linutronix.de>
+References: <20260113-module-hashes-v4-0-0b932db9b56b@weissschuh.net>
+ <20260113-module-hashes-v4-15-0b932db9b56b@weissschuh.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,74 +102,74 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20260113-module-hashes-v4-2-0b932db9b56b@weissschuh.net>
-References: <20260113-module-hashes-v4-0-0b932db9b56b@weissschuh.net>
-In-Reply-To: <20260113-module-hashes-v4-0-0b932db9b56b@weissschuh.net>
-To: Nathan Chancellor <nathan@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
- Luis Chamberlain <mcgrof@kernel.org>, Petr Pavlu <petr.pavlu@suse.com>, 
- Sami Tolvanen <samitolvanen@google.com>, 
- Daniel Gomez <da.gomez@samsung.com>, Paul Moore <paul@paul-moore.com>, 
- James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, 
- Jonathan Corbet <corbet@lwn.net>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- Naveen N Rao <naveen@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>, 
- Roberto Sassu <roberto.sassu@huawei.com>, 
- Dmitry Kasatkin <dmitry.kasatkin@gmail.com>, 
- Eric Snowberg <eric.snowberg@oracle.com>, 
- Nicolas Schier <nicolas.schier@linux.dev>, 
- Daniel Gomez <da.gomez@kernel.org>, Aaron Tomlin <atomlin@atomlin.com>, 
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
- Nicolas Schier <nsc@kernel.org>, 
- Nicolas Bouchinet <nicolas.bouchinet@oss.cyber.gouv.fr>, 
- Xiu Jianfeng <xiujianfeng@huawei.com>, Nicolas Schier <nsc@kernel.org>, 
- Christophe Leroy <chleroy@kernel.org>
-Cc: =?utf-8?q?Fabian_Gr=C3=BCnbichler?= <f.gruenbichler@proxmox.com>, 
- Arnout Engelen <arnout@bzzt.net>, Mattia Rizzolo <mattia@mapreri.org>, 
- kpcyrd <kpcyrd@archlinux.org>, Christian Heusel <christian@heusel.eu>, 
- =?utf-8?q?C=C3=A2ju_Mihai-Drosi?= <mcaju95@gmail.com>, 
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>, 
- linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-arch@vger.kernel.org, linux-modules@vger.kernel.org, 
- linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org, 
- linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org, 
- =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1768307859; l=965;
- i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=C8ZnR8aqoKvJkB4QCMCRFoAe/2le+A5GtPBqy+Qa43c=;
- b=fOyWYKhWQ+jNMEiBfpyKRDrc+eKQtmdIHJd/6KYHr3QI2V48g5JUNn51K2jsWWbdtlvyanJM1
- DKPnRJ2YqXVDVwecDFNjFeR+uDRGpALqpNP0f/cmiRLFo1HmKIbz5Hm
-X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
- pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20260113-module-hashes-v4-15-0b932db9b56b@weissschuh.net>
 
-When CONFIG_MODULE_SIG is disabled set_module_sig_enforced() is defined
-as an empty stub, so the check is unnecessary.
-The specific configuration option for set_module_sig_enforced() is
-about to change and removing the check avoids some later churn.
+On 2026-01-13 13:28:59 [+0100], Thomas Wei=C3=9Fschuh wrote:
+> --- /dev/null
+> +++ b/scripts/modules-merkle-tree.c
+> @@ -0,0 +1,467 @@
+=E2=80=A6
+> +static void build_proof(struct mtree *mt, unsigned int n, int fd)
+> +{
+> +	unsigned char cur[EVP_MAX_MD_SIZE];
+> +	unsigned char tmp[EVP_MAX_MD_SIZE];
 
-Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
----
- arch/powerpc/kernel/ima_arch.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+This and a few other instances below could be optimized to avoid
+hashing. I probably forgot to let you know.
+-> https://git.kernel.org/pub/scm/linux/kernel/git/bigeasy/mtree-hashed-mod=
+s.git/commit/?id=3D10b565c123c731da37befe862de13678b7c54877
 
-diff --git a/arch/powerpc/kernel/ima_arch.c b/arch/powerpc/kernel/ima_arch.c
-index b7029beed847..690263bf4265 100644
---- a/arch/powerpc/kernel/ima_arch.c
-+++ b/arch/powerpc/kernel/ima_arch.c
-@@ -63,8 +63,7 @@ static const char *const secure_and_trusted_rules[] = {
- const char *const *arch_get_ima_policy(void)
- {
- 	if (is_ppc_secureboot_enabled()) {
--		if (IS_ENABLED(CONFIG_MODULE_SIG))
--			set_module_sig_enforced();
-+		set_module_sig_enforced();
- 
- 		if (is_ppc_trustedboot_enabled())
- 			return secure_and_trusted_rules;
+> +	struct file_entry *fe, *fe_sib;
+> +
+> +	fe =3D &fh_list[n];
+> +
+> +	if ((n & 1) =3D=3D 0) {
+> +		/* No pair, hash with itself */
+> +		if (n + 1 =3D=3D num_files)
+> +			fe_sib =3D fe;
+> +		else
+> +			fe_sib =3D &fh_list[n + 1];
+> +	} else {
+> +		fe_sib =3D &fh_list[n - 1];
+> +	}
+> +	/* First comes the node position into the file */
+> +	write_be_int(fd, n);
+> +
+> +	if ((n & 1) =3D=3D 0)
+> +		hash_entry(fe->hash, fe_sib->hash, cur);
+> +	else
+> +		hash_entry(fe_sib->hash, fe->hash, cur);
+> +
+> +	/* Next is the sibling hash, followed by hashes in the tree */
+> +	write_hash(fd, fe_sib->hash);
+> +
+> +	for (unsigned int i =3D 0; i < mt->levels - 1; i++) {
+> +		n >>=3D 1;
+> +		if ((n & 1) =3D=3D 0) {
+> +			void *h;
+> +
+> +			/* No pair, hash with itself */
+> +			if (n + 1 =3D=3D mt->entries[i])
+> +				h =3D cur;
+> +			else
+> +				h =3D mt->l[i][n + 1].hash;
+> +
+> +			hash_entry(cur, h, tmp);
+> +			write_hash(fd, h);
+> +		} else {
+> +			hash_entry(mt->l[i][n - 1].hash, cur, tmp);
+> +			write_hash(fd, mt->l[i][n - 1].hash);
+> +		}
+> +		memcpy(cur, tmp, hash_size);
+> +	}
+> +
+> +	 /* After all that, the end hash should match the root hash */
+> +	if (memcmp(cur, mt->l[mt->levels - 1][0].hash, hash_size))
+> +		errx(1, "hash mismatch");
+> +}
 
--- 
-2.52.0
-
+Sebastian
 
