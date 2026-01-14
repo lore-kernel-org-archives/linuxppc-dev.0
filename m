@@ -1,81 +1,91 @@
-Return-Path: <linuxppc-dev+bounces-15716-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15717-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08FC8D29FE6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jan 2026 10:39:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA600D29FEF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jan 2026 11:45:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4drjKQ3M3Tz2xFn;
-	Wed, 14 Jan 2026 21:39:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768387162;
-	cv=none; b=O1tn92XIUFSsBXEfTLq7Of67SmrpzBkHVksAlFgSEVS1378w9ypTfXNhgjL1PNaDYnYTUmba+0PZjIS7k/d+Gxn8xxLzqgOpxUhENtS7yp09SUqg4QhtUEo8lXvolHuop9OeizZ13TQDNO8TEkRVFlQ6PYitpQsrkI0cM5JxCvVJfbAO4cs8SHrDcmSbGmTLpPfX5CKSqmkLSOwfDdZsk7inxhKGRJryARuYyPuIWapZjqw2V53E0LwbWxvuH/8R6wtbADS5luVsFNULv9MW3/Wp5enn6lJn+ZkSgbQJUBqXF7twVTqjCW0yQmYYKj634YkHpSFG2hUlAtNOGfWWrA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4drkpC5cGtz2xHP;
+	Wed, 14 Jan 2026 22:45:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768391155;
+	cv=none; b=D64y794DnO9h3Of+d/OYPJpFnOotW7PqqjQmGqqQStssR1FQP17nvGH2Ssk6Nrer1V/4PEg259Q0pCUqu77odrq4WB6g8gzgbgln5N0zwVWLU6h+MpZ1H0rzYOzLVCwXYdaoIf9bxLAyqo8lgrhsbBa5BDbIKQITOkqfBrFeS9MXOvWVQcljgG1lh4I3Y8ZtELqIWZLjwrXVT4dBh31h3/SsEKbneyEgodMxS/mB0QLt7lHP+7femg8b5EAmGlPnBaz/ecDZ+Bny/AyoFBgyAabQkuZcmSYQk+U24UVt5e8UtLME9RfputaR8Ra+ZQzlrtrZUXJj44tgcFDsIOSVoA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768387162; c=relaxed/relaxed;
-	bh=D/s09hn0ccb9yZFvYxUjpULJqF7ImKPJ28RibKMEcgY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=c1IySVqgGkp8TqAIKMT02y5OU5ucfjIwv65Zm25zE9h6x4XxsuVCuQXB1ouKVRVotDLOoVP4AND7E19svBoeq98BD68MbejHqw3TjSzpNrfuB5Q6fkWRl+0WMeNKKN4Pwz1D5o7MA9KpqDbP/gRYfgNi2SqR1BQEG/p6CfXAdyZ0BlEcs1hsxpJk35gFS+kTRXl26ndJXeon9/fT8mLagOIwuD3dMXRxV+U2Q0TvolHeFoaVft2uxlJv2Pho1Ejgv9SZaQ3PKHSPkoZl+rKHl39xpQIDJQidicfsPbD2NJ7ppIPRrRb+WN1VFgY4v5KrHbvHdgC3Pbkk6wALkVCTtA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=c1cx4AN6; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=cassel@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1768391155; c=relaxed/relaxed;
+	bh=WV+OWYKEIVeMcpz1svAZC+IJRhC6pnf54j2kmIgVQfw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=BxOzClIkJ8hiUypwEukQRGVen57LR0r7ur/Dp222FHsNk2Pq5/cazpvMHWOyo2v56qkTzMsnbcBnKbdfC9h7WCMZb3Wy+guwhqfPMsd1Ejvxjpe5jBm9XIVjU7qOrUcADm03DNtF6d29DFp7guKif1thqbq/l8eb7O5+aQX+Xxpva6S8d118HsEmHqmPhaFUM7qoGg/muVUp9DKVUSrKMLvBteJyteGZcGBGgdysV7Hj/hO44glWcjo6zE/38rVBxDSQt2cVeF85JYeVTwfCvR8foJkMdE6F4wD70PM4CBgvCq//XJhJTBbNVYgYj/Dpm7XcXSDgVX07BZH7rH0qhg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Jg5Fy0rA; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=c1cx4AN6;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Jg5Fy0rA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=cassel@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4drjKN5fXKz2x9M
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2026 21:39:20 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id C595C60097;
-	Wed, 14 Jan 2026 10:39:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 26CFAC4CEF7;
-	Wed, 14 Jan 2026 10:39:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1768387157;
-	bh=GXOUS5IVA/W+B1bIiXQJ9wm/cqS9Cfmo4/ZzvR1iFTY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=c1cx4AN6qnW//qfPtg+YU+kBK0Fwi1qx7TD4KI7OcyvNk84LcaOGokwsZbcc85njb
-	 qNE/fDPQvFv/hrK3hmEx5+u9dS2ysExw/sZMu59+B6tkrQgcsiR0HoyBLL0SqDaJNl
-	 lZiiHfClvv5U5qlwltVlii620fXgPEmppvSDIBUFS8QaAvEzvcf7lbCi351zOc3W8f
-	 OSyJms1RzaBtduqCcc4R6U9FLBKh2qAsW/1bGu/5Vq+EF+x+/uK/2ZYuVFmug/pbtL
-	 IQE5Pt8WGKFCXfH5aCcnYzBH4PHJ3+KmYKvQ4C17LfDVYZ564TGrXzWP3iZN+7Q5zE
-	 l1TuhhZkNiuDQ==
-Date: Wed, 14 Jan 2026 11:39:03 +0100
-From: Niklas Cassel <cassel@kernel.org>
-To: Koichiro Den <den@valinux.co.jp>
-Cc: jingoohan1@gmail.com, mani@kernel.org, lpieralisi@kernel.org,
-	kwilczynski@kernel.org, robh@kernel.org, bhelgaas@google.com,
-	vigneshr@ti.com, s-vadapalli@ti.com, hongxing.zhu@nxp.com,
-	l.stach@pengutronix.de, shawnguo@kernel.org, s.hauer@pengutronix.de,
-	kernel@pengutronix.de, festevam@gmail.com, minghuan.Lian@nxp.com,
-	mingkai.hu@nxp.com, roy.zang@nxp.com, jesper.nilsson@axis.com,
-	heiko@sntech.de, srikanth.thokala@intel.com,
-	marek.vasut+renesas@gmail.com, yoshihiro.shimoda.uh@renesas.com,
-	geert+renesas@glider.be, magnus.damm@gmail.com,
-	christian.bruel@foss.st.com, mcoquelin.stm32@gmail.com,
-	alexandre.torgue@foss.st.com, thierry.reding@gmail.com,
-	jonathanh@nvidia.com, hayashi.kunihiko@socionext.com,
-	mhiramat@kernel.org, kishon@kernel.org, jirislaby@kernel.org,
-	rongqianfeng@vivo.com, 18255117159@163.com,
-	shawn.lin@rock-chips.com, nicolas.frattaroli@collabora.com,
-	linux.amoon@gmail.com, vidyas@nvidia.com, Frank.Li@nxp.com,
-	linux-omap@vger.kernel.org, linux-pci@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	imx@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@axis.com, linux-rockchip@lists.infradead.org,
-	linux-arm-msm@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
-	linux-stm32@st-md-mailman.stormreply.com,
-	linux-tegra@vger.kernel.org
-Subject: Re: [PATCH v7 5/6] PCI: dwc: ep: Support BAR subrange inbound
- mapping via Address Match Mode iATU
-Message-ID: <aWdyR4Xkh2_ZgOf8@fedora>
-References: <20260113162719.3710268-1-den@valinux.co.jp>
- <20260113162719.3710268-6-den@valinux.co.jp>
- <5kexuvze2a4m6bd3yhv2cd7yrzo4r6ubbbouktdsurv7n22v7o@7s3pgf6ftgur>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4drkp96mK3z2x9M
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2026 22:45:53 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 60E4cFPg019307;
+	Wed, 14 Jan 2026 11:45:16 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=WV+OWYKEIVeMcpz1svAZC+IJRhC6pnf54j2kmIgVQ
+	fw=; b=Jg5Fy0rAniaLYbbY6ZRRtdLCi2fylyvGfGpHsxruXs4/VhtW3XzQAfLET
+	LEjcREENkYWRHas7aZoG9ICZKli9Y+AJnOJojUKo8HXqnSl/v50WnGzWvmIdrHCM
+	YUIg1b6K687UJKHmafOtkhAZ5/+PNwpB89UK+MRRVwvr/3gCwqLUwA+QKXeyetlf
+	iPWPw2KJbt1SMLf0EbH9S0W+0XWRrddEAuijptV2yJKVDJMTj64ILCBIRT658tXe
+	K87/bqpnSi6B39AP5VT/B8X9YFYEmYmbS92Y1FX//eqrWRwHR2n20qXQc3jsJpao
+	VdxDxmLC/uuygh3oYQ0tJx5AFOyLw==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4bkd6e8u50-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 14 Jan 2026 11:45:16 +0000 (GMT)
+Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 60EBjF0w017939;
+	Wed, 14 Jan 2026 11:45:15 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4bkd6e8u4v-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 14 Jan 2026 11:45:15 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 60E9sj6B002510;
+	Wed, 14 Jan 2026 11:45:14 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4bm13ssy6v-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 14 Jan 2026 11:45:14 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 60EBjAK551053028
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 14 Jan 2026 11:45:10 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9321D20043;
+	Wed, 14 Jan 2026 11:45:10 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4315A20040;
+	Wed, 14 Jan 2026 11:45:04 +0000 (GMT)
+Received: from abhi.. (unknown [9.124.217.65])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 14 Jan 2026 11:45:04 +0000 (GMT)
+From: adubey@linux.ibm.com
+To: bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: hbathini@linux.ibm.com, sachinpb@linux.ibm.com, venkat88@linux.ibm.com,
+        andrii@kernel.org, eddyz87@gmail.com, mykolal@fb.com, ast@kernel.org,
+        daniel@iogearbox.net, martin.lau@linux.dev, song@kernel.org,
+        yonghong.song@linux.dev, john.fastabend@gmail.com, kpsingh@kernel.org,
+        sdf@fomichev.me, haoluo@google.com, jolsa@kernel.org,
+        christophe.leroy@csgroup.eu, naveen@kernel.org, maddy@linux.ibm.com,
+        mpe@ellerman.id.au, npiggin@gmail.com, memxor@gmail.com,
+        iii@linux.ibm.com, shuah@kernel.org,
+        Abhishek Dubey <adubey@linux.ibm.com>
+Subject: [PATCH v2 0/6] powerpc64/bpf: Support tailcalls with subprogs & BPF exceptions
+Date: Wed, 14 Jan 2026 17:14:44 +0530
+Message-ID: <20260114114450.30405-1-adubey@linux.ibm.com>
+X-Mailer: git-send-email 2.48.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,95 +99,214 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5kexuvze2a4m6bd3yhv2cd7yrzo4r6ubbbouktdsurv7n22v7o@7s3pgf6ftgur>
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: kGNkf1GgfCOKnJIkCrA78MFK8kpOj1iH
+X-Authority-Analysis: v=2.4 cv=LLxrgZW9 c=1 sm=1 tr=0 ts=696781cc cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=vUbySO9Y5rIA:10 a=VkNPw1HP01LnGYTKEx00:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=rhI0E6_HooCo6thlJxMA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTE0MDA5MyBTYWx0ZWRfX6/XoNKVkPY0e
+ LBgWiiWI4o6p0bjcjTuYZRqkp0vn/5L/xWkZq0iSfRespIykgCtN6V7K6OOaNrzy3EZtD6/XZmz
+ QZBkd4+0RBvzy27uticjidmqFpcI9hfbDlScu3/nDJc7o+LZxmT5qouoaW6D0/wps8WiuYNi8Lg
+ u11Et8+Siafg6FTlueUSl1+ArAz/qGiitEWLcMYtl4KpEJ1pzzTK7PSZS+bw+SHFOEn/tBjIPX+
+ qfKAWRJvi7DwYRGSwyJH1ldm4oeR2arOzbmjq2Il80NVVxBGe1RACZCLc2UX/gVNyh/OUbvq7+C
+ uLGP8BI4tDPQ5rwV19UJeMlvkZVeNRBX1MXLkd9j1zoJUlfbC8s+WP3McBCIXBN10A1r07Fbdtc
+ vdDbp4PfsEh3YUB3Deh8MlnLtGXQEzCD/nJT3W9cYyLKZSuZSDQDfU+mJPTnKwzAeYTv4M2yo6L
+ 3o3bhnPJ27FxNDNri4Q==
+X-Proofpoint-ORIG-GUID: 6enXm8th8r8d5YXDS4d_YAiTJ1qizIqh
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2026-01-14_03,2026-01-09_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 suspectscore=0 clxscore=1015 spamscore=0 impostorscore=0
+ malwarescore=0 phishscore=0 adultscore=0 lowpriorityscore=0 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2512120000 definitions=main-2601140093
 
-On Wed, Jan 14, 2026 at 12:54:37PM +0900, Koichiro Den wrote:
-> I realized that I missed one case in v7.
-> 
-> I think dw_pcie_ep_clear_ib_maps() should also be called from
-> dw_pcie_ep_ib_atu_bar() to tear down any existing inbound mappings for the
-> same BAR before re-programming it in BAR Match Mode.
-> 
-> This matters when updating inbound mappings for a BAR without resetting the
-> BAR in between. There are four possible transition patterns, and pattern #4
-> below was overlooked:
-> 
->   1. BAR Match Mode -> BAR Match Mode
->      As the current implementation does, the mapping is simply updated
->      (with the same atu index)
-> 
->   2. BAR Match Mode -> Address Match Mode
->      This patch series already ensures the old BAR Match mapping is
->      torn down before reprogramming.
-> 
->   3. Address Match Mode -> Address Match Mode
->      Likewise, existing Address Match mappings are cleared first.
-> 
->   4. Address Match Mode  -> BAR Match Mode
->      This case was not handled. The change below adds the missing
->      teardown so that stale Address Match mappings do not remain active.
-> 
->      --- a/drivers/pci/controller/dwc/pcie-designware-ep.c
->      +++ b/drivers/pci/controller/dwc/pcie-designware-ep.c
->      @@ -148,9 +148,12 @@ static int dw_pcie_ep_ib_atu_bar(struct dw_pcie_ep *ep, u8 func_no, int type,
->              u32 free_win;
->              struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
->      
->      -       if (!ep->bar_to_atu[bar])
->      +       if (!ep->bar_to_atu[bar]) {
->      +               /* Tear down existing mappings before (re)programming. */
->      +               dw_pcie_ep_clear_ib_maps(ep, bar);
->      +
->                      free_win = find_first_zero_bit(ep->ib_window_map,
->                                                    pci->num_ib_windows);
->      -       else
->      +       } else
->                      free_win = ep->bar_to_atu[bar] - 1;
+From: Abhishek Dubey <adubey@linux.ibm.com>
 
-If one of the branches has braces, both branches should have braces:
-https://www.kernel.org/doc/html/latest/process/coding-style.html#placing-braces-and-spaces
+This patch series enables support for two BPF JIT features
+on powerpc64. The first three patches target support for
+tail calls with subprogram combinations. The first patch
+supports realignment of tail_call_cnt offset in stack frame.
+Implementation details are provided in the commit messages.
 
+The last three patches add support for BPF exceptions. An
+architecture-specific stack walker is implemented to assist
+with stack walk during exceptions.
 
-> 
-> Unless there are objections, I'll include this fix in v8.
+All selftests related to tailcalls and exceptions are passing:
 
-Isn't it easier/cleaner if we call dw_pcie_ep_clear_ib_maps() in
-dw_pcie_ep_set_bar(), rather than calling it in both dw_pcie_ep_ib_atu_addr()
-and dw_pcie_ep_ib_atu_bar() ?
+# ./test_progs -t tailcalls
+#442/1   tailcalls/tailcall_1:OK
+#442/2   tailcalls/tailcall_2:OK
+#442/3   tailcalls/tailcall_3:OK
+#442/4   tailcalls/tailcall_4:OK
+#442/5   tailcalls/tailcall_5:OK
+#442/6   tailcalls/tailcall_6:OK
+#442/7   tailcalls/tailcall_bpf2bpf_1:OK
+#442/8   tailcalls/tailcall_bpf2bpf_2:OK
+#442/9   tailcalls/tailcall_bpf2bpf_3:OK
+#442/10  tailcalls/tailcall_bpf2bpf_4:OK
+#442/11  tailcalls/tailcall_bpf2bpf_5:OK
+#442/12  tailcalls/tailcall_bpf2bpf_6:OK
+#442/13  tailcalls/tailcall_bpf2bpf_fentry:OK
+#442/14  tailcalls/tailcall_bpf2bpf_fexit:OK
+#442/15  tailcalls/tailcall_bpf2bpf_fentry_fexit:OK
+#442/16  tailcalls/tailcall_bpf2bpf_fentry_entry:OK
+#442/17  tailcalls/tailcall_poke:OK
+#442/18  tailcalls/tailcall_bpf2bpf_hierarchy_1:OK
+#442/19  tailcalls/tailcall_bpf2bpf_hierarchy_fentry:OK
+#442/20  tailcalls/tailcall_bpf2bpf_hierarchy_fexit:OK
+#442/21  tailcalls/tailcall_bpf2bpf_hierarchy_fentry_fexit:OK
+#442/22  tailcalls/tailcall_bpf2bpf_hierarchy_fentry_entry:OK
+#442/23  tailcalls/tailcall_bpf2bpf_hierarchy_2:OK
+#442/24  tailcalls/tailcall_bpf2bpf_hierarchy_3:OK
+#442/25  tailcalls/tailcall_freplace:OK
+#442/26  tailcalls/tailcall_bpf2bpf_freplace:OK
+#442/27  tailcalls/tailcall_failure:OK
+#442/28  tailcalls/reject_tail_call_spin_lock:OK
+#442/29  tailcalls/reject_tail_call_rcu_lock:OK
+#442/30  tailcalls/reject_tail_call_preempt_lock:OK
+#442/31  tailcalls/reject_tail_call_ref:OK
+#442     tailcalls:OK
+Summary: 1/31 PASSED, 0 SKIPPED, 0 FAILED
 
-dw_pcie_ep_set_bar() knows the condition if we are dynamically reprogramming
-a BAR or not, and all the four cases are when dynamically reprogramming a BAR.
+# ./test_progs -t exceptions
+#105/1   exceptions/exception_throw_always_1:OK
+#105/2   exceptions/exception_throw_always_2:OK
+#105/3   exceptions/exception_throw_unwind_1:OK
+#105/4   exceptions/exception_throw_unwind_2:OK
+#105/5   exceptions/exception_throw_default:OK
+#105/6   exceptions/exception_throw_default_value:OK
+#105/7   exceptions/exception_tail_call:OK
+#105/8   exceptions/exception_ext:OK
+#105/9   exceptions/exception_ext_mod_cb_runtime:OK
+#105/10  exceptions/exception_throw_subprog:OK
+#105/11  exceptions/exception_assert_nz_gfunc:OK
+#105/12  exceptions/exception_assert_zero_gfunc:OK
+#105/13  exceptions/exception_assert_neg_gfunc:OK
+#105/14  exceptions/exception_assert_pos_gfunc:OK
+#105/15  exceptions/exception_assert_negeq_gfunc:OK
+#105/16  exceptions/exception_assert_poseq_gfunc:OK
+#105/17  exceptions/exception_assert_nz_gfunc_with:OK
+#105/18  exceptions/exception_assert_zero_gfunc_with:OK
+#105/19  exceptions/exception_assert_neg_gfunc_with:OK
+#105/20  exceptions/exception_assert_pos_gfunc_with:OK
+#105/21  exceptions/exception_assert_negeq_gfunc_with:OK
+#105/22  exceptions/exception_assert_poseq_gfunc_with:OK
+#105/23  exceptions/exception_bad_assert_nz_gfunc:OK
+#105/24  exceptions/exception_bad_assert_zero_gfunc:OK
+#105/25  exceptions/exception_bad_assert_neg_gfunc:OK
+#105/26  exceptions/exception_bad_assert_pos_gfunc:OK
+#105/27  exceptions/exception_bad_assert_negeq_gfunc:OK
+#105/28  exceptions/exception_bad_assert_poseq_gfunc:OK
+#105/29  exceptions/exception_bad_assert_nz_gfunc_with:OK
+#105/30  exceptions/exception_bad_assert_zero_gfunc_with:OK
+#105/31  exceptions/exception_bad_assert_neg_gfunc_with:OK
+#105/32  exceptions/exception_bad_assert_pos_gfunc_with:OK
+#105/33  exceptions/exception_bad_assert_negeq_gfunc_with:OK
+#105/34  exceptions/exception_bad_assert_poseq_gfunc_with:OK
+#105/35  exceptions/exception_assert_range:OK
+#105/36  exceptions/exception_assert_range_with:OK
+#105/37  exceptions/exception_bad_assert_range:OK
+#105/38  exceptions/exception_bad_assert_range_with:OK
+#105/39  exceptions/non-throwing fentry -> exception_cb:OK
+#105/40  exceptions/throwing fentry -> exception_cb:OK
+#105/41  exceptions/non-throwing fexit -> exception_cb:OK
+#105/42  exceptions/throwing fexit -> exception_cb:OK
+#105/43  exceptions/throwing extension (with custom cb) -> exception_cb:OK
+#105/44  exceptions/throwing extension -> global func in exception_cb:OK
+#105/45  exceptions/exception_ext_mod_cb_runtime:OK
+#105/46  exceptions/throwing extension (with custom cb) -> global func in exception_cb:OK
+#105/47  exceptions/exception_ext:OK
+#105/48  exceptions/non-throwing fentry -> non-throwing subprog:OK
+#105/49  exceptions/throwing fentry -> non-throwing subprog:OK
+#105/50  exceptions/non-throwing fentry -> throwing subprog:OK
+#105/51  exceptions/throwing fentry -> throwing subprog:OK
+#105/52  exceptions/non-throwing fexit -> non-throwing subprog:OK
+#105/53  exceptions/throwing fexit -> non-throwing subprog:OK
+#105/54  exceptions/non-throwing fexit -> throwing subprog:OK
+#105/55  exceptions/throwing fexit -> throwing subprog:OK
+#105/56  exceptions/non-throwing fmod_ret -> non-throwing subprog:OK
+#105/57  exceptions/non-throwing fmod_ret -> non-throwing global subprog:OK
+#105/58  exceptions/non-throwing extension -> non-throwing subprog:OK
+#105/59  exceptions/non-throwing extension -> throwing subprog:OK
+#105/60  exceptions/non-throwing extension -> non-throwing subprog:OK
+#105/61  exceptions/non-throwing extension -> throwing global subprog:OK
+#105/62  exceptions/throwing extension -> throwing global subprog:OK
+#105/63  exceptions/throwing extension -> non-throwing global subprog:OK
+#105/64  exceptions/non-throwing extension -> main subprog:OK
+#105/65  exceptions/throwing extension -> main subprog:OK
+#105/66  exceptions/reject_exception_cb_type_1:OK
+#105/67  exceptions/reject_exception_cb_type_2:OK
+#105/68  exceptions/reject_exception_cb_type_3:OK
+#105/69  exceptions/reject_exception_cb_type_4:OK
+#105/70  exceptions/reject_async_callback_throw:OK
+#105/71  exceptions/reject_with_lock:OK
+#105/72  exceptions/reject_subprog_with_lock:OK
+#105/73  exceptions/reject_with_rcu_read_lock:OK
+#105/74  exceptions/reject_subprog_with_rcu_read_lock:OK
+#105/75  exceptions/reject_with_rbtree_add_throw:OK
+#105/76  exceptions/reject_with_reference:OK
+#105/77  exceptions/reject_with_cb_reference:OK
+#105/78  exceptions/reject_with_cb:OK
+#105/79  exceptions/reject_with_subprog_reference:OK
+#105/80  exceptions/reject_throwing_exception_cb:OK
+#105/81  exceptions/reject_exception_cb_call_global_func:OK
+#105/82  exceptions/reject_exception_cb_call_static_func:OK
+#105/83  exceptions/reject_multiple_exception_cb:OK
+#105/84  exceptions/reject_exception_throw_cb:OK
+#105/85  exceptions/reject_exception_throw_cb_diff:OK
+#105/86  exceptions/reject_set_exception_cb_bad_ret1:OK
+#105/87  exceptions/reject_set_exception_cb_bad_ret2:OK
+#105/88  exceptions/check_assert_eq_int_min:OK
+#105/89  exceptions/check_assert_eq_int_max:OK
+#105/90  exceptions/check_assert_eq_zero:OK
+#105/91  exceptions/check_assert_eq_llong_min:OK
+#105/92  exceptions/check_assert_eq_llong_max:OK
+#105/93  exceptions/check_assert_lt_pos:OK
+#105/94  exceptions/check_assert_lt_zero:OK
+#105/95  exceptions/check_assert_lt_neg:OK
+#105/96  exceptions/check_assert_le_pos:OK
+#105/97  exceptions/check_assert_le_zero:OK
+#105/98  exceptions/check_assert_le_neg:OK
+#105/99  exceptions/check_assert_gt_pos:OK
+#105/100 exceptions/check_assert_gt_zero:OK
+#105/101 exceptions/check_assert_gt_neg:OK
+#105/102 exceptions/check_assert_ge_pos:OK
+#105/103 exceptions/check_assert_ge_zero:OK
+#105/104 exceptions/check_assert_ge_neg:OK
+#105/105 exceptions/check_assert_range_s64:OK
+#105/106 exceptions/check_assert_range_u64:OK
+#105/107 exceptions/check_assert_single_range_s64:OK
+#105/108 exceptions/check_assert_single_range_u64:OK
+#105/109 exceptions/check_assert_generic:OK
+#105/110 exceptions/check_assert_with_return:OK
+#105     exceptions:OK
+Summary: 1/110 PASSED, 0 SKIPPED, 0 FAILED
 
-I.e. instead of adding additional code to dw_pcie_ep_ib_atu_bar(), we do
-something like:
+[v1]: https://lore.kernel.org/all/20260105105212.136645-1-adubey@linux.ibm.com/
 
-diff --git a/drivers/pci/controller/dwc/pcie-designware-ep.c b/drivers/pci/controller/dwc/pcie-designware-ep.c
-index b2ea2c2c986f..63ae5471fe13 100644
---- a/drivers/pci/controller/dwc/pcie-designware-ep.c
-+++ b/drivers/pci/controller/dwc/pcie-designware-ep.c
-@@ -318,9 +318,6 @@ static int dw_pcie_ep_ib_atu_addr(struct dw_pcie_ep *ep, u8 func_no, int type,
-                return -EINVAL;
-        }
- 
--       /* Tear down any existing mappings before (re)programming. */
--       dw_pcie_ep_clear_ib_maps(ep, bar);
--
-        for (i = 0; i < epf_bar->num_submap; i++) {
-                off = submap[i].offset;
-                size = submap[i].size;
-@@ -571,6 +568,9 @@ static int dw_pcie_ep_set_bar(struct pci_epc *epc, u8 func_no, u8 vfunc_no,
-                    ep->epf_bar[bar]->flags != flags)
-                        return -EINVAL;
- 
-+               if (ep->epf_bar[bar]->num_submap || epf_bar->num_submap)
-+                       dw_pcie_ep_clear_ib_maps(ep, bar);
-+
-                /*
-                 * When dynamically changing a BAR, skip writing the BAR reg, as
-                 * that would clear the BAR's PCI address assigned by the host.
+Changes v1->v2:
+        Move tail_call_cnt to offset 0 in stack frame
+        Remove trampoline NVR remapping-patch3/6[v1]
 
+Abhishek Dubey (6):
+  powerpc64/bpf: Move tail_call_cnt to bottom of stack frame
+  powerpc64/bpf: Support tailcalls with subprogs
+  powerpc64/bpf: Tailcall handling with trampolines
+  powerpc64/bpf: Add arch_bpf_stack_walk() for BPF JIT
+  powerpc64/bpf: Support exceptions
+  powerpc64/bpf: Additional NVR handling for bpf_throw
 
+ arch/powerpc/net/bpf_jit.h        |  18 ++-
+ arch/powerpc/net/bpf_jit_comp.c   |  98 ++++++++----
+ arch/powerpc/net/bpf_jit_comp64.c | 240 ++++++++++++++++++++++++------
+ 3 files changed, 280 insertions(+), 76 deletions(-)
+
+-- 
+2.48.1
 
 
