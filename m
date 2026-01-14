@@ -1,80 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-15725-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15726-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F2C2D29FEA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jan 2026 11:53:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81517D29FEF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Jan 2026 12:12:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4drkyf2CHyz2x9M;
-	Wed, 14 Jan 2026 22:53:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=52.101.66.135 arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768388625;
-	cv=pass; b=VxQucE4aXAffmn0UJipXXt5kphpn3GqF31huV9uJFpoJiMVAOogVACO/C4FAxCRXbAomywbbBjePwC/o8cIPnGS5xhMZbH/4WA9LiKI+UJlH7xGvFLiYwl1GF9fEOqlLYkuUgO4b7ACaSvHgKKtxYP0mcUunpNUfostW8YKjAqlIbOTHukQ6uSoNUaW68g8Cz5/bm3M1SRa8TzL6qzvDcRi2V75EREZonXYybCmQn2D9YZDoL+U9Hwe/ViwBABzkovtKa5+scfQiNft6WpPoodK5OPqDKgTw5kDyR5E1gxYPbmr+LlZywCCGFaWpZ9Ay2RhscvK/g3Hmg9UXD2rYPQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768388625; c=relaxed/relaxed;
-	bh=F+u9hMLsJwpot15jGv+6DuobMLs1jlIWrW7gX77cKIo=;
-	h=Message-ID:Date:To:Cc:References:Subject:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=cDASU3dW9a6dcgqYaRyrhBKOYNxYbsgrPkfhEE2rE2NR6xZhuu0fl1ORdNEruiRzQnPcGTkq9zqUpvsCXBFnevdxkFFwdzS+lCizgVPuE0TvY3/rXaJpKJ7pYbnxuX8sx8q4E/qZzGd1C3rL43rtlgBAcv6PMOH3VkSd0ZLlQVZAEJ7eXg1Q+Lvd3Dm5F+0ztsPHcmfxuhwIMuSRefp5hlmpKFnIGNsrp/AjBv99MCyFR+SdkAAs/t7SRW1rLMEZWKH2RQ9VPt6SWsrQ5CR4C2YS6tfE10WZZL1Of/QYVGNZfdvHVkWKqMtBxTnc2MTAJNs359Zt1hk3KoXZVSe4/w==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gocontroll.com; dkim=pass (2048-bit key; unprotected) header.d=gocontrollcom.onmicrosoft.com header.i=@gocontrollcom.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-gocontrollcom-onmicrosoft-com header.b=aOawUrSy; dkim-atps=neutral; spf=pass (client-ip=52.101.66.135; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=maudspierings@gocontroll.com; receiver=lists.ozlabs.org) smtp.mailfrom=gocontroll.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gocontroll.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4drlP60q6fz2xHW;
+	Wed, 14 Jan 2026 23:12:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768392762;
+	cv=none; b=RckKtzE9YCFQ7h9ApGW5H+9fEpe5wPB3FaAzdioGx4GmHXlA/qGGy/BWb5EbIwn5HzxyKQaFYQwSejYheQTCBImHXtd4E4DztbwLzkrmnIv1xV0oCgX1U28y5KkQvdBYHD0Oq3aZBd/ppyNjbfUywVvbQOiGCtS67XnQsPVYY5kGNlXA9cNjTThjg483K9wfQKFBZ9I73gyKjKHNn67HGqNiKiJftqgmBriSGBCgnn+FG080WC+e+Okki8TNZFogz3XJF+KW+cmmK7ZP4YKxn4JRbQQcRULykW7lqFPbFhXWxKy08PW2Cf2AolkGJP5QnKX7KC3UlJPvRSvw8AH4pQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1768392762; c=relaxed/relaxed;
+	bh=pzHVxvE5ODBHsgsz8pyhe6cG5oMDjzw2x+Um2O9cGO8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=faLbklu44sXikvdVVWwiLWs+N4O8u1Np8rrAicj6oBUNFRoxdQPzQJxzNR0LKzObJDNgNXBE8sOTVXQ+KSNp0SZTfB5+rAr9dGCOx9uHL2dYVgjLgPr5kw3fiPn5OW/Tb9ZgWjNdqVC7BxhhjEfyffj3mbfzcCJMK1MF+Je6NL+HAeNdabxvWbfHTC7aMqqFYgYgBKf2jjm7g+8V/mKhF06jTm9ETH1uxv4Bsjlpgu0U7ev2livdmDcgtC2RB3deVQjnYo4esf5kc1hoGlzQkIzai+yMW580GjeODSwm97mgm9dDBDm+cZ8y1SDPNu+BKNe++AgX+Nx7kP4lZIIZIA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lMJWfhbE; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=dengler@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gocontrollcom.onmicrosoft.com header.i=@gocontrollcom.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-gocontrollcom-onmicrosoft-com header.b=aOawUrSy;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lMJWfhbE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gocontroll.com (client-ip=52.101.66.135; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=maudspierings@gocontroll.com; receiver=lists.ozlabs.org)
-Received: from DUZPR83CU001.outbound.protection.outlook.com (mail-northeuropeazon11022135.outbound.protection.outlook.com [52.101.66.135])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=dengler@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4drjsW2L2tz2xFn
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2026 22:03:42 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=WSQVIdQCnqBYQva2mPOLq6GWThdIrpylB0K+b1iQ+Snx9JbdfxtdTneSobNGBQxjopTX+y8PKdxUOzu64YJb6gbEvccq7RpShpbC17I2BNoaGCKYfS9LADH6z5TCRFnMFTO8ega25UjrNGAklMdo0esAHz0MpWzpD4Jx4kk9y5N14SR+ZN0da5LSLEv1XL0lnb+ON+ff/rEA/apgfjGxIOUfTT3h/LAz501VuaxRCRHiEAivweEXT0zw/5xH+elzdmTH9qe+UqtQzmQT1/RvScfKV5qQmZvd0xHAOzxJG8P7iOiPJBjZbL5keqJMdtT6SM8Fgl8Pezy9dctLSRAt5w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=F+u9hMLsJwpot15jGv+6DuobMLs1jlIWrW7gX77cKIo=;
- b=ZtWnw/xCpvmeONgcaa+VmfcYdQpqLGkN6hbJd0iCs8196yMIVlKJ7kHQmhOmdAgsm3g4c7fZ4LY6lNIwq7h5ud7PyAXOF1qf769WO0RXFKCfVuKf0WAly1tUnRqSTtK/jh+UxeCRQ6pdAcpBn1xnVgnxTP7n93hpNQ5IHEj8QsmRWINcfUKIzzm8lcjncsLB+ydVVRK64fYI6r2COIg8X/P6lXvPGjVDrqqOQIQfdmFhRCkyNb3GlEr2vecjet3u/8al6CecuHZzc0GZ8QhG4bvOzmx9wERW9GwmS2/yKUA0da7gEbxastSUrVbih6CeglPQkGEAJw3cu7Gh3kozIw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=gocontroll.com; dmarc=pass action=none
- header.from=gocontroll.com; dkim=pass header.d=gocontroll.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gocontrollcom.onmicrosoft.com; s=selector1-gocontrollcom-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=F+u9hMLsJwpot15jGv+6DuobMLs1jlIWrW7gX77cKIo=;
- b=aOawUrSy+6wGun7WNyqg1M7gCsp1bSUnvYVK8kiqrMZhk13KuelBTegR05SPdAr+L21DkxcBBTN3XQ/x3+TwnCzzFHBC6My+9a8ryZKhGnQsWuSxmR55MzuKCgrob7lvP3dpmiWgT4hWnH/uKZ0/Tjaj/uI7V4L4FgvemYPvgxf57/H0iB7CCQ9Ybpb36xlZ9hFkzngnC22XBML+puN9TLuf3fIhQ1CYiLh6uR0kEflQn9Jzz1pk0j+jJMAKcsWEsOsNWxFnGKM19iUC5hCeIsdarnIM52ocZlVcLwqjnNDwh0gGSrfAfNwl1vSqDwvDpRbVjSubQyZ0QGwjsX+eog==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=gocontroll.com;
-Received: from AMBPR04MB11741.eurprd04.prod.outlook.com (2603:10a6:20b:6f3::7)
- by DU7PR04MB11233.eurprd04.prod.outlook.com (2603:10a6:10:5b2::21) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9499.7; Wed, 14 Jan
- 2026 11:03:01 +0000
-Received: from AMBPR04MB11741.eurprd04.prod.outlook.com
- ([fe80::ee70:7a62:e9f:12b7]) by AMBPR04MB11741.eurprd04.prod.outlook.com
- ([fe80::ee70:7a62:e9f:12b7%7]) with mapi id 15.20.9499.005; Wed, 14 Jan 2026
- 11:03:01 +0000
-Message-ID: <8e86fc06-b162-4591-bc8c-e4b2fd487855@gocontroll.com>
-Date: Wed, 14 Jan 2026 12:03:00 +0100
-User-Agent: Mozilla Thunderbird
-To: shengjiu.wang@nxp.com
-Cc: Xiubo.Lee@gmail.com, broonie@kernel.org, conor+dt@kernel.org,
- devicetree@vger.kernel.org, festevam@gmail.com, krzk+dt@kernel.org,
- lgirdwood@gmail.com, linux-kernel@vger.kernel.org,
- linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- nicoleotsuka@gmail.com, perex@perex.cz, robh@kernel.org,
- shengjiu.wang@gmail.com, tiwai@suse.com
-References: <20260114100655.3885926-3-shengjiu.wang@nxp.com>
-Subject: Re: [PATCH 2/2] ASoC: fsl_sai: Add support for i.MX952 platform
-Content-Language: en-US
-From: Maud Spierings <maudspierings@gocontroll.com>
-In-Reply-To: <20260114100655.3885926-3-shengjiu.wang@nxp.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: AM8P190CA0005.EURP190.PROD.OUTLOOK.COM
- (2603:10a6:20b:219::10) To AMBPR04MB11741.eurprd04.prod.outlook.com
- (2603:10a6:20b:6f3::7)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4drlP44qJqz2xMQ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Jan 2026 23:12:39 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 60E6dduV001269;
+	Wed, 14 Jan 2026 12:12:24 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=pzHVxv
+	E5ODBHsgsz8pyhe6cG5oMDjzw2x+Um2O9cGO8=; b=lMJWfhbEbMAC0y/nZY42B/
+	5YaagzgIChz+c+hXT+p0sPjrIsQKN01YUhffjjGLx0tcgLpD555fPceEiis/cMPo
+	Ud+G/Q9qOY9L/BVKtJsa6PM7nPLQ2li2e5HZ1Fq0/wc1cTTUI/2bgTGdegdjgLMg
+	zr8PcN7jyW7myFFQBc+mnSiZIqK3UBp2rwlFjaGbBtFtH75Enu8vC2GfCCWGS/lt
+	IDWXQCvJxHqU4aNYABYn2I68yeuDhL+ER6cPDB/3djfxAenBiZERQZim3y2zwN62
+	Q+vsqMpVm+LV40sb9OoEMQXKU2l8r41K+Yb0TalBh3Lydh2cRDmoTWd1RStYZX+Q
+	==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4bkc6h91dy-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 14 Jan 2026 12:12:23 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 60E8Y3X7031269;
+	Wed, 14 Jan 2026 12:12:23 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4bm3t1sjyu-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 14 Jan 2026 12:12:22 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 60ECCLDO44564742
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 14 Jan 2026 12:12:21 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3811E20043;
+	Wed, 14 Jan 2026 12:12:21 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E59C620040;
+	Wed, 14 Jan 2026 12:12:20 +0000 (GMT)
+Received: from [9.111.193.9] (unknown [9.111.193.9])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 14 Jan 2026 12:12:20 +0000 (GMT)
+Message-ID: <f31a9a3f-ec9a-44e1-85ae-c0e0391ff0fc@linux.ibm.com>
+Date: Wed, 14 Jan 2026 13:12:20 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,156 +80,111 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: AMBPR04MB11741:EE_|DU7PR04MB11233:EE_
-X-MS-Office365-Filtering-Correlation-Id: 4e309377-5f6e-4960-ef2f-08de535c7be7
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|10070799003|7416014|376014|366016|7053199007;
-X-Microsoft-Antispam-Message-Info:
-	=?utf-8?B?YUhsTUFPd3RmdTlLRjNkaGVhOGZsSzExdFE5YkNSOTJlMGFkbFRFSDFsaDRy?=
- =?utf-8?B?RnpkT2tVU0JDa25GQm9hT3U5QmZaVFVBT0VGMnVaS0Z3N2ZXL2JDdUxBOUFP?=
- =?utf-8?B?MGZ2RU1jdE1ON2Z2L0FGalJMcUt3UFZjM0VrUGJvT095MHdjdnRwSm5PQjNi?=
- =?utf-8?B?clEzUlVKdVpUMTd4UTdTQXVaNzM2TnREdFBjaGlKV3lOTkJCbzVwTjFOWFNG?=
- =?utf-8?B?amcwdlJ0dW1iN2lrcGZiRnh1MVQrdXV6anNaMnk4a0dFUVhoMjd3aVZQK1oz?=
- =?utf-8?B?Y1NBWFZFQlp6SGFZaWhWY1Y4WG04ZlJrR01xOEVDVVlteng1Y2RhZ2tnbWdt?=
- =?utf-8?B?b1VMWnJqalE1TWNDQ2hHVk04aXp6Nk5WY2VzNXB0QTV2SXJCV1FMRHVZaHdK?=
- =?utf-8?B?RE1WbTZsTDd1bzlnVkQ1Y3cxOW5KbzZxVVBybVVxOTc5V2hyVHBqUUQ1NWI0?=
- =?utf-8?B?NThNcHd4K0dDc3hjVHF3ZWhxZnY0QWM2L1FGOGlTWm80UU5NU25RMmUvbnlj?=
- =?utf-8?B?MXVqT2RKMEk4N1htMXIyUUtwdTd5ZlVYQzdzbTVud2UxVC9hK0owa3NpNXE1?=
- =?utf-8?B?aEhMdW5lY2UvVWdaMW9KK2RUR1VUU1JjYXMveVVWR2hWQjlYakFtWkJOeSs2?=
- =?utf-8?B?Ylorcm1WOU9WZ1ZXYXBkSjMvQUdNRStXekIxMG9ObEFZNXNydUZjSk1yZzVO?=
- =?utf-8?B?NjV3V3VBZ1ZpMnQrd3BsVTU0SGpYT2xPRmJRcThNY0pEdVNFMFdCSXhKbERL?=
- =?utf-8?B?UjE5SmN1d0NRMUpTS3BscmJOa0FkSXRIa0pVcEdYNnhpMFpycHRYck5QbzBQ?=
- =?utf-8?B?Z0w5ZGVZdzRnUGVQQmJVUjlFZjR1SUx2NHEyYmJ3aUZoNXF0MnV5TzJaNUJH?=
- =?utf-8?B?QldnbU1WZHhvRG5ZOGpCejlHR3ptaC9NR25MQUNZNWJCZmN0djlnR2srRVlo?=
- =?utf-8?B?UGNKVjNxM2owYXpRRFlUVUxNaW1mUHVtVTFQVk14Y2ZMWFlFbDkyVit3VVVp?=
- =?utf-8?B?ZlBBZ2kyam1GYlE1TUFQU2cxQmk5OVJkK1lxZ0pVb3R6WFFtbFBLS1ZWNWpQ?=
- =?utf-8?B?MnNUdVhBUWFZSHdLK1RydHVvSmZwZStVbFc1ZkxmbUFuTHVSSnhwSW9tUEl3?=
- =?utf-8?B?cjdFUkxrRkpvcHhlMXE5U0gvLzdRbFZVakkvcWFrOGJYL0hlb0cwK2xqUzRr?=
- =?utf-8?B?VHN1S05Xa0diS05yeGRuV0svVUs0ZlNXNmM1YWk4VjhCWi9ZVW5GREdjN09R?=
- =?utf-8?B?VEhYTncxcmtHaTg1NUdjLzNVd0Ivay9rc01NRlBiU2ZyVU1PaVgvUThIWmhY?=
- =?utf-8?B?L2xRRElSeFkwTTBUam8wR0c4L2dXcEFVakxkbzE4TmxtRXVkYktQWlNkc3k2?=
- =?utf-8?B?VXB2QkNVcmJYMjh3YmwrQkpTREE4V3ZROVpZVTlXc0FhQU9WbTFSaENvdmZs?=
- =?utf-8?B?bmhiTGhPS2VXOXFvV2RVR3RDc1crTVhJeVFxWTl0MmpFY2pJcmQwbTUyQW5K?=
- =?utf-8?B?ZFJieHhHUWZld0g4bHBIMmZ1THBXaUZZc2ZaRWVxK0FIRDFabGpsQVhKaFhh?=
- =?utf-8?B?TGF5NDR0c1JwOStsTVNKMGlwUnQzb1poSkV3aExXcnBvU01DSnh6dXdRWE0r?=
- =?utf-8?B?ekZTSWp3RzZ6NnF3TjFDdlVjYm1NVU5IMmloOXhhb2NVMGNrTmNFdHB1aFlP?=
- =?utf-8?B?cHdLMjNhUFVuZWpYYWt6dU9DTld4Zi9haVZvdjJPNjFvd0gvT05sc0F3MWJm?=
- =?utf-8?B?SGxjM3dNbVhlazd3SDE5UmZmRVl1b0JLMm1hcmxwUWlmOXcwazZsNFFIM2w5?=
- =?utf-8?B?amZuNEY1TkI5N3N4dnBPTndFelVqai9VS05EMkVTaU5HTWN3WDJ4cDZyOEl6?=
- =?utf-8?B?Tk9zQ3k0L2RwMHBieGltSkk3NXk2c09sbkhkbHJnZDZCWGNYaFVxbENUc0Vj?=
- =?utf-8?B?OWI5UWhON3VTTUgrNFhNZlhObVpHbUVkMVY1VGt3V2ZrTEF4TkNuYXJxQVJK?=
- =?utf-8?B?VEpvL0lSMGhDL3JGc2RaMUNkdXc5Y3llS2h5NlM3akltRjZtT2JhdjQ4Mnpr?=
- =?utf-8?B?Z2dWbVJjdXdveDN6ak9JeVBBc28zcjIvTXdvMmhBNkVUVk5zRTBGU21DbHYx?=
- =?utf-8?Q?yKvY=3D?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AMBPR04MB11741.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(10070799003)(7416014)(376014)(366016)(7053199007);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?aVU3eGk3cDJMRDU0U0xVUUtuMnpWYi8wSW5zYi83Q2g2ZGxOcXp2cm9oRTUy?=
- =?utf-8?B?MmJpdkluaUY4N2JRYUo3NEVvZEg2RWNOc2xtWDhwclIwSUtyc2Y1TU5OUUkw?=
- =?utf-8?B?NTVFR2QrMUo4U0hyRW1CZjRVKzhyY1NNUGdvQVZHK1liS2tnbExNUEludFJu?=
- =?utf-8?B?U1p0VU5sdHZyWWQ3VjdRWmxPaTg1ZEhSZTgvNU1hSk5uemptbjRxWk1GK0Qy?=
- =?utf-8?B?dDdmVHN2SEhDQWV1ZUx2bEluVys1TWFNaWg3TlhYZEtNTWZSWmU0OHU3U0o0?=
- =?utf-8?B?amxhNW91WXdoV0VCZXlyT25FRi9xYWZkam1BMHBHZ1ZvNitxMGxwT2g0bTJC?=
- =?utf-8?B?UDJHR3p4alNJTTgyWVYvckVQdFYxZlFNVTViNWJROVMyWCs4WlRvKzJJdkwv?=
- =?utf-8?B?KzNYMmJib2ROaVVXNlJOQVRueEd1bklpM0ZBWUdhek9rd2ZmUGlmUTlmQkNj?=
- =?utf-8?B?N3d2enlPV0VneU9hNFVZekZ4azkyaU95N1Y1NmVFekZTRG43bk9Cckh2ZFA2?=
- =?utf-8?B?Y08xRnRzbnlsNzNxTTA1YW1SQUpEaDFvUm9GNGFGT1g4UzVubUFsKzkvWFJK?=
- =?utf-8?B?dm5iaXhBSGRMdytxQkpXY3EvcWt5WkpwbFJEMnAyZXcvazY1RGRZUWM4Tk1F?=
- =?utf-8?B?ZzdFcUhHdm1Kd2hWc0JibGZwNjRWaXhzclZGS2YvbGlheGVUTEdpdmM4NDVB?=
- =?utf-8?B?SGlPQnNJMUlSTkNjTXJRV1dFL0h5ZEVSZDZqaGkxMkRlQkMzdjhTZWNxR2dT?=
- =?utf-8?B?cXVTMHNvc1J3L2QrZ0F5NFNhdHNFWitUM2dxSCtnQ1lXZGlEQ3BKbGR4UU5r?=
- =?utf-8?B?c1pjdGhJeGh1SmhyemNaOVZsTkkya3dMNGg2dlorcVl3amw1NGJBbjNadTRr?=
- =?utf-8?B?QnlWQkZ1TitMTzgxaFBPOW5GOHh3UC9NUUlUT0FZbEFTSDVjTnNQUk1nQWIy?=
- =?utf-8?B?WUE3ekFSb0pRbGM2YWtUSVBvdXhkTDNocW93UzQrMnZkREV0S1k0emp5b0tK?=
- =?utf-8?B?TWtqcXpyVjM1ZFJ4NWpCeUd0cDVTL0JjUG0rU1RrdnVCQkcvUzBUdmwzVVVK?=
- =?utf-8?B?UzZtVXpIemZ6eHpCV2lhYzhWN3k5YmcrWGE2TFNicFpGUXN0ZDMvZWpxUUZD?=
- =?utf-8?B?TWpGK2RjSjFpYkFET1hXMkx2NjVWNmdobVN3dDBGSHArbWpEci9DQnNZR2Jo?=
- =?utf-8?B?R1paM0ZzMEpKTWp2Y3dFc0JDWFBSaWtQUjZxZlVEb0UrV1l4ZVBWTTVtMjJ0?=
- =?utf-8?B?MS9PYTNDWDg3VTV3eGlLTitUVGZzT3hVRlhPbm40MDVGN3ZXeTA0WjRHSU9E?=
- =?utf-8?B?RW9hUmxuVXN2a09rQ2NUZlhDUy92MVV1TW1zd3NPdDhUMk9FOXFBZjJMUkdy?=
- =?utf-8?B?RXhFZWpoejY2MVRPOGdPRHplWWJ6MUZ6b2tKMUhUblpyM0gvWWZ2LzRuRkdl?=
- =?utf-8?B?VTlTMHR0YTgwOERmQ2FmLzcyYWo1NUpJdzFPek1YQW55QnRPT3g3azkzVVZD?=
- =?utf-8?B?WENEQU1DR0lwVzVqVXhLS3A5Q0Y1QmtrREN2cXUwcFlFbzhGRFJiZ3lZZTZ5?=
- =?utf-8?B?eGVFcGtiWmZBZVlpNmkyRWcramdYM2hLVnRRR2ZxanF2RG93bnNjc1NGb0pC?=
- =?utf-8?B?Q2FIYlZLTWowZjNJME5EUUU5eWxBdFZBMUdTc2NuNE02U05xeVVEWDY2bnR6?=
- =?utf-8?B?bWd0cEQ1Q0hYYThXVVF4RzE3TCtWRFVtNUxsQXdjSUYrbVZxVUtMNDNZMnJM?=
- =?utf-8?B?WnFhQVNXSmlFNFBjUjJnV0dSZmFnSHgxcTNQUWhvT0ZDVUdiUTA0UzI3TWxs?=
- =?utf-8?B?MzRGZVFpTGNUalB6N2UrbkZPUGRxaEIzd3AwbXZQeGZ2MUcyK0FGZ3JYbTdS?=
- =?utf-8?B?M0w5OXZuWUhuSDFlRDZKNnQ4MEl2eHZ3U0N6eExtVE5xa3RHYmJoUzByWUc0?=
- =?utf-8?B?NUR1NUNGT0wxa0g0M1VXdElhR3VXYlZ5b3hWR2ZqSFBzRmVLYWNBOHMycWY0?=
- =?utf-8?B?aXN2OU54OW5seS9KMVJKSndmSlVWbVFoMjhCZmdINFRBc2plTitKODFHUDk1?=
- =?utf-8?B?TVp0UEl6ZzlGZ0UrWHd2bEhDQzdvL3ZoM2ZhZkRNYzdhY0E3U3crSmhKa2cv?=
- =?utf-8?B?MWtpanY2ZDFkWjdmemY0bHI1Sm1Zb3Y2MUd4Zy9FUUV5MzBqNUkyUG5sdXBP?=
- =?utf-8?B?di8xSG1BSk9jMmN2SzJYcnkzQU8vVFpKL1ROeGhxamlLVUFkL0tpMTF6dzZF?=
- =?utf-8?B?OFdOUDlTK0NKVkl5Z1V0cWQ2N1QzS0huVlNHeUtIMWxsSCtlczVJaWhJRUY3?=
- =?utf-8?B?WTZYaFFKbDZPWEorZDE5QmltUUdUWTBmV1RJV3EzYzdFNXZZRGVLTVRaNGRI?=
- =?utf-8?Q?5k3Yo4H4/FopwUaqeDnbsj9DVyMPkId3uYGzeOCbFHJAC?=
-X-MS-Exchange-AntiSpam-MessageData-1: FF9cJrVkJvgP6MocSq6hTV91Cd0yMRouqBA=
-X-OriginatorOrg: gocontroll.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 4e309377-5f6e-4960-ef2f-08de535c7be7
-X-MS-Exchange-CrossTenant-AuthSource: AMBPR04MB11741.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Jan 2026 11:03:01.5370
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4c8512ff-bac0-4d26-919a-ee6a4cecfc9d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 9az+ATJjfOEBcALWHzL9Vwqy5ldZL0wlVRmUPS2ozF8M5FxvZ5KwP8uCbo6mm2Gq8ul8A8nmNW0KLDna+NfL3TSQuH+09n7J5x547JM1b9M=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU7PR04MB11233
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 15/36] lib/crypto: s390/aes: Migrate optimized code into
+ library
+To: Eric Biggers <ebiggers@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Ard Biesheuvel <ardb@kernel.org>,
+        "Jason A . Donenfeld" <Jason@zx2c4.com>,
+        Herbert Xu <herbert@gondor.apana.org.au>,
+        linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+        linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+        sparclinux@vger.kernel.org, x86@kernel.org,
+        Harald Freudenberger <freude@linux.ibm.com>,
+        linux-crypto@vger.kernel.org
+References: <20260105051311.1607207-1-ebiggers@kernel.org>
+ <20260105051311.1607207-16-ebiggers@kernel.org>
+ <167cbd49-e0ba-4b1d-a724-e64ab6ee863c@linux.ibm.com>
+ <20260107203458.GA2200@quark>
+From: Holger Dengler <dengler@linux.ibm.com>
+Content-Language: de-DE
+In-Reply-To: <20260107203458.GA2200@quark>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 0JISleG8ICtApQmeXiUHRBk2QsRrV-GL
+X-Proofpoint-ORIG-GUID: 0JISleG8ICtApQmeXiUHRBk2QsRrV-GL
+X-Authority-Analysis: v=2.4 cv=TaibdBQh c=1 sm=1 tr=0 ts=69678827 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=vUbySO9Y5rIA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=ZiP0gMQ4KlzIHEEEXi0A:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTE0MDA5OCBTYWx0ZWRfX5A+i08xANtZk
+ Fe+bZobRq26jJWk184c/YDGBQCyOVVLaLTd7R8/xRa2F7V2TV8Bg+SsBN/h5dn5SfGzmh/wYuz5
+ w30g6R0CLgIL1jn/JcBYwYqbkxyZpkEfj16M+S4Affu9dsapUUHK0CVqv+IhI4UyQQIrYFEEB0Z
+ 3B9m8UtdjEXn9TKdLvp2EtGA7bwr8Alb3lyx1W8g1FvkDLqWZH8pNiHlGy3bUSdyIYaBBzJ6Ksu
+ 0hIrAA0Vz1lE+E3NgThKtT8Ny5YVbfRradjECMhYhDl9l3y2VMv+nwgy2ECrru+8J9islTgzfan
+ nQJxf6ZdIBhgXVxQNe9ke1h11g9yU3MtkbRg2UKG439sbAXH7R/Fn6hMC6skQh5adHr6hOm9T9R
+ /VzDc94a0vrwPKWt5A5rwL1Wgu+r0uvCX12NNuyZVH782uArTzidCMQGvU81ZBbcWtx+kFbgpbO
+ RBT7auXbzpAuG57LgUg==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2026-01-14_03,2026-01-09_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 phishscore=0 impostorscore=0 bulkscore=0 clxscore=1015
+ suspectscore=0 priorityscore=1501 malwarescore=0 lowpriorityscore=0
+ spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.19.0-2512120000
+ definitions=main-2601140098
 
+On 07/01/2026 21:34, Eric Biggers wrote:
+> On Wed, Jan 07, 2026 at 08:41:02AM +0100, Holger Dengler wrote:
+>> Hi Eric,
+>>
+>> first of all: happy New Year! ANd thanks for the series.
+>>
+>> On 05/01/2026 06:12, Eric Biggers wrote:
+>>> Implement aes_preparekey_arch(), aes_encrypt_arch(), and 
+>>> aes_decrypt_arch() using the CPACF AES instructions.
+>>
+>> I'm not sure, it it makes sense to implement this on s390 at all. The CPACF
+>> instructions cover full modes of operations and are  to process more
+>> than one cipher-block-size (*). For single-block operations, the performance
+>> might be worth than using the generic functions. I will look into it and do
+>> some performance tests. If there is a possibility to plug-in to the level
+>> where the modes of operation are implemented, it would make much more sense
+>> for s390.
+>>
+>> (*) Yes, it's a bit uncommon, but the CPACF instructions on s390 can process
+>> multiple block with a single instruction call! They are so called long running
+>> instructions.
 > 
-> Add compatible string and specific soc data to support SAI on i.MX952
-> platform.
+> I'm happy to drop the CPACF single-block AES code if it's not
+> worthwhile.  I included it only because arch/s390/crypto/ already has
+> such code.  Since I'm making it so that the crypto_cipher API simply
+> wraps the library API, if this code is not brought into the library it
+> will effectively be dropped.  You had pushed back the last time I
+> proposed dropping one of the s390 optimizations, even a fairly minor one
+> (https://lore.kernel.org/linux-crypto/51fc91b6-3a6e-44f7-ae93-aef0bcb48964@linux.ibm.com/).
 > 
-> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-> ---
->  sound/soc/fsl/fsl_sai.c | 13 +++++++++++++
->  1 file changed, 13 insertions(+)
-> 
-> diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-> index 2fa14fbdfe1a..c025041dc079 100644
-> --- a/sound/soc/fsl/fsl_sai.c
-> +++ b/sound/soc/fsl/fsl_sai.c
-> @@ -1765,6 +1765,18 @@ static const struct fsl_sai_soc_data fsl_sai_imx95_data = {
->  	.max_burst = {8, 8},
->  };
->  
-> +static const struct fsl_sai_soc_data fsl_sai_imx952_data = {
-> +	.use_imx_pcm = true,
-> +	.use_edma = true,
-> +	.fifo_depth = 128,
-> +	.reg_offset = 8,
-> +	.mclk0_is_mclk1 = false,
-> +	.pins = 8,
-> +	.flags = 0,
-> +	.max_register = FSL_SAI_MCTL,
-> +	.max_burst = {8, 8},
-> +};
-> +
->  static const struct of_device_id fsl_sai_ids[] = {
->  	{ .compatible = "fsl,vf610-sai", .data = &fsl_sai_vf610_data },
->  	{ .compatible = "fsl,imx6sx-sai", .data = &fsl_sai_imx6sx_data },
-> @@ -1778,6 +1790,7 @@ static const struct of_device_id fsl_sai_ids[] = {
->  	{ .compatible = "fsl,imx8mn-sai", .data = &fsl_sai_imx8mn_data },
->  	{ .compatible = "fsl,imx93-sai", .data = &fsl_sai_imx93_data },
->  	{ .compatible = "fsl,imx95-sai", .data = &fsl_sai_imx95_data },
-> +	{ .compatible = "fsl,imx952-sai", .data = &fsl_sai_imx952_data },
->  	{ /* sentinel */ }
->  };
->  MODULE_DEVICE_TABLE(of, fsl_sai_ids);
-> -- 
-> 2.34.1
+> But I have no way to test or benchmark the s390 code myself.  If the
+> CPACF single-block AES en/decryption code isn't worthwhile, there's no
+> reason to keep it, so I'll remove it.
 
-scratch my comment on patch 1, drop this patch. the new data struct is 
-the exact same as the imx95 one.
+My assumtion, that the aes single-block-operation operation is slower in CPACF
+than in software, seems to be wrong. I did some measurements on different
+machines and it turns out, that it is up to ~2x faster doing it in CPACF.
 
-Keep the fallback compatible and let it match against that instead of 
-introducing a new one in the driver.
+So, sorry for the noise. Please leave your s390 implementation as it is.
 
-Kind regards,
-Maud
+PS: I have a simple kunit test for aes (KAT and benchmark for each direction
+and key-size). I'll send it in a separate reply. Feel free to pick it.
+
+> As for AES modes, later patchsets are going to introduce
+> architecture-optimized AES modes into the library, and the traditional
+> crypto API for those modes will similarly be reimplemented on top of it.
+> This patchset just focuses on the existing library API for key expansion
+> and single block en/decryption as a first step.  (As with the
+> traditional API, single block en/decryption is needed as a fallback to
+> handle any modes that don't have a standalone implementation.)
+
+Ok. So we'll wait for upcoming patchsets.
+
+-- 
+Mit freundlichen Grüßen / Kind regards
+Holger Dengler
+--
+IBM Systems, Linux on IBM Z Development
+dengler@linux.ibm.com
+
 
