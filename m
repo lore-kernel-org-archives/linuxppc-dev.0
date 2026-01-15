@@ -1,90 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-15825-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15826-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42D0FD41173
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jan 2026 11:57:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A140D41176
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Jan 2026 12:01:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dsM166TY7z2yFm;
-	Thu, 15 Jan 2026 22:57:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768478250;
-	cv=none; b=RqjSDpUP8Uu7kqbSnb6fvJN1J3o/xtOuLQq8EIk0tANER2A1Dx8gZnWIpZFajCVqVEOXADfyCa35Zu6yjjQczHv4Um8mGzRKlTbJyeS6qobw1HWjfmhcodnxhTex7xwx702D05VR8geKqq9Ei5Fp8RY3tiLlYg05K1CZWcsjE8V0F5Nz8heZXlejF3VoarMx4rIe3XgkveqQVmKfBXX1+8Mf+APBZctREb5TCjbrh666f94Uto/DSFr8yGjCTROE7xHFtNjrIYeEgnkY9gWL9Zul4Mg+zq8qIRyxw2VUc4BLYaJ8VTcRrFj2dQRibhNiqv0i79SIh2fqezXHAjJugA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dsM6B6Qryz2yFm;
+	Thu, 15 Jan 2026 23:01:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768478514;
+	cv=none; b=H0g+SzoU+EOy6leuSNQFiqP9K3lfCX+Ut1jEeX5R4avfHfgjyqATev9rBzte/4Po4goh8dlmVwizrEu1rv3An50JphMFrmlR+JqhwXJ1gmCQ83vWSp6nLXE0eScXLbRFeGo+FrvphvOSoOv3lT922Z/AJHR2EXgmuRSzyNez3hSx2GeG/yauR3IX01aW7B20mEBQFhq/uMir51qLjQ5t4fWvKBM3IoFaKEEkhnWYz9Pmco6YRYaWzsOaYOsNR5nxLSZNbIkVMuEc+WbexcFO1FCXbCq0KLb7rtFaqyUSD6t632kbHu+9wtEZ2vwwMOwGGPedj++nTR45TnQHiRG/DA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768478250; c=relaxed/relaxed;
-	bh=E9q9MwLx+QxB8gPZoWTVfIF6m08d+i7ReyBrKfC6Vc8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=YTIc/5jl//1Zq19I1HpJLuoxVtS1poiijJRXVridLCXnQs4JKU8z/UDMoFk6k06iQSDncwyl6X773dRyJJVkS2+2aPDJb65fLjP5+sPyOJqtCqhKOfcskIr0K2rZansG2DLQ/mxk7Kv/6v1NbHyTMkZrccy7YbCmVCMzMgwSIp3+wJ/gXDuoUO93Hri0zsGoYgNyJFqtmBbwg9CounAz1A6GySSxvS45kcMoNv279k8zt825UdPj6LVmViMv/TEyFm8PV+C7FMYQNeQmAJzszmxerCMD+fKDBbGvor2GC17mBC+hCPQ3Ph8vfli1Uq4IbMXKi0jefS0Q0BV/L85gNw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kYTAEQBU; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kYTAEQBU;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1768478514; c=relaxed/relaxed;
+	bh=Ud/J85QV+BEQ0bP0JtZ4ngTyr5lpqKGqcXK2k5Mpbe4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=SUyfPZEZFCpURbDBObwEcV7RcS+yZGmuhBcqHFpvk9BsnnPVaRyl0nlyT7/kibnVS4fEvy4n4EyCD/DSiNzTYqDmZOM07egXxsMhFM+/ZKPzGbcgKsZcQZeiBRo9/qDMTIC78cCLlyqqFzCzh96whF73hULfI+EPkNH9xaZXB5u2OyF/pnsANut0PSz9nzBgOL/12FdTQkdpLo0WU3syaKC38xfK7CifowZo9Bw24Xyaiu9yDMX7MaJFw+WCS9oJOfh8jbKHdwvu4LsAlb5nV+Cm0xhR+ljEslRLHLTwwl+PTxRGpkgjIfTmeokBwnHwnUMCx7wVb0m0r+Y5sdsKHg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=vbabka@suse.cz; receiver=lists.ozlabs.org) smtp.mailfrom=suse.cz
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=vbabka@suse.cz; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dsM160qGlz2xNg
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2026 22:57:29 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 60F9L1oc026309;
-	Thu, 15 Jan 2026 10:05:25 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=E9q9MwLx+QxB8gPZo
-	WTVfIF6m08d+i7ReyBrKfC6Vc8=; b=kYTAEQBUPxNFx8H43mN1u4tQene/B3Ya/
-	VFVSd3mtymJlc2tMM/cAHdITXvH9wWW8vc5nfL9vuG3Jze0yy3/HTdc01PTUYnrt
-	AYBz1w686hFA3XTHue9TmBFLdvVEgyVUTzeSFcqN2yTMwN03bWUgmOCMHRLFjvCj
-	YecZB1V6KCAvvTC8AS7qaFLRSNyL/WvRmog+6Ols//UE7nDhpO1Nt56g6pYArkHP
-	X6a7XXb8Sla1OPXE9Ouz8DpzPK0tAYC3FfB236YiK4Yujqp4yciOvtiCcxiwFmCw
-	oJQu1n+h1RjjPYPrpcR8t7QXEg+zeoBk4+DfmPmTWwpMK+fVA6Vlw==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4bpja4jgvq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 15 Jan 2026 10:05:24 +0000 (GMT)
-Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 60FA5OKd029550;
-	Thu, 15 Jan 2026 10:05:24 GMT
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4bpja4jgvh-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 15 Jan 2026 10:05:24 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 60F8aNSR030146;
-	Thu, 15 Jan 2026 10:05:23 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4bm3ajy4w6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 15 Jan 2026 10:05:23 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 60FA5JJR31261138
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 15 Jan 2026 10:05:19 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 95D672004E;
-	Thu, 15 Jan 2026 10:05:19 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5E43C2004F;
-	Thu, 15 Jan 2026 10:05:16 +0000 (GMT)
-Received: from li-fc74f8cc-3279-11b2-a85c-ef5828687581.ibm.com.com (unknown [9.39.20.65])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 15 Jan 2026 10:05:16 +0000 (GMT)
-From: Srish Srinivasan <ssrish@linux.ibm.com>
-To: linux-integrity@vger.kernel.org, keyrings@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        christophe.leroy@csgroup.eu, James.Bottomley@HansenPartnership.com,
-        jarkko@kernel.org, zohar@linux.ibm.com, nayna@linux.ibm.com,
-        rnsastry@linux.ibm.com, linux-kernel@vger.kernel.org,
-        linux-security-module@vger.kernel.org, ssrish@linux.ibm.com
-Subject: [PATCH v4 3/6] pseries/plpks: expose PowerVM wrapping features via the sysfs
-Date: Thu, 15 Jan 2026 15:35:01 +0530
-Message-ID: <20260115100504.488665-4-ssrish@linux.ibm.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260115100504.488665-1-ssrish@linux.ibm.com>
-References: <20260115100504.488665-1-ssrish@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dsM696V2tz2xNg
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Jan 2026 23:01:53 +1100 (AEDT)
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 8CEAD3368D;
+	Thu, 15 Jan 2026 12:01:50 +0000 (UTC)
+Authentication-Results: smtp-out1.suse.de;
+	none
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 543513EA63;
+	Thu, 15 Jan 2026 12:01:50 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id NDM1FC7XaGnnWwAAD6G6ig
+	(envelope-from <vbabka@suse.cz>); Thu, 15 Jan 2026 12:01:50 +0000
+Message-ID: <2c4c2b2e-bf96-4c4a-a66c-93b66553030c@suse.cz>
+Date: Thu, 15 Jan 2026 13:01:49 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,173 +59,157 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTE1MDA2OSBTYWx0ZWRfXzsGInuXGaqNp
- vG6Gba+HBgaVn7fcYirKWgZ+aaLZxHO3zBImWxoxH+4DG56AS7qb9MA79vcgDug+4oLHI15XD9m
- nNCKbNKWPJFQ5RH2QpvzM+sABl+nzR6D2JLl93iS6FJxsb8e4jBsh0r8LGBP0xSu7yZiSOEmLEh
- cv1V9HsmTsZjbfO3dqbQmZi6Q4fB2tV1YtxRW6v7ki4MSzOxVbjUrjdIQoVaX8ptGCxZ/ED0K7v
- qYYhNaHGdsGnMhJamhOZx+e9uyvbLCqGbDXBx3qIkLtQTu8iYxeg20oVfkjAYicUxYG8cswMFDK
- L7LEQsvx/L2jfAmUVZGcU4qBEuKCmqVN+lEcXUVxRigBO1naSMHPMg1O9DbsARG5wzlEB/ki2gs
- UVjIVzmpq6XqYiFPvLA/RompRX0A787CV2pV6jLaao5yKP3chAtOVLQL1oLzF7verKSO7XTSzoc
- fHC0xpQKpsbJwb5X3fg==
-X-Proofpoint-ORIG-GUID: DJdQ-6_JF7FB7ujIPcaqkoOnT1WmUzlJ
-X-Proofpoint-GUID: 7__KPtyBQF2dw7reEONCjJG60qGMBn3_
-X-Authority-Analysis: v=2.4 cv=U4afzOru c=1 sm=1 tr=0 ts=6968bbe4 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=vUbySO9Y5rIA:10 a=VkNPw1HP01LnGYTKEx00:22 a=VnNF1IyMAAAA:8
- a=z7cUUKlKUSfJ7xv5IYMA:9
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
- definitions=2026-01-15_03,2026-01-14_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 clxscore=1015 priorityscore=1501 lowpriorityscore=0 adultscore=0
- malwarescore=0 bulkscore=0 phishscore=0 suspectscore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2512120000 definitions=main-2601150069
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 23/23] MAINTAINERS: move memory balloon infrastructure
+ to "MEMORY MANAGEMENT - BALLOON"
+Content-Language: en-US
+To: "David Hildenbrand (Red Hat)" <david@kernel.org>,
+ Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org,
+ Broadcom internal kernel review list
+ <bcm-kernel-feedback-list@broadcom.com>, linux-doc@vger.kernel.org,
+ virtualization@lists.linux.dev, Andrew Morton <akpm@linux-foundation.org>,
+ Oscar Salvador <osalvador@suse.de>, "Liam R. Howlett"
+ <Liam.Howlett@oracle.com>, Mike Rapoport <rppt@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
+ Jonathan Corbet <corbet@lwn.net>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>, Arnd Bergmann
+ <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jerrin Shaji George <jerrin.shaji-george@broadcom.com>,
+ "Michael S. Tsirkin" <mst@redhat.com>, Jason Wang <jasowang@redhat.com>,
+ Xuan Zhuo <xuanzhuo@linux.alibaba.com>, =?UTF-8?Q?Eugenio_P=C3=A9rez?=
+ <eperezma@redhat.com>, Zi Yan <ziy@nvidia.com>
+References: <20260115092015.3928975-1-david@kernel.org>
+ <20260115092015.3928975-24-david@kernel.org>
+ <f2ce1126-0059-481c-b54f-0b09518666d3@lucifer.local>
+ <284775bd-767d-45f8-b66b-96709dabcc5e@kernel.org>
+From: Vlastimil Babka <vbabka@suse.cz>
+Autocrypt: addr=vbabka@suse.cz; keydata=
+ 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
+ m6M14QORSWTLRg==
+In-Reply-To: <284775bd-767d-45f8-b66b-96709dabcc5e@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
+X-Rspamd-Action: no action
+X-Rspamd-Queue-Id: 8CEAD3368D
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Spamd-Result: default: False [-4.00 / 50.00];
+	REPLY(-4.00)[]
 
-Starting with Power11, PowerVM supports a new feature called "Key Wrapping"
-that protects user secrets by wrapping them using a hypervisor generated
-wrapping key. The status of this feature can be read by the
-H_PKS_GET_CONFIG HCALL.
+On 1/15/26 12:25, David Hildenbrand (Red Hat) wrote:
+> On 1/15/26 10:39, Lorenzo Stoakes wrote:
+>> On Thu, Jan 15, 2026 at 10:20:13AM +0100, David Hildenbrand (Red Hat) wrote:
+>>> Nowadays, there is nothing virtio-balloon specific anymore about these
+>>> files, the basic infrastructure is used by multiple memory balloon
+>>> drivers.
+>>>
+>>> For now we'll route it through Andrew's tree, maybe in some future it
+>>> makes sense to route this through a separate tree.
+>>>
+>>> Signed-off-by: David Hildenbrand (Red Hat) <david@kernel.org>
+>> 
+>> Assuming below fixed + Michael's concern addressed, LGTM so:
+>> 
+>> Acked-by: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
+>> 
+>>> ---
+>>>   MAINTAINERS | 12 ++++++++++--
+>>>   1 file changed, 10 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/MAINTAINERS b/MAINTAINERS
+>>> index de8f89ca1149f..b974f8c1c2225 100644
+>>> --- a/MAINTAINERS
+>>> +++ b/MAINTAINERS
+>>> @@ -16454,6 +16454,16 @@ T:	quilt git://git.kernel.org/pub/scm/linux/kernel/git/akpm/25-new
+>>>   F:	mm/
+>>>   F:	tools/mm/
+>>>
+>>> +MEMORY MANAGEMENT - BALLOON
+>>> +M:	Andrew Morton <akpm@linux-foundation.org>
+>>> +M:	David Hildenbrand <david@redhat.com>
+>> 
+>> david@kernel.org you mean? ;)
+> 
+> Maybe I just want all the patches to go to /dev/null soon? ;)
+> 
+> The following on top:
+> 
+> 
+>  From 3d344330b1ff6088582fe8e3bbff49d1557eba22 Mon Sep 17 00:00:00 2001
+> From: "David Hildenbrand (Red Hat)" <david@kernel.org>
+> Date: Thu, 15 Jan 2026 12:23:57 +0100
+> Subject: [PATCH] fixup: MAINTAINERS: move memory balloon infrastructure to
+>   "MEMORY MANAGEMENT - BALLOON"
+> 
+> CC the virt list and use the proper mail address.
+> 
+> Signed-off-by: David Hildenbrand (Red Hat) <david@kernel.org>
 
-Expose the Power LPAR Platform KeyStore (PLPKS) wrapping features config
-via the sysfs file /sys/firmware/plpks/config/wrapping_features.
+Acked-by: Vlastimil Babka <vbabka@suse.cz>
+for both
 
-Signed-off-by: Srish Srinivasan <ssrish@linux.ibm.com>
----
- .../ABI/testing/sysfs-firmware-plpks          |  8 ++++++++
- arch/powerpc/include/asm/hvcall.h             |  4 +++-
- arch/powerpc/include/asm/plpks.h              |  3 +++
- arch/powerpc/platforms/pseries/plpks-sysfs.c  |  2 ++
- arch/powerpc/platforms/pseries/plpks.c        | 20 +++++++++++++++++++
- 5 files changed, 36 insertions(+), 1 deletion(-)
-
-diff --git a/Documentation/ABI/testing/sysfs-firmware-plpks b/Documentation/ABI/testing/sysfs-firmware-plpks
-index af0353f34115..cba061e4eee2 100644
---- a/Documentation/ABI/testing/sysfs-firmware-plpks
-+++ b/Documentation/ABI/testing/sysfs-firmware-plpks
-@@ -48,3 +48,11 @@ Description:	Bitmask of flags indicating which algorithms the hypervisor
- 		supports for signed update of objects, represented as a 16 byte
- 		hexadecimal ASCII string. Consult the hypervisor documentation
- 		for what these flags mean.
-+
-+What:		/sys/firmware/plpks/config/wrapping_features
-+Date:		November 2025
-+Contact:	Srish Srinivasan <ssrish@linux.ibm.com>
-+Description:	Bitmask of the wrapping features indicating the wrapping
-+		algorithms that are supported for the H_PKS_WRAP_OBJECT requests
-+		, represented as a 8 byte hexadecimal ASCII string. Consult the
-+		hypervisor documentation for what these flags mean.
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index 9aef16149d92..dff90a7d7f70 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -360,7 +360,9 @@
- #define H_GUEST_RUN_VCPU	0x480
- #define H_GUEST_COPY_MEMORY	0x484
- #define H_GUEST_DELETE		0x488
--#define MAX_HCALL_OPCODE	H_GUEST_DELETE
-+#define H_PKS_WRAP_OBJECT	0x490
-+#define H_PKS_UNWRAP_OBJECT	0x494
-+#define MAX_HCALL_OPCODE	H_PKS_UNWRAP_OBJECT
- 
- /* Scope args for H_SCM_UNBIND_ALL */
- #define H_UNBIND_SCOPE_ALL (0x1)
-diff --git a/arch/powerpc/include/asm/plpks.h b/arch/powerpc/include/asm/plpks.h
-index 8829a13bfda0..8f034588fdf7 100644
---- a/arch/powerpc/include/asm/plpks.h
-+++ b/arch/powerpc/include/asm/plpks.h
-@@ -23,6 +23,7 @@
- #define PLPKS_IMMUTABLE		PPC_BIT32(5) // Once written, object cannot be removed
- #define PLPKS_TRANSIENT		PPC_BIT32(6) // Object does not persist through reboot
- #define PLPKS_SIGNEDUPDATE	PPC_BIT32(7) // Object can only be modified by signed updates
-+#define PLPKS_WRAPPINGKEY	PPC_BIT32(8) // Object contains a wrapping key
- #define PLPKS_HVPROVISIONED	PPC_BIT32(28) // Hypervisor has provisioned this object
- 
- // Signature algorithm flags from signed_update_algorithms
-@@ -103,6 +104,8 @@ u32 plpks_get_maxlargeobjectsize(void);
- 
- u64 plpks_get_signedupdatealgorithms(void);
- 
-+u64 plpks_get_wrappingfeatures(void);
-+
- u16 plpks_get_passwordlen(void);
- 
- void plpks_early_init_devtree(void);
-diff --git a/arch/powerpc/platforms/pseries/plpks-sysfs.c b/arch/powerpc/platforms/pseries/plpks-sysfs.c
-index 01d526185783..c2ebcbb41ae3 100644
---- a/arch/powerpc/platforms/pseries/plpks-sysfs.c
-+++ b/arch/powerpc/platforms/pseries/plpks-sysfs.c
-@@ -30,6 +30,7 @@ PLPKS_CONFIG_ATTR(used_space, "%u\n", plpks_get_usedspace);
- PLPKS_CONFIG_ATTR(supported_policies, "%08x\n", plpks_get_supportedpolicies);
- PLPKS_CONFIG_ATTR(signed_update_algorithms, "%016llx\n",
- 		  plpks_get_signedupdatealgorithms);
-+PLPKS_CONFIG_ATTR(wrapping_features, "%016llx\n", plpks_get_wrappingfeatures);
- 
- static const struct attribute *config_attrs[] = {
- 	&attr_version.attr,
-@@ -38,6 +39,7 @@ static const struct attribute *config_attrs[] = {
- 	&attr_used_space.attr,
- 	&attr_supported_policies.attr,
- 	&attr_signed_update_algorithms.attr,
-+	&attr_wrapping_features.attr,
- 	NULL,
- };
- 
-diff --git a/arch/powerpc/platforms/pseries/plpks.c b/arch/powerpc/platforms/pseries/plpks.c
-index 03722fabf9c3..4a08f51537c8 100644
---- a/arch/powerpc/platforms/pseries/plpks.c
-+++ b/arch/powerpc/platforms/pseries/plpks.c
-@@ -38,6 +38,7 @@ static u32 usedspace;
- static u32 supportedpolicies;
- static u32 maxlargeobjectsize;
- static u64 signedupdatealgorithms;
-+static u64 wrappingfeatures;
- 
- struct plpks_auth {
- 	u8 version;
-@@ -248,6 +249,7 @@ static int _plpks_get_config(void)
- 		__be32 supportedpolicies;
- 		__be32 maxlargeobjectsize;
- 		__be64 signedupdatealgorithms;
-+		__be64 wrappingfeatures;
- 		u8 rsvd1[476];
- 	} __packed * config;
- 	size_t size;
-@@ -280,6 +282,7 @@ static int _plpks_get_config(void)
- 	supportedpolicies = be32_to_cpu(config->supportedpolicies);
- 	maxlargeobjectsize = be32_to_cpu(config->maxlargeobjectsize);
- 	signedupdatealgorithms = be64_to_cpu(config->signedupdatealgorithms);
-+	wrappingfeatures = be64_to_cpu(config->wrappingfeatures);
- 
- 	// Validate that the numbers we get back match the requirements of the spec
- 	if (maxpwsize < 32) {
-@@ -472,6 +475,23 @@ u64 plpks_get_signedupdatealgorithms(void)
- 	return signedupdatealgorithms;
- }
- 
-+/**
-+ * plpks_get_wrappingfeatures() - Returns a bitmask of the wrapping features
-+ * supported by the hypervisor.
-+ *
-+ * Successful execution of the H_PKS_GET_CONFIG HCALL during initialization
-+ * reads a bitmask of the wrapping features supported by the hypervisor into the
-+ * file local static wrappingfeatures variable. This is valid only when the
-+ * PLPKS config structure version >= 3.
-+ *
-+ * Return:
-+ *	bitmask of the wrapping features supported by the hypervisor
-+ */
-+u64 plpks_get_wrappingfeatures(void)
-+{
-+	return wrappingfeatures;
-+}
-+
- /**
-  * plpks_get_passwordlen() - Get the length of the PLPKS password in bytes.
-  *
--- 
-2.47.3
+> ---
+>   MAINTAINERS | 3 ++-
+>   1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index b974f8c1c2225..11720728d92f2 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -16456,8 +16456,9 @@ F:	tools/mm/
+>   
+>   MEMORY MANAGEMENT - BALLOON
+>   M:	Andrew Morton <akpm@linux-foundation.org>
+> -M:	David Hildenbrand <david@redhat.com>
+> +M:	David Hildenbrand <david@kernel.org>
+>   L:	linux-mm@kvack.org
+> +L:	virtualization@lists.linux.dev
+>   S:	Maintained
+>   W:	http://www.linux-mm.org
+>   T:	git git://git.kernel.org/pub/scm/linux/kernel/git/akpm/mm
 
 
