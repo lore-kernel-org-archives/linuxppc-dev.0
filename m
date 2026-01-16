@@ -1,132 +1,140 @@
-Return-Path: <linuxppc-dev+bounces-15917-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15918-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61252C982D1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Jan 2026 16:44:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84871C982D1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Jan 2026 17:06:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dt5KR6NTnz2ySb;
-	Sat, 17 Jan 2026 03:44:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip=192.198.163.9
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768581851;
-	cv=fail; b=HpbwncpbGm6voJzIaRu0k7JkB/dXqq15OxBQMakX7/bD7C1w/d/R71VR1vXEJDwSGvmBKVewoYFlI+DOMXAVFJcqMDjJSqRVE7I3HN9AVlqvaASAkAbnYMlXJ21mbnBIKNpSL7EjFX3100R1UCbp5+I43CcsMCHj2KpqQxkmRi03Mx+ELhwk6Iu7QhlouzuIzMZh3ueCZE2illObEbZH9ttAfZvQJIVSHAFr1Q5GnE2coZq98ZAk4qPgURvx5tdU0dUVQkBbVzBOy4ZKfv5IqGLNF3tOgB7zqddYWymCqRobqcEHZoG0mUPlfo/CeoKLX8Iyrp0SG/Uf4Q1F4cB8Xw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768581851; c=relaxed/relaxed;
-	bh=UNAA5npnbzeZbPI3SJkOiufd4Gk60hu5LwfvjO8J9JY=;
-	h=Date:From:To:CC:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=fEFIl8GSEeiG9J6l8rU7cB8Fq/3XI0Bq2EK2fUM6x1UP4qwFmpKT1eUjbJUs3hpVThaKToHx8nzrVCNSHDwdWqwM9L0DnP9IaXZYLRUP40HM1+aZp8fZ5C2lxnQagyT5LAaYi65XN6lrHTlEQ/nHJS8upvuJSCbKtwhSq9TSdN/uxtZBAmcmpigJ2EKLJJ5g44v8v73j+80/QMNsnEW6XLDNYNnDHeMmCE6riNzsh0/zRlLzLiX5TRL1cwueNrhTJk//t94wGtOpQN38Hgi4XLNJeOrnxNptLtKUIovFumKanR/o7BjrV1QNTadPZmgAyaNepwehz871IJvx1Y15LA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eEKOkSHF; dkim-atps=neutral; spf=pass (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=rodrigo.vivi@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dt5qX1S1Kz2xm3;
+	Sat, 17 Jan 2026 04:06:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768583208;
+	cv=none; b=fs6GpGE4eznvHgjcwiVK5K1q4gaIOXr9yc5VyYCW8TMgS3Zw24NTr4Gd64sYZo1VKzdiU3NaCx7he5Ze8mPwPE9AJXIUriJ0Wis0CacCJuAH9tcnrW44PG6DLInknN2mwkwtM1E6DSv6GRm37YazekcUOsQVs4cgsJbzKzQ6VpasLZGfDwVx5lBszy7xKd+24YwDMg4Dc5kqnMc57Mpz26dFkg/CUxIOYLv1uuj4Yte9JndvDgl4w1Q7nliEN8qtRsMAg9yFUH5MbF29Px8MoQkfXRcgpmu/n/+z6K/dwpRGoXj6p8pzQ8wF7HQt129kIuzon0adVWr1aZ42tpJckQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1768583208; c=relaxed/relaxed;
+	bh=RoN1ojr5MYR8WVOifwR88Ffw20/RJ9UUbBOLTB+iK34=;
+	h=Message-ID:Subject:From:To:Cc:In-Reply-To:References:Content-Type:
+	 Date:MIME-Version; b=Tdv4+I4jgsQ5H2iXV8qMQ5390aoUAV/sQA0PAmbCOOJUx/GVy/mmetOqlS9uUIsrszmcfC/7yUg7M03AQnyjxoHU/CxYdT28MdntotvvJXQZbi8G4uU0mujHUqsCxkwoy/JA+5XMh1oSalTpVOusRmY4i2LNblyBveIjF5eq9hY5hn4AqGqPow/t6oZ4RH3WYZsS+1TbiRf06jbKTWQ7m74x0wxqBBWu/l3U0YKk/oZEq5qHY1AWBJniR3/W8HIkIGIkAstNjCtjJ+keQmF9fb2TEftXeOfXoxeG0+/7hcSM4e2Nd8xNS7NL9D4XVg44ZLFPaPs5NVTySG6i2HOBNg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cUaZQ/mN; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=zohar@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eEKOkSHF;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cUaZQ/mN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=rodrigo.vivi@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=zohar@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dt5KQ65gLz2xnj
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jan 2026 03:44:10 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1768581851; x=1800117851;
-  h=date:from:to:cc:subject:message-id:references:
-   content-transfer-encoding:in-reply-to:mime-version;
-  bh=NT+m9YIP3QTsCC8EZrpqZn6qWTZXPtbKpU3DzatI3T0=;
-  b=eEKOkSHFK9i0+U8ES9UuaDkDfR0veVNVhjn13jK53ZBDVbMi/eX+FsUd
-   sqWGVve8sKtj0f32PypLWQ35nj9kDpdXVbvD2M9ZoZIPglRh544AFmsC2
-   qVhi/h68qRRcWbIk2GWJ6aO8QEyZ7oPRoikWjSKdEW2A5IsN/id8I/fu9
-   Dgbp8YBSEkj6oBsB884SKKpl8JMXN2jCLuWybmJAc347p+oNpDMH7ZYC8
-   0niykDerbCxPnPSbf6IgO5TlgXgN9yOhAUa07QF6Qw54ghKocaGP61DOA
-   aSS5DhZbv37HfZMbgDFei/WlF4tuI9KMCykgqTxYu4hxVs3PNDh33TE/g
-   Q==;
-X-CSE-ConnectionGUID: S1M7nihETSmFt9byA3dsig==
-X-CSE-MsgGUID: 0qsTDtHOTni/fRcos83pLg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11673"; a="80620171"
-X-IronPort-AV: E=Sophos;i="6.21,231,1763452800"; 
-   d="scan'208";a="80620171"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
-  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Jan 2026 08:44:08 -0800
-X-CSE-ConnectionGUID: GW4ogReTQtaGvsdfcWF90w==
-X-CSE-MsgGUID: M26tkflfRUe5AG+UpBtlcw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,231,1763452800"; 
-   d="scan'208";a="205335890"
-Received: from orsmsx901.amr.corp.intel.com ([10.22.229.23])
-  by orviesa008.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Jan 2026 08:44:07 -0800
-Received: from ORSMSX901.amr.corp.intel.com (10.22.229.23) by
- ORSMSX901.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.29; Fri, 16 Jan 2026 08:44:06 -0800
-Received: from ORSEDG903.ED.cps.intel.com (10.7.248.13) by
- ORSMSX901.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.29 via Frontend Transport; Fri, 16 Jan 2026 08:44:06 -0800
-Received: from DM5PR21CU001.outbound.protection.outlook.com (52.101.62.41) by
- edgegateway.intel.com (134.134.137.113) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.29; Fri, 16 Jan 2026 08:44:03 -0800
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=CjNWjkO/TSziJ8kzFzZHQDjK3dtug2/jDFsA+8tELiBm4YFY3jZNPYOxW9xo1gEEdpbunVWSwoP8Qbgi2q8JLrYchbyLgFucwR3e8ZtS0lLQaeJP9QILqmoPdwxIRIsOJvXEJYzmeYp+7MTa4ydwQFb8bIndICPiRymm2qebGy7p0zfA/HjtLHTaMKqoJSppct+pP81ML8df574W5P7DEmjQWgFj8bfo9NCKJKZBqQuhIAJOxi7ZTp5GkA/CyzNf0a7mbEakfWp8I7yDdLEgFaAyVKHQd/esVb8IXIIzPEYZuHpc6g41Lm0oeRU614QQprZYL6vxyBKnhRZaubEaYQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=UNAA5npnbzeZbPI3SJkOiufd4Gk60hu5LwfvjO8J9JY=;
- b=OwVJnmg14TLFE6HpiXV6qmAv1hQg6ExHWT0K/KhStuxRZX4H3Ai0hZmqESR6NVSzeW7RYvuA8al8ngqmN+fHllo2meAwTq5hnXoiHiwDw7q79+MIwR81/fACQff/32eKvGoSDsdYS3LyJdnGLu4AEcb0Z3WM6gG5cp1fIEYM/Jo+E3rtbN5csRRsSVo3UUhh3KGyFcFQZSbZL0kT6fJHWdwwWYcWLflQC/mAkkU3ShXERgB2STqDNxPPqkATjJEaz4yONk3Qte2uXMse12BaNpDxlLOyDrehp+m8HklvcJdSO1iTXQWQVzYWSmfe/WoaMnFRH1K3Ylty35r6y2DroQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Received: from CYYPR11MB8430.namprd11.prod.outlook.com (2603:10b6:930:c6::19)
- by DM4PR11MB6214.namprd11.prod.outlook.com (2603:10b6:8:ac::7) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9520.5; Fri, 16 Jan 2026 16:44:01 +0000
-Received: from CYYPR11MB8430.namprd11.prod.outlook.com
- ([fe80::1d86:a34:519a:3b0d]) by CYYPR11MB8430.namprd11.prod.outlook.com
- ([fe80::1d86:a34:519a:3b0d%5]) with mapi id 15.20.9520.005; Fri, 16 Jan 2026
- 16:44:00 +0000
-Date: Fri, 16 Jan 2026 11:43:49 -0500
-From: Rodrigo Vivi <rodrigo.vivi@intel.com>
-To: Francois Dugast <francois.dugast@intel.com>, Felix Kuehling
-	<Felix.Kuehling@amd.com>, Alex Deucher <alexander.deucher@amd.com>, Christian
- =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>, Lyude Paul
-	<lyude@redhat.com>, Danilo Krummrich <dakr@kernel.org>,
-	<nouveau@lists.freedesktop.org>, <amd-gfx@lists.freedesktop.org>
-CC: <intel-xe@lists.freedesktop.org>, <dri-devel@lists.freedesktop.org>,
-	Matthew Brost <matthew.brost@intel.com>, Zi Yan <ziy@nvidia.com>, "Alistair
- Popple" <apopple@nvidia.com>, adhavan Srinivasan <maddy@linux.ibm.com>,
-	Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Felix Kuehling
-	<Felix.Kuehling@amd.com>, Alex Deucher <alexander.deucher@amd.com>, Christian
- =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>, David Airlie
-	<airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, Maarten Lankhorst
-	<maarten.lankhorst@linux.intel.com>, Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>, Lyude Paul <lyude@redhat.com>,
-	Danilo Krummrich <dakr@kernel.org>, David Hildenbrand <david@kernel.org>,
-	Oscar Salvador <osalvador@suse.de>, Andrew Morton
-	<akpm@linux-foundation.org>, Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky
-	<leon@kernel.org>, Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, "Liam R .
- Howlett" <Liam.Howlett@oracle.com>, Vlastimil Babka <vbabka@suse.cz>, "Mike
- Rapoport" <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, "Michal
- Hocko" <mhocko@suse.com>, Balbir Singh <balbirs@nvidia.com>,
-	<linuxppc-dev@lists.ozlabs.org>, <kvm@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <amd-gfx@lists.freedesktop.org>,
-	<nouveau@lists.freedesktop.org>, <linux-mm@kvack.org>,
-	<linux-cxl@vger.kernel.org>
-Subject: Re: [PATCH v5 1/5] mm/zone_device: Reinitialize large zone device
- private folios
-Message-ID: <aWpqxS7FrV0KffLr@intel.com>
-References: <20260114192111.1267147-1-francois.dugast@intel.com>
- <20260114192111.1267147-2-francois.dugast@intel.com>
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260114192111.1267147-2-francois.dugast@intel.com>
-X-ClientProxiedBy: SJ0PR05CA0008.namprd05.prod.outlook.com
- (2603:10b6:a03:33b::13) To CYYPR11MB8430.namprd11.prod.outlook.com
- (2603:10b6:930:c6::19)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dt5qW2n4Mz2xS2
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jan 2026 04:06:46 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 60GDHP70029226;
+	Fri, 16 Jan 2026 16:38:46 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=RoN1oj
+	r5MYR8WVOifwR88Ffw20/RJ9UUbBOLTB+iK34=; b=cUaZQ/mNbLlBHYQafX6HAX
+	qWG95pfUh3Bsl+I0lDUllvwlggKsG7sfH2VDuiC2IJGNO+F7u5OAwOHH3KG+9hs/
+	Vj3qKB08w6tzN97YI0D3u2Xf2bjtor+NV2pyw4r210onY+MwlCOx/qRmQmDtIkVM
+	h4O03p9UPEnvyERn8ZrYCMrhoIG+jRmoxQRTvW2wVToLOEBTF4WZx0D9rpNiFNv7
+	yYqM4c0cprkScOYt1viWMrkhFbjJOcF43XIAwzS0YG/TcGEXcWRBYD7Su1P8lvMV
+	wGqm6tEMQPE7+u4k30Aq/Cy3yM5e36lR+ausjtWI5np+fteyMPJRL4U2M0RVfQLA
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4bq9stbr5n-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 16 Jan 2026 16:38:46 +0000 (GMT)
+Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 60GGcj9u016730;
+	Fri, 16 Jan 2026 16:38:45 GMT
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4bq9stbr5c-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 16 Jan 2026 16:38:45 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 60GF2S16030126;
+	Fri, 16 Jan 2026 16:38:44 GMT
+Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4bm3ak76ah-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 16 Jan 2026 16:38:44 +0000
+Received: from smtpav05.dal12v.mail.ibm.com (smtpav05.dal12v.mail.ibm.com [10.241.53.104])
+	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 60GGcgJT34210378
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 16 Jan 2026 16:38:42 GMT
+Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0A0CF58068;
+	Fri, 16 Jan 2026 16:38:42 +0000 (GMT)
+Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C6E1158065;
+	Fri, 16 Jan 2026 16:38:39 +0000 (GMT)
+Received: from li-43857255-d5e6-4659-90f1-fc5cee4750ad.ibm.com (unknown [9.61.160.11])
+	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 16 Jan 2026 16:38:39 +0000 (GMT)
+Message-ID: <97b69bc79a5d9246f7a399510908c7b95b2e95e7.camel@linux.ibm.com>
+Subject: Re: [PATCH 1/3] integrity: Make arch_ima_get_secureboot
+ integrity-wide
+From: Mimi Zohar <zohar@linux.ibm.com>
+To: Ard Biesheuvel <ardb@kernel.org>
+Cc: Coiby Xu <coxu@redhat.com>, linux-integrity@vger.kernel.org,
+        Heiko
+ Carstens	 <hca@linux.ibm.com>,
+        Roberto Sassu
+ <roberto.sassu@huaweicloud.com>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Will Deacon <will@kernel.org>,
+        Madhavan Srinivasan	 <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin	
+ <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Vasily Gorbik <gor@linux.ibm.com>,
+        Alexander Gordeev
+ <agordeev@linux.ibm.com>,
+        Christian Borntraeger	
+ <borntraeger@linux.ibm.com>,
+        Sven Schnelle <svens@linux.ibm.com>,
+        Thomas
+ Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+        Borislav
+ Petkov <bp@alien8.de>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        "maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)"	 <x86@kernel.org>,
+        "H.
+ Peter Anvin" <hpa@zytor.com>,
+        Roberto Sassu	 <roberto.sassu@huawei.com>,
+        Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+        Eric Snowberg
+ <eric.snowberg@oracle.com>,
+        Paul Moore <paul@paul-moore.com>, James Morris
+ <jmorris@namei.org>,
+        "Serge E. Hallyn"	 <serge@hallyn.com>,
+        Jarkko
+ Sakkinen <jarkko@kernel.org>,
+        "moderated list:ARM64 PORT (AARCH64
+ ARCHITECTURE)"	 <linux-arm-kernel@lists.infradead.org>,
+        open list
+ <linux-kernel@vger.kernel.org>,
+        "open list:LINUX FOR POWERPC (32-BIT AND
+ 64-BIT)"	 <linuxppc-dev@lists.ozlabs.org>,
+        "open list:S390 ARCHITECTURE"	
+ <linux-s390@vger.kernel.org>,
+        "open list:EXTENSIBLE FIRMWARE INTERFACE
+ (EFI)"	 <linux-efi@vger.kernel.org>,
+        "open list:SECURITY SUBSYSTEM"	
+ <linux-security-module@vger.kernel.org>,
+        "open
+ list:KEYS/KEYRINGS_INTEGRITY"	 <keyrings@vger.kernel.org>
+In-Reply-To: <CAMj1kXHsJNZoUEnbD1y=v4Ftuv9d2c08VckRV7ru4k4P83vZbQ@mail.gmail.com>
+References: <20260115004328.194142-1-coxu@redhat.com>
+	 <20260115004328.194142-2-coxu@redhat.com>
+	 <CAMj1kXFXNo1-pMbo-VZrjQ3TYe1tufebrLr_avL12A0nHMSGnA@mail.gmail.com>
+	 <8bfa859ed3a4f1cf0db0ab64d8c1c3b24684582a.camel@linux.ibm.com>
+	 <CAMj1kXHsJNZoUEnbD1y=v4Ftuv9d2c08VckRV7ru4k4P83vZbQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Date: Fri, 16 Jan 2026 11:38:39 -0500
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -140,298 +148,121 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CYYPR11MB8430:EE_|DM4PR11MB6214:EE_
-X-MS-Office365-Filtering-Correlation-Id: 29715aa9-d4f4-42ed-c80a-08de551e7356
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|7416014|366016|1800799024|376014|7053199007;
-X-Microsoft-Antispam-Message-Info: =?utf-8?B?TFQwOXR4c2JJc0hyUGZEanhtR2Mycis2VkFPbDhWdVBMZHpDa21heEVqdVNE?=
- =?utf-8?B?TmdOQnBzb3lrL2tVb1RUeXpCQ09hWW1TK0NtWnlkNElYOCtUQzBrSTNnZllu?=
- =?utf-8?B?RUlvOXFrYmtWbVhWR0ZNdFB2VTlHWi83MUpidDc3MGYzenZBNEp3bHdCd3Zu?=
- =?utf-8?B?TDhBcXRTQnJqQ3U1ZTdVQWZsZWM5cEIwMy9XTVNtWkd5T3l6Tm9oKzN3RTgr?=
- =?utf-8?B?UVpoaUk1dzZSZXJEKzh4cmVXZktLVllCbkFpeFdSdDZqZGY1YVMvd0ZadEJ4?=
- =?utf-8?B?SE05N3c2ME92QmovaGRBVUFYVlZpN2xISUFuSEcrUWExMi9wMW1Dcmx4RXdJ?=
- =?utf-8?B?a0pyNHIwV05NRHE0eWgzLzkrVm5nVG9mRExvVHVOV2tNQmgyS2xnWEMyRSsy?=
- =?utf-8?B?TG1Pd2RXUjFSMkpBT29RTlQ2aExBajNvMmJoK2tNNGdWT3JNeXRMcVF0NTMx?=
- =?utf-8?B?YWRWRDg5U2ZUd0xWRnQ2WXJIN0JiNjN1eVROaEtFY1p2Ym96QlhLRnFpeXlp?=
- =?utf-8?B?YmlkNFpOREVzQUx5bldqcWdyVjdYVU11bnZlMENiWU43VVo5cm0rYzk5bFhl?=
- =?utf-8?B?eUlvNSt0MzhUZEJCaFVZYU0yQUtPdHZLWUsyVzcrTExXWHpobEJYOUYyYWZC?=
- =?utf-8?B?cVJWRHhjVDYvVG55Z3p2TldndFcyT283MWNxNzZMbXI3c0hyTk9DTyt2UExj?=
- =?utf-8?B?bGFHQm1GT3NCNDRVc2cvYmdFY3RBN3NIM1NOckRoMmU1VTdsZmUrNkxEM0VQ?=
- =?utf-8?B?a3ArTlJGRkJncGllcjFoMlh0WkhKMmhzRERmMUwya3hrMUxmSFZTOHVXcERp?=
- =?utf-8?B?K1dWb2lzQXIyYWhIZHlsbkQ1OE15cU5laHlRTitBVCtoZ1htUjc5Y1JlRnFS?=
- =?utf-8?B?dTJTZGI5eWtJdXdWV05QS0lDckFYOURkajRPMm93bTBYYXdXV2c1Nk5lVWxL?=
- =?utf-8?B?aGxETDF2RzVTYXBhczZxOEVMRXVGTDE5bjFadHYwQnZwV21iZTlJUWs3ajZM?=
- =?utf-8?B?ZmJvRkVROG1Jc01HcE12UmVKMDlMKzlhUlc4TVVnNGR3YlVMR2ZKQ2lqb2hk?=
- =?utf-8?B?bHFlVHVFeXJKU2pmd0dGcTBvSnZxMlI3V3NiWk9FK25nSDJJMk9kS0xzZmtQ?=
- =?utf-8?B?M1ZLMjRpRTFxOGtHcFdEYWVoN0ovRzU0QzNSOC9OelJwSkljYXNLT0ZRT1ZW?=
- =?utf-8?B?djVYcllaajMrVU0wVXFyZFVtY01BUUk0cllzWm1RY2RSUlYrYjJ6d0gzTGRi?=
- =?utf-8?B?TkpwNXArNlJlTENHUXkzZmdKbjFLNWtJSzk0YnFDZlI4aDR1anZPMS9IL0dx?=
- =?utf-8?B?cXR1dHE3RWhMQ2dyRFRwQ3pnQXJRWWNVSUFBSFJWTndzSnhyN1IwTlRxbzhm?=
- =?utf-8?B?WDMzLzUxY21PYnpGc3FHTlI2ZlRmVGlmSWREcm55MG13YmI2eEhFMy9rUzA1?=
- =?utf-8?B?MGsxVTg0SmtMRjlFc2M0bnBjNTVYYkpueVlCS1JJMUsvWnZKc0lobm5MM2xw?=
- =?utf-8?B?VU1xSmRxNHBHZ3pyMjJaVWZBUnRRSFU2cHdLaDJZdVAwSXhwSFcrVDhaL2VC?=
- =?utf-8?B?anNqYmZPallYTHNlQlJpeXNZVVRSMkFvVTFDQWUxbmhmOVlRRDVuUnh5UjNN?=
- =?utf-8?B?UzNiSkt4T1pMRFFmc2ZvNzdDZGlHcElTMmZNZjhvRzNxRU9sb3dtREpYNXJ1?=
- =?utf-8?B?YUp6R1o3Zzl4YkdVamlONUhXTW1zQVpoR1hXMVk0Q29JR1g1Yjcxb04reEZs?=
- =?utf-8?B?QXdGeEZmd2Z3cmlMNFpsOXlpYktndFZ5b3NHejVmVU9abGJPYnpIMElUUHlz?=
- =?utf-8?B?RFFuNHRsTnZYK1JrbHFnTmdhV0xXZEVzNzMwRnFPcGFwT2FxeVBKSEU0Qmdn?=
- =?utf-8?B?QVo1bDBKWDlCaDZ4U2pZRDdVMHJlMUwvRmRzbGpwak0wYm80ZURITEJOZUly?=
- =?utf-8?B?U1lneVVoSEw5bFl0NDYvMncyOEtydXpScGs5YzdVb1RYdEVqRkNrNks0WjRn?=
- =?utf-8?B?dko2eC9VMFA2VVJPOHBRdDhFd1UwWSs1akJQa3hycEJVaHMwQWNDaFNlZnho?=
- =?utf-8?B?TUdseWpEaUxkZVV2OGRjMitHTDZqZXJwTnVtRHdpOG1wYVZZSURhN2kxZlRq?=
- =?utf-8?Q?ZYyI=3D?=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CYYPR11MB8430.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(366016)(1800799024)(376014)(7053199007);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?TGNCWFJHSU9pcHhGS3V5ZkZkMHNhZEQ1RWQ4WUZ5VlN4OXhMcGd4amo5Q1pK?=
- =?utf-8?B?SDRpbEkzWUJ5TTFnWUdsbTVYY3F2SzBFVXNQcUpXTDRaUlJaN3p2NzF0KzFN?=
- =?utf-8?B?UlNTd2JLVUtyWGh3VFZnUTcvV2NjTmZOb2xkbkg2dnRObXdibmsvU2x0SStX?=
- =?utf-8?B?VEhsWVlxTVZJdjh0UEtaRUJVVDFtVWJ5Z0dUTndKbktpaFVBZUFCV285bCtC?=
- =?utf-8?B?WU1VS0pDTHVvOEFJd3JJdEFjV1l5TzQ1Mi9iRWVLa3hJeUZ4V0tUWW9LZnpI?=
- =?utf-8?B?ckhrZlpUbmxXdjVPNUFHalZicmNIbmVLOXlMUDRNZys2bjRHOEFKbFlmZzNt?=
- =?utf-8?B?NmhJQ3FWbFpNQW56Ty9SSGR5bEgySC93RmxrUCs4WGJLQ1pxbjJ1QkZUMUxR?=
- =?utf-8?B?d0Q1NGJtRS9WRDRkNHdFN01tb1N0Q1RvamFZclM1azZYRm55a1NNM0N0L1oz?=
- =?utf-8?B?QUM5V3pwN2R5WGE0TWFvM1N2RVM0TE1kRU1JZGtJeXJuMmJUd2tpMDgvWlF5?=
- =?utf-8?B?WDZFMUo5dGF3WnRSeDErbDJzdXlUd0JxUnZGZFNCSm9RNTBEcXJHN3NuQkU5?=
- =?utf-8?B?MU5JNFlTZWZPdG52KzJnYzdnT3IraTEzMXVyaS9Ebml2eG51MWQzamlXTm9F?=
- =?utf-8?B?YVVNeUtxZnlka2ZhN0Q1YytnZDBIMHhNWURORk44bmRhMDBsWXRSUnF0U3RG?=
- =?utf-8?B?czJtckppTDNmV3BRanR2Mk42U2RpdmUwODF6N25Rck9NVzN0dzlYYTZzeG9X?=
- =?utf-8?B?azlVR0JCczdKcGgyRXVOaG9Sd3d1eUE5aHhvTHBCMDQ3cTgyU3hQQVcwN1Fo?=
- =?utf-8?B?YWYrQzZqVzNLcWkvNXhES3c3QXZ1NXFtbFE5ZjBIa2pkQmROWmNOT2N1V20w?=
- =?utf-8?B?QXlnTit5TmNwN2VyQ2VwMXlBZ3VCWWtDLzlBaFhoUzNTQUtTZks3anAxUEk0?=
- =?utf-8?B?WHZzVGV6QlVVYkdpb0lDZEdhV08rL0RpQXJYOENIWmFPeGcyd3dsTEtGRXVz?=
- =?utf-8?B?WUtvaVpmenJBakd1Umg0V0p4MThhV2FJOUlTeGEyT2w0czNSTFdnYVpueVhk?=
- =?utf-8?B?SVBwR3NyWGY3V3VJaHZQUWxtWDJHTnRWYVNBMmJtaXFuNkQ3ZnZSWlRKcXZJ?=
- =?utf-8?B?WGVPWkx2TjNjWXlrblpJQy9tMmloVFBraFBsbzU0NGlINGRnUFpEdDg3U3c4?=
- =?utf-8?B?UVNFNGh1ZFB5Yi8wUURFTERaNXhtUmRXVzVZR1JPenBPbmYrZTNEdkR0THZs?=
- =?utf-8?B?ZWxPS2NWRG1KRURXa1hiMW9TcHdTUWtEd0hXT2U4N3lhZzdJUEFkaUJ6dXBZ?=
- =?utf-8?B?bmVJSG5FWnNiWSt6WXNJaFE2anNpdHBEeFdQTzVWOVdnNXU0aGdPbmtIUjV1?=
- =?utf-8?B?a0N3dkZONHZvZkpZTlFrZm5qZ3RSUmR3am1iRE90MUFKSWU2T29sR08vOWFE?=
- =?utf-8?B?UHFGQnJrYnl3ZDRzUFpPeGtJUlF1WEdRQlRtZWdhbmhrSGk4cUZrOEFINWZS?=
- =?utf-8?B?RG54SERlNTVoV0hJS3oxN2tGZzRwUnBIREZsYWc5UGN3Y2k5enVUZWtybWxM?=
- =?utf-8?B?MEFKSC9aSExUS3NnVXN0TWZWaS9zS0hZclRpeHdKSzJXR3JhM1RUaG9QZUkx?=
- =?utf-8?B?R3JLSlBncjhZQVdMR2FJU1B4azRGM3N5VEwzK3VSNDQzdHo3UU5nTHRxN3F2?=
- =?utf-8?B?QnltazVRWjN5dUtKMHlVa2h1U3ltclErK1lUSDRMenFiS3o1Q1A2MWllT2g5?=
- =?utf-8?B?dFVHWUYzOGtpV2h4T2NpaDd5dm1ZanVmRll4aC81TEJsaHJkdXBrbE5ZVm8v?=
- =?utf-8?B?VzdwV29ST2FBNEl5bzNSZEpTRld4aXJyUnhxR2JsWGVXVG1ZaFlRSUJZUm15?=
- =?utf-8?B?S21ZdjZRckczblRFTythb2J3eERncjdzS0xXeTEzWUNzNVpXSnU1M0VkUVBE?=
- =?utf-8?B?aFJZVnJ6M3FwcXVoRGFKU01yL0NIT3hYZjg1Q3RPZmNEeW1scEIzbUVVQlJx?=
- =?utf-8?B?UFFEeTZiTUZMTjA5ZDBvdEdGUjRuWUxYRTliNUpQSlJqN1NyVzN5S3RmOHBI?=
- =?utf-8?B?TTFRa3ZCcUVFL0xNa0UzMjVhbXZlQ21RMEErS2dPY1pqb3dETkM5eDcvUzNS?=
- =?utf-8?B?cmw1MmlySTQrOStpa1NpeitiVHhGelZYU3hQa3lyZHZlWk12UCtnVVdyMDhM?=
- =?utf-8?B?MlpDSVVPZlA2OXAwZy96Qkc2NUp3cjhCK2FlYWoxZkwwWkFzeHBrTmJ4Wkxx?=
- =?utf-8?B?dFJnN3J6ZlZmM1Y5bXRZRE1pdzJ2UWM0K2ZvV1Y1cVpzNUYyMnI0SkExTnlZ?=
- =?utf-8?B?UTFZSUg1aUN2cUIzOFlSVHdaNytPY3JUQW9IMlJKeFRBTUtHd1BIQT09?=
-X-MS-Exchange-CrossTenant-Network-Message-Id: 29715aa9-d4f4-42ed-c80a-08de551e7356
-X-MS-Exchange-CrossTenant-AuthSource: CYYPR11MB8430.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Jan 2026 16:44:00.8103
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 6GPzny6s1UQBNkYkjw4SzqNoskV9MwYM/zBbRqW4fRB42QNzOJDwThBpDyxvA4F9ZKAl2upl442yB0jAYBtVYw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR11MB6214
-X-OriginatorOrg: intel.com
+User-Agent: Evolution 3.56.2 (3.56.2-2.fc42) 
+X-TM-AS-GCONF: 00
+X-Authority-Analysis: v=2.4 cv=KNRXzVFo c=1 sm=1 tr=0 ts=696a6996 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=vUbySO9Y5rIA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=VnNF1IyMAAAA:8 a=20KFwNOVAAAA:8 a=AiHppB-aAAAA:8 a=zBo5Bit52hmzgxODDfcA:9
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: HDcUgXMqcrTFQcSSHwm55CTcX_zwATbB
+X-Proofpoint-GUID: Ms5Y-J-mUGXOf9HnmbrcFe2dwdu983UI
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTE2MDExOCBTYWx0ZWRfX3faEyruqGvQW
+ oupyyXcrvAM+R4BJlmjSvcRP4ebLmXZhJFlQva3o6KeDgGEArgdmUS24CbJCiH6jfhxW7FGAGWF
+ HHRRx/Syu4McI8VLU2sev/aqwevPbDhZvdSYdhn4Tll/jefhRG3GgwItlQU2iK1yIRw5rsiGLvq
+ BCkW4iiA4vxY4jdSO1mQJrvFC9SUavwqfVmK0ZBb3m7d37wDH1hR2ZXXvc6GyLFR5rDzzCoNRq8
+ 1Rai+F1uAEtkEelhFGfGM/0D9rHURNdigulpRPDyEn7kdi6FGPMMIIIaXPG2sQAHfPDeE0ojokF
+ r350/RtFFrO6ZeMyVfHIj4zRt9LWZzxO3LlXdH+rlBc+LfekgBX7DznlV8vRIljfLt7CF9In3se
+ slN0LiKdYvif4zFMLHTKScLdnsFw5VBmbqE/MHE8+quOOB6VVMnP5ANRv5r0sNQLmhiJPdp5NA7
+ RrEcybl2m3gHsglFpPA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2026-01-16_06,2026-01-15_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 suspectscore=0 spamscore=0 malwarescore=0
+ lowpriorityscore=0 clxscore=1015 impostorscore=0 adultscore=0 phishscore=0
+ bulkscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.19.0-2512120000
+ definitions=main-2601160118
 
-On Wed, Jan 14, 2026 at 08:19:52PM +0100, Francois Dugast wrote:
-> From: Matthew Brost <matthew.brost@intel.com>
-> 
-> Reinitialize metadata for large zone device private folios in
-> zone_device_page_init prior to creating a higher-order zone device
-> private folio. This step is necessary when the folio’s order changes
-> dynamically between zone_device_page_init calls to avoid building a
-> corrupt folio. As part of the metadata reinitialization, the dev_pagemap
-> must be passed in from the caller because the pgmap stored in the folio
-> page may have been overwritten with a compound head.
-> 
-> Cc: Zi Yan <ziy@nvidia.com>
-> Cc: Alistair Popple <apopple@nvidia.com>
-> Cc: adhavan Srinivasan <maddy@linux.ibm.com>
-> Cc: Nicholas Piggin <npiggin@gmail.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-> Cc: Felix Kuehling <Felix.Kuehling@amd.com>
-> Cc: Alex Deucher <alexander.deucher@amd.com>
-> Cc: "Christian König" <christian.koenig@amd.com>
-> Cc: David Airlie <airlied@gmail.com>
-> Cc: Simona Vetter <simona@ffwll.ch>
-> Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-> Cc: Maxime Ripard <mripard@kernel.org>
-> Cc: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Lyude Paul <lyude@redhat.com>
-> Cc: Danilo Krummrich <dakr@kernel.org>
-> Cc: David Hildenbrand <david@kernel.org>
-> Cc: Oscar Salvador <osalvador@suse.de>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Jason Gunthorpe <jgg@ziepe.ca>
-> Cc: Leon Romanovsky <leon@kernel.org>
-> Cc: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
-> Cc: Liam R. Howlett <Liam.Howlett@oracle.com>
-> Cc: Vlastimil Babka <vbabka@suse.cz>
-> Cc: Mike Rapoport <rppt@kernel.org>
-> Cc: Suren Baghdasaryan <surenb@google.com>
-> Cc: Michal Hocko <mhocko@suse.com>
-> Cc: Balbir Singh <balbirs@nvidia.com>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: kvm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: amd-gfx@lists.freedesktop.org
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: nouveau@lists.freedesktop.org
-> Cc: linux-mm@kvack.org
-> Cc: linux-cxl@vger.kernel.org
-> Fixes: d245f9b4ab80 ("mm/zone_device: support large zone device private folios")
-> Signed-off-by: Matthew Brost <matthew.brost@intel.com>
-> Signed-off-by: Francois Dugast <francois.dugast@intel.com>
-> ---
->  arch/powerpc/kvm/book3s_hv_uvmem.c       |  2 +-
->  drivers/gpu/drm/amd/amdkfd/kfd_migrate.c |  2 +-
+On Fri, 2026-01-16 at 14:18 +0100, Ard Biesheuvel wrote:
+> On Fri, 16 Jan 2026 at 14:11, Mimi Zohar <zohar@linux.ibm.com> wrote:
+> >=20
+> > On Fri, 2026-01-16 at 10:41 +0100, Ard Biesheuvel wrote:
+> > > On Thu, 15 Jan 2026 at 01:43, Coiby Xu <coxu@redhat.com> wrote:
+> > > >=20
+> > > > EVM and other LSMs need the ability to query the secure boot status=
+ of
+> > > > the system, without directly calling the IMA arch_ima_get_secureboo=
+t
+> > > > function. Refactor the secure boot status check into a general,
+> > > > integrity-wide function named arch_integrity_get_secureboot.
+> > > >=20
+> > > > Define a new Kconfig option CONFIG_INTEGRITY_SECURE_BOOT, which is
+> > > > automatically configured by the supported architectures. The existi=
+ng
+> > > > IMA_SECURE_AND_OR_TRUSTED_BOOT Kconfig loads the architecture speci=
+fic
+> > > > IMA policy based on the refactored secure boot status code.
+> > > >=20
+> > > > Reported-and-suggested-by: Mimi Zohar <zohar@linux.ibm.com>
+> > > > Suggested-by: Roberto Sassu <roberto.sassu@huaweicloud.com>
+> > > > Signed-off-by: Coiby Xu <coxu@redhat.com>
+> > > > ---
+> > > >  arch/arm64/Kconfig                            |  1 +
+> > > >  arch/powerpc/Kconfig                          |  1 +
+> > > >  arch/powerpc/kernel/Makefile                  |  2 +-
+> > > >  arch/powerpc/kernel/ima_arch.c                |  5 --
+> > > >  arch/powerpc/kernel/integrity_sb_arch.c       | 13 +++++
+> > > >  arch/s390/Kconfig                             |  1 +
+> > > >  arch/s390/kernel/Makefile                     |  1 +
+> > > >  arch/s390/kernel/ima_arch.c                   |  6 --
+> > > >  arch/s390/kernel/integrity_sb_arch.c          |  9 +++
+> > > >  arch/x86/Kconfig                              |  1 +
+> > > >  arch/x86/include/asm/efi.h                    |  4 +-
+> > > >  arch/x86/platform/efi/efi.c                   |  2 +-
+> > > >  include/linux/ima.h                           |  7 +--
+> > > >  include/linux/integrity.h                     |  8 +++
+> > > >  security/integrity/Kconfig                    |  6 ++
+> > > >  security/integrity/Makefile                   |  3 +
+> > > >  security/integrity/efi_secureboot.c           | 56 +++++++++++++++=
+++++
+> > > >  security/integrity/ima/ima_appraise.c         |  2 +-
+> > > >  security/integrity/ima/ima_efi.c              | 47 +--------------=
+-
+> > > >  security/integrity/ima/ima_main.c             |  4 +-
+> > > >  security/integrity/platform_certs/load_uefi.c |  2 +-
+> > > >  21 files changed, 111 insertions(+), 70 deletions(-)
+> > > >  create mode 100644 arch/powerpc/kernel/integrity_sb_arch.c
+> > > >  create mode 100644 arch/s390/kernel/integrity_sb_arch.c
+> > > >  create mode 100644 security/integrity/efi_secureboot.c
+> > > >=20
+> > > > diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+> > > > index 93173f0a09c7..4c265b7386bb 100644
+> > > > --- a/arch/arm64/Kconfig
+> > > > +++ b/arch/arm64/Kconfig
+> > > > @@ -2427,6 +2427,7 @@ config EFI
+> > > >         select EFI_STUB
+> > > >         select EFI_GENERIC_STUB
+> > > >         imply IMA_SECURE_AND_OR_TRUSTED_BOOT
+> > > > +       imply INTEGRITY_SECURE_BOOT
+> > >=20
+> > > This allows both to be en/disabled individually, which I don't think
+> > > is what we want. It also results in more churn across the
+> > > arch-specific Kconfigs than needed.
+> > >=20
+> > > Wouldn't it be better if IMA_SECURE_AND_OR_TRUSTED_BOOT 'select'ed
+> > > INTEGRITY_SECURE_BOOT in its Kconfig definition?
+> >=20
+> > As much as possible, EVM (and other LSMs) shouldn't be dependent on ano=
+ther LSM,
+> > in this case IMA, being configured.
+>=20
+> Sure, but that is not my point.
+>=20
+> This arrangement allows for IMA_SECURE_AND_OR_TRUSTED_BOOT to be
+> enabled without INTEGRITY_SECURE_BOOT, resulting in the stub
+> implementation of arch_integrity_get_secureboot() being used, which
+> always returns false.
 
-AMD folks, ack to get this patch through drm-misc-next or even perhaps some mm
-related tree?
+I understand your concern, but instead of "select"ing INTEGRITY_SECURE_BOOT=
+ from
+IMA_SECURE_AND_OR_TRUSTED_BOOT, how making IMA_SECURE_AND_OR_TRUSTED_BOOT
+dependent on both IMA_ARCH_POLICY and INTEGRITY_SECURE_BOOT.
 
->  drivers/gpu/drm/drm_pagemap.c            |  2 +-
->  drivers/gpu/drm/nouveau/nouveau_dmem.c   |  2 +-
-
-Nouveau folks, ack as well?
-
->  include/linux/memremap.h                 |  9 ++++++---
->  lib/test_hmm.c                           |  4 +++-
->  mm/memremap.c                            | 20 +++++++++++++++++++-
->  7 files changed, 32 insertions(+), 9 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/book3s_hv_uvmem.c b/arch/powerpc/kvm/book3s_hv_uvmem.c
-> index e5000bef90f2..7cf9310de0ec 100644
-> --- a/arch/powerpc/kvm/book3s_hv_uvmem.c
-> +++ b/arch/powerpc/kvm/book3s_hv_uvmem.c
-> @@ -723,7 +723,7 @@ static struct page *kvmppc_uvmem_get_page(unsigned long gpa, struct kvm *kvm)
->  
->  	dpage = pfn_to_page(uvmem_pfn);
->  	dpage->zone_device_data = pvt;
-> -	zone_device_page_init(dpage, 0);
-> +	zone_device_page_init(dpage, &kvmppc_uvmem_pgmap, 0);
->  	return dpage;
->  out_clear:
->  	spin_lock(&kvmppc_uvmem_bitmap_lock);
-> diff --git a/drivers/gpu/drm/amd/amdkfd/kfd_migrate.c b/drivers/gpu/drm/amd/amdkfd/kfd_migrate.c
-> index af53e796ea1b..6ada7b4af7c6 100644
-> --- a/drivers/gpu/drm/amd/amdkfd/kfd_migrate.c
-> +++ b/drivers/gpu/drm/amd/amdkfd/kfd_migrate.c
-> @@ -217,7 +217,7 @@ svm_migrate_get_vram_page(struct svm_range *prange, unsigned long pfn)
->  	page = pfn_to_page(pfn);
->  	svm_range_bo_ref(prange->svm_bo);
->  	page->zone_device_data = prange->svm_bo;
-> -	zone_device_page_init(page, 0);
-> +	zone_device_page_init(page, page_pgmap(page), 0);
->  }
->  
->  static void
-> diff --git a/drivers/gpu/drm/drm_pagemap.c b/drivers/gpu/drm/drm_pagemap.c
-> index 03ee39a761a4..c497726b0147 100644
-> --- a/drivers/gpu/drm/drm_pagemap.c
-> +++ b/drivers/gpu/drm/drm_pagemap.c
-> @@ -201,7 +201,7 @@ static void drm_pagemap_get_devmem_page(struct page *page,
->  					struct drm_pagemap_zdd *zdd)
->  {
->  	page->zone_device_data = drm_pagemap_zdd_get(zdd);
-> -	zone_device_page_init(page, 0);
-> +	zone_device_page_init(page, zdd->dpagemap->pagemap, 0);
->  }
->  
->  /**
-> diff --git a/drivers/gpu/drm/nouveau/nouveau_dmem.c b/drivers/gpu/drm/nouveau/nouveau_dmem.c
-> index 58071652679d..3d8031296eed 100644
-> --- a/drivers/gpu/drm/nouveau/nouveau_dmem.c
-> +++ b/drivers/gpu/drm/nouveau/nouveau_dmem.c
-> @@ -425,7 +425,7 @@ nouveau_dmem_page_alloc_locked(struct nouveau_drm *drm, bool is_large)
->  			order = ilog2(DMEM_CHUNK_NPAGES);
->  	}
->  
-> -	zone_device_folio_init(folio, order);
-> +	zone_device_folio_init(folio, page_pgmap(folio_page(folio, 0)), order);
->  	return page;
->  }
->  
-> diff --git a/include/linux/memremap.h b/include/linux/memremap.h
-> index 713ec0435b48..e3c2ccf872a8 100644
-> --- a/include/linux/memremap.h
-> +++ b/include/linux/memremap.h
-> @@ -224,7 +224,8 @@ static inline bool is_fsdax_page(const struct page *page)
->  }
->  
->  #ifdef CONFIG_ZONE_DEVICE
-> -void zone_device_page_init(struct page *page, unsigned int order);
-> +void zone_device_page_init(struct page *page, struct dev_pagemap *pgmap,
-> +			   unsigned int order);
->  void *memremap_pages(struct dev_pagemap *pgmap, int nid);
->  void memunmap_pages(struct dev_pagemap *pgmap);
->  void *devm_memremap_pages(struct device *dev, struct dev_pagemap *pgmap);
-> @@ -234,9 +235,11 @@ bool pgmap_pfn_valid(struct dev_pagemap *pgmap, unsigned long pfn);
->  
->  unsigned long memremap_compat_align(void);
->  
-> -static inline void zone_device_folio_init(struct folio *folio, unsigned int order)
-> +static inline void zone_device_folio_init(struct folio *folio,
-> +					  struct dev_pagemap *pgmap,
-> +					  unsigned int order)
->  {
-> -	zone_device_page_init(&folio->page, order);
-> +	zone_device_page_init(&folio->page, pgmap, order);
->  	if (order)
->  		folio_set_large_rmappable(folio);
->  }
-> diff --git a/lib/test_hmm.c b/lib/test_hmm.c
-> index 8af169d3873a..455a6862ae50 100644
-> --- a/lib/test_hmm.c
-> +++ b/lib/test_hmm.c
-> @@ -662,7 +662,9 @@ static struct page *dmirror_devmem_alloc_page(struct dmirror *dmirror,
->  			goto error;
->  	}
->  
-> -	zone_device_folio_init(page_folio(dpage), order);
-> +	zone_device_folio_init(page_folio(dpage),
-> +			       page_pgmap(folio_page(page_folio(dpage), 0)),
-> +			       order);
->  	dpage->zone_device_data = rpage;
->  	return dpage;
->  
-> diff --git a/mm/memremap.c b/mm/memremap.c
-> index 63c6ab4fdf08..6f46ab14662b 100644
-> --- a/mm/memremap.c
-> +++ b/mm/memremap.c
-> @@ -477,10 +477,28 @@ void free_zone_device_folio(struct folio *folio)
->  	}
->  }
->  
-> -void zone_device_page_init(struct page *page, unsigned int order)
-> +void zone_device_page_init(struct page *page, struct dev_pagemap *pgmap,
-> +			   unsigned int order)
->  {
-> +	struct page *new_page = page;
-> +	unsigned int i;
-> +
->  	VM_WARN_ON_ONCE(order > MAX_ORDER_NR_PAGES);
->  
-> +	for (i = 0; i < (1UL << order); ++i, ++new_page) {
-> +		struct folio *new_folio = (struct folio *)new_page;
-> +
-> +		new_page->flags.f &= ~0xffUL;	/* Clear possible order, page head */
-> +#ifdef NR_PAGES_IN_LARGE_FOLIO
-> +		((struct folio *)(new_page - 1))->_nr_pages = 0;
-> +#endif
-> +		new_folio->mapping = NULL;
-> +		new_folio->pgmap = pgmap;	/* Also clear compound head */
-> +		new_folio->share = 0;   /* fsdax only, unused for device private */
-> +		VM_WARN_ON_FOLIO(folio_ref_count(new_folio), new_folio);
-> +		VM_WARN_ON_FOLIO(!folio_is_zone_device(new_folio), new_folio);
-> +	}
-> +
->  	/*
->  	 * Drivers shouldn't be allocating pages after calling
->  	 * memunmap_pages().
-> -- 
-> 2.43.0
-> 
+Including the "imply INTEGRITY_SECURE_BOOT" here in the arch Kconfig allows=
+ EVM
+to query the secure boot state without relying on IMA_SECURE_AND_OR_TRUSTED=
+_BOOT
+being configured.
 
