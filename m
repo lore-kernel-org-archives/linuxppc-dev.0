@@ -1,52 +1,121 @@
-Return-Path: <linuxppc-dev+bounces-15921-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15922-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1736AC982DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Jan 2026 17:27:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D536BC982E2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Jan 2026 17:41:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dt6Hf3rZxz2xnj;
-	Sat, 17 Jan 2026 04:27:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:2"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768584462;
-	cv=none; b=jRMLX2RXkTOut3QZwMrxnxZCedDjG/cbCgeieYvdOfXutXnA7EZ9xIHjIW6GKA4T0u/woPqGxmNnENmZfSQGS2A2L9zKwaS60Tdd0Tbv2b4yKyVba1/+IRvueQBe2790NtKNyHgCN+LgFsjX9u8eRIO7rNCG1JOaGyICQoBCj5PbcsRr5JCh80sY3HmNbB2bNVwPC6H0p8CLYCOf3dk9ofowjsMIsUBqD5DCZFo7FjwLsFyWwUIgy1RxK06zXycGDZpeRueCfj+PnxKReJGNG6CgWDi4QZJoFnXuWymhWaguq4bdg2U+Iek0t/EIUiA0J6XCbk2XX7cCtK6mOuDmZA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dt6bg3j5zz2xm3;
+	Sat, 17 Jan 2026 04:41:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768571672;
+	cv=none; b=aeF/SVTxC9QZA6lVeuT+yKqpUiiLf3VqRKLRyNI0vnVsuDNCYqIePb5aVlTBKzs/iE8jqhrSjureZNC+Hs0jDX07lI6TIWaCaYyCGYwIN6SwCX7WG4gPAZU7tAdC4u6gjsnSPPMatCO342fg4NqMwMyIHuTwmmgDqSy6zwn3VQ7XwV+n/xpUYXF8Mz6R6hCvP+oQE8ma3jsWBP09OdRpzVrT/pGAbgVhy+8EQ/FldZVv6WW/JPpmDm7wzfBrAzhqk3uI5XIHz3g4MndWqciCfZJipSXICZVFxhtTN3xVqgrvs9xKguEqsEofyPHq4NXC+Qyu04IbYucm0uxNdkuxDA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768584462; c=relaxed/relaxed;
-	bh=sOtTf9haEQ9bDW7hx4S6Kpvek/si/81/SSAc2MauChM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=XaFjeO1W68qK6tffge6C2LLoi3oy1vT+Ps98Xpc8Jp6DdJ9ifH16Z8A/PyFJuQkN79+KVQNfZC7wZ/ih5agt3vcWL8pMlRtrLwUqvOynvQ5T0P8bnWy1i3FZTiyk95aFzVnw++ZyzsER2MWcl8DqMWL0VJi1DSQo1hpb5/LPkCAFoRsdmIIsHUqqI3ASOOLIFAaiV/Iu/vU25F1L2EVu7noG0z7aPlD20x/wAV3UhKtRQomR5NXUmO09iVYMIgDM+8hBey/I4U2U3hK8xFbA0QtVVHV9dlxEkIRPHRPO0n7fhASWb/8GxXAZ5kYxB8RGHEZLe0l90fK60ty+Vgd2HA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=vbabka@suse.cz; receiver=lists.ozlabs.org) smtp.mailfrom=suse.cz
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=vbabka@suse.cz; receiver=lists.ozlabs.org)
-X-Greylist: delayed 4827 seconds by postgrey-1.37 at boromir; Sat, 17 Jan 2026 04:27:41 AEDT
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
+	t=1768571672; c=relaxed/relaxed;
+	bh=2Jyc4vjPWHQ8N29GFPPd4QPUxfDxmdAZddY3K56YrUM=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=VEpJY5DL2WrHmQY7VIeYHySzbKFVoNePNe64p7PCt8A+QgzMoO2/vmFK2SE6svcn4hH+eYAi7/FUoBXHw46PIptBfAsmkWVhPQg0nXHI874j1fzPC6Wm8qcuoYurrtjDVNtZOgTebr0TeVEAaT5WjHcxBfyuG/nDNgygmVcIUjRAaap+oJR/hMVAtbbU/9g0CnuLXn8Q4DRLwvz4UP6DRC6B2YN/p6R2rE9cU9Y+cDZX9oa5xPYboHR7qGbX1YiAWUqnSj03LLqR/1LtjZNSHFE3QFmsbAh3DN4LXz0WAK4jkEJqhJz991UxSpBTqxjy6OdbsXsKgwTt5k7nkgydkg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=C073zvxJ; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42b; helo=mail-wr1-x42b.google.com; envelope-from=mpdesouza@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=C073zvxJ;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::42b; helo=mail-wr1-x42b.google.com; envelope-from=mpdesouza@suse.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x42b.google.com (mail-wr1-x42b.google.com [IPv6:2a00:1450:4864:20::42b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dt6Hd5ljbz2xS2
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jan 2026 04:27:41 +1100 (AEDT)
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 26A185BCEE;
-	Fri, 16 Jan 2026 17:27:38 +0000 (UTC)
-Authentication-Results: smtp-out2.suse.de;
-	none
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id D33633EA63;
-	Fri, 16 Jan 2026 17:27:37 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id /QGJMAl1ammlHgAAD6G6ig
-	(envelope-from <vbabka@suse.cz>); Fri, 16 Jan 2026 17:27:37 +0000
-Message-ID: <4e100125-ed70-4ec9-a0fa-5214bccd7cf3@suse.cz>
-Date: Fri, 16 Jan 2026 18:27:37 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dt1Yg3WCbz2xS2
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Jan 2026 00:54:30 +1100 (AEDT)
+Received: by mail-wr1-x42b.google.com with SMTP id ffacd0b85a97d-42fb2314eb0so1644011f8f.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Jan 2026 05:54:30 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1768571667; x=1769176467; darn=lists.ozlabs.org;
+        h=mime-version:user-agent:content-transfer-encoding:autocrypt
+         :references:in-reply-to:date:cc:to:from:subject:message-id:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=2Jyc4vjPWHQ8N29GFPPd4QPUxfDxmdAZddY3K56YrUM=;
+        b=C073zvxJfB+UEHfIRsxi6ra/S4Bg6G6gVO+VCmmunhwMzOe5KOvGMrCk5/scYc2//Q
+         wMZUIOx1nsHkcjzQj0Gfyca59w1yzNAEIGCbA8eh+T/CutL9Rj9sY7GUK6sP9LpbTkLz
+         XtxuB4Iv82zO5s3/u4yMa33Ui7v63jMuedgN0MQqU4ZtEf49ppghRdf/es6wQkDKS9eC
+         3IuF6QBGdRMKSu0nZA17FQRoW0GWD3O/SfGovpthPIYetIlrjld35WUA6amiwV6QD1LI
+         sGfWNWC/yclJtLXPaogviGthBMwcmN5A0pds8YTl/ZzGrfQCRMpM3ss+r3wE8aB/zm3f
+         He0Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1768571667; x=1769176467;
+        h=mime-version:user-agent:content-transfer-encoding:autocrypt
+         :references:in-reply-to:date:cc:to:from:subject:message-id:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=2Jyc4vjPWHQ8N29GFPPd4QPUxfDxmdAZddY3K56YrUM=;
+        b=VidAjiXz7kdNJXoPze1VXXcAVMVNZHcjgnTiBzly6seThb0i+/ke9eDDOUNyPcJV56
+         i5V8R++ITlKGvy/qkD/zh0tnpDTJY5T/zgQtsG/Eli7Zw05A2LntpVXzSwcYSpm0F2iQ
+         4ljz9W4YqptINcqWAwDX1HekmXBUd+N+QtPaFp3WGq5ViJdgxLBlWgfSTIPY8CJAx306
+         BAeEdLFLgq+uhZlgr80RBRZ2ZIxgPlzjn1OD87YRPGf9o5+/OHw27gHvL4DLZ7tZ/zpV
+         dOZZnxecfh09nsewxV+rb1hf2ifyiM76WsbY1JCFdWJSAX1fae9ST+02FppL+G+egDY2
+         weGA==
+X-Forwarded-Encrypted: i=1; AJvYcCVUODKRDWmHJ6pP/MVNm9E6ChKPlob6NcaEJUZzyW3jR3K81TvphJ97fETGFX2e+b+O2Z1wEHgBO1ti0QE=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyhCDLlGZI2qhoIilb78uSjIZRck/YGS/v9sDJCN3MVnY7Rkl1X
+	haUwFrylhcpCX1PKjuSKv+y7c62va9wVEE8lyYpNSCIaH0l/y8Ho5MWcyF7ZQB+ufJY=
+X-Gm-Gg: AY/fxX6vS388XZ/97bEI1nGTIXLQ7Av/fRpXkt6CGxFPezRN2vP5+pfJE0TbUHVIW0U
+	T1ADxH1tOAfTRp1MUkh5aHxSPZoTDhq7Thl/6bXA9+8brYaA2JTMeP1QMPaewJjNJCLuo89Uvr2
+	RH9S8UguCijD3FQI4RchCGm1uGguOSY7QR3DjZN5jkeUZlT5W/mc19/z/rXyumi8GNAQmdakz0e
+	2tS928mbCXfxu/u8LaYobFdil6h/IUejPGZMmWLdAij1F4A1st5SmVIt3bRzfy/f1vtMCjfFh72
+	hlHUortROXH/fj91Wj/1j/kxlXg5MITqweAZSQk4yS/2HkYSUytf280JalmiwhPDWceKgvEulsb
+	SECBYGz52XPcdLzb+0MVHd0/+5THQIwnpMfb3RJhrVvSmVtWip4Fk1bgTMAcbLrzNMJnyP3H/MV
+	qWEI+8dMx6Y0knfS3DgD3xxGqiyZl6W4ugLuUEiQA=
+X-Received: by 2002:a05:6000:4387:b0:431:1ae:a3d0 with SMTP id ffacd0b85a97d-435699810a1mr3695386f8f.25.1768571667158;
+        Fri, 16 Jan 2026 05:54:27 -0800 (PST)
+Received: from [192.168.3.33] (97.36.160.45.gramnet.com.br. [45.160.36.97])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-435696fbea8sm5433542f8f.0.2026.01.16.05.54.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 16 Jan 2026 05:54:26 -0800 (PST)
+Message-ID: <6168099632390068c8544b48f2e81bf737aa10d7.camel@suse.com>
+Subject: Re: [PATCH 14/19] drivers: hwtracing: stm: console.c: Migrate to
+ register_console_force helper
+From: Marcos Paulo de Souza <mpdesouza@suse.com>
+To: Alexander Shishkin <alexander.shishkin@linux.intel.com>, Richard
+ Weinberger <richard@nod.at>, Anton Ivanov
+ <anton.ivanov@cambridgegreys.com>, Johannes Berg	
+ <johannes@sipsolutions.net>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>,  Jason Wessel <jason.wessel@windriver.com>,
+ Daniel Thompson <danielt@kernel.org>, Douglas Anderson	
+ <dianders@chromium.org>, Petr Mladek <pmladek@suse.com>, Steven Rostedt	
+ <rostedt@goodmis.org>, John Ogness <john.ogness@linutronix.de>, Sergey
+ Senozhatsky <senozhatsky@chromium.org>, Jiri Slaby <jirislaby@kernel.org>,
+ Breno Leitao <leitao@debian.org>,  Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet	
+ <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni	
+ <pabeni@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Kees Cook	
+ <kees@kernel.org>, Tony Luck <tony.luck@intel.com>, "Guilherme G. Piccoli"	
+ <gpiccoli@igalia.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael
+ Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy	 <christophe.leroy@csgroup.eu>, Andreas Larsson
+ <andreas@gaisler.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Alexandre Torgue <alexandre.torgue@foss.st.com>, Jacky Huang	
+ <ychuang3@nuvoton.com>, Shan-Chun Hung <schung@nuvoton.com>, Laurentiu
+ Tudor	 <laurentiu.tudor@nxp.com>
+Cc: linux-um@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	kgdb-bugreport@lists.sourceforge.net, linux-serial@vger.kernel.org, 
+	netdev@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
+	linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	sparclinux@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, 
+	linux-arm-kernel@lists.infradead.org, linux-fsdevel@vger.kernel.org
+Date: Fri, 16 Jan 2026 10:54:14 -0300
+In-Reply-To: <83zf6daetu.fsf@black.igk.intel.com>
+References: <20251227-printk-cleanup-part3-v1-0-21a291bcf197@suse.com>
+	 <20251227-printk-cleanup-part3-v1-14-21a291bcf197@suse.com>
+	 <83zf6daetu.fsf@black.igk.intel.com>
+Autocrypt: addr=mpdesouza@suse.com; prefer-encrypt=mutual;
+ keydata=mDMEZ/0YqhYJKwYBBAHaRw8BAQdA4JZz0FED+JD5eKlhkNyjDrp6lAGmgR3LPTduPYGPT
+ Km0Kk1hcmNvcyBQYXVsbyBkZSBTb3V6YSA8bXBkZXNvdXphQHN1c2UuY29tPoiTBBMWCgA7FiEE2g
+ gC66iLbhUsCBoBemssEuRpLLUFAmf9GKoCGwMFCwkIBwICIgIGFQoJCAsCBBYCAwECHgcCF4AACgk
+ QemssEuRpLLWGxwD/S1I0bjp462FlKb81DikrOfWbeJ0FOJP44eRzmn20HmEBALBZIMrfIH2dJ5eM
+ GO8seNG8sYiP6JfRjl7Hyqca6YsE
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.58.2 (by Flathub.org) 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,162 +129,33 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 1/5] mm/zone_device: Reinitialize large zone device
- private folios
-Content-Language: en-US
-To: Jason Gunthorpe <jgg@ziepe.ca>
-Cc: Francois Dugast <francois.dugast@intel.com>,
- intel-xe@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
- Matthew Brost <matthew.brost@intel.com>, Zi Yan <ziy@nvidia.com>,
- Alistair Popple <apopple@nvidia.com>,
- adhavan Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin
- <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Felix Kuehling <Felix.Kuehling@amd.com>,
- Alex Deucher <alexander.deucher@amd.com>,
- =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
- Lyude Paul <lyude@redhat.com>, Danilo Krummrich <dakr@kernel.org>,
- David Hildenbrand <david@kernel.org>, Oscar Salvador <osalvador@suse.de>,
- Andrew Morton <akpm@linux-foundation.org>, Leon Romanovsky
- <leon@kernel.org>, Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
- "Liam R . Howlett" <Liam.Howlett@oracle.com>, Mike Rapoport
- <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
- Michal Hocko <mhocko@suse.com>, Balbir Singh <balbirs@nvidia.com>,
- linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org,
- nouveau@lists.freedesktop.org, linux-mm@kvack.org, linux-cxl@vger.kernel.org
-References: <20260116111325.1736137-1-francois.dugast@intel.com>
- <20260116111325.1736137-2-francois.dugast@intel.com>
- <ed6ca250-67ee-4f7a-bc3b-66169494549a@suse.cz>
- <20260116172052.GC961572@ziepe.ca>
-From: Vlastimil Babka <vbabka@suse.cz>
-Autocrypt: addr=vbabka@suse.cz; keydata=
- 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
- m6M14QORSWTLRg==
-In-Reply-To: <20260116172052.GC961572@ziepe.ca>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Spamd-Result: default: False [-4.00 / 50.00];
-	REPLY(-4.00)[]
-X-Rspamd-Queue-Id: 26A185BCEE
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
 
-On 1/16/26 18:20, Jason Gunthorpe wrote:
-> On Fri, Jan 16, 2026 at 05:07:09PM +0100, Vlastimil Babka wrote:
->> On 1/16/26 12:10, Francois Dugast wrote:
->> > From: Matthew Brost <matthew.brost@intel.com>
->> > diff --git a/mm/memremap.c b/mm/memremap.c
->> > index 63c6ab4fdf08..ac7be07e3361 100644
->> > --- a/mm/memremap.c
->> > +++ b/mm/memremap.c
->> > @@ -477,10 +477,43 @@ void free_zone_device_folio(struct folio *folio)
->> >  	}
->> >  }
->> >  
->> > -void zone_device_page_init(struct page *page, unsigned int order)
->> > +void zone_device_page_init(struct page *page, struct dev_pagemap *pgmap,
->> > +			   unsigned int order)
->> >  {
->> > +	struct page *new_page = page;
->> > +	unsigned int i;
->> > +
->> >  	VM_WARN_ON_ONCE(order > MAX_ORDER_NR_PAGES);
->> >  
->> > +	for (i = 0; i < (1UL << order); ++i, ++new_page) {
->> > +		struct folio *new_folio = (struct folio *)new_page;
->> > +
->> > +		/*
->> > +		 * new_page could have been part of previous higher order folio
->> > +		 * which encodes the order, in page + 1, in the flags bits. We
->> > +		 * blindly clear bits which could have set my order field here,
->> > +		 * including page head.
->> > +		 */
->> > +		new_page->flags.f &= ~0xffUL;	/* Clear possible order, page head */
->> > +
->> > +#ifdef NR_PAGES_IN_LARGE_FOLIO
->> > +		/*
->> > +		 * This pointer math looks odd, but new_page could have been
->> > +		 * part of a previous higher order folio, which sets _nr_pages
->> > +		 * in page + 1 (new_page). Therefore, we use pointer casting to
->> > +		 * correctly locate the _nr_pages bits within new_page which
->> > +		 * could have modified by previous higher order folio.
->> > +		 */
->> > +		((struct folio *)(new_page - 1))->_nr_pages = 0;
->> > +#endif
->> > +
->> > +		new_folio->mapping = NULL;
->> > +		new_folio->pgmap = pgmap;	/* Also clear compound head */
->> > +		new_folio->share = 0;   /* fsdax only, unused for device private */
->> > +		VM_WARN_ON_FOLIO(folio_ref_count(new_folio), new_folio);
->> > +		VM_WARN_ON_FOLIO(!folio_is_zone_device(new_folio), new_folio);
->> > +	}
->> > +
->> >  	/*
->> >  	 * Drivers shouldn't be allocating pages after calling
->> >  	 * memunmap_pages().
->> 
->> Can't say I'm a fan of this. It probably works now (so I'm not nacking) but
->> seems rather fragile. It seems likely to me somebody will try to change some
->> implementation detail in the page allocator and not notice it breaks this,
->> for example. I hope we can eventually get to something more robust.
-> 
-> These pages shouldn't be in the buddy allocator at all? The driver
-> using the ZONE_DEVICE pages is responsible to provide its own
-> allocator.
-> 
-> Did you mean something else?
+On Fri, 2026-01-16 at 14:04 +0100, Alexander Shishkin wrote:
+> Marcos Paulo de Souza <mpdesouza@suse.com> writes:
+>=20
+> > The register_console_force function was introduced to register
+> > consoles
+> > even on the presence of default consoles, replacing the CON_ENABLE
+> > flag
+> > that was forcing the same behavior.
+> >=20
+> > No functional changes.
+> >=20
+> > Signed-off-by: Marcos Paulo de Souza <mpdesouza@suse.com>
+>=20
+> Acked-by: Alexander Shishkin <alexander.shishkin@linux.intel.com>
 
-Yeah sorry that was imprecise. I meant the struct page/folio layout
-implementation details (which may or may not be related to the page allocator).
+Thanks Alexander!
 
-> Jason
->  
+>=20
+> Should I pick this up or will you send this with the rest of the
+> series?
 
+I'll need a v2, since some things will also change in other parts of
+the patchset, so I would wait for the next version.
+
+>=20
+> Cheers,
+> --
+> Alex
 
