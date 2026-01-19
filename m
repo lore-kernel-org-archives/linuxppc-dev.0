@@ -1,44 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-15949-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15950-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A646EC98315
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jan 2026 06:04:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 997F6C98315
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jan 2026 06:06:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dvfzy66xSz2xjb;
-	Mon, 19 Jan 2026 17:04:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dvg1j2RVPz2xjb;
+	Mon, 19 Jan 2026 17:06:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.81
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768802670;
-	cv=none; b=JGw8HvFEHlzKDGrJ7oAcjGPTpXrSR0oPRAd+W0/jkrBlnftZP6qsgzjPnMm8s5p6rXLQmheUjb42Kx2MnQXkXYaJzZEliMgHYCpw3cxvQXLubHJ8y/ASNBtxxGxRGwIi1C3001TLvu7U36QSvFZW2Oz7kWdGjFnCL8POfl+z5DQfjsZAR+xhBMScPe7gxmtexeXo0yscaqmA7D72uxdbqvRdPav8K8pycmLRsHbscaOIoqzzlu2+XKB2/5KyYHOtEK7Sbn5yuUuS/6JGt0ipVcpo7KpHaKxWl5m7Gwoga5qdHiQSaAANOxUcwMVsw0uZYGmfizRzhFltlvvJ0QKUgg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768802761;
+	cv=none; b=mz3eIDyoYEYZ1HuyHllZfeGkM9OPC0ACMiPJFiznNcaVqfcm2lqAPERqjCPz3m0GC5ke21GWat75BFZeWC1oIgrJeAOJienVeMWJ+YzoJGi+MK7Vg9xf1sP4dr+eg3BAJPkvKRf7bedllGbb3BaN5gk2iMJmJUmLvfrgSvos/IdprUcgrwRe5NqH5ojFcqunNnQzsm37Yp+afSTm3JR+eU0a61sueeFRZK1cLrl6IN1ZRs1f0oNFGAhkC4iPNGdarF9sNNexhwlNlgw9tkhyI0xZB+YyKkfyiFyzssgjURBNQ3J+SqsmUKrca0pJ9QG3kIf1FzIcTxwpwl/zuEv7Lw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768802670; c=relaxed/relaxed;
-	bh=SOpAkrurgZZ+XgghofR9vRH2MXo+1yAlhLPtvMwp1yo=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=ZYoIeAE4mpS+B9ubRwBGOBO+oYQ9bmNTRTztZLpSEJ9D8s4BYkDw+DfJNZAG9Weq31q0ph3/aXI2t9IGnRk5zsCxQGUxm5aP2aPtSwsmS4ir/a2Kkd2rCHzZIdMxmKR8FfnNZjBeyyqHm6a6Ao6cmPjq2z7fND4OLUmRxhy8G6x3wxtHscZo9osp8iQg25KNX5DLOYnWcl0Y4Y3BKKl3T2oPNc20Q11I4xETKrFOEP9l4LrFFdCV6UHsLXCCGmPzcT2G5jEb78VrvFWELayr8wl4PyrgcKzj3QgtuOyHhGDhufPAQwsxC9PO9b8HoX5yY3rzEq2i4UzmDRmslVSy1Q==
+	t=1768802761; c=relaxed/relaxed;
+	bh=c/X3NWCP0Bb6C/gVMuDHOd2u23xDLA+ONfYxgwyAPWk=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=AWb44jhJolX4pTyoKl68UrbEQ6792cA1Xf0I42mHyrIyx0YSaeFxH6Joem+XggUOMT7cWlc0yGl2L1HJLf64hHwRWcfbQtEIRx4IvXTZpKuTm7hpyIpxGH9s3sk69mXbIeeko5hs2uUS/dYrHh5I2/OJLTclwXtEUcA79iiMucTp/IJPdoT+xQFRTthsRZpXu81kBogNuef93ZlOFPRO1Opd/hnobwWwicbDjrch8EPmnNL0CgcxaZ6ZxMT+4oc59G26zP8ruQR0b0/URXTbXXS3AEXwXlFQj3iwitfqCgRfVY++DO4JHwpCtPO8urjHVTVnAPYXd8vKwqpLHbenRw==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass (client-ip=159.226.251.81; helo=cstnet.cn; envelope-from=nichen@iscas.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=iscas.ac.cn
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iscas.ac.cn (client-ip=159.226.251.81; helo=cstnet.cn; envelope-from=nichen@iscas.ac.cn; receiver=lists.ozlabs.org)
-X-Greylist: delayed 395 seconds by postgrey-1.37 at boromir; Mon, 19 Jan 2026 17:04:29 AEDT
 Received: from cstnet.cn (smtp81.cstnet.cn [159.226.251.81])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dvfzx603Hz2xSZ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jan 2026 17:04:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dvg1h3r3gz2xSZ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jan 2026 17:06:00 +1100 (AEDT)
 Received: from localhost (unknown [124.16.138.129])
-	by APP-03 (Coremail) with SMTP id rQCowADX9NvOx21pkW+9BQ--.64349S2;
-	Mon, 19 Jan 2026 13:57:34 +0800 (CST)
+	by APP-03 (Coremail) with SMTP id rQCowACHpt27yW1pmq69BQ--.58969S2;
+	Mon, 19 Jan 2026 14:05:47 +0800 (CST)
 From: Chen Ni <nichen@iscas.ac.cn>
-To: qiang.zhao@nxp.com,
-	chleroy@kernel.org
+To: agust@denx.de,
+	maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	chleroy@kernel.org,
+	jirislaby@kernel.org,
+	tglx@kernel.org
 Cc: linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Chen Ni <nichen@iscas.ac.cn>
-Subject: [PATCH] soc: fsl: qe: qe_ports_ic: Consolidate chained IRQ handler install/remove
-Date: Mon, 19 Jan 2026 13:57:15 +0800
-Message-Id: <20260119055715.889001-1-nichen@iscas.ac.cn>
+Subject: [PATCH] powerpc/52xx/media5200: Consolidate chained IRQ handler install/remove
+Date: Mon, 19 Jan 2026 14:04:50 +0800
+Message-Id: <20260119060450.889119-1-nichen@iscas.ac.cn>
 X-Mailer: git-send-email 2.25.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -54,23 +57,23 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:rQCowADX9NvOx21pkW+9BQ--.64349S2
-X-Coremail-Antispam: 1UD129KBjvdXoW7Jr1fKr4kGryrKryxXw1DKFg_yoWDtrXE9w
-	4jvr97Wr10vr9IvF12kwsxAFyrZr4UWwn29wsYqayay348trW5XFy2qFnxCrn7WF48Arnr
-	Grn8Z393C348ujkaLaAFLSUrUUUUbb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUIcSsGvfJTRUUUbs8FF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2IYs7xG
+X-CM-TRANSID:rQCowACHpt27yW1pmq69BQ--.58969S2
+X-Coremail-Antispam: 1UD129KBjvdXoW7Jr1fKr4kGryrKryxXw1DKFg_yoWkZFg_Ww
+	4kZFsrXr48ArsIyrnFvr15AFy0yrW8GFy0k3ZYqanrtrn8XrWDZr10vF42kr47WF10yr43
+	G3sYkanxCayj9jkaLaAFLSUrUUUUbb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUIcSsGvfJTRUUUbTAFF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2IYs7xG
 	6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
-	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr0_
-	Cr1l84ACjcxK6I8E87Iv67AKxVWxJr0_GcWl84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s
-	0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xII
-	jxv20xvE14v26rWY6Fy7McIj6I8E87Iv67AKxVWYoVW2owAm72CE4IkC6x0Yz7v_Jr0_Gr
-	1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7MxkF7I0En4kS14v26r12
-	6r1DMxkIecxEwVAFwVW8WwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJVW8Jw
-	C20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAF
-	wI0_JF0_Jw1lIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6xIIjx
-	v20xvEc7CjxVAFwI0_Jr0_Gr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2
-	jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Jr0_GrUvcSsGvfC2KfnxnUUI43
-	ZEXa7sR_AR65UUUUU==
+	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Cr0_
+	Gr1UM28EF7xvwVC2z280aVAFwI0_Cr1j6rxdM28EF7xvwVC2z280aVCY1x0267AKxVW0oV
+	Cq3wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0
+	I7IYx2IY67AKxVWrXVW3AwAv7VC2z280aVAFwI0_XcC_AcWlOx8S6xCaFVCjc4AY6r1j6r
+	4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IErcIFxwACI402YVCY1x02628v
+	n2kIc2xKxwCY1x0262kKe7AKxVWUtVW8ZwCY02Avz4vE14v_GF1l42xK82IYc2Ij64vIr4
+	1l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK
+	67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r1q6r43MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI
+	8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14v26r4j6F4UMIIF0xvE42xK8VAv
+	wI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14
+	v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjTRWuWlUUUUU
 X-Originating-IP: [124.16.138.129]
 X-CM-SenderInfo: xqlfxv3q6l2u1dvotugofq/
 
@@ -84,23 +87,24 @@ both the handler and its data atomically under the irq_desc->lock.
 
 Signed-off-by: Chen Ni <nichen@iscas.ac.cn>
 ---
- drivers/soc/fsl/qe/qe_ports_ic.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ arch/powerpc/platforms/52xx/media5200.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/soc/fsl/qe/qe_ports_ic.c b/drivers/soc/fsl/qe/qe_ports_ic.c
-index 61dd09fec6f6..8e2107e2cde5 100644
---- a/drivers/soc/fsl/qe/qe_ports_ic.c
-+++ b/drivers/soc/fsl/qe/qe_ports_ic.c
-@@ -114,8 +114,7 @@ static int qepic_probe(struct platform_device *pdev)
- 	if (!data->host)
- 		return -ENODEV;
+diff --git a/arch/powerpc/platforms/52xx/media5200.c b/arch/powerpc/platforms/52xx/media5200.c
+index bc7f83cfec1d..c20ac8010f6d 100644
+--- a/arch/powerpc/platforms/52xx/media5200.c
++++ b/arch/powerpc/platforms/52xx/media5200.c
+@@ -176,8 +176,8 @@ static void __init media5200_init_irq(void)
  
--	irq_set_handler_data(irq, data);
--	irq_set_chained_handler(irq, qepic_cascade);
-+	irq_set_chained_handler_and_data(irq, qepic_cascade, data);
+ 	of_node_put(fpga_np);
  
- 	return 0;
- }
+-	irq_set_handler_data(cascade_virq, &media5200_irq);
+-	irq_set_chained_handler(cascade_virq, media5200_irq_cascade);
++	irq_set_chained_handler_and_data(cascade_virq, media5200_irq_cascade,
++					 &media5200_irq);
+ 
+ 	return;
+ 
 -- 
 2.25.1
 
