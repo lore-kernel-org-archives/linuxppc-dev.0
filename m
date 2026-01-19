@@ -1,58 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-15980-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15981-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF939CCF2E5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jan 2026 11:18:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F131CA5FF6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Jan 2026 11:32:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dvnxq2zr7z2xSZ;
-	Mon, 19 Jan 2026 22:18:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768821487;
-	cv=none; b=e8ZoV/x0mYwLX8+rQqMW0OejKxeuwDO2GSDLJNwumRYicGed73nUD0P5gJe2i685gRWe3+6bFic/fsGpglfzkflU4e5Juhu9oXCku1+KcHTowRe6kyp3XUMsdAmiT4asAJWNNJSKRGznK3Ewnosq6fdEQj/rYYvtw4kQR8yuyrLJEWdFU5/M9gdA1ncp3yLw8J/q264DL5w8Qe4DkQzayPPMIKhfGleNLXW6uvBYN1TdILYAsUciCvH6nDgEgjFFBjnCYtzg68d9di8aTOp4yqwMH1wBJ4N+7xpzF6+pRlTmKkmtPbItpdudXbIoNpUbMVZl/Zy+0/NaFNjvEAIn1g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dvpGb71xHz2xSZ;
+	Mon, 19 Jan 2026 22:32:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768822359;
+	cv=none; b=HaaFUOwVnxoNHEQpVV/jPOg+DYg/lqJMcs0B4ZSirlM7bkn3EV49cGKMdrhSsqSGT7WIpxm3Lb6L9ce7JmIc8IiiT8x7N0iVKL02uWGukaSy28za/vz5cRAxDhwQVhOyVyDi23wluwVG9il2Z7BmKgmehUohYKxTcQsEWlJPwJr/Afy+XlNRxMH6VkfI5jHBDw0Gam5+93INqpRvxtYNPe8EUlWe3h46L9cjjL8Pbawb4IBXPJA1Lv4fX52Moson+3/vbjaxYXVo1nZlsSb/dxHyZG8z+1TczjKltPgsQPL1yIpHrxgLhnTmyO+itQzxs3wdXUjJw4UBtSX+uMSMAw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768821487; c=relaxed/relaxed;
-	bh=Qrt8Pc2QUAYXx+nK9SbBMDpSB00S5AE1V+9Iq+T3JoE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Y/HX4WFa4ld525VoLhdPQCl/ikbNBO4aVJito5IYtgcj6RkDT8JMzekMScD38yvoDGTkGMknaAJpnNgvIF0dCk0ogznfWHp5Jhf1tkyasG2tqfU5W6Igk8P3c9mYGMVdKsilEr1xN0h7D81grjGhAAvOt/WR1N7PRaiWCrT76WxhGzVlMcNMlCIoo9aA9bYpNept+7SQJ4bxrffOd/kQKn/CuPzWUMtO3RLrr/mZ+5I88153tsr6ArgEyjOIH/+DiYgnBPuK+EXKhfrvk2RhTMyUdewceuJHj8vBH1AwG6vA/QSX1dUw7TCJYaL4T9ns5ajj8E0mUgzA6T9fhdnuew==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QAecoarN; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1768822359; c=relaxed/relaxed;
+	bh=EdHYfSg21ACmJPB3bps9vYjXNLGEb4DLj5JUnCHrhG8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=LdkOFjq0vGcZIclCqFV5o0zQZ8+fT+tbMvQa4iuljBmnFgoUBytV5p5yOGGsG4xUG1YAgBtjvSgNAkcOCeyvatK+J9S7R1ko/yIS6WU/szryq/Ecs2OS/kxYudbhTiZ0y0Jnie41U36qQ3RBbNUoYvDdUX/D8IJmik9Gp0TJld5YeZUBJvDygmqjgIbX9nqdVTpOujRuqGnaC2CRJQFrkdCeSoSTuvHMYXg1KN5hDEzPZagqoGImTPcvqGRxgl4Kv9DGXs8iRpAqGI89z8jOBOrufscRiivH0VMmGWz623NZLI4JbQla85+r8d8sU9iKNEPmBbZVIWntWI7/ZROUfA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QklYNyBi; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=johan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QAecoarN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QklYNyBi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=johan@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dvnxp3DL5z2xHW
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jan 2026 22:18:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dvpGb1BGrz2xHW
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jan 2026 22:32:39 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 29F4F41B4F
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jan 2026 11:18:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0D149C2BCAF
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jan 2026 11:18:03 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id DAD236014E;
+	Mon, 19 Jan 2026 11:32:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8EED2C19423;
+	Mon, 19 Jan 2026 11:32:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1768821483;
-	bh=Qrt8Pc2QUAYXx+nK9SbBMDpSB00S5AE1V+9Iq+T3JoE=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=QAecoarNHChls3V/koML1MoTCmcSstaYu6upGx1rM+y2j9tIJYU4WTCmdLhQZYH4h
-	 a4/BwXPwDJJAVFiOUjFL94sLogU6+CewqpY1d2U7WGQtBh5UxNkp3sSwB8mZLTUy/h
-	 aIXwVLQ/TsMOaytrWRvocvl4GxT7Q3f51HgfKLpxD7gMkaRqIdlsjTnOJQhlZZnycE
-	 swC9Stg16nZ8vSF/dX47WLNuytsZiPXn4T7iNJ/6r6z+t9yogQ7iJSWp6hF7KzuUfk
-	 P3RyHi+AUOyAGxk+e9lBkvwbkmYunPIGftM/YgflqYAooqm8QfGwSgrT4Xibf3DWdv
-	 +PSVXMc4/1OuQ==
-Received: by mail-lf1-f41.google.com with SMTP id 2adb3069b0e04-59b6c13b68dso4606732e87.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Jan 2026 03:18:02 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCUGY1AN02wdBjF5xq2gCCWE/7BX70z9tCb73ZIwY+LaayFG5+lcFQVhvCq7jEhOVRqCByCKsHzKyHawLO8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yzo41w7jZ3y3sd8a/myask8ofxv/P0hhzElG2QerawAj46uXR1Y
-	JKjfhjvn908eGc8IIdmGsHyZBFqO+krPz7l93G4LHSm9Wq5o4F0T/PSeK+ry22C5/l9Lnommoml
-	FqVfBCQalbIp+pq9dXjrJAhgBb02kpupmkvy3lrdD0g==
-X-Received: by 2002:a05:6512:234a:b0:59b:73b9:1f49 with SMTP id
- 2adb3069b0e04-59ba71a21a4mr5663497e87.26.1768821481438; Mon, 19 Jan 2026
- 03:18:01 -0800 (PST)
+	s=k20201202; t=1768822356;
+	bh=DvzlZA0wArsQBqRk/g9C45k6eQwlXTf9pRhS6v/hblE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=QklYNyBiLyNbVDv5pAYHYJyk0bj7HuLxm4RdnPQlB7NM/byxMQHr6dcjpJgEUyaSi
+	 vDbPmhnDe5joODlAWMctXZ6yukk52rtxus9ROOKC8+uW6Zz9rkB3U1FCbKxMAd1SLO
+	 tcMS3f15BrZcp/hfGt2YzRik01eHwcVJB5ksNBnn5MI/YOz/rjlbx1xjSQmriXDJCz
+	 mCC6hUD3Hbhqy5DJMwqrHBUS74BZ0nrN+jXvOj735XhdwGzxxP2lQjsRPCVP+nqvgb
+	 F7/ZxhldSHFJFDx7fDy/LzwQHUbtvzJrXkvbN6+q6bXDCTsh/YCP+EhYBRPFlLXlPa
+	 bc4SSKgYPThhA==
+Received: from johan by xi.lan with local (Exim 4.98.2)
+	(envelope-from <johan@kernel.org>)
+	id 1vhnUi-000000001IZ-3bew;
+	Mon, 19 Jan 2026 12:32:29 +0100
+Date: Mon, 19 Jan 2026 12:32:28 +0100
+From: Johan Hovold <johan@kernel.org>
+To: Bartosz Golaszewski <brgl@kernel.org>
+Cc: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
+	Wolfram Sang <wsa+renesas@sang-engineering.com>,
+	Andi Shyti <andi.shyti@kernel.org>, Chen-Yu Tsai <wens@kernel.org>,
+	Jernej Skrabec <jernej.skrabec@gmail.com>,
+	Samuel Holland <samuel@sholland.org>,
+	Khalil Blaiech <kblaiech@nvidia.com>,
+	Asmaa Mnebhi <asmaa@nvidia.com>, Jean Delvare <jdelvare@suse.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Andreas =?utf-8?Q?F=C3=A4rber?= <afaerber@suse.de>,
+	Manivannan Sadhasivam <mani@kernel.org>, linux-i2c@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-sunxi@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+	linux-actions@lists.infradead.org
+Subject: Re: [PATCH 00/12] i2c: add and start using i2c_adapter-specific
+ printk helpers
+Message-ID: <aW4WTP8ZJXIe4Mg1@hovoldconsulting.com>
+References: <20251223-i2c-printk-helpers-v1-0-46a08306afdb@oss.qualcomm.com>
+ <aUql_tZisfH8E1bq@hovoldconsulting.com>
+ <CAMRc=MeHL5=s=ciUjHGw_poKpeVMWVi_2LBDFY_ugvXBaaE0vA@mail.gmail.com>
+ <aW4PajoKqmyjkciY@hovoldconsulting.com>
+ <CAMRc=McfiKGT9RSJqZtCtHHHjwDLGPkNwA4Kot9-9frfpCGVmQ@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,108 +88,94 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20251223-i2c-printk-helpers-v1-0-46a08306afdb@oss.qualcomm.com>
- <aUql_tZisfH8E1bq@hovoldconsulting.com> <CAMRc=MeHL5=s=ciUjHGw_poKpeVMWVi_2LBDFY_ugvXBaaE0vA@mail.gmail.com>
- <aW4PajoKqmyjkciY@hovoldconsulting.com>
-In-Reply-To: <aW4PajoKqmyjkciY@hovoldconsulting.com>
-From: Bartosz Golaszewski <brgl@kernel.org>
-Date: Mon, 19 Jan 2026 12:17:49 +0100
-X-Gmail-Original-Message-ID: <CAMRc=McfiKGT9RSJqZtCtHHHjwDLGPkNwA4Kot9-9frfpCGVmQ@mail.gmail.com>
-X-Gm-Features: AZwV_QhTOAeF1zNPvjVLJF6GJlUC44HwEM3vIZ8FNKt6qikN3ueMCqdY3a7S--s
-Message-ID: <CAMRc=McfiKGT9RSJqZtCtHHHjwDLGPkNwA4Kot9-9frfpCGVmQ@mail.gmail.com>
-Subject: Re: [PATCH 00/12] i2c: add and start using i2c_adapter-specific
- printk helpers
-To: Johan Hovold <johan@kernel.org>
-Cc: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
-	Wolfram Sang <wsa+renesas@sang-engineering.com>, Andi Shyti <andi.shyti@kernel.org>, 
-	Chen-Yu Tsai <wens@kernel.org>, Jernej Skrabec <jernej.skrabec@gmail.com>, 
-	Samuel Holland <samuel@sholland.org>, Khalil Blaiech <kblaiech@nvidia.com>, 
-	Asmaa Mnebhi <asmaa@nvidia.com>, Jean Delvare <jdelvare@suse.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	=?UTF-8?Q?Andreas_F=C3=A4rber?= <afaerber@suse.de>, 
-	Manivannan Sadhasivam <mani@kernel.org>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-sunxi@lists.linux.dev, 
-	linuxppc-dev@lists.ozlabs.org, linux-actions@lists.infradead.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAMRc=McfiKGT9RSJqZtCtHHHjwDLGPkNwA4Kot9-9frfpCGVmQ@mail.gmail.com>
 
-On Mon, Jan 19, 2026 at 12:03=E2=80=AFPM Johan Hovold <johan@kernel.org> wr=
-ote:
->
-> On Tue, Dec 23, 2025 at 04:11:08PM +0100, Bartosz Golaszewski wrote:
-> > On Tue, Dec 23, 2025 at 3:24=E2=80=AFPM Johan Hovold <johan@kernel.org>=
- wrote:
-> > >
-> > > On Tue, Dec 23, 2025 at 11:02:22AM +0100, Bartosz Golaszewski wrote:
-> > > > It's been another year of discussing the object life-time problems =
-at
-> > > > conferences. I2C is one of the offenders and its problems are more
-> > > > complex than those of some other subsystems. It seems the revocable=
-[1]
-> > > > API may make its way into the kernel this year but even with it in
-> > > > place, I2C won't be able to use it as there's currently nothing to
-> > > > *revoke*. The struct device is embedded within the i2c_adapter stru=
-ct
-> > > > whose lifetime is tied to the provider device being bound to its dr=
-iver.
-> > > >
-> > > > Fixing this won't be fast and easy but nothing's going to happen if=
- we
-> > > > don't start chipping away at it. The ultimate goal in order to be a=
-ble
-> > > > to use an SRCU-based solution (revocable or otherwise) is to conver=
-t the
-> > > > embedded struct device in struct i2c_adapter into an __rcu pointer =
-that
-> > > > can be *revoked*. To that end we need to hide all dereferences of
-> > > > adap->dev in drivers.
-> > >
-> > > No, this is not the way to do it. You start with designing and showin=
-g
-> > > what the end result will look like *before* you start rewriting world
-> > > like you are doing here.
+On Mon, Jan 19, 2026 at 12:17:49PM +0100, Bartosz Golaszewski wrote:
+> On Mon, Jan 19, 2026 at 12:03 PM Johan Hovold <johan@kernel.org> wrote:
 > >
-> > The paragraph you're commenting under explains exactly what I propose
-> > to do: move struct device out of struct i2c_adapter and protect the
-> > pointer storing its address with SRCU. This is a well-known design
-> > that's being generalized to a common "revocable" API which will
-> > possibly be available upstream by the time we're ready to use it.
->
-> Revocable, as presented in plumbers, is not going upstream.
->
+> > On Tue, Dec 23, 2025 at 04:11:08PM +0100, Bartosz Golaszewski wrote:
+> > > On Tue, Dec 23, 2025 at 3:24 PM Johan Hovold <johan@kernel.org> wrote:
+> > > >
+> > > > On Tue, Dec 23, 2025 at 11:02:22AM +0100, Bartosz Golaszewski wrote:
+> > > > > It's been another year of discussing the object life-time problems at
+> > > > > conferences. I2C is one of the offenders and its problems are more
+> > > > > complex than those of some other subsystems. It seems the revocable[1]
+> > > > > API may make its way into the kernel this year but even with it in
+> > > > > place, I2C won't be able to use it as there's currently nothing to
+> > > > > *revoke*. The struct device is embedded within the i2c_adapter struct
+> > > > > whose lifetime is tied to the provider device being bound to its driver.
+> > > > >
+> > > > > Fixing this won't be fast and easy but nothing's going to happen if we
+> > > > > don't start chipping away at it. The ultimate goal in order to be able
+> > > > > to use an SRCU-based solution (revocable or otherwise) is to convert the
+> > > > > embedded struct device in struct i2c_adapter into an __rcu pointer that
+> > > > > can be *revoked*. To that end we need to hide all dereferences of
+> > > > > adap->dev in drivers.
+> > > >
+> > > > No, this is not the way to do it. You start with designing and showing
+> > > > what the end result will look like *before* you start rewriting world
+> > > > like you are doing here.
+> > >
+> > > The paragraph you're commenting under explains exactly what I propose
+> > > to do: move struct device out of struct i2c_adapter and protect the
+> > > pointer storing its address with SRCU. This is a well-known design
+> > > that's being generalized to a common "revocable" API which will
+> > > possibly be available upstream by the time we're ready to use it.
+> >
+> > Revocable, as presented in plumbers, is not going upstream.
+> >
+> 
+> Oh really? :)
+> 
+> https://lore.kernel.org/all/2026011607-canister-catalyst-9fdd@gregkh/
 
-Oh really? :)
+Looks like a bad call as Laurent immediately pointed out:
 
-https://lore.kernel.org/all/2026011607-canister-catalyst-9fdd@gregkh/
+	https://lore.kernel.org/all/20260116160454.GN30544@pendragon.ideasonboard.com/#t
 
-> > You know I can't possibly *show* the end result in a single series
-> > because - as the paragraph before explains - we need to first hide all
-> > direct dereferences of struct device in struct i2c_adapter behind
-> > dedicated interfaces so that we when do the conversion, it'll affect
-> > only a limited number of places. It can't realistically be done at
-> > once.
->
-> You can post an RFC converting one driver with a proper description of
-> the problem you're trying to solve.
->
+Let's see where that goes.
 
-It's not a one-driver problem. It's a subsystem-wide problem requiring
-a subsystem-wide solution. Wolfram explained it really well in his
-summary, I'm not going to repeat it here.
+> > > You know I can't possibly *show* the end result in a single series
+> > > because - as the paragraph before explains - we need to first hide all
+> > > direct dereferences of struct device in struct i2c_adapter behind
+> > > dedicated interfaces so that we when do the conversion, it'll affect
+> > > only a limited number of places. It can't realistically be done at
+> > > once.
+> >
+> > You can post an RFC converting one driver with a proper description of
+> > the problem you're trying to solve.
+> >
+> 
+> It's not a one-driver problem. It's a subsystem-wide problem requiring
+> a subsystem-wide solution. Wolfram explained it really well in his
+> summary, I'm not going to repeat it here.
 
-I also don't agree that i2c-specific helpers make code harder to read.
-Is device_set_node() harder to read than
+Of course it is, but you still don't have to rewrite world to post an
+RFC where the problem can be discussed. A single driver is more than
+enough.
 
-dev->fwnode =3D fwnode;
-dev->of_node =3D to_of_node(fwnode);
+> I also don't agree that i2c-specific helpers make code harder to read.
+> Is device_set_node() harder to read than
+> 
+> dev->fwnode = fwnode;
+> dev->of_node = to_of_node(fwnode);
+> 
+> ?
+> 
+> Even if you answer yes - it at least helps hide the implementation
+> details of the OF layer where fwnode-level is preferred. We do it all
+> the time in the kernel. This kind of helpers allows easier transitions
+> when some implementation detail needs to change - as is the case here.
 
-?
+Magic helpers that hide what's really going on hurts readability. So
+introducing them when they are not really needed should be avoided.
 
-Even if you answer yes - it at least helps hide the implementation
-details of the OF layer where fwnode-level is preferred. We do it all
-the time in the kernel. This kind of helpers allows easier transitions
-when some implementation detail needs to change - as is the case here.
+(But yeah, we have a problem with developers introducing esoteric
+helpers while seemingly thinking all that matters is LOC count, and too
+few people raising their voice against bad ideas.)
 
-Bartosz
+Johan
 
