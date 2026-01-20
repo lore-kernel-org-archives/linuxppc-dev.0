@@ -1,36 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-16074-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16075-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7DE02CA5FA7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Jan 2026 16:33:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ACD99CA5FAC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Jan 2026 16:37:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dwXtg0SY7z2xQB;
-	Wed, 21 Jan 2026 03:32:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768926779;
-	cv=none; b=ZiL6dDu+oS0XkF/wOQ4hrqM7Cw6IBdjZAA8B8fwO2m/mkgg2kAwCKXEB95n2z65K3WH/BfPNa4p2f+wvqT3lXMV+Qrapz93F8Z+8DCYdUZayLEcZoFAUr+9icWDpTb+DVvSx3S9m861aXeWv5U09a4mMPY1HMfxFj9+b2wXQy/gOkqruIwu5xmUDb5pDsqMFCdSCRS2DMXCaWqkWz3C1BByZPr1kbpkNAknoktj+eV3BqMk3hSprm7L78lpH2a+kwKmD8bWoi3RRDhRZgI+LQMI0RxNWm744au2n+ghhlE/QRM4WgWAZh3Ih9PQZUstwe3sHWypuEENLXhOB/34ozQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dwY0K1rrwz2xQB;
+	Wed, 21 Jan 2026 03:37:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.19
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768927073;
+	cv=none; b=Q4NYkesxHVeuRO5f8IUiPoRLCVbNVp2jvHwWT88nX8FCJyYQ3etYaGggRWqTGY7rPk843wHbZouwbBWZYmYuZu8QIBrELfoxOiWXRErhYuKI54MiHABUyDbE74LLzGIZBB6uV8XVl1Jc0H8oS1cJ7mAVHyIIOEnVkd3wskz6hNqfwTN64uXkD3Tf9fDLKGV9BSV2eFcaHYoCgwrCgCSCET2shJpbGN5R7ZMRQzi1b9pbNWNd1MS9cdLw+56rFMFdqGmDSqbUiwDyYKsjxPB2jd0eLHzLMdiZ/lIc02EhGkrTR/Ug2flTRaDlm1iMGs1QAhWyoGV63c+PLLtz0WNkPg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768926779; c=relaxed/relaxed;
-	bh=pzCqaWRw4l8YZiXRlEaKsY2UZqzEryF7b+9WjJwCLVI=;
+	t=1768927073; c=relaxed/relaxed;
+	bh=l6zt9Aq16n1bm0FvTo8vindZbxHrJGqWuAngHOx6RHU=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=V/ELUvUGMKXJDhRla5qie3U6yzo/XLAO3Q4eaJmJjpyoOaZuLS+pdTq50ZC/5RW2B3mdMiN4WYG5RVBCbqXBnSiM/MS/4yo/MohQDK6mQU1h/XtE5Co3sG1SHnYrmU49/wMgd0WWj71V5D1fAWQFEc/jIaZtsc98TW1fHpGUN1KDV+MP/9rFzJABfxr8hrjOgsT6Ku4hC8kasM+i4fKM34SxNvSGfPe1rf9EAIRKIrl3ciVPCyxNM7CR88n/Yc5Rf8YcVtYaBCj9+1BCjmoPY4Q1rZCfIQa5AhlbzcDs0Qn5IVpSXHuI4Rs26p+lzEhEUrvtB8N4gzbh6wXZzVa4IQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dwXtd73pvz2x9M
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2026 03:32:56 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6B3771476;
-	Tue, 20 Jan 2026 08:32:16 -0800 (PST)
-Received: from [10.1.39.200] (XHFQ2J9959.cambridge.arm.com [10.1.39.200])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id BFE823F694;
-	Tue, 20 Jan 2026 08:32:18 -0800 (PST)
-Message-ID: <785a7d90-babe-43af-93a6-c220c1877bcf@arm.com>
-Date: Tue, 20 Jan 2026 16:32:17 +0000
+	 In-Reply-To:Content-Type; b=WTIKkQA8NTmtkcAXpW4FpE+3QMfswGBwzUevC6YzXZ+vK6v6UgQWbz5YO7ZRetRFz1NfBZd9dU6/nmP45duOEwh7zNEJX8MI7dg/b/792agxixxBrJ5xHEs+iagnR6gebqdzQuwdMXVLCopGJPEEPQ2hSXqLwTTetnhsmmZK43O1bJfFHgEqO7VW1Zn14LGvCQyFcnjaZETjAEV5IaE5x5OmRb4HB8r3EwIDqIcONmA/fiwr7y8Jt6Uttnbygj7ClhD5VtZxkRgTljynqO/oDvPQ4/EkWXsPh2TZPlWjNTGM4yenuq46Ltlb+INDtZDg6SMo+pfgr4Z0EGlLIJi+3Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ER76PCn3; dkim-atps=neutral; spf=pass (client-ip=192.198.163.19; helo=mgamail.intel.com; envelope-from=dave.hansen@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ER76PCn3;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.19; helo=mgamail.intel.com; envelope-from=dave.hansen@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dwY0G5mzwz2x9M
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2026 03:37:49 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1768927071; x=1800463071;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=l6zt9Aq16n1bm0FvTo8vindZbxHrJGqWuAngHOx6RHU=;
+  b=ER76PCn3lwV16gz2IP/oTFD7qNTHsPeR/E/D3Zi2i+vcYZg28aIJeihc
+   /IGBiVWeDqNvBK4c6hvkDURMaPhb9RoP2LZTXf/WYLiLTjvbZNolHTq47
+   TPPNUQpGW6bpSxAEIKMkImk5DpzHMaFbe7Qm6SA6ynyxexUDfQUiOQRyD
+   q7STRfsH5Z9JfNMScliO7uFe2jdtGAYjpoM0lEjV9p0gQEx7wAg49lhzT
+   FJfVkWvuhJR6th+jtLyYH0yzZ/zN5vwxuNvgsoSUPW1t5jCpnEKuo1J0M
+   X4ClYg0uxTJ3j03p0+qeNQ4H63UwiUp0J0aKr1sKaEGxNr14slfC/vQ3D
+   Q==;
+X-CSE-ConnectionGUID: 1ImNIayuQBen9eVettn3CA==
+X-CSE-MsgGUID: frrQwot0SLWKAZOT0pctfg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11677"; a="69156593"
+X-IronPort-AV: E=Sophos;i="6.21,241,1763452800"; 
+   d="scan'208";a="69156593"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Jan 2026 08:37:46 -0800
+X-CSE-ConnectionGUID: i8YmVT04SAqzglnbuUMMhg==
+X-CSE-MsgGUID: ukbzNSMQRBCd4IS3CMSH7Q==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.21,241,1763452800"; 
+   d="scan'208";a="206422303"
+Received: from vverma7-desk1.amr.corp.intel.com (HELO [10.125.108.22]) ([10.125.108.22])
+  by fmviesa008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Jan 2026 08:37:44 -0800
+Message-ID: <a8ca3483-d61a-41bd-9b1b-17a8f3ac03eb@intel.com>
+Date: Tue, 20 Jan 2026 08:37:43 -0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -47,8 +73,7 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v4 0/3] Fix bugs and performance of kstack offset
  randomisation
-Content-Language: en-GB
-To: Kees Cook <kees@kernel.org>, Dave Hansen <dave.hansen@intel.com>,
+To: Ryan Roberts <ryan.roberts@arm.com>, Kees Cook <kees@kernel.org>,
  Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
  Huacai Chen <chenhuacai@kernel.org>,
  Madhavan Srinivasan <maddy@linux.ibm.com>,
@@ -70,49 +95,68 @@ Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
 References: <20260119130122.1283821-1-ryan.roberts@arm.com>
  <20fb97f1-7e50-485a-bdfd-a2901d20ec84@intel.com>
  <C502BCE6-2FB2-4A06-93A8-E8DEDFC22914@kernel.org>
-From: Ryan Roberts <ryan.roberts@arm.com>
-In-Reply-To: <C502BCE6-2FB2-4A06-93A8-E8DEDFC22914@kernel.org>
+ <785a7d90-babe-43af-93a6-c220c1877bcf@arm.com>
+From: Dave Hansen <dave.hansen@intel.com>
+Content-Language: en-US
+Autocrypt: addr=dave.hansen@intel.com; keydata=
+ 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
+In-Reply-To: <785a7d90-babe-43af-93a6-c220c1877bcf@arm.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On 19/01/2026 16:44, Kees Cook wrote:
-> 
-> 
-> On January 19, 2026 8:00:00 AM PST, Dave Hansen <dave.hansen@intel.com> wrote:
->> On 1/19/26 05:01, Ryan Roberts wrote:
->>> x86 (AWS Sapphire Rapids):
->>> +-----------------+--------------+-------------+---------------+
->>> | Benchmark       | Result Class |   v6.18-rc5 | per-task-prng |
->>> |                 |              | rndstack-on |               |
->>> |                 |              |             |               |
->>> +=================+==============+=============+===============+
->>> | syscall/getpid  | mean (ns)    |  (R) 13.32% |     (R) 4.60% |
->>> |                 | p99 (ns)     |  (R) 13.38% |    (R) 18.08% |
->>> |                 | p99.9 (ns)   |      16.26% |    (R) 19.38% |
->>
->> Like you noted, this is surprising. This would be a good thing to make
->> sure it goes in very early after -rc1 and gets plenty of wide testing.
-> 
-> Right, we are pretty late in the dev cycle (rc6). It would be prudent to get this into -next after the coming rc1 (1 month from now).
-> 
-> On the other hand, the changes are pretty "binary" in the sense that mistakes should be VERY visible right away. Would it be better to take this into -next immediately instead?
+On 1/20/26 08:32, Ryan Roberts wrote:
+> I don't think this question was really addressed to me, but I'll give my opinion
+> anyway; I agree it's pretty binary - it will either work or it will explode.
+> I've tested on arm64 and x86_64 so I have high confidence that it works. If you
+> get it into -next ASAP it has 3 weeks to soak before the merge window opens
+> right? (Linus said he would do an -rc8 this cycle). That feels like enough time
+> to me. But it's your tree 😉
 
-I don't think this question was really addressed to me, but I'll give my opinion
-anyway; I agree it's pretty binary - it will either work or it will explode.
-I've tested on arm64 and x86_64 so I have high confidence that it works. If you
-get it into -next ASAP it has 3 weeks to soak before the merge window opens
-right? (Linus said he would do an -rc8 this cycle). That feels like enough time
-to me. But it's your tree ;-)
+First of all, thank you for testing it on x86! Having that one data
+point where it helped performance is super valuable.
 
-Thanks,
-Ryan
-
-
-> 
->> But I don't see any problems with the approach, and the move to common
->> code looks like a big win as well:
-> 
-> Agreed; I think it's looking great.
-> 
-
+I'm more worried that it's going to regress performance somewhere and
+then it's going to be a pain to back out. I'm not super worried about
+functional regressions.
 
