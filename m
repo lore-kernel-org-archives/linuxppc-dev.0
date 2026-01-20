@@ -1,36 +1,105 @@
-Return-Path: <linuxppc-dev+bounces-16076-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16077-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C414ACA5FB1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Jan 2026 16:46:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99D74D26284
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Jan 2026 18:45:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dwY9s3Gbsz2xQB;
-	Wed, 21 Jan 2026 03:46:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768927569;
-	cv=none; b=CjXZaSBlkzFqNz+wZDZsJa0Oilsj2z4DqjaKqtzRuEWm1nIGwA340DBy61KNYqOc4fe6A0gUlsPkF4ujmnq2OoqsvPYwNdauDKHc+wdEgmM+w0LXPtkp6DGVDfgL7mNoNBRAqY7dGuMR3ivREHIDyvCjnbClijj1Ax2nPfWnxNwqfmkmjr2LTdYMCAZCpCI6ptxO3INsD3DdBla7hYaky/nWFNNNGuMPYvuz8CdIrAXGeRGawoNy6IFH0IXEMpajvMmYgnZTiC6hEUJwjLT9VogJLoHiheH3GixwBv6fzc05jmIL9+EIxNiy408GYHRkQhyOAxZRnqWnc85uIwjn5w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dwbqy6Hgtz2xQB;
+	Wed, 21 Jan 2026 05:45:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768934750;
+	cv=none; b=Q7AYtpelTisOKWIXQ+8aNgalZoM/qmL3KmF9qzB0AXdENpnpL4lsw6G7Ir7BKUN4Wq9xKH8/SlkQ7YNKKi0PYDu9P65pu2zcB4ewwh1TzdyuV/tHElUog4f6c6XojblF2BPowliMBjUgqdW50n4XgVt1h4ElPNk4kNlnJRXqQFQ3mKY3fJ4UtZsQ0Sm5Bd95qZQiWFzZDGRdGyh0QnM6Gf2pSIyScUXQSGo6wB8b4cT35tf2elEIvj2dFwnXsEzzs9dkmV0SqM+olzVxXPb7eOHw0UtrodNoyecoKApOJDDsCmYrcKExeo3FhwqydvOvELulROYRXQXMjqXP4k1ZrQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768927569; c=relaxed/relaxed;
-	bh=GYJIKeSCyLSC7tzF8rbMDrps3XHjO9NAgwZz6IjopgQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Ort0OSYJTsq2zhGd1Sp/IPZ3UggGyXUcuw4evJT1RZ531URICrxJWyrkXcAP5C+DrDPFmEHFwsST8O2bV+ldhMzoMoe1hQwFYNnP0Vfa99tvamwWcGAFI3h6agVG3ss1tYJUxCk+heI6SZcQmV78sLkyTuCqENJ7suAggUEcMHbsjaNvneVtHpkheegG2G0sVLzNJMfeYr2JaQ8cjwFYmXGlbS30Hbd/FGNLsbTGTKSmHPg1O4U/vY1uXovWWXiRLjA2KGv0eaHG6j1EGktWShKUyvJaAEmgdWhxs1HOT/CygZZhSIABy7ZspQelQOhDzdnX0Qfk3Ho7SxlyqqUURA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dwY9r6Ssnz2x9M
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2026 03:46:08 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E55491476;
-	Tue, 20 Jan 2026 08:45:30 -0800 (PST)
-Received: from [10.1.39.200] (XHFQ2J9959.cambridge.arm.com [10.1.39.200])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 600763F694;
-	Tue, 20 Jan 2026 08:45:33 -0800 (PST)
-Message-ID: <c5922290-f01c-4c77-995a-9a0ef89053a1@arm.com>
-Date: Tue, 20 Jan 2026 16:45:31 +0000
+	t=1768934750; c=relaxed/relaxed;
+	bh=thnE7Lerq2YAOWgwctI0eLWWpc+gSu6vXOqPs3mAkT8=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=X4CUiGmU7a69ch3obLYLCgQVl1WsIBzwdATFu/maxVm3ELUixR4JDxGQutjXwk7JZ0PwRPY9NbEOK+0t5Zlm8N9mfepri9Ur2E0LSyiy2v78KNzaF9pHWfNwM09VoKQsNX+O6g6PKlypU58pyqeTMUZ2klWI8APtLQoqBU6Erwt1vcYTma1APuyIDco+aOr/1Sn+M5ClD3m8eb9dkMEvwqNH4rOI9OG0AP3cxgpyj4shFhsT6DXzbvg5iJZQmtRoBUtEBxNaaRdzJ9iowjga04fTiwqlZaT1a41BK5bcVVqdpCdI9nsTp9fGGBSichdVvrmyGsarAxICVF2Po1SAEQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=XM0foiBB; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42d; helo=mail-wr1-x42d.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=XM0foiBB;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::42d; helo=mail-wr1-x42d.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dwbqw6GW9z2x9M
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2026 05:45:47 +1100 (AEDT)
+Received: by mail-wr1-x42d.google.com with SMTP id ffacd0b85a97d-4358fb60802so65973f8f.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Jan 2026 10:45:47 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1768934743; x=1769539543; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=thnE7Lerq2YAOWgwctI0eLWWpc+gSu6vXOqPs3mAkT8=;
+        b=XM0foiBBR/+fnvFhMruU0DSUMe41Hpbg4cnpDfYAPL87ekPfGBSPql1qVLIfGpFt9k
+         tWZ1dNu9mUtcK6XuIihv/Y+HJrD76dxoojgfvSTndR/kyY+kpt5ZtnTLCwWl6ZEoDrts
+         5NJmHs+MrN7f5qyeDVqHBOWbdrk7gtwWxDdY5KvJl1cRt6KDcOGQ90uFVO/TOA53ajfw
+         z9/Y3Zc6NCJ6nMuCXt7j1dep89f6sobLuvkkkYD2P5q1Wj2s6vSEG1sX24HVFk/h7O+1
+         E7HgPZSQvaP7AQYFJxspdJ9jqb1l2G6XoQSfZ8Opd2Q6EFfFvvnOHbKCJFF/tx1DfYMM
+         l45Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1768934743; x=1769539543;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=thnE7Lerq2YAOWgwctI0eLWWpc+gSu6vXOqPs3mAkT8=;
+        b=f9GIX/xGcMwuZrWA2QQY6oJrvPdxCXimVhR7LlMOJPXfbeEw42fid8KByAZwOZ/zjx
+         e+1ln0S8EMDrzqbBqDvZ8CKiJ+I+m+dkaYWGs8Kg82S9NtNbojvjfcjOImD8yxCG7BRx
+         qvGCJlz0jG1OMlaDM4ti6snpd3qKejwpJWR7TEEPlZSBQ0VzggBVAV3a+SITw+4+6hwM
+         lMwsYZr2h9Dh5B86sI8axOUnvzuMXfhSSRto23/3SmwtZAxwhXt2nWOi85J4w/WeVz9r
+         4PQJu+nTa0T6q920M+Ekcvo2PQfo8eT/+QJn+skFMr5wBuBHqodUXZfmCON39UUw3Ven
+         xLmw==
+X-Forwarded-Encrypted: i=1; AJvYcCVyqjbLm41Q+bXm8hf4I4dOFFvBv12K838X6YAwl3r6Y+QqgmE/boaH0cefI5CpQ0aYSaLKeR7FlD54uA8=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxO6ZDo6Rb7eu2yMijQaAFlOL/VmP2RgDwMo6OkNL3Xk7Wc0zNH
+	1bCBXo/lYUdZ6LiwEx++TMEFF8JvpfAR4WzVL2Zrum04Bt15DI7RNdLS
+X-Gm-Gg: AZuq6aKetpsd5JONrYcXP1hOPDfuXbfo25PcijB8mBGplbSZM1QYO19NBeaojk4y7n2
+	dM1oaotMxiLbNAlrPd5ANpeAHmqxTZO47Yt4Z7kV6szuCCVG8O6HParW6hfz9tMTiQCVfVuHUw0
+	YKrO3Wau36xu5ee2XwO7qyWFUcWt2xEPjEZPwLzwBQpP8OjhXkJ3K9AF4aGcMxiWkMHdlTOK+rF
+	lY5WUn/bhWYHiCU2iyXYXs0cKKOcO7W9fkuXdzkWaLD9WFA8uG5wy99pUkNPU2O7rQnxD7rpGUE
+	3kxgPi8p7mAkjXotJS4gbcuHhoLkaXVMHIUc29Xxb1XzPC3cV2JAUlBbfbGWA//Je8IUnVnkalx
+	mLMylxjXBryZjxGE7t8MYvj9G7MqxF5n5dAO22IwtorYkyhlLcfd0PDbYigxoPgTTeED/LHQsSZ
+	P2QjoIduWgNpWYNeIOMndGthyYVVv0VtbIgV/iMgB1A0Urp+9pzYZ7
+X-Received: by 2002:a05:6000:2484:b0:430:fcbc:dc4a with SMTP id ffacd0b85a97d-434d75c16c1mr25592154f8f.19.1768934743113;
+        Tue, 20 Jan 2026 10:45:43 -0800 (PST)
+Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4356997eb1fsm30869735f8f.35.2026.01.20.10.45.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 20 Jan 2026 10:45:42 -0800 (PST)
+Date: Tue, 20 Jan 2026 18:45:41 +0000
+From: David Laight <david.laight.linux@gmail.com>
+To: Dave Hansen <dave.hansen@intel.com>
+Cc: Ryan Roberts <ryan.roberts@arm.com>, Kees Cook <kees@kernel.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ Huacai Chen <chenhuacai@kernel.org>, Madhavan Srinivasan
+ <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Paul Walmsley
+ <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou
+ <aou@eecs.berkeley.edu>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik
+ <gor@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Thomas
+ Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav
+ Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, "Gustavo
+ A. R. Silva" <gustavoars@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Mark
+ Rutland <mark.rutland@arm.com>, "Jason A. Donenfeld" <Jason@zx2c4.com>, Ard
+ Biesheuvel <ardb@kernel.org>, Jeremy Linton <jeremy.linton@arm.com>,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ linux-hardening@vger.kernel.org
+Subject: Re: [PATCH v4 0/3] Fix bugs and performance of kstack offset
+ randomisation
+Message-ID: <20260120184541.0a463cd1@pumpkin>
+In-Reply-To: <a8ca3483-d61a-41bd-9b1b-17a8f3ac03eb@intel.com>
+References: <20260119130122.1283821-1-ryan.roberts@arm.com>
+	<20fb97f1-7e50-485a-bdfd-a2901d20ec84@intel.com>
+	<C502BCE6-2FB2-4A06-93A8-E8DEDFC22914@kernel.org>
+	<785a7d90-babe-43af-93a6-c220c1877bcf@arm.com>
+	<a8ca3483-d61a-41bd-9b1b-17a8f3ac03eb@intel.com>
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -44,54 +113,43 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 0/3] Fix bugs and performance of kstack offset
- randomisation
-Content-Language: en-GB
-To: Dave Hansen <dave.hansen@intel.com>, Kees Cook <kees@kernel.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
- Huacai Chen <chenhuacai@kernel.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Walmsley <pjw@kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
- "Gustavo A. R. Silva" <gustavoars@kernel.org>, Arnd Bergmann
- <arnd@arndb.de>, Mark Rutland <mark.rutland@arm.com>,
- "Jason A. Donenfeld" <Jason@zx2c4.com>, Ard Biesheuvel <ardb@kernel.org>,
- Jeremy Linton <jeremy.linton@arm.com>,
- David Laight <david.laight.linux@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- linux-hardening@vger.kernel.org
-References: <20260119130122.1283821-1-ryan.roberts@arm.com>
- <20fb97f1-7e50-485a-bdfd-a2901d20ec84@intel.com>
- <C502BCE6-2FB2-4A06-93A8-E8DEDFC22914@kernel.org>
- <785a7d90-babe-43af-93a6-c220c1877bcf@arm.com>
- <a8ca3483-d61a-41bd-9b1b-17a8f3ac03eb@intel.com>
-From: Ryan Roberts <ryan.roberts@arm.com>
-In-Reply-To: <a8ca3483-d61a-41bd-9b1b-17a8f3ac03eb@intel.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
 
-On 20/01/2026 16:37, Dave Hansen wrote:
+On Tue, 20 Jan 2026 08:37:43 -0800
+Dave Hansen <dave.hansen@intel.com> wrote:
+
 > On 1/20/26 08:32, Ryan Roberts wrote:
->> I don't think this question was really addressed to me, but I'll give my opinion
->> anyway; I agree it's pretty binary - it will either work or it will explode.
->> I've tested on arm64 and x86_64 so I have high confidence that it works. If you
->> get it into -next ASAP it has 3 weeks to soak before the merge window opens
->> right? (Linus said he would do an -rc8 this cycle). That feels like enough time
->> to me. But it's your tree 😉
-> 
+> > I don't think this question was really addressed to me, but I'll give m=
+y opinion
+> > anyway; I agree it's pretty binary - it will either work or it will exp=
+lode.
+> > I've tested on arm64 and x86_64 so I have high confidence that it works=
+. If you
+> > get it into -next ASAP it has 3 weeks to soak before the merge window o=
+pens
+> > right? (Linus said he would do an -rc8 this cycle). That feels like eno=
+ugh time
+> > to me. But it's your tree =F0=9F=98=89 =20
+>=20
 > First of all, thank you for testing it on x86! Having that one data
 > point where it helped performance is super valuable.
-> 
+>=20
 > I'm more worried that it's going to regress performance somewhere and
 > then it's going to be a pain to back out. I'm not super worried about
 > functional regressions.
 
-Fair enough. Let's go slow then.
+Unlikely, on x86 the 'rdtsc' is ~20 clocks on Intel cpu and even slower
+on amd (according to Agner).
+(That is serialised against another rdtsc rather than other instructions.)
+Whereas the four TAUSWORTHE() are independent so can execute in parallel.
+IIRC each is a memory read and 5 ALU instructions - not much at all.
+The slow bit will be the cache miss on the per-cpu data.
+You lose a clock at the end because gcc will compile the a | b | c | d
+as (((a | b) | c) | d) not ((a | b) | (c | d)).
+
+I think someone reported the 'new' version being faster on x86,
+that might be why.
+
+	David
 
