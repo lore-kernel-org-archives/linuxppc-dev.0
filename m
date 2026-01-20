@@ -1,88 +1,36 @@
-Return-Path: <linuxppc-dev+bounces-16073-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16074-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BB03D2ECF7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Jan 2026 14:52:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7DE02CA5FA7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Jan 2026 16:33:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dwVfZ6RnGz3c7n;
-	Wed, 21 Jan 2026 01:52:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768920742;
-	cv=none; b=lf2yq1r5mEiWrO+DrmF4zdCqAZwd4bqK/x30V+M3i69KuKSkxXNFJRaQJi9gh6PD06kqCvdxFMTk/okeFQ0Jx0jiACKoyC2dk9DhQ6nxaAdFNKBzDdPIlmUcGHXg2orO3t2Kj2bxRS9W6U+/OCKldpq9V7pYjnCgtzQQG6Kix8DT2meiCZTR8UmZ5+euuBmcyKmYk4eYTFU/ON8zYf5zw0kUeo0Dq1HuAppsD21dHV7xtgQk7UnRbYlMcD+TsFHPQbvE0I2MjF8iiUNzBKQStywtr93cEIPRFinYMrMj/Pmg2KYhUxPWwGVkBO53HEqwfBGRYU5ZcDf5fn5UAaf1Kg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dwXtg0SY7z2xQB;
+	Wed, 21 Jan 2026 03:32:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768926779;
+	cv=none; b=ZiL6dDu+oS0XkF/wOQ4hrqM7Cw6IBdjZAA8B8fwO2m/mkgg2kAwCKXEB95n2z65K3WH/BfPNa4p2f+wvqT3lXMV+Qrapz93F8Z+8DCYdUZayLEcZoFAUr+9icWDpTb+DVvSx3S9m861aXeWv5U09a4mMPY1HMfxFj9+b2wXQy/gOkqruIwu5xmUDb5pDsqMFCdSCRS2DMXCaWqkWz3C1BByZPr1kbpkNAknoktj+eV3BqMk3hSprm7L78lpH2a+kwKmD8bWoi3RRDhRZgI+LQMI0RxNWm744au2n+ghhlE/QRM4WgWAZh3Ih9PQZUstwe3sHWypuEENLXhOB/34ozQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768920742; c=relaxed/relaxed;
-	bh=Nqo2fPqbrUqfQKli7Mqidc2NiQjbgO1WJceFyXuitqY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=in5tCoIPOGjGXjM3hLnwlnEX6jQ+XHEeT2xuF0Nx6MorCUZ2IM8n3tJToaKVRiPmX0llKV4afPNuV1uIXT2FrKdpxwMrgCwpBTtd/bwK+3PNzk4/koUMuAnNbtl0ZBIeefmjeQSL4Z+mDCU3ZG8/nbcoDFVtbFZigXSYgl9aXtQe4r3ZglQjZwv1MbJzD7hj9jI7avJYTmBl7xpeXQB5f8kyz5nw/0/R5T++iLZLOmP+xqhKOxKCaR+lN9BdWv53hpZRJ6s1W8tsK6o4u7icCeb4+O78NymRqhaOTq1EPCJn9zP/WsGVcr0NIKQnMO156Qldd0wqAKe10WNrDeWp4A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pPSOBYBt; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=frederic@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pPSOBYBt;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=frederic@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dwVfZ0rYQz3c5y
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2026 01:52:22 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id B2D4C429C4;
-	Tue, 20 Jan 2026 14:52:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DD110C4AF09;
-	Tue, 20 Jan 2026 14:52:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1768920739;
-	bh=DpCSZAzTuJI/7gGOtphK/DlHzjIiahQ/22C6C32U1mg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=pPSOBYBtcsR6iQhbXYih9Qp4HdBObVgVQWeBJdOmP5uvW3N0XpRwSuRGUWszm8Wsm
-	 x7X1naATf4iHfH9+WXGmMpEbmoBIzfMBWDcjtXp2ALq+q0DiaZyE+0hf8qZzmfyuAh
-	 +k54n2m4xgJ9vCgrUunkiflZvzFqqvPrajs2pQaTShpqhWcSbbMV55FcEigDfmF0b6
-	 b/su04c8MKtL98toNNGznOkNtlwkGEo9U5PNysWfc/lynAGqRxUMUxxpDP98oacmK/
-	 95IV+zJ4Gik2QAjU0tollXRYSthjis0U+sTqRza5ZxURR6g98HQ8t2T1QaqUfMgxNy
-	 +l4xvmdsJAObg==
-Date: Tue, 20 Jan 2026 15:52:16 +0100
-From: Frederic Weisbecker <frederic@kernel.org>
-To: K Prateek Nayak <kprateek.nayak@amd.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Anna-Maria Behnsen <anna-maria@linutronix.de>,
-	Ben Segall <bsegall@google.com>, Boqun Feng <boqun.feng@gmail.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Dietmar Eggemann <dietmar.eggemann@arm.com>,
-	Heiko Carstens <hca@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
-	Jan Kiszka <jan.kiszka@siemens.com>,
-	Joel Fernandes <joelagnelf@nvidia.com>,
-	Juri Lelli <juri.lelli@redhat.com>,
-	Kieran Bingham <kbingham@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Mel Gorman <mgorman@suse.de>, Michael Ellerman <mpe@ellerman.id.au>,
-	Neeraj Upadhyay <neeraj.upadhyay@kernel.org>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Paul E . McKenney" <paulmck@kernel.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Uladzislau Rezki <urezki@gmail.com>,
-	Valentin Schneider <vschneid@redhat.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Vincent Guittot <vincent.guittot@linaro.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Xin Zhao <jackzxcui1989@163.com>, linux-pm@vger.kernel.org,
-	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 01/15] sched/idle: Handle offlining first in idle loop
-Message-ID: <aW-WoBsdb-jKDomL@localhost.localdomain>
-References: <20260116145208.87445-1-frederic@kernel.org>
- <20260116145208.87445-2-frederic@kernel.org>
- <20260119125347.GT830755@noisy.programming.kicks-ass.net>
- <aW6ccexiQaPLQcS1@pavilion.home>
- <ec1fbc52-3e72-4a0f-954c-9ecf581f9e39@amd.com>
+	t=1768926779; c=relaxed/relaxed;
+	bh=pzCqaWRw4l8YZiXRlEaKsY2UZqzEryF7b+9WjJwCLVI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=V/ELUvUGMKXJDhRla5qie3U6yzo/XLAO3Q4eaJmJjpyoOaZuLS+pdTq50ZC/5RW2B3mdMiN4WYG5RVBCbqXBnSiM/MS/4yo/MohQDK6mQU1h/XtE5Co3sG1SHnYrmU49/wMgd0WWj71V5D1fAWQFEc/jIaZtsc98TW1fHpGUN1KDV+MP/9rFzJABfxr8hrjOgsT6Ku4hC8kasM+i4fKM34SxNvSGfPe1rf9EAIRKIrl3ciVPCyxNM7CR88n/Yc5Rf8YcVtYaBCj9+1BCjmoPY4Q1rZCfIQa5AhlbzcDs0Qn5IVpSXHuI4Rs26p+lzEhEUrvtB8N4gzbh6wXZzVa4IQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dwXtd73pvz2x9M
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2026 03:32:56 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6B3771476;
+	Tue, 20 Jan 2026 08:32:16 -0800 (PST)
+Received: from [10.1.39.200] (XHFQ2J9959.cambridge.arm.com [10.1.39.200])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id BFE823F694;
+	Tue, 20 Jan 2026 08:32:18 -0800 (PST)
+Message-ID: <785a7d90-babe-43af-93a6-c220c1877bcf@arm.com>
+Date: Tue, 20 Jan 2026 16:32:17 +0000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,50 +44,75 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <ec1fbc52-3e72-4a0f-954c-9ecf581f9e39@amd.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 0/3] Fix bugs and performance of kstack offset
+ randomisation
+Content-Language: en-GB
+To: Kees Cook <kees@kernel.org>, Dave Hansen <dave.hansen@intel.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ Huacai Chen <chenhuacai@kernel.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Walmsley <pjw@kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
+ "Gustavo A. R. Silva" <gustavoars@kernel.org>, Arnd Bergmann
+ <arnd@arndb.de>, Mark Rutland <mark.rutland@arm.com>,
+ "Jason A. Donenfeld" <Jason@zx2c4.com>, Ard Biesheuvel <ardb@kernel.org>,
+ Jeremy Linton <jeremy.linton@arm.com>,
+ David Laight <david.laight.linux@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ linux-hardening@vger.kernel.org
+References: <20260119130122.1283821-1-ryan.roberts@arm.com>
+ <20fb97f1-7e50-485a-bdfd-a2901d20ec84@intel.com>
+ <C502BCE6-2FB2-4A06-93A8-E8DEDFC22914@kernel.org>
+From: Ryan Roberts <ryan.roberts@arm.com>
+In-Reply-To: <C502BCE6-2FB2-4A06-93A8-E8DEDFC22914@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Le Tue, Jan 20, 2026 at 09:56:12AM +0530, K Prateek Nayak a écrit :
-> Hello Frederic, Peter,
+On 19/01/2026 16:44, Kees Cook wrote:
 > 
-> On 1/20/2026 2:34 AM, Frederic Weisbecker wrote:
-> > Le Mon, Jan 19, 2026 at 01:53:47PM +0100, Peter Zijlstra a écrit :
-> >> On Fri, Jan 16, 2026 at 03:51:54PM +0100, Frederic Weisbecker wrote:
-> >>
-> >>>  kernel/sched/idle.c | 11 ++++++-----
-> >>>  1 file changed, 6 insertions(+), 5 deletions(-)
-> >>>
-> >>> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-> >>> index c174afe1dd17..35d79af3286d 100644
-> >>> --- a/kernel/sched/idle.c
-> >>> +++ b/kernel/sched/idle.c
-> >>> @@ -260,6 +260,12 @@ static void do_idle(void)
-> >>>  {
-> >>>  	int cpu = smp_processor_id();
-> >>>  
-> >>> +	if (cpu_is_offline(cpu)) {
-> >>
-> >> Does it make sense to make that: if (unlikely(cpu_is_offline(cpu))) ?
-> > 
-> > Yes indeed!
 > 
-> nit. but don't we inherit it from:
+> On January 19, 2026 8:00:00 AM PST, Dave Hansen <dave.hansen@intel.com> wrote:
+>> On 1/19/26 05:01, Ryan Roberts wrote:
+>>> x86 (AWS Sapphire Rapids):
+>>> +-----------------+--------------+-------------+---------------+
+>>> | Benchmark       | Result Class |   v6.18-rc5 | per-task-prng |
+>>> |                 |              | rndstack-on |               |
+>>> |                 |              |             |               |
+>>> +=================+==============+=============+===============+
+>>> | syscall/getpid  | mean (ns)    |  (R) 13.32% |     (R) 4.60% |
+>>> |                 | p99 (ns)     |  (R) 13.38% |    (R) 18.08% |
+>>> |                 | p99.9 (ns)   |      16.26% |    (R) 19.38% |
+>>
+>> Like you noted, this is surprising. This would be a good thing to make
+>> sure it goes in very early after -rc1 and gets plenty of wide testing.
 > 
-> #define cpu_is_offline(cpu)     unlikely(!cpu_online(cpu))
+> Right, we are pretty late in the dev cycle (rc6). It would be prudent to get this into -next after the coming rc1 (1 month from now).
 > 
-> so it will end up being annotated with unlikely() no?
+> On the other hand, the changes are pretty "binary" in the sense that mistakes should be VERY visible right away. Would it be better to take this into -next immediately instead?
 
-Ah right!
+I don't think this question was really addressed to me, but I'll give my opinion
+anyway; I agree it's pretty binary - it will either work or it will explode.
+I've tested on arm64 and x86_64 so I have high confidence that it works. If you
+get it into -next ASAP it has 3 weeks to soak before the merge window opens
+right? (Linus said he would do an -rc8 this cycle). That feels like enough time
+to me. But it's your tree ;-)
+
+Thanks,
+Ryan
+
 
 > 
-> -- 
-> Thanks and Regards,
-> Prateek
+>> But I don't see any problems with the approach, and the move to common
+>> code looks like a big win as well:
+> 
+> Agreed; I think it's looking great.
 > 
 
--- 
-Frederic Weisbecker
-SUSE Labs
 
