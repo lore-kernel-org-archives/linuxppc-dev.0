@@ -1,73 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-16100-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16101-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BADDD262B2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Jan 2026 08:21:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86F0EC44501
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Jan 2026 10:47:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dwxxT6Xq5z2xqD;
-	Wed, 21 Jan 2026 19:21:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768983709;
-	cv=none; b=ELD7TyOFvx/pcTP5+sIIzKzoqVcsS18WeQ+oaxvXN+3HYEyQaqNsJl+BYcUcAQK/QTAJIqKB1XEuD2C8a2Z5aSN1DQlQUMInbje/5GnNQCjoqTY3t48qD1J4+ju4/hWB7kD95NMv5/IAePq4DPchvPaiAy6nrfw2ZOh2xtUw6JBXjvHnyFfw4ITlGRKFIdDDSPdj5P0asKisQXmT5tYlSZ416PGZBae7rPdaB/PVZzb9hYlWUNrLfCezEM/+UHpscWSrFKF6D1vp2p6AjpPqMgkWldSQY7oWvJ6nCLJ0nXHCoLwOE1+acuzYpCyG+i35huAeXTKIx4IRbc+fqb+hMQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768983709; c=relaxed/relaxed;
-	bh=5v0G3hfuMgHKCpAul8u/BydQTA6hxmdaE0q9JPFf+wQ=;
-	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=dZEfyzv8MilrdyaqSoW9OxfZ/rXRQ6NSOipnG3Cp+uq/bOmpDIDulDa6tOrSXqG1wdP85LSdnRu5yr3V6lB6BREsmMUo5qT3fjCeqQ33AimWqwzAJBSOM4e6vPPBlLjujxYLGQZ+6eflrGnppE9HEblbSFvNdHl3J2yj1dcSDC0cI1FvbT1jdvAwArAnBVW990Aqq+tj12xn75bM7t40cWbUB2pVsxL0TmWJM2WD9RAwKIs9fHr/65tLtDZ4GQ8ZqaR/s1oiZ2gfolPZEIX9I/xXwM8L+M/K/oHdwY496BmmQK0mmLAwQBHwxT7wSgvz3+hZpyyx6OIWSgcQliWgnw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dx19l0751z2xqD;
+	Wed, 21 Jan 2026 21:47:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::1029" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768992458;
+	cv=pass; b=nZz/EKSMQ6T4Demnh8u1IoHX7hcA0e2fKT5EEAlUXPd+mSDR1fbpAaJIo2uGLovisujtpPnq9x10xQYn+MU8qwKFL83arJO5qK+gKOePHF1/TGKUeVwMg3js69XmuvkR0rNRDZ4jLmtAw96aUTmPNJG4/BLbXqqiizhhSJaDBplLmCZjuN9GNggRZbVzoWNbG9tnD3eeZXjFfrfwgKb/Uuw6GAemzAs278AT/cobCjpn4uxhhChtn5EawcwBx7L9wwQGM+R/D1/xJpom7XBRc94rCYGF+K40hPWV4Caowl+6xD0/PKnZO7tnQniJwJhhtpaCf7rQMOVKpDDqk3aSmQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1768992458; c=relaxed/relaxed;
+	bh=/fMXkDh4NuIGqP7vK0ebKmRodxeqBxQ37RgaLup8t8A=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=F+aLTuX0uFtZndApY0Ghi3CtxkkI7ixG8u0X6TCjmWYV+iyQ02TxmsGm+V3ANkw2XPbSrSXftYLUjSzcH5n2OCj5pq6AUNcD0Hd7Ax8OBFJr8rgBaND4fMYiXTvhZ9HRTwlysHjLI3eogHSfHq3vcjItMQWTiBpcnEBT9qhw9gNCJKcNnhBoSD8HsM/be8fUbvBIAB6E6e5bh8zOiOhAEQfxCxGqCicNl07vOzDLaFNEq9sRTc/q1nJ71TPpbqbC6Qv9Y1mt73aPkpzF/sGPkeHBz8BTKmFhj5T0n4wlA90lQHGqf0Bn6g4/vKyM6yuXcq7SbnmFhkx8aLVECkGPdQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=nAuZU9Ws; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1029; helo=mail-pj1-x1029.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=nAuZU9Ws;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1029; helo=mail-pj1-x1029.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1029.google.com (mail-pj1-x1029.google.com [IPv6:2607:f8b0:4864:20::1029])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dwxxT0Cjcz2xm5
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2026 19:21:48 +1100 (AEDT)
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id E049133689;
-	Wed, 21 Jan 2026 08:21:45 +0000 (UTC)
-Authentication-Results: smtp-out1.suse.de;
-	none
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 3B4903EA63;
-	Wed, 21 Jan 2026 08:21:45 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id 8K9NDZmMcGm6dwAAD6G6ig
-	(envelope-from <tiwai@suse.de>); Wed, 21 Jan 2026 08:21:45 +0000
-Date: Wed, 21 Jan 2026 09:21:44 +0100
-Message-ID: <874iofs7dz.wl-tiwai@suse.de>
-From: Takashi Iwai <tiwai@suse.de>
-To: Vivian Wang <wangruikang@iscas.ac.cn>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,	Michael Ellerman
- <mpe@ellerman.id.au>,	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,	Alex Deucher
- <alexander.deucher@amd.com>,	Christian =?ISO-8859-1?Q?K=F6nig?=
- <christian.koenig@amd.com>,	David Airlie <airlied@gmail.com>,	Simona Vetter
- <simona@ffwll.ch>,	"Creeley, Brett" <bcreeley@amd.com>,	Andrew Lunn
- <andrew+netdev@lunn.ch>,	"David S. Miller" <davem@davemloft.net>,	Eric
- Dumazet <edumazet@google.com>,	Jakub Kicinski <kuba@kernel.org>,	Paolo
- Abeni <pabeni@redhat.com>,	Bjorn Helgaas <bhelgaas@google.com>,	Jaroslav
- Kysela <perex@perex.cz>,	Takashi Iwai <tiwai@suse.com>,	Han Gao
- <gaohan@iscas.ac.cn>,	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,	amd-gfx@lists.freedesktop.org,
-	dri-devel@lists.freedesktop.org,	netdev@vger.kernel.org,
-	linux-pci@vger.kernel.org,	linux-sound@vger.kernel.org,
-	linux-riscv@lists.infradead.org,	sophgo@lists.linux.dev
-Subject: Re: [PATCH v2 1/4] PCI/MSI: Conservatively generalize no_64bit_msi into msi_addr_mask
-In-Reply-To: <20260121-pci-msi-addr-mask-v2-1-f42593168989@iscas.ac.cn>
-References: <20260121-pci-msi-addr-mask-v2-0-f42593168989@iscas.ac.cn>
-	<20260121-pci-msi-addr-mask-v2-1-f42593168989@iscas.ac.cn>
-User-Agent: Wanderlust/2.15.9 (Almost Unreal) Emacs/30.1 Mule/6.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dx19h0x25z2xm5
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2026 21:47:35 +1100 (AEDT)
+Received: by mail-pj1-x1029.google.com with SMTP id 98e67ed59e1d1-35305538592so403808a91.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2026 02:47:35 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1768992452; cv=none;
+        d=google.com; s=arc-20240605;
+        b=lM4ve5qdm+bzK/kapu3pkX874+YJjvNr0M1cSbmK01rwi79NL3ZscOocg4qDsoYpRL
+         iDZ33pgx32VmJ96JGXFsl7h+cYUMSj03y1UdcHiA4PSzv1tI97hDBQ2lrNgXZ9iE5RfJ
+         70MxpFNbpu/ZSEO5rWG/d+BGl3bOL8uN2DcESeD1bXpAGBIXZs4HaXOLNwnXbhuRjiCp
+         MYO0l5+UUlTqy3wry88VTmKRqeqcoEjRc/dpQKSwbjCnFkDELNnQniYc91V4RVdWRz1N
+         dw/AQ/Rf3vfrX8acQDBMenCpQkW6s+9avoS6lS+zd39l/grkXLgQvFixzZ5juFqLG6Fy
+         0hWA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=/fMXkDh4NuIGqP7vK0ebKmRodxeqBxQ37RgaLup8t8A=;
+        fh=2KFU3Pdo2KETrmOOctvS1QYzb2btkmsHbbTRrwbGanE=;
+        b=RCrXvdk5SwngYpEjwT6K8IFWfcnJ3EmjGe/8JJp0S8icw3FTeZjXWxeNgd4mPuLpZe
+         FOk8gHpuNvLxDZZ+u+mVgkUCg/8bP8VP0xJnHiYPA5ceBq9k80J1MDT4za5wBnnTFYA4
+         W9IO8ls5ZgNYz5TA20VbFojUKre29e0tnyp5gFnAKYTLYPIUE2CZFW5uAwY1AcD3I8tP
+         Vb1i61/4Y1MgifW3TUMtnWbpEIlnwyY8DNo5VjnguGwTUzS9Bkl+d70nKOPEtHFJ8+5D
+         BDV5vTKDStDThPnfXwznS7KmRy1nA9NvCUHTGLm58MBAx6hLXzru3BJoZHAiCh7v7KcS
+         GayQ==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1768992452; x=1769597252; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=/fMXkDh4NuIGqP7vK0ebKmRodxeqBxQ37RgaLup8t8A=;
+        b=nAuZU9WsqIcG5VXr54IC/hCkKfvfusbdAzKGEYBG3oC21DSEDOeE37HmJz4yRv/otd
+         hDDBtded3daUCuXtb3d9r8Ew6Dtucxt4FoI5dRSxdD0xn4p793ZelRh+Jh49cDDBGQSA
+         4lSTbgP8XilkdtXUuHvpOqvz6Yf/oqt//+T2ccinFkbxaQe0CbnBpJkjewy03/U95AqT
+         cM7NgxvpkI2O0VSVc5SSOb7OSn+51HP+SDOI08pyMEW4v0M9d9rt3dmssR9LcKmJ41+2
+         2e8ZURXpsoqRSghTKH+sFxF0W+XnwowlaYWuo0H1WNUb6VrUj5imZ6VT8D0VExEMWIwJ
+         bH/w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1768992452; x=1769597252;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=/fMXkDh4NuIGqP7vK0ebKmRodxeqBxQ37RgaLup8t8A=;
+        b=P11MAGA4Q1QT5LZh90E0hFaRjPzShOP0xTdgrlEhSzmyoOn5N+BSA+Fdck8eGxq7ZW
+         VW2FnoZ4iCev4U+u5Nh+W1C0tN7kk0A4S/qC71kD9qV/rH9Rh5IgsY4u8c2Y/vYyV9WR
+         KLj0EgCKd33jXdTHRf4RjrvvtMmLILFV8EOFp0k4bVj8p7zSxkGPlUPKkenxJ2ZpRBfD
+         h/di68nmBGdVxMxt8s4jFQ0evjbEdzoaxwLSVQQ/5mpHEdeePb8aQnbE35ZZdyUaXWr1
+         aKCyUVprgMYIn2eFy5TkYcLk+qzVrAYwGuuR+B4ZWeugK4OrVM2hzqLtRcKbgaONQeqC
+         BynA==
+X-Forwarded-Encrypted: i=1; AJvYcCUbqVnWdw79mmEG6oqCbpPrHYOC+qB8G1G+N1Wp8uBFvGGNG/kE2lu9ra9EXqLpWS+2mdDP8t5E8+Fo2Tc=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzHel3e0eEPJZJOMNL2jeLX3KAiw9gR6Zs33YzmGLdMMOYMrQ3O
+	NSXkmbstispcUbVYnQ9c40QyCohqaeLLjUUEZxTQwQ3DQdgOt/TsBrkkt/6AU9hFCZOhbLmBL4N
+	SmPex6s5nC2I3Vde0YMPqQr5PiI6W42g=
+X-Gm-Gg: AZuq6aKv5HCnlWm8ZvHSo+c2jj+reDtXMWE+ot8Rd7yd2eUNrGc+Jr2eM13QI8f1RbX
+	uKBU3kIjxJdwPVU17Gf1mckqGOUR7Zyix+ALXhOchSzGRybnNnxZW46MepwI+Qaqzlfk2irdpYg
+	n/sfH8Od3W6DtZGCOYrlitv1p6mCgZXJx6mNfVWyOPr8l2iK+r1BWvXDWNjBoiFIMqfF6tdofXh
+	ObkucU0VxMwt1ldjByTirWWWZoZdwlQiyTdOJeK9+YpuvM8tiqluugdLyrJQzJmGUTcrYc=
+X-Received: by 2002:a17:90b:3b8d:b0:340:b908:9665 with SMTP id
+ 98e67ed59e1d1-3527329ea06mr14234623a91.37.1768992452459; Wed, 21 Jan 2026
+ 02:47:32 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,227 +99,126 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
-Content-Type: text/plain; charset=US-ASCII
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Spamd-Result: default: False [-4.00 / 50.00];
-	REPLY(-4.00)[];
-	TAGGED_RCPT(0.00)[netdev]
-X-Rspamd-Queue-Id: E049133689
-X-Rspamd-Pre-Result: action=no action;
-	module=replies;
-	Message is reply to one we originated
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+MIME-Version: 1.0
+References: <20260120035210.1593742-1-shengjiu.wang@nxp.com>
+ <20260120035210.1593742-3-shengjiu.wang@nxp.com> <20260121-careful-beige-iguana-c32bbd@quoll>
+In-Reply-To: <20260121-careful-beige-iguana-c32bbd@quoll>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Wed, 21 Jan 2026 18:47:19 +0800
+X-Gm-Features: AZwV_QjDpxZv6jt8rBYtLCaZTNVLi3Y8jythwZEftwLkFpk7naOfOY6Hgw_qq24
+Message-ID: <CAA+D8ANy6-e3RkhjSKWfqEcxEnsZrEuJvz7Bmp5q6ZO4x3RfVg@mail.gmail.com>
+Subject: Re: [PATCH v2 2/4] ASoC: dt-bindings: fsl,sai: Add AUDMIX mode
+ support on i.MX952
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Shengjiu Wang <shengjiu.wang@nxp.com>, Xiubo.Lee@gmail.com, festevam@gmail.com, 
+	nicoleotsuka@gmail.com, lgirdwood@gmail.com, broonie@kernel.org, 
+	perex@perex.cz, tiwai@suse.com, linux-sound@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, robh@kernel.org, 
+	krzk+dt@kernel.org, conor+dt@kernel.org, devicetree@vger.kernel.org, 
+	shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de, 
+	imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, 21 Jan 2026 04:49:37 +0100,
-Vivian Wang wrote:
-> 
-> Some PCI devices have PCI_MSI_FLAGS_64BIT in the MSI capability, but
-> implement less than 64 address bits. This breaks on platforms where such
-> a device is assigned an MSI address higher than what's reachable.
-> 
-> Currently, we deal with this with a single no_64bit_msi flag, and
-> (notably on powerpc) forces 32-bit MSI address for these devices.
-> However, on some platforms the MSI doorbell address is above 32-bit but
-> within device ability.
-> 
-> As a first step to enabling MSI on those combinations of devices and
-> platforms, conservatively generalize the single-bit flag no_64bit_msi
-> into msi_addr_mask. (The name msi_addr_mask is chosen to avoid confusion
-> with msi_mask.)
-> 
-> The translation is essentially:
-> 
-> - no_64bit_msi = 1    ->    msi_addr_mask = DMA_BIT_MASK(32)
-> - no_64bit_msi = 0    ->    msi_addr_mask = DMA_BIT_MASK(64)
-> - if (no_64bit_msi)   ->    if (msi_addr_mask < DMA_BIT_MASK(64))
-> 
-> Since no values other than DMA_BIT_MASK(32) and DMA_BIT_MASK(64) is
-> used, no functional change is intended. Future patches that make use of
-> intermediate values of msi_addr_mask will follow, allowing devices that
-> cannot use full 64-bit addresses for MSI to work on platforms with MSI
-> doorbell above 32-bit address space.
-> 
-> Signed-off-by: Vivian Wang <wangruikang@iscas.ac.cn>
+On Wed, Jan 21, 2026 at 4:03=E2=80=AFPM Krzysztof Kozlowski <krzk@kernel.or=
+g> wrote:
+>
+> On Tue, Jan 20, 2026 at 11:52:08AM +0800, Shengjiu Wang wrote:
+> > The SAI can connect to AUDMIX, but AUDMIX can be bypassed or not on
+> > i.MX952, so add 'fsl,sai-amix-mode' property for this feature, with
+> > this property present, then SAI driver will try to config the setting,
+>
+> I am still not sure this is hardware static property. You say "can be
+> bypassed", so I imagine same board could have it bypassed or not,
+> depending on use case (so mixers).
 
-For the sound part:
+Yes, depending on the use case.
+1.  When bypassed,   the SAI output goes to codec directly.
+      like: SAI -> Codec
 
-Acked-by: Takashi Iwai <tiwai@suse.de>
+2.  AUDMIX mode:  the SAI output goes to AUDMIX.
+      like: SAI -> AUDMIX-> Codec
+
+Will add above info in the commit message.
+
+>
+> > fsl,sai-amix-mode =3D <0> is bypass mode, fsl,sai-amix-mode =3D <1> is
+> > the AUDMIX mode.
+> >
+> > Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+> > ---
+> >  .../devicetree/bindings/sound/fsl,sai.yaml       | 16 ++++++++++++++++
+> >  1 file changed, 16 insertions(+)
+> >
+> > diff --git a/Documentation/devicetree/bindings/sound/fsl,sai.yaml b/Doc=
+umentation/devicetree/bindings/sound/fsl,sai.yaml
+> > index d838ee0b61cb..7808c324eebc 100644
+> > --- a/Documentation/devicetree/bindings/sound/fsl,sai.yaml
+> > +++ b/Documentation/devicetree/bindings/sound/fsl,sai.yaml
+> > @@ -133,6 +133,13 @@ properties:
+> >          - description: dataline mask for 'rx'
+> >          - description: dataline mask for 'tx'
+> >
+> > +  fsl,sai-amix-mode:
+> > +    $ref: /schemas/types.yaml#/definitions/uint32
+>
+> Anyway, string is more readable.
+
+Ok,  will use string
+>
+> > +    description:
+> > +      The audmix module is bypassed from hardware or not.
+> > +      Bypass AUDMIX(0), AUDMIX mode(1)
+>
+> Drop last sentence and use enum [ bypass, mode-1-whatever-this-means ]
+>
+> > +    enum: [0, 1]
+>
+> What is the default? What is the meaning of lack of this property?
+>
+
+  fsl,sai-amix-mode:
+    $ref: /schemas/types.yaml#/definitions/string
+    description:
+      The audmix module is bypassed from hardware or not.
+    enum: [none, bypass, audmix]
+    default: none
+
+I'd like to use the above definition.  add 'none' for default.
+Which means no audmix connection in hardware. then we don't need to
+bypass or not-bypass audmix.
 
 
-thanks,
+> > +
+> >    fsl,sai-mclk-direction-output:
+> >      description: SAI will output the SAI MCLK clock.
+> >      type: boolean
+> > @@ -180,6 +187,15 @@ allOf:
+> >        properties:
+> >          fsl,sai-synchronous-rx: false
+> >
+> > +  - if:
+> > +      required:
+> > +        - fsl,sai-amix-mode
+> > +    then:
+> > +      properties:
+> > +        compatible:
+> > +          contains:
+> > +            const: fsl,imx952-sai
+>
+> There is no such compatible.
 
-Takashi
+It is in another patch:
+https://www.spinics.net/lists/kernel/msg6004158.html
 
-
-> 
-> ---
-> 
-> v2: Minor rewording. No code changes.
-> 
-> checkpatch complains about the comment include/linux/pci.h, which I have
-> formatted similarly with other comments in the vicinity.
-> ---
->  arch/powerpc/platforms/powernv/pci-ioda.c           | 2 +-
->  arch/powerpc/platforms/pseries/msi.c                | 4 ++--
->  drivers/gpu/drm/radeon/radeon_irq_kms.c             | 2 +-
->  drivers/net/ethernet/pensando/ionic/ionic_bus_pci.c | 2 +-
->  drivers/pci/msi/msi.c                               | 2 +-
->  drivers/pci/msi/pcidev_msi.c                        | 2 +-
->  drivers/pci/probe.c                                 | 7 +++++++
->  include/linux/pci.h                                 | 8 +++++++-
->  sound/hda/controllers/intel.c                       | 2 +-
->  9 files changed, 22 insertions(+), 9 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index b0c1d9d16fb5..1c78fdfb7b03 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -1666,7 +1666,7 @@ static int __pnv_pci_ioda_msi_setup(struct pnv_phb *phb, struct pci_dev *dev,
->  		return -ENXIO;
->  
->  	/* Force 32-bit MSI on some broken devices */
-> -	if (dev->no_64bit_msi)
-> +	if (dev->msi_addr_mask < DMA_BIT_MASK(64))
->  		is_64 = 0;
->  
->  	/* Assign XIVE to PE */
-> diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
-> index a82aaa786e9e..7473c7ca1db0 100644
-> --- a/arch/powerpc/platforms/pseries/msi.c
-> +++ b/arch/powerpc/platforms/pseries/msi.c
-> @@ -383,7 +383,7 @@ static int rtas_prepare_msi_irqs(struct pci_dev *pdev, int nvec_in, int type,
->  	 */
->  again:
->  	if (type == PCI_CAP_ID_MSI) {
-> -		if (pdev->no_64bit_msi) {
-> +		if (pdev->msi_addr_mask < DMA_BIT_MASK(64)) {
->  			rc = rtas_change_msi(pdn, RTAS_CHANGE_32MSI_FN, nvec);
->  			if (rc < 0) {
->  				/*
-> @@ -409,7 +409,7 @@ static int rtas_prepare_msi_irqs(struct pci_dev *pdev, int nvec_in, int type,
->  		if (use_32bit_msi_hack && rc > 0)
->  			rtas_hack_32bit_msi_gen2(pdev);
->  	} else {
-> -		if (pdev->no_64bit_msi)
-> +		if (pdev->msi_addr_mask < DMA_BIT_MASK(64))
->  			rc = rtas_change_msi(pdn, RTAS_CHANGE_32MSIX_FN, nvec);
->  		else
->  			rc = rtas_change_msi(pdn, RTAS_CHANGE_MSIX_FN, nvec);
-> diff --git a/drivers/gpu/drm/radeon/radeon_irq_kms.c b/drivers/gpu/drm/radeon/radeon_irq_kms.c
-> index 9961251b44ba..d550554a6f3f 100644
-> --- a/drivers/gpu/drm/radeon/radeon_irq_kms.c
-> +++ b/drivers/gpu/drm/radeon/radeon_irq_kms.c
-> @@ -252,7 +252,7 @@ static bool radeon_msi_ok(struct radeon_device *rdev)
->  	 */
->  	if (rdev->family < CHIP_BONAIRE) {
->  		dev_info(rdev->dev, "radeon: MSI limited to 32-bit\n");
-> -		rdev->pdev->no_64bit_msi = 1;
-> +		rdev->pdev->msi_addr_mask = DMA_BIT_MASK(32);
->  	}
->  
->  	/* force MSI on */
-> diff --git a/drivers/net/ethernet/pensando/ionic/ionic_bus_pci.c b/drivers/net/ethernet/pensando/ionic/ionic_bus_pci.c
-> index 70d86c5f52fb..0671deae9a28 100644
-> --- a/drivers/net/ethernet/pensando/ionic/ionic_bus_pci.c
-> +++ b/drivers/net/ethernet/pensando/ionic/ionic_bus_pci.c
-> @@ -331,7 +331,7 @@ static int ionic_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
->  
->  #ifdef CONFIG_PPC64
->  	/* Ensure MSI/MSI-X interrupts lie within addressable physical memory */
-> -	pdev->no_64bit_msi = 1;
-> +	pdev->msi_addr_mask = DMA_BIT_MASK(32);
->  #endif
->  
->  	err = ionic_setup_one(ionic);
-> diff --git a/drivers/pci/msi/msi.c b/drivers/pci/msi/msi.c
-> index 34d664139f48..48f5f03d1479 100644
-> --- a/drivers/pci/msi/msi.c
-> +++ b/drivers/pci/msi/msi.c
-> @@ -322,7 +322,7 @@ static int msi_verify_entries(struct pci_dev *dev)
->  {
->  	struct msi_desc *entry;
->  
-> -	if (!dev->no_64bit_msi)
-> +	if (dev->msi_addr_mask == DMA_BIT_MASK(64))
->  		return 0;
->  
->  	msi_for_each_desc(entry, &dev->dev, MSI_DESC_ALL) {
-> diff --git a/drivers/pci/msi/pcidev_msi.c b/drivers/pci/msi/pcidev_msi.c
-> index 5520aff53b56..0b0346813092 100644
-> --- a/drivers/pci/msi/pcidev_msi.c
-> +++ b/drivers/pci/msi/pcidev_msi.c
-> @@ -24,7 +24,7 @@ void pci_msi_init(struct pci_dev *dev)
->  	}
->  
->  	if (!(ctrl & PCI_MSI_FLAGS_64BIT))
-> -		dev->no_64bit_msi = 1;
-> +		dev->msi_addr_mask = DMA_BIT_MASK(32);
->  }
->  
->  void pci_msix_init(struct pci_dev *dev)
-> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-> index 41183aed8f5d..a2bff57176a3 100644
-> --- a/drivers/pci/probe.c
-> +++ b/drivers/pci/probe.c
-> @@ -2047,6 +2047,13 @@ int pci_setup_device(struct pci_dev *dev)
->  	 */
->  	dev->dma_mask = 0xffffffff;
->  
-> +	/*
-> +	 * Assume 64-bit addresses for MSI initially. Will be changed to 32-bit
-> +	 * if MSI (rather than MSI-X) capability does not have
-> +	 * PCI_MSI_FLAGS_64BIT. Can also be overridden by driver.
-> +	 */
-> +	dev->msi_addr_mask = DMA_BIT_MASK(64);
-> +
->  	dev_set_name(&dev->dev, "%04x:%02x:%02x.%d", pci_domain_nr(dev->bus),
->  		     dev->bus->number, PCI_SLOT(dev->devfn),
->  		     PCI_FUNC(dev->devfn));
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index 864775651c6f..0fe32fef0331 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -377,6 +377,13 @@ struct pci_dev {
->  					   0xffffffff.  You only need to change
->  					   this if your device has broken DMA
->  					   or supports 64-bit transfers.  */
-> +	u64		msi_addr_mask;	/* Mask of the bits of bus address for
-> +					   MSI that this device implements.
-> +					   Normally set based on device
-> +					   capabilities. You only need to
-> +					   change this if your device claims
-> +					   to support 64-bit MSI but implements
-> +					   fewer than 64 address bits. */
->  
->  	struct device_dma_parameters dma_parms;
->  
-> @@ -441,7 +448,6 @@ struct pci_dev {
->  
->  	unsigned int	is_busmaster:1;		/* Is busmaster */
->  	unsigned int	no_msi:1;		/* May not use MSI */
-> -	unsigned int	no_64bit_msi:1;		/* May only use 32-bit MSIs */
->  	unsigned int	block_cfg_access:1;	/* Config space access blocked */
->  	unsigned int	broken_parity_status:1;	/* Generates false positive parity */
->  	unsigned int	irq_reroute_variant:2;	/* Needs IRQ rerouting variant */
-> diff --git a/sound/hda/controllers/intel.c b/sound/hda/controllers/intel.c
-> index 1e8e3d61291a..c9542ebdf7e2 100644
-> --- a/sound/hda/controllers/intel.c
-> +++ b/sound/hda/controllers/intel.c
-> @@ -1905,7 +1905,7 @@ static int azx_first_init(struct azx *chip)
->  
->  	if (chip->msi && chip->driver_caps & AZX_DCAPS_NO_MSI64) {
->  		dev_dbg(card->dev, "Disabling 64bit MSI\n");
-> -		pci->no_64bit_msi = true;
-> +		pci->msi_addr_mask = DMA_BIT_MASK(32);
->  	}
->  
->  	pci_set_master(pci);
-> 
-> -- 
-> 2.52.0
-> 
+Best regards
+Shengjiu Wang
+>
+> > +
+> >  required:
+> >    - compatible
+> >    - reg
+> > --
+> > 2.34.1
+> >
 
