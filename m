@@ -1,67 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-16113-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16114-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B69AC44508
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Jan 2026 20:46:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DE45C44508
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Jan 2026 23:38:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dxGT64sbLz2xqD;
-	Thu, 22 Jan 2026 07:46:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=130.133.4.66
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769028410;
-	cv=none; b=AHooRzkxQFVz8fUA6xpFlohACZok6ZakJhj7ga/P+uBh75E8PiRO9404JYKfMONejQULRWwGxExfquQwq4+fX7mdC6BEMB7nD4kJ4DPACAEwRJjexWjhs8XWUtVYYR6jUeg+FUjTZBlP+WGMxECG3bVGY/9TApd6KHvn7A0ys3IGjKMUIAPJivvlxGf805meUJwecZR6tNS+PJbs9yZ28tBACuAGdZPDW7ktNoRVJHuEQ21gNAiZu7vC6wythgklHs3sVn1njtV0nPVCxQ+xxUUOqyYSiuj1ruqG7ZPAlAJpahWl/e3LveXtJqJ23E9el+euqq23R/2bha86qDGZxw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dxLGp1XWKz2xs1;
+	Thu, 22 Jan 2026 10:38:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769038690;
+	cv=none; b=KzSXoiAku79H5d7U9lY7vA/WxccjEeUKRwex9AiXr0eAIKfjk6SVqbZo+GphPFepIgE+9agIuPHUlOYR1vZRDF7MbbUQS5GfS46pyk9pIxux4sUglB9USkAFWCMaaU0JnM3Stz5zLll9S+fMD9CZA5Mxs/xVEFuBiH3Fgl0RE7IjtwGGYC7qSC0O2iSeLFQ3TnuW6E1UaZIuCT71rxklvGX4k4WFfRJW1m+J0+i3VTlPewIMrr/dqbURywIv9njN2GaK8WM4AaOhS7RnweMvk6pw7lOmbg5YHfiq/anLKAvO9xLPS6HPvluSQPW7Nl85yxysBerpIFGwn3DBcnFgvg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1769028410; c=relaxed/relaxed;
-	bh=9YQ0iB6tHGlmx4FNm0cMTJYg5esIL/mk4dDFvpnMobM=;
-	h=Message-ID:Subject:From:To:Cc:Date:Content-Type:MIME-Version; b=DLWAdaQCtcXTv0XW5qltkFI5eDAdot6Qd4Qupd4SV7jv9JLBPOZJcLRXnhEvz1vsJdARcN2iWy2KCDrHDpYK1JhhLSXxiu/BytsPbcArEx+m4E7EuBM3UGhmuSsFwRnosTQZ/hgYoTXrjD6YRY3KcedNJl9Nbk5/iqSRVvu//0tU9HqogB+TreilFfHZcu8yFvu05EujG0oaaAhUbXihOarYscsOtVma4nySybArIeGv1CVe6p3vUHl6Zopi7F7EE8ER3M3oTC+0PHCCqriIAjTshXoiEg2DhVvkgMDbAOhtogFk9VO3kWkjO3o2Cp2KoFF/fLm+8y6v2LrWiTw1Pg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=physik.fu-berlin.de; dkim=pass (2048-bit key; unprotected) header.d=fu-berlin.de header.i=@fu-berlin.de header.a=rsa-sha256 header.s=fub01 header.b=Yp5mx6as; dkim-atps=neutral; spf=pass (client-ip=130.133.4.66; helo=outpost1.zedat.fu-berlin.de; envelope-from=glaubitz@zedat.fu-berlin.de; receiver=lists.ozlabs.org) smtp.mailfrom=zedat.fu-berlin.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=physik.fu-berlin.de
+	t=1769038690; c=relaxed/relaxed;
+	bh=ELw4AYfB44Z0XQD4NOw9N6lLs0Ghyzdi5aoiaCYEH9o=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=WnEmEAwq3j9C7ZEZsLEysSxUPUL+JRV/ISRrHZUb2bfl7yHcdxvwRMYlOcS3Ncc+2NKgDPdWluiMhiRxjse60LATKUHBN2uAhMlQBGJTSotVSJVGFKekcijUIMWqVXnMTz35kzjWvHTGy+h5pFfO5j3Gldb+J21jln1iX/DOcJgcjUfvIt/iRPREjtjc6O3yZkxFHDHvSpp8f6aLqF9MVQP4oeMRirXVQSP+KHRdFxzO9hdVG2eS8jhBJY9ejJjSJPnQBKIDzgmyWshcIp9JDS73hTISEYF5c4T2e+cmlZ9LgkFwNz2MpatDHOXMybH7feGqZvn4hcLsu1JldTZjBw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BeikHttw; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=fu-berlin.de header.i=@fu-berlin.de header.a=rsa-sha256 header.s=fub01 header.b=Yp5mx6as;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BeikHttw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zedat.fu-berlin.de (client-ip=130.133.4.66; helo=outpost1.zedat.fu-berlin.de; envelope-from=glaubitz@zedat.fu-berlin.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 198 seconds by postgrey-1.37 at boromir; Thu, 22 Jan 2026 07:46:47 AEDT
-Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de [130.133.4.66])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dxGT33NzGz2xpk
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2026 07:46:47 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=fu-berlin.de; s=fub01; h=MIME-Version:Content-Transfer-Encoding:
-	Content-Type:Date:Cc:To:From:Subject:Message-ID:From:Reply-To:Subject:Date:
-	Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:In-Reply-To:References;
-	bh=9YQ0iB6tHGlmx4FNm0cMTJYg5esIL/mk4dDFvpnMobM=; t=1769028407; x=1769633207; 
-	b=Yp5mx6asXan3PwyNofvA6ET3h1SubDJCv8W+KiIQQ0spoyKcE0Yx0V/S4rSLYd9AJTYsuA2pj38
-	dv/qTfoHgVjl1sBOm55dHyK5VP7ppJnbKm/21i9nM1kMfD8jX2nZIG0PsjI1GmLNeUa9NdFuxob6r
-	bHbw7R5Eq9lOCmWiHDh0KHMiLsBqH5xCnWHQFXha+qFCipUQBaUGOQJOVW4e9ff223J0G7hcc/GAp
-	nanytDedvKZHvicC1ZKN01OQQFxw5GFQPk/IUHZ8f7s+ovOelQrMzGlqIFIhy/gUHJsbHqzVUuxcR
-	KMWyKSYMG55ZYa/HksvNYLYEyZm8D1cZWOGg==;
-Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
-          by outpost.zedat.fu-berlin.de (Exim 4.99)
-          with esmtps (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@zedat.fu-berlin.de>)
-          id 1vif2w-00000001o2E-0c21; Wed, 21 Jan 2026 21:43:22 +0100
-Received: from p5dc55f29.dip0.t-ipconnect.de ([93.197.95.41] helo=suse-laptop.fritz.box)
-          by inpost2.zedat.fu-berlin.de (Exim 4.99)
-          with esmtpsa (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@physik.fu-berlin.de>)
-          id 1vif2v-00000000srx-3q9b; Wed, 21 Jan 2026 21:43:22 +0100
-Message-ID: <a8c239b497a3986fa20556b5aa54b8e2c8d56b17.camel@physik.fu-berlin.de>
-Subject: Github tracker for PowerPC issues
-From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-To: debian-powerpc <debian-powerpc@lists.debian.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, 
-	gentoo-powerpc@lists.gentoo.org
-Date: Wed, 21 Jan 2026 21:43:21 +0100
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.58.2 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dxLGn0qlzz2xl0
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2026 10:38:09 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id A474041697;
+	Wed, 21 Jan 2026 23:38:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 54A20C4CEF1;
+	Wed, 21 Jan 2026 23:38:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1769038685;
+	bh=weaJN1Iequ/ZyzA1DPueH31401FC5DUZbpwwcPNyzmQ=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:From;
+	b=BeikHttwrCy8vR2Z2txVC+OK5mggBSlKkHUlak+4qJNsLFrRy2lVin2znkr8uhTQV
+	 hDrmRILtEmj7vUJozkGZqTtkC7jUFLFbW93vmaGTVqr/Sn5lqEpjj1cfK583XK2h1W
+	 cWE3lMXXh6kONxTUrzilJiZU5A5Y89Zu2yn7RIUyGceGoUtYvSK8Y5rNZvlAy9u9iN
+	 R2s2BfJMHAxgIvFEovn2WRV21tJsbeLz8tsu8o8CSDoBDHmaPSHQj2jCW8PFkiE8aJ
+	 ocO0pWswC8u3eMGvxOnwCJab2Y+7vdjDnkfCiO1CZLrXf1aJX6D22EoP5AUFp1+EdI
+	 qGoPNveHv3RcA==
+Date: Wed, 21 Jan 2026 17:38:04 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Vivian Wang <wangruikang@iscas.ac.cn>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Alex Deucher <alexander.deucher@amd.com>,
+	Christian =?utf-8?B?S8O2bmln?= <christian.koenig@amd.com>,
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+	"Creeley, Brett" <bcreeley@amd.com>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+	Han Gao <gaohan@iscas.ac.cn>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org,
+	dri-devel@lists.freedesktop.org, netdev@vger.kernel.org,
+	linux-pci@vger.kernel.org, linux-sound@vger.kernel.org,
+	linux-riscv@lists.infradead.org, sophgo@lists.linux.dev,
+	Thomas Gleixner <tglx@kernel.org>
+Subject: Re: [PATCH v2 2/4] PCI/MSI: Check msi_addr_mask in
+ msi_verify_entries()
+Message-ID: <20260121233804.GA1221537@bhelgaas>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,32 +83,59 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Original-Sender: glaubitz@physik.fu-berlin.de
-X-Originating-IP: 93.197.95.41
-X-ZEDAT-Hint: PO
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260121-pci-msi-addr-mask-v2-2-f42593168989@iscas.ac.cn>
 
-Hi,
+[+cc Thomas, thread at https://lore.kernel.org/r/20260121-pci-msi-addr-mask-v2-0-f42593168989@iscas.ac.cn]
 
-I just noticed that similar to the issue tracker I created for SPARC [1], t=
-here is an
-issue tracker for PowerPC [2].
+On Wed, Jan 21, 2026 at 11:49:38AM +0800, Vivian Wang wrote:
+> Instead of a 32-bit/64-bit dichotomy, check the MSI address against
+> msi_addr_mask.
+> 
+> This allows platforms with MSI doorbell above 32-bit address space to
+> work with devices without full 64-bit MSI address support, as long as
+> the doorbell is within addressable range of MSI of the device.
+> 
+> Signed-off-by: Vivian Wang <wangruikang@iscas.ac.cn>
+> 
+> ---
+> v2: No changes
+> ---
+>  drivers/pci/msi/msi.c | 9 ++++++---
+>  1 file changed, 6 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/pci/msi/msi.c b/drivers/pci/msi/msi.c
+> index 48f5f03d1479..2ecbcd6c436a 100644
+> --- a/drivers/pci/msi/msi.c
+> +++ b/drivers/pci/msi/msi.c
+> @@ -321,14 +321,17 @@ static int msi_setup_msi_desc(struct pci_dev *dev, int nvec,
+>  static int msi_verify_entries(struct pci_dev *dev)
+>  {
+>  	struct msi_desc *entry;
+> +	u64 address;
+>  
+>  	if (dev->msi_addr_mask == DMA_BIT_MASK(64))
+>  		return 0;
+>  
+>  	msi_for_each_desc(entry, &dev->dev, MSI_DESC_ALL) {
+> -		if (entry->msg.address_hi) {
+> -			pci_err(dev, "arch assigned 64-bit MSI address %#x%08x but device only supports 32 bits\n",
+> -				entry->msg.address_hi, entry->msg.address_lo);
+> +		address = (u64)entry->msg.address_hi << 32 |
+> +			  entry->msg.address_lo;
+> +		if (address & ~dev->msi_addr_mask) {
+> +			pci_err(dev, "arch assigned 64-bit MSI address %llx above device MSI address mask %llx\n",
 
-The idea is to track any issues specific to a certain architecture in a cen=
-tral, prominent
-location so these become visible to any distribution maintainer and PowerPC=
- upstream developer.
+Use %#llx so it's clear these addresses are hex.  The previous message
+did that, not sure why you dropped it.
 
-Thus, if you spot a bug affecting PowerPC, please report it in [2].
-
-Thanks,
-Adrian
-
-> [1] https://github.com/sparclinux/issues/issues
-> [2] https://github.com/linuxppc/issues/issues
-
---=20
- .''`.  John Paul Adrian Glaubitz
-: :' :  Debian Developer
-`. `'   Physicist
-  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
+> +				address, dev->msi_addr_mask);
+>  			break;
+>  		}
+>  	}
+> 
+> -- 
+> 2.52.0
+> 
 
