@@ -1,103 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-16110-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16111-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 05181C44536
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Jan 2026 16:38:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6C97C44536
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Jan 2026 16:55:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dx8z309Srz2xqD;
-	Thu, 22 Jan 2026 03:38:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::534"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769013534;
-	cv=none; b=O9KTHVc2zIY7MCyaPIDP7foNSTHQW2aUggxUqFo82PdcMW8+l4dYAmH6xowCcR0vIv/BHl7YZXDCHk/F99x76Ln2CWLGsMm5bqdHiD0+0NE0cuNLxWH9ZYqy8AuqLksTcQ9qTv2ryANWgjnzd6qSbtBYY/oYcb3WyYyA0+mnaz+8onTRv5EQX/ZXFhLX5EPoAaayJ0WMbmT+Zi/dJaPEFy1us4oJsC8KZ3+ZhLx4qX+HwbUSNDnmcm/+zwbxpflPs7H8z3TpxRzHgsk1it0RNccqrJXcK5PFo+upnLaYnUUpR7WwZ3y5hga31gCbqL7gUecHHVg+oqXuRBcfAMGIZw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dx9LH2nSkz2xqD;
+	Thu, 22 Jan 2026 03:55:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769014535;
+	cv=none; b=ndmJvpKGCRQ4d0b8Ymbre3U5bCpwiGh92RC2Ctc1MgOLHW6u7UvH9sRZTAMK92s1G/R48x7LPsqQ14VQOGkb9je6CqVgZdkVVSe1V1KRwShWNPWBYDs/vf/2R3UNz1pBjEF38Trq28e7FQqpNkogi9PJ/lr95XbHi+7BfXDORIkOSgjhsDWr9UdZl6da1plj0dR+loIsXmJu0UQXa3OpMKwoQGZ3ASDEqQXbqIWaliIN5ZBs9+kI3n+1f22qvkoj0ey7xcTip5BjWJcWN4ZTr5z1h8JeD1xUqRVyiQgA/3+ByvOBbxdo/Bj4MNkw4w/fLcrJUiG9gYPv/KgMAJyNXw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1769013534; c=relaxed/relaxed;
-	bh=7MFyGEBMKUH9OPAqYqwZCoqkE5S+eIGaZJE0/gf+bsI=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=OXfDyPB93Qd8G3z+ttEGJ++LstiK4XI48T2X9BwQkoHEdt58wRP9gX8Ch7FQiWYoRinJTK3GuAY5WbF9op7seG8PY2KxV5fVyfiULtlm6xxd17V2iid3xWIzjGo4I7kJMXOrwJruhjnBtUXRohnYvtWXR2z3poXTi+0ag7crjo0iIQP4MvoAFBjD9bQVK0dmne3em7Mdnf0271+L24v2Nf0s8/ZoMuhgMmEdYM7/rpXwKoedMnOTzJ0YssLbFWbHS2L1280s5s/P8OYzby3gs5Chg7R0EP6X+rRHDiOKbcM8s3KDwGf1Hbcaji/kGfjbwkorxE1FuUkuhdXvk75KWA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=SrWk5meI; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::534; helo=mail-ed1-x534.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1769014535; c=relaxed/relaxed;
+	bh=bouEFs8AEKR3hpmuCbVACtSfuPWhxI+MJhmhnLd0A5w=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=GxfEWiMkPp2SbRffRnT/piCkROrAWErVpfffGHiaQA4ILfA3wxCDYy2q1DPvNPOOcfpfzKNixYnMMvzH77Z8+5qwzS5wwiO9Tsl6xsXb2USAxFGIPXAwaqBYt3izFHFGPqLNj1qZYHalrj/IxtYvYqhXz33dR/ebLLfg8rKl0tzPSPTcD94+ufkvrVl5t62SksTtoYywo0/P7b6rHZ3ewdgrwUIfK7g8LgaLLnfn3egMe6/7MfhiNxGl+T+k1CSkSfa5XJ4MNY9j2bNqS4qYghQ1o2NEsMhzJBkI4dqce0NtKBaeXSuTjACei9AINLs4EcYPyisU4zM1/Y+yQ6l8Rw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=i4zQlP9q; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=frederic@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=SrWk5meI;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=i4zQlP9q;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::534; helo=mail-ed1-x534.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x534.google.com (mail-ed1-x534.google.com [IPv6:2a00:1450:4864:20::534])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=frederic@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dx8z13Hw1z2xpk
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2026 03:38:52 +1100 (AEDT)
-Received: by mail-ed1-x534.google.com with SMTP id 4fb4d7f45d1cf-64b92abe63aso57027a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Jan 2026 08:38:52 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1769013525; x=1769618325; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=7MFyGEBMKUH9OPAqYqwZCoqkE5S+eIGaZJE0/gf+bsI=;
-        b=SrWk5meIJCC8BJur3fxb4EOVnFaM5LUP7D8wu92m30lr3ndr8Fuvk3b9yktDrN5uOT
-         lCY+CzVnr2UYoS7VbdXIx36AUyPzf3m5VORS4Ibaj1W3E61SZJydhXm/knqYxZr11EAk
-         q7HsXqYBhvP+c5wlvXcH3h1EHrAQxq4B7q5In+NAX5ztYbPQ2uGw+eNJnrnBhQ0Gec/u
-         ku+c77+q/zclajYH3DztBBCXuV2nZGDRdVfQ87IuW2T6IMvcbv3RcWFFJCKdobG0PHwG
-         AMau9dUdPgG/lidj1enjE0nYEYRzaFwNUgiTtnKMdOLioE2dxIsg27GPskCMaMMwv5iW
-         upow==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1769013525; x=1769618325;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=7MFyGEBMKUH9OPAqYqwZCoqkE5S+eIGaZJE0/gf+bsI=;
-        b=Hr1+0x/3d4FMJwRMyJtNPC+gdfwtPG1eih4XR4mUWyW7+e3KQwYa2qFRNGufLDEEsj
-         HtvooMrDmQ5NanUS8Ify4mkGdKhST4e+oIY2vVKqgTOR4WGWQwiur3BxLojjSCIldwfV
-         qT37lylCDMAEigJrT9qYe/uz4nsx9JzTDsBiGh0zCBSBcMqyIDPLHpqTgCTs2y6rFvYy
-         YST1Krt0BSRcOPDKpBNT0m/yQFjPu/EC60uxNPkGVyosc8N8FWJGyL0q+/whLfcSDslg
-         V1+BK8lquAF+uxdEUmqvoPHozdGOBRz6cqWmxPYSHJLRmUnpJbHwkNzmsf1NJH4yX0lx
-         Yj0Q==
-X-Forwarded-Encrypted: i=1; AJvYcCXyPbTa9rXSuW1pr1pjMokBBsd14cg73QY3HwHmTHKmQHgmQo0M6+nrOxdHWwFr5g9Mexdler4j0bduegI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx4nmsYOCNDHZJa+hB55u6TsrH8AcZ6J2H64Buokb8dcVTH6hO6
-	EiwGHeutY2eHmebJOLThBDfdcviHpPsa23U2K4BYQ7fzDvJYPQsz0sLbu/UWlA==
-X-Gm-Gg: AZuq6aIvaQ/NtU30hN5dR795ea+dyL6UjUJ2cyJ51cp2O6lym524ij/87tKhByglCY8
-	lonnbmpn5vXdmWs6GcoBXr0ADw0hOij2fHftlXKKAObSd7wGNM20gunSFFZwpBVcrQwIxJ96+UY
-	9r8/7chz+hdgeuc/Qu/16oH9yBJq8Bj6pPHhGmZVYXNt2XWjGx8XF1qY4GN3fzQw6lezp2qFlJc
-	8sKGFwYywmge1j4FXqZ3DoA0zkjcJAtd5woxnra6TcpQXfRizqIFr/JdeU/UXmMkBdB6Qs3Hhxx
-	hGuql3q/7hM8uwRu4nVKyX1Q7SvhvRZ1J4A7cr9UNcOXXta7K+7GpU95z9ks7Tw90L/XBWTbXC9
-	nlqVaMkHSjPFiGO2xSmxdJrV/TuD0VYl90J2tzo0l+bz1vGhxlxs0Q9KJpkXV0mhKFauMuG2Uq2
-	4L1lVhZ9pCix5xjNKxh6DaNMn1Lacfqy8dd7NCA5BfDJ94rzv8vxrK
-X-Received: by 2002:a05:600c:4fc7:b0:480:41f2:b212 with SMTP id 5b1f17b1804b1-48042f7e0e0mr38897745e9.25.1769006884109;
-        Wed, 21 Jan 2026 06:48:04 -0800 (PST)
-Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4802dc90068sm274897235e9.7.2026.01.21.06.48.03
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 21 Jan 2026 06:48:03 -0800 (PST)
-Date: Wed, 21 Jan 2026 14:48:02 +0000
-From: David Laight <david.laight.linux@gmail.com>
-To: kernel test robot <lkp@intel.com>
-Cc: Ryan Roberts <ryan.roberts@arm.com>, Catalin Marinas
- <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Huacai Chen
- <chenhuacai@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael
- Ellerman <mpe@ellerman.id.au>, Paul Walmsley <pjw@kernel.org>, Palmer
- Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Heiko
- Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, Alexander
- Gordeev <agordeev@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen
- <dave.hansen@linux.intel.com>, Kees Cook <kees@kernel.org>, "Gustavo A. R.
- Silva" <gustavoars@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Mark Rutland
- <mark.rutland@arm.com>, "Jason A. Donenfeld" <Jason@zx2c4.com>, Ard
- Biesheuvel <ardb@kernel.org>, Jeremy Linton <jeremy.linton@arm.com>,
- llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org
-Subject: Re: [PATCH v4 3/3] randomize_kstack: Unify random source across
- arches
-Message-ID: <20260121144802.1287ce3e@pumpkin>
-In-Reply-To: <20260121102017.539b5531@pumpkin>
-References: <20260119130122.1283821-4-ryan.roberts@arm.com>
-	<202601210752.6Nsv9et9-lkp@intel.com>
-	<20260121102017.539b5531@pumpkin>
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dx9LG3q7kz2xpk
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2026 03:55:34 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 54C7F60130;
+	Wed, 21 Jan 2026 16:55:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6F892C4CEF1;
+	Wed, 21 Jan 2026 16:55:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1769014531;
+	bh=mxuQx8myh37sFEu9+vJLmpyCKKaNhjPDjdia8zaYzsE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=i4zQlP9qJjB6AQvf49Y9Ufsh9lLsJ6bgZDrju7360I1I550ZnhpWAwEhlEoR9En0J
+	 y6/+oLJdJnMdYltuM3MRou3lpBFM3dQjjN6PzEResWJIqV+XkmAk4eyCJq2+1ZLjyD
+	 aQLh3joSmHc4hig6Ewwj3u3Tl6EQRXKppt8VR+cgGDTQdrlYJVRKNFZqvklqakPBWY
+	 OWXFLzFKVuyDHwqGzad53oDQuURAzIfzlqt4EtTh8VHFtXd/0GY3pZh+ePdP1ub/q3
+	 F4FRPA0IyGS9x8qxwRk/fYy0I+TKHGub9a3Sp7PBRLyZBWkY/dcH8M84Au0PkruVH+
+	 OEqS1sr2cxlOg==
+Date: Wed, 21 Jan 2026 17:55:27 +0100
+From: Frederic Weisbecker <frederic@kernel.org>
+To: Shrikanth Hegde <sshegde@linux.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Boqun Feng <boqun.feng@gmail.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Kieran Bingham <kbingham@kernel.org>,
+	Ben Segall <bsegall@google.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Ingo Molnar <mingo@redhat.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Neeraj Upadhyay <neeraj.upadhyay@kernel.org>,
+	Xin Zhao <jackzxcui1989@163.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Mel Gorman <mgorman@suse.de>,
+	Valentin Schneider <vschneid@redhat.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Jan Kiszka <jan.kiszka@siemens.com>, linuxppc-dev@lists.ozlabs.org,
+	"Paul E . McKenney" <paulmck@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Anna-Maria Behnsen <anna-maria@linutronix.de>,
+	Uladzislau Rezki <urezki@gmail.com>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Heiko Carstens <hca@linux.ibm.com>, linux-pm@vger.kernel.org,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Joel Fernandes <joelagnelf@nvidia.com>,
+	Nicholas Piggin <npiggin@gmail.com>, linux-s390@vger.kernel.org,
+	Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 00/15] tick/sched: Refactor idle cputime accounting
+Message-ID: <aXEE_5vT03dlTCyN@localhost.localdomain>
+References: <20260116145208.87445-1-frederic@kernel.org>
+ <aWpRxyt8HuXkSuxs@localhost.localdomain>
+ <a4037857-b161-4536-9a2e-2cf4c168736d@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -111,73 +96,38 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <a4037857-b161-4536-9a2e-2cf4c168736d@linux.ibm.com>
 
-On Wed, 21 Jan 2026 10:20:17 +0000
-David Laight <david.laight.linux@gmail.com> wrote:
-
-> On Wed, 21 Jan 2026 07:50:16 +0800
-> kernel test robot <lkp@intel.com> wrote:
+Le Tue, Jan 20, 2026 at 06:12:08PM +0530, Shrikanth Hegde a écrit :
 > 
-> > Hi Ryan,
-> > 
-> > kernel test robot noticed the following build warnings:
-> > 
-> > [auto build test WARNING on akpm-mm/mm-everything]
-> > [also build test WARNING on linus/master v6.19-rc6 next-20260119]
-> > [cannot apply to tip/sched/core kees/for-next/hardening kees/for-next/execve]
-> > [If your patch is applied to the wrong git tree, kindly drop us a note.
-> > And when submitting patch, we suggest to use '--base' as documented in
-> > https://git-scm.com/docs/git-format-patch#_base_tree_information]
-> > 
-> > url:    https://github.com/intel-lab-lkp/linux/commits/Ryan-Roberts/randomize_kstack-Maintain-kstack_offset-per-task/20260119-210329
-> > base:   https://git.kernel.org/pub/scm/linux/kernel/git/akpm/mm.git mm-everything
-> > patch link:    https://lore.kernel.org/r/20260119130122.1283821-4-ryan.roberts%40arm.com
-> > patch subject: [PATCH v4 3/3] randomize_kstack: Unify random source across arches
-> > config: x86_64-allmodconfig (https://download.01.org/0day-ci/archive/20260121/202601210752.6Nsv9et9-lkp@intel.com/config)
-> > compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0227cb60147a26a1eeb4fb06e3b505e9c7261)
-> > reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260121/202601210752.6Nsv9et9-lkp@intel.com/reproduce)
-> > 
-> > If you fix the issue in a separate patch/commit (i.e. not just a new version of
-> > the same patch/commit), kindly add following tags
-> > | Reported-by: kernel test robot <lkp@intel.com>
-> > | Closes: https://lore.kernel.org/oe-kbuild-all/202601210752.6Nsv9et9-lkp@intel.com/
-> > 
-> > All warnings (new ones prefixed by >>):
-> >   
-> > >> vmlinux.o: warning: objtool: do_syscall_64+0x2c: call to preempt_count_add() leaves .noinstr.text section
-> > >> vmlinux.o: warning: objtool: __do_fast_syscall_32+0x3d: call to preempt_count_add() leaves .noinstr.text section    
-> >   
+> Hi Frederic.
 > 
-> When CONFIG_DEBUG_PREEMPT or CONFIG_TRACE_PREEMP_TOGGLE is set
-> the preempt_count_[en|dis]able() calls inside [put|get]_cpu_var()
-> become real functions.
+> On 1/16/26 8:27 PM, Frederic Weisbecker wrote:
+> > I forgot to mention I haven't yet tested CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+> > (s390 and powerpc).
+> > 
+> > Thanks.
 > 
-> Maybe __preempt_count_[inc|dec]() can be called (with this_cpu_ptr()).
-
-Or the code could just use the per-cpu data without disabling preemption.
-Usually that isn't a good idea at all, but it can't matter in this case.
-Might give a noticeable performance gain, disabling preemption is
-non-trivial and/or an atomic operation on some architectures.
-
-If anyone is worried about preemption causing the output be repeated, that
-would be (mostly) mitigated by checking that s[1234] haven't changed prior
-to writing the new values.
-I think a 'not locked at all' compare of two of the four values will
-stop everything except two threads doing system calls at the same time
-getting the same output from the prng.
-
-The whole thing is very unlikely and there will be much easier ways
-to break the prng.
-Provided s[1234] are only written with valid values (ie ones which aren't
-effectively zero) it will continue generating numbers.
-
-	David
-
-
 > 
-> 	David
+> tl;dr
 > 
+> I ran this on powerNV(Non virtualized) with 144 CPUs with below config. (default ones)
+> Patch *breaks* the cpu idle stats most of the time. idle values are wrong.
 
+Right I somehow lost the TS_FLAG_INIDLE setting in tick_nohz_idle_enter(),
+which ruins the whole thing.
+
+You probably think I should have detected that with light testing and you're
+right. Not checking dmesg was a bit sloppy from my end...
+
+I'm fixing that and will send a v2 soonish.
+
+Thanks a lot for testing!
+
+-- 
+Frederic Weisbecker
+SUSE Labs
 
