@@ -1,76 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-16165-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16166-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1CCCED6CFA4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jan 2026 21:21:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE9F8D6CFA2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jan 2026 21:21:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dxvBN3MQRz2xJ5;
-	Fri, 23 Jan 2026 08:21:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dxvBP5ZsXz2xHt;
+	Fri, 23 Jan 2026 08:21:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769116876;
-	cv=none; b=Jd6re80PEsDs8xy1AvzBIEPyVXHpq1YQ5cj4pELM4g0OZ/MOxlyUsEU6ypb9pN9+0fwdet9cBnR7ME9OIwEf3B9UtTnrczzCUWvCiDCY4q9gzyZxIr4P4MYODEf84ZjjevL5lsp0kIBOYE2rMQOr0h79pAyk0IR2yFT/bmzo/q+DTdGkbsU4cFC+i/lK3QdHF2BB5UYG55K7H00CGD01SB591ckOllDuXIR+GoBRBoDjVd1N60wRn7On3zfV0qixKrYXaxEHZFXilQfUopV1FqqFcOwzOOeNadxVpa6zGWAR7EUoes3KVo2Vunzh4KrNjOvhr0ZlEGbYDdNz1ayJ5w==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769116877;
+	cv=none; b=HGIoWM54FryTAgan/fO7tuAKTeP0X9IjueA5aMg0YHjaZwzoTMJpZyxotAUv6exE5ePWG8yjIFfac97KjO3WH2BClLFVMA6i6JuiyVWeZkIUWGwY0MdO/QWCvctDX9EyspHNyHSLQg0Lk6hrlOACaCwghCBRfpXNEJ6qOLxSs+T7Fagek26doFWSkoJQOxjvkti8b1Y2qyDHOZnVDZN8YG+yH2BqsN91WLE4Fp1qbDCIaIGo1EvkkY5DDhvooCSQHf5gPhXKD4BXt4bIF4QkuSJwPWVTUPx/7L3tDkhYnF3QkSGmoZYFhlhDM1M7tF5SS6k7xlNhZ8sTH6kWKK7ODg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1769116876; c=relaxed/relaxed;
-	bh=lIXJpPOz6M8n5l/5xrS+RIZGbVNIZ9gJkeFEAK0Jml0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=U83URBDO/9ShcwOi0a6BH/J74eSqzytWJaqNT9OkdNjVRE/BOEeXAjPJ5dml8g84PlXyKuu7hp1WHg3ZFjCgfvakiU8LNrvYT8o1rRtH4EgFftN2EqF+u4tsKhNwf/HwgOZq1lNnMB6Tt6GbG0cl0jkRkz8odX6yDAMFggUSTszedxMnxE1QP+cI2c7H5FhnocuSYoG6TAjoqNEGdFhLgsqrDgiX3fNtJlu7+kHoxiOLQunKIKWnUbUCQCnZ4FSQP6iv0Jj0fD4/mNig/uUOUWTaM5Q+7uv9TLxb3lmzMT6TjWQXuRSJHr6jNmmN0Nd+yI3aS25n/S0fQFCKG/DuHg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FswGjdde; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1769116877; c=relaxed/relaxed;
+	bh=BE8bTfnjziUpmPonwSdW10Ni9TABW/am7VyKoOkkbuM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ZyehSHBmw+2asWzONcOmnq+RuRVHf6mfiKiKM/a2rVc1pKXoaotB3nUYdiOcs93DGjojqcpu5uPrtn88tYNJRhX6KANHfgjxz95jgDGrQsi56G1BD+p+ORz2fep9uNJxQYEn/CxlF7j86d4LAY2rbo/doDMVvUdocxMxgh6NLNKuVH1k/S6Zd9A3PP66ybTe00BICSEJEvLri1k8GKP2FUbzjEbfGwXnB/EFRCHHVm0OQK5ogUah0cKWsltScCjn7+rACIGVl4qqYejVAJfoTO2kl63+zZa2BZMBqkf9bXWp+hfQ53iX8VDC/A20ARSdD8+XeJ4q45Rfy+fad4Eiog==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=toAarroi; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FswGjdde;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=toAarroi;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dxvBM57qbz2xHt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2026 08:21:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dxvBN6WJ4z2xqL
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2026 08:21:16 +1100 (AEDT)
 Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 60MDm7Jo028639;
-	Thu, 22 Jan 2026 21:19:37 GMT
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 60MEDAqq028651;
+	Thu, 22 Jan 2026 21:19:13 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=lIXJpPOz6M8n5l/5x
-	rS+RIZGbVNIZ9gJkeFEAK0Jml0=; b=FswGjddeoolbPnzdKoBbJpOYXf1cfVm67
-	3vlkdj0C6g6OjAU/UK16ZB2FNkcXUHVKR61ZcxfFKA467tlMIuDP1OEqKto2iI46
-	Na603O44AiNokOBDlo1t5diYngZUmFFdv+UZx6q5GvMt5QEbr6s3IxEW/yMMdo4O
-	w/w27gBBhxir9oDrWOynS/+F65UQLtRJCIeQmGrBBIQ+tYzuFBfKpQH6rZeYnXlZ
-	LIv5NZxyalEey/arnGXrtnFPMfvyBkUsBQarMG223EgcIpq21HPCkwb8OkHham7Y
-	U4AmvWykOiwyCcGRFSwY6PZg/zMFurmvwuNwYy0dAdZ9iqGauS97w==
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=BE8bTfnjziUpmPonwSdW10Ni9TABW/am7VyKoOkkb
+	uM=; b=toAarroikFRvAp0BB5au0Ue6iSKfB6XaUGsF/EwK24PUCRrsvUqFDnQDl
+	jrnsQ0kSlPO8bh8p+PY9WbzODq6ArRAUYV9U8yfE3/9z/1oc1LG8iRbT68dVLxEl
+	FlXh34nDCJdvzYqhM5TkHU/+jVwchEM6Z+Jc8p7L7EoMG3UNIk8sOpIe/LMJMlGs
+	+6pnNTxWHfLV5x+G4j5K67k8E38z/KgsbH4SKNpfC7tiDfuO4UVVkFy/TpZYeQFx
+	L7jWpjHwf5EhwTKOTscRIhgOsZHjb8iTRWknX16XjmzjiuimIY8w5RRMbFLBM9sG
+	e2/0eu6iltNM/Woim1OGBfgOENxVw==
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4bt60eys1s-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4bt60eys0u-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 22 Jan 2026 21:19:37 +0000 (GMT)
+	Thu, 22 Jan 2026 21:19:13 +0000 (GMT)
 Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 60MLGN2v018099;
-	Thu, 22 Jan 2026 21:19:36 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4bt60eys1p-1
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 60MLEEkp012555;
+	Thu, 22 Jan 2026 21:19:13 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4bt60eys0r-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 22 Jan 2026 21:19:36 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 60MLCoHm024572;
-	Thu, 22 Jan 2026 21:19:35 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4brxas39ck-1
+	Thu, 22 Jan 2026 21:19:12 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 60MJsc6J006427;
+	Thu, 22 Jan 2026 21:19:11 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4brqf1vn4m-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 22 Jan 2026 21:19:35 +0000
+	Thu, 22 Jan 2026 21:19:11 +0000
 Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 60MLJW0r48628080
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 60MLJ8Zn44368352
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 22 Jan 2026 21:19:32 GMT
+	Thu, 22 Jan 2026 21:19:08 GMT
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id ED66020043;
-	Thu, 22 Jan 2026 21:19:31 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 2288720043;
+	Thu, 22 Jan 2026 21:19:08 +0000 (GMT)
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5275020040;
-	Thu, 22 Jan 2026 21:19:25 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 14EFC20040;
+	Thu, 22 Jan 2026 21:19:01 +0000 (GMT)
 Received: from abhi.. (unknown [9.124.222.159])
 	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 22 Jan 2026 21:19:25 +0000 (GMT)
+	Thu, 22 Jan 2026 21:19:00 +0000 (GMT)
 From: adubey@linux.ibm.com
 To: bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
         linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org
@@ -82,12 +81,10 @@ Cc: hbathini@linux.ibm.com, sachinpb@linux.ibm.com, venkat88@linux.ibm.com,
         christophe.leroy@csgroup.eu, naveen@kernel.org, maddy@linux.ibm.com,
         mpe@ellerman.id.au, npiggin@gmail.com, memxor@gmail.com,
         iii@linux.ibm.com, shuah@kernel.org
-Subject: [PATCH v4 2/6] powerpc64/bpf: Support tailcalls with subprogs
-Date: Fri, 23 Jan 2026 02:48:50 +0530
-Message-ID: <20260122211854.5508-3-adubey@linux.ibm.com>
+Subject: [PATCH v4 0/6] powerpc64/bpf: Support tailcalls with subprogs & BPF exceptions
+Date: Fri, 23 Jan 2026 02:48:48 +0530
+Message-ID: <20260122211854.5508-1-adubey@linux.ibm.com>
 X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20260122211854.5508-1-adubey@linux.ibm.com>
-References: <20260122211854.5508-1-adubey@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,20 +100,20 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=WMdyn3sR c=1 sm=1 tr=0 ts=69729469 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=vUbySO9Y5rIA:10 a=VkNPw1HP01LnGYTKEx00:22 a=VnNF1IyMAAAA:8
- a=aLVHvtoiTwlSXXnS9I8A:9
-X-Proofpoint-GUID: inYvG4gxFFXM2SGktPvXODiYVtIAwuik
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTIyMDE2MiBTYWx0ZWRfXyKA5WYEbZili
- qL8F6PMOmiZ9luRYRP/dWmEM6yuXOVeB1kNBvSB3cNCNHkogp2B/vGjoVmdVhU79fslJwI4GewV
- NvFQfgTcGZbfXnF0zvFoSQ3bK7MecJdlHYkInCE0uLMKuu/TGYdq1ZakbXFxua4wLnJoVDrlL1g
- 9QljcwwCF6bzChGLzLPhUMV8BBLtJJU3hv+8Sp3y+W7B9Rt0zaKEXknFgxb9YQ8Tc2bhY2OcccM
- juG6L7LYTr5P3101Ly5qXKfVMFa9l+86WP++jkAndzjfxjMUnikPDcrMNyQu9WnJAfkS/jkiF9k
- gy9mjm93CRH2AtrsyWT7XPYEM1hSkDY5gY5m36pH302J3C6jhgz3+YkVFut/8C4llhN0TvHHZi6
- uffTOOH6gq+lyHtPHFsSQs2dtKb/raw2u91QdNTJdWs6ajINyHFqM3lCJ1j+QVPraiIK4kTwtTm
- J5WE06fYFy/NsN5wkAg==
-X-Proofpoint-ORIG-GUID: _VUCRqpOhEklSNHNicensI3tOp8aVDsh
+X-Authority-Analysis: v=2.4 cv=WMdyn3sR c=1 sm=1 tr=0 ts=69729451 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=vUbySO9Y5rIA:10 a=VkNPw1HP01LnGYTKEx00:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=iIzsfX1pHA8hvRYzEnUA:9
+X-Proofpoint-GUID: lVXSJcuh1r-XOp_8FEYyCj_uHOMajrQ2
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTIyMDE2MiBTYWx0ZWRfX/HOzoq6wem5l
+ Pjmsabe9xifKkX/23IMEqTICiuRU8b+sG0tefJpmevnWd0+TdOifqnmd99W4DBg28Ze9uT2l179
+ Ik2Ilh7+lnVsR27XN0HZ37/wdxm1jcC7M91VWvQZ8BwTkDilenB2CylvMft6nAJ3mNl4hS7iBAr
+ 9tudUYYb7xcAgOPwda0iMlrStmaZQLsSQ1hA+CSlklouRgSxNs/lwt9TJ6TDqRygdksNv6HkXNQ
+ rBceILPOjp1iYrt6d5diFkhJtuDI5yq+AIxkxcYpoTLa8dE8tdoSvH+uc4U5qOVpGpXlEyd/VMQ
+ mLbd7CqpnuXjKw6zbZY6ay+dQausTmdRz2G/DVoejFc3EAL/egeM5KW3q8kPW4xwfXCyUVtxK4z
+ JHCae8PngRsQW1rsSJdd3A2uP5jzfctNaNMw/FurfYtdPG5TZeZ152qPyMrI+KQGGwfZIVSq0cK
+ +zWQIBiT5rtKE9biR3g==
+X-Proofpoint-ORIG-GUID: 1j3Mzri4C22PWEG7M9RYSQT3pivWuPeL
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.20,FMLib:17.12.100.49
  definitions=2026-01-22_05,2026-01-22_02,2025-10-01_01
@@ -129,299 +126,195 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
 
 From: Abhishek Dubey <adubey@linux.ibm.com>
 
-Enabling tailcalls with subprog combinations by referencing
-method. The actual tailcall count is always maintained in the
-tail_call_info variable present in the frame of main function
-(also called entry function). The tail_call_info field in the
-stack frame of subprogs contains reference to the tail_call_info
-field in the stack frame of main BPF program.
+This patch series enables support for two BPF JIT features
+on powerpc64. The first three patches target support for
+tail calls with subprogram combinations. The first patch
+supports realignment of tail_call_cnt offset in stack frame.
+Implementation details are provided in the commit messages.
 
-Dynamic resolution interprets the tail_call_info either as
-value or reference depending on the context of active frame
-while tailcall is invoked.
+The last three patches add support for BPF exceptions. An
+architecture-specific stack walker is implemented to assist
+with stack walk during exceptions.
 
-Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
----
- arch/powerpc/net/bpf_jit.h        | 13 ++++++
- arch/powerpc/net/bpf_jit_comp.c   | 59 +++++++++++++++++++++++----
- arch/powerpc/net/bpf_jit_comp64.c | 68 +++++++++++++++++++++++--------
- 3 files changed, 117 insertions(+), 23 deletions(-)
+All selftests related to tailcalls and exceptions are passing:
 
-diff --git a/arch/powerpc/net/bpf_jit.h b/arch/powerpc/net/bpf_jit.h
-index 9f6ec00bd02e..56f56fdd4969 100644
---- a/arch/powerpc/net/bpf_jit.h
-+++ b/arch/powerpc/net/bpf_jit.h
-@@ -52,6 +52,13 @@
- 		EMIT(PPC_INST_BRANCH_COND | (((cond) & 0x3ff) << 16) | (offset & 0xfffc));					\
- 	} while (0)
- 
-+/* When constant jump offset is known prior */
-+#define PPC_BCC_CONST_SHORT(cond, offset)							\
-+	do {											\
-+		BUILD_BUG_ON(offset < -0x8000 || offset > 0x7fff || (offset & 0x3));		\
-+		EMIT(PPC_INST_BRANCH_COND | (((cond) & 0x3ff) << 16) | (offset & 0xfffc));	\
-+	} while (0)
-+
- /*
-  * Sign-extended 32-bit immediate load
-  *
-@@ -73,6 +80,10 @@
- 	} } while (0)
- 
- #ifdef CONFIG_PPC64
-+
-+/* for gpr non volatile registers BPG_REG_6 to 10 */
-+#define BPF_PPC_STACK_SAVE	(6 * 8)
-+
- /* If dummy pass (!image), account for maximum possible instructions */
- #define PPC_LI64(d, i)		do {					      \
- 	if (!image)							      \
-@@ -167,6 +178,7 @@ struct codegen_context {
- 	unsigned int alt_exit_addr;
- 	u64 arena_vm_start;
- 	u64 user_vm_start;
-+	bool is_subprog;
- };
- 
- #define bpf_to_ppc(r)	(ctx->b2p[r])
-@@ -206,6 +218,7 @@ int bpf_add_extable_entry(struct bpf_prog *fp, u32 *image, u32 *fimage, int pass
- 			  struct codegen_context *ctx, int insn_idx,
- 			  int jmp_off, int dst_reg, u32 code);
- 
-+int bpf_jit_stack_tailcallinfo_offset(struct codegen_context *ctx);
- #endif
- 
- #endif
-diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-index d51c696221d7..93355ba5382a 100644
---- a/arch/powerpc/net/bpf_jit_comp.c
-+++ b/arch/powerpc/net/bpf_jit_comp.c
-@@ -206,6 +206,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
- 	cgctx.stack_size = round_up(fp->aux->stack_depth, 16);
- 	cgctx.arena_vm_start = bpf_arena_get_kern_vm_start(fp->aux->arena);
- 	cgctx.user_vm_start = bpf_arena_get_user_vm_start(fp->aux->arena);
-+	cgctx.is_subprog = bpf_is_subprog(fp);
- 
- 	/* Scouting faux-generate pass 0 */
- 	if (bpf_jit_build_body(fp, NULL, NULL, &cgctx, addrs, 0, false)) {
-@@ -435,6 +436,11 @@ void bpf_jit_free(struct bpf_prog *fp)
- 	bpf_prog_unlock_free(fp);
- }
- 
-+bool bpf_jit_supports_subprog_tailcalls(void)
-+{
-+	return IS_ENABLED(CONFIG_PPC64);
-+}
-+
- bool bpf_jit_supports_kfunc_call(void)
- {
- 	return true;
-@@ -600,15 +606,53 @@ static int invoke_bpf_mod_ret(u32 *image, u32 *ro_image, struct codegen_context
- 	return 0;
- }
- 
--static void bpf_trampoline_setup_tail_call_cnt(u32 *image, struct codegen_context *ctx,
--					       int func_frame_offset, int r4_off)
-+/*
-+ * Refer the label 'Generated stack layout' in this file for actual stack
-+ * layout during trampoline invocation.
-+ *
-+ * Refer __arch_prepare_bpf_trampoline() for stack component details.
-+ *
-+ * The tailcall count/reference is present in caller's stack frame. Its required
-+ * to copy the content of tail_call_info before calling the actual function
-+ * to which the trampoline is attached.
-+ */
-+static void bpf_trampoline_setup_tail_call_info(u32 *image, struct codegen_context *ctx,
-+						int func_frame_offset,
-+						int bpf_dummy_frame_size, int r4_off)
- {
- 	if (IS_ENABLED(CONFIG_PPC64)) {
- 		/* See Generated stack layout */
--		int tailcallcnt_offset = BPF_PPC_TAILCALL;
-+		int tailcallinfo_offset = BPF_PPC_TAILCALL;
-+
-+		/*
-+		 * func_frame_offset =                                   ...(1)
-+		 *      bpf_dummy_frame_size + trampoline_frame_size
-+		 */
-+		EMIT(PPC_RAW_LD(_R4, _R1, func_frame_offset));
-+		EMIT(PPC_RAW_LD(_R3, _R4, -tailcallinfo_offset));
- 
--		EMIT(PPC_RAW_LL(_R3, _R1, func_frame_offset - tailcallcnt_offset));
--		EMIT(PPC_RAW_STL(_R3, _R1, -tailcallcnt_offset));
-+		/*
-+		 * Setting the tail_call_info in trampoline's frame
-+		 * depending on if previous frame had value or reference.
-+		 */
-+		EMIT(PPC_RAW_CMPLWI(_R3, MAX_TAIL_CALL_CNT));
-+		PPC_BCC_CONST_SHORT(COND_GT, 8);
-+		EMIT(PPC_RAW_ADDI(_R3, _R4, bpf_jit_stack_tailcallinfo_offset(ctx)));
-+		/*
-+		 * From ...(1) above:
-+		 * trampoline_frame_bottom =                            ...(2)
-+		 *      func_frame_offset - bpf_dummy_frame_size
-+		 *
-+		 * Using ...(2) derived above:
-+		 * trampoline_tail_call_info_offset =                  ...(3)
-+		 *      trampoline_frame_bottom - tailcallinfo_offset
-+		 *
-+		 * From ...(3):
-+		 * Use trampoline_tail_call_info_offset to write reference of main's
-+		 * tail_call_info in trampoline frame.
-+		 */
-+		EMIT(PPC_RAW_STL(_R3, _R1, (func_frame_offset - bpf_dummy_frame_size)
-+								- tailcallinfo_offset));
- 	} else {
- 		/* See bpf_jit_stack_offsetof() and BPF_PPC_TC */
- 		EMIT(PPC_RAW_LL(_R4, _R1, r4_off));
-@@ -714,7 +758,7 @@ static int __arch_prepare_bpf_trampoline(struct bpf_tramp_image *im, void *rw_im
- 	 * LR save area                 [ r0 save (64-bit)  ]   | header
- 	 *                              [ r0 save (32-bit)  ]   |
- 	 * dummy frame for unwind       [ back chain 1      ] --
--	 *                              [ tail_call_cnt     ] optional - 64-bit powerpc
-+	 *                              [ tail_call_info    ] optional - 64-bit powerpc
- 	 *                              [ padding           ] align stack frame
- 	 *       r4_off                 [ r4 (tailcallcnt)  ] optional - 32-bit powerpc
- 	 *       alt_lr_off             [ real lr (ool stub)] optional - actual lr
-@@ -905,7 +949,8 @@ static int __arch_prepare_bpf_trampoline(struct bpf_tramp_image *im, void *rw_im
- 
- 		/* Replicate tail_call_cnt before calling the original BPF prog */
- 		if (flags & BPF_TRAMP_F_TAIL_CALL_CTX)
--			bpf_trampoline_setup_tail_call_cnt(image, ctx, func_frame_offset, r4_off);
-+			bpf_trampoline_setup_tail_call_info(image, ctx, func_frame_offset,
-+								bpf_dummy_frame_size, r4_off);
- 
- 		/* Restore args */
- 		bpf_trampoline_restore_args_stack(image, ctx, func_frame_offset, nr_regs, regs_off);
-diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
-index 296e9ea14f2e..18da5a866447 100644
---- a/arch/powerpc/net/bpf_jit_comp64.c
-+++ b/arch/powerpc/net/bpf_jit_comp64.c
-@@ -26,8 +26,12 @@
-  * Ensure the top half (upto local_tmp_var) stays consistent
-  * with our redzone usage.
-  *
-+ * tail_call_info - stores tailcall count value in main program's
-+ *                  frame, stores reference to tail_call_info of
-+ *                  main's frame in sub-prog's frame.
-+ *
-  *		[	prev sp		] <-------------
-- *		[    tail_call_cnt	] 8		|
-+ *		[    tail_call_info	] 8		|
-  *		[   nv gpr save area	] 6*8		|
-  *		[    local_tmp_var	] 24		|
-  * fp (r31) -->	[   ebpf stack space	] upto 512	|
-@@ -35,8 +39,6 @@
-  * sp (r1) --->	[    stack pointer	] --------------
-  */
- 
--/* for gpr non volatile registers BPG_REG_6 to 10 */
--#define BPF_PPC_STACK_SAVE	(6*8)
- /* for bpf JIT code internal usage */
- #define BPF_PPC_STACK_LOCALS	24
- /* stack frame excluding BPF stack, ensure this is quadword aligned */
-@@ -98,7 +100,7 @@ static inline bool bpf_has_stack_frame(struct codegen_context *ctx)
-  *		[	prev sp		] <-------------
-  *		[	  ...       	] 		|
-  * sp (r1) --->	[    stack pointer	] --------------
-- *		[    tail_call_cnt	] 8
-+ *		[    tail_call_info	] 8
-  *		[   nv gpr save area	] 6*8
-  *		[    local_tmp_var	] 24
-  *		[   unused red zone	] 224
-@@ -114,7 +116,7 @@ static int bpf_jit_stack_local(struct codegen_context *ctx)
- 	}
- }
- 
--static int bpf_jit_stack_tailcallcnt(struct codegen_context *ctx)
-+int bpf_jit_stack_tailcallinfo_offset(struct codegen_context *ctx)
- {
- 	return bpf_jit_stack_local(ctx) + BPF_PPC_STACK_LOCALS + BPF_PPC_STACK_SAVE;
- }
-@@ -147,17 +149,32 @@ void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx)
- #endif
- 
- 	/*
--	 * Initialize tail_call_cnt if we do tail calls.
--	 * Otherwise, put in NOPs so that it can be skipped when we are
--	 * invoked through a tail call.
-+	 * Tail call count(tcc) is saved & updated only in main
-+	 * program's frame and the address of tcc in main program's
-+	 * frame (tcc_ptr) is saved in subprogs frame.
-+	 *
-+	 * Offset of tail_call_info on any frame will be interpreted
-+	 * as either tcc_ptr or tcc value depending on whether it is
-+	 * greater than MAX_TAIL_CALL_CNT or not.
- 	 */
--	if (ctx->seen & SEEN_TAILCALL) {
-+	if (!ctx->is_subprog) {
- 		EMIT(PPC_RAW_LI(bpf_to_ppc(TMP_REG_1), 0));
- 		/* this goes in the redzone */
- 		EMIT(PPC_RAW_STD(bpf_to_ppc(TMP_REG_1), _R1, -(BPF_PPC_TAILCALL)));
- 	} else {
--		EMIT(PPC_RAW_NOP());
--		EMIT(PPC_RAW_NOP());
-+		/*
-+		 * if tail_call_info < MAX_TAIL_CALL_CNT
-+		 *      main prog calling first subprog -> copy reference
-+		 * else
-+		 *      subsequent subprog calling another subprog -> directly copy content
-+		 */
-+		EMIT(PPC_RAW_LD(bpf_to_ppc(TMP_REG_2), _R1, 0));
-+		EMIT(PPC_RAW_LD(bpf_to_ppc(TMP_REG_1), bpf_to_ppc(TMP_REG_2), -(BPF_PPC_TAILCALL)));
-+		EMIT(PPC_RAW_CMPLWI(bpf_to_ppc(TMP_REG_1), MAX_TAIL_CALL_CNT));
-+		PPC_BCC_CONST_SHORT(COND_GT, 8);
-+		EMIT(PPC_RAW_ADDI(bpf_to_ppc(TMP_REG_1), bpf_to_ppc(TMP_REG_2),
-+								-(BPF_PPC_TAILCALL)));
-+		EMIT(PPC_RAW_STD(bpf_to_ppc(TMP_REG_1), _R1, -(BPF_PPC_TAILCALL)));
- 	}
- 
- 	if (bpf_has_stack_frame(ctx)) {
-@@ -352,19 +369,38 @@ static int bpf_jit_emit_tail_call(u32 *image, struct codegen_context *ctx, u32 o
- 	EMIT(PPC_RAW_CMPLW(b2p_index, bpf_to_ppc(TMP_REG_1)));
- 	PPC_BCC_SHORT(COND_GE, out);
- 
-+	EMIT(PPC_RAW_LD(bpf_to_ppc(TMP_REG_1), _R1, bpf_jit_stack_tailcallinfo_offset(ctx)));
-+	EMIT(PPC_RAW_CMPLWI(bpf_to_ppc(TMP_REG_1), MAX_TAIL_CALL_CNT));
-+	PPC_BCC_CONST_SHORT(COND_LE, 8);
-+
-+	/* dereference TMP_REG_1 */
-+	EMIT(PPC_RAW_LD(bpf_to_ppc(TMP_REG_1), bpf_to_ppc(TMP_REG_1), 0));
-+
- 	/*
--	 * if (tail_call_cnt >= MAX_TAIL_CALL_CNT)
-+	 * if (tail_call_info == MAX_TAIL_CALL_CNT)
- 	 *   goto out;
- 	 */
--	EMIT(PPC_RAW_LD(bpf_to_ppc(TMP_REG_1), _R1, bpf_jit_stack_tailcallcnt(ctx)));
- 	EMIT(PPC_RAW_CMPLWI(bpf_to_ppc(TMP_REG_1), MAX_TAIL_CALL_CNT));
--	PPC_BCC_SHORT(COND_GE, out);
-+	PPC_BCC_SHORT(COND_EQ, out);
- 
- 	/*
--	 * tail_call_cnt++;
-+	 * tail_call_info++; <- Actual value of tcc here
- 	 */
- 	EMIT(PPC_RAW_ADDI(bpf_to_ppc(TMP_REG_1), bpf_to_ppc(TMP_REG_1), 1));
--	EMIT(PPC_RAW_STD(bpf_to_ppc(TMP_REG_1), _R1, bpf_jit_stack_tailcallcnt(ctx)));
-+
-+	/*
-+	 * Before writing updated tail_call_info, distinguish if current frame
-+	 * is storing a reference to tail_call_info or actual tcc value in
-+	 * tail_call_info.
-+	 */
-+	EMIT(PPC_RAW_LD(bpf_to_ppc(TMP_REG_2), _R1, bpf_jit_stack_tailcallinfo_offset(ctx)));
-+	EMIT(PPC_RAW_CMPLWI(bpf_to_ppc(TMP_REG_2), MAX_TAIL_CALL_CNT));
-+	PPC_BCC_CONST_SHORT(COND_GT, 8);
-+
-+	/* First get address of tail_call_info */
-+	EMIT(PPC_RAW_ADDI(bpf_to_ppc(TMP_REG_2), _R1, bpf_jit_stack_tailcallinfo_offset(ctx)));
-+	/* Writeback updated value to tail_call_info */
-+	EMIT(PPC_RAW_STD(bpf_to_ppc(TMP_REG_1), bpf_to_ppc(TMP_REG_2), 0));
- 
- 	/* prog = array->ptrs[index]; */
- 	EMIT(PPC_RAW_MULI(bpf_to_ppc(TMP_REG_1), b2p_index, 8));
+# ./test_progs -t tailcalls
+#442/1   tailcalls/tailcall_1:OK
+#442/2   tailcalls/tailcall_2:OK
+#442/3   tailcalls/tailcall_3:OK
+#442/4   tailcalls/tailcall_4:OK
+#442/5   tailcalls/tailcall_5:OK
+#442/6   tailcalls/tailcall_6:OK
+#442/7   tailcalls/tailcall_bpf2bpf_1:OK
+#442/8   tailcalls/tailcall_bpf2bpf_2:OK
+#442/9   tailcalls/tailcall_bpf2bpf_3:OK
+#442/10  tailcalls/tailcall_bpf2bpf_4:OK
+#442/11  tailcalls/tailcall_bpf2bpf_5:OK
+#442/12  tailcalls/tailcall_bpf2bpf_6:OK
+#442/13  tailcalls/tailcall_bpf2bpf_fentry:OK
+#442/14  tailcalls/tailcall_bpf2bpf_fexit:OK
+#442/15  tailcalls/tailcall_bpf2bpf_fentry_fexit:OK
+#442/16  tailcalls/tailcall_bpf2bpf_fentry_entry:OK
+#442/17  tailcalls/tailcall_poke:OK
+#442/18  tailcalls/tailcall_bpf2bpf_hierarchy_1:OK
+#442/19  tailcalls/tailcall_bpf2bpf_hierarchy_fentry:OK
+#442/20  tailcalls/tailcall_bpf2bpf_hierarchy_fexit:OK
+#442/21  tailcalls/tailcall_bpf2bpf_hierarchy_fentry_fexit:OK
+#442/22  tailcalls/tailcall_bpf2bpf_hierarchy_fentry_entry:OK
+#442/23  tailcalls/tailcall_bpf2bpf_hierarchy_2:OK
+#442/24  tailcalls/tailcall_bpf2bpf_hierarchy_3:OK
+#442/25  tailcalls/tailcall_freplace:OK
+#442/26  tailcalls/tailcall_bpf2bpf_freplace:OK
+#442/27  tailcalls/tailcall_failure:OK
+#442/28  tailcalls/reject_tail_call_spin_lock:OK
+#442/29  tailcalls/reject_tail_call_rcu_lock:OK
+#442/30  tailcalls/reject_tail_call_preempt_lock:OK
+#442/31  tailcalls/reject_tail_call_ref:OK
+#442     tailcalls:OK
+Summary: 1/31 PASSED, 0 SKIPPED, 0 FAILED
+
+# ./test_progs -t exceptions
+#105/1   exceptions/exception_throw_always_1:OK
+#105/2   exceptions/exception_throw_always_2:OK
+#105/3   exceptions/exception_throw_unwind_1:OK
+#105/4   exceptions/exception_throw_unwind_2:OK
+#105/5   exceptions/exception_throw_default:OK
+#105/6   exceptions/exception_throw_default_value:OK
+#105/7   exceptions/exception_tail_call:OK
+#105/8   exceptions/exception_ext:OK
+#105/9   exceptions/exception_ext_mod_cb_runtime:OK
+#105/10  exceptions/exception_throw_subprog:OK
+#105/11  exceptions/exception_assert_nz_gfunc:OK
+#105/12  exceptions/exception_assert_zero_gfunc:OK
+#105/13  exceptions/exception_assert_neg_gfunc:OK
+#105/14  exceptions/exception_assert_pos_gfunc:OK
+#105/15  exceptions/exception_assert_negeq_gfunc:OK
+#105/16  exceptions/exception_assert_poseq_gfunc:OK
+#105/17  exceptions/exception_assert_nz_gfunc_with:OK
+#105/18  exceptions/exception_assert_zero_gfunc_with:OK
+#105/19  exceptions/exception_assert_neg_gfunc_with:OK
+#105/20  exceptions/exception_assert_pos_gfunc_with:OK
+#105/21  exceptions/exception_assert_negeq_gfunc_with:OK
+#105/22  exceptions/exception_assert_poseq_gfunc_with:OK
+#105/23  exceptions/exception_bad_assert_nz_gfunc:OK
+#105/24  exceptions/exception_bad_assert_zero_gfunc:OK
+#105/25  exceptions/exception_bad_assert_neg_gfunc:OK
+#105/26  exceptions/exception_bad_assert_pos_gfunc:OK
+#105/27  exceptions/exception_bad_assert_negeq_gfunc:OK
+#105/28  exceptions/exception_bad_assert_poseq_gfunc:OK
+#105/29  exceptions/exception_bad_assert_nz_gfunc_with:OK
+#105/30  exceptions/exception_bad_assert_zero_gfunc_with:OK
+#105/31  exceptions/exception_bad_assert_neg_gfunc_with:OK
+#105/32  exceptions/exception_bad_assert_pos_gfunc_with:OK
+#105/33  exceptions/exception_bad_assert_negeq_gfunc_with:OK
+#105/34  exceptions/exception_bad_assert_poseq_gfunc_with:OK
+#105/35  exceptions/exception_assert_range:OK
+#105/36  exceptions/exception_assert_range_with:OK
+#105/37  exceptions/exception_bad_assert_range:OK
+#105/38  exceptions/exception_bad_assert_range_with:OK
+#105/39  exceptions/non-throwing fentry -> exception_cb:OK
+#105/40  exceptions/throwing fentry -> exception_cb:OK
+#105/41  exceptions/non-throwing fexit -> exception_cb:OK
+#105/42  exceptions/throwing fexit -> exception_cb:OK
+#105/43  exceptions/throwing extension (with custom cb) -> exception_cb:OK
+#105/44  exceptions/throwing extension -> global func in exception_cb:OK
+#105/45  exceptions/exception_ext_mod_cb_runtime:OK
+#105/46  exceptions/throwing extension (with custom cb) -> global func in exception_cb:OK
+#105/47  exceptions/exception_ext:OK
+#105/48  exceptions/non-throwing fentry -> non-throwing subprog:OK
+#105/49  exceptions/throwing fentry -> non-throwing subprog:OK
+#105/50  exceptions/non-throwing fentry -> throwing subprog:OK
+#105/51  exceptions/throwing fentry -> throwing subprog:OK
+#105/52  exceptions/non-throwing fexit -> non-throwing subprog:OK
+#105/53  exceptions/throwing fexit -> non-throwing subprog:OK
+#105/54  exceptions/non-throwing fexit -> throwing subprog:OK
+#105/55  exceptions/throwing fexit -> throwing subprog:OK
+#105/56  exceptions/non-throwing fmod_ret -> non-throwing subprog:OK
+#105/57  exceptions/non-throwing fmod_ret -> non-throwing global subprog:OK
+#105/58  exceptions/non-throwing extension -> non-throwing subprog:OK
+#105/59  exceptions/non-throwing extension -> throwing subprog:OK
+#105/60  exceptions/non-throwing extension -> non-throwing subprog:OK
+#105/61  exceptions/non-throwing extension -> throwing global subprog:OK
+#105/62  exceptions/throwing extension -> throwing global subprog:OK
+#105/63  exceptions/throwing extension -> non-throwing global subprog:OK
+#105/64  exceptions/non-throwing extension -> main subprog:OK
+#105/65  exceptions/throwing extension -> main subprog:OK
+#105/66  exceptions/reject_exception_cb_type_1:OK
+#105/67  exceptions/reject_exception_cb_type_2:OK
+#105/68  exceptions/reject_exception_cb_type_3:OK
+#105/69  exceptions/reject_exception_cb_type_4:OK
+#105/70  exceptions/reject_async_callback_throw:OK
+#105/71  exceptions/reject_with_lock:OK
+#105/72  exceptions/reject_subprog_with_lock:OK
+#105/73  exceptions/reject_with_rcu_read_lock:OK
+#105/74  exceptions/reject_subprog_with_rcu_read_lock:OK
+#105/75  exceptions/reject_with_rbtree_add_throw:OK
+#105/76  exceptions/reject_with_reference:OK
+#105/77  exceptions/reject_with_cb_reference:OK
+#105/78  exceptions/reject_with_cb:OK
+#105/79  exceptions/reject_with_subprog_reference:OK
+#105/80  exceptions/reject_throwing_exception_cb:OK
+#105/81  exceptions/reject_exception_cb_call_global_func:OK
+#105/82  exceptions/reject_exception_cb_call_static_func:OK
+#105/83  exceptions/reject_multiple_exception_cb:OK
+#105/84  exceptions/reject_exception_throw_cb:OK
+#105/85  exceptions/reject_exception_throw_cb_diff:OK
+#105/86  exceptions/reject_set_exception_cb_bad_ret1:OK
+#105/87  exceptions/reject_set_exception_cb_bad_ret2:OK
+#105/88  exceptions/check_assert_eq_int_min:OK
+#105/89  exceptions/check_assert_eq_int_max:OK
+#105/90  exceptions/check_assert_eq_zero:OK
+#105/91  exceptions/check_assert_eq_llong_min:OK
+#105/92  exceptions/check_assert_eq_llong_max:OK
+#105/93  exceptions/check_assert_lt_pos:OK
+#105/94  exceptions/check_assert_lt_zero:OK
+#105/95  exceptions/check_assert_lt_neg:OK
+#105/96  exceptions/check_assert_le_pos:OK
+#105/97  exceptions/check_assert_le_zero:OK
+#105/98  exceptions/check_assert_le_neg:OK
+#105/99  exceptions/check_assert_gt_pos:OK
+#105/100 exceptions/check_assert_gt_zero:OK
+#105/101 exceptions/check_assert_gt_neg:OK
+#105/102 exceptions/check_assert_ge_pos:OK
+#105/103 exceptions/check_assert_ge_zero:OK
+#105/104 exceptions/check_assert_ge_neg:OK
+#105/105 exceptions/check_assert_range_s64:OK
+#105/106 exceptions/check_assert_range_u64:OK
+#105/107 exceptions/check_assert_single_range_s64:OK
+#105/108 exceptions/check_assert_single_range_u64:OK
+#105/109 exceptions/check_assert_generic:OK
+#105/110 exceptions/check_assert_with_return:OK
+#105     exceptions:OK
+Summary: 1/110 PASSED, 0 SKIPPED, 0 FAILED
+
+[v1]: https://lore.kernel.org/all/20260105105212.136645-1-adubey@linux.ibm.com/
+[v2]: https://lore.kernel.org/all/20260114114450.30405-1-adubey@linux.ibm.com/
+[v3]: https://lore.kernel.org/all/20260122165716.10508-1-adubey@linux.ibm.com/
+
+Changes v3->v4:
+	Handle bpf-ci warnings
+Changes v2->v3:
+        Added PPC_BCC_CONST_SHORT for short jumps of constant offset
+        Optimize tailcall allocation for BPF_TRAMP_F_CALL_ORIG flag
+        New helper for stack size calculation during exceptions
+        Prologue JIT optimizations during non exception prog case
+Changes v1->v2:
+        Move tail_call_cnt to offset 0 in stack frame
+        Remove trampoline NVR remapping-patch3/6[v1]
+
+Abhishek Dubey (6):
+  powerpc64/bpf: Moving tail_call_cnt to bottom of frame
+  powerpc64/bpf: Support tailcalls with subprogs
+  powerpc64/bpf: Avoid tailcall restore from trampoline
+  powerpc64/bpf: Add arch_bpf_stack_walk() for BPF JIT
+  powerpc64/bpf: Support exceptions
+  powerpc64/bpf: Additional NVR handling for bpf_throw
+
+ arch/powerpc/net/bpf_jit.h        |  16 ++
+ arch/powerpc/net/bpf_jit_comp.c   |  88 ++++++++--
+ arch/powerpc/net/bpf_jit_comp64.c | 256 ++++++++++++++++++++++++------
+ 3 files changed, 297 insertions(+), 63 deletions(-)
+
 -- 
 2.48.1
 
