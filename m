@@ -1,94 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-16157-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16158-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43147D3EE95
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jan 2026 16:59:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9789BD3EE95
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jan 2026 16:59:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dxnNC67H6z30N8;
-	Fri, 23 Jan 2026 03:59:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769101163;
-	cv=none; b=YpkJNQguERNMaRw/1QiOYxMrY4+EY92euBnp/w1rHOLWXm/n67SnVT+drQwPfxSEtFMEk5fwZBqcvCSk42jyTdr3Z5jsKoQA/xfbjJ28zqRRekhQ24da0nOHeFUbbO3hjO0bQfcfrhRNe2LuT5P5FV/LTPPlD+wawL6SGfNHbyQEaXjX3exobxhEgL5mbkrfDS137rAEI6OdbMakK9cZ2EGKnwdsiTr4jzr6Bj9QV2xezb9yCa0miyMMhejqxVR8ROU5BALqN8riIix9LllDXe8WbtEj+D4dMzUOC8TjoiS1WPwTb1pB6sFjv8FDzqJUcWeL1h3IOV9ymUz/H62dTQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dxnND3zjBz3c9l;
+	Fri, 23 Jan 2026 03:59:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769101164;
+	cv=none; b=YMFEuTfwYXP1CyifL0vR1mUJHzCjW7YG/8dNPk7Wq11ut0TcS7hTbro/sul9//rjUqQaXkIa+QPC4GLF7P8KW5LYaxNaO9WJ2XndtxjZBMQfLIi3S4vYQ5IV4SmT+Ct4Ja6fnUtJ9Q6UnBc/BluSow3K2Z7WfmN/y64KhYFe1ISGDtLlz5jx6ggjf7ccLw1gb+cwCKgviuGxe/O4LzmpUE0YJM0mo9CxSjq/VwI37cmGY+9WSTvXMXpPeJumLt8E4OQlH3VEbj9MZmQDtkw7DFUoW9mi08bTi3dX5G7Hoq+CBTEe8rQQX9+7RTbO/t2Zj7JtpWITKy8vaj53UE9fqA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1769101163; c=relaxed/relaxed;
-	bh=/eHX9B+rQjztqsfK1dbsZkcMj6llvfxq0MlC2mC0A2k=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=imr28jri2xQEMBWldWpLLiKdjUXdr67NBt0yKenXerFxed+vqjWn9jd1FHVZFowNShaT/eBiyTRMUNeSyxK6UIQ+gjVwnpJQtY4BOPWX8luLllckn2+9aKwHjcUUwUW5bGeao3JXYvCP2Uac8yYetpb4OC+CTT2rmHZjGINJh/kQdwUn42ceQCLIZSo90zkUWLUMS8EwYpGkQojfSqIMfmisfMZq4Hggx0EyyaHuLbsMrlXyWNmJXvOXw+gWkUCegNatf/XyIY3Cpdbz1QGNGKfcAs07WM3pSVRsU1qHSfRZNonWRAsVudEI4WJZoV5wQ0t1tcs3EY0uNTX8pB/nJw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sOLWr/V/; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1769101164; c=relaxed/relaxed;
+	bh=ctyaECZ1PTrRA7apezvO6HlUfCV+MlmRr+a4g56cUxU=;
+	h=Date:From:To:CC:Subject:In-Reply-To:References:Message-ID:
+	 MIME-Version:Content-Type; b=eaTuZqgPadNubqjg89hnfEYEX1rDcNGRFuxphFE8Tuyn4/MmmQR3D00itljzLvwvkvTUN+/bj2lEBvadrekpm0MEMbzoJuYnwVJcTRIxeDMEK0hUYgYMMqzUAYHTjVGuywSBrRHubYMF6HQoMAsd8XaQKZJdvUt5M9dA/LLGCOQy6X+Fara3uQuXqmoZdcKT38JdMTByMr75ZolQeBvNbf3ZBc9oR5XPR9WORUa01cMc42p95Z8m8XgDSZoJw0Zs1PCyBnhYXxYoOWdpBHgPJV7GCBaUN1VFp9Co/JQY8OWyRZxZEEmfDiVMFBVGsMxKx/ve06+mcPbEBc1VUkV8lg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WK8Qdiy+; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=cassel@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sOLWr/V/;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WK8Qdiy+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=cassel@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dxnNB3Jrjz2yql
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2026 03:59:22 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 60MDZPXA020990;
-	Thu, 22 Jan 2026 16:58:57 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=/eHX9B+rQjztqsfK1
-	dbsZkcMj6llvfxq0MlC2mC0A2k=; b=sOLWr/V/Al95Xm9mr9nkv8v21sHLYewOs
-	td86ld8zl5r22cpI54pZ+XWdyaW/Dw0g4IdEbNHKw9vZ8LHDWTEsE+r24ulFMRxY
-	4K8hGT2LfVZyr9QjerCpu/DyQLsLANvx+O2/Q9qP4PvokNxFkVc1ScEmc3JyDbfl
-	rQ0sCtzIBvtiHRVDtVv//X64jhkujVdOg0YTDsQvz3KzY/qZMTCGp3i68WN1NBKK
-	ynnZ8d1m13nx8ug4cLtMf76ryYGp8/rm8nIA1hdI1v794akXa+ejjVWQgI5d5QlQ
-	0gnm+gLqizFrzCC/xCIyDKiYVLtHqJ0QyBnuqIJcF2BrDuR3kisTA==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4br0ufsh4t-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 22 Jan 2026 16:58:57 +0000 (GMT)
-Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 60MGoBSB012660;
-	Thu, 22 Jan 2026 16:58:56 GMT
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4br0ufsh4p-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 22 Jan 2026 16:58:56 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 60MEwtNl006427;
-	Thu, 22 Jan 2026 16:58:55 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4brqf1u5hd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 22 Jan 2026 16:58:55 +0000
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 60MGwpAs41943358
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 22 Jan 2026 16:58:51 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A4E1B20040;
-	Thu, 22 Jan 2026 16:58:51 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9235020043;
-	Thu, 22 Jan 2026 16:58:42 +0000 (GMT)
-Received: from abhi.. (unknown [9.39.26.73])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 22 Jan 2026 16:58:42 +0000 (GMT)
-From: adubey@linux.ibm.com
-To: bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: hbathini@linux.ibm.com, sachinpb@linux.ibm.com, venkat88@linux.ibm.com,
-        andrii@kernel.org, eddyz87@gmail.com, mykolal@fb.com, ast@kernel.org,
-        daniel@iogearbox.net, martin.lau@linux.dev, song@kernel.org,
-        yonghong.song@linux.dev, john.fastabend@gmail.com, kpsingh@kernel.org,
-        sdf@fomichev.me, haoluo@google.com, jolsa@kernel.org,
-        christophe.leroy@csgroup.eu, naveen@kernel.org, maddy@linux.ibm.com,
-        mpe@ellerman.id.au, npiggin@gmail.com, memxor@gmail.com,
-        iii@linux.ibm.com, shuah@kernel.org,
-        Abhishek Dubey <adubey@linux.ibm.com>
-Subject: [PATCH v3 5/6] powerpc64/bpf: Support exceptions
-Date: Thu, 22 Jan 2026 22:27:15 +0530
-Message-ID: <20260122165716.10508-6-adubey@linux.ibm.com>
-X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20260122165716.10508-1-adubey@linux.ibm.com>
-References: <20260122165716.10508-1-adubey@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dxnNC44t9z2xl0
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2026 03:59:23 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id D3DFE44229;
+	Thu, 22 Jan 2026 16:59:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F2E2BC116D0;
+	Thu, 22 Jan 2026 16:59:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1769101161;
+	bh=J5VqdBfB3qJLKokwNzHgugj/xR5O2h1qw7xFVlfjZa4=;
+	h=Date:From:To:CC:Subject:In-Reply-To:References:From;
+	b=WK8Qdiy+OYob7AaCGw51BnlD5QnCxxjuxB5EckU4dxg2pceWfpf2hxcKJkAGzgwFv
+	 OYvOTfFdeWLftjTHM3KIMbaNG3YhhMm3cp18/6v/6az/gI/YGsh+WTX1ANIJxUNjYh
+	 cl/mjuaSdgT3rWYuCgUTf6UHnlg/1tRcJrYbOBdEOp6sNTpKOEKcgzWV5UUBmJd0NX
+	 F4SohSFUcSgon4U5tz/wv89xMjr8qloLQOeEn/d6QBDjT0SbWdWqo9mkOmFYG0Sf7l
+	 MKr9b6ddz/dSiwuBXDx4us3AZ2sp9epXfvMoT66uX2n8zu/GB8+2jbN0aSSOs+eDIg
+	 xXk9RSb1r82KA==
+Date: Thu, 22 Jan 2026 17:59:18 +0100
+From: Niklas Cassel <cassel@kernel.org>
+To: Koichiro Den <den@valinux.co.jp>
+CC: jingoohan1@gmail.com, mani@kernel.org, lpieralisi@kernel.org,
+ kwilczynski@kernel.org, robh@kernel.org, bhelgaas@google.com,
+ vigneshr@ti.com, s-vadapalli@ti.com, hongxing.zhu@nxp.com,
+ l.stach@pengutronix.de, shawnguo@kernel.org, s.hauer@pengutronix.de,
+ kernel@pengutronix.de, festevam@gmail.com, minghuan.Lian@nxp.com,
+ mingkai.hu@nxp.com, roy.zang@nxp.com, jesper.nilsson@axis.com,
+ heiko@sntech.de, srikanth.thokala@intel.com, marek.vasut+renesas@gmail.com,
+ yoshihiro.shimoda.uh@renesas.com, geert+renesas@glider.be,
+ magnus.damm@gmail.com, christian.bruel@foss.st.com,
+ mcoquelin.stm32@gmail.com, alexandre.torgue@foss.st.com,
+ thierry.reding@gmail.com, jonathanh@nvidia.com,
+ hayashi.kunihiko@socionext.com, mhiramat@kernel.org, kishon@kernel.org,
+ jirislaby@kernel.org, rongqianfeng@vivo.com, 18255117159@163.com,
+ shawn.lin@rock-chips.com, nicolas.frattaroli@collabora.com,
+ linux.amoon@gmail.com, vidyas@nvidia.com, Frank.Li@nxp.com,
+ linux-omap@vger.kernel.org, linux-pci@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ imx@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@axis.com, linux-rockchip@lists.infradead.org,
+ linux-arm-msm@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
+ linux-stm32@st-md-mailman.stormreply.com, linux-tegra@vger.kernel.org
+Subject: =?US-ASCII?Q?Re=3A_=5BPATCH_v9_4/5=5D_PCI=3A_dwc=3A_ep=3A_Support_BAR_sub?=
+ =?US-ASCII?Q?range_inbound_mapping_via_Address_Match_Mode_iATU?=
+User-Agent: Thunderbird for Android
+In-Reply-To: <s6bnqkbuugi7oio7ybekdbk3dokpbe2bui2wjltdwajxix2app@wosgmhrfsriv>
+References: <20260122084909.2390865-1-den@valinux.co.jp> <20260122084909.2390865-5-den@valinux.co.jp> <aXHsd7-WWAGyhy_w@ryzen> <s6bnqkbuugi7oio7ybekdbk3dokpbe2bui2wjltdwajxix2app@wosgmhrfsriv>
+Message-ID: <19D609EC-F850-4B43-A83C-0B8C70E641B5@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,203 +87,66 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: Wr_21ZGH3LbqbZJ7F_5HJbcJ-5o1CVKd
-X-Proofpoint-ORIG-GUID: K5s7DPISdH0d1g-JZzAOxzSj7BpoeNwp
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTIyMDEyOSBTYWx0ZWRfX9DlCFjeZkbmD
- nufukhfdODR+V0JL63dS4T2DQ3UTNcR6RAvt42GUJvbBuLmvrgOyz/0Rj1raXVBbROIhUlRz4Rd
- rEZW/xbiAZO1DIh3YyDH/cvxSCfDOktDsWty9JiDdpmLVOX37nhk9ebidZd18V7BrAmBtD7ds66
- ALTN2KcWCro1PBivWab7NZTcokPVHciAiDcIPhflPVzrsH0VbuZjBfE+4g8Ck9MZjDXBOcZ0PKs
- LZZc0e8cPcELCam4B9XiRqU5oD9bWYDiP/hkuReZLf/RYJt/51+GIaQYSplrgAVdsIsaY+kxkEb
- bYkYg+8t0WFvvyLCTNI+OfMim0pAtWVLCKONetLRpCOOLdqG8WySZfsiSR/KkpHsMli4JmwYfEv
- iX8lOC14OqEm9/hA8514IGHzuH3hrfYPyKhJUPUAWuoipESSwp0sJ5D8fZbh6cvVXeiu/ucaObs
- +FB6T+Z//LqQe8UryGg==
-X-Authority-Analysis: v=2.4 cv=bopBxUai c=1 sm=1 tr=0 ts=69725751 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=vUbySO9Y5rIA:10 a=VkNPw1HP01LnGYTKEx00:22 a=DU0EyFXtAAAA:8 a=VnNF1IyMAAAA:8
- a=xcpHmmOOOUdXZ9sPVCMA:9 a=UCR5be5CC-YrbG9FbbB0:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.20,FMLib:17.12.100.49
- definitions=2026-01-22_03,2026-01-22_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 bulkscore=0 adultscore=0 suspectscore=0 impostorscore=0
- phishscore=0 malwarescore=0 lowpriorityscore=0 priorityscore=1501
- clxscore=1015 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2601150000
- definitions=main-2601220129
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-From: Abhishek Dubey <adubey@linux.ibm.com>
+On 22 January 2026 15:29:02 CET, Koichiro Den <den@valinux=2Eco=2Ejp> wrote=
+:
+>
+>> To make sure that dw_pcie_ep_ib_atu_addr() cannot be called without alr=
+eady
+>> having a BAR configured, to we perhaps want something like:
+>
+>Thanks for the review=2E
+>Isn't the existing guard in dw_pcie_ep_ib_atu_addr sufficient?
+>
+>        [=2E=2E=2E]
+>        base =3D dw_pcie_ep_read_bar_assigned(ep, func_no, bar, epf_bar->=
+flags);
+>        if (!base) {
+>                dev_err(dev,
+>                        "BAR%u not assigned, cannot set up sub-range mapp=
+ings\n",
+>                        bar);
+>                return -EINVAL;
+>        }
+>
 
-The modified prologue/epilogue generation code now
-enables exception-callback to use the stack frame of
-the program marked as exception boundary, where callee
-saved registers are stored.
+Well, for a driver that does not call dw_pcie_ep_reset_bar() in their =2Ei=
+nit() to disable all BARs that are enabled in the controller by default, th=
+e host side will assign an PCI address even if no EPF has called set_bar() =
+on that BAR=2E
 
-As per ppc64 ABIv2 documentation[1], r14-r31 are callee
-saved registers. BPF programs on ppc64 already saves
-r26-r31 registers. Saving the remaining set of callee
-saved registers(r14-r25) is handled in the next patch.
+See e=2Eg=2E
+https://git=2Ekernel=2Eorg/pub/scm/linux/kernel/git/pci/pci=2Egit/commit/d=
+rivers/pci/controller/dwc/pcie-tegra194=2Ec?h=3Dcontroller/dwc&id=3D42f9c66=
+a6d0cc45758dab77233c5460e1cf003df
 
-[1] https://ftp.rtems.org/pub/rtems/people/sebh/ABI64BitOpenPOWERv1.1_16July2015_pub.pdf
+There might be other EPC drivers that don't disable all BARs in their =2Ei=
+nit(), so I would say that simply checking if the BAR has an address is not=
+ sufficient to guarantee that an EPF driver has called set_bar()=2E
 
-Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
----
- arch/powerpc/net/bpf_jit.h        |  2 ++
- arch/powerpc/net/bpf_jit_comp.c   |  7 ++++
- arch/powerpc/net/bpf_jit_comp64.c | 58 +++++++++++++++++++++----------
- 3 files changed, 48 insertions(+), 19 deletions(-)
 
-diff --git a/arch/powerpc/net/bpf_jit.h b/arch/powerpc/net/bpf_jit.h
-index 56f56fdd4969..82bbf63f0e57 100644
---- a/arch/powerpc/net/bpf_jit.h
-+++ b/arch/powerpc/net/bpf_jit.h
-@@ -179,6 +179,8 @@ struct codegen_context {
- 	u64 arena_vm_start;
- 	u64 user_vm_start;
- 	bool is_subprog;
-+	bool exception_boundary;
-+	bool exception_cb;
- };
- 
- #define bpf_to_ppc(r)	(ctx->b2p[r])
-diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-index 9a8236d161ef..e5a044364835 100644
---- a/arch/powerpc/net/bpf_jit_comp.c
-+++ b/arch/powerpc/net/bpf_jit_comp.c
-@@ -207,6 +207,8 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
- 	cgctx.arena_vm_start = bpf_arena_get_kern_vm_start(fp->aux->arena);
- 	cgctx.user_vm_start = bpf_arena_get_user_vm_start(fp->aux->arena);
- 	cgctx.is_subprog = bpf_is_subprog(fp);
-+	cgctx.exception_boundary = fp->aux->exception_boundary;
-+	cgctx.exception_cb = fp->aux->exception_cb;
- 
- 	/* Scouting faux-generate pass 0 */
- 	if (bpf_jit_build_body(fp, NULL, NULL, &cgctx, addrs, 0, false)) {
-@@ -436,6 +438,11 @@ void bpf_jit_free(struct bpf_prog *fp)
- 	bpf_prog_unlock_free(fp);
- }
- 
-+bool bpf_jit_supports_exceptions(void)
-+{
-+	return IS_ENABLED(CONFIG_PPC64);
-+}
-+
- bool bpf_jit_supports_subprog_tailcalls(void)
- {
- 	return IS_ENABLED(CONFIG_PPC64);
-diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
-index c25ba1ad587a..d7cd8ab6559c 100644
---- a/arch/powerpc/net/bpf_jit_comp64.c
-+++ b/arch/powerpc/net/bpf_jit_comp64.c
-@@ -89,7 +89,9 @@ static inline bool bpf_has_stack_frame(struct codegen_context *ctx)
- 	 * - the bpf program uses its stack area
- 	 * The latter condition is deduced from the usage of BPF_REG_FP
- 	 */
--	return ctx->seen & SEEN_FUNC || bpf_is_seen_register(ctx, bpf_to_ppc(BPF_REG_FP));
-+	return ctx->seen & SEEN_FUNC ||
-+	       bpf_is_seen_register(ctx, bpf_to_ppc(BPF_REG_FP)) ||
-+	       ctx->exception_cb;
- }
- 
- /*
-@@ -161,8 +163,13 @@ void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx)
- 		EMIT(PPC_RAW_LI(bpf_to_ppc(TMP_REG_1), 0));
- 		/* this goes in the redzone */
- 		EMIT(PPC_RAW_STD(bpf_to_ppc(TMP_REG_1), _R1, -(BPF_PPC_TAILCALL)));
--	} else {
-+	} else if (!ctx->exception_cb) {
- 		/*
-+		 * Tailcall jitting for non exception_cb progs only.
-+		 * exception_cb won't require tail_call_info to be setup.
-+		 *
-+		 * tail_call_info interpretation logic:
-+		 *
- 		 * if tail_call_info < MAX_TAIL_CALL_CNT
- 		 *      main prog calling first subprog -> copy reference
- 		 * else
-@@ -177,8 +184,12 @@ void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx)
- 		EMIT(PPC_RAW_STD(bpf_to_ppc(TMP_REG_1), _R1, -(BPF_PPC_TAILCALL)));
- 	}
- 
--	if (bpf_has_stack_frame(ctx)) {
-+	if (bpf_has_stack_frame(ctx) && !ctx->exception_cb) {
- 		/*
-+		 * exception_cb uses boundary frame after stack walk.
-+		 * It can simply use redzone, this optimization reduces
-+		 * stack walk loop by one level.
-+		 *
- 		 * We need a stack frame, but we don't necessarily need to
- 		 * save/restore LR unless we call other functions
- 		 */
-@@ -190,23 +201,32 @@ void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx)
- 		EMIT(PPC_RAW_STDU(_R1, _R1, -(BPF_PPC_STACKFRAME + ctx->stack_size)));
- 	}
- 
--	/*
--	 * Back up non-volatile regs -- BPF registers 6-10
--	 * If we haven't created our own stack frame, we save these
--	 * in the protected zone below the previous stack frame
--	 */
--	for (i = BPF_REG_6; i <= BPF_REG_10; i++)
--		if (bpf_is_seen_register(ctx, bpf_to_ppc(i)))
--			EMIT(PPC_RAW_STD(bpf_to_ppc(i), _R1, bpf_jit_stack_offsetof(ctx, bpf_to_ppc(i))));
-+	if (!ctx->exception_cb) {
-+		/*
-+		 * Back up non-volatile regs -- BPF registers 6-10
-+		 * If we haven't created our own stack frame, we save these
-+		 * in the protected zone below the previous stack frame
-+		 */
-+		for (i = BPF_REG_6; i <= BPF_REG_10; i++)
-+			if (ctx->exception_boundary || bpf_is_seen_register(ctx, bpf_to_ppc(i)))
-+				EMIT(PPC_RAW_STD(bpf_to_ppc(i), _R1,
-+					bpf_jit_stack_offsetof(ctx, bpf_to_ppc(i))));
- 
--	if (ctx->arena_vm_start)
--		EMIT(PPC_RAW_STD(bpf_to_ppc(ARENA_VM_START), _R1,
-+		if (ctx->exception_boundary || ctx->arena_vm_start)
-+			EMIT(PPC_RAW_STD(bpf_to_ppc(ARENA_VM_START), _R1,
- 				 bpf_jit_stack_offsetof(ctx, bpf_to_ppc(ARENA_VM_START))));
- 
--	/* Setup frame pointer to point to the bpf stack area */
--	if (bpf_is_seen_register(ctx, bpf_to_ppc(BPF_REG_FP)))
--		EMIT(PPC_RAW_ADDI(bpf_to_ppc(BPF_REG_FP), _R1,
-+		/* Setup frame pointer to point to the bpf stack area */
-+		if (bpf_is_seen_register(ctx, bpf_to_ppc(BPF_REG_FP)))
-+			EMIT(PPC_RAW_ADDI(bpf_to_ppc(BPF_REG_FP), _R1,
- 				STACK_FRAME_MIN_SIZE + ctx->stack_size));
-+	} else {
-+		/*
-+		 * Exception callback receives Frame Pointer of main
-+		 * program as third arg
-+		 */
-+		EMIT(PPC_RAW_MR(_R1, _R5));
-+	}
- 
- 	if (ctx->arena_vm_start)
- 		PPC_LI64(bpf_to_ppc(ARENA_VM_START), ctx->arena_vm_start);
-@@ -218,17 +238,17 @@ static void bpf_jit_emit_common_epilogue(u32 *image, struct codegen_context *ctx
- 
- 	/* Restore NVRs */
- 	for (i = BPF_REG_6; i <= BPF_REG_10; i++)
--		if (bpf_is_seen_register(ctx, bpf_to_ppc(i)))
-+		if (ctx->exception_cb || bpf_is_seen_register(ctx, bpf_to_ppc(i)))
- 			EMIT(PPC_RAW_LD(bpf_to_ppc(i), _R1, bpf_jit_stack_offsetof(ctx, bpf_to_ppc(i))));
- 
--	if (ctx->arena_vm_start)
-+	if (ctx->exception_cb || ctx->arena_vm_start)
- 		EMIT(PPC_RAW_LD(bpf_to_ppc(ARENA_VM_START), _R1,
- 				bpf_jit_stack_offsetof(ctx, bpf_to_ppc(ARENA_VM_START))));
- 
- 	/* Tear down our stack frame */
- 	if (bpf_has_stack_frame(ctx)) {
- 		EMIT(PPC_RAW_ADDI(_R1, _R1, BPF_PPC_STACKFRAME + ctx->stack_size));
--		if (ctx->seen & SEEN_FUNC) {
-+		if (ctx->seen & SEEN_FUNC || ctx->exception_cb) {
- 			EMIT(PPC_RAW_LD(_R0, _R1, PPC_LR_STKOFF));
- 			EMIT(PPC_RAW_MTLR(_R0));
- 		}
--- 
-2.48.1
+I think the safest option is my second suggestion because then we know tha=
+t we will only call
+dw_pcie_ep_ib_atu_addr()
+
+When:
+
+1) If ep->epf_bar[bar] is set:
+https://github=2Ecom/torvalds/linux/blob/v6=2E19-rc6/drivers/pci/controlle=
+r/dwc/pcie-designware-ep=2Ec#L363
+
+
+2) All the other requirements to dynamically update a BAR is also met:
+
+https://github=2Ecom/torvalds/linux/blob/v6=2E19-rc6/drivers/pci/controlle=
+r/dwc/pcie-designware-ep=2Ec#L368-L370
+
+
+
+Kind regards,
+Niklas
 
 
