@@ -1,88 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-16171-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16172-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E82AD6CFA6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jan 2026 21:41:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3420D6CFA2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jan 2026 21:50:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dxvdX6jCsz2xqL;
-	Fri, 23 Jan 2026 08:41:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769118080;
-	cv=none; b=egfzN3g/66wUo5S5QI1dr0U2gQQ3iLiEYpb6E9j1pbypXriFGHz/SU6viRegsKy5poe4QjTZULJQNCaIUYGfb5vcREUc48JEOAu9KM96Dyy1Zv9ZakHnvoyz0J+1h/yeKd6U8XNT2qgn6DlTRmF9gCcX5UlWzckaWhOxrmjZ5OndQa23kaBiCOKl62dLHZVVMkeGnKX8ghA9TJbJ3k11KCoNlIkrCnsKCUetAiBNPnWVRWezSXilFfezjQpct01D5dcVuw/g1TV4AtjZN1sD35xJDKQzRp9PZYpMGAnhK9GFz88JFjVYLSwCX7R68iBBN+NjeulpRu3SaYAOgtfk0A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dxvqj0kxGz30M6;
+	Fri, 23 Jan 2026 08:50:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769066099;
+	cv=none; b=QAcmsYY1JrxjY5eVQyHBqNsE00WPzzT5amuldkDNJOnDSF1k2yQros55hBrhQEerIAy62LgEiKBNloZgPJXPv0V5SrgoqRyYh0AfFk4C9ShefaHVIA5Yhd0GDmEthFM1HWQwhgtzFzWprc01ZF2XT1qpupSJU6CXXp/nH00p78Tejmvno+PNGtwOVzQtkm2Yw3sM7W+sn1XCgRk2wlPEX0jeuR3pVu/ykILtq0rTC/TlL57Zuj1J/LZUqYTNoI32lWBYWfEWGf+cOL34l4YG39TXXS+CSCb036EE2wPLkPhpBxwRa1H/Q2LpahHb5Qcri4PvSFPC3ceiqKJJ6Sh1ww==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1769118080; c=relaxed/relaxed;
-	bh=OpYFVQ+VNJG8H/bYcBfO1oxUpkQ5dAYJneF97kYBjLE=;
-	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=O53Vbl+vAVXyUQJIeFIhjUeJk7ZGlp9FHV9VV8XlXk58lLiHlY51KOd+ZsKqyTKGdNka1jxUo23RmBC0k+CwJVCGb1NqGvB3V0wbiupWc7Tcjo+jnI9g6LQsP5yyq3jA28T/bNhcx+nDqY7jg6XdkDcakmHQb1APIaspGyGwBC5YIGNbE7kf9Av4seReu6z6GH319CBjvhM1SLcCSwImSZ1ttCQBKem53AewIxJzKkixkMxPOUO0aTmnooB3UDp+H2MFtdjn1ijQSmxU2k7l5jNsgpf1R8/Z491XmiUt17mDQKz5tvMa7Z7l48ihrsoxW6M+qAymqCVCCyu1oOCj2Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=nbhvWI6F; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	t=1769066099; c=relaxed/relaxed;
+	bh=Y9gY9EPIOCfX5PEhIg/pLH6vuJJU6y/EFzoU6HjZNgo=;
+	h=MIME-Version:Date:From:To:Cc:Subject:In-Reply-To:References:
+	 Message-ID:Content-Type; b=bScodWI5yI+NG6YUIw53xyOg5VIlTOfSCrGa0E4j+6ezNsxk/+XRyZ0GHdMZzzqN9EwFA/osUT7OvW/bhWe2YqdH89v+2sX9qN2mWDx3Mu3zChNES9sAdXVrYZcjX9dZsLUB2xD8i1EmaWu/jcGSchR54So3tdcYNntXIOI4p6W54P0X65JVY5KdgWZgJVmeVE4PkayXnZiT/9xTvUGd06lbF0nh7pvKEoP81ylW0/+7XtapThHdkRVfoT2Mag8eii2W+dVIbl6NlUJeCa9vi0AmjcDR4gXcl82GMiC8Oq40lVBKTtbYHIXKZP3S/KwrWau0przqW4iI6+u/KP8LaA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eXKPeB1G; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=trupti@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=nbhvWI6F;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eXKPeB1G;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=trupti@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dxvdW4W4jz2xdY
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2026 08:41:19 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id AD66160018;
-	Thu, 22 Jan 2026 21:41:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 482E1C116C6;
-	Thu, 22 Jan 2026 21:41:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
-	s=korg; t=1769118076;
-	bh=o3gdWNkDSd9Vm/DMgr4/ykIAOvt43+NsJA/Imw15e/A=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=nbhvWI6FsmrV2v6DkoSqN8213V2yIRhOd6eP75LypoUaN54UBoDiDxVp1akq7FG3f
-	 CVLIelPV0CkF4x7Juc3HDczRCXMl0AOZY4EUYaiK0pNhQfi7cbwzUhOkV6AnNppJ9U
-	 SqiE6hXL+nm2nlnc5o4hmp73evXdLpeOeMX2qi64=
-Date: Thu, 22 Jan 2026 13:41:14 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Balbir Singh <balbirs@nvidia.com>
-Cc: Vlastimil Babka <vbabka@suse.cz>, Matthew Brost
- <matthew.brost@intel.com>, Zi Yan <ziy@nvidia.com>, Jason Gunthorpe
- <jgg@nvidia.com>, Matthew Wilcox <willy@infradead.org>, Alistair Popple
- <apopple@nvidia.com>, Francois Dugast <francois.dugast@intel.com>,
- intel-xe@lists.freedesktop.org, dri-devel@lists.freedesktop.org, adhavan
- Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
- Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)"
- <chleroy@kernel.org>, Felix Kuehling <Felix.Kuehling@amd.com>, Alex Deucher
- <alexander.deucher@amd.com>, Christian =?UTF-8?B?S8O2bmln?=
- <christian.koenig@amd.com>, David Airlie <airlied@gmail.com>, Simona Vetter
- <simona@ffwll.ch>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann
- <tzimmermann@suse.de>, Lyude Paul <lyude@redhat.com>, Danilo Krummrich
- <dakr@kernel.org>, David Hildenbrand <david@kernel.org>, Oscar Salvador
- <osalvador@suse.de>, Leon Romanovsky <leon@kernel.org>, Lorenzo Stoakes
- <lorenzo.stoakes@oracle.com>, "Liam R . Howlett" <Liam.Howlett@oracle.com>,
- Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
- Michal Hocko <mhocko@suse.com>, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
- amd-gfx@lists.freedesktop.org, nouveau@lists.freedesktop.org,
- linux-mm@kvack.org, linux-cxl@vger.kernel.org
-Subject: Re: [PATCH v6 1/5] mm/zone_device: Reinitialize large zone device
- private folios
-Message-Id: <20260122134114.a04ddf4c34a4b926d057032f@linux-foundation.org>
-In-Reply-To: <626c34fc-34df-4629-baf3-fbebc9abafbb@nvidia.com>
-References: <eb94d115-18a6-455b-b020-f18f372e283a@nvidia.com>
-	<aWsdv6dX2RgqajFQ@lstrano-desk.jf.intel.com>
-	<4k72r4n5poss2glrof5fsapczkpcrnpokposeikw5wjvtodbto@wpqsxoxzpvy6>
-	<20260119142019.GG1134360@nvidia.com>
-	<96926697-070C-45DE-AD26-559652625859@nvidia.com>
-	<20260119203551.GQ1134360@nvidia.com>
-	<ef6ef1e2-25f1-4f1b-a8d4-98c0d7b4ad0c@nvidia.com>
-	<EE2956E3-CCEA-4EF9-A1A4-A483245091FC@nvidia.com>
-	<20260120135340.GA1134360@nvidia.com>
-	<F7E3DF24-A37B-40A0-A507-CEF4AB76C44D@nvidia.com>
-	<aXHPkQfwhMHU/oP6@lstrano-desk.jf.intel.com>
-	<9077ab5b-f2c8-4c8d-8441-631e7c2cf384@suse.cz>
-	<626c34fc-34df-4629-baf3-fbebc9abafbb@nvidia.com>
-X-Mailer: Sylpheed 3.7.0 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dxXPt6KSgz2xS5
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Jan 2026 18:14:58 +1100 (AEDT)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 60LNXdwY021306;
+	Thu, 22 Jan 2026 07:14:49 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=Y9gY9E
+	PIOCfX5PEhIg/pLH6vuJJU6y/EFzoU6HjZNgo=; b=eXKPeB1GwlqVNdmF4XZXFQ
+	HSzKofCQmTH4sotYCW7tmyLzuPLbqpO3Mu6wwFQX9EAvgO/cG0QPCs0XyVLQXlwR
+	gw9GbcUHw38S590UkyPJCC5wTzubrlmteTee7H/d7EIyWDT1ynvoBHN/dSM/3V1v
+	5Yk4cM29z6FOw1PdSa+nCaFOoZcsuleLdmXYmV6PXEfsQ7kg1cwoawAyqpz0k9Z+
+	6WGeRNrBGffy0FkXhTxrNhlQ6svAqe2mEPNkMQwkavdVmNkWrYNWV2OE10+0kfIE
+	W5H9RbM/QgBLNdf25955MKmWmZ6yhbRcKZrUVf0KQJaFsSZV7OXsk1Tb9FK41TVQ
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4bt612baa7-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 22 Jan 2026 07:14:49 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 60M6pKpJ009266;
+	Thu, 22 Jan 2026 07:14:48 GMT
+Received: from smtprelay06.wdc07v.mail.ibm.com ([172.16.1.73])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4brp8kgndv-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 22 Jan 2026 07:14:48 +0000
+Received: from smtpav05.wdc07v.mail.ibm.com (smtpav05.wdc07v.mail.ibm.com [10.39.53.232])
+	by smtprelay06.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 60M7Em2O2294420
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 22 Jan 2026 07:14:48 GMT
+Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7AFED58053;
+	Thu, 22 Jan 2026 07:14:48 +0000 (GMT)
+Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F3F8558043;
+	Thu, 22 Jan 2026 07:14:47 +0000 (GMT)
+Received: from ltc.linux.ibm.com (unknown [9.5.196.140])
+	by smtpav05.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 22 Jan 2026 07:14:47 +0000 (GMT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,40 +77,60 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+MIME-Version: 1.0
+Date: Thu, 22 Jan 2026 12:44:47 +0530
+From: Trupti <trupti@linux.ibm.com>
+To: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+Cc: debian-powerpc <debian-powerpc@lists.debian.org>,
+        linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>,
+        gentoo-powerpc@lists.gentoo.org
+Subject: Re: Github tracker for PowerPC issues
+In-Reply-To: <1534D914-DAFF-4008-87ED-E887BA0DC070@physik.fu-berlin.de>
+References: <f80cd9f9b91966862ece4bb270460198@linux.ibm.com>
+ <1534D914-DAFF-4008-87ED-E887BA0DC070@physik.fu-berlin.de>
+Message-ID: <7601fc49e07533b891609ec72e315db9@linux.ibm.com>
+X-Sender: trupti@linux.ibm.com
+Content-Type: text/plain; charset=UTF-8;
+ format=flowed
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: upTOlzUUZahsdtEKvT5xRNQiz4JeCbGR
+X-Authority-Analysis: v=2.4 cv=LaIxKzfi c=1 sm=1 tr=0 ts=6971ce69 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=vUbySO9Y5rIA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=Bn48Lc1lnD29vORwN3EA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: upTOlzUUZahsdtEKvT5xRNQiz4JeCbGR
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTIyMDA0MyBTYWx0ZWRfXxVdhNy7PmL/x
+ 6+domJRzomS/vxxY17GN+/pdmdVrCYeHCwhrWPId8MuSgZfER314OoeGUbBohOYkJ/jHsqBEYxv
+ GAlo9u4kgWyUfpvs4PljCA65IDoVWb5Oq775X5ph0Br4BkTwSxqvdPR5MsGDUd+haECt9urqs46
+ BVHq2/Vet7rddjpFZRIX1zRG8nGpodOPOkWVF2hf2U6r1IiQGDZheYBd/SWYv1O0AKl+47JQthk
+ lJHDo/C3xj3xN5yHBhpTU3tIWd6p6cByIcKtq67OkmbqPP/uMTSxZhmFEe5EviSDv1CE6/g3nDQ
+ 2z+7u9RUr0wEDFrzvX3PvbEi3w9OsxwZgOOEeQfRyYUd7r6nvmo0m5U3U6+xYzpjvbgQGcp79kK
+ VyCtrDRB+99xmzQ79DyztzvacTnI+hY3gBXyULjSHPcMzhDhRxkXSMtrj9y+FUOX6p6HRPP0Eo6
+ d+Y0Rt7d8+lfmyhoIpw==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.20,FMLib:17.12.100.49
+ definitions=2026-01-21_04,2026-01-20_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 adultscore=0 phishscore=0 priorityscore=1501 lowpriorityscore=0
+ suspectscore=0 clxscore=1015 impostorscore=0 spamscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2601150000 definitions=main-2601220043
 
-On Thu, 22 Jan 2026 20:10:44 +1100 Balbir Singh <balbirs@nvidia.com> wrote:
-
-> >> - Intel has demonstrated that this works and is still getting blocked.
-> >>
-> >> - This entire thread is about a fixes patch for large device pages.
-> >>   Changing prep_compound_page is completely out of scope for a fixes
-> >>   patch, and honestly so is most of the rest of what’s being proposed.
-> > 
-> > FWIW I'm ok if this lands as a fix patch, and perceived the discussion to be
-> > about how refactor things more properly afterwards, going forward.
-> > 
+On 2026-01-22 12:25, John Paul Adrian Glaubitz wrote:
+> But I’m not talking about Debian-specific issues. Tracking
+> Debian-specific issues happens in Debian.
 > 
-> I've said the same thing and I concur, we can use the patch as-is and
-> change this to set the relevant identified fields after 6.19
+> When I report an issue in the GHC Haskell compiler on PowerPC, it
+> belongs in the existing tracker. Doesn’t it?
+> 
+> Adrian
 
-So the plan is to add this patch to 6.19-rc and take another look at
-patches [2-5] during next -rc cycle?
+That makes sense, thanks for clarifying. I agree, we can use the 
+existing issue tracker for this.
 
-I think the plan is to take Matthew's work via the DRM tree?  But if people
-want me to patchbunny this fix then please lmk.
 
-I presently have
-
-Signed-off-by: Matthew Brost <matthew.brost@intel.com>
-Signed-off-by: Francois Dugast <francois.dugast@intel.com>
-Acked-by: Felix Kuehling <felix.kuehling@amd.com>
-Reviewed-by: Balbir Singh <balbirs@nvidia.com>
-
-If people wish to add to this then please do so.
-
-I'll restore this patch into mm.git's hotfix branch (and hence
-linux-next) because testing.
+Thanks,
+Trupti
 
