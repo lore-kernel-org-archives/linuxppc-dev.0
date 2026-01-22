@@ -1,83 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-16173-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16174-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90833D6CFA6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jan 2026 21:53:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76CBAD6CFAB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Jan 2026 22:47:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dxvvs0mxnz30Sv;
-	Fri, 23 Jan 2026 08:53:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.165.32
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769087427;
-	cv=none; b=QdiJxs4rjJ5UkbbF5pigpFU9fac9QWxLcWPvtHRPDbeL14WmEgDNkxa0RI9PLg16wXvHPDLAk1BxZ+w3gr5XtvoIbPCxTthGCb3rCQcakb/Qj5XNHwcofHFXA3jIvaFVtzmAsAQ0aN7mS1Kh6WpevmNW9VAxcJBHWRi4QYnAKzfgZaGo7ixxM/i9p8Ws/SCDzE1OedZM1oaqfnodusG5KH7dodbfKBda+PQUg2+DLGOb1+l+cLPQkehpmUMt/hXlf8cIYqdsioStP5Ep8n/uIKXdbPvfFOSGECpI7OPZdNmblzXRbz3i0UwVrjt51fhlwEqhy5vU4JCeHB0Ddy2eDQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dxx5j5VXGz2xXB;
+	Fri, 23 Jan 2026 09:47:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769122041;
+	cv=none; b=O+9ZpvoKI0d2TLJqAHRcfCKU8khBHt92skBijueFiD1YHseODz+IubRD8uhHWBYv13bNI01yVSQUuRePLDoq/PI0K76JFMfJCJFOR4oPsNMFjY9bpOR1rlFHfxRYuZ5ig4g6BBVrlceSuhhgwUKv8+yP3d9SYi9bsT+CkWhWnZzmIu33e8Sdq1zlfwaWBdk+mli7sslmau/K1NauEMbD+0dnqzlcVDCVfAbxvDPp/JghTkkqonLVQC7cd416ERB2kfd9XClMX9oOISlNsjer+eLKDgID9H2Uamo952YsNgDdWZ3hQjo4oKtB7oNsWTMvX9WbncxrhAY27Y0Thw/YSw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1769087427; c=relaxed/relaxed;
-	bh=nJxYE5tWOaA+nFUgNT+GxlYvfYWT4LvK7kd/62xiFl8=;
+	t=1769122041; c=relaxed/relaxed;
+	bh=15+B6CbLt2ChyR8qtylg18EYlouONEheH96W2YTGceI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=NFRPMNqMgForKYmWrnvNGTlOW8ScxRGbozA2UyNN+Ssh2jTgDIgkF0TlYfhPmrxbO15O0hSJTKXbKpB9ElZePXonYGQyXoQd7zJwx9wRz9eXKEH7VhLc7rt+jZzNmn3xnJ/EfSxjodF0mik8GpkMaG09LTefiQEkC8GqUqn9zOzToI9qx6YzUW6tqtkUPzJo4C3YgJAR1yo0o6kcKuWuyPLv6Br3eFDtk3wiBBwXkp1g8R8JqFB2f7sPVC3kMJSA1Hh0ZFG72dTxHmPFfZpv8PZ/Uj64F6OIG8oeLt4SLGmvqxBnjDs1LhLL67n/XiER+k7jb0HEY/9lsNnYobD6cw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2025-04-25 header.b=Ce6CqWDG; dkim-atps=neutral; spf=pass (client-ip=205.220.165.32; helo=mx0a-00069f02.pphosted.com; envelope-from=haakon.bugge@oracle.com; receiver=lists.ozlabs.org) smtp.mailfrom=oracle.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
+	 MIME-Version; b=OGcKIOp1ndNi3eO/gierQO6v4VUDWf3ZcZoLp0qdcCuV9NyZgkQ77nJ8jaYXx0dDAHwFaAlN8ff57c0h+FHJyDrYmq1DnaJSsrpbs9KP4i3+0rHX3V54o5mu5QAE6rbsGsNmcTKaTRlwpSjLKJOSlsetjgBNRZdpAI5kHPmpmqjGCdRmFCdJat1m5hihJBDaf8d/CY9KK3nJ7l+DrsusqFu8oErGbMiMM5kGlsZLGtjBSpBRAcJkaGeY2thiC3j2nOAxEYHct7pHb79/VWQaNWVGpPmXO8Q3TfIFb6yqqaQCxNJfnXR3b3gv5CU+d2upm8LdBPXO/5Tki5WUE1y0Rw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=g7HXFva3; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2025-04-25 header.b=Ce6CqWDG;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=g7HXFva3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oracle.com (client-ip=205.220.165.32; helo=mx0a-00069f02.pphosted.com; envelope-from=haakon.bugge@oracle.com; receiver=lists.ozlabs.org)
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dxhJ24cbmz2xl0
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2026 00:10:24 +1100 (AEDT)
-Received: from pps.filterd (m0246617.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 60M0IDl93032045;
-	Thu, 22 Jan 2026 13:10:14 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=
-	corp-2025-04-25; bh=nJxYE5tWOaA+nFUgNT+GxlYvfYWT4LvK7kd/62xiFl8=; b=
-	Ce6CqWDGgsthWplFqiSoPjN7iOWmzJ9BcBCaHfGZFvMgeaxDQjJ6G89kowQKMFYA
-	ycRuapFGrc7tR5XwXO3a8P3xhXu1IVdB7MwRssfSa1UT9lLWwACSLq1Tqwq4hSm2
-	8RUdUfaxSolHy2oV7Cpt7jbOEVxJXdJYiN3ujl2KqO+CaPGhTO3xv0d/wZLsUGz9
-	qsJCboQ0keWhNZNu9T5HfJXL1zzFePfxdlmL2NyN5VmlzpBVf13//2DxhKW3gFq1
-	wEqZoObk15CK4sBFFtPsC/TxI4TtOtOCIeJmXareU0P4+v8qlw5ijIOQ16ZtA1r7
-	Dxz4niWOTKgnieLLdBsMwQ==
-Received: from phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta01.appoci.oracle.com [138.1.114.2])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4br2ypyjub-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 22 Jan 2026 13:10:14 +0000 (GMT)
-Received: from pps.filterd (phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
-	by phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 60MD0XQ1015492;
-	Thu, 22 Jan 2026 13:10:13 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dxx5h2wQyz2xT4
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2026 09:47:19 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 60MD86fQ006766;
+	Thu, 22 Jan 2026 21:19:50 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=15+B6CbLt2ChyR8qt
+	ylg18EYlouONEheH96W2YTGceI=; b=g7HXFva3akx2SufG19+76Q1rZ1c9r8ax0
+	VvRQVmfcFNgF7HHenYskfuvnCQ3wqHYF7vf9wYFHfAI+cd9yC60JWg93o6onQ7YD
+	TJ61mMCYm2sNEPIH6gftldH/oLlsfP8oWX5s6qgjvjd1e7LLt2PGLeJKzvz97r1n
+	wnODdVbpEyZI5YreAOvxNV2Bl8SYHnCIYpP99tPa9tjaRCjjWPi8NC8fhjulSA/p
+	q5Nkro9tnYhY7lctId4q38iQaA9K3tJbUVCjuTPr5F5n96MWJmo3tNeoVzevmQr9
+	N/MEpcrBjgVpADjMOS/l9OITXRJcd9kNfiHw62QUCAJIIhc/kP+Ig==
 Received: from pps.reinject (localhost [127.0.0.1])
-	by phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 4br0vctgwd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 22 Jan 2026 13:10:13 +0000
-Received: from phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 60MD5mR3028904;
-	Thu, 22 Jan 2026 13:10:13 GMT
-Received: from lab61.no.oracle.com (lab61.no.oracle.com [10.172.144.82])
-	by phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTP id 4br0vctgdy-3;
-	Thu, 22 Jan 2026 13:10:12 +0000
-From: =?UTF-8?q?H=C3=A5kon=20Bugge?= <haakon.bugge@oracle.com>
-To: Bjorn Helgaas <bhelgaas@google.com>,
-        Niklas Schnelle <schnelle@linux.ibm.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
-        Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-        "Oliver O'Halloran" <oohall@gmail.com>,
-        Greg Kroah-Hartman <gregkh@suse.de>,
-        Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: Alex Williamson <alex@shazbot.org>,
-        Johannes Thumshirn <morbidrsa@gmail.com>, linux-pci@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-        =?UTF-8?q?H=C3=A5kon=20Bugge?= <haakon.bugge@oracle.com>,
-        linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 2/2] PCI/ACPI: Confine program_hpx_type2 to the AER bits
-Date: Thu, 22 Jan 2026 14:09:54 +0100
-Message-ID: <20260122130957.68757-3-haakon.bugge@oracle.com>
-X-Mailer: git-send-email 2.43.5
-In-Reply-To: <20260122130957.68757-1-haakon.bugge@oracle.com>
-References: <20260122130957.68757-1-haakon.bugge@oracle.com>
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4br23sc90w-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 22 Jan 2026 21:19:50 +0000 (GMT)
+Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 60MLJn9Y018809;
+	Thu, 22 Jan 2026 21:19:49 GMT
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4br23sc90u-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 22 Jan 2026 21:19:49 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 60MKKfuU016611;
+	Thu, 22 Jan 2026 21:19:48 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4brn4yd3v9-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 22 Jan 2026 21:19:47 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 60MLJh7745744428
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 22 Jan 2026 21:19:43 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C03E32004B;
+	Thu, 22 Jan 2026 21:19:43 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6508420040;
+	Thu, 22 Jan 2026 21:19:37 +0000 (GMT)
+Received: from abhi.. (unknown [9.124.222.159])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 22 Jan 2026 21:19:37 +0000 (GMT)
+From: adubey@linux.ibm.com
+To: bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: hbathini@linux.ibm.com, sachinpb@linux.ibm.com, venkat88@linux.ibm.com,
+        andrii@kernel.org, eddyz87@gmail.com, mykolal@fb.com, ast@kernel.org,
+        daniel@iogearbox.net, martin.lau@linux.dev, song@kernel.org,
+        yonghong.song@linux.dev, john.fastabend@gmail.com, kpsingh@kernel.org,
+        sdf@fomichev.me, haoluo@google.com, jolsa@kernel.org,
+        christophe.leroy@csgroup.eu, naveen@kernel.org, maddy@linux.ibm.com,
+        mpe@ellerman.id.au, npiggin@gmail.com, memxor@gmail.com,
+        iii@linux.ibm.com, shuah@kernel.org
+Subject: [PATCH v4 3/6] powerpc64/bpf: Avoid tailcall restore from trampoline
+Date: Fri, 23 Jan 2026 02:48:51 +0530
+Message-ID: <20260122211854.5508-4-adubey@linux.ibm.com>
+X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20260122211854.5508-1-adubey@linux.ibm.com>
+References: <20260122211854.5508-1-adubey@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,217 +101,70 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: GPwLLMBfru7JZbASjB3ZK79lwNgowuaC
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTIyMDE2MiBTYWx0ZWRfX7jrp/6j5IKgq
+ nkjEL6fWOb1cwK6VUJk2BEww/LuWV96XbkNN0i7ejG0M/GhsC9E+NsBaKloHr/sRiJGEVQZQA/V
+ qqrWeKhE9ZWOefMjeOYb/tzRHNtGOmpj0bEnsmJW1cC/ITFSi4+i9/AipNsVBvxOi08x5EzjUbK
+ +kG4NCcELPN9S1dfqNNCRC/eykiqaVxlqGRFbpxC+SXgul13RYro8Pa82bsi07EbdnLX/yathMd
+ lC2GtEjPCcem9jhIKe6iGU4epwgA8Pg1zLft6jOc/kw2JrlzxvG09EQPU9XMKdD1C+gZTQrulrZ
+ uFAafwsOlpp0Yss+TlsjXT0bnauFpYWDtW3Plh4UmzOjwIMPkQlAyvwz/dX43onoaVE8rn7yqG3
+ 9V1PIE9I5A61UAiq22tRRW4BX62u+/DxPlqenqxeayhza7bTRg5miXwbmPo9s4jUjlFZMnTAbIC
+ WaxSpc8101QXgN1Q+Pw==
+X-Authority-Analysis: v=2.4 cv=J9SnLQnS c=1 sm=1 tr=0 ts=69729476 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=vUbySO9Y5rIA:10 a=VkNPw1HP01LnGYTKEx00:22 a=VnNF1IyMAAAA:8
+ a=yUNxoNuUyiXgUDPvJtcA:9
+X-Proofpoint-ORIG-GUID: qfme069ZT8EvMbnwutMdsEnYi-f7akUY
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.20,FMLib:17.12.100.49
- definitions=2026-01-22_01,2026-01-22_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0 mlxscore=0 adultscore=0
- phishscore=0 suspectscore=0 spamscore=0 mlxlogscore=999 bulkscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2601150000
- definitions=main-2601220098
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTIyMDA5NiBTYWx0ZWRfX52jA4HJu4E7K
- YXMoMji/HCQuhPKrKAIX/mYswMggY9iCnKrmwdIM/6mn+9Lt3YVsB1DNv0NgvfyqqtthgUvGbm/
- 57WVWqCXUWdE3pGavY519iKXoAQzJ5boBptsHd+xNVtBhi1k+k3vjMZCywr6jVix+KA495sSPoF
- l7Dhqn3Jr9uSc3XPQgW2jD/g5vG8jI26FWylNfFMY/qg225wFFNO3ByPJI5azDVqjH9EC2bT8xT
- e0BrkfVgCslzxwA97ZMDZZ+WPBQK9A/R5/Iw4opFPfqbkkUgLxd40mLACbnV0C+wC6AWY37Bn+j
- lezvSaI6JStoT0TeCOS/xQHMdl6zj59mWPXRfU9VVNYJuObqI396ieS03eOtgnUgJBQe2SJR1Pk
- sMlqYZVDWtMtWHirAujY71DqPIz+icPq1EpPqKjOgkelOoBPKaRJ8IRMgQON4OzO5AF7rlMJBki
- 4SsGD1O19WzV2oehFuQ==
-X-Authority-Analysis: v=2.4 cv=de6NHHXe c=1 sm=1 tr=0 ts=697221b6 cx=c_pps
- a=XiAAW1AwiKB2Y8Wsi+sD2Q==:117 a=XiAAW1AwiKB2Y8Wsi+sD2Q==:17
- a=IkcTkHD0fZMA:10 a=vUbySO9Y5rIA:10 a=M51BFTxLslgA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=yPCof4ZbAAAA:8 a=CF6WusRKGoJ8OkfercgA:9
- a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: yXe7wd63ys3MNZY58qSg4iGD59Ki9CQA
-X-Proofpoint-GUID: yXe7wd63ys3MNZY58qSg4iGD59Ki9CQA
+ definitions=2026-01-22_05,2026-01-22_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 impostorscore=0 adultscore=0 suspectscore=0 spamscore=0
+ lowpriorityscore=0 malwarescore=0 clxscore=1015 bulkscore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2601150000 definitions=main-2601220162
 
-program_hpx_type2() is today unconditionally called, despite the fact
-that when the _HPX was added to the ACPI spec. v3.0, the description
-stated:
+From: Abhishek Dubey <adubey@linux.ibm.com>
 
- OSPM [1] will only evaluate _HPX with Setting Record – Type 2 if OSPM
- is not controlling the PCI Express Advanced Error Reporting
- capability.
+Back propagation of tailcall count is no longer needed for
+powerpc64 due to use of reference, which updates the tailcall
+count in the tail_call_info field in the frame of the main
+program only.
 
-Hence, we only call program_hpx_type2() when the OSPM owns the PCIe
-hotplug capability but not the AER.
+Back propagation is still required for 32-bit powerpc.
 
-The Advanced Configuration and Power Interface (ACPI) Specification
-version 6.6 has a provision that gives the OSPM the ability to control
-the other PCIe Device Control bits any way. In a note in section
-6.2.9, it is stated:
-
-"OSPM may override the settings provided by the _HPX object's Type2
-record (PCI Express Settings) or Type3 record (PCI Express Descriptor
-Settings) when OSPM has assumed native control of the corresponding
-feature."
-
-So, in order to preserve the non-AER bits in PCIe Device Control, in
-particular the performance sensitive ExtTag and RO, we make sure
-program_hpx_type2() if called, doesn't modify any non-AER bits.
-
-Also, when program_hpx_type2() is called, we completely avoid
-modifying any bits in the Link Control register. However, if the _HPX
-type 2 records contains bits indicating such modifications, we print
-an info message.
-
-[1] Operating System-directed configuration and Power Management
-
-Fixes: 40abb96c51bb ("[PATCH] pciehp: Fix programming hotplug parameters")
-Signed-off-by: Håkon Bugge <haakon.bugge@oracle.com>
-
+Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
 ---
+ arch/powerpc/net/bpf_jit_comp.c | 13 +++++--------
+ 1 file changed, 5 insertions(+), 8 deletions(-)
 
-v2 -> v3:
-   * No changes
-
-v1 -> v2:
-   * Fixed comment style
-   * Simplified the and/or logic when programming the Device Control
-     register
-   * Fixed the incorrect and brutal warning about Link Control
-     register bits set and changed it to an info message about _HPX
-     attempting to set/reset bits therein.
-   * Removed the RCB programming from program_hpx_type2()
-   * Moved the PCI_EXP_AER_FLAGS definition from
-     drivers/pci/pcie/aer.c to drivers/pci/pci.h
----
- drivers/pci/pci-acpi.c | 61 +++++++++++++++++++-----------------------
- drivers/pci/pci.h      |  3 +++
- drivers/pci/pcie/aer.c |  3 ---
- 3 files changed, 30 insertions(+), 37 deletions(-)
-
-diff --git a/drivers/pci/pci-acpi.c b/drivers/pci/pci-acpi.c
-index 9369377725fa0..34ea22f65a410 100644
---- a/drivers/pci/pci-acpi.c
-+++ b/drivers/pci/pci-acpi.c
-@@ -271,21 +271,6 @@ static acpi_status decode_type1_hpx_record(union acpi_object *record,
- 	return AE_OK;
- }
- 
--static bool pcie_root_rcb_set(struct pci_dev *dev)
--{
--	struct pci_dev *rp = pcie_find_root_port(dev);
--	u16 lnkctl;
--
--	if (!rp)
--		return false;
--
--	pcie_capability_read_word(rp, PCI_EXP_LNKCTL, &lnkctl);
--	if (lnkctl & PCI_EXP_LNKCTL_RCB)
--		return true;
--
--	return false;
--}
--
- /* _HPX PCI Express Setting Record (Type 2) */
- struct hpx_type2 {
- 	u32 revision;
-@@ -311,6 +296,7 @@ static void program_hpx_type2(struct pci_dev *dev, struct hpx_type2 *hpx)
+diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+index 93355ba5382a..1a305f0fed27 100644
+--- a/arch/powerpc/net/bpf_jit_comp.c
++++ b/arch/powerpc/net/bpf_jit_comp.c
+@@ -662,14 +662,11 @@ static void bpf_trampoline_setup_tail_call_info(u32 *image, struct codegen_conte
+ static void bpf_trampoline_restore_tail_call_cnt(u32 *image, struct codegen_context *ctx,
+ 						 int func_frame_offset, int r4_off)
  {
- 	int pos;
- 	u32 reg32;
-+	const struct pci_host_bridge *host;
- 
- 	if (!hpx)
- 		return;
-@@ -318,6 +304,15 @@ static void program_hpx_type2(struct pci_dev *dev, struct hpx_type2 *hpx)
- 	if (!pci_is_pcie(dev))
- 		return;
- 
-+	host = pci_find_host_bridge(dev->bus);
-+
-+	/*
-+	 * We only do the HP programming if we own the PCIe native
-+	 * hotplug and not the AER ownership
-+	 */
-+	if (!host->native_pcie_hotplug || host->native_aer)
-+		return;
-+
- 	if (hpx->revision > 1) {
- 		pci_warn(dev, "PCIe settings rev %d not supported\n",
- 			 hpx->revision);
-@@ -325,33 +320,31 @@ static void program_hpx_type2(struct pci_dev *dev, struct hpx_type2 *hpx)
- 	}
- 
- 	/*
--	 * Don't allow _HPX to change MPS or MRRS settings.  We manage
--	 * those to make sure they're consistent with the rest of the
-+	 * We only allow _HPX to program the AER registers, namely
-+	 * PCI_EXP_DEVCTL_CERE, PCI_EXP_DEVCTL_NFERE,
-+	 * PCI_EXP_DEVCTL_FERE, and PCI_EXP_DEVCTL_URRE.
-+	 *
-+	 * The other settings in PCIe DEVCTL are managed by OS in
-+	 * order to make sure they're consistent with the rest of the
- 	 * platform.
- 	 */
--	hpx->pci_exp_devctl_and |= PCI_EXP_DEVCTL_PAYLOAD |
--				    PCI_EXP_DEVCTL_READRQ;
--	hpx->pci_exp_devctl_or &= ~(PCI_EXP_DEVCTL_PAYLOAD |
--				    PCI_EXP_DEVCTL_READRQ);
-+	hpx->pci_exp_devctl_and |= ~PCI_EXP_AER_FLAGS;
-+	hpx->pci_exp_devctl_or &= PCI_EXP_AER_FLAGS;
- 
- 	/* Initialize Device Control Register */
- 	pcie_capability_clear_and_set_word(dev, PCI_EXP_DEVCTL,
- 			~hpx->pci_exp_devctl_and, hpx->pci_exp_devctl_or);
- 
--	/* Initialize Link Control Register */
-+	/* Log if _HPX attempts to modify PCIe Link Control register */
- 	if (pcie_cap_has_lnkctl(dev)) {
+-	if (IS_ENABLED(CONFIG_PPC64)) {
+-		/* See bpf_jit_stack_tailcallcnt() */
+-		int tailcallcnt_offset = BPF_PPC_TAILCALL;
 -
--		/*
--		 * If the Root Port supports Read Completion Boundary of
--		 * 128, set RCB to 128.  Otherwise, clear it.
--		 */
--		hpx->pci_exp_lnkctl_and |= PCI_EXP_LNKCTL_RCB;
--		hpx->pci_exp_lnkctl_or &= ~PCI_EXP_LNKCTL_RCB;
--		if (pcie_root_rcb_set(dev))
--			hpx->pci_exp_lnkctl_or |= PCI_EXP_LNKCTL_RCB;
--
--		pcie_capability_clear_and_set_word(dev, PCI_EXP_LNKCTL,
--			~hpx->pci_exp_lnkctl_and, hpx->pci_exp_lnkctl_or);
-+		if (hpx->pci_exp_lnkctl_and)
-+			pci_info(dev,
-+				 "_HPX attempts to reset the following bits in PCIe Link Control: 0x%04x\n",
-+				 hpx->pci_exp_lnkctl_and);
-+		if (hpx->pci_exp_lnkctl_or)
-+			pci_info(dev,
-+				 "_HPX attempts to set the following bits in PCIe Link Control: 0x%04x\n",
-+				 hpx->pci_exp_lnkctl_or);
+-		EMIT(PPC_RAW_LL(_R3, _R1, -tailcallcnt_offset));
+-		EMIT(PPC_RAW_STL(_R3, _R1, func_frame_offset - tailcallcnt_offset));
+-	} else {
+-		/* See bpf_jit_stack_offsetof() and BPF_PPC_TC */
++	if (IS_ENABLED(CONFIG_PPC32)) {
++		/*
++		 * Restore tailcall for 32-bit powerpc
++		 * See bpf_jit_stack_offsetof() and BPF_PPC_TC
++		 */
+ 		EMIT(PPC_RAW_STL(_R4, _R1, r4_off));
  	}
- 
- 	/* Find Advanced Error Reporting Enhanced Capability */
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index 0e67014aa0013..f388d4414dd3a 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -88,6 +88,9 @@ struct pcie_tlp_log;
- #define PCI_BUS_BRIDGE_MEM_WINDOW	1
- #define PCI_BUS_BRIDGE_PREF_MEM_WINDOW	2
- 
-+#define	PCI_EXP_AER_FLAGS	(PCI_EXP_DEVCTL_CERE | PCI_EXP_DEVCTL_NFERE | \
-+				 PCI_EXP_DEVCTL_FERE | PCI_EXP_DEVCTL_URRE)
-+
- extern const unsigned char pcie_link_speed[];
- extern bool pci_early_dump;
- 
-diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-index e0bcaa896803c..9472d86cef552 100644
---- a/drivers/pci/pcie/aer.c
-+++ b/drivers/pci/pcie/aer.c
-@@ -239,9 +239,6 @@ void pcie_ecrc_get_policy(char *str)
  }
- #endif	/* CONFIG_PCIE_ECRC */
- 
--#define	PCI_EXP_AER_FLAGS	(PCI_EXP_DEVCTL_CERE | PCI_EXP_DEVCTL_NFERE | \
--				 PCI_EXP_DEVCTL_FERE | PCI_EXP_DEVCTL_URRE)
--
- int pcie_aer_is_native(struct pci_dev *dev)
- {
- 	struct pci_host_bridge *host = pci_find_host_bridge(dev->bus);
 -- 
-2.43.5
+2.48.1
 
 
