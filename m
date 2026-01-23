@@ -1,22 +1,22 @@
-Return-Path: <linuxppc-dev+bounces-16185-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16186-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F311FD6CFBD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Jan 2026 06:07:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1C07D6CFDB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Jan 2026 06:07:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dy6t43MXhz2yFK;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dy6t441Xpz2yFQ;
 	Fri, 23 Jan 2026 17:07:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.84
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769148476;
-	cv=none; b=nNC/E8DB8cPGevzcbkDTbnT0RV1X0d21zhYdcy1aVi0Dgv/A4HR1/W2bt8x8FKUWbXKRpuCThkgRvbCn1VNfwAo1H9C0QIrdiiqPXiFhSlMAChHx+bOJX1ZlXSiMw+o1cK5DEK+0YALb8K1tDJWjGXnWKySYOefRU73OnxZ86i65nxSEfhi2NPWrHQdSaPpmbfisegYuXrg6y9ht4GDcndbEVQ7SQXATJxAXPI4g+pEw3V4GJTEuulNzUFzWQfJ9UB6xW5zbFi9ktCr4rBYCqMNQhrgVUvAfA8z+LnM2DQ8b19tdY+xqY2aDdLRZxt8CHaVbX8d9Y3ZuU8/W7S1xpw==
+	cv=none; b=KIYINTWoWyANMVXi6Ntz5R/TjwzGdYiQhgRxjoQKAx1qPelNMqArhPrTTMm3ehN4dlbBNNi1edPMz8tyAsPNTyn+YUq6PE7IXBwoO7ntNrm/LYum2lW72bcwLxcqYsM/NcBrIx4O+PpKAR61apH8XqwTsmEmUGLCHB9xjj6m+8myk4WxMFzmi47KdUqKipADLkGvwhRqjhyBHCGfMoU/Uum/6uZwqHs5T6k8EQyUxx6LfBTMyGDMxRfJmJRfxqds7fYbgBekwSzHFinicaAq3BkBbjIHzCl1BXsrQSr2lhP6jajeHsJBf4KipTWSD9erQMoEMmBNkwIgw+IBJihRaw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1769148476; c=relaxed/relaxed;
-	bh=sHgLEs11Mp2ci0mVwb1VDtNCb25py+3iMA/PJvDn2Nw=;
+	bh=4psgDjU9u45SsnOSV2VDYaPRYCxhu40F7D93NclUoHo=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=BuzeNkgfexnI4ThZ1Nb3K3ffQQo5ywUugEvwBJtjF2DWfPt8imcgdPE0KDrQtcjSo+21/GV9BoxW8aUUZoMjMIWPvszHdIh0tffPDqYE09zNwoCSRR8c/TY0Z2V88c2BCN2LC5SlvUxJT7GseyWGmlNroQ7FdpNFTieRZHsUlCSvcE9SjEjiEPbYQ9ZTr0pzjVHPYwvcuLdbMh44z0MG+1PRivZUR42YPgg85/XHeV0jidXHdSvs4jBkDzOta4J9y/6ABQhTcM14QgJqjwmsBgpBh1/5gIWxcKCDGvW6dlIuCrjsL37qFPh0q2BWY3sq+YwwDysgndPDyzF7WZpAeA==
+	 In-Reply-To:To:Cc; b=IhHDZIwNERhNJAzyEPHCZ3cfHdxC93ViaxlL22DaaKARB+NwJrp2JT8r6WYrq0c9otH1CXvloPsAIYJkbKmbO3ziWsfJmE3hyr+6Ureit7YS1bp0unbN3V/6BO3G9Ffpa6e8ljiAw+hgVw+K2HwJzbYdYbDUfwhbbJHf3hhyK7Escbev8EOmDBf/skjivFnVmfy6N/EGhy5mFNzGWzSD85Jxju+Bzy8ueOUWl/kj5kHZj+/RBvCPV7h9dgfN+9TVwbc77TJE1VWCB3q6FhbXoMB5IVvQQoyapfLSVgFKwzF1ZkFTKFrW2LCWLvuY16Zgw6o9UT2GfaXtmaxBPth5Bg==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass (client-ip=159.226.251.84; helo=cstnet.cn; envelope-from=wangruikang@iscas.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=iscas.ac.cn
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iscas.ac.cn (client-ip=159.226.251.84; helo=cstnet.cn; envelope-from=wangruikang@iscas.ac.cn; receiver=lists.ozlabs.org)
@@ -24,14 +24,15 @@ Received: from cstnet.cn (unknown [159.226.251.84])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dy6t31T9Qz2xJ5
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dy6t31QCWz2xHt
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2026 17:07:54 +1100 (AEDT)
 Received: from [127.0.0.2] (unknown [210.73.43.101])
-	by APP-05 (Coremail) with SMTP id zQCowACnPBAiEHNp9tMuBg--.1678S6;
-	Fri, 23 Jan 2026 14:07:33 +0800 (CST)
+	by APP-05 (Coremail) with SMTP id zQCowACnPBAiEHNp9tMuBg--.1678S3;
+	Fri, 23 Jan 2026 14:07:32 +0800 (CST)
 From: Vivian Wang <wangruikang@iscas.ac.cn>
-Date: Fri, 23 Jan 2026 14:07:31 +0800
-Subject: [PATCH v3 4/4] ALSA: hda/intel: Raise msi_addr_mask to dma_bits
+Date: Fri, 23 Jan 2026 14:07:28 +0800
+Subject: [PATCH v3 1/4] PCI/MSI: Conservatively generalize no_64bit_msi
+ into msi_addr_mask
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -47,7 +48,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260123-pci-msi-addr-mask-v3-4-9f9baa048524@iscas.ac.cn>
+Message-Id: <20260123-pci-msi-addr-mask-v3-1-9f9baa048524@iscas.ac.cn>
 References: <20260123-pci-msi-addr-mask-v3-0-9f9baa048524@iscas.ac.cn>
 In-Reply-To: <20260123-pci-msi-addr-mask-v3-0-9f9baa048524@iscas.ac.cn>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>, 
@@ -69,72 +70,216 @@ Cc: Han Gao <gaohan@iscas.ac.cn>, Vivian Wang <wangruikang@iscas.ac.cn>,
  linux-riscv@lists.infradead.org, sophgo@lists.linux.dev, 
  Takashi Iwai <tiwai@suse.de>
 X-Mailer: b4 0.14.3
-X-CM-TRANSID:zQCowACnPBAiEHNp9tMuBg--.1678S6
-X-Coremail-Antispam: 1UD129KBjvJXoW7tF4kGw18tr47AF4fZryrJFb_yoW8Ww17pa
-	1UWay3tF4jqFW5Ga1kKa1DZF13CFWFkwn8GrW8K34fKa4Yvr10gryakr1xJa4xGF4vgw1Y
-	vrWjv3W8WF45Za7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUmS14x267AKxVWrJVCq3wAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2048vs2IY020E87I2jVAFwI0_JF0E3s1l82xGYI
-	kIc2x26xkF7I0E14v26ryj6s0DM28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8wA2
-	z4x0Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr1j6F
-	4UJwA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY1x0267AKxVW0oVCq
-	3wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0I7
-	IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAFwI0_Gr0_Cr1lOx8S6xCaFVCjc4AY6r1j6r4U
-	M4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IErcIFxwACI402YVCY1x02628vn2
-	kIc2xKxwCY1x0262kKe7AKxVW8ZVWrXwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkE
-	bVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67
-	AF67kF1VAFwI0_GFv_WrylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI
-	42IY6xIIjxv20xvEc7CjxVAFwI0_Gr1j6F4UJwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF
-	4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8Jr0_Cr1UYxBI
-	daVFxhVjvjDU0xZFpf9x0pRxOzhUUUUU=
+X-CM-TRANSID:zQCowACnPBAiEHNp9tMuBg--.1678S3
+X-Coremail-Antispam: 1UD129KBjvJXoWxtF17JryDZw4UKrykKr15Jwb_yoW3Wr45pa
+	yDCFWfKrWrK3yUJayqy3WUuF13Xan093yfWrWUK3sa93ZIvFyUXFn7try7Jwn7XrsrCF1a
+	vFyUKw4UWFnxX3JanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUm014x267AKxVWrJVCq3wAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2048vs2IY020E87I2jVAFwI0_Jr4l82xGYIkIc2
+	x26xkF7I0E14v26ryj6s0DM28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8wA2z4x0
+	Y4vE2Ix0cI8IcVAFwI0_Xr0_Ar1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Cr0_Gr1UM2
+	8EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s0DM2AI
+	xVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xIIjxv20x
+	vE14v26r1j6r18McIj6I8E87Iv67AKxVW8JVWxJwAm72CE4IkC6x0Yz7v_Jr0_Gr1lF7xv
+	r2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7M4IIrI8v6xkF7I0E8cxan2IY04
+	v7MxkF7I0En4kS14v26r4a6rW5MxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j
+	6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7
+	AF67AKxVW8ZVWrXwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE
+	2Ix0cI8IcVCY1x0267AKxVWxJVW8Jr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0x
+	vEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVj
+	vjDU0xZFpf9x0pRVOJOUUUUU=
 X-Originating-IP: [210.73.43.101]
 X-CM-SenderInfo: pzdqw2pxlnt03j6l2u1dvotugofq/
 
-The code was originally written using no_64bit_msi, which restricts the
-device to 32-bit MSI addresses.
+Some PCI devices have PCI_MSI_FLAGS_64BIT in the MSI capability, but
+implement less than 64 address bits. This breaks on platforms where such
+a device is assigned an MSI address higher than what's reachable.
 
-Since msi_addr_mask is introduced, use DMA_BIT_MASK(dma_bits) instead of
-DMA_BIT_MASK(32) here for msi_addr_mask, describing the restriction more
-precisely and allowing these devices to work on platforms with MSI
-doorbell address above 32-bit space, as long as it is within the
-hardware's addressable space.
+Currently, we deal with this with a single no_64bit_msi flag, and
+(notably on powerpc) forces 32-bit MSI address for these devices.
+However, on some platforms the MSI doorbell address is above 32-bit but
+within device ability.
+
+As a first step to enabling MSI on those combinations of devices and
+platforms, conservatively generalize the single-bit flag no_64bit_msi
+into msi_addr_mask. (The name msi_addr_mask is chosen to avoid confusion
+with msi_mask.)
+
+The translation is essentially:
+
+- no_64bit_msi = 1    ->    msi_addr_mask = DMA_BIT_MASK(32)
+- no_64bit_msi = 0    ->    msi_addr_mask = DMA_BIT_MASK(64)
+- if (no_64bit_msi)   ->    if (msi_addr_mask < DMA_BIT_MASK(64))
+
+Since no values other than DMA_BIT_MASK(32) and DMA_BIT_MASK(64) is
+used, no functional change is intended. Future patches that make use of
+intermediate values of msi_addr_mask will follow, allowing devices that
+cannot use full 64-bit addresses for MSI to work on platforms with MSI
+doorbell above 32-bit address space.
 
 Acked-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Vivian Wang <wangruikang@iscas.ac.cn>
 ---
 v3: Add Acked-by, no code changes
----
- sound/hda/controllers/intel.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/sound/hda/controllers/intel.c b/sound/hda/controllers/intel.c
-index c9542ebdf7e2..a44de2306a2b 100644
---- a/sound/hda/controllers/intel.c
-+++ b/sound/hda/controllers/intel.c
-@@ -1903,11 +1903,6 @@ static int azx_first_init(struct azx *chip)
- 		chip->gts_present = true;
+checkpatch complains about the comment include/linux/pci.h, which I have
+formatted similarly with other comments in the vicinity.
+---
+ arch/powerpc/platforms/powernv/pci-ioda.c           | 2 +-
+ arch/powerpc/platforms/pseries/msi.c                | 4 ++--
+ drivers/gpu/drm/radeon/radeon_irq_kms.c             | 2 +-
+ drivers/net/ethernet/pensando/ionic/ionic_bus_pci.c | 2 +-
+ drivers/pci/msi/msi.c                               | 2 +-
+ drivers/pci/msi/pcidev_msi.c                        | 2 +-
+ drivers/pci/probe.c                                 | 7 +++++++
+ include/linux/pci.h                                 | 8 +++++++-
+ sound/hda/controllers/intel.c                       | 2 +-
+ 9 files changed, 22 insertions(+), 9 deletions(-)
+
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index b0c1d9d16fb5..1c78fdfb7b03 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1666,7 +1666,7 @@ static int __pnv_pci_ioda_msi_setup(struct pnv_phb *phb, struct pci_dev *dev,
+ 		return -ENXIO;
+ 
+ 	/* Force 32-bit MSI on some broken devices */
+-	if (dev->no_64bit_msi)
++	if (dev->msi_addr_mask < DMA_BIT_MASK(64))
+ 		is_64 = 0;
+ 
+ 	/* Assign XIVE to PE */
+diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
+index a82aaa786e9e..7473c7ca1db0 100644
+--- a/arch/powerpc/platforms/pseries/msi.c
++++ b/arch/powerpc/platforms/pseries/msi.c
+@@ -383,7 +383,7 @@ static int rtas_prepare_msi_irqs(struct pci_dev *pdev, int nvec_in, int type,
+ 	 */
+ again:
+ 	if (type == PCI_CAP_ID_MSI) {
+-		if (pdev->no_64bit_msi) {
++		if (pdev->msi_addr_mask < DMA_BIT_MASK(64)) {
+ 			rc = rtas_change_msi(pdn, RTAS_CHANGE_32MSI_FN, nvec);
+ 			if (rc < 0) {
+ 				/*
+@@ -409,7 +409,7 @@ static int rtas_prepare_msi_irqs(struct pci_dev *pdev, int nvec_in, int type,
+ 		if (use_32bit_msi_hack && rc > 0)
+ 			rtas_hack_32bit_msi_gen2(pdev);
+ 	} else {
+-		if (pdev->no_64bit_msi)
++		if (pdev->msi_addr_mask < DMA_BIT_MASK(64))
+ 			rc = rtas_change_msi(pdn, RTAS_CHANGE_32MSIX_FN, nvec);
+ 		else
+ 			rc = rtas_change_msi(pdn, RTAS_CHANGE_MSIX_FN, nvec);
+diff --git a/drivers/gpu/drm/radeon/radeon_irq_kms.c b/drivers/gpu/drm/radeon/radeon_irq_kms.c
+index 9961251b44ba..d550554a6f3f 100644
+--- a/drivers/gpu/drm/radeon/radeon_irq_kms.c
++++ b/drivers/gpu/drm/radeon/radeon_irq_kms.c
+@@ -252,7 +252,7 @@ static bool radeon_msi_ok(struct radeon_device *rdev)
+ 	 */
+ 	if (rdev->family < CHIP_BONAIRE) {
+ 		dev_info(rdev->dev, "radeon: MSI limited to 32-bit\n");
+-		rdev->pdev->no_64bit_msi = 1;
++		rdev->pdev->msi_addr_mask = DMA_BIT_MASK(32);
+ 	}
+ 
+ 	/* force MSI on */
+diff --git a/drivers/net/ethernet/pensando/ionic/ionic_bus_pci.c b/drivers/net/ethernet/pensando/ionic/ionic_bus_pci.c
+index 70d86c5f52fb..0671deae9a28 100644
+--- a/drivers/net/ethernet/pensando/ionic/ionic_bus_pci.c
++++ b/drivers/net/ethernet/pensando/ionic/ionic_bus_pci.c
+@@ -331,7 +331,7 @@ static int ionic_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ #ifdef CONFIG_PPC64
+ 	/* Ensure MSI/MSI-X interrupts lie within addressable physical memory */
+-	pdev->no_64bit_msi = 1;
++	pdev->msi_addr_mask = DMA_BIT_MASK(32);
  #endif
  
--	if (chip->msi && chip->driver_caps & AZX_DCAPS_NO_MSI64) {
--		dev_dbg(card->dev, "Disabling 64bit MSI\n");
--		pci->msi_addr_mask = DMA_BIT_MASK(32);
--	}
--
- 	pci_set_master(pci);
+ 	err = ionic_setup_one(ionic);
+diff --git a/drivers/pci/msi/msi.c b/drivers/pci/msi/msi.c
+index 34d664139f48..48f5f03d1479 100644
+--- a/drivers/pci/msi/msi.c
++++ b/drivers/pci/msi/msi.c
+@@ -322,7 +322,7 @@ static int msi_verify_entries(struct pci_dev *dev)
+ {
+ 	struct msi_desc *entry;
  
- 	gcap = azx_readw(chip, GCAP);
-@@ -1958,6 +1953,11 @@ static int azx_first_init(struct azx *chip)
- 		dma_set_mask_and_coherent(&pci->dev, DMA_BIT_MASK(32));
- 	dma_set_max_seg_size(&pci->dev, UINT_MAX);
+-	if (!dev->no_64bit_msi)
++	if (dev->msi_addr_mask == DMA_BIT_MASK(64))
+ 		return 0;
  
-+	if (chip->msi && chip->driver_caps & AZX_DCAPS_NO_MSI64) {
-+		dev_dbg(card->dev, "Restricting MSI to %u-bit\n", dma_bits);
-+		pci->msi_addr_mask = DMA_BIT_MASK(dma_bits);
-+	}
-+
- 	/* read number of streams from GCAP register instead of using
- 	 * hardcoded value
+ 	msi_for_each_desc(entry, &dev->dev, MSI_DESC_ALL) {
+diff --git a/drivers/pci/msi/pcidev_msi.c b/drivers/pci/msi/pcidev_msi.c
+index 5520aff53b56..0b0346813092 100644
+--- a/drivers/pci/msi/pcidev_msi.c
++++ b/drivers/pci/msi/pcidev_msi.c
+@@ -24,7 +24,7 @@ void pci_msi_init(struct pci_dev *dev)
+ 	}
+ 
+ 	if (!(ctrl & PCI_MSI_FLAGS_64BIT))
+-		dev->no_64bit_msi = 1;
++		dev->msi_addr_mask = DMA_BIT_MASK(32);
+ }
+ 
+ void pci_msix_init(struct pci_dev *dev)
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 41183aed8f5d..a2bff57176a3 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -2047,6 +2047,13 @@ int pci_setup_device(struct pci_dev *dev)
  	 */
+ 	dev->dma_mask = 0xffffffff;
+ 
++	/*
++	 * Assume 64-bit addresses for MSI initially. Will be changed to 32-bit
++	 * if MSI (rather than MSI-X) capability does not have
++	 * PCI_MSI_FLAGS_64BIT. Can also be overridden by driver.
++	 */
++	dev->msi_addr_mask = DMA_BIT_MASK(64);
++
+ 	dev_set_name(&dev->dev, "%04x:%02x:%02x.%d", pci_domain_nr(dev->bus),
+ 		     dev->bus->number, PCI_SLOT(dev->devfn),
+ 		     PCI_FUNC(dev->devfn));
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 864775651c6f..0fe32fef0331 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -377,6 +377,13 @@ struct pci_dev {
+ 					   0xffffffff.  You only need to change
+ 					   this if your device has broken DMA
+ 					   or supports 64-bit transfers.  */
++	u64		msi_addr_mask;	/* Mask of the bits of bus address for
++					   MSI that this device implements.
++					   Normally set based on device
++					   capabilities. You only need to
++					   change this if your device claims
++					   to support 64-bit MSI but implements
++					   fewer than 64 address bits. */
+ 
+ 	struct device_dma_parameters dma_parms;
+ 
+@@ -441,7 +448,6 @@ struct pci_dev {
+ 
+ 	unsigned int	is_busmaster:1;		/* Is busmaster */
+ 	unsigned int	no_msi:1;		/* May not use MSI */
+-	unsigned int	no_64bit_msi:1;		/* May only use 32-bit MSIs */
+ 	unsigned int	block_cfg_access:1;	/* Config space access blocked */
+ 	unsigned int	broken_parity_status:1;	/* Generates false positive parity */
+ 	unsigned int	irq_reroute_variant:2;	/* Needs IRQ rerouting variant */
+diff --git a/sound/hda/controllers/intel.c b/sound/hda/controllers/intel.c
+index 1e8e3d61291a..c9542ebdf7e2 100644
+--- a/sound/hda/controllers/intel.c
++++ b/sound/hda/controllers/intel.c
+@@ -1905,7 +1905,7 @@ static int azx_first_init(struct azx *chip)
+ 
+ 	if (chip->msi && chip->driver_caps & AZX_DCAPS_NO_MSI64) {
+ 		dev_dbg(card->dev, "Disabling 64bit MSI\n");
+-		pci->no_64bit_msi = true;
++		pci->msi_addr_mask = DMA_BIT_MASK(32);
+ 	}
+ 
+ 	pci_set_master(pci);
 
 -- 
 2.52.0
