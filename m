@@ -1,57 +1,125 @@
-Return-Path: <linuxppc-dev+bounces-16253-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16254-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47E2FD778BF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Jan 2026 00:18:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB9EBD77898
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Jan 2026 00:21:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dyb4H3xk8z2yFg;
-	Sat, 24 Jan 2026 11:18:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=210.0.225.12
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769166065;
-	cv=none; b=dWY7v6BJoVAVNk2ji5wz+WW2UTQEaMy1xsMj0UJg26A05YZuWxIgCHOY2Kq0B1bHsfc47pCCv0Q44sPV35868an9i/Cv0l1yxlogwiFNwxvziapW4mRcLodbnrLp97TJSPUxhTuDexd/PmU4Pglde9WnLzXhVRsFNHX0SX/zFliv9j5NazKg5XkfjED5ADhxh5NYftP3+M7UPFim9e7GVzR1tf2TjdyXGA7s3ICw71m2Cs2DWeVcS34yfb1/b4ZTYXMYv8U7tbRv9cEV+MkUEjo1+HsQkFRRl7WHM1MVZczONiZ5JjG1FeSD89ZA5ED7c3KXCLAsQI+s9nuMpeushA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dyb7l6t1yz2yFg;
+	Sat, 24 Jan 2026 11:21:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769214083;
+	cv=none; b=TeqodFIbylv81d8RhAFluUxlarKGAoLi00gnSXq9y9Ge2nZ+TDY0we0dTzCGB00XUyV1AR+IlXCrQu14R9Hb7MQfyK/dlFqZaBaMzWHiq7iqzrXF97ircnbbTlLpgPTOVBKzVikAPgbf9G8obrVA/XpZ5GqxREL1cPqCKRkp8OKMdf9KVgKkzmmIVB+CAR44HjlfAW7oszGySsV/jJChqZ5GVTE0Up6+MXojSUaUvlVX/RcOlkO7bPatXZ7iZKRVbohuTlz7xfEckC5kRN4jOmEcRneHUPE+Q86zapTMk+ZGblgQsd6kkiRqVGLOjJCe/aGF2hvOiBXguHGyD+cviQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1769166065; c=relaxed/relaxed;
-	bh=jzPwbEeeQw2vnJZX7XdQ2MBbz9aV59PxUo9MHT3+/8g=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=O374TOi81flrXchtGdg8cj5HgrRBhrOmiQHZzZTyZu3aZA4CKUdRc9wDGI93dT8b0ekZIpmPrag582izVDuT7vSAm6U56jZMNtYsV1O0YGqKQ4dP87SBe4yQJOtrEPg4SVJw0y56Z5PncEpEgzZQlVNE2vFzbGjiFA8s5jwcAvmNcuni8NHNw3epSXirqg3xfnDKxr8RfElzeqGmppA7DIvZ+TwxEZUf456FcsEtne5s7lmCBi80iwqBlHFK/yJiLhO25ZAWKo5kHakVJ4iZs1oMxPqOya7n1B/hHBmiloadFzuLp9vCHHIbC2WGYcpodhLY6S4so+RkdqZY3Ri4fg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=zhaoxin.com; spf=pass (client-ip=210.0.225.12; helo=mx1.zhaoxin.com; envelope-from=leoliu-oc@zhaoxin.com; receiver=lists.ozlabs.org) smtp.mailfrom=zhaoxin.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=zhaoxin.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zhaoxin.com (client-ip=210.0.225.12; helo=mx1.zhaoxin.com; envelope-from=leoliu-oc@zhaoxin.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 1153 seconds by postgrey-1.37 at boromir; Fri, 23 Jan 2026 22:01:04 AEDT
-Received: from mx1.zhaoxin.com (MX1.ZHAOXIN.COM [210.0.225.12])
+	t=1769214083; c=relaxed/relaxed;
+	bh=xhgLPiYR6xEsxXnQ/SeaMjXXghHvMuOe7YsndhfrobA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 In-Reply-To:Content-Type:Content-Disposition; b=FJsM/moj7Gd2ah+IN40qyi/cA1V7KsyseLgt2xPMHTX9IvYBT+JH7t/dflR0WJmLCUv3GgjgH3aAq2z6SbdwMO+EW+zc1g6elUyD/O1lBNHFxVJzpHXh6mP91mjMXHH/egcMkeIioJ+SoKcpg9dzH2kYjvfMQ14Z+tSTMUnDqi3zA1BzJGYDo5J3Wo+DqWGOZUdaVPBKKFIA5CpyU8D1RoqNtXAuhFhyTEDMHIKm05N+2RDPQiUbrIrtSqQLrC1cmMomTls0T3zL0h3kxeDLIp/32GInUmDn/X7pgR2Fq3los5q7AyysP8giZ0+a/BZWhh98vavpBhxiHWX4RFaBYg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Nh1jvGaU; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Nh1jvGaU; dkim-atps=neutral; spf=temperror (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=coxu@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Nh1jvGaU;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Nh1jvGaU;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=temperror (SPF Temporary Error: DNS Timeout) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=coxu@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dyFNJ4wpVz2x9M
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2026 22:01:02 +1100 (AEDT)
-X-ASG-Debug-ID: 1769164884-086e2306f936500002-v7v7hK
-Received: from ZXSHMBX2.zhaoxin.com (ZXSHMBX2.zhaoxin.com [10.28.252.164]) by mx1.zhaoxin.com with ESMTP id zi7TNQI7lFCBKrup (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NO); Fri, 23 Jan 2026 18:41:27 +0800 (CST)
-X-Barracuda-Envelope-From: LeoLiu-oc@zhaoxin.com
-X-Barracuda-RBL-Trusted-Forwarder: 10.28.252.164
-Received: from ZXSHMBX1.zhaoxin.com (10.28.252.163) by ZXSHMBX2.zhaoxin.com
- (10.28.252.164) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.59; Fri, 23 Jan
- 2026 18:41:26 +0800
-Received: from ZXSHMBX1.zhaoxin.com ([fe80::936:f2f9:9efa:3c85]) by
- ZXSHMBX1.zhaoxin.com ([fe80::936:f2f9:9efa:3c85%7]) with mapi id
- 15.01.2507.059; Fri, 23 Jan 2026 18:41:26 +0800
-X-Barracuda-RBL-Trusted-Forwarder: 10.28.252.164
-Received: from HX007EA1.lan (10.32.64.5) by ZXBJMBX03.zhaoxin.com
- (10.29.252.7) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.59; Fri, 23 Jan
- 2026 18:40:34 +0800
-From: LeoLiu-oc <LeoLiu-oc@zhaoxin.com>
-To: <mahesh@linux.ibm.com>, <oohall@gmail.com>, <bhelgaas@google.com>,
-	<linuxppc-dev@lists.ozlabs.org>, <linux-pci@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>
-CC: <CobeChen@zhaoxin.com>, <TonyWWang@zhaoxin.com>, <ErosZhang@zhaoxin.com>
-Subject: [PATCH] PCI: dpc: Increase pciehp waiting time for DPC recovery
-Date: Fri, 23 Jan 2026 18:40:34 +0800
-X-ASG-Orig-Subj: [PATCH] PCI: dpc: Increase pciehp waiting time for DPC recovery
-Message-ID: <20260123104034.429060-1-LeoLiu-oc@zhaoxin.com>
-X-Mailer: git-send-email 2.43.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dyb7k21TTz2x9M
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jan 2026 11:21:01 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1769214057;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=xhgLPiYR6xEsxXnQ/SeaMjXXghHvMuOe7YsndhfrobA=;
+	b=Nh1jvGaUjRm0atvydNlFFcW0SGiWwOYFpOdTr4FsomtL9qdYU+lsoKPYZQ/oTEFfdVlIFN
+	N+bjUvd+u6NUv4R012H2KaeQ6qtKfPv98GcgZHcSau+9q456oOuIes5Ywj7Z67w+zv8VdE
+	jxe3YXmMkcgTLM5xpkflhgGfV4Frk5c=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1769214057;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=xhgLPiYR6xEsxXnQ/SeaMjXXghHvMuOe7YsndhfrobA=;
+	b=Nh1jvGaUjRm0atvydNlFFcW0SGiWwOYFpOdTr4FsomtL9qdYU+lsoKPYZQ/oTEFfdVlIFN
+	N+bjUvd+u6NUv4R012H2KaeQ6qtKfPv98GcgZHcSau+9q456oOuIes5Ywj7Z67w+zv8VdE
+	jxe3YXmMkcgTLM5xpkflhgGfV4Frk5c=
+Received: from mail-pl1-f198.google.com (mail-pl1-f198.google.com
+ [209.85.214.198]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-142-sX_cGJgLMNS5K8kQ7feH-Q-1; Fri, 23 Jan 2026 19:20:55 -0500
+X-MC-Unique: sX_cGJgLMNS5K8kQ7feH-Q-1
+X-Mimecast-MFC-AGG-ID: sX_cGJgLMNS5K8kQ7feH-Q_1769214054
+Received: by mail-pl1-f198.google.com with SMTP id d9443c01a7336-2a76f2d7744so23237545ad.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2026 16:20:55 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1769214054; x=1769818854;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=xhgLPiYR6xEsxXnQ/SeaMjXXghHvMuOe7YsndhfrobA=;
+        b=qzW+vBgtAGaJViRtRTxTPJ0CqHImSb8VeiofJIFXQ1Mo19Qp4lkGBjauVrP/hQPsyS
+         sZlKNUcUqaQHIdOcAVFZvSEeKub/HABZxjNyRxtHLirqA1XW8J/+AJITW3wGtwHDD0k8
+         ywXTlfiVtnrxt3wdYpl8C5GUxAwTyjKyxidJqZ7ZLnPnGAqT6LKUzl4Y+Hryf1c2pv4g
+         u+weacp4BHAYJiFThB9nWfcGWaTMqQr2ETVKa9Na3AtO1ux1rJEvX1jCrH66WqpJVLlU
+         ct8Zd9jivrznEYtHFyd+dnaCzCooF+ALYe6rUlIcX+0/I8gI4uHnUkYkHXiJ+hEZOqev
+         x9Nw==
+X-Forwarded-Encrypted: i=1; AJvYcCVXHrB1mZ/5F9sNRpgS2eV11Ki/FxMLtS+hiZctn6C02QdCttqPbqox9k6qM+rqqmttiHWP1x38PIOqtQ4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxQ6CbV0nqHrB9zhJ4Ob9gPrq7vOQmg1kO3hQDgylmMx/DYiwsY
+	nmk317eVACMbL0DveeOjkgu7QeyTteAwsAeIrezvHLBbhilSd6/bsYHAlJmhf2wDJKRIt/1TT8/
+	gjnZjaKWGyCZdG7YRQEw4vl4TBBEqDMX4YVtSOcvGNR0mYO4WvuycL/7b6Brq5jN98kw=
+X-Gm-Gg: AZuq6aLMNm5srMw4inU74QqM0lrhucEx+RQLIXsQMJPDaQEiogK8xl5dQD7Om8+6BRa
+	Sg9OtuLdUTPwySfTJJMXGyKbzAD3yM3UYchPIx/HFBtSmJjG8WX8ecba+DCCKwhw7CLwJIivBKK
+	dsvYmpv9UN1OSApEhe17ovD2NPAa/AdQvDKzLww/2BcIAOYUo2ROBdOa6OIsncniMyytH9bV1cR
+	OlUr6tNEIm8MpodEqh9u5MvLYKQKvKLQ1ABWkrnmwoCZKDk894OJu9T4WB57zol2F3BnGRbZFOn
+	R5kKigyqSAGhLrxRkIMF8jYKb5kVbX8zf0B76Nv0NsXnTwC8QOaP/jRTWDZmmJYKt8jvXyGPKdO
+	k
+X-Received: by 2002:a17:902:e54d:b0:2a7:682b:50ac with SMTP id d9443c01a7336-2a7fe625118mr44257365ad.28.1769214054347;
+        Fri, 23 Jan 2026 16:20:54 -0800 (PST)
+X-Received: by 2002:a17:902:e54d:b0:2a7:682b:50ac with SMTP id d9443c01a7336-2a7fe625118mr44257045ad.28.1769214053812;
+        Fri, 23 Jan 2026 16:20:53 -0800 (PST)
+Received: from localhost ([209.132.188.88])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a802faf6f9sm29695045ad.71.2026.01.23.16.20.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 23 Jan 2026 16:20:53 -0800 (PST)
+Date: Sat, 24 Jan 2026 08:18:46 +0800
+From: Coiby Xu <coxu@redhat.com>
+To: Ard Biesheuvel <ardb@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>
+Cc: Dave Hansen <dave.hansen@intel.com>, linux-integrity@vger.kernel.org, 
+	Heiko Carstens <hca@linux.ibm.com>, Roberto Sassu <roberto.sassu@huaweicloud.com>, 
+	Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+	Vasily Gorbik <gor@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, 
+	Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>, 
+	Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, 
+	"maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <x86@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, 
+	Roberto Sassu <roberto.sassu@huawei.com>, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>, 
+	Eric Snowberg <eric.snowberg@oracle.com>, Paul Moore <paul@paul-moore.com>, 
+	James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, 
+	Jarkko Sakkinen <jarkko@kernel.org>, 
+	"moderated list:ARM64 PORT (AARCH64 ARCHITECTURE)" <linux-arm-kernel@lists.infradead.org>, open list <linux-kernel@vger.kernel.org>, 
+	"open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>, "open list:S390 ARCHITECTURE" <linux-s390@vger.kernel.org>, 
+	"open list:EXTENSIBLE FIRMWARE INTERFACE (EFI)" <linux-efi@vger.kernel.org>, 
+	"open list:SECURITY SUBSYSTEM" <linux-security-module@vger.kernel.org>, "open list:KEYS/KEYRINGS_INTEGRITY" <keyrings@vger.kernel.org>
+Subject: Re: [PATCH 1/3] integrity: Make arch_ima_get_secureboot
+ integrity-wide
+Message-ID: <aXQN-ZNhT5olbf6X@Rk>
+References: <20260115004328.194142-2-coxu@redhat.com>
+ <CAMj1kXFXNo1-pMbo-VZrjQ3TYe1tufebrLr_avL12A0nHMSGnA@mail.gmail.com>
+ <8bfa859ed3a4f1cf0db0ab64d8c1c3b24684582a.camel@linux.ibm.com>
+ <CAMj1kXHsJNZoUEnbD1y=v4Ftuv9d2c08VckRV7ru4k4P83vZbQ@mail.gmail.com>
+ <97b69bc79a5d9246f7a399510908c7b95b2e95e7.camel@linux.ibm.com>
+ <CAMj1kXGx4ebaK87W7k0SNUNQnO9+=z1nmYxXC7retmp3OqRRFg@mail.gmail.com>
+ <ac5e5e45c12e9b0bda19807e60b06057d74be0b3.camel@linux.ibm.com>
+ <aW2i3yacr5TvWU-m@Rk>
+ <1a0b6e5601a673a81f8823de0815f92b7afbeb60.camel@linux.ibm.com>
+ <CAMj1kXFBMSEdRL8FotASbQO3dcfNG0bpp9Vnm5JPn-yjyDr=GA@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,59 +133,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain
-X-Originating-IP: [10.32.64.5]
-X-ClientProxiedBy: zxbjmbx1.zhaoxin.com (10.29.252.163) To
- ZXBJMBX03.zhaoxin.com (10.29.252.7)
-X-Moderation-Data: 1/23/2026 6:41:25 PM
-X-Barracuda-Connect: ZXSHMBX2.zhaoxin.com[10.28.252.164]
-X-Barracuda-Start-Time: 1769164884
-X-Barracuda-Encrypted: ECDHE-RSA-AES128-GCM-SHA256
-X-Barracuda-URL: https://mx2.zhaoxin.com:4443/cgi-mod/mark.cgi
-X-Virus-Scanned: by bsmtpd at zhaoxin.com
-X-Barracuda-Scan-Msg-Size: 1355
-X-Barracuda-BRTS-Status: 1
-X-Barracuda-Bayes: INNOCENT GLOBAL 0.0000 1.0000 -2.0210
-X-Barracuda-Spam-Score: -2.02
-X-Barracuda-Spam-Status: No, SCORE=-2.02 using global scores of TAG_LEVEL=1000.0 QUARANTINE_LEVEL=1000.0 KILL_LEVEL=9.0 tests=
-X-Barracuda-Spam-Report: Code version 3.2, rules version 3.2.3.153451
-	Rule breakdown below
-	 pts rule name              description
-	---- ---------------------- --------------------------------------------------
+In-Reply-To: <CAMj1kXFBMSEdRL8FotASbQO3dcfNG0bpp9Vnm5JPn-yjyDr=GA@mail.gmail.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: VxgygnQraub_aSK27bbTMplUYtJe69szPY2opXullv0_1769214054
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
 
-Commit a97396c6eb13 ("PCI: pciehp: Ignore Link Down/Up caused by DPC")
-amended PCIe hotplug to not bring down the slot upon Data Link Layer State
-Changed events caused by Downstream Port Containment.
+On Wed, Jan 21, 2026 at 05:25:39PM +0100, Ard Biesheuvel wrote:
+>On Wed, 21 Jan 2026 at 16:41, Mimi Zohar <zohar@linux.ibm.com> wrote:
+>>
+>> On Mon, 2026-01-19 at 12:04 +0800, Coiby Xu wrote:
+>>
+>> > diff --git a/security/integrity/ima/Kconfig b/security/integrity/ima/Kconfig
+>> > index 976e75f9b9ba..5dce572192d6 100644
+>> > --- a/security/integrity/ima/Kconfig
+>> > +++ b/security/integrity/ima/Kconfig
+>> > @@ -311,6 +311,7 @@ config IMA_QUEUE_EARLY_BOOT_KEYS
+>> >   config IMA_SECURE_AND_OR_TRUSTED_BOOT
+>> >          bool
+>> >          depends on IMA_ARCH_POLICY
+>> > +       depends on INTEGRITY_SECURE_BOOT
+>> >
+>> >
+>> > Another idea is make a tree-wide arch_get_secureboot i.e. to move
+>> > current arch_ima_get_secureboot code to arch-specific secure boot
+>> > implementation. By this way, there will no need for a new Kconfig option
+>> > INTEGRITY_SECURE_BOOT. But I'm not sure if there is any unforeseen
+>> > concern.
+>>
+>> Originally basing IMA policy on the secure boot mode was an exception.  As long
+>> as making it public isn't an issue any longer, this sounds to me.  Ard, Dave, do
+>> you have any issues with replacing arch_ima_get_secureboot() with
+>> arch_get_secureboot()?
+>
+>I don't see an issue with that. If there is a legitimate need to
+>determine this even if IMA is not enabled, then this makes sense.
 
-However, PCIe hotplug (pciehp) waits up to 4 seconds before assuming that
-DPC recovery has failed and disabling the slot. This timeout period is
-insufficient for some PCIe devices.
-For example, the E810 dual-port network card driver needs to take over
-10 seconds to execute its err_detected() callback.
-Since this exceeds the maximum wait time allowed for DPC recovery by the
-hotplug IRQ threads, a race condition occurs between the hotplug thread and
-the dpc_handler() thread.
+Thanks for the confirmation! Here's the updated patch
+https://github.com/coiby/linux/commit/c222c1d08d90ef1ec85ef81ece90afc9efde7937.patch
 
-Signed-off-by: LeoLiu-oc <LeoLiu-oc@zhaoxin.com>
----
- drivers/pci/pcie/dpc.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+If there is no objection, I'll send v2.
 
-diff --git a/drivers/pci/pcie/dpc.c b/drivers/pci/pcie/dpc.c
-index fc18349614d7..08b5f275699a 100644
---- a/drivers/pci/pcie/dpc.c
-+++ b/drivers/pci/pcie/dpc.c
-@@ -121,7 +121,7 @@ bool pci_dpc_recovered(struct pci_dev *pdev)
- 	 * but reports indicate that DPC completes within 4 seconds.
- 	 */
- 	wait_event_timeout(dpc_completed_waitqueue, dpc_completed(pdev),
--			   msecs_to_jiffies(4000));
-+			   msecs_to_jiffies(16000));
-=20
- 	return test_and_clear_bit(PCI_DPC_RECOVERED, &pdev->priv_flags);
- }
---=20
-2.43.0
+-- 
+Best regards,
+Coiby
 
 
