@@ -1,94 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-16272-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16273-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6534D715E3
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Jan 2026 10:46:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E364D715E3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Jan 2026 10:47:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dys0T1SPKz2xqj;
-	Sat, 24 Jan 2026 21:46:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769251561;
-	cv=none; b=jd4ilhBQEpUzlGkHnDgU2p4zz37YFeaw0LXgwb76/ta2Cc7tltfqA8wo0xlJ413o1bNEKU/WSrnFnjiVNfof4J7cI+tRjrFsiJ0PcbVNfbpfNtB0zWcLnd0KqxIwQEKx6MNxvX3pJ3U4cjZLr9xCcX0+yQmc6Uc4aIbGu5jjmK4KBO1NMFJb2/ucUaJqlgTE9iLQWxZIqe6PdMLa2bpR4cjHUi4cSW0D4aAPtMBfaL9luMZbdggJ1i4vscYvnxIARgo7WuHmnXYsl+UeA7B6DLeQH4bDp6YGsmyvAPd1junF4Fh0grPs6Ym74ez0akFwbY0rfuOGLSpgFo432yfzWg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dys2G5jyMz2xqj;
+	Sat, 24 Jan 2026 21:47:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::443"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769251654;
+	cv=none; b=Ksf3MrE++RjLpkLEMSL82oMxBOvQ5hb3EtoLG57PlXPQRWD3CFVEK+OQtN6YKkf/vOaaDPWNFWsmJbOwoXQnKZxIvssz/jWwsr40d6azb5KBZqTnLnpXHkU0GJkdFzTZox3kjxthSHBunAZQHsycZmznkSILysO1rSEnG9kdJ4vuJQX2hftCHksYZAd6A5AiEIjSiLJr14pbpEk0fb6O1SsyrfPTDk3ox/Hi9A6tdW91AdvoXXIXHOFcm9DgAk3CXGkikuT3GBXtj8bBrIO+mNDG6GVzUk8+yzv8nTTv1I7t8P4ximWDLJnJg44DCsjRIvMVyjaEVifAKJstyQ/K6w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1769251561; c=relaxed/relaxed;
-	bh=UXdPxN0yzQYC1zXtRqHrrTIjvlERtEZxVMk7HfF01xU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=QjvjlsNI9+LjP+xL1CzU/GIzbl7a87GacxVFlOXhQz3Nn8aadKIkVOvJCkG3IpDRb7YK3rGvu3vOR+ek8BFjFVerzTT4bllNL0Q8JTIsWIHQsM3y7h1N+2wfwINi6kpjnQsAJpMBkHiRqGQgjS0u314lBkk+R9q5BOyyLN2jvQft9AxmDNWSQswJuwiuYmKSEbamSen2WFPxAN/u1N0kbqXsGgJy4ttsJRdYvybNIHEkwKEg6kRdXhOgETUxRA0ZjzQ7TBAWonTXIrrqQFs+opuLRccYUUhOtP+w02OhfANNXBOM2endz6t7x4hSJargEHfq+Czr9LcpABg4bJKYKw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mm1vQQqA; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1769251654; c=relaxed/relaxed;
+	bh=PDUcuGLtSATdOwWmJYbA7S8LzZRTPKGXoW+hiKHosIk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=DJzWe+wGEi+sYz+lnmfsLvtc5m8UH4C0jo2khjSkSCQSastQ4HXlgRkiYsOfnUSVIoKEzniLuNF1hXxQtYCr5OEue+KgCiUJC76fq5sf9DumVqcvmemlIaeKJFTtrIv0m7tdfchHBOHltZTGsLHMem87sqRqSNajiP8s2GaLY/7cBaM+EYjiKxl++mvJpbNq9GQ+Mw1Ozp11MoOIZnkHTOwHvZPWw/3BWVCLUBi7aQytzUq566PgrludCnrnHLeJR6WrcHQo4V1lTWmjtkV+Ms1QCow0imAQ4Z67Q7Q4DhuSvdDGcpGpZBG0rWD+VK7lm8PXU0RKA2Nfy/RDtVz6pA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=gjwkh5L0; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::443; helo=mail-wr1-x443.google.com; envelope-from=dan.carpenter@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mm1vQQqA;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=gjwkh5L0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::443; helo=mail-wr1-x443.google.com; envelope-from=dan.carpenter@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com [IPv6:2a00:1450:4864:20::443])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dys0R6k0hz2xSN
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jan 2026 21:45:59 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 60O5RSev024443;
-	Sat, 24 Jan 2026 07:53:09 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=UXdPxN0yzQYC1zXtR
-	qHrrTIjvlERtEZxVMk7HfF01xU=; b=mm1vQQqAipr4Psx80BtReaB7rzUE7oQO/
-	VebSDCwbT/OVCBZ8YPUxNTeSLvVUHF/yv+bGzlizW6UC/VhnCGzHXWc+1Hxva9lP
-	b7+AiKadjrQ51eWygQ1TtwQhDKuaPl8l0csisQlgRBmyHROIVubiajiZJUXHae+y
-	zfQU/v+OrQNG8lA/6siEfb7RTrnXoWr8tfHXMrW3T1qr9YXgwcuxWZC3rZfTzj7D
-	5MXBrNo/rWs6tebOc70GzkHpXnuOJNopaRMh5OI8fhHTu8CKVaxp56mld69cCTWw
-	qgNoS9vFxlcz8DQy5ftlGYfKcWzbns0VxfDey/RjU8hv8ccbzZrfA==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4bvnr5rjb6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 24 Jan 2026 07:53:09 +0000 (GMT)
-Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 60O7r8R7010462;
-	Sat, 24 Jan 2026 07:53:08 GMT
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4bvnr5rjb4-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 24 Jan 2026 07:53:08 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 60O24kpu006424;
-	Sat, 24 Jan 2026 07:53:07 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4brqf24n1q-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 24 Jan 2026 07:53:07 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 60O7r4Vo47514030
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 24 Jan 2026 07:53:04 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E9BA620043;
-	Sat, 24 Jan 2026 07:53:03 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9A36120040;
-	Sat, 24 Jan 2026 07:52:57 +0000 (GMT)
-Received: from abhi.. (unknown [9.124.223.59])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sat, 24 Jan 2026 07:52:57 +0000 (GMT)
-From: adubey@linux.ibm.com
-To: bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: hbathini@linux.ibm.com, sachinpb@linux.ibm.com, venkat88@linux.ibm.com,
-        andrii@kernel.org, eddyz87@gmail.com, mykolal@fb.com, ast@kernel.org,
-        daniel@iogearbox.net, martin.lau@linux.dev, song@kernel.org,
-        yonghong.song@linux.dev, john.fastabend@gmail.com, kpsingh@kernel.org,
-        sdf@fomichev.me, haoluo@google.com, jolsa@kernel.org,
-        christophe.leroy@csgroup.eu, naveen@kernel.org, maddy@linux.ibm.com,
-        mpe@ellerman.id.au, npiggin@gmail.com, memxor@gmail.com,
-        iii@linux.ibm.com, shuah@kernel.org,
-        Abhishek Dubey <adubey@linux.ibm.com>
-Subject: [PATCH v5 3/6] powerpc64/bpf: Avoid tailcall restore from trampoline
-Date: Sat, 24 Jan 2026 13:22:20 +0530
-Message-ID: <20260124075223.6033-4-adubey@linux.ibm.com>
-X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20260124075223.6033-1-adubey@linux.ibm.com>
-References: <20260124075223.6033-1-adubey@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dys2D5clzz2xSN
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jan 2026 21:47:32 +1100 (AEDT)
+Received: by mail-wr1-x443.google.com with SMTP id ffacd0b85a97d-42fbc544b09so2241594f8f.1
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jan 2026 02:47:32 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1769251648; x=1769856448; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=PDUcuGLtSATdOwWmJYbA7S8LzZRTPKGXoW+hiKHosIk=;
+        b=gjwkh5L0t0BYignI3BJd8CQMbSJ5Rfa1JwCxcHmDyKCBu0lPX9fsRyxZyR77KvC8bj
+         yVEEdbaxZtyYiuGh7bTaw2pjiGYaN9QLhQd4tdH6JojsZh9ydreu9pjfqGJzCdrNt+fA
+         G0EhBOPSLFc2SL6apy9UxoKFPUy3DSxXF+lgy26iqESageDObzfYydCtGDzffi8yJGcd
+         PNLKdhagNKi4x+xwHucYHUHf5ArmBuA745n746un6dZzsi40XP7ioofwp4gAJNbaTA0l
+         yG6vJJXA2WN5k9zTNnYqHQuBgxVuAj0ue0IBlKBgvPdubYicTR23ZlUKeBTkee5+XpPV
+         spjg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1769251648; x=1769856448;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=PDUcuGLtSATdOwWmJYbA7S8LzZRTPKGXoW+hiKHosIk=;
+        b=FFYuGCblwF8r4YCZGoYb815A+SURciiLRcZphd8kf0L1UdvYsrYwP+oj5fVeB/S8g+
+         YGa89wQgNsv1JxdE6RTTb5oPu2byBbcqyyEyu3xUPXulntkASuIlliWlP+wWxxPkuflV
+         CIUMDNcDhhVzaK1apxd4f0/3XiEs278nSUA7QmgSdJaVvr43EGH2jf3/9bkV21gI4oOa
+         3j3EED43jl1OpA52v+Wi2FoC65bVsMfSkwWzUQpA4I6zA1Z+kExiYSevhiyyaHtUn6Sd
+         rZn1Sc9E5n+n58O3McjPNpiPgwbJHDIdQIBN4qHhn77pdLBX6wFn7SdoZMgZWbl/bXF2
+         IY2A==
+X-Forwarded-Encrypted: i=1; AJvYcCXGJ3mk7DxF9umyKeEIDufOqNHQY74VN9OsyZDVW814vT5wxz7i2BUHS4ju/9ABI+xZXUk23P27FBgVMLQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yyx/dkCdjgBZdvzMilxPSj++QBSdrUF2jm9GMfMAcvHeZ599wa/
+	MF20DBVNFhqv4tPqtHAVnNiBV8Rtt+7On2W/FtKWn50i9UZLA1RHzvcaTFP3IqCihEU=
+X-Gm-Gg: AZuq6aKi5iAEu/TCbpNRt2LLkBuveAVaIpz7LIc/wt/+WD7XJqcLKbNUEEuwyt/PIhg
+	HhKPhf5n2xJqEWjGu03SJKrEGFwpg6ZHHWCELhoO3C+Rsbm/KwpBiapUjCwS9ifZgWeZLmSzUCj
+	C3zYesT5XdFH9oPPqyjo3EsI7MjcuKsy+H6bWmq4dRT4Rb59nUccbHei4EJzhPRHTDxJSIFi7ke
+	vs/Xdh0PTuxhWldtyUMeEy4qRGQMbxq+9PuO6AyRKNZS4Vx0xC5eo2Oqw9pT559Aa8wUn5eqXGT
+	6jbYTtSsBNeeOKG+Jywq0M9PxLYJPfwLduzpoOLOJi+GPE4VSkXY8Ey21gRFxk9Q5eLUUzTfUMy
+	ASgnojGDQQt4HLXZyxOYsOjbG4Ctltt5lOXkkfxU5hrrhgPN3TYEIe1Uca1QQEjcMyt7A4XQLzn
+	ZeAwuB5B6sSqO6yVXLUJNN4CyVCAQ=
+X-Received: by 2002:a05:6000:40dd:b0:435:a2f8:1515 with SMTP id ffacd0b85a97d-435b1587983mr9884751f8f.10.1769251647634;
+        Sat, 24 Jan 2026 02:47:27 -0800 (PST)
+Received: from localhost ([196.207.164.177])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-435b1e7156dsm13469488f8f.20.2026.01.24.02.47.26
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 24 Jan 2026 02:47:27 -0800 (PST)
+Date: Sat, 24 Jan 2026 13:47:24 +0300
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>
+Cc: ioana.ciornei@nxp.com, stuart.yoder@freescale.com, agraf@suse.de,
+	German.Rivera@freescale.com, gregkh@linuxfoundation.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org, Su Hui <suhui@nfschina.com>,
+	Christophe Leroy <chleroy@kernel.org>
+Subject: Re: [PATCH v3] bus: fsl-mc: fix an error handling in
+ fsl_mc_device_add()
+Message-ID: <aXSjPNWzsEPhYhv6@stanley.mountain>
+References: <20260124102054.1613093-1-lihaoxiang@isrc.iscas.ac.cn>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,71 +95,62 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTI0MDA2MCBTYWx0ZWRfXyKAdOv1HA5FA
- 84DoEfCC1SloNkLxLa+syX9gZPZbEJSl5o8fxx3mKyikDijirNWaPPQ5TVfZpIBasV2o0eWT/EA
- shBgEZL5FSNF3ZkCCes2VZtpPHrp6xzoOi7mGGZcXm9Z+9I2Jy4fnOOFYN+tXZST8vnOO+4Z451
- KbWrWRJOaeNrh/kT9GQ0DU07hOfsQHkAbAmPoRZOe/R7R3kuT6M2OGpZ3S+L87RrEb9gRPV/dgI
- O1QmMVI3KD+Z327VPP/7UsoDHooIHw47dzhanrGTeHcqcdIpYpyK9K48xXR4Xmya82dez/o2319
- PtbOibXjCFZ9c6RHhM2ESjFuDCzckCXfDjGOSqWSMwrnQ/AS1YqCQVbm0P2oEE946Fx0shmeQRn
- FVOMc56dpQPyd78e2030QACHnBblQyHoq5hFQx8SZCd/ixVRyyJH0iZCmjX2RoLjQa52qApLVgW
- 3FCFXlFuOW2a84+f5/A==
-X-Proofpoint-GUID: zttSLy4Wpu_vInN_j3ZKCS3aXrDsCSxt
-X-Proofpoint-ORIG-GUID: PCDTYKd1zuPlntCIjQHjWNKfHLnepz56
-X-Authority-Analysis: v=2.4 cv=X+Vf6WTe c=1 sm=1 tr=0 ts=69747a65 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=vUbySO9Y5rIA:10 a=VkNPw1HP01LnGYTKEx00:22 a=VnNF1IyMAAAA:8
- a=yUNxoNuUyiXgUDPvJtcA:9
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.20,FMLib:17.12.100.49
- definitions=2026-01-24_02,2026-01-22_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 suspectscore=0 impostorscore=0 lowpriorityscore=0
- clxscore=1015 spamscore=0 adultscore=0 malwarescore=0 bulkscore=0
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2601150000
- definitions=main-2601240060
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260124102054.1613093-1-lihaoxiang@isrc.iscas.ac.cn>
 
-From: Abhishek Dubey <adubey@linux.ibm.com>
+On Sat, Jan 24, 2026 at 06:20:54PM +0800, Haoxiang Li wrote:
+> In fsl_mc_device_add(), device_initialize() is called first.
+> put_device() should be called to drop the reference if error
+> occurs. And other resources would be released via put_device
+> -> fsl_mc_device_release. So remove redundant kfree() in
+> error handling path.
+> 
 
-Back propagation of tailcall count is no longer needed for
-powerpc64 due to use of reference, which updates the tailcall
-count in the tail_call_info field in the frame of the main
-program only.
+It is true that we shouldn't free things directly after calling
+device_initialize().  I don't know the impact of this bug in
+real life.  Is it a leak?
 
-Back propagation is still required for 32-bit powerpc.
+> Fixes: bbf9d17d9875 ("staging: fsl-mc: Freescale Management Complex (fsl-mc) bus driver")
+> Cc: stable@vger.kernel.org
+> Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
+> Closes: https://lore.kernel.org/all/b767348e-d89c-416e-acea-1ebbff3bea20@stanley.mountain/
 
-Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
----
- arch/powerpc/net/bpf_jit_comp.c | 13 +++++--------
- 1 file changed, 5 insertions(+), 8 deletions(-)
+Heh.  What was I even talking about when I wrote this???
 
-diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-index 4b18daed054a..f8769d785123 100644
---- a/arch/powerpc/net/bpf_jit_comp.c
-+++ b/arch/powerpc/net/bpf_jit_comp.c
-@@ -659,14 +659,11 @@ static void bpf_trampoline_setup_tail_call_info(u32 *image, struct codegen_conte
- static void bpf_trampoline_restore_tail_call_cnt(u32 *image, struct codegen_context *ctx,
- 						 int func_frame_offset, int r4_off)
- {
--	if (IS_ENABLED(CONFIG_PPC64)) {
--		/* See bpf_jit_stack_tailcallcnt() */
--		int tailcallcnt_offset = BPF_PPC_TAILCALL;
--
--		EMIT(PPC_RAW_LL(_R3, _R1, -tailcallcnt_offset));
--		EMIT(PPC_RAW_STL(_R3, _R1, func_frame_offset - tailcallcnt_offset));
--	} else {
--		/* See bpf_jit_stack_offsetof() and BPF_PPC_TC */
-+	if (IS_ENABLED(CONFIG_PPC32)) {
-+		/*
-+		 * Restore tailcall for 32-bit powerpc
-+		 * See bpf_jit_stack_offsetof() and BPF_PPC_TC
-+		 */
- 		EMIT(PPC_RAW_STL(_R4, _R1, r4_off));
- 	}
- }
--- 
-2.48.1
+In my head I remember the code as looking like this:
+https://lore.kernel.org/all/20251222074958.992911-1-lihaoxiang@isrc.iscas.ac.cn/
+But that's not the version of the code that I copy and pasted into my
+email.
+
+The release function looks like this:
+
+drivers/bus/fsl-mc/fsl-mc-bus.c
+   757  static void fsl_mc_device_release(struct device *dev)
+   758  {
+   759          struct fsl_mc_device *mc_dev = to_fsl_mc_device(dev);
+   760  
+   761          kfree(mc_dev->regions);
+   762  
+   763          if (is_fsl_mc_bus_dprc(mc_dev))
+   764                  kfree(to_fsl_mc_bus(mc_dev));
+   765          else
+   766                  kfree(mc_dev);
+   767  }
+
+The problem is that if this function call fails:
+
+	mc_dev->dev.type = fsl_mc_get_device_type(obj_desc->type);
+
+Then the is_fsl_mc_bus_dprc() check might not work.  In the current
+code the to_fsl_mc_bus() pointer math is a no-op because mc_dev is
+the first struct member of mc_bus.  So it works for now, but it
+feels wrong.
+
+The fsl_mc_get_device_type() function can't really fail in real
+life.
+
+regards,
+dan carpenter
 
 
