@@ -1,125 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-16254-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16255-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB9EBD77898
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Jan 2026 00:21:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A348D715C7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Jan 2026 07:46:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dyb7l6t1yz2yFg;
-	Sat, 24 Jan 2026 11:21:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769214083;
-	cv=none; b=TeqodFIbylv81d8RhAFluUxlarKGAoLi00gnSXq9y9Ge2nZ+TDY0we0dTzCGB00XUyV1AR+IlXCrQu14R9Hb7MQfyK/dlFqZaBaMzWHiq7iqzrXF97ircnbbTlLpgPTOVBKzVikAPgbf9G8obrVA/XpZ5GqxREL1cPqCKRkp8OKMdf9KVgKkzmmIVB+CAR44HjlfAW7oszGySsV/jJChqZ5GVTE0Up6+MXojSUaUvlVX/RcOlkO7bPatXZ7iZKRVbohuTlz7xfEckC5kRN4jOmEcRneHUPE+Q86zapTMk+ZGblgQsd6kkiRqVGLOjJCe/aGF2hvOiBXguHGyD+cviQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dyn1S67Rsz309N;
+	Sat, 24 Jan 2026 18:46:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.111
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769240796;
+	cv=none; b=bmH/W1JSq0TXFD0Brf4ZGUsb1eiUcU0VLfTAl3G9PpqlZ9odIeNthqx6KY/26JwRj9BQo7Ay3JBSbfdxp3GfLeN//xbBL5qrIPYMnukqzO0EnTKz6qDP70E4xfAbFUdcZnDgwDZv1HSkcR9XKrYo6jog5/NmHrknSAS5HbTNuRZRVOyygkbXRqkAN6TKyQ5oAmVFxk0fZvv5vIr2uV+v1ElNI4VGs3Iq+1iT3Bii6UICh839ZORT9pt14p8SECoDQ1jlkrIY2fdN8ikpZTawuvjfwvYX+6ST2ayaZqbYjvFAbP2jvPRdyqpxF3uJ3R1kaeTp7ijwvz3DA7g1Xyyltg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1769214083; c=relaxed/relaxed;
-	bh=xhgLPiYR6xEsxXnQ/SeaMjXXghHvMuOe7YsndhfrobA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 In-Reply-To:Content-Type:Content-Disposition; b=FJsM/moj7Gd2ah+IN40qyi/cA1V7KsyseLgt2xPMHTX9IvYBT+JH7t/dflR0WJmLCUv3GgjgH3aAq2z6SbdwMO+EW+zc1g6elUyD/O1lBNHFxVJzpHXh6mP91mjMXHH/egcMkeIioJ+SoKcpg9dzH2kYjvfMQ14Z+tSTMUnDqi3zA1BzJGYDo5J3Wo+DqWGOZUdaVPBKKFIA5CpyU8D1RoqNtXAuhFhyTEDMHIKm05N+2RDPQiUbrIrtSqQLrC1cmMomTls0T3zL0h3kxeDLIp/32GInUmDn/X7pgR2Fq3los5q7AyysP8giZ0+a/BZWhh98vavpBhxiHWX4RFaBYg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Nh1jvGaU; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Nh1jvGaU; dkim-atps=neutral; spf=temperror (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=coxu@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1769240796; c=relaxed/relaxed;
+	bh=gdJzXK+D/+LAbE0E0SHsIWq9BjPFdGgwrb0qI4bTG8Y=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=EVVN0tDO4QL0evn03NlFY1B71bwxAZh7UiCBJvVBFPlNMHGdHmwUMzPpC79oC5B/Y6k7hXRTbQa/Q0HPM4kgRtYwbf8jAMLVwBgnrR/pkWEDKei5u76+Rq6w1FoY3OSZr7XKJlyegH0h2Ev8sdSLxidp+rg6QoLj0O1hqhaql6u7QTWlbo4NZQQhA36U5Xtj1YDwHo+NeLZ0nT+cwXA3A0kuJ3mzq5Jx+vtELyOnWBVgqDBjU4zVC8diBqjbbgdlIx69UGwaiF3hL3t2WKbHhU16SUbyNUrCuLGJD7fVccMzjLEwx7Et60jP2pz9qrHVTmA5BYgTm6gfjNx3i0alqQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=foPzKMw5; dkim-atps=neutral; spf=pass (client-ip=115.124.30.111; helo=out30-111.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Nh1jvGaU;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Nh1jvGaU;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=foPzKMw5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=temperror (SPF Temporary Error: DNS Timeout) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=coxu@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.111; helo=out30-111.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org)
+Received: from out30-111.freemail.mail.aliyun.com (out30-111.freemail.mail.aliyun.com [115.124.30.111])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dyb7k21TTz2x9M
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jan 2026 11:21:01 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1769214057;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=xhgLPiYR6xEsxXnQ/SeaMjXXghHvMuOe7YsndhfrobA=;
-	b=Nh1jvGaUjRm0atvydNlFFcW0SGiWwOYFpOdTr4FsomtL9qdYU+lsoKPYZQ/oTEFfdVlIFN
-	N+bjUvd+u6NUv4R012H2KaeQ6qtKfPv98GcgZHcSau+9q456oOuIes5Ywj7Z67w+zv8VdE
-	jxe3YXmMkcgTLM5xpkflhgGfV4Frk5c=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1769214057;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=xhgLPiYR6xEsxXnQ/SeaMjXXghHvMuOe7YsndhfrobA=;
-	b=Nh1jvGaUjRm0atvydNlFFcW0SGiWwOYFpOdTr4FsomtL9qdYU+lsoKPYZQ/oTEFfdVlIFN
-	N+bjUvd+u6NUv4R012H2KaeQ6qtKfPv98GcgZHcSau+9q456oOuIes5Ywj7Z67w+zv8VdE
-	jxe3YXmMkcgTLM5xpkflhgGfV4Frk5c=
-Received: from mail-pl1-f198.google.com (mail-pl1-f198.google.com
- [209.85.214.198]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-142-sX_cGJgLMNS5K8kQ7feH-Q-1; Fri, 23 Jan 2026 19:20:55 -0500
-X-MC-Unique: sX_cGJgLMNS5K8kQ7feH-Q-1
-X-Mimecast-MFC-AGG-ID: sX_cGJgLMNS5K8kQ7feH-Q_1769214054
-Received: by mail-pl1-f198.google.com with SMTP id d9443c01a7336-2a76f2d7744so23237545ad.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Jan 2026 16:20:55 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1769214054; x=1769818854;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=xhgLPiYR6xEsxXnQ/SeaMjXXghHvMuOe7YsndhfrobA=;
-        b=qzW+vBgtAGaJViRtRTxTPJ0CqHImSb8VeiofJIFXQ1Mo19Qp4lkGBjauVrP/hQPsyS
-         sZlKNUcUqaQHIdOcAVFZvSEeKub/HABZxjNyRxtHLirqA1XW8J/+AJITW3wGtwHDD0k8
-         ywXTlfiVtnrxt3wdYpl8C5GUxAwTyjKyxidJqZ7ZLnPnGAqT6LKUzl4Y+Hryf1c2pv4g
-         u+weacp4BHAYJiFThB9nWfcGWaTMqQr2ETVKa9Na3AtO1ux1rJEvX1jCrH66WqpJVLlU
-         ct8Zd9jivrznEYtHFyd+dnaCzCooF+ALYe6rUlIcX+0/I8gI4uHnUkYkHXiJ+hEZOqev
-         x9Nw==
-X-Forwarded-Encrypted: i=1; AJvYcCVXHrB1mZ/5F9sNRpgS2eV11Ki/FxMLtS+hiZctn6C02QdCttqPbqox9k6qM+rqqmttiHWP1x38PIOqtQ4=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxQ6CbV0nqHrB9zhJ4Ob9gPrq7vOQmg1kO3hQDgylmMx/DYiwsY
-	nmk317eVACMbL0DveeOjkgu7QeyTteAwsAeIrezvHLBbhilSd6/bsYHAlJmhf2wDJKRIt/1TT8/
-	gjnZjaKWGyCZdG7YRQEw4vl4TBBEqDMX4YVtSOcvGNR0mYO4WvuycL/7b6Brq5jN98kw=
-X-Gm-Gg: AZuq6aLMNm5srMw4inU74QqM0lrhucEx+RQLIXsQMJPDaQEiogK8xl5dQD7Om8+6BRa
-	Sg9OtuLdUTPwySfTJJMXGyKbzAD3yM3UYchPIx/HFBtSmJjG8WX8ecba+DCCKwhw7CLwJIivBKK
-	dsvYmpv9UN1OSApEhe17ovD2NPAa/AdQvDKzLww/2BcIAOYUo2ROBdOa6OIsncniMyytH9bV1cR
-	OlUr6tNEIm8MpodEqh9u5MvLYKQKvKLQ1ABWkrnmwoCZKDk894OJu9T4WB57zol2F3BnGRbZFOn
-	R5kKigyqSAGhLrxRkIMF8jYKb5kVbX8zf0B76Nv0NsXnTwC8QOaP/jRTWDZmmJYKt8jvXyGPKdO
-	k
-X-Received: by 2002:a17:902:e54d:b0:2a7:682b:50ac with SMTP id d9443c01a7336-2a7fe625118mr44257365ad.28.1769214054347;
-        Fri, 23 Jan 2026 16:20:54 -0800 (PST)
-X-Received: by 2002:a17:902:e54d:b0:2a7:682b:50ac with SMTP id d9443c01a7336-2a7fe625118mr44257045ad.28.1769214053812;
-        Fri, 23 Jan 2026 16:20:53 -0800 (PST)
-Received: from localhost ([209.132.188.88])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a802faf6f9sm29695045ad.71.2026.01.23.16.20.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 23 Jan 2026 16:20:53 -0800 (PST)
-Date: Sat, 24 Jan 2026 08:18:46 +0800
-From: Coiby Xu <coxu@redhat.com>
-To: Ard Biesheuvel <ardb@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>
-Cc: Dave Hansen <dave.hansen@intel.com>, linux-integrity@vger.kernel.org, 
-	Heiko Carstens <hca@linux.ibm.com>, Roberto Sassu <roberto.sassu@huaweicloud.com>, 
-	Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Vasily Gorbik <gor@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, 
-	Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>, 
-	Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, 
-	"maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <x86@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, 
-	Roberto Sassu <roberto.sassu@huawei.com>, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>, 
-	Eric Snowberg <eric.snowberg@oracle.com>, Paul Moore <paul@paul-moore.com>, 
-	James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, 
-	Jarkko Sakkinen <jarkko@kernel.org>, 
-	"moderated list:ARM64 PORT (AARCH64 ARCHITECTURE)" <linux-arm-kernel@lists.infradead.org>, open list <linux-kernel@vger.kernel.org>, 
-	"open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>, "open list:S390 ARCHITECTURE" <linux-s390@vger.kernel.org>, 
-	"open list:EXTENSIBLE FIRMWARE INTERFACE (EFI)" <linux-efi@vger.kernel.org>, 
-	"open list:SECURITY SUBSYSTEM" <linux-security-module@vger.kernel.org>, "open list:KEYS/KEYRINGS_INTEGRITY" <keyrings@vger.kernel.org>
-Subject: Re: [PATCH 1/3] integrity: Make arch_ima_get_secureboot
- integrity-wide
-Message-ID: <aXQN-ZNhT5olbf6X@Rk>
-References: <20260115004328.194142-2-coxu@redhat.com>
- <CAMj1kXFXNo1-pMbo-VZrjQ3TYe1tufebrLr_avL12A0nHMSGnA@mail.gmail.com>
- <8bfa859ed3a4f1cf0db0ab64d8c1c3b24684582a.camel@linux.ibm.com>
- <CAMj1kXHsJNZoUEnbD1y=v4Ftuv9d2c08VckRV7ru4k4P83vZbQ@mail.gmail.com>
- <97b69bc79a5d9246f7a399510908c7b95b2e95e7.camel@linux.ibm.com>
- <CAMj1kXGx4ebaK87W7k0SNUNQnO9+=z1nmYxXC7retmp3OqRRFg@mail.gmail.com>
- <ac5e5e45c12e9b0bda19807e60b06057d74be0b3.camel@linux.ibm.com>
- <aW2i3yacr5TvWU-m@Rk>
- <1a0b6e5601a673a81f8823de0815f92b7afbeb60.camel@linux.ibm.com>
- <CAMj1kXFBMSEdRL8FotASbQO3dcfNG0bpp9Vnm5JPn-yjyDr=GA@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dyn1Q1SFJz2xqj
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Jan 2026 18:46:33 +1100 (AEDT)
+DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux.alibaba.com; s=default;
+	t=1769240787; h=From:To:Subject:Date:Message-Id:MIME-Version;
+	bh=gdJzXK+D/+LAbE0E0SHsIWq9BjPFdGgwrb0qI4bTG8Y=;
+	b=foPzKMw5L9SCOiOzta9UsreanKDkzmWfemuORyVe5EKPt9ZviIe51yvejbbWf4lAe1ip5mxaUHo4RwsGVX3/PxboyPmVYYh6HpuEkjg2406JNNWUK0XH5WemmBFpqAq/QbFN9k8AHea9lmc7YVx2+bq7kiXtGW2vWGZRDLSProw=
+Received: from localhost.localdomain(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0WxiIIAV_1769240785 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Sat, 24 Jan 2026 15:46:26 +0800
+From: Shuai Xue <xueshuai@linux.alibaba.com>
+To: linux-pci@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	bhelgaas@google.com,
+	kbusch@kernel.org,
+	sathyanarayanan.kuppuswamy@linux.intel.com
+Cc: mahesh@linux.ibm.com,
+	oohall@gmail.com,
+	xueshuai@linux.alibaba.com,
+	Jonathan.Cameron@huawei.com,
+	terry.bowman@amd.com,
+	tianruidong@linux.alibaba.com,
+	lukas@wunner.de
+Subject: [PATCH v7 2/5] PCI/DPC: Run recovery on device that detected the error
+Date: Sat, 24 Jan 2026 15:45:54 +0800
+Message-Id: <20260124074557.73961-3-xueshuai@linux.alibaba.com>
+X-Mailer: git-send-email 2.39.5 (Apple Git-154)
+In-Reply-To: <20260124074557.73961-1-xueshuai@linux.alibaba.com>
+References: <20260124074557.73961-1-xueshuai@linux.alibaba.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -133,50 +70,153 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-In-Reply-To: <CAMj1kXFBMSEdRL8FotASbQO3dcfNG0bpp9Vnm5JPn-yjyDr=GA@mail.gmail.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: VxgygnQraub_aSK27bbTMplUYtJe69szPY2opXullv0_1769214054
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 
-On Wed, Jan 21, 2026 at 05:25:39PM +0100, Ard Biesheuvel wrote:
->On Wed, 21 Jan 2026 at 16:41, Mimi Zohar <zohar@linux.ibm.com> wrote:
->>
->> On Mon, 2026-01-19 at 12:04 +0800, Coiby Xu wrote:
->>
->> > diff --git a/security/integrity/ima/Kconfig b/security/integrity/ima/Kconfig
->> > index 976e75f9b9ba..5dce572192d6 100644
->> > --- a/security/integrity/ima/Kconfig
->> > +++ b/security/integrity/ima/Kconfig
->> > @@ -311,6 +311,7 @@ config IMA_QUEUE_EARLY_BOOT_KEYS
->> >   config IMA_SECURE_AND_OR_TRUSTED_BOOT
->> >          bool
->> >          depends on IMA_ARCH_POLICY
->> > +       depends on INTEGRITY_SECURE_BOOT
->> >
->> >
->> > Another idea is make a tree-wide arch_get_secureboot i.e. to move
->> > current arch_ima_get_secureboot code to arch-specific secure boot
->> > implementation. By this way, there will no need for a new Kconfig option
->> > INTEGRITY_SECURE_BOOT. But I'm not sure if there is any unforeseen
->> > concern.
->>
->> Originally basing IMA policy on the secure boot mode was an exception.  As long
->> as making it public isn't an issue any longer, this sounds to me.  Ard, Dave, do
->> you have any issues with replacing arch_ima_get_secureboot() with
->> arch_get_secureboot()?
->
->I don't see an issue with that. If there is a legitimate need to
->determine this even if IMA is not enabled, then this makes sense.
+The current implementation of pcie_do_recovery() assumes that the
+recovery process is executed for the device that detected the error.
+However, the DPC driver currently passes the error port that experienced
+the DPC event to pcie_do_recovery().
 
-Thanks for the confirmation! Here's the updated patch
-https://github.com/coiby/linux/commit/c222c1d08d90ef1ec85ef81ece90afc9efde7937.patch
+Use the SOURCE ID register to correctly identify the device that
+detected the error. When passing the error device, the
+pcie_do_recovery() will find the upstream bridge and walk bridges
+potentially AER affected. And subsequent commits will be able to
+accurately access AER status of the error device.
 
-If there is no objection, I'll send v2.
+Should not observe any functional changes.
 
+Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+Signed-off-by: Shuai Xue <xueshuai@linux.alibaba.com>
+---
+ drivers/pci/pci.h      |  2 +-
+ drivers/pci/pcie/dpc.c | 25 +++++++++++++++++++++----
+ drivers/pci/pcie/edr.c |  7 ++++---
+ 3 files changed, 26 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index 0e67014aa001..58640e656897 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -771,7 +771,7 @@ struct rcec_ea {
+ void pci_save_dpc_state(struct pci_dev *dev);
+ void pci_restore_dpc_state(struct pci_dev *dev);
+ void pci_dpc_init(struct pci_dev *pdev);
+-void dpc_process_error(struct pci_dev *pdev);
++struct pci_dev *dpc_process_error(struct pci_dev *pdev);
+ pci_ers_result_t dpc_reset_link(struct pci_dev *pdev);
+ bool pci_dpc_recovered(struct pci_dev *pdev);
+ unsigned int dpc_tlp_log_len(struct pci_dev *dev);
+diff --git a/drivers/pci/pcie/dpc.c b/drivers/pci/pcie/dpc.c
+index bff29726c6a5..f6069f621683 100644
+--- a/drivers/pci/pcie/dpc.c
++++ b/drivers/pci/pcie/dpc.c
+@@ -260,10 +260,20 @@ static int dpc_get_aer_uncorrect_severity(struct pci_dev *dev,
+ 	return 1;
+ }
+ 
+-void dpc_process_error(struct pci_dev *pdev)
++/**
++ * dpc_process_error - handle the DPC error status
++ * @pdev: the port that experienced the containment event
++ *
++ * Return: the device that detected the error.
++ *
++ * NOTE: The device reference count is increased, the caller must decrement
++ * the reference count by calling pci_dev_put().
++ */
++struct pci_dev *dpc_process_error(struct pci_dev *pdev)
+ {
+ 	u16 cap = pdev->dpc_cap, status, source, reason, ext_reason;
+ 	struct aer_err_info info = {};
++	struct pci_dev *err_dev;
+ 
+ 	pci_read_config_word(pdev, cap + PCI_EXP_DPC_STATUS, &status);
+ 
+@@ -279,6 +289,7 @@ void dpc_process_error(struct pci_dev *pdev)
+ 			pci_aer_clear_nonfatal_status(pdev);
+ 			pci_aer_clear_fatal_status(pdev);
+ 		}
++		err_dev = pci_dev_get(pdev);
+ 		break;
+ 	case PCI_EXP_DPC_STATUS_TRIGGER_RSN_NFE:
+ 	case PCI_EXP_DPC_STATUS_TRIGGER_RSN_FE:
+@@ -290,6 +301,8 @@ void dpc_process_error(struct pci_dev *pdev)
+ 				"ERR_FATAL" : "ERR_NONFATAL",
+ 			 pci_domain_nr(pdev->bus), PCI_BUS_NUM(source),
+ 			 PCI_SLOT(source), PCI_FUNC(source));
++		err_dev = pci_get_domain_bus_and_slot(pci_domain_nr(pdev->bus),
++					    PCI_BUS_NUM(source), source & 0xff);
+ 		break;
+ 	case PCI_EXP_DPC_STATUS_TRIGGER_RSN_IN_EXT:
+ 		ext_reason = status & PCI_EXP_DPC_STATUS_TRIGGER_RSN_EXT;
+@@ -304,8 +317,11 @@ void dpc_process_error(struct pci_dev *pdev)
+ 		if (ext_reason == PCI_EXP_DPC_STATUS_TRIGGER_RSN_RP_PIO &&
+ 		    pdev->dpc_rp_extensions)
+ 			dpc_process_rp_pio_error(pdev);
++		err_dev = pci_dev_get(pdev);
+ 		break;
+ 	}
++
++	return err_dev;
+ }
+ 
+ static void pci_clear_surpdn_errors(struct pci_dev *pdev)
+@@ -361,7 +377,7 @@ static bool dpc_is_surprise_removal(struct pci_dev *pdev)
+ 
+ static irqreturn_t dpc_handler(int irq, void *context)
+ {
+-	struct pci_dev *err_port = context;
++	struct pci_dev *err_port = context, *err_dev;
+ 
+ 	/*
+ 	 * According to PCIe r6.0 sec 6.7.6, errors are an expected side effect
+@@ -372,10 +388,11 @@ static irqreturn_t dpc_handler(int irq, void *context)
+ 		return IRQ_HANDLED;
+ 	}
+ 
+-	dpc_process_error(err_port);
++	err_dev = dpc_process_error(err_port);
+ 
+ 	/* We configure DPC so it only triggers on ERR_FATAL */
+-	pcie_do_recovery(err_port, pci_channel_io_frozen, dpc_reset_link);
++	pcie_do_recovery(err_dev, pci_channel_io_frozen, dpc_reset_link);
++	pci_dev_put(err_dev);
+ 
+ 	return IRQ_HANDLED;
+ }
+diff --git a/drivers/pci/pcie/edr.c b/drivers/pci/pcie/edr.c
+index 521fca2f40cb..b6e9d652297e 100644
+--- a/drivers/pci/pcie/edr.c
++++ b/drivers/pci/pcie/edr.c
+@@ -150,7 +150,7 @@ static int acpi_send_edr_status(struct pci_dev *pdev, struct pci_dev *edev,
+ 
+ static void edr_handle_event(acpi_handle handle, u32 event, void *data)
+ {
+-	struct pci_dev *pdev = data, *err_port;
++	struct pci_dev *pdev = data, *err_port, *err_dev;
+ 	pci_ers_result_t estate = PCI_ERS_RESULT_DISCONNECT;
+ 	u16 status;
+ 
+@@ -190,7 +190,7 @@ static void edr_handle_event(acpi_handle handle, u32 event, void *data)
+ 		goto send_ost;
+ 	}
+ 
+-	dpc_process_error(err_port);
++	err_dev = dpc_process_error(err_port);
+ 	pci_aer_raw_clear_status(err_port);
+ 
+ 	/*
+@@ -198,7 +198,8 @@ static void edr_handle_event(acpi_handle handle, u32 event, void *data)
+ 	 * or ERR_NONFATAL, since the link is already down, use the FATAL
+ 	 * error recovery path for both cases.
+ 	 */
+-	estate = pcie_do_recovery(err_port, pci_channel_io_frozen, dpc_reset_link);
++	estate = pcie_do_recovery(err_dev, pci_channel_io_frozen, dpc_reset_link);
++	pci_dev_put(err_dev);
+ 
+ send_ost:
+ 
 -- 
-Best regards,
-Coiby
+2.39.3
 
 
