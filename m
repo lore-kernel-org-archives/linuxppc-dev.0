@@ -1,76 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-16299-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16300-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23E14D25930
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jan 2026 04:15:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B97ABD25944
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jan 2026 06:54:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f0XBh1bLqz2xcB;
-	Tue, 27 Jan 2026 15:15:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769480294;
-	cv=none; b=cMwwZiao8OYA+ZZZOFt+qr4Ul/tbFjbWjrlx4cAdN4l4YC/zg26eZwK4zil1jprREbKggHo7RqNY9YAnS13mifKL8cS8OqZoT6qbV+K2W0BBiS1cYhDaU434szRsZPpfVap8Dd/feK8Qod2/6nHAzI+OTNquboc12X3QA5sk/dw3+ZQg3mWSrG8l9hCC7Geiy2/agfE1pD66IMGmeB+xd0g4QV9a6vMp1Zre67YXuEh3fWm2F3q8NhfPdFkCxAClsesq9gWul/HiCT5U7Aoc5ms/bmJDGO4ouv2zU6GVXA8sm4Xsft2cjkPPUYlqADx4OeyQqkZUIPM0QVFf24r93Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f0bjj4Wlwz2xcB;
+	Tue, 27 Jan 2026 17:54:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769496857;
+	cv=none; b=hHU+Ybg43poHafyQscnsQIkzq8QSEcOz9jLu5ZuQByzRfYuyLbMYRpsPtTUqLeHfuINpmaR+oD/GCDS25hz7eLYGiRZ4ItoocJ3t5FLlZAFlMt/qgDiuDIX2FZoOzCdZt01XelMxeShrf06N79+db65Df3IOk8FO6IF/d1d8oVYuvP7Viecj5Py4vxb2FY/189HL5hccu08yTv6l+hnxrleyUh38/7qDtA4dFjjs559qyZ19hUbc1UfwuEGDmmqETBOlkPS/H9jq8Jp5IFVS7rPf3LKEBJ7qEjIpjvewU3Yk/+jVZKiLVdKjc5z6oI7+ac7dCzxk7H3rxbX+N6H69w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1769480294; c=relaxed/relaxed;
-	bh=ILbdrs4Bla+uWz0JeBAHQW7wW3rfgXE+tpe4Z9zQqSc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=m4rFGezjrAmvbrJHlmv4vtg9gGtMyzNPz8+MVB8fr/oeeKqIn1GwrX6i6ZP1plzB7q6arTo+/4NPzLh2ofdHf5Gygd6iC6mM2abSmLuk3A0uiX2p9/mfoNLPRyxARTvm4fzgvyBWjqp3uMCjUdqur9FNsOYG8Y99ldJ7ZvsCkr2Mw7Ds+puy88qoxen/AyNbaDNH5ctsJDuQBk0h6a++6cBh/ccz2A9disAx5Kzwy1VCOhkcc/en1nqHuClmHOv8ySgdOwdtm5d41D3XuJTXermSYq5t2WwuFB/0igpY1MaONIcnao6Rr02dmWE94TVVmpDEpJ5amiGNjOKdLGAOGQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gaeYthzL; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=wenxiong@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1769496857; c=relaxed/relaxed;
+	bh=2vKyuYPx1Jq1ekbrT4IzHP+v9xXysPIOpGFFOnvpWoI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=L91rCy1epMzow/UgfCfq0SdAUc1hyQGh9ElgFFKLMFxGfZ8CmHXwnz7lExPoVz8GSDPj51G6HD5PHJXkIyb2kFjCfleGYCLqKLBqxDFV0YraTs/s9tzK/iuWk6eboPR9pZ/bYWfgqLjzR1bLRrRN8S1Psyrp9DNi1VDrbVU2JjYi0JpqmmQFG34rKO3eWkQ4r50KKrT4746DDQQXbeEqZxOdj3L/UAmrXS5SQ+QB8RBgVZAo2+L1mlTwLVr/naxQtHs9ZAUGWpqyCwTJRfqNlHHdOQ0MwacrYlJxXZEGv+oC3p68BhZhUDISJBrHb1IGywlwAuFY7NjDvCoSBpe6Ng==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MHjDObsF; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gaeYthzL;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MHjDObsF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=wenxiong@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f0Tb948bgz2xcB
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2026 13:18:13 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 60QGJPHd007578
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2026 02:18:10 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f0bjh5DNRz2xJF
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2026 17:54:16 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 60QFcQPc023414;
+	Tue, 27 Jan 2026 06:53:45 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=ILbdrs4Bla+uWz0JeBAHQW7wW3rfgXE+tpe4Z9zQq
-	Sc=; b=gaeYthzLCD9CHB5TqyK/kOzjL+//blLxsW0TBFSaS6chmf6xy5hrrk+oa
-	g0XFvYgMWjB1T/brofFDSHpXQa1KSuimrWu+F4F0TUs9p/uBDBGGLhPHVpEi26YU
-	b5o9/ixEFWuLEvHaoTmbAGS80WCTaqwejrlHm3Qp7cVQcBuayEIHn+jKBK+R4NuE
-	8PULamz25oyWnZW6cIbsqPPLf3IJQGGz8OZ1LAyGru5SkY92M6PxWh1fRkDsVl9J
-	oMzQoteRIvHcG4niXJgeHJICLclQUYr9LlA37O6eDSfAJQEL7WLngTo6M0GAZvFY
-	Knusygl03d8BFq9a+g5N9xvrZQm0A==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4bvnr61fgu-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2026 02:18:10 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 60R21qLg019630
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2026 02:18:09 GMT
-Received: from smtprelay04.dal12v.mail.ibm.com ([172.16.1.6])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4bw9dmxyae-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2026 02:18:09 +0000
-Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
-	by smtprelay04.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 60R2I6og26935992
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=2vKyuY
+	Px1Jq1ekbrT4IzHP+v9xXysPIOpGFFOnvpWoI=; b=MHjDObsFUocpXTiOJ4FkIH
+	pN5rcvsjOpbt8u4T4+d7nM9NeoYxToKC4IDqydh2gb8tTcZAiQ7zqNzlZXjNo4Ui
+	inQ/b9mfiH/A0uDDOwrdbXQjwofOH6I440R8F2vyykGCooIH7wG+ogQV927a2KqH
+	Ad87Z5KP0nTVfrUF3CnbY7QRUsuSX9Grlsn2CiKEBobISXeT+CTBkV+oK6vr6lcF
+	/kz2U+YibqcAmstUBDzTLK4uPqI1knDINIMt0nPphvP3Mx+tPgJh4H20MkSBVO5F
+	LA0Jl3SSM8Smi+XQlYY/Np2Rz6Gq64W2LlPGehMhGacmoNg8hXhyLHhVWpZass3Q
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4bvnk6uxdb-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 27 Jan 2026 06:53:45 +0000 (GMT)
+Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 60R6rikb030787;
+	Tue, 27 Jan 2026 06:53:44 GMT
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4bvnk6uxd9-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 27 Jan 2026 06:53:44 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 60R3vTD3023625;
+	Tue, 27 Jan 2026 06:53:43 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4bwamjqf9b-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 27 Jan 2026 06:53:43 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 60R6rdu253608772
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 27 Jan 2026 02:18:06 GMT
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 19BC558054;
-	Tue, 27 Jan 2026 02:18:06 +0000 (GMT)
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7BE5158055;
-	Tue, 27 Jan 2026 02:18:05 +0000 (GMT)
-Received: from ltcrain119-lp4.ltc.tadn.ibm.com (unknown [9.5.7.39])
-	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 27 Jan 2026 02:18:05 +0000 (GMT)
-From: wenxiong@linux.ibm.com
-To: linuxppc-dev@lists.ozlabs.org
-Cc: maddy@linux.ibm.com, haren@linux.ibm.com, tyreld@linux.ibm.com,
-        Wen Xiong <wenxiong@linux.ibm.com>
-Subject: [PATCH] error path improvement in dlpar add
-Date: Mon, 26 Jan 2026 20:18:45 -0600
-Message-ID: <20260127021845.2326-1-wenxiong@linux.ibm.com>
-X-Mailer: git-send-email 2.47.3
+	Tue, 27 Jan 2026 06:53:39 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4D51120043;
+	Tue, 27 Jan 2026 06:53:39 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 83F5B20040;
+	Tue, 27 Jan 2026 06:53:34 +0000 (GMT)
+Received: from [9.78.106.105] (unknown [9.78.106.105])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 27 Jan 2026 06:53:34 +0000 (GMT)
+Message-ID: <91a1246a-44d7-4f39-b7a5-2de1865e7415@linux.ibm.com>
+Date: Tue, 27 Jan 2026 12:23:33 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -84,240 +87,142 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 6/6] powerpc64/bpf: Additional NVR handling for
+ bpf_throw
+To: bot+bpf-ci@kernel.org, adubey@linux.ibm.com, bpf@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc: sachinpb@linux.ibm.com, venkat88@linux.ibm.com, andrii@kernel.org,
+        eddyz87@gmail.com, mykolal@fb.com, ast@kernel.org,
+        daniel@iogearbox.net, martin.lau@linux.dev, song@kernel.org,
+        yonghong.song@linux.dev, john.fastabend@gmail.com, kpsingh@kernel.org,
+        sdf@fomichev.me, haoluo@google.com, jolsa@kernel.org,
+        christophe.leroy@csgroup.eu, naveen@kernel.org, maddy@linux.ibm.com,
+        mpe@ellerman.id.au, npiggin@gmail.com, memxor@gmail.com,
+        iii@linux.ibm.com, shuah@kernel.org, martin.lau@kernel.org,
+        clm@meta.com, ihor.solodrai@linux.dev
+References: <20260124075223.6033-7-adubey@linux.ibm.com>
+ <2a310e86a59eb4c44c3ac9e5647814469d9c955580c9c0f1b3d9ca4a44717a34@mail.kernel.org>
+Content-Language: en-US
+From: Hari Bathini <hbathini@linux.ibm.com>
+In-Reply-To: <2a310e86a59eb4c44c3ac9e5647814469d9c955580c9c0f1b3d9ca4a44717a34@mail.kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTI3MDAxNyBTYWx0ZWRfX6XlvXlk71feW
- TJMV6zqizXdSh+oxoWJTVMTmMYSJY6VfZq0YRm0upwelDHFnPkwg/CdNx2d+6U57JijIIOj3HRG
- NO07m2pykRIFkf6kZDVly2buJjGpHoLYYBvX3qT+aUe97e4+ljmwODE9XsRndphjmEc6VR9TNHF
- t660zC94ILhvXXtAphfcu6IySs3hPYpvq8kvxnJHUjevpsnaxjXFzkhllRNMWGIljeAKGOXsg4c
- PThFh4BAdLGPrLBd63vETBLa2iVZSfi8uYlCS+q4sjcXpL216vPz3/VgKcCpnWvwyqwxhfO74Uh
- 4nsAE/dxhshx0DeUveDQqnIqlO0hRelH6xXJ40XnS7egb8G5ZtC+VMhA99F8e6Q+vzQUTq6piEj
- wCRhAAF4MMe40lPbSmxs4qek7M0uX+curh+vCaT8JprZV+Q9bnci06E1l3c1MBnZ7kZwXsI+gL/
- wQT/eeyFCNAbd4ZrCtw==
-X-Proofpoint-GUID: 3rWMY9WT1LIaeN77jcnbsZuFHGA0IQYD
-X-Proofpoint-ORIG-GUID: 3rWMY9WT1LIaeN77jcnbsZuFHGA0IQYD
-X-Authority-Analysis: v=2.4 cv=X+Vf6WTe c=1 sm=1 tr=0 ts=69782062 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=vUbySO9Y5rIA:10 a=VkNPw1HP01LnGYTKEx00:22 a=VnNF1IyMAAAA:8
- a=WJWy47JjtfI5XqIBqRAA:9
+X-Proofpoint-GUID: PFbibNarOBqJkas2DMGTEou_bb19UzBW
+X-Proofpoint-ORIG-GUID: 9D4Ah6Cb63jonCAn6hbYlOYL6sVvYXd6
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTI3MDA1NCBTYWx0ZWRfX92YmP9olsmk7
+ ifu2d0hXdJlzQ/tVU8Ue7Aeym88Q9H0TKK0m9XsiWDeh2FQtCRR32Rl75Nu1XWlSzMyu0gRG7ek
+ HuDq+VHNPDUg3jtdx/zn2Kho70vhOpazchYYqVvccMOBCsUp5K4+iu40FYdBdIl90LbgLZIhX6A
+ 7fU13Trb8v7KUiCfrWy2OFFVGUoVotOXIjf86qp9f2/POe5yIRagdjze/t56UQTPFpVDE38wfeP
+ Lf9va1A6UeUkXsEILvDeXRkJhhqSvrlWum0Mp/RcbBwcRkaUxIyCE2ZZ/z58XuJaKkWHre0YrUM
+ nRg4H1g6+0JB9p2stZVKug/6v4Ez++140RyvZG1KDZuiB9nxqHOVUuOhyVbh4Vo1skUuP48aEUC
+ w37PSFcFkDE/7gPaRv6JtbDM3wCqUgX6mg2hMfqpmmX3dOBb+g+Cmx+vKhRBSANsxr86VhlfHdv
+ EQEewlDpy8umq+1DWSA==
+X-Authority-Analysis: v=2.4 cv=AMiVTGgp c=1 sm=1 tr=0 ts=697860f9 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=vUbySO9Y5rIA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=VwQbUJbxAAAA:8 a=DLj6BFq7CkYCEiYtZIMA:9 a=QEXdDO2ut3YA:10
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.20,FMLib:17.12.100.49
  definitions=2026-01-27_01,2026-01-26_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 suspectscore=0 impostorscore=0 lowpriorityscore=0
- clxscore=1011 spamscore=0 adultscore=0 malwarescore=0 bulkscore=0
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ malwarescore=0 spamscore=0 phishscore=0 bulkscore=0 suspectscore=0
+ adultscore=0 clxscore=1015 priorityscore=1501 lowpriorityscore=0
+ impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
  route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2601150000
- definitions=main-2601270017
+ definitions=main-2601270054
 
-From: Wen Xiong <wenxiong@linux.ibm.com>
 
-When doing a dlpar adding a device back, expect not loading device driver
-if claiming pci resource failed.
 
-Validating PHB DLPAR capability...yes.
-[ 4928.798012] pci_bus 0187:c0: root bus resource [bus c0-ff]
-[ 4928.798038] pci 0187:c0:00.0: No hypervisor support for SR-IOV on this device, IOV BARs disabled.
-[ 4928.815867] pci 0187:c0:00.0: BAR 0 [mem 0xb0020000-0xb0027fff 64bit]: can't claim; no compatible bridge window
+On 24/01/26 1:53 pm, bot+bpf-ci@kernel.org wrote:
+>> diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+>> index db121b1404fe..17de8b53a962 100644
+>> --- a/arch/powerpc/net/bpf_jit_comp64.c
+>> +++ b/arch/powerpc/net/bpf_jit_comp64.c
+> 
+> [ ... ]
+> 
+>> +/*
+>> + * For exception boundary & exception_cb progs:
+>> + *     return increased size to accommodate additional NVRs.
+>> + */
+>> +static int bpf_jit_stack_size(struct codegen_context *ctx)
+>> +{
+>> +	return ctx->exception_boundary || ctx->exception_cb ?
+>> +					BPF_PPC_EXC_STACKFRAME :
+>> +					BPF_PPC_STACKFRAME;
+>> +}
+> 
+> [ ... ]
+> 
+>> @@ -198,7 +249,19 @@ void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx)
+>>   			EMIT(PPC_RAW_STD(_R0, _R1, PPC_LR_STKOFF));
+>>   		}
+>>
+>> -		EMIT(PPC_RAW_STDU(_R1, _R1, -(BPF_PPC_STACKFRAME + ctx->stack_size)));
+>> +		EMIT(PPC_RAW_STDU(_R1, _R1,
+>> +				-(bpf_jit_stack_size(ctx) + ctx->stack_size)));
+>> +	}
+> 
+> [ ... ]
+> 
+>> @@ -248,9 +311,19 @@ static void bpf_jit_emit_common_epilogue(u32 *image, struct codegen_context *ctx)
+>>   		EMIT(PPC_RAW_LD(bpf_to_ppc(ARENA_VM_START), _R1,
+>>   				bpf_jit_stack_offsetof(ctx, bpf_to_ppc(ARENA_VM_START))));
+>>
+>> +	if (ctx->exception_cb) {
+>> +		/*
+>> +		 * Recover additionally saved non volatile registers from stack
+>> +		 * frame of exception boundary program.
+>> +		 */
+>> +		for (i = _R14; i <= _R25; i++)
+>> +			EMIT(PPC_RAW_LD(i, _R1, bpf_jit_stack_offsetof(ctx, i)));
+>> +	}
+>> +
+>>   	/* Tear down our stack frame */
+>>   	if (bpf_has_stack_frame(ctx)) {
+>> -		EMIT(PPC_RAW_ADDI(_R1, _R1, BPF_PPC_STACKFRAME + ctx->stack_size));
+>> +		EMIT(PPC_RAW_ADDI(_R1, _R1, bpf_jit_stack_size(ctx) + ctx->stack_size));
+> 
+> For the exception callback case, doesn't this use the wrong stack_size?
+> 
+> In bpf_jit_build_prologue(), the exception callback does not create its own
+> frame - it sets R1 to the boundary's frame pointer via EMIT(PPC_RAW_MR(_R1,
+> _R5)). However here in the epilogue, the frame teardown uses ctx->stack_size
+> which is the callback's stack depth, not the boundary's.
+> 
+> The boundary program creates its frame with:
+>      STDU R1, R1, -(bpf_jit_stack_size(boundary_ctx) + boundary_stack_size)
+> 
+> But the callback tears it down with:
+>      ADDI R1, R1, bpf_jit_stack_size(callback_ctx) + callback_stack_size
+> 
+> Since each BPF subprogram can have a different stack_depth (set per-subprog
+> in kernel/bpf/verifier.c via func[i]->aux->stack_depth), if the exception
+> callback has a different stack depth than the boundary, R1 will end up at
+> the wrong location after this ADDI.
+> 
+> After the wrong R1 adjustment, the LR restore below loads from R1+16 which
+> is now pointing to the wrong memory location, potentially causing a return
+> to an invalid address.
+> 
+> Would it be correct to store the boundary's stack_size somewhere accessible
+> to the callback, or ensure the callback uses the same stack layout as the
+> boundary?
+> 
+>> +
+>>   		if (ctx->seen & SEEN_FUNC || ctx->exception_cb) {
+>>   			EMIT(PPC_RAW_LD(_R0, _R1, PPC_LR_STKOFF));
+>>   			EMIT(PPC_RAW_MTLR(_R0));
+> 
+> 
+> ---
+> AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
 
----> Expect to exit if claiming resources fails(BAR0)
+I will post the fix for this issue as a follow-up.
 
-[ 4928.815899] pci 0187:c0:00.0: ROM [mem 0xb0000000-0xb001ffff]: can't claim; no compatible bridge window
-
---->Expect to exit if claiming resources fails(ROM), don't load device
-driver anymore, showed "dlpar add failed"
-
-[ 4928.815913] pci 0187:c0:00.0: ROM [mem 0x40000000000-0x4000001ffff]: assigned
-[ 4928.815923] pci 0187:c0:00.0: BAR 0 [mem 0x40800000000-0x40800007fff 64bit]: assigned
-[ 4928.816220] pci 0187:c0:00.0: BAR 0: error updating (0x00000004 != 0xffffffff)
-[ 4928.816364] pci 0187:c0:00.0: BAR 0: error updating (high 0x00060238 != 0xffffffff)
-[ 4928.816839] pci 0187:c0:00.0: ibm,query-pe-dma-windows(53) b00000 8000000 20000187 returned -3, lb=0 ps=0 wn=0
-[ 4928.816855] pci 0187:c0:00.0: spapr_tce_init_table_group: query_ddw failed
-[ 4928.816871] pci 0187:c0:00.0: Adding to iommu group 1
-[ 4928.816952] pci 0187:c0:00.0: of_irq_parse_pci: no interrupt-map found, INTx interrupts not available
-[ 4928.818135] nvme 0187:c0:00.0: ibm,query-pe-dma-windows(53) b00000 8000000 20000187 returned -3, lb=0 ps=0 wn=0
-[ 4928.818284] nvme nvme1: pci function 0187:c0:00.0
-[ 4928.819321] rpaphp: Slot [U78DB.ND0.WZS08E2-P1-C7] registered
-[ 4928.819338] rpadlpar_io: slot PHB 391 added
-
-With adding error path checking, didn't load the device driver anymore
-if claiming resources failed.
-
-Validating PHB DLPAR capability...yes.
-[  260.414453] PCI host bridge /pci@800000020000187  ranges:
-[  260.414473]  MEM 0x0000040000000000..0x0000040007ffffff -> 0x00000000b8000000
-[  260.414480]  MEM 0x0000040800000000..0x0000040fffffffff -> 0x0006023800000000
-[  260.414915] PCI host bridge to bus 0187:c0
-[  260.414922] pci_bus 0187:c0: root bus resource [mem 0x40000000000-0x40007ffffff] (bus address [0xb8000000-0xbfffffff])
-[  260.414929] pci_bus 0187:c0: root bus resource [mem 0x40800000000-0x40fffffffff 64bit] (bus address [0x6023800000000-0x6023fffffffff])
-[  260.414936] pci_bus 0187:c0: root bus resource [bus c0-ff]
-[  260.414948] pci 0187:c0:00.0: No hypervisor support for SR-IOV on this device, IOV BARs disabled.
-[  260.423439] pci 0187:c0:00.0: BAR 0 [mem 0xb0020000-0xb0027fff 64bit]: can't claim; no compatible bridge window
-[  260.423463] after pci_cliam_Resource=-22   ----> pci_claim_resources fails.
-
-[  260.423471] rpadlpar_io: slot PHB 391 added failed rc=-5  -----> added failed.
-
-Signed-off-by: Wen Xiong <wenxiong@linux.ibm.com>
-Reviewed-by: Haren Myneni <haren@linux.ibm.com>
-Reviewed-by: Tyrel Datwyler <tyreld@linux.ibm.com>
----
- arch/powerpc/include/asm/pci.h             |  4 ++--
- arch/powerpc/kernel/pci-common.c           | 23 +++++++++++++++++-----
- arch/powerpc/kernel/pci-hotplug.c          |  5 ++++-
- arch/powerpc/platforms/pseries/pci_dlpar.c |  3 ++-
- drivers/pci/hotplug/rpadlpar_core.c        |  7 ++++++-
- 5 files changed, 32 insertions(+), 10 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
-index 46a9c4491ed0..ebeb912a92bf 100644
---- a/arch/powerpc/include/asm/pci.h
-+++ b/arch/powerpc/include/asm/pci.h
-@@ -86,9 +86,9 @@ extern void pci_adjust_legacy_attr(struct pci_bus *bus,
- 				   enum pci_mmap_state mmap_type);
- #define HAVE_PCI_LEGACY	1
- 
--extern void pcibios_claim_one_bus(struct pci_bus *b);
-+extern int pcibios_claim_one_bus(struct pci_bus *b);
- 
--extern void pcibios_finish_adding_to_bus(struct pci_bus *bus);
-+extern int pcibios_finish_adding_to_bus(struct pci_bus *bus);
- 
- extern void pcibios_resource_survey(void);
- 
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index eac84d687b53..b16f43c7f02e 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1446,10 +1446,11 @@ void __init pcibios_resource_survey(void)
-  * rest of the code later, for now, keep it as-is as our main
-  * resource allocation function doesn't deal with sub-trees yet.
-  */
--void pcibios_claim_one_bus(struct pci_bus *bus)
-+int pcibios_claim_one_bus(struct pci_bus *bus)
- {
- 	struct pci_dev *dev;
- 	struct pci_bus *child_bus;
-+	int ret = 0;
- 
- 	list_for_each_entry(dev, &bus->devices, bus_list) {
- 		struct resource *r;
-@@ -1462,15 +1463,20 @@ void pcibios_claim_one_bus(struct pci_bus *bus)
- 			pr_debug("PCI: Claiming %s: Resource %d: %pR\n",
- 				 pci_name(dev), i, r);
- 
--			if (pci_claim_resource(dev, i) == 0)
-+			ret = pci_claim_resource(dev, i);
-+			if (ret == 0)
- 				continue;
-+			else
-+				return ret;
- 
- 			pci_claim_bridge_resource(dev, i);
- 		}
- 	}
- 
- 	list_for_each_entry(child_bus, &bus->children, node)
--		pcibios_claim_one_bus(child_bus);
-+		ret = pcibios_claim_one_bus(child_bus);
-+
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(pcibios_claim_one_bus);
- 
-@@ -1481,14 +1487,19 @@ EXPORT_SYMBOL_GPL(pcibios_claim_one_bus);
-  * added to a bus, this include calling it for a PHB that is just
-  * being added
-  */
--void pcibios_finish_adding_to_bus(struct pci_bus *bus)
-+int pcibios_finish_adding_to_bus(struct pci_bus *bus)
- {
-+	int ret = 0;
-+
- 	pr_debug("PCI: Finishing adding to hotplug bus %04x:%02x\n",
- 		 pci_domain_nr(bus), bus->number);
- 
- 	/* Allocate bus and devices resources */
- 	pcibios_allocate_bus_resources(bus);
--	pcibios_claim_one_bus(bus);
-+	ret = pcibios_claim_one_bus(bus);
-+	if (ret)
-+		return ret;
-+
- 	if (!pci_has_flag(PCI_PROBE_ONLY)) {
- 		if (bus->self)
- 			pci_assign_unassigned_bridge_resources(bus->self);
-@@ -1498,6 +1509,8 @@ void pcibios_finish_adding_to_bus(struct pci_bus *bus)
- 
- 	/* Add new devices to global lists.  Register in proc, sysfs. */
- 	pci_bus_add_devices(bus);
-+
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(pcibios_finish_adding_to_bus);
- 
-diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
-index 6f444d0822d8..133ce03fdd82 100644
---- a/arch/powerpc/kernel/pci-hotplug.c
-+++ b/arch/powerpc/kernel/pci-hotplug.c
-@@ -140,6 +140,7 @@ void pci_hp_add_devices(struct pci_bus *bus)
- 	struct pci_dev *dev;
- 	struct pci_controller *phb;
- 	struct device_node *dn = pci_bus_to_OF_node(bus);
-+	int ret = 0;
- 
- 	if (!dn)
- 		return;
-@@ -176,6 +177,8 @@ void pci_hp_add_devices(struct pci_bus *bus)
- 		for_each_pci_bridge(dev, bus)
- 			max = pci_scan_bridge(bus, dev, max, 1);
- 	}
--	pcibios_finish_adding_to_bus(bus);
-+	ret = pcibios_finish_adding_to_bus(bus);
-+	if (ret)
-+		pr_err("%s: unable to add hotplug pci device!\n");
- }
- EXPORT_SYMBOL_GPL(pci_hp_add_devices);
-diff --git a/arch/powerpc/platforms/pseries/pci_dlpar.c b/arch/powerpc/platforms/pseries/pci_dlpar.c
-index 8c77ec7980de..2b78faba40f6 100644
---- a/arch/powerpc/platforms/pseries/pci_dlpar.c
-+++ b/arch/powerpc/platforms/pseries/pci_dlpar.c
-@@ -58,7 +58,8 @@ struct pci_controller *init_phb_dynamic(struct device_node *dn)
- 		pseries_eeh_init_edev_recursive(PCI_DN(dn));
- 
- 	pcibios_scan_phb(phb);
--	pcibios_finish_adding_to_bus(phb->bus);
-+	if (pcibios_finish_adding_to_bus(phb->bus))
-+		return NULL;
- 
- 	return phb;
- }
-diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
-index 980bb3afd092..4c507dd04fa1 100644
---- a/drivers/pci/hotplug/rpadlpar_core.c
-+++ b/drivers/pci/hotplug/rpadlpar_core.c
-@@ -240,8 +240,10 @@ static int dlpar_add_phb(char *drc_name, struct device_node *dn)
- 	}
- 
- 	phb = init_phb_dynamic(dn);
--	if (!phb)
-+	if (!phb) {
-+		pr_err("%s: unable to add hotplug slot %s\n", drc_name);
- 		return -EIO;
-+	}
- 
- 	if (rpaphp_add_slot(dn)) {
- 		printk(KERN_ERR "%s: unable to add hotplug slot %s\n",
-@@ -311,6 +313,9 @@ int dlpar_add_slot(char *drc_name)
- 	}
- 	of_node_put(dn);
- 
-+	if (rc)
-+		goto exit;
-+
- 	printk(KERN_INFO "%s: slot %s added\n", DLPAR_MODULE_NAME, drc_name);
- exit:
- 	mutex_unlock(&rpadlpar_mutex);
--- 
-2.47.3
-
+Thanks
+Hari
 
