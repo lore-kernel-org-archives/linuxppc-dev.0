@@ -1,93 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-16296-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16297-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A662D19512
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jan 2026 02:05:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62812D19511
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jan 2026 02:34:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f0TJB34Wtz2xcB;
-	Tue, 27 Jan 2026 13:05:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::629" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769475421;
-	cv=pass; b=OqGp/xAAFerTyk+wiPIfBMQdiicoLH0j6QjBT8SXQvPcSfDLxBfo68Or2QLHwU3ghs7CjZ6hblKg+fiotWmOOYo+DwPqTVLmElHtadn2LOBqONRfC0H1BpZj7lw2uRed6Wy0VzZhbavZC30mn0vBYvVWt1Kk4voxBOpB/W1K6OP/3hh6hB3vBncm0ocK0jsie+UQ+QzBBZhXSvIw5Tk0TH/PXYFkvzitgZdZ0xkkF+lKh6GxA+KiwPVNhK49jsITU0H02zPb+nJBz00ynwBMr26TOUx1I5QYD3M4w5+RvoUxrjQfXMHv3ZzCKuAKVJLNKDcre+YR9/8BrSrAy1dOfQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1769475421; c=relaxed/relaxed;
-	bh=3zLfNFu5Ej89ae2FOVFTz6sNNJ0wH6QKfxg5HAX5ASo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=RAWxDS9VD9fvRnxkPJCuL3NFS1VVz8pYAFYiEWMqhnRr5ym6Ql52HO+vsQuOzpibrDmcpEWGXTTSfqs7Ut5e3ts9ag4TDyU2tOGmlFJuG4EpzDOvBTveR7ctMCtrMnJa9aWHvGvsfhQl3gLDayYdoOJTIjD0NZIjB+1AKPPe4Opsar3Ta8JXjoBhQnv48d/LUwIdlZVxV5f9vH09bytHbPvfyE/sT+H06Psp3uwhbQjRbwsXwNv9RhYc9BeYTqnDq4kXVwYp5AxFWEBEEux4zKbZGyo9lrXe4bsdzMs/UG2xXuQDeSersVwj3oZ2OZvD+9MNm6zNLiMB8HPHrsTXHw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=VwENLZu1; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::629; helo=mail-ej1-x629.google.com; envelope-from=wusamuel@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f0Txh4np8z2xcB;
+	Tue, 27 Jan 2026 13:34:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769481256;
+	cv=none; b=InYiAYIUW7aYt3tEz6g2znxQz2O/A9PguiqQ1qOirmZQusi9pD3TnWX/su7SsqRDpV4GyF5nxdrL31Z7OrUwrUlJR2uemBZRCTYpvLnBIlcD2CsBqM4PShE8cnfbTKC1F2NjyuqwAI/BoMzyD/Rxn9GuUbXRtZU2L5HYvUyCw4ncO3pDGvf4CvPX2R2bApqFx+d3F6MpldR+k1ZKVuuobYfteTkoLmqQquZp6HPZlo2WeYtcAsTdwW+0SYRCmNhbKtyKWIXi0elTPiBCGgCOGbwskpH/zFnmyyeedhQ9CIg+4O3iBW2JTwg0puZDVhm5kaLcLEmCP9CL8QKZETy6jw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1769481256; c=relaxed/relaxed;
+	bh=CQycuOp4nIBSfW/vleYH22vyOKUKF5lfgvTu3TbeUrQ=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=PZlwAHoA6xoPApfatKBqtctELWGZbtZze3dmQ06LJ44XeiqonPGtOPBjO7hFb87QI2/ycV1CnNyB3h6ote3DawULUIsD44WYEGfgubSwNBUkQbHMimdg3abJgCA3FU9q0jzimyy+VxS1Pu+tBttRhmUUocCfBAHlsGHA+bsLaonVjjtAp/xKaSGp8Xch8igVer+WIW6wC13PX2gqafv0ZSdhhGrn1zKF5NRGUujz+ONziXOU0tBWIe6LN51F286tbmoBzMGHISpt8sGjsuRmJ4diPPAEP/SjDMKS5E+KRkP2YcmrqCl4W0KIuJ4Ztq8s8ULoT9chxeIIBPQ9UJgSMg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=W002QsDT; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=VwENLZu1;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=W002QsDT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::629; helo=mail-ej1-x629.google.com; envelope-from=wusamuel@google.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x629.google.com (mail-ej1-x629.google.com [IPv6:2a00:1450:4864:20::629])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f0RnR2v9wz2xjP
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2026 11:56:58 +1100 (AEDT)
-Received: by mail-ej1-x629.google.com with SMTP id a640c23a62f3a-b884cb1e717so718014966b.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Jan 2026 16:56:58 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1769475414; cv=none;
-        d=google.com; s=arc-20240605;
-        b=bVRJvDIbadO6EsWbzAVmt8+/Ot0yj+9EDhMFpEer6OBrVNRaQ0XY8xyiSl0I2nEPpw
-         IZMf+GoodC3fcF4i9xhrzq0OoqVgcwRb8baAdy8q+MT950qx9rJU/fRU8xVvtKYvksn9
-         ehjW3QnjdexKgtQGnUJ0f/gxwUasmeg1U2k1S4JCGHXKlSuIRvlPQxMhNlXsbmfHKq3Q
-         cufotQYdD2bBK3d6IfZlXvhOzwDkdrCXXe8g/N+k4vWfAHcZxmGBlBGYo1pK0A5IQBHA
-         bUflULoIPhP6EPrhPA9TFlgYwFhsJloWdRcjrsR9eyzKPNRFmm2QghwLPraiqK/Qblcc
-         FGfg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=3zLfNFu5Ej89ae2FOVFTz6sNNJ0wH6QKfxg5HAX5ASo=;
-        fh=nnTBalLKp+Bdk1AhnZiI/lGzZrYTI7VB/FOdw2fheFI=;
-        b=Paz38mDs1Bu67B2MTwlMNbOH7fSXfTXBcC2L/U6qjegd9hDBgHFWDveQYhzk8YaSbY
-         bryq8FzsMnLSygOBslCrtxHzRYbQq0GEnBR7tPpUxqYoYH5UdPuSt0ZAbCIQ4VAdsGrd
-         8nz4kdKAZMiIC8q2Ol57Wb3nrd8x0bv9qCb5WXGI8Z7fZy4YVi7fT2UABp0N7F/am6/I
-         0LVllNTEuOUaNomKwOBt/l5LPdN6AQXj5oAmuGMhsXfCQZDdD1e4Qpzr3oo0WKaPKh2x
-         bmILVMXr/E2FC9vSMyEy+hjmFAn2TRrtVYCRmGsV056Gjy6THFAmyjLTdE/l5y1ia0RC
-         6Ckg==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1769475414; x=1770080214; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=3zLfNFu5Ej89ae2FOVFTz6sNNJ0wH6QKfxg5HAX5ASo=;
-        b=VwENLZu1fJv5LZZk+loAaliVLDqN3kpNgmVJqNNpwQYkZ+rwBKIrPaVS9neVxGfzMp
-         NdwNKMQTLkdIm+J1HmRMqkZoq1WhMKe82BgzcjsgiWbilSWHGqVC92d9/NWWgsOC0gta
-         a4IfPFhO2fXXpKpYV+3lDfSIY9qdOw+Ui/6nPaBw+b4Zxrlpv53r+1cwNeyGd4bZ/VaR
-         N+TeJ25oCJtiGcuqZfGNO8g3ZVU5jJ+aFh0NhtI0k25WHhfhi56NYL8tIe/t52XYuoKf
-         jB6U4dquwiO5OL4FWPKL8qfE42dP8+zHqAVte3zfB9x3GMU7F1dkoOKAfKc6ECPbEAt/
-         Jezg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1769475414; x=1770080214;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=3zLfNFu5Ej89ae2FOVFTz6sNNJ0wH6QKfxg5HAX5ASo=;
-        b=SEUhVFLiIYQWEtMikaIe9Z7AGonpnKaZY6k0PPdIz4IqUeCt+Yp1Vrk521XUyPDj3D
-         5tSxeYdsz0fJOPJeI3+5D9YHCTZjP6YMh3pGdhFM3PWoIxaJ/fsfacyhXe6R8jWyrBHL
-         FRQykf7xhUBzBqNRMxLH5aD/kJbNLZFs4dh1c35g+wgd7+KwQZfSuSBYWVkrnSylKgee
-         XuzyoEydwKNLIOpL3riEWLLzlMZE6EzFJ03CvuH0ZhRuu3U1SDr6CGtFcSkY4Idh8A1l
-         cKQTa1RmS6Seq2zbybwjAOI1xH3cnFBJ18EMYk7shcPUaYYATvhzfId9nlqN3fveJ2q7
-         Fobw==
-X-Forwarded-Encrypted: i=1; AJvYcCUSCNqeEADEbi0YK5hWDIFIuGZZz9F/ftXWyWSWJvS1xB1yr0og5Dc0vU9oYO2zSJJ/5ibjGpra6Ud0a5I=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyN1P4hJf9VrkjT8FNQLeUB0tZvdhNm2s1ePBi3KqG9CH7+/R9e
-	WyTDOzPELsUi0mHlq9pOnjOf6qg9vNi/Z0aTQh1263i9QMPlOBeVDVhnstAiMw7B3s04HoIg+tI
-	Vqb049k7f/i7cHqTc3ieT/ZILfE+rS8cEmpWFrOEG
-X-Gm-Gg: AZuq6aJqat7edlyUNu3UoccTFteJV1Bg5a63IDcmo3wNv/RGRmwtgHL5i+88bU5j3rU
-	T4bZ9oIwXZBMUrqKBxwmGwSzfN45tIYbOyURMt0PQnL5jZUQqRp9UY2H5PchtvgGOOsnLuxZF4o
-	zgNa0MD0ZRz7yA1X7mcN93KwMGsBR8RxKV+ZiAGsvHH18fIToI83Bal6gdsRWFQz1HsDIw+hM4L
-	3zB6xvOkKYGZRxDgTKHo4+KjKP3i2mpcHye9Q9P+C6tJEvqjmMK98W18iYZIaU9ZiUJB3EBOxuE
-	TwS6t7FMyB4OhQvh/t0cbPerPRAlrQ==
-X-Received: by 2002:a17:907:3e1f:b0:b70:4f7d:24f8 with SMTP id
- a640c23a62f3a-b8ceef90390mr472102366b.22.1769475414121; Mon, 26 Jan 2026
- 16:56:54 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f0Txg5LgWz2xJF
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2026 13:34:15 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 60QFGRN2010776;
+	Tue, 27 Jan 2026 02:32:45 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=CQycuO
+	p4nIBSfW/vleYH22vyOKUKF5lfgvTu3TbeUrQ=; b=W002QsDTnpWy5bTCK6SUeq
+	k1RURfCQAs5S8BiCV6aime/l+ZAp97IhBnvrqHISKtWRVPU+RwXGfpwathlFqsiv
+	VTjjl0vqkLmYa08F0o5VuQWoVKx9Qiv22BudjEuJ/C9R9Xaycx0SjasFEX8Za3R3
+	cBwYXAPa8aoDAg9UBKWZx3O0WyEzrJ4nor6xX4G8Z0ncjkNWllTU7sPchsDvtSl5
+	+38tF/ykcRpBqPgZL3gLU85vX6MPwTcrDoAD6+hh7t5B8vGUy2PAcvBHyzI4U0pc
+	ffM8F7mqlhWghoBAbAWmAIxIa221JZPQKLKcs3DB9OPmjLVL2vR/4up/HPidGfuw
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4bvnt7k2uh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 27 Jan 2026 02:32:44 +0000 (GMT)
+Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 60R2U3X0012232;
+	Tue, 27 Jan 2026 02:32:44 GMT
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4bvnt7k2uc-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 27 Jan 2026 02:32:44 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 60QLR0dk026319;
+	Tue, 27 Jan 2026 02:32:42 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4bw9wk6x95-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 27 Jan 2026 02:32:42 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 60R2WcCf42402162
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 27 Jan 2026 02:32:38 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8B8AF20043;
+	Tue, 27 Jan 2026 02:32:38 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1303920040;
+	Tue, 27 Jan 2026 02:32:32 +0000 (GMT)
+Received: from [9.43.49.170] (unknown [9.43.49.170])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 27 Jan 2026 02:32:31 +0000 (GMT)
+Message-ID: <6873d674-316e-4bc2-a39d-52ba4239e395@linux.ibm.com>
+Date: Tue, 27 Jan 2026 08:02:29 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,370 +87,395 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
-In-Reply-To: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
-From: Samuel Wu <wusamuel@google.com>
-Date: Mon, 26 Jan 2026 16:56:42 -0800
-X-Gm-Features: AZwV_QiBMrJYd91OXm8P7lUFLNbyvK6EaRwh_3htJKxjg87yoCQ5TeewXmGGNPs
-Message-ID: <CAG2KctrjSP+XyBiOB7hGA2DWtdpg3diRHpQLKGsVYxExuTZazA@mail.gmail.com>
-Subject: Re: [PATCH v4 00/54] tree-in-dcache stuff
-To: Al Viro <viro@zeniv.linux.org.uk>
-Cc: linux-fsdevel@vger.kernel.org, torvalds@linux-foundation.org, 
-	brauner@kernel.org, jack@suse.cz, raven@themaw.net, miklos@szeredi.hu, 
-	neil@brown.name, a.hindborg@kernel.org, linux-mm@kvack.org, 
-	linux-efi@vger.kernel.org, ocfs2-devel@lists.linux.dev, kees@kernel.org, 
-	rostedt@goodmis.org, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, 
-	paul@paul-moore.com, casey@schaufler-ca.com, linuxppc-dev@lists.ozlabs.org, 
-	john.johansen@canonical.com, selinux@vger.kernel.org, 
-	borntraeger@linux.ibm.com, bpf@vger.kernel.org, clm@meta.com, 
-	android-kernel-team <android-kernel-team@google.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 6/6] powerpc64/bpf: Additional NVR handling for
+ bpf_throw
+From: Hari Bathini <hbathini@linux.ibm.com>
+To: bot+bpf-ci@kernel.org, adubey@linux.ibm.com, bpf@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc: sachinpb@linux.ibm.com, venkat88@linux.ibm.com, andrii@kernel.org,
+        eddyz87@gmail.com, mykolal@fb.com, ast@kernel.org,
+        daniel@iogearbox.net, martin.lau@linux.dev, song@kernel.org,
+        yonghong.song@linux.dev, john.fastabend@gmail.com, kpsingh@kernel.org,
+        sdf@fomichev.me, haoluo@google.com, jolsa@kernel.org,
+        christophe.leroy@csgroup.eu, naveen@kernel.org, maddy@linux.ibm.com,
+        mpe@ellerman.id.au, npiggin@gmail.com, memxor@gmail.com,
+        iii@linux.ibm.com, shuah@kernel.org, martin.lau@kernel.org,
+        clm@meta.com, ihor.solodrai@linux.dev
+References: <20260124075223.6033-7-adubey@linux.ibm.com>
+ <2a310e86a59eb4c44c3ac9e5647814469d9c955580c9c0f1b3d9ca4a44717a34@mail.kernel.org>
+ <1ea2c9bc-4dde-4e26-9e50-066e5e3900ab@linux.ibm.com>
+Content-Language: en-US
+In-Reply-To: <1ea2c9bc-4dde-4e26-9e50-066e5e3900ab@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: FtwGbzwVp_kfmFnVmzUNWrXLGa-8yiha
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTI3MDAxNyBTYWx0ZWRfX1yQ/KGzehPNr
+ 8WXEAkjlXftp4mF4R56AImVx29fMSXQ/itg6Wg4aWNWA6VbroL+l2ezdWIAsUCrWDiAD6/viWWD
+ h0DmkXTxlxb1e6dprywG7goStvg1qz/OJFdP5qKObgm4MXm3lVOoBjbGGbwsiS7W2DqdshP5cOb
+ mPyLXkTUYwAG6C+6oBav9lwDpsufhl/owJmT0MDsFLstnMQAMO+ZoWmZbzttUnNDWM+8DQmhGRW
+ th6SlRkCP2A18V1Tz7X4WKkF6aK4KaDIBsgawN5y7laYxAODTg/odZkg/JwK03In26/cnzZEaYQ
+ vW2LARFRCOa5KrnG74t+3ioRaQiuCU26s+UEyVhXqzGYCCdFFvKfxi4WN90TVeq7Q/ErDfFN6fQ
+ jt+9RNsXa7RdcihilOA3Ulz/zogAhTKeJIpAjfxbO+Aho40/SxjgMD7vBNEdciwOtPsRfEGK6+W
+ IfFFsvbYIi4eMomP6Mw==
+X-Authority-Analysis: v=2.4 cv=Zs3g6t7G c=1 sm=1 tr=0 ts=697823cc cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=vUbySO9Y5rIA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=VwQbUJbxAAAA:8 a=PTKKscx9fBaGl3L8rvAA:9 a=tOGEaUVFaSAvnmsd:21
+ a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: eI5URQBaM0cPWrVkAcznPgxx4yBPxGiw
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.20,FMLib:17.12.100.49
+ definitions=2026-01-27_01,2026-01-26_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 lowpriorityscore=0 adultscore=0 phishscore=0 suspectscore=0
+ bulkscore=0 impostorscore=0 priorityscore=1501 malwarescore=0 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2601150000 definitions=main-2601270017
 
-On Mon, Nov 17, 2025 at 9:15=E2=80=AFPM Al Viro <viro@zeniv.linux.org.uk> w=
-rote:
->
-> Some filesystems use a kinda-sorta controlled dentry refcount leak to pin
-> dentries of created objects in dcache (and undo it when removing those).
-> Reference is grabbed and not released, but it's not actually _stored_
-> anywhere.  That works, but it's hard to follow and verify; among other
-> things, we have no way to tell _which_ of the increments is intended
-> to be an unpaired one.  Worse, on removal we need to decide whether
-> the reference had already been dropped, which can be non-trivial if
-> that removal is on umount and we need to figure out if this dentry is
-> pinned due to e.g. unlink() not done.  Usually that is handled by using
-> kill_litter_super() as ->kill_sb(), but there are open-coded special
-> cases of the same (consider e.g. /proc/self).
->
-> Things get simpler if we introduce a new dentry flag (DCACHE_PERSISTENT)
-> marking those "leaked" dentries.  Having it set claims responsibility
-> for +1 in refcount.
->
-> The end result this series is aiming for:
->
-> * get these unbalanced dget() and dput() replaced with new primitives tha=
-t
->   would, in addition to adjusting refcount, set and clear persistency fla=
-g.
-> * instead of having kill_litter_super() mess with removing the remaining
->   "leaked" references (e.g. for all tmpfs files that hadn't been removed
->   prior to umount), have the regular shrink_dcache_for_umount() strip
->   DCACHE_PERSISTENT of all dentries, dropping the corresponding
->   reference if it had been set.  After that kill_litter_super() becomes
->   an equivalent of kill_anon_super().
->
-> Doing that in a single step is not feasible - it would affect too many pl=
-aces
-> in too many filesystems.  It has to be split into a series.
->
-> This work has really started early in 2024; quite a few preliminary piece=
-s
-> have already gone into mainline.  This chunk is finally getting to the
-> meat of that stuff - infrastructure and most of the conversions to it.
->
-> Some pieces are still sitting in the local branches, but the bulk of
-> that stuff is here.
->
-> Compared to v3:
->         * fixed a functionfs braino around ffs_epfiles_destroy() (in #40/=
-54,
-> used to be #36/50).
->         * added fixes for a couple of UAF in functionfs (##36--39); that
-> does *NOT* include any fixes for dmabuf bugs Chris posted last week, thou=
-gh.
->
-> The branch is -rc5-based; it lives in
-> git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs.git #work.persiste=
-ncy
-> individual patches in followups.
->
-> Please, help with review and testing.  If nobody objects, in a few days i=
-t
-> goes into #for-next.
->
-> Shortlog:
->       fuse_ctl_add_conn(): fix nlink breakage in case of early failure
->       tracefs: fix a leak in eventfs_create_events_dir()
->       new helper: simple_remove_by_name()
->       new helper: simple_done_creating()
->       introduce a flag for explicitly marking persistently pinned dentrie=
-s
->       primitives for maintaining persisitency
->       convert simple_{link,unlink,rmdir,rename,fill_super}() to new primi=
-tives
->       convert ramfs and tmpfs
->       procfs: make /self and /thread_self dentries persistent
->       configfs, securityfs: kill_litter_super() not needed
->       convert xenfs
->       convert smackfs
->       convert hugetlbfs
->       convert mqueue
->       convert bpf
->       convert dlmfs
->       convert fuse_ctl
->       convert pstore
->       convert tracefs
->       convert debugfs
->       debugfs: remove duplicate checks in callers of start_creating()
->       convert efivarfs
->       convert spufs
->       convert ibmasmfs
->       ibmasmfs: get rid of ibmasmfs_dir_ops
->       convert devpts
->       binderfs: use simple_start_creating()
->       binderfs_binder_ctl_create(): kill a bogus check
->       convert binderfs
->       autofs_{rmdir,unlink}: dentry->d_fsdata->dentry =3D=3D dentry there
->       convert autofs
->       convert binfmt_misc
->       selinuxfs: don't stash the dentry of /policy_capabilities
->       selinuxfs: new helper for attaching files to tree
->       convert selinuxfs
->       functionfs: don't abuse ffs_data_closed() on fs shutdown
->       functionfs: don't bother with ffs->ref in ffs_data_{opened,closed}(=
-)
->       functionfs: need to cancel ->reset_work in ->kill_sb()
->       functionfs: fix the open/removal races
->       functionfs: switch to simple_remove_by_name()
->       convert functionfs
->       gadgetfs: switch to simple_remove_by_name()
->       convert gadgetfs
->       hypfs: don't pin dentries twice
->       hypfs: switch hypfs_create_str() to returning int
->       hypfs: swich hypfs_create_u64() to returning int
->       convert hypfs
->       convert rpc_pipefs
->       convert nfsctl
->       convert rust_binderfs
->       get rid of kill_litter_super()
->       convert securityfs
->       kill securityfs_recursive_remove()
->       d_make_discardable(): warn if given a non-persistent dentry
->
-> Diffstat:
->  Documentation/filesystems/porting.rst     |   7 ++
->  arch/powerpc/platforms/cell/spufs/inode.c |  17 ++-
->  arch/s390/hypfs/hypfs.h                   |   6 +-
->  arch/s390/hypfs/hypfs_diag_fs.c           |  60 ++++------
->  arch/s390/hypfs/hypfs_vm_fs.c             |  21 ++--
->  arch/s390/hypfs/inode.c                   |  82 +++++--------
->  drivers/android/binder/rust_binderfs.c    | 121 ++++++-------------
->  drivers/android/binderfs.c                |  82 +++----------
->  drivers/base/devtmpfs.c                   |   2 +-
->  drivers/misc/ibmasm/ibmasmfs.c            |  24 ++--
->  drivers/usb/gadget/function/f_fs.c        | 144 +++++++++++++----------
->  drivers/usb/gadget/legacy/inode.c         |  49 ++++----
->  drivers/xen/xenfs/super.c                 |   2 +-
->  fs/autofs/inode.c                         |   2 +-
->  fs/autofs/root.c                          |  11 +-
->  fs/binfmt_misc.c                          |  69 ++++++-----
->  fs/configfs/dir.c                         |  10 +-
->  fs/configfs/inode.c                       |   3 +-
->  fs/configfs/mount.c                       |   2 +-
->  fs/dcache.c                               | 111 +++++++++++-------
->  fs/debugfs/inode.c                        |  32 ++----
->  fs/devpts/inode.c                         |  57 ++++-----
->  fs/efivarfs/inode.c                       |   7 +-
->  fs/efivarfs/super.c                       |   5 +-
->  fs/fuse/control.c                         |  38 +++---
->  fs/hugetlbfs/inode.c                      |  12 +-
->  fs/internal.h                             |   1 -
->  fs/libfs.c                                |  52 +++++++--
->  fs/nfsd/nfsctl.c                          |  18 +--
->  fs/ocfs2/dlmfs/dlmfs.c                    |   8 +-
->  fs/proc/base.c                            |   6 +-
->  fs/proc/internal.h                        |   1 +
->  fs/proc/root.c                            |  14 +--
->  fs/proc/self.c                            |  10 +-
->  fs/proc/thread_self.c                     |  11 +-
->  fs/pstore/inode.c                         |   7 +-
->  fs/ramfs/inode.c                          |   8 +-
->  fs/super.c                                |   8 --
->  fs/tracefs/event_inode.c                  |   7 +-
->  fs/tracefs/inode.c                        |  13 +--
->  include/linux/dcache.h                    |   4 +-
->  include/linux/fs.h                        |   6 +-
->  include/linux/proc_fs.h                   |   2 -
->  include/linux/security.h                  |   2 -
->  init/do_mounts.c                          |   2 +-
->  ipc/mqueue.c                              |  12 +-
->  kernel/bpf/inode.c                        |  15 +--
->  mm/shmem.c                                |  38 ++----
->  net/sunrpc/rpc_pipe.c                     |  27 ++---
->  security/apparmor/apparmorfs.c            |  13 ++-
->  security/inode.c                          |  35 +++---
->  security/selinux/selinuxfs.c              | 185 +++++++++++++-----------=
-------
->  security/smack/smackfs.c                  |   2 +-
->  53 files changed, 649 insertions(+), 834 deletions(-)
->
->         Overview:
->
-> First two commits are bugfixes (fusectl and tracefs resp.)
->
-> [1/54] fuse_ctl_add_conn(): fix nlink breakage in case of early failure
-> [2/54] tracefs: fix a leak in eventfs_create_events_dir()
->
-> Next, two commits adding a couple of useful helpers, the next three addin=
-g
-> the infrastructure and the rest consists of per-filesystem conversions.
->
-> [3/54] new helper: simple_remove_by_name()
-> [4/54] new helper: simple_done_creating()
->         end_creating_path() analogue for internal object creation; unlike
-> end_creating_path() no mount is passed to it (or guaranteed to exist, for
-> that matter - it might be used during the filesystem setup, before the
-> superblock gets attached to any mounts).
->
-> Infrastructure:
-> [5/54] introduce a flag for explicitly marking persistently pinned dentri=
-es
->         * introduce the new flag
->         * teach shrink_dcache_for_umount() to handle it (i.e. remove
-> and drop refcount on anything that survives to umount with that flag
-> still set)
->         * teach kill_litter_super() that anything with that flag does
-> *not* need to be unpinned.
-> [6/54] primitives for maintaining persisitency
->         * d_make_persistent(dentry, inode) - bump refcount, mark persiste=
-nt
-> and make hashed positive.  Return value is a borrowed reference to dentry=
-;
-> it can be used until something removes persistency (at the very least,
-> until the parent gets unlocked, but some filesystems may have stronger
-> exclusion).
->         * d_make_discardable() - remove persistency mark and drop referen=
-ce.
->
-> NOTE: at that stage d_make_discardable() does not reject dentries not
-> marked persistent - it acts as if the mark been set.
->
-> Rationale: less noise in series splitup that way.  We want (and on the
-> next commit will get) simple_unlink() to do the right thing - remove
-> persistency, if it's there.  However, it's used by many filesystems.
-> We would have either to convert them all at once or split simple_unlink()
-> into "want persistent" and "don't want persistent" versions, the latter
-> being the old one.  In the course of the series almost all callers
-> would migrate to the replacement, leaving only two pathological cases
-> with the old one.  The same goes for simple_rmdir() (two callers left in
-> the end), simple_recursive_removal() (all callers gone in the end), etc.
-> That's a lot of noise and it's easier to start with d_make_discardable()
-> quietly accepting non-persistent dentries, then, in the end, add private
-> copies of simple_unlink() and simple_rmdir() for two weird users (configf=
-s
-> and apparmorfs) and have those use dput() instead of d_make_discardable()=
-.
-> At that point we'd be left with all callers of d_make_discardable()
-> always passing persistent dentries, allowing to add a warning in it.
->
-> [7/54] convert simple_{link,unlink,rmdir,rename,fill_super}() to new prim=
-itives
->         See above re quietly accepting non-peristent dentries in
-> simple_unlink(), simple_rmdir(), etc.
->
->         Converting filesystems:
-> [8/54] convert ramfs and tmpfs
-> [9/54] procfs: make /self and /thread_self dentries persistent
-> [10/54] configfs, securityfs: kill_litter_super() not needed
-> [11/54] convert xenfs
-> [12/54] convert smackfs
-> [13/54] convert hugetlbfs
-> [14/54] convert mqueue
-> [15/54] convert bpf
-> [16/54] convert dlmfs
-> [17/54] convert fuse_ctl
-> [18/54] convert pstore
-> [19/54] convert tracefs
-> [20/54] convert debugfs
-> [21/54] debugfs: remove duplicate checks in callers of start_creating()
-> [22/54] convert efivarfs
-> [23/54] convert spufs
-> [24/54] convert ibmasmfs
-> [25/54] ibmasmfs: get rid of ibmasmfs_dir_ops
-> [26/54] convert devpts
-> [27/54] binderfs: use simple_start_creating()
-> [28/54] binderfs_binder_ctl_create(): kill a bogus check
-> [29/54] convert binderfs
-> [30/54] autofs_{rmdir,unlink}: dentry->d_fsdata->dentry =3D=3D dentry the=
-re
-> [31/54] convert autofs
-> [32/54] convert binfmt_misc
-> [33/54] selinuxfs: don't stash the dentry of /policy_capabilities
-> [34/54] selinuxfs: new helper for attaching files to tree
-> [35/54] convert selinuxfs
->
->         Several functionfs fixes, before converting it, to make life
-> simpler for backporting:
-> [36/54] functionfs: don't abuse ffs_data_closed() on fs shutdown
-> [37/54] functionfs: don't bother with ffs->ref in ffs_data_{opened,closed=
-}()
-> [38/54] functionfs: need to cancel ->reset_work in ->kill_sb()
-> [39/54] functionfs: fix the open/removal races
->
->         ... and back to filesystems conversions:
->
-> [40/54] functionfs: switch to simple_remove_by_name()
-> [41/54] convert functionfs
-> [42/54] gadgetfs: switch to simple_remove_by_name()
-> [43/54] convert gadgetfs
-> [44/54] hypfs: don't pin dentries twice
-> [45/54] hypfs: switch hypfs_create_str() to returning int
-> [46/54] hypfs: swich hypfs_create_u64() to returning int
-> [47/54] convert hypfs
-> [48/54] convert rpc_pipefs
-> [49/54] convert nfsctl
-> [50/54] convert rust_binderfs
->
->         ... and no kill_litter_super() callers remain, so we
-> can take it out:
-> [51/54] get rid of kill_litter_super()
->
->         Followups:
-> [52/54] convert securityfs
->         That was the last remaining user of simple_recursive_removal()
-> that did *not* mark things persistent.  Now the only places where
-> d_make_discardable() is still called for dentries that are not marked
-> persistent are the calls of simple_{unlink,rmdir}() in configfs and
-> apparmorfs.
->
-> [53/54] kill securityfs_recursive_remove()
->         Unused macro...
->
-> [54/54] d_make_discardable(): warn if given a non-persistent dentry
->
-> At this point there are very few call chains that might lead to
-> d_make_discardable() on a dentry that hadn't been made persistent:
-> calls of simple_unlink() and simple_rmdir() in configfs and
-> apparmorfs.
->
-> Both filesystems do pin (part of) their contents in dcache, but
-> they are currently playing very unusual games with that.  Converting
-> them to more usual patterns might be possible, but it's definitely
-> going to be a long series of changes in both cases.
->
-> For now the easiest solution is to have both stop using simple_unlink()
-> and simple_rmdir() - that allows to make d_make_discardable() warn
-> when given a non-persistent dentry.
->
-> Rather than giving them full-blown private copies (with calls of
-> d_make_discardable() replaced with dput()), let's pull the parts of
-> simple_unlink() and simple_rmdir() that deal with timestamps and link
-> counts into separate helpers (__simple_unlink() and __simple_rmdir()
-> resp.) and have those used by configfs and apparmorfs.
->
 
-Hi Al, when I apply this patchset my Pixel 6 no longer enumerates on
-lsusb or ADB. It was quite hard to bisect to this point, as this is
-non-deterministic and seems to be setup specific. Note, I am using
-android-mainline, but my understanding is that this build does not
-have any out-of-tree USB patches, and that there are no vendor hooks
-in the build.
 
-My apologies as I can't offer any other clues; there are no obviously
-bad dmesg logs and I'm still working on narrowing down the exact
-commit(s) that started this, but just wanted to send a FYI in case
-something stands out as obvious.
+On 27/01/26 12:00 am, Hari Bathini wrote:
+> 
+> 
+> On 24/01/26 1:53 pm, bot+bpf-ci@kernel.org wrote:
+>>> diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/ 
+>>> bpf_jit_comp64.c
+>>> index db121b1404fe..17de8b53a962 100644
+>>> --- a/arch/powerpc/net/bpf_jit_comp64.c
+>>> +++ b/arch/powerpc/net/bpf_jit_comp64.c
+>>
+>> [ ... ]
+>>
+>>> +/*
+>>> + * For exception boundary & exception_cb progs:
+>>> + *     return increased size to accommodate additional NVRs.
+>>> + */
+>>> +static int bpf_jit_stack_size(struct codegen_context *ctx)
+>>> +{
+>>> +    return ctx->exception_boundary || ctx->exception_cb ?
+>>> +                    BPF_PPC_EXC_STACKFRAME :
+>>> +                    BPF_PPC_STACKFRAME;
+>>> +}
+>>
+>> [ ... ]
+>>
+>>> @@ -198,7 +249,19 @@ void bpf_jit_build_prologue(u32 *image, struct 
+>>> codegen_context *ctx)
+>>>               EMIT(PPC_RAW_STD(_R0, _R1, PPC_LR_STKOFF));
+>>>           }
+>>>
+>>> -        EMIT(PPC_RAW_STDU(_R1, _R1, -(BPF_PPC_STACKFRAME + ctx- 
+>>> >stack_size)));
+>>> +        EMIT(PPC_RAW_STDU(_R1, _R1,
+>>> +                -(bpf_jit_stack_size(ctx) + ctx->stack_size)));
+>>> +    }
+>>
+>> [ ... ]
+>>
+>>> @@ -248,9 +311,19 @@ static void bpf_jit_emit_common_epilogue(u32 
+>>> *image, struct codegen_context *ctx)
+>>>           EMIT(PPC_RAW_LD(bpf_to_ppc(ARENA_VM_START), _R1,
+>>>                   bpf_jit_stack_offsetof(ctx, 
+>>> bpf_to_ppc(ARENA_VM_START))));
+>>>
+>>> +    if (ctx->exception_cb) {
+>>> +        /*
+>>> +         * Recover additionally saved non volatile registers from stack
+>>> +         * frame of exception boundary program.
+>>> +         */
+>>> +        for (i = _R14; i <= _R25; i++)
+>>> +            EMIT(PPC_RAW_LD(i, _R1, bpf_jit_stack_offsetof(ctx, i)));
+>>> +    }
+>>> +
+>>>       /* Tear down our stack frame */
+>>>       if (bpf_has_stack_frame(ctx)) {
+>>> -        EMIT(PPC_RAW_ADDI(_R1, _R1, BPF_PPC_STACKFRAME + ctx- 
+>>> >stack_size));
+>>> +        EMIT(PPC_RAW_ADDI(_R1, _R1, bpf_jit_stack_size(ctx) + ctx- 
+>>> >stack_size));
+>>
+>> For the exception callback case, doesn't this use the wrong stack_size?
+>>
+>> In bpf_jit_build_prologue(), the exception callback does not create 
+>> its own
+>> frame - it sets R1 to the boundary's frame pointer via 
+>> EMIT(PPC_RAW_MR(_R1,
+>> _R5)). However here in the epilogue, the frame teardown uses ctx- 
+>> >stack_size
+>> which is the callback's stack depth, not the boundary's.
+>>
+>> The boundary program creates its frame with:
+>>      STDU R1, R1, -(bpf_jit_stack_size(boundary_ctx) + 
+>> boundary_stack_size)
+>>
+>> But the callback tears it down with:
+>>      ADDI R1, R1, bpf_jit_stack_size(callback_ctx) + callback_stack_size
+>>
+>> Since each BPF subprogram can have a different stack_depth (set per- 
+>> subprog
+>> in kernel/bpf/verifier.c via func[i]->aux->stack_depth), if the exception
+>> callback has a different stack depth than the boundary, R1 will end up at
+>> the wrong location after this ADDI.
+>>
+>> After the wrong R1 adjustment, the LR restore below loads from R1+16 
+>> which
+>> is now pointing to the wrong memory location, potentially causing a 
+>> return
+>> to an invalid address.
+>>
+>> Would it be correct to store the boundary's stack_size somewhere 
+>> accessible
+>> to the callback, or ensure the callback uses the same stack layout as the
+>> boundary?
+> 
+> That is a good catch! Jitting the rollback of the stack frame of
+> exception boundary program in exception callback program is tricky
+> as stack_depth of exception boundary program is not readily available
+> while jitting exception callback program...
+> 
+> "ld r1, 0(r1)" instruction can be used instead of "addi r1, r1, size"
+> form for tearing down the stack.
+> 
+> The other issue is calculating the offset of non volatile registers
+> to restore them from the stack. To reliably restore, move one frame
+> above exception boundary frame and restore NVRs with redzone offset
+> without relying on stack_depth of exception boundary program.
+> 
+> Also, as exception callback may also use stack, setup frame for
+> exception callback and restore BPF JIT NVRs in its epilogue.
+> 
+> In essence, something like the below is needed on top of your patch..
+> 
+> ---
+> 
+> diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/ 
+> bpf_jit_comp64.c
+> index b1a3945ccc9f..15342d76f96f 100644
+> --- a/arch/powerpc/net/bpf_jit_comp64.c
+> +++ b/arch/powerpc/net/bpf_jit_comp64.c
+> @@ -32,7 +32,8 @@
+>    *
+>    *        [    prev sp        ] <-------------
+>    *        [    tail_call_info    ] 8        |
+> - *        [   nv gpr save area    ] 6*8 + (12*8)    |
+> + *        [   nv gpr save area    ] 6*8        |
+> + *        [ addl. nv gpr save area] (12*8)    | <--- only in exception 
+> boundary program
+>    *        [    local_tmp_var    ] 24        |
+>    * fp (r31) -->    [   ebpf stack space    ] upto 512    |
+>    *        [     frame header    ] 32/112    |
+> @@ -125,7 +126,8 @@ static inline bool bpf_has_stack_frame(struct 
+> codegen_context *ctx)
+>    *        [      ...           ]         |
+>    * sp (r1) --->    [    stack pointer    ] --------------
+>    *        [    tail_call_info    ] 8
+> - *        [   nv gpr save area    ] 6*8 + (12*8)
+> + *        [   nv gpr save area    ] 6*8
+> + *        [ addl. nv gpr save area] (12*8) <--- Only in case of 
+> exception boundary
+>    *        [    local_tmp_var    ] 24
+>    *        [   unused red zone    ] 224
+>    *
+> @@ -139,12 +141,9 @@ static int bpf_jit_stack_local(struct 
+> codegen_context *ctx)
+>           return STACK_FRAME_MIN_SIZE + ctx->stack_size;
+>       } else {
+>           /* Stack layout with redzone */
+> -        return -(BPF_PPC_TAILCALL
+> -            +BPF_PPC_STACK_SAVE
+> -            +(ctx->exception_boundary || ctx->exception_cb ?
+> -                        BPF_PPC_EXC_STACK_SAVE : 0)
+> -            +BPF_PPC_STACK_LOCALS
+> -            );
+> +        return -(BPF_PPC_TAILCALL + BPF_PPC_STACK_SAVE +
+> +             (ctx->exception_boundary ? BPF_PPC_EXC_STACK_SAVE : 0) +
+> +             BPF_PPC_STACK_LOCALS);
+>       }
+>   }
+> 
+> @@ -153,20 +152,27 @@ int bpf_jit_stack_tailcallinfo_offset(struct 
+> codegen_context *ctx)
+>       return bpf_jit_stack_local(ctx) + BPF_PPC_STACK_LOCALS + 
+> BPF_PPC_STACK_SAVE;
+>   }
+> 
+> -static int bpf_jit_stack_offsetof(struct codegen_context *ctx, int reg)
+> +static int bpf_jit_stack_offsetof(struct codegen_context *ctx, int reg, 
+> bool use_redzone)
+>   {
+>       int min_valid_nvreg = BPF_PPC_NVR_MIN;
+>       /* Default frame size for all cases except exception boundary */
+>       int frame_nvr_size = BPF_PPC_STACKFRAME;
+> 
+> +    /*
+> +     * When use_redzone is true, return offset of the NVR on redzone
+> +     * Else, return offset based on whether stack is setup or not.
+> +     */
+> +    if (!use_redzone)
+> +        use_redzone = bpf_has_stack_frame(ctx);
+> +
+>       /* Consider all nv regs for handling exceptions */
+> -    if (ctx->exception_boundary || ctx->exception_cb) {
+> +    if (ctx->exception_boundary) {
+>           min_valid_nvreg = _R14;
+>           frame_nvr_size = BPF_PPC_EXC_STACKFRAME;
+>       }
+> 
 
-Thanks!
-Sam
+>       if (reg >= min_valid_nvreg && reg < 32)
+
+On a closely look, min_valid_nvreg has to be _R14 for exception_cb to
+satisfy the above reg condition check...
+
+> -        return (bpf_has_stack_frame(ctx) ?
+> +        return (!use_redzone ?
+>               (frame_nvr_size + ctx->stack_size) : 0)
+>                   - (8 * (32 - reg)) - BPF_PPC_TAILCALL;
+> 
+> @@ -179,14 +185,12 @@ void bpf_jit_realloc_regs(struct codegen_context 
+> *ctx)
+>   }
+> 
+>   /*
+> - * For exception boundary & exception_cb progs:
+> - *     return increased size to accommodate additional NVRs.
+> + * For exception boundary program, return increased size to
+> + * accommodate additional NVRs.
+>    */
+>   static int bpf_jit_stack_size(struct codegen_context *ctx)
+>   {
+> -    return ctx->exception_boundary || ctx->exception_cb ?
+> -                    BPF_PPC_EXC_STACKFRAME :
+> -                    BPF_PPC_STACKFRAME;
+> +    return ctx->exception_boundary ? BPF_PPC_EXC_STACKFRAME : 
+> BPF_PPC_STACKFRAME;
+>   }
+> 
+>   void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx)
+> @@ -235,12 +239,30 @@ void bpf_jit_build_prologue(u32 *image, struct 
+> codegen_context *ctx)
+>           EMIT(PPC_RAW_STD(bpf_to_ppc(TMP_REG_1), _R1, - 
+> (BPF_PPC_TAILCALL)));
+>       }
+> 
+> -    if (bpf_has_stack_frame(ctx) && !ctx->exception_cb) {
+> +    if (ctx->exception_cb) {
+> +        /*
+> +         * Exception callback receives frame pointer of exception 
+> boundary program as
+> +         * third argument but reliable offset calculation for NVRs is 
+> only possible
+> +         * on the redzone because stack_depth of exception boundary is 
+> not known
+> +         * while jitting the exception_cb program. So, rollback to an 
+> sp above
+> +         * exception boundary frame and restore the additional NVRs 
+> using redzone
+> +         * offset. The regular BPF JIT NVRs can be restored now, or in 
+> the epilogue
+> +         * of exception_cb like any other bpf prog by reusing the BPF 
+> JIT NVRs part
+> +         * of exception_boundary stack frame. The latter is preferred 
+> as exception
+> +         * cb may also clobber the BPF JIT NVRs.
+> +         */
+> +        EMIT(PPC_RAW_LD(_R1, _R5, 0));
+> +
+> +        /*
+> +         * Recover additionally saved non volatile registers from stack
+> +         * frame of exception boundary program.
+> +         */
+> +        for (i = _R14; i <= _R25; i++)
+> +            EMIT(PPC_RAW_LD(i, _R1, bpf_jit_stack_offsetof(ctx, i, 
+> true)));
+> +    }
+> +
+> +    if (bpf_has_stack_frame(ctx)) {
+>           /*
+> -         * exception_cb uses boundary frame after stack walk.
+> -         * It can simply use redzone, this optimization reduces
+> -         * stack walk loop by one level.
+> -         *
+>            * We need a stack frame, but we don't necessarily need to
+>            * save/restore LR unless we call other functions
+>            */
+> @@ -257,11 +279,11 @@ void bpf_jit_build_prologue(u32 *image, struct 
+> codegen_context *ctx)
+>        * Program acting as exception boundary pushes R14..R25 in 
+> addition to
+>        * BPF callee-saved non volatile registers. Exception callback uses
+>        * the boundary program's stack frame, recover additionally saved
+> -     * registers in epilogue of exception callback.
+> +     * registers in prologue of exception callback.
+>        */
+>       if (ctx->exception_boundary) {
+>           for (i = _R14; i <= _R25; i++)
+> -            EMIT(PPC_RAW_STD(i, _R1, bpf_jit_stack_offsetof(ctx, i)));
+> +            EMIT(PPC_RAW_STD(i, _R1, bpf_jit_stack_offsetof(ctx, i, 
+> false)));
+>       }
+> 
+>       if (!ctx->exception_cb) {
+> @@ -273,17 +295,11 @@ void bpf_jit_build_prologue(u32 *image, struct 
+> codegen_context *ctx)
+>           for (i = BPF_REG_6; i <= BPF_REG_10; i++)
+>               if (ctx->exception_boundary || bpf_is_seen_register(ctx, 
+> bpf_to_ppc(i)))
+>                   EMIT(PPC_RAW_STD(bpf_to_ppc(i), _R1,
+> -                    bpf_jit_stack_offsetof(ctx, bpf_to_ppc(i))));
+> +                    bpf_jit_stack_offsetof(ctx, bpf_to_ppc(i), false)));
+> 
+>           if (ctx->exception_boundary || ctx->arena_vm_start)
+>               EMIT(PPC_RAW_STD(bpf_to_ppc(ARENA_VM_START), _R1,
+> -                 bpf_jit_stack_offsetof(ctx, 
+> bpf_to_ppc(ARENA_VM_START))));
+> -    } else {
+> -        /*
+> -         * Exception callback receives Frame Pointer of boundary
+> -         * program(main prog) as third arg
+> -         */
+> -        EMIT(PPC_RAW_MR(_R1, _R5));
+> +                 bpf_jit_stack_offsetof(ctx, 
+> bpf_to_ppc(ARENA_VM_START), false)));
+>       }
+> 
+>       /*
+> @@ -305,20 +321,12 @@ static void bpf_jit_emit_common_epilogue(u32 
+> *image, struct codegen_context *ctx
+>       /* Restore NVRs */
+>       for (i = BPF_REG_6; i <= BPF_REG_10; i++)
+>           if (ctx->exception_cb || bpf_is_seen_register(ctx, 
+> bpf_to_ppc(i)))
+> -            EMIT(PPC_RAW_LD(bpf_to_ppc(i), _R1, 
+> bpf_jit_stack_offsetof(ctx, bpf_to_ppc(i))));
+> +            EMIT(PPC_RAW_LD(bpf_to_ppc(i), _R1,
+> +                    bpf_jit_stack_offsetof(ctx, bpf_to_ppc(i), false)));
+> 
+>       if (ctx->exception_cb || ctx->arena_vm_start)
+>           EMIT(PPC_RAW_LD(bpf_to_ppc(ARENA_VM_START), _R1,
+> -                bpf_jit_stack_offsetof(ctx, bpf_to_ppc(ARENA_VM_START))));
+> -
+> -    if (ctx->exception_cb) {
+> -        /*
+> -         * Recover additionally saved non volatile registers from stack
+> -         * frame of exception boundary program.
+> -         */
+> -        for (i = _R14; i <= _R25; i++)
+> -            EMIT(PPC_RAW_LD(i, _R1, bpf_jit_stack_offsetof(ctx, i)));
+> -    }
+> +                bpf_jit_stack_offsetof(ctx, bpf_to_ppc(ARENA_VM_START), 
+> false)));
+> 
+>       /* Tear down our stack frame */
+>       if (bpf_has_stack_frame(ctx)) {
+
+Also, if all exception selftests are passing, it is likely that neither
+exception boundary nor exception callback is using BPF stack.
+Need to have a test case that tests different BPF stack size for
+exception boundary and exception callback..
+
+- Hari
 
