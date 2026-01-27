@@ -1,74 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-16333-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16334-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C829D2FED9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jan 2026 21:36:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55F18D2FEF3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jan 2026 22:24:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f0zHP32vpz2xXB;
-	Wed, 28 Jan 2026 08:36:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769506084;
-	cv=none; b=iRZ2T0c5qbjt69rDhJR+Oka03YpS/EOzPAzFZkTCHp+PwFOJ62h0B8jDhpXiAynvjmOLkHND+PbozZUVAPd2BgOkVE5H5+hogPj8wah1yttqRwoWJdyEN3Da5kyUKTD9IM/SeASRHgMs3i6i/hLqUxJwUqIsDWqkMAl8tD5OUSbKWgJQoBODriBXC+o9JgENhvbrvK2TCIMO3JP4dVU3q4wC9FJLn1pTAM6Wd47xMI/OH+6m10au3+3Po8FXJaY/bWEsCN7ufKp28nZWEOHA1ZrEsUceyIPRc14N9DLtizZaMW6pG6NC7YX4l/69Le2lRD3DydsNCk1hPB2BTnwusQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f10ML5pQvz2xrC;
+	Wed, 28 Jan 2026 09:24:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769552686;
+	cv=none; b=N1yJOlgl8F2heNaNBGH+zAdXrousLuOBZBXFuPdNhw5LjI138ni6h7NLhQrughvK68ksiX9LFBUd0D9jg6x66+gZAWbzQl5H1CL0Ky3olzAZVxrLQObN6H18ySaxrx07G0nvGKFDZZ1ID2F6cDvNu56qY8TZxGBbmGTWObYqRloPsY4kq/GXWpTdIvoC6S/p1gZyXQdg+BUr45ich95tYLEizm2TrSFAaleAKZZckmhktJHjsMMr2JE3i/GkXB9SD4q51jRXyUQwWpr9gPnC6Q1vlHkraKjX/arusOF9m8wXwUOY1kiNuI+e8Ti85ma/45s4Kxo102Gvm7D0X61Q3A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1769506084; c=relaxed/relaxed;
-	bh=QxWbi0fR89aN2JlOIVMD+G7j77d5nNaeRsUPp7VB8Yk=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=U9+BTUZISWZ8Vty7t2fbyTysYYljrafK7KC89O7igw3mMT42RxZpKRdwhd2Xfg6qyUr0R1/blsNIhKq40GF7DgD3+eDTVXQ2pAAQ46SqKaOfiN2a3Jo7dEKKZ1zqb5pfTHipdmKrrX8LJKlEsFgk30E0aRuA/dPbM9SduTVwwRJOn5TwKsWPCN482tyB0nVdo4r5GJ8EQwuNesL+kv/mj9hsaHCV+d4AYQjrxZuY9z7CnIf+Jh4cFXrlgsj56jwCKJcj3fYfXrZStpyeFY0vThxcIrZsRyaC4vV0JpjZ8IA9I3f2Lj91lHHbH0macPrAKaRCTbvfbGD0ztbayrqi2w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oEO2FeMp; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1769552686; c=relaxed/relaxed;
+	bh=04n91jW8NL9aWB+fkk69TvAPRR9Oshnv2f6pWTS23p0=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=jwB37CINU649/r5ujQQgkN8dYThdD4AVBOq8QyUa9yWLCrHz/aUNzreOxUXr6cKEk10hWlPyUnZMf52ndkL7DgS/XtPTgwbFTZkf6yK9CoubNJWdwCHguW7iXSYclPouX7dK8VmNdtzvg2Kv+0ZXvLzgxGSxuI6mXR97deCzJQTiAyhLwvvUfNGIgc/GCLVfknuE25PHmkLyhU+VWmyKJ654msE28urfF3Tbc7AcOooIgBONhwyAsQvKdPg5mFL7FlObzRxLzoX3w+sne9OyVqRnEA82BWCev30C8hcBWCptnML3QPbzCLVhjqce8VEBLv8dMosQNIdCCBHQAAPHIg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ec7Mlq26; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oEO2FeMp;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ec7Mlq26;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f0g774rG2z2xcB
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2026 20:28:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f10ML0Hh2z2xqj
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2026 09:24:45 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id A3E6260143;
-	Tue, 27 Jan 2026 09:28:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AA751C116C6;
-	Tue, 27 Jan 2026 09:28:00 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id E059040324;
+	Tue, 27 Jan 2026 22:24:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A11B8C116C6;
+	Tue, 27 Jan 2026 22:24:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1769506081;
-	bh=NUtdM1nWlicDFUqsuPzcoMB/gzA3aziNceLt7F8iSE8=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=oEO2FeMpvi1NaSCO2Gn8Cj6UbLkdPGgHSCr2a7tIho96JHKe2OPIWUlyKRZRs+g/p
-	 bOydMQemiNt+degt62tyGOKCzCMxGQP/+fWYHd5fQoEeMMtMBrEhvbKzxQI+uASfo+
-	 WnvxAODGQoHBidevnuikSB14Qm/l1uuA8SKt8swMro14a0ryd5Zo1SXOw/QtvrZtYe
-	 o9wowBLm4NktfnH4gj6vq4gkvSOgZCJwp+WvtCKPASNeo0iUYm1k9Mj89Qs/nBEKdC
-	 UoXofhNhiJNlSAVG+UzzUh/MKGzx0b0QaoSEXAsSwPPoP60aL3O7aNFQz0OEp+KLaq
-	 Ksz08X55xve/w==
-From: Thomas Gleixner <tglx@kernel.org>
-To: Vivian Wang <wangruikang@iscas.ac.cn>, Madhavan Srinivasan
- <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas
- Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)"
- <chleroy@kernel.org>, Alex Deucher <alexander.deucher@amd.com>, Christian
- =?utf-8?Q?K=C3=B6nig?= <christian.koenig@amd.com>, David Airlie
- <airlied@gmail.com>, Simona
- Vetter <simona@ffwll.ch>, "Creeley, Brett" <bcreeley@amd.com>, Andrew Lunn
- <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, Eric
- Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo
- Abeni <pabeni@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Jaroslav
- Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>
-Cc: Han Gao <gaohan@iscas.ac.cn>, Vivian Wang <wangruikang@iscas.ac.cn>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
- netdev@vger.kernel.org, linux-pci@vger.kernel.org,
- linux-sound@vger.kernel.org, linux-riscv@lists.infradead.org,
- sophgo@lists.linux.dev
-Subject: Re: [PATCH v3 2/4] PCI/MSI: Check msi_addr_mask in
- msi_verify_entries()
-In-Reply-To: <20260123-pci-msi-addr-mask-v3-2-9f9baa048524@iscas.ac.cn>
-References: <20260123-pci-msi-addr-mask-v3-0-9f9baa048524@iscas.ac.cn>
- <20260123-pci-msi-addr-mask-v3-2-9f9baa048524@iscas.ac.cn>
-Date: Tue, 27 Jan 2026 10:27:58 +0100
-Message-ID: <87jyx3be1t.ffs@tglx>
+	s=k20201202; t=1769552683;
+	bh=XAyXKUf6q/0z3PUr5sC//LrqmgO0EPfzDjK+XCHmP/o=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:From;
+	b=ec7Mlq26+vqOlpYOZBpxXb0vji+31/Ak5zmDkDh5FN9xMmbs4r0QOiKPUM8p8v3CJ
+	 71DY16D+R+d7+2FfPIbCt0FK+WOf8LTQNE6XhxMTYGnGwivvgATkI4GrURtlxn1wr1
+	 GjvYRrQ6A72582sJhwh85d9hIRuv2kHjqrgQ74a2iM1XG0PGvo98glYn/51o6qwccR
+	 iwsdsUNCGDvAEYxVAaBRvuL+dZFwjaVcYNnZ5765xGn1+TSAFuZ4e4TQ0ELEudDB8o
+	 i1vSWdgS/fylsVdc96IsQLxn1r3s9QaQDSq5MvZ6nmF3TZ8vh8MZNU84ZdJG+zeKL8
+	 APFASB2wtRdRw==
+Date: Tue, 27 Jan 2026 16:24:42 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: =?utf-8?B?SMOla29u?= Bugge <haakon.bugge@oracle.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>,
+	Niklas Schnelle <schnelle@linux.ibm.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Len Brown <lenb@kernel.org>,
+	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	Oliver O'Halloran <oohall@gmail.com>,
+	Greg Kroah-Hartman <gregkh@suse.de>,
+	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+	Alex Williamson <alex@shazbot.org>,
+	Johannes Thumshirn <morbidrsa@gmail.com>, linux-pci@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v3 2/2] PCI/ACPI: Confine program_hpx_type2 to the AER
+ bits
+Message-ID: <20260127222442.GA379147@bhelgaas>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,46 +75,145 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260122130957.68757-3-haakon.bugge@oracle.com>
 
-On Fri, Jan 23 2026 at 14:07, Vivian Wang wrote:
-> Instead of a 32-bit/64-bit dichotomy, check the MSI address against
-> msi_addr_mask.
->
-> This allows platforms with MSI doorbell above 32-bit address space to
+On Thu, Jan 22, 2026 at 02:09:54PM +0100, Håkon Bugge wrote:
+> program_hpx_type2() is today unconditionally called, despite the fact
+> that when the _HPX was added to the ACPI spec. v3.0, the description
+> stated:
+> 
+>  OSPM [1] will only evaluate _HPX with Setting Record – Type 2 if OSPM
+>  is not controlling the PCI Express Advanced Error Reporting
+>  capability.
+> 
+> Hence, we only call program_hpx_type2() when the OSPM owns the PCIe
+> hotplug capability but not the AER.
+> 
+> The Advanced Configuration and Power Interface (ACPI) Specification
+> version 6.6 has a provision that gives the OSPM the ability to control
+> the other PCIe Device Control bits any way. In a note in section
+> 6.2.9, it is stated:
+> 
+> "OSPM may override the settings provided by the _HPX object's Type2
+> record (PCI Express Settings) or Type3 record (PCI Express Descriptor
+> Settings) when OSPM has assumed native control of the corresponding
+> feature."
+> 
+> So, in order to preserve the non-AER bits in PCIe Device Control, in
+> particular the performance sensitive ExtTag and RO, we make sure
+> program_hpx_type2() if called, doesn't modify any non-AER bits.
+> 
+> Also, when program_hpx_type2() is called, we completely avoid
+> modifying any bits in the Link Control register. However, if the _HPX
+> type 2 records contains bits indicating such modifications, we print
+> an info message.
+> 
+> [1] Operating System-directed configuration and Power Management
 
-with a MSI doorbell address above the 32-bit limit to
+I looked at the specs again and pulled out some more details.  Here's
+what seemed relevant to me:
 
-> work with devices without full 64-bit MSI address support, as long as
-> the doorbell is within addressable range of MSI of the device.
+    PCI/ACPI: Restrict program_hpx_type2() to AER bits
+    
+    Previously program_hpx_type2() applied PCIe settings unconditionally, which
+    could incorrectly change bits like Extended Tag Field Enable and Enable
+    Relaxed Ordering.
+    
+    When _HPX was added to ACPI r3.0, the intent of the PCIe Setting Record
+    (Type 2) in sec 6.2.7.3 was to configure AER registers when the OS does not
+    own the AER Capability:
+    
+      The PCI Express setting record contains ... [the AER] Uncorrectable Error
+      Mask, Uncorrectable Error Severity, Correctable Error Mask ... to be used
+      when configuring registers in the Advanced Error Reporting Extended
+      Capability Structure ...
+    
+      OSPM will only evaluate _HPX with Setting Record – Type 2 if OSPM is not
+      controlling the PCI Express Advanced Error Reporting capability.
+    
+    ACPI r3.0b, sec 6.2.7.3, added more AER registers, including registers in
+    the PCIe Capability with AER-related bits, and the restriction that the OS
+    use this only when it owns PCIe native hotplug:
+    
+      ... when configuring PCI Express registers in the Advanced Error
+      Reporting Extended Capability Structure *or PCI Express Capability
+      Structure* ...
+    
+      An OS that has assumed ownership of native hot plug but does not ... have
+      ownership of the AER register set must use ... the Type 2 record to
+      program the AER registers ...
+    
+      However, since the Type 2 record also includes register bits that have
+      functions other than AER, the OS must ignore values ... that are not
+      applicable.
+    
+    Restrict program_hpx_type2() to only the intended purpose:
+    
+      - Apply settings only when OS owns PCIe native hotplug but not AER,
+    
+      - Only touch the AER-related bits (Error Reporting Enables) in Device
+        Control
+    
+      - Don't touch Link Control at all, since nothing there seems AER-related,
+        but log _HPX settings for debugging purposes
+    
+    Note that Read Completion Boundary is now configured elsewhere, since it is
+    unrelated to _HPX.
 
-within the addressable
+> +	/* Log if _HPX attempts to modify PCIe Link Control register */
+>  	if (pcie_cap_has_lnkctl(dev)) {
+> -
+> -		/*
+> -		 * If the Root Port supports Read Completion Boundary of
+> -		 * 128, set RCB to 128.  Otherwise, clear it.
+> -		 */
+> -		hpx->pci_exp_lnkctl_and |= PCI_EXP_LNKCTL_RCB;
+> -		hpx->pci_exp_lnkctl_or &= ~PCI_EXP_LNKCTL_RCB;
+> -		if (pcie_root_rcb_set(dev))
+> -			hpx->pci_exp_lnkctl_or |= PCI_EXP_LNKCTL_RCB;
+> -
+> -		pcie_capability_clear_and_set_word(dev, PCI_EXP_LNKCTL,
+> -			~hpx->pci_exp_lnkctl_and, hpx->pci_exp_lnkctl_or);
+> +		if (hpx->pci_exp_lnkctl_and)
+> +			pci_info(dev,
+> +				 "_HPX attempts to reset the following bits in PCIe Link Control: 0x%04x\n",
+> +				 hpx->pci_exp_lnkctl_and);
+> +		if (hpx->pci_exp_lnkctl_or)
+> +			pci_info(dev,
+> +				 "_HPX attempts to set the following bits in PCIe Link Control: 0x%04x\n",
+> +				 hpx->pci_exp_lnkctl_or);
 
->  static int msi_verify_entries(struct pci_dev *dev)
->  {
->  	struct msi_desc *entry;
-> +	u64 address;
->  
->  	if (dev->msi_addr_mask == DMA_BIT_MASK(64))
->  		return 0;
->  
->  	msi_for_each_desc(entry, &dev->dev, MSI_DESC_ALL) {
-> -		if (entry->msg.address_hi) {
-> -			pci_err(dev, "arch assigned 64-bit MSI address %#x%08x but device only supports 32 bits\n",
-> -				entry->msg.address_hi, entry->msg.address_lo);
-> +		address = (u64)entry->msg.address_hi << 32 |
-> +			  entry->msg.address_lo;
+Again I'm afraid I suggested some over-engineering, and even worse, I
+misinterpreted the pci_exp_lnkctl_and and pci_exp_lnkctl_or usage when
+I said "if pci_exp_lnkctl_and or pci_exp_lnkctl_or are *non-zero*".
 
-No line break required. Let it stick out.
+Per spec, we are supposed to AND the register with pci_exp_lnkctl_and,
+so the interesting value would be anything other than 0xffff.  Since
+we OR it with pci_exp_lnkctl_or, the interesting values there would be
+anything non-zero.  So I think what we would want is something like
+this:
 
-> +		if (address & ~dev->msi_addr_mask) {
-> +			pci_err(dev, "arch assigned 64-bit MSI address %#llx above device MSI address mask %#llx\n",
-> +				address, dev->msi_addr_mask);
->  			break;
->  		}
->  	}
-
-Other than those nits:
-
-Reviewed-by: Thomas Gleixner <tglx@kernel.org>
++	/* Log if _HPX attempts to modify PCIe Link Control register */
+ 	if (pcie_cap_has_lnkctl(dev)) {
+-
+-		/*
+-		 * If the Root Port supports Read Completion Boundary of
+-		 * 128, set RCB to 128.  Otherwise, clear it.
+-		 */
+-		hpx->pci_exp_lnkctl_and |= PCI_EXP_LNKCTL_RCB;
+-		hpx->pci_exp_lnkctl_or &= ~PCI_EXP_LNKCTL_RCB;
+-		if (pcie_root_rcb_set(dev))
+-			hpx->pci_exp_lnkctl_or |= PCI_EXP_LNKCTL_RCB;
+-
+-		pcie_capability_clear_and_set_word(dev, PCI_EXP_LNKCTL,
+-			~hpx->pci_exp_lnkctl_and, hpx->pci_exp_lnkctl_or);
++		if (hpx->pci_exp_lnkctl_and != 0xffff ||
++		    hpx->pci_exp_lnkctl_or != 0)
++			pci_info(dev, "_HPX attempts Link Control setting (AND %#06x OR %#06x)\n",
++				 hpx->pci_exp_lnkctl_and,
++				 hpx->pci_exp_lnkctl_or);
+ 	}
 
