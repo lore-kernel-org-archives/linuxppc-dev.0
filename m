@@ -1,54 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-16302-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16303-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0FBF3D25959
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jan 2026 08:03:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A18DCA6C92
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Jan 2026 08:49:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f0dFc2JYVz2xcB;
-	Tue, 27 Jan 2026 19:03:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=144.76.133.112
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769501012;
-	cv=none; b=fKLkX2fmxxnutAI1YRdaQof/pVfAHdx3H0W7BLAo0h7t1R4SmX0sXF1iN8vMGTGottrdePGTaQpbHKYhFXB1Ouq13HmCZ8F6jpye7M7K67QCtz/or+3S6zQREAijehQH6TXiWBfYwk6aUq3/iBwAkbdtdA+0gj6aNvGIZeaD0M1i/fT3toaYlrv6GHd/Pdw/+h7RB2TxZPxhvYgreqBKe8bJtMWiceDkoZAswKaczaA7Zzf2cYgUp1AkHjlt2MZk980PuvWrhgXz7WSp/LpeQ1Kv1rPNrA0ioFaI9IRMTld08HHuRMBEAGQGFOAghQ7Rj2h9epJWHfKU7nOGEVCVew==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f0fH75th8z2yGM;
+	Tue, 27 Jan 2026 19:49:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769503795;
+	cv=none; b=M7+AFvzZIUCWj+/CetC8H8bvgw0U7jzH1YT5le2OLj+eq3VQillVjH7PmPAC2wD3beW2RqghTRpnwUXWkmOT+bJsxzUsCJVzFLU0m0dJXJtCnZr7ktE5nh8EbJI47/XFl+XZI3vrhObWZajZMqAkW5oIQeSeFcFk8SrFnB4wCU2tk6Qt9rXwBm4G5Qv4DwuoaiHo7ct8D56KN6qZa8Rq/NiYCTSKduLXdM+JVokxP691zZeqcRW62uk/X3aSqmyZ5ngksSODfygYoswezCnPKTTz10CjL3L7gmr11eeypcWc56RTTCJs6m3bB2Qd8Lmb80gamzmV/pzid7m8+O1Maw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1769501012; c=relaxed/relaxed;
-	bh=OqLTZnaR76/X4GuLe7DHwPK0CdnfxdxNomCoVQx6ngw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=BrBTtFQvL650PQriOWa7Qge411jsgqfR02fufau+6fl/8SZVpyWSP7FkZ8vYJQoHThSmz2Ep2WwO/8EJKzJjbW+xgZFXcEqxOTdF/XpDTdLTn8zDJRugEXOUSPM74l5vYcE5lHwcKrREyXjWwzAXO4VjPlZenQNiEBpqw8RphdNsLGQFtqgqTlTmytuCeUYOvluCbLvs0HdgUQHmyLHhEYATshbq7oo8EquSZQxqvVE0heQjWchWvcR8OiCLnHkzjKVn8GAqjt6asLFyCR2AzZg0PRJzwFTRqkGWnylJY5zlfQ4qx8GK3nruZ0CH92lub9fWNEus/R9jtO77G+bNFQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=144.76.133.112; helo=bmailout3.hostsharing.net; envelope-from=foo00@h08.hostsharing.net; receiver=lists.ozlabs.org) smtp.helo=bmailout3.hostsharing.net
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=bmailout3.hostsharing.net (client-ip=144.76.133.112; helo=bmailout3.hostsharing.net; envelope-from=foo00@h08.hostsharing.net; receiver=lists.ozlabs.org)
-X-Greylist: delayed 389 seconds by postgrey-1.37 at boromir; Tue, 27 Jan 2026 19:03:30 AEDT
-Received: from bmailout3.hostsharing.net (bmailout3.hostsharing.net [144.76.133.112])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1769503795; c=relaxed/relaxed;
+	bh=DDHhLXaDEFCJFS1JezriYb1CLJlOz5e6EELlx4UELic=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=RyK/Z5Os5i+CB9u0k6gHljGiTP7J3mo3iOF5OYxQdDqeNbaH4nfpSC0jTFBZzvpKEA0arba+EIKp7fJWn1j/1/CNPJWNvO3heR4oRL8i2dUIPnDy0B7TiXJq8/nXiey5KgTSPNXPtCF16DTsaDnenceKeFAHS/kfLWBS1ic4HdMy0xFVXELQkeSNeSQIHZuiPvmIpEW7x2pdlcMzuTmyfwGorGH0KerXZbwH7vX9bY4LHq4vpRBIgwTJo4sElQwF14ZYsoB2pDCpcwXRfgpwWxypTjT94hLnVIwWwCaJ3DXn71tkUzSmae0lkQxmQYz0KY24IIXm9q/aUDbh9ChMAw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Q0ZVcIYS; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Q0ZVcIYS;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f0dFZ5fl9z2xJF
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2026 19:03:30 +1100 (AEDT)
-Received: from h08.hostsharing.net (h08.hostsharing.net [IPv6:2a01:37:1000::53df:5f1c:0])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (secp384r1) server-digest SHA384
-	 client-signature ECDSA (secp384r1) client-digest SHA384)
-	(Client CN "*.hostsharing.net", Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
-	by bmailout3.hostsharing.net (Postfix) with ESMTPS id 37B772C003FA;
-	Tue, 27 Jan 2026 08:56:53 +0100 (CET)
-Received: by h08.hostsharing.net (Postfix, from userid 100393)
-	id 07EA22F4FF; Tue, 27 Jan 2026 08:56:53 +0100 (CET)
-Date: Tue, 27 Jan 2026 08:56:53 +0100
-From: Lukas Wunner <lukas@wunner.de>
-To: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Terry Bowman <terry.bowman@amd.com>,
-	linux-pci@vger.kernel.org, Shuai Xue <xueshuai@linux.alibaba.com>,
-	tianruidong@linux.alibaba.com, Keith Busch <kbusch@kernel.org>,
-	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Oliver OHalloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] PCI/AER: Clear stale errors on reporting agents upon
- probe
-Message-ID: <aXhvxYw6q3XvoEFh@wunner.de>
-References: <3011c2ed30c11f858e35e29939add754adea7478.1769332702.git.lukas@wunner.de>
- <06fcb922-458c-473c-999a-1dd8518976f1@linux.intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f0fH63LF9z2xcB
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Jan 2026 19:49:54 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 60R802Ot001509;
+	Tue, 27 Jan 2026 08:49:37 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=DDHhLXaDEFCJFS1Je
+	zriYb1CLJlOz5e6EELlx4UELic=; b=Q0ZVcIYSUu1hVRSIUyotEMJ3wyJOzaB+G
+	G5qZjeUgnAXd9obIUkoyNLBopn6xup629JKNjqrYJveL7J0xl2+J7r1QGxlbXN9T
+	n9LwypAAkB9gmXlDQndMzWkyumm2ebrXBf/skoY57Cy2xdi8lVuvp4Z/Pht3Pc/p
+	/Ok+HGyTNffwGnsiPMqa7TwBPqiFLbl4Eu5340Ho9uXKOv77ZawI2iTO2cBjJKmJ
+	oJWGxsU3hK9ZKAa56+0nSp+t/ReK3SCErVJNE4MVzVHqhuxZydjB6Qbmn1upYGyn
+	2RUYHtfdmmSX2v2ApGs7v3NZzLALCJLMniAdLLod38dB1n/gMPQ9w==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4bvnrtca08-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 27 Jan 2026 08:49:37 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 60R3F1ne026333;
+	Tue, 27 Jan 2026 08:49:36 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4bw9wk7whw-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 27 Jan 2026 08:49:35 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 60R8nV1C56426806
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 27 Jan 2026 08:49:31 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C6D312004D;
+	Tue, 27 Jan 2026 08:49:31 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A09AF20043;
+	Tue, 27 Jan 2026 08:49:29 +0000 (GMT)
+Received: from li-bd3f974c-2712-11b2-a85c-df1cec4d728e.in.ibm.com (unknown [9.78.106.105])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 27 Jan 2026 08:49:29 +0000 (GMT)
+From: Hari Bathini <hbathini@linux.ibm.com>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>,
+        "Naveen N. Rao" <naveen@kernel.org>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        linux-trace-kernel@vger.kernel.org,
+        Mark Rutland <mark.rutland@arm.com>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Masami Hiramatsu <mhiramat@kernel.org>, llvm@lists.linux.dev,
+        Maryam Moghadas <maryammo@ca.ibm.com>
+Subject: [PATCH v2 1/3] powerpc64: make clang cross-build friendly
+Date: Tue, 27 Jan 2026 14:19:24 +0530
+Message-ID: <20260127084926.34497-2-hbathini@linux.ibm.com>
+X-Mailer: git-send-email 2.52.0
+In-Reply-To: <20260127084926.34497-1-hbathini@linux.ibm.com>
+References: <20260127084926.34497-1-hbathini@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,91 +94,70 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <06fcb922-458c-473c-999a-1dd8518976f1@linux.intel.com>
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: oPYrBd_Pzi4XlxD8NY6SZPti61D8Jj67
+X-Authority-Analysis: v=2.4 cv=Uptu9uwB c=1 sm=1 tr=0 ts=69787c21 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=vUbySO9Y5rIA:10 a=VkNPw1HP01LnGYTKEx00:22 a=VnNF1IyMAAAA:8
+ a=G_DWyleSnc-e0WChyngA:9
+X-Proofpoint-ORIG-GUID: oPYrBd_Pzi4XlxD8NY6SZPti61D8Jj67
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTI3MDA3MSBTYWx0ZWRfX/8rGKwvJBA3R
+ Ipc79uG3sHu+qVTLgjm3vAFl/uGIkMDnGPXsIYpIe3+Nr3wfY8q97X4RuzUET+ru40OotcHiqQ+
+ Olw/WIEMpGm45uk5NQ5GrnK34htExPXjoDpP1OTAxuPoWP9VqK3OqYJ60Ba08xFp/pPNoJSxdbZ
+ NHpBT9MM7Mmc7ufEMF5W6blUO3e409MjHtLPdHqNiJXP8bl7x6hd8nBkJcMVFrQFl9w0c5IlPrI
+ ykWSAe/e7CZdSNgg7InYL8RMNAshA5CpERFtqYsIiCncf8mlg4c6qA69L1ADYNY7XXvFpTXsUZr
+ HHh+9tXiiiEGL8CJ8Y4z+YtnY6pwBx9G4rOnxqBbMDaYJGW+pD769dxKKjSTqTbDYmLELgfCOy8
+ J33sF5qYLQAh6OxdiRCCiWQbMq6mtUOOA7lTmyhUQv/0AxYkpzK8cjrvHxx5kc6rmjfbArbuno6
+ u1YsXSYk1z9kYaeZA5Q==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.20,FMLib:17.12.100.49
+ definitions=2026-01-27_01,2026-01-26_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 priorityscore=1501 clxscore=1015 lowpriorityscore=0
+ phishscore=0 adultscore=0 impostorscore=0 bulkscore=0 spamscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2601150000
+ definitions=main-2601270071
 
-On Mon, Jan 26, 2026 at 10:42:06AM -0800, Kuppuswamy Sathyanarayanan wrote:
-> On 1/25/2026 1:25 AM, Lukas Wunner wrote:
-> > Correctable and Uncorrectable Error Status Registers on reporting agents
-> > are cleared upon PCI device enumeration in pci_aer_init() to flush past
-> > events.  They're cleared again when an error is handled by the AER driver.
-> > 
-> > If an agent reports a new error after pci_aer_init() and before the AER
-> > driver has probed on the corresponding Root Port or Root Complex Event
-> > Collector, that error is not handled by the AER driver:  It clears the
-> > Root Error Status Register on probe, but neglects to re-clear the
-> > Correctable and Uncorrectable Error Status Registers on reporting agents.
-> > 
-> > The error will eventually be reported when another error occurs.  Which
-> > is irritating because to an end user it appears as if the earlier error
-> > has just happened.
-> > 
-> > Amend the AER driver to clear stale errors on reporting agents upon probe.
-> > 
-> > Skip reporting agents which have not invoked pci_aer_init() yet to avoid
-> > using an uninitialized pdev->aer_cap.  They're recognizable by the error
-> > bits in the Device Control register still being clear.
-> > 
-> > Reporting agents may execute pci_aer_init() after the AER driver has
-> > probed, particularly when devices are hotplugged or removed/rescanned via
-> > sysfs.  For this reason, it continues to be necessary that pci_aer_init()
-> > clears Correctable and Uncorrectable Error Status Registers.
-> 
-> Can you include details about where and in what configuration you observed 
-> this issue?
+ARCH_USING_PATCHABLE_FUNCTION_ENTRY depends on toolchain support for
+-fpatchable-function-entry option. The current script that checks
+for this support only handles GCC. Rename the script and extend it
+to detect support for -fpatchable-function-entry with Clang as well,
+allowing clean cross-compilation with Clang toolchains.
 
-The issue was observed on an upcoming Xeon "Diamond Rapids" platform,
-where certain Root Complex Integrated Endpoints (the Data Streaming
-Accelerator and In-Memory Analytics Accelerator) raise a Correctable Error
-of type "Advisory Non-Fatal Error" when certain fields in Config Space are
-accessed.  The RCiEPs send an ERR_COR Message to their Root Complex Event
-Collector, but it is not handled because the AER driver hasn't probed yet.
-When it later on does probe, it only clear the error bits of the RCEC, not
-those of the RCiEPs.
+Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
+---
 
-Since this platform is not yet in customers' hands and the issue
-apparently wasn't observed on other platforms before, I refrained
-from including those details in the commit message.  But I can respin
-and include them, or Bjorn may choose to amend the commit message
-with those details if/when applying the patch.
+* Changes in v2:
+  - Use $(CLANG_FLAGS) instead of manually checking CC_IS_CLANG
 
-> > +static int clear_status_iter(struct pci_dev *dev, void *data)
-> > +{
-> > +	u16 devctl;
-> > +
-> > +	/* Skip if pci_enable_pcie_error_reporting() hasn't been called yet */
-> > +	pcie_capability_read_word(dev, PCI_EXP_DEVCTL, &devctl);
-> > +	if (!(devctl & PCI_EXP_AER_FLAGS))
-> > +		return 0;
-> > +
-> > +	pci_aer_clear_status(dev);
-> > +	pcie_clear_device_status(dev);
-> 
-> Should pci_aer_init() also clear device status along with uncor/cor
-> error status?
 
-Hm, good question.  For AER-supporting devices, it probably makes sense
-since we're also clearing the bits when handling an error.
+ arch/powerpc/Kconfig                                          | 4 ++--
+ ...e-function-entry.sh => check-fpatchable-function-entry.sh} | 0
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+ rename arch/powerpc/tools/{gcc-check-fpatchable-function-entry.sh => check-fpatchable-function-entry.sh} (100%)
 
-It's unclear what to do on non-AER-supporting devices.  PCIe r7.0 sec 6.2.1
-calls this "baseline capability" error signaling.  If a device doesn't
-support AER, I don't think we get a (spec-defined) interrupt to report
-and clear errors.  But the device may still raise an interrupt which
-would then be received and handled by its driver in some custom way.
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index b8d36a261009..dcb9894e2004 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -571,8 +571,8 @@ config ARCH_USING_PATCHABLE_FUNCTION_ENTRY
+ 	depends on FUNCTION_TRACER && (PPC32 || PPC64_ELF_ABI_V2)
+ 	depends on $(cc-option,-fpatchable-function-entry=2)
+ 	def_bool y if PPC32
+-	def_bool $(success,$(srctree)/arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh $(CC) -mlittle-endian) if PPC64 && CPU_LITTLE_ENDIAN
+-	def_bool $(success,$(srctree)/arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh $(CC) -mbig-endian) if PPC64 && CPU_BIG_ENDIAN
++	def_bool $(success,$(srctree)/arch/powerpc/tools/check-fpatchable-function-entry.sh $(CC) $(CLANG_FLAGS) -mlittle-endian) if PPC64 && CPU_LITTLE_ENDIAN
++	def_bool $(success,$(srctree)/arch/powerpc/tools/check-fpatchable-function-entry.sh $(CC) -mbig-endian) if PPC64 && CPU_BIG_ENDIAN
+ 
+ config PPC_FTRACE_OUT_OF_LINE
+ 	def_bool PPC64 && ARCH_USING_PATCHABLE_FUNCTION_ENTRY
+diff --git a/arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh b/arch/powerpc/tools/check-fpatchable-function-entry.sh
+similarity index 100%
+rename from arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh
+rename to arch/powerpc/tools/check-fpatchable-function-entry.sh
+-- 
+2.52.0
 
-So I guess that on "baseline capability" devices, it is the job of the
-device driver to report and clear errors.  One could argue that it's
-also the driver's job to clear stale bits on probe.  Because if the
-kernel does that on enumeration, new errors may occur until the driver
-probes and so the driver would have to clear stale bits on probe
-anyway.
-
-I can look into amending pci_aer_init() to clear the Device Status
-error bits on AER-supporting devices, but it's an orthogonal issue
-to the one addressed by this patch.
-
-Thanks,
-
-Lukas
 
