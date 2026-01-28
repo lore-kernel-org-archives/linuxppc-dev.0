@@ -1,50 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-16356-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16357-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C710D25B48
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jan 2026 11:51:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5CF40D25B4C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jan 2026 12:15:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f1LG00HMPz2xlK;
-	Wed, 28 Jan 2026 22:51:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=61.152.208.219
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769595974;
-	cv=none; b=KqV23Is0ZMfX6/G5dOQ2J3thYZtm74Fene0ydJxktAdAAlnBxpqCAN6gvHQ//2VlGsd2Eu7n+mBlQNxtmnEGA2BhAtd82Z842F1aUZBHml3D/7YfzbdBU3Oby95SsdYkL4HaotsdC8WTUnzn+MPeWPh3xOONlG5iDgPV4JOxmLWVD2bA91OyXrKLfmHJhlsHtG+28OyIKtCmPP/TAmZBbUIVIbgfyjP9WHyQPh1+oCMewOxp6OTbre14pXA3sai7VGuauP1sGPkRgeo5pJKFgL/T+O147MolPIUdDxZW0OBCKnguJc1g9ni3VGMksE/OdTVQ7urj+hv/T6mq4sUQXw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1769595974; c=relaxed/relaxed;
-	bh=6q4lC4pF/slRu02qeWpo+FxWoaj0Y2OTo9oRpIdlZxM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=Js12+HAwUPzYFoyQPsvQBdeHuMhVN7Dy0TKZFwJM7NYF5U6QkqXsfL1wFscHmHBpD35woG/r76Da/vgin7hIqa3l/rwb3h5KDBeRGi6jGzBMDG/bQF5v7zw3zVbnlWPi0WnXz6Aa/r0vg5ICttii8rFgxxUYubauuV9iQ7IZotcd1KSAueI0RSjQeg335I4qKiqwnS7cNKeqhx1RWWqzKmZaqbfcpErrXQiOHhYdWpwJiOTxj1HdT9eb12Jas3LIYgBmFdHRzXSANIReads6qkvTM9gJ3/5uSKBf95dTkXfvw6vQhuvPwsW3tfqX92+V+SPPcoNWhzeUxZUp9pfvAA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=zhaoxin.com; spf=pass (client-ip=61.152.208.219; helo=mx2.zhaoxin.com; envelope-from=leoliu-oc@zhaoxin.com; receiver=lists.ozlabs.org) smtp.mailfrom=zhaoxin.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=zhaoxin.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zhaoxin.com (client-ip=61.152.208.219; helo=mx2.zhaoxin.com; envelope-from=leoliu-oc@zhaoxin.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 992 seconds by postgrey-1.37 at boromir; Wed, 28 Jan 2026 21:26:12 AEDT
-Received: from mx2.zhaoxin.com (mx2.zhaoxin.com [61.152.208.219])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f1Lny2QCjz2xlK;
+	Wed, 28 Jan 2026 23:15:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::6" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769602534;
+	cv=pass; b=J2/94oEL9mRnclNR7azerycFa8bu/yShQJg4Z8Bl8ShQXQwt/y4kOeP/SEsOnBT6befgIH8owoPiJ16s2YKRkOqyLoiMkiUyTZYevL6RGI1Xo9hZ6cDInskASejm3ib7DoU06MbFAjnirtJS9OSCJTL/rGYoqAAUM68HHg84zn80GlkkHAF10R0rkA5ZCwLUkqsY+1zJguJbWQVnYhxaVkdg/eDB8DZbOjozsa4idIqSixxpM+0g23cjsH0ebGK5SdvcBejo7n9SRxQxmk7LTE3uZlZfud2PU6vRA7d9EOFQPcpMc42QoIdzo6lz78k4VYiVKsieL7tACfY9+LoItg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1769602534; c=relaxed/relaxed;
+	bh=hGUCGEUTZmV9NkDi4ZfW/afjM7L4Zp8bGdcT+I9l8lU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=LAaSF9+Wo4PpXfoKzHtA7h4206sDPx6ehFXgY2dyfgPxkhK8vu6PWAHovJlHpkF9qEjo+6H6e/63Z2MjUW+9aeMxB2ffXjajEJk17RuPUP0bSpNY+2CffELiazK5Hfw/tNYMQOIqungIE4IzRDIRda9vN5fJZO+uH2KgHICGjzG1YoXPXElZXESS3cKuMvkV0xMSt+lkjp6gWLP3Yfn6EuzLcgfbl13GYDInT3am0Chqtffp9jRWq9/3qnGJxBb1x83Qxg/OweURulvolWH3hKV/VAhlexfqGgMeihQ2/lUHBbKTixxo+sNA1ixLUJIepY4/22PC/BgE/giget5KKg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=edSuEtH6; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=ioana.ciornei@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=edSuEtH6;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=ioana.ciornei@nxp.com; receiver=lists.ozlabs.org)
+Received: from AM0PR02CU008.outbound.protection.outlook.com (mail-westeuropeazlp170130006.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::6])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f1JMm6r44z2xT6
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2026 21:26:10 +1100 (AEDT)
-X-ASG-Debug-ID: 1769594970-1eb14e7c0137290001-v7v7hK
-Received: from ZXSHMBX2.zhaoxin.com (ZXSHMBX2.zhaoxin.com [10.28.252.164]) by mx2.zhaoxin.com with ESMTP id O3s3E7PRvfVJ8Zj0 (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NO); Wed, 28 Jan 2026 18:09:30 +0800 (CST)
-X-Barracuda-Envelope-From: LeoLiu-oc@zhaoxin.com
-X-Barracuda-RBL-Trusted-Forwarder: 10.28.252.164
-Received: from ZXSHMBX1.zhaoxin.com (10.28.252.163) by ZXSHMBX2.zhaoxin.com
- (10.28.252.164) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.59; Wed, 28 Jan
- 2026 18:09:30 +0800
-Received: from ZXSHMBX1.zhaoxin.com ([fe80::936:f2f9:9efa:3c85]) by
- ZXSHMBX1.zhaoxin.com ([fe80::936:f2f9:9efa:3c85%7]) with mapi id
- 15.01.2507.059; Wed, 28 Jan 2026 18:09:30 +0800
-X-Barracuda-RBL-Trusted-Forwarder: 10.28.252.164
-Received: from [10.32.64.5] (10.32.64.5) by ZXBJMBX03.zhaoxin.com
- (10.29.252.7) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.59; Wed, 28 Jan
- 2026 18:08:46 +0800
-Message-ID: <3af9f754-d282-485c-a3f2-49a230bfe143@zhaoxin.com>
-Date: Wed, 28 Jan 2026 18:07:51 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f1Lnw2HF7z2xjK
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Jan 2026 23:15:31 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=ElBRP1RU7q2UGQ8DX8wcwd8vSs+vuU12jdZoYFUuFV44hqfITroAuMuIk5JC2pTPmarErlmZG2wu8A15Y4zrjHf76beMfu7vhyLtGMfSAcgyeR+Rn+Y6/wywpoDzCHUoBU7s6ICRinLnLG0ldJOUjqkX2HFTwn1lo7WFLui7iAyQE7mv+ZpilnffNf7wqg0meEcOpE7N9gg9HuW2l+QHMD5GScqyZ0WqxEPPXwwjQgIOvlMFxkpUfmOHxnHQKon4BcpND/EtN2hyYj4myTcqafssMGjVKWzOpipFpq44XPDYmxW9UvuebFFmVMCHq5BunEOQDkxpFGnp4jkmjEgb/w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=hGUCGEUTZmV9NkDi4ZfW/afjM7L4Zp8bGdcT+I9l8lU=;
+ b=SrKz42cr5ZX4gOLdPAdHv6+YIj6qYshzxiKDqfn4Fww/jVVchycmh0OxC32QqAk/rJd6TNweGeExqYPEbBFXLplAysu9ojahUv3s1Qp7+jh/ZUWeAtVa6Tbb/hiCtQDX1Q4BOy/MKjIfHbtHTL7Yup5qEHtYtMtFhm/Lcv6tiOnlxoHYp54U7Zi5DGuC3elBevvQtpBhBl7jc8axtGOXutK2PIytgnmFFVn19za8J8bdnKjj2R/zXgE1d+SFtpSqoVQsgxYM73J0gbtyhwjpTOebZbgK/t/sFc422ddk/f5gkwEcxJRGg3cNR40pOMB2j/yy7tuBRg0GLhnI12hiiQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=hGUCGEUTZmV9NkDi4ZfW/afjM7L4Zp8bGdcT+I9l8lU=;
+ b=edSuEtH6fCUHFjSaHsvB1F22TVjChqHI+KV1UjqEtRBR+MlEVR8Hvrlrz7dX4pi2rqevsuG6IdSdWydl5y26g+dp00+2U+C32Z1yLjwLIn/V3E6NWecgyir9KuJHP/Q4odDrLr2mVmmyk/7wz3/AmmWOL9vvcjjqE2gqc/zyoI/idweWP7KUJoiFOD+ZWTPUaZ3A0HOvMWl9L5GOEApVYBDmEQMcXrII4oo4asZSBPE6Wf3yDyuU6YLwNU55sN9VguDPCnOqKDtqT3/+WRhZZZSAFA8ilGERYyOD2/t+yH6CZPGocj1JqIjTe0sleHdgcBJoJu7T8J5NOKFl4bq3Cg==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from PAXPR04MB8253.eurprd04.prod.outlook.com (2603:10a6:102:1bf::7)
+ by PA4PR04MB7920.eurprd04.prod.outlook.com (2603:10a6:102:c4::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9542.16; Wed, 28 Jan
+ 2026 12:15:07 +0000
+Received: from PAXPR04MB8253.eurprd04.prod.outlook.com
+ ([fe80::b853:e05b:c1e5:41b7]) by PAXPR04MB8253.eurprd04.prod.outlook.com
+ ([fe80::b853:e05b:c1e5:41b7%5]) with mapi id 15.20.9542.009; Wed, 28 Jan 2026
+ 12:15:07 +0000
+Date: Wed, 28 Jan 2026 14:15:02 +0200
+From: Ioana Ciornei <ioana.ciornei@nxp.com>
+To: Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>
+Cc: stuart.yoder@freescale.com, agraf@suse.de, German.Rivera@freescale.com, 
+	gregkh@linuxfoundation.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+	stable@vger.kernel.org, Dan Carpenter <dan.carpenter@linaro.org>, 
+	Su Hui <suhui@nfschina.com>, Christophe Leroy <chleroy@kernel.org>
+Subject: Re: [PATCH v3] bus: fsl-mc: fix an error handling in
+ fsl_mc_device_add()
+Message-ID: <2nwskmo3gta3fkharhzeg5fj66pymj5az7wiv7wfa4gfa3mrid@iswqizf6qhrg>
+References: <20260124102054.1613093-1-lihaoxiang@isrc.iscas.ac.cn>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260124102054.1613093-1-lihaoxiang@isrc.iscas.ac.cn>
+X-ClientProxiedBy: AM0PR02CA0189.eurprd02.prod.outlook.com
+ (2603:10a6:20b:28e::26) To PAXPR04MB8253.eurprd04.prod.outlook.com
+ (2603:10a6:102:1bf::7)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,134 +84,103 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] PCI: dpc: Increase pciehp waiting time for DPC recovery
-To: Bjorn Helgaas <helgaas@kernel.org>
-X-ASG-Orig-Subj: Re: [PATCH] PCI: dpc: Increase pciehp waiting time for DPC recovery
-CC: <mahesh@linux.ibm.com>, <oohall@gmail.com>, <bhelgaas@google.com>,
-	<linuxppc-dev@lists.ozlabs.org>, <linux-pci@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <CobeChen@zhaoxin.com>,
-	<TonyWWang@zhaoxin.com>, <ErosZhang@zhaoxin.com>, Lukas Wunner
-	<lukas@wunner.de>
-References: <20260123202140.GA84703@bhelgaas>
-From: LeoLiu-oc <LeoLiu-oc@zhaoxin.com>
-In-Reply-To: <20260123202140.GA84703@bhelgaas>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Originating-IP: [10.32.64.5]
-X-ClientProxiedBy: zxbjmbx1.zhaoxin.com (10.29.252.163) To
- ZXBJMBX03.zhaoxin.com (10.29.252.7)
-X-Moderation-Data: 1/28/2026 6:09:29 PM
-X-Barracuda-Connect: ZXSHMBX2.zhaoxin.com[10.28.252.164]
-X-Barracuda-Start-Time: 1769594970
-X-Barracuda-Encrypted: ECDHE-RSA-AES128-GCM-SHA256
-X-Barracuda-URL: https://10.28.252.36:4443/cgi-mod/mark.cgi
-X-Virus-Scanned: by bsmtpd at zhaoxin.com
-X-Barracuda-Scan-Msg-Size: 3796
-X-Barracuda-BRTS-Status: 1
-X-Barracuda-Bayes: INNOCENT GLOBAL 0.0000 1.0000 -2.0210
-X-Barracuda-Spam-Score: -2.02
-X-Barracuda-Spam-Status: No, SCORE=-2.02 using global scores of TAG_LEVEL=1000.0 QUARANTINE_LEVEL=1000.0 KILL_LEVEL=9.0 tests=
-X-Barracuda-Spam-Report: Code version 3.2, rules version 3.2.3.153689
-	Rule breakdown below
-	 pts rule name              description
-	---- ---------------------- --------------------------------------------------
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PAXPR04MB8253:EE_|PA4PR04MB7920:EE_
+X-MS-Office365-Filtering-Correlation-Id: f0a9cce7-8e46-49c0-f672-08de5e66dfe3
+X-LD-Processed: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635,ExtAddr
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+ BCL:0;ARA:13230040|366016|19092799006|376014|1800799024|7053199007;
+X-Microsoft-Antispam-Message-Info:
+ =?us-ascii?Q?KXp2AWLTgYVzA9ltqL77+Sd7N04Fz+a9GqySSQdUQCXvM7EKw3P40BOcnnU7?=
+ =?us-ascii?Q?2HT2zH6gZMDec5ijtN5/WQ1da17nk8nIPY4ew26M+NA3N+XFYiG83nyYYZq3?=
+ =?us-ascii?Q?XW7ctNPYMAwP8kTjy6g6F5Ob/LepnJ40Bd71RCF3d+UnW2HFHjIREj/tnGVH?=
+ =?us-ascii?Q?oekT0+23NZDRdIYxHJ3N+WtERWHu5Ko/3jsrl4MLszw999k2kwCqwyyvHUfh?=
+ =?us-ascii?Q?vP0rZUtZtlb6gcR3NDyN6qjGRnQODyl/Yf+68850PcW8NbVa4ScUdiJxmC81?=
+ =?us-ascii?Q?0TbP/3B2elVqPmfQxSZOAauuMwD3qhQ5WqHCN38wzj5CJefkMSOnVAjvmEGi?=
+ =?us-ascii?Q?jMcTp1BF43z5v+jg3hzsy5XRK8jicOoeUDXvpuTEsj9D2i0uLXRubkUNROJf?=
+ =?us-ascii?Q?mwhSR2X3HWhmlKYVfrFrtzxZjv/NqCM6MKAhePE69OYQtArsUvu5tEwM9Fec?=
+ =?us-ascii?Q?FzartvrbJl2hO70PF2M173j0z3i+sY/m5FFOecFAFzw5pLkiAGbPuGtxYEsq?=
+ =?us-ascii?Q?SkaerG2svqiygOGuMcl3R7pi3/bUwR+w47KqNaTbBs3IAU5hYgoq1Qjw6x8S?=
+ =?us-ascii?Q?vkaPqYlQELXZYPcNxOPWuN0ZQoOGEm2dIRIEMYhecmYFm+qJd/lyeoCI4h5R?=
+ =?us-ascii?Q?IKir5BKdbs2oLbiBuui2028NDHBAC7nAZqv5geqtYb7Nrwnpl5BC/84cEWc/?=
+ =?us-ascii?Q?dkcXuT6cgStqWQxfrvQMpK/O4wwB3B/pVYfvyAnwLe+PgHlDww5rBmcqpMjH?=
+ =?us-ascii?Q?L2n0ZvwV03hrfv3pfLG33ef1XvFnN9/YR31jwehyY4FvNCrf+x0iOu5RF0aB?=
+ =?us-ascii?Q?zTd4dDKoIx2iAidV64GsAwx5lc11LEdG0CMJ6vJjzUlBhwHus91LtNSpfBHA?=
+ =?us-ascii?Q?6ZgMjxJ4Xo4P9yJWz2x+5PlTWO9cRhYXhY2gAU29XZAPxdcwSLHqOTMhu+s/?=
+ =?us-ascii?Q?f54+pguxuxDJx70JkaC8ewVCx6eULJ/wesv+s01IS1wJeNMIXPEYdWdsISfh?=
+ =?us-ascii?Q?uG4gtiql0YdxFDj1G5CrCzOXTtWb4mhQq9G29M5ZpEq5B/JLgNnBSU2l892S?=
+ =?us-ascii?Q?nhRi9gmsIT3GV+MFO7Ax9abxVzmMlwdFwj9R/rXjPEquE8Z79MKeSaVPPnD8?=
+ =?us-ascii?Q?Uc2xHC6ieMjsmv/QpyiKyGgk9ZUGweAKOw64hJNZSg6jwhuYovve3QcArN4d?=
+ =?us-ascii?Q?jpGdqyg7DPqdRzbRpwtlpWHgDVsC2puqRFzVoFyb6E/TgiTl+PCVRJisY0n9?=
+ =?us-ascii?Q?OUPWjfPuxRq5RD/8T3d/sfrLlEZypzkzVPMb1UYo9JfnTVudRmcPoVhnkZPq?=
+ =?us-ascii?Q?PHX9nUb5C1Om5phBh7QsQQgcYPnQH0ko2C1PN2VRQAP8QEyYUyq/gBVx7TF9?=
+ =?us-ascii?Q?LCCFWMWydv7Gwm0dCwWoNujZBlsfoZO0/W30gPBVE+EqndK6gCl8AZk+OxRK?=
+ =?us-ascii?Q?VPHpRh9bm402zs+gLZDvP4NtdxuLyBsUyGD7nbG6DHAJzZ9HWqOMn/UJnzsH?=
+ =?us-ascii?Q?PcEScxthuEvbNWafy9ym31VxPtg5Fhr63nGLmRZWY61qaN31G8VvUKcn/GkH?=
+ =?us-ascii?Q?mcfQOODGwJXVHzYra1tJbSHC1PTOSFqpxJEzcT8i?=
+X-Forefront-Antispam-Report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB8253.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(19092799006)(376014)(1800799024)(7053199007);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+ =?us-ascii?Q?v5aW6+MehiQcMIPD1qoxM9pWtAHmuYdRNqTRFbuAA+bGFlzXFWhBJKR41qwo?=
+ =?us-ascii?Q?wNaFD2Xj8PDdKMs/05kz7UXHHGlpbw3lS4Gr31LaJza7hssDJ0X44uXjf/kk?=
+ =?us-ascii?Q?GnfsMAbpwr/rJFv1L3lQjZkbqEqyxemhPjYwuA8Sfj+HoQGNqKHG00piunOB?=
+ =?us-ascii?Q?vj4zBCy0eqHXa7/N5KwyFjylKZ/fwMhn5rYp5eM969NCju8ca604olhsshtQ?=
+ =?us-ascii?Q?c8SrOHT/xRtbMkwGxM9g/4on98J/IiVh60XASkMPHmsUEzdpKnDggEBVmHE0?=
+ =?us-ascii?Q?fEVviOFB0OzyLsxnW3k4JSduusEWHRh3734t4T9PZBuJpuAwmDKVT3sbF1Nt?=
+ =?us-ascii?Q?YZbzhlAibkNAkEPkIB8JrtciyE7DxZMgr03qtT56vaZg/SmTmXYAwTC8dL7J?=
+ =?us-ascii?Q?Moj6NpTStmMJsn69ylyGenPVQ6nSgSuP/gnjIB4aJMFU1CoK1tkvaW99r5is?=
+ =?us-ascii?Q?49OEnYh916YnYuycGP+fc/Q08eu1Wk2RpVlmnkpCd4BPDwKe1urR8Kuk0wCQ?=
+ =?us-ascii?Q?kAsZAmPfThVXuaRYeBHr3k0HGMdzUFVyFQE96zlXlKtLfbW36e0siVi0ykJT?=
+ =?us-ascii?Q?S8fC/vLQoBnNiFOhpptgKgnrf6eSO8MC+KIEjpdOFKeFvGs4UJ7GZ9fUaPk6?=
+ =?us-ascii?Q?cmLUkoIL7M2j7KszWsriLGe8SEg3WTe17qa1RQboGIrErxRQAxfITIcf8zI6?=
+ =?us-ascii?Q?B1gzzhrIFxcqSJc/SdQo7BcNRiXpxNvNspk6cHag1ciezP9LSG0Ai18ARDJM?=
+ =?us-ascii?Q?zYX3GdPH/Y1DHCs+mBRHtuUReiyf8H2+i0eVNSwsGdusCzp8EbaKRLcARg2U?=
+ =?us-ascii?Q?ITYODa/qTroABAjchosTpxl9366IlMlkJZW6VBOD2OoCwRp8pBc61gG8xGkb?=
+ =?us-ascii?Q?AI7sQCOTdCyf5GCtRKpgTxL4yncEF1fGmb8DwTevecKizRmV2LxWJqn19x86?=
+ =?us-ascii?Q?dXLta3okwBPDIJhHCZ+ofXn6bdWZL1DbSDe6HTyI3tGlcwHtY4LF8b6UAys1?=
+ =?us-ascii?Q?t1GM7Yy8Qk97MPeGEcEVznZQsYwNw67iVHEMe4jqjZ2iU+pnkb/T2izS2c10?=
+ =?us-ascii?Q?rX2r0/X+guvC5QigqXqA4j3/UfY8iZcDs95W2LURyryDIaLkeYD+O1JFxgdJ?=
+ =?us-ascii?Q?0Fc0csBbvTVl8PrnIvTvJFL7mQp/bpiC6bAlNWT4CbwwLnrjeJVNPqpjvAMN?=
+ =?us-ascii?Q?MaSnVa0ma636XjH1YofFEAzYPxbRhv7JanwLvibv7B6NVKMMKJZOovaN0Ap+?=
+ =?us-ascii?Q?u8YY4ZBRz1yiUbJmSJTGsRG6x0YZNkxVpqJrf9uh64kS4I3L+oA1xPK+gLHQ?=
+ =?us-ascii?Q?xKZVr902xNuD491B2JgDUYdk/8v78IPufmeakChVannDXdZXfhFcan0gyuWh?=
+ =?us-ascii?Q?62PVWxxudrIB7pFB6IRENwfq8wM2rBuQ+i6oz2nZ2yRDVmWLtbBGng2w6Xph?=
+ =?us-ascii?Q?NYHLj0glf/Qg/IdLdB5J+F9o0aoTK3HIVGqwED4iYtuPdR+bIr1Gq6C3MApy?=
+ =?us-ascii?Q?TERzgTLGkFVxT0217OgLfD10qmpdQmUMPWuuogNUjRaiCkb4gi/r1s5dAVcb?=
+ =?us-ascii?Q?QgJzswcV29ngMZtyqpo+U5J9gnrXJp5QUV9cz6qTpA4rDYiHni3PqCSFymbW?=
+ =?us-ascii?Q?HGaqyZ138of7RNKRRq9CfbJmB0ENk3Yu5sDtvyD16QsvCBGdzVdhxk+92iV1?=
+ =?us-ascii?Q?1RXKwBDMCXjBBLmUvTjlbN0b5tjPfQZFn6nFIvK2h8GfNfVwSOfronUypbOJ?=
+ =?us-ascii?Q?qCZumSVgKw=3D=3D?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f0a9cce7-8e46-49c0-f672-08de5e66dfe3
+X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB8253.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Jan 2026 12:15:07.0529
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 3pusNfzR2y4YseyrlRTqaOLw7JsnC6Rb8TU2CNLKZ7ZwzsTPB2LyGQhs+f/5t5T/5uO9lOvUlIZUT+O2A+w2GQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA4PR04MB7920
 
+On Sat, Jan 24, 2026 at 06:20:54PM +0800, Haoxiang Li wrote:
+> In fsl_mc_device_add(), device_initialize() is called first.
+> put_device() should be called to drop the reference if error
+> occurs. And other resources would be released via put_device
+> -> fsl_mc_device_release. So remove redundant kfree() in
+> error handling path.
+> 
+> Fixes: bbf9d17d9875 ("staging: fsl-mc: Freescale Management Complex (fsl-mc) bus driver")
+> Cc: stable@vger.kernel.org
+> Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
+> Closes: https://lore.kernel.org/all/b767348e-d89c-416e-acea-1ebbff3bea20@stanley.mountain/
+> Signed-off-by: Su Hui <suhui@nfschina.com>
+> Suggested-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+> Signed-off-by: Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>
 
-
-=E5=9C=A8 2026/1/24 4:21, Bjorn Helgaas =E5=86=99=E9=81=93:
->=20
->=20
-> [=E8=BF=99=E5=B0=81=E9=82=AE=E4=BB=B6=E6=9D=A5=E8=87=AA=E5=A4=96=E9=83=A8=
-=E5=8F=91=E4=BB=B6=E4=BA=BA =E8=B0=A8=E9=98=B2=E9=A3=8E=E9=99=A9]
->=20
-> [+cc Lukas, pciehp expert and author of a97396c6eb13]
->=20
-> On Fri, Jan 23, 2026 at 06:40:34PM +0800, LeoLiu-oc wrote:
->> Commit a97396c6eb13 ("PCI: pciehp: Ignore Link Down/Up caused by DPC")
->> amended PCIe hotplug to not bring down the slot upon Data Link Layer Sta=
-te
->> Changed events caused by Downstream Port Containment.
->>
->> However, PCIe hotplug (pciehp) waits up to 4 seconds before assuming tha=
-t
->> DPC recovery has failed and disabling the slot. This timeout period is
->> insufficient for some PCIe devices.
->> For example, the E810 dual-port network card driver needs to take over
->> 10 seconds to execute its err_detected() callback.
->> Since this exceeds the maximum wait time allowed for DPC recovery by the
->> hotplug IRQ threads, a race condition occurs between the hotplug thread =
-and
->> the dpc_handler() thread.
->=20
-> Add blank lines between paragraphs.
->=20
-> Include the name of the E810 driver so we can easily find the
-> .err_detected() callback in question.  Actually, including the *name*
-> of that callback would be a very direct way of doing this :)
->=20
-> I guess the problem this fixes is that there was a PCIe error that
-> triggered DPC, and the E810 .err_detected() works but takes longer
-> than expected, which results in pciehp disabling the slot when it
-> doesn't need to?  So the user basically sees a dead E810 device?
->=20
-Yes, this patch is to solve this problem.
-
-> It seems unfortunate that we have this dependency on the time allowed
-> for .err_detected() to execute.  It's nice if adding arbitrary delay
-> doesn't break things, but maybe we can't always achieve that.
->=20
-I think this is a feasible solution. For some PCIE devices, executing
-the .err_detect() within 4 seconds will not have any impact, for a few
-PCIE devices, it might increase the execution time of pciehp_ist().
-Without this patch, PCIE devices may not be usable and could even cause
-more serious errors, such as a kernel panic. For example, the following
-log is encountered in hardware testing:
-
-list_del corruption, ffff8881418b79e8->next is LIST_POISON1
-(dead000000000100)
-------------[ cut here ]------------
-kernel BUG at lib/list_debug.c:56!
-invalid opcode: 0000 [#1] PREEMPT SMP NOPTI
-...
-Kernel panic - not syncing: Fatal exception
-
-> I see that pci_dpc_recovered() is called from pciehp_ist().  Are we
-> prepared for long delays there?
->=20
-This patch may affect the hotplug IRQ threads execution time triggered
-by DPC, but it has no effect for normal HotPlug operation, e.g.
-Attention Button Pressed or Power Fault Detected. If you have better
-modification suggestions, I will update to the next version.
-
->> Signed-off-by: LeoLiu-oc <LeoLiu-oc@zhaoxin.com>
->> ---
->>  drivers/pci/pcie/dpc.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/pci/pcie/dpc.c b/drivers/pci/pcie/dpc.c
->> index fc18349614d7..08b5f275699a 100644
->> --- a/drivers/pci/pcie/dpc.c
->> +++ b/drivers/pci/pcie/dpc.c
->> @@ -121,7 +121,7 @@ bool pci_dpc_recovered(struct pci_dev *pdev)
->>        * but reports indicate that DPC completes within 4 seconds.
->>        */
->>       wait_event_timeout(dpc_completed_waitqueue, dpc_completed(pdev),
->> -                        msecs_to_jiffies(4000));
->> +                        msecs_to_jiffies(16000));
->=20
-> It looks like this breaks the connection between the "completes within
-> 4 seconds" comment and the 4000ms wait_event timeout.
->=20
-Thanks for your suggestion, I will change it in the next version.
-
-Yours sincerely.
-LeoLiu-oc
-
->>       return test_and_clear_bit(PCI_DPC_RECOVERED, &pdev->priv_flags);
->>  }
->> --
->> 2.43.0
->>
+Reviewed-by: Ioana Ciornei <ioana.ciornei@nxp.com>
 
 
