@@ -1,62 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-16369-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16370-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31B42D3F083
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jan 2026 16:59:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30AC8D3F097
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Jan 2026 17:01:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f1T546MvJz2xlK;
-	Thu, 29 Jan 2026 03:59:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769619544;
-	cv=none; b=liNqlyK4ZSt6NRzcutFGUUH93aBsg+dKha/7zn924SKzzZYMHJLnjTvT1yXTe25zLfq+NobirREwvPUT3oVOA+00SerRds6y9POWk/mg42zfqnVXb1JrRgPrNk7SNJpYHIY0tl6rBE/VSImV1WLw5HsS0sBhG5LpcR8u4qKBljAnYfpPyfF46CPZBQLcrsB7LuCwutFWVbHjmVdAjc4Ezhsiilo2HrEoT7zQHjehuB2ZdYifGP0OMNwUabwnNf0bA1yWzXnwUgH7ltBbtjJnBy298F6UspixmkjJmF9PYN0JENHwfpjGGjTeLbWlOfVhtt1YY8xxq2U9LcRPh3U+dQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f1T7G5FSxz2xlK;
+	Thu, 29 Jan 2026 04:00:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769619658;
+	cv=none; b=njHZTZZ3u1FgHbEaxo5356bNmsV+icEeCEkDhO77wSEsWLtxI/c19CvGP3TBk4lAW61Qs5id8YRoJb9fafM5EyWISLkaGBwEqgdCTsGWWBfa3WIoi4bhPdzb+Q2sYkzUDov8DZEOG0rcLmdUeAc6VziVpIHqSyiDwQH26T1tGdF3nx3vugMEcw5+CjrIL3PfVkpH2PcXUkQ7WqBKnM8x+3APWeCgZGwbUA6mHR9WSnl6/vvt6fYZ7CHLFSWUUJZoKhfEiNRfVKO8qxAh3KSvNmstddcPAPdp8C8Dv/ckU4/Bxt0eWnqhVWB7ECW1Hip6VUeqfHs6Jgp6tOIuEPCX9Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1769619544; c=relaxed/relaxed;
-	bh=3GI7Hnlo9tD5UoBmqHIIESrY3FeVdBtOoymNBTRCgg8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=lcOyisNT4VSgypNNCuafb5E4xrxCoszCG6nYYl3cwhN7Bz2Ka0Z5EV01ijgHVS5b+LCj23xAbjL6BABofdHCX+OKnD19Q+qpHXvqthANoCvC88bWkQzcoAksPXeAfuixl3OXr1ha1nngoAzPtNHeOr/KthOFGV+vaRPyLQFRSFJvs4w0zorm7DKB0mo6hnLvq78JjPnx+sV4N47WSMq6YtHEbAEnRiopEe2pC0yzvWqtyNpeCPA8MZDuJoDki2dUAzWN0VBCNlH+4FVMBu3KDWOQf37uINBmtSd+Sq4m0a/cpBTApsK/Q/eChVAu7G7QVlrUkIwy9AQ/9ndZAXtwqA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=mjKyEe2K; dkim-atps=neutral; spf=pass (client-ip=198.175.65.10; helo=mgamail.intel.com; envelope-from=sathyanarayanan.kuppuswamy@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	t=1769619658; c=relaxed/relaxed;
+	bh=tn4g/9//RsuI8p+PfBKBMGxP/jMELrcAL7s9pAP33WA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=LB0AaT7C1tOfFt1aKNYvuYAZgj+G/dlzoZQm1KKYOIw55SKqCWAI6dcCsRO6iPEYjOnMB/kJAW/VqPFgVFEk77QyXSg88cslIbGVSenpWrUHOrEFvpwFg5tU3yVn0Byk69obl6BDqYdscbGKEeBJR1QT4Mun4MGM5cxPwyLgZun0svPgrkHxixzupLFDbZMlyVj7Ne1Qaf75AQZofFeBzPKYYG3PQmchJiEJLrO9SdM3lyRqzWSUjwoJw7Ol1ELigTOnwUGXgFRlq2+oramR2Pgn0W2b9zs3eddiCbD/co30lRqVNwARryIfMBpvpGr0SR0jwKLMCrSni9oWCww4LQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com; dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=m2wKvC3q; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=srs0=wv9x=ab=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=mjKyEe2K;
+	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=m2wKvC3q;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.10; helo=mgamail.intel.com; envelope-from=sathyanarayanan.kuppuswamy@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=srs0=wv9x=ab=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f1T534fTKz2xgv
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2026 03:59:03 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1769619544; x=1801155544;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=bnHXPMPNgHRvQiG4GLdo6odlzdOHxKJIHAHU+qCgXrA=;
-  b=mjKyEe2KZK0Vvge48WsbUNWp14/rppXskOOgA6XTrSDB44+8opJoR7cP
-   nYsCTTJlJ4KKjMsXTBiO1ise/n/SvdS7lM6VQkI0wfKeJnTrS+mipKJP6
-   ySgR9nHqyDiej0ZYo956ACh8VBk0YAVVGSJyhZUSjHB0Udv9WEVVgIW4h
-   W7CrzKdqLDyKG66VKPEKztwvAArr31s5VI5IoNuvXncmILnFuZo9F7Gts
-   TK9mhd3ZCU9HE2KeJ7WfqoiDOc9FVaTEgxcBvnAxRwgtwDNU5DRWFpCy9
-   o4rzMe/R/hBMbfECydm6gpbmGf3xO/VtZKPqSuKvizL7fRi31IHHvgwif
-   g==;
-X-CSE-ConnectionGUID: 4vlhxrIoQTyXe49yqRO3Kg==
-X-CSE-MsgGUID: 7Ngr2t2dTOOHAU34nDlLIQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11685"; a="88257699"
-X-IronPort-AV: E=Sophos;i="6.21,258,1763452800"; 
-   d="scan'208";a="88257699"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
-  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Jan 2026 08:59:01 -0800
-X-CSE-ConnectionGUID: S6k9xmHPR7qDkRvMokBb7Q==
-X-CSE-MsgGUID: MijA/aemRcKq3WeA4g3K1w==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,258,1763452800"; 
-   d="scan'208";a="208225520"
-Received: from soc-pf446t5c.clients.intel.com (HELO [10.24.81.126]) ([10.24.81.126])
-  by fmviesa006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Jan 2026 08:59:00 -0800
-Message-ID: <f98c4da6-502a-4d9c-8df7-8db3b3ea5d15@linux.intel.com>
-Date: Wed, 28 Jan 2026 08:58:59 -0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f1T7C6Rjlz2xgv
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2026 04:00:55 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id CA43D41B6E;
+	Wed, 28 Jan 2026 17:00:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CF87CC4CEF7;
+	Wed, 28 Jan 2026 17:00:50 +0000 (UTC)
+Authentication-Results: smtp.kernel.org;
+	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="m2wKvC3q"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
+	t=1769619644;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=tn4g/9//RsuI8p+PfBKBMGxP/jMELrcAL7s9pAP33WA=;
+	b=m2wKvC3qDETjKG8j143DAoxEEYCt8XypTTP1fkG55IkiGr/El87+qNAqFmJAhmO5Ss4QvO
+	luTaIueGqjBBUWvKkPauPs45CQSo4/Z464etuqYdgloGfvYxQ/yKi612qCksjG3596dGqI
+	ftt2n6cXvdkVFbr1KrLxJuY4x/ZjghA=
+Received: 
+	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id bd2c9de1 (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
+	Wed, 28 Jan 2026 17:00:40 +0000 (UTC)
+Date: Wed, 28 Jan 2026 18:00:30 +0100
+From: "Jason A. Donenfeld" <Jason@zx2c4.com>
+To: Ryan Roberts <ryan.roberts@arm.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>, Huacai Chen <chenhuacai@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	Kees Cook <kees@kernel.org>,
+	"Gustavo A. R. Silva" <gustavoars@kernel.org>,
+	Arnd Bergmann <arnd@arndb.de>, Mark Rutland <mark.rutland@arm.com>,
+	Ard Biesheuvel <ardb@kernel.org>,
+	Jeremy Linton <jeremy.linton@arm.com>,
+	David Laight <david.laight.linux@gmail.com>,
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+	linux-hardening@vger.kernel.org
+Subject: Re: [PATCH v4 2/3] prandom: Add __always_inline version of
+ prandom_u32_state()
+Message-ID: <aXpArjZ1QQowshnA@zx2c4.com>
+References: <20260119130122.1283821-1-ryan.roberts@arm.com>
+ <20260119130122.1283821-3-ryan.roberts@arm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,60 +91,51 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v7 4/5] PCI/AER: Clear both AER fatal and non-fatal status
-To: Shuai Xue <xueshuai@linux.alibaba.com>, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- bhelgaas@google.com, kbusch@kernel.org
-Cc: mahesh@linux.ibm.com, oohall@gmail.com, Jonathan.Cameron@huawei.com,
- terry.bowman@amd.com, tianruidong@linux.alibaba.com, lukas@wunner.de
-References: <20260124074557.73961-1-xueshuai@linux.alibaba.com>
- <20260124074557.73961-5-xueshuai@linux.alibaba.com>
-Content-Language: en-US
-From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-In-Reply-To: <20260124074557.73961-5-xueshuai@linux.alibaba.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260119130122.1283821-3-ryan.roberts@arm.com>
 
-
-
-On 1/23/2026 11:45 PM, Shuai Xue wrote:
-> The DPC driver clears AER fatal status for the port that reported the
-> error, but not for the downstream device that deteced the error.  The
-> current recovery code only clears non-fatal AER status, leaving fatal
-> status bits set in the error device.
+On Mon, Jan 19, 2026 at 01:01:09PM +0000, Ryan Roberts wrote:
+> We will shortly use prandom_u32_state() to implement kstack offset
+> randomization and some arches need to call it from non-instrumentable
+> context. So let's implement prandom_u32_state() as an out-of-line
+> wrapper around a new __always_inline prandom_u32_state_inline(). kstack
+> offset randomization will use this new version.
 > 
-> Use pci_aer_raw_clear_status() to clear both fatal and non-fatal error
-> status in the error device, ensuring all AER status bits are properly
-> cleared after recovery.
-> 
-> Fixes: aa344bc8b727 ("PCI/ERR: Clear AER status only when we control AER")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Shuai Xue <xueshuai@linux.alibaba.com>
+> Acked-by: Mark Rutland <mark.rutland@arm.com>
+> Signed-off-by: Ryan Roberts <ryan.roberts@arm.com>
 > ---
-
-Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-
-
->  drivers/pci/pcie/err.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  include/linux/prandom.h | 20 ++++++++++++++++++++
+>  lib/random32.c          |  8 +-------
+>  2 files changed, 21 insertions(+), 7 deletions(-)
 > 
-> diff --git a/drivers/pci/pcie/err.c b/drivers/pci/pcie/err.c
-> index 0780ea09478b..5e463efc3d05 100644
-> --- a/drivers/pci/pcie/err.c
-> +++ b/drivers/pci/pcie/err.c
-> @@ -285,7 +285,7 @@ pci_ers_result_t pcie_do_recovery(struct pci_dev *dev,
->  	 */
->  	if (host->native_aer || pcie_ports_native) {
->  		pcie_clear_device_status(dev);
-> -		pci_aer_clear_nonfatal_status(dev);
-> +		pci_aer_raw_clear_status(dev);
->  	}
+> diff --git a/include/linux/prandom.h b/include/linux/prandom.h
+> index ff7dcc3fa105..801188680a29 100644
+> --- a/include/linux/prandom.h
+> +++ b/include/linux/prandom.h
+> @@ -17,6 +17,26 @@ struct rnd_state {
+>  	__u32 s1, s2, s3, s4;
+>  };
 >  
->  	pci_walk_bridge(bridge, pci_pm_runtime_put, NULL);
+> +/**
+> + * prandom_u32_state_inline - seeded pseudo-random number generator.
+> + * @state: pointer to state structure holding seeded state.
+> + *
+> + * This is used for pseudo-randomness with no outside seeding.
+> + * For more random results, use get_random_u32().
+> + * For use only where the out-of-line version, prandom_u32_state(), cannot be
+> + * used (e.g. noinstr code).
+> + */
+> +static __always_inline u32 prandom_u32_state_inline(struct rnd_state *state)
 
--- 
-Sathyanarayanan Kuppuswamy
-Linux Kernel Developer
+This is pretty bikesheddy and I'm not really entirely convinced that my
+intuition is correct here, but I thought I should at least ask. Do you
+think this would be better called __prandom_u32_state(), where the "__"
+is kind of a, "don't use this directly unless you know what you're doing
+because it's sort of internal"? It seems like either we make this inline
+for everybody, or if there's a good reason for having most users use the
+non-inline version, then we should be careful that new users don't use
+the inline version. I was thinking the __ would help with that.
 
+Jason
 
