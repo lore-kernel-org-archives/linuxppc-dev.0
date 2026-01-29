@@ -1,89 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-16388-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16389-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56343D358CE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jan 2026 08:08:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72D0ED358ED
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jan 2026 09:37:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f1sGb55Clz2xpn;
-	Thu, 29 Jan 2026 19:08:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c112::5" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769674119;
-	cv=pass; b=KZ8XSMw+y5vYIBaYNZ9wF6Orsxr4VlV4ldhHJGxbVZ9PkQ2KPiv7chFs22NnqhywE8fMO+KyFC0BPE2X8QZPOFmHojAvX3UrEpBxUanAnQ/Q8pFtrwyHnzEUbkm9zXa/kXIlor42UYVvnLJtq3YDYxmpQ6Ob53lr5mF+LxBgc3lOlRtit6eo6aYJa86xczcb/VveIZC3V8964mRYKu1eDhA0F7O1R07jXMe2RwQLC6NLGliUydu+ZOVTg8NJR4vBe8x1uLyeDeKrhP922vDi7jZ8RcTKah+rQRt8pmek5Uf/6nlwVI81jypSKgrkDNH67NsH4pvh0Ux8t1D+JlStvw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f1vFX5TlKz2xnh;
+	Thu, 29 Jan 2026 20:37:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::530" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769679472;
+	cv=pass; b=GlSCpP/Vidbmo3aWFY284r/eAGhxhi1fGL/fDvEj0r4lQvGqXXyAjjGXj2j+jwUHb+oSBv/6hPm9Lk65+/0l0MY/12BiQabXUoSCUsgwkstitih56Hp09h2BLkdXI1JlIwQX0M+sZ1ROjI4LOyPf2UQz7F7pLCnB1KMKEgS2DN5n0sBgMCbIzHO82uUT1nNqJNGhsnSQONqPhUBD9G+bgP4QWiu0vm/JZXMrntgKlSgynLoEyMvI3MucCnQA1S877YDzheEtzlVbzxx53dpgjFN1zaYqe7H/KeykGcUqsIANu2DvQe2RtqddBnCIDNbR3t/pwi1iHnFbrwhpksGW+Q==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1769674119; c=relaxed/relaxed;
-	bh=9UEb0TtI9lNv1G5JDPp4bVL/DKH0BLmJdILLaUK37vA=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=YRohGl9hRZ89uJUB3lRQ7Y7/c5Dr/JdL1JMwEIbOHgp7R8RSxiLBAvCCfzik3f0hMUlcibG6oeFnq9rqYiP9dg6elVaXBIMAj3VstROfqajjPH3WPB53YDEoJ8U0M+ulEQryB7wuj7/KgPDvQ+j8S3Zpa9/DBCuugGQFRyHAu+X6mTLFYmzB7CHYH20//YfOnEMXeFME8xuFkjs93Ub90q5AiyjKg1DuyB7RFF0gJb/+oYVkfRw81UgutR7VwGOhOzMJpjud0BGtEOcPXAeam2bPNkLZNgknl4FnwsDiMDQ6o5QxwakUnex2zExE92gEE2ZNtz+pP+LdnYDv1+quKw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=FaHRAiCt; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c112::5; helo=cy7pr03cu001.outbound.protection.outlook.com; envelope-from=christian.koenig@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+	t=1769679472; c=relaxed/relaxed;
+	bh=4lU8GWlv78rS676V94HHH4zs90Fwj2GtCQjzXirgDFE=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=iMMZDMrlTFmjmMbuwQgrzwQhEQSxrqYrl3+0Vbc0DUddAFK8jrsEKfsu/89ryCpjLjFo+EY1gPtYraRH06W80FDFKqDW+MOn6bYU3P8Kt0oCPtpnaGxB0+0TaWfGWFqr1trYslDU5gZrzTQ158vpicKNbBAta683WrLllK60d4r5KWEoLo0sQ50zd1TwLzqUoqM4gwah0QuChkPEGvBd9NaOxWzKyygcViO16N1ARVoptcB5jFGVl6/AGz6g7pYFaIjKKFZlauZrcEI1/kJcOyIWqgfaNgwxEwbiIMHzbgfK+voyLRk6IfSZKNI6MPITM3D678bGZd/54Nkxvm5knA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=ZYDYehbe; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::530; helo=mail-pg1-x530.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=FaHRAiCt;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=ZYDYehbe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c112::5; helo=cy7pr03cu001.outbound.protection.outlook.com; envelope-from=christian.koenig@amd.com; receiver=lists.ozlabs.org)
-Received: from CY7PR03CU001.outbound.protection.outlook.com (mail-westcentralusazlp170100005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c112::5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::530; helo=mail-pg1-x530.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x530.google.com (mail-pg1-x530.google.com [IPv6:2607:f8b0:4864:20::530])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f1sGY5RKkz2xKh
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2026 19:08:36 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=DbMlPf2kIT5yyiFrmfRkVA21sGXsPlQRJ9s3aEm97l0V4Bvnbj3gKx3wc4KvyCrpX/kYWXKi5ISom5cUMI6cbTsz0dvvSOeoO4y3XTMCbnjnCltjepSzzeAxCAsMjO1EDAY0ngmlxUpU8NSiGyYrEHJrs0N8KvxM31B4x2tdtoijHYAfrEbhA6LJI2Cu34JtYhXWdWwqiH+5f729biCrQSvUPVLFc5gNZUd8K/X288YE7jyloSYY3/KKfwLyTp0Q13ezyG8RgFlPoF0MkgkFKXWqZY0CO5YuK15O0D1xG93bLmienX3/DFmnQKocc5lDnSwSWOC81zqiOXfBdg0XxQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=9UEb0TtI9lNv1G5JDPp4bVL/DKH0BLmJdILLaUK37vA=;
- b=tvaiTyh497rjdHiFz9pNkmNHgszZD6tlG1AoLJU+TlS7qydGFfFsyN+vMSTpPLobUqvnZ0mEnBYOnQmA8UND497lkev/viQd9DdJwL93lJEDjI69TZVwFWPYocxduySNWpNcBstVr2KOEN62wxijtvdzIrGkKjpDQB8O9iRyhvuKsAC65m3H87zMd0f1wnn7W2GfPXf9BLUXPykg/02e98/kDXSqth26yFGvzRxtuCb+p7edGSZMAslZdLreL5Eih9E4HTVnATW4HQUlY4DIYpgxgnTsNM2Uif/QnByJbEZjW2FMKHlnnWygm7rr6XtG66y0rG5uFrVYvMuSK38xag==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=9UEb0TtI9lNv1G5JDPp4bVL/DKH0BLmJdILLaUK37vA=;
- b=FaHRAiCtF37ZgXJ+3Y+kvXR2Y8AZATcyIBcanUaotK3xD1ZArMNJXKdqYXqMcFsVsHv9bZcu7X73cczRGcPN0ay+4BHXsmbHHl/oH8tGXQaKL1SskbJXQ/5NH2r7SV1VK2mvkPStBKtANfV2P9BWnB7hGBN7kjSZ5zx2Pw2fPgY=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from PH7PR12MB5685.namprd12.prod.outlook.com (2603:10b6:510:13c::22)
- by BL1PR12MB5969.namprd12.prod.outlook.com (2603:10b6:208:398::7) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9542.9; Thu, 29 Jan
- 2026 08:08:13 +0000
-Received: from PH7PR12MB5685.namprd12.prod.outlook.com
- ([fe80::46fb:96f2:7667:7ca5]) by PH7PR12MB5685.namprd12.prod.outlook.com
- ([fe80::46fb:96f2:7667:7ca5%4]) with mapi id 15.20.9542.009; Thu, 29 Jan 2026
- 08:08:13 +0000
-Message-ID: <f7c23358-9438-47cd-8493-6bc84ecd9900@amd.com>
-Date: Thu, 29 Jan 2026 09:08:00 +0100
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 3/4] drm/radeon: Raise msi_addr_mask to dma_bits
-To: Vivian Wang <wangruikang@iscas.ac.cn>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Alex Deucher <alexander.deucher@amd.com>, David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>, Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>, Brett Creeley <brett.creeley@amd.com>
-Cc: Han Gao <gaohan@iscas.ac.cn>, Thomas Gleixner <tglx@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
- netdev@vger.kernel.org, linux-pci@vger.kernel.org,
- linux-sound@vger.kernel.org, linux-riscv@lists.infradead.org,
- sophgo@lists.linux.dev
-References: <20260129-pci-msi-addr-mask-v4-0-70da998f2750@iscas.ac.cn>
- <20260129-pci-msi-addr-mask-v4-3-70da998f2750@iscas.ac.cn>
-Content-Language: en-US
-From: =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
-In-Reply-To: <20260129-pci-msi-addr-mask-v4-3-70da998f2750@iscas.ac.cn>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: BN0PR02CA0026.namprd02.prod.outlook.com
- (2603:10b6:408:e4::31) To PH7PR12MB5685.namprd12.prod.outlook.com
- (2603:10b6:510:13c::22)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f1vFW1Rfgz2xlF
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2026 20:37:50 +1100 (AEDT)
+Received: by mail-pg1-x530.google.com with SMTP id 41be03b00d2f7-b6ce6d1d3dcso297762a12.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2026 01:37:49 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1769679467; cv=none;
+        d=google.com; s=arc-20240605;
+        b=HB6VyaSxbiMw16i6ToBpu+mZMJL8y30xYnS7RRMCfiSbND7BtlET1EmthZM5ULsGR0
+         1AqN806RqUx7XLe+lNIGqs6ytNN94hmw/46om5osXQF0XNCnnqCK/Kzay5GXxUCpQTgP
+         nronLVMmQ5HabajWzhi84is3lvLOW230ogdJ0e6lEMq4k7mBxWjMasPs9tKQOw+XHqzu
+         p3XqNqKeY86NjDzg8V4k0UjdtbHR+sKYwNtgKEN5J2e1LGDEP+af12g5zzj9RLzVDahH
+         BcGzcQbhzo0TSYhSLqipzD8T8sSzor0MRclK1iN5YF44wmyzSJ+W3x2x35WA/R5fHVwf
+         Gi5g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=4lU8GWlv78rS676V94HHH4zs90Fwj2GtCQjzXirgDFE=;
+        fh=T0uAWuN9qkTqSy85zLxSDftCktfYx66VI0uNhLZ/HPI=;
+        b=T+P98UuP6HIsIgw1yniDQeQ250U6o1kRmZeFOW6tZaKIFev6CJ8sBATAApqkj5YCHr
+         ffJRjGjGIqVgEP5R+aZy39Gm5k3DKKoh9762eDr0/Yp5mWFsukVsxA57t8EnRMR2THbQ
+         oKlHSsFwUsPw4eNsodPB11IEyZO0HAKvI/D2iKzoLeX9U0Tb6VTgIGXlgMVfMFhNf8TP
+         zXKvI1IZlRVWGC4/caKY+1iUbi7feMw7jF6hi3lc1hMmk0S4CLo3GBD57EAqfLMthHmK
+         CSDwhTwTJ9IIOwmkM0+Rrlp8cTrJaNmVIRIShcS0fIXnhQkGAYs1GKjOwpFgOXHawcZd
+         KbvA==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1769679467; x=1770284267; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=4lU8GWlv78rS676V94HHH4zs90Fwj2GtCQjzXirgDFE=;
+        b=ZYDYehbeai5dtSXwqDgGq1IuRa+pRFNBxJiw1qm1JtqeXTZYEEASdGjNMliS9pB/KL
+         6uDvSHuovgNxcoHcNHcyCxk1Uynv5AoIFKsvXm6LmfCrxIboYQX6ycUWPL7Z1F3Fy3dO
+         eKVhkm51cRqabea5ORlyFZ7pD6Lw8AvIAgkw1vYE9BUxvFs751WozMrsG01hLG7XunKz
+         0o4O44OrZ/i/ifesR4AjjhSXreKG+xGCoBkuyBB2DL114Vk77ZLjQY1z4xQxjE1O4SJ6
+         u2oOvazxWltYavVIS7f1lSm9S/59iAHoKU4o053tJsN8T7Eqob5edvIvftwrJW3NujTi
+         S6lA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1769679467; x=1770284267;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=4lU8GWlv78rS676V94HHH4zs90Fwj2GtCQjzXirgDFE=;
+        b=JQBldXMrxOsmItxcCmfaVZbMPLlIp3lfDsPiZjUKfdlcC7/7i0Rfnw9Z/bXSCZYgKU
+         BlycUD4J7GJf2z5WzYpjJCc6jdoXgyWnrjEY2LS+DfOIzah3HJ6OOFr3vdYLZtr15tQV
+         wUu2UPOx7GoVJUHZm0NNljPqrqXeYrZuUjmTdMTpgH48Wk8UNfE7MoBmOobd32/Gr0P9
+         h9az5EZc4xXmbbfb/QTOQToZdgfnJRHYwFlW1g1yFqb/KBgQd/i1rnKobO34qdhPRm6z
+         fZQrJdbOaq93JEo6FdAR8G8T+D1xVwQgjrIwrL/69zvvf3m4U3ycFnRGbF9jwe58O8mZ
+         ASAg==
+X-Forwarded-Encrypted: i=1; AJvYcCWItd4Xmz3qV5nUAFGfoCtmDxiyJ/v90tx4wLO9XIx5PR5JAvY+SEQls6t0Tby9FYX6RDeJTpFMchJlLeU=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yw1KQc7W/b3uhXoteVHnGbxL/2QR+dFomS9YLbg8LTcvdFvB4Gx
+	pMuin8oFgi5mfdxPkPVSxLwXfyJ6Knj3F9j20Yvfk5FLadPLHhzx1lnmI8zBYV95x0JdqNOP5zS
+	ZalbPJ+5u0tT0oEnX0gsrjN5ix2pR9PA=
+X-Gm-Gg: AZuq6aIjpvJ3o5sPuC8vMsaWQMUKozb/PO4OMAe+p47Q5ZqyxJsSrODjRLP5796zA6q
+	ItRsxGelG0CM0o5yYtoNx2vtau3lW3lPO3LXBN7QsD4YcUMj4wUafk5jxn5e4OAiy4BL2bpJpVI
+	xGCjOAPmNnhoXlyO60ot32MBn7tXeddTVftPbg7BU85jBKhG9wYc901hb/b2dcrx7KqcvTJ2q3K
+	k7NXpouWBQzXGf4ZaHC7iNx5GvKmCAqzdOzPZ4AW7i3kuMiEpszh4qR4FLLh8ZileKRYTg=
+X-Received: by 2002:a17:90b:1f8b:b0:352:c9c9:75b8 with SMTP id
+ 98e67ed59e1d1-353feda27ddmr6746159a91.36.1769679466914; Thu, 29 Jan 2026
+ 01:37:46 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,161 +100,59 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH7PR12MB5685:EE_|BL1PR12MB5969:EE_
-X-MS-Office365-Filtering-Correlation-Id: 9387bf3f-514b-4237-6aa9-08de5f0d8c7c
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|366016|7416014|376014|921020|7053199007;
-X-Microsoft-Antispam-Message-Info:
-	=?utf-8?B?SVRGTTkxQTBmQkdjU3BkbzJFZUJ1QWExQVhqK2VOMU95djJiQzRnV3hXbndj?=
- =?utf-8?B?VVJCUFdEWDdiVS9qekZXTEM0bi9vWnVPRURqMjBDY0ZXR2tVTms2anFJMmxN?=
- =?utf-8?B?Zlp0clF3WE5zcUJtTkJVeWRJNzh4L1J4KzVRcVFzTnRSREVCTWlQUFBWWFJC?=
- =?utf-8?B?OWlUb1d5UENIZk9hVU4xYm41eDY5NlVaelh4cnlVa0tMclg5OEdhbUFUdEpF?=
- =?utf-8?B?VW1RM0ErNS9abkJVT3BQTGc3dlp3T0NNK21JTFluaGMzbU5yRnM4MU8yblpr?=
- =?utf-8?B?NytiWUdPR09EajNheHlsaFY2MnFpMkwxeG8vM2JjZ3dkVE01cExPbGdFRTlO?=
- =?utf-8?B?UDhQRFJ1d0c0bjNFTXZuS3JrMHVjbHRwRmZGbkxKQUI1L1p1dHNSbkx6MVNz?=
- =?utf-8?B?ZWNUT2UvZkRyTWEveWRZM3h4VU1nNHloM3ZaQ3NmRGtubjlhUTNPa1ZhVExR?=
- =?utf-8?B?VU4vWUlDSjJwWEdzZUdlUytmb01wbW13a21OUnFOdExZSm9LZTljaGlrcE4y?=
- =?utf-8?B?ZUdLRDlaUFRqRmVLYms0dG9oOXZmcGUrNUdSenVxYXBmOTVPZXh0WTdJVFJl?=
- =?utf-8?B?K3F3WHYzU0tNdXhqYTRHOWdnbUJxS0pwVHVXeDFITGNLcWtROFVrUVZ3WE9C?=
- =?utf-8?B?Rm1xS1B2cUVnT0RrMTJrbEJLcS9MM0JuU1RvZGwrSFBTYU5BRmtucXFIMDVC?=
- =?utf-8?B?TXJMeDZyTG5US0JuVWhCTCtQUVNZbUs3QXdLOUtnZmoxODhIUmZMcUIxODJJ?=
- =?utf-8?B?K3FrN2ovMjlCcTZ1MmwwWGpvc3lzQlBDRVpkRXlJSUI1Z1gwOWhsZERMVmZl?=
- =?utf-8?B?YTlaUjRqbEVISTA5S0hTaGtKSldtNktFN2dLcXdjVVc0SURVZTRJTU54SDhE?=
- =?utf-8?B?LytkaDlRRHZpYXhUdlhGVzEwbms0R1dQWjR5OEljSUJpUmY0enh5SWhIN3hK?=
- =?utf-8?B?RzdFRGVyL3BLeHJnTkM1YkgvWkZaTXJTRE8raUIrUDBSclZMcHJzR2tJYzJD?=
- =?utf-8?B?YjBMeW5PNTBISm5MTUxGcGQ4WlY5cG5lb3F3bjVUZWtYajRKOFh4VlVpSUhK?=
- =?utf-8?B?bUs1dHh5eXRtblpWVm1adW5pVVBJZlBFaDZwQ09mS0dRWWNDQ1plSTRxaHhx?=
- =?utf-8?B?aUNCQkpQV0ZtZFBoYVg2NlZXdGpmT1Z2S0FQaU1hZmQvWWgzd25jVDY1UlBn?=
- =?utf-8?B?NEhGN0pFL0xzd2tuV0V3ZXdQSkk1czFDdXA3dE5RL1ZXY1prMGhJYXJpM3N4?=
- =?utf-8?B?L0lVajJFR3VrTXZSQmdVaDFYekhsM1pSOVJDTndLOVlCSUxvL3phaXc2THRu?=
- =?utf-8?B?eWNiR2pSMUp2b2JXMS9vZGhoZGVJVFVmZkhWQ0M2T1ZsaDlnYjdPZm5rWmxB?=
- =?utf-8?B?bFpDT2lIVTRLT3M4L2w0WWt1Q2lDV2VSdHVhTHp5Ui9uSlZ5dXg1UWYvTlJ1?=
- =?utf-8?B?NFdGbjh5WGdvMU1iN3c5ZmNsaEwvYXVxbkE0NWF0MVZNajRacXBUV1k3RWJV?=
- =?utf-8?B?M1Iyb1Y3UjBXWXJkYnBKaDd3Rld4akVVUlpXampiU0FhT29CaGJwem50LzdC?=
- =?utf-8?B?UWo3NkF4Y3FpQWJJQThPTWwwNk80M3pyeFpOOHgzRGhEY3FnOXd3SEZPUDhh?=
- =?utf-8?B?cEErajFFSjYyd3Y1cnNIYW5pS1g0UXUrL2ttRjVSdjNrL29IT3pSTDZnZnpG?=
- =?utf-8?B?Um5XblV1ai9rVDNCVU1MQ0ZJdVR4SGs4SDEzOFJlVWlIR0lqSER1VTUyeGdY?=
- =?utf-8?B?M2lmWWYvKzE0eGdmMmMyMmhGTlo3My96QlZlUmN1djZDa3Rpa1BDT1Z1VjJm?=
- =?utf-8?B?NzhteWl5TG0wZHIvZEE2UzhjbDZiWnRsR2tqS2NYNTJxWXU0WGxxRWFSYUtw?=
- =?utf-8?B?UisxNVJvZHNOMkJ0MFo4UUdPVFlPMnVCcmZWaGRtSnU1UkZKSkozZFh1d2dJ?=
- =?utf-8?B?RjArNmx5QU5sbEVKVTRkRVhGOGJWS0ZNRUhoWDRzeG1VSzQ0dmUxMGVRZGY0?=
- =?utf-8?B?dDllRytEMkR5QkVFeURPb08wK05HcEFxdEY3OHEvaUZFM2lTOHVPck1XN1g2?=
- =?utf-8?B?VzJBcjJ6aGVtNmNMaFNiRE50dlNkNUFWTFNqWnhEQWIzU0dCZEV2Z2FLeU0x?=
- =?utf-8?B?ZUhBVWR6RlAyVlBrb0FyUmJsbDBpdWl4cHVBZG9STXpCMGg4YWF6QU04d3ha?=
- =?utf-8?B?dWc9PQ==?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH7PR12MB5685.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(7416014)(376014)(921020)(7053199007);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?RE1BUy9ySytNUnNDem0zblhwallObXh4K0g4RG9URWxWUVgxbFF6N0gyaFZ5?=
- =?utf-8?B?bGpvbjFVaXREakhGUXRVaGtIby90VmhhMnQ3ZTcxYWRhUVhZaFQ0R010dzZO?=
- =?utf-8?B?N3hNMEZFOW1yZEY1ME5LYXpRUEtNbFNHUHVrN2xlYVM4VkdPQktTbGwzMW5O?=
- =?utf-8?B?M21mSVhGcVRkRWR4ZlptUVFpSnE2N2xQNHI2SC9BaDIybEY0YVJ2d044dTU2?=
- =?utf-8?B?SVFsbGhjNDRVNkhpVDcwNnhxOUtoUmdBZndsbXFMc0Q2UktEeHhZMGpqVXdY?=
- =?utf-8?B?a1Q1YmEwanhxR3NSeVRyWlNERjdEV2FxMWZVWTRYOXJPcmR6VFFyQ29QelFZ?=
- =?utf-8?B?Q3ZQMG9BNnBLUkJRcnRXcWR3cWZUWnRyNjBnVDlkU3hCcUsvMk4wZXpKUytw?=
- =?utf-8?B?d0tic0NaV3JQMFQ5MEtobG5NdzlxT2pzSWsyWFhPcmN2QlJqZSsyNW0xcUwx?=
- =?utf-8?B?eExSR3BjbDBXN3FlZGNXS3BzSjgxZmxwSy8yby9PaVZRSTVZZnhYWjh4Y3pZ?=
- =?utf-8?B?YnNyNmpCNkJ2Q3pzVVRKVXQwRTRkOTVqMDJXZmxtVzNXK0d1L0J4WUhEMGNZ?=
- =?utf-8?B?N0tJeUg2NjVNaVdJbkRYcVJPMU1oYUQ1YUt6dEVncTllV0cvL1JBbmdxdkhO?=
- =?utf-8?B?eWNvL2pOTkQ1UFMvSitNcXhuOEhOV3ZUdUhOQ2RkYWdrUy80M0JUeUo1NEFB?=
- =?utf-8?B?K0JCVHJwOEpVM0NpaU5OZ1VFdlRoaGM3dHJpZjV0UDAwR2tpODJRVkpOTi9C?=
- =?utf-8?B?LzNZQS9na3EvWUVNNnVHVTF2Z2F1UTU1ZTFjUXNnY04rUFFaa0x2UTNSTXRM?=
- =?utf-8?B?UWlpRmZHRlA0K0VuVUdzZ01oTHhBdkpZVTlWVCtoSFdVdy94TWNPMzJ5b0R3?=
- =?utf-8?B?dWs5ZjBSRzY3U1FpdFhtN2xDY0pXZlg2VTNOb2JDbXY5UUtNYkFnTGVhVjFq?=
- =?utf-8?B?dmpYYWkxNjlYVVFWRDJHZUpMaVJicU45K1ZEZjNSVElzZkQ5NWNMT0J5Y0Vm?=
- =?utf-8?B?djBZd0FVdG52Z0Fzck1vK1poK3BJY0QveGRSMVd4b3lnMDdzQmRHVG5NKzFw?=
- =?utf-8?B?WklqWW52MEhaZEEvcTYwNmJ6VE40VTJSb2Qwa284QzQrczBoOHdCT3hRMDBR?=
- =?utf-8?B?SXZ6YVhWeWlHaklQRjBzcGtoV3V5TTFBSTlkYjViVXpuUWVmZXEzQXFvQzJr?=
- =?utf-8?B?TE04eDB6MXdoOEJmcWUyR1U0R3BlekFhMTBGTzdEdUNmc2gwWEdFYm1sRUto?=
- =?utf-8?B?UCtET1BwZnZWUWM5NGpaTWFiZ3krNmtwQ1NzWGU4SzY3R1BLR2ZyQ1hxRUZk?=
- =?utf-8?B?aldFSVQ2Y3kwSEZxMVJDRkh6NEVBRzhBajdva1JYRUtlOFM3NUo3RFkxRHhs?=
- =?utf-8?B?bVpSNWhnMGRGTmtmWjlNQTV2THBQRU9MVDZLTmJNOEkwRzRUOWFDN1A4UUZm?=
- =?utf-8?B?c05wZW1OaThzTEltODREK0l0U0VBaW4yVTdGZHQwVnFKcnVoajdEa2FSTnNi?=
- =?utf-8?B?cFM2Q3h5UmpKVjAyc1Y0a2kxVzNFdnU2OWowUmNPMDM1UTlCaFlXYVg0bjNk?=
- =?utf-8?B?d0lIS28yRjBFeWk3bnZKRDhCSkhkcTJNYUlodUp6L3JKYnpGc3Y4SkQ4dWlQ?=
- =?utf-8?B?Z1B1NExiRlkrbzMrTU1mTHlLNkMvQjBBZGZGbVdxMFNmdkJ6d0pNUlY1MDFX?=
- =?utf-8?B?K0tTZFIyQ28zV095Y3RuRmMvTEY1MktQdDBNZnQ1Wnd4dU9lM24xTmpQWFZk?=
- =?utf-8?B?NjZVVzBzNk9VRDJ3YWhSYWkrUXdORlovWTZvSFBiS0hLeVpkeG9CTXBkQXQz?=
- =?utf-8?B?QnVaV2k5T2R5ZlpULzRlTnl0NkNJcG4veXhrNzdSN1RoWUNuQVRhbXVydHBw?=
- =?utf-8?B?WncvcWFIV1hsNzB0Y0Z1dkZNLys0alA1OHFDQ2gxMzlNdkFYU2g0OExMSHB1?=
- =?utf-8?B?eis4S2dZdU5QU2UycndjTnAvaHRuN1NzazNwbDUvVnZTbEpmNmVmM01vVXpt?=
- =?utf-8?B?NkI3TVJDNGZKb2pEQnlBbUhSVDROdDVtaWp4cEJoZlFuLzJHanArUXJGVU5x?=
- =?utf-8?B?TWQvQVZ2dE9ISXBpanIvbnRqczdvOUJ3NU1aMGo1RlpiOHBhcUFGTWluOE1t?=
- =?utf-8?B?Y29aTWlJSEZxdGFaZ2dLRlBRR2lYUkZUb05jSFpaeWJCTUorRHg2Qmh3MlFW?=
- =?utf-8?B?S0pNa2kyeG1hUFdTYWk0aTJmSFMxeXpyMWhCTG5PUnZ1M2ZZY1BVNVVqeVRo?=
- =?utf-8?B?N0s1WVVuNlV5QmZCRUlLdE9sVVRQTlVYckc5U0IvNThHWGxsWFZrT2E3RVd0?=
- =?utf-8?Q?rF3XE926xNrVi8AiD1?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9387bf3f-514b-4237-6aa9-08de5f0d8c7c
-X-MS-Exchange-CrossTenant-AuthSource: PH7PR12MB5685.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Jan 2026 08:08:13.0983
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: gWB5c8uw8mwYmng8Ej2tubcudxpPkEEPRvaREjD0DI3BOnY2MrbNiG1q30e0H/08
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL1PR12MB5969
+References: <20260128071853.2602784-1-shengjiu.wang@nxp.com>
+ <20260128071853.2602784-4-shengjiu.wang@nxp.com> <7e34b098-bdab-448e-a34a-02bdc643f700@oss.nxp.com>
+In-Reply-To: <7e34b098-bdab-448e-a34a-02bdc643f700@oss.nxp.com>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Thu, 29 Jan 2026 17:37:35 +0800
+X-Gm-Features: AZwV_QjhsaT3WGqHFWhY63rZWE_xfRO_5posf7-8hnrbY9543Mu3MY60Z30GXKk
+Message-ID: <CAA+D8APbzGCSHOwGyBZjf1TYqo2K0s0dvoLjHS+FsT_RLGrb2w@mail.gmail.com>
+Subject: Re: [PATCH 3/3] ASoC: fsl_asrc_dma: allocate memory from dma device
+To: Daniel Baluta <daniel.baluta@oss.nxp.com>
+Cc: Shengjiu Wang <shengjiu.wang@nxp.com>, lgirdwood@gmail.com, broonie@kernel.org, 
+	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, shawnguo@kernel.org, 
+	s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com, 
+	linux-sound@vger.kernel.org, devicetree@vger.kernel.org, imx@lists.linux.dev, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	Xiubo.Lee@gmail.com, nicoleotsuka@gmail.com, perex@perex.cz, tiwai@suse.com, 
+	linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 1/29/26 02:56, Vivian Wang wrote:
-> The code was originally written using no_64bit_msi, which restricts the
-> device to 32-bit MSI addresses.
-> 
-> Since msi_addr_mask is introduced, use DMA_BIT_MASK(dma_bits) instead of
-> DMA_BIT_MASK(32) here for msi_addr_mask, describing the restriction more
-> precisely and allowing these devices to work on platforms with MSI
-> doorbell address above the 32-bit limit, as long as it is within the
-> hardware's addressable range.
-> 
-> Signed-off-by: Vivian Wang <wangruikang@iscas.ac.cn>
+On Thu, Jan 29, 2026 at 5:22=E2=80=AFPM Daniel Baluta <daniel.baluta@oss.nx=
+p.com> wrote:
+>
+> On 1/28/26 09:18, Shengjiu Wang wrote:
+> > As the dma device may support dma-coherent property on the i.MX952,
+> > allocate memory from dma device to make asrc driver to be compatible wi=
+th
+> > such a case.
+>
+>
+> This commit message refers to imx952 but the change in the code apply to =
+all supported platforms
+>
+> So in not really clear what is the intention of it.
 
-Reviewed-by: Christian König <christian.koenig@amd.com>
+The dma-coherent property is used to indicate a device is capable of
+coherent DMA operations.
+Which is applied to the EDMA device on i.MX952,  in order to support
+such EDMA device,
+the memory is need to allocated from DMA device,
 
-> 
-> ---
-> v4: Patch message rewording for more consistency
-> ---
->  drivers/gpu/drm/radeon/radeon_device.c  |  1 +
->  drivers/gpu/drm/radeon/radeon_irq_kms.c | 10 ----------
->  2 files changed, 1 insertion(+), 10 deletions(-)
-> 
-> diff --git a/drivers/gpu/drm/radeon/radeon_device.c b/drivers/gpu/drm/radeon/radeon_device.c
-> index 60afaa8e56b4..5faae0361361 100644
-> --- a/drivers/gpu/drm/radeon/radeon_device.c
-> +++ b/drivers/gpu/drm/radeon/radeon_device.c
-> @@ -1374,6 +1374,7 @@ int radeon_device_init(struct radeon_device *rdev,
->  		pr_warn("radeon: No suitable DMA available\n");
->  		return r;
->  	}
-> +	rdev->pdev->msi_addr_mask = DMA_BIT_MASK(dma_bits);
->  	rdev->need_swiotlb = drm_need_swiotlb(dma_bits);
->  
->  	/* Registers mapping */
-> diff --git a/drivers/gpu/drm/radeon/radeon_irq_kms.c b/drivers/gpu/drm/radeon/radeon_irq_kms.c
-> index d550554a6f3f..839d619e5602 100644
-> --- a/drivers/gpu/drm/radeon/radeon_irq_kms.c
-> +++ b/drivers/gpu/drm/radeon/radeon_irq_kms.c
-> @@ -245,16 +245,6 @@ static bool radeon_msi_ok(struct radeon_device *rdev)
->  	if (rdev->flags & RADEON_IS_AGP)
->  		return false;
->  
-> -	/*
-> -	 * Older chips have a HW limitation, they can only generate 40 bits
-> -	 * of address for "64-bit" MSIs which breaks on some platforms, notably
-> -	 * IBM POWER servers, so we limit them
-> -	 */
-> -	if (rdev->family < CHIP_BONAIRE) {
-> -		dev_info(rdev->dev, "radeon: MSI limited to 32-bit\n");
-> -		rdev->pdev->msi_addr_mask = DMA_BIT_MASK(32);
-> -	}
-> -
->  	/* force MSI on */
->  	if (radeon_msi == 1)
->  		return true;
-> 
+The code change is compatible for non dma-coherent and dma-coherent dma dev=
+ices.
 
+>
+> Also, it is not clear why do you allocate a pair only to free it at the e=
+nd of the function.
+
+As the comment in the code says,  it is to get the dma device handler
+for memory allocation
+. After that, it is freed.
+
+best regards
+Shengjiu wang
+>
+>
 
