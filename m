@@ -1,210 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-16405-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16406-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 507C8D73E8C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jan 2026 21:15:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51447D73E8C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Jan 2026 21:15:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f2Bk23pvNz2xHX;
-	Fri, 30 Jan 2026 08:15:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=205.220.177.32 arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769704592;
-	cv=pass; b=js5jLWeuLvMIAzXawPdZJ0y7PuVa6u9RT7wOQLhrX7L1e4xhl71oBsauB2fzQ90JRFAtf05MlM9slhO9CDCcK/GZZ05+xFjXc53jb+lDssTf211OB2o/vQbCLxFEF6l8OYmHNnks7IamyJgQHCaLFU7DZlD96a9A6J/PIXquIYGWah+2VXQerNWYOUQcZ8qBpoyDj/FAmJIG963/KJRSECZffzuErGgcBnm2uh0bjJCyxwkdQkiJFiBwRXN//oiiAwM5eOROgxoZomSrAgXSpI0YGlM71aM9E6vgmKKH4bySCL+G/9a9Gvqmrml/EMni77MY4yVrzCZ8WOBJnD0jdQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1769704592; c=relaxed/relaxed;
-	bh=coBj1np7qE4p/u1Bhd85W+J3ULugDoAaDLZ8kM39B4g=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=Nrq/II3aN+HYZGw3bIZFP4RUlYps3PsAUDY1nQ7am/hIyMC5BC3i1Oe6Lb6OxwMMPy2OvTmOf7QdS2E+SkQaAi1jRltMFdB5+FE4nPhWB+DzbzFOrsTCGB/gxR4bjy6swNJLt/Y+tSySBXz98ltbQB+GhRCDuVZK/mf8hWFVv+W4CL7OE985XdEArg8MPgS2tOWyMBt9adieG5DF/N2XtXIUTpJ6HIfGisZIy6tmrPYfn2kgVtlOZhUroh8KX0NTR050bzpvFDOKgoLzOj/jTeBG9C3T6xKuUxM21+leOOrCKUTyVUTjJ3kY6hpXBNPPDM3RwkVVGquxqfBkR5FLHA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2025-04-25 header.b=eG/5KUmm; dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=EpY/ufLx; dkim-atps=neutral; spf=pass (client-ip=205.220.177.32; helo=mx0b-00069f02.pphosted.com; envelope-from=haakon.bugge@oracle.com; receiver=lists.ozlabs.org) smtp.mailfrom=oracle.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f2BkY6mMSz2xKh;
+	Fri, 30 Jan 2026 08:15:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.177.32
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769709178;
+	cv=none; b=gRbaCxGcrsgUlW+34y/CCJ5hGIxGBWSU/LzVW4t8AJikBkXItfJdEjDibTuMtu3hyV4VYg6V3FBQPaDhp9EiecFRQOigQfCo6JXWTMe6Zn+1F7YuijkPyB2lK7zMat1/uG1omTfzVA0mrVIpGnn6Hlwh8slCMHdkMZpQholLDCC29iIB8w6Y+HoeYjf1Vfy9iX2HGgGt9W3Qf5zCL/m78YegYfh7EZJUWpT59CIFW2U9UI+l/lhmRwlowzp9RohFBUXyX4rG2RYdBGgrZeOuzRLTblXskslnxB/uekgo6JtLhemoIqKyTsG+smNzcb68757miljRmNbT3ENQtsqlug==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1769709178; c=relaxed/relaxed;
+	bh=fwb2FMXA5tJtyDq/Zqal//2M2OPh3VodiSxTtoTaLBU=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=hdp6jLLk4HMHVTakIZOOT7S+MIwmXUwqBvTvP/w7tfDxOXKZ4EK2bKFNVb9naeHEy7OlnZYjxS0iNRtwLfb9qTnX48yRA0gHt7E0B+K3y3gs8mOJeMlI9EaE1ru664Qsh7SMVVrSum9BnxdtZo7QAo+7Nxivm3Y5Kup/cxajCWR618ZIo26ydMz7R7bEGxlCffG8pg0YE6h/eRehlaBvm+67dPq0CwViQMDIb4tM4vAa8bM0Y6Dj6agOPUZapLbW4mgEnqtXRNUZzijDcf+NK+h09AAqvaNLAMavIEx5hZ7qlrY5NuMy+3XWs99Oc2xqz/YudDmkWvRIst4LhQmNkQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2025-04-25 header.b=VsWJ2VKR; dkim-atps=neutral; spf=pass (client-ip=205.220.177.32; helo=mx0b-00069f02.pphosted.com; envelope-from=haakon.bugge@oracle.com; receiver=lists.ozlabs.org) smtp.mailfrom=oracle.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2025-04-25 header.b=eG/5KUmm;
-	dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=EpY/ufLx;
+	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2025-04-25 header.b=VsWJ2VKR;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oracle.com (client-ip=205.220.177.32; helo=mx0b-00069f02.pphosted.com; envelope-from=haakon.bugge@oracle.com; receiver=lists.ozlabs.org)
 Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f24Xb0GQ4z2xQs
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2026 03:36:29 +1100 (AEDT)
-Received: from pps.filterd (m0246631.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 60TDgOVX449018;
-	Thu, 29 Jan 2026 16:36:15 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f26Dn1Kl8z2xQs
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2026 04:52:56 +1100 (AEDT)
+Received: from pps.filterd (m0333520.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 60TDgJNf1278673;
+	Thu, 29 Jan 2026 17:52:47 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
-	:content-id:content-transfer-encoding:content-type:date:from
-	:in-reply-to:message-id:mime-version:references:subject:to; s=
-	corp-2025-04-25; bh=coBj1np7qE4p/u1Bhd85W+J3ULugDoAaDLZ8kM39B4g=; b=
-	eG/5KUmmtu0dvaxiWT0akusKQwusP5MDzWpGESOqHXSFEKxOxS4IDUqLgwt4BW18
-	wp8NCMqr0DJ7hxY4wrfMlVKo1D/hhbaJKOUG9TlNpBwg6l1qPOS3pLedvJ504it7
-	KIm1FRULGbgMS8xdaQpNwluBNvlLDenm1YHc/NhTAab0Vo2zY3UanpNDy0hWtqUv
-	Dxgo3uxARt38O+n5+4c4fc+wt62hknNAYXPWoEoO+XwyxcP6HtEWDd1YWBs0qv8o
-	N6yTqWrthsS2VVWuWIgmc9fESGPOYNRUAv7IslcN5l6nz1TPVJvdzp2d5uSb4F+w
-	yKn+/2Ks6grDhu7Zip5K5A==
-Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4bxx09m9q2-1
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=
+	corp-2025-04-25; bh=fwb2FMXA5tJtyDq/Zqal//2M2OPh3VodiSxTtoTaLBU=; b=
+	VsWJ2VKRf3OjE1laDkpNztObe9cr/Rf1nFHxMq/69fqkJmT9h89cVc6xH+ISzCUE
+	tqKgZjunorm5a6iWAz1fJqzS60ynjbzKpsPZW2I1mPOKx6JbdK0f4RVvrUtq06GR
+	UpFVjkSPdT1UDPS5b4dja6UoPWAQjMzlaAsOHTdiLY2A875kDcBvgNxLNRdlXTUw
+	8y7cqgpRGLxNKyjuWOWkmaaNA64ryENQm9+Y/vwXIPkAVEnz9KHmua+nQa+MfaC1
+	DL6GTQfDTkC1PAulgOJwCUH0mzmp0QaAB+I5IUjx6qsi7VRuRYWtjVKI3/DPWIlW
+	wfskegk/uQbPtTIBwgaBTQ==
+Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4by2xquu2a-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 29 Jan 2026 16:36:15 +0000 (GMT)
-Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 60TGAVYQ001716;
-	Thu, 29 Jan 2026 16:36:15 GMT
-Received: from bn1pr04cu002.outbound.protection.outlook.com (mail-eastus2azon11010071.outbound.protection.outlook.com [52.101.56.71])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 4bvmhh41t0-1
+	Thu, 29 Jan 2026 17:52:46 +0000 (GMT)
+Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 60TH18iq019819;
+	Thu, 29 Jan 2026 17:52:46 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 4bvmhhyfff-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 29 Jan 2026 16:36:14 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Ri442k1eMQF8Cg4X0gIpXZ2xBjnZQGBXZyI5qHTd6JCTUduQPDcbke70Pn9uz1a9vczK09PeZt7PHwTAXZk3LRhbgGeoFYSzQi9RFYv0nCrPdVSUXw/ajX5SdMW3gMEpi98n59U9X8Gs7H/4oOiU1eQ+LPP1Ny+snxmsz8/4EqbPP1NIIi4+C1VVSQ6oA1Dzi3awIdsoukrA1wBx+ErUZzm/FKRZuvmvGBaz1PFZ43wAjEx7FC1AGEZ1jRgds0Nt1zeLkGZHlxSK947sihcOiEzEaymdALDe63Cq3Z1CuUxXuZQ0LjIPoaDu9Le65sVuv549xVIbLv1AUOj6f1cC5A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=coBj1np7qE4p/u1Bhd85W+J3ULugDoAaDLZ8kM39B4g=;
- b=BBlfyez/c+GL++Cc6inarB/tgH4zY4ZCJTH48WJsXPQUzDdW9ni2ebPYCc2VWCmeMZpFJkCF4BU7qN0WXDDttP60G9iWP4jvlvcbo2AR1WN5U881mdNzL4AoARIyKfYzwn7KrL77x7ZKebb0WF1EQIVyhJDJ4IzKZYSlL0B0TgELLS3T1HwkRwowiz3jbDR7vxOwTnk+ecMx2U1El9orgX27vzXr6R3k5rrPdoA6g749AXVTdNQ6ukF+qg5btVuJfi2K4fqUj0Uaz77HNtNG8oF4Bq6vH3bQ/CO2hEvWI9gHbAnkVsNdu1DsiFh99CQqwIiWx6CEWvxEZCUc9VuYUA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=coBj1np7qE4p/u1Bhd85W+J3ULugDoAaDLZ8kM39B4g=;
- b=EpY/ufLxwihBw2pBAojjgnzIk/W7q0KB6JL8RD0VHim/tFa/kkEGmCWB1R9dnGLFYkqSEaL/tD4nB1iuNJdwy8/dYZFATAmy9L5s8nWRtt+5QJyp7LeOcgYeLTF8/eNAvGdaV+n02ViJ9y/UbFE0QeDkzL8nFxUoTiy6WGUVWgQ=
-Received: from CY8PR10MB6826.namprd10.prod.outlook.com (2603:10b6:930:9d::13)
- by SA2PR10MB4539.namprd10.prod.outlook.com (2603:10b6:806:117::8) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9564.7; Thu, 29 Jan
- 2026 16:36:10 +0000
-Received: from CY8PR10MB6826.namprd10.prod.outlook.com
- ([fe80::f9d3:19ef:4ce8:4d63]) by CY8PR10MB6826.namprd10.prod.outlook.com
- ([fe80::f9d3:19ef:4ce8:4d63%2]) with mapi id 15.20.9564.006; Thu, 29 Jan 2026
- 16:36:10 +0000
-From: Haakon Bugge <haakon.bugge@oracle.com>
-To: Bjorn Helgaas <helgaas@kernel.org>
-CC: Bjorn Helgaas <bhelgaas@google.com>,
-        Niklas Schnelle
-	<schnelle@linux.ibm.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown
-	<lenb@kernel.org>,
+	Thu, 29 Jan 2026 17:52:46 +0000
+Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 60THllYh012086;
+	Thu, 29 Jan 2026 17:52:45 GMT
+Received: from lab61.no.oracle.com (lab61.no.oracle.com [10.172.144.82])
+	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 4bvmhhyfc3-3;
+	Thu, 29 Jan 2026 17:52:45 +0000
+From: =?UTF-8?q?H=C3=A5kon=20Bugge?= <haakon.bugge@oracle.com>
+To: Bjorn Helgaas <bhelgaas@google.com>,
+        Niklas Schnelle <schnelle@linux.ibm.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
         Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-        Oliver
- O'Halloran <oohall@gmail.com>,
-        Greg Kroah-Hartman <gregkh@suse.de>,
-        Kenji
- Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-        Alex Williamson
-	<alex@shazbot.org>,
-        Johannes Thumshirn <morbidrsa@gmail.com>,
-        "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-        "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v3 2/2] PCI/ACPI: Confine program_hpx_type2 to the AER
- bits
-Thread-Topic: [PATCH v3 2/2] PCI/ACPI: Confine program_hpx_type2 to the AER
- bits
-Thread-Index: AQHci6Bzoxg7BPJ1h02CdG3Ul0x5+LVmoDYAgAE9BoCAAYY1gA==
-Date: Thu, 29 Jan 2026 16:36:10 +0000
-Message-ID: <E8CB259F-49BB-47FB-8D41-591DD302F168@oracle.com>
-References: <20260127222442.GA379147@bhelgaas>
- <5B14DFEB-18F2-46C0-8DD1-166A3BC275B4@oracle.com>
-In-Reply-To: <5B14DFEB-18F2-46C0-8DD1-166A3BC275B4@oracle.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-x-mailer: Apple Mail (2.3864.300.41.1.7)
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: CY8PR10MB6826:EE_|SA2PR10MB4539:EE_
-x-ms-office365-filtering-correlation-id: ca8fd4d9-52c0-4717-d49e-08de5f54828e
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|1800799024|366016|376014|7416014|38070700021;
-x-microsoft-antispam-message-info:
- =?utf-8?B?Z3RKYW9yZWxEenJjdTJzUVJBSlk2WnFxdm00NGpnMjRzYUVid1dkcVFwYUtD?=
- =?utf-8?B?RE5JbVJQU1MwSXo0N2dIRzRDM2wrRHlyN2VUcm02K0dJN3dnaDQ1cHZWb2pm?=
- =?utf-8?B?UGY3L3NSZlRKTFBJeUZ4eWdVL2xSYi9xRHMzTjdzbU9FV0hiL3NnM3NYWWFp?=
- =?utf-8?B?b3JCV2RTS3RBNjBaUUxxRk9pTFV3Q3RtbE0zQm1vQkJLWlREK2N3c3Nqazdn?=
- =?utf-8?B?SXJZSjh6RXJLdlM0NGhGZjdQTTNBcUxDZkJvMk4rZG5QUWtpU1hQa1Q1dnoy?=
- =?utf-8?B?YVRIMFd1MnlLQlNEY1pQZWxvVXJhaGJyTTlVaTR3eTJ1eGQvanpnRXo3UEl5?=
- =?utf-8?B?bS8wdXBSbEF1QWY0ZmVxM3ltWGxiZU1tdHFDc0M1eGR5Mi9HbnZZVzcxc0p4?=
- =?utf-8?B?eEk1ZUlhak4xQW40OFFKNDBUejlqa0JRNFNhUlNpQU5WcG5IVnRuSFY3NXFi?=
- =?utf-8?B?MzlVd0lzdXJHdE5Jdi9hMUFYZTJXUkJaWDNCdGZTdE92a2wyMTZnbElqMkN5?=
- =?utf-8?B?ckdnVW90RHlOZzVLZkUrNkR2cXhwdldCSU4yWGR0S3Y1SXpiYysxZmdEZlpo?=
- =?utf-8?B?UytoQmJuUElLN1cyL3EwaVdocTltcEUxOVBVSGVEVDJPdDhza3N0K0RJellj?=
- =?utf-8?B?cHNoSy92Qm1MeFNMNUo3ZDc3cjZJckVwYUZGNHp1ckpqRHJmQllielVtUmpY?=
- =?utf-8?B?RzMwTHFtRHNhMG1zbm01SWhGSjlpSi9WelliNUx2aGdVL2Q5RTNsR25CT1lC?=
- =?utf-8?B?YUVld0Eza2Q3ODJVUFhYR21kWkd6SXh0cjFTb0VQZGV3a2RIblI5dlYycEE2?=
- =?utf-8?B?alRzOXJCd01PUUJydDdZSU5JZUZHMFp0bHA3WWNaa0UvK1daQ01MbXR2bitv?=
- =?utf-8?B?RmlXN1VSNzlGZXhZY083MkxVdkxOQUNtYVVCZ0xQeXdYbURsWmtLMzdYNWxX?=
- =?utf-8?B?Q3gvb0hjNkNJTVVKelF0MHdaaVNKQ1RpYjFEcC9wdVZIZ1BaRUF6Rklpc0kv?=
- =?utf-8?B?cHhmQmJTRVJQUXBWcmhmUDRUdGx2eDlnOHI5VjhxbkZ2Q2ZwdVYzL245QStD?=
- =?utf-8?B?RWNOVWx0eWR3Y2xvWGZQcS9SRGVQR2hPUjNHaExmWXZSejdhdjNOcjA5MGxk?=
- =?utf-8?B?dkZUOU9EaFVzMVEzUDhXbEVSd1NCZWdQU0wxUmpEclNPeW0xckF5Nys0MmtU?=
- =?utf-8?B?am0ybkhKUklGdHNkbGl1SE5VSkNvaG5hZWI5dUVhejB6a2psNEZhS3N3ZkJw?=
- =?utf-8?B?M0k1ZzhJWml2aFJ3Vkdxc2Y0VXRtMjdDWnRRaVQwWUM3bFRPdExySkoyeWdB?=
- =?utf-8?B?bHB4aTBKZllDdDF1VHkxaE16cElQd1BVWUZNTGZHNzFPWUc3VG5UeTYrMXlj?=
- =?utf-8?B?SzRJL09EMW1vTlF0WkxNNThrMDBURWtUNitwcjFrUWpzcGQ5b2xrWFIxeXVQ?=
- =?utf-8?B?bWVOUTg0N1JQYkg5NUxRemZ5K3JJUCtxQmhxcFJmVEFYM0I1ZWN1ZzQwVDhz?=
- =?utf-8?B?QVJWOTJSWUh3OUx5c3VVVURORTlzUVdRN01zbHdlQ09YWmpSZFZEZncyRnJG?=
- =?utf-8?B?QmtJRHRVOUZVSjF6UWl3Z2psV1NEdUI5dEVqbUQyazRYTXl6SHZBcGxqVXJF?=
- =?utf-8?B?a1k2ZXlJeWlQNldUM2l5bkpWZG15cjNNQlRxZVArRE5QeWI2eEQxMzcwYllR?=
- =?utf-8?B?bldSMER4UWxLZXp4MXdRWDVUQWNTY1Q3Wm5FWWtSQWNZdE4vUTlEUkU0Ri9k?=
- =?utf-8?B?YmFlVHZRTWpPeFZNdmhXMGlvMm9nd0tOdERYeDl2Wkd0Q0htS09QMzJwRlJp?=
- =?utf-8?B?alhNUU9PZnBUT3VhYVJIOEpTNGMydE83VHZxRVVPditTLzBkaVhRbmRyeHo3?=
- =?utf-8?B?K0UvakYvU25ia1lNRUR0MFhlcndZeWdOSXBQMkFOeGRyUTYxNTZxbE9YNlI2?=
- =?utf-8?B?d0ZpQ0lqdEl1UGtFYlZqRjF0Ny9yMDYvL21KamttY285SE84Z1VZQUdSaGtJ?=
- =?utf-8?B?S3FwMjAwcHJNdkxMVU9tc3NhR1pnTFh0UkdCUWYvUWxXYjJudWtpcy9oK0xl?=
- =?utf-8?B?ZzhLbVd2MTlxV1pZOUk5eDRwNHU3ZVphQVRUOTRBZGNJWXNDNkFtVU82QWIx?=
- =?utf-8?B?OWorZzlFUlE3dU5aWUwzOHJaSW96Mlk1ODIvbUFBbE9OSVRta1d4cXh4ejhF?=
- =?utf-8?Q?7j7PsjcThe7FQO36FsQMqDA=3D?=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CY8PR10MB6826.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(376014)(7416014)(38070700021);DIR:OUT;SFP:1101;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?utf-8?B?OFFpcktNS0o1MWpGOC9zL1lMdjJQRWZhOWVwYmZUNW9VNmdvT2RTZittVGww?=
- =?utf-8?B?cTJrMTZhSHV1NXBieHBzclQyUEg3d29jaDNsYU1tRW9ESkFoOWV4SjIrQjF3?=
- =?utf-8?B?WFU4dUJEbHpYYzZ2OTczbFpEdS9mTmxzZy9rWG1reEhDblkwZnR1Qjdhejkv?=
- =?utf-8?B?eWZaMU1qMU94UGxsUEx6Z1diNXVNM1NCMFY4UlV4cVNJUlZnNVZOdm1RTURx?=
- =?utf-8?B?MFcrREVHZ1l0K09WYjJWNGFiSEVTQzlRQjJzZjBUWmovcjl0UnhaQlo0bHg1?=
- =?utf-8?B?OXVXTG5MS1dENDBwRFZyZW94VmJ3aUFZeEtjdHlxNXljaFYwb2RnSFpWRDQ5?=
- =?utf-8?B?aEEwamN1QmxiZlM2dVB6VCtZTWw3QmQ0L1lIZjgzOHdHOFFhM2d0QWF0cC9O?=
- =?utf-8?B?Z2dTWXIydVAvQ1NSa0dNSHpFSUpheUcwcW1JODc4YUt1dEtZUDNlVWdZRzFN?=
- =?utf-8?B?U2d3LzJhZ3NIMVlKQ25Ka1FsN2tJYVBTdEo4RUs1SDdhUG9JYlRJSEhYc2dS?=
- =?utf-8?B?NGlaWWtsM3FqRi8vUmM2TUFyclo3ZXhLZmlPV3FmYmJOMkhocVlta1dGRi9q?=
- =?utf-8?B?VHR0MU4xYVFXM1BYUnlqZ3d6VnczTE9aWSs3ejBBaEgzTHc0U09pN0M1M2hH?=
- =?utf-8?B?TlBlZ3VZc3hwSWRaR3k0WG1BTlJvSmUvenpXMzNrZlZnV2MyRU9NN1FaTm15?=
- =?utf-8?B?QUhzcWhLRnUvcFZ6TWUxV2pxQmtPd1hqZ1haS3U1T1pPYi9ZUVVvODMveWdV?=
- =?utf-8?B?ajdvQ1RQa0VPTEdFQzlDa0hZU2hValdHWEdtVjVJK2IxSEc1Y3Y3TVJVTjNS?=
- =?utf-8?B?NHl3NXZNL0luMHlsTEREZlFIRDg1VzlGRzF3MDdkRFZIVjJUZTNERDAzM2FM?=
- =?utf-8?B?VCtTVFYyY05zMlMrcC9iSWRJbitzNEthazduaEtoaHF4T0tkdkFaL2hxZjRx?=
- =?utf-8?B?SG9PNmwzYitnb0pLM0hmVHp0K3hFNUNVVy9YOE01S29JVXJ4N3JCdkNBRVFq?=
- =?utf-8?B?WWxWYUltLzJFTlE4YVdqalJKUXAxdUFSNHc2ZkFRUXdmM1lnVEJhd3Fha0p6?=
- =?utf-8?B?YVhzdGJMd2J3WVRRcW53NkpNeHhGMjEzTndYZzlLV240UzJ3ajhidWNKSHlI?=
- =?utf-8?B?OXBCZVZiUjFCd0p5aXI5eWxjaGxXcGdLVHd6REVzSy8xTFFNWlpRMGc4WGxs?=
- =?utf-8?B?QjdRVnY5ZkxsZlN2OHRGaHdCMXZxK0xURURueTNVNjdoQ05sNm5uaCtOdnNX?=
- =?utf-8?B?QTVTbWRtbkl1YWMvY0dMK0ZrNnRRU2RCZjZyS0VPTkdBVXh0U0Y1SXZuVTBn?=
- =?utf-8?B?MVg3a2htYzRJRVhsV1pBZGJhVjFBa29lMFRDTlRLT1p0bWpWeXRhdGNScFNM?=
- =?utf-8?B?cURwTnl2Zk40d3NuVCtRenIrS1ZzMkp5V0U2T09rbnVXMVZtQURQNDcxNC9r?=
- =?utf-8?B?K3hyeEJlL1p2ZDJCOVVZRUhEUjB2NjRTZTB1TllSZHZkWFFKakJhMWdJZXA0?=
- =?utf-8?B?V3pYMmcxODFoSk1RU0c0Tzd4STdTUEpnQzkwRE9qRi9rK3BuekNvTFNKbHZs?=
- =?utf-8?B?MVJGa0MyUldUSDNFaS9ZWVJsVkhjY0x3VUJza2svdTY5L2l1OTgzWmJjcDFJ?=
- =?utf-8?B?bWVlUVRTWVl4YjJYc21WSW9pOHp5ZkF6NGdhSC96ejRrcGtiL1hqaE9vVHJ5?=
- =?utf-8?B?ZWV0aW50R1AzY0s0NTJHVUNDSlo4a1djajNyMHV4dU9WWTNVbnRmVlRLWDIv?=
- =?utf-8?B?NEI2VGhQdVlCVFZ4MG4zWi96S1R1V1dTdVZob25Yb0FlOE42VHdFVWdXRWJL?=
- =?utf-8?B?Tm5Pb250enZIaUhhT01LUXE0d0RXVEQzWEo4RUsxazU1ajk4UHNWZFA4VFVu?=
- =?utf-8?B?cEhzNXFVeUJ2M2c5eWpObDdVTlc2RkpBNGcxK2pTRllXQ3ptYVdkVlJMZENj?=
- =?utf-8?B?dGNTRUdONEI3VEMrZFMxbWNwMHZqeXF3MGdOSFU0UlgzTGZYbGtxdHhtaDAr?=
- =?utf-8?B?OExtL0JHTVpRbDIzS1UxeWRmaW9LaCtRMXVwL1dESVBxM3BPZDNJc091MXh1?=
- =?utf-8?B?Qk1ma3ZBT3JaUTlsSFlyNmlxZTJ1cnF5QXJQamZuQ0FFQjFzZ3dVZnN4TG9a?=
- =?utf-8?B?NnljWDU2YkdJemFPMTVOLzJzQklINTZyN0ZQUFdyVnRhVVpEZTFDYVNCMzVJ?=
- =?utf-8?B?cDhYb1VDV1J2aXd0S3kvWUVjSWZjMHRrMmlyekMxbS9PZ0hzTk5jcVpHQ29v?=
- =?utf-8?B?WFQ4Um0yVWt5QjA5ZCtnRFhiNktyL0Q0NmoyOVJzUnhhR3N0K1hUYUFHalpI?=
- =?utf-8?B?VE1IdkFZNGxoNmd1SVlIUTdVYkRsdm5BajBPaFlwVkFNd3MvOWphcjhReWNE?=
- =?utf-8?Q?rxONe+lQF9rWUyDE=3D?=
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <9FDF0931E236C148A8DC1B95D980D95D@namprd10.prod.outlook.com>
-Content-Transfer-Encoding: base64
+        "Oliver O'Halloran" <oohall@gmail.com>,
+        Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+        Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Alex Williamson <alex@shazbot.org>,
+        Johannes Thumshirn <morbidrsa@gmail.com>, linux-pci@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+        =?UTF-8?q?H=C3=A5kon=20Bugge?= <haakon.bugge@oracle.com>,
+        linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v4 2/2] PCI/ACPI: Restrict program_hpx_type2() to AER bits
+Date: Thu, 29 Jan 2026 18:52:33 +0100
+Message-ID: <20260129175237.727059-3-haakon.bugge@oracle.com>
+X-Mailer: git-send-email 2.43.5
+In-Reply-To: <20260129175237.727059-1-haakon.bugge@oracle.com>
+References: <20260129175237.727059-1-haakon.bugge@oracle.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -218,66 +91,235 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
-	aUNQRROxo4nP5ICL9XXiZ0RzoOvDrHlCbnlm3TUE7o9juwwilpp97TgWYRvP0LJGT+e1OlK/WfU3+kgp/lfKku10r9dzGEkPpsWZYY2SzXxW4YqJlwYQmUllTxVJnPSBnmuTXbuMTZZQqe3qqJf0DiYCAPqsOsdup1CYwo6RPc8AzHYVeNmwu3/UhC1XvBhZr8Wy0Oi0uB/Jx1xhnc9LEsbnZFhhW/XlbZGFCk0fNYWb2t9masJnmhzu6O1l4K99SZc8Ty6UKxndTZq7mPcrhHCpBosqsJd8Px9Ljuzw/PzzxJwbRmblUdQ5St4+w5JFECXbD8bgd1xctz9jzkLTm4Jo02adl5TvusY5GYvVYOsBChS9Q+GiO6+byk5c+ON4ChzEa+vBU/oJlHve2dClyd+QDACC55BFjshRShPPvcru13dxewvVI2RFW9ZpuRk30+pKFG2FYEgCG00zreQD5tZrFmFwubcnBoeMZd/2U2hPDmxwpRz+xEejFxFfFmJIknhALMP6GcBrJEx7z55Hyt9eFuzqZR64fg0lSh93kL22+htkk1+CL3/PyaigBpPrEcJa+xcTDupB7LRYFmhTWyFovYWsaC/tWg5gyXJFlB8=
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: CY8PR10MB6826.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: ca8fd4d9-52c0-4717-d49e-08de5f54828e
-X-MS-Exchange-CrossTenant-originalarrivaltime: 29 Jan 2026 16:36:10.4469
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: e6I72tVG1DOq/3TJybTCerujtLMNilOX9NDVSEbhdwLmfE7bZr0qPj49AgeBMwMDwSYYi5nEiv/VGRmWHOHRIA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA2PR10MB4539
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-01-29_02,2026-01-29_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 malwarescore=0
- suspectscore=0 mlxscore=0 spamscore=0 bulkscore=0 mlxlogscore=999
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2601150000 definitions=main-2601290115
-X-Proofpoint-ORIG-GUID: Oaig0m9XNg-JxgQ5uUq7f2iy2tzDhLuK
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTI5MDExNiBTYWx0ZWRfX2lsNb1J+QGc0
- Qpy7miSjLsZ/GGpXNoDQs4Ce5GRGJzaub8e0hNyQHV7EwmlBjcgW3nc15K/lJA2ksfnq0erFnJ5
- nUCXvYMulyEXIm42/ZI9pmHJthXBet7lUMVoJ63pbZ7/OC0Bbccpf/htrqAW/2+M7tksr8xIP1R
- cXHcMtYrvU8umq1BxwCzo8wnm2Lz7IWtg/T2YVs4n9ahXiJX40yoVWrqS/rRA+5aJ1cOgd0u0Di
- Jer54xc8z8RZaCy6hwYWBKfrJ/FXmHsq7EHjW/1JXfyAk5B6yi9vrX6lQa5NjKL7BDRXdmpxhR0
- 51j4EbZ9QpmwGUI0JnE/vHwpkdGPOMKy/DX2OxX1g0UKhpBovb01S6kXNyyYEnhnTWZDxP4wtyb
- NF5OjVygDkYygWKeDN8EKoY9teTKhPI11MnMMkmluZsgF0OHnBdvvLP+gA+B9hfLjJiXIrHPSWk
- kYmKlG6DsllgLXT+KVPI8v6zUGI02favF988efpY=
-X-Authority-Analysis: v=2.4 cv=Qe5rf8bv c=1 sm=1 tr=0 ts=697b8c7f b=1 cx=c_pps
- a=e1sVV491RgrpLwSTMOnk8w==:117 a=e1sVV491RgrpLwSTMOnk8w==:17
- a=z/mQ4Ysz8XfWz/Q5cLBRGdckG28=:19 a=lCpzRmAYbLLaTzLvsPZ7Mbvzbb8=:19
- a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10 a=vUbySO9Y5rIA:10 a=GoEa3M9JfhUA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=Wl_u4ra9nSrZaNrLTc0A:9 a=QEXdDO2ut3YA:10 cc=ntf
- awl=host:13644
-X-Proofpoint-GUID: Oaig0m9XNg-JxgQ5uUq7f2iy2tzDhLuK
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0 bulkscore=0 phishscore=0
+ mlxlogscore=999 mlxscore=0 spamscore=0 suspectscore=0 malwarescore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2601150000
+ definitions=main-2601290126
+X-Proofpoint-GUID: jTAJP50xMzHjPyfLiE3zB8lMmrucg_11
+X-Proofpoint-ORIG-GUID: jTAJP50xMzHjPyfLiE3zB8lMmrucg_11
+X-Authority-Analysis: v=2.4 cv=UepciaSN c=1 sm=1 tr=0 ts=697b9e6e b=1 cx=c_pps
+ a=zPCbziy225d3KhSqZt3L1A==:117 a=zPCbziy225d3KhSqZt3L1A==:17
+ a=IkcTkHD0fZMA:10 a=vUbySO9Y5rIA:10 a=M51BFTxLslgA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=yPCof4ZbAAAA:8 a=SsKr03gcbRYbsVN0MpsA:9
+ a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10 cc=ntf awl=host:12103
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTI5MDEyNiBTYWx0ZWRfX1fAyVDYiClBu
+ z17eEuc0YoENcle/VRABxs8D4vTxTXhqx9QGV4lBx7bdJ+k9IGdDW1sqQTxTG0xJBVJmotgBVZm
+ vsc3IFJXZRha6liP7elgozwPwNiFGbunTG27JDrxDTFeC7OjaFrRkFNwUwOk1sAnkOUey0ozYlR
+ 14FO5bqN2i+0tgpkZDFxVinNeL7EMl0ExdzcIlGGG5R3BYiNpfdRzngGN7GmEMeyLQyKF4DFTtP
+ 4+AM0gQHVt8PEL+mhvMxiJsFhWtjtB4/F5G05rOdvogA/5cKuhj0E6936S+sS1tCTJHR8MzMAyU
+ ACZiM7A/FohAgx/vHSnmVIaHjV6io9htTqU2fj+ThvgvFWWl3zSeEmNZcTgJiCAFA6sAOt0DXnB
+ 542AhQvQVt3lvbck9aGa3VWNq1kQpfKoFduLtr7wEGxr659rndEj90gZ5A5ndywvoOInYNv8kyX
+ 2Yio5A4ROwzWd1cfAi85Z0v9gZsAVZLfyZgmXxZ4=
 
-Pj4+IFRoYW5rcyBmb3IgdGhlIHdvcmQtc21pdGhpbmcgYW5kIGltcHJvdmVkIGFjY3VyYWN5IQ0K
-Pj4+IA0KPj4+ICsJLyogTG9nIGlmIF9IUFggYXR0ZW1wdHMgdG8gbW9kaWZ5IFBDSWUgTGluayBD
-b250cm9sIHJlZ2lzdGVyICovDQo+Pj4gCWlmIChwY2llX2NhcF9oYXNfbG5rY3RsKGRldikpIHsN
-Cj4+PiAtDQo+Pj4gLQkJLyoNCj4+PiAtCQkgKiBJZiB0aGUgUm9vdCBQb3J0IHN1cHBvcnRzIFJl
-YWQgQ29tcGxldGlvbiBCb3VuZGFyeSBvZg0KPj4+IC0JCSAqIDEyOCwgc2V0IFJDQiB0byAxMjgu
-ICBPdGhlcndpc2UsIGNsZWFyIGl0Lg0KPj4+IC0JCSAqLw0KPj4+IC0JCWhweC0+cGNpX2V4cF9s
-bmtjdGxfYW5kIHw9IFBDSV9FWFBfTE5LQ1RMX1JDQjsNCj4+PiAtCQlocHgtPnBjaV9leHBfbG5r
-Y3RsX29yICY9IH5QQ0lfRVhQX0xOS0NUTF9SQ0I7DQo+Pj4gLQkJaWYgKHBjaWVfcm9vdF9yY2Jf
-c2V0KGRldikpDQo+Pj4gLQkJCWhweC0+cGNpX2V4cF9sbmtjdGxfb3IgfD0gUENJX0VYUF9MTktD
-VExfUkNCOw0KPj4+IC0NCj4+PiAtCQlwY2llX2NhcGFiaWxpdHlfY2xlYXJfYW5kX3NldF93b3Jk
-KGRldiwgUENJX0VYUF9MTktDVEwsDQo+Pj4gLQkJCX5ocHgtPnBjaV9leHBfbG5rY3RsX2FuZCwg
-aHB4LT5wY2lfZXhwX2xua2N0bF9vcik7DQo+Pj4gDQo+IFRoaXMgd2FzIHdoYXQgY29uZnVzZWQg
-bWUgYSBsb3QsIHRoZSBiaXQtd2lzZSBOT1QgYWJvdmUuIFRoYXQgbXVzdCBiZSB3cm9uZywgYXMg
-cGNpZV9jYXBhYmlsaXR5X2NsZWFyX2FuZF9zZXRfd29yZCgpIGludmVydHMgdGhlICJjbGVhciIg
-YXJndW1lbnQuDQoNCkhhdmUgdG8gY29ycmVjdCBteXNlbGYgaGVyZS4gQUNQSSBzdGF0ZXM6DQoN
-CldoZW4gY29uZmlndXJpbmcgYSBnaXZlbiByZWdpc3RlciwgT1NQTSB1c2VzIHRoZSBmb2xsb3dp
-bmcgYWxnb3JpdGhtOg0KMS4gUmVhZCB0aGUgcmVnaXN0ZXLigJlzIGN1cnJlbnQgdmFsdWUsIHdo
-aWNoIGNvbnRhaW5zIHRoZSByZWdpc3RlcuKAmXMgZGVmYXVsdCB2YWx1ZS4NCjIuIFBlcmZvcm0g
-YSBiaXQtd2lzZSBBTkQgb3BlcmF0aW9uIHdpdGggdGhlIOKAnEFORCBtYXNr4oCdIGZyb20gdGhl
-IHRhYmxlIGJlbG93Lg0KW10NCg0KQmVjYXVzZSBwY2llX2NhcGFiaWxpdHlfY2xlYXJfYW5kX3Nl
-dF93b3JkKCkgaW52ZXJ0cyB0aGUgImNsZWFyIiBhcmd1bWVudCwgdGhlIGFib3ZlIGJpdHdpc2Ug
-Tk9UIGlzIG9mIGNvdXJzZSBjb3JyZWN0LiBUd28gYml0d2lzZSBOT1RzIGlzIGEgbm8tb3AgYW5k
-IHdlIGZvbGxvdyB0aGUgQUNQSSBvdXRsaW5lZCBhbGdvcml0aG0uDQoNCg0KU29ycnkgZm9yIHRo
-ZSBub2lzZSwgSMOla29uDQoNCg==
+Previously program_hpx_type2() applied PCIe settings unconditionally,
+which could incorrectly change bits like Extended Tag Field Enable and
+Enable Relaxed Ordering.
+
+When _HPX was added to ACPI r3.0, the intent of the PCIe Setting
+Record (Type 2) in sec 6.2.7.3 was to configure AER registers when the
+OS does not own the AER Capability:
+
+  The PCI Express setting record contains ... [the AER] Uncorrectable
+  Error Mask, Uncorrectable Error Severity, Correctable Error Mask
+  ... to be used when configuring registers in the Advanced Error
+  Reporting Extended Capability Structure ...
+
+  OSPM [1] will only evaluate _HPX with Setting Record – Type 2 if
+  OSPM is not controlling the PCI Express Advanced Error Reporting
+  capability.
+
+ACPI r3.0b, sec 6.2.7.3, added more AER registers, including registers
+in the PCIe Capability with AER-related bits, and the restriction that
+the OS use this only when it owns PCIe native hotplug:
+
+  ... when configuring PCI Express registers in the Advanced Error
+  Reporting Extended Capability Structure *or PCI Express Capability
+  Structure* ...
+
+  An OS that has assumed ownership of native hot plug but does not
+  ... have ownership of the AER register set must use ... the Type 2
+  record to program the AER registers ...
+
+  However, since the Type 2 record also includes register bits that
+  have functions other than AER, the OS must ignore values ... that
+  are not applicable.
+
+Restrict program_hpx_type2() to only the intended purpose:
+
+  - Apply settings only when OS owns PCIe native hotplug but not AER,
+
+  - Only touch the AER-related bits (Error Reporting Enables) in Device
+    Control
+
+  - Don't touch Link Control at all, since nothing there seems AER-related,
+    but log _HPX settings for debugging purposes
+
+Note that Read Completion Boundary is now configured elsewhere, since it is
+unrelated to _HPX.
+
+[1] Operating System-directed configuration and Power Management
+
+Fixes: 40abb96c51bb ("[PATCH] pciehp: Fix programming hotplug parameters")
+Signed-off-by: Håkon Bugge <haakon.bugge@oracle.com>
+
+---
+
+v3 -> v4:
+   * Improved commit message
+   * Corrected info log when _HPX attempts to modify the Link Control
+     register
+
+v2 -> v3:
+   * No changes
+
+v1 -> v2:
+   * Fixed comment style
+   * Simplified the and/or logic when programming the Device Control
+     register
+   * Fixed the incorrect and brutal warning about Link Control
+     register bits set and changed it to an info message about _HPX
+     attempting to set/reset bits therein.
+   * Removed the RCB programming from program_hpx_type2()
+   * Moved the PCI_EXP_AER_FLAGS definition from
+     drivers/pci/pcie/aer.c to drivers/pci/pci.h
+---
+ drivers/pci/pci-acpi.c | 58 +++++++++++++++++-------------------------
+ drivers/pci/pci.h      |  3 +++
+ drivers/pci/pcie/aer.c |  3 ---
+ 3 files changed, 27 insertions(+), 37 deletions(-)
+
+diff --git a/drivers/pci/pci-acpi.c b/drivers/pci/pci-acpi.c
+index 9369377725fa0..3ffceaa7603c0 100644
+--- a/drivers/pci/pci-acpi.c
++++ b/drivers/pci/pci-acpi.c
+@@ -271,21 +271,6 @@ static acpi_status decode_type1_hpx_record(union acpi_object *record,
+ 	return AE_OK;
+ }
+ 
+-static bool pcie_root_rcb_set(struct pci_dev *dev)
+-{
+-	struct pci_dev *rp = pcie_find_root_port(dev);
+-	u16 lnkctl;
+-
+-	if (!rp)
+-		return false;
+-
+-	pcie_capability_read_word(rp, PCI_EXP_LNKCTL, &lnkctl);
+-	if (lnkctl & PCI_EXP_LNKCTL_RCB)
+-		return true;
+-
+-	return false;
+-}
+-
+ /* _HPX PCI Express Setting Record (Type 2) */
+ struct hpx_type2 {
+ 	u32 revision;
+@@ -311,6 +296,7 @@ static void program_hpx_type2(struct pci_dev *dev, struct hpx_type2 *hpx)
+ {
+ 	int pos;
+ 	u32 reg32;
++	const struct pci_host_bridge *host;
+ 
+ 	if (!hpx)
+ 		return;
+@@ -318,6 +304,15 @@ static void program_hpx_type2(struct pci_dev *dev, struct hpx_type2 *hpx)
+ 	if (!pci_is_pcie(dev))
+ 		return;
+ 
++	host = pci_find_host_bridge(dev->bus);
++
++	/*
++	 * We only do the HP programming if we own the PCIe native
++	 * hotplug and not the AER ownership
++	 */
++	if (!host->native_pcie_hotplug || host->native_aer)
++		return;
++
+ 	if (hpx->revision > 1) {
+ 		pci_warn(dev, "PCIe settings rev %d not supported\n",
+ 			 hpx->revision);
+@@ -325,33 +320,28 @@ static void program_hpx_type2(struct pci_dev *dev, struct hpx_type2 *hpx)
+ 	}
+ 
+ 	/*
+-	 * Don't allow _HPX to change MPS or MRRS settings.  We manage
+-	 * those to make sure they're consistent with the rest of the
++	 * We only allow _HPX to program the AER registers, namely
++	 * PCI_EXP_DEVCTL_CERE, PCI_EXP_DEVCTL_NFERE,
++	 * PCI_EXP_DEVCTL_FERE, and PCI_EXP_DEVCTL_URRE.
++	 *
++	 * The other settings in PCIe DEVCTL are managed by OS in
++	 * order to make sure they're consistent with the rest of the
+ 	 * platform.
+ 	 */
+-	hpx->pci_exp_devctl_and |= PCI_EXP_DEVCTL_PAYLOAD |
+-				    PCI_EXP_DEVCTL_READRQ;
+-	hpx->pci_exp_devctl_or &= ~(PCI_EXP_DEVCTL_PAYLOAD |
+-				    PCI_EXP_DEVCTL_READRQ);
++	hpx->pci_exp_devctl_and |= ~PCI_EXP_AER_FLAGS;
++	hpx->pci_exp_devctl_or &= PCI_EXP_AER_FLAGS;
+ 
+ 	/* Initialize Device Control Register */
+ 	pcie_capability_clear_and_set_word(dev, PCI_EXP_DEVCTL,
+ 			~hpx->pci_exp_devctl_and, hpx->pci_exp_devctl_or);
+ 
+-	/* Initialize Link Control Register */
++	/* Log if _HPX attempts to modify PCIe Link Control register */
+ 	if (pcie_cap_has_lnkctl(dev)) {
+-
+-		/*
+-		 * If the Root Port supports Read Completion Boundary of
+-		 * 128, set RCB to 128.  Otherwise, clear it.
+-		 */
+-		hpx->pci_exp_lnkctl_and |= PCI_EXP_LNKCTL_RCB;
+-		hpx->pci_exp_lnkctl_or &= ~PCI_EXP_LNKCTL_RCB;
+-		if (pcie_root_rcb_set(dev))
+-			hpx->pci_exp_lnkctl_or |= PCI_EXP_LNKCTL_RCB;
+-
+-		pcie_capability_clear_and_set_word(dev, PCI_EXP_LNKCTL,
+-			~hpx->pci_exp_lnkctl_and, hpx->pci_exp_lnkctl_or);
++		if (hpx->pci_exp_lnkctl_and != 0xffff ||
++		    hpx->pci_exp_lnkctl_or != 0)
++			pci_info(dev, "_HPX attempts Link Control setting (AND %#06x OR %#06x)\n",
++				 hpx->pci_exp_lnkctl_and,
++				 hpx->pci_exp_lnkctl_or);
+ 	}
+ 
+ 	/* Find Advanced Error Reporting Enhanced Capability */
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index 0e67014aa0013..f388d4414dd3a 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -88,6 +88,9 @@ struct pcie_tlp_log;
+ #define PCI_BUS_BRIDGE_MEM_WINDOW	1
+ #define PCI_BUS_BRIDGE_PREF_MEM_WINDOW	2
+ 
++#define	PCI_EXP_AER_FLAGS	(PCI_EXP_DEVCTL_CERE | PCI_EXP_DEVCTL_NFERE | \
++				 PCI_EXP_DEVCTL_FERE | PCI_EXP_DEVCTL_URRE)
++
+ extern const unsigned char pcie_link_speed[];
+ extern bool pci_early_dump;
+ 
+diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+index e0bcaa896803c..9472d86cef552 100644
+--- a/drivers/pci/pcie/aer.c
++++ b/drivers/pci/pcie/aer.c
+@@ -239,9 +239,6 @@ void pcie_ecrc_get_policy(char *str)
+ }
+ #endif	/* CONFIG_PCIE_ECRC */
+ 
+-#define	PCI_EXP_AER_FLAGS	(PCI_EXP_DEVCTL_CERE | PCI_EXP_DEVCTL_NFERE | \
+-				 PCI_EXP_DEVCTL_FERE | PCI_EXP_DEVCTL_URRE)
+-
+ int pcie_aer_is_native(struct pci_dev *dev)
+ {
+ 	struct pci_host_bridge *host = pci_find_host_bridge(dev->bus);
+-- 
+2.43.5
+
 
