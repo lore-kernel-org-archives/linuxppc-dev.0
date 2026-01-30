@@ -1,94 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-16422-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16423-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D302D49C66
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jan 2026 07:20:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03447D49C65
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jan 2026 07:25:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f2S8R6c4Kz30Lw;
-	Fri, 30 Jan 2026 18:20:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::122b" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769757623;
-	cv=pass; b=Fc1u6/RSLrtXh47U/p8Ik3FYXJx6R7aQdpjJBchkmOQ6hvyk4KZMmlWQJ7JaeDeeeiZt+BOMnvwOFqM0EKlZeSXcnMMMIkwaRT6XnSI8gGSZ9GBCwYmkZzaBGJz1TOluTxChW0AViaWfJg2+0wkMHiaSODjF4RK1qCWfObxF/yAeWSsPpHF+9gVlnXAkv7t3bva4jQylvWOLgx+Bj4Vca4YWdjI0xVyhyFW30QYzzv+1xUXJfJqWwVzUg9zHxXkAlFUZuiYpcgBz+se9xYVnTOnhVpuPK1+aMise1FpRN0vA38ug17WJljPpwt1e0UeclDXcjG5QYh527OcJWXIasg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1769757623; c=relaxed/relaxed;
-	bh=yiCInPBw07YvtBtb/8UPQ6O9jfSpvmf7nJNZXF9oh5Q=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=M/KN2WoZ2Du9/EgBDI/2cgnFdLPRV0rLERhYJf0sHDThURR1hx05mOmaxaEuU3Ve1duqh95VWAzawIijWH4UZr3l53LNJtn4g4hVSOREuLHVCNkhCWFVCdlxWZdYG7mQ4iHjCEOiNVA7AU0C8gI7kFtFE05S7DSu/ObA2jjBOAi3V+UQzoLEEUy049YKq3z3avOayMyD3KVhsJl3/gBPkeG/SXqDFRRuwVRqb/OTCndPEQwG2YAwVJSk+BROTuAV6GyHOP/EXm+ogjLuxCFK3cJxI+E4K+CZ+07peIZkbWSuHEwHGyTMH295sN4Gh6vLlqU10Yd4moyJwRovkQ3r7A==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=ffO15Ghb; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122b; helo=mail-dl1-x122b.google.com; envelope-from=daniel.baluta@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f2SGq40xcz30Lw;
+	Fri, 30 Jan 2026 18:25:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769757955;
+	cv=none; b=eSIBNuD1NcjJnX6naxbp50ePitnrnTFyt7VVtkL7rIFqcNcAbRZ/baLWcwCQF8Qg8KkYFnZxs3zLaJ9x4HnQ8QwZLPD+0+UI+Ial3ueOnnJMDisfkB6YCco+bC2xpQ1UG8n1gzGKtj1tufPQWUMTUc+wIeqKCp7j2LUHMI4IFPxnD7TRydq0b/igvU+0Dz7twfuH1tAqtW/qC4mRc5Ni+kBVlu7XPL37vPLK9Ht4VvCltnZKzCqxi9FEfeNaAQykSg9lTeD5Eb951ra08v+eG0uOoEK3Uz+mOCwG4AbJHIp0+S09dag4U0SEFl+bZNB6P+Na+3T+PzHW4XH5bEAbTw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1769757955; c=relaxed/relaxed;
+	bh=Vp/MVXWKLfmcf3W30OS3OMGE1YCMMoCP2G4v7UNz/A8=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=H6KlCbcujmSiGsYuXwbrW/NrUxsHi4UgVBuugWNrmdBw0QUHuFBdsDjgIJx47+CqqTDVCTh/S8Aq44CzeEipe7+o/UrqQpWzhGJxkt3HosJI9xT+e/9nrp2CcOhNE0RFiLl50s7u16rZkLR3ySegnRA/ihJfE8fhFMuPi5PDJ0Tu4GHAJZMu7hD3s7ykKahFemMdzkyrVO1P5H7qTzDX6ikNP6NQsoUCo7VyqYtB8Ts/D7UKGR9C8cez4SNsvrYk8nAwcq0cGgeVXcenWDF3ZL9O8rbhkYSMMVROBlXepqgjt3J4dOxb6YXa2kOLzet20Rz49anSLB1i9bazbvVyHg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KrNkDNoT; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=ffO15Ghb;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KrNkDNoT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::122b; helo=mail-dl1-x122b.google.com; envelope-from=daniel.baluta@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-x122b.google.com (mail-dl1-x122b.google.com [IPv6:2607:f8b0:4864:20::122b])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f2S8Q1HXvz30FF
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2026 18:20:21 +1100 (AEDT)
-Received: by mail-dl1-x122b.google.com with SMTP id a92af1059eb24-124afd03fd1so2789271c88.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2026 23:20:21 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1769757614; cv=none;
-        d=google.com; s=arc-20240605;
-        b=lOizwf3KTMfhwpltA5TeSk8PctiWgampNOYu2F19if5L2PtnUQ5bMM5n5Tm/k7omJ2
-         ZIfDa0AJA+HK6q9f6wBl/62a4JHQUfNpsKshgMRgtw+SxBbUGDyVh/GxVLhXiJ0g9oIl
-         9x8LNnQ7r1hJv8JdQyuzWkTTMOsc2QNhewhLPAyzKPkwQlFpgSZGpl5nvdxOoiGy9f3l
-         tVqDVeFMGuNzR8J4d59ajzk8LkWuZ2bGZk311Xl0MZpAECXWkRkzRd7AUo96poAy36F2
-         Qhcnn6KWQl7IjMUMcxBNKHp9OaCZNeLg2r6+hu6+RsuBmvirBHEnFdPrfiblvlMzQFyA
-         cdCA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=yiCInPBw07YvtBtb/8UPQ6O9jfSpvmf7nJNZXF9oh5Q=;
-        fh=J2VvihtnvH65RNRk0CllUBMbwcECnJHOnYtdiVIKvHs=;
-        b=On9i3kNNvU3xN4fM9aZBpWB2N/Gg7O4ndDptWfnykFiEvf8R9BHdPfE2ZHryuKYE5x
-         2LEqVAIMWqiGXgAVm9I7/34Z4bidsAe37PYQRRbs6nSOgeg3t6Rq8zAPskeYQWrvhOhN
-         YZN0wFLb+7Q86VyOt02anJbQafxkf3DBWuILPxoh5pW+92sT4nnqjBr2oM90l1aEUGwy
-         I49umtqzbW8z/Cluf+UjON5cyNEbJr31jAHZFsSQqv9Xh/3bjhv80JbGdh1VmeljhkNX
-         cRq6sh2/yjtfqeRoBgEgs+lso9pBwnMYZ/H8FOd3qiQKoo7rdOZ+FiiwI1dCrznpYy0N
-         Uqsw==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1769757614; x=1770362414; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=yiCInPBw07YvtBtb/8UPQ6O9jfSpvmf7nJNZXF9oh5Q=;
-        b=ffO15GhbDUyiqB1YSmwrqhjn0MTvTIrFHjvaR+X3zl6cNbC/Re/h1HJEID6pY1RoJJ
-         r7ElkmAJ3VTCYVl7c9h9JxfSBaN0MZdwBCOTppgNNR9aYGBWPXeYArUlP9N/65lt0Pzi
-         IU+KfqJ1jdPh1mr0qK53Egh4ruov2y/yAF8BxRUOdwbfudEgrCIMxeeU60FJvFPscgwn
-         /r6KcjngPldWOcQiyYmnA3BhFbtCw9RATTYNElp6lezn9PlBHfY/PYaCihkf01UQn3eu
-         ExVgttuxQacrkBKvXU979m+Ncdiv1E7R4+WLnhG8uFzX3xYf8gOn1eAjNVBznI8i/Hhy
-         SAYw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1769757614; x=1770362414;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=yiCInPBw07YvtBtb/8UPQ6O9jfSpvmf7nJNZXF9oh5Q=;
-        b=iA0f10Hwl7AHBjLmH1pyRkKJYlVoe0Rwe7jztplkYSGocFN5UhxQ/Knc4g31V9y5kV
-         2xYHfZNqplgL9PrgioYC62bc0Ai1078y+scMC/8HckhhA77RNeXv4TLi3aMOqh5uh8Yp
-         dU1fNjCLX8eXvtltlcUWWiLgswkdXgC3PAu19KDVon5RLAoXYWnAczVDy9/NMPl8WQq1
-         UhBX3HV93YFzzDUIxjO3IluOIugHlD0yod3w16SPubex8cA/HZpXQNOb9YRgPFGsr+ve
-         N/hzX8JPjgky5XqZCbQxUocMKUWWJ0z9EKN1Zy/GjHw8m5vXyNwAJSDHXYOjfqa/fnKa
-         6R2g==
-X-Forwarded-Encrypted: i=1; AJvYcCWqKVav/xSarrY8so+/WglxaS2ItX3J9N/fpKs3ObKErEhV8EI+8GlpKfb0mZmsBtPycqIvNgAGivgp7es=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwJJgsQm3YNmEPERul9Yl24IVVLyPzfAY9iC9DWAjnJnenOaORw
-	Ow+EEOnM8ZFK/RtAzEoBrwKoX0nDn51fdqq4rVyZ9PQz+5e48GPZFtK2O5Y19vC54r01bCMrdoa
-	NFCTM/lcT4/1XW19eZZBe8pMc/UeFgiw=
-X-Gm-Gg: AZuq6aI9rh9ilNo8rCssYnf9rFqOtwklXhCdTCVec6NnokjHRUjHZn+IFaZaoJt655H
-	8ALuaLqjzj+O3jOQLSY1NhVpKWDXZJ0rtkdKuG6WyGWo8z1+PHTBWL3uwoYhyTBCThrIos+HXwW
-	/yX/LRCWt8Vu+BMQcyidk2ewwwKBnq+QBXsknGuKIoEUpMdn/18uoL5x/9mDovqXbcQh4OlDxg/
-	cy/6XRRUdZCVk/fK8IUcd5TvAntT2SJa6Vy7vL3hXSMccpabAhgKh8CCjrEt0TAZX0PKQkGNH4D
-	CQFvcQQcmSVZNd3R1/jDkFOhj4hP/mMGs092V/8OdWNuNsg/MydjM3G2mSgXRc1btUFFLt6bhsM
-	D09mSs3zy+GhcuQ==
-X-Received: by 2002:a05:7022:207:b0:123:35a4:e8be with SMTP id
- a92af1059eb24-125c0f8d01fmr955848c88.13.1769757613717; Thu, 29 Jan 2026
- 23:20:13 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f2SGp2FKmz30FF
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2026 18:25:53 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 60U2vfVe011251;
+	Fri, 30 Jan 2026 07:25:06 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=Vp/MVX
+	WKLfmcf3W30OS3OMGE1YCMMoCP2G4v7UNz/A8=; b=KrNkDNoTpGIWn32FP21hNm
+	8zRCqfOsV8SqVYFljGKX4GYWWwx32OiWBR5KulaCb+LZGUsygOjdk8WDS5wdnMJf
+	zzPZ17cywYjOJyRIuYTM3aFHX8LfZ3UXTsRK23nbZYh2ZZPEDlB7AcOrJ6DgemEc
+	P3OjcYaNgpMCht3sKM/gBndfYdNMoCGK5L4wuimJriZqXVAdXBni7tHCtU2pJ/Ua
+	xm3lmvNeHyv9mgCD3jcXC/HikUy4RKiABw8OIxBr55n86hjl7gP59Kayzz6F+nu0
+	5GpB/avzes/B+0A0p3S+7IDLAWKrL+iZkR8a2Ux05/C4qtN9UrucE2YccU/AB6Sg
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4bvmgg9u1a-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 30 Jan 2026 07:25:05 +0000 (GMT)
+Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 60U7P5fx015866;
+	Fri, 30 Jan 2026 07:25:05 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4bvmgg9u15-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 30 Jan 2026 07:25:05 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 60U24ewf018303;
+	Fri, 30 Jan 2026 07:25:03 GMT
+Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4bwb4251x9-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 30 Jan 2026 07:25:03 +0000
+Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
+	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 60U7P2X831326754
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 30 Jan 2026 07:25:02 GMT
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7568058061;
+	Fri, 30 Jan 2026 07:25:02 +0000 (GMT)
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2AF2958056;
+	Fri, 30 Jan 2026 07:24:53 +0000 (GMT)
+Received: from smtpclient.apple (unknown [9.61.240.86])
+	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTPS;
+	Fri, 30 Jan 2026 07:24:52 +0000 (GMT)
+Content-Type: text/plain;
+	charset=utf-8
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,46 +86,181 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-References: <20260130054330.3462544-1-shengjiu.wang@nxp.com> <20260130054330.3462544-2-shengjiu.wang@nxp.com>
-In-Reply-To: <20260130054330.3462544-2-shengjiu.wang@nxp.com>
-From: Daniel Baluta <daniel.baluta@gmail.com>
-Date: Fri, 30 Jan 2026 09:20:01 +0200
-X-Gm-Features: AZwV_QhrTfQ-UYZ4PfDVoCm6fliDdKe2PvVXhTLbJKtRrXqH5MmZHe0lNlu_Efo
-Message-ID: <CAEnQRZC5umZYoxemGO_yc5xT328uQxUG8Sg8yZvgDowhLP6UPg@mail.gmail.com>
-Subject: Re: [PATCH v2 1/4] ASoC: dt-bindings: fsl,imx-asrc: Add support for
- i.MX952 platform
-To: Shengjiu Wang <shengjiu.wang@nxp.com>
-Cc: lgirdwood@gmail.com, broonie@kernel.org, robh@kernel.org, 
-	krzk+dt@kernel.org, conor+dt@kernel.org, shawnguo@kernel.org, 
-	s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com, 
-	linux-sound@vger.kernel.org, devicetree@vger.kernel.org, imx@lists.linux.dev, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, nicoleotsuka@gmail.com, 
-	perex@perex.cz, tiwai@suse.com, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.300.41.1.7\))
+Subject: Re: [PATCH v4 0/8] Generic IRQ entry/exit support for powerpc
+From: Venkat <venkat88@linux.ibm.com>
+In-Reply-To: <20260123073916.956498-1-mkchauras@linux.ibm.com>
+Date: Fri, 30 Jan 2026 12:54:40 +0530
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        chleroy@kernel.org, ryabinin.a.a@gmail.com, glider@google.com,
+        andreyknvl@gmail.com, dvyukov@google.com, vincenzo.frascino@arm.com,
+        oleg@redhat.com, kees@kernel.org, luto@amacapital.net,
+        wad@chromium.org, mchauras@linux.ibm.com, thuth@redhat.com,
+        ruanjinjie@huawei.com, sshegde@linux.ibm.com,
+        akpm@linux-foundation.org, charlie@rivosinc.com, deller@gmx.de,
+        ldv@strace.io, macro@orcam.me.uk, segher@kernel.crashing.org,
+        peterz@infradead.org, bigeasy@linutronix.de, namcao@linutronix.de,
+        tglx@linutronix.de, mark.barnett@arm.com,
+        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+        kasan-dev@googlegroups.com
 Content-Transfer-Encoding: quoted-printable
+Message-Id: <E4046FE5-A919-4B30-B6D8-8F968628CFE3@linux.ibm.com>
+References: <20260123073916.956498-1-mkchauras@linux.ibm.com>
+To: Mukesh Kumar Chaurasiya <mkchauras@linux.ibm.com>
+X-Mailer: Apple Mail (2.3864.300.41.1.7)
+X-TM-AS-GCONF: 00
+X-Authority-Analysis: v=2.4 cv=Z4vh3XRA c=1 sm=1 tr=0 ts=697c5cd1 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=vUbySO9Y5rIA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=PKHrbpWhOttoSJa1NdwA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: MOtuIipkCsAG32U1n9mma2eNkA-XhVLe
+X-Proofpoint-ORIG-GUID: 1eWwm_FmuSP_nBNnRBgIffQncjCokOBm
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTMwMDA1NSBTYWx0ZWRfX6KNP6j5jq2+v
+ nANystBdQ3Fe6bnYg3ATgoo+QUV4er0iY7XpMFXF6xm5NXGu8g6n2OmS2JJ1vFdFmpVKJwPgEhV
+ IJ9UGdgyz1ALoUiOn//fgKTy4a3AwPq5Qs9AA1D+tCLocmcZds6VGjlFkYKl8ivJRf4+bbEZuWi
+ rqyzd+piEVUiMufOrJLG2UsPpzDfEiPFQ/R9CNiS25MimTVdXcZvI7uChznUmALsqlgo90rtMdh
+ cDsCLkuk3oRTGy34U0XMcanL0XPCbqRNZh9JjCP+PGbJ+Gxtqq+SwUtcto7WhIBIORo/xeNKIy3
+ x9k80cATF1slciXugXstQ4HmrCunD5pu9RznmUy8ScwmmcPfRhfJnMGngRAbmpQ5rzyE2mhz5eQ
+ uW7f77p2ph2EhGB4/TwTpDUUJmhE2RWmlS9WJbYLzeYlePxq6Kq8KYMvmrkXGhvhmSHCeIJi/no
+ rxB7pPwZihtWOZ0gxfA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-01-29_03,2026-01-29_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 malwarescore=0 phishscore=0 priorityscore=1501 bulkscore=0
+ adultscore=0 clxscore=1011 lowpriorityscore=0 impostorscore=0 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2601150000 definitions=main-2601300055
 
-On Fri, Jan 30, 2026 at 7:44=E2=80=AFAM Shengjiu Wang <shengjiu.wang@nxp.co=
-m> wrote:
->
-> Add new compatible string 'fsl,imx952-asrc' for i.MX952 platform,
-> below are the differences that make this ASRC not fallback compatible
-> with other platforms.
->
-> 1) There is a power domain on i.MX952 for the wakeupmix system where
-> ASRC is in. But it is enabled by default, ASRC device don't need
-> to enable it, so it is optional for i.MX952.
-> 2) The clock sources of ASRC are different on i.MX952.
-> 3) There is a limitation on i.MX952 that DMA request is not cleared at th=
-e
-> end of conversion with dma slave mode. Which causes sample is dropped fro=
-m
-> the input fifo on the second time if DMA is triggered before the client
-> device and DMA may copy wrong data from output fifo as the output fifo is
-> not ready in the beginning. So there is specially handling in the driver.
->
-> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 
-Reviewed-by: Daniel Baluta <daniel.baluta@nxp.com>
+
+> On 23 Jan 2026, at 1:09=E2=80=AFPM, Mukesh Kumar Chaurasiya =
+<mkchauras@linux.ibm.com> wrote:
+>=20
+> Adding support for the generic irq entry/exit handling for PowerPC. =
+The
+> goal is to bring PowerPC in line with other architectures that already
+> use the common irq entry infrastructure, reducing duplicated code and
+> making it easier to share future changes in entry/exit paths.
+>=20
+> This is slightly tested of ppc64le and ppc32.
+>=20
+> The performance benchmarks are below:
+>=20
+> perf bench syscall usec/op (-ve is improvement)
+>=20
+> | Syscall | Base        | test        | change % |
+> | ------- | ----------- | ----------- | -------- |
+> | basic   | 0.093543    | 0.093023    | -0.56    |
+> | execve  | 446.557781  | 450.107172  | +0.79    |
+> | fork    | 1142.204391 | 1156.377214 | +1.24    |
+> | getpgid | 0.097666    | 0.092677    | -5.11    |
+>=20
+> perf bench syscall ops/sec (+ve is improvement)
+>=20
+> | Syscall | Base     | New      | change % |
+> | ------- | -------- | -------- | -------- |
+> | basic   | 10690548 | 10750140 | +0.56    |
+> | execve  | 2239     | 2221     | -0.80    |
+> | fork    | 875      | 864      | -1.26    |
+> | getpgid | 10239026 | 10790324 | +5.38    |
+>=20
+>=20
+> IPI latency benchmark (-ve is improvement)
+>=20
+> | Metric         | Base (ns)     | New (ns)      | % Change |
+> | -------------- | ------------- | ------------- | -------- |
+> | Dry run        | 583136.56     | 584136.35     | 0.17%    |
+> | Self IPI       | 4167393.42    | 4149093.90    | -0.44%   |
+> | Normal IPI     | 61769347.82   | 61753728.39   | -0.03%   |
+> | Broadcast IPI  | 2235584825.02 | 2227521401.45 | -0.36%   |
+> | Broadcast lock | 2164964433.31 | 2125658641.76 | -1.82%   |
+>=20
+>=20
+> Thats very close to performance earlier with arch specific handling.
+>=20
+> Tests done:
+> - Build and boot on ppc64le pseries.
+> - Build and boot on ppc64le powernv8 powernv9 powernv10.
+> - Build and boot on ppc32.
+> - Performance benchmark done with perf syscall basic on pseries.
+>=20
+> Changelog:
+> V3 -> V4
+> - Fixed the issue in older gcc version where linker couldn't find
+>   mem functions
+> - Merged IRQ enable and syscall enable into a single patch
+> - Cleanup for unused functions done in separate patch.
+> - Some other cosmetic changes
+> V3: =
+https://lore.kernel.org/all/20251229045416.3193779-1-mkchauras@linux.ibm.c=
+om/
+>=20
+> V2 -> V3
+> - #ifdef CONFIG_GENERIC_IRQ_ENTRY removed from unnecessary places
+> - Some functions made __always_inline
+> - pt_regs padding changed to match 16byte interrupt stack alignment
+> - And some cosmetic changes from reviews from earlier patch
+> V2: =
+https://lore.kernel.org/all/20251214130245.43664-1-mkchauras@linux.ibm.com=
+/
+>=20
+> V1 -> V2
+> - Fix an issue where context tracking was showing warnings for
+>   incorrect context
+> V1: =
+https://lore.kernel.org/all/20251102115358.1744304-1-mkchauras@linux.ibm.c=
+om/
+>=20
+> RFC -> PATCH V1
+> - Fix for ppc32 spitting out kuap lock warnings.
+> - ppc64le powernv8 crash fix.
+> - Review comments incorporated from previous RFC.
+> RFC =
+https://lore.kernel.org/all/20250908210235.137300-2-mchauras@linux.ibm.com=
+/
+>=20
+> Mukesh Kumar Chaurasiya (8):
+>  powerpc: rename arch_irq_disabled_regs
+>  powerpc: Prepare to build with generic entry/exit framework
+>  powerpc: introduce arch_enter_from_user_mode
+>  powerpc: Introduce syscall exit arch functions
+>  powerpc: add exit_flags field in pt_regs
+>  powerpc: Prepare for IRQ entry exit
+>  powerpc: Enable GENERIC_ENTRY feature
+>  powerpc: Remove unused functions
+>=20
+> arch/powerpc/Kconfig                    |   1 +
+> arch/powerpc/include/asm/entry-common.h | 533 ++++++++++++++++++++++++
+> arch/powerpc/include/asm/hw_irq.h       |   4 +-
+> arch/powerpc/include/asm/interrupt.h    | 386 +++--------------
+> arch/powerpc/include/asm/kasan.h        |  15 +-
+> arch/powerpc/include/asm/ptrace.h       |   6 +-
+> arch/powerpc/include/asm/signal.h       |   1 -
+> arch/powerpc/include/asm/stacktrace.h   |   6 +
+> arch/powerpc/include/asm/syscall.h      |   5 +
+> arch/powerpc/include/asm/thread_info.h  |   1 +
+> arch/powerpc/include/uapi/asm/ptrace.h  |  14 +-
+> arch/powerpc/kernel/interrupt.c         | 254 ++---------
+> arch/powerpc/kernel/ptrace/ptrace.c     | 142 +------
+> arch/powerpc/kernel/signal.c            |  25 +-
+> arch/powerpc/kernel/syscall.c           | 119 +-----
+> arch/powerpc/kernel/traps.c             |   2 +-
+> arch/powerpc/kernel/watchdog.c          |   2 +-
+> arch/powerpc/perf/core-book3s.c         |   2 +-
+> 18 files changed, 690 insertions(+), 828 deletions(-)
+> create mode 100644 arch/powerpc/include/asm/entry-common.h
+>=20
+> --=20
+> 2.52.0
+>=20
+
+Tested this patch set, and it builds successfully. Also ran ltp, ptrace, =
+ftrace, perf related tests and no crash or warnings observed. Please add =
+below tag.
+
+Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+
+Regards,
+Venkat.=
 
