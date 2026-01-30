@@ -1,92 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-16412-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16413-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F4D9D73EAF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jan 2026 01:52:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E0FBD73E86
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jan 2026 02:08:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f2JtL4fDmz2xS7;
-	Fri, 30 Jan 2026 12:52:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::1032" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769737962;
-	cv=pass; b=G8JWFFTLO9UCwG1CIUtICe9vEAYw+NGKtWywS8Fn3CF1f2Cj8mpRj5rMAH0ubS9bDkLk/zPQC3ECXEj2EJsYHnxNYoXxc1NPI1cJ6QI9TMqDlV2QgzATJC9qo7HId1klkY27ppAzA1tiNIYPK1oc1LruS0+f+C3CWBA4rSYDPwW6cY/4DM+rR8gKAg19QwUyfXSXEW/t29p//QbwyR5NjNwMeDx/L0jIESLwDT13B0FJ7HAsjPQDhZ+Ks4mXrBgPR/5ngxkZaJESYfbrL8afAOn4IrRKZZqAl7QpKZmgwXjYvbn+lmr/bGxlZUmn6yXhgOJaGQAl+o9Nihg9KLY6dg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f2KDB4jJ2z2xS7;
+	Fri, 30 Jan 2026 13:08:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::62c" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769735800;
+	cv=pass; b=KSRnTkRw8P+8ujGNyrGDzkafAB7VJMFV9/QYvCYa8qHexWmD6PRFV/eXdrdRLJNji52AsRGFbCK3EFT7RzuFestrZuTDy5PjXtDhGXQiPHucZ4K0ymO+luo5fsxiMU5YjdcqHox+VumDOjMBBzg+U97b+ZsxBJKpjOtPZ1MHYgtYGkBb9mMdKNGq+7fgclfRQ/4/eg+eFGTjzSiI+8MBDgWvbZMdc1b1mvuec7/SeWiTxsRWOBGc7a47kTuaAZqMtGfvK9b1GALc7tf9rCLKSQDPoQlLBD12naRPR6T7P9WoWtnK2CzaZxx7vwt80yvAxOHzFTMX1wjfLiuVI3hm2g==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1769737962; c=relaxed/relaxed;
-	bh=AYrclzb/DI20ULzMRT5C3zx7BcemIpx5wfq90vBWrJQ=;
+	t=1769735800; c=relaxed/relaxed;
+	bh=TDFRbEmoo50qM27MYVAAAo2rNiUVkc6+HtDETmMWn38=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Hhv47hcCgKp0mu/mMt2DgF5I1IEEHxryhs90EwenYhn3WkejXcxzq/zhGoAJZkx8ufQUJ4Oo4pQTkmATYi7Z7Mpcm9o1HuyBKauQ9ibORXn5iSvsrcg/9RMpOUQzxXzI5s/RI1Q2m+IspE0aisecjFytHIkF9LD2CRDzYtT/aKnDHz1t9qbZs+QqqxHdx0//nSTx2Nusm2WKpNzMKa09XBrRThgcGbqlkQDWGxn7xa5cwbZTA3CdYPprGWdxpGIu4FEtacmEuPGxTRgqz4f3uI7FRhfOy6xtCmcIRuB5NeHGZB9ZmrIx8pcKCATdCrRN0TIbZgWCIR8sbWi2rtJZ+A==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=eW682Xx0; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	 To:Cc:Content-Type; b=JJFrEUsDA+MbK4PzdzsR46GQU5SoyP9/G9sE+WSmuOy5XUcokeS7EtbmN0xZVyi0M6rhMZeB7K4jh63oP9+ZB7+YhaJnyFObVcUA8c78/5MQcHmtwLblDGIHFj4ECGJJI8Mv51m/aRret5VLOrYc6sB/6o9as+fuByJSI0O2hN2+DrE9WvByDRNvaPGNtJgGPo/1pB0c4WDK3lj8vpxQkDPLBkoaLBV4WhQpSV7uPxKZTIxXP1tL2dOo8EwYzGcZLcLDHot9HNYakxkCT0JmPRZf1SfmTaNodOpBRxjHscVVCx4YUQgnC6jytDRF1X8jW7rgbBvwZkAT3f1WKCWdAw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=uhkQBUIj; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::62c; helo=mail-ej1-x62c.google.com; envelope-from=wusamuel@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=eW682Xx0;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=uhkQBUIj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::62c; helo=mail-ej1-x62c.google.com; envelope-from=wusamuel@google.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x62c.google.com (mail-ej1-x62c.google.com [IPv6:2a00:1450:4864:20::62c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f2JtK47JPz2xKx
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2026 12:52:40 +1100 (AEDT)
-Received: by mail-pj1-x1032.google.com with SMTP id 98e67ed59e1d1-34c7d0c5ddaso1253240a91.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2026 17:52:40 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1769737958; cv=none;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f2J4k3Dyfz2xKx
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Jan 2026 12:16:37 +1100 (AEDT)
+Received: by mail-ej1-x62c.google.com with SMTP id a640c23a62f3a-b8845cb5862so241229166b.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Jan 2026 17:16:37 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1769735792; cv=none;
         d=google.com; s=arc-20240605;
-        b=c8zjvx6oCnpbRAeCnCB9nKteZgJdNFOnN5PSS2ed4uLxvfTkBPd6CKVMxXD/aGDCSI
-         RGBydvwqf2t5LGT95KdE+B1nOiHbcPQ2lUIcJuGN0ux/jX5CPgwQqAt8sHqa67KZJCEX
-         JE656PC9Rn/LlWROpqMHA8I52024CJZXYXVjwFuOtn6Iz2xSztBIGkczFZPnjRDoMian
-         pqPxhdRZE9NH23sgaSrqV6WlpcmCw+k7NLpHlDAP/BsxMpmUMjTS4HUzGCN10IruTdLl
-         s4oH76rxekT447x0Vmh15lNIU5klG2zS0vdVk9NxIH6EbNv/oQSRBYfiNL9LieKYNeQB
-         ASCg==
+        b=ghjQ6oWNUvPHwpJSeMC+S+4zetvLIBhgLbTAhdcHH/K6shAcEjjw3+w8ol/o+toO39
+         bPa8hAROksgVFMxICsCdgtFNRCDHGZcOYjqTwSBCrBkndHE/OjMG+9wN8M61JdTnM4a9
+         DjVjf/PUw8z8tjcaVRO78jukClgqezdMZv5U46Zp935H5pG5EzALcKfdW/EoFDu3HXv/
+         mm9TpMItf6uCZmjC1Pl7abOkdq18rjeMErnwZOxbxJiLtTDtPRBVmsomBpMPbJF7CGUM
+         +5jUOO8q3G3PbFF1niXjswzjm9no4Derxp8FbUqvlTNqYf2r6gYHKxo2Vukh2ZQ0dAu0
+         uz7w==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=AYrclzb/DI20ULzMRT5C3zx7BcemIpx5wfq90vBWrJQ=;
-        fh=02tNfCpEhMGv1b3FUJCulGF6t7mOZvJ018Rutm8+Ajk=;
-        b=GhhHPMY2a177Ytn54PIX0/m1eWXgQ/mCoAceOttqTMh4pUzPvXj0yrP/2t3QP18ecv
-         uSN5dqYNO0nSoJoKXOkQhSX64WFJ8pas7vOG18hkBx6/NtL/XrPdmx/i8qBYltyzdnNR
-         dJl34bLBdSfiTXFZe02Uefx866dM/qCC51+HVZButnWWWx2JijjmvaKae1l1ZF1g8wsh
-         jgLzjhFDVGbvZhCm2Pbp7bqJZTH+5m+ENSVjQa4J9PN1mcrh7AvSdeioU2NVMM30IPVE
-         tIVeXhCzVL4bEv6HcHYzQebib9KJBATCI4PZq/S62CUZ2HQAT8y+72pUoSPBng+GYGbj
-         vJmw==;
+        bh=TDFRbEmoo50qM27MYVAAAo2rNiUVkc6+HtDETmMWn38=;
+        fh=2wEYn5AmGLonLVmu5GekELfhCxYgdoWOdyz/1sW4RfU=;
+        b=lq1juDGJIh9nehvYmazcO0xYxPqtp/fyp2+wmNhBVv3+XZ1xtEbpPo2KVp8F8i78S7
+         2pExOMSZmu8Ws+S6g2Y4Yy8y2FSkOfAsaqcvYAmrTrxTKPTd5ZqDNKwItAWMAc24TVez
+         YjN3+mvMBiwKSiPYNoVeu9FWU8c9Q5386s2LkXLTXeEQZtSHZ/iPQadyk+k9dP+Y+mci
+         lND21s4WnuMIbzmN1T9iYO6I5Z607oXPEjEH3U14BusAsMDAIR3YdatkQP3T1j+pqXp2
+         QxTAk3nwha1LVliIg4aylUHLBUEUZg2ut28+RepS41wQv5yUokCALbYels6FLCAOugm2
+         1kKA==;
         darn=lists.ozlabs.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1769737958; x=1770342758; darn=lists.ozlabs.org;
+        d=google.com; s=20230601; t=1769735792; x=1770340592; darn=lists.ozlabs.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=AYrclzb/DI20ULzMRT5C3zx7BcemIpx5wfq90vBWrJQ=;
-        b=eW682Xx0nbYSn82djRR1FSGZ0W26pJjeSgD3LlNQRlQQIIgXt5v2rcPttJj5/Y2XDx
-         7A9+nliTfmjwpMxD19z0g6elOb5Ik9wGAn8jze0rN6W36WLzUmq935ayYa17konj7/p6
-         cERaK0nURNG/kyaMfPyY2mftgFNmiJytF/Sz5TmSSMrdt+bTaYHDnXFO9dAiPQHu/6ZW
-         PXiNTTnm2jnVHzcdXp1LWY0setcSTpuNgEIyU4+JcCoeZtdHh1IwQQ/Hap0yKiPrCaPU
-         7AuyTLnq9meqljNS+ZR7mOT2DsGzAOozuYoFcDwp28mHZdomFyvJVDVzP24bpN4vflpv
-         cqtg==
+        bh=TDFRbEmoo50qM27MYVAAAo2rNiUVkc6+HtDETmMWn38=;
+        b=uhkQBUIjYEmszsuQiDoyAq0RNIx3t1Ich5vDJ4SSTKvSHhXSGC0xOKqnwbQK416BDs
+         VKHHkgU5dQVFvbqNUFEHZADqD8ESWGj04QASaeGAlFSW8CQkmz8IwILwUhKYvxzf5sQp
+         V9wCbeJuzScpUbUdnKrp09mvMeXjETytWp8wb8/0pCgLzzsMGYkHfvByFgbxY3Nw6nF0
+         FSJv4SjZHl0LNmWOrkorrtIDFFktLPZ8U/0heDqfN0Ig6klSvzDF4xfjcTpncADlj3YG
+         rKWHA7uNfB7QdwAg1u7Et2xQmkAuAk+rDPiA+AHDJFxaEcyzkHaVr2ddBJoR01FmWnvr
+         Zt4A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1769737958; x=1770342758;
+        d=1e100.net; s=20230601; t=1769735792; x=1770340592;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=AYrclzb/DI20ULzMRT5C3zx7BcemIpx5wfq90vBWrJQ=;
-        b=nJLtWmYXGFEwtCSasVrvAaSbd6V/IMOcZzv6j6s8G/6GRUb2DCsqSqhco0Gj9w5DWZ
-         B23iECDDhT5O88Bu04VqJeTk6/jRCGCcfaMctMI/+zXsawsXIW2Jw4FWkJLPLqa7vaNt
-         nefJQMSgjhO0GzMK+gMDP/HPLUBm+pmPTKt96uKZ1CkYZr2cCI4NCaePtjRw+cdAQTqX
-         aln4gH13S/lqGxziaDV8OWxSAVgY2E1p7Vz5pewnSUCG5R0UA6Nvwugy5ZBYu7vcVQmx
-         kyJt4AFIt4ijTXuQsIqJV0sXbYn989uHXSpp9Tg1hoEbLh0zGguBH5YtJfk2FWiu9J8l
-         kp9g==
-X-Forwarded-Encrypted: i=1; AJvYcCVZn+3ddIa9/XOpwE/DjJjjw3gyPjzlpaWP2YCW7ne26Gt/vB+3dKLFcg68YqxA4GIYMavVPUsexHX6ys8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yw4kqvrMoj7EdcqUDEUPHgrgpT2g/fUGjNhrLsptKoKSYyGwzBC
-	UYk8EiE6+fBMhEvNadCoYHF2shIEJ2v59mYxDpfOLYIXEKs0smCiYwnZTsIG+kXI7M4i5bmNoY5
-	O3i2YkEHfV9NlCwUl+cmAPwbVkZqnnac=
-X-Gm-Gg: AZuq6aLjXwVFlJ/vS24Z+/ug79LoCLsLIvy2uMkMbVTbGnnDEFwTHrcGMbmcbaSyOYf
-	dw1k/eBPsJzymo9A3lF+CA0wIziromD5mexkBHEqG422emqocllpExNxuA6qo4WppoxjGNZfp+w
-	uRUg5/RZ7tvScxlM6HAsVygb6v5oR/DZB8J9yfU38SdOLSizn18Q1I9G9oJnkfwGegF8H4YXMgS
-	oZPJycs2ia1Y2AwfJWZoCkSbb68JIl1Fslr/D1B2M75eFwp6Xn0QUxc3YL2ZhZPkkD9GVo=
-X-Received: by 2002:a17:90b:1c0e:b0:340:8d99:49d4 with SMTP id
- 98e67ed59e1d1-354299f24a8mr4236387a91.1.1769737957855; Thu, 29 Jan 2026
- 17:52:37 -0800 (PST)
+        bh=TDFRbEmoo50qM27MYVAAAo2rNiUVkc6+HtDETmMWn38=;
+        b=s6vwSHBWKx7gIdqrjSTAal8ejfN5hwLigJbXWbdeKZwOyZeJ8/gtd5ifVmtqLexcm8
+         n+54lvstEQVHLI0pJj6YYIvrBWXnQee/VWzsnV3S9y4JPko1wCjmhFrfFwVmkLWGCnHU
+         48ZbhBU+DZ62Wz0TpZmsDe9crk6AUM9/sdGVQZq7t5pgqCnsvH4IOnzAJCzq1NO5f1PS
+         HBrTqW2v5ZNK4hnt73O7i+h2UmTBPFdlTtpE4X3VfGUSTY5iZGWBGkpy+mhxQNTc69gj
+         jl4fP/CVB4ccCpHLTZP0KOBMKP4Q7+GjNBrmyb0wpw/hPjxrn7nV2qKsiFfXwljea3q1
+         6Tkw==
+X-Forwarded-Encrypted: i=1; AJvYcCWDsh6np62oCrj/vk/VNiVXPfMrxEpvCyVB6cKt9ZbbZ6l6jvfoDuVAkIfpX9xx8Y5seMgVEgkhMjLKtU0=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yy6/7eILpt1Rhzw+pm9mDKoaVlu4ncX655orTT9FgIaKwQ9Mwyk
+	rxD7a6W8C+9chvdaqrtKzkP/VCp2U7cEuWKhHU3Fmas7/5/k9tvnYCDir9L1okyoARvNzehQLnf
+	BDM0+o5SKEn/vkGWmLdqHuDZ3CV0d+zIzkrC49kd6
+X-Gm-Gg: AZuq6aLxfetvcstILKrN2aDggpQdMzxmX5tu3bw/Tbq4SnFLSc2YHfLSeqUXAz4HDp5
+	bZwdhCW1s6i7KXNY5x9hNNyAdyo7GjcG4a3XScoDOeJOGLL+wxo2cpYn93q2iQDop5Neb/U24e3
+	HfPkMdDkjug20vs5t4AK1K0Z6LLV/bfVHl0Jti+gx0pVSfyI2Olh749LRyBZVtchIYg0u/Zbry5
+	fTuIv8heUnuAol96bZ5Z9J3iCCSZKhYYYoXXn/LeLJ2mR9OcCbSsJUon4nrqM3FcOB0DPcAcYKL
+	lqcMDNQHGIDRkcbhMpCjqZEc9Lj14w==
+X-Received: by 2002:a17:906:eecb:b0:b88:31f9:1d9a with SMTP id
+ a640c23a62f3a-b8dff71fbbcmr62042966b.62.1769735792220; Thu, 29 Jan 2026
+ 17:16:32 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,131 +101,115 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260128071853.2602784-1-shengjiu.wang@nxp.com>
- <20260128071853.2602784-4-shengjiu.wang@nxp.com> <aXuUSnPSCa8YYfgd@lizhi-Precision-Tower-5810>
-In-Reply-To: <aXuUSnPSCa8YYfgd@lizhi-Precision-Tower-5810>
-From: Shengjiu Wang <shengjiu.wang@gmail.com>
-Date: Fri, 30 Jan 2026 09:52:26 +0800
-X-Gm-Features: AZwV_QiF2cDrLfRKNnjCIo-qh5cZKFulc8s1nwm3YFRDiF2SntZx7QwlcKkdk5I
-Message-ID: <CAA+D8AM2d8m2eZnenH7gqOEUO1dLifFSNgizRRXwOiLX2vVdTA@mail.gmail.com>
-Subject: Re: [PATCH 3/3] ASoC: fsl_asrc_dma: allocate memory from dma device
-To: Frank Li <Frank.li@nxp.com>
-Cc: Shengjiu Wang <shengjiu.wang@nxp.com>, lgirdwood@gmail.com, broonie@kernel.org, 
-	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, shawnguo@kernel.org, 
-	s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com, 
-	linux-sound@vger.kernel.org, devicetree@vger.kernel.org, imx@lists.linux.dev, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	Xiubo.Lee@gmail.com, nicoleotsuka@gmail.com, perex@perex.cz, tiwai@suse.com, 
-	linuxppc-dev@lists.ozlabs.org
+References: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
+ <CAG2KctrjSP+XyBiOB7hGA2DWtdpg3diRHpQLKGsVYxExuTZazA@mail.gmail.com>
+ <2026012715-mantra-pope-9431@gregkh> <CAG2Kctoo=xiVdhRZnLaoePuu2cuQXMCdj2q6L-iTnb8K1RMHkw@mail.gmail.com>
+ <20260128045954.GS3183987@ZenIV> <CAG2KctqWy-gnB4o6FAv3kv6+P2YwqeWMBu7bmHZ=Acq+4vVZ3g@mail.gmail.com>
+ <20260129032335.GT3183987@ZenIV> <20260129225433.GU3183987@ZenIV>
+In-Reply-To: <20260129225433.GU3183987@ZenIV>
+From: Samuel Wu <wusamuel@google.com>
+Date: Thu, 29 Jan 2026 17:16:20 -0800
+X-Gm-Features: AZwV_Qio50GdQN1165WVg9oPRvbdMSYV2LeALjhPJoJWlsc8zYrp7Hv8KsFMrXk
+Message-ID: <CAG2KctoNjktJTQqBb7nGeazXe=ncpwjsc+Lm+JotcpaO3Sf9gw@mail.gmail.com>
+Subject: Re: [PATCH v4 00/54] tree-in-dcache stuff
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Greg KH <gregkh@linuxfoundation.org>, linux-fsdevel@vger.kernel.org, 
+	torvalds@linux-foundation.org, brauner@kernel.org, jack@suse.cz, 
+	raven@themaw.net, miklos@szeredi.hu, neil@brown.name, a.hindborg@kernel.org, 
+	linux-mm@kvack.org, linux-efi@vger.kernel.org, ocfs2-devel@lists.linux.dev, 
+	kees@kernel.org, rostedt@goodmis.org, linux-usb@vger.kernel.org, 
+	paul@paul-moore.com, casey@schaufler-ca.com, linuxppc-dev@lists.ozlabs.org, 
+	john.johansen@canonical.com, selinux@vger.kernel.org, 
+	borntraeger@linux.ibm.com, bpf@vger.kernel.org, clm@meta.com, 
+	android-kernel-team <android-kernel-team@google.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Jan 30, 2026 at 1:09=E2=80=AFAM Frank Li <Frank.li@nxp.com> wrote:
->
-> On Wed, Jan 28, 2026 at 03:18:53PM +0800, Shengjiu Wang wrote:
-> > As the dma device may support dma-coherent property on the i.MX952,
-> > allocate memory from dma device to make asrc driver to be compatible wi=
-th
-> > such a case.
-> >
-> > Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-> > ---
-> >  sound/soc/fsl/fsl_asrc_dma.c | 48 ++++++++++++++++++++++++++++++------
-> >  1 file changed, 41 insertions(+), 7 deletions(-)
-> >
-> > diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.=
-c
-> > index 7dacc06b2f02..b8fe242d53db 100644
-> > --- a/sound/soc/fsl/fsl_asrc_dma.c
-> > +++ b/sound/soc/fsl/fsl_asrc_dma.c
-> > @@ -449,18 +449,52 @@ fsl_asrc_dma_pcm_pointer(struct snd_soc_component=
- *component,
-> >  static int fsl_asrc_dma_pcm_new(struct snd_soc_component *component,
-> >                               struct snd_soc_pcm_runtime *rtd)
-> >  {
-> > -     struct snd_card *card =3D rtd->card->snd_card;
-> > +     struct device *dev =3D component->dev;
-> > +     struct fsl_asrc *asrc =3D dev_get_drvdata(dev);
-> > +     struct fsl_asrc_pair *pair;
-> >       struct snd_pcm *pcm =3D rtd->pcm;
-> > +     struct dma_chan *chan;
-> >       int ret;
-> >
-> > -     ret =3D dma_coerce_mask_and_coherent(card->dev, DMA_BIT_MASK(32))=
-;
-> > -     if (ret) {
-> > -             dev_err(card->dev, "failed to set DMA mask\n");
-> > -             return ret;
-> > +     pair =3D kzalloc(sizeof(*pair) + asrc->pair_priv_size, GFP_KERNEL=
-);
->
-> prefer use size_add(sizeof(*pair), asrc->pair_priv_size), which did
-> overflow check.
+On Thu, Jan 29, 2026 at 2:52=E2=80=AFPM Al Viro <viro@zeniv.linux.org.uk> w=
+rote:
 
-Ok, will update it.
+> > Sorry, I hadn't been clear enough: if you do
+> > git switch --detach 1544775687f0
+> > and build the resulting tree, does the breakage reproduce?  What I want
+> > to do is to split e5bf5ee26663 into smaller steps and see which one
+> > introduces the breakage, but the starting point would be verify that
+> > there's no breakage prior to that.
 
+Ultimately, same conclusion as before: 6.18-rc5 with patches up to
+1544775687f0 works, but adding e5bf5ee26663 breaks it.
+
+> > PS: v6.19-rc7 contains fc45aee66223 ("get rid of kill_litter_super()"),
+> > and reverting 6ca67378d0e7 ("convert functionfs") would reintroduce
+> > the call of that function in ffs_fs_kill_sb(), so the resulting tree
+> > won't even build on any configs with functionfs enabledd; are you sure
+> > that you'd been testing v6.19-rc7 + reverts of just these 3 commits?
+
+I also could have been more clear- I had to
+s/kill_anon_super/kill_litter_super/ as part of the revert of
+6ca67378d0e7 to properly build. That felt like an appropriate change,
+but if not, adding patches on top of 6.18-rc5 is perfectly fine for
+testing this.
+
+> Could you try your reproducer on mainline with the following delta applie=
+d?
 >
-> > +     if (!pair)
-> > +             return -ENOMEM;
-> > +
-> > +     pair->asrc =3D asrc;
-> > +     pair->private =3D (void *)pair + sizeof(struct fsl_asrc_pair);
-> > +
-> > +     /* Request a dummy pair, which will be released later.
-> > +      * Request pair function needs channel num as input, for this
-> > +      * dummy pair, we just request "1" channel temporarily.
-> > +      */
-> > +     ret =3D asrc->request_pair(1, pair);
-> > +     if (ret < 0) {
-> > +             dev_err(dev, "failed to request asrc pair\n");
-> > +             goto req_pair_err;
-> >       }
-> >
-> > -     return snd_pcm_set_fixed_buffer_all(pcm, SNDRV_DMA_TYPE_DEV,
-> > -                                         card->dev, FSL_ASRC_DMABUF_SI=
-ZE);
-> > +     /* Request a dummy dma channel, which will be released later. */
-> > +     chan =3D asrc->get_dma_channel(pair, IN);
+> diff --git a/drivers/usb/gadget/function/f_fs.c b/drivers/usb/gadget/func=
+tion/f_fs.c
+> index 05c6750702b6..6c6d55ba0749 100644
+> --- a/drivers/usb/gadget/function/f_fs.c
+> +++ b/drivers/usb/gadget/function/f_fs.c
+> @@ -646,12 +646,11 @@ static int ffs_ep0_open(struct inode *inode, struct=
+ file *file)
+>         if (ret < 0)
+>                 return ret;
 >
-> Is it possible get real dma chan from fsl_asrc?
-
-This is real dma chan, may be I should remove "dummy".
-
+> -       ffs_data_opened(ffs);
+>         if (ffs->state =3D=3D FFS_CLOSING) {
+> -               ffs_data_closed(ffs);
+>                 mutex_unlock(&ffs->mutex);
+>                 return -EBUSY;
+>         }
+> +       ffs_data_opened(ffs);
+>         mutex_unlock(&ffs->mutex);
+>         file->private_data =3D ffs;
 >
-> > +     if (!chan) {
-> > +             dev_err(dev, "failed to get dma channel\n");
-> > +             ret =3D -EINVAL;
-> > +             goto dma_chan_err;
-> > +     }
-> > +
-> > +     ret =3D snd_pcm_set_fixed_buffer_all(pcm,
-> > +                                        SNDRV_DMA_TYPE_DEV,
-> > +                                        chan->device->dev,
-> > +                                        FSL_ASRC_DMABUF_SIZE);
->
-> Here you assume chan->device->dev never change when it did DMA transfer.
 
-Yes, this refers to the generic code in ALSA.
+This didn't work on either build variant (6.18-rc5 and 6.19-rc7).
 
-best regards
-Shengjiu Wang
+I'm exploring a few other paths, but not having USB access makes
+traditional tools a bit difficult. One thing I'm rechecking and is
+worth mentioning is the lockdep below: it's been present for quite
+some time now, but I'm not sure if it would have some undesired
+interaction with your patch.
 
->
-> Frank
-> > +
-> > +     dma_release_channel(chan);
-> > +
-> > +dma_chan_err:
-> > +     asrc->release_pair(pair);
-> > +
-> > +req_pair_err:
-> > +     kfree(pair);
-> > +
-> > +     return ret;
-> >  }
-> >
-> >  struct snd_soc_component_driver fsl_asrc_component =3D {
-> > --
-> > 2.34.1
-> >
+[ BUG: Invalid wait context ]
+6.18.0-rc5-mainline-maybe-dirty-4k
+-----------------------------
+irq/360-dwc3/352 is trying to lock:
+ffffff800792deb8 (&psy->extensions_sem){.+.+}-{3:3}, at:
+__power_supply_set_property+0x40/0x180
+other info that might help us debug this:
+context-{4:4}
+1 lock held by irq/360-dwc3/352:
+ #0: ffffff8017bb98f0 (&gi->spinlock){....}-{2:2}, at:
+configfs_composite_suspend+0x28/0x68
+Call trace:
+ show_stack+0x18/0x28 (C)
+ __dump_stack+0x28/0x3c
+ dump_stack_lvl+0xac/0xf0
+ dump_stack+0x18/0x3c
+ __lock_acquire+0x794/0x2bec
+ lock_acquire+0x148/0x2cc
+ down_read+0x3c/0x194
+ __power_supply_set_property+0x40/0x180
+ power_supply_set_property+0x14/0x20
+ dwc3_gadget_vbus_draw+0x8c/0xcc
+ usb_gadget_vbus_draw+0x48/0x130
+ composite_suspend+0xcc/0xe4
+ configfs_composite_suspend+0x44/0x68
+ dwc3_thread_interrupt+0x8f8/0xc88
+ irq_thread_fn+0x48/0xa8
+ irq_thread+0x150/0x31c
+ kthread+0x150/0x280
+ ret_from_fork+0x10/0x20
 
