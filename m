@@ -1,42 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-16461-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16462-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0FC6EE6BF1E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jan 2026 15:53:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62CA3E6BF1E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Jan 2026 16:16:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f2gXs3yVqz2xT4;
-	Sat, 31 Jan 2026 02:53:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=63.228.1.57
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769788429;
-	cv=none; b=EaFiMPuBenO8fTRJ+4e42AevE5309aUhGOy0/+wtX9n9RqIwagoPbLoA9GUFtsqjq2r67zdeJgrZHQLRfnWCl/ar1nTTcg05AsILLmeRwS1WuVPX12gdR5URhltZv3eDv/Hc/Fsg/ntLOOZ2pNDS1VGQ3eM5gr7UPVE/0aFI1LL6QpydkifK+JCUW1i/eDeBBMZD196tKlzYK+azIBY3sqJA6cHA4ZuX26Dki8vMqOHwqaDW/oIBJ/LDC8RqTF1NZKopqFHGkWh+H5iGWEKAyNmVx2Glfv5js6JD1e/Aw3XoywILzvyCEMV++NHp4shHlpt7/sy4Zm/J+rBrK/++0A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f2h3L6rxHz2xT4;
+	Sat, 31 Jan 2026 03:16:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769789806;
+	cv=none; b=NU6JGv2Z/6cD+o2SGWJkqLwSSvf+RqmGojM0KO+iEyi6t3Ms3i01InW/iaD7JFeSVtfxpQXcEIs4nyVNI92oEJ5vSk8UY9fPd3nLJoT2BJlzIBgg9elFscTC/Ld09Y/60Zt4p4ZLz2LJUke26d80xafdnnurOKFul7j5nZeiwWBie129wpUYUeTUrIO9BpNo57Se9pjiJfc7XoWrl6S0UlytLQSAwARN4vyG7hxBICWT5txFs5Atq+OoCv2H/C4DDFIkLdMr7hfDyS2+4KQQGzSDTdX5Q64K4LvqSwg2r/0C+nF+mwMknWM/0hqa8QJfcUvVdr8GUGwlMwzfQ+FwEQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1769788429; c=relaxed/relaxed;
-	bh=/N/gdqXNSxjGhSy6xlZCb5nNS6V3s9YjmXiDnl7X37k=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=kcPh9cUqPJB5soZzk20W7zduG7Eq2vZ5dR/+FV4sqEAWPf126PlmCyx3x3/45OldjBcO+D8FbdNHNvt6eLj5CR0Jmg23Lijiq6H1MwXzlync0FD/OO81QMWnpM2lUJBkzMMHGZHbySGVBEfWW6/B1M9wvfkVGmqQr4T5DIzgjpOBeiI/Xv2hEemZ/FyBzy+UG+p5xnyNuloKTdVzVsKudGn3eLWeoIlOH+X8tnmG3Z/Akw8P8Yek5tuWa+N889hgUw0n1408nwB/FGshiBqFOA3jmXwcEf9+RuDyFw+k+nHeqklY+iYUoiHBlXPcSy+1QETEwSxEnnUEV8ArJpfiwg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org; spf=pass (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.crashing.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f2gXr2ZZjz2xPW
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Jan 2026 02:53:47 +1100 (AEDT)
-Received: from gate.crashing.org (localhost [127.0.0.1])
-	by gate.crashing.org (8.18.1/8.18.1/Debian-2) with ESMTP id 60UFreJP3403643;
-	Fri, 30 Jan 2026 09:53:40 -0600
-Received: (from segher@localhost)
-	by gate.crashing.org (8.18.1/8.18.1/Submit) id 60UFre7G3403642;
-	Fri, 30 Jan 2026 09:53:40 -0600
-X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
-Date: Fri, 30 Jan 2026 09:53:40 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Link Mauve <linkmauve@linkmauve.fr>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: Failure to build with LLVM for the Wii
-Message-ID: <aXzUBHQR7ZJ4nVAA@gate>
-References: <aXs8sgAcci9FKKpx@luna>
+	t=1769789806; c=relaxed/relaxed;
+	bh=9R2B8FSLGFMC0OlwEN1WnPoEMECK3FEtwbgv3hWtqSY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=R6fHVcO3c2Cr11HCNXv8uq8bhboqmJa2AqBsjnITs3zoo4yv0NuTXiC1FoBUlHMX0MVby65KYzTuoGYCUq7OL4DWYMcMwZkfdJM1QQhrcDIVRDnfbN/ZJe/VD33p+/r85vZ+2hih8GjQcHT7SQsqAhcC6m15yD7UI5EU5TNA1QMF/vy5FbVUJnuz1d9ZJ00NyIUSnjmlRoJgxLnGdM48a7ALPVOJnWODVtuVfQcfKrA7YlURK2mIbv0Kz+gaN6d/+s11FXJtNvf2ybxDTzFH8xs7DBQggN46UV7mUu5Rn/yE+qp+ChWLDYHTUYOaROjDzluqQVWLq0DL4Yi2JnKAmA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hOS7PmZZ; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hOS7PmZZ;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f2h3K3TNyz2xPW
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Jan 2026 03:16:45 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id BBCD143965;
+	Fri, 30 Jan 2026 16:16:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5D006C4CEF7;
+	Fri, 30 Jan 2026 16:16:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1769789802;
+	bh=AlNS0o8O55cP7ZrafFrQalBO7KdanY5615Qax8Ig75c=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=hOS7PmZZrFc5HSN1dVXhZyg9M/cciPSolaQqfWhYDg7HfF1XDoB1HNjJxeiK86UnM
+	 t0paeaoxtYjhwYcMLP8ehpw722gawXSmnt1Ff80sY7yEF5L7T7o1KVKgfa1P6xx/Uk
+	 S7DHHq636jQuWcXVs9rBcbEQ2QAQvrKFpcJM6bhZnxkVAsJwslEvfWUX4cXWiSjnms
+	 hkZcBfTLn6d4cw+9OyK7Jpzkky0ySo8aVXdV/3Vs41kEzOIubFCXlw7rvKNAruk9J0
+	 NRQPKWhrHubAf3UrGWI3BkY7UvozmV6Ss4pPyWqiFlF2wY0RZojtLxb1ipESYS24SU
+	 AnDTT8wKSbTgQ==
+Message-ID: <993fb876-7958-4f1d-ba69-2601976a42d7@kernel.org>
+Date: Fri, 30 Jan 2026 17:16:32 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -50,45 +59,104 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 2/3] prandom: Add __always_inline version of
+ prandom_u32_state()
+To: "Jason A. Donenfeld" <Jason@zx2c4.com>,
+ Ryan Roberts <ryan.roberts@arm.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ Huacai Chen <chenhuacai@kernel.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Walmsley <pjw@kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
+ Kees Cook <kees@kernel.org>, "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>, Mark Rutland <mark.rutland@arm.com>,
+ Ard Biesheuvel <ardb@kernel.org>, Jeremy Linton <jeremy.linton@arm.com>,
+ David Laight <david.laight.linux@gmail.com>, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
+ linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, linux-hardening@vger.kernel.org
+References: <20260119130122.1283821-1-ryan.roberts@arm.com>
+ <20260119130122.1283821-3-ryan.roberts@arm.com> <aXpArjZ1QQowshnA@zx2c4.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <aXpArjZ1QQowshnA@zx2c4.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <aXs8sgAcci9FKKpx@luna>
 
-Hi!
 
-On Thu, Jan 29, 2026 at 11:55:46AM +0100, Link Mauve wrote:
-> I’m trying to build the kernel for the Nintendo Wii, using LLVM instead
-> of gcc, in order to bring Rust support to this architecture (and also
-> because my distribution doesn’t ship a cross-compiling gcc), but I get
-> this build issue near the end:
-> ```
-> % make O=wii LLVM=1 ARCH=powerpc -j1
-> make[1]: Entering directory '/home/linkmauve/dev/linux/wii'
->   GEN     Makefile
->   CALL    ../scripts/checksyscalls.sh
->   DESCEND objtool
->   INSTALL libsubcmd_headers
->   WRAP    arch/powerpc/boot/dtbImage.wii
-> objcopy: Unable to recognise the format of the input file `vmlinux'
-> make[3]: *** [../arch/powerpc/boot/Makefile:394: arch/powerpc/boot/dtbImage.wii] Error 1
-> make[2]: *** [../arch/powerpc/Makefile:236: zImage] Error 2
-> make[1]: *** [/home/linkmauve/dev/linux/Makefile:248: __sub-make] Error 2
-> make[1]: Leaving directory '/home/linkmauve/dev/linux/wii'
-> make: *** [Makefile:248: __sub-make] Error 2
-> ```
+
+Le 28/01/2026 à 18:00, Jason A. Donenfeld a écrit :
+> On Mon, Jan 19, 2026 at 01:01:09PM +0000, Ryan Roberts wrote:
+>> We will shortly use prandom_u32_state() to implement kstack offset
+>> randomization and some arches need to call it from non-instrumentable
+>> context. So let's implement prandom_u32_state() as an out-of-line
+>> wrapper around a new __always_inline prandom_u32_state_inline(). kstack
+>> offset randomization will use this new version.
+>>
+>> Acked-by: Mark Rutland <mark.rutland@arm.com>
+>> Signed-off-by: Ryan Roberts <ryan.roberts@arm.com>
+>> ---
+>>   include/linux/prandom.h | 20 ++++++++++++++++++++
+>>   lib/random32.c          |  8 +-------
+>>   2 files changed, 21 insertions(+), 7 deletions(-)
+>>
+>> diff --git a/include/linux/prandom.h b/include/linux/prandom.h
+>> index ff7dcc3fa105..801188680a29 100644
+>> --- a/include/linux/prandom.h
+>> +++ b/include/linux/prandom.h
+>> @@ -17,6 +17,26 @@ struct rnd_state {
+>>   	__u32 s1, s2, s3, s4;
+>>   };
+>>   
+>> +/**
+>> + * prandom_u32_state_inline - seeded pseudo-random number generator.
+>> + * @state: pointer to state structure holding seeded state.
+>> + *
+>> + * This is used for pseudo-randomness with no outside seeding.
+>> + * For more random results, use get_random_u32().
+>> + * For use only where the out-of-line version, prandom_u32_state(), cannot be
+>> + * used (e.g. noinstr code).
+>> + */
+>> +static __always_inline u32 prandom_u32_state_inline(struct rnd_state *state)
 > 
-> I believe it should use $(OBJCOPY) instead of objcopy, which is set to
-> llvm-objcopy, but couldn’t figure out where it is misconfigured.
+> This is pretty bikesheddy and I'm not really entirely convinced that my
+> intuition is correct here, but I thought I should at least ask. Do you
+> think this would be better called __prandom_u32_state(), where the "__"
+> is kind of a, "don't use this directly unless you know what you're doing
+> because it's sort of internal"? It seems like either we make this inline
+> for everybody, or if there's a good reason for having most users use the
+> non-inline version, then we should be careful that new users don't use
+> the inline version. I was thinking the __ would help with that.
 
-Other people already pointed you places, but to find out for yourself:
+I looked into kernel sources and there are several functions named 
+something_something_else_inline() and it doesn't mean those functions 
+get inlined, so I would also prefer __prandom_u32_state() which means 
+"If you use it you know what you are doing", just like __get_user() for 
+instance.
 
-   make V=1
+However maybe we could also reconsider making it inline for everyone. We 
+have spotted half a dozen of places where the code size increases a lot 
+when forcing it inline, but those places deserve a local trampoline to 
+avoid code duplication, and then the compiler decides to inline or not.
 
-will tell you all that happens.  The kernel build system tries to not
-say much at all normally, but sometimes you want to see whatever is
-happening :-)
+Because there are also several places that benefit from the inlining 
+because it allows GCC to simplify the calculation, for instance when 
+some calculation is performed with the result like with 
+(prandom_u32_state(rng) % ceil) where ceil is 2 or 4.
 
+That can of course be done as a followup patch but it means at the end 
+we will have to rename all __prandom_u32_state() to prandom_u32_state().
 
-Segher
+Or should we do the other way round ? Make __prandom_u32_state() the 
+out-of-line version and just change the few places where the size 
+explodes like drm_test_buddy_alloc_range_bias(), loss_gilb_ell(), 
+generate_random_testvec_config(), generate_random_sgl_divisions(), 
+mutate_buffer(), ... ?
+
+Christophe
 
