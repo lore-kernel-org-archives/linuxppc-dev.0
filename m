@@ -1,52 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-16474-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16475-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B5A4E6BF3C
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Jan 2026 00:58:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A3D1D49C9E
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 31 Jan 2026 01:06:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f2vd10Jrpz2yFm;
-	Sat, 31 Jan 2026 11:58:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f2vph13htz2xc2;
+	Sat, 31 Jan 2026 12:06:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769821092;
-	cv=none; b=eIaPbb1RTEte36OG18MFtfIcqgHKX4AwIEa9mcMyviy6iNusCLDvSDIO2HpZHDxHHeBrz1W9vmd6qP/Aak8ZIL6a02/AC7MDTAUQ84SNG0qJ6+DGYKYgySIW7op3Qx12scT8XWfmXA5RVLwaKkZlGJmFMAAnSZRuHrnNfAqYTzriXIgv0xACDkFaPT6IBnhLYki3bW78B19PCxEw2rDweSRNfXZSL5vsTf05xHQMOyceQeaNNCLMBhHETdj/9JY5oBY5MtgY6tDfSgaqRXkCpotRRE9deWQ8en+itsza/Cel8n1530AM9v3EVKk7jcxWkOjbb+rhYorqQ2t2XM2tzQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769821596;
+	cv=none; b=in6yOwOZkvxfZjnjO6yNBVWgDkDu1JOXfHrdt8rv0XUWlwFyoDsxB9gaI0nVOcf6O3qKzYLE64gjiqfeScQOaZK47CXJsbpHcUsDqkwrGN8WMwc4wyhaSSK1ur5vmEyZnxhw6J8IwwNPiX7BiXt/KnHxQkoUNdKpXX6okaIA4vHqULqDcHvTMd/Rn2z213PBk8kbBNSFTkqcMNbGeBrIJYnfzHIXVei5AhVKHqUZlp9yoF95FQZLUgQdo0RpD7zGnKOEO1aY2V9Hx7W61xWOkfjXIDek2uojzIR/afrzu+YgXRz08NT56mEz0sLRvQwATl9P9JkEKDWzYEAqUOrBSA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1769821092; c=relaxed/relaxed;
-	bh=6wn5ysU0YfloeA6exMYYK6iQpv2UsqLmSW+HgYt8Lvk=;
+	t=1769821596; c=relaxed/relaxed;
+	bh=j6niAf9hGe4w9oPvmCTGyNtjBKea5D0eR+MRPWb1Frg=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Ydxfwm34DUhRlQMZZhsbvjumd69Z1sOn1bCZhK7PlZKP/nO9hB9sI/Qz/l+E0ixNR6RGnRy3U2xAqX1g5gwmtLgcz24z7PhWg7YvBINXEqMq4WdkiKJf7yFk8BxOp/pwJ+bf+C0eSWh4MCAKxXT6AH+TdbMduDZhXgnoo52ITcRcNe7g5gNowwCdXmNbBAiDRZwdvLBfYBY9dRz6vR0wWeJQIakaaZSUhIf4cnK4Idyb4+P4Bt+dEs6UIOKJIpKZ2bUp0XQGx/ksfIWi7dHSrDJJCutquuXADRVhfTbeH619wYXD0LpchOnXlzadfAnTkxXHAy60JEx4Kdwbqf98bw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=UM/ksZZW; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 Content-Type:Content-Disposition:In-Reply-To; b=HFAkUKg1ggMFZqgwt1Nsyw4sGQ94ZFMvR0mMI/NiXuQ3dpUCdP4dRa8uz50sIbiMZBd5+bUqHAUHTBhehzdMaEMBAx7eE4LGXkWuNWtJO0BTJja6v/lBRxtSBix+RTcPmj2uLPGApp1+yxLe9pvRsLZ2f4xDb30GIfXiBRmz0ErC8YKkwcFPyiOlr1fKiy71i8/GiK2FcYH96z4X6Y8x+1tr8OJN/+kn4ZOxeK6xFgkNAeHEe+J7upU5cQrtqf+w13hKN9Wu07FCtt+eF8/6F56H0a2TLOMQ7eOR2HA6vRoRSV0elyI8uV179dDJbSJkmI0idJXSjUiMWBoVgT2I1g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=bgRCHe/1; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=UM/ksZZW;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=bgRCHe/1;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f2vcz6R8Hz2yFK
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Jan 2026 11:58:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f2vpg3Bm6z2xP8
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 Jan 2026 12:06:35 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:In-Reply-To:Content-Type:
 	MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
 	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=6wn5ysU0YfloeA6exMYYK6iQpv2UsqLmSW+HgYt8Lvk=; b=UM/ksZZWv++c+yQ2Z0BCZkfn/S
-	HjTROjfZP9usvFLH2AozqIKT5BfvGCplmb5PT/OrqOxyIcxn1AnMzXsSeyOPcgbqqK7NMoXLYcvD+
-	AiRLG7sl+WVpci94VwwaRDPiyv+ALu0PW0AOh4CiNKrQBg0ntaI7j9YVDXwgHCt8rFkuXFoQG/qMG
-	eM8x2UZHeYYWXCwshzBNpx/h2uX9YYt6vLnLMjgpBNC6Py3sbsH1CGWkWSNnpJz82lWdW9yjSFjyo
-	D5jPNPQHtBTk91smKSHKmFupg6W69tzPTg2LBnAVeU/tacJaM4FNWwWmfNA5hRayFruPqi7yXGApP
-	RaQL9bWw==;
+	bh=j6niAf9hGe4w9oPvmCTGyNtjBKea5D0eR+MRPWb1Frg=; b=bgRCHe/1HuJX1btyYG1KNZ3vno
+	TCqbEHHU6qGFN6p0raUIHroX/2Mch+Dje7lhnqFfAJqsXO6HOqA7hIbTc5Ox2EyVbbOISxAEFdnC6
+	W6r9RbXH0cnnhzNCiUhyza8AQbuIL4q3umghKXNiUTquST9A8JtmhoMfurM+zy30Rr9a+EJlhTbz4
+	mYdFlsgU/wLW6TW33NJuVF5q5MA2CVNgEEq5fEtx1mxQWuXErxAlK11j+2i67Fvpc3vfpacoulXyo
+	qXmAQ2zn5lax6oOz0fp9VhU1n6CsYyGOFMeanmsPrwfxDcQRKBhE1jubjYt0zbsFP4o9GMz2qqGl5
+	v717ALhA==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.99.1 #2 (Red Hat Linux))
-	id 1vlzL8-0000000D2NM-1MYL;
-	Sat, 31 Jan 2026 00:59:54 +0000
-Date: Sat, 31 Jan 2026 00:59:54 +0000
+	id 1vlzTJ-0000000D8c0-0LnE;
+	Sat, 31 Jan 2026 01:08:21 +0000
+Date: Sat, 31 Jan 2026 01:08:21 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
-To: Samuel Wu <wusamuel@google.com>
-Cc: Greg KH <gregkh@linuxfoundation.org>, linux-fsdevel@vger.kernel.org,
-	torvalds@linux-foundation.org, brauner@kernel.org, jack@suse.cz,
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Samuel Wu <wusamuel@google.com>, Greg KH <gregkh@linuxfoundation.org>,
+	linux-fsdevel@vger.kernel.org, brauner@kernel.org, jack@suse.cz,
 	raven@themaw.net, miklos@szeredi.hu, neil@brown.name,
 	a.hindborg@kernel.org, linux-mm@kvack.org,
 	linux-efi@vger.kernel.org, ocfs2-devel@lists.linux.dev,
@@ -57,9 +57,8 @@ Cc: Greg KH <gregkh@linuxfoundation.org>, linux-fsdevel@vger.kernel.org,
 	bpf@vger.kernel.org, clm@meta.com,
 	android-kernel-team <android-kernel-team@google.com>
 Subject: Re: [PATCH v4 00/54] tree-in-dcache stuff
-Message-ID: <20260131005954.GX3183987@ZenIV>
-References: <2026012715-mantra-pope-9431@gregkh>
- <CAG2Kctoo=xiVdhRZnLaoePuu2cuQXMCdj2q6L-iTnb8K1RMHkw@mail.gmail.com>
+Message-ID: <20260131010821.GY3183987@ZenIV>
+References: <CAG2Kctoo=xiVdhRZnLaoePuu2cuQXMCdj2q6L-iTnb8K1RMHkw@mail.gmail.com>
  <20260128045954.GS3183987@ZenIV>
  <CAG2KctqWy-gnB4o6FAv3kv6+P2YwqeWMBu7bmHZ=Acq+4vVZ3g@mail.gmail.com>
  <20260129032335.GT3183987@ZenIV>
@@ -68,6 +67,7 @@ References: <2026012715-mantra-pope-9431@gregkh>
  <20260130070424.GV3183987@ZenIV>
  <CAG2Kctoqja9R1bBzdEAV15_yt=sBGkcub6C2nGE6VHMJh13=FQ@mail.gmail.com>
  <20260130235743.GW3183987@ZenIV>
+ <CAHk-=wgk7MRBj4iwQLHocVCa94Jf0cMEz2HzUAS9+6rGtnp4JA@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -83,59 +83,50 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260130235743.GW3183987@ZenIV>
+In-Reply-To: <CAHk-=wgk7MRBj4iwQLHocVCa94Jf0cMEz2HzUAS9+6rGtnp4JA@mail.gmail.com>
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-On Fri, Jan 30, 2026 at 11:57:43PM +0000, Al Viro wrote:
+On Fri, Jan 30, 2026 at 04:14:48PM -0800, Linus Torvalds wrote:
+> On Fri, 30 Jan 2026 at 15:55, Al Viro <viro@zeniv.linux.org.uk> wrote:
+> >
+> > So we have something that does O_NDELAY opens of ep0 *and* does not retry on
+> > EAGAIN?
+> >
+> > How lovely...
+> 
+> Actually, I think that is pretty normal behavior.
+> 
+> Generally, O_NDELAY and friends should *NOT* turn locks into trylocks
+> - because user space has no sane way to deal with kernel lock issues,
+> and user space simply shouldn't care.
+> 
+> So O_NDELAY should be about avoiding IO, not about avoiding perfectly
+> normal locks.
+> 
+> Of course, that horrendous driver locking is broken, since it holds
+> the lock over IO, so that driver basically conflates IO and locking,
+> and that's arguably the fundamental problem here.
+> 
+> But I suspect that for this case, we should just pass in zero to
+> ffs_mutex_lock() on open, and say that the O_NONBLOCK flag is purely
+> about the subsequent IO, not about the open() itself.
+> 
+> That is, after all, how the driver used to work.
 
-> Another thing to try (not as a suggestion of a fix, just an attempt to figure
-> out how badly would the things break): in current mainline replace that
-> 	ffs_mutex_lock(&ffs->mutex, file->f_flags & O_NONBLOCK)
-> in ffs_ep0_open() with
-> 	ffs_mutex_lock(&ffs->mutex, false)
-> and see how badly do the things regress for userland.  Again, I'm not saying
-> that this is a fix - just trying to get some sense of what's the userland
-> is doing.
+I'd rather go for a spinlock there, protecting these FFS_DEACTIVATED
+transitions; let me try and put together something along those lines.
+Matter of fact, I would drop the atomics for ->opened completely
+and do all changes under the same spinlock - it's really just
+->open() and ->release().  Simpler that way...
 
-At a guess, quite badly.  ffs->mutex *is* way too heavy for that purpose -
-that's a geniune bug.
+The shitty part is that ->set_alt() thing and its callers seems to
+be written in assumption that it can come from an interrupt, so we'd
+need spin_lock_irq() in open/release and spin_lock_irqsave() in
+set_alt/disable...
 
-State transitions in that thing are messy; AFAICS, the state is a combination
-of ->opened and ->state, and transitions assume atomicity that just isn't there.
-
-All updates of ->opened are process-synchronous; the nasty part is in the
-FFS_DEACTIVATED handling.  We don't want it to coexist with ->opened > 0;
-normally decrement of ->opened to 0 gets us into FFS_CLOSING immediately
-and follows that with ffs_data_reset().  In -o no_disconnect mounts we switch
-to FFS_DEACTIVATED instead.  On the next open() after that we want it to
-transition to the same FFS_CLOSING + the same call of ffs_data_reset().
-
-open() running into FFS_CLOSING fails; that happens until ffs_data_reset()
-switches ->state to FFS_READ_DESCRIPTORS.
-
-Things are complicated by ffs_func_set_alt() and ffs_func_disable() - these
-can come with ->opened being zero and both contain this:
-        if (ffs->state == FFS_DEACTIVATED) {
-		ffs->state = FFS_CLOSING;
-		INIT_WORK(&ffs->reset_work, ffs_reset_work);
-		schedule_work(&ffs->reset_work);
-		return -ENODEV;
-	}
-with s/return -ENODEV;/return;/ for ffs_func_disable().  The point, AFAICT,
-is to avoid deadlocks from having ffs_data_reset() called in the locking
-environment these two are called in.  At least ->set_alt() can be called
-under a spinlock and ffs_data_reset() is blocking.
-
-Another potentially troubling part is the check for FFS_ACTIVE in the
-same functions, seeing that
-                        ffs->state = FFS_ACTIVE;
-                        mutex_unlock(&ffs->mutex);
- 
-                        ret = ffs_ready(ffs);
-                        if (ret < 0) {
-                                ffs->state = FFS_CLOSING;
-                                return ret;
-                        }
-in ep0 write() happens with no exclusion with those (as the matter of
-fact, that transition to FFS_CLOSING holds no locks at all)...
+Another fun part is that we need a barrier on transition from
+FFS_CLOSING in ffs_data_reset() - right now it's not even the last
+assignment in there.  Same spinlock would solve that - screw explicit
+barriers, it's _not_ a hot path and the locking is convoluted enough
+as it is.
 
