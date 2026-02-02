@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-16502-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16503-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 015F9D172CC
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Feb 2026 06:42:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6E04D172DC
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Feb 2026 06:49:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f4H8t3hkzz30FD;
-	Mon, 02 Feb 2026 17:42:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=210.0.225.12
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770014526;
-	cv=none; b=dCfcCWIS3ZbsCYr8xqYRsOkmSyf6k6NN1JU4P6wh6JoDb3PZY0eyxaZ05Yy5VU8RdivyIVKjwDBEFsJI7si40s+b7dAi53iigAEjpUMi5JwgnSP5feOGtUOcF1qwhVA5uwYxh9NUkQF9lxRn1iK6EBeCTDRQhIH305c3H/ZZmkncMqQ3LiBAFSEtGgkKcq+FWA+tyz5taZt2w1UiGKm28tstMxn4wkPODf6pUrqyNW9OLbpbFG6zFIgEpbnGmMxZleEK8m2c9I7ipwFrCqR7hbvYjMO0q3kJlMtMaK2FHBFinprQ8rRZAp17Ut+ud98BKt/nIkEFJY+MPx6B89NyhQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f4HKd4LnWz30FD;
+	Mon, 02 Feb 2026 17:49:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=61.152.208.219
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770014981;
+	cv=none; b=Gc2Zf7An8Y8U+563s3+KYFEyKxOwc5cUqewtadfzDC10JjeTmF65fzL3dUgKdIDzP51vGo9DLcx0kAOEcb+OZoYoA3735/Pk6e6GFrBc99lQZ8NZqc8UUIkDm30T/9twf8SzJwMKC0ulPmaphC+X5EN3BIoI6eT22SnpT2Sy9XQaWfaDLg8ZZSTE39g7G+vNamWrHW+GUm6Dr1eBQWkK7DaCjoq7RL62lxRqzfZ5olXaoptsJB3CbJUXwSK43Bq7DElsLCXJ160nnJPEdFhxPklk//RRE55913NVSQ0b8jyl0BzmfIYXXuwt7cGXlCRurfcIZMUlnb16xOOrdRhP0A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770014526; c=relaxed/relaxed;
-	bh=j6p442+AmI2YECcTkPi9dheYk4EENeaqgOlkE5wYxMA=;
+	t=1770014981; c=relaxed/relaxed;
+	bh=HuXza5IKqH+jfDdU/iMuuGVJC1wMTwNjXTJPG8GkI7k=;
 	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=dPTm2WfQ19lC3ymHpoRmQ+2UlKdwq6+hTR1iyAQ3MqON2qceyQpOgfQ3lu+04+7QxuLcfq6CLyiEhJQfNh/7Efi5mde+Pzsh6+dRUF1rUg/zmOEDvpJmqOmNsGb5Ari8DOl/1hpir7hlbHYdGQLSa7/HdaVhCcFw5dmZG6gKPd6Zu166AwFRkx2z88epFD92rWZV2sW1F06IpaKsFpMCXEFPpWza2xOmsfJRx8RJPbe6XLScKRWg/tnZQViq+vFpD4fXBM5qy5zOHV8jCJu6lsS5xegmuBK30FEUAofF7Ij3ztyveOKXeQ6adFB0G5uorG+E86vRuphnmOsnyDdwPQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=zhaoxin.com; spf=pass (client-ip=210.0.225.12; helo=mx1.zhaoxin.com; envelope-from=leoliu-oc@zhaoxin.com; receiver=lists.ozlabs.org) smtp.mailfrom=zhaoxin.com
+	 In-Reply-To:Content-Type; b=nHHiexOO5sUpflUZjKVA3l8FQWfl7Fn8bU24qKVnACsYjTfr+reFbIZtMN7eadPLDajDHiZvb9M0h6TS1D4M8pdc3vceHRVs/XREhE3Rgb7TpaXTaD+RbxZNlX43L6TJmrsJT8xc9Em8Avub6z9yCqnOl/A2PdrkDA84QWrxuIpYCD8ZxEWOiJ+y8jyH+rHB/ZzZQ/MtQZEgTYSoSS3WZFPdNXMZXlIWtpdHhxyZjwhuuG+28lUN4EjV8q0YMLyp4MsAU3UPPDpeFN0RxRXH/WBsyQBQXn8WpucOKu5HnLpvasGk36B5OfwtKwX8PV9AHy123OvnEIYCaoGUghLCFw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=zhaoxin.com; spf=pass (client-ip=61.152.208.219; helo=mx2.zhaoxin.com; envelope-from=leoliu-oc@zhaoxin.com; receiver=lists.ozlabs.org) smtp.mailfrom=zhaoxin.com
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=zhaoxin.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zhaoxin.com (client-ip=210.0.225.12; helo=mx1.zhaoxin.com; envelope-from=leoliu-oc@zhaoxin.com; receiver=lists.ozlabs.org)
-Received: from mx1.zhaoxin.com (MX1.ZHAOXIN.COM [210.0.225.12])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zhaoxin.com (client-ip=61.152.208.219; helo=mx2.zhaoxin.com; envelope-from=leoliu-oc@zhaoxin.com; receiver=lists.ozlabs.org)
+Received: from mx2.zhaoxin.com (mx2.zhaoxin.com [61.152.208.219])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f4H8q5M1Zz30BR
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Feb 2026 17:41:57 +1100 (AEDT)
-X-ASG-Debug-ID: 1770014494-086e2306f850df0001-v7v7hK
-Received: from ZXSHMBX1.zhaoxin.com (ZXSHMBX1.zhaoxin.com [10.28.252.163]) by mx1.zhaoxin.com with ESMTP id K2fM5KilnLxEKCqs (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NO); Mon, 02 Feb 2026 14:41:34 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f4HKB4Zmfz30BR
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Feb 2026 17:49:16 +1100 (AEDT)
+X-ASG-Debug-ID: 1770011779-1eb14e7c0446370001-v7v7hK
+Received: from ZXSHMBX2.zhaoxin.com (ZXSHMBX2.zhaoxin.com [10.28.252.164]) by mx2.zhaoxin.com with ESMTP id fSw72eFTANyS85Gi (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NO); Mon, 02 Feb 2026 13:56:19 +0800 (CST)
 X-Barracuda-Envelope-From: LeoLiu-oc@zhaoxin.com
-X-Barracuda-RBL-Trusted-Forwarder: 10.28.252.163
-Received: from ZXSHMBX1.zhaoxin.com (10.28.252.163) by ZXSHMBX1.zhaoxin.com
- (10.28.252.163) with Microsoft SMTP Server (version=TLS1_2,
+X-Barracuda-RBL-Trusted-Forwarder: 10.28.252.164
+Received: from ZXSHMBX1.zhaoxin.com (10.28.252.163) by ZXSHMBX2.zhaoxin.com
+ (10.28.252.164) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.59; Mon, 2 Feb
- 2026 14:41:33 +0800
+ 2026 13:56:18 +0800
 Received: from ZXSHMBX1.zhaoxin.com ([fe80::936:f2f9:9efa:3c85]) by
  ZXSHMBX1.zhaoxin.com ([fe80::936:f2f9:9efa:3c85%7]) with mapi id
- 15.01.2507.059; Mon, 2 Feb 2026 14:41:33 +0800
-X-Barracuda-RBL-Trusted-Forwarder: 10.28.252.163
+ 15.01.2507.059; Mon, 2 Feb 2026 13:56:18 +0800
+X-Barracuda-RBL-Trusted-Forwarder: 10.28.252.164
 Received: from [10.32.64.5] (10.32.64.5) by ZXBJMBX03.zhaoxin.com
  (10.29.252.7) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.59; Mon, 2 Feb
- 2026 14:00:53 +0800
-Message-ID: <1096398c-e883-4232-91f6-836fc508092d@zhaoxin.com>
-Date: Mon, 2 Feb 2026 14:00:55 +0800
+ 2026 13:55:30 +0800
+Message-ID: <075992c3-6a98-4854-9c4d-59abef7f1d5a@zhaoxin.com>
+Date: Mon, 2 Feb 2026 13:55:24 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,65 +59,108 @@ Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH] PCI: dpc: Increase pciehp waiting time for DPC recovery
-To: Lukas Wunner <lukas@wunner.de>
+To: Bjorn Helgaas <helgaas@kernel.org>
 X-ASG-Orig-Subj: Re: [PATCH] PCI: dpc: Increase pciehp waiting time for DPC recovery
-CC: Bjorn Helgaas <helgaas@kernel.org>, <mahesh@linux.ibm.com>,
-	<oohall@gmail.com>, <bhelgaas@google.com>, <linuxppc-dev@lists.ozlabs.org>,
-	<linux-pci@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<CobeChen@zhaoxin.com>, <TonyWWang@zhaoxin.com>, <ErosZhang@zhaoxin.com>
-References: <20260123202140.GA84703@bhelgaas>
- <3af9f754-d282-485c-a3f2-49a230bfe143@zhaoxin.com>
- <aXydEn_lAbNROQKy@wunner.de>
+CC: <mahesh@linux.ibm.com>, <oohall@gmail.com>, <bhelgaas@google.com>,
+	<linuxppc-dev@lists.ozlabs.org>, <linux-pci@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <CobeChen@zhaoxin.com>,
+	<TonyWWang@zhaoxin.com>, <ErosZhang@zhaoxin.com>, Lukas Wunner
+	<lukas@wunner.de>
+References: <20260128194835.GA429644@bhelgaas>
 From: LeoLiu-oc <LeoLiu-oc@zhaoxin.com>
-In-Reply-To: <aXydEn_lAbNROQKy@wunner.de>
+In-Reply-To: <20260128194835.GA429644@bhelgaas>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 X-Originating-IP: [10.32.64.5]
 X-ClientProxiedBy: zxbjmbx1.zhaoxin.com (10.29.252.163) To
  ZXBJMBX03.zhaoxin.com (10.29.252.7)
-X-Moderation-Data: 2/2/2026 2:41:32 PM
-X-Barracuda-Connect: ZXSHMBX1.zhaoxin.com[10.28.252.163]
-X-Barracuda-Start-Time: 1770014494
+X-Moderation-Data: 2/2/2026 1:56:17 PM
+X-Barracuda-Connect: ZXSHMBX2.zhaoxin.com[10.28.252.164]
+X-Barracuda-Start-Time: 1770011779
 X-Barracuda-Encrypted: ECDHE-RSA-AES128-GCM-SHA256
-X-Barracuda-URL: https://mx2.zhaoxin.com:4443/cgi-mod/mark.cgi
+X-Barracuda-URL: https://10.28.252.36:4443/cgi-mod/mark.cgi
 X-Virus-Scanned: by bsmtpd at zhaoxin.com
-X-Barracuda-Scan-Msg-Size: 7328
+X-Barracuda-Scan-Msg-Size: 13155
 X-Barracuda-BRTS-Status: 1
 X-Barracuda-Bayes: INNOCENT GLOBAL 0.0000 1.0000 -2.0210
 X-Barracuda-Spam-Score: -2.02
 X-Barracuda-Spam-Status: No, SCORE=-2.02 using global scores of TAG_LEVEL=1000.0 QUARANTINE_LEVEL=1000.0 KILL_LEVEL=9.0 tests=
-X-Barracuda-Spam-Report: Code version 3.2, rules version 3.2.3.153923
+X-Barracuda-Spam-Report: Code version 3.2, rules version 3.2.3.153920
 	Rule breakdown below
 	 pts rule name              description
 	---- ---------------------- --------------------------------------------------
 
 
 
-=E5=9C=A8 2026/1/30 19:59, Lukas Wunner =E5=86=99=E9=81=93:
+=E5=9C=A8 2026/1/29 3:48, Bjorn Helgaas =E5=86=99=E9=81=93:
 >=20
 >=20
 > [=E8=BF=99=E5=B0=81=E9=82=AE=E4=BB=B6=E6=9D=A5=E8=87=AA=E5=A4=96=E9=83=A8=
 =E5=8F=91=E4=BB=B6=E4=BA=BA =E8=B0=A8=E9=98=B2=E9=A3=8E=E9=99=A9]
 >=20
 > On Wed, Jan 28, 2026 at 06:07:51PM +0800, LeoLiu-oc wrote:
->> Without this patch, PCIE devices may not be usable and could even cause
->> more serious errors, such as a kernel panic. For example, the following
->> log is encountered in hardware testing:
->>
->> list_del corruption, ffff8881418b79e8->next is LIST_POISON1
->> (dead000000000100)
->> ------------[ cut here ]------------
->> kernel BUG at lib/list_debug.c:56!
->> invalid opcode: 0000 [#1] PREEMPT SMP NOPTI
->> ...
->> Kernel panic - not syncing: Fatal exception
+>> =E5=9C=A8 2026/1/24 4:21, Bjorn Helgaas =E5=86=99=E9=81=93:
+>>> [=E8=BF=99=E5=B0=81=E9=82=AE=E4=BB=B6=E6=9D=A5=E8=87=AA=E5=A4=96=E9=83=
+=A8=E5=8F=91=E4=BB=B6=E4=BA=BA =E8=B0=A8=E9=98=B2=E9=A3=8E=E9=99=A9]
+>>> On Fri, Jan 23, 2026 at 06:40:34PM +0800, LeoLiu-oc wrote:
+>>>> Commit a97396c6eb13 ("PCI: pciehp: Ignore Link Down/Up caused by DPC")
+>>>> amended PCIe hotplug to not bring down the slot upon Data Link Layer S=
+tate
+>>>> Changed events caused by Downstream Port Containment.
+>>>>
+>>>> However, PCIe hotplug (pciehp) waits up to 4 seconds before assuming t=
+hat
+>>>> DPC recovery has failed and disabling the slot. This timeout period is
+>>>> insufficient for some PCIe devices.
+>>>> For example, the E810 dual-port network card driver needs to take over
+>>>> 10 seconds to execute its err_detected() callback.
+>>>> Since this exceeds the maximum wait time allowed for DPC recovery by t=
+he
+>>>> hotplug IRQ threads, a race condition occurs between the hotplug threa=
+d and
+>>>> the dpc_handler() thread.
 >=20
-> This should not happen.  Which kernel version are you using?
+>>> Include the name of the E810 driver so we can easily find the
+>>> .err_detected() callback in question.  Actually, including the *name*
+>>> of that callback would be a very direct way of doing this :)
+>=20
+Ok, your advice is very good. I'll follow your suggestion.
 
-The kernel version I am using is 6.18.6. This patch has already been
-included.
+> AFAICS there is no ".err_detected()" callback.  I assume you mean the
+> ".error_detected()" callback in struct pci_error_handlers.  Sorry to
+> be pedantic, but it makes things a lot harder to review if we don't
+> refer to the actual names in the code.
+>=20
+Yes,.err_detected() described above refers to the ice_pci_err_detected
+function of the ice network driver.I will modify this part in the commit
+of the next version.
 
-The complete log of the kernel panic is as follows:
+> And my guess is that E810 means the Intel E810 NIC, probably claimed
+> by the "ice" driver, which would mean ice_pci_err_detected() is the
+> callback in question?
+>=20
+Yes, the "E810" device driver described above refers to the "ice" driver.
+
+Commit a97396c6eb13 ("PCI: pciehp: Ignore Link Down/Up caused by DPC")
+amended PCIe hotplug to not bring down the slot upon Data Link Layer State
+Changed events caused by Downstream Port Containment.
+Commit c3be50f7547c ("PCI: pciehp: Ignore Presence Detect Changed caused
+by DPC") sought to ignore Presence Detect Changed events occurring as a sid=
+e
+effect of Downstream Port Containment.
+These commits await recovery from DPC and then clears events which
+occurred in the meantime.
+
+However, pciehp_ist() waits up to 4 seconds before assuming that DPC
+recovery has failed and disabling the slot. This timeout period is
+insufficient for some PCIe devices. For example, the ice network card
+driver execution exceeded the maximum waiting time for DPC recovery,
+causing the pciehp_disable_slot function to be executed which is not
+needed. From the user's point of view, you will see that the ice network
+card may not be usable and could even cause more serious errors, such as
+a kernel panic. kernel panic is caused by a race between
+pciep_disable_slot() and pcie_do_recovery().
+For example, the following log is encountered in hardware testing:
 
 [  100.304077][  T843] list_del corruption, ffff8881418b79e8->next is
 LIST_POISON1 (dead000000000100)
@@ -223,6 +266,45 @@ GS:ffff8897df580000(0000) knlGS:0000000000000000
 [  100.827481][  T843] ---[ end Kernel panic - not syncing: Fatal
 exception ]---
 
+
+>>> I guess the problem this fixes is that there was a PCIe error that
+>>> triggered DPC, and the E810 .err_detected() works but takes longer
+>>> than expected, which results in pciehp disabling the slot when it
+>>> doesn't need to?  So the user basically sees a dead E810 device?
+>>
+>> Yes, this patch is to solve this problem.
+>>
+Without this patch, we would observe that the ice network card is in an
+unavailable state and a kernel panic.
+
+>>> It seems unfortunate that we have this dependency on the time allowed
+>>> for .err_detected() to execute.  It's nice if adding arbitrary delay
+>>> doesn't break things, but maybe we can't always achieve that.
+>>>
+>> I think this is a feasible solution. For some PCIE devices, executing
+>> the .err_detect() within 4 seconds will not have any impact, for a few
+>> PCIE devices, it might increase the execution time of pciehp_ist().
+>> Without this patch, PCIE devices may not be usable and could even cause
+>> more serious errors, such as a kernel panic. For example, the following
+>> log is encountered in hardware testing:
+>>
+>> list_del corruption, ffff8881418b79e8->next is LIST_POISON1
+>> (dead000000000100)
+>> ------------[ cut here ]------------
+>> kernel BUG at lib/list_debug.c:56!
+>> invalid opcode: 0000 [#1] PREEMPT SMP NOPTI
+>> ...
+>> Kernel panic - not syncing: Fatal exception
+>=20
+> This is an interesting panic and looks like it might have been hard to
+> debug.
+>=20
+> Do you have any idea what exactly caused this and how it's related to
+> the timeout in pci_dpc_recovered()?  Is there a race where pciehp
+> disables the slot and removes the driver, but eventually
+> ice_pci_err_detected() completes and we're running some ice driver
+> code while it's being removed or something?
+>=20
 The reason for this kernel panic is that the ice network card driver
 executed the ice_pci_err_detected() for a longer time than the maximum
 waiting time allowed by pciehp. After that, the pciehp_ist() will
@@ -230,21 +312,56 @@ execute the ice network card driver's ice_remove() process. This results
 in the ice_pci_err_detected() having already deleted the list, while the
 ice_remove() is still attempting to delete a list that no longer exists.
 
-> There used to be a use-after-free on concurrent DPC and hot-removal.
-> It was fixed by 11a1f4bc4736, which went into v6.11 and was subsequently
-> ported all the way back to v5.10-stable.
+> Simply increasing the timeout doesn't feel like a very robust way of
+> solving the problem.  What happens when some other device needs 17
+> seconds?
 >=20
-> I suspect you may be using a kernel which lacks that fix.
+The situation you described is indeed possible. Yes, we cannot guarantee
+that all PCIe devices will complete the DPC recovery process within 16
+seconds.
+
+> But if increasing the timeout is the best we can do, maybe a warning
+> message in pci_dpc_recovered() when we time out would at least be a
+> hint that we might be heading for trouble?
 >=20
+This is indeed a very good suggestion. Here is another alternative.
 
-From the above analysis process, it is clear that this is not the same
-issue.
+@@ -100,6 +100,7 @@ static bool dpc_completed(struct pci_dev *pdev)
+ bool pci_dpc_recovered(struct pci_dev *pdev)
+ {
+ 	struct pci_host_bridge *host;
++	u16 status;
 
-Yours sincerely,
-LeoLiu-oc
+ 	if (!pdev->dpc_cap)
+ 		return false;
+@@ -120,6 +121,12 @@ bool pci_dpc_recovered(struct pci_dev *pdev)
+ 	wait_event_timeout(dpc_completed_waitqueue, dpc_completed(pdev),
+ 			   msecs_to_jiffies(4000));
 
-> Thanks,
++	pci_read_config_word(pdev, pdev->dpc_cap + PCI_EXP_DPC_STATUS, &status);
++	if ((!PCI_POSSIBLE_ERROR(status)) && (status &
+PCI_EXP_DPC_STATUS_TRIGGER)){
++		pci_warn(pdev, "The execution of device driver's error_detected()
+took too long\n");
++		return true;
++	}
++
+ 	return test_and_clear_bit(PCI_DPC_RECOVERED, &pdev->priv_flags);
+
+>>> I see that pci_dpc_recovered() is called from pciehp_ist().  Are we
+>>> prepared for long delays there?
+>>
+>> This patch may affect the hotplug IRQ threads execution time triggered
+>> by DPC, but it has no effect for normal HotPlug operation, e.g.
+>> Attention Button Pressed or Power Fault Detected. If you have better
+>> modification suggestions, I will update to the next version.
 >=20
-> Lukas
+>>>> +++ b/drivers/pci/pcie/dpc.c
+>>>> @@ -121,7 +121,7 @@ bool pci_dpc_recovered(struct pci_dev *pdev)
+>>>>        * but reports indicate that DPC completes within 4 seconds.
+>>>>        */
+>>>>       wait_event_timeout(dpc_completed_waitqueue, dpc_completed(pdev),
+>>>> -                        msecs_to_jiffies(4000));
+>>>> +                        msecs_to_jiffies(16000));
 
 
