@@ -1,92 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-16524-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16525-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BDE36E7DF11
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Feb 2026 18:03:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96B63E7DF19
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Feb 2026 18:31:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f4ZHP02m2z309N;
-	Tue, 03 Feb 2026 05:03:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::32d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770054081;
-	cv=none; b=g4hpNlhAaOH0mAwF7UWP9Ecp31F3I5xHFHqmyNSvv1uogqoA0ERyW/oNQjnovQugge5HmEvEqvRwPNIrnDtozetbqXGhgNF+VJqLRGXiB987DHr0DSGXg23odo/27iok4TaW768isr25GhJF/n8rM383Xxk7fMxpF7K5hPBJ6IL2XGgXchl93kVE1DGKWfV+RMfC4HRIIMsoYQcB/ms9AgD+x6aaLyFV67OH97Zxj4OeRTVAX/oOH6stklQrPUbvndZj2W1Mgwj0YRdwMDavK+oL8pe2wKMANwlRmbWYVQXfRAOpmZOXXmqo20bxxqjEoVxlbRDG9WPdeXZavHZD4g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f4Zv21mMXz30M6;
+	Tue, 03 Feb 2026 05:31:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770057070;
+	cv=none; b=S6T5svrCKbVTgk1eLhs52sVUR1tqtJ8JOJPTBE4/SxP3rywmmVVLPwy/mgtr1RckfuThSOrEIV/cR5wGvKvUOXPyuOClnK+tP1hiGJECoyNawOegpDLRB2vCRZ8AmnldfHgNyagPK1iKA1wR9Bz3WvHLJUkN1Ni7jJFK7y80fMR/W9UFGQ96VMajR6RqbRXidVAB11dE4QuFMrbMTgz26uVuSMbS/xc9h+pIRh4J1zMSeYkvEpPtI/h+X2XCy+6ROXV1To8scp7xUmI5SWhyCXUEaGABc36OhKaI2xlvhIBSBNZKBz4eKPp0x2abF4OvxDYhaBMb/ZJIDC9YtLDmBQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770054081; c=relaxed/relaxed;
-	bh=s8hbofn9BxxsYVhBolr0rYFiwuYMaB/sew2pKb65Ces=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=CQHuXAty/dD2/fry/5Ist+wACFkB5cxqppBvLz8/G3FWoVx4BApTY0a/DbXVQm2SEiNfrwzMMUnx9IRdbXCu4ob+krGk9oY2uuWZAzhjrBj3o75yaZ1eJ1P4GrVc3nmE9BLrI6Ie8Ivg5u2pORWRiPRyRiKkDF5490ULIb7FNdiqv9HUDmXQnhOpreroVXRJ4Ym4HS8dxAURa5l3vNN8NzHtMruojRa48iQTgI6r9OADF6JIUo49IklDyrdplBxHiZ03F3ANAf1wBD/v3jRjjHLAbUHHPC37NMP22N8i/R7ChMfKkW8OhkfsHu455EDnAQ+9x6ntLRhgHkf8pqJ+bA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=u.northwestern.edu; dkim=pass (2048-bit key; unprotected) header.d=u-northwestern-edu.20230601.gappssmtp.com header.i=@u-northwestern-edu.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=l6FPmvMU; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::32d; helo=mail-ot1-x32d.google.com; envelope-from=n7l8m4@u.northwestern.edu; receiver=lists.ozlabs.org) smtp.mailfrom=u.northwestern.edu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=u.northwestern.edu
+	t=1770057070; c=relaxed/relaxed;
+	bh=oNx+hCAL4E/Pc6Jo2HhfsXkPxHB/scQLsLlFTn0IoHE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=n/jMlgZF+h0MIEREdiTDuuT8RcYGrBBXxlRtLLqzRkGHn7LoN2tx5+zZd9VJ/5zg1ItTikPw+BRBAt88hW9as4MjEGcJpKooUSOh/zPaarbZCOI/nMh+GvtA+xNWSNbTthfEv3rD2zMyLf5TF2snFy+UhgwVzIGK4M0ncM+nvv+GtK6AYBsdLP0kqLOygJRIxj+J/ZRRKK3W8PzqRG/cmObLPNwUZQesTJuN3fvpBgB6PKubmSOCBf5fY5O0rFdIgUoccEFQ95Rcv6hiJpXRgxV/1xcHrPL914tQEUVquanV5MCiw9yjeXhI8JzILCgDr9yuRwJ8Ixvj+0w5faoq2A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jQdWElel; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=u-northwestern-edu.20230601.gappssmtp.com header.i=@u-northwestern-edu.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=l6FPmvMU;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jQdWElel;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=u.northwestern.edu (client-ip=2607:f8b0:4864:20::32d; helo=mail-ot1-x32d.google.com; envelope-from=n7l8m4@u.northwestern.edu; receiver=lists.ozlabs.org)
-Received: from mail-ot1-x32d.google.com (mail-ot1-x32d.google.com [IPv6:2607:f8b0:4864:20::32d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f4YnW0y33z2xpn
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Feb 2026 04:41:18 +1100 (AEDT)
-Received: by mail-ot1-x32d.google.com with SMTP id 46e09a7af769-7cfd0f349c4so2901921a34.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Feb 2026 09:41:18 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=u-northwestern-edu.20230601.gappssmtp.com; s=20230601; t=1770054075; x=1770658875; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=s8hbofn9BxxsYVhBolr0rYFiwuYMaB/sew2pKb65Ces=;
-        b=l6FPmvMU/T2mbf/OMzCh+vExKji0VrKIxUDBxi0gtXzTQUuBQXHyWgD0HTomWtAB2Y
-         6Om4+OhZ962i4uYYAcdRnSWegru9FuT6Pxb9q/r+Flq/wYAM5GkTu4IEklT567tnnDay
-         wan0tysPPTYmwGmAuH8FpS+K+XrfmGyOepp7DfslygJsdFS6IYqyDxM14ltVzrylaN4b
-         3XNQrSm1QdtSSmDjiahFWfSN/nCiVOVfnP23JLhn6c+lNquzKM2YsnAWz28CE83F9az0
-         8YC29VtoaQ81af3BVdNY0JgbbuZyAX+Ifj5Ud8jnRSM8e+B9DNnLtZybFMQ0b8maZWEh
-         /ytw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770054075; x=1770658875;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=s8hbofn9BxxsYVhBolr0rYFiwuYMaB/sew2pKb65Ces=;
-        b=Ang84arGzjn9RcL89dlZ775RBeWCiimyGEHi3q/5vvT2VKwsnFmmuv0wHaa4lN3vex
-         XuedgV8CgFBiEU8eiNXIH6p02rYm/4m61lnhifnCog0N28wM89XKpAWclH0sb8wzrler
-         8KAiT6jvmZVvOvfYpMncI1CbVHdSsDNKlFyIt7zDK+bhdwSd7n8Rt5WdIDvwE5RC7IaF
-         pDKkYfHU/Qjfq32arSsYgSJF1tKRs0AHcRMjvd7PQHojgxG5J7PxHFxGo06o9v2J2qcr
-         4O0TglP0GScTYKNTfw5a/Po5o9Z3nKwLBr9+DU0RmdKic9LqwNm7+kZGwY2y08n52RxN
-         qqgw==
-X-Forwarded-Encrypted: i=1; AJvYcCW/hy1WzSb1XU30t/XSRAS00qp86qrJ9dHm/TzLVF05E8zELYxig9kXEcMxUBL2ipby93fBJe8Rr3W3FMQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyiZ69WssbeSKOQviL7PS3VcJPl4QE/QAytmLGn1JfZ/wP9YoiN
-	dVGyj8hS9AksEPtmkQ/7KSV5DF5Ql1qL1KjOEExCrodYIq4umE2sbmL9QYze4hT+V8A=
-X-Gm-Gg: AZuq6aItw9snD/Kq7/vfFXJOxoDkcnqxR8yi+AlcAtyUX6KS2IG+LPeBdJ37RGOIBla
-	4h1GCfCEaR2UFydQIZRu1MdSBxCC0UMRmmdfXXq1NnbV5j9rL7uKH2r1r4v5AFe8QdNqb6tRKNB
-	10tdl88MdPxZHTuYX0Vh5NuSC+JjJQrphNtkOxPUaksqZtMAJOKPeSgPOHBMS0Iv66AKL8VcC++
-	sEmCryjkQJK4K3CEtVJoXtU4dggzMIysqmFU5v1phyuduxsGD6fi/BzIrAuB396GkUI+8csg4FX
-	laOIlXMTfQDq5CBSpM6UswR/m7w/k4XAyzIKpmA7o1gOioXjqKOieIm1mmRKfWn3M44F3dI5ign
-	ikGs+iXcO/1SRNkXUCdlDc6VeRo3u1csnpnhPDTf9TIXOBrbMn4kLiFzCWMRruf5hcCjez7hU8x
-	13rWpcHjAeCUolI0mYBORPBra4GJgeYj0UZqZudWPQ9N3/Eui3NM5pOnqOF9N+ZahTTRZysrTzG
-	WROTFBL+nPt3MLTJ/u1+JYuH+m3gGc=
-X-Received: by 2002:a9d:7549:0:b0:7d2:eb51:ca21 with SMTP id 46e09a7af769-7d2eb51d9ddmr3079904a34.23.1770054074769;
-        Mon, 02 Feb 2026 09:41:14 -0800 (PST)
-Received: from security.cs.northwestern.edu (security.cs.northwestern.edu. [165.124.184.136])
-        by smtp.gmail.com with ESMTPSA id 46e09a7af769-7d18c7ffcc7sm10936421a34.23.2026.02.02.09.41.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 02 Feb 2026 09:41:14 -0800 (PST)
-From: Ziyi Guo <n7l8m4@u.northwestern.edu>
-To: Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>
-Cc: Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>,
-	linux-sound@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Ziyi Guo <n7l8m4@u.northwestern.edu>
-Subject: [PATCH] ASoC: fsl_xcvr: fix missing lock in fsl_xcvr_mode_put()
-Date: Mon,  2 Feb 2026 17:41:12 +0000
-Message-Id: <20260202174112.2018402-1-n7l8m4@u.northwestern.edu>
-X-Mailer: git-send-email 2.34.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f4Ztv22tZz2xpn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Feb 2026 05:31:03 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 7887860010;
+	Mon,  2 Feb 2026 18:30:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E3D3BC116C6;
+	Mon,  2 Feb 2026 18:30:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1770057059;
+	bh=ba2/NLTkOhnfOM6fqK9CoYWWEtF7emjNfwqBUh4yBbA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=jQdWElelgsDi9Lay4j/hwJ03E13C+lgoT6EceyxP+5cYY6I6m7jHMoK+qOMfJiv86
+	 yQ3WpDDf9fgEhNukaSob3J6pFaTB/P4DCFJjyfM4Qjn/hK2D2RuxK//YXd1Is1nThp
+	 MMNKlgqT+Agvdn6PA3w3ZXA54il9ecGPcwQbfeIQVC1mCBJEN7XENg1MdrliWyx+hh
+	 BKgNv5CkNux1m/VqvUXQanwkHaGSibh10BbGrK26dHOS6DSO2GQpycuZCHpDaFERCb
+	 c/7E10hAvVtHrmBU33vel+eacqEbofbWdplYFbOlibC/SQaxmPqR8fKJZItMGwz9/Y
+	 /D38Ipq7pYTIQ==
+Date: Mon, 2 Feb 2026 10:30:55 -0800
+From: Eric Biggers <ebiggers@kernel.org>
+To: David Howells <dhowells@redhat.com>
+Cc: =?us-ascii?B?PT9VVEYtOD9xP01paGFpLURyb3NpPTIwQz1DMz1BMmp1Pz0=?= <mcaju95@gmail.com>,
+	linux@weissschuh.net, arnd@arndb.de, arnout@bzzt.net,
+	atomlin@atomlin.com, bigeasy@linutronix.de, chleroy@kernel.org,
+	christian@heusel.eu, corbet@lwn.net, coxu@redhat.com,
+	da.gomez@kernel.org, da.gomez@samsung.com,
+	dmitry.kasatkin@gmail.com, eric.snowberg@oracle.com,
+	f.gruenbichler@proxmox.com, jmorris@namei.org, kpcyrd@archlinux.org,
+	linux-arch@vger.kernel.org, linux-doc@vger.kernel.org,
+	linux-integrity@vger.kernel.org, linux-kbuild@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-modules@vger.kernel.org,
+	linux-security-module@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, lkp@intel.com, maddy@linux.ibm.com,
+	mattia@mapreri.org, mcgrof@kernel.org, mpe@ellerman.id.au,
+	nathan@kernel.org, naveen@kernel.org,
+	nicolas.bouchinet@oss.cyber.gouv.fr, nicolas.schier@linux.dev,
+	npiggin@gmail.com, nsc@kernel.org, paul@paul-moore.com,
+	petr.pavlu@suse.com, roberto.sassu@huawei.com,
+	samitolvanen@google.com, serge@hallyn.com, xiujianfeng@huawei.com,
+	zohar@linux.ibm.com
+Subject: Re: [PATCH v4 00/17] module: Introduce hash-based integrity checking
+Message-ID: <20260202183055.GB2036@quark>
+References: <20260201201218.GA15755@quark>
+ <20260131073636.65494-1-mcaju95@gmail.com>
+ <20260113-module-hashes-v4-0-0b932db9b56b@weissschuh.net>
+ <2316630.1769965788@warthog.procyon.org.uk>
+ <2339369.1770024079@warthog.procyon.org.uk>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,43 +86,36 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2339369.1770024079@warthog.procyon.org.uk>
 
-fsl_xcvr_activate_ctl() has 
-lockdep_assert_held(&card->snd_card->controls_rwsem),
-but fsl_xcvr_mode_put() calls it without acquiring this lock.
+On Mon, Feb 02, 2026 at 09:21:19AM +0000, David Howells wrote:
+> Eric Biggers <ebiggers@kernel.org> wrote:
+> 
+> > With that being the case, why is there still effort being put into
+> > adding more features to module signing?  I would think efforts should be
+> > focused on hash-based module authentication, i.e. this patchset.
+> 
+> Because it's not just signing of modules
 
-Other callers of fsl_xcvr_activate_ctl() in fsl_xcvr_startup() and
-fsl_xcvr_shutdown() properly acquire the lock with down_read()/up_read().
+Module signing is indeed about the signing of modules.
 
-Add the missing down_read()/up_read() calls around fsl_xcvr_activate_ctl()
-in fsl_xcvr_mode_put() to fix the lockdep assertion and prevent potential
-race conditions when multiple userspace threads access the control.
+> and it's not just modules built with the kernel.
 
-Signed-off-by: Ziyi Guo <n7l8m4@u.northwestern.edu>
----
- sound/soc/fsl/fsl_xcvr.c | 3 +++
- 1 file changed, 3 insertions(+)
+Could you give more details on this use case and why it needs
+signatures, as opposed to e.g. loading an additional Merkle tree root
+into the kernel to add to the set of allowed modules?
 
-diff --git a/sound/soc/fsl/fsl_xcvr.c b/sound/soc/fsl/fsl_xcvr.c
-index a268fb81a2f8..0b9dd64b9a82 100644
---- a/sound/soc/fsl/fsl_xcvr.c
-+++ b/sound/soc/fsl/fsl_xcvr.c
-@@ -223,10 +223,13 @@ static int fsl_xcvr_mode_put(struct snd_kcontrol *kcontrol,
- 
- 	xcvr->mode = snd_soc_enum_item_to_val(e, item[0]);
- 
-+	down_read(&card->snd_card->controls_rwsem);
- 	fsl_xcvr_activate_ctl(dai, fsl_xcvr_arc_mode_kctl.name,
- 			      (xcvr->mode == FSL_XCVR_MODE_ARC));
- 	fsl_xcvr_activate_ctl(dai, fsl_xcvr_earc_capds_kctl.name,
- 			      (xcvr->mode == FSL_XCVR_MODE_EARC));
-+	up_read(&card->snd_card->controls_rwsem);
-+
- 	/* Allow playback for SPDIF only */
- 	rtd = snd_soc_get_pcm_runtime(card, card->dai_link);
- 	rtd->pcm->streams[SNDRV_PCM_STREAM_PLAYBACK].substream_count =
--- 
-2.34.1
+> Also a hash table just of module hashes built into the core
+> kernel image will increase the size of the kernel by around a third of a meg
+> (on Fedora 43 and assuming SHA512) with uncompressible data.
 
+This patchset already optimizes it to use Merkle tree proofs instead.
+While I'm a bit skeptical of the complexity myself (and distros
+shouldn't be shipping such an excessively large number of modules in the
+first place), if it's indeed needed it's already been solved.  It's
+still much simpler than the PKCS#7 signature mess.
+
+- Eric
 
