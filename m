@@ -1,64 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-16559-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16560-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6AFC7E8B362
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Feb 2026 20:55:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06439E8B36D
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Feb 2026 22:29:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f5G2q56v8z3bZm;
-	Wed, 04 Feb 2026 07:55:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770152115;
-	cv=none; b=DTmOI4IA8GfAT6QuFKCU5l7z9IeXjBVNCG1QycG512PgE2wZVK+uG5n6zMaiuWx0syjZcp97o8P3PjGl6fa1LDqszEhMsRd0+MhzD+5MupgqmwYIq+oLbMwoc0Xwe4CXWEqg9Z5kGwgAuWHoBgPCDJzuznibveZbmyyVaDZeAJFtLYjtGn29nVrPCclktp/ymq26Kh8X4lrH4eMp59xGqhNIkkDUWoomOgkHM/jWy5GNRbRPnxOF13vJ0NFULyhZtw0ICBXHCFrTbpscyC/+/Gi1UpgvmflhmAadQFIEt39YaCbpIO/9rvqzccijTUyAut+NXkvzpJe6HgQMRvPMow==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f5J7D6PH3z2yFQ;
+	Wed, 04 Feb 2026 09:29:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=63.228.1.57
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770157752;
+	cv=none; b=TDxuNi4ovb7JIy+etMta5yOI1kwGCpHjbliRz1awYTicsQQg2qRRy6HRH+43Hl5D3jfjITZFt0K9sxOir1gG1de4wnUFOLhse+ud75IbnRFIzgEGdxVtwO73l9rq8igoi9FLKkmsJfXdNjzXrttM3OypZPPxvguSxgpcV6Eq61D0xcCPJotSWoe/H37Dfgt3gFlD+iC8B0AeSgnK2nKGUOOgJUKlqV9wwlW9cST5vjQtlBcXv2hhTzWX4UwKNFpxdgharvMZb+SyBElMXKo5xuJePj5CBfaRBxNxXbo+FqZEjkktMT+VBHAbV2wqFRhDjwIUW5tGaE7pVZIH4LY6mg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770152115; c=relaxed/relaxed;
-	bh=s1aQwok2HKbsVBmX9eGa5RkrHuBtVFsjyMEuTuBB7cE=;
+	t=1770157752; c=relaxed/relaxed;
+	bh=Mcn9IlcZ31nIdqD6XJ39e/F8iEV1JgZ372/KWmM9QS0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=NSv50Tzw1KQiDnGOc7NpH50kez1QSU/K825Q0hCE/rEnvw7D82yOJqyc+Y5fo9tWGCl08Xy2r3Xhz3iW6jHaRKMW36A3xmhuDUMml7Mb4sY6twEUUyybf8Tmy/4Qkk8GBCRPEsAk9J1aDfEMK0ECdLk+DYxbT1bARcx6kerOdSlvAfem7NsXl9Ch/JNt7wAhWEDQvPjWK/XTow7phvU6QQcFyh2IXAQy9j1Q6LzNICF2mHXvTCCjJQmBv0fyaAu+8TMNtgNY/5TA8X3BHzeyWSAQZHHaoA8Rb/L/fLq4vOHFDWyvKLxCg3UQu5oc3IBgOrnyEmJ/6LahOUmDj0tMHw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=POWNce9U; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=POWNce9U;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f5G2p2Y0Zz3bW7
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Feb 2026 07:55:14 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id DE7C360129;
-	Tue,  3 Feb 2026 20:55:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0E095C116D0;
-	Tue,  3 Feb 2026 20:55:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1770152106;
-	bh=qNVKdNlvBI2upvfPnIIgcVTzRhdg8ywM2HpUBMwe0vc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=POWNce9Uce38XpZ7U2P46dhJuFXkGCnJDzv1qQ7fO+ohlM18AjxAR9TBIe6tAXdl5
-	 PtKfRHKTYSLnla8zkDLT3odsYw90qWhaAtHzzpfQdcJHvtAKPq4e+jlGPJWGWFkk+l
-	 XY6kO7rDIdleV7uKpQxL3QjMowb493+3u7SpFPJAh+RXIpAi6J2S5cKbK12Niazlip
-	 Gcp86Os96EG3x8+RuErxGPng+g31nIgq9udndxB32r7QeKfOYLFMmtfIhv+qL76Kic
-	 rJt3k424VOBVbbVJS9z6aHpldW0kJjzd+wo4VD4BR8BPryApHapNepBCQ2Mi+Bjaay
-	 kgOdVzMPG/HpA==
-Date: Tue, 3 Feb 2026 13:55:01 -0700
-From: Nathan Chancellor <nathan@kernel.org>
+	 Content-Type:Content-Disposition:In-Reply-To; b=Ps3I0Oe77kmL8l1RZ51JME2ctMNpKuuc5BUjnKYkGrAakJY1Px456nFs1ZBvbBlqYvuu7sZigU3wBNpvyTXMHiDhJXBVV0lGqM2MKmBAYgiNWfTqWNoDRm6cJomSDMM8ScMUKmjfzbKTZ+HL7PSc9Th2p99PLl8CY1vF4BBGYp3TN/j5FOpHQqtxVrEcbjGIP7I/7MCsi1zXTwrVF5uZrq7RqPgBb+c9PrQrp1/C+Z54LgwtOeqKyszr0b7eWCYdREEFsA5bvWiGsTfrbvW/0F1FcH8n1j1Zl2z8Ry67+lfRGsJQ0wreuZ+p+SZD69eORJBRfYoubscqEmkdxPKHkg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org; spf=pass (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.crashing.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f5J7C3fw4z2xs4
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Feb 2026 09:29:10 +1100 (AEDT)
+Received: from gate.crashing.org (localhost [127.0.0.1])
+	by gate.crashing.org (8.18.1/8.18.1/Debian-2) with ESMTP id 613MSbKs3677924;
+	Tue, 3 Feb 2026 16:28:37 -0600
+Received: (from segher@localhost)
+	by gate.crashing.org (8.18.1/8.18.1/Submit) id 613MSauR3677923;
+	Tue, 3 Feb 2026 16:28:36 -0600
+X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
+Date: Tue, 3 Feb 2026 16:28:36 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
 To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
 Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
-	Bill Wendling <morbo@google.com>,
-	Justin Stitt <justinstitt@google.com>,
-	Segher Boessenkool <segher@kernel.crashing.org>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	llvm@lists.linux.dev, kernel test robot <lkp@intel.com>
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Nathan Chancellor <nathan@kernel.org>,
+        Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
+        Bill Wendling <morbo@google.com>,
+        Justin Stitt <justinstitt@google.com>, linux-kernel@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, llvm@lists.linux.dev,
+        kernel test robot <lkp@intel.com>
 Subject: Re: [PATCH] powerpc/uaccess: Fix inline assembly for clang build on
  PPC32
-Message-ID: <20260203205501.GC3573384@ax162>
+Message-ID: <aYJ2lGdDd041F2SY@gate>
 References: <8ca3a657a650e497a96bfe7acde2f637dadab344.1770103646.git.chleroy@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -76,6 +62,8 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <8ca3a657a650e497a96bfe7acde2f637dadab344.1770103646.git.chleroy@kernel.org>
+
+Hi!
 
 On Tue, Feb 03, 2026 at 08:30:41AM +0100, Christophe Leroy (CS GROUP) wrote:
 > Test robot reports the following error with clang-16.0.6:
@@ -118,48 +106,17 @@ On Tue, Feb 03, 2026 at 08:30:41AM +0100, Christophe Leroy (CS GROUP) wrote:
 > With that change, the build doesn't fail anymore and a disassembly shows
 > clang uses r17/r18 and r31/r14 pair when GCC would have used r16/r17 and
 > r30/r31:
-> 
-> 	Disassembly of section .fixup:
-> 
-> 	00000000 <.fixup>:
-> 	   0:	38 a0 ff f2 	li      r5,-14
-> 	   4:	3a 20 00 00 	li      r17,0
-> 	   8:	3a 40 00 00 	li      r18,0
-> 	   c:	48 00 00 00 	b       c <.fixup+0xc>
-> 				c: R_PPC_REL24	.text+0xbc
-> 	  10:	38 a0 ff f2 	li      r5,-14
-> 	  14:	3b e0 00 00 	li      r31,0
-> 	  18:	39 c0 00 00 	li      r14,0
-> 	  1c:	48 00 00 00 	b       1c <.fixup+0x1c>
-> 				1c: R_PPC_REL24	.text+0x144
-> 
-> Reported-by: kernel test robot <lkp@intel.com>
-> Closes: https://lore.kernel.org/oe-kbuild-all/202602021825.otcItxGi-lkp@intel.com/
-> Fixes: c20beffeec3c ("powerpc/uaccess: Use flexible addressing with __put_user()/__get_user()")
-> Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
 
-Acked-by: Nathan Chancellor <nathan@kernel.org>
+This does not fix the problem that somehow LLVM thinks that GPR31/FPR0
+is a valid pair for two-register integer things (well, 31+1 in
+assembler is not actually valid at all).  Quite worrying.
 
-> ---
-> I set Fixes: tag to the commit that recently replaced %1+1 by %L1 in the main part of the macro as the fix would be uncomplete otherwise but the problem has been there since commit 2df5e8bcca53 ("powerpc: merge uaccess.h")
-> ---
->  arch/powerpc/include/asm/uaccess.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-> index ba1d878c3f404..570b3d91e2e40 100644
-> --- a/arch/powerpc/include/asm/uaccess.h
-> +++ b/arch/powerpc/include/asm/uaccess.h
-> @@ -255,7 +255,7 @@ __gus_failed:								\
->  		".section .fixup,\"ax\"\n"		\
->  		"4:	li %0,%3\n"			\
->  		"	li %1,0\n"			\
-> -		"	li %1+1,0\n"			\
-> +		"	li %L1,0\n"			\
->  		"	b 3b\n"				\
->  		".previous\n"				\
->  		EX_TABLE(1b, 4b)			\
-> -- 
-> 2.49.0
-> 
+Maybe you can fix this in a more fundamental way?  In LLVM itself?
+
+(The kernel patch of course is a nice workaround, if it in fact works
+reliably, but a big fat comment here would be useful.  Pointing to the
+LLVM problem report where this is tracked, etc.)
+
+
+Segher
 
