@@ -1,62 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-16535-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16536-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 944B9E83057
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Feb 2026 06:48:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64CF4E8305B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Feb 2026 07:31:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f4vFP4y1Jz30Lv;
-	Tue, 03 Feb 2026 17:48:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770101289;
-	cv=none; b=lke8P85/Ys+2c/fUWcOTlwLifi83IhkUPArsgiqUs/ZrFse8iiI1ozE5hZbtoW9bj8xosGgADGts6e7J6Z4smtQaBpwx5O6lCS6/dGFD4QhJMzLs4DdMOCbqiFus33LrLEyjQob3wrOztWgKte9XdclcuYnAtpcOZSR5x+cgrXAZoxUbdQhOyC4oNXSiVM7IEyrP566qF1or7qmsP2lSGdJwbpKvfz56qmv7NYON2EJtU6TD8uppsCujYXh6yChWKECuxnxG147WZPFA7LkdaNT1lk9ABqQ73Ip880AibNtIHXnSBT7ASLDx3tC00HWiE149GdQtK4Gq3hDf2rkuKg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f4wBx5mD5z30FF;
+	Tue, 03 Feb 2026 18:31:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770103865;
+	cv=none; b=Ujla2zrqNNA+XVhQDDDLNBAI5X9FbBYkPkq1ckUGUGKnNBsEmgwAVZ9P/P222J2ZCEE6PrifzqkGjVxboZbpyNcuGmKLp7NfcEXH1tGkM9e1SYfFwbyO3eokz3SGEhWr1aqNW6HPIwoz5U+TZaYgSKTer0unwSPha6QyTIYcTgoPVJ5rCgvFwnWKZIaja8HXsZqne2b3tOs6OviSJe1LXiSt0F6bcUtUpoav2VOv2dpUqCXPHi7iFQLkkPBE34fqJl+DGaBnw70FWDv0J+kMxVVx/cUENdfTf0NbMEFK8bT6+7+hsJze5pf29XFS9346X4mAx2ixGYJjMf0zkBGrRA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770101289; c=relaxed/relaxed;
-	bh=wKfgeNcUZsfODc/EWUF+P356I4tXzdW6JOW+pXIZpKo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=He1ERbwKlgCdz1KaKOFkfwULJCOacffJR4V9quricLiVmpEf2vFq/75UvzfPZJRN0Q7lCXkxqEXro86MMv56Z1rf6LX1FCnZK+xq0BXVU0WiO3Wd+TK/YkWKei2Uf/SnWSYXOUi5SypgVR0Xmtxf4VQVqF+PG6CYg5H5jZqtCOkrXiPe+HE1wyqVFLVmjuHA+ftluAPsZXLNTpIjviIxI6ey2/mgZw5DtRb1iTWsEP0hDwACfRAbP4UAlqko1lPROIuIsORcipXOo9VXVpqfyqGHjmllXO65zKCkyoJ1TSpKVLE5QOgPDOkZXnDB+eIND47jr8DnRoxVAADj8L738w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eevVl2qq; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1770103865; c=relaxed/relaxed;
+	bh=jxNWFOPW+glMT0z4ZOP90SSEVTMRtYLfLqGGwn9rA8w=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=UVdNTr1HT2acL/9vd1pyAllyf7K84GnTvN7+c51NWi/mudzqt3gsnF6jasE68fvUhx/5JpwnChiUHTfPCz8oXIS+LbKnP+1z2a8grDCV+9Lgw1MayD7gGSCMhUgAvMnw4kBO92fHXkksoyea1sxoR0dOR7bXRtWO9MF60izy2gtqyaF7ABpoy/7beBUrGcMvKZaOUAod9oISrpuVFVEqdOeeqBMQJ4w1ZbG8CxK79coj/5LyhSEZyKuxMyqAkaSNMkcYlmURsBLzktunIRJshEsYXy5XySlPs1/0Zu+8BYJTh6K2CsA0QfK5s7wQ1aQQi5ONU8r027H+1A94L3pigA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jqCn2a/o; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eevVl2qq;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jqCn2a/o;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f4vFM5d7Yz309y
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Feb 2026 17:48:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f4wBw10Knz309y
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Feb 2026 18:31:04 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 2E6A940168;
-	Tue,  3 Feb 2026 06:48:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7C875C116D0;
-	Tue,  3 Feb 2026 06:48:03 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 99D9760134;
+	Tue,  3 Feb 2026 07:31:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C62F3C116D0;
+	Tue,  3 Feb 2026 07:30:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1770101285;
-	bh=DBiReB4Q+1e/CMQ4SDJwbTiDxnKQkOOzQpHkhc3T+/Y=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=eevVl2qq5esU47MGc2pWXWt1cCWEVoqkzuDgNwlq321XIQssdSpKaZgLszLB9UPh2
-	 c2tVHkj/2UriXlqFNq71B4izt9hefFNWBSogNsl7HkQZErVq9mS0ApDn15QudFwXWj
-	 JMs4Va7XqXKKi+0O0xrnvxpYHQR2pbk5YDUFLbGORy6YTq3BpkUIaPTGF2AVdajT4R
-	 oZRX1ctk3yFC/l1Deg/zkrgR5i93LsvweHWBIXnSYfvAliEuPQ1ad0Hqq47pg5RlGT
-	 rdeZ/xXq/CdeBgYxedU2ugJ7qMORWTlTC8YrNk0uALf1Xp2WFl6a1OlVckBpVHQWA4
-	 WWCRz9mF7AInA==
-Date: Mon, 2 Feb 2026 23:48:00 -0700
-From: Nathan Chancellor <nathan@kernel.org>
-To: =?iso-8859-1?Q?Ren=E9?= Rebe <rene@exactco.de>
-Cc: chleroy@kernel.org, linux-kbuild@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com,
-	mpe@ellerman.id.au, npiggin@gmail.com
-Subject: Re: [PATCH V2] modpost: Amend ppc64 save/restfpr symnames for -Os
- build
-Message-ID: <20260203064800.GA701088@ax162>
-References: <20251123.131330.407910684435629198.rene@exactco.de>
- <d69d7167-00d1-49c5-90ee-6bc0b7e8295f@kernel.org>
- <20251123.160941.475051668667578407.rene@exactco.de>
- <20251123.162551.979799191208988118.rene@exactco.de>
+	s=k20201202; t=1770103861;
+	bh=nE9mcDppRscPQOO6KIoG4m/kW+C5a6C2tfa4wTdCQQw=;
+	h=From:To:Cc:Subject:Date:From;
+	b=jqCn2a/oFvLY0qBIMGvOPX8KpWbxrDT2iIu74XMZ5VZ6mFCCVH5go6PhCwGAqQNmo
+	 HRB/a+PZt7U+JNHXILRDT+pvQJp/z/NlxRZKvpoVCx/KI5iHlvKZHKBWeA/AV70AHN
+	 5Z/kL/b84B1bZUwCYgBl6UbxFX8hVoPT0ts2YXXYqrh+gSgA2VMO50sKmqGeM0Wwcz
+	 dPHv9TLmx2iR1dgi7jvppPb/07KPMiB3xEMC3uVtr+ow0mFSOW47v/dCk/O94Mnbnv
+	 emBFMZL3A+Q0041OUpfMSjWiB1T5yexyWpeHixVnv4s6jdNtGLrb0+RSJClmZJscFN
+	 Ivz0hSuqgB3ug==
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Nathan Chancellor <nathan@kernel.org>,
+	Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
+	Bill Wendling <morbo@google.com>,
+	Justin Stitt <justinstitt@google.com>,
+	Segher Boessenkool <segher@kernel.crashing.org>
+Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	llvm@lists.linux.dev,
+	kernel test robot <lkp@intel.com>
+Subject: [PATCH] powerpc/uaccess: Fix inline assembly for clang build on PPC32
+Date: Tue,  3 Feb 2026 08:30:41 +0100
+Message-ID: <8ca3a657a650e497a96bfe7acde2f637dadab344.1770103646.git.chleroy@kernel.org>
+X-Mailer: git-send-email 2.49.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,165 +74,89 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3467; i=chleroy@kernel.org; h=from:subject:message-id; bh=nE9mcDppRscPQOO6KIoG4m/kW+C5a6C2tfa4wTdCQQw=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWQ2LlGaGO7z8dTVvlOWvh2u7el5FXG8Z/fM4uvcNnVVi sSH9Ym1HaUsDGJcDLJiiizH/3PvmtH1JTV/6i59mDmsTCBDGLg4BWAi5ZWMDDvWW3vUeBnse7if SWFif2f33yexO6alhfQs+auiXbmYk53hf81fkaAJfvIPZBbl67xqbNtZHGno/eyPwK38dPYTYZU rWAE=
+X-Developer-Key: i=chleroy@kernel.org; a=openpgp; fpr=10FFE6F8B390DE17ACC2632368A92FEB01B8DD78
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20251123.162551.979799191208988118.rene@exactco.de>
 
-On Sun, Nov 23, 2025 at 04:25:51PM +0100, René Rebe wrote:
-> Hey,
-> 
-> On Sun, 23 Nov 2025 16:09:41 +0100 (CET), René Rebe <rene@exactco.de> wrote:
-> 
-> > On Sun, 23 Nov 2025 15:57:24 +0100, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org> wrote:
-> > 
-> > > Le 23/11/2025 à 13:13, René Rebe a écrit :
-> > > > Building a size optimized ppc64 kernel (-Os), gcc emits more FP
-> > > > save/restore symbols, that the linker generates on demand into the
-> > > > .sfpr section. Explicitly allow-list those in scripts/mod/modpost.c,
-> > > > too. They are needed for the amdgpu in-kernel floating point support.
-> > > 
-> > > Would have been interested to know with which version of GCC the
-> > > problem started.
-> > 
-> > idk, maybe forever, or at least a decade fo GCC? Most devs probably
-> > don't build size optimized, and addtionally we only use in kernel
-> > floating point for amdgpu since recently? Should I add Fixes: for the
-> > in-kernel FP hash?
-> > 
-> > > By the way you seem to fix the problem for modules, but does it also
-> > > work when amdgpu is in kernel ? I would have expected a need to add
-> > > functions in arch/powerpc/lib/crtsavres.S as well, just like following
-> > > commits:
-> > > 
-> > > 8fe9c93e7453 ("powerpc: Add vr save/restore functions")
-> > > 7fca5dc8aa7a ("powerpc: Fix module building for gcc 4.5 and 64 bit")
-> > > da3de6df33f5 ("[POWERPC] Fix -Os kernel builds with newer gcc
-> > > versions")
-> > 
-> > idk, I avoid linking that big stuff directly into the kernel and would
-> > need to specically test that, too. I guess I go do that now, too, ...
-> 
-> It appears built-in amdgpu FP somehow magically works for me:
-> 
-> debug-linux:[linux-6.17]# grep DRM.*AMD .config
-> CONFIG_DRM_AMDGPU=y
-> CONFIG_DRM_AMDGPU_SI=y
-> CONFIG_DRM_AMDGPU_CIK=y
-> CONFIG_DRM_AMDGPU_USERPTR=y
-> CONFIG_DRM_AMD_ACP=y
-> CONFIG_DRM_AMD_DC=y
-> CONFIG_DRM_AMD_DC_FP=y
-> CONFIG_DRM_AMD_DC_SI=y
-> ...
->   CC      drivers/gpu/drm/amd/amdgpu/../display/modules/hdcp/hdcp_ddc.o
->   CC      drivers/gpu/drm/amd/amdgpu/../display/modules/hdcp/hdcp_log.o
->   CC      drivers/gpu/drm/amd/amdgpu/../display/modules/hdcp/hdcp_psp.o
->   CC      drivers/gpu/drm/amd/amdgpu/../display/modules/hdcp/hdcp.o
->   CC      drivers/gpu/drm/amd/amdgpu/../display/modules/hdcp/hdcp1_execution.o
->   CC      drivers/gpu/drm/amd/amdgpu/../display/modules/hdcp/hdcp1_transition.o
->   CC      drivers/gpu/drm/amd/amdgpu/../display/modules/hdcp/hdcp2_execution.o
->   CC      drivers/gpu/drm/amd/amdgpu/../display/modules/hdcp/hdcp2_transition.o
->   AR      drivers/gpu/drm/amd/amdgpu/built-in.a
->   AR      drivers/gpu/drm/built-in.a
->   AR      drivers/gpu/built-in.a
->   AR      drivers/built-in.a
->   AR      built-in.a
->   AR      vmlinux.a
->   LD      vmlinux.o
->   GEN     modules.builtin.modinfo
->   GEN     modules.builtin
->   MODPOST vmlinux.symvers
->   CC      .vmlinux.export.o
->   UPD     include/generated/utsversion.h
->   CC      init/version-timestamp.o
->   KSYMS   .tmp_vmlinux0.kallsyms.S
->   AS      .tmp_vmlinux0.kallsyms.o
->   LD      .tmp_vmlinux1
->   NM      .tmp_vmlinux1.syms
->   KSYMS   .tmp_vmlinux1.kallsyms.S
->   AS      .tmp_vmlinux1.kallsyms.o
->   LD      .tmp_vmlinux2
->   NM      .tmp_vmlinux2.syms
->   KSYMS   .tmp_vmlinux2.kallsyms.S
->   AS      .tmp_vmlinux2.kallsyms.o
->   LD      vmlinux.unstripped
->   NM      System.map
->   SORTTAB vmlinux.unstripped
-> make[3]: Nothing to be done for 'vmlinux.unstripped'.
->   OBJCOPY vmlinux
-> 
-> So I guess the patch is good to go after clarifying which kind of
-> Fixes: to use?
+Test robot reports the following error with clang-16.0.6:
 
-Was this ever picked up or addressed elswhere?
+   In file included from kernel/rseq.c:75:
+   include/linux/rseq_entry.h:141:3: error: invalid operand for instruction
+                   unsafe_get_user(offset, &ucs->post_commit_offset, efault);
+                   ^
+   include/linux/uaccess.h:608:2: note: expanded from macro 'unsafe_get_user'
+           arch_unsafe_get_user(x, ptr, local_label);      \
+           ^
+   arch/powerpc/include/asm/uaccess.h:518:2: note: expanded from macro 'arch_unsafe_get_user'
+           __get_user_size_goto(__gu_val, __gu_addr, sizeof(*(p)), e); \
+           ^
+   arch/powerpc/include/asm/uaccess.h:284:2: note: expanded from macro '__get_user_size_goto'
+           __get_user_size_allowed(x, ptr, size, __gus_retval);    \
+           ^
+   arch/powerpc/include/asm/uaccess.h:275:10: note: expanded from macro '__get_user_size_allowed'
+           case 8: __get_user_asm2(x, (u64 __user *)ptr, retval);  break;  \
+                   ^
+   arch/powerpc/include/asm/uaccess.h:258:4: note: expanded from macro '__get_user_asm2'
+                   "       li %1+1,0\n"                    \
+                    ^
+   <inline asm>:7:5: note: instantiated into assembly here
+           li 31+1,0
+              ^
+   1 error generated.
 
-> > > > MODPOST Module.symvers
-> > > > ERROR: modpost: "_restfpr_20" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko]
-> > > > undefined!
-> > > > ERROR: modpost: "_restfpr_26" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko]
-> > > > undefined!
-> > > > ERROR: modpost: "_restfpr_22" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko]
-> > > > undefined!
-> > > > ERROR: modpost: "_savegpr1_27" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko]
-> > > > undefined!
-> > > > ERROR: modpost: "_savegpr1_25" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko]
-> > > > undefined!
-> > > > ERROR: modpost: "_restfpr_28" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko]
-> > > > undefined!
-> > > > ERROR: modpost: "_savegpr1_29" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko]
-> > > > undefined!
-> > > > ERROR: modpost: "_savefpr_20" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko]
-> > > > undefined!
-> > > > ERROR: modpost: "_savefpr_22" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko]
-> > > > undefined!
-> > > > ERROR: modpost: "_restfpr_15" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko]
-> > > > undefined!
-> > > > WARNING: modpost: suppressed 56 unresolved symbol warnings because
-> > > > there were too many)
-> > > > Signed-off-by: René Rebe <rene@exactco.de>
-> > > > ---
-> > > > V2: description
-> > > > Theoretically for -stable, but no previous commit that broke it.
-> > > 
-> > > In that case you have to add Cc: stable@vger.kernel.org
-> > > Add indeed it is likely a gcc upgrade that broke it, not a previous
-> > > commit.
-> > 
-> > Should I then simply use enabling amdgpu dc_fp and in-kernel FP as the
-> > breaking commit for Fixes:?
-> > 
-> > Thanks!
-> > 
-> > 	René
-> > 
-> > > > ---
-> > > >   scripts/mod/modpost.c | 4 ++++
-> > > >   1 file changed, 4 insertions(+)
-> > > > diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-> > > > index 47c8aa2a6939..133dfa16308a 100644
-> > > > --- a/scripts/mod/modpost.c
-> > > > +++ b/scripts/mod/modpost.c
-> > > > @@ -602,6 +602,10 @@ static int ignore_undef_symbol(struct elf_info
-> > > > *info, const char *symname)
-> > > >   		/* Special register function linked on all modules during final link of
-> > > >   		.ko */
-> > > >   		if (strstarts(symname, "_restgpr0_") ||
-> > > >   		    strstarts(symname, "_savegpr0_") ||
-> > > > +		    strstarts(symname, "_restgpr1_") ||
-> > > > +		    strstarts(symname, "_savegpr1_") ||
-> > > > +		    strstarts(symname, "_restfpr_") ||
-> > > > +		    strstarts(symname, "_savefpr_") ||
-> > > >   		    strstarts(symname, "_restvr_") ||
-> > > >   		    strstarts(symname, "_savevr_") ||
-> > > >   		    strcmp(symname, ".TOC.") == 0)
-> > > 
-> > 
-> > -- 
-> > René Rebe, ExactCODE GmbH, Berlin, Germany
-> > https://exactco.de • https://t2linux.com • https://patreon.com/renerebe
-> 
-> -- 
-> René Rebe, ExactCODE GmbH, Berlin, Germany
-> https://exactco.de • https://t2linux.com • https://patreon.com/renerebe
+On PPC32, for 64 bits vars a pair of registers is used. Usually the
+lower register in the pair is the high part and the higher register is
+the low part. GCC uses r3/r4 ... r11/r12 ... r14/r15 ... r30/r31
+
+In older kernel code inline assembly was using %1 and %1+1 to represent
+64 bits values. However here it looks like clang uses r31 as high part,
+allthough r32 doesn't exist hence the error.
+
+Allthoug %1+1 should work, most places now use %L1 instead of %1+1, so
+let's do the same here.
+
+With that change, the build doesn't fail anymore and a disassembly shows
+clang uses r17/r18 and r31/r14 pair when GCC would have used r16/r17 and
+r30/r31:
+
+	Disassembly of section .fixup:
+
+	00000000 <.fixup>:
+	   0:	38 a0 ff f2 	li      r5,-14
+	   4:	3a 20 00 00 	li      r17,0
+	   8:	3a 40 00 00 	li      r18,0
+	   c:	48 00 00 00 	b       c <.fixup+0xc>
+				c: R_PPC_REL24	.text+0xbc
+	  10:	38 a0 ff f2 	li      r5,-14
+	  14:	3b e0 00 00 	li      r31,0
+	  18:	39 c0 00 00 	li      r14,0
+	  1c:	48 00 00 00 	b       1c <.fixup+0x1c>
+				1c: R_PPC_REL24	.text+0x144
+
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202602021825.otcItxGi-lkp@intel.com/
+Fixes: c20beffeec3c ("powerpc/uaccess: Use flexible addressing with __put_user()/__get_user()")
+Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+---
+I set Fixes: tag to the commit that recently replaced %1+1 by %L1 in the main part of the macro as the fix would be uncomplete otherwise but the problem has been there since commit 2df5e8bcca53 ("powerpc: merge uaccess.h")
+---
+ arch/powerpc/include/asm/uaccess.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index ba1d878c3f404..570b3d91e2e40 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -255,7 +255,7 @@ __gus_failed:								\
+ 		".section .fixup,\"ax\"\n"		\
+ 		"4:	li %0,%3\n"			\
+ 		"	li %1,0\n"			\
+-		"	li %1+1,0\n"			\
++		"	li %L1,0\n"			\
+ 		"	b 3b\n"				\
+ 		".previous\n"				\
+ 		EX_TABLE(1b, 4b)			\
+-- 
+2.49.0
+
 
