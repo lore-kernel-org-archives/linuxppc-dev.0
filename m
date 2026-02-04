@@ -1,51 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-16594-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16595-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7FA4E9D419
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Feb 2026 17:19:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E998E9D41E
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Feb 2026 17:49:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f5nCR0xPFz2xm3;
-	Thu, 05 Feb 2026 04:19:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770225571;
-	cv=none; b=E3lBjQnfzhGjtj3anCLV3TrAUe1Wign++of0uN4HSMR326+4qszbe7UKFWZoYGLKw9ZJ3FNmkdlvYIZyk/Wg1uM2MELrc1Um8QbWW9B63cCMhqDOpnZJUJWtenxs0ed0Sv/HCb6jIwvdG1ulCo2PH8VTB5LeyH0aeVtVzKWNHo3kCO5TjXmAOQUer7GkvHjQuQcrxqbPASs8Xprrwk1KkC/dMIWW6bS609Hrf7ASsx3dgsEQoQIY65Fh/0XiduFjbqrThmrnhwwKMWrA1oBUeSd/ag2/fbOo74S96Q60Stbuxg6Ewmv5+EA/idYHlGr6MKKzulFPKwrPvWy/Gu15+A==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770225571; c=relaxed/relaxed;
-	bh=w4Mmcg/mTBkKnYhg9EeUnZ86Twbt2RoOxtFB04MrLYE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PlKwGHegySkERzRv2tgVip1ShqZ3k7WERz8A4CU0cQM9y16ORwP/1OACRewLyTQDiESEZzldVebpPXHHvphqsNwvTyhTpJ1PdA4iPp4xQuBTBYS3bznvU+vtJetNRYpj6HylnJSK70Yviq3fuUwHRO6MQtxYJdc5LkNE0kErWb+7mKAaI2RqvAgzqmeBS5tvEGGazKcTNIe6NuEUFsKhSMp5s4tIJpJvx1EkdAh9kdVWK2FNpLQ7ytoWn4rVZNC6XIMTbTHdXeaI4iNQslqjqbxhw3c7V8D0weuD54ABuenPJkbsX4gvokjN/RjB9edTyNls1Jt8fVBpQHZvXamIQA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mr0Pw4cU; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f5ntG52Lqz2xm3;
+	Thu, 05 Feb 2026 04:49:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::1231" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770227382;
+	cv=pass; b=k1SDu2CvDagRWgKx7SLp7egK7D6fxSKpNsyrqPvzZP8aNOvZ7/mSKvMTEEShnI8UtRsgAtsNBZ2b/zBzybilWl/VIZ1Ube+eqobCxi0AvLUzd/j9XDwIeJ4d7WHsGZicn8wvPiZcRjVPr/xJcnRnAYJcsY/kQEfv8IXlCSAj4gaMt0glEFwLqQlCX6EdiYAIY7q8r2uw9ejo7A1uK1IkgXisyjsKiHFgPB8vPn4s1zEEuE7JORe4W6zdEixuVLsvBhwmgWGarrUogmpiNHXpSZ2L9lRjOsvR5F4StPcVp6kAZd01qW7fOEyMQaLa5f5i3BmLEZe/zhTb0hYkxzawFQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1770227382; c=relaxed/relaxed;
+	bh=xDefLCRgV/TQ3JHNjcWIRVQ67vN0JwqCI2ji4ZmQrkk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=bIcwHl5v6rdsY+GXq8pgHr3pOPk8C5ZKSqop3A18Gte0lBOyM2MDoFbIiZcaYRSlSuPHfFcWPoWuYth/du6Iisef9R8EDJb1/yIrsiqBIJKdDiG38dkJGPSjplasZr3xRoTe6FI4Npt8vnVuOEqmfavTYkv6ftYqk0qqZYWYBHiGDlNM0oYzu5OZMtF1DbYiF7fLCiD9/Ztqtn82gdNR48sZGklc8rR0bV6p1mR2GjU7xl7u8WxX0DAf+bqxvwNvdTY7LzMVBkiNpmHgQcGm7hbigfYNi7bfOJcEkD9B6hoTzq/TL1DU4nuIv43ZJy+PH4MKmMrnnZsSAzuTgL03Pg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=DZU1RheK; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1231; helo=mail-dl1-x1231.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mr0Pw4cU;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=DZU1RheK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1231; helo=mail-dl1-x1231.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dl1-x1231.google.com (mail-dl1-x1231.google.com [IPv6:2607:f8b0:4864:20::1231])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f5nCQ2YM8z2xJ5
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Feb 2026 04:19:30 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 6AF1F4181A;
-	Wed,  4 Feb 2026 17:19:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B7599C4CEF7;
-	Wed,  4 Feb 2026 17:19:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1770225568;
-	bh=DtHe0dwbusnQaV94dHwbXq/wTSKOEey/tmCSKDwj+wo=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=mr0Pw4cU9VKIf49Cx5IUekaRAaaJWcVfy4cr6IfmgolfGJgwarXwi7+W2mtY0mUFz
-	 T8SUfyk5vmnZi4h84W19N6J6mA0lHMAsnaT54R3ayxcS3w4OMilo/hjFL7mRLQNc4u
-	 o/8kHtDxD1wuOvAtf1OQbEoSi4aPLhL25djAeuIXxw7OzbBT9hTh2jiGXBqlaWaEns
-	 RL9npkDq+LWQ582cE7X6G+kjwXQ5BDI8U7swO4T9ZbNhNo5PD5CNI7MZ4rFjVB8nZD
-	 0Ql3r/znHtrsNeVVmcvfvWw/ZXmJkryBPyN+Mseo8R4zN2I0wiY9lZvVWYnaD7XbgE
-	 l4uDcnF4SFtWw==
-Message-ID: <6a4799d9-48fe-410e-acad-fe687edebc7e@kernel.org>
-Date: Wed, 4 Feb 2026 18:19:19 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f5ntF2tpvz2xJ5
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Feb 2026 04:49:40 +1100 (AEDT)
+Received: by mail-dl1-x1231.google.com with SMTP id a92af1059eb24-124a5810e41so16848c88.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Feb 2026 09:49:40 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1770227377; cv=none;
+        d=google.com; s=arc-20240605;
+        b=LnKV036V58HTLL+A+yCq0dyxCYvAFEz6EQ0hWGKHTBpzrP05mD9JIUgFCzuNmht3SD
+         6b1pHQWAPcSOy2+Lc+iIVNdWeMqMXQ30heu7KJOLqk126H8KnsmRdWdicvG/i+56QfTa
+         mY+ZUgqIxF4VS5NkiNO3Lff1Qz5N/FeNhE/L/nxs7vND+4YlBow6UgpfPhZedSeUfXig
+         vGLOSYycimrHcH33PSey130xE+hGdF/DbtFvzFRWcWBLWXGDORCIZpeWcoshPa+YTdZc
+         NqtZ3ZEPLKgAoVYCP5tuRqhn47e5TDxB9EcV0QJu2WQec1/IqxawozmAIeoEAN9mbbI0
+         IjbQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=xDefLCRgV/TQ3JHNjcWIRVQ67vN0JwqCI2ji4ZmQrkk=;
+        fh=TxlFIUXtko8YFYZfPxMoKTKA/9IyAvv/H2srSvqfBL0=;
+        b=RrIjSYXV4HaI4y/GKb2BWoJBwORsyEysLIcKPjhAtGhzMkrJvODNEfVhYGBnNMczwV
+         OcfJo8ZAVfbm8BcuQGLFylLcR8H4uPGC3qrSOUJDwfL8iT5OxTC23jijeTIe/xrWY1T0
+         LxqiEojmpmmIjIxkH2/ulkd2kr6ejZBNCJfOQQZBv85aLhkH2f+xacoLxA60YZxrr0hy
+         Hs7wYoxX376oOV5hV2axZeijFdzHC5YSUG1OLdeESL7kTNNa98SjujM7GxHp94mHHu06
+         vMw8dAgY0/NdV7klZNQXjmX2o0WBd25fvF5bOr41oC3m3oD6jxG2qsfP0p9wJHY1uXiZ
+         yqkg==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1770227377; x=1770832177; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=xDefLCRgV/TQ3JHNjcWIRVQ67vN0JwqCI2ji4ZmQrkk=;
+        b=DZU1RheKzUuDqY7DdZ49vh3Aw6YezwuoyGhkFYGwPMapAhUYJJ2I0ek32h85QpCi27
+         IPL3SV8Y1ubknxqg5s/8zuqYgbI2jdeYryS+tyC625Q5ZWdcy2cvpYyv19q08Rjph3tZ
+         KfZkdHzCD14mWYIfW4ED1O/Z0r84HSHzh1rYS4tF3ko9y/0dMYiCQ+akmia6+iA7jboO
+         IAN2hN//fay2F4XyP+fzkUIGbYOxGoaqkEkEhB7cd6ELPHtMpHiAai0Rzg5pv4j7kwh8
+         HPo9LECFhkbt+bFqM7/yJq2qLDCb3hgoF7Bgzy6yyYBKczth42LaX/fLdlTVWUoMI7zx
+         ECDA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1770227377; x=1770832177;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=xDefLCRgV/TQ3JHNjcWIRVQ67vN0JwqCI2ji4ZmQrkk=;
+        b=ls4ONH6ExOLAZ6JFMvs5TDIFVPvnlobUjSVTEp8lbjVg+ZsoHmysgx8LPotEIDbRF2
+         PsFtc+CUm72916p4NFeN+yHLq9FKW0gy1q6lpy1a19gmG+BfOBHZ2UvTZ76+eYAr8E0V
+         OB0ic9rxbXhPNw5Ypu71wkh2tuoGgNjsOUi+5p+ojg23jadV1UBTAWWQOi7wDAsc+nnJ
+         AcFSUShp7bCAakFCvrm+IuZ4b5Osb8nV8GZgFcP1YXWDKtT+MTekcWMi12GMF0O5auGH
+         sytnSW2LE7SGhoIqMsNRy775bryTicUcez35FXfc9IuhWOk8J1amJmW1lEWCccMV1rj3
+         vTEQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVQ9V1lUQnkjP6iCSElrtM6e3ZdW1lwnR/TgXZJcn70PExnkVBcYLGW/0XSZEqe62+IQR9q5zW6Y25upvA=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwQQBoxiU9SKUcZ2gKQwAwulDlMe1IF2JduT8y3pVt0xqLhn66n
+	FtaahaFO+Rvnly6TxcgUYW0oOELFouiK7mLQqQVAoNvpxxOoed991J+K1Ccsu1c+pUBM2NHk+HV
+	MGl7WYUC7YWt50/GbkCG7ov1mBX/m7Ks=
+X-Gm-Gg: AZuq6aI/bB9TX3qZ2D0EiM708Uq3Sa1PHhLcrgjtnyFmON11Fn//82pfz0/2wD56hpV
+	yp8MsRC7wW4h3meqrvT5YDmMKiyLZzZOqZQVDNuDNF1HQBb2NfIm4+H1/QZcQat/0B7mGtgyzKJ
+	+o3z9s3mRc+6uS//RXDYHcMouinnzH4GLTQtBynpzB+wiiphXUdF6Dh8poS+8/NJ5U0Q33ajZRy
+	5lpQYaeRpziyDnTFJl0+50eE1Umse/fa82kgRJzTGaUjqGXsXDCmerl8DeaoMG5I2OVFx5+2fGd
+	nbtY5aOs5i0PGb5zD3ADa0I6jBER849TWX5ra2ne78H+EiMEJo3QZNl0jdOAZom9l9BzpmBLusM
+	VO+xpm+BoIgOw
+X-Received: by 2002:a05:7301:4592:b0:2b7:1008:9f2e with SMTP id
+ 5a478bee46e88-2b8329d7929mr884867eec.7.1770227377226; Wed, 04 Feb 2026
+ 09:49:37 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,125 +102,45 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] rust: Add PowerPC support
-To: Alice Ryhl <aliceryhl@google.com>, Link Mauve <linkmauve@linkmauve.fr>
-Cc: rust-for-linux@vger.kernel.org, Miguel Ojeda <ojeda@kernel.org>,
- Boqun Feng <boqun@kernel.org>, Gary Guo <gary@garyguo.net>,
- =?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>,
- Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>,
- Trevor Gross <tmgross@umich.edu>, Danilo Krummrich <dakr@kernel.org>,
- Jonathan Corbet <corbet@lwn.net>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@kernel.org>,
- Jason Baron <jbaron@akamai.com>, Steven Rostedt <rostedt@goodmis.org>,
- Ard Biesheuvel <ardb@kernel.org>, Nathan Chancellor <nathan@kernel.org>,
- Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
- Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, llvm@lists.linux.dev,
- officialTechflashYT@gmail.com, Ash Logan <ash@heyquark.com>,
- Roberto Van Eeden <rw-r-r-0644@protonmail.com>,
- =?UTF-8?Q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
- "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
-References: <20260204030507.8203-1-linkmauve@linkmauve.fr>
- <aYMiXcy33YEVkgYM@google.com>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <aYMiXcy33YEVkgYM@google.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+References: <20260204042417.83903-1-mkchauras@gmail.com>
+In-Reply-To: <20260204042417.83903-1-mkchauras@gmail.com>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Wed, 4 Feb 2026 18:49:23 +0100
+X-Gm-Features: AZwV_QhpXt59DsIzTmuh2ZPPW6T9uONYBCxBt7FVK2mswJ22l7u_sEZEOBg8s4M
+Message-ID: <CANiq72k41tCq7-LccTz2NNpUF-0sOqPvbj-z+Qz0msud3O-3AQ@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: Enable Rust for ppc64le
+To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, peterz@infradead.org, jpoimboe@kernel.org, 
+	jbaron@akamai.com, rostedt@goodmis.org, ardb@kernel.org, ojeda@kernel.org, 
+	boqun.feng@gmail.com, gary@garyguo.net, bjorn3_gh@protonmail.com, 
+	lossin@kernel.org, a.hindborg@kernel.org, aliceryhl@google.com, 
+	tmgross@umich.edu, dakr@kernel.org, nathan@kernel.org, 
+	nick.desaulniers+lkml@gmail.com, morbo@google.com, justinstitt@google.com, 
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+	rust-for-linux@vger.kernel.org, llvm@lists.linux.dev
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Wed, Feb 4, 2026 at 6:54=E2=80=AFAM Mukesh Kumar Chaurasiya (IBM)
+<mkchauras@gmail.com> wrote:
+>
+> +    } else if cfg.has("PPC64") {
 
+Can this be done via flags, i.e. avoiding the `target.json`?
 
-Le 04/02/2026 à 11:41, Alice Ryhl a écrit :
-> On Wed, Feb 04, 2026 at 04:05:04AM +0100, Link Mauve wrote:
->> For now only Big Endian 32-bit PowerPC is supported, as that is the only
->> hardware I have.  This has been tested on the Nintendo Wii so far, but I
->> plan on also using it on the GameCube, Wii U and Apple G4.
-> 
-> Super cool!
-> 
->> These changes aren’t the only ones required to get the kernel to compile
->> and link on PowerPC, libcore will also have to be changed to not use
->> integer division to format u64, u128 and core::time::Duration, otherwise
->> __udivdi3() and __umoddi3() will have to be added.  I have tested this
->> change by replacing the three implementations with unimplemented!() and
->> it linked just fine.
-> 
-> Uh oh this seems tricky. How is this not a problem on arm32 too?
-> 
-> Perhaps we should just be providing __udivdi3() and __umoddi3() in
-> general?
+We are trying to avoid adding new custom targets, since the idea is to
+remove our reliance on `target.json`.
 
-We don't want those functions in the kernel as they are sub-optimal and 
-unnecessary. Usually the kernel needs can be covered with do_div() or 
-other functions in include/asm-generic/div64.h. If we add those 
-functions people will start doing divides blindly in the kernel 
-forgetting the huge cost a 64 bits divide has on a 32 bits processor.
+If it is not possible to do it via flags only, then we should talk to
+upstream to add the needed flags or perhaps a new built-in target.
 
-> 
->> diff --git a/arch/powerpc/include/asm/jump_label.h b/arch/powerpc/include/asm/jump_label.h
->> index d4eaba459a0e..238f0f625a36 100644
->> --- a/arch/powerpc/include/asm/jump_label.h
->> +++ b/arch/powerpc/include/asm/jump_label.h
->> @@ -15,14 +15,18 @@
->>   #define JUMP_ENTRY_TYPE		stringify_in_c(FTR_ENTRY_LONG)
->>   #define JUMP_LABEL_NOP_SIZE	4
->>   
->> +/* This macro is also expanded on the Rust side. */
->> +#define ARCH_STATIC_BRANCH_ASM(key, label)		\
->> +	"1:\n\t"					\
->> +	"nop # arch_static_branch\n\t"			\
->> +	".pushsection __jump_table,  \"aw\"\n\t"	\
->> +	".long 1b - ., " label " - .\n\t"		\
->> +	 JUMP_ENTRY_TYPE key " - .\n\t"			\
->> +	 ".popsection \n\t"
->> +
+Thanks!
 
-Would be better split in two with a JUMP_TABLE_ENTRY() macro as other 
-architectures and as done by Mukesh in its patch, see 
-https://lore.kernel.org/r/20260204042417.83903-1-mkchauras@gmail.com
+(By the way, Michael back in 2021 did the original integration of
+ppc64le before Rust was merged into mainline -- he may want to take a
+look at this :) I see he is in Cc).
 
->>   static __always_inline bool arch_static_branch(struct static_key *key, bool branch)
->>   {
->> -	asm goto("1:\n\t"
->> -		 "nop # arch_static_branch\n\t"
->> -		 ".pushsection __jump_table,  \"aw\"\n\t"
->> -		 ".long 1b - ., %l[l_yes] - .\n\t"
->> -		 JUMP_ENTRY_TYPE "%c0 - .\n\t"
->> -		 ".popsection \n\t"
->> +	asm goto(ARCH_STATIC_BRANCH_ASM("%c0", "%l[l_yes]")
->>   		 : :  "i" (&((char *)key)[branch]) : : l_yes);
-> 
-> In case this patch takes a long time to land, it may make sense to split
-> this part out in a separate patch that can land now.
-> 
-> Also, consider pre-emptively updating arch_static_branch_jump too. We
-> probably need it at some point in the future.
-> 
->> diff --git a/scripts/generate_rust_target.rs b/scripts/generate_rust_target.rs
->> index 38b3416bb979..0054880ba0ea 100644
->> --- a/scripts/generate_rust_target.rs
->> +++ b/scripts/generate_rust_target.rs
->> @@ -188,6 +188,16 @@ fn main() {
->>           panic!("arm uses the builtin rustc target");
->>       } else if cfg.has("ARM64") {
->>           panic!("arm64 uses the builtin rustc aarch64-unknown-none target");
->> +    } else if cfg.has("PPC32") {
->> +        ts.push("arch", "powerpc");
->> +        ts.push("data-layout", "E-m:e-p:32:32-Fn32-i64:64-n32");
->> +        ts.push("features", "+soft-float");
->> +        ts.push("llvm-target", "powerpc-unknown-eabi");
->> +        if cfg.rustc_version_atleast(1, 91, 0) {
->> +            ts.push("target-pointer-width", 32);
->> +        } else {
->> +            ts.push("target-pointer-width", "32");
->> +        }
-> 
-> Is there no built-in target we can use? I think we want to avoid adding
-> new targets if at all possible.
-> 
-> Alice
-
+Cheers,
+Miguel
 
