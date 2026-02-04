@@ -1,58 +1,106 @@
-Return-Path: <linuxppc-dev+bounces-16573-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16574-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28FA3E8B39F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Feb 2026 05:55:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2468EE83EE1
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Feb 2026 07:11:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f5V1k1qGVz2xHt;
-	Wed, 04 Feb 2026 16:55:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=210.0.225.12
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770184506;
-	cv=none; b=Q8W3cUclGC/FFw3h/+Um10KJAXkP+4EZMiadmSe28op+5a39FbCsSSzV404BEZPw7R8HBwHgH9Yf3eKqiDbzQtVvn0dsC6aZqr/r2uqEjKXyuiSslNMk1kINK55Ri6b8bTXsp79Ut5vUQdR5Q3XB8pYtaMfgq6WDT4c1yfKEErhkwh13mTeEYXWlb16xgEU/KTmUDKWhvGhcXfC3bZfYAO/kUYBjCip73jmi8u5f9Rw0s0J2OTBd7sm3VtQ19bkLPY0Zm93yxteYkrfifUWm0ulxi2cRU0KlLg451k1mXjPgZEJAYEItFNSTMv7mBT/j28ABaheQQ8P6YCShwLuISQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f5Wjv1Zllz2xHt;
+	Wed, 04 Feb 2026 18:11:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770185768;
+	cv=none; b=G12pHcR2ChjsgGiKOysexH0uFlDtFvNThZ/N6mOHXlmybm+WjwqPzpSv2TZy+hPdRsxRvnzuHaodn3TAIo06m5fjoV+RDRyK2Jo4PNO3aGpltP7sN9AAbRVQsiDxwM3CyJSCspJccdnraLVXYwQqxzI+UiUN3MAzjkQrNORCcgwIt5IBVXZmmu20XBF9NtXDUr0jXugJDr2ecihRyi2KFFRPrjCSeLFOrDHGgAX4MMXERTxmLCDrqRmv5TTfA8D5abaLESgKwVdmFG+PMBuGdOV5SqquLGXUBrWliCLNVM70+JShSJl4t14f9c5vtcc1yUDb6IZjnZRwcCiTq8isZw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770184506; c=relaxed/relaxed;
-	bh=krvWU3RIDCFnaOlsjPiSzDQ5pbtuYU67LBfZYb0ibVA=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ohHPdHffJ8oVpfJk5pBcy1ePpB03/R0Osy6BupHX65XmLWiXs9a/GBvKKOJPCwK7h+JFoRvZS4nYsykALmFr1SNXAtvzvjbwLQrqx/tZnrPDvkYDcj014uXqf7AzmltlOXn+dVllcOy3M9YbOJgD0kV8IKQudCmNsybq+E6KAJpCE+F0zo7GYuSU+mFwdWTazIls6vhwQE7xbJgEwVR6Oo/Loz2HFlXnK0ogwW9JRQwlyy/04Dj1RZO+MRMdfTypP2sDhoqOJ0BRR3ktN3t811gBpM4eV1Nuzd29yFdxo+cN1xYUHcwONfLHoVYBFmvR2voJAMf/4WFo7w0QxWZsVA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=zhaoxin.com; spf=pass (client-ip=210.0.225.12; helo=mx1.zhaoxin.com; envelope-from=leoliu-oc@zhaoxin.com; receiver=lists.ozlabs.org) smtp.mailfrom=zhaoxin.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=zhaoxin.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zhaoxin.com (client-ip=210.0.225.12; helo=mx1.zhaoxin.com; envelope-from=leoliu-oc@zhaoxin.com; receiver=lists.ozlabs.org)
-Received: from mx1.zhaoxin.com (MX1.ZHAOXIN.COM [210.0.225.12])
+	t=1770185768; c=relaxed/relaxed;
+	bh=VL5of/f5KyDAfjTDwdEWFiFC2+YlHapoLTi3UvRqx5s=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=H2d1wDt1Unyqz/zzUxL8MroJOzzKlKuzrwddgO6iUavdequp25fovUnZgcCPTkliqHbt8dWvhVl5oRMnhtpjkNZKOJTeRqU7BEXBrBB1JrhYYmDllWsIQCGF2LiohiTZLcM1iRlxqwOaRKBHoMs3coOh8Lvfn0l5xKR548kQtLgCAMGofurftf5BlUWjA5KlkM0yJPS3GWEL/08Vkr+lZ48WLFs5VOTHHAgp8ysbep8OuyjyzNRD+gz0u8MJgsGCjKaZN7/1oQHvpBSkS711lFGEw+KoQSMs4IH+eiVk+RnjsZHmyUh6LCMlKS+ptsQCtZtcXTSx1wCE7RfkdWnZKQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=hV+BJpcK; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132f; helo=mail-dy1-x132f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=hV+BJpcK;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132f; helo=mail-dy1-x132f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x132f.google.com (mail-dy1-x132f.google.com [IPv6:2607:f8b0:4864:20::132f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f5V1h6sdJz2xBV
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Feb 2026 16:55:02 +1100 (AEDT)
-X-ASG-Debug-ID: 1770184481-086e2306f656ed0001-v7v7hK
-Received: from ZXSHMBX3.zhaoxin.com (ZXSHMBX3.zhaoxin.com [10.28.252.165]) by mx1.zhaoxin.com with ESMTP id phGCJUvNjH60FnHe (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NO); Wed, 04 Feb 2026 13:54:41 +0800 (CST)
-X-Barracuda-Envelope-From: LeoLiu-oc@zhaoxin.com
-X-Barracuda-RBL-Trusted-Forwarder: 10.28.252.165
-Received: from ZXSHMBX1.zhaoxin.com (10.28.252.163) by ZXSHMBX3.zhaoxin.com
- (10.28.252.165) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.59; Wed, 4 Feb
- 2026 13:54:40 +0800
-Received: from ZXSHMBX1.zhaoxin.com ([fe80::936:f2f9:9efa:3c85]) by
- ZXSHMBX1.zhaoxin.com ([fe80::936:f2f9:9efa:3c85%7]) with mapi id
- 15.01.2507.059; Wed, 4 Feb 2026 13:54:40 +0800
-X-Barracuda-RBL-Trusted-Forwarder: 10.28.252.165
-Received: from HX007EA1.lan (10.32.64.12) by ZXBJMBX03.zhaoxin.com
- (10.29.252.7) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.59; Wed, 4 Feb
- 2026 11:55:42 +0800
-From: LeoLiu-oc <LeoLiu-oc@zhaoxin.com>
-To: Bjorn Helgaas <bhelgaas@google.com>, Mahesh J Salgaonkar
-	<mahesh@linux.ibm.com>, Lukas Wunner <lukas@wunner.de>, Przemek Kitszel
-	<przemyslaw.kitszel@intel.com>, <leoliu-oc@zhaoxin.com>
-CC: Oliver O'Halloran <oohall@gmail.com>, <linuxppc-dev@lists.ozlabs.org>,
-	<linux-pci@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<CobeChen@zhaoxin.com>, <ErosZhang@zhaoxin.com>, <TonyWWang@zhaoxin.com>
-Subject: [PATCH v2] PCI: dpc: Increase pciehp waiting time for DPC recovery
-Date: Wed, 4 Feb 2026 11:55:42 +0800
-X-ASG-Orig-Subj: [PATCH v2] PCI: dpc: Increase pciehp waiting time for DPC recovery
-Message-ID: <20260204035542.53232-1-LeoLiu-oc@zhaoxin.com>
-X-Mailer: git-send-email 2.43.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f5VTt6Lpcz2xBV
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Feb 2026 17:16:01 +1100 (AEDT)
+Received: by mail-dy1-x132f.google.com with SMTP id 5a478bee46e88-2b785801c93so4602000eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Feb 2026 22:16:01 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1770185759; x=1770790559; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=VL5of/f5KyDAfjTDwdEWFiFC2+YlHapoLTi3UvRqx5s=;
+        b=hV+BJpcK40I/qJ+F65s+iwWVE3gkkbhpo0smbFeqIpTFBTPxefDviph5eimglJFuEG
+         sCIGxbyyRui5chEXBL0mvJzGjT2iDZQpcrsiKYQ92Zp74FcqGr5mz3jFbhQJKCeyE8oN
+         8jI1jMHg2AcrjIM7EVvzHXpCcCDhEXyRhsVaJpqp5f9dQy7JjsDvjNZi73Tu6bX+VwVS
+         NCZCYvopl7Tg1m3KwF4uvlbpZBll4hR/z5rw1mFwfIv5HEsMS7w2376hGLcRx/pi7o8t
+         mg3y6uz7Ed93CAW0H9cvFLeYsiphRdjckal0IIDDadhF6sxBud7eI1m7fs66Vk8c7dts
+         WDTQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1770185759; x=1770790559;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=VL5of/f5KyDAfjTDwdEWFiFC2+YlHapoLTi3UvRqx5s=;
+        b=Sn7KxHv9PyHaP0ntWRSPvKpOUFrJZRtMfum68E1ZRRUmBuyT6oEJ/mmaK4KA8rnAMO
+         TfHgKNzRwl8zDcgbW+NO7+SP73j49X/f/ZdbN7UAbqSzuy+XHduNgFfA0LgWt9bp2dKy
+         /MmBD2YgWPitC1uqzzcM76JCaeDmZaWydNI8Lg25KWeKxZ6lP98HX4pdHDx8mP+LVHwp
+         nGO7kq7+jd+Pt/MO8x4YNHJptH3sRhVou7lKBLJ7ei7JPQMBBPx35CP69oWTxfLLX0Tm
+         bQX46jAR+tZ9d6Zheo8D+dGoEjFGkm0zLjdVaY5HPMXzywqIx19tzvHIEK4OwzhLHG4R
+         Gddw==
+X-Forwarded-Encrypted: i=1; AJvYcCVoiQezzr/DWipXeyfI7rjNgXGeweC2xYGaDDp8M5xUaC0g1gnBnQI9HM8TL2/TJOE2cNUbyogOylFVdGU=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwFk8jf6Vi2RVnMNgRYmsaivmkNZFtDSaGfS5VtZUhl+Yv5QAeE
+	o8N2eg5lN+MuxiMwp1W4c85QZOJOlmBwibyty4+ynvDjhAV2Va9nBfgfyEGT+w==
+X-Gm-Gg: AZuq6aLxhL7iuFJO65/sYuj1fu7WLPS2ywDX0VzYlqVPkh8SUxJZSFIXNBGwPmED+Ho
+	7qQXr4E0EGw1fIVOgRv/2Zrsl8K8Khh26QXvc5l0RyLs3xE8NqkItfg+H4dCRA5ceDECHmwQxrL
+	pI4d0gpAzOJp2c43AxlDtZD9Bd6LzmFB15Iw1H2dEhCVqpewu4HBQt+QykEbeMcJLLCfTUhkSs4
+	6L46hRneqZU9euoMysX+L+sYf4/Mr9iCOyjjR+DCw3HQmw1W4//Q5tsCBTkeKJe3w/w17FTYv7H
+	DMNzG/gO+fCPNWtcoUMMgn2UDnjw7Ph8LEO6xLTmtoEKf8Uh7HfYBZgrbZDXrg0N+UsCfkJmXAr
+	NLGvHssXTkFGinfiNFsyY1JKiPShDKFxQAWsXcfocNOkW4y/xotPskSC08gE7+SeoeXpYo+dtST
+	OSVimskOT4Dp+J6AY4dHeviU36eICF2LQ2mLoRQt1/ktffTilYke7bxQ9YG6eVfN3vruDFKg==
+X-Received: by 2002:a17:90b:2889:b0:335:2747:a9b3 with SMTP id 98e67ed59e1d1-3548720a3eamr1376264a91.32.1770179086053;
+        Tue, 03 Feb 2026 20:24:46 -0800 (PST)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.in.ibm.com ([129.41.58.2])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35485eb8d4csm1017430a91.10.2026.02.03.20.24.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 03 Feb 2026 20:24:45 -0800 (PST)
+From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+To: maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	chleroy@kernel.org,
+	peterz@infradead.org,
+	jpoimboe@kernel.org,
+	jbaron@akamai.com,
+	rostedt@goodmis.org,
+	ardb@kernel.org,
+	ojeda@kernel.org,
+	boqun.feng@gmail.com,
+	gary@garyguo.net,
+	bjorn3_gh@protonmail.com,
+	lossin@kernel.org,
+	a.hindborg@kernel.org,
+	aliceryhl@google.com,
+	tmgross@umich.edu,
+	dakr@kernel.org,
+	nathan@kernel.org,
+	nick.desaulniers+lkml@gmail.com,
+	morbo@google.com,
+	justinstitt@google.com,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	rust-for-linux@vger.kernel.org,
+	llvm@lists.linux.dev
+Cc: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+Subject: [PATCH] powerpc: Enable Rust for ppc64le
+Date: Wed,  4 Feb 2026 09:54:17 +0530
+Message-ID: <20260204042417.83903-1-mkchauras@gmail.com>
+X-Mailer: git-send-email 2.52.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,109 +114,189 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain
-X-Originating-IP: [10.32.64.12]
-X-ClientProxiedBy: zxbjmbx1.zhaoxin.com (10.29.252.163) To
- ZXBJMBX03.zhaoxin.com (10.29.252.7)
-X-Moderation-Data: 2/4/2026 1:54:39 PM
-X-Barracuda-Connect: ZXSHMBX3.zhaoxin.com[10.28.252.165]
-X-Barracuda-Start-Time: 1770184481
-X-Barracuda-Encrypted: ECDHE-RSA-AES128-GCM-SHA256
-X-Barracuda-URL: https://mx2.zhaoxin.com:4443/cgi-mod/mark.cgi
-X-Virus-Scanned: by bsmtpd at zhaoxin.com
-X-Barracuda-Scan-Msg-Size: 3433
-X-Barracuda-BRTS-Status: 1
-X-Barracuda-Bayes: INNOCENT GLOBAL 0.0000 1.0000 -2.0210
-X-Barracuda-Spam-Score: -2.02
-X-Barracuda-Spam-Status: No, SCORE=-2.02 using global scores of TAG_LEVEL=1000.0 QUARANTINE_LEVEL=1000.0 KILL_LEVEL=9.0 tests=
-X-Barracuda-Spam-Report: Code version 3.2, rules version 3.2.3.154017
-	Rule breakdown below
-	 pts rule name              description
-	---- ---------------------- --------------------------------------------------
+Content-Transfer-Encoding: 8bit
 
-From: LeoLiu-oc <leoliu-oc@zhaoxin.com>
+Enabling rust support for ppc64 only.
 
-Commit a97396c6eb13 ("PCI: pciehp: Ignore Link Down/Up caused by DPC")
-amended PCIe hotplug to not bring down the slot upon Data Link Layer State
-Changed events caused by Downstream Port Containment.
+To support rust a new macro ARCH_STATIC_BRANCH_ASM in powerpc
+is added to avoid duplication of inline asm between C and Rust.
+This is inline with commit
+aecaf181651c '("jump_label: adjust inline asm to be consistent")'
 
-Commit c3be50f7547c ("PCI: pciehp: Ignore Presence Detect Changed caused by
-DPC") sought to ignore Presence Detect Changed events occurring as a side
-effect of Downstream Port Containment. These commits await recovery from
-DPC and then clears events which occurred in the meantime.
+Tested on powernv9:
 
-However, pciehp_ist() waits up to 4 seconds before assuming that DPC
-recovery has failed and disabling the slot. This timeout period is
-insufficient for some PCIe devices.
+$ uname -rm
+6.19.0-rc8+ ppc64le
 
-For example, The execution of the ice_pci_err_detected() in the ice network
-card driver exceeded the maximum waiting time for DPC recovery, causing the
-pciehp_disable_slot() to be executed which is not needed. From the user's
-point of view, you will see that the ice network card may not be usable and
-could even cause more serious errors, such as a kernel panic. kernel panic
-is caused by a race between pciehp_disable_slot() and pcie_do_recovery().
-In practice, we would observe that the ice network card is in an
-unavailable state and a kernel panic.
+$ sudo modprobe rust_minimal
+[  632.890850] rust_minimal: Rust minimal sample (init)
+[  632.890881] rust_minimal: Am I built-in? false
+[  632.890898] rust_minimal: test_parameter: 1
 
-Therefore, we need to increase the time that pciehp_ist() waits for the DPC
-to recover. For some PCIe devices, the time taken for the error_detected()
-to execute may exceed 16 seconds, but the dpc_reset_link() has not yet been
-executed. In this situation, the Link Down/Up events and Presence Detect
-Changed events that occur during the DPC recovery should also be ignored.
+$ sudo rmmod rust_minimal
+[  648.272832] rust_minimal: My numbers are [72, 108, 200]
+[  648.272873] rust_minimal: Rust minimal sample (exit)
 
-Signed-off-by: LeoLiu-oc <leoliu-oc@zhaoxin.com>
+$ sudo modprobe rust_print
+[  843.410391] rust_print: Rust printing macros sample (init)
+[  843.410424] rust_print: Emergency message (level 0) without args
+[  843.410451] rust_print: Alert message (level 1) without args
+[  843.410477] rust_print: Critical message (level 2) without args
+[  843.410503] rust_print: Error message (level 3) without args
+[  843.410530] rust_print: Warning message (level 4) without args
+[  843.410557] rust_print: Notice message (level 5) without args
+[  843.410594] rust_print: Info message (level 6) without args
+[  843.410617] rust_print: A line that is continued without args
+[  843.410646] rust_print: Emergency message (level 0) with args
+[  843.410675] rust_print: Alert message (level 1) with args
+[  843.410691] rust_print: Critical message (level 2) with args
+[  843.410727] rust_print: Error message (level 3) with args
+[  843.410761] rust_print: Warning message (level 4) with args
+[  843.410796] rust_print: Notice message (level 5) with args
+[  843.410821] rust_print: Info message (level 6) with args
+[  843.410854] rust_print: A line that is continued with args
+[  843.410892] rust_print: 1
+[  843.410895] rust_print: "hello, world"
+[  843.410924] rust_print: [samples/rust/rust_print_main.rs:35:5] c = "hello, world"
+[  843.410977] rust_print: Arc<dyn Display> says 42
+[  843.410979] rust_print: Arc<dyn Display> says hello, world
 
+$ sudo rmmod rust_print
+[  843.411003] rust_print: "hello, world"
+[  888.499935] rust_print: Rust printing macros sample (exit)
+
+Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
 ---
-v2:
- - Modify and add code comments
- - Add handling for error_detected() execution exceeding 16s
+ arch/powerpc/Kconfig                  |  1 +
+ arch/powerpc/Makefile                 |  9 +++++----
+ arch/powerpc/include/asm/jump_label.h | 23 +++++++++++++----------
+ rust/Makefile                         |  1 +
+ scripts/generate_rust_target.rs       | 24 ++++++++++++++++++++++++
+ 5 files changed, 44 insertions(+), 14 deletions(-)
 
-v1: https://lore.kernel.org/all/20260123104034.429060-1-LeoLiu-oc@zhaoxin.c=
-om/
----
- drivers/pci/pcie/dpc.c | 17 +++++++++++++++--
- 1 file changed, 15 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/pci/pcie/dpc.c b/drivers/pci/pcie/dpc.c
-index fc18349614d7..331d0299af6a 100644
---- a/drivers/pci/pcie/dpc.c
-+++ b/drivers/pci/pcie/dpc.c
-@@ -103,6 +103,7 @@ static bool dpc_completed(struct pci_dev *pdev)
- bool pci_dpc_recovered(struct pci_dev *pdev)
- {
- 	struct pci_host_bridge *host;
-+	u16 status;
-=20
- 	if (!pdev->dpc_cap)
- 		return false;
-@@ -118,10 +119,22 @@ bool pci_dpc_recovered(struct pci_dev *pdev)
- 	/*
- 	 * Need a timeout in case DPC never completes due to failure of
- 	 * dpc_wait_rp_inactive().  The spec doesn't mandate a time limit,
--	 * but reports indicate that DPC completes within 4 seconds.
-+	 * but reports indicate that DPC completes within 16 seconds.
- 	 */
- 	wait_event_timeout(dpc_completed_waitqueue, dpc_completed(pdev),
--			   msecs_to_jiffies(4000));
-+			   msecs_to_jiffies(16000));
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 9537a61ebae0..e9b8d761ed52 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -285,6 +285,7 @@ config PPC
+ 	select HAVE_RSEQ
+ 	select HAVE_SAMPLE_FTRACE_DIRECT	if HAVE_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
+ 	select HAVE_SAMPLE_FTRACE_DIRECT_MULTI	if HAVE_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
++	select HAVE_RUST			if PPC64
+ 	select HAVE_SETUP_PER_CPU_AREA		if PPC64
+ 	select HAVE_SOFTIRQ_ON_OWN_STACK
+ 	select HAVE_STACKPROTECTOR		if PPC32 && $(cc-option,$(m32-flag) -mstack-protector-guard=tls -mstack-protector-guard-reg=r2 -mstack-protector-guard-offset=0)
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index a58b1029592c..7ad28cf0fd35 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -172,10 +172,11 @@ CFLAGS-y += $(CONFIG_TUNE_CPU)
+ 
+ asinstr := $(call as-instr,lis 9$(comma)foo@high,-DHAVE_AS_ATHIGH=1)
+ 
+-KBUILD_CPPFLAGS	+= -I $(srctree)/arch/powerpc $(asinstr)
+-KBUILD_AFLAGS	+= $(AFLAGS-y)
+-KBUILD_CFLAGS	+= $(CC_FLAGS_NO_FPU)
+-KBUILD_CFLAGS	+= $(CFLAGS-y)
++KBUILD_CPPFLAGS		+= -I $(srctree)/arch/powerpc $(asinstr)
++KBUILD_AFLAGS		+= $(AFLAGS-y)
++KBUILD_CFLAGS		+= $(CC_FLAGS_NO_FPU)
++KBUILD_CFLAGS		+= $(CFLAGS-y)
++KBUILD_RUSTFLAGS        += -Ctarget-feature=-mma,-vsx,-hard-float,-altivec
+ 
+ CHECKFLAGS	+= -m$(BITS) -D__powerpc__ -D__powerpc$(BITS)__
+ ifdef CONFIG_CPU_BIG_ENDIAN
+diff --git a/arch/powerpc/include/asm/jump_label.h b/arch/powerpc/include/asm/jump_label.h
+index d4eaba459a0e..a6b211502bfe 100644
+--- a/arch/powerpc/include/asm/jump_label.h
++++ b/arch/powerpc/include/asm/jump_label.h
+@@ -15,14 +15,20 @@
+ #define JUMP_ENTRY_TYPE		stringify_in_c(FTR_ENTRY_LONG)
+ #define JUMP_LABEL_NOP_SIZE	4
+ 
++#define JUMP_TABLE_ENTRY(key, label)			\
++	".pushsection __jump_table,  \"aw\"	\n\t"	\
++	".long 1b - ., " label " - .		\n\t"	\
++	JUMP_ENTRY_TYPE key " - .		\n\t"	\
++	".popsection 				\n\t"
 +
-+	/*
-+	 * In some cases, the execution time of report_error_detected()
-+	 * exceeded 16 seconds, and dpc_reset_link() was still waiting to
-+	 * be executed. This situation should be treated as successful dpc
-+	 * recovery.
-+	 */
-+	pci_read_config_word(pdev, pdev->dpc_cap + PCI_EXP_DPC_STATUS, &status);
-+	if ((!PCI_POSSIBLE_ERROR(status)) && (status & PCI_EXP_DPC_STATUS_TRIGGER=
-)) {
-+		pci_warn(pdev, "DPC: error_detected() callback timed out\n");
-+		return true;
-+	}
-=20
- 	return test_and_clear_bit(PCI_DPC_RECOVERED, &pdev->priv_flags);
- }
---=20
-2.43.0
++#define ARCH_STATIC_BRANCH_ASM(key, label)		\
++	"1:	nop				\n\t"	\
++	JUMP_TABLE_ENTRY(key,label)
++
+ static __always_inline bool arch_static_branch(struct static_key *key, bool branch)
+ {
+-	asm goto("1:\n\t"
+-		 "nop # arch_static_branch\n\t"
+-		 ".pushsection __jump_table,  \"aw\"\n\t"
+-		 ".long 1b - ., %l[l_yes] - .\n\t"
+-		 JUMP_ENTRY_TYPE "%c0 - .\n\t"
+-		 ".popsection \n\t"
++	asm goto(
++		 ARCH_STATIC_BRANCH_ASM("%c0", "%l[l_yes]")
+ 		 : :  "i" (&((char *)key)[branch]) : : l_yes);
+ 
+ 	return false;
+@@ -34,10 +40,7 @@ static __always_inline bool arch_static_branch_jump(struct static_key *key, bool
+ {
+ 	asm goto("1:\n\t"
+ 		 "b %l[l_yes] # arch_static_branch_jump\n\t"
+-		 ".pushsection __jump_table,  \"aw\"\n\t"
+-		 ".long 1b - ., %l[l_yes] - .\n\t"
+-		 JUMP_ENTRY_TYPE "%c0 - .\n\t"
+-		 ".popsection \n\t"
++		 JUMP_TABLE_ENTRY("%c0", "%l[l_yes]")
+ 		 : :  "i" (&((char *)key)[branch]) : : l_yes);
+ 
+ 	return false;
+diff --git a/rust/Makefile b/rust/Makefile
+index 5d357dce1704..7a6daa822cbc 100644
+--- a/rust/Makefile
++++ b/rust/Makefile
+@@ -390,6 +390,7 @@ BINDGEN_TARGET_x86	:= x86_64-linux-gnu
+ BINDGEN_TARGET_arm64	:= aarch64-linux-gnu
+ BINDGEN_TARGET_arm	:= arm-linux-gnueabi
+ BINDGEN_TARGET_loongarch	:= loongarch64-linux-gnusf
++BINDGEN_TARGET_powerpc	:= powerpc64le-linux-gnu
+ BINDGEN_TARGET_um	:= $(BINDGEN_TARGET_$(SUBARCH))
+ BINDGEN_TARGET		:= $(BINDGEN_TARGET_$(SRCARCH))
+ 
+diff --git a/scripts/generate_rust_target.rs b/scripts/generate_rust_target.rs
+index 38b3416bb979..875579b37424 100644
+--- a/scripts/generate_rust_target.rs
++++ b/scripts/generate_rust_target.rs
+@@ -256,6 +256,30 @@ fn main() {
+         }
+     } else if cfg.has("LOONGARCH") {
+         panic!("loongarch uses the builtin rustc loongarch64-unknown-none-softfloat target");
++    } else if cfg.has("PPC64") {
++        ts.push("arch", "powerpc64");
++        ts.push(
++            "data-layout",
++            if cfg.has("CPU_LITTLE_ENDIAN") {
++                "e-m:e-Fn32-i64:64-n32:64-S128-v256:256:256-v512:512:512"
++            } else {
++                "E-m:e-Fn32-i64:64-n32:64-S128-v256:256:256-v512:512:512"
++            },
++        );
++        ts.push("features", "-mma,-altivec,-vsx,-hard-float");
++        ts.push(
++            "llvm-target",
++            if cfg.has("CPU_LITTLE_ENDIAN") {
++                "powerpc64le-linux-gnu"
++            } else {
++                "powerpc64-linux-gnu"
++            },
++        );
++        if cfg.rustc_version_atleast(1, 91, 0) {
++            ts.push("target-pointer-width", 64);
++        } else {
++            ts.push("target-pointer-width", "64");
++        }
+     } else {
+         panic!("Unsupported architecture");
+     }
+-- 
+2.52.0
 
 
