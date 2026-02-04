@@ -1,78 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-16572-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16573-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A254EE8B39C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Feb 2026 04:56:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28FA3E8B39F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Feb 2026 05:55:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f5Sjh1bPPz2xqD;
-	Wed, 04 Feb 2026 15:56:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.19
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770180968;
-	cv=none; b=RLG7sb/Q8TKAaTvPo2KvOnsEV3E+wGVyv9cN3YfDRQ12LtKUdIqNElK4iJq/9QRrlatXBZ/+nNnaKBFSM9V1PWzmy3sB/aLm0voC5QISPEVAEpUFivRe8gp8nR/ZDr6qCvKb051C36fEyD5/0CUeKok7wX1rykDa5sKD0zL28Gxx0dWXG36zwbAbJXivQOuswFRKJW3I5iUDt7Tz2c7qvQ8XFXQ361AEmgGln/u9oLI1bsAqgBXLaWo2XvhfI2AWUYbHFJUzReTSgDLT3q/I7RS+0UTJ/q0hodqMTqk/U2Lqdf4XJz+wnlO/rhB/EYrjUKIRZiu76CRqyjjtck3zvg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f5V1k1qGVz2xHt;
+	Wed, 04 Feb 2026 16:55:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=210.0.225.12
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770184506;
+	cv=none; b=Q8W3cUclGC/FFw3h/+Um10KJAXkP+4EZMiadmSe28op+5a39FbCsSSzV404BEZPw7R8HBwHgH9Yf3eKqiDbzQtVvn0dsC6aZqr/r2uqEjKXyuiSslNMk1kINK55Ri6b8bTXsp79Ut5vUQdR5Q3XB8pYtaMfgq6WDT4c1yfKEErhkwh13mTeEYXWlb16xgEU/KTmUDKWhvGhcXfC3bZfYAO/kUYBjCip73jmi8u5f9Rw0s0J2OTBd7sm3VtQ19bkLPY0Zm93yxteYkrfifUWm0ulxi2cRU0KlLg451k1mXjPgZEJAYEItFNSTMv7mBT/j28ABaheQQ8P6YCShwLuISQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770180968; c=relaxed/relaxed;
-	bh=brr/J2EOgJ2TOEABdIK6FjJERPy3YjEqZWn5qvvuZe0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=bKWC56Sc932QFXfe2dGyllpkCLIM6K43LtfgDwjjEKy2tN8Qb4lgYMvRowJccp++EBjHjZQX3qwoXFw2WiWIqhfP6FRqf6o3xhzdiDakI5nmh9WKYT49h23ocLHk2yFbkgn+X1f5lYyf1ehcmTV9Lhtji3KSU3U4Fr1WsqZGLxraQtNzRuj2bv0WQd3Dp3OUe6lTK1BXXbDOH4fdiuF218kZ1ryqLD6J2qNszK2Jnk640nDuTabbJ6ZbbItRl8fgJquU0Z7Swxz0ZHgAkt9K+UyCg+UcFO3+PRfmdasR4n1eC/mLcZL/MLza8wQcJsCdw7aDFS/M2lXh9/8Qjhxqvg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=cAGRuogC; dkim-atps=neutral; spf=pass (client-ip=192.198.163.19; helo=mgamail.intel.com; envelope-from=ricardo.neri-calderon@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=cAGRuogC;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.19; helo=mgamail.intel.com; envelope-from=ricardo.neri-calderon@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1770184506; c=relaxed/relaxed;
+	bh=krvWU3RIDCFnaOlsjPiSzDQ5pbtuYU67LBfZYb0ibVA=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ohHPdHffJ8oVpfJk5pBcy1ePpB03/R0Osy6BupHX65XmLWiXs9a/GBvKKOJPCwK7h+JFoRvZS4nYsykALmFr1SNXAtvzvjbwLQrqx/tZnrPDvkYDcj014uXqf7AzmltlOXn+dVllcOy3M9YbOJgD0kV8IKQudCmNsybq+E6KAJpCE+F0zo7GYuSU+mFwdWTazIls6vhwQE7xbJgEwVR6Oo/Loz2HFlXnK0ogwW9JRQwlyy/04Dj1RZO+MRMdfTypP2sDhoqOJ0BRR3ktN3t811gBpM4eV1Nuzd29yFdxo+cN1xYUHcwONfLHoVYBFmvR2voJAMf/4WFo7w0QxWZsVA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=zhaoxin.com; spf=pass (client-ip=210.0.225.12; helo=mx1.zhaoxin.com; envelope-from=leoliu-oc@zhaoxin.com; receiver=lists.ozlabs.org) smtp.mailfrom=zhaoxin.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=zhaoxin.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zhaoxin.com (client-ip=210.0.225.12; helo=mx1.zhaoxin.com; envelope-from=leoliu-oc@zhaoxin.com; receiver=lists.ozlabs.org)
+Received: from mx1.zhaoxin.com (MX1.ZHAOXIN.COM [210.0.225.12])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f5Sjd4B2Dz2xm3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Feb 2026 15:56:03 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1770180966; x=1801716966;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=K8kS8LTj7SacAhbR8Lm57iCY0N8iq2KDeT/Xb2+vjLw=;
-  b=cAGRuogCbXLI7v5g6z5EpQrnYKGVZkYwKTlhKMSG+T3zGden8FWT1UCg
-   GsJwZn6G0XEE2vEsOd28VWFFiMvW8pYRItRkQPVI53ArhpVFlWxVCjvD3
-   fY59zBhUFR592QoqJx2XDxeZoOywjT/PoxOqwau4Ncz3Oqhz53ixqacv8
-   fO0Z8NhfJSio36Ba9LHMh9IRTjc6ZJwG3y8nm7kldF7j1EA/Iqi/KisAT
-   0k8wRPr9xhN2jNj/IxzsqoJzW8C1JrqZU1bLL3lEuceyywCwrjJDTDbxt
-   NjQv3xqMsrDWZd4F2UqO6/q0nrB5PuD98c+ZqrN05BwUmeqzXTTYJtRvn
-   g==;
-X-CSE-ConnectionGUID: +KrBdA2lQSOCuh94QRaf5A==
-X-CSE-MsgGUID: rwSgbRxdRAeRUupv58OO4w==
-X-IronPort-AV: E=McAfee;i="6800,10657,11691"; a="70382590"
-X-IronPort-AV: E=Sophos;i="6.21,272,1763452800"; 
-   d="scan'208";a="70382590"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
-  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Feb 2026 20:56:00 -0800
-X-CSE-ConnectionGUID: U8O4G4VkRhiTWmO+8Oi4kA==
-X-CSE-MsgGUID: KGpyjR7UQ8WugpKpjJ1iqQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,272,1763452800"; 
-   d="scan'208";a="214757473"
-Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
-  by fmviesa004.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Feb 2026 20:55:59 -0800
-Date: Tue, 3 Feb 2026 21:02:05 -0800
-From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-To: Thomas Gleixner <tglx@kernel.org>
-Cc: Tony Luck <tony.luck@intel.com>, Dave Hansen <dave.hansen@intel.com>,
-	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-	Reinette Chatre <reinette.chatre@intel.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Len Brown <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>,
-	Stephane Eranian <eranian@google.com>,
-	"Ravi V. Shankar" <ravi.v.shankar@intel.com>,
-	Ricardo Neri <ricardo.neri@intel.com>,
-	linuxppc-dev@lists.ozlabs.org, iommu@lists.linux-foundation.org,
-	linux-kernel@vger.kernel.org, Alexander Graf <graf@amazon.com>
-Subject: Re: [PATCH v7 00/24] x86: Implement an HPET-based hardlockup detector
-Message-ID: <20260204050205.GA31059@ranerica-svr.sc.intel.com>
-References: <20230301234753.28582-1-ricardo.neri-calderon@linux.intel.com>
- <20230413035844.GA31620@ranerica-svr.sc.intel.com>
- <874inx4y4m.ffs@tglx>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f5V1h6sdJz2xBV
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Feb 2026 16:55:02 +1100 (AEDT)
+X-ASG-Debug-ID: 1770184481-086e2306f656ed0001-v7v7hK
+Received: from ZXSHMBX3.zhaoxin.com (ZXSHMBX3.zhaoxin.com [10.28.252.165]) by mx1.zhaoxin.com with ESMTP id phGCJUvNjH60FnHe (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NO); Wed, 04 Feb 2026 13:54:41 +0800 (CST)
+X-Barracuda-Envelope-From: LeoLiu-oc@zhaoxin.com
+X-Barracuda-RBL-Trusted-Forwarder: 10.28.252.165
+Received: from ZXSHMBX1.zhaoxin.com (10.28.252.163) by ZXSHMBX3.zhaoxin.com
+ (10.28.252.165) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.59; Wed, 4 Feb
+ 2026 13:54:40 +0800
+Received: from ZXSHMBX1.zhaoxin.com ([fe80::936:f2f9:9efa:3c85]) by
+ ZXSHMBX1.zhaoxin.com ([fe80::936:f2f9:9efa:3c85%7]) with mapi id
+ 15.01.2507.059; Wed, 4 Feb 2026 13:54:40 +0800
+X-Barracuda-RBL-Trusted-Forwarder: 10.28.252.165
+Received: from HX007EA1.lan (10.32.64.12) by ZXBJMBX03.zhaoxin.com
+ (10.29.252.7) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.59; Wed, 4 Feb
+ 2026 11:55:42 +0800
+From: LeoLiu-oc <LeoLiu-oc@zhaoxin.com>
+To: Bjorn Helgaas <bhelgaas@google.com>, Mahesh J Salgaonkar
+	<mahesh@linux.ibm.com>, Lukas Wunner <lukas@wunner.de>, Przemek Kitszel
+	<przemyslaw.kitszel@intel.com>, <leoliu-oc@zhaoxin.com>
+CC: Oliver O'Halloran <oohall@gmail.com>, <linuxppc-dev@lists.ozlabs.org>,
+	<linux-pci@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<CobeChen@zhaoxin.com>, <ErosZhang@zhaoxin.com>, <TonyWWang@zhaoxin.com>
+Subject: [PATCH v2] PCI: dpc: Increase pciehp waiting time for DPC recovery
+Date: Wed, 4 Feb 2026 11:55:42 +0800
+X-ASG-Orig-Subj: [PATCH v2] PCI: dpc: Increase pciehp waiting time for DPC recovery
+Message-ID: <20260204035542.53232-1-LeoLiu-oc@zhaoxin.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,35 +66,109 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <874inx4y4m.ffs@tglx>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
+X-Originating-IP: [10.32.64.12]
+X-ClientProxiedBy: zxbjmbx1.zhaoxin.com (10.29.252.163) To
+ ZXBJMBX03.zhaoxin.com (10.29.252.7)
+X-Moderation-Data: 2/4/2026 1:54:39 PM
+X-Barracuda-Connect: ZXSHMBX3.zhaoxin.com[10.28.252.165]
+X-Barracuda-Start-Time: 1770184481
+X-Barracuda-Encrypted: ECDHE-RSA-AES128-GCM-SHA256
+X-Barracuda-URL: https://mx2.zhaoxin.com:4443/cgi-mod/mark.cgi
+X-Virus-Scanned: by bsmtpd at zhaoxin.com
+X-Barracuda-Scan-Msg-Size: 3433
+X-Barracuda-BRTS-Status: 1
+X-Barracuda-Bayes: INNOCENT GLOBAL 0.0000 1.0000 -2.0210
+X-Barracuda-Spam-Score: -2.02
+X-Barracuda-Spam-Status: No, SCORE=-2.02 using global scores of TAG_LEVEL=1000.0 QUARANTINE_LEVEL=1000.0 KILL_LEVEL=9.0 tests=
+X-Barracuda-Spam-Report: Code version 3.2, rules version 3.2.3.154017
+	Rule breakdown below
+	 pts rule name              description
+	---- ---------------------- --------------------------------------------------
 
-On Tue, Feb 03, 2026 at 04:58:49PM +0100, Thomas Gleixner wrote:
-> On Wed, Apr 12 2023 at 20:58, Ricardo Neri wrote:
-> > Hello, checking if there is any feedback on these patches that I plan to
-> > send to the x86 maintainer.
-> 
-> Seems this completely fell through the cracks. Alexander reinvented this
-> recently with all mistakes made before, which made me come back to this.
-> 
-> This needs to be respun against current mainline.
+From: LeoLiu-oc <leoliu-oc@zhaoxin.com>
 
-Sure, I will rebase it on mainline.
+Commit a97396c6eb13 ("PCI: pciehp: Ignore Link Down/Up caused by DPC")
+amended PCIe hotplug to not bring down the slot upon Data Link Layer State
+Changed events caused by Downstream Port Containment.
 
-> Most rejects for the x86 preparatory patches are trivial,
+Commit c3be50f7547c ("PCI: pciehp: Ignore Presence Detect Changed caused by
+DPC") sought to ignore Presence Detect Changed events occurring as a side
+effect of Downstream Port Containment. These commits await recovery from
+DPC and then clears events which occurred in the meantime.
 
-I am going through your feedback and will update the series as needed.
+However, pciehp_ist() waits up to 4 seconds before assuming that DPC
+recovery has failed and disabling the slot. This timeout period is
+insufficient for some PCIe devices.
 
-> just the AMD IOMMU code has changed significantly.
-> I haven't tried to apply the core watchdog stuff at all.
+For example, The execution of the ice_pci_err_detected() in the ice network
+card driver exceeded the maximum waiting time for DPC recovery, causing the
+pciehp_disable_slot() to be executed which is not needed. From the user's
+point of view, you will see that the ice network card may not be usable and
+could even cause more serious errors, such as a kernel panic. kernel panic
+is caused by a race between pciehp_disable_slot() and pcie_do_recovery().
+In practice, we would observe that the ice network card is in an
+unavailable state and a kernel panic.
 
-I'll look into the needed changes.
+Therefore, we need to increase the time that pciehp_ist() waits for the DPC
+to recover. For some PCIe devices, the time taken for the error_detected()
+to execute may exceed 16 seconds, but the dpc_reset_link() has not yet been
+executed. In this situation, the Link Down/Up events and Presence Detect
+Changed events that occur during the DPC recovery should also be ignored.
 
-> 
-> I'll go through the x86/HPET side quickly and comment on what might need
-> to be still address.
+Signed-off-by: LeoLiu-oc <leoliu-oc@zhaoxin.com>
 
-Thank you!
+---
+v2:
+ - Modify and add code comments
+ - Add handling for error_detected() execution exceeding 16s
+
+v1: https://lore.kernel.org/all/20260123104034.429060-1-LeoLiu-oc@zhaoxin.c=
+om/
+---
+ drivers/pci/pcie/dpc.c | 17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/pci/pcie/dpc.c b/drivers/pci/pcie/dpc.c
+index fc18349614d7..331d0299af6a 100644
+--- a/drivers/pci/pcie/dpc.c
++++ b/drivers/pci/pcie/dpc.c
+@@ -103,6 +103,7 @@ static bool dpc_completed(struct pci_dev *pdev)
+ bool pci_dpc_recovered(struct pci_dev *pdev)
+ {
+ 	struct pci_host_bridge *host;
++	u16 status;
+=20
+ 	if (!pdev->dpc_cap)
+ 		return false;
+@@ -118,10 +119,22 @@ bool pci_dpc_recovered(struct pci_dev *pdev)
+ 	/*
+ 	 * Need a timeout in case DPC never completes due to failure of
+ 	 * dpc_wait_rp_inactive().  The spec doesn't mandate a time limit,
+-	 * but reports indicate that DPC completes within 4 seconds.
++	 * but reports indicate that DPC completes within 16 seconds.
+ 	 */
+ 	wait_event_timeout(dpc_completed_waitqueue, dpc_completed(pdev),
+-			   msecs_to_jiffies(4000));
++			   msecs_to_jiffies(16000));
++
++	/*
++	 * In some cases, the execution time of report_error_detected()
++	 * exceeded 16 seconds, and dpc_reset_link() was still waiting to
++	 * be executed. This situation should be treated as successful dpc
++	 * recovery.
++	 */
++	pci_read_config_word(pdev, pdev->dpc_cap + PCI_EXP_DPC_STATUS, &status);
++	if ((!PCI_POSSIBLE_ERROR(status)) && (status & PCI_EXP_DPC_STATUS_TRIGGER=
+)) {
++		pci_warn(pdev, "DPC: error_detected() callback timed out\n");
++		return true;
++	}
+=20
+ 	return test_and_clear_bit(PCI_DPC_RECOVERED, &pdev->priv_flags);
+ }
+--=20
+2.43.0
+
 
