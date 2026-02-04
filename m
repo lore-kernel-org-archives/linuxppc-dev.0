@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-16587-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16588-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C4F5E9D3FF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Feb 2026 15:20:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A877E9D3FF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Feb 2026 15:22:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f5kZ66BF0z2xm3;
-	Thu, 05 Feb 2026 02:20:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770218430;
-	cv=none; b=R52nrh/HxwcI99LbTcg1ZVdg4WAAgXi6sYi3MvMJgtPAKtdeHA1IYGRhX+l/+smtvrLvNFnVfGzLrFSCAPXEsWgTU04lwOZBANIgeFOSMkq509uFb7vsY/aOgNl+dEMYmDoatWjp7VGj5Y3ilBHWxwoqJavHQ+wgG7S+0VLNvF8xZVVww6MMPDhskBPKgqoFaZTPOXGFlLo0u+ZhKozMXnrzPTiyEcgqMf6psYG0a9lepDLlxebRU55vh1ChMMnJYaE1KfaKcCBfAlJY55k59RZvokpAiYHG2WC8BES98OVaFMM1q3+JrUe2oHzU9Kl20JFxzwWIfL0tfF8AQtKjAA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f5kcM738Hz2xm3;
+	Thu, 05 Feb 2026 02:22:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770218547;
+	cv=none; b=ArZZab+yLx54shgPFahK1y1/KSZyoPrYJFf+KR0OGNBdIfm/nH4PXp9eU1k7C1zvnmGQzR+TFYnkPu6DbvqQRL29hCK1PRUSGxwNiuhI/36QW6YeSn58m33b45SQUmH+kPRCGG6+l1KoESoUtcgx4PQJcoe11m7DL7HCLmjtiCj+rknqs9NDo3IaafVbPNOv6Sq9CiXD4Z/tkA9hqKVx95UOJghMLCGUdsx1anasUSOEJq2117EsMfzKJL8U6mtQkuXVb+R/f+/Qng1sp1c11b7Rm3ckfTYiFtnt0ZcJXBnQWnO1KIPoX6ffTVdhOK0o5cpR8on8KQrmXeu8S0Z+Vw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770218430; c=relaxed/relaxed;
-	bh=7pD4L63+b+j3hA00EWBUcMoTppTDGstuV/J24qN2eq8=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:To:From:
-	 References:In-Reply-To; b=Mus2u9TR2NHizEpuIwVYP4R1Dd3og3JvtCjbnSvNdYx2Y9ThcoTQ4aVnHHUi3QjAs/kinPw9PRKNZIpNyd3R7TX/TpQzfeO53G90oPvdxyvUes6hGwmkMOuQtB2T+LA21zvKJEs0UX1fjGXXw6ZwvRjgQSsZGjqKgdvem5KsVFUDjFZkz48icqoEchwaMPZsTDsmGaNTEx91Mngw1aT68vEr4oUXIBMdiRbbswtTdq/W6qMv7FT9UnES4kX6lfEzjzpH5ZQNiMuOWtDLFwzVGcbHE1fwiIF9IeenkCHclizzjW01IG30/N55fdjnlIoUWTXyBVsWjk4rTh8bgRNPug==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ubXJVA9I; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1770218547; c=relaxed/relaxed;
+	bh=2AeUjjckE6ckbEbtZhA2yK/5rvZ03cd2hDiS+we+mO8=;
+	h=Mime-Version:Content-Type:Date:Message-Id:To:From:Subject:Cc:
+	 References:In-Reply-To; b=B5na9GDscYpMLR1qbUnn/gl3w1AsPrDDeyGrKAW0TSMPJGX3weim4zOiXvocxUXOYvFgesKQHMv0t/U2GDqEmuRczVlV+mnlKm68Qt1KIolwnBMJyHGmWPhksCSrC5bCWw9YdbTQPBdR9HiN/mHBVrjLe+yamHao2PSWWmDJmya2vnwwJ1TWAbYykeGFZlvZ4fjd4W+Plo8YFuUwDGqdhgDUl0D0Ic/v5lkH6MK1M/levU0mqUMinFl4T85U5apSejhL5HNY4PYbkw7LWBqi/XJzKtKi6ZI1uIES9Xi2OoLfwuHfu85YTsgh+jjbJdSaL0QCXnpUrEF3yHyd+LuluQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TTfSlDeb; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ubXJVA9I;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TTfSlDeb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f5kZ61ZD7z2xJ5
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Feb 2026 02:20:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f5kcM1P95z2xJ5
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Feb 2026 02:22:27 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 29FA960138;
-	Wed,  4 Feb 2026 15:20:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D537DC19423;
-	Wed,  4 Feb 2026 15:20:21 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 829F040622;
+	Wed,  4 Feb 2026 15:22:24 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4F7DBC4CEF7;
+	Wed,  4 Feb 2026 15:22:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1770218427;
-	bh=LV83XAoHqKAShfT+AE1ovPhvCrwFlhSL6wBvyLgD+xY=;
-	h=Date:Subject:Cc:To:From:References:In-Reply-To:From;
-	b=ubXJVA9IWQFsVT10MV2cX8xswhetEh26NAfls/hCUAlfrGGDCWcWxFPBf7Zi5FVzg
-	 ZVvKGaDsLhtq4c0XyIq9GvAgi8sZDwd56jJXpJliLSsDtyM3l3d8PghQupdMMVALTD
-	 8Z44+C7aR1EXkXVA28gk2mQVJomrAxQfxnLTTioF3nuWtawWMU3TwM5WaxQkV2/BtN
-	 E3FbJj++4DNnvWR3TyGdZZ8lg1un5DVgh+693lqv/tDluv/nYwwYPr/ZEbhW/ZFpiv
-	 Ng6eYhXiyLX3/BdlY/jMPTb+n99xaEWOjC0DtKeV8QVBBEnvpLvLec6vZetewHt2fT
-	 KJrj0xGWmUGkA==
+	s=k20201202; t=1770218544;
+	bh=QKVVD+VED38HnrXr/JITeGWgjURaXPWa1Xedn84btf4=;
+	h=Date:To:From:Subject:Cc:References:In-Reply-To:From;
+	b=TTfSlDebQAJqui1BgHSLQCpxmS1XraC4tCysTQlx/7N2g5rtB+tlpXXC0ldh9xiGD
+	 OT8seMStZDGN8ZHn4zPekngkKI8Kvzghah8MwYXK7gHzIkPw8cT8Zj7K2ylotwmyyS
+	 5bVn3aetLQXvUA5Hs4YZmtbHYz9r1UyD26f12s1cpSqTj6NaT3R8XUt5zAnjhjVuOe
+	 s/9baVrvWxyOP6X+0aeCGahyFh/hVJDzPmYHNW5P/ri9bGycBC0GpaLlBJE3BU95XC
+	 5Avy4MUetp//pSBPcuLXYM3oWMorFMHTYePXG6RB/exwpOEYhPKicSOTfJOVBWXyHq
+	 Z/mUgO6aOJ6Ug==
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,10 +59,12 @@ Precedence: list
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset=UTF-8
-Date: Wed, 04 Feb 2026 16:20:20 +0100
-Message-Id: <DG6A23IKOR3S.E8UNRLDT8GRD@kernel.org>
-Subject: Re: [PATCH v2 1/4] rust: io: Add big-endian read and write
- functions
+Date: Wed, 04 Feb 2026 16:22:16 +0100
+Message-Id: <DG6A3L2W1YC0.YOB6BUMGG38F@kernel.org>
+To: "Link Mauve" <linkmauve@linkmauve.fr>
+From: "Danilo Krummrich" <dakr@kernel.org>
+Subject: Re: [PATCH v2 2/4] rust: nvmem: Add an abstraction for nvmem
+ providers
 Cc: <rust-for-linux@vger.kernel.org>, "Madhavan Srinivasan"
  <maddy@linux.ibm.com>, "Michael Ellerman" <mpe@ellerman.id.au>, "Nicholas
  Piggin" <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)"
@@ -83,46 +85,32 @@ Cc: <rust-for-linux@vger.kernel.org>, "Madhavan Srinivasan"
  <officialTechflashYT@gmail.com>, "Ash Logan" <ash@heyquark.com>, "Roberto
  Van Eeden" <rw-r-r-0644@protonmail.com>,
  =?utf-8?q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
-To: "Link Mauve" <linkmauve@linkmauve.fr>
-From: "Danilo Krummrich" <dakr@kernel.org>
 References: <20260204040505.8447-1-linkmauve@linkmauve.fr>
- <20260204040505.8447-2-linkmauve@linkmauve.fr>
- <DG6A0WRA0JZC.SPDT9WEXF92K@kernel.org>
-In-Reply-To: <DG6A0WRA0JZC.SPDT9WEXF92K@kernel.org>
+ <20260204040505.8447-3-linkmauve@linkmauve.fr>
+In-Reply-To: <20260204040505.8447-3-linkmauve@linkmauve.fr>
 
-On Wed Feb 4, 2026 at 4:18 PM CET, Danilo Krummrich wrote:
-> On Wed Feb 4, 2026 at 5:04 AM CET, Link Mauve wrote:
->> Another option would be to call u32::swap_bytes() on the data being
->> read/written, but these helpers make the Rust code as ergonomic as the C
->> code.
->>
->> Signed-off-by: Link Mauve <linkmauve@linkmauve.fr>
->
-> The I/O stuff recently changed quite significantly, please have a look at=
- the
-> driver-core-next branch [1] in the driver-core tree.
->
-> Also, instead of providing additional *be() methods, we should just creat=
-e a new
-> type io::Endianness and use it to indicate the device endianness when req=
-uesting
-> the I/O resource.
->
-> For instance, for your driver we could have
->
-> 	request.iomap_exclusive_sized::<8>(Endianness::Big)?
->
-> and then let the I/O backend choose the correct accessors based on this.
->
-> I.e. the device is either big or little endian, hence we don't need to pr=
-ovide
-> both accessors at the same time.
->
-> [1] https://git.kernel.org/pub/scm/linux/kernel/git/driver-core/driver-co=
-re.git/log/?h=3Ddriver-core-next
+On Wed Feb 4, 2026 at 5:04 AM CET, Link Mauve wrote:
+> +impl Device {
+> +    /// Register a managed nvmem provider on the given device.
+> +    pub fn nvmem_register<T>(&self, mut config: NvmemConfig<T>, priv_: &=
+T::Priv)
+> +    where
+> +        T: NvmemProvider + Default,
+> +    {
+> +        // FIXME: The last cast to mut indicates some unsoundness here.
+> +        config.inner.priv_ =3D core::ptr::from_ref(priv_).cast::<c_void>=
+().cast_mut();
+> +        config.inner.dev =3D self.as_raw();
+> +        config.inner.reg_read =3D Some(NvmemConfig::<T>::reg_read);
+> +        config.inner.reg_write =3D Some(NvmemConfig::<T>::reg_write);
+> +        // SAFETY: Both self and config can=E2=80=99t be null here, and =
+should have the correct type.
+> +        unsafe { bindings::devm_nvmem_register(self.as_raw(), &config.in=
+ner) };
+> +    }
+> +}
 
-Forgot to mention, please also consider this patch series [2] for your work=
-.
-
-[2] https://lore.kernel.org/all/20260202-io-v1-0-9bb2177d23be@nvidia.com/
+This should not be a method on the generic device type. Typically we use a
+Registration struct for this, i.e. this would become
+nvmem::Registration::register().
 
