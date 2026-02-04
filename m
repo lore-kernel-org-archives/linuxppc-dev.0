@@ -1,70 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-16582-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16583-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA356E95399
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Feb 2026 12:55:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A3E3E9539A
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Feb 2026 13:03:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f5gLh3nKBz2xm3;
-	Wed, 04 Feb 2026 23:55:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::34a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770209724;
-	cv=none; b=gnZXPqQHSfDjpPaXeVjdh/ZxDpzg3myg7APvHH11++MicfMFt4/WdIq3ZuUXffh8+gwYXQdFvK43gYwmLVe4pLIWVSx2JiZVYCanYjYXpQSNrc7oMyNALCQFnOlQQdYPCV0PETEMlrOo3HlEqUFnV4HkmDLz/n+oCS98pAu3UciUbWmT5eOS6ujympDaJ6253UiPLNseA49146P1hBSZqRoX5UhoLQmYVRJ999yn4zY8sZ+comNf3utrtr/5lU+imjysoKcdXshfeoTP62IhTF+2NKGXEHRkaE4Y42IP1i5WnrJmeOHAdaazocZxvjjED2yl2GW30t10FX9c6WZ3Jg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f5gWm38tSz2xm3;
+	Thu, 05 Feb 2026 00:03:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770210196;
+	cv=none; b=BTFgsZGXVVHglImeju97kn4KQ0nX+35m+xKCTuFHN3jVfI+r8Zex0UqI6xfMLXd1e14RJeZDsAFPC3aF4RKhFHNGEH78j6c3IgGgqba7Rn4VWfo2mpmJyO7o2mQ3p45IYqQJlp3cxQ0CW3l32TBn1HlqtJSz/8wku55AQmlptSgjjlkHljvOCr/RLFBxLzhMpyFXrcllLXoIE/n0tETEE5fRyCPYvR0hz8eqgOtW6COpW6CYcMKjsBAS/5EQARVbKfJezaFZQ+Smw/Bp3nEKYTUCt4/Bb2QuWi2Ejw6/++QdAjJ3m7LeFtYviCOaKhNgkBnW++T5BnDE6Zz/PAWD5Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770209724; c=relaxed/relaxed;
-	bh=D1+zqDYtEzNHH8qUq1QENLiYsBbkZqTWhXubUu0+QkU=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=N70zGDMrI0xzwP4eTDW2rvHSGmMsU6GnB4fH1mbM4p2bSAY6Tv1nRL+DByU7oI0w+T+prOsBffb2uuWPTDikTjHFp9JPUeNFQJnvDHt+Tbj6UVOiDNi01vVCk0YKcrORo6TViVZedrB63sdEZVKv/4xEewohDUB7oxMcgE4SuTo+X1t3U5p1yY9skK6WSKX/koxmns86sGibMrnX8m32oErDuyHNUDKTqm5qjclzMcYGS0o0lsOnYX8KS6Bxo2FV34Yfz2T/EbgZi4zP8MyUXof6uKWyPI3jk5ZtYc/2/CW2VlyM/JLj8YldMFy1CiQj0Dh2qk1iCrifHIb/I7YLow==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=H+x6uFV7; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::34a; helo=mail-wm1-x34a.google.com; envelope-from=3tkgdaqkkdjk3eb57krae9hh9e7.5hfebgnqii5-67oeblml.hse34l.hk9@flex--aliceryhl.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--aliceryhl.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1770210196; c=relaxed/relaxed;
+	bh=kkQ9WSOJMPpWw+ZJkdpoFoBelTlijNy7vQcOjcZyFKI=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=aHA9YrfY9SsS6NLacbOrZNZUgIz+KWt3u56nC3vpmoHANEd03Slc++60t0DEx2nHiI1alDyX5cpi6mWQEIdQ6cbVQ1b/lBwRIMoBayW0Kd9s8M359l53ssmwF6kxXPjhpGUjs3h2s/8fxCPw4RfEEeAOgIyg3rq8Bnyqdf1ISA5/zZkzWi/fY0iMX//WRq3d/ZIAu/RbvvSfqcNThKQxXIxTDQ0OUE6ll2OS4+0qN6YGh4iJEixaj+9RayscvqaU9iLZZVAX3AZVJ6ANLavLAWy+gDekMsDaqGSrZkv0SqTTDZrbjLkCtYrfnNnWH2l9Ngnkr6OTYHqerXYVrECfIQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=u+44IJQC; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=H+x6uFV7;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=u+44IJQC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--aliceryhl.bounces.google.com (client-ip=2a00:1450:4864:20::34a; helo=mail-wm1-x34a.google.com; envelope-from=3tkgdaqkkdjk3eb57krae9hh9e7.5hfebgnqii5-67oeblml.hse34l.hk9@flex--aliceryhl.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x34a.google.com (mail-wm1-x34a.google.com [IPv6:2a00:1450:4864:20::34a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f5gLf48qjz2xJ5
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Feb 2026 23:55:21 +1100 (AEDT)
-Received: by mail-wm1-x34a.google.com with SMTP id 5b1f17b1804b1-4803e8b6007so56350835e9.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Feb 2026 04:55:21 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1770209719; x=1770814519; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:from:subject:message-id:references
-         :mime-version:in-reply-to:date:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=D1+zqDYtEzNHH8qUq1QENLiYsBbkZqTWhXubUu0+QkU=;
-        b=H+x6uFV7u7YR4IY89atQfarC18pitMPjgzzPzxwP7EemL0RPlEW52aB3P1Oly+wAr+
-         YfxdsRjn3pDWKLooZKI0vbT4i1l5glmdH5s1n2iWU0gDvwkpO2Dj4f1dedxdSEJ5SVe3
-         Kz8K62/zGTRg8rFpweF+2r14ZWpxSUtK2MolLVIvjgeD+iNYDlHqClk7vNcC3sPZ81rz
-         1kWT2yd99AwWfmQKiJI9FXfz3UH/n97XkDmjCXBoe8cl2SvxpGdf9Kn0nyuzusb8OZ6u
-         qgkJzTaYcv2MVCC+5WGjw9K/ZD262zSzd6njI9WWwROM8J9xSUAt2+FACJFH7jCIGq3V
-         K4CQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770209719; x=1770814519;
-        h=content-transfer-encoding:cc:to:from:subject:message-id:references
-         :mime-version:in-reply-to:date:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=D1+zqDYtEzNHH8qUq1QENLiYsBbkZqTWhXubUu0+QkU=;
-        b=sytm+DUJlExkkSpbM03cI/M5upj3KSGSsA0WPo6MZokGi0C2DBo6sBfEO7SR/6wpIy
-         6ubLL0vjnAvCYOuSDUPX/4V96cWetA5Z2kHHoF31kcdSR8eCktoFJJmHs019GjNwssXe
-         zY6qF4fT1SQwJvjrX9Of8QQXW3NGWK16t4NZaN5hIsd7gQe5zNafuChh6yKraXm8NdQ2
-         g00JFXTa7lPBxA3HOpLxuwYtAiRNAxB9yJjE+SqqI4xX7Kv5EAv2rtRRoRWOsEwaZ3rI
-         GcaolITyxq4gdxGNHQI8W7UwDZuJ7egCmqlEx2VmcuPdRvvZo2yNNBvoeG549NTHRNyi
-         8Zjg==
-X-Forwarded-Encrypted: i=1; AJvYcCUxRdWS+fRLpGvLGDLbD5AuT5h+B1FVMRdw+htasNbZFtBAmPorz+CqLEIL7gm6rO/JYhH/9TPO8Ogpwjc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxMJVwkOguIFOgSMCLNs/aXBXj50QKb3rdEAvSoJKec+UxGZpJ5
-	djwaZiMH61jPJjVBtgMHo3TY8MjnAF4GO7MM5wiO4T5Y7e8LbVV8qS7IhWTXMRh3/4TKFyUcZ8w
-	NmFsnkYIQAE9z1HjJ1w==
-X-Received: from wmxa18-n2.prod.google.com ([2002:a05:600d:6452:20b0:480:6c6f:8c06])
- (user=aliceryhl job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:600c:8b88:b0:480:4a90:1b00 with SMTP id 5b1f17b1804b1-4830e96d623mr34918315e9.20.1770209718861;
- Wed, 04 Feb 2026 04:55:18 -0800 (PST)
-Date: Wed, 4 Feb 2026 12:55:17 +0000
-In-Reply-To: <DG66KRKI62WA.3GILMBH1UCYB@garyguo.net>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f5gWk5sZQz2xJ5
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Feb 2026 00:03:14 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 6CEDF60142;
+	Wed,  4 Feb 2026 13:03:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1F8BBC2BC86;
+	Wed,  4 Feb 2026 13:03:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1770210190;
+	bh=n8rNqrB2sTthf6NVyEee9YXiwP/2LrMsSu6Zji+6OWg=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=u+44IJQCVUd53BQZpm9rvKrf6WvgQCBPh9cfEzBOAPp8ACrJy3cEdIRr3BwCjVAJt
+	 rdEUf15WCtE8HsRIkni7PTcivOIgvJEYTwQ5eW7buvnwgeqM/MY8WpwsPOmbAoYIiR
+	 rwWNJH19hWzGBMb+Z4SqqyyDZdbu5BUS6pfVM+ppbqWV/RBWqsInZLC9b/Gje6tt61
+	 fEUZMCn7ZKEQIexUsRFfsA0PFkZ+IwKUISbvLVLE2Is5Xh/nz+o7Fsan0pJeJrCHp/
+	 19jMFAwn+f3sdb4CI3yq8WZGeD1N/Oc2Y/cXWAuELynYC/XJfKcmoQeHFZ7ZnOWKka
+	 kTV8WlZ2jxtRQ==
+From: Mark Brown <broonie@kernel.org>
+To: Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>, 
+ Ziyi Guo <n7l8m4@u.northwestern.edu>
+Cc: Fabio Estevam <festevam@gmail.com>, 
+ Nicolin Chen <nicoleotsuka@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, 
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
+ linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+ linux-kernel@vger.kernel.org
+In-Reply-To: <20260202174112.2018402-1-n7l8m4@u.northwestern.edu>
+References: <20260202174112.2018402-1-n7l8m4@u.northwestern.edu>
+Subject: Re: [PATCH] ASoC: fsl_xcvr: fix missing lock in
+ fsl_xcvr_mode_put()
+Message-Id: <177021018786.97050.3676101017242233000.b4-ty@kernel.org>
+Date: Wed, 04 Feb 2026 13:03:07 +0000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,72 +70,47 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-References: <20260204030507.8203-1-linkmauve@linkmauve.fr> <aYMiXcy33YEVkgYM@google.com>
- <DG66KRKI62WA.3GILMBH1UCYB@garyguo.net>
-Message-ID: <aYNBtc2Jbtg9sLIE@google.com>
-Subject: Re: [PATCH] rust: Add PowerPC support
-From: Alice Ryhl <aliceryhl@google.com>
-To: Gary Guo <gary@garyguo.net>
-Cc: Link Mauve <linkmauve@linkmauve.fr>, rust-for-linux@vger.kernel.org, 
-	Miguel Ojeda <ojeda@kernel.org>, Boqun Feng <boqun@kernel.org>, 
-	"=?utf-8?B?QmrDtnJu?= Roy Baron" <bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>, 
-	Andreas Hindborg <a.hindborg@kernel.org>, Trevor Gross <tmgross@umich.edu>, 
-	Danilo Krummrich <dakr@kernel.org>, Jonathan Corbet <corbet@lwn.net>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@kernel.org>, 
-	Jason Baron <jbaron@akamai.com>, Steven Rostedt <rostedt@goodmis.org>, 
-	Ard Biesheuvel <ardb@kernel.org>, Nathan Chancellor <nathan@kernel.org>, 
-	Nick Desaulniers <nick.desaulniers+lkml@gmail.com>, Bill Wendling <morbo@google.com>, 
-	Justin Stitt <justinstitt@google.com>, linux-doc@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	llvm@lists.linux.dev, officialTechflashYT@gmail.com, 
-	Ash Logan <ash@heyquark.com>, Roberto Van Eeden <rw-r-r-0644@protonmail.com>, 
-	"Jonathan =?utf-8?Q?Neusch=C3=A4fer?=" <j.neuschaefer@gmx.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.15-dev-47773
 
-On Wed, Feb 04, 2026 at 12:36:38PM +0000, Gary Guo wrote:
-> On Wed Feb 4, 2026 at 10:41 AM GMT, Alice Ryhl wrote:
-> > On Wed, Feb 04, 2026 at 04:05:04AM +0100, Link Mauve wrote:
-> >> For now only Big Endian 32-bit PowerPC is supported, as that is the on=
-ly
-> >> hardware I have.  This has been tested on the Nintendo Wii so far, but=
- I
-> >> plan on also using it on the GameCube, Wii U and Apple G4.
-> >
-> > Super cool!
-> >
-> >> These changes aren=E2=80=99t the only ones required to get the kernel =
-to compile
-> >> and link on PowerPC, libcore will also have to be changed to not use
-> >> integer division to format u64, u128 and core::time::Duration, otherwi=
-se
-> >> __udivdi3() and __umoddi3() will have to be added.  I have tested this
-> >> change by replacing the three implementations with unimplemented!() an=
-d
-> >> it linked just fine.
-> >
-> > Uh oh this seems tricky. How is this not a problem on arm32 too?
-> >
-> > Perhaps we should just be providing __udivdi3() and __umoddi3() in
-> > general?
->=20
-> I think there is some concern that if this is provided, then C side that =
-uses
-> the divide operator instead of dividing function doesn't get linker error
-> anymore.
->=20
-> However, a proper way is to do this via the hooks that we already have in
-> `compiler_builtins.rs`.
->=20
-> This can either be replace these with panics or actual implementation, bu=
-t for
-> libcore.o only.
+On Mon, 02 Feb 2026 17:41:12 +0000, Ziyi Guo wrote:
+> fsl_xcvr_activate_ctl() has
+> lockdep_assert_held(&card->snd_card->controls_rwsem),
+> but fsl_xcvr_mode_put() calls it without acquiring this lock.
+> 
+> Other callers of fsl_xcvr_activate_ctl() in fsl_xcvr_startup() and
+> fsl_xcvr_shutdown() properly acquire the lock with down_read()/up_read().
+> 
+> [...]
 
-Is there any reason to not make it Rust-only but for all Rust code?
-Making the / operator work seems like it would be a good idea.
+Applied to
 
-Alice
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+
+Thanks!
+
+[1/1] ASoC: fsl_xcvr: fix missing lock in fsl_xcvr_mode_put()
+      commit: f514248727606b9087bc38a284ff686e0093abf1
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
+
 
