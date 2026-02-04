@@ -1,106 +1,91 @@
-Return-Path: <linuxppc-dev+bounces-16574-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16576-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2468EE83EE1
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Feb 2026 07:11:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93EC0E95360
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Feb 2026 09:36:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f5Wjv1Zllz2xHt;
-	Wed, 04 Feb 2026 18:11:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770185768;
-	cv=none; b=G12pHcR2ChjsgGiKOysexH0uFlDtFvNThZ/N6mOHXlmybm+WjwqPzpSv2TZy+hPdRsxRvnzuHaodn3TAIo06m5fjoV+RDRyK2Jo4PNO3aGpltP7sN9AAbRVQsiDxwM3CyJSCspJccdnraLVXYwQqxzI+UiUN3MAzjkQrNORCcgwIt5IBVXZmmu20XBF9NtXDUr0jXugJDr2ecihRyi2KFFRPrjCSeLFOrDHGgAX4MMXERTxmLCDrqRmv5TTfA8D5abaLESgKwVdmFG+PMBuGdOV5SqquLGXUBrWliCLNVM70+JShSJl4t14f9c5vtcc1yUDb6IZjnZRwcCiTq8isZw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f5Zxg29XFz2xs4;
+	Wed, 04 Feb 2026 20:36:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.187
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770197815;
+	cv=none; b=cbWgoeqJO9ObZbv47JVXLgsSEofWcIfMfOzG592uMfQK7HWRIvlw8ggh3n9Jd8DuUG2x82Jd8H3xLW+xwJH5KDLXr/5h+aZBWkV5mfPrG3YfJrSY9PYdAX2lJshY59NCNNfo6cg3afCIACWy1Lykmxfs3ZS5/hwaXvBtCT44c+2hHLCm3oyGPf7VlPKxpLitjEb+STNLvEB2ZhCU7QTty9A/KJq4yY7C4J0DJJ2NCtBctvXGbnqYSxjJLNk/L1mKk5/fSGcZN/LKBrpTtLpb6+9zrlzo+PKEbLy8X9wYlIVRdJLmEQEnpZonNifsURWf2qqZ3I6JNqUvkGLVDwmKIA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770185768; c=relaxed/relaxed;
-	bh=VL5of/f5KyDAfjTDwdEWFiFC2+YlHapoLTi3UvRqx5s=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=H2d1wDt1Unyqz/zzUxL8MroJOzzKlKuzrwddgO6iUavdequp25fovUnZgcCPTkliqHbt8dWvhVl5oRMnhtpjkNZKOJTeRqU7BEXBrBB1JrhYYmDllWsIQCGF2LiohiTZLcM1iRlxqwOaRKBHoMs3coOh8Lvfn0l5xKR548kQtLgCAMGofurftf5BlUWjA5KlkM0yJPS3GWEL/08Vkr+lZ48WLFs5VOTHHAgp8ysbep8OuyjyzNRD+gz0u8MJgsGCjKaZN7/1oQHvpBSkS711lFGEw+KoQSMs4IH+eiVk+RnjsZHmyUh6LCMlKS+ptsQCtZtcXTSx1wCE7RfkdWnZKQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=hV+BJpcK; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132f; helo=mail-dy1-x132f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1770197815; c=relaxed/relaxed;
+	bh=9dh41FuXoskin5kEyP/EzKDXWLppsq5+vDzuAG9frAc=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=Dwy8C1Hr32iNph88ip0cwbckL6zPgcuf3lCSR5iJTAaFVL5FLAT24lxNOrQPh/BayugB16MFgJ5GQTehgNfvaAutMjPUUFFXCmpPfaJgvqfKD5K4YyqJxtzLTn3YnkROwqVhFxvrE4TDVBqPV/1utp2e86KfsFZxzrua5PF5WLblsLTBzvJtf03+T1vqqiUQJyRw6fTSWO+LwUSX/Om8zUDDf/1Ba19thtyunMcwy9mEW1ScRFHz4rS0MJRlOQ28GVBwLTteNZhgh9sIZq/LIL1FSg08Oe2gzda3MSC74GsA0XHMwZDrowd9qreMubYk+4b8jK/aARm4vUO5tfNrfQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=O05tgehu; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=O05tgehu; dkim-atps=neutral; spf=pass (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=hV+BJpcK;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=O05tgehu;
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=O05tgehu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132f; helo=mail-dy1-x132f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x132f.google.com (mail-dy1-x132f.google.com [IPv6:2607:f8b0:4864:20::132f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f5VTt6Lpcz2xBV
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Feb 2026 17:16:01 +1100 (AEDT)
-Received: by mail-dy1-x132f.google.com with SMTP id 5a478bee46e88-2b785801c93so4602000eec.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Feb 2026 22:16:01 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1770185759; x=1770790559; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=VL5of/f5KyDAfjTDwdEWFiFC2+YlHapoLTi3UvRqx5s=;
-        b=hV+BJpcK40I/qJ+F65s+iwWVE3gkkbhpo0smbFeqIpTFBTPxefDviph5eimglJFuEG
-         sCIGxbyyRui5chEXBL0mvJzGjT2iDZQpcrsiKYQ92Zp74FcqGr5mz3jFbhQJKCeyE8oN
-         8jI1jMHg2AcrjIM7EVvzHXpCcCDhEXyRhsVaJpqp5f9dQy7JjsDvjNZi73Tu6bX+VwVS
-         NCZCYvopl7Tg1m3KwF4uvlbpZBll4hR/z5rw1mFwfIv5HEsMS7w2376hGLcRx/pi7o8t
-         mg3y6uz7Ed93CAW0H9cvFLeYsiphRdjckal0IIDDadhF6sxBud7eI1m7fs66Vk8c7dts
-         WDTQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770185759; x=1770790559;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=VL5of/f5KyDAfjTDwdEWFiFC2+YlHapoLTi3UvRqx5s=;
-        b=Sn7KxHv9PyHaP0ntWRSPvKpOUFrJZRtMfum68E1ZRRUmBuyT6oEJ/mmaK4KA8rnAMO
-         TfHgKNzRwl8zDcgbW+NO7+SP73j49X/f/ZdbN7UAbqSzuy+XHduNgFfA0LgWt9bp2dKy
-         /MmBD2YgWPitC1uqzzcM76JCaeDmZaWydNI8Lg25KWeKxZ6lP98HX4pdHDx8mP+LVHwp
-         nGO7kq7+jd+Pt/MO8x4YNHJptH3sRhVou7lKBLJ7ei7JPQMBBPx35CP69oWTxfLLX0Tm
-         bQX46jAR+tZ9d6Zheo8D+dGoEjFGkm0zLjdVaY5HPMXzywqIx19tzvHIEK4OwzhLHG4R
-         Gddw==
-X-Forwarded-Encrypted: i=1; AJvYcCVoiQezzr/DWipXeyfI7rjNgXGeweC2xYGaDDp8M5xUaC0g1gnBnQI9HM8TL2/TJOE2cNUbyogOylFVdGU=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwFk8jf6Vi2RVnMNgRYmsaivmkNZFtDSaGfS5VtZUhl+Yv5QAeE
-	o8N2eg5lN+MuxiMwp1W4c85QZOJOlmBwibyty4+ynvDjhAV2Va9nBfgfyEGT+w==
-X-Gm-Gg: AZuq6aLxhL7iuFJO65/sYuj1fu7WLPS2ywDX0VzYlqVPkh8SUxJZSFIXNBGwPmED+Ho
-	7qQXr4E0EGw1fIVOgRv/2Zrsl8K8Khh26QXvc5l0RyLs3xE8NqkItfg+H4dCRA5ceDECHmwQxrL
-	pI4d0gpAzOJp2c43AxlDtZD9Bd6LzmFB15Iw1H2dEhCVqpewu4HBQt+QykEbeMcJLLCfTUhkSs4
-	6L46hRneqZU9euoMysX+L+sYf4/Mr9iCOyjjR+DCw3HQmw1W4//Q5tsCBTkeKJe3w/w17FTYv7H
-	DMNzG/gO+fCPNWtcoUMMgn2UDnjw7Ph8LEO6xLTmtoEKf8Uh7HfYBZgrbZDXrg0N+UsCfkJmXAr
-	NLGvHssXTkFGinfiNFsyY1JKiPShDKFxQAWsXcfocNOkW4y/xotPskSC08gE7+SeoeXpYo+dtST
-	OSVimskOT4Dp+J6AY4dHeviU36eICF2LQ2mLoRQt1/ktffTilYke7bxQ9YG6eVfN3vruDFKg==
-X-Received: by 2002:a17:90b:2889:b0:335:2747:a9b3 with SMTP id 98e67ed59e1d1-3548720a3eamr1376264a91.32.1770179086053;
-        Tue, 03 Feb 2026 20:24:46 -0800 (PST)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.in.ibm.com ([129.41.58.2])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35485eb8d4csm1017430a91.10.2026.02.03.20.24.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 03 Feb 2026 20:24:45 -0800 (PST)
-From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
-To: maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	peterz@infradead.org,
-	jpoimboe@kernel.org,
-	jbaron@akamai.com,
-	rostedt@goodmis.org,
-	ardb@kernel.org,
-	ojeda@kernel.org,
-	boqun.feng@gmail.com,
-	gary@garyguo.net,
-	bjorn3_gh@protonmail.com,
-	lossin@kernel.org,
-	a.hindborg@kernel.org,
-	aliceryhl@google.com,
-	tmgross@umich.edu,
-	dakr@kernel.org,
-	nathan@kernel.org,
-	nick.desaulniers+lkml@gmail.com,
-	morbo@google.com,
-	justinstitt@google.com,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	rust-for-linux@vger.kernel.org,
-	llvm@lists.linux.dev
-Cc: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
-Subject: [PATCH] powerpc: Enable Rust for ppc64le
-Date: Wed,  4 Feb 2026 09:54:17 +0530
-Message-ID: <20260204042417.83903-1-mkchauras@gmail.com>
-X-Mailer: git-send-email 2.52.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f5Zxd45HXz2xm3
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Feb 2026 20:36:53 +1100 (AEDT)
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=9dh41FuXoskin5kEyP/EzKDXWLppsq5+vDzuAG9frAc=;
+	b=O05tgehusLXxCPdoMc3HuZGiKmyI7zPSArAukVtx29XJeeSPz6a9SN/2YFTXxU1lSlAJ79XK1
+	K0hTPthQMZ92VIfFMbzLuF5PiVF+fIshLc7csCP+lx0p4fKMolwvRJCvTP4q8HxXlOf5doEOqux
+	NH1bTdersZfl51BebkcMNZM=
+Received: from canpmsgout01.his.huawei.com (unknown [172.19.92.178])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTPS id 4f5Zwk4JSmz1BGCs
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Feb 2026 17:36:06 +0800 (CST)
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=9dh41FuXoskin5kEyP/EzKDXWLppsq5+vDzuAG9frAc=;
+	b=O05tgehusLXxCPdoMc3HuZGiKmyI7zPSArAukVtx29XJeeSPz6a9SN/2YFTXxU1lSlAJ79XK1
+	K0hTPthQMZ92VIfFMbzLuF5PiVF+fIshLc7csCP+lx0p4fKMolwvRJCvTP4q8HxXlOf5doEOqux
+	NH1bTdersZfl51BebkcMNZM=
+Received: from mail.maildlp.com (unknown [172.19.163.104])
+	by canpmsgout01.his.huawei.com (SkyGuard) with ESMTPS id 4f5ZrP1l8Wz1T4fn;
+	Wed,  4 Feb 2026 17:32:21 +0800 (CST)
+Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
+	by mail.maildlp.com (Postfix) with ESMTPS id 9E0B5404AD;
+	Wed,  4 Feb 2026 17:36:43 +0800 (CST)
+Received: from huawei.com (10.90.53.73) by dggpemf500011.china.huawei.com
+ (7.185.36.131) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Wed, 4 Feb
+ 2026 17:36:40 +0800
+From: Jinjie Ruan <ruanjinjie@huawei.com>
+To: <corbet@lwn.net>, <catalin.marinas@arm.com>, <will@kernel.org>,
+	<chenhuacai@kernel.org>, <kernel@xen0n.name>, <maddy@linux.ibm.com>,
+	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <chleroy@kernel.org>,
+	<pjw@kernel.org>, <palmer@dabbelt.com>, <aou@eecs.berkeley.edu>,
+	<alex@ghiti.fr>, <tglx@kernel.org>, <mingo@redhat.com>, <bp@alien8.de>,
+	<dave.hansen@linux.intel.com>, <hpa@zytor.com>, <akpm@linux-foundation.org>,
+	<bhe@redhat.com>, <vgoyal@redhat.com>, <dyoung@redhat.com>,
+	<pawan.kumar.gupta@linux.intel.com>, <feng.tang@linux.alibaba.com>,
+	<kees@kernel.org>, <elver@google.com>, <arnd@arndb.de>,
+	<lirongqing@baidu.com>, <fvdl@google.com>, <leitao@debian.org>,
+	<rppt@kernel.org>, <cfsworks@gmail.com>, <osandov@fb.com>,
+	<sourabhjain@linux.ibm.com>, <ardb@kernel.org>, <ryan.roberts@arm.com>,
+	<tangyouling@kylinos.cn>, <ritesh.list@gmail.com>, <bjorn@rivosinc.com>,
+	<songshuaishuai@tinylab.org>, <samuel.holland@sifive.com>,
+	<kevin.brodsky@arm.com>, <junhui.liu@pigmoral.tech>,
+	<vishal.moola@gmail.com>, <coxu@redhat.com>, <jbohac@suse.cz>,
+	<liaoyuanhong@vivo.com>, <brgerst@gmail.com>, <fuqiang.wang@easystack.cn>,
+	<x86@kernel.org>, <linux-doc@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
+	<linux-riscv@lists.infradead.org>, <kexec@lists.infradead.org>
+CC: <ruanjinjie@huawei.com>
+Subject: [PATCH v3 2/3] arm64: kexec: Add support for crashkernel CMA reservation
+Date: Wed, 4 Feb 2026 17:37:27 +0800
+Message-ID: <20260204093728.1447527-3-ruanjinjie@huawei.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260204093728.1447527-1-ruanjinjie@huawei.com>
+References: <20260204093728.1447527-1-ruanjinjie@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -114,189 +99,121 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
+X-Originating-IP: [10.90.53.73]
+X-ClientProxiedBy: kwepems200002.china.huawei.com (7.221.188.68) To
+ dggpemf500011.china.huawei.com (7.185.36.131)
 
-Enabling rust support for ppc64 only.
+Commit 35c18f2933c5 ("Add a new optional ",cma" suffix to the
+crashkernel= command line option") and commit ab475510e042 ("kdump:
+implement reserve_crashkernel_cma") added CMA support for kdump
+crashkernel reservation.
 
-To support rust a new macro ARCH_STATIC_BRANCH_ASM in powerpc
-is added to avoid duplication of inline asm between C and Rust.
-This is inline with commit
-aecaf181651c '("jump_label: adjust inline asm to be consistent")'
+Crash kernel memory reservation wastes production resources if too
+large, risks kdump failure if too small, and faces allocation difficulties
+on fragmented systems due to contiguous block constraints. The new
+CMA-based crashkernel reservation scheme splits the "large fixed
+reservation" into a "small fixed region + large CMA dynamic region": the
+CMA memory is available to userspace during normal operation to avoid
+waste, and is reclaimed for kdump upon crash—saving memory while
+improving reliability.
 
-Tested on powernv9:
+So extend crashkernel CMA reservation support to arm64. The following
+changes are made to enable CMA reservation:
 
-$ uname -rm
-6.19.0-rc8+ ppc64le
+- Parse and obtain the CMA reservation size along with other crashkernel
+  parameters.
+- Call reserve_crashkernel_cma() to allocate the CMA region for kdump.
+- Include the CMA-reserved ranges for kdump kernel to use.
+- Exclude the CMA-reserved ranges from the crash kernel memory to
+  prevent them from being exported through /proc/vmcore, which is already
+  done in the crash core.
 
-$ sudo modprobe rust_minimal
-[  632.890850] rust_minimal: Rust minimal sample (init)
-[  632.890881] rust_minimal: Am I built-in? false
-[  632.890898] rust_minimal: test_parameter: 1
+Update kernel-parameters.txt to document CMA support for crashkernel on
+arm64 architecture.
 
-$ sudo rmmod rust_minimal
-[  648.272832] rust_minimal: My numbers are [72, 108, 200]
-[  648.272873] rust_minimal: Rust minimal sample (exit)
-
-$ sudo modprobe rust_print
-[  843.410391] rust_print: Rust printing macros sample (init)
-[  843.410424] rust_print: Emergency message (level 0) without args
-[  843.410451] rust_print: Alert message (level 1) without args
-[  843.410477] rust_print: Critical message (level 2) without args
-[  843.410503] rust_print: Error message (level 3) without args
-[  843.410530] rust_print: Warning message (level 4) without args
-[  843.410557] rust_print: Notice message (level 5) without args
-[  843.410594] rust_print: Info message (level 6) without args
-[  843.410617] rust_print: A line that is continued without args
-[  843.410646] rust_print: Emergency message (level 0) with args
-[  843.410675] rust_print: Alert message (level 1) with args
-[  843.410691] rust_print: Critical message (level 2) with args
-[  843.410727] rust_print: Error message (level 3) with args
-[  843.410761] rust_print: Warning message (level 4) with args
-[  843.410796] rust_print: Notice message (level 5) with args
-[  843.410821] rust_print: Info message (level 6) with args
-[  843.410854] rust_print: A line that is continued with args
-[  843.410892] rust_print: 1
-[  843.410895] rust_print: "hello, world"
-[  843.410924] rust_print: [samples/rust/rust_print_main.rs:35:5] c = "hello, world"
-[  843.410977] rust_print: Arc<dyn Display> says 42
-[  843.410979] rust_print: Arc<dyn Display> says hello, world
-
-$ sudo rmmod rust_print
-[  843.411003] rust_print: "hello, world"
-[  888.499935] rust_print: Rust printing macros sample (exit)
-
-Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
 ---
- arch/powerpc/Kconfig                  |  1 +
- arch/powerpc/Makefile                 |  9 +++++----
- arch/powerpc/include/asm/jump_label.h | 23 +++++++++++++----------
- rust/Makefile                         |  1 +
- scripts/generate_rust_target.rs       | 24 ++++++++++++++++++++++++
- 5 files changed, 44 insertions(+), 14 deletions(-)
+v3:
+- Add Acked-by.
+v2:
+- Free cmem in prepare_elf_headers()
+- Add the mtivation.
+---
+ Documentation/admin-guide/kernel-parameters.txt | 2 +-
+ arch/arm64/kernel/machine_kexec_file.c          | 8 +++++++-
+ arch/arm64/mm/init.c                            | 5 +++--
+ 3 files changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 9537a61ebae0..e9b8d761ed52 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -285,6 +285,7 @@ config PPC
- 	select HAVE_RSEQ
- 	select HAVE_SAMPLE_FTRACE_DIRECT	if HAVE_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
- 	select HAVE_SAMPLE_FTRACE_DIRECT_MULTI	if HAVE_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
-+	select HAVE_RUST			if PPC64
- 	select HAVE_SETUP_PER_CPU_AREA		if PPC64
- 	select HAVE_SOFTIRQ_ON_OWN_STACK
- 	select HAVE_STACKPROTECTOR		if PPC32 && $(cc-option,$(m32-flag) -mstack-protector-guard=tls -mstack-protector-guard-reg=r2 -mstack-protector-guard-offset=0)
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index a58b1029592c..7ad28cf0fd35 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -172,10 +172,11 @@ CFLAGS-y += $(CONFIG_TUNE_CPU)
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index 1058f2a6d6a8..36bb642a7edd 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -1119,7 +1119,7 @@ Kernel parameters
+ 			It will be ignored when crashkernel=X,high is not used
+ 			or memory reserved is below 4G.
+ 	crashkernel=size[KMG],cma
+-			[KNL, X86, ppc] Reserve additional crash kernel memory from
++			[KNL, X86, ARM64, ppc] Reserve additional crash kernel memory from
+ 			CMA. This reservation is usable by the first system's
+ 			userspace memory and kernel movable allocations (memory
+ 			balloon, zswap). Pages allocated from this memory range
+diff --git a/arch/arm64/kernel/machine_kexec_file.c b/arch/arm64/kernel/machine_kexec_file.c
+index ed2c45007158..cab4aaf8cb22 100644
+--- a/arch/arm64/kernel/machine_kexec_file.c
++++ b/arch/arm64/kernel/machine_kexec_file.c
+@@ -48,7 +48,7 @@ static int prepare_elf_headers(void **addr, unsigned long *sz)
+ 	u64 i;
+ 	phys_addr_t start, end;
  
- asinstr := $(call as-instr,lis 9$(comma)foo@high,-DHAVE_AS_ATHIGH=1)
+-	nr_ranges = 2; /* for exclusion of crashkernel region */
++	nr_ranges = 2 + crashk_cma_cnt; /* for exclusion of crashkernel region */
+ 	for_each_mem_range(i, &start, &end)
+ 		nr_ranges++;
  
--KBUILD_CPPFLAGS	+= -I $(srctree)/arch/powerpc $(asinstr)
--KBUILD_AFLAGS	+= $(AFLAGS-y)
--KBUILD_CFLAGS	+= $(CC_FLAGS_NO_FPU)
--KBUILD_CFLAGS	+= $(CFLAGS-y)
-+KBUILD_CPPFLAGS		+= -I $(srctree)/arch/powerpc $(asinstr)
-+KBUILD_AFLAGS		+= $(AFLAGS-y)
-+KBUILD_CFLAGS		+= $(CC_FLAGS_NO_FPU)
-+KBUILD_CFLAGS		+= $(CFLAGS-y)
-+KBUILD_RUSTFLAGS        += -Ctarget-feature=-mma,-vsx,-hard-float,-altivec
+@@ -64,6 +64,12 @@ static int prepare_elf_headers(void **addr, unsigned long *sz)
+ 		cmem->nr_ranges++;
+ 	}
  
- CHECKFLAGS	+= -m$(BITS) -D__powerpc__ -D__powerpc$(BITS)__
- ifdef CONFIG_CPU_BIG_ENDIAN
-diff --git a/arch/powerpc/include/asm/jump_label.h b/arch/powerpc/include/asm/jump_label.h
-index d4eaba459a0e..a6b211502bfe 100644
---- a/arch/powerpc/include/asm/jump_label.h
-+++ b/arch/powerpc/include/asm/jump_label.h
-@@ -15,14 +15,20 @@
- #define JUMP_ENTRY_TYPE		stringify_in_c(FTR_ENTRY_LONG)
- #define JUMP_LABEL_NOP_SIZE	4
- 
-+#define JUMP_TABLE_ENTRY(key, label)			\
-+	".pushsection __jump_table,  \"aw\"	\n\t"	\
-+	".long 1b - ., " label " - .		\n\t"	\
-+	JUMP_ENTRY_TYPE key " - .		\n\t"	\
-+	".popsection 				\n\t"
++	for (i = 0; i < crashk_cma_cnt; i++) {
++		cmem->ranges[cmem->nr_ranges].start = crashk_cma_ranges[i].start;
++		cmem->ranges[cmem->nr_ranges].end = crashk_cma_ranges[i].end;
++		cmem->nr_ranges++;
++	}
 +
-+#define ARCH_STATIC_BRANCH_ASM(key, label)		\
-+	"1:	nop				\n\t"	\
-+	JUMP_TABLE_ENTRY(key,label)
-+
- static __always_inline bool arch_static_branch(struct static_key *key, bool branch)
+ 	ret = crash_prepare_elf64_headers(cmem, true, addr, sz);
+ 
+ 	kfree(cmem);
+diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
+index 524d34a0e921..28165d94af08 100644
+--- a/arch/arm64/mm/init.c
++++ b/arch/arm64/mm/init.c
+@@ -96,8 +96,8 @@ phys_addr_t __ro_after_init arm64_dma_phys_limit;
+ 
+ static void __init arch_reserve_crashkernel(void)
  {
--	asm goto("1:\n\t"
--		 "nop # arch_static_branch\n\t"
--		 ".pushsection __jump_table,  \"aw\"\n\t"
--		 ".long 1b - ., %l[l_yes] - .\n\t"
--		 JUMP_ENTRY_TYPE "%c0 - .\n\t"
--		 ".popsection \n\t"
-+	asm goto(
-+		 ARCH_STATIC_BRANCH_ASM("%c0", "%l[l_yes]")
- 		 : :  "i" (&((char *)key)[branch]) : : l_yes);
++	unsigned long long crash_base, crash_size, cma_size = 0;
+ 	unsigned long long low_size = 0;
+-	unsigned long long crash_base, crash_size;
+ 	bool high = false;
+ 	int ret;
  
- 	return false;
-@@ -34,10 +40,7 @@ static __always_inline bool arch_static_branch_jump(struct static_key *key, bool
- {
- 	asm goto("1:\n\t"
- 		 "b %l[l_yes] # arch_static_branch_jump\n\t"
--		 ".pushsection __jump_table,  \"aw\"\n\t"
--		 ".long 1b - ., %l[l_yes] - .\n\t"
--		 JUMP_ENTRY_TYPE "%c0 - .\n\t"
--		 ".popsection \n\t"
-+		 JUMP_TABLE_ENTRY("%c0", "%l[l_yes]")
- 		 : :  "i" (&((char *)key)[branch]) : : l_yes);
+@@ -106,11 +106,12 @@ static void __init arch_reserve_crashkernel(void)
  
- 	return false;
-diff --git a/rust/Makefile b/rust/Makefile
-index 5d357dce1704..7a6daa822cbc 100644
---- a/rust/Makefile
-+++ b/rust/Makefile
-@@ -390,6 +390,7 @@ BINDGEN_TARGET_x86	:= x86_64-linux-gnu
- BINDGEN_TARGET_arm64	:= aarch64-linux-gnu
- BINDGEN_TARGET_arm	:= arm-linux-gnueabi
- BINDGEN_TARGET_loongarch	:= loongarch64-linux-gnusf
-+BINDGEN_TARGET_powerpc	:= powerpc64le-linux-gnu
- BINDGEN_TARGET_um	:= $(BINDGEN_TARGET_$(SUBARCH))
- BINDGEN_TARGET		:= $(BINDGEN_TARGET_$(SRCARCH))
+ 	ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
+ 				&crash_size, &crash_base,
+-				&low_size, NULL, &high);
++				&low_size, &cma_size, &high);
+ 	if (ret)
+ 		return;
  
-diff --git a/scripts/generate_rust_target.rs b/scripts/generate_rust_target.rs
-index 38b3416bb979..875579b37424 100644
---- a/scripts/generate_rust_target.rs
-+++ b/scripts/generate_rust_target.rs
-@@ -256,6 +256,30 @@ fn main() {
-         }
-     } else if cfg.has("LOONGARCH") {
-         panic!("loongarch uses the builtin rustc loongarch64-unknown-none-softfloat target");
-+    } else if cfg.has("PPC64") {
-+        ts.push("arch", "powerpc64");
-+        ts.push(
-+            "data-layout",
-+            if cfg.has("CPU_LITTLE_ENDIAN") {
-+                "e-m:e-Fn32-i64:64-n32:64-S128-v256:256:256-v512:512:512"
-+            } else {
-+                "E-m:e-Fn32-i64:64-n32:64-S128-v256:256:256-v512:512:512"
-+            },
-+        );
-+        ts.push("features", "-mma,-altivec,-vsx,-hard-float");
-+        ts.push(
-+            "llvm-target",
-+            if cfg.has("CPU_LITTLE_ENDIAN") {
-+                "powerpc64le-linux-gnu"
-+            } else {
-+                "powerpc64-linux-gnu"
-+            },
-+        );
-+        if cfg.rustc_version_atleast(1, 91, 0) {
-+            ts.push("target-pointer-width", 64);
-+        } else {
-+            ts.push("target-pointer-width", "64");
-+        }
-     } else {
-         panic!("Unsupported architecture");
-     }
+ 	reserve_crashkernel_generic(crash_size, crash_base, low_size, high);
++	reserve_crashkernel_cma(cma_size);
+ }
+ 
+ static phys_addr_t __init max_zone_phys(phys_addr_t zone_limit)
 -- 
-2.52.0
+2.34.1
 
 
