@@ -1,68 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-16585-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16586-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87C0CE9539E
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Feb 2026 13:36:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8BAF0E9D3F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Feb 2026 15:19:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f5hGd2gnhz2xm3;
-	Thu, 05 Feb 2026 00:36:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::34a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770212217;
-	cv=none; b=Lh7VBxYto8+jMhNmFTTNEIXg3Iw0UPYOhqDMw/QvjnRROjfFctt2nthavyy5PXdm9HuecZKU/Zuu1z94YG8X9jwHgdmEClyJqja15u70tcbGTjQSm5YbIwR7eoOKCv/9+k5+O/5nLgnStQbQbdWbZa8lZRygnumVE1VrBeRLYxJdrJFfo3TNwWsk6fCfVBQ9saYrQjlPMjMlvLD96s3htY10zbktoAVyqY2mURBFAvOWaStcYmgeub8PjolJQPOsFs4IZVBo/nL0U8mqxM6cForVuw59JaynG8EU914x3ISqzt1n/B6m1/0EK65HrMa17fZivYTS7TbByZDi4DolfQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f5kXM6K0gz2xm3;
+	Thu, 05 Feb 2026 02:18:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770218339;
+	cv=none; b=EBfkyZybGh7HiSNID+ltIY9fdPitrQw18w1ke3snIPFw4MMnuHlFq7D2N3HaPwZSv8UtdWBOmtdQ6rBREm/hzc8ctlfaDzrQ2ENKly+B2Gixma8zD7bcTUYiqe/rXxI+DcqKG6xSWmtz5rYT320Zn8DbJX9XI+I/VQpRCRijNePPNSghdUrnZzL2USivbDcNdX0jYd3tM6Om8otrLax1xWPgMaCT/Uw+zkcvaTeLradyg19BYg/v+CH+lu92zw+lDsFa3pNroJsN5gJhpHMCleKrpwaWdmFTwQ21YojpqjZHmx8YbG1GSsL9MoBKh41l9uPcXPjIeqsxNML7rq0q9Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770212217; c=relaxed/relaxed;
-	bh=fIR6EBMCAqXb340DYxL2KRHd/O9FP1A+6HPiKAJmpBg=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=baqrSOwjykvN51Rn1aYlq7qTEOMfqfHZJH8eRLABICKUMARxi+G05cXIDD/8TB6HXjUos3riMkRayctnhSf4kNLxt5CYKD2cE20JH7j0VuEx5KzBWgSPzF6iKuY/O1u2pq7EWjDZ3Kkmq2pdDHc6nEjHlx3BOYUZhBPHP6sEGgmqRzb/7NGSrl2NuwZqInnpPrh0FuhVsEDWUNuQQmQzXu/A8a12eWhPWxXTe0GaNlsyLd8tJFr4DrTs0sziFCAut3L+X6uzZt6JttyP7xCY09ynpfpOljklU3xzylIIZ01AdSmH4w3FHnPx8Lpzyb4txIsKXwFPjVEg0PxOuOo0ug==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=uAYMc8pV; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::34a; helo=mail-wm1-x34a.google.com; envelope-from=3deudaqkkdgsjurlnahqupxxpun.lxvurwdgyyl-mneurbcb.xiujkb.xap@flex--aliceryhl.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--aliceryhl.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1770218339; c=relaxed/relaxed;
+	bh=/r/U7r4dQEZ/kZMSFCyP4yoofqRWU4bOUtamKZ8X9ic=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:To:From:
+	 References:In-Reply-To; b=YwzP7rQlqFzaNRWQcfF+NyBZajDy6yN1xlNW7dJGXoo6w2/iWItG859bp+GUDZOhfLDb9RRdTnRpCc4hd3p9H7l+k9PwiO3uKPVefKSp4g5F30CkfsaPveyj9LOsCHYWdbyNAm6do4fOS4se1YzShKBWnhylT9T0nBcvrl7N3cfiIjz/SGU5jMIlSn9MVnfv1Uqv8KBt1jhKRCVdKJ7lsms2cGVMJZhb2idaluRMZgX05Yl1D5WRenpN54+13G6BABhTfDKuznaXFi8rYCFiJYnpBW6Zj/xMo5ETdFRbl+mUIhWp2ONppyyZH4VZqtmxYu6gou1rRyHvUyAVCz+g3A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lP9jjWuk; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=uAYMc8pV;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lP9jjWuk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--aliceryhl.bounces.google.com (client-ip=2a00:1450:4864:20::34a; helo=mail-wm1-x34a.google.com; envelope-from=3deudaqkkdgsjurlnahqupxxpun.lxvurwdgyyl-mneurbcb.xiujkb.xap@flex--aliceryhl.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x34a.google.com (mail-wm1-x34a.google.com [IPv6:2a00:1450:4864:20::34a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f5hGc1SQjz2xJ5
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Feb 2026 00:36:55 +1100 (AEDT)
-Received: by mail-wm1-x34a.google.com with SMTP id 5b1f17b1804b1-4801d21c280so5984975e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Feb 2026 05:36:55 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1770212213; x=1770817013; darn=lists.ozlabs.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=fIR6EBMCAqXb340DYxL2KRHd/O9FP1A+6HPiKAJmpBg=;
-        b=uAYMc8pVmB3oiWgQVNXpjp34cbwv4uWmpM2zJb+pprt3GG8j3XTOfo2BLqOxdkCERy
-         IhbyMBjjANmJajfrhjys1PprDes+/RT+OtH9V1x1dEGOun5ONyI1dw6lxSgVJvbIvHQq
-         Quytc3mzhq2RAwLILZXFj3lnO55Tim4xFpAl8Nxx6HfpBcSNUBT7W6Q3KVSppT8F+JMr
-         VMSxJ1p/o/Gk3IeNs66rhpfeoNeCVtJhRu/QuSivOAwNLt0zpsHnDlrlhXXS6A+LFdGx
-         BhLMjb9wJJ+8GQri8btf9oJXIMLcLx2P+TGtuVmzdmBxnhJ2AzRcENSU+Ra8nSmYjmTF
-         Bbcw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770212213; x=1770817013;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=fIR6EBMCAqXb340DYxL2KRHd/O9FP1A+6HPiKAJmpBg=;
-        b=MDSp/86tUpyfHn1WZ4l/A8Uw09Q45JIs6vjtiNOCZoYriVn2yVerUfLTn2VwQB7ZuW
-         Far53hPN7wHsmDfNYPYMrwpF335E2zOxYtvXHSjtRXaCnbT23GKpoWlKu8bdVsAiVhF9
-         pmDX4Qan1/2a6AjlJx3w5+UhHwRlPKvSNNMGde827DBMh7W+nBc595dmcy1IBLCrUeaF
-         dz3rkqqJvky7CGAiLtIABYqpXNDNZmTsDOwdYdkLXTMgVGoYxgDk69Sx3SEceGc44L5i
-         Fy+70wRwc9VWibBt+rkwiw+0c6KRZAMGtmYxtt2TvA3DGv9sNJOdcMAvBJIEgbxadu4W
-         KY4A==
-X-Forwarded-Encrypted: i=1; AJvYcCXpKIO8ggkpCIdnC85Lpf7/ewICxZXDBbNzlEVMSD/v2EZXsvidw2isYHRkTOLX2qaOHleHHxU+5cwAqxY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxCiB773z7+MspCUpo4D1VoWDZ+Ri5XiStMLvILutUuqdRbt5ud
-	BJQUHyAMeAYC44WqubEcpv5xymAFyCZhUq9IS0e7kk8FHOTDvp2l5MFgj2sqVC63fpe6c9FUFs4
-	XSVWDX6bD+YYnCapj3g==
-X-Received: from wmqu6.prod.google.com ([2002:a05:600c:19c6:b0:480:4a03:7b76])
- (user=aliceryhl job=prod-delivery.src-stubby-dispatcher) by
- 2002:a05:600c:1c17:b0:480:5951:fc1e with SMTP id 5b1f17b1804b1-4830e930f73mr44864985e9.11.1770212212161;
- Wed, 04 Feb 2026 05:36:52 -0800 (PST)
-Date: Wed, 4 Feb 2026 13:36:50 +0000
-In-Reply-To: <20260204130653.GH2995752@noisy.programming.kicks-ass.net>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f5kXL54bQz2xJ5
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Feb 2026 02:18:58 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 35E8460127;
+	Wed,  4 Feb 2026 15:18:55 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D2CB0C4CEF7;
+	Wed,  4 Feb 2026 15:18:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1770218334;
+	bh=R/vYVRpiIAu9yQjINq8nY1wv3oc/VE2zCfT+3Ijz/40=;
+	h=Date:Subject:Cc:To:From:References:In-Reply-To:From;
+	b=lP9jjWukmyB7EFdcetvQyxJXXhPXHKFrHML61W5B4WEE2icZWtPcdHewuK9ibiQSH
+	 baHVldFuhplxp1PjWrkUvgBUAqF2CYkBFeVGLnNwUwkiGBAvquhy6eQOJlFnEK/OG6
+	 +kbH9QMJq5wOxeUTLb8QBIRZYZUXssU3nJXQGW/oQwWwDjZpXkZZDLLlM7aTjaotLh
+	 hQI8JrMDt+oQPfUg+LwhFUQMEcNewdPw4h6R1vnHzQ03FRwAxL0GI+H0bbsOW+WiiB
+	 /IiKPTahxsOHwXboK2DPHJAjYjwXBfN72iHP/Tu+OF5yPCmds+AKnE1m6BIdY6O3d8
+	 IJbrU76l0lcww==
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,51 +57,65 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 Mime-Version: 1.0
-References: <20260204030507.8203-1-linkmauve@linkmauve.fr> <aYMiXcy33YEVkgYM@google.com>
- <DG66KRKI62WA.3GILMBH1UCYB@garyguo.net> <aYNBtc2Jbtg9sLIE@google.com> <20260204130653.GH2995752@noisy.programming.kicks-ass.net>
-Message-ID: <aYNLcqEo45oWpRYi@google.com>
-Subject: Re: [PATCH] rust: Add PowerPC support
-From: Alice Ryhl <aliceryhl@google.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Gary Guo <gary@garyguo.net>, Link Mauve <linkmauve@linkmauve.fr>, 
-	rust-for-linux@vger.kernel.org, Miguel Ojeda <ojeda@kernel.org>, 
-	Boqun Feng <boqun@kernel.org>, 
-	"=?utf-8?B?QmrDtnJu?= Roy Baron" <bjorn3_gh@protonmail.com>, Benno Lossin <lossin@kernel.org>, 
-	Andreas Hindborg <a.hindborg@kernel.org>, Trevor Gross <tmgross@umich.edu>, 
-	Danilo Krummrich <dakr@kernel.org>, Jonathan Corbet <corbet@lwn.net>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Josh Poimboeuf <jpoimboe@kernel.org>, Jason Baron <jbaron@akamai.com>, 
-	Steven Rostedt <rostedt@goodmis.org>, Ard Biesheuvel <ardb@kernel.org>, 
-	Nathan Chancellor <nathan@kernel.org>, Nick Desaulniers <nick.desaulniers+lkml@gmail.com>, 
-	Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>, linux-doc@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	llvm@lists.linux.dev, officialTechflashYT@gmail.com, 
-	Ash Logan <ash@heyquark.com>, Roberto Van Eeden <rw-r-r-0644@protonmail.com>, 
-	"Jonathan =?utf-8?Q?Neusch=C3=A4fer?=" <j.neuschaefer@gmx.net>
-Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 04 Feb 2026 16:18:47 +0100
+Message-Id: <DG6A0WRA0JZC.SPDT9WEXF92K@kernel.org>
+Subject: Re: [PATCH v2 1/4] rust: io: Add big-endian read and write
+ functions
+Cc: <rust-for-linux@vger.kernel.org>, "Madhavan Srinivasan"
+ <maddy@linux.ibm.com>, "Michael Ellerman" <mpe@ellerman.id.au>, "Nicholas
+ Piggin" <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)"
+ <chleroy@kernel.org>, "Srinivas Kandagatla" <srini@kernel.org>, "Miguel
+ Ojeda" <ojeda@kernel.org>, "Boqun Feng" <boqun@kernel.org>, "Gary Guo"
+ <gary@garyguo.net>, =?utf-8?q?Bj=C3=B6rn_Roy_Baron?=
+ <bjorn3_gh@protonmail.com>, "Benno Lossin" <lossin@kernel.org>, "Andreas
+ Hindborg" <a.hindborg@kernel.org>, "Alice Ryhl" <aliceryhl@google.com>,
+ "Trevor Gross" <tmgross@umich.edu>, "Daniel Almeida"
+ <daniel.almeida@collabora.com>, "Ard Biesheuvel" <ardb@kernel.org>, "Martin
+ K. Petersen" <martin.petersen@oracle.com>, "Eric Biggers"
+ <ebiggers@google.com>, "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
+ "Lyude Paul" <lyude@redhat.com>, "Asahi Lina" <lina+kernel@asahilina.net>,
+ "Viresh Kumar" <viresh.kumar@linaro.org>, "Lorenzo Stoakes"
+ <lorenzo.stoakes@oracle.com>, "Tamir Duberstein" <tamird@kernel.org>,
+ "FUJITA Tomonori" <fujita.tomonori@gmail.com>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <officialTechflashYT@gmail.com>, "Ash Logan" <ash@heyquark.com>, "Roberto
+ Van Eeden" <rw-r-r-0644@protonmail.com>,
+ =?utf-8?q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+To: "Link Mauve" <linkmauve@linkmauve.fr>
+From: "Danilo Krummrich" <dakr@kernel.org>
+References: <20260204040505.8447-1-linkmauve@linkmauve.fr>
+ <20260204040505.8447-2-linkmauve@linkmauve.fr>
+In-Reply-To: <20260204040505.8447-2-linkmauve@linkmauve.fr>
 
-On Wed, Feb 04, 2026 at 02:06:53PM +0100, Peter Zijlstra wrote:
-> On Wed, Feb 04, 2026 at 12:55:17PM +0000, Alice Ryhl wrote:
-> 
-> > Is there any reason to not make it Rust-only but for all Rust code?
-> > Making the / operator work seems like it would be a good idea.
-> 
-> Why would it be a good idea to have it work on non-native types in Rust?
-> 
-> The reason we don't have them in C is because non-native divisions are
-> expensive and doing them should be a conscious choice. The very same
-> argument should be true for Rust code too.
+On Wed Feb 4, 2026 at 5:04 AM CET, Link Mauve wrote:
+> Another option would be to call u32::swap_bytes() on the data being
+> read/written, but these helpers make the Rust code as ergonomic as the C
+> code.
+>
+> Signed-off-by: Link Mauve <linkmauve@linkmauve.fr>
 
-I suppose that's fair. Perhaps one way to go about it could be to create
-a clippy lint for 64-bit divisions telling you to use an explicit
-division method?
+The I/O stuff recently changed quite significantly, please have a look at t=
+he
+driver-core-next branch [1] in the driver-core tree.
 
-This way cases such as `core` that use division can still use the slash
-operator because the lint is not enabled when building core. And normal
-kernel code would be told to use the explicit method instead. Or kernel
-code could explicitly choose to silence the lint on a specific method if
-they want to perform a lot of divisions and know what they are doing.
+Also, instead of providing additional *be() methods, we should just create =
+a new
+type io::Endianness and use it to indicate the device endianness when reque=
+sting
+the I/O resource.
 
-Alice
+For instance, for your driver we could have
+
+	request.iomap_exclusive_sized::<8>(Endianness::Big)?
+
+and then let the I/O backend choose the correct accessors based on this.
+
+I.e. the device is either big or little endian, hence we don't need to prov=
+ide
+both accessors at the same time.
+
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/driver-core/driver-core=
+.git/log/?h=3Ddriver-core-next
 
