@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-16610-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16611-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 986BFE91269
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Feb 2026 06:54:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 274CDE9128E
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Feb 2026 08:09:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f67J85H1Dz2xrk;
-	Thu, 05 Feb 2026 17:54:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770274488;
-	cv=none; b=Bx+K7lOYJSBuQ8qLMQX+69aZMlKpM9K54NGPGZekrsmCwfv3dnKmgWuj/wRBhiuI79mb54BV/y/4nXWlJqHE9eUZ9NwOh+XaCYQ6ACosqnUgN44Rakgnipg0Z+RVoNvmro4MRcwtG9/aIzR4NS+0ydksdChDRKmOohqsLTL/zpGchXqkosL4Bda7pzuOChri+QaRnqgQzeKuK+qTIPfqx329DU/lgR56x93eHWZCpWduqCmvVLFn8HN9/LeiSxr6v5RYh24KFRDikI9yABtEvFAFh+dx9704uwnycsqCOKzObZDFHeTwcDnh+CrmTvawxoooEi2ECH3T0pzagRJ8VA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f68yk1KWMz2xrk;
+	Thu, 05 Feb 2026 19:09:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770278990;
+	cv=none; b=HmLgnijkprV+eg83E5d7X0SbcytYhe5rADu72Pu+FpylZv8aUVfRxRO9ULjb3D2Io+piwfCLLReQsKCR9dZdFF1DC8D/9vi0yqunBi88057OdtAFaGel753Jbp47siEWWTS0jWMlgN1tuM0dAGWb2JHbzIqc1+/iENmMOGcZ9w2gEGqkPQTIpq6gku9nxTYiYTaEtDSXFfNrv2ymV7FdtnLEzZbnqGUg7Y0zslrDA9tO5tVsX22qoWPVH7+t7v241E1bU2XLrpZDU+38vC6swYftxgxGX2GS95whAsPgtrEnB39am4r8D49OhEVPPkU4Jo7L29lsgS0GU0/W9nrzOw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770274488; c=relaxed/relaxed;
-	bh=5T0ktCjmh8RZLUEP0esqkY26ecLoJfpVXJxSRbhD2VE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ZQYMyAgcjc05yDXlbZZwBm51+eze1SX0N1vQSgtXs4wP2zqPy3IOmjrXRB01cTGY/9GeiUnhabq08J4G65lwRWa0xzOpEk+8qRuwprwJY/sZUMgcF4JegdiHJWyqaDF1CgUxvrVpI9g74FHnZ2Qswf9QWu/uk1xaDqKzlPRX1DAcv+BmF0qtSNAWLgCNyuEK3KA89rSrmx1sH1ZJ4H+8upKmgKB0dyc6qPNpob8qgsCHpvnxzZ0k+W2jeR2eBodLea71XHNvtOAWFn3s2shmnU5nNq6utnSXoNNLJP40F8QwRDEAdgafpuAIfJ5IHnvvUh7CIjPqMkHijQKRhN+k7A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YnI6RNMr; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1770278990; c=relaxed/relaxed;
+	bh=j0zOtfOLPNEn9L9ERmStb8da84cpm/uZMBH6mKpx9nM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=aDxZ8wgU8fZROiOuOO/7vnOlcvpjUkyANzGC5k1OWtvAeHZ96FMr7WfyN7faoq6AKl4PxzI4eQNmWPQuMCRk/OkXGvTQMhhe2KuucTgNPM0XyYAVyz/jdmPWCmPk4DNIetH79bdW/lxtJuDgNjsUbaa2S/2xDxTP0KWh3uPaWM/mtJ3jIa8tzceZ8z/BALXKLm/jF0k89g4MVVX6wQeJjJFDPHnfwuSR0t0CoTaVcTpc938tkSyqzNZbpPOzcgp4FTed+1URPNKbwVZusl0nW6tyCxbgqYY13ul/O+svb+CTXVuZbhe8RjbnRSe25y9XXeOfrgHrsHbMROCQBebFAA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pB2e8MNX; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YnI6RNMr;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pB2e8MNX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f67J801fdz2xS5
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Feb 2026 17:54:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f68yj2k0nz2xg9
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Feb 2026 19:09:49 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 281CC43C1C;
-	Thu,  5 Feb 2026 06:54:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E82EBC4CEF7;
-	Thu,  5 Feb 2026 06:54:42 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 84C9343B8D;
+	Thu,  5 Feb 2026 08:09:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 33374C4CEF7;
+	Thu,  5 Feb 2026 08:09:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1770274485;
-	bh=EEyaIS7c/Np/w/ayZ/fwd6oYNont392luQLgCjnHcqU=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=YnI6RNMrjB8P3QuDfeXZj4xszCtFy0YMF+8N8ZMfymdZ9gx4glVSoc6aRgF77Vk35
-	 GiPTaWQItTOr2z6lOoLDGYAUjBjrPbgaDWXzlw0W95uqE9vFGCkxQS5qrtPD/46hW5
-	 lTcRlZnhqDGHWw0Qh8GmOmADpM6NsRyEaOTZLcrli79mJ0YkVDip7IgU/J2yIegRsg
-	 jy25oKzOzuDLytA6X0XcVplJ2qcU+RDYgJBZBGeVhxbAvHmnUWr/epxFrwQLqomGMv
-	 nhXo0pvsdNRyyP+iVz1jw1cSNd1jN5v4rzs6EpgYzQBU/Qgs+SNAo3W6MLBHabzMRN
-	 TqZfvChTSpuBg==
-Message-ID: <54bf1026-7d71-466d-b6c0-8714c7230f9f@kernel.org>
-Date: Thu, 5 Feb 2026 07:54:41 +0100
+	s=k20201202; t=1770278987;
+	bh=Gk1rpoOJ3qlMNhZI4HdytNI08bOgFElC6mEKS/IYXNY=;
+	h=Date:Subject:To:References:From:In-Reply-To:From;
+	b=pB2e8MNXaRPUmdj792704a5mCJ0O/XIcY+O/2uRB8F5ajnD4PcWkA5KMzKdeEv6lr
+	 1uUJN8R989oRBO7EdhPbQ6DY7ClEQcXN6BH40hSFaFL34sfY2LJiOslN+vusKxUq5M
+	 7AinykT94Vuh8f1ztqhVGOk6b3g7bai93vDS+1Fii6v1Eooi66xu05r+3tGuW9REsC
+	 HHy6KSI7JjgIhhbLQNpDPf/rhBrUvbebMayFanIA0pa7w2sSqk3ka0qoG7MqSLq2O7
+	 1TNzuHjjOsM9ii53boG+MXTyhUyTTv1CEpljC4vj5gNuGBrgBzqfZnfe1x8M1yTlje
+	 VRvEXr3Tb4PMQ==
+Message-ID: <306b01a2-caba-4c15-89d4-849c3f4848cb@kernel.org>
+Date: Thu, 5 Feb 2026 09:09:41 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,84 +60,88 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH net] net: wan/fsl_ucc_hdlc: Fix dma_free_coherent() in
- uhdlc_memclean()
-To: Thomas Fourier <fourier.thomas@gmail.com>
-Cc: stable@vger.kernel.org, Zhao Qiang <qiang.zhao@nxp.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
- <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-References: <20260204162548.94160-3-fourier.thomas@gmail.com>
+Subject: Re: [PATCH V2 1/3] powerpc/jump_label: adjust inline asm to be
+ consistent
+To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
+ linkmauve@linkmauve.fr, ojeda@kernel.org, boqun.feng@gmail.com,
+ gary@garyguo.net, bjorn3_gh@protonmail.com, lossin@kernel.org,
+ a.hindborg@kernel.org, aliceryhl@google.com, tmgross@umich.edu,
+ dakr@kernel.org, corbet@lwn.net, maddy@linux.ibm.com, mpe@ellerman.id.au,
+ npiggin@gmail.com, peterz@infradead.org, jpoimboe@kernel.org,
+ jbaron@akamai.com, rostedt@goodmis.org, ardb@kernel.org,
+ rust-for-linux@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <20260204210125.613350-1-mkchauras@gmail.com>
+ <20260204210125.613350-2-mkchauras@gmail.com>
 Content-Language: fr-FR
 From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <20260204162548.94160-3-fourier.thomas@gmail.com>
+In-Reply-To: <20260204210125.613350-2-mkchauras@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 
 
-Le 04/02/2026 à 17:25, Thomas Fourier a écrit :
-> [Vous ne recevez pas souvent de courriers de fourier.thomas@gmail.com. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
+Le 04/02/2026 à 22:01, Mukesh Kumar Chaurasiya (IBM) a écrit :
+> [Vous ne recevez pas souvent de courriers de mkchauras@gmail.com. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
 > 
-> The priv->rx_buffer and priv->dma_rx_addr are alloc'd together as
+> Added support for a new macro ARCH_STATIC_BRANCH_ASM in powerpc
+> to avoid duplication of inline asm between C and Rust. This is
+> inline with commit aecaf181651c '("jump_label: adjust inline asm to be consistent")'
+> 
+> Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+> Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
 
-You mean priv->rx_buffer and priv->tx_buffer I guess.
+Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
 
-> contiguous buffers in uhdlc_init() but freed as two buffers in
-> uhdlc_memclean().
-> 
-> Change the cleanup to only call dma_free_coherent() once on the whole
-> buffer.
-> 
-> Fixes: c19b6d246a35 ("drivers/net: support hdlc function for QE-UCC")
-> Cc: <stable@vger.kernel.org>
-> Signed-off-by: Thomas Fourier <fourier.thomas@gmail.com>
 > ---
->   drivers/net/wan/fsl_ucc_hdlc.c | 10 +---------
->   1 file changed, 1 insertion(+), 9 deletions(-)
+>   arch/powerpc/include/asm/jump_label.h | 23 +++++++++++++----------
+>   1 file changed, 13 insertions(+), 10 deletions(-)
 > 
-> diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
-> index f999798a5612..59cd861d13d6 100644
-> --- a/drivers/net/wan/fsl_ucc_hdlc.c
-> +++ b/drivers/net/wan/fsl_ucc_hdlc.c
-> @@ -790,19 +790,11 @@ static void uhdlc_memclean(struct ucc_hdlc_private *priv)
+> diff --git a/arch/powerpc/include/asm/jump_label.h b/arch/powerpc/include/asm/jump_label.h
+> index d4eaba459a0e..a6b211502bfe 100644
+> --- a/arch/powerpc/include/asm/jump_label.h
+> +++ b/arch/powerpc/include/asm/jump_label.h
+> @@ -15,14 +15,20 @@
+>   #define JUMP_ENTRY_TYPE                stringify_in_c(FTR_ENTRY_LONG)
+>   #define JUMP_LABEL_NOP_SIZE    4
 > 
->          if (priv->rx_buffer) {
->                  dma_free_coherent(priv->dev,
-> -                                 RX_BD_RING_LEN * MAX_RX_BUF_LENGTH,
-> +                                 (RX_BD_RING_LEN + TX_BD_RING_LEN) * MAX_RX_BUF_LENGTH,
->                                    priv->rx_buffer, priv->dma_rx_addr);
->                  priv->rx_buffer = NULL;
->                  priv->dma_rx_addr = 0;
-
-You also have to do:
-		priv->tx_buffer = NULL;
-		priv->dma_tx_addr = 0;
-
-
-Which that and commit message fixed you can add Reviewed-by: Christophe 
-Leroy (CS GROUP) <chleroy@kernel.org>
-
-
-
-
->          }
-> -
-> -       if (priv->tx_buffer) {
-> -               dma_free_coherent(priv->dev,
-> -                                 TX_BD_RING_LEN * MAX_RX_BUF_LENGTH,
-> -                                 priv->tx_buffer, priv->dma_tx_addr);
-> -               priv->tx_buffer = NULL;
-> -               priv->dma_tx_addr = 0;
-> -       }
->   }
+> +#define JUMP_TABLE_ENTRY(key, label)                   \
+> +       ".pushsection __jump_table,  \"aw\"     \n\t"   \
+> +       ".long 1b - ., " label " - .            \n\t"   \
+> +       JUMP_ENTRY_TYPE key " - .               \n\t"   \
+> +       ".popsection                            \n\t"
+> +
+> +#define ARCH_STATIC_BRANCH_ASM(key, label)             \
+> +       "1:     nop                             \n\t"   \
+> +       JUMP_TABLE_ENTRY(key,label)
+> +
+>   static __always_inline bool arch_static_branch(struct static_key *key, bool branch)
+>   {
+> -       asm goto("1:\n\t"
+> -                "nop # arch_static_branch\n\t"
+> -                ".pushsection __jump_table,  \"aw\"\n\t"
+> -                ".long 1b - ., %l[l_yes] - .\n\t"
+> -                JUMP_ENTRY_TYPE "%c0 - .\n\t"
+> -                ".popsection \n\t"
+> +       asm goto(
+> +                ARCH_STATIC_BRANCH_ASM("%c0", "%l[l_yes]")
+>                   : :  "i" (&((char *)key)[branch]) : : l_yes);
 > 
->   static int uhdlc_close(struct net_device *dev)
+>          return false;
+> @@ -34,10 +40,7 @@ static __always_inline bool arch_static_branch_jump(struct static_key *key, bool
+>   {
+>          asm goto("1:\n\t"
+>                   "b %l[l_yes] # arch_static_branch_jump\n\t"
+> -                ".pushsection __jump_table,  \"aw\"\n\t"
+> -                ".long 1b - ., %l[l_yes] - .\n\t"
+> -                JUMP_ENTRY_TYPE "%c0 - .\n\t"
+> -                ".popsection \n\t"
+> +                JUMP_TABLE_ENTRY("%c0", "%l[l_yes]")
+>                   : :  "i" (&((char *)key)[branch]) : : l_yes);
+> 
+>          return false;
 > --
-> 2.43.0
-> 
+> 2.52.0
 > 
 
 
