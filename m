@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-16640-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16641-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A58BAECD9B1
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Feb 2026 22:44:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79A1BECD9B0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Feb 2026 22:46:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f6XMM1LkFz2yFQ;
-	Fri, 06 Feb 2026 09:43:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770331439;
-	cv=none; b=CmMlyOrq9AHUJrsO5XGVUWAtUmftZVD1clT+5Y5Ssg4Bdd0Usqb3MruJi76wo1JmCjNW1J8Bra0Gx29NMJQA9Cic3JtR5DViFGQB516OOG9FMXoKkS9NnbROr7EZBcVRG/cCqhL0oPNPfvGvvkk32ugVWOnLCqIEBv4tWgU3Y2I80tapCrjIUwtV8NlZ7wAtTMckhWpEvA4UVok3Bk5HDFakPTAq+RqLMO2HvGdg5OW/MtZmFGg3su0vduQRlBct/wR5GkqSggvVmcaV5LWoeWLcnsThyycpJLCAmcmCD48zzJiQ8XNt43uCLmdDM7WehwHcfZI7ajjE/pjlgRVXUw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f6XQB6yypz2yFQ;
+	Fri, 06 Feb 2026 09:46:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770331586;
+	cv=none; b=YeM3s44Rj0seOQqtbzqPG4gFxwvqG+YV3BvRcK/xbNS5VEWyv7vFttKn8BLUjLOrVzfUf4BRyAwZprS5rMcaLdjns0m4BAZoaRXhdh23Scw4ylKBQBVw2CJzdcRamz/SC6iUEh66BnGH2lCYewxU4At8petGg9oh2Zz03jBcit+yx8DP8WrJJHzFXUsdp3ZClQMZhWVy3V31Ml7ltuTUzkGbs39mr8r8fir3VPuCXRDw5p7xLfaNAK3K+9teMssROI2pAWNFyxrRuhwUHSvzkcT4ce6ivDmfroPgUn5spGNq/2owxVn2MM0hzsTH1Lzut8b+j8WX4i8R4MQoasLvRA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770331439; c=relaxed/relaxed;
-	bh=00ZItawsL1jMxe0aVbb5Eh5Za/GC3Kl87nKVXLZOXv0=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:To:From:
-	 References:In-Reply-To; b=WNpU/VpKwWnpoB/PvwZe0gKNxtEOXAgb0awWOT7L8+6u4GxfeYLNcUF8QpBqeAUAIArZIXFIqFxru2ufFJCpv80i1PnsPTojwP+SvL5/q+F5d5zbG+o+wNfqVNJeI6B/KOVosjGo4qcOcJRTLQGdvpNg5YYv9HAke2VaZjQO1TszNi2v6sSWfZ/U5uaSjbF6ykZxTTtHDyphjo3dzzvxrIOpG2jirbrgg4M+czeDTUlatb/Q0z8iMAs7JojfI8XgLvATV4Oh4rd6mjG7aMYr4SmI+PQmGTGTMxjTQb5Z+e/uZLCyRL7Y9p9t56l0/VAQ0lsng2EEScNxBN1Nb07nbg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Cq4mDnAK; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1770331586; c=relaxed/relaxed;
+	bh=c8fYKE9+ySvvwxeHCgDhSW7zyQfsh6rfatxRSof4wjY=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Cc:To:From:Subject:
+	 References:In-Reply-To; b=hEkckuWZ1YGwsQOdmJI77sp6HJVvLCjQPBnDx5Lrp3rDK7zpdXlSLKzvKn+WfRXV57GX6EmLh01zo5tO9BY99GSw9Dspz9bbmcR4PTaX2I69PkaiW+UKWuXFRgGuRcgHM2ySWYpw71kwx6P1OKJk9VgUs0w3SFC5JoJsDuOMF9/j/68SGYctt7YFhSbsl7rPQTC1AUhAf/Nwo6PxhLcTYF23XLFM/lkuvL2qLTtuwSai1vMb7ABqQ0re5+TuhtrAv/3qY02Rh0HhU8gGTupz3nJwWcAFxaPevt89Xv3Q4IwyQWXgUITGpfKj+QC3vtzrzK5Ery3Vp7rwmGryYvT52g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kQKEJqY/; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Cq4mDnAK;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kQKEJqY/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f6XML3cHwz2xqj
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Feb 2026 09:43:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f6XQB2tZLz2xqj
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Feb 2026 09:46:26 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 16BCA600AD;
-	Thu,  5 Feb 2026 22:43:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E6563C4CEF7;
-	Thu,  5 Feb 2026 22:43:49 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id E952142B23;
+	Thu,  5 Feb 2026 22:46:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 91F64C4CEF7;
+	Thu,  5 Feb 2026 22:46:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1770331435;
-	bh=BLZubPyxzY4kDURUlK2y8s17DmJ2s1rb3y59eXB/ze4=;
-	h=Date:Subject:Cc:To:From:References:In-Reply-To:From;
-	b=Cq4mDnAKeu/gwoqwVhYxePHfG2GvzTbpMKt1srXw0uyYG+eviwnylSx+QdNqEmBx9
-	 w7uKFgzxiB5d1vu9II/w6yi7+zx8DEnspzM7i0ySSYVdd2kM/y2IvRRV5FXvse43dH
-	 HYDmUCYABz/Sbp2XEChzpMPNgEbDIbSxzp0yA4Q35iw7Zgnlq4M8szaInXVo85iqm0
-	 J9SwfE3kadxaI4LHpssXYSAX2B4ACy9k82g2Z/tJVAPAZGkBIk0fjl19vm2uznHRzY
-	 //uA36cI7MfNbkxBWu7pefjP5eTgymaNIC/KkpItKan1V26wo66Lh2WxHL5CLZeO1M
-	 6+BF3NMP+qfqQ==
+	s=k20201202; t=1770331583;
+	bh=c8fYKE9+ySvvwxeHCgDhSW7zyQfsh6rfatxRSof4wjY=;
+	h=Date:Cc:To:From:Subject:References:In-Reply-To:From;
+	b=kQKEJqY/sSJofCBVy05YcB0R4FCbORXgvKp/q/B19cu8EKvBJ0sqe9LDii6MoegmP
+	 xZlPV5jlxVR2E05BAV4FqG4gneXmp4YbOaw/k9Ld22vViu1Yh1iZJyAP2EoZPzgdH7
+	 UzB8O3sJNpDSbm5zWkFOeeGHcVdulpEWlYKJNy+UF3/HW+gcCEmUkQatjyhhR3jXQp
+	 l61f7crCSqlnGfnzW6RvzQ89p7RlSkpamkPAlSnVEHVN/DDsCGZdkXWnfRHAAkVCzh
+	 9sFB/1He6ChWkrcFYkkHV4ii0o/VqE3YS+mRIHoljL1SLNR+mXGEJuVOssOR7bcPhG
+	 oiFVtyqY+YU9A==
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,10 +59,8 @@ Precedence: list
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset=UTF-8
-Date: Thu, 05 Feb 2026 23:43:48 +0100
-Message-Id: <DG7E46M9VINC.3KTNQ1T7USPVO@kernel.org>
-Subject: Re: [PATCH v2 1/4] rust: io: Add big-endian read and write
- functions
+Date: Thu, 05 Feb 2026 23:46:15 +0100
+Message-Id: <DG7E62FRLFG8.2WLEEY8VX9PRO@kernel.org>
 Cc: "Daniel Almeida" <daniel.almeida@collabora.com>, "Link Mauve"
  <linkmauve@linkmauve.fr>, <rust-for-linux@vger.kernel.org>, "Madhavan
  Srinivasan" <maddy@linux.ibm.com>, "Michael Ellerman" <mpe@ellerman.id.au>,
@@ -85,6 +83,8 @@ Cc: "Daniel Almeida" <daniel.almeida@collabora.com>, "Link Mauve"
  =?utf-8?q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
 To: "Gary Guo" <gary@garyguo.net>
 From: "Danilo Krummrich" <dakr@kernel.org>
+Subject: Re: [PATCH v2 1/4] rust: io: Add big-endian read and write
+ functions
 References: <20260204040505.8447-1-linkmauve@linkmauve.fr>
  <20260204040505.8447-2-linkmauve@linkmauve.fr>
  <DG6A0WRA0JZC.SPDT9WEXF92K@kernel.org>
@@ -96,28 +96,17 @@ References: <20260204040505.8447-1-linkmauve@linkmauve.fr>
 In-Reply-To: <DG7DUN9M4YIU.KNRN6FM1K687@garyguo.net>
 
 On Thu Feb 5, 2026 at 11:31 PM CET, Gary Guo wrote:
-> On Thu Feb 5, 2026 at 7:05 PM GMT, Danilo Krummrich wrote:
->>   (1) Devices are either little-endian or big-endian. Hence, having to w=
-rite
->>
->> 	io.big_endian().write()
->>
->>       is excessive, we always want big-endian for a big-endian device.
->
-> You don't need to always write this. You just need to do `big_endian()` o=
-nce
-> when you obtain the io, and then keep using `BigEndian<Mmio>` instead of =
-just
-> `Mmio`, and the rest of code is still `.write()`.
+> I proposed the wrapper type because majority of devices won't need BE sup=
+port,
+> so adding complexity to Mmio itself is not ideal. It is also generic, so =
+it can
+> work with any IO backends, so for example, you can have `BigEndian<Pio>` =
+and
+> `BigEndian<Mmio>` and you don't need to duplicate your endianness support=
+ for
+> both backends.
 
-<snip>
-
->>   (2) It is error prone, if you forget to call big_endian() first, it is=
- a bug.
->
-> Moot point when `big_endian()` is only done once.
-
-Well, you need to do it at least once per driver entry point. For DRM IOCTL=
-s for
-instance you also have to consider that it is always Devres<Mmio>.
+That implies that we swap bytes manually? That would be a waste if the CPU =
+and
+device are big-endian.
 
