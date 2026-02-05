@@ -1,75 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-16628-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16629-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7C9AECD993
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Feb 2026 18:06:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 913E5ECD993
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Feb 2026 18:08:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f6QBk0GJbz2yF1;
-	Fri, 06 Feb 2026 05:06:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.187
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770287046;
-	cv=none; b=aToeQKMkeEiUkhH0ok6L57b+EVmDB8h/JII1iaELXel4y4RhDJcUXMSJTOVtrsL3hocQGFtvMHtRtjghPnFNpPr170UiYAmwz4OkgUr58vs+9HAWsepVaToiMJWmItZpNSDl7RS+nu2G28YkpFujk/IlH5IAkFSLJKw4ZGPbyd1ABwLYBCwc/EU74YLIVKnod8d4ZRL/ORO9d9BnMKYj95rp9ovhJH+N+7fMMuoeTjw5Dkji4XBpCn8AQPcHlw4GBDKa9lEv1OlojoskQXmMiSZo6tjXkZRSChFHVbB6sFQT7wii/R2nA20sByTmD9cqyRnv3cZQnAsME1qhkSC/UA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770287046; c=relaxed/relaxed;
-	bh=sPoqZUGwj+5Bi5z4vx96eEq6JXWaEqv8vZqoNKhRA4Y=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=kIKmDt4S4O7mPyMpgeCvHOf0W5B5yc735o7KcE3t8HJD0IuzAHj7LbRW24A2DF2+487BdNnDVDMxv2n5K5nsLNwi+E4CIFRky0rbYAJs9s/aSGVGYBdQHtUVmOADKeVClxoNovrnF2cdLXapZG3AMCd4N/1ChctQJ3hCOfCjnRDYY1nxtrRbxxxXuZtUrexQL60TZbf6cBRb8BnngotkZSlJRcX5EdTSoj1EbNwaLEnsm1T0OvNa6MeR07HQC7+aLchbXGjLc41pYw1k2d56uFNSVe7PXr0xGFZi6uT11VwOKrgWoRmMwuuQ5PKMuDWcUmO4nrX3wCub26Wle1XNWg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=Un6ikFWD; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=Un6ikFWD; dkim-atps=neutral; spf=pass (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=xieyuanbin1@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f6QFj6g6Yz2yF1;
+	Fri, 06 Feb 2026 05:08:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=136.143.188.103 arc.chain=zohomail.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770302659;
+	cv=pass; b=WG0nrNHXbFjdg5MoTNrqM6psZeTRUTlMu3WppZYqvsFRt+sRKkJC28xePpN/G8nDiXewIWVrM6YxqB4OQHFQ/LUqnlhIskEniRjq7dta/qPbdZu5Utc3qHlWio2FewG80Mk0gHJyRKgI6bNbLajBo/buINdEoX3E8CqAHDOqO2Xlg4IM2aV2WsN32J7HF15JoY45YrJ+tCFpjVzVB6qls2ZjKBdG6u1vnoxe8rJZ00A/WsfnwMmKQFxrj3+VXkLeccUaakjmUDrp8G/qzacPNmik1W2EFRvt6Zo9elBkJr2IgRA94DUrbbo4y0ElyC289Ebz50I3cNx7G70T5W/KMw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1770302659; c=relaxed/relaxed;
+	bh=Qc1uiAFxrbLUJY1lZJ2hPTXPxu1uxTuoB4PMQ6ccxF4=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=LUHihtwylz0CECSnjPyfUT3oSTUwuooB+n0Kz9kcUb/acn/a92emRo96gN6tm4rqvaQfJfZ8LRa46xFS0Amh2j7mGUJhYnFcImUNvP+GAHjggSfz+/p+Hd1SdXMrYlkeGTwfocB265AbaLxiqErFeoSY8g5aEmsGrQz0hdYseLekKW4zxwVQ/wJ2rlrEYBxvsDQJrOTiCV4Ngyu/LbO0Cue9Aoc+WS1vJB3pOUk9HIKVpudHK7FMeJyCwtf0T07WV50SLto2e5OXSXehs3iIAlQtwpvI+lb+qt0ID1fr0Sarg/oS1sGUJNgBAjxzM18WoUgScdnWjmv3PVhoTVBgHQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=collabora.com; dkim=pass (1024-bit key; unprotected) header.d=collabora.com header.i=daniel.almeida@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=Nd7mF5t7; dkim-atps=neutral; spf=pass (client-ip=136.143.188.103; helo=sender4-pp-e103.zoho.com; envelope-from=daniel.almeida@collabora.com; receiver=lists.ozlabs.org) smtp.mailfrom=collabora.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=Un6ikFWD;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=Un6ikFWD;
+	dkim=pass (1024-bit key; unprotected) header.d=collabora.com header.i=daniel.almeida@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=Nd7mF5t7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=xieyuanbin1@huawei.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 1103 seconds by postgrey-1.37 at boromir; Thu, 05 Feb 2026 21:24:02 AEDT
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=collabora.com (client-ip=136.143.188.103; helo=sender4-pp-e103.zoho.com; envelope-from=daniel.almeida@collabora.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 909 seconds by postgrey-1.37 at boromir; Fri, 06 Feb 2026 01:44:17 AEDT
+Received: from sender4-pp-e103.zoho.com (sender4-pp-e103.zoho.com [136.143.188.103])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f6CxZ6SFJz2xg9
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Feb 2026 21:24:00 +1100 (AEDT)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=sPoqZUGwj+5Bi5z4vx96eEq6JXWaEqv8vZqoNKhRA4Y=;
-	b=Un6ikFWDy+OL/X35GfoynaKqozTukzBUEGGr1KyzRsUxy14hDXbZGeUF05qp7Wr+4OrPCN5j/
-	sk+4SupjtDViXV7t5JI6/60h2z8tGzIRgXGflSdph/KS4ecWy0VbK2nPc/S06OXqrNSFhLQDIeu
-	Q3Uv1YOzxYPzfQ+vyM4T6BU=
-Received: from canpmsgout10.his.huawei.com (unknown [172.19.92.130])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTPS id 4f6CWM70H7z1BG52
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Feb 2026 18:04:47 +0800 (CST)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=sPoqZUGwj+5Bi5z4vx96eEq6JXWaEqv8vZqoNKhRA4Y=;
-	b=Un6ikFWDy+OL/X35GfoynaKqozTukzBUEGGr1KyzRsUxy14hDXbZGeUF05qp7Wr+4OrPCN5j/
-	sk+4SupjtDViXV7t5JI6/60h2z8tGzIRgXGflSdph/KS4ecWy0VbK2nPc/S06OXqrNSFhLQDIeu
-	Q3Uv1YOzxYPzfQ+vyM4T6BU=
-Received: from mail.maildlp.com (unknown [172.19.162.92])
-	by canpmsgout10.his.huawei.com (SkyGuard) with ESMTPS id 4f6CQs5s8Hz1K9Yq;
-	Thu,  5 Feb 2026 18:00:53 +0800 (CST)
-Received: from kwepemj100009.china.huawei.com (unknown [7.202.194.3])
-	by mail.maildlp.com (Postfix) with ESMTPS id 33E4440565;
-	Thu,  5 Feb 2026 18:05:26 +0800 (CST)
-Received: from DESKTOP-A37P9LK.huawei.com (10.67.109.17) by
- kwepemj100009.china.huawei.com (7.202.194.3) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.36; Thu, 5 Feb 2026 18:05:25 +0800
-From: Xie Yuanbin <xieyuanbin1@huawei.com>
-To: <maddy@linux.ibm.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
-	<chleroy@kernel.org>, <kees@kernel.org>, <andy@kernel.org>
-CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
-	<linux-hardening@vger.kernel.org>, <lilinjie8@huawei.com>,
-	<liaohua4@huawei.com>, <xieyuanbin1@huawei.com>
-Subject: [PATCH 2/2] powerpc/text-patching: Fix possible stringop-overread compilation error
-Date: Thu, 5 Feb 2026 18:05:17 +0800
-Message-ID: <20260205100517.292858-2-xieyuanbin1@huawei.com>
-X-Mailer: git-send-email 2.51.0
-In-Reply-To: <20260205100517.292858-1-xieyuanbin1@huawei.com>
-References: <20260205100517.292858-1-xieyuanbin1@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f6Kjs2gDhz2xrk
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Feb 2026 01:44:16 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1770301713; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=QSHFHjAa99OTsHyo5WeoPv5AV9EjQ0E9CCqkc/P1ek8zbHF5ygGvwJsFdiHrgoqhy2ugUygi/WQgy4RwlfB+hfiKtivaqNSl/OQ3WwEEEGA1lzyUikm+2T9E25w7B08IgE5gF8u5o1sYJumHLR699+/8Fazs0E3KTlkOzs90yHw=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1770301713; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=Qc1uiAFxrbLUJY1lZJ2hPTXPxu1uxTuoB4PMQ6ccxF4=; 
+	b=l6oEINuDc/5/QcYD7ikomuZP+zz6goGoswPCOJfahIgja7xnNIFEq4XQIs2zljH5faIZoq9qRCu57RkO69KPLkB2xIyyUC2st/zHMv9rcdghcDo6vT/0YZJtNuVUZXO1fmhlnXany0Gi6ZRv1Mc4Asdpke/3Mnu+/qFLfbe2VFo=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=daniel.almeida@collabora.com;
+	dmarc=pass header.from=<daniel.almeida@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1770301713;
+	s=zohomail; d=collabora.com; i=daniel.almeida@collabora.com;
+	h=Content-Type:Mime-Version:Subject:Subject:From:From:In-Reply-To:Date:Date:Cc:Cc:Content-Transfer-Encoding:Message-Id:Message-Id:References:To:To:Reply-To;
+	bh=Qc1uiAFxrbLUJY1lZJ2hPTXPxu1uxTuoB4PMQ6ccxF4=;
+	b=Nd7mF5t7UX1hhdRejJ5dTJ8sBkXzpqebV9DrOCx4zQtMOdHVWEpIsk/77WhSq4gz
+	6oSg6CWjheB2LaN1fTXIpTEKtjxYScZ+PHimltaStwkZcQHucBZRbnOVv0owIsRavB4
+	GuqXAOZ1UuNjygzxQSH7pMYGYhq/1lFrAyCFw0B8=
+Received: by mx.zohomail.com with SMTPS id 1770301712607806.8941192551862;
+	Thu, 5 Feb 2026 06:28:32 -0800 (PST)
+Content-Type: text/plain;
+	charset=us-ascii
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,68 +64,92 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.67.109.17]
-X-ClientProxiedBy: kwepems200002.china.huawei.com (7.221.188.68) To
- kwepemj100009.china.huawei.com (7.202.194.3)
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3826.700.81\))
+Subject: Re: [PATCH v2 1/4] rust: io: Add big-endian read and write functions
+From: Daniel Almeida <daniel.almeida@collabora.com>
+In-Reply-To: <DG6A0WRA0JZC.SPDT9WEXF92K@kernel.org>
+Date: Thu, 5 Feb 2026 11:28:12 -0300
+Cc: Link Mauve <linkmauve@linkmauve.fr>,
+ rust-for-linux@vger.kernel.org,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Srinivas Kandagatla <srini@kernel.org>,
+ Miguel Ojeda <ojeda@kernel.org>,
+ Boqun Feng <boqun@kernel.org>,
+ Gary Guo <gary@garyguo.net>,
+ =?utf-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>,
+ Benno Lossin <lossin@kernel.org>,
+ Andreas Hindborg <a.hindborg@kernel.org>,
+ Alice Ryhl <aliceryhl@google.com>,
+ Trevor Gross <tmgross@umich.edu>,
+ Ard Biesheuvel <ardb@kernel.org>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Eric Biggers <ebiggers@google.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Lyude Paul <lyude@redhat.com>,
+ Asahi Lina <lina+kernel@asahilina.net>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+ Tamir Duberstein <tamird@kernel.org>,
+ FUJITA Tomonori <fujita.tomonori@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org,
+ officialTechflashYT@gmail.com,
+ Ash Logan <ash@heyquark.com>,
+ Roberto Van Eeden <rw-r-r-0644@protonmail.com>,
+ =?utf-8?Q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <EC479D9E-ADBF-461C-BEA6-06EA2D4FD8A6@collabora.com>
+References: <20260204040505.8447-1-linkmauve@linkmauve.fr>
+ <20260204040505.8447-2-linkmauve@linkmauve.fr>
+ <DG6A0WRA0JZC.SPDT9WEXF92K@kernel.org>
+To: Danilo Krummrich <dakr@kernel.org>
+X-Mailer: Apple Mail (2.3826.700.81)
+X-ZohoMailClient: External
 
-For strnlen(), if the compiler detects that the maxlen argument exceeds
-the valid memory size of the input string object, a compilation error may
-occur.
 
-For lastest linux-next source, changing ppc_kallsyms_lookup_name() to
-__always_inline, using default ppc64_defconfig, and setting
-CONFIG_EXPERT=y, CONFIG_PPC64_BIG_ENDIAN_ELF_ABI_V2=n,
-CONFIG_CC_OPTIMIZE_FOR_SIZE=y. Then, when using gcc-15 for compilation,
-the following error will be triggered:
-```log
-  CC      arch/powerpc/kernel/optprobes.o
-In file included from ./arch/powerpc/include/asm/kprobes.h:24,
-                 from ./include/linux/kprobes.h:31,
-                 from arch/powerpc/kernel/optprobes.c:8:
-In function ‘ppc_kallsyms_lookup_name’,
-    inlined from ‘arch_prepare_optimized_kprobe’ at arch/powerpc/kernel/optprobes.c:209:21:
-./arch/powerpc/include/asm/text-patching.h:232:13: error: ‘strnlen’ specified bound 512 exceeds source size 19 [-Werror=stringop-overread]
-  232 |         if (strnlen(name, KSYM_NAME_LEN) >= KSYM_NAME_LEN)
-      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-In function ‘ppc_kallsyms_lookup_name’,
-    inlined from ‘arch_prepare_optimized_kprobe’ at arch/powerpc/kernel/optprobes.c:210:22:
-./arch/powerpc/include/asm/text-patching.h:232:13: error: ‘strnlen’ specified bound 512 exceeds source size 13 [-Werror=stringop-overread]
-  232 |         if (strnlen(name, KSYM_NAME_LEN) >= KSYM_NAME_LEN)
-      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-cc1: all warnings being treated as errors
-```
 
-Refer to the implementation of fortify's strnlen(). If the string length
-is a compile-time constant, do not call the strnlen() function.
+> On 4 Feb 2026, at 12:18, Danilo Krummrich <dakr@kernel.org> wrote:
+>=20
+> On Wed Feb 4, 2026 at 5:04 AM CET, Link Mauve wrote:
+>> Another option would be to call u32::swap_bytes() on the data being
+>> read/written, but these helpers make the Rust code as ergonomic as =
+the C
+>> code.
+>>=20
+>> Signed-off-by: Link Mauve <linkmauve@linkmauve.fr>
+>=20
+> The I/O stuff recently changed quite significantly, please have a look =
+at the
+> driver-core-next branch [1] in the driver-core tree.
+>=20
+> Also, instead of providing additional *be() methods, we should just =
+create a new
+> type io::Endianness and use it to indicate the device endianness when =
+requesting
+> the I/O resource.
+>=20
+> For instance, for your driver we could have
+>=20
+> request.iomap_exclusive_sized::<8>(Endianness::Big)?
 
-Signed-off-by: Xie Yuanbin <xieyuanbin1@huawei.com>
----
- arch/powerpc/include/asm/text-patching.h | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+Can we please structure this in a way that LittleEndian is the default?
+Perhaps using a const generic that is defaulted, or something along =
+these lines.
 
-diff --git a/arch/powerpc/include/asm/text-patching.h b/arch/powerpc/include/asm/text-patching.h
-index e7f14720f630..ce1b2131980a 100644
---- a/arch/powerpc/include/asm/text-patching.h
-+++ b/arch/powerpc/include/asm/text-patching.h
-@@ -228,8 +228,13 @@ static inline unsigned long ppc_kallsyms_lookup_name(const char *name)
- 	/* check for dot variant */
- 	char dot_name[1 + KSYM_NAME_LEN];
- 	bool dot_appended = false;
-+	size_t n_len = __compiletime_strlen(name);
-+	const size_t n_size = __member_size(name);
- 
--	if (strnlen(name, KSYM_NAME_LEN) >= KSYM_NAME_LEN)
-+	if (n_len == SIZE_MAX || KSYM_NAME_LEN < n_size)
-+		n_len = strnlen(name, KSYM_NAME_LEN);
-+	
-+	if (n_len >= KSYM_NAME_LEN)
- 		return 0;
- 
- 	if (name[0] != '.') {
--- 
-2.51.0
+>=20
+> and then let the I/O backend choose the correct accessors based on =
+this.
+>=20
+> I.e. the device is either big or little endian, hence we don't need to =
+provide
+> both accessors at the same time.
+>=20
+> [1] =
+https://git.kernel.org/pub/scm/linux/kernel/git/driver-core/driver-core.gi=
+t/log/?h=3Ddriver-core-next
+>=20
 
 
