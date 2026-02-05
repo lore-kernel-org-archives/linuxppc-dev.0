@@ -1,108 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-16607-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16608-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13736EA794B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Feb 2026 22:58:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9937EEA7951
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Feb 2026 02:36:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f5wkD6Xsbz2yFK;
-	Thu, 05 Feb 2026 09:58:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::231"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770245892;
-	cv=none; b=ZrCR2/NMx/IlPNymVa/L4WxBlEb/Vbffcio+4Y/ui+1ESjaBzrKGAYqNp9KUqXyDNNaaZjkaWvL7eXDJlbbgbQzif1CNB94KMTQATpQF79d3gI9zVx2T4s2JizuNl4+gEr3Vi2x+F5t+hnqTcBpsCoYtX6BvZyfVX8JDl1DQRggCnXX+PsC7ZsFKOUq0vvrrX+QyXzUTbIX0+SyrZTmLOGdmTWbh2UEze2QvHt9H5HSOMWPd1qKQ9ugQKPDl084GrGf4aO8/qrnOzoG7Oz9S/FIZYqu7CDajgbjufaeVykjBFbIu2XxSXyk1i3cnS9a49NiFbdYBQuW02rMah3QFSQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770245892; c=relaxed/relaxed;
-	bh=HXYYAkQIYtgJH8avjMGESEihpdp9UD0EHXLRnPGjhdU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=abut1HvcjKlicjadGJI+V05JkxMDARaeUTYi8PGIc3sRc5lxIYpPPRO0REc4f+dGrmEjWY0GllbL7GDh2Mz3laasurqdmwehBzLQ6e+3jfiSMYkhhl982ISuOE/wIS0VpzPLbGDJJcsPFvBz8PUIT8ks1mK88BKxEWEfQa6xMjzIALycSmjNQsuw1CmYBrRoFJuW3LgbJk3G1vkPbIXfmXXPGWTU+0i2lzrqm/xuyOJS/6MxyGZQxV2bq/oMhhCK6F89BGV/dXpDX06AGZWlJjFE31PpbU3qDIK1T/6dCfMGd0U3xvYbdkT6jzCud9CU3/fjdbTuGlcTF4wKn5g/Qg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Y5xBmlvb; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::231; helo=mail-oi1-x231.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f61Ys2CQDz2xrk;
+	Thu, 05 Feb 2026 13:36:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::531" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770258977;
+	cv=pass; b=Rvduq4umxWsyDkoXZB9adWq0miRHEynR7ILS3eUMz78CA0SIZtSwJtLMW8sJdEHBYadIENBsKKmwtay5OYELn8kkk/pgfazkvbAcJy8fsIAAY3vY+js8rJ0fx5viyjAi3v4gL8ePpZDpTbu7EV5CaMvxrY45kHo0b3vi5vpLLC/T9j0vQxIy8+iHH3B8EUpblPSrIuqHmzoBdZ2CEqUNBTOzsY5tDl3Ik/pkUvxTLg8t9CJ9fizUml9lRpjQV+aTzeDnnCEkEOYKFrkT1rQiUQ+8Bv0/IHfNDCRhl7V1G1ZTfzzRkyLmbVkYXhlNakZgGn+b7mChyxD7oTjx/uL2eQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1770258977; c=relaxed/relaxed;
+	bh=HjF1oe/j6F+p4WP4e0eq4iSGoPJ70DW7/iIuXSYvlGc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=BwjLCJxqy6zqWRseS5Np4nRobaFc8p/PdlnUTuTmmyp0uNl82iBFl3T+Ph5WTkwFcfR7s/HNzRDWnSS3zhQDyU18O5YNvl5u2OdODZszpRceHrEqCBVL/4qtX4wD+er9zFEch4eHzRIzVUzc9nSjZRFf4jttD6IYvnLcGChsJXR4+B9eqel3YfsfbIKW/b8YDUXnWlKYD7qZDcGo1PTWW2PNxR5IzS0anw0zSEE7puEJ6LhTH9hy8JOh0vs2pHedG3ZryhaiXLq4kxM+JWlismrVPuzCEIZsr7+gqaqCdzXxXoa/4IiaIEwFK9qLPocuAEnJ69N+SnLfXDnEBVf7yw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=J4/AEIOj; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Y5xBmlvb;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=J4/AEIOj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::231; helo=mail-oi1-x231.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-oi1-x231.google.com (mail-oi1-x231.google.com [IPv6:2607:f8b0:4864:20::231])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com [IPv6:2607:f8b0:4864:20::531])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f5wkC2thmz2xHt
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Feb 2026 09:58:10 +1100 (AEDT)
-Received: by mail-oi1-x231.google.com with SMTP id 5614622812f47-45f0b597eb4so194432b6e.2
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Feb 2026 14:58:10 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f61Yr1mGVz2xHt
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Feb 2026 13:36:15 +1100 (AEDT)
+Received: by mail-pg1-x531.google.com with SMTP id 41be03b00d2f7-c6c444e89bcso104623a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Feb 2026 18:36:15 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1770258974; cv=none;
+        d=google.com; s=arc-20240605;
+        b=lbXgdOjx+i8HH69jr7PGo4TgCYGa3r2J0j+Nx6gHdhGarYE0gfoLgjwd+OHBgrs5As
+         pEajh50k5gmiZGRd+OVK9+xKQw5GH2/JDLIyNjICainmHycWChRZv9R1SPPX6An/RY7R
+         sTqK1J6Zn7T98wC/Up8DomOZklvq+BzHOcFS0nJgk4iUjepmotNOWJIce5l6hJa37w5r
+         jxk69DbODV3XLqUxeeUHbJKD7XKk7YB6JhsQp5Mi+ceSnSHMsIvbwkYGNa+CxahwkUS6
+         cfY1p/yquco1tu/KtraDlVPFkRP2J2qzOuTPQODCwXD5JLvyf1yhgNs31OLtkjPHepOa
+         W70A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=HjF1oe/j6F+p4WP4e0eq4iSGoPJ70DW7/iIuXSYvlGc=;
+        fh=dHFb0iRFdn7plL2GwOf/a9G1IgCip6DLrPtxhb0aa4U=;
+        b=UWHKFCrCBlmh7OlMJPsOcPenaiFzlkU66YxWYXrLJxZD0MGX29Os7oWjJmmzxK927a
+         uFNSnBfir1UrC3kZz43vOTC7KrXkm/R7dnRZm+lS0N32dODRumlkZL6UAMu/ESSN8wvf
+         ky52EOyuxdoJ8lh4rMILSJnEe9sS5gQX2nJAgDdUPjq+f7JmRR7Cig5WL8qJVmjSh/JB
+         0PxQ0huD9IDwoloNXY3RKnHrE+gmXBzeHu9WRN7ifHC8JhBFRjRM0aDB+w+XxAEztM33
+         hKa8cFVGTZyhsKMU/sZtR2WXhDvy+eqpmQQDYBRORRzjBaAdkb55JfZMnxhDrYUdAfxC
+         KJwg==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1770245888; x=1770850688; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+        d=gmail.com; s=20230601; t=1770258974; x=1770863774; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=HXYYAkQIYtgJH8avjMGESEihpdp9UD0EHXLRnPGjhdU=;
-        b=Y5xBmlvb4s8LB+aLqovn2wfG6cLTU2gqUlDefbyF9GTq1w5biDb9WtIMc91JFw8jAQ
-         H3HmzrFsoR0pDCoLImqt81PhdOFbHTRkwNDSl6XSMTs58Vvc4xwffmCIaPQweBy1qGha
-         lsqr2zO8zHQC1N+Chjv4ACjWnEg9pwJFtx0wmO1JoF5VXD8n19IKCX44+BOpN3EiQjSf
-         WPc/awX2c6VEhWo8QBrp3EEEoL+gFhx26fjSo32ivPNJeiTwBYi9cjsupVFmuN4vRW93
-         6E5FjeLx2BLUGWwvsEN6RHa+Xx68EVVjIdBN+RrPBxYvbtddKBxxXrk5QkCBLgKm9Paf
-         3yDg==
+        bh=HjF1oe/j6F+p4WP4e0eq4iSGoPJ70DW7/iIuXSYvlGc=;
+        b=J4/AEIOjU3UYiUJO+4jOy6Sk/NNrvUCtONrnlr/VeS+W1hIHif/VjImF1nlld9An48
+         cMsBTX6FyehukyZp+W6rwQ+P9bySIE/jSD9NAUZOokdfAt9yEeN/MIU28eiFrxhNKhHc
+         7SOk/y7QTyZHvUV3nj9YYZ7DKVEa/bo/gHnysAC4T0+QB9ldOM2tLNxuHdGLUiA8pq9d
+         iwwyW6znT940VO2DlCAJ5qcUeQz8rdMeSe5S5V22orvtxnsMqXe10lnTpcNle/lYvnyK
+         9X7msX1xda3vwSD8uHkhp4KVPuYjM4Rgg33xxK/Dzgagzd316BAJ6lUeyiidtuS/gAUS
+         WyMg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770245888; x=1770850688;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+        d=1e100.net; s=20230601; t=1770258974; x=1770863774;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=HXYYAkQIYtgJH8avjMGESEihpdp9UD0EHXLRnPGjhdU=;
-        b=qn2dX8+z93ETn4tyZVhWvml/gq5SAjs4M+Xp+a87i5a2PqJL0eHT+09eJ0HR1JF8aw
-         QVJRpQbqV0GPAUqFVPkKUEXymr6Z48kAR1L8ENE1GNh2NmkHeqiTFuMyvxeHS2ZryCG/
-         Ddj50ZGw1npENIwbjFgeWjyxNplUIXD0lJsqdIetVKAPWaihwyl4ZJ15xAzQpFfQ5TG+
-         CS6xv2Ogd1kTyefOMBhDrI4FQXutDWLtvSFZ7IvNKFXlGQ3bcNZaeDfEJLBA/TcYykHk
-         E30m6VIxTsziMVHk/bzNxZSNqvFsDyJg4/IhzPgtK4zPkQCM8SraelMCZRvhZBhw7Cfm
-         WgQQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXCETWk6A6P8JeXFoZSsySt5b1jWDl+1AFB/Jgh58lUWggJFleJg88ziCRm4h2Qr1g4mqw6fn9zwcwXYDs=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx1VJL3qYA9cp/+BNFJMp0UQhS/FFEvvG4zKIzhnCb+Lne04WIM
-	AiU1/dMXQ/QFxG3H+Q3sK+XYO0he/CUQX4AC/zMzUkay9g1Srz7DSH6j
-X-Gm-Gg: AZuq6aLIWhK+I0EpeU8BTDmWRvuP7g7idtfLWyBelr2+jJJztCZ+oEEwvu9iRsAq4WM
-	qRkYk5L4HWYC8kxC04fKxcz7aR+b5hkR+guxon0ixUdBgLY8Y6slw5Tz0+WzS8O9D1tIzWXL2iU
-	BS0MS5eAMAGmc1KtdJjecPk7/cMbaZJ3+lJcYTD9xX5ojTYS7jM9yUKuybNcAbcbZ5Q/qjomMnB
-	jVs529JT4k6hDel+opXptRFJsHlO20QyQWZB+BwyU2Zq/QGLwRr4y6y2zNWH2OpTEueujLmqx/y
-	M1Qx/rERstxfUyitzhF8PW2O6o/ZpU1FuwAMDYHOeLFVUmBw2hNoZLRd46CH2JSpRPj29e2acu0
-	yBJRsaWiNa7VTDZxRaYsQSs2DR+BCE5rzJfFwTILiMCiYbgSmAkotiivdnYS4NzyJN5JA52XEY5
-	DyRc53FYrH3lN7yIsoVChMmerN5bh1rWY45FAez4H5zDK39txQ25i5YT4sOwSHjdBJ
-X-Received: by 2002:a17:90b:2f47:b0:340:c060:4d44 with SMTP id 98e67ed59e1d1-354870f8750mr3428377a91.14.1770238953409;
-        Wed, 04 Feb 2026 13:02:33 -0800 (PST)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com.com ([106.51.164.193])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8241d1bd466sm3277977b3a.20.2026.02.04.13.02.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Feb 2026 13:02:33 -0800 (PST)
-From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
-To: linkmauve@linkmauve.fr,
-	ojeda@kernel.org,
-	boqun.feng@gmail.com,
-	gary@garyguo.net,
-	bjorn3_gh@protonmail.com,
-	lossin@kernel.org,
-	a.hindborg@kernel.org,
-	aliceryhl@google.com,
-	tmgross@umich.edu,
-	dakr@kernel.org,
-	corbet@lwn.net,
-	maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	peterz@infradead.org,
-	jpoimboe@kernel.org,
-	jbaron@akamai.com,
-	rostedt@goodmis.org,
-	ardb@kernel.org,
-	rust-for-linux@vger.kernel.org,
-	linux-doc@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Cc: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
-Subject: [PATCH V2 3/3] powerpc: Enable Rust for ppc64le
-Date: Thu,  5 Feb 2026 02:31:25 +0530
-Message-ID: <20260204210125.613350-4-mkchauras@gmail.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260204210125.613350-1-mkchauras@gmail.com>
-References: <20260204210125.613350-1-mkchauras@gmail.com>
+        bh=HjF1oe/j6F+p4WP4e0eq4iSGoPJ70DW7/iIuXSYvlGc=;
+        b=Iv0IRQ0REHwZDk8rp/N12xkHPLypew8Q/Bq6aDR2Ca+vOAWhzIfRMeHdNwgY6WiiiC
+         R10AtaWwDs69X+SclS8XziRAni5kjgJ9sVMEmTqY9293n+L5F3WoRmZEoMWsAdxYfJ3z
+         rLUPI8SNgpRMyoYq4OW4zsvk5FFaQl6Tc4DmewR1hwLlYi+oRdkhmWvbqRxlwTuiafr2
+         cXrmU+WTX9x2STNiaRgl0V5VfffVeYt6w65M0Uerc4hsGqeTlog3T2n36sXvoWJudfnK
+         g3jlqEzKs/1aDJb5fbC6eHVgF/z1qUKIpxRCdHs+6/tfqLInvmbAGlQmiouKc/Ulo45J
+         Hm3Q==
+X-Forwarded-Encrypted: i=1; AJvYcCXDVrtABIjnaw3pifWFJE9OFtzzHEy3Ecqr9HoEOBn8aC5vel9gXbHJk3BdudF7NVSmZJ7kQOqNL2AoN3w=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzkGDWiJAK9ylLrJQqrTXIcSaqps6f/EPWJB533uvT26AVZZk5K
+	iweJRVZyFuGuvxw1pMSfJjG25o0xCcYCzqmMZe6cbZT8HXerif2orTGNfEx05wRBjpguYEhwcmv
+	g0KQu9EPIQ8havblhAdj34xrSGCiieIY=
+X-Gm-Gg: AZuq6aJc7iowboJCl8eMOszu0N7dxYaaJ54+esX8DO+zerXo7JC4skwOs/Z+6Fqu14K
+	zA8iDuZrJvDbPWmyDVOYzbIDwbtqdlZGjfaDpHngFBjB0wB7KwDb/EUwXX0TJey50GguT4lzF0A
+	eorsSDY2WiFdqcbenaCfcRTDfVdrX4yjsi/yW79DwNAD9VEU+SICElh+Ht1cwT9rM/4LuujxdCE
+	0TZmLPewq4GlAXRU1zapcKtFgypJGKYaq6mgd2XGowwjzsYpp/BgY56zSj6waVox45n9TEhy+t/
+	VxmUtQ==
+X-Received: by 2002:a17:90b:3884:b0:340:4abf:391d with SMTP id
+ 98e67ed59e1d1-35487125d82mr4318915a91.16.1770258973498; Wed, 04 Feb 2026
+ 18:36:13 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -116,130 +101,242 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260203031345.3850533-1-shengjiu.wang@nxp.com>
+ <20260203031345.3850533-3-shengjiu.wang@nxp.com> <aYI2KZE8/MGQ633A@lizhi-Precision-Tower-5810>
+ <CAA+D8APXwucOLhhnZF7ASPufWyQs4tbxtR46UFdpm=4wRyHOyA@mail.gmail.com> <aYN0CQbRwyYJDlJn@lizhi-Precision-Tower-5810>
+In-Reply-To: <aYN0CQbRwyYJDlJn@lizhi-Precision-Tower-5810>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Thu, 5 Feb 2026 10:36:01 +0800
+X-Gm-Features: AZwV_QgTCuKmUaXOlpjmbiCTEgTaxxVjxr1vFqJ32-N2ro_Vxt5AFFdiFJtKCnI
+Message-ID: <CAA+D8AN_xej-DWHbWKMCwgZVVcW9N2mHrK=4GUyoRiGLXBAoTw@mail.gmail.com>
+Subject: Re: [PATCH v3 2/4] ASoC: fsl_asrc_m2m: Add option to start ASRC
+ before DMA device for M2M
+To: Frank Li <Frank.li@nxp.com>
+Cc: Shengjiu Wang <shengjiu.wang@nxp.com>, lgirdwood@gmail.com, broonie@kernel.org, 
+	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, shawnguo@kernel.org, 
+	s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com, 
+	linux-sound@vger.kernel.org, devicetree@vger.kernel.org, imx@lists.linux.dev, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	Xiubo.Lee@gmail.com, nicoleotsuka@gmail.com, perex@perex.cz, tiwai@suse.com, 
+	linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Enabling rust support for ppc64le only.
+On Thu, Feb 5, 2026 at 12:30=E2=80=AFAM Frank Li <Frank.li@nxp.com> wrote:
+>
+> On Wed, Feb 04, 2026 at 09:41:55AM +0800, Shengjiu Wang wrote:
+> > On Wed, Feb 4, 2026 at 1:53=E2=80=AFAM Frank Li <Frank.li@nxp.com> wrot=
+e:
+> > >
+> > > On Tue, Feb 03, 2026 at 11:13:43AM +0800, Shengjiu Wang wrote:
+> > > > There is a limitation on i.MX952 that dma request is not cleared at=
+ the
+> > > > end of conversion with dma slave mode. Which causes sample is dropp=
+ed
+> > > > from the input fifo on the second time if dma is triggered before t=
+he
+> > > > client device and EDMA may copy wrong data from output fifo as the =
+output
+> > > > fifo is not ready in the beginning.
+> > > >
+> > > > The solution is to trigger asrc before dma on i.MX952, and add dela=
+y to
+> > > > wait output data is generated then start the EDMA for output, other=
+wise
+> > > > the m2m function has noise issues.
+> > > >
+> > > > So add an option to start ASRC first for M2M before ASRC is enabled=
+ on
+> > > > i.MX952.
+> > > >
+> > > > Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+> > > > ---
+> > > >  sound/soc/fsl/fsl_asrc.c        | 23 +++++++++++++++++++++++
+> > > >  sound/soc/fsl/fsl_asrc.h        |  4 ++++
+> > > >  sound/soc/fsl/fsl_asrc_common.h |  4 ++++
+> > > >  sound/soc/fsl/fsl_asrc_m2m.c    |  8 +++++++-
+> > > >  4 files changed, 38 insertions(+), 1 deletion(-)
+> > > >
+> > > > diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
+> > > > index 92fb16f7be45..b6d4f1e09e2e 100644
+> > > > --- a/sound/soc/fsl/fsl_asrc.c
+> > > > +++ b/sound/soc/fsl/fsl_asrc.c
+> > > > @@ -1078,6 +1078,27 @@ static unsigned int fsl_asrc_get_output_fifo=
+_size(struct fsl_asrc_pair *pair)
+> > > >       return val >> ASRFSTi_OUTPUT_FIFO_SHIFT;
+> > > >  }
+> > > >
+> > > > +static bool fsl_asrc_m2m_output_ready(struct fsl_asrc_pair *pair)
+> > > > +{
+> > > > +     struct fsl_asrc *asrc =3D pair->asrc;
+> > > > +     enum asrc_pair_index index =3D pair->index;
+> > > > +     int retry =3D 1000;
+> > > > +     u32 val;
+> > > > +     int ret;
+> > > > +
+> > > > +     /* Check output fifo status if it exceeds the watermark. */
+> > > > +     ret =3D regmap_read_poll_timeout(asrc->regmap, REG_ASRFST(ind=
+ex), val,
+> > > > +                                    (ASRFSTi_OUTPUT_FIFO_FILL(val)=
+ >=3D ASRC_M2M_OUTPUTFIFO_WML) ||
+> > > > +                                    (--retry =3D=3D 0), 0, USEC_PE=
+R_SEC);
+> > >
+> > > are sure need "retry"? there are timeout, which should be equal to 'r=
+etry'.
+> >
+> > Yes, "retry" is what I want, timeout is not what I expected.
+>
+> Okay, but it will be strange. you polling a register, you suppose it will
+> be finished below 1000 IO read, which is certain time in SoC, for example
+> 1ms. Compare to timeout us value, 1000 is hard to understand why you choo=
+se
+> this value.
 
-Tested on powernv9:
+It can be removed by reducing the timeout time.
+will update in the next version.
 
-$ uname -rm
-6.19.0-rc8+ ppc64le
+best regards
+Shengjiu Wang
 
-$ sudo modprobe rust_minimal
-[  632.890850] rust_minimal: Rust minimal sample (init)
-[  632.890881] rust_minimal: Am I built-in? false
-[  632.890898] rust_minimal: test_parameter: 1
-
-$ sudo rmmod rust_minimal
-[  648.272832] rust_minimal: My numbers are [72, 108, 200]
-[  648.272873] rust_minimal: Rust minimal sample (exit)
-
-$ sudo modprobe rust_print
-[  843.410391] rust_print: Rust printing macros sample (init)
-[  843.410424] rust_print: Emergency message (level 0) without args
-[  843.410451] rust_print: Alert message (level 1) without args
-[  843.410477] rust_print: Critical message (level 2) without args
-[  843.410503] rust_print: Error message (level 3) without args
-[  843.410530] rust_print: Warning message (level 4) without args
-[  843.410557] rust_print: Notice message (level 5) without args
-[  843.410594] rust_print: Info message (level 6) without args
-[  843.410617] rust_print: A line that is continued without args
-[  843.410646] rust_print: Emergency message (level 0) with args
-[  843.410675] rust_print: Alert message (level 1) with args
-[  843.410691] rust_print: Critical message (level 2) with args
-[  843.410727] rust_print: Error message (level 3) with args
-[  843.410761] rust_print: Warning message (level 4) with args
-[  843.410796] rust_print: Notice message (level 5) with args
-[  843.410821] rust_print: Info message (level 6) with args
-[  843.410854] rust_print: A line that is continued with args
-[  843.410892] rust_print: 1
-[  843.410895] rust_print: "hello, world"
-[  843.410924] rust_print: [samples/rust/rust_print_main.rs:35:5] c = "hello, world"
-[  843.410977] rust_print: Arc<dyn Display> says 42
-[  843.410979] rust_print: Arc<dyn Display> says hello, world
-
-$ sudo rmmod rust_print
-[  843.411003] rust_print: "hello, world"
-[  888.499935] rust_print: Rust printing macros sample (exit)
-
-Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
----
- Documentation/rust/arch-support.rst | 2 +-
- arch/powerpc/Kconfig                | 2 +-
- arch/powerpc/Makefile               | 9 ++++++++-
- rust/Makefile                       | 9 ++++++++-
- 4 files changed, 18 insertions(+), 4 deletions(-)
-
-diff --git a/Documentation/rust/arch-support.rst b/Documentation/rust/arch-support.rst
-index e26a94808e97..627471ac9238 100644
---- a/Documentation/rust/arch-support.rst
-+++ b/Documentation/rust/arch-support.rst
-@@ -18,7 +18,7 @@ Architecture   Level of support  Constraints
- ``arm``        Maintained        ARMv7 Little Endian only.
- ``arm64``      Maintained        Little Endian only.
- ``loongarch``  Maintained        \-
--``powerpc``    Experimental      32-bit Big Endian only.
-+``powerpc``    Experimental      64-bit Little Endian. 32-bit Big Endian.
- ``riscv``      Maintained        ``riscv64`` and LLVM/Clang only.
- ``um``         Maintained        \-
- ``x86``        Maintained        ``x86_64`` only.
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 17db23b82e91..c5dd03713af2 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -283,7 +283,7 @@ config PPC
- 	select HAVE_REGS_AND_STACK_ACCESS_API
- 	select HAVE_RELIABLE_STACKTRACE
- 	select HAVE_RSEQ
--	select HAVE_RUST			if PPC32
-+	select HAVE_RUST			if PPC32 || (PPC64 && CPU_LITTLE_ENDIAN)
- 	select HAVE_SAMPLE_FTRACE_DIRECT	if HAVE_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
- 	select HAVE_SAMPLE_FTRACE_DIRECT_MULTI	if HAVE_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
- 	select HAVE_SETUP_PER_CPU_AREA		if PPC64
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 9fd82c75dcbd..f93816ddc036 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -61,7 +61,14 @@ else
- KBUILD_LDFLAGS_MODULE += $(objtree)/arch/powerpc/lib/crtsavres.o
- endif
- 
--KBUILD_RUSTFLAGS += --target=powerpc-unknown-linux-gnu
-+ifdef CONFIG_PPC64
-+ifdef CONFIG_CPU_LITTLE_ENDIAN
-+KBUILD_RUSTFLAGS	+= --target=powerpc64le-unknown-linux-gnu
-+endif
-+KBUILD_RUSTFLAGS	+= -Ctarget-feature=-mma,-vsx,-hard-float,-altivec
-+else
-+KBUILD_RUSTFLAGS	+= --target=powerpc-unknown-linux-gnu
-+endif
- 
- ifdef CONFIG_CPU_LITTLE_ENDIAN
- KBUILD_CPPFLAGS	+= -mlittle-endian
-diff --git a/rust/Makefile b/rust/Makefile
-index ae22f2c5f0b3..c3961fd0d9a4 100644
---- a/rust/Makefile
-+++ b/rust/Makefile
-@@ -392,10 +392,17 @@ BINDGEN_TARGET_x86	:= x86_64-linux-gnu
- BINDGEN_TARGET_arm64	:= aarch64-linux-gnu
- BINDGEN_TARGET_arm	:= arm-linux-gnueabi
- BINDGEN_TARGET_loongarch	:= loongarch64-linux-gnusf
--BINDGEN_TARGET_powerpc	:= powerpc-linux-gnu
- BINDGEN_TARGET_um	:= $(BINDGEN_TARGET_$(SUBARCH))
- BINDGEN_TARGET		:= $(BINDGEN_TARGET_$(SRCARCH))
- 
-+ifdef CONFIG_PPC64
-+ifdef CONFIG_CPU_LITTLE_ENDIAN
-+BINDGEN_TARGET_powerpc	:= powerpc64le-linux-gnu
-+endif
-+else
-+BINDGEN_TARGET_powerpc	:= powerpc-linux-gnu
-+endif
-+
- # All warnings are inhibited since GCC builds are very experimental,
- # many GCC warnings are not supported by Clang, they may only appear in
- # some configurations, with new GCC versions, etc.
--- 
-2.52.0
-
+>
+> Frank
+> >
+> > Best regards
+> > Shengjiu Wang
+> >
+> > >
+> > > Frank
+> > > > +
+> > > > +     if (ret || !retry) {
+> > > > +             pair_warn("output is not ready\n");
+> > > > +             return false;
+> > > > +     }
+> > > > +
+> > > > +     return true;
+> > > > +}
+> > > > +
+> > > >  static int fsl_asrc_m2m_prepare(struct fsl_asrc_pair *pair)
+> > > >  {
+> > > >       struct fsl_asrc_pair_priv *pair_priv =3D pair->private;
+> > > > @@ -1275,6 +1296,7 @@ static int fsl_asrc_probe(struct platform_dev=
+ice *pdev)
+> > > >
+> > > >       asrc_priv->soc =3D of_device_get_match_data(&pdev->dev);
+> > > >       asrc->use_edma =3D asrc_priv->soc->use_edma;
+> > > > +     asrc->start_before_dma =3D asrc_priv->soc->start_before_dma;
+> > > >       asrc->get_dma_channel =3D fsl_asrc_get_dma_channel;
+> > > >       asrc->request_pair =3D fsl_asrc_request_pair;
+> > > >       asrc->release_pair =3D fsl_asrc_release_pair;
+> > > > @@ -1289,6 +1311,7 @@ static int fsl_asrc_probe(struct platform_dev=
+ice *pdev)
+> > > >       asrc->m2m_get_maxburst =3D fsl_asrc_m2m_get_maxburst;
+> > > >       asrc->m2m_pair_resume =3D fsl_asrc_m2m_pair_resume;
+> > > >       asrc->m2m_get_cap =3D fsl_asrc_m2m_get_cap;
+> > > > +     asrc->m2m_output_ready =3D fsl_asrc_m2m_output_ready;
+> > > >
+> > > >       if (of_device_is_compatible(np, "fsl,imx35-asrc")) {
+> > > >               asrc_priv->clk_map[IN] =3D input_clk_map_imx35;
+> > > > diff --git a/sound/soc/fsl/fsl_asrc.h b/sound/soc/fsl/fsl_asrc.h
+> > > > index 1c492eb237f5..60b6865ca952 100644
+> > > > --- a/sound/soc/fsl/fsl_asrc.h
+> > > > +++ b/sound/soc/fsl/fsl_asrc.h
+> > > > @@ -257,6 +257,8 @@
+> > > >  #define ASRFSTi_OUTPUT_FIFO_WIDTH    7
+> > > >  #define ASRFSTi_OUTPUT_FIFO_SHIFT    12
+> > > >  #define ASRFSTi_OUTPUT_FIFO_MASK     (((1 << ASRFSTi_OUTPUT_FIFO_W=
+IDTH) - 1) << ASRFSTi_OUTPUT_FIFO_SHIFT)
+> > > > +#define ASRFSTi_OUTPUT_FIFO_FILL(v)  \
+> > > > +     (((v) & ASRFSTi_OUTPUT_FIFO_MASK) >> ASRFSTi_OUTPUT_FIFO_SHIF=
+T)
+> > > >  #define ASRFSTi_IAEi_SHIFT           11
+> > > >  #define ASRFSTi_IAEi_MASK            (1 << ASRFSTi_IAEi_SHIFT)
+> > > >  #define ASRFSTi_IAEi                 (1 << ASRFSTi_IAEi_SHIFT)
+> > > > @@ -432,10 +434,12 @@ struct dma_block {
+> > > >   *
+> > > >   * @use_edma: using edma as dma device or not
+> > > >   * @channel_bits: width of ASRCNCR register for each pair
+> > > > + * @start_before_dma: start asrc before dma
+> > > >   */
+> > > >  struct fsl_asrc_soc_data {
+> > > >       bool use_edma;
+> > > >       unsigned int channel_bits;
+> > > > +     bool start_before_dma;
+> > > >  };
+> > > >
+> > > >  /**
+> > > > diff --git a/sound/soc/fsl/fsl_asrc_common.h b/sound/soc/fsl/fsl_as=
+rc_common.h
+> > > > index 0cd595b0f629..c8a1a2b5915d 100644
+> > > > --- a/sound/soc/fsl/fsl_asrc_common.h
+> > > > +++ b/sound/soc/fsl/fsl_asrc_common.h
+> > > > @@ -107,6 +107,7 @@ struct fsl_asrc_pair {
+> > > >   * @asrc_rate: default sample rate for ASoC Back-Ends
+> > > >   * @asrc_format: default sample format for ASoC Back-Ends
+> > > >   * @use_edma: edma is used
+> > > > + * @start_before_dma: start asrc before dma
+> > > >   * @get_dma_channel: function pointer
+> > > >   * @request_pair: function pointer
+> > > >   * @release_pair: function pointer
+> > > > @@ -116,6 +117,7 @@ struct fsl_asrc_pair {
+> > > >   * @m2m_start: function pointer
+> > > >   * @m2m_unprepare: function pointer
+> > > >   * @m2m_stop: function pointer
+> > > > + * @m2m_output_ready: function pointer, check output fifo ready or=
+ not
+> > > >   * @m2m_calc_out_len: function pointer
+> > > >   * @m2m_get_maxburst: function pointer
+> > > >   * @m2m_pair_suspend: function pointer
+> > > > @@ -143,6 +145,7 @@ struct fsl_asrc {
+> > > >       int asrc_rate;
+> > > >       snd_pcm_format_t asrc_format;
+> > > >       bool use_edma;
+> > > > +     bool start_before_dma;
+> > > >
+> > > >       struct dma_chan *(*get_dma_channel)(struct fsl_asrc_pair *pai=
+r, bool dir);
+> > > >       int (*request_pair)(int channels, struct fsl_asrc_pair *pair)=
+;
+> > > > @@ -154,6 +157,7 @@ struct fsl_asrc {
+> > > >       int (*m2m_start)(struct fsl_asrc_pair *pair);
+> > > >       int (*m2m_unprepare)(struct fsl_asrc_pair *pair);
+> > > >       int (*m2m_stop)(struct fsl_asrc_pair *pair);
+> > > > +     bool (*m2m_output_ready)(struct fsl_asrc_pair *pair);
+> > > >
+> > > >       int (*m2m_calc_out_len)(struct fsl_asrc_pair *pair, int input=
+_buffer_length);
+> > > >       int (*m2m_get_maxburst)(u8 dir, struct fsl_asrc_pair *pair);
+> > > > diff --git a/sound/soc/fsl/fsl_asrc_m2m.c b/sound/soc/fsl/fsl_asrc_=
+m2m.c
+> > > > index f46881f71e43..77999526dd9e 100644
+> > > > --- a/sound/soc/fsl/fsl_asrc_m2m.c
+> > > > +++ b/sound/soc/fsl/fsl_asrc_m2m.c
+> > > > @@ -253,15 +253,21 @@ static int asrc_m2m_device_run(struct fsl_asr=
+c_pair *pair, struct snd_compr_task
+> > > >       reinit_completion(&pair->complete[IN]);
+> > > >       reinit_completion(&pair->complete[OUT]);
+> > > >
+> > > > +     if (asrc->start_before_dma)
+> > > > +             asrc->m2m_start(pair);
+> > > > +
+> > > >       /* Submit DMA request */
+> > > >       dmaengine_submit(pair->desc[IN]);
+> > > >       dma_async_issue_pending(pair->desc[IN]->chan);
+> > > >       if (out_dma_len > 0) {
+> > > > +             if (asrc->start_before_dma && asrc->m2m_output_ready)
+> > > > +                     asrc->m2m_output_ready(pair);
+> > > >               dmaengine_submit(pair->desc[OUT]);
+> > > >               dma_async_issue_pending(pair->desc[OUT]->chan);
+> > > >       }
+> > > >
+> > > > -     asrc->m2m_start(pair);
+> > > > +     if (!asrc->start_before_dma)
+> > > > +             asrc->m2m_start(pair);
+> > > >
+> > > >       if (!wait_for_completion_interruptible_timeout(&pair->complet=
+e[IN], 10 * HZ)) {
+> > > >               dev_err(dev, "out DMA task timeout\n");
+> > > > --
+> > > > 2.34.1
+> > > >
 
