@@ -1,51 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-16701-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16702-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 557F4EE6B4D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Feb 2026 19:54:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E939EEE6B60
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Feb 2026 20:53:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f74Xs404gz30GV;
-	Sat, 07 Feb 2026 06:54:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770407645;
-	cv=none; b=C8kEbEuh15TugacOMezqVvc23qe43mCQ7U4uT/YB2PavpOgmHZllCAlo2xifnvLMVMn4Zm/nPJKRw+Eix+7d6SivDdjJ2+DXBLBdtk6fYO3usdFxYhoQ8COx15/RW/0rFO3DwoThELer5sWa6IlPLNDalwWsjtbm5xzd+gf6E3CLSbp0N02erBD8SYa3MiwInh9rl7381YyEezaWshVONAMnf+dJAH7CPLJC5EFvUHrutTDlP8RbvuZVOHKOxi29ROQMR/al9ym+quSs2vXTevbdNddEotgWRPPGUCXzyjdcyPQxgwwCB0OMd9imWXls9WMixJo7KOzt6GORb6jQqg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f75sh3S21z30GV;
+	Sat, 07 Feb 2026 07:53:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:fff3:b8::112"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770411224;
+	cv=none; b=UTSEmP4aNIBIEli6hqGNdzAgQptrTDPHnLThO1caiCOhssJpkYEi9L9G5Pp53OGqIwcbGY5U0YOWJlWto8gdEgH5lHhbKAkC5HXFqlOE3QUDCVSUoW0kHGQ9D5P58uups2gdwVVWKTP4VBF8ffqP55lj3q6qzFFG3mKjuF53Cx108KJ3KNzMLrup5eo3s83eLziWnzsZ6EkEG+Z6LfcC9GPHb2FgsyzSP4mdhQivgQCmNmGTeU8YZXp+e9jSw42xRlT0haO4av8Y3l+iaqmHqlZUr3qCT+IcX8GDgHl0kAr3xwdH88N7/lgdlHLM/p/aDTSfyqMAn1SvVTy9lA08ug==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770407645; c=relaxed/relaxed;
-	bh=+I7UAK1IjMD7Bo09lDyMkeUG92zZAlLP2I1S1ovYfGM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=k8cQEX8LIC4P8k0jzPyMWlIik+MKYp2nEn5qScvVTxy50yx0nXHIjOSQATP2npeGmMg+kFacUnbJ0o+CWz66iA/KFFFNUV7wseTJHJAKWVgxaR5D7f+j2/qW/Up8ycjgRln6YSvoDhWvnsg8SDYKg5FffKBEQJQ6mymDvs/DkvGn0szmGGYGSKwjKyHBlCKPMKWm5GAJsXoaIznD6gCFKoSo5DwA39njwYnAg8MGzdEoig07+bhyFnfccItVR04Ks5d5u5qy0bli3J5h2kaqax6X2GNFM89xNaVZ1Az8eOyqpH6aQpe9fyxho8cpy7co//Jw5JQOiNbx34W9/KrHIw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HDAa4U/3; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HDAa4U/3;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	t=1770411224; c=relaxed/relaxed;
+	bh=fXYC91HcJkNCizZyqKOcLutS+6c83bpXhkw5cRYiMRE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=GL0gy1P7hyEOW1VcPlsKjEI6McDqF3F9YhwPR+13zfJj6ecnd59vfMQ5XIyD9FzbIaQLuKjJn7NRNgxHI2BF501xSbyWuy/OT/DsNp19bglHdG1F7Z7DUNzeiSR1q46adr4mcE+YABm/ow8I1CR6Q6UYIP+xmOz7eUCU1rw8+TDlnH9jGhFoTll9RzXs82w1aQgFYFNPY1WNZl9q1xJbivnCxwqb5zKzxY7YlP9bab9eZOP47QVgGZ3XlVVJUWRfWZVX40KvA7cem/QPiqJzhBjXzH37RpXmkOl13goKhcwPrx6jDQrcjEBfdHRGP3W/y0YL5OkTLKyrZuhsb9GqUQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=2a01:4f8:fff3:b8::112; helo=bmailout3.hostsharing.net; envelope-from=foo00@h08.hostsharing.net; receiver=lists.ozlabs.org) smtp.helo=bmailout3.hostsharing.net
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=bmailout3.hostsharing.net (client-ip=2a01:4f8:fff3:b8::112; helo=bmailout3.hostsharing.net; envelope-from=foo00@h08.hostsharing.net; receiver=lists.ozlabs.org)
+Received: from bmailout3.hostsharing.net (bmailout3.hostsharing.net [IPv6:2a01:4f8:fff3:b8::112])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f74Xr0LRBz30FP
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Feb 2026 06:54:03 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 0BFDF43FA9;
-	Fri,  6 Feb 2026 19:54:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F1567C116C6;
-	Fri,  6 Feb 2026 19:53:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1770407641;
-	bh=zuTx45IAXwCCZxQU6FBP5xFVJffmh2hCgzQapegT9vw=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=HDAa4U/3FllAHrt8tgmweRCEeXs78x4KO6JSUioK8jcWQVszKIa6U7gxfZvgEYm4h
-	 B6/AHZMLBH6lvH1gSkfgLdfNR3y7acJGFCHc2qJKzo/O84tOuaYpq09pVyenUA/tAX
-	 zdIHeVSiKlEePQDpV2CXOdWDbc1mK4xz5XPFRe061GFSeBSxlLEJncJPl9FPe1Rc8r
-	 axac7GCT2qmxi1Pia/PKTkfZntTavmsr0apQrMS7ZlrL+SwlU69RK+mnWAOjcrHTu+
-	 JB+7IPaxEGFziQFuLXjK3bPnIkxrsSEFaylMjKarxFURKBCTtQQ1jF3KVcFZKWN3it
-	 Zsc202ZRu+bWg==
-Message-ID: <bca0abe3-5b8d-4493-a338-b41322e9e85d@kernel.org>
-Date: Fri, 6 Feb 2026 20:53:55 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f75sg2vPzz309y
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Feb 2026 07:53:42 +1100 (AEDT)
+Received: from h08.hostsharing.net (h08.hostsharing.net [83.223.95.28])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (secp384r1) server-digest SHA384
+	 client-signature ECDSA (secp384r1) client-digest SHA384)
+	(Client CN "*.hostsharing.net", Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
+	by bmailout3.hostsharing.net (Postfix) with ESMTPS id 50E4F2C0162F;
+	Fri,  6 Feb 2026 21:53:39 +0100 (CET)
+Received: by h08.hostsharing.net (Postfix, from userid 100393)
+	id 377E14936; Fri,  6 Feb 2026 21:53:39 +0100 (CET)
+Date: Fri, 6 Feb 2026 21:53:39 +0100
+From: Lukas Wunner <lukas@wunner.de>
+To: Keith Busch <kbusch@kernel.org>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Breno Leitao <leitao@debian.org>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	Oliver O'Halloran <oohall@gmail.com>,
+	Bjorn Helgaas <bhelgaas@google.com>, linux-doc@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-pci@vger.kernel.org, dcostantino@meta.com, rneu@meta.com,
+	kernel-team@meta.com
+Subject: Re: [PATCH] PCI/AER: Add option to panic on unrecoverable errors
+Message-ID: <aYZU09qCN3u-_byj@wunner.de>
+References: <20260206-pci-v1-1-85160f02d956@debian.org>
+ <20260206185232.GA70936@bhelgaas>
+ <aYY_hMZyVp7GZvX2@kbusch-mbp>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,103 +64,48 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/2] powerpc/text-patching: Fix possible stringop-overread
- compilation error
-To: Kees Cook <kees@kernel.org>, Xie Yuanbin <xieyuanbin1@huawei.com>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
- andy@kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org,
- lilinjie8@huawei.com, liaohua4@huawei.com
-References: <20260205100517.292858-1-xieyuanbin1@huawei.com>
- <20260205100517.292858-2-xieyuanbin1@huawei.com>
- <202602061024.111ED487@keescook>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <202602061024.111ED487@keescook>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <aYY_hMZyVp7GZvX2@kbusch-mbp>
 
-
-
-Le 06/02/2026 à 19:26, Kees Cook a écrit :
-> On Thu, Feb 05, 2026 at 06:05:17PM +0800, Xie Yuanbin wrote:
->> For strnlen(), if the compiler detects that the maxlen argument exceeds
->> the valid memory size of the input string object, a compilation error may
->> occur.
->>
->> For lastest linux-next source, changing ppc_kallsyms_lookup_name() to
->> __always_inline, using default ppc64_defconfig, and setting
->> CONFIG_EXPERT=y, CONFIG_PPC64_BIG_ENDIAN_ELF_ABI_V2=n,
->> CONFIG_CC_OPTIMIZE_FOR_SIZE=y. Then, when using gcc-15 for compilation,
->> the following error will be triggered:
->> ```log
->>    CC      arch/powerpc/kernel/optprobes.o
->> In file included from ./arch/powerpc/include/asm/kprobes.h:24,
->>                   from ./include/linux/kprobes.h:31,
->>                   from arch/powerpc/kernel/optprobes.c:8:
->> In function ‘ppc_kallsyms_lookup_name’,
->>      inlined from ‘arch_prepare_optimized_kprobe’ at arch/powerpc/kernel/optprobes.c:209:21:
->> ./arch/powerpc/include/asm/text-patching.h:232:13: error: ‘strnlen’ specified bound 512 exceeds source size 19 [-Werror=stringop-overread]
->>    232 |         if (strnlen(name, KSYM_NAME_LEN) >= KSYM_NAME_LEN)
->>        |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
->> In function ‘ppc_kallsyms_lookup_name’,
->>      inlined from ‘arch_prepare_optimized_kprobe’ at arch/powerpc/kernel/optprobes.c:210:22:
->> ./arch/powerpc/include/asm/text-patching.h:232:13: error: ‘strnlen’ specified bound 512 exceeds source size 13 [-Werror=stringop-overread]
->>    232 |         if (strnlen(name, KSYM_NAME_LEN) >= KSYM_NAME_LEN)
->>        |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
->> cc1: all warnings being treated as errors
->> ```
->>
->> Refer to the implementation of fortify's strnlen(). If the string length
->> is a compile-time constant, do not call the strnlen() function.
->>
->> Signed-off-by: Xie Yuanbin <xieyuanbin1@huawei.com>
->> ---
->>   arch/powerpc/include/asm/text-patching.h | 7 ++++++-
->>   1 file changed, 6 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/include/asm/text-patching.h b/arch/powerpc/include/asm/text-patching.h
->> index e7f14720f630..ce1b2131980a 100644
->> --- a/arch/powerpc/include/asm/text-patching.h
->> +++ b/arch/powerpc/include/asm/text-patching.h
->> @@ -228,8 +228,13 @@ static inline unsigned long ppc_kallsyms_lookup_name(const char *name)
->>   	/* check for dot variant */
->>   	char dot_name[1 + KSYM_NAME_LEN];
->>   	bool dot_appended = false;
->> +	size_t n_len = __compiletime_strlen(name);
->> +	const size_t n_size = __member_size(name);
->>   
->> -	if (strnlen(name, KSYM_NAME_LEN) >= KSYM_NAME_LEN)
->> +	if (n_len == SIZE_MAX || KSYM_NAME_LEN < n_size)
->> +		n_len = strnlen(name, KSYM_NAME_LEN);
->> +	
->> +	if (n_len >= KSYM_NAME_LEN)
->>   		return 0;
+On Fri, Feb 06, 2026 at 12:22:44PM -0700, Keith Busch wrote:
+> On Fri, Feb 06, 2026 at 12:52:32PM -0600, Bjorn Helgaas wrote:
+> > Are there any other similar flags you already use that we could
+> > piggy-back on?  E.g., if we raised the level to KERN_WARNING, maybe
+> > the existing "panic_on_warn" would be enough?
 > 
-> Isn't it possible to do this and not need __compiletime_strlen at all?
-> 
-> 	n_len = strnlen(name, min(__member_size(name), KSYM_NAME_LEN));
+> There are many KERN_WARNING messages that don't rise to the level of
+> warranting a 'panic' that don't want to enable such an option in
+> production. It looks like the panic_on_warn was introduced for developer
+> debugging.
 
-ppc_kallsyms_lookup_name() only has two callers and they call it with a 
-built-in string. I think we can do something a lot simpler, something 
-like (untested):
+panic_on_warn springs into action on WARN() splats, not arbitrary
+messages with KERN_WARNING severity.  Also, sysctl kernel.warn_limit
+may be used to grant a certain number of panic-free WARNs.
 
-static inline unsigned long __ppc_kallsyms_lookup_name(const char *name)
-{
-	unsigned long addr = kallsyms_lookup_name(name);
+FWIW, the "pcieportdrv.aer_unrecoverable_fatal" parameter introduced
+by this patch feels somewhat oddly named.  Something like
+"pci.panic_on_fatal" might be clearer and more succinct.
 
-	if (IS_ENABLED(CONFIG_PPC64_ELF_ABI_V2) && addr)
-		addr = ppc_function_entry((void *)addr);
+> I agree the curnent INFO level is too low for the generic unrecovered
+> condition, though.
 
-	return addr;
-}
+At least for unbound devices, I think 918b4053184c went way too far.
+I think an unbound device should generally be considered recoverable
+through a reset.
 
-#ifdef CONFIG_PPC64_ELF_ABI_V1
-#define ppc_kallsyms_lookup_name(x)	__ppc_kallsyms_lookup_name("." ## x);
-#else
-#define ppc_kallsyms_lookup_name(x)	__ppc_kallsyms_lookup_name(x)
-#endif
+As for bound devices whose drivers lack pci_error_handlers, it has been
+painful in practice that they're considered unrecoverable wholesale.
+E.g. GPUs often expose an audio device as well as telemetry devices,
+all arranged below an integrated PCIe switch.  All of these devices
+need drivers with pci_error_handlers in order for the GPU to be
+recoverable.  In some cases, dummy callbacks were added to render
+the whole thing recoverable.
 
-Christophe
+So I wouldn't consider 918b4053184c to have been a universally successful
+approach and I fear that this patch goes even further.
+
+Thanks,
+
+Lukas
 
