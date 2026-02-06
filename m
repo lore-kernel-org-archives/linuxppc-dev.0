@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-16654-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16655-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EDBD6EB28EC
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Feb 2026 08:27:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF64DEB28EC
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Feb 2026 08:30:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f6nJf1sdHz3bjb;
-	Fri, 06 Feb 2026 19:27:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770366450;
-	cv=none; b=PCE8xc38ddZXACnKXJr0NtVVYk8qRthEqUnEv1WJ3CBWPMAlZS1JKEa2CCQdQFbBtFD4OVOJ2wsI1gM3zYQ8gWT8BugkwczxPqDqO9sAfFBOmE3ub/QP2eS9cscrrZa+soEP4nFzqdPvqDE4SYTsRvk5olKkbC6xcMGP6+3WBapw/Ej3RrU/NJhA5PmS28IUMexQ/ccKu8FN2i0JoJ/543Nepl+ezQVL7G3FeDtWnfejV0vF9tu1GG/rHwUqRD9AqVRacwBpJMXUQBkmX8dtdUIqs6curLqgcx+VR5gi4S8VUrig9U/yD5OO5dGyRCjas+zixG1qffNyBw+aClj0lQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f6nNJ3kNQz2xqk;
+	Fri, 06 Feb 2026 19:30:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770366640;
+	cv=none; b=hApBzWu2mNyS5KhV6+/QevBi4H4D/zkUdU8CGH+Up+N700plX8ztTTtpqg9Cg4wZ1UPc8sTscZ2Q1OwUBAQQPM542NCRoQLDqYDnOmoMpKuGuvNqtZS0qc+FFYeeNLp2IVHKKpME5owCncT3e8ziw9J8maef1JNESAfIm1/Uxd9ToP20Zjz4KUEtMkf17UBj41rQqTWzm7j3M2M5DBCxpUdzMhCDGq10JqTyFDz29BnbvnEPMRcmWfZaEctNNGZvBjhzsrwnA6ieNikpX7HFYqu+xu56tTENRhJjDvMvm2wzM6RUQqQfML4othXhirgNK0I9tlHV32cnkvhepZ9B+g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770366450; c=relaxed/relaxed;
-	bh=zLUomY3J5KL8fcj2/N72sXoQOCJEHD+NYbgfaroByCY=;
+	t=1770366640; c=relaxed/relaxed;
+	bh=sdOTZioJuz3aMR6h3cXIsj2GPleXC8Oph453vxjWLnM=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=IUp1hJiakqaFFTG1jjLgOwVLsegWqQ3RdWUD9uAk0MIvp5jL9TqKDnoTXX1mw+khg6u9L8SbJDmnZZCc0ekwkxIdsOfk69/p4XwCpFOspv6+CiJO476zVAzBK/WrlY8B1p79Aadu+2yUO6Mrip+XLekXYGHoeyy9zbocP9TtMp6KW36dMt1p0/1SNWoovDVzrCHuJ1uewHCYuOH3Tw7ytnnGJMQ4rHcZOE688jOfSs5L/x23bCBI2DVImouCxTS6rym3J0y63CX3WcygeoHuVNOiKez8R3X9BObqsy/+79unMcypwYyvj7GAw15Qjx+F1Nhe2B7jmmidYeEfvjrIwQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Vp2PC2gA; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=nsc@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=RnOAVjV//2rgSB7CZJeeciHVT3r56kuNn8YxrLdkt04nhWQXNbtVnj29Qf3GDOgn1HwTmvTA4KBI/nhtLsGK6eNnYXslu+ei7wtTasZMhHg3tRVlMfWHRqX52b6oOUjatfJM6TPJChMxJwDnkKdMuxnCC4l3lbGnwGte8s77rl1JUzNnz+/+8Shtp9dobduqSNXiVBnFoW2XfpBkeRbigijw//n4k50sNsatMlXtM05qovErzdKzFvb+g0dfGwIMuUSOftgccTBPRX+VlmZ81tMtyNdM0eqetiXK6tFQU4kUCGha+Ww+kA6MNXlS6GjHEA6fzJpEVIDNT+udFGcd8A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KbZxmDrr; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=nsc@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Vp2PC2gA;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KbZxmDrr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=nsc@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=nsc@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f6nJd3HVYz30Sv
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Feb 2026 19:27:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f6nNH3qFCz2xWJ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Feb 2026 19:30:39 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 21164440A4;
-	Fri,  6 Feb 2026 08:27:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6A683C116C6;
-	Fri,  6 Feb 2026 08:27:26 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id E9B1D42AC9;
+	Fri,  6 Feb 2026 08:30:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 487F2C116C6;
+	Fri,  6 Feb 2026 08:30:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1770366447;
-	bh=8tR/JyMCLrNy8ADtwT4oi7g4gZt3KEWkMvJ5vdKP8xw=;
+	s=k20201202; t=1770366636;
+	bh=CyWrZOJATVNS9+Rj5D0Boe5KDdvWmaNR5FdjGU15MAE=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Vp2PC2gA3+pZ8ESxBUwBD4+RlaTlMiWTbYGCtU9uYm1Ny183qPkkM87EeA+70T8t5
-	 uzV1MMT7Q4DQgDpm+2PGiSpvjiaRX74PAbfM7uyoDwXe/rTpGM+QBUrLgiopB4ETsv
-	 OzREwf4AkrZVM4U5Fwepst4YUp4B7s/N9yoWtTC4FkxZ4d+t2EASYBqh5qWYBhyCYA
-	 MqgxuIdsfeNUKg4BKG5poj069tVGi16kfDgOxNwtZo3vQdM2dJkzA18wCblJTwE3eD
-	 9zlsMHbbo+uZN88155eS2nRq2Cc3wjAwD6+dE9uNqkh4pjZEXYLAPQykM4P7Sgealq
-	 gaRO1u7Z225vA==
-Date: Fri, 6 Feb 2026 09:25:37 +0100
+	b=KbZxmDrrcakJ1Zbg86za3Nn9bxpJJasJZ16hyHVIpnfS1mGRcJ3jNdVJC+Jj19++i
+	 PnqWZFYx52twIezwwpk0X6QS6xzo4JcNBncQACzeVxjyHXngXPgP3tIbbteQ/24IT9
+	 hiiwZu6Dywo+w3kpTYZNBhw5+WZLY5UX7R/ohVMYzH1KHFl62weRoMxRPY3pR5QjVO
+	 d5VSXMwhPOYk1nZJeUxwaJDqXNznFEJjahtBzWO4YYlcyvgUVDHJmKKgafFuD0pdIN
+	 vbno5/RvKlSCcd79Gf4Z2Kqme2oRkRu8CzIQ5fv1QDygN6tvY3nONmqGvGHrUztUps
+	 EmR0AXYyecAlg==
+Date: Fri, 6 Feb 2026 09:30:08 +0100
 From: Nicolas Schier <nsc@kernel.org>
 To: Thomas =?iso-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>
 Cc: Nathan Chancellor <nathan@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
@@ -77,8 +77,8 @@ Cc: Nathan Chancellor <nathan@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
 	linux-arch@vger.kernel.org, linux-modules@vger.kernel.org,
 	linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
-Subject: Re: [PATCH v4 04/17] module: Make mod_verify_sig() static
-Message-ID: <aYWlgdnHjhVbAlTh@levanger>
+Subject: Re: [PATCH v4 05/17] module: Switch load_info::len to size_t
+Message-ID: <aYWmkEzjvo9RrzI9@levanger>
 Mail-Followup-To: Nicolas Schier <nsc@kernel.org>,
 	Thomas =?iso-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>,
 	Nathan Chancellor <nathan@kernel.org>,
@@ -112,7 +112,7 @@ Mail-Followup-To: Nicolas Schier <nsc@kernel.org>,
 	linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
 References: <20260113-module-hashes-v4-0-0b932db9b56b@weissschuh.net>
- <20260113-module-hashes-v4-4-0b932db9b56b@weissschuh.net>
+ <20260113-module-hashes-v4-5-0b932db9b56b@weissschuh.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -129,21 +129,23 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260113-module-hashes-v4-4-0b932db9b56b@weissschuh.net>
-X-TUID: h6XwNhzsR91M
+In-Reply-To: <20260113-module-hashes-v4-5-0b932db9b56b@weissschuh.net>
+X-TUID: cnlOAPnJljc+
 
-On Tue, Jan 13, 2026 at 01:28:48PM +0100, Thomas Weiﬂschuh wrote:
-> It is not used outside of signing.c.
+On Tue, Jan 13, 2026 at 01:28:49PM +0100, Thomas Weiﬂschuh wrote:
+> Switching the types will make some later changes cleaner.
+> size_t is also the semantically correct type for this field.
 > 
-> Signed-off-by: Thomas Weiﬂschuh <linux@weissschuh.net>
-> ---
->  kernel/module/internal.h | 1 -
->  kernel/module/signing.c  | 2 +-
->  2 files changed, 1 insertion(+), 2 deletions(-)
-> 
+> As both 'size_t' and 'unsigned int' are always the same size, this
+> should be risk-free.
 
-Reviewed-by: Nicolas Schier <nsc@kernel.org>
+include/uapi/asm-generic/posix_types.h states:
+| * Most 32 bit architectures use "unsigned int" size_t,
+| * and all 64 bit architectures use "unsigned long" size_t.
 
--- 
+Is that statement wrong?  Or did I mix up the context?
+
+
+Kind regards,
 Nicolas
 
