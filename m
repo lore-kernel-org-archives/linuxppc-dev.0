@@ -1,67 +1,44 @@
-Return-Path: <linuxppc-dev+bounces-16657-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16658-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9A31EB28EE
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Feb 2026 08:38:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0C3FEB28F1
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Feb 2026 08:42:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f6nY04GTGz2xqk;
-	Fri, 06 Feb 2026 19:38:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770367092;
-	cv=none; b=NyvhNnG6PuSj7Ym+nEcvvuD+1KXt/qwWvCWrRv/C8J64An+ioVrK7qKayJtSeFWZ1orD9QThW0647gwekAaGwqGbZwFP2v3fu1vFWEI273fz9jLtunFNKv0U+/nCgcjPGdJvs8Ypr7yS+eW+YK02FzwTQJZraueUcEuqgTOQn7o8C1Y2RHu85ynxZbaaGB2YiAe8wYkfmDrt/ikrR/6Ea/4eNY/dL25NmShF5D7O0FPu0DOwXDoxo5WtP4sY2zydyMgt9XT5VC0u5JmvU10LtrofEdhqAI1V7H/SwmcWbXZ2HhGC9sRAGgaGqCLh5DJDPbuJ7HVxsjLvIQNqCJZp/Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f6ndx2b9sz2xqk;
+	Fri, 06 Feb 2026 19:42:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.110
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770367349;
+	cv=none; b=ndbTeBpdd3lXbQticGcNIVYk3ZOtl7vs+GKcZNb+STHCqsGcfBB7Hr/uy+tAZzNQSi59i3DXM2hw4zQhIft6uhxpKWyA7vNVtEpvDpBQlVVdyyT9vYmcoP8lXgwIlNcrwRNZ7jIjVQqPdy+hQQMslYKyZ/hQCOc4ukHRtZdNtEl/9Y4JW5wfeqtPO92WcZX8NzEfWocSnAcrfK9jLVQluiI1pyCzsNpcmyQleGk4i6WVCuanS7rQh6Az5sV6enmltMGChjBBwqkxywzEFlsVDQ4jTB0VAM7WGQN31a4EADmypGYcHnvTsnKPRzRaFaGvN5DI+ZAs8O8JQyhxvsYqMQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770367092; c=relaxed/relaxed;
-	bh=Q9ycdsaxEpijgdU+RaHTmq8JxzjgGQv7feYyRsFD0pg=;
-	h=Date:From:To:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=JjG9w2i60AO/2Ury6h/CbCmQvnOX4hSraPi/3WfeBWjxfiUEriCgggwBr92yqISuoJ9BexbB9IHIHoU9Cyc0PzrITDbd/2yIb/X94IEc5IizGvg7Fm+uyB2Pu8v6o6nexxrPK2LpbD4o7kipnZHwmUOS78ji/2vYelr14whhI4LJPkvGScT/35gRWvhHV9nOakHtI+EaOAgdnTGV7dkbouNvtISuUFQGNUERgSaq1RCB7gAgirTpdfTO6T8ibmzDir37LKj2O4evkFwrjL+7R/Jsk1YXFzCexd/42r1AvFhdiBlQGP5v1GpT0F4IEkNRBS1Xm1wdq5k7RZ/Uroy9RA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=lC6l85Da; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
+	t=1770367349; c=relaxed/relaxed;
+	bh=roeuOg0Rv1qCNNC6wf86NafkQzf+jUxSv4eS8pnA4tE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=hSgJHvnr2xIxAbUktIavQodkZpKy8XVQhdEoaB7IC60AKdtzuBkv6aBuQll4+T6+HTPfCU1MgYFylLpdv+hrNAj/zm7JdHagV9TC1kv61K7zAy4mkb9Um2s6F+9E0OPSwa5G4O2lM8gdBoZdAi+pPkGd2YVrvoML0BaOb0MLYKm5jVqp2zuBYOrFCA3UlrLPxYyGArPskd75M2zxJp7JMkdg4oAFe+h3FYkBg8muz9JquG5LSHNtl90LGBHLTxcY2I2Dtd4z4deN3MVO6teRtoQGRWTyEXCBEIDOGbO8c+3t0ZuhjwDj1jsYCCRBZICqlQ/x21mgQfmg8GMDhFRZag==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=r0JNAib6; dkim-atps=neutral; spf=pass (client-ip=115.124.30.110; helo=out30-110.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=lC6l85Da;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=r0JNAib6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.110; helo=out30-110.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org)
+Received: from out30-110.freemail.mail.aliyun.com (out30-110.freemail.mail.aliyun.com [115.124.30.110])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f6nXz3bHxz2xWJ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Feb 2026 19:38:11 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1770367087;
-	bh=su7FBYVicdGhRvt56gHhQmYzpUnWthWMP4R173ydEmg=;
-	h=Date:From:To:Subject:References:In-Reply-To:From;
-	b=lC6l85Da6t0X83D9MSdF+rrwYpLGVaWK+Xg63weYUn13dYVZG8LoS1IkERKbA0VxU
-	 eXtFagHfIkW0+2Nt4h3K4217dro8uw+kNYhA+Jea23v6FFzE84ypMvOVnGLtlMb66a
-	 vke8iVYP2yDoFauo7ono6lRopUzDGDLu+wsELEj0=
-Date: Fri, 6 Feb 2026 09:38:07 +0100
-From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>
-To: Nicolas Schier <nsc@kernel.org>, Nathan Chancellor <nathan@kernel.org>, 
-	Arnd Bergmann <arnd@arndb.de>, Luis Chamberlain <mcgrof@kernel.org>, 
-	Petr Pavlu <petr.pavlu@suse.com>, Sami Tolvanen <samitolvanen@google.com>, 
-	Daniel Gomez <da.gomez@samsung.com>, Paul Moore <paul@paul-moore.com>, 
-	James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, 
-	Jonathan Corbet <corbet@lwn.net>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	Naveen N Rao <naveen@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>, 
-	Roberto Sassu <roberto.sassu@huawei.com>, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>, 
-	Eric Snowberg <eric.snowberg@oracle.com>, Daniel Gomez <da.gomez@kernel.org>, 
-	Aaron Tomlin <atomlin@atomlin.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Nicolas Bouchinet <nicolas.bouchinet@oss.cyber.gouv.fr>, Xiu Jianfeng <xiujianfeng@huawei.com>, 
-	Fabian =?utf-8?Q?Gr=C3=BCnbichler?= <f.gruenbichler@proxmox.com>, Arnout Engelen <arnout@bzzt.net>, 
-	Mattia Rizzolo <mattia@mapreri.org>, kpcyrd <kpcyrd@archlinux.org>, 
-	Christian Heusel <christian@heusel.eu>, =?utf-8?B?Q8OianU=?= Mihai-Drosi <mcaju95@gmail.com>, 
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>, linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-arch@vger.kernel.org, linux-modules@vger.kernel.org, 
-	linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-integrity@vger.kernel.org
-Subject: Re: [PATCH v4 05/17] module: Switch load_info::len to size_t
-Message-ID: <8fd4914d-5cff-4030-822c-98c8e76d0e60@t-8ch.de>
-References: <20260113-module-hashes-v4-0-0b932db9b56b@weissschuh.net>
- <20260113-module-hashes-v4-5-0b932db9b56b@weissschuh.net>
- <aYWmkEzjvo9RrzI9@levanger>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f6ndt2SB8z2xWJ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Feb 2026 19:42:24 +1100 (AEDT)
+DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux.alibaba.com; s=default;
+	t=1770367336; h=Message-ID:Date:MIME-Version:Subject:To:From:Content-Type;
+	bh=roeuOg0Rv1qCNNC6wf86NafkQzf+jUxSv4eS8pnA4tE=;
+	b=r0JNAib6Uy1JwpiTkHPNNTLehXrMXJgVwRBFeckxgjsVfs9m1nStTA2qTRmQMgXwbTtAnTv/wx3HhmHYzFQ0SPMksKMzDXD2U4aeVTu0jyfsr77OMUI0rYfcfvvE4u7wvlruAkwYsncBhx+3PCQlBCqFFlDeVF59gOsa/V/eczo=
+Received: from 30.246.162.188(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0Wye3ZUk_1770367332 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Fri, 06 Feb 2026 16:42:13 +0800
+Message-ID: <ab4dd988-8140-4ade-b26f-e6f9e4e8e67d@linux.alibaba.com>
+Date: Fri, 6 Feb 2026 16:41:06 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,28 +52,82 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <aYWmkEzjvo9RrzI9@levanger>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v7 2/5] PCI/DPC: Run recovery on device that detected the
+ error
+To: Lukas Wunner <lukas@wunner.de>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, bhelgaas@google.com, kbusch@kernel.org,
+ sathyanarayanan.kuppuswamy@linux.intel.com, mahesh@linux.ibm.com,
+ oohall@gmail.com, Jonathan.Cameron@huawei.com, terry.bowman@amd.com,
+ tianruidong@linux.alibaba.com
+References: <20260124074557.73961-1-xueshuai@linux.alibaba.com>
+ <20260124074557.73961-3-xueshuai@linux.alibaba.com>
+ <aYCujqZIvxElSsOE@wunner.de>
+From: Shuai Xue <xueshuai@linux.alibaba.com>
+In-Reply-To: <aYCujqZIvxElSsOE@wunner.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On 2026-02-06 09:30:08+0100, Nicolas Schier wrote:
-> On Tue, Jan 13, 2026 at 01:28:49PM +0100, Thomas Weißschuh wrote:
-> > Switching the types will make some later changes cleaner.
-> > size_t is also the semantically correct type for this field.
-> > 
-> > As both 'size_t' and 'unsigned int' are always the same size, this
-> > should be risk-free.
+
+
+On 2/2/26 10:02 PM, Lukas Wunner wrote:
+> On Sat, Jan 24, 2026 at 03:45:54PM +0800, Shuai Xue wrote:
+>> +++ b/drivers/pci/pcie/dpc.c
+>> @@ -372,10 +388,11 @@ static irqreturn_t dpc_handler(int irq, void *context)
+>>   		return IRQ_HANDLED;
+>>   	}
+>>   
+>> -	dpc_process_error(err_port);
+>> +	err_dev = dpc_process_error(err_port);
+>>   
+>>   	/* We configure DPC so it only triggers on ERR_FATAL */
+>> -	pcie_do_recovery(err_port, pci_channel_io_frozen, dpc_reset_link);
+>> +	pcie_do_recovery(err_dev, pci_channel_io_frozen, dpc_reset_link);
+>> +	pci_dev_put(err_dev);
+>>   
+>>   	return IRQ_HANDLED;
+>>   }
 > 
-> include/uapi/asm-generic/posix_types.h states:
-> | * Most 32 bit architectures use "unsigned int" size_t,
-> | * and all 64 bit architectures use "unsigned long" size_t.
+> You're assuming that the parent of the Requester is always identical
+> to the containing Downstream Port.  But that's not necessarily the case:
 > 
-> Is that statement wrong?  Or did I mix up the context?
+> E.g., imagine a DPC-capable Root Port with a PCIe switch below
+> whose Downstream Ports are not DPC-capable.  Let's say an Endpoint
+> beneath the PCIe switch sends ERR_FATAL upstream.  AFAICS, your patch
+> will cause pcie_do_recovery() to invoke dpc_reset_link() with the
+> Downstream Port of the PCIe switch as argument.  That function will
+> then happily use pdev->dpc_cap even though it's 0.
 
-That statement is correct. But as both 'unsigned int' and 'unsigned
-long' are 32-bit wide on 32-bit Linux platforms they are compatible.
+I see. Goot point.
+
+> 
+> A possible solution may be to amend dpc_reset_link() to walk upwards,
+> starting at pdev, and search for a pci_dev whose pdev->dpc_cap is
+> non-zero.  That should be the containing DPC-capable port.
+
+See my reply in your later patch.
+
+> 
+> I don't really like the err_dev and err_port terminology invented here.
+> We generally use spec terms to make it easy to connect the code to the
+> spec.  The spec uses the term "Downstream Port" to denote the containing
+> Downstream Port, so a name such as "dport" may be better than "err_port".
+ >
+> 
+> Similarly, the spec uses "Requester" or "Source" for the reporting agent,
+> so "req", "requester", "src" or "source" may all be better names than
+> "err_dev".
+
+Sure, I wll use the common "dport" and "req" term from spec to make it more readable.
 
 
-Thomas
+> 
+> Thanks,
+> 
+> Lukas
+
+Thanks for valuable comments.
+Shuai
+
 
