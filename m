@@ -1,44 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-16658-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16659-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0C3FEB28F1
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Feb 2026 08:42:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBA04EB28F1
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Feb 2026 08:43:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f6ndx2b9sz2xqk;
-	Fri, 06 Feb 2026 19:42:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.110
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770367349;
-	cv=none; b=ndbTeBpdd3lXbQticGcNIVYk3ZOtl7vs+GKcZNb+STHCqsGcfBB7Hr/uy+tAZzNQSi59i3DXM2hw4zQhIft6uhxpKWyA7vNVtEpvDpBQlVVdyyT9vYmcoP8lXgwIlNcrwRNZ7jIjVQqPdy+hQQMslYKyZ/hQCOc4ukHRtZdNtEl/9Y4JW5wfeqtPO92WcZX8NzEfWocSnAcrfK9jLVQluiI1pyCzsNpcmyQleGk4i6WVCuanS7rQh6Az5sV6enmltMGChjBBwqkxywzEFlsVDQ4jTB0VAM7WGQN31a4EADmypGYcHnvTsnKPRzRaFaGvN5DI+ZAs8O8JQyhxvsYqMQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770367349; c=relaxed/relaxed;
-	bh=roeuOg0Rv1qCNNC6wf86NafkQzf+jUxSv4eS8pnA4tE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=hSgJHvnr2xIxAbUktIavQodkZpKy8XVQhdEoaB7IC60AKdtzuBkv6aBuQll4+T6+HTPfCU1MgYFylLpdv+hrNAj/zm7JdHagV9TC1kv61K7zAy4mkb9Um2s6F+9E0OPSwa5G4O2lM8gdBoZdAi+pPkGd2YVrvoML0BaOb0MLYKm5jVqp2zuBYOrFCA3UlrLPxYyGArPskd75M2zxJp7JMkdg4oAFe+h3FYkBg8muz9JquG5LSHNtl90LGBHLTxcY2I2Dtd4z4deN3MVO6teRtoQGRWTyEXCBEIDOGbO8c+3t0ZuhjwDj1jsYCCRBZICqlQ/x21mgQfmg8GMDhFRZag==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=r0JNAib6; dkim-atps=neutral; spf=pass (client-ip=115.124.30.110; helo=out30-110.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f6nfd28zcz2xqk;
+	Fri, 06 Feb 2026 19:43:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::6" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770367385;
+	cv=pass; b=llTW/5Y6ItfWDwuR8R1JMB8rvSD5mpgoRx2w0DthXpo7aMI2ulRKFdp2LwlVyBHkLHhFAc0fbc0wrhjPvA62DY+C/qfs88miWQmWC/J6/dEHvp0o7SvhMQxiGNoVUqQblupkObYfF1lX/okwfS01nrrfELkmVmRlbhIIMqlE2NvFIHT4zjTXW2orZ0TSX/KQKC8b9O3FHKCROw/1imFN7XtVkkJe5qJ/Il9zbLEoKZUJSloa/d+4Pt36pTBB0Log01wXiB0A4RyRmBjY/L3Blb67sYKdKkMFKbezU/DM5o+WJ1TNwElumMFiEbJdbrKXdKJXKs9+EmXkfw/DncLOdQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1770367385; c=relaxed/relaxed;
+	bh=DHJv4om29nDL23nkXqH2NWPtyudzSU8ysG1DZUcWGlM=;
+	h=From:To:Subject:Date:Message-Id:Content-Type:MIME-Version; b=Mg0jSF0HvdtuO9rChk+sXnWw/3LDD4x/R5l+071sIHxNXLa21LGJVTqMHcUsBs3139u7xtCBccpy9ShOTqRWN1kdOLYOwhYPDdaja41WZAgZf1Tq5Y3OTW1t1YsM7JV4M/RQTv8sX2/LBOjTGcAp5zeYglA4fQw7Et7zjHGfeE/31/m2ZPOgehANk2DoEdgMwoxsVaQUpKj69ubWbHu6uujv0Bl5dIHDxfhG2VHRVJEpnoYsHJujC/s/uhr7YbaS1zR2RVDiAkD3wlXMPazJTh19fd1T9E9IF31hY/v4g0DmAWVDtqlzeagwv37GlWNBSD1uXaXEDvWe+KMaeZEptw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=BhXK6Uzy; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=r0JNAib6;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=BhXK6Uzy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.110; helo=out30-110.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org)
-Received: from out30-110.freemail.mail.aliyun.com (out30-110.freemail.mail.aliyun.com [115.124.30.110])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
+Received: from AM0PR02CU008.outbound.protection.outlook.com (mail-westeuropeazlp170130006.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::6])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f6ndt2SB8z2xWJ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Feb 2026 19:42:24 +1100 (AEDT)
-DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1770367336; h=Message-ID:Date:MIME-Version:Subject:To:From:Content-Type;
-	bh=roeuOg0Rv1qCNNC6wf86NafkQzf+jUxSv4eS8pnA4tE=;
-	b=r0JNAib6Uy1JwpiTkHPNNTLehXrMXJgVwRBFeckxgjsVfs9m1nStTA2qTRmQMgXwbTtAnTv/wx3HhmHYzFQ0SPMksKMzDXD2U4aeVTu0jyfsr77OMUI0rYfcfvvE4u7wvlruAkwYsncBhx+3PCQlBCqFFlDeVF59gOsa/V/eczo=
-Received: from 30.246.162.188(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0Wye3ZUk_1770367332 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Fri, 06 Feb 2026 16:42:13 +0800
-Message-ID: <ab4dd988-8140-4ade-b26f-e6f9e4e8e67d@linux.alibaba.com>
-Date: Fri, 6 Feb 2026 16:41:06 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f6nfc0kHWz2xWJ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Feb 2026 19:43:03 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=hyyclp96+OOBgWLReDZEipXb5N8mxNq3zlKkvxQBNqWmlJPkdS76WwKc/IJea6gGIjSvJIOiuJ2AV0fSROwzIUuBmupbGhXaf8+tLsvfHkuYXMIu5+RNYQmLRa32VrODiu1MNUzd8TIMmRiL7+g9N/5EuKDSjg+WUnIygsn6tn72h25GSWF4PR+zx12SFAeJGMvveBO+5eIRr8efJvwxEBJZG9L8S1iaQgn1Y4NXEyP6/KDL2Y/Pmri7UkBK7+dRVEGST6buqzErE412ZCBYKwDTS17ZQy5PIBpuS8ohHHbsJvvh+Yld2aTmlnkTRAIwabH86iGwzMsXDkVIFHyqtQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=DHJv4om29nDL23nkXqH2NWPtyudzSU8ysG1DZUcWGlM=;
+ b=SQFAhnYe4N0RMsgK2kE4CSJ+1HgyyDRUjG5Hf1vS2srPwUWbeXotwlvcPfcsF1vPha8gWirHQmyPzAywc4pVQ+6oYP/vb1DCVLUsp1ESpQQ9kLcog16qO+qRq1QsVB310IChRL7e8vpdNBJSZ9vkk9QUgfxRW4GRiTx6e2yGMjW+mp4jd7xD9darcpB8HQOaY2APyjG9tCkg4Js3piy7R/alYdxt4iY9QYQSBFzxeKtby/hFlNmC3MoGDQNQzvXgK1G+whsv6MChYJyaM84uLY615zq4Em516/yuR18F1A7TvT189BxhywEdztP+jx8n/L7o8BpXC6FEQv5rn7x/8A==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=DHJv4om29nDL23nkXqH2NWPtyudzSU8ysG1DZUcWGlM=;
+ b=BhXK6UzyOfbcC8zK3+rPFawTdzhWMJt5KqdbrkY1hj7FGmB6X/0wdDaFRrZqY1i88RLU7csmUp+XZz7CtPXpfLUNGTkKEdxiIP9X7zztP7wQtnoBUs7/WkUeZACjT/tAwE1fYd6bjknnVAtUDRz5nZgNi9bFsvqby7FWM1lJ5XRVUgYUjdeM9N4bKWd0SylXpaur7AIvBfEnAk+dxYb/KsEeTTBvQ+cAuBUmmMlcX8iak2QOBKm8TggJIfDxcZPsqD1MOALGh9EoZEr3Q9G/RBFfavbfLwkUOw3VUbV5uIPCVW5BBzLmQ+u0eEY63vJKqLI7Tda06TsBcU3IWnnIHg==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from VI1PR04MB7055.eurprd04.prod.outlook.com (2603:10a6:800:123::21)
+ by VI0PR04MB11503.eurprd04.prod.outlook.com (2603:10a6:800:2c7::16) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9587.12; Fri, 6 Feb
+ 2026 08:42:40 +0000
+Received: from VI1PR04MB7055.eurprd04.prod.outlook.com
+ ([fe80::d6ab:1538:d868:bf8]) by VI1PR04MB7055.eurprd04.prod.outlook.com
+ ([fe80::d6ab:1538:d868:bf8%7]) with mapi id 15.20.9564.014; Fri, 6 Feb 2026
+ 08:42:40 +0000
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: shengjiu.wang@gmail.com,
+	Xiubo.Lee@gmail.com,
+	festevam@gmail.com,
+	nicoleotsuka@gmail.com,
+	lgirdwood@gmail.com,
+	broonie@kernel.org,
+	perex@perex.cz,
+	tiwai@suse.com,
+	linux-sound@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH 0/2] ASoC: fsl: add bitcount and timestamp controls
+Date: Fri,  6 Feb 2026 16:43:32 +0800
+Message-Id: <20260206084334.483404-1-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.37.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: MA5PR01CA0107.INDPRD01.PROD.OUTLOOK.COM
+ (2603:1096:a01:1d1::10) To VI1PR04MB7055.eurprd04.prod.outlook.com
+ (2603:10a6:800:123::21)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -52,82 +87,103 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v7 2/5] PCI/DPC: Run recovery on device that detected the
- error
-To: Lukas Wunner <lukas@wunner.de>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, bhelgaas@google.com, kbusch@kernel.org,
- sathyanarayanan.kuppuswamy@linux.intel.com, mahesh@linux.ibm.com,
- oohall@gmail.com, Jonathan.Cameron@huawei.com, terry.bowman@amd.com,
- tianruidong@linux.alibaba.com
-References: <20260124074557.73961-1-xueshuai@linux.alibaba.com>
- <20260124074557.73961-3-xueshuai@linux.alibaba.com>
- <aYCujqZIvxElSsOE@wunner.de>
-From: Shuai Xue <xueshuai@linux.alibaba.com>
-In-Reply-To: <aYCujqZIvxElSsOE@wunner.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: VI1PR04MB7055:EE_|VI0PR04MB11503:EE_
+X-MS-Office365-Filtering-Correlation-Id: bc5c512b-3c5b-4f41-2f69-08de655bafbd
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|19092799006|1800799024|7416014|52116014|376014|921020|38350700014;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?lRckedDfie46Y+JE/bei52/Ac6vBYcScd+PJxjGwU3Q+zPLpaIGfC/xU7GcW?=
+ =?us-ascii?Q?D9AItrtcYdIuro2dVnDfrFZfOUbZ4tPNQpVFcVSd4TjeYONl4pc3qMPbxqTe?=
+ =?us-ascii?Q?lv0erz3+ASeSjP2UAVvGBX3ofDedAedcykd2IVgA51LxYnByic0opVihhZxx?=
+ =?us-ascii?Q?PhzLmOpVjty+zh+wtbQ6cW6fi0ZO622T9fMM7T1esbhtYZx/hA8XkMkMmQNg?=
+ =?us-ascii?Q?4Lvr/eSSEBjONiky1ug26bjPLd8PeqOs05fQexgiurFqAFxCDsoHRVFZ3ZBB?=
+ =?us-ascii?Q?7gIpOHbTFIQeXdscKfG3vP1Gr7C+A4u5VeoBq9ewThQOsIyIwvvEj0CqnmwJ?=
+ =?us-ascii?Q?iTP4Z1ylYadpOLHkZmts6uB859vq2zyxN7npZ07Ni6Pee2cvw3+rFK6bZNBH?=
+ =?us-ascii?Q?iRuh2zyDrsV2jAAHHzzq0Z8Dki+xfF2VJ4monJOET2zsj4yu1XicikGH1R8a?=
+ =?us-ascii?Q?1H4fahk9jfTnNEcw5TwJVkX2552OiFr/Xq0Qs2610E7/2GKs9HfAyzojZcPe?=
+ =?us-ascii?Q?FxPy+1iUVqmCTZTMS8co7oTKjdMyYzq+Qlkw+r7uCadsEHx4QH38zI1ej9Bv?=
+ =?us-ascii?Q?Yq+gh3JsipJq8dpBZJHZ4GCzjMHaCY/wBOM/USOSq6R7kGSAVYdcCniGZBCW?=
+ =?us-ascii?Q?FzonnbioLQdswUhW7Sw05O84upC0NilhEkP+QTkqWQKgTQZjYFO3ZNUoRfOa?=
+ =?us-ascii?Q?Sw7YNIzcBCn8pwvyWwXxgFeqnPMbxB4MSfyWJoj0mS5MISu/pxFwY13EJaIy?=
+ =?us-ascii?Q?we2i9De8qDNYcuEqDrcH3TB2ReyJJtOP5tk3Zc6QGevdU8Fo+TT31SKIdmuc?=
+ =?us-ascii?Q?sVlxMd3e6bxp54+e5mnGZeykTL/KTFuaOZWq+ThRRMBaETL42Ii+oN6Sp4ec?=
+ =?us-ascii?Q?/tTIieWNnr6SMT3znXnc9Hr9I7QND2+s8bKwOECwcQnm4OaS3HbDcGlIgfOX?=
+ =?us-ascii?Q?6uWl2L1DmUp2xD4+XYGDiM5LalVhFBkNbXRCHCJ4F2461+WZuHKnGBhiNzEw?=
+ =?us-ascii?Q?3Qd4zvz0FDeUkX5fSp36yqabuKLDFwL5uEmJWVaUkU16Zylgj3MYiVMJ92lr?=
+ =?us-ascii?Q?Y9/wKUJJc9WUo7mFhJC7ER878Oy2PRV6xqm/Av2l6krdWkjWSfa2Yv2xRS2k?=
+ =?us-ascii?Q?noZBanxuMlE8clx+PpC35xklDM9EwlB8u2dTLccw/dwPnAchz+mMhDHrncNw?=
+ =?us-ascii?Q?imO1KG9LwrEiLazsTorn4cnk8rRHivGfkpEoWAdZlS2Ky3/dxtRIsQHpPlO0?=
+ =?us-ascii?Q?mc2mGI8jFFDepYXTSidLMHdkxHBLjoR6oNcJkBv0hOxIPC/7xOT8UGoWBBKI?=
+ =?us-ascii?Q?N8UrYe4JA8tAShIBr6E96IOuorQP2Xrm7HPF5o4jT71JzkdWkldXYn/y/1s+?=
+ =?us-ascii?Q?52I4kscv1IrD2V6AaPtSJm4NnlDP52kK7WPxU/PDpcSsoEkY8pg1WDGudEpL?=
+ =?us-ascii?Q?bJw9fzi8c6uRwHKhSjvRiBOA6zxP2cDpyzy8cpEWhPm9x69WA+R0uEVFjjUw?=
+ =?us-ascii?Q?CZAQTq2GJKDu8557/WOsKdkyQS62SIOBYqZ0YwOCTt/7sKcLisFaPBzigXq7?=
+ =?us-ascii?Q?IH+kQcaqGopX9VXLLw954zgeUOMbUhdsilZJLPrY1NNl3QDXv1HnZ9cpvwEl?=
+ =?us-ascii?Q?ITr3aPcTVeJXZi5ubuN5qdJh69ovPVx/UzHYQRc+VR2d?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI1PR04MB7055.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(19092799006)(1800799024)(7416014)(52116014)(376014)(921020)(38350700014);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?nWtHzD6reCVnJ6Qq6IgdntN5XSeCRhSSUkAY0kWCoCIy+cg6xjgxHeVrtcBe?=
+ =?us-ascii?Q?o14i4QF0u5upj9y0KCXquNb4Vhu+kvRG8tLx3fab80dUK0iDA/R4lO8TatDH?=
+ =?us-ascii?Q?oyRXizNYa/cUcobD9IvHrndOaqzSvk8sPOqERXa0J1m+BtVxAKmmDkJ+VTcz?=
+ =?us-ascii?Q?Cv65SSummZuDbailJUITYtCIjk6xPQhTXH6cwwrhJNqGzxdt6td7ekS6W+QW?=
+ =?us-ascii?Q?Ri3C/Y3BcFW1ZUlNi1YI16VpVbzPajxytkbM2fwKNaS2iPqHgOzgebqpG9/l?=
+ =?us-ascii?Q?p7iiJB+ORWLKgsRV2ed8DU6C1cKeXjujx3gK/ud75S9BtnyMiW8bl1SWt1ue?=
+ =?us-ascii?Q?d+o+rCOxpoquWM/+Zd/U1YuOmJ3D84kxOq9VaGt19BZt0kni7XjV0CJBZWL9?=
+ =?us-ascii?Q?FEV7yLBYpRFXtUY+fP2TEJyw5R1HokSHtz2cyVyof/mdhJxfuJ78dYwrJ6Fi?=
+ =?us-ascii?Q?Cv0b0sTHi9Sr6wSCRAkiPDhWQJgkYviEIB3Bscf1yWbZUF5N8ZoQ9iUDbGvz?=
+ =?us-ascii?Q?r0utA9wulhPsupdkjhEvfKdtPsCeXaqoY5CZkjVJohk/1gRzNSq5jHklVxDM?=
+ =?us-ascii?Q?Gfl1w8QpfvtZ+8cnojIxUXdS2OxQabk6AFpKB+692KN5NqSkibCemb5X702G?=
+ =?us-ascii?Q?hlKY3x7qCydd2DO+8DmMfoEtK97MyUYciKS/BfYsV6n2+vLdsbILCmalQSms?=
+ =?us-ascii?Q?PbH8Q4X4TqCPkeXozptMQ9MWwmrvwUdX5/6QKSgn2MmUZ0UWs7W2pENEh5J3?=
+ =?us-ascii?Q?JiBelKAa0GafjOFB+OqPUtOoihEeR3oKu/662UxbuAEwDCbdLegObJerp5tT?=
+ =?us-ascii?Q?R5nX6PjjGq8k5l2nJzSQe3njgI59Bl42QQWIKOViXF96nWVo1jJR36u7jW6S?=
+ =?us-ascii?Q?1aZSQcaayB5b5fhFj2bXNRV5DwNnSQRmk5KOak4sHfp8QSD9pRsrlMHME8tB?=
+ =?us-ascii?Q?r++rHrpoHsWp8W3+/NClwSP/ahA1Qj9t7lxzkxBmsLK2DIP5gaSTfmd2vV6q?=
+ =?us-ascii?Q?qdzUb/DQG5Teq4CgnGCnEzyTvD8H8/7FMZ2si2FxZaUkzRdSUDCoQFL+ToG+?=
+ =?us-ascii?Q?XoOV2Y8fLq7/M2mvwpIY//3+4XxFH723ow7u7CIMTwodVxC0cKso6v//YlT5?=
+ =?us-ascii?Q?NhitFKeRhz79GaXrceMlOoYMnhqGFZ86YyeBzGS4CZN1Rg53XQsu4NjycMGq?=
+ =?us-ascii?Q?OoMaZ0bfZdIMQ49twzoEDFdpt7q6FyMimfe7FRvvYilqPHFceWbOmOSHbZe1?=
+ =?us-ascii?Q?nj8yu4e5FmeWYwCKglwX4yKaoKLwg6ceFedjlsF8zPHvKsIpQUA8UsZv+RbX?=
+ =?us-ascii?Q?DRl37TZnIFISiDdpe5LgJWLoBTrlSTN81D6kRUKiISUPv4ug61tCbrvu9JFr?=
+ =?us-ascii?Q?LgXZ6nLlv5j+Nz/Q9IAvXYXdNcuIZFaGXJD1bjVig6TsIBJWUrhiP4S11bX3?=
+ =?us-ascii?Q?8ru8Qdfn5JwdCVzws+nUbqsdoTD4gVkgMP3PPuqgMfAiom7/BNKHLDv9NCKV?=
+ =?us-ascii?Q?LknyYKUSV/wXRNYh3c5y9OS1B9/n2ICXdqx5EtK4/hLlXSfrm3nY17bvTKho?=
+ =?us-ascii?Q?iHttb9d+9lvgImhJCP2JLgz57879WFyq7dT4EsvJE/auyz0reoqKm/JFY4Gq?=
+ =?us-ascii?Q?DWhXe80FpGNYwA2aYc4QC/4qmLA/ngQlBe/jQREZJl6uyPMMzQO+Y/olyHKg?=
+ =?us-ascii?Q?RJDSQvrQlfBjZLebE1vLkPHVLhak44cv3wbpuop0K6/aTbiGtj8CdMDCldGT?=
+ =?us-ascii?Q?DK96ZrTp3Q=3D=3D?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: bc5c512b-3c5b-4f41-2f69-08de655bafbd
+X-MS-Exchange-CrossTenant-AuthSource: VI1PR04MB7055.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 06 Feb 2026 08:42:40.1333
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: SnFaYm1jz/ryJ+zviRbi3MenMyTfnuvqWdrfMuYJyPdHTvk+FPvmyZhGushQtpvPW26EOIfoytlMln2sE38eHA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI0PR04MB11503
 
+The SAI and XCVR have the timestamp counters and bit counters, which can
+be used by software to track the progress of the transmitter and receiver.
+They can also be used to calculate the relative frequency of the bit clock
+against the bus interface clock.
 
+Shengjiu Wang (2):
+  ASoC: fsl_sai: add bitcount and timestamp controls
+  ASoC: fsl_xcvr: add bitcount and timestamp controls
 
-On 2/2/26 10:02 PM, Lukas Wunner wrote:
-> On Sat, Jan 24, 2026 at 03:45:54PM +0800, Shuai Xue wrote:
->> +++ b/drivers/pci/pcie/dpc.c
->> @@ -372,10 +388,11 @@ static irqreturn_t dpc_handler(int irq, void *context)
->>   		return IRQ_HANDLED;
->>   	}
->>   
->> -	dpc_process_error(err_port);
->> +	err_dev = dpc_process_error(err_port);
->>   
->>   	/* We configure DPC so it only triggers on ERR_FATAL */
->> -	pcie_do_recovery(err_port, pci_channel_io_frozen, dpc_reset_link);
->> +	pcie_do_recovery(err_dev, pci_channel_io_frozen, dpc_reset_link);
->> +	pci_dev_put(err_dev);
->>   
->>   	return IRQ_HANDLED;
->>   }
-> 
-> You're assuming that the parent of the Requester is always identical
-> to the containing Downstream Port.  But that's not necessarily the case:
-> 
-> E.g., imagine a DPC-capable Root Port with a PCIe switch below
-> whose Downstream Ports are not DPC-capable.  Let's say an Endpoint
-> beneath the PCIe switch sends ERR_FATAL upstream.  AFAICS, your patch
-> will cause pcie_do_recovery() to invoke dpc_reset_link() with the
-> Downstream Port of the PCIe switch as argument.  That function will
-> then happily use pdev->dpc_cap even though it's 0.
+ sound/soc/fsl/fsl_sai.c  | 52 +++++++++++++++++++++++++++++++++++++
+ sound/soc/fsl/fsl_xcvr.c | 56 ++++++++++++++++++++++++++++++++++++++++
+ sound/soc/fsl/fsl_xcvr.h | 10 +++++++
+ 3 files changed, 118 insertions(+)
 
-I see. Goot point.
-
-> 
-> A possible solution may be to amend dpc_reset_link() to walk upwards,
-> starting at pdev, and search for a pci_dev whose pdev->dpc_cap is
-> non-zero.  That should be the containing DPC-capable port.
-
-See my reply in your later patch.
-
-> 
-> I don't really like the err_dev and err_port terminology invented here.
-> We generally use spec terms to make it easy to connect the code to the
-> spec.  The spec uses the term "Downstream Port" to denote the containing
-> Downstream Port, so a name such as "dport" may be better than "err_port".
- >
-> 
-> Similarly, the spec uses "Requester" or "Source" for the reporting agent,
-> so "req", "requester", "src" or "source" may all be better names than
-> "err_dev".
-
-Sure, I wll use the common "dport" and "req" term from spec to make it more readable.
-
-
-> 
-> Thanks,
-> 
-> Lukas
-
-Thanks for valuable comments.
-Shuai
+-- 
+2.34.1
 
 
