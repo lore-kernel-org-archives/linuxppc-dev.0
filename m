@@ -1,44 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-16709-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16710-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3692EE6B76
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Feb 2026 08:35:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33D48EE0AC8
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Feb 2026 10:37:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f7PRg2ngGz2xm3;
-	Sat, 07 Feb 2026 19:35:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.113
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770453343;
-	cv=none; b=TaYPFC+J22g7I51fhK5kVjJ63kus3eqh5oKpayS28j9LNiGUQrTt1qnN8kvsYSzxntkCO6RXxKixr7sInHPmrEoKrPUO+nCvsRDXRsBZU+P62muDtd78WP+yaTaDHis4bfiJq863gNgWbJQwzhMPG+jRODU0Af1cINBLSY7xR+NQbInZQa1WGupJLV7aJPYf1fKyYd9WSbRCTyPKtl/PwHmPtd7RY/uo4PcaxDu/OBj1fxghfgBUY5QD3CIwGWuN7w6YAa/otriBcsD21OiDMa+WXkbMZlybt0+E/MjBX08EczyhFEyFfY6Lrh42re+MSwjCUtomKNX0zPOtl661zg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f7S7k4n5sz2xm3;
+	Sat, 07 Feb 2026 21:37:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770460626;
+	cv=none; b=l8yHHKlXN+06ZbFYtA06DMpNTN70qVXWiwaWk1Y0aN5c5CU2/qcMLH8zZAQYK3oqf281Hc91V5a7dDV7ITg3LGxrqk4FeFNYReS80ofEPxDKqwTZjQbQ6NYoYnTsiaEJqwhm7BTq1xXyxUvkNPey3qti2O+uPmBL3HMzemFPYNDW52FDurG8HVaL/7v6I0rxLdP2A0a5F5sq5nlHhCv41jC9W5RWNC8rweQa1WZYn778VfR6K9WXKkEPVnMk1n+YpCbhjst+UtdVZOzdZoKIEByuEClThGL5x09ZuO1KyeoczWxh2QBp6h4SOebZB8shI+m8Ywm/mHMb7lDhXj4B0w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770453343; c=relaxed/relaxed;
-	bh=NdAVUBsBt+q9ht9jChQ+fU7/bdKbU4jceYqVa9txGzY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=bz2z20OmUGq7CzdJmA4ij+RxXqIm9ipM/YLIob7LLq465qDtMxuKe7D9OpJjMJnis4BBA47RoXNSJVJGhlkOWJHvblunhsGWe8sCgNHDCSJdMiyXnJ5S+w3/y0tPI5ZKse4cuYqASU8COPDQ37UzajQVy/NnE+OUPF+bkL9pecgiw7Ayq44qAfrz8v4tXfdv9cv8fwZECfcD3EjfVWeZ3y5kQasRLUHGssNPGgoaDiPYdFFXk/KbnRC5uCwihlJxkfdYEAv/V0EE7ygnxL4JHW62ts2M4SfTJKUuq3T5pX1qi79WOcbBTkkp10/KzLDjhaEB08esEdvcx7BqTVyNvw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=CM4oQQE1; dkim-atps=neutral; spf=pass (client-ip=115.124.30.113; helo=out30-113.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
+	t=1770460626; c=relaxed/relaxed;
+	bh=FSUDcBsri7qYzrRkXH9I9k/QM3kDOL2TH7o2w54VR4A=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=HzhcEJidQkAVqbOlDsrb98Ic5RP+TaHF/Qlm0KjYngwOBgRJHOmsoMqQ8SkaIdl6VU1CsJuRC82YfJ5j4bX5PCtxaEe3oCcb1dbGdXdHOfJcCQXJE9q6fPYwx8wLN5Dw3C4UyNp0DmLaGDsU7UxvQYzrYYLlFrg4WgXDwbwzITBXK0vVJRPpaaszgjBExdoHr+TzPmyj/PAn7vD6vlP4a0Po3d81pursRsdrzCNavXg4/+Y9FJwGtn5jYlj0DaeSCzZCOleVA14DdM+39NOxQiQqn5dNxw5PyKrhZcV+cDeuJS+cF+QdcBrhMGeaLWOmOfhzvtIvThP11gYd3uRLjw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cfYuL09Y; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=CM4oQQE1;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cfYuL09Y;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.113; helo=out30-113.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org)
-Received: from out30-113.freemail.mail.aliyun.com (out30-113.freemail.mail.aliyun.com [115.124.30.113])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f7PRd22Lgz2xWJ
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Feb 2026 19:35:39 +1100 (AEDT)
-DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1770453335; h=Message-ID:Date:MIME-Version:Subject:To:From:Content-Type;
-	bh=NdAVUBsBt+q9ht9jChQ+fU7/bdKbU4jceYqVa9txGzY=;
-	b=CM4oQQE17iGnlLhDv5F4te2WbgEM6Aw4ZLJjuBoH5qfFE6DHIB9Zebt3uuSdRE31Dqj8KVzWGrgLvWXlF6i8igIMe4vwQXBzJNuu3t0w48RTXW8tUuR0PqSVHjWclqvT/oEmpdNj3CfdEznYwgLEAAQLVbeahCOs9BdGLakqtc8=
-Received: from 30.246.162.188(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0WyhXHoT_1770453333 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Sat, 07 Feb 2026 16:35:34 +0800
-Message-ID: <de195f39-8197-494e-8451-2cf8fde064ea@linux.alibaba.com>
-Date: Sat, 7 Feb 2026 16:34:23 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f7S7j3vBQz2xWJ
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Feb 2026 21:37:05 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id B848344328;
+	Sat,  7 Feb 2026 10:37:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7A2BFC116D0;
+	Sat,  7 Feb 2026 10:36:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1770460622;
+	bh=5txootZk9XnxQipltUnu1uJG2kCaI77i7XiNzSKLg6I=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=cfYuL09YPhGMJd7P35kyjr0lAxa/iHu/YfsEkzH8LubrxmisxkzKdBFcs1Y2N2MU2
+	 dvs+BpQiIMu7RNuFgOa2U4lhfkQQMWEApPyUIFI4G5jPDx5SxM7vGgvEgcMaAZR3wb
+	 b5TmWeYHqGOnIP6RUJQS0EZeSOfMx7DmDO3xOwzBoST0J5Zd5mVF9jwQn1yVKcNfBE
+	 uWSTfKP2vKbdUd2LRGCkPloiDZT2rrMv/eHBuetCIurcEWl+GxWXDT1apLvIJsW7lK
+	 ecWz7qUsRKRAGOnHYFNSzWF/NyB7DB8z+ZPDngeTtgHQpWl15K7AQ1eM41lt8lTvb6
+	 U9okHU4kls45Q==
+Date: Sat, 7 Feb 2026 12:36:43 +0200
+From: Mike Rapoport <rppt@kernel.org>
+To: Andreas Larsson <andreas@gaisler.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Borislav Petkov <bp@alien8.de>, Brian Cain <bcain@kernel.org>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	David Hildenbrand <david@kernel.org>,
+	Dinh Nguyen <dinguyen@kernel.org>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Guo Ren <guoren@kernel.org>, Helge Deller <deller@gmx.de>,
+	Huacai Chen <chenhuacai@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	"Liam R. Howlett" <Liam.Howlett@oracle.com>,
+	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Magnus Lindholm <linmag7@gmail.com>,
+	Matt Turner <mattst88@gmail.com>, Max Filippov <jcmvbkbc@gmail.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Michal Hocko <mhocko@suse.com>, Michal Simek <monstr@monstr.eu>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Richard Weinberger <richard@nod.at>,
+	Russell King <linux@armlinux.org.uk>,
+	Stafford Horne <shorne@gmail.com>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Thomas Gleixner <tglx@kernel.org>, Vineet Gupta <vgupta@kernel.org>,
+	Vlastimil Babka <vbabka@suse.cz>, Will Deacon <will@kernel.org>,
+	linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-snps-arc@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org,
+	linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev,
+	linux-m68k@lists.linux-m68k.org, linux-openrisc@vger.kernel.org,
+	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
+	sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
+	linux-mm@kvack.org, x86@kernel.org
+Subject: Re: [PATCH mm-unstable] arch, mm: consolidate empty_zero_page
+Message-ID: <aYcVu7gs65S1CeST@kernel.org>
+References: <20260124095628.668870-1-rppt@kernel.org>
+ <2157220c-0394-40fa-9918-a8514171bd10@gaisler.com>
+ <aXj_x5CyUeys7ONM@kernel.org>
+ <ec965a79-dad8-4358-a8e9-ebc9f330b67b@gaisler.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -52,101 +101,164 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v7 4/5] PCI/AER: Clear both AER fatal and non-fatal status
-To: Lukas Wunner <lukas@wunner.de>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, bhelgaas@google.com, kbusch@kernel.org,
- sathyanarayanan.kuppuswamy@linux.intel.com, mahesh@linux.ibm.com,
- oohall@gmail.com, Jonathan.Cameron@huawei.com, terry.bowman@amd.com,
- tianruidong@linux.alibaba.com
-References: <20260124074557.73961-1-xueshuai@linux.alibaba.com>
- <20260124074557.73961-5-xueshuai@linux.alibaba.com>
- <aYGsmgyVwvbj83YI@wunner.de>
-From: Shuai Xue <xueshuai@linux.alibaba.com>
-In-Reply-To: <aYGsmgyVwvbj83YI@wunner.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ec965a79-dad8-4358-a8e9-ebc9f330b67b@gaisler.com>
 
-
-
-On 2/3/26 4:06 PM, Lukas Wunner wrote:
-> On Sat, Jan 24, 2026 at 03:45:56PM +0800, Shuai Xue wrote:
->> The DPC driver clears AER fatal status for the port that reported the
->> error, but not for the downstream device that deteced the error.  The
->> current recovery code only clears non-fatal AER status, leaving fatal
->> status bits set in the error device.
+On Tue, Feb 03, 2026 at 11:17:08AM +0100, Andreas Larsson wrote:
+> On 2026-01-27 19:11, Mike Rapoport wrote:
+> > On Tue, Jan 27, 2026 at 05:02:39PM +0100, Andreas Larsson wrote:
+> >> On 2026-01-24 10:56, Mike Rapoport wrote:
+> >>
+> >>> Every architecture defines empty_zero_page that way or another, but for the
+> >>> most of them it is always a page aligned page in BSS and most definitions
+> >>> of ZERO_PAGE do virt_to_page(empty_zero_page).
+> >>
+> >> Running this in an LDOM on an UltraSparc T4 sparc64, the entire LDOM
+> >> hangs after a while during boot.
+> >>
+> >>> diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
+> >>> index c2d19c9a9244..2bd99944176d 100644
+> >>> --- a/arch/sparc/mm/init_64.c
+> >>> +++ b/arch/sparc/mm/init_64.c
+> >>> @@ -177,9 +177,6 @@ extern unsigned long sparc_ramdisk_image64;
+> >>>  extern unsigned int sparc_ramdisk_image;
+> >>>  extern unsigned int sparc_ramdisk_size;
+> >>>  
+> >>> -struct page *mem_map_zero __read_mostly;
+> >>> -EXPORT_SYMBOL(mem_map_zero);
+> >>> -
+> >>>  unsigned int sparc64_highest_unlocked_tlb_ent __read_mostly;
+> >>>  
+> >>>  unsigned long sparc64_kern_pri_context __read_mostly;
+> >>> @@ -2506,18 +2503,6 @@ void __init mem_init(void)
+> >>>  	 */
+> >>>  	register_page_bootmem_info();
+> >>>  
+> >>> -	/*
+> >>> -	 * Set up the zero page, mark it reserved, so that page count
+> >>> -	 * is not manipulated when freeing the page from user ptes.
+> >>> -	 */
+> >>> -	mem_map_zero = alloc_pages(GFP_KERNEL|__GFP_ZERO, 0);
+> >>> -	if (mem_map_zero == NULL) {
+> >>> -		prom_printf("paging_init: Cannot alloc zero page.\n");
+> >>> -		prom_halt();
+> >>> -	}
+> >>> -	mark_page_reserved(mem_map_zero);
+> >>> -
+> >>> -
+> >>>  	if (tlb_type == cheetah || tlb_type == cheetah_plus)
+> >>>  		cheetah_ecache_flush_init();
+> >>>  }
+> >>
+> >> This just removes the mark_page_reserved(mem_map_zero) without 
+> >> replacing it with something corresponding to that. Perhaps part
+> >> of the problem?
+> > 
+> > I don't think so, empty_zero_page is in BSS now an it's reserved as a part
+> > of the kernel image.
+> > 
+> > I suspect that virt_to_page() does not work BSS symbols on sparc64. Can you
+> > please try with this patch:
+> > 
+> > diff --git a/arch/sparc/include/asm/pgtable_64.h b/arch/sparc/include/asm/pgtable_64.h
+> > index 74ede706fb32..0578c5172d4e 100644
+> > --- a/arch/sparc/include/asm/pgtable_64.h
+> > +++ b/arch/sparc/include/asm/pgtable_64.h
+> > @@ -22,6 +22,7 @@
+> >  #include <asm/adi.h>
+> >  #include <asm/page.h>
+> >  #include <asm/processor.h>
+> > +#include <asm/vaddrs.h>
+> >  
+> >  /* The kernel image occupies 0x4000000 to 0x6000000 (4MB --> 96MB).
+> >   * The page copy blockops can use 0x6000000 to 0x8000000.
+> > @@ -210,6 +211,11 @@ extern unsigned long _PAGE_CACHE;
+> >  extern unsigned long pg_iobits;
+> >  extern unsigned long _PAGE_ALL_SZ_BITS;
+> >  
+> > +extern unsigned long kern_base;
+> > +#define ZERO_PAGE(vaddr)						   \
+> > +	(virt_to_page(empty_zero_page + ((unsigned long)__va(kern_base)) - \
+> > +		      ((unsigned long)KERNBASE)))
+> > +
+> >  /* PFNs are real physical page numbers.  However, mem_map only begins to record
+> >   * per-page information starting at pfn_base.  This is to handle systems where
+> >   * the first physical page in the machine is at some huge physical address,
+> > diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
+> > index 2bd99944176d..d2d724ba4f83 100644
+> > --- a/arch/sparc/mm/init_64.c
+> > +++ b/arch/sparc/mm/init_64.c
+> > @@ -170,6 +170,8 @@ static void __init read_obp_memory(const char *property,
+> >  
+> >  /* Kernel physical address base and size in bytes.  */
+> >  unsigned long kern_base __read_mostly;
+> > +EXPORT_SYMBOL(kern_base);
+> > +
+> >  unsigned long kern_size __read_mostly;
+> >  
+> >  /* Initial ramdisk setup */
+> Hi,
 > 
-> That's not quite accurate:
-> 
-> The error device has undergone a Hot Reset as a result of the Link Down
-> event.  To be able to use it again, pci_restore_state() is invoked by
-> the driver's ->slot_reset() callback.  And pci_restore_state() does
-> clear fatal status bits.
-> 
-> pci_restore_state()
->    pci_aer_clear_status()
->      pci_aer_raw_clear_status()
-> 
->> Use pci_aer_raw_clear_status() to clear both fatal and non-fatal error
->> status in the error device, ensuring all AER status bits are properly
->> cleared after recovery.
-> 
-> Well, pci_restore_state() already clears all AER status bits so why
-> is this patch necessary?
+> Unfortunately, that does not help. The LDOM goes down in the same fashion.
 
-You're right that many drivers call pci_restore_state() in their
-->slot_reset() callback, which clears all AER status bits.  However,
-since ->slot_reset() is driver-defined and not all drivers invoke
-pci_restore_state(), there could be cases where fatal AER status bits
-remain set after the frozen recovery completes.
+Apparently something is wrong with my pointer arithmetics :/
 
-> 
->> +++ b/drivers/pci/pcie/err.c
->> @@ -285,7 +285,7 @@ pci_ers_result_t pcie_do_recovery(struct pci_dev *dev,
->>   	 */
->>   	if (host->native_aer || pcie_ports_native) {
->>   		pcie_clear_device_status(dev);
->> -		pci_aer_clear_nonfatal_status(dev);
->> +		pci_aer_raw_clear_status(dev);
->>   	}
-> 
-> This code path is for the case when pcie_do_recovery() is called
-> with state=pci_channel_io_normal, i.e. in the nonfatal case.
-> That's why only the nonfatal bits need to be cleared here.
-> 
-> In the fatal case clearing of the error bits is done by
-> pci_restore_state().
-> 
-> I understand that this is subtle and should probably be changed
-> to improve clarity, but this patch doesn't look like a step
-> in that direction.
-> 
+Can you try this one instead?
 
-I notice that pcie_clear_device_status()
-(called just before pci_aer_clear_nonfatal_status()) already clears
-*all* error bits in the Device Status register (CED, NFED, FED, URD),
-including the Fatal Error Detected (FED) bit, regardless of whether
-we're in a fatal or nonfatal recovery path.
+diff --git a/arch/sparc/include/asm/pgtable_64.h b/arch/sparc/include/asm/pgtable_64.h
+index 74ede706fb32..615f460c50af 100644
+--- a/arch/sparc/include/asm/pgtable_64.h
++++ b/arch/sparc/include/asm/pgtable_64.h
+@@ -210,6 +210,9 @@ extern unsigned long _PAGE_CACHE;
+ extern unsigned long pg_iobits;
+ extern unsigned long _PAGE_ALL_SZ_BITS;
+ 
++extern struct page *mem_map_zero;
++#define ZERO_PAGE(vaddr)	(mem_map_zero)
++
+ /* PFNs are real physical page numbers.  However, mem_map only begins to record
+  * per-page information starting at pfn_base.  This is to handle systems where
+  * the first physical page in the machine is at some huge physical address,
+diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
+index 2bd99944176d..aa1f9f071fb2 100644
+--- a/arch/sparc/mm/init_64.c
++++ b/arch/sparc/mm/init_64.c
+@@ -177,6 +177,9 @@ extern unsigned long sparc_ramdisk_image64;
+ extern unsigned int sparc_ramdisk_image;
+ extern unsigned int sparc_ramdisk_size;
+ 
++struct page *mem_map_zero __read_mostly;
++EXPORT_SYMBOL(mem_map_zero);
++
+ unsigned int sparc64_highest_unlocked_tlb_ent __read_mostly;
+ 
+ unsigned long sparc64_kern_pri_context __read_mostly;
+@@ -2495,6 +2498,9 @@ static void __init register_page_bootmem_info(void)
+ }
+ void __init mem_init(void)
+ {
++	phys_addr_t zero_page_pa = kern_base +
++		((unsigned long)&empty_zero_page[0] - KERNBASE);
++
+ 	/*
+ 	 * Must be done after boot memory is put on freelist, because here we
+ 	 * might set fields in deferred struct pages that have not yet been
+@@ -2503,6 +2509,12 @@ void __init mem_init(void)
+ 	 */
+ 	register_page_bootmem_info();
+ 
++	/*
++	 * Set up the zero page, mark it reserved, so that page count
++	 * is not manipulated when freeing the page from user ptes.
++	 */
++	mem_map_zero = pfn_to_page(PHYS_PFN(zero_page_pa));
++
+ 	if (tlb_type == cheetah || tlb_type == cheetah_plus)
+ 		cheetah_ecache_flush_init();
+ }
 
-So there's an inconsistency in the current design:
-- pcie_clear_device_status() clears all error bits (including FED)
-- pci_aer_clear_nonfatal_status() only clears nonfatal AER status
-
-This means that even in the nonfatal case, the FED bit in Device
-Status is cleared, even though we preserve the fatal bits in the AER
-Uncorrectable Error Status register.
-
-Would you prefer that I:
-1. Make both pcie_clear_device_status() and the AER clearing
-    conditional on the 'state' parameter, so that nonfatal recovery
-    truly preserves fatal bits in both registers, or
-2. Drop this patch and instead move the AER-specific clearing logic
-    out of pcie_do_recovery() entirely (as you suggested earlier), so
-    that each caller can handle the status clearing explicitly for the
-    appropriate error sources and severity?
-
-Thanks,
-Shuai
-
+-- 
+Sincerely yours,
+Mike.
 
