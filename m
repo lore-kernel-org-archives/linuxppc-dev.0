@@ -1,66 +1,44 @@
-Return-Path: <linuxppc-dev+bounces-16707-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16708-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 133C8EE6B65
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Feb 2026 05:55:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06444EE6B7C
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Feb 2026 07:49:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f7Ktc3M83z2xRv;
-	Sat, 07 Feb 2026 16:55:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770443720;
-	cv=none; b=g+2iudOoTHpvy6V46atX31uax8/bDMiyWaQ2f2KPGsAk6QvW7eQ2mlz7OS9s9mRnI83EZAqDm/GTb9pZe3t4YJBITlGQiPfrE3F6T6WnrF93qN2KRjqUwfGYji3oEhD2Vb54isQZamezyJW850x6h738b/pjU34KMGC/syHV3g0fApnvWlIWhaotnzqBvq/N5E2XTXoFLDRL5jKktiiMr9EAKGL4xLSL4/NcMIhf2DZdrr7oqoO64upDq5z1/eN3hrVGiGiy/kmzubNbGcdw1OtHX0Efu9nLVE4zUSfFt9i1/JgbZy/EiqeqIg0ikWsn7jc4c+qa8G7F1BQGIxcfpQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f7NQP6RL3z2xm3;
+	Sat, 07 Feb 2026 18:49:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770450573;
+	cv=none; b=TzRtL4HCSz8XAbnyMVUiEoQx6egO+xrcgOQEhYzTF/xViEgSmaldD09vFbIR0UXMmGKX8ApcNQ9hrm/VtwdE6Ee76SfPKk+lR2YyWvYhZTU+IOqL+XPLYTAAZ/cB9vh3Fn4zRY+7wRjHtrYmy9et+ncgQFywmtRMghiER4jfQJMamEzO1YwnPCBtURTWfz1dUpBlau/MdihPaeirYQmaL2yOMXP96uqdBCbUZ+822T7omB538qU6THiyq/wjYxNq7A0RE/H+yTj0J5pri787fW+VD9m0f1ZOMaUlazthSQlcR0DmEXCkJCDZjAIQQxTqcRynmALYMvv1poULtAxULw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770443720; c=relaxed/relaxed;
-	bh=dkDYANJ0vOAcQ80fvWHL7o+zkXTW0Qwm4IsGDjSXZQA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=VcwC5ZQ/whxkpsm/ta2UiqNCPthyx793Y5XH3eEntEP6DtFcjyVgU+b13AvCaaf0NHiUOoD2+M3xDsu/2iHDfwMikFY+3P3YUp2LlfaJVGy9JSLqocBg1LFfkI15h54nsz3V+uHiAP7YuEIeelxg7EnqkiBqU9RqN4ZKEML2zlOvWeUbX04KY2CizqknOjBRzYC7lQqEYAESOOiRaTW3Yu853Apa3WAaLesoZ077xXLNZ2FdDm9eZC95kWE5ahYH6YM9jEqOLO6Ak2uB2YKVVIfz7b4/gFddrjrTE3Nz9z5GfkI3Y1YDF1PQ/w0bR+9jFEdGfMYAxZ4YufHEegrTpg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Y4qN5NdE; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kbusch@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1770450573; c=relaxed/relaxed;
+	bh=LHc3SXs3IglbN0dRzOuqXsju9nOLE6/m2styMOamf7w=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=khat7/Az4Ig+3j7TBJftEeBTbNpiBhLgn4j9Iif8E8+uZo0a8ZAOPRm6xm+jEkT71m9q9uVc+/JLLmJSkbRG3iRZNbHFbNQAQ+nD+Nsf8vDuC6nVrPgeOwXNiAOqt7v4pXRJ8oXtZObMIMi3G8hel1dWppa1H3k3JHMV61ptC16z7IaXXGYYR7SHLZSzY7yt5s9jnAzoZcIx27+InXpQ5qGSEkodMStmWYagIC8QKM4aE1hmF5jCfv3xWPBmJOxQB6peXlDt/OZNyGbDX1FeJlVuO33XUiFzePyM1boVFZloDyfNjKHQCtp5t+U3MkuRENgIs06B/ppA+7aNTz25jQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=Ye3Il9L2; dkim-atps=neutral; spf=pass (client-ip=115.124.30.131; helo=out30-131.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Y4qN5NdE;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=Ye3Il9L2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kbusch@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.131; helo=out30-131.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org)
+Received: from out30-131.freemail.mail.aliyun.com (out30-131.freemail.mail.aliyun.com [115.124.30.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f7Ktb1vfrz2xHX
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Feb 2026 16:55:19 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id C48DB441B4;
-	Sat,  7 Feb 2026 05:55:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F28E2C116D0;
-	Sat,  7 Feb 2026 05:55:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1770443715;
-	bh=8PukKFBx0ZPMJSJYocWLm+117LmZbUdDqx7PaS3ZQhE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Y4qN5NdEJvGU5Obp06Gold/eJ5wAAyowy4yEejppiJvN44Ojl5C36+4e5JdV23tpw
-	 Ljm0YwaAhPA4H9UAksqiKW7acrebCd2QZRMOSxnRmzfklW/XTpv1C3KjHzTm9GDmc4
-	 NnC9xTffRs9rsUGrzKwnre9WCgF+dC/pi0TBo6bT/YuCPi0XPNJuGgbrkP9tq7XCtE
-	 jrMkwx98xIIK1KDETiD3HcOMTeLisGhnTp61JZJuz7VtskM12M0u0ZkQ0TdRQ9n2Av
-	 lcQFJfjv6EZQuAZnMEoNkXehFCQH8Y5kReIIXpAkBhFLe15+mXmQF96PzhleXzkI7J
-	 1qV2zgf5rHGBg==
-Date: Fri, 6 Feb 2026 22:55:13 -0700
-From: Keith Busch <kbusch@kernel.org>
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Breno Leitao <leitao@debian.org>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Oliver O'Halloran <oohall@gmail.com>,
-	Bjorn Helgaas <bhelgaas@google.com>, linux-doc@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-pci@vger.kernel.org, dcostantino@meta.com, rneu@meta.com,
-	kernel-team@meta.com
-Subject: Re: [PATCH] PCI/AER: Add option to panic on unrecoverable errors
-Message-ID: <aYbTwfShdDE4fouM@kbusch-mbp>
-References: <20260206-pci-v1-1-85160f02d956@debian.org>
- <20260206185232.GA70936@bhelgaas>
- <aYY_hMZyVp7GZvX2@kbusch-mbp>
- <aYZU09qCN3u-_byj@wunner.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f7NQL1mG2z2xWJ
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Feb 2026 18:49:28 +1100 (AEDT)
+DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux.alibaba.com; s=default;
+	t=1770450559; h=Message-ID:Date:MIME-Version:Subject:To:From:Content-Type;
+	bh=LHc3SXs3IglbN0dRzOuqXsju9nOLE6/m2styMOamf7w=;
+	b=Ye3Il9L2+c0IKpUS3/8dwe9OESTWFtU+sjMcn5XJjym0enckmsvCaeK7Af6RhKPiX9GGuUVbjqlbnMHcHsYSXItCAbUaMmMhlfKsmc8yjezTDTN/tIGy7nYaRmuWUjmr0kkm8caJHPQ6F7SnsfuZM4zpGgYxZazJvrobco57lB4=
+Received: from 30.246.162.188(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0WyhThvz_1770450556 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Sat, 07 Feb 2026 15:49:17 +0800
+Message-ID: <924dce22-171e-4508-907c-74f57f1bdea8@linux.alibaba.com>
+Date: Sat, 7 Feb 2026 15:48:07 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -74,71 +52,120 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <aYZU09qCN3u-_byj@wunner.de>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v7 2/5] PCI/DPC: Run recovery on device that detected the
+ error
+To: Lukas Wunner <lukas@wunner.de>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, bhelgaas@google.com, kbusch@kernel.org,
+ sathyanarayanan.kuppuswamy@linux.intel.com, mahesh@linux.ibm.com,
+ oohall@gmail.com, Jonathan.Cameron@huawei.com, terry.bowman@amd.com,
+ tianruidong@linux.alibaba.com
+References: <20260124074557.73961-1-xueshuai@linux.alibaba.com>
+ <20260124074557.73961-3-xueshuai@linux.alibaba.com>
+ <aYCujqZIvxElSsOE@wunner.de> <aYESh4bCE2lzTg2S@wunner.de>
+From: Shuai Xue <xueshuai@linux.alibaba.com>
+In-Reply-To: <aYESh4bCE2lzTg2S@wunner.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Fri, Feb 06, 2026 at 09:53:39PM +0100, Lukas Wunner wrote:
-> On Fri, Feb 06, 2026 at 12:22:44PM -0700, Keith Busch wrote:
-> > On Fri, Feb 06, 2026 at 12:52:32PM -0600, Bjorn Helgaas wrote:
-> > > Are there any other similar flags you already use that we could
-> > > piggy-back on?  E.g., if we raised the level to KERN_WARNING, maybe
-> > > the existing "panic_on_warn" would be enough?
-> > 
-> > There are many KERN_WARNING messages that don't rise to the level of
-> > warranting a 'panic' that don't want to enable such an option in
-> > production. It looks like the panic_on_warn was introduced for developer
-> > debugging.
+
+
+On 2/3/26 5:09 AM, Lukas Wunner wrote:
+> On Mon, Feb 02, 2026 at 03:02:54PM +0100, Lukas Wunner wrote:
+>> You're assuming that the parent of the Requester is always identical
+>> to the containing Downstream Port.  But that's not necessarily the case:
+>>
+>> E.g., imagine a DPC-capable Root Port with a PCIe switch below
+>> whose Downstream Ports are not DPC-capable.  Let's say an Endpoint
+>> beneath the PCIe switch sends ERR_FATAL upstream.  AFAICS, your patch
+>> will cause pcie_do_recovery() to invoke dpc_reset_link() with the
+>> Downstream Port of the PCIe switch as argument.  That function will
+>> then happily use pdev->dpc_cap even though it's 0.
 > 
-> panic_on_warn springs into action on WARN() splats, not arbitrary
-> messages with KERN_WARNING severity.  Also, sysctl kernel.warn_limit
-> may be used to grant a certain number of panic-free WARNs.
-
-Okay, but the warn panic param still isn't an option for production.
-
-> FWIW, the "pcieportdrv.aer_unrecoverable_fatal" parameter introduced
-> by this patch feels somewhat oddly named.  Something like
-> "pci.panic_on_fatal" might be clearer and more succinct.
-
-Naming is hard; thanks for the suggestion.
-
-> > I agree the curnent INFO level is too low for the generic unrecovered
-> > condition, though.
+> Thinking about this some more, I realized there's another problem:
 > 
-> At least for unbound devices, I think 918b4053184c went way too far.
-> I think an unbound device should generally be considered recoverable
-> through a reset.
+> In a scenario like the one I've outlined above, after your change,
+> pcie_do_recovery() will only broadcast error_detected (and other
+> callbacks) below the downstream port of the PCIe switch -- and not
+> to any other devices below the containing Root Port.
+> 
+> However, the DPC-induced Link Down event at the Root Port results
+> in a Hot Reset being propagated down the hierarchy to any device
+> below the Root Port.  So with your change, the siblings of the
+> downstream port on the PCIe switch will no longer be informed of
+> the reset and thus are no longer given an opportunity to recover
+> after reset.
+> 
+> The premise on which this patch is built is false -- that the bridge
+> upstream of the error-reporting device is always equal to the
+> containing Downstream Port.
 
-Yes, I agree, especially considering the generic probe saves a
-checkpoint of the state that we can restore to that is consistent with
-the kernel's view. There's no clear reason to fail recovery when there's
-no bound driver, so this changing that behavior s a good idea.
+Thanks again for the very detailed analysis and for the pointers to
+your earlier mail.
 
-> As for bound devices whose drivers lack pci_error_handlers, it has been
-> painful in practice that they're considered unrecoverable wholesale.
+You are right, thanks for pointing it out.
 
-Yes, it gets tricky when there is a bound driver; there's no telling
-whether or not it may initiate a broken transaction with cascading
-consequences for the rest of the system if anything in the chain is not
-cooperating with the error recovery orchestration. I don't know if there
-is a best default action, so allowing it to be user defined seems okay.
+> 
+> It seems the only reason why you want to pass the reporting device
+> to pcie_do_recovery() is that you want to call pcie_clear_device_status()
+> and pci_aer_clear_nonfatal_status() with that device.
 
-> E.g. GPUs often expose an audio device as well as telemetry devices,
-> all arranged below an integrated PCIe switch.  All of these devices
-> need drivers with pci_error_handlers in order for the GPU to be
-> recoverable.  In some cases, dummy callbacks were added to render
-> the whole thing recoverable.
+In the AER path, pcie_do_recovery() is indeed invoked with the Error
+Source device found by find_source_device(), and internally it treats
+that dev as the function that detected the error and derives the
+containing Downstream Port (bridge) from it.  For DPC, however, the
+error-detecting function is the DPC-capable Downstream Port itself, not
+the Endpoint identified as Error Source, so passing the Endpoint to
+pcie_do_recovery() breaks that assumption.
+> 
+> However as I've said before, those calls are AER-specific and should
+> be moved out of pcie_do_recovery() so that it becomes generic and can
+> be used by EEH and s390:
+> 
+> https://lore.kernel.org/all/aPYKe1UKKkR7qrt1@wunner.de/
 
-This experience sounds familiar, and it really does appear that a hard
-reboot is the best outcome in many cases because orchestrating all the
-components to recover is not going to happen. Hence the reboot param.
+Sure, I'd like to move it out.  I will remove the AER-specific calls
+(pcie_clear_device_status() and pci_aer_raw_clear_status()) from
+pcie_do_recovery() itself, and instead handle them in the AER and DPC
+code paths where we already know which device(s) are the actual error
+sources.  That way, pcie_do_recovery() becomes a generic recovery
+framework that can be reused by EEH and s390.
 
-> So I wouldn't consider 918b4053184c to have been a universally successful
-> approach and I fear that this patch goes even further.
+> 
+> There's another problem:  When a device experiences an error while DPC
+> is ongoing (i.e. while the link is down), its ERR_FATAL or ERR_NONFATAL
+> Message may not come through.  Still the error bits are set in the
+> device's Uncorrectable Error Status register.  So I think what we need to
+> do is walk the hierarchy below the containing Downstream Port after the
+> link is back up and search for devices with any error bits set,
+> then report and clear those errors.  We may do this after first
+> examining the device in the DPC Error Source ID register.
+> Any additional errors found while walking the hierarchy can then
+> be identified as "occurred during DPC recovery".
 
-If anyone goes through the effort of fixing that, will it be considered?
-You told me in Vienna LPC '24 that you'd help resolve the pci hotplug
-deadlocks that have been plaguing pci for the last 10 years, but not a
-single comment has happened despite multiple complete and validated
-solutions offered.
+I agree this is similar in spirit to find_source_device() -- both walk
+the bus and check AER Status registers.  For the DPC case, I'll perform
+this walk after the link is back up (i.e., after dpc_reset_link()
+succeeds).
+
+Regarding pci_restore_state() in slot_reset(): I see now that it does
+call pci_aer_clear_status(dev) (at line 1844 in pci.c), which will
+clear the AER Status registers.  So if we walk the hierarchy after
+the slot_reset callbacks, the error bits accumulated during DPC will
+already be cleared.
+
+To avoid losing those errors, I think the walk should happen after
+dpc_reset_link() succeeds but *before* pcie_do_recovery() invokes the
+slot_reset callbacks.  That way, we can capture the AER Status bits
+before pci_restore_state() clears them.
+
+Does that sound like the right approach, or would you prefer a
+different placement?
+
+Thanks a lot for your guidance.
+
+Best Regards,
+Shuai
+
 
