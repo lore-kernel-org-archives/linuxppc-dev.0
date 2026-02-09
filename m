@@ -1,70 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-16722-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16724-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DA21E78D45
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Feb 2026 08:49:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0394E78D45
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Feb 2026 08:49:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f8dfX5qn8z30GV;
-	Mon, 09 Feb 2026 19:49:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770626964;
-	cv=none; b=RDXHeoDDTK8ycCTaxQTXn+yn5LSaEha2OhQl0MkchOl+SUqkzSEO66TLIcy3jesJYaPf1Lft9TxltzxP4BZ7H2waXnwp8SB+39hWCgf0fcTPrtNXepwZqzmaATl8yAvuyakMLkTyTV7ZoInp1wKGG+qLSgPmV+KIShSDbo2aJ6ZtYczedw6prHh0vrLMn+OcQvKLGovaFrOXRqAhzLlI3YsPt4k1nXFejWn4veB3C+BylpqHUqNTdC8veqWIKX/XjI97AgfcC9Aoc5FKl+YG/0YJyQOra67UnlDy2ILtpFpN2UTSy6gPnKT4c7gn05vB+3uyAcWtswWEKFizzfKhwA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f8dfZ2082z3bkq;
+	Mon, 09 Feb 2026 19:49:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770626966;
+	cv=none; b=HbF5DIcn3jkthIMjzpDblaQx5ocY23bsUAOEC/tuXCnBwjbJAebpe1MxK6but9gk4u01bY9W1n/bVhwwqHQ+1f+JS7xFwDuBl97HJZUEGVaZgvoK33mVfyMX+b1NXcov8E6NV3YDjkKq0U06nk5tslR9hl6S9ijWtgSJGjTifaGbq38x6YlXvAbQWd5dzUPTi2vf2TC+r6Te2aXxbIvzDnkrndEIyRFJvHDqTWaca+YUkfoXD4repZAzsAbdO6149tc473gn06oW4t2Z62131dHFoZajdUpHJvgsLjo9XhdMLn/woNoMDlW2WwWVjDkpQR8F8zI3UQXOv8a7G0v5HA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770626964; c=relaxed/relaxed;
-	bh=QMaUEur+Isf/QckwIRFYY2tM7AcZD+C785AUJtOzoNw=;
+	t=1770626966; c=relaxed/relaxed;
+	bh=6pTFAo/qNgU6OYUJNOjZ00Qdyl2NOyAzAlaEd2uhLNU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=RT/qhsFAzULPyxbmv9j8TDPip3D3fNju5kXKbFkMqCPDA3DlK4N78yJXyuuz4pTXpI+YDSCaFHOcSSTgXafxYrxz9DXO9hkoOEjRzpL/N0laTxCYj1zD4IBBa+8Op7aXGF1+tiDxTBGR2jrbouAukZvxJC5czV6qXfVvf+R6446ZJyjvMCFZbyMw/r5sqjn64ZupnSSqcZ3D4K8eti6PNDjkEXHR4FfoesY1xam8T+dbhY+Q4cR9Cv6Id9PSWxTaWl7YnV8GdpE2Z14BQw6RoUGV85Thp/DEf9w06+XEjHX+vAg4O1xKoKFkEfmQgvKuow2me3v1fGPZptES+rTQhA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=e7kGzWOv; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sv@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=gH9vQqUafnQRvE8FqyB1D6/gLmhN1QHIf7mlA+K3UnZ3rbJVEMi5FcKGb78QamxaDM41iVfdAq/SRTLomzwNyKObA0/btCgiRqEr9YG59ebC62g9MgkEk1XnV+m5vetro4Mpu6xtcV/ddZdTXmdse6Kw+O1GyNAfBVUcSymEc3Ry+QiejSAM9+fnzVvZ9DDuJl8gdJPfDbUrJ9Nhm8g5kGxJxDdbY23q5n0WOCsQ9frhNEbdJhiGUuYZRCz0dehV2eIZ0WkiETDf41sB2IrkpQ/UDvTfJeu04vWugjajxLRBrUBoV4SlxNHZHfvUNgOBgMC1z5799R5j2sTRDDYXBw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qWztqHfi; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sv@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=e7kGzWOv;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qWztqHfi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sv@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sv@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f8dfV5TY6z2yFm
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Feb 2026 19:49:22 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6190RsWA608141;
-	Mon, 9 Feb 2026 08:48:55 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f8dfY1xM6z30T8
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Feb 2026 19:49:25 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6191c5ap693544;
+	Mon, 9 Feb 2026 08:49:09 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=QMaUEur+Isf/QckwI
-	RFYY2tM7AcZD+C785AUJtOzoNw=; b=e7kGzWOvZ4/ca9Vy2l6s8809ggCfzmTZq
-	n8P7dDm/og+j8UzRPk3QA4ABf2/oFJ03BACJl3SX2FGJYqUMFPokZy+n21d6PhMm
-	xAWXGUvwYr9i50v0LYMnLtsr8MOW1Swo9XY70e8LEL2Qf7dcCvlOeV/1Lr94jIEV
-	UKZaArMeIU46Z4GAxvcnDOoue5q4JN8Cysh/Wsrvo+iSU14aXvn2WeVTc9k1Q8OH
-	lXBqzC4K1mBNvSZU8eGevVGjpK0H9pt4YqO1Qpkmw2NP6sqfUBIQL2z2Z+WWgAey
-	OKnNicoFWFOCh1J4K16yTz7ruYtQ2V3628cyX9idiFTOmKv8ZvoVQ==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4c696uvydr-1
+	:mime-version:references:subject:to; s=pp1; bh=6pTFAo/qNgU6OYUJN
+	OjZ00Qdyl2NOyAzAlaEd2uhLNU=; b=qWztqHfiEpwpI4HhhBtIrDr9C4e4Xgl4V
+	fdZ9VoSH4f0dvsgwDRqrWOvwxMgawnbPoMCl1p1jW7hl+GXF/dfTGssF6pb0e+xW
+	QmYk7I3xL7pPR1VUkQotJYBa+uFzfIga3iuYFZv+wbSsS8v3r8G8D9T5i0OrEw++
+	iSi/vviq1naoLblYvlbOVcxIQB4Y3ODadmp3/bNELFgBLVFOXSAQzjrE2oyQBRfL
+	sfCCN+ymmPzWaM6wOtGGBYJVGD+jUAwAUJA+BiYfaZvbmBeBK82oaSLJHO0iurwY
+	9bDbHbfVX8Ck7KHA8ur/oY38XgoVOLc4AWdrg8oi1mHLVfhp+1Now==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4c696vx67m-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 09 Feb 2026 08:48:54 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 6198LsKS001420;
-	Mon, 9 Feb 2026 08:48:53 GMT
+	Mon, 09 Feb 2026 08:49:08 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 6194I9X6019336;
+	Mon, 9 Feb 2026 08:49:07 GMT
 Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4c6gqmvewa-1
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4c6hxjv84b-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 09 Feb 2026 08:48:53 +0000
+	Mon, 09 Feb 2026 08:49:07 +0000
 Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6198mndr50397490
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6198n39Q53543224
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 9 Feb 2026 08:48:49 GMT
+	Mon, 9 Feb 2026 08:49:03 GMT
 Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6BDEE2004E;
-	Mon,  9 Feb 2026 08:48:49 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 7634D20040;
+	Mon,  9 Feb 2026 08:49:03 +0000 (GMT)
 Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CB4162004B;
-	Mon,  9 Feb 2026 08:48:45 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id B48A22004D;
+	Mon,  9 Feb 2026 08:48:59 +0000 (GMT)
 Received: from li-2fa77bcc-2701-11b2-a85c-cd621c23b6bd.in.ibm.com (unknown [9.79.195.233])
 	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  9 Feb 2026 08:48:45 +0000 (GMT)
+	Mon,  9 Feb 2026 08:48:59 +0000 (GMT)
 From: Sathvika Vasireddy <sv@linux.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
         linuxppc-dev@lists.ozlabs.org
@@ -73,9 +73,9 @@ Cc: nathan@kernel.org, masahiroy@kernel.org, kees@kernel.org,
         npiggin@gmail.com, maddy@linux.ibm.com, segher@kernel.crashing.org,
         christophe.leroy@csgroup.eu, mingo@kernel.org, mpe@ellerman.id.au,
         sv@linux.ibm.com, nsc@kernel.org
-Subject: [RFC PATCH v3 1/6] objtool/powerpc: Add build-time fixup of alternate feature branch targets
-Date: Mon,  9 Feb 2026 14:18:15 +0530
-Message-ID: <20260209084820.57298-2-sv@linux.ibm.com>
+Subject: [RFC PATCH v3 4/6] objtool/powerpc: Skip jump destination analysis and unnanotated intra-function call warnings for --ftr-fixup
+Date: Mon,  9 Feb 2026 14:18:18 +0530
+Message-ID: <20260209084820.57298-5-sv@linux.ibm.com>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20260209084820.57298-1-sv@linux.ibm.com>
 References: <20260209084820.57298-1-sv@linux.ibm.com>
@@ -95,763 +95,116 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: CNM14htUYtoaIZk_O3Vaj2-PdjX2R3mN
-X-Proofpoint-ORIG-GUID: DkGN-_zHF46_Sn2aNJ4hpd2QSFd3DsX-
-X-Authority-Analysis: v=2.4 cv=JdWxbEKV c=1 sm=1 tr=0 ts=69899f76 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+X-Authority-Analysis: v=2.4 cv=YeCwJgRf c=1 sm=1 tr=0 ts=69899f84 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
  a=HzLeVaNsDn8A:10 a=VkNPw1HP01LnGYTKEx00:22 a=Mpw57Om8IfrbqaoTuvik:22
- a=GgsMoib0sEa3-_RKJdDe:22 a=VwQbUJbxAAAA:8 a=pGLkceISAAAA:8 a=VnNF1IyMAAAA:8
- a=5klgpdlFSnDGvnxfnF4A:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjA5MDA3MiBTYWx0ZWRfX/Qoql/1mzS7D
- GE+Mg0QExoWn69fE0wMnl0Qi174OG+VEg8KGM8M8zrsjYw0B55Qi77kdCpRtzl3kiGFPO1U4nwu
- Z5HYCPNXKfB4JW0hhWMdFO6/ao7g9xDyj6+6S43KOrhjwOs1Xf/u+0Mr1S+IMZnOMlQNeLHaS/8
- moDSNldg+KNo81LBZmf5qXoWJfG65FY9UQUoTvXQqcI8XI5G2zXSQNXH9js4ovzW/6eNGY8ZK3z
- MdukfExeznk0Zk/Xx/0S+PUP37JFipzxzdmxb2Vm8V3rhgedXgGYjgGlQFeN3btYLHC5rvUVcOs
- sr9+SZjRffNJP31DL7OJt32Ne/QoEiaMp6KWi+DGu8ptI16nJJFkd03+zorq+eXLZP38bNjRDtU
- dvS2Ll62+noNxzO6xBo75ldJGlvqmlSAULiO1X+2zuG2QKjjMsWqhPKn2I2un4YNPA1XfyfHuuO
- JtBa7QdApIbv+2VwAlQ==
+ a=GgsMoib0sEa3-_RKJdDe:22 a=VnNF1IyMAAAA:8 a=8-sZ6GPjQPUUxCpKAYwA:9
+X-Proofpoint-GUID: qDkfc-DJNCXacmFDikyxmhcNuGda5RJQ
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjA5MDA3MiBTYWx0ZWRfX+Ld5l8kAw2q7
+ 7eUbqIrsR7xEkqth1IaLV4St1LEvU4oZQY7P3puTEAJUrxEsm5TbXzxcF7NJWN2rKsBLyeq+B0R
+ 1TW9aiAkkXUfspi9BNa8UQTPSpvwSZ1qMgj+bxfyYWzosqHKnGXhaRllDGsWsmGPy0hTcMWn0kD
+ OMsJsaGSG7E306m/OPY2/wf37N2n2mZVuHX/W4g3WG3o88Nzq2Q0Q578iRSJPfEal5IjeEGP+So
+ WTugZr9Kz3QHYiAeheCOaWn6Zpwt3cIhitEPcIffMgH9wy7/Sl0a4WBZt4nFev8qnlUbLZphDkP
+ /zEQquIVSRwkKkOwshRCRDUu0oBkP/URk7Ww+dKot5wHD1a9y2MWpFqlxcBXQqnI0uHL79/gny0
+ Cuwl7CY6fX0E8bCHbUO0YwzUxdxEqQO0j6Txvm67YG8F0q4SLs0s05myS8rIi+9VQZ83g+rIz2U
+ 7ysMbEiPKgfKe2i3zQg==
+X-Proofpoint-ORIG-GUID: hlklK367W2znF8mxiCFFgnhIl6K75Mtr
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-02-08_05,2026-02-09_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 clxscore=1015 impostorscore=0 bulkscore=0
- lowpriorityscore=0 suspectscore=0 adultscore=0 spamscore=0 malwarescore=0
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2601150000
+ suspectscore=0 adultscore=0 bulkscore=0 malwarescore=0 phishscore=0
+ priorityscore=1501 lowpriorityscore=0 clxscore=1015 impostorscore=0
+ spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2601150000
  definitions=main-2602090072
 
-PowerPC __ftr_alt* sections must currently be placed near .text because
-they lack the executable attribute, preventing the linker from inserting
-stubs. Branches in the alternate code must reach their targets directly.
-This can cause build failures as the kernel grows.
+Objtool is throwing unannotated intra-function call warnings
+when run on vmlinux with --ftr-fixup option.
 
-Fix this by processing alternate feature relocations at build time with
-objtool. Link with --emit-relocs to preserve relocation information,
-mark __ftr_alt* sections executable ("ax") so the linker can insert
-stubs, then use objtool --ftr-fixup to recompute branch offsets based
-on their runtime locations.
+One such example:
 
-objtool already has ELF parsing and instruction patching infrastructure,
-so this avoids introducing a separate tool as was originally proposed [1].
+vmlinux: warning: objtool: .text+0x3d94:
+                        unannotated intra-function call
 
-[1] https://lore.kernel.org/linuxppc-dev/20170521010130.13552-1-npiggin@gmail.com/
+.text + 0x3d94 = c000000000008000 + 3d94 = c0000000000081d4
 
-Co-developed-by: Nicholas Piggin <npiggin@gmail.com>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+c0000000000081d4: 45 24 02 48  bl c00000000002a618
+<system_reset_exception+0x8>
+
+c00000000002a610 <system_reset_exception>:
+c00000000002a610:       0e 01 4c 3c     addis   r2,r12,270
+                        c00000000002a610: R_PPC64_REL16_HA    .TOC.
+c00000000002a614:       f0 6c 42 38     addi    r2,r2,27888
+                        c00000000002a614: R_PPC64_REL16_LO    .TOC.+0x4
+c00000000002a618:       a6 02 08 7c     mflr    r0
+
+This is happening because we should be looking for destination
+symbols that are at absolute offsets instead of relative offsets.
+After fixing dest_off to point to absolute offset, there are still
+a lot of these warnings shown.
+
+In the above example, objtool is computing the destination
+offset to be c00000000002a618, which points to a completely
+different instruction. find_call_destination() is looking for this
+offset and failing. Instead, we should be looking for destination
+offset c00000000002a610 which points to system_reset_exception
+function.
+
+Even after fixing the way destination offset is computed, and
+after looking for dest_off - 0x8 in cases where the original offset
+is not found, there are still a lot of unannotated intra-function
+call warnings generated. This is due to symbols that are not
+properly annotated.
+
+So, for now, as a hack to curb these warnings, do not emit
+unannotated intra-function call warnings when objtool is run
+with --ftr-fixup option.
+
+Skip add_jump_destinations() and suppress intra-function call
+errors in --ftr-fixup mode. The feature fixup pass only needs fixup
+entry tables, relocation entries from .__ftr_alternates.text, and
+elf_write_insn() to patch branch offsets.
+
 Signed-off-by: Sathvika Vasireddy <sv@linux.ibm.com>
 ---
- tools/objtool/arch/powerpc/decode.c     |  15 +-
- tools/objtool/arch/powerpc/special.c    | 437 ++++++++++++++++++++++++
- tools/objtool/builtin-check.c           |   2 +
- tools/objtool/check.c                   |  29 +-
- tools/objtool/elf.c                     |   1 +
- tools/objtool/include/objtool/builtin.h |   1 +
- tools/objtool/include/objtool/special.h |  56 +++
- tools/objtool/special.c                 |  29 ++
- 8 files changed, 568 insertions(+), 2 deletions(-)
+ tools/objtool/check.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/tools/objtool/arch/powerpc/decode.c b/tools/objtool/arch/powerpc/decode.c
-index e534ac1123b3..f6e69d074f28 100644
---- a/tools/objtool/arch/powerpc/decode.c
-+++ b/tools/objtool/arch/powerpc/decode.c
-@@ -59,13 +59,26 @@ int arch_decode_instruction(struct objtool_file *file, const struct section *sec
- 	enum insn_type typ;
- 	unsigned long imm;
- 	u32 ins;
-+	unsigned int aa;
- 
- 	ins = bswap_if_needed(file->elf, *(u32 *)(sec->data->d_buf + offset));
- 	opcode = ins >> 26;
- 	typ = INSN_OTHER;
- 	imm = 0;
-+	aa = ins & 2;
- 
- 	switch (opcode) {
-+	case 16:
-+		if (ins & 1)
-+			typ = INSN_OTHER;
-+		else
-+			typ = INSN_JUMP_CONDITIONAL;
-+		imm = ins & 0xfffc;
-+		if (imm & 0x8000)
-+			imm -= 0x10000;
-+		insn->immediate = imm | aa;
-+		break;
-+
- 	case 18: /* b[l][a] */
- 		if (ins == 0x48000005)	/* bl .+4 */
- 			typ = INSN_OTHER;
-@@ -77,7 +90,7 @@ int arch_decode_instruction(struct objtool_file *file, const struct section *sec
- 		imm = ins & 0x3fffffc;
- 		if (imm & 0x2000000)
- 			imm -= 0x4000000;
--		imm |= ins & 2;	/* AA flag */
-+		insn->immediate = imm | aa;
- 		break;
- 	}
- 
-diff --git a/tools/objtool/arch/powerpc/special.c b/tools/objtool/arch/powerpc/special.c
-index 8f9bf61ca089..b837b8d7dfeb 100644
---- a/tools/objtool/arch/powerpc/special.c
-+++ b/tools/objtool/arch/powerpc/special.c
-@@ -3,7 +3,17 @@
- #include <stdlib.h>
- #include <objtool/special.h>
- #include <objtool/builtin.h>
-+#include <objtool/warn.h>
-+#include <asm/byteorder.h>
-+#include <errno.h>
- 
-+struct section *ftr_alt;
-+
-+struct fixup_entry *fes;
-+unsigned int nr_fes;
-+
-+uint64_t fe_alt_start = -1;
-+uint64_t fe_alt_end;
- 
- bool arch_support_alt_relocation(struct special_alt *special_alt,
- 				 struct instruction *insn,
-@@ -23,3 +33,430 @@ const char *arch_cpu_feature_name(int feature_number)
- {
- 	return NULL;
- }
-+
-+
-+int process_alt_data(struct objtool_file *file)
-+{
-+	struct section *section;
-+
-+	section = find_section_by_name(file->elf, ".__ftr_alternates.text");
-+	ftr_alt = section;
-+
-+	if (!ftr_alt) {
-+		WARN(".__ftr_alternates.text section not found\n");
-+		return -1;
-+	}
-+
-+	fe_alt_start = ftr_alt->sh.sh_addr;
-+	fe_alt_end = ftr_alt->sh.sh_addr + ftr_alt->sh.sh_size;
-+
-+	return 0;
-+
-+}
-+
-+static int is_le(struct objtool_file *file)
-+{
-+	return file->elf->ehdr.e_ident[EI_DATA] == ELFDATA2LSB;
-+}
-+
-+static int is_64bit(struct objtool_file *file)
-+{
-+	return file->elf->ehdr.e_ident[EI_CLASS] == ELFCLASS64;
-+}
-+
-+static uint32_t f32_to_cpu(struct objtool_file *file, uint32_t val)
-+{
-+	if (is_le(file))
-+		return __le32_to_cpu(val);
-+	else
-+		return __be32_to_cpu(val);
-+}
-+
-+static uint64_t f64_to_cpu(struct objtool_file *file, uint64_t val)
-+{
-+	if (is_le(file))
-+		return __le64_to_cpu(val);
-+	else
-+		return __be64_to_cpu(val);
-+}
-+
-+static uint32_t cpu_to_f32(struct objtool_file *file, uint32_t val)
-+{
-+	if (is_le(file))
-+		return __cpu_to_le32(val);
-+	else
-+		return __cpu_to_be32(val);
-+}
-+
-+int process_fixup_entries(struct objtool_file *file)
-+{
-+	struct section *sec;
-+	int i;
-+
-+	for_each_sec(file->elf, sec) {
-+		Elf_Data *data;
-+		unsigned int nr;
-+
-+		if (strstr(sec->name, "_ftr_fixup") == NULL)
-+			continue;
-+
-+		if (strstr(sec->name, ".rela") != NULL)
-+			continue;
-+
-+		data = sec->data;
-+		if (!data || data->d_size == 0)
-+			continue;
-+
-+		if (is_64bit(file))
-+			nr = data->d_size / sizeof(struct fixup_entry_64);
-+		else
-+			nr = data->d_size / sizeof(struct fixup_entry_32);
-+
-+		for (i = 0; i < nr; i++) {
-+			unsigned long idx;
-+			unsigned long long off;
-+			struct fixup_entry *dst;
-+
-+			if (is_64bit(file)) {
-+				struct fixup_entry_64 *src;
-+
-+				idx = i * sizeof(struct fixup_entry_64);
-+				off = sec->sh.sh_addr + data->d_off + idx;
-+				src = data->d_buf + idx;
-+
-+				if (src->alt_start_off == src->alt_end_off)
-+					continue;
-+
-+				fes = realloc(fes, (nr_fes + 1) * sizeof(struct fixup_entry));
-+				dst = &fes[nr_fes];
-+				nr_fes++;
-+
-+				dst->mask = f64_to_cpu(file, src->mask);
-+				dst->value = f64_to_cpu(file, src->value);
-+				dst->start_off = f64_to_cpu(file, src->start_off) + off;
-+				dst->end_off = f64_to_cpu(file, src->end_off) + off;
-+				dst->alt_start_off = f64_to_cpu(file, src->alt_start_off) + off;
-+				dst->alt_end_off = f64_to_cpu(file, src->alt_end_off) + off;
-+			} else {
-+				struct fixup_entry_32 *src;
-+
-+				idx = i * sizeof(struct fixup_entry_32);
-+				off = sec->sh.sh_addr + data->d_off + idx;
-+				src = data->d_buf + idx;
-+
-+				if (src->alt_start_off == src->alt_end_off)
-+					continue;
-+
-+				fes = realloc(fes, (nr_fes + 1) * sizeof(struct fixup_entry));
-+				dst = &fes[nr_fes];
-+				nr_fes++;
-+
-+				dst->mask = f32_to_cpu(file, src->mask);
-+				dst->value = f32_to_cpu(file, src->value);
-+				dst->start_off = (int32_t)f32_to_cpu(file, src->start_off) + off;
-+				dst->end_off = (int32_t)f32_to_cpu(file, src->end_off) + off;
-+				dst->alt_start_off = (int32_t)f32_to_cpu(file,
-+								src->alt_start_off) + off;
-+				dst->alt_end_off = (int32_t)f32_to_cpu(file,
-+								src->alt_end_off) + off;
-+			}
-+		}
-+	}
-+	return 0;
-+}
-+
-+struct fixup_entry *find_fe_altaddr(uint64_t addr)
-+{
-+	unsigned int i;
-+
-+	if (addr < fe_alt_start)
-+		return NULL;
-+	if (addr >= fe_alt_end)
-+		return NULL;
-+
-+	for (i = 0; i < nr_fes; i++) {
-+		if (addr >= fes[i].alt_start_off && addr < fes[i].alt_end_off)
-+			return &fes[i];
-+	}
-+	return NULL;
-+}
-+
-+int set_uncond_branch_target(uint32_t *insn,
-+		const uint64_t addr, uint64_t target)
-+{
-+	uint32_t i = *insn;
-+	int64_t offset;
-+
-+	offset = target;
-+	if (!(i & BRANCH_ABSOLUTE))
-+		offset = offset - addr;
-+
-+	/* Check we can represent the target in the instruction format */
-+	if (offset < -0x2000000 || offset > 0x1fffffc || offset & 0x3)
-+		return -EOVERFLOW;
-+
-+	/* Mask out the flags and target, so they don't step on each other. */
-+	*insn = 0x48000000 | (i & 0x3) | (offset & 0x03FFFFFC);
-+
-+	return 0;
-+}
-+
-+int set_cond_branch_target(uint32_t *insn,
-+		const uint64_t addr, uint64_t target)
-+{
-+	uint32_t i = *insn;
-+	int64_t offset;
-+
-+	offset = target;
-+
-+	if (!(i & BRANCH_ABSOLUTE))
-+		offset = offset - addr;
-+
-+	/* Check we can represent the target in the instruction format */
-+	if (offset < -0x8000 || offset > 0x7FFF || offset & 0x3)
-+		return -EOVERFLOW;
-+
-+	/* Mask out the flags and target, so they don't step on each other. */
-+	*insn = 0x40000000 | (i & 0x3FF0003) | (offset & 0xFFFC);
-+
-+	return 0;
-+}
-+
-+void check_and_flatten_fixup_entries(void)
-+{
-+	static struct fixup_entry *fe;
-+	unsigned int i;
-+
-+	i = nr_fes;
-+	while (i) {
-+		static struct fixup_entry *parent;
-+		uint64_t nested_off; /* offset from start of parent */
-+		uint64_t size;
-+
-+		i--;
-+		fe = &fes[i];
-+
-+		parent = find_fe_altaddr(fe->start_off);
-+		if (!parent) {
-+			parent = find_fe_altaddr(fe->end_off);
-+			continue;
-+		}
-+
-+		size = fe->end_off - fe->start_off;
-+		nested_off = fe->start_off - parent->alt_start_off;
-+
-+		fe->start_off = parent->start_off + nested_off;
-+		fe->end_off = fe->start_off + size;
-+	}
-+}
-+
-+
-+static struct symbol *find_symbol_at_address_within_section(struct section *sec,
-+				unsigned long address)
-+{
-+	struct symbol *sym;
-+
-+	sec_for_each_sym(sec, sym) {
-+		if (sym->sym.st_value <= address && address < sym->sym.st_value + sym->len)
-+			return sym;
-+	}
-+
-+	return NULL;
-+}
-+
-+static int is_local_symbol(uint8_t st_other)
-+{
-+	return (st_other & 0x3) != 0;
-+}
-+
-+static struct symbol *find_symbol_at_address(struct objtool_file *file,
-+					unsigned long address)
-+{
-+	struct section *sec;
-+	struct symbol *sym;
-+
-+	list_for_each_entry(sec, &file->elf->sections, list) {
-+		sym = find_symbol_at_address_within_section(sec, address);
-+		if (sym)
-+			return sym;
-+		}
-+	return NULL;
-+}
-+
-+int process_alt_relocations(struct objtool_file *file)
-+{
-+	struct section *section;
-+	size_t n = 0;
-+	struct reloc *relocation;
-+	struct symbol *sym;
-+	struct fixup_entry *fe;
-+	uint64_t addr;
-+	uint64_t scn_delta;
-+	uint64_t dst_addr;
-+	const char *insn_ptr;
-+	unsigned long target;
-+	struct symbol *symbol;
-+	int is_local;
-+	int j;
-+	uint32_t new_insn;
-+	uint32_t file_insn;
-+	struct instruction decoded_insn = {0};
-+	uint32_t *insn_ptr_raw;
-+	uint32_t insn;
-+
-+	section = find_section_by_name(file->elf, ".rela.__ftr_alternates.text");
-+	if (!section) {
-+		printf(".rela.__ftr_alternates.text section not found.\n");
-+		return 0;
-+	}
-+
-+	for (j = 0; j < sec_num_entries(section); j++) {
-+
-+		relocation = &section->relocs[j];
-+		sym = relocation->sym;
-+		addr = reloc_offset(relocation);
-+		target = sym->sym.st_value + reloc_addend(relocation);
-+		symbol = find_symbol_at_address(file, target);
-+
-+		if (symbol) {
-+			is_local = is_local_symbol(symbol->sym.st_other);
-+			if (!is_local)
-+				target = target + 0x8;
-+		}
-+
-+		n++;
-+		fe = find_fe_altaddr(addr);
-+		if (!fe)
-+			continue;
-+
-+		if (target >= fe->alt_start_off && target < fe->alt_end_off)
-+			continue;
-+
-+		if (target >= ftr_alt->sh.sh_addr &&
-+			target < ftr_alt->sh.sh_addr + ftr_alt->sh.sh_size)
-+			return -1;
-+
-+		scn_delta = addr - ftr_alt->sh.sh_addr;
-+		dst_addr = addr - fe->alt_start_off + fe->start_off;
-+
-+		if (arch_decode_instruction(file, ftr_alt, scn_delta, 4, &decoded_insn) < 0)
-+			continue;
-+
-+		insn_ptr_raw = (uint32_t *)(ftr_alt->data->d_buf + scn_delta);
-+		if (!insn_ptr_raw || !ftr_alt->data->d_buf)
-+			continue;
-+
-+		insn = f32_to_cpu(file, *insn_ptr_raw);
-+		new_insn = insn;
-+
-+		switch (decoded_insn.type) {
-+		case INSN_JUMP_CONDITIONAL:
-+			if (set_cond_branch_target(&new_insn, dst_addr, target) != 0)
-+				continue;
-+			break;
-+
-+		case INSN_JUMP_UNCONDITIONAL:
-+			if (set_uncond_branch_target(&new_insn, dst_addr, target) != 0)
-+				continue;
-+			break;
-+
-+		case INSN_CALL:
-+			if (set_uncond_branch_target(&new_insn, dst_addr, target) != 0)
-+				continue;
-+			break;
-+		default:
-+			continue;
-+		}
-+
-+		if (new_insn == insn)
-+			continue;
-+
-+		file_insn = cpu_to_f32(file, new_insn);
-+		insn_ptr = (const char *)&file_insn;
-+		elf_write_insn(file->elf, ftr_alt, scn_delta, sizeof(file_insn), insn_ptr);
-+	}
-+	return 0;
-+}
-+
-+int process_exception_entries(struct objtool_file *file)
-+{
-+	struct section *section;
-+	Elf_Data *data;
-+	unsigned int nr, i;
-+
-+	section = find_section_by_name(file->elf, "__ex_table");
-+	if (!section) {
-+		printf("__ex_table section not found\n");
-+		return 0;
-+	}
-+
-+	data = section->data;
-+	if (!data || data->d_size == 0)
-+		return 0;
-+
-+	nr = data->d_size / sizeof(struct exception_entry);
-+
-+	for (i = 0; i < nr; i++) {
-+		struct exception_entry *ex;
-+		unsigned long idx;
-+		uint64_t exaddr;
-+		unsigned long long off;
-+
-+		idx = i * sizeof(struct exception_entry);
-+		off = section->sh.sh_addr + data->d_off + idx;
-+		ex = data->d_buf + idx;
-+
-+		exaddr = off + (int32_t)f32_to_cpu(file, ex->insn);
-+
-+		if (exaddr < fe_alt_start)
-+			continue;
-+		if (exaddr >= fe_alt_end)
-+			continue;
-+
-+		return -1;
-+	}
-+	return 0;
-+}
-+
-+int process_bug_entries(struct objtool_file *file)
-+{
-+	struct section *section;
-+	Elf_Data *data;
-+	unsigned int nr, i;
-+
-+	section = find_section_by_name(file->elf, "__bug_table");
-+	if (!section) {
-+		printf("__bug_table section not found\n");
-+		return 0;
-+	}
-+
-+	data = section->data;
-+	if (!data || data->d_size == 0)
-+		return 0;
-+
-+	if (data->d_size % sizeof(struct bug_entry) != 0)
-+		return -1;
-+
-+	nr = data->d_size / sizeof(struct bug_entry);
-+	for (i = 0; i < nr; i++) {
-+		struct bug_entry *bug;
-+		unsigned long idx;
-+		uint64_t entry_addr;
-+		uint64_t bugaddr;
-+		int32_t bug_disp;
-+
-+		idx = i * sizeof(struct bug_entry);
-+		entry_addr = section->sh.sh_addr + data->d_off + idx;
-+		bug = (struct bug_entry *)(data->d_buf + idx);
-+		bug_disp = f32_to_cpu(file, bug->bug_addr_disp);
-+		bugaddr = entry_addr + bug_disp;
-+
-+		if (bugaddr < fe_alt_start)
-+			continue;
-+		if (bugaddr >= fe_alt_end)
-+			continue;
-+
-+		return -1;
-+	}
-+	return 0;
-+}
-diff --git a/tools/objtool/builtin-check.c b/tools/objtool/builtin-check.c
-index b780df513715..5ee0880baec5 100644
---- a/tools/objtool/builtin-check.c
-+++ b/tools/objtool/builtin-check.c
-@@ -78,6 +78,7 @@ static const struct option check_options[] = {
- 	OPT_STRING_OPTARG('d',	 "disas", &opts.disas, "function-pattern", "disassemble functions", "*"),
- 	OPT_CALLBACK_OPTARG('h', "hacks", NULL, NULL, "jump_label,noinstr,skylake", "patch toolchain bugs/limitations", parse_hacks),
- 	OPT_BOOLEAN('i',	 "ibt", &opts.ibt, "validate and annotate IBT"),
-+	OPT_BOOLEAN('f',	 "ftr-fixup", &opts.ftr_fixup, "feature fixup"),
- 	OPT_BOOLEAN('m',	 "mcount", &opts.mcount, "annotate mcount/fentry calls for ftrace"),
- 	OPT_BOOLEAN(0,		 "noabs", &opts.noabs, "reject absolute references in allocatable sections"),
- 	OPT_BOOLEAN('n',	 "noinstr", &opts.noinstr, "validate noinstr rules"),
-@@ -181,6 +182,7 @@ static bool opts_valid(void)
- 	    opts.disas			||
- 	    opts.hack_jump_label	||
- 	    opts.hack_noinstr		||
-+	    opts.ftr_fixup		||
- 	    opts.ibt			||
- 	    opts.mcount			||
- 	    opts.noabs			||
 diff --git a/tools/objtool/check.c b/tools/objtool/check.c
-index 3f7999317f4d..667d95431793 100644
+index 92fe5dc05cdb..9c6b892792a4 100644
 --- a/tools/objtool/check.c
 +++ b/tools/objtool/check.c
-@@ -1594,9 +1594,11 @@ static int add_jump_destinations(struct objtool_file *file)
+@@ -1598,7 +1598,6 @@ static int add_jump_destinations(struct objtool_file *file)
  			    dest_off == func->offset + func->len)
  				continue;
  
-+
+-
  			ERROR_INSN(insn, "can't find jump dest instruction at %s",
--				   offstr(dest_sec, dest_off));
-+				offstr(dest_sec, dest_off));
+ 				offstr(dest_sec, dest_off));
  			return -1;
-+
- 		}
+@@ -1680,7 +1679,7 @@ static int add_call_destinations(struct objtool_file *file)
+ 			if (func && func->ignore)
+ 				continue;
  
- 		if (!dest_sym || is_sec_sym(dest_sym)) {
-@@ -4966,6 +4968,31 @@ int check(struct objtool_file *file)
- 	if (!nr_insns)
- 		goto out;
+-			if (!insn_call_dest(insn)) {
++			if (!insn_call_dest(insn) && !opts.ftr_fixup) {
+ 				ERROR_INSN(insn, "unannotated intra-function call");
+ 				return -1;
+ 			}
+@@ -2636,8 +2635,10 @@ static int decode_sections(struct objtool_file *file)
+ 			return -1;
+ 	}
  
-+	if (opts.ftr_fixup) {
-+		ret = process_alt_data(file);
-+		if (ret < 0)
-+			return ret;
-+
-+		ret = process_fixup_entries(file);
-+		if (ret < 0)
-+			return ret;
-+
-+		check_and_flatten_fixup_entries();
-+
-+		ret = process_exception_entries(file);
-+		if (ret < 0)
-+			return ret;
-+
-+		ret = process_bug_entries(file);
-+		if (ret < 0)
-+			return ret;
-+
-+		ret = process_alt_relocations(file);
-+		if (ret < 0)
-+			return ret;
+-	if (add_jump_destinations(file))
+-		return -1;
++	if (!opts.ftr_fixup) {
++		if (add_jump_destinations(file))
++			return -1;
 +	}
-+
-+
- 	if (opts.retpoline)
- 		warnings += validate_retpoline(file);
  
-diff --git a/tools/objtool/elf.c b/tools/objtool/elf.c
-index 6a8ed9c62323..94370a470cbb 100644
---- a/tools/objtool/elf.c
-+++ b/tools/objtool/elf.c
-@@ -1158,6 +1158,7 @@ struct elf *elf_open_read(const char *name, int flags)
- 		cmd = ELF_C_WRITE;
- 
- 	elf->elf = elf_begin(elf->fd, cmd, NULL);
-+
- 	if (!elf->elf) {
- 		ERROR_ELF("elf_begin");
- 		goto err;
-diff --git a/tools/objtool/include/objtool/builtin.h b/tools/objtool/include/objtool/builtin.h
-index b9e229ed4dc0..3578ec174a59 100644
---- a/tools/objtool/include/objtool/builtin.h
-+++ b/tools/objtool/include/objtool/builtin.h
-@@ -13,6 +13,7 @@ struct opts {
- 	bool checksum;
- 	bool dump_orc;
- 	bool hack_jump_label;
-+	bool ftr_fixup;
- 	bool hack_noinstr;
- 	bool hack_skylake;
- 	bool ibt;
-diff --git a/tools/objtool/include/objtool/special.h b/tools/objtool/include/objtool/special.h
-index 121c3761899c..0a5efbfa29d0 100644
---- a/tools/objtool/include/objtool/special.h
-+++ b/tools/objtool/include/objtool/special.h
-@@ -12,6 +12,41 @@
- 
- #define C_JUMP_TABLE_SECTION ".data.rel.ro.c_jump_table"
- 
-+#define BRANCH_SET_LINK 0x1
-+#define BRANCH_ABSOLUTE 0x2
-+
-+struct bug_entry {
-+	int32_t  bug_addr_disp;
-+	int32_t  file_disp;
-+	uint16_t line;
-+	uint16_t flags;
-+};
-+
-+struct exception_entry {
-+	int32_t insn;
-+	int32_t fixup;
-+};
-+
-+struct fixup_entry_64 {
-+	uint64_t mask;
-+	uint64_t value;
-+	uint64_t start_off;
-+	uint64_t end_off;
-+	uint64_t alt_start_off;
-+	uint64_t alt_end_off;
-+};
-+
-+#define fixup_entry fixup_entry_64
-+
-+struct fixup_entry_32 {
-+	uint32_t mask;
-+	uint32_t value;
-+	uint32_t start_off;
-+	uint32_t end_off;
-+	uint32_t alt_start_off;
-+	uint32_t alt_end_off;
-+};
-+
- struct special_alt {
- 	struct list_head list;
- 
-@@ -28,6 +63,8 @@ struct special_alt {
- 	unsigned int orig_len, new_len, feature; /* group only */
- };
- 
-+int process_alt_data(struct objtool_file *file);
-+
- int special_get_alts(struct elf *elf, struct list_head *alts);
- 
- void arch_handle_alternative(struct special_alt *alt);
-@@ -40,4 +77,23 @@ struct reloc *arch_find_switch_table(struct objtool_file *file,
- 				     unsigned long *table_size);
- const char *arch_cpu_feature_name(int feature_number);
- 
-+int process_fixup_entries(struct objtool_file *file);
-+
-+void check_and_flatten_fixup_entries(void);
-+
-+int process_exception_entries(struct objtool_file *file);
-+
-+int process_bug_entries(struct objtool_file *file);
-+
-+int process_alt_relocations(struct objtool_file *file);
-+
-+struct fixup_entry *find_fe_altaddr(uint64_t addr);
-+
-+int set_uncond_branch_target(uint32_t *insn,
-+		const uint64_t addr, uint64_t target);
-+
-+int set_cond_branch_target(uint32_t *insn,
-+		const uint64_t addr, uint64_t target);
-+
-+
- #endif /* _SPECIAL_H */
-diff --git a/tools/objtool/special.c b/tools/objtool/special.c
-index 2a533afbc69a..43b60bf789dd 100644
---- a/tools/objtool/special.c
-+++ b/tools/objtool/special.c
-@@ -167,3 +167,32 @@ int special_get_alts(struct elf *elf, struct list_head *alts)
- 
- 	return 0;
- }
-+
-+int __weak process_alt_data(struct objtool_file *file)
-+{
-+	return 0;
-+}
-+
-+int __weak process_fixup_entries(struct objtool_file *file)
-+{
-+	return 0;
-+}
-+
-+void __weak check_and_flatten_fixup_entries(void)
-+{
-+}
-+
-+int __weak process_exception_entries(struct objtool_file *file)
-+{
-+	return 0;
-+}
-+
-+int __weak process_bug_entries(struct objtool_file *file)
-+{
-+	return 0;
-+}
-+
-+int __weak process_alt_relocations(struct objtool_file *file)
-+{
-+	return 0;
-+}
+ 	/*
+ 	 * Must be before add_call_destination(); it changes INSN_CALL to
 -- 
 2.43.0
 
