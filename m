@@ -1,84 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-16727-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16728-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F6B4E78D45
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Feb 2026 08:50:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 822C8E78D6A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Feb 2026 09:07:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f8dfs3lP6z3cCJ;
-	Mon, 09 Feb 2026 19:49:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770626981;
-	cv=none; b=odZUhUV8L9+o/RVfjOhdzzDg9r0KNpjrBnMG4yuOKiXAT/oKjlEFLXmFn7go2AAHAz8R6HmVxH3amE+BBt8rH1raEdites2/Yk53jdmbZipXhb57BIybisBSgO6vIwM2z4F2QPUyWouZlCskIDcpx8HQDnFY7t0TqQFfzcwhySC1SzAALK4Awpat7FSFbjum1n8nvmHyebxiGhHb5DckhlhljLtB40acMZn6wc7YH1HqgNokhOp5e4D/HXT3AgsyhAL6m2mjeqNmWeg8OGR8RhGFpdnbFdjhK03sRNP8BwI5guLr7kp6ry84vHUbX6GdKzjpftLLn/b2iqrGUb/Dgg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f8f3S0csgz2yFm;
+	Mon, 09 Feb 2026 20:07:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770628052;
+	cv=none; b=MvsatnF1o9JThhDu4ev9QK0hKjC7CNgRH7LhMfM/9pGvf11HusmJ6Q/fpzBG4XLh5tsc5EGB65sKUAFDCeQm+aB0N1AZO2DHsrDPRP/MSFlAxhWFUSXU5xFrEEWVNhTxiZuDW9wZCuzERcT0yZTukAX9V+Pt4Fs3zl2zgUtCP8fZMCPlAJRzQG7IYtJ6FlmNIWwLr+MOywGX+7DHZu74tWzTCYK93nomCX7pdVeq9OpvoJ+6/0IXPx7HyMjn3VMiGh+eNYTanex4ynlAjdnVlmv04hOcGtoe0D9wK230uhxblHrBbQVPVxurlzlFn6VJDeeWk8fIbe3N25oSRN+1kQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770626981; c=relaxed/relaxed;
-	bh=swzmicMpwiMbx8mDSbwNndtctxSKq8Ub8sOhW5HI1og=;
+	t=1770628052; c=relaxed/relaxed;
+	bh=ldPhGDz6odKYJJYfPklkHhLA78TDu86SzZgRiyZHvn8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=czmrDFN69Yo7rNNv0ikXu45hTFOqdX3lKGxnrZDZ1b6E33t5E6t+E37N9j5aC7MouXmtdsdNNeKVcniGQxWg2yRUinstE/nrOfzV5yBiFrbbnu3x/f1ldq178aZUN/CWpgxdkGEv38YET3al4fMOrhxbsEC3hKpN4HB5M3qV+Q7TIvUCJ5anobs2P7zF50bh3JnRHsWi5bLuE1wdqD6Yi4n7soxo8DifZo3UyTEJ4gw+woK0lND4YxokxZbM9B3khUObKSL0CgbGkcFEW4LermPcdc3sYcJu1s9kXgYQ2gJ3iJTFMxcROHOnjvs5PcxcOCKITbxk8v2ZinZsX3urzw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fF1AoKqL; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sv@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 MIME-Version:Content-Type; b=DC4tenDhXArmNSkvIDhVVSdX7OhyWaQeaHwaE8FyfkiCuMD25960WSvn99YHH5iTCIcgm1/ndOjexWuyYf8/HhIjGss/ugfDNbYI0s9CtmMuK6vz88DhIUXDsNDQXAlArMpI2S4C5v9YvTcTBAF7lVggnvzUd84vrTnQBBkOAleordGi5kLSVu7GgFb2qw5YypMyGTw/HbKbY2Pdk0XF76BeQxozLZOUGu1rdB4NymVoPfp2TJcc0f++T/zGP3bMMCtLZETCyOT7qLqOEH4Li04zxrEJaOXSLr7ZxSoWaqb7FrHSR78JPWaYwALnpRNKQw298FX8nK1LoZzKjpTCrQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rXCpMKG9; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fF1AoKqL;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rXCpMKG9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sv@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f8dfq1qTNz3c9M
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Feb 2026 19:49:39 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 618MsFKb369791;
-	Mon, 9 Feb 2026 08:49:20 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=swzmicMpwiMbx8mDS
-	bwNndtctxSKq8Ub8sOhW5HI1og=; b=fF1AoKqLfdckc6vWgvjkz+PHgASRx8aRT
-	kq7waiXEZ3Fm+TipOyUA9tnie5ar1mRydD+O2H6D7ugu7a+lDTfrRs0jq6PD1MA6
-	FltUBiKh0gWkGZhctJolKtuxhFBdt9w88ZrYxO0hAKURpw0XNV1yGwv6ylMHazuw
-	K+8NWNkxEpNyuKZLZI4DhTOMXzuTEhChNIDh7Y0Zc0HfCZ6htnR0uoHyMCdgMx2v
-	BPuQZ/yFE4r3T8fToa50w2tQU2sSlvLmbI4X4DNej6RmkHUdIWEhrOE4DnaLG/uU
-	WSpses+2nSPa4jveyXFFiO71aP6tkV4hoJFCpA1XluCUmiLcQ4q6w==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4c696wn121-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 09 Feb 2026 08:49:19 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 6193F7Ef012996;
-	Mon, 9 Feb 2026 08:49:19 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4c6h7k4bc8-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 09 Feb 2026 08:49:19 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6198nE9129557040
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 9 Feb 2026 08:49:14 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 159FA2005A;
-	Mon,  9 Feb 2026 08:49:14 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1DEB320043;
-	Mon,  9 Feb 2026 08:49:10 +0000 (GMT)
-Received: from li-2fa77bcc-2701-11b2-a85c-cd621c23b6bd.in.ibm.com (unknown [9.79.195.233])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  9 Feb 2026 08:49:09 +0000 (GMT)
-From: Sathvika Vasireddy <sv@linux.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org
-Cc: nathan@kernel.org, masahiroy@kernel.org, kees@kernel.org,
-        naveen@kernel.org, jpoimboe@kernel.org, peterz@infradead.org,
-        npiggin@gmail.com, maddy@linux.ibm.com, segher@kernel.crashing.org,
-        christophe.leroy@csgroup.eu, mingo@kernel.org, mpe@ellerman.id.au,
-        sv@linux.ibm.com, nsc@kernel.org
-Subject: [RFC PATCH v3 6/6] powerpc: Enable build-time feature fixup processing by default
-Date: Mon,  9 Feb 2026 14:18:20 +0530
-Message-ID: <20260209084820.57298-7-sv@linux.ibm.com>
-X-Mailer: git-send-email 2.50.1
-In-Reply-To: <20260209084820.57298-1-sv@linux.ibm.com>
-References: <20260209084820.57298-1-sv@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f8f3R2mf4z2xc8
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Feb 2026 20:07:31 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 11CC160008;
+	Mon,  9 Feb 2026 09:07:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E7710C116C6;
+	Mon,  9 Feb 2026 09:07:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1770628048;
+	bh=YX2dlUnFy6z+33Wd41/5d2pf3kMRqAOW/vZQUL0L6XI=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=rXCpMKG9ftgohCo6zJAAk3a/cq4h/5ZHTZVK2z4PAmybiAC2eNvbFObbxDAOhlJ+N
+	 0nLJp3IDDsr2cGyBI8lXgm6aCKUlm+bhT1q63wCU5+xzq4qppYaofzz3sJpBpj5DvX
+	 hvTL7mBngd2IQ9boz8RraLah0nSZJ7scLg4EXd0Z0REwj+4OYd3z6KH0YT+z75W7uu
+	 6SCFkkOcWZFT2rEJX0MNkv2uY/8MF1Z8q17D2Tv7qW2Iq1R6c9uGDUNwYSoxRURF2w
+	 0w2qJL/FMVVac1XZbnxXYECymvBmzNXd0RG2lYiSzZ+FkWH/n2nGxdu4wvFrPcUQrm
+	 XfW7Ux4E15JDA==
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+To: herve.codina@bootlin.com,
+	qiang.zhao@nxp.com,
+	Chen Ni <nichen@iscas.ac.cn>
+Cc: Christophe Leroy <chleroy@kernel.org>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] soc: fsl: cpm1: qmc: Fix error check for devm_ioremap_resource() in qmc_qe_init_resources()
+Date: Mon,  9 Feb 2026 10:04:53 +0100
+Message-ID: <177062782918.3769661.1539202055286384529.b4-ty@kernel.org>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20260209015904.871269-1-nichen@iscas.ac.cn>
+References: <20260209015904.871269-1-nichen@iscas.ac.cn>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,167 +71,25 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+X-Developer-Signature: v=1; a=openpgp-sha256; l=500; i=chleroy@kernel.org; h=from:subject:message-id; bh=p8lgMolzAatri58HbwQzvJCCPq3xAD8+zmQmEpG7lXE=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWR2LjZ3EjSQv9Tbe0Re86g09/2GLIfmeTKyh3drsXF41 XSve7ayo5SFQYyLQVZMkeX4f+5dM7q+pOZP3aUPM4eVCWQIAxenAEzkiyDDX9EVu7UiWYXOb1K7 VTH75AMGzRtpX3w/bTaZ84br34OWldcY/udUesxnOPI6O678Jg/PrHbmHSI5EbvVlIIquqUCzGf 4MAIA
+X-Developer-Key: i=chleroy@kernel.org; a=openpgp; fpr=10FFE6F8B390DE17ACC2632368A92FEB01B8DD78
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=WZYBqkhX c=1 sm=1 tr=0 ts=69899f90 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=HzLeVaNsDn8A:10 a=VkNPw1HP01LnGYTKEx00:22 a=Mpw57Om8IfrbqaoTuvik:22
- a=GgsMoib0sEa3-_RKJdDe:22 a=CCpqsmhAAAAA:8 a=pGLkceISAAAA:8 a=VnNF1IyMAAAA:8
- a=VskAbI2hzQZqgVltqkQA:9 a=ul9cdbp4aOFLsgKbc677:22
-X-Proofpoint-GUID: OKeoAZ_qGQIChqA9D9J6OY22ZY98-8Pe
-X-Proofpoint-ORIG-GUID: _e2wpXSxv9mlaPRqxf5o3pOZrAJ7h1if
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjA5MDA3MiBTYWx0ZWRfX4sKG2cWTbN0G
- aAfUTY1xWxqWq89QeCu8Jv3K7bEYb0FFWTMsLcY6U6xxy37EsVI5LUC3mAk+407DqyOy+8Nv07K
- uYccfshHtpMRJe/aJ4VdXi64BG+waABEFT65T2m6Xq8Mnv1xGc7dhQWxW8WuT5IqPjwRY3eMeUT
- LQN+JSbKAXIWTQq0+9GrJURg29Q6cel16U17Txck3+8IDgFzWHw13Rm4zsv94AtJyoDFP7zEie9
- Z4BFF/NTOw7B2y0O+gweRBw/Nt5tLUfRaVgydPGRZsU2fzSd/oNzH1SKmhx4fWBiSHEKLS2TuU2
- zqNEg/wMVUlss9bacH1O2ozdaT1jLvFiygq8OWSpkdlAg9Ny1rUaTUh1ZQ0Mh3ju5xqewOF4b5G
- M5EMsPjuekHjZjJFSsWDwOR/7R6Im23bVIjwF+TCXsPJNCYLWW4NbhtNdtLARVz1NtABjh9prxb
- vke6nj6QTp48jeHXxeA==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-02-08_05,2026-02-09_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 clxscore=1015 phishscore=0 bulkscore=0 adultscore=0
- priorityscore=1501 lowpriorityscore=0 suspectscore=0 impostorscore=0
- malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2601150000
- definitions=main-2602090072
 
-Enable HAVE_OBJTOOL_FTR_FIXUP by default on PowerPC architecture.
 
-- Remove runtime branch translation logic from patch_alt_instruction()
-- Add --emit-relocs linker flags for post-link fixup processing
-- Update ftr_alt section attributes to include executable flag
-- Strip the --emit-relocs relocation sections (.rel*) from the final
-  vmlinux after processing
+On Mon, 09 Feb 2026 09:59:04 +0800, Chen Ni wrote:
+> Fix wrong variable used for error checking after devm_ioremap_resource()
+> call. The function checks qmc->scc_pram instead of qmc->dpram, which
+> could lead to incorrect error handling.
+> 
+> 
 
-Co-developed-by: Nicholas Piggin <npiggin@gmail.com>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-Signed-off-by: Sathvika Vasireddy <sv@linux.ibm.com>
----
- arch/powerpc/Kconfig                      |  3 +++
- arch/powerpc/Makefile                     |  5 +++++
- arch/powerpc/include/asm/feature-fixups.h |  2 +-
- arch/powerpc/kernel/vmlinux.lds.S         |  8 ++++++--
- arch/powerpc/lib/feature-fixups.c         | 12 ------------
- scripts/Makefile.vmlinux                  |  5 +++++
- 6 files changed, 20 insertions(+), 15 deletions(-)
+Applied, thanks!
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index b8d36a261009..aedb11912672 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -23,6 +23,9 @@ config 64BIT
- 	bool
- 	default y if PPC64
- 
-+config HAVE_OBJTOOL_FTR_FIXUP
-+        def_bool y
-+
- config LIVEPATCH_64
- 	def_bool PPC64
- 	depends on LIVEPATCH
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index a58b1029592c..8e1dab5f3c9a 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -105,6 +105,11 @@ LDFLAGS_vmlinux-$(CONFIG_RELOCATABLE) := -pie --no-dynamic-linker
- LDFLAGS_vmlinux-$(CONFIG_RELOCATABLE) += -z notext
- LDFLAGS_vmlinux	:= $(LDFLAGS_vmlinux-y)
- 
-+# --emit-relocs required for post-link fixup of alternate feature
-+# text section relocations.
-+LDFLAGS_vmlinux        += --emit-relocs
-+KBUILD_LDFLAGS_MODULE += --emit-relocs
-+
- ifdef CONFIG_PPC64
- ifndef CONFIG_PPC_KERNEL_PCREL
- 	# -mcmodel=medium breaks modules because it uses 32bit offsets from
-diff --git a/arch/powerpc/include/asm/feature-fixups.h b/arch/powerpc/include/asm/feature-fixups.h
-index 756a6c694018..d6ae92a292ec 100644
---- a/arch/powerpc/include/asm/feature-fixups.h
-+++ b/arch/powerpc/include/asm/feature-fixups.h
-@@ -32,7 +32,7 @@
- 
- #define FTR_SECTION_ELSE_NESTED(label)			\
- label##2:						\
--	.pushsection __ftr_alt_##label,"a";		\
-+	.pushsection __ftr_alt_##label, "ax";		\
- 	.align 2;					\
- label##3:
- 
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 15850296c0a9..70a4de464b34 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -99,8 +99,8 @@ SECTIONS
- 	.text : AT(ADDR(.text) - LOAD_OFFSET) {
- 		ALIGN_FUNCTION();
- #endif
--		/* careful! __ftr_alt_* sections need to be close to .text */
--		*(.text.hot .text.hot.* TEXT_MAIN .text.fixup .text.unlikely .text.unlikely.* .fixup __ftr_alt_* .ref.text);
-+		*(.text.hot .text.hot.* TEXT_MAIN .text.fixup .text.unlikely
-+			.text.unlikely.* .fixup .ref.text);
- 		*(.tramp.ftrace.text);
- 		NOINSTR_TEXT
- 		SCHED_TEXT
-@@ -267,6 +267,10 @@ SECTIONS
- 		_einittext = .;
- 	} :text
- 
-+	.__ftr_alternates.text : AT(ADDR(.__ftr_alternates.text) - LOAD_OFFSET) {
-+		*(__ftr_alt*);
-+	}
-+
- 	/* .exit.text is discarded at runtime, not link time,
- 	 * to deal with references from __bug_table
- 	 */
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index 587c8cf1230f..269e992b1631 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -53,22 +53,10 @@ static u32 *calc_addr(struct fixup_entry *fcur, long offset)
- 
- static int patch_alt_instruction(u32 *src, u32 *dest, u32 *alt_start, u32 *alt_end)
- {
--	int err;
- 	ppc_inst_t instr;
- 
- 	instr = ppc_inst_read(src);
- 
--	if (instr_is_relative_branch(ppc_inst_read(src))) {
--		u32 *target = (u32 *)branch_target(src);
--
--		/* Branch within the section doesn't need translating */
--		if (target < alt_start || target > alt_end) {
--			err = translate_branch(&instr, dest, src);
--			if (err)
--				return 1;
--		}
--	}
--
- 	raw_patch_instruction(dest, instr);
- 
- 	return 0;
-diff --git a/scripts/Makefile.vmlinux b/scripts/Makefile.vmlinux
-index e3dd7fc62f20..3d2a203b8908 100644
---- a/scripts/Makefile.vmlinux
-+++ b/scripts/Makefile.vmlinux
-@@ -88,6 +88,11 @@ remove-section-$(CONFIG_ARCH_VMLINUX_NEEDS_RELOCS) += '.rel*' '!.rel*.dyn'
- # https://sourceware.org/git/?p=binutils-gdb.git;a=commit;h=c12d9fa2afe7abcbe407a00e15719e1a1350c2a7
- remove-section-$(CONFIG_ARCH_VMLINUX_NEEDS_RELOCS) += '.rel.*'
- 
-+# --emit-relocs produces .rela.* sections needed by objtool --ftr-fixup;
-+# strip them from vmlinux after fixup processing is complete.
-+remove-section-$(CONFIG_HAVE_OBJTOOL_FTR_FIXUP)    += '.rel*' '!.rel*.dyn'
-+remove-section-$(CONFIG_HAVE_OBJTOOL_FTR_FIXUP)    += '.rel.*'
-+
- remove-symbols := -w --strip-unneeded-symbol='__mod_device_table__*'
- 
- # To avoid warnings: "empty loadable segment detected at ..." from GNU objcopy,
+[1/1] soc: fsl: cpm1: qmc: Fix error check for devm_ioremap_resource() in qmc_qe_init_resources()
+      commit: 39676244858f24089f83134bbf975dd31abe7544
+
+Best regards,
 -- 
-2.43.0
-
+Christophe Leroy (CS GROUP) <chleroy@kernel.org>
 
