@@ -1,82 +1,108 @@
-Return-Path: <linuxppc-dev+bounces-16732-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16734-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54FA6E7E0B9
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Feb 2026 09:59:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 377CBE7E0C7
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Feb 2026 10:55:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f8gBn2kgjz3bmR;
-	Mon, 09 Feb 2026 20:58:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.219
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770631137;
-	cv=none; b=AOpASCtZ8J3GY0PsLDawmYEZ8H4CUab3llNXm/AzSZGnl/wmoU8Bad0BoY4es3m54BkmqU0gl06qJ+XxTCPOB/qVceFU7n3K3d2chD4b1ummfHEPZdeyXVRaBG13v5Y88hP7cgwpGVlfLqLIm64KaWA9HiNRHm2srd3SHP2HlltLalDZKfzaa8UNgcxBZWICzrZS1jB7iwxB1UGLGT+W86o4YHIqR08rtc+YYbpX48d468pzheXf1f2t7yjqM3D0pavgELdVyf0zrGwiekirQOUeOxPeodIuWkcsk5ZqoYEVafnYIT7irpNbZ103RyhdzxhyKHhsiG05+YXYqBYKyQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f8hRn4YgMz2yqs;
+	Mon, 09 Feb 2026 21:55:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::431"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770634517;
+	cv=none; b=VE6P3CtNU8LwDEwFeeEx7oiDmfLRBQPgoledXeEv1FV2Y1BUE/2zAli2H+qUKj/8nUzDa1YTF91HD3DbjdcfMGcR10LamzlHFhm4Rgb43pfg1ya/cLxYvQUKpD+KMA2hILdGx2YJbBHO9nvP1DnIPrPSIo2lAmV7wuSQMHOLVgWYoOjWrigSG7O+dZPdKol8TUtGT53MC4JgV55TJ8I7BYqlZeZWHUq9IkIVVXKnw4qn/SUYWPKw/c7tBp8fBfTDUZiE7R/pjQJOiVFt9b3TPS63CykDtALO2yPK7o4jrPPE7ntHdA8kusP1DDhzWKzwlfqC8NQrNw0gqMG8FkpvGA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770631137; c=relaxed/relaxed;
-	bh=A7QSD0FZxPYGa9nM/vOmRlehchcq+wPFipR/HtdIIvk=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=h51RNtBDwK/N4WPrJwZaMCQq+DN7OS7ajAtacOK0KB8NMAW+so8Rq3/BYx7AUDZOSSfXTENFEVJvLMbMzSvRPq7XfMooHxQ7Eh/HMzW0En6Wmd1gr2qgZoL9B6rgq2nNdybJ7XOED9eIMb0V/bDJIYkzTixo2a5Cz+PPKaw8p7p+co2mNC2ehAiA7GnIdKVYskIp9DNvHMnldDIJ12J0unKS+V+NCDTf/yqft1pZiAU3LO88LELhs9nWYkR0cmcW3h7YgStqKgLsHft1hNb32ybmbPGQXHFZjjb+VORJhCGmuXm/NV8jeJI1igkA/tKFJlUXESBejWraAo1+9sKdIg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=lZ9hS/qn; dkim-atps=neutral; spf=pass (client-ip=113.46.200.219; helo=canpmsgout04.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+	t=1770634517; c=relaxed/relaxed;
+	bh=GWQDA/EkiuOrnzzQZpTgk67yZSDsyGvnGU0WBzxGHSc=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=S2mX1np8WgiH6Dxl7wue2mANz3kcy5QPWdODuJRNCzuIMxBs8SvQRrkNKt9fmIBqqhqsfFM8BvcJVBDwsvJb13iKovpHIPSKbTXJSf+eLSTN9qKRqdRpC+HDm9cyYevWPmjPXm23akm1gzh34hYkBG+lFegFiKcw5lqivmdTGGfpwQ3DsRpsKpd9ueMJ3ln3jVgtDh/4C3Rd+t90FseZFYNBgv5exfuHulb5XBnnoCJwlfqmQx7bYNa7VjxexmQ27A5oCEiGAs2IONgGMREyF36d8h7xq3byj3BvL5XcUWnZ7kenPxmNrj0VceV2TWGcNwJfUr2O303Nbhk7qE6BYg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=bOxkdRFR; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=lZ9hS/qn;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=bOxkdRFR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.219; helo=canpmsgout04.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout04.his.huawei.com (canpmsgout04.his.huawei.com [113.46.200.219])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com [IPv6:2607:f8b0:4864:20::431])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f8gBl1xn8z3bjb
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Feb 2026 20:58:54 +1100 (AEDT)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=A7QSD0FZxPYGa9nM/vOmRlehchcq+wPFipR/HtdIIvk=;
-	b=lZ9hS/qnzUPwxNJd4kCYOh4uN0Q8ShB745NEqXHiPySEmqU1DMVTtzwGtCeICu9S654aPh3kb
-	Y3CbKrQ74CjPdXLzIdQlWGIOPaWwJWngtd2Ywql6AzsZvRZ+esf6OoGrXNPpEUzCPVqt8ZDrvNY
-	dpjJ/qmocCnQODqgczGI8fE=
-Received: from mail.maildlp.com (unknown [172.19.162.197])
-	by canpmsgout04.his.huawei.com (SkyGuard) with ESMTPS id 4f8g581GmGz1prMr;
-	Mon,  9 Feb 2026 17:54:04 +0800 (CST)
-Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id C96AD40363;
-	Mon,  9 Feb 2026 17:58:43 +0800 (CST)
-Received: from huawei.com (10.90.53.73) by dggpemf500011.china.huawei.com
- (7.185.36.131) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Mon, 9 Feb
- 2026 17:58:40 +0800
-From: Jinjie Ruan <ruanjinjie@huawei.com>
-To: <corbet@lwn.net>, <catalin.marinas@arm.com>, <will@kernel.org>,
-	<chenhuacai@kernel.org>, <kernel@xen0n.name>, <maddy@linux.ibm.com>,
-	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <chleroy@kernel.org>,
-	<pjw@kernel.org>, <palmer@dabbelt.com>, <aou@eecs.berkeley.edu>,
-	<alex@ghiti.fr>, <tglx@kernel.org>, <mingo@redhat.com>, <bp@alien8.de>,
-	<dave.hansen@linux.intel.com>, <hpa@zytor.com>, <akpm@linux-foundation.org>,
-	<bhe@redhat.com>, <vgoyal@redhat.com>, <dyoung@redhat.com>,
-	<rdunlap@infradead.org>, <pmladek@suse.com>, <feng.tang@linux.alibaba.com>,
-	<pawan.kumar.gupta@linux.intel.com>, <kees@kernel.org>, <elver@google.com>,
-	<arnd@arndb.de>, <lirongqing@baidu.com>, <fvdl@google.com>,
-	<leitao@debian.org>, <rppt@kernel.org>, <ardb@kernel.org>, <jbohac@suse.cz>,
-	<sourabhjain@linux.ibm.com>, <osandov@fb.com>, <ryan.roberts@arm.com>,
-	<cfsworks@gmail.com>, <tangyouling@kylinos.cn>, <ritesh.list@gmail.com>,
-	<thuth@redhat.com>, <hbathini@linux.ibm.com>, <eajames@linux.ibm.com>,
-	<bjorn@rivosinc.com>, <songshuaishuai@tinylab.org>, <kevin.brodsky@arm.com>,
-	<samuel.holland@sifive.com>, <vishal.moola@gmail.com>,
-	<junhui.liu@pigmoral.tech>, <dwmw@amazon.co.uk>, <pbonzini@redhat.com>,
-	<thomas.lendacky@amd.com>, <kai.huang@intel.com>, <ubizjak@gmail.com>,
-	<coxu@redhat.com>, <liaoyuanhong@vivo.com>, <fuqiang.wang@easystack.cn>,
-	<brgerst@gmail.com>, <x86@kernel.org>, <linux-doc@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
-	<linux-riscv@lists.infradead.org>, <kexec@lists.infradead.org>
-CC: <ruanjinjie@huawei.com>
-Subject: [PATCH v4 2/3] arm64: kexec: Add support for crashkernel CMA reservation
-Date: Mon, 9 Feb 2026 17:59:30 +0800
-Message-ID: <20260209095931.2813152-3-ruanjinjie@huawei.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260209095931.2813152-1-ruanjinjie@huawei.com>
-References: <20260209095931.2813152-1-ruanjinjie@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f8hRm5tgfz2yFm
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Feb 2026 21:55:16 +1100 (AEDT)
+Received: by mail-pf1-x431.google.com with SMTP id d2e1a72fcca58-82318b640beso2190597b3a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Feb 2026 02:55:16 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1770634514; x=1771239314; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=GWQDA/EkiuOrnzzQZpTgk67yZSDsyGvnGU0WBzxGHSc=;
+        b=bOxkdRFR/KFx5hexvPONb+ZA0u1vq9Hu/QJ/Z6eRo/Usiu4OLWM/L6MofGO9+fqIsW
+         YCvoqtRwtBwbDomMb7yQp4WjUGpp9otKdEmla4rlepLxbIZCnNNpmfrN4CGAmoAtE6jD
+         GoBgl5fp9jOOW6t9DqAzxVkowy7xbizj+ZPx3b8Ob+5EGnKbmWffUUG538uckzffYgIa
+         5TMlYcSZHMhMBvft1Gh5uPSQFIpK5Z/E/pPdwM4/XMrMD3ZvGbwcQH+CPLOrxYm4jHYe
+         0xrXENavHtoWHYLcD9b236Wj0uXdqGJRYXckThTDDtWoUD8nlpwyEPQ/ZsFMgI10NqYZ
+         4AfQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1770634514; x=1771239314;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=GWQDA/EkiuOrnzzQZpTgk67yZSDsyGvnGU0WBzxGHSc=;
+        b=etQlGIC9wfev6vt4kW9nQpr36aN4w84JhYTh/q908i8NL7ZGhU6IRh3I808iACUzVG
+         W9I34T0ZDh029zg6SpWNBk0LzPBtNFwhuoD4usRLsRczD6pg8B389h88ovVM2QHZTcgf
+         9NCoDYYjdaB61eDiVbMY2PFd++QPoxK9hJx7a8cgIiGlMBMrZRHxmp1jBZJzcPY4zC+d
+         MmN+uM2szVxd6VR5TAXhZOdMTlQQaIup3RCYBwfUxemlF7z/LJsjMZ9zF1KdQAZk2Rd3
+         xmKJjiexcR9rTmonWEDmKSL3HZHOUZfTiNCtwhocXg22uu0ldSNvdrKGAhO6xp8SlwgK
+         HW9w==
+X-Forwarded-Encrypted: i=1; AJvYcCXig8NDVMRo2lbemv54wvrXV2sSCi4oxRIwe9xC5+UNwiX62mVqaXgrICbRaP9wzF5jIX2yk/6R/9LeuSM=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yyj3SkzpNG9JtnOvA0zqgI2yXkuyGRJXl/fyLIaPINNx2RdiDiX
+	KvDmGYY8Lic8M7Bng3lfzDGURhNqICORVH0DYdZjklaVJikvrt6wDLsl
+X-Gm-Gg: AZuq6aL6gny03i1DMvuRdnwlsbbxvltKE+9IPktYacpVkco1I2UWN+GBQb3brYI/iud
+	/UApS9UdGs7Sd+1AoNMxahTrPPuo768wRzQEW+Fjyz7Z2nn0jRYMKSi2wxVZwMI/hgCFiWZji+A
+	oKELK6TjArheq8Dribl7vBvNh6vlpDcW+u6RNdvR/wNbVNqQx//HSi0zSnJ3Er86xWSpdmLjot6
+	0qz0gQYl3dCZTO3/ompTVMKrZ/JAv4q3yLtjNYoVTgFIaxAQzrGr/mVnn9r8il+ospv4ZDDaFRB
+	wezLjG1Okb6QbJmGLn+hHRrv1/KOXVzaMNS7lBRlfJ3lRqvxax+Xc7JL0JT7Kf9o/YqKB5dVhhu
+	h1nbOeRD8x35o7JYimCb9jPTlnT0DOit2N6P0VJ4TIHiRokyCFKokdXDjjAyp6po3W4drawLH86
+	C4vJUs5voFB8i2aVI4bEbpOKsu6Ep/RYiYrs6YXVtvQ7YPtYAi/lQ2MKfBWcU=
+X-Received: by 2002:a05:6a00:2d9d:b0:81e:5d52:53b8 with SMTP id d2e1a72fcca58-8244172c5ddmr9473132b3a.50.1770634514410;
+        Mon, 09 Feb 2026 02:55:14 -0800 (PST)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.in.ibm.com ([129.41.58.2])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-824418b31c2sm10635974b3a.50.2026.02.09.02.55.08
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 09 Feb 2026 02:55:14 -0800 (PST)
+From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+To: linkmauve@linkmauve.fr,
+	ojeda@kernel.org,
+	boqun.feng@gmail.com,
+	gary@garyguo.net,
+	bjorn3_gh@protonmail.com,
+	lossin@kernel.org,
+	a.hindborg@kernel.org,
+	aliceryhl@google.com,
+	tmgross@umich.edu,
+	dakr@kernel.org,
+	corbet@lwn.net,
+	maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	chleroy@kernel.org,
+	peterz@infradead.org,
+	jpoimboe@kernel.org,
+	jbaron@akamai.com,
+	rostedt@goodmis.org,
+	ardb@kernel.org,
+	rust-for-linux@vger.kernel.org,
+	linux-doc@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Cc: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+Subject: [PATCH V4 1/3] powerpc/jump_label: adjust inline asm to be consistent
+Date: Mon,  9 Feb 2026 16:24:54 +0530
+Message-ID: <20260209105456.1551677-2-mkchauras@gmail.com>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260209105456.1551677-1-mkchauras@gmail.com>
+References: <20260209105456.1551677-1-mkchauras@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,96 +116,65 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.90.53.73]
-X-ClientProxiedBy: kwepems200002.china.huawei.com (7.221.188.68) To
- dggpemf500011.china.huawei.com (7.185.36.131)
 
-Commit 35c18f2933c5 ("Add a new optional ",cma" suffix to the
-crashkernel= command line option") and commit ab475510e042 ("kdump:
-implement reserve_crashkernel_cma") added CMA support for kdump
-crashkernel reservation.
+Added support for a new macro ARCH_STATIC_BRANCH_ASM in powerpc
+to avoid duplication of inline asm between C and Rust. This is
+inline with commit aecaf181651c '("jump_label: adjust inline asm to be consistent")'
 
-Crash kernel memory reservation wastes production resources if too
-large, risks kdump failure if too small, and faces allocation difficulties
-on fragmented systems due to contiguous block constraints. The new
-CMA-based crashkernel reservation scheme splits the "large fixed
-reservation" into a "small fixed region + large CMA dynamic region": the
-CMA memory is available to userspace during normal operation to avoid
-waste, and is reclaimed for kdump upon crash—saving memory while
-improving reliability.
-
-So extend crashkernel CMA reservation support to arm64. The following
-changes are made to enable CMA reservation:
-
-- Parse and obtain the CMA reservation size along with other crashkernel
-  parameters.
-- Call reserve_crashkernel_cma() to allocate the CMA region for kdump.
-- Include the CMA-reserved ranges for kdump kernel to use, which is
-  the crash core default implementation, so nothing needs to be done.
-- Exclude the CMA-reserved ranges from the crash kernel memory to
-  prevent them from being exported through /proc/vmcore, which is already
-  done in the crash core.
-
-Update kernel-parameters.txt to document CMA support for crashkernel on
-arm64 architecture.
-
-Acked-by: Ard Biesheuvel <ardb@kernel.org>
-Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
+Co-developed-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+Reviewed-by: Alice Ryhl <aliceryhl@google.com>
+Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
 ---
-v3:
-- Add Acked-by.
-v2:
-- Free cmem in prepare_elf_headers()
-- Add the mtivation.
----
- Documentation/admin-guide/kernel-parameters.txt | 2 +-
- arch/arm64/mm/init.c                            | 5 +++--
- 2 files changed, 4 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/jump_label.h | 23 +++++++++++++----------
+ 1 file changed, 13 insertions(+), 10 deletions(-)
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 1058f2a6d6a8..36bb642a7edd 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -1119,7 +1119,7 @@ Kernel parameters
- 			It will be ignored when crashkernel=X,high is not used
- 			or memory reserved is below 4G.
- 	crashkernel=size[KMG],cma
--			[KNL, X86, ppc] Reserve additional crash kernel memory from
-+			[KNL, X86, ARM64, ppc] Reserve additional crash kernel memory from
- 			CMA. This reservation is usable by the first system's
- 			userspace memory and kernel movable allocations (memory
- 			balloon, zswap). Pages allocated from this memory range
-diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
-index 524d34a0e921..28165d94af08 100644
---- a/arch/arm64/mm/init.c
-+++ b/arch/arm64/mm/init.c
-@@ -96,8 +96,8 @@ phys_addr_t __ro_after_init arm64_dma_phys_limit;
+diff --git a/arch/powerpc/include/asm/jump_label.h b/arch/powerpc/include/asm/jump_label.h
+index d4eaba459a0e..a6b211502bfe 100644
+--- a/arch/powerpc/include/asm/jump_label.h
++++ b/arch/powerpc/include/asm/jump_label.h
+@@ -15,14 +15,20 @@
+ #define JUMP_ENTRY_TYPE		stringify_in_c(FTR_ENTRY_LONG)
+ #define JUMP_LABEL_NOP_SIZE	4
  
- static void __init arch_reserve_crashkernel(void)
++#define JUMP_TABLE_ENTRY(key, label)			\
++	".pushsection __jump_table,  \"aw\"	\n\t"	\
++	".long 1b - ., " label " - .		\n\t"	\
++	JUMP_ENTRY_TYPE key " - .		\n\t"	\
++	".popsection 				\n\t"
++
++#define ARCH_STATIC_BRANCH_ASM(key, label)		\
++	"1:	nop				\n\t"	\
++	JUMP_TABLE_ENTRY(key,label)
++
+ static __always_inline bool arch_static_branch(struct static_key *key, bool branch)
  {
-+	unsigned long long crash_base, crash_size, cma_size = 0;
- 	unsigned long long low_size = 0;
--	unsigned long long crash_base, crash_size;
- 	bool high = false;
- 	int ret;
+-	asm goto("1:\n\t"
+-		 "nop # arch_static_branch\n\t"
+-		 ".pushsection __jump_table,  \"aw\"\n\t"
+-		 ".long 1b - ., %l[l_yes] - .\n\t"
+-		 JUMP_ENTRY_TYPE "%c0 - .\n\t"
+-		 ".popsection \n\t"
++	asm goto(
++		 ARCH_STATIC_BRANCH_ASM("%c0", "%l[l_yes]")
+ 		 : :  "i" (&((char *)key)[branch]) : : l_yes);
  
-@@ -106,11 +106,12 @@ static void __init arch_reserve_crashkernel(void)
+ 	return false;
+@@ -34,10 +40,7 @@ static __always_inline bool arch_static_branch_jump(struct static_key *key, bool
+ {
+ 	asm goto("1:\n\t"
+ 		 "b %l[l_yes] # arch_static_branch_jump\n\t"
+-		 ".pushsection __jump_table,  \"aw\"\n\t"
+-		 ".long 1b - ., %l[l_yes] - .\n\t"
+-		 JUMP_ENTRY_TYPE "%c0 - .\n\t"
+-		 ".popsection \n\t"
++		 JUMP_TABLE_ENTRY("%c0", "%l[l_yes]")
+ 		 : :  "i" (&((char *)key)[branch]) : : l_yes);
  
- 	ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
- 				&crash_size, &crash_base,
--				&low_size, NULL, &high);
-+				&low_size, &cma_size, &high);
- 	if (ret)
- 		return;
- 
- 	reserve_crashkernel_generic(crash_size, crash_base, low_size, high);
-+	reserve_crashkernel_cma(cma_size);
- }
- 
- static phys_addr_t __init max_zone_phys(phys_addr_t zone_limit)
+ 	return false;
 -- 
-2.34.1
+2.53.0
 
 
