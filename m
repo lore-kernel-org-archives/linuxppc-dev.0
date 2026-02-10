@@ -1,109 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-16772-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16773-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78F32E7E0DB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Feb 2026 10:56:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44C7DEA8107
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Feb 2026 12:08:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f9JR02TDFz2xKx;
-	Tue, 10 Feb 2026 21:56:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4860:4864:20::34"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770721004;
-	cv=none; b=OvinQEifCOW/3Kf9CFE/fiLF+B5YNLcE4MuQgj9eBlnvGa67nCsmhzJRseqMdiy5Ug/gS9DKDM22GsAFKmJC4LYhSmWHKOw3oYde8Gxo8epVEVQY3DxIQOCJjMEzaNhVE1pSxRR4HeOuyn2VPcFXcR6+Vi2uMouF5LLFC5fDUmeNO2fVIs47jgbYpCtHNj7xrjMbyeykY3Ll7+rbicmi2qcMWfsbMjIvLFLpQaDGqjXF/NWshMEZ3107VFyvMr5w9UiPXZvUFbYSQhSeyELSxBkIZtCayfftOzQUrn64P3f9hE5mqAK7Ou3epUmG7FQn+hFsrgtGK0Bda262QnAV/g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f9L1Z0yvfz2xN5;
+	Tue, 10 Feb 2026 23:08:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770725298;
+	cv=none; b=VudjCODBo850nZIQjoT/2QyRRww0aLAEQj8kriOOEPdFRRFC6+V10xnCdBd/tQHW3Y/+JEeZc+9v4bopjfrUvR6ATLiu0IWx3yI43+5w71oRTPCyKtFwJTWKek5DucRBTqAZ0z1Pc4mrVXRkW6F0sh2ZwJiTVBkOZLnzHPgOApUGM4LYuhrNqezCnGF9LxyoIB3DNibRTd7jRauEVaxWaDw+3ewUucwhWCTPbDg+z2ZfEWCeZQFp1D4kqusRuI91aZ9WNgtvPJDb7B+k0y6GpHDQ2VBbxtiUTUb+ZzqvH/I7OqCJXs7enUF3MzPTBKmxhzSHXP4KfpgetmzUV5eCfw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770721004; c=relaxed/relaxed;
-	bh=fIJz3kYN33qG3Fl2V6Bqi8+KcSudbe9ldFTSf7iXp3g=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=hac7pzlRQ3tKpaUunzz8ExE1DtdjSUzH7Ny3nIw13IAR1qdu9osqMo4QrBhpdcOR12eeljb3xIfgvqfTYYXS6LFVBkYe7xj/+x87lccSjUNvQ5MefVLn4+J4b9LmNMuvJTXEUc8K9r9HAqaxVKdceru+PBg8JN6B1Zs72ihXgs4YVfxQjM8/p/+DJRfpSAtfJdnOGgYpdd4DRMbaqL2NYH72XjFGbbVf5RJXEh2d8p3+xx5IZJVpjcreuMmbQcsZzbjvDtcEj64rjy/Pa68FBS0xIVnq2Zd3akeTPUTqnEEfN4NiGaaHN4pQ9bz93ZzpJI3WAhx0N/IoXX7WO35MHw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Y4PdIx7C; dkim-atps=neutral; spf=pass (client-ip=2001:4860:4864:20::34; helo=mail-oa1-x34.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1770725298; c=relaxed/relaxed;
+	bh=Xv31K9B4Rfyf2Ej5MEXolwmoThhGfqVsylqQpOMv9WY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=aY9nkslBFpFdyHVA0ZSsbL1sKLy2TBBTbR3ecvRfjAYE42hMb2T0P9IUPG1dV50yzW6A8+b6BrfXnc8kZm6yGr20g3coSjpdO41lDnE6lfhAOeO861MdYglmYbGotGJhi9GpPvRiVxuAyRm3J6AWGLpn9uMBOFYVTErAn2gbJaXziGPp7DB6p6zt/owIeGAPPnRUZ74tcU9z0W5sey6sXNEGNP46qClNpewxbzWk9KhHzgxZ5rKKLrfzxUaEo//VGuGRcw0akkScoAhZbslyZXnv+g7pE0FsJhzvKzR2lzdPKZLeFIQiRQx5f3nynHYduShYjSdQ4F1Olki85B29VQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=C813DFKs; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Y4PdIx7C;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=C813DFKs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2001:4860:4864:20::34; helo=mail-oa1-x34.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-oa1-x34.google.com (mail-oa1-x34.google.com [IPv6:2001:4860:4864:20::34])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f9JQx6ZLDz2x99
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2026 21:56:40 +1100 (AEDT)
-Received: by mail-oa1-x34.google.com with SMTP id 586e51a60fabf-4096aab5521so3153978fac.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2026 02:56:40 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1770720993; x=1771325793; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=fIJz3kYN33qG3Fl2V6Bqi8+KcSudbe9ldFTSf7iXp3g=;
-        b=Y4PdIx7C6/S1dTzAxNiTT3yP8mC/fg6jGnF2O071sZjLGdQ6c9r+Zaer8FAwVGcxQJ
-         p541E14ftgNNzjtsRTDQLl3dOl2kJ86q70vxat5B+ilelsFoak52DEZO9vqRGFWMKi0c
-         xIctUlNEJbkX4NKMALbF4Cni53LXyeHUHoHjDlLa8awtHB3A4Hn6lZhrhe6kbQtcHyTU
-         DqlwkcRY9q1t+4TOWDVX3+RMbn9U1fjXQgmrpocjkdHRHMqRExF3YeYdk3CSnY8Rmy+C
-         hs+vmleVUyf+EtkDrEqIW/t7wcorVEScmqwSGkQ+T3BkcYE1XzUqJaLR/RxStZAnuVa9
-         dugQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770720993; x=1771325793;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=fIJz3kYN33qG3Fl2V6Bqi8+KcSudbe9ldFTSf7iXp3g=;
-        b=uNKeSyQ1hJrC7skuoCPtmFlSu3lRGcKQWBV91q4mGP43YCyXLJO9fNrLAxp4Hn7VOx
-         DUpOGNow7MsP0fGAd7RHrz7xTG5ibotwgwPD2qiU/FYTpDSQCWGZkdGXErmi9XvUm7LS
-         9i8AZ2UghatU9EJ8ei36R5BmtqK0RgWKyj13o3H4QT+7CQ/DfJWcxnBfN8mpa5lP98gm
-         P74l6b+3WFeVH8NH64CI9IVtt4Tdf9m2wNXUpeMeX11TM00RynYPISFeBonZDdJ5ybdG
-         FTe3qbB8dJ+SnGfl8D3RCPaY/K+4+sSApVVivzQ4qznd1Vd0TMPd6y8QexC5gcXKfZaQ
-         JhaQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUUc05RwvnDuBa7O2iu5v09K4KDHTIqvKLNcQ475iNLMS360R45N7iHBC1/qVrwmpH2ApSARraQkUz87Lc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yzc0Ot+KnFu9WnJEhKLuUH0mxzrXMQdnhtW2jXp6VTabJPzQodo
-	ntnOssNdT9yiNZRQYdOHVqDmDB9y5Jr9sojqoe1SU8/HtuSxdfgLN4Nw1fBp2w==
-X-Gm-Gg: AZuq6aI0syQDfRyXTk7yWxLjffis4wbnFF9rxu08MB3NiNJ58X+euetogsw4zIX86bS
-	10TdKxqV7sBbjbbw7NqpM1KfQWA7ZsEXcw+mlGvT/mI67dmrAJxtqGyaXFdZ67hlFU12AyYfNc9
-	rwOrYqbBpQw8+aAiz6PSlJH/62UkdefhOdH+9uKywaZLdb7n2LdeqTkJzx9aH2EET6/MOlniZyE
-	jIdfDNU1fnA544Bmnc37UP0qfiZq4zhNAC10p29ZDj5W3zw/J5z/eqzwtHk5EJGwDUrvHVnfVVC
-	RIAvQXQAph0n1k6oQmv1DpS7T5yt1WS9CfjU0pWvxS4YLWRrLLwwcbgNjVh3iF+Qq32ZKeMt8zE
-	WB5ZZdmdW6U1+EixaVIiGg+/9gcVpT/WQSfRbli+2/dM0qjx8JUJO+4d0QLbzzkQE4JOj/CwG4/
-	Br7lq9YdyXnyEIhyBmTU3y6c9ePknFYOA1CJCZg3cNRj1Pb4HEAzHkj7iwAavyFMY+zZHxF2M=
-X-Received: by 2002:a17:903:b4e:b0:2a0:fe9f:1884 with SMTP id d9443c01a7336-2a95194aaeamr120907585ad.55.1770714055465;
-        Tue, 10 Feb 2026 01:00:55 -0800 (PST)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.in.ibm.com ([129.41.58.2])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a951c7a342sm129536605ad.26.2026.02.10.01.00.48
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Feb 2026 01:00:55 -0800 (PST)
-From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
-To: linkmauve@linkmauve.fr,
-	ojeda@kernel.org,
-	boqun.feng@gmail.com,
-	gary@garyguo.net,
-	bjorn3_gh@protonmail.com,
-	lossin@kernel.org,
-	a.hindborg@kernel.org,
-	aliceryhl@google.com,
-	tmgross@umich.edu,
-	dakr@kernel.org,
-	corbet@lwn.net,
-	maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	peterz@infradead.org,
-	jpoimboe@kernel.org,
-	jbaron@akamai.com,
-	rostedt@goodmis.org,
-	ardb@kernel.org,
-	rust-for-linux@vger.kernel.org,
-	linux-doc@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Cc: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: [PATCH V6 3/3] powerpc: Enable Rust for ppc64le
-Date: Tue, 10 Feb 2026 14:30:22 +0530
-Message-ID: <20260210090023.2587534-4-mkchauras@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260210090023.2587534-1-mkchauras@gmail.com>
-References: <20260210090023.2587534-1-mkchauras@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f9L1X4m1Bz2xKx
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2026 23:08:16 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61AC4V5q700860;
+	Tue, 10 Feb 2026 12:07:57 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=Xv31K9B4Rfyf2Ej5MEXolwmoThhGfqVsylqQpOMv9
+	WY=; b=C813DFKsofbob+DvghY5FI0hHkqzXC7Ye13l0jMR9AqTjU47ZPR/+KkNk
+	c7TXHtzxZccfwikdwV+vz55OhdW+NbTa5/Q8IjzaV8cuZwDDfwCyKy8YvClzBY3s
+	Y868YP5diZZKfW1wkV+ZkOQvHtqWU/+wCKsIMnxFaTVKoOsY0OO/c3OURrSouZ29
+	8roVlsUF0bzxhAxddQpcNRNCIe8KEBsY6x5wije9T6UM/30B8ubw7zpW2sfuybhj
+	uj/WnPqccfbRmqXKu0/7k2dVYwpVaSmpCJnrAOs0uG4a9kwAglQ9utOVbNizqYy1
+	xUFulgZ0VYdcPx066xNBh8axdoMwg==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4c696w417e-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 10 Feb 2026 12:07:56 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 61ABnpjI001819;
+	Tue, 10 Feb 2026 12:07:55 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4c6je20un1-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 10 Feb 2026 12:07:55 +0000
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 61AC7p7I36635058
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 10 Feb 2026 12:07:52 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DDBE22004B;
+	Tue, 10 Feb 2026 12:07:51 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 61DB220049;
+	Tue, 10 Feb 2026 12:07:49 +0000 (GMT)
+Received: from li-4f5ba44c-27d4-11b2-a85c-a08f5b49eada.in.ibm.com (unknown [9.109.204.116])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 10 Feb 2026 12:07:49 +0000 (GMT)
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Sourabh Jain <sourabhjain@linux.ibm.com>,
+        Andrew Morton <akpm@linux-foundation.org>, Baoquan he <bhe@redhat.com>,
+        Jinjie Ruan <ruanjinjie@huawei.com>,
+        Hari Bathini <hbathini@linux.ibm.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Mahesh Salgaonkar <mahesh@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Shivang Upadhyay <shivangu@linux.ibm.com>,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/crash: sort crash memory ranges before preparing elfcorehdr
+Date: Tue, 10 Feb 2026 17:38:03 +0530
+Message-ID: <20260210120803.433978-1-sourabhjain@linux.ibm.com>
+X-Mailer: git-send-email 2.52.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -118,125 +94,219 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=YeCwJgRf c=1 sm=1 tr=0 ts=698b1f9d cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=HzLeVaNsDn8A:10 a=VkNPw1HP01LnGYTKEx00:22 a=Mpw57Om8IfrbqaoTuvik:22
+ a=GgsMoib0sEa3-_RKJdDe:22 a=VwQbUJbxAAAA:8 a=i0EeH86SAAAA:8 a=Z4Rwk6OoAAAA:8
+ a=20KFwNOVAAAA:8 a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8 a=TNJSkpwCZzExJk-GAwUA:9
+ a=HkZW87K1Qel5hWWM3VKY:22
+X-Proofpoint-GUID: gs_dvMUkCXqNMKZptpIFVs5vjQ8YbrW1
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjEwMDA5OSBTYWx0ZWRfX3uwLkjH8mZ0K
+ atA9jIi6prPpHSyKdjqeZabpYbfNW/0Dy7v3kR1uxyKv2mWH5+IiQp9KjjWiH0ZT0tJ2oDZScKN
+ oFu0G2Pfx7whze7gae1kbOOLSsCOpyGIW2Y8K1Ash1lhEFjJAezIU13rz4++hW9ki3hK9HHhA1d
+ sHIJFG3GZpYLJmi7Uhts+PcITlgmOabKTg5XEPVpBTNhGA6truJg5K83/Y5Wt+tJHcSWYK3uVGW
+ /a3qQlukSHMlR1QyScYmLY5M3r3gP50o6guwjHt1pUCvkpKcH46s68PryC/qmzx+mQchkWlHdNs
+ XUjA486A435GOVkh0eAB7k2zx5PNDKGrolzHPBwlPe2CJ6xolcGRikIECS9Mg9AkGZXev8twbpS
+ 9hbmnLSYdm8xmA1EIW94PhlWTymKsAT6ASJsWS0B0oMHuiePCGeiEG6FPndiT9mYgZeOp+w6UIM
+ Sdm1Ghtn7txLqrOzAAA==
+X-Proofpoint-ORIG-GUID: D82rnNBrlk8EALdkRIldie3_0FdmkLdd
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-02-10_01,2026-02-10_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 adultscore=0 bulkscore=0 malwarescore=0 phishscore=0
+ priorityscore=1501 lowpriorityscore=0 clxscore=1015 impostorscore=0
+ spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2601150000
+ definitions=main-2602100099
 
-Enabling rust support for ppc64le only.
+During a memory hot-remove event, the elfcorehdr is rebuilt to exclude
+the removed memory. While updating the crash memory ranges for this
+operation, the crash memory ranges array can become unsorted. This
+happens because remove_mem_range() may split a memory range into two
+parts and append the higher-address part as a separate range at the end
+of the array.
 
-Tested on powernv9:
+So far, no issues have been observed due to the unsorted crash memory
+ranges. However, this could lead to problems once crash memory range
+removal is handled by generic code, as introduced in the upcoming
+patches in this series.
 
-$ uname -rm
-6.19.0-rc8+ ppc64le
+Currently, powerpc uses a platform-specific function,
+remove_mem_range(), to exclude hot-removed memory from the crash memory
+ranges. This function performs the same task as the generic
+crash_exclude_mem_range() in crash_core.c. The generic helper also
+ensures that the crash memory ranges remain sorted. So remove the
+redundant powerpc-specific implementation and instead call
+crash_exclude_mem_range_guarded() (which internally calls
+crash_exclude_mem_range()) to exclude the hot-removed memory ranges.
 
-$ sudo modprobe rust_minimal
-[  632.890850] rust_minimal: Rust minimal sample (init)
-[  632.890881] rust_minimal: Am I built-in? false
-[  632.890898] rust_minimal: test_parameter: 1
-
-$ sudo rmmod rust_minimal
-[  648.272832] rust_minimal: My numbers are [72, 108, 200]
-[  648.272873] rust_minimal: Rust minimal sample (exit)
-
-$ sudo modprobe rust_print
-[  843.410391] rust_print: Rust printing macros sample (init)
-[  843.410424] rust_print: Emergency message (level 0) without args
-[  843.410451] rust_print: Alert message (level 1) without args
-[  843.410477] rust_print: Critical message (level 2) without args
-[  843.410503] rust_print: Error message (level 3) without args
-[  843.410530] rust_print: Warning message (level 4) without args
-[  843.410557] rust_print: Notice message (level 5) without args
-[  843.410594] rust_print: Info message (level 6) without args
-[  843.410617] rust_print: A line that is continued without args
-[  843.410646] rust_print: Emergency message (level 0) with args
-[  843.410675] rust_print: Alert message (level 1) with args
-[  843.410691] rust_print: Critical message (level 2) with args
-[  843.410727] rust_print: Error message (level 3) with args
-[  843.410761] rust_print: Warning message (level 4) with args
-[  843.410796] rust_print: Notice message (level 5) with args
-[  843.410821] rust_print: Info message (level 6) with args
-[  843.410854] rust_print: A line that is continued with args
-[  843.410892] rust_print: 1
-[  843.410895] rust_print: "hello, world"
-[  843.410924] rust_print: [samples/rust/rust_print_main.rs:35:5] c = "hello, world"
-[  843.410977] rust_print: Arc<dyn Display> says 42
-[  843.410979] rust_print: Arc<dyn Display> says hello, world
-
-$ sudo rmmod rust_print
-[  843.411003] rust_print: "hello, world"
-[  888.499935] rust_print: Rust printing macros sample (exit)
-
-Reviewed-by: Link Mauve <linkmauve@linkmauve.fr>
-Tested-by: Link Mauve <linkmauve@linkmauve.fr>
-Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Baoquan he <bhe@redhat.com>
+Cc: Jinjie Ruan <ruanjinjie@huawei.com>
+Cc: Hari Bathini <hbathini@linux.ibm.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Cc: Shivang Upadhyay <shivangu@linux.ibm.com>
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
 ---
- Documentation/rust/arch-support.rst | 2 +-
- arch/powerpc/Kconfig                | 1 +
- arch/powerpc/Makefile               | 7 ++++++-
- rust/Makefile                       | 6 ++++++
- 4 files changed, 14 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/rust/arch-support.rst b/Documentation/rust/arch-support.rst
-index 70b9e192a7a0..70bcd726ad0e 100644
---- a/Documentation/rust/arch-support.rst
-+++ b/Documentation/rust/arch-support.rst
-@@ -18,7 +18,7 @@ Architecture   Level of support  Constraints
- ``arm``        Maintained        ARMv7 Little Endian only.
- ``arm64``      Maintained        Little Endian only.
- ``loongarch``  Maintained        \-
--``powerpc``    Maintained        32-bit Big Endian only.
-+``powerpc``    Maintained        64-bit Little Endian. 32-bit Big Endian.
- ``riscv``      Maintained        ``riscv64`` and LLVM/Clang only.
- ``um``         Maintained        \-
- ``x86``        Maintained        ``x86_64`` only.
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 17db23b82e91..954af27e10c5 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -284,6 +284,7 @@ config PPC
- 	select HAVE_RELIABLE_STACKTRACE
- 	select HAVE_RSEQ
- 	select HAVE_RUST			if PPC32
-+	select HAVE_RUST			if PPC64 && CPU_LITTLE_ENDIAN
- 	select HAVE_SAMPLE_FTRACE_DIRECT	if HAVE_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
- 	select HAVE_SAMPLE_FTRACE_DIRECT_MULTI	if HAVE_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
- 	select HAVE_SETUP_PER_CPU_AREA		if PPC64
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 9fd82c75dcbd..9385db478c59 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -61,7 +61,12 @@ else
- KBUILD_LDFLAGS_MODULE += $(objtree)/arch/powerpc/lib/crtsavres.o
- endif
+Requesting this patch to part of the below patch series.
+https://lore.kernel.org/all/20260209095931.2813152-1-ruanjinjie@huawei.com/
+
+---
+ arch/powerpc/include/asm/kexec_ranges.h |  4 +-
+ arch/powerpc/kexec/crash.c              |  5 +-
+ arch/powerpc/kexec/ranges.c             | 87 +------------------------
+ 3 files changed, 7 insertions(+), 89 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/kexec_ranges.h b/arch/powerpc/include/asm/kexec_ranges.h
+index 14055896cbcb..ad95e3792d10 100644
+--- a/arch/powerpc/include/asm/kexec_ranges.h
++++ b/arch/powerpc/include/asm/kexec_ranges.h
+@@ -7,7 +7,9 @@
+ void sort_memory_ranges(struct crash_mem *mrngs, bool merge);
+ struct crash_mem *realloc_mem_ranges(struct crash_mem **mem_ranges);
+ int add_mem_range(struct crash_mem **mem_ranges, u64 base, u64 size);
+-int remove_mem_range(struct crash_mem **mem_ranges, u64 base, u64 size);
++int crash_exclude_mem_range_guarded(struct crash_mem **mem_ranges,
++				    unsigned long long mstart,
++				    unsigned long long mend);
+ int get_exclude_memory_ranges(struct crash_mem **mem_ranges);
+ int get_reserved_memory_ranges(struct crash_mem **mem_ranges);
+ int get_crash_memory_ranges(struct crash_mem **mem_ranges);
+diff --git a/arch/powerpc/kexec/crash.c b/arch/powerpc/kexec/crash.c
+index a325c1c02f96..31462e8415ff 100644
+--- a/arch/powerpc/kexec/crash.c
++++ b/arch/powerpc/kexec/crash.c
+@@ -431,7 +431,7 @@ static void update_crash_elfcorehdr(struct kimage *image, struct memory_notify *
+ 	struct crash_mem *cmem = NULL;
+ 	struct kexec_segment *ksegment;
+ 	void *ptr, *mem, *elfbuf = NULL;
+-	unsigned long elfsz, memsz, base_addr, size;
++	unsigned long elfsz, memsz, base_addr, size, end;
  
--KBUILD_RUSTFLAGS += --target=powerpc-unknown-linux-gnu
-+ifdef CONFIG_PPC64
-+KBUILD_RUSTFLAGS	+= --target=powerpc64le-unknown-linux-gnu
-+KBUILD_RUSTFLAGS	+= -Ctarget-feature=-mma,-vsx,-hard-float,-altivec
-+else
-+KBUILD_RUSTFLAGS	+= --target=powerpc-unknown-linux-gnu
-+endif
+ 	ksegment = &image->segment[image->elfcorehdr_index];
+ 	mem = (void *) ksegment->mem;
+@@ -450,7 +450,8 @@ static void update_crash_elfcorehdr(struct kimage *image, struct memory_notify *
+ 	if (image->hp_action == KEXEC_CRASH_HP_REMOVE_MEMORY) {
+ 		base_addr = PFN_PHYS(mn->start_pfn);
+ 		size = mn->nr_pages * PAGE_SIZE;
+-		ret = remove_mem_range(&cmem, base_addr, size);
++		end = base_addr - size - 1;
++		ret = crash_exclude_mem_range_guarded(&cmem, base_addr, end);
+ 		if (ret) {
+ 			pr_err("Failed to remove hot-unplugged memory from crash memory ranges\n");
+ 			goto out;
+diff --git a/arch/powerpc/kexec/ranges.c b/arch/powerpc/kexec/ranges.c
+index 867135560e5c..6c58bcc3e130 100644
+--- a/arch/powerpc/kexec/ranges.c
++++ b/arch/powerpc/kexec/ranges.c
+@@ -553,7 +553,7 @@ int get_usable_memory_ranges(struct crash_mem **mem_ranges)
+ #endif /* CONFIG_KEXEC_FILE */
  
- ifdef CONFIG_CPU_LITTLE_ENDIAN
- KBUILD_CPPFLAGS	+= -mlittle-endian
-diff --git a/rust/Makefile b/rust/Makefile
-index ae22f2c5f0b3..0aef472c6cf5 100644
---- a/rust/Makefile
-+++ b/rust/Makefile
-@@ -392,7 +392,13 @@ BINDGEN_TARGET_x86	:= x86_64-linux-gnu
- BINDGEN_TARGET_arm64	:= aarch64-linux-gnu
- BINDGEN_TARGET_arm	:= arm-linux-gnueabi
- BINDGEN_TARGET_loongarch	:= loongarch64-linux-gnusf
-+
-+ifdef CONFIG_PPC64
-+BINDGEN_TARGET_powerpc	:= powerpc64le-linux-gnu
-+else
- BINDGEN_TARGET_powerpc	:= powerpc-linux-gnu
-+endif
-+
- BINDGEN_TARGET_um	:= $(BINDGEN_TARGET_$(SUBARCH))
- BINDGEN_TARGET		:= $(BINDGEN_TARGET_$(SRCARCH))
- 
+ #ifdef CONFIG_CRASH_DUMP
+-static int crash_exclude_mem_range_guarded(struct crash_mem **mem_ranges,
++int crash_exclude_mem_range_guarded(struct crash_mem **mem_ranges,
+ 					   unsigned long long mstart,
+ 					   unsigned long long mend)
+ {
+@@ -641,89 +641,4 @@ int get_crash_memory_ranges(struct crash_mem **mem_ranges)
+ 		pr_err("Failed to setup crash memory ranges\n");
+ 	return ret;
+ }
+-
+-/**
+- * remove_mem_range - Removes the given memory range from the range list.
+- * @mem_ranges:    Range list to remove the memory range to.
+- * @base:          Base address of the range to remove.
+- * @size:          Size of the memory range to remove.
+- *
+- * (Re)allocates memory, if needed.
+- *
+- * Returns 0 on success, negative errno on error.
+- */
+-int remove_mem_range(struct crash_mem **mem_ranges, u64 base, u64 size)
+-{
+-	u64 end;
+-	int ret = 0;
+-	unsigned int i;
+-	u64 mstart, mend;
+-	struct crash_mem *mem_rngs = *mem_ranges;
+-
+-	if (!size)
+-		return 0;
+-
+-	/*
+-	 * Memory range are stored as start and end address, use
+-	 * the same format to do remove operation.
+-	 */
+-	end = base + size - 1;
+-
+-	for (i = 0; i < mem_rngs->nr_ranges; i++) {
+-		mstart = mem_rngs->ranges[i].start;
+-		mend = mem_rngs->ranges[i].end;
+-
+-		/*
+-		 * Memory range to remove is not part of this range entry
+-		 * in the memory range list
+-		 */
+-		if (!(base >= mstart && end <= mend))
+-			continue;
+-
+-		/*
+-		 * Memory range to remove is equivalent to this entry in the
+-		 * memory range list. Remove the range entry from the list.
+-		 */
+-		if (base == mstart && end == mend) {
+-			for (; i < mem_rngs->nr_ranges - 1; i++) {
+-				mem_rngs->ranges[i].start = mem_rngs->ranges[i+1].start;
+-				mem_rngs->ranges[i].end = mem_rngs->ranges[i+1].end;
+-			}
+-			mem_rngs->nr_ranges--;
+-			goto out;
+-		}
+-		/*
+-		 * Start address of the memory range to remove and the
+-		 * current memory range entry in the list is same. Just
+-		 * move the start address of the current memory range
+-		 * entry in the list to end + 1.
+-		 */
+-		else if (base == mstart) {
+-			mem_rngs->ranges[i].start = end + 1;
+-			goto out;
+-		}
+-		/*
+-		 * End address of the memory range to remove and the
+-		 * current memory range entry in the list is same.
+-		 * Just move the end address of the current memory
+-		 * range entry in the list to base - 1.
+-		 */
+-		else if (end == mend)  {
+-			mem_rngs->ranges[i].end = base - 1;
+-			goto out;
+-		}
+-		/*
+-		 * Memory range to remove is not at the edge of current
+-		 * memory range entry. Split the current memory entry into
+-		 * two half.
+-		 */
+-		else {
+-			size = mem_rngs->ranges[i].end - end + 1;
+-			mem_rngs->ranges[i].end = base - 1;
+-			ret = add_mem_range(mem_ranges, end + 1, size);
+-		}
+-	}
+-out:
+-	return ret;
+-}
+ #endif /* CONFIG_CRASH_DUMP */
 -- 
-2.53.0
+2.52.0
 
 
