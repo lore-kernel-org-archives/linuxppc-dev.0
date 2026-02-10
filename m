@@ -1,105 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-16761-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16762-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E521AEA3F11
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Feb 2026 07:03:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F939EA3F0D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Feb 2026 07:20:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f9CG92jG1z30BR;
-	Tue, 10 Feb 2026 18:03:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::92a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770707025;
-	cv=none; b=VmkrLwGmIN6nRT4Miw40rvSMZR2A3IkmrrDFWvbMUC8smWCy8XOccnHw8tjQB6Qlh4VO+NWgV3IPVk0fLbIZEMYN7FIocqmYKUjYkDgSyNLc0S3KjVN7GfKWGkK0HEx/4aTGj2GIjIKkTYcl+TEJqCsarcrrUL/KZH+1rssrzXeLibO5eus8QpSvb/ZteHS77ogsvEEFKV/9lJb2j6N464a2qX9D+QwQrUY885T03ZEfSyjLnLo/Py9nYj8jcUOGxpBU1pt5zdOZmI2DbsTGqT1k/GpmSGrm+GbJRroOUn8AJ0fXUyMOyv4j38RteIeqmy4Fhc5mzEEUobcrL8h2Fg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770707025; c=relaxed/relaxed;
-	bh=GFHY+kwDQdh2yEHJCYn420Oxm2P8lL33JJQBtOkv6/g=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=csGGPe9OvCEMmb/dLTjhVJHLFw6C6XiwijNZn08Nv8uX7d1BezSpYrLAlL4KueLHa3j1sryw7/uwCGzupWmWFldlHzm+Jk9YR0eYNL4n95y+2tLUn+DglChaPBDz32/whJIo/rzoYEvjqatu8NkFe9moZ2SzbIBQUpICtMKOsuSzr5c6Kug1TvGKYnpdU7j2nmmnKxJ4wMj/i2tVs5dnT0eQ9At19tl/9Ak7R6y3P9uhjrigwmgJHblXIkvkGL/Cq3+YKlmEkYxfiqmHIYkmxHuoZAKJtQmZKV1uJKXfjT1W2Z88RE0gydKbmfAGV930Tn+Wm/+JqChcm825FWkb6Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=dQNUOjDy; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::92a; helo=mail-ua1-x92a.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f9Cd35b4Fz30FF;
+	Tue, 10 Feb 2026 18:20:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=94.100.134.238 arc.chain=hornetsecurity.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770708007;
+	cv=pass; b=TkEyZbHJl2CdD58gf6EuUdL2l8UFsC5dAaPh95Wk2a2mZbCr5Q85OKaPeJcijPrw/Gds4hZmkoOnHB/Ln6SoATssCqYngrMG6w6IwYTg2Od/gytWu2FUORFbZMi9gPgl0Ocha/uDHchU8A85OUGjGUNkQ5/zEbLhpp4ssYXmiQpUTU/nqLBUt2eq5hlK+Giy63LLZCGMQnP+6+rKxCbO4W9uisj0sVFMWkrE0075LjyPh3s1YI2SkOoMEGDnVui93dnSWFFcv8OMOFeMfJ3Jk/38zZHz/nfIPmBj3YQ2CDJJZbe20TugIYiTFR8kLAebzbZSGwh+8NdOqKwGDJ3wSA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1770708007; c=relaxed/relaxed;
+	bh=pabMGLGGXLOcOo/Dpjkxu/cClFC72VFL87C8/t2PX84=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=HeWgTcpczNUuqxDpFqCq/nOLYfFA/vf+vWv8+LYxx/XgTGE5jFImlmSFauZg/8HQUqxUKjWAcxAT8UlLnOnq56GgCqdZRtUpJMDfKdnQ63WaVY3iT3ZcX5fPJs7vwSvr1a0BlZkGAVhwyhlHIB4N6xG1qhmFvDceYHmBU30IkE6x6cR78OkB1TMaajiqgcvAwgo9cVZKSzfA9wI2wa93o8n6YolVQJpo6MT3IT8YFxWQMeqjx0gmSYVO4G2KbjePy4IKWcm2ted0ZJoeKe6UvGSuFaXRNX4xXCWLBbZYvD08bewPRxNo6S3nmo00xWMuGhkNUHtOGLgd/r2i3S+nsg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=ew.tq-group.com; dkim=pass (2048-bit key; unprotected) header.d=ew.tq-group.com header.i=@ew.tq-group.com header.a=rsa-sha256 header.s=hse1 header.b=kr2UFQaX; dkim-atps=neutral; spf=pass (client-ip=94.100.134.238; helo=mx-relay49-hz3.antispameurope.com; envelope-from=prvs=049498f0c0=alexander.stein@ew.tq-group.com; receiver=lists.ozlabs.org) smtp.mailfrom=ew.tq-group.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=ew.tq-group.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=dQNUOjDy;
+	dkim=pass (2048-bit key; unprotected) header.d=ew.tq-group.com header.i=@ew.tq-group.com header.a=rsa-sha256 header.s=hse1 header.b=kr2UFQaX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::92a; helo=mail-ua1-x92a.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ua1-x92a.google.com (mail-ua1-x92a.google.com [IPv6:2607:f8b0:4864:20::92a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ew.tq-group.com (client-ip=94.100.134.238; helo=mx-relay49-hz3.antispameurope.com; envelope-from=prvs=049498f0c0=alexander.stein@ew.tq-group.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 62 seconds by postgrey-1.37 at boromir; Tue, 10 Feb 2026 18:20:04 AEDT
+Received: from mx-relay49-hz3.antispameurope.com (mx-relay49-hz3.antispameurope.com [94.100.134.238])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f9CG807NQz309N
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2026 18:03:43 +1100 (AEDT)
-Received: by mail-ua1-x92a.google.com with SMTP id a1e0cc1a2514c-9489d087bcfso322848241.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Feb 2026 23:03:43 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1770707020; x=1771311820; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=GFHY+kwDQdh2yEHJCYn420Oxm2P8lL33JJQBtOkv6/g=;
-        b=dQNUOjDyd7OZF0+NvTMDK8lPapSUyGxuYZZ4hdhqIpXtnMcRV7+kKHpfaY1r0J8QN6
-         ZM1iDTUqrKUwaePoSl6NbCN867nFcoDHIYBcFRgWRKA5PwZfMiHHGhfPXjTTTM2pQ9Hz
-         5c1U7DIpAUK7EicpvCKWbLU4mewe0lps/MfQrn/d+m03aR9IdTxecdgu1+bQh+pRclLr
-         UIFvXQ4vXS8pUJqFO/u2bFy8uOA7iY9C4B2HxqcjzAmRDCpTDFd8IXk3i6JR9/FV+Avz
-         zBMVrhB9UmfxqyKEL7rhlyB4Guu+nQiy0n3ZuY/QSX4posXIyrfMA97235n+qIegssGW
-         QhNA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770707020; x=1771311820;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=GFHY+kwDQdh2yEHJCYn420Oxm2P8lL33JJQBtOkv6/g=;
-        b=SEACJUweHw30nHbN+DpAGUXf7xuRc9xnBMM7wT9FYKrSNeMr9eMieB8x08iKhYYGU+
-         xMPM8utyX87Css6gBd/uUZP/KGKguQn0wpWrILGYa/+Mtmd+Ig0cPfTYxJQ3tiK00SWr
-         bxYRIko/1kL3KnCrkUpIc36PukEtPDaD/lUiNqhjHN8Dtb4USRA99MlEoEhazI8CLCxB
-         WlKd4G5zBjfJ+MBK/8SsotkDMjLDe6DD6mCeNPNSJvyIVhlC8Otm6rbasP8Ydvghvm8+
-         kYprEnuaaCXR/TmyeMrsAzjQ4kpqdRobKjqVFZQ6InrJmEBIB8EgQ+rM1tCgw2NZD1Fr
-         gucg==
-X-Forwarded-Encrypted: i=1; AJvYcCV5fh8MH8L22kQUMjOYiDIxcNVfCpW8AyHjmE10KD2WcAL478KFzA6aJyEB6/1C1LshxACoQxSW8ZmUkv4=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyE70lyro9Jgp9DrWW0pwQ2ITGSmJytSp+YRbFDoWNxUQmts4oX
-	trLnTAAVvp5hijUR6EjWDIfyCSbeEZrqujZR/oUAl8FjLLcRpXjzJB2HUNKHDw==
-X-Gm-Gg: AZuq6aIj6GtgGHBwCy2+sFxkrmY8ypKSY5xlOHc0M3YWeklRnmtMx+Dn4qJBmXndl8o
-	AyE+DuOeXK/IsWGd6q8vdfOsFQdpslMY7eHL20i8x/pP1342t4c9Gz+IR/eT1ZVcoEiSDtT92wA
-	de2K90zegSX2DOCe52kjn4AwaE0DpQHV4UgIdZ0VLZ3iCTATtdQL0R5CSy/AXskt2IlDCUx6TFc
-	ShC+yYyjANMBRdcb6u61BchMPGBCd4zwAlQjPwYmEicQ/9xBMpN3BGrnHMLyx5RRjfTtJ/pqF6I
-	HSS/U3yTwWNqZJZ4+QCwofGdqa4VNPHyz48u56hDwjMMeya8/QSJakXSGgqioX9tP9CgGD8jqmi
-	EnUTkHoV6SZBuF6OluroGViZZUsbjWFNPJLgkF0AYZgP5+YoTSOa1oVopcBQgfEqJpkRlztdE9K
-	hz+n0bXmdqlzPJcvxVWLZYzar1t66rYnCWIh9shA76UgmSAxb2kNYdB2PH7Og8e1iPWXvkFfJHZ
-	NofwJ7A3A==
-X-Received: by 2002:a05:6a00:770f:b0:823:b6b:4850 with SMTP id d2e1a72fcca58-824416f8d24mr11637215b3a.44.1770701888061;
-        Mon, 09 Feb 2026 21:38:08 -0800 (PST)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.in.ibm.com ([129.41.58.2])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8245b62d773sm7529056b3a.36.2026.02.09.21.38.00
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 Feb 2026 21:38:07 -0800 (PST)
-From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
-To: linkmauve@linkmauve.fr,
-	ojeda@kernel.org,
-	boqun.feng@gmail.com,
-	gary@garyguo.net,
-	bjorn3_gh@protonmail.com,
-	lossin@kernel.org,
-	a.hindborg@kernel.org,
-	aliceryhl@google.com,
-	tmgross@umich.edu,
-	dakr@kernel.org,
-	corbet@lwn.net,
-	maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	peterz@infradead.org,
-	jpoimboe@kernel.org,
-	jbaron@akamai.com,
-	rostedt@goodmis.org,
-	ardb@kernel.org,
-	rust-for-linux@vger.kernel.org,
-	linux-doc@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Cc: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
-Subject: [PATCH V5 0/3] Rust support for powerpc
-Date: Tue, 10 Feb 2026 11:07:53 +0530
-Message-ID: <20260210053756.2088302-1-mkchauras@gmail.com>
-X-Mailer: git-send-email 2.53.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f9Cd04mZYz309N
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2026 18:20:04 +1100 (AEDT)
+ARC-Authentication-Results: i=1; mx-gate49-hz3.hornetsecurity.com 1; spf=pass
+ reason=mailfrom (ip=94.100.132.6, headerfrom=ew.tq-group.com)
+ smtp.mailfrom=ew.tq-group.com smtp.helo=smtp-out02-hz1.hornetsecurity.com;
+ dmarc=pass header.from=ew.tq-group.com orig.disposition=pass
+ARC-Message-Signature: a=rsa-sha256;
+ bh=pabMGLGGXLOcOo/Dpjkxu/cClFC72VFL87C8/t2PX84=; c=relaxed/relaxed;
+ d=hornetsecurity.com; h=from:to:date:subject:mime-version:; i=1; s=hse1;
+ t=1770707921;
+ b=Lkf/ijyYtpqXJ9nBvRIQnxMT7wE3VP46AOQkAiCLWiFQuWiStceCtKu0BcQ8FpDH4Vil5gdR
+ wbDJHZmH+rJwuTcs6epCVLN+1fFdRPwyHzlQeqTPnLniSD5Op0dqYaoLHi5xj688dgTIqhy8i+C
+ g1vCnEBKPblmz023LUh4XcV+MVLBEn52WIhxpEuUKAVXOBatBhcEFo9x+cEo64h/qDhuTk5YX20
+ IUWkFcXjhcs1+hcTE5DSRtULGZuDYm8lMzktXIvUl9HzxUq+m6t56I/YSd96wIPEWW24XY+b1bN
+ /eEEbQ+PChKIUVqDYifrjLITDyili97aWsSgt/CoCEQTQ==
+ARC-Seal: a=rsa-sha256; cv=none; d=hornetsecurity.com; i=1; s=hse1;
+ t=1770707921;
+ b=EcqE3uDndxlQFBbaKYeMbWnvs6AEVt9IXqKP3ll2yg6TwoN8DxBHDVs9VkLzGAbVS2Br37eD
+ 6u9zduS7uz95eQLIIuyKNF1v3bghWHmGNqLo8tm0o1eap+jDXN2MVVNxBafN5KL/wjEEDMUc2Nc
+ Zi+c8WkjZ455STgIBbxN4zBp5VMud7KNKGOsK5APSqOnBqtCKIVCMERVdZSRyLot/R70ktdpNjc
+ 0rM+G9SA06WC5N25vgcSJ6U1Kb8pyLN8OAFy0NYMKMps0vbK3lmSclH92VRENTSljve5pnhoN4E
+ Q2zUoEx6CZI7nrspaN7VTHYuIsQkxfDsxBZLv1tfGxFHw==
+Received: from he-nlb01-hz1.hornetsecurity.com ([94.100.132.6]) by mx-relay49-hz3.antispameurope.com;
+ Tue, 10 Feb 2026 08:18:40 +0100
+Received: from steina-w.localnet (host-82-135-125-110.customer.m-online.net [82.135.125.110])
+	(Authenticated sender: alexander.stein@ew.tq-group.com)
+	by smtp-out02-hz1.hornetsecurity.com (Postfix) with ESMTPSA id 59A1B5A3119;
+	Tue, 10 Feb 2026 08:18:27 +0100 (CET)
+From: Alexander Stein <alexander.stein@ew.tq-group.com>
+To: Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Ziyi Guo <n7l8m4@u.northwestern.edu>
+Cc: Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Ziyi Guo <n7l8m4@u.northwestern.edu>
+Subject: Re: [PATCH] ASoC: fsl_xcvr: fix missing lock in fsl_xcvr_mode_put()
+Date: Tue, 10 Feb 2026 08:18:26 +0100
+Message-ID: <5056506.GXAFRqVoOG@steina-w>
+Organization: TQ-Systems GmbH
+In-Reply-To: <20260202174112.2018402-1-n7l8m4@u.northwestern.edu>
+References: <20260202174112.2018402-1-n7l8m4@u.northwestern.edu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -113,59 +83,108 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
+X-cloud-security-sender:alexander.stein@ew.tq-group.com
+X-cloud-security-recipient:linuxppc-dev@lists.ozlabs.org
+X-cloud-security-crypt: load encryption module
+X-cloud-security-Mailarchiv: E-Mail archived for: alexander.stein@ew.tq-group.com
+X-cloud-security-Mailarchivtype:outbound
+X-cloud-security-Virusscan:CLEAN
+X-cloud-security-disclaimer: This E-Mail was scanned by E-Mailservice on mx-relay49-hz3.antispameurope.com with 4f9Cb80s0Mz3ybFB
+X-cloud-security-connect: he-nlb01-hz1.hornetsecurity.com[94.100.132.6], TLS=1, IP=94.100.132.6
+X-cloud-security-Digest:f91bf45b2c1e1e4dad7653f0d57fe9b6
+X-cloud-security:scantime:2.062
+DKIM-Signature: a=rsa-sha256;
+ bh=pabMGLGGXLOcOo/Dpjkxu/cClFC72VFL87C8/t2PX84=; c=relaxed/relaxed;
+ d=ew.tq-group.com;
+ h=content-type:mime-version:subject:from:to:message-id:date; s=hse1;
+ t=1770707920; v=1;
+ b=kr2UFQaXqPIR8OnShRcChB+GiU3jo1eLV0g4IdsE34lLXNwBvrRgOpu0kOg/c9MOxcApcEuJ
+ QuhMek6GiRshG3lAThzz1X6n+SKwzFtBKGYHTU2CW8F9h21Vi4fLxaVyN++RWh7ID2/QYa1DrQL
+ c7MHkLvc2rifGIQiYZRWQSsWvQLWbUQuNcKVLEkMoqsTnv1k5DXIyh0VH98FkpplMLDshVmPBSt
+ ntCRtzYzdAWUrbe+GOGhh7JtTlNvNyQBZm6Txnxs0vAdc+JlHvC35bPVd5NcLAE+DAi37wZPMs4
+ P/KQi0Ij/i+3cWH9GE7p1i/I7R4bK0aJ75K8g7wro2Egg==
 
-Enable experimental rust support for ppc64le and ppc32be. The patch for
-ppc32 has been provided by Link Mauve[1] and ppc64le support[2] has been 
-merged over it. ppc32 needs some toolchain fixes mentioned in the patch 
-`rust: Add PowerPC support` and the discussion for that is done here[1]. 
+Hi,
 
-This has been tested on powernv9 hardware and power10 pseries qemu. I
-I request Link to test the ppc32 part as i don't have a hardware to test
-it out. 
+Am Montag, 2. Februar 2026, 18:41:12 CET schrieb Ziyi Guo:
+> fsl_xcvr_activate_ctl() has=20
+> lockdep_assert_held(&card->snd_card->controls_rwsem),
+> but fsl_xcvr_mode_put() calls it without acquiring this lock.
+>=20
+> Other callers of fsl_xcvr_activate_ctl() in fsl_xcvr_startup() and
+> fsl_xcvr_shutdown() properly acquire the lock with down_read()/up_read().
+>=20
+> Add the missing down_read()/up_read() calls around fsl_xcvr_activate_ctl()
+> in fsl_xcvr_mode_put() to fix the lockdep assertion and prevent potential
+> race conditions when multiple userspace threads access the control.
+>=20
+> Signed-off-by: Ziyi Guo <n7l8m4@u.northwestern.edu>
+> ---
+>  sound/soc/fsl/fsl_xcvr.c | 3 +++
+>  1 file changed, 3 insertions(+)
+>=20
+> diff --git a/sound/soc/fsl/fsl_xcvr.c b/sound/soc/fsl/fsl_xcvr.c
+> index a268fb81a2f8..0b9dd64b9a82 100644
+> --- a/sound/soc/fsl/fsl_xcvr.c
+> +++ b/sound/soc/fsl/fsl_xcvr.c
+> @@ -223,10 +223,13 @@ static int fsl_xcvr_mode_put(struct snd_kcontrol *k=
+control,
+> =20
+>  	xcvr->mode =3D snd_soc_enum_item_to_val(e, item[0]);
+> =20
+> +	down_read(&card->snd_card->controls_rwsem);
 
-[1] https://lore.kernel.org/all/20260204030507.8203-1-linkmauve@linkmauve.fr
-[2] https://lore.kernel.org/all/20260204042417.83903-1-mkchauras@gmail.com
+This lock causes a blocked task on my TQMa8MPxL based board:
 
-Changelog:
-V4 -> V5:
-- Removed a nested ifdef from PPC64 for Little endian toolchain
-V4: https://lore.kernel.org/all/20260209105456.1551677-1-mkchauras@gmail.com/ 
+INFO: task alsactl:1969 blocked for more than 120 seconds.
+      Tainted: G        W           6.19.0-next-20260209+ #3331
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+task:alsactl         state:D stack:0     pid:1969  tgid:1969  ppid:1      t=
+ask_flags:0x400100 flags:0x00000a01
+Call trace:
+ __switch_to+0xdc/0x120 (T)
+ __schedule+0x258/0x790
+ schedule+0x30/0xb0
+ schedule_preempt_disabled+0x20/0x40
+ rwsem_down_read_slowpath+0x214/0x68c
+ down_read+0xb0/0xb8
+ fsl_xcvr_mode_put+0x4c/0xc0 [snd_soc_fsl_xcvr ac1b31380c6a6ea0d613bd5f7848=
+9e314a40f91f]
+ snd_ctl_elem_write+0xdc/0x180 [snd 852e63996474051c57bcd1a86ebfd8108307385=
+3]
+ snd_ctl_ioctl+0x7a4/0xaec [snd 852e63996474051c57bcd1a86ebfd81083073853]
+ __arm64_sys_ioctl+0x9c/0xe4
+ invoke_syscall.constprop.0+0x58/0xcc
+ el0_svc_common.constprop.0+0xac/0xd4
+ do_el0_svc+0x18/0x20
+ el0_svc+0x24/0xa0
+ el0t_64_sync_handler+0x98/0xdc
+ el0t_64_sync+0x154/0x158
+INFO: task alsactl:1969 <reader> blocked on an rw-semaphore likely owned by=
+ task alsactl:1969 <writer>
 
-V3 -> V4:
-- Co-developed-by header added in patch 1
-V3: https://lore.kernel.org/all/20260205180429.3280657-1-mkchauras@gmail.com
+Best regards,
+Alexander
 
-V2 -> V3:
-- Splited HAVE_RUST in 2 lines
-- BINDGEN_TARGET_powerpc initialized before assigning the same to
-  BINDGEN_TARGET
-V2: https://lore.kernel.org/all/20260204210125.613350-1-mkchauras@gmail.com
-
-V1 -> V2:
-- jump label fix for rust has been moved to a separate patch
-- PPC32 support has been taken
-- rust support has been marked experimental
-- target.json dependency has been removed
-- HAVE_RUST now depends on CPU_LITTLE_ENDIAN for PPC64
+>  	fsl_xcvr_activate_ctl(dai, fsl_xcvr_arc_mode_kctl.name,
+>  			      (xcvr->mode =3D=3D FSL_XCVR_MODE_ARC));
+>  	fsl_xcvr_activate_ctl(dai, fsl_xcvr_earc_capds_kctl.name,
+>  			      (xcvr->mode =3D=3D FSL_XCVR_MODE_EARC));
+> +	up_read(&card->snd_card->controls_rwsem);
+> +
+>  	/* Allow playback for SPDIF only */
+>  	rtd =3D snd_soc_get_pcm_runtime(card, card->dai_link);
+>  	rtd->pcm->streams[SNDRV_PCM_STREAM_PLAYBACK].substream_count =3D
+>=20
 
 
-Link Mauve (1):
-  rust: Add PowerPC support
+=2D-=20
+TQ-Systems GmbH | M=FChlstra=DFe 2, Gut Delling | 82229 Seefeld, Germany
+Amtsgericht M=FCnchen, HRB 105018
+Gesch=E4ftsf=FChrer: Detlef Schneider, R=FCdiger Stahl, Stefan Schneider
+http://www.tq-group.com/
 
-Mukesh Kumar Chaurasiya (IBM) (2):
-  powerpc/jump_label: adjust inline asm to be consistent
-  powerpc: Enable Rust for ppc64le
-
- Documentation/rust/arch-support.rst   |  1 +
- arch/powerpc/Kconfig                  |  2 ++
- arch/powerpc/Makefile                 |  9 +++++++++
- arch/powerpc/include/asm/jump_label.h | 23 +++++++++++++----------
- rust/Makefile                         | 10 +++++++++-
- 5 files changed, 34 insertions(+), 11 deletions(-)
-
--- 
-2.53.0
 
 
