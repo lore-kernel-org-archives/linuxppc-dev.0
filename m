@@ -1,73 +1,116 @@
-Return-Path: <linuxppc-dev+bounces-16797-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16798-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6367EB596B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Feb 2026 07:17:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE3ACEB597D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Feb 2026 08:24:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f9qWs3nGJz2xlM;
-	Wed, 11 Feb 2026 18:17:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770794265;
-	cv=none; b=opoWRjgcyrWtIxUuBQThje9736Ob9x0ss2OQd5C8Z/iO+XVEPA0LajLdxdhfdtzoG+jQhQYGf5rxaPpKz+39IN2PwpDsF/997UOEUB1iGFO1LZP8qNZ/1K2RsT0XVx4CDI8L7eekcP7uge7h0LGHVQiWSZ/DDjSNkrk2MzJhEF21gH+T30yk4CgSJZFTWfuCv1lBZqZdBkiDQbnfcXfFM9AcMZab+fkoffFXLIUJBlvur0j6sovQagaeVim5TbKqpiv8QIaMavMZrieqtNbiW5u+vofzjXsvOsM8mLHFCpfYI0mu8b2jpkZDaUzbWZh2fSg3UiUW9TfJg60X/SJ/Lg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f9s0h59Tzz2yFc;
+	Wed, 11 Feb 2026 19:24:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770798260;
+	cv=none; b=Atg6xp5aNTIAWrrOs9/FxzV1CIBbILGv8YkpBIsBlOUJaCL65rSG53js98hm1T/LooW8Vt2jby1CG+LzHr4GvnjhmrzrYGBm8rHJqLQmgBlsqBUBT30diTY01eqZM2SJ8WNmTY91uGwpeppNXlPFL1rLHpov8CeJR24MrgzojciRxq4ga+UaTTaHKVgO+1zq1iemVFM5ltMymV3GkZsE0ZPaiiMQCWwIdds7VQPHH5PO7IKzCH1xc5dO57ocW0Y1OyUZND+BJ1B8iojcgBH+ELtn3UtLUeb23V20MXOKpRUaALlk5olcqqTyJiohRbWupR315IKVax7dxPgFwKOqxg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770794265; c=relaxed/relaxed;
-	bh=rOrabWDWlsl4i0N/Sz+/mAPq29P2YHk3fkva++SGgpM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=OIgUtToc7IXUa5UBRaUzR2fNsQYVYDSQZDjY8ZkuLuQfb2dGul4p5Dazv9/d/rFC0FbslkSL/UITQSou4PEQsm8nvgzUE8LIq6eL4ZfkEPJZlEI/Vg9jdfaNU/RR1rZGDym8aMbYvoKcveSAc4i24TvxQe0sCyICR03osZFLrceZBZBkPP1iwrm0ERDBBtE/i0XQv07Btn9UUdeIBY0n4SPrUvCYpXhOB3t4LpgCNEDj/NM4zyHpvz2+mQWDWjAtE9MrLaQ36C3jO9d4x6rTRH1A90WfR2toHq3KtD0/O668lpOPyVzrmve5X+pJySECqtI2VdTBuql2P4L3ml22LA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CMECliyx; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1770798260; c=relaxed/relaxed;
+	bh=ihJ36lzkXZ7WFB7v/KaqffqO3gp0QEVYrI9tOHAHfi4=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:content-type; b=OYcsWJMNYKCjNbbsZTxi7sfZM3KaYUM9OIlyOcdZHWmpSyI5GDyYTS3gCZ0L15LrR31gdSGzDg8clWLB9qmfxbhkqLToClO+dCJ8pthb3tw/MSoOHwzpJVjEZv90Gsu1uMAAXGzC/1TPez0yIe3w0x9vpztrDVwYd0F3BS6YbJ/0lzyqC5QJEoWvrgE7AFQk/pjbgXSGBYtQlNZTE3aMyGHtMYu7XyNG+ARxJB7N7Yps6hFJLm98pCCX+A2hRZ+Hx0ABVODIRDMT4fmqOkrOP+lWIozM5USb6JFgZGoZqbeg7SWNyqJMq0S3Mx4dgVGyPBiGu7cQNzSDaDgHJuLB6w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=HGM0BIZ2; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=HGM0BIZ2; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=coxu@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CMECliyx;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=HGM0BIZ2;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=HGM0BIZ2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=coxu@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f9qWr1pKxz2xSb
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2026 18:17:43 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61ANxSQG205004;
-	Wed, 11 Feb 2026 07:17:24 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=rOrabW
-	DWlsl4i0N/Sz+/mAPq29P2YHk3fkva++SGgpM=; b=CMECliyxsizS/zv08+VezE
-	WDW222P54qiJdRbQiqLCVwReoBO1vg0urDHlPx4h8aufnDn/Oe45biVqmiXzLACd
-	Y1z/RQ19v5dz8h4wZPvI03eobZpAmYuwtEGavxsoXMyKHb0QQHPulqxjHmktbVm5
-	l1HvUaTqQMQf2q+64D8ccVcsfNGa1iFtwbJAW7OKcbpYlj1ushvtJnyDBXv6x6aI
-	6abYyvdapD92faXLvjcwqOmOo5iXgbJs9a1gLCj5FGKwHcR4UoaAtlSxbY1KZq6B
-	klDJIDN6+Xcsp371IghFNJuCiOu57nULyZLJNo2SmyxTsrmHZW2e2i+F3t7RqT2A
-	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4c696v5j2t-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 11 Feb 2026 07:17:23 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 61B6VU9h001873;
-	Wed, 11 Feb 2026 07:17:22 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4c6je24hn9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 11 Feb 2026 07:17:22 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 61B7HDJR50594252
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 11 Feb 2026 07:17:13 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 715922004D;
-	Wed, 11 Feb 2026 07:17:13 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9B58320040;
-	Wed, 11 Feb 2026 07:17:11 +0000 (GMT)
-Received: from [9.109.204.116] (unknown [9.109.204.116])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 11 Feb 2026 07:17:11 +0000 (GMT)
-Message-ID: <a66d659f-320a-4307-ac01-7d0bc3119ec7@linux.ibm.com>
-Date: Wed, 11 Feb 2026 12:47:28 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f9s0g2Wwbz2xlM
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2026 19:24:16 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1770798253;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ihJ36lzkXZ7WFB7v/KaqffqO3gp0QEVYrI9tOHAHfi4=;
+	b=HGM0BIZ2j8v/Ckvo+ZUTjfoTeR8qZyKRQafo3MM46cOEZ8By7cR3hnNBDkpdpoh2T0WAIR
+	1g2NCUsh7869SpDqdOch7vkAT3334XDhQqnXin9TR45qtZtSYB8+qsOoH59cseIazlnfKY
+	8SaT6h7U1jMjbxPyHOUaGPv74O4pNPE=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1770798253;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ihJ36lzkXZ7WFB7v/KaqffqO3gp0QEVYrI9tOHAHfi4=;
+	b=HGM0BIZ2j8v/Ckvo+ZUTjfoTeR8qZyKRQafo3MM46cOEZ8By7cR3hnNBDkpdpoh2T0WAIR
+	1g2NCUsh7869SpDqdOch7vkAT3334XDhQqnXin9TR45qtZtSYB8+qsOoH59cseIazlnfKY
+	8SaT6h7U1jMjbxPyHOUaGPv74O4pNPE=
+Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com
+ [209.85.214.200]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-354-K6tmrgPQNxaex0KodTc-zg-1; Wed, 11 Feb 2026 03:24:11 -0500
+X-MC-Unique: K6tmrgPQNxaex0KodTc-zg-1
+X-Mimecast-MFC-AGG-ID: K6tmrgPQNxaex0KodTc-zg_1770798250
+Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2aad6045810so15371765ad.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2026 00:24:11 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1770798250; x=1771403050;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=ihJ36lzkXZ7WFB7v/KaqffqO3gp0QEVYrI9tOHAHfi4=;
+        b=mUB26ciEC32Ob33tbfmJ7DrSJeMZ+kkunnAq+r2Xg4WIcqgV5uQz4JGQfyKuT9msFJ
+         bvNc5AWF66n2mQ3/AVsK8bwlw+VMgDcTnZmgWzXeFd/RI0QrlOhEI7kBfLgDktoGK/eW
+         HOATbCpwNpj9FcSr2EfAnHQzLS9hYrd4abSoxZT2RuNV8opzBTwj7aOFC7yoxi6b8ZW+
+         gc9fe8W8TmpIE6bUlI1i6VXPquL1TjNsH4MQ0cAdW23IOE1GVgVNysMlMhQwklwLs/mJ
+         i7g85mryeV/0jXNwaVNXQga6GZhiVBBT4EF46nEg3Et8FaNAG8M02sOvUtxV4oOVcpFS
+         sLrw==
+X-Forwarded-Encrypted: i=1; AJvYcCXw7OTIr/TNwGxeqEbVpJOlj8WjE0IkSSXKxUAPUJsDOmxO3BJYNbQCbBfz4h1bDJb4efdchwr98MV2dEQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyD7PYOz345E7cIHdxLbMiq2tERyT7JUAkFKmJaHayi0Nqy6AXc
+	jVHpay1ZADn0FNvk7SrQ4EoV8tua0TfzravC5Efu3869SMfTWotIfT+TxonlTYpBJ+U7yR8tfd6
+	Wpc6dWXd0/Xxi8T5cUMUD3tDtTfZadsDI9YbH4fChxlf/hD/k8wKMgrMlXsowZ9TPAY8=
+X-Gm-Gg: AZuq6aIMAE8eU7K9J6FNA/C9HfTj6ZcOB6NrZ2EjJw5Qari3E2A8OIHoZHJgBfOkbYj
+	1pXtjrjPcF7LVyPaJHKFT9B3FaJm5ulQxZylkI2KXrcOzG1eEqj/8cvLRJZ1Gd6BRMAN0xuBUp5
+	U/QQdu58g/wwXydjNg9uYtBklwjMETW/LNXS/WeVtgNe/NYLfOJcosqkNOU1EaittQZZM/a9Yx1
+	m0ZEz4n/h8T9YGdsn7zH+bDMTAGF8b4zxGqyH0jFfeqVBuJA2pHRFMn4BZeiAM5TNRvo3fYRTNj
+	oCnHgZyyz+rxB62Y5P1WWWaJVLO/LtTODjg0BtDdgPh/I3RtJKnULRQ54iX8HK2mfcq0JmdlZXO
+	f+Un/J9ntShrh
+X-Received: by 2002:a17:903:1a0e:b0:2a9:4450:abb7 with SMTP id d9443c01a7336-2a9516fcf6amr203049345ad.39.1770798250253;
+        Wed, 11 Feb 2026 00:24:10 -0800 (PST)
+X-Received: by 2002:a17:903:1a0e:b0:2a9:4450:abb7 with SMTP id d9443c01a7336-2a9516fcf6amr203049015ad.39.1770798249724;
+        Wed, 11 Feb 2026 00:24:09 -0800 (PST)
+Received: from localhost ([209.132.188.88])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ab29964c62sm14460265ad.55.2026.02.11.00.24.08
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 11 Feb 2026 00:24:09 -0800 (PST)
+From: Coiby Xu <coxu@redhat.com>
+To: kexec@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org,
+	linuxppc-dev@lists.ozlabs.org,
+	devicetree@vger.kernel.org
+Cc: Will Deacon <will@kernel.org>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	x86@kernel.org (maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)),
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Baoquan He <bhe@redhat.com>,
+	Vivek Goyal <vgoyal@redhat.com>,
+	Dave Young <dyoung@redhat.com>,
+	linux-kernel@vger.kernel.org (open list:X86 ARCHITECTURE (32-BIT AND 64-BIT))
+Subject: [PATCH v4 1/2] crash_dump/dm-crypt: Don't print in arch-specific code
+Date: Wed, 11 Feb 2026 16:23:59 +0800
+Message-ID: <20260211082401.2407853-2-coxu@redhat.com>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260211082401.2407853-1-coxu@redhat.com>
+References: <20260211082401.2407853-1-coxu@redhat.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,172 +124,74 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/crash: sort crash memory ranges before preparing
- elfcorehdr
-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-        linuxppc-dev@lists.ozlabs.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, Baoquan he <bhe@redhat.com>,
-        Jinjie Ruan <ruanjinjie@huawei.com>,
-        Hari Bathini <hbathini@linux.ibm.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Mahesh Salgaonkar <mahesh@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Shivang Upadhyay <shivangu@linux.ibm.com>,
-        linux-kernel@vger.kernel.org
-References: <20260210120803.433978-1-sourabhjain@linux.ibm.com>
- <875x840x6v.ritesh.list@gmail.com>
-Content-Language: en-US
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-In-Reply-To: <875x840x6v.ritesh.list@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: 6Pnuh1tthOly9A2JJh9CywcvnoJKpI4oHfWNXuSIsgg_1770798250
+X-Mimecast-Originator: redhat.com
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: XJxWFGKelXzlrQo5w0R1AdsF4P70HYEL
-X-Proofpoint-ORIG-GUID: eb2mMYKf5IIQdWLtJaB6U4NrADWkpV5L
-X-Authority-Analysis: v=2.4 cv=JdWxbEKV c=1 sm=1 tr=0 ts=698c2d03 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=HzLeVaNsDn8A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=Mpw57Om8IfrbqaoTuvik:22 a=GgsMoib0sEa3-_RKJdDe:22 a=VwQbUJbxAAAA:8
- a=i0EeH86SAAAA:8 a=VnNF1IyMAAAA:8 a=Z4Rwk6OoAAAA:8 a=20KFwNOVAAAA:8
- a=pGLkceISAAAA:8 a=5dAAW_aV5X8ElluqeskA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=HkZW87K1Qel5hWWM3VKY:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjExMDA1OCBTYWx0ZWRfXzuuMRXLvxnyQ
- y6VlO5PJ6625LsCxLncr7QwaPj1bM0eTD5iO9KY8Xvr9SE6/zYLPOZKCEckoulWs+j+nAJzA+D8
- zORV/ISKptegt9a63m6girx5J4v1q8YyiqQmTrnOxgT+SbTNenHjYVQ4vsvpl3K7d1fwBbp+48r
- sRHyquGvebgyrDfjs6Szy6VwXiQfFnCLka1ChsKZEweZ5tNMY7D0qBZIHSW99YOE+CweKlqJfXI
- LbO1Lh9nV4q+qH0QpNMrqEWd7Jt1gCp58SX9m3TKHPGDcpx3/VQyBmzQT3EBEml9MUJMzdgdo7o
- FzJNUl82Ad/9fhp5Xm9fBGGxRX9+QekXw2qGkuyHeguCq6kcYHg74ZGZohDh0WR9j/3eGRgKm3v
- lAJr6Olt9KobAZtTLl8+l0K49iPno1nkK3nz5rPz9cMgXHEFLizjaKHWTit4bggEtT2TlnOhiBm
- xyvzuBO0cS8h5ijZx/g==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-02-10_03,2026-02-10_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 clxscore=1015 impostorscore=0 bulkscore=0
- lowpriorityscore=0 suspectscore=0 adultscore=0 spamscore=0 malwarescore=0
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2601150000
- definitions=main-2602110058
+content-type: text/plain; charset="US-ASCII"; x-default=true
 
+When the vmcore dumping target is not a LUKS-encrypted target, it's
+expected that there is no dm-crypt key thus no need to return -ENOENT.
+Also print more logs in crash_load_dm_crypt_keys. The benefit is
+arch-specific code can be more succinct.
 
+Suggested-by: Will Deacon <will@kernel.org>
+Signed-off-by: Coiby Xu <coxu@redhat.com>
+---
+ arch/x86/kernel/kexec-bzimage64.c | 6 +-----
+ kernel/crash_dump_dm_crypt.c      | 7 +++++--
+ 2 files changed, 6 insertions(+), 7 deletions(-)
 
-On 11/02/26 09:05, Ritesh Harjani (IBM) wrote:
-> Sourabh Jain <sourabhjain@linux.ibm.com> writes:
->
->> During a memory hot-remove event, the elfcorehdr is rebuilt to exclude
->> the removed memory. While updating the crash memory ranges for this
->> operation, the crash memory ranges array can become unsorted. This
->> happens because remove_mem_range() may split a memory range into two
->> parts and append the higher-address part as a separate range at the end
->> of the array.
->>
->> So far, no issues have been observed due to the unsorted crash memory
->> ranges. However, this could lead to problems once crash memory range
->> removal is handled by generic code, as introduced in the upcoming
->> patches in this series.
-> Do you have the link of the discussion, to where you have pointed about,
-> what sort of problems this unsorted memory ranges might bring up with
-> the new patch series?
-
-No, we didn’t discuss this anywhere. This occurred to me while I
-was reviewing [1].
-
-The issue is that [1] moves the exclusion of crashkernel reserved
-memory into a generic function. With [1] included, the architecture
-prepares the initial set of crash_mem ranges, and later the generic
-function removes the crashkernel memory range from those crash_mem
-ranges by calling crash_exclude_mem_range().
-
-crash_exclude_mem_range() expects the crash_mem ranges to be sorted,
-but that may not be true on powerpc if the ranges come from the
-hotplug remove path, where remove_mem_range() is called to exclude
-the hot-removed memory range.
-
-
-[1] 
-https://lore.kernel.org/all/20260209095931.2813152-1-ruanjinjie@huawei.com/
->
->
->> Currently, powerpc uses a platform-specific function,
->> remove_mem_range(), to exclude hot-removed memory from the crash memory
->> ranges. This function performs the same task as the generic
->> crash_exclude_mem_range() in crash_core.c. The generic helper also
->> ensures that the crash memory ranges remain sorted. So remove the
->> redundant powerpc-specific implementation and instead call
->> crash_exclude_mem_range_guarded() (which internally calls
->> crash_exclude_mem_range()) to exclude the hot-removed memory ranges.
->>
->> Cc: Andrew Morton <akpm@linux-foundation.org>
->> Cc: Baoquan he <bhe@redhat.com>
->> Cc: Jinjie Ruan <ruanjinjie@huawei.com>
->> Cc: Hari Bathini <hbathini@linux.ibm.com>
->> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
->> Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
->> Cc: Michael Ellerman <mpe@ellerman.id.au>
->> Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
->> Cc: Shivang Upadhyay <shivangu@linux.ibm.com>
->> Cc: linux-kernel@vger.kernel.org
->> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
->> ---
->>
->> Requesting this patch to part of the below patch series.
->> https://lore.kernel.org/all/20260209095931.2813152-1-ruanjinjie@huawei.com/
->>
->> ---
->>   arch/powerpc/include/asm/kexec_ranges.h |  4 +-
->>   arch/powerpc/kexec/crash.c              |  5 +-
->>   arch/powerpc/kexec/ranges.c             | 87 +------------------------
->>   3 files changed, 7 insertions(+), 89 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/kexec_ranges.h b/arch/powerpc/include/asm/kexec_ranges.h
->> index 14055896cbcb..ad95e3792d10 100644
->> --- a/arch/powerpc/include/asm/kexec_ranges.h
->> +++ b/arch/powerpc/include/asm/kexec_ranges.h
->> @@ -7,7 +7,9 @@
->>   void sort_memory_ranges(struct crash_mem *mrngs, bool merge);
->>   struct crash_mem *realloc_mem_ranges(struct crash_mem **mem_ranges);
->>   int add_mem_range(struct crash_mem **mem_ranges, u64 base, u64 size);
->> -int remove_mem_range(struct crash_mem **mem_ranges, u64 base, u64 size);
->> +int crash_exclude_mem_range_guarded(struct crash_mem **mem_ranges,
->> +				    unsigned long long mstart,
->> +				    unsigned long long mend);
->>   int get_exclude_memory_ranges(struct crash_mem **mem_ranges);
->>   int get_reserved_memory_ranges(struct crash_mem **mem_ranges);
->>   int get_crash_memory_ranges(struct crash_mem **mem_ranges);
->> diff --git a/arch/powerpc/kexec/crash.c b/arch/powerpc/kexec/crash.c
->> index a325c1c02f96..31462e8415ff 100644
->> --- a/arch/powerpc/kexec/crash.c
->> +++ b/arch/powerpc/kexec/crash.c
->> @@ -431,7 +431,7 @@ static void update_crash_elfcorehdr(struct kimage *image, struct memory_notify *
->>   	struct crash_mem *cmem = NULL;
->>   	struct kexec_segment *ksegment;
->>   	void *ptr, *mem, *elfbuf = NULL;
->> -	unsigned long elfsz, memsz, base_addr, size;
->> +	unsigned long elfsz, memsz, base_addr, size, end;
->>   
->>   	ksegment = &image->segment[image->elfcorehdr_index];
->>   	mem = (void *) ksegment->mem;
->> @@ -450,7 +450,8 @@ static void update_crash_elfcorehdr(struct kimage *image, struct memory_notify *
->>   	if (image->hp_action == KEXEC_CRASH_HP_REMOVE_MEMORY) {
->>   		base_addr = PFN_PHYS(mn->start_pfn);
->>   		size = mn->nr_pages * PAGE_SIZE;
->> -		ret = remove_mem_range(&cmem, base_addr, size);
->> +		end = base_addr - size - 1;
->
-> end should be "base_addr + size - 1", isn't it?
-
-oops, my bad. I will fix it in v2.
-
-
-Thanks for the review, Ritesh.
->
->
->> +		ret = crash_exclude_mem_range_guarded(&cmem, base_addr, end);
->>   		if (ret) {
->>   			pr_err("Failed to remove hot-unplugged memory from crash memory ranges\n");
->>   			goto out;
-> -ritesh
+diff --git a/arch/x86/kernel/kexec-bzimage64.c b/arch/x86/kernel/kexec-bzimage64.c
+index 7508d0ccc740..d20cf976d01a 100644
+--- a/arch/x86/kernel/kexec-bzimage64.c
++++ b/arch/x86/kernel/kexec-bzimage64.c
+@@ -518,12 +518,8 @@ static void *bzImage64_load(struct kimage *image, char *kernel,
+ 		if (ret)
+ 			return ERR_PTR(ret);
+ 		ret = crash_load_dm_crypt_keys(image);
+-		if (ret == -ENOENT) {
+-			kexec_dprintk("No dm crypt key to load\n");
+-		} else if (ret) {
+-			pr_err("Failed to load dm crypt keys\n");
++		if (ret)
+ 			return ERR_PTR(ret);
+-		}
+ 		if (image->dm_crypt_keys_addr &&
+ 		    cmdline_len + MAX_ELFCOREHDR_STR_LEN + MAX_DMCRYPTKEYS_STR_LEN >
+ 			    header->cmdline_size) {
+diff --git a/kernel/crash_dump_dm_crypt.c b/kernel/crash_dump_dm_crypt.c
+index 401423ba477d..478dacb0625c 100644
+--- a/kernel/crash_dump_dm_crypt.c
++++ b/kernel/crash_dump_dm_crypt.c
+@@ -405,14 +405,16 @@ int crash_load_dm_crypt_keys(struct kimage *image)
+ 
+ 	if (key_count <= 0) {
+ 		kexec_dprintk("No dm-crypt keys\n");
+-		return -ENOENT;
++		return 0;
+ 	}
+ 
+ 	if (!is_dm_key_reused) {
+ 		image->dm_crypt_keys_addr = 0;
+ 		r = build_keys_header();
+-		if (r)
++		if (r) {
++			pr_err("Failed to build dm-crypt keys header, ret=%d\n", r);
+ 			return r;
++		}
+ 	}
+ 
+ 	kbuf.buffer = keys_header;
+@@ -423,6 +425,7 @@ int crash_load_dm_crypt_keys(struct kimage *image)
+ 	kbuf.mem = KEXEC_BUF_MEM_UNKNOWN;
+ 	r = kexec_add_buffer(&kbuf);
+ 	if (r) {
++		pr_err("Failed to call kexec_add_buffer, ret=%d\n", r);
+ 		kvfree((void *)kbuf.buffer);
+ 		return r;
+ 	}
+-- 
+2.53.0
 
 
