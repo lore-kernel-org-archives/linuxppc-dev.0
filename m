@@ -1,47 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-16816-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16817-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 676CBECD6E9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Feb 2026 21:39:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B04C5ECD6EE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Feb 2026 22:23:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fBBfK3bR5z2xHX;
-	Thu, 12 Feb 2026 08:39:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.177
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770817554;
-	cv=none; b=HLNb7N5aW8fMiyKFieVEkPiLD01hDcKN0Ha8ciC74C/sEsf1A+ADivppMosPp15DFwM6Jk71C+4/I3IN2jEHRsHoe4PO6i9eg8uDWyzHdWXEaSCa4kHog8/xtlEz5/kSBXBjzoSEjex7qn6cp7cGSxyBugsr4SMxVdsBlQAR+OrFC9L6gtuh/r+1yvfuhualCFfcHOer+l5v85hepMjof6UCwvgCxKbymNFk1UJheOWhBowlMyUnn9R/WbhI8wYMP6uBqafTY8MhpYF+vq2c5ZzPfwNn5X+apt6C59FUkUR6PjFFQZRX8O+NQYimcQN/GggJHl5BfsESo6aH7Pvyjw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770817554; c=relaxed/relaxed;
-	bh=AvbV/7yBLNX8l/Q3y3FXi6sUQ6jYM1ujaQvV+NINbwk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ortbRWqs+VcFXJAR2ddmAM77QURumQQlbYRAJiIADIGhIZeO0Tj1T1Ah5afjMn2Vi7S2Z823RtGxYvnxJQX9B4kqEsXCtvqP2mrasz3Sr4/MezBCCKkuNVb2n6NKOGLaNtEU+5tEGS8Gra1v0IcWiK94ceAiH2GwAL6IcjD79rZ3r9OYcTHBjc14FVO9jXy8mqAqlyc2Yw4mSIAurYoo76ShllDkMAHLT86R02VWYqKUQbt3B1zKZpe9COS6BYwiAr2h42S3hpRa2Pb74Yc7HFEo/1e/l+ZlgAx5++1zLsitYDGhihXyswxtMQ4AnOwJaeQaYDwUj+eRWuBBXF7+ag==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=KTkCq28T; dkim-atps=neutral; spf=pass (client-ip=95.215.58.177; helo=out-177.mta1.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fBCcx0LKXz2xm5;
+	Thu, 12 Feb 2026 09:23:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::1329" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770848608;
+	cv=pass; b=oR0nUBO3JAQKEVXU+byw2ne3x+nJBxCzMphSXdCgoe50UxJhhcSfG671fVXajGBHAps7KrD48ZQoal/4UI3cJSSWI+7vQi8Yxpcn/UdCnAqfaoiMhImskncjp61hTH3315bxBtJe6PiJqpgAI4K3odyoCFG2ENea+ukLv/z92+ezouwsX9ZR5d029pZe7pioeeKhVFyKQVgBEUJZmxtEiNv79+WHjB8XY7ZuM/vQXVIFuH5c8sbxw9Z8nk5LSyyF2VLnphGzCy4hqQgyLM/gK6CGoo8PoJRKzAuOv7NCc3YYAeolNzDOo7ZHn4B39ChXir3adBHyy0B94GjVGvtLcQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1770848608; c=relaxed/relaxed;
+	bh=RfH/ZJAACI/swH2C3a/IoB6OapnQajyNzXEzxpMU19Q=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=B9xiz0asHpUTRZTQ1OPtKuVh6GTy3I9eHA99idETBcyn8NKKoj4IiU2ADd6nYaMTXUbpRhsVFR5IVQropfPLxxYIr8uISY3Gv5j2XzZKdUVwVcIlcX6ot1TdpPOcDEyxP7XoxqxCzfUysqFWxIto+l8+xQDW0DVKBtKQOGuF64NaMpqNZH5QM1036uvElqwJ4QFmEoR8g6f8LfEny8tbgqblFxp0Nz/rSVEl3wDeB1HADC2V4/9YO9mvIRGmIAStq2+7stRcniWpfPA7E5fBQajmbaYiq9yWBDAbbxTcC3Nm7QR1QFYpBcjP/fgQh6A6bl6/mDa2LPL7qzZ5BTAo1Q==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=AEl5dRMU; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1329; helo=mail-dy1-x1329.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=KTkCq28T;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=AEl5dRMU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.177; helo=out-177.mta1.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org)
-X-Greylist: delayed 428 seconds by postgrey-1.37 at boromir; Thu, 12 Feb 2026 00:45:50 AEDT
-Received: from out-177.mta1.migadu.com (out-177.mta1.migadu.com [95.215.58.177])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1329; helo=mail-dy1-x1329.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x1329.google.com (mail-dy1-x1329.google.com [IPv6:2607:f8b0:4864:20::1329])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fB07f6j7dz2xlM
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Feb 2026 00:45:50 +1100 (AEDT)
-Message-ID: <735c0277-2155-47f5-a650-b4c8a0a2e6fc@linux.dev>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1770817101;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=AvbV/7yBLNX8l/Q3y3FXi6sUQ6jYM1ujaQvV+NINbwk=;
-	b=KTkCq28TEAtcHJtPGFZ/oKU8vD4gE8s1v/eM0FDHslaVRDzQDOvgbM71iCr6Pzgy+Spxsz
-	evXRXBoMAsjI/Ec6zEqMkgSSphZQpvv9wrKwI5q/izSGw5wgkZUgK6soksEZU9HWq9rx3W
-	FPXHMoVaAFe+ylRDS4SuNauNPCVGj+I=
-Date: Wed, 11 Feb 2026 13:38:17 +0000
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fBCcv4rX1z2xm3
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Feb 2026 09:23:26 +1100 (AEDT)
+Received: by mail-dy1-x1329.google.com with SMTP id 5a478bee46e88-2ba76d64d14so154774eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2026 14:23:26 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1770848603; cv=none;
+        d=google.com; s=arc-20240605;
+        b=ZWmcEt8LSNN0c436JibiZejbZROuAVmQ+ZyazNZVTzsG/jyGRtCr6qVbeM2LG0NbeG
+         hn7telx7fqBpAsJJCQweEvnxB0zTlRf8c689mkbxmWGzEmFZ2eO00cDGA287gvGG6Pf6
+         iQd9Ju+Fu5bc7qdnYXJhRk0HGwiYWp53tWxBeeI5u9MVoR3z9vb6cPnxtsqhQQxhRko6
+         6OtZ/9IkaCkwnzl3nyw+ClhdCsByOPCR3LGGL0vvTA0ZlV4w8Yik9hVcWdJMZA2jumlo
+         /U/O02/5lOOn7+hLhJiR329p3BmvJcRaX9Rv26/PeF5+4E7BgSrVwXSuUtjiezVrEzXz
+         ZXFw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=RfH/ZJAACI/swH2C3a/IoB6OapnQajyNzXEzxpMU19Q=;
+        fh=kl4/Tb+MYLeTthImi+hzxxDHOkGvJuTmW8YqamMcnyk=;
+        b=GV1EznakRcdi9UikXOfdL/hJeuL2dt+DcyqntAD3rMa1Q8DP9bueiBQzyw2ICHbjOM
+         iY1/52BqsPGjABiFCCXWLtIr8sfTUf+VOqmT9qx6KzZFI1ojSeXB4A0wl/fc9J1KG1nQ
+         BPwYOBF1lL1ID/LCdpqF4lr7WoOECESZJ2pe35mSJuBcen5ZGYl69pS+cjxVo/vaqJp8
+         HiV78jaY0VnFOThIb5hk4oX0iYDSxi1jP0RHKqPRgFW6Ak5Bc6vcmHpbkBb0tYilqscL
+         y80rRu8Ks3v3EzkhW/y1c36y13bt8eG4BDCzuObxGBOEJoaPUkLRCpEh7ZOzzvOnLSGK
+         4Z1g==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1770848603; x=1771453403; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=RfH/ZJAACI/swH2C3a/IoB6OapnQajyNzXEzxpMU19Q=;
+        b=AEl5dRMUV0AaRXjRnQaM/+15qEl8eheR3L/QLZsrGu9IOt4PPvxHKt9EueIAlu94j1
+         +B86H4Ncdq8vE/6NZ8b5PxSTju8/Ja/IyrCIXDPpWi9YpKKFE+1FDL50CwC33WW9Witp
+         /SWjJA0phn/JZqC+mRlPafHnzGSp1zM4z+NYZmyoIYA/AjZbaZwzmli1b4gD/LY3PnGQ
+         DHhu5mr0qkSqvFIk0IhVRzBh2CwDoAt9Wr3YFXORKx8jFDoLtcD7nuKaTL/YFXUrLBEX
+         8TbWTPTKe3wRzNgb0Fzfds8Uf46A3IBg/rm/vFb0JURpBN4bqwGoqmj9TD5iXRirxvJH
+         fSqQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1770848603; x=1771453403;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=RfH/ZJAACI/swH2C3a/IoB6OapnQajyNzXEzxpMU19Q=;
+        b=terzU0lBv/ySHgYklA6vCK7tKj+2weg9Kz+L1nOEIi38oSn43BO+7yAYf458oBOuBG
+         BguQqukoiYZkEoDU663u42XYIdIK95DZWYxbk8ox/ZJ8h2ftjoSG7gic7hRyTLiPn9Nz
+         g688rJquGrDXnahLjOL8o3OC4cGgTwAmSsHPYefK/oT5iK4Asfq6mNkKailxc0V5rKrz
+         9Sis3bMg1rkNdSi+I8EKxoEebYR2tH4EPSjtAaaPMko2j6/UXsZ1EuSLfiZbYVczteWo
+         TBlBNdxHPRMyssVtSXZLY0fN3yvjM2Qt2tq2YjiDSYA9LGudcFRgYJbK0CVvUITkMbk5
+         yfnA==
+X-Forwarded-Encrypted: i=1; AJvYcCU9pSlaGtGxy6E0jtL9FtS0ZGBP81BADNR3FdCjL/HiK0Rjjdjj+sP3eJOk0JgIZYwR55p/LTpxc6MJlYE=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwAnubzYLmerUeL9quubQ53o3PeMtEDpR8cYOskcFkrqZxWPckz
+	GGyU2N25n8SgzU2/ZECSQZpPED/h0GvW28SjZAV/bKgUhe2Zs8ebAcVoZzWIbz7bgqnXnwcYTQx
+	WIyQmBFq8/k10MiAiFxfQZSVkufRAB+8=
+X-Gm-Gg: AZuq6aIdoq2aej74P9kMgr4sAMrW5nGubYtZJ2uegFZw/oF0htaIjptQA1SOBidXFda
+	Ej5NieAQGqf86MxMHvjUuOJq4gkgf2V7VrSMYEPGAQRxciYQJhcjLAOakNxuQC3rA6pnApGLHza
+	oWU078/R0TYzlwsGD8U0p2g2zeP2J9I75O0uQWo8L40wRCco9JVq1KvZzfESJSb3JX4G9PDAUT7
+	WRDVNnR95VFUBD0xY0KmbiBAs1QfVXku7VUEGLmYGxZjsmYP+GQA2ZAz7edaeESEHnpUsRqNBQS
+	qvmsy7YSt5etUO7VK+hhPCHpBr1s714gv2K3VvEiFRJ3HgTw5PiC04NJMSz0fb2w1QWnDl808LA
+	PL8RET2u3vQufBPtggDguiQmX
+X-Received: by 2002:a05:7300:cb0f:b0:2ba:7d5a:a816 with SMTP id
+ 5a478bee46e88-2baa8079874mr215051eec.4.1770848603104; Wed, 11 Feb 2026
+ 14:23:23 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -55,101 +102,47 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Subject: Re: [RFC 1/2] mm: thp: allocate PTE page tables lazily at split time
-Content-Language: en-GB
-To: "David Hildenbrand (Arm)" <david@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>, lorenzo.stoakes@oracle.com,
- willy@infradead.org, linux-mm@kvack.org
-Cc: fvdl@google.com, hannes@cmpxchg.org, riel@surriel.com,
- shakeel.butt@linux.dev, kas@kernel.org, baohua@kernel.org, dev.jain@arm.com,
- baolin.wang@linux.alibaba.com, npache@redhat.com, Liam.Howlett@oracle.com,
- ryan.roberts@arm.com, vbabka@suse.cz, lance.yang@linux.dev,
- linux-kernel@vger.kernel.org, kernel-team@meta.com,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-References: <20260211125507.4175026-1-usama.arif@linux.dev>
- <20260211125507.4175026-2-usama.arif@linux.dev>
- <13ab56cb-7fdb-4ee4-9170-f9f4fa4b6e37@kernel.org>
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Usama Arif <usama.arif@linux.dev>
-In-Reply-To: <13ab56cb-7fdb-4ee4-9170-f9f4fa4b6e37@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
+References: <20260204210125.613350-1-mkchauras@gmail.com> <20260204210125.613350-4-mkchauras@gmail.com>
+ <aYSgjPD5KRcNN0j4@luna> <1ed12a72-06e4-461b-907e-2581e25e3e38@linux.ibm.com>
+ <aYS2oWCE0ZCC3don@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+ <CANiq72mi-V_SF+JErMJu1wZEd27HPHqhsxE8dELtd5e3ZEaA4w@mail.gmail.com> <20260205200222.GA1298159@ax162>
+In-Reply-To: <20260205200222.GA1298159@ax162>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Wed, 11 Feb 2026 23:23:08 +0100
+X-Gm-Features: AZwV_QiUruFZTWSfo62Op58oUYH2ayIoiaQzk5z1Tco-BdUXIDPQzuMLaoXlnas
+Message-ID: <CANiq72=-8urJufUuZLnRtm6qKCUhsSd=kPF=_a3ga=nk-iMV5A@mail.gmail.com>
+Subject: Re: [PATCH V2 3/3] powerpc: Enable Rust for ppc64le
+To: Nathan Chancellor <nathan@kernel.org>
+Cc: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>, Jubilee Young <workingjubilee@gmail.com>, 
+	Nick Desaulniers <nick.desaulniers+lkml@gmail.com>, Bill Wendling <morbo@google.com>, 
+	Justin Stitt <justinstitt@google.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, 
+	Link Mauve <linkmauve@linkmauve.fr>, ojeda@kernel.org, boqun.feng@gmail.com, 
+	gary@garyguo.net, bjorn3_gh@protonmail.com, lossin@kernel.org, 
+	a.hindborg@kernel.org, aliceryhl@google.com, tmgross@umich.edu, 
+	dakr@kernel.org, corbet@lwn.net, maddy@linux.ibm.com, mpe@ellerman.id.au, 
+	npiggin@gmail.com, chleroy@kernel.org, peterz@infradead.org, 
+	jpoimboe@kernel.org, jbaron@akamai.com, rostedt@goodmis.org, ardb@kernel.org, 
+	rust-for-linux@vger.kernel.org, linux-doc@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	clang-built-linux <llvm@lists.linux.dev>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Thu, Feb 5, 2026 at 9:02=E2=80=AFPM Nathan Chancellor <nathan@kernel.org=
+> wrote:
+>
+> Thanks for the CC, I had not seen that issue. LLVM 22 is currently in
+> the -rc phase and I see that the fix has been merged into the
+> release/22.x branch as of yesterday so it should be in LLVM 21.1.0-rc3
+> when it get released on February 10. LLVM 21.1.8 was the last release of
+> the 21.x series (hard to keep up with all the numbers...) and it sounds
+> like this is only a regression from the LLVM 22 development cycle.
 
+Fixed as well for Rust 1.95.0 (expected 2026-04-16) when using the
+LLVM they provide.
 
-On 11/02/2026 13:25, David Hildenbrand (Arm) wrote:
-> CCing ppc folks
-> 
-> On 2/11/26 13:49, Usama Arif wrote:
->> When the kernel creates a PMD-level THP mapping for anonymous pages,
->> it pre-allocates a PTE page table and deposits it via
->> pgtable_trans_huge_deposit(). This deposited table is withdrawn during
->> PMD split or zap. The rationale was that split must not fail—if the
->> kernel decides to split a THP, it needs a PTE table to populate.
->>
->> However, every anon THP wastes 4KB (one page table page) that sits
->> unused in the deposit list for the lifetime of the mapping. On systems
->> with many THPs, this adds up to significant memory waste. The original
->> rationale is also not an issue. It is ok for split to fail, and if the
->> kernel can't find an order 0 allocation for split, there are much bigger
->> problems. On large servers where you can easily have 100s of GBs of THPs,
->> the memory usage for these tables is 200M per 100G. This memory could be
->> used for any other usecase, which include allocating the pagetables
->> required during split.
->>
->> This patch removes the pre-deposit for anonymous pages on architectures
->> where arch_needs_pgtable_deposit() returns false (every arch apart from
->> powerpc, and only when radix hash tables are not enabled) and allocates
->> the PTE table lazily—only when a split actually occurs. The split path
->> is modified to accept a caller-provided page table.
->>
->> PowerPC exception:
->>
->> It would have been great if we can completely remove the pagetable
->> deposit code and this commit would mostly have been a code cleanup patch,
->> unfortunately PowerPC has hash MMU, it stores hash slot information in
->> the deposited page table and pre-deposit is necessary. All deposit/
->> withdraw paths are guarded by arch_needs_pgtable_deposit(), so PowerPC
->> behavior is unchanged with this patch. On a better note,
->> arch_needs_pgtable_deposit will always evaluate to false at compile time
->> on non PowerPC architectures and the pre-deposit code will not be
->> compiled in.
-> 
-> Is there a way to remove this? It's always been a confusing hack, now it's unpleasant to have around :)
+  https://github.com/rust-lang/rust/pull/152428
 
-
-I spent some time researching this (I havent worked with PowerPC before)
-as I really wanted to get rid of all the pre-deposit code. I cant really see a
-way without removing PMD THP support. I was going to CC the PowerPC maintainers
-but I see that you already did!
-
-> 
-> In particular, seeing that radix__pgtable_trans_huge_deposit() just 1:1 copied generic pgtable_trans_huge_deposit() hurts my belly.
-> 
-> 
-> IIUC, hash is mostly used on legacy power systems, radix on newer ones.
-> 
-
-Yes that is what I found as well.
-
-> So one obvious solution: remove PMD THP support for hash MMUs along with all this hacky deposit code.
-> 
-
-I would be happy with that!
-
-> 
-> the "vma_is_anonymous(vma) && !arch_needs_pgtable_deposit()" and similar checks need to be wrapped in a reasonable helper and likely this all needs to get cleaned up further.
-
-Ack. The code will definitely look a lot lot cleaner and wont have much of this if we decide to remove
-PMD THP support for hash MMU.
-
-> 
-> The implementation if the generic pgtable_trans_huge_deposit and the radix handlers etc must be removed. If any code would trigger them it would be a bug.
-> 
-> If we have to keep this around, pgtable_trans_huge_deposit() should likely get renamed to arch_pgtable_trans_huge_deposit() etc, as there will not be generic support for it.
-> 
-
-Ack.
+Cheers,
+Miguel
 
