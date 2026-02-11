@@ -1,93 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-16815-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16816-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9F24ECD6D6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Feb 2026 20:14:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 676CBECD6E9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Feb 2026 21:39:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fB8mL6jfVz2xlk;
-	Thu, 12 Feb 2026 07:14:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::62a" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770840882;
-	cv=pass; b=fqVaRYuQsoQea/52LOHrj86tQqhKqZczLLCqOFZ+DSFOp16y9ubjJNWrDv3wbNBZC2MweJzSYsBlVZ365my4uV5TSTjHMHEHgpS4wTCtCmgbLHmvDY4hdgHI7rik0fqjC4CWVZJX46yJigaXE65RmK3UwYjp+oU5njQsnry84hElKU9C/6U9VGr6g3VVCxdc+ycoGBcqH1VsRIKkKy1ZPIebQ44DC993n2GPUZR56AX4DPek0qHz0bYWYGBJ01gkd/MNjnkihw3oVDYzjJ6hGQUHnggEX6JaymVxABazQVx1h5ErHbbpLjf/0lTyCAfucrSNHbrHkbnGUs3IFHjugA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770840882; c=relaxed/relaxed;
-	bh=28hr9LjidhOb4+7vDtUZiT7dYr2nuAMqMlceW5mXuOg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=nfZcwPlj79myJgg5L22j1OfzL+vIuEfJ8MvVR+TgRtQasIe21+BJKa1rG6pYjg3bnhH5Og/S3BQ98SRQZ7pcWVGbOVpYqrBYz6Mbj4HxZ6CcRnons71Fem0EWdUH3y9zIxipvQiXUhpj47zzX8l/9RcE/r5rzjQkqQRMiiXuhOGOSuwaeZXmn9u4UJx8pND7wRW9cig3xOdDjEt0g+zvEwHeKbGX+NKMdnCA2lmA5IfpBXxmH5YfvckaoEUyGHm9thFNjWMbK2UO5S4NY8Ov2kjuIS3k40UNK+lhD7eamGAjiCG9idQ3Ly/EZ4NIlCeFYigaRbUWnEZs6jfQn4S62A==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=kSZHwymP; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::62a; helo=mail-ej1-x62a.google.com; envelope-from=linmag7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fBBfK3bR5z2xHX;
+	Thu, 12 Feb 2026 08:39:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.177
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770817554;
+	cv=none; b=HLNb7N5aW8fMiyKFieVEkPiLD01hDcKN0Ha8ciC74C/sEsf1A+ADivppMosPp15DFwM6Jk71C+4/I3IN2jEHRsHoe4PO6i9eg8uDWyzHdWXEaSCa4kHog8/xtlEz5/kSBXBjzoSEjex7qn6cp7cGSxyBugsr4SMxVdsBlQAR+OrFC9L6gtuh/r+1yvfuhualCFfcHOer+l5v85hepMjof6UCwvgCxKbymNFk1UJheOWhBowlMyUnn9R/WbhI8wYMP6uBqafTY8MhpYF+vq2c5ZzPfwNn5X+apt6C59FUkUR6PjFFQZRX8O+NQYimcQN/GggJHl5BfsESo6aH7Pvyjw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1770817554; c=relaxed/relaxed;
+	bh=AvbV/7yBLNX8l/Q3y3FXi6sUQ6jYM1ujaQvV+NINbwk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ortbRWqs+VcFXJAR2ddmAM77QURumQQlbYRAJiIADIGhIZeO0Tj1T1Ah5afjMn2Vi7S2Z823RtGxYvnxJQX9B4kqEsXCtvqP2mrasz3Sr4/MezBCCKkuNVb2n6NKOGLaNtEU+5tEGS8Gra1v0IcWiK94ceAiH2GwAL6IcjD79rZ3r9OYcTHBjc14FVO9jXy8mqAqlyc2Yw4mSIAurYoo76ShllDkMAHLT86R02VWYqKUQbt3B1zKZpe9COS6BYwiAr2h42S3hpRa2Pb74Yc7HFEo/1e/l+ZlgAx5++1zLsitYDGhihXyswxtMQ4AnOwJaeQaYDwUj+eRWuBBXF7+ag==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=KTkCq28T; dkim-atps=neutral; spf=pass (client-ip=95.215.58.177; helo=out-177.mta1.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=kSZHwymP;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=KTkCq28T;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::62a; helo=mail-ej1-x62a.google.com; envelope-from=linmag7@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x62a.google.com (mail-ej1-x62a.google.com [IPv6:2a00:1450:4864:20::62a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.177; helo=out-177.mta1.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org)
+X-Greylist: delayed 428 seconds by postgrey-1.37 at boromir; Thu, 12 Feb 2026 00:45:50 AEDT
+Received: from out-177.mta1.migadu.com (out-177.mta1.migadu.com [95.215.58.177])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fB8mK0809z2xlM
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Feb 2026 07:14:39 +1100 (AEDT)
-Received: by mail-ej1-x62a.google.com with SMTP id a640c23a62f3a-b8869cd7bb1so1034179966b.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2026 12:14:39 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1770840872; cv=none;
-        d=google.com; s=arc-20240605;
-        b=aUjoHXqKe0UkSfnhL0zvuBWCF03Dn1M8p8NbmwFkMxYqL8l5xdSjqR+ttc6XJY2bBK
-         7gZysb3HiwvXIfsJbZywz9CyQLrnG5jTqMBuphyY+V0AhrUUGknLdAjL2iQy5hrqrMWP
-         GmkvTdfeEC+QKD0OOyQCw/W/0LdTx0qqN0s2RXOB4oaYtsyjQ7DMFM9zbix+HBWCQG7D
-         sAEqXHbiKQ/l2Rs8Xr7oMJCL79ys4GoJmOy7zydZXPew2J4FAYhWrIbX7iWa2sMDxX0e
-         YyLQObDyDRAvwzDBRIU0FttcGKxF27fgYC6bd5xizPU2osYdsrY0rpP+TqmcXlSmxSm/
-         tngA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=28hr9LjidhOb4+7vDtUZiT7dYr2nuAMqMlceW5mXuOg=;
-        fh=Y08Xo/ayF3BeX8G9CdHJ2A17kGnLYPle5z+d1c7EJXY=;
-        b=LPXJCIY3LVsqc0+YKxFFDeSOafSVR/77jqBZw/2R4BxYhql9dU1VKpInsL+Y4x08aI
-         XOCtZ+BCVbvIWcWXY54rP1GZqx//4Mm+ieix7ta3lFcjuylrE4eLgooh6k1Vr6F97i4M
-         NkbVah5Y+4NdnPbwuDZD8EzgP40SjSyxPT8MvEJoalAhC2hu3qC6dixCHBC7cKymUfNz
-         mHVE0pNw7e3TU5bRS4ogiKraX1+QhZJvVRPQsJHmWqqiFEqih+ZjAj+Ff73MLc0Yn6Zv
-         Twio5hDaTE3ho3hfPnksgbl81fPhjtSpXd6fBjWsqfWI8OLu/voLcbcOWhJ+EP4WPLO9
-         9Z3g==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1770840872; x=1771445672; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=28hr9LjidhOb4+7vDtUZiT7dYr2nuAMqMlceW5mXuOg=;
-        b=kSZHwymPelrcBAKNTbSVX5JPmP1JeabqGkIlvtTrDUOApbLvPehLpCf8dZmNDQoJdi
-         QZ/cC3xkiNgYKx1QxT2VslVtBwyc1wP9ECqFxQ+mDSQP+dE/2ms+21r/OYG/m9Ueb8S7
-         9cF5CzWnr60jarQRSTiOjlHTWBJ9tZIutXp423so7L3lw/mHOsxszCj+Mn0tSWz2eF1+
-         gAWAlb+V5jMMrWrSFgrYZtSPFgmdoopzN+MLTe5o0F6gvMQG1Xzl8qBm/HACBNaIOvn7
-         42j61qfomfI/G5/0TAUR/9Yb82voOxCmR4NoKff5cPvQxvGX4bZAObZ+385g4TI7nnU3
-         7wPQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770840872; x=1771445672;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=28hr9LjidhOb4+7vDtUZiT7dYr2nuAMqMlceW5mXuOg=;
-        b=XpKcVMUtHCEaIwKse/91CsksjNHxfCNe/uzFNI/iVKPMCx1+Cfe+F3T73TdzSSI2CN
-         1iKyWd0V1N7OEPZeKkAHZB99s5NRKnPdCVaYMHfIZM1zjKm7Zkyj2xO78gmaDdlQ+TvP
-         6ur6jx6hgNfmTUNfaPEwA5nM24YPNdfcOYFTtNi0vMebOdLOpd1SsdcrBE6/yFJ4Vt7E
-         hlP0aeXCjTzm0x/MAdZLoGDaA8riO2QU3NhB1hkLZb2nbx8jLGXabn7PJ0pdzGoxvdKu
-         Y5iyQxKraXCgpLuyl9aKnZAk3wPy6PldvNnibqQswR23kf0bA2Usplh5dZDt4JGWWRs9
-         Bi1Q==
-X-Forwarded-Encrypted: i=1; AJvYcCVwxf5YwAGPrsf/FRgXmwzzyXgA/PSKkscLmGdIJ6nqB/nHVOb/Fos5882UHdDUEQbAXvcl+P5hUlAjX6w=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzbKWKPAAvgzbswB2VKURy6ne4nkpozNse+++32PxzcrpvCSwL2
-	+uQ8bMSV5XTU2R31/RHXiqnu98P/8viL6iyp0Fft7kXlktZvfeGa4xMIFCqJ48gecut1OKrv5yr
-	2wtvkweALr/MY1mZVfGTAa6ImjkM+vnQ=
-X-Gm-Gg: AZuq6aIf01H26pDyx5n1GI0S76/cXh+YYyhoNDHggoXrSjsm6M5pA7Qh4t0h/pMfgIh
-	3h53eLQoagnxK4hWcir9D4KwTGF5jRw7LG9nDY66+Vpz+QFvuhA7mMq+j7tSSap1yI5RQQSf24T
-	b8DyV+TasyqJCW9agSnxfFMQdChWTFeFl4QLwUKWKBJ7kw2naOvEFcy2+s4RWI+Bj6nPN7XRZVt
-	E6OwYkmBMB0ZTLIOuph/vwTXdVkTA9qdQVK0Yc1ydPzx3NqYyHDxjTXaDyRH9VrfCYL6oIeliC6
-	fmoo54zNf598QIDit64XRT22UZd/bqhmHPdecdVC4Q==
-X-Received: by 2002:a17:907:a08a:b0:b8e:64e:1ed with SMTP id
- a640c23a62f3a-b8f8f72d91emr17643566b.50.1770840871149; Wed, 11 Feb 2026
- 12:14:31 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fB07f6j7dz2xlM
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Feb 2026 00:45:50 +1100 (AEDT)
+Message-ID: <735c0277-2155-47f5-a650-b4c8a0a2e6fc@linux.dev>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1770817101;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=AvbV/7yBLNX8l/Q3y3FXi6sUQ6jYM1ujaQvV+NINbwk=;
+	b=KTkCq28TEAtcHJtPGFZ/oKU8vD4gE8s1v/eM0FDHslaVRDzQDOvgbM71iCr6Pzgy+Spxsz
+	evXRXBoMAsjI/Ec6zEqMkgSSphZQpvv9wrKwI5q/izSGw5wgkZUgK6soksEZU9HWq9rx3W
+	FPXHMoVaAFe+ylRDS4SuNauNPCVGj+I=
+Date: Wed, 11 Feb 2026 13:38:17 +0000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,117 +55,101 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260211103141.3215197-1-rppt@kernel.org> <20260211103141.3215197-4-rppt@kernel.org>
-In-Reply-To: <20260211103141.3215197-4-rppt@kernel.org>
-From: Magnus Lindholm <linmag7@gmail.com>
-Date: Wed, 11 Feb 2026 21:14:19 +0100
-X-Gm-Features: AZwV_QgdPAvH3hw0825YIt93LQPupYFvh_AV-2zMkwGhubC87cSa2iVxpdoZwag
-Message-ID: <CA+=Fv5T07oBJweU3tURD4Nuh7VRWovsf0zjHtA1nDAVNmO=D2w@mail.gmail.com>
-Subject: Re: [PATCH v3 3/4] arch, mm: consolidate empty_zero_page
-To: Mike Rapoport <rppt@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andreas Larsson <andreas@gaisler.com>, 
-	Borislav Petkov <bp@alien8.de>, Brian Cain <bcain@kernel.org>, 
-	Catalin Marinas <catalin.marinas@arm.com>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "David S. Miller" <davem@davemloft.net>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, David Hildenbrand <david@kernel.org>, 
-	Dinh Nguyen <dinguyen@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Guo Ren <guoren@kernel.org>, 
-	Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
-	Johannes Berg <johannes@sipsolutions.net>, 
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, "Liam R. Howlett" <Liam.Howlett@oracle.com>, 
-	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Matt Turner <mattst88@gmail.com>, Max Filippov <jcmvbkbc@gmail.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>, Michal Simek <monstr@monstr.eu>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Richard Weinberger <richard@nod.at>, 
-	Russell King <linux@armlinux.org.uk>, Stafford Horne <shorne@gmail.com>, 
-	Suren Baghdasaryan <surenb@google.com>, Thomas Gleixner <tglx@kernel.org>, Vineet Gupta <vgupta@kernel.org>, 
-	Vlastimil Babka <vbabka@suse.cz>, Will Deacon <will@kernel.org>, linux-alpha@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-snps-arc@lists.infradead.org, 
-	linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org, 
-	linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev, 
-	linux-m68k@lists.linux-m68k.org, linux-openrisc@vger.kernel.org, 
-	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org, 
-	sparclinux@vger.kernel.org, linux-um@lists.infradead.org, linux-mm@kvack.org, 
-	x86@kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Subject: Re: [RFC 1/2] mm: thp: allocate PTE page tables lazily at split time
+Content-Language: en-GB
+To: "David Hildenbrand (Arm)" <david@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>, lorenzo.stoakes@oracle.com,
+ willy@infradead.org, linux-mm@kvack.org
+Cc: fvdl@google.com, hannes@cmpxchg.org, riel@surriel.com,
+ shakeel.butt@linux.dev, kas@kernel.org, baohua@kernel.org, dev.jain@arm.com,
+ baolin.wang@linux.alibaba.com, npache@redhat.com, Liam.Howlett@oracle.com,
+ ryan.roberts@arm.com, vbabka@suse.cz, lance.yang@linux.dev,
+ linux-kernel@vger.kernel.org, kernel-team@meta.com,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+References: <20260211125507.4175026-1-usama.arif@linux.dev>
+ <20260211125507.4175026-2-usama.arif@linux.dev>
+ <13ab56cb-7fdb-4ee4-9170-f9f4fa4b6e37@kernel.org>
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Usama Arif <usama.arif@linux.dev>
+In-Reply-To: <13ab56cb-7fdb-4ee4-9170-f9f4fa4b6e37@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-On Wed, Feb 11, 2026 at 11:32=E2=80=AFAM Mike Rapoport <rppt@kernel.org> wr=
-ote:
->
-> From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
->
-> Reduce 22 declarations of empty_zero_page to 3 and 23 declarations of
-> ZERO_PAGE() to 4.
->
-> Every architecture defines empty_zero_page that way or another, but for t=
-he
-> most of them it is always a page aligned page in BSS and most definitions
-> of ZERO_PAGE do virt_to_page(empty_zero_page).
->
-> Move Linus vetted x86 definition of empty_zero_page and ZERO_PAGE() to th=
-e
-> core MM and drop these definitions in architectures that do not implement
-> colored zero page (MIPS and s390).
->
-> ZERO_PAGE() remains a macro because turning it to a wrapper for a static
-> inline causes severe pain in header dependencies.
->
-> For the most part the change is mechanical, with these being noteworthy:
->
-> * alpha: aliased empty_zero_page with ZERO_PGE that was also used for boo=
-t
->   parameters. Switching to a generic empty_zero_page removes the aliasing
->   and keeps ZERO_PGE for boot parameters only
-> * arm64: uses __pa_symbol() in ZERO_PAGE() so that definition of
->   ZERO_PAGE() is kept intact.
-> * m68k/parisc/um: allocated empty_zero_page from memblock,
->   although they do not support zero page coloring and having it in BSS
->   will work fine.
-> * sparc64 can have empty_zero_page in BSS rather allocate it, but it
->   can't use virt_to_page() for BSS. Keep it's definition of ZERO_PAGE()
->   but instead of allocating it, make mem_map_zero point to
->   empty_zero_page.
-> * sh: used empty_zero_page for boot parameters at the very early boot.
->   Rename the parameters page to boot_params_page and let sh use the gener=
-ic
->   empty_zero_page.
-> * hexagon: had an amusing comment about empty_zero_page
->
->         /* A handy thing to have if one has the RAM. Declared in head.S *=
-/
->
->   that unfortunately had to go :)
->
-> Acked-by: Helge Deller <deller@gmx.de>   # parisc
-> Tested-by: Helge Deller <deller@gmx.de>  # parisc
-> Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-> Acked-by: Dave Hansen <dave.hansen@linux.intel.com>
-> Acked-by: Catalin Marinas <catalin.marinas@arm.com>
-> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> ---
->  arch/alpha/include/asm/pgtable.h          |  6 ------
 
-> diff --git a/arch/alpha/include/asm/pgtable.h b/arch/alpha/include/asm/pg=
-table.h
-> index 90e7a9539102..12a3c5f8ece8 100644
-> --- a/arch/alpha/include/asm/pgtable.h
-> +++ b/arch/alpha/include/asm/pgtable.h
-> @@ -125,12 +125,6 @@ struct vm_area_struct;
->   */
->  #define pgprot_noncached(prot) (prot)
->
-> -/*
-> - * ZERO_PAGE is a global shared page that is always zero:  used
-> - * for zero-mapped memory areas etc..
-> - */
-> -#define ZERO_PAGE(vaddr)       (virt_to_page(ZERO_PGE))
-> -
->  /*
->   * On certain platforms whose physical address space can overlap KSEG,
->   * namely EV6 and above, we must re-twiddle the physaddr to restore the
 
-This looks good from an Alpha perspective
+On 11/02/2026 13:25, David Hildenbrand (Arm) wrote:
+> CCing ppc folks
+> 
+> On 2/11/26 13:49, Usama Arif wrote:
+>> When the kernel creates a PMD-level THP mapping for anonymous pages,
+>> it pre-allocates a PTE page table and deposits it via
+>> pgtable_trans_huge_deposit(). This deposited table is withdrawn during
+>> PMD split or zap. The rationale was that split must not fail—if the
+>> kernel decides to split a THP, it needs a PTE table to populate.
+>>
+>> However, every anon THP wastes 4KB (one page table page) that sits
+>> unused in the deposit list for the lifetime of the mapping. On systems
+>> with many THPs, this adds up to significant memory waste. The original
+>> rationale is also not an issue. It is ok for split to fail, and if the
+>> kernel can't find an order 0 allocation for split, there are much bigger
+>> problems. On large servers where you can easily have 100s of GBs of THPs,
+>> the memory usage for these tables is 200M per 100G. This memory could be
+>> used for any other usecase, which include allocating the pagetables
+>> required during split.
+>>
+>> This patch removes the pre-deposit for anonymous pages on architectures
+>> where arch_needs_pgtable_deposit() returns false (every arch apart from
+>> powerpc, and only when radix hash tables are not enabled) and allocates
+>> the PTE table lazily—only when a split actually occurs. The split path
+>> is modified to accept a caller-provided page table.
+>>
+>> PowerPC exception:
+>>
+>> It would have been great if we can completely remove the pagetable
+>> deposit code and this commit would mostly have been a code cleanup patch,
+>> unfortunately PowerPC has hash MMU, it stores hash slot information in
+>> the deposited page table and pre-deposit is necessary. All deposit/
+>> withdraw paths are guarded by arch_needs_pgtable_deposit(), so PowerPC
+>> behavior is unchanged with this patch. On a better note,
+>> arch_needs_pgtable_deposit will always evaluate to false at compile time
+>> on non PowerPC architectures and the pre-deposit code will not be
+>> compiled in.
+> 
+> Is there a way to remove this? It's always been a confusing hack, now it's unpleasant to have around :)
 
-Acked-by: Magnus Lindholm <linmag7@gmail.com>
+
+I spent some time researching this (I havent worked with PowerPC before)
+as I really wanted to get rid of all the pre-deposit code. I cant really see a
+way without removing PMD THP support. I was going to CC the PowerPC maintainers
+but I see that you already did!
+
+> 
+> In particular, seeing that radix__pgtable_trans_huge_deposit() just 1:1 copied generic pgtable_trans_huge_deposit() hurts my belly.
+> 
+> 
+> IIUC, hash is mostly used on legacy power systems, radix on newer ones.
+> 
+
+Yes that is what I found as well.
+
+> So one obvious solution: remove PMD THP support for hash MMUs along with all this hacky deposit code.
+> 
+
+I would be happy with that!
+
+> 
+> the "vma_is_anonymous(vma) && !arch_needs_pgtable_deposit()" and similar checks need to be wrapped in a reasonable helper and likely this all needs to get cleaned up further.
+
+Ack. The code will definitely look a lot lot cleaner and wont have much of this if we decide to remove
+PMD THP support for hash MMU.
+
+> 
+> The implementation if the generic pgtable_trans_huge_deposit and the radix handlers etc must be removed. If any code would trigger them it would be a bug.
+> 
+> If we have to keep this around, pgtable_trans_huge_deposit() should likely get renamed to arch_pgtable_trans_huge_deposit() etc, as there will not be generic support for it.
+> 
+
+Ack.
 
