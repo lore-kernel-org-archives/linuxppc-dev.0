@@ -1,117 +1,112 @@
-Return-Path: <linuxppc-dev+bounces-16819-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16820-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58A07E9E31B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Feb 2026 01:30:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D4CFECD6FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Feb 2026 02:05:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fBHmq5bxTz2xcB;
-	Thu, 12 Feb 2026 12:30:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fBJYB62s2z2xcB;
+	Thu, 12 Feb 2026 13:05:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770859835;
-	cv=none; b=BL30CnAjOQ+m8U6fVPZffspUMiZa3qEt1cKYGIrFf72jSHFPQr1lf6JqrSSNcd8zo1YN8puZ6Krv92rkWbeGyunaIBPdjmQ+nLqEo4cUGSM1jFlR3gr3dtbovyqtId6pW16EY82E/Ea6vnCOA1uP4yPOrDF5b0kOn+Gs7mDDhdi47uqEka26NZNTKWix2gti1rPTftTAMH5Vn4ZSxTOMWjORLq85injJZRBUHgzPVYPzCBgTKnL9uNteas1vht6cZcEv4PgDEUhY2yVfi03uAKnSJwIAugCf5qov6WIJtQLutZb/IpTjDd4qW//RZGX/TxGlMbv0VIl1KUwiAlyCHA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770861934;
+	cv=none; b=QP5yhmpxufYUQZuYiUzBwNMAf4PbPM+w2/PGZecW2sL7uZZjIEX8K+SPpuWlNGlzKVvRh5LLd3QtoVOq0MEKGvM/vIskYD7qanct2KMaD9XmaEi+ioeqAwCEpMfsRupR23llyN+DggLo5BqxZCGcMRfmtY5ym3SMVr+uZjVh4/yA+QZlhUnkxNRLjiRBIa7/STYhORH3+fNIBwtx11j9gNJdaWpvCi2WPiB33/vMDF0sTRj5gPCFqxnxwpPA8IBPTaxrD4+k8ssyauywwrU151PodWHY4MQKgCC2qM2CgoRTzFiYcuXCTgaM01BX8e2sjp/oYqAiq6hW4N5V2FEN2Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770859835; c=relaxed/relaxed;
-	bh=bY4z6uuO6pRuPz5GN5A8CgMrwxk/puAYj4i3AjMGr9s=;
+	t=1770861934; c=relaxed/relaxed;
+	bh=PizJXKd85zXyZ9iQQX+Ej3hfH7kGalbAW0kYbFZfhf4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 In-Reply-To:Content-Type:Content-Disposition; b=nE9NOQkay/bk69UPYDgYCiEbv19Il2qRJBtSy/E9FCRSFNIKg689wXWb/F5DtDBE9us1iEkomO/CJWcEatK3fgbu9ayDkO/qZxMXo85iT6xIZZKr1tTCtKHIZsYB9C35PkqQhcPWv+wMe9qicmVAPzI6HkhmbIDyiZus9em6ZwY83+jqe2NtKb41sN0TsP4kG9myJCzzg5Q10/5nOUrJDCFP0Qc7aWajspB/JObAPs3TJmtIuBBr+tDeUBPTLCz8IUGI1T7/rvZmDJpPbsb2P03VXq49I3WTiGvDrDfcBlMnBp5HOLbcWxaBIfM6b8e67aNErcmVxgjkHHjtzH9smw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=AstQJRbp; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=AstQJRbp; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=coxu@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+	 In-Reply-To:Content-Type:Content-Disposition; b=OjdmPVvDD7GFfOcMV7o9R5267p1JAQEvs1I75trCrfAsC8R7Uc5gqIZ72cWqFsvu0vdTbLm585wWhtWhSF3AP/h/x+ZxYD2S3epP7vgLJpVP+vJ5q298/LWrUFBbfwqBTiWCSKwLaBmzyvseHGPoKTS5pLUzHe6DUSa4r9UrWfwYDVSpc4Yq5SxTeuDf+QMuDYAQYvEfuPQ089ylEJ4Bm/FcZCOAsCi45Kp4TswIzkh0sRIphrrRfOIE3HY3Jx167stNCGydtpbC8h4bIVYt+Q9rdvKa+AMHcYvR8gfyGfBD37johVgJ5pJMck5t0ytWFzpmaTzi/YAz7E+Hgg4m6w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ULDh7QcQ; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ULDh7QcQ; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=coxu@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=AstQJRbp;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=AstQJRbp;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ULDh7QcQ;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ULDh7QcQ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=coxu@redhat.com; receiver=lists.ozlabs.org)
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fBHmp4d8Wz2xHX
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Feb 2026 12:30:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fBJY96lz3z2xHX
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Feb 2026 13:05:32 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1770859828;
+	s=mimecast20190719; t=1770861928;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=bY4z6uuO6pRuPz5GN5A8CgMrwxk/puAYj4i3AjMGr9s=;
-	b=AstQJRbpgZMBDfedPSvIG3Xnm5M2B//WLIDQk+TQjtOT3E6HivpB5auxwSEoGzSe4NadKB
-	4VX0yKUdUPfE+Bo5cB8Zvun30ncCADH3u1Nmka9q4M8pdlDxKVaJGgVOJpoBiAOn5fAxAe
-	d9b0KsQkGsIPO7slZKuV4rPPHflHXtk=
+	bh=PizJXKd85zXyZ9iQQX+Ej3hfH7kGalbAW0kYbFZfhf4=;
+	b=ULDh7QcQOGgvZj2wTFEoOjuxG4CSW61nO1C0xeArzSl5Q8k/eAwJOhFcOlv0KuUwdSUn0D
+	kdy083qKTD66V88t0Et4GMkxCkB9ukBB1aoR3l0SwJjds3a2gi1vO9mcvGGckNRsF8StIM
+	cA6s4WMAxT67AtNYsjwxkzY/MMOG/fA=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1770859828;
+	s=mimecast20190719; t=1770861928;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=bY4z6uuO6pRuPz5GN5A8CgMrwxk/puAYj4i3AjMGr9s=;
-	b=AstQJRbpgZMBDfedPSvIG3Xnm5M2B//WLIDQk+TQjtOT3E6HivpB5auxwSEoGzSe4NadKB
-	4VX0yKUdUPfE+Bo5cB8Zvun30ncCADH3u1Nmka9q4M8pdlDxKVaJGgVOJpoBiAOn5fAxAe
-	d9b0KsQkGsIPO7slZKuV4rPPHflHXtk=
-Received: from mail-pg1-f199.google.com (mail-pg1-f199.google.com
- [209.85.215.199]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=PizJXKd85zXyZ9iQQX+Ej3hfH7kGalbAW0kYbFZfhf4=;
+	b=ULDh7QcQOGgvZj2wTFEoOjuxG4CSW61nO1C0xeArzSl5Q8k/eAwJOhFcOlv0KuUwdSUn0D
+	kdy083qKTD66V88t0Et4GMkxCkB9ukBB1aoR3l0SwJjds3a2gi1vO9mcvGGckNRsF8StIM
+	cA6s4WMAxT67AtNYsjwxkzY/MMOG/fA=
+Received: from mail-pl1-f199.google.com (mail-pl1-f199.google.com
+ [209.85.214.199]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-118-PtFB9CWdPe2FNGtpWKD-_w-1; Wed, 11 Feb 2026 20:30:26 -0500
-X-MC-Unique: PtFB9CWdPe2FNGtpWKD-_w-1
-X-Mimecast-MFC-AGG-ID: PtFB9CWdPe2FNGtpWKD-_w_1770859826
-Received: by mail-pg1-f199.google.com with SMTP id 41be03b00d2f7-c6e1dab2235so908634a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2026 17:30:26 -0800 (PST)
+ us-mta-422-u5XyZFtSP7S7929vLaVAqg-1; Wed, 11 Feb 2026 21:05:26 -0500
+X-MC-Unique: u5XyZFtSP7S7929vLaVAqg-1
+X-Mimecast-MFC-AGG-ID: u5XyZFtSP7S7929vLaVAqg_1770861926
+Received: by mail-pl1-f199.google.com with SMTP id d9443c01a7336-2aad5fc5b2fso26713185ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2026 18:05:26 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770859825; x=1771464625;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=bY4z6uuO6pRuPz5GN5A8CgMrwxk/puAYj4i3AjMGr9s=;
-        b=sKOTRo/f1C2Oo2yPnTugjtpipGqaGQPmCQ3IX266ETfU1aSR9tJhu3OIjcVTPW9ZBZ
-         vbIsbu2QtbB8EYTnoDp3lIWniGV1KWuG2vOy0GWwp3684ccy3I8soiPMMMWxePAR0igK
-         2HOZzY/yFj7umDvKPoiRVw6HRT01ivjiBs8nunRqeVkpsWNBFH1fLmzvVK7WBGFOoIWt
-         n9Ug4SDX2ufUU4ysg0zubq1Y0n648LllIe142OYulp28r4fwDug9perw9dCxDbVBYo5L
-         YVo1pcj83neC8ig4BbbxDhF6UiByUR85gJk8FaXkQzkoAwfr01trL8fKJx23sjnTV28+
-         2M8A==
-X-Forwarded-Encrypted: i=1; AJvYcCVwsikBjXikwx43bTbcCymx19wUY4dgF7cepLBmkimPwyUE0pVzEClvWEXwWVcKpsOsOQ4NJtnjcWLFn4c=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz77qTmAn7ysgPBKGlmgGwCHyehhpl8OLKRemm/59q0DBO1lcEu
-	r1VwhtLXPwaIAsKSJv6cuj2SUhEkdvoD2R9/+uOTEvdTpW897tdJyHTRE1B/+/USrwnuuBsZ7Fm
-	IJeLuw2zNN3xTcEWsIS7qVd7C+bfLCMO56VTw/e93FfPSMQWDNv+MUQXs4vhUIrwebv0=
-X-Gm-Gg: AZuq6aLzw6Gv1G7JNZP6ZbDK3gU5PIUc+enTZmGKaA4Gd0RF1AmJHJYG5UsAI9Bp+wp
-	Hg5PegKhIhA83xwZCTGdp5cDpB1aY/FazP2WywjJ3tggx2xQB1QER/yBGrajYQyJqV1v+CCyLB6
-	r5EEqDFfmLhDurbHO16//5yfLcET6ANZDMiFaII9exucgIZzmTpl/vlgk16soW9hXBtbGJcqgyU
-	DSUHUTQZmIg/t1vvxdWAJa4Ve1ygHq9OU5C535BsUb4LtyG+ZoHbQ3rB+e0wZDhoBST1YWtDqS0
-	xLgxg0I+vrRjqN6iSpL9cb0bmgOcOfFN4U4+KjIN9ihffSbjcC7M8eIAE1aXfptzC+FJm033rfm
-	UM+r5mekmoUnu
-X-Received: by 2002:a05:6a20:e20d:b0:38d:fc34:c88d with SMTP id adf61e73a8af0-3944887601cmr937845637.55.1770859825453;
-        Wed, 11 Feb 2026 17:30:25 -0800 (PST)
-X-Received: by 2002:a05:6a20:e20d:b0:38d:fc34:c88d with SMTP id adf61e73a8af0-3944887601cmr937804637.55.1770859824883;
-        Wed, 11 Feb 2026 17:30:24 -0800 (PST)
+        d=1e100.net; s=20230601; t=1770861925; x=1771466725;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=PizJXKd85zXyZ9iQQX+Ej3hfH7kGalbAW0kYbFZfhf4=;
+        b=Kumut/k9IRplKcPHZ6fCGRClk2LCXC9Vi/Fdi+c/6MlZZjlzw5z1L4u/QsMgqTSxgd
+         ay40tQexDWFXTPu75Pqk03T/tt8xYPb7fytcdyKimu9eEvx6OxjJtE8Sj1KTeA0sQRH1
+         WEGTLrHuU6/I5BZsht7CMuFTL0FwUpQl3zaJbTSXOnACX2pXbKkUunllCE+MRk5+wclY
+         RyXecAcNu8ErmJbSJLdCd96ibtw60oB6NWwP8GSOjSfxoWb6gZqkErevA+8R8nCzM83R
+         TTNHmn7ddOWWWNBm0EvNbQKxjR5F3OWyy2MNjDLyisyuicTbXZjDt6RUTSLxr3yFHxxA
+         sxfQ==
+X-Forwarded-Encrypted: i=1; AJvYcCV9KZV4rXJi1ZFGhL0WdUr21OSHGBBtTAG8xjv4r50Z73DxpWEBhVX5BTn8ECrQOVoZqg/UOLw06njfZxc=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yz+mSMgW8nXwm1A8M0ajwIlSo1bsIMbUw58I7sFvRXCNDGwyysH
+	xSD5GIaLi8lNa5eg2wqPf14NihmXKn12ZSXIt9jYgAsXIF/T5+pPDHxoWFsF0m60c3ZlYRs0i+t
+	eZeHqWLqUaGpqrcjVJTYjWLhiZ57YFrOpHmr8n779BCs8eKJIVEU2aEeuE5kLQJpVXN4=
+X-Gm-Gg: AZuq6aLBbgaKlQygn/qO459klJEabK96E1mTZ/uOrHkEK7QEy9Pg7to2765H9XCMZCp
+	5A36yPKQOdi4L+h52N7i+iWcCEfaOUqxadyMNZY6SEVgorHzvPHgWCeJQmRrfInBZC4wAVMH6Cy
+	7U6QJ2jXjQPL4QJP07CikKf+EFeqgfVRx7IFjA9twFciSeiQTjpkEaKNVUK9qvy2oCJAnh5UF1x
+	jUY4PepOF/xw4Iqv06sRHRk5rjFA12hFhJFKF4YVHGQ554lToUbs/1EdsAcQCIOZ+Jxn174rd5P
+	XnNxhJ+fc2r22rGHr7MQFn9jNwqt1vsCRCFL4MFu/ydXle/m5F4HDyVzSjfYcuhwUGIpMyKOOTs
+	Lwj1mW5Ut8YSx
+X-Received: by 2002:a17:903:1663:b0:2a0:de4f:c99 with SMTP id d9443c01a7336-2ab3b1583c5mr6716815ad.9.1770861925459;
+        Wed, 11 Feb 2026 18:05:25 -0800 (PST)
+X-Received: by 2002:a17:903:1663:b0:2a0:de4f:c99 with SMTP id d9443c01a7336-2ab3b1583c5mr6716465ad.9.1770861924935;
+        Wed, 11 Feb 2026 18:05:24 -0800 (PST)
 Received: from localhost ([209.132.188.88])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c6e197f7e0bsm3248413a12.27.2026.02.11.17.30.23
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ab2984c07bsm34405605ad.7.2026.02.11.18.05.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 Feb 2026 17:30:24 -0800 (PST)
-Date: Thu, 12 Feb 2026 09:28:43 +0800
+        Wed, 11 Feb 2026 18:05:24 -0800 (PST)
+Date: Thu, 12 Feb 2026 10:01:58 +0800
 From: Coiby Xu <coxu@redhat.com>
-To: Mimi Zohar <zohar@linux.ibm.com>
-Cc: linux-integrity@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>, 
-	Alexander Egorenkov <egorenar@linux.ibm.com>, Ard Biesheuvel <ardb@kernel.org>, 
-	Dave Hansen <dave.hansen@intel.com>, Roberto Sassu <roberto.sassu@huawei.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Vasily Gorbik <gor@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, 
-	Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>, 
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, 
-	"maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <x86@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, 
-	Dmitry Kasatkin <dmitry.kasatkin@gmail.com>, Eric Snowberg <eric.snowberg@oracle.com>, 
-	Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, 
-	"Serge E. Hallyn" <serge@hallyn.com>, Jarkko Sakkinen <jarkko@kernel.org>, 
-	open list <linux-kernel@vger.kernel.org>, 
-	"open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>, "open list:S390 ARCHITECTURE" <linux-s390@vger.kernel.org>, 
-	"open list:EXTENSIBLE FIRMWARE INTERFACE (EFI)" <linux-efi@vger.kernel.org>, 
-	"open list:SECURITY SUBSYSTEM" <linux-security-module@vger.kernel.org>, "open list:KEYS/KEYRINGS_INTEGRITY" <keyrings@vger.kernel.org>
-Subject: Re: [PATCH v2 1/3] integrity: Make arch_ima_get_secureboot
- integrity-wide
-Message-ID: <aY0rZp9ROwfjPgD8@Rk>
-References: <20260203041434.872784-1-coxu@redhat.com>
- <20260203041434.872784-2-coxu@redhat.com>
- <66f9d13875e81a965984e2a661e992a3fe43c516.camel@linux.ibm.com>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: kexec@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+	linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, 
+	Arnaud Lefebvre <arnaud.lefebvre@clever-cloud.com>, Baoquan he <bhe@redhat.com>, Dave Young <dyoung@redhat.com>, 
+	Kairui Song <ryncsn@gmail.com>, Pingfan Liu <kernelfans@gmail.com>, 
+	Andrew Morton <akpm@linux-foundation.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
+	Rob Herring <robh@kernel.org>, Thomas Staudt <tstaudt@de.ibm.com>, 
+	Sourabh Jain <sourabhjain@linux.ibm.com>, Will Deacon <will@kernel.org>, 
+	Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	Saravana Kannan <saravanak@kernel.org>, open list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v4 2/2] arm64,ppc64le/kdump: pass dm-crypt keys to kdump
+ kernel
+Message-ID: <aY0uGN67vdEP2b_F@Rk>
+References: <20260211082401.2407853-1-coxu@redhat.com>
+ <20260211082401.2407853-3-coxu@redhat.com>
+ <423a3431-1271-4c35-94fe-8ca880679ed9@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -125,68 +120,118 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-In-Reply-To: <66f9d13875e81a965984e2a661e992a3fe43c516.camel@linux.ibm.com>
+In-Reply-To: <423a3431-1271-4c35-94fe-8ca880679ed9@kernel.org>
 X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: f3ynkbwW9oFddtRKB4dVQkL4LPPV4ZTt1qCuDEOvCJo_1770859826
+X-Mimecast-MFC-PROC-ID: bdiRqbC6xk6O_sgJVG8pVo0VLrmLZDEl8NA9aet2cT0_1770861926
 X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 
-On Mon, Feb 09, 2026 at 03:43:08PM -0500, Mimi Zohar wrote:
->On Tue, 2026-02-03 at 12:14 +0800, Coiby Xu wrote:
->> EVM and other LSMs need the ability to query the secure boot status of
->> the system, without directly calling the IMA arch_ima_get_secureboot
->> function. Refactor the secure boot status check into a general function
->> named arch_get_secureboot.
+On Wed, Feb 11, 2026 at 10:55:17AM +0100, Christophe Leroy (CS GROUP) wrote:
+>
+>
+>Le 11/02/2026 à 09:24, Coiby Xu a écrit :
+>>CONFIG_CRASH_DM_CRYPT has been introduced to support LUKS-encrypted
+>>device dump target by addressing two challenges [1],
+>>  - Kdump kernel may not be able to decrypt the LUKS partition. For some
+>>    machines, a system administrator may not have a chance to enter the
+>>    password to decrypt the device in kdump initramfs after the 1st kernel
+>>    crashes
 >>
->> Reported-and-suggested-by: Mimi Zohar <zohar@linux.ibm.com>
->> Suggested-by: Roberto Sassu <roberto.sassu@huawei.com>
->> Signed-off-by: Coiby Xu <coxu@redhat.com>
->
->Thanks, Coiby.  Other than unnecessarily splitting a line, the patch set looks
->good.  As soon as the open window closes, I'll queue these patches for linux-
->next.
-
-Hi Mimi, thanks for reviewing the patch set! Would you like me to send a
-new version with the line splitting issue fixed?
-
->
->> diff --git a/security/integrity/ima/ima_efi.c b/security/integrity/ima/ima_efi.c
->> index 138029bfcce1..27521d665d33 100644
->> --- a/security/integrity/ima/ima_efi.c
->> +++ b/security/integrity/ima/ima_efi.c
-[...]
->>  {
->> -	if (IS_ENABLED(CONFIG_IMA_ARCH_POLICY) && arch_ima_get_secureboot()) {
->> +	if (IS_ENABLED(CONFIG_IMA_ARCH_POLICY) &&
->> +	    arch_get_secureboot()) {
->
->No need to split the line here or below.
->
->
->>  		if (IS_ENABLED(CONFIG_MODULE_SIG))
->>  			set_module_sig_enforced();
->>  		if (IS_ENABLED(CONFIG_KEXEC_SIG))
->> diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
->> index 5770cf691912..6d093ac82a45 100644
->> --- a/security/integrity/ima/ima_main.c
->> +++ b/security/integrity/ima/ima_main.c
->> @@ -949,8 +949,8 @@ static int ima_load_data(enum kernel_load_data_id id, bool contents)
+>>  - LUKS2 by default use the memory-hard Argon2 key derivation function
+>>    which is quite memory-consuming compared to the limited memory reserved
+>>    for kdump.
 >>
->>  	switch (id) {
->>  	case LOADING_KEXEC_IMAGE:
->> -		if (IS_ENABLED(CONFIG_KEXEC_SIG)
->> -		    && arch_ima_get_secureboot()) {
->> +		if (IS_ENABLED(CONFIG_KEXEC_SIG) &&
->> +		    arch_get_secureboot()) {
+>>To also enable this feature for ARM64 and PowerPC, we only need to add
 >
->===>
+>What do you want to say exactly with 'only' ?
+
+Hi Christophe,
+
+Thanks for raising the question! To clarify, CONFIG_CRASH_DM_CRYPT
+provides the framework to address these challenges for LUKS-encrypted
+dump target. Since the heavy lifting is handled in the arch-independent
+code, we only need to...
+
+If it looks good to you, I'll rephrase it as "To also enable this
+feature for ARM64 and PowerPC, the missing piece is to let the kdump
+kernel know where to find the dm-crypt keys which are randomly stored in
+memory reserved for kdump. I'll introduce a new device tree property
+dmcryptkeys ...".
+
 >
->Mimi
+>>a device tree property dmcryptkeys [2] as similar to elfcorehdr to pass
+>>the memory address of the stored info of dm-crypt keys to the kdump
+>>kernel. Since this property is only needed by the kdump kernel, it won't
+>>be exposed to user space.
+>>
+>>[1] https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Fall%2F20250502011246.99238-1-coxu%40redhat.com%2F&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C0aa5f3b34d694b23b0cc08de6946f66c%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639063950684962054%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=8uCc%2Bg6YNojymf8UpZhmJY19vpWXJCC9KIf3qMyQ3dI%3D&reserved=0
+>>[2] https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2Fdevicetree-org%2Fdt-schema%2Fpull%2F181&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C0aa5f3b34d694b23b0cc08de6946f66c%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639063950684987003%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=1s5NPHgF1LsXdrDXBhawduFXOqnHPlkbohQHHvolLw4%3D&reserved=0
+>>
+>>Cc: Arnaud Lefebvre <arnaud.lefebvre@clever-cloud.com>
+>>Cc: Baoquan he <bhe@redhat.com>
+>>Cc: Dave Young <dyoung@redhat.com>
+>>Cc: Kairui Song <ryncsn@gmail.com>
+>>Cc: Pingfan Liu <kernelfans@gmail.com>
+>>Cc: Andrew Morton <akpm@linux-foundation.org>
+>>Cc: Krzysztof Kozlowski <krzk@kernel.org>
+>>Cc: Rob Herring <robh@kernel.org>
+>>Cc: Thomas Staudt <tstaudt@de.ibm.com>
+>>Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
+>>Cc: Will Deacon <will@kernel.org>
+>>Signed-off-by: Coiby Xu <coxu@redhat.com>
+>>---
+>>  arch/arm64/kernel/machine_kexec_file.c |  4 ++++
+>>  arch/powerpc/kexec/elf_64.c            |  4 ++++
+>>  drivers/of/fdt.c                       | 21 +++++++++++++++++++++
+>>  drivers/of/kexec.c                     | 19 +++++++++++++++++++
+>>  4 files changed, 48 insertions(+)
+>>
+>>diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+>>index 331646d667b9..2967e4aff807 100644
+>>--- a/drivers/of/fdt.c
+>>+++ b/drivers/of/fdt.c
+>>@@ -866,6 +866,26 @@ static void __init early_init_dt_check_for_elfcorehdr(unsigned long node)
+>>  		 elfcorehdr_addr, elfcorehdr_size);
+>>  }
+>>+static void __init early_init_dt_check_for_dmcryptkeys(unsigned long node)
+>>+{
+>>+	const char *prop_name = "linux,dmcryptkeys";
+>>+	const __be32 *prop;
+>>+
+>>+	if (!IS_ENABLED(CONFIG_CRASH_DM_CRYPT))
+>>+		return;
+>>+
+>>+	pr_debug("Looking for dmcryptkeys property... ");
+>>+
+>>+	prop = of_get_flat_dt_prop(node, prop_name, NULL);
+>>+	if (!prop)
+>>+		return;
+>>+
+>>+	dm_crypt_keys_addr = dt_mem_next_cell(dt_root_addr_cells, &prop);
+>>+
+>>+	/* Property only accessible to crash dump kernel */
+>>+	fdt_delprop(initial_boot_params, node, prop_name);
 >
->>  			pr_err("impossible to appraise a kernel image without a file descriptor; try using kexec_file_load syscall.\n");
->>  			return -EACCES;
->>  		}
+>Shouldn't this property be deleted regardless of whether kernel is 
+>built with CONFIG_CRASH_DM_CRYPT or without ?
+
+This property will be created only if 1) CONFIG_CRASH_DM_CRYPT is
+enabled and 2) the dump target is LUKS-encrypted. So there is no need to
+delete it if it doesn't exist at all.
+
+>
+>>+}
+>>+
+>>  static unsigned long chosen_node_offset = -FDT_ERR_NOTFOUND;
+>>  /*
+>>@@ -1097,6 +1117,7 @@ int __init early_init_dt_scan_chosen(char *cmdline)
+>>  	early_init_dt_check_for_initrd(node);
+>>  	early_init_dt_check_for_elfcorehdr(node);
+>>+	early_init_dt_check_for_dmcryptkeys(node);
+>>  	rng_seed = of_get_flat_dt_prop(node, "rng-seed", &l);
+>>  	if (rng_seed && l > 0) {
 >
 
 -- 
