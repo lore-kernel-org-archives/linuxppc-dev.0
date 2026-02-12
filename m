@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-16831-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16832-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C062EEB48EB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Feb 2026 08:58:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B93FEEB48ED
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Feb 2026 09:01:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fBTjz1rnRz2yFm;
-	Thu, 12 Feb 2026 19:58:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770886727;
-	cv=none; b=CYF6jd2vE6sEm8e7B43SlDUkimX5gig9cn1gQAOEPnCQHs36f4MA91xVmEDxnIAoB/SRD+fqNaTiGh+2ZAcufbODq1W+ZEvm0I2J9Lj64khZ9Tin9ho4Lx76TLBBSYykBVDf5VPoYtFZfWULR5tZneMNxXmgVCJHcKwg1EUypiPWl9bSVZT0zNr9UUYhAfZIzjxq9m06X8zddNSsZNzTCmcygyiaeQHjSI2CRT7zZSPPUc0C86zF0Ytvn50Y+FlsBcMdRQdjfJeM852jRyGeWDHRkfv33JNp4ndv5V5i3cfxDHxe//MmuQ4tNQBH/OMck35wYq+PKMJxgEbxUN9WUQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fBTnX2XDmz2yFm;
+	Thu, 12 Feb 2026 20:01:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770886912;
+	cv=none; b=lK9wYvWJvGupXSk55+HOsuLfAEkWPS+hjOTTAujetkYad7VXzd+jZAKSuLddXQAl5pmBNHVBUssEbsmELRk2qZkCogykJnOhJYdd6xmHSiPBXgFooDer+yyfWKwuPhTeHQPBxh6GUAX4/fa/d6MVFL4/FGDXPCTzKPalsSsY1Io0nrvnqtU7Yp10XFG7HtoEeAdRAK1BNoq6SUFesakKiD69gdzYIAt+7VtwLhHQcjm8JNQDYqdJJD9r2ItVfi4FtE/+Zw+4sIog4DLHGxMOAhq/ZwwzQcUDmuxW7ypeH43tb+kIf3HuzX5446wVY4eTHjCQzB+1Ga7I0sxcHAvZgQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770886727; c=relaxed/relaxed;
-	bh=YDZYxDalqWS4jpiN6DyzwpwDXVyHMVpKrE+0rILK6hg=;
+	t=1770886912; c=relaxed/relaxed;
+	bh=ztokAIoCYpkBlx7T8Bsk0Xjj5MaU1sWiBBOC3dSH5QU=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=mWtC1t8Mn7+3B1HEEmN5rLaMf/8WKl2vnMF7v+TG8WbQjppKMokSEVxkpVUfq9vwJ5OMaqLxIkOr2ZsC3sX+lAoIdabG5DvmuC0JGNuW10W6z6o1FZXqbbXxRjtNZ6YXLuw+DAd6f9KndjRfzaoGVzGD+JGlFA3N8xlH1jLVpMyewyVOx55fsPd9o2ph/DAsUoH9h5NfSyRrIYkXc9McUKxJJGfo6owThbwMSi9rYlbLIUjNLU3okFE2XGVIgppjzB5+AX5zPftTF1mQ1r/c+wdt+/RxRQosEqoCdiCu/6BjP1uhDdprI2/mNvCDSNgSfrXJdF7gJfxb1DUK2OXYqQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HT5R6kpv; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=DTe2jSr3AQiUNuXVfkrfxs1jPKmzYB1cIMMydWicLQFKfjnalN26aDmVNBFchYIBslmo1KlIpln4opqBGu3SgQqkTq2bj1LkDOtC98Q3wOmfrGX6mYgm9d9koNOEuJg5cMlChjwSLd+15BndSgdEnyZ4vnggx02DPBCQkjpX5zFaKzq3pXpfeiX3fAL/9ubC20Y158jg2oBr+m1AE5lBh147bl9CKIZ9k6NMROxjB6hhOnqgZFL9ibPEi4gSd4PKeWzXwL73dysZCtfbKxVkVjt+vglZNtwAu1X1Pk/zaa9AWnRIECdI7rv7PR8wVrrPUGuylFNLP9lHV/7lQOaMMg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EzC7pZZ3; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HT5R6kpv;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EzC7pZZ3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fBTjx73pxz2xlh
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Feb 2026 19:58:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fBTnV04sbz2xlh
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Feb 2026 20:01:49 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 7B62960128;
-	Thu, 12 Feb 2026 08:58:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0155DC16AAE;
-	Thu, 12 Feb 2026 08:58:27 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 3A70941980;
+	Thu, 12 Feb 2026 09:01:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6B128C4CEF7;
+	Thu, 12 Feb 2026 09:01:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1770886723;
-	bh=O72aDxD0jjZlGGwbJFSDSKCAXe0FHSLzulcP/3B+3gA=;
+	s=k20201202; t=1770886907;
+	bh=mbeyKAvym1Evnd03SXCqu1tAKf52BxUCYkSrs6de9OY=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=HT5R6kpvSukfg5IN9nlS4YbpAP2leknMovU4Qa/hAHCkiDLHNZCK/gaEeXQHxyP1T
-	 EeaWGdiI6XLZNPc7qylXP4VxUBbfiWCiPR0OOrU3ukw4sHt8o/tbgJHm1EXYuVKv5l
-	 TBZNfkmh8mxb3m+xGctyA2sWLPBXy+8bVH6k/ChG6pgU9xLYtMCirmrNSdekZUSMr1
-	 rcLqmGD6U2Zf3RltXhzmv3O0aVtAoGjJuEnP61CUcxzzuUEYvxoWOwO1f80x8bs6UX
-	 gPY2bh3g5BAn1TNdodmkMMpjKpSAgB1l7qIcZJmbGe5SiaAuLLViJ5jFEfzgOeHrZb
-	 3ef+PtYkktc6A==
-Message-ID: <a9834da2-67c5-4641-8ca1-fc5ba067572e@kernel.org>
-Date: Thu, 12 Feb 2026 09:58:24 +0100
+	b=EzC7pZZ31+AvqkeNbZ+v1uBdrrQu/Ug8+evZxdKrZiDdRxVQ9FJ6YzrNMAOjK6l1l
+	 lmA2Vqe7Yd2Y1fOK/Gf/bHij4F99vPL/NoVeb/p4w5i3b0ZJOx0+iUhnJYpQoDl79S
+	 vvU8wl5F2oYQ0e22bB7hT79dtpzdPxIQO89tikEAnB0VTGRwU2yhWdh4sD6hFlZMj8
+	 HpUICv7+9ultjVQRagyYsoL6VB2fxPVVT5hFfxy0PlrOl41v9xEYNuIAuSVc1vAmlJ
+	 JDfwSZ+HNeo4rjkOTyrcFsmfy2SUffMK2Adtr7i2FrD0mIutj8T5KgIQM6xp8QRIZa
+	 Mu5waAMtsSfSw==
+Message-ID: <74103a51-cada-4645-91d3-e0807b32c2a7@kernel.org>
+Date: Thu, 12 Feb 2026 10:01:27 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,8 +60,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 1/4] mm: don't special case !MMU for is_zero_pfn() and
- my_zero_pfn()
+Subject: Re: [PATCH v3 2/4] mm: rename my_zero_pfn() to zero_pfn()
 To: Mike Rapoport <rppt@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
 Cc: Andreas Larsson <andreas@gaisler.com>, Borislav Petkov <bp@alien8.de>,
  Brian Cain <bcain@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>,
@@ -93,7 +92,7 @@ Cc: Andreas Larsson <andreas@gaisler.com>, Borislav Petkov <bp@alien8.de>,
  sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
  linux-mm@kvack.org, x86@kernel.org
 References: <20260211103141.3215197-1-rppt@kernel.org>
- <20260211103141.3215197-2-rppt@kernel.org>
+ <20260211103141.3215197-3-rppt@kernel.org>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -140,22 +139,20 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260211103141.3215197-2-rppt@kernel.org>
+In-Reply-To: <20260211103141.3215197-3-rppt@kernel.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
 On 2/11/26 11:31, Mike Rapoport wrote:
 > From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
 > 
-> nommu architectures have empty_zero_page and define ZERO_PAGE() and
-> although they don't really use it to populate page tables, there is no
-> reason to hardwire !MMU implementation of is_zero_pfn() and my_zero_pfn()
-> to 0.
+> my_zero_pfn() is a silly name.
 > 
-> Drop #ifdef CONFIG_MMU around implementations of is_zero_pfn() and
-> my_zero_pfn() and remove !MMU version.
+> Rename zero_pfn variable to zero_page_pfn and my_zero_pfn() function to
+> zero_pfn().
 > 
-> While on it, make zero_pfn __ro_after_init.
+> While on it, move extern declarations of zero_page_pfn outside the
+> functions that use it and add a comment about what ZERO_PAGE is.
 > 
 > Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 > ---
