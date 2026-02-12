@@ -1,53 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-16822-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16823-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4DB6DEDF021
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Feb 2026 03:28:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5734EDF040
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Feb 2026 05:33:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fBLPM6NB9z2xcB;
-	Thu, 12 Feb 2026 14:28:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.221
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770866935;
-	cv=none; b=ovbg7u2pkrEwxkRSFFBS/gUisSBaCSufFNrXAA9kJf/RWrYMmepfxr22Y30kGlieBONlae+HdMSoBn2xSncNYwNh41YjGAmLowALMknHNo/6t51hWBCEQzDfn5saAeMWwSjF2gkB2IOomLkFMUnoaOyc+/xAwJjcegm+S0HGYlv9NIPjXWuV8XuclMsj4FpquuWfKjz0edmEUSe/3/bRVVeQs4yAkcBNchFh9a7Uim9DvA+5I8pI+1qhyzcuMkwedEOfcscMbwadHv4QQLv7LvbHxLQEy0j3o7wejXM70AJ94Noqx+LsbWy6A5O06CJ0cAELbJxCrocPwHPYbxl0bA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fBP8t1tP7z2xcB;
+	Thu, 12 Feb 2026 16:33:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770874398;
+	cv=none; b=LnC4LT4y6uY7ilt2E9TfbHHtnEmdQV8HOwjQzYrZ15UFeX1BkOuTX9aiEPL3nPHv6MW/8y4Um+zTaebk6gXkz59ahlSKH/YssjLlXWyzffd+y/DzMcieqTesSkQ1b1A+MSlPGpVPeHmeTEjc835TOWCUNesfi8lPQhDwzvn9ULdzXoIRKkXZeeC55YXJxp1dI3YISQS9lW6KGsfqfSiH0OcG3w9F22riBbKmT4PU6FnicEDkjJ/r8gKYB1dU896+NdrZTJLTRLme7p1faOlNhlXQ40jvgteaczaHgH+z7EuCwj5SWGCOUEZpRYnmfdgJ56+jQpB8FOkdJA9jZP8kgA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770866935; c=relaxed/relaxed;
-	bh=RZTcbKUpf2wubcUUQwFd4TLSwyssXimapX4rFbyIz5A=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=MeqOYltVJY4b2l+VjAA17jfJ9Y6sOqlfs6NHBz0SvIE/3vpEi7AC4/+SV5ORi0LO3Eav2rI7IFQmZ6PT7csgWow10E5M9USVGSzga+Wwh+HbQjdDvNIAiIsaYP27d9B5Wl3wNrGjhQPn5t0ylw98iQMI500Ws8g4p0D8ZRKEVTjXJAA9eO7MBH2vZMC0NesI2JlMN29Ut2Ifahc1yVF0QQ5js3zK/C4DYiUgyzSGvlRliNSxt06YBK+7RyrZKDlEoHwW9gWyc6qeT15u5kSoqS9pDl9DlEX0Z5bGVCgeOL/4MRhV+2ISgAS5aWS8EjN04xTDN/z7yqGjqVqIB48hqA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=cXMfoad+; dkim-atps=neutral; spf=pass (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+	t=1770874398; c=relaxed/relaxed;
+	bh=jRzyQacyUh/08e1S92m/JTc0FNNqNKr3dxJ1j03blI8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=NQzzCAzVTOQG3HGOQD8Rl2Kdg9a8I/1WmjXCIKXCJtMWegLNEV0HdHVwg7QegvK2RkuP2otOOS/gD4oe5UeAjXDvqFHCYgL/z0MDb3gpi2+ytK0Ubwc7c9MBLfLaGB+TMlpe2ZsTzCsRzqetPDOXmEUOcr/Z7jdSSnBOkyrHFjBmTBvb5RbA39JWckdB/xLt484wqVCMCkL+Lv4PfpgomZMM+ggRTfvTfjc/RwxQ9+QA1rdUkq0/+D8Ia04TCSbQJqaOvxM2iAXCDCPAmojzLTso8wrZSRs5sloepnlN3I8RGlpAte6v6My4j5n96s9r8ATOC/lYSKdfXyoBlRWOxA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fnRt4bNT; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=dinguyen@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=cXMfoad+;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fnRt4bNT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout06.his.huawei.com (canpmsgout06.his.huawei.com [113.46.200.221])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=dinguyen@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fBLPK339Jz2xHX
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Feb 2026 14:28:52 +1100 (AEDT)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=RZTcbKUpf2wubcUUQwFd4TLSwyssXimapX4rFbyIz5A=;
-	b=cXMfoad+w/Ix+LI9YndMWoNmF4Iu3IJhXflwlT1MxUXYGZVZzdihNCJKOT0lufO87rj8TPJxq
-	3rCoLyHgE6YQfJO7OcmMQHWBZTvKnoxt4QdFUAjcXo3Ou/NK7Ychs3Q1erI52ZOjhspHUesfzbk
-	tjGTeV7nVTLFy9vfIpqFDy4=
-Received: from mail.maildlp.com (unknown [172.19.162.144])
-	by canpmsgout06.his.huawei.com (SkyGuard) with ESMTPS id 4fBLHs1gjWzRhRT;
-	Thu, 12 Feb 2026 11:24:09 +0800 (CST)
-Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id 7371340567;
-	Thu, 12 Feb 2026 11:28:47 +0800 (CST)
-Received: from [10.67.109.254] (10.67.109.254) by
- dggpemf500011.china.huawei.com (7.185.36.131) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Thu, 12 Feb 2026 11:28:43 +0800
-Message-ID: <31c2ae53-cbb7-bfad-9b8f-f9e1a254491e@huawei.com>
-Date: Thu, 12 Feb 2026 11:28:42 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fBP8s2Gq2z2xHX
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Feb 2026 16:33:17 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 97C9B4151B;
+	Thu, 12 Feb 2026 05:33:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D227FC4CEF7;
+	Thu, 12 Feb 2026 05:33:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1770874394;
+	bh=xWdXZIArybbo9Rgxccq3nL2HLMDxrTRxGRMmTyJ92Ek=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=fnRt4bNTruqGWDCex4UgCYs5xfFXruN8Lon65hP9g22+WBdZKtSwF7Vlpe0Cerco4
+	 bvwxt2r8yj+pM8xOwU8CRkM4OmUaUA/+Tzc72yQC0G+UVZeUmzyMyMPGyxL/xNIa4X
+	 +/VC+HyZKbjW0nnljKGakLZZFB897pqnLw9d71EIpoTCJ5wnD5VHVMEklBRL/Jcabq
+	 Mwmjfv/JZu6GfI7SyoqZ+mxEsaOK/PQXeGkhDnmh+ztI8JZFzkYG9tnpHFUHqIR6N4
+	 w+N5IHX73Du91X+qNAEJ7TQrDCCl9z1LnQGwJBdYZfNUoF2uBKOsddFYGgsxivKLws
+	 KFvp/8rynpEOQ==
+Message-ID: <0b420450-a85f-4f7c-93c2-4d2de37d257b@kernel.org>
+Date: Wed, 11 Feb 2026 23:33:09 -0600
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,288 +59,101 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Thunderbird/102.2.0
-Subject: Re: [PATCH v4 1/3] crash: Exclude crash kernel memory in crash core
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 3/4] arch, mm: consolidate empty_zero_page
 Content-Language: en-US
-To: Sourabh Jain <sourabhjain@linux.ibm.com>, <corbet@lwn.net>,
-	<catalin.marinas@arm.com>, <will@kernel.org>, <chenhuacai@kernel.org>,
-	<kernel@xen0n.name>, <maddy@linux.ibm.com>, <mpe@ellerman.id.au>,
-	<npiggin@gmail.com>, <chleroy@kernel.org>, <pjw@kernel.org>,
-	<palmer@dabbelt.com>, <aou@eecs.berkeley.edu>, <alex@ghiti.fr>,
-	<tglx@kernel.org>, <mingo@redhat.com>, <bp@alien8.de>,
-	<dave.hansen@linux.intel.com>, <hpa@zytor.com>, <akpm@linux-foundation.org>,
-	<bhe@redhat.com>, <vgoyal@redhat.com>, <dyoung@redhat.com>,
-	<rdunlap@infradead.org>, <pmladek@suse.com>, <feng.tang@linux.alibaba.com>,
-	<pawan.kumar.gupta@linux.intel.com>, <kees@kernel.org>, <elver@google.com>,
-	<arnd@arndb.de>, <lirongqing@baidu.com>, <fvdl@google.com>,
-	<leitao@debian.org>, <rppt@kernel.org>, <ardb@kernel.org>, <jbohac@suse.cz>,
-	<osandov@fb.com>, <ryan.roberts@arm.com>, <cfsworks@gmail.com>,
-	<tangyouling@kylinos.cn>, <ritesh.list@gmail.com>, <thuth@redhat.com>,
-	<hbathini@linux.ibm.com>, <eajames@linux.ibm.com>, <bjorn@rivosinc.com>,
-	<songshuaishuai@tinylab.org>, <kevin.brodsky@arm.com>,
-	<samuel.holland@sifive.com>, <vishal.moola@gmail.com>,
-	<junhui.liu@pigmoral.tech>, <dwmw@amazon.co.uk>, <pbonzini@redhat.com>,
-	<thomas.lendacky@amd.com>, <kai.huang@intel.com>, <ubizjak@gmail.com>,
-	<coxu@redhat.com>, <liaoyuanhong@vivo.com>, <fuqiang.wang@easystack.cn>,
-	<brgerst@gmail.com>, <x86@kernel.org>, <linux-doc@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
-	<linux-riscv@lists.infradead.org>, <kexec@lists.infradead.org>
-References: <20260209095931.2813152-1-ruanjinjie@huawei.com>
- <20260209095931.2813152-2-ruanjinjie@huawei.com>
- <50693f0c-c610-4347-86aa-40d50dc681fc@linux.ibm.com>
-From: Jinjie Ruan <ruanjinjie@huawei.com>
-In-Reply-To: <50693f0c-c610-4347-86aa-40d50dc681fc@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.67.109.254]
-X-ClientProxiedBy: kwepems200002.china.huawei.com (7.221.188.68) To
- dggpemf500011.china.huawei.com (7.185.36.131)
+To: Mike Rapoport <rppt@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Andreas Larsson <andreas@gaisler.com>, Borislav Petkov <bp@alien8.de>,
+ Brian Cain <bcain@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ David Hildenbrand <david@kernel.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Guo Ren <guoren@kernel.org>,
+ Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Johannes Berg <johannes@sipsolutions.net>,
+ John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+ "Liam R. Howlett" <Liam.Howlett@oracle.com>,
+ Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Magnus Lindholm <linmag7@gmail.com>, Matt Turner <mattst88@gmail.com>,
+ Max Filippov <jcmvbkbc@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Michal Hocko <mhocko@suse.com>, Michal Simek <monstr@monstr.eu>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Richard Weinberger <richard@nod.at>,
+ Russell King <linux@armlinux.org.uk>, Stafford Horne <shorne@gmail.com>,
+ Suren Baghdasaryan <surenb@google.com>, Thomas Gleixner <tglx@kernel.org>,
+ Vineet Gupta <vgupta@kernel.org>, Vlastimil Babka <vbabka@suse.cz>,
+ Will Deacon <will@kernel.org>, linux-alpha@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev,
+ linux-m68k@lists.linux-m68k.org, linux-openrisc@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
+ linux-mm@kvack.org, x86@kernel.org
+References: <20260211103141.3215197-1-rppt@kernel.org>
+ <20260211103141.3215197-4-rppt@kernel.org>
+From: Dinh Nguyen <dinguyen@kernel.org>
+In-Reply-To: <20260211103141.3215197-4-rppt@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
 
 
-On 2026/2/10 20:30, Sourabh Jain wrote:
-> Hello Jinjie,
+On 2/11/26 04:31, Mike Rapoport wrote:
+> From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
 > 
-> On 09/02/26 15:29, Jinjie Ruan wrote:
->> The exclude of crashk_res, crashk_low_res and crashk_cma memory
->> are almost identical across different architectures, handling them
->> in the crash core would eliminate a lot of duplication, so do
->> them in the common code.
->>
->> And move the size calculation (and the realloc if needed) into the
->> generic crash core so that:
->>
->> - New CMA regions or future crash-memory types can automatically
->>    accounted for in crash core;
->>
->> - Each architecture no longer has to play whack-a-mole with
->>    its private array size.
->>
->> To achieve the above goal, 4 architecture-specific functions are
->> introduced:
->>
->> - arch_get_system_nr_ranges() and arch_prepare_elf64_ram_headers().
->>    The 1st function pre-counts the number of memory ranges, and
->>    the 2st function fill the memory ranges into the cmem->ranges[] array,
->>    and count the actual number of ranges filled. The default
->> implementation
->>    is consistent with arm64 and loongson.
->>
->> - arch_crash_exclude_mem_range(). Realloc for powerpc. The default
->>    implementation is crash_exclude_mem_range(), and use
->>    crash_exclude_mem_range_guarded() to implement the arch version
->>    for powerpc.
->>
->> - arch_get_crash_memory_ranges(). Get crash memory ranges for arch and
->>    the default implementation is generic across x86, arm64, riscv, and
->>    loongson by using the first two arch functions above. powerpc has its
->>    own implementation by calling get_crash_memory_ranges().
->>
->> Tested on x86, arm64 and riscv with QEMU.
->>
->> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
->> ---
->>   arch/arm64/kernel/machine_kexec_file.c     |  47 +--------
->>   arch/loongarch/kernel/machine_kexec_file.c |  45 +-------
->>   arch/powerpc/include/asm/kexec.h           |  13 +++
->>   arch/powerpc/kexec/crash.c                 |  52 ++++++----
->>   arch/powerpc/kexec/file_load_64.c          |  17 ++-
->>   arch/powerpc/kexec/ranges.c                |  18 +---
->>   arch/riscv/include/asm/kexec.h             |  10 ++
->>   arch/riscv/kernel/machine_kexec_file.c     |  37 ++-----
->>   arch/x86/include/asm/kexec.h               |  10 ++
->>   arch/x86/kernel/crash.c                    | 104 ++-----------------
->>   include/linux/crash_core.h                 | 114 +++++++++++++++++++--
->>   kernel/crash_core.c                        |  71 +++++++++++--
->>   12 files changed, 269 insertions(+), 269 deletions(-)
->>
-
-[...]
-
->>   extern void crash_ipi_callback(struct pt_regs *regs);
->> diff --git a/arch/powerpc/kexec/crash.c b/arch/powerpc/kexec/crash.c
->> index a325c1c02f96..5ade9a853fb0 100644
->> --- a/arch/powerpc/kexec/crash.c
->> +++ b/arch/powerpc/kexec/crash.c
->> @@ -419,30 +419,21 @@ unsigned int arch_crash_get_elfcorehdr_size(void)
->>       return sizeof(struct elfhdr) + (phdr_cnt * sizeof(Elf64_Phdr));
->>   }
->>   -/**
->> - * update_crash_elfcorehdr() - Recreate the elfcorehdr and replace it
->> with old
->> - *                   elfcorehdr in the kexec segment array.
->> - * @image: the active struct kimage
->> - * @mn: struct memory_notify data handler
->> - */
->> -static void update_crash_elfcorehdr(struct kimage *image, struct
->> memory_notify *mn)
->> +int arch_get_crash_memory_ranges(struct crash_mem **cmem, unsigned
->> long *nr_mem_ranges,
->> +                 struct kimage *image, struct memory_notify *mn)
->>   {
->> +    unsigned long base_addr, size;
->>       int ret;
->> -    struct crash_mem *cmem = NULL;
->> -    struct kexec_segment *ksegment;
->> -    void *ptr, *mem, *elfbuf = NULL;
->> -    unsigned long elfsz, memsz, base_addr, size;
->>   -    ksegment = &image->segment[image->elfcorehdr_index];
->> -    mem = (void *) ksegment->mem;
->> -    memsz = ksegment->memsz;
->> -
->> -    ret = get_crash_memory_ranges(&cmem);
->> +    ret = get_crash_memory_ranges(cmem);
->>       if (ret) {
->>           pr_err("Failed to get crash mem range\n");
->> -        return;
->> +        return ret;
->>       }
->>   +    if (!image || !mn)
->> +        return 0;
->> +
->>       /*
->>        * The hot unplugged memory is part of crash memory ranges,
->>        * remove it here.
->> @@ -450,14 +441,34 @@ static void update_crash_elfcorehdr(struct
->> kimage *image, struct memory_notify *
->>       if (image->hp_action == KEXEC_CRASH_HP_REMOVE_MEMORY) {
->>           base_addr = PFN_PHYS(mn->start_pfn);
->>           size = mn->nr_pages * PAGE_SIZE;
->> -        ret = remove_mem_range(&cmem, base_addr, size);
->> +        ret = remove_mem_range(cmem, base_addr, size);
+> Reduce 22 declarations of empty_zero_page to 3 and 23 declarations of
+> ZERO_PAGE() to 4.
 > 
-> I like the overall design for handling crashkernel memory exclusion
-> in this patch series, especially the way you managed to free the
-> crash_mem object (mem) in the generic code (crash_prepare_elf64_headers()).
-
-Thanks for the review.
-
+> Every architecture defines empty_zero_page that way or another, but for the
+> most of them it is always a page aligned page in BSS and most definitions
+> of ZERO_PAGE do virt_to_page(empty_zero_page).
 > 
-> However, the way crash memory is prepared after a memory hotplug
-> event on powerpc by calling remove_mem_range(), can leave the crash
-> memory ranges unsorted. This can cause issues in the generic code
-> when excluding crashkernel memory, because crash_exclude_mem_range()
-> expects crash_mem to be sorted.
-
-You are absolutely correct.
-
+> Move Linus vetted x86 definition of empty_zero_page and ZERO_PAGE() to the
+> core MM and drop these definitions in architectures that do not implement
+> colored zero page (MIPS and s390).
 > 
-> So I wrote a simple patch to cover this scenario. Including the
-> patch below as the first patch in this series would be helpful.
-> https://lore.kernel.org/all/20260210120803.433978-1-sourabhjain@linux.ibm.com/
-
-Thanks for the additional patch. I'll add it as the first patch in the
-next revision to ensure crash_mem remains sorted after memory hotplug
-events on powerpc.
-
-Best regards,
-Jinjie
-
+> ZERO_PAGE() remains a macro because turning it to a wrapper for a static
+> inline causes severe pain in header dependencies.
 > 
-> Jinjie, will it be possible for you to include the above patch in this
-> patch series?
-
-My pleasure.
-
->>           if (ret) {
->>               pr_err("Failed to remove hot-unplugged memory from crash
->> memory ranges\n");
->> -            goto out;
->> +            return ret;
->>           }
->>       }
->>   -    ret = crash_prepare_elf64_headers(cmem, false, &elfbuf, &elfsz);
->> +    return 0;
->> +}
->> +
->> +/**
->> + * update_crash_elfcorehdr() - Recreate the elfcorehdr and replace it
->> with old
->> + *                   elfcorehdr in the kexec segment array.
->> + * @image: the active struct kimage
->> + * @mn: struct memory_notify data handler
->> + */
->> +static void update_crash_elfcorehdr(struct kimage *image, struct
->> memory_notify *mn)
->> +{
->> +    void *ptr, *mem, *elfbuf = NULL;
->> +    struct kexec_segment *ksegment;
->> +    unsigned long elfsz, memsz;
->> +    int ret;
->> +
->> +    ksegment = &image->segment[image->elfcorehdr_index];
->> +    mem = (void *) ksegment->mem;
->> +    memsz = ksegment->memsz;
->> +
->> +    ret = crash_prepare_elf64_headers(false, &elfbuf, &elfsz, NULL,
->> image, mn);
->>       if (ret) {
->>           pr_err("Failed to prepare elf header\n");
->>           goto out;
->> @@ -486,7 +497,6 @@ static void update_crash_elfcorehdr(struct kimage
->> *image, struct memory_notify *
->>           xchg(&kexec_crash_image, image);
->>       }
->>   out:
->> -    kvfree(cmem);
->>       kvfree(elfbuf);
->>   }
-
-[...]
-
->> +int crash_prepare_elf64_headers(int need_kernel_map, void **addr,
->> +                unsigned long *sz, unsigned long *nr_mem_ranges,
->> +                struct kimage *image, struct memory_notify *mn)
->>   {
->> -    Elf64_Ehdr *ehdr;
->> -    Elf64_Phdr *phdr;
->>       unsigned long nr_cpus = num_possible_cpus(), nr_phdr, elf_sz;
->> -    unsigned char *buf;
->> -    unsigned int cpu, i;
->>       unsigned long long notes_addr;
->> +    struct crash_mem *mem = NULL;
->>       unsigned long mstart, mend;
->> +    unsigned int cpu, i;
->> +    unsigned char *buf;
->> +    Elf64_Ehdr *ehdr;
->> +    Elf64_Phdr *phdr;
->> +    int ret = 0;
->> +
->> +    ret = arch_get_crash_memory_ranges(&mem, nr_mem_ranges, image, mn);
->> +    if (ret)
->> +        return ret;
->> +
->> +    if (mem) {
->> +        ret = crash_exclude_mem_ranges(mem, nr_mem_ranges);
->> +        if (ret)
->> +            goto out;
->> +    }
->>         /* extra phdr for vmcoreinfo ELF note */
->>       nr_phdr = nr_cpus + 1;
->> @@ -192,8 +240,10 @@ int crash_prepare_elf64_headers(struct crash_mem
->> *mem, int need_kernel_map,
->>       elf_sz = ALIGN(elf_sz, ELF_CORE_HEADER_ALIGN);
->>         buf = vzalloc(elf_sz);
->> -    if (!buf)
->> -        return -ENOMEM;
->> +    if (!buf) {
->> +        ret = -ENOMEM;
->> +        goto out;
->> +    }
->>         ehdr = (Elf64_Ehdr *)buf;
->>       phdr = (Elf64_Phdr *)(ehdr + 1);
->> @@ -262,7 +312,10 @@ int crash_prepare_elf64_headers(struct crash_mem
->> *mem, int need_kernel_map,
->>         *addr = buf;
->>       *sz = elf_sz;
->> -    return 0;
->> +
->> +out:
->> +    kvfree(mem);
->> +    return ret;
->>   }
->>     /**
+> For the most part the change is mechanical, with these being noteworthy:
 > 
+> * alpha: aliased empty_zero_page with ZERO_PGE that was also used for boot
+>    parameters. Switching to a generic empty_zero_page removes the aliasing
+>    and keeps ZERO_PGE for boot parameters only
+> * arm64: uses __pa_symbol() in ZERO_PAGE() so that definition of
+>    ZERO_PAGE() is kept intact.
+> * m68k/parisc/um: allocated empty_zero_page from memblock,
+>    although they do not support zero page coloring and having it in BSS
+>    will work fine.
+> * sparc64 can have empty_zero_page in BSS rather allocate it, but it
+>    can't use virt_to_page() for BSS. Keep it's definition of ZERO_PAGE()
+>    but instead of allocating it, make mem_map_zero point to
+>    empty_zero_page.
+> * sh: used empty_zero_page for boot parameters at the very early boot.
+>    Rename the parameters page to boot_params_page and let sh use the generic
+>    empty_zero_page.
+> * hexagon: had an amusing comment about empty_zero_page
+> 
+> 	/* A handy thing to have if one has the RAM. Declared in head.S */
+> 
+>    that unfortunately had to go :)
+> 
+> Acked-by: Helge Deller <deller@gmx.de>   # parisc
+> Tested-by: Helge Deller <deller@gmx.de>  # parisc
+> Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+> Acked-by: Dave Hansen <dave.hansen@linux.intel.com>
+> Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> ---
+
+>   arch/nios2/include/asm/pgtable.h          |  7 -------
+>   arch/nios2/kernel/head.S                  | 10 ----------
+>   arch/nios2/kernel/nios2_ksyms.c           |  1 -
+
+For nios2,
+
+Acked-by: Dinh Nguyen <dinguyen@kernel.org>
 
