@@ -1,83 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-16882-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16883-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE3C4E7BD8C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Feb 2026 10:53:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F157EE7BD92
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Feb 2026 11:29:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fF04R2lfLz2xlq;
-	Mon, 16 Feb 2026 21:53:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771239207;
-	cv=none; b=cqVRcNPxcOnJG9D3qynNRWsktCu4TKSX+bBlbkMALFpvhsYYJKcBlU12KxmeZv68itajnDltGSAHt8FYv69XM+UdncCeQHYjVdsVbi5k9eydFqLqGs1csOd0XoOI/gE+LnbMndlRIhfSsr4huNKO9ImnMHSI823LWuvjCd/HmcO+KMn60TJJUwVn0p4V4bK/ku1R26xGTvF7mUvjW3EsjdQUop3pmFt/9ojuiviuj3zK0zNRV3+qEw34Soj8bRJhJczdnn1IAI7I+xeTjXIvtHexqgqZq6sq0cSTp3H+CS6ghRjAQFMgIshzukyk3XWlP5P3+D8uVB34rQO0vO54Qw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fF0sj2lrFz2ySS;
+	Mon, 16 Feb 2026 22:29:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::649"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771241353;
+	cv=none; b=JK/+vHxAi+qnXi1wDKasNzBplR2+mUL0+veRrOuaQ1eV1okHTOQVKa0v/oRcLfv2Mqhw/ZVM8kqBIeb4s6OdgCQr7ilkldX4Mh/95W73plY/z/SPyT+/YXajDBNH6PQhO2sJHSOghDtHqu7QQl4f98nKRkxPIR/434Gk5yYJ51at+nJbIyWAxsEdLuCY30k1OCvjoBnHEznXZFafxIIKwZX38LXLbUoEw3hg4DHi8sw11BXQmMM2FVaB+8Ls1oBFBYWp5HaI8dCY9CYpMAQ6h6z4uAA5VSim/F0gFRjXMYiEDNQnuvPZawwLpD39cVm7XLwFyxk4uFwem8SIwLiYgA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1771239207; c=relaxed/relaxed;
-	bh=OmqFTgRqOq9or6wZKZbPjcu17SMCURtdsaFIELB0ln8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=EHXNGjb4k6I03uEBRsCDkKURC8YfpzWOsaR8dAltCd4oQxSCDOEuhcZqSIRDa8exs3vAq4LCtg7DChD7Wi2ZfnyAClpXtxHX/kfdhKe8WMSvJngl3nYWr7Mh+0rfcHTXTT2/OFHK3V3SlMnbQ+A7yPBjf1WfkJwcU4KeNHsTKNo7pWplXZqUb5NzTy/vYyCS6SpWT5TQCPWnwySbu0lQnZa9BErMrON1W6/19opeVySbRRDjG/k78AQj6j9zXyu6YWSpytgt3zbVZIgiJhzKswcPs11vmJ4yF8sDknEuR1LlTEXHsiRSKq8mwx9NRLqnaSXZvq3eo4bhRi6zrlr24w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LQdmL+d8; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1771241353; c=relaxed/relaxed;
+	bh=Vo1OOIvCISDxl5O3fpiaDD0IWyIfX7wGxG8VPYZFpaE=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=XyJvFBRWGmOsiW+TBeDjWZYy9NxQ1kuuXQjAl3rHwl84ac+FcKkZF6NCopOScoDOTaHfdQu7mF/iNoIFk2JJvnue/xZaXmKCYd6uv1eR/piypuE9PYHIFMcEYWO+oks4QMqeCm2KzpTUV9q4ctC5+Mp8voGokxc+uFt7THiNVpV0Txu1ROP+t/F7iwoM4v7x+NvKc20/cwo4+B3ibuDzYrYRFe7j7XotIroK9En+AbK1ZdlrQ4zZ+SWaDK6N77fP3PBrH1AKnByPmAA7S+DTrEQjh2HDWYKlmTtKOiFQYmKLB8k+d18YVE4frqwNfxhBKArL+OSx/lYmlhxG5r8zAA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=2y2Pmw/2; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::649; helo=mail-ej1-x649.google.com; envelope-from=3gv-saqkkdce7if9boveidlldib.9ljifkrumm9-absifpqp.lwi78p.lod@flex--aliceryhl.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--aliceryhl.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LQdmL+d8;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=2y2Pmw/2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--aliceryhl.bounces.google.com (client-ip=2a00:1450:4864:20::649; helo=mail-ej1-x649.google.com; envelope-from=3gv-saqkkdce7if9boveidlldib.9ljifkrumm9-absifpqp.lwi78p.lod@flex--aliceryhl.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x649.google.com (mail-ej1-x649.google.com [IPv6:2a00:1450:4864:20::649])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fF04Q4mHdz3bnm
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2026 21:53:26 +1100 (AEDT)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61G5PNbY1448294;
-	Mon, 16 Feb 2026 10:53:05 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=OmqFTgRqOq9or6wZK
-	ZbPjcu17SMCURtdsaFIELB0ln8=; b=LQdmL+d8tMJYv8WJ//pCA+zIbN+Gq0c2v
-	OB/FLOYb+YExEP66hTkvaGYnis7O7uz5hAnvvQYlXExGO6TQN2CXAqUuJAGEZcJv
-	yGhhuyR8c4qmlBtvytkdHfA+MWK7RtNJjb3tPid4fwnlLLZreQg0eaSfe7j9k2kU
-	Sp4xRKXnyQutuA5oF1/U55kJ/3dQ7ENRwXod9m2brmCUlBYc8pmHqlgu5RVp2fUr
-	5iukjXHGTATHqNUWddSjI4kt1NbPbRH7QxLg6l6SJbPjyrjUp3OhcErXpc1iauU4
-	rxHP7gpYZxFqLDj225nBcLz7kxFNvyNJwWVEtgnIN+O5xdGfCxXFQ==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4caj63xu9a-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 16 Feb 2026 10:53:04 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 61G6LTwF025053;
-	Mon, 16 Feb 2026 10:53:04 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4cb3rxn5jc-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 16 Feb 2026 10:53:04 +0000
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 61GAr0Gt37814606
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 16 Feb 2026 10:53:00 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4D34D2004D;
-	Mon, 16 Feb 2026 10:53:00 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 00AB220043;
-	Mon, 16 Feb 2026 10:52:58 +0000 (GMT)
-Received: from ltcrain4-lp15.ltc.tadn.ibm.com (unknown [9.5.7.39])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 16 Feb 2026 10:52:57 +0000 (GMT)
-From: adubey@linux.ibm.com
-To: bpf@vger.kernel.org
-Cc: hbathini@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, ast@kernel.org,
-        daniel@iogearbox.net, andrii@kernel.org, martin.lau@kernel.org,
-        eddyz87@gmail.com, yonghong.song@linux.dev, clm@meta.com,
-        ihor.solodrai@linux.dev, chleroy@kernel.org,
-        Abhishek Dubey <adubey@linux.ibm.com>
-Subject: [PATCH 3/3] powerpc32/bpf: Add fsession support
-Date: Mon, 16 Feb 2026 10:53:10 -0500
-Message-ID: <20260216155310.38457-3-adubey@linux.ibm.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260216155310.38457-1-adubey@linux.ibm.com>
-References: <20260216155310.38457-1-adubey@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fF0sg22Qgz2xVT
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2026 22:29:10 +1100 (AEDT)
+Received: by mail-ej1-x649.google.com with SMTP id a640c23a62f3a-b8861544696so325504966b.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2026 03:29:10 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1771241347; x=1771846147; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:from:subject:message-id:references
+         :mime-version:in-reply-to:date:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=Vo1OOIvCISDxl5O3fpiaDD0IWyIfX7wGxG8VPYZFpaE=;
+        b=2y2Pmw/2iN5905trhzxy9Ngkhysnpo3G09Z3CuHgeXW++aNebgNsW6iff9O+tkNPpm
+         YpIWln9V4I+gFEG25QtLLEtF66Rf9JvRXNzEi+21Gk3d/x0DLiEdtK1k6hOkqEMUPCxM
+         qUX8vEWdMlskl5KF2IVkKv8CkrMoXyOarVPFPb7t39ic87dUx+h4FxuncElsiTI0TZyq
+         rL5+EgaBtIqr7rp9xyCZE9/+rwnEZGLhCXi5EEusfkhcSpXhkODg25p4lrGEJOy7OkCb
+         fESHQW5a1/SqhANatHF03l5cJgMIZOTakilCFi4sleI1ljoSc/DrzwKzhA0VGbWAf2uQ
+         M0ig==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1771241347; x=1771846147;
+        h=content-transfer-encoding:cc:to:from:subject:message-id:references
+         :mime-version:in-reply-to:date:x-gm-message-state:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=Vo1OOIvCISDxl5O3fpiaDD0IWyIfX7wGxG8VPYZFpaE=;
+        b=gGqAu6QDukFSJ9sZC94/C+qhfHT7XnOuNqBzF90vkDIpDBGos1uqLCcssgyBTIE+Nt
+         gNTKtX75uD5PEu6u+0FmQKT3BHLwM53KONbFM66GjUln/jNuRWxTHi8VEI1RIesRO6dP
+         ZTVeDOQ6nRDdx9VTlacxwQRPLEgjBpsE1CZE64JklSi3l4FwjnEPYLqLIIi+DXuP9nw4
+         bvg7Ub+nzVOJIlUKsCxIVdHWEqW3jm7V6Hz1vB9l1peO7Y/EwGmCd4HhSgShdCyYc497
+         ZDxTtr6J1iVXQCFfI/zpsmsf2ADSEsNdaaP3BOzkcfHQQUz+l043X78ZqDvQfUlUm+Ne
+         QnWw==
+X-Forwarded-Encrypted: i=1; AJvYcCUjVony1cccuZGw2vsJ1NzL0Wc+efDPufSIP3RHdaj2xZxoRNb4XbdLq0UNgB5MTFTzLRsWdpt0AR+lwY0=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxAyofaZ8S78C2WLqc2ENXVMY/mKOq1yaAllUOFUWOvRIJfpQ70
+	gUxQgItwZxy4kZl48oKZ5O9/T0tUHpgwZ+dXRCraUMTal4XI620a2LBupmh3sZsrnlGKZkLr2+N
+	Ns4b1Lp0hkDPSg2AEFQ==
+X-Received: from edqp10.prod.google.com ([2002:aa7:d30a:0:b0:659:474e:caf2])
+ (user=aliceryhl job=prod-delivery.src-stubby-dispatcher) by
+ 2002:a17:907:869e:b0:b8e:9e11:6615 with SMTP id a640c23a62f3a-b8fb44d5e4fmr626744366b.47.1771241346405;
+ Mon, 16 Feb 2026 03:29:06 -0800 (PST)
+Date: Mon, 16 Feb 2026 11:29:05 +0000
+In-Reply-To: <aZL-JO3950gc9YO_@probook>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,114 +77,72 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: nEgH6frHMIvewrpChD0Hisy_VMYOOLqL
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjE2MDA5MCBTYWx0ZWRfX2vpzY9BZK9Vx
- QgCB/BmVb0/Qi+OM7/ZO4m6CLAor/N8rIuNmGJsVKJ426mWWPwBl/rEKIUoMFFsJMaI2GmJl6iQ
- Dm2e6yHcmGswDNDG0v3Yi32JlC86MBTRwCOec11hA8oRK/CnsyDB6vdImwQfhMy+YJiIQDqnJnw
- +OPjJFVwwIN8nEbqVCzNOs277ynKE+5gI/Kilu7+wkE6NA5YeTG/eFGH9fFzmbsQVit8pMejOA7
- KCf/DIyPl3FkNzIF1/4GmuDg7XFs8y5tCp1jkz+OYdwM3mbCM7GCINJQqp7v5peJmHe6TF80GC5
- CxvGGhwesrz9MmPnqmnQpfbqAvxq6wdj7xsWP6qtBa8ezY1iLul+ngMG90KYs0gW5+9fZ3Iffet
- hIAj3Blx2O83Ac5ejfZIVQ20pOMbwhjWUQeYcSyTU6CNwcPW+lLGl9fQpfFWXROHo3jJc+xRIeR
- UbE/WkMbrMJ3+IIowrw==
-X-Proofpoint-GUID: vcHD1HVWe-I1JxvKtHROaS96omExZ4Ve
-X-Authority-Analysis: v=2.4 cv=U+mfzOru c=1 sm=1 tr=0 ts=6992f711 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=HzLeVaNsDn8A:10 a=VkNPw1HP01LnGYTKEx00:22 a=Mpw57Om8IfrbqaoTuvik:22
- a=GgsMoib0sEa3-_RKJdDe:22 a=VnNF1IyMAAAA:8 a=_ySWqCA71J16aY6q5SMA:9
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-02-16_04,2026-02-16_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 bulkscore=0 impostorscore=0 malwarescore=0 spamscore=0
- adultscore=0 phishscore=0 lowpriorityscore=0 priorityscore=1501
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2601150000
- definitions=main-2602160090
+Mime-Version: 1.0
+References: <20260204210125.613350-1-mkchauras@gmail.com> <20260204210125.613350-4-mkchauras@gmail.com>
+ <aYSgjPD5KRcNN0j4@luna> <1ed12a72-06e4-461b-907e-2581e25e3e38@linux.ibm.com>
+ <aYS2oWCE0ZCC3don@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com> <aZL-JO3950gc9YO_@probook>
+Message-ID: <aZL_gVBFVzMjQkYK@google.com>
+Subject: Re: Rust version requirement (was: [PATCH V2 3/3] powerpc: Enable
+ Rust for ppc64le)
+From: Alice Ryhl <aliceryhl@google.com>
+To: "=?utf-8?Q?J=2E_Neusch=C3=A4fer?=" <j.neuschaefer@gmx.net>
+Cc: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, 
+	Link Mauve <linkmauve@linkmauve.fr>, ojeda@kernel.org, boqun.feng@gmail.com, 
+	gary@garyguo.net, bjorn3_gh@protonmail.com, lossin@kernel.org, 
+	a.hindborg@kernel.org, tmgross@umich.edu, dakr@kernel.org, corbet@lwn.net, 
+	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, peterz@infradead.org, jpoimboe@kernel.org, 
+	jbaron@akamai.com, rostedt@goodmis.org, ardb@kernel.org, 
+	rust-for-linux@vger.kernel.org, linux-doc@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 
-From: Abhishek Dubey <adubey@linux.ibm.com>
+On Mon, Feb 16, 2026 at 12:23:16PM +0100, J. Neusch=C3=A4fer wrote:
+> On Thu, Feb 05, 2026 at 09:12:01PM +0530, Mukesh Kumar Chaurasiya wrote:
+> [...]
+> > use rust version nightly-2026-01-28
+> >=20
+> > the latest one has some issue. I just raised a bug for the rustc
+> > here[1].
+> >=20
+> > [1] https://github.com/rust-lang/rust/issues/152177
+>=20
+> Another reason to use a nightly version is that Rust inline assembly for
+> PowerPC will only be stabilized[1] in version 1.94, so current release
+> versions fail like this (tested with 1.91.1):
+>=20
+>     error[E0658]: inline assembly is not stable yet on this architecture
+>       --> ../rust/kernel/sync/barrier.rs:19:14
+>        |
+>     19 |     unsafe { core::arch::asm!("") };
+>        |              ^^^^^^^^^^^^^^^^^^^^
+>        |
+>        =3D note: see issue #93335 <https://github.com/rust-lang/rust/issu=
+es/93335> for more information
+>        =3D help: add `#![feature(asm_experimental_arch)]` to the crate at=
+tributes to enable
+>        =3D note: this compiler was built on 2025-11-07; consider upgradin=
+g it if it is out of date
+>=20
+> This is somewhat at odds with Documentation/process/changes.rst which
+> only requires Rust 1.78. I wonder if the rust version requirement should
+> generally be bumped, or if there should be arch-specific requirements
+> somewhere in changes.rst or rust/arch-support.rst.
+>=20
+> Best regards,
+> J. Neusch=C3=A4fer
+>=20
+> [1]: https://github.com/rust-lang/rust/pull/147996
 
-Extend JIT support of fsession in powerpc64 trampoline, since
-ppc64 and ppc32 shares common trampoline implementation.
-Arch specific helpers handle 64-bit data copy using 32 bit regs.
+The MSRV is planned to be bumped to 1.85.
 
-Need to validate fsession support along with trampoline support.
+If it's available as a nightly feature on 1.78, then you can just add
+#![feature(asm_experimental_arch)] to lib.rs, which already enables
+several other stabilized feature on older compilers.
 
-Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
----
- arch/powerpc/net/bpf_jit_comp.c   |  8 ++++++-
- arch/powerpc/net/bpf_jit_comp32.c | 35 +++++++++++++++++++++++++++++++
- 2 files changed, 42 insertions(+), 1 deletion(-)
+Otherwise powerpc support can always be gated to require a larger
+rustc version than other platforms.
 
-diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-index 65e091064fe4..31896ed34129 100644
---- a/arch/powerpc/net/bpf_jit_comp.c
-+++ b/arch/powerpc/net/bpf_jit_comp.c
-@@ -529,7 +529,13 @@ bool bpf_jit_supports_private_stack(void)
- 
- bool bpf_jit_supports_fsession(void)
- {
--	return IS_ENABLED(CONFIG_PPC64);
-+	/*
-+	 * TODO: Remove after validating support
-+	 * for fsession and trampoline on ppc32.
-+	 */
-+	if (IS_ENABLED(CONFIG_PPC32))
-+		return -EOPNOTSUPP;
-+	return true;
- }
- 
- bool bpf_jit_supports_arena(void)
-diff --git a/arch/powerpc/net/bpf_jit_comp32.c b/arch/powerpc/net/bpf_jit_comp32.c
-index 3087e744fb25..72dc2a55d66c 100644
---- a/arch/powerpc/net/bpf_jit_comp32.c
-+++ b/arch/powerpc/net/bpf_jit_comp32.c
-@@ -123,6 +123,41 @@ void bpf_jit_realloc_regs(struct codegen_context *ctx)
- 	}
- }
- 
-+void prepare_for_fsession_fentry(u32 *image, struct codegen_context *ctx, int cookie_cnt,
-+						int cookie_off, int retval_off)
-+{
-+	/*
-+	 * Set session cookies value
-+	 * Clear cookies field on stack
-+	 * Ensure retval to be cleared on fentry
-+	 */
-+	EMIT(PPC_RAW_LI(bpf_to_ppc(TMP_REG), 0));
-+
-+	for (int i = 0; i < cookie_cnt; i++) {
-+		EMIT(PPC_RAW_STW(bpf_to_ppc(TMP_REG), _R1, cookie_off + 4 * i));
-+		EMIT(PPC_RAW_STW(bpf_to_ppc(TMP_REG), _R1, cookie_off + 4 * i + 4));
-+	}
-+
-+	EMIT(PPC_RAW_STW(bpf_to_ppc(TMP_REG), _R1, retval_off));
-+	EMIT(PPC_RAW_STW(bpf_to_ppc(TMP_REG), _R1, retval_off + 4));
-+}
-+
-+void store_func_meta(u32 *image, struct codegen_context *ctx,
-+					u64 func_meta, int func_meta_off)
-+{
-+	/*
-+	 * Store func_meta to stack: [R1 + func_meta_off] = func_meta
-+	 * func_meta := argument count in first byte + cookie value
-+	 */
-+	/* Store lower word */
-+	EMIT(PPC_RAW_LI(bpf_to_ppc(TMP_REG), (u32)func_meta));
-+	EMIT(PPC_RAW_STW(bpf_to_ppc(TMP_REG), _R1, func_meta_off));
-+
-+	/* Store upper word */
-+	EMIT(PPC_RAW_LI(bpf_to_ppc(TMP_REG), (u32)(func_meta >> 32)));
-+	EMIT(PPC_RAW_STW(bpf_to_ppc(TMP_REG), _R1, func_meta_off + 4));
-+}
-+
- void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx)
- {
- 	int i;
--- 
-2.52.0
-
+Alice
 
