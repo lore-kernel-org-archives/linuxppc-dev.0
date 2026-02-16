@@ -1,50 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-16879-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16880-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15F7FE7BD83
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Feb 2026 10:50:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 075D8E7BD8C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Feb 2026 10:53:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fF01L4NKxz2xlq;
-	Mon, 16 Feb 2026 21:50:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771239046;
-	cv=none; b=bIcdOLogtyEaJflk6RF+qXlmc13glVY7QGXqBJh5cPIVCzK8fBMhzoATV2sq42ldjiuvPQvhjfbhHA/5CpMfcbqnDLZ4Ody3+LTwFa0GiVD2Aad2m7tuBVr/H5Agp8TdOHkc4YhPjKpZqgrWXYqxaTHjZCogil0bLvIM7lysm+Fx/UgrlGwXvLplpCibls0JXUW54acnizDg97mLcCITFUNyH+V3GifQzOr6vZCQDidXDoV8k80BxpXyzZXce/8/HfBJAPpAj+yOKrEI11NjHCjbnRLxthj/9J5IvMWFKqGLvD7zg959LIYoUqRcjMWRAaqMnY0RCLR1f6pqJLhznA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fF04P4NHtz2ySS;
+	Mon, 16 Feb 2026 21:53:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771239205;
+	cv=none; b=Bv/VRqKdys7wgFrXHd9v92TmkNfeMlnPeu3X/i4smGSqFuhRaQgzaKE28s3Edniv3xLMRCCW552Kuz4F5lf1th3Ch7Re5cWyMg5Y0R7ZRiIRiU7XLZe1FGYplBs8kLruVNvQACtCjsNW8przOE0FguAFSvr/jfz+2gUqlq2Rl3hMb1AohK+/AAJlyxZjkA6ftdPZ/tbKJO9kD8YwS9sDrMV/pG5Jptba9HyeIDKuVuYRhsggPzvcNNCz7zFEuPsd2IFVEoHjx3g56F90ALBP6y+f6Cd/WEfCwYtrwJDeE8jn44I3KEK9iaGjGBkzZTwnX9YB0kgcRY+WgiorAtpERA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1771239046; c=relaxed/relaxed;
-	bh=9JKoT9v9/NwXwx27eTaKiz7MurJHQ3YVD1G0KrITcm4=;
-	h=Content-Type:MIME-Version:Message-Id:In-Reply-To:References:
-	 Subject:From:To:Cc:Date; b=LZxzcZ3If5ORh8jKOdz5muZOM4GF0s4qhCYabVTnVQSz2WMB1ud0X56iReCGXIw1rG/bYHdBeSjGp6ZrIuVpEdoWGTY5oamwR/5e2jlCV225wz6rMseyjHcON/hYXY5F2Yiz4DACerE0sHF0pxmQ++EOIceY+uftQmnPZYlaBk2vonHdbpo7jbMHWx4Io9vclBhrpDNT7/qbEzp9NeggmtJX/Ad64UwUyLQip6knXL7HQsTxiauaYBQEkEuwocFMMjc3S04OfYqXl0J5smmFGasBm+2QuYC+dI7ARhmqaBjNe01Md1wZkEV5b7NO/H2GaTEGGvGZLE8mkFxQvdixEQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bBMTW5zK; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1771239205; c=relaxed/relaxed;
+	bh=XKAe0UdH4VvYka3cegfu01NSGhxdoMyut4g2Su5xT9s=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=kXu0SAuAWOrMCjm9bby87J9ajoNViYPT1j28kab8lhY0ecQaBfdhtsz0hatCgSRUFh7NEXZgDcwNsgqZ2+mmqaL67pLFciA8GSLApXmZmIVAb2M+BNrINKYMnLir4Q07Rcj1JwWdxa5JYWIGYKZmgrMR4xXRfYB0+TmvUIJN9T1KxVx5gz1AHHSboEVAyavG82+fvfnTWUIVhg0xKQKKTDiygWThc+nRFGApfMj4YCekzvJYcoAeQ8ArdmlbPFvH4T/iJ4rW/X1kpPiPrRDZi/Rbeje42uJAcI2PryLJ4enbRhOMO1qbSTXe4/gpuXhXrHb/UXriRMCGkkZYMOzBhA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MnLZPRqD; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bBMTW5zK;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MnLZPRqD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fF01K2RxFz2xN4
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2026 21:50:45 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 2BC62442E5;
-	Mon, 16 Feb 2026 10:50:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B9B56C116C6;
-	Mon, 16 Feb 2026 10:50:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1771239042;
-	bh=SlCa7iijd6YimdLQ8812y/Spgl/WvF8IFqOjV1zktiA=;
-	h=In-Reply-To:References:Subject:From:To:Cc:Date:From;
-	b=bBMTW5zK5+cv4R3scVjmm91cPOGj1uakO+y+KT0nLKB+NlBO1KTXMMoCft3+rmV9T
-	 Hja1V+HxZs5RYWjJMFyRmat/5TlBgZRgeeFQAjcotLKCdhTvxg4NvlvHnIKJ3AdHRO
-	 Ppkr1LIOUi5xWpMCatwwPt2kYUCtpqiQs2BBQ8e3+uXBk3l7A3CChJtuqRDspa4ebV
-	 lBYq9nfZe2MsB8jEPqJMNEodyVKmysipBt6iQOIrNPOFsrwwSZJloS+vLVAMt6YMOl
-	 mjcXzayNvKN1eQ9N6D6QeNCTI2Rh637ZK1jFXWejWgpCr77uLU7EjyUhRUNUF9LKE+
-	 g+zFB/WJnwI+A==
-Content-Type: multipart/mixed; boundary="===============3828383631417245113=="
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fF04N36kGz2xN4
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2026 21:53:24 +1100 (AEDT)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61FM1J5G3669128;
+	Mon, 16 Feb 2026 10:53:01 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=XKAe0UdH4VvYka3ce
+	gfu01NSGhxdoMyut4g2Su5xT9s=; b=MnLZPRqDWVPfyibT+uwAEBWUzOS7S1xKw
+	io+TbwUZlyAQfgYhOU2syis6+ANyTg4qu+8db6W4IKrfaxXgT6iZfjzZDTT1tV+T
+	RCeAcqah360ggy93Uw3tnfgHwGGnVwcF6tJseAXupntO0nxygiCYl266cyJe036B
+	Bln5ZhsQEIVWT/Nxqnq0P3krOOPloerfdWxO9IU50NGopLMUGu77g7Wm2+HlENbV
+	XXoeZj+NjDmHls1tKEUR2I2FvimHm13q9/6rJtRmOflf6RJ7BPoxnCB47bNit57O
+	+cexBMSEgbRfrPRVG1qurnNWBIk896bABD3SDntnhC0MlcRwbmdvg==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cajcj6tnb-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 16 Feb 2026 10:53:00 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 61G8ehZS029078;
+	Mon, 16 Feb 2026 10:52:59 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4cb6314s4m-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 16 Feb 2026 10:52:59 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 61GAquJu54395200
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 16 Feb 2026 10:52:56 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E5CE32004B;
+	Mon, 16 Feb 2026 10:52:55 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9BAD720043;
+	Mon, 16 Feb 2026 10:52:53 +0000 (GMT)
+Received: from ltcrain4-lp15.ltc.tadn.ibm.com (unknown [9.5.7.39])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 16 Feb 2026 10:52:53 +0000 (GMT)
+From: adubey@linux.ibm.com
+To: bpf@vger.kernel.org
+Cc: hbathini@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, ast@kernel.org,
+        daniel@iogearbox.net, andrii@kernel.org, martin.lau@kernel.org,
+        eddyz87@gmail.com, yonghong.song@linux.dev, clm@meta.com,
+        ihor.solodrai@linux.dev, chleroy@kernel.org,
+        Abhishek Dubey <adubey@linux.ibm.com>
+Subject: [PATCH 2/3] selftest/bpf: Enable get_func_args and get_func_ip tests on powerpc64
+Date: Mon, 16 Feb 2026 10:53:09 -0500
+Message-ID: <20260216155310.38457-2-adubey@linux.ibm.com>
+X-Mailer: git-send-email 2.52.0
+In-Reply-To: <20260216155310.38457-1-adubey@linux.ibm.com>
+References: <20260216155310.38457-1-adubey@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,92 +91,81 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Message-Id: <0263fb1687612da60c26fc7ab569190aa94e7d6f9b3ebd23b80b4bbf7751c27e@mail.kernel.org>
-In-Reply-To: <20260216152234.36632-1-adubey@linux.ibm.com>
-References: <20260216152234.36632-1-adubey@linux.ibm.com>
-Subject: Re: [PATCH 1/2] powerpc64/bpf: Implement JIT support for private stack
-From: bot+bpf-ci@kernel.org
-To: adubey@linux.ibm.com,bpf@vger.kernel.org
-Cc: hbathini@linux.ibm.com,linuxppc-dev@lists.ozlabs.org,ast@kernel.org,daniel@iogearbox.net,andrii@kernel.org,martin.lau@kernel.org,eddyz87@gmail.com,yonghong.song@linux.dev,clm@meta.com,ihor.solodrai@linux.dev,chleroy@kernel.org,adubey@linux.ibm.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,martin.lau@kernel.org,eddyz87@gmail.com,yonghong.song@linux.dev,clm@meta.com,ihor.solodrai@linux.dev
-Date: Mon, 16 Feb 2026 10:50:41 +0000 (UTC)
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: FFv_YSACmUjl7w-XBH3SiS-oniKgljEB
+X-Authority-Analysis: v=2.4 cv=Md9hep/f c=1 sm=1 tr=0 ts=6992f70c cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=HzLeVaNsDn8A:10 a=VkNPw1HP01LnGYTKEx00:22 a=Mpw57Om8IfrbqaoTuvik:22
+ a=GgsMoib0sEa3-_RKJdDe:22 a=VnNF1IyMAAAA:8 a=DqXwyqWM9aSI_JVwGXwA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjE2MDA5MCBTYWx0ZWRfX0LiVAHaFcwZM
+ qqOzTL5L0jKYXwGc3BJoW6pf65y6JgouqRW7rxVllR70sw1R+K0pyLP0WmpWArmeP9iFF3eID+4
+ RugzfE7/vxdAWU9ozci3zPLdhM9EvInq+s0jhGTq4ia9blQUrsQSAmi8Lb8U1QivTr/QFnO7aEM
+ BQ4ttLaZsK+sNhBpDL9Nec5mYKudZAO6weQq5HMfhK4P//yIz6yRQJVYw+mQ4zQgaTX8B1yDk1g
+ KnWpsoQzBTvo0Ju3lJIFHObLMmEeLSXJWwlPdGw38W6evXe/vzc7LJlqemVf7CjhLaxz2OzuiuF
+ hh3q2OqMVORGjsFL3plhkxQ9Dy6Eb54va4TdN66EgUAvWMw6MJJKXb+HOjfk/uCflWf52mfSGAe
+ piWaTQGb6Vx7MQ+THPI3nlD4JQKn6cEyuT9CDSLenpPJhpWrhDwMdlEDzeZLTJ9DL4peKsHrtrF
+ FVIes3yGEGSBV3UtnXg==
+X-Proofpoint-GUID: l6LAAxqDsgQDuBuDyPk6V2EOYmOiGqj0
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-02-16_04,2026-02-16_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 impostorscore=0 lowpriorityscore=0 spamscore=0 adultscore=0
+ priorityscore=1501 suspectscore=0 malwarescore=0 phishscore=0 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2601150000 definitions=main-2602160090
 
---===============3828383631417245113==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+From: Abhishek Dubey <adubey@linux.ibm.com>
 
-> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-> --- a/arch/powerpc/net/bpf_jit_comp.c
-> +++ b/arch/powerpc/net/bpf_jit_comp.c
+Allow get_func_args, and get_func_ip fsession selftests to run on powerpc64.
 
-[ ... ]
+# ./test_progs -t fsession
+#135/1   fsession_test/fsession_test:OK
+#135/2   fsession_test/fsession_reattach:OK
+#135/3   fsession_test/fsession_cookie:OK
+#135     fsession_test:OK
+Summary: 1/3 PASSED, 0 SKIPPED, 0 FAILED
 
-> @@ -140,6 +173,8 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
->  	struct codegen_context cgctx;
->  	int pass;
->  	int flen;
-> +	int priv_stack_alloc_size;
-> +	void __percpu *priv_stack_ptr = NULL;
->  	struct bpf_binary_header *fhdr = NULL;
->  	struct bpf_binary_header *hdr = NULL;
->  	struct bpf_prog *org_fp = fp;
+# ./test_progs -t get_func
+#138     get_func_args_test:OK
+#139     get_func_ip_test:OK
+Summary: 2/0 PASSED, 0 SKIPPED, 0 FAILED
 
-[ ... ]
-
->  	}
->
-> +	if (!priv_stack_ptr && fp->aux->jits_use_priv_stack) {
-
-On extra_pass (when jit_data->addrs is non-NULL), the local
-priv_stack_ptr is still NULL because it was initialized to NULL above
-and is never loaded from fp->aux->priv_stack_ptr. This means the
-allocation will happen again on extra_pass, leaking the per-CPU
-memory allocated during the first pass and overwriting
-fp->aux->priv_stack_ptr with the new allocation.
-
-Both the x86 and arm64 implementations load the existing pointer
-before this check:
-
-arch/x86/net/bpf_jit_comp.c:bpf_int_jit_compile() {
-    ...
-    priv_stack_ptr = prog->aux->priv_stack_ptr;
-    if (!priv_stack_ptr && prog->aux->jits_use_priv_stack) {
-    ...
-}
-
-arch/arm64/net/bpf_jit_comp.c:bpf_int_jit_compile() {
-    ...
-    priv_stack_ptr = prog->aux->priv_stack_ptr;
-    if (!priv_stack_ptr && prog->aux->jits_use_priv_stack) {
-    ...
-}
-
-Is this missing a similar assignment before the check?
-
-> +		priv_stack_alloc_size = round_up(fp->aux->stack_depth, 16) +
-> +							2 * PRIV_STACK_GUARD_SZ;
-> +		priv_stack_ptr = __alloc_percpu_gfp(priv_stack_alloc_size, 16, GFP_KERNEL);
-> +		if (!priv_stack_ptr) {
-> +			fp = org_fp;
-> +			goto out_priv_stack;
-> +		}
-> +
-> +		priv_stack_init_guard(priv_stack_ptr, priv_stack_alloc_size);
-> +		fp->aux->priv_stack_ptr = priv_stack_ptr;
-> +	}
-
-
+Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
 ---
-AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
-See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
+ tools/testing/selftests/bpf/progs/get_func_args_test.c | 2 +-
+ tools/testing/selftests/bpf/progs/get_func_ip_test.c   | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-CI run summary: https://github.com/kernel-patches/bpf/actions/runs/22059200816
+diff --git a/tools/testing/selftests/bpf/progs/get_func_args_test.c b/tools/testing/selftests/bpf/progs/get_func_args_test.c
+index 180ba5098ca1..5579141ea45e 100644
+--- a/tools/testing/selftests/bpf/progs/get_func_args_test.c
++++ b/tools/testing/selftests/bpf/progs/get_func_args_test.c
+@@ -167,7 +167,7 @@ int BPF_PROG(tp_test2)
+ }
+ 
+ __u64 test7_result = 0;
+-#if defined(bpf_target_x86) || defined(bpf_target_arm64)
++#if defined(bpf_target_x86) || defined(bpf_target_arm64) || defined(bpf_target_powerpc64)
+ SEC("fsession/bpf_fentry_test1")
+ int BPF_PROG(test7)
+ {
+diff --git a/tools/testing/selftests/bpf/progs/get_func_ip_test.c b/tools/testing/selftests/bpf/progs/get_func_ip_test.c
+index 43ff836a8ed8..2558dda4d82c 100644
+--- a/tools/testing/selftests/bpf/progs/get_func_ip_test.c
++++ b/tools/testing/selftests/bpf/progs/get_func_ip_test.c
+@@ -106,7 +106,7 @@ int BPF_URETPROBE(test8, int ret)
+ 
+ __u64 test9_entry_result = 0;
+ __u64 test9_exit_result = 0;
+-#if defined(bpf_target_x86) || defined(bpf_target_arm64)
++#if defined(bpf_target_x86) || defined(bpf_target_arm64) || defined(bpf_target_powerpc64)
+ SEC("fsession/bpf_fentry_test1")
+ int BPF_PROG(test9, int a)
+ {
+-- 
+2.52.0
 
-AI-authorship-score: low
-AI-authorship-explanation: The code shows human copy-and-adapt patterns from existing x86/arm64 implementations, with a characteristic human omission bug and copied pre-existing typo, inconsistent with typical AI code generation.
-issues-found: 1
-issue-severity-score: medium
-issue-severity-explanation: Per-CPU memory leak on extra_pass in bpf_int_jit_compile due to missing load of existing priv_stack_ptr from fp->aux before allocation check, affecting programs with subprogs using private stack on powerpc64.
-
---===============3828383631417245113==--
 
