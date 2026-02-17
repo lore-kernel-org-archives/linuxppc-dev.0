@@ -1,88 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-16898-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16899-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D5BEE6817A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Feb 2026 12:28:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9AFA6E6817D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Feb 2026 12:45:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fFf7M0l1sz2xjP;
-	Tue, 17 Feb 2026 23:28:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=130.133.4.66
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771331295;
-	cv=none; b=joNOKVKLccdSez+4SgWwuWpcX6cy5q4qIfxU4b3hO6KAD/DNYlC3dqGZjeionL3fXJuty1kltFNoxmN7+6aYzS8sTxtwFVLTalU6yVjHYRg/e+cuO959N6XGjvlkaM0WZALUvNFWZJzTWyVGuKjYAqWM81QjVkXYUG4oU1LMF24S/cueIvhzpuPRxqknyj3KSn88KV5OpTeSgsNPljP/oLpwZEo6NO0/Q34DNAXmTIv7326J/3w6X0yXMS2XJ4ctEZo90uoE2q7wy+qthMtb9iBeRnygPPBvkqzYeUAGEKVZHHE0r5Jqwo0hBY5a334WnS/7QF8NM7O3iU0UbtmAww==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fFfW514rbz2yS4;
+	Tue, 17 Feb 2026 23:45:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771332321;
+	cv=none; b=lzAyQGpX990Qo7I15jQhtUd8kNWGebG5P1ZOOqcgIN8yt5TqsfnB9QMT3rh58Aqey7Gi9yXXUZBuz7aV1oi2tCCyPwNb3Dh0Q1Ms+dJXPoI2dCoF7zC3aDwxzSAtDbWaKrxuI8p4hEeY+dkwrlNO0xC72FaFmm19dQ7aJSxE04n7mLxw0olIpHyye6ZizB/LTC072TBYjT77VbV921FCDxovVn7A1b1FcHJUynldSzye1LdDcmvq4zYtNXGwkwa+dhyNlXMnFusq7aFNDFA4zXnuK/pwgMAL4PD/wfJgd7ODOuIYxqRyt3rZAPkgaCH2sQYL6gO0mgQ1PJJGW33Veg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1771331295; c=relaxed/relaxed;
-	bh=M8vjpXwBYqHTGgLeO7mfZbw/zRtPy35wLTMbPEUqNJY=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=PWICujbAtJC6h8+tWkouiuYGt3GYD1DmtMJGwIjF3P8l6buRP/p8SXIPEpGc8vD0LhGljsKXyJObNbdBokIj0QozxE/ItoXu5uQX1BoZU+Yr8mbBUnjlHK9ArrNhgL6zXatBRsrN7O73ZBmVsMFNVIm2kAKOnmKr3eU/uyduP6FthC77mppAeRpHaue+u4bMY6OoyoqecKtXGjeHsKiVqDnr/mST0qjqh3Tp8HAKn2k+v4LxwaoGNrLGO40WDTMOHutVmlpuxSDqCii3HF0GoOfr9XAlL6z3+A3zWm0u0aTND12rn7DcxK/2mlT9Di5uzrli0/DAvHZFjj7x3umfWw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=physik.fu-berlin.de; dkim=pass (2048-bit key; unprotected) header.d=fu-berlin.de header.i=@fu-berlin.de header.a=rsa-sha256 header.s=fub01 header.b=KwaCefz8; dkim-atps=neutral; spf=pass (client-ip=130.133.4.66; helo=outpost1.zedat.fu-berlin.de; envelope-from=glaubitz@zedat.fu-berlin.de; receiver=lists.ozlabs.org) smtp.mailfrom=zedat.fu-berlin.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=physik.fu-berlin.de
+	t=1771332321; c=relaxed/relaxed;
+	bh=/3tTftym6SuHixCQlft2GwxbgPlB5hBfnIRsAIq10bo=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=jMZjMPzanKS5xP6iOJhWCagUh7TcATkcrG4RWHL67VehEYgR+Z6KrkBPtYyJLAeaag15Jk9gd3iNbypVxCSO4U7G6RFKb+GA6U5rc/kMxLQv2Naj4M8jvT8OLU6ACYUVHMnj2kCkufDOb9yW99KojimDtCBovsQtUQAWdetPczx0ThCNPSUEDJIMbziDk5TseiiQ5brqhQqHxQxNIGbmgfRvzbZy1J8m4qw53eNgV0eCzEEmma780b1ozFIwiu2JEey/YhOomyD3hgdu63HUc7DJsuHysBTc+TihpzWpWekjnn7SdJesEdNyYiXZfe4h/EdXuLzDwqV3oIGHlouqWw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PhoLN/J8; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=fu-berlin.de header.i=@fu-berlin.de header.a=rsa-sha256 header.s=fub01 header.b=KwaCefz8;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PhoLN/J8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zedat.fu-berlin.de (client-ip=130.133.4.66; helo=outpost1.zedat.fu-berlin.de; envelope-from=glaubitz@zedat.fu-berlin.de; receiver=lists.ozlabs.org)
-Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de [130.133.4.66])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fFf7H0NDlz2xJF
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2026 23:28:09 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=fu-berlin.de; s=fub01; h=MIME-Version:Content-Transfer-Encoding:
-	Content-Type:References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:From:
-	Reply-To:Subject:Date:Message-ID:To:Cc:MIME-Version:Content-Type:
-	Content-Transfer-Encoding:Content-ID:Content-Description:In-Reply-To:
-	References; bh=M8vjpXwBYqHTGgLeO7mfZbw/zRtPy35wLTMbPEUqNJY=; t=1771331291;
-	x=1771936091; b=KwaCefz86aHcV1WA9Zdnjw/rjA5OMkCQPA8cbBctj+KipOvNpyYoyrQ6w/j70
-	NZ50pjf95xmkwl+u6fzBhAaICvsTvi9RzsTS3ntdkosk51hZuYcYOl72LfPpez0SMQV7dYbrrCe/I
-	h49S7w2cjB/CstrhxUZBSlGAebmrVDcMxy8kvUCY57w7k0zdPFq/p0txGfEpi8G8gC/LnWFdoJEqn
-	+uf3bbZ65R+5mZ5YMLi7fj6F5LsZ3FjPX8lCsZkf3PCM8YxemZrvsaO1mPaZkUuXY5+AfQYkeht4Q
-	ICtBgRFjIfYOfWY/R3VqH0O05RbL6nofRF8Ijm7dHE+q2wCG0A==;
-Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
-          by outpost.zedat.fu-berlin.de (Exim 4.99)
-          with esmtps (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@zedat.fu-berlin.de>)
-          id 1vsKAq-00000002WEs-0TOS; Tue, 17 Feb 2026 13:27:28 +0100
-Received: from p5dc55f29.dip0.t-ipconnect.de ([93.197.95.41] helo=[192.168.178.61])
-          by inpost2.zedat.fu-berlin.de (Exim 4.99)
-          with esmtpsa (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@physik.fu-berlin.de>)
-          id 1vsKAp-000000026vw-3EPk; Tue, 17 Feb 2026 13:27:27 +0100
-Message-ID: <e294484787a5032c531dcd40071b22362bddcad4.camel@physik.fu-berlin.de>
-Subject: Re: [PATCH v5 11/14] sparc: Use physical address DMA mapping
-From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-To: Leon Romanovsky <leon@kernel.org>, Marek Szyprowski	
- <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Russell
- King	 <linux@armlinux.org.uk>, Juergen Gross <jgross@suse.com>, Stefano
- Stabellini	 <sstabellini@kernel.org>, Oleksandr Tyshchenko
- <oleksandr_tyshchenko@epam.com>,  Richard Henderson
- <richard.henderson@linaro.org>, Matt Turner <mattst88@gmail.com>, Thomas
- Bogendoerfer	 <tsbogend@alpha.franken.de>, "James E.J. Bottomley"	
- <James.Bottomley@HansenPartnership.com>, Helge Deller <deller@gmx.de>, 
- Madhavan Srinivasan	 <maddy@linux.ibm.com>, Michael Ellerman
- <mpe@ellerman.id.au>, Nicholas Piggin	 <npiggin@gmail.com>, Christophe
- Leroy <christophe.leroy@csgroup.eu>, Geoff Levand <geoff@infradead.org>,
- "David S. Miller" <davem@davemloft.net>, Andreas Larsson	
- <andreas@gaisler.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar	
- <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen	
- <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin"
- <hpa@zytor.com>
-Cc: iommu@lists.linux.dev, linux-kernel@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, xen-devel@lists.xenproject.org, 
-	linux-alpha@vger.kernel.org, linux-mips@vger.kernel.org, 
-	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, sparclinux
-	 <sparclinux@vger.kernel.org>
-Date: Tue, 17 Feb 2026 13:27:26 +0100
-In-Reply-To: <20251015-remove-map-page-v5-11-3bbfe3a25cdf@kernel.org>
-References: <20251015-remove-map-page-v5-0-3bbfe3a25cdf@kernel.org>
-	 <20251015-remove-map-page-v5-11-3bbfe3a25cdf@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.58.3 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fFfW40rlhz2xjP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2026 23:45:19 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61H8vxPr3306870;
+	Tue, 17 Feb 2026 12:45:17 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=/3tTftym6SuHixCQl
+	ft2GwxbgPlB5hBfnIRsAIq10bo=; b=PhoLN/J8hX3bq5tmz2EkTPLPM0jQisA0G
+	3tmDAxNtajl+AfyM4quv3cdx9vvh2Hv+J2wH8R3jD23EYBlCTRe55R6rcO/L31fG
+	mpGQSCkkvajgPVgOhF4w8o++LhcpIG+jCpGhQMDLJadDH8O0CPRtep3dzCXXZgec
+	CTq2bN9RJ/Zkk7/WVoPP7bhlhfSNmXVgQ3YFiuo9p3Z2lgLhYFTGM1gDhObBBTWJ
+	Qe/cX25W+PbvPkyrVJbaBkWlz8CtZ7MBYTD4WrhNsBkP0wTtQ0EgPcsbVGKHZVOY
+	M3ZpVj8igUKKhoOIn7MEXhZ0BSCpm5BrdhnIgtrCZpUQd3LDh8RWQ==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4caj6ruv7t-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 17 Feb 2026 12:45:16 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 61H8lSCF011912;
+	Tue, 17 Feb 2026 12:45:15 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ccb26te7c-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 17 Feb 2026 12:45:15 +0000
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 61HCjBLp52691228
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 17 Feb 2026 12:45:11 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id BF794200A8;
+	Tue, 17 Feb 2026 12:45:11 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 33F98200A5;
+	Tue, 17 Feb 2026 12:45:10 +0000 (GMT)
+Received: from li-3f69264c-2ce6-11b2-a85c-c3f414d24014.in.ibm.com (unknown [9.109.243.201])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 17 Feb 2026 12:45:10 +0000 (GMT)
+From: Sayali Patil <sayalip@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com
+Cc: aboorvad@linux.ibm.com, sshegde@linux.ibm.com, chleroy@kernel.org,
+        riteshh@linux.ibm.com, sayalip@linux.ibm.com
+Subject: [PATCH 2/2] powerpc/selftests/copyloops: extend selftest to exercise __copy_tofrom_user_power7_vmx
+Date: Tue, 17 Feb 2026 18:14:57 +0530
+Message-ID: <20260217124457.89219-2-sayalip@linux.ibm.com>
+X-Mailer: git-send-email 2.52.0
+In-Reply-To: <20260217124457.89219-1-sayalip@linux.ibm.com>
+References: <20260217124457.89219-1-sayalip@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,511 +88,161 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Original-Sender: glaubitz@physik.fu-berlin.de
-X-Originating-IP: 93.197.95.41
-X-ZEDAT-Hint: PO
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Authority-Analysis: v=2.4 cv=dvvWylg4 c=1 sm=1 tr=0 ts=699462dc cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=HzLeVaNsDn8A:10 a=VkNPw1HP01LnGYTKEx00:22 a=Mpw57Om8IfrbqaoTuvik:22
+ a=GgsMoib0sEa3-_RKJdDe:22 a=VnNF1IyMAAAA:8 a=gZzq1o9Dtywjk6PVXYUA:9
+X-Proofpoint-GUID: _JbGyJjtRDZH0YpSo2YSrTCujRpd-_rr
+X-Proofpoint-ORIG-GUID: _JbGyJjtRDZH0YpSo2YSrTCujRpd-_rr
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjE3MDEwNSBTYWx0ZWRfXwGZS5ofns1ms
+ Ve5DDpVzDXFnM7m3KIU8IzNasNSKuWIBfFEbA74fiwyc/0ra5mICQAIr8xUNbNHn75O+DnIMPLO
+ N/1cytqbnMB6t8f6+IEolcOM9UBIDXIxKTJbfb+FvPk8mZ13ZsdtdxO/3W1EQppnXmQyWJrgvj+
+ u82gK1c7repysazLlBlGlfGOvyDDO6S8bOTattXtUI7SIQ9S8XxYup2I7Pdt0hcZtkEFSco53MM
+ oS299mzRCm8Mt4LOOJsIrwUZpwhVXTtRyTbilWGpp7YAIax5VqN+1HXRkfak6VtuswLeIHWKNs2
+ Tv4ZdD5NoMqvv729xuF/BPQ72qqVxj1+mmPSTAMvfjCwDj3eM93KsMYgR2p/17gEawY2ob4UJJS
+ JlRzLBLVfFpzednpfjnSMUMLdMN+iqPHcPLTcBKSU7RJpRB0f8rwN4S4nYBL0YesG7s5R6lq/pB
+ Z87x7KN9JeXnGfeLcIg==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-02-17_01,2026-02-16_04,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 lowpriorityscore=0 impostorscore=0 adultscore=0
+ priorityscore=1501 clxscore=1015 malwarescore=0 phishscore=0 suspectscore=0
+ bulkscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2601150000
+ definitions=main-2602170105
 
-Hello Leon,
+The new PowerPC VMX fast path (__copy_tofrom_user_power7_vmx) is not
+exercised by existing copyloops selftests. This patch updates
+the selftest to exercise the VMX variant, ensuring the VMX copy path
+is validated.
 
-On Wed, 2025-10-15 at 12:12 +0300, Leon Romanovsky wrote:
-> From: Leon Romanovsky <leonro@nvidia.com>
->=20
-> Convert sparc architecture DMA code to use .map_phys callback.
->=20
-> Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
-> ---
->  arch/sparc/kernel/iommu.c     | 30 +++++++++++++++++-----------
->  arch/sparc/kernel/pci_sun4v.c | 31 ++++++++++++++++++-----------
->  arch/sparc/mm/io-unit.c       | 38 ++++++++++++++++++-----------------
->  arch/sparc/mm/iommu.c         | 46 ++++++++++++++++++++++---------------=
-------
->  4 files changed, 82 insertions(+), 63 deletions(-)
->=20
-> diff --git a/arch/sparc/kernel/iommu.c b/arch/sparc/kernel/iommu.c
-> index da0363692528..46ef88bc9c26 100644
-> --- a/arch/sparc/kernel/iommu.c
-> +++ b/arch/sparc/kernel/iommu.c
-> @@ -260,26 +260,35 @@ static void dma_4u_free_coherent(struct device *dev=
-, size_t size,
->  		free_pages((unsigned long)cpu, order);
->  }
-> =20
-> -static dma_addr_t dma_4u_map_page(struct device *dev, struct page *page,
-> -				  unsigned long offset, size_t sz,
-> -				  enum dma_data_direction direction,
-> +static dma_addr_t dma_4u_map_phys(struct device *dev, phys_addr_t phys,
-> +				  size_t sz, enum dma_data_direction direction,
->  				  unsigned long attrs)
->  {
->  	struct iommu *iommu;
->  	struct strbuf *strbuf;
->  	iopte_t *base;
->  	unsigned long flags, npages, oaddr;
-> -	unsigned long i, base_paddr, ctx;
-> +	unsigned long i, ctx;
->  	u32 bus_addr, ret;
->  	unsigned long iopte_protection;
-> =20
-> +	if (unlikely(attrs & DMA_ATTR_MMIO))
-> +		/*
-> +		 * This check is included because older versions of the code
-> +		 * lacked MMIO path support, and my ability to test this path
-> +		 * is limited. However, from a software technical standpoint,
-> +		 * there is no restriction, as the following code operates
-> +		 * solely on physical addresses.
-> +		 */
-> +		goto bad_no_ctx;
-> +
->  	iommu =3D dev->archdata.iommu;
->  	strbuf =3D dev->archdata.stc;
-> =20
->  	if (unlikely(direction =3D=3D DMA_NONE))
->  		goto bad_no_ctx;
-> =20
-> -	oaddr =3D (unsigned long)(page_address(page) + offset);
-> +	oaddr =3D (unsigned long)(phys_to_virt(phys));
->  	npages =3D IO_PAGE_ALIGN(oaddr + sz) - (oaddr & IO_PAGE_MASK);
->  	npages >>=3D IO_PAGE_SHIFT;
-> =20
-> @@ -296,7 +305,6 @@ static dma_addr_t dma_4u_map_page(struct device *dev,=
- struct page *page,
->  	bus_addr =3D (iommu->tbl.table_map_base +
->  		    ((base - iommu->page_table) << IO_PAGE_SHIFT));
->  	ret =3D bus_addr | (oaddr & ~IO_PAGE_MASK);
-> -	base_paddr =3D __pa(oaddr & IO_PAGE_MASK);
->  	if (strbuf->strbuf_enabled)
->  		iopte_protection =3D IOPTE_STREAMING(ctx);
->  	else
-> @@ -304,8 +312,8 @@ static dma_addr_t dma_4u_map_page(struct device *dev,=
- struct page *page,
->  	if (direction !=3D DMA_TO_DEVICE)
->  		iopte_protection |=3D IOPTE_WRITE;
-> =20
-> -	for (i =3D 0; i < npages; i++, base++, base_paddr +=3D IO_PAGE_SIZE)
-> -		iopte_val(*base) =3D iopte_protection | base_paddr;
-> +	for (i =3D 0; i < npages; i++, base++, phys +=3D IO_PAGE_SIZE)
-> +		iopte_val(*base) =3D iopte_protection | phys;
-> =20
->  	return ret;
-> =20
-> @@ -383,7 +391,7 @@ static void strbuf_flush(struct strbuf *strbuf, struc=
-t iommu *iommu,
->  		       vaddr, ctx, npages);
->  }
-> =20
-> -static void dma_4u_unmap_page(struct device *dev, dma_addr_t bus_addr,
-> +static void dma_4u_unmap_phys(struct device *dev, dma_addr_t bus_addr,
->  			      size_t sz, enum dma_data_direction direction,
->  			      unsigned long attrs)
->  {
-> @@ -753,8 +761,8 @@ static int dma_4u_supported(struct device *dev, u64 d=
-evice_mask)
->  static const struct dma_map_ops sun4u_dma_ops =3D {
->  	.alloc			=3D dma_4u_alloc_coherent,
->  	.free			=3D dma_4u_free_coherent,
-> -	.map_page		=3D dma_4u_map_page,
-> -	.unmap_page		=3D dma_4u_unmap_page,
-> +	.map_phys		=3D dma_4u_map_phys,
-> +	.unmap_phys		=3D dma_4u_unmap_phys,
->  	.map_sg			=3D dma_4u_map_sg,
->  	.unmap_sg		=3D dma_4u_unmap_sg,
->  	.sync_single_for_cpu	=3D dma_4u_sync_single_for_cpu,
-> diff --git a/arch/sparc/kernel/pci_sun4v.c b/arch/sparc/kernel/pci_sun4v.=
-c
-> index b720b21ccfbd..791f0a76665f 100644
-> --- a/arch/sparc/kernel/pci_sun4v.c
-> +++ b/arch/sparc/kernel/pci_sun4v.c
-> @@ -352,9 +352,8 @@ static void dma_4v_free_coherent(struct device *dev, =
-size_t size, void *cpu,
->  		free_pages((unsigned long)cpu, order);
->  }
-> =20
-> -static dma_addr_t dma_4v_map_page(struct device *dev, struct page *page,
-> -				  unsigned long offset, size_t sz,
-> -				  enum dma_data_direction direction,
-> +static dma_addr_t dma_4v_map_phys(struct device *dev, phys_addr_t phys,
-> +				  size_t sz, enum dma_data_direction direction,
->  				  unsigned long attrs)
->  {
->  	struct iommu *iommu;
-> @@ -362,18 +361,27 @@ static dma_addr_t dma_4v_map_page(struct device *de=
-v, struct page *page,
->  	struct iommu_map_table *tbl;
->  	u64 mask;
->  	unsigned long flags, npages, oaddr;
-> -	unsigned long i, base_paddr;
-> -	unsigned long prot;
-> +	unsigned long i, prot;
->  	dma_addr_t bus_addr, ret;
->  	long entry;
-> =20
-> +	if (unlikely(attrs & DMA_ATTR_MMIO))
-> +		/*
-> +		 * This check is included because older versions of the code
-> +		 * lacked MMIO path support, and my ability to test this path
-> +		 * is limited. However, from a software technical standpoint,
-> +		 * there is no restriction, as the following code operates
-> +		 * solely on physical addresses.
-> +		 */
-> +		goto bad;
-> +
->  	iommu =3D dev->archdata.iommu;
->  	atu =3D iommu->atu;
-> =20
->  	if (unlikely(direction =3D=3D DMA_NONE))
->  		goto bad;
-> =20
-> -	oaddr =3D (unsigned long)(page_address(page) + offset);
-> +	oaddr =3D (unsigned long)(phys_to_virt(phys));
->  	npages =3D IO_PAGE_ALIGN(oaddr + sz) - (oaddr & IO_PAGE_MASK);
->  	npages >>=3D IO_PAGE_SHIFT;
-> =20
-> @@ -391,7 +399,6 @@ static dma_addr_t dma_4v_map_page(struct device *dev,=
- struct page *page,
-> =20
->  	bus_addr =3D (tbl->table_map_base + (entry << IO_PAGE_SHIFT));
->  	ret =3D bus_addr | (oaddr & ~IO_PAGE_MASK);
-> -	base_paddr =3D __pa(oaddr & IO_PAGE_MASK);
->  	prot =3D HV_PCI_MAP_ATTR_READ;
->  	if (direction !=3D DMA_TO_DEVICE)
->  		prot |=3D HV_PCI_MAP_ATTR_WRITE;
-> @@ -403,8 +410,8 @@ static dma_addr_t dma_4v_map_page(struct device *dev,=
- struct page *page,
-> =20
->  	iommu_batch_start(dev, prot, entry);
-> =20
-> -	for (i =3D 0; i < npages; i++, base_paddr +=3D IO_PAGE_SIZE) {
-> -		long err =3D iommu_batch_add(base_paddr, mask);
-> +	for (i =3D 0; i < npages; i++, phys +=3D IO_PAGE_SIZE) {
-> +		long err =3D iommu_batch_add(phys, mask);
->  		if (unlikely(err < 0L))
->  			goto iommu_map_fail;
->  	}
-> @@ -426,7 +433,7 @@ static dma_addr_t dma_4v_map_page(struct device *dev,=
- struct page *page,
->  	return DMA_MAPPING_ERROR;
->  }
-> =20
-> -static void dma_4v_unmap_page(struct device *dev, dma_addr_t bus_addr,
-> +static void dma_4v_unmap_phys(struct device *dev, dma_addr_t bus_addr,
->  			      size_t sz, enum dma_data_direction direction,
->  			      unsigned long attrs)
->  {
-> @@ -686,8 +693,8 @@ static int dma_4v_supported(struct device *dev, u64 d=
-evice_mask)
->  static const struct dma_map_ops sun4v_dma_ops =3D {
->  	.alloc				=3D dma_4v_alloc_coherent,
->  	.free				=3D dma_4v_free_coherent,
-> -	.map_page			=3D dma_4v_map_page,
-> -	.unmap_page			=3D dma_4v_unmap_page,
-> +	.map_phys			=3D dma_4v_map_phys,
-> +	.unmap_phys			=3D dma_4v_unmap_phys,
->  	.map_sg				=3D dma_4v_map_sg,
->  	.unmap_sg			=3D dma_4v_unmap_sg,
->  	.dma_supported			=3D dma_4v_supported,
-> diff --git a/arch/sparc/mm/io-unit.c b/arch/sparc/mm/io-unit.c
-> index d8376f61b4d0..d409cb450de4 100644
-> --- a/arch/sparc/mm/io-unit.c
-> +++ b/arch/sparc/mm/io-unit.c
-> @@ -94,13 +94,14 @@ static int __init iounit_init(void)
->  subsys_initcall(iounit_init);
-> =20
->  /* One has to hold iounit->lock to call this */
-> -static unsigned long iounit_get_area(struct iounit_struct *iounit, unsig=
-ned long vaddr, int size)
-> +static dma_addr_t iounit_get_area(struct iounit_struct *iounit,
-> +				  phys_addr_t phys, int size)
->  {
->  	int i, j, k, npages;
->  	unsigned long rotor, scan, limit;
->  	iopte_t iopte;
-> =20
-> -        npages =3D ((vaddr & ~PAGE_MASK) + size + (PAGE_SIZE-1)) >> PAGE=
-_SHIFT;
-> +	npages =3D (offset_in_page(phys) + size + (PAGE_SIZE - 1)) >> PAGE_SHIF=
-T;
-> =20
->  	/* A tiny bit of magic ingredience :) */
->  	switch (npages) {
-> @@ -109,7 +110,7 @@ static unsigned long iounit_get_area(struct iounit_st=
-ruct *iounit, unsigned long
->  	default: i =3D 0x0213; break;
->  	}
->  =09
-> -	IOD(("iounit_get_area(%08lx,%d[%d])=3D", vaddr, size, npages));
-> +	IOD(("%s(%pa,%d[%d])=3D", __func__, &phys, size, npages));
->  =09
->  next:	j =3D (i & 15);
->  	rotor =3D iounit->rotor[j - 1];
-> @@ -124,7 +125,8 @@ nexti:	scan =3D find_next_zero_bit(iounit->bmap, limi=
-t, scan);
->  		}
->  		i >>=3D 4;
->  		if (!(i & 15))
-> -			panic("iounit_get_area: Couldn't find free iopte slots for (%08lx,%d)=
-\n", vaddr, size);
-> +			panic("iounit_get_area: Couldn't find free iopte slots for (%pa,%d)\n=
-",
-> +			      &phys, size);
->  		goto next;
->  	}
->  	for (k =3D 1, scan++; k < npages; k++)
-> @@ -132,30 +134,29 @@ nexti:	scan =3D find_next_zero_bit(iounit->bmap, li=
-mit, scan);
->  			goto nexti;
->  	iounit->rotor[j - 1] =3D (scan < limit) ? scan : iounit->limit[j - 1];
->  	scan -=3D npages;
-> -	iopte =3D MKIOPTE(__pa(vaddr & PAGE_MASK));
-> -	vaddr =3D IOUNIT_DMA_BASE + (scan << PAGE_SHIFT) + (vaddr & ~PAGE_MASK)=
-;
-> +	iopte =3D MKIOPTE(phys & PAGE_MASK);
-> +	phys =3D IOUNIT_DMA_BASE + (scan << PAGE_SHIFT) + offset_in_page(phys);
->  	for (k =3D 0; k < npages; k++, iopte =3D __iopte(iopte_val(iopte) + 0x1=
-00), scan++) {
->  		set_bit(scan, iounit->bmap);
->  		sbus_writel(iopte_val(iopte), &iounit->page_table[scan]);
->  	}
-> -	IOD(("%08lx\n", vaddr));
-> -	return vaddr;
-> +	IOD(("%pa\n", &phys));
-> +	return phys;
->  }
-> =20
-> -static dma_addr_t iounit_map_page(struct device *dev, struct page *page,
-> -		unsigned long offset, size_t len, enum dma_data_direction dir,
-> -		unsigned long attrs)
-> +static dma_addr_t iounit_map_phys(struct device *dev, phys_addr_t phys,
-> +		size_t len, enum dma_data_direction dir, unsigned long attrs)
->  {
-> -	void *vaddr =3D page_address(page) + offset;
->  	struct iounit_struct *iounit =3D dev->archdata.iommu;
-> -	unsigned long ret, flags;
-> +	unsigned long flags;
-> +	dma_addr_t ret;
->  =09
->  	/* XXX So what is maxphys for us and how do drivers know it? */
->  	if (!len || len > 256 * 1024)
->  		return DMA_MAPPING_ERROR;
-> =20
->  	spin_lock_irqsave(&iounit->lock, flags);
-> -	ret =3D iounit_get_area(iounit, (unsigned long)vaddr, len);
-> +	ret =3D iounit_get_area(iounit, phys, len);
->  	spin_unlock_irqrestore(&iounit->lock, flags);
->  	return ret;
->  }
-> @@ -171,14 +172,15 @@ static int iounit_map_sg(struct device *dev, struct=
- scatterlist *sgl, int nents,
->  	/* FIXME: Cache some resolved pages - often several sg entries are to t=
-he same page */
->  	spin_lock_irqsave(&iounit->lock, flags);
->  	for_each_sg(sgl, sg, nents, i) {
-> -		sg->dma_address =3D iounit_get_area(iounit, (unsigned long) sg_virt(sg=
-), sg->length);
-> +		sg->dma_address =3D
-> +			iounit_get_area(iounit, sg_phys(sg), sg->length);
->  		sg->dma_length =3D sg->length;
->  	}
->  	spin_unlock_irqrestore(&iounit->lock, flags);
->  	return nents;
->  }
-> =20
-> -static void iounit_unmap_page(struct device *dev, dma_addr_t vaddr, size=
-_t len,
-> +static void iounit_unmap_phys(struct device *dev, dma_addr_t vaddr, size=
-_t len,
->  		enum dma_data_direction dir, unsigned long attrs)
->  {
->  	struct iounit_struct *iounit =3D dev->archdata.iommu;
-> @@ -279,8 +281,8 @@ static const struct dma_map_ops iounit_dma_ops =3D {
->  	.alloc			=3D iounit_alloc,
->  	.free			=3D iounit_free,
->  #endif
-> -	.map_page		=3D iounit_map_page,
-> -	.unmap_page		=3D iounit_unmap_page,
-> +	.map_phys		=3D iounit_map_phys,
-> +	.unmap_phys		=3D iounit_unmap_phys,
->  	.map_sg			=3D iounit_map_sg,
->  	.unmap_sg		=3D iounit_unmap_sg,
->  };
-> diff --git a/arch/sparc/mm/iommu.c b/arch/sparc/mm/iommu.c
-> index 5a5080db800f..f48adf62724a 100644
-> --- a/arch/sparc/mm/iommu.c
-> +++ b/arch/sparc/mm/iommu.c
-> @@ -181,18 +181,20 @@ static void iommu_flush_iotlb(iopte_t *iopte, unsig=
-ned int niopte)
->  	}
->  }
-> =20
-> -static dma_addr_t __sbus_iommu_map_page(struct device *dev, struct page =
-*page,
-> -		unsigned long offset, size_t len, bool per_page_flush)
-> +static dma_addr_t __sbus_iommu_map_phys(struct device *dev, phys_addr_t =
-paddr,
-> +		size_t len, bool per_page_flush, unsigned long attrs)
->  {
->  	struct iommu_struct *iommu =3D dev->archdata.iommu;
-> -	phys_addr_t paddr =3D page_to_phys(page) + offset;
-> -	unsigned long off =3D paddr & ~PAGE_MASK;
-> +	unsigned long off =3D offset_in_page(paddr);
->  	unsigned long npages =3D (off + len + PAGE_SIZE - 1) >> PAGE_SHIFT;
->  	unsigned long pfn =3D __phys_to_pfn(paddr);
->  	unsigned int busa, busa0;
->  	iopte_t *iopte, *iopte0;
->  	int ioptex, i;
-> =20
-> +	if (unlikely(attrs & DMA_ATTR_MMIO))
-> +		return DMA_MAPPING_ERROR;
-> +
->  	/* XXX So what is maxphys for us and how do drivers know it? */
->  	if (!len || len > 256 * 1024)
->  		return DMA_MAPPING_ERROR;
-> @@ -202,10 +204,10 @@ static dma_addr_t __sbus_iommu_map_page(struct devi=
-ce *dev, struct page *page,
->  	 * XXX Is this a good assumption?
->  	 * XXX What if someone else unmaps it here and races us?
->  	 */
-> -	if (per_page_flush && !PageHighMem(page)) {
-> +	if (per_page_flush && !PhysHighMem(paddr)) {
->  		unsigned long vaddr, p;
-> =20
-> -		vaddr =3D (unsigned long)page_address(page) + offset;
-> +		vaddr =3D (unsigned long)phys_to_virt(paddr);
->  		for (p =3D vaddr & PAGE_MASK; p < vaddr + len; p +=3D PAGE_SIZE)
->  			flush_page_for_dma(p);
->  	}
-> @@ -231,19 +233,19 @@ static dma_addr_t __sbus_iommu_map_page(struct devi=
-ce *dev, struct page *page,
->  	return busa0 + off;
->  }
-> =20
-> -static dma_addr_t sbus_iommu_map_page_gflush(struct device *dev,
-> -		struct page *page, unsigned long offset, size_t len,
-> -		enum dma_data_direction dir, unsigned long attrs)
-> +static dma_addr_t sbus_iommu_map_phys_gflush(struct device *dev,
-> +		phys_addr_t phys, size_t len, enum dma_data_direction dir,
-> +		unsigned long attrs)
->  {
->  	flush_page_for_dma(0);
-> -	return __sbus_iommu_map_page(dev, page, offset, len, false);
-> +	return __sbus_iommu_map_phys(dev, phys, len, false, attrs);
->  }
-> =20
-> -static dma_addr_t sbus_iommu_map_page_pflush(struct device *dev,
-> -		struct page *page, unsigned long offset, size_t len,
-> -		enum dma_data_direction dir, unsigned long attrs)
-> +static dma_addr_t sbus_iommu_map_phys_pflush(struct device *dev,
-> +		phys_addr_t phys, size_t len, enum dma_data_direction dir,
-> +		unsigned long attrs)
->  {
-> -	return __sbus_iommu_map_page(dev, page, offset, len, true);
-> +	return __sbus_iommu_map_phys(dev, phys, len, true, attrs);
->  }
-> =20
->  static int __sbus_iommu_map_sg(struct device *dev, struct scatterlist *s=
-gl,
-> @@ -254,8 +256,8 @@ static int __sbus_iommu_map_sg(struct device *dev, st=
-ruct scatterlist *sgl,
->  	int j;
-> =20
->  	for_each_sg(sgl, sg, nents, j) {
-> -		sg->dma_address =3D__sbus_iommu_map_page(dev, sg_page(sg),
-> -				sg->offset, sg->length, per_page_flush);
-> +		sg->dma_address =3D __sbus_iommu_map_phys(dev, sg_phys(sg),
-> +				sg->length, per_page_flush, attrs);
->  		if (sg->dma_address =3D=3D DMA_MAPPING_ERROR)
->  			return -EIO;
->  		sg->dma_length =3D sg->length;
-> @@ -277,7 +279,7 @@ static int sbus_iommu_map_sg_pflush(struct device *de=
-v, struct scatterlist *sgl,
->  	return __sbus_iommu_map_sg(dev, sgl, nents, dir, attrs, true);
->  }
-> =20
-> -static void sbus_iommu_unmap_page(struct device *dev, dma_addr_t dma_add=
-r,
-> +static void sbus_iommu_unmap_phys(struct device *dev, dma_addr_t dma_add=
-r,
->  		size_t len, enum dma_data_direction dir, unsigned long attrs)
->  {
->  	struct iommu_struct *iommu =3D dev->archdata.iommu;
-> @@ -303,7 +305,7 @@ static void sbus_iommu_unmap_sg(struct device *dev, s=
-truct scatterlist *sgl,
->  	int i;
-> =20
->  	for_each_sg(sgl, sg, nents, i) {
-> -		sbus_iommu_unmap_page(dev, sg->dma_address, sg->length, dir,
-> +		sbus_iommu_unmap_phys(dev, sg->dma_address, sg->length, dir,
->  				attrs);
->  		sg->dma_address =3D 0x21212121;
->  	}
-> @@ -426,8 +428,8 @@ static const struct dma_map_ops sbus_iommu_dma_gflush=
-_ops =3D {
->  	.alloc			=3D sbus_iommu_alloc,
->  	.free			=3D sbus_iommu_free,
->  #endif
-> -	.map_page		=3D sbus_iommu_map_page_gflush,
-> -	.unmap_page		=3D sbus_iommu_unmap_page,
-> +	.map_phys		=3D sbus_iommu_map_phys_gflush,
-> +	.unmap_phys		=3D sbus_iommu_unmap_phys,
->  	.map_sg			=3D sbus_iommu_map_sg_gflush,
->  	.unmap_sg		=3D sbus_iommu_unmap_sg,
->  };
-> @@ -437,8 +439,8 @@ static const struct dma_map_ops sbus_iommu_dma_pflush=
-_ops =3D {
->  	.alloc			=3D sbus_iommu_alloc,
->  	.free			=3D sbus_iommu_free,
->  #endif
-> -	.map_page		=3D sbus_iommu_map_page_pflush,
-> -	.unmap_page		=3D sbus_iommu_unmap_page,
-> +	.map_phys		=3D sbus_iommu_map_phys_pflush,
-> +	.unmap_phys		=3D sbus_iommu_unmap_phys,
->  	.map_sg			=3D sbus_iommu_map_sg_pflush,
->  	.unmap_sg		=3D sbus_iommu_unmap_sg,
->  };
+Changes include:
+  - COPY_LOOP=test___copy_tofrom_user_power7_vmx with -D VMX_TEST is used
+    in existing selftest build targets.
+  - Inclusion of ../utils.c to provide get_auxv_entry() for hardware
+    feature detection.
+  - At runtime, the test skips execution if Altivec is not available.
+  - Copy sizes above VMX_COPY_THRESHOLD are used to ensure the VMX
+    path is taken.
 
-This change has just been reported to cause a regression with the igb
-driver on some SPARC server systems:
+This enables validation of the VMX fast path without affecting systems
+that do not support Altivec.
 
-Feb 16 15:20:22 sparcy kernel: igb 0000:0c:00.0 enp12s0f0: igb: enp12s0f0 N=
-IC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX=20
-Feb 16 15:20:23 sparcy kernel: iommu_batch_flush: ATU map of [00000400:2:10=
-00000000a7d:1:2736c000] failed with status 8=20
-Feb 16 15:20:23 sparcy kernel: igb 0000:0c:00.0: TX DMA map failed=20
-Feb 16 15:20:23 sparcy kernel: iommu_batch_flush: ATU map of [00000400:2:10=
-00000000a7e:1:2736c000] failed with status 8=20
-Feb 16 15:20:23 sparcy kernel: igb 0000:0c:00.0: TX DMA map failed=20
-Feb 16 15:20:23 sparcy kernel: igb 0000:0c:00.1 enp12s0f1: igb: enp12s0f1 N=
-IC Link is Up 100 Mbps Full Duplex, Flow Control: RX=20
-Feb 16 15:20:23 sparcy kernel: iommu_batch_flush: ATU map of [00000400:2:10=
-000001c02af:1:2736e000] failed with status 8=20
-Feb 16 15:20:23 sparcy kernel: iommu_batch_flush: ATU map of [00000400:2:10=
-0000038009f:1:27390000] failed with status 8=20
-Feb 16 15:20:23 sparcy kernel: igb 0000:0c:00.1: TX DMA map failed=20
-Feb 16 15:20:23 sparcy last message buffered 1 times=20
-Feb 16 15:20:23 sparcy kernel: iommu_batch_flush: ATU map of [00000400:2:10=
-000001c02b1:1:2736e000] failed with status 8=20
-Feb 16 15:20:23 sparcy kernel: igb 0000:0c:00.0: TX DMA map failed=20
-Feb 16 15:20:24 sparcy kernel: iommu_batch_flush: ATU map of [00000400:2:10=
-00000000a80:1:2736c000] failed with status 8=20
-Feb 16 15:20:24 sparcy kernel: igb 0000:0c:00.0: TX DMA map failed=20
-Feb 16 15:20:24 sparcy kernel: iommu_batch_flush: ATU map of [00000400:2:10=
-00000000a81:1:2736c000] failed with status 8=20
-Feb 16 15:20:24 sparcy kernel: igb 0000:0c:00.0: TX DMA map failed=20
-Feb 16 15:20:24 sparcy kernel: iommu_batch_flush: ATU map of [00000400:2:10=
-00000200000:1:2738e000] failed with status 8=20
-Feb 16 15:20:24 sparcy kernel: igb 0000:0c:00.1: TX DMA map failed=20
-Feb 16 15:20:24 sparcy kernel: iommu_batch_flush: ATU map of [00000400:2:10=
-00000000a82:1:2736c000] failed with status 8=20
-Feb 16 15:20:24 sparcy kernel: igb 0000:0c:00.1: TX DMA map failed
+Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
+---
+ .../selftests/powerpc/copyloops/.gitignore        |  4 ++--
+ .../testing/selftests/powerpc/copyloops/Makefile  | 11 ++++++++---
+ tools/testing/selftests/powerpc/copyloops/stubs.S |  8 --------
+ .../selftests/powerpc/copyloops/validate.c        | 15 ++++++++++++++-
+ 4 files changed, 24 insertions(+), 14 deletions(-)
 
-Please see also the discussion in [1].
+diff --git a/tools/testing/selftests/powerpc/copyloops/.gitignore b/tools/testing/selftests/powerpc/copyloops/.gitignore
+index 7283e8b07b75..80d4270a71ac 100644
+--- a/tools/testing/selftests/powerpc/copyloops/.gitignore
++++ b/tools/testing/selftests/powerpc/copyloops/.gitignore
+@@ -2,8 +2,8 @@
+ copyuser_64_t0
+ copyuser_64_t1
+ copyuser_64_t2
+-copyuser_p7_t0
+-copyuser_p7_t1
++copyuser_p7
++copyuser_p7_vmx
+ memcpy_64_t0
+ memcpy_64_t1
+ memcpy_64_t2
+diff --git a/tools/testing/selftests/powerpc/copyloops/Makefile b/tools/testing/selftests/powerpc/copyloops/Makefile
+index 42940f92d832..0c8efb0bddeb 100644
+--- a/tools/testing/selftests/powerpc/copyloops/Makefile
++++ b/tools/testing/selftests/powerpc/copyloops/Makefile
+@@ -1,6 +1,6 @@
+ # SPDX-License-Identifier: GPL-2.0
+ TEST_GEN_PROGS := copyuser_64_t0 copyuser_64_t1 copyuser_64_t2 \
+-		copyuser_p7_t0 copyuser_p7_t1 \
++		copyuser_p7 copyuser_p7_vmx \
+ 		memcpy_64_t0 memcpy_64_t1 memcpy_64_t2 \
+ 		memcpy_p7_t0 memcpy_p7_t1 copy_mc_64 \
+ 		copyuser_64_exc_t0 copyuser_64_exc_t1 copyuser_64_exc_t2 \
+@@ -28,10 +28,15 @@ $(OUTPUT)/copyuser_64_t%:	copyuser_64.S $(EXTRA_SOURCES)
+ 		-D SELFTEST_CASE=$(subst copyuser_64_t,,$(notdir $@)) \
+ 		-o $@ $^
+ 
+-$(OUTPUT)/copyuser_p7_t%:	copyuser_power7.S $(EXTRA_SOURCES)
++$(OUTPUT)/copyuser_p7:	copyuser_power7.S $(EXTRA_SOURCES)
+ 	$(CC) $(CPPFLAGS) $(CFLAGS) \
+ 		-D COPY_LOOP=test___copy_tofrom_user_power7 \
+-		-D SELFTEST_CASE=$(subst copyuser_p7_t,,$(notdir $@)) \
++		-o $@ $^
++
++$(OUTPUT)/copyuser_p7_vmx:       copyuser_power7.S $(EXTRA_SOURCES) ../utils.c
++	$(CC) $(CPPFLAGS) $(CFLAGS) \
++		-D COPY_LOOP=test___copy_tofrom_user_power7_vmx \
++		-D VMX_TEST \
+ 		-o $@ $^
+ 
+ # Strictly speaking, we only need the memcpy_64 test cases for big-endian
+diff --git a/tools/testing/selftests/powerpc/copyloops/stubs.S b/tools/testing/selftests/powerpc/copyloops/stubs.S
+index ec8bcf2bf1c2..3a9cb8c9a3ee 100644
+--- a/tools/testing/selftests/powerpc/copyloops/stubs.S
++++ b/tools/testing/selftests/powerpc/copyloops/stubs.S
+@@ -1,13 +1,5 @@
+ #include <asm/ppc_asm.h>
+ 
+-FUNC_START(enter_vmx_usercopy)
+-	li	r3,1
+-	blr
+-
+-FUNC_START(exit_vmx_usercopy)
+-	li	r3,0
+-	blr
+-
+ FUNC_START(enter_vmx_ops)
+ 	li	r3,1
+ 	blr
+diff --git a/tools/testing/selftests/powerpc/copyloops/validate.c b/tools/testing/selftests/powerpc/copyloops/validate.c
+index 0f6873618552..fb822534fbe9 100644
+--- a/tools/testing/selftests/powerpc/copyloops/validate.c
++++ b/tools/testing/selftests/powerpc/copyloops/validate.c
+@@ -12,6 +12,10 @@
+ #define BUFLEN (MAX_LEN+MAX_OFFSET+2*MIN_REDZONE)
+ #define POISON 0xa5
+ 
++#ifdef VMX_TEST
++#define VMX_COPY_THRESHOLD 3328
++#endif
++
+ unsigned long COPY_LOOP(void *to, const void *from, unsigned long size);
+ 
+ static void do_one(char *src, char *dst, unsigned long src_off,
+@@ -81,8 +85,12 @@ int test_copy_loop(void)
+ 	/* Fill with sequential bytes */
+ 	for (i = 0; i < BUFLEN; i++)
+ 		fill[i] = i & 0xff;
+-
++#ifdef VMX_TEST
++	/* Force sizes above kernel VMX threshold (3328) */
++	for (len = VMX_COPY_THRESHOLD + 1; len < MAX_LEN; len++) {
++#else
+ 	for (len = 1; len < MAX_LEN; len++) {
++#endif
+ 		for (src_off = 0; src_off < MAX_OFFSET; src_off++) {
+ 			for (dst_off = 0; dst_off < MAX_OFFSET; dst_off++) {
+ 				do_one(src, dst, src_off, dst_off, len,
+@@ -96,5 +104,10 @@ int test_copy_loop(void)
+ 
+ int main(void)
+ {
++#ifdef VMX_TEST
++	/* Skip if Altivec not present */
++	SKIP_IF_MSG(!have_hwcap(PPC_FEATURE_HAS_ALTIVEC), "ALTIVEC not supported");
++#endif
++
+ 	return test_harness(test_copy_loop, str(COPY_LOOP));
+ }
+-- 
+2.52.0
 
-Adrian
-
-> [1] https://github.com/sparclinux/issues/issues/75
-
---=20
- .''`.  John Paul Adrian Glaubitz
-: :' :  Debian Developer
-`. `'   Physicist
-  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
 
