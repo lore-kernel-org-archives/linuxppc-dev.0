@@ -1,73 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-16950-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16951-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5367E9A056
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Feb 2026 17:37:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4AEF7E9A057
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Feb 2026 18:31:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fH0v61qyZz2yFY;
-	Fri, 20 Feb 2026 04:37:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fH25652LDz2yFY;
+	Fri, 20 Feb 2026 05:31:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771522642;
-	cv=none; b=Nz74AGpD1Ssd3qWthGeDPM9U8Xf3wnXX+E3Ll32XR4I0BnrCOTJnRRqtbi2yoWU+FBco2iqbAxZuBBQT236Kd6umdRMI152MQedzQqe9VCKtGDDkQkwZX1fEuPJPck2mIYzAlszsX87QUF+r3ZPGCNn+R76A06TuZHl4gDjHDhLxwqow6s554K25okBYBPWD8acNhpB04kePIqZg7oRYVdOmVYFQGGhDzWu4v+OgzjFH6WDldJJfSmDZGBeOah4RmuzZP7vWuV67mweFX/IDeMdFCJeb9GwYu4eCnbQHl4f5CAtaGjEgxpMfNrH5Bkl2Zba6kL+NZYbMpNjoMMrPow==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771525866;
+	cv=none; b=QIsrsIgVyiD1W6eOFiWUkF0JOk+vimpEHqOhJz7f2Sf3KSFHIaT0mLmae4+fG53KeE+0/dQe6fobnwvBgsvK5YsY2EMtwfZU61CzixAQZGJ2D7VO6pHglz9n6Ylic0cab/Wzp782yo07Imgu1oFzSGrtEdNYIXuMMLYYuYhDDL8mRDxE5VzdWSvC54b7ggrXZV4HX6eKcbFvsETQy24Do8+lZ4xjxbKqhzfWy+xDY1fLlEzs+TBNko1qX7pgy4z8FsX39LRjhMXoeztdo4HxcZiYz3ktO9RobwsD/iRufcUQYlPLsrRGrRI09rvfExz09qFGROheoCAhwAGq2O75mg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1771522642; c=relaxed/relaxed;
-	bh=KzUa/DAODjPXOJZk+zAZxaDHAy0uF4q50JpQeGI7vUs=;
+	t=1771525866; c=relaxed/relaxed;
+	bh=UyqtE5dFClD4qUnTIg5kBZRFtx9J4UpArQv5TR4phSc=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=WyGvidQgKYEBqW5kvsGADCodyQUgNi9sa3+9D98rw8k3GBeRDc/DM/yFEZr1yFmC4PfpIK9cG2T2PMcYSSV0PNA1yJwrn+Yw0IPOkczSIptt2dsvqlAe2bsiHTiBSFUkfn1w2XLYgLq3E9c7eMjYeu78s9CMFcQdJPbm3hICB/e9IlQKOQR2y6aLx0BQ4ce3bQqZXboY75BLqG9Pz0S1RpLbeY0bvqRJqF18/kNtFyPFCEyv3YEzeZmBloh9+g+jguq3+eKF2s94DlSwBvUM2KVTpC2LUdkphb4nexjI28nPsO9Td16JM3VGSbTnyazrGoQX/vaAUSle83oOUtsIiw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Cs7eIaIO; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nilay@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 In-Reply-To:Content-Type; b=ofU3ff0FqoM306D/70FPJZ+Gg0jiMUyhjPmtv4j1Q3ocvNYIGdgsxKNN8+V/0eTjuCyl0Os8NTKPpl5hBKtek/xPXvM8mliA538Qzcw7GEtlY0VwBqJI4a5M3uCspPlwBkxt2Z5AtuQYoU/g4SdM7meEOSiDpxLlT2jIz4C9DoesoV7pBSjrA9nUZ+1AzbWRQ6/2uBWQwvXZ3NTQ3DbWb3wYw6SbzUlYjeZWrXOX9fOJRHl0efYWySurqKXPTRHlGqV6lcDfR+SaOckqK/CPNpgOjqRgFMa9J73EZ++Ka4P+4e7e25rjlt6in2GiLuKOvtY46KKhrYor7vwwWNMfMg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SFWg1clY; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Cs7eIaIO;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SFWg1clY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nilay@linux.ibm.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fH0v53Zgcz2xlj
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Feb 2026 04:37:20 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61J99tXr1600918;
-	Thu, 19 Feb 2026 17:37:06 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fH2511VRLz2yFQ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Feb 2026 05:31:00 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61J9ACWk1261180;
+	Thu, 19 Feb 2026 18:30:23 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=KzUa/D
-	AODjPXOJZk+zAZxaDHAy0uF4q50JpQeGI7vUs=; b=Cs7eIaIOR6mpPx6OX2Wf4/
-	rStp2r3A/nRexuR9jl8YKNfmCFmoFTxMgDB2tsSSWu7Tk60Psz31F+HJsQoCncv2
-	2fcThhrONaaaTGgct0o/welIJO9zsrPxMFRzCzjysICLQf7v+8F7Xy4Tz4KUnyP/
-	nc2KePRIV6QwWqduyHY89PGjV0NBQhTsKqFdW935Du+oPva5obrcDKOPtt/TQG3s
-	0EGtrn9CjXS5rc+NdFMQhK79JSOXD0S2q1Vvp82KnI6GWUVbpwo7PYTqZMYWOOg5
-	OiZZXlU1XV45/jf2cOF4ELDJPVc5LVUOsCOQ9XsM9C8zZkcfr5E2ZjyRShcdVi3A
+	:message-id:mime-version:references:subject:to; s=pp1; bh=UyqtE5
+	dFClD4qUnTIg5kBZRFtx9J4UpArQv5TR4phSc=; b=SFWg1clY7vnfwxc2JH30jJ
+	GJyI4qt6fn1359Gi0VIHaY13aqwYWLOj6niHzBfsHP5AavkHlDE/vcNM2azVxa07
+	0Zel6Es13bpMv4TGzSTxPKyEjvfE5AhzRlvYMEuPDIAjrJ27RKQJChBMjT8ZMFyI
+	E3lShnVceGQMb/zRm3DsYqC0D0i6SEwdDkv74HM220HMvNTpB/+6OriXCGBjEbhP
+	mJhjlRD7I+qgk8g3wBrUGqLGBcVEVm2RApSFTCYTPi+Wez+l9FuCSEuNL0bF3XNq
+	cZx7xJ40MSy+Ykw0yUWGf+8teGiGPXVQnxjyG+r4bMFA0nWqqWOFb9Cb+bNiV8jA
 	==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cajcr7bca-1
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4caj6s7h9u-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 19 Feb 2026 17:37:05 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 61JHZRq1024327;
-	Thu, 19 Feb 2026 17:37:04 GMT
-Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ccb45d699-1
+	Thu, 19 Feb 2026 18:30:23 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 61JI5k01015697;
+	Thu, 19 Feb 2026 18:30:21 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ccb45dbya-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 19 Feb 2026 17:37:04 +0000
-Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
-	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 61JHb3mN14680590
+	Thu, 19 Feb 2026 18:30:21 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 61JIUHLX29229328
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 19 Feb 2026 17:37:03 GMT
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B94AF58062;
-	Thu, 19 Feb 2026 17:37:03 +0000 (GMT)
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id AE5F458052;
-	Thu, 19 Feb 2026 17:36:56 +0000 (GMT)
-Received: from [9.111.6.127] (unknown [9.111.6.127])
-	by smtpav04.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 19 Feb 2026 17:36:56 +0000 (GMT)
-Message-ID: <4eaa7872-6bae-4419-9281-203c04f1996d@linux.ibm.com>
-Date: Thu, 19 Feb 2026 23:06:54 +0530
+	Thu, 19 Feb 2026 18:30:17 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C524720043;
+	Thu, 19 Feb 2026 18:30:17 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 66FC720040;
+	Thu, 19 Feb 2026 18:30:07 +0000 (GMT)
+Received: from [9.111.92.82] (unknown [9.111.92.82])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 19 Feb 2026 18:30:07 +0000 (GMT)
+Message-ID: <9413517d-963b-4e6d-b11b-b440acd7cb5a@linux.ibm.com>
+Date: Fri, 20 Feb 2026 00:00:06 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,119 +82,288 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/pci: Initialize msi_addr_mask for OF-created PCI
- devices
-To: Bjorn Helgaas <helgaas@kernel.org>, Thomas Gleixner <tglx@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
-        wangruikang@iscas.ac.cn, maddy@linux.ibm.com, mpe@ellerman.id.au,
-        npiggin@gmail.com, chleroy@kernel.org, gjoyce@ibm.com,
-        "David S. Miller" <davem@davemloft.net>,
-        Andreas Larsson <andreas@gaisler.com>, sparclinux@vger.kernel.org
-References: <20260219173149.GA3486808@bhelgaas>
+Subject: Re: [PATCH 04/15] powerpc/time: Prepare to stop elapsing in
+ dynticks-idle
+To: Frederic Weisbecker <frederic@kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Alexander Gordeev <agordeev@linux.ibm.com>,
+        Anna-Maria Behnsen <anna-maria@linutronix.de>,
+        Ben Segall <bsegall@google.com>, Boqun Feng <boqun.feng@gmail.com>,
+        Christian Borntraeger <borntraeger@linux.ibm.com>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Heiko Carstens <hca@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+        Jan Kiszka <jan.kiszka@siemens.com>,
+        Joel Fernandes <joelagnelf@nvidia.com>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Kieran Bingham <kbingham@kernel.org>, Mel Gorman <mgorman@suse.de>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Neeraj Upadhyay <neeraj.upadhyay@kernel.org>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Paul E . McKenney"
+ <paulmck@kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Sven Schnelle <svens@linux.ibm.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Uladzislau Rezki <urezki@gmail.com>,
+        Valentin Schneider <vschneid@redhat.com>,
+        Vasily Gorbik <gor@linux.ibm.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Xin Zhao <jackzxcui1989@163.com>, linux-pm@vger.kernel.org,
+        linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <20260206142245.58987-1-frederic@kernel.org>
+ <20260206142245.58987-5-frederic@kernel.org>
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
 Content-Language: en-US
-From: Nilay Shroff <nilay@linux.ibm.com>
-In-Reply-To: <20260219173149.GA3486808@bhelgaas>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20260206142245.58987-5-frederic@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: i2oEi-oEaCIUdP7mOfcn8jNXprvsrnrx
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjE5MDE1NSBTYWx0ZWRfX6fztuDLfQP78
- bs3iMVzUMjYjN4HReCzlptyDs1e/aVd5gc28eUa3+0C2e1fLhqAb6j5XVUcJ1S1avz9ojUvbIBj
- tjkOk+P7R3piB88A/3A1AIPjRdb92BdQQ34C4asuNzbUhmqB7K8O1AbimaSnriwRjj5kanTjBtj
- jP3rZTrbdtCl1Tg1dRoocVhJ7uRQGzWvEPkfmAUIgG042ydXE2JYTGKXMp35dpN/USEqr5n4uui
- ZdnSXYcZkDqbRlXNtr809t0+tSMD9Z/Aa/daO6pvSuFfONTLf3pyAMqKmQNFvqNhwFCtQDWR1/X
- LIQiEL2f7q1uhFWG5ReA/9GqUazbW0/gBrevjUxe8k2pYbjY3JE8XaknSh5cVkqjYVf+YOmqypM
- RGH8ABSvkly4bWHGRuLRS5fG/izUxaNvGDAIAVbppjSynUyMjREnZ7G8bkKFqsPDST1Fdnz7W0n
- G52t2XnceWl9Dhwe/2A==
-X-Authority-Analysis: v=2.4 cv=UPXQ3Sfy c=1 sm=1 tr=0 ts=69974a42 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+X-Authority-Analysis: v=2.4 cv=dvvWylg4 c=1 sm=1 tr=0 ts=699756bf cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
  a=IkcTkHD0fZMA:10 a=HzLeVaNsDn8A:10 a=VkNPw1HP01LnGYTKEx00:22
  a=Mpw57Om8IfrbqaoTuvik:22 a=GgsMoib0sEa3-_RKJdDe:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=3Jw2BVf9RI64lIZzIOoA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: xgNA2-reBvL-KTMEoudIcSE0TvYu7ral
+ a=VnNF1IyMAAAA:8 a=YJB6otqPPJUw7w8ZA6oA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: wBr2Fja_KVXT4_1MKa1HvqQ-fZlDiO8G
+X-Proofpoint-ORIG-GUID: 0riturGGUpWqAjVXmFdvyORGCGQiEQj9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjE5MDE2NCBTYWx0ZWRfXydBM+OSLWTzC
+ ZXK3WUprw2QRv0CstNwfm1HYMX09fQc9mgkhfmkAeYae0qdpXwTYM2fTlEGcxaxiS3ph0VWCZIY
+ dXPnepPQ8PSxKduvuvQtq8HT/njmynffdUIClnWG5BvjEju0vZwrHWcJVMq85gYQf3KapPljO+O
+ uWju3HnVtoEcV6YCBUrho8+uZm5qjE8oggcTXLzzgrzb4OzOIrwf3RfnxxnPYoym7PTbgGDDqCv
+ Ev+o3/YrxQTD9A6ydZur6C18ZLRUz9SokEpx0p+KrHT6k7nLP4JGu9qDEWjtpiJO18Lmkdtv4wx
+ KDyBtbLse6zROCdEJ6eTsp2PUdhxK3lgANAw+965RN6cCwIPWZ0QoGtdxvMbFlKiCAOGwmHnD/0
+ LMTlzF8iSkZ8CITcxADOqNh9xfH5zpcK2sEV6TZTSW1eMjIZKcmvqCSH5vy5VObjdsIMstZVPv0
+ iK7e9YgDm58GOlOhDBQ==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-02-19_04,2026-02-19_02,2025-10-01_01
+ definitions=2026-02-19_04,2026-02-19_03,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 suspectscore=0 phishscore=0 impostorscore=0 adultscore=0
- bulkscore=0 clxscore=1011 lowpriorityscore=0 priorityscore=1501 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2601150000 definitions=main-2602190155
+ spamscore=0 lowpriorityscore=0 impostorscore=0 adultscore=0
+ priorityscore=1501 clxscore=1015 malwarescore=0 phishscore=0 suspectscore=0
+ bulkscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2601150000
+ definitions=main-2602190164
 
 
 
-On 2/19/26 11:01 PM, Bjorn Helgaas wrote:
-> [+cc sparc folks, PCI enumeration via OF likely broken]
+On 2/6/26 7:52 PM, Frederic Weisbecker wrote:
+> Currently the tick subsystem stores the idle cputime accounting in
+> private fields, allowing cohabitation with architecture idle vtime
+> accounting. The former is fetched on online CPUs, the latter on offline
+> CPUs.
 > 
-> On Tue, Feb 17, 2026 at 11:15:26PM +0530, Nilay Shroff wrote:
->> Recent changes [1] replaced the use of no_64bit_msi with msi_addr_mask.
->> As a result, msi_addr_mask is now expected to be initialized to
->> DMA_BIT_MASK(64) when a pci_dev is set up. However, this initialization
->> was missed on powerpc due to differences in the device initialization
->> path compared to other architectures. Due to this, now pci device probe
->> method fails on powerpc system.
+> For consolidation purpose, architecture vtime accounting will continue
+> to account the cputime but will make a break when the idle tick is
+> stopped. The dyntick cputime accounting will then be relayed by the tick
+> subsystem so that the idle cputime is still seen advancing coherently
+> even when the tick isn't there to flush the idle vtime.
 > 
-> s/pci/PCI/ to match below.
-Ack
+> Prepare for that and introduce three new APIs which will be used in
+> subsequent patches:
 > 
->> On powerpc systems, struct pci_dev instances are created from device
->> tree nodes via of_create_pci_dev(). Because msi_addr_mask was not
->> initialized there, it remained zero. Later, during MSI setup,
->> msi_verify_entries() validates the programmed MSI address against
->> pdev->msi_addr_mask. Since the mask was not set correctly, the
->> validation fails, causing PCI driver probe failures for devices on
->> powerpc systems.
->>
->> Initialize pdev->msi_addr_mask to DMA_BIT_MASK(64) in
->> of_create_pci_dev() so that MSI address validation succeeds and device
->> probe works as expected.
->>
->> [1] https://lore.kernel.org/all/20260129-pci-msi-addr-mask-v4-0-70da998f2750@iscas.ac.cn/
->>
->> Fixes: 386ced19e9a3 ("PCI/MSI: Convert the boolean no_64bit_msi flag to a DMA address mask")
->> Signed-off-by: Nilay Shroff <nilay@linux.ibm.com>
+> _ vtime_dynticks_start() is deemed to be called when idle enters in
+>    dyntick mode. The idle cputime that elapsed so far is accumulated.
 > 
-> Looks like this and a similar sparc fix need to be in v7.0.  Would be
-> great if they could make v7.0-rc1 (Sunday), but that's pretty close.
+> - vtime_dynticks_stop() is deemed to be called when idle exits from
+>    dyntick mode. The vtime entry clocks are fast-forward to current time
+>    so that idle accounting restarts elapsing from now.
 > 
-> Thomas, you merged 386ced19e9a3.  I'm happy to merge the powerpc and
-> sparc fixes, given acks from you and the powerpc & sparc folks, or
-> feel free to take them yourself.
+> - vtime_reset() is deemed to be called from dynticks idle IRQ entry to
+>    fast-forward the clock to current time so that the IRQ time is still
+>    accounted by vtime while nohz cputime is paused.
 > 
->> ---
->>  arch/powerpc/kernel/pci_of_scan.c | 6 ++++++
->>  1 file changed, 6 insertions(+)
->>
->> diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
->> index 756043dd06e9..26ec97ce6b40 100644
->> --- a/arch/powerpc/kernel/pci_of_scan.c
->> +++ b/arch/powerpc/kernel/pci_of_scan.c
->> @@ -211,6 +211,12 @@ struct pci_dev *of_create_pci_dev(struct device_node *node,
->>  	dev->current_state = PCI_UNKNOWN;	/* unknown power state */
->>  	dev->error_state = pci_channel_io_normal;
->>  	dev->dma_mask = 0xffffffff;
+> Also accumulated vtime won't be flushed from dyntick-idle ticks to avoid
+> accounting twice the idle cputime, along with nohz accounting.
 > 
-> It's typical to add a blank line between the code above and the
-> comment below, as was done in 386ced19e9a3.
+> Signed-off-by: Frederic Weisbecker <frederic@kernel.org>
 
-Okay will fix this in v2.
+Reviewed-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+
+> ---
+>   arch/powerpc/kernel/time.c | 41 ++++++++++++++++++++++++++++++++++++++
+>   include/linux/vtime.h      |  6 ++++++
+>   2 files changed, 47 insertions(+)
 > 
->> +	/*
->> +	 * Assume 64-bit addresses for MSI initially. Will be changed to 32-bit
->> +	 * if MSI (rather than MSI-X) capability does not have
->> +	 * PCI_MSI_FLAGS_64BIT. Can also be overridden by driver.
->> +	 */
->> +	dev->msi_addr_mask = DMA_BIT_MASK(64);
->>  
->>  	/* Early fixups, before probing the BARs */
->>  	pci_fixup_device(pci_fixup_early, dev);
->> -- 
->> 2.52.0
->>
+> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+> index 4bbeb8644d3d..18506740f4a4 100644
+> --- a/arch/powerpc/kernel/time.c
+> +++ b/arch/powerpc/kernel/time.c
+> @@ -376,6 +376,47 @@ void vtime_task_switch(struct task_struct *prev)
+>   		acct->starttime = acct0->starttime;
+>   	}
+>   }
+> +
+> +#ifdef CONFIG_NO_HZ_COMMON
+> +/**
+> + * vtime_reset - Fast forward vtime entry clocks
+> + *
+> + * Called from dynticks idle IRQ entry to fast-forward the clocks to current time
+> + * so that the IRQ time is still accounted by vtime while nohz cputime is paused.
+> + */
+> +void vtime_reset(void)
+> +{
+> +	struct cpu_accounting_data *acct = get_accounting(current);
+> +
+> +	acct->starttime = mftb();
 
-Thanks,
---Nilay
+I figured out why those huge values happen.
 
+This happens because mftb is from when the system is booted.
+I was doing kexec to start the new kernel and mftb wasn't getting
+reset.
+
+I thought about this. This is concern for pseries too, where LPAR's
+restart but system won't restart and mftb will continue to run instead of
+reset.
+
+I think we should be using sched_clock instead of mftb here.
+Though we need it a few more places and some cosmetic changes around it.
+
+Note: Some values being huge exists without series for few CPUs, with series it
+shows up in most of the CPUs.
+
+So I am planning send out fix below fix separately keeping your
+series as dependency.
+
+---
+  arch/powerpc/include/asm/accounting.h |  4 ++--
+  arch/powerpc/include/asm/cputime.h    | 14 +++++++-------
+  arch/powerpc/kernel/time.c            | 22 +++++++++++-----------
+  3 files changed, 20 insertions(+), 20 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/accounting.h b/arch/powerpc/include/asm/accounting.h
+index 6d79c31700e2..50f120646e6d 100644
+--- a/arch/powerpc/include/asm/accounting.h
++++ b/arch/powerpc/include/asm/accounting.h
+@@ -21,8 +21,8 @@ struct cpu_accounting_data {
+  	unsigned long steal_time;
+  	unsigned long idle_time;
+  	/* Internal counters */
+-	unsigned long starttime;	/* TB value snapshot */
+-	unsigned long starttime_user;	/* TB value on exit to usermode */
++	unsigned long starttime;	/* Time value snapshot */
++	unsigned long starttime_user;	/* Time value on exit to usermode */
+  #ifdef CONFIG_ARCH_HAS_SCALED_CPUTIME
+  	unsigned long startspurr;	/* SPURR value snapshot */
+  	unsigned long utime_sspurr;	/* ->user_time when ->startspurr set */
+diff --git a/arch/powerpc/include/asm/cputime.h b/arch/powerpc/include/asm/cputime.h
+index aff858ca99c0..eb6b629b113f 100644
+--- a/arch/powerpc/include/asm/cputime.h
++++ b/arch/powerpc/include/asm/cputime.h
+@@ -20,9 +20,9 @@
+  #include <asm/time.h>
+  #include <asm/param.h>
+  #include <asm/firmware.h>
++#include <linux/sched/clock.h>
+  
+  #ifdef __KERNEL__
+-#define cputime_to_nsecs(cputime) tb_to_ns(cputime)
+  
+  /*
+   * PPC64 uses PACA which is task independent for storing accounting data while
+@@ -44,20 +44,20 @@
+   */
+  static notrace inline void account_cpu_user_entry(void)
+  {
+-	unsigned long tb = mftb();
++	unsigned long now = sched_clock();
+  	struct cpu_accounting_data *acct = raw_get_accounting(current);
+  
+-	acct->utime += (tb - acct->starttime_user);
+-	acct->starttime = tb;
++	acct->utime += (now - acct->starttime_user);
++	acct->starttime = now;
+  }
+  
+  static notrace inline void account_cpu_user_exit(void)
+  {
+-	unsigned long tb = mftb();
++	unsigned long now = sched_clock();
+  	struct cpu_accounting_data *acct = raw_get_accounting(current);
+  
+-	acct->stime += (tb - acct->starttime);
+-	acct->starttime_user = tb;
++	acct->stime += (now - acct->starttime);
++	acct->starttime_user = now;
+  }
+  
+  static notrace inline void account_stolen_time(void)
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 18506740f4a4..fb67cdae3bcb 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -215,7 +215,7 @@ static unsigned long vtime_delta(struct cpu_accounting_data *acct,
+  
+  	WARN_ON_ONCE(!irqs_disabled());
+  
+-	now = mftb();
++	now = sched_clock();
+  	stime = now - acct->starttime;
+  	acct->starttime = now;
+  
+@@ -299,9 +299,9 @@ static void vtime_flush_scaled(struct task_struct *tsk,
+  {
+  #ifdef CONFIG_ARCH_HAS_SCALED_CPUTIME
+  	if (acct->utime_scaled)
+-		tsk->utimescaled += cputime_to_nsecs(acct->utime_scaled);
++		tsk->utimescaled += acct->utime_scaled;
+  	if (acct->stime_scaled)
+-		tsk->stimescaled += cputime_to_nsecs(acct->stime_scaled);
++		tsk->stimescaled += acct->stime_scaled;
+  
+  	acct->utime_scaled = 0;
+  	acct->utime_sspurr = 0;
+@@ -321,28 +321,28 @@ void vtime_flush(struct task_struct *tsk)
+  	struct cpu_accounting_data *acct = get_accounting(tsk);
+  
+  	if (acct->utime)
+-		account_user_time(tsk, cputime_to_nsecs(acct->utime));
++		account_user_time(tsk, acct->utime);
+  
+  	if (acct->gtime)
+-		account_guest_time(tsk, cputime_to_nsecs(acct->gtime));
++		account_guest_time(tsk, acct->gtime);
+  
+  	if (IS_ENABLED(CONFIG_PPC_SPLPAR) && acct->steal_time) {
+-		account_steal_time(cputime_to_nsecs(acct->steal_time));
++		account_steal_time(acct->steal_time);
+  		acct->steal_time = 0;
+  	}
+  
+  	if (acct->idle_time)
+-		account_idle_time(cputime_to_nsecs(acct->idle_time));
++		account_idle_time(acct->idle_time);
+  
+  	if (acct->stime)
+-		account_system_index_time(tsk, cputime_to_nsecs(acct->stime),
++		account_system_index_time(tsk, acct->stime,
+  					  CPUTIME_SYSTEM);
+  
+  	if (acct->hardirq_time)
+-		account_system_index_time(tsk, cputime_to_nsecs(acct->hardirq_time),
++		account_system_index_time(tsk, acct->hardirq_time,
+  					  CPUTIME_IRQ);
+  	if (acct->softirq_time)
+-		account_system_index_time(tsk, cputime_to_nsecs(acct->softirq_time),
++		account_system_index_time(tsk, acct->softirq_time,
+  					  CPUTIME_SOFTIRQ);
+  
+  	vtime_flush_scaled(tsk, acct);
+@@ -388,7 +388,7 @@ void vtime_reset(void)
+  {
+  	struct cpu_accounting_data *acct = get_accounting(current);
+  
+-	acct->starttime = mftb();
++	acct->starttime = sched_clock();
+  #ifdef CONFIG_ARCH_HAS_SCALED_CPUTIME
+  	acct->startspurr = read_spurr(acct->starttime);
+  #endif
+-- 
+2.43.0
 
 
