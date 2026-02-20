@@ -1,52 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-16975-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-16976-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78563C531E4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Feb 2026 04:11:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15680C531F2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Feb 2026 04:11:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fHGy04Pl1z3c2R;
-	Fri, 20 Feb 2026 15:10:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771560648;
-	cv=none; b=WNe1JluYwYKIbYZZKWW0fwl9mOgnj6eTY22NtVT3DyT1wVLTtstWGfvtUFGYMrAASMFX4cGAsqYAQTbp9tiZh7yE490EYExX7v/A7lfBsI3P1TwqyKOC2Vey18o2MYRPhJ4heztengMU5fQ3IJl7I7+HTCNee2BAVe1oMt3Az4knqgPQyR4vIM1elHg4OKMQE7GRqToeA4BfVRZDlEzaqXBTri9zst3vajlh0b/qLplmS0sNp+Bqfdo/uG/SC4wyeLNGOCPcyXL7GvG7+BkwG7BsEVAgacd4xybXOPgaKfRgckq/Z1C3G3TtHkxZzwrkz/J115OblOhf/mSMfoVE0Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fHGy17078z30M0;
+	Fri, 20 Feb 2026 15:10:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771560649;
+	cv=none; b=dVWCxWmctOhweSa6wAkp8MYGE1uubvYjc5wiFmUlgQiQc6wLg94HVa6aMA+8wgLjs8vEKIv7wZCjeZiFhP8tg4N/aQnG9bbT60KCgPuUBK9YjQlpzhr2FZSA3GklUg4PzR1xZG6GIu1fbganpFckV5wEQ1O8dzK63AANEkMMI4RMM7uDk+nTrIOKZ1NqFmh3KZfP8Y1RMN+OBGRCWxVBT5tQiUZBr9b1DT7Xp4X3HF6zgvFxzGJLCeT8DgoyUufZlV47LrsYs17a+84QKHNgRw3YdNOcKI6yMLWnugfUkbl54NWuTDPycYDrxx03rExdQSRDUNDin1eRJ85dCunG0w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1771560648; c=relaxed/relaxed;
-	bh=WcdEQQ+pTRMlxD1mEEDZhY+c0IYRhEa/p0rsMNwHNKg=;
+	t=1771560649; c=relaxed/relaxed;
+	bh=85X6LrlIRj2s7TciepaBOqaUuq8laeZOb3hjpVqdg8g=;
 	h=Content-Type:MIME-Version:Subject:From:Message-Id:Date:References:
-	 In-Reply-To:To:Cc; b=JLow5PGCxdeziqpCWjaIna2UmpVQWJlC65bQsSBBzTNrh1DNFG8RQwfxR4cz1lEDd2+O3/H5BC+sqEvtQt3oVW/x0A4lBwdgicBgsQgvbInL27xOy2+zkjc+KNL5TYG4FY+ybrdtUlwX8pfzM3gQy4vuUT4mnStYZnoHimdNJINfV5hEHfaNIyxfZH6ggsQPHDPblyFc6alPYJNAJHnf9SqWNY/696Ps50s1oe1oyLSTSaY9KfkG8x0QXK4g9lgTkGhdJaOItibOyDw6Pw2wGeSPO4rRw3D3CeThvi96X6aAIkXDUAGh1aZACCm6tIVrU+XjOULut9RL8uCYceywSA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kr71DRur; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=hef5o6Vh2ZMaNIbNUmRp4OEfnVLFhH/pQo/FE5FXhi7FeTTiPKrKPoqYIlv2LWD+X/mQOUpwwrojolvkyI2oMY7SbXZkzL1mjSQl7usxnJQdMXKR6oOcnE06O1MXfj8O1SR8x82+J5VV/+m4A2WyFMRB4ZXdc2/PkGDoWghQa+6cGoZ4iGWuLA47ax/JPqE46Z4Xq2MksBPcNsK7pCWzGw1PlLr1XtV4iWPUsZ7Nekxu4Bdy/0ictB416N9e83Y/UgDa++faG4f+5FO4PrGyPn3qTXuZ2o4AYDbr7t3kLzpnm1PbnklzN1Px0gzyhiYqlDUZyJWvFM8yVyLoBEjCYQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UDXlT4Na; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kr71DRur;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UDXlT4Na;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fHGxz5hx3z3cBW
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Feb 2026 15:10:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fHGy1259kz3cD7
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Feb 2026 15:10:49 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id D31A36185F;
-	Fri, 20 Feb 2026 04:10:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 983BCC2BC86;
-	Fri, 20 Feb 2026 04:10:45 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 570116187C;
+	Fri, 20 Feb 2026 04:10:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1B4F7C116D0;
+	Fri, 20 Feb 2026 04:10:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1771560645;
-	bh=Db/wdfVcXsniMHB7ine8YIWTDXSl11tG9gQ8k5IjjLI=;
+	s=k20201202; t=1771560647;
+	bh=DjnngyKQ6dmi0gCTo1xCIRCHL1ludrKw3TKGvuwo0Ug=;
 	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
-	b=kr71DRurREHYrZUr3Iu8kBF3sP8Kd84HBgPzOFQul6k/zdt4cn+xGkSwn0Z2bqTfV
-	 tf5GWnU3xbuMF1mRY2zfCfhwSJ3szrnd4MwQID7TlG/ObeeVfWOZaUAUN9KDzPtFXq
-	 uy1Y74jNH9hfglIFadwb8ipRoBqsN6Uzgj+8SQxzFAonkiWY1FDYL7wgISg0RrCqCf
-	 Ea0jKMmyz8PSk9M1AEvK0cx4T9JGn1EjDLxRkWlV1jl+wC4Rkuzikre+XGx59kvCUa
-	 0nl4J1xMm2mAntv2sFs93qKoael3Itii9ExFq0zMW3WuUeG439WsT4vH4KO58AiK6B
-	 bv8XfesBgFH7g==
+	b=UDXlT4NaQgzahQOt/dvMDQ39sYRD52/c4qNbvdVS19EyX+doX2VR1jGpM6fKTK5hg
+	 rCFmqTKrXa0b5vcg1CKJuJbKtS2lu3bnOvOY1ZcjS8kyszRsQ2ihER7WY0j0/TjBVf
+	 ESR58G8Wv5UXiZfVQgBBL/VOfCL/cCWmW3eJdCd7YiiZjvIc5PshOYVmUb7FMpdqCZ
+	 VR22LNGw4/8tgtnLSks4YTRJWofn1TLmsJ8G9rz+7byiQ7KQhujWiVq++1aXqr5MNK
+	 QsNQ2UwnhyOvc9Xw93nbkQEhuN5Pu9Vx+F7bxbEBDe/gC+mfrfvQgRuyWi/5t61Vpf
+	 lawUTNXKdiYlA==
 Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 3FD8A3809A88;
-	Fri, 20 Feb 2026 04:10:55 +0000 (UTC)
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id BA1363809A88;
+	Fri, 20 Feb 2026 04:10:56 +0000 (UTC)
 Content-Type: text/plain; charset="utf-8"
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -62,13 +62,13 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH v2 00/21] paravirt: cleanup and reorg
+Subject: Re: [PATCH v3 00/21] paravirt: cleanup and reorg
 From: patchwork-bot+linux-riscv@kernel.org
 Message-Id: 
- <177156065379.189817.4828097381020781784.git-patchwork-notify@kernel.org>
-Date: Fri, 20 Feb 2026 04:10:53 +0000
-References: <20250917145220.31064-1-jgross@suse.com>
-In-Reply-To: <20250917145220.31064-1-jgross@suse.com>
+ <177156065529.189817.17016822219300820690.git-patchwork-notify@kernel.org>
+Date: Fri, 20 Feb 2026 04:10:55 +0000
+References: <20251006074606.1266-1-jgross@suse.com>
+In-Reply-To: <20251006074606.1266-1-jgross@suse.com>
 To: =?utf-8?b?SsO8cmdlbiBHcm/DnyA8amdyb3NzQHN1c2UuY29tPg==?=@aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org
 Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
  x86@kernel.org, linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev,
@@ -83,7 +83,7 @@ Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
  alexey.makhalov@broadcom.com, bcm-kernel-feedback-list@broadcom.com,
  linux@armlinux.org.uk, catalin.marinas@arm.com, chenhuacai@kernel.org,
  kernel@xen0n.name, maddy@linux.ibm.com, mpe@ellerman.id.au,
- npiggin@gmail.com, christophe.leroy@csgroup.eu, paul.walmsley@sifive.com,
+ npiggin@gmail.com, christophe.leroy@csgroup.eu, pjw@kernel.org,
  palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr,
  juri.lelli@redhat.com, vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
  rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
@@ -96,7 +96,7 @@ Hello:
 This series was applied to riscv/linux.git (fixes)
 by Borislav Petkov (AMD) <bp@alien8.de>:
 
-On Wed, 17 Sep 2025 16:51:59 +0200 you wrote:
+On Mon,  6 Oct 2025 09:45:45 +0200 you wrote:
 > Some cleanups and reorg of paravirt code and headers:
 > 
 > - The first 2 patches should be not controversial at all, as they
@@ -111,11 +111,11 @@ On Wed, 17 Sep 2025 16:51:59 +0200 you wrote:
 > [...]
 
 Here is the summary with links:
-  - [v2,05/21] paravirt: Remove asm/paravirt_api_clock.h
+  - [v3,05/21] paravirt: Remove asm/paravirt_api_clock.h
     https://git.kernel.org/riscv/c/68b10fd40d49
-  - [v2,06/21] sched: Move clock related paravirt code to kernel/sched
+  - [v3,06/21] sched: Move clock related paravirt code to kernel/sched
     (no matching commit)
-  - [v2,10/21] riscv/paravirt: Use common code for paravirt_steal_clock()
+  - [v3,10/21] riscv/paravirt: Use common code for paravirt_steal_clock()
     https://git.kernel.org/riscv/c/ee9ffcf99f07
 
 You are awesome, thank you!
