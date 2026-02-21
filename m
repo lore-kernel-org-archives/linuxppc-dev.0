@@ -1,86 +1,37 @@
-Return-Path: <linuxppc-dev+bounces-16999-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17000-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F13AC624A3
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Feb 2026 21:38:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79BA8C624A1
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Feb 2026 21:40:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fJL8m3zcmz2xN8;
-	Sun, 22 Feb 2026 08:38:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771709928;
-	cv=none; b=KmKWCkyYsmDkR38ELN/WaQx26oZsbNm8DGRJ0RPwGluf+SXFjfS+16EuywrDjm1HGoBGpf9q3qnSPNdTzUIUH7A698GiCbCQMU0RkvKQ63w+CDetigX41WlHzufyfq6yAA1dHSPtSQYlQbshw2mKMYOfaDd6Uro9RRW8E6SlOTYIbADD4JGDe7h93MgEdnTiZrAzxPMpI21fvYoYwkGT/9PXBhFd5pCsDey+MGSzDjoWfULEEtVUYZ6lBf+6gQy5DtQIBVtfg4rHzi+Qai4aRiEot3TFeSJFWiosquu5qLeIcdXMmWnKqXbvLkhM+MyScTSd9o1LnS1Lv5G4wp77zQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fJLC95V4Yz2xN8;
+	Sun, 22 Feb 2026 08:40:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.81
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771692285;
+	cv=none; b=UQKzgufBaXB/N0IJnG6ZshDThjLDTF6PZEHoFbI2nDCDZ+tOQcBcTJGHCDKX3SOpYq69IyQr4P93q3qNjEsP/nOWOkPUTfFGT75npXniM0B3+7RvBUKvFUNclL+wbUNT2qhpg/NH6wuknjBG3nVBM5vdXdq1eXbaqi0bGDosCH+rQxFsoVrMc+luZT8N0RyL20nScIRuOamrOaGM7ZLAvevbbe5dh20bP3ucRM1jcahI0I80C4L1+mf+u4cKGl+qrnlHj5LuEYNPvgioSl5Fq3nueRV6uSS67h++Lp71ko+pJYgy+iZQv/yxK0YgdXxACVEzcQe9DNKbRzZNKwvT9Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1771709928; c=relaxed/relaxed;
-	bh=6cNXAdyyBSwZ6HHNLhtCMamgS2JtSisLhXs31ZqqLAE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=iLIcxAbUcSzahZkPh0W3bFBt0gIqJfL2t4Dz8HXNPoh93GQFANwX1Td8DC3d7xOkVZi0BwK3ddAGqJm80YtGNtUtOsxvVHJBarPB/7RcPFutnwerY2LsExIQWFiX/Wq28d940oVr4fxtUn/a6eXvQMQE1FHkrGhxWgLDxxztignoRYTlWlCA4e7Urn4BVQjU5jeQLxvSJW3+xRu9Y5wR+qKMcDmfSBWGm3n2oVicKJ+Yc9tz2i4bqTyv5u7R9z9TKROBrGRYlFpvxwr19RS+85s+NUrWrGnXiL+vd7rAO2eo5HHpCtYFB4HUNbz8Dsu6AQ0xnupiMnrIttocEVDwdA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RpvIeLgC; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=nsc@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RpvIeLgC;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=nsc@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	t=1771692285; c=relaxed/relaxed;
+	bh=eE2b6J8MoKoJciV+vNZFu4wv1hIVgksS6b0uGzsvRYo=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=ga/vBoaJTtt7XYaz48549m6c4p5n22jhHh21ZEtNuH8bXle/5nRwVbJ+tL1qFnx4TNGzL9ApDdiYbdTN2FV6/uS2yxs6NG9G5YoBKKeCXPCZ4elCb+UFpH37o7fE0oyN1qIbmhGLwAEK+w3jcXLlgYNYUdtmUuplZzAUA5wedxcT7zk9SztrCQxp7tNlWz/0Dy7li+1Z8S+oK24DCJRFgnUuRxhyoSxN6tMAlJJZmAoBISUTOB4RNCHsTBCxE0WmSEN8AIbKXlhJXSEy5pEglTC+UTSSJswElRfWlVyn8o0Y6m4MLcp/RW1pf2b6rwQllO2v6r0kbansMsTQ+I13Jg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass (client-ip=159.226.251.81; helo=cstnet.cn; envelope-from=gaohan@iscas.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=iscas.ac.cn
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iscas.ac.cn (client-ip=159.226.251.81; helo=cstnet.cn; envelope-from=gaohan@iscas.ac.cn; receiver=lists.ozlabs.org)
+X-Greylist: delayed 474 seconds by postgrey-1.37 at boromir; Sun, 22 Feb 2026 03:44:43 AEDT
+Received: from cstnet.cn (smtp81.cstnet.cn [159.226.251.81])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fJL8k4s54z2xN2
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Feb 2026 08:38:46 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 2212844317;
-	Sat, 21 Feb 2026 21:38:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4F1BAC4CEF7;
-	Sat, 21 Feb 2026 21:38:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1771709923;
-	bh=6f/BlOCaBHYHn12tHM4Bu5uqu60c5HeyFZykyfi11cE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=RpvIeLgCkECuxu/6gXgTQN2VJvSNRxp9H8NYfUdN96cKwgGi5TbrmXVpqRCoCmv0U
-	 8OmVb/vAvTcOeCQNkRiA6vTqRcn92yFQi7lxqql889K9VGxhBd2S3Lrj2uruF0W3N1
-	 q3LW64Hu0Jzi9dPzsRlC27O5F+KqMpmiiRlL3h9J6chn3swUA+7qCqSMMa9Du9alRE
-	 n1uxljy0MYxcWwo+BPYiNoKWc70PEpCrYmTd15UI34v+JYgQMoWBOrCxOrEnrqaV3n
-	 FPWWMoa5bu7H3KoDUUcK3RIt06OjrYY/5chzuNfvAD15oxT3h127uPEAVN2/0On/Hr
-	 JnQUEuIrWpOoA==
-Date: Sat, 21 Feb 2026 22:38:29 +0100
-From: Nicolas Schier <nsc@kernel.org>
-To: Thomas =?iso-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>
-Cc: Nathan Chancellor <nathan@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-	Luis Chamberlain <mcgrof@kernel.org>,
-	Petr Pavlu <petr.pavlu@suse.com>,
-	Sami Tolvanen <samitolvanen@google.com>,
-	Daniel Gomez <da.gomez@samsung.com>,
-	Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
-	"Serge E. Hallyn" <serge@hallyn.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Naveen N Rao <naveen@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>,
-	Roberto Sassu <roberto.sassu@huawei.com>,
-	Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
-	Eric Snowberg <eric.snowberg@oracle.com>,
-	Daniel Gomez <da.gomez@kernel.org>,
-	Aaron Tomlin <atomlin@atomlin.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Nicolas Bouchinet <nicolas.bouchinet@oss.cyber.gouv.fr>,
-	Xiu Jianfeng <xiujianfeng@huawei.com>,
-	Fabian =?iso-8859-1?Q?Gr=FCnbichler?= <f.gruenbichler@proxmox.com>,
-	Arnout Engelen <arnout@bzzt.net>,
-	Mattia Rizzolo <mattia@mapreri.org>, kpcyrd <kpcyrd@archlinux.org>,
-	Christian Heusel <christian@heusel.eu>,
-	=?iso-8859-1?Q?C=E2ju?= Mihai-Drosi <mcaju95@gmail.com>,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-arch@vger.kernel.org, linux-modules@vger.kernel.org,
-	linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
-Subject: Re: [PATCH v4 15/17] module: Introduce hash-based integrity checking
-Message-ID: <aZol1Rsa2tX-WNaZ@derry.ads.avm.de>
-References: <20260113-module-hashes-v4-0-0b932db9b56b@weissschuh.net>
- <20260113-module-hashes-v4-15-0b932db9b56b@weissschuh.net>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fJCdR4CBtz2xm5
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Feb 2026 03:44:43 +1100 (AEDT)
+Received: from smtpclient.apple (unknown [58.38.117.196])
+	by APP-03 (Coremail) with SMTP id rQCowABnTOMQ35lplLf9CA--.17993S2;
+	Sun, 22 Feb 2026 00:36:33 +0800 (CST)
+Content-Type: text/plain;
+	charset=us-ascii
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,284 +44,104 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260113-module-hashes-v4-15-0b932db9b56b@weissschuh.net>
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.400.21\))
+Subject: Re: [PATCHv2 2/2] sparc/pci: Initialize msi_addr_mask for OF-created
+ PCI devices
+From: Han Gao <gaohan@iscas.ac.cn>
+In-Reply-To: <20260220070239.1693303-3-nilay@linux.ibm.com>
+Date: Sun, 22 Feb 2026 00:36:22 +0800
+Cc: Han Gao <gaohan@iscas.ac.cn>,
+ linuxppc-dev@lists.ozlabs.org,
+ linux-pci@vger.kernel.org,
+ sparclinux@vger.kernel.org,
+ wangruikang@iscas.ac.cn,
+ tglx@kernel.org,
+ maddy@linux.ibm.com,
+ mpe@ellerman.id.au,
+ npiggin@gmail.com,
+ chleroy@kernel.org,
+ gjoyce@ibm.com,
+ helgaas@kernel.org,
+ davem@davemloft.net,
+ andreas@gaisler.com,
+ "Han Gao (Revy)" <rabenda.cn@gmail.com>
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <47EB6E53-3E20-4E95-A329-928E5BDDFB81@iscas.ac.cn>
+References: <20260220070239.1693303-1-nilay@linux.ibm.com>
+ <20260220070239.1693303-3-nilay@linux.ibm.com>
+To: Nilay Shroff <nilay@linux.ibm.com>
+X-Mailer: Apple Mail (2.3864.400.21)
+X-CM-TRANSID:rQCowABnTOMQ35lplLf9CA--.17993S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7Cr1fXr18CFWkJr1UWFWDtwb_yoW8CF4Upr
+	Z7CFn3trWUt347Ga9xAr1UZFyjgan8u3s3Wr98K34IqryI9r10vrnrWrWjkw4jqrsYka1F
+	va9YvrWjqw1DWaDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUU9C14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26r4j6ryUM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
+	6F4UM28EF7xvwVC2z280aVAFwI0_Gr0_Cr1l84ACjcxK6I8E87Iv6xkF7I0E14v26r4j6r
+	4UJwAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0
+	I7IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFVCjc4AY6r1j6r
+	4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IErcIFxwACI402YVCY1x02628v
+	n2kIc2xKxwCY1x0262kKe7AKxVWUtVW8ZwCY02Avz4vE14v_JwCF04k20xvY0x0EwIxGrw
+	CFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE
+	14v26r106r1rMI8E67AF67kF1VAFwI0_GFv_WrylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2
+	IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAIcVCF04k26cxK
+	x2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI
+	0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x0JUeq2_UUUUU=
+X-Originating-IP: [58.38.117.196]
+X-CM-SenderInfo: xjdrxt3q6l2u1dvotugofq/1tbiBgwFDGmZySEWPgAAsz
 
-Hi Thomas,
+Tested and passed on SPARC Enterprise T5220.=20
 
-On Tue, Jan 13, 2026 at 01:28:59PM +0100, Thomas Weiﬂschuh wrote:
-> The current signature-based module integrity checking has some drawbacks
-> in combination with reproducible builds. Either the module signing key
-> is generated at build time, which makes the build unreproducible, or a
-> static signing key is used, which precludes rebuilds by third parties
-> and makes the whole build and packaging process much more complicated.
-> 
-> The goal is to reach bit-for-bit reproducibility. Excluding certain
-> parts of the build output from the reproducibility analysis would be
-> error-prone and force each downstream consumer to introduce new tooling.
-> 
-> Introduce a new mechanism to ensure only well-known modules are loaded
-> by embedding a merkle tree root of all modules built as part of the full
-> kernel build into vmlinux.
-> 
-> Non-builtin modules can be validated as before through signatures.
-> 
-> Normally the .ko module files depend on a fully built vmlinux to be
-> available for modpost validation and BTF generation. With
-> CONFIG_MODULE_HASHES, vmlinux now depends on the modules
-> to build a merkle tree. This introduces a dependency cycle which is
-> impossible to satisfy. Work around this by building the modules during
-> link-vmlinux.sh, after vmlinux is complete enough for modpost and BTF
-> but before the final module hashes are
-> 
-> The PKCS7 format which is used for regular module signatures can not
-> represent Merkle proofs, so a new kind of module signature is
-> introduced. As this signature type is only ever used for builtin
-> modules, no compatibility issues can arise.
-> 
-> Signed-off-by: Thomas Weiﬂschuh <linux@weissschuh.net>
+Without this patch, the e1000e would use intx.
+
+Tested-by: Han Gao <gaohan@iscas.ac.cn <mailto:gaohan@iscas.ac.cn>> # on =
+SPARC Enterprise T5220
+
+> On Feb 20, 2026, at 15:02, Nilay Shroff <nilay@linux.ibm.com> wrote:
+>=20
+> Recent changes replaced the use of no_64bit_msi with msi_addr_mask,
+> which is now expected to be initialized to DMA_BIT_MASK(64) during PCI
+> device setup. On SPARC systems, this initialization was inadvertently
+> missed for devices instantiated from device tree nodes, leaving
+> msi_addr_mask unset for OF-created pci_dev instances. As a result,
+> MSI address validation fails during probe, causing affected devices
+> to fail initialization.
+>=20
+> Initialize pdev->msi_addr_mask to DMA_BIT_MASK(64) in
+> of_create_pci_dev() so that MSI address validation succeeds and PCI
+> device probing works as expected.
+>=20
+> Fixes: 386ced19e9a3 ("PCI/MSI: Convert the boolean no_64bit_msi flag =
+to a DMA address mask")
+> Signed-off-by: Nilay Shroff <nilay@linux.ibm.com>
 > ---
->  .gitignore                                   |   1 +
->  Documentation/kbuild/reproducible-builds.rst |   5 +-
->  Makefile                                     |   8 +-
->  include/asm-generic/vmlinux.lds.h            |  11 +
->  include/linux/module_hashes.h                |  25 ++
->  include/linux/module_signature.h             |   1 +
->  kernel/module/Kconfig                        |  21 +-
->  kernel/module/Makefile                       |   1 +
->  kernel/module/hashes.c                       |  92 ++++++
->  kernel/module/hashes_root.c                  |   6 +
->  kernel/module/internal.h                     |   1 +
->  kernel/module/main.c                         |   4 +-
->  scripts/.gitignore                           |   1 +
->  scripts/Makefile                             |   3 +
->  scripts/Makefile.modfinal                    |  11 +
->  scripts/Makefile.modinst                     |  13 +
->  scripts/Makefile.vmlinux                     |   5 +
->  scripts/link-vmlinux.sh                      |  14 +-
->  scripts/modules-merkle-tree.c                | 467 +++++++++++++++++++++++++++
->  security/lockdown/Kconfig                    |   2 +-
->  20 files changed, 685 insertions(+), 7 deletions(-)
-> 
-[...]
-
-> diff --git a/kernel/module/hashes_root.c b/kernel/module/hashes_root.c
-> new file mode 100644
-> index 000000000000..1abfcd3aa679
-> --- /dev/null
-> +++ b/kernel/module/hashes_root.c
-> @@ -0,0 +1,6 @@
-> +// SPDX-License-Identifier: GPL-2.0-or-later
-> +
-> +#include <linux/module_hashes.h>
-> +
-> +/* Blank dummy data. Will be overridden by link-vmlinux.sh */
-> +const struct module_hashes_root module_hashes_root __module_hashes_section = {};
-> diff --git a/kernel/module/internal.h b/kernel/module/internal.h
-> index e2d49122c2a1..e22837d3ac76 100644
-> --- a/kernel/module/internal.h
-> +++ b/kernel/module/internal.h
-> @@ -338,6 +338,7 @@ void module_mark_ro_after_init(const Elf_Ehdr *hdr, Elf_Shdr *sechdrs,
->  			       const char *secstrings);
->  
->  int module_sig_check(struct load_info *info, const u8 *sig, size_t sig_len);
-> +int module_hash_check(struct load_info *info, const u8 *sig, size_t sig_len);
->  
->  #ifdef CONFIG_DEBUG_KMEMLEAK
->  void kmemleak_load_module(const struct module *mod, const struct load_info *info);
-> diff --git a/kernel/module/main.c b/kernel/module/main.c
-> index 2a28a0ece809..fa30b6387936 100644
-> --- a/kernel/module/main.c
-> +++ b/kernel/module/main.c
-> @@ -3362,8 +3362,10 @@ static int module_integrity_check(struct load_info *info, int flags)
->  
->  	if (IS_ENABLED(CONFIG_MODULE_SIG) && sig_type == PKEY_ID_PKCS7) {
->  		err = module_sig_check(info, sig, sig_len);
-> +	} else if (IS_ENABLED(CONFIG_MODULE_HASHES) && sig_type == PKEY_ID_MERKLE) {
-> +		err = module_hash_check(info, sig, sig_len);
->  	} else {
-> -		pr_err("module: not signed with expected PKCS#7 message\n");
-> +		pr_err("module: not signed with signature mechanism\n");
->  		err = -ENOPKG;
-
-To prevent others from running into the same issue:
-
-My first test got stuck here, as I tested with virtme-ng, which symlinks
-modules from build tree to /lib/modules/$(uname -r)/..., resulting in
-
-    [   15.956855] module: not signed with signature mechanism
-    modprobe: ERROR: could not insert 'efivarfs': Package not installed
-
-As the modules_install step was missing, modules were not being signed.
-
-
-[...]
-> diff --git a/scripts/modules-merkle-tree.c b/scripts/modules-merkle-tree.c
-> new file mode 100644
-> index 000000000000..a6ec0e21213b
-> --- /dev/null
-> +++ b/scripts/modules-merkle-tree.c
-> @@ -0,0 +1,467 @@
-> +// SPDX-License-Identifier: GPL-2.0-or-later
-> +/*
-> + * Compute hashes for modules files and build a merkle tree.
-> + *
-> + * Copyright (C) 2025 Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-> + * Copyright (C) 2025 Thomas Weiﬂschuh <linux@weissschuh.net>
-> + *
+> arch/sparc/kernel/pci.c | 7 +++++++
+> 1 file changed, 7 insertions(+)
+>=20
+> diff --git a/arch/sparc/kernel/pci.c b/arch/sparc/kernel/pci.c
+> index b290107170e9..a4815d544781 100644
+> --- a/arch/sparc/kernel/pci.c
+> +++ b/arch/sparc/kernel/pci.c
+> @@ -355,6 +355,13 @@ static struct pci_dev *of_create_pci_dev(struct =
+pci_pbm_info *pbm,
+> dev->error_state =3D pci_channel_io_normal;
+> dev->dma_mask =3D 0xffffffff;
+>=20
+> + /*
+> + * Assume 64-bit addresses for MSI initially. Will be changed to =
+32-bit
+> + * if MSI (rather than MSI-X) capability does not have
+> + * PCI_MSI_FLAGS_64BIT. Can also be overridden by driver.
 > + */
-> +#define _GNU_SOURCE 1
-> +#include <arpa/inet.h>
-> +#include <err.h>
-> +#include <unistd.h>
-> +#include <fcntl.h>
-> +#include <stdarg.h>
-> +#include <stdio.h>
-> +#include <string.h>
-> +#include <stdbool.h>
-> +#include <stdlib.h>
+> + dev->msi_addr_mask =3D DMA_BIT_MASK(64);
 > +
-> +#include <sys/stat.h>
-> +#include <sys/mman.h>
-> +
-> +#include <openssl/evp.h>
-> +#include <openssl/err.h>
-> +
-> +#include "ssl-common.h"
-> +
-> +static int hash_size;
-> +static EVP_MD_CTX *ctx;
-> +
-> +struct module_signature {
-> +	uint8_t		algo;		/* Public-key crypto algorithm [0] */
-> +	uint8_t		hash;		/* Digest algorithm [0] */
-> +	uint8_t		id_type;	/* Key identifier type [PKEY_ID_PKCS7] */
-> +	uint8_t		signer_len;	/* Length of signer's name [0] */
-> +	uint8_t		key_id_len;	/* Length of key identifier [0] */
-> +	uint8_t		__pad[3];
-> +	uint32_t	sig_len;	/* Length of signature data */
-> +};
-> +
-> +#define PKEY_ID_MERKLE 3
-> +
-> +static const char magic_number[] = "~Module signature appended~\n";
+> if (of_node_name_eq(node, "pci")) {
+> /* a PCI-PCI bridge */
+> dev->hdr_type =3D PCI_HEADER_TYPE_BRIDGE;
+> --=20
+> 2.52.0
+>=20
+>=20
 
-This here will be the forth definition of struct module_signature,
-increasing the risk of unwanted diversion.  I second Petr's suggestion
-to reuse a _common_ definition instead.
-
-(Here, even include/linux/module_signature.h could be included itself.)
-
-> +
-> +struct file_entry {
-> +	char *name;
-> +	unsigned int pos;
-> +	unsigned char hash[EVP_MAX_MD_SIZE];
-> +};
-> +
-> +static struct file_entry *fh_list;
-> +static size_t num_files;
-> +
-> +struct leaf_hash {
-> +	unsigned char hash[EVP_MAX_MD_SIZE];
-> +};
-> +
-> +struct mtree {
-> +	struct leaf_hash **l;
-> +	unsigned int *entries;
-> +	unsigned int levels;
-> +};
-> +
-> +static inline void *xcalloc(size_t n, size_t size)
-> +{
-> +	void *p;
-> +
-> +	p = calloc(n, size);
-> +	if (!p)
-> +		errx(1, "Memory allocation failed");
-> +
-> +	return p;
-> +}
-> +
-> +static void *xmalloc(size_t size)
-> +{
-> +	void *p;
-> +
-> +	p = malloc(size);
-> +	if (!p)
-> +		errx(1, "Memory allocation failed");
-> +
-> +	return p;
-> +}
-> +
-> +static inline void *xreallocarray(void *oldp, size_t n, size_t size)
-> +{
-> +	void *p;
-> +
-> +	p = reallocarray(oldp, n, size);
-> +	if (!p)
-> +		errx(1, "Memory allocation failed");
-> +
-> +	return p;
-> +}
-> +
-> +static inline char *xasprintf(const char *fmt, ...)
-> +{
-> +	va_list ap;
-> +	char *strp;
-> +	int ret;
-> +
-> +	va_start(ap, fmt);
-> +	ret = vasprintf(&strp, fmt, ap);
-> +	va_end(ap);
-> +	if (ret == -1)
-> +		err(1, "Memory allocation failed");
-> +
-> +	return strp;
-> +}
-
-Please consider moving these x* functions into scripts/include/xalloc.h
-for reuse.  (I am sure someone else wrote this already, but I can't find
-it...)
-
-> 
-> 
-
-thanks for all your efforts for reproducibility!
-
-As I have no clue about that:  Is the patent for merkle trees [1] a
-problem when integrating that here?
-
-Can you verify if I get the mechanics roughly correct?
-
-  * Modules are merkle tree leaves.  Modules are built and logically
-    paired by the order from modules.order; a single left-over module is
-    paired with itself.
-
-  * Hashes of paired modules are hashed again (branch node hash);
-    hashes of pairs of branch nodes' hashes are hashed again;
-    repeat until we reach the single merkle tree root hash
-
-  * The final merkle tree root hash (and the count of tree levels) is
-    included in vmlinux
-
-
-'make && find . -name '*.ko' -exec rm {} \; && make' does not rebuild
-the in-tree modules.  Shifting the module-hashes support from
-scripts/link-vmlinux.sh to scripts/Makefile.vmlinux might (make it
-easier) to fix this again.
-
-Kind regards,
-Nicolas
-
-
-
-[1]: https://worldwide.espacenet.com/patent/search/family/022107098/publication/US4309569A?q=pn%3DUS4309569
-
-
--- 
-Nicolas
 
