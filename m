@@ -1,89 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-17003-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17004-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86247C624A5
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Feb 2026 06:30:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C8CEC624D0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Feb 2026 06:33:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fJYyg4Gh5z3bkq;
-	Sun, 22 Feb 2026 17:30:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1029"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771738890;
-	cv=none; b=e/3iqcKjVRIAWHq7nsfHkMLqYRgbJ4G0OqS8MIhh1Y1MbZj7XEEyfRqPCCiq9rV7NFy++nOI8ROgYlCqfRfyoeOhQpzRP+TVvqyAs76iDgVjZGTEsfExOeeacPSGTiyJtktz+kymB3IPGO9ioxBiXzBnJ60+UxI7yU9xwRlivnDOT4/As3nQNzasuoSo79MJQp4lB/x14TbMwJHJ7Yw7cMyof0ocjyjU2G2Q5cpIjmgQo75hiNZ1RbpAm1JFpTnwNd7xfhIgl/X3NuSlO1uqTyZnC3ZP9b1/S12IOcwEoBok1i7wmzHJSPomT8+iUDmV2Htg81jtO3BAKqd+W/0lsg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fJZ1Y4txZz3bkq;
+	Sun, 22 Feb 2026 17:33:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:19f0:5800:8dea:5400:ff:fe25:676e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771740657;
+	cv=none; b=oscXE6cDOV7I0Yg+lZWnlDie9VC0GXc0cqJFfThgKQRAcbE66Iyi6CHRowWQlPnUazEu+r8V3iv1tCnsWHFe/WTIAIPONoOUShkqoMpebmPsuzb/cZWm3uHUM+5o8MZwyF04dYGofQFRYowB/uIvfYSQ0PeHttHm2B4j8AC6CqguJpSpu6Q42DFf5RqPJh6NEu0XZw4e9Q8+5NVZQOpV0tvE2SEzmyyaYRIE2ALoW9XEGjn+XSfhZDQcHhVtrWtzgHxb2d84kaezeeL674PvbRisFkQd+o4neiwq+YAfA+iQztb0YymqtboGmLVhaGc3Jr6IP97ougDONJbJD53PJQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1771738890; c=relaxed/relaxed;
-	bh=p3Z/yBJ2hZx3EcKfd+7Xe19sF+zpgD7i7OaZHR1+Q6w=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Tou3K+1kX9QVcrXgbn2mQOOfKiSG8w6fLjLKwMbfl6kCzW/aHXb4zLhjRn3zTTDPSDA7bU3afov2BVthLEuKI3Rez1RD0kUJZ7REJiOq3Wj4RoYTZwR5LrM0Wx76UO4BWPaRceH84t7R3P61TSyXi0PMQ0dyud1AeSJldSbMs44rTdWjWOVTN9QOiBoxtgqGbT6327atKzC29GKIT++msUDgEQ+D403Zqutv+fMWHxTEnowUTRoLnTKWAv/H6LaLl4uztEnmu9B8P9nRlWPWb0U+7HJkH0X3vp3gZyynwmDbsniHiUgo6sVlEjiGXPy3HqpuFh3JsSt+WSyWYVz9Cw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=mqzKG9Jb; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1029; helo=mail-pj1-x1029.google.com; envelope-from=abhindeka@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1771740657; c=relaxed/relaxed;
+	bh=RRdlnthyiAYvYf+PF3zh72k237xjd6HvWMI+59FQbm8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=BpNjeFLxQYj6tcUIifElqBOsrKtP2HFbOMsHXW0tRANPeOthNkMkiP1ExRwBw5aa2vU4nAEhDihoOE47BB30lFBVOUCkFH9MnuLKAHrzbuVswCH9Rr6L+3trwurOvx8VNa2h6PEe+EIrgG1AkUNi4llTMyQA0g5vC4cPlgtU6pmwP/ChpP1UbaO+TGP/ixm1PPbqr7za+r57pG87eTwfwHXXa9qwjPuf/JcyoGrx2qL54LtD7UrbYPcQBAcTSSw0XGlx84/M1KMuDu09HgroaDU2ZiWFLPtvJXLiAqXiAM5ZtdnTVlM47V+8jiSLX+w9vbs+wEbQre19mxdRE7e8/A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=nroach44.id.au; dkim=pass (2048-bit key; unprotected) header.d=nroach44.id.au header.i=@nroach44.id.au header.a=rsa-sha256 header.s=dYX2HNEqNNRL header.b=gFTB++kU; dkim=pass (2048-bit key) header.d=nroach44.id.au header.i=@nroach44.id.au header.a=rsa-sha256 header.s=dYX2HNEqNNRL header.b=gFTB++kU; dkim=pass (2048-bit key) header.d=nroach44.id.au header.i=@nroach44.id.au header.a=rsa-sha256 header.s=dYX2HNEqNNRL header.b=f7CdgK4d; dkim-atps=neutral; spf=pass (client-ip=2001:19f0:5800:8dea:5400:ff:fe25:676e; helo=arcturus.nroach44.id.au; envelope-from=nroach44@nroach44.id.au; receiver=lists.ozlabs.org) smtp.mailfrom=nroach44.id.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=nroach44.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=mqzKG9Jb;
+	dkim=pass (2048-bit key; unprotected) header.d=nroach44.id.au header.i=@nroach44.id.au header.a=rsa-sha256 header.s=dYX2HNEqNNRL header.b=gFTB++kU;
+	dkim=pass (2048-bit key) header.d=nroach44.id.au header.i=@nroach44.id.au header.a=rsa-sha256 header.s=dYX2HNEqNNRL header.b=gFTB++kU;
+	dkim=pass (2048-bit key) header.d=nroach44.id.au header.i=@nroach44.id.au header.a=rsa-sha256 header.s=dYX2HNEqNNRL header.b=f7CdgK4d;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1029; helo=mail-pj1-x1029.google.com; envelope-from=abhindeka@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1029.google.com (mail-pj1-x1029.google.com [IPv6:2607:f8b0:4864:20::1029])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nroach44.id.au (client-ip=2001:19f0:5800:8dea:5400:ff:fe25:676e; helo=arcturus.nroach44.id.au; envelope-from=nroach44@nroach44.id.au; receiver=lists.ozlabs.org)
+X-Greylist: delayed 569 seconds by postgrey-1.37 at boromir; Sun, 22 Feb 2026 17:10:56 AEDT
+Received: from arcturus.nroach44.id.au (arcturus.nroach44.id.au [IPv6:2001:19f0:5800:8dea:5400:ff:fe25:676e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fJXsj5lLsz2xm5
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Feb 2026 16:41:28 +1100 (AEDT)
-Received: by mail-pj1-x1029.google.com with SMTP id 98e67ed59e1d1-3567e2b4159so1740610a91.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Feb 2026 21:41:28 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1771738887; x=1772343687; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=p3Z/yBJ2hZx3EcKfd+7Xe19sF+zpgD7i7OaZHR1+Q6w=;
-        b=mqzKG9Jbps6hus6+PPf08xb3zFtdgn5WtqypUoadW0KarXfYZxuVm8QX5bA00LeNqX
-         8Tvuf6a78RUQOwlj/s/U9TZj105Z+Kj1sr8kac6EBXKI5mil0QWLTFTWJbgXpUn8p77o
-         u9FKZpPF+C+avyT5LxZeyfc6Qy6XWsSI+7lcm1Z17PhKnE5F+7ly+BM1XYWfTEsXqpel
-         sbpsc8RgnR+YEBTfwcIPqnOF9a5QmSKUur2T2MoIe2pmHHdvrTqSNx0yQggCIx/UvM1i
-         2Q1acM1ZyyBEvzwb+lKFlHZD6olDDQEkiK0sIbt5xbGuzfUqXKDVvAb3qjVu0hNCR7+c
-         uoWw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1771738887; x=1772343687;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=p3Z/yBJ2hZx3EcKfd+7Xe19sF+zpgD7i7OaZHR1+Q6w=;
-        b=S8G9N/OX+z/R95Q2zo4N0nxkeQ3D0KUOwMfwsJ30UHYwM27DJEDF755WTVy4KfF/O2
-         KraoaVa8hpEWi2SnxrrM2n7hvjKKWdcNxlfAtGgfwJQ6hdWGOBMttxulj//bgtgc3Yk6
-         I+2yewtwiCgMR4iL6aLdkSU5Rw59FCl2Q6rvjq9bEVG3bp6wgzDlb0AKNvkEzM5etKuy
-         zrS38I3U6oxFFPqaciw4mKJrJ76y36mPhhLDOj665LMDLFW+Ay+peNEVF5y0l0+kSRV2
-         KAZWxIFTJgM9APT7nx1nYSVz0PGf9QkrE3Eb7UatndW2w9gEMEcqTD96hXY0KU6lhgod
-         iAdQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXUy1ld0aE2rrltLUifMiDPgR5DCFQhNoyyCrrMnPchJTF6n3GYgXe6AExe6JcwSSF5OnaRdwV2qHUB/mA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yyo+UjEn/t4XUbweGDnI3JROnJkc8dfB6X+2Y4ze0UT0dQxpBNV
-	A1f3RSF0JsZdYPAlge+O1T+RmRDjE9kk77KiS1WoT++M4N+6JQ2CFV7g
-X-Gm-Gg: AZuq6aIEMOqWs2yNSzvYdfVHurLKIrB0iolJpWIEStPMyM7ZCTU7wecBxL7NyVU24SN
-	R/EfNvNWehlAzk1a9qutHvhB2arKNvNbYvxON/2hM4RVUOgLde4jMGCdAmx1gE/XnGve9UYvUQr
-	zazbGzjYIjk/FsG9TUWYYMaD/np8KzPEeH+A+5GI5I1vdXKj5ZGfy8GX/0t+GlNKwnyy2/k6uJ+
-	sY4AetjcbaAR2YYi+aIaY90yP6XPPiJtrvrKLDxMVkcHhwObQLXoQGG2pUUdeqRoNZ2BEC2+evl
-	QjdrvABPhDYQ178/idDEQfn+FbhBuyFxiyFpOFiD1u26o7XbF3EsBIWz/2bniVjqhLCk2EMC4Ag
-	XHSlqlx77BY+UB+ne/V0+tyd786j3TMURkX2xghDLjmCiZqZcZpj2Pc9xKs8pgXX7MRBV+Ja/vA
-	6x1zg+VDJg3hr1jG4RkyABebF9fv5oMVaIendpYg4QIUMvObYf4ibjad0i
-X-Received: by 2002:a17:90b:5646:b0:354:7be4:a241 with SMTP id 98e67ed59e1d1-358ae81e3d4mr3566849a91.15.1771738886764;
-        Sat, 21 Feb 2026 21:41:26 -0800 (PST)
-Received: from Ubuntu-Kernel-2204.local.tld ([49.207.50.26])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3589d81cdbfsm9728510a91.7.2026.02.21.21.41.23
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 21 Feb 2026 21:41:26 -0800 (PST)
-From: Abhilekh Deka <abhindeka@gmail.com>
-To: davem@davemloft.net,
-	kuba@kernel.org,
-	pabeni@redhat.com,
-	nnac123@linux.ibm.com
-Cc: maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	linuxppc-dev@lists.ozlabs.org,
-	netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Abhilekh Deka <abhindeka@gmail.com>
-Subject: [PATCH] net/ibmveth: fix typo in ibmveth_remove_buffer_from_pool()
-Date: Sun, 22 Feb 2026 11:11:17 +0530
-Message-Id: <20260222054117.14943-1-abhindeka@gmail.com>
-X-Mailer: git-send-email 2.34.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fJYWh1yMJz3bjb
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Feb 2026 17:10:56 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=nroach44.id.au;
+	s=dYX2HNEqNNRL; t=1771740082;
+	bh=8U/bP+r/4Svx2WVB+nx4JWF9ZuYunuY2P74myov9U9c=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=gFTB++kUuK0bcLo7rCA7VcLE10Lmin5m59fPyEXyaHSiQgGdZzi7zBbgcozrSDVnr
+	 4iRz9yfEXzuFPNT3jqPgfreFPlmaHH/CdrO9lVI+SxRAzHqjUG1FggWzIcDutzHiKt
+	 0s8e1FsPhxO7utuWXvq3ozrKw60n8aMc65fJFKXF0oJ9B4QYTWPKovieyoOcf4BvPD
+	 EXGTyvWrQ/N3psnc8PliLSkHrzNaYNJVTms3faD/2KwA/NQrqe0+NiWnx7cP0tDs9U
+	 8fEh9Y8dypEx31FpkmQz7gjh812LgjHNXYEP4EANBY/CwKNiphLZe6OAZWnvKuZ7O1
+	 YNfJstgHCEouA==
+Received: from arcturus.nroach44.id.au (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by arcturus.nroach44.id.au (Postfix) with ESMTPS id 5F2892E659
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Feb 2026 14:01:22 +0800 (AWST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=nroach44.id.au;
+	s=dYX2HNEqNNRL; t=1771740082;
+	bh=8U/bP+r/4Svx2WVB+nx4JWF9ZuYunuY2P74myov9U9c=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=gFTB++kUuK0bcLo7rCA7VcLE10Lmin5m59fPyEXyaHSiQgGdZzi7zBbgcozrSDVnr
+	 4iRz9yfEXzuFPNT3jqPgfreFPlmaHH/CdrO9lVI+SxRAzHqjUG1FggWzIcDutzHiKt
+	 0s8e1FsPhxO7utuWXvq3ozrKw60n8aMc65fJFKXF0oJ9B4QYTWPKovieyoOcf4BvPD
+	 EXGTyvWrQ/N3psnc8PliLSkHrzNaYNJVTms3faD/2KwA/NQrqe0+NiWnx7cP0tDs9U
+	 8fEh9Y8dypEx31FpkmQz7gjh812LgjHNXYEP4EANBY/CwKNiphLZe6OAZWnvKuZ7O1
+	 YNfJstgHCEouA==
+Received: by arcturus.nroach44.id.au (Postfix, from userid 5555)
+	id 43C6F30D1E; Sun, 22 Feb 2026 14:01:22 +0800 (AWST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=nroach44.id.au;
+	s=dYX2HNEqNNRL; t=1771740068;
+	bh=8U/bP+r/4Svx2WVB+nx4JWF9ZuYunuY2P74myov9U9c=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=f7CdgK4d4wk8Sj0Cp0KAfzNKCLJMCZEqVglBumfnfjMFcv0jBT/GFwUHPLd5+lMfA
+	 ZCSxOdbcRY3WRaRDAGcDxoOLEziGwC4xyD/OhMCm+OJtf3bnKC0TM+igKtnFWyNclI
+	 Na+1WTJSitA73Cx/cqdR7bTXJLP7k5CY+3XpZMIbzxvNOHhtZ47b0rsuS3m0T6zXBc
+	 Z9zAZZpxkhGEQHl+bAhPnUHf8cZZXfGYPZZYJn1XnkHVbPo9ABKcHQhQiQMWT9f9IF
+	 8Lxyc6WsaoAb7S9RYgNC6OuP/ZzpZ3OEZ5X5cEg0ycIAZAuqfYQl+M23WUkT9Xz282
+	 uD4wR+AG3cpPw==
+Received: from [IPV6:2403:5814:4228:10:3a62:38:7f97:4cc] (unknown [IPv6:2403:5814:4228:10:3a62:38:7f97:4cc])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by arcturus.nroach44.id.au (Postfix) with ESMTPSA id 3719E2E659;
+	Sun, 22 Feb 2026 14:01:07 +0800 (AWST)
+Message-ID: <dd9f072a-9db8-475f-a7a6-3cf5c5ec45bd@nroach44.id.au>
+Date: Sun, 22 Feb 2026 14:01:05 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,30 +91,70 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCHv2 2/2] sparc/pci: Initialize msi_addr_mask for OF-created
+ PCI devices
+To: Han Gao <gaohan@iscas.ac.cn>, Nilay Shroff <nilay@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ sparclinux@vger.kernel.org, wangruikang@iscas.ac.cn, tglx@kernel.org,
+ maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+ chleroy@kernel.org, gjoyce@ibm.com, helgaas@kernel.org, davem@davemloft.net,
+ andreas@gaisler.com, "Han Gao (Revy)" <rabenda.cn@gmail.com>
+References: <20260220070239.1693303-1-nilay@linux.ibm.com>
+ <20260220070239.1693303-3-nilay@linux.ibm.com>
+ <47EB6E53-3E20-4E95-A329-928E5BDDFB81@iscas.ac.cn>
+Content-Language: en-US
+From: Nathaniel Roach <nroach44@nroach44.id.au>
+In-Reply-To: <47EB6E53-3E20-4E95-A329-928E5BDDFB81@iscas.ac.cn>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Correct a typo in ibmveth_remove_buffer_from_pool()
-where gro_receive is misspelled in a comment.
-
-Signed-off-by: Abhilekh Deka <abhindeka@gmail.com>
----
- drivers/net/ethernet/ibm/ibmveth.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-index 3108bf50576f..3272134611c2 100644
---- a/drivers/net/ethernet/ibm/ibmveth.c
-+++ b/drivers/net/ethernet/ibm/ibmveth.c
-@@ -480,7 +480,7 @@ static int ibmveth_remove_buffer_from_pool(struct ibmveth_adapter *adapter,
- 	 */
- 	if (!reuse) {
- 		/* remove the skb pointer to mark free. actual freeing is done
--		 * by upper level networking after gro_recieve
-+		 * by upper level networking after gro_receive
- 		 */
- 		adapter->rx_buff_pool[pool].skbuff[index] = NULL;
- 
--- 
-2.34.1
-
+On 22/2/26 00:36, Han Gao wrote:
+> Tested and passed on SPARC Enterprise T5220.
+>
+> Without this patch, the e1000e would use intx.
+>
+> Tested-by: Han Gao <gaohan@iscas.ac.cn <mailto:gaohan@iscas.ac.cn>> # on SPARC Enterprise T5220
+>
+>> On Feb 20, 2026, at 15:02, Nilay Shroff <nilay@linux.ibm.com> wrote:
+>>
+>> Recent changes replaced the use of no_64bit_msi with msi_addr_mask,
+>> which is now expected to be initialized to DMA_BIT_MASK(64) during PCI
+>> device setup. On SPARC systems, this initialization was inadvertently
+>> missed for devices instantiated from device tree nodes, leaving
+>> msi_addr_mask unset for OF-created pci_dev instances. As a result,
+>> MSI address validation fails during probe, causing affected devices
+>> to fail initialization.
+>>
+>> Initialize pdev->msi_addr_mask to DMA_BIT_MASK(64) in
+>> of_create_pci_dev() so that MSI address validation succeeds and PCI
+>> device probing works as expected.
+>>
+>> Fixes: 386ced19e9a3 ("PCI/MSI: Convert the boolean no_64bit_msi flag to a DMA address mask")
+>> Signed-off-by: Nilay Shroff <nilay@linux.ibm.com>
+>> ---
+>> arch/sparc/kernel/pci.c | 7 +++++++
+>> 1 file changed, 7 insertions(+)
+>>
+>> diff --git a/arch/sparc/kernel/pci.c b/arch/sparc/kernel/pci.c
+>> index b290107170e9..a4815d544781 100644
+>> --- a/arch/sparc/kernel/pci.c
+>> +++ b/arch/sparc/kernel/pci.c
+>> @@ -355,6 +355,13 @@ static struct pci_dev *of_create_pci_dev(struct pci_pbm_info *pbm,
+>> dev->error_state = pci_channel_io_normal;
+>> dev->dma_mask = 0xffffffff;
+>>
+>> + /*
+>> + * Assume 64-bit addresses for MSI initially. Will be changed to 32-bit
+>> + * if MSI (rather than MSI-X) capability does not have
+>> + * PCI_MSI_FLAGS_64BIT. Can also be overridden by driver.
+>> + */
+>> + dev->msi_addr_mask = DMA_BIT_MASK(64);
+>> +
+>> if (of_node_name_eq(node, "pci")) {
+>> /* a PCI-PCI bridge */
+>> dev->hdr_type = PCI_HEADER_TYPE_BRIDGE;
+>> -- 
+>> 2.52.0
+Tested-by: Nathaniel Roach <nroach44@nroach44.id.au> # SPARC T5-2
 
