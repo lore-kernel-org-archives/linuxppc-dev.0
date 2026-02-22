@@ -1,58 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-17002-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17003-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A3FFC61DFF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Feb 2026 06:01:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86247C624A5
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Feb 2026 06:30:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fJYJX3BFGz30Sv;
-	Sun, 22 Feb 2026 17:01:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::133"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771740076;
-	cv=none; b=BUa1Sw2AbZ5ZOCgWBBzyRl/9+TghxEPvaxsCkRre07gLT/2mhKSBMlbDskchav8n3Vu130NSFgS/jvznPp6y94SnxRy7WLbFoUvuY8kak108GPbismey927w1TfD1I7haanXpbAqZT2BOUNK8BTvQnCU+ogmzhvUo+dtPe96xnER7BxIUsrUVS4++lxps6/4fqr1sm6BWGi7ddt7YcPFjKvCB3Yh92Bw0pIUfc619s7eWaPZzVwAx20/O70zLNqXaGTnkcOOf7ujjIAmkMy6RDJn6z4SRXrGmLBko9Z45oViedlMz6OHK52DAvom122iIIkPNaPAcG/ks/BB1ZFuHQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fJYyg4Gh5z3bkq;
+	Sun, 22 Feb 2026 17:30:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1029"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771738890;
+	cv=none; b=e/3iqcKjVRIAWHq7nsfHkMLqYRgbJ4G0OqS8MIhh1Y1MbZj7XEEyfRqPCCiq9rV7NFy++nOI8ROgYlCqfRfyoeOhQpzRP+TVvqyAs76iDgVjZGTEsfExOeeacPSGTiyJtktz+kymB3IPGO9ioxBiXzBnJ60+UxI7yU9xwRlivnDOT4/As3nQNzasuoSo79MJQp4lB/x14TbMwJHJ7Yw7cMyof0ocjyjU2G2Q5cpIjmgQo75hiNZ1RbpAm1JFpTnwNd7xfhIgl/X3NuSlO1uqTyZnC3ZP9b1/S12IOcwEoBok1i7wmzHJSPomT8+iUDmV2Htg81jtO3BAKqd+W/0lsg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1771740076; c=relaxed/relaxed;
-	bh=SGUrJpT2snvrCrHF6oQDUX1NZznrc6QH9tpjEoGVdds=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=RjbDJNmZ5TAyXeCR65F2fq1XjvuoeopUV92zce2jI6mqC+Lw75XHB6uEtbhwdbC/vg7Rkmewkph5Osq1SODB7+ubAy0Tj6avrpIslWs4blV6sw9glfhnbZqFdNKaezXwhUG/5IKj4ib1/59mxCybZfBvepHSm+9rR/MDL2Pl3ygzic4xSL1nan/KiMHmhC1eRCaQIi9MV9/VB0JJMY32A8XV0mhTgVpxcXKnwyJiqzX/5QA09ixD50pUxKoy3oaVqc87JjlnCSm+zZ+EVjcDJdKdt3j7AqJuIaatSyADgymdvGAE1wiskNoPXlAzncWdix5fxF6HR3wm3apg/9k1oQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=QpQ/5ii7; dkim-atps=neutral; spf=none (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+	t=1771738890; c=relaxed/relaxed;
+	bh=p3Z/yBJ2hZx3EcKfd+7Xe19sF+zpgD7i7OaZHR1+Q6w=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Tou3K+1kX9QVcrXgbn2mQOOfKiSG8w6fLjLKwMbfl6kCzW/aHXb4zLhjRn3zTTDPSDA7bU3afov2BVthLEuKI3Rez1RD0kUJZ7REJiOq3Wj4RoYTZwR5LrM0Wx76UO4BWPaRceH84t7R3P61TSyXi0PMQ0dyud1AeSJldSbMs44rTdWjWOVTN9QOiBoxtgqGbT6327atKzC29GKIT++msUDgEQ+D403Zqutv+fMWHxTEnowUTRoLnTKWAv/H6LaLl4uztEnmu9B8P9nRlWPWb0U+7HJkH0X3vp3gZyynwmDbsniHiUgo6sVlEjiGXPy3HqpuFh3JsSt+WSyWYVz9Cw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=mqzKG9Jb; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1029; helo=mail-pj1-x1029.google.com; envelope-from=abhindeka@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=QpQ/5ii7;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=mqzKG9Jb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org)
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1029; helo=mail-pj1-x1029.google.com; envelope-from=abhindeka@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1029.google.com (mail-pj1-x1029.google.com [IPv6:2607:f8b0:4864:20::1029])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fJYJR4gDWz2xm5
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Feb 2026 17:01:07 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	MIME-Version:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
-	Content-ID:Content-Description:In-Reply-To:References;
-	bh=SGUrJpT2snvrCrHF6oQDUX1NZznrc6QH9tpjEoGVdds=; b=QpQ/5ii7leZxLHvs7muSYQSakB
-	zvy/aaQ0m3HYxfTsHaCFJ402XdzRSzcUTUlT1rchx06MZEC3Xc2GwxF1zolh+ySlmhXmehbXBftCM
-	vwbWnj0PEN6deZD6UOBshyyYTZv5yGtrNORrEQO2hgQv6PVLiWwjId46iQq+EhBKu3FGd1hGCavPi
-	h0VbGehTmkn5t9BYSiqjzjqUyvnJZsBsFH0HF/Gdl6OrjqZonl+Kyin+V15zuWKYi5mIcWQuiFcsy
-	gVX2NLh5u8VRt0q5CsJEFp1MFkKYUg70InlNr123KR3eo7kxuv/fAb8fVuA7ati0iSJW+Hy7WOrIP
-	cST7ov0A==;
-Received: from [50.53.43.113] (helo=bombadil.infradead.org)
-	by bombadil.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vu2Wc-0000000GVXz-33hD;
-	Sun, 22 Feb 2026 06:01:02 +0000
-From: Randy Dunlap <rdunlap@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: Randy Dunlap <rdunlap@infradead.org>,
-	Geoff Levand <geoff@infradead.org>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fJXsj5lLsz2xm5
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Feb 2026 16:41:28 +1100 (AEDT)
+Received: by mail-pj1-x1029.google.com with SMTP id 98e67ed59e1d1-3567e2b4159so1740610a91.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Feb 2026 21:41:28 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1771738887; x=1772343687; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=p3Z/yBJ2hZx3EcKfd+7Xe19sF+zpgD7i7OaZHR1+Q6w=;
+        b=mqzKG9Jbps6hus6+PPf08xb3zFtdgn5WtqypUoadW0KarXfYZxuVm8QX5bA00LeNqX
+         8Tvuf6a78RUQOwlj/s/U9TZj105Z+Kj1sr8kac6EBXKI5mil0QWLTFTWJbgXpUn8p77o
+         u9FKZpPF+C+avyT5LxZeyfc6Qy6XWsSI+7lcm1Z17PhKnE5F+7ly+BM1XYWfTEsXqpel
+         sbpsc8RgnR+YEBTfwcIPqnOF9a5QmSKUur2T2MoIe2pmHHdvrTqSNx0yQggCIx/UvM1i
+         2Q1acM1ZyyBEvzwb+lKFlHZD6olDDQEkiK0sIbt5xbGuzfUqXKDVvAb3qjVu0hNCR7+c
+         uoWw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1771738887; x=1772343687;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=p3Z/yBJ2hZx3EcKfd+7Xe19sF+zpgD7i7OaZHR1+Q6w=;
+        b=S8G9N/OX+z/R95Q2zo4N0nxkeQ3D0KUOwMfwsJ30UHYwM27DJEDF755WTVy4KfF/O2
+         KraoaVa8hpEWi2SnxrrM2n7hvjKKWdcNxlfAtGgfwJQ6hdWGOBMttxulj//bgtgc3Yk6
+         I+2yewtwiCgMR4iL6aLdkSU5Rw59FCl2Q6rvjq9bEVG3bp6wgzDlb0AKNvkEzM5etKuy
+         zrS38I3U6oxFFPqaciw4mKJrJ76y36mPhhLDOj665LMDLFW+Ay+peNEVF5y0l0+kSRV2
+         KAZWxIFTJgM9APT7nx1nYSVz0PGf9QkrE3Eb7UatndW2w9gEMEcqTD96hXY0KU6lhgod
+         iAdQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXUy1ld0aE2rrltLUifMiDPgR5DCFQhNoyyCrrMnPchJTF6n3GYgXe6AExe6JcwSSF5OnaRdwV2qHUB/mA=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yyo+UjEn/t4XUbweGDnI3JROnJkc8dfB6X+2Y4ze0UT0dQxpBNV
+	A1f3RSF0JsZdYPAlge+O1T+RmRDjE9kk77KiS1WoT++M4N+6JQ2CFV7g
+X-Gm-Gg: AZuq6aIEMOqWs2yNSzvYdfVHurLKIrB0iolJpWIEStPMyM7ZCTU7wecBxL7NyVU24SN
+	R/EfNvNWehlAzk1a9qutHvhB2arKNvNbYvxON/2hM4RVUOgLde4jMGCdAmx1gE/XnGve9UYvUQr
+	zazbGzjYIjk/FsG9TUWYYMaD/np8KzPEeH+A+5GI5I1vdXKj5ZGfy8GX/0t+GlNKwnyy2/k6uJ+
+	sY4AetjcbaAR2YYi+aIaY90yP6XPPiJtrvrKLDxMVkcHhwObQLXoQGG2pUUdeqRoNZ2BEC2+evl
+	QjdrvABPhDYQ178/idDEQfn+FbhBuyFxiyFpOFiD1u26o7XbF3EsBIWz/2bniVjqhLCk2EMC4Ag
+	XHSlqlx77BY+UB+ne/V0+tyd786j3TMURkX2xghDLjmCiZqZcZpj2Pc9xKs8pgXX7MRBV+Ja/vA
+	6x1zg+VDJg3hr1jG4RkyABebF9fv5oMVaIendpYg4QIUMvObYf4ibjad0i
+X-Received: by 2002:a17:90b:5646:b0:354:7be4:a241 with SMTP id 98e67ed59e1d1-358ae81e3d4mr3566849a91.15.1771738886764;
+        Sat, 21 Feb 2026 21:41:26 -0800 (PST)
+Received: from Ubuntu-Kernel-2204.local.tld ([49.207.50.26])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3589d81cdbfsm9728510a91.7.2026.02.21.21.41.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 21 Feb 2026 21:41:26 -0800 (PST)
+From: Abhilekh Deka <abhindeka@gmail.com>
+To: davem@davemloft.net,
+	kuba@kernel.org,
+	pabeni@redhat.com,
+	nnac123@linux.ibm.com
+Cc: maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
 	linuxppc-dev@lists.ozlabs.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc/ps3: fix ps3.h kernel-doc warnings
-Date: Sat, 21 Feb 2026 22:01:01 -0800
-Message-ID: <20260222060101.2086504-1-rdunlap@infradead.org>
-X-Mailer: git-send-email 2.53.0
+	netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Abhilekh Deka <abhindeka@gmail.com>
+Subject: [PATCH] net/ibmveth: fix typo in ibmveth_remove_buffer_from_pool()
+Date: Sun, 22 Feb 2026 11:11:17 +0530
+Message-Id: <20260222054117.14943-1-abhindeka@gmail.com>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -68,127 +99,28 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Eliminate all kernel-doc warnings in ps3.h:
-- add one missing struct member description
-- add one missing function short description
-- correct one enum name typo
-- change several incomplete kernel-doc comments to plain "/*" comments
+Correct a typo in ibmveth_remove_buffer_from_pool()
+where gro_receive is misspelled in a comment.
 
-Examples:
-
-Warning: arch/powerpc/include/asm/ps3.h:96 struct member 'dev' not
- described in 'ps3_dma_region'
-Warning: arch/powerpc/include/asm/ps3.h:408 missing initial short
- description on line: * ps3_system_bus_set_drvdata -
-Warning: arch/powerpc/include/asm/ps3.h:473 Enum value
- 'PS3_LPM_TB_TYPE_INTERNAL' not described in enum 'ps3_lpm_tb_type'
-Warning: arch/powerpc/include/asm/ps3.h:473 Excess enum value
- '@PS3_LPM_RIGHTS_USE_TB' description in 'ps3_lpm_tb_type'
-
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Signed-off-by: Abhilekh Deka <abhindeka@gmail.com>
 ---
-Cc: Geoff Levand <geoff@infradead.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
+ drivers/net/ethernet/ibm/ibmveth.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- arch/powerpc/include/asm/ps3.h |   26 ++++++++++++++------------
- 1 file changed, 14 insertions(+), 12 deletions(-)
+diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+index 3108bf50576f..3272134611c2 100644
+--- a/drivers/net/ethernet/ibm/ibmveth.c
++++ b/drivers/net/ethernet/ibm/ibmveth.c
+@@ -480,7 +480,7 @@ static int ibmveth_remove_buffer_from_pool(struct ibmveth_adapter *adapter,
+ 	 */
+ 	if (!reuse) {
+ 		/* remove the skb pointer to mark free. actual freeing is done
+-		 * by upper level networking after gro_recieve
++		 * by upper level networking after gro_receive
+ 		 */
+ 		adapter->rx_buff_pool[pool].skbuff[index] = NULL;
+ 
+-- 
+2.34.1
 
---- linux-next-20260220.orig/arch/powerpc/include/asm/ps3.h
-+++ linux-next-20260220/arch/powerpc/include/asm/ps3.h
-@@ -65,6 +65,7 @@ struct ps3_dma_region_ops;
- 
- /**
-  * struct ps3_dma_region - A per device dma state variables structure
-+ * @dev: The device that this struct describes.
-  * @did: The HV device id.
-  * @page_size: The ioc pagesize.
-  * @region_type: The HV region type.
-@@ -108,18 +109,19 @@ struct ps3_dma_region_ops {
- 		     dma_addr_t bus_addr,
- 		     unsigned long len);
- };
--/**
-+
-+struct ps3_system_bus_device;
-+
-+/*
-  * struct ps3_dma_region_init - Helper to initialize structure variables
-  *
-  * Helper to properly initialize variables prior to calling
-  * ps3_system_bus_device_register.
-  */
--
--struct ps3_system_bus_device;
--
- int ps3_dma_region_init(struct ps3_system_bus_device *dev,
- 	struct ps3_dma_region *r, enum ps3_dma_page_size page_size,
- 	enum ps3_dma_region_type region_type, void *addr, unsigned long len);
-+
- int ps3_dma_region_create(struct ps3_dma_region *r);
- int ps3_dma_region_free(struct ps3_dma_region *r);
- int ps3_dma_map(struct ps3_dma_region *r, unsigned long virt_addr,
-@@ -136,7 +138,7 @@ enum ps3_mmio_page_size {
- };
- 
- struct ps3_mmio_region_ops;
--/**
-+/*
-  * struct ps3_mmio_region - a per device mmio state variables structure
-  *
-  * Current systems can be supported with a single region per device.
-@@ -155,13 +157,13 @@ struct ps3_mmio_region_ops {
- 	int (*create)(struct ps3_mmio_region *);
- 	int (*free)(struct ps3_mmio_region *);
- };
--/**
-- * struct ps3_mmio_region_init - Helper to initialize structure variables
-+
-+/*
-+ * ps3_mmio_region_init - Helper to initialize structure variables
-  *
-  * Helper to properly initialize variables prior to calling
-  * ps3_system_bus_device_register.
-  */
--
- int ps3_mmio_region_init(struct ps3_system_bus_device *dev,
- 	struct ps3_mmio_region *r, unsigned long bus_addr, unsigned long len,
- 	enum ps3_mmio_page_size page_size);
-@@ -342,7 +344,7 @@ enum ps3_system_bus_device_type {
- 	PS3_DEVICE_TYPE_LPM,
- };
- 
--/**
-+/*
-  * struct ps3_system_bus_device - a device on the system bus
-  */
- 
-@@ -371,7 +373,7 @@ struct ps3_system_bus_device {
- int ps3_open_hv_device(struct ps3_system_bus_device *dev);
- int ps3_close_hv_device(struct ps3_system_bus_device *dev);
- 
--/**
-+/*
-  * struct ps3_system_bus_driver - a driver for a device on the system bus
-  */
- 
-@@ -405,7 +407,7 @@ static inline struct ps3_system_bus_driv
- }
- 
- /**
-- * ps3_system_bus_set_drvdata -
-+ * ps3_system_bus_set_drvdata - save driver private pointer in @dev
-  * @dev: device structure
-  * @data: Data to set
-  */
-@@ -464,7 +466,7 @@ enum ps3_lpm_rights {
-  * enum ps3_lpm_tb_type - Type of trace buffer lv1 should use.
-  *
-  * @PS3_LPM_TB_TYPE_NONE: Do not use a trace buffer.
-- * @PS3_LPM_RIGHTS_USE_TB: Use the lv1 internal trace buffer.  Must have
-+ * @PS3_LPM_TB_TYPE_INTERNAL: Use the lv1 internal trace buffer.  Must have
-  *  rights @PS3_LPM_RIGHTS_USE_TB.
-  */
- 
 
