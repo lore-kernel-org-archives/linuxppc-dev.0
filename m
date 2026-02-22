@@ -1,38 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-17001-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17002-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6374DC624A3
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Feb 2026 21:41:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A3FFC61DFF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Feb 2026 06:01:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fJLCr3zxQz2xN8;
-	Sun, 22 Feb 2026 08:41:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.25
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771694378;
-	cv=none; b=P1/O3+XesQLKLOPCg/er2/5MK81lNqD4kzHTCEBwGUxTEA0xFdHyPx46bLtFrd9hmIIyjT7ZeA/TYNL4474vC5J5bW75xoG8siYB/X7lxB5xfBxVZoMqqTEvtkjUoT6ZysF1vbvVrwcGSWVP/keKoS/ULyIOY8SueAE/RL0iOfBzAHy37s7jfdZWmXUMTZlOVvlzim8oAxZk6s1A0NDH+OWF8DZfsF8nox0bzPimeh3PZz9w7V0IEH7MgrqrZUn/MDAENtyHimtZnoBB9rDpkR8hVXufwCzSYn0MP6gZ8VzlaOcRlg1XAkNAFNuUqzM+Fnr//H7CYtyHFnv2cuQ1Ug==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fJYJX3BFGz30Sv;
+	Sun, 22 Feb 2026 17:01:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::133"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771740076;
+	cv=none; b=BUa1Sw2AbZ5ZOCgWBBzyRl/9+TghxEPvaxsCkRre07gLT/2mhKSBMlbDskchav8n3Vu130NSFgS/jvznPp6y94SnxRy7WLbFoUvuY8kak108GPbismey927w1TfD1I7haanXpbAqZT2BOUNK8BTvQnCU+ogmzhvUo+dtPe96xnER7BxIUsrUVS4++lxps6/4fqr1sm6BWGi7ddt7YcPFjKvCB3Yh92Bw0pIUfc619s7eWaPZzVwAx20/O70zLNqXaGTnkcOOf7ujjIAmkMy6RDJn6z4SRXrGmLBko9Z45oViedlMz6OHK52DAvom122iIIkPNaPAcG/ks/BB1ZFuHQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1771694378; c=relaxed/relaxed;
-	bh=dzEqgpRvX92Ph1mNyD7O8NkYWIGFUBJuEdNn1cp7f10=;
-	h=From:Message-Id:Content-Type:Mime-Version:Subject:Date:
-	 In-Reply-To:Cc:To:References; b=De/Xgcuz9WVr3/rTtNBW4ZH1KXmk+aV6IpdtZc/XlasLPaRo6Tyj+RkzcDJ20/5U4BRrXxo0rmkZBDRjb3MGzyGzFIpyZzF1prINuTKNUYiW03ogqBXoC9q4MittOX02eeTKQAy4oW06Ntf9UJru6CEO05p6ETcF4O3EyoM4Pp/LGpOz2HWdWwAn+D2QLxCz5kFgq0EV6y0VVZXvxwzMQROHqckWVBDp0h5jfaOVJj/0m0u5evaqOTe8wxIWuuAT8O1eZ84fkZglqFXMh+kuD+M28qQw8prkhEoJGJg9aUfisBlcJ989wyM4hsJghG1X/7o5xKDR+mzaZBim1Ff7pw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass (client-ip=159.226.251.25; helo=cstnet.cn; envelope-from=gaohan@iscas.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=iscas.ac.cn
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iscas.ac.cn (client-ip=159.226.251.25; helo=cstnet.cn; envelope-from=gaohan@iscas.ac.cn; receiver=lists.ozlabs.org)
-Received: from cstnet.cn (smtp25.cstnet.cn [159.226.251.25])
+	t=1771740076; c=relaxed/relaxed;
+	bh=SGUrJpT2snvrCrHF6oQDUX1NZznrc6QH9tpjEoGVdds=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=RjbDJNmZ5TAyXeCR65F2fq1XjvuoeopUV92zce2jI6mqC+Lw75XHB6uEtbhwdbC/vg7Rkmewkph5Osq1SODB7+ubAy0Tj6avrpIslWs4blV6sw9glfhnbZqFdNKaezXwhUG/5IKj4ib1/59mxCybZfBvepHSm+9rR/MDL2Pl3ygzic4xSL1nan/KiMHmhC1eRCaQIi9MV9/VB0JJMY32A8XV0mhTgVpxcXKnwyJiqzX/5QA09ixD50pUxKoy3oaVqc87JjlnCSm+zZ+EVjcDJdKdt3j7AqJuIaatSyADgymdvGAE1wiskNoPXlAzncWdix5fxF6HR3wm3apg/9k1oQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=QpQ/5ii7; dkim-atps=neutral; spf=none (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=QpQ/5ii7;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org)
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fJDPj0X3Tz2xm5
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Feb 2026 04:19:36 +1100 (AEDT)
-Received: from smtpclient.apple (unknown [58.38.117.196])
-	by APP-05 (Coremail) with SMTP id zQCowADXaQ0b6Zlp9bfQCA--.52886S2;
-	Sun, 22 Feb 2026 01:19:24 +0800 (CST)
-From: Han Gao <gaohan@iscas.ac.cn>
-Message-Id: <D46A040A-F4BE-4540-9896-A557DF74DE50@iscas.ac.cn>
-Content-Type: multipart/alternative;
-	boundary="Apple-Mail=_2974C493-A06E-4DEE-BFCF-9B1CAEF6116E"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fJYJR4gDWz2xm5
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Feb 2026 17:01:07 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	MIME-Version:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
+	Content-ID:Content-Description:In-Reply-To:References;
+	bh=SGUrJpT2snvrCrHF6oQDUX1NZznrc6QH9tpjEoGVdds=; b=QpQ/5ii7leZxLHvs7muSYQSakB
+	zvy/aaQ0m3HYxfTsHaCFJ402XdzRSzcUTUlT1rchx06MZEC3Xc2GwxF1zolh+ySlmhXmehbXBftCM
+	vwbWnj0PEN6deZD6UOBshyyYTZv5yGtrNORrEQO2hgQv6PVLiWwjId46iQq+EhBKu3FGd1hGCavPi
+	h0VbGehTmkn5t9BYSiqjzjqUyvnJZsBsFH0HF/Gdl6OrjqZonl+Kyin+V15zuWKYi5mIcWQuiFcsy
+	gVX2NLh5u8VRt0q5CsJEFp1MFkKYUg70InlNr123KR3eo7kxuv/fAb8fVuA7ati0iSJW+Hy7WOrIP
+	cST7ov0A==;
+Received: from [50.53.43.113] (helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1vu2Wc-0000000GVXz-33hD;
+	Sun, 22 Feb 2026 06:01:02 +0000
+From: Randy Dunlap <rdunlap@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: Randy Dunlap <rdunlap@infradead.org>,
+	Geoff Levand <geoff@infradead.org>,
+	linuxppc-dev@lists.ozlabs.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH] powerpc/ps3: fix ps3.h kernel-doc warnings
+Date: Sat, 21 Feb 2026 22:01:01 -0800
+Message-ID: <20260222060101.2086504-1-rdunlap@infradead.org>
+X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -45,198 +65,130 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.400.21\))
-Subject: Re: [PATCHv2 2/2] sparc/pci: Initialize msi_addr_mask for OF-created
- PCI devices
-Date: Sun, 22 Feb 2026 01:19:13 +0800
-In-Reply-To: <20260220070239.1693303-3-nilay@linux.ibm.com>
-Cc: Han Gao <gaohan@iscas.ac.cn>,
- linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org,
- sparclinux@vger.kernel.org,
- wangruikang@iscas.ac.cn,
- tglx@kernel.org,
- maddy@linux.ibm.com,
- mpe@ellerman.id.au,
- npiggin@gmail.com,
- chleroy@kernel.org,
- gjoyce@ibm.com,
- helgaas@kernel.org,
- davem@davemloft.net,
- andreas@gaisler.com,
- "Han Gao (Revy)" <rabenda.cn@gmail.com>
-To: Nilay Shroff <nilay@linux.ibm.com>
-References: <20260220070239.1693303-1-nilay@linux.ibm.com>
- <20260220070239.1693303-3-nilay@linux.ibm.com>
-X-Mailer: Apple Mail (2.3864.400.21)
-X-CM-TRANSID:zQCowADXaQ0b6Zlp9bfQCA--.52886S2
-X-Coremail-Antispam: 1UD129KBjvJXoW7Cr1fKrWktF17Zr4rAryfXrb_yoW8Aw18pr
-	Z7uFn5KrWUt347Ga98A3WUZFyjqan8u343XrZ8Kw1Iqry09r10vrnrWryjkrWUXrsaka1F
-	va9Yv3yUXw1DG3DanT9S1TB71UUUUUDqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUU9G14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26r4j6ryUM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
-	6F4UM28EF7xvwVC2z280aVAFwI0_Cr0_Gr1UM28EF7xvwVC2z280aVCY1x0267AKxVW8Jr
-	0_Cr1UM2AIxVAIcxkEcVAq07x20xvEncxIr21lYx0E2Ix0cI8IcVAFwI0_JrI_JrylYx0E
-	x4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwIxGrwACjI
-	8F5VA0II8E6IAqYI8I648v4I1lFIxGxcIEc7CjxVA2Y2ka0xkIwI1l7480Y4vEI4kI2Ix0
-	rVAqx4xJMxkF7I0En4kS14v26r4a6rW5MxkIecxEwVAFwVW8MxAIw28IcxkI7VAKI48JMx
-	C20s026xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_JrI_JrWlx2IqxVCjr7xvwVAF
-	wI0_JrI_JrWlx4CE17CEb7AF67AKxVW8ZVWrXwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20x
-	vE14v26r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAIw20EY4v2
-	0xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxV
-	W8JVW8JrUvcSsGvfC2KfnxnUUI43ZEXa7sRi-txDUUUUU==
-X-Originating-IP: [58.38.117.196]
-X-CM-SenderInfo: xjdrxt3q6l2u1dvotugofq/1tbiDAUFDGmZycsguAAAsq
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
+Eliminate all kernel-doc warnings in ps3.h:
+- add one missing struct member description
+- add one missing function short description
+- correct one enum name typo
+- change several incomplete kernel-doc comments to plain "/*" comments
 
---Apple-Mail=_2974C493-A06E-4DEE-BFCF-9B1CAEF6116E
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain;
-	charset=us-ascii
+Examples:
 
-Tested and passed on SPARC Enterprise T5220.=20
+Warning: arch/powerpc/include/asm/ps3.h:96 struct member 'dev' not
+ described in 'ps3_dma_region'
+Warning: arch/powerpc/include/asm/ps3.h:408 missing initial short
+ description on line: * ps3_system_bus_set_drvdata -
+Warning: arch/powerpc/include/asm/ps3.h:473 Enum value
+ 'PS3_LPM_TB_TYPE_INTERNAL' not described in enum 'ps3_lpm_tb_type'
+Warning: arch/powerpc/include/asm/ps3.h:473 Excess enum value
+ '@PS3_LPM_RIGHTS_USE_TB' description in 'ps3_lpm_tb_type'
 
-Without this patch, the e1000e would use intx.
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+---
+Cc: Geoff Levand <geoff@infradead.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
 
-Tested-by: Han Gao <gaohan@iscas.ac.cn> # on SPARC Enterprise T5220
+ arch/powerpc/include/asm/ps3.h |   26 ++++++++++++++------------
+ 1 file changed, 14 insertions(+), 12 deletions(-)
 
-> On Feb 20, 2026, at 15:02, Nilay Shroff <nilay@linux.ibm.com> wrote:
->=20
-> Recent changes replaced the use of no_64bit_msi with msi_addr_mask,
-> which is now expected to be initialized to DMA_BIT_MASK(64) during PCI
-> device setup. On SPARC systems, this initialization was inadvertently
-> missed for devices instantiated from device tree nodes, leaving
-> msi_addr_mask unset for OF-created pci_dev instances. As a result,
-> MSI address validation fails during probe, causing affected devices
-> to fail initialization.
->=20
-> Initialize pdev->msi_addr_mask to DMA_BIT_MASK(64) in
-> of_create_pci_dev() so that MSI address validation succeeds and PCI
-> device probing works as expected.
->=20
-> Fixes: 386ced19e9a3 ("PCI/MSI: Convert the boolean no_64bit_msi flag =
-to a DMA address mask")
-> Signed-off-by: Nilay Shroff <nilay@linux.ibm.com>
-> ---
-> arch/sparc/kernel/pci.c | 7 +++++++
-> 1 file changed, 7 insertions(+)
->=20
-> diff --git a/arch/sparc/kernel/pci.c b/arch/sparc/kernel/pci.c
-> index b290107170e9..a4815d544781 100644
-> --- a/arch/sparc/kernel/pci.c
-> +++ b/arch/sparc/kernel/pci.c
-> @@ -355,6 +355,13 @@ static struct pci_dev *of_create_pci_dev(struct =
-pci_pbm_info *pbm,
-> 	dev->error_state =3D pci_channel_io_normal;
-> 	dev->dma_mask =3D 0xffffffff;
->=20
-> +	/*
-> +	 * Assume 64-bit addresses for MSI initially. Will be changed to =
-32-bit
-> +	 * if MSI (rather than MSI-X) capability does not have
-> +	 * PCI_MSI_FLAGS_64BIT. Can also be overridden by driver.
-> +	 */
-> +	dev->msi_addr_mask =3D DMA_BIT_MASK(64);
-> +
-> 	if (of_node_name_eq(node, "pci")) {
-> 		/* a PCI-PCI bridge */
-> 		dev->hdr_type =3D PCI_HEADER_TYPE_BRIDGE;
-> --=20
-> 2.52.0
->=20
->=20
-
-
---Apple-Mail=_2974C493-A06E-4DEE-BFCF-9B1CAEF6116E
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/html;
-	charset=us-ascii
-
-<html aria-label=3D"message body"><head><meta http-equiv=3D"content-type" =
-content=3D"text/html; charset=3Dus-ascii"></head><body =
-style=3D"overflow-wrap: break-word; -webkit-nbsp-mode: space; =
-line-break: after-white-space;"><div><p style=3D"margin: 0px; =
-font-width: normal; font-size: 13px; line-height: normal; font-family: =
-&quot;Helvetica Neue&quot;; font-size-adjust: none; font-kerning: auto; =
-font-variant-alternates: normal; font-variant-ligatures: normal; =
-font-variant-numeric: normal; font-variant-east-asian: normal; =
-font-variant-position: normal; font-feature-settings: normal; =
-font-optical-sizing: auto; font-variation-settings: normal;">Tested and =
-passed on SPARC Enterprise T5220.&nbsp;</p>
-<p style=3D"margin: 0px; font-width: normal; font-size: 13px; =
-line-height: normal; font-family: &quot;Helvetica Neue&quot;; =
-font-size-adjust: none; font-kerning: auto; font-variant-alternates: =
-normal; font-variant-ligatures: normal; font-variant-numeric: normal; =
-font-variant-east-asian: normal; font-variant-position: normal; =
-font-feature-settings: normal; font-optical-sizing: auto; =
-font-variation-settings: normal; min-height: 15px;"><br></p>
-<p style=3D"margin: 0px; font-width: normal; font-size: 13px; =
-line-height: normal; font-family: &quot;Helvetica Neue&quot;; =
-font-size-adjust: none; font-kerning: auto; font-variant-alternates: =
-normal; font-variant-ligatures: normal; font-variant-numeric: normal; =
-font-variant-east-asian: normal; font-variant-position: normal; =
-font-feature-settings: normal; font-optical-sizing: auto; =
-font-variation-settings: normal;">Without this patch, the e1000e would =
-use intx.</p>
-<p style=3D"margin: 0px; font-width: normal; font-size: 13px; =
-line-height: normal; font-family: &quot;Helvetica Neue&quot;; =
-font-size-adjust: none; font-kerning: auto; font-variant-alternates: =
-normal; font-variant-ligatures: normal; font-variant-numeric: normal; =
-font-variant-east-asian: normal; font-variant-position: normal; =
-font-feature-settings: normal; font-optical-sizing: auto; =
-font-variation-settings: normal; min-height: 15px;"><br></p>
-<p style=3D"margin: 0px; font-width: normal; font-size: 13px; =
-line-height: normal; font-family: &quot;Helvetica Neue&quot;; =
-font-size-adjust: none; font-kerning: auto; font-variant-alternates: =
-normal; font-variant-ligatures: normal; font-variant-numeric: normal; =
-font-variant-east-asian: normal; font-variant-position: normal; =
-font-feature-settings: normal; font-optical-sizing: auto; =
-font-variation-settings: normal;">Tested-by: Han Gao &lt;<span =
-style=3D"color: rgb(21, 154, 255);">gaohan@iscas.ac.cn</span>&gt; # on =
-SPARC Enterprise T5220</p></div><div><br><blockquote type=3D"cite"><div>On=
- Feb 20, 2026, at 15:02, Nilay Shroff &lt;nilay@linux.ibm.com&gt; =
-wrote:</div><br class=3D"Apple-interchange-newline"><div><div>Recent =
-changes replaced the use of no_64bit_msi with msi_addr_mask,<br>which is =
-now expected to be initialized to DMA_BIT_MASK(64) during PCI<br>device =
-setup. On SPARC systems, this initialization was inadvertently<br>missed =
-for devices instantiated from device tree nodes, =
-leaving<br>msi_addr_mask unset for OF-created pci_dev instances. As a =
-result,<br>MSI address validation fails during probe, causing affected =
-devices<br>to fail initialization.<br><br>Initialize =
-pdev-&gt;msi_addr_mask to DMA_BIT_MASK(64) in<br>of_create_pci_dev() so =
-that MSI address validation succeeds and PCI<br>device probing works as =
-expected.<br><br>Fixes: 386ced19e9a3 ("PCI/MSI: Convert the boolean =
-no_64bit_msi flag to a DMA address mask")<br>Signed-off-by: Nilay Shroff =
-&lt;nilay@linux.ibm.com&gt;<br>---<br> arch/sparc/kernel/pci.c | 7 =
-+++++++<br> 1 file changed, 7 insertions(+)<br><br>diff --git =
-a/arch/sparc/kernel/pci.c b/arch/sparc/kernel/pci.c<br>index =
-b290107170e9..a4815d544781 100644<br>--- =
-a/arch/sparc/kernel/pci.c<br>+++ b/arch/sparc/kernel/pci.c<br>@@ -355,6 =
-+355,13 @@ static struct pci_dev *of_create_pci_dev(struct pci_pbm_info =
-*pbm,<br> <span class=3D"Apple-tab-span" style=3D"white-space:pre">	=
-</span>dev-&gt;error_state =3D pci_channel_io_normal;<br> <span =
-class=3D"Apple-tab-span" style=3D"white-space:pre">	=
-</span>dev-&gt;dma_mask =3D 0xffffffff;<br><br>+<span =
-class=3D"Apple-tab-span" style=3D"white-space:pre">	=
-</span>/*<br>+<span class=3D"Apple-tab-span" style=3D"white-space:pre">	=
-</span> * Assume 64-bit addresses for MSI initially. Will be changed to =
-32-bit<br>+<span class=3D"Apple-tab-span" style=3D"white-space:pre">	=
-</span> * if MSI (rather than MSI-X) capability does not have<br>+<span =
-class=3D"Apple-tab-span" style=3D"white-space:pre">	</span> * =
-PCI_MSI_FLAGS_64BIT. Can also be overridden by driver.<br>+<span =
-class=3D"Apple-tab-span" style=3D"white-space:pre">	</span> =
-*/<br>+<span class=3D"Apple-tab-span" style=3D"white-space:pre">	=
-</span>dev-&gt;msi_addr_mask =3D DMA_BIT_MASK(64);<br>+<br> <span =
-class=3D"Apple-tab-span" style=3D"white-space:pre">	</span>if =
-(of_node_name_eq(node, "pci")) {<br> <span class=3D"Apple-tab-span" =
-style=3D"white-space:pre">	</span><span class=3D"Apple-tab-span" =
-style=3D"white-space:pre">	</span>/* a PCI-PCI bridge */<br> <span =
-class=3D"Apple-tab-span" style=3D"white-space:pre">	</span><span =
-class=3D"Apple-tab-span" style=3D"white-space:pre">	=
-</span>dev-&gt;hdr_type =3D PCI_HEADER_TYPE_BRIDGE;<br>-- =
-<br>2.52.0<br><br><br></div></div></blockquote></div><br></body></html>=
-
---Apple-Mail=_2974C493-A06E-4DEE-BFCF-9B1CAEF6116E--
-
+--- linux-next-20260220.orig/arch/powerpc/include/asm/ps3.h
++++ linux-next-20260220/arch/powerpc/include/asm/ps3.h
+@@ -65,6 +65,7 @@ struct ps3_dma_region_ops;
+ 
+ /**
+  * struct ps3_dma_region - A per device dma state variables structure
++ * @dev: The device that this struct describes.
+  * @did: The HV device id.
+  * @page_size: The ioc pagesize.
+  * @region_type: The HV region type.
+@@ -108,18 +109,19 @@ struct ps3_dma_region_ops {
+ 		     dma_addr_t bus_addr,
+ 		     unsigned long len);
+ };
+-/**
++
++struct ps3_system_bus_device;
++
++/*
+  * struct ps3_dma_region_init - Helper to initialize structure variables
+  *
+  * Helper to properly initialize variables prior to calling
+  * ps3_system_bus_device_register.
+  */
+-
+-struct ps3_system_bus_device;
+-
+ int ps3_dma_region_init(struct ps3_system_bus_device *dev,
+ 	struct ps3_dma_region *r, enum ps3_dma_page_size page_size,
+ 	enum ps3_dma_region_type region_type, void *addr, unsigned long len);
++
+ int ps3_dma_region_create(struct ps3_dma_region *r);
+ int ps3_dma_region_free(struct ps3_dma_region *r);
+ int ps3_dma_map(struct ps3_dma_region *r, unsigned long virt_addr,
+@@ -136,7 +138,7 @@ enum ps3_mmio_page_size {
+ };
+ 
+ struct ps3_mmio_region_ops;
+-/**
++/*
+  * struct ps3_mmio_region - a per device mmio state variables structure
+  *
+  * Current systems can be supported with a single region per device.
+@@ -155,13 +157,13 @@ struct ps3_mmio_region_ops {
+ 	int (*create)(struct ps3_mmio_region *);
+ 	int (*free)(struct ps3_mmio_region *);
+ };
+-/**
+- * struct ps3_mmio_region_init - Helper to initialize structure variables
++
++/*
++ * ps3_mmio_region_init - Helper to initialize structure variables
+  *
+  * Helper to properly initialize variables prior to calling
+  * ps3_system_bus_device_register.
+  */
+-
+ int ps3_mmio_region_init(struct ps3_system_bus_device *dev,
+ 	struct ps3_mmio_region *r, unsigned long bus_addr, unsigned long len,
+ 	enum ps3_mmio_page_size page_size);
+@@ -342,7 +344,7 @@ enum ps3_system_bus_device_type {
+ 	PS3_DEVICE_TYPE_LPM,
+ };
+ 
+-/**
++/*
+  * struct ps3_system_bus_device - a device on the system bus
+  */
+ 
+@@ -371,7 +373,7 @@ struct ps3_system_bus_device {
+ int ps3_open_hv_device(struct ps3_system_bus_device *dev);
+ int ps3_close_hv_device(struct ps3_system_bus_device *dev);
+ 
+-/**
++/*
+  * struct ps3_system_bus_driver - a driver for a device on the system bus
+  */
+ 
+@@ -405,7 +407,7 @@ static inline struct ps3_system_bus_driv
+ }
+ 
+ /**
+- * ps3_system_bus_set_drvdata -
++ * ps3_system_bus_set_drvdata - save driver private pointer in @dev
+  * @dev: device structure
+  * @data: Data to set
+  */
+@@ -464,7 +466,7 @@ enum ps3_lpm_rights {
+  * enum ps3_lpm_tb_type - Type of trace buffer lv1 should use.
+  *
+  * @PS3_LPM_TB_TYPE_NONE: Do not use a trace buffer.
+- * @PS3_LPM_RIGHTS_USE_TB: Use the lv1 internal trace buffer.  Must have
++ * @PS3_LPM_TB_TYPE_INTERNAL: Use the lv1 internal trace buffer.  Must have
+  *  rights @PS3_LPM_RIGHTS_USE_TB.
+  */
+ 
 
