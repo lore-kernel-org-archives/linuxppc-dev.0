@@ -1,73 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-17019-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17020-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4BC34C636B9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Feb 2026 03:45:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A43F6E98DEF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Feb 2026 07:53:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fK6FK5DQNz30hq;
-	Mon, 23 Feb 2026 14:45:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771818325;
-	cv=none; b=cY/wFiJSd6GhYf3g7UdQQJXYC2ci1b24vBCze5iTVc//OkXm+FtbSwrfJKwY1fyWdv/zFgdENKBJ4QsJdkGEq+/8r+xyMFJqb0E8zjKkpqljgddrwcr/YMXe8KUFE3TVoWlYcvTbEPQb/8kS7iXndMosvBQTLBd9uBv7B2VlCwgyvlHQpX/EEzuFDC+2KDlXXz7cfFsTIP7Hj/7i1ejeWAHpV2pjJC8VkX7DYEnnvQ6bR3MOYz1aUWyjL7zH+IwneDbKVoG+rnCaHRmbg3w8lgIXmeEDVSLyIF4pgQ/AWIGQpMy70vi4n614Ykz71w3C1GQSCGMUwkFZq2YLnE15Cg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fKClm3CrCz2yDk;
+	Mon, 23 Feb 2026 18:53:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:c010:41de::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771833220;
+	cv=none; b=CHi4aUZPIYoUJE/AKht4aOfGoPkpzPkpLpLz5+G46Z61BKh4YlTNkCHvd8WHglWRniwTcl+cTtmyTaYiUhq5W2g6ML5l0kxm3g/6gNYl3UFcTB0zA+XGD7yuqH1j/0JXLGXiwJx7TisCX+PwDetZi/ggAgyBbj6h4a2zoTrWyZqfXIPTghdNDsPO21eAsDhw675k5nBgmaSTtwzjo0Prq8HTFDUaYshnu60z3ciV9xf5rAHAYZ+YT4qw5vi2lXkjdvhktf+cN+FtAHuL2XkbH+GL4NsTFln0o6SIRZL2Fu7+/XtwyHlkClgh83wH56ZTmhPwtJwJvlEE54eZtCHJbw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1771818325; c=relaxed/relaxed;
-	bh=RyYSL2ov6C3u3yqvGVc58oTwjWdV5IlojIEozCfjRo8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PsTQcO2QccXw8m7LkThjt7NPDwD/LWlr2OI520auYzdfn8eq/HKYU7l589syFh43+RM0AWzxa5+oelB22fsBoI/hpx7Kg4I6jTYvMd0TOvwSflDfxVXIaj7VlvwEcRhn4KXmEtVvPGdcK+3CzPORnbcFx6tABwHisZGEZxaLUTd/169M7ydh38XmTNgFgB6/Izg2YjfVcs64OvAoKGom6deKPPNsUAq4O83yiz4O9T1qEhUv1tCJQIM1LVVusHFWAI6rEDy0hAIiHzLodN/vh9YPz+oMwKxoV/STVwBaUFZscCfdYCrmQsP96SNg0X1Kaj74arRCXGYTRtUwXObIdQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aDW2PS3c; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1771833220; c=relaxed/relaxed;
+	bh=V9lREaOyq6EobGrRcurxT3XKwYVlFVVG1tae/8MebOc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=m6wVzFRt+mKuEWwxS4tDxOTf7Q+3BcqIZj8Pg4i868PfMVkiA18C+ThF5QUru0nOj41Vl6uN7ktqanbvuVJoWnJEMIxdhzsXrxZMsev+XUxx+tSjHlv/CPJalBUT3BKCIRvRnU07v4BsWXQPNh7eZcp1OLhixDQD58ZDADBDNIVpuxR7CeArcrLitcahrDCi+N/LxPpEpdXEYa64yknHmI5YITyIW2ew4W7m9iDWFW7J8farPwX3I6PpXudJMhii+unQTqqZYIpsrdYoR9BLgvbU6h1HIhcCWjFiayd4YnzK/E7EP7SF+mu7yCDfbrOCov+CuGU0ZgfAYJqmZ4Uqlw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=UBLlbx6r; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aDW2PS3c;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=UBLlbx6r;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
+Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fK6FJ3wjMz2xlv
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2026 14:45:23 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61MJFcMa2615756;
-	Mon, 23 Feb 2026 03:45:22 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=RyYSL2
-	ov6C3u3yqvGVc58oTwjWdV5IlojIEozCfjRo8=; b=aDW2PS3cByWWhIvZ7L+Bk0
-	21zT5Y94/sbIkDpo2M3s7CmUAxGVP2PCCN9JsUoSW1SKVZIclgIPSIez5SQ0IxX1
-	Z41MiMf3QWDDVqGw/NTDIddgy2n65g6quADBSrLSV+YNx17n7pKGr02VgnOZ0nvZ
-	rVGCUt4gyHnROxn+FnhJ4TxjY7gMJYvKojUKNDALHVQfJgxIlhrRxEhwhFWwD1cp
-	F3KEFsgy8gl1jYHNIMl5Vam7vRbTaBtkqJZB4QXo3X5JLDB3+9TYeY8eyi7k4b0y
-	FAqa0f8sBcncSuK4j0Yka+5zmdCv0W6thCLs41FocIWGbcWkOK386Fk/+33I+aLw
-	==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cf471nn0s-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 23 Feb 2026 03:45:21 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 61MN8P3r030385;
-	Mon, 23 Feb 2026 03:45:20 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4cfrhk36gp-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 23 Feb 2026 03:45:20 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 61N3jIMw45220136
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 23 Feb 2026 03:45:18 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 26B9C20043;
-	Mon, 23 Feb 2026 03:45:18 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id BA11020040;
-	Mon, 23 Feb 2026 03:45:13 +0000 (GMT)
-Received: from [9.124.222.94] (unknown [9.124.222.94])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 23 Feb 2026 03:45:13 +0000 (GMT)
-Message-ID: <d0342f0e-633f-4299-966a-27e4c0050da3@linux.ibm.com>
-Date: Mon, 23 Feb 2026 09:15:12 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fKClj1RYGz2xN8
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2026 18:53:36 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
+	s=mail; t=1771833210;
+	bh=nYV9JeJzQ3cvBQGeC5/lhY69NNQylLWUFgiVvFPfShg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=UBLlbx6rGRzhB0lc8jmUhiwdOSlc22ZND7JHZWW4sRNkp+NBvBnncnMPS1yVQbgOV
+	 DymrASfqtlntMVz/GvTCjMNRdBah/OWyHZRmpdBJ/j56Uf6K1XZArBL2sV3NTKngvN
+	 Lufi5ad54jpSd2BodXC8KOcnZyRYF4fvDZt5qkc4=
+Date: Mon, 23 Feb 2026 08:53:29 +0100
+From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>
+To: Nicolas Schier <nsc@kernel.org>
+Cc: Nathan Chancellor <nathan@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
+	Luis Chamberlain <mcgrof@kernel.org>, Petr Pavlu <petr.pavlu@suse.com>, 
+	Sami Tolvanen <samitolvanen@google.com>, Daniel Gomez <da.gomez@samsung.com>, 
+	Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, 
+	"Serge E. Hallyn" <serge@hallyn.com>, Jonathan Corbet <corbet@lwn.net>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>, 
+	Mimi Zohar <zohar@linux.ibm.com>, Roberto Sassu <roberto.sassu@huawei.com>, 
+	Dmitry Kasatkin <dmitry.kasatkin@gmail.com>, Eric Snowberg <eric.snowberg@oracle.com>, 
+	Daniel Gomez <da.gomez@kernel.org>, Aaron Tomlin <atomlin@atomlin.com>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Nicolas Bouchinet <nicolas.bouchinet@oss.cyber.gouv.fr>, 
+	Xiu Jianfeng <xiujianfeng@huawei.com>, Fabian =?utf-8?Q?Gr=C3=BCnbichler?= <f.gruenbichler@proxmox.com>, 
+	Arnout Engelen <arnout@bzzt.net>, Mattia Rizzolo <mattia@mapreri.org>, 
+	kpcyrd <kpcyrd@archlinux.org>, Christian Heusel <christian@heusel.eu>, 
+	=?utf-8?B?Q8OianU=?= Mihai-Drosi <mcaju95@gmail.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, 
+	linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, 
+	linux-modules@vger.kernel.org, linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
+Subject: Re: [PATCH v4 15/17] module: Introduce hash-based integrity checking
+Message-ID: <0d70db8d-702b-46ec-a010-298fe6515aab@t-8ch.de>
+References: <20260113-module-hashes-v4-0-0b932db9b56b@weissschuh.net>
+ <20260113-module-hashes-v4-15-0b932db9b56b@weissschuh.net>
+ <aZol1Rsa2tX-WNaZ@derry.ads.avm.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,121 +75,243 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [Linux PPC] KVM PR and KVM HV do not work if the kernel was
- compiled with PREEMPT
-To: Christian Zigotzky <chzigotzky@xenosoft.de>,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: "R.T.Dickinson" <rtd2@xtra.co.nz>, hypexed@yahoo.com.au,
-        mad skateman <madskateman@gmail.com>,
-        Christian Zigotzky <info@xenosoft.de>
-References: <b897b0fd-90f2-4215-bcd4-3714e497d773@xenosoft.de>
- <185d7a42-f7b4-44e1-a129-f5989d211c74@linux.ibm.com>
- <40154f6a-39da-959d-e039-5ab9ff62db3c@xenosoft.de>
- <709b864f-9daa-4a48-b3d6-39baedce63b2@linux.ibm.com>
- <dbbb7998-5245-170f-626b-81bc75a32591@xenosoft.de>
- <843b7c60-23f1-47d0-b4e8-2147c3e40c23@linux.ibm.com>
- <2a27e6fc-7eb4-41a5-ba88-58f6a22625b5@xenosoft.de>
- <1d79ec6f-ce7f-4432-80e0-a54fa1668642@linux.ibm.com>
- <caeed62f-0e36-4868-e593-887d7f33ce50@xenosoft.de>
-Content-Language: en-US
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-In-Reply-To: <caeed62f-0e36-4868-e593-887d7f33ce50@xenosoft.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: 3F2JuIXyLO7ZJjv4yYD4iiIXOi8YIsaV
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjIzMDAyOSBTYWx0ZWRfXzrNJq3YQZKnY
- 2hgb6pYpRSorP6VnZIiFzkrj0I1SJa6BXbe8AGOI5Eh3wc+kOv2kQ9XVDk7u8iFhSIC35EEcawj
- qUFeyDiv6vpk312XP2ZJIWtj+pIOHFCB7cT63zexMVGn6ihD4ZfXgM6ss+OnZLfRZX0trHlgwMp
- C3TcvZhgfyA0nRBKizJwTZpa17kgqXFLsH2oF3iQXGAqw4oRP/D438HUjHfdkxM1bpF7n7HTjIg
- sDm6JSIe/b0AK9PaawhiWXvD9DEL6Bd0JE9/CZhZ+weP7PpcpshJysGVQJKNFXq0NFX2Jp5mEvj
- pJQQvMWY4+kokNXelB3BBE/zhP9ftb30f0JGNT0jkEFuSXOzOdVODzD5kmLenDXVStQR8UpJNFm
- QQkuGdnURdANi36QkTYtuXzfhzkk/9eZXtUr2EhpR29FspK8VtP04RO2SLOa11gxPtyoW8l0FkD
- UrI74xpktUSvF6hYOpQ==
-X-Authority-Analysis: v=2.4 cv=R7wO2NRX c=1 sm=1 tr=0 ts=699bcd51 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=HzLeVaNsDn8A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=Mpw57Om8IfrbqaoTuvik:22 a=GgsMoib0sEa3-_RKJdDe:22 a=LpcYUoi4WhtTY--kXmYA:9
- a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: AwVlqX4TNhBbZR4cJm0A8rsBXpk1O0Z2
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-02-23_01,2026-02-20_04,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 clxscore=1015 impostorscore=0 phishscore=0 spamscore=0
- suspectscore=0 malwarescore=0 bulkscore=0 adultscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2601150000 definitions=main-2602230029
+In-Reply-To: <aZol1Rsa2tX-WNaZ@derry.ads.avm.de>
 
-
-Hi Christian.
-
-
->> If possible give the below try.
->> (Note: Didn;t replicate your issue)
->>
->> ---
->>
->> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
->> index 7667563fb9ff..bf0ca49c9915 100644
->> --- a/arch/powerpc/kvm/book3s_hv.c
->> +++ b/arch/powerpc/kvm/book3s_hv.c
->> @@ -4825,10 +4825,13 @@ static int kvmppc_run_vcpu(struct kvm_vcpu *vcpu)
->>          vc->runner = vcpu;
->>          if (n_ceded == vc->n_runnable) {
->>              kvmppc_vcore_blocked(vc);
->> -        } else if (need_resched()) {
->> +        } else if (need_resched() || spin_needbreak(&vc->lock)) {
->>              kvmppc_vcore_preempt(vc);
->>              /* Let something else run */
->> -            cond_resched_lock(&vc->lock);
->> +            spin_unlock(&vc->lock);
->> +            schedule();
->> +            //cond_resched_lock(&vc->lock);
->> +            spin_lock(&vc->lock);
->>              if (vc->vcore_state == VCORE_PREEMPT)
->>                  kvmppc_vcore_end_preempt(vc);
->>          } else {
->> @@ -4901,7 +4904,7 @@ int kvmhv_run_single_vcpu(struct kvm_vcpu *vcpu, 
->> u64 time_limit,
->>      }
->>
->>      if (need_resched())
->> -        cond_resched();
->> +        schedule();
->>
->>      kvmppc_update_vpas(vcpu);
->>
->> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
->> index 9a89a6d98f97..54963c1d8b58 100644
->> --- a/arch/powerpc/kvm/powerpc.c
->> +++ b/arch/powerpc/kvm/powerpc.c
->> @@ -86,7 +86,7 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
->>      while (true) {
->>          if (need_resched()) {
->>              local_irq_enable();
->> -            cond_resched();
->> +            schedule();
->>              hard_irq_disable();
->>              continue;
->>          }
->>
-> Hello Shrikanth,
-> t
-> I tested your patch today. The patched preempt kernel boots on my e5500 
-> host and in an e5500 VM. Unfortunately my guest and host freeze after 
-> loading the VirtIO-GPU.
+On 2026-02-21 22:38:29+0100, Nicolas Schier wrote:
+> On Tue, Jan 13, 2026 at 01:28:59PM +0100, Thomas Weißschuh wrote:
+> > The current signature-based module integrity checking has some drawbacks
+> > in combination with reproducible builds. Either the module signing key
+> > is generated at build time, which makes the build unreproducible, or a
+> > static signing key is used, which precludes rebuilds by third parties
+> > and makes the whole build and packaging process much more complicated.
+> > 
+> > The goal is to reach bit-for-bit reproducibility. Excluding certain
+> > parts of the build output from the reproducibility analysis would be
+> > error-prone and force each downstream consumer to introduce new tooling.
+> > 
+> > Introduce a new mechanism to ensure only well-known modules are loaded
+> > by embedding a merkle tree root of all modules built as part of the full
+> > kernel build into vmlinux.
+> > 
+> > Non-builtin modules can be validated as before through signatures.
+> > 
+> > Normally the .ko module files depend on a fully built vmlinux to be
+> > available for modpost validation and BTF generation. With
+> > CONFIG_MODULE_HASHES, vmlinux now depends on the modules
+> > to build a merkle tree. This introduces a dependency cycle which is
+> > impossible to satisfy. Work around this by building the modules during
+> > link-vmlinux.sh, after vmlinux is complete enough for modpost and BTF
+> > but before the final module hashes are
+> > 
+> > The PKCS7 format which is used for regular module signatures can not
+> > represent Merkle proofs, so a new kind of module signature is
+> > introduced. As this signature type is only ever used for builtin
+> > modules, no compatibility issues can arise.
+> > 
+> > Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
+> > ---
+> >  .gitignore                                   |   1 +
+> >  Documentation/kbuild/reproducible-builds.rst |   5 +-
+> >  Makefile                                     |   8 +-
+> >  include/asm-generic/vmlinux.lds.h            |  11 +
+> >  include/linux/module_hashes.h                |  25 ++
+> >  include/linux/module_signature.h             |   1 +
+> >  kernel/module/Kconfig                        |  21 +-
+> >  kernel/module/Makefile                       |   1 +
+> >  kernel/module/hashes.c                       |  92 ++++++
+> >  kernel/module/hashes_root.c                  |   6 +
+> >  kernel/module/internal.h                     |   1 +
+> >  kernel/module/main.c                         |   4 +-
+> >  scripts/.gitignore                           |   1 +
+> >  scripts/Makefile                             |   3 +
+> >  scripts/Makefile.modfinal                    |  11 +
+> >  scripts/Makefile.modinst                     |  13 +
+> >  scripts/Makefile.vmlinux                     |   5 +
+> >  scripts/link-vmlinux.sh                      |  14 +-
+> >  scripts/modules-merkle-tree.c                | 467 +++++++++++++++++++++++++++
+> >  security/lockdown/Kconfig                    |   2 +-
+> >  20 files changed, 685 insertions(+), 7 deletions(-)
+> > 
+> [...]
 > 
-> Thanks for your help,
+> > diff --git a/kernel/module/hashes_root.c b/kernel/module/hashes_root.c
+> > new file mode 100644
+> > index 000000000000..1abfcd3aa679
+> > --- /dev/null
+> > +++ b/kernel/module/hashes_root.c
+> > @@ -0,0 +1,6 @@
+> > +// SPDX-License-Identifier: GPL-2.0-or-later
+> > +
+> > +#include <linux/module_hashes.h>
+> > +
+> > +/* Blank dummy data. Will be overridden by link-vmlinux.sh */
+> > +const struct module_hashes_root module_hashes_root __module_hashes_section = {};
+> > diff --git a/kernel/module/internal.h b/kernel/module/internal.h
+> > index e2d49122c2a1..e22837d3ac76 100644
+> > --- a/kernel/module/internal.h
+> > +++ b/kernel/module/internal.h
+> > @@ -338,6 +338,7 @@ void module_mark_ro_after_init(const Elf_Ehdr *hdr, Elf_Shdr *sechdrs,
+> >  			       const char *secstrings);
+> >  
+> >  int module_sig_check(struct load_info *info, const u8 *sig, size_t sig_len);
+> > +int module_hash_check(struct load_info *info, const u8 *sig, size_t sig_len);
+> >  
+> >  #ifdef CONFIG_DEBUG_KMEMLEAK
+> >  void kmemleak_load_module(const struct module *mod, const struct load_info *info);
+> > diff --git a/kernel/module/main.c b/kernel/module/main.c
+> > index 2a28a0ece809..fa30b6387936 100644
+> > --- a/kernel/module/main.c
+> > +++ b/kernel/module/main.c
+> > @@ -3362,8 +3362,10 @@ static int module_integrity_check(struct load_info *info, int flags)
+> >  
+> >  	if (IS_ENABLED(CONFIG_MODULE_SIG) && sig_type == PKEY_ID_PKCS7) {
+> >  		err = module_sig_check(info, sig, sig_len);
+> > +	} else if (IS_ENABLED(CONFIG_MODULE_HASHES) && sig_type == PKEY_ID_MERKLE) {
+> > +		err = module_hash_check(info, sig, sig_len);
+> >  	} else {
+> > -		pr_err("module: not signed with expected PKCS#7 message\n");
+> > +		pr_err("module: not signed with signature mechanism\n");
+> >  		err = -ENOPKG;
 > 
-> Christian
+> To prevent others from running into the same issue:
+> 
+> My first test got stuck here, as I tested with virtme-ng, which symlinks
+> modules from build tree to /lib/modules/$(uname -r)/..., resulting in
+> 
+>     [   15.956855] module: not signed with signature mechanism
+>     modprobe: ERROR: could not insert 'efivarfs': Package not installed
+> 
+> As the modules_install step was missing, modules were not being signed.
 
-Glad it helps you to boot into.
+Currently the signing is deferred to installation time to keep in sync
+with regular module signing and to keep the logic simpler by not having
+to gracefully handle previously-signed files.
+But this could be changed.
 
-Since you said even host freezes, host maybe crashing.
-Do you have the console log when you load the VirtIO-GPU?
+> [...]
+> > diff --git a/scripts/modules-merkle-tree.c b/scripts/modules-merkle-tree.c
+> > new file mode 100644
+> > index 000000000000..a6ec0e21213b
+> > --- /dev/null
+> > +++ b/scripts/modules-merkle-tree.c
+> > @@ -0,0 +1,467 @@
+> > +// SPDX-License-Identifier: GPL-2.0-or-later
+> > +/*
+> > + * Compute hashes for modules files and build a merkle tree.
+> > + *
+> > + * Copyright (C) 2025 Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+> > + * Copyright (C) 2025 Thomas Weißschuh <linux@weissschuh.net>
+> > + *
+> > + */
+> > +#define _GNU_SOURCE 1
+> > +#include <arpa/inet.h>
+> > +#include <err.h>
+> > +#include <unistd.h>
+> > +#include <fcntl.h>
+> > +#include <stdarg.h>
+> > +#include <stdio.h>
+> > +#include <string.h>
+> > +#include <stdbool.h>
+> > +#include <stdlib.h>
+> > +
+> > +#include <sys/stat.h>
+> > +#include <sys/mman.h>
+> > +
+> > +#include <openssl/evp.h>
+> > +#include <openssl/err.h>
+> > +
+> > +#include "ssl-common.h"
+> > +
+> > +static int hash_size;
+> > +static EVP_MD_CTX *ctx;
+> > +
+> > +struct module_signature {
+> > +	uint8_t		algo;		/* Public-key crypto algorithm [0] */
+> > +	uint8_t		hash;		/* Digest algorithm [0] */
+> > +	uint8_t		id_type;	/* Key identifier type [PKEY_ID_PKCS7] */
+> > +	uint8_t		signer_len;	/* Length of signer's name [0] */
+> > +	uint8_t		key_id_len;	/* Length of key identifier [0] */
+> > +	uint8_t		__pad[3];
+> > +	uint32_t	sig_len;	/* Length of signature data */
+> > +};
+> > +
+> > +#define PKEY_ID_MERKLE 3
+> > +
+> > +static const char magic_number[] = "~Module signature appended~\n";
+> 
+> This here will be the forth definition of struct module_signature,
+> increasing the risk of unwanted diversion.  I second Petr's suggestion
+> to reuse a _common_ definition instead.
+
+Ack.
+
+> (Here, even include/linux/module_signature.h could be included itself.)
+
+I'd like to avoid including internal headers from other components.
+We could move it to an UAPI header. Various other subsystems use those
+for not-really-UAPI but still ABI definitions.
+
+(...)
+
+> > +static inline char *xasprintf(const char *fmt, ...)
+> > +{
+> > +	va_list ap;
+> > +	char *strp;
+> > +	int ret;
+> > +
+> > +	va_start(ap, fmt);
+> > +	ret = vasprintf(&strp, fmt, ap);
+> > +	va_end(ap);
+> > +	if (ret == -1)
+> > +		err(1, "Memory allocation failed");
+> > +
+> > +	return strp;
+> > +}
+> 
+> Please consider moving these x* functions into scripts/include/xalloc.h
+> for reuse.  (I am sure someone else wrote this already, but I can't find
+> it...)
+
+Petr suggested it somewhere, it is done for the next revision.
+
+> thanks for all your efforts for reproducibility!
+> 
+> As I have no clue about that:  Is the patent for merkle trees [1] a
+> problem when integrating that here?
+
+That should have expired a long time ago [2].
+And fs-verity is also using merkle trees.
+
+> Can you verify if I get the mechanics roughly correct?
+> 
+>   * Modules are merkle tree leaves.  Modules are built and logically
+>     paired by the order from modules.order; a single left-over module is
+>     paired with itself.
+> 
+>   * Hashes of paired modules are hashed again (branch node hash);
+>     hashes of pairs of branch nodes' hashes are hashed again;
+>     repeat until we reach the single merkle tree root hash
+> 
+>   * The final merkle tree root hash (and the count of tree levels) is
+>     included in vmlinux
+
+The merkle tree code was written by Sebastian so he will have the best
+knowledge about it. But this is also my understanding.
+
+> 'make && find . -name '*.ko' -exec rm {} \; && make' does not rebuild
+> the in-tree modules.  Shifting the module-hashes support from
+> scripts/link-vmlinux.sh to scripts/Makefile.vmlinux might (make it
+> easier) to fix this again.
+
+I'll take a look at it.
+
+> [1]: https://worldwide.espacenet.com/patent/search/family/022107098/publication/US4309569A?q=pn%3DUS4309569
+
+[2] https://patents.stackexchange.com/questions/17901/validity-of-patent-on-merkle-trees
+
+
+Thomas
 
