@@ -1,94 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-17099-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17100-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C04CEFB81B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Feb 2026 08:58:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0211E9B24C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Feb 2026 10:09:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fKs880xyLz3cJr;
-	Tue, 24 Feb 2026 19:58:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::531" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771923512;
-	cv=pass; b=SQkjM/tF/YZWRCfu5JSgCwrz0jO35KYri9dzbgcCAFxeJZZ9nwS8p2ic9k7A2kI6jAhREOTcycaEPfOlvGHm3W8o+V6DXrmRcp3OFXdRUto0K0sowSzfC4PmQvHP4yMf2SXedY6v3mysKfwI21Er1ar0mNS1NiK/6UIw8gQSpvxVJTtxqsG2LSiOr/oMF2YMlmHeNbGnWgte4rN3fwgMVkA1tOZW6pNLDKYdQZ88uiWGag9wYghL+O7BNpCLhG7HHZ2ZF9Hpv9wP82cOeEm4PBbcbpHYdImDkc26Zyrfu3n0eV3dGLQYciw9C94xPTTGlKQmkzf8aGwdRFERjAOTlw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1771923512; c=relaxed/relaxed;
-	bh=faiZjMOkti3cU0i9Gy2EPz0ZebIZs9O9WnlPDsTpWAc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=hVq78sexK96rCYVYPzgo/wl7C8ddRhnGDdIAbXheEt6vtltRfQjzaQH1GHLBo2/3j4J4B60gtl4LIiE6wpxsstTDVqbEE3zV8DbvNWA8sP+LrqAi3+jt2zEpadNWD3WtPIbz46eoMvCFNT8xWjlizkcdfn1hAQKN/97mcjGxPw0/ndpNLMd7SjnNTIYZRDUHeUAodq6DC5zIr9h69Ln5iwSiwleJL9IMptnssQyOjN4DR8+h5j32KvVPxh9+TAvijmglbZ0H8sTOVqeBOI/PPWeN3oHn+fPxPNdrF4kpZeKPCWGSwPVENk/CV9F7xST47vNElOcA5OTIg89x6KGIBg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=kBBlPTgd; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::531; helo=mail-ed1-x531.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fKtkS0br8z3cLg;
+	Tue, 24 Feb 2026 21:09:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771927792;
+	cv=none; b=SbUb9O4my44iN3EBEHgirPS+f+OIzk3W59+fJJabwnwbwMg31P0jp6EwSKOp60T/UkIMbC1Y5raTxTypeCHl4rBG2CoXEm2tsqmaGplZr8NGhe6XJmu8ScEbphEMsDSSFBlQ2p6wWO3iw/F0lUUTzYSyp+E33A1vA3grf3rYWshM6xtTk8AibswspjYNzR5GipRqHzop3Vj0/zyTT+kjnY4bXBMzZfsWee1T8/szBIvotFNyUNO8HN/aR63P1xVbO4nUKi1zn/9H0zgP6Q7CufdoVXfQVZ5XAS9routfcYtm4LlFUQCuBqGpqHDHAzx/LmhIrCTJ5NNzgOCnN1/KPA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1771927792; c=relaxed/relaxed;
+	bh=amCVEVpiZceKS/9PaKZY/D7hzY7M3HXHMAkJsrFiw4I=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=iP00sQg5mdVSqBK4Bdms2FAKTyJMItq3EEt8VAKESkqW38JrvrOQ5n9Yi5GOepLRmRLYZhRRNb53QWAO/54KO5DfGzt9SQwhteRvWJ95SHFtWg9zezCdQf68og/ofmcf7RhJeBa4HWvPTqNxOlN6Uba0M30oLnx5qlSIzF6TEv4bpIrxFylIwXtpbRh8oFpMwJ0Z0Su0qmBdXFDGzM8SqW6AZtpPwZlWVTuqqlac48daS36qJVnmZwpEy8ZuMyINb/f3gUPJv9Wv/FITHj1xKYVyCgssUlQh34+rsk8h6cXfId6ZePhW0S6jBQcsCPU/Vc25kAuAF2v+mq/e6ccTxg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Jfg8+cOl; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=maz@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=kBBlPTgd;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Jfg8+cOl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::531; helo=mail-ed1-x531.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x531.google.com (mail-ed1-x531.google.com [IPv6:2a00:1450:4864:20::531])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=maz@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fKs864NBtz3cJj
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2026 19:58:29 +1100 (AEDT)
-Received: by mail-ed1-x531.google.com with SMTP id 4fb4d7f45d1cf-65b94e0a875so7511785a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2026 00:58:29 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1771923507; cv=none;
-        d=google.com; s=arc-20240605;
-        b=V8Pgh08AmbGWTW0zMsSCnm8SnnD0BCKC9Nq+buVMwq1500w5fD0BAAgHm39sop0Orh
-         XRvlecjL4g81FKnOa4VXj1GfJnuRHpO7F1KOhiCLkA1377W/uPdbWNv9Qf0EK6YBHF2+
-         1Cy//7YLQHsjZGq+p46Pss4+E7tJ//SQ3xFPI7doE/BlRW/p1G4v45++KuxktPbGAoE0
-         A1fskr2bF0yIQ+GX/vtPc9kb92a30ZJm/uO+ym1P+l/nHe0DXa1vonQctUB9iMDW6Yp/
-         2GEfYh7MXfkE04Plvnu/Q7lbkFeH76jWDenLTtwIqlMtmQEyqwu833S9+zrhJoSZtkA4
-         kRhw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=faiZjMOkti3cU0i9Gy2EPz0ZebIZs9O9WnlPDsTpWAc=;
-        fh=E3llIhXXBSsFYcX3sXtZbG5jcFm2U4Gh39b6Lj9rBKg=;
-        b=c07L08W3POZCngRlP6Mdd1xALrl57gBUGqx9fmOGhy7IAG+a2ma/ucsVjdOl7Dkv82
-         tVJwGe6uqsVXdFhjWysWAGog9g9vpgQCyy58Y2yFbpYlkC//SSAvYL4UWR28tQUafSSm
-         tp8j+pfbiODNl7NjymEYCYYU5RZDVSe1qHzf1cF3WQ0uR+UzD/igwgRR5VQiUAyqfjIk
-         GTf7f/ZedDGvkvLgyEU9s4NIb5u7aCZ1vtDWdWa7H6U4zIUFeYD7och5oHTJYRi/3LxJ
-         y9DEM+XLcY7A5Cw/8y6MuwWA9J/dJz46q1uWoJ6P5A7sKvMQPxhj0/MQa9lHfbxWtlgV
-         VflA==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1771923507; x=1772528307; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=faiZjMOkti3cU0i9Gy2EPz0ZebIZs9O9WnlPDsTpWAc=;
-        b=kBBlPTgdg2/85Zs70soE5F0hrLEtzC9Qv+dyNh9v24LEhh5eFaDEWQUbGYxN8Aoxmh
-         oZlLm6RMoyhcu1ltsar1WqAUgcddtQq/dwjJgOnKnX+brSzwFZWpqEjdC+eQl2GiTGnB
-         RGLQBOkqwIUpGotsFhGBAbc10wZXTrkmPmzTgqpDPk/SGkkc04P6vRedpCqep/R5bYJu
-         vlb8KnO656lKapZYptZZVEl1B3FDqEdMNLW6VVYFnwKJPLRWvhkd8CAPuA7Fdpy7TOqQ
-         18uQx4ZmCMSTzRMkQ3ZorUrYW9JYObKIC9Cxfs/fpBvcwQ/aYKvgLi7Qvjr82BdmOLl+
-         UVPg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1771923507; x=1772528307;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=faiZjMOkti3cU0i9Gy2EPz0ZebIZs9O9WnlPDsTpWAc=;
-        b=iuwWEiQmrHEqBrM3jDfuFr6NUculB7xCZ9kATAbnmYXfw61VdQW79UpJs6SCqjGddc
-         QeVpdFg+HxZ7t7827vAaVJhfzHl0UE4YjQRZy0IOs8AU1L2RGFqtlTJ3wwExDt89fgJl
-         znmk0NRAqPxkSkI3rqERQxKE5pdVtmsJlazhCtuoSETNfViTijxpmvKyqfKWDXQibWt6
-         CDP5nwiZ+le523x5kDxy7MuJBLoclkPxGapwfyx/tslnFdk5bR1QCyavTJP00Mnn4102
-         OB+qq8T9A7H5f4t96VCk8BJhUpLyARouYnhBX52j0+DCb0dUNl2E6g8S6w1H/m1ztujT
-         6MPQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXuyfnWkpzgMDZm1CghvskP1zEEP+IjP7zjewvSUrK+gQG6wBV2LOpG/yTdOXcKztgbccWgQrXpgzts2go=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx05DKut4KwpjhBBgQAFiBNd58dt83kw0nR/7h3er/b5YyZooqV
-	5Cnd63rYRWd97xyF0Hxyr5Hk7wKF6P6/VGiRxaY3NbrDVAijWVBbWhwk8SdLxbxV/aAH59iT3AU
-	pAoJgCrjz2iLKj+Hjfjve8c4QQHfbdxw=
-X-Gm-Gg: AZuq6aIfsFu6uhB/PCOYBX9TchoVznPk5+zojNA+gDq/NNqU2qiDMVOk8SwPKq2PAUt
-	02O4jWH2JT49hy+47ZGqNZozCptRLZkSVYN04Qf7WnpS1c7bAY3wUVIKRCY8HYyZys9Rtg5Dw7V
-	LcXPCjZlgqFWSz58nAseKEFiCRuJ9f04zetTKvbGHhGl70CGZFG5ZdKJxAxzd6cDkmzaG+jPJaD
-	fI/ufS0VcMS1DfcOW+S+HU0p9Q5bFVkv6PxBpMWEDwq85qVS5oQZ4TmUqgrMbLWkgNGJLkhErUC
-	syRN7LEtx48bmqHRjQB6Wvw3DNItlSSpRKQvLb4wJRKY/0pAK0x9a3gNTbM+EWyflNNevHfIpQZ
-	MwaPpHQ==
-X-Received: by 2002:a17:906:2083:b0:b8e:7d43:edd9 with SMTP id
- a640c23a62f3a-b9081b403camr443962166b.34.1771923506344; Tue, 24 Feb 2026
- 00:58:26 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fKtkQ706Vz3cLR
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2026 21:09:50 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id A1FC6445AE;
+	Tue, 24 Feb 2026 10:09:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 81D6DC2BCAF;
+	Tue, 24 Feb 2026 10:09:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1771927788;
+	bh=hsCQhGflSwjmOOlm9wV6+2iHnF8xoCeNa3HV8QtpTIo=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=Jfg8+cOl4ZROIlq75g/zbRWA5RZsKZFwCLFu9ML0xh3yavj7Gr9gC49zC+9v6eMJY
+	 pqesAKHcmJbcbGTRx3DuY5Ult7dqQ/Af8fI8zFCeeTIxG/s/9PjRN1T5TbsPuj+zgd
+	 qYo4TbIAAc7L6aOi6odjUa7Pt6RFUIibW1ol8phLKXEPdF8uuGxFNilEGSj/E+SoTo
+	 Kj4c+dFwBDiN0dNYQ5neqwt1sux5h4ewMdsHxh+VbBlngelziRXFArZ5UdD2ePYKRZ
+	 P+NOOoMrcRUSXzPyT2xnLLZ8bIATh/Dx4cDU3Z+CRRHnG1PTtHuW0lhWZBacnEM5of
+	 FrAoGZHVj2gyw==
+Received: from sofa.misterjones.org ([185.219.108.64] helo=valley-girl.lan)
+	by disco-boy.misterjones.org with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.98.2)
+	(envelope-from <maz@kernel.org>)
+	id 1vupMQ-0000000DIa5-1EUE;
+	Tue, 24 Feb 2026 10:09:46 +0000
+From: Marc Zyngier <maz@kernel.org>
+To: Ioana Ciornei <ioana.ciornei@nxp.com>,
+	Thomas Gleixner <tglx@kernel.org>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Sascha Bischoff <sascha.bischoff@arm.com>,
+	linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 3/6] irqchip/gic-v3-its: Add fsl_mc device plumbing to the msi-parent handling
+Date: Tue, 24 Feb 2026 10:09:33 +0000
+Message-ID: <20260224100936.3752303-4-maz@kernel.org>
+X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20260224100936.3752303-1-maz@kernel.org>
+References: <20260224100936.3752303-1-maz@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,64 +77,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260224014607.353378-1-rosenp@gmail.com> <ff1c77b9-bb29-48f8-b942-6ace8ea31dd1@kernel.org>
-In-Reply-To: <ff1c77b9-bb29-48f8-b942-6ace8ea31dd1@kernel.org>
-From: Rosen Penev <rosenp@gmail.com>
-Date: Tue, 24 Feb 2026 00:58:14 -0800
-X-Gm-Features: AaiRm50Bek9WP5Ws1AwhONIM9bVEBKCp-RC5r12jn8hk7U7EM-DczY17IsUaeCc
-Message-ID: <CAKxU2N-Vr_cQBBwWd49j6U=WO3pFjLWos4A50AOnFTY1qhyNiQ@mail.gmail.com>
-Subject: Re: [PATCH net-next] net: fs_enet: allow nvmem to override MAC address
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: netdev@vger.kernel.org, Pantelis Antoniou <pantelis.antoniou@gmail.com>, 
-	Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
-	Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
-	"open list:FREESCALE SOC FS_ENET DRIVER" <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 185.219.108.64
+X-SA-Exim-Rcpt-To: ioana.ciornei@nxp.com, tglx@kernel.org, chleroy@kernel.org, sascha.bischoff@arm.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
+X-SA-Exim-Mail-From: maz@kernel.org
+X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
 
-On Tue, Feb 24, 2026 at 12:29=E2=80=AFAM Christophe Leroy (CS GROUP)
-<chleroy@kernel.org> wrote:
->
->
->
-> Le 24/02/2026 =C3=A0 02:46, Rosen Penev a =C3=A9crit :
-> > NVMEM typically loads after the ethernet driver and
-> > of_get_ethdev_address returns -EPROBE_DEFER. return in such a case to
-> > allow NVMEM to work.
-> >
-> > Signed-off-by: Rosen Penev <rosenp@gmail.com>
-> > ---
-> >   drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c | 4 +++-
-> >   1 file changed, 3 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/dr=
-ivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-> > index 2cbcc29408e3..d3c772ed5fc9 100644
-> > --- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-> > +++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-> > @@ -951,7 +951,9 @@ static int fs_enet_probe(struct platform_device *of=
-dev)
-> >       spin_lock_init(&fep->lock);
-> >       spin_lock_init(&fep->tx_lock);
-> >
-> > -     of_get_ethdev_address(ofdev->dev.of_node, ndev);
-> > +     ret =3D of_get_ethdev_address(ofdev->dev.of_node, ndev);
-> > +     if (ret =3D=3D -EPROBE_DEFER)
-> > +             goto out_cleanup_data;
->
-> What about other error cases ? Shouldn't it exit on all types of errors ?
-For MAC acquisition? No. That would result in a non working interface
-for no good reason.
+Make the ITS code aware of fsl_mc devices by plumbing the devid
+retrieval primitive.
 
-The way other driver handle this is exit when probe is deferred, and
-set a random MAC on other errors.
->
-> >
-> >       ret =3D fep->ops->allocate_bd(ndev);
-> >       if (ret)
-> > --
-> > 2.53.0
-> >
-> >
->
+Reviewed-by: Ioana Ciornei <ioana.ciornei@nxp.com>
+Tested-by: Ioana Ciornei <ioana.ciornei@nxp.com> # LX2160ARDB, LS2088ARDB
+Tested-by: Sascha Bischoff <sascha.bischoff@arm.com>
+Signed-off-by: Marc Zyngier <maz@kernel.org>
+---
+ drivers/irqchip/irq-gic-its-msi-parent.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/irqchip/irq-gic-its-msi-parent.c b/drivers/irqchip/irq-gic-its-msi-parent.c
+index a832cdb2e6978..d36b278ae66c5 100644
+--- a/drivers/irqchip/irq-gic-its-msi-parent.c
++++ b/drivers/irqchip/irq-gic-its-msi-parent.c
+@@ -5,6 +5,7 @@
+ // Copyright (C) 2022 Intel
+ 
+ #include <linux/acpi_iort.h>
++#include <linux/fsl/mc.h>
+ #include <linux/of_address.h>
+ #include <linux/pci.h>
+ 
+@@ -187,9 +188,11 @@ static int its_pmsi_prepare(struct irq_domain *domain, struct device *dev,
+ {
+ 	struct msi_domain_info *msi_info;
+ 	u32 dev_id;
+-	int ret;
++	int ret = 0;
+ 
+-	if (dev->of_node)
++	if (dev_is_fsl_mc(dev))
++		dev_id = fsl_mc_get_msi_id(dev);
++	else if (dev->of_node)
+ 		ret = of_pmsi_get_msi_info(domain->parent, dev, &dev_id, NULL);
+ 	else
+ 		ret = iort_pmsi_get_msi_info(dev, &dev_id, NULL);
+-- 
+2.47.3
+
 
