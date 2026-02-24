@@ -1,80 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-17098-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17099-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C42FEFB819
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Feb 2026 08:55:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C04CEFB81B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Feb 2026 08:58:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fKs4D0cLsz3cL0;
-	Tue, 24 Feb 2026 19:55:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771923308;
-	cv=none; b=TAJg+QtNwGucDRjGwXbUO3nzuxkhEXbhZE+8hiQJbq8J26hnx2d/4a90dDizogV2DsHoYtlirEfZtE821h4F/8y/d/ULzRfMI2/KGRTCt9M03+ZCfcLg0xigCU1kX275UBqD6IgENWBonLlWdyqnSPIcPXbORCDBF85A45qdr7WwghKGtTgHq+TzEUw/PsKp9lJVP9K9Vk1zdeko44xB6yyghIZUvRy8y9XgwbMLnos9ko9hL1hebis3M3GaqpqqOBLauDfZtIwcCfaJbRG3HQub8oXcsO+/rKdm+K+OJCPh/5s2pgxCayh5ZDgPEn/jMYZYYevrTYrKNHzSJ9qDeA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1771923308; c=relaxed/relaxed;
-	bh=rNYav2yGpg/yhEliv79lwhJ8COerKJd3gx9DFjPKfgs=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=YlZiVSuytrclAzk6Y/k0Ez72CU5DJ21foKRe8MCMkwk171lZH8zd9FM6QcTJWQsUGpBjA+hpkTWkM7C2CoD5cOl/VCa4xUhncgipa95wXjmaitkFC5LpA9AMgfVCcMN3gr8bLaH2K/uuNND4kWW/do0SLIjZ3yefQbIVXKowLScLRCbrptrrAX8eAgvKHqjnKDjbDBmjguylEoyEkh1jYoLR/Gqhl4TbHpJL5zvDJ6rluqdhBkT6/HGx7S2Tyg1qq9RdK/sjSo6+Jwau0YEpRMz+wQ1Fm2S8tdLCu6auzsHAs6bduC/8AQLKoyqilBKpIr1nht+3yp1G7ZYgRURiLQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=KAFY5ARO; dkim-atps=neutral; spf=pass (client-ip=113.46.200.217; helo=canpmsgout02.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fKs880xyLz3cJr;
+	Tue, 24 Feb 2026 19:58:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::531" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771923512;
+	cv=pass; b=SQkjM/tF/YZWRCfu5JSgCwrz0jO35KYri9dzbgcCAFxeJZZ9nwS8p2ic9k7A2kI6jAhREOTcycaEPfOlvGHm3W8o+V6DXrmRcp3OFXdRUto0K0sowSzfC4PmQvHP4yMf2SXedY6v3mysKfwI21Er1ar0mNS1NiK/6UIw8gQSpvxVJTtxqsG2LSiOr/oMF2YMlmHeNbGnWgte4rN3fwgMVkA1tOZW6pNLDKYdQZ88uiWGag9wYghL+O7BNpCLhG7HHZ2ZF9Hpv9wP82cOeEm4PBbcbpHYdImDkc26Zyrfu3n0eV3dGLQYciw9C94xPTTGlKQmkzf8aGwdRFERjAOTlw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1771923512; c=relaxed/relaxed;
+	bh=faiZjMOkti3cU0i9Gy2EPz0ZebIZs9O9WnlPDsTpWAc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=hVq78sexK96rCYVYPzgo/wl7C8ddRhnGDdIAbXheEt6vtltRfQjzaQH1GHLBo2/3j4J4B60gtl4LIiE6wpxsstTDVqbEE3zV8DbvNWA8sP+LrqAi3+jt2zEpadNWD3WtPIbz46eoMvCFNT8xWjlizkcdfn1hAQKN/97mcjGxPw0/ndpNLMd7SjnNTIYZRDUHeUAodq6DC5zIr9h69Ln5iwSiwleJL9IMptnssQyOjN4DR8+h5j32KvVPxh9+TAvijmglbZ0H8sTOVqeBOI/PPWeN3oHn+fPxPNdrF4kpZeKPCWGSwPVENk/CV9F7xST47vNElOcA5OTIg89x6KGIBg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=kBBlPTgd; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::531; helo=mail-ed1-x531.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=KAFY5ARO;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=kBBlPTgd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.217; helo=canpmsgout02.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout02.his.huawei.com (canpmsgout02.his.huawei.com [113.46.200.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::531; helo=mail-ed1-x531.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x531.google.com (mail-ed1-x531.google.com [IPv6:2a00:1450:4864:20::531])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fKs4B5tFhz3cPb
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2026 19:55:06 +1100 (AEDT)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=rNYav2yGpg/yhEliv79lwhJ8COerKJd3gx9DFjPKfgs=;
-	b=KAFY5ARO3lkVVlwifRHD59MvsYOIxlEqBKCuVdt9gR43+fi6kz761/nmCdIH8aKkL2My7T0x+
-	XSGqwaW1YlXTdSb0joV2Ga1dvUnO2qFrEpDnU5u9/XXt/LGEIsgjOvZSzDomn1uY9e6UrIk7gDS
-	PNte+t/SYwF58Yq+2OvlD8A=
-Received: from mail.maildlp.com (unknown [172.19.162.144])
-	by canpmsgout02.his.huawei.com (SkyGuard) with ESMTPS id 4fKryM166Wzcb1W;
-	Tue, 24 Feb 2026 16:50:03 +0800 (CST)
-Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id 1A20240567;
-	Tue, 24 Feb 2026 16:55:02 +0800 (CST)
-Received: from huawei.com (10.90.53.73) by dggpemf500011.china.huawei.com
- (7.185.36.131) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Tue, 24 Feb
- 2026 16:54:59 +0800
-From: Jinjie Ruan <ruanjinjie@huawei.com>
-To: <corbet@lwn.net>, <skhan@linuxfoundation.org>, <catalin.marinas@arm.com>,
-	<will@kernel.org>, <chenhuacai@kernel.org>, <kernel@xen0n.name>,
-	<maddy@linux.ibm.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
-	<chleroy@kernel.org>, <pjw@kernel.org>, <palmer@dabbelt.com>,
-	<aou@eecs.berkeley.edu>, <alex@ghiti.fr>, <tglx@kernel.org>,
-	<mingo@redhat.com>, <bp@alien8.de>, <dave.hansen@linux.intel.com>,
-	<hpa@zytor.com>, <akpm@linux-foundation.org>, <bhe@redhat.com>,
-	<vgoyal@redhat.com>, <dyoung@redhat.com>, <rdunlap@infradead.org>,
-	<pmladek@suse.com>, <dapeng1.mi@linux.intel.com>, <kees@kernel.org>,
-	<paulmck@kernel.org>, <lirongqing@baidu.com>, <arnd@arndb.de>,
-	<ardb@kernel.org>, <leitao@debian.org>, <rppt@kernel.org>,
-	<cfsworks@gmail.com>, <ryan.roberts@arm.com>, <sourabhjain@linux.ibm.com>,
-	<tangyouling@kylinos.cn>, <eajames@linux.ibm.com>, <hbathini@linux.ibm.com>,
-	<ritesh.list@gmail.com>, <songshuaishuai@tinylab.org>,
-	<samuel.holland@sifive.com>, <kevin.brodsky@arm.com>,
-	<vishal.moola@gmail.com>, <junhui.liu@pigmoral.tech>, <coxu@redhat.com>,
-	<liaoyuanhong@vivo.com>, <fuqiang.wang@easystack.cn>, <jbohac@suse.cz>,
-	<brgerst@gmail.com>, <x86@kernel.org>, <linux-doc@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
-	<linux-riscv@lists.infradead.org>, <kexec@lists.infradead.org>
-CC: <ruanjinjie@huawei.com>
-Subject: [PATCH v6 5/5] riscv: kexec: Add support for crashkernel CMA reservation
-Date: Tue, 24 Feb 2026 16:53:42 +0800
-Message-ID: <20260224085342.387996-6-ruanjinjie@huawei.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260224085342.387996-1-ruanjinjie@huawei.com>
-References: <20260224085342.387996-1-ruanjinjie@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fKs864NBtz3cJj
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2026 19:58:29 +1100 (AEDT)
+Received: by mail-ed1-x531.google.com with SMTP id 4fb4d7f45d1cf-65b94e0a875so7511785a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2026 00:58:29 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1771923507; cv=none;
+        d=google.com; s=arc-20240605;
+        b=V8Pgh08AmbGWTW0zMsSCnm8SnnD0BCKC9Nq+buVMwq1500w5fD0BAAgHm39sop0Orh
+         XRvlecjL4g81FKnOa4VXj1GfJnuRHpO7F1KOhiCLkA1377W/uPdbWNv9Qf0EK6YBHF2+
+         1Cy//7YLQHsjZGq+p46Pss4+E7tJ//SQ3xFPI7doE/BlRW/p1G4v45++KuxktPbGAoE0
+         A1fskr2bF0yIQ+GX/vtPc9kb92a30ZJm/uO+ym1P+l/nHe0DXa1vonQctUB9iMDW6Yp/
+         2GEfYh7MXfkE04Plvnu/Q7lbkFeH76jWDenLTtwIqlMtmQEyqwu833S9+zrhJoSZtkA4
+         kRhw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=faiZjMOkti3cU0i9Gy2EPz0ZebIZs9O9WnlPDsTpWAc=;
+        fh=E3llIhXXBSsFYcX3sXtZbG5jcFm2U4Gh39b6Lj9rBKg=;
+        b=c07L08W3POZCngRlP6Mdd1xALrl57gBUGqx9fmOGhy7IAG+a2ma/ucsVjdOl7Dkv82
+         tVJwGe6uqsVXdFhjWysWAGog9g9vpgQCyy58Y2yFbpYlkC//SSAvYL4UWR28tQUafSSm
+         tp8j+pfbiODNl7NjymEYCYYU5RZDVSe1qHzf1cF3WQ0uR+UzD/igwgRR5VQiUAyqfjIk
+         GTf7f/ZedDGvkvLgyEU9s4NIb5u7aCZ1vtDWdWa7H6U4zIUFeYD7och5oHTJYRi/3LxJ
+         y9DEM+XLcY7A5Cw/8y6MuwWA9J/dJz46q1uWoJ6P5A7sKvMQPxhj0/MQa9lHfbxWtlgV
+         VflA==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1771923507; x=1772528307; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=faiZjMOkti3cU0i9Gy2EPz0ZebIZs9O9WnlPDsTpWAc=;
+        b=kBBlPTgdg2/85Zs70soE5F0hrLEtzC9Qv+dyNh9v24LEhh5eFaDEWQUbGYxN8Aoxmh
+         oZlLm6RMoyhcu1ltsar1WqAUgcddtQq/dwjJgOnKnX+brSzwFZWpqEjdC+eQl2GiTGnB
+         RGLQBOkqwIUpGotsFhGBAbc10wZXTrkmPmzTgqpDPk/SGkkc04P6vRedpCqep/R5bYJu
+         vlb8KnO656lKapZYptZZVEl1B3FDqEdMNLW6VVYFnwKJPLRWvhkd8CAPuA7Fdpy7TOqQ
+         18uQx4ZmCMSTzRMkQ3ZorUrYW9JYObKIC9Cxfs/fpBvcwQ/aYKvgLi7Qvjr82BdmOLl+
+         UVPg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1771923507; x=1772528307;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=faiZjMOkti3cU0i9Gy2EPz0ZebIZs9O9WnlPDsTpWAc=;
+        b=iuwWEiQmrHEqBrM3jDfuFr6NUculB7xCZ9kATAbnmYXfw61VdQW79UpJs6SCqjGddc
+         QeVpdFg+HxZ7t7827vAaVJhfzHl0UE4YjQRZy0IOs8AU1L2RGFqtlTJ3wwExDt89fgJl
+         znmk0NRAqPxkSkI3rqERQxKE5pdVtmsJlazhCtuoSETNfViTijxpmvKyqfKWDXQibWt6
+         CDP5nwiZ+le523x5kDxy7MuJBLoclkPxGapwfyx/tslnFdk5bR1QCyavTJP00Mnn4102
+         OB+qq8T9A7H5f4t96VCk8BJhUpLyARouYnhBX52j0+DCb0dUNl2E6g8S6w1H/m1ztujT
+         6MPQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXuyfnWkpzgMDZm1CghvskP1zEEP+IjP7zjewvSUrK+gQG6wBV2LOpG/yTdOXcKztgbccWgQrXpgzts2go=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx05DKut4KwpjhBBgQAFiBNd58dt83kw0nR/7h3er/b5YyZooqV
+	5Cnd63rYRWd97xyF0Hxyr5Hk7wKF6P6/VGiRxaY3NbrDVAijWVBbWhwk8SdLxbxV/aAH59iT3AU
+	pAoJgCrjz2iLKj+Hjfjve8c4QQHfbdxw=
+X-Gm-Gg: AZuq6aIfsFu6uhB/PCOYBX9TchoVznPk5+zojNA+gDq/NNqU2qiDMVOk8SwPKq2PAUt
+	02O4jWH2JT49hy+47ZGqNZozCptRLZkSVYN04Qf7WnpS1c7bAY3wUVIKRCY8HYyZys9Rtg5Dw7V
+	LcXPCjZlgqFWSz58nAseKEFiCRuJ9f04zetTKvbGHhGl70CGZFG5ZdKJxAxzd6cDkmzaG+jPJaD
+	fI/ufS0VcMS1DfcOW+S+HU0p9Q5bFVkv6PxBpMWEDwq85qVS5oQZ4TmUqgrMbLWkgNGJLkhErUC
+	syRN7LEtx48bmqHRjQB6Wvw3DNItlSSpRKQvLb4wJRKY/0pAK0x9a3gNTbM+EWyflNNevHfIpQZ
+	MwaPpHQ==
+X-Received: by 2002:a17:906:2083:b0:b8e:7d43:edd9 with SMTP id
+ a640c23a62f3a-b9081b403camr443962166b.34.1771923506344; Tue, 24 Feb 2026
+ 00:58:26 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,131 +102,64 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.90.53.73]
-X-ClientProxiedBy: kwepems100001.china.huawei.com (7.221.188.238) To
- dggpemf500011.china.huawei.com (7.185.36.131)
+References: <20260224014607.353378-1-rosenp@gmail.com> <ff1c77b9-bb29-48f8-b942-6ace8ea31dd1@kernel.org>
+In-Reply-To: <ff1c77b9-bb29-48f8-b942-6ace8ea31dd1@kernel.org>
+From: Rosen Penev <rosenp@gmail.com>
+Date: Tue, 24 Feb 2026 00:58:14 -0800
+X-Gm-Features: AaiRm50Bek9WP5Ws1AwhONIM9bVEBKCp-RC5r12jn8hk7U7EM-DczY17IsUaeCc
+Message-ID: <CAKxU2N-Vr_cQBBwWd49j6U=WO3pFjLWos4A50AOnFTY1qhyNiQ@mail.gmail.com>
+Subject: Re: [PATCH net-next] net: fs_enet: allow nvmem to override MAC address
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: netdev@vger.kernel.org, Pantelis Antoniou <pantelis.antoniou@gmail.com>, 
+	Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, 
+	Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+	"open list:FREESCALE SOC FS_ENET DRIVER" <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Commit 35c18f2933c5 ("Add a new optional ",cma" suffix to the
-crashkernel= command line option") and commit ab475510e042 ("kdump:
-implement reserve_crashkernel_cma") added CMA support for kdump
-crashkernel reservation. This allows the kernel to dynamically allocate
-contiguous memory for crash dumping when needed, rather than permanently
-reserving a fixed region at boot time.
+On Tue, Feb 24, 2026 at 12:29=E2=80=AFAM Christophe Leroy (CS GROUP)
+<chleroy@kernel.org> wrote:
+>
+>
+>
+> Le 24/02/2026 =C3=A0 02:46, Rosen Penev a =C3=A9crit :
+> > NVMEM typically loads after the ethernet driver and
+> > of_get_ethdev_address returns -EPROBE_DEFER. return in such a case to
+> > allow NVMEM to work.
+> >
+> > Signed-off-by: Rosen Penev <rosenp@gmail.com>
+> > ---
+> >   drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c | 4 +++-
+> >   1 file changed, 3 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/dr=
+ivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+> > index 2cbcc29408e3..d3c772ed5fc9 100644
+> > --- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+> > +++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+> > @@ -951,7 +951,9 @@ static int fs_enet_probe(struct platform_device *of=
+dev)
+> >       spin_lock_init(&fep->lock);
+> >       spin_lock_init(&fep->tx_lock);
+> >
+> > -     of_get_ethdev_address(ofdev->dev.of_node, ndev);
+> > +     ret =3D of_get_ethdev_address(ofdev->dev.of_node, ndev);
+> > +     if (ret =3D=3D -EPROBE_DEFER)
+> > +             goto out_cleanup_data;
+>
+> What about other error cases ? Shouldn't it exit on all types of errors ?
+For MAC acquisition? No. That would result in a non working interface
+for no good reason.
 
-So extend crashkernel CMA reservation support to riscv. The following
-changes are made to enable CMA reservation:
-
-- Parse and obtain the CMA reservation size along with other crashkernel
-  parameters.
-- Call reserve_crashkernel_cma() to allocate the CMA region for kdump.
-- Include the CMA-reserved ranges for kdump kernel to use.
-- Exclude the CMA-reserved ranges from the crash kernel memory to
-  prevent them from being exported through /proc/vmcore, which is already
-  done in the crash core.
-
-Update kernel-parameters.txt to document CMA support for crashkernel on
-riscv architecture.
-
-Acked-by: Paul Walmsley <pjw@kernel.org> # arch/riscv
-Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
----
- Documentation/admin-guide/kernel-parameters.txt | 16 ++++++++--------
- arch/riscv/kernel/machine_kexec_file.c          | 16 ++++++++++++++--
- arch/riscv/mm/init.c                            |  5 +++--
- 3 files changed, 25 insertions(+), 12 deletions(-)
-
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 497f63b76898..3f9ca148167e 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -1121,14 +1121,14 @@ Kernel parameters
- 			It will be ignored when crashkernel=X,high is not used
- 			or memory reserved is below 4G.
- 	crashkernel=size[KMG],cma
--			[KNL, X86, ARM64, ppc] Reserve additional crash kernel memory from
--			CMA. This reservation is usable by the first system's
--			userspace memory and kernel movable allocations (memory
--			balloon, zswap). Pages allocated from this memory range
--			will not be included in the vmcore so this should not
--			be used if dumping of userspace memory is intended and
--			it has to be expected that some movable kernel pages
--			may be missing from the dump.
-+			[KNL, X86, ARM64, RISCV, ppc] Reserve additional crash
-+			kernel memory from CMA. This reservation is usable by
-+			the first system's userspace memory and kernel movable
-+			allocations (memory balloon, zswap). Pages allocated
-+			from this memory range will not be included in the vmcore
-+			so this should not be used if dumping of userspace memory
-+			is intended and it has to be expected that some movable
-+			kernel pages may be missing from the dump.
- 
- 			A standard crashkernel reservation, as described above,
- 			is still needed to hold the crash kernel and initrd.
-diff --git a/arch/riscv/kernel/machine_kexec_file.c b/arch/riscv/kernel/machine_kexec_file.c
-index d0e331d87155..605903e21c01 100644
---- a/arch/riscv/kernel/machine_kexec_file.c
-+++ b/arch/riscv/kernel/machine_kexec_file.c
-@@ -46,7 +46,7 @@ static int get_nr_ram_ranges_callback(struct resource *res, void *arg)
- 
- unsigned int arch_get_system_nr_ranges(void)
- {
--	unsigned int nr_ranges = 1; /* For exclusion of crashkernel region */
-+	unsigned int nr_ranges = 1 + crashk_cma_cnt; /* For exclusion of crashkernel region */
- 
- 	walk_system_ram_res(0, -1, &nr_ranges, get_nr_ram_ranges_callback);
- 
-@@ -66,8 +66,20 @@ static int prepare_elf64_ram_headers_callback(struct resource *res, void *arg)
- 
- int arch_crash_populate_cmem(struct crash_mem *cmem)
- {
-+	int ret, i;
-+
- 	cmem->nr_ranges = 0;
--	return walk_system_ram_res(0, -1, cmem, prepare_elf64_ram_headers_callback);
-+	ret = walk_system_ram_res(0, -1, cmem, prepare_elf64_ram_headers_callback);
-+	if (ret)
-+		return ret;
-+
-+	for (i = 0; i < crashk_cma_cnt; i++) {
-+		cmem->ranges[cmem->nr_ranges].start = crashk_cma_ranges[i].start;
-+		cmem->ranges[cmem->nr_ranges].end = crashk_cma_ranges[i].end;
-+		cmem->nr_ranges++;
-+	}
-+
-+	return 0;
- }
- 
- static char *setup_kdump_cmdline(struct kimage *image, char *cmdline,
-diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
-index 811e03786c56..4cd49afa9077 100644
---- a/arch/riscv/mm/init.c
-+++ b/arch/riscv/mm/init.c
-@@ -1398,7 +1398,7 @@ static inline void setup_vm_final(void)
-  */
- static void __init arch_reserve_crashkernel(void)
- {
--	unsigned long long low_size = 0;
-+	unsigned long long low_size = 0, cma_size = 0;
- 	unsigned long long crash_base, crash_size;
- 	bool high = false;
- 	int ret;
-@@ -1408,11 +1408,12 @@ static void __init arch_reserve_crashkernel(void)
- 
- 	ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
- 				&crash_size, &crash_base,
--				&low_size, NULL, &high);
-+				&low_size, &cma_size, &high);
- 	if (ret)
- 		return;
- 
- 	reserve_crashkernel_generic(crash_size, crash_base, low_size, high);
-+	reserve_crashkernel_cma(cma_size);
- }
- 
- void __init paging_init(void)
--- 
-2.34.1
-
+The way other driver handle this is exit when probe is deferred, and
+set a random MAC on other errors.
+>
+> >
+> >       ret =3D fep->ops->allocate_bd(ndev);
+> >       if (ret)
+> > --
+> > 2.53.0
+> >
+> >
+>
 
