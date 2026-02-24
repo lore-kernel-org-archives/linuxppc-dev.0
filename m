@@ -1,51 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-17116-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17117-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55F4AF3C9AC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Feb 2026 16:11:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B373F3C9AC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Feb 2026 16:15:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fL2lM6lSwz3cVK;
-	Wed, 25 Feb 2026 03:11:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771949471;
-	cv=none; b=LIvQ09tKPvdtRZ4ExCQZKOFN4/Pc1SLfsgprs3Z63Lz/nlxGlrDa7iY93X/u04rYXZsyKYLmXCafsaT/B7BBKlaAQZybCHaRrcHJcbs6h1MnaffUVhRFnSNMGQeQBPDAg+Gla2MOIwkVqyzwfoJ7r0mgoyDU0EgGh21PecXd+1Tmmnua0HzELmZSIi6dUp03IWmyaiPKGqj81LBlNEdPrsbR/CiWrpIwV7TLggjqXrMeSlhfB5C3y0oS7FiwWKoUw2rWDIV0ULG3O2tSDUp0UCd3uZJ5vlZsWZGQkzteMv1QYP7zpiw5QRo/mrKay4I+Ctj7dZoBFxfeagGzYKaCag==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fL2r660fnz3cVZ;
+	Wed, 25 Feb 2026 03:15:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771949718;
+	cv=none; b=P62dSiki/AXq+/rLj/8Ddx7Q4nibrI3oNGQArNMbn6sFNXlIev2wl1z72vIKpGS9qy1IYgOOtty+QeDuzbovtKAzL07n+gAfZ+ePSSuLrglt5+WlMIAL5zjrRF5pFCk2IaveaMC3wUgHau0ZV0H44ur9QwMKbTE9MVQs44KD6Wb6iVuKw7NZJISYpgRB9sPXCN+JUiYvjnzLzDLj5mmVTe+2Jw4hROCjS53MStOKdoL/7ih+Ecr989OmEB+ofx3BGKjCEZkk6VhVDl+JcK5hcyAhc27xNgcs+0XmRIOATpHYch1uUoW7Bh6hWNRzseV4G+ddVQtU43y/15/sNjpi3Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1771949471; c=relaxed/relaxed;
-	bh=MGxPgbd1Y1eKUe4oqApKFPkyBU1147l5ua5MacsPo4g=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ZLNPWs/+goTqvI9hjNCXJOeLKaK6O8o9w3lpmgVtS0/L+t9hVkKRqHvn3n4jhwrJcLJsixmhpEBXuMwOnPYpslVJCwR18f4N7OPCN7Vl8nWjc3e8RM9Y4QkvUHmsA1l7KojdeR/5Nu90oQWHIKBgPRKt/Gqoa3IRdFaduKqps7DDGeshnTgi4leSyWuZEJtxUq4BHwKFCheq3VdwwMgy5iOd/1J+oHnyEegAweLS5SW58kN8o67VTXU5xq/yuv+AKimU62gsYZMrHJwwvFLZY4GsX3v/1ev8rr/AY72ulzSr2p+k63ZghCxPgLAq1p8dHUnFleW2clypoqM09YR/EQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=M9/c75dG; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1771949718; c=relaxed/relaxed;
+	bh=TcCab+Oc090dbZQOacet5ipuIYY0TItZpINJDVPLWus=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=k45OonA73K5/zAUsXo7alB0ZcitYDk5KlzHT3xXFHEpwyaBnX8je28rMcozuIIIKXDvua12wEvA0OP8zkYTWVEB5cjnExGgqyx9TPTywNFhAh9XFY6aXZQectv95sDTO7xgKFWZQxlGxvxTHC1aZ/fKNqb9nd42Lhdwb69zKdjfu0oRJzb/sFIVINzBNKuIcM1Sveu4R3kHL5k8eAsTs4k2eDnOvf/KG78MRqrLj/7QXOvJi7al1dTXKi72XgbvqmjB2UHNIeo0N54PH5Qlk7TAjXr9O30H0B6WzqFkL7CdfaLszcahNjAJgbUbxBSSaXgwVh9fiqqXleUh9U4DThQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QybVP9Fr; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=M9/c75dG;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QybVP9Fr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fL2lM1mWCz3cR1
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 03:11:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fL2r54qfQz3cVK
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 03:15:17 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 642FC61119;
-	Tue, 24 Feb 2026 16:11:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0A80DC116D0;
-	Tue, 24 Feb 2026 16:11:04 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id DA20143E94;
+	Tue, 24 Feb 2026 16:15:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 491CAC2BC87;
+	Tue, 24 Feb 2026 16:15:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1771949468;
-	bh=fdhBT8l/JcKIXS2ne2lkmrwsuR/CTkT5ozhsuLKERZs=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=M9/c75dG8dszOV0z1Be56sld1x/t2ZfPsTWRDI1P85Kk523WNOmba2nuMGKc+1Jku
-	 M856aa+x0L/FpI2uLf1hx4XYG3e6JlSkl02y6jCbB8Ky35lWiOog5eECUG5FqzLJ1f
-	 gZAy3eoMsogHzIThoAmlfOCcdUlWhFL77GKhTJDIoG07WLzl/chn5dHkFtnkkLOHeR
-	 pQPXkmYgU6FbGH2Z4wiDmFKQR3fWW1gWw8ffZh+kdvgI0BF66s4lOFYzfcPf8WeZDF
-	 1j+9jtzdwHADBkrH3xGU6vBW53yyCiwzPtZjBJTGd0SXDCVrhh5oOBlMxJDC6nRkmA
-	 hdsf7LRfmjK6Q==
-Message-ID: <c43286ec-90fb-4d3f-830a-e3644be3c310@kernel.org>
-Date: Tue, 24 Feb 2026 17:11:03 +0100
+	s=k20201202; t=1771949715;
+	bh=M70nIzVXO7Ck6scYDO0aC8TqvdXXZp+11UABd836Tm0=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=QybVP9Fr9wGUOohN9vTBDwIk2Klj4+KVM95gSiWFFs3cFGQc1hbhjJ9MlNM9prWEt
+	 T9bND1DMWFcAERhEN/v6hMzvE+bHM+3UZ712hgccGLupO7jVQZlkiXM7wg77BahXHJ
+	 0uFdJVZe0B0zOkFAzP+38/o1UjQFCyQrYBTw3G56qqE7RS9018HQC1KZhAW4aUXN8O
+	 1wZqEbWdfwOLyxYg+8eS7EexOpj6WLOu9cq38cZqbkLDjhBc4iS1x0fw9ntLARQJsr
+	 IKthMAsbsqYJdsNpdOg06XvaVfbGwPZHs9lR6WH1RUYGIecJ3u3ng4dwFFf0Ip5ZGa
+	 T7bxBhqBmAPaw==
+From: Thomas Gleixner <tglx@kernel.org>
+To: Marc Zyngier <maz@kernel.org>, Ioana Ciornei <ioana.ciornei@nxp.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Sascha Bischoff <sascha.bischoff@arm.com>, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 0/6] fsl-mc: Move over to device MSI infrastructure
+In-Reply-To: <20260224100936.3752303-1-maz@kernel.org>
+References: <20260224100936.3752303-1-maz@kernel.org>
+Date: Tue, 24 Feb 2026 17:15:12 +0100
+Message-ID: <87wm02t8xb.ffs@tglx>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,63 +67,35 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3] net/ibmveth: fix comment typos in ibmveth.c
-To: Dave Marquardt <davemarq@linux.ibm.com>,
- Abhilekh Deka <abhindeka@gmail.com>
-Cc: davem@davemloft.net, kuba@kernel.org, pabeni@redhat.com,
- nnac123@linux.ibm.com, maddy@linux.ibm.com, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <20260224153601.17534-1-abhindeka@gmail.com>
- <87v7fmyvjv.fsf@linux.ibm.com>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <87v7fmyvjv.fsf@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
+On Tue, Feb 24 2026 at 10:09, Marc Zyngier wrote:
 
+> This is the second drop of this cleanup series for the fsl-mc MSI
+> infrastructure, initially posted at [1].
+>
+> * From v1 [1]:
+>
+>   - Drop the now unused DOMAIN_BUS_FSL_MC_MSI bus token
+>
+>   - Tidy-up fsl_mc_write_msi_msg() while removing the legacy helper
+>
+>   - Fix include ordering in irq-gic-its-msi-parent.c
+>
+>   - Various commit message cleanups
+>
+>   - Collected tags from Ioana and Sascha, with thanks
+>
+>   - Rebased on top of v7.0.rc1
+>
+> [1] https://lore.kernel.org/r/20260218135203.2267907-1-maz@kernel.org
 
-Le 24/02/2026 à 17:07, Dave Marquardt a écrit :
-> Abhilekh Deka <abhindeka@gmail.com> writes:
-> 
->> Correct spelling mistakes in comments:
->> - Fix misspelling of gro_receive
->> - Fix misspelling of Partition
->>
->> Signed-off-by: Abhilekh Deka <abhindeka@gmail.com>
->> ---
->>   drivers/net/ethernet/ibm/ibmveth.c | 4 ++--
->>   1 file changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
->> index 3108bf50576f..b2a578e6ff31 100644
->> --- a/drivers/net/ethernet/ibm/ibmveth.c
->> +++ b/drivers/net/ethernet/ibm/ibmveth.c
->> @@ -355,7 +355,7 @@ static void ibmveth_replenish_buffer_pool(struct ibmveth_adapter *adapter,
->>   
->>   		/*
->>   		 * If multi rx buffers hcall is no longer supported by FW
->> -		 * e.g. in the case of Live Parttion Migration
->> +		 * e.g. in the case of Live Partition Migration
->>   		 */
->>   		if (batch > 1 && lpar_rc == H_FUNCTION) {
->>   			/*
->> @@ -480,7 +480,7 @@ static int ibmveth_remove_buffer_from_pool(struct ibmveth_adapter *adapter,
->>   	 */
->>   	if (!reuse) {
->>   		/* remove the skb pointer to mark free. actual freeing is done
->> -		 * by upper level networking after gro_recieve
->> +		 * by upper level networking after gro_receive
->>   		 */
->>   		adapter->rx_buff_pool[pool].skbuff[index] = NULL;
-> 
-> I'm not quite sure why this was a v3 of this patch, but anyway.
-> 
-> Reviewed-by: Dave Marquardt <davemarq@linux.ibm.com>
-> 
+Acked-by: Thomas Gleixner <tglx@kernel.org>
 
-I guess because there was a v2 5 minutes before with a misspelled 
-subject "[PATCH v2] net/ibmveth: fix comment typos in imbveth.c"
+in case this goes through the FSL SoC tree. If not, please let me know
+and I pick it up.
+
+Thanks,
+
+        tglx
 
