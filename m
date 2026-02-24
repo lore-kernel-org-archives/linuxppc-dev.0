@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-17121-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17122-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1CDFF4BB71
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Feb 2026 18:32:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B78BFF4BB6F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Feb 2026 18:38:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fL5t94Nrnz3cZp;
-	Wed, 25 Feb 2026 05:32:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771957937;
-	cv=none; b=JqkCbys9RdhL3cdTvKWWrXXcAW8tTywZ86tAkDRte5KPoOAu/UUuMVA5KBW90j2n3Pf53U6WK70wxy/9o5dnZRWK4unOok5arD2lCKXzmB2FXDVXBaRZ9VZ5llDJBbck5ePJZz69O1Jkvi2IqDyGEi5K65Qs3Nqow9QXhxQzkhXi5aqu6XRm7Rutl7NXz5/ORlVahc8j3ih8WOwwxlpVfEKGeLiPETJXhz4ko8NP8wkkaftenbS+a0d54QVfdhRhEa4nDazUNihbU8FxnslNtcJyF2vcJSSgzNLOxgCcbsnYHhMY2w8x+s13bUj+s5FUcR8f9DqivQ5BYE7Fe17XPQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fL61T249lz3cZy;
+	Wed, 25 Feb 2026 05:38:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771958317;
+	cv=none; b=OzSNYQi89VkH1l8BaUmw2+FxVMMNqOk/nEtHkGZXYTBgXz20XilQcvc/A4Dn9KSzg2tjsHXCeWYyrXbMJr5j1Hz3npaMxRpayQ+dlrZAHZTeVQGgTz7VzRqpbDhn7xoE5d44OCE+JgfTisHFVWKjB58I5a3jmijv97xEqbbpv22frAMJ7kfersnZtQJ15aLNyr3BSLcM0b4ZXucEqJgArR9+zvv96X6kxI85nUI4W7mj8bwW2r+TOXyVaw8Wtu21t0RSYYC7ltxggW2F0CwIaDQnkZmdxmU4JSJiCn+eX3sxcUlFcbLSyqFS5BbNBpXpYGwegc1L98zAvK7Guj0b8A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1771957937; c=relaxed/relaxed;
-	bh=zPZuuyOkZlhki+7UWHq16YlQwKX4HwZ3acsGMHI5nBc=;
+	t=1771958317; c=relaxed/relaxed;
+	bh=4+9/kVThc3/+V8elCs3VhAo/JNdEc8B5u2qZALvxJF4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=dzdxSPJokjd5SWACZjl00se+7W6kym3fPoptcayrPOhhcM394zmcV38kjtSeLELezJHWX4wsQzxyaN8VuOaNwE3OPiT1KbeSCumWixJvt91ZVJg2E0o8T8YzfC/pRW+ZeAlNXmiqO2kQg5RF8Szjt1t27ZclEn/QcJIcZwDKwB0128XUrGt6mHT7vpoR4whg/OFwnFy2d/yFJJvTLBDqkL0Q+3reevRfVheBFSn5X78K3KUFBRwqYOuf7VmPDVizQGr92LWQZ+UK0KKxMfMPOa3GmGtMI/YFMWHJDuBYgv8RY+obYM2EnI6MUg85S3eoZRiT3Mn+8VHuJPqkUMaIaA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=c7knNeoc; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=i82LSe3uReriosJ0LH2ClO5+ZeTUYLR2Mh1GeyMgzKLWX9Hvj69wR6EL4f3Or6Dszweu0z/8vNEZkYaBG0P2tneva4rITq12zXrkeiVnYvYBUWDNKXSJQokIUxDW0DTITe/3e+CVEPJqAt9NBeXGU7z9G5FmqH4cawfTnQ+IyqRPq2XtF/0R/AODUnXWu8CpvimookznM9mFJcNAEL9aViStQ1gNO+bvKFgHFkwy9NJMAgn3o26FN7ZQKl3Fl2Td8CnMa2ufB9fkh0DZ2i3HeF2pu2UNJujdh6MCzFy7e3IqTTFFwQ0pu+JiAwq4GgF6dlp+cy/UgZZRnpIgDqLeFA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NeVWlmTO; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=c7knNeoc;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NeVWlmTO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fL5t90N2bz3cZj
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 05:32:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fL61S2nZHz3cZp
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 05:38:36 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 9C02743DD9;
-	Tue, 24 Feb 2026 18:32:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 52733C116D0;
-	Tue, 24 Feb 2026 18:32:14 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 63FF8600AD;
+	Tue, 24 Feb 2026 18:38:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E4B2DC116D0;
+	Tue, 24 Feb 2026 18:38:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1771957934;
-	bh=pjvAYBrvNS02jtvepugyA12PJiegFiNTbfdgM5xo/i4=;
+	s=k20201202; t=1771958313;
+	bh=dS/PeNeD3SjxSqxDdPYuOcwLO2rhR2F/UDY4OUrE8go=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=c7knNeoc9b86Pn0zEU+63t097NFo8V1DiirlR+tFZ1FEmys2K12aiKxgV26a+Iq89
-	 RW6s0i4WgFsU7xqxe8QBZwCYJNTIVU3fAwl3MGD7Aj4aB1OoJndbEf2iR6U88immAp
-	 lZ+ZXHG/Xi72zzK8VDXb1mAK2vZ0209HXQk7MRNvlQC+u2HbsY+3zcDZ+XYAve07YX
-	 j2P8qGLxSyl/X5aalMr+ZIKOrye9wAb9AsuokDyn+o7qEDIc7rs0g0ENF+WykPsMJB
-	 rB53ZMhwaMGyIXtt5iQf/o7438b0ko4vJZyN2r+EDkjhge4ukxBR8Fm0m2Acp8dlEu
-	 cszWkbq8B5NMg==
-Date: Tue, 24 Feb 2026 12:32:13 -0600
+	b=NeVWlmTOJhJlcf2PmA7E4NC6gNxINhb72p4NHtgkyLKaCJYMzQAy/keCJnA2KK+D4
+	 Mf0HKgARJSzH2/4R4f40d31RyUB9qGr3mFYQrsP3gxEg+O4XWATTxQHXdNslk5f+yv
+	 w2pFlwO5vAp9GZHfw6EXQ0O5P5At56q/eE3dWguZ64rHK/ZtFclnJZZaFmSBaKdvv6
+	 rtQ1AGhipiTlK6H9Xbigxs2zEBQUPcF79m1CMwGc0e6oxJHnP96DtyoNcxU1LGg/3j
+	 D0QGJ6559cz1b6h6MDNhDBN2F0l6CZzeazoO+GDCuTQ3g0z4Od6TmS4qZI3gX1qV7f
+	 Ejfo/J/YfSL7w==
+Date: Tue, 24 Feb 2026 12:38:32 -0600
 From: Rob Herring <robh@kernel.org>
 To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
 Cc: Saravana Kannan <saravanak@kernel.org>,
@@ -63,11 +63,12 @@ Cc: Saravana Kannan <saravanak@kernel.org>,
 	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
 	imx@lists.linux.dev, linux-renesas-soc@vger.kernel.org,
-	linux-sunxi@lists.linux.dev, driver-core@lists.linux.dev
-Subject: Re: [PATCH v2 8/9] soc: renesas: don't access of_root directly
-Message-ID: <20260224183213.GA3239922-robh@kernel.org>
+	linux-sunxi@lists.linux.dev, driver-core@lists.linux.dev,
+	Peng Fan <peng.fan@nxp.com>
+Subject: Re: [PATCH v2 0/9] soc: remove direct accesses to of_root from
+ drivers/soc/
+Message-ID: <20260224183832.GB3239922-robh@kernel.org>
 References: <20260223-soc-of-root-v2-0-b45da45903c8@oss.qualcomm.com>
- <20260223-soc-of-root-v2-8-b45da45903c8@oss.qualcomm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -83,41 +84,53 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260223-soc-of-root-v2-8-b45da45903c8@oss.qualcomm.com>
+In-Reply-To: <20260223-soc-of-root-v2-0-b45da45903c8@oss.qualcomm.com>
 
-On Mon, Feb 23, 2026 at 02:37:23PM +0100, Bartosz Golaszewski wrote:
-> Don't access of_root directly as it reduces the build test coverage for
-> this driver with COMPILE_TEST=y and OF=n. Use existing helper functions
-> to retrieve the relevant information.
+On Mon, Feb 23, 2026 at 02:37:15PM +0100, Bartosz Golaszewski wrote:
+> linux/of.h declares a set of variables providing addresses of certain
+> key OF nodes. The pointers being variables can't profit from stubs
+> provided for when CONFIG_OF is disabled which means that drivers
+> accessing these variables can't profit from CONFIG_COMPILE_TEST=y
+> coverage.
 > 
-> Suggested-by: Rob Herring <robh@kernel.org>
+> There are drivers under drivers/soc/ that access the of_root node. This
+> series introduces new OF helpers for reading the machine compatible and
+> model strings, exports an existing SoC helper that reads the machine
+> string from the root node and finally replaces all direct accesses to
+> of_root with new or already existing helper functions.
+> 
+> Merging strategy: first two patches should be either acked by Rob or
+> picked up into an immutable branch based on v7.0-rc1, the rest can go
+> through the SoC tree.
+
+SoC tree is good.
+
+> 
 > Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
 > ---
->  drivers/soc/renesas/renesas-soc.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
+> Changes in v2:
+> - rename of_machine_get_compatible() to of_machine_read_compatible() and
+>   add the index argument
+> - add a stub for of_machine_read_compatible() for !CONFIG_OF
+> - provide of_machine_read_model() to avoid having to look-up the root
+>   node via of_find_node_by_path("/")
+> - rename soc_device_get_machine() to soc_attr_read_machine() before
+>   making it an exported symbol
+> - Link to v1: https://lore.kernel.org/r/20260119-soc-of-root-v1-0-32a0fa9a78b4@oss.qualcomm.com
 > 
-> diff --git a/drivers/soc/renesas/renesas-soc.c b/drivers/soc/renesas/renesas-soc.c
-> index 38ff0b823bdaf1ba106bfb57ed423158d9103f8d..bd8ba0ac30fa91fcf2a10edd0d58b064650085cf 100644
-> --- a/drivers/soc/renesas/renesas-soc.c
-> +++ b/drivers/soc/renesas/renesas-soc.c
-> @@ -6,6 +6,7 @@
->   */
->  
->  #include <linux/bitfield.h>
-> +#include <linux/cleanup.h>
->  #include <linux/io.h>
->  #include <linux/of.h>
->  #include <linux/of_address.h>
-> @@ -468,7 +469,11 @@ static int __init renesas_soc_init(void)
->  	const char *soc_id;
->  	int ret;
->  
-> -	match = of_match_node(renesas_socs, of_root);
-> +	struct device_node *root __free(device_node) = of_find_node_by_path("/");
-> +	if (!root)
-> +		return -ENOENT;
-> +
-> +	match = of_match_node(renesas_socs, root);
+> ---
+> Bartosz Golaszewski (9):
+>       of: provide of_machine_read_compatible()
+>       of: provide of_machine_read_model()
+>       base: soc: order includes alphabetically
+>       base: soc: rename and export soc_device_get_machine()
+>       soc: fsl: guts: don't access of_root directly
+>       soc: imx8m: don't access of_root directly
+>       soc: imx9: don't access of_root directly
+>       soc: renesas: don't access of_root directly
+>       soc: sunxi: mbus: don't access of_root directly
 
-Doesn't of_machine_device_match() work here?
+For all but patch 8,
+
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 
