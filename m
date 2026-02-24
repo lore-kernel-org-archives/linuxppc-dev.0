@@ -1,88 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-17083-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17085-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA1C7EEC2BD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Feb 2026 01:46:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F8DAEFB7F6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Feb 2026 04:05:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fKgYc0sQBz3cBN;
-	Tue, 24 Feb 2026 12:46:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771897588;
-	cv=none; b=TjnjcBVQe+rb7fDc6lmIVgim9h4CUnrcb27EA62hg7l0NamshaWJXWLAX59OyOeAMLJ77nILFG3w9WSrzaApz2SCWGv8w8m388jEU5Lat9541IF0hvDkOtwGk8n2xR7J9wx+5zYIp9/oqtchPB1LXKtDErTdAlRI9D12FcGn337xCpPJ63GPsaQCoFl4SAkCgszXuQHFqgZz09fNhIqc5dW/LTpOsfCdzOUAoCoPh0eqt+Tbm/G3UKBkNgMKDfPaisryTb7Dbvt7NBwAB2LGjZj1i/s3RHCFrUYI7VjxFBLFybAIDLOUDSqzwOP3kTGu6gEsakOwDN5BHchqkfoNFw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fKkdX5l2Vz3cD1;
+	Tue, 24 Feb 2026 15:05:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771905904;
+	cv=none; b=DU+5tLHAcJKgOcbJc+UrleHTVDdX4HV7Nh9ASZww3MUVh56qjjdCPVnr4GIDaVnVu9bd7GIsxE3Q3DP1kJG9LyoK/csDUnyIT6VxsFoAu+2jNaOYqy+TCX97kt6IeIr1vTTR4bpzQ4Aa7P7235E4QHv106YZlOFkPgO2LhMkFJjVPmur/rfZtzPSdCPeQSKuceE04KjODM5ulaBQrA7FPk8jvjrLlcHtSmz9ne7DTlzQ17yPzGCNLpUE9y/IBulQp9HiBvHd6rHO3LYoebCREYndQiCmMYW8wZSA2Y9xk7OYPReqkrDNJhuc+9D65v05FfGJPVz0wlacXl/HvZQsjw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1771897588; c=relaxed/relaxed;
-	bh=pyCuepEEE5VZwezz+EwCnELSbh3qvdwdxfgg+cxEJD8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=AaLMSWyTqA/zgyThcOecqVlDZLQ7GnnRJfQiAPfKdpgy29aWD/re6q55g3dAxhHEtPLtBeMhgQabIywuBeQCC+mWBsDLGy3eR5XN4nC4rcxiFM0vRCHNDLn0B6ExZFw+YYIB2E0LW6Y7grECbnrz+jkPk0DOqmAan1XkZ6TMUTtLvNS8dGMC3+Rklu2uvVnYRF+7IByDMlNoP6FyqGRRVyK6fHvNpnnXQfewgZUEPOiwiTfymvpwSyS24sZ3pUKwAKBLMODXHBv+sj5MW7ZGloDd6Aw1IMyvgQ2O0li19rAo1d+LjzfLF/O9lsKilME5/WsZ4P0r6Qgbgwe68ui7aw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=gp6s3yCl; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1771905904; c=relaxed/relaxed;
+	bh=CWvD8IPypkRZgxlOxv/JnqzeVGYPURFB61q7xCa7kNQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=d7f7PJZ/whWraGKZv3sW7rBeUIHkibkAn9QBg8ZMiEmGEDZFblR8CdRqkKC2sqEm78aKNXJztF4Dhh0Qx9DFUdeozmUq/Ji35Xgh71OTmS6Ptj3atxm69diYo/7qndTCWX3jwgXT/0CoaRL6KA5oBsDp4ETaNDQRs2EM2WgqioebhY2Y4Z1O/2yr5xGCjnahbgjSrSmn+QRdk4+UDHX4gfaQ8MNrFtKwgHB3QbztP7asuSkTu17l/pKQPLAYEu68CZDbkVz8jQdYpudq9fe98ohXNrqqmMwXn5bP3+lobDnHnoCQ6s2CHK+lDYRxTm/NFWJaFUWk4yjzPIVMvBOgQA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dU8uXAkv; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=gp6s3yCl;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dU8uXAkv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com [IPv6:2607:f8b0:4864:20::62d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fKgYb1kbSz3cB5
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2026 12:46:27 +1100 (AEDT)
-Received: by mail-pl1-x62d.google.com with SMTP id d9443c01a7336-2aad1bb5058so51634405ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2026 17:46:27 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1771897585; x=1772502385; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=pyCuepEEE5VZwezz+EwCnELSbh3qvdwdxfgg+cxEJD8=;
-        b=gp6s3yClAEbuQBELXueHt4aZ/x1SdSqqMXZp6Sw/6cd3ubfQdoOb2XkJnV9PD4hnSe
-         NMXDit/pQCsLUwRSGPeJ5qcnsZApE7B72UJFOJD3/kyfGfqz0Dm8MzobNXEMp4SAJyhk
-         syOMwDAo0g2kMUHEpCIq81kbX7tAuhJ1X+NDmSbT6C5Bk9IFvusVHtWYnNTJJAlDyPPN
-         KbxGXm+RFgwpFYp27bYG1ZTgRn7IS0QgWSOYT0zupbUooFWn+GCNJgnv7GQ8afK2fZ4r
-         lojryPPBuYIvg56g0xI8/CLoUNbJYU29Bo/o7SLTyZ1daxIGwAXPlXwMtDPHn+KAB4ri
-         A9Yg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1771897585; x=1772502385;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=pyCuepEEE5VZwezz+EwCnELSbh3qvdwdxfgg+cxEJD8=;
-        b=KWuLDYSDIrl7yDKpnTDfZLw48/O7SVmPiRjhn56IuSh9wIuHSv6Zn48daxTF5WDoHj
-         N04jeZv0sjPQ8ICThLPeu0BBKaWsodASW7+eN3wjNfDLr+2F/SfNxoYGGUIJgVHW2VVp
-         2mzNNCsDSD5F5XLacXmmshrSlA+lfVLVgKGS2kAAbqRLX8+eDhozERTPrpFh8V2QiDNU
-         4DoTFhTHnmvvguU5JgyrR1DRin6sPtp+eZ0Cm1K0dEjIVN6b2THOHxLJBFQ3HC4OjHig
-         ay3z/ArTSjXKPtQM82zhMAlV3XLbQuwwC4yn0s0vLBH55rok7JteuQUf1gCnn2Rf8IiY
-         NyEg==
-X-Forwarded-Encrypted: i=1; AJvYcCWkXzmCzUSa+BbN9J1eFq+b6unIw/SISkPJ2LKeEOVijsCThHImVpvDWmCKaaIO63BYKzzeRerj7lS6mXA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YygResT0MHvdnJXPArfZz01ZVMnYf8zi7qS/HRRA/IhMFL/qHu8
-	7J75OLuyF4ZlS2o6sPuZolXHAsZ6vAgxUPpOWzvtE5BbBBiCxpow0pTt
-X-Gm-Gg: ATEYQzxIXuU2+sd/fZwRhzOrFipMnXhOEoGmJL2TQZxKoBd63SC5V0VuZDCmga2fdU/
-	TOBgfBwmF9aeueQdBRnO9Q0mLM43yiHqtHP5xXPrA1XdkQGt0JDMs2T5sy8L5DMV4TCQFnfoqr6
-	sthaHwXSjiS9NpGwfXlaLotTtHUH7pqLHrYyvvbYZlX8ppUKP9N40BO97TBKNMyRM/7ifgz7y9+
-	5Agc7H/p+DBq46SCc3zzCOoed4nsT1ASnGjojO1dEJ96WdtJNA6+qqzjhCZAdZKjx3cxo6wTmh8
-	SOUsPTYkgfXGxUyQ5HT5XgMlW+E3d4FxRPg6InlAwSneDF+XsUPk0FuFhmn66YkHOIJO+fMaUhL
-	YcnKfjvXZKIx7jZq5rHPi1O9TUjXNr7RhhKbwKr/ZnKn3ZgqkYxumY/o88ug1CDsMaBGC6emWb1
-	XK5PaN/YLpwUvHd0dni7q1cvOC95uN216QQOQR4unGmVMVpIq7fcfsiQ==
-X-Received: by 2002:a17:903:32c7:b0:2aa:d320:e969 with SMTP id d9443c01a7336-2ad743fb337mr101422045ad.8.1771897585096;
-        Mon, 23 Feb 2026 17:46:25 -0800 (PST)
-Received: from ryzen ([2601:644:8000:56f5::8bd])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ad75044c72sm88143715ad.86.2026.02.23.17.46.23
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 23 Feb 2026 17:46:24 -0800 (PST)
-From: Rosen Penev <rosenp@gmail.com>
-To: netdev@vger.kernel.org
-Cc: Pantelis Antoniou <pantelis.antoniou@gmail.com>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Paolo Abeni <pabeni@redhat.com>,
-	linuxppc-dev@lists.ozlabs.org (open list:FREESCALE SOC FS_ENET DRIVER),
-	linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH net-next] net: fs_enet: allow nvmem to override MAC address
-Date: Mon, 23 Feb 2026 17:46:06 -0800
-Message-ID: <20260224014607.353378-1-rosenp@gmail.com>
-X-Mailer: git-send-email 2.53.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fKkdW5WYhz3c9d
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2026 15:05:03 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61O0L2uR1191599;
+	Tue, 24 Feb 2026 04:04:54 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=CWvD8I
+	PypkRZgxlOxv/JnqzeVGYPURFB61q7xCa7kNQ=; b=dU8uXAkv+RqiuY3/sSRoh4
+	DbfFQcxDT4qbP+IhtLE3l7mjFZhJot6CKoa3YYPGZQLnnJe55AWL7VG4wHJpTwKN
+	SVo64HwksFwB3ucUYcuOITyosEVHI7l9EfDBouAV9tfKi6KQTfyvldlTiUCefl8K
+	tgM76Daa1UlQIxBZlwtvlmGebu7qIEJUdSrI+WpLD6M/Y0wvnXTyRD+NuSzAEGwH
+	9zPbDOwqAUOa1/4WjR7+g0ovOpP0RNA4UxNJqeDmYmvImJwVv/wJVufNsM55AmJ3
+	YFPZI8ec5FolAaZBfKrHkKvQp6t77XoZUcJmjppEy7l6asYjAiL9Dsv61b6/KgSw
+	==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cf4e39u0d-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 24 Feb 2026 04:04:54 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 61O1A5fC015970;
+	Tue, 24 Feb 2026 04:04:53 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4cfq1sffym-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 24 Feb 2026 04:04:53 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 61O44n9731195476
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 24 Feb 2026 04:04:49 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8A87C2004B;
+	Tue, 24 Feb 2026 04:04:49 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 13C7B20043;
+	Tue, 24 Feb 2026 04:04:48 +0000 (GMT)
+Received: from [9.109.204.116] (unknown [9.109.204.116])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 24 Feb 2026 04:04:47 +0000 (GMT)
+Message-ID: <7061c762-cb20-4ec0-8c7b-2899ecc47503@linux.ibm.com>
+Date: Tue, 24 Feb 2026 09:34:46 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,33 +81,102 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc/crash: adjust the elfcorehdr size
+To: Hari Bathini <hbathini@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Mahesh Salgaonkar <mahesh@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Shivang Upadhyay <shivangu@linux.ibm.com>
+References: <20260218050105.391285-1-sourabhjain@linux.ibm.com>
+ <21a8553a-82c8-46f1-93cb-fbdb6ed32377@linux.ibm.com>
+Content-Language: en-US
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+In-Reply-To: <21a8553a-82c8-46f1-93cb-fbdb6ed32377@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=XMs9iAhE c=1 sm=1 tr=0 ts=699d2366 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=HzLeVaNsDn8A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=Mpw57Om8IfrbqaoTuvik:22 a=GgsMoib0sEa3-_RKJdDe:22 a=VnNF1IyMAAAA:8
+ a=pGLkceISAAAA:8 a=_wgSUu-TgyWQHSV5L6MA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: TrDpG23PzgnsDEYr_ikCJXf3U901TT31
+X-Proofpoint-ORIG-GUID: k-DmLl99fXOtZ15ROnjEY1G8NV2fvtDI
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjI0MDAyOSBTYWx0ZWRfXye17xDi+6AiD
+ H32slUwRSMLJtVVhKshjxhWdjOTuT41UOj1qj/HboOwxv1TQTgnoIdg9x6p0ymG1xiXvLusb/tU
+ WbWbFPntezK8837vN0EXdsZ2Lhf3Pg0a3ziEUpLcN2Q5uu6lHwT8FReQXPAnBwUZV6uVWBO3HEC
+ b3pmNbkeqywOU5Of97OBrxOFUbIkdhg7fOuarWgz9TaeH45xJohITqZ5voSWH35AW9Ng4b4F2jE
+ LiM/9KI/TDH908wIENOzOn8qz0rpV/FHaWkSzrUNld0Q6vHEY76fZ9Sm6/L2YM6sQuGvuNEcFVO
+ UqcBxjf3HFiqqG+QzbXyZwes0HNcAOczlrxyDEUr9qXRQpYodCvrrljmYRBFEV9iIHOTwcAxQ4D
+ B9dMO5b2FeRS2/KHoMZSIX0o9oH2ir2YzwqHGwSScPImDaTyP/nKZaE2Skecl11HzNJBpHstkaA
+ 9e2Am9HgYW0oAOAqz8A==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-02-23_06,2026-02-23_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 phishscore=0 lowpriorityscore=0 malwarescore=0 suspectscore=0
+ clxscore=1015 adultscore=0 spamscore=0 priorityscore=1501 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2601150000 definitions=main-2602240029
 
-NVMEM typically loads after the ethernet driver and
-of_get_ethdev_address returns -EPROBE_DEFER. return in such a case to
-allow NVMEM to work.
 
-Signed-off-by: Rosen Penev <rosenp@gmail.com>
----
- drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-index 2cbcc29408e3..d3c772ed5fc9 100644
---- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-@@ -951,7 +951,9 @@ static int fs_enet_probe(struct platform_device *ofdev)
- 	spin_lock_init(&fep->lock);
- 	spin_lock_init(&fep->tx_lock);
+On 20/02/26 15:54, Hari Bathini wrote:
+>
+>
+> On 18/02/26 10:31 am, Sourabh Jain wrote:
+>> With crash hotplug support enabled, additional memory is allocated to
+>> the elfcorehdr kexec segment to accommodate resources added during
+>> memory hotplug events. However, the kdump FDT is not updated with the
+>> same size, which can result in elfcorehdr corruption in the kdump
+>> kernel.
+>>
+>> Update elf_headers_sz (the kimage member representing the size of the
+>> elfcorehdr kexec segment) to reflect the total memory allocated for the
+>> elfcorehdr segment instead of the elfcorehdr buffer size at the time of
+>> kdump load. This allows of_kexec_alloc_and_setup_fdt() to reserve the
+>> full elfcorehdr memory in the kdump FDT and prevents elfcorehdr
+>> corruption.
+>>
+>> Fixes: 849599b702ef8 ("powerpc/crash: add crash memory hotplug support")
+>> Cc: Hari Bathini <hbathini@linux.ibm.com>
+>> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+>> Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>> Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+>> Cc: Shivang Upadhyay <shivangu@linux.ibm.com>
+>> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+>> ---
+>>   arch/powerpc/kexec/file_load_64.c | 2 +-
+>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/kexec/file_load_64.c 
+>> b/arch/powerpc/kexec/file_load_64.c
+>> index e7ef8b2a2554..ed76326f4b57 100644
+>> --- a/arch/powerpc/kexec/file_load_64.c
+>> +++ b/arch/powerpc/kexec/file_load_64.c
+>> @@ -460,7 +460,7 @@ static int load_elfcorehdr_segment(struct kimage 
+>> *image, struct kexec_buf *kbuf)
+>>       }
+>>         image->elf_load_addr = kbuf->mem;
+>
+>> -    image->elf_headers_sz = headers_sz;
+>> +    image->elf_headers_sz = kbuf->memsz;
+>
+> A comment here explaining why memsz is used instead of headers_sz and
+> also, another comment where memsz is set, as to why extra memory size
+> is accounted under it, improves readability...
 
--	of_get_ethdev_address(ofdev->dev.of_node, ndev);
-+	ret = of_get_ethdev_address(ofdev->dev.of_node, ndev);
-+	if (ret == -EPROBE_DEFER)
-+		goto out_cleanup_data;
+Sure I will update the commit message in the next version.
 
- 	ret = fep->ops->allocate_bd(ndev);
- 	if (ret)
---
-2.53.0
+>
+> Regardless..
+>
+> Reviewed-by: Hari Bathini <hbathini@linux.ibm.com>
+Thanks for the review.
 
+- Sourabh Jain
 
