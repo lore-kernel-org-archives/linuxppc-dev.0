@@ -1,81 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-17132-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17133-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A924AF4BB89
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Feb 2026 20:36:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7AD81F4BB8A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Feb 2026 20:55:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fL8dl4K9nz3cfy;
-	Wed, 25 Feb 2026 07:36:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771965403;
-	cv=none; b=QfrDAr585c303+uU65DyeL/tondddUai3AN8SACbEiJ23X/aXxLcXZJLhF51j4iifOeT3XBkI5TazeTR+nSwOj9m2gDLO1wkk3eLhfKzVWOhODbUJ1ab13+v+aUneKmZAJQiVHS0jabQk+wk3mOFzKRmNeD4VdDjpcUfeG2LbYqcTQGPc+xNJ5sDByRLW2RiKV0ioFeATMLG3MsCKJUDO0COWc0dRbj4iTOWA1Y/+Ds8sgAdZ2titjpa0kd4TjxOi85llAT0gL3E34V3ZDtxW+Hgc6jpokhsfSwhEGbooaYPKYvDp3xOOTRzwfSftSbTWgf+BzA+KJZhItEw6yZKNQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fL93d5dQtz3cgy;
+	Wed, 25 Feb 2026 07:55:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771966541;
+	cv=none; b=L1OvdUJJywTcUbdOkJww92JJ0fOeAVwJuW46vIkk0q7TN3jqidmBLlXWW9wML3PTUd7xjYrAc1ro471YaqR2EloDqTMuD8DgV3ESsvjUWmM4UAQP+zEVje6+roZsaZYSED8iGW9Rf2/pc98vKufdZ+70HLwPuDyqT4EI6nKRNbicrcEyldQEyLmVdmYLPJSMJRrc5LR+GdNg+X7lYI4fJeXNrS4vqppfTqPDlJriHO7+w1Thsc7tLVrd+xyQ9B/9CvY+livBnYsSn+7T1XkCPWsVncru8PnZWfSu3+xI7CTGaVt2sPZzFL/AFTJHK7a/auUvPJqoYZ6ZTsiFZtrNvg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1771965403; c=relaxed/relaxed;
-	bh=LDKruURJptjtqC3/O5C7mqtiXapJ5l0fal5Ut14TaTI=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=QqUpMyNL1WRC6d1gN6Q5V/PraMZU4WHTjQ1BPsxGXkpkdag/WNSaRTCknqsU/2HfzHcxMgemP1UdU917Y1cuM7TWkPoYXF1Gz8IWRnhkk70k9xnDgjtuAGSZvyzOlxOu1BlQFIFIa9fZ4P0lNyAPwkDabTr8LG5qxM3eieyI5irYPDrsGiQtB1ujS59ZGdypRNQWMMmM2eyaXFFQCTnlGfKJUezu/qZU8xsmHOex7/4xzH3jL8HnJAAi9wNQQ9z1KQJOWHSjGHdxACj4LG6MdckKZtGlu2W+vFyJSKzuS3S+lMucMx0ai7dtTSQtZx56xtzE8Wa2UNudcsqwBQu5LA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fZc1G0dn; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1771966541; c=relaxed/relaxed;
+	bh=nD4+lp1M+KECx0QLG8Rln8fzr8sfcII1yyyhBAQzizQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=l04IEEN0RF67hYJ2LQ5wXvcHq1NkYJAlpjvSVmKGurNpyrNO2yJra+ptXYH0DzVkuNrvS8KbXfOcLVWO8xt3BxoNtgLOjH75kLqGyZYY2GMVWtxLAqu9bsEeQ2TACLruieRgKn1azyj2L1w24e97XriXneIB1wr7Tt1w7aVnAU8Q8wuB/U//oTXWpM4ZKuW2zwijRW5xM+K2hPgMPZiq9P8FHKzmS86jJ/Q1VsxeCXY8bTDQdTCc0SnJ4UBpgYlQLD+Y/rmnuNXT726odOfagQxsNQiXRQyWb9wQubw1kgySnnoxSITriVZpX6VbjjFw6u/CE0ohR1IxeJbD/IcttQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=C5QdJEhD; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fZc1G0dn;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=C5QdJEhD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fL8dk3pLmz3dLW
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 07:36:42 +1100 (AEDT)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61OKNk9H2582842;
-	Tue, 24 Feb 2026 20:36:29 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=LDKruURJptjtqC3/O
-	5C7mqtiXapJ5l0fal5Ut14TaTI=; b=fZc1G0dnQiSqKOIPD3z28q+TpmgaMAgHi
-	90lqOZrwqzRt1dtTAulTb0/B5toZbWo0G9nJ9OnACrasD0jYA5kgSk3KMBxgQsoW
-	sAl2CZSqld4nThFIbUEp4WH6AAwSn5fXa40POAbbC9RslyB+PREw3eaj5y8VZkit
-	46rXrrTtwAHszKjE5/IF15FljKEogbWcUf7xaWY/bd9CIJFprfojEu30hev2komB
-	Wvt/zELhU2rjJNFUCe3dn/R/GOR6gmUrTouSSuHYZbNFdwtO+KlfuCosvgyd9Ckj
-	G6i0ebNsgH2flxWsnG4/ohg2Km/F75BdFnLlDumLYd3o1kXsQm+7g==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cf24gd2bq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 24 Feb 2026 20:36:28 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 61OGf8IE015789;
-	Tue, 24 Feb 2026 20:36:27 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4cfq1sjnb1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 24 Feb 2026 20:36:27 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 61OKaO0252429172
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 24 Feb 2026 20:36:24 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1DA7D2004B;
-	Tue, 24 Feb 2026 20:36:24 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9330820040;
-	Tue, 24 Feb 2026 20:36:22 +0000 (GMT)
-Received: from ltcrain4-lp15.ltc.tadn.ibm.com (unknown [9.5.7.39])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 24 Feb 2026 20:36:22 +0000 (GMT)
-From: adubey@linux.ibm.com
-To: linuxppc-dev@lists.ozlabs.org
-Cc: bpf@vger.kernel.org, hbathini@linux.ibm.com, ast@kernel.org,
-        daniel@iogearbox.net, andrii@kernel.org, maddy@linux.ibm.com,
-        Abhishek Dubey <adubey@linux.ibm.com>
-Subject: [PATCH 4/4] selftest/bpf: Add tailcall verifier selftest for powerpc64
-Date: Tue, 24 Feb 2026 20:36:27 -0500
-Message-ID: <20260225013627.22098-5-adubey@linux.ibm.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260225013627.22098-1-adubey@linux.ibm.com>
-References: <20260225013627.22098-1-adubey@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fL93c5W1Bz3cgf
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 07:55:40 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 8E3F942BB8;
+	Tue, 24 Feb 2026 20:55:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D21D3C116D0;
+	Tue, 24 Feb 2026 20:55:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1771966538;
+	bh=SQcVebSSVbAr9KoKj2KkC4SNEiz7WbMDmKWz7KrYMDc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=C5QdJEhDu3F3RiE7rGx/Dj0PuDa8L2iA78NrEvl5azZwBu4Ri8KTCOsR7pMfcmtU3
+	 je0zFaQMDs14Xk47ydamr6d7K/C2mLgReCJU0eQ5t1msb9+Cr7JogPuBHz98HpmyQ7
+	 FL/1gMMXhg+L00T+Kh2KO3QlEyL82mSedV36eljnS06LPHa0h3WmsQVmUdeXN3DiC9
+	 cEZqkUgOnFmktJdADtpZXWkrLh5++ZoIg7vfN/CCzxHt5NfLUeQ6OdSa50D7n4i6eP
+	 XnEv8Hyqpy7KHExKA4q8UQSULNu6IIGyin0jFfMRoKZyLBFOB48silsMM4b6g71d0s
+	 /Yrc0O/Gx/2jA==
+Date: Tue, 24 Feb 2026 13:55:29 -0700
+From: Nathan Chancellor <nathan@kernel.org>
+To: Kees Cook <kees@kernel.org>
+Cc: Nicolas Schier <nsc@kernel.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>, Huacai Chen <chenhuacai@kernel.org>,
+	WANG Xuerui <kernel@xen0n.name>,
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+	Helge Deller <deller@gmx.de>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>, Ard Biesheuvel <ardb@kernel.org>,
+	Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+	Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
+	Bill Wendling <morbo@google.com>,
+	Justin Stitt <justinstitt@google.com>, linux-kbuild@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	loongarch@lists.linux.dev, linux-parisc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+	linux-efi@vger.kernel.org, llvm@lists.linux.dev
+Subject: Re: [PATCH 2/2] kbuild: Use '-fms-anonymous-structs' if it is
+ available
+Message-ID: <20260224205529.GB3510750@ax162>
+References: <20260223-fms-anonymous-structs-v1-0-8ee406d3c36c@kernel.org>
+ <20260223-fms-anonymous-structs-v1-2-8ee406d3c36c@kernel.org>
+ <202602231432.20F3F0CF@keescook>
+ <20260223225311.GA2462602@ax162>
+ <202602231459.2A1DD53E0@keescook>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,129 +96,38 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=TNRIilla c=1 sm=1 tr=0 ts=699e0bcc cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=HzLeVaNsDn8A:10 a=VkNPw1HP01LnGYTKEx00:22 a=Mpw57Om8IfrbqaoTuvik:22
- a=GgsMoib0sEa3-_RKJdDe:22 a=VnNF1IyMAAAA:8 a=TZJ4Wy1_Ugu8wcDdlOUA:9
-X-Proofpoint-GUID: 9k6bWDutqn9pjuip8fHcLD8GF_HkkTFo
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjI0MDE3MyBTYWx0ZWRfXyxpEuYp9QAjw
- zjxDU+LwYzuNj5Il9u+WSdzMXIH5V5BgLtwy5YTOBS6jkZgu9OT+slcaUe54ZgjEp1wGeTolOUD
- WpPUTyJmFFX9jLQBh/GR+R7+qMbuEsg89yweP7a/Cje2FXkujyV/pf+ZnZQfqc3wR/JRH0THJq4
- vtC3xQWZQFKZUoDMuD0SkQHbHbTghiWhDv58iWZYl9ylFLyXvboFSg6e9/iGi/uuwGIj0w2acvc
- d+n1XOW9TQQ1Tz5HQkNwsKjj1UxyxudjoeRaHulZskkCQpA1J1RQP47iYAh/MygYQ/nYk9eaeme
- K1IgwRlRPna0EERre6hOVGbDZX6BzNtPOLg+GGg87sv3szR8Tn75Ov1NPq8meIa/FPz/KMHR3IR
- 8NliRyyrqBIG0qmhl0/npUf5LpLL9HbzyZsxQyBGoQrm2O5s5enuWv1dQRQl7+JtDobH/S6NcyL
- hrFz9b9DDASl0dWl2IQ==
-X-Proofpoint-ORIG-GUID: 9k6bWDutqn9pjuip8fHcLD8GF_HkkTFo
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-02-24_02,2026-02-23_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 suspectscore=0 adultscore=0 priorityscore=1501 impostorscore=0
- spamscore=0 clxscore=1015 bulkscore=0 lowpriorityscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2601150000 definitions=main-2602240173
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <202602231459.2A1DD53E0@keescook>
 
-From: Abhishek Dubey <adubey@linux.ibm.com>
+On Mon, Feb 23, 2026 at 03:02:32PM -0800, Kees Cook wrote:
+> On Mon, Feb 23, 2026 at 03:53:11PM -0700, Nathan Chancellor wrote:
+> > On Mon, Feb 23, 2026 at 02:33:35PM -0800, Kees Cook wrote:
+> > > Series looks good to me. One style question, why go the round-trip with
+> > > Kconfig instead of doing it all with a fallback in the Makefile:
+> > > 
+> > > CC_FLAGS_DIALECT += $(call cc-option,-fms-anonymous-structs,-fms-extensions)
+> > 
+> > I might be misunderstanding how Kbuild works but
+> > arch/$(SRCARCH)/Makefile may have logic for selecting CROSS_COMPILE,
+> > which can impact the selection of $(CC), so I cannot use cc-option prior
+> > to its inclusion but I need CC_FLAGS_DIALECT to be included before
+> > arch/$(SRCARCH)/Makefile in the main build so that they can be used
+> > within it, which is only possible after Kconfig has run. This is
+> > probably worth more flushing out in the code or a comment since it is
+> > subtle.
+> 
+> Will Kconfig see a different CC than Makefile? Regardless, I trust your
 
-Verifier testcase result for tailcalls:
+It shouldn't, as arch/$(SRCARCH)/Makefile is included before invoking
+Kconfig; if the compiler changes, Kconfig will run again before
+building.
 
-# ./test_progs -t verifier_tailcall
-#617/1   verifier_tailcall/invalid map type for tail call:OK
-#617/2   verifier_tailcall/invalid map type for tail call @unpriv:OK
-#617     verifier_tailcall:OK
-#618/1   verifier_tailcall_jit/main:OK
-#618     verifier_tailcall_jit:OK
-Summary: 2/3 PASSED, 0 SKIPPED, 0 FAILED
+> judgement here! I actually rather prefer having it exposed via Kconfig.
+> :)
+> 
+> Reviewed-by: Kees Cook <kees@kernel.org>
 
-Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
----
- .../bpf/progs/verifier_tailcall_jit.c         | 69 +++++++++++++++++++
- 1 file changed, 69 insertions(+)
-
-diff --git a/tools/testing/selftests/bpf/progs/verifier_tailcall_jit.c b/tools/testing/selftests/bpf/progs/verifier_tailcall_jit.c
-index 8d60c634a114..17475ecb3207 100644
---- a/tools/testing/selftests/bpf/progs/verifier_tailcall_jit.c
-+++ b/tools/testing/selftests/bpf/progs/verifier_tailcall_jit.c
-@@ -90,6 +90,75 @@ __jited("	popq	%rax")
- __jited("	jmp	{{.*}}")		/* jump to tail call tgt   */
- __jited("L0:	leave")
- __jited("	{{(retq|jmp	0x)}}")		/* return or jump to rethunk */
-+__arch_powerpc64
-+/* program entry for main(), regular function prologue */
-+__jited("	nop")
-+__jited("	ld 2, 16(13)")
-+__jited("	li 9, 0")
-+__jited("	std 9, -8(1)")
-+__jited("	mflr 0")
-+__jited("	std 0, 16(1)")
-+__jited("	stdu 1, {{.*}}(1)")
-+/* load address and call sub() via count register */
-+__jited("	lis 12, {{.*}}")
-+__jited("	sldi 12, 12, 32")
-+__jited("	oris 12, 12, {{.*}}")
-+__jited("	ori 12, 12, {{.*}}")
-+__jited("	mtctr 12")
-+__jited("	bctrl")
-+__jited("	mr	8, 3")
-+__jited("	li 8, 0")
-+__jited("	addi 1, 1, {{.*}}")
-+__jited("	ld 0, 16(1)")
-+__jited("	mtlr 0")
-+__jited("	mr	3, 8")
-+__jited("	blr")
-+__jited("...")
-+__jited("func #1")
-+/* subprogram entry for sub() */
-+__jited("	nop")
-+__jited("	ld 2, 16(13)")
-+/* tail call prologue for subprogram */
-+__jited("	ld 10, 0(1)")
-+__jited("	ld 9, -8(10)")
-+__jited("	cmplwi	9, 33")
-+__jited("	bt	{{.*}}, {{.*}}")
-+__jited("	addi 9, 10, -8")
-+__jited("	std 9, -8(1)")
-+__jited("	lis {{.*}}, {{.*}}")
-+__jited("	sldi {{.*}}, {{.*}}, 32")
-+__jited("	oris {{.*}}, {{.*}}, {{.*}}")
-+__jited("	ori {{.*}}, {{.*}}, {{.*}}")
-+__jited("	li {{.*}}, 0")
-+__jited("	lwz 9, {{.*}}({{.*}})")
-+__jited("	slwi {{.*}}, {{.*}}, 0")
-+__jited("	cmplw	{{.*}}, 9")
-+__jited("	bf	0, {{.*}}")
-+/* bpf_tail_call implementation */
-+__jited("	ld 9, -8(1)")
-+__jited("	cmplwi	9, 33")
-+__jited("	bf	{{.*}}, {{.*}}")
-+__jited("	ld 9, 0(9)")
-+__jited("	cmplwi	9, 33")
-+__jited("	bt	{{.*}}, {{.*}}")
-+__jited("	addi 9, 9, 1")
-+__jited("	mulli 10, {{.*}}, 8")
-+__jited("	add 10, 10, {{.*}}")
-+__jited("	ld 10, {{.*}}(10)")
-+__jited("	cmpldi	10, 0")
-+__jited("	bt	{{.*}}, {{.*}}")
-+__jited("	ld 10, {{.*}}(10)")
-+__jited("	addi 10, 10, 16")
-+__jited("	mtctr 10")
-+__jited("	ld 10, -8(1)")
-+__jited("	cmplwi	10, 33")
-+__jited("	bt	{{.*}}, {{.*}}")
-+__jited("	addi 10, 1, -8")
-+__jited("	std 9, 0(10)")
-+__jited("	bctr")
-+__jited("	mr	3, 8")
-+__jited("	blr")
-+
- SEC("tc")
- __naked int main(void)
- {
--- 
-2.52.0
-
+Thanks!
+Nathan
 
