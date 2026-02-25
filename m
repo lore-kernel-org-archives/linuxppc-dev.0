@@ -1,49 +1,100 @@
-Return-Path: <linuxppc-dev+bounces-17137-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17138-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7CBA8F55434
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Feb 2026 01:59:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99BDCF55449
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Feb 2026 03:24:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fLHpd4hJhz3dBq;
-	Wed, 25 Feb 2026 12:59:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=5.75.144.95
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771975996;
-	cv=none; b=YeJidVzf0sJBEQ0K/h0zCzLrVqln7uCn7SGTgpXXyI36kVTmda94UsFm6BpJJ55lypizq52sHtnxkKz12A5soerUtmU+6AHTq8PHDP04q54WwMk6pgLisNWW30zgePxqtGpxi0bukkzDO3nAUA+v83cSLITNP/mlFyFtZPyPxKDh23YlMgSM21KVv/MPq1iTL32M0Xn6zK5C+kbKJyCc/OD/qRniL4/j5yhvY2pb8qswI1fT++gl2Uqe3f6oi5G1uJAAiXz27AS/g38ciX3AMWvwRz9gLiv+rUv/Ad1hD6vmWRsnGhAqyu2BpZbhE/Pnhyw1E1kLlOHVxl3ex+iRrg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fLKhJ2BnZz3dK1;
+	Wed, 25 Feb 2026 14:24:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771989872;
+	cv=none; b=h+VNoOqPl5zFbO/6XTNkK6I7c3zz+Hz92U7GKj2/uQ7Ghv/h72yQqh1YDNI2XGfjxS1xqtUOXyz5A8LJSwjXSgt8VVjNnulLuhVDpwZQdwuUAmk85nTcEosHB0kiBzEpa2HbIZGkZd5WuERSvXCNtC87g6RBWvqQSZJ22CSTjz33r42Y4VAiYo6n249twIzIXDlSzTG2puwuqSHPaTVFGUw5qDEZRe3MstSII6fUzP+vYJPTsuqwmFlPgvzOOfgol6kRRxlWVxb7XcICArkcu4+l/PC62e65Jo6xyTdfR5utzss0Y9gAvL6ylt3xb87BZZVqAzX/+gl/fMHwH2fH5w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1771975996; c=relaxed/relaxed;
-	bh=KwQalYMWTwMP4M+FQW5xwdF4J5kMnovp49C0rT2vdQ4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=JZ9Nn8TrynkV8MrbzAfC0Eu904LUh4IaUy/ocnlO3yDvHc6RccsCjDLOjBs+Tk8BO922d5/ghGsqP3T5skA7x6oYd5g4tY2YYRsz5WSobJT7nAPAdjITVBUL4AxjLycN3JBSejHMBJNa/yKRsTcGPgK3EjvUzEYuePYfOuR7z6mzkwePeezziPmzkMEfdQiGbuRCGjcfKXo1K3+hiIV9M7te96GTifBNdjL4SijEIal6zmUfvzJ4odRrey782CGGL9e0aqMJRZtkVLOQhB9D002IZFkYuTSEQaj0WNQBVpcW4GQWIIEZ3WPH6FoG3RRaRgCUDNPk93cT7tUcgeKjew==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org; dkim=pass (2048-bit key; unprotected) header.d=mainlining.org header.i=@mainlining.org header.a=rsa-sha256 header.s=202507r header.b=Uukjzxhz; dkim=pass header.d=mainlining.org header.i=@mainlining.org header.a=ed25519-sha256 header.s=202507e header.b=G8QpVoG+; dkim-atps=neutral; spf=pass (client-ip=5.75.144.95; helo=mail.mainlining.org; envelope-from=aelin@mainlining.org; receiver=lists.ozlabs.org) smtp.mailfrom=mainlining.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=mainlining.org
+	t=1771989872; c=relaxed/relaxed;
+	bh=2erXaSzxqouJYHAI7iQgk06x1aOTRy7Rez7nS+35Gsk=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
+	 MIME-Version:Content-Type; b=mG5WkyiZpKhCUhynUqaPbxR6GJI5WKGRJTqtfLvwJd7tUWlwAE/oze5PRDHeeCR6/5zdH3vqFzPN2YZL7gAzV0ZNawsLOjmmLbk3WmgGXCc+sKHkF+jrQ1FtCPDYBIBRX+8YTdMS9Ns1/aPxfrfjhH66kiiHzoC7xJCP3muzuHYTgR7YI7cl3u2aP+DAX1JRWsSbIqJslef2FfHrm1NrfYOf042eneIwmRMX5ygbQ4RF+cL0QArm3Csr6oSBXmlU/O1xMJmo/DcIHO6u5TbnLWXVck9C7uO9x8nb//dwDV8ehZrEIDtLSxvkYJGAF96gATkNihi3UiuDa0Z1y8PMKg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=ErQUt0Qn; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=mainlining.org header.i=@mainlining.org header.a=rsa-sha256 header.s=202507r header.b=Uukjzxhz;
-	dkim=pass header.d=mainlining.org header.i=@mainlining.org header.a=ed25519-sha256 header.s=202507e header.b=G8QpVoG+;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=ErQUt0Qn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=mainlining.org (client-ip=5.75.144.95; helo=mail.mainlining.org; envelope-from=aelin@mainlining.org; receiver=lists.ozlabs.org)
-X-Greylist: delayed 146 seconds by postgrey-1.37 at boromir; Wed, 25 Feb 2026 10:33:14 AEDT
-Received: from mail.mainlining.org (mail.mainlining.org [5.75.144.95])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fLDYQ2700z3clw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 10:33:13 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; s=202507r; d=mainlining.org; c=relaxed/relaxed;
-	h=From:To:Subject:Date:Message-ID; t=1771975841; bh=KwQalYMWTwMP4M+FQW5xwdF
-	4J5kMnovp49C0rT2vdQ4=; b=Uukjzxhz3Dr+cXdlOV+aSFORFmnTUjXYjGwrVS20vC9V65UcL2
-	6zIJXYirK0rR121RJOnzJ8r3FJgnPDOqDYCByUo9GWr4QctA470jTXacjULZ8/bNk202VwC4Kof
-	bgx55G+1yENEvyNcAzvEPHMUNfM0+6OouO/vmJsgQealIzSgJHp+WhTKH1N92KrTFCdDtedcExM
-	N0Iqe4R7VCY1DbIfXnAf1iWysnpadQ1lWCOcAd5Nfnn5kC8xvO33Be3Zvo8DNTOqKO2TUH4NpyF
-	SYHlDR8B4kx6ulcAMOCZCRPA3wsCHLCL1ZVVytH6aGLpAVSAC1UmzMGZZTODtTvE7SQ==;
-DKIM-Signature: v=1; a=ed25519-sha256; s=202507e; d=mainlining.org; c=relaxed/relaxed;
-	h=From:To:Subject:Date:Message-ID; t=1771975841; bh=KwQalYMWTwMP4M+FQW5xwdF
-	4J5kMnovp49C0rT2vdQ4=; b=G8QpVoG+pfT01hkDnrLnViIoQqYohWptZmGJSHA+Swzqv+Zn91
-	iJfFVFalGGzjTaaigF3XMrwKHWfoUpKVBuDA==;
-Message-ID: <77cd40dd-bc40-4223-a5db-7eb514c13b78@mainlining.org>
-Date: Wed, 25 Feb 2026 00:30:30 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fLKhH0Lzrz3dJg
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 14:24:30 +1100 (AEDT)
+Received: by mail-pj1-x102e.google.com with SMTP id 98e67ed59e1d1-3562212b427so2567365a91.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2026 19:24:30 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1771989867; x=1772594667; darn=lists.ozlabs.org;
+        h=mime-version:references:message-id:date:in-reply-to:subject:cc:to
+         :from:from:to:cc:subject:date:message-id:reply-to;
+        bh=2erXaSzxqouJYHAI7iQgk06x1aOTRy7Rez7nS+35Gsk=;
+        b=ErQUt0QnaSKUH/F+xHu82UYQBjeKhBdx/HgPNjVAVZdCjgpyPOYDtUcAXHJUFaO/UH
+         cmtjp6pBLzleFa8Ozr56tu7lzy+9JIgQmEd//gAdSf2riVfnqJg4QfjLIBVfC9rHjXW4
+         xX4P085D1rvsOu9IiRZR5wAUsFYBR3KceISDahJZKaoZFBGopu7kXmUyEBespLj0Cdo+
+         uM3wQ7dhan807z7aA7oFMcjQWJU+wTbZY9eChQZK0DeWf9AW4z8QEM8qi7VHyg5R4FIl
+         8Ua5KR7kt3y0x3SIB0cj+wF86e+UNBIBDwrqslpVYQywIglhye0UMrTgUMhfBgrAfQVw
+         HA4w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1771989867; x=1772594667;
+        h=mime-version:references:message-id:date:in-reply-to:subject:cc:to
+         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=2erXaSzxqouJYHAI7iQgk06x1aOTRy7Rez7nS+35Gsk=;
+        b=OjL/ua1KLFTjNgMyBmkzELmiR6fpUpTngbmkHjRZo8QdSb1+1sJcROTGT6keUVWVTE
+         zfc+QQyzeBFdu5l/IVuqdqTVKA95URY7P6sKEZtY7L212Ro5mg4qFeX2ZdBvSEH73jMl
+         xTX8cBN8s/AU1o+vIWrT3WQ/LLZ6LrgkJYOlTbXxxu5MkUoNFk9z2SteaW+Nb02W6ppE
+         h+YTVDOR1t4VIn4a/yZMF+HdoYO1IVKooqtZdIVytGPrP8Tjruyr2wY1/AsaV5NjeFOp
+         hrMOq8XKiZaljC7LEhrS4krKtjW/LUnWqcIeTty9eBCu0jH8+4khm3SCKjqfvK4SN7Pt
+         5nTQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWZeV/uGXPcvxWmEeeugbv4Ffq1rqIL0b6aMy1ACfS0V/dlUBQ7aYfBAlQ2SRA+rFnScRwfLENuSbT/ooM=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyXndZDH1uNXxgTLAwT1s+0qfFKP6fNxCj8WqBYtRBozaKr6Mvn
+	vCucgkIBA/Jy6RQGKFTk3Wq7sruqH0wXK8wi9f+aiAaklVHSzK1emzY7
+X-Gm-Gg: ATEYQzw4NsKsKspowUZAshbRUnKqrq2XTxWbURGoOY/i0lUezkLcgAx343SXuh7zbaT
+	8o8SnMq1LKarUBCBxTemWOYtY6N1X8FUxHi0lZfl+iSV1u5sEalDRF2C4jtQX+/kvK/I72IZ+cb
+	4cIGBenP8kicwJl0+1HpuAqbiv5Ye5UuLAPQAahhP1jtsueHCsBsZq5X+k8UJduPu1NwE02ENsa
+	lCrTUWNUWRPAMrGs9zUjYMbR26bsCcAt5gNgg+kxPHiioL/V2Wn4jyFyjH0oNjlsgIN17m7IA5n
+	LrsCASuk7Q4RLkDgaXjQc/1UtFGV7+iDSsKG/19doo+AzayoOSgZ2+StypGE7cTIUOZKaE/19Br
+	icm7eY+uDJnq2JL6Ewi3ahMIxlo802j1HRpQnL1wNint2nqM+1KW5wbe0n4yXRh4vjLbNo18l/S
+	XsfZea4oECnxaJYNhQig==
+X-Received: by 2002:a17:90b:2cc5:b0:356:35a5:4a64 with SMTP id 98e67ed59e1d1-358ae7c5003mr12522694a91.4.1771989867018;
+        Tue, 24 Feb 2026 19:24:27 -0800 (PST)
+Received: from dw-tp ([203.81.240.195])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-359037afe31sm1092824a91.16.2026.02.24.19.24.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 24 Feb 2026 19:24:26 -0800 (PST)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Jinjie Ruan <ruanjinjie@huawei.com>, corbet@lwn.net, skhan@linuxfoundation.org, 
+	catalin.marinas@arm.com, will@kernel.org, chenhuacai@kernel.org, 
+	kernel@xen0n.name, maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, pjw@kernel.org, palmer@dabbelt.com, aou@eecs.berkeley.edu, 
+	alex@ghiti.fr, tglx@kernel.org, mingo@redhat.com, bp@alien8.de, 
+	dave.hansen@linux.intel.com, hpa@zytor.com, akpm@linux-foundation.org, 
+	bhe@redhat.com, vgoyal@redhat.com, dyoung@redhat.com, rdunlap@infradead.org, 
+	pmladek@suse.com, dapeng1.mi@linux.intel.com, kees@kernel.org, 
+	paulmck@kernel.org, lirongqing@baidu.com, arnd@arndb.de, ardb@kernel.org, 
+	leitao@debian.org, rppt@kernel.org, cfsworks@gmail.com, ryan.roberts@arm.com, 
+	sourabhjain@linux.ibm.com, tangyouling@kylinos.cn, eajames@linux.ibm.com, 
+	hbathini@linux.ibm.com, songshuaishuai@tinylab.org, samuel.holland@sifive.com, 
+	kevin.brodsky@arm.com, vishal.moola@gmail.com, junhui.liu@pigmoral.tech, 
+	coxu@redhat.com, liaoyuanhong@vivo.com, fuqiang.wang@easystack.cn, 
+	jbohac@suse.cz, brgerst@gmail.com, x86@kernel.org, linux-doc@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
+	linux-riscv@lists.infradead.org, kexec@lists.infradead.org
+Cc: ruanjinjie@huawei.com
+Subject: Re: [PATCH v6 1/5] powerpc/crash: sort crash memory ranges before preparing elfcorehdr
+In-Reply-To: <20260224085342.387996-2-ruanjinjie@huawei.com>
+Date: Wed, 25 Feb 2026 08:45:56 +0530
+Message-ID: <87wm01h5sj.ritesh.list@gmail.com>
+References: <20260224085342.387996-1-ruanjinjie@huawei.com> <20260224085342.387996-2-ruanjinjie@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,72 +108,53 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: Failure to build with LLVM for the Wii
-To: Nathan Chancellor <nathan@kernel.org>, Link Mauve <linkmauve@linkmauve.fr>
-Cc: linuxppc-dev@lists.ozlabs.org, llvm@lists.linux.dev
-References: <aXs8sgAcci9FKKpx@luna> <20260129223136.GA1614447@ax162>
-Content-Language: en-US
-From: Aelin <aelin@mainlining.org>
-In-Reply-To: <20260129223136.GA1614447@ax162>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
-On 1/29/26 11:31 PM, Nathan Chancellor wrote:
-> Hi Link,
-> 
-> On Thu, Jan 29, 2026 at 11:55:46AM +0100, Link Mauve wrote:
->> I’m trying to build the kernel for the Nintendo Wii, using LLVM instead
->> of gcc, in order to bring Rust support to this architecture (and also
->> because my distribution doesn’t ship a cross-compiling gcc), but I get
->> this build issue near the end:
->> ```
->> % make O=wii LLVM=1 ARCH=powerpc -j1
->> make[1]: Entering directory '/home/linkmauve/dev/linux/wii'
->>    GEN     Makefile
->>    CALL    ../scripts/checksyscalls.sh
->>    DESCEND objtool
->>    INSTALL libsubcmd_headers
->>    WRAP    arch/powerpc/boot/dtbImage.wii
->> objcopy: Unable to recognise the format of the input file `vmlinux'
->> make[3]: *** [../arch/powerpc/boot/Makefile:394: arch/powerpc/boot/dtbImage.wii] Error 1
->> make[2]: *** [../arch/powerpc/Makefile:236: zImage] Error 2
->> make[1]: *** [/home/linkmauve/dev/linux/Makefile:248: __sub-make] Error 2
->> make[1]: Leaving directory '/home/linkmauve/dev/linux/wii'
->> make: *** [Makefile:248: __sub-make] Error 2
->> ```
->>
->> I believe it should use $(OBJCOPY) instead of objcopy, which is set to
->> llvm-objcopy, but couldn’t figure out where it is misconfigured.
->>
->> Thanks for your help!
-> 
-> It is the arch/powerpc/boot/wrapper script:
-> 
->    https://github.com/ClangBuiltLinux/linux/issues/1601
-> 
-> I have a WIP series from long ago that may be a good starting point for
-> getting something working but there were some errors I never got around
-> to solving before having to shelve it for other issues:
-> 
->    https://git.kernel.org/pub/scm/linux/kernel/git/nathan/linux.git/log/?h=wip/llvm-1-powerpc-boot-wrapper
-> 
-> Maybe something I (or someone else) can get back to soon.
-> 
-> Cheers,
-> Nathan
-> 
+Jinjie Ruan <ruanjinjie@huawei.com> writes:
 
-Hi Nathan,
+> From: Sourabh Jain <sourabhjain@linux.ibm.com>
+>
+> During a memory hot-remove event, the elfcorehdr is rebuilt to exclude
+> the removed memory. While updating the crash memory ranges for this
+> operation, the crash memory ranges array can become unsorted. This
+> happens because remove_mem_range() may split a memory range into two
+> parts and append the higher-address part as a separate range at the end
+> of the array.
+>
+> So far, no issues have been observed due to the unsorted crash memory
+> ranges. However, this could lead to problems once crash memory range
+> removal is handled by generic code, as introduced in the upcoming
+> patches in this series.
+>
+> Currently, powerpc uses a platform-specific function,
+> remove_mem_range(), to exclude hot-removed memory from the crash memory
+> ranges. This function performs the same task as the generic
+> crash_exclude_mem_range() in crash_core.c. The generic helper also
+> ensures that the crash memory ranges remain sorted. So remove the
+> redundant powerpc-specific implementation and instead call
+> crash_exclude_mem_range_guarded() (which internally calls
+> crash_exclude_mem_range()) to exclude the hot-removed memory ranges.
+>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Baoquan he <bhe@redhat.com>
+> Cc: Jinjie Ruan <ruanjinjie@huawei.com>
+> Cc: Hari Bathini <hbathini@linux.ibm.com>
+> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+> Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+> Cc: Shivang Upadhyay <shivangu@linux.ibm.com>
+> Cc: linux-kernel@vger.kernel.org
+> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
 
-your last 3 patches on this branch do indeed fix the wrapper script for 
-the cross-compilation with LLVM=1 ARCH=powerpc without CROSS_COMPILE set 
-or GNU binutils in PATH. They look good to me! Would you be willing to 
-submit them now without touching the VDSO? That part does not seem to be 
-necessary to fix the wrapper script for this usecase, so it should 
-strictly be an improvement. I'd also be happy to pick up your patches, 
-send them and follow-up on feedback if you don't want to do it yourself.
 
-Best regards,
-Aelin
+I had gone through the generic implementation v/s the powerpc specific
+remove_mem_range() implementation, when it was posted by Sourabh
+separately. And it make sense to use the generic implementation in this
+case, rather than keeping a duplicate powerpc specific version. So...
+
+LGTM. Please feel free to add:
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+
 
