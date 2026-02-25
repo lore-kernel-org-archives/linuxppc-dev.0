@@ -1,74 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-17122-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17123-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B78BFF4BB6F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Feb 2026 18:38:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29F74F4BB83
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Feb 2026 20:10:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fL61T249lz3cZy;
-	Wed, 25 Feb 2026 05:38:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771958317;
-	cv=none; b=OzSNYQi89VkH1l8BaUmw2+FxVMMNqOk/nEtHkGZXYTBgXz20XilQcvc/A4Dn9KSzg2tjsHXCeWYyrXbMJr5j1Hz3npaMxRpayQ+dlrZAHZTeVQGgTz7VzRqpbDhn7xoE5d44OCE+JgfTisHFVWKjB58I5a3jmijv97xEqbbpv22frAMJ7kfersnZtQJ15aLNyr3BSLcM0b4ZXucEqJgArR9+zvv96X6kxI85nUI4W7mj8bwW2r+TOXyVaw8Wtu21t0RSYYC7ltxggW2F0CwIaDQnkZmdxmU4JSJiCn+eX3sxcUlFcbLSyqFS5BbNBpXpYGwegc1L98zAvK7Guj0b8A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fL8353TP6z3cbt;
+	Wed, 25 Feb 2026 07:10:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771963809;
+	cv=none; b=Zbpi3sFSgZnoquz51gn6ORWDZGZI6pwhhVzWnC/tL0Xh1Vv0bafGZsHsrO5RBybSmpI93mAd10c6sV97UUheXeO1gRETnrDIuwG7V1L2tSevJLPSuv6PN9PsGwfcmwjtWpDXLCXt41gnxJdHC0fNO59qqKJRTt2ebFPNVzUGLTCjLzgfXq5nGJPGfErzDyJOBGeDBx8GOVtGIXWbMWFWT7oasfnS+NJtYINeJN+nl0AIea1BtLrmdFK82Fg4em2QE3XMS0S2llrNNOFiE+M3k9krPqMzjGprn3/MrDxt0T0+USSOpJS0Qe3M3Eh36zTaP0vBgDuovmoUV/86qHSFTg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1771958317; c=relaxed/relaxed;
-	bh=4+9/kVThc3/+V8elCs3VhAo/JNdEc8B5u2qZALvxJF4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=i82LSe3uReriosJ0LH2ClO5+ZeTUYLR2Mh1GeyMgzKLWX9Hvj69wR6EL4f3Or6Dszweu0z/8vNEZkYaBG0P2tneva4rITq12zXrkeiVnYvYBUWDNKXSJQokIUxDW0DTITe/3e+CVEPJqAt9NBeXGU7z9G5FmqH4cawfTnQ+IyqRPq2XtF/0R/AODUnXWu8CpvimookznM9mFJcNAEL9aViStQ1gNO+bvKFgHFkwy9NJMAgn3o26FN7ZQKl3Fl2Td8CnMa2ufB9fkh0DZ2i3HeF2pu2UNJujdh6MCzFy7e3IqTTFFwQ0pu+JiAwq4GgF6dlp+cy/UgZZRnpIgDqLeFA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NeVWlmTO; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1771963809; c=relaxed/relaxed;
+	bh=62cf8BdE7tqhziY156GWJ+4twaLEiemM+AhXMVEXK7k=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=JXLa0GYxzLcBCSWKLXBmgnOt25hSmaj/XTDG4rZaQWRF63xoWboJmFklX8Z0mdGhC70WsUtcYtPkg99chxK+ozTWQBCr7w+47QYbrqF3Ct1gA5t+v/OTkOld0cHADUIwSleucSUjDQROgJ3Ny7vjNsZz4DhdPIW61WWMu1BikVIe9DqaXmu/bjOTYo4IGaEVYlXamtpSAlrHdLtubfzvQIlW9A02cqD/cnbPolhcIvVbgHkBWvjxHGTIV6ETfWoJJ47ny1zLL/7wnCwD5u91jNJO3SlFeSjzpxSC42vL+/Ff+Jn7VOh9Ex6a8fep1HsnmZJA5M9LUe1cSvX+V05tOA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HEworAZq; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NeVWlmTO;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HEworAZq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fL61S2nZHz3cZp
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 05:38:36 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 63FF8600AD;
-	Tue, 24 Feb 2026 18:38:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E4B2DC116D0;
-	Tue, 24 Feb 2026 18:38:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1771958313;
-	bh=dS/PeNeD3SjxSqxDdPYuOcwLO2rhR2F/UDY4OUrE8go=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=NeVWlmTOJhJlcf2PmA7E4NC6gNxINhb72p4NHtgkyLKaCJYMzQAy/keCJnA2KK+D4
-	 Mf0HKgARJSzH2/4R4f40d31RyUB9qGr3mFYQrsP3gxEg+O4XWATTxQHXdNslk5f+yv
-	 w2pFlwO5vAp9GZHfw6EXQ0O5P5At56q/eE3dWguZ64rHK/ZtFclnJZZaFmSBaKdvv6
-	 rtQ1AGhipiTlK6H9Xbigxs2zEBQUPcF79m1CMwGc0e6oxJHnP96DtyoNcxU1LGg/3j
-	 D0QGJ6559cz1b6h6MDNhDBN2F0l6CZzeazoO+GDCuTQ3g0z4Od6TmS4qZI3gX1qV7f
-	 Ejfo/J/YfSL7w==
-Date: Tue, 24 Feb 2026 12:38:32 -0600
-From: Rob Herring <robh@kernel.org>
-To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Cc: Saravana Kannan <saravanak@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Shawn Guo <shawnguo@kernel.org>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Magnus Damm <magnus.damm@gmail.com>, Chen-Yu Tsai <wens@kernel.org>,
-	Jernej Skrabec <jernej.skrabec@gmail.com>,
-	Samuel Holland <samuel@sholland.org>, Frank Li <Frank.Li@nxp.com>,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-	imx@lists.linux.dev, linux-renesas-soc@vger.kernel.org,
-	linux-sunxi@lists.linux.dev, driver-core@lists.linux.dev,
-	Peng Fan <peng.fan@nxp.com>
-Subject: Re: [PATCH v2 0/9] soc: remove direct accesses to of_root from
- drivers/soc/
-Message-ID: <20260224183832.GB3239922-robh@kernel.org>
-References: <20260223-soc-of-root-v2-0-b45da45903c8@oss.qualcomm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fL8342Gjbz3cbQ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 07:10:07 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61OEMe6K327440;
+	Tue, 24 Feb 2026 20:09:51 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=pp1; bh=62cf8BdE7tqhziY156GWJ+4twaLE
+	iemM+AhXMVEXK7k=; b=HEworAZq/IZpEBwiGGjnqw/WJZQ09OftyX/3AmlUrm9X
+	hub0pdv/Bw5CtQG9IPyGcscuU+fMTXtb/6sDAM46b+HWfYMLy+/XbXp6wXtW/5vu
+	XTcXIP7k/SP2Z9fPsClQgEowQrqlOKwPPcy8lbinnH7fHVDtvBhGza8YaDvStiSq
+	00FbLb0mdSb8BhfEGbeUIPy8NwfAHk3cf7nYnuwxIA0m6eA6d5c7tybvyHcsIZ9u
+	LO2gEwVKgj9MEF+3CYM63F9+2ksWZxZFffiXJDsKSaPOFEpc98xK+keSyAvNhOd6
+	mcWZC19hIUoCGxsm8TvY4nCVJw0Us627eb07nQSOfA==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cf34c4t6b-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 24 Feb 2026 20:09:51 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 61OH5CUm001631;
+	Tue, 24 Feb 2026 20:09:51 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4cfr1n2fum-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 24 Feb 2026 20:09:50 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 61OK9lxS49545560
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 24 Feb 2026 20:09:47 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id EC7D22004B;
+	Tue, 24 Feb 2026 20:09:46 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6B30620043;
+	Tue, 24 Feb 2026 20:09:45 +0000 (GMT)
+Received: from ltcrain4-lp15.ltc.tadn.ibm.com (unknown [9.5.7.39])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 24 Feb 2026 20:09:45 +0000 (GMT)
+From: adubey@linux.ibm.com
+To: linuxppc-dev@lists.ozlabs.org
+Cc: bpf@vger.kernel.org, hbathini@linux.ibm.com, ast@kernel.org,
+        daniel@iogearbox.net, andrii@kernel.org, maddy@linux.ibm.com,
+        Abhishek Dubey <adubey@linux.ibm.com>
+Subject: [PATCH 0/4] powerpc64/bpf: Add support for instruction array and indirect jump
+Date: Tue, 24 Feb 2026 20:09:28 -0500
+Message-ID: <20260225010950.20218-1-adubey@linux.ibm.com>
+X-Mailer: git-send-email 2.52.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,55 +86,89 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260223-soc-of-root-v2-0-b45da45903c8@oss.qualcomm.com>
+Content-Type: text/plain; charset=y
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjI0MDE3MyBTYWx0ZWRfX+UFLxuhYOBOy
+ 1rrdHQNAFXpUFDJc6MMS1N1vfeRU0x/Lu9k+qEbD4lBCzu77D+V0MhUW4Pi/CXYa/oBLR4J0VG4
+ 20LuCLABMhLwpaklFMfv+QWmyuRsHqavTvtw/IS8nTBSkjcRCRqXHmCFOJRrdTBdi01H/tf+I8S
+ Z3MyUeS0ap8tORbq3ETus7hiFwvBKJrRE1kIYpcYMYrEqQNLmq25U7ooi+z/KiLrALgYQ646IbR
+ q3NE3gV43fbpOTG4LCURuRoTQF0SZE4GpuC3K5Qa71P+YjpfBepPMRTVnF9wZq2pmV0x5afxZKz
+ l/b0bvZ6ipew8orFrGsW3RZT3e64Yea/f11XBnDALQlm5XlegQ23ZpK8kwSjHd80bmms9Ri923Q
+ EWNzfzQZB1fqCcCOsoCGzgRh3B3tgIuxpENi+7USe1F36cRUeT95OkH4ayD+nPukYSc4/aYroVu
+ mYSP4ECjYvvCTztfG5g==
+X-Proofpoint-ORIG-GUID: cgqE8olK2WkmaJQvaM3tpNxMOfjz9Ozn
+X-Authority-Analysis: v=2.4 cv=F9lat6hN c=1 sm=1 tr=0 ts=699e058f cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=qf4gfuq51q0A:10 a=HzLeVaNsDn8A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=Mpw57Om8IfrbqaoTuvik:22 a=GgsMoib0sEa3-_RKJdDe:22 a=VnNF1IyMAAAA:8
+ a=L4-lWHaHw3GvA7f3vB0A:9 a=3ZKOabzyN94A:10 a=k40Crp0UdiQA:10
+X-Proofpoint-GUID: cgqE8olK2WkmaJQvaM3tpNxMOfjz9Ozn
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-02-24_02,2026-02-23_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 phishscore=0 bulkscore=0 adultscore=0 spamscore=0
+ clxscore=1015 suspectscore=0 malwarescore=0 lowpriorityscore=0
+ priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2601150000
+ definitions=main-2602240173
 
-On Mon, Feb 23, 2026 at 02:37:15PM +0100, Bartosz Golaszewski wrote:
-> linux/of.h declares a set of variables providing addresses of certain
-> key OF nodes. The pointers being variables can't profit from stubs
-> provided for when CONFIG_OF is disabled which means that drivers
-> accessing these variables can't profit from CONFIG_COMPILE_TEST=y
-> coverage.
-> 
-> There are drivers under drivers/soc/ that access the of_root node. This
-> series introduces new OF helpers for reading the machine compatible and
-> model strings, exports an existing SoC helper that reads the machine
-> string from the root node and finally replaces all direct accesses to
-> of_root with new or already existing helper functions.
-> 
-> Merging strategy: first two patches should be either acked by Rob or
-> picked up into an immutable branch based on v7.0-rc1, the rest can go
-> through the SoC tree.
+From: Abhishek Dubey <adubey@linux.ibm.com>
 
-SoC tree is good.
+The first 2 patch enable support for instruction array. Now, the 
+instruction offset map maintain the mapping:
+original inst -> xlated inst -> jited inst
 
-> 
-> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-> ---
-> Changes in v2:
-> - rename of_machine_get_compatible() to of_machine_read_compatible() and
->   add the index argument
-> - add a stub for of_machine_read_compatible() for !CONFIG_OF
-> - provide of_machine_read_model() to avoid having to look-up the root
->   node via of_find_node_by_path("/")
-> - rename soc_device_get_machine() to soc_attr_read_machine() before
->   making it an exported symbol
-> - Link to v1: https://lore.kernel.org/r/20260119-soc-of-root-v1-0-32a0fa9a78b4@oss.qualcomm.com
-> 
-> ---
-> Bartosz Golaszewski (9):
->       of: provide of_machine_read_compatible()
->       of: provide of_machine_read_model()
->       base: soc: order includes alphabetically
->       base: soc: rename and export soc_device_get_machine()
->       soc: fsl: guts: don't access of_root directly
->       soc: imx8m: don't access of_root directly
->       soc: imx9: don't access of_root directly
->       soc: renesas: don't access of_root directly
->       soc: sunxi: mbus: don't access of_root directly
+The last two patch enable support for indirect jump. Any eligile
+register can store jump target address for control flow to jump.
 
-For all but patch 8,
+The features will be enabled on ppc32 in a separate series.
 
-Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+All selftest related to instruction array and indirect jump
+are passing.
+
+./test_progs-cpuv4 -n 20
+#21/1    bpf_insn_array/one2one:OK
+#21/2    bpf_insn_array/simple:OK
+#21/3    bpf_insn_array/deletions:OK
+#21/4    bpf_insn_array/deletions-with-functions:OK
+#21/5    bpf_insn_array/blindness:OK
+#21/6    bpf_insn_array/incorrect-index:OK
+#21/7    bpf_insn_array/load-unfrozen-map:OK
+#21/8    bpf_insn_array/no-map-reuse:OK
+#21/9    bpf_insn_array/bpf-side-ops:OK
+#21      bpf_insn_array:OK
+Summary: 1/9 PASSED, 0 SKIPPED, 0 FAILED
+
+./test_progs-cpuv4 -n 21 
+#20/1    bpf_gotox/one-switch:OK
+#20/2    bpf_gotox/one-switch-non-zero-sec-offset:OK
+#20/3    bpf_gotox/two-switches:OK
+#20/4    bpf_gotox/big-jump-table:OK
+#20/5    bpf_gotox/static-global:OK
+#20/6    bpf_gotox/nonstatic-global:OK
+#20/7    bpf_gotox/other-sec:OK
+#20/8    bpf_gotox/static-global-other-sec:OK
+#20/9    bpf_gotox/nonstatic-global-other-sec:OK
+#20/10   bpf_gotox/one-jump-two-maps:OK
+#20/11   bpf_gotox/one-map-two-jumps:OK
+#20      bpf_gotox:OK
+Summary: 1/11 PASSED, 0 SKIPPED, 0 FAILED
+
+Abhishek Dubey (4):
+  powerpc64/bpf: Add support for instruction array
+  selftest/bpf: Enable instruction array test for powerpc64
+  powerpc64/bpf: Add support for indirect jump
+  selftest/bpf: Enable gotox tests for powerpc64
+
+ arch/powerpc/net/bpf_jit_comp.c                         | 6 ++++++
+ arch/powerpc/net/bpf_jit_comp64.c                       | 8 ++++++++
+ tools/testing/selftests/bpf/prog_tests/bpf_insn_array.c | 2 +-
+ tools/testing/selftests/bpf/progs/verifier_gotox.c      | 2 +-
+ 4 files changed, 16 insertions(+), 2 deletions(-)
+
+-- 
+2.52.0
+
 
