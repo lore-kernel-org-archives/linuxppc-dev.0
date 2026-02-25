@@ -1,81 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-17173-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17174-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DAB5F4BB99
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Feb 2026 10:40:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F3E6EFD23D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Feb 2026 10:43:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fLWLn28ssz3f0c;
-	Wed, 25 Feb 2026 21:40:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772016001;
-	cv=none; b=i5TPeAUWjswZtxcKCNHDw0nA1/OCSjg7biB3ZVFQRoM4BtVLYvVo4P6NTtqXNk67UBehaWhUwK42opfxxwwoY4dXA6dweKy8CSdPbqRmfdb1qnbJslCSdMfG7DwPOhiUVeAHspFvome6bpemJo++OMYLsE9d1mmpNcr9Qm9582SLfBvJCeIsLVGOnBqWX3YFykA9gq68CzDskwhuj9OY56j0MGzkYfQr6vfvOhNYxPmkQfunoUay1B0eZtdHgRnR9MotxcesfNsMr6NSdRI87nJuNSyCoYoDeRoiFZQP3pgJyMahtQgZhP3RLudMdD/Bd9/HABymFchlcP1fS8lVrg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fLWR76wbDz3dXT;
+	Wed, 25 Feb 2026 21:43:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772016227;
+	cv=none; b=kG/x0mT9vz6WXpR63UpIigxyvofmw1a+R/Q/UCkjob1XzUWVy96fkg/yZEw1NU5MMtpbVQdkakqKKLGPum2qpND1UhlfPzX8pUjB3Wn8aS6UDYpyT6tqqs4Lk5lgAWLTQbmQEYu7HfixphOBVurWWaxG6LSLjKwbz5ttKjkNTh9+C8d+udIFQvKzI2+wtsuZKX7XqLMF1p3bI/jg7mIl9olzPQNjZCxFhe1NX64jCC7sXIrWgXg65A4ekRfKIumHfp+0pVK1doXEQ/Rgebn90ZYI9lnuNMge6iYzW4BQHmE+QFXZOVAnpGBhsZvBtUdU76D5ePbnVZUz8sKVgv5SpA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772016001; c=relaxed/relaxed;
-	bh=sL11sx23Rcy5IgZ8B9tWiGZp8lNaf1EwggY4I08LQUE=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=lpi+H0+auKIsfzd3O9vNfQBO0Em9PFzPBEq+ilmgtzuZfwFJ7G8T+Z8PKy98PNxtkIaETJjKS6gjiwi9Ewhz/cofAcQ1g/9QalLsNI3JjQPxwStfSooREzuQKGXVC2ok2ry6ZWlWHzqurNTuRdxEzYf9VsPRFcYLnrDheXicmtcLp9HMcH3AbPESeFEXle36X5Mky6tIcS3oXEuK6H/vB/x2tpz9J5o7dnZbpxzHtzSOdLdXqq3TkB48JGXjsia2bfuD/5dwmEAEpK3s4LHbFKJWTJuz9KzHEm0uIfKXvJyOdh9AWsQYl4QgxWPPFvYaFxgAyyOQMtMZmS80+Agf1w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EQeZDU2l; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1772016227; c=relaxed/relaxed;
+	bh=RQ6LjH8xg3kKnf/ssYdrwl1NaeB3S68pAKn+Qw6TYD4=;
+	h=MIME-Version:Date:From:To:Cc:Subject:In-Reply-To:References:
+	 Message-ID:Content-Type; b=Vj6tB19dqIO9NAkuibmyCrqsySQRAnyXX582VoYMUwKYoHxHUemiwfVS6SK2eEcttctTwYB++lUuDy24fgKQFZbBsABCY2FSJ6AJnkOTMBDAK9rOFAJg2Yc5mK+qmRTtSXcq8+4kEJ1TQ76x9vESMd7MLyhCHEuTOGBy+aucoqKf+Ol2GrdcpU4N7ApgtKzkMLxwpE3wPcAz7gK5dYR2Ohfeh0CaH7F7aOY1ieJr0wETXew70lUeb/LyXiLEgtrz21jwNYhEj+NwJ43ExNTNSPayQmDv9gI+xNhuh6+ZrYktghyoUkHJg06WoivhpoPMoocTDY5mStZNI3yU5NW5Hg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AM7d06Cb; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EQeZDU2l;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AM7d06Cb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fLWLm3gJYz3f0P
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 21:40:00 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61OIfMf92461030;
-	Wed, 25 Feb 2026 10:39:45 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fLWR61QR8z3dXF
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 21:43:45 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61ONhT60483702;
+	Wed, 25 Feb 2026 10:43:20 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=sL11sx23Rcy5IgZ8B
-	9tWiGZp8lNaf1EwggY4I08LQUE=; b=EQeZDU2lzepoFDMBXLJR7Xj/Wag++ZZ0D
-	+fp8War+AQl4lwwUNzEE9z2GmhVX6fqk8STybj0YcLP0uaThf0lQCmpOPRmea1mq
-	J3FABFZg3xbD3k1hO2S2PA+CvLted51VetVaPRnQm8yi9BfdjHV5XsxxlKZ2qAG4
-	WG5+Lg0/Ouw6EDhj+dfFIq7P8NpPvKoCfkSFA4rZhN1oQ7jBt2wqLi67qARVqK9n
-	QqUWSEFMEHU9gtOJc6Lt9o5mmytCJ5HYxO/kYfSQFeREYHMQ1K8UTbkCfdxZ7yNz
-	/YFVR7PK0TRLimXCPDFUEB6Sx0jmUyxr7oKIRDgDQxxnaidp32BZQ==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cf34c73ee-1
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=RQ6LjH
+	8xg3kKnf/ssYdrwl1NaeB3S68pAKn+Qw6TYD4=; b=AM7d06Cb1kz/ExiZUn6El3
+	riranoTqH1Ip8ZOMOvZ1rprdk/fxcvIwQtjOgZ9o8d+gZ7ZGTge2iVdDUWhtH4Ot
+	mPwxqiiVQ1Q2uc70/YTg+Z0iluD09pySB7hCSG4Ri9ndbZGMBnWsM/fvgYplCFql
+	U0U2hAYw2k77eBKGdOYbGz6EcTvo0F+1qwUEULScooRLxRZcDvWp2tsYxNEl0nzm
+	MbvJ/82XcJCohpZoocnvZDXvRILwR7q8C8BU5C6P5ACepFw+6YhhFzUkXOEuNigc
+	o9ROLVkY70jDJSSE58eE5M/H7A0rFmXGdqMZXcujkQpXmllycrsnznZWMC1H930A
+	==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ch858n76t-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 25 Feb 2026 10:39:45 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 61P8eqqI030385;
-	Wed, 25 Feb 2026 10:39:44 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4cfrhkcuvt-1
+	Wed, 25 Feb 2026 10:43:19 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 61P7L03A001607;
+	Wed, 25 Feb 2026 10:43:18 GMT
+Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4cfr1n4xnh-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 25 Feb 2026 10:39:44 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 61PAdeV330474614
+	Wed, 25 Feb 2026 10:43:18 +0000
+Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
+	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 61PAhIng25428576
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 25 Feb 2026 10:39:40 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 96B0A2004D;
-	Wed, 25 Feb 2026 10:39:40 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1668A20043;
-	Wed, 25 Feb 2026 10:39:39 +0000 (GMT)
-Received: from ltcrain4-lp15.ltc.tadn.ibm.com (unknown [9.5.7.39])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 25 Feb 2026 10:39:38 +0000 (GMT)
-From: adubey@linux.ibm.com
-To: linuxppc-dev@lists.ozlabs.org
-Cc: bpf@vger.kernel.org, hbathini@linux.ibm.com, ast@kernel.org,
-        daniel@iogearbox.net, andrii@kernel.org, maddy@linux.ibm.com,
-        Abhishek Dubey <adubey@linux.ibm.com>
-Subject: [PATCH v2 2/2] selftests/bpf: Enable private stack tests for powerpc64
-Date: Wed, 25 Feb 2026 10:39:50 -0500
-Message-ID: <20260225153950.15331-2-adubey@linux.ibm.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260225153950.15331-1-adubey@linux.ibm.com>
-References: <20260225153950.15331-1-adubey@linux.ibm.com>
+	Wed, 25 Feb 2026 10:43:18 GMT
+Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 14C715805C;
+	Wed, 25 Feb 2026 10:43:18 +0000 (GMT)
+Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6D2175805A;
+	Wed, 25 Feb 2026 10:43:17 +0000 (GMT)
+Received: from ltc.linux.ibm.com (unknown [9.5.196.140])
+	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 25 Feb 2026 10:43:17 +0000 (GMT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,94 +79,344 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Date: Wed, 25 Feb 2026 16:13:17 +0530
+From: adubey <adubey@linux.ibm.com>
+To: kernel test robot <lkp@intel.com>
+Cc: bpf@vger.kernel.org, oe-kbuild-all@lists.linux.dev, hbathini@linux.ibm.com,
+        linuxppc-dev@lists.ozlabs.org, ast@kernel.org, daniel@iogearbox.net,
+        andrii@kernel.org, martin.lau@kernel.org, eddyz87@gmail.com,
+        yonghong.song@linux.dev, clm@meta.com, ihor.solodrai@linux.dev,
+        chleroy@kernel.org
+Subject: Re: [PATCH 1/2] powerpc64/bpf: Implement JIT support for private
+ stack
+In-Reply-To: <202602170941.f1KIvBuf-lkp@intel.com>
+References: <20260216152234.36632-1-adubey@linux.ibm.com>
+ <202602170941.f1KIvBuf-lkp@intel.com>
+Message-ID: <6c6bc9bb6ed9d20f9a9dd6ae06d60706@linux.ibm.com>
+X-Sender: adubey@linux.ibm.com
+Organization: IBM
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjI1MDEwNCBTYWx0ZWRfXxR83Y1wvvITm
- 0hPGeZ+1ESt36/n022OZrBuNgv74hI/nLW/lnOtaFC+in+HpWgxpG0qM1i3ZA23Zaez3T0YS2X8
- ZFProcHL3dwKRbEefeFi/JG5Wq6dvCMNWeiP3GW9llGM9iMvl3KDwXIftwXGVlmtxI0HZJBBIzI
- cerr5jSZw/fyN6TgLR1Rjj2cTCBW7gyEZk3Act3x+Csk2V68FxVbX+pCBf+Kg7kfKCI7fYS0xgq
- V+DEUD8/om/KEQezm+SR0rVKp4qNIpEdzXO+ZIQb3GXmnUkw9fF3UaXmCbmmMmJ9P5FwMlPsppc
- o+pd9pS6M0qjyHlkrDXqolYDDbHGs5Db3EbMqQrgN01ED0s3WyflsVpNS/JRmrAV0wlcPO14Qam
- NXDkclYqCWsZzXs6xgGSoFnPoXYOlcYIl9kupyDJWb6QXDVIoXA8fO9Qh3+EdC1wbSBj3fNyTpM
- l+C3yCUSBHjVfQDbabQ==
-X-Proofpoint-ORIG-GUID: nYQJL7GUvBs5ndoM5BjXt5AP51Nean3q
-X-Authority-Analysis: v=2.4 cv=F9lat6hN c=1 sm=1 tr=0 ts=699ed171 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=HzLeVaNsDn8A:10 a=VkNPw1HP01LnGYTKEx00:22 a=Mpw57Om8IfrbqaoTuvik:22
- a=GgsMoib0sEa3-_RKJdDe:22 a=VnNF1IyMAAAA:8 a=EpsnbLDfARfeqce_9zcA:9
-X-Proofpoint-GUID: nYQJL7GUvBs5ndoM5BjXt5AP51Nean3q
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjI1MDEwNCBTYWx0ZWRfX+IbyPXI4/8kA
+ kpDtA8gzKnn28FGaCshKJxS1s2gpqgz23HDWljS7jL4Ak3yyLqUYfMGB9qAlvkyTP+Dp6W465j/
+ OPZTGPhOdWfs5Bx9UHj0XbsCyPPrt9NaCcZ44RJRVTKkv9/TT1OrT4r3ko43IPO8LR6s6MnMifM
+ OEISJTAsSOt4dmf7KT8KXAFwxEJFpujthXfw8MR7fTHLoeHa5yUwO15MFN3RTd7FKazZxoEvcDz
+ RfWhOqbXJTfElrD2tPUMU4wwgzqwN2BkazWGk1BZLPxqBchPLLogoS7QqJ+Vnbh7WWZ7rp8ULtD
+ heEnK+uj/Bf5ondVrbQ0EPvFsv/8SBIosQWiR1h1bU4LDpOjP/V6R2ivSEOWShskDJdwE5bqWCD
+ wf5SFL+0SbUKSI76tOBC0kiwoxLHgPUQBXoArG2Rzh1NBpvs1EAeyLpo0UM8B+r/uZaFDhLQfg9
+ iucguXzNVa3oHp5YwVw==
+X-Proofpoint-GUID: geF-IrIiX2VqDqgaN0ZVlw6f1De_W3tG
+X-Authority-Analysis: v=2.4 cv=S4HUAYsP c=1 sm=1 tr=0 ts=699ed248 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=kj9zAlcOel0A:10 a=HzLeVaNsDn8A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=Mpw57Om8IfrbqaoTuvik:22 a=GgsMoib0sEa3-_RKJdDe:22 a=anyJmfQTAAAA:8
+ a=NEAV23lmAAAA:8 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=i3X5FwGiAAAA:8
+ a=QyXUC8HyAAAA:8 a=JF70iciwwkSvicA1UWAA:9 a=BVDnAcuDQriz4NxV:21
+ a=CjuIK1q_8ugA:10 a=mmqRlSCDY2ywfjPLJ4af:22
+X-Proofpoint-ORIG-GUID: 5anlTzqsHpMGWk9F3uL_nxEqfoFTS6nx
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-02-24_03,2026-02-23_03,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 phishscore=0 bulkscore=0 adultscore=0 spamscore=0
- clxscore=1015 suspectscore=0 malwarescore=0 lowpriorityscore=0
- priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2601150000
- definitions=main-2602250104
+ suspectscore=0 clxscore=1011 impostorscore=0 malwarescore=0 bulkscore=0
+ phishscore=0 adultscore=0 lowpriorityscore=0 spamscore=0 priorityscore=1501
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2601150000 definitions=main-2602250104
 
-From: Abhishek Dubey <adubey@linux.ibm.com>
-
-With support of private stack, relevant tests must pass
-on powerpc64.
-
-#./test_progs -t struct_ops_private_stack
-#434/1   struct_ops_private_stack/private_stack:OK
-#434/2   struct_ops_private_stack/private_stack_fail:OK
-#434/3   struct_ops_private_stack/private_stack_recur:OK
-#434     struct_ops_private_stack:OK
-Summary: 1/3 PASSED, 0 SKIPPED, 0 FAILED
-
-Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
----
- tools/testing/selftests/bpf/progs/struct_ops_private_stack.c   | 3 ++-
- .../selftests/bpf/progs/struct_ops_private_stack_fail.c        | 3 ++-
- .../selftests/bpf/progs/struct_ops_private_stack_recur.c       | 3 ++-
- 3 files changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/tools/testing/selftests/bpf/progs/struct_ops_private_stack.c b/tools/testing/selftests/bpf/progs/struct_ops_private_stack.c
-index dbe646013811..1df1111cd029 100644
---- a/tools/testing/selftests/bpf/progs/struct_ops_private_stack.c
-+++ b/tools/testing/selftests/bpf/progs/struct_ops_private_stack.c
-@@ -7,7 +7,8 @@
- 
- char _license[] SEC("license") = "GPL";
- 
--#if defined(__TARGET_ARCH_x86) || defined(__TARGET_ARCH_arm64)
-+#if defined(__TARGET_ARCH_x86) || defined(__TARGET_ARCH_arm64) \
-+				|| defined(__TARGET_ARCH_powerpc)
- bool skip __attribute((__section__(".data"))) = false;
- #else
- bool skip = true;
-diff --git a/tools/testing/selftests/bpf/progs/struct_ops_private_stack_fail.c b/tools/testing/selftests/bpf/progs/struct_ops_private_stack_fail.c
-index 3d89ad7cbe2a..e09c1a8782b4 100644
---- a/tools/testing/selftests/bpf/progs/struct_ops_private_stack_fail.c
-+++ b/tools/testing/selftests/bpf/progs/struct_ops_private_stack_fail.c
-@@ -7,7 +7,8 @@
- 
- char _license[] SEC("license") = "GPL";
- 
--#if defined(__TARGET_ARCH_x86) || defined(__TARGET_ARCH_arm64)
-+#if defined(__TARGET_ARCH_x86) || defined(__TARGET_ARCH_arm64) \
-+				|| defined(__TARGET_ARCH_powerpc)
- bool skip __attribute((__section__(".data"))) = false;
- #else
- bool skip = true;
-diff --git a/tools/testing/selftests/bpf/progs/struct_ops_private_stack_recur.c b/tools/testing/selftests/bpf/progs/struct_ops_private_stack_recur.c
-index b1f6d7e5a8e5..791800835673 100644
---- a/tools/testing/selftests/bpf/progs/struct_ops_private_stack_recur.c
-+++ b/tools/testing/selftests/bpf/progs/struct_ops_private_stack_recur.c
-@@ -7,7 +7,8 @@
- 
- char _license[] SEC("license") = "GPL";
- 
--#if defined(__TARGET_ARCH_x86) || defined(__TARGET_ARCH_arm64)
-+#if defined(__TARGET_ARCH_x86) || defined(__TARGET_ARCH_arm64) \
-+				|| defined(__TARGET_ARCH_powerpc)
- bool skip __attribute((__section__(".data"))) = false;
- #else
- bool skip = true;
--- 
-2.52.0
-
+On 2026-02-17 07:19, kernel test robot wrote:
+> Hi,
+> 
+> kernel test robot noticed the following build warnings:
+> 
+> [auto build test WARNING on bpf-next/master]
+> [also build test WARNING on bpf/master powerpc/next linus/master 
+> next-20260216]
+> [cannot apply to bpf-next/net powerpc/fixes v6.19]
+> [If your patch is applied to the wrong git tree, kindly drop us a note.
+> And when submitting patch, we suggest to use '--base' as documented in
+> https://git-scm.com/docs/git-format-patch#_base_tree_information]
+> 
+> url:
+> https://github.com/intel-lab-lkp/linux/commits/adubey-linux-ibm-com/selftests-bpf-Enable-private-stack-tests-for-powerpc64/20260216-182353
+> base:   
+> https://git.kernel.org/pub/scm/linux/kernel/git/bpf/bpf-next.git master
+> patch link:
+> https://lore.kernel.org/r/20260216152234.36632-1-adubey%40linux.ibm.com
+> patch subject: [PATCH 1/2] powerpc64/bpf: Implement JIT support for
+> private stack
+> config: powerpc64-randconfig-r133-20260217
+> (https://download.01.org/0day-ci/archive/20260217/202602170941.f1KIvBuf-lkp@intel.com/config)
+> compiler: powerpc64-linux-gcc (GCC) 8.5.0
+> reproduce (this is a W=1 build):
+> (https://download.01.org/0day-ci/archive/20260217/202602170941.f1KIvBuf-lkp@intel.com/reproduce)
+> 
+> If you fix the issue in a separate patch/commit (i.e. not just a new 
+> version of
+> the same patch/commit), kindly add following tags
+> | Reported-by: kernel test robot <lkp@intel.com>
+> | Closes:
+> https://lore.kernel.org/oe-kbuild-all/202602170941.f1KIvBuf-lkp@intel.com/
+> 
+> sparse warnings: (new ones prefixed by >>)
+>>> arch/powerpc/net/bpf_jit_comp.c:266:43: sparse: sparse: cast removes 
+>>> address space '__percpu' of expression
+> --
+>>> arch/powerpc/net/bpf_jit_comp64.c:186:9: sparse: sparse: cast removes 
+>>> address space '__percpu' of expression
+>>> arch/powerpc/net/bpf_jit_comp64.c:186:9: sparse: sparse: cast removes 
+>>> address space '__percpu' of expression
+>>> arch/powerpc/net/bpf_jit_comp64.c:186:9: sparse: sparse: cast removes 
+>>> address space '__percpu' of expression
+>>> arch/powerpc/net/bpf_jit_comp64.c:186:9: sparse: sparse: cast removes 
+>>> address space '__percpu' of expression
+>>> arch/powerpc/net/bpf_jit_comp64.c:186:9: sparse: sparse: cast removes 
+>>> address space '__percpu' of expression
+>>> arch/powerpc/net/bpf_jit_comp64.c:186:9: sparse: sparse: cast removes 
+>>> address space '__percpu' of expression
+>>> arch/powerpc/net/bpf_jit_comp64.c:186:9: sparse: sparse: cast removes 
+>>> address space '__percpu' of expression
+>>> arch/powerpc/net/bpf_jit_comp64.c:186:9: sparse: sparse: cast removes 
+>>> address space '__percpu' of expression
+>>> arch/powerpc/net/bpf_jit_comp64.c:186:9: sparse: sparse: cast removes 
+>>> address space '__percpu' of expression
+>>> arch/powerpc/net/bpf_jit_comp64.c:186:9: sparse: sparse: cast removes 
+>>> address space '__percpu' of expression
+>>> arch/powerpc/net/bpf_jit_comp64.c:186:9: sparse: sparse: cast removes 
+>>> address space '__percpu' of expression
+>>> arch/powerpc/net/bpf_jit_comp64.c:186:9: sparse: sparse: cast removes 
+>>> address space '__percpu' of expression
+>>> arch/powerpc/net/bpf_jit_comp64.c:186:9: sparse: sparse: cast removes 
+>>> address space '__percpu' of expression
+>>> arch/powerpc/net/bpf_jit_comp64.c:186:9: sparse: sparse: cast removes 
+>>> address space '__percpu' of expression
+>>> arch/powerpc/net/bpf_jit_comp64.c:186:9: sparse: sparse: cast removes 
+>>> address space '__percpu' of expression
+>>> arch/powerpc/net/bpf_jit_comp64.c:186:9: sparse: sparse: cast removes 
+>>> address space '__percpu' of expression
+>>> arch/powerpc/net/bpf_jit_comp64.c:186:9: sparse: sparse: cast removes 
+>>> address space '__percpu' of expression
+>>> arch/powerpc/net/bpf_jit_comp64.c:212:32: sparse: sparse: incorrect 
+>>> type in assignment (different address spaces) @@     expected void 
+>>> [noderef] __percpu *priv_frame_ptr @@     got void * @@
+>    arch/powerpc/net/bpf_jit_comp64.c:212:32: sparse:     expected void
+> [noderef] __percpu *priv_frame_ptr
+>    arch/powerpc/net/bpf_jit_comp64.c:212:32: sparse:     got void *
+>    arch/powerpc/net/bpf_jit_comp64.c:1476:41: sparse: sparse: cast
+> truncates bits from constant value (8000000000000000 becomes 0)
+>    arch/powerpc/net/bpf_jit_comp64.c:1476:41: sparse: sparse: cast
+> truncates bits from constant value (8000000000000000 becomes 0)
+>    arch/powerpc/net/bpf_jit_comp64.c:1478:41: sparse: sparse: cast
+> truncates bits from constant value (c000000000000000 becomes 0)
+>    arch/powerpc/net/bpf_jit_comp64.c:1478:41: sparse: sparse: cast
+> truncates bits from constant value (c000000000000000 becomes 0)
+> 
+> vim +/__percpu +266 arch/powerpc/net/bpf_jit_comp.c
+> 
+>    164
+>    165	struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+>    166	{
+>    167		u32 proglen;
+>    168		u32 alloclen;
+>    169		u8 *image = NULL;
+>    170		u32 *code_base;
+>    171		u32 *addrs;
+>    172		struct powerpc_jit_data *jit_data;
+>    173		struct codegen_context cgctx;
+>    174		int pass;
+>    175		int flen;
+>    176		int priv_stack_alloc_size;
+>    177		void __percpu *priv_stack_ptr = NULL;
+>    178		struct bpf_binary_header *fhdr = NULL;
+>    179		struct bpf_binary_header *hdr = NULL;
+>    180		struct bpf_prog *org_fp = fp;
+>    181		struct bpf_prog *tmp_fp;
+>    182		bool bpf_blinded = false;
+>    183		bool extra_pass = false;
+>    184		u8 *fimage = NULL;
+>    185		u32 *fcode_base;
+>    186		u32 extable_len;
+>    187		u32 fixup_len;
+>    188
+>    189		if (!fp->jit_requested)
+>    190			return org_fp;
+>    191
+>    192		tmp_fp = bpf_jit_blind_constants(org_fp);
+>    193		if (IS_ERR(tmp_fp))
+>    194			return org_fp;
+>    195
+>    196		if (tmp_fp != org_fp) {
+>    197			bpf_blinded = true;
+>    198			fp = tmp_fp;
+>    199		}
+>    200
+>    201		jit_data = fp->aux->jit_data;
+>    202		if (!jit_data) {
+>    203			jit_data = kzalloc(sizeof(*jit_data), GFP_KERNEL);
+>    204			if (!jit_data) {
+>    205				fp = org_fp;
+>    206				goto out;
+>    207			}
+>    208			fp->aux->jit_data = jit_data;
+>    209		}
+>    210
+>    211		if (!priv_stack_ptr && fp->aux->jits_use_priv_stack) {
+>    212			/*
+>    213			 * Allocate private stack of size equivalent to
+>    214			 * verifier-calculated stack size plus two memory
+>    215			 * guard regions to detect private stack overflow
+>    216			 * and underflow.
+>    217			 */
+>    218			priv_stack_alloc_size = round_up(fp->aux->stack_depth, 16) +
+>    219								2 * PRIV_STACK_GUARD_SZ;
+>    220			priv_stack_ptr = __alloc_percpu_gfp(priv_stack_alloc_size,
+> 16, GFP_KERNEL);
+>    221			if (!priv_stack_ptr) {
+>    222				fp = org_fp;
+>    223				goto out_priv_stack;
+>    224			}
+>    225
+>    226			priv_stack_init_guard(priv_stack_ptr, priv_stack_alloc_size);
+>    227			fp->aux->priv_stack_ptr = priv_stack_ptr;
+>    228		}
+>    229
+>    230		flen = fp->len;
+>    231		addrs = jit_data->addrs;
+>    232		if (addrs) {
+>    233			cgctx = jit_data->ctx;
+>    234			/*
+>    235			 * JIT compiled to a writable location (image/code_base) 
+> first.
+>    236			 * It is then moved to the readonly final location 
+> (fimage/fcode_base)
+>    237			 * using instruction patching.
+>    238			 */
+>    239			fimage = jit_data->fimage;
+>    240			fhdr = jit_data->fhdr;
+>    241			proglen = jit_data->proglen;
+>    242			hdr = jit_data->hdr;
+>    243			image = (void *)hdr + ((void *)fimage - (void *)fhdr);
+>    244			extra_pass = true;
+>    245			/* During extra pass, ensure index is reset before
+> repopulating extable entries */
+>    246			cgctx.exentry_idx = 0;
+>    247			goto skip_init_ctx;
+>    248		}
+>    249
+>    250		addrs = kcalloc(flen + 1, sizeof(*addrs), GFP_KERNEL);
+>    251		if (addrs == NULL) {
+>    252			fp = org_fp;
+>    253			goto out_addrs;
+>    254		}
+>    255
+>    256		memset(&cgctx, 0, sizeof(struct codegen_context));
+>    257		bpf_jit_init_reg_mapping(&cgctx);
+>    258
+>    259		/* Make sure that the stack is quadword aligned. */
+>    260		cgctx.stack_size = round_up(fp->aux->stack_depth, 16);
+>    261		cgctx.arena_vm_start = 
+> bpf_arena_get_kern_vm_start(fp->aux->arena);
+>    262		cgctx.user_vm_start = 
+> bpf_arena_get_user_vm_start(fp->aux->arena);
+>    263		cgctx.is_subprog = bpf_is_subprog(fp);
+>    264		cgctx.exception_boundary = fp->aux->exception_boundary;
+>    265		cgctx.exception_cb = fp->aux->exception_cb;
+>  > 266		cgctx.priv_sp = priv_stack_ptr ? (u64)priv_stack_ptr : 0;
+>    267
+>    268		/* Scouting faux-generate pass 0 */
+>    269		if (bpf_jit_build_body(fp, NULL, NULL, &cgctx, addrs, 0, 
+> false)) {
+>    270			/* We hit something illegal or unsupported. */
+>    271			fp = org_fp;
+>    272			goto out_addrs;
+>    273		}
+>    274
+>    275		/*
+>    276		 * If we have seen a tail call, we need a second pass.
+>    277		 * This is because bpf_jit_emit_common_epilogue() is called
+>    278		 * from bpf_jit_emit_tail_call() with a not yet stable 
+> ctx->seen.
+>    279		 * We also need a second pass if we ended up with too large
+>    280		 * a program so as to ensure BPF_EXIT branches are in range.
+>    281		 */
+>    282		if (cgctx.seen & SEEN_TAILCALL ||
+> !is_offset_in_branch_range((long)cgctx.idx * 4)) {
+>    283			cgctx.idx = 0;
+>    284			if (bpf_jit_build_body(fp, NULL, NULL, &cgctx, addrs, 0, 
+> false)) {
+>    285				fp = org_fp;
+>    286				goto out_addrs;
+>    287			}
+>    288		}
+>    289
+>    290		bpf_jit_realloc_regs(&cgctx);
+>    291		/*
+>    292		 * Pretend to build prologue, given the features we've seen.  
+> This will
+>    293		 * update ctgtx.idx as it pretends to output instructions, then 
+> we can
+>    294		 * calculate total size from idx.
+>    295		 */
+>    296		bpf_jit_build_prologue(NULL, &cgctx);
+>    297		addrs[fp->len] = cgctx.idx * 4;
+>    298		bpf_jit_build_epilogue(NULL, &cgctx);
+>    299
+>    300		fixup_len = fp->aux->num_exentries * BPF_FIXUP_LEN * 4;
+>    301		extable_len = fp->aux->num_exentries * sizeof(struct
+> exception_table_entry);
+>    302
+>    303		proglen = cgctx.idx * 4;
+>    304		alloclen = proglen + FUNCTION_DESCR_SIZE + fixup_len + 
+> extable_len;
+>    305
+>    306		fhdr = bpf_jit_binary_pack_alloc(alloclen, &fimage, 4, &hdr, 
+> &image,
+>    307						      bpf_jit_fill_ill_insns);
+>    308		if (!fhdr) {
+>    309			fp = org_fp;
+>    310			goto out_addrs;
+>    311		}
+>    312
+>    313		if (extable_len)
+>    314			fp->aux->extable = (void *)fimage + FUNCTION_DESCR_SIZE +
+> proglen + fixup_len;
+>    315
+>    316	skip_init_ctx:
+>    317		code_base = (u32 *)(image + FUNCTION_DESCR_SIZE);
+>    318		fcode_base = (u32 *)(fimage + FUNCTION_DESCR_SIZE);
+>    319
+>    320		/* Code generation passes 1-2 */
+>    321		for (pass = 1; pass < 3; pass++) {
+>    322			/* Now build the prologue, body code & epilogue for real. */
+>    323			cgctx.idx = 0;
+>    324			cgctx.alt_exit_addr = 0;
+>    325			bpf_jit_build_prologue(code_base, &cgctx);
+>    326			if (bpf_jit_build_body(fp, code_base, fcode_base, &cgctx, 
+> addrs, pass,
+>    327					       extra_pass)) {
+>    328				bpf_arch_text_copy(&fhdr->size, &hdr->size, 
+> sizeof(hdr->size));
+>    329				bpf_jit_binary_pack_free(fhdr, hdr);
+>    330				fp = org_fp;
+>    331				goto out_addrs;
+>    332			}
+>    333			bpf_jit_build_epilogue(code_base, &cgctx);
+>    334
+>    335			if (bpf_jit_enable > 1)
+>    336				pr_info("Pass %d: shrink = %d, seen = 0x%x\n", pass,
+>    337					proglen - (cgctx.idx * 4), cgctx.seen);
+>    338		}
+>    339
+>    340		if (bpf_jit_enable > 1)
+>    341			/*
+>    342			 * Note that we output the base address of the code_base
+>    343			 * rather than image, since opcodes are in code_base.
+>    344			 */
+>    345			bpf_jit_dump(flen, proglen, pass, code_base);
+>    346
+Posted v2 with fix:
+https://lore.kernel.org/bpf/20260216152234.36632-1-adubey@linux.ibm.com/
+-Abhishek
 
