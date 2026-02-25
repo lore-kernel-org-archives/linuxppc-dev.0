@@ -1,71 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-17155-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17156-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E242EFD202
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Feb 2026 08:15:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A06FEFD209
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Feb 2026 08:16:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fLS8L5n79z3dVJ;
-	Wed, 25 Feb 2026 19:15:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fLS8k6K1dz3dVq;
+	Wed, 25 Feb 2026 19:16:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772007346;
-	cv=none; b=jWDli3uAHAqApATejCdbyiVyE2QGWpi9zhlx/TxzsHjE5n5q60sTy8yYcB5di9+kiJYxopk9+YL6WOdvQhBTLOWTw+VogGr0rCc5kmPzq/TvS43MCHNgFQl7sKuqgeIjSR+HQ6QgPFOHetMeOV2+Rz/arvnkUkQHvUtlil5R8e5vRmgybCjXna3lhxoRpVLYjRpMCE44Jg6QbCapdu0hZTMRse5wulxGYzoKd2l49Uca1VlpT4thmEyrrdXESwb9FdPbOC5gOUO5ltg6ysvOqAxjFw9V5N1KOdDJc4LrvaZ09y/CPu+d9TvPi3sNqFBlhJ2L+RX4KdLMj2vzGZia6A==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772007366;
+	cv=none; b=FN0ImYfbYbQrfRsU+ScE0msiCMXl795oKnef9dlYZnNlQGo47AiTVkztzj55UMNcT88c1c/3nFRPS/en8O0VH6XXCeKfpLYH1AhxDwNgooJ2v1XQ+aZloFPBmcvos3eDfS7SsYEcSdcC3OAGH89AoKjqaqSECPsgajHeSnGBnrkvHVdtHKPpfwIsTcgvsrrjmVkjs/jvXsTtThtDBE6WLJqcZJJKLt8waC+cTqh3Sv+v9aGNvgxM/qnUGbNA4PjkwZJmh9iEirqrMTQOUpTcnMcw+f+P4IMFF7WoeX4EpSgEmuCfkPjOKa+rPLgDrzyPJbACQGqspv8MVV3gTNk99A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772007346; c=relaxed/relaxed;
-	bh=I228xoUl4+ZrgdKCBvI2rCmcNIzmRojWxOXL2gQGmtk=;
+	t=1772007366; c=relaxed/relaxed;
+	bh=1+o8INxubcV2x/Jl5UdObmj+gfJwsgp0C09vqymuwDM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-type; b=TeGTjskKqSWsokxEauaoXPR709D8F4E/Z8BoYJSqMO4aYLJtfMcW1XN6GbVi5rN4V5xGBXntBl7+HykwEy4cAZh3WiSbC/a/4Amf/19gV/mlJ6V7MXdgTjgakVDbce3eq7WQ9gN+1Dl9k9Z7fhznn9j0Ko7ucBor1ccyH+1oVzFJS/Q6MUOPyUkdaR/ucqXV9x0Vlpx4XXeNAFNpBcHzynrseE2W+aM9qUR2VovCia5USGlr7hwRdvFjakeRiA6PsqoGdxuHW7Cl7kiGb6J/KtWE1MjLQ9edWYEujqvicEcK0j8vB+09zKSdEeX2JCBXiMvmtLDIvPXJPtGNcdqmBQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dObQvKzz; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dObQvKzz; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+	 MIME-Version:Content-type; b=A8+Xcir/5YRbVr4DfaVGuZx3jiANN1fTjH9WhkHzuMpU1M4zajo7rr6cmmI/zbh5RRxOdZGXi45NBJjTbJq3UjGOWY78RM+rDad58Dltw/IGmrB5U8xtDAPlMHtpIR//9B+L3kI1n4Z05y4KW63BFEdOTLYCOtDxjMXpeCpEg+sAJrLJywysAEfL8P3COP1R9QlQapzWu0NstBICyWEJtJMXtrg79yAeUMzzx5289amWXh83WnDBl60mwtPIoOoR5y4qfSPvOpEmFfRf0hD5j3dvqbzp0/1xHNhy8FvKAKuVqzhuOrU3ujjVb//JQkQPsL8RsMWe24YuRx3N31TCxQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q29svCBs; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q29svCBs; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dObQvKzz;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dObQvKzz;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q29svCBs;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Q29svCBs;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fLS8K6XcDz3dSV
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 19:15:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fLS8j6z0fz3dVf
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 19:16:05 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1772007343;
+	s=mimecast20190719; t=1772007362;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=I228xoUl4+ZrgdKCBvI2rCmcNIzmRojWxOXL2gQGmtk=;
-	b=dObQvKzzD3MdQN93tAvBIg+Xp3mE40a5QCNv6TVVFKN54TmYsMAPebWcQUlVGzt5181dvx
-	lOqG2dY9Kdq5zsCIGeMo0NNnKKJraKpakz8ZWMKYitVxbpunJYa1IPI7T8UL//pIARW7LE
-	6zGZljXunaB0J7lRTN/BaMFmS+7QrDw=
+	bh=1+o8INxubcV2x/Jl5UdObmj+gfJwsgp0C09vqymuwDM=;
+	b=Q29svCBsU3ux33af2oh4/jl/+MCxPRR7/iPDNNV4Uuxvz82nj1fQ7qmzM3RXudsT54nWTB
+	WUtYESHIFPsP0F3YisTPjXH4+xWT4nvpguhXRjhXShPGoocWWkFsi7TKoYxXesDAwgtzGd
+	k5NqiA3iMVWxwStR+KQxP8nIzKLc4H8=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1772007343;
+	s=mimecast20190719; t=1772007362;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=I228xoUl4+ZrgdKCBvI2rCmcNIzmRojWxOXL2gQGmtk=;
-	b=dObQvKzzD3MdQN93tAvBIg+Xp3mE40a5QCNv6TVVFKN54TmYsMAPebWcQUlVGzt5181dvx
-	lOqG2dY9Kdq5zsCIGeMo0NNnKKJraKpakz8ZWMKYitVxbpunJYa1IPI7T8UL//pIARW7LE
-	6zGZljXunaB0J7lRTN/BaMFmS+7QrDw=
-Received: from mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com
+	bh=1+o8INxubcV2x/Jl5UdObmj+gfJwsgp0C09vqymuwDM=;
+	b=Q29svCBsU3ux33af2oh4/jl/+MCxPRR7/iPDNNV4Uuxvz82nj1fQ7qmzM3RXudsT54nWTB
+	WUtYESHIFPsP0F3YisTPjXH4+xWT4nvpguhXRjhXShPGoocWWkFsi7TKoYxXesDAwgtzGd
+	k5NqiA3iMVWxwStR+KQxP8nIzKLc4H8=
+Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
  (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-675-rwD-1e3zOqOiSldVPhFTdg-1; Wed,
- 25 Feb 2026 03:15:40 -0500
-X-MC-Unique: rwD-1e3zOqOiSldVPhFTdg-1
-X-Mimecast-MFC-AGG-ID: rwD-1e3zOqOiSldVPhFTdg_1772007338
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-556-nQ4DDfqXPK2cnN4hGIJDvA-1; Wed,
+ 25 Feb 2026 03:14:51 -0500
+X-MC-Unique: nQ4DDfqXPK2cnN4hGIJDvA-1
+X-Mimecast-MFC-AGG-ID: nQ4DDfqXPK2cnN4hGIJDvA_1772007289
 Received: from mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.111])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 01DB51956070;
-	Wed, 25 Feb 2026 08:15:38 +0000 (UTC)
+	by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id A0E82195609D;
+	Wed, 25 Feb 2026 08:14:48 +0000 (UTC)
 Received: from MiWiFi-R3L-srv.redhat.com (unknown [10.72.112.55])
-	by mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 68EB31800286;
-	Wed, 25 Feb 2026 08:15:29 +0000 (UTC)
+	by mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id DE8351800351;
+	Wed, 25 Feb 2026 08:14:38 +0000 (UTC)
 From: Baoquan He <bhe@redhat.com>
 To: kasan-dev@googlegroups.com
 Cc: linux-mm@kvack.org,
@@ -85,9 +85,9 @@ Cc: linux-mm@kvack.org,
 	linux-s390@vger.kernel.org,
 	hca@linux.ibm.com,
 	Baoquan He <bhe@redhat.com>
-Subject: [PATCH v5 06/15] arch/arm: don't initialize kasan if it's disabled
-Date: Wed, 25 Feb 2026 16:14:03 +0800
-Message-ID: <20260225081412.76502-7-bhe@redhat.com>
+Subject: [PATCH v5 01/15] mm/kasan: add conditional checks in functions to return directly if kasan is disabled
+Date: Wed, 25 Feb 2026 16:13:58 +0800
+Message-ID: <20260225081412.76502-2-bhe@redhat.com>
 In-Reply-To: <20260225081412.76502-1-bhe@redhat.com>
 References: <20260225081412.76502-1-bhe@redhat.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -104,56 +104,221 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.111
-X-Mimecast-MFC-PROC-ID: xHWm3nFnZ4YGHiNlQEbJPl3ZCYod3tlDU3BcfmXndAw_1772007338
+X-Mimecast-MFC-PROC-ID: Q_fJ-rZPB_pSSNOAnwtrh4a5290mMglH8kBaTBn2NLc_1772007289
 X-Mimecast-Originator: redhat.com
 Content-type: text/plain
 Content-Transfer-Encoding: 8bit
 
-Here, kasan is disabled if specified 'kasan=off' in kernel cmdline.
+The current codes only check if kasan is disabled for hw_tags
+mode. Here add the conditional checks for functional functions of
+generic mode and sw_tags mode.
 
-And also call jump_label_init() early in setup_arch() so that later
-kasan_init() can enable static key kasan_flag_enabled. Put
-jump_label_init() beofre parse_early_param() as other architectures
-do.
+And also add a helper __kasan_cache_shrink() in mm/kasan/generic.c
+so that the conditional check is done in include/linux/kasan.h.
+
+This is prepared for later adding kernel parameter kasan=on|off for
+all three kasan modes.
 
 Signed-off-by: Baoquan He <bhe@redhat.com>
-Cc: linux-arm-kernel@lists.infradead.org
 ---
- arch/arm/kernel/setup.c  | 6 ++++++
- arch/arm/mm/kasan_init.c | 3 +++
- 2 files changed, 9 insertions(+)
+ include/linux/kasan.h |  7 ++++++-
+ mm/kasan/generic.c    | 16 ++++++++++++++--
+ mm/kasan/init.c       |  6 ++++++
+ mm/kasan/quarantine.c |  3 +++
+ mm/kasan/report.c     |  4 +++-
+ mm/kasan/shadow.c     | 11 ++++++++++-
+ mm/kasan/sw_tags.c    |  3 +++
+ 7 files changed, 45 insertions(+), 5 deletions(-)
 
-diff --git a/arch/arm/kernel/setup.c b/arch/arm/kernel/setup.c
-index 0bfd66c7ada0..453a47a4c715 100644
---- a/arch/arm/kernel/setup.c
-+++ b/arch/arm/kernel/setup.c
-@@ -1135,6 +1135,12 @@ void __init setup_arch(char **cmdline_p)
- 	early_fixmap_init();
- 	early_ioremap_init();
+diff --git a/include/linux/kasan.h b/include/linux/kasan.h
+index 338a1921a50a..a9b8d58d8699 100644
+--- a/include/linux/kasan.h
++++ b/include/linux/kasan.h
+@@ -492,7 +492,12 @@ size_t kasan_metadata_size(struct kmem_cache *cache, bool in_object);
+ void kasan_cache_create(struct kmem_cache *cache, unsigned int *size,
+ 			slab_flags_t *flags);
  
-+	/*
-+	 * Initialise the static keys early as they may be enabled by the
-+	 * kasan_init() or early parameters.
-+	 */
-+	jump_label_init();
+-void kasan_cache_shrink(struct kmem_cache *cache);
++void __kasan_cache_shrink(struct kmem_cache *cache);
++static inline void kasan_cache_shrink(struct kmem_cache *cache)
++{
++	if (kasan_enabled())
++		__kasan_cache_shrink(cache);
++}
+ void kasan_cache_shutdown(struct kmem_cache *cache);
+ void kasan_record_aux_stack(void *ptr);
+ 
+diff --git a/mm/kasan/generic.c b/mm/kasan/generic.c
+index 2b8e73f5f6a7..25850e7c2e00 100644
+--- a/mm/kasan/generic.c
++++ b/mm/kasan/generic.c
+@@ -212,14 +212,14 @@ bool kasan_byte_accessible(const void *addr)
+ 	return shadow_byte >= 0 && shadow_byte < KASAN_GRANULE_SIZE;
+ }
+ 
+-void kasan_cache_shrink(struct kmem_cache *cache)
++void __kasan_cache_shrink(struct kmem_cache *cache)
+ {
+ 	kasan_quarantine_remove_cache(cache);
+ }
+ 
+ void kasan_cache_shutdown(struct kmem_cache *cache)
+ {
+-	if (!__kmem_cache_empty(cache))
++	if (kasan_enabled() && !__kmem_cache_empty(cache))
+ 		kasan_quarantine_remove_cache(cache);
+ }
+ 
+@@ -239,6 +239,9 @@ void __asan_register_globals(void *ptr, ssize_t size)
+ 	int i;
+ 	struct kasan_global *globals = ptr;
+ 
++	if (!kasan_enabled())
++		return;
 +
- 	parse_early_param();
+ 	for (i = 0; i < size; i++)
+ 		register_global(&globals[i]);
+ }
+@@ -369,6 +372,9 @@ void kasan_cache_create(struct kmem_cache *cache, unsigned int *size,
+ 	unsigned int rem_free_meta_size;
+ 	unsigned int orig_alloc_meta_offset;
  
- #ifdef CONFIG_MMU
-diff --git a/arch/arm/mm/kasan_init.c b/arch/arm/mm/kasan_init.c
-index c6625e808bf8..82ec043c891f 100644
---- a/arch/arm/mm/kasan_init.c
-+++ b/arch/arm/mm/kasan_init.c
-@@ -212,6 +212,9 @@ void __init kasan_init(void)
- 	phys_addr_t pa_start, pa_end;
- 	u64 i;
++	if (!kasan_enabled())
++		return;
++
+ 	if (!kasan_requires_meta())
+ 		return;
  
-+	/* If KASAN is disabled via command line, don't initialize it. */
-+	if (kasan_arg_disabled)
+@@ -518,6 +524,9 @@ size_t kasan_metadata_size(struct kmem_cache *cache, bool in_object)
+ {
+ 	struct kasan_cache *info = &cache->kasan_info;
+ 
++	if (!kasan_enabled())
++		return 0;
++
+ 	if (!kasan_requires_meta())
+ 		return 0;
+ 
+@@ -543,6 +552,9 @@ void kasan_record_aux_stack(void *addr)
+ 	struct kasan_alloc_meta *alloc_meta;
+ 	void *object;
+ 
++	if (!kasan_enabled())
++		return;
++
+ 	if (is_kfence_address(addr) || !slab)
+ 		return;
+ 
+diff --git a/mm/kasan/init.c b/mm/kasan/init.c
+index f084e7a5df1e..c78d77ed47bc 100644
+--- a/mm/kasan/init.c
++++ b/mm/kasan/init.c
+@@ -447,6 +447,9 @@ void kasan_remove_zero_shadow(void *start, unsigned long size)
+ 	unsigned long addr, end, next;
+ 	pgd_t *pgd;
+ 
++	if (!kasan_enabled())
++		return;
++
+ 	addr = (unsigned long)kasan_mem_to_shadow(start);
+ 	end = addr + (size >> KASAN_SHADOW_SCALE_SHIFT);
+ 
+@@ -482,6 +485,9 @@ int kasan_add_zero_shadow(void *start, unsigned long size)
+ 	int ret;
+ 	void *shadow_start, *shadow_end;
+ 
++	if (!kasan_enabled())
++		return 0;
++
+ 	shadow_start = kasan_mem_to_shadow(start);
+ 	shadow_end = shadow_start + (size >> KASAN_SHADOW_SCALE_SHIFT);
+ 
+diff --git a/mm/kasan/quarantine.c b/mm/kasan/quarantine.c
+index 6958aa713c67..a6dc2c3d8a15 100644
+--- a/mm/kasan/quarantine.c
++++ b/mm/kasan/quarantine.c
+@@ -405,6 +405,9 @@ static int __init kasan_cpu_quarantine_init(void)
+ {
+ 	int ret = 0;
+ 
++	if (!kasan_enabled())
++		return 0;
++
+ 	ret = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN, "mm/kasan:online",
+ 				kasan_cpu_online, kasan_cpu_offline);
+ 	if (ret < 0)
+diff --git a/mm/kasan/report.c b/mm/kasan/report.c
+index 27efb78eb32d..1a39b3f62c57 100644
+--- a/mm/kasan/report.c
++++ b/mm/kasan/report.c
+@@ -576,7 +576,9 @@ bool kasan_report(const void *addr, size_t size, bool is_write,
+ 	unsigned long irq_flags;
+ 	struct kasan_report_info info;
+ 
+-	if (unlikely(report_suppressed_sw()) || unlikely(!report_enabled())) {
++	if (unlikely(report_suppressed_sw()) ||
++	    unlikely(!report_enabled()) ||
++	    !kasan_enabled()) {
+ 		ret = false;
+ 		goto out;
+ 	}
+diff --git a/mm/kasan/shadow.c b/mm/kasan/shadow.c
+index d286e0a04543..87f517b76d6e 100644
+--- a/mm/kasan/shadow.c
++++ b/mm/kasan/shadow.c
+@@ -164,6 +164,8 @@ void kasan_unpoison(const void *addr, size_t size, bool init)
+ {
+ 	u8 tag = get_tag(addr);
+ 
++	if (!kasan_enabled())
 +		return;
  	/*
- 	 * We are going to perform proper setup of shadow memory.
- 	 *
+ 	 * Perform shadow offset calculation based on untagged address, as
+ 	 * some of the callers (e.g. kasan_unpoison_new_object) pass tagged
+@@ -277,7 +279,8 @@ static int __meminit kasan_mem_notifier(struct notifier_block *nb,
+ 
+ static int __init kasan_memhotplug_init(void)
+ {
+-	hotplug_memory_notifier(kasan_mem_notifier, DEFAULT_CALLBACK_PRI);
++	if (kasan_enabled())
++		hotplug_memory_notifier(kasan_mem_notifier, DEFAULT_CALLBACK_PRI);
+ 
+ 	return 0;
+ }
+@@ -660,6 +663,9 @@ int kasan_alloc_module_shadow(void *addr, size_t size, gfp_t gfp_mask)
+ 	size_t shadow_size;
+ 	unsigned long shadow_start;
+ 
++	if (!kasan_enabled())
++		return 0;
++
+ 	shadow_start = (unsigned long)kasan_mem_to_shadow(addr);
+ 	scaled_size = (size + KASAN_GRANULE_SIZE - 1) >>
+ 				KASAN_SHADOW_SCALE_SHIFT;
+@@ -696,6 +702,9 @@ int kasan_alloc_module_shadow(void *addr, size_t size, gfp_t gfp_mask)
+ 
+ void kasan_free_module_shadow(const struct vm_struct *vm)
+ {
++	if (!kasan_enabled())
++		return;
++
+ 	if (IS_ENABLED(CONFIG_UML))
+ 		return;
+ 
+diff --git a/mm/kasan/sw_tags.c b/mm/kasan/sw_tags.c
+index c75741a74602..6c1caec4261a 100644
+--- a/mm/kasan/sw_tags.c
++++ b/mm/kasan/sw_tags.c
+@@ -79,6 +79,9 @@ bool kasan_check_range(const void *addr, size_t size, bool write,
+ 	u8 *shadow_first, *shadow_last, *shadow;
+ 	void *untagged_addr;
+ 
++	if (!kasan_enabled())
++		return true;
++
+ 	if (unlikely(size == 0))
+ 		return true;
+ 
 -- 
 2.52.0
 
