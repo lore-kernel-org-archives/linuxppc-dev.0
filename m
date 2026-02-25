@@ -1,95 +1,112 @@
-Return-Path: <linuxppc-dev+bounces-17167-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17168-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E033AEFD209
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Feb 2026 08:17:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B785FEFD216
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Feb 2026 09:34:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fLSBL1Lc4z3dXC;
-	Wed, 25 Feb 2026 19:17:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772007450;
-	cv=none; b=XgZ0FJLKaf+Ln9cxUFugpGLBn0z+sSZ7TLbMQ4pD5BuBgnlsBUymMmBtulPa01l/7zw/WUuEomZYHnNruoOlCu2+XQ7rtPegtCRnaE/rGqyOKwZwMwkgbiZA48Aszjr2nhrv1AHGkWx9Z/dXmuXz/RquKObuYMwLROzhjCMA0bg2SKPTKKEfMqKBYv4U9dWBXwXTR5goZAPpyH0/t6XnQI7I0jv4uEjUNzjoGdFDQXwAsUfui0l1h4hJlbH8g5Dvcag2WYX/xO58rvLLkdy3Y4VKefzQdPNGXJ9p8yeVn0X11de5dyyF/ZN+bXtivpmCeYy8yBBVtuj6bqQv7u5fSw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fLTtz0Y0Vz3dXj;
+	Wed, 25 Feb 2026 20:34:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::532"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772012059;
+	cv=none; b=FNoeumEQsQ8dAexPoQpFe+2ZcgshWaV+ZOuaaJr9ds816io145AB0j4bUdhDjswte9baip7Js5LMerxN6ApYBYbqdPMpphgFg9EtA+mIypecAgcyPEvmQ1G1u3APNAKhoUgChH+BW7/lZxxvTuqI2jOGbjDv9IrJ4d76ZScbXZOX5b1mZ99Wam+kRJQpaa28tS+vKnaQNC4K+lq7b/HBBCQtDP3xP/atNGNXM/SpIRi7ecNsT5Gx+FDWlxsabOZmyvdHogqntdO2iJrWyJbe25Ds2MGZ8o+qBVi1xQ0FMqLh5GChrG56URO5pHJUzsm+201J+Qm5lTcJ6SFHhGNYew==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772007450; c=relaxed/relaxed;
-	bh=oV6MOc6IZ/eQSfEt7lDYf3QV1I2fYi7uzloZcjfdDk8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-type; b=ZnRiSg+3MwrKXEq+e2T2Q6uR0safqXPizpEWpTFkWc5pDK/ZUYy7rHSNOSo+GNCSrUC+XfcAcrHT0RACTtTV2X7hhXUK8h5Z8+Qh1uAxNh1DJF4kEbXecSeAumaqMQBK2PmABy74rcnGj3nyW6/Pu2ZoSBdOvwbimWIpgw1Kpi1h+wNK7RWTP8+RjJ50oXMkPqb/GzQ73ZC3d1YEL46wcbgKtYzMB+J0ehXFbZPC8bDdVEOQEjqJEZSmU29zfiubIemxZGQbA/wesFfzv7hewWAWq0tCeatqivQq+t1x560dCjJgKrSelZ/v4yYmQxKvOhI1XETSUuwOj36wkiQXfg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Sdltovha; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Sdltovha; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1772012059; c=relaxed/relaxed;
+	bh=JxnsaOQZey5wMq56BxN2EdEuMBW71mGq+RSuzcss/8M=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
+	 MIME-Version:Content-Type; b=e91VK4YJEHwJdmiwYKqTUDcunP0k9z+48zz6FSf5UJFvsXvaR6WTvBASd9PV8pzsG8JGYS251i2mOkzlkEkU8EfYX9NeDTwvPmKtmOhl/e5gN+eetVO4B2MqbvrugRqWk2uCxDGsN01uTJ3kZjn0bhcHh6CYypHNG1VhT4hxPw6nRGspSilFfTorfXH84k3MAS86jLrQeQZFDwyTV+l7OH9/3El0aAa4wxv+AmdaEOkGIko+C847dm9JRcufGv8nAgLKjTjZnjfyZ/kVIV0iJRVwQlXNqpvkzXWS9lIleKM3oYNP7XtWkrDnzNyG/HoH0ONtKCx3Ev3Nw4dU/mE+pQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=NuHqsKMf; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::532; helo=mail-pg1-x532.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Sdltovha;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Sdltovha;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=NuHqsKMf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::532; helo=mail-pg1-x532.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x532.google.com (mail-pg1-x532.google.com [IPv6:2607:f8b0:4864:20::532])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fLSBK1JWDz3dXB
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 19:17:28 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1772007446;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=oV6MOc6IZ/eQSfEt7lDYf3QV1I2fYi7uzloZcjfdDk8=;
-	b=SdltovhakWpz5RDVNFplcUigc2H5aTC8P8aiIb5ck58po6JFsdSXgejyv+9uFuEMDeX6pU
-	9Zcai9YXkloB2JV2WHzLA7ZG0WI4ZMr4A7Vv665v+ZwygV2hPdRMMVQO2FdfxbOJcgYvRJ
-	V4nXTSLMDgRlw9y4NW/56D/ZjIkocsE=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1772007446;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=oV6MOc6IZ/eQSfEt7lDYf3QV1I2fYi7uzloZcjfdDk8=;
-	b=SdltovhakWpz5RDVNFplcUigc2H5aTC8P8aiIb5ck58po6JFsdSXgejyv+9uFuEMDeX6pU
-	9Zcai9YXkloB2JV2WHzLA7ZG0WI4ZMr4A7Vv665v+ZwygV2hPdRMMVQO2FdfxbOJcgYvRJ
-	V4nXTSLMDgRlw9y4NW/56D/ZjIkocsE=
-Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-477-d1eK6WOzOV6_MuYcbjoUdg-1; Wed,
- 25 Feb 2026 03:17:22 -0500
-X-MC-Unique: d1eK6WOzOV6_MuYcbjoUdg-1
-X-Mimecast-MFC-AGG-ID: d1eK6WOzOV6_MuYcbjoUdg_1772007439
-Received: from mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.111])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 33B381955E8C;
-	Wed, 25 Feb 2026 08:17:16 +0000 (UTC)
-Received: from MiWiFi-R3L-srv.redhat.com (unknown [10.72.112.55])
-	by mx-prod-int-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 657C01800465;
-	Wed, 25 Feb 2026 08:17:04 +0000 (UTC)
-From: Baoquan He <bhe@redhat.com>
-To: kasan-dev@googlegroups.com
-Cc: linux-mm@kvack.org,
-	andreyknvl@gmail.com,
-	ryabinin.a.a@gmail.com,
-	glider@google.com,
-	dvyukov@google.com,
-	linux-kernel@vger.kernel.org,
-	linux-um@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org,
-	loongarch@lists.linux.dev,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org,
-	x86@kernel.org,
-	chris@zankel.net,
-	jcmvbkbc@gmail.com,
-	linux-s390@vger.kernel.org,
-	hca@linux.ibm.com,
-	Baoquan He <bhe@redhat.com>
-Subject: [PATCH v5 15/15] mm/kasan: clean up unneeded ARCH_DEFER_KASAN and kasan_arch_is_ready
-Date: Wed, 25 Feb 2026 16:14:12 +0800
-Message-ID: <20260225081412.76502-16-bhe@redhat.com>
-In-Reply-To: <20260225081412.76502-1-bhe@redhat.com>
-References: <20260225081412.76502-1-bhe@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fLTtx70CNz3dXW
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 20:34:17 +1100 (AEDT)
+Received: by mail-pg1-x532.google.com with SMTP id 41be03b00d2f7-c6e266a3572so2257012a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 01:34:17 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1772012054; x=1772616854; darn=lists.ozlabs.org;
+        h=mime-version:references:message-id:date:in-reply-to:subject:cc:to
+         :from:from:to:cc:subject:date:message-id:reply-to;
+        bh=JxnsaOQZey5wMq56BxN2EdEuMBW71mGq+RSuzcss/8M=;
+        b=NuHqsKMf4r7gix9rohHLHZ0ieWcPQAuw2yNc/ix56e7XN0SngwcMftA3Ye5jF8WgQH
+         EbYkoUr+SytmTLs1/Rraw6vgCmRjbd8frgw9XptakbY7rSEg+4Sf7hGTQGDnNe73XGWW
+         7S+Sb1bBeMVdpVdb93OTNAsDgbL1reBrzIKRmmeBsf03tcOVG4DxRmHQHRiCy2qh3eeH
+         u+si4y2UvAB9uCqBjlEnTIhMGR2Pb5GhpeYeBUhibW6q3Y7hC+sWGgfSCPS9jIYFv44C
+         gO3/nH/FVKMvGWk8CM06mSCx+GXdS1CppF0vFr3EnZ8s5g2bUehwbh1UhymSz3Vn4Uyt
+         KKzw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1772012054; x=1772616854;
+        h=mime-version:references:message-id:date:in-reply-to:subject:cc:to
+         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=JxnsaOQZey5wMq56BxN2EdEuMBW71mGq+RSuzcss/8M=;
+        b=rg5ihkFfEwtpIQfa/fWyOb8VhDiz6/8hTgcxneKIz6Ot4otxeOsxsNomOywPS0yLlF
+         ileEU3zla3RAos04eIIemdxgGRMD+JkCZHo8hv94YqfZAC4ewUHaJpFeUdwO+xhtvwcT
+         GfFvnMKyMtFF7i0OSLk4TqGLPFouJP2yvf9K8poaoDkg98N75tvMQD9Es528t6atYlLx
+         7b81G/yd6mu1bLqrrxL+oENbUHgP1IsqpJUUQk5v3Q8TU/o6mRmrZb65KZkbhRzcG1Sk
+         CXgdQ8sfiQIUg7kAcE1//UoSFf95Eb9R/czdqX6CJw0/um7uaoZbPkszPw3zIm/k6JGV
+         JqbA==
+X-Forwarded-Encrypted: i=1; AJvYcCXrFwRqFlbn83ISs35yPXsTZDBaFs8sz+533vqvnFXZ8h9oJZXN2FGDzY0oEZx4qlgQAv1ZNL8u705FJuk=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzwB+uFRO0YVCUwKeopNw2+3OOqqxqGuusDYlLatmWxJXuvvXAg
+	nBvBpFFVP8HuY3TNRqqA9WX3YvmKKCDBBeXPe6dedagB4EGUdXcwREdZ
+X-Gm-Gg: ATEYQzz30I5s1WZn6V9KjEPvXix4eD0fuUyVaMvEoJLzHC3LCtNs25jIRsrT15KYGrQ
+	H3iQnlzq9b1WKX6rsi5MepvBG4a9mGITHhbJ+mF6fqd3YJlWn28hWT8Q3wyroQknx/9tXRYZnGg
+	lCzWiFI56Rnr8ZP1lFYDvh4gP7z//JRSavyn2H/DV9hW8IM5arOHPUKgLzpJRvX4cxLRh/IgHkr
+	wBjULXDVJERykzjWyb+hSEF8anIbcNUUOhn4jjQJazOxhhrXHHh4RBHufDphSV20QtJsy9iIzew
+	L1DuWJbt1T4oi79o5Kl0XbBlUNnfGMJTMH9aHUaj3y10Vwe8HDHNM6YmDOEY61u6B0AJ7ymckHy
+	EXSdqZH9qBFDKwOI/7qsBnpFR+1W+CyMau9CApfA9nS2yHBlaT6zjl4+Ifjff+61j3L+TjUjV7D
+	yUYjoLrWX9ZZbNA8yKAw==
+X-Received: by 2002:a17:90b:3dcc:b0:340:c60b:f362 with SMTP id 98e67ed59e1d1-358ae7c6ca9mr13087754a91.6.1772012054135;
+        Wed, 25 Feb 2026 01:34:14 -0800 (PST)
+Received: from dw-tp ([203.81.242.210])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3590188126esm2256635a91.6.2026.02.25.01.33.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 25 Feb 2026 01:34:13 -0800 (PST)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Mike Rapoport <rppt@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Alex Shi <alexs@kernel.org>, Alexander Gordeev <agordeev@linux.ibm.com>, 
+	Andreas Larsson <andreas@gaisler.com>, Borislav Petkov <bp@alien8.de>, Brian Cain <bcain@kernel.org>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, 
+	"David S. Miller" <davem@davemloft.net>, Dave Hansen <dave.hansen@linux.intel.com>, 
+	David Hildenbrand <david@kernel.org>, Dinh Nguyen <dinguyen@kernel.org>, 
+	Geert Uytterhoeven <geert@linux-m68k.org>, Guo Ren <guoren@kernel.org>, 
+	Heiko Carstens <hca@linux.ibm.com>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, 
+	Ingo Molnar <mingo@redhat.com>, Johannes Berg <johannes@sipsolutions.net>, 
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Jonathan Corbet <corbet@lwn.net>, 
+	Klara Modin <klarasmodin@gmail.com>, "Liam R. Howlett" <Liam.Howlett@oracle.com>, 
+	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, Magnus Lindholm <linmag7@gmail.com>, 
+	Matt Turner <mattst88@gmail.com>, Max Filippov <jcmvbkbc@gmail.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>, Michal Simek <monstr@monstr.eu>, 
+	Mike Rapoport <rppt@kernel.org>, Muchun Song <muchun.song@linux.dev>, 
+	Oscar Salvador <osalvador@suse.de>, Palmer Dabbelt <palmer@dabbelt.com>, 
+	Pratyush Yadav <pratyush@kernel.org>, Richard Weinberger <richard@nod.at>, 
+	Russell King <linux@armlinux.org.uk>, Stafford Horne <shorne@gmail.com>, 
+	Suren Baghdasaryan <surenb@google.com>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
+	Thomas Gleixner <tglx@linutronix.de>, Vasily Gorbik <gor@linux.ibm.com>, Vineet Gupta <vgupta@kernel.org>, 
+	Vlastimil Babka <vbabka@suse.cz>, Will Deacon <will@kernel.org>, x86@kernel.org, 
+	linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-csky@vger.kernel.org, linux-cxl@vger.kernel.org, 
+	linux-doc@vger.kernel.org, linux-hexagon@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
+	linux-mips@vger.kernel.org, linux-mm@kvack.org, 
+	linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org, 
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
+	linux-sh@vger.kernel.org, linux-snps-arc@lists.infradead.org, 
+	linux-um@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, 
+	loongarch@lists.linux.dev, sparclinux@vger.kernel.org
+Subject: Re: [PATCH v3 24/29] arch, mm: consolidate initialization of SPARSE memory model
+In-Reply-To: <20260111082105.290734-25-rppt@kernel.org>
+Date: Wed, 25 Feb 2026 09:00:35 +0530
+Message-ID: <87tsv5h544.ritesh.list@gmail.com>
+References: <20260111082105.290734-1-rppt@kernel.org> <20260111082105.290734-25-rppt@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,105 +120,109 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.111
-X-Mimecast-MFC-PROC-ID: TiSilhpxGwr8MPhv7kMlZCIuo4RIQSrdsyYC52nL0cc_1772007439
-X-Mimecast-Originator: redhat.com
-Content-type: text/plain
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
-Since commit 1e338f4d99e6 ("kasan: introduce ARCH_DEFER_KASAN and unify
-static key across modes"), kasan_arch_is_ready() has been dead code.
-And up to now, ARCH_DEFER_KASAN is useless too because of code change
-for 'kasan=on|off'.
+Mike Rapoport <rppt@kernel.org> writes:
 
-Here clean them up.
+> From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
+>
+> Every architecture calls sparse_init() during setup_arch() although the
+> data structures created by sparse_init() are not used until the
+> initialization of the core MM.
+>
+> Beside the code duplication, calling sparse_init() from architecture
+> specific code causes ordering differences of vmemmap and HVO initialization
+> on different architectures.
+>
+> Move the call to sparse_init() from architecture specific code to
+> free_area_init() to ensure that vmemmap and HVO initialization order is
+> always the same.
+>
 
-Signed-off-by: Baoquan He <bhe@redhat.com>
----
- arch/loongarch/Kconfig |  1 -
- arch/powerpc/Kconfig   |  1 -
- arch/um/Kconfig        |  1 -
- lib/Kconfig.kasan      | 12 ------------
- mm/kasan/kasan.h       |  6 ------
- 5 files changed, 21 deletions(-)
+Hello Mike,
 
-diff --git a/arch/loongarch/Kconfig b/arch/loongarch/Kconfig
-index d211c6572b0a..4b7802d02911 100644
---- a/arch/loongarch/Kconfig
-+++ b/arch/loongarch/Kconfig
-@@ -9,7 +9,6 @@ config LOONGARCH
- 	select ACPI_PPTT if ACPI
- 	select ACPI_SYSTEM_POWER_STATES_SUPPORT	if ACPI
- 	select ARCH_BINFMT_ELF_STATE
--	select ARCH_NEEDS_DEFER_KASAN
- 	select ARCH_DISABLE_KASAN_INLINE
- 	select ARCH_ENABLE_MEMORY_HOTPLUG
- 	select ARCH_ENABLE_MEMORY_HOTREMOVE
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index ad7a2fe63a2a..b51fbc25bdc9 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -122,7 +122,6 @@ config PPC
- 	# Please keep this list sorted alphabetically.
- 	#
- 	select ARCH_32BIT_OFF_T if PPC32
--	select ARCH_NEEDS_DEFER_KASAN		if PPC_RADIX_MMU
- 	select ARCH_DISABLE_KASAN_INLINE	if PPC_RADIX_MMU
- 	select ARCH_DMA_DEFAULT_COHERENT	if !NOT_COHERENT_CACHE
- 	select ARCH_ENABLE_MEMORY_HOTPLUG
-diff --git a/arch/um/Kconfig b/arch/um/Kconfig
-index 098cda44db22..fd0bedd2c696 100644
---- a/arch/um/Kconfig
-+++ b/arch/um/Kconfig
-@@ -6,7 +6,6 @@ config UML
- 	bool
- 	default y
- 	select ARCH_DISABLE_KASAN_INLINE if STATIC_LINK
--	select ARCH_NEEDS_DEFER_KASAN if STATIC_LINK
- 	select ARCH_WANTS_DYNAMIC_TASK_STRUCT
- 	select ARCH_HAS_CACHE_LINE_SIZE
- 	select ARCH_HAS_CPU_FINALIZE_INIT
-diff --git a/lib/Kconfig.kasan b/lib/Kconfig.kasan
-index a4bb610a7a6f..f82889a830fa 100644
---- a/lib/Kconfig.kasan
-+++ b/lib/Kconfig.kasan
-@@ -19,18 +19,6 @@ config ARCH_DISABLE_KASAN_INLINE
- 	  Disables both inline and stack instrumentation. Selected by
- 	  architectures that do not support these instrumentation types.
- 
--config ARCH_NEEDS_DEFER_KASAN
--	bool
--
--config ARCH_DEFER_KASAN
--	def_bool y
--	depends on KASAN && ARCH_NEEDS_DEFER_KASAN
--	help
--	  Architectures should select this if they need to defer KASAN
--	  initialization until shadow memory is properly set up. This
--	  enables runtime control via static keys. Otherwise, KASAN uses
--	  compile-time constants for better performance.
--
- config CC_HAS_KASAN_GENERIC
- 	def_bool $(cc-option, -fsanitize=kernel-address)
- 
-diff --git a/mm/kasan/kasan.h b/mm/kasan/kasan.h
-index fc9169a54766..f08f7f75c285 100644
---- a/mm/kasan/kasan.h
-+++ b/mm/kasan/kasan.h
-@@ -552,12 +552,6 @@ static inline void kasan_poison_last_granule(const void *address, size_t size) {
- 
- #endif /* CONFIG_KASAN_GENERIC */
- 
--#ifndef kasan_arch_is_ready
--static inline bool kasan_arch_is_ready(void)	{ return true; }
--#elif !defined(CONFIG_KASAN_GENERIC) || !defined(CONFIG_KASAN_OUTLINE)
--#error kasan_arch_is_ready only works in KASAN generic outline mode!
--#endif
--
- #if IS_ENABLED(CONFIG_KASAN_KUNIT_TEST)
- 
- void kasan_kunit_test_suite_start(void);
--- 
-2.52.0
+[    0.000000][    T0] ------------[ cut here ]------------
+[    0.000000][    T0] WARNING: arch/powerpc/include/asm/io.h:879 at virt_to_phys+0x44/0x1b8, CPU#0: swapper/0
+[    0.000000][    T0] Modules linked in:
+[    0.000000][    T0] CPU: 0 UID: 0 PID: 0 Comm: swapper Not tainted 6.19.0-12139-gc57b1c00145a #31 PREEMPT
+[    0.000000][    T0] Hardware name: IBM pSeries (emulated by qemu) POWER10 (architected) 0x801200 0xf000006 of:SLOF,git-ee03ae pSeries
+[    0.000000][    T0] NIP:  c000000000601584 LR: c000000004075de4 CTR: c000000000601548
+[    0.000000][    T0] REGS: c000000004d1f870 TRAP: 0700   Not tainted  (6.19.0-12139-gc57b1c00145a)
+[    0.000000][    T0] MSR:  8000000000021033 <SF,ME,IR,DR,RI,LE>  CR: 48022448  XER: 20040000
+[    0.000000][    T0] CFAR: c0000000006016c4 IRQMASK: 1
+[    0.000000][    T0] GPR00: c000000004075dd4 c000000004d1fb10 c00000000304bb00 c000000180000000
+[    0.000000][    T0] GPR04: 0000000000000009 0000000000000009 c000000004ec94a0 0000000000000000
+[    0.000000][    T0] GPR08: 0000000000018000 0000000000000001 c000000004921280 0000000048022448
+[    0.000000][    T0] GPR12: c000000000601548 c000000004fe0000 0000000000000004 0000000000000004
+[    0.000000][    T0] GPR16: 000000000287fb08 0000000000000060 0000000000000002 0000000002831750
+[    0.000000][    T0] GPR20: 0000000002831778 fffffffffffffffd c000000004d78050 00000000051cbb00
+[    0.000000][    T0] GPR24: 0000000005a40008 c000000000000000 c000000000400000 0000000000000100
+[    0.000000][    T0] GPR28: c000000004d78050 0000000000000000 c000000004ecd4a8 0000000000000001
+[    0.000000][    T0] NIP [c000000000601584] virt_to_phys+0x44/0x1b8
+[    0.000000][    T0] LR [c000000004075de4] alloc_bootmem+0x144/0x1a8
+[    0.000000][    T0] Call Trace:
+[    0.000000][    T0] [c000000004d1fb50] [c000000004075dd4] alloc_bootmem+0x134/0x1a8
+[    0.000000][    T0] [c000000004d1fba0] [c000000004075fac] __alloc_bootmem_huge_page+0x164/0x230
+[    0.000000][    T0] [c000000004d1fbe0] [c000000004030bc4] alloc_bootmem_huge_page+0x44/0x138
+[    0.000000][    T0] [c000000004d1fc10] [c000000004076e48] hugetlb_hstate_alloc_pages+0x350/0x5ac
+[    0.000000][    T0] [c000000004d1fd30] [c0000000040782f0] hugetlb_bootmem_alloc+0x15c/0x19c
+[    0.000000][    T0] [c000000004d1fd70] [c00000000406d7b4] mm_core_init_early+0x7c/0xdf4
+[    0.000000][    T0] [c000000004d1ff30] [c000000004011d84] start_kernel+0xac/0xc58
+[    0.000000][    T0] [c000000004d1ffe0] [c00000000000e99c] start_here_common+0x1c/0x20
+[    0.000000][    T0] Code: 6129ffff 792907c6 6529ffff 6129ffff 7c234840 40810018 3d2201e8 3929a7a8 e9290000 7c291840 41810044 3be00001 <0b1f0000> 3d20bfff 6129ffff 792907c6
 
+
+I think this is happening because, now in mm_core_early_init(), the
+order of initialization between hugetlb_bootmem_alloc() and
+free_area_init() is reversed. Since free_area_init() -> sparse_init()
+is responsible for setting SECTIONS and vmemmap area. 
+
+Then in alloc_bootmem() (from hugetlb_bootmem_alloc() path), it uses virt_to_phys(m)...
+
+			/*
+			 * For pre-HVO to work correctly, pages need to be on
+			 * the list for the node they were actually allocated
+			 * from. That node may be different in the case of
+			 * fallback by memblock_alloc_try_nid_raw. So,
+			 * extract the actual node first.
+			 */
+			if (m)
+				listnode = early_pfn_to_nid(PHYS_PFN(virt_to_phys(m)));
+
+
+... virt_to_phys on powerpc uses:
+
+static inline unsigned long virt_to_phys(const volatile void * address)
+{
+	WARN_ON(IS_ENABLED(CONFIG_DEBUG_VIRTUAL) && !virt_addr_valid(address));
+
+	return __pa((unsigned long)address);
+}
+
+#define virt_addr_valid(vaddr)	({					\
+	unsigned long _addr = (unsigned long)vaddr;			\
+	_addr >= PAGE_OFFSET && _addr < (unsigned long)high_memory &&	\
+	pfn_valid(virt_to_pfn((void *)_addr));				\
+})
+
+
+I think the above warning in dmesg gets printed from above WARN_ON, i.e.
+because pfn_valid() is false, since we haven't done sparse_init() yet.
+
+So, what I wanted to check was - do you think instead of virt_to_phys(), we
+could directly use __pa() here() in mm/hugetlb.c, since these are
+memblock alloc addresses? i.e.: 
+
+// alloc_bootmem():
+-   listnode = early_pfn_to_nid(PHYS_PFN(virt_to_phys(m)));
++   listnode = early_pfn_to_nid(PHYS_PFN(__pa(m)));
+
+// __alloc_bootmem_huge_page():
+-   memblock_reserved_mark_noinit(virt_to_phys((void *)m + PAGE_SIZE),
++   memblock_reserved_mark_noinit(__pa((void *)m + PAGE_SIZE),
+
+
+Thoughts?
+
+-ritesh
 
