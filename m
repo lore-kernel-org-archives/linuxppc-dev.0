@@ -1,50 +1,140 @@
-Return-Path: <linuxppc-dev+bounces-17135-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17136-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC3F8F4BB8B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Feb 2026 21:29:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5B8BF55434
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Feb 2026 00:04:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fL9q20qpSz3cGL;
-	Wed, 25 Feb 2026 08:29:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771968590;
-	cv=none; b=FbUDkwH1Qb3aBejL/tEhFvOmzrJd0NKxejOzkiHuQ3n7QGuIq78Dr7xHowdzwpKD81elSj154dq3v+FzGOGnuWA8rc33w7yxBNM/QKj6P2nDCYGKQr9lPZaCvS9GbyPl4zuww5wFJhhUUypshX5GJWtFtmc2zO/ZV37+AsXW2/ioLfwuicFA32FmFsn/rD2bG/+BrvG7HevAqtIRAUHnG+/6ZMDOQ4z8RpI/zMjl5FAY9mgmFmolx6sBqJepphOzoQNZjJfZgS6BtSR5PRqsoDFsPnxaNG0ovhJK56nuTsHefEAicUHJJFq6zBv6Gn6R39kt5J1/Gbixm1vhhov/GQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fLFFC6PDQz3dBq;
+	Wed, 25 Feb 2026 11:04:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771977855;
+	cv=none; b=SuMMoOhSB6uIWkeSpRZQCA2sJptAMmeCgNztZ6WR4Ei0QU5V5RZ9dufrGFVqQ3cZRdZP4IjHo33cSehvCZVPsDMwQ6E3t3QqlNYPAyKOWHdTOrl1wEWJi2AbR/eq5kjE4j/hbBlYv4klFVk1Y9futyM4DuOgRFJCxUPhxP4lxF1Dn/lpz1SXN9iuItHLkTZo/rCFDxfwQQFwPayG2JXNHNhVG16/iQ+Ze4IpOUvke25PWG7MAaFA+CYkEcp8awSgpEu5D/c966T7Ev4glF3suhHhY5fZqOrgvLM4v7R08iJA00O9+ul+pFikAKbd2sD8BXk+Fc7SI29wiFLRrOKbzA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1771968590; c=relaxed/relaxed;
-	bh=q10+uC/aYDkdKm829ZpOBGZg/BCmUVy0TnhE+fQq53I=;
-	h=Content-Type:MIME-Version:Message-Id:In-Reply-To:References:
-	 Subject:From:To:Cc:Date; b=JyYNZURUZNe1mMvS8k6Xsva8xDQRkZbsHxDt2l6UU6XTZiJFgeq1WftGusF5olK4fUglceCShHuXapFjNAlwbduINLpihVHj3Aj+JakQZvWxmlYAORx8lLS2LZxwhwg1E2BzgcNd7H+jwTSw0hS9UeYwixFeKyQJby8w1sUFBfPVUHkPQzvKPxBEySp8BS3xfUcfFMETxVOrwE0L+OOvTUvfTu5RMNsTum8jBnLNAThKB7lie8fSHTmI/8ZGZJksBacGcdwswoKkfZQB9SAwMy7ZsWEU6oFJOWmxUr3fJdQtWkibSSpI2GlxTdHoT9z1/in6JBmk0mOWnZhpLPH2rQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jc6BIQKZ; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1771977855; c=relaxed/relaxed;
+	bh=cFbFxILw8z/WHEBjoq2ZMztetevIFEwE8orbafe4X+g=;
+	h=Message-ID:Subject:From:To:Cc:In-Reply-To:References:Content-Type:
+	 Date:MIME-Version; b=k3Y7WfLTWk+PcvK1c10oyzN9WZIn/XBxewRj9zNryAVDmI6mCgifZls9VgPdpBW6vG0zXqUVy4G2kSB1jNon0+tAUrJXvWlCAblA/vnhC22NqTLgKBzO1Ocx8YhiwtC6DIMi+DBN1JWGW3Ax6+7mMqWZOOUxaj5aRCakw8xCTVQNonMY0IYlR8ri4wXgJ12OdIGdmI6VWoeYxdjNYfYdA08GL+RJgD08/yFNVLkHTt4GUv4aaYU7H3MMzPm+FUCDR3ym3PgwNonYXZLywf2WmYUgukRrFA15w4vvpUdDFiUaZQhKq3QfRCYXOvD7aTVDWJcgDL1LnvzPOVSBN77OPA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TDPeo8v/; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=zohar@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jc6BIQKZ;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TDPeo8v/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=zohar@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fL9q06TdKz2xN2
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 08:29:48 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 66E2B60053;
-	Tue, 24 Feb 2026 21:29:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EDD53C116D0;
-	Tue, 24 Feb 2026 21:29:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1771968586;
-	bh=75wFjdLGpHCy36wy8xROygNeEyyiavbM5IBG1ytvkKs=;
-	h=In-Reply-To:References:Subject:From:To:Cc:Date:From;
-	b=jc6BIQKZhDP0Fw8ryEyJuwTU9nb3PVbbMInrmC86lfEXFQgDCmRHLxTlcrfqleLGK
-	 bW7AW+h+lH394daVpxBnzCdO5vliuMNTKUIzMa206/I2pZQSfq5VNaMBfq9gM2erse
-	 oMWanjnulqaGMccx74WsG87tuqnOSYs0umeizAMeCVOSP/9J+MdDLK1h29IJWDnUrd
-	 pdEooMBOtNPk8JcZtDlpjn2suLhT/gk2TiDOc7sp+L/UmSbSDovYAgkYLByy3FMfxf
-	 ZNJxwsq8VnionIo7TZkDrRncKA7LdEfmsr0w2hrDHdZb+/lnr+1GpSgM1eFT/2eQs7
-	 /S5ORyr0PR6kw==
-Content-Type: multipart/mixed; boundary="===============4812018571603848610=="
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fLFFB5WgLz3d8p
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 11:04:14 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61OKo3mo2894740;
+	Wed, 25 Feb 2026 00:03:17 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=cFbFxI
+	Lw8z/WHEBjoq2ZMztetevIFEwE8orbafe4X+g=; b=TDPeo8v/2+wirzhVbwsQUy
+	hYpVYSVAc0lg1TDb8j+bjbT6nU7ETrG+IW1bV3dwqFTJ6ryXa/vazci9dAxEZTNG
+	za6txZ0VpMGiiTyrUkYkGSynN5Ugck33b3VltjtkuYTBAXc2QR0FcN2P2Jgs9bPx
+	33pfHCbLbYKsuq2iKQ4mZMaPcoeJcGDnQZdFaoTQPUpF6waYgUBh2mw1Xmyj4WfK
+	jmg+Q3C2q+Q8FFiQtMa7+TqiQdMIpB2/iOqevicTdezsXzN5wVOQkBIzazGpnvp9
+	ZrPaq3cjiJH4QOKOjUUkRtj0uNcvGJ+LBM3BOZgkZvNY8O2h1gvNk7hddd9AbgWQ
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cf471x2sa-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 25 Feb 2026 00:03:15 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 61OLXORR030259;
+	Wed, 25 Feb 2026 00:03:14 GMT
+Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4cfrhkb1gd-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 25 Feb 2026 00:03:14 +0000
+Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
+	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 61P03DrN32375318
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 25 Feb 2026 00:03:13 GMT
+Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1E5865805A;
+	Wed, 25 Feb 2026 00:03:13 +0000 (GMT)
+Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D3A8E5805C;
+	Wed, 25 Feb 2026 00:03:10 +0000 (GMT)
+Received: from li-43857255-d5e6-4659-90f1-fc5cee4750ad.ibm.com (unknown [9.61.83.151])
+	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 25 Feb 2026 00:03:10 +0000 (GMT)
+Message-ID: <ad471c33eeb9e21c49ac81032dc64555a2fb816f.camel@linux.ibm.com>
+Subject: Re: [PATCH 1/3] integrity: Make arch_ima_get_secureboot
+ integrity-wide
+From: Mimi Zohar <zohar@linux.ibm.com>
+To: Ard Biesheuvel <ardb@kernel.org>
+Cc: Coiby Xu <coxu@redhat.com>, Dave Hansen <dave.hansen@intel.com>,
+        linux-integrity@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>,
+        Roberto Sassu <roberto.sassu@huaweicloud.com>,
+        Catalin Marinas
+ <catalin.marinas@arm.com>,
+        Will Deacon	 <will@kernel.org>,
+        Madhavan
+ Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman	 <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)"
+ <chleroy@kernel.org>,
+        Vasily Gorbik <gor@linux.ibm.com>,
+        Alexander Gordeev	
+ <agordeev@linux.ibm.com>,
+        Christian Borntraeger
+ <borntraeger@linux.ibm.com>,
+        Sven Schnelle <svens@linux.ibm.com>,
+        Thomas
+ Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+        Borislav
+ Petkov	 <bp@alien8.de>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        "maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)"	 <x86@kernel.org>,
+        "H.
+ Peter Anvin" <hpa@zytor.com>,
+        Roberto Sassu	 <roberto.sassu@huawei.com>,
+        Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+        Eric Snowberg
+ <eric.snowberg@oracle.com>,
+        Paul Moore <paul@paul-moore.com>, James Morris
+ <jmorris@namei.org>,
+        "Serge E. Hallyn"	 <serge@hallyn.com>,
+        Jarkko
+ Sakkinen <jarkko@kernel.org>,
+        "moderated list:ARM64 PORT (AARCH64
+ ARCHITECTURE)"	 <linux-arm-kernel@lists.infradead.org>,
+        open list
+ <linux-kernel@vger.kernel.org>,
+        "open list:LINUX FOR POWERPC (32-BIT AND
+ 64-BIT)"	 <linuxppc-dev@lists.ozlabs.org>,
+        "open list:S390 ARCHITECTURE"	
+ <linux-s390@vger.kernel.org>,
+        "open list:EXTENSIBLE FIRMWARE INTERFACE
+ (EFI)"	 <linux-efi@vger.kernel.org>,
+        "open list:SECURITY SUBSYSTEM"	
+ <linux-security-module@vger.kernel.org>,
+        "open
+ list:KEYS/KEYRINGS_INTEGRITY"	 <keyrings@vger.kernel.org>
+In-Reply-To: <CAMj1kXFBMSEdRL8FotASbQO3dcfNG0bpp9Vnm5JPn-yjyDr=GA@mail.gmail.com>
+References: <20260115004328.194142-1-coxu@redhat.com>
+	 <20260115004328.194142-2-coxu@redhat.com>
+	 <CAMj1kXFXNo1-pMbo-VZrjQ3TYe1tufebrLr_avL12A0nHMSGnA@mail.gmail.com>
+	 <8bfa859ed3a4f1cf0db0ab64d8c1c3b24684582a.camel@linux.ibm.com>
+	 <CAMj1kXHsJNZoUEnbD1y=v4Ftuv9d2c08VckRV7ru4k4P83vZbQ@mail.gmail.com>
+	 <97b69bc79a5d9246f7a399510908c7b95b2e95e7.camel@linux.ibm.com>
+	 <CAMj1kXGx4ebaK87W7k0SNUNQnO9+=z1nmYxXC7retmp3OqRRFg@mail.gmail.com>
+	 <ac5e5e45c12e9b0bda19807e60b06057d74be0b3.camel@linux.ibm.com>
+	 <aW2i3yacr5TvWU-m@Rk>
+	 <1a0b6e5601a673a81f8823de0815f92b7afbeb60.camel@linux.ibm.com>
+	 <CAMj1kXFBMSEdRL8FotASbQO3dcfNG0bpp9Vnm5JPn-yjyDr=GA@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Date: Tue, 24 Feb 2026 19:03:10 -0500
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,145 +148,78 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Message-Id: <29abe0604fd96a4e172f6ff49dacddb3f207c2e84959e0d93223ca30ba90d77f@mail.kernel.org>
-In-Reply-To: <20260225013627.22098-2-adubey@linux.ibm.com>
-References: <20260225013627.22098-2-adubey@linux.ibm.com>
-Subject: Re: [PATCH 1/4] powerpc/bpf: Move out dummy_tramp_addr after Long branch stub
-From: bot+bpf-ci@kernel.org
-To: adubey@linux.ibm.com,linuxppc-dev@lists.ozlabs.org
-Cc: bpf@vger.kernel.org,hbathini@linux.ibm.com,ast@kernel.org,daniel@iogearbox.net,andrii@kernel.org,maddy@linux.ibm.com,adubey@linux.ibm.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,martin.lau@kernel.org,eddyz87@gmail.com,yonghong.song@linux.dev,clm@meta.com,ihor.solodrai@linux.dev
-Date: Tue, 24 Feb 2026 21:29:44 +0000 (UTC)
+User-Agent: Evolution 3.56.2 (3.56.2-2.fc42) 
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: KmeUE4GQkjFCEA-onCkjAzUZBg2oc_Jk
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjI0MDIwOSBTYWx0ZWRfX2xjh5sVgzhOS
+ dnNMnaiYXxvEopWHavbqXkdT3qDid/FcKrZW6PmQdfwrcST/ZX7r1DIOCK79NPeBkmvn5ZHnYe9
+ iQCAUuGXNwIfntSmXBmb3sUwGlIdjaEKqZi1yYK+izhn6dUmiu/Nzuts6JG8Ag64IbvlsCzY9HR
+ y1IRHwNmX0lY22905adj132keU3lKlbxSTaMIzXpdbD2idW7uvTZCuaRnWcSmyCenN1pvMDPDtz
+ Ojr2imkhf9l9gWYtYrhl9C6I4J8BD8+fWsWgo8o8r/qtjNfpI8oxVuSL/ZlJTwW4+zm6hRkbkoN
+ 4lqBW+WzVRY5+AOS30Msdg/NZ8hJlFIKGLqUHVrs0oDlu2icF3c2sOI3QWj0LDoJJ5HzB/Elg74
+ cnpm/637Zl1QbABBe956sXpIE+1HpOurd+ceDGYdkaBpuRjH9KncE0ga2Ag7Qpm+1XRIU3zjk+0
+ 9ddSy/sJJwN86SA5NEA==
+X-Authority-Analysis: v=2.4 cv=R7wO2NRX c=1 sm=1 tr=0 ts=699e3c44 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=HzLeVaNsDn8A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=Mpw57Om8IfrbqaoTuvik:22 a=GgsMoib0sEa3-_RKJdDe:22 a=VwQbUJbxAAAA:8
+ a=20KFwNOVAAAA:8 a=VnNF1IyMAAAA:8 a=qGODes0vNXlHMsmaWvgA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: 2x_WgBn-lXEWRE-KKGAySI2MMRU7Qajr
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-02-24_03,2026-02-23_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 clxscore=1015 impostorscore=0 phishscore=0 spamscore=0
+ suspectscore=0 malwarescore=0 bulkscore=0 adultscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2601150000 definitions=main-2602240209
 
---===============4812018571603848610==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+On Wed, 2026-01-21 at 17:25 +0100, Ard Biesheuvel wrote:
+> On Wed, 21 Jan 2026 at 16:41, Mimi Zohar <zohar@linux.ibm.com> wrote:
+> >=20
+> > On Mon, 2026-01-19 at 12:04 +0800, Coiby Xu wrote:
+> >=20
+> > > diff --git a/security/integrity/ima/Kconfig b/security/integrity/ima/=
+Kconfig
+> > > index 976e75f9b9ba..5dce572192d6 100644
+> > > --- a/security/integrity/ima/Kconfig
+> > > +++ b/security/integrity/ima/Kconfig
+> > > @@ -311,6 +311,7 @@ config IMA_QUEUE_EARLY_BOOT_KEYS
+> > >   config IMA_SECURE_AND_OR_TRUSTED_BOOT
+> > >          bool
+> > >          depends on IMA_ARCH_POLICY
+> > > +       depends on INTEGRITY_SECURE_BOOT
+> > >=20
+> > >=20
+> > > Another idea is make a tree-wide arch_get_secureboot i.e. to move
+> > > current arch_ima_get_secureboot code to arch-specific secure boot
+> > > implementation. By this way, there will no need for a new Kconfig opt=
+ion
+> > > INTEGRITY_SECURE_BOOT. But I'm not sure if there is any unforeseen
+> > > concern.
+> >=20
+> > Originally basing IMA policy on the secure boot mode was an exception. =
+ As long
+> > as making it public isn't an issue any longer, this sounds to me.  Ard,=
+ Dave, do
+> > you have any issues with replacing arch_ima_get_secureboot() with
+> > arch_get_secureboot()?
+>=20
+> I don't see an issue with that. If there is a legitimate need to
+> determine this even if IMA is not enabled, then this makes sense.
 
-> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-> --- a/arch/powerpc/net/bpf_jit_comp.c
-> +++ b/arch/powerpc/net/bpf_jit_comp.c
+Ard, Dave -
 
-[ ... ]
+FYI, Coiby posted v3 of this patch set[1], which is queued in the next-
+integrity-testing branch[2].
 
-> +	/* Relative offset of dummy_tramp_addr wrt start of long branch stub */
-> +	tramp_idx = long_branch_stub_idx + 7;
-> +	/*
-> +	 * Image layout need not be considered 8-byte aligned.
-> +	 * Lower 3 bits must be clear for 8-bytes alignment.
-> +	 * Adjust offset for padding NOP before dummy_tramp_addr
-> +	 */
-> +	tramp_needs_align = (((unsigned long)&image[tramp_idx]) & 7) != 0;
-> +	tramp_load_offset = tramp_needs_align ? 24 : 20;
+[1]
+https://lore.kernel.org/linux-integrity/20260213012851.2532722-1-coxu@redha=
+t.com/
 
-Can the alignment check produce different results between the sizing
-pass and the code generation pass?
+[2] https://git.kernel.org/pub/scm/linux/kernel/git/zohar/linux-integrity.g=
+it/
 
-During the sizing pass, bpf_int_jit_compile() calls
-bpf_jit_build_epilogue(NULL, &cgctx), so image is NULL here.
-&image[tramp_idx] evaluates to (tramp_idx * 4), and the alignment
-decision depends only on the parity of tramp_idx.
-
-During code generation, image is code_base, which may or may not be
-8-byte aligned. bpf_jit_binary_pack_alloc() uses alignment=4 with a
-random start offset, so roughly half the time code_base will have
-bit 2 set. When it does, the alignment check flips:
-
-    sizing pass (image=NULL, tramp_idx odd):
-        ((tramp_idx * 4) & 7) = 4, tramp_needs_align = true
-
-    code gen pass (code_base bit 2 set, tramp_idx odd):
-        (((unsigned long)code_base + tramp_idx * 4) & 7) = 0,
-        tramp_needs_align = false
-
-This means the sizing pass may emit a NOP that the code generation
-pass omits (or vice versa), causing the stub to be a different size
-than what was computed during sizing.
-
-> +	EMIT(PPC_RAW_LL(_R12, _R12, tramp_load_offset));
-> +	EMIT(PPC_RAW_MTCTR(_R12));
-> +	EMIT(PPC_RAW_MTLR(_R11));
-> +	EMIT(PPC_RAW_BCTR());
-> +
-> +	/* align dummy_tramp_addr to 8 bytes */
-> +	if (tramp_needs_align)
-> +		EMIT(PPC_RAW_NOP());
-> +
-> +	if (image)
-> +		*((unsigned long *)&image[ctx->idx]) = (unsigned long)dummy_tramp;
-> +
-> +	ctx->idx += SZL / 4;
-> +
->  	if (!bpf_jit_ool_stub) {
->  		bpf_jit_ool_stub = (ctx->idx - ool_stub_idx) * 4;
->  		bpf_jit_long_branch_stub = (ctx->idx - long_branch_stub_idx) * 4;
->  	}
-
-Because the conditional NOP makes the stub size variable,
-bpf_jit_long_branch_stub now depends on whether tramp_needs_align
-was true when it was first set. This global is set once during the
-first program's sizing pass and reused for all subsequent programs.
-
-Since each BPF program has a different body size (different N for
-long_branch_stub_idx), and each allocation may have different
-code_base alignment, the stub size can vary per-program. But
-bpf_arch_text_poke() uses the fixed global to compute the branch
-target:
-
-    create_branch(&old_inst, ip,
-                  bpf_func_end - bpf_jit_long_branch_stub,
-                  branch_flags);
-
-If this program's actual stub size differs from the global by 4
-bytes, the branch lands one instruction before or after the intended
-mflr r11 at the stub entry.
-
-In the old code, the stub had a fixed layout with no conditional
-instructions, so bpf_jit_long_branch_stub was the same for all
-programs.
-
-[ ... ]
-
-> @@ -1161,6 +1180,8 @@ static void do_isync(void *info __maybe_unused)
->  *	mtctr	r12
->  *	mtlr	r11 // needed to retain ftrace ABI
->  *	bctr
-> + *	nop         // optinonal, mem align dummy_tramp field
-> + *	.long	<branch_addr>/<dummy_tramp>
-
-Typo: "optinonal" should be "optional".
-
-Also, the comment block above this still shows the old load offset:
-
- *	ld	r12, -16(r12)
-
-This should reflect the new forward offset (20 or 24).
-
-[ ... ]
-
->  	/*
->  	 * Long branch stub:
->  	 *	mflr	r11
->  	 *	bcl	20,31,$+4
-> -	 *	mflr	r12
-> -	 *	ld	r12, -8-SZL(r12)
-> +	 *	mflr	r12		// lr/r12 stores current pc
-> +	 *	ld	r12, 20(r12)	// offset(dummy_tramp_addr) from prev inst. is 20
-
-The hardcoded 20 in this comment is only correct when no alignment
-NOP is needed. When tramp_needs_align is true, the offset is 24.
-
-
----
-AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
-See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
-
-CI run summary: https://github.com/kernel-patches/bpf/actions/runs/22369534987
-
-AI-authorship-score: low
-AI-authorship-explanation: Domain-specific code with detailed hardware debugging output in the cover letter suggests manual engineering work.
-issues-found: 3
-issue-severity-score: high
-issue-severity-explanation: Alignment check uses NULL image pointer during sizing pass, causing variable stub sizes that break the bpf_jit_long_branch_stub global used by bpf_arch_text_poke to compute branch targets, potentially causing incorrect JIT code execution.
-
---===============4812018571603848610==--
+Mimi
 
