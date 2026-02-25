@@ -1,92 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-17191-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17192-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55DA8FD3756
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Feb 2026 12:43:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B34F8FD375D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Feb 2026 13:33:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fLZ504PRVz3f46;
-	Wed, 25 Feb 2026 23:43:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::834"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772023396;
-	cv=none; b=Nvywq+WeaMXT+zw40l/qdYjCw3L7ste3Dx0CdSYZIJPFOwKdzn0iSIkGS4lnSKsU0cYcyeC2R2CHCmvmKo5pRYeiEZIe9HhQB9rnElpDainLc5VGupsnOJtSXhgbwwmae3Vx8JYtvvkbTRFX+rGXJ7tYJZe0CMQ8EpEv4TFbGvfDx6e7yCQq3Q4CmMyDaoluTlgCV1TcgBXWIwVRZSWzDEs2+0t8W0ln4R9xGq7NiqdBjQh7PCaF278GHwrU8T/4rYx32yrplehkGhU0tNBD6RAEC0763nW08GEkVm6+TLN0tN7dwq0Kv8YTHGy7NP6G4c7DpaLDeIcT+CEGyKkglA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fLbCP6WNqz3f4W;
+	Thu, 26 Feb 2026 00:33:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772026433;
+	cv=none; b=YHFOnuXVeuqmmvFabp/aUlK+86qYtdvu8ys0BXY0xmDo4cu4ct6KDZBsKt38oHNuuN7OvQU3/Z3GZZOqwhIWLai6xtpPE2Inz1EP+GrnS3Qx0SOEbs5L8P+f5L0RKeESxp2Z2790P/TRTwvjAcxNBvMc/wC7wdiWczPI/oW3YlQRV1qgtvFbHaQ3NPQm9BbYyoIx3OhYx+osv9wq/5tnazrJuPADIZpimBtDyrg/+30qbgZjSpJzGegZCc1Mfqk535gNlaEGDpMgNusNy8u/37D21kVUwzs8qIl2hZQ0GKHxr7cEg081GQFaUySP/hJ8Kirc29cMnB66E3Vq4lwITg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772023396; c=relaxed/relaxed;
-	bh=zCgxlgUh2Kzipr/6PqsqlcJ2dmxQyt6oZKQKS/otnAk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ICLa3AKZlvufBF2CI8QqiETqVVulzdll4kr6snThOkITiMZvpEFKZigE1q8jsh7Ey5hCVDglzPukhPeAjl34u120LlieWOtdGYod0IOyVAQbQUIZ61rpNV7EUSCqs1QUyNcj6yR9/Y3iak9BM8W93U45/YI0dQSPZRuH7Tspw5Ryo9zNGigB711KSkGoNaHiF6Z4AGb1u2ix8SC6W6oFZXHY1p7vB4HLk5D4QDXtfMoqJoI61vSH9bbIAztTR/wJnhVrSTwrHpNkfYVUqxGp6GTEC8TGxH6m9r9LgxZOdTF0f0QDIiKdPoq3zmU/7NNCHtQCMQOBBKQ3DBGK+ii5CQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=WeugJPXk; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::834; helo=mail-qt1-x834.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1772026433; c=relaxed/relaxed;
+	bh=MKV16Iq/t3QcqQDzN4+Ao/FS2tWGu5v2JXxmaFI9Dx4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=JFy9e0/bdpjt6gN7d6DqwkFwkOibXAsiTF7Fy9IRLBwhqILeWYow077anxYpCa1D23IsV8BglEy7XiM2F50eMMgyxwQ3PHiRaNQ99VEU0ZzMzfEJlCvxOWhCv8LwkpP9HN9yt6kZpv7kxzJRW9bLuiM7HFum54o1KBYe6WLftU5TFV79YCfNVmDJS9RAAWnshiLKFnr4kBwonzcUiJzeSwz6cMOKNyPWtwhfQdwRZf/S15e9Grg6/HMG6XyT0NOm3w+s6sN28tij+I7ur6o9Ot2iKQpsDUTIbIgB7FRW7jE35d/Bc2sP/cWzfoCIBlItk6n9UPZW+gyqjDE52NIcdw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RtgekPTi; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=WeugJPXk;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RtgekPTi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::834; helo=mail-qt1-x834.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x834.google.com (mail-qt1-x834.google.com [IPv6:2607:f8b0:4864:20::834])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fLZ4y72ZNz3f3G
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 23:43:13 +1100 (AEDT)
-Received: by mail-qt1-x834.google.com with SMTP id d75a77b69052e-5033387c80aso11200731cf.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 04:43:13 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1772023391; x=1772628191; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=zCgxlgUh2Kzipr/6PqsqlcJ2dmxQyt6oZKQKS/otnAk=;
-        b=WeugJPXkvxqFdNF1rj7N2xQP4JsVgXrK4BgjwY/DOLkSDyP8dVhC9ZJOyj4NspJOKq
-         Q8B01SnXuOCmFNPkNmnii13e5TtdifV/C2Mrt/GJeA6P/v4vtzyVNPfrc6y5hBpmzqZZ
-         JOtiydP/pZEbuta39vJFKh4T0sljX9RRY/XaEGEsd8W4ztvCoGgBIpFR6TSvFWIPqmcj
-         VtEhzLt0my3/NJEsB4VtnRRyl+JK7WUnE0t+AkQSithn9rVYRCXQXG8Sc+9J9pVPRQvk
-         g80WL1HUa8N9hjBIMTNzjonRTtE6x8GQRHuvG92mT1IBABHxddGO28/ebkomeoQzkIWE
-         EGsw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772023391; x=1772628191;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=zCgxlgUh2Kzipr/6PqsqlcJ2dmxQyt6oZKQKS/otnAk=;
-        b=doARSJiKZobpgnQlfzIy1ovLRc3lWHvzTo9j3l4o2iOw96BQmkwuM730ilwwuRT5Pi
-         msH72Ch924IzZ7/2RYa3igWIsDxOs3GqiJ8m/dr9Bvw01zLTQx1BAhCxQYOUFZ+WTVI3
-         M24j9CPnlxIRwxtpZ44BQkJjxDxWueTk8eNuZCtoprAXaHuWiwdxHWuvVVT0iR5l2Xsq
-         vE/x80ScoVQXf7ChuoitV6z0sBwxHs9K1cs4TqJEuyE3Pi85fPmKtRvCnF3Rr2mNt7AG
-         8MVSm38k3LBA1+J/xJhlz+bGtW7lVIrvzH0De9hXEfEGTi6CKTouUUIpFWjK2fDesPlJ
-         HNpg==
-X-Gm-Message-State: AOJu0YxQxH98WuI4bgYsbxYTvzFZ81QN0aOrri8zoCNKOCl0I4k9DnmR
-	8l8trkS5nn3xjdKCesT8WwIC0mdePWdFVlwdr+njLjSNuP1Qkr7Wcmkl+qjRCAs5
-X-Gm-Gg: ATEYQzy+sGQtyeDZ/Mghl9JhjLiQVkDZ3H5/R3f5evcOkFh8C14vFYDK3GQLK3pilZQ
-	aUseYvKJigGBLA8teGJIampxIj0rKrNldsWoemaulTBLYB8RNfSXI07I5tNIRXCAzyUFq+DBeM4
-	dpyKtoQxGEzJZnA0G/QiMgvGyioJw8NH4BIQo9RP1mAQEJiwGd+6e+o42Cu/O3VgwF0of68Ll3g
-	FQQ4UbXdHanW6eyH9L2SeXLewgTUsL9ji19gJRcGM+8o1rutVs8blCQs+QEDAvWaZ8L1JwW6nE9
-	bnV+Yet50KliQYAXZmjkPgv9f9nCl/es/h5xUkU3DaDfGB0+IqELD5qfN5fyENYgiGxmhWjoDLM
-	z10O5XONWnGWRgiSHqPDOiiAnBlpieOKEiMoVpTnugoLyZ58VGgoLmI8vdjtkKjDstkpJiGj17t
-	6j2vfNbayQs1xqp6jntdkS+MyZfVMinT8=
-X-Received: by 2002:a17:903:2f8c:b0:2a9:320d:285e with SMTP id d9443c01a7336-2adbde07482mr26085165ad.27.1772017488500;
-        Wed, 25 Feb 2026 03:04:48 -0800 (PST)
-Received: from dw-tp.ibmuc.com ([203.81.242.210])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ad7503f9f5sm138365975ad.77.2026.02.25.03.04.44
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 25 Feb 2026 03:04:47 -0800 (PST)
-From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: linux-mm@kvack.org,
-	Hugh Dickins <hughd@google.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Aneesh Kumar K . V" <aneesh.kumar@kernel.org>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [RFC v1 01/10] powerpc/pgtable-frag: Fix bad page state in pte_frag_destroy
-Date: Wed, 25 Feb 2026 16:34:22 +0530
-Message-ID: <62dfff55a7f4f465ac1f8077cee93e6e87ebddd0.1772013273.git.ritesh.list@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <cover.1772013273.git.ritesh.list@gmail.com>
-References: <cover.1772013273.git.ritesh.list@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fLbCN68Vxz3f28
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2026 00:33:52 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61P7vOku1361599;
+	Wed, 25 Feb 2026 13:33:31 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=MKV16I
+	q/t3QcqQDzN4+Ao/FS2tWGu5v2JXxmaFI9Dx4=; b=RtgekPTihxSf+Z1saRD9E5
+	+ia9iffe4EJ+WK6VHzkMbGfuLTmZ+lLrROFR5iGUAB9FEqJplUFZNeh6eGdvZ+HY
+	bnCHgAX9ZgeVerkVVarxPWxLfegBYZehqGTcOhqTyTe5A12XIgTl74VFT/WHavit
+	rjlBbdKWovqepLmof9yAXW1S7D8ZH7/h24kyYzbiq44viFYtzkpsUutjsCk/+c2f
+	4xllpI4xt7SPy2Et5LU1OLblloUgc4oRvOnMkWq/CBnAhe3zE1gs3jUXiZG098CT
+	AzVonxe7/UeWzj8fyA0+/dEug9PwkZMhQ2Tty3zn35E/3DaRHEMlBYCUBUVZBtMQ
+	==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cf34c7nwy-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 25 Feb 2026 13:33:30 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 61PCMQ9F013438;
+	Wed, 25 Feb 2026 13:33:30 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4cfqdy5hqy-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 25 Feb 2026 13:33:29 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 61PDXORR45351396
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 25 Feb 2026 13:33:24 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C31E120043;
+	Wed, 25 Feb 2026 13:33:24 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A2CD120040;
+	Wed, 25 Feb 2026 13:33:17 +0000 (GMT)
+Received: from [9.124.208.53] (unknown [9.124.208.53])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 25 Feb 2026 13:33:17 +0000 (GMT)
+Message-ID: <729a7e7f-a50e-480c-87ce-c45221fbb326@linux.ibm.com>
+Date: Wed, 25 Feb 2026 19:03:16 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,82 +81,237 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 04/15] powerpc/time: Prepare to stop elapsing in
+ dynticks-idle
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Frederic Weisbecker <frederic@kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+        Alexander Gordeev <agordeev@linux.ibm.com>,
+        Anna-Maria Behnsen <anna-maria@linutronix.de>,
+        Ben Segall <bsegall@google.com>, Boqun Feng <boqun.feng@gmail.com>,
+        Christian Borntraeger <borntraeger@linux.ibm.com>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Heiko Carstens <hca@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+        Jan Kiszka <jan.kiszka@siemens.com>,
+        Joel Fernandes <joelagnelf@nvidia.com>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Kieran Bingham <kbingham@kernel.org>, Mel Gorman <mgorman@suse.de>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Neeraj Upadhyay <neeraj.upadhyay@kernel.org>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Paul E . McKenney"
+ <paulmck@kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Sven Schnelle <svens@linux.ibm.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Uladzislau Rezki <urezki@gmail.com>,
+        Valentin Schneider <vschneid@redhat.com>,
+        Vasily Gorbik <gor@linux.ibm.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Xin Zhao <jackzxcui1989@163.com>, linux-pm@vger.kernel.org,
+        linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <20260206142245.58987-1-frederic@kernel.org>
+ <20260206142245.58987-5-frederic@kernel.org>
+ <9413517d-963b-4e6d-b11b-b440acd7cb5a@linux.ibm.com>
+ <9ab1e7d7-57ee-49f9-963c-3a1b96dda684@kernel.org>
+ <120884b0-0b09-43a9-b0f6-7dc2affe1ac0@linux.ibm.com>
+ <55720b5b-f643-4e67-8841-d81a9e712faf@kernel.org>
+ <a20beb34-0e4b-4063-b6b0-6c5886bbb971@linux.ibm.com>
+ <a0c6e65c-3331-402a-94eb-14ba7f4b7ba7@kernel.org>
+Content-Language: en-US
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+In-Reply-To: <a0c6e65c-3331-402a-94eb-14ba7f4b7ba7@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-Message-ID: <20260225110422.8UoDo5bWodwlTvwgSaVS7mqtVVnwruwwJRcnv-4T82A@z>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjI1MDEyNyBTYWx0ZWRfX5CemSYZLYfyA
+ HGcdaS4W6NSe0RH7joqrl2xCqCNGgO2jyfM9XfmYC5TpEjoXALKUxBhfwlN2gk3B3v5a+0+JGiM
+ DSgMS2nZiKGJaU3y4fNU7Cp2QfC0TVb+KYR8ETva90ht1gdaL3JjGHueSAeqfxnuYKFruuom//2
+ AqWFMoptMk45r9r3RnL9h3zEl0K7cLSPgEDEtwKXKvDQF2HZrCEZZBBmBDrWojPXYwWXeTWbMBQ
+ 158am7Lb9ktWcv6xuKGAekFMjHSE2Brh2sJo0BXn1AW3wu6WinWYx8Fs35KHK+1YzJoVjNZUJzg
+ JsXNH5lmWhI4AJlJ+Ct+KZ9cMeuS8UhpEkbOtKqZPjKcxjqaeYrTmWls6ASAD9IB4ipPgJjnSXJ
+ hUDsNGDqAPF5KI0TtDkwdtzqOayMeZXL7YVSWu3Rctozqz9x3L3hahPArxFNneX9w5/rvqlHmMF
+ D7wfMPLd0LwHUIoHiuA==
+X-Proofpoint-ORIG-GUID: Z2Jv3lCRzvEH3cjoqe7yhERoCviSoF8M
+X-Authority-Analysis: v=2.4 cv=F9lat6hN c=1 sm=1 tr=0 ts=699efa2b cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=IkcTkHD0fZMA:10 a=HzLeVaNsDn8A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=Mpw57Om8IfrbqaoTuvik:22 a=GgsMoib0sEa3-_RKJdDe:22 a=vmwh1tm8htbPATXHtMEA:9
+ a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: dou2Eb5l4epyt6I8Td4ZuRygSsbP0W0a
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-02-25_01,2026-02-25_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 phishscore=0 bulkscore=0 adultscore=0 spamscore=0
+ clxscore=1015 suspectscore=0 malwarescore=0 lowpriorityscore=0
+ priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2601150000
+ definitions=main-2602250127
 
-powerpc uses pt_frag_refcount as a reference counter for tracking it's
-pte and pmd page table fragments. For PTE table, in case of Hash with
-64K pagesize, we have 16 fragments of 4K size in one 64K page.
 
-Patch series [1] "mm: free retracted page table by RCU"
-added pte_free_defer() to defer the freeing of PTE tables when
-retract_page_tables() is called for madvise MADV_COLLAPSE on shmem
-range.
-[1]: https://lore.kernel.org/all/7cd843a9-aa80-14f-5eb2-33427363c20@google.com/
 
-pte_free_defer() sets the active flag on the corresponding fragment's
-folio & calls pte_fragment_free(), which reduces the pt_frag_refcount.
-When pt_frag_refcount reaches 0 (no active fragment using the folio), it
-checks if the folio active flag is set, if set, it calls call_rcu to
-free the folio, it the active flag is unset then it calls pte_free_now().
+On 2/25/26 4:44 PM, Christophe Leroy (CS GROUP) wrote:
+> Hi Hegde,
+> 
+> Le 25/02/2026 à 11:34, Shrikanth Hegde a écrit :
+>> Hi Christophe.
+>>
+>> On 2/25/26 3:15 PM, Christophe Leroy (CS GROUP) wrote:
+>>>
+>>> Hope it is more explicit now.
+>>>
+>>
+>> Got it. The main concern was around with additional computation that 
+>> sched_clock,
+>> not any additional paths per se.
+>>
+>> yes, that would be possible,
+>>
+>>
+>> How about we do below? This adds only one subtraction.
+>> This achieves the same outcome.
+> 
+> It adds a bit more than just a substration. It adds a call to an extern 
+> fonction.
 
-Now, this can lead to following problem in a corner case...
+I think we should make it always inline and move it to time.h
 
-[  265.351553][  T183] BUG: Bad page state in process a.out  pfn:20d62
-[  265.353555][  T183] page: refcount:0 mapcount:0 mapping:0000000000000000 index:0x0 pfn:0x20d62
-[  265.355457][  T183] flags: 0x3ffff800000100(active|node=0|zone=0|lastcpupid=0x7ffff)
-[  265.358719][  T183] raw: 003ffff800000100 0000000000000000 5deadbeef0000122 0000000000000000
-[  265.360177][  T183] raw: 0000000000000000 c0000000119caf58 00000000ffffffff 0000000000000000
-[  265.361438][  T183] page dumped because: PAGE_FLAGS_CHECK_AT_FREE flag(s) set
-[  265.362572][  T183] Modules linked in:
-[  265.364622][  T183] CPU: 0 UID: 0 PID: 183 Comm: a.out Not tainted 6.18.0-rc3-00141-g1ddeaaace7ff-dirty #53 VOLUNTARY
-[  265.364785][  T183] Hardware name: IBM pSeries (emulated by qemu) POWER10 (architected) 0x801200 0xf000006 of:SLOF,git-ee03ae pSeries
-[  265.364908][  T183] Call Trace:
-[  265.364955][  T183] [c000000011e6f7c0] [c000000001cfaa18] dump_stack_lvl+0x130/0x148 (unreliable)
-[  265.365202][  T183] [c000000011e6f7f0] [c000000000794758] bad_page+0xb4/0x1c8
-[  265.365384][  T183] [c000000011e6f890] [c00000000079c020] __free_frozen_pages+0x838/0xd08
-[  265.365554][  T183] [c000000011e6f980] [c0000000000a70ac] pte_frag_destroy+0x298/0x310
-[  265.365729][  T183] [c000000011e6fa30] [c0000000000aa764] arch_exit_mmap+0x34/0x218
-[  265.365912][  T183] [c000000011e6fa80] [c000000000751698] exit_mmap+0xb8/0x820
-[  265.366080][  T183] [c000000011e6fc30] [c0000000001b1258] __mmput+0x98/0x300
-[  265.366244][  T183] [c000000011e6fc80] [c0000000001c81f8] do_exit+0x470/0x1508
-[  265.366421][  T183] [c000000011e6fd70] [c0000000001c95e4] do_group_exit+0x88/0x148
-[  265.366602][  T183] [c000000011e6fdc0] [c0000000001c96ec] pid_child_should_wake+0x0/0x178
-[  265.366780][  T183] [c000000011e6fdf0] [c00000000003a270] system_call_exception+0x1b0/0x4e0
-[  265.366958][  T183] [c000000011e6fe50] [c00000000000d05c] system_call_vectored_common+0x15c/0x2ec
+> 
+> 00000164 <my_account_cpu_user_entry>:
+>   164:    94 21 ff f0     stwu    r1,-16(r1)
+>   168:    7c 08 02 a6     mflr    r0
+>   16c:    90 01 00 14     stw     r0,20(r1)
+>   170:    93 e1 00 0c     stw     r31,12(r1)
+>   174:    7f ec 42 e6     mftb    r31
+>   178:    48 00 00 01     bl      178 <my_account_cpu_user_entry+0x14>
+>              178: R_PPC_REL24    get_boot_tb
+>   17c:    81 02 00 08     lwz     r8,8(r2)
+>   180:    81 22 00 28     lwz     r9,40(r2)
+>   184:    7c 84 f8 50     subf    r4,r4,r31
+>   188:    7d 29 40 50     subf    r9,r9,r8
+>   18c:    7d 29 22 14     add     r9,r9,r4
+>   190:    90 82 00 24     stw     r4,36(r2)
+>   194:    91 22 00 08     stw     r9,8(r2)
+>   198:    80 01 00 14     lwz     r0,20(r1)
+>   19c:    83 e1 00 0c     lwz     r31,12(r1)
+>   1a0:    7c 08 03 a6     mtlr    r0
+>   1a4:    38 21 00 10     addi    r1,r1,16
+>   1a8:    4e 80 00 20     blr
+> 
+> 000001ac <my_account_cpu_user_exit>:
+>   1ac:    94 21 ff f0     stwu    r1,-16(r1)
+>   1b0:    7c 08 02 a6     mflr    r0
+>   1b4:    90 01 00 14     stw     r0,20(r1)
+>   1b8:    93 e1 00 0c     stw     r31,12(r1)
+>   1bc:    7f ec 42 e6     mftb    r31
+>   1c0:    48 00 00 01     bl      1c0 <my_account_cpu_user_exit+0x14>
+>              1c0: R_PPC_REL24    get_boot_tb
+>   1c4:    81 02 00 0c     lwz     r8,12(r2)
+>   1c8:    81 22 00 24     lwz     r9,36(r2)
+>   1cc:    7c 84 f8 50     subf    r4,r4,r31
+>   1d0:    7d 29 40 50     subf    r9,r9,r8
+>   1d4:    7d 29 22 14     add     r9,r9,r4
+>   1d8:    90 82 00 28     stw     r4,40(r2)
+>   1dc:    91 22 00 0c     stw     r9,12(r2)
+>   1e0:    80 01 00 14     lwz     r0,20(r1)
+>   1e4:    83 e1 00 0c     lwz     r31,12(r1)
+>   1e8:    7c 08 03 a6     mtlr    r0
+>   1ec:    38 21 00 10     addi    r1,r1,16
+>   1f0:    4e 80 00 20     blr
+> 
+> 
+> I really still can't see the point of this substraction.
+> 
+> At one place we do
+> 
+>      tb1 = mftb1;
+> 
+>      acct->utime += (tb1 - acct->starttime_user);
+>      acct->starttime = tb1;
+> 
+> At the other place we do
+> 
+>      tb2 = mftb2;
+> 
+>      acct->stime += (tb2 - acct->starttime);
+>      acct->starttime_user = tb2;
+> 
+> So at the end we have
+> 
+>      acct->utime += mftb1 - mftb2;
+>      acct->stime += mftb2 - mftb1;
+> 
+> You want to change to
+>      tb1 = mftb1 - boot_tb;
+>      tb2 = mftb2 - boot_tb;
+> 
+> At the end we would get
+> 
+>      acct->utime += mftb1 - boot_tb - mftb2 + boot_tb = mftb1 - mftb2;
+>      acct->stime += mftb2 - boot_tb - mftb1 + boot_tb = mftb2 - mftb1;
+> 
+> So what's the point in doing such a useless substract that disappears at 
+> the end ? What am I missing ?
+> 
 
-The bad page state error occurs when such a folio gets freed (with
-active flag set), from do_exit() path in parallel.
+I had similar thought, but I saw this data below when i do exec on the system.
 
-... this can happen when the pte fragment was allocated from this folio,
-but when all the fragments get freed, the pte_frag_refcount still had some
-unused fragments. Now, if this process exits, with such folio as it's cached
-pte_frag in mm->context, then during pte_frag_destroy(), we simply call
-pagetable_dtor() and pagetable_free(), meaning it doesn't clear the
-active flag. This, can lead to the above bug. Since we are anyway in
-do_exit() path, then if the refcount is 0, then I guess it should be
-ok to simply clear the folio active flag before calling pagetable_dtor()
-& pagetable_free().
+This was the stats seen on PowerNV system with 144 CPUs.
+Nothing is running on the system after boot. So it is mostly idle.
 
-Fixes: 32cc0b7c9d50 ("powerpc: add pte_free_defer() for pgtables sharing page")
-Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
----
- arch/powerpc/mm/pgtable-frag.c | 1 +
- 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/mm/pgtable-frag.c b/arch/powerpc/mm/pgtable-frag.c
-index 77e55eac16e4..ae742564a3d5 100644
---- a/arch/powerpc/mm/pgtable-frag.c
-+++ b/arch/powerpc/mm/pgtable-frag.c
-@@ -25,6 +25,7 @@ void pte_frag_destroy(void *pte_frag)
- 	count = ((unsigned long)pte_frag & ~PAGE_MASK) >> PTE_FRAG_SIZE_SHIFT;
- 	/* We allow PTE_FRAG_NR fragments from a PTE page */
- 	if (atomic_sub_and_test(PTE_FRAG_NR - count, &ptdesc->pt_frag_refcount)) {
-+		folio_clear_active(ptdesc_folio(ptdesc));
- 		pagetable_dtor(ptdesc);
- 		pagetable_free(ptdesc);
- 	}
--- 
-2.53.0
+======== With the series applied ===
+
+cat /proc/stat | head
+cpu  1494 0 135607576 9628633227 16876 142 63 0 0 0
+cpu0 0 0 8 67807311 0 2 40 0 0 0
+cpu1 0 0 6 67807349 0 0 0 0 0 0
+
+cat /proc/uptime
+48.32 96286332.82   << Note this value is too huge. Also system value is also huge.
+
+========= without the series(tip/master) ===============
+cat /proc/stat | head
+cpu  2003 0 67866261 859414 15923 249 66 0 0 0
+cpu0 5 0 23 5595 461 2 38 0 0 0
+cpu1 0 0 9 6092 21 0 3 0 0 0
+
+cat /proc/uptime
+61.29 8594.82    << This is right. 144*61 = 8784.
+
+But note, the system time reported. i.e 67866261. It is too huge again. And very close to actual mftb value
+rather than the diff. i.e we have paths were tb1 is not done. tb2 is effectively mftb - 0
+
+
+========= with proposed fix of mftb - boot_tb ===============
+cat /proc/stat | head
+cpu  5187 0 10996 2025690 16566 765 184 0 0 0
+cpu0 9 0 28 14096 65 6 108 0 0 0
+cpu1 4 0 15 14277 0 0 2 0 0 0
+
+cat /proc/uptime
+142.97 20257.42     << Looks correct, since 142*144 is close to 20448
+
+=============================================================
+
+Now lets go to CONFIG_VIRT_CPU_ACCOUNTING_GEN=y
+
+cat /proc/stat | head
+cpu  1804 0 3003 791760 15695 0 0 0 0 0
+cpu0 22 0 46 5535 0 0 0 0 0 0
+cpu1 0 0 7 5637 0 0 0 0 0 0
+
+cat /proc/uptime
+56.49 7918.05      << Looks correct. close 56*144
+
+
+================================================
 
 
