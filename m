@@ -1,73 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-17176-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17177-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78851EFD23D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Feb 2026 11:04:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73739F4BB9F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Feb 2026 11:04:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fLWvP2hKYz2xNT;
-	Wed, 25 Feb 2026 22:04:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::634"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772017489;
-	cv=none; b=hcP3ffDntQW7fxDWCNhsmk93HhkN107H9/c4CnIzK9S73FCp84RY2L00JRwnWsOycp42b5ve3h72GUDNYFyzInfUOGMlMVbgrdzQ2cGoKhg+zwvPwCxZlwgkjgdkCTXoWhstG5M6TLAm/aZrUYB+o5evgn4kXYgRuTe8KlDAo0g12/EG7IfMn9Q8qNTR+yRbyczgbChg/F+dEq2OtBurT8Il5JFkCGZQZtYBEzZUv6Ok+8Krb2m2A3+GpjGxq/pFKtHa67hapjGFC4FLemUpCdnFMjQb9e//vUxJqYmBtPaTynYJDKPT+1+7/nUJV3SzASlDopi+Mz3Vkd/xfEH1dQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fLWvY0HcYz3f1W;
+	Wed, 25 Feb 2026 22:04:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::636"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772017497;
+	cv=none; b=HEQsYkpTwzYjr460rFV1VgF/fhfQimdCXIDDT8Rha0Fi0PBsQVZ5B1l1ilpA0oG6WQ3jmX28FeLses5b5eeBF+uEOg7athgQZy/i+5LYjl0VoaumRFHfNTY0YFHYl+wKrwzkl9FUKxHEO1zSrGm5+3i4UhPIvhvnharbuo17mb2WWldmSJn7EVDWCHUoR+Te/1tg4xopXsJiERXieKbpX1vKTYcTyN4umfSg8+CKecTzP+MqecZk5blM41lVAH+GWdN2zrZkA0UV3+9gS89KiPQrpInPqnIFEvCDc28pQ8JgzNfd0nPYe1q5PZe7Ik9Uu+Ge1WTVoEvMYyKWgjFAlQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772017489; c=relaxed/relaxed;
-	bh=g5KVqfadpQstZ/7tuEPjkEGdNo2tYUxFPdG16RZ/7OI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=MXMi+LDaD0Gr6S//ThAVg0N6wLYPS6l/YNbG9hB3Per8CPitOTnPF5C2IvoPFbHMgmBLGmRi7B++987iEkqawmDPAOEktJphaEiz8oN8ezsivlOuyAn3gea4ETLWQjQLdUXwMZQckibk+M3FMnuEMueF1U6BuJC5bR7186nbobFG8Nvs4lKzVSoUWVrRugy1lc7ED55knF9igZekvLpdFR17ZZBLM8b38XBxcxmteaN6hPOmVkrURkHhkpZi2vO18p7d5mN4Hjdh3kvwlo/f/EkIFXJJ6hxwnBPadxiXAdIrk4zLJ06HKGJM9IcTzlsE+4DXtKbXWl888MSLDsZvlQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=NIXY8TFD; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1772017497; c=relaxed/relaxed;
+	bh=J868TVnPJgR7LCa7+/bcaLOytmiRzF7462XYcNyDyzw=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=Ebuz8ozL7rYWN7fhtAPTiqek12n8pBurWlTUORo4hVc4uuipMpgWQNvDX6u8hI4oG1xpJLDHIjuty4URBW4lCE8FhM4CN4fHpID6alNNDyr4EvqL0SjglatW+pzUBJcQLvoYJrZ1qeZnWtT8I9tZ8HYvol51mH38S6gpVYSFR1IxFWYLDievq6E3fEKonHGWekBQuOv3vZQF7WOC4cw7Qk5DrAQUs7us3W+11UXi9gcJohUMIAFxZttUfLzFtJ6euf6QJaRvqKe4ZH5LEAh0nRJvaIALVKa468qXZpnvCEEPg+D5s7eVM2417jev1TllizghB96Ub/qQJ1fk2PvIyg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=AJlCFD7+; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::636; helo=mail-pl1-x636.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=NIXY8TFD;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=AJlCFD7+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::636; helo=mail-pl1-x636.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fLWvM5pJSz3cKm
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 22:04:47 +1100 (AEDT)
-Received: by mail-pl1-x634.google.com with SMTP id d9443c01a7336-2ad9f2ee29aso12454805ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 03:04:47 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fLWvX23xwz3f1K
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 22:04:56 +1100 (AEDT)
+Received: by mail-pl1-x636.google.com with SMTP id d9443c01a7336-2aaf5d53eaaso44677905ad.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 03:04:56 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1772017484; x=1772622284; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=g5KVqfadpQstZ/7tuEPjkEGdNo2tYUxFPdG16RZ/7OI=;
-        b=NIXY8TFDC9tyuyYVmulQsm5KOGR9z5HzC3vyr7zI4W4gXaG3gQueu47pSEkP4khLQl
-         kMFMGpb+vDEDsCtLpqRZL90d2ZeOTjDVad6fNwZJWYvVU5kd8MxyEoRxKwyO62sJOoEW
-         2m5jN7INXS4fFlWZeKi04I+Uw3pX9iHyGB32wELoTYVYBKIorNJJE0TkvM8MVFeFVvrs
-         10cbp6I/vSlcrmVzCj4eXIzdGT1T1KCxqyVO1JbvMz3PN7vrRNLFP+vzaBzKZLQ8RE9H
-         Nf1xKdYBYcho65bL7fAKsgu/MXTerV+OBylp5S4Q6F57gAKTPyR79SDG3U0VfbvTK7XH
-         HNyg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772017484; x=1772622284;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20230601; t=1772017493; x=1772622293; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=g5KVqfadpQstZ/7tuEPjkEGdNo2tYUxFPdG16RZ/7OI=;
-        b=v6WVHNEk1lJX3vU7ZCzC5u9Fra7QsOs2K2JrcbNwIAeEUMIqC9MUEGpLBV5nFeyRol
-         v9gBA1ztfiYzOimUelML+s5XFVV+WYbzDJGOopBzW2ddqzf/yvA6GXTlNCRMt46+35ti
-         ljY+71NlVrCjb6JIBQTPl33+BKVZ2Iw8rx3Khf67Fn2DIDminBvpPIJAwDJq/aruOl/J
-         2LiI/ukqbDYmoFJA2CNy+Vi3XnijGoL7gUg2bkYQDby4gYAGWq+EY58czgKXyiMFz/jC
-         PAJcT0p6stLNExWhQbLJXAL0Xmz4zGH0hHtatQmygR0TwFuc6MHB2Um12aFTek710rdT
-         14pQ==
-X-Gm-Message-State: AOJu0Yx37HjFuNugyLEtAWGzJObyPApXQ0RngK1PGqkyvxCL5hPet8bL
-	En94kXogfdAOTa8yPc62zdHjTE0R3Y+2ps/44UOxtLrL0696rblQCcFpWzMRxA==
-X-Gm-Gg: ATEYQzzxnX4OSpNq1UN4Nw2jEeajOm6OMtKP0cXtIz+oQ9AzrcuERZ2oX95qENKEWTF
-	lT2Pmx69vQVxIaPOAdBLO5dFN7Dy/LE6WaC+Em3rVomVOF7oi9fDCVuVZnrSEY7FJkGNlMiCGs0
-	PK9dr1Kr7aGNfdo3pLe2WT0VfVhoALzVTcABSS3YnsdAEj8x+pboJdnv3MF2CsJAIqnZkKe65ZV
-	aUnHXzJa3y4SgItQCGjI+HMfHd/HfxA4m4HQRiDp0LSBxRPw+gDecWuGms0USxHdd2400knPCr4
-	968CPdXNRqygy0MwAv2tEsAKbyre9bFaxN9BYjUTSxMVZLRSClR4B3bUSPpnzu+vbXBZOwv+8Gp
-	7SVgMIbRM7h1o+PJTpxivRscTTGvA/Acckb52B5wy+7Q72AaP/JZBpblWm6giICX1tWABbbzJ0P
-	lCgnMR8He0mhFqwJI+HtOT8PtsxWr2SRk=
-X-Received: by 2002:a17:903:3885:b0:2aa:daf7:84f6 with SMTP id d9443c01a7336-2ad74597df5mr135442095ad.55.1772017483592;
-        Wed, 25 Feb 2026 03:04:43 -0800 (PST)
+        bh=J868TVnPJgR7LCa7+/bcaLOytmiRzF7462XYcNyDyzw=;
+        b=AJlCFD7+Yockcdc64W2+N0yZUIHTjN6LfVnn4rJDq4C6t6457O77mOh6ZFR8HtEmWO
+         ZJkV9qoyYRIhySkmjlY3Mc/AZctYxecBjP+lb8R7SeM0VrL6kwNNNTw1njoo/zQWDmEL
+         /Ou8OFlgDbgzhignt9YL1yQwG204eI5+EyIv2pTftBBhrAkS7Q1esbMOlJDTRPhqVlxn
+         7f/EmnrlJqnNEBPZWmyBzurvsSbAA67lwUXZ5toY851Ip80E0h+UptZwGV27IIEvQUfC
+         WZiciPBvHGdC+MC56m2K5C3/O7jNjrlFE75dxk1/ygfOBHoFSrdcZpJvLE5sDQOscox1
+         a/uA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1772017493; x=1772622293;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=J868TVnPJgR7LCa7+/bcaLOytmiRzF7462XYcNyDyzw=;
+        b=O7Vo7L8+D3obusrM5myCJlg0rQed82DP0vp50MN983afWMNdcNIf4vF7+ALzKeyWVN
+         cKBEPoikL+ao8VKEOMcdM1pEK3SD2ZMsnhsZ+mETGAUsXON0DAbCgM0qJhgCorC0xWO6
+         a2uWeYTJKa5JSGEePqOf+ROCCS5joxpA+e7tFSorBWKAIfL8jCnZO4PvqfDduleLn57g
+         nClgeZNtoCOTT3lCOYe//uW/Gf/ZAw/nrZdZjlXgh/YbZZvZyWCrgiBFX+HLV+qleIF2
+         PzIWbsVra1lwJTjtFHdmT7O5gfI+Ya9aELXtftJWegNii+3wJIzdcyTAzDbn0Aj2Czcf
+         saUg==
+X-Gm-Message-State: AOJu0YzgJTCQOZe57IMn8fy+PGswAguHECuLw+uW3/ro1/BnOiJIgjD9
+	xd9atnoPwskIfdYqdyO99mkTUhaxX3TxgsUZ4lqBsPvUF3LcTKC8m7C3D0IIoQ==
+X-Gm-Gg: ATEYQzzLAsADp0N3LK8wezSpxaKPB2BbwkLLAt8+59MJo+zHgUYzU41QZmOd2NplBmk
+	RDQZdvDM8pJ0R12YsAoiw8jIlfhJP4/tNknE5wgiM3KTApqKxTVAJBWVAbvrT50MOsLVX+D6JyY
+	BqVSiGW4mrkpxw14ugOEWIOWA2eD3Ehk/AJm6IvM9bQqzsS4a+sOpj0ZhVkpMqENJHsYYfY74vL
+	5ZGqbO9XJydgaNx1UbJur1JzT6gnXXrZEmodjYGaZ7/cnH5uRvwJmi0+HbniMmapNQ/8eWyP3tl
+	C1GoFufjv0kzTAbXsrSccqKqWD26g8Mnkte5qiyk77ehYK47wg8bDD+gi0d+NqmALOjpwufL9aa
+	P7GVpNrdc1CXjk4HYdOd2zL+CsveS4MnRTinTX5/O2ypGZxT5OYTMEZi+TvfOvEb7+KmwOkdHaO
+	HQyiVsixXw2IIpHgTDJlkd6gT+2He7GDc=
+X-Received: by 2002:a17:902:cecc:b0:2a0:c58b:ed6 with SMTP id d9443c01a7336-2add1382e8amr25909715ad.29.1772017493421;
+        Wed, 25 Feb 2026 03:04:53 -0800 (PST)
 Received: from dw-tp.ibmuc.com ([203.81.242.210])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ad7503f9f5sm138365975ad.77.2026.02.25.03.04.39
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ad7503f9f5sm138365975ad.77.2026.02.25.03.04.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 25 Feb 2026 03:04:42 -0800 (PST)
+        Wed, 25 Feb 2026 03:04:52 -0800 (PST)
 From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-mm@kvack.org,
@@ -78,11 +80,14 @@ Cc: linux-mm@kvack.org,
 	"Aneesh Kumar K . V" <aneesh.kumar@kernel.org>,
 	Christophe Leroy <chleroy@kernel.org>,
 	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [RFC v1 00/10] Misc powerpc fixes and refactoring
-Date: Wed, 25 Feb 2026 16:34:21 +0530
-Message-ID: <cover.1772013273.git.ritesh.list@gmail.com>
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Pavithra Prakash <pavrampu@linux.vnet.ibm.com>
+Subject: [RFC v1 02/10] powerpc: book3s64: Fix unmap race with PMD THP migration entry
+Date: Wed, 25 Feb 2026 16:34:23 +0530
+Message-ID: <6a1d3d5992307e181082b35ba238d7e09acc77a6.1772013273.git.ritesh.list@gmail.com>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <cover.1772013273.git.ritesh.list@gmail.com>
+References: <cover.1772013273.git.ritesh.list@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,41 +103,107 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Hello All,
+The following race is possible with migration swap entries or
+device-private THP entries. e.g. when move_pages is called on a PMD THP
+page, then there maybe an intermediate state, where PMD entry acts as
+a migration swap entry (pmd_present() is true). Then if an munmap
+happens at the same time, then this VM_BUG_ON() can happen in
+pmdp_huge_get_and_clear_full().
 
-- Patches 1 & 2, are fixes found during reviews and while running mm selftests.
-- Patch-3 adds a way to verify / test this race using debug_vm_pgtable.c
-- Patches 4-10 are various cleanups and refactoring, that I have been carrying in
-  my tree. I felt it's time to push it, if those changes seems logical to others too.
+This patch fixes that.
 
-Please review and share your thoughts!
+Thread A: move_pages() syscall
+  add_folio_for_migration()
+    mmap_read_lock(mm)
+    folio_isolate_lru(folio)
+    mmap_read_unlock(mm)
 
--ritesh
+  do_move_pages_to_node()
+    migrate_pages()
+      try_to_migrate_one()
+        spin_lock(ptl)
+        set_pmd_migration_entry()
+          pmdp_invalidate()     # PMD: _PAGE_INVALID | _PAGE_PTE | pfn
+          set_pmd_at()          # PMD: migration swap entry (pmd_present=0)
+        spin_unlock(ptl)
+        [page copy phase]       # <--- RACE WINDOW -->
 
+Thread B: munmap()
+  mmap_write_downgrade(mm)
+  unmap_vmas() -> zap_pmd_range()
+    zap_huge_pmd()
+      __pmd_trans_huge_lock()
+        pmd_is_huge():          # !pmd_present && !pmd_none -> TRUE (swap entry)
+        pmd_lock() -> 		# spin_lock(ptl), waits for Thread A to release ptl
+      pmdp_huge_get_and_clear_full()
+        VM_BUG_ON(!pmd_present(*pmdp))  # HITS!
 
-Ritesh Harjani (IBM) (10):
-  powerpc/pgtable-frag: Fix bad page state in pte_frag_destroy
-  powerpc: book3s64: Fix unmap race with PMD THP migration entry
-  mm/debug_vm_pgtable.c: Add test to zap THP migration entry
-  powerpc/64s/tlbflush-radix: Remove unused radix__flush_tlb_pwc()
-  powerpc/64s: Move serialize_against_pte_lookup() to hash_pgtable.c
-  powerpc/64s: Kill the unused argument of exit_lazy_flush_tlb
-  powerpc: book3s64: Rename tlbie_va_lpid to tlbie_va_pid_lpid
-  powerpc: book3s64: Rename tlbie_lpid_va to tlbie_va_lpid
-  powerpc: book3s64: Make use of H_RPTI_TYPE_ALL macro
-  powerpc: Add MMU_FTRS_POSSIBLE & MMU_FTRS_ALWAYS
+[  287.738700][ T1867] ------------[ cut here ]------------
+[  287.743843][ T1867] kernel BUG at arch/powerpc/mm/book3s64/pgtable.c:187!
+cpu 0x0: Vector: 700 (Program Check) at [c00000044037f4f0]
+    pc: c000000000094ca4: pmdp_huge_get_and_clear_full+0x6c/0x23c
+    lr: c000000000645dec: zap_huge_pmd+0xb0/0x868
+    sp: c00000044037f790
+   msr: 800000000282b033
+  current = 0xc0000004032c1a00
+  paca    = 0xc000000004fe0000   irqmask: 0x03   irq_happened: 0x09
+    pid   = 1867, comm = a.out
+kernel BUG at :187!
+Linux version 6.19.0-12136-g14360d4f917c-dirty (powerpc64le-linux-gnu-gcc (Debian 12.2.0-14) 12.2.0, GNU ld (GNU Binutils for Debian) 2.40) #27 SMP PREEMPT Sun Feb 22 10:38:56 IST 2026
+enter ? for help
+[link register   ] c000000000645dec zap_huge_pmd+0xb0/0x868
+[c00000044037f790] c00000044037f7d0 (unreliable)
+[c00000044037f7d0] c000000000645dcc zap_huge_pmd+0x90/0x868
+[c00000044037f840] c0000000005724cc unmap_page_range+0x176c/0x1f40
+[c00000044037fa00] c000000000572ea0 unmap_vmas+0xb0/0x1d8
+[c00000044037fa90] c0000000005af254 unmap_region+0xb4/0x128
+[c00000044037fb50] c0000000005af400 vms_complete_munmap_vmas+0x138/0x310
+[c00000044037fbe0] c0000000005b0f1c do_vmi_align_munmap+0x1ec/0x238
+[c00000044037fd30] c0000000005b3688 __vm_munmap+0x170/0x1f8
+[c00000044037fdf0] c000000000587f74 sys_munmap+0x2c/0x40
+[c00000044037fe10] c000000000032668 system_call_exception+0x128/0x350
+[c00000044037fe50] c00000000000d05c system_call_vectored_common+0x15c/0x2ec
+---- Exception: 3000 (System Call Vectored) at 0000000010064a2c
+SP (7fff9b1ee9c0) is in userspace
+0:mon> zh
 
- arch/powerpc/include/asm/book3s/64/pgtable.h  |  1 -
- .../include/asm/book3s/64/tlbflush-radix.h    |  1 -
- arch/powerpc/kernel/setup-common.c            |  4 ++
- arch/powerpc/mm/book3s64/hash_pgtable.c       | 21 +++++++
- arch/powerpc/mm/book3s64/internal.h           |  2 -
- arch/powerpc/mm/book3s64/pgtable.c            | 46 ++++++--------
- arch/powerpc/mm/book3s64/radix_tlb.c          | 61 ++++++++-----------
- arch/powerpc/mm/pgtable-frag.c                |  1 +
- mm/debug_vm_pgtable.c                         | 38 ++++++++++++
- 9 files changed, 108 insertions(+), 67 deletions(-)
+Fixes: 75358ea359e7c ("powerpc/mm/book3s64: Fix MADV_DONTNEED and parallel page fault race")
+Reported-by: Pavithra Prakash <pavrampu@linux.vnet.ibm.com>
+Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+---
+ arch/powerpc/mm/book3s64/pgtable.c | 19 +++++++++++++++++--
+ 1 file changed, 17 insertions(+), 2 deletions(-)
 
+diff --git a/arch/powerpc/mm/book3s64/pgtable.c b/arch/powerpc/mm/book3s64/pgtable.c
+index 4b09c04654a8..359092001670 100644
+--- a/arch/powerpc/mm/book3s64/pgtable.c
++++ b/arch/powerpc/mm/book3s64/pgtable.c
+@@ -210,8 +210,23 @@ pmd_t pmdp_huge_get_and_clear_full(struct vm_area_struct *vma,
+ {
+ 	pmd_t pmd;
+ 	VM_BUG_ON(addr & ~HPAGE_PMD_MASK);
+-	VM_BUG_ON((pmd_present(*pmdp) && !pmd_trans_huge(*pmdp)) ||
+-		   !pmd_present(*pmdp));
++	VM_BUG_ON((pmd_present(*pmdp) && !pmd_trans_huge(*pmdp)));
++
++	if (!pmd_present(*pmdp)) {
++		/*
++		 * Non-present PMDs can be migration entries or device-private
++		 * THP entries. Since these are non-present, so there is no TLB
++		 * backing. This happens when the address space is being
++		 * unmapped zap_huge_pmd(), and we encounter non-present pmds.
++		 * So it is safe to just clear the PMDs here. zap_huge_pmd(),
++		 * will take care of withdraw of the deposited table.
++		 */
++		pmd = pmdp_get(pmdp);
++		pmd_clear(pmdp);
++		page_table_check_pmd_clear(vma->vm_mm, addr, pmd);
++		return pmd;
++	}
++
+ 	pmd = pmdp_huge_get_and_clear(vma->vm_mm, addr, pmdp);
+ 	/*
+ 	 * if it not a fullmm flush, then we can possibly end up converting
 --
 2.53.0
 
