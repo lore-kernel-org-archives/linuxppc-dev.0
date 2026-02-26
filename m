@@ -1,89 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-17322-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17323-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A720FD9E0A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Feb 2026 21:01:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D719EFD9E13
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Feb 2026 21:11:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fMP5d6Hqpz2xN8;
-	Fri, 27 Feb 2026 08:01:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772139701;
-	cv=none; b=kEiBq6KwlR4WOqCwvhos98ah2BJk0s3vbH21sMfk9kccGvBtZYvJ0hnED3m9mRROPGUPAA9LXvqXtB+TAtIc9DSDf4z7H3rykM3i+zMr8ksBl7lRe+RgKgvWNmnTfrW76PiAwit9vnrjgNJSmDFLAyJIv0yzloZVV3gLAno+YPMl3eGFo+J4k28fSW9XjAXmJdu8gw5klwR0ikw9Tl4PHHmRU3KRNVZ9gQr4kaNE5BYYRsWxVKuNlh9d5INotVYGn/mr7IVfXR/407NUJ/8sYouKF5jGrxYmEkIrebg921ecreCSAwY7WxMhz0LsaY9Ad7UTFLKf5H1/baCodRX7jw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772139701; c=relaxed/relaxed;
-	bh=bmxX/qYJNas+Kj/SszP9KMGgHjwU+T3IF8YxcVK/CRk=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=SrHXn1JVAwPDd4XxHZoGKAVwXB37dANLL68//RU5PjshpDPpYZFhSnj85FguwigumU/bOucmgJkOMzQbT5rbT4uk39uX6KObEYOOpbDCok09UN7xDARks7xgNocUlMBxx+JU7bgzY8OpJKr2qocxLf8UY1ls11s6y2AOGSEws2QL5/S/VrFIoirbJUUAUU0IL57Lv8dAKzHCu72q2bJxc4nI8qTivnFComBEls5b9w0jPhU1gEyNbEOA2pieKy12gKMtcu7c4Z/s3x2srD7Lvxrvjqes0hA5eRa80/lEU2rblhNDGtgAysvc5ev0SPevY/qKPaAGHL1xGvPdKyTeQQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=iA/hbpDL; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=iA/hbpDL; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=npache@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fMPK81Znfz2xN8;
+	Fri, 27 Feb 2026 08:11:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c101::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772130370;
+	cv=pass; b=Fssm2SQXHJcava4HtnzaweVcZstExh2o/by6wJQZYEi6Nnz9dCD4elYFg2CRK1yMPOImfASIw+ulFPtVgssBC3MVng++TAwMr+XBayqr9MupP6s8Dy5HeX0dHMNuWuxkQFJIT0CLaAaYdV7iN05PWjwgIkfONcdxlsJWYc5rXtlJJII7Z2UOHyoq2wrqE6Hma3m7tVxiX5rGn12rNpoBSfbcpecjyma+6lHxVVjsvnDcqZH9X7NmDFLGK7xSLEh4FRTkvN6pHCpxj1/fCeM2E0e+KvTAiupW1Ku9V7bRd2XJmZQeKLinkOHBQcKigsLirVYBr7KVsoGQqJbWeOgdvg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1772130370; c=relaxed/relaxed;
+	bh=vPJp5w19Fx+MlYCGTQ73OECtl6RWRLR8f56KXzk5WL0=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=Re8YGHj/9jLr5Bb6vcoUDiGv7HGIizdLX3QRnVIVygxvZ7UcElM4Vm4DFzGrIBHWMf+t0lV68u62gpWurTRtqyKLNRjpr7DUsNU2XiDP9v9pbVBotTNvanJTVRZ3fuE29qRRx1tRWK5aJSgodVg8ow3Xif1HxHXMMjwEyW7klF6IzYmpqqFTaUxkp1xN3nF/vss5aLpWAspjy1Or4KTF20b3dMWQH90zJMrnDnIj8kLCbghP1N1v902fywlnUrEeT6s9uUUqqJDglVpXkXV9d3/XXyXBc4qHGCtWCzlq34RaO+D4e/xaz9g76pLYSunenEcvicEUCE4E2bXcDRRAZw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=T5Rd1Ref; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c101::7; helo=bl0pr03cu003.outbound.protection.outlook.com; envelope-from=mbloch@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=iA/hbpDL;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=iA/hbpDL;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=T5Rd1Ref;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=npache@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c101::7; helo=bl0pr03cu003.outbound.protection.outlook.com; envelope-from=mbloch@nvidia.com; receiver=lists.ozlabs.org)
+Received: from BL0PR03CU003.outbound.protection.outlook.com (mail-eastusazlp170120007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c101::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMP5c2fjGz2xKh
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 08:01:38 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1772139695;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=bmxX/qYJNas+Kj/SszP9KMGgHjwU+T3IF8YxcVK/CRk=;
-	b=iA/hbpDLCfO5lyLyX77WdIbV67d0u5nW1R6fcLDJcWM+83D4W5uozuxXUHE5BeQkp24S7v
-	/9xPgbV3aYLKZaFZ/T4zw37ZMBuE/go9P5aB6zBXJsMVCT6aYsZJqjj21+TR6JSYN94Yq5
-	ZqwbYu6RK/URKYeMk6wr+FoGBtjIksg=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1772139695;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=bmxX/qYJNas+Kj/SszP9KMGgHjwU+T3IF8YxcVK/CRk=;
-	b=iA/hbpDLCfO5lyLyX77WdIbV67d0u5nW1R6fcLDJcWM+83D4W5uozuxXUHE5BeQkp24S7v
-	/9xPgbV3aYLKZaFZ/T4zw37ZMBuE/go9P5aB6zBXJsMVCT6aYsZJqjj21+TR6JSYN94Yq5
-	ZqwbYu6RK/URKYeMk6wr+FoGBtjIksg=
-Received: from mail-yw1-f198.google.com (mail-yw1-f198.google.com
- [209.85.128.198]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-556-b0_k-VcrOQCL78G6927ggg-1; Thu, 26 Feb 2026 16:01:32 -0500
-X-MC-Unique: b0_k-VcrOQCL78G6927ggg-1
-X-Mimecast-MFC-AGG-ID: b0_k-VcrOQCL78G6927ggg_1772139691
-Received: by mail-yw1-f198.google.com with SMTP id 00721157ae682-79868381229so2257897b3.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2026 13:01:32 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772139691; x=1772744491;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=bmxX/qYJNas+Kj/SszP9KMGgHjwU+T3IF8YxcVK/CRk=;
-        b=vrlDH+Ka5AcYn+9N9xHsIQXnBfscj5GhZvnv8SHdXE43PcevYbNnATI9v+rqaFUT9W
-         51AATp7iEUHfdbyZ7bT0NjERo8VwPngAiQUoHGsER0FAE5C+0G71AGiQFVkFrFm8CJLl
-         o/c5fNbnqx3suOCQjOJNDo3aFBvt1MbM+NJZSsSjwSuQBvr63AIpWt+zclZGHEhw0Brl
-         0V6ytJFcOKylEpgIrpbR0lceybiAS0Dqlad7uMFklocnUgdx3Qtqik/SuHLzNqs1ja/K
-         fvZo+UtYBElJxOLkTb3u3XN7aYX52WqCWutD8ifIhnJ7svHFGTQROxyEQB0bJFIwTItV
-         Pr5A==
-X-Forwarded-Encrypted: i=1; AJvYcCXRZtANFtZjx9MAGNYVAgs+8S8iN3F1dGBzGthq9OSLrWRjc2FAuZQhzwsM0CPWZp6/bbdYl1ng4ddN5/Y=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx4mafTwGsLcmolPr0q0OgO9BpijjuGOkqf5xOlCvaIH2t4Ay9b
-	/8d6K2gIowfGZTS0yuq1SCpzKEoeEMNOFdRqdv64XC6Xd4nN0+OAb/XKnm2S0UTSAel916AJvkF
-	8rYRlERs37cPrheYZXlaxkoUYPY0oBkBIoYP3cdBZA2y5oLTyogigioK62h3bonfC43e/5dMG21
-	God+6iEPb0YL4mrlZYyoC9+7wIOn3zVNusngWq1l9llQ==
-X-Gm-Gg: ATEYQzxJtvT7JUXsrWSjuoJJDZe2S07B1lq+P7fRtKzSWzybNz9dTvpeUtUlQDkVjFw
-	fpNX0jeI/zdbcw45D0XGRdwguUujHUwTgKa5Doefzz3uwgbLsiEauOHL5Fji269PGOyWAZ3pR4K
-	Qx4avq2GuothDbqxys+bdwDc+5rWwCcU+ENfb9OVuqDtN/k2K9Io1OObHt6x1NzKCXme9wpqCV0
-	PWR
-X-Received: by 2002:a05:690e:bc6:b0:649:4f58:5cd2 with SMTP id 956f58d0204a3-64cb6e0c928mr3154551d50.0.1772139691119;
-        Thu, 26 Feb 2026 13:01:31 -0800 (PST)
-X-Received: by 2002:a05:690e:bc6:b0:649:4f58:5cd2 with SMTP id
- 956f58d0204a3-64cb6e0c928mr3154488d50.0.1772139690404; Thu, 26 Feb 2026
- 13:01:30 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMKf86HPMz2yrW
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 05:26:07 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=DUduklsZrHkQishuUPheRHmgVXZDZtxmGW/ZDp/KN1jcJEU5FAn+/plxULygOltk5HUm6z/1OENO8oeodgTQMMQZ/xuFzuJnocuX46lG34Bg0pyTrImLEJrhO1moAvlp5pfaK+ntLOB/lXy/jQBFb3jsGnjgl23UQ7IxwqZmESPzrTKC7V7P2ZDGA9rk/JhhsA2PGATemEJYdyA7KrofffH1Fz2yBk4KW9yLcHd/k46BNz9jLB4VVe9eExI7J0a2+9OweDp/qE7fo3Uzii30HJOqlA4SlZOgHIuowTTrxawVVAixzKpiaiE9CzXjVkiG1fMuUtR7rdtGxphbooZwUQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=vPJp5w19Fx+MlYCGTQ73OECtl6RWRLR8f56KXzk5WL0=;
+ b=jWU5DksezKpEO2lrEqIpywS5iCGg0U/kdTkSE5fSRGQd0VPW1QkZzI4vuFwpZYJGVN72eqQWulR5w3W1+lNoEyoFlWFboQj7XMorTTIFSsKljek/Eq6NeW+LIvd3T4hFLDHI2qeU90kXu0x4jbeFuo9rupuUblhShPpk3+9UGenNrGfSIUdqziliBEzGfjDynkEwnT7wPkAhHLY6njeKpqzecKmrh/Erx1fvMWLQ1HVXhOI2JRUa54J8+6Bawg1B9FUfodWkx/4dDhi2PqUaK8tZp4SsGuZQL3kDQWF98CG7nYb+4rLU2drYgz7n9WlNs2Cu8QaVO91j/oHcT4EIMA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=vPJp5w19Fx+MlYCGTQ73OECtl6RWRLR8f56KXzk5WL0=;
+ b=T5Rd1RefJz7HEyjGB5AdSupkSAwnPBJ3/dAGQmGJzq+YHWfDIBx0ldTGkENN6GS1JKVxfmV4L9xSUSuqbkHlrZZFQUtrF6f7nE1GpUNjsYx3EPVrJC7LZ5gqJ1HK6qihTn8/ew27NdN5hw5miJABNDDzPDmJzd/k2zaEoXvoPofG7G6NoBQwDsP5W8VeeLcPrTNDOItEOYV+ywmqbD30DcxbMDCG5KiAAVH/lT6+dbWuey230mosgTA6dIUijSC9CEm7i1Jn6/DmNKqaVOEtVcDzxo0V/dKFYy7vYSJ2I/Iah9sW/u426AwhatO/GTY/W/G45l9MCId+4xqVQHU8GA==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from CH3PR12MB7548.namprd12.prod.outlook.com (2603:10b6:610:144::12)
+ by MN2PR12MB4173.namprd12.prod.outlook.com (2603:10b6:208:1d8::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9611.15; Thu, 26 Feb
+ 2026 18:25:41 +0000
+Received: from CH3PR12MB7548.namprd12.prod.outlook.com
+ ([fe80::b710:d6a1:ab16:76de]) by CH3PR12MB7548.namprd12.prod.outlook.com
+ ([fe80::b710:d6a1:ab16:76de%5]) with mapi id 15.20.9654.007; Thu, 26 Feb 2026
+ 18:25:41 +0000
+Message-ID: <fb23d54a-fca0-43a2-ae1d-03ae52112192@nvidia.com>
+Date: Thu, 26 Feb 2026 20:25:35 +0200
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 1/4] PCI/MSI: Conservatively generalize no_64bit_msi
+ into msi_addr_mask
+To: Vivian Wang <wangruikang@iscas.ac.cn>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Alex Deucher <alexander.deucher@amd.com>,
+ =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
+ <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>, Brett Creeley <brett.creeley@amd.com>
+Cc: Han Gao <gaohan@iscas.ac.cn>, Thomas Gleixner <tglx@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+ netdev@vger.kernel.org, linux-pci@vger.kernel.org,
+ linux-sound@vger.kernel.org, linux-riscv@lists.infradead.org,
+ sophgo@lists.linux.dev, Takashi Iwai <tiwai@suse.de>,
+ Maor Gottlieb <maorg@nvidia.com>
+References: <20260129-pci-msi-addr-mask-v4-0-70da998f2750@iscas.ac.cn>
+ <20260129-pci-msi-addr-mask-v4-1-70da998f2750@iscas.ac.cn>
+Content-Language: en-US
+From: Mark Bloch <mbloch@nvidia.com>
+In-Reply-To: <20260129-pci-msi-addr-mask-v4-1-70da998f2750@iscas.ac.cn>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: FR2P281CA0184.DEUP281.PROD.OUTLOOK.COM
+ (2603:10a6:d10:9f::16) To CH3PR12MB7548.namprd12.prod.outlook.com
+ (2603:10b6:610:144::12)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,237 +102,313 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260226113233.3987674-1-usama.arif@linux.dev>
-In-Reply-To: <20260226113233.3987674-1-usama.arif@linux.dev>
-From: Nico Pache <npache@redhat.com>
-Date: Thu, 26 Feb 2026 14:01:04 -0700
-X-Gm-Features: AaiRm5209LV06f3Unt5ipFy-rNSZmlqNghFDY0XoCRoPEuuBfLMWoAzmF-tTAXE
-Message-ID: <CAA1CXcAYt3OfW_uBTYZgr-dBhg99x=5pUs5uvqtpg+PNJ1KxGQ@mail.gmail.com>
-Subject: Re: [RFC v2 00/21] mm: thp: lazy PTE page table allocation at PMD split
-To: Usama Arif <usama.arif@linux.dev>
-Cc: Andrew Morton <akpm@linux-foundation.org>, david@kernel.org, lorenzo.stoakes@oracle.com, 
-	willy@infradead.org, linux-mm@kvack.org, fvdl@google.com, hannes@cmpxchg.org, 
-	riel@surriel.com, shakeel.butt@linux.dev, kas@kernel.org, baohua@kernel.org, 
-	dev.jain@arm.com, baolin.wang@linux.alibaba.com, Liam.Howlett@oracle.com, 
-	ryan.roberts@arm.com, Vlastimil Babka <vbabka@kernel.org>, lance.yang@linux.dev, 
-	linux-kernel@vger.kernel.org, kernel-team@meta.com, maddy@linux.ibm.com, 
-	mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, hca@linux.ibm.com, 
-	gor@linux.ibm.com, agordeev@linux.ibm.com, borntraeger@linux.ibm.com, 
-	svens@linux.ibm.com, linux-s390@vger.kernel.org
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: SitpAoUoNG1_uwv8xdJWgxz8ipc6sxyPEWEf0J0smUU_1772139691
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CH3PR12MB7548:EE_|MN2PR12MB4173:EE_
+X-MS-Office365-Filtering-Correlation-Id: 4a7bee03-677f-4c20-7d11-08de75647295
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|366016|376014|7416014|921020;
+X-Microsoft-Antispam-Message-Info:
+	9PsqS6ngW9OR79WvmoGbuLJT/Njq9tmn1Y4kvWKFRcHaqMXldP8HOWVYX46z8WeonfN8WfJUoVu82cTYacwuOgeqjFg2iX8mrd2TTwQTkl4KQKDMNN4CVErLry1dFopRS4rv4TntRLONZni2EQ8hVZ4uM64SHN0/hmx30g75xcs3CBS3ycUBWburJCmxM2xX4bonbAE1cfG3c6Xp6Shtx6/EwR+O4K21WVLphuRuQlcaw20fRpFe43mOG4g6P6tpqnRrr5QmiTKK9Tcm6A45A+nI1WRchacp4w0zkZPeN7ZcOpw8SWCeO1Qw7jmgU5kTDwmw1KTo9wsUAWjWeaGwrZYlg4Le6w++ekYYYVVd74QD/J1IvIQBOHMLhJrbr911iHYuLbXHvv56hT1bmaSaiYMfAEABEImTpp3TIYVEL3yB7sqAzOoSm1vvR9S5ozVhI8vMXqQO5Zeq02Bq1ORu/gPHjlDYHgNW9zTFUaQgFti4b+raO4CO8CL8gijpCzwVb6/qpuOJ98kh9Ty6vyh+DS4ygtC7grkJlORQsOceyiMrQQ8L6k791Uf2wTai+HMW+V432jJqkZdMs60jpUTIYmU1spudUBf1G/J2KY76FG6fw2RBsN0kJ9FwJoHBPuH/nvHpPOsdXVV2nUMig1EKk50lzeyrJfAkU+S2Y6wISuPx0Sw/8xXMNnZBlSecidU7H6Px9Kg/6CZt6DXIW+ZC9bGwtwWiYZa05uQAHUktPdmVHbP4p51UEIXYyTdmy+CjfzNomScronvuYkoyA3FWhd0PDkj4ATclX/WqjqoNUMM=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CH3PR12MB7548.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(376014)(7416014)(921020);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?bFdERFpreHJzMy8xL3kxTG5rcXp2S3JKa2FCRzRDOVp6bDBaa1dPZUtyYVMw?=
+ =?utf-8?B?SWpJUXhxbTRsNGUzTW0xV09uamF6UzRIN2wvSklpTEFOWW1CK0E3cUJ6c1V3?=
+ =?utf-8?B?cGpoU21vMDRaRDdnUG1nSy9ocXpaNS9zV293NkdsZ1ZWakE0bEFrRVZNdS96?=
+ =?utf-8?B?SEEzYWdDc3Y0emh2cDRhWVJ6bHFhdmVaR1BSMGZVc2dPRUNmMGozdWx0TVpV?=
+ =?utf-8?B?b3NWTkkzNTE3d2REdXZjL1dnOXE4eDFTbUZMSHBWalFrSUE2aFNXWituYVFQ?=
+ =?utf-8?B?cXFwVGhxc1JvRDR2NUhHb0NJQ3pEdHlqUmliU0xOMm80dk56eVh0TzJEOXNM?=
+ =?utf-8?B?SkpXZ205QXhvbTRjN2I0TWxYcTJIbER1bFVoVlZnN2cra2x0U1JZL3ZGcFRs?=
+ =?utf-8?B?cG1QWE9JMGF5bXJsZkhWeEEwVng4RmJHZC9kZGRON2tiUmhkOXJ5eGk2ZzJ0?=
+ =?utf-8?B?dGE2SlhJc25VMTgzRkJUZisxVGNiL0tiOW5oV2JwMXZGMHo4dDN6TXdPT2Zh?=
+ =?utf-8?B?WEZQaWl5UndNYXkyQ3FwR3U5djNQUjVCeC8zdmtBOHcrVzgzaHJiL0VSQnND?=
+ =?utf-8?B?TWNsT1ZGcE9MT3NCNXhvbkRyUUt5dWZzWThOQm5sc3IydWdGUDlZbXljcnVo?=
+ =?utf-8?B?QWxhbC90ZG1CK25nM1p0QVZKTUp1OFZPU2ZSSGVON0d3bFVYZmlkQU9QYk1U?=
+ =?utf-8?B?cVZJc2pDR1RlcnFmSDBoUjZBemF6ZnFDTFNoSGNGd3VIWFFrdGUxUzhHcnBx?=
+ =?utf-8?B?Rmk0dEJNRy9qdStZdUNZQUVrRDVKODZQN3luS0tpKzVCZ0hVenpJS0IzOHFZ?=
+ =?utf-8?B?dGpuazBBYnBlM2h2aWhNS2RqZGU5MzF1TktoYzFoN1ArcjFGYkVzVThTZXlp?=
+ =?utf-8?B?U2pnNGJQL1IrZkkrSEFtNURkTktNVGJYcjVUUU15YmN1OWY5N1NjdWExOVN0?=
+ =?utf-8?B?UnZtWUF2MjB6MnJSTzVjOWVaVkJreUtkaHgycGJRNTVmUiswMGpTS1BYSXNM?=
+ =?utf-8?B?aTJOUnh4VTlrUmpHQmdrVGU0SnlXUktJQlVjaUFtdzhZSXQxcFdHZEZCMTU2?=
+ =?utf-8?B?V2tBbnJJdjNFNFRJb3NkSEM1K1k0VEhWRlErRDFXdkIwYThPOW9zamRFQW9G?=
+ =?utf-8?B?RlY5RnV4cFpKVmkxWWgxSHN1UTRzbjJXVURMMmJHMXYvUmNHN0o5THBzQ0tB?=
+ =?utf-8?B?aVUreWhHY2xjbk84NFJmSlpQYUthZmhGd2xIbUUwSHgxRkN3b2IzMDlTNERN?=
+ =?utf-8?B?Qk85YXF1dkYyRGE5TmQ4c3F1T0wxdW5aaDg1Y0FETjYvZlVPUWhLSm92R0Ft?=
+ =?utf-8?B?TVdqY2crRno5Ym43VHl1NHl3djZVYjR3amE3ZElsT2d3ekdZQ0xDaE1tNDhs?=
+ =?utf-8?B?bHdFOEpSMFNMRm0yRFpPTG9iS2ZqdWd3MjNuTzNDeXdjMDNMamZySXVCakdk?=
+ =?utf-8?B?K0VDK0xKMVJucjlsTlhhWFJtN3N4ZSthVnNEZE5maElxOC9XVGFJNnNENzZP?=
+ =?utf-8?B?dUF3djh2WDNmNXkyT3VsYkdHZTcrTjB5UU81ekpyWHl0WXROVTNpd08zU09L?=
+ =?utf-8?B?ZHZLS0RQVmU5SjJXU3RwUDBiMjQrZDZPM2pNdkR4WC85MWNqNzlPQ1pYM0Fv?=
+ =?utf-8?B?TlNlVDhwM2dZeHpKSStpSTJ0TFA5YU80UUNkSWtuVHpNQzMxMnp6QjMvZHNj?=
+ =?utf-8?B?eVp2cnh4clY2MEtCRk0xRXhUZ2FtVTBvUGRseEdkcVJ0cG51R2NESjNRUkZt?=
+ =?utf-8?B?bU9GazZZTFYxRFl3dlkxaEtjTzNwazdGWFRqWWRpUWdacFhGVm43cHFnUFRj?=
+ =?utf-8?B?NWFRTklybTY1YU53aWNXWTBvdUdkdy9SdldQOTgxQTVCcW9GKy9vZlB0cnJX?=
+ =?utf-8?B?eGlMZTl2TWg2SlZqOEhNRzFwUEx3QjErb2paY1VOeC9HZGZEY0VJNC9nQ0sw?=
+ =?utf-8?B?Rm9NRDBrTyttRVlyT1NCbzFKdUxuMVlWOTR3RW81MXlUeEpzNkRucU54T3pR?=
+ =?utf-8?B?ZWNjNkx6SFJPb3oxTWdLTFJ3emp6S2pnK1Jkbko5Wk54OEYxbXFMd0xwRTJQ?=
+ =?utf-8?B?VlBtMERxbVRPKzhicjl1enM2b3M0T2FGZU9KWXNFWHQ1SnNuS2NzbXdta21G?=
+ =?utf-8?B?dmVZYU1rQi9nZnduYzhjRm5IaSsvcEZMY1lDQVovY3BweUdNazBsa0xsR0dt?=
+ =?utf-8?B?Y2Y5cnhSTG90YXZPMElQTVdadnRNUGgvUkFyTVNiYWNYUFF0REJPZHdMWklS?=
+ =?utf-8?B?NkJYS2wweWgwT2VEc1BEVkREY3ZCRll5SmZ3WkZydnp3d1FFbEpnVnI2RElk?=
+ =?utf-8?B?RXV2TVd0ZG5YV24xbTF2QVEycFpwV2h1dDMvQnRtenVSV1RkQUhNQT09?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4a7bee03-677f-4c20-7d11-08de75647295
+X-MS-Exchange-CrossTenant-AuthSource: CH3PR12MB7548.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Feb 2026 18:25:41.4895
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: OlFLm3GZ1y9vpyXQeLQV0YKwzzLKC23HIr14pChwyB7Gy2h2Z79whxlIAx9Hcgzrm4pA4z5E1CcLKN7aJgyqPw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN2PR12MB4173
 
-On Thu, Feb 26, 2026 at 4:33=E2=80=AFAM Usama Arif <usama.arif@linux.dev> w=
-rote:
->
-> When the kernel creates a PMD-level THP mapping for anonymous pages, it
-> pre-allocates a PTE page table via pgtable_trans_huge_deposit(). This
-> page table sits unused in a deposit list for the lifetime of the THP
-> mapping, only to be withdrawn when the PMD is split or zapped. Every
-> anonymous THP therefore wastes 4KB of memory unconditionally. On large
-> servers where hundreds of gigabytes of memory are mapped as THPs, this
-> adds up: roughly 200MB wasted per 100GB of THP memory. This memory
-> could otherwise satisfy other allocations, including the very PTE page
-> table allocations needed when splits eventually occur.
->
-> This series removes the pre-deposit and allocates the PTE page table
-> lazily =E2=80=94 only when a PMD split actually happens. Since a large nu=
-mber
-> of THPs are never split (they are zapped wholesale when processes exit or
-> munmap the full range), the allocation is avoided entirely in the common
-> case.
->
-> The pre-deposit pattern exists because split_huge_pmd was designed as an
-> operation that must never fail: if the kernel decides to split, it needs
-> a PTE page table, so one is deposited in advance. But "must never fail"
-> is an unnecessarily strong requirement. A PMD split is typically triggere=
-d
-> by a partial operation on a sub-PMD range =E2=80=94 partial munmap, parti=
-al
-> mprotect, partial mremap and so on.
-> Most of these operations already have well-defined error handling for
-> allocation failures (e.g., -ENOMEM, VM_FAULT_OOM). Allowing split to
-> fail and propagating the error through these existing paths is the natura=
-l
-> thing to do. Furthermore, split failing requires an order-0 allocation fo=
-r
-> a page table to fail, which is extremely unlikely.
->
-> Designing functions like split_huge_pmd as operations that cannot fail
-> has a subtle but real cost to code quality. It forces a pre-allocation
-> pattern - every THP creation path must deposit a page table, and every
-> split or zap path must withdraw one, creating a hidden coupling between
-> widely separated code paths.
->
-> This also serves as a code cleanup. On every architecture except powerpc
-> with hash MMU, the deposit/withdraw machinery becomes dead code. The
-> series removes the generic implementations in pgtable-generic.c and the
-> s390/sparc overrides, replacing them with no-op stubs guarded by
-> arch_needs_pgtable_deposit(), which evaluates to false at compile time
-> on all non-powerpc architectures.
 
-Hi Usama,
 
-Thanks for tackling this, it seems like an interesting problem. Im
-trying to get more into reviewing, so bare with me I may have some
-stupid comments or questions. Where I can really help out is with
-testing. I will build this for all RH-supported architectures and run
-some automated test suites and performance metrics. I'll report back
-if I spot anything.
+On 29/01/2026 3:56, Vivian Wang wrote:
+> Some PCI devices have PCI_MSI_FLAGS_64BIT in the MSI capability, but
+> implement less than 64 address bits. This breaks on platforms where such
+> a device is assigned an MSI address higher than what's reachable.
+> 
+> Currently, the no_64bit_msi bit is set for these devices, meaning that
+> only 32-bit MSI addresses are allowed for them. However, on some
+> platforms the MSI doorbell address is above the 32-bit limit but within
+> the addressable range of the device.
+> 
+> As a first step to enabling MSI on those combinations of devices and
+> platforms, conservatively generalize the single-bit flag no_64bit_msi
+> into msi_addr_mask. (The name msi_addr_mask is chosen to avoid confusion
+> with msi_mask.)
+> 
+> The translation is essentially:
+> 
+> - no_64bit_msi = 1    ->    msi_addr_mask = DMA_BIT_MASK(32)
+> - no_64bit_msi = 0    ->    msi_addr_mask = DMA_BIT_MASK(64)
+> - if (no_64bit_msi)   ->    if (msi_addr_mask < DMA_BIT_MASK(64))
+> 
 
-Cheers!
--- Nico
+Hey Vivian,
 
->
-> The series is structured as follows:
->
-> Patches 1-2:    Error infrastructure =E2=80=94 make split functions retur=
-n int
->                 and propagate errors from vma_adjust_trans_huge()
->                 through __split_vma, vma_shrink, and commit_merge.
->
-> Patches 3-12:   Handle split failure at every call site =E2=80=94 copy_hu=
-ge_pmd,
->                 do_huge_pmd_wp_page, zap_pmd_range, wp_huge_pmd,
->                 change_pmd_range (mprotect), follow_pmd_mask (GUP),
->                 walk_pmd_range (pagewalk), move_page_tables (mremap),
->                 move_pages (userfaultfd), and device migration.
->                 The code will become affective in Patch 14 when split
->                 functions start returning -ENOMEM.
->
-> Patch 13:       Add __must_check to __split_huge_pmd(), split_huge_pmd()
->                 and split_huge_pmd_address() so the compiler warns on
->                 unchecked return values.
->
-> Patch 14:       The actual change =E2=80=94 allocate PTE page tables lazi=
-ly at
->                 split time instead of pre-depositing at THP creation.
->                 This is when split functions will actually start returnin=
-g
->                 -ENOMEM.
->
-> Patch 15:       Remove the now-dead deposit/withdraw code on
->                 non-powerpc architectures.
->
-> Patch 16:       Add THP_SPLIT_PMD_FAILED vmstat counter for monitoring
->                 split failures.
->
-> Patches 17-21:  Selftests covering partial munmap, mprotect, mlock,
->                 mremap, and MADV_DONTNEED on THPs to exercise the
->                 split paths.
->
-> The error handling patches are placed before the lazy allocation patch so
-> that every call site is already prepared to handle split failures before
-> the failure mode is introduced. This makes each patch independently safe
-> to apply and bisect through.
->
-> The patches were tested with CONFIG_DEBUG_ATOMIC_SLEEP and CONFIG_DEBUG_V=
-M
-> enabled. The test results are below:
->
-> TAP version 13
-> 1..5
-> # Starting 5 tests from 1 test cases.
-> #  RUN           thp_pmd_split.partial_munmap ...
-> # thp_pmd_split_test.c:60:partial_munmap:thp_split_pmd: 0 -> 1
-> # thp_pmd_split_test.c:62:partial_munmap:thp_split_pmd_failed: 0 -> 0
-> #            OK  thp_pmd_split.partial_munmap
-> ok 1 thp_pmd_split.partial_munmap
-> #  RUN           thp_pmd_split.partial_mprotect ...
-> # thp_pmd_split_test.c:60:partial_mprotect:thp_split_pmd: 1 -> 2
-> # thp_pmd_split_test.c:62:partial_mprotect:thp_split_pmd_failed: 0 -> 0
-> #            OK  thp_pmd_split.partial_mprotect
-> ok 2 thp_pmd_split.partial_mprotect
-> #  RUN           thp_pmd_split.partial_mlock ...
-> # thp_pmd_split_test.c:60:partial_mlock:thp_split_pmd: 2 -> 3
-> # thp_pmd_split_test.c:62:partial_mlock:thp_split_pmd_failed: 0 -> 0
-> #            OK  thp_pmd_split.partial_mlock
-> ok 3 thp_pmd_split.partial_mlock
-> #  RUN           thp_pmd_split.partial_mremap ...
-> # thp_pmd_split_test.c:60:partial_mremap:thp_split_pmd: 3 -> 4
-> # thp_pmd_split_test.c:62:partial_mremap:thp_split_pmd_failed: 0 -> 0
-> #            OK  thp_pmd_split.partial_mremap
-> ok 4 thp_pmd_split.partial_mremap
-> #  RUN           thp_pmd_split.partial_madv_dontneed ...
-> # thp_pmd_split_test.c:60:partial_madv_dontneed:thp_split_pmd: 4 -> 5
-> # thp_pmd_split_test.c:62:partial_madv_dontneed:thp_split_pmd_failed: 0 -=
-> 0
-> #            OK  thp_pmd_split.partial_madv_dontneed
-> ok 5 thp_pmd_split.partial_madv_dontneed
-> # PASSED: 5 / 5 tests passed.
-> # Totals: pass:5 fail:0 xfail:0 xpass:0 skip:0 error:0
->
-> The patches are based off of 957a3fab8811b455420128ea5f41c51fd23eb6c7 fro=
-m
-> mm-unstable as of 25 Feb (7.0.0-rc1).
->
->
-> RFC v1 -> v2: https://lore.kernel.org/all/20260211125507.4175026-1-usama.=
-arif@linux.dev/
-> - Change counter name to THP_SPLIT_PMD_FAILED (David)
-> - remove pgtable_trans_huge_{deposit/withdraw} when not needed and
->   make them arch specific (David)
-> - make split functions return error code and have callers handle them
->   (David and Kiryl)
-> - Add test cases for splitting
->
-> Usama Arif (21):
->   mm: thp: make split_huge_pmd functions return int for error
->     propagation
->   mm: thp: propagate split failure from vma_adjust_trans_huge()
->   mm: thp: handle split failure in copy_huge_pmd()
->   mm: thp: handle split failure in do_huge_pmd_wp_page()
->   mm: thp: handle split failure in zap_pmd_range()
->   mm: thp: handle split failure in wp_huge_pmd()
->   mm: thp: retry on split failure in change_pmd_range()
->   mm: thp: handle split failure in follow_pmd_mask()
->   mm: handle walk_page_range() failure from THP split
->   mm: thp: handle split failure in mremap move_page_tables()
->   mm: thp: handle split failure in userfaultfd move_pages()
->   mm: thp: handle split failure in device migration
->   mm: huge_mm: Make sure all split_huge_pmd calls are checked
->   mm: thp: allocate PTE page tables lazily at split time
->   mm: thp: remove pgtable_trans_huge_{deposit/withdraw} when not needed
->   mm: thp: add THP_SPLIT_PMD_FAILED counter
->   selftests/mm: add THP PMD split test infrastructure
->   selftests/mm: add partial_mprotect test for change_pmd_range
->   selftests/mm: add partial_mlock test
->   selftests/mm: add partial_mremap test for move_page_tables
->   selftests/mm: add madv_dontneed_partial test
->
->  arch/powerpc/include/asm/book3s/64/pgtable.h  |  12 +-
->  arch/s390/include/asm/pgtable.h               |   6 -
->  arch/s390/mm/pgtable.c                        |  41 ---
->  arch/sparc/include/asm/pgtable_64.h           |   6 -
->  arch/sparc/mm/tlb.c                           |  36 ---
->  include/linux/huge_mm.h                       |  51 +--
->  include/linux/pgtable.h                       |  16 +-
->  include/linux/vm_event_item.h                 |   1 +
->  mm/debug_vm_pgtable.c                         |   4 +-
->  mm/gup.c                                      |  10 +-
->  mm/huge_memory.c                              | 208 +++++++++----
->  mm/khugepaged.c                               |   7 +-
->  mm/memory.c                                   |  26 +-
->  mm/migrate_device.c                           |  33 +-
->  mm/mprotect.c                                 |  11 +-
->  mm/mremap.c                                   |   8 +-
->  mm/pagewalk.c                                 |   8 +-
->  mm/pgtable-generic.c                          |  32 --
->  mm/rmap.c                                     |  42 ++-
->  mm/userfaultfd.c                              |   8 +-
->  mm/vma.c                                      |  37 ++-
->  mm/vmstat.c                                   |   1 +
->  tools/testing/selftests/mm/Makefile           |   1 +
->  .../testing/selftests/mm/thp_pmd_split_test.c | 290 ++++++++++++++++++
->  tools/testing/vma/include/stubs.h             |   9 +-
->  25 files changed, 645 insertions(+), 259 deletions(-)
->  create mode 100644 tools/testing/selftests/mm/thp_pmd_split_test.c
->
-> --
-> 2.47.3
->
+We are seeing issues while reloading mlx5 on a PPC64 platform.
+We see the following messages in dmesg:
+
+mlx5_core 0000:00:08.0: mlx5_load:1266:(pid 1283): Failed to alloc IRQs
+mlx5_core 0000:00:08.0: E-Switch: cleanup
+mlx5_core 0000:00:08.0: probe_one:1959:(pid 1283): mlx5_init_one failed with error code -19
+mlx5_core 0000:00:08.1: lsa_required: 0, lsa_enabled: 0, direct mapping: 0
+mlx5_core 0000:00:08.1: lsa_required: 0, lsa_enabled: 0, direct mapping: 0
+mlx5_core 0000:00:08.1: firmware version: 16.35.4506
+mlx5_core 0000:00:08.1: 0.000 Gb/s available PCIe bandwidth (Unknown x16 link)
+mlx5_core 0000:00:08.1: Rate limit: 127 rates are supported, range: 0Mbps to 97656Mbps
+mlx5_core 0000:00:08.1: E-Switch: Total vports 2, per vport: max uc(128) max mc(2048)
+mlx5_core 0000:00:08.1: Flow counters bulk query buffer size increased, bulk_query_len(8)
+mlx5_core 0000:00:08.1: mlx5_load:1266:(pid 1283): Failed to alloc IRQs
+mlx5_core 0000:00:08.1: E-Switch: cleanup
+mlx5_core 0000:00:08.1: probe_one:1959:(pid 1283): mlx5_init_one failed with error code -19
+
+We've bisectedthe issue to this patch.
+We've pointed some AI tool to look at the reproducation script and this patch and it came
+up with the following idea:
+
+"
+The bug is a missing initialization of msi_addr_mask on PPC64LE, caused by a PPC-specific PCI device creation path.
+On most architectures, PCI devices are enumerated via the standard path:
+> pci_scan_device() -> pci_alloc_dev() (kzalloc) -> pci_setup_device() -> pci_device_add()
+But PPC has its own device-tree-based PCI enumeration in arch/powerpc/kernel/pci_of_scan.c.
+The function of_create_pci_dev() does this:
+ 
+pci_of_scan.cLines 215-235
+ 
+    dev = pci_alloc_dev(bus);       // kzalloc -> all fields zeroed, msi_addr_mask = 0
+    // ... manually sets vendor, device, class, dma_mask, etc.
+    // ... does NOT call pci_setup_device() !!!
+    pci_device_add(dev, bus);       // calls pci_init_capabilities -> pci_msi_init
+
+Inside pci_msi_init(), the code only sets msi_addr_mask = DMA_BIT_MASK(32) when 64-bit MSI is not supported.
+If the device does support 64-bit MSI (like mlx5), it leaves msi_addr_mask untouched -- meaning it stays at 0 from the kzalloc.
+"
+
+We tried a patch that moved dev->msi_addr_mask = DMA_BIT_MASK(64) from pci_setup_device()
+to pci_alloc_dev() and it solved the issue we were seeing (don't know if this is the proper fix).
+
+Can you please have a look?
+
+Mark
+
+> Since no values other than DMA_BIT_MASK(32) and DMA_BIT_MASK(64) are
+> used, no functional change is intended. Future patches that make use of
+> intermediate values of msi_addr_mask will follow, allowing devices that
+> cannot use full 64-bit addresses for MSI to work on platforms with MSI
+> doorbell above the 32-bit limit.
+> 
+> Acked-by: Takashi Iwai <tiwai@suse.de> # sound
+> Reviewed-by: Brett Creeley <brett.creeley@amd.com> # ionic
+> Reviewed-by: Thomas Gleixner <tglx@kernel.org>
+> Signed-off-by: Vivian Wang <wangruikang@iscas.ac.cn>
+> ---
+> v4: Patch message rewording (Thomas)
+> 
+> checkpatch complains about the comment include/linux/pci.h, which I have
+> formatted similarly with other comments in the vicinity.
+> ---
+>  arch/powerpc/platforms/powernv/pci-ioda.c           | 2 +-
+>  arch/powerpc/platforms/pseries/msi.c                | 4 ++--
+>  drivers/gpu/drm/radeon/radeon_irq_kms.c             | 2 +-
+>  drivers/net/ethernet/pensando/ionic/ionic_bus_pci.c | 2 +-
+>  drivers/pci/msi/msi.c                               | 2 +-
+>  drivers/pci/msi/pcidev_msi.c                        | 2 +-
+>  drivers/pci/probe.c                                 | 7 +++++++
+>  include/linux/pci.h                                 | 8 +++++++-
+>  sound/hda/controllers/intel.c                       | 2 +-
+>  9 files changed, 22 insertions(+), 9 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index b0c1d9d16fb5..1c78fdfb7b03 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -1666,7 +1666,7 @@ static int __pnv_pci_ioda_msi_setup(struct pnv_phb *phb, struct pci_dev *dev,
+>  		return -ENXIO;
+>  
+>  	/* Force 32-bit MSI on some broken devices */
+> -	if (dev->no_64bit_msi)
+> +	if (dev->msi_addr_mask < DMA_BIT_MASK(64))
+>  		is_64 = 0;
+>  
+>  	/* Assign XIVE to PE */
+> diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
+> index a82aaa786e9e..7473c7ca1db0 100644
+> --- a/arch/powerpc/platforms/pseries/msi.c
+> +++ b/arch/powerpc/platforms/pseries/msi.c
+> @@ -383,7 +383,7 @@ static int rtas_prepare_msi_irqs(struct pci_dev *pdev, int nvec_in, int type,
+>  	 */
+>  again:
+>  	if (type == PCI_CAP_ID_MSI) {
+> -		if (pdev->no_64bit_msi) {
+> +		if (pdev->msi_addr_mask < DMA_BIT_MASK(64)) {
+>  			rc = rtas_change_msi(pdn, RTAS_CHANGE_32MSI_FN, nvec);
+>  			if (rc < 0) {
+>  				/*
+> @@ -409,7 +409,7 @@ static int rtas_prepare_msi_irqs(struct pci_dev *pdev, int nvec_in, int type,
+>  		if (use_32bit_msi_hack && rc > 0)
+>  			rtas_hack_32bit_msi_gen2(pdev);
+>  	} else {
+> -		if (pdev->no_64bit_msi)
+> +		if (pdev->msi_addr_mask < DMA_BIT_MASK(64))
+>  			rc = rtas_change_msi(pdn, RTAS_CHANGE_32MSIX_FN, nvec);
+>  		else
+>  			rc = rtas_change_msi(pdn, RTAS_CHANGE_MSIX_FN, nvec);
+> diff --git a/drivers/gpu/drm/radeon/radeon_irq_kms.c b/drivers/gpu/drm/radeon/radeon_irq_kms.c
+> index 9961251b44ba..d550554a6f3f 100644
+> --- a/drivers/gpu/drm/radeon/radeon_irq_kms.c
+> +++ b/drivers/gpu/drm/radeon/radeon_irq_kms.c
+> @@ -252,7 +252,7 @@ static bool radeon_msi_ok(struct radeon_device *rdev)
+>  	 */
+>  	if (rdev->family < CHIP_BONAIRE) {
+>  		dev_info(rdev->dev, "radeon: MSI limited to 32-bit\n");
+> -		rdev->pdev->no_64bit_msi = 1;
+> +		rdev->pdev->msi_addr_mask = DMA_BIT_MASK(32);
+>  	}
+>  
+>  	/* force MSI on */
+> diff --git a/drivers/net/ethernet/pensando/ionic/ionic_bus_pci.c b/drivers/net/ethernet/pensando/ionic/ionic_bus_pci.c
+> index 70d86c5f52fb..0671deae9a28 100644
+> --- a/drivers/net/ethernet/pensando/ionic/ionic_bus_pci.c
+> +++ b/drivers/net/ethernet/pensando/ionic/ionic_bus_pci.c
+> @@ -331,7 +331,7 @@ static int ionic_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+>  
+>  #ifdef CONFIG_PPC64
+>  	/* Ensure MSI/MSI-X interrupts lie within addressable physical memory */
+> -	pdev->no_64bit_msi = 1;
+> +	pdev->msi_addr_mask = DMA_BIT_MASK(32);
+>  #endif
+>  
+>  	err = ionic_setup_one(ionic);
+> diff --git a/drivers/pci/msi/msi.c b/drivers/pci/msi/msi.c
+> index 34d664139f48..48f5f03d1479 100644
+> --- a/drivers/pci/msi/msi.c
+> +++ b/drivers/pci/msi/msi.c
+> @@ -322,7 +322,7 @@ static int msi_verify_entries(struct pci_dev *dev)
+>  {
+>  	struct msi_desc *entry;
+>  
+> -	if (!dev->no_64bit_msi)
+> +	if (dev->msi_addr_mask == DMA_BIT_MASK(64))
+>  		return 0;
+>  
+>  	msi_for_each_desc(entry, &dev->dev, MSI_DESC_ALL) {
+> diff --git a/drivers/pci/msi/pcidev_msi.c b/drivers/pci/msi/pcidev_msi.c
+> index 5520aff53b56..0b0346813092 100644
+> --- a/drivers/pci/msi/pcidev_msi.c
+> +++ b/drivers/pci/msi/pcidev_msi.c
+> @@ -24,7 +24,7 @@ void pci_msi_init(struct pci_dev *dev)
+>  	}
+>  
+>  	if (!(ctrl & PCI_MSI_FLAGS_64BIT))
+> -		dev->no_64bit_msi = 1;
+> +		dev->msi_addr_mask = DMA_BIT_MASK(32);
+>  }
+>  
+>  void pci_msix_init(struct pci_dev *dev)
+> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+> index 41183aed8f5d..a2bff57176a3 100644
+> --- a/drivers/pci/probe.c
+> +++ b/drivers/pci/probe.c
+> @@ -2047,6 +2047,13 @@ int pci_setup_device(struct pci_dev *dev)
+>  	 */
+>  	dev->dma_mask = 0xffffffff;
+>  
+> +	/*
+> +	 * Assume 64-bit addresses for MSI initially. Will be changed to 32-bit
+> +	 * if MSI (rather than MSI-X) capability does not have
+> +	 * PCI_MSI_FLAGS_64BIT. Can also be overridden by driver.
+> +	 */
+> +	dev->msi_addr_mask = DMA_BIT_MASK(64);
+> +
+>  	dev_set_name(&dev->dev, "%04x:%02x:%02x.%d", pci_domain_nr(dev->bus),
+>  		     dev->bus->number, PCI_SLOT(dev->devfn),
+>  		     PCI_FUNC(dev->devfn));
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 864775651c6f..0fe32fef0331 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -377,6 +377,13 @@ struct pci_dev {
+>  					   0xffffffff.  You only need to change
+>  					   this if your device has broken DMA
+>  					   or supports 64-bit transfers.  */
+> +	u64		msi_addr_mask;	/* Mask of the bits of bus address for
+> +					   MSI that this device implements.
+> +					   Normally set based on device
+> +					   capabilities. You only need to
+> +					   change this if your device claims
+> +					   to support 64-bit MSI but implements
+> +					   fewer than 64 address bits. */
+>  
+>  	struct device_dma_parameters dma_parms;
+>  
+> @@ -441,7 +448,6 @@ struct pci_dev {
+>  
+>  	unsigned int	is_busmaster:1;		/* Is busmaster */
+>  	unsigned int	no_msi:1;		/* May not use MSI */
+> -	unsigned int	no_64bit_msi:1;		/* May only use 32-bit MSIs */
+>  	unsigned int	block_cfg_access:1;	/* Config space access blocked */
+>  	unsigned int	broken_parity_status:1;	/* Generates false positive parity */
+>  	unsigned int	irq_reroute_variant:2;	/* Needs IRQ rerouting variant */
+> diff --git a/sound/hda/controllers/intel.c b/sound/hda/controllers/intel.c
+> index 1e8e3d61291a..c9542ebdf7e2 100644
+> --- a/sound/hda/controllers/intel.c
+> +++ b/sound/hda/controllers/intel.c
+> @@ -1905,7 +1905,7 @@ static int azx_first_init(struct azx *chip)
+>  
+>  	if (chip->msi && chip->driver_caps & AZX_DCAPS_NO_MSI64) {
+>  		dev_dbg(card->dev, "Disabling 64bit MSI\n");
+> -		pci->no_64bit_msi = true;
+> +		pci->msi_addr_mask = DMA_BIT_MASK(32);
+>  	}
+>  
+>  	pci_set_master(pci);
+> 
 
 
