@@ -1,81 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-17320-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17321-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8040FD9E10
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Feb 2026 20:43:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A755FD9E12
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Feb 2026 20:57:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fMNhb4nfRz2yLH;
-	Fri, 27 Feb 2026 07:43:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772138607;
-	cv=none; b=KMJTRqbFBwBYAdsA0Uzeowat5Tt9781sffP/QvsmD7vIDk72hrbcyqbydrhK6cKJCcG+vcDATWUgkvexbOr/fVo+z1TJP0yUG09aaOZwinfE5CoKOAKKonUGcgXIiO3f44BDZFWMpcR2QE3G+uFgZKHgVUQbTyh33+Uri8obQbd58Ga2Tae++eoF4ZR4AfiYKjHfgrckyp9uoWzR+3dZqGtd5+zG52CV8mY4XUXHIPjOolSfpLDpXiRBag05d0DEsCp+4cNhDbltuzAjLnOc172c3h6jSikXhwmHpJ5fzD8Kx22YJOJ//Sas0ZSx9cODcWyCOB3QoNsQD5w5De4VCA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fMP1D45sjz2yLH;
+	Fri, 27 Feb 2026 07:57:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=80.12.242.80
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772139472;
+	cv=none; b=TF9LZ7Sl3JIN7at7044kgdUcCA7vpjxzr1f9VLTIjKl5AL0BlW+rNNj0zBtHRPlf6RL6azVG9qnRD27TS+77CI6YeLdID5RiGWLRFceQ46B6CD6rdyHL6S1S1F2rJzErxPz49cmGXwb2ig6wU/cumcuSYUBdkK+dZr6tMeymCpdC6cPbUUwTgUhlFB7w8OuJJXwhR1D9VylsGHMcmjSPNTuGj39aPvWskFDzDcUN7oFltcu4gLPltebjbhWOztONFHSe1qY25eipicSh9vCc7n38y2aAgxCRE+kLeflIEWtKlab+rqzjoVL4RnYUaKHIuWcI1WOva/aSYrwlkXdaVA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772138607; c=relaxed/relaxed;
-	bh=zR6NZ+PIQzkOImxuEoIedc+fyLzHwiU5uHKWg9CMDDo=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=MDuqFxcX71+B0fltItZ+uDIJYmrAESUlvlSAuUTAscwHLKw3ThY86OPev/KIR86Yep+0/8dotwMuzipqtxeAJ2IHqUN5m+bjDDwkuLbK01dUXvZnG/XNggHPwOj437ri3GbMtIpj0+VjvXg+CFdz+DYfE1nCIMmNi4fcWpsiA2fs1i2SPNC/3HDg07HhWPRQXPaFOo6N2UYrloXXz+/NWN/IcwjELKbowL35SWS3H+HJphNxA3g3tiIKWnbdsScG3VmFvr2Dn5+6WUlsD5PbE5yHTewMmdAQDKkG7hMwLbAv4YzUFWH5tT6FEpYyA6YT89P/7DgRtAzQPKFpbQ2WaA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DEdmONkF; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1772139472; c=relaxed/relaxed;
+	bh=XNvxEZUCBvpU8JwtRc1bKvRe9HjTkA50spCCWeLolOQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Zsjh7USseY+MKkcDSgkx35+q48JLj8yYkZMpc0rlD5OjQemVKOUJWytjrKbl4MO9HLobI14YlKd+qOMDiNBEoTTLJchxpauvbfJkEgyuiyToo2l4gh7DvxBZn03e2y1wG/Jvzw1Su+aA2O2o+pVPCR6IRKrqR5sEZBkxrNlFr91IZQ0bTEw65IRARcUcO6Om1wsyPYdWkYkj/l/3D6e9rXX/f/q6/zmXbcsD6l3JYi5fOoatHLSPvhsXAdiUS8ZExyXbRl2UT5pDTVV89nRNy1VQVyjyL46WmKvrtTApemb32sSoGKfCQTsM3JonW6ks4L7zf6Va5pXyf9qDPdeN0w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr; dkim=pass (2048-bit key; unprotected) header.d=wanadoo.fr header.i=@wanadoo.fr header.a=rsa-sha256 header.s=t20230301 header.b=Ppx8My7D; dkim-atps=neutral; spf=pass (client-ip=80.12.242.80; helo=smtp.smtpout.orange.fr; envelope-from=christophe.jaillet@wanadoo.fr; receiver=lists.ozlabs.org) smtp.mailfrom=wanadoo.fr
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DEdmONkF;
+	dkim=pass (2048-bit key; unprotected) header.d=wanadoo.fr header.i=@wanadoo.fr header.a=rsa-sha256 header.s=t20230301 header.b=Ppx8My7D;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wanadoo.fr (client-ip=80.12.242.80; helo=smtp.smtpout.orange.fr; envelope-from=christophe.jaillet@wanadoo.fr; receiver=lists.ozlabs.org)
+X-Greylist: delayed 783 seconds by postgrey-1.37 at boromir; Fri, 27 Feb 2026 07:57:50 AEDT
+Received: from smtp.smtpout.orange.fr (smtp-80.smtpout.orange.fr [80.12.242.80])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMNhb0KBTz309S
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 07:43:26 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61QHpCZT2848171;
-	Thu, 26 Feb 2026 20:43:13 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=zR6NZ+PIQzkOImxuE
-	oIedc+fyLzHwiU5uHKWg9CMDDo=; b=DEdmONkFBdTo+8aMYMI29mLLucLMcTQXv
-	cfZ82MN84Mum3sfDz/acKaKp76PV2fi5Vwe3xESYFxI3u5tXboczpO4zGta6cbG6
-	HaJmOuVGG1h3eOiDNEtGMYEEqP0haWDtS+w9fsTfVqKuW1odZ/HUhQnbcHgTI4do
-	/2OcaZy4ezYD1YM+evapFiRUt0u7Pae4XQKD2KyW5wNvLjU0an8+KDm+ypsm9Fhm
-	BHkhVrkcZ8LUpAQqpvdYPKcecm/DC/jRRE4FXJIsIsz13J+LpalIF/Vy8w21F8++
-	9T5MdB0Fp/ulAFb0qjTX73ZaChwiE+8K5T1ekyDWEj3lsv7Jw8R2w==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cf34cg3ct-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 26 Feb 2026 20:43:13 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 61QJ7kJw027887;
-	Thu, 26 Feb 2026 20:43:12 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4cfsr25t4g-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 26 Feb 2026 20:43:12 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 61QKh9ar41353576
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 26 Feb 2026 20:43:09 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0CB6E20040;
-	Thu, 26 Feb 2026 20:43:09 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6DB7C20043;
-	Thu, 26 Feb 2026 20:43:07 +0000 (GMT)
-Received: from ltcrain4-lp15.ltc.tadn.ibm.com (unknown [9.5.7.39])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 26 Feb 2026 20:43:07 +0000 (GMT)
-From: adubey@linux.ibm.com
-To: linuxppc-dev@lists.ozlabs.org
-Cc: bpf@vger.kernel.org, hbathini@linux.ibm.com, ast@kernel.org,
-        daniel@iogearbox.net, andrii@kernel.org, maddy@linux.ibm.com,
-        Abhishek Dubey <adubey@linux.ibm.com>
-Subject: [PATCH v2 4/4] selftest/bpf: Enable gotox tests for powerpc64
-Date: Thu, 26 Feb 2026 20:43:11 -0500
-Message-ID: <20260227014315.39980-5-adubey@linux.ibm.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260227014315.39980-1-adubey@linux.ibm.com>
-References: <20260227014315.39980-1-adubey@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMP1B4Wjmz2yLG
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 07:57:50 +1100 (AEDT)
+Received: from [IPV6:2a01:cb10:785:b00:8347:f260:7456:7662]
+ ([IPv6:2a01:cb10:785:b00:8347:f260:7456:7662])
+	by smtp.orange.fr with ESMTPSA
+	id viPYv6Djy0h1yviPYvQ3lF; Thu, 26 Feb 2026 21:56:42 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wanadoo.fr;
+	s=t20230301; t=1772139402;
+	bh=XNvxEZUCBvpU8JwtRc1bKvRe9HjTkA50spCCWeLolOQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:From;
+	b=Ppx8My7DW0Tash6fRof9n4+6lWDa8ewK0KusdITyWFkaucykY9/lauiR5Qbu+VhOa
+	 LJGQfSqFqNuVnSe7Yuhui2umVN4S7U1CeR77+cFPI16j8ixG61vjMIEZk3srFmdFxx
+	 K0d+Ttk9Ccq6ORR3jG0rC/Bvyma32ZRQW/DW4it3UwYqBf78O9XQ47eDx5OFw4jmC1
+	 rCQetJ5bua+Ccvk/cqOJJVO6KOWOopEr16NkfP207QpU+49Alj6btvqV8E92ovDInl
+	 Z8zf6M4Fm0JcLCkDeypupyMUA0jmb7LeDL3O01Ak7xXGIOgWZjXM66zuATDna+VAIY
+	 2zwrmkaixMynw==
+X-ME-Helo: [IPV6:2a01:cb10:785:b00:8347:f260:7456:7662]
+X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
+X-ME-Date: Thu, 26 Feb 2026 21:56:42 +0100
+X-ME-IP: 2a01:cb10:785:b00:8347:f260:7456:7662
+Message-ID: <61cece55-8ab1-4146-a3f5-a2b5d97adc66@wanadoo.fr>
+Date: Thu, 26 Feb 2026 21:56:39 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,64 +63,49 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v1] ALSA: aoa: Constify struct configfs_item_operations
+ and configfs_group_operations
+To: Johannes Berg <johannes@sipsolutions.net>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-sound@vger.kernel.org
+References: <803ed3c1a19faab6481f3b3b4bf1eb86739061bd.1772138561.git.christophe.jaillet@wanadoo.fr>
+ <05f10825418c4e8c12b96eaf9404e4e14ad63aaa.camel@sipsolutions.net>
+Content-Language: en-US, fr-FR
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+In-Reply-To: <05f10825418c4e8c12b96eaf9404e4e14ad63aaa.camel@sipsolutions.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjI2MDE4NCBTYWx0ZWRfX+PanbBT8qLYf
- c27pKqpxlOj7ZIey2PWNes76BenyyWbO77Np1wDc2k90g6NaYUlf71eKn/cjmaJC3phPPmsKUbN
- KilQktEs5oH+qF3SlzIv7eKA241eL+pKv1KVLLfbLJjy0ZsFNlMv4+82LizrK7FkNI/eYwad9fH
- dve6L9bC/yY+Q2B42ti0ONQ5zeqr2NT7l1WWnyxUlQpsVQDHMoLxQ8j70VKEEs8lpWA9sdCwvTq
- 5kyziNkhSSbcaiGbA71djLEZVodkj3sdy3x/d0B0ctGDGgblUEhc+maZeS9KvU3pJkVa01QHw5r
- 6HEzaBiA6qf9ULcQOKqZl/Wgh7GBcIk99oaDVnwB23Is3SLqq/JggYgh7Lr1wGfeYgqSv8nu5lB
- 2zVCnUKe4t/9I7pz2WCKOmQLjfyXgmvy+4IaNWvZeseI9QFR2KeIzCbYRMJInFM5JCll3vqqPAJ
- 4vA/Vs4KuW/TqrJdboA==
-X-Proofpoint-ORIG-GUID: _HiC_SpTgFNhNJMvQPZNyfKULQjHe7J4
-X-Authority-Analysis: v=2.4 cv=F9lat6hN c=1 sm=1 tr=0 ts=69a0b061 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=HzLeVaNsDn8A:10 a=VkNPw1HP01LnGYTKEx00:22 a=Mpw57Om8IfrbqaoTuvik:22
- a=GgsMoib0sEa3-_RKJdDe:22 a=VnNF1IyMAAAA:8 a=UBUblTJxaNEy-f4YUGgA:9
-X-Proofpoint-GUID: _HiC_SpTgFNhNJMvQPZNyfKULQjHe7J4
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-02-26_02,2026-02-26_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 phishscore=0 bulkscore=0 adultscore=0 spamscore=0
- clxscore=1015 suspectscore=0 malwarescore=0 lowpriorityscore=0
- priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2601150000
- definitions=main-2602260184
 
-From: Abhishek Dubey <adubey@linux.ibm.com>
+Le 26/02/2026 à 21:47, Johannes Berg a écrit :
+> On Thu, 2026-02-26 at 21:43 +0100, Christophe JAILLET wrote:
+>> 'struct codec_connection' are not modified in this driver.
+>>
+>> Constifying these structures moves some data to a read-only section, so
+>> increases overall security.
+>>
+> 
+> The security claim seems like a stretch for this data, but I guess since
+> it's never modified making it const makes some sense.
 
-With gotox instruction and jumptable now supported,
-enable corresponding bpf selftest on powerpc.
+You are right, in this case the security claim is a bit too much.
+I use the same template for all such patches, and some times, it is less 
+relevant.
 
-Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
----
- tools/testing/selftests/bpf/progs/verifier_gotox.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+The claim makes much more sense when the struct has some function pointers.
 
-diff --git a/tools/testing/selftests/bpf/progs/verifier_gotox.c b/tools/testing/selftests/bpf/progs/verifier_gotox.c
-index 607dad058ca1..0f43b56ec2bc 100644
---- a/tools/testing/selftests/bpf/progs/verifier_gotox.c
-+++ b/tools/testing/selftests/bpf/progs/verifier_gotox.c
-@@ -6,7 +6,7 @@
- #include "bpf_misc.h"
- #include "../../../include/linux/filter.h"
- 
--#if defined(__TARGET_ARCH_x86) || defined(__TARGET_ARCH_arm64)
-+#if defined(__TARGET_ARCH_x86) || defined(__TARGET_ARCH_arm64) || defined(__TARGET_ARCH_powerpc)
- 
- #define DEFINE_SIMPLE_JUMP_TABLE_PROG(NAME, SRC_REG, OFF, IMM, OUTCOME)	\
- 									\
-@@ -384,6 +384,6 @@ jt0_%=:								\
- 	: __clobber_all);
- }
- 
--#endif /* __TARGET_ARCH_x86 || __TARGET_ARCH_arm64 */
-+#endif /* __TARGET_ARCH_x86 || __TARGET_ARCH_arm64 || __TARGET_ARCH_powerpc*/
- 
- char _license[] SEC("license") = "GPL";
--- 
-2.52.0
+
+Please not the the subject is broken (configfs_item_operations...)
+I've sent the same patch with the correct subject.
+Sorry for the noise.
+
+CJ
+
+
+> 
+> johannes
+> 
+> 
 
 
