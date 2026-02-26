@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-17324-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17325-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8040AFD9E12
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Feb 2026 21:17:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3091FD9E0A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Feb 2026 21:18:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fMPRn6Tpnz2xN8;
-	Fri, 27 Feb 2026 08:17:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fMPSl6F5Fz2xN8;
+	Fri, 27 Feb 2026 08:18:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=80.12.242.82
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772140645;
-	cv=none; b=eUkP4dxw1ZDjlI4F9wdyBU0wvsrouo4Gq9jJsRLBPT3Mx612rEo4LUiEHBpZ8Gr1pNb1z59lZ1wUGy8F8tv6edOO0xCPxgWzh/LHCEv2cBPNL298mBkKOwjjEajxPpJuRiQ4ME6Bl7/NDU5InYRI4h4S3tJQwxPiyUgspJsKtdxOMl3yN2CdgK9JF7euEltXX/MNzfQDaGJ7f7HxBrlAL/25R8d2Sd1QRqjWp2HkybvWH8izsiUVqp3i1AOJYacTnql3ulZVwDaWDKQ1JnVT6tyVJsk54I7cdWStcO9ISaz/jqh8Uq11c0TAoVS/tDdAMjHH7hzOY9yZEMnh3zeDhg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772140695;
+	cv=none; b=jFe/oP0ORhuyk7wTkVyFNegpvYBKH6yyG5Ge2tUI7eVPsb8bsrBnX0/bp4sTGUyS0Dn6Amcffvo/w9gf3MHYn0hCClYYBiGpw25Nf/sqsmo2sQ46ifwWv/cD0S6SWj1S3N8s/OW5REvXIOeEteOpaVM95LCEHgsUkXLbx6g2ddH4NPs3gzyBXYDd7LJb0KIB8scdSpXHBvJ3PFtuie3Ep0dA1a9rIsORhQY5q6w7f2ubJkDIWpORjuBNBgXypBoDCyrzuf2F9/B6lmK5jxtHKy78lUe6NKkB44llgr+WVYYPOE816LtooO1uCTAf5+x/9TffjjQ1qUgConZ1r7WjYQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772140645; c=relaxed/relaxed;
+	t=1772140695; c=relaxed/relaxed;
 	bh=DacmWtirnDJ8c5FfO60izxCVDBNId/jIFsPzSSFKxMk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=gPDYkI0ppcOvGDRwS8gmMo5FPIJuUtASrPfpMfcX8RJ/eOOMq7I++BFbG40uMb6+IOIGcbQ3bZY6Q9Lr/Y1Brpvr26yEGJfzMKZbndZi9jKfXpkx5qslF5J7/nmGgpNuch6FfEEtV+5HKgcwFsKAR4bZkemRYpiOdObbUWL11WUFkuvtCKBCq6ANEGIlqUnuUGpygFXbYFjGUrKavPEkS1koxoNozSLlZZAfmotmukDc2W4cOu+DGbApqnaIOKe77GK8dgMmvNS0L2fF6Spw3T6Ad5TVPIqTuaYij6vVCMDZxaOpBGqpt8dk1RP3DRvAII5/4G5INfvBTMyPj9sqmg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr; dkim=pass (2048-bit key; unprotected) header.d=wanadoo.fr header.i=@wanadoo.fr header.a=rsa-sha256 header.s=t20230301 header.b=eZ7aCq2w; dkim-atps=neutral; spf=pass (client-ip=80.12.242.82; helo=smtp.smtpout.orange.fr; envelope-from=christophe.jaillet@wanadoo.fr; receiver=lists.ozlabs.org) smtp.mailfrom=wanadoo.fr
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=D1logHxyAGKpAYyVoUrWDW0YPCB0EPf0BlpyPRzKryw9sZdtvDhWWJIERKXEQFtHx1O2knuWx3BqXLPrM4fsY90oEiO3oHWg/RZxU+NaweJBgqDkzJF4ocTmE2/qpM2RiI6/TB7EJ/ootkaPsSxWbYo5QeuYS1DIwFHwbar4O4zIvpJm+J4xGvonMgMVSxdaXfagA3Ir3JVBx74O24kUaVM5J+aB0/GkJjIgGs5TqktabTrnZx1xm8609dVxG+sdTkRXq9fKEjsLDjk3Kmc8CriB/XJ9sxJlUixwxD/VgJ6ZI2zJlnhZQx2HPEf6d6lov/rOS+0dmlRUZAQZQs+HeA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr; dkim=pass (2048-bit key; unprotected) header.d=wanadoo.fr header.i=@wanadoo.fr header.a=rsa-sha256 header.s=t20230301 header.b=sWNx3deX; dkim-atps=neutral; spf=pass (client-ip=80.12.242.82; helo=smtp.smtpout.orange.fr; envelope-from=christophe.jaillet@wanadoo.fr; receiver=lists.ozlabs.org) smtp.mailfrom=wanadoo.fr
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=wanadoo.fr
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=wanadoo.fr header.i=@wanadoo.fr header.a=rsa-sha256 header.s=t20230301 header.b=eZ7aCq2w;
+	dkim=pass (2048-bit key; unprotected) header.d=wanadoo.fr header.i=@wanadoo.fr header.a=rsa-sha256 header.s=t20230301 header.b=sWNx3deX;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wanadoo.fr (client-ip=80.12.242.82; helo=smtp.smtpout.orange.fr; envelope-from=christophe.jaillet@wanadoo.fr; receiver=lists.ozlabs.org)
 Received: from smtp.smtpout.orange.fr (smtp-82.smtpout.orange.fr [80.12.242.82])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMPRn08dCz2xKh
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 08:17:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMPSl18GTz2xKh
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 08:18:15 +1100 (AEDT)
 Received: from fedora.home ([IPv6:2a01:cb10:785:b00:8347:f260:7456:7662])
 	by smtp.orange.fr with ESMTPSA
-	id viCtvYCtLgy1AviCtvArnH; Thu, 26 Feb 2026 21:43:37 +0100
+	id viDZvEqUkbni4viDavq6iC; Thu, 26 Feb 2026 21:44:21 +0100
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wanadoo.fr;
-	s=t20230301; t=1772138617;
+	s=t20230301; t=1772138661;
 	bh=DacmWtirnDJ8c5FfO60izxCVDBNId/jIFsPzSSFKxMk=;
 	h=From:To:Subject:Date:Message-ID:MIME-Version;
-	b=eZ7aCq2wjCWG0RHDmt9Ufs1JdOdT5ftNgWwm0PPOJoL7DTWeMBn3lMbrT1t7W/6lj
-	 bxCX7MR8Pk/ndt49pSC2ygnwqvXIpgPzGYnLBzYKLfCp9LclYz79GoDkmjxAGNlg7/
-	 aOES8EGeUgiHO2/zhaziIJeq57x8DGH6vhJ1PxMQxVwS7r9tdM18t7ujjWbCis3UCb
-	 G/qapnySNgtbFuc0LUNMtYzS7y/P8WLAw7y4gxibVtjsvmOQrIAfcquZKn0fn5RX5W
-	 mCV9RyyYHrbOxCUfqZx75dusobe6CBCPn1SETv9QhqQbF9E2OCe2Z/mrtlabg9XXHJ
-	 wiODN5Imqnalw==
+	b=sWNx3deX74wZ1sLmbYlB94WwaAvsbzZjnr/HqeBUWAOhun7bKOCvQbAnp1elKkvzt
+	 ef6PBgecHm1z/Ua/2PhYmMnHJzfwb0C3KNbIuPhRPcZiLM1ZuPS7E5X9T8t56MLJcs
+	 wn7ngmD4UfdxYcVwXMKGJuHQL9er9gH4vZMBlZsmZJPus1/UJ3ySU5VVbZM0q6eUjJ
+	 E3GcXHEwuv8Vup9GCxUFH5tcK1US0W+l7IYFd2W56mKh03e81/REuI8ZfgenpFXs+Z
+	 jqq/hPeb1DL0biKYbHI2BhIOh/ZVmM8w1UV59jlUvdas2tRkKexZud3w+qcnFiruL/
+	 bjxcsLkEKKxKQ==
 X-ME-Helo: fedora.home
 X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
-X-ME-Date: Thu, 26 Feb 2026 21:43:37 +0100
+X-ME-Date: Thu, 26 Feb 2026 21:44:21 +0100
 X-ME-IP: 2a01:cb10:785:b00:8347:f260:7456:7662
 From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 To: Johannes Berg <johannes@sipsolutions.net>,
@@ -54,9 +54,9 @@ Cc: linux-kernel@vger.kernel.org,
 	Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-sound@vger.kernel.org
-Subject: [PATCH v1] ALSA: aoa: Constify struct configfs_item_operations and configfs_group_operations
-Date: Thu, 26 Feb 2026 21:43:27 +0100
-Message-ID: <803ed3c1a19faab6481f3b3b4bf1eb86739061bd.1772138561.git.christophe.jaillet@wanadoo.fr>
+Subject: [PATCH v1] ALSA: aoa: Constify struct codec_connection
+Date: Thu, 26 Feb 2026 21:44:10 +0100
+Message-ID: <4009c337cc1a1a57795562279270c03687973b3b.1772138640.git.christophe.jaillet@wanadoo.fr>
 X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
