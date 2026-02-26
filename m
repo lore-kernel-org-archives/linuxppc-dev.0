@@ -1,73 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-17228-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17229-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 558E0FC5900
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Feb 2026 06:57:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28F46FC5906
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Feb 2026 07:06:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fM2Mf6h4tz2yFc;
-	Thu, 26 Feb 2026 17:57:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772089054;
-	cv=none; b=nj6sDNNfYgLHykWpVqtTtJncNGgd0klznuED1oosfcdTIJdKVQ1YkMp10MDGFu5ff5MdfxpOauIlpBJYXz1XoA2noTKOwz394vXKIdvN+vQoetC/d9KQG37j7y53jrqoPfQc4J4MqQR8LqMoebVQEI7XSgO3OXFVyiJ7G9l42/jqbSxqCrLaJvy6tW7+Cp7iO1mA9YZiTFbm8qp+iSuOPVUClHheyY2cxSXu/U8EtiYabz6dRIAfD9yfjNJg8yFdVQ33en8YkM/3miz9a9/uJS7j1g/iSjGXmg2rH9+koj/9Co/rGU4S77/Rwc9yvtK5E1z8nxvzeDu2pl+auAstBg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fM2Yk49Mmz2yFd;
+	Thu, 26 Feb 2026 18:06:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::134a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772089578;
+	cv=none; b=I5m9ZrM5w6fqnWmfxtKfXoF7erc7ODDAnnnTeHaNTmW9W39Pd17jDmkenKrNJpD1JDWS+YrXajqQctVEP6bLplnIeTTGdMZWkHdT2o4zW58vqojoZQsfRKcEdI1WevK0VnJDBEKKI5a98b3eaIg2okB9MPL5+lA2ZxhpfvUzx2SrxShP5WPyBhV+zTEVi4caWDXrMqm9HW33WvJn54XTXF2lF0CnecbCPdubBowzB6pcKpm4Ope0nlZcDMSEGQqqZaqsCWL6OhqGKWg2BBfIozaJPG0T0xHHK34ctxFtHmmx+LmkXW5dbsSEHFuTYmhtYVvHokERaRsHQlC1jDltMA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772089054; c=relaxed/relaxed;
-	bh=SqilmPT7i33gSRVp4y9chABduz+0yQMqtB5A911BG0c=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=eM5naCx6m35FcvEJdGwL31gaH4S2++LnRcQ2rEu7H18+Ykt+PtdwaUSac2qB2dAAGejb1xj4XM5ko73nnMwdgIV5FZeh6v0kKyBXxX+ZCg4llAnPc+T1F+P7VVMYu+072+BH/0DfcmQUr5CIdLsAnUy28/koyWrjkU7OV/UzMBKMI2KinTWsW1TqQCvY3IPyJgrTSxZ1n3oAVAo7kxWVXfdpXwH1X/7OxfhJwctSrVvguWmVFgCLn1xLyJNx11Vq7xflFkeRmd2/zdYTGpa+c7TR/gjuFSslQnM9R5z0IJKUWxncQI9LF1p6J5ZkHoKhSfgqeIiw6NNRvZXYaKj6fA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lqK//VG3; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1772089578; c=relaxed/relaxed;
+	bh=vucVmOFSxssu4W4+hD04IB0isnzzlwVXoGbpC2l+3Iw=;
+	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=SXCcUVnLX/BU8Z+O+MmEgpc0sdzsEMfsqYNr0amL7r5CqNGPOMKwTp1gKq4v2hRxb2PoTXbBpjEuHWmgeHGQJWcx6UTjOhlDiSTjFgGSXTHw5+eh/346mWNedabZhyuMLPaBPDoTXAgrpyV/Asai5twyNlQ7r/TeUNqXzddNwVpazIslra0LTCeC9fx0w3kce1z46AIsc26YQq1z2WTp63eyGSz96EVELvsRgbBhTtlYuxtyHwq7eZ2H+TvAo5aIocvl3nIwUAnptV0YyvBcEkXCNuz/dscKU/cKbU9Hjixi9qvsWNhkfM3n63fpNYwdbf+S8P+tepMwQdiTF+ECRw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=P/vWR45s; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::134a; helo=mail-dy1-x134a.google.com; envelope-from=35fcfaqykdjomol8h5aiiaf8.6igfchorjj6-78pfcmnm.itf45m.ila@flex--surenb.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--surenb.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lqK//VG3;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=P/vWR45s;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--surenb.bounces.google.com (client-ip=2607:f8b0:4864:20::134a; helo=mail-dy1-x134a.google.com; envelope-from=35fcfaqykdjomol8h5aiiaf8.6igfchorjj6-78pfcmnm.itf45m.ila@flex--surenb.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x134a.google.com (mail-dy1-x134a.google.com [IPv6:2607:f8b0:4864:20::134a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fM2Md6z1rz2xMt
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2026 17:57:33 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61Q0KUHP2632518;
-	Thu, 26 Feb 2026 06:57:19 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=SqilmP
-	T7i33gSRVp4y9chABduz+0yQMqtB5A911BG0c=; b=lqK//VG3GqT/mpfRXP528N
-	iNUrFIFtAA5FzR4MnP/Qz3crImqOuePwcGBxJGM6HAxCURXRxcoXNUSAbp2MFY2p
-	3+MdY9R6gWmufnPYZis8OXxHgUuqL5hb6D6OuQa2IvB3xX6r4HShryMPk6cAq3AU
-	M8+743nJ4PC590It7WVpLwJasvW4RgvboxslKyAgS/7cvcl6htuFQKIyVkbaKWMQ
-	OXakqVye+TYEuI8iO+e0A3SoCuH+LVc9gW0Acw+gVgWKYt1XMEIWqOkRMkTxYu/f
-	z2rIola0ijnwd8L6JV4vnholvX3jlU30i5hUu5qiTIQ1nFK7onCzGxRBiXdQGELg
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cf4bs3x9m-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 26 Feb 2026 06:57:18 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 61Q6kKgr001653;
-	Thu, 26 Feb 2026 06:57:18 GMT
-Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4cfr1n9s3v-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 26 Feb 2026 06:57:18 +0000
-Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
-	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 61Q6vH1n28574382
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 26 Feb 2026 06:57:17 GMT
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DF72958055;
-	Thu, 26 Feb 2026 06:57:16 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 821AC58043;
-	Thu, 26 Feb 2026 06:57:14 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.98.108.141])
-	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTPS;
-	Thu, 26 Feb 2026 06:57:14 +0000 (GMT)
-Content-Type: text/plain;
-	charset=utf-8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fM2Yj4Gtqz2xMt
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2026 18:06:16 +1100 (AEDT)
+Received: by mail-dy1-x134a.google.com with SMTP id 5a478bee46e88-2bdcd394f5bso603873eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2026 23:06:16 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1772089573; x=1772694373; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=vucVmOFSxssu4W4+hD04IB0isnzzlwVXoGbpC2l+3Iw=;
+        b=P/vWR45sq5OKygnBabOcM+ucO6WuKjEy2xSm7/O9YDkJvOM73CHQ7n6UDZaFrSVUPc
+         wuWfDNQwd7GoC3JoZl+jif9re0CM9s/NQLf0S2h2VelnB54qPEcR9pYeZ/ymEPDdTx2F
+         xMeJ6+LeJjoOgfUrNeVn0ODykOgRZA/FOpJiBQSDjwyi+3ajuHlK3WpDikjVQ2Sl7qgi
+         9S2AhAEoDawsdL3vROMgkQlf477NUKhf+BIOGCyxoMrKQmVNdguyV+1IsKRi3ToUOalF
+         zLzEp2GzAuSFlSE7rjZ+RdNaWWYiC3uA6zWLFwYAUhmzB2mM/yWfD1R0dwFJ8pj1h2A2
+         QYBw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1772089573; x=1772694373;
+        h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=vucVmOFSxssu4W4+hD04IB0isnzzlwVXoGbpC2l+3Iw=;
+        b=fY8LaV63+kKUrhkOdF1YXgpY5/Y+xBqnq6EUe0rZuj+6jJvN5XH/FCIGIM71r4k1WP
+         vK/tft1SfPfJFd3y966VYqovwW0DvgkgmDNPVCqmuuMeJaENYdPDnz/qcgF5aCh6a9el
+         Qkk9MOUNkrU+z6Z9HpvDGCK4SbJbGU0aFPvN+v+lrcmZxQx6ob33c/xcWWVoy2zORATs
+         QKi10xF7h0BHOeTa6MOB7F11CkQw5dtoj1y/a2wDTZAELFiT3NYiusOXzrVObsAKlfu2
+         TSKFj62Nkp/6JxYmHeYnmM6MFB0MW8sHwGDbBSWSfwzql8a9HhOcj9UhDVAzT5ExhHZf
+         QbXw==
+X-Forwarded-Encrypted: i=1; AJvYcCU68kUmktA5Sly2OCJZ54MIg5wwEHYAE+kSXHPLNBU8KzYwrp4wp66CfhL3ZA9ofurwu64EbNbEhIFAt38=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yz2gQ6OfomrLQY0PQWYSW2gec2jQHQwtPYDJGyy1CLRBFIQ/uA7
+	BkKOmUBicbC84df7vSfFLPQ+M0TH3SofD9Z1iMV8gJ64JEqAHsP2Oyuiu4J8oZ4PqK3gh/Pas5q
+	LBWZQVA==
+X-Received: from dlam21-n1.prod.google.com ([2002:a05:701b:2095:10b0:127:89b6:8d2a])
+ (user=surenb job=prod-delivery.src-stubby-dispatcher) by 2002:a05:7022:60aa:b0:127:3b16:bf4f
+ with SMTP id a92af1059eb24-127869c9ac6mr1332481c88.40.1772089573227; Wed, 25
+ Feb 2026 23:06:13 -0800 (PST)
+Date: Wed, 25 Feb 2026 23:06:06 -0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,132 +73,96 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.300.41.1.7\))
-Subject: Re: [PATCH v2 2/3] selftest/bpf: Enable get_func_args and get_func_ip
- tests on powerpc64
-From: Venkat <venkat88@linux.ibm.com>
-In-Reply-To: <20260226041217.18059-2-adubey@linux.ibm.com>
-Date: Thu, 26 Feb 2026 12:27:02 +0530
-Cc: linuxppc-dev@lists.ozlabs.org, bpf@vger.kernel.org, hbathini@linux.ibm.com,
-        ast@kernel.org, daniel@iogearbox.net, andrii@kernel.org,
-        maddy@linux.ibm.com
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <5E3E8F8D-D40B-4838-BAB4-1A75A90EA9E7@linux.ibm.com>
-References: <20260226041217.18059-1-adubey@linux.ibm.com>
- <20260226041217.18059-2-adubey@linux.ibm.com>
-To: adubey@linux.ibm.com
-X-Mailer: Apple Mail (2.3864.300.41.1.7)
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: _Wld7jqjdQocfPdcw6t7N_qdT7BD_ylV
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjI2MDA1NyBTYWx0ZWRfX3+EBXQapSV36
- Sfd+uhd3TJqkIiivJCfDqXp974mvL4NrQ0G8j8HWZ5bpXC0oztR57JwH4jzZypuD1lSP2cVEdN9
- LisEtmDXiK1IRb/QZ23y1YamGYRZvNkk/dkIg08Yn+xnEOdsOI9VQJpclX61SA/0u4N9OEaFZe5
- d5ruF5VQKCH/V77PgOgD/EXoY2Vtm979KEU9aT3svaD9dFxkJj2UfbqiUDB9ASmdIzHwdUMr6HZ
- 7Puogw3jEL7LPsCIqad6wvxmtO78jH20Uykd8HG1+o7+uXIMWZsRSWfxBudrL/1hBkCmqSZQYgJ
- 5CHnLmInYr7hmsrY7zgTA5YkaoF9SiOyPyLw45GvYST0g4HKkhaiOKTT647QefMu/vQBV1wxIqL
- 6tpCtpAb77VH44aCZxgfYP4oPxZZ0LMBjrNQ6V1uQrOO6s4XgJA8BlgQK5gGz2owatHnQh6L+65
- gbHKChyWZnjfIrCkXdw==
-X-Authority-Analysis: v=2.4 cv=eNceTXp1 c=1 sm=1 tr=0 ts=699feece cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=HzLeVaNsDn8A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=Mpw57Om8IfrbqaoTuvik:22 a=GgsMoib0sEa3-_RKJdDe:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=94qgRYN1easYJoKLEIAA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: _Wld7jqjdQocfPdcw6t7N_qdT7BD_ylV
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-02-25_04,2026-02-25_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 priorityscore=1501 phishscore=0 suspectscore=0 adultscore=0
- bulkscore=0 lowpriorityscore=0 malwarescore=0 impostorscore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2601150000 definitions=main-2602260057
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.53.0.414.gf7e9f6c205-goog
+Message-ID: <20260226070609.3072570-1-surenb@google.com>
+Subject: [PATCH v3 0/3] Use killable vma write locking in most places
+From: Suren Baghdasaryan <surenb@google.com>
+To: akpm@linux-foundation.org
+Cc: willy@infradead.org, david@kernel.org, ziy@nvidia.com, 
+	matthew.brost@intel.com, joshua.hahnjy@gmail.com, rakie.kim@sk.com, 
+	byungchul@sk.com, gourry@gourry.net, ying.huang@linux.alibaba.com, 
+	apopple@nvidia.com, lorenzo.stoakes@oracle.com, baolin.wang@linux.alibaba.com, 
+	Liam.Howlett@oracle.com, npache@redhat.com, ryan.roberts@arm.com, 
+	dev.jain@arm.com, baohua@kernel.org, lance.yang@linux.dev, vbabka@suse.cz, 
+	jannh@google.com, rppt@kernel.org, mhocko@suse.com, pfalcato@suse.de, 
+	kees@kernel.org, maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au, 
+	chleroy@kernel.org, borntraeger@linux.ibm.com, frankja@linux.ibm.com, 
+	imbrenda@linux.ibm.com, hca@linux.ibm.com, gor@linux.ibm.com, 
+	agordeev@linux.ibm.com, svens@linux.ibm.com, gerald.schaefer@linux.ibm.com, 
+	linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, surenb@google.com
+Content-Type: text/plain; charset="UTF-8"
+
+Now that we have vma_start_write_killable() we can replace most of the
+vma_start_write() calls with it, improving reaction time to the kill
+signal.
+
+There are several places which are left untouched by this patchset:
+
+1. free_pgtables() because function should free page tables even if a
+fatal signal is pending.
+
+2. userfaultd code, where some paths calling vma_start_write() can
+handle EINTR and some can't without a deeper code refactoring.
+
+3. mpol_rebind_mm() which is used by cpusset controller for migrations
+and operates on a remote mm. Incomplete operations here would result
+in an inconsistent cgroup state.
+
+4. vm_flags_{set|mod|clear} require refactoring that involves moving
+vma_start_write() out of these functions and replacing it with
+vma_assert_write_locked(), then callers of these functions should
+lock the vma themselves using vma_start_write_killable() whenever
+possible.
+
+A cleanup patch is added in the beginning to make later changes more
+readable. The second patch contains most of the changes and the last
+patch contains the changes associated with process_vma_walk_lock()
+error handling.
+
+Changes since v2 [1]:
+- rebased over mm-unstable, per Matthew Wilcox;
+- removed mpol_rebind_mm() changes since the function operates on a
+remote mm and incomplete operation can leave unrelated process in an
+inconsistent state;
+- moved vma_start_write_killable() inside set_mempolicy_home_node() to
+avoid locking extra vmas, per Liam R. Howlett
+- moved vma_start_write_killable() inside __mmap_new_vma() to lock the
+vma right after it's allocation, per Liam R. Howlett
+- introduced VMA_MERGE_ERROR_INTR to add EINTR handling for vma_modify()
+- changed do_mbind() error handling for avoid EINTR overrides;
+- changed migrate_to_node() error handling for avoid EINTR overrides;
+- added EINTR handling in queue_pages_range();
+- fixed clear_refs_write() error handling which previous verstion broke
+by skipping some of the cleanup logic;
+
+[1] https://lore.kernel.org/all/20260217163250.2326001-1-surenb@google.com/
+
+Suren Baghdasaryan (3):
+  mm/vma: cleanup error handling path in vma_expand()
+  mm: replace vma_start_write() with vma_start_write_killable()
+  mm: use vma_start_write_killable() in process_vma_walk_lock()
+
+ arch/powerpc/kvm/book3s_hv_uvmem.c |   5 +-
+ arch/s390/kvm/kvm-s390.c           |   2 +-
+ fs/proc/task_mmu.c                 |   5 +-
+ mm/khugepaged.c                    |   5 +-
+ mm/madvise.c                       |   4 +-
+ mm/memory.c                        |   2 +
+ mm/mempolicy.c                     |  22 +++--
+ mm/mlock.c                         |  21 +++--
+ mm/mprotect.c                      |   4 +-
+ mm/mremap.c                        |   4 +-
+ mm/pagewalk.c                      |  20 +++--
+ mm/vma.c                           | 127 ++++++++++++++++++++---------
+ mm/vma.h                           |   6 ++
+ mm/vma_exec.c                      |   6 +-
+ 14 files changed, 167 insertions(+), 66 deletions(-)
 
 
-
-> On 26 Feb 2026, at 9:42=E2=80=AFAM, adubey@linux.ibm.com wrote:
->=20
-> From: Abhishek Dubey <adubey@linux.ibm.com>
->=20
-> Allow get_func_args, get_func_ip & fsession selftests to run on
-> powerpc64.
->=20
-> # ./test_progs -t fsession
-> #135/1   fsession_test/fsession_test:OK
-> #135/2   fsession_test/fsession_reattach:OK
-> #135/3   fsession_test/fsession_cookie:OK
-> #135     fsession_test:OK
-> Summary: 1/3 PASSED, 0 SKIPPED, 0 FAILED
->=20
-> # ./test_progs -t get_func
-> #138     get_func_args_test:OK
-> #139     get_func_ip_test:OK
-> Summary: 2/0 PASSED, 0 SKIPPED, 0 FAILED
->=20
-> v1->v2:
->  Resolve merge conflict
->=20
-> [v1]: =
-https://lore.kernel.org/bpf/20260216155310.38457-1-adubey@linux.ibm.com
->=20
-> Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
-
-./test_progs -t fsession
-#135/1   fsession_test/fsession_test:OK
-#135/2   fsession_test/fsession_reattach:OK
-#135/3   fsession_test/fsession_cookie:OK
-#135     fsession_test:OK
-Summary: 1/3 PASSED, 0 SKIPPED, 0 FAILED
-
-
-./test_progs -t get_func
-#138     get_func_args_test:OK
-#139     get_func_ip_test:OK
-Summary: 2/0 PASSED, 0 SKIPPED, 0 FAILED
-
-
-Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-
-Regards,
-Venkat.
-> ---
-> tools/testing/selftests/bpf/progs/get_func_args_test.c | 3 ++-
-> tools/testing/selftests/bpf/progs/get_func_ip_test.c   | 3 ++-
-> 2 files changed, 4 insertions(+), 2 deletions(-)
->=20
-> diff --git a/tools/testing/selftests/bpf/progs/get_func_args_test.c =
-b/tools/testing/selftests/bpf/progs/get_func_args_test.c
-> index 075a1180ec26..1fe1fb0548ea 100644
-> --- a/tools/testing/selftests/bpf/progs/get_func_args_test.c
-> +++ b/tools/testing/selftests/bpf/progs/get_func_args_test.c
-> @@ -167,7 +167,8 @@ int BPF_PROG(tp_test2)
-> }
->=20
-> __u64 test7_result =3D 0;
-> -#if defined(bpf_target_x86) || defined(bpf_target_arm64) || =
-defined(bpf_target_riscv)
-> +#if defined(bpf_target_x86) || defined(bpf_target_arm64) || \
-> + defined(bpf_target_riscv) || defined(bpf_target_powerpc64)
-> SEC("fsession/bpf_fentry_test1")
-> int BPF_PROG(test7)
-> {
-> diff --git a/tools/testing/selftests/bpf/progs/get_func_ip_test.c =
-b/tools/testing/selftests/bpf/progs/get_func_ip_test.c
-> index 45eaa54d1ac7..be6b1a073b11 100644
-> --- a/tools/testing/selftests/bpf/progs/get_func_ip_test.c
-> +++ b/tools/testing/selftests/bpf/progs/get_func_ip_test.c
-> @@ -106,7 +106,8 @@ int BPF_URETPROBE(test8, int ret)
->=20
-> __u64 test9_entry_result =3D 0;
-> __u64 test9_exit_result =3D 0;
-> -#if defined(bpf_target_x86) || defined(bpf_target_arm64) || =
-defined(bpf_target_riscv)
-> +#if defined(bpf_target_x86) || defined(bpf_target_arm64) || \
-> + defined(bpf_target_riscv) || defined(bpf_target_powerpc64)
-> SEC("fsession/bpf_fentry_test1")
-> int BPF_PROG(test9, int a)
-> {
-> --=20
-> 2.52.0
->=20
+base-commit: 6de23f81a5e08be8fbf5e8d7e9febc72a5b5f27f
+-- 
+2.53.0.414.gf7e9f6c205-goog
 
 
