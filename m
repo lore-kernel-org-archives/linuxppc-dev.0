@@ -1,45 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-17235-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17236-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00F59FC5907
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Feb 2026 07:20:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE0EEFC5906
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Feb 2026 07:32:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fM2t91NrYz2yY0;
-	Thu, 26 Feb 2026 18:20:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:c010:41de::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772090433;
-	cv=none; b=Xk7zWbmVuPmiVtjkvXQerf1BhI8E7DoZEv6WoEX3m+pmkirgYAK9K7qRF4+/IGBtsv/nKQbU+vuh2aaTJHmrIQ20jhD7KgcL2NxEX19qXgWyJEUcm4Xub9iPjytcBKwEGoz9kJ8MyRMMYVkZd5iWS70OhKEFyT0hluoAkJT5Q0WG4Z4zSWRsMPdRKNrB4qAbaZeu1q3hoE594xiOqDtzL9e4uQ01V8WWs3gT0BJhQ09qLQnsfhz3x7LKc1G+3h6gQXUAukuCyUrxvHmT1liwyTRoQhoEYP8TNQF6PqoThlmHUd9XaGaRsFAz7CyEyGP2HlweaQRnYzeAiwa+uxDmjg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fM38Q2d7Rz2yFc;
+	Thu, 26 Feb 2026 18:32:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772091174;
+	cv=none; b=A3p/3XzJzzeBwvMETtz0g/xYUOKKjCJyQ5dVLoAfEVg6H33UMQCK5jGQZOT5crsTFZ4VQGVVRUCHAuk7ZCN2dAonyG2W1uwrJPhvX58jPuC12yvSkQvuCb04J+uqegdpehXC/an7mkqSCZ1VY4wyFnjz16HuE8XcQkiyh1OlzYyGcimvO9evID35w++lWZbhfIm9MORD9fZet8BPAmFe6Gs6Hss6zEK6lY5pXvdu++YN87RERkrBuQEH6NCb7Wnl4XslF+wjrwZhWGhHXFwFsQGYkAN2M9vLs24GgMHfoBi4WIsF7fvtvaH+v4foSuIvQlQJBFTo6SRC8fJnv4I98A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772090433; c=relaxed/relaxed;
-	bh=QC+1BgJmLhkk1Hm+HkACcZg3As2D0rDobBsUyFX/J6Q=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=C1G5YaD8lR5KsXE7crLY/ONkz04BadKbjGEPSQgYxv1i+DJSQdpFIuz41dgJKb8l2dCpivx8hWc6cOkXTEg1AKfXepuXRq3rEWQFhW+fDmdS8r0s/ApumsAcJTUfqEqt609fVpTCCTgqH/5xlit0TRrAas+opPlK7nZX7MO/U8QrgO2Cfyy2HqXaMRu4Ng1ZLr71rph6OoPnff2TAjHz/aNoEFxzhXA5Oo9mhvu5e87TF2Ivqi+Ei309NWA9nqFh0I5BGrDydyVG6ShDJV4D0ZaaCbFq34XPA6HlTNgZyx+i5r934ggPH3xI163C9ShcNR3jsFQXZsbzNPAIoAnrhA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=R6xSeAbN; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
+	t=1772091174; c=relaxed/relaxed;
+	bh=HoNaPrsz8jSOm4pKktZZCYfZwEyknBPj/p+TAy2XcaE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=TEKS2gARHENQaKsgFvLF4ndKb0SrP/nnpQ8jw9+FesGJHFzc4Q1UUIyMomOLR2bSv/t4j3lM/mB6NWb6qM9BYfldGoefMnLiEzML/nHq+6Fhz4zojgsJGA6GcfOXCB8VNuboCMnLFrsDo8MTGBylFjhSq3smMheIvF2RfZybYDU0cX56wlBDnjlDTNkXuz7Gfuy+6bHAxCg0uShE2S1dAMPxPUmedzyTMPeZ/Eb0OCMU+3d8/KwCgw8WETc1MDg0vT7TjiJZ0odmu//OjUwf0fJCs8FgRvYtrOzjMB9H8Z7D08ZLfi6ikc5XuJJnmzNFzysPBN1P9deWXvE/XTiyTA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WhvNjpNI; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=R6xSeAbN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WhvNjpNI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
-Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fM2t819Kdz2yFd
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2026 18:20:32 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1772090423;
-	bh=+xNhFMCr+AwJ4R2ewthyRXsYeAS6MRC+DvkGWiz2Xy4=;
-	h=From:Subject:Date:To:Cc:From;
-	b=R6xSeAbNDvMGPqDU/utIhb/xu3nrrNnDjkWNlPyAeHVnpu6/xjE3pJJp/5RdXJ0uh
-	 0D1nEPT/c9CPZOpLaU+O638k1ZA67qY3tpeXETdU1a1p0jcqd1vc4bq14cxFVIOi5h
-	 jMbu0SfjRphv5Oj0K35ErXJuKmFna+F5rBR8wqBU=
-From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Subject: [PATCH 0/2] efi: Drop unnecessary check for
- CONFIG_MODULE_SIG/CONFIG_KEXEC_SIG
-Date: Thu, 26 Feb 2026 08:20:11 +0100
-Message-Id: <20260226-ima-ifdef-v1-0-8b9613edbbdb@weissschuh.net>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fM38P2fwYz2xMt
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2026 18:32:53 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 8DE9444038;
+	Thu, 26 Feb 2026 07:32:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 799CBC19422;
+	Thu, 26 Feb 2026 07:32:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1772091170;
+	bh=ifqswWyiVHltZ9jFj6fgw2nxsxq2WC8ta0ADE6u9hWI=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=WhvNjpNILxETP/ReAQHkJifgws79BarPd0lr/3gqQBeIzqk0pha6jraykIWKGQtVy
+	 ZrHsOMJZnMrAm3YHBSPO4y3G750XUvfj7XhfDbyA2TSKY8m4v+v4/javixoBNFY2G2
+	 nYzQr5QIgxxfFqY9lgcQSi+bVPGFXSt6IWRTbIMUcctibqsDZR3h6yrEy/KcHTAq2G
+	 fO014sbo8trvofLQau9qwAz3BpgITpklacs/vDlBbdl4KXTiUXVisDUJ1UbLDppdhb
+	 3B2KYdLlu4vI3vxE/jLVZGsmjAeaHUtqgeSHWi1Vq8hN3ve+qwwK0L7Esrnc2sjwYJ
+	 x8ZwgdYb7lFOw==
+Message-ID: <1c1e5cf6-5b38-476c-ba49-35510312b064@kernel.org>
+Date: Thu, 26 Feb 2026 08:32:36 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,57 +59,384 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 04/15] powerpc/time: Prepare to stop elapsing in
+ dynticks-idle
+To: Shrikanth Hegde <sshegde@linux.ibm.com>,
+ Frederic Weisbecker <frederic@kernel.org>,
+ LKML <linux-kernel@vger.kernel.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Anna-Maria Behnsen <anna-maria@linutronix.de>,
+ Ben Segall <bsegall@google.com>, Boqun Feng <boqun.feng@gmail.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Jan Kiszka <jan.kiszka@siemens.com>, Joel Fernandes <joelagnelf@nvidia.com>,
+ Juri Lelli <juri.lelli@redhat.com>, Kieran Bingham <kbingham@kernel.org>,
+ Mel Gorman <mgorman@suse.de>, Michael Ellerman <mpe@ellerman.id.au>,
+ Neeraj Upadhyay <neeraj.upadhyay@kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>, "Paul E . McKenney"
+ <paulmck@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Steven Rostedt <rostedt@goodmis.org>, Sven Schnelle <svens@linux.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Uladzislau Rezki <urezki@gmail.com>,
+ Valentin Schneider <vschneid@redhat.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>, Xin Zhao <jackzxcui1989@163.com>,
+ linux-pm@vger.kernel.org, linux-s390@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+References: <20260206142245.58987-1-frederic@kernel.org>
+ <20260206142245.58987-5-frederic@kernel.org>
+ <9413517d-963b-4e6d-b11b-b440acd7cb5a@linux.ibm.com>
+ <9ab1e7d7-57ee-49f9-963c-3a1b96dda684@kernel.org>
+ <120884b0-0b09-43a9-b0f6-7dc2affe1ac0@linux.ibm.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <120884b0-0b09-43a9-b0f6-7dc2affe1ac0@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDIzMDIyNT3czcRN3MtJTUNF1LcwtLM4NkgzQDg1QloPqCotS0zAqwWdGxtbU
- ADAsehFsAAAA=
-X-Change-ID: 20260225-ima-ifdef-978960c0f00e
-To: Mimi Zohar <zohar@linux.ibm.com>, 
- Roberto Sassu <roberto.sassu@huawei.com>, 
- Dmitry Kasatkin <dmitry.kasatkin@gmail.com>, 
- Eric Snowberg <eric.snowberg@oracle.com>, Paul Moore <paul@paul-moore.com>, 
- James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: linux-integrity@vger.kernel.org, linux-security-module@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>, 
- Aaron Tomlin <atomlin@atomlin.com>, Nicolas Schier <nsc@kernel.org>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1772090423; l=912;
- i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=+xNhFMCr+AwJ4R2ewthyRXsYeAS6MRC+DvkGWiz2Xy4=;
- b=EXmDSldrQjH9k7r0b85aygGNholtTe9az0eoaO840iqEpDnHsz3NlQbbpTApT7423xZ3w9rGu
- uRSsU+wItAJBD1UaM5biNqLgvm3cHWR5LUeC4k6Vl70QwDNFXQQ0QmZ
-X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
- pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-When configuration settings are disabled the guarded functions are
-defined as empty stubs, so the check is unnecessary.
+Hi Hegde,
 
-This was originally part of my CONFIG_MODULE_HASHES[0] series,
-but as I am dropping IMA compatibility for now, these patches
-can go in independently.
+Le 25/02/2026 à 08:46, Shrikanth Hegde a écrit :
+> Hi Christophe,
+> 
+> On 2/24/26 9:11 PM, Christophe Leroy (CS GROUP) wrote:
+>> Hi Hegde,
+>>
+>> Le 19/02/2026 à 19:30, Shrikanth Hegde a écrit :
+>>>
+>>>
+>>> On 2/6/26 7:52 PM, Frederic Weisbecker wrote:
+>>>> Currently the tick subsystem stores the idle cputime accounting in
+>>>> private fields, allowing cohabitation with architecture idle vtime
+>>>> accounting. The former is fetched on online CPUs, the latter on offline
+>>>> CPUs.
+>>>>
+>>>> For consolidation purpose, architecture vtime accounting will continue
+>>>> to account the cputime but will make a break when the idle tick is
+>>>> stopped. The dyntick cputime accounting will then be relayed by the 
+>>>> tick
+>>>> subsystem so that the idle cputime is still seen advancing coherently
+>>>> even when the tick isn't there to flush the idle vtime.
+>>>>
+>>>> Prepare for that and introduce three new APIs which will be used in
+>>>> subsequent patches:
+>>>>
+>>>> _ vtime_dynticks_start() is deemed to be called when idle enters in
+>>>>    dyntick mode. The idle cputime that elapsed so far is accumulated.
+>>>>
+>>>> - vtime_dynticks_stop() is deemed to be called when idle exits from
+>>>>    dyntick mode. The vtime entry clocks are fast-forward to current 
+>>>> time
+>>>>    so that idle accounting restarts elapsing from now.
+>>>>
+>>>> - vtime_reset() is deemed to be called from dynticks idle IRQ entry to
+>>>>    fast-forward the clock to current time so that the IRQ time is still
+>>>>    accounted by vtime while nohz cputime is paused.
+>>>>
+>>>> Also accumulated vtime won't be flushed from dyntick-idle ticks to 
+>>>> avoid
+>>>> accounting twice the idle cputime, along with nohz accounting.
+>>>>
+>>>> Signed-off-by: Frederic Weisbecker <frederic@kernel.org>
+>>>
+>>> Reviewed-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+>>>
+>>>> ---
+>>>>   arch/powerpc/kernel/time.c | 41 ++++++++++++++++++++++++++++++++++ 
+>>>> ++++
+>>>>   include/linux/vtime.h      |  6 ++++++
+>>>>   2 files changed, 47 insertions(+)
+>>>>
+>>>> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+>>>> index 4bbeb8644d3d..18506740f4a4 100644
+>>>> --- a/arch/powerpc/kernel/time.c
+>>>> +++ b/arch/powerpc/kernel/time.c
+>>>> @@ -376,6 +376,47 @@ void vtime_task_switch(struct task_struct *prev)
+>>>>           acct->starttime = acct0->starttime;
+>>>>       }
+>>>>   }
+>>>> +
+>>>> +#ifdef CONFIG_NO_HZ_COMMON
+>>>> +/**
+>>>> + * vtime_reset - Fast forward vtime entry clocks
+>>>> + *
+>>>> + * Called from dynticks idle IRQ entry to fast-forward the clocks 
+>>>> to current time
+>>>> + * so that the IRQ time is still accounted by vtime while nohz 
+>>>> cputime is paused.
+>>>> + */
+>>>> +void vtime_reset(void)
+>>>> +{
+>>>> +    struct cpu_accounting_data *acct = get_accounting(current);
+>>>> +
+>>>> +    acct->starttime = mftb();
+>>>
+>>> I figured out why those huge values happen.
+>>>
+>>> This happens because mftb is from when the system is booted.
+>>> I was doing kexec to start the new kernel and mftb wasn't getting
+>>> reset.
+>>>
+>>> I thought about this. This is concern for pseries too, where LPAR's
+>>> restart but system won't restart and mftb will continue to run 
+>>> instead of
+>>> reset.
+>>>
+>>> I think we should be using sched_clock instead of mftb here.
+>>> Though we need it a few more places and some cosmetic changes around it.
+>>>
+>>> Note: Some values being huge exists without series for few CPUs, with 
+>>> series it
+>>> shows up in most of the CPUs.
+>>>
+>>> So I am planning send out fix below fix separately keeping your
+>>> series as dependency.
+>>>
+>>> ---
+>>>   arch/powerpc/include/asm/accounting.h |  4 ++--
+>>>   arch/powerpc/include/asm/cputime.h    | 14 +++++++-------
+>>>   arch/powerpc/kernel/time.c            | 22 +++++++++++-----------
+>>>   3 files changed, 20 insertions(+), 20 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/include/asm/accounting.h b/arch/powerpc/ 
+>>> include/asm/accounting.h
+>>> index 6d79c31700e2..50f120646e6d 100644
+>>> --- a/arch/powerpc/include/asm/accounting.h
+>>> +++ b/arch/powerpc/include/asm/accounting.h
+>>> @@ -21,8 +21,8 @@ struct cpu_accounting_data {
+>>>       unsigned long steal_time;
+>>>       unsigned long idle_time;
+>>>       /* Internal counters */
+>>> -    unsigned long starttime;    /* TB value snapshot */
+>>> -    unsigned long starttime_user;    /* TB value on exit to usermode */
+>>> +    unsigned long starttime;    /* Time value snapshot */
+>>> +    unsigned long starttime_user;    /* Time value on exit to 
+>>> usermode */
+>>>   #ifdef CONFIG_ARCH_HAS_SCALED_CPUTIME
+>>>       unsigned long startspurr;    /* SPURR value snapshot */
+>>>       unsigned long utime_sspurr;    /* ->user_time when ->startspurr 
+>>> set */
+>>> diff --git a/arch/powerpc/include/asm/cputime.h b/arch/powerpc/ 
+>>> include/ asm/cputime.h
+>>> index aff858ca99c0..eb6b629b113f 100644
+>>> --- a/arch/powerpc/include/asm/cputime.h
+>>> +++ b/arch/powerpc/include/asm/cputime.h
+>>> @@ -20,9 +20,9 @@
+>>>   #include <asm/time.h>
+>>>   #include <asm/param.h>
+>>>   #include <asm/firmware.h>
+>>> +#include <linux/sched/clock.h>
+>>>
+>>>   #ifdef __KERNEL__
+>>> -#define cputime_to_nsecs(cputime) tb_to_ns(cputime)
+>>>
+>>>   /*
+>>>    * PPC64 uses PACA which is task independent for storing accounting 
+>>> data while
+>>> @@ -44,20 +44,20 @@
+>>>    */
+>>>   static notrace inline void account_cpu_user_entry(void)
+>>>   {
+>>> -    unsigned long tb = mftb();
+>>> +    unsigned long now = sched_clock();
+>>
+>> Now way !
+>>
+>> By doing that you'll kill performance for no reason. All we need when 
+>> accounting time spent in kernel or in user is the difference between 
+>> time at entry and time at exit, no mater what the time was at boot time.
+>>
+> 
+> No. With this patch there will not be any performance difference.
+> All it does is, instead of using mftb uses sched_clock at those places.
+> 
 
-[0] https://lore.kernel.org/lkml/20260113-module-hashes-v4-0-0b932db9b56b@weissschuh.net/
+For the record, I did some benchmark test with 
+tools/testing/selftests/powerpc/benchmarks/null_syscall on powerpc 885 
+microcontroller:
 
-Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
----
-Thomas Weißschuh (2):
-      ima: efi: Drop unnecessary check for CONFIG_MODULE_SIG/CONFIG_KEXEC_SIG
-      powerpc/ima: Drop unnecessary check for CONFIG_MODULE_SIG
+Without your proposed patch:
 
- arch/powerpc/kernel/ima_arch.c   | 3 +--
- security/integrity/ima/ima_efi.c | 6 ++----
- 2 files changed, 3 insertions(+), 6 deletions(-)
----
-base-commit: 6de23f81a5e08be8fbf5e8d7e9febc72a5b5f27f
-change-id: 20260225-ima-ifdef-978960c0f00e
+root@vgoip:~# ./null_syscall
+    2729.98 ns     360.36 cycles
 
-Best regards,
--- 
-Thomas Weißschuh <linux@weissschuh.net>
+With your proposed patch below:
+
+root@vgoip:~# ./null_syscall
+    3370.80 ns     444.95 cycles
+
+So as expected it is a huge regression, almost 25% more time to run the 
+syscall.
+
+Christophe
+
+
+> 
+> In arch/powerpc/kernel/time.c we have sched_clock().
+> notrace unsigned long long sched_clock(void)
+> {
+>          return mulhdu(get_tb() - boot_tb, tb_to_ns_scale) << 
+> tb_to_ns_shift;
+> }
+> 
+> It does the same mftb call, and accounts only the time after boot, which is
+> what /proc/stat should do as well.
+> 
+> "
+> the amount of time, measured in units of USER_HZ
+> (1/100ths of a second on most architectures
+> 
+> user   (1) Time spent in user mode.
+> 
+> idle   (4) Time spent in the idle task.  This value
+>         should be USER_HZ times the second entry in
+>         the /proc/uptime pseudo-file.
+> "
+> /proc/uptime is based on sched_clock, so i infer /proc/stat also should 
+> show
+> values w.r.t to boot of the OS.
+> 
+> 
+>> Also sched_clock() returns nanoseconds which implies calculation from 
+>> timebase. This is pointless CPU consumption. The current 
+>> implementation calculates nanoseconds at task switch when calling 
+>> vtime_flush().Your change will now do it at every kernel entry and 
+>> kernel exit by calling sched_clock().
+> 
+> This change doesn't add any additional paths. Even without patches, mftb 
+> would have
+> been called in every kernel entry/exit.  See mftb usage 
+> account_cpu_user_exit/enter
+> 
+> Now instead of mftb sched_clock is used, that's all. No additional 
+> entry/exit points.
+> And previously when accounting we would have done cputime_to_nsecs, now 
+> that conversion
+> is done automatically in sched_clock. So overall computation-wise it 
+> should be same.
+> 
+> What i am missing to see it here?
+> 
+>>
+>> Another point is that sched_clock() returns a long long not a long.
+> 
+> Thanks for pointing that out.
+> 
+> Ok. Let me change some of those variables into unsigned long long.
+> Compiler didn't warn me, so i didn't see it.
+> 
+>>
+>> And also sched_clock() uses get_tb() which does mftb and mftbu. Which 
+>> is pointless for calculating time deltas unless your application 
+>> spends hours without being re-scheduled.
+>>
+> 
+> I didn't get this. At current also, we use mftb, that functionality 
+> should be the same.
+> Could you please explain how?
+> 
+>>
+>>>       struct cpu_accounting_data *acct = raw_get_accounting(current);
+>>>
+>>> -    acct->utime += (tb - acct->starttime_user);
+>>> -    acct->starttime = tb;
+>>> +    acct->utime += (now - acct->starttime_user);
+>>> +    acct->starttime = now;
+>>>   }
+>>>
+>>>   static notrace inline void account_cpu_user_exit(void)
+>>>   {
+>>> -    unsigned long tb = mftb();
+>>> +    unsigned long now = sched_clock();
+>>>       struct cpu_accounting_data *acct = raw_get_accounting(current);
+>>>
+>>> -    acct->stime += (tb - acct->starttime);
+>>> -    acct->starttime_user = tb;
+>>> +    acct->stime += (now - acct->starttime);
+>>> +    acct->starttime_user = now;
+>>>   }
+>>>
+>>>   static notrace inline void account_stolen_time(void)
+>>> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+>>> index 18506740f4a4..fb67cdae3bcb 100644
+>>> --- a/arch/powerpc/kernel/time.c
+>>> +++ b/arch/powerpc/kernel/time.c
+>>> @@ -215,7 +215,7 @@ static unsigned long vtime_delta(struct 
+>>> cpu_accounting_data *acct,
+>>>
+>>>       WARN_ON_ONCE(!irqs_disabled());
+>>>
+>>> -    now = mftb();
+>>> +    now = sched_clock();
+>>>       stime = now - acct->starttime;
+>>>       acct->starttime = now;
+>>>
+>>> @@ -299,9 +299,9 @@ static void vtime_flush_scaled(struct task_struct 
+>>> *tsk,
+>>>   {
+>>>   #ifdef CONFIG_ARCH_HAS_SCALED_CPUTIME
+>>>       if (acct->utime_scaled)
+>>> -        tsk->utimescaled += cputime_to_nsecs(acct->utime_scaled);
+>>> +        tsk->utimescaled += acct->utime_scaled;
+>>>       if (acct->stime_scaled)
+>>> -        tsk->stimescaled += cputime_to_nsecs(acct->stime_scaled);
+>>> +        tsk->stimescaled += acct->stime_scaled;
+>>>
+>>>       acct->utime_scaled = 0;
+>>>       acct->utime_sspurr = 0;
+>>> @@ -321,28 +321,28 @@ void vtime_flush(struct task_struct *tsk)
+>>>       struct cpu_accounting_data *acct = get_accounting(tsk);
+>>>
+>>>       if (acct->utime)
+>>> -        account_user_time(tsk, cputime_to_nsecs(acct->utime));
+>>> +        account_user_time(tsk, acct->utime);
+>>>
+>>>       if (acct->gtime)
+>>> -        account_guest_time(tsk, cputime_to_nsecs(acct->gtime));
+>>> +        account_guest_time(tsk, acct->gtime);
+>>>
+>>>       if (IS_ENABLED(CONFIG_PPC_SPLPAR) && acct->steal_time) {
+>>> -        account_steal_time(cputime_to_nsecs(acct->steal_time));
+>>> +        account_steal_time(acct->steal_time);
+>>>           acct->steal_time = 0;
+>>>       }
+>>>
+>>>       if (acct->idle_time)
+>>> -        account_idle_time(cputime_to_nsecs(acct->idle_time));
+>>> +        account_idle_time(acct->idle_time);
+>>>
+>>>       if (acct->stime)
+>>> -        account_system_index_time(tsk, cputime_to_nsecs(acct->stime),
+>>> +        account_system_index_time(tsk, acct->stime,
+>>>                         CPUTIME_SYSTEM);
+>>>
+>>>       if (acct->hardirq_time)
+>>> -        account_system_index_time(tsk, cputime_to_nsecs(acct- 
+>>>  >hardirq_time),
+>>> +        account_system_index_time(tsk, acct->hardirq_time,
+>>>                         CPUTIME_IRQ);
+>>>       if (acct->softirq_time)
+>>> -        account_system_index_time(tsk, cputime_to_nsecs(acct- 
+>>>  >softirq_time),
+>>> +        account_system_index_time(tsk, acct->softirq_time,
+>>>                         CPUTIME_SOFTIRQ);
+>>>
+>>>       vtime_flush_scaled(tsk, acct);
+>>> @@ -388,7 +388,7 @@ void vtime_reset(void)
+>>>   {
+>>>       struct cpu_accounting_data *acct = get_accounting(current);
+>>>
+>>> -    acct->starttime = mftb();
+>>> +    acct->starttime = sched_clock();
+>>>   #ifdef CONFIG_ARCH_HAS_SCALED_CPUTIME
+>>>       acct->startspurr = read_spurr(acct->starttime);
+>>>   #endif
+>>
+> 
+> PS: I measured the performance with hackbench. I don't see any degradation.
+> 
 
 
