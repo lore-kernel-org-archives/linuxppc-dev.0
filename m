@@ -1,51 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-17212-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17213-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D617FD45FA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Feb 2026 22:03:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26561FD45F8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Feb 2026 22:13:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fLpW86Pbjz3fGT;
-	Thu, 26 Feb 2026 09:03:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772056996;
-	cv=none; b=aY5EKOclgw2ULagnbxaeenTq74JTonUMYkliM2pMV02W4FHeIImrQ9gFJCoz7tU+tudpMX8o7VexdrzRAJaRDFNew8fpz4O83Xjk2nVs8P3BKf+XgcG6vz+JhIc0k5CbkdeLeaKelekMOdcT+YsBeaOT5ouH2N41yXhH4k2g0g7l/x3D/JR75wKzoFbdibmgdR5yI42rZatnL9RXQsxev2VX6Omj7YZ0a3M6ZOJYkoDU5ccGXXBGOVlb+vvdWZ0riDDaZ2rjeA1e+blDy/+e5WBpQh4ST9izG0NlyoFDnFZJBCHp9TXfFBjTn/RyMwZMYGnXLzxxp8pfzBTOuhvtIQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fLpkv58Jtz3fHc;
+	Thu, 26 Feb 2026 09:13:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772057607;
+	cv=none; b=n79hy6pcr4rOkBH1hiIGk6vzyjzIcVoDB/X/oiWK7CwFKBhHFudLiv+jyc6hWi/LC1MUqr5K9MCswsSfu/jmmZfb6oaAMBW8suq6A7vdReMLvuLHNtVNP79imd0NQudChVazksixGiczInFshXCnI17sYmVKpZCh3jB5q+6KgRfpfX3WwqgQevKUH2lJnszgnzI3VRAYkxuTkFkRn6xrmX8ojYIuwVJ/448QNGdQN0V9JjdV/Im9kPySa9qdVoH91iYA/JTzqbv82WcQQb+9DjNaMMe5gmYDYb9FAJdrPTX0U+jxN+qTJMeJfQHcVawLG8iCERgWmvMcnzy+SO9jBQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772056996; c=relaxed/relaxed;
-	bh=X5Uei7J6wPTaufFZfJ1QY+msf1MQQfu8WvoFcRNTGHw=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=U/LgfGmMoXRE1G2RfAjKE+CJ0kIgAWOjCMfmjgZP7+VRzdStL0ehThZSedxFUx3cDK3ivwzBFnlkTaV8MZ+44teTvOT5J61NIltPrZyakzbB1I4F08Djlr9mXJytg5WEiPstwXV6s1q/vk/fwt+8X4BMigBRWHoZowf9IpSjHQtIe8obmU4OTDRWeQFtAFwuzJnypSAXNPLeaV6kpxNeAFYe3OIAtCjnE1Kihu4GV80oQEil+8Sl4lZ8hz2nApEn1c4LKkiIXqFtafWpyuD3hxk8VAAGhtj+lnF0ulx6idTL77PwhDqk1j96c9TAg75IOhAcXgFNiZZEDB7WRDfw2A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Lh2Gp07e; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1772057607; c=relaxed/relaxed;
+	bh=dxHggNPzAYgLCqID2Ta+KQdHyGg+OOvcsXIswGIfBeY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=O27QgiOtgazTWYWuNzdZFXwCpEtkHbkX01jQUz5ZNvDXLr0ffeKJlGD5GNwH3MRP/HPy1nDo8k1QvvSbeYSepnQsWPzPdwwV8eIgIxRoYVm4gy2nsNHZlR6TnTnVh1rncQUsSkLOPJQK158L73GG7YPCHzVDQdWcswcSaODq1L/tMDITCzYHPmP3e0l1oJhk8u4E0MHgbbQ+L1Dnpxk90p4TD88jXkLp4J2QwWpVT4bNBn2xffkvEQbO9REDwl2bGF5Ltg5q6CpZW2yyG3HjNEuFdSQBnn3y+F3taWR06zpNq0hx54psTrvPMvlSuZ9Esx/TP5G7VAQ3eQAf/uDjSw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gRzEU8Cj; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Lh2Gp07e;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gRzEU8Cj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fLpW63tp5z3fFx
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2026 09:03:14 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 0B41C60053;
-	Wed, 25 Feb 2026 22:03:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 71333C116D0;
-	Wed, 25 Feb 2026 22:02:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772056991;
-	bh=gYzWYbqUVyUWAs9EGE5ShllXabtNZu/2sUv3FCUuj7w=;
-	h=From:Date:Subject:To:Cc:From;
-	b=Lh2Gp07eMCKl2XdNkedsqAZVkfBDWlOl2fsRxHEWE9tKv6jQh0edVVUsxDh6W5Xp/
-	 cpuHLuvKro/8fpHAIcfb6xh/0YkDcRPPmsCi3vH9hoM2N/cp4Zu293fjw8x0Y3sBRt
-	 xrryrjjtuF0G+GfHoJWSUPrL9Ub+h33d7ZDtN9xF5vWiBWN/Dqwh64X9F4ye8SQCek
-	 kzV0xNeQjeGNvdSYha+gv6+Zs0BqrJ4PL5GFW9IS3v5kg8ppoQ0ELPzksn51X2e+bF
-	 DsAPQYsTPAgDK9wa/O/d5HZiuyl/GUUOQtp0CrrKYMUtc7XQZ+nQdyI2fcEiQZeqbq
-	 KLkKqVrgOPu2w==
-From: Nathan Chancellor <nathan@kernel.org>
-Date: Wed, 25 Feb 2026 15:02:51 -0700
-Subject: [PATCH] kbuild: Split .modinfo out from ELF_DETAILS
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fLpkt4mc2z3fHR
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2026 09:13:26 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61PK2bGF2523183;
+	Wed, 25 Feb 2026 22:13:09 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=dxHggNPzAYgLCqID2Ta+KQdHyGg+OOvcsXIswGIfB
+	eY=; b=gRzEU8CjsqFGfdIIbM4jIoiXRrI2S2eHz27ljNcz+B9BvBgQSM4Gfq69y
+	8cImiiP+XNiw69hEV8d1m1phrUZ2VIlU/GUZ7spgnm/UxPO9q3YSF/U9xi3S6INK
+	yVqfOEoOdbgWxN2eRcG+TnU7n/1E0/wFcuaZ3BFR22I4CYOhifGeJT3Svw2lyDis
+	ZgfopLjwSeyWMYU0zMpZTqv11gnvsNkYzMWLEmSPpqZtBMnCBGH9XTebUrp7/Z/3
+	vLWWOZO04T2SUarvV9ed5+/1cvwidUhveQMR4O5WQi9Bxl6Kx2QxuH2tF/0EqR/P
+	XAOxsA1wfNjJo91Z1ahCj6NxvPMSQ==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cf24gj920-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 25 Feb 2026 22:13:09 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 61PKrSgv027789;
+	Wed, 25 Feb 2026 22:13:08 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4cfsr1yg1n-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 25 Feb 2026 22:13:08 +0000
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 61PMD4qK30540484
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 25 Feb 2026 22:13:05 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D92D82004E;
+	Wed, 25 Feb 2026 22:13:04 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4D6362004B;
+	Wed, 25 Feb 2026 22:13:03 +0000 (GMT)
+Received: from ltcrain4-lp15.ltc.tadn.ibm.com (unknown [9.5.7.39])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 25 Feb 2026 22:13:03 +0000 (GMT)
+From: adubey@linux.ibm.com
+To: linuxppc-dev@lists.ozlabs.org
+Cc: bpf@vger.kernel.org, hbathini@linux.ibm.com, ast@kernel.org,
+        daniel@iogearbox.net, andrii@kernel.org, maddy@linux.ibm.com,
+        Abhishek Dubey <adubey@linux.ibm.com>
+Subject: [PATCH v4 1/2] powerpc64/bpf: Implement JIT support for private stack
+Date: Wed, 25 Feb 2026 22:13:23 -0500
+Message-ID: <20260226031324.17352-1-adubey@linux.ibm.com>
+X-Mailer: git-send-email 2.52.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,430 +86,325 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260225-separate-modinfo-from-elf-details-v1-1-387ced6baf4b@kernel.org>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXNwQrCMAyA4VcZORvoOh3MVxEPcUk1srWj6UQYe
- 3erHr/L/29gklUMzs0GWV5qmmJFe2hgfFC8CypXg3e+d94f0WShTEVwTqwxJAw5zShTQJZCOhl
- y1/aO6RS6YYDaWbIEff8el+vftt6eMpZvGPb9A+qYJnaFAAAA
-X-Change-ID: 20260224-separate-modinfo-from-elf-details-d3160da5f399
-To: Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nsc@kernel.org>
-Cc: Richard Henderson <richard.henderson@linaro.org>, 
- Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>, 
- Vineet Gupta <vgupta@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, 
- Will Deacon <will@kernel.org>, Guo Ren <guoren@kernel.org>, 
- Brian Cain <bcain@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, 
- WANG Xuerui <kernel@xen0n.name>, Geert Uytterhoeven <geert@linux-m68k.org>, 
- Sam Creasey <sammy@sammy.net>, 
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
- Dinh Nguyen <dinguyen@kernel.org>, Jonas Bonn <jonas@southpole.se>, 
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, 
- Stafford Horne <shorne@gmail.com>, 
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
- Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
- Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
- Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
- Alexander Gordeev <agordeev@linux.ibm.com>, 
- Christian Borntraeger <borntraeger@linux.ibm.com>, 
- Sven Schnelle <svens@linux.ibm.com>, 
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
- "David S. Miller" <davem@davemloft.net>, 
- Andreas Larsson <andreas@gaisler.com>, Richard Weinberger <richard@nod.at>, 
- Anton Ivanov <anton.ivanov@cambridgegreys.com>, 
- Johannes Berg <johannes@sipsolutions.net>, 
- Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
- Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, 
- x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
- Kees Cook <kees@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
- Masahiro Yamada <masahiroy@kernel.org>, Alexey Gladkov <legion@kernel.org>, 
- linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
- linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
- loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org, 
- linux-mips@vger.kernel.org, linux-openrisc@vger.kernel.org, 
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, 
- linux-um@lists.infradead.org, linux-kbuild@vger.kernel.org, 
- stable@vger.kernel.org, Ed W <lists@wildgooses.com>
-X-Mailer: b4 0.15-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=11544; i=nathan@kernel.org;
- h=from:subject:message-id; bh=gYzWYbqUVyUWAs9EGE5ShllXabtNZu/2sUv3FCUuj7w=;
- b=owGbwMvMwCUmm602sfCA1DTG02pJDJnzCyeriCZdaxI+5Sf0rTM57l6D0sWGw+sO7C6JuqWuV
- lv08cGpjhIWBjEuBlkxRZbqx6rHDQ3nnGW8cWoSzBxWJpAhDFycAjAR9SKG75EsPLMZNsz8+2PX
- foVJdy5bdNqZ6l3jFRDMuD/jsMiKLoa/Andbtyi/Z/w0p6XQ5urDDXN8jKJenk+u2/pZubeWW6q
- QDwA=
-X-Developer-Key: i=nathan@kernel.org; a=openpgp;
- fpr=2437CB76E544CB6AB3D9DFD399739260CB6CB716
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Authority-Analysis: v=2.4 cv=TNRIilla c=1 sm=1 tr=0 ts=699f73f5 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=HzLeVaNsDn8A:10 a=VkNPw1HP01LnGYTKEx00:22 a=Mpw57Om8IfrbqaoTuvik:22
+ a=GgsMoib0sEa3-_RKJdDe:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=A8mRDSlWM7J1pTn1j8wA:9
+X-Proofpoint-GUID: aaEl0NdXzjClI1-v0Hw1S3P-FsFrqfgt
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjI1MDIxMiBTYWx0ZWRfX+pQO1y5LQeaH
+ gr/NcEnr64ei1krWwBvIhrvFN0efgM6iBZZdIMBaspGCMzixTgBQyOkzzhdLL1tOk1cAVVe/OEa
+ xa9ADgag9rMwuFReBAmcwHtxuXa/dakyzvcpwO5/APgZppm4asv6ENiN4OwBNdnGughI3Py6yp/
+ m8TsnxN9lshnHx7m+E9P4tVMFK6hCcwUKZTdRgTI9n87G86hdGKQK72dQiO5VVuDQRIZ7UrqUcQ
+ BGAPBIyr2bETv2hORMWJvvfW3uGou12r+s9dukcfa2yo61ojRNKppM7O1urMFUQicShoAw7jQXW
+ uAx2ds4FARBuihi2qx22a6jAkE/0yB+w2Ct49FFAWgEZbBGVsIRRtYmNm2UUKcbyUfC0CJZt1Ff
+ poX5V0vXTj+SKf1wyxg1Z/G+BpPMAHrTUKJ/ogYYJsOumqSVchgHFHcFU4v0TyDrvseqPRs+Sio
+ WewISs9hMwdkoDJVt5Q==
+X-Proofpoint-ORIG-GUID: aaEl0NdXzjClI1-v0Hw1S3P-FsFrqfgt
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-02-25_03,2026-02-25_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 suspectscore=0 adultscore=0 priorityscore=1501 impostorscore=0
+ spamscore=0 clxscore=1015 bulkscore=0 lowpriorityscore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2601150000 definitions=main-2602250212
 
-Commit 3e86e4d74c04 ("kbuild: keep .modinfo section in
-vmlinux.unstripped") added .modinfo to ELF_DETAILS while removing it
-from DISCARDS, as it was needed in vmlinux.unstripped and ELF_DETAILS
-was present in all architecture specific vmlinux linker scripts. While
-this shuffle is fine for vmlinux, ELF_DETAILS and DISCARDS may be used
-by other linker scripts, such as the s390 and x86 compressed boot
-images, which may not expect to have a modinfo section. In certain
-circumstances, this could result in a bootloader failing to load the
-compressed kernel [1].
+From: Abhishek Dubey <adubey@linux.ibm.com>
 
-Commit ddc6cbef3ef1 ("s390/boot/vmlinux.lds.S: Ensure bzImage ends with
-SecureBoot trailer") recently addressed this for the s390 bzImage but
-the same bug remains for parisc and x86. The presence of .modinfo in the
-x86 bzImage was the root cause of the issue workad around with
-commit d50f21091358 ("kbuild: align modinfo section for Secureboot
-Authenticode EDK2 compat"). misc.c in arch/x86/boot/compressed includes
-lib/decompress_unzstd.c, which in turn includes lib/xxhash.c and its
-MODULE_LICENSE / MODULE_DESCRIPTION macros due to the STATIC definition.
+Provision the private stack as a per-CPU allocation during
+bpf_int_jit_compile(). Align the stack to 16 bytes and place guard
+regions at both ends to detect runtime stack overflow and underflow.
 
-Split .modinfo out from ELF_DETAILS into its own macro and handle it in
-all vmlinux linker scripts. Discard .modinfo in the places where it was
-previously being discarded from being in DISCARDS, as it has never been
-necessary in those uses.
+Round the private stack size up to the nearest 16-byte boundary.
+Make each guard region 16 bytes to preserve the required overall
+16-byte alignment. When private stack is set, skip bpf stack size
+accounting in kernel stack.
 
-Cc: stable@vger.kernel.org
-Fixes: 3e86e4d74c04 ("kbuild: keep .modinfo section in vmlinux.unstripped")
-Reported-by: Ed W <lists@wildgooses.com>
-Closes: https://lore.kernel.org/587f25e0-a80e-46a5-9f01-87cb40cfa377@wildgooses.com/ [1]
-Tested-by: Ed W <lists@wildgooses.com> # x86_64
-Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+There is no stack pointer in powerpc. Stack referencing during JIT
+is done using frame pointer. Frame pointer calculation goes like:
+
+BPF frame pointer = Priv stack allocation start address +
+                    Overflow guard +
+                    Actual stack size defined by verifier
+
+Memory layout:
+
+High Addr          +--------------------------------------------------+
+                   |                                                  |
+                   | 16 bytes Underflow guard (0xEB9F12345678eb9fULL) |
+                   |                                                  |
+         BPF FP -> +--------------------------------------------------+
+                   |                                                  |
+                   | Private stack - determined by verifier           |
+                   | 16-bytes aligned                                 |
+                   |                                                  |
+                   +--------------------------------------------------+
+                   |                                                  |
+Lower Addr         | 16 byte Overflow guard (0xEB9F12345678eb9fULL)   |
+                   |                                                  |
+Priv stack alloc ->+--------------------------------------------------+
+start
+
+Update BPF_REG_FP to point to the calculated offset within the
+allocated private stack buffer. Now, BPF stack usage reference
+in the allocated private stack.
+
+The patch is rebase over fixes by Hari:
+https://lore.kernel.org/bpf/20260220063933.196141-1-hbathini@linux.ibm.com/
+
+v1->v2:
+  Fix ci-bot warning for percpu pointer casting
+  Minor refactoring
+v2->v3:
+  Fix ci-bot bug targeting clobbered NVRs on stack rollback
+v3->v4:
+  Added new field to fix priv_stack allocation
+
+[v3]: https://lore.kernel.org/bpf/20260226005440.9570-1-adubey@linux.ibm.com
+[v2]: https://lore.kernel.org/bpf/20260225153950.15331-1-adubey@linux.ibm.com
+[v1]: https://lore.kernel.org/bpf/20260216152234.36632-1-adubey@linux.ibm.com
+
+Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
 ---
-I intend to take this as a fix via the Kbuild tree for 7.0 after
-sufficient testing in -next, please Ack accordingly.
----
- arch/alpha/kernel/vmlinux.lds.S           | 1 +
- arch/arc/kernel/vmlinux.lds.S             | 1 +
- arch/arm64/kernel/vmlinux.lds.S           | 1 +
- arch/csky/kernel/vmlinux.lds.S            | 1 +
- arch/hexagon/kernel/vmlinux.lds.S         | 1 +
- arch/loongarch/kernel/vmlinux.lds.S       | 1 +
- arch/m68k/kernel/vmlinux-nommu.lds        | 1 +
- arch/m68k/kernel/vmlinux-std.lds          | 1 +
- arch/m68k/kernel/vmlinux-sun3.lds         | 1 +
- arch/mips/kernel/vmlinux.lds.S            | 1 +
- arch/nios2/kernel/vmlinux.lds.S           | 1 +
- arch/openrisc/kernel/vmlinux.lds.S        | 1 +
- arch/parisc/boot/compressed/vmlinux.lds.S | 1 +
- arch/parisc/kernel/vmlinux.lds.S          | 1 +
- arch/powerpc/kernel/vmlinux.lds.S         | 1 +
- arch/riscv/kernel/vmlinux.lds.S           | 1 +
- arch/s390/kernel/vmlinux.lds.S            | 1 +
- arch/sh/kernel/vmlinux.lds.S              | 1 +
- arch/sparc/kernel/vmlinux.lds.S           | 1 +
- arch/um/kernel/dyn.lds.S                  | 1 +
- arch/um/kernel/uml.lds.S                  | 1 +
- arch/x86/boot/compressed/vmlinux.lds.S    | 2 +-
- arch/x86/kernel/vmlinux.lds.S             | 1 +
- include/asm-generic/vmlinux.lds.h         | 4 +++-
- 24 files changed, 26 insertions(+), 2 deletions(-)
+ arch/powerpc/net/bpf_jit.h        |  6 ++
+ arch/powerpc/net/bpf_jit_comp.c   | 97 +++++++++++++++++++++++++++++--
+ arch/powerpc/net/bpf_jit_comp64.c | 29 ++++++++-
+ 3 files changed, 124 insertions(+), 8 deletions(-)
 
-diff --git a/arch/alpha/kernel/vmlinux.lds.S b/arch/alpha/kernel/vmlinux.lds.S
-index 2efa7dfc798a..2d136c63db16 100644
---- a/arch/alpha/kernel/vmlinux.lds.S
-+++ b/arch/alpha/kernel/vmlinux.lds.S
-@@ -71,6 +71,7 @@ SECTIONS
+diff --git a/arch/powerpc/net/bpf_jit.h b/arch/powerpc/net/bpf_jit.h
+index 7354e1d72f79..a232f3fb73be 100644
+--- a/arch/powerpc/net/bpf_jit.h
++++ b/arch/powerpc/net/bpf_jit.h
+@@ -178,8 +178,14 @@ struct codegen_context {
+ 	bool is_subprog;
+ 	bool exception_boundary;
+ 	bool exception_cb;
++	void __percpu *priv_sp;
++	unsigned int priv_stack_size;
+ };
  
- 	STABS_DEBUG
- 	DWARF_DEBUG
-+	MODINFO
- 	ELF_DETAILS
++/* Memory size & magic-value to detect private stack overflow/underflow */
++#define PRIV_STACK_GUARD_SZ    16
++#define PRIV_STACK_GUARD_VAL   0xEB9F12345678eb9fULL
++
+ #define bpf_to_ppc(r)	(ctx->b2p[r])
  
- 	DISCARDS
-diff --git a/arch/arc/kernel/vmlinux.lds.S b/arch/arc/kernel/vmlinux.lds.S
-index 61a1b2b96e1d..6af63084ff28 100644
---- a/arch/arc/kernel/vmlinux.lds.S
-+++ b/arch/arc/kernel/vmlinux.lds.S
-@@ -123,6 +123,7 @@ SECTIONS
- 	_end = . ;
+ #ifdef CONFIG_PPC32
+diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+index 278e09b57560..ad70c3e1294e 100644
+--- a/arch/powerpc/net/bpf_jit_comp.c
++++ b/arch/powerpc/net/bpf_jit_comp.c
+@@ -129,25 +129,60 @@ bool bpf_jit_needs_zext(void)
+ 	return true;
+ }
  
- 	STABS_DEBUG
-+	MODINFO
- 	ELF_DETAILS
- 	DISCARDS
++static void priv_stack_init_guard(void __percpu *priv_stack_ptr, int alloc_size)
++{
++	int cpu, underflow_idx = (alloc_size - PRIV_STACK_GUARD_SZ) >> 3;
++	u64 *stack_ptr;
++
++	for_each_possible_cpu(cpu) {
++		stack_ptr = per_cpu_ptr(priv_stack_ptr, cpu);
++		stack_ptr[0] = PRIV_STACK_GUARD_VAL;
++		stack_ptr[1] = PRIV_STACK_GUARD_VAL;
++		stack_ptr[underflow_idx] = PRIV_STACK_GUARD_VAL;
++		stack_ptr[underflow_idx + 1] = PRIV_STACK_GUARD_VAL;
++	}
++}
++
++static void priv_stack_check_guard(void __percpu *priv_stack_ptr, int alloc_size,
++								struct bpf_prog *fp)
++{
++	int cpu, underflow_idx = (alloc_size - PRIV_STACK_GUARD_SZ) >> 3;
++	u64 *stack_ptr;
++
++	for_each_possible_cpu(cpu) {
++		stack_ptr = per_cpu_ptr(priv_stack_ptr, cpu);
++		if (stack_ptr[0] != PRIV_STACK_GUARD_VAL ||
++			stack_ptr[1] != PRIV_STACK_GUARD_VAL ||
++			stack_ptr[underflow_idx] != PRIV_STACK_GUARD_VAL ||
++			stack_ptr[underflow_idx + 1] != PRIV_STACK_GUARD_VAL) {
++			pr_err("BPF private stack overflow/underflow detected for prog %s\n",
++			bpf_jit_get_prog_name(fp));
++			break;
++		}
++	}
++}
++
+ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+ {
+ 	u32 proglen;
+ 	u32 alloclen;
+ 	u8 *image = NULL;
+-	u32 *code_base;
+-	u32 *addrs;
+-	struct powerpc_jit_data *jit_data;
++	u32 *code_base = NULL;
++	u32 *addrs = NULL;
++	struct powerpc_jit_data *jit_data = NULL;
+ 	struct codegen_context cgctx;
+ 	int pass;
+ 	int flen;
++	int priv_stack_alloc_size;
++	void __percpu *priv_stack_ptr = NULL;
+ 	struct bpf_binary_header *fhdr = NULL;
+ 	struct bpf_binary_header *hdr = NULL;
+ 	struct bpf_prog *org_fp = fp;
+-	struct bpf_prog *tmp_fp;
++	struct bpf_prog *tmp_fp = NULL;
+ 	bool bpf_blinded = false;
+ 	bool extra_pass = false;
+ 	u8 *fimage = NULL;
+-	u32 *fcode_base;
++	u32 *fcode_base = NULL;
+ 	u32 extable_len;
+ 	u32 fixup_len;
  
-diff --git a/arch/arm64/kernel/vmlinux.lds.S b/arch/arm64/kernel/vmlinux.lds.S
-index ad6133b89e7a..2964aad0362e 100644
---- a/arch/arm64/kernel/vmlinux.lds.S
-+++ b/arch/arm64/kernel/vmlinux.lds.S
-@@ -349,6 +349,7 @@ SECTIONS
- 
- 	STABS_DEBUG
- 	DWARF_DEBUG
-+	MODINFO
- 	ELF_DETAILS
- 
- 	HEAD_SYMBOLS
-diff --git a/arch/csky/kernel/vmlinux.lds.S b/arch/csky/kernel/vmlinux.lds.S
-index d718961786d2..81943981b3af 100644
---- a/arch/csky/kernel/vmlinux.lds.S
-+++ b/arch/csky/kernel/vmlinux.lds.S
-@@ -109,6 +109,7 @@ SECTIONS
- 
- 	STABS_DEBUG
- 	DWARF_DEBUG
-+	MODINFO
- 	ELF_DETAILS
- 
- 	DISCARDS
-diff --git a/arch/hexagon/kernel/vmlinux.lds.S b/arch/hexagon/kernel/vmlinux.lds.S
-index 1150b77fa281..aae22283b5e0 100644
---- a/arch/hexagon/kernel/vmlinux.lds.S
-+++ b/arch/hexagon/kernel/vmlinux.lds.S
-@@ -62,6 +62,7 @@ SECTIONS
- 
- 	STABS_DEBUG
- 	DWARF_DEBUG
-+	MODINFO
- 	ELF_DETAILS
- 	.hexagon.attributes 0 : { *(.hexagon.attributes) }
- 
-diff --git a/arch/loongarch/kernel/vmlinux.lds.S b/arch/loongarch/kernel/vmlinux.lds.S
-index 08ea921cdec1..d0e1377a041d 100644
---- a/arch/loongarch/kernel/vmlinux.lds.S
-+++ b/arch/loongarch/kernel/vmlinux.lds.S
-@@ -147,6 +147,7 @@ SECTIONS
- 
- 	STABS_DEBUG
- 	DWARF_DEBUG
-+	MODINFO
- 	ELF_DETAILS
- 
- #ifdef CONFIG_EFI_STUB
-diff --git a/arch/m68k/kernel/vmlinux-nommu.lds b/arch/m68k/kernel/vmlinux-nommu.lds
-index 2624fc18c131..45d7f4b0177b 100644
---- a/arch/m68k/kernel/vmlinux-nommu.lds
-+++ b/arch/m68k/kernel/vmlinux-nommu.lds
-@@ -85,6 +85,7 @@ SECTIONS {
- 	_end = .;
- 
- 	STABS_DEBUG
-+	MODINFO
- 	ELF_DETAILS
- 
- 	/* Sections to be discarded */
-diff --git a/arch/m68k/kernel/vmlinux-std.lds b/arch/m68k/kernel/vmlinux-std.lds
-index 1ccdd04ae462..7326586afe15 100644
---- a/arch/m68k/kernel/vmlinux-std.lds
-+++ b/arch/m68k/kernel/vmlinux-std.lds
-@@ -58,6 +58,7 @@ SECTIONS
-   _end = . ;
- 
-   STABS_DEBUG
-+  MODINFO
-   ELF_DETAILS
- 
-   /* Sections to be discarded */
-diff --git a/arch/m68k/kernel/vmlinux-sun3.lds b/arch/m68k/kernel/vmlinux-sun3.lds
-index f13ddcc2af5c..1b19fef201fb 100644
---- a/arch/m68k/kernel/vmlinux-sun3.lds
-+++ b/arch/m68k/kernel/vmlinux-sun3.lds
-@@ -51,6 +51,7 @@ __init_begin = .;
-   _end = . ;
- 
-   STABS_DEBUG
-+  MODINFO
-   ELF_DETAILS
- 
-   /* Sections to be discarded */
-diff --git a/arch/mips/kernel/vmlinux.lds.S b/arch/mips/kernel/vmlinux.lds.S
-index 2b708fac8d2c..579b2cc1995a 100644
---- a/arch/mips/kernel/vmlinux.lds.S
-+++ b/arch/mips/kernel/vmlinux.lds.S
-@@ -217,6 +217,7 @@ SECTIONS
- 
- 	STABS_DEBUG
- 	DWARF_DEBUG
-+	MODINFO
- 	ELF_DETAILS
- 
- 	/* These must appear regardless of  .  */
-diff --git a/arch/nios2/kernel/vmlinux.lds.S b/arch/nios2/kernel/vmlinux.lds.S
-index 37b958055064..206f92445bfa 100644
---- a/arch/nios2/kernel/vmlinux.lds.S
-+++ b/arch/nios2/kernel/vmlinux.lds.S
-@@ -57,6 +57,7 @@ SECTIONS
- 
- 	STABS_DEBUG
- 	DWARF_DEBUG
-+	MODINFO
- 	ELF_DETAILS
- 
- 	DISCARDS
-diff --git a/arch/openrisc/kernel/vmlinux.lds.S b/arch/openrisc/kernel/vmlinux.lds.S
-index 049bff45f612..9b29c3211774 100644
---- a/arch/openrisc/kernel/vmlinux.lds.S
-+++ b/arch/openrisc/kernel/vmlinux.lds.S
-@@ -101,6 +101,7 @@ SECTIONS
- 	/* Throw in the debugging sections */
- 	STABS_DEBUG
- 	DWARF_DEBUG
-+	MODINFO
- 	ELF_DETAILS
- 
-         /* Sections to be discarded -- must be last */
-diff --git a/arch/parisc/boot/compressed/vmlinux.lds.S b/arch/parisc/boot/compressed/vmlinux.lds.S
-index ab7b43990857..87d24cc824b6 100644
---- a/arch/parisc/boot/compressed/vmlinux.lds.S
-+++ b/arch/parisc/boot/compressed/vmlinux.lds.S
-@@ -90,6 +90,7 @@ SECTIONS
- 	/* Sections to be discarded */
- 	DISCARDS
- 	/DISCARD/ : {
-+		*(.modinfo)
- #ifdef CONFIG_64BIT
- 		/* temporary hack until binutils is fixed to not emit these
- 		 * for static binaries
-diff --git a/arch/parisc/kernel/vmlinux.lds.S b/arch/parisc/kernel/vmlinux.lds.S
-index b445e47903cf..0ca93d6d7235 100644
---- a/arch/parisc/kernel/vmlinux.lds.S
-+++ b/arch/parisc/kernel/vmlinux.lds.S
-@@ -165,6 +165,7 @@ SECTIONS
- 	_end = . ;
- 
- 	STABS_DEBUG
-+	MODINFO
- 	ELF_DETAILS
- 	.note 0 : { *(.note) }
- 
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 15850296c0a9..8fc11d6565bf 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -397,6 +397,7 @@ SECTIONS
- 	_end = . ;
- 
- 	DWARF_DEBUG
-+	MODINFO
- 	ELF_DETAILS
- 
- 	DISCARDS
-diff --git a/arch/riscv/kernel/vmlinux.lds.S b/arch/riscv/kernel/vmlinux.lds.S
-index 61bd5ba6680a..997f9eb3b22b 100644
---- a/arch/riscv/kernel/vmlinux.lds.S
-+++ b/arch/riscv/kernel/vmlinux.lds.S
-@@ -170,6 +170,7 @@ SECTIONS
- 
- 	STABS_DEBUG
- 	DWARF_DEBUG
-+	MODINFO
- 	ELF_DETAILS
- 	.riscv.attributes 0 : { *(.riscv.attributes) }
- 
-diff --git a/arch/s390/kernel/vmlinux.lds.S b/arch/s390/kernel/vmlinux.lds.S
-index 53bcbb91bb9b..2b62395e35bf 100644
---- a/arch/s390/kernel/vmlinux.lds.S
-+++ b/arch/s390/kernel/vmlinux.lds.S
-@@ -221,6 +221,7 @@ SECTIONS
- 	/* Debugging sections.	*/
- 	STABS_DEBUG
- 	DWARF_DEBUG
-+	MODINFO
- 	ELF_DETAILS
- 
- 	/*
-diff --git a/arch/sh/kernel/vmlinux.lds.S b/arch/sh/kernel/vmlinux.lds.S
-index 008c30289eaa..169c63fb3c1d 100644
---- a/arch/sh/kernel/vmlinux.lds.S
-+++ b/arch/sh/kernel/vmlinux.lds.S
-@@ -89,6 +89,7 @@ SECTIONS
- 
- 	STABS_DEBUG
- 	DWARF_DEBUG
-+	MODINFO
- 	ELF_DETAILS
- 
- 	DISCARDS
-diff --git a/arch/sparc/kernel/vmlinux.lds.S b/arch/sparc/kernel/vmlinux.lds.S
-index f1b86eb30340..7ea510d9b42f 100644
---- a/arch/sparc/kernel/vmlinux.lds.S
-+++ b/arch/sparc/kernel/vmlinux.lds.S
-@@ -191,6 +191,7 @@ SECTIONS
- 
- 	STABS_DEBUG
- 	DWARF_DEBUG
-+	MODINFO
- 	ELF_DETAILS
- 
- 	DISCARDS
-diff --git a/arch/um/kernel/dyn.lds.S b/arch/um/kernel/dyn.lds.S
-index a36b7918a011..ad3cefeff2ac 100644
---- a/arch/um/kernel/dyn.lds.S
-+++ b/arch/um/kernel/dyn.lds.S
-@@ -172,6 +172,7 @@ SECTIONS
- 
-   STABS_DEBUG
-   DWARF_DEBUG
-+  MODINFO
-   ELF_DETAILS
- 
-   DISCARDS
-diff --git a/arch/um/kernel/uml.lds.S b/arch/um/kernel/uml.lds.S
-index a409d4b66114..30aa24348d60 100644
---- a/arch/um/kernel/uml.lds.S
-+++ b/arch/um/kernel/uml.lds.S
-@@ -113,6 +113,7 @@ SECTIONS
- 
-   STABS_DEBUG
-   DWARF_DEBUG
-+  MODINFO
-   ELF_DETAILS
- 
-   DISCARDS
-diff --git a/arch/x86/boot/compressed/vmlinux.lds.S b/arch/x86/boot/compressed/vmlinux.lds.S
-index 587ce3e7c504..e0b152715d9c 100644
---- a/arch/x86/boot/compressed/vmlinux.lds.S
-+++ b/arch/x86/boot/compressed/vmlinux.lds.S
-@@ -88,7 +88,7 @@ SECTIONS
- 	/DISCARD/ : {
- 		*(.dynamic) *(.dynsym) *(.dynstr) *(.dynbss)
- 		*(.hash) *(.gnu.hash)
--		*(.note.*)
-+		*(.note.*) *(.modinfo)
+@@ -173,6 +208,26 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+ 		fp->aux->jit_data = jit_data;
  	}
  
- 	.got.plt (INFO) : {
-diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
-index 3a24a3fc55f5..4711a35e706c 100644
---- a/arch/x86/kernel/vmlinux.lds.S
-+++ b/arch/x86/kernel/vmlinux.lds.S
-@@ -427,6 +427,7 @@ SECTIONS
- 	.llvm_bb_addr_map : { *(.llvm_bb_addr_map) }
- #endif
- 
-+	MODINFO
- 	ELF_DETAILS
- 
- 	DISCARDS
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index eeb070f330bd..1e1580febe4b 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -848,12 +848,14 @@
- 
- /* Required sections not related to debugging. */
- #define ELF_DETAILS							\
--		.modinfo : { *(.modinfo) . = ALIGN(8); }		\
- 		.comment 0 : { *(.comment) }				\
- 		.symtab 0 : { *(.symtab) }				\
- 		.strtab 0 : { *(.strtab) }				\
- 		.shstrtab 0 : { *(.shstrtab) }
- 
-+#define MODINFO								\
-+		.modinfo : { *(.modinfo) . = ALIGN(8); }
++	priv_stack_ptr = fp->aux->priv_stack_ptr;
++	if (!priv_stack_ptr && fp->aux->jits_use_priv_stack) {
++		/*
++		 * Allocate private stack of size equivalent to
++		 * verifier-calculated stack size plus two memory
++		 * guard regions to detect private stack overflow
++		 * and underflow.
++		 */
++		priv_stack_alloc_size = round_up(fp->aux->stack_depth, 16) +
++							2 * PRIV_STACK_GUARD_SZ;
++		priv_stack_ptr = __alloc_percpu_gfp(priv_stack_alloc_size, 16, GFP_KERNEL);
++		if (!priv_stack_ptr) {
++			fp = org_fp;
++			goto out_priv_stack;
++		}
 +
- #ifdef CONFIG_GENERIC_BUG
- #define BUG_TABLE							\
- 	. = ALIGN(8);							\
-
----
-base-commit: 6de23f81a5e08be8fbf5e8d7e9febc72a5b5f27f
-change-id: 20260224-separate-modinfo-from-elf-details-d3160da5f399
-
-Best regards,
---  
-Nathan Chancellor <nathan@kernel.org>
++		priv_stack_init_guard(priv_stack_ptr, priv_stack_alloc_size);
++		fp->aux->priv_stack_ptr = priv_stack_ptr;
++	}
++
+ 	flen = fp->len;
+ 	addrs = jit_data->addrs;
+ 	if (addrs) {
+@@ -209,6 +264,19 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+ 	cgctx.is_subprog = bpf_is_subprog(fp);
+ 	cgctx.exception_boundary = fp->aux->exception_boundary;
+ 	cgctx.exception_cb = fp->aux->exception_cb;
++	cgctx.priv_sp = priv_stack_ptr;
++	cgctx.priv_stack_size = 0;
++	if (priv_stack_ptr) {
++		/*
++		 * priv_stack_size required for setting bpf FP inside
++		 * percpu allocation.
++		 * stack_size is marked 0 to prevent allocation on
++		 * general stack and offset calculation don't go for
++		 * a toss in bpf_jit_stack_offsetof() & bpf_jit_stack_local()
++		 */
++		cgctx.priv_stack_size = cgctx.stack_size;
++		cgctx.stack_size = 0;
++	}
+ 
+ 	/* Scouting faux-generate pass 0 */
+ 	if (bpf_jit_build_body(fp, NULL, NULL, &cgctx, addrs, 0, false)) {
+@@ -306,6 +374,11 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+ 		}
+ 		bpf_prog_fill_jited_linfo(fp, addrs);
+ out_addrs:
++		if (!image && priv_stack_ptr) {
++			fp->aux->priv_stack_ptr = NULL;
++			free_percpu(priv_stack_ptr);
++		}
++out_priv_stack:
+ 		kfree(addrs);
+ 		kfree(jit_data);
+ 		fp->aux->jit_data = NULL;
+@@ -419,6 +492,8 @@ void bpf_jit_free(struct bpf_prog *fp)
+ 	if (fp->jited) {
+ 		struct powerpc_jit_data *jit_data = fp->aux->jit_data;
+ 		struct bpf_binary_header *hdr;
++		void __percpu *priv_stack_ptr;
++		int priv_stack_alloc_size;
+ 
+ 		/*
+ 		 * If we fail the final pass of JIT (from jit_subprogs),
+@@ -432,6 +507,13 @@ void bpf_jit_free(struct bpf_prog *fp)
+ 		}
+ 		hdr = bpf_jit_binary_pack_hdr(fp);
+ 		bpf_jit_binary_pack_free(hdr, NULL);
++		priv_stack_ptr = fp->aux->priv_stack_ptr;
++		if (priv_stack_ptr) {
++			priv_stack_alloc_size = round_up(fp->aux->stack_depth, 16) +
++							2 * PRIV_STACK_GUARD_SZ;
++			priv_stack_check_guard(priv_stack_ptr, priv_stack_alloc_size, fp);
++			free_percpu(priv_stack_ptr);
++		}
+ 		WARN_ON_ONCE(!bpf_prog_kallsyms_verify_off(fp));
+ 	}
+ 
+@@ -453,6 +535,11 @@ bool bpf_jit_supports_kfunc_call(void)
+ 	return true;
+ }
+ 
++bool bpf_jit_supports_private_stack(void)
++{
++	return IS_ENABLED(CONFIG_PPC64);
++}
++
+ bool bpf_jit_supports_arena(void)
+ {
+ 	return IS_ENABLED(CONFIG_PPC64);
+diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+index 640b84409687..4d997da242fe 100644
+--- a/arch/powerpc/net/bpf_jit_comp64.c
++++ b/arch/powerpc/net/bpf_jit_comp64.c
+@@ -183,6 +183,22 @@ void bpf_jit_realloc_regs(struct codegen_context *ctx)
+ {
+ }
+ 
++static void emit_fp_priv_stack(u32 *image, struct codegen_context *ctx)
++{
++	/* Load percpu data offset */
++	EMIT(PPC_RAW_LD(bpf_to_ppc(TMP_REG_1), _R13,
++			offsetof(struct paca_struct, data_offset)));
++	PPC_LI64(bpf_to_ppc(BPF_REG_FP), (__force long)ctx->priv_sp);
++	/*
++	 * Load base percpu pointer of private stack allocation.
++	 * Runtime per-cpu address = (base + data_offset) + (guard + stack_size)
++	 */
++	EMIT(PPC_RAW_ADD(bpf_to_ppc(BPF_REG_FP),
++			bpf_to_ppc(TMP_REG_1), bpf_to_ppc(BPF_REG_FP)));
++	EMIT(PPC_RAW_ADDI(bpf_to_ppc(BPF_REG_FP), bpf_to_ppc(BPF_REG_FP),
++			PRIV_STACK_GUARD_SZ + round_up(ctx->priv_stack_size, 16)));
++}
++
+ /*
+  * For exception boundary & exception_cb progs:
+  *     return increased size to accommodate additional NVRs.
+@@ -307,9 +323,16 @@ void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx)
+ 	 * Exception_cb not restricted from using stack area or arena.
+ 	 * Setup frame pointer to point to the bpf stack area
+ 	 */
+-	if (bpf_is_seen_register(ctx, bpf_to_ppc(BPF_REG_FP)))
+-		EMIT(PPC_RAW_ADDI(bpf_to_ppc(BPF_REG_FP), _R1,
+-			STACK_FRAME_MIN_SIZE + ctx->stack_size));
++	if (bpf_is_seen_register(ctx, bpf_to_ppc(BPF_REG_FP))) {
++		if (ctx->priv_sp) {
++			/* Set up fp in private stack */
++			emit_fp_priv_stack(image, ctx);
++		} else {
++			/* Setup frame pointer to point to the bpf stack area */
++			EMIT(PPC_RAW_ADDI(bpf_to_ppc(BPF_REG_FP), _R1,
++				STACK_FRAME_MIN_SIZE + ctx->stack_size));
++		}
++	}
+ 
+ 	if (ctx->arena_vm_start)
+ 		PPC_LI64(bpf_to_ppc(ARENA_VM_START), ctx->arena_vm_start);
+-- 
+2.52.0
 
 
