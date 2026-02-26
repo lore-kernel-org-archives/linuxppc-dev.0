@@ -1,45 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-17249-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17250-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3EFFCFC5930
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Feb 2026 11:34:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE941FC5933
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Feb 2026 11:34:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fM8VW2Wltz2yLG;
-	Thu, 26 Feb 2026 22:33:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772105635;
-	cv=none; b=ovHoDXuSj76C6GP7MC1kbMbEj7B3kzRu0N+ft8v8HGqEkQKY8HWKmTzaz3EKoGm+m68hzu8hHOuv5Yri1HuhM9d0vMKH5ku79KXzy7O05SsAtj+8/BIYYHhW78jb/iTJFMZrIYpIw89Dckg4EZ8q7M1PQntRgpLflhuOD3S9xBY1MVpENufak0IiZ97ohGndiYy0+CuzW5oL6sWROj5cKqD2xV/4gYSvOYmrVwYuexkv7DbfFRb+W3IyG31q/hkMBjz+R1Ih3ShfaiMfmj7WNvVNvH06iYo+h9fHr+JfwpQ7yn9J/ksWSVjycuGjdYRRNafhq+TlupqZSKm0qt0c2A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fM8Vh3rV8z2yrl;
+	Thu, 26 Feb 2026 22:34:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.179
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772105644;
+	cv=none; b=SoU4s1/VqnUfBM8uzoQQ+Lwjwu8olPpq35SZaOHZWVbA0XMX4RpnRfFBiTtv1f0jVjJLstObtkVQgPz810nIEH0ZfagNL3J4iTIGbYB/t2/q01TkQaj5vx2qO9DEsJ5KQHzu0IPB0z18TQJFZwgcuNDSKyvCM5KvuR0gv3q6yOl9HBEVuxSKhSfoCOn8VJMEKmeWQAQIy4wo41FstSuH9B8NOzITrB1qBPTyfQXCcapuuEjOxKT5a/bzCur/DHknFckCDolwQT2iPCbWHnkY8QWyrxZ0ptCOlOrtHiZg8ePAHIXzz35VzgWM6I8aAUvm5TiZMN2mOcr3Mm+8weVx6Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772105635; c=relaxed/relaxed;
-	bh=sEWb6ULyOrXRVye+x+KftZvBAQkL33Q0arTZiVRMt8I=;
+	t=1772105644; c=relaxed/relaxed;
+	bh=HW5NR2wuAB2pCKpIclCqiHUIfVFdsbldp3G0DhmGrt0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=K4NnmPne80nQXfTOCLGfuL/jlLCGJRm2McrozL5aEFp1pNJRBDKolT8CPrvn9iBAySr2cqmSvka5Y4E43QZWuiAtF7ghpOyy/f1HFk0ZBmOz/V4dS5FCyRCAc6rLht89yinSjGq6vNlk9yYhqqJPLOPH/jPaArtzBYR4E+yC6Rzikg7lroFYvTdhQbVXJq+x9KaF9YZq7ARPwmKRKFFmVL3H6hdt0jq5r3wkq3hhkkLv6031ZMPr7UhoGY+lqSSITrzZ9YJ2us7EfWY+GseScDMlCiN+4xtOkQLz0P5XUKuAuKZwO9o/r0/YJs6MAoMYnDay7QvTPOJ7XYp3upPQow==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=qqWTnMAd; dkim-atps=neutral; spf=pass (client-ip=95.215.58.172; helo=out-172.mta1.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+	 MIME-Version:Content-Type; b=Y8uLC9NBG10jr45Y9f6+eS9utg6na3mTa+h6g8GckNg8YivGYIQqYReIzxFxXPUFmVuHkZUrmMNH2MZ1BNTmGChrLkyqQC8dgvIv9QsJk+qWW8YfBxHyeuwLHDJksArE4gz94xEokDN5mG/56ym4ZH53Yp6oO6Xhjh70yM2EV+MLdqfaq/0apRFFneETx1snksrM7bU89L0kc/j2Ra2CARTSj/7IjL9p2H1mk/skTIOFFOcY06CvltFO8px2OGKQExEDxwIQXy/Ob+USOHOj9m2O54382ndXcUNkDLbgmgWIrHOgoPtPf8IItcGHp01IBEvRBwM/BtSRouEpIoKQdg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=RzdiMKp1; dkim-atps=neutral; spf=pass (client-ip=95.215.58.179; helo=out-179.mta1.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=qqWTnMAd;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=RzdiMKp1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.172; helo=out-172.mta1.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-172.mta1.migadu.com (out-172.mta1.migadu.com [95.215.58.172])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.179; helo=out-179.mta1.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-179.mta1.migadu.com (out-179.mta1.migadu.com [95.215.58.179])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fM8VV51pvz3cBW
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2026 22:33:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fM8Vg5f1cz2yqs
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2026 22:34:03 +1100 (AEDT)
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1772105615;
+	t=1772105620;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=sEWb6ULyOrXRVye+x+KftZvBAQkL33Q0arTZiVRMt8I=;
-	b=qqWTnMAdq5dg5CvpyeLbGUPbMz61dA9xpNIaerVTAxRFPXhdC6tgbMB8GUGdaSb1pEj7AQ
-	+ksDSA5ARHrYo0OCNpPhXKcjyhuY8ZIczmUrM/O9mt6vELpp8Kp9v5Y2Nt8i4eNS5HVweF
-	CbjSJodzFuIWJHz06nT0yacW4sZIjPs=
+	bh=HW5NR2wuAB2pCKpIclCqiHUIfVFdsbldp3G0DhmGrt0=;
+	b=RzdiMKp1lP+byHUz7l0eKCj1eX9Ut37lQaDPNj8KBcBVLlesiFHpqHK5Ah8iyhlMOrVaW8
+	bKBZ75Ay6+l6RYyt5Y/uNJyEGcxJ4zFpSZ6y9Ko1EHA6ZJ6Q6nV1TPDvRsz7Z/op/nwRKq
+	NXqpxWMbKJY4XmDlR6gubAl3bFel52M=
 From: Usama Arif <usama.arif@linux.dev>
 To: Andrew Morton <akpm@linux-foundation.org>,
 	david@kernel.org,
@@ -71,9 +71,9 @@ Cc: fvdl@google.com,
 	svens@linux.ibm.com,
 	linux-s390@vger.kernel.org,
 	Usama Arif <usama.arif@linux.dev>
-Subject: [RFC v2 06/21] mm: thp: handle split failure in wp_huge_pmd()
-Date: Thu, 26 Feb 2026 03:23:35 -0800
-Message-ID: <20260226113233.3987674-7-usama.arif@linux.dev>
+Subject: [RFC v2 07/21] mm: thp: retry on split failure in change_pmd_range()
+Date: Thu, 26 Feb 2026 03:23:36 -0800
+Message-ID: <20260226113233.3987674-8-usama.arif@linux.dev>
 In-Reply-To: <20260226113233.3987674-1-usama.arif@linux.dev>
 References: <20260226113233.3987674-1-usama.arif@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -89,43 +89,57 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-Migadu-Flow: FLOW_OUT
 
-wp_huge_pmd() splits the PMD when COW or write-notify must be handled at
-PTE level (e.g., shared/file VMAs, userfaultfd).  It then returns
-VM_FAULT_FALLBACK so the fault handler retries at PTE granularity.
-If the split fails, the PMD is still huge.  The PTE fault path cannot
-handle a huge PMD entry.
-Return VM_FAULT_OOM on split failure, which signals the fault handler to
-invoke the OOM killer or return -ENOMEM to userspace. This is similar to
-what __handle_mm_fault would do if p4d_alloc or pud_alloc fails.
+change_pmd_range() splits a huge PMD when mprotect() targets a sub-PMD
+range or when VMA flags require per-PTE protection bits that can't be
+represented at PMD granularity.
+
+If pte_alloc_one() fails inside __split_huge_pmd(), the huge PMD remains
+intact. Without this change, change_pte_range() would return -EAGAIN
+because pte_offset_map_lock() returns NULL for a huge PMD, sending the
+code back to the 'again' label to retry the split—without ever calling
+cond_resched().
+
+Now that __split_huge_pmd() returns an error code, handle it explicitly:
+yield the CPU with cond_resched() and retry via goto again, giving other
+tasks a chance to free memory.
+
+Trying to return an error all the way to change_protection_range would
+not work as it would leave a memory range with new protections, and
+others unchanged, with no easy way to roll back the already modified
+entries (and previous splits). __split_huge_pmd only requires an
+order-0 allocation and is extremely unlikely to fail.
 
 Signed-off-by: Usama Arif <usama.arif@linux.dev>
 ---
- mm/memory.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ mm/mprotect.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/mm/memory.c b/mm/memory.c
-index 7ba1221c63792..51d2717e3f1b4 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -6161,8 +6161,13 @@ static inline vm_fault_t wp_huge_pmd(struct vm_fault *vmf)
- 	}
- 
- split:
--	/* COW or write-notify handled on pte level: split pmd. */
--	__split_huge_pmd(vma, vmf->pmd, vmf->address, false);
-+	/*
-+	 * COW or write-notify handled on pte level: split pmd.
-+	 * If split fails, the PMD is still huge so falling back
-+	 * to PTE handling would be incorrect.
-+	 */
-+	if (__split_huge_pmd(vma, vmf->pmd, vmf->address, false))
-+		return VM_FAULT_OOM;
- 
- 	return VM_FAULT_FALLBACK;
- }
+diff --git a/mm/mprotect.c b/mm/mprotect.c
+index 9681f055b9fca..599d80a7d6969 100644
+--- a/mm/mprotect.c
++++ b/mm/mprotect.c
+@@ -477,7 +477,16 @@ static inline long change_pmd_range(struct mmu_gather *tlb,
+ 		if (pmd_is_huge(_pmd)) {
+ 			if ((next - addr != HPAGE_PMD_SIZE) ||
+ 			    pgtable_split_needed(vma, cp_flags)) {
+-				__split_huge_pmd(vma, pmd, addr, false);
++				ret = __split_huge_pmd(vma, pmd, addr, false);
++				if (ret) {
++					/*
++					 * Yield and retry. Other tasks
++					 * may free memory while we
++					 * reschedule.
++					 */
++					cond_resched();
++					goto again;
++				}
+ 				/*
+ 				 * For file-backed, the pmd could have been
+ 				 * cleared; make sure pmd populated if
 -- 
 2.47.3
 
