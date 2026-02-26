@@ -1,103 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-17237-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17238-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07BF9FC590A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Feb 2026 08:00:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D234FFC5918
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Feb 2026 09:28:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fM3mY017Hz2yFc;
-	Thu, 26 Feb 2026 19:00:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.21
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772092844;
-	cv=none; b=Tjgx6/eoWy3Y1Is2QacOz9PSneN6pqLrwxhhSjC9a6xDIvcAHyhkURd/J1ldKbbjCUUxp89BRUhqwPqQRyy/m3iq2z0rSeCDzS3C1wDYBMuT8IvMy4ltC5+sPYYaiCzVJQFhw5WIfHjNS0V1HvCt90gB2abWbSKum4R/VSvJZ09XbsMUDKXfuF6njDRHPO1ZvEwcYbSbj0xQR4uZ2uRyrxxlhI+DIjNRCAizHM0RsL9btX9AHFZ46CIa7r43PCyB45R5HGE5DoTFD6YpnrYfQbVZk2VWTkux95gkdyli2pSLWGNVuVLTrFuSHQQNTsjbZMLXpSEduyEV9cobzw7qxA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fM5k22gcgz2yFc;
+	Thu, 26 Feb 2026 20:28:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772098122;
+	cv=none; b=Tqt798Y+TdgqUuy1f+6wgOP4mx2fG1pJoElzZ4a13+IjukdR9S2I2etoVS+muYHy4hCX87+4c0Gcg83I3eWxNaarpxKBxy8E44QYAG1eNPCPLfu0Tdqj3Cooc+OoVxtfe6zMHwjcJQ8zGmY3Ye/pTaCiavw4Q7DIc5+7n9Ie8Pa5i3uoZhUeiaXd8yvD5W0CJPcP3QQoflR6qsF659kONJDopl4EWWWAqwCAxBHnHryYNXuD03PSxS+9zP5eRk07cPWp7lwQ9nUZ//NC9Z98SPVzt9dr7fOixNnnymLH9TYYupgC3YlST851H9MAS8ZJmv2zi1VAWBYCEw1hoSu9PA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772092844; c=relaxed/relaxed;
-	bh=45JsBOPCFZIuEnMHMmIEK6FxJ6Vmoi6JWlGzfgTlKd0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=V+6HLaDcOq/4z2ERUp2NlViQLua1vng6e+JjnP2xEYss8+Xd8qJYyTK1i01MfQsboQUqpNQdxuoSuetSwC4Z7GMSr5YRsbW1IwIPL++6sa0sE8lVNdJBS632fHR4PEqke7/mojxEOjzgXu1CaVlHJ7RqKuTJDZzGwWJn5Pp6fKcl/xxbrt/3XfpZO+cGtFHgEOl8PSZtM3KWMNYLrcPh+oHDtzzJo/Gy/lsLVfv3wr+FAjEbBPIgY3wiZY3V4Rg97kaWB8eo5Y/chDGP3cozT1R0Q3zwGaX/7ZoReyqQxTLyyOaDp3U8QBYcjRl/M2ZqGqghJWnBrtJ88iImMUBPlQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eJSyJR2d; dkim-atps=neutral; spf=pass (client-ip=198.175.65.21; helo=mgamail.intel.com; envelope-from=yilun.xu@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	t=1772098122; c=relaxed/relaxed;
+	bh=Q+JPGjs/pGTsOGNIOl36KuUbk8oNei+wKcehtvsLCRI=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=aXFzl89hAgP5hny7rpEIWDa4fpZbOUNpLxpo8/+YMWH6lhnvC9yRfmk2MghBWWzsqX8XaQ4wRbyhwAU9n7DquaSRt0ayJy2L6N5Asj2z6MF3uNKwwQ5YcS3lKUy6ISzVeUDP1zUSy26T06YHv9hX6rmIgL8h/X2NXnAoSp93sNPxOTzAzNAngPnhcxVv6EknDXKZ0ZjMbQI8XE0qxLbRmriN083RtLM+xSFdxKEi1TVjvmPOmQ4lCc7Zmq7hsaCivCrHr8kvQF+EwZLDcqOWBkANElsBZ4DtiLpB/jafQ3OFRr7M2fUt3t4g1TSELu7wwLuxPIg8ItIi6bRjHvxxcw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pGu5+ci+; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eJSyJR2d;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pGu5+ci+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.21; helo=mgamail.intel.com; envelope-from=yilun.xu@linux.intel.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 65 seconds by postgrey-1.37 at boromir; Thu, 26 Feb 2026 19:00:41 AEDT
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fM3mT23M7z2xMt
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2026 19:00:40 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1772092842; x=1803628842;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=rs0qEAZbdxZqApzkbG0FHEalQVhLZ+XgQWmJpEIvOnc=;
-  b=eJSyJR2dHtUdxrPzJnvzlm5lh/CfkM36HpwvK3l30h0dY7MwnPLP3839
-   JqS6Ifd72MNddL+8asfxAbdjhxhq+/nuFwlGG7MvCEadQGwsIgvjI3Kct
-   5r4qobZ/OyVEIf62ri/PjnPh5uIbAdG084UyVHlvTwxubq8f2HaAulD4t
-   Ysk0PP1it1X5BvGQ9y4R76N8lTb5mPJxpaBn216xNrUbAH8+gN0WbQo9j
-   jv2FIvs473vsXrs245UCKNkqDHbBniASBgMb9fg8E4Owd6xUpxlkeQF5r
-   H2znahtm5sMVXYVC0EBcvFATPsjZ2jP4InIDs9gMAxQdZlccGxf0Stwh4
-   A==;
-X-CSE-ConnectionGUID: ABt9kXeeRWi/ux3/ZACkyA==
-X-CSE-MsgGUID: vRH+UZtnRpWjYGHCKx3P7Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11712"; a="73018068"
-X-IronPort-AV: E=Sophos;i="6.21,311,1763452800"; 
-   d="scan'208";a="73018068"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
-  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Feb 2026 23:59:30 -0800
-X-CSE-ConnectionGUID: HXHY4jaTS763fk0dqYE34Q==
-X-CSE-MsgGUID: n89NMNHmQ2uMu7evv5CMDQ==
-X-ExtLoop1: 1
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by fmviesa003.fm.intel.com with ESMTP; 25 Feb 2026 23:59:20 -0800
-Date: Thu, 26 Feb 2026 15:39:46 +0800
-From: Xu Yilun <yilun.xu@linux.intel.com>
-To: Yury Norov <ynorov@nvidia.com>
-Cc: linux-kernel@vger.kernel.org,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"David S. Miller" <davem@davemloft.net>,
-	"Peter Zijlstra (Intel)" <peterz@infradead.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Antoine Tenart <atenart@kernel.org>,
-	Christian Brauner <brauner@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Eric Dumazet <edumazet@google.com>,
-	Geetha sowjanya <gakula@marvell.com>,
-	Ingo Molnar <mingo@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
-	James Clark <james.clark@linaro.org>,
-	Jerin Jacob <jerinj@marvell.com>,
-	Linu Cherian <lcherian@marvell.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Mike Leach <mike.leach@linaro.org>, Moritz Fischer <mdf@kernel.org>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Paolo Abeni <pabeni@redhat.com>,
-	Rasmus Villemoes <linux@rasmusvillemoes.dk>,
-	Simon Horman <horms@kernel.org>,
-	Stanislav Fomichev <sdf@fomichev.me>,
-	Subbaraya Sundeep <sbhatta@marvell.com>,
-	Sunil Goutham <sgoutham@marvell.com>,
-	Suzuki K Poulose <suzuki.poulose@arm.com>,
-	Tom Rix <trix@redhat.com>, Xu Yilun <yilun.xu@intel.com>,
-	Yajun Deng <yajun.deng@linux.dev>,
-	Yury Norov <yury.norov@gmail.com>, Zhang Rui <rui.zhang@intel.com>,
-	hariprasad <hkelam@marvell.com>, coresight@lists.linaro.org,
-	linux-arm-kernel@lists.infradead.org, linux-fpga@vger.kernel.org,
-	linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	netdev@vger.kernel.org
-Subject: Re: [PATCH 09/12] fpga: m10bmc-sec: switch show_canceled_csk() to
- using scnprintf()
-Message-ID: <aZ/4whL40HHi/85Z@yilunxu-OptiPlex-7050>
-References: <20260219181407.290201-1-ynorov@nvidia.com>
- <20260219181407.290201-10-ynorov@nvidia.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fM5k14l6bz2xMt
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2026 20:28:41 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id A804444593
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2026 09:28:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 83D26C2BCFB
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2026 09:28:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1772098119;
+	bh=Q+JPGjs/pGTsOGNIOl36KuUbk8oNei+wKcehtvsLCRI=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=pGu5+ci+Wn2JAlztc6J6f17nc1u7YqME6JKT+8WKxBgc0aHcELhW8ukVtK0us1QEk
+	 vZNR+ptEg/K6oY7fx9VRoFz+7glIPSL8J/f3xTV38nfSLG2Pn+yOHDraiExxbpKF7/
+	 RMy3y7yR6cPFN3QrnZsiNvy5AjcqAc72iEN6B5FcJuEqSOhXp2VLav781RZKXGrhyp
+	 i9Dll60Oag+79Jj6SFxp8iQwslow7Q5Tc5X3tHYLya1ez1aOHjdGBcNxkq/3lzqwPX
+	 wA2XfnV170zB6ymSkxYEUufb58p0kTvV/FvZXmY++w5oMjSHRFhKZm882IOP6064bh
+	 MDBQX4QmjpAWQ==
+Received: by mail-lf1-f42.google.com with SMTP id 2adb3069b0e04-5a10a1617d0so508478e87.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2026 01:28:39 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCVOs3+NUUBrxz1O+ZVfWDro6MM36fgNxsfjPJQwQfROnimNnV5GMF6pkW4+e4UB6y1Fm6uLdsahgjesUoI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzDsg808p1bap31vboUKXHC4gcLiEpWwEl8kVDMQLNCa/X0JVHT
+	Th8Py/Yy3dS8/SK2G1O70Lu2AQmSLKsf9bLJeSwBIEUSNPzl2qv7lLmv6V7YEVFlHr4+vm8IFPa
+	rPG60bNSZivsVDtFyzwX4nvkdgMXwdON+fwXl7Oq00A==
+X-Received: by 2002:ac2:4bc6:0:b0:595:9d6b:1178 with SMTP id
+ 2adb3069b0e04-5a105eb321amr948844e87.40.1772098117903; Thu, 26 Feb 2026
+ 01:28:37 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -111,44 +66,61 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260219181407.290201-10-ynorov@nvidia.com>
+References: <20260223-soc-of-root-v2-0-b45da45903c8@oss.qualcomm.com> <20260224183832.GB3239922-robh@kernel.org>
+In-Reply-To: <20260224183832.GB3239922-robh@kernel.org>
+From: Bartosz Golaszewski <brgl@kernel.org>
+Date: Thu, 26 Feb 2026 10:28:26 +0100
+X-Gmail-Original-Message-ID: <CAMRc=Mft5vc-C8miKVdw6C-qRdYsqfgm-UgLZJOctFwagMF0iA@mail.gmail.com>
+X-Gm-Features: AaiRm51IEGv2tkqYAUL_wlvSqsaBCZdXcGaMbPUU4umqiYT87HTd0LJXBirO8Tg
+Message-ID: <CAMRc=Mft5vc-C8miKVdw6C-qRdYsqfgm-UgLZJOctFwagMF0iA@mail.gmail.com>
+Subject: Re: [PATCH v2 0/9] soc: remove direct accesses to of_root from drivers/soc/
+To: Rob Herring <robh@kernel.org>
+Cc: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
+	Saravana Kannan <saravanak@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Shawn Guo <shawnguo@kernel.org>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
+	Fabio Estevam <festevam@gmail.com>, Geert Uytterhoeven <geert+renesas@glider.be>, 
+	Magnus Damm <magnus.damm@gmail.com>, Chen-Yu Tsai <wens@kernel.org>, 
+	Jernej Skrabec <jernej.skrabec@gmail.com>, Samuel Holland <samuel@sholland.org>, 
+	Frank Li <Frank.Li@nxp.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
+	imx@lists.linux.dev, linux-renesas-soc@vger.kernel.org, 
+	linux-sunxi@lists.linux.dev, driver-core@lists.linux.dev, 
+	Peng Fan <peng.fan@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, Feb 19, 2026 at 01:14:01PM -0500, Yury Norov wrote:
-> Switch show_canceled_csk() to use a more common scnprintf("%*pbl").
-> 
-> Signed-off-by: Yury Norov <ynorov@nvidia.com>
-> ---
->  drivers/fpga/intel-m10-bmc-sec-update.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/fpga/intel-m10-bmc-sec-update.c b/drivers/fpga/intel-m10-bmc-sec-update.c
-> index 10f678b9ed36..5ae76b8ece18 100644
-> --- a/drivers/fpga/intel-m10-bmc-sec-update.c
-> +++ b/drivers/fpga/intel-m10-bmc-sec-update.c
-> @@ -10,6 +10,7 @@
->  #include <linux/firmware.h>
->  #include <linux/mfd/intel-m10-bmc.h>
->  #include <linux/mod_devicetable.h>
-> +#include <linux/mm.h>
->  #include <linux/module.h>
->  #include <linux/platform_device.h>
->  #include <linux/slab.h>
-> @@ -183,7 +184,7 @@ show_canceled_csk(struct device *dev, u32 addr, char *buf)
->  
->  	bitmap_from_arr32(csk_map, csk32, CSK_BIT_LEN);
->  	bitmap_complement(csk_map, csk_map, CSK_BIT_LEN);
-> -	return bitmap_print_to_pagebuf(1, buf, csk_map, CSK_BIT_LEN);
-> +	return scnprintf(buf, rest_of_page(buf), "%*pbl\n", CSK_BIT_LEN, csk_map);
+On Tue, Feb 24, 2026 at 7:38=E2=80=AFPM Rob Herring <robh@kernel.org> wrote=
+:
+>
+> On Mon, Feb 23, 2026 at 02:37:15PM +0100, Bartosz Golaszewski wrote:
+> > linux/of.h declares a set of variables providing addresses of certain
+> > key OF nodes. The pointers being variables can't profit from stubs
+> > provided for when CONFIG_OF is disabled which means that drivers
+> > accessing these variables can't profit from CONFIG_COMPILE_TEST=3Dy
+> > coverage.
+> >
+> > There are drivers under drivers/soc/ that access the of_root node. This
+> > series introduces new OF helpers for reading the machine compatible and
+> > model strings, exports an existing SoC helper that reads the machine
+> > string from the root node and finally replaces all direct accesses to
+> > of_root with new or already existing helper functions.
+> >
+> > Merging strategy: first two patches should be either acked by Rob or
+> > picked up into an immutable branch based on v7.0-rc1, the rest can go
+> > through the SoC tree.
+>
+> SoC tree is good.
+>
+> For all but patch 8,
+>
+> Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+>
 
-As Thomas mentioned, use sysfs_emit()
+FYI Rob also reviewed patch 8 now. Who would pick the patches up? Greg
+KH? There does not seem to be a centralized SoC maintainer in
+MAINTAINERS?
 
->  }
->  
->  #define DEVICE_ATTR_SEC_CSK_RO(_name)						\
-> -- 
-> 2.43.0
-> 
-> 
+Bart
 
