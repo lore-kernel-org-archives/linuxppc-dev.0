@@ -1,81 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-17214-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17215-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF64CFD45F9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Feb 2026 22:13:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79BB6FD45F9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Feb 2026 23:12:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fLpl41RTRz3fKh;
-	Thu, 26 Feb 2026 09:13:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772057616;
-	cv=none; b=FiBxLaeYAjJkULAjHp0oWFpgyGvFsuxwu/hVQR+/u/5/8W8VVndoZXcDrbFPwgDsZsX0artVk4UUd1tlm2GwGVpUnbSrjC/aEoEWeZvsh8jhkdkHxA5Fb+yY56zuEPkjNPXCZXAgWAdapq87mqsHLj5C0CrChRRSNcdikwO2yV1xoLw7vsqXR/lSHiCMV6tQdBbMCmXNa23gAxq1NVOEWS/8xe9l8vrY1JvBfPdXFn3sL6Tt7Oe+hqNkYA4bzszw2hOb5q6bio/F7CbJkXbV2B+HuEt0hbxeh1BDof4rUyzzC1HO6M99yP74uQ7DyqhFL3+7Icq3f37EM5qNeFXMNA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fLr3G4cJFz2xRv;
+	Thu, 26 Feb 2026 10:12:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772061162;
+	cv=none; b=grF0ZFE7AKh+2GlkJ47CDR2AePQOyiObTQ3iaVgvy9XeNjZtFZ5L3NePvD2SvEO+vtg3ALoP8qjyw/JMyktVkDX0uTe58PcmIPKaO0qg93Q5+HkAcKbSW73OTQvLTS131zzC5s03WTVNLwt3PGkJtN/MxTzFuUqZWQjUiMNj9KRFQLR0jJEGu1fpMoPtURv2q4CQvBvXTQEuPNT9JjtLV1QBO+KJBKBEY0kPOn4QEywOOLgZL/ABBbRYpt1KT5B5PfofR6IP6I9kWMPteKV7r6SM/+oSfC8SJh0BhdeQ+BuZni1cw6GIi8tKoLVI4fg26qxBwu6KGD9lLcdtj9TG9Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772057616; c=relaxed/relaxed;
-	bh=CKksP/7kRZbD8X/Qs1392h9zaNldfBZ6sBaDcofTYeI=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=EEbNTsuek/cgdjtTESFP4Vrd6bagCiJbixXiZr+6pKKNZFOWdCDSzVV/5vaR3Ez1SFpaV99Ovc0bkKJySeXI2fr/DFFlhuagIxVXelWyec0wzOlUuaWamukPwQVHdq73DJ3fmCybc1J10G4009XN6UNI4R4FlhlU87F2yMjeodmvy+2ppbExLXg4g1HSON4x5TyCSfaPTeVvP0e9+jAgu4gVlMpiVB96BjYgs0vQzbZUfvA8HjV+IzuqwBKLlxDSHItDG9kEOfM1/MdMZHv9X2Gipa+iZ90iqbzNloecPOHqRhumcPBqk7SQqUKfzsAKRPR+f6KpxIp7lDTcFp6qCQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VIP7Ejlo; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1772061162; c=relaxed/relaxed;
+	bh=m9BO38pWe3BGs3iSgg9zL0rfQqR0j5b9FLogTaldN6k=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=OAOWhH06bVvzNMZ6K3M0b38Sok6dPnLqwRZ6GJdbBteUWZkgZOzPwBS1pwUwcID+WhPqHQPIG9z29bPBHJhgk4BOZAzjpc2IBEs6p1xTQxe9BFYc0sOKG9lFPgITrAukL2GJQsBQ3BNSd6JLTYFSlrGeoxnVFdLLque8a6x4frtQAw1w931jF03XOrupyTiv2UGuqT2mWafR3RPGGvJxqWVVdDKmYEdUng7mVDDNdutUlBBH8juYw7TRpicbhuGksfp3tiXANi2w5V9kjat+D/jBwrxTW9TZfMDSqFuts2M4zGOrWNBP5b4AsfwUejNcWAbCm/bJ4X7opKXWMupXHw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RmDZ8wic; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VIP7Ejlo;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RmDZ8wic;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fLpl30JKJz3fKd
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2026 09:13:34 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61PF9h772774175;
-	Wed, 25 Feb 2026 22:13:12 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fLr3F3mwlz2xNC
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2026 10:12:40 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61PLMbDc3390406;
+	Wed, 25 Feb 2026 23:12:25 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=CKksP/7kRZbD8X/Qs
-	1392h9zaNldfBZ6sBaDcofTYeI=; b=VIP7EjloYofvWASNiwQICAuaJPtWM6dQS
-	XzmTizVdadPdaxFAaa/Nsm38GFNNRNyKxSHbthAwPdgqf8LgkwHPsJG5zaS7s75m
-	r/InEMCnI99CY5SZPiiry/4JdVp7VI8yPWHNzIgIvXE57poRxsVph/Yql3EDR6AQ
-	tJdCHwm0vou2XTjfjpOOWiKuPo7jfej41gMUdVxTbylyaGH2kFsGoTyIVcIv8oic
-	fyELdqQGt1A+uyv0Bb6pM0zu5fZOiOFZtq2d03HNVERVpSkif44/uGSzYt1vHVjA
-	b0upgHjwuwbkUa5M9BL0cNEsTh3HoMrR9xYYqFUxLb69erXNKCyjg==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cf34ca39v-1
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=m9BO38pWe3BGs3iSgg9zL0rfQqR0j5b9FLogTaldN
+	6k=; b=RmDZ8wicFKsdl8F7sKlK8VsUYXVMrsu7JVys0MfDmEyRXHO3GSX67i+j0
+	OPOfed2dOEF4n7nt60BHTAQIHcuZpJoegKFUHb1wCrvFwriOxRdZ7R6PYgEtebET
+	5AgGuoz66JnyWNi3OmRFy+QNycKFOcjuYl1n9boVo2xRCJ9xRrK1dmO7v/6wbrTi
+	cUSKiAPN7off+HB/Kw9UdtBMq4ayFXh00aTL1MYjCtFDDCNIhbg5YzFBHDAaX9rj
+	6mXKcmDx5xVd1iSFTZ2r+B7Gok3VqQ9j/nnkNvPYzvcJpMnoP2JxrouKFjnWJmxi
+	yd6CSU3np+Y0hh7qh6GmAupcwtgWA==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cf4723511-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 25 Feb 2026 22:13:12 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 61PJWo9f013411;
-	Wed, 25 Feb 2026 22:13:12 GMT
+	Wed, 25 Feb 2026 23:12:25 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 61PNA2e1001659;
+	Wed, 25 Feb 2026 23:12:24 GMT
 Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4cfqdy7t6v-1
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4cfr1n7ygb-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 25 Feb 2026 22:13:12 +0000
+	Wed, 25 Feb 2026 23:12:23 +0000
 Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 61PMD75J48103774
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 61PNCJ8349414422
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 25 Feb 2026 22:13:08 GMT
+	Wed, 25 Feb 2026 23:12:19 GMT
 Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D7E5B2004E;
-	Wed, 25 Feb 2026 22:13:07 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id A851F20049;
+	Wed, 25 Feb 2026 23:12:19 +0000 (GMT)
 Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4CD722004B;
-	Wed, 25 Feb 2026 22:13:06 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 1FB0420040;
+	Wed, 25 Feb 2026 23:12:18 +0000 (GMT)
 Received: from ltcrain4-lp15.ltc.tadn.ibm.com (unknown [9.5.7.39])
 	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 25 Feb 2026 22:13:06 +0000 (GMT)
+	Wed, 25 Feb 2026 23:12:17 +0000 (GMT)
 From: adubey@linux.ibm.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: bpf@vger.kernel.org, hbathini@linux.ibm.com, ast@kernel.org,
         daniel@iogearbox.net, andrii@kernel.org, maddy@linux.ibm.com,
         Abhishek Dubey <adubey@linux.ibm.com>
-Subject: [PATCH v4 2/2] selftests/bpf: Enable private stack tests for powerpc64
-Date: Wed, 25 Feb 2026 22:13:24 -0500
-Message-ID: <20260226031324.17352-2-adubey@linux.ibm.com>
+Subject: [PATCH v2 1/3] powerpc64/bpf: Implement fsession support
+Date: Wed, 25 Feb 2026 23:12:15 -0500
+Message-ID: <20260226041217.18059-1-adubey@linux.ibm.com>
 X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260226031324.17352-1-adubey@linux.ibm.com>
-References: <20260226031324.17352-1-adubey@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,180 +88,248 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjI1MDIxMiBTYWx0ZWRfX1ZZw63RUuebZ
- p2axfhHD6cYAGwdnEOJad33AopxKHzn0we+rw9iMvLSWrtEOMXie3jSQGUUCyxan5Dja1vfJaZH
- aoY/srR8LhGZQdYzHj8ILACODBaKVLN8mXGJhChAV8hlq+nRVbUoDFZfbkOmn50jz8cqNL7zMrR
- 588sauooQs2VJJ9COWIrOpP6HtegTquMRbiajwbCQEymq/yeEvcloP2dc0kS7XH+IR81BdEhs2B
- dayWbUyApJaFbpyszuLg9U8ER+X88UIo5zkvijH6epFhhTNPI6CCJnurN0AcwppS358gttY46X/
- U+B489nzS6K23gfSfH5sLlnhdCI192NkG1KcObTkK/E4k+6VR/HgHqSxjss9A+qhHBm8XmkJS8n
- g4PseBhwlQWVToDaK1LDOprQ2kCVs3ZGrrfHs4ZsL6OJ8NMxidLYcbZjtH+3QuRcYtgFJLVPmn8
- VD0YTji5aQVtqJKNo0g==
-X-Proofpoint-ORIG-GUID: GHF6h37bvVam8xQGisGvshypyii9lGEI
-X-Authority-Analysis: v=2.4 cv=F9lat6hN c=1 sm=1 tr=0 ts=699f73f8 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+X-Proofpoint-ORIG-GUID: VMnX9COGN3NEFrWhF67XcdIiScdFG-52
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjI1MDIyMSBTYWx0ZWRfXwHy2eXvp5iXE
+ r/ppb9RrcOduU/G4sBYS02flPlSAf/gEh+yPdE+CwVncoS5ktl9oI2ZlDkZHh7k14fpep6HD76/
+ Hx3yJb7tZN4foCm96udqaxx36+pf5D5WqdS0fABEzFI+xTtObKvW/SzeGLOeL0pQ0QWBUxbk9bf
+ 7ZtDkonYvaanmRkwB/h0Kwvx7oKi+NihxuY6WfEs7FRIDgylTp+IfgWduZbz95/fr/bhrskNmQV
+ 8gUESCnpaKUIW5rtfD+wnkDmOVr3aG5hmv3WBlPPg+cpz9dEM5jIfptiCXl73X7IxXVcTBcyDCh
+ h5HBEotKa03c/ebPxqN2+UWvZx5tPLO0flcVjRO/+iqFBIl7rAesf5ZCrsdjAn4hX/4/4mlfeqA
+ WjsDv+ZleZpwb+YdMghNuFZbKh89/ZjMfgXc0zHd70JJJ6BllcCqnRf0rbTcFO90a65uWhzF76Q
+ HDMwJPBrVC2F630rf9g==
+X-Authority-Analysis: v=2.4 cv=R7wO2NRX c=1 sm=1 tr=0 ts=699f81d9 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
  a=HzLeVaNsDn8A:10 a=VkNPw1HP01LnGYTKEx00:22 a=Mpw57Om8IfrbqaoTuvik:22
  a=GgsMoib0sEa3-_RKJdDe:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=WRW5XrRV495NP23rXD4A:9
-X-Proofpoint-GUID: GHF6h37bvVam8xQGisGvshypyii9lGEI
+ a=VI0ruYTOgo-bu1z5fxYA:9
+X-Proofpoint-GUID: VMnX9COGN3NEFrWhF67XcdIiScdFG-52
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-02-25_03,2026-02-25_01,2025-10-01_01
+ definitions=2026-02-25_04,2026-02-25_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 phishscore=0 bulkscore=0 adultscore=0 spamscore=0
- clxscore=1015 suspectscore=0 malwarescore=0 lowpriorityscore=0
- priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2601150000
- definitions=main-2602250212
+ priorityscore=1501 clxscore=1015 impostorscore=0 phishscore=0 spamscore=0
+ suspectscore=0 malwarescore=0 bulkscore=0 adultscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2601150000 definitions=main-2602250221
 
 From: Abhishek Dubey <adubey@linux.ibm.com>
 
-With support of private stack, relevant tests must pass
-on powerpc64.
+Implement JIT support for fsession in powerpc64 trampoline.
+The trampoline stack now accommodate session cookies and
+function metadata in place of function argument. fentry/fexit
+programs consume corresponding function metadata. This mirrors
+existing x86 behavior and enable session cookies on powerpc64.
 
-#./test_progs -t struct_ops_private_stack
-#434/1   struct_ops_private_stack/private_stack:OK
-#434/2   struct_ops_private_stack/private_stack_fail:OK
-#434/3   struct_ops_private_stack/private_stack_recur:OK
-#434     struct_ops_private_stack:OK
-Summary: 1/3 PASSED, 0 SKIPPED, 0 FAILED
+Patch rebased over:
+https://lore.kernel.org/bpf/20260220063933.196141-1-hbathini@linux.ibm.com
 
-v2->v3:
-  Enable testcase using __powerpc64__ instead of __TARGET_ARCH_powerpc,
-  to prevent it getting invoked on powerpc32
+v1->v2:
+  No change since v1
 
-[v2]: https://lore.kernel.org/bpf/20260225153950.15331-1-adubey@linux.ibm.com
+[v1]: https://lore.kernel.org/bpf/20260216155310.38457-1-adubey@linux.ibm.com
 
 Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
 ---
- .../bpf/prog_tests/struct_ops_private_stack.c | 29 +++++++++----------
- .../bpf/progs/struct_ops_private_stack.c      |  6 ----
- .../bpf/progs/struct_ops_private_stack_fail.c |  6 ----
- .../progs/struct_ops_private_stack_recur.c    |  6 ----
- 4 files changed, 13 insertions(+), 34 deletions(-)
+ arch/powerpc/net/bpf_jit.h        |  4 +-
+ arch/powerpc/net/bpf_jit_comp.c   | 69 ++++++++++++++++++++++++++-----
+ arch/powerpc/net/bpf_jit_comp64.c | 25 +++++++++++
+ 3 files changed, 87 insertions(+), 11 deletions(-)
 
-diff --git a/tools/testing/selftests/bpf/prog_tests/struct_ops_private_stack.c b/tools/testing/selftests/bpf/prog_tests/struct_ops_private_stack.c
-index 4006879ca3fe..afad3522b772 100644
---- a/tools/testing/selftests/bpf/prog_tests/struct_ops_private_stack.c
-+++ b/tools/testing/selftests/bpf/prog_tests/struct_ops_private_stack.c
-@@ -5,6 +5,7 @@
- #include "struct_ops_private_stack_fail.skel.h"
- #include "struct_ops_private_stack_recur.skel.h"
- 
-+#if defined(__x86_64__) || defined(__aarch64__) || defined(__powerpc64__)
- static void test_private_stack(void)
- {
- 	struct struct_ops_private_stack *skel;
-@@ -15,11 +16,6 @@ static void test_private_stack(void)
- 	if (!ASSERT_OK_PTR(skel, "struct_ops_private_stack__open"))
- 		return;
- 
--	if (skel->data->skip) {
--		test__skip();
--		goto cleanup;
--	}
+diff --git a/arch/powerpc/net/bpf_jit.h b/arch/powerpc/net/bpf_jit.h
+index a232f3fb73be..f32de8704d4d 100644
+--- a/arch/powerpc/net/bpf_jit.h
++++ b/arch/powerpc/net/bpf_jit.h
+@@ -218,7 +218,9 @@ void bpf_jit_build_epilogue(u32 *image, struct codegen_context *ctx);
+ void bpf_jit_build_fentry_stubs(u32 *image, struct codegen_context *ctx);
+ void bpf_jit_realloc_regs(struct codegen_context *ctx);
+ int bpf_jit_emit_exit_insn(u32 *image, struct codegen_context *ctx, int tmp_reg, long exit_addr);
 -
- 	err = struct_ops_private_stack__load(skel);
- 	if (!ASSERT_OK(err, "struct_ops_private_stack__load"))
- 		goto cleanup;
-@@ -48,11 +44,6 @@ static void test_private_stack_fail(void)
- 	if (!ASSERT_OK_PTR(skel, "struct_ops_private_stack_fail__open"))
- 		return;
- 
--	if (skel->data->skip) {
--		test__skip();
--		goto cleanup;
--	}
--
- 	err = struct_ops_private_stack_fail__load(skel);
- 	if (!ASSERT_ERR(err, "struct_ops_private_stack_fail__load"))
- 		goto cleanup;
-@@ -72,11 +63,6 @@ static void test_private_stack_recur(void)
- 	if (!ASSERT_OK_PTR(skel, "struct_ops_private_stack_recur__open"))
- 		return;
- 
--	if (skel->data->skip) {
--		test__skip();
--		goto cleanup;
--	}
--
- 	err = struct_ops_private_stack_recur__load(skel);
- 	if (!ASSERT_OK(err, "struct_ops_private_stack_recur__load"))
- 		goto cleanup;
-@@ -95,7 +81,7 @@ static void test_private_stack_recur(void)
- 	struct_ops_private_stack_recur__destroy(skel);
++void prepare_for_fsession_fentry(u32 *image, struct codegen_context *ctx, int cookie_cnt,
++								int cookie_off, int retval_off);
++void store_func_meta(u32 *image, struct codegen_context *ctx, u64 func_meta, int func_meta_off);
+ int bpf_add_extable_entry(struct bpf_prog *fp, u32 *image, u32 *fimage, int pass,
+ 			  struct codegen_context *ctx, int insn_idx,
+ 			  int jmp_off, int dst_reg, u32 code);
+diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+index 08c992436ace..6d334c0c3d85 100644
+--- a/arch/powerpc/net/bpf_jit_comp.c
++++ b/arch/powerpc/net/bpf_jit_comp.c
+@@ -540,6 +540,11 @@ bool bpf_jit_supports_private_stack(void)
+ 	return IS_ENABLED(CONFIG_PPC64);
  }
  
--void test_struct_ops_private_stack(void)
-+static void __test_struct_ops_private_stack(void)
- {
- 	if (test__start_subtest("private_stack"))
- 		test_private_stack();
-@@ -104,3 +90,14 @@ void test_struct_ops_private_stack(void)
- 	if (test__start_subtest("private_stack_recur"))
- 		test_private_stack_recur();
- }
-+#else
-+static void __test_struct_ops_private_stack(void)
++bool bpf_jit_supports_fsession(void)
 +{
-+	test__skip();
++	return IS_ENABLED(CONFIG_PPC64);
 +}
-+#endif
 +
-+void test_struct_ops_private_stack(void)
+ bool bpf_jit_supports_arena(void)
+ {
+ 	return IS_ENABLED(CONFIG_PPC64);
+@@ -812,12 +817,16 @@ static int __arch_prepare_bpf_trampoline(struct bpf_tramp_image *im, void *rw_im
+ 					 struct bpf_tramp_links *tlinks,
+ 					 void *func_addr)
+ {
+-	int regs_off, nregs_off, ip_off, run_ctx_off, retval_off, nvr_off, alt_lr_off, r4_off = 0;
++	int regs_off, func_meta_off, ip_off, run_ctx_off, retval_off;
++	int nvr_off, alt_lr_off, r4_off = 0;
+ 	struct bpf_tramp_links *fmod_ret = &tlinks[BPF_TRAMP_MODIFY_RETURN];
+ 	struct bpf_tramp_links *fentry = &tlinks[BPF_TRAMP_FENTRY];
+ 	struct bpf_tramp_links *fexit = &tlinks[BPF_TRAMP_FEXIT];
+ 	int i, ret, nr_regs, retaddr_off, bpf_frame_size = 0;
+ 	struct codegen_context codegen_ctx, *ctx;
++	int cookie_off, cookie_cnt, cookie_ctx_off;
++	int fsession_cnt = bpf_fsession_cnt(tlinks);
++	u64 func_meta;
+ 	u32 *image = (u32 *)rw_image;
+ 	ppc_inst_t branch_insn;
+ 	u32 *branches = NULL;
+@@ -853,9 +862,11 @@ static int __arch_prepare_bpf_trampoline(struct bpf_tramp_image *im, void *rw_im
+ 	 *                              [ reg argN          ]
+ 	 *                              [ ...               ]
+ 	 *       regs_off               [ reg_arg1          ] prog ctx context
+-	 *       nregs_off              [ args count        ] ((u64 *)prog_ctx)[-1]
++	 *       func_meta_off          [ args count        ] ((u64 *)prog_ctx)[-1]
+ 	 *       ip_off                 [ traced function   ] ((u64 *)prog_ctx)[-2]
++	 *                              [ stack cookieN     ]
+ 	 *                              [ ...               ]
++	 *       cookie_off             [ stack cookie1     ]
+ 	 *       run_ctx_off            [ bpf_tramp_run_ctx ]
+ 	 *                              [ reg argN          ]
+ 	 *                              [ ...               ]
+@@ -887,16 +898,21 @@ static int __arch_prepare_bpf_trampoline(struct bpf_tramp_image *im, void *rw_im
+ 	run_ctx_off = bpf_frame_size;
+ 	bpf_frame_size += round_up(sizeof(struct bpf_tramp_run_ctx), SZL);
+ 
++	/* room for session cookies */
++	cookie_off = bpf_frame_size;
++	cookie_cnt = bpf_fsession_cookie_cnt(tlinks);
++	bpf_frame_size += cookie_cnt * 8;
++
+ 	/* Room for IP address argument */
+ 	ip_off = bpf_frame_size;
+ 	if (flags & BPF_TRAMP_F_IP_ARG)
+ 		bpf_frame_size += SZL;
+ 
+-	/* Room for args count */
+-	nregs_off = bpf_frame_size;
++	/* Room for function metadata, arg regs count */
++	func_meta_off = bpf_frame_size;
+ 	bpf_frame_size += SZL;
+ 
+-	/* Room for args */
++	/* Room for arg egs */
+ 	regs_off = bpf_frame_size;
+ 	bpf_frame_size += nr_regs * SZL;
+ 
+@@ -990,9 +1006,9 @@ static int __arch_prepare_bpf_trampoline(struct bpf_tramp_image *im, void *rw_im
+ 		EMIT(PPC_RAW_STL(_R3, _R1, retaddr_off));
+ 	}
+ 
+-	/* Save function arg count -- see bpf_get_func_arg_cnt() */
+-	EMIT(PPC_RAW_LI(_R3, nr_regs));
+-	EMIT(PPC_RAW_STL(_R3, _R1, nregs_off));
++	/* Save function arg regs count -- see bpf_get_func_arg_cnt() */
++	func_meta = nr_regs;
++	store_func_meta(image, ctx, func_meta, func_meta_off);
+ 
+ 	/* Save nv regs */
+ 	EMIT(PPC_RAW_STL(_R25, _R1, nvr_off));
+@@ -1006,10 +1022,28 @@ static int __arch_prepare_bpf_trampoline(struct bpf_tramp_image *im, void *rw_im
+ 			return ret;
+ 	}
+ 
+-	for (i = 0; i < fentry->nr_links; i++)
++	if (fsession_cnt) {
++		/*
++		 * Clear all the session cookies' values
++		 * Clear the return value to make sure fentry always get 0
++		 */
++		prepare_for_fsession_fentry(image, ctx, cookie_cnt, cookie_off, retval_off);
++	}
++
++	cookie_ctx_off = (regs_off - cookie_off) / 8;
++
++	for (i = 0; i < fentry->nr_links; i++) {
++		if (bpf_prog_calls_session_cookie(fentry->links[i])) {
++			u64 meta = func_meta | (cookie_ctx_off << BPF_TRAMP_COOKIE_INDEX_SHIFT);
++
++			store_func_meta(image, ctx, meta, func_meta_off);
++			cookie_ctx_off--;
++		}
++
+ 		if (invoke_bpf_prog(image, ro_image, ctx, fentry->links[i], regs_off, retval_off,
+ 				    run_ctx_off, flags & BPF_TRAMP_F_RET_FENTRY_RET))
+ 			return -EINVAL;
++	}
+ 
+ 	if (fmod_ret->nr_links) {
+ 		branches = kcalloc(fmod_ret->nr_links, sizeof(u32), GFP_KERNEL);
+@@ -1071,12 +1105,27 @@ static int __arch_prepare_bpf_trampoline(struct bpf_tramp_image *im, void *rw_im
+ 		image[branches[i]] = ppc_inst_val(branch_insn);
+ 	}
+ 
+-	for (i = 0; i < fexit->nr_links; i++)
++	/* set the "is_return" flag for fsession */
++	func_meta |= (1ULL << BPF_TRAMP_IS_RETURN_SHIFT);
++	if (fsession_cnt)
++		store_func_meta(image, ctx, func_meta, func_meta_off);
++
++	cookie_ctx_off = (regs_off - cookie_off) / 8;
++
++	for (i = 0; i < fexit->nr_links; i++) {
++		if (bpf_prog_calls_session_cookie(fexit->links[i])) {
++			u64 meta = func_meta | (cookie_ctx_off << BPF_TRAMP_COOKIE_INDEX_SHIFT);
++
++			store_func_meta(image, ctx, meta, func_meta_off);
++			cookie_ctx_off--;
++		}
++
+ 		if (invoke_bpf_prog(image, ro_image, ctx, fexit->links[i], regs_off, retval_off,
+ 				    run_ctx_off, false)) {
+ 			ret = -EINVAL;
+ 			goto cleanup;
+ 		}
++	}
+ 
+ 	if (flags & BPF_TRAMP_F_CALL_ORIG) {
+ 		if (ro_image) /* image is NULL for dummy pass */
+diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+index 17aec341f5eb..1e2ac6c4f331 100644
+--- a/arch/powerpc/net/bpf_jit_comp64.c
++++ b/arch/powerpc/net/bpf_jit_comp64.c
+@@ -179,6 +179,31 @@ static int bpf_jit_stack_offsetof(struct codegen_context *ctx, int reg)
+ 	BUG();
+ }
+ 
++void prepare_for_fsession_fentry(u32 *image, struct codegen_context *ctx, int cookie_cnt,
++				int cookie_off, int retval_off)
 +{
-+	__test_struct_ops_private_stack();
++	EMIT(PPC_RAW_LI(bpf_to_ppc(TMP_REG_1), 0));
++
++	for (int i = 0; i < cookie_cnt; i++)
++		EMIT(PPC_RAW_STD(bpf_to_ppc(TMP_REG_1), _R1, cookie_off + 8 * i));
++	EMIT(PPC_RAW_STD(bpf_to_ppc(TMP_REG_1), _R1, retval_off));
 +}
-diff --git a/tools/testing/selftests/bpf/progs/struct_ops_private_stack.c b/tools/testing/selftests/bpf/progs/struct_ops_private_stack.c
-index dbe646013811..3cd0c1a55cbd 100644
---- a/tools/testing/selftests/bpf/progs/struct_ops_private_stack.c
-+++ b/tools/testing/selftests/bpf/progs/struct_ops_private_stack.c
-@@ -7,12 +7,6 @@
- 
- char _license[] SEC("license") = "GPL";
- 
--#if defined(__TARGET_ARCH_x86) || defined(__TARGET_ARCH_arm64)
--bool skip __attribute((__section__(".data"))) = false;
--#else
--bool skip = true;
--#endif
--
- void bpf_testmod_ops3_call_test_2(void) __ksym;
- 
- int val_i, val_j;
-diff --git a/tools/testing/selftests/bpf/progs/struct_ops_private_stack_fail.c b/tools/testing/selftests/bpf/progs/struct_ops_private_stack_fail.c
-index 3d89ad7cbe2a..1442728f5604 100644
---- a/tools/testing/selftests/bpf/progs/struct_ops_private_stack_fail.c
-+++ b/tools/testing/selftests/bpf/progs/struct_ops_private_stack_fail.c
-@@ -7,12 +7,6 @@
- 
- char _license[] SEC("license") = "GPL";
- 
--#if defined(__TARGET_ARCH_x86) || defined(__TARGET_ARCH_arm64)
--bool skip __attribute((__section__(".data"))) = false;
--#else
--bool skip = true;
--#endif
--
- void bpf_testmod_ops3_call_test_2(void) __ksym;
- 
- int val_i, val_j;
-diff --git a/tools/testing/selftests/bpf/progs/struct_ops_private_stack_recur.c b/tools/testing/selftests/bpf/progs/struct_ops_private_stack_recur.c
-index b1f6d7e5a8e5..faaa0f8d65a4 100644
---- a/tools/testing/selftests/bpf/progs/struct_ops_private_stack_recur.c
-+++ b/tools/testing/selftests/bpf/progs/struct_ops_private_stack_recur.c
-@@ -7,12 +7,6 @@
- 
- char _license[] SEC("license") = "GPL";
- 
--#if defined(__TARGET_ARCH_x86) || defined(__TARGET_ARCH_arm64)
--bool skip __attribute((__section__(".data"))) = false;
--#else
--bool skip = true;
--#endif
--
- void bpf_testmod_ops3_call_test_1(void) __ksym;
- 
- int val_i, val_j;
++
++void store_func_meta(u32 *image, struct codegen_context *ctx,
++					u64 func_meta, int func_meta_off)
++{
++	/*
++	 * Store func_meta to stack at [R1 + func_meta_off] = func_meta
++	 *
++	 * func_meta :
++	 *	bit[63]: is_return flag
++	 *	byte[1]: cookie offset from ctx
++	 *	byte[0]: args count
++	 */
++	PPC_LI64(bpf_to_ppc(TMP_REG_1), func_meta);
++	EMIT(PPC_RAW_STD(bpf_to_ppc(TMP_REG_1), _R1, func_meta_off));
++}
++
+ void bpf_jit_realloc_regs(struct codegen_context *ctx)
+ {
+ }
 -- 
 2.52.0
 
