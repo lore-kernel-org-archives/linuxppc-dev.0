@@ -1,93 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-17312-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17313-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6F0DFD8FF4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Feb 2026 18:25:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D86AFD8FF4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Feb 2026 18:57:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fMKcy1QRmz2yvy;
-	Fri, 27 Feb 2026 05:25:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::82b" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772130306;
-	cv=pass; b=DG2yKcEFEZ9nrCoynaZWLRTiTh+59Zade21kXlhgqruQxj/Etxo21N+uspc2yYl63ins9E2IKQ1czcDXHTiHfkZpIvNqo6UTThrc0KGgfZFRlaNellt2C68WCFzhKuRwAuTxHl3qJyXQHTmVxmNwBuAl+jgwiQ78g1tE3fNoWpHX/QqfLQbJ1Jkw1F/UfsBVz6wOO9KB0bWdpziBNPGRDoiSj+obwJXTqChX4t7LHLKJcDgfgAmuz7FUuo1oAdawmCqJ9aA3oLnp1bFpzDSxgyXm2hdX8dyjPkVRUyRywaSVwau+OEQSt29fWMVm3x04dzk9fA+1gMXhkXD2OENneQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772130306; c=relaxed/relaxed;
-	bh=/PYRcOeI7C9TjyeqdENicil+1+DTaWkY4tVXR58gDo0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=GaKAJETHg++MMEofmMFvBO9mghdR7rZT1VMwgTYmrELcWc/4i9ILVNUloll8f1S4oMsFjssXKar+PsMHhl7ReHduiTQl9NKCZTeroL9VHI5PjeTFV8L4CkSylSVFwTzpGnMXPLpbgyFHLFMXxVrGuX17361Q0p18XA+0YXY2BSkpZPnZdXlKhZK7HEN0nVTm93cucl7dhaTj5OOU7YXnp9OBmTW7qYb6w+p70gE53waFtq68Tx+kqnacgqR44PPGUryQbu3stAAIzLUM+r090EDl2xYF9Jymo21GqzXXkUZmX+UhxKSEzY3AiKXUaZ9O6ulH+PJ1oAjL9sIM66uvZA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=pm+8hMOx; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::82b; helo=mail-qt1-x82b.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fMLL069Zzz2ySS;
+	Fri, 27 Feb 2026 05:57:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772132232;
+	cv=none; b=mFEE+ZOpU8uJFjSQ12RFb0a7x3rztRg18b7MEo1SvBIdX+sGjkIs1lnf26KLrxdsDWvnBDxDfYub+GoxpnzUvbQW+iwbIG9KONZ4cmmwRSkN1KRCv06ihyqvItM25KkTC9/XWbhRlFuoxu80pLU76p2pJMPj7Q3PyFnqn3VFafzpTyyzHFJATYVb3Jm0QPaXTwE7B7rLSlp5Xg9bq83q1VFqKWoRwR6dLDV42y+y1d1H87QFIXZM841kiz0TZh97tYj/qYDB312f3A++mXpegeEfLIwBl+43QmsWmxO3kDua0Wft6cKcIUn4cwBJjqmsiLv3HiCLc0bn/2xR37BXoA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1772132232; c=relaxed/relaxed;
+	bh=FIyJiF+EsFICIbGngtFt2QEoH02V0XdkHZzMYH6oSdk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=EAkOdlbof4LYvQpQpBgeyx+72E/qxJM0lzQ/maFzA2TGegXsT3em27vllCC3cmnnBuGqDIz0iVy7rLf3cgGi01wczYQ5lxuFyaDqJA7KbgZ6ppo8AY7pxgB/+Mo97w6ygAY+w9+crFivcnaktwvwYfJaqgFxFvF4rd3EkwybziFohrxt4qdiZBWt3hwQuCM+xtU11Ze4k2D3XMxqqAp4Riw3UxojYqYvGHHNuC89eZBZz9f15s1pCi5Ie0DuIktTwLiwiipVxPtdbE9COl59ROBwqz/7exbwzzKU7p7jOtx0O8kZFgXo/ECKpjY4rrGKZikZeThkSQaqlvf6upTxUA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AOuKzwpy; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=pm+8hMOx;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AOuKzwpy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::82b; helo=mail-qt1-x82b.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x82b.google.com (mail-qt1-x82b.google.com [IPv6:2607:f8b0:4864:20::82b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMKcw4XxCz2yrW
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 05:25:04 +1100 (AEDT)
-Received: by mail-qt1-x82b.google.com with SMTP id d75a77b69052e-505d3baf1a7so29881cf.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2026 10:25:04 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1772130301; cv=none;
-        d=google.com; s=arc-20240605;
-        b=NXGnh1NTbt/er9JDTGxqk5RzQY0N2MS4pfp91fz+ZmZyHu8cH9yXSwEYsDpTkbRTby
-         nGcCekjiLKmiv0jCsNu+r/z3dUrnpzt5dCSfw6bpJ/fVC/btuGQXCaO03QD8yZzaH9B/
-         0l9VMzvf7IBmGBR043tAPIDJE0EI9JLSJwcydqPuy3gJxzxM71tz2UT+x9CkyTr6cylA
-         VEDttXAN3AZh5pd83fgvO6Utyn/ruTmY3DzIQEw44mDzbV4D+QpiaXrDObottTL5SJms
-         5Q/Cqt3PemEHXDGP8olBW4TTETSu9LvAV1XdgAbBSDJlCeNepyJPSlhUnA5GdiOVZ40N
-         1qTw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=/PYRcOeI7C9TjyeqdENicil+1+DTaWkY4tVXR58gDo0=;
-        fh=ZSoI1aj3mOpHAC8R2HXdVEk5bMR4CEIaTi9dUAmFLYo=;
-        b=Fwxl8xuMtpJcM18xQd8jMOr1RB6fCxQD6pC5tmY2udasm2P387ey2QEqPprk4PX7Vw
-         O3jsVRouGjbHvfxI1j5YEQEDYPe651EBjRn03jGtfkdA3rbE2Y1h9iiebn+XRE8/6Yhb
-         zWabYyCLlPnJg9caFK2SuaTjQVFq5rT0F/thwO1Xx1SnIm8ydfrJwqsEA4L7A/w1xU9Y
-         6gD3IY6e2T93CCHEnBJ8YPLOwdYd3uN6k3pnrjtWW4SOzY3XQOeD5O4vtv7vFLOejSi4
-         4GszYD8E5IoQTWTKBM0dpV8dnVppQFzGsCFH7NtYBAAkRxQlp069sfXhwEdPKnHAt2LS
-         /YxA==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1772130301; x=1772735101; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=/PYRcOeI7C9TjyeqdENicil+1+DTaWkY4tVXR58gDo0=;
-        b=pm+8hMOxyCPMPzv/AUfbykgLPoVq8akuUEisM9wXVrt7KjD+VtB1tBx8BxqAw4BN7f
-         uPbvVl+7Dy1PvssZRhkF/UpF7aPovIklRW+dMY50N2rEDAVsW/bdiw+MukxTk0JAg5Iy
-         jgB8mpbcPwkHHqSWUiB4G5PZAQPWb2yZxn6zE/dSx0dRnymmoNArPgvo9MrK9MaWE4Y1
-         lZuKlVqoOSh7QVlk9IvZC2fjdHy1WtKP7AlYsgrQ8AJoC3bWP1Nf22QIUyh33Xzs4jXz
-         GOS1fFVwszdft2QlZ0ADGpEd6XVwF5XZes1cPbvEjRx7eC6ZZXTXROYOsBIypEowyQ6i
-         r6Kg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772130301; x=1772735101;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=/PYRcOeI7C9TjyeqdENicil+1+DTaWkY4tVXR58gDo0=;
-        b=YHNTPa58Hp259cGReEjPm5MstB6L76pTTf1jA7PIHZ2tILJQBmDsE1X+JZqPSHBhjT
-         jkFdF4HaNpJL/7xUWo/7VBgWGN6doxmSqJ5ZlzxIntNBpVxyEmTzQN8Qgy7glNVm9rYu
-         N2PIpvYxBfmaRBz71lP4ouKSczDj8QdOvRerXsYvKXJzaDv+h3hSPRTM4KfVI+DF+Vn4
-         3wmKL6gsSNY9TzbEbXY3haDyNx7GlQe3DPxo37XEznnqM05uWY7U38PUvYbwy7NWbdmc
-         u4Tki1TrdpC7rcjKP07x779GEfIRgvCuELPJP82Bf+aPghbtS6YdPsWwllTGQo3To0M5
-         jwxg==
-X-Forwarded-Encrypted: i=1; AJvYcCUPQL7XmFlcGytKUuscezWCKWJmKM6j3vaSeCgp7UJDmf5JgILa5LOwKlPpc6urwediAvoqUmShMzAaAeY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxX/0oAnb/Hjm0jodes8Ei03RqOPYeQ5wbbUKuGGHAfP+HjQnV5
-	WHMczQG8AX4FWuM2g5dxJcYPoExP5tFMNNBSw65rwTgLSqe3YxVLvzbvNi3tIX2RsdRYy4dtSYn
-	Gifu+lYHxen3yia6KUqWLGCrSviBe3yL/VNv7+BAW
-X-Gm-Gg: ATEYQzwt5bs4QxD1234l6rFssnUiMrBuUoABY5p2ZZUdvamU/wEQq6rmKXr0QX8MQYc
-	D2XdDRMdxo2eF1ETkrsGrjC0zrpxMWktlwWcfuW7HCNEgyU6wu6ALlqDXMfMiFLZrHGRoex5bdw
-	irAwAJcceALmLOZx9wFdr5S8J81c5V/e/YP5/Ypg5E/XF/X0G4n1ND8Tz5sVAwa6ig4Ja6tpyVI
-	ebaZpw2PSRYreUCRaEOOfJp5XV3aqhiWF25a/YTg8BKKk1pIhbBSgZSmr8TxaW41JklNdrpeGkH
-	U0tCt0urNYgrS4+h+k5mfG6BgJ5JrChQCS3NuSKvjPyG/foO
-X-Received: by 2002:a05:622a:15d1:b0:501:4eae:dbfc with SMTP id
- d75a77b69052e-507454fc6c1mr12936811cf.5.1772130300634; Thu, 26 Feb 2026
- 10:25:00 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMLKz69NPz2yLH
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 05:57:11 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 6DE356013A;
+	Thu, 26 Feb 2026 18:57:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E0C14C116C6;
+	Thu, 26 Feb 2026 18:57:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1772132229;
+	bh=PnxEIgfsXeStlrThxLfxoDBf2IdKb0WXD9cn82B/HT8=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=AOuKzwpys4kof1ZxK7YXH2reFy+tcD+VOHwUOAvUXIQgyrggK4FbVj4kmokSrxxce
+	 AiX9oVFnCv1wyqoUxClw/UI1VUJBGUzlCHWD1UR5W+AhVEQNKBmYnN8rA4QyWgB9fX
+	 VcIo4zJSIlby/v3JSoy8oFh4cRBXgi3BuqwyWhUHIj3Jj15H7VtBW4VlT1EYhZmrbu
+	 d3c/XrAwMiRW1EIvUvPM9JPfVR7XqnpV2Z/5zqaQqennlovKf4LiSeg8RN95a2nJ4G
+	 GDHML72oPy9JtFFliUruxGMb2TUSCjf4yhRdXTCILJ8l0Wg+4lxR2y2FCwxv25fdn/
+	 n36rzn+jSPB6w==
+Message-ID: <df5dac1b-286d-43d5-a742-375b6de8730f@kernel.org>
+Date: Thu, 26 Feb 2026 19:57:05 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,78 +59,138 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260226070609.3072570-1-surenb@google.com> <20260226070609.3072570-4-surenb@google.com>
- <20260226191007.409a7a21@p-imbrenda>
-In-Reply-To: <20260226191007.409a7a21@p-imbrenda>
-From: Suren Baghdasaryan <surenb@google.com>
-Date: Thu, 26 Feb 2026 10:24:49 -0800
-X-Gm-Features: AaiRm52wFdTJC6YvOb26vvaOOFR294VpLCUuG2iciIW7CwkMabryiSXuJJdbEug
-Message-ID: <CAJuCfpEk_VPqwpqtAiCJSR5bkvHuzvC8ooXrB4jKTYnQB2D4YA@mail.gmail.com>
-Subject: Re: [PATCH v3 3/3] mm: use vma_start_write_killable() in process_vma_walk_lock()
-To: Claudio Imbrenda <imbrenda@linux.ibm.com>
-Cc: akpm@linux-foundation.org, willy@infradead.org, david@kernel.org, 
-	ziy@nvidia.com, matthew.brost@intel.com, joshua.hahnjy@gmail.com, 
-	rakie.kim@sk.com, byungchul@sk.com, gourry@gourry.net, 
-	ying.huang@linux.alibaba.com, apopple@nvidia.com, lorenzo.stoakes@oracle.com, 
-	baolin.wang@linux.alibaba.com, Liam.Howlett@oracle.com, npache@redhat.com, 
-	ryan.roberts@arm.com, dev.jain@arm.com, baohua@kernel.org, 
-	lance.yang@linux.dev, vbabka@suse.cz, jannh@google.com, rppt@kernel.org, 
-	mhocko@suse.com, pfalcato@suse.de, kees@kernel.org, maddy@linux.ibm.com, 
-	npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org, 
-	borntraeger@linux.ibm.com, frankja@linux.ibm.com, hca@linux.ibm.com, 
-	gor@linux.ibm.com, agordeev@linux.ibm.com, svens@linux.ibm.com, 
-	gerald.schaefer@linux.ibm.com, linux-mm@kvack.org, 
-	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [bug report] Bug: Write fault blocked by KUAP!
+To: Caleb Sander Mateos <csander@purestorage.com>,
+ Ming Lei <ming.lei@redhat.com>
+Cc: Changhui Zhong <czhong@redhat.com>,
+ Linux Block Devices <linux-block@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
+References: <CAGVVp+U0EYVX+VbbEHzcYP70zdmOXwAmUvpMYV9y3jBSRFmS6g@mail.gmail.com>
+ <CAFj5m9L8ahNYFf-tUAZFKAUzkeyqV-Sx94MxC268XJ-hqHPCig@mail.gmail.com>
+ <CAFj5m9+OCswLULgVx8eSydTG0OeN4f-8dK1-JyoAA70CNF88Qg@mail.gmail.com>
+ <CADUfDZrq96YGiMN9==gMitAHZtXydOAwy-767-d0j5LdUqO91Q@mail.gmail.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <CADUfDZrq96YGiMN9==gMitAHZtXydOAwy-767-d0j5LdUqO91Q@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Thu, Feb 26, 2026 at 10:10=E2=80=AFAM Claudio Imbrenda
-<imbrenda@linux.ibm.com> wrote:
->
-> On Wed, 25 Feb 2026 23:06:09 -0800
-> Suren Baghdasaryan <surenb@google.com> wrote:
->
-> > Replace vma_start_write() with vma_start_write_killable() when
-> > process_vma_walk_lock() is used with PGWALK_WRLOCK option.
-> > Adjust its direct and indirect users to check for a possible error
-> > and handle it. Ensure users handle EINTR correctly and do not ignore
-> > it.
-> >
-> > Signed-off-by: Suren Baghdasaryan <surenb@google.com>
-> > ---
-> >  arch/s390/kvm/kvm-s390.c |  2 +-
-> >  fs/proc/task_mmu.c       |  5 ++++-
-> >  mm/mempolicy.c           | 14 +++++++++++---
-> >  mm/pagewalk.c            | 20 ++++++++++++++------
-> >  mm/vma.c                 | 22 ++++++++++++++--------
-> >  mm/vma.h                 |  6 ++++++
-> >  6 files changed, 50 insertions(+), 19 deletions(-)
-> >
-> > diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-> > index 7a175d86cef0..337e4f7db63a 100644
-> > --- a/arch/s390/kvm/kvm-s390.c
-> > +++ b/arch/s390/kvm/kvm-s390.c
-> > @@ -2948,7 +2948,7 @@ int kvm_arch_vm_ioctl(struct file *filp, unsigned=
- int ioctl, unsigned long arg)
-> >               }
-> >               /* must be called without kvm->lock */
-> >               r =3D kvm_s390_handle_pv(kvm, &args);
-> > -             if (copy_to_user(argp, &args, sizeof(args))) {
-> > +             if (r !=3D -EINTR && copy_to_user(argp, &args, sizeof(arg=
-s))) {
-> >                       r =3D -EFAULT;
-> >                       break;
-> >               }
->
-> can you very briefly explain how we can end up with -EINTR here?
->
-> do I understand correctly that -EINTR is possible here only if the
-> process is being killed?
 
-Correct, it would happen if the process has a pending fatal signal
-(like SIGKILL) in its signal queue.
 
->
-> [...]
+Le 26/02/2026 à 17:59, Caleb Sander Mateos a écrit :
+> On Thu, Feb 26, 2026 at 4:44 AM Ming Lei <ming.lei@redhat.com> wrote:
+>>
+>> On Thu, Feb 26, 2026 at 6:48 PM Ming Lei <ming.lei@redhat.com> wrote:
+>>>
+>>> Hi Changhui,
+>>>
+>>> Thanks for the report!
+>>>
+>>> Loop Caleb Sander Mateos  in.
+>>>
+>>> Thanks,
+>>>
+>>> On Thu, Feb 26, 2026 at 6:37 PM Changhui Zhong <czhong@redhat.com> wrote:
+>>>>
+>>>> Hello,
+>>>>
+>>>> on the ppc64le arch, I hit the issue below with ublksrv on the latest
+>>>> linux-block/for-next, please help check it, and let me know if you
+>>>> need any info/test for it. Thanks.
+>>>>
+>>>> INFO: HEAD of cloned kernel
+>>>> commit 37a43fd770f3dcac8f72f3ea909b3e893e2385c9
+>>>> Merge: 13cd9b41227a c1dfbd7e71b0
+>>>> Author: Jens Axboe <axboe@kernel.dk>
+>>>> Date:   Wed Feb 25 08:37:06 2026 -0700
+>>>>
+>>>>      Merge branch 'for-7.1/block' into for-next
+>>>>
+>>>>      * for-7.1/block:
+>>>>        ublk: report BLK_SPLIT_INTERVAL_CAPABLE
+>>>>
+>>>> reproducer:
+>>>> compile and install https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2Fublk-org%2Fublksrv.git&data=05%7C02%7Cchristophe.leroy2%40cs-soprasteria.com%7Cf0b0066758be476be95508de75587a73%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639077220067774377%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=ki4yUMx%2FBTANcpfzEoVMdBKsuflIbzhHO2Wqpxtvj5g%3D&reserved=0
+>>>> #echo 0 > /proc/sys/kernel/io_uring_disabled
+>>>> #modprobe ublk_drv
+>>>> #cd ublksrv
+>>>> #make test T=null
+>>>> #make test T=loop
+>>>>
+>>>> dmesg log：
+>>>> Feb 26 00:24:30 ibm-p9z-27-lp26 journal: running null/002
+>>>> Feb 26 00:24:30 ibm-p9z-27-lp26 ublksrvd-0[57921]: start ublksrv io
+>>>> daemon ublksrvd-0
+>>>> Feb 26 00:24:30 ibm-p9z-27-lp26 ublksrvd-0[57921]: tid 57923: ublk dev
+>>>> 0 queue 0 started
+>>>> Feb 26 00:24:30 ibm-p9z-27-lp26 ublksrvd-0[57921]: tid 57924: ublk dev
+>>>> 0 queue 1 started
+>>>> Feb 26 00:24:36 ibm-p9z-27-lp26 NetworkManager[818]: <warn>
+>>>> [1772083476.4882] platform-linux: do-add-ip6-address[2:
+>>>> fe80::8448:a3ff:fe51:f102]: failure 13 (Permission denied - ipv6: IPv6
+>>>> is disabled on this device)
+>>>> Feb 26 00:24:36 ibm-p9z-27-lp26 NetworkManager[818]: <warn>
+>>>> [1772083476.4885] platform-linux: do-add-ip6-address[2:
+>>>> 2620:52:9:160c:8448:a3ff:fe51:f102]: failure 13 (Permission denied -
+>>>> ipv6: IPv6 is disabled on this device)
+>>>> Feb 26 00:24:36 ibm-p9z-27-lp26 NetworkManager[818]: <warn>
+>>>> [1772083476.4938] l3cfg[0f1985ec14299e62,ifindex=2]: unable to
+>>>> configure IPv6 route: type unicast fe80::/64 dev 2 metric 1024 mss 0
+>>>> rt-src ipv6ll
+>>>> Feb 26 00:24:38 ibm-p9z-27-lp26 NetworkManager[818]: <warn>
+>>>> [1772083478.4938] ipv6ll[95ab7f3fdbfe643d,ifindex=2]: changed: no IPv6
+>>>> link local address to retry after Duplicate Address Detection failures
+>>>> (back off)
+>>>> Feb 26 00:24:38 ibm-p9z-27-lp26 NetworkManager[818]: <warn>
+>>>> [1772083478.4943] platform-linux: do-add-ip6-address[2:
+>>>> 2620:52:9:160c:8448:a3ff:fe51:f102]: failure 13 (Permission denied -
+>>>> ipv6: IPv6 is disabled on this device)
+>>>> Feb 26 00:24:48 ibm-p9z-27-lp26 NetworkManager[818]: <warn>
+>>>> [1772083488.5034] platform-linux: do-add-ip6-address[2:
+>>>> fe80::8448:a3ff:fe51:f102]: failure 13 (Permission denied - ipv6: IPv6
+>>>> is disabled on this device)
+>>>> Feb 26 00:24:48 ibm-p9z-27-lp26 NetworkManager[818]: <warn>
+>>>> [1772083488.5037] platform-linux: do-add-ip6-address[2:
+>>>> 2620:52:9:160c:8448:a3ff:fe51:f102]: failure 13 (Permission denied -
+>>>> ipv6: IPv6 is disabled on this device)
+>>>> Feb 26 00:24:48 ibm-p9z-27-lp26 NetworkManager[818]: <warn>
+>>>> [1772083488.5041] l3cfg[0f1985ec14299e62,ifindex=2]: unable to
+>>>> configure IPv6 route: type unicast fe80::/64 dev 2 metric 1024 mss 0
+>>>> rt-src ipv6ll
+>>>> Feb 26 00:24:50 ibm-p9z-27-lp26 NetworkManager[818]: <warn>
+>>>> [1772083490.5034] ipv6ll[95ab7f3fdbfe643d,ifindex=2]: changed: no IPv6
+>>>> link local address to retry after Duplicate Address Detection failures
+>>>> (back off)
+>>>> Feb 26 00:24:50 ibm-p9z-27-lp26 NetworkManager[818]: <warn>
+>>>> [1772083490.5039] platform-linux: do-add-ip6-address[2:
+>>>> 2620:52:9:160c:8448:a3ff:fe51:f102]: failure 13 (Permission denied -
+>>>> ipv6: IPv6 is disabled on this device)
+>>>> Feb 26 00:24:58 ibm-p9z-27-lp26 kernel: Kernel attempted to read user
+>>>> page (7fff81210000) - exploit attempt? (uid: 0)
+>>>> Feb 26 00:24:58 ibm-p9z-27-lp26 kernel: ------------[ cut here ]------------
+>>>> Feb 26 00:24:58 ibm-p9z-27-lp26 kernel: Bug: Read fault blocked by KUAP!
+>>>> Feb 26 00:24:58 ibm-p9z-27-lp26 kernel: WARNING:
+>>>> arch/powerpc/mm/fault.c:231 at bad_kernel_fault.isra.0+0xc8/0x2c0,
+>>>> CPU#5: lt-ublk.null/57924
+>>
+>> oops, it shouldn't be related with `ublk: report BLK_SPLIT_INTERVAL_CAPABLE`,
+>> Perhaps one issue lies in the ppcle64 architecture code.
+> 
+> Agreed, the "Kernel attempted to read user page" error seems
+> incorrect. The call trace shows this is in copy_from_iter(), so
+> reading a user page is expected. I too would be suspicious of the
+> powerpc copy_from_iter() implementation.
+
+Looks similar to:
+
+https://lore.kernel.org/all/20260109064917.777587-2-sshegde@linux.ibm.com/
+
+That fix was rejected, more acceptable fix here:
+
+https://lore.kernel.org/all/20260217124457.89219-1-sayalip@linux.ibm.com/
+
+Let us know if it fixes the issue for you.
+
+Christophe
 
