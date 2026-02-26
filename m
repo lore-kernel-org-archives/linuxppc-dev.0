@@ -1,99 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-17266-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17267-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03F5EFCE066
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Feb 2026 12:26:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E342FCE066
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Feb 2026 12:26:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fM9gc2vX0z2yFc;
-	Thu, 26 Feb 2026 23:26:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772097894;
-	cv=none; b=Gfl543wnhWEmJvKngi1ayPNfr844Ua2qm4yyAXRIVvhAcI2NkBKT0gic3GFouk6PJGvc4PyEtJ1/z8SlfNew0JSkCMCSK9FBq6OGm4jh8XHpdqTi3+yx6/nEYvmzWKts2oxJq6upmx8tOZ3hWv3X1CfOxorzvMgZxCZ5cmkJydD6o5dHum84zJha2labamZOQnpIBeBxHcwXeP1yD04fx0ts1V/EnV1+Ragns7FENs3Ot3e46VG2QGx0JbnvPFdHVm2EppgHjuNtfR3le1K6Ikg2l7I8sf7mlQ75UE4LEdMQgWGtadWInni6TsoJOl7sKIeUoPu8vCHlS5YMPXaSZQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fM9gg0mV3z309S;
+	Thu, 26 Feb 2026 23:26:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::430"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772108815;
+	cv=none; b=atnKfb9sSV4y8uCzRhytaLTUByO2Xq1y+NbKjvp/Qdn1aneZSuQ4W+INFu7gpIgzEY9DHvr+FkK123HCnqxZpwzGAR2AnoNvDKpRC5+649w3tdNYNQPvUpln68GCqbvRGQAwKWL+a7bYMU0kukm7AFdPAw6rp9m+WpVF3DN4xx/EMC+BcQBqPFSihY1AX04h6qskOiyKqR5cTGz4TCbb9JlNjIPSdfUgNeqr+UC/+VMkCdvcIzPQpc9TDAj6JkVva8NvI1w/8lxLBIF7w/cpXNnPcV4I8xVmTM/uuHNp1u7JQ16vhvH9Wi5Fq5MDEa4msxaWb5ZKcxH/PCskUxp5sA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772097894; c=relaxed/relaxed;
-	bh=0f2eSr9rmaNS1+79aXS+wFuWYZUMMuO+mzVaId9UwP4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 In-Reply-To:Content-Type:Content-Disposition; b=NMDEZBQMBZ5gSlNsP3XCLfJwYVIENMUypyHTS3ubYZmovg9gdJplBjVlGCZ98ZCcGl3ZcTGR2V4CLD/RwfOZtGP7JVRgwwVvpLV+RfQrSyDIay5v4BDO3A67PEPtfkmcnLKde6tveBTrqBV7dRLLOOtPdZFTRZITU0TTjZ2zCk8pdGC1w20Oi+cBl8w5maGiHKNImGLV8ytxe9qAI8OrRZpU9o0XE+XvjZYMAdwmeOX/X6gJf7/HJnmmDlHlIaXvnDYhjJZxnKN5ikJWw6NAl4vB+62r1NarcOls+tmha/eKHVRkG3zZHcgsvFwYrKzoQwCoKiM0oV4TVOX8nAEmuA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BukvBJoQ; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BukvBJoQ; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1772108815; c=relaxed/relaxed;
+	bh=keG28VRg7hb2nWNj2uJ8lKl/FGoScXVGvErAk96Ikwo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=cH9vBs8Rnk6u9op+MbZ+8qj14phcCGxQ5ccwVr7L2sAE2BWCJ112EqILU6wnAgXnsVzQydLeFavx6igeXiZCeve0h56d5q6naf82Yc+QVJeteoTp63b0ZFU4u2cOUR9uNDTs9fvMsdIWT2GDZt/BAnqn3NC0iFcahNaAiVVexfrvTbh9aO3OLk33JUSfVV0a4wjFKrcB8mI3VfxhRJvuPmu3pg1aLh21Sl7jxEokruKCkc+kidnM5/PUmL1s9jkhT33KAK5QCJ/imALxWXQC19XwJfTE8LfCP7ZA3XepNS0bPz0r1UyxURywta2fju7okAzLvHbYKQcAl51xJ5I0ng==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=TVMqtxQP; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::430; helo=mail-pf1-x430.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BukvBJoQ;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BukvBJoQ;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=TVMqtxQP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::430; helo=mail-pf1-x430.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x430.google.com (mail-pf1-x430.google.com [IPv6:2607:f8b0:4864:20::430])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fM5dd2Rdjz2xMt
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2026 20:24:50 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1772097886;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=0f2eSr9rmaNS1+79aXS+wFuWYZUMMuO+mzVaId9UwP4=;
-	b=BukvBJoQYmP+TLZSR60t3gz+cXrEseAQuSs1eHpJ2VcKm2MH94IZYui/DXineDpa9M4FGT
-	KmzMfw8HW4QahVW7TMf6BXGkOgQm/+RjctKuAC1bJYNJwkcbwctV8bpbExJ7SRp8VyYPi8
-	h7/dxhMJpsiqj2MUrWRiQkWEiNaeyow=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1772097886;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=0f2eSr9rmaNS1+79aXS+wFuWYZUMMuO+mzVaId9UwP4=;
-	b=BukvBJoQYmP+TLZSR60t3gz+cXrEseAQuSs1eHpJ2VcKm2MH94IZYui/DXineDpa9M4FGT
-	KmzMfw8HW4QahVW7TMf6BXGkOgQm/+RjctKuAC1bJYNJwkcbwctV8bpbExJ7SRp8VyYPi8
-	h7/dxhMJpsiqj2MUrWRiQkWEiNaeyow=
-Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-13-X0rGY6nTMuu-QJYjQSsSnw-1; Thu,
- 26 Feb 2026 04:24:42 -0500
-X-MC-Unique: X0rGY6nTMuu-QJYjQSsSnw-1
-X-Mimecast-MFC-AGG-ID: X0rGY6nTMuu-QJYjQSsSnw_1772097877
-Received: from mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.93])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id D399F1956089;
-	Thu, 26 Feb 2026 09:24:32 +0000 (UTC)
-Received: from localhost (unknown [10.72.112.101])
-	by mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id BAD4B1800348;
-	Thu, 26 Feb 2026 09:24:25 +0000 (UTC)
-Date: Thu, 26 Feb 2026 17:24:21 +0800
-From: Baoquan He <bhe@redhat.com>
-To: Jinjie Ruan <ruanjinjie@huawei.com>
-Cc: corbet@lwn.net, skhan@linuxfoundation.org, catalin.marinas@arm.com,
-	will@kernel.org, chenhuacai@kernel.org, kernel@xen0n.name,
-	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-	chleroy@kernel.org, pjw@kernel.org, palmer@dabbelt.com,
-	aou@eecs.berkeley.edu, alex@ghiti.fr, tglx@kernel.org,
-	mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com,
-	hpa@zytor.com, akpm@linux-foundation.org, vgoyal@redhat.com,
-	dyoung@redhat.com, rdunlap@infradead.org, pmladek@suse.com,
-	dapeng1.mi@linux.intel.com, kees@kernel.org, paulmck@kernel.org,
-	lirongqing@baidu.com, arnd@arndb.de, ardb@kernel.org,
-	leitao@debian.org, rppt@kernel.org, cfsworks@gmail.com,
-	ryan.roberts@arm.com, sourabhjain@linux.ibm.com,
-	tangyouling@kylinos.cn, eajames@linux.ibm.com,
-	hbathini@linux.ibm.com, ritesh.list@gmail.com,
-	songshuaishuai@tinylab.org, samuel.holland@sifive.com,
-	kevin.brodsky@arm.com, vishal.moola@gmail.com,
-	junhui.liu@pigmoral.tech, coxu@redhat.com, liaoyuanhong@vivo.com,
-	fuqiang.wang@easystack.cn, jbohac@suse.cz, brgerst@gmail.com,
-	x86@kernel.org, linux-doc@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, kexec@lists.infradead.org
-Subject: Re: [PATCH v6 1/5] powerpc/crash: sort crash memory ranges before
- preparing elfcorehdr
-Message-ID: <aaARRZh9k_0oG3Qo@MiWiFi-R3L-srv>
-References: <20260224085342.387996-1-ruanjinjie@huawei.com>
- <20260224085342.387996-2-ruanjinjie@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fM9gd4xxtz2xLv
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2026 23:26:53 +1100 (AEDT)
+Received: by mail-pf1-x430.google.com with SMTP id d2e1a72fcca58-827307b12dfso411035b3a.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2026 04:26:53 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1772108811; x=1772713611; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=keG28VRg7hb2nWNj2uJ8lKl/FGoScXVGvErAk96Ikwo=;
+        b=TVMqtxQPIUkxfVpvocrKjorimIDo9QeUVGOIpHGpg/aC181smqjzsAKenPqOzie1FX
+         j0NpNDWlIU37YirRhpO7T7V3ojXePZB7ThT8ttPhf7aO8+xxopgVyxH+2HrNbfvJcFiV
+         mIBqxAgOP9MFEAB4GVaUIfJ4hpH59nLccjUIBG3RNGTkit1zpoa/AxZgCE2uAkcko8uE
+         WD2iBNuO5W0is15eabcu/esMS2cG3qlbWvkaElWoguhTY4wG0xv4Gow4I18SIBTlCFrK
+         qe52bjyV4MqZnXIjyYlLTBZBoZTDtcM/wrexvhuQTGLCiUr26olKqQDrO33TZSjAv/nx
+         Twpw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1772108811; x=1772713611;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=keG28VRg7hb2nWNj2uJ8lKl/FGoScXVGvErAk96Ikwo=;
+        b=jkrXM+GmdO//VqP8VsZIbGwPJUI5XflmJ/A6Nk6VG+zCKsPJZGplfLdSMPYEXkLSvM
+         4PU2vRinY/nDJlI//YJKTwkDmGvcKXG7RXfNn8YYXGlh0iKqTNNYWNcrLqIWWS5XQFUh
+         sWklrvyRVbDigUKPXqS2gfMGEieIV5kyI9h5Za2xSvwet+fDNMDbthIixege29kuGeFi
+         Dp6p4NXBdqx+voPxbPxohnaHH7HznDYwpcW+bOfTGn0CVvHkNGO1iDmg5d1NgWXodAFx
+         L3jI8d/E/jI8CfsKO3+2BtXB/GlH4m1nAJOOl++EDwLvElsneazbJk2g99hip2caFcNq
+         lmFw==
+X-Forwarded-Encrypted: i=1; AJvYcCXonExDYQyWKIXRy+z2cLiX0ehoAmKj2yHfuMaPMlAl4fewuBsLi057IHdS4UMd6eN0g8/UFvxYOeUJNJg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwRD6be8/Tv49IuI2tNICyi7k6FXOi1KSaigG/9tYKN1/l6rXe/
+	SiHifYSOZUIlj81qboyPYZHXLPJjdrPceLK/MqnESGPqGsOUbHA0Iik5R1DzDg==
+X-Gm-Gg: ATEYQzwhkJQNxUckgpdXhG5pxyG/Imn0tUKrGZp11DLoMsvUggDzYE9Lzj8U7BKHk6W
+	EdHoDH79AXqPSxxxDHLJX2PEo5B0xXmmRWfiSpewZXMAdC5jUNd+gL4yj8UY9H7eCpuG9jEaap0
+	9qZxThT/hBugaimAmmjn39x7lZkJ7BldxJYPZCMFEuqmHMAffZzGKeOldIB4ctGEa39tHo8GW3p
+	gmsJBEv7fD6HZhYuk/+RYOwKQvsvf+B4c8Dz06+AlJyXa0Z4niVRYNGcmT6vcIlvuQ4TNyXb6Pn
+	Ra9umEc3TK/t0MbczM9FFchVEKgptrY3M8IxJVZ/ybpmXy11uevxpbBwpaN33VP+n3KS61z7ra3
+	DSwmv07AwMcSPnXaK1aOVdfkTrlqFX8lC1ee7Wr3dB35HCtzb3NRVhvacRUYKLbDAzHxz2M6bIi
+	R4sKVkT9Mic6hA1K/O6A==
+X-Received: by 2002:a05:6a00:1d14:b0:7e8:3fcb:9b00 with SMTP id d2e1a72fcca58-827398063bemr1923995b3a.22.1772108810592;
+        Thu, 26 Feb 2026 04:26:50 -0800 (PST)
+Received: from dw-tp ([203.81.243.177])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8273a01aa09sm2958494b3a.48.2026.02.26.04.26.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 26 Feb 2026 04:26:48 -0800 (PST)
+From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+To: linux-mm@kvack.org
+Cc: Mike Rapoport <rppt@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linuxppc-dev@lists.ozlabs.org,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Subject: [PATCH] mm/hugetlb.c: Use __pa() instead of virt_to_phys() in early bootmem alloc code
+Date: Thu, 26 Feb 2026 17:56:30 +0530
+Message-ID: <b4a7d2c6c4c1dd81dddc904fc21f01303290a4b8.1772107852.git.riteshh@linux.ibm.com>
+X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -107,57 +92,68 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-In-Reply-To: <20260224085342.387996-2-ruanjinjie@huawei.com>
-X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.93
-X-Mimecast-MFC-PROC-ID: a_zEO7-mjqenstXlv02SXXKwthOATMcH4tw1ySWZUP4_1772097877
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 
-On 02/24/26 at 04:53pm, Jinjie Ruan wrote:
-> From: Sourabh Jain <sourabhjain@linux.ibm.com>
-> 
-> During a memory hot-remove event, the elfcorehdr is rebuilt to exclude
-> the removed memory. While updating the crash memory ranges for this
-> operation, the crash memory ranges array can become unsorted. This
-> happens because remove_mem_range() may split a memory range into two
-> parts and append the higher-address part as a separate range at the end
-> of the array.
-> 
-> So far, no issues have been observed due to the unsorted crash memory
-> ranges. However, this could lead to problems once crash memory range
-> removal is handled by generic code, as introduced in the upcoming
-> patches in this series.
-> 
-> Currently, powerpc uses a platform-specific function,
-> remove_mem_range(), to exclude hot-removed memory from the crash memory
-> ranges. This function performs the same task as the generic
-> crash_exclude_mem_range() in crash_core.c. The generic helper also
-> ensures that the crash memory ranges remain sorted. So remove the
-> redundant powerpc-specific implementation and instead call
-> crash_exclude_mem_range_guarded() (which internally calls
-> crash_exclude_mem_range()) to exclude the hot-removed memory ranges.
-> 
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Baoquan he <bhe@redhat.com>
-> Cc: Jinjie Ruan <ruanjinjie@huawei.com>
-> Cc: Hari Bathini <hbathini@linux.ibm.com>
-> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-> Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-> Cc: Shivang Upadhyay <shivangu@linux.ibm.com>
-> Cc: linux-kernel@vger.kernel.org
-> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+Architecture like powerpc, checks for pfn_valid() in their
+virt_to_phys() implementation (when CONFIG_DEBUG_VIRTUAL is enabled) [1].
+Commit d49004c5f0c1 "arch, mm: consolidate initialization of nodes, zones and memory map"
+changed the order of initialization between hugetlb_bootmem_alloc() and
+free_area_init(). This means, pfn_valid() can now return false in
+alloc_bootmem() path, since sparse_init() is not yet done.
 
-You should add your own Signed-off-by since you sent it out.
+Since, alloc_bootmem() uses memblock_alloc(.., MEMBLOCK_ALLOC_ACCESSIBLE), this
+means these allocations are always going to happen below high_memory, where
+__pa() should return valid physical addresses. Hence this patch converts
+the two callers of virt_to_phys() in alloc_bootmem() path to __pa() to avoid
+this bootup warning:
 
-> ---
->  arch/powerpc/include/asm/kexec_ranges.h |  4 +-
->  arch/powerpc/kexec/crash.c              |  5 +-
->  arch/powerpc/kexec/ranges.c             | 87 +------------------------
->  3 files changed, 7 insertions(+), 89 deletions(-)
-......snip...
+ ------------[ cut here ]------------
+ WARNING: arch/powerpc/include/asm/io.h:879 at virt_to_phys+0x44/0x1b8, CPU#0: swapper/0
+ Modules linked in:
+ <...>
+ NIP [c000000000601584] virt_to_phys+0x44/0x1b8
+ LR [c000000004075de4] alloc_bootmem+0x144/0x1a8
+ Call Trace:
+ [c000000004d1fb50] [c000000004075dd4] alloc_bootmem+0x134/0x1a8
+ [c000000004d1fba0] [c000000004075fac] __alloc_bootmem_huge_page+0x164/0x230
+ [c000000004d1fbe0] [c000000004030bc4] alloc_bootmem_huge_page+0x44/0x138
+ [c000000004d1fc10] [c000000004076e48] hugetlb_hstate_alloc_pages+0x350/0x5ac
+ [c000000004d1fd30] [c0000000040782f0] hugetlb_bootmem_alloc+0x15c/0x19c
+ [c000000004d1fd70] [c00000000406d7b4] mm_core_init_early+0x7c/0xdf4
+ [c000000004d1ff30] [c000000004011d84] start_kernel+0xac/0xc58
+ [c000000004d1ffe0] [c00000000000e99c] start_here_common+0x1c/0x20
+
+[1]: https://lore.kernel.org/linuxppc-dev/87tsv5h544.ritesh.list@gmail.com/
+
+Fixes: d49004c5f0c1 ("arch, mm: consolidate initialization of nodes, zones and memory map")
+Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+---
+ mm/hugetlb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 6e855a32de3d..43e0c95738a6 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -3101,7 +3101,7 @@ static __init void *alloc_bootmem(struct hstate *h, int nid, bool node_exact)
+ 			 * extract the actual node first.
+ 			 */
+ 			if (m)
+-				listnode = early_pfn_to_nid(PHYS_PFN(virt_to_phys(m)));
++				listnode = early_pfn_to_nid(PHYS_PFN(__pa(m)));
+ 		}
+
+ 		if (m) {
+@@ -3160,7 +3160,7 @@ int __alloc_bootmem_huge_page(struct hstate *h, int nid)
+ 	 * The head struct page is used to get folio information by the HugeTLB
+ 	 * subsystem like zone id and node id.
+ 	 */
+-	memblock_reserved_mark_noinit(virt_to_phys((void *)m + PAGE_SIZE),
++	memblock_reserved_mark_noinit(__pa((void *)m + PAGE_SIZE),
+ 		huge_page_size(h) - PAGE_SIZE);
+
+ 	return 1;
+--
+2.53.0
 
 
