@@ -1,60 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-17338-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17339-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 219D2FD9E34
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Feb 2026 06:45:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3012FFD9E3E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Feb 2026 06:45:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fMf2V0MY0z2yFQ;
-	Fri, 27 Feb 2026 17:44:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fMf2W4P9Qz2xKh;
+	Fri, 27 Feb 2026 17:44:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772174690;
-	cv=none; b=Q3VhofDgidlTe8giKrUnGyzQueO6Ll3KU3s1gtIIyKr2DtmAbe7S/Toua0UmLjrzGe0Ub/9lmM6HCjFU+iLLx9wTqRkLoYEckRp4APi/BJ6dXmcqQZTGD36BIhbnLBuJKbQNn8/lLnLNr9YqtsXpCKAjygX0EFKOWASN4OHvzvQGxgvTUln2CvlR91SsuE+hgtdIKCXaGnV7TR5cZhU+ZcFLZZKDg3mxEDmntn8zoKqlW+DA/oSfCmqDD+sY36JvBXjW6gfCVSV8c6TgePtq4JK8PJtuQWYdUoTnwccNlm+NRCrFSvRtHSUnlxPg0/0SMQs3cciDjVBb5bWUPQfinA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772174691;
+	cv=none; b=ZRjf6HePD94TJCdsmkKCgQMcHWBgUqPxKAGvbHlk12Y7cgYNoqy803bOg2WZsEqn0UNlKOa4LJAZzR6ublPsrUoW+X2LdLdHDYkRkI57NUOrf6nHA5eKyPVUX3GvHe0DowMZJzJkrj9XaM8cUgApU2BZmQu30mUu7gWIfKLFBnYzcGmZuiPpMfq+59K2U3f+CIhgKe7pUSTm1uxx3fS91ro4TDKjaurwC8E+/ZTGZfdpDT0ZWeViJYQATyhBkYiUf/ZY4/ctPQ8cHFgYV0dtnzyy2776nL4sCTJPqr+3BxUPFNm7NTYWnntyPuE0k8cjsoeWr6es5g0OcjNICH7u0w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772174690; c=relaxed/relaxed;
-	bh=XmucPrbDNMsefUcsKOtEJFfiebQUYcBxKvPhHkOrNBw=;
+	t=1772174691; c=relaxed/relaxed;
+	bh=3e/NNt95zCxtiCGoXkbHwk0qG7BgGrrwg5COo+2IR4M=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=AJHPCKWgdXIHno22ufxd+EOu2qZIluqBYRja7CNFYqzqSIUm6smTaQrwrbBwGWdTM8zNX2CnjBDJsmNWmuowXKdTO47yI2Mlor+iGkdVEvzLBoo41w56nujKDhxn5so5T8DRI4yTozG7yfxXBYrgct+9lY+2wdqMrBS0UAwhcDvmkswb69DSiTWno5vqDagiYWXJZTUkpHqlQrwKinOliy3n4NH++JNwt/w0i1MzFFAeeZ3PZdyN4Nr/V0WjW8GwAxwHDnC0GrntZVrMu//Y7VcBUx3ZIxpDCvUVhNJuc+5knMAHBAodbF2V7fl4giNCv2ofY+WwTKtsfWpg+mV27g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=JnWzCg7D; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=tHlKNh6w; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=lAxtSk008FldC5DcTWChQUlWaTcRSCQw5UOt9wkErf8ex+dqJXbSQ7c8k7zvd8BTi6D6RjF2l7sbc9VV7zHSvHo2AdUbpng7kQ0r3VpOIM5GG5kkmQcvjpP1pRJXkCkSxPu1ZdKBhW0bMa6vRUufIEdHw1Tuorr0nqVrUIDRqIOPqYf/J8ZhaJVhj0sSZmc5UaLntWZEu52qC9jHorOlqD6EFjy2DDMhMYei6q8R1C/4pESbnn5jztuTL2JWwuXezZW4Vx/iCgLxsk4dXXWhwrPKPmg1jYKKLnB+5VoUTkqcSIKtcfTXHDc05ln6EJFyha16ez8iPAXD+OpeU9VPhA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=rMSSg6Kk; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=z+7rDyIY; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=JnWzCg7D;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=tHlKNh6w;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=rMSSg6Kk;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=z+7rDyIY;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMf2T412Bz2xKh
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 17:44:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMf2W0Vt2z3cCx
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 17:44:50 +1100 (AEDT)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1772174684;
+	s=2020; t=1772174688;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=XmucPrbDNMsefUcsKOtEJFfiebQUYcBxKvPhHkOrNBw=;
-	b=JnWzCg7DEKYV2bv5K6E3fL2KDMQNza16vhQQfVP9nF3iJ/IoUaCDlBDz/d70U96JL4bnVy
-	FjwNJ9HQBFViBxVX1Gf7tt25uFpAoDTwROf+MbHrNcMSCO2BKHTCiQ4FDqgpqOCTQFrdvf
-	mGFzCCzjqfkLAEB+zSGT49adTuUHlugoT/PoXH4w67QEc3b3R9T1OWTP5SBlly1FzZ6+j8
-	VQwAmWJkDUJaNh8453C/m5M/+IY2xg1jbnSi6PezuKdBjZ29sBF1qsT0JlbnUo664I0cGP
-	okw1YIVfE58WIO6J75t6Hq77Do+5U/qzPqrwmdKbX0dTaMNdCohQ6L7r3AdNcg==
+	bh=3e/NNt95zCxtiCGoXkbHwk0qG7BgGrrwg5COo+2IR4M=;
+	b=rMSSg6KkrB+0JkEM1SVz4yxaMDvQUAxB07ZFP9o0HFv6OnuLmfJlM9CHLY8ayOT8Uhnze8
+	pLV4mfEgu3dsHx834eCRUmmtN4sob50LIxDOtoV4HLJRpckcONip2LvGVDl/0uetoYfdme
+	WYlrXelcW8RoqItBz4pgzGh0g3/tsixL2/scHhnwHl1qFr+6VQK4fNZ+uICoU6db8BK5HX
+	mvQ7TDFgU4wiudUQVcteSfUyFjtl7tnEOJkifbpUujp3RFT4F/vZMuuRQtgKgxv4iRvb0q
+	NnJyjvFya4aexIexIuGGS4UVVQB8PDNaK4qjW4e55/9HW15nge6lQefC55Rdkw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1772174684;
+	s=2020e; t=1772174688;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=XmucPrbDNMsefUcsKOtEJFfiebQUYcBxKvPhHkOrNBw=;
-	b=tHlKNh6wS5kvkLXvS6aQz/UTvClSXPsl2MOfkm2W3fc7sbbFTwrKKMB7iR+WUCpFSo/B4Z
-	EWK+/op+KpFGrVCQ==
-Date: Fri, 27 Feb 2026 07:44:31 +0100
-Subject: [PATCH v2 05/15] powerpc/vdso: Explicitly include asm/cputable.h
- and asm/feature-fixups.h
+	bh=3e/NNt95zCxtiCGoXkbHwk0qG7BgGrrwg5COo+2IR4M=;
+	b=z+7rDyIYn1phXQcYGsAZsKJBR7n26KW4uUnlAVjzkZZjU2TqDmha5eFw4erHfLHmHrpl4F
+	mpFNzwgxd8QHywBg==
+Date: Fri, 27 Feb 2026 07:44:38 +0100
+Subject: [PATCH v2 12/15] vdso/datapage: Remove inclusion of gettimeofday.h
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,7 +69,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260227-vdso-header-cleanups-v2-5-35d60acf7410@linutronix.de>
+Message-Id: <20260227-vdso-header-cleanups-v2-12-35d60acf7410@linutronix.de>
 References: <20260227-vdso-header-cleanups-v2-0-35d60acf7410@linutronix.de>
 In-Reply-To: <20260227-vdso-header-cleanups-v2-0-35d60acf7410@linutronix.de>
 To: Catalin Marinas <catalin.marinas@arm.com>, 
@@ -86,42 +85,70 @@ To: Catalin Marinas <catalin.marinas@arm.com>,
 Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
  linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev, 
  linux-mips@vger.kernel.org, 
- =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>, 
- Christophe Leroy <chleroy@kernel.org>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1772174681; l=993;
+ =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1772174681; l=1781;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=MsK41lHUHc/yAdslHPs0q9i5ib5Ft1iliGOxwDrf3Kg=;
- b=TfyA4IzI496eXTs3L/06kAAhPp3mHtun65YNoMVIs2Yhuq39YNDXrVKmQsQU6Y4LdaAnU2PQ0
- aCTV6rcrMRYADzKJ1REKA2yV8qrugygffNHq4VkMModR+niBGWTNBiB
+ bh=I1SCO5giHITu1X8K8iGKyItIGK/4mCTfzb50bCLrYKk=;
+ b=cXXrn6n7S+LEJc/Pp/MqAwi+lbezgl7mZP2vqpUPRpYbrjF+hNOZx1xoGZnMYsL/8exZLnqct
+ PS2lFy9vGRJA92TiwY/nge/emrraWRcMcE51aTOIQcxtePRxMwT5RuF
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-The usage of ASM_FTR_IFCLR(CPU_TR_ARCH_31) requires asm/cputable.h and
-asm/feature-fixups.h. Currently these headers are included transitively,
-but that transitive inclusion is about to go away.
+vdso/datapage.h is useful without pulling in the architecture-specific
+gettimeofday() helpers.
 
-Explicitly include the headers.
+Move the include to the only users which needs it.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
-Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/vdso/processor.h | 3 +++
- 1 file changed, 3 insertions(+)
+ include/vdso/datapage.h | 11 -----------
+ lib/vdso/gettimeofday.c | 11 +++++++++++
+ 2 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/vdso/processor.h b/arch/powerpc/include/asm/vdso/processor.h
-index c1f3d7aaf3ee..4c6802c3a580 100644
---- a/arch/powerpc/include/asm/vdso/processor.h
-+++ b/arch/powerpc/include/asm/vdso/processor.h
-@@ -4,6 +4,9 @@
+diff --git a/include/vdso/datapage.h b/include/vdso/datapage.h
+index 23c39b96190f..752856b36a3a 100644
+--- a/include/vdso/datapage.h
++++ b/include/vdso/datapage.h
+@@ -184,17 +184,6 @@ enum vdso_pages {
+ 	VDSO_NR_PAGES
+ };
  
- #ifndef __ASSEMBLER__
+-/*
+- * The generic vDSO implementation requires that gettimeofday.h
+- * provides:
+- * - __arch_get_hw_counter(): to get the hw counter based on the
+- *   clock_mode.
+- * - gettimeofday_fallback(): fallback for gettimeofday.
+- * - clock_gettime_fallback(): fallback for clock_gettime.
+- * - clock_getres_fallback(): fallback for clock_getres.
+- */
+-#include <asm/vdso/gettimeofday.h>
+-
+ #else /* !__ASSEMBLY__ */
  
-+#include <asm/cputable.h>
-+#include <asm/feature-fixups.h>
+ #ifdef CONFIG_VDSO_GETRANDOM
+diff --git a/lib/vdso/gettimeofday.c b/lib/vdso/gettimeofday.c
+index 73b079eb4511..a4b0f06cf970 100644
+--- a/lib/vdso/gettimeofday.c
++++ b/lib/vdso/gettimeofday.c
+@@ -12,6 +12,17 @@
+ #include <vdso/time32.h>
+ #include <vdso/time64.h>
+ 
++/*
++ * The generic vDSO implementation requires that gettimeofday.h
++ * provides:
++ * - __arch_get_hw_counter(): to get the hw counter based on the
++ *   clock_mode.
++ * - gettimeofday_fallback(): fallback for gettimeofday.
++ * - clock_gettime_fallback(): fallback for clock_gettime.
++ * - clock_getres_fallback(): fallback for clock_getres.
++ */
++#include <asm/vdso/gettimeofday.h>
 +
- /* Macros for adjusting thread priority (hardware multi-threading) */
- #ifdef CONFIG_PPC64
- #define HMT_very_low()		asm volatile("or 31, 31, 31	# very low priority")
+ /* Bring in default accessors */
+ #include <vdso/vsyscall.h>
+ 
 
 -- 
 2.53.0
