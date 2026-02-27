@@ -1,84 +1,44 @@
-Return-Path: <linuxppc-dev+bounces-17388-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17389-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5DE26FEFB47
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Feb 2026 12:27:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A829FEFB48
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Feb 2026 12:28:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fMnf34txZz30Sv;
-	Fri, 27 Feb 2026 23:27:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772195259;
-	cv=none; b=lZ/JZWswm+eVl3H+lSuc5dy9LGIdXhkanpw3KEIFcNCBt2VEH0+G49sBPmOAXt01HWEM+/Zavg9Lfsp91FPpQuV9hx49Uf1RiVpwSqsPjrHBqZbRngy+58hgWxoDZ6akmo13uGT05u/XX5R9RQZjBGnX9IEqNyjOaYzfKpeoyAbOGrMGr5KoTIeEWuoUTZIF3tnkETKsWc3wQA0ZdH3kRJepa87+veYAmvpGEJ7DGI+dGpxBIrNmtl5fCMYnjs961oIYJF9cOPFlsrNk71WrcVJv6CZdn/feJ9jg2Go4F1WfMvlZZIeyn5VOm3dDn63CpHMJzc8RSco7ELHJVkxW9A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fMnfx4kwRz30Sv;
+	Fri, 27 Feb 2026 23:28:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.99
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772195305;
+	cv=none; b=S6FD9jlM7RicIicIzYITJCc7LAEzn7j9nAiGmoD0iu2MCxabXa0VOXQ1v3INNNy3WOOIKBFmkz1ynOS/YWIgAJbJn0Dk3C1ZkaB4DvdZrJwVFOT3+ibpZTKNWwk68D/Rkm32eReIoLBr4KfFmW6W5xj2H5IV+05GDpewmzeqhc1BtR9iWU4SfU0ry1qfVQZooKzB7CZD0Nojk8zC5jOmOD5G7aHuFrjHMCPeewVsIeDWG0s0J1WKzzMBiB/rJVKEaEgDpyyvyLrI3YU8+JMLR+iBxj4I70Xd7ciTQQ+ve6jFyqycFemdghDn1m8i9z+AR5wbiRbpHuExWlxcWaVqow==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772195259; c=relaxed/relaxed;
-	bh=BBCa2Iq0/hu0sJwRb681qcL3bM1nOatkl9qB4gJ48xY=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
-	 MIME-version:Content-type; b=UDB+FLpAriBUc1MAFI6MOvKe9so46dFbhHm0r1bib6uKhZZvdI2txtbUgbFGqbfBi824wq+9x6X3IRxltcXqYdMgpLNQvEw7T8UFRBlPuBvvc82eODu9Syo57K9ipkaWM6BWbbFkJZjYGZCSn1ptB3s6I5SpmnEgO+jK/gM4FdrE8iLuvlaFZVJpzQ8EHUFZ1Retn5/SguMWLlUPKUzJ8lqu9+oZxb3C6LZd83iXMaOG8UZX6uMuQaDsn7FYRQCMekqf+eRZzzD7e4sTe3qgo4gTks7vgiYlQJQtFfJ0/Wn93dCVBaqooMKzyTUQg+3/Hwo/LiG43kpqqup03uUU1w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=jv692TgY; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1772195305; c=relaxed/relaxed;
+	bh=YAnptZhgz1649pWMwYw9NqZhdnSslf/yjACo95roL/I=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=IV2QNoXNwbYG3JASKCc3fQotAhqHliJxa9v4SYigF9hMc4fdl4I5bgce4EJIsYEbX4Cp1hsTsslufbRKb2VDKSPYXcfheJdIDeoj9Fhc805tIevGVu57Uo4xgLBMTjclcZ+8zVUESSPPNIQQ3bZbLtx5yx9DCpQIteEHXs/v0QDkLg/k0mb4Aeezfoh0eFo+rOYVPLXT1NZH2cNi2q98TwkxuWT4GHIVZf9ypC88U8OGNZzK7QdqhdGLVXl0qbU/yaeNZWQknHpw6gWycQqVWHH1nAMoR7HX4PUCL0lWzAW0zlWOw0Gs6bs5zReJmmlsuRxfy6lREq2XhUMUYNE/Hw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=x+W4cYDW; dkim-atps=neutral; spf=pass (client-ip=115.124.30.99; helo=out30-99.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=jv692TgY;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=x+W4cYDW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com [IPv6:2607:f8b0:4864:20::42e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.99; helo=out30-99.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org)
+Received: from out30-99.freemail.mail.aliyun.com (out30-99.freemail.mail.aliyun.com [115.124.30.99])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMnf21mgvz30N8
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 23:27:37 +1100 (AEDT)
-Received: by mail-pf1-x42e.google.com with SMTP id d2e1a72fcca58-824af5e5c81so2207315b3a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 04:27:37 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1772195255; x=1772800055; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:message-id:date
-         :in-reply-to:subject:cc:to:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=BBCa2Iq0/hu0sJwRb681qcL3bM1nOatkl9qB4gJ48xY=;
-        b=jv692TgYARhIg/pnOhFvZf9pNyY9vdSEYWUa9LEAxJYW6c4g+dNHiXuOUhBrCD7yRo
-         /JaPxa9d9HRdJ0s+3hOTV3MWsEb6UJfgPoQaTAAGDVOG7M1lfHuWrscT7DXN/aP7q70E
-         jqhLPXu10WxvFm8UumY45BPtsHoN/NOJ/7TqelM6yMqEHoVeqG0MFYfOZ7CRRRmRcTIq
-         8gWPTgt/Pxk2S2ktcBWDEcVzdH8UnyHYtQL0cSOhcmXoknOs2YF2Q0YO+cine0wewejV
-         8cvn3tF1IQUFXwfKGgJNRZr+gxABlCtpl9D2VUcf35hYAdkIVCLN0ZreKzsNGxkMDSNE
-         w+lg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772195255; x=1772800055;
-        h=content-transfer-encoding:mime-version:references:message-id:date
-         :in-reply-to:subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=BBCa2Iq0/hu0sJwRb681qcL3bM1nOatkl9qB4gJ48xY=;
-        b=JqKllkEoP0BgVQlotxbjUounl4HPM8Z2Cvabm7LAbh2EzhEberVTAEuuyVr/GfbS2y
-         azdLcILoKDwrmFUNCfMBDCTdP/HNTwydTf/ISZQxNVnKsti2816Y6AFSWMG+Yfveb2cD
-         qSsHdwWKBy9T6HQ1UTq4ESjTHwTvdnKOFw99FGU6iQEvJzORsGsA5X7YjQLJjx7pW2/O
-         IKPjcXmUZBcIPQk9bv/JqztG+TB9oADTOh0nULTdVyep9gJMezmYLRlSdYmJfbULXKmk
-         DruaYue4NdMDv5FnQPVVqrNu2fV+XEbg59D0nNgbBBjPG2r5XkdXKu7DXkphioN8q96V
-         2KkQ==
-X-Forwarded-Encrypted: i=1; AJvYcCU/j3xPj3lvCb/DY0FJY2DnSvz/0My48qilzPz4XKOyJ5A98IEGanU7zM9axK/iamfjF1SzcR1deeeb5k4=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxfyBf/zNdNboMNbNTyMROnMktFQ8QhrhjOTltLg0jOO6YqulDt
-	M3k9oCMBBP2UujcrPyaMyNbQUx6IQX/aPA8LHF7Jer13SXc9NM5QxlSg
-X-Gm-Gg: ATEYQzySFXEkG/Qigm+uYm+4PE5vnK/e82pBSpAvPf14YtewpGK8w+sBUoqIzcI2DxY
-	mVExLc3sYophrFyeBVqjyfUpWswp3wKtwPJCu7s7j9rSuHoPKPimesuH0i7oZgi73PLfETaczLn
-	7R9PGZBjBKHpj/2aQrK5rsVaq8O9l5Cz++cckP5RGokBUrN2DjAjAv5FtvCouEzrtc6uTNOftCv
-	LxmrMOFJ76PmXdqjM8fI6XyjanSJ2Z+AmdtGSzyESyKpLnIO1sfYbKutkJuC8n3hGjik+T7ATb1
-	iPUaHpsqe//dwJKIEWQuGM0FYuWXcyOO5uSgXwrI0AMSP/mWvqKHgGVn25h+vAzDYkgr57Ihtre
-	SYaf3bT4AeUT+/PkiBInHENSjsBoImqYahNFguCcT8dPX9OVLtxjn2spGnxddZ5ovfvVoy5u4BD
-	aMoqAfkvylV7RpWpJ+wQ==
-X-Received: by 2002:a05:6a00:4c81:b0:81f:3ae9:3f71 with SMTP id d2e1a72fcca58-8274d9d0704mr2242350b3a.28.1772195255179;
-        Fri, 27 Feb 2026 04:27:35 -0800 (PST)
-Received: from dw-tp ([203.81.240.187])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82739ff1c9esm5479908b3a.32.2026.02.27.04.27.31
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 Feb 2026 04:27:34 -0800 (PST)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-mm@kvack.org, kvm@vger.kernel.org, Alex Williamson <alex@shazbot.org>, Peter Xu <peterx@redhat.com>
-Subject: Re: [RFC v1 2/2] powerpc/64s: Add support for huge pfnmaps
-In-Reply-To: <abfbe83b-23fb-400d-9069-b8bf4ad21d95@kernel.org>
-Date: Fri, 27 Feb 2026 16:02:25 +0530
-Message-ID: <87pl5qh3ye.ritesh.list@gmail.com>
-References: <0b8fce7a61561640634317a5e287cdb4794715fd.1772170860.git.ritesh.list@gmail.com> <d159058a45ac5e225f2e64cc7c8bbbd1583e51f3.1772170860.git.ritesh.list@gmail.com> <abfbe83b-23fb-400d-9069-b8bf4ad21d95@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMnft5Sm6z30N8
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 23:28:21 +1100 (AEDT)
+DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux.alibaba.com; s=default;
+	t=1772195293; h=Message-ID:Date:MIME-Version:Subject:To:From:Content-Type;
+	bh=YAnptZhgz1649pWMwYw9NqZhdnSslf/yjACo95roL/I=;
+	b=x+W4cYDWOzbQZ+6UpmqRzIU8PULTOcBB1HHbP2m8NryA7G5YqnwqhU1lO0zZhwq0i10EXRCu1i4aphZvTqtKb+mD5VqNYibmUqgvnYLHzQdbiTFYeuSfkXcii/sXa8tfUZxYdB0/NncXBWRcyUkuTQpxLVzSLH7y24UbBPyGaZU=
+Received: from 30.246.163.43(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0WzuNC9i_1772195290 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Fri, 27 Feb 2026 20:28:11 +0800
+Message-ID: <a0ec1ce8-06cc-463d-86b4-a6d6a625a808@linux.alibaba.com>
+Date: Fri, 27 Feb 2026 20:28:17 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,55 +51,81 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v7 2/5] PCI/DPC: Run recovery on device that detected the
+ error
+To: Lukas Wunner <lukas@wunner.de>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, bhelgaas@google.com, kbusch@kernel.org,
+ sathyanarayanan.kuppuswamy@linux.intel.com, mahesh@linux.ibm.com,
+ oohall@gmail.com, Jonathan.Cameron@huawei.com, terry.bowman@amd.com,
+ tianruidong@linux.alibaba.com
+References: <20260124074557.73961-1-xueshuai@linux.alibaba.com>
+ <20260124074557.73961-3-xueshuai@linux.alibaba.com>
+ <aYCujqZIvxElSsOE@wunner.de> <aYESh4bCE2lzTg2S@wunner.de>
+ <924dce22-171e-4508-907c-74f57f1bdea8@linux.alibaba.com>
+ <234dcf9e-05ff-485c-a330-019a4fbb5f3b@linux.alibaba.com>
+ <aaF2PAOZsHr4PuC_@wunner.de>
+From: Shuai Xue <xueshuai@linux.alibaba.com>
+In-Reply-To: <aaF2PAOZsHr4PuC_@wunner.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-"Christophe Leroy (CS GROUP)" <chleroy@kernel.org> writes:
 
-> Le 27/02/2026 à 07:16, Ritesh Harjani (IBM) a écrit :
->> This uses _RPAGE_SW2 bit for the PMD and PUDs similar to PTEs.
->> This also adds support for {pte,pmd,pud}_pgprot helpers needed for
->> follow_pfnmap APIs.
->> 
->> This allows us to extend the PFN mappings, e.g. PCI MMIO bars where
->> it can grow as large as 8GB or even bigger, to map at PMD / PUD level.
->> VFIO PCI core driver already supports fault handling at PMD / PUD level
->> for more efficient BAR mappings.
->> 
->> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
->
-> Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
->
->
 
-Thanks for the review!
+On 2/27/26 6:47 PM, Lukas Wunner wrote:
+> On Fri, Feb 27, 2026 at 04:28:59PM +0800, Shuai Xue wrote:
+>> On 2/7/26 3:48 PM, Shuai Xue wrote:
+>>> Regarding pci_restore_state() in slot_reset(): I see now that it does
+>>> call pci_aer_clear_status(dev) (at line 1844 in pci.c), which will
+>>> clear the AER Status registers. So if we walk the hierarchy after
+>>> the slot_reset callbacks, the error bits accumulated during DPC will
+>>> already be cleared.
+>>>
+>>> To avoid losing those errors, I think the walk should happen after
+>>> dpc_reset_link() succeeds but *before* pcie_do_recovery() invokes the
+>>> slot_reset callbacks. That way, we can capture the AER Status bits
+>>> before pci_restore_state() clears them.
+>>>
+>>> Does that sound like the right approach, or would you prefer a
+>>> different placement?
+> 
+> The problem is that if the hierarchy that was reset is deeper than
+> one level, you first need to call pci_restore_state() on all the
+> PCIe Upstream and Downstream Ports that were reset before you can
+> access the Endpoints at the bottom of the hierarchy.
+> 
+> E.g. if DPC occurs at a Root Port with multiple nested PCIe switches
+> below, the Endpoints at the "leafs" of that tree are only accessible
+> once Config Space has been restored at all the PCIe switches
+> in-between the Endpoints and the DPC-capable Root Port.
+> 
+> Hence your proposal unfortunately won't work.
+> 
+> I think the solution is to move pci_aer_clear_status() out of
+> pci_restore_state() into the callers that actually need it.
+> But that requires going through every single caller.
+> I've begun doing that last week and am about 60% done.
+> 
+> Once pci_restore_state() no longer clears the error bits, we can
+> report and clear them after the "report_slot_reset" stage (which
+> is where drivers call pci_restore_state()).
+> 
+> I've also changed my mind and I think reporting and clearing
+> the error bits *could* happen in pcie_do_recovery() even if it
+> were used for EEH and s390 because those platforms may plug in
+> AER-capable devices as well and so we do need to clear the bits
+> regardless of the error recovery mechanism used.
+> 
+> Let me get back to you once I've gone through all the callers of
+> pci_restore_state().  Please be patient.
+> 
 
->>   #define __HAVE_ARCH_PMDP_SET_ACCESS_FLAGS
->>   extern int pmdp_set_access_flags(struct vm_area_struct *vma,
->> diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
->> index dcd3a88caaf6..2d27cb1c2334 100644
->> --- a/arch/powerpc/include/asm/pgtable.h
->> +++ b/arch/powerpc/include/asm/pgtable.h
->> @@ -63,6 +63,18 @@ static inline pgprot_t pte_pgprot(pte_t pte)
->>   	return __pgprot(pte_flags);
->>   }
->> 
->> +#define pmd_pgprot pmd_pgprot
->> +static inline pgprot_t pmd_pgprot(pmd_t pmd)
->> +{
->> +	return pte_pgprot(pmd_pte(pmd));
->> +}
->> +
->> +#define pud_pgprot pud_pgprot
->> +static inline pgprot_t pud_pgprot(pud_t pud)
->> +{
->> +	return pte_pgprot(pud_pte(pud));
->> +}
->> +
+Sure, glad to hear you have been working on that.
 
-In v2 - I will add above under #ifdef CONFIG_PPC_BOOK3S_64 
-to avoid build issues with 32-bit PPC.
 
--ritesh
+Thanks.
+SHuai
+
 
