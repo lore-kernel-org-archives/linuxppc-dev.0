@@ -1,51 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-17333-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17334-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B116FD4601
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Feb 2026 06:42:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F8EDFD4600
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Feb 2026 06:44:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fMdzS1bSkz2xLv;
-	Fri, 27 Feb 2026 17:42:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772174532;
-	cv=none; b=QhgQfiSPq6+F8VYEnBlddP5bqgUTRIjYVEixdlSMilHzacjLuh8gN2qx37sjxQjn/Af1XCMvj3+FC+dwfWfOz1TCcW8TK3lIj4BvZPbtL1fpb0zXLwiIEllYxmyAJoi55+cHTNQGpXQDBoBNaytIJCH8t2NZiGc4t7Y9X3Hd/V/c6uO5j52zrArKJiX27gBcXuD3PJtSX6hQi5z12GioYk8DLdK5k7ON+as0zGdkEvRBVZZGtkqxk+2tmQG0IDjbDZCoPqfpUqNK7tH9ARgSJ0sRbnM06Q7oTPNTFfNovHQ6X7QYEVIzAYku4nXJnhYPPD2SCbzEZZm+S+ZAHBvRZg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fMf2R2PP1z3bjN;
+	Fri, 27 Feb 2026 17:44:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772174687;
+	cv=none; b=dhDg46g424BdL1hpX0kb8nJ5OpWL6I5fIXvJP6bzIprNE4YLxgC72TC0k1QX0pLRv6zWhUBHH7hbOjVe9VKqf1x6sjDY0iSwMVZexxbUxIvvTwe2CC3DfKp4KqSUVBwTt7FQ2uxYYnzxc63H6cYnBeHQtwrwIEtiCHwTWCGDOli2d4Vg1Q3HBzUyFsieZUoTidb8a9Do3dwfusOoHfi/oZwvtC7ktk7v3cr2fsoNVyhzCB67ya6RFj1+I6bV16dJ2MP0mInQJtJo5IIGsBDqW5w4n6DzEJim3KcjU+JoCZ1lNRqCfM//fZjAEwAiJ3nPNi3Td8Ejn/VrNTBKJWd36g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772174532; c=relaxed/relaxed;
-	bh=ZjRSfA1J0fa33N0Re9W0GNS4OAn0Juv79uWe2f7kUiU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=fRjkicslDUM/52BgVWt5ACDSU1LTEJYLB8GNQ31DM/ZG81R0zb+wja8r19DcgrNMhqpRxbFKr/RwkliFqtRH8C4tbmOovpt3iC9S57yZiVHX6d5P560ztBBLNqBTsSndQ3K9XFHeHSUeT7rM9i0CyjpnTt/UQYQkK4kJIsugW4boviLbEhdkZm2NCh/L2IHrFtKp7EncXqWxAXOBfRI9qylJasJPH6DYe3iflMg+AAlf4Jh09MmVTgyx1Z470pOGKu9DdLX7V653GJSt2NLK7ydzOnGuE9b2fS868i+JkMThVHfTHJZ12Su1396o4XU1NuVlV75kGFB3j5epiokMUQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=vKNKd87k; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1772174687; c=relaxed/relaxed;
+	bh=tIzyOBO0MUC1gjnQlOZaz5WdpoHJoIjGFPUUXU0dq7E=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=hHKtOlD9U7yybRceA/emVLtmhjuvzLeO0qiWalZIveSgtThJM/nS04SRDzh5jAvgZemSIufvE9VM+HZJysZRDUGnjIuqatjtSKKJ4fad2z9NpcPofmxxdWo/vjzfvvZCHpA4pIhrbHWhM2rUkGy2f8ZSAm3icEX6ldZHCmhiWP3VVlzYgfwvIa7HtXhk20g6T3gwBY6VGtqjp4dOfCrs2BcH2vTnCPzMPh6HyQ5hjVGp3ryNJsAF2eMLLEgpLtI5pe3REtKUYiygoW0bS5j7+EtPl8wWs4gn4l56JqdEy2JRH+uPXACuM5efw3PXU74OKLEZBz/6BM11hzPOTbq7sA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=E81MX9z2; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=U94drMM5; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=vKNKd87k;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=E81MX9z2;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=U94drMM5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMdzR0CNGz2xKh
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 17:42:11 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 9357D60008;
-	Fri, 27 Feb 2026 06:42:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8E06DC116C6;
-	Fri, 27 Feb 2026 06:42:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772174528;
-	bh=l7o5vW4EQFZ93oUhFFbp3DYvB6UsG9r2GGJLzb9y3sc=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=vKNKd87k7g9018XjH0D3CkmNwOrKrNd6r7LM1V3s25Qm6Tpromm2h2AyabbuUj4i+
-	 Hf/1bvJMM3gmHKUoF1a+3iudR/eskf1QQ9m0hTdphlmbMJZxMJutEnkQdrcqWOqFna
-	 mxGhRAdy3nt3hBGmVydrDWS+Yc8IUU0TCL5KUJ3fSU6/5o64tXlJA1R2q+0TbaWZye
-	 FEzshG1TBa/UdwaEZK4WZmFr5QWtnGi9k/+qfNkjzMmI8zbuCiGdRDfp++hgB60BzW
-	 Wn7Q1zMkDebyVCNaAb3LOtiB8IV/fW6CRHRt75z59MiuV9aYiI13fsIe/TGfNWiq64
-	 YvooidiS5oG3w==
-Message-ID: <a864b2ed-1a77-4aac-b0e8-d97b4bf8be47@kernel.org>
-Date: Fri, 27 Feb 2026 07:42:03 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMf2Q2pnBz2xMt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 17:44:46 +1100 (AEDT)
+From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1772174683;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=tIzyOBO0MUC1gjnQlOZaz5WdpoHJoIjGFPUUXU0dq7E=;
+	b=E81MX9z27fb6iOgDPvOjHyZq9lLoj5k7Xn4lhkXaNGe+gQTytI7YYl/p5GxyCR0bpojyEl
+	I+ytafun06DCmWYljV840vgi/0RqQ0PrTsgD1b6mau/3ev4WlS35Flv65khQJPJm69OB19
+	5/Ui4qC67Lli03t78tLB3XaKiMWrgsXYg3sSUT5skJ7m85q/xhqehxm2ciaKp9LgGaqrtp
+	cwgKZPwiOPxbxB2axoaVmFdKlSr87wTTQU7R3UTjM7UJQ2RyquhN7VyIdVNYjuAwr99jkn
+	k7CNW3By19H79/yNTztN1GKacKgRTLbJVqum68Ca0M4YVfCpEteDCjyhoVNLMQ==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1772174683;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=tIzyOBO0MUC1gjnQlOZaz5WdpoHJoIjGFPUUXU0dq7E=;
+	b=U94drMM56wMv6zpBylLQPwmLFuDXo72akf5+eb1y2OjPiFv44gi9g/toB2rqCZHPxOpY1/
+	5xKusqE5XrZEMwBQ==
+Date: Fri, 27 Feb 2026 07:44:29 +0100
+Subject: [PATCH v2 03/15] ARM: vdso: gettimeofday: Add explicit includes
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,122 +67,60 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC v1 1/2] drivers/vfio_pci_core: Change PXD_ORDER check from
- switch case to if/else block
-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: linux-mm@kvack.org, kvm@vger.kernel.org,
- Alex Williamson <alex@shazbot.org>, Peter Xu <peterx@redhat.com>
-References: <0b8fce7a61561640634317a5e287cdb4794715fd.1772170860.git.ritesh.list@gmail.com>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <0b8fce7a61561640634317a5e287cdb4794715fd.1772170860.git.ritesh.list@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
+Message-Id: <20260227-vdso-header-cleanups-v2-3-35d60acf7410@linutronix.de>
+References: <20260227-vdso-header-cleanups-v2-0-35d60acf7410@linutronix.de>
+In-Reply-To: <20260227-vdso-header-cleanups-v2-0-35d60acf7410@linutronix.de>
+To: Catalin Marinas <catalin.marinas@arm.com>, 
+ Will Deacon <will@kernel.org>, Russell King <linux@armlinux.org.uk>, 
+ Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+ Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
+ Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@kernel.org>, 
+ Vincenzo Frascino <vincenzo.frascino@arm.com>, 
+ Theodore Ts'o <tytso@mit.edu>, "Jason A. Donenfeld" <Jason@zx2c4.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+ linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev, 
+ linux-mips@vger.kernel.org, 
+ =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1772174681; l=899;
+ i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
+ bh=aYrHWJd0bhmjChMmo+JGha4OUSHIgaD7jcuPC+kTlSg=;
+ b=L+nxYTe4Xu7tbOaysmodJ3f65uyex5hwuv4KS3TnbH0HYi4mZ5/LtcKTrbLS5iK5/ygPPMWVi
+ i+XTjg51+63DE4ZupdB1nrJ3vyHCCtJqQWsPOwIN0nJQy9oIttoD0qK
+X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
+ pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
+The reference to VDSO_CLOCKMODE_NONE requires vdso/clocksource.h and
+'struct old_timespec32' requires vdso/time32.h. Currently these headers
+are included transitively, but those transitive inclusions are about to go
+away.
 
+Explicitly include the headers.
 
-Le 27/02/2026 à 07:16, Ritesh Harjani (IBM) a écrit :
-> Architectures like PowerPC uses runtime defined values for
-> PMD_ORDER/PUD_ORDER. This is because it can use either RADIX or HASH MMU
-> at runtime using kernel cmdline. So the pXd_index_size is not known at
-> compile time. Without this fix, when we add huge pfn support on powerpc
-> in the next patch, vfio_pci_core driver compilation can fail with the
-> following errors.
-> 
->    CC [M]  drivers/vfio/vfio_main.o
->    CC [M]  drivers/vfio/group.o
->    CC [M]  drivers/vfio/container.o
->    CC [M]  drivers/vfio/virqfd.o
->    CC [M]  drivers/vfio/vfio_iommu_spapr_tce.o
->    CC [M]  drivers/vfio/pci/vfio_pci_core.o
->    CC [M]  drivers/vfio/pci/vfio_pci_intrs.o
->    CC [M]  drivers/vfio/pci/vfio_pci_rdwr.o
->    CC [M]  drivers/vfio/pci/vfio_pci_config.o
->    CC [M]  drivers/vfio/pci/vfio_pci.o
->    AR      kernel/built-in.a
-> ../drivers/vfio/pci/vfio_pci_core.c: In function ‘vfio_pci_vmf_insert_pfn’:
-> ../drivers/vfio/pci/vfio_pci_core.c:1678:9: error: case label does not reduce to an integer constant
->   1678 |         case PMD_ORDER:
->        |         ^~~~
-> ../drivers/vfio/pci/vfio_pci_core.c:1682:9: error: case label does not reduce to an integer constant
->   1682 |         case PUD_ORDER:
->        |         ^~~~
-> make[6]: *** [../scripts/Makefile.build:289: drivers/vfio/pci/vfio_pci_core.o] Error 1
-> make[6]: *** Waiting for unfinished jobs....
-> make[5]: *** [../scripts/Makefile.build:546: drivers/vfio/pci] Error 2
-> make[5]: *** Waiting for unfinished jobs....
-> make[4]: *** [../scripts/Makefile.build:546: drivers/vfio] Error 2
-> make[3]: *** [../scripts/Makefile.build:546: drivers] Error 2
-> 
-> Fixes: f9e54c3a2f5b7 ("vfio/pci: implement huge_fault support")
-> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-> ---
->   drivers/vfio/pci/vfio_pci_core.c | 15 +++++++--------
->   1 file changed, 7 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/vfio/pci/vfio_pci_core.c b/drivers/vfio/pci/vfio_pci_core.c
-> index d43745fe4c84..5395a6f30904 100644
-> --- a/drivers/vfio/pci/vfio_pci_core.c
-> +++ b/drivers/vfio/pci/vfio_pci_core.c
-> @@ -1670,21 +1670,20 @@ vm_fault_t vfio_pci_vmf_insert_pfn(struct vfio_pci_core_device *vdev,
->   	if (vdev->pm_runtime_engaged || !__vfio_pci_memory_enabled(vdev))
->   		return VM_FAULT_SIGBUS;
-> 
-> -	switch (order) {
-> -	case 0:
-> +	if (order == 0) {
->   		return vmf_insert_pfn(vmf->vma, vmf->address, pfn);
-> +	}
+Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
+---
+ arch/arm/include/asm/vdso/gettimeofday.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Those braces are unneeded as all legs of the if/else are single lines
+diff --git a/arch/arm/include/asm/vdso/gettimeofday.h b/arch/arm/include/asm/vdso/gettimeofday.h
+index 1e9f81639c88..26da5d8621cc 100644
+--- a/arch/arm/include/asm/vdso/gettimeofday.h
++++ b/arch/arm/include/asm/vdso/gettimeofday.h
+@@ -11,6 +11,8 @@
+ #include <asm/errno.h>
+ #include <asm/unistd.h>
+ #include <asm/vdso/cp15.h>
++#include <vdso/clocksource.h>
++#include <vdso/time32.h>
+ #include <uapi/linux/time.h>
+ 
+ #define VDSO_HAS_CLOCK_GETRES		1
 
->   #ifdef CONFIG_ARCH_SUPPORTS_PMD_PFNMAP
-
-ifdef could be replaced by IS_ENABLED() because PxD_ORDER and 
-vmf_insert_pfn_xxx() are declared all the time
-
-> -	case PMD_ORDER:
-> +	 else if (order == PMD_ORDER) {
-
-'else' is not needed because every 'if' leads to a return statement
-
->   		return vmf_insert_pfn_pmd(vmf, pfn, false);
-> +	 }
->   #endif
->   #ifdef CONFIG_ARCH_SUPPORTS_PUD_PFNMAP
-> -	case PUD_ORDER:
-> +	 else if (order == PUD_ORDER) {
->   		return vmf_insert_pfn_pud(vmf, pfn, false);
-> -		break;
-> +	 }
->   #endif
-> -	default:
-> -		return VM_FAULT_FALLBACK;
-> -	}
-> +	return VM_FAULT_FALLBACK;
-
-So at the end we should get something like:
-
-	if (!order)
-		return vmf_insert_pfn(vmf->vma, vmf->address, pfn);
-
-	if (IS_ENABLED(CONFIG_ARCH_SUPPORTS_PMD_PFNMAP) && order == PMD_ORDER)
-		return vmf_insert_pfn_pmd(vmf, pfn, false);
-
-	if (IS_ENABLED(CONFIG_ARCH_SUPPORTS_PUD_PFNMAP) && order == PMD_ORDER)
-		return vmf_insert_pfn_pud(vmf, pfn, false);
-
-	return VM_FAULT_FALLBACK;
-
-
->   }
->   EXPORT_SYMBOL_GPL(vfio_pci_vmf_insert_pfn);
-> 
-> --
-> 2.53.0
-> 
-> 
+-- 
+2.53.0
 
 
