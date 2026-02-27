@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-17392-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17393-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D86AFEFB56
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Feb 2026 14:30:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF821FEFB56
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Feb 2026 14:36:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fMrN66PNKz30Sv;
-	Sat, 28 Feb 2026 01:30:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772202646;
-	cv=none; b=c/JH7m7RiQj4JCK04aqu/IqSJ7NsEDf53KHVJmeY/CGoioopDH0GuFIp5zI69NHfjXffoj24X0sg1QG+CXURjpOd8z5fVs4SnNXv2Vv2zIQnaYxEOcH4wG0VqvCnPGLhaUVL/voo/TfDc8dDeG5OE+VroMWeGbY9AdU88Mlql3okvocPOX+oqGlUAjyAK13Ub03WJ6eQ5LDS4t7cJJSrYbsZSSNpB2RqQhhigVg3H1MEExWxsTtjWeVgZxVAXDqzrEKqn09plJldCUlnXs4iM9uQaIR6WC3DQHGz3wTdvOeowl24if2T+q3nuP1Jy6rb2ZOOuldPtwMGxraVWjJnQg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fMrW00mWbz3bmk;
+	Sat, 28 Feb 2026 01:36:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1:d65d:64ff:fe57:4e05"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772203004;
+	cv=none; b=JpaDDfyyra4pFfHJlU5//vBdTwElTus8Av8L7sak4BLVqzAVRdJ673Z8W5Ybb0/JtkhnggtE8bSAuxy5i6BYjI+BgCUdFIiRV+JVCLZ5/v7ySkA+A+TNeho9pr+mNFJMuM480DpdYCu6L/JAxSXGXNtTvRiDOie7g8xTTvw2d/NV9+7IM/jAy/Wnttipqf53pUcPmgNTLJw4SchfW6CIRcKnFFOGQX6IaAWi0IDyL61liqXgxq5OJwKMwo+j7hfk+2Wdt0jNXCeuew7Tqt3Q9Ekip+GD5QmShcu4HhqWVE1Ze4qxATLlfX02HF2ep78Lbb9iO80BxD5M9clCxFrdpg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772202646; c=relaxed/relaxed;
-	bh=lOp11MEHkYYwHRuUi0PZxSk1JN5+nTDJOLnSpDaUbDc=;
+	t=1772203004; c=relaxed/relaxed;
+	bh=sd4Dk0zWsQwDRJSs7bWqIQywpiYjqUPgxmAIc0fK68w=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=HB4WH1rL2z767SoHhK+DVkyUWf7xuS4Kk9d87xHF9Xu6NMdxYefZ4xO8LxJZmHKBKD8dIR8NaPnNEBQ54d3vG7gTd9Bn92gbyWe0yXtuTn6kbe6hrrfJlV6O2B1FOFMceULflkuaYlaw+j7+ckZ31ob5kbwG/icSGXGOYUA1L11DFU0QH9DCcktSf+I6TBc8tDxlzglzNdHI0qcti0s3wEdOITkCR+ipdEoJlFZPHahY1bVHhHb9HlDorgEH1nia+S6v+GwiX5yyX+3ma91p/s0mqzBfY+FvtvgavhN5LKAH4mTxVXh3Ic6C7vpKLY8fPz+6QqkBhZOD6Xa3gN8EXg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=Z9TK/udX; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=ajROGW7a07oVfFLS1P25FGA6d9hT+jh+kgWmxKZ5xRCUUHw9GwaIuMSif0v4x4AysglVeRUIWUlKodJVOqhRCzFwJkx5Phh0NcZfBw4OUhxvcHWFUwBtGyj5dQjy/yP+2Lz0rNsHET60OPHBHG8BROqqqki/HuRS8FKDJ/d/4lFGnu+CUD6grZ32g4t76i2TyjHc+o6VOwq4loWBmLztGUssyVZXsml/hlVxkYKHBFzF6YhnZ/lpwuVq5tVM77PirHD3th96gKjt5LCpACKb6MuQYJEySwF+cCCOJf5kt7APY+A4HLr0b5jWpRkOsmiRXKGPm4wGxUi333Q5ua699Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=KD1L4Etw; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=Z9TK/udX;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=KD1L4Etw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMrN60K61z30N8
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Feb 2026 01:30:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMrVx2HzZz30Sv
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Feb 2026 01:36:41 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
 	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
 	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=lOp11MEHkYYwHRuUi0PZxSk1JN5+nTDJOLnSpDaUbDc=; b=Z9TK/udXiurPXiytUakXbFeev1
-	ri7v9BFFO7R7ZiJvpbTW1JFNZRneKl3isIJyG3zHlkz9s2XQmusrQ/zacC5tOadz4Z7qmOWC49end
-	3fVssHWiU1uZPXJxiiQFriaeu9YgtBdmdglQ2CtYVshTHvu5aWjnfh1f3CqeCm2LMKGKqofhFMRq5
-	2FTQrOlmRLWH57X+/mT4zC19PNT7lNgxKvCQLn4m60NIZInXyfVhYVB3n68h6H+ZGw2r9VS0iGiNq
-	QnT1zFqHAqIdiC0LM2DhVATtSnPcGUsNzzjMV7n5w3njjHXBfMs/S6eMK73CqMCrr/PUyh+1FLh1J
-	kCLUtTiQ==;
+	bh=sd4Dk0zWsQwDRJSs7bWqIQywpiYjqUPgxmAIc0fK68w=; b=KD1L4Etwagd1eSmxZlo6KzsMbM
+	fONwzvtpqLYChdBJfr8NDHR8cZXcrwPHL+6MIUnFqjzp0jZOeTwkR++VxiE9mZ1Fxo7dbV/s6M719
+	JXFDIXO8UCIWQEeT56dTega0MPjMh5tY7+yrFo7oX79K+n7Q70KOFxLusSqDmlcp0JTF6MuobaJLg
+	ZSmFE4SvOnGKM4aBqQQdA/ZFNBGOvBjLR8Shx1hs85uSqO4Qz/GeLsp1DyW7Ixx3MzD/enr49FEf0
+	39cX6Lvq4zVc/FsVzQUKO0QukCMVTZ+GAl9JRmO5cYgboNvRfsG10Yh9iL/+2tvOLVN16tQiiLj7h
+	ldkMSYYw==;
 Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
-	by casper.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vvyrB-00000004hgm-0psV;
-	Fri, 27 Feb 2026 14:30:17 +0000
+	by desiato.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1vvywq-0000000DG9M-0aeA;
+	Fri, 27 Feb 2026 14:36:08 +0000
 Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-	id B3685300CDE; Fri, 27 Feb 2026 15:30:16 +0100 (CET)
-Date: Fri, 27 Feb 2026 15:30:16 +0100
+	id AF18E300462; Fri, 27 Feb 2026 15:36:06 +0100 (CET)
+Date: Fri, 27 Feb 2026 15:36:06 +0100
 From: Peter Zijlstra <peterz@infradead.org>
 To: Christoph Hellwig <hch@lst.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -87,10 +87,10 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
 	sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
 	linux-crypto@vger.kernel.org, linux-btrfs@vger.kernel.org,
 	linux-arch@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: [PATCH 18/25] x86: move the XOR code to lib/raid/
-Message-ID: <20260227143016.GH1282955@noisy.programming.kicks-ass.net>
+Subject: Re: [PATCH 25/25] xor: use static_call for xor_gen
+Message-ID: <20260227143606.GI1282955@noisy.programming.kicks-ass.net>
 References: <20260226151106.144735-1-hch@lst.de>
- <20260226151106.144735-19-hch@lst.de>
+ <20260226151106.144735-26-hch@lst.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -106,21 +106,10 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260226151106.144735-19-hch@lst.de>
+In-Reply-To: <20260226151106.144735-26-hch@lst.de>
 
-On Thu, Feb 26, 2026 at 07:10:30AM -0800, Christoph Hellwig wrote:
-> Move the optimized XOR code out of line into lib/raid.
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> ---
->  arch/x86/include/asm/xor.h                    | 518 ++----------------
->  arch/x86/include/asm/xor_64.h                 |  32 --
->  lib/raid/xor/Makefile                         |   8 +
->  .../xor_avx.h => lib/raid/xor/x86/xor-avx.c   |  14 +-
->  .../xor_32.h => lib/raid/xor/x86/xor-mmx.c    |  60 +-
->  lib/raid/xor/x86/xor-sse.c                    | 476 ++++++++++++++++
+On Thu, Feb 26, 2026 at 07:10:37AM -0800, Christoph Hellwig wrote:
+> Avoid the indirect call for xor_generation by using a static_call.
 
-I gotta ask, why lib/raid/xor/$arch/ instead of something like
-arch/$arch/lib/xor ?
-
+Nice!
 
