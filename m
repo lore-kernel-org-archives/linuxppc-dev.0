@@ -1,84 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-17384-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17385-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13CEBFD7F92
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Feb 2026 10:32:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1FBB9FD7F90
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Feb 2026 10:47:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fMl4x2ll3z3blr;
-	Fri, 27 Feb 2026 21:32:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772188337;
-	cv=none; b=KZBC0+lpoy88P2LMeqeWTIW+U/HZIb7nyZaz0RfuNeXkd42bJP0vyvRlCaNKkRQhIteHn3591u+0tIRqrMn3vTwP6EvdfIBLdPoEX+k8EJBXelVth9XPYftnvnTX50/gYoJlp8cSy5Eujwlh7pv3eE8MDe9OEJeCKX3XfZ9iy+Qwq9NsryO6UF5HHGa3hJqkYvnP76uakYsTzk3f/9PdCM7cExEVu3l9l7d2rZ0SpyYifG0eEZXXNHYCV5ebJv9+qIwcvKeOUnlXH3kWXtel0YGCebUTJKsjSudoVviVFgNrjgfQluwBgs+DwsireCYzZrt7En/CFkdlWOxP6naIqg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fMlQh3nH9z3bmR;
+	Fri, 27 Feb 2026 21:47:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=83.223.95.100
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772189260;
+	cv=none; b=cEu6aIagCSVg34hlcU61e4mExwfAL+SIsgHombEImR5/ZS2AYzYFdmi0T5MDe1b3TSYsb5yEEri9rGc81URkLgM/z7cWApLnGmD+OSimmeRFfEmHW0YVfPXX3zq9DKHwek4EBvvtiaf0vNrpasH2gJs0X7d65CPAcuvcf0pj/eifOHE2TSIScf6Tg/JLtMwroLNh/gn5FJGU/AAYG4vWAsUDt4/hRAE3ebqps+JM4e39zSIzsJqbV56AskT9/+Xqy0nRbTt1pRMYKb0sjCRGGT82iYZl+7XoEygCJUYsXVZoPBBj7WKBlAz/Sk1b8fiDP/L+Al8i7fmKGwujZo8Cyg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772188337; c=relaxed/relaxed;
-	bh=LT1HXP6ImCtKkrDGFwhhoLVXorV0oXPyJhBSmf51vOA=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
-	 MIME-version:Content-type; b=VDCys0m/WM6bopRhSkVtEZHAIi7oFcUhDVuEmRUNk8lcL9QzHxCYG+xS+m0BLQ8vyrfavh+sUQO1Ko0u8TbADofv4AM0OkR8kypDrtwRzKn1jEHDx2euKDBo7cq3DocndR5/RAkBLb662kve9L98YL5XD7R583lbybHg9OFjOVuQzBAa6nDFKXuF3nSxdcr+MCboMZ2bLUhAxgpiYQqpDpQt3ouOqanhBcTequCoTCaBKCYAPMWn7do+Oi/EpmEx31JrB0tk7MLJCEK8YYA0K7MPeax5NKMwBNykEF1+ti3u45vcEnSqqnNExrKKFeEleLMUW4rgrTtWSLLDV2Baqw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=m6a80jh+; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52e; helo=mail-pg1-x52e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=m6a80jh+;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52e; helo=mail-pg1-x52e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x52e.google.com (mail-pg1-x52e.google.com [IPv6:2607:f8b0:4864:20::52e])
+	t=1772189260; c=relaxed/relaxed;
+	bh=uzRgfIWoT6V19WGBBA361FyQ3WKPXmlU9iBpyYHezLs=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=V6Nukn9tVFTvSK6LC1q8MseR6n0gejL6FEJ2g7cBh2Fh8ri0KshcKUwIoDGU/9Zivr7Y60gpd9XPYvAsUWXiW/bxYwj9Oiiru/n1WewapXcvrlFnIpkBtE5pjbZcoqvBtx6y902i1dh1y5J3FgNCnzaKQrBF6Cq+BBEo1ZygzzojrhvgYwHSAhiHJH4i0hWQy/eKL4CjDikyYKR7ibbRzZsKfxI6jsODSopPLRNztMYQ8QDS+xka3MLXMlVMj4fjILcG5Cx7TEyLOmnPY6TjA0wBKPFhj4v7uoiPZv6sYBNFSXlOZE8oYFkj+NojDl+uujLkF4bb0gC93t60Ow1rbA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=83.223.95.100; helo=bmailout1.hostsharing.net; envelope-from=foo00@h08.hostsharing.net; receiver=lists.ozlabs.org) smtp.helo=bmailout1.hostsharing.net
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=bmailout1.hostsharing.net (client-ip=83.223.95.100; helo=bmailout1.hostsharing.net; envelope-from=foo00@h08.hostsharing.net; receiver=lists.ozlabs.org)
+Received: from bmailout1.hostsharing.net (bmailout1.hostsharing.net [83.223.95.100])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMl4w24QSz2xYw
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 21:32:15 +1100 (AEDT)
-Received: by mail-pg1-x52e.google.com with SMTP id 41be03b00d2f7-c6e5998f90dso696555a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 02:32:15 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1772188333; x=1772793133; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:message-id:date
-         :in-reply-to:subject:cc:to:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=LT1HXP6ImCtKkrDGFwhhoLVXorV0oXPyJhBSmf51vOA=;
-        b=m6a80jh+ExY3JtFUDK6PEQUU7Xow/9GlfSKifuPGA54JC6qSGmPJkGstvUiYYsAwn4
-         8p/tTbFga5W2rV2lxokQkzz7FzaknydT3CvTeHLXLtnsSw1Ugph0lDxq45dvb225FaoS
-         cPzbGFGV0mzZQQZg6mcqZmarKXI3ur9gPLsZQpvUKhSoTQB1lzz2dpbrSJeh2ysG93tP
-         PkoWfvPWC6E5A0aByQZWNhnsYBW0kOijFHsaIPw6U6xj2C6176JcDRUm0sGhlOSE0tBY
-         NpmLqA2oxehE3S0MXZAxDHbhowSOU48OapidwfQ2debfgT3pUbGKyuKrw7FfvJIr/cnf
-         A9ww==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772188333; x=1772793133;
-        h=content-transfer-encoding:mime-version:references:message-id:date
-         :in-reply-to:subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=LT1HXP6ImCtKkrDGFwhhoLVXorV0oXPyJhBSmf51vOA=;
-        b=sJKV+MyVegAo3nO6z0z6i1vvSu39SkJEalH2XFBrgcHM6LqpSN/mVucZ2mH7hEaydk
-         0c4+f6Rbu0iZu/Guf9KWgPUN1N5aGjKoatV9A/NlPEGvp1+b92Y0s12IvSJ1WQaykaU0
-         bZntkTIfB5ySTS7wQtOBr1Tu9ivTAUbwi1iskydRbC4+8hU+nGs38sVy4rz0CwInoAhi
-         VJUUS0O6wbmwnM3sk/ZjV49twRORSCxnif6vgmWeQCZaSUxShnYQTLiaghiMkeoJJ7ph
-         VBeXWQFo2f22VSYC22wHpt1Wof8weX5q07qWV9MzZDpgTjeuwuEy1LZ/x3cq0mpJN781
-         HGsg==
-X-Forwarded-Encrypted: i=1; AJvYcCUNeSOgSOilcrePeUjvwilc/cURAFs35AcY2scFiBU4mBoPCQdB67YRj/KrWSYUKwf4WeJEKuZHH0M6Wwk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyVUmVCbKA+14OcBi0pd/fQUxmxn4z9mBzey+7vF0tBLNaTAJ1C
-	nD+CiTFhHbF/Uakntk8mZxFe0BMhYWdQd1f55bTkc7Kvjfsrxyvj9Ra/
-X-Gm-Gg: ATEYQzyC8OxrufoM+zy8zMLdIAkkHVjyj2Um1t9VZalAShggvISgj//YzVZSm5i1lR1
-	sF3GnxOqQ0d6/4uVEpsq3E7k6f8IuQIgpEy7ep8K6xUbKiipFGy/mu/wS+e5JP9HabGTkDUFmvY
-	J+5b/0Q5z5vvVUkWX9U/k6pUhoKGPfr2hkVYHQoyxOQpzCAFIlL11iqMgn6Uo3+lRrpU7kweS8H
-	RUfmLOIpS2cthfMp3C3XwGavWE5A0DtNvx3Mgd0lG1+4hoYLXvK6rcLMttew3fY3f5V3MCDMSqs
-	NHI/SQ7Zu4yWD2njqACiBXn/GC0j1+eIuLxgzdyVjZ7QvDgfW60JdQmzM1+BzMCKITp67XTqmu1
-	2IdJ4wM88R5N0dBgnJZW7havQxQUmDle0wBYVEtca0eTmY7NofoREIzlts7V2ZYTedxb/+cUgzt
-	sRzTx/6E/zDCYyRi9gNQ==
-X-Received: by 2002:a17:90b:2884:b0:356:4ea0:e9e2 with SMTP id 98e67ed59e1d1-35965d074afmr2219544a91.34.1772188332691;
-        Fri, 27 Feb 2026 02:32:12 -0800 (PST)
-Received: from dw-tp ([203.81.240.187])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-359134a0a2asm3170713a91.14.2026.02.27.02.32.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 Feb 2026 02:32:11 -0800 (PST)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-mm@kvack.org, kvm@vger.kernel.org, Alex Williamson <alex@shazbot.org>, Peter Xu <peterx@redhat.com>
-Subject: Re: [RFC v1 1/2] drivers/vfio_pci_core: Change PXD_ORDER check from switch case to if/else block
-In-Reply-To: <a864b2ed-1a77-4aac-b0e8-d97b4bf8be47@kernel.org>
-Date: Fri, 27 Feb 2026 16:00:54 +0530
-Message-ID: <87qzq6h40x.ritesh.list@gmail.com>
-References: <0b8fce7a61561640634317a5e287cdb4794715fd.1772170860.git.ritesh.list@gmail.com> <a864b2ed-1a77-4aac-b0e8-d97b4bf8be47@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMlQg1ChCz3blr
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 21:47:39 +1100 (AEDT)
+Received: from h08.hostsharing.net (h08.hostsharing.net [83.223.95.28])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature ECDSA (secp384r1) server-digest SHA384
+	 client-signature ECDSA (secp384r1) client-digest SHA384)
+	(Client CN "*.hostsharing.net", Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
+	by bmailout1.hostsharing.net (Postfix) with ESMTPS id 8AF3F2020218;
+	Fri, 27 Feb 2026 11:47:24 +0100 (CET)
+Received: by h08.hostsharing.net (Postfix, from userid 100393)
+	id 86E064F39A; Fri, 27 Feb 2026 11:47:24 +0100 (CET)
+Date: Fri, 27 Feb 2026 11:47:24 +0100
+From: Lukas Wunner <lukas@wunner.de>
+To: Shuai Xue <xueshuai@linux.alibaba.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, bhelgaas@google.com,
+	kbusch@kernel.org, sathyanarayanan.kuppuswamy@linux.intel.com,
+	mahesh@linux.ibm.com, oohall@gmail.com, Jonathan.Cameron@huawei.com,
+	terry.bowman@amd.com, tianruidong@linux.alibaba.com
+Subject: Re: [PATCH v7 2/5] PCI/DPC: Run recovery on device that detected the
+ error
+Message-ID: <aaF2PAOZsHr4PuC_@wunner.de>
+References: <20260124074557.73961-1-xueshuai@linux.alibaba.com>
+ <20260124074557.73961-3-xueshuai@linux.alibaba.com>
+ <aYCujqZIvxElSsOE@wunner.de>
+ <aYESh4bCE2lzTg2S@wunner.de>
+ <924dce22-171e-4508-907c-74f57f1bdea8@linux.alibaba.com>
+ <234dcf9e-05ff-485c-a330-019a4fbb5f3b@linux.alibaba.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,111 +64,58 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <234dcf9e-05ff-485c-a330-019a4fbb5f3b@linux.alibaba.com>
 
-"Christophe Leroy (CS GROUP)" <chleroy@kernel.org> writes:
+On Fri, Feb 27, 2026 at 04:28:59PM +0800, Shuai Xue wrote:
+> On 2/7/26 3:48 PM, Shuai Xue wrote:
+> > Regarding pci_restore_state() in slot_reset(): I see now that it does
+> > call pci_aer_clear_status(dev) (at line 1844 in pci.c), which will
+> > clear the AER Status registers. So if we walk the hierarchy after
+> > the slot_reset callbacks, the error bits accumulated during DPC will
+> > already be cleared.
+> > 
+> > To avoid losing those errors, I think the walk should happen after
+> > dpc_reset_link() succeeds but *before* pcie_do_recovery() invokes the
+> > slot_reset callbacks. That way, we can capture the AER Status bits
+> > before pci_restore_state() clears them.
+> > 
+> > Does that sound like the right approach, or would you prefer a
+> > different placement?
 
-> Le 27/02/2026 à 07:16, Ritesh Harjani (IBM) a écrit :
->> Architectures like PowerPC uses runtime defined values for
->> PMD_ORDER/PUD_ORDER. This is because it can use either RADIX or HASH MMU
->> at runtime using kernel cmdline. So the pXd_index_size is not known at
->> compile time. Without this fix, when we add huge pfn support on powerpc
->> in the next patch, vfio_pci_core driver compilation can fail with the
->> following errors.
->> 
->>    CC [M]  drivers/vfio/vfio_main.o
->>    CC [M]  drivers/vfio/group.o
->>    CC [M]  drivers/vfio/container.o
->>    CC [M]  drivers/vfio/virqfd.o
->>    CC [M]  drivers/vfio/vfio_iommu_spapr_tce.o
->>    CC [M]  drivers/vfio/pci/vfio_pci_core.o
->>    CC [M]  drivers/vfio/pci/vfio_pci_intrs.o
->>    CC [M]  drivers/vfio/pci/vfio_pci_rdwr.o
->>    CC [M]  drivers/vfio/pci/vfio_pci_config.o
->>    CC [M]  drivers/vfio/pci/vfio_pci.o
->>    AR      kernel/built-in.a
->> ../drivers/vfio/pci/vfio_pci_core.c: In function ‘vfio_pci_vmf_insert_pfn’:
->> ../drivers/vfio/pci/vfio_pci_core.c:1678:9: error: case label does not reduce to an integer constant
->>   1678 |         case PMD_ORDER:
->>        |         ^~~~
->> ../drivers/vfio/pci/vfio_pci_core.c:1682:9: error: case label does not reduce to an integer constant
->>   1682 |         case PUD_ORDER:
->>        |         ^~~~
->> make[6]: *** [../scripts/Makefile.build:289: drivers/vfio/pci/vfio_pci_core.o] Error 1
->> make[6]: *** Waiting for unfinished jobs....
->> make[5]: *** [../scripts/Makefile.build:546: drivers/vfio/pci] Error 2
->> make[5]: *** Waiting for unfinished jobs....
->> make[4]: *** [../scripts/Makefile.build:546: drivers/vfio] Error 2
->> make[3]: *** [../scripts/Makefile.build:546: drivers] Error 2
->> 
->> Fixes: f9e54c3a2f5b7 ("vfio/pci: implement huge_fault support")
->> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
->> ---
->>   drivers/vfio/pci/vfio_pci_core.c | 15 +++++++--------
->>   1 file changed, 7 insertions(+), 8 deletions(-)
->> 
->> diff --git a/drivers/vfio/pci/vfio_pci_core.c b/drivers/vfio/pci/vfio_pci_core.c
->> index d43745fe4c84..5395a6f30904 100644
->> --- a/drivers/vfio/pci/vfio_pci_core.c
->> +++ b/drivers/vfio/pci/vfio_pci_core.c
->> @@ -1670,21 +1670,20 @@ vm_fault_t vfio_pci_vmf_insert_pfn(struct vfio_pci_core_device *vdev,
->>   	if (vdev->pm_runtime_engaged || !__vfio_pci_memory_enabled(vdev))
->>   		return VM_FAULT_SIGBUS;
->> 
->> -	switch (order) {
->> -	case 0:
->> +	if (order == 0) {
->>   		return vmf_insert_pfn(vmf->vma, vmf->address, pfn);
->> +	}
->
-> Those braces are unneeded as all legs of the if/else are single lines
->
->>   #ifdef CONFIG_ARCH_SUPPORTS_PMD_PFNMAP
->
-> ifdef could be replaced by IS_ENABLED() because PxD_ORDER and 
-> vmf_insert_pfn_xxx() are declared all the time
->
->> -	case PMD_ORDER:
->> +	 else if (order == PMD_ORDER) {
->
-> 'else' is not needed because every 'if' leads to a return statement
->
->>   		return vmf_insert_pfn_pmd(vmf, pfn, false);
->> +	 }
->>   #endif
->>   #ifdef CONFIG_ARCH_SUPPORTS_PUD_PFNMAP
->> -	case PUD_ORDER:
->> +	 else if (order == PUD_ORDER) {
->>   		return vmf_insert_pfn_pud(vmf, pfn, false);
->> -		break;
->> +	 }
->>   #endif
->> -	default:
->> -		return VM_FAULT_FALLBACK;
->> -	}
->> +	return VM_FAULT_FALLBACK;
->
-> So at the end we should get something like:
->
-> 	if (!order)
-> 		return vmf_insert_pfn(vmf->vma, vmf->address, pfn);
->
-> 	if (IS_ENABLED(CONFIG_ARCH_SUPPORTS_PMD_PFNMAP) && order == PMD_ORDER)
-> 		return vmf_insert_pfn_pmd(vmf, pfn, false);
->
-> 	if (IS_ENABLED(CONFIG_ARCH_SUPPORTS_PUD_PFNMAP) && order == PMD_ORDER)
-                                                                ^^^ PUD_ORDER
+The problem is that if the hierarchy that was reset is deeper than
+one level, you first need to call pci_restore_state() on all the
+PCIe Upstream and Downstream Ports that were reset before you can
+access the Endpoints at the bottom of the hierarchy.
 
-> 		return vmf_insert_pfn_pud(vmf, pfn, false);
->
-> 	return VM_FAULT_FALLBACK;
->
->
+E.g. if DPC occurs at a Root Port with multiple nested PCIe switches
+below, the Endpoints at the "leafs" of that tree are only accessible
+once Config Space has been restored at all the PCIe switches
+in-between the Endpoints and the DPC-capable Root Port.
 
-Looks a lot cleaner. Thanks!
-I will make that change in v2.
+Hence your proposal unfortunately won't work.
 
--ritesh
+I think the solution is to move pci_aer_clear_status() out of
+pci_restore_state() into the callers that actually need it.
+But that requires going through every single caller.
+I've begun doing that last week and am about 60% done.
+
+Once pci_restore_state() no longer clears the error bits, we can
+report and clear them after the "report_slot_reset" stage (which
+is where drivers call pci_restore_state()).
+
+I've also changed my mind and I think reporting and clearing
+the error bits *could* happen in pcie_do_recovery() even if it
+were used for EEH and s390 because those platforms may plug in
+AER-capable devices as well and so we do need to clear the bits
+regardless of the error recovery mechanism used.
+
+Let me get back to you once I've gone through all the callers of
+pci_restore_state().  Please be patient.
+
+Thank you!
+
+Lukas
 
