@@ -1,82 +1,36 @@
-Return-Path: <linuxppc-dev+bounces-17329-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17330-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86B2BFD9E1A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Feb 2026 22:10:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01865FD9E3C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Feb 2026 05:25:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fMQdL6hKCz3bZm;
-	Fri, 27 Feb 2026 09:10:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=213.95.11.211
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772143846;
-	cv=none; b=EMuno1uR13UKVbl+ogYp5ParVSbDyh01FA3yctabgjAWrcGqemXZL27NMDV8f3/a9iApBRngGaVgcInHk9K7szAXio9p5gJPX762gba7BVxczY/skoJ8u1cPD/CjWTr1NTuOI3PKySNSRPZhbntiU02UXEBZBI8g207Cg4D4j/vzak1XfZ6D23sJ+mX634lU/6PvgZ5iob3ODINRr4YF0NV6AsmsnlceJ/lHvxs3T/KCwFtN9XFBk3fp95JgjDSIxoB1AhVIPb/4JuNm8KqM8lL4zEW9ZowLT3GOWVOsAMI4yf/Nrhnjs8zJyCbx2pXNcZwZ80uKHhzlHVp6usckuQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fMcGx2gcWz2xLv;
+	Fri, 27 Feb 2026 16:25:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.21
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772169929;
+	cv=none; b=W7syKDOlyC8TDpUAdtccyr9ENJejpeW9E0V9RvPRExiQ+DSPaDOJGATDixYWhObCJ4fPnSjC7LjTiFCHPqTqOmfn1Hc8VCo/FUMQdzI92Eva3bYgytGmn6MLVulilOomPuy6wTSfUurd/sFn1Xz9H05bkgyaE/h22Q7acIQEXoQX7yMyEaOc8iQOhoKxq7SRvjBPHV6AkBBd2OLE9JjbANGL0H5x33OOHKA//WC8Clg/lpDq/QoCjESLyT7Q8qAiJtIr5kulFWDXvxAO3E5VlER1U/ogNfUk7fnwe5LjnHLr792HLqeTN8/Y63S0ET5OilIaO07Qnx3X4386yEpQ3Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772143846; c=relaxed/relaxed;
-	bh=3ilvamkoK822H0OMpkLt0O2v/cHCUl9aKFe1v6Kcca4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=OSJrJHMdfNg2UwLvL0+KP1/5iab7iN+0i+TrsOwEJvelqqvS6dNmfbQIgOMWHCP6FyQN+/Go5Kayt5BC0G/KcSXf+/J+61KaEzwWapv6sjFEflI3N5keisn8VU1pC6zmJzZ1umHCN68IyOdFLwcFaNVjHjPCIqJjwJUzbS6d7xYhInjDebx/PRXp3QsCYzDkhaBK1CmHTg3p3GFmM40TbmS3XiIUgWBHsuCLj/3svdH6B20xyVq7MeJifG2f9UiQyGtpIE+DiIA45pG2uJR5rikigB1d5pYF1aKfNNVp4c+BR3Zj6xBjFXnJ8LXhFQLlqtv8b6AWi+RFiVyxDJXwfw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lst.de; spf=pass (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de; receiver=lists.ozlabs.org) smtp.mailfrom=lst.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lst.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lst.de (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 593 seconds by postgrey-1.37 at boromir; Fri, 27 Feb 2026 09:10:45 AEDT
-Received: from verein.lst.de (verein.lst.de [213.95.11.211])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1772169929; c=relaxed/relaxed;
+	bh=UrQTgr8Z2Zj/VgbjC2bHNzR3OxdGv7iQW5hB/FUCfvU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=MJQgtrv18iimCwB+SAJV+c/pLbbWbPyjjE9VExK7kefcJku4hS5ipZfX5rEN/nHekGfqpf3FgHZI4KfeHsCn3X/s+xKy2EJZqLLU6uqfmvmRY+8wsG0++rwsXPQOcRl9Pm5I8l7p5uOy7R99NVMDNG7H/+o5qwd9Tu+s7eLmAU2IEDSdNeBvpldpv515R1vPs+a/ZK7aYue4uN0MAcIOru5SJ10V8Glh6JjUVFMspbL094Jtm3QwtZXAf8SpIplucfdLfJlg483maUIascTA14wogozcuyVV5ZKTDlJaCyeOjWWTgE52anFFQkPr3hXvj/yHBxj76Xw871F60DyZAg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass (client-ip=159.226.251.21; helo=cstnet.cn; envelope-from=wangruikang@iscas.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=iscas.ac.cn
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iscas.ac.cn (client-ip=159.226.251.21; helo=cstnet.cn; envelope-from=wangruikang@iscas.ac.cn; receiver=lists.ozlabs.org)
+Received: from cstnet.cn (smtp21.cstnet.cn [159.226.251.21])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMQdK73mZz2yr6
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 09:10:45 +1100 (AEDT)
-Received: by verein.lst.de (Postfix, from userid 2407)
-	id 3731168C4E; Thu, 26 Feb 2026 23:00:39 +0100 (CET)
-Date: Thu, 26 Feb 2026 23:00:38 +0100
-From: hch <hch@lst.de>
-To: Richard Weinberger <richard@nod.at>
-Cc: hch <hch@lst.de>, Andrew Morton <akpm@linux-foundation.org>,
-	Richard Henderson <richard.henderson@linaro.org>,
-	Matt Turner <mattst88@gmail.com>,
-	Magnus Lindholm <linmag7@gmail.com>,
-	Russell King <linux@armlinux.org.uk>,
-	Catalin Marinas <catalin.marinas@arm.com>, will <will@kernel.org>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, davem <davem@davemloft.net>,
-	Andreas Larsson <andreas@gaisler.com>,
-	anton ivanov <anton.ivanov@cambridgegreys.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	Thomas Gleixner <tglx@kernel.org>, mingo <mingo@redhat.com>,
-	bp <bp@alien8.de>, dave hansen <dave.hansen@linux.intel.com>,
-	x86 <x86@kernel.org>, hpa <hpa@zytor.com>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	dan j williams <dan.j.williams@intel.com>, Chris Mason <clm@fb.com>,
-	David Sterba <dsterba@suse.com>, Arnd Bergmann <arnd@arndb.de>,
-	Song Liu <song@kernel.org>, Yu Kuai <yukuai@fnnas.com>,
-	Li Nan <linan122@huawei.com>,
-	linux-alpha <linux-alpha@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-	loongarch <loongarch@lists.linux.dev>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	linux-riscv <linux-riscv@lists.infradead.org>,
-	linux-s390 <linux-s390@vger.kernel.org>,
-	sparclinux <sparclinux@vger.kernel.org>,
-	linux-um <linux-um@lists.infradead.org>,
-	Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
-	linux-btrfs <linux-btrfs@vger.kernel.org>,
-	linux-arch <linux-arch@vger.kernel.org>,
-	linux-raid <linux-raid@vger.kernel.org>
-Subject: Re: [PATCH 03/25] um/xor: don't override XOR_SELECT_TEMPLATE
-Message-ID: <20260226220038.GA15172@lst.de>
-References: <20260226151106.144735-1-hch@lst.de> <20260226151106.144735-4-hch@lst.de> <445921547.2198.1772142326749.JavaMail.zimbra@nod.at>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMcGw03vrz2xKh
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 16:25:26 +1100 (AEDT)
+Received: from [192.168.0.103] (unknown [123.118.222.47])
+	by APP-01 (Coremail) with SMTP id qwCowABH72qvKqFp4fXQCA--.7323S2;
+	Fri, 27 Feb 2026 13:25:04 +0800 (CST)
+Message-ID: <c9329ae2-721d-4127-9380-b1ea454bd8f2@iscas.ac.cn>
+Date: Fri, 27 Feb 2026 13:25:03 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,29 +44,88 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <445921547.2198.1772142326749.JavaMail.zimbra@nod.at>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 1/4] PCI/MSI: Conservatively generalize no_64bit_msi
+ into msi_addr_mask
+To: Mark Bloch <mbloch@nvidia.com>, Madhavan Srinivasan
+ <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Alex Deucher <alexander.deucher@amd.com>,
+ =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
+ <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>, Brett Creeley <brett.creeley@amd.com>
+Cc: Han Gao <gaohan@iscas.ac.cn>, Thomas Gleixner <tglx@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+ netdev@vger.kernel.org, linux-pci@vger.kernel.org,
+ linux-sound@vger.kernel.org, linux-riscv@lists.infradead.org,
+ sophgo@lists.linux.dev, Takashi Iwai <tiwai@suse.de>,
+ Maor Gottlieb <maorg@nvidia.com>
+References: <20260129-pci-msi-addr-mask-v4-0-70da998f2750@iscas.ac.cn>
+ <20260129-pci-msi-addr-mask-v4-1-70da998f2750@iscas.ac.cn>
+ <fb23d54a-fca0-43a2-ae1d-03ae52112192@nvidia.com>
+Content-Language: en-US
+From: Vivian Wang <wangruikang@iscas.ac.cn>
+In-Reply-To: <fb23d54a-fca0-43a2-ae1d-03ae52112192@nvidia.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-CM-TRANSID:qwCowABH72qvKqFp4fXQCA--.7323S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7WrykArWkCrW7tr1xAr48tFb_yoW8Gr4fpF
+	WDWF4rtF4UKry7t39Fvw1DZF45Zws5Z3s3Wry5twnakan0v3W2qr1qyr4aga42gr48Jw4Y
+	kryjgw1vqrs8Z37anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUvE14x267AKxVWrJVCq3wAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26r4j6ryUM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26F4j
+	6r4UJwA2z4x0Y4vEx4A2jsIE14v26F4UJVW0owA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Gc
+	CE3s1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E
+	2Ix0cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJV
+	W8JwACjcxG0xvEwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lFIxGxcIEc7CjxVA2Y2ka
+	0xkIwI1lc7CjxVAaw2AFwI0_GFv_Wryl42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7
+	v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF
+	1VAY17CE14v26r4a6rW5MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIx
+	AIcVC0I7IYx2IY6xkF7I0E14v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI
+	42IY6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWI
+	evJa73UjIFyTuYvjTRM6wCDUUUU
+X-Originating-IP: [123.118.222.47]
+X-CM-SenderInfo: pzdqw2pxlnt03j6l2u1dvotugofq/
 
-On Thu, Feb 26, 2026 at 10:45:26PM +0100, Richard Weinberger wrote:
-> ----- Ursprüngliche Mail -----
-> > Von: "hch" <hch@lst.de>
-> > XOR_SELECT_TEMPLATE is only ever called with a NULL argument, so all the
-> > ifdef'ery doesn't do anything.  With our without this, the time travel
-> > mode should work fine on CPUs that support AVX2, as the AVX2
-> > implementation is forced in this case, and won't work otherwise.
-> 
-> IIRC Johannes added XOR_SELECT_TEMPLATE() here to skip
-> the template selection logic because it didn't work with time travel mode.
-> 
-> Johannes, can you please test whether this change does not break
-> time travel mode?
+On 2/27/26 02:25, Mark Bloch wrote:
 
-I'm pretty sure that was the intent, but as I wrote above it worked
-and still works on AVX-supporting CPUs by chance, and already doesn't
-on older CPUs, and unless my git blaming went wrong someewhere already
-didn't when this was originally added.
+> On 29/01/2026 3:56, Vivian Wang wrote:
+>> Some PCI devices have PCI_MSI_FLAGS_64BIT in the MSI capability, but
+>> implement less than 64 address bits. This breaks on platforms where such
+>> a device is assigned an MSI address higher than what's reachable.
+>>
+>> Currently, the no_64bit_msi bit is set for these devices, meaning that
+>> only 32-bit MSI addresses are allowed for them. However, on some
+>> platforms the MSI doorbell address is above the 32-bit limit but within
+>> the addressable range of the device.
+>>
+>> As a first step to enabling MSI on those combinations of devices and
+>> platforms, conservatively generalize the single-bit flag no_64bit_msi
+>> into msi_addr_mask. (The name msi_addr_mask is chosen to avoid confusion
+>> with msi_mask.)
+>>
+>> The translation is essentially:
+>>
+>> - no_64bit_msi = 1    ->    msi_addr_mask = DMA_BIT_MASK(32)
+>> - no_64bit_msi = 0    ->    msi_addr_mask = DMA_BIT_MASK(64)
+>> - if (no_64bit_msi)   ->    if (msi_addr_mask < DMA_BIT_MASK(64))
+>>
+> Hey Vivian,
+>
+> We are seeing issues while reloading mlx5 on a PPC64 platform.
+
+Mea culpa. There's a fix on the list [1] since last Friday. I'm not sure
+why it hasn't moved yet, but please take a look.
+
+Vivian "dramforever" Wang
+
+[1]: https://lore.kernel.org/all/20260220070239.1693303-1-nilay@linux.ibm.com/
 
 
