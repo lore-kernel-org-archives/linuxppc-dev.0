@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-17419-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17420-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59E0A1039893
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Feb 2026 20:12:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27D161039893
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Feb 2026 20:12:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fMzy45mM0z3bll;
-	Sat, 28 Feb 2026 07:12:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fMzyP4btNz3bmk;
+	Sat, 28 Feb 2026 07:12:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772223132;
-	cv=none; b=TfbNIjBsdqaSBh4fXOs81F3nZGnXmIN3pOPfUi0fm7HxY+jqQe9Zrii7zuzF7CPDyJ3BeAIxU9e91NePbCyIZH4SPkc/KjZgUcIgGMG/d3vTiT3izuPnkKLwRwAEt3I0ugM8INJGJDYFpE5w5p2ew3eIeIf4QAfZ8lK52HsqfGX+aoOly1vvvGeTL1CmV5PlXQlGWlGlfCifUbep3Vlwn7lLKG0Yy3iSoheiQbqIrptW9Qnzp2/tNrCfaWlxfn5gGcZjQk8+Eh3azFoEaEY6wUEHwatPSSufLVgmxYH0CcYrs0WKuD3opXK+VcKVadsmhXIfbzh7nBJ1n44my/sdyw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772223149;
+	cv=none; b=Hah2SR0qmduM3DPZ4WUO/IS6IBDc6JBJFMH2XtBUXzLjY3xxF04jmKpImXqHi2DnnKPg+MsVGD76AIy62W4mINDr4ghQdcjgeu7auZkP0sbaBbypeMd5HA7fDrXsBTPmcgNGPyhmi0rkanHhpaLOVI9UcZBVqUShOTLXXAYwyZFcj1aHSv9i+Ml9RojbFe00OBB/888r68rwv6c4y8+qDr8pWIjYLWzxmLW6FIANBLh2lJ4xGWlt5WQ8n4k7OhuKmk8lcqcPgmAvkq80LDZak+b5/+jb8sEmDk8uJcrt3zFugdbecdfdaFdQSxhlyprcGyjBH5XGWI4AmGCSCwmWVg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772223132; c=relaxed/relaxed;
-	bh=7fCPmvc1vvorzRSL+A9RsibKTn2zoH1ERt88khz0mWY=;
+	t=1772223149; c=relaxed/relaxed;
+	bh=P/m3MqIEX6AkMye3eSum2W1oL4VvXYBIQlIkGRZjJ28=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=MRuuqnOlDIrL3G2caSsdfBXTsDgrD+E9PwVF2ipDUdtnJcp3zDI0gUBr0at0Pk/w+gLWyCcojm6pYj9jimNLzTyfwqi4bMYq2bNYCZg9gF2N/hovfldHAKseCasGfWSGASvs1oiTIPrM+BEj3ug/qp2DCW0vBUublwdXhVEwtNgSShq7D/EqJa6ehtwXgMIIatVW45RyYkHiCqJ/SEuglfcEAPsB+r5NxABqekYyTn5Y29+DJtCzIX1Vi1ZWvJR9USTSrNE82bfvmZayhww2ew3G0ExWRhnl2VBB6UQGIliFt/Q6V1TqQrUp+lz4cYTP53aXOEYo+YRcX5BQM9QooA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ngaOty6e; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=fXZEMju60eIf0Mzp4S8zLRqcpf/PRPNiQWp3kPmZQH7W49RQpKSmbZQf0eFpi19wt7iDxRJ5C/HokeyrRMXZd+a5io8GIUSlaGwE93tX9K/nk4ktL/U29UwBLDCK6vlnMOoTG6oPAX+L0ixKykZXbtEqB7xne/7kH+KtX+q07sTdOc8mFONLrkvzrZ6mjzMFUpzqTFofNKV/lZHPTS+4+3EKFaUAZMgPYfknGQLpTIXjoGeDE0xcWy13dgWt4o27SisxvvtkD3D+pVJyJcqj16YAOtORnepOAJWgqHx/IwuwyPs0jwGKzlMaEQeBOP494FoEMProywbuBUk9fXmcsg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XV3R41u2; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ngaOty6e;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XV3R41u2;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMzy40dClz3bkq
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Feb 2026 07:12:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMzyN6Ngxz3bjb
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Feb 2026 07:12:28 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 952F141843;
+	by sea.source.kernel.org (Postfix) with ESMTP id EAAFE41843;
+	Fri, 27 Feb 2026 20:12:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 047EBC116C6;
 	Fri, 27 Feb 2026 20:12:10 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B39E4C116C6;
-	Fri, 27 Feb 2026 20:11:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772223130;
-	bh=clYyWttfcaFGSXdSI+NFUKwc/GgjopvB2fmwPUXTrio=;
+	s=k20201202; t=1772223146;
+	bh=aB5tiNSbiWIs8J38wzKTGn9gBoLw1Ed2QFc8m6G1lhE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=ngaOty6eXM5j7is+WGyPTLemdZsPBcNe61ojNKAJgZwE71n14yO064jdNtdsbX/Ee
-	 RlnqA3sETb9Sy0WtFg1UK1UEcaoO+Lw/1O2wov2lG6O/6NijoRCZZU6GJofxg0KeVi
-	 odWoGYGuMoHkVNOTEmUkygOdILEoNupmNcfh6X2yUbKxw8hqRUN3XAIuwmUTHbl0uv
-	 Wl5I/FU4hI2dyfaSjJKbwQzwLAdwBQdMN+UbkJt1AStL/fzXkytyB/+eDsgIyfI8n/
-	 b9L2nmNB1P0iCf65mL/2gwS2RTtD6WGlw6k+T+OihQnVUd6MdiJbH5WiiAYE79FL+a
-	 YRQ32YLZxixOw==
+	b=XV3R41u27yOs3AucAXItd/ZxAZjAbvL9zkvtgql+u+4ijDgzXZEbk77WEppDG6XbQ
+	 RaRDFQEIdi93XVV3MnYwhO+PQuYzL6HPudiNqhTkElOIxON9zpQ28ddXnRauD5K7xI
+	 pPAPZLRWc+u8ZveolZp8sk3xfxpltOLQDdxGrANzjZcI65k2mZV2C7NoEkTTWxEEvR
+	 CAFqu7YxseHBUNNfvGMccb+W5iBgk9khfRU0vAq0qlcZ/q5lDlnaLNcSa+FLgrhULj
+	 YjzvWS5u0pea0U3pcj1C2Qe1JsARvSTKUCz1+bSDPl3+jOtxbrGUap4h/9n2umCd7p
+	 tlC/aFeo6fWmw==
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 To: linux-kernel@vger.kernel.org
 Cc: "linux-mm @ kvack . org" <linux-mm@kvack.org>,
@@ -119,9 +119,9 @@ Cc: "linux-mm @ kvack . org" <linux-mm@kvack.org>,
 	netdev@vger.kernel.org,
 	rust-for-linux@vger.kernel.org,
 	x86@kernel.org
-Subject: [PATCH v1 11/16] mm/memory: inline unmap_page_range() into __zap_vma_range()
-Date: Fri, 27 Feb 2026 21:08:42 +0100
-Message-ID: <20260227200848.114019-12-david@kernel.org>
+Subject: [PATCH v1 12/16] mm: rename zap_vma_pages() to zap_vma()
+Date: Fri, 27 Feb 2026 21:08:43 +0100
+Message-ID: <20260227200848.114019-13-david@kernel.org>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20260227200848.114019-1-david@kernel.org>
 References: <20260227200848.114019-1-david@kernel.org>
@@ -140,66 +140,87 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Let's inline it into the single caller to reduce the number of confusing
-unmap/zap helpers.
-
-Get rid of the unnecessary BUG_ON().
+Let's rename it to an even simpler name. While at it, add some
+simplistic kernel doc.
 
 Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
 ---
- mm/memory.c | 32 ++++++++++++--------------------
- 1 file changed, 12 insertions(+), 20 deletions(-)
+ arch/powerpc/platforms/book3s/vas-api.c | 2 +-
+ arch/powerpc/platforms/pseries/vas.c    | 2 +-
+ include/linux/mm.h                      | 6 +++++-
+ lib/vdso/datastore.c                    | 2 +-
+ mm/page-writeback.c                     | 2 +-
+ 5 files changed, 9 insertions(+), 5 deletions(-)
 
-diff --git a/mm/memory.c b/mm/memory.c
-index 394b2e931974..1c0bcdfc73b7 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2056,25 +2056,6 @@ static inline unsigned long zap_p4d_range(struct mmu_gather *tlb,
- 	return addr;
- }
+diff --git a/arch/powerpc/platforms/book3s/vas-api.c b/arch/powerpc/platforms/book3s/vas-api.c
+index ea4ffa63f043..e96d79db69fe 100644
+--- a/arch/powerpc/platforms/book3s/vas-api.c
++++ b/arch/powerpc/platforms/book3s/vas-api.c
+@@ -414,7 +414,7 @@ static vm_fault_t vas_mmap_fault(struct vm_fault *vmf)
+ 	/*
+ 	 * When the LPAR lost credits due to core removal or during
+ 	 * migration, invalidate the existing mapping for the current
+-	 * paste addresses and set windows in-active (zap_vma_pages in
++	 * paste addresses and set windows in-active (zap_vma() in
+ 	 * reconfig_close_windows()).
+ 	 * New mapping will be done later after migration or new credits
+ 	 * available. So continue to receive faults if the user space
+diff --git a/arch/powerpc/platforms/pseries/vas.c b/arch/powerpc/platforms/pseries/vas.c
+index ceb0a8788c0a..fa05f04364fe 100644
+--- a/arch/powerpc/platforms/pseries/vas.c
++++ b/arch/powerpc/platforms/pseries/vas.c
+@@ -807,7 +807,7 @@ static int reconfig_close_windows(struct vas_caps *vcap, int excess_creds,
+ 		 * is done before the original mmap() and after the ioctl.
+ 		 */
+ 		if (vma)
+-			zap_vma_pages(vma);
++			zap_vma(vma);
  
--static void unmap_page_range(struct mmu_gather *tlb, struct vm_area_struct *vma,
--		unsigned long addr, unsigned long end,
--		struct zap_details *details)
--{
--	pgd_t *pgd;
--	unsigned long next;
--
--	BUG_ON(addr >= end);
--	tlb_start_vma(tlb, vma);
--	pgd = pgd_offset(vma->vm_mm, addr);
--	do {
--		next = pgd_addr_end(addr, end);
--		if (pgd_none_or_clear_bad(pgd))
--			continue;
--		next = zap_p4d_range(tlb, vma, pgd, addr, next, details);
--	} while (pgd++, addr = next, addr != end);
--	tlb_end_vma(tlb, vma);
--}
--
- static void __zap_vma_range(struct mmu_gather *tlb, struct vm_area_struct *vma,
- 		unsigned long start, unsigned long end,
- 		struct zap_details *details)
-@@ -2100,7 +2081,18 @@ static void __zap_vma_range(struct mmu_gather *tlb, struct vm_area_struct *vma,
- 			return;
- 		__unmap_hugepage_range(tlb, vma, start, end, NULL, zap_flags);
- 	} else {
--		unmap_page_range(tlb, vma, start, end, details);
-+		unsigned long next, cur = start;
-+		pgd_t *pgd;
-+
-+		tlb_start_vma(tlb, vma);
-+		pgd = pgd_offset(vma->vm_mm, cur);
-+		do {
-+			next = pgd_addr_end(cur, end);
-+			if (pgd_none_or_clear_bad(pgd))
-+				continue;
-+			next = zap_p4d_range(tlb, vma, pgd, cur, next, details);
-+		} while (pgd++, cur = next, cur != end);
-+		tlb_end_vma(tlb, vma);
+ 		mutex_unlock(&task_ref->mmap_mutex);
+ 		mmap_write_unlock(task_ref->mm);
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 4710f7c7495a..4bd1500b9630 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -2837,7 +2837,11 @@ void zap_vma_ptes(struct vm_area_struct *vma, unsigned long address,
+ 		  unsigned long size);
+ void zap_page_range_single(struct vm_area_struct *vma, unsigned long address,
+ 			   unsigned long size);
+-static inline void zap_vma_pages(struct vm_area_struct *vma)
++/**
++ * zap_vma - zap all page table entries in a vma
++ * @vma: The vma to zap.
++ */
++static inline void zap_vma(struct vm_area_struct *vma)
+ {
+ 	zap_page_range_single(vma, vma->vm_start, vma->vm_end - vma->vm_start);
+ }
+diff --git a/lib/vdso/datastore.c b/lib/vdso/datastore.c
+index a565c30c71a0..222c143aebf7 100644
+--- a/lib/vdso/datastore.c
++++ b/lib/vdso/datastore.c
+@@ -121,7 +121,7 @@ int vdso_join_timens(struct task_struct *task, struct time_namespace *ns)
+ 	mmap_read_lock(mm);
+ 	for_each_vma(vmi, vma) {
+ 		if (vma_is_special_mapping(vma, &vdso_vvar_mapping))
+-			zap_vma_pages(vma);
++			zap_vma(vma);
  	}
- }
+ 	mmap_read_unlock(mm);
  
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 601a5e048d12..29f7567e5a71 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -2645,7 +2645,7 @@ void folio_account_cleaned(struct folio *folio, struct bdi_writeback *wb)
+  * while this function is in progress, although it may have been truncated
+  * before this function is called.  Most callers have the folio locked.
+  * A few have the folio blocked from truncation through other means (e.g.
+- * zap_vma_pages() has it mapped and is holding the page table lock).
++ * zap_vma() has it mapped and is holding the page table lock).
+  * When called from mark_buffer_dirty(), the filesystem should hold a
+  * reference to the buffer_head that is being marked dirty, which causes
+  * try_to_free_buffers() to fail.
 -- 
 2.43.0
 
