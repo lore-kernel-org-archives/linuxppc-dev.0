@@ -1,82 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-17405-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17406-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02F22FEFB6E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Feb 2026 17:18:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A345DFEFB71
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Feb 2026 17:42:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fMw5b3r0Mz2xMt;
-	Sat, 28 Feb 2026 04:18:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772212707;
-	cv=none; b=MUXJ0P+ZJ/AnD4z9BWdVkcJn7Yd3q15EdiE6U5giNnAcsZdjxW2raUnCBiM7kuca8jhG3t2YyX+n1DfTnbd1mzW/1JzsL5F6mulL1J0eLp/zK09/UCmSoa5BGBgpZCwqPgeeXyg2hgrpn6ul4LzdE09tR6lrym+4zdMtmIbKe2I0OYYvGejUMwiA37itLTxx3QsFoJwG/AnWuAxk/K1PqvxBu9XOguKYIjTVXl5nPB84jZg63fIYn1wnQ0vtbSZm6Y9FtonNODi4G3A7HcnQDyK4kN8R4WqU22ZLLMi2ylIlJgxDCopJNvF32BhdBo9ZcQ2Ok5U+I389H/r75+0AMw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fMwdJ3Y77z2xMt;
+	Sat, 28 Feb 2026 04:42:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::634"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772214148;
+	cv=none; b=XITcJ7qeAl/6W6x9leUG+SuKHPDO+8HwoWU1/Bf6ivTGiHMrGu1fwc0WDpQ5clqM1b0XuJljtauEj3OCzQldbr4tVgpOjlS7d3O24N/KL01bBmeg/XlOfILoe+h4U0fpDZuGqE+1l2ot5I+N3SyrTkI3MTRm1CeCnPYSAUoYgk136Fn2SokWkfM212jrR/Ln+mf2SOSO5v++u8vFMfiDY+xjflmMbuDXjs0LbjsahlIKpYO9M9XCt/PHHk6T4BGG2o4nOhlqbL35Umf1woYXyGNFsx03OjBD7nfWWGS6uBsZJ1VlYSpdNYh7NdaKG7oINMQOnTVgZphvkujgZo0RWQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772212707; c=relaxed/relaxed;
-	bh=6gheSBiXkF87syMd72xi8Q8Bw/02uMWT3yhhBB3eeBo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=QW79d1kvHZtWxoCxok6EjgbVB87w2f1b0y0Hn5To6KSkcxWV5N52U7Tpz9t9RH35u7z9DzKicYVIwgmBWd1FT9O/UpGStJiSRyBy2oXQ1qTEXpfPyPWz9dMUPFy3ry1KPBlrOc1myqaC/G5WScpThvetlX3gpFEVV1zsDoGkkGieGYHMoyza5WeE4uAc2+9M5p1ixioSvQw5ily2XLxjrnx9ZJ9HCjUWanusSGtHw/HLb5KoX1LN0Mr8gFJGUEvJ61pCInDi6JqwpJcbCAz3DCD+Vcw4Vp8Cq/ZWX/uWm8VFXJEoRNM5z2CpidUbVLtwdc13ZuyM1+qWif0AxeujvA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=O2nWbXQW; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1772214148; c=relaxed/relaxed;
+	bh=Et77aHJTeuGzmmNrAkPK/DYt1o94w5tXvKsba6OelYM=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
+	 MIME-version:Content-type; b=K78d380garwIOY9YhmM7q1HGoA1dofSTh71OvkrOKnbvHlR4SCBCaMtzjcgRx29q8/YsZVpsMj6ONM9VsDgUnY/TuM8K/FQ6+QKQo+04SPk3ZKy96CLDXZcl2n8F9a4XvX0pW8ssJxXZ/hd+xf2tjlmttUY6uaidmiZqubAJczXf/l39vMXWTu/o6Hn+Ofii4493roXDmGvFJz7rL/uaYGpHDeQLgBjLkto5D8jc9I7jjqQawod5YzW5ZDdAMuswY3zHYZyLWKcW0LJPhV6Mm5KVqo9lUgRdobK7HrND+UhGpgbH5YAPdqRHLbrDffvVQmLCW4bmX33EqpgemTgAmg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=XCpzIZK+; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=O2nWbXQW;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=XCpzIZK+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMw5Z4cqmz2xLv
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Feb 2026 04:18:25 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61RBKTCc3315819;
-	Fri, 27 Feb 2026 17:18:17 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=6gheSBiXkF87syMd72xi8Q8Bw/02uMWT3yhhBB3ee
-	Bo=; b=O2nWbXQWe89MzVrnKmLWuTmmvhxlRHr1Et84htY/94FJYwQlrVPlrk5bM
-	lqD/fY+MqjxuCuJiI5ARVnM1EXmp2MzGQzqF+Rzjb1vjZu39K/Jp+R0KutwJ3fEl
-	fEvksCZ44fmUfukUZkDc8qUIcsBeM5N0PJCYbqoxjABeGlWt104ZglGFil2jMWdc
-	syuAzQH8YIbQqfRvUDFI9XwYsDw0Tj8fsEabQXuxd3pF8Ar2308+adouJdXHH1Vp
-	xAPsn5exQ/RU79rTlJsI7hL77TmYmeW5AAa/9i2g7NRhYb3UY0Di16MuNOpWF7aE
-	X8Bf8W7bpJMzo0TQT3jxT3P5CLnfg==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cf472dxdh-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 27 Feb 2026 17:18:16 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 61RE3g6a013478;
-	Fri, 27 Feb 2026 17:18:15 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4cfqdykcdj-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 27 Feb 2026 17:18:15 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 61RHIBIC45416802
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 27 Feb 2026 17:18:11 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9BA6E20043;
-	Fri, 27 Feb 2026 17:18:11 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2A0DB20040;
-	Fri, 27 Feb 2026 17:18:09 +0000 (GMT)
-Received: from li-4f5ba44c-27d4-11b2-a85c-a08f5b49eada.ibm.com.com (unknown [9.124.211.61])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 27 Feb 2026 17:18:08 +0000 (GMT)
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Sourabh Jain <sourabhjain@linux.ibm.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Mahesh Salgaonkar <mahesh@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-        Shivang Upadhyay <shivangu@linux.ibm.com>,
-        Hari Bathini <hbathini@linux.ibm.com>
-Subject: [PATCH v2] powerpc/crash: adjust the elfcorehdr size
-Date: Fri, 27 Feb 2026 22:48:01 +0530
-Message-ID: <20260227171801.2238847-1-sourabhjain@linux.ibm.com>
-X-Mailer: git-send-email 2.52.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMwdG6n1Sz2xLv
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Feb 2026 04:42:25 +1100 (AEDT)
+Received: by mail-pl1-x634.google.com with SMTP id d9443c01a7336-2a7a9b8ed69so25275495ad.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 09:42:25 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1772214142; x=1772818942; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:message-id:date
+         :in-reply-to:subject:cc:to:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=Et77aHJTeuGzmmNrAkPK/DYt1o94w5tXvKsba6OelYM=;
+        b=XCpzIZK+TivE0WMm9fwaqGru/tBXzHiwKZ3FP8MKiSoIaFCg4zhQfuMfg8ws3uaenK
+         W4jiDKhNfriVYwU6tiQmwM9uT6/DajpLM+JjOGkESiRixLMqDHILcejT+sFlgcgX7pxv
+         GfhfPJcvi+6N8C2FBAt/FigNYHuEG3zjoFXt0/lJH/oeTuI5B1yn8cCLsap2rkedMmLg
+         nDwHne96CUal1OuhSRMIb9i3pvUga0XkDG5HCOyyH8y5aaLawS3ZsfWtlviegtGAvs59
+         DaawDLOy4JOUcc4TjTNi43uacM3GSYhvXUkYN/n9196dYrGdmVueg1Qnh15XqniFLDUI
+         wyag==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1772214142; x=1772818942;
+        h=content-transfer-encoding:mime-version:references:message-id:date
+         :in-reply-to:subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=Et77aHJTeuGzmmNrAkPK/DYt1o94w5tXvKsba6OelYM=;
+        b=XToa1XqaNBFfm4UxKS+wgNNYd4uqpEztSJoCBt/gllR4UkvvIbX/qg3LnCyctpSlOO
+         XN6dBqSG4Q3LaeylNmBP/6uMfBVtXzQEYer0F3i2T6MABma4MTjq6nSQNAE9dx398eRD
+         ISWt4cCPcD4SppKvYD446dbUcWJygtfFHai6Nxa4mHPC22cZfztSH8/myo3rLsRz2NWK
+         vCTzG+mnsNwTchvy1L1sN2/SoSit6vJHrxvjs0a0bcZ9prNlJrWkCJX0RP5RhgE9jZM9
+         5o8ki12kK4h0Lup5h27PVwEzlemDgTDacIlYDBRamCCb8qonzV40fg8SV4WGN+xNmWL8
+         enPw==
+X-Forwarded-Encrypted: i=1; AJvYcCW2MtwRtMmbLySKMccOduu4Z+L63dmYV1QYHhPTZnXaVIJemaWNIlRVYxfI2xuBlbgnXiWnkNWj8mtJDIg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yya3/4Zudc8J7joyjaw+hDOrVVywSlRPlnM9GIMMfNNdO1uhg1+
+	PttajhDM3PYbSbdI+tskyu2tNWbrdC/55jfLIbzv+XKQGEqPGl+lG6Ye
+X-Gm-Gg: ATEYQzzAEn177+4uRucyrYxv76vlJpKLPfvGvHOZ+kSyZ+HqoZiyIBKzRoCkQBoTQ4S
+	y8equtFpbxM1QBIOyBc9Eo5YFWIe34/Gb8gaoaZSuN8mJ/+s9BH/PvWczEOFaezQ8Ffg7k/bZox
+	JIvSCTcFfDkEUgvwe9xPdYI2V8rOb1CjQEvz32KFHH+rXqlw0A/EWxmkSSw57/YxpUIxzfV3zzA
+	Pp7FCq0gigFJQPpm5Du5wcNgZxjaKPOCp2MfWTB7I52SV9pqS3UPuTgWo0Bg65qAF1YxV9Fv+JT
+	PNCZ+ofcNFpokEIHcqFx6ydfeqQXt703byBAzvzts1HXjQWahkl7MUja2rzc/mStsfrsCxgTYq0
+	Tt8R/CxhvDo2BZEDoulMm4wgXg007M1k3o+Txuact+tqx6WHSzxUuh5MYsz3brXti3nzgON47y9
+	wniLrHYuwvMZmYlGf02E1ptrJfBewZ
+X-Received: by 2002:a17:902:f647:b0:2aa:d350:fbf0 with SMTP id d9443c01a7336-2ae2e4a5ff3mr42125155ad.26.1772214142121;
+        Fri, 27 Feb 2026 09:42:22 -0800 (PST)
+Received: from dw-tp ([171.76.229.104])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2adfb6b974csm58040095ad.65.2026.02.27.09.42.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 27 Feb 2026 09:42:21 -0800 (PST)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Sourabh Jain <sourabhjain@linux.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>, Mike Rapoport <rppt@kernel.org>
+Cc: Donet Tom <donettom@linux.ibm.com>, Hari Bathini <hbathini@linux.ibm.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, linux-mm@kvack.org
+Subject: Re: powerpc/fadump: CMA init is failing
+In-Reply-To: <4c338a29-d190-44f3-8874-6cfa0a031f0b@linux.ibm.com>
+Date: Fri, 27 Feb 2026 22:39:53 +0530
+Message-ID: <87o6lagljy.ritesh.list@gmail.com>
+References: <4c338a29-d190-44f3-8874-6cfa0a031f0b@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,101 +91,88 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: vb0glSvIQq_fx56LDI29Y8W1uIye6zG5
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjI3MDE1MyBTYWx0ZWRfX/RIKudOjnRAl
- ZY74qb5LEOjVmi3/lVIGo499wezef9b9Wlr+HMcp1yD0amMIB+dfDUxAk+k+oShjFVzeXnWgSvc
- fTuhYuxJWEPjw0lQ2bdLPSdItWQ1jPetz878W5RiIKN1UqyeozrayUvam9Unos4c2wuTFuXkW4S
- xFm8OpCQ3HdudRCeov8XnFsSBfof2jD//7h4fTCL+wfBL/dnyrHH4IlpiL8aqMbKCMQwNFprQmo
- r3vD/PxUIvIMZxaAHqySXmcBVxaSkvR1g781rZ4/oW1DiYJK+GgWGuAbzI+beLCbpZE1H989y1n
- nHLH50hobgg0cDYjJPEluBaXtPSW9OQe8Vysy5StEUbP4sC7Y+4cBsjbXnOhCmo/iYoA/pXFx2I
- EVmM2/KFQB0GLsOefK53Joz7iId5wCMrvAtRxBZCbYXXiAhy4j9SuKfppcymZ5uuv8VNAal+mwt
- EKeDAfcFQTwEYG8HNkw==
-X-Authority-Analysis: v=2.4 cv=R7wO2NRX c=1 sm=1 tr=0 ts=69a1d1d9 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=HzLeVaNsDn8A:10 a=VkNPw1HP01LnGYTKEx00:22 a=Mpw57Om8IfrbqaoTuvik:22
- a=GgsMoib0sEa3-_RKJdDe:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8
- a=vcnXBeTVwP-GbbQqWxsA:9
-X-Proofpoint-GUID: pWkyJmDoXMZidsslkPHR4d9oQUhqzm5M
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-02-27_03,2026-02-27_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 clxscore=1015 impostorscore=0 phishscore=0 spamscore=0
- suspectscore=0 malwarescore=0 bulkscore=0 adultscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2601150000 definitions=main-2602270153
 
-With crash hotplug support enabled, additional memory is allocated to
-the elfcorehdr kexec segment to accommodate resources added during
-memory hotplug events. However, the kdump FDT is not updated with the
-same size, which can result in elfcorehdr corruption in the kdump
-kernel.
+Sourabh Jain <sourabhjain@linux.ibm.com> writes:
 
-Update elf_headers_sz (the kimage member representing the size of the
-elfcorehdr kexec segment) to reflect the total memory allocated for the
-elfcorehdr segment instead of the elfcorehdr buffer size at the time of
-kdump load. This allows of_kexec_alloc_and_setup_fdt() to reserve the
-full elfcorehdr memory in the kdump FDT and prevents elfcorehdr
-corruption.
+> I noticed CMA init for fadump crashkernel memory is failing.
+>
+> [    0.000000] cma: pageblock_order not yet initialized. Called during 
+> early boot?
+> [    0.000000] fadump: Failed to init cma area for firmware-assisted 
+> dump,-22
+>
+>
+> kernel command-line:
+> BOOT_IMAGE=(ieee1275//vdevice/v-scsi@30000070/disk@8100000000000000,msdos2)/vmlinuz-7.0.0-rc1+ 
+> root=/dev/mapper/rhel_ltcden3--lp12-root ro 
+> rd.lvm.lv=rhel_ltcden3-lp12/root rd.lvm.lv=rhel_ltcden3-lp12/swap 
+> fadump=on crashkernel=3G
+>
+>
+> Same issue with kdump CMA reservation:
+>
+> [    0.000000][    T0] cma: pageblock_order not yet initialized. Called 
+> during early boot?
 
-Fixes: 849599b702ef8 ("powerpc/crash: add crash memory hotplug support")
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-Cc: Shivang Upadhyay <shivangu@linux.ibm.com>
-Reviewed-by: Hari Bathini <hbathini@linux.ibm.com>
-Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
----
-Changelog:
+Good that we added those debug prints ;)
 
-v1:
-https://lore.kernel.org/all/20260218050105.391285-1-sourabhjain@linux.ibm.com/
+I think I know what went wrong, as part of this arch,mm consolidation
+patch series [1], I think the order of initialization is changed.
 
-v2:
- - Add a comment explaining why elf_headers_sz is initialized
-   with memsz instead of headers_sz.
----
- arch/powerpc/kexec/file_load_64.c | 14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
+With this patch the new order is ... 
+start_kernel()
+    - setup_arch()
+       - xxx_cma_reserve();
+    - mm_core_init_early()
+       - free_area_init()
+          - sparse_init()
+             - set_pageblock_order() // this sets the pageblock_order.
 
-diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
-index e7ef8b2a2554..5f6d50e4c3d4 100644
---- a/arch/powerpc/kexec/file_load_64.c
-+++ b/arch/powerpc/kexec/file_load_64.c
-@@ -450,6 +450,11 @@ static int load_elfcorehdr_segment(struct kimage *image, struct kexec_buf *kbuf)
- 	kbuf->buffer = headers;
- 	kbuf->mem = KEXEC_BUF_MEM_UNKNOWN;
- 	kbuf->bufsz = headers_sz;
-+
-+	/*
-+	 * Account for extra space required to accommodate additional memory
-+	 * ranges in elfcorehdr due to memory hotplug events.
-+	 */
- 	kbuf->memsz = headers_sz + kdump_extra_elfcorehdr_size(cmem);
- 	kbuf->top_down = false;
- 
-@@ -460,7 +465,14 @@ static int load_elfcorehdr_segment(struct kimage *image, struct kexec_buf *kbuf)
- 	}
- 
- 	image->elf_load_addr = kbuf->mem;
--	image->elf_headers_sz = headers_sz;
-+
-+	/*
-+	 * If CONFIG_CRASH_HOTPLUG is enabled, the elfcorehdr kexec segment
-+	 * memsz can be larger than bufsz. Always initialize elf_headers_sz
-+	 * with memsz. This ensures the correct size is reserved for elfcorehdr
-+	 * memory in the FDT prepared for kdump.
-+	 */
-+	image->elf_headers_sz = kbuf->memsz;
- 	image->elf_headers = headers;
- out:
- 	kfree(cmem);
--- 
-2.52.0
+Whereas earlier set_pageblock_order() was called from initmem_init(),
+just before cma reservations were being made. 
 
+start_kernel()
+    - setup_arch()
+       - initmem_init()
+         - sparse_init()
+           - set_pageblock_order();  // this sets the pageblock_order
+       - xxx_cma_reserve();
+
+So that means, pageblock_order is not initialized before these cma
+reservation function calls, hence we are seeing these failures.
+
+setup_arch() {
+    ...
+
+	/*
+	 * Reserve large chunks of memory for use by CMA for kdump, fadump, KVM and
+	 * hugetlb. These must be called after initmem_init(), so that
+	 * pageblock_order is initialised.
+	 */
+	fadump_cma_init();
+	kdump_cma_reserve();
+	kvm_cma_reserve();
+
+    ...
+}
+
+
+So what if we do.. 
+
+start_kernel() {
+  ...
+	setup_arch(&command_line);
+	mm_core_init_early();
+    setup_arch_post_mm_core_init(); // and here we call CMA reservation functions ?
+
+
+References:
+[1]: https://lore.kernel.org/linuxppc-dev/20260111082105.290734-1-rppt@kernel.org/T/#m5adf1a845e0a0867066c4f7055f28e6304b73fa5
+[2]: https://lore.kernel.org/all/3ae208e48c0d9cefe53d2dc4f593388067405b7d.1729146153.git.ritesh.list@gmail.com/
+
+
+-ritesh
 
