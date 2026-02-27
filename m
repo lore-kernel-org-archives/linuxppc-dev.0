@@ -1,57 +1,46 @@
-Return-Path: <linuxppc-dev+bounces-17385-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17386-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1FBB9FD7F90
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Feb 2026 10:47:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E76DFD7F97
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Feb 2026 11:14:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fMlQh3nH9z3bmR;
-	Fri, 27 Feb 2026 21:47:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=83.223.95.100
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772189260;
-	cv=none; b=cEu6aIagCSVg34hlcU61e4mExwfAL+SIsgHombEImR5/ZS2AYzYFdmi0T5MDe1b3TSYsb5yEEri9rGc81URkLgM/z7cWApLnGmD+OSimmeRFfEmHW0YVfPXX3zq9DKHwek4EBvvtiaf0vNrpasH2gJs0X7d65CPAcuvcf0pj/eifOHE2TSIScf6Tg/JLtMwroLNh/gn5FJGU/AAYG4vWAsUDt4/hRAE3ebqps+JM4e39zSIzsJqbV56AskT9/+Xqy0nRbTt1pRMYKb0sjCRGGT82iYZl+7XoEygCJUYsXVZoPBBj7WKBlAz/Sk1b8fiDP/L+Al8i7fmKGwujZo8Cyg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fMm1W6mVKz3bmR;
+	Fri, 27 Feb 2026 22:14:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.184
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772190863;
+	cv=none; b=mZ7uOlF61xEwO0gvG/CIihGJWVV8w/wAlSr3/LzgUkV01vgJ53pKWzCLfV/hv/duJH5i/0BjoTYT+jnmUyF+X+ggzI6ECeAN0Nk1Dycj+2L0LeiZZIgM4b/nHvh4JNZv1jhNqQU9yWGJH3sUbdao0hfN4rBjY4ta4tEzqPIEqf7gUnvOrYPVnkJnVeF9FUYjOE+lTuMn8QwBW7j89gztBqxhoY77c/HLXjTnxcPct0RV6oG+EzwWyHiSsMuugxvsUzrt++w0dbjJC4cXe+fa7ma5FQ4noyk+rw53AMJ+esW0pGpGjGMGHIg4uFHoYIQxLl6CQSup64vrpaMzy59hJg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772189260; c=relaxed/relaxed;
-	bh=uzRgfIWoT6V19WGBBA361FyQ3WKPXmlU9iBpyYHezLs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=V6Nukn9tVFTvSK6LC1q8MseR6n0gejL6FEJ2g7cBh2Fh8ri0KshcKUwIoDGU/9Zivr7Y60gpd9XPYvAsUWXiW/bxYwj9Oiiru/n1WewapXcvrlFnIpkBtE5pjbZcoqvBtx6y902i1dh1y5J3FgNCnzaKQrBF6Cq+BBEo1ZygzzojrhvgYwHSAhiHJH4i0hWQy/eKL4CjDikyYKR7ibbRzZsKfxI6jsODSopPLRNztMYQ8QDS+xka3MLXMlVMj4fjILcG5Cx7TEyLOmnPY6TjA0wBKPFhj4v7uoiPZv6sYBNFSXlOZE8oYFkj+NojDl+uujLkF4bb0gC93t60Ow1rbA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=83.223.95.100; helo=bmailout1.hostsharing.net; envelope-from=foo00@h08.hostsharing.net; receiver=lists.ozlabs.org) smtp.helo=bmailout1.hostsharing.net
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=bmailout1.hostsharing.net (client-ip=83.223.95.100; helo=bmailout1.hostsharing.net; envelope-from=foo00@h08.hostsharing.net; receiver=lists.ozlabs.org)
-Received: from bmailout1.hostsharing.net (bmailout1.hostsharing.net [83.223.95.100])
+	t=1772190863; c=relaxed/relaxed;
+	bh=uXPJJ+uhWU3/FibG5pPc63uoF/bg2b2LZnaOHcLIOXA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=FD2UiFFKBmyPd/xX5sfnaI6mGZAkbh/MAOSw6RWQgr40S/JoUoKvj462UbF72UXHAgGsofK9YWUW53pUpeDkqCbB2eMyGeJZMcjbvsQB+/7gytYQv3C1vhEQhet8udLt8NeRmUG953UAELuyC/b9m+LJS/Q16n0fCED2Hxz47+u9igWt+nskzqfDSNa4XFJYTb2I92UFam//69pHp71808ooof2tdDQh86gDAmgs+ciLsM6Okn8fZcqCFXnhYfHgCsrVVOqmnLQZC780Rrioen0csSwI4nRes76WNEIFGHswKgCcYjMU7ARpx/SAQ4WN6OtDecwcYwqpRGhehOlKFQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=fjb+QxCd; dkim-atps=neutral; spf=pass (client-ip=91.218.175.184; helo=out-184.mta0.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=fjb+QxCd;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.184; helo=out-184.mta0.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-184.mta0.migadu.com (out-184.mta0.migadu.com [91.218.175.184])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMlQg1ChCz3blr
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 21:47:39 +1100 (AEDT)
-Received: from h08.hostsharing.net (h08.hostsharing.net [83.223.95.28])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature ECDSA (secp384r1) server-digest SHA384
-	 client-signature ECDSA (secp384r1) client-digest SHA384)
-	(Client CN "*.hostsharing.net", Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
-	by bmailout1.hostsharing.net (Postfix) with ESMTPS id 8AF3F2020218;
-	Fri, 27 Feb 2026 11:47:24 +0100 (CET)
-Received: by h08.hostsharing.net (Postfix, from userid 100393)
-	id 86E064F39A; Fri, 27 Feb 2026 11:47:24 +0100 (CET)
-Date: Fri, 27 Feb 2026 11:47:24 +0100
-From: Lukas Wunner <lukas@wunner.de>
-To: Shuai Xue <xueshuai@linux.alibaba.com>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, bhelgaas@google.com,
-	kbusch@kernel.org, sathyanarayanan.kuppuswamy@linux.intel.com,
-	mahesh@linux.ibm.com, oohall@gmail.com, Jonathan.Cameron@huawei.com,
-	terry.bowman@amd.com, tianruidong@linux.alibaba.com
-Subject: Re: [PATCH v7 2/5] PCI/DPC: Run recovery on device that detected the
- error
-Message-ID: <aaF2PAOZsHr4PuC_@wunner.de>
-References: <20260124074557.73961-1-xueshuai@linux.alibaba.com>
- <20260124074557.73961-3-xueshuai@linux.alibaba.com>
- <aYCujqZIvxElSsOE@wunner.de>
- <aYESh4bCE2lzTg2S@wunner.de>
- <924dce22-171e-4508-907c-74f57f1bdea8@linux.alibaba.com>
- <234dcf9e-05ff-485c-a330-019a4fbb5f3b@linux.alibaba.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMm1T2gHwz3bZm
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 22:14:20 +1100 (AEDT)
+Message-ID: <1d3a4e8e-9ea0-42e7-b8e7-d92fb27f80f4@linux.dev>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1772190839;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=uXPJJ+uhWU3/FibG5pPc63uoF/bg2b2LZnaOHcLIOXA=;
+	b=fjb+QxCdpTD3b4hr6YJTVtQxFdL+ygkZ8Otiw+cAUP2giw6sWDiSAgMSDuqQT6kvToVNoO
+	8K59vpmdlkwEvSNRr24BZt7S48RvMyWCLaDD2DvslmD5YU5FO7ZumLMbqR8ln6N1qw/OQO
+	ZU+NrOiKyaHHCpYxVLcB1Tyhayipyrk=
+Date: Fri, 27 Feb 2026 11:13:55 +0000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,57 +54,90 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <234dcf9e-05ff-485c-a330-019a4fbb5f3b@linux.alibaba.com>
+Subject: Re: [RFC v2 00/21] mm: thp: lazy PTE page table allocation at PMD
+ split
+Content-Language: en-GB
+To: Nico Pache <npache@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, david@kernel.org,
+ lorenzo.stoakes@oracle.com, willy@infradead.org, linux-mm@kvack.org,
+ fvdl@google.com, hannes@cmpxchg.org, riel@surriel.com,
+ shakeel.butt@linux.dev, kas@kernel.org, baohua@kernel.org, dev.jain@arm.com,
+ baolin.wang@linux.alibaba.com, Liam.Howlett@oracle.com,
+ ryan.roberts@arm.com, Vlastimil Babka <vbabka@kernel.org>,
+ lance.yang@linux.dev, linux-kernel@vger.kernel.org, kernel-team@meta.com,
+ maddy@linux.ibm.com, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ hca@linux.ibm.com, gor@linux.ibm.com, agordeev@linux.ibm.com,
+ borntraeger@linux.ibm.com, svens@linux.ibm.com, linux-s390@vger.kernel.org
+References: <20260226113233.3987674-1-usama.arif@linux.dev>
+ <CAA1CXcAYt3OfW_uBTYZgr-dBhg99x=5pUs5uvqtpg+PNJ1KxGQ@mail.gmail.com>
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Usama Arif <usama.arif@linux.dev>
+In-Reply-To: <CAA1CXcAYt3OfW_uBTYZgr-dBhg99x=5pUs5uvqtpg+PNJ1KxGQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-On Fri, Feb 27, 2026 at 04:28:59PM +0800, Shuai Xue wrote:
-> On 2/7/26 3:48 PM, Shuai Xue wrote:
-> > Regarding pci_restore_state() in slot_reset(): I see now that it does
-> > call pci_aer_clear_status(dev) (at line 1844 in pci.c), which will
-> > clear the AER Status registers. So if we walk the hierarchy after
-> > the slot_reset callbacks, the error bits accumulated during DPC will
-> > already be cleared.
-> > 
-> > To avoid losing those errors, I think the walk should happen after
-> > dpc_reset_link() succeeds but *before* pcie_do_recovery() invokes the
-> > slot_reset callbacks. That way, we can capture the AER Status bits
-> > before pci_restore_state() clears them.
-> > 
-> > Does that sound like the right approach, or would you prefer a
-> > different placement?
 
-The problem is that if the hierarchy that was reset is deeper than
-one level, you first need to call pci_restore_state() on all the
-PCIe Upstream and Downstream Ports that were reset before you can
-access the Endpoints at the bottom of the hierarchy.
 
-E.g. if DPC occurs at a Root Port with multiple nested PCIe switches
-below, the Endpoints at the "leafs" of that tree are only accessible
-once Config Space has been restored at all the PCIe switches
-in-between the Endpoints and the DPC-capable Root Port.
+On 26/02/2026 21:01, Nico Pache wrote:
+> On Thu, Feb 26, 2026 at 4:33 AM Usama Arif <usama.arif@linux.dev> wrote:
+>>
+>> When the kernel creates a PMD-level THP mapping for anonymous pages, it
+>> pre-allocates a PTE page table via pgtable_trans_huge_deposit(). This
+>> page table sits unused in a deposit list for the lifetime of the THP
+>> mapping, only to be withdrawn when the PMD is split or zapped. Every
+>> anonymous THP therefore wastes 4KB of memory unconditionally. On large
+>> servers where hundreds of gigabytes of memory are mapped as THPs, this
+>> adds up: roughly 200MB wasted per 100GB of THP memory. This memory
+>> could otherwise satisfy other allocations, including the very PTE page
+>> table allocations needed when splits eventually occur.
+>>
+>> This series removes the pre-deposit and allocates the PTE page table
+>> lazily — only when a PMD split actually happens. Since a large number
+>> of THPs are never split (they are zapped wholesale when processes exit or
+>> munmap the full range), the allocation is avoided entirely in the common
+>> case.
+>>
+>> The pre-deposit pattern exists because split_huge_pmd was designed as an
+>> operation that must never fail: if the kernel decides to split, it needs
+>> a PTE page table, so one is deposited in advance. But "must never fail"
+>> is an unnecessarily strong requirement. A PMD split is typically triggered
+>> by a partial operation on a sub-PMD range — partial munmap, partial
+>> mprotect, partial mremap and so on.
+>> Most of these operations already have well-defined error handling for
+>> allocation failures (e.g., -ENOMEM, VM_FAULT_OOM). Allowing split to
+>> fail and propagating the error through these existing paths is the natural
+>> thing to do. Furthermore, split failing requires an order-0 allocation for
+>> a page table to fail, which is extremely unlikely.
+>>
+>> Designing functions like split_huge_pmd as operations that cannot fail
+>> has a subtle but real cost to code quality. It forces a pre-allocation
+>> pattern - every THP creation path must deposit a page table, and every
+>> split or zap path must withdraw one, creating a hidden coupling between
+>> widely separated code paths.
+>>
+>> This also serves as a code cleanup. On every architecture except powerpc
+>> with hash MMU, the deposit/withdraw machinery becomes dead code. The
+>> series removes the generic implementations in pgtable-generic.c and the
+>> s390/sparc overrides, replacing them with no-op stubs guarded by
+>> arch_needs_pgtable_deposit(), which evaluates to false at compile time
+>> on all non-powerpc architectures.
+> 
+> Hi Usama,
+> 
+> Thanks for tackling this, it seems like an interesting problem. Im
+> trying to get more into reviewing, so bare with me I may have some
+> stupid comments or questions. Where I can really help out is with
+> testing. I will build this for all RH-supported architectures and run
+> some automated test suites and performance metrics. I'll report back
+> if I spot anything.
+> 
+> Cheers!
+> -- Nico
+> 
 
-Hence your proposal unfortunately won't work.
+Thanks for the build and looking into reviewing this. All comments
+and questions are welcome! I had only tested on x86, and I had a look
+at the link you shared so its great to know that powerPC and s390 are fine.
 
-I think the solution is to move pci_aer_clear_status() out of
-pci_restore_state() into the callers that actually need it.
-But that requires going through every single caller.
-I've begun doing that last week and am about 60% done.
-
-Once pci_restore_state() no longer clears the error bits, we can
-report and clear them after the "report_slot_reset" stage (which
-is where drivers call pci_restore_state()).
-
-I've also changed my mind and I think reporting and clearing
-the error bits *could* happen in pcie_do_recovery() even if it
-were used for EEH and s390 because those platforms may plug in
-AER-capable devices as well and so we do need to clear the bits
-regardless of the error recovery mechanism used.
-
-Let me get back to you once I've gone through all the callers of
-pci_restore_state().  Please be patient.
-
-Thank you!
-
-Lukas
 
