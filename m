@@ -1,84 +1,44 @@
-Return-Path: <linuxppc-dev+bounces-17364-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17365-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1BEAFD530E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Feb 2026 08:25:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2482EFD530D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Feb 2026 08:29:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fMhGh1Fb7z2xLv;
-	Fri, 27 Feb 2026 19:25:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772180732;
-	cv=none; b=NLhBGerACqFs4wYM5N6eIsRCcMycyyLKB8s1O3kdF+oWGQ1hvrXo9ZtfO1gO57YiCpe4nVELGUrYSwyhUfCiHG27DEj3p9x/E6HwdouhCGdAPDKut/aQmXgTLVpZK2EmmvnVPx++u/Q3FlOth+6P0AkwcyK+6Errvg3X60vIcyDIc3pfzIoTuFXJEgQarQsRT7yhjv1I+92y8P7ID/YyAdXPdMelfHNoXaW3U8ulyow3oTX0hKCeM/UW/Ao5Did6ExyfTCneQjAwvg8vSewTr/F+Fw5XogIzEOWtsmBPGP3qFDgTu+IaFMwvrF20t74Ag0+8Kjp1z8so5mrzOzuNkw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fMhLp4gNKz2xLv;
+	Fri, 27 Feb 2026 19:29:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.111
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772180946;
+	cv=none; b=XUVNPsrvPcZO6RfKAd2/Mc4vY5H6sGeDmWTGZ2z0gbRBlH+dmzC6TB3z0h4AKfH8Py+87H/beDgTHsnQulGwEHTmjNS1cdMwlR9yBoWzgqdzLHds0bjkYnGrdMaX/N8FWr9PI8+L16RwLQ6tfXcrWGumu8ufbBEU/NPhgWKGwPsuAOs4sTPNPsj0nPaNWL6rQpcq79IMuGdMEbUBSSFAx/rtswX28BrmRONyNg2o8nanTrqlHrdshzRCr/eYszSo4m4whrrFjyWLH9wvR1K8gA4cVRGLMwuPEsU5sDrIcxMfIFfGmu0TCSWuTjLinOfw48ZWHY52HXQVSm/XO6/4yg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772180732; c=relaxed/relaxed;
-	bh=/Fh2/7Q0VX79mlypXDHnI3a7+14V5syTjjpTGCvuVa4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:content-type; b=lbJRLe7t2JhezH6cBnToCL35zljhJx3WNfAAJqSQBo1/dkQDqotNpzk2VeDpE/q8jKks0QsRcHTAIRJQ9j2RVPPC4n2PBgbgARcWfmje28fPPqxc0BZdVHTHXTT4Uapm5UZ+WfM7uIwiumZ+bwgiXz1REj9lYseyMHr7Tc9RFdt/o2N2VoUYQYnqpbN4lC0P54C3smYkiZfz7I1YsShlydSh5IvpjhmsO2/hl2F9N6aBRxbnQRRJAQ9U/Vq/qusq+99RtOGUbmC2SC2A4+BCuPjh171NcT3QJUTbgIIEo2MRex0gB7ip5U85Yqk5Iq9OmDTzYJhnxEwXJSj1wC4a+Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=I71OL5Hj; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=I71OL5Hj; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=vmalik@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1772180946; c=relaxed/relaxed;
+	bh=LRn/oGL+tuAtq64yYzAexbKedW997ZLDSHRH+Js7iPY=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=VSSk6UnGWht4HBjQfznPRZTTOK+S40cHGMDvBCH41PuxlY+ZuACBbNwl8lIUshHow/yCDMEvzc+ghgi5y1rYIyvgv1adC73ryFxWIcKtOS5IKIypc3BSs3Xu92RovXUX6oMur16BR+KHSYhSGPbBMAY2CyoB5ZWX7aXSPwg2SpixCxre2+vUQ+uEgEIb41F9HWxsAsiNEFhdl4ZT9CYZneWApNERjPkmMyWVlPUVG0IQBMxzdFIIEcwEHooWFF2PWqxLg1Oh2YO/16Gl06nEejzOwLBs1ZqWpKnGMdDKKc++VmEsykae5Pv8XrB048FP5Q7BoSmosijVd63VI6kPWw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=MZN5QDm7; dkim-atps=neutral; spf=pass (client-ip=115.124.30.111; helo=out30-111.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=I71OL5Hj;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=I71OL5Hj;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=MZN5QDm7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=vmalik@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.111; helo=out30-111.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org)
+Received: from out30-111.freemail.mail.aliyun.com (out30-111.freemail.mail.aliyun.com [115.124.30.111])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMhGf62H5z2xKh
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 19:25:28 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1772180725;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=/Fh2/7Q0VX79mlypXDHnI3a7+14V5syTjjpTGCvuVa4=;
-	b=I71OL5Hj9cJZJXLkzIulM3pXOcDK4O6+t/fOeA3yUHacscQuRnfqnj/bDTRuHgPVQJ3ATW
-	/JrhUzqMoquBJBoEjRzT0k2e1NjVr6xOUUb8pP9iFDY6DJDd1SRHcaRSHRYaQ4y2ZgY3LK
-	eSY1URbIwhJB+4ekTHHLoAW6dzxUewU=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1772180725;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=/Fh2/7Q0VX79mlypXDHnI3a7+14V5syTjjpTGCvuVa4=;
-	b=I71OL5Hj9cJZJXLkzIulM3pXOcDK4O6+t/fOeA3yUHacscQuRnfqnj/bDTRuHgPVQJ3ATW
-	/JrhUzqMoquBJBoEjRzT0k2e1NjVr6xOUUb8pP9iFDY6DJDd1SRHcaRSHRYaQ4y2ZgY3LK
-	eSY1URbIwhJB+4ekTHHLoAW6dzxUewU=
-Received: from mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-482-U7gNmmNNO8W1zaIhia_HBQ-1; Fri,
- 27 Feb 2026 03:25:21 -0500
-X-MC-Unique: U7gNmmNNO8W1zaIhia_HBQ-1
-X-Mimecast-MFC-AGG-ID: U7gNmmNNO8W1zaIhia_HBQ_1772180719
-Received: from mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.93])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id E402018002C3;
-	Fri, 27 Feb 2026 08:25:18 +0000 (UTC)
-Received: from vmalik-fedora.redhat.com (unknown [10.44.32.91])
-	by mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 652701800370;
-	Fri, 27 Feb 2026 08:25:13 +0000 (UTC)
-From: Viktor Malik <vmalik@redhat.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Joe Perches <joe@perches.com>,
-	Viktor Malik <vmalik@redhat.com>,
-	Paul Mackerras <paulus@ozlabs.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linux-perf-users@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	bpf@vger.kernel.org
-Subject: [PATCH] powerpc, perf: Check that current->mm is alive before getting user callchain
-Date: Fri, 27 Feb 2026 09:25:02 +0100
-Message-ID: <20260227082502.1882395-1-vmalik@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMhLl0126z2xKh
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 19:29:00 +1100 (AEDT)
+DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux.alibaba.com; s=default;
+	t=1772180935; h=Message-ID:Date:MIME-Version:Subject:From:To:Content-Type;
+	bh=LRn/oGL+tuAtq64yYzAexbKedW997ZLDSHRH+Js7iPY=;
+	b=MZN5QDm7eqYZ4l9v6K2nigOErQPrE40QYYIAmeynHt2tcq+Z0RYvTTwCDpqDjuaSDfMfZQNimFiVcRpSV2vtCBe6a64Ha/2tRMsfZuh8NOkRqkDetRy2mfSboMsIHsj9Vz75xh/Sc0oBHwu6U9mfcV7kIaRyrd+ptOPhHYTJD38=
+Received: from 30.246.163.43(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0Wztj3at_1772180931 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Fri, 27 Feb 2026 16:28:52 +0800
+Message-ID: <234dcf9e-05ff-485c-a330-019a4fbb5f3b@linux.alibaba.com>
+Date: Fri, 27 Feb 2026 16:28:59 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,69 +52,132 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.93
-X-Mimecast-MFC-PROC-ID: f6JnTT6j4sOZ8rbmNqjH0jqniQEAxBvzQNuIty_ulJ0_1772180719
-X-Mimecast-Originator: redhat.com
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v7 2/5] PCI/DPC: Run recovery on device that detected the
+ error
+From: Shuai Xue <xueshuai@linux.alibaba.com>
+To: Lukas Wunner <lukas@wunner.de>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, bhelgaas@google.com, kbusch@kernel.org,
+ sathyanarayanan.kuppuswamy@linux.intel.com, mahesh@linux.ibm.com,
+ oohall@gmail.com, Jonathan.Cameron@huawei.com, terry.bowman@amd.com,
+ tianruidong@linux.alibaba.com
+References: <20260124074557.73961-1-xueshuai@linux.alibaba.com>
+ <20260124074557.73961-3-xueshuai@linux.alibaba.com>
+ <aYCujqZIvxElSsOE@wunner.de> <aYESh4bCE2lzTg2S@wunner.de>
+ <924dce22-171e-4508-907c-74f57f1bdea8@linux.alibaba.com>
+In-Reply-To: <924dce22-171e-4508-907c-74f57f1bdea8@linux.alibaba.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-content-type: text/plain; charset="US-ASCII"; x-default=true
 
-It may happen that mm is already released, which leads to kernel panic.
-This adds the NULL check for current->mm, similarly to 20afc60f892d
-("x86, perf: Check that current->mm is alive before getting user
-callchain").
 
-I was getting this panic when running a profiling BPF program
-(profile.py from bcc-tools):
 
-    [26215.051935] Kernel attempted to read user page (588) - exploit attempt? (uid: 0)
-    [26215.051950] BUG: Kernel NULL pointer dereference on read at 0x00000588
-    [26215.051952] Faulting instruction address: 0xc00000000020fac0
-    [26215.051957] Oops: Kernel access of bad area, sig: 11 [#1]
-    [...]
-    [26215.052049] Call Trace:
-    [26215.052050] [c000000061da6d30] [c00000000020fc10] perf_callchain_user_64+0x2d0/0x490 (unreliable)
-    [26215.052054] [c000000061da6dc0] [c00000000020f92c] perf_callchain_user+0x1c/0x30
-    [26215.052057] [c000000061da6de0] [c0000000005ab2a0] get_perf_callchain+0x100/0x360
-    [26215.052063] [c000000061da6e70] [c000000000573bc8] bpf_get_stackid+0x88/0xf0
-    [26215.052067] [c000000061da6ea0] [c008000000042258] bpf_prog_16d4ab9ab662f669_do_perf_event+0xf8/0x274
-    [...]
+On 2/7/26 3:48 PM, Shuai Xue wrote:
+> 
+> 
+> On 2/3/26 5:09 AM, Lukas Wunner wrote:
+>> On Mon, Feb 02, 2026 at 03:02:54PM +0100, Lukas Wunner wrote:
+>>> You're assuming that the parent of the Requester is always identical
+>>> to the containing Downstream Port.  But that's not necessarily the case:
+>>>
+>>> E.g., imagine a DPC-capable Root Port with a PCIe switch below
+>>> whose Downstream Ports are not DPC-capable.  Let's say an Endpoint
+>>> beneath the PCIe switch sends ERR_FATAL upstream.  AFAICS, your patch
+>>> will cause pcie_do_recovery() to invoke dpc_reset_link() with the
+>>> Downstream Port of the PCIe switch as argument.  That function will
+>>> then happily use pdev->dpc_cap even though it's 0.
+>>
+>> Thinking about this some more, I realized there's another problem:
+>>
+>> In a scenario like the one I've outlined above, after your change,
+>> pcie_do_recovery() will only broadcast error_detected (and other
+>> callbacks) below the downstream port of the PCIe switch -- and not
+>> to any other devices below the containing Root Port.
+>>
+>> However, the DPC-induced Link Down event at the Root Port results
+>> in a Hot Reset being propagated down the hierarchy to any device
+>> below the Root Port.  So with your change, the siblings of the
+>> downstream port on the PCIe switch will no longer be informed of
+>> the reset and thus are no longer given an opportunity to recover
+>> after reset.
+>>
+>> The premise on which this patch is built is false -- that the bridge
+>> upstream of the error-reporting device is always equal to the
+>> containing Downstream Port.
+> 
+> Thanks again for the very detailed analysis and for the pointers to
+> your earlier mail.
+> 
+> You are right, thanks for pointing it out.
+> 
+>>
+>> It seems the only reason why you want to pass the reporting device
+>> to pcie_do_recovery() is that you want to call pcie_clear_device_status()
+>> and pci_aer_clear_nonfatal_status() with that device.
+> 
+> In the AER path, pcie_do_recovery() is indeed invoked with the Error
+> Source device found by find_source_device(), and internally it treats
+> that dev as the function that detected the error and derives the
+> containing Downstream Port (bridge) from it.  For DPC, however, the
+> error-detecting function is the DPC-capable Downstream Port itself, not
+> the Endpoint identified as Error Source, so passing the Endpoint to
+> pcie_do_recovery() breaks that assumption.
+>>
+>> However as I've said before, those calls are AER-specific and should
+>> be moved out of pcie_do_recovery() so that it becomes generic and can
+>> be used by EEH and s390:
+>>
+>> https://lore.kernel.org/all/aPYKe1UKKkR7qrt1@wunner.de/
+> 
+> Sure, I'd like to move it out.  I will remove the AER-specific calls
+> (pcie_clear_device_status() and pci_aer_raw_clear_status()) from
+> pcie_do_recovery() itself, and instead handle them in the AER and DPC
+> code paths where we already know which device(s) are the actual error
+> sources.  That way, pcie_do_recovery() becomes a generic recovery
+> framework that can be reused by EEH and s390.
+> 
+>>
+>> There's another problem:  When a device experiences an error while DPC
+>> is ongoing (i.e. while the link is down), its ERR_FATAL or ERR_NONFATAL
+>> Message may not come through.  Still the error bits are set in the
+>> device's Uncorrectable Error Status register.  So I think what we need to
+>> do is walk the hierarchy below the containing Downstream Port after the
+>> link is back up and search for devices with any error bits set,
+>> then report and clear those errors.  We may do this after first
+>> examining the device in the DPC Error Source ID register.
+>> Any additional errors found while walking the hierarchy can then
+>> be identified as "occurred during DPC recovery".
+> 
+> I agree this is similar in spirit to find_source_device() -- both walk
+> the bus and check AER Status registers.  For the DPC case, I'll perform
+> this walk after the link is back up (i.e., after dpc_reset_link()
+> succeeds).
+> 
+> Regarding pci_restore_state() in slot_reset(): I see now that it does
+> call pci_aer_clear_status(dev) (at line 1844 in pci.c), which will
+> clear the AER Status registers.  So if we walk the hierarchy after
+> the slot_reset callbacks, the error bits accumulated during DPC will
+> already be cleared.
+> 
+> To avoid losing those errors, I think the walk should happen after
+> dpc_reset_link() succeeds but *before* pcie_do_recovery() invokes the
+> slot_reset callbacks.  That way, we can capture the AER Status bits
+> before pci_restore_state() clears them.
+> 
+> Does that sound like the right approach, or would you prefer a
+> different placement?
+> 
+> Thanks a lot for your guidance.
+> 
+> Best Regards,
+> Shuai
+> 
 
-Fixes: 20002ded4d93 ("perf_counter: powerpc: Add callchain support")
-Signed-off-by: Viktor Malik <vmalik@redhat.com>
----
- arch/powerpc/perf/callchain_32.c | 3 +++
- arch/powerpc/perf/callchain_64.c | 3 +++
- 2 files changed, 6 insertions(+)
+Hi, Lukas,
 
-diff --git a/arch/powerpc/perf/callchain_32.c b/arch/powerpc/perf/callchain_32.c
-index ddcc2d8aa64a..b46e21679566 100644
---- a/arch/powerpc/perf/callchain_32.c
-+++ b/arch/powerpc/perf/callchain_32.c
-@@ -144,6 +144,9 @@ void perf_callchain_user_32(struct perf_callchain_entry_ctx *entry,
- 	sp = regs->gpr[1];
- 	perf_callchain_store(entry, next_ip);
- 
-+	if (!current->mm)
-+		return;
-+
- 	while (entry->nr < entry->max_stack) {
- 		fp = (unsigned int __user *) (unsigned long) sp;
- 		if (invalid_user_sp(sp) || read_user_stack_32(fp, &next_sp))
-diff --git a/arch/powerpc/perf/callchain_64.c b/arch/powerpc/perf/callchain_64.c
-index 115d1c105e8a..eaaadd6fa81b 100644
---- a/arch/powerpc/perf/callchain_64.c
-+++ b/arch/powerpc/perf/callchain_64.c
-@@ -79,6 +79,9 @@ void perf_callchain_user_64(struct perf_callchain_entry_ctx *entry,
- 	sp = regs->gpr[1];
- 	perf_callchain_store(entry, next_ip);
- 
-+	if (!current->mm)
-+		return;
-+
- 	while (entry->nr < entry->max_stack) {
- 		fp = (unsigned long __user *) sp;
- 		if (invalid_user_sp(sp) || read_user_stack_64(fp, &next_sp))
--- 
-2.53.0
+Gentle ping. Any feedback?
+
+Thanks.
+Shuai
 
 
