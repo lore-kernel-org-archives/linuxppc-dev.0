@@ -1,46 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-17387-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17388-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64F06FEFB42
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Feb 2026 12:12:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5DE26FEFB47
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Feb 2026 12:27:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fMnJJ6FXFz30Sv;
-	Fri, 27 Feb 2026 23:12:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772194336;
-	cv=none; b=cNFPZNeJM5INJWqlZFrj/bphJFXDgmNeOLZC48NnyUZ5ULDdARgALnV7TpvFraz88bNfJLAE23PDAy4bEVmbb3Iu7qt/IGhjGNLMlYje4h77J3fAU/1gre+ol4cAXzjELJKrLTXDSV5wMzaQe7MS7nnsTYiv1rP2eUFXCp4Rzt++WXFSRGSO/ZAFXFRU97VE++FQr/RwnllrmCYGetFDF9OQBaxvkoysxjnqRUP79LLi1KBeZO4Kod6iRU3QMpf31uWU5alaFd0WZEEYaBojyIRwe4TJ0k8SJdp5yShHok4RA7NRpi1b+zwU1ydc5/AwRTBFhk4Lhnbn++km/w8Uuw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fMnf34txZz30Sv;
+	Fri, 27 Feb 2026 23:27:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772195259;
+	cv=none; b=lZ/JZWswm+eVl3H+lSuc5dy9LGIdXhkanpw3KEIFcNCBt2VEH0+G49sBPmOAXt01HWEM+/Zavg9Lfsp91FPpQuV9hx49Uf1RiVpwSqsPjrHBqZbRngy+58hgWxoDZ6akmo13uGT05u/XX5R9RQZjBGnX9IEqNyjOaYzfKpeoyAbOGrMGr5KoTIeEWuoUTZIF3tnkETKsWc3wQA0ZdH3kRJepa87+veYAmvpGEJ7DGI+dGpxBIrNmtl5fCMYnjs961oIYJF9cOPFlsrNk71WrcVJv6CZdn/feJ9jg2Go4F1WfMvlZZIeyn5VOm3dDn63CpHMJzc8RSco7ELHJVkxW9A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772194336; c=relaxed/relaxed;
-	bh=A9VnUUVWt2OivEInnP/5hnH7A1kF+epUMtvXzdzCsRg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=SmM38Wpyf9VJrIj47XiN4p1NqqzbbV7s2TAWmuQc+nmwAEWQz4YLJ4pznjvyJV0s/aVTVkiLhEuQTfbVFRV31O9NbUyhg0OM6OXFELVPrUtIZqEUwEj0ylVV6AWEModoOKat+T4RzYGoQZxLc+prhpVUnBkDQ+GSFct+mLGHmSdrK5x3FBPJSndl738SLSSu6gZDlQ8nzfXrRXThfr5sYJ83yQJRXTizsAXE9Wc+Fz5d9yzOSAnanVIHnwV/gspW4CGHV/8/6EUNBFL5WKikwNkjn4MlFsNyYSkSXAMW11KCsYi+OIsqCulTXv4yb1sN7DyNqViyfeKJAuzzOKQ7cQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=G73YvlTI; dkim-atps=neutral; spf=pass (client-ip=91.218.175.172; helo=out-172.mta0.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1772195259; c=relaxed/relaxed;
+	bh=BBCa2Iq0/hu0sJwRb681qcL3bM1nOatkl9qB4gJ48xY=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
+	 MIME-version:Content-type; b=UDB+FLpAriBUc1MAFI6MOvKe9so46dFbhHm0r1bib6uKhZZvdI2txtbUgbFGqbfBi824wq+9x6X3IRxltcXqYdMgpLNQvEw7T8UFRBlPuBvvc82eODu9Syo57K9ipkaWM6BWbbFkJZjYGZCSn1ptB3s6I5SpmnEgO+jK/gM4FdrE8iLuvlaFZVJpzQ8EHUFZ1Retn5/SguMWLlUPKUzJ8lqu9+oZxb3C6LZd83iXMaOG8UZX6uMuQaDsn7FYRQCMekqf+eRZzzD7e4sTe3qgo4gTks7vgiYlQJQtFfJ0/Wn93dCVBaqooMKzyTUQg+3/Hwo/LiG43kpqqup03uUU1w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=jv692TgY; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=G73YvlTI;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=jv692TgY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.172; helo=out-172.mta0.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-172.mta0.migadu.com (out-172.mta0.migadu.com [91.218.175.172])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com [IPv6:2607:f8b0:4864:20::42e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMnJF2MRkz30N8
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 23:12:11 +1100 (AEDT)
-Message-ID: <4672053f-c9d9-4694-81ad-9b5fe741013a@linux.dev>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1772194310;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=A9VnUUVWt2OivEInnP/5hnH7A1kF+epUMtvXzdzCsRg=;
-	b=G73YvlTItW/u/rHPyW7CK+7PMpVtGhIzMOv1+2p9NrT7k4zRVoaOf2NzDUgdgP0DB933Kw
-	FryLANPcbvAUfbuhOq0PAoZA9+6fSEp1UeRgwgS84+HZU3nq7i3sqNUZ2hl1aMgf8gchpW
-	Ttxn5+wmgqiIl17kKNPBrc5OfS3bRa0=
-Date: Fri, 27 Feb 2026 12:11:46 +0000
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMnf21mgvz30N8
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 23:27:37 +1100 (AEDT)
+Received: by mail-pf1-x42e.google.com with SMTP id d2e1a72fcca58-824af5e5c81so2207315b3a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 04:27:37 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1772195255; x=1772800055; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:message-id:date
+         :in-reply-to:subject:cc:to:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=BBCa2Iq0/hu0sJwRb681qcL3bM1nOatkl9qB4gJ48xY=;
+        b=jv692TgYARhIg/pnOhFvZf9pNyY9vdSEYWUa9LEAxJYW6c4g+dNHiXuOUhBrCD7yRo
+         /JaPxa9d9HRdJ0s+3hOTV3MWsEb6UJfgPoQaTAAGDVOG7M1lfHuWrscT7DXN/aP7q70E
+         jqhLPXu10WxvFm8UumY45BPtsHoN/NOJ/7TqelM6yMqEHoVeqG0MFYfOZ7CRRRmRcTIq
+         8gWPTgt/Pxk2S2ktcBWDEcVzdH8UnyHYtQL0cSOhcmXoknOs2YF2Q0YO+cine0wewejV
+         8cvn3tF1IQUFXwfKGgJNRZr+gxABlCtpl9D2VUcf35hYAdkIVCLN0ZreKzsNGxkMDSNE
+         w+lg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1772195255; x=1772800055;
+        h=content-transfer-encoding:mime-version:references:message-id:date
+         :in-reply-to:subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=BBCa2Iq0/hu0sJwRb681qcL3bM1nOatkl9qB4gJ48xY=;
+        b=JqKllkEoP0BgVQlotxbjUounl4HPM8Z2Cvabm7LAbh2EzhEberVTAEuuyVr/GfbS2y
+         azdLcILoKDwrmFUNCfMBDCTdP/HNTwydTf/ISZQxNVnKsti2816Y6AFSWMG+Yfveb2cD
+         qSsHdwWKBy9T6HQ1UTq4ESjTHwTvdnKOFw99FGU6iQEvJzORsGsA5X7YjQLJjx7pW2/O
+         IKPjcXmUZBcIPQk9bv/JqztG+TB9oADTOh0nULTdVyep9gJMezmYLRlSdYmJfbULXKmk
+         DruaYue4NdMDv5FnQPVVqrNu2fV+XEbg59D0nNgbBBjPG2r5XkdXKu7DXkphioN8q96V
+         2KkQ==
+X-Forwarded-Encrypted: i=1; AJvYcCU/j3xPj3lvCb/DY0FJY2DnSvz/0My48qilzPz4XKOyJ5A98IEGanU7zM9axK/iamfjF1SzcR1deeeb5k4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxfyBf/zNdNboMNbNTyMROnMktFQ8QhrhjOTltLg0jOO6YqulDt
+	M3k9oCMBBP2UujcrPyaMyNbQUx6IQX/aPA8LHF7Jer13SXc9NM5QxlSg
+X-Gm-Gg: ATEYQzySFXEkG/Qigm+uYm+4PE5vnK/e82pBSpAvPf14YtewpGK8w+sBUoqIzcI2DxY
+	mVExLc3sYophrFyeBVqjyfUpWswp3wKtwPJCu7s7j9rSuHoPKPimesuH0i7oZgi73PLfETaczLn
+	7R9PGZBjBKHpj/2aQrK5rsVaq8O9l5Cz++cckP5RGokBUrN2DjAjAv5FtvCouEzrtc6uTNOftCv
+	LxmrMOFJ76PmXdqjM8fI6XyjanSJ2Z+AmdtGSzyESyKpLnIO1sfYbKutkJuC8n3hGjik+T7ATb1
+	iPUaHpsqe//dwJKIEWQuGM0FYuWXcyOO5uSgXwrI0AMSP/mWvqKHgGVn25h+vAzDYkgr57Ihtre
+	SYaf3bT4AeUT+/PkiBInHENSjsBoImqYahNFguCcT8dPX9OVLtxjn2spGnxddZ5ovfvVoy5u4BD
+	aMoqAfkvylV7RpWpJ+wQ==
+X-Received: by 2002:a05:6a00:4c81:b0:81f:3ae9:3f71 with SMTP id d2e1a72fcca58-8274d9d0704mr2242350b3a.28.1772195255179;
+        Fri, 27 Feb 2026 04:27:35 -0800 (PST)
+Received: from dw-tp ([203.81.240.187])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82739ff1c9esm5479908b3a.32.2026.02.27.04.27.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 27 Feb 2026 04:27:34 -0800 (PST)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-mm@kvack.org, kvm@vger.kernel.org, Alex Williamson <alex@shazbot.org>, Peter Xu <peterx@redhat.com>
+Subject: Re: [RFC v1 2/2] powerpc/64s: Add support for huge pfnmaps
+In-Reply-To: <abfbe83b-23fb-400d-9069-b8bf4ad21d95@kernel.org>
+Date: Fri, 27 Feb 2026 16:02:25 +0530
+Message-ID: <87pl5qh3ye.ritesh.list@gmail.com>
+References: <0b8fce7a61561640634317a5e287cdb4794715fd.1772170860.git.ritesh.list@gmail.com> <d159058a45ac5e225f2e64cc7c8bbbd1583e51f3.1772170860.git.ritesh.list@gmail.com> <abfbe83b-23fb-400d-9069-b8bf4ad21d95@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,90 +91,55 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Subject: Re: [RFC v2 13/21] mm: huge_mm: Make sure all split_huge_pmd calls
- are checked
-Content-Language: en-GB
-To: Andrew Morton <akpm@linux-foundation.org>, david@kernel.org,
- lorenzo.stoakes@oracle.com, willy@infradead.org, linux-mm@kvack.org
-Cc: fvdl@google.com, hannes@cmpxchg.org, riel@surriel.com,
- shakeel.butt@linux.dev, kas@kernel.org, baohua@kernel.org, dev.jain@arm.com,
- baolin.wang@linux.alibaba.com, npache@redhat.com, Liam.Howlett@oracle.com,
- ryan.roberts@arm.com, Vlastimil Babka <vbabka@kernel.org>,
- lance.yang@linux.dev, linux-kernel@vger.kernel.org, kernel-team@meta.com,
- maddy@linux.ibm.com, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- hca@linux.ibm.com, gor@linux.ibm.com, agordeev@linux.ibm.com,
- borntraeger@linux.ibm.com, svens@linux.ibm.com, linux-s390@vger.kernel.org
-References: <20260226113233.3987674-1-usama.arif@linux.dev>
- <20260226113233.3987674-14-usama.arif@linux.dev>
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Usama Arif <usama.arif@linux.dev>
-In-Reply-To: <20260226113233.3987674-14-usama.arif@linux.dev>
-Content-Type: text/plain; charset=UTF-8
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
 
+"Christophe Leroy (CS GROUP)" <chleroy@kernel.org> writes:
 
+> Le 27/02/2026 à 07:16, Ritesh Harjani (IBM) a écrit :
+>> This uses _RPAGE_SW2 bit for the PMD and PUDs similar to PTEs.
+>> This also adds support for {pte,pmd,pud}_pgprot helpers needed for
+>> follow_pfnmap APIs.
+>> 
+>> This allows us to extend the PFN mappings, e.g. PCI MMIO bars where
+>> it can grow as large as 8GB or even bigger, to map at PMD / PUD level.
+>> VFIO PCI core driver already supports fault handling at PMD / PUD level
+>> for more efficient BAR mappings.
+>> 
+>> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+>
+> Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+>
+>
 
-On 26/02/2026 11:23, Usama Arif wrote:
-> Mark __split_huge_pmd(), split_huge_pmd() and split_huge_pmd_address()
-> with __must_check so the compiler warns if any caller ignores the return
-> value. Not checking return value and operating on the basis that the pmd
-> is split could result in a kernel bug. The possibility of an order-0
-> allocation failing for page table allocation is very low, but it should
-> be handled correctly.
-> 
-> Signed-off-by: Usama Arif <usama.arif@linux.dev>
+Thanks for the review!
 
+>>   #define __HAVE_ARCH_PMDP_SET_ACCESS_FLAGS
+>>   extern int pmdp_set_access_flags(struct vm_area_struct *vma,
+>> diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+>> index dcd3a88caaf6..2d27cb1c2334 100644
+>> --- a/arch/powerpc/include/asm/pgtable.h
+>> +++ b/arch/powerpc/include/asm/pgtable.h
+>> @@ -63,6 +63,18 @@ static inline pgprot_t pte_pgprot(pte_t pte)
+>>   	return __pgprot(pte_flags);
+>>   }
+>> 
+>> +#define pmd_pgprot pmd_pgprot
+>> +static inline pgprot_t pmd_pgprot(pmd_t pmd)
+>> +{
+>> +	return pte_pgprot(pmd_pte(pmd));
+>> +}
+>> +
+>> +#define pud_pgprot pud_pgprot
+>> +static inline pgprot_t pud_pgprot(pud_t pud)
+>> +{
+>> +	return pte_pgprot(pud_pte(pud));
+>> +}
+>> +
 
-Kernel test bot reported that I missed one split_huge_pmd call. I will include
-the below patch in the next revision.
+In v2 - I will add above under #ifdef CONFIG_PPC_BOOK3S_64 
+to avoid build issues with 32-bit PPC.
 
-
-commit 9e1bb250ea8ef0a39c738cd4137ed6c98131ebb0 (HEAD)
-Author: Usama Arif <usama.arif@linux.dev>
-Date:   Thu Feb 26 10:45:35 2026 -0800
-
-    mm: proc: handle split_huge_pmd failure in pagemap_scan
-    
-    pagemap_scan_thp_entry() splits a huge PMD when the PAGEMAP_SCAN ioctl
-    needs to write-protect only a portion of a THP. It then returns -ENOENT
-    so pagemap_scan_pmd_entry() falls through to PTE-level handling.
-    
-    Check the split_huge_pmd() return value and propagate the error on
-    failure. Returning -ENOMEM instead of -ENOENT prevents the fallthrough
-    to PTE handling, and the error propagates through walk_page_range() to
-    do_pagemap_scan() where it becomes the ioctl return value.
-    pagemap_scan_backout_range() already undoes the buffered output, and
-    walk_end is written back to userspace so the caller knows where the
-    scan stopped.
-    
-    If the split fails, the PMD remains huge. An alternative to the approach
-    in the patch is to return -ENOENT, causing the caller to proceed to
-    pte_offset_map_lock(). ___pte_offset_map() detects the trans_huge PMD
-    and returns NULL, which sets ACTION_AGAIN — restarting the walker on the
-    same PMD by which time the system might have enough memory to satisfy
-    the split from succeeding.
-    
-    Signed-off-by: Usama Arif <usama.arif@linux.dev>
-
-diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-index e091931d7ca19..f5f459140b5c0 100644
---- a/fs/proc/task_mmu.c
-+++ b/fs/proc/task_mmu.c
-@@ -2714,9 +2714,13 @@ static int pagemap_scan_thp_entry(pmd_t *pmd, unsigned long start,
-         * needs to be performed on a portion of the huge page.
-         */
-        if (end != start + HPAGE_SIZE) {
-+               int err;
-+
-                spin_unlock(ptl);
--               split_huge_pmd(vma, pmd, start);
-+               err = split_huge_pmd(vma, pmd, start);
-                pagemap_scan_backout_range(p, start, end);
-+               if (err)
-+                       return err;
-                /* Report as if there was no THP */
-                return -ENOENT;
-        }
+-ritesh
 
