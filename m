@@ -1,73 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-17398-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17400-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D903EFEFB5D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Feb 2026 15:29:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 655F4FEFB61
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Feb 2026 15:42:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fMsgP30ykz2yFQ;
-	Sat, 28 Feb 2026 02:29:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772206145;
-	cv=none; b=bPzSM8gcHHslxzBGv62aDUDTkt2L8gMw3S2tPudXvczEgtHFKQVpHBr7M9eb3YJstVX0fyPVOTFsNOQ8J7xRBipKO9I+A84kxam55tewwdlONq07UUZcyiZBrYI7ZtLbKkv3319geryHeWiMkcftH9KbrA+kEyxj4UlOhSgz/LiJcQeUSS0erDWgMUtzl4VZ9bPUisC5FeZPPf1RmBjADsEmAjZzLVZ0nPmLDvb1empu7PnmYvMxZY7pKvm9uWZ+8IQYU9Ktz/agz8inVo+vfmD3s0bBUGxf0mhym+cwSNwAw/g1xdvtfHl0r91hcGVKtlWZ7qRR5fHbKSQT6F0R1g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fMsyp5dM7z2xMt;
+	Sat, 28 Feb 2026 02:42:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772206946;
+	cv=none; b=hYSvl/xRkWt9BfokyLEub3ArM8aTlBRzTKo+UarqDL5h9puY8Hb/fEOmyZuQk7rIqty4T5qaf7kmq+tEGpxR/K71rGKtjru8sN9nlAxtCZt2tDEqahJjOjfH3QPGUy636cNJLAX7VHmeKevbEpq6UvkaWt7wv/Im/TI1++L8ES0w3X8kzzQ5VKi7CI5dRDhDmamjaIyl1y0Ey/skxmfHZi+G7fXjCYCQBChN8rZYXGY4sLdIT4ZPUV01pRMUoM3atqsi11zcTNccUoxUpPgsMftJ60pFhrro03ucUzEK/IQoOlzp4R9H9R86lfATl7hir93UK8U8JnxPZXyUgxmjBw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772206145; c=relaxed/relaxed;
-	bh=kIbzSGqhhdlxl+7UUOcZIEyJPullP3O8/Dx7rRjrPi0=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=UE64oALDh18wG8opSkyNGCol4NG10TgMsNvD2KF/U1C6v6E5zzR6Bq30UPrP4HEsCNI1nKhbWjLhMFHWZNlOhpPV0KWTutRR7xryi0fjFl8bZ3YkrtHgW/GuNAqROQlRPfCvzHdCEu2S/6iXKeiMs+GOaueJvZPF7tC1jeiiedI9mWh3y3ZRgWE6up0HDE2R7ekJoosbxGcZtvISuj4olSl7FUcG8K1be6lvEsssuspgp8f2BzkBuk6S97xCrmfdzxzDObbVRkQsfzuw7llQK7HhJnDwied6+1U22BYuOxFZc1HpJHXS05H4+dNSF37jYdIHWyUh5c4+coLnGFrEfQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HMVvWosJ; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1772206946; c=relaxed/relaxed;
+	bh=sdCPwqd3I1Oda3Lh95ge0A49tYvELGgPEvmK4+J0ABA=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=RMcMu6c88vP7Rkn1RtXff7kEdSR/JlvCH3iTcpuYVrsNrponJpGCzX4wpMwXJ8I1CrTC8p3i3oBsc72e81YgAbmMbjtFb1ha+2jzzZ2BvM1ub4GMIOKnQBA3QMkMXZE/80BPnVOwWiSvzURokZh4NZJ468MIg7I1c6SISGXtI3zPLjns79MSJqYTae6WquF9XzkyXac4dn1fpdQ1heXMdlF/tzz9J0chWpWOzvP+VBBDP6cD8SqPs4d6dngxNGiTzssH4LcwBug4YacqEkUCeAb05cCpg1UwclMBPK5Qr3sPkxWoILaZ2vCM26dCqZDa0rFAaDSVLG9f7e30z/cp0A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LBGFhqUB; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HMVvWosJ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LBGFhqUB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMsgN49Clz2xYw
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Feb 2026 02:29:04 +1100 (AEDT)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 61R9lpGW733353;
-	Fri, 27 Feb 2026 15:28:47 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=kIbzSG
-	qhhdlxl+7UUOcZIEyJPullP3O8/Dx7rRjrPi0=; b=HMVvWosJswVeeViN8D/g7j
-	+hJjYP4L9gnW5ylKVdgEWVyGY0H9xSGb8tIZWZF+YWG7Xu1R72oLUo+J/jcR1xrh
-	CJ+7jDBQxVd/ttCpHe1/AM0CXMtTOeqgQU4t0veHGXMCU2S37lnlG+HUdSihMR17
-	IWK+eZesRV1g1grQTnCmORRuo7+XUUdbttAoMNlsvJPZ7ubSH8lng7fNcCw9ODy2
-	aj12k052TwMP09GmkjMmnltHTH/QMGmEjEsiJagWHXVQutEJ9YX4T63YBzcGZvtr
-	eF49YZokBwQNdcuMwH0mutEvoesyjTwNP6XFiJvKJq0Pxt4eAwNQf+hWvUtWEmgw
-	==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cf24gvhbu-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 27 Feb 2026 15:28:47 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 61RF4vHY030256;
-	Fri, 27 Feb 2026 15:28:46 GMT
-Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4cfrhktqhs-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 27 Feb 2026 15:28:46 +0000
-Received: from smtpav05.dal12v.mail.ibm.com (smtpav05.dal12v.mail.ibm.com [10.241.53.104])
-	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 61RFSjKs28246740
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 27 Feb 2026 15:28:45 GMT
-Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9453A58052;
-	Fri, 27 Feb 2026 15:28:45 +0000 (GMT)
-Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 47DAD5805D;
-	Fri, 27 Feb 2026 15:28:43 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.61.241.223])
-	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTPS;
-	Fri, 27 Feb 2026 15:28:43 +0000 (GMT)
-Content-Type: text/plain;
-	charset=utf-8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMsyn5tQzz2xLv
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Feb 2026 02:42:25 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 58C2944458
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 15:42:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 39206C2BCC4
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 15:42:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1772206943;
+	bh=STzTxb6AkecD0Oj2uXWbAE7smRP8JD9AAxkR2Qux/Sc=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=LBGFhqUBtQI9BbpwK46VoHQn50/6CaY1vQ5PIc4y5spoYCP25Jf0LROem1fHBjUy4
+	 yeI4JK9t+VAFfxsB/FRVdfK2qMAp7BaBH+/oWL+LnHZG992H0B/CcnUUAoiNPkt5su
+	 u377zsPtAQxl/Qcm2oYsywZEuG0OqtFcTLP7OjoWey7QG/JHyvrV4iN6xZaOIqUa06
+	 vfJFlrWT+r202v79WRMwFVhTxOamgJ/igAb5KSIJ4HqzNmfDIAyq7QGRarn4/4y6Qh
+	 NxQCbSDcfMyB0gb6ik4hp18xL7FM5BoFy0P7SgHelPVuHedFnta+qYHiFlGS3xx2xF
+	 pZng7DsL48SLg==
+Received: by mail-lj1-f173.google.com with SMTP id 38308e7fff4ca-389fb626b67so23605261fa.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 07:42:23 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCU7TbquVp6dBRP+bPAG8UBxk1VFEJCO3G/Kb2xKAAbIZhVl5emhXFuTwqhBs5FoJ5dGKjyrc5j9Nux78lA=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yz+O1Qrd+RGXQlX1baqVpb9hestbd4+veGbeEVlFXdGF1QRv6cd
+	+QUgLQcnziZ407C9HQ64AU+S9TyZe0WACsTfJr23Q96Y10dg8L0PxsTzAyg5RuPu59jq52z4HQZ
+	X/DGAHT5sLREkWI1UQrIUZcPEq2cPwROclAFRIkJGig==
+X-Received: by 2002:a05:651c:41d8:b0:384:9b92:c5b7 with SMTP id
+ 38308e7fff4ca-389ff143720mr18998801fa.15.1772206941514; Fri, 27 Feb 2026
+ 07:42:21 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,152 +65,87 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.300.41.1.7\))
-Subject: Re: [PATCH v2 0/4] powerpc64/bpf: Add support for instruction array
- and indirect jump
-From: Venkat <venkat88@linux.ibm.com>
-In-Reply-To: <20260227014315.39980-1-adubey@linux.ibm.com>
-Date: Fri, 27 Feb 2026 20:58:29 +0530
-Cc: linuxppc-dev@lists.ozlabs.org, bpf@vger.kernel.org, hbathini@linux.ibm.com,
-        ast@kernel.org, daniel@iogearbox.net, andrii@kernel.org,
-        maddy@linux.ibm.com
+MIME-Version: 1.0
+References: <20260223-i2c-printk-helpers-v2-0-13b2a97762af@oss.qualcomm.com>
+ <aaFcs1miP88QWmtH@hovoldconsulting.com> <aaFfEsfh0xTh0b1y@shikoro> <aaFsZbiLYSz_YEjw@hovoldconsulting.com>
+In-Reply-To: <aaFsZbiLYSz_YEjw@hovoldconsulting.com>
+From: Bartosz Golaszewski <brgl@kernel.org>
+Date: Fri, 27 Feb 2026 16:42:09 +0100
+X-Gmail-Original-Message-ID: <CAMRc=MfcvD1nJy=zpoCkSkJq6WjyXQxFUZ4QE6vyCS+XFCn5AA@mail.gmail.com>
+X-Gm-Features: AaiRm51scY9nN4P8ovfss040XTmsPoSnyMQYg9QuZyNCyHcgWecCdT1v9mdLWqo
+Message-ID: <CAMRc=MfcvD1nJy=zpoCkSkJq6WjyXQxFUZ4QE6vyCS+XFCn5AA@mail.gmail.com>
+Subject: Re: [PATCH v2 00/13] i2c: add and start using i2c_adapter-specific
+ printk helpers
+To: Johan Hovold <johan@kernel.org>
+Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>, 
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, Andi Shyti <andi.shyti@kernel.org>, 
+	Chen-Yu Tsai <wens@kernel.org>, Jernej Skrabec <jernej.skrabec@gmail.com>, 
+	Samuel Holland <samuel@sholland.org>, Khalil Blaiech <kblaiech@nvidia.com>, 
+	Asmaa Mnebhi <asmaa@nvidia.com>, Jean Delvare <jdelvare@suse.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+	=?UTF-8?Q?Andreas_F=C3=A4rber?= <afaerber@suse.de>, 
+	Manivannan Sadhasivam <mani@kernel.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, linux-i2c@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-sunxi@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
+	linux-actions@lists.infradead.org, linux-media@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-Message-Id: <72C902E6-BE4E-4C47-9F4A-D8095E7BEDE2@linux.ibm.com>
-References: <20260227014315.39980-1-adubey@linux.ibm.com>
-To: adubey@linux.ibm.com
-X-Mailer: Apple Mail (2.3864.300.41.1.7)
-X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=TNRIilla c=1 sm=1 tr=0 ts=69a1b82f cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=HzLeVaNsDn8A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=Mpw57Om8IfrbqaoTuvik:22 a=GgsMoib0sEa3-_RKJdDe:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=navZPS6tSOt6txFWZpkA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: lKGDajksKhFp2tvNLGdV4bxmcHYM9AYC
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMjI3MDEzNSBTYWx0ZWRfXxS4c/lTHaT0k
- xphzYhlROPKZCAlGAqXPRck8wRPTzJ9aqhZB0+8q3ly4Xk+4fzjJwu6yP7KsAlmc5tVuA49sU5O
- U2F+s7raLG0OJ3rRiLoz3bBJqdpnZgDsPLp5AU1aVAlxrbek6a3qwhbVFDiCJ8auc+me4PwFrGk
- q4fTxvDJ500itvPdYgpwlDbymdHQIluI5RcXKxqfyXx+yMnjP+m4BMT2pVNb0aiXJBY0SsERQPg
- GpXz5qmluQSAJGOum5g2/JXqUk1sJc48Kw178oFvuc2ck6KTfBbWc5yDBT6w3PM2bDsRkmwdefo
- jpETe0DAFNQ6smJJ1A/9wmW9FnJXS18VEGdxBqy3wBYykEvYB6yIhrJKeXCcjgt1/5WHIJzwzz5
- LCj4iIOyP2JJr1B6dd1nQB7BvCG8sOx51W+RrlcNwjT/RzRf7nlQUjH9y8S6DebEuWVWj5xESbp
- VT8r9z2vyQADdY/MgAQ==
-X-Proofpoint-ORIG-GUID: lKGDajksKhFp2tvNLGdV4bxmcHYM9AYC
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-02-27_02,2026-02-27_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 suspectscore=0 adultscore=0 priorityscore=1501 impostorscore=0
- spamscore=0 clxscore=1015 bulkscore=0 lowpriorityscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2601150000 definitions=main-2602270135
 
+On Fri, Feb 27, 2026 at 11:06=E2=80=AFAM Johan Hovold <johan@kernel.org> wr=
+ote:
+>
+> On Fri, Feb 27, 2026 at 10:08:34AM +0100, Wolfram Sang wrote:
+>
+> > > Wolfram, I noticed you merged these last night. Please think again an=
+d
+> > > let's discuss the end result here. There's no question that there are
+> > > lifetime issues in i2c, but this is not the way to solve it.
+> >
+> > I did think again and do not see a way how the life cycle problems can
+> > be solved while drivers happily access the device struct of the adapter=
+.
+>
+> There's nothing special about the struct device. What matters is that
+> drivers don't free memory that's still in use by the core.
+>
+> > Whatever the solution to the core problem is (revocable, custom SRCU,
+> > something else), I still think this step is needed in any case. If I am
+> > wrong with this opinion, please enlighten me. Pointer to some existing
+> > thread is OK, too. I didn't have the bandwidth to read the revocable
+> > mail threads.
+>
+> It's not even about revocable or SRCU, that's just an implementation
+> detail.
+>
+> It seems all that is needed is to decouple the struct i2c_adapter from
+> the driver data and have core manage the lifetime of the former using
+> the reference count of the embedded struct device.
+>
 
+I feel like we've discussed it already under v1 or elsewhere.
 
-> On 27 Feb 2026, at 7:13=E2=80=AFAM, adubey@linux.ibm.com wrote:
->=20
-> From: Abhishek Dubey <adubey@linux.ibm.com>
->=20
-> The first 2 patch enable support for instruction array. Now, the=20
-> instruction offset map maintain the mapping:
-> original inst -> xlated inst -> jited inst
->=20
-> The last two patch enable support for indirect jump. Any eligile
-> register can store jump target address for control flow to jump.
->=20
-> The features will be enabled on ppc32 in a separate series.
->=20
-> The patch series is rebased over:
-> =
-https://lore.kernel.org/bpf/20260226031324.17352-1-adubey@linux.ibm.com
->=20
-> All selftest related to instruction array and indirect jump
-> are passing.
->=20
-> ./test_progs-cpuv4 -n 20
-> #21/1=C3=82 =C3=82 =C3=82  bpf_insn_array/one2one:OK
-> #21/2=C3=82 =C3=82 =C3=82  bpf_insn_array/simple:OK
-> #21/3=C3=82 =C3=82 =C3=82  bpf_insn_array/deletions:OK
-> #21/4=C3=82 =C3=82 =C3=82  bpf_insn_array/deletions-with-functions:OK
-> #21/5=C3=82 =C3=82 =C3=82  bpf_insn_array/blindness:OK
-> #21/6=C3=82 =C3=82 =C3=82  bpf_insn_array/incorrect-index:OK
-> #21/7=C3=82 =C3=82 =C3=82  bpf_insn_array/load-unfrozen-map:OK
-> #21/8=C3=82 =C3=82 =C3=82  bpf_insn_array/no-map-reuse:OK
-> #21/9=C3=82 =C3=82 =C3=82  bpf_insn_array/bpf-side-ops:OK
-> #21=C3=82 =C3=82 =C3=82 =C3=82 =C3=82  bpf_insn_array:OK
-> Summary: 1/9 PASSED, 0 SKIPPED, 0 FAILED
->=20
-> ./test_progs-cpuv4 -n 21 =20
-> #20/1=C3=82 =C3=82 =C3=82  bpf_gotox/one-switch:OK
-> #20/2=C3=82 =C3=82 =C3=82  bpf_gotox/one-switch-non-zero-sec-offset:OK
-> #20/3=C3=82 =C3=82 =C3=82  bpf_gotox/two-switches:OK
-> #20/4=C3=82 =C3=82 =C3=82  bpf_gotox/big-jump-table:OK
-> #20/5=C3=82 =C3=82 =C3=82  bpf_gotox/static-global:OK
-> #20/6=C3=82 =C3=82 =C3=82  bpf_gotox/nonstatic-global:OK
-> #20/7=C3=82 =C3=82 =C3=82  bpf_gotox/other-sec:OK
-> #20/8=C3=82 =C3=82 =C3=82  bpf_gotox/static-global-other-sec:OK
-> #20/9=C3=82 =C3=82 =C3=82  bpf_gotox/nonstatic-global-other-sec:OK
-> #20/10=C3=82 =C3=82  bpf_gotox/one-jump-two-maps:OK
-> #20/11=C3=82 =C3=82  bpf_gotox/one-map-two-jumps:OK
-> #20=C3=82 =C3=82 =C3=82 =C3=82 =C3=82  bpf_gotox:OK
-> Summary: 1/11 PASSED, 0 SKIPPED, 0 FAILED
->=20
-> v1->v2:
-> Handle image offset for ABIv1
->=20
-> [v1]: =
-https://lore.kernel.org/bpf/20260225010950.20218-1-adubey@linux.ibm.com
->=20
-> Abhishek Dubey (4):
-> powerpc64/bpf: Add support for instruction array
-> selftest/bpf: Enable instruction array test for powerpc64
-> powerpc64/bpf: Add support for indirect jump
-> selftest/bpf: Enable gotox tests for powerpc64
->=20
-> arch/powerpc/net/bpf_jit_comp.c                        | 10 ++++++++++
-> arch/powerpc/net/bpf_jit_comp64.c                      |  8 ++++++++
-> .../testing/selftests/bpf/prog_tests/bpf_insn_array.c  |  2 +-
-> tools/testing/selftests/bpf/progs/verifier_gotox.c     |  4 ++--
-> 4 files changed, 21 insertions(+), 3 deletions(-)
->=20
-> --=20
-> 2.52.0
+This is a weird pattern you sometimes see where a driver allocates
+something and passes the ownership to the subsystem.  This often
+causes confusion among driver authors, who logically assume that if
+you allocate something, you are responsible for freeing it. Since this
+is C and not Rust (where such things are tracked by the compiler), I
+strongly believe we should strive to keep ownership consistent: the
+driver should free resources it allocated within the bounds of the
+lifetime of the device it controls. The subsystem should manage the
+data it allocated - in this case the i2c adapter struct device.
 
-Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+I know there are a lot of places where this is done in the kernel but
+let's not introduce new ones. This is a bad pattern.
 
-Tested this series and below are the results.
+But even if you decided this is the way to go, I fail to see how it
+would be easier than what I'm trying to do. You would have to modify
+*all* I2C bus drivers as opposed to only modifying those that access
+the underlying struct device. Or am I missing something?
 
-./test_progs-cpuv4 -n 21=20
-#21/1    bpf_insn_array/one2one:OK
-#21/2    bpf_insn_array/simple:OK
-#21/3    bpf_insn_array/deletions:OK
-#21/4    bpf_insn_array/deletions-with-functions:OK
-#21/5    bpf_insn_array/blindness:OK
-#21/6    bpf_insn_array/incorrect-index:OK
-#21/7    bpf_insn_array/load-unfrozen-map:OK
-#21/8    bpf_insn_array/no-map-reuse:OK
-#21/9    bpf_insn_array/bpf-side-ops:OK
-#21      bpf_insn_array:OK
-Summary: 1/9 PASSED, 0 SKIPPED, 0 FAILED
+Bartosz
 
-
-./test_progs-cpuv4 -n 20
-#20/1    bpf_gotox/one-switch:SKIP
-#20/2    bpf_gotox/one-switch-non-zero-sec-offset:SKIP
-#20/3    bpf_gotox/two-switches:SKIP
-#20/4    bpf_gotox/big-jump-table:SKIP
-#20/5    bpf_gotox/static-global:SKIP
-#20/6    bpf_gotox/nonstatic-global:SKIP
-#20/7    bpf_gotox/other-sec:SKIP
-#20/8    bpf_gotox/static-global-other-sec:SKIP
-#20/9    bpf_gotox/nonstatic-global-other-sec:SKIP
-#20/10   bpf_gotox/one-jump-two-maps:SKIP
-#20/11   bpf_gotox/one-map-two-jumps:SKIP
-#20/12   bpf_gotox/check-ldimm64-off:SKIP
-#20/13   bpf_gotox/check-ldimm64-off-gotox:SKIP
-#20      bpf_gotox:SKIP
-Summary: 1/0 PASSED, 13 SKIPPED, 0 FAILED
-
-Regards,
-Venkat.
-
+> Then you can use an rwsem, SRCU, revocable or something else to handle
+> devices going away while they are in use.
+>
 
