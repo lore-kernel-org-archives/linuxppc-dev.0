@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-17435-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17436-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DB4AFEE4C5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Feb 2026 04:41:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0BE83FEE4C4
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Feb 2026 04:44:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fNCG8683Yz30BR;
-	Sat, 28 Feb 2026 15:41:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fNCJd2sPKz30BR;
+	Sat, 28 Feb 2026 15:44:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772253712;
-	cv=none; b=cl3qSX6rKC0O2oy9krnSdYFq0ApZiRQjKaHICZ/YK9vayNjTNRzT96ny2Ec3oKY7W8wYQwLmUQg8qFOWOXDzxkf/SK273OqpCAxNbUgprIPBU6Bvk2xTeEshMb08086QJsyYiuA9sNYrrFf34j07Aq5n6vIUBGjRBDvO784m2JPbKX6R9Mn8SKX2YejZHUNPkDRNHxO8tn5V9uSjQOd5nZaKAfiiYhCtzAboIqj81mDDZYWbS7UIjaI9/MmvnVyix3BgyMIetZgbG+gpzojLWYUDF+FeS5YeDNWh5vEY2Ea+SpeJAsV/l9t8obcnnhb0uMOv5zTdUZYFnYbJP1apgw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772253841;
+	cv=none; b=ZY43JsLlcgGySDNNahQV3WTU4q2NzW5OnYLgQzJGNpTs3HGH1kK7NyWPnDIX3YOJcqJ79L4CEKk6xote+Wopm/4oD8eimuXE28gMa8+tjlxsSxT9Bdtrj4owP+5BEZnZ6n3eWQ0DHSR/PEDQSIgx18s27lLFyWx7nVLIcncbm6n8KthewHzv1RIIPCXuFyr13yv9/6GrXcxhEOeRnQPrGJT10Vmc3HQmKAc7F0b9Krs9Cu1cCeZC1mGKqBH9c+dLP1xExpmhNDLdp+7LIBR4UjvtxrKCx/vYTTryx9UahDEyOfiw9Cv8dzQKnqWwA8gj6K+3EUvVUiBsQFkvaPBOoA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772253712; c=relaxed/relaxed;
-	bh=Y3L+qGVzTsCJQnoG5TCi8Lc0DlEfyMFXUAiYCFvEtfs=;
+	t=1772253841; c=relaxed/relaxed;
+	bh=hTTnDcnDoYmcoNie9tHbMTIizvVqtd87Tnc3PFg/feQ=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=JF7AcOthDYWguoCYUCHnR8ed9aOT+dt9pWvAMtMK2TWHf2nH0NqqDZbDIZTJbKom9FTrYqTzOuT5Fe9mZlnTImCLX3e1ONhwsY+7zWyV/umXo7uXJqsx5n/DC1LoRcw0PnuKcfcaqyLEeecv8hJtoPRYGmc5HXyvS7yfS0QGITEZjeQI5jdMGQ8NfeVD0gECxAWCoSSDxaBMF7cZfoLtuL/xk1aV7NUH+RpQEAJtPEiZRpek9Cyd6hLQAM3NWggHrwoun4d1/DUhozNqgqVYkXDj37leYpBS3xvQOQS/wFKFAosbZ0ezaMNXwLP8WbwpCkpKmH4A3q2pFhEXBPcwFg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rOKkIgOd; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=FjDtttb7OAlglSRHBrkKC+ZOydQ35XT6IrwQQNCs2iZSppFlPvmR3LBecvzHQViG7Rb5xCxzB9Jf80EOJga1bG+SrPfl3Tml8fbSMky4dQ6m+Lv+4XBTY47bI1yUbResvMXxrqV226jifCnO8AtFbJFAcPoErUpDCHYs0vK2d+q+mAt2cajhE76fmN6a+2zDu/xVPfYN1IHUTYvqQz+HZ52Ir4Vm3I3jrsSy83s1BHIS1GjoEtJbnxtgNJYfy9CeAxf7vD3HqS02VYIcs7kFbIiYzUcwqQ/XVaWdscYWRYdyFSq1bjbpYVk9QFOH4KdCCqC9NJS8b0F/wm44O285aQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PuoEPD5d; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rOKkIgOd;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PuoEPD5d;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fNCG80slsz2xlj
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Feb 2026 15:41:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fNCJc5wY0z2xlj
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Feb 2026 15:44:00 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id F247640067;
-	Sat, 28 Feb 2026 04:41:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A4A79C116D0;
-	Sat, 28 Feb 2026 04:41:44 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id AF29C438ED;
+	Sat, 28 Feb 2026 04:43:58 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B7B7EC116D0;
+	Sat, 28 Feb 2026 04:43:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772253708;
-	bh=GTl5b4pj52hP0KVBkFlgMlumLNdyDtznBRe/1mAWWQw=;
+	s=k20201202; t=1772253838;
+	bh=yQS8EYr1F4rANaBe7v+3inxmWJU0zVKQEOlUsxymw4k=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=rOKkIgOdBSzVWSzHxw5DOhxNn03a0Ygaw1woVlTjin4KLowyLELOm+OVhIowZs3Mi
-	 dqJMT1De+b8BARm6gDQusg4IahSRzGUQaRpIL79MWyistCvbIiMZ6GQa64miu3ZcRZ
-	 cmMCGr06kdASJAnWQFN5T5HEhrn2CSG3d0wt7lfBrAFCfHwD8AHIT6zDjcjgyWpudZ
-	 1T16tuC8Ef/5l0VtYfOtBa3/4cAwxmH1U8wP9gZSK6LcugatbAZqq7cuamim+FKLGl
-	 QGX36uRgBg/t7BIN5Yg+65x2RyzeJ36b/t9uuoaV9NMPtIM82r7BkkP953pZJg4x7P
-	 1Tdp6OJiWNiZw==
-Date: Fri, 27 Feb 2026 20:41:43 -0800
+	b=PuoEPD5dGKM2iOhSW+0my0D/f4VLvinBi2jt5Kbxbd81P1k+jWi0+KVciBAPrpL/g
+	 r4r2NT2v38o9qtnIhfBxVgmjQSQJywLVObj3muDNlyHJqSESQCTZhmJe/6Rzsk2R9M
+	 8ZnzLPFYGLtie7deDR1V8Pnkzre6yCwdaC1qBSQ9wNIL1XaAUgCSzSUwN7lW5l11mD
+	 VW2gjQBqijiFVLqfxqw/TTKXHQthqIgVue3hQeJ64rdHrmcizqorwLbqqoBbwNSZH4
+	 QorQ2T+BBBGPZMVwQBEeX4nOyWDWoKOqpyMPTJ5mdi+JknVW5oDrCxr9Qb4qEoWrJm
+	 UhY0/KMibUBXA==
+Date: Fri, 27 Feb 2026 20:43:55 -0800
 From: Eric Biggers <ebiggers@kernel.org>
 To: Christoph Hellwig <hch@lst.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -86,10 +86,10 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
 	sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
 	linux-crypto@vger.kernel.org, linux-btrfs@vger.kernel.org,
 	linux-arch@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: [PATCH 06/25] xor: cleanup registration and probing
-Message-ID: <20260228044143.GC65277@quark>
+Subject: Re: [PATCH 07/25] xor: split xor.h
+Message-ID: <20260228044355.GD65277@quark>
 References: <20260226151106.144735-1-hch@lst.de>
- <20260226151106.144735-7-hch@lst.de>
+ <20260226151106.144735-8-hch@lst.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,21 +105,24 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260226151106.144735-7-hch@lst.de>
+In-Reply-To: <20260226151106.144735-8-hch@lst.de>
 
-On Thu, Feb 26, 2026 at 07:10:18AM -0800, Christoph Hellwig wrote:
->  /* Set of all registered templates.  */
->  static struct xor_block_template *__initdata template_list;
-> +static int __initdata xor_forced = false;
+On Thu, Feb 26, 2026 at 07:10:19AM -0800, Christoph Hellwig wrote:
+> Keep xor.h for the public API, and split the struct xor_block_template
+> definition that is only needed by the xor.ko core and
+> architecture-specific optimizations into a separate xor_impl.h header.
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>  arch/arm/lib/xor-neon.c       |  1 +
+>  arch/s390/lib/xor.c           |  2 +-
+>  include/linux/raid/xor.h      | 22 +---------------------
+>  include/linux/raid/xor_impl.h | 25 +++++++++++++++++++++++++
+>  lib/raid/xor/xor-core.c       |  1 +
+>  5 files changed, 29 insertions(+), 22 deletions(-)
+>  create mode 100644 include/linux/raid/xor_impl.h
 
-bool instead of int
-
->  	b1 = (void *) __get_free_pages(GFP_KERNEL, 2);
->  	if (!b1) {
-> -		printk(KERN_WARNING "xor: Yikes!  No memory available.\n");
-> +		pr_info("xor: Yikes!  No memory available.\n");
-
-pr_warn() instead of pr_info()
+arch/arm64/lib/xor-neon.c needs to be updated to include xor_impl.h.
 
 - Eric
 
