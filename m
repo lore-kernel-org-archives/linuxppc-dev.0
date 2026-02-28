@@ -1,90 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-17439-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17440-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6305BFEE4C6
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Feb 2026 06:10:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9CD6AFEE4CA
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Feb 2026 06:42:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fNFDS5V5qz30hg;
-	Sat, 28 Feb 2026 17:10:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772247477;
-	cv=none; b=OD6Gh3/lXlDP4Aq/KyyxPeJDIwYal23ZVGVtOP07inSpnRSESwePhr/gCNv4t4wSUrGjl77Jh/wO3h+NkXTn+K3AemRpLdYraUpbmwTSWdZIhLYrwT6Lh2wpTobLFKWoy9QYf4JgR/rAQtaBpeesZXmGzgdjMou4v37BgwAYiRfsXkO4S/TtMmpF2/rI6mciwWZlFfWm/daYLxYGIHd7vcgZyn7E1ZL/VPIJPCJAH+ZjNNRWap6qi8LHyCuAY9jR7xE6+Lr/dLRT1FM3KNJAbXMBeonwdCtN5+LyvJu1zMnDVDk5nirAQzTnp1Q5fttv4HFX7oyBoL4LiEbQ9CbFtA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fNFxr5V9qz30hg;
+	Sat, 28 Feb 2026 17:42:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772260976;
+	cv=none; b=hYn7n/GzHbTE6NVDeOpiQ5zPb6TuqocLlusD+MlX8vbgcQyEn2Jo/VlIAfSV3Wq4dz06Vm0r9Aqd3VDqoEfbf9B9DisQzXo5Mn42f0RkkjqHbG6x/8H68LjvEanJFwRr2vPeY4aAgKk+kfV00bvwO5WSjtbdXRyMNJhzl87UNbHxVkLbSSgB1EeDU7zaUHZTKLYg84tQCdp9ktcByTKXanpJvom6grZ8adWkY6Rt8gE4LvI8H2v63FKKfE+X4wInBH9sxyinJUWlOdwxdS99VsBMasb5pwUtQDX95nkRGWoOfersYu4PDUflKX7WTglg7Dk8hKWAAi9eZ0yx6XiCGQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772247477; c=relaxed/relaxed;
-	bh=Ul9ErbzYFrTHEYKr0As/6D1/FUSyXsPZPt7ruX+ITJg=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Pez0sdhXJ6P7QdJhRrL/7QqR/6NtL0zV/1Z+75RP/aoSgQUwUrAvRvGh2suybSz9Th6MWAXdJqI6V3EsDSjbQVSPINmsyNw2nXqyaZ7kmA9mWrBS9yMS/wb4TveOu9KNsOJ6F7IoCf6XxLkJ9ApG/AIz93o1r1Z4vCuQKZg8yn8F6TBYGeWFvMRRI1tuTX8Z9csuBL9JBLt2PZFRJ1sv91kY+sPYj2ba7QfwaLHBukFDeycLraUgWtghOkOf9h7F1tIwDmtlQVTscTdxare5P+T6Bp7+8VTPbnD3sz0wg1rEXiRgnMLW/kOEGHWH1LA1NqWNF/qTo5vqE9KHHyvA4A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=InHpyns8; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=InHpyns8; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=czhong@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1772260976; c=relaxed/relaxed;
+	bh=6IUKgULF8ycn4aiMjxbWgi7kwhcuo5AKCMo5sVjVXSI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=NrKxe+RoXxTalXdwN9XNRNHcWSqnWtojT7bPvThs/NMIfrztWxIFbIvmaiODRk8I6VlDYNZxkfFRi7nRAXGx9IV93l1q8/FhTLnZLoipcBeCJpDDUT+NEbLaj4OhFFk4CL3FT3leDwAiF/dOn6LK5Jmg/EVWTNwXvrf2CXmvfvlKS/UwgHvpEzxEgQbYAPN6Y6W99AdHEHQbFlVj9hPSmvbrT2VWuMS8P9LQnZSutQrmWBdjzcs+hhgys17yQiEIaemPyN2sS6UvrJX9GgJTAO5enzRDQIIQJMN679N/bF8Zz+88b8MmCuCzW1AokLASYpTG4JiMgbCsYoj49eqtnw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YClOM9Wk; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=InHpyns8;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=InHpyns8;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YClOM9Wk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=czhong@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fN8yC6wLSz2xlj
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Feb 2026 13:57:54 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1772247470;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Ul9ErbzYFrTHEYKr0As/6D1/FUSyXsPZPt7ruX+ITJg=;
-	b=InHpyns8aX4mTKl8+octJleoOVLtWKHuFdfuyRSzp6BIfOfc+RCXs9NyQvDUq6p1W6zaFo
-	bC3T1xTbxeoJudxjZUcUrvnOIrYuSKLwbSEstFOkOiJUJJV+owo+LaH/y5j+Y5jrVGmvkX
-	AkzpRomGb1rKTEpW2nDSO1PDtjKPWD8=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1772247470;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Ul9ErbzYFrTHEYKr0As/6D1/FUSyXsPZPt7ruX+ITJg=;
-	b=InHpyns8aX4mTKl8+octJleoOVLtWKHuFdfuyRSzp6BIfOfc+RCXs9NyQvDUq6p1W6zaFo
-	bC3T1xTbxeoJudxjZUcUrvnOIrYuSKLwbSEstFOkOiJUJJV+owo+LaH/y5j+Y5jrVGmvkX
-	AkzpRomGb1rKTEpW2nDSO1PDtjKPWD8=
-Received: from mail-lj1-f199.google.com (mail-lj1-f199.google.com
- [209.85.208.199]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-402-SgA9s710PrWbLBU1mMwQdQ-1; Fri, 27 Feb 2026 21:57:48 -0500
-X-MC-Unique: SgA9s710PrWbLBU1mMwQdQ-1
-X-Mimecast-MFC-AGG-ID: SgA9s710PrWbLBU1mMwQdQ_1772247467
-Received: by mail-lj1-f199.google.com with SMTP id 38308e7fff4ca-389fc2e65adso18560611fa.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2026 18:57:47 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772247467; x=1772852267;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=Ul9ErbzYFrTHEYKr0As/6D1/FUSyXsPZPt7ruX+ITJg=;
-        b=NGHpiMw16/+lA4RkFVZeOO9UMRH4jP9tk9mchlPxwOTXJU0KNrtOko9hnM/dgX+pUW
-         JXbSmfLym8IaowOrPAkGhbGVORoVxyCcvhRYcxkmH5F+Q8XtyZxhUhm5NedJ8DUAB9i7
-         vI/n+VTn5MInwD6IZ54W5DSWtbUR2QinSU33mUzsfizmLY/CunkJjAtuWE8i+46p6yyl
-         T/J+MBfkTy9Dx/nnEhpZcAW7e+Z7z70wSwC0rwjOtsbLfGmFKtuQVY+K+Lk8jGV8jnUY
-         XRvNlFZFJZTn5SXz6lFw6/5fRdYtS69dxnFd9DLsy3GqB2BR7wIjB1c7ayUPnvq9llU9
-         ERvw==
-X-Forwarded-Encrypted: i=1; AJvYcCVymYq0HsMzV9iJGFS21/R66wJmr6f3qZOaZZy2KcVEucQ+lUzNRASdf/6F1Z/G2ySVXLsfL3YSuopKqvo=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyfmK8XiwdmJU3doe8zp8xMyXK8T+5gu1UyBYS75hiLtA706H2A
-	Vn+Y5xupyuSThfInU8b3/XyGF3SVrk6O9KaoU3aDzOshqwefemb8EOZmH5iHgJLkPLgCA6MeXAV
-	t5YvUkFb2VSduMVTgkeJeFYwRTfZGQku57j3kZPlK3Zv9iXBxAkFZB+LljsRUk+JLTM3Fw8Z1rP
-	NvYKIdnQKXZRiqt29shgQ8eZ+m5U6t2klNt28ws5JxyA==
-X-Gm-Gg: ATEYQzxmsEhZh56RfgtNdLuXqFPEGXj40qWpqrMh7kVqhgRtx/TS25B8VUB9eCC33bX
-	d1d3hUP2ghz5JO3+jlEhCD10lMBhrCvcRHE4K5WDa4I3g4SwNnVY/z5Vlp+Yewmq3ZaSV0JrVbP
-	2dmgNf8AlYatr+wdgSf0Xp8btwe7BjFXvnMj3VdwNuxB0jK0pffJnp5jkc4+YMMv8HY5zAQ2DLS
-	xMpOsfdnAXmoCFUklK6DaDfM7+mtMt+VN1GP/G5Er5GI8AEIZw1nG6mBhr91UGQHNSVk3TFcydk
-	k/EYJQ==
-X-Received: by 2002:a05:651c:893:b0:389:fc69:45e8 with SMTP id 38308e7fff4ca-389ff13552fmr36092191fa.13.1772247466604;
-        Fri, 27 Feb 2026 18:57:46 -0800 (PST)
-X-Received: by 2002:a05:651c:893:b0:389:fc69:45e8 with SMTP id
- 38308e7fff4ca-389ff13552fmr36092081fa.13.1772247466164; Fri, 27 Feb 2026
- 18:57:46 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fNFxq6yspz30BR
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Feb 2026 17:42:55 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 36ED940A5D;
+	Sat, 28 Feb 2026 06:42:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 32FCCC116D0;
+	Sat, 28 Feb 2026 06:42:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1772260973;
+	bh=RjXh+3ODcjpkGCclxlZLerhUTxAgrS3+Qw6tdSUsizg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=YClOM9Wk3/7+pE7QyV7s9mlYuDllppl2YGLrTn0xkJ5pU3h4NtzzqxpXAgzhRI9N2
+	 JuGJGprSvbiCiYCR4+DPFVLVUesA+9zY/ql1wKLu6GOJbDRJOE72dBApORguyRvSk0
+	 Ip+z80iLf2XB3ZIQqPYK3ZEA4iixYi0/FOhgYq24wKd6cZqPgSNMaeZpzPpmIg/H3w
+	 0n7sJMgccYUbEkKSe7BVVGr7K1ToaaAdi9JBbH+YWUnyRyLa4C5j5ZLWu0XZjJO8MA
+	 f7GJPwidtEPGlIQhpocckRINXMDZxErl0fKAfQbViWFT5IVTuMqtgP4lHaU8x4cpN/
+	 +BKrl6+TlJfNA==
+Date: Fri, 27 Feb 2026 22:42:49 -0800
+From: Eric Biggers <ebiggers@kernel.org>
+To: Christoph Hellwig <hch@lst.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Richard Henderson <richard.henderson@linaro.org>,
+	Matt Turner <mattst88@gmail.com>,
+	Magnus Lindholm <linmag7@gmail.com>,
+	Russell King <linux@armlinux.org.uk>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>, Huacai Chen <chenhuacai@kernel.org>,
+	WANG Xuerui <kernel@xen0n.name>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Richard Weinberger <richard@nod.at>,
+	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	Dan Williams <dan.j.williams@intel.com>, Chris Mason <clm@fb.com>,
+	David Sterba <dsterba@suse.com>, Arnd Bergmann <arnd@arndb.de>,
+	Song Liu <song@kernel.org>, Yu Kuai <yukuai@fnnas.com>,
+	Li Nan <linan122@huawei.com>, linux-alpha@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+	sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
+	linux-crypto@vger.kernel.org, linux-btrfs@vger.kernel.org,
+	linux-arch@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: [PATCH 20/25] xor: make xor.ko self-contained in lib/raid/
+Message-ID: <20260228064249.GG65277@quark>
+References: <20260226151106.144735-1-hch@lst.de>
+ <20260226151106.144735-21-hch@lst.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,177 +103,36 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <CAGVVp+U0EYVX+VbbEHzcYP70zdmOXwAmUvpMYV9y3jBSRFmS6g@mail.gmail.com>
- <CAFj5m9L8ahNYFf-tUAZFKAUzkeyqV-Sx94MxC268XJ-hqHPCig@mail.gmail.com>
- <CAFj5m9+OCswLULgVx8eSydTG0OeN4f-8dK1-JyoAA70CNF88Qg@mail.gmail.com>
- <CADUfDZrq96YGiMN9==gMitAHZtXydOAwy-767-d0j5LdUqO91Q@mail.gmail.com> <df5dac1b-286d-43d5-a742-375b6de8730f@kernel.org>
-In-Reply-To: <df5dac1b-286d-43d5-a742-375b6de8730f@kernel.org>
-From: Changhui Zhong <czhong@redhat.com>
-Date: Sat, 28 Feb 2026 10:57:34 +0800
-X-Gm-Features: AaiRm50A-oreMROg-IZY0a7VYOIC_N5HQ9n4L5iqJp7NRvUvCh2O8zvAPssSEws
-Message-ID: <CAGVVp+X6jSJeKoJ0YAjGqcvrwPMBThLRpD176SG2OR20s08XgA@mail.gmail.com>
-Subject: Re: [bug report] Bug: Write fault blocked by KUAP!
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: Caleb Sander Mateos <csander@purestorage.com>, Ming Lei <ming.lei@redhat.com>, 
-	Linux Block Devices <linux-block@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: 5_f82oU7oyc1YZEo2q8NAj39hoSsNKF8Lndl1ZQ1374_1772247467
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260226151106.144735-21-hch@lst.de>
 
-On Fri, Feb 27, 2026 at 3:05=E2=80=AFAM Christophe Leroy (CS GROUP)
-<chleroy@kernel.org> wrote:
->
->
->
-> Le 26/02/2026 =C3=A0 17:59, Caleb Sander Mateos a =C3=A9crit :
-> > On Thu, Feb 26, 2026 at 4:44=E2=80=AFAM Ming Lei <ming.lei@redhat.com> =
-wrote:
-> >>
-> >> On Thu, Feb 26, 2026 at 6:48=E2=80=AFPM Ming Lei <ming.lei@redhat.com>=
- wrote:
-> >>>
-> >>> Hi Changhui,
-> >>>
-> >>> Thanks for the report!
-> >>>
-> >>> Loop Caleb Sander Mateos  in.
-> >>>
-> >>> Thanks,
-> >>>
-> >>> On Thu, Feb 26, 2026 at 6:37=E2=80=AFPM Changhui Zhong <czhong@redhat=
-.com> wrote:
-> >>>>
-> >>>> Hello,
-> >>>>
-> >>>> on the ppc64le arch, I hit the issue below with ublksrv on the lates=
-t
-> >>>> linux-block/for-next, please help check it, and let me know if you
-> >>>> need any info/test for it. Thanks.
-> >>>>
-> >>>> INFO: HEAD of cloned kernel
-> >>>> commit 37a43fd770f3dcac8f72f3ea909b3e893e2385c9
-> >>>> Merge: 13cd9b41227a c1dfbd7e71b0
-> >>>> Author: Jens Axboe <axboe@kernel.dk>
-> >>>> Date:   Wed Feb 25 08:37:06 2026 -0700
-> >>>>
-> >>>>      Merge branch 'for-7.1/block' into for-next
-> >>>>
-> >>>>      * for-7.1/block:
-> >>>>        ublk: report BLK_SPLIT_INTERVAL_CAPABLE
-> >>>>
-> >>>> reproducer:
-> >>>> compile and install https://eur01.safelinks.protection.outlook.com/?=
-url=3Dhttps%3A%2F%2Fgithub.com%2Fublk-org%2Fublksrv.git&data=3D05%7C02%7Cch=
-ristophe.leroy2%40cs-soprasteria.com%7Cf0b0066758be476be95508de75587a73%7C8=
-b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639077220067774377%7CUnknown%7CTW=
-FpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOI=
-joiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=3Dki4yUMx%2FBTANcpfzEoVMdBKs=
-uflIbzhHO2Wqpxtvj5g%3D&reserved=3D0
-> >>>> #echo 0 > /proc/sys/kernel/io_uring_disabled
-> >>>> #modprobe ublk_drv
-> >>>> #cd ublksrv
-> >>>> #make test T=3Dnull
-> >>>> #make test T=3Dloop
-> >>>>
-> >>>> dmesg log=EF=BC=9A
-> >>>> Feb 26 00:24:30 ibm-p9z-27-lp26 journal: running null/002
-> >>>> Feb 26 00:24:30 ibm-p9z-27-lp26 ublksrvd-0[57921]: start ublksrv io
-> >>>> daemon ublksrvd-0
-> >>>> Feb 26 00:24:30 ibm-p9z-27-lp26 ublksrvd-0[57921]: tid 57923: ublk d=
-ev
-> >>>> 0 queue 0 started
-> >>>> Feb 26 00:24:30 ibm-p9z-27-lp26 ublksrvd-0[57921]: tid 57924: ublk d=
-ev
-> >>>> 0 queue 1 started
-> >>>> Feb 26 00:24:36 ibm-p9z-27-lp26 NetworkManager[818]: <warn>
-> >>>> [1772083476.4882] platform-linux: do-add-ip6-address[2:
-> >>>> fe80::8448:a3ff:fe51:f102]: failure 13 (Permission denied - ipv6: IP=
-v6
-> >>>> is disabled on this device)
-> >>>> Feb 26 00:24:36 ibm-p9z-27-lp26 NetworkManager[818]: <warn>
-> >>>> [1772083476.4885] platform-linux: do-add-ip6-address[2:
-> >>>> 2620:52:9:160c:8448:a3ff:fe51:f102]: failure 13 (Permission denied -
-> >>>> ipv6: IPv6 is disabled on this device)
-> >>>> Feb 26 00:24:36 ibm-p9z-27-lp26 NetworkManager[818]: <warn>
-> >>>> [1772083476.4938] l3cfg[0f1985ec14299e62,ifindex=3D2]: unable to
-> >>>> configure IPv6 route: type unicast fe80::/64 dev 2 metric 1024 mss 0
-> >>>> rt-src ipv6ll
-> >>>> Feb 26 00:24:38 ibm-p9z-27-lp26 NetworkManager[818]: <warn>
-> >>>> [1772083478.4938] ipv6ll[95ab7f3fdbfe643d,ifindex=3D2]: changed: no =
-IPv6
-> >>>> link local address to retry after Duplicate Address Detection failur=
-es
-> >>>> (back off)
-> >>>> Feb 26 00:24:38 ibm-p9z-27-lp26 NetworkManager[818]: <warn>
-> >>>> [1772083478.4943] platform-linux: do-add-ip6-address[2:
-> >>>> 2620:52:9:160c:8448:a3ff:fe51:f102]: failure 13 (Permission denied -
-> >>>> ipv6: IPv6 is disabled on this device)
-> >>>> Feb 26 00:24:48 ibm-p9z-27-lp26 NetworkManager[818]: <warn>
-> >>>> [1772083488.5034] platform-linux: do-add-ip6-address[2:
-> >>>> fe80::8448:a3ff:fe51:f102]: failure 13 (Permission denied - ipv6: IP=
-v6
-> >>>> is disabled on this device)
-> >>>> Feb 26 00:24:48 ibm-p9z-27-lp26 NetworkManager[818]: <warn>
-> >>>> [1772083488.5037] platform-linux: do-add-ip6-address[2:
-> >>>> 2620:52:9:160c:8448:a3ff:fe51:f102]: failure 13 (Permission denied -
-> >>>> ipv6: IPv6 is disabled on this device)
-> >>>> Feb 26 00:24:48 ibm-p9z-27-lp26 NetworkManager[818]: <warn>
-> >>>> [1772083488.5041] l3cfg[0f1985ec14299e62,ifindex=3D2]: unable to
-> >>>> configure IPv6 route: type unicast fe80::/64 dev 2 metric 1024 mss 0
-> >>>> rt-src ipv6ll
-> >>>> Feb 26 00:24:50 ibm-p9z-27-lp26 NetworkManager[818]: <warn>
-> >>>> [1772083490.5034] ipv6ll[95ab7f3fdbfe643d,ifindex=3D2]: changed: no =
-IPv6
-> >>>> link local address to retry after Duplicate Address Detection failur=
-es
-> >>>> (back off)
-> >>>> Feb 26 00:24:50 ibm-p9z-27-lp26 NetworkManager[818]: <warn>
-> >>>> [1772083490.5039] platform-linux: do-add-ip6-address[2:
-> >>>> 2620:52:9:160c:8448:a3ff:fe51:f102]: failure 13 (Permission denied -
-> >>>> ipv6: IPv6 is disabled on this device)
-> >>>> Feb 26 00:24:58 ibm-p9z-27-lp26 kernel: Kernel attempted to read use=
-r
-> >>>> page (7fff81210000) - exploit attempt? (uid: 0)
-> >>>> Feb 26 00:24:58 ibm-p9z-27-lp26 kernel: ------------[ cut here ]----=
---------
-> >>>> Feb 26 00:24:58 ibm-p9z-27-lp26 kernel: Bug: Read fault blocked by K=
-UAP!
-> >>>> Feb 26 00:24:58 ibm-p9z-27-lp26 kernel: WARNING:
-> >>>> arch/powerpc/mm/fault.c:231 at bad_kernel_fault.isra.0+0xc8/0x2c0,
-> >>>> CPU#5: lt-ublk.null/57924
-> >>
-> >> oops, it shouldn't be related with `ublk: report BLK_SPLIT_INTERVAL_CA=
-PABLE`,
-> >> Perhaps one issue lies in the ppcle64 architecture code.
-> >
-> > Agreed, the "Kernel attempted to read user page" error seems
-> > incorrect. The call trace shows this is in copy_from_iter(), so
-> > reading a user page is expected. I too would be suspicious of the
-> > powerpc copy_from_iter() implementation.
->
-> Looks similar to:
->
-> https://lore.kernel.org/all/20260109064917.777587-2-sshegde@linux.ibm.com=
-/
->
-> That fix was rejected, more acceptable fix here:
->
-> https://lore.kernel.org/all/20260217124457.89219-1-sayalip@linux.ibm.com/
->
-> Let us know if it fixes the issue for you.
->
-> Christophe
->
+On Thu, Feb 26, 2026 at 07:10:32AM -0800, Christoph Hellwig wrote:
+> diff --git a/arch/um/include/asm/xor.h b/lib/raid/xor/um/xor_arch.h
+> similarity index 61%
+> rename from arch/um/include/asm/xor.h
+> rename to lib/raid/xor/um/xor_arch.h
+> index c9ddedc19301..c75cd9caf792 100644
+> --- a/arch/um/include/asm/xor.h
+> +++ b/lib/raid/xor/um/xor_arch.h
+> @@ -1,7 +1,4 @@
+>  /* SPDX-License-Identifier: GPL-2.0 */
+> -#ifndef _ASM_UM_XOR_H
+> -#define _ASM_UM_XOR_H
+> -
+>  #ifdef CONFIG_64BIT
+>  #undef CONFIG_X86_32
+>  #else
+>  #define CONFIG_X86_32 1
+>  #endif
 
-Hi=EF=BC=8C Christophe
+Due to this change, the above code that sets CONFIG_X86_32 to the
+opposite of CONFIG_64BIT is no longer included in xor-sse.c, which uses
+CONFIG_X86_32.  So if the above code actually did anything, this change
+would have broken it for xor-sse.c.  However, based on
+arch/x86/um/Kconfig, CONFIG_X86_32 is always the opposite of
+CONFIG_64BIT, so the above code actually has no effect.  Does that sound
+right?
 
-confirmed that after applying the patch
-https://lore.kernel.org/all/20260217124457.89219-1-sayalip@linux.ibm.com/,
-this issue has not been hit again, the fix works.
-
-Thanks,
-Changhui
-
+- Eric
 
