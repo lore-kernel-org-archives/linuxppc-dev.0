@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-17437-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17438-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1FDC9FEE4C8
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Feb 2026 05:37:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4622AFEE4CB
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Feb 2026 05:47:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fNDVX0SNBz30hg;
-	Sat, 28 Feb 2026 16:37:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772257059;
-	cv=none; b=czW4O32tUNyrDIXxOcDj13a4E/V36JDOXAUBvWeoMexbQn1aQRIxkZQSkr0B4l+O4v605sbptTL4dUatWl20l2dL1+lFK3gTqxIzthNWIIC1aVEeRJmEIZ+bU0ERU4aPH2MkYSV9PUCNGjEMQZfVuawCkPps3nZ6Auw01cpTe7krp/Sw1A2CyVEdyZuPy3bcraC2bdjVTZB+TXREFkOdPQJ+BY8/vhAmJ2grfaxDsxRHqZQyz7fPj+bY01vth5JyDm9P7whZM0m5QyVmTJiYxfATLZVgCT0B0kZJkfHnMndnMB+OOHL6PjLHcdAVS+b/LDLLmKujngjTx7QrZL8gfQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fNDjl3X7Fz30hg;
+	Sat, 28 Feb 2026 16:47:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772257643;
+	cv=none; b=UeSidAiIug6fX3KUwpm69yvTEbHuuVoXEB4Nm+zwApc1qSyU56jbjm05zMZ4FsAHEj1mkMfIRUWBXkMGoPXujU7OCWg9BhgLIpXXoFYCUZW0bD7+bAkllbE4wB7g0vpOEVj62Ds8nPIIRu7EOZbaPxJDmi9VoIkeaMEVSg8m3eZXpfhmmlLUGTjZt/cquNcFVNqHLXEv1I6scSlO0pnI1NI66NaWQYI+Tt5UW0Jih9sB616j2soOseiavRB897jZSr0f9gnK1XEUk6tyMN9Ju6CaxBb7kXKWW4n6PwHw098C96qDoHGHGu0dQ5raLtRlTA5BtQvt6j0Oa2zA/KJ76w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772257059; c=relaxed/relaxed;
-	bh=pPKu8pyhkInpX09bIAbmlPH+OLoaLy8SUm0nQHgk8LI=;
+	t=1772257643; c=relaxed/relaxed;
+	bh=UZF1EV3uOejareY3JkuljGyR7tieZdU6/99rOblHojU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=JDJVPOA+L0ZViq3UV812E1xeSOS5I+zD3JsRMYWyCZDMElGVNGETHDskFPEcShZ67L2xbuVSNKrIFgZbtCs9Vb+5+4Kc3U6bH6+wlg3/wNbr0u4RdU0UDeTtqYTypROUzvSUxOdk/DYnv4qv1aN4nE9bmS4R2H4NzAIfBjJpOzqDG5IgwGaz6UDv8sai2jbscakmbzyIo0hNYSLCJwfuC/T9RT7/c5zYcsAlXULk7AVAjNI1l7AtuoHwJn1viftU6hKPN7aKDXSBQsUWFVwBbdZ5YnGLrxGsxfov6EEuFc3AJkeXnriT21AROMn8rOy46fv6svaAY+izpP3yea4PNg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=vJAxXZ8K; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=bhDGvWVBMnC6bPjdYvxhcAqE93uaIOTppZrR9Nd86Pn09C1XgJZfS7ktoJcs4EsuPDNM1sjHfckDfXDHzyNcK9fNzslzDR8yziRghaYbMqQpJ+pCF/SuNBhnhm1/t/dyVpFtdcNjHVkkfxDBHpdDALQYPqa/L/PpiaQgM0Lvi/YXIVIMTNA+rmFW+nhtwPedSqtQzb0Es9MOrRkIz+WvzWuM/i2WiHL5EgHCrI/PUSgzryEISi34yBKGOF3DupHVt0s0KOPVAeqXvvSjUzmHvGxnSTSHbCbLysKkLsoB3kcRXL3pJUnfsHAsWh1ZeChszOoUZQ12LCG6jVIOzYNpbw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZxnCfx5J; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=vJAxXZ8K;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZxnCfx5J;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fNDVV0Crsz30BR
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Feb 2026 16:37:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fNDjk3Rrhz30BR
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Feb 2026 16:47:22 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 555454064C;
-	Sat, 28 Feb 2026 05:37:35 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BE76EC116D0;
-	Sat, 28 Feb 2026 05:37:31 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 2B33141E50;
+	Sat, 28 Feb 2026 05:47:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E6374C116D0;
+	Sat, 28 Feb 2026 05:47:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772257055;
-	bh=eqLNM+it9jPNWRs+scO49PSKMIRVyGiqn9NcqSlCp7w=;
+	s=k20201202; t=1772257640;
+	bh=3fhtDiEfYQIsR8xe5v1xLPzjOApnwt1LgQea0fiE/sk=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=vJAxXZ8Kz5WRI3FAqQiiWltyd3uQ9vRfiXCgBQwT4V+lApPXGfBKpNyhyElFSuB3u
-	 XB4VENMAfKNQt4jt5mepYgezGyP/JFcan/V5g78ruKQj4Ji3BOedSoLRvaGOzY6b7q
-	 Mc5XWWLUQF0PcVSlTTmo7S7Zck6GQKRu3zWFaP+B5XItpiitYzcZpUfca6qi8XUfOd
-	 6vh1cIQZcaLVpiV5n3ZguAWWWmPlxPcj2Nj9plSsomBCSSLqZZekWhAfjQ2YeYW7iu
-	 rDzWS5l+PL0z3I+4kxGk4sYmPecb+wzM6vyPcl7Y9d2Uxa1CYls2Am5BPUZnt/qH5z
-	 mB77YqO/RTn8A==
-Date: Fri, 27 Feb 2026 21:37:30 -0800
+	b=ZxnCfx5JDI332Qrr3aqcMLFE+Z8TXsT+uailOd+3AxcXf1coTOZ7vF5OtRVlFz27S
+	 I+XE3qJMsOy/NaWilUmpaeuY7J3oz+cG4Um71U6OgQ7NcFA0HIvDDJfrudH5EPWD3S
+	 jPn9xscU5HDErluyyxksFTvSuNR6X2vG6RGaNlRTZxMmerYr0sgLOhE7L00/8t5/MJ
+	 uNCGKSSPUVI6ufs4uUbVSf5rsbRTL4oD2BooogSyg1zZ0YWLvakCTY7IPYd2SyPwrp
+	 50+eB5Q59+IeVeLCa8yNWJbEZz5QSmLw3fDIRjKAzMjZdSuoZa7lO1W7LFFthLj2/W
+	 ELDld1Q34kANQ==
+Date: Fri, 27 Feb 2026 21:47:16 -0800
 From: Eric Biggers <ebiggers@kernel.org>
 To: Christoph Hellwig <hch@lst.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -86,10 +86,10 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
 	sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
 	linux-crypto@vger.kernel.org, linux-btrfs@vger.kernel.org,
 	linux-arch@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: [PATCH 15/25] riscv: move the XOR code to lib/raid/
-Message-ID: <20260228053730.GE65277@quark>
+Subject: Re: [PATCH 16/25] sparc: move the XOR code to lib/raid/
+Message-ID: <20260228054716.GF65277@quark>
 References: <20260226151106.144735-1-hch@lst.de>
- <20260226151106.144735-16-hch@lst.de>
+ <20260226151106.144735-17-hch@lst.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,22 +105,40 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260226151106.144735-16-hch@lst.de>
+In-Reply-To: <20260226151106.144735-17-hch@lst.de>
 
-On Thu, Feb 26, 2026 at 07:10:27AM -0800, Christoph Hellwig wrote:
-> Move the optimized XOR into lib/raid and include it it in xor.ko
-> instead of always building it into the main kernel image.
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> ---
->  arch/riscv/include/asm/xor.h                 | 54 +------------------
->  arch/riscv/lib/Makefile                      |  1 -
->  lib/raid/xor/Makefile                        |  1 +
->  lib/raid/xor/riscv/xor-glue.c                | 56 ++++++++++++++++++++
->  {arch/riscv/lib => lib/raid/xor/riscv}/xor.S |  0
+On Thu, Feb 26, 2026 at 07:10:28AM -0800, Christoph Hellwig wrote:
+> diff --git a/arch/sparc/lib/xor.S b/lib/raid/xor/sparc/xor-niagara.S
+> similarity index 53%
+> rename from arch/sparc/lib/xor.S
+> rename to lib/raid/xor/sparc/xor-niagara.S
+> index 35461e3b2a9b..f8749a212eb3 100644
+> --- a/arch/sparc/lib/xor.S
+> +++ b/lib/raid/xor/sparc/xor-niagara.S
+> @@ -1,11 +1,8 @@
+>  /* SPDX-License-Identifier: GPL-2.0 */
+>  /*
+> - * arch/sparc64/lib/xor.S
+> - *
+>   * High speed xor_block operation for RAID4/5 utilizing the
+> - * UltraSparc Visual Instruction Set and Niagara store-init/twin-load.
+> + * Niagara store-init/twin-load.
+>   *
+> - * Copyright (C) 1997, 1999 Jakub Jelinek (jj@ultra.linux.cz)
+>   * Copyright (C) 2006 David S. Miller <davem@davemloft.net>
+>   */
+>  
+> @@ -16,343 +13,6 @@
+>  #include <asm/dcu.h>
+>  #include <asm/spitfire.h>
+>  
 
-The EXPORT_SYMBOL() statements in xor.S can be removed, since the
-functions are now located in the same module as their callers.
+<linux/export.h> can be removed from the two assembly files, since all
+the invocations of EXPORT_SYMBOL() in them were removed.
+
+Also, xor-niagara.S ended up without a .text directive at the beginning.
+Probably it was unnecessary anyway.  However, this seems unintentional,
+given that xor-vis.S still has it.
 
 - Eric
 
