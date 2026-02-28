@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-17434-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17435-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 664E5FEE4C5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Feb 2026 04:35:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DB4AFEE4C5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Feb 2026 04:41:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fNC6p5TlGz30BR;
-	Sat, 28 Feb 2026 15:35:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772253330;
-	cv=none; b=oznns5lIsE4UlQXo3a3WgKIXsK2VKmjnIFMC7A6KYGh9kd5S7bY4YyIktqvM3z2Zx9WnEm5F9NXIBXxuOkueLUnHFo7CIwK5aauRhTiPogI+8Tqw42rSF0/CTn/wZSAKzIgnmEpaZ+oC0COseYcwihYEAk7ly5l5xRPbXMFvQ8SioDUDtdHCNmRCsF7vnLVPefesdpe+rB1h2CnM/9gFPxjLMBwx5Z/X01dlGxt/XrpUCt0oUmp4f4Po02iqF4ncsTUSwesc9YYb2F71XrKWuRUbmGC3bUoeCwBF8LjORUOsOwcocJHJvc9OwvL6/K4R4QJsEhjPLEnUyJWnFM2GEQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fNCG8683Yz30BR;
+	Sat, 28 Feb 2026 15:41:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772253712;
+	cv=none; b=cl3qSX6rKC0O2oy9krnSdYFq0ApZiRQjKaHICZ/YK9vayNjTNRzT96ny2Ec3oKY7W8wYQwLmUQg8qFOWOXDzxkf/SK273OqpCAxNbUgprIPBU6Bvk2xTeEshMb08086QJsyYiuA9sNYrrFf34j07Aq5n6vIUBGjRBDvO784m2JPbKX6R9Mn8SKX2YejZHUNPkDRNHxO8tn5V9uSjQOd5nZaKAfiiYhCtzAboIqj81mDDZYWbS7UIjaI9/MmvnVyix3BgyMIetZgbG+gpzojLWYUDF+FeS5YeDNWh5vEY2Ea+SpeJAsV/l9t8obcnnhb0uMOv5zTdUZYFnYbJP1apgw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772253330; c=relaxed/relaxed;
-	bh=a4/HdkUFGu6SFVOsDJPzYjExpCDKt+qABe3apagq8N4=;
+	t=1772253712; c=relaxed/relaxed;
+	bh=Y3L+qGVzTsCJQnoG5TCi8Lc0DlEfyMFXUAiYCFvEtfs=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=LwscCbWlicFNKD/8s3YXvTKGPQ81MChxAXIqiTn6YStPzQcAwoH4z6/zH6dEJwfZM6HRAi9jBLzg4QDe0xkEqdeNVSTvNWpEmyrIAqlPBeIUgLmfYJ5yjIDxdM6HYFZe3oYeA7eI4gk4lgQH91lCiL0Z05k1GndcIEgskKvAK2XWpCpyJcBYoB1mo3lFAQZB7/BhP6EbgB16tTdyxO66omWuMG6ZYgbOD9Lx7wb+Iwa2/mXQx7E/Cv4qiXYpGAW0oaFupgTr1tANcBFfyD/WPxZywGcMTaz92C/jIMOkl7Hcz0eb6LhkhkpjmAQdgXEkFjbN+1jiw+/EIcnJoSZG3A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jvLMWT5Q; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=JF7AcOthDYWguoCYUCHnR8ed9aOT+dt9pWvAMtMK2TWHf2nH0NqqDZbDIZTJbKom9FTrYqTzOuT5Fe9mZlnTImCLX3e1ONhwsY+7zWyV/umXo7uXJqsx5n/DC1LoRcw0PnuKcfcaqyLEeecv8hJtoPRYGmc5HXyvS7yfS0QGITEZjeQI5jdMGQ8NfeVD0gECxAWCoSSDxaBMF7cZfoLtuL/xk1aV7NUH+RpQEAJtPEiZRpek9Cyd6hLQAM3NWggHrwoun4d1/DUhozNqgqVYkXDj37leYpBS3xvQOQS/wFKFAosbZ0ezaMNXwLP8WbwpCkpKmH4A3q2pFhEXBPcwFg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rOKkIgOd; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jvLMWT5Q;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rOKkIgOd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fNC6n5FlQz2xlj
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Feb 2026 15:35:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fNCG80slsz2xlj
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Feb 2026 15:41:52 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 7D89B43B42;
-	Sat, 28 Feb 2026 04:35:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 69FD3C116D0;
-	Sat, 28 Feb 2026 04:35:25 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id F247640067;
+	Sat, 28 Feb 2026 04:41:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A4A79C116D0;
+	Sat, 28 Feb 2026 04:41:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772253327;
-	bh=7zmaVKtAh2Ji/dO9zQKMopZe2cxR3kulm8/sTdUvOcA=;
+	s=k20201202; t=1772253708;
+	bh=GTl5b4pj52hP0KVBkFlgMlumLNdyDtznBRe/1mAWWQw=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=jvLMWT5QPfWf5fqwCu0b6jyf1JkY8VhTv+hzjbPZJIShl575Kc/hb2XB6K7qkymfN
-	 qwBqh029UG4QDt1k4o+yWv6HUuKWpWsplNNhaICJZz2k0ORPmJLnhkHAyONmX7M+TQ
-	 zDX6zjqvLirKpTtriXBUSdvtk9Yk8/30R2kYnR4XhUkO0qR3hMOqza11uJQ08QFz4S
-	 oQboCK+Z7P0MYthrxKSIcy3roPsAHLbVtIrOmNmHcNMgysOz0VoIhFow1SEkkuFGuP
-	 DaFupym5qTt9eY/XGsZgNFTL4RRcp5VoPtcdKHWNHmTzORlfM9TjONCOU+EFM4pkgz
-	 p45HIHdqNKblg==
-Date: Fri, 27 Feb 2026 20:35:23 -0800
+	b=rOKkIgOdBSzVWSzHxw5DOhxNn03a0Ygaw1woVlTjin4KLowyLELOm+OVhIowZs3Mi
+	 dqJMT1De+b8BARm6gDQusg4IahSRzGUQaRpIL79MWyistCvbIiMZ6GQa64miu3ZcRZ
+	 cmMCGr06kdASJAnWQFN5T5HEhrn2CSG3d0wt7lfBrAFCfHwD8AHIT6zDjcjgyWpudZ
+	 1T16tuC8Ef/5l0VtYfOtBa3/4cAwxmH1U8wP9gZSK6LcugatbAZqq7cuamim+FKLGl
+	 QGX36uRgBg/t7BIN5Yg+65x2RyzeJ36b/t9uuoaV9NMPtIM82r7BkkP953pZJg4x7P
+	 1Tdp6OJiWNiZw==
+Date: Fri, 27 Feb 2026 20:41:43 -0800
 From: Eric Biggers <ebiggers@kernel.org>
 To: Christoph Hellwig <hch@lst.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -86,10 +86,10 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
 	sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
 	linux-crypto@vger.kernel.org, linux-btrfs@vger.kernel.org,
 	linux-arch@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: [PATCH 04/25] xor: move to lib/raid/
-Message-ID: <20260228043523.GB65277@quark>
+Subject: Re: [PATCH 06/25] xor: cleanup registration and probing
+Message-ID: <20260228044143.GC65277@quark>
 References: <20260226151106.144735-1-hch@lst.de>
- <20260226151106.144735-5-hch@lst.de>
+ <20260226151106.144735-7-hch@lst.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,43 +105,21 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260226151106.144735-5-hch@lst.de>
+In-Reply-To: <20260226151106.144735-7-hch@lst.de>
 
-On Thu, Feb 26, 2026 at 07:10:16AM -0800, Christoph Hellwig wrote:
-> diff --git a/lib/Kconfig b/lib/Kconfig
-> index 0f2fb9610647..5be57adcd454 100644
-> --- a/lib/Kconfig
-> +++ b/lib/Kconfig
-> @@ -138,6 +138,7 @@ config TRACE_MMIO_ACCESS
->  
->  source "lib/crc/Kconfig"
->  source "lib/crypto/Kconfig"
-> +source "lib/raid/Kconfig"
+On Thu, Feb 26, 2026 at 07:10:18AM -0800, Christoph Hellwig wrote:
+>  /* Set of all registered templates.  */
+>  static struct xor_block_template *__initdata template_list;
+> +static int __initdata xor_forced = false;
 
-This adds lib/raid/ alongside the existing lib/raid6/ directory.  Is
-that the intended final state, or is the intent for the code in
-lib/raid6/ to eventually be moved to a subdirectory of lib/raid/
-(alongside the "xor" subdirectory)?
+bool instead of int
 
-> diff --git a/lib/raid/Kconfig b/lib/raid/Kconfig
-> new file mode 100644
-> index 000000000000..4b720f3454a2
-> --- /dev/null
-> +++ b/lib/raid/Kconfig
-> @@ -0,0 +1,3 @@
-> +
-> +config XOR_BLOCKS
-> +	tristate
-> diff --git a/lib/raid/Makefile b/lib/raid/Makefile
-> new file mode 100644
-> index 000000000000..382f2d1694bd
-> --- /dev/null
-> +++ b/lib/raid/Makefile
-> @@ -0,0 +1,2 @@
-> +
-> +obj-y				+= xor/
+>  	b1 = (void *) __get_free_pages(GFP_KERNEL, 2);
+>  	if (!b1) {
+> -		printk(KERN_WARNING "xor: Yikes!  No memory available.\n");
+> +		pr_info("xor: Yikes!  No memory available.\n");
 
-Probably should add an SPDX-License-Identifier to these new files.
+pr_warn() instead of pr_info()
 
 - Eric
 
