@@ -1,103 +1,99 @@
-Return-Path: <linuxppc-dev+bounces-17446-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17447-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A12BFEE4D3
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Feb 2026 08:33:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7293DFEE4EA
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Feb 2026 10:32:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fNJPk4VJbz30hg;
-	Sat, 28 Feb 2026 19:33:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772267626;
-	cv=none; b=lXna91UeUyNMtVaBzT4vi/iXcbcjqNGi9SjkqPgMUymbYFejkg5kOVEw37aqyPSxmOxA9fToVVmF7PAnJIf70sqp94rLZxDP9T5eWOzgBPrIIjrwV2rCUG8Vm0DPqYe2+RsDt84V/v7LHMEA9K5Fmv5ty49ok17dOGcEfM6VlNIZOO7Mtg0QPmHuwl5Qf/AKzayBPYU/n6RB64fgZc3qye6ElwvhEJ+rgGVwynbqXcOk2xw3UTAuzmbbXAaGoEe0O8i/DTchmXQaOWpoGsHDMvpjpQ3t7hZzys3qV//PPdPj4MrDian5+nARII9S2CFKdZU0yGJ/xWkbHtR8/jXcmw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fNM2966pPz30BR;
+	Sat, 28 Feb 2026 21:32:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1:d65d:64ff:fe57:4e05"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772274721;
+	cv=none; b=Jw3GU90QF7zuBoyjN4rYPt9ljRk33fiFOW/QHSvkGGpMrpPytjVEjW3HI1rjdHunoT30Qxq8XZyyQHfNDEcMFKnloqExlgvI3OCNG4JxVTQDR3AVg2TBovXvQuJo3wiyyjC/Pnps/fc+9b70eNMJAW8PY8oJwwa+aWg4+W0bqeBiwV4oDU5vxyZX8vo8xBKU4HqOwok5iX1O/TroegrdQ9UfMEcagTw5Vnj25OpKUj8xp2sFIUFg0R6NvXg3yl2EYBhsVJX5cK7F8CP7rYWkLFBpf6iCbGRH3W7g1WQoEUvPM6oOtLT/chFdyQawoH7glYqr5rfGtjNtSmnJQ93Wmw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772267626; c=relaxed/relaxed;
-	bh=eXNJRNBKCpIULn24va1xFS7lT+j21mcqoDyWxckYkJU=;
-	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=jIyzxHLCxhaKHRElzhf2zYCWBqceWuup6rpMyRDF5EjO7t6ZgPaLNsoXQ/VEsUOWfmnQKHbjiF5s4Rr8v2S0s2grXJoRwfay+oSs4iSTmocraLEudep8M0oveSUoq3FAYVl+gsN1CMWcoDtv6bbbk+DimxueLIAQb8QxDdfOH7+vfWRzzaBZ44fK1aUka52QCzBz4WuUJdtUrQkWllfV/pfkbA8m1AIx7fG2izs7aN7D9x3WRm3OXIi+N+oTAsDP4iIoC2mxYDwBrLesCJHrYLKSP1JgLHc9SJQU18dAEbzS3dWnxfzXzZpdY0o7j8IHq0y4W6cwopt3skZjpDPTZQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=GcSG9wfh; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=v2Tpj0jq; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=stYtJ938; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=z7ONblRo; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1772274721; c=relaxed/relaxed;
+	bh=TMfQFraLliTO9OYi4VnvV7gf7AjKPxIluxE2boSfq9E=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=V7VfMz+wJzyYc68JX+AqMW8sR3spwhchZGtqjS2KWkWx7yXV947rUxkUaifAY66/G/WHRwQto/jF4tB7Xe/n+xFKlyozwkZgdTyZauJr3uRpRr+jDLy0aWcqsWE+oyK1FgWG3Inceq4T9a3C2Z87V/4nB2pgr/1131rEsQ0XHb+YYFNbKivcEyoRSJ0EGibOfWddv/8YRChvqYxO5RDYFFBT/DaDy0kH/dPGm+sM6iLbMslE2ts7+lF9eqrKjCaiDicJNXmJ/Fo1ZXi6tj9PaDeWXACnDU0RT7yseKWxZJbjnid5bKYUpf9MTEyuRfC1WqmTbyoh26mc3XCHwU/jyA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=Ihs5Yf5H; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=GcSG9wfh;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=v2Tpj0jq;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=stYtJ938;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=z7ONblRo;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=Ihs5Yf5H;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fNJPh57f2z30BR
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Feb 2026 19:33:44 +1100 (AEDT)
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id ACD6A3F8E7;
-	Sat, 28 Feb 2026 08:33:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1772267613; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=eXNJRNBKCpIULn24va1xFS7lT+j21mcqoDyWxckYkJU=;
-	b=GcSG9wfh7MXdVEH4anojkW3R5eYh7VqH2o8eJUpraFCSd0ioxPuOcqoF1+BPbFOWQ7jYnp
-	UHFpnQtggIAkMMErtit1Tb2NWowBoI3TwtDVaouHP/XYychr+Czccpgdne3EhOcsY7Gu34
-	REqDi67deh7vBEBgE3ix2Ek/+kiYuKQ=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1772267613;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=eXNJRNBKCpIULn24va1xFS7lT+j21mcqoDyWxckYkJU=;
-	b=v2Tpj0jqtwVouxVCkSNrtpNVjQGf0IyDAuIuYdcLm1FM5RZW3aK177hafKGIChiO1PBS3X
-	m3HUsVKjFHg3OrBg==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=stYtJ938;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=z7ONblRo
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1772267611; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=eXNJRNBKCpIULn24va1xFS7lT+j21mcqoDyWxckYkJU=;
-	b=stYtJ938Z7u4ehosRybMS+f0aGVbgPuduOmgfZs0C/5rZI9yk3eXXnsgAk8YH24lJx60mj
-	Zwu60BPK3fhQspdwgJCjtGWzRC+bpCJJMrh5eo4YacjiqC1ykisfpP0dKjFkUhtNTPQni6
-	9FaAuDrJ5uxsx/dfA7Q9b4VvqcaedAg=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1772267611;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=eXNJRNBKCpIULn24va1xFS7lT+j21mcqoDyWxckYkJU=;
-	b=z7ONblRo7DyDe+Ikjg5ycJYke/fpkaQJynqvXKkji/kv70az+dGJdntWrmVeoeAJsGYLbk
-	ik8MK7QfgudjRXCA==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 7079B3EA65;
-	Sat, 28 Feb 2026 08:33:31 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id mUwiGluoomlyTAAAD6G6ig
-	(envelope-from <tiwai@suse.de>); Sat, 28 Feb 2026 08:33:31 +0000
-Date: Sat, 28 Feb 2026 09:33:31 +0100
-Message-ID: <87a4wt6zdw.wl-tiwai@suse.de>
-From: Takashi Iwai <tiwai@suse.de>
-To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>,
-	linux-kernel@vger.kernel.org,
-	kernel-janitors@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-sound@vger.kernel.org
-Subject: Re: [PATCH v1] ALSA: aoa: Constify struct codec_connection
-In-Reply-To: <4009c337cc1a1a57795562279270c03687973b3b.1772138640.git.christophe.jaillet@wanadoo.fr>
-References: <4009c337cc1a1a57795562279270c03687973b3b.1772138640.git.christophe.jaillet@wanadoo.fr>
-User-Agent: Wanderlust/2.15.9 (Almost Unreal) Emacs/30.2 Mule/6.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fNM2773hHz2xQs
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Feb 2026 21:31:55 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=TMfQFraLliTO9OYi4VnvV7gf7AjKPxIluxE2boSfq9E=; b=Ihs5Yf5HVrcI20Hvh5VGWrIGtj
+	w539I2X4jBa2jKtS495tj7OW6yzhUvsPzuvYxap8QuwZoigJhFPba8v5sdtkPlsa6ID6C16CNvr3D
+	fYcDuOEFbymUfK08ZwvafhxK/cQQqT8fuyE87FJ8bLSaBRcRuE1oHdJ8cGt5ahL8RttPyiMxygm7n
+	mt+sFX75z3hVeBiEagfvPL++3zVOztglGmkatawM3oQt9uFpQqkNr4WQvFkrT+2czFsf7HwHxTWyD
+	ed2+E9lBjpxNLnaogre7bAMexNOCdGPm1iLI1kQQI6WFzJBF95/QpTcsQabK0eral+I71Lj4w+g8Q
+	gLUIf0SA==;
+Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
+	by desiato.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1vwHbS-0000000EUcv-1pQT;
+	Sat, 28 Feb 2026 10:31:18 +0000
+Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
+	id 2ADC430066A; Sat, 28 Feb 2026 11:31:17 +0100 (CET)
+Date: Sat, 28 Feb 2026 11:31:17 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Eric Biggers <ebiggers@kernel.org>
+Cc: Christoph Hellwig <hch@lst.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Richard Henderson <richard.henderson@linaro.org>,
+	Matt Turner <mattst88@gmail.com>,
+	Magnus Lindholm <linmag7@gmail.com>,
+	Russell King <linux@armlinux.org.uk>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>, Huacai Chen <chenhuacai@kernel.org>,
+	WANG Xuerui <kernel@xen0n.name>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Richard Weinberger <richard@nod.at>,
+	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	Dan Williams <dan.j.williams@intel.com>, Chris Mason <clm@fb.com>,
+	David Sterba <dsterba@suse.com>, Arnd Bergmann <arnd@arndb.de>,
+	Song Liu <song@kernel.org>, Yu Kuai <yukuai@fnnas.com>,
+	Li Nan <linan122@huawei.com>, linux-alpha@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+	sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
+	linux-crypto@vger.kernel.org, linux-btrfs@vger.kernel.org,
+	linux-arch@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: [PATCH 18/25] x86: move the XOR code to lib/raid/
+Message-ID: <20260228103117.GK1282955@noisy.programming.kicks-ass.net>
+References: <20260226151106.144735-1-hch@lst.de>
+ <20260226151106.144735-19-hch@lst.de>
+ <20260227143016.GH1282955@noisy.programming.kicks-ass.net>
+ <20260227235529.GA31321@quark>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -110,68 +106,43 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
-Content-Type: text/plain; charset=US-ASCII
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Spamd-Result: default: False [-3.51 / 50.00];
-	BAYES_HAM(-3.00)[99.99%];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-0.999];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_TO(0.00)[wanadoo.fr];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	ARC_NA(0.00)[];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	TO_DN_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[wanadoo.fr];
-	RCVD_TLS_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	RCPT_COUNT_SEVEN(0.00)[8];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	DKIM_TRACE(0.00)[suse.de:+];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,suse.de:mid,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns]
-X-Rspamd-Queue-Id: ACD6A3F8E7
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260227235529.GA31321@quark>
 
-On Thu, 26 Feb 2026 21:44:10 +0100,
-Christophe JAILLET wrote:
+On Fri, Feb 27, 2026 at 03:55:29PM -0800, Eric Biggers wrote:
+> On Fri, Feb 27, 2026 at 03:30:16PM +0100, Peter Zijlstra wrote:
+> > On Thu, Feb 26, 2026 at 07:10:30AM -0800, Christoph Hellwig wrote:
+> > > Move the optimized XOR code out of line into lib/raid.
+> > > 
+> > > Signed-off-by: Christoph Hellwig <hch@lst.de>
+> > > ---
+> > >  arch/x86/include/asm/xor.h                    | 518 ++----------------
+> > >  arch/x86/include/asm/xor_64.h                 |  32 --
+> > >  lib/raid/xor/Makefile                         |   8 +
+> > >  .../xor_avx.h => lib/raid/xor/x86/xor-avx.c   |  14 +-
+> > >  .../xor_32.h => lib/raid/xor/x86/xor-mmx.c    |  60 +-
+> > >  lib/raid/xor/x86/xor-sse.c                    | 476 ++++++++++++++++
+> > 
+> > I gotta ask, why lib/raid/xor/$arch/ instead of something like
+> > arch/$arch/lib/xor ?
 > 
-> 'struct codec_connection' are not modified in this driver.
+> Similar to lib/crypto/ and lib/crc/, it allows the translation units
+> (either .c or .S files) containing architecture-optimized XOR code to be
+> included directly in the xor.ko module, where they should be.
 > 
-> Constifying these structures moves some data to a read-only section, so
-> increases overall security.
+> Previously, these were always built into the core kernel even if
+> XOR_BLOCKS was 'n' or 'm', or they were built into a separate module
+> xor-neon.ko which xor.ko depended on.  So either the code was included
+> unnecessarily, or there was an extra module.
 > 
-> On a x86_64, with allmodconfig:
-> Before:
-> ======
->    text	   data	    bss	    dec	    hex	filename
->   10034	   3392	     12	  13438	   347e	sound/aoa/fabrics/layout.o
-> 
-> After:
-> =====
->    text	   data	    bss	    dec	    hex	filename
->   10370	   3040	     12	  13422	   346e	sound/aoa/fabrics/layout.o
-> 
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-> ---
-> Compile tested only.
-> 
-> The fabric_data field in struct aoa_codecis is only used in
-> sound/aoa/fabrics/layout.c, so there should be no side effect for other
-> files that include sound/aoa/aoa.h
+> Technically we could instead have the lib makefile compile stuff in
+> arch/, but that would be unusual.  It's much cleaner to have the
+> directory structure match the build system.
 
-Applied to for-next branch now.  Thanks.
+Hmm, I suppose. Its just weird that we now have to look in both
+arch/$foo and lib/*/$foo/ to find all arch code.
 
-
-Takashi
+And I don't suppose symlinks would make it better?
 
