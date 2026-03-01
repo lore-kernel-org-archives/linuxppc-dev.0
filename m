@@ -1,58 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-17460-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17461-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBCCDFD0048
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Mar 2026 01:28:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70A40FD0049
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Mar 2026 01:35:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fNkwK2TJVz2yFK;
-	Sun, 01 Mar 2026 12:28:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772328497;
-	cv=none; b=GIcFTDChnVHi4kM1I3m3DgBv+kg4XitbXnTeP0KHCZAN3rTyKAgSxGnCaUIZcd8G9A2J0L9eD6HwmFOEJdBdppE58tohzs61hQnaycpaUZpDTwUQQ1HuIT8UXwPCqAN43dgN8c/+cnqQSHcPDcrkf+ieb9vrAhooyXZWoxbGHLKbhbmznzAVK8fhQTimWBAVx7YE5pf5DsBcqgjm1M42/8laiUCZlRPLbXMXipfyKN6aMP/dGq013OcK1q1PwZAc9/17aiKMQYUPH7BnxROYQcXM80aanxrzPluFcGWmF48kGH53JWYpLAOx1bWlZgIoEPoVRdBn+UwK3eKo5g8sGw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fNl4c3Nfzz2yFK;
+	Sun, 01 Mar 2026 12:35:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772328928;
+	cv=none; b=nK9r/NyaEWCdvo9BUhJZOVJ8pIj0PXSsqOySBj1pAhqpVJrOQU0ahceo0H85mq8TsXWoiOWze0r4Na/LBVz7fdPP/1EVIzDdvVe6nHS1v9VgZ3ks5nNBOO6d4FnHdXKQwCVr2zqQlKy8sRf2v8+H0ndj+FuL/fMi5V6nS+dhxuoEeGOW4MnVnZGqqH4sNYDGJd0D2xO7Z9w4Un4frg+hp24xNtVQFLgovssjm7A/PYQfXVZ29C8Am9b0O7DE24Ey8LLs34jw6blSmUtjfy3YWlmfW+JCad5NmcjUsa+QSkczks7cz6qI6Th2BoE0MzCmd1Z6qnGRRFLRHmRxhILF6Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772328497; c=relaxed/relaxed;
-	bh=SSpUrKO3s0lYb3j7CKqp6Wl0C/OOc5UVBpY+DCd35tI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=OqSZOr728Wz5/uLPM/pVXmEto04TDRsx3D0Xks8uGtscUPVJC6xj3DDPXMJjifEgGSRjYGG68cwm/hBBgkN5FIid+dSt+XVGR1ljCJ3qxdUiutzOQJbyGaQbtZH6N8F0JaGCHdVIE3Xm8QpS8skVkgTTkRuQoSgW+ePNjIio2wuG1t+BVHK448z+gRC0ZqBwMH/X0uT/XwP1b8Pty6WhZctVc1feD9UDweObzXMvdT3vFNGfZlAnXZvbIWRF6Er4/ZDGyh4BNESUGs34nhB7YmYla3cD5OWmZEp82Bo24LABhTM4k+bni/4hHC4xek8xdwZ8wibGgprGjb/Vj8chkA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=i8Vo+ttC; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1772328928; c=relaxed/relaxed;
+	bh=QnGmxgcuTWCcLVezlF2EjHZRgUntC183jmn3V7/2Ghs=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=gTtXs47zUQs0M6DSd0yztSHNDpekqTd22Ak+OCmkPLL++3qdQBgv/bXWLPdeItYHBKNgCDkSisZlTuEKrPKQupNKEqqhWvOD0QGXdHLEgkpSIB4A+AN9OvoMIuYsZR9M9h5sRtVkxj+vkjziTGDCM8JBZNxPR6kYjGw6MXDmbdr0fT3YzobVwx9NMXsAuleSehcHicEsDhYraLt9Le/orWslZHVUBPPtA8LSe2R3xf98Lc5xfdnQUvZiTQzDu93qm50mPHTAFKKk6haHXVddPCmbiL26+S1PcEpiO42IzW2PDxKhfvPmC3rI6AEdBIRv3Ur+IPbER4EIn7eHIVGQ4Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QX0b5AQq; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=i8Vo+ttC;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QX0b5AQq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fNkwJ5KS0z2yF1
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Mar 2026 12:28:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fNl4b5sJbz2yF1
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Mar 2026 12:35:27 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 78BCF433FB;
-	Sun,  1 Mar 2026 01:28:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AE031C19424;
-	Sun,  1 Mar 2026 01:28:13 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 2411E60126;
+	Sun,  1 Mar 2026 01:35:25 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1BEF3C19425;
+	Sun,  1 Mar 2026 01:35:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772328494;
-	bh=caGLC4eiAMQuTnRrjh2L4wlwOWWY1jUeLUW3d4w/g0c=;
+	s=k20201202; t=1772328924;
+	bh=Iqn/1UNrQ4Hq6I0QrWg2QMyfOmeaP4SvAm41QyGmjVY=;
 	h=From:To:Cc:Subject:Date:From;
-	b=i8Vo+ttCsB09oz4w2xuwNtQViEoT+KhsJ/C5HycLyVfqP2jkEXs7Ru4/q5+Q5RRUR
-	 OdwSaPXO523RMSljTiHwt/KjHw6jYv69KvVni9pm1o1aSxknD9gpLeIxPpdVAzSGJf
-	 +VAU+N+zhoPd1P3l8wBkjmkTIFOpyI0z0JHODSEdG1ynla4xFlMgS2q40eSqB7OxUH
-	 xYtQe9minaICWyUqSi0d+yd7Bkyw8Tu44cSdL3+UoHRD54UQaCa4DMR8WhBJCTjn7v
-	 cB4sMo3e4srkld38A3wnE7pO6v+J4iPgW5YYSjGtnus4ZBsAcSp8rAx3iR+CDhUysV
-	 T9w3EX3KOkLPw==
+	b=QX0b5AQqXxmYJx7TfyRDU6S6bWMozTZc2olYzU4mW0ZgJ5vPJ8BVGIAIkjCSi9LaV
+	 cNhxUzUX3uP/0eCTK+rTO30tUFxbimlrYkkiIBM834GS1tfifrf6xjpNT+o4L+P/0S
+	 VP0R56+9AuXBrLA+hHUz2gZLfxFksbIwMII2l+vAovoczzVSiq15zQXfjPzU/VxMRc
+	 cS2NEF1BB9bA4NezEndHEjrsrJ+14XeRYZcaji3VHy6F21O6AwmlV3l7jxXsDrRFPe
+	 nDPOuDyzEhmbyYrjBDvurMVBTV6y9wxJwtpPGwMOOGVS/MwjNHM/sfQsV3Y1bLs4Rq
+	 l7FkMZ6or3Avw==
 From: Sasha Levin <sashal@kernel.org>
 To: stable@vger.kernel.org,
-	fourier.thomas@gmail.com
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Paolo Abeni <pabeni@redhat.com>,
-	netdev@vger.kernel.org,
+	lihaoxiang@isrc.iscas.ac.cn
+Cc: Dan Carpenter <dan.carpenter@linaro.org>,
+	Su Hui <suhui@nfschina.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Ioana Ciornei <ioana.ciornei@nxp.com>,
 	linuxppc-dev@lists.ozlabs.org
-Subject: FAILED: Patch "net: wan/fsl_ucc_hdlc: Fix dma_free_coherent() in uhdlc_memclean()" failed to apply to 6.12-stable tree
-Date: Sat, 28 Feb 2026 20:28:12 -0500
-Message-ID: <20260301012812.1685923-1-sashal@kernel.org>
+Subject: FAILED: Patch "bus: fsl-mc: fix an error handling in fsl_mc_device_add()" failed to apply to 6.6-stable tree
+Date: Sat, 28 Feb 2026 20:35:22 -0500
+Message-ID: <20260301013523.1695052-1-sashal@kernel.org>
 X-Mailer: git-send-email 2.51.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -71,7 +72,7 @@ X-Patchwork-Hint: ignore
 X-stable: review
 Content-Transfer-Encoding: 8bit
 
-The patch below does not apply to the 6.12-stable tree.
+The patch below does not apply to the 6.6-stable tree.
 If someone wants it applied there, or to any other stable or longterm
 tree, then please email the backport, including the original git commit
 id to <stable@vger.kernel.org>.
@@ -81,54 +82,48 @@ Sasha
 
 ------------------ original commit in Linus's tree ------------------
 
-From 36bd7d5deef936c4e1e3cd341598140e5c14c1d3 Mon Sep 17 00:00:00 2001
-From: Thomas Fourier <fourier.thomas@gmail.com>
-Date: Fri, 6 Feb 2026 09:53:33 +0100
-Subject: [PATCH] net: wan/fsl_ucc_hdlc: Fix dma_free_coherent() in
- uhdlc_memclean()
+From 52f527d0916bcdd7621a0c9e7e599b133294d495 Mon Sep 17 00:00:00 2001
+From: Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>
+Date: Sat, 24 Jan 2026 18:20:54 +0800
+Subject: [PATCH] bus: fsl-mc: fix an error handling in fsl_mc_device_add()
 
-The priv->rx_buffer and priv->tx_buffer are alloc'd together as
-contiguous buffers in uhdlc_init() but freed as two buffers in
-uhdlc_memclean().
+In fsl_mc_device_add(), device_initialize() is called first.
+put_device() should be called to drop the reference if error
+occurs. And other resources would be released via put_device
+-> fsl_mc_device_release. So remove redundant kfree() in
+error handling path.
 
-Change the cleanup to only call dma_free_coherent() once on the whole
-buffer.
-
-Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-Fixes: c19b6d246a35 ("drivers/net: support hdlc function for QE-UCC")
-Cc: <stable@vger.kernel.org>
-Signed-off-by: Thomas Fourier <fourier.thomas@gmail.com>
-Link: https://patch.msgid.link/20260206085334.21195-2-fourier.thomas@gmail.com
-Signed-off-by: Paolo Abeni <pabeni@redhat.com>
+Fixes: bbf9d17d9875 ("staging: fsl-mc: Freescale Management Complex (fsl-mc) bus driver")
+Cc: stable@vger.kernel.org
+Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
+Closes: https://lore.kernel.org/all/b767348e-d89c-416e-acea-1ebbff3bea20@stanley.mountain/
+Signed-off-by: Su Hui <suhui@nfschina.com>
+Suggested-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+Signed-off-by: Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>
+Reviewed-by: Ioana Ciornei <ioana.ciornei@nxp.com>
+Link: https://lore.kernel.org/r/20260124102054.1613093-1-lihaoxiang@isrc.iscas.ac.cn
+Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
 ---
- drivers/net/wan/fsl_ucc_hdlc.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+ drivers/bus/fsl-mc/fsl-mc-bus.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
-index f999798a56127..dff84731343cc 100644
---- a/drivers/net/wan/fsl_ucc_hdlc.c
-+++ b/drivers/net/wan/fsl_ucc_hdlc.c
-@@ -790,18 +790,14 @@ static void uhdlc_memclean(struct ucc_hdlc_private *priv)
+diff --git a/drivers/bus/fsl-mc/fsl-mc-bus.c b/drivers/bus/fsl-mc/fsl-mc-bus.c
+index 08b99b0b342f3..007223549887d 100644
+--- a/drivers/bus/fsl-mc/fsl-mc-bus.c
++++ b/drivers/bus/fsl-mc/fsl-mc-bus.c
+@@ -896,11 +896,7 @@ int fsl_mc_device_add(struct fsl_mc_obj_desc *obj_desc,
+ 	return 0;
  
- 	if (priv->rx_buffer) {
- 		dma_free_coherent(priv->dev,
--				  RX_BD_RING_LEN * MAX_RX_BUF_LENGTH,
-+				  (RX_BD_RING_LEN + TX_BD_RING_LEN) * MAX_RX_BUF_LENGTH,
- 				  priv->rx_buffer, priv->dma_rx_addr);
- 		priv->rx_buffer = NULL;
- 		priv->dma_rx_addr = 0;
--	}
+ error_cleanup_dev:
+-	kfree(mc_dev->regions);
+-	if (mc_bus)
+-		kfree(mc_bus);
+-	else
+-		kfree(mc_dev);
++	put_device(&mc_dev->dev);
  
--	if (priv->tx_buffer) {
--		dma_free_coherent(priv->dev,
--				  TX_BD_RING_LEN * MAX_RX_BUF_LENGTH,
--				  priv->tx_buffer, priv->dma_tx_addr);
- 		priv->tx_buffer = NULL;
- 		priv->dma_tx_addr = 0;
-+
- 	}
+ 	return error;
  }
- 
 -- 
 2.51.0
 
