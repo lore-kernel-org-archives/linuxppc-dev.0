@@ -1,57 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-17459-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17460-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B959EFD0049
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Mar 2026 01:24:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBCCDFD0048
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Mar 2026 01:28:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fNkrD1MRbz3bp0;
-	Sun, 01 Mar 2026 12:24:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772328284;
-	cv=none; b=FTprxabhcc7A/Wh1ElyiwhbmWrdiQHcSX8yszzNcdVBECiO/bwfbYV6DJJ75ZEgwP05TweZU00TGh8G7PyADOzoGttQTr9g/dCkKqJkYqcQLWEbCeWIEmJ++UuYCn6iP1M21N/x66vfvEo+DcTiLqzPCoT87rSAcf+AsBHA1PESSrzZpX8Utvm+LkmwK2JjZ0FhoSU2rIhc3wV9Rv517bCZFWZaBZ5ahl9Zk0K13WoGRGIMoMBDubzdwBWSOwyBBYhB2N1bBsENgnIifgtLSU2PUEGdIJOWO3FhVhd2ch8cdKSNJ9UJWPY9eqPi/k0pn1g79zsUSuStI9pEIB54y9A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fNkwK2TJVz2yFK;
+	Sun, 01 Mar 2026 12:28:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772328497;
+	cv=none; b=GIcFTDChnVHi4kM1I3m3DgBv+kg4XitbXnTeP0KHCZAN3rTyKAgSxGnCaUIZcd8G9A2J0L9eD6HwmFOEJdBdppE58tohzs61hQnaycpaUZpDTwUQQ1HuIT8UXwPCqAN43dgN8c/+cnqQSHcPDcrkf+ieb9vrAhooyXZWoxbGHLKbhbmznzAVK8fhQTimWBAVx7YE5pf5DsBcqgjm1M42/8laiUCZlRPLbXMXipfyKN6aMP/dGq013OcK1q1PwZAc9/17aiKMQYUPH7BnxROYQcXM80aanxrzPluFcGWmF48kGH53JWYpLAOx1bWlZgIoEPoVRdBn+UwK3eKo5g8sGw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772328284; c=relaxed/relaxed;
-	bh=s2XwAhrDbC60lrDz1umM+4SIGDEqYDeQWiORdETsSX0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=crZqlcuojXKOjV2e3woGztRtWZn7H8Xyypye/oHxUAh8qawLXCNrabV9SvsHATZFZbYnMur948uKUM/8kwJvdTkC7uBRtQmzPa0JTaWUhze56cUHSEriNqp3hiSU2bfNoKuTJh36JeH2IF3UeJ2fDQRFce/qJjqZYFpgzyEBgXXOo/qj3PLsqrozKcTwYPbs95dTqAlGC38VEuezkVi8G90JE3hfEGEU+WDYcedHwnEfJYjcEysk4cR156ye+vhHAOY3dZEddteSwZ8bMvp4XL6UNY8lekTm6hI5qAIpJpAjuGwYZ7McGv30MvVOapIyeHnxTxVX3rsZvU0/eeC5Ag==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ALKitZ5F; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1772328497; c=relaxed/relaxed;
+	bh=SSpUrKO3s0lYb3j7CKqp6Wl0C/OOc5UVBpY+DCd35tI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=OqSZOr728Wz5/uLPM/pVXmEto04TDRsx3D0Xks8uGtscUPVJC6xj3DDPXMJjifEgGSRjYGG68cwm/hBBgkN5FIid+dSt+XVGR1ljCJ3qxdUiutzOQJbyGaQbtZH6N8F0JaGCHdVIE3Xm8QpS8skVkgTTkRuQoSgW+ePNjIio2wuG1t+BVHK448z+gRC0ZqBwMH/X0uT/XwP1b8Pty6WhZctVc1feD9UDweObzXMvdT3vFNGfZlAnXZvbIWRF6Er4/ZDGyh4BNESUGs34nhB7YmYla3cD5OWmZEp82Bo24LABhTM4k+bni/4hHC4xek8xdwZ8wibGgprGjb/Vj8chkA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=i8Vo+ttC; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ALKitZ5F;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=i8Vo+ttC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fNkrC1qv4z2yF1
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Mar 2026 12:24:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fNkwJ5KS0z2yF1
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Mar 2026 12:28:16 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id A832D600AD;
-	Sun,  1 Mar 2026 01:24:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C3ED4C19421;
-	Sun,  1 Mar 2026 01:24:39 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 78BCF433FB;
+	Sun,  1 Mar 2026 01:28:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AE031C19424;
+	Sun,  1 Mar 2026 01:28:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772328280;
-	bh=1zHeqx5A0fPOef7dleWESDWxHRaitZC+ksGwBypNhFY=;
+	s=k20201202; t=1772328494;
+	bh=caGLC4eiAMQuTnRrjh2L4wlwOWWY1jUeLUW3d4w/g0c=;
 	h=From:To:Cc:Subject:Date:From;
-	b=ALKitZ5F9++aYMr7EF/jJ9LetV3L0DL+FJzzwXkvgC6KxT+xoUP7qlnjEBIxVek5C
-	 X00bCIMxvSZ7IynD/GjwMeP1ijTW9azgkenOr5WnxoWf15BC0kQL5ENabRSRyhY8O3
-	 K5PbHofPoIZ/N7z1J1NOrchmTQ7LyZs5IKUw1Jat8RScbKc3/7nLkUjZtNROmfbmq1
-	 06i4irXO5qn62/2Pu8RqydXqExzwyT2fokHCh+RG0V6ee+Wu9IRljYHHM5JKEgJnra
-	 Z87wQPz3IzGEBtiEWIg0OOyz6QP/NBeezQsGCVWJM//jiPl+nF2q8hDa3IklTf7a7w
-	 1EkCuCCtShu0Q==
+	b=i8Vo+ttCsB09oz4w2xuwNtQViEoT+KhsJ/C5HycLyVfqP2jkEXs7Ru4/q5+Q5RRUR
+	 OdwSaPXO523RMSljTiHwt/KjHw6jYv69KvVni9pm1o1aSxknD9gpLeIxPpdVAzSGJf
+	 +VAU+N+zhoPd1P3l8wBkjmkTIFOpyI0z0JHODSEdG1ynla4xFlMgS2q40eSqB7OxUH
+	 xYtQe9minaICWyUqSi0d+yd7Bkyw8Tu44cSdL3+UoHRD54UQaCa4DMR8WhBJCTjn7v
+	 cB4sMo3e4srkld38A3wnE7pO6v+J4iPgW5YYSjGtnus4ZBsAcSp8rAx3iR+CDhUysV
+	 T9w3EX3KOkLPw==
 From: Sasha Levin <sashal@kernel.org>
 To: stable@vger.kernel.org,
-	lgs201920130244@gmail.com
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	fourier.thomas@gmail.com
+Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>,
+	netdev@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: FAILED: Patch "powerpc/smp: Add check for kcalloc() failure in parse_thread_groups()" failed to apply to 6.12-stable tree
-Date: Sat, 28 Feb 2026 20:24:38 -0500
-Message-ID: <20260301012438.1681542-1-sashal@kernel.org>
+Subject: FAILED: Patch "net: wan/fsl_ucc_hdlc: Fix dma_free_coherent() in uhdlc_memclean()" failed to apply to 6.12-stable tree
+Date: Sat, 28 Feb 2026 20:28:12 -0500
+Message-ID: <20260301012812.1685923-1-sashal@kernel.org>
 X-Mailer: git-send-email 2.51.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -80,38 +81,54 @@ Sasha
 
 ------------------ original commit in Linus's tree ------------------
 
-From 33c1c6d8a28a2761ac74b0380b2563cf546c2a3a Mon Sep 17 00:00:00 2001
-From: Guangshuo Li <lgs201920130244@gmail.com>
-Date: Tue, 23 Sep 2025 21:32:35 +0800
-Subject: [PATCH] powerpc/smp: Add check for kcalloc() failure in
- parse_thread_groups()
+From 36bd7d5deef936c4e1e3cd341598140e5c14c1d3 Mon Sep 17 00:00:00 2001
+From: Thomas Fourier <fourier.thomas@gmail.com>
+Date: Fri, 6 Feb 2026 09:53:33 +0100
+Subject: [PATCH] net: wan/fsl_ucc_hdlc: Fix dma_free_coherent() in
+ uhdlc_memclean()
 
-As kcalloc() may fail, check its return value to avoid a NULL pointer
-dereference when passing it to of_property_read_u32_array().
+The priv->rx_buffer and priv->tx_buffer are alloc'd together as
+contiguous buffers in uhdlc_init() but freed as two buffers in
+uhdlc_memclean().
 
-Fixes: 790a1662d3a26 ("powerpc/smp: Parse ibm,thread-groups with multiple properties")
-Cc: stable@vger.kernel.org
-Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
-Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
-Link: https://patch.msgid.link/20250923133235.1862108-1-lgs201920130244@gmail.com
+Change the cleanup to only call dma_free_coherent() once on the whole
+buffer.
+
+Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+Fixes: c19b6d246a35 ("drivers/net: support hdlc function for QE-UCC")
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Thomas Fourier <fourier.thomas@gmail.com>
+Link: https://patch.msgid.link/20260206085334.21195-2-fourier.thomas@gmail.com
+Signed-off-by: Paolo Abeni <pabeni@redhat.com>
 ---
- arch/powerpc/kernel/smp.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/net/wan/fsl_ucc_hdlc.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 292fee8809bc8..cad3358fa4c35 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -822,6 +822,8 @@ static int parse_thread_groups(struct device_node *dn,
+diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
+index f999798a56127..dff84731343cc 100644
+--- a/drivers/net/wan/fsl_ucc_hdlc.c
++++ b/drivers/net/wan/fsl_ucc_hdlc.c
+@@ -790,18 +790,14 @@ static void uhdlc_memclean(struct ucc_hdlc_private *priv)
  
- 	count = of_property_count_u32_elems(dn, "ibm,thread-groups");
- 	thread_group_array = kcalloc(count, sizeof(u32), GFP_KERNEL);
-+	if (!thread_group_array)
-+		return -ENOMEM;
- 	ret = of_property_read_u32_array(dn, "ibm,thread-groups",
- 					 thread_group_array, count);
- 	if (ret)
+ 	if (priv->rx_buffer) {
+ 		dma_free_coherent(priv->dev,
+-				  RX_BD_RING_LEN * MAX_RX_BUF_LENGTH,
++				  (RX_BD_RING_LEN + TX_BD_RING_LEN) * MAX_RX_BUF_LENGTH,
+ 				  priv->rx_buffer, priv->dma_rx_addr);
+ 		priv->rx_buffer = NULL;
+ 		priv->dma_rx_addr = 0;
+-	}
+ 
+-	if (priv->tx_buffer) {
+-		dma_free_coherent(priv->dev,
+-				  TX_BD_RING_LEN * MAX_RX_BUF_LENGTH,
+-				  priv->tx_buffer, priv->dma_tx_addr);
+ 		priv->tx_buffer = NULL;
+ 		priv->dma_tx_addr = 0;
++
+ 	}
+ }
+ 
 -- 
 2.51.0
 
