@@ -1,53 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-17534-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17535-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28070EA4E08
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2026 14:06:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4EE2EA4E07
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2026 14:07:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fPghW21xwz3bsC;
-	Tue, 03 Mar 2026 01:06:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0c:5a00:149::26"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772460379;
-	cv=none; b=bz2cUXm2s/FFlPoEg90Qf81jGmJe6DcxX7anXHSy0wtRrdq4Y/neGkebIZKNxtBNQ7RA4LbGKx5FLcr/eT1c5oxF3Sc04ldcabnh1h22sA/KeeuBPDBjCn3fgnqVXxEHlv5ymsr0cQH5tebYC5YIEWeqIaGsJvrjo8lFmuSs/05LURWnXf4FtSXBOq3Pb1W0XdSd3ywYXFZmHdiupR0mBucCmdCo+0FLK5YNN06iiKXPqTlAzvzAEL4Ok0hbXhf1S5T53WXmKmoynkjvLlSdhrtvPUoS6sVFfIN7SUMPNzDbJZLawupIY+DfBxwfuncnoQe97mYso1lnx+3WOCXJpg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fPgjX3CrNz2xc8;
+	Tue, 03 Mar 2026 01:07:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0c:5a00:149::25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772460432;
+	cv=none; b=mr5RgCANwuayVUIPru1EeMXsO/bBAO8uoFuIW0gquVCrjK23MAxqw/NGt+ffRGEXZLq9Tk8I8rTyRLQaotPWgnWeq2QbiLR1Cd0sNoGTFhrCnlEhkZN/+ubVWYD69VupNR4y8QyeWamam6AOwGjs9v0ab8ZEMrcQ25t9lSFHIGlI8waIJbNzoku2pLuLQVaoou1ggDw3JMeo8eyaudNnC73VHcO4zmt1mulAhEE8nsl3DtBXB4qdw5J1mVW7sMSMVZ2aJhUaIXoY3qW602VJFpnUCLKp2PzR2VmBm75m1A4bc9d2nRSrcWuDOHy1yHVS3gZrZRC8S3bR3yU653QLrA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772460379; c=relaxed/relaxed;
-	bh=TqCugejn+OGjGM2P4bwUziYu78OGaka0Bim+UNMgjx0=;
-	h=From:To:Subject:Date:Message-Id:MIME-Version; b=hVZLt3dk+RjwGFbM5CxdYNvSrokfP9O3qrm9NNk/+OBoCJ/keLjX9DeO4qJGkBcncLIP2Evhs7ozKy7vgq/Rt2TFIHUE0iLjH2AmzPHrBfUhei4dlH5YjNBWqwRIx6Rvy8JIue9jD6ngGdWwAdoYvFt734MD+FzeyGKCPLmJWYUjmZGtT9vOCnGMPhfpOl9BP90CZkdgXP3VU7tLsE6jQbPtPn+FfT/vdU1GBZ9ttV9xRo6XKazKy8J1nN0rHoV+ZiCFc2dH+CmH7lRNjzp+00mQvAwuxydstkPVi4FlrjWHu7ZZFadC3LaZ1arZn1K385pRs2gPh+I+/TzYLpUrCg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=runbox.com header.i=@runbox.com header.a=rsa-sha256 header.s=selector2 header.b=CnVsYB+8; dkim-atps=neutral; spf=pass (client-ip=2a0c:5a00:149::26; helo=mailtransmit05.runbox.com; envelope-from=david.laight.linux_spam@runbox.com; receiver=lists.ozlabs.org) smtp.mailfrom=runbox.com
+	t=1772460432; c=relaxed/relaxed;
+	bh=o2ClYLRupqDrO68wbhPYoX/KO8vhOPlwFWoOd/NbY3w=;
+	h=From:To:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=kkzEsVH0WWPEQZPVJBjFtJPaCXTCboepeFrskdfklBTjphWmBsJtDE9AG2q2Sr6fCiL/rphnnV0RMHZ/BM0SGkT0/AnNRUiLtvYfa0po6FjPkL6/9wzVVZ6B3W4YCF2AkuRrMxGc7IRxBL5971pqZQIJCr2xg7ZxNesVCeIxjCTvoSRpN8p1q7MgYDeCsFILM8HV8bVRGOYYa3JE2KyWUbwWfp+AlDjRhrrTLfximV/aXreBFiJ0wzgMtvz0xzlGa+iQxqaCje0Zk8aOuvOZzPTEF/QEEkfPNZZCfq8mlCPDGapHVmPnTupNHdB8ZrUH7bXOIaiW5dNgNb48ZKJ2lQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=runbox.com header.i=@runbox.com header.a=rsa-sha256 header.s=selector2 header.b=RaIJo34Y; dkim-atps=neutral; spf=pass (client-ip=2a0c:5a00:149::25; helo=mailtransmit04.runbox.com; envelope-from=david.laight.linux_spam@runbox.com; receiver=lists.ozlabs.org) smtp.mailfrom=runbox.com
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=runbox.com header.i=@runbox.com header.a=rsa-sha256 header.s=selector2 header.b=CnVsYB+8;
+	dkim=pass (2048-bit key; unprotected) header.d=runbox.com header.i=@runbox.com header.a=rsa-sha256 header.s=selector2 header.b=RaIJo34Y;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=runbox.com (client-ip=2a0c:5a00:149::26; helo=mailtransmit05.runbox.com; envelope-from=david.laight.linux_spam@runbox.com; receiver=lists.ozlabs.org)
-Received: from mailtransmit05.runbox.com (mailtransmit05.runbox.com [IPv6:2a0c:5a00:149::26])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=runbox.com (client-ip=2a0c:5a00:149::25; helo=mailtransmit04.runbox.com; envelope-from=david.laight.linux_spam@runbox.com; receiver=lists.ozlabs.org)
+Received: from mailtransmit04.runbox.com (mailtransmit04.runbox.com [IPv6:2a0c:5a00:149::25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fPghV5Nnmz2xGF
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Mar 2026 01:06:18 +1100 (AEDT)
-Received: from mailtransmit02.runbox ([10.9.9.162] helo=aibo.runbox.com)
-	by mailtransmit05.runbox.com with esmtps  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fPgjW4wb4z2xGF
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Mar 2026 01:07:11 +1100 (AEDT)
+Received: from mailtransmit03.runbox ([10.9.9.163] helo=aibo.runbox.com)
+	by mailtransmit04.runbox.com with esmtps  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
 	(Exim 4.93)
 	(envelope-from <david.laight.linux_spam@runbox.com>)
-	id 1vx3Jw-003bl3-6s; Mon, 02 Mar 2026 14:28:24 +0100
+	id 1vx3Jx-003ZEJ-9O; Mon, 02 Mar 2026 14:28:25 +0100
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=runbox.com;
-	 s=selector2; h=Content-Transfer-Encoding:MIME-Version:Message-Id:Date:
-	Subject:To:From; bh=TqCugejn+OGjGM2P4bwUziYu78OGaka0Bim+UNMgjx0=; b=CnVsYB+8+
-	VTkexEkCIXtWxDk0ct8bmk056FpnSkPCeP5i9Yz34bIo3y9sfFFKxB70WZvWoa5uqvPOn8FGr0qGf
-	EbIp0aausm3TBu9LxPZnWweSATT+ezR5WZWL2ZB5A/AohwyvAn5sRz/2VIhze8//praDWx5tUs3Kh
-	uSZ5LHvoL37lkFaTAFRYZPn6z3367lk4BEMixUtiAnxmBvTrEt3Nok0C2xREQl+pFHBZNSGve89hN
-	sVBOcOV0Nc47MyZUOiMqCn7FnHZ5wI0tCUtCptdrGMcotngqvg2PlvnsYF2JihFCbaufaLijoNZFG
-	NDR1Prmpt8MS2YYeGDqIb7kqQ==;
+	 s=selector2; h=Content-Transfer-Encoding:MIME-Version:References:In-Reply-To
+	:Message-Id:Date:Subject:To:From;
+	bh=o2ClYLRupqDrO68wbhPYoX/KO8vhOPlwFWoOd/NbY3w=; b=RaIJo34Y0Q7j2egm9oaHOlOtOd
+	qIf5fI6+l/d2wpNaqq8G9dXTQ9MMLD3B96RqcrmcIuZWAbHSJrVvAOsCyxNnHmB0ApiOwjvIA/WUq
+	2QHmlroveisu5RbpBCARdjIwFelcSMWSgnuhcGGnezIcVvrdSc/czwp60dIuZ0dJ0UBhYTt3Dir6A
+	kPjMxT6Sx+w5jzEelLAoWpF5WZwr5068t7N9pLbu3BuEHsUXyhRpZNDULOe1NTcLEJsTarSsqPA3q
+	jO3BiP4+6U4spuDiRYWorjNHk7ZXXdxC/8mJTlzMjB17nS6wB8o7mn+sdiXsOXXocQv+tO32ThUWi
+	FRs2OCew==;
 Received: from [10.9.9.73] (helo=submission02.runbox)
-	by mailtransmit02.runbox with esmtp (Exim 4.86_2)
+	by mailtransmit03.runbox with esmtp (Exim 4.86_2)
 	(envelope-from <david.laight.linux_spam@runbox.com>)
-	id 1vx3Js-0003sJ-UZ; Mon, 02 Mar 2026 14:28:21 +0100
+	id 1vx3Jw-0001hU-9m; Mon, 02 Mar 2026 14:28:24 +0100
 Received: by submission02.runbox with esmtpsa  [Authenticated ID (1493616)]  (TLS1.2:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
 	(Exim 4.93)
-	id 1vx3Jf-008UTR-B9; Mon, 02 Mar 2026 14:28:07 +0100
+	id 1vx3Jj-008UTR-SY; Mon, 02 Mar 2026 14:28:11 +0100
 From: david.laight.linux@gmail.com
 To: Alexander Viro <viro@zeniv.linux.org.uk>,
 	Andre Almeida <andrealmeid@igalia.com>,
@@ -83,10 +85,12 @@ To: Alexander Viro <viro@zeniv.linux.org.uk>,
 	x86@kernel.org,
 	Kees Cook <kees@kernel.org>,
 	akpm@linux-foundation.org
-Subject: [PATCH v2 0/5] uaccess: Updates to scoped_user_access()
-Date: Mon,  2 Mar 2026 13:27:50 +0000
-Message-Id: <20260302132755.1475451-1-david.laight.linux@gmail.com>
+Subject: [PATCH v2 4/5] uaccess: Disable -Wshadow in __scoped_user_access()
+Date: Mon,  2 Mar 2026 13:27:54 +0000
+Message-Id: <20260302132755.1475451-5-david.laight.linux@gmail.com>
 X-Mailer: git-send-email 2.39.5
+In-Reply-To: <20260302132755.1475451-1-david.laight.linux@gmail.com>
+References: <20260302132755.1475451-1-david.laight.linux@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,44 +108,30 @@ Content-Transfer-Encoding: 8bit
 
 From: David Laight <david.laight.linux@gmail.com>
 
-Converting kernel/signal.c to use scoped_user_access() had compilation
-warnings because some of the pointers are 'pointer to const'.
-This is fixed in patch 1.
+-Wshadow is enabled by W=2 builds and __scoped_user_access() quite
+deliberately creates a 'const' shadow of the 'user' address that
+references a 'guard page' when the application passes a kernel pointer.
 
-The same problem has been found compiling arch/powerpc/lib/checksum_wrappers.c
+Signed-off-by: David Laight <david.laight.linux@gmail.com>
+---
+ include/linux/uaccess.h | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-For v2 I've changed the code to use 'auto' and replaced the over-complex
-CLASS definition (and its for loop) with a much simpler __cleanup() function
-on the second loop.
-
-Patches 2 and 3 factor out the 'autoterminating nested for loops'.
-I'm sure there'll be a 'bikeshed' discussion about the names.
-
-Patch 4 stops warnings from -Wshadow (enabled by W=2).
-I did think about making the _diag_xxx conditional on a W=2 build,
-but since the pre-processor just emits #pragma lines and they are
-smaller that the for() loop it doesn't seem worth while.
-
-Patch 5 is the change to signal.c that prompted patch 1.
-The generated code looks fine, but I've not tested it.
-Most of the changes are to 'compat' code - so are probably not
-usually performance critical.
-IIRC the non-compat code uses copy_to/from_user() for the structures
-so is probably slower than the compat code's member by member copy.
-
-David Laight (5):
-  uaccess: Fix scoped_user_read_access() for 'pointer to const'
-  compiler.h: Add generic support for 'autoterminating nested for()
-    loops'
-  uaccess.h: Use with() and and_with() in __scoped_user_access()
-  uaccess: Disable -Wshadow in __scoped_user_access()
-  signal: Use scoped_user_access() instead of __put/get_user()
-
- include/linux/compiler.h | 26 +++++++++++++++
- include/linux/uaccess.h  | 51 ++++++++++------------------
- kernel/signal.c          | 72 +++++++++++++++++++++++-----------------
- 3 files changed, 86 insertions(+), 63 deletions(-)
-
+diff --git a/include/linux/uaccess.h b/include/linux/uaccess.h
+index 64bc2492eb99..445391ec5a6d 100644
+--- a/include/linux/uaccess.h
++++ b/include/linux/uaccess.h
+@@ -739,7 +739,9 @@ static __always_inline void __scoped_user_rw_access_end(const void *p)
+ #define __scoped_user_access(mode, uptr, size, elbl)					\
+ 	with (auto _tmpptr = __scoped_user_access_begin(mode, uptr, size, elbl))	\
+ 		/* Force modified pointer usage within the scope */			\
+-		and_with (const auto uptr __cleanup(__scoped_user_##mode##_access_end) = _tmpptr)
++		__diag_push() __diag_ignore_all("-Wshadow", "uptr is readonly copy")	\
++		and_with (const auto uptr __cleanup(__scoped_user_##mode##_access_end) = _tmpptr) \
++		__diag_pop()
+ 
+ /**
+  * scoped_user_read_access_size - Start a scoped user read access with given size
 -- 
 2.39.5
 
