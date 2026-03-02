@@ -1,35 +1,35 @@
-Return-Path: <linuxppc-dev+bounces-17497-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17498-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E4BED58E7A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2026 07:59:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C3142D58E73
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2026 07:59:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fPWXg0FwNz3btS;
-	Mon, 02 Mar 2026 18:58:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772438338;
-	cv=none; b=U9uz6IWU3JJ9qTJuWR2xmsgYNc5zZ0rUz78wvkstcsD78DGQpgF5BztB4vq5N2jD0ooPc2+q5TXGnrdd5xcWpR+TsQB9wEVQqxZySu5Fm8882MFF0YjoTWFysCCdt3Rutbtp7HplkvqBgKHLBVuEfgXpXv3tCM33y487BK5/Tzb9fFGGuhPjPCGPwljnc7elURAvSlQ/A+qVW9nkLbCxmdRChdzQOvohe19UhZOWZ93Xai/znVLTguOWegAsw8Tnqg17fAAByTrRX8HNhz94XHUebUe0I2AWCj5FeyWFVGCkAM9riqM5K0MVSNXcEmoEQ0dOGlrG/bnHqvKiHAoBvg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fPWXh0HpPz3cB0;
+	Mon, 02 Mar 2026 18:59:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772438339;
+	cv=none; b=ISUl3rzPDphkFaioneV0LS60sCCj5KQXyONGITevTNeztKBudaY4AqE4ISHtXByw9dLHkCmzI/IWUBzwXtiZ0ZdzuHUsFBCXRPvD1uR1hvrC5M3MQA2Fr6xMQeXUs1vrsK+93F80n9Wn43+gjZLeKZf7dt5iLCYZ33Xj/NCTv+I//8mzJRGLD89G1HBPcvE6hdJstEQvZDoTk4xYIa3Je+oRegb4unV/aXzqUAI6HP/GnOYirAOE838elkeHr3hSN9x2Cjl5IgAt/38KZMUjflafU4D4CUKrwIAmNM4i/a26yoCyB9HlQTenk8iKCquYTYcMhcuV8uMZL4nUuxJi4A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772438338; c=relaxed/relaxed;
-	bh=UF10sktaE3a/u60QuU3fU7HqMA3bwXEWu54Wnq4Vn5g=;
+	t=1772438339; c=relaxed/relaxed;
+	bh=hYzDmJLESQDE0WGZOLxDeZB0k8diDoIRXYV8eHmiP4I=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=KEi4T3dYzd2KYZ+U4c9DH+lbEPBeUuY6u3jGMw0Y4hnZ+BjB2LbcuQVcdbz1f7mumrqs16vsaXenUrDVqNa/P+Q4Cy6Xea6XDl0pjMv7r3ZNA6ejwxVOOYH/3E8/3pMmxNzD0L3vAh7ywS+VAQVZ4E3K6+sHDUWc0+YgG/mwtT2OFapE3Qmld5wQJ+nl7+eIJ1oscxYjK1fXehXkUvbvQjuHUhqvFW8fpY33l9UnkQPnQKs5FkYc5RVVmStLoJZ7nINf6Rz5HVciALWua0NZwPkwu5jRECNZ0fgS8WG6HIEvCexoXfmOFsF3Bqf9osviCSmllDZ63OYjow42KWSpRQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=ciydefi2; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=/oOqZJOd; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=c2gkN8dpdXKJwUIzlC0tNL9rJzAwDM9Y7iJExIumFNcZ9vOOqFzCm7s37Tv1X5TjGInNAkVYOloNKMM1vxn0BQdDCj8g+wUpNBHLEMMCAizgGzP/HeC1bzkYvoGDGqxQ+UJ70fw6rxJtB8yssfkQ9Y22MVxLwOYI+aQXhjxrYc+EtrXHShMZOGW8vRNCPBC6nLeIVA3gftF0JACFohNuxvEXFKmNCA8hAb6wVw7s/CXX2hMU59Bw9+TjYonyx0MsUAGJzc42sRupbR7XI1QDrBoE7agDCeZHk+ofvV5CSoCx1NSQqqLrrSOgCT/otmOI9wWEfIO4XtWOpfr35A/0lw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=uyjMEpDU; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=fr/HGqXy; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=ciydefi2;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=/oOqZJOd;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=uyjMEpDU;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=fr/HGqXy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fPWXc4zqPz2xc8
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Mar 2026 18:58:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fPWXg1d7kz3c1T
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Mar 2026 18:58:59 +1100 (AEDT)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
 	s=2020; t=1772438331;
@@ -37,23 +37,24 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=UF10sktaE3a/u60QuU3fU7HqMA3bwXEWu54Wnq4Vn5g=;
-	b=ciydefi2+IGpGjxuJ8S0Pi+V3OE2L2KTESiiSpFlWMdULYcmkYxxE1PJyxSZo34YX9HCvC
-	otxxjHp2oFTPL9j9x3qD59f3ZnvENSKPwzlcjDF9gwOAoWjmGg+Kl2GOzjsuuqOkUN8EFR
-	MpaBg4Wm8BR5LSNmS/vo72/wV/m8ujzC+zXJsxM/E5eHSDwg5a+SCYVX5LcbFGs9WLZx1o
-	IqabJtHg5sn7IO0PwbjNhXU3mLreIj2ehewv2aXyfQnB+vS6/6g72GHvLiu7IUXCA2Dns3
-	jj6Qctvz2ySNMQjcEbRkObXtPQ32W4ozS6FFjJEQYmO4+ZGx86/y86p5sT36/w==
+	bh=hYzDmJLESQDE0WGZOLxDeZB0k8diDoIRXYV8eHmiP4I=;
+	b=uyjMEpDU+Ms1HTL60KWTsXDcQuLD7b4yjxeGhF8tgVTjQ2kkhq75vsgmGnXpq+8cnTXa4D
+	NlV740cDY97hzfhxaqf+46PapcgZHM3gq8CE8RIib4dlrrZ3dXD6rVbf3QDfoCPW+Wl9CV
+	fIAojNCIpmwsadApQeVOp0XlGmzA+oCh36feTuw2rjfy8hvAU0NO5gPPZA5ZQz4FnwJ/6p
+	krCJW8vtMkGUvKjS2hJDtWYE5zCYVvUYmirfs+VbjdnrpMiGWrnjkAGBsJkUvnf8rIMIAf
+	/4rnpF5/Ap+e6KKVqMrxmtke0Oq/DcTrDVeTWQGALaRy8CLcZnadb4lYmSPpPw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
 	s=2020e; t=1772438331;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=UF10sktaE3a/u60QuU3fU7HqMA3bwXEWu54Wnq4Vn5g=;
-	b=/oOqZJOd60lffdI+2m/cDGB+gvLeO1GfCoV5HvJr4+3CHFqEyKt8w0Em37WkJfh2QW+Rxk
-	lrrT3Gblc0IA2uBg==
-Date: Mon, 02 Mar 2026 08:58:39 +0100
-Subject: [PATCH v2 3/5] s390: Add -m64 to KBUILD_CPPFLAGS
+	bh=hYzDmJLESQDE0WGZOLxDeZB0k8diDoIRXYV8eHmiP4I=;
+	b=fr/HGqXyWU3Kci3r+yPCt6+p6Pqf+02Ssd1Pb1zEsVJbbH9+n0SKw2uwMCxMhExtDcG5VA
+	3gqEiOxkN1sj6jDg==
+Date: Mon, 02 Mar 2026 08:58:38 +0100
+Subject: [PATCH v2 2/5] sparc64: vdso: Use 32-bit CHECKFLAGS for compat
+ vDSO
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,7 +70,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260302-vdso-compat-checkflags-v2-3-78e55baa58ba@linutronix.de>
+Message-Id: <20260302-vdso-compat-checkflags-v2-2-78e55baa58ba@linutronix.de>
 References: <20260302-vdso-compat-checkflags-v2-0-78e55baa58ba@linutronix.de>
 In-Reply-To: <20260302-vdso-compat-checkflags-v2-0-78e55baa58ba@linutronix.de>
 To: "David S. Miller" <davem@davemloft.net>, 
@@ -88,45 +89,51 @@ To: "David S. Miller" <davem@davemloft.net>,
 Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org, 
  linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, 
  David Laight <david.laight.linux@gmail.com>, linuxppc-dev@lists.ozlabs.org, 
- =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1772438327; l=1115;
+ =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>, 
+ kernel test robot <lkp@intel.com>
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1772438327; l=1447;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=BTq+tG721IWvmNZKRhmYuiBTJvXYohTSP94/jYKFkyc=;
- b=sX+mpo7qFfoRgBke0bz6zAxXtqo1MhErKWEmsMFk1R+7DQ6DdvNT3JOeYuQjWk75pK4XrWWHX
- /ugF1GYyl71DtJ1gQ0FcfcZ9SjFd/F4MkzoR7GPOsO1elfICLhEYH+T
+ bh=+ZNTvsS03cf/7hGvDJacLfCnOSDvf3VWGwKmuX5AIIY=;
+ b=kspaAO2Nd+J47AMHG0hbuL+BuqH4VXDaOrQx3Oh8u8q9Ts994YT8aym1Wgdi+yqmVAf1E3CFM
+ xPP9byI6x8wC16gAJRbrSBAnEgOpEOXAIgsN+ha/IFSD+jCl89niAri
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-Some non-code files, like linkescripts, are preprocessed with the C
-preprocessor and make use of regular kernel headers.
-As -m64 is not passed to those preprocessor invocations this leads
-to an inconsistency between __BITS_PER_LONG and the C type 'long'.
-An upcoming consistency check will be tripped by this.
+When building the compat vDSO the CHECKFLAGS from the 64-bit kernel
+are used. These are combined with the 32-bit CFLAGS. This confuses
+sparse, producing false-positive warnings or potentially missing
+real issues.
 
-Make sure -m64 is also defined for those preprocessing steps.
+Manually override the CHECKFLAGS for the compat vDSO with the correct
+32-bit configuration.
 
-As KBUILD_CPPFLAGS is inherited by both KBUILD_AFLAGS and KBUILD_CFLAGS,
-drop -m64 from these variables.
-
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/lkml/202511030021.9v1mIgts-lkp@intel.com/
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/s390/Makefile | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+The actual false-positive is only reported when SPARC is converted over
+to the generic vDSO library. However the issue is already present.
+To avoid dependencies between different patch queues, I have this patch
+in this one.
+---
+ arch/sparc/vdso/Makefile | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/s390/Makefile b/arch/s390/Makefile
-index d78ad6885ca2..02bc948a4a56 100644
---- a/arch/s390/Makefile
-+++ b/arch/s390/Makefile
-@@ -12,8 +12,7 @@ LD_BFD		:= elf64-s390
- KBUILD_LDFLAGS	:= -m elf64_s390
- KBUILD_AFLAGS_MODULE += -fPIC
- KBUILD_CFLAGS_MODULE += -fPIC
--KBUILD_AFLAGS	+= -m64
--KBUILD_CFLAGS	+= -m64
-+KBUILD_CPPFLAGS	+= -m64
- KBUILD_CFLAGS	+= -fPIC
- LDFLAGS_vmlinux	:= $(call ld-option,-no-pie)
- extra_tools	:= relocs
+diff --git a/arch/sparc/vdso/Makefile b/arch/sparc/vdso/Makefile
+index 13f1d7be00f1..7d6e3097ebfc 100644
+--- a/arch/sparc/vdso/Makefile
++++ b/arch/sparc/vdso/Makefile
+@@ -90,6 +90,9 @@ KBUILD_CFLAGS_32 += -DDISABLE_BRANCH_PROFILING
+ KBUILD_CFLAGS_32 += -mv8plus
+ $(obj)/vdso32.so.dbg: KBUILD_CFLAGS = $(KBUILD_CFLAGS_32)
+ 
++CHECKFLAGS_32 := $(filter-out -m64 -D__sparc_v9__ -D__arch64__, $(CHECKFLAGS)) -m32
++$(obj)/vdso32.so.dbg: CHECKFLAGS = $(CHECKFLAGS_32)
++
+ $(obj)/vdso32.so.dbg: FORCE \
+ 			$(obj)/vdso32/vdso32.lds \
+ 			$(obj)/vdso32/vclock_gettime.o \
 
 -- 
 2.53.0
