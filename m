@@ -1,57 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-17519-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17518-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94DD1E9B36D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2026 12:26:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3BBF1E9B36A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2026 12:26:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fPdSg62wkz3cBW;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fPdSg4W7Wz3cB5;
 	Mon, 02 Mar 2026 23:25:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772454355;
-	cv=none; b=H9ufvp0gu7mcP+0+MwnT5nNAihRn6SnJF8vP1+/H1VugpAAHXCfoa9Ts1cj9A/2+JmAB064uvq8/ODMRNCgzvDnPqa49RsE+2aD96VlBA0QjisnDxws/svuHvXmORZeYMW5vSIYxmJ5QZ7VtwJNySZO4el/VGnZ24u9y4I+bVnxHkDOGiALRgy3XR/9tmob/bdqs+Q5swm4eAWoiFU+lWFMoceglblHw1qUor9yR704fti3V3ad4y1lZrHi6QED7jvtrPbFGpXwHLVOKNqS3XjfR/Uw9731FL2NDShPqDP0J+0a7LeKlGILtddaQnrrzlZhG70pHu9ahEd+JlcDYmQ==
+	cv=none; b=NBaFAy9qUKbUE1P+QqlmtxgUB4SurH7jh2Ux9ObgWYuEItQ4OLNAEwDU7V/MiGXXQLuxSGLZ9g4aaYS8Dy4uqihavQuQQytkKUkZ0VwxtTkBiNPJhHalvrb2Z0mgSIn2Diw3p8wB2uIEWatGKXmhWloeeIDHPCQnB56ZFgsziXVSEomBI19zErlTwgjKiMTOGWE5om5SfKYXOjBpkbofpKlnGDmkT+cnRkCF+KVI/74qPIqeoqc3bzMzX2We2sPlaQhQVKSQNan8IOgphXb335fUaJCnYN0qAsxIdqk0N2uIHBnklWGpSE2ALGuODyMA75tSEdyfS89mGg9/GSLZYg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1772454355; c=relaxed/relaxed;
-	bh=Q8M0BzYT+8nDvDRpeOPQrwaX+SE1r8gh99dGV2h1fFk=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=o31c8wTRp7Rmj4dBhZXhR8JTvQJobq0/bBmm/Ptf4Ar8j+XgyxgjIaNG9uSKrShjrEWm5/ZwYNYgzJEhEo9hjX4zt+D9HiQ0oOah6ICrZNi0g99h3LO3P1zMULaHwKIiAJN99+o68lObfUvZOQqQYnOadVt/ZbIOJkjC5ORu4ch/2hltbw7HMaUf9/waHH5eABiCOIiPorhGInutrRRkAqQYW/J+ZCY5vB4GsByegUrnIwDyln8dQ4FrH4RwrXjxdQePeghB0ZJoAR5wUBu1mW985V3d73MIMJS2i2edebTySP67CjQavt2nmyBFhzld8XWYsg/csOoMmohggmTJZA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=XTq/Qbds; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=f3MlQqxs; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	bh=KXDeF7UDpB8ZiPE3iLm028k2zogpL4XBUC66IjBoygE=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=f1geYt2VCnYNkoQoBbqRFBIgnam5mly28RM4rjwqOTmV4vDkYQK9fheUvO45ZmBzofVHbc6xJ1jgRRHnjgE9D9UWcUp/y6iH+yFeqmIvxOdUy9GrEq38pQ7D0kt6gpjmSsBEuKfS/0Sp9E8ZTPd7IRR9KV/cL5aI71eR8bdfEhwBWGZrq+4LN+Azv1eYsIJHN9xqlJH0PWkZBaZRBs43sXU6oCDVX5IPw48lXm+gvEryy3VAOwkS3YCVAOQKgNzLQnprVEKAYozF5T9uFfyVoZOlhbU2eP9h39q0478N0XsE0H6sZYqU3gM/cNLnv/9R/DIXJoOliUHlY1UrhwepQA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=u5zypD0/; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=YRuN5Am8; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=XTq/Qbds;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=f3MlQqxs;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=u5zypD0/;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=YRuN5Am8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fPdSf4Z6Qz3c5j
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fPdSf53h5z3c5y
 	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Mar 2026 23:25:54 +1100 (AEDT)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1772454344;
+	s=2020; t=1772454349;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=Q8M0BzYT+8nDvDRpeOPQrwaX+SE1r8gh99dGV2h1fFk=;
-	b=XTq/Qbdsmdrjjgi15d+mbxPv7MA1pmSdTxIgk0x+7gQ1SBn3Qk50BPvaiHTGQy/qTkOET0
-	CGc+OMjOeQ/n2dA3JdyCWwjrdxy0uscngADbfRLK8WmqnacdFL6h4HVWXe+3LbMBHdWR9X
-	qZ74nUVL9W2j3VLfwuTKczYIjFgmRo5MMH5f83HQtqnIdi+gp6yskGE9pemAt/5epkD38A
-	sdonFKgtjJGoOsIGmpIH2kKpN+TtX6hvt/oaC/e+zE3Kp4IcFO+phZTmHZCNcZy7Qe9ryj
-	DSBSapJLSRTcmYCf4GVgZP161CF/lM2AnixGVHOK2waHFibtLc9ifGRmcjG1Rw==
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=KXDeF7UDpB8ZiPE3iLm028k2zogpL4XBUC66IjBoygE=;
+	b=u5zypD0/i7Uz5OODrlF49hQ+lpWWTOdLI3nJOWR1OIvOaMO/3vb+rs4YWorLAbvP3SeupE
+	efw3ir1dAVgCC7GhhgW3qdEFCEqGz/gSDiFzw5LRuYIKpRBxkhhBowXFddLuhZtiaOP4gF
+	dlepkL6XEteTWqc5T9no4ZA3k61IKxfE6IyhfQStErarfrPL67AkxEbr6CYYlqNEZQVMqN
+	NX7z/XIV3AaMIkKD+rc7xX8BEr+XDtbuCIpEFqfZ3QBZQ8mYAYth30AHwbN8dJIxz2QK7H
+	BcQ+zup4ER2aBs9NnJ3azWnJ9/PQBtVXq08kdgFnw32rydUXnsqSCDbbdOlVJg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1772454344;
+	s=2020e; t=1772454349;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=Q8M0BzYT+8nDvDRpeOPQrwaX+SE1r8gh99dGV2h1fFk=;
-	b=f3MlQqxsNMwSdSaceDHlFwzKoTlTmrVShpKlZNDhQVk9O7AG1ihqK0Tpn92+Xr2oztP91Z
-	NrP6Rmm8D/oDiRBw==
-Subject: [PATCH 00/15] exec: Remove AT_VECTOR_SIZE_ARCH from UAPI
-Date: Mon, 02 Mar 2026 13:25:24 +0100
-Message-Id: <20260302-at-vector-size-arch-v1-0-a11f03ba2ca8@linutronix.de>
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=KXDeF7UDpB8ZiPE3iLm028k2zogpL4XBUC66IjBoygE=;
+	b=YRuN5Am8QTcAru6KtUv5IvXWiWNuN4ajxCeRCgIAwKrJtoAJkHubhsTbdBJDWkHmvs5dPw
+	Q4dALwGBXmkPgVBw==
+Date: Mon, 02 Mar 2026 13:25:32 +0100
+Subject: [PATCH 08/15] LoongArch: Remove AT_VECTOR_SIZE_ARCH from UAPI
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -67,10 +69,9 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x3MQQ5AMBBG4avIrE1SXTS4ilhU/WU2yFRESO+us
- fwW772UoIJEffWS4pIk+1bQ1BWF1W8LWOZissY605iO/ckXwrkrJ3nAXsPKDiZadDG2k6NSHoo
- o938dxpw/BDR+BWUAAAA=
-X-Change-ID: 20260109-at-vector-size-arch-6e0f2e9ff8b6
+Message-Id: <20260302-at-vector-size-arch-v1-8-a11f03ba2ca8@linutronix.de>
+References: <20260302-at-vector-size-arch-v1-0-a11f03ba2ca8@linutronix.de>
+In-Reply-To: <20260302-at-vector-size-arch-v1-0-a11f03ba2ca8@linutronix.de>
 To: Kees Cook <kees@kernel.org>, Arnd Bergmann <arnd@arndb.de>
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, 
  linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
@@ -79,11 +80,11 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-mips@vger.kernel.org, sparclinux@vger.kernel.org, 
  linux-sh@vger.kernel.org, linux-alpha@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1772454343; l=2953;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1772454343; l=1725;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=JDTHLUTBRhLdtWzI+cYwcXmhsRHrVsJSh1vwEnoNL54=;
- b=J6CYW4wsSS52A+nGxs9gwUdPdfHUZDIYWEVVGw/G+GXj/VTqu7W4L6C1R+uvBZbzZsf4FisCc
- r+YyP25hcjyC3G9P+jLo1JOj2qTAaURruN7qUwKyoqSA+FQdhvM39MD
+ bh=+/a7BCuaRvs/grFgisGI29OqfBKuEYQlySRlV2+Ad3w=;
+ b=PsVs/lovJCA1Gx2WwwkdDjFmcUu2Juw49xEDuMkmmUjNuORoQIekOKf3Yr14UygMky0lYF1th
+ pALKMlLZtR4CkzYTF734/hb85wQvMSVlXVQIwWJIc24yD/mabNmcyJT
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
@@ -91,64 +92,56 @@ There is nothing userspace can do with this value. In the kernel is
 always combined with AT_VECTOR_SIZE_BASE, which is not exposed to
 userspace and also changes from time to time.
 
-Move the symbol to kernel-internal headers.
-
-Meant to be applied through the asm-generic tree.
-The default recipient list was huge. I trimmed it to only the
-architecture lists.
+Move the symbol to a kernel-internal header.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 ---
-Thomas Weißschuh (15):
-      MAINTAINERS: exec: Add more auxvec.h variants
-      auxvec.h: Move AT_VECTOR_SIZE definitions to linux/auxvec.h
-      asm-generic: add an in-kernel auxvec.h header
-      ARM: drop custom asm/auxvec.h
-      x86: Remove AT_VECTOR_SIZE_ARCH from UAPI
-      arm64: Remove AT_VECTOR_SIZE_ARCH from UAPI
-      RISC-V: Remove AT_VECTOR_SIZE_ARCH from UAPI
-      LoongArch: Remove AT_VECTOR_SIZE_ARCH from UAPI
-      s390: Remove AT_VECTOR_SIZE_ARCH from UAPI
-      powerpc: Remove AT_VECTOR_SIZE_ARCH from UAPI
-      MIPS: Remove AT_VECTOR_SIZE_ARCH from UAPI
-      sparc: Remove AT_VECTOR_SIZE_ARCH from UAPI
-      sh: Remove AT_VECTOR_SIZE_ARCH from UAPI
-      alpha: remove AT_VECTOR_SIZE_ARCH from UAPI
-      auxvec.h: Drop fallback AT_VECTOR_SIZE_ARCH
-
- MAINTAINERS                              |  5 +++++
- arch/alpha/include/asm/auxvec.h          |  7 +++++++
- arch/alpha/include/uapi/asm/auxvec.h     |  8 +++-----
- arch/arm/include/asm/auxvec.h            |  1 -
- arch/arm64/include/asm/auxvec.h          |  7 +++++++
- arch/arm64/include/uapi/asm/auxvec.h     |  6 ++----
  arch/loongarch/include/asm/auxvec.h      | 14 ++++++++++++++
  arch/loongarch/include/uapi/asm/auxvec.h |  8 +++-----
- arch/mips/include/asm/auxvec.h           | 17 +++++++++++++++++
- arch/mips/include/uapi/asm/auxvec.h      |  8 +++-----
- arch/powerpc/include/asm/auxvec.h        |  7 +++++++
- arch/powerpc/include/uapi/asm/auxvec.h   |  6 ++----
- arch/riscv/include/asm/auxvec.h          | 13 +++++++++++++
- arch/riscv/include/uapi/asm/auxvec.h     |  2 --
- arch/s390/include/asm/auxvec.h           |  7 +++++++
- arch/s390/include/uapi/asm/auxvec.h      |  6 ++----
- arch/sh/include/asm/auxvec.h             |  7 +++++++
- arch/sh/include/uapi/asm/auxvec.h        |  8 +++-----
- arch/sparc/include/asm/auxvec.h          |  6 ++++++
- arch/sparc/include/uapi/asm/auxvec.h     |  8 +++-----
- arch/x86/include/asm/auxvec.h            | 12 ++++++++++++
- arch/x86/include/uapi/asm/auxvec.h       | 13 +++----------
- include/asm-generic/Kbuild               |  1 +
- include/asm-generic/auxvec.h             |  7 +++++++
- include/linux/auxvec.h                   |  5 +++++
- include/linux/mm_types.h                 |  6 ------
- 26 files changed, 139 insertions(+), 56 deletions(-)
----
-base-commit: f6b3b0a4c85882ad75bce3b093173203e3f39f28
-change-id: 20260109-at-vector-size-arch-6e0f2e9ff8b6
+ 2 files changed, 17 insertions(+), 5 deletions(-)
 
-Best regards,
+diff --git a/arch/loongarch/include/asm/auxvec.h b/arch/loongarch/include/asm/auxvec.h
+new file mode 100644
+index 000000000000..37dd717a3a22
+--- /dev/null
++++ b/arch/loongarch/include/asm/auxvec.h
+@@ -0,0 +1,14 @@
++/* SPDX-License-Identifier: GPL-2.0+ */
++/*
++ * Author: Hanlu Li <lihanlu@loongson.cn>
++ *         Huacai Chen <chenhuacai@loongson.cn>
++ *
++ * Copyright (C) 2020-2022 Loongson Technology Corporation Limited
++ */
++
++#ifndef __ASM_AUXVEC_H
++#define __ASM_AUXVEC_H
++
++#define AT_VECTOR_SIZE_ARCH 1 /* entries in ARCH_DLINFO */
++
++#endif /* __ASM_AUXVEC_H */
+diff --git a/arch/loongarch/include/uapi/asm/auxvec.h b/arch/loongarch/include/uapi/asm/auxvec.h
+index 922d9e6b5058..79691c422c7e 100644
+--- a/arch/loongarch/include/uapi/asm/auxvec.h
++++ b/arch/loongarch/include/uapi/asm/auxvec.h
+@@ -6,12 +6,10 @@
+  * Copyright (C) 2020-2022 Loongson Technology Corporation Limited
+  */
+ 
+-#ifndef __ASM_AUXVEC_H
+-#define __ASM_AUXVEC_H
++#ifndef __UAPI_ASM_AUXVEC_H
++#define __UAPI_ASM_AUXVEC_H
+ 
+ /* Location of VDSO image. */
+ #define AT_SYSINFO_EHDR		33
+ 
+-#define AT_VECTOR_SIZE_ARCH 1 /* entries in ARCH_DLINFO */
+-
+-#endif /* __ASM_AUXVEC_H */
++#endif /* __UAPI_ASM_AUXVEC_H */
+
 -- 
-Thomas Weißschuh <thomas.weissschuh@linutronix.de>
+2.53.0
 
 
