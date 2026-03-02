@@ -1,59 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-17529-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17530-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74C6BE9B36D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2026 12:27:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 027AAE9B36D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2026 12:29:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fPdSn51vRz3cPM;
-	Mon, 02 Mar 2026 23:26:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772454361;
-	cv=none; b=ZlzYXA7zxhreyEO/3qtWKpWxgHMUXshTglXZGPzcA0YRXYxGYw05b6lLXWP85dNmGNmnQ191uab2+6aVtyyBmXOLioHNn07UrqFeyeb5WMw65zIZRUJP6en8ZOVHp82wBeGfJqsD2yOZRMvkgTt0OsZ76zi10MnpEXiEHLQaYOQDfmE5UC+bEFnstVn4qWsm0Q/cRm6xYzvjCBtpGMWMABRsPKCMoc8Ycpfywu4niwpGmiCfkUQcDste+Nkz60SeMHtgrHBkpRfeUzPtjDfOiCwGZRmnC2lVRNlQ9qxJPfXSlaA++Hy1T9SLVWdfwhJdXJKVuhJKNiT5l81ZaNdeag==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fPdXR4Dx7z3bmR;
+	Mon, 02 Mar 2026 23:29:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=109.230.236.95
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772454551;
+	cv=none; b=j+r6Vxuh1c7jGdcgk1S+ULCLkRGEqoWOpcMYkwBqAYIG02NEaMque5DUbQcuCM0gLt9ONMnn5PssQbm+VDVNnRWh2MTcY8heAhDK2P0jpwaaiLzrs9OgU32hc9bmnmDTXokbDnTD7r7nKPUGPSfVGvA0WBws78Cz7cgOiXM8sNnf6SOlvh1YE9iMu+9P0pHxqMtRsn9VQC6SV/aKLXJOK+tSas7nkggUKW6tOUoMQ6emFIR6/dDiaaeR03/kqxf/0+4PE8SXcxfAqouwp/u7/KkthUBRKA9jOG6dnxM8QaGr/4zhCU92EudyfBh/ZzftEPfjb2KAqmdrSZutfA/SDw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772454361; c=relaxed/relaxed;
-	bh=Gk+DNY1FnX2Is9++3W7weFVsUWOyhOhif2Eu1mxTHc8=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=AuBLwBwGH5O2ATg08tr3osUfu49t8x+u2pT+eUKJvTxFXHP2mp1Ub5xCJALKKhWP7VXBaNQESTrbTbtEmFX2WLqI6btoLBvUMYnpdl2i8DbYZnYzCBBmZNNKG0LdsyKLmSLY+PZSjXnnuzwrwPkNGvK/B7Q6tX0UrpSo6jDkl/LqewAHPSLLc7absrjDpUggRejNjP001ghNUQLFywp03KTVTSXhwAqiRoNUbmfco3KqKCpjJUF+kaNZ9mQFcJq9pGvL+IL/44gg6ZsCA1bol3B2QfSU7LPkhT58TU1h6lDLJRI27M7Ua8ie9EERaDSSH5/Wf9Q0NdACAegC9LkzPw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=bjv0a6y3; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=BYfC3Feg; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+	t=1772454551; c=relaxed/relaxed;
+	bh=X8mwUNYwU9JF40bR4iD2R82JNIOFzCxZ7NUOwk/BDMA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Df2bMdQq+d6v0Jhcn8UimtTjzeIKYQatLBZnvN2ZOTsnGOqqoB+tVjqDJ3FvPzBa8bJXkqr2C8JAglwG4U+AZzsArHZdJTDPEaECo6BAGA/9BMgGEUAgxAtiNDl2Qh8bu4VpZUgvJZtNMRzLN1+ycdaKxJfD7mt4skPVCdNnR6EQdC3V1oUKIZCcK09aVDihP+6AsE7Zk+NUXIHQn0LaxiEm3SF1OWHkInBlR++0i35FdWCaPwaSgTbnJmn9h2hwg7/rmKnzRQRRJ0PEi9cF4crqFM14KZpK++qYR+bQXfFOltTS1wf2auuMa4HZ9leq7wWDFT/LndV0nw/n5fyE9w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ralfj.de; dkim=pass (1024-bit key; secure) header.d=ralfj.de header.i=@ralfj.de header.a=rsa-sha256 header.s=mail header.b=BCOnjU22; dkim-atps=neutral; spf=pass (client-ip=109.230.236.95; helo=r-passerv.ralfj.de; envelope-from=post@ralfj.de; receiver=lists.ozlabs.org) smtp.mailfrom=ralfj.de
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ralfj.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=bjv0a6y3;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=BYfC3Feg;
+	dkim=pass (1024-bit key; secure) header.d=ralfj.de header.i=@ralfj.de header.a=rsa-sha256 header.s=mail header.b=BCOnjU22;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ralfj.de (client-ip=109.230.236.95; helo=r-passerv.ralfj.de; envelope-from=post@ralfj.de; receiver=lists.ozlabs.org)
+Received: from r-passerv.ralfj.de (r-passerv.ralfj.de [109.230.236.95])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fPdSm2BvQz3cMc
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Mar 2026 23:25:59 +1100 (AEDT)
-From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1772454353;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Gk+DNY1FnX2Is9++3W7weFVsUWOyhOhif2Eu1mxTHc8=;
-	b=bjv0a6y3jCZ57+M0uFA88aCV5qSJ4Nd0obqTh1cZRZ6IaeWWNg/CTFwcAHwXw//lfMMUVu
-	m1Mpa8otbmrWDJUuqL59FPydBljYCAaaGVif88nsL7FmUoVnPZ45eBu/dbmrRuw0f6Yo6w
-	v9eNArcvNvWsTi5mM3dGszF37CncJy76utUKDIR7HGZiggCkaqipBC1lZDaBI2haLxXiKZ
-	M35kORuqVQt+esRy8qf4cdpa+eJ/GDFoQkajHSv+QyO+Ky0KkAVVx8uVkOXMDX0AEguZXr
-	nuJHkW7DK+/9SJ98zVgc7fjaR+AC8titmzEOvetbJ5VW1vSlFpSMgU0fO2yfFw==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1772454353;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Gk+DNY1FnX2Is9++3W7weFVsUWOyhOhif2Eu1mxTHc8=;
-	b=BYfC3Fegaop1FFBF9oem1OjAUVs0XyTKiFOs56Iip+kmC013SL48mBu/X4JFdKO5qcaRVH
-	9OQ9T+TEdCCCwCCw==
-Date: Mon, 02 Mar 2026 13:25:39 +0100
-Subject: [PATCH 15/15] auxvec.h: Drop fallback AT_VECTOR_SIZE_ARCH
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fPdXP2s7Qz3bW7
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Mar 2026 23:29:09 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=ralfj.de; s=mail;
+	t=1772454536; bh=esTLKb+WUSLP+AsKnFLMgNAf+diFPkDDjV0Pd6WW1/0=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=BCOnjU22b/jdLSEp9fI4ZXsYJIYsFRiLCHfZrQ7spHnfClt7sp1JELo970f4LgOol
+	 JnQ8VD6EkHCcT/ZDfQjEL+kWWTE8+JDW0z0DlBZeSA6YN15Jr7mj8S2uErEFix8yes
+	 juIvP/O56YjynhkqGGgznD9455bI65Gxauk+JHPQ=
+Received: from [IPV6:2001:67c:10ec:5784:8000::12e7] (2001-67c-10ec-5784-8000--12e7.net6.ethz.ch [IPv6:2001:67c:10ec:5784:8000::12e7])
+	by r-passerv.ralfj.de (Postfix) with ESMTPSA id 9A52A2053392;
+	Mon,  2 Mar 2026 13:28:55 +0100 (CET)
+Message-ID: <fa775d83-73ad-450d-a592-7a9d3a3e2271@ralfj.de>
+Date: Mon, 2 Mar 2026 13:28:50 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -67,51 +53,110 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH V6 2/3] rust: Add PowerPC support
+To: Alice Ryhl <aliceryhl@google.com>,
+ Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+Cc: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>,
+ Link Mauve <linkmauve@linkmauve.fr>, ojeda@kernel.org, boqun.feng@gmail.com,
+ gary@garyguo.net, bjorn3_gh@protonmail.com, lossin@kernel.org,
+ a.hindborg@kernel.org, tmgross@umich.edu, dakr@kernel.org, corbet@lwn.net,
+ maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+ chleroy@kernel.org, peterz@infradead.org, jpoimboe@kernel.org,
+ jbaron@akamai.com, rostedt@goodmis.org, ardb@kernel.org,
+ rust-for-linux@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Jubilee Young <workingjubilee@gmail.com>, Matthew Maurer
+ <mmaurer@google.com>, David Wood <david@davidtw.co>,
+ Wesley Wiser <wwiser@gmail.com>
+References: <20260210090023.2587534-1-mkchauras@gmail.com>
+ <20260210090023.2587534-3-mkchauras@gmail.com>
+ <CAH5fLgi3Owm4=4g8wQ5Rnr7Y63XJ1D8apOdkewW6WpRfg6vV_w@mail.gmail.com>
+ <aZtT4MH0Q8Ic9ZiM@luna>
+ <CANiq72nEam8n_daX5LyYrpH=i71k+pb+HLn6EEPdJJc-Zi9Q3A@mail.gmail.com>
+ <aZu6cSqnvO91w1m4@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+ <CANiq72mg+D4QZmBhrNj7dB+V3GHsQoZT2cSG1ffHYDYJWXyopQ@mail.gmail.com>
+ <0a176f95-eeba-428e-b19b-b08503d9ca5d@ralfj.de>
+ <aaUlwfP72ZpshLPL@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+ <aaU8VC-kLOKDyYDP@google.com>
+From: Ralf Jung <post@ralfj.de>
+Content-Language: en-US, de-DE
+In-Reply-To: <aaU8VC-kLOKDyYDP@google.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260302-at-vector-size-arch-v1-15-a11f03ba2ca8@linutronix.de>
-References: <20260302-at-vector-size-arch-v1-0-a11f03ba2ca8@linutronix.de>
-In-Reply-To: <20260302-at-vector-size-arch-v1-0-a11f03ba2ca8@linutronix.de>
-To: Kees Cook <kees@kernel.org>, Arnd Bergmann <arnd@arndb.de>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, 
- linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-riscv@lists.infradead.org, loongarch@lists.linux.dev, 
- linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- linux-mips@vger.kernel.org, sparclinux@vger.kernel.org, 
- linux-sh@vger.kernel.org, linux-alpha@vger.kernel.org, 
- =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1772454343; l=730;
- i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=3SgKzX2uaURwdk6BulOU26vMp194sxSrGIKk7+4gH+o=;
- b=vht2sJN2rUis/ZgzV++4P2sJ59ygy9DcT8yNfNbBA9oZ/PokJlfDEb+BAVSUMWrI8Um52Kvy2
- /R46rtq58zdC0ybNyXouxNGCbUYsNmMjl7tobyboz5eg/Pw0p7lpe82
-X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
- pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-All asm headers now define this constant.
+Hi all,
 
-Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
----
- include/linux/auxvec.h | 4 ----
- 1 file changed, 4 deletions(-)
+On 02.03.26 08:29, Alice Ryhl wrote:
+> On Mon, Mar 02, 2026 at 11:25:54AM +0530, Mukesh Kumar Chaurasiya wrote:
+>> On Tue, Feb 24, 2026 at 09:58:10AM +0100, Ralf Jung wrote:
+>>> Hi all,
+>>>
+>>> On 23.02.26 16:31, Miguel Ojeda wrote:
+>>>> On Mon, Feb 23, 2026 at 3:26 AM Mukesh Kumar Chaurasiya
+>>>> <mkchauras@gmail.com> wrote:
+>>>>>
+>>>>> I think, disabling altivec, fpu and vsx with compiler flag will work.
+>>>>>
+>>>>> What are your opinion on this?
+>>>>
+>>>> It is really up to upstream Rust -- for us, i.e. the kernel, it
+>>>> usually doesn't really matter much how things like that are
+>>>> accomplished: whether via flags, a built-in target, a custom target,
+>>>> etc. However, we need to know what the path to stability is.
+>>>>
+>>>> My understanding (but I may be wrong) is that upstream Rust prefer we
+>>>> use built-in targets for softfloat instead of disabling via
+>>>> `-Ctarget-feature` (and that the other options may go away soon and/or
+>>>> will never be stable) -- at least for some cases. For instance, for
+>>>> arm64, please this recent change kernel-side regarding `neon` as an
+>>>> entry point:
+>>>>
+>>>>     446a8351f160 ("arm64: rust: clean Rust 1.85.0 warning using softfloat target")
+>>>>
+>>>> So please ask upstream Rust (probably in their Zulip, e.g. in
+>>>> t-compiler or rust-for-linux channels) what you should do for powerpc.
+>>>> They will likely be happy with a PR adding the target (or whatever
+>>>> they decide) as Alice mentions. And until we reach that minimum
+>>>> version (in a year or more), we can use something else meanwhile. But
+>>>> at least we will have a way towards the end goal, if that makes sense.
+>>>>
+>>>> In case it helps, let me Cc Ralf, Jubilee and Matthew who were
+>>>> involved in some of that discussion in the past, plus the compiler
+>>>> leads.
+>>>
+>>> Upstream Rust dev here. Indeed we'd strongly prefer if this could use a
+>>> built-in Rust target; we can work with you on adding a new target if that is
+>>> needed.
+>>> The kernel currently uses a custom JSON target on x86 and that's quite the
+>>> headache for compiler development: JSON targets are highly unstable and
+>>> directly expose low-level details of how the compiler internally represents
+>>> targets. When we change that representation, we update all built-in targets,
+>>> but of course we cannot update JSON targets. So whenever possible we'd like
+>>> to move towards reducing the number of JSON targets used by the kernel, not
+>>> increase it. :)
+>>>
+>>> Kind regards,
+>>> Ralf
+>>>
+>> Hey,
+>>
+>> Sorry for delayed response. I was out of network zone.
+>>
+>> I am not sure about the process of how to get this in rust toolchain.
+>> Should I raise an issue of github for this?
+> 
+> You would need to add a new file to compiler/rustc_target/src/spec/targets
+> in the rustc repository.
+> 
+> If you're not sure what to put there, I would suggest coming up with
+> something that looks plausible, and opening a PR with that. Then others
+> can help you with filling out the target correctly.
 
-diff --git a/include/linux/auxvec.h b/include/linux/auxvec.h
-index 68c9d6b118a9..814f984726d6 100644
---- a/include/linux/auxvec.h
-+++ b/include/linux/auxvec.h
-@@ -9,10 +9,6 @@
- #define AT_VECTOR_SIZE_BASE 22 /* NEW_AUX_ENT entries in auxiliary table */
-   /* number of "#define AT_.*" above, minus {AT_NULL, AT_IGNORE, AT_NOTELF} */
- 
--#ifndef AT_VECTOR_SIZE_ARCH
--#define AT_VECTOR_SIZE_ARCH 0
--#endif
--
- #define AT_VECTOR_SIZE (2*(AT_VECTOR_SIZE_ARCH + AT_VECTOR_SIZE_BASE + 1))
- 
- #endif /* _LINUX_AUXVEC_H */
+Also see the documentation at 
+<https://doc.rust-lang.org/rustc/target-tier-policy.html#adding-a-new-target>.
 
--- 
-2.53.0
+Kind regards,
+Ralf
 
 
