@@ -1,60 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-17495-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17496-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D17CDD58E7A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2026 07:59:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67D45D58E73
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Mar 2026 07:59:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fPWXf1ClYz3blr;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fPWXf5zfLz3bsC;
 	Mon, 02 Mar 2026 18:58:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772438338;
-	cv=none; b=RmU/+vOnL4w61OHGUem9GrNekKnluSiqBPajJkquCRJZvYvPE9/C2fuoDFplShGeBVKdvTgQVXMjewbP3CtYAa0kjNrPiFnyk8c95m+IysM0eNlm10sx04lX/7+4517HWRZEGrmRBK0r2MsU+i1lweOkHXfsna3QfDB83CnSNpjX6z18cqrR39Qee/F47oXBteq66PAOQrnkWtHk0p3hLa1z3edvVvlvJXuveoLyjUiRaIYtp0feiA3WmgmoHZ/ejy9W2rzzkCL8QlKEsKLhCegewomjcuLLLUapsNyVEUK61EXkedWeR5gNwxDbkWvDUIYGpGg3wZalfGLpU9N3TQ==
+	cv=none; b=nInG1V94Q+XiX9qm9LXVCJ4wh9hB8+mJVNKEknhkcxzRyaWaaXcastpR6gwfqhpKMKX77l46bTrMjLDTBSI87XdpVd5llP0PF0SMVkZZVo/dofu+go4ZGaRoXc1OQ/EY1boxfzQLHvE2x1Xge35tZzB12QmOUe2RGmhW8Q0y9RR5Wn4BrFqA8ev34DBkTIAzZGc0N/EZfptbdCYx8twXsJpbnJP12GG+SGVx0lJJGkEIue3zUouyHA4DZdeKppcoWoVFv76/o32Oi/Te43lJZkWkaMpEs9u2r59xc2JuRtkMJi3u1FpJxg+SKHI+SSJ7D9ARbFO2qFGBBb+yCu/WHw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1772438338; c=relaxed/relaxed;
-	bh=8mcgepFI0mjBE0CWOdrG5t6m+R1W63RB4CuAREY+63Q=;
+	bh=jDCrcHt8O4dhTht762Lzzs+IBKZYqdQLeGb4eSwA3mw=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=fGJk8rQp1NsPxzgHmjPGuaWCbjlWIoJ1xyKosV/aUV57/Z/KfJ2Twjl4VxTzLSxNU8Z3c0SyZ8b2+NPL97QbBvovwnOy0UlLbarZhP4oKW7hEP5vULvPFq64B5Iav4vxy8TdJjvhnFMLQV/54+jH9cl8Bq03/5y+toyKf3GNTRHFnarKOFjVJkJvhdlccExmIfU7+vIn5mggxv1eJMQR+mUin57I+rYKBZmt2R6PpbxU1gLTiy02gliIbPRWbt5V+QupY79bTRmfmdNHotYDKld3HA5XrHP3LW4xKe155YHQK3WfxG54xR0tyb6c+B/HPmsU1+QB5umzCNX4KHt5Wg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=HLcwMe71; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=P+DKLgDO; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=iFAf+t0aKESAyhh5B9txmimcE2uKez8kWieQaslX1WD95FhvV82EWFQJLHhec+MLxDZIqeJlFH1NUupQR+dBE0QBrNdDZeuawrgLiq2JZEPCfZv0JL6+FlPAwlllDD5k/LgWkQ+30L5VBp5jWeIV4KdS4bF6+ylN3654ohXzq25cOY7dN+tt4Pr23v6zuXZzAkqzdSbVIJOeRn5LD2vDYWmiitHQLIczirabWOPno+kkhqeFw8XiZImjhEblQRIkT3lOa23p7pbSqye6nAPQfIS3CqXm0lJijVrRoVKeae0YmRtVF1vEx7Eqh5bjIs6U9egCS5V8PsWy3dbcalctsQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=bxHB4cE7; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=efvxVqum; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=HLcwMe71;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=P+DKLgDO;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=bxHB4cE7;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=efvxVqum;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fPWXc4TzKz2xYw
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fPWXc53Z4z3bkL
 	for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Mar 2026 18:58:56 +1100 (AEDT)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1772438332;
+	s=2020; t=1772438330;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=8mcgepFI0mjBE0CWOdrG5t6m+R1W63RB4CuAREY+63Q=;
-	b=HLcwMe71m9ympi7l8ojF719Wk0h5dn83FMfTV2eQj+BsIGnoLt//wF957nA94RMrcQ+cmP
-	qEC5Fp6Iyck1YtuGVOrktMAZlKQHS9yEcLQmo/0wcN7rgByvJbjRgbQRJ4C26cNL0Kf0gN
-	eGssvjqFfCb3b0h3edf16P2CoW1NLM2vfN5yicNUdGT5MB0EDEDaXA6ZMY0MagK3NbS6BC
-	9QdfYfxeKl1IcOkuSxQNEGL2+uvVZJWE7va6DfdZnxVpiYTRSienFC/jT5xg8PPopE+j7j
-	Xig5KOwPNRDG9jfz2/lrP/9iUFo5fA9iSHIPhf6qj6eAMfPdiLjACBWXGcsq0g==
+	bh=jDCrcHt8O4dhTht762Lzzs+IBKZYqdQLeGb4eSwA3mw=;
+	b=bxHB4cE7MnNYGC3LGFJQZbAqR1AX7Fj2u4K/iJg3DmTgTPv6SMfC+jLrKfrfo48cNHCdcS
+	kHgm1LXOX3Ulk7YNyobEBm6LA3UE+JS/ajFt59GmEeArXLSu9TZbpwBY0V4leeH+yaR59D
+	tZJTJ+Qk1vW2vXSbeMLxeaOej/OSpsZaSsUEoHAb0/9/wyJobZOuZeR+HK69qB0I/SQ2i0
+	gU5Z769UJXIQa4xv9omtW2LTJtS2OQAUvJ10ZjYFfCCIgEfO9N3H2fTgFPSsZZnDq9OG47
+	Jf/T4JWoaDBRD5aq5CZMdxKd01JAbK9NjJhb68w+D2/ObDrUR52dcQH+0oGmbw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1772438332;
+	s=2020e; t=1772438330;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=8mcgepFI0mjBE0CWOdrG5t6m+R1W63RB4CuAREY+63Q=;
-	b=P+DKLgDOi3dnOL/kQA6aCgkM34iRMwcaE2eHH/CHlKfBv8Ls2GwbOPP9cSN6G7kAkOHhWN
-	4m0jvGhZo/3wd4BA==
-Date: Mon, 02 Mar 2026 08:58:40 +0100
-Subject: [PATCH v2 4/5] powerpc/audit: directly include unistd_32.h from
- compat_audit.c
+	bh=jDCrcHt8O4dhTht762Lzzs+IBKZYqdQLeGb4eSwA3mw=;
+	b=efvxVqumAur2T8LG28u5Yn0U0H8bRQKwT+Jh2uOlOmK4nUzUOsltLyESAuNhzX0970V5P6
+	r2bYGqMgv6Z8JFCw==
+Date: Mon, 02 Mar 2026 08:58:37 +0100
+Subject: [PATCH v2 1/5] x86/vdso: Use 32-bit CHECKFLAGS for compat vDSO
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,7 +69,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260302-vdso-compat-checkflags-v2-4-78e55baa58ba@linutronix.de>
+Message-Id: <20260302-vdso-compat-checkflags-v2-1-78e55baa58ba@linutronix.de>
 References: <20260302-vdso-compat-checkflags-v2-0-78e55baa58ba@linutronix.de>
 In-Reply-To: <20260302-vdso-compat-checkflags-v2-0-78e55baa58ba@linutronix.de>
 To: "David S. Miller" <davem@davemloft.net>, 
@@ -89,41 +88,51 @@ To: "David S. Miller" <davem@davemloft.net>,
 Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org, 
  linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, 
  David Laight <david.laight.linux@gmail.com>, linuxppc-dev@lists.ozlabs.org, 
- =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1772438327; l=1025;
+ =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>, 
+ Sun Jian <sun.jian.kdev@gmail.com>, kernel test robot <lkp@intel.com>, 
+ Dan Carpenter <dan.carpenter@linaro.org>
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1772438327; l=1516;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=CVSp9N7ojydH+g55wpL0oEQy1NPWvz/8vcri2dbmViY=;
- b=5UJigRuF1ls39QQ7kYsZuAT52JM94nxcB/HBtSSri5qEB/zHIEP+ctD0UzjErLMR8hzmiHDY+
- asSEu4ht1X7COVSQi1dPSE+PM1nFTj8O0AyRPzX/iKSvzdf9gNJv3ej
+ bh=5ZtWeLoIG1DUjNycBMtCEpprUXPJS/yxYX1kXl4i0fQ=;
+ b=+NVtnS6EyY2Yoq5xKj8da3D2ktgjWUTfvnaXTMMqFJhyaa85rPvEJd4KytnY3lc96J0g8mRrj
+ KMacJ1WhtFWAPq9kCvYgoREx0uRXMt7AQbPWjwUKsysaifcS2+RVPku
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-This source file undefines '__powerpc64__' to get the 32-bit system call
-numbers from asm/unistd.h. However this symbol is also evaluated by
-other headers, among them is asm/bitsperlong.h. The undefinition leads
-to an inconsistency between __BITS_PER_LONG and the C type 'long'.
-An upcoming consistency check will be tripped by this.
+When building the compat vDSO the CHECKFLAGS from the 64-bit kernel
+are used. These are combined with the 32-bit CFLAGS. This confuses
+sparse, producing false-positive warnings or potentially missing
+real issues.
 
-Directly include asm/unistd_32.h to get access to the 32-bit system call
-numbers instead.
+Manually override the CHECKFLAGS for the compat vDSO with the correct
+32-bit configuration.
 
+Reported-by: Sun Jian <sun.jian.kdev@gmail.com>
+Closes: https://lore.kernel.org/lkml/20260114084529.1676356-1-sun.jian.kdev@gmail.com/
+Closes: https://lore.kernel.org/lkml/20260117215542.342638347@kernel.org/
+Reported-by: kernel test robot <lkp@intel.com>
+Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
+Closes: https://lore.kernel.org/r/202602111941.PIhubgrb-lkp@intel.com/
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/powerpc/kernel/compat_audit.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ arch/x86/entry/vdso/vdso32/Makefile | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/kernel/compat_audit.c b/arch/powerpc/kernel/compat_audit.c
-index 57b38c592b9f..b4d81a57b2d9 100644
---- a/arch/powerpc/kernel/compat_audit.c
-+++ b/arch/powerpc/kernel/compat_audit.c
-@@ -1,7 +1,6 @@
- // SPDX-License-Identifier: GPL-2.0
--#undef __powerpc64__
- #include <linux/audit_arch.h>
--#include <asm/unistd.h>
-+#include <asm/unistd_32.h>
+diff --git a/arch/x86/entry/vdso/vdso32/Makefile b/arch/x86/entry/vdso/vdso32/Makefile
+index add6afb484ba..ded4fc6a48cd 100644
+--- a/arch/x86/entry/vdso/vdso32/Makefile
++++ b/arch/x86/entry/vdso/vdso32/Makefile
+@@ -15,6 +15,10 @@ flags-y			:= -DBUILD_VDSO32 -m32 -mregparm=0
+ flags-$(CONFIG_X86_64)	+= -include $(src)/fake_32bit_build.h
+ flags-remove-y          := -m64
  
- #include "audit_32.h"
++# Checker flags
++CHECKFLAGS := $(subst -m64,-m32,$(CHECKFLAGS))
++CHECKFLAGS := $(subst -D__x86_64__,-D__i386__,$(CHECKFLAGS))
++
+ # The location of this include matters!
+ include $(src)/../common/Makefile.include
  
 
 -- 
