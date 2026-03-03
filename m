@@ -1,63 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-17607-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17608-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73FB4EDA694
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2026 16:30:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5DCDEDA698
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2026 16:32:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fQLrw6Xd2z30Lw;
-	Wed, 04 Mar 2026 03:30:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772555456;
-	cv=none; b=HyJ8ljhw52p0pXKNOIVTqSjMUiPxa5IQaIHgCItu0hLE3sl//tW8owhIo6kyDdRAkzilR+O3b+aZYoKQEQhKDc4VCLU09h4acfAaIwMg/6g6QzRD38i/4pdYu/cd4leQdjhAuAJm/OGOBx3eBrCVoc+Rsbia4KbhFwWfYDgQ06EacTz1RyEfAlByamOp/Apk5nNVVQ1mKM3EDf06zq2lbRkyYL3zIiPow7Ok2mb61m8zqZVYgIn9EnQglo5mOiNxssJkLoeNMEIkh48osNGCkdnv0h92KtdD1FeYRfRnZCeXc62HQlyul9dXMCNSX6FtesTUqwW8bo0J8wd64b4PrQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fQLvC3lnkz30Lw;
+	Wed, 04 Mar 2026 03:32:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772555575;
+	cv=none; b=JtKoflDvPh5NALuuiORhPHjpU9ENPW+25KKWflwkuJkDk2biWolw8d7pG8j38KzEBKu3jBhp9LPHU5H9IsKkkyvmRlwAKcWiCE5BZBoFwrzw4tYQNiHFnUzF7TXAPNpKW3UtJStZ/O5T8+GffGI5bEfOoKuo6XCXne8iQswyXOsVXx4/OCboqweENTnBQ/cFiMKe/oHQb2b4nakKGDqskjDxWLTmbE1Y4tPfpLGv7UdlEks++5UrP9lXIIT7OopbkVkVXdrLiNd19CzJ6sPBf3RHNBGio28LR7W8PnwZHPCzBSnJkZ7oK1VsH/pz/ok0oMl2cuXd78ZAULAFQlHoNg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772555456; c=relaxed/relaxed;
-	bh=UTOTk/ZV24+OID7LJEgvcIOA3TZg/dywwJRwEN2hzOU=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=TbSnNqwTHktHkowEaA4Ui8iSNU1tc3a9B3mJ95Wo590YTErkVqYliXGRp/vZfPFdwlXvdxNnifZQzLV1CJX41D/wXiikd6FExfqmYqYOWq8A6RxRkarS4Ju/qeeiBM9BH9OwC1OfD0fy0WPBYOG3iqynaucMA9g4EhN61nITMM3Ps/pye31WQqwmkezjCsGfNIJOXyAlvAbWwjRcXKe2OVkBO+j08Dql6dIfLBvb0Z/8e2uQFOS/V1YSOB0FbJ+Z5ZfDGcg2p/5jXtNBLhYGM1qfikIecoiqAAh0zcAtJTpeaqRG+rPjxQz0vXKg87uKkhPzRmXAqvZHimAPOEraxA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=W5KbtB6A; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1772555575; c=relaxed/relaxed;
+	bh=FEL/TtVbe5ASgkwZnfcfemXJ7VYjUN4DKcL0dOBph1o=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ZrI9YxFvl4qP6eTx0ovFN92FHti3Qy8Pbw31zLjzDwRmmyi1WN2xXdE7rgh4Ue+JdJ8R6En5+hwD0E1ILe+x+mJodxIGng3B42DiVYZmusNjvfj5V/UI8mtGsY5Tl2ccGEtQ29gbdXQX0NpCFcxp+/+scFJp/cGLaTzr2w6HLfYCx7nL9XwCkBMWzSaKfS15iM0/HXezt2gZgZ61QuqY/6BksmG6Phdw1ekUrmURfVwsOvhzqQvOfJtEJi9wNVBi+i9QEoQaaUOh5jeUFZ+Yn8Z1P2K+ddDy/eMJ9J3SsNWPCW84LrpEIrKZbeKt4+bhNz01ihCrRItPSD/na9AFbQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nDNY2kBm; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=W5KbtB6A;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nDNY2kBm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQLrw0vR0z2xP9
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 03:30:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQLvB5M62z2xP9
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 03:32:54 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id ECD9060008;
-	Tue,  3 Mar 2026 16:30:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 734E8C116C6;
-	Tue,  3 Mar 2026 16:30:53 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 3449A43F0E;
+	Tue,  3 Mar 2026 16:32:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 008A2C116C6;
+	Tue,  3 Mar 2026 16:32:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772555453;
-	bh=D2pPg2evVcS3OwEffdyZzwyhu5mGQ3DavyPjm4j33e8=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:From;
-	b=W5KbtB6A0G2m/2ihT3XDZLZ1J31O6g7kq8xkLz7SMDzdBFPEaAXJKPILxy/5pZFxo
-	 VD3ug1zEfyyGRMgzj5yYbUGUZKzDhz1SKIs9+iJ2+oxjTxfCYw+mr5Ol63WP8jwjbY
-	 hOosGeo+emjWgCMGDrbFRWEmayrPXfx/NYajhHtgl1eSf02IYfo98sa5MP5S8vw3Q+
-	 xRud5IB6QOoqtIOWN2WIT7Bp8uGvpOkxMBuN5JiBEAPQLN/8XocgX22s/sGb2+grKN
-	 cHD08FRGQM0Vxkia4iLgppWy+vide3XkHT6UuM+9JIha9+PvKW9BgBN/7aNUr9wbPF
-	 bCbzflpQ0R+Bw==
-Date: Tue, 3 Mar 2026 10:30:51 -0600
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Nilay Shroff <nilay@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	"David S. Miller" <davem@davemloft.net>,
-	Andreas Larsson <andreas@gaisler.com>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
-	sparclinux@vger.kernel.org, wangruikang@iscas.ac.cn,
-	tglx@kernel.org, npiggin@gmail.com, chleroy@kernel.org,
-	gjoyce@ibm.com
-Subject: Re: [PATCHv2 0/2] pci: fix msi_addr_mask on powerpc and sparc systems
-Message-ID: <20260303163051.GA4059101@bhelgaas>
+	s=k20201202; t=1772555573;
+	bh=2Sl7aDOLhWSrJiQTk8Mgcff8zbQx95VCCn1PoV2FpZY=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=nDNY2kBmYN+NuwFo3thQ/sWHyhRgfQeHTyWHfBniHNjPL0oQI7rwVP4BAGGka2BVO
+	 X2eonOQTORKw4QyAvBe8SHzxKvYYXyRcQkhx11QEY4iezHoyT64BtvBlX/zrslkt8o
+	 TmzoL3Y7w1lww4tC8ombT9QBKmAzjT4qFDkONDvfp2oR2t+yNFM1oHn2WfDjnZrf73
+	 BuRfV7dQttvocIgye8lvZLJHANLxlbrfIiIalPMQ6tZuJeSyCAHEsrZwI4tw/4bZbD
+	 QmvrR7XLBlf8skl2ht4g6ytJIQCVDZVIfR9GCQISCD5amk7k+O3aibTOEoIWlXUS4c
+	 s5pzS6NssRWLA==
+Message-ID: <c5584cf8-1389-4df4-9fb7-19d9ee26ab9c@kernel.org>
+Date: Tue, 3 Mar 2026 17:32:43 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,55 +59,144 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d8440351-7394-4444-9891-b9af1982bd06@linux.ibm.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6 01/13] mm/migrate_device: Introduce
+ migrate_pfn_from_page() helper
+To: Jordan Niethe <jniethe@nvidia.com>, linux-mm@kvack.org
+Cc: balbirs@nvidia.com, matthew.brost@intel.com, akpm@linux-foundation.org,
+ linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ ziy@nvidia.com, apopple@nvidia.com, lorenzo.stoakes@oracle.com,
+ lyude@redhat.com, dakr@kernel.org, airlied@gmail.com, simona@ffwll.ch,
+ rcampbell@nvidia.com, mpenttil@redhat.com, jgg@nvidia.com,
+ willy@infradead.org, linuxppc-dev@lists.ozlabs.org,
+ intel-xe@lists.freedesktop.org, jgg@ziepe.ca, Felix.Kuehling@amd.com,
+ jhubbard@nvidia.com, maddy@linux.ibm.com, mpe@ellerman.id.au,
+ ying.huang@linux.alibaba.com
+References: <20260202113642.59295-1-jniethe@nvidia.com>
+ <20260202113642.59295-2-jniethe@nvidia.com>
+ <9ee22635-a219-47bb-a397-bc4e141b408d@kernel.org>
+ <cf547dbb-af45-49d0-87a0-5267dedf0470@nvidia.com>
+ <5182bb7d-f7cf-4b8e-8320-996c52fe24d8@kernel.org>
+ <faaa84fd-095e-440b-9922-b4037a67416d@nvidia.com>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=david@kernel.org; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <faaa84fd-095e-440b-9922-b4037a67416d@nvidia.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Tue, Mar 03, 2026 at 09:59:15AM +0530, Madhavan Srinivasan wrote:
-> On 2/27/26 10:14 PM, Bjorn Helgaas wrote:
-> > On Fri, Feb 20, 2026 at 12:32:26PM +0530, Nilay Shroff wrote:
-> > > Hi,
-> > > 
-> > > Recent changes [1] which replaced pci_dev::no_64bit_msi with pci_dev::
-> > > msi_addr_mask inadvertently missed to initialize the pci_dev::msi_addr_mask
-> > > to the DMA_BIT_MASK(64) on powerpc platform. Due to this, later the
-> > > validation the programmed MSI address against the msi_addr_mask fails.
-> > > This causes pci device probe method failures on powerpc platform. We also
-> > > realized that similar issue could potentially happen on sparc system as
-> > > well. So this series initializes pci_dev::msi_addr_mask to DMA_BIT_MASK(64)
-> > > when pci_dev is instantiated for both powerpc and sparc platforms.
-> > > 
-> > > The first patch in the series fixes this on powerpc platform. The second
-> > > patch fixes this issue on sparc platform. Please note that as I don't have
-> > > access to the sparc platform, this patch was only compile tested on the
-> > > sparc system. Anyone from the community is welcome to test it who has
-> > > access to the sparc machine.
-> > > 
-> > > [1] https://lore.kernel.org/all/20260129-pci-msi-addr-mask-v4-0-70da998f2750@iscas.ac.cn/
-> > > 
-> > > Changes since v1:
-> > >    - Initialize the pci_dev:msi_addr_mask on sparc platform (Vivian Wang)
-> > >    - Some minor cosmetic fixes (Bjorn Helgaas)
-> > > 
-> > > Nilay Shroff (2):
-> > >    powerpc/pci: Initialize msi_addr_mask for OF-created PCI devices
-> > >    sparc/pci: Initialize msi_addr_mask for OF-created PCI devices
-> > > 
-> > >   arch/powerpc/kernel/pci_of_scan.c | 7 +++++++
-> > >   arch/sparc/kernel/pci.c           | 7 +++++++
-> > >   2 files changed, 14 insertions(+)
-> > These fix regressions on powerpc and sparc caused by 386ced19e9a3
-> > ("PCI/MSI: Convert the boolean no_64bit_msi flag to a DMA address
-> > mask").
-> > 
-> > These fixes have been tested by Han Gao (SPARC Enterprise T5220),
-> > Nathaniel Roach (SPARC T5-2), and Venkat Rao Bagalkote (IBM Power
-> > System LPAR (pseries)).
-> > 
-> > It'd be great to have acks from the powerpc and sparc folks so they
->
-> Sorry for the delayed response, yes we tested this from our end.
-> Acked-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+On 3/3/26 06:52, Jordan Niethe wrote:
+> Hi
+> 
+> On 2/3/26 20:22, David Hildenbrand (Arm) wrote:
+>> On 3/2/26 00:38, Jordan Niethe wrote:
+>>> Hi,
+>>>
+>>
+>> I'll go through he remainder of the patchset this week.
+> 
+> Much appreciated.
+> 
+>>
+>> While skimming over patch #2, I was wondering whether
+>> "page_to_migration_pfn()" would better fit "migration_pfn_to_page".
+> 
+> I guess you were thinking about migration_pfn_/from/_page() rather than
+> "migration_pfn_to_page()"? Renaming it to page_to_migration_pfn() would
+> be fine.
 
-Added your ack to the powerpc patch, thank you very much!
+Yes. :)
+
+page_to_migration_pfn() and migration_pfn_to_page()
+
+But really, we should only be dealing with folio migration longterm ...
+
+> 
+>>
+>> ... and I was wondering why that code deals with pages instead of folios.
+> 
+>>
+>> E.g.,
+>>
+>>     page = folio_page(folio, 0);
+>>     mpfn[i] = migrate_pfn_from_page(page);
+>>
+>> Should just be
+>>
+>>     mpfn[i] = folio_to_migration_pfn(folio);
+>>
+>> Right?
+> 
+> This patch is quite limited, essentially just converts usages of
+> migrate_pfn(page_to_pfn()) to migration_pfn_from_page().  However, I
+> agree, there could be scope for moving some of those usages to folios.
+> 
+> Was that example from drm_pagemap_migrate_populate_ram_pfn()?  There
+> 'page' goes on to be used elsewhere in the function so we'd need some
+> further refactoring to fully benefit.
+> 
+> I see migrate_vma_collect_huge_pmd() as a candidate for a
+> folio_to_migration_pfn() function too.
+
+All that code should be converted to folios (unless I am missing
+something important). We only support migration of folios, and all
+ZONE_DEVICE pages correspond to folios.
+
+E.g., in migrate_vma_setup() we're implicitly converting from page to
+folio multiple times, which is rather wasteful.
+
+Now, I don't think the conversion is your responsibility :)
+
+But you'd provide the folio helpers and use them where we can already.
+
+I'm fine with leaving the code the still operates purely on page to be
+converted later.
+
+-- 
+Cheers,
+
+David
 
