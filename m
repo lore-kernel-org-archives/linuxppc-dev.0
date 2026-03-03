@@ -1,70 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-17566-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17567-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68B48EC143A
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2026 13:03:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C472AEC1430
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2026 13:03:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fQGDc1RWjz3c5y;
-	Wed, 04 Mar 2026 00:02:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fQGDj3Sw7z3cDf;
+	Wed, 04 Mar 2026 00:02:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772542960;
-	cv=none; b=Vpqrm/Nawl0OlgwNowR44fr0632W2ztv50C8BmYq9B5iJGNliBFop8xKbYzCktBs9y6w6lxVTwPHEWIK7BZMhrQWFlF5US398fxuF9QFR/uiE4/0JBO4TZBPw54lX6dVa0bXH3JlbrFVW6Q1A4XWRa/M+5VWZJ1dzrs+ESTbrNSKilbgc8tNyEEDFC/Zp3OlJ0OSYIyA5jSk2ZLB2yhGqm94Aln7Ta4mzr2lqOc8r64sYXBPiu28zos493GWW4aREsi0D6BwLIPDm1bo/GX7PS8UaTH0Y3n6Xia7juicazv8u5v6IOw1HUsE2tSDDl1vik9a+N4nFbkfleL3sjvPIg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772542965;
+	cv=none; b=AyIUQFiicXh22YTu72wOA+DD6D8itFYXSdqIFsRxrSF58tPII/B2RiZltL+aQX+XMTMYrDLQhauqkHGSf6hCXSFq0uL0HqhDW/RXQlUnjiVM5HKSAv5KYkTp4RrKaXydeFlQuQe8gE9dWYg4eIy2KeCzLJpdqIcR0KByXFRAfTMbIsbP03QX2RBmI4Za9dkuYXfYOUtZcVXtziKMTCdRCpalwOLdk0dLCDs+Nx0SCN79QUj9pVnwFb53JY+jz+3xxksfnZhsXSLQ6OuuVYFM+nEM1+GXF3IBF4aomyBU7UU770CQXYtWp/MUFUDUZTa6r4RYAXUIs3S6Ysvhu0nR3w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772542960; c=relaxed/relaxed;
-	bh=0bxxZjB1UqCr2g9aJH+ztRBNkUytRzzKe0CEwvLgaT4=;
+	t=1772542965; c=relaxed/relaxed;
+	bh=CvRuULbh9UCyQxvb66fdtNibWfdV6kqPGT7RTWisaMg=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=jJpKRHWjyFZBl/h4LLuWNrKAyP9Cu5nTIhGms7zlkIFWZ5MJ89bMb8tXeCYafw1mBkgzR7TZPgWj1fOS1c+ryZ7FRaMlP9vIgoZ7KOdnJG7ByzcUwboVNunElhFE4fQ/AWbCG589Gnn45guKH49I4I3K27bZBSA8NE5q8OlyIvZ4XGXNdPBJYSZkwHYcrgnK+vQ8vgbfjhgkJVH65Oi+s4SbrrI64lGHw9SkO1ojdqJp0eX7LDKYBa7LQKij3CotPNhfyH1tEMQ/P/LkCE0ONoQi6d7t+ME11829VUi+hijWJnvEsDpRPnffDhM3JBnv2vbQjlNzW2ownfLb2tSFxg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Z6h9/qEa; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=F1fz/qsQ2sa+7OpSn/sQXRO1HnERDJzfeLfV1Kf4H7Yz1H6aWkj55nndLWkXeYfQcejSrD87dcPoVPSSRquJut1C2pmVjKQIO6UC/JfTmPF94hGvwOABamgHLFT+YFgwBduvaFLq4zMtqJgE2ZvAoeHv4VruCM8xItE9W3WSjPWePd1sl3d9ImOvXnbIHCBZthJhO0YKyPTq53DbqfWYkRMo3r72AXqbTfxCZlJ7Slp7htKSuVL5RLDQPTp12+QXmPXKmyE/Fb7KkNkDQQqCUT7CfAEZUbLSbSchaXtpXTckQkX6qeSGnY06g+2KJy0kvw0OPcw08KHqL4KSRTtNlA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=apLWm+xO; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Z6h9/qEa;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=apLWm+xO;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQGDb2GZpz3cBT
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 00:02:39 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6234Wdci2084496;
-	Tue, 3 Mar 2026 13:02:21 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQGDh5jTgz3cBT
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 00:02:44 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6233xRkI2094170;
+	Tue, 3 Mar 2026 13:02:30 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=0bxxZjB1UqCr2g9aJ
-	H+ztRBNkUytRzzKe0CEwvLgaT4=; b=Z6h9/qEaWEOjmLmiSHw8SFXsstLpViMfu
-	fGeyFznGGekuhvNRGkP+urabGVPIxmUlimEeo26C9fiOb/IX7lTIWJPGI91Bf3/0
-	7q3KfCSKWsj0RHAU2bpE56Ij49RSOkxYs7pZuOW1+qtNrpZPtH0qQWEqxNzNdH3c
-	0udN3W/9K1je2ugqoT0TE1PTOnJ9A5+JKlO2BB4wyE5HlOfJxsoeFu29ngeuUGfV
-	WMF+imQ4MuE/Qoj/C15Z8CzRST42B+gYVhsUoDB3CXEayb4gFb38Se1fRwoFCG78
-	nfV07IceM3eXiyEP0tALfuk+U9e9TDO0dt8UlFJP3sVKdmcmSr/+A==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cksrj30bq-1
+	:mime-version:references:subject:to; s=pp1; bh=CvRuULbh9UCyQxvb6
+	6fdtNibWfdV6kqPGT7RTWisaMg=; b=apLWm+xOGHVqABAJFDJD1kCSjVHR6MF75
+	6tVW0ezn9UwkY3RAePhAEfnsdvhllipXN9JM6EaAiH6Xpg3+2Z6fNj493HDKgbTe
+	vw6hHxO+J6Zs6o38E3h5RJrld8YYO4TR5k7eJEiTkm3Oq71uvAJOqi0uvoDU35y1
+	AuvNepE0Mx2X0WFJc9FF0bCORM9KfftNJ4VKurXLlHm/CHoY7lvMuAjyA134W+v/
+	1lv2MzxWTOkZtGies3Lsy3fWoVZJjpxE7J0kx7pLHedZwmDxKvdFBkG+o82P419G
+	U1rFKDVgGHYog+3FMGe4ZlL4SqeY/ne11n9cfbOy2ba+MYcWDQX/w==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ckskctys6-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 03 Mar 2026 13:02:20 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 623BPUim027658;
-	Tue, 3 Mar 2026 13:02:19 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4cmcwja07f-1
+	Tue, 03 Mar 2026 13:02:29 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 623BjisK008782;
+	Tue, 3 Mar 2026 13:02:29 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4cmdd19xxt-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 03 Mar 2026 13:02:19 +0000
+	Tue, 03 Mar 2026 13:02:28 +0000
 Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 623D2Fw961211128
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 623D2P2L48234866
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 3 Mar 2026 13:02:16 GMT
+	Tue, 3 Mar 2026 13:02:25 GMT
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D869A2004D;
-	Tue,  3 Mar 2026 13:02:15 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 28DBF2004B;
+	Tue,  3 Mar 2026 13:02:25 +0000 (GMT)
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 00AA720043;
-	Tue,  3 Mar 2026 13:02:14 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 1BF8720043;
+	Tue,  3 Mar 2026 13:02:23 +0000 (GMT)
 Received: from li-bd3f974c-2712-11b2-a85c-df1cec4d728e.in.ibm.com (unknown [9.78.106.17])
 	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  3 Mar 2026 13:02:13 +0000 (GMT)
+	Tue,  3 Mar 2026 13:02:22 +0000 (GMT)
 From: Hari Bathini <hbathini@linux.ibm.com>
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Cc: bpf@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
@@ -74,9 +74,9 @@ Cc: bpf@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
         Saket Kumar Bhaskar <skb99@linux.ibm.com>,
         Abhishek Dubey <adubey@linux.ibm.com>,
         Venkat Rao Bagalkote <venkat88@linux.ibm.com>, stable@vger.kernel.org
-Subject: [PATCH v3 2/6] powerpc64/bpf: fix the address returned by bpf_get_func_ip
-Date: Tue,  3 Mar 2026 18:32:04 +0530
-Message-ID: <20260303130208.325249-3-hbathini@linux.ibm.com>
+Subject: [PATCH v3 6/6] powerpc64/bpf: fix kfunc call support
+Date: Tue,  3 Mar 2026 18:32:08 +0530
+Message-ID: <20260303130208.325249-7-hbathini@linux.ibm.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260303130208.325249-1-hbathini@linux.ibm.com>
 References: <20260303130208.325249-1-hbathini@linux.ibm.com>
@@ -95,118 +95,194 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=Rp/I7SmK c=1 sm=1 tr=0 ts=69a6dbdc cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+X-Proofpoint-GUID: Kmc_seossRwssWuUqkbXQ26MaVC5x2ED
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzAzMDA5OSBTYWx0ZWRfX6yCajZ3eWjz3
+ SeUF/Tg5pHN2RFWn3IxSaeeafcxgpG6TVZYadc7W6kX36B+PM8TVwvWFS9QYmOj/7Xpd8DpQskT
+ ycdfaDMO+cqGkeqe8GHwxC2lHqK8jL66eIhXkI31r/Va6cCVtG9OE7N+zeL+r9T4+5T6eOffijA
+ Xj+spKNfwaiqDnby5uwkEfO0BdWwhFWKJ2YuS/RQMH9eQ0TrkfPOoQ1gM5PW567EFaijO8H4ndl
+ 3QDYNIbU37mPHUK87JCuXKHVw+6ZCNw8UamF3udGazbX/Lbd4+QJY4IgNVroPMltunLrAMOeTF1
+ j2Ai9AwEC0lphuMietZasfEo3Rol/nqqLBfh0DUKYM40iGsQdqiibbxKc0wtxhju4F+YMnO+gpS
+ UzE0id89ddysPCBM4XgCISQYrX5B1k3HxrTfZwSyg5PGdBhZNr23sqQ8RmWUmfjXmwAhG3Zcf3K
+ EHt+A7k5vZ67k/1sXow==
+X-Authority-Analysis: v=2.4 cv=H7DWAuYi c=1 sm=1 tr=0 ts=69a6dbe6 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
  a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8 a=VwQbUJbxAAAA:8
- a=dqEaXb2bD6BGsTbsOCIA:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzAzMDA5OSBTYWx0ZWRfXzQ0HgbPMS3Bd
- IF2O8y8Ub2NlMB09ILnxHpvz8GgLz6+Y3pPLavnmgiT3JtX+EMD9HjgIT2IZUa/LdlR6D4GlkEQ
- nIWLjYMcLv07JM5emQXlpUiJrpNCnX9+0g5eIGrsOCJmNfNH+Fqh8QHV+Ia2mubGJhiOmzFKYX/
- GHnQbKgL1WHL0um2mfRdjWHDbz0TvH56DLNIX30ulajPKyuOFBJRBGsSmkpFB3+g/PcugJoooeq
- Ip5YSQKEjHOFMKL73yVXvZNh34fWpDcOVgo9cWnCSU3VXA9Wgb+42jMSj2LFrepoFslws16vbud
- 7VBCcBmVFI4R68uxFh30lXnU8aDzBcwDJTKd7AVsuGd6NVl8KCzxqX60YBjn3K6FEbyejTw0+oT
- b7eIuAOm9Rk/cEgb700292wSDb36GOzLVrYtIc1Kywrl+TqiGtXwLISHa+2UUDH+lQFWVCnj2lo
- PuRj/rSexBNIpYrz8WQ==
-X-Proofpoint-GUID: CD7lMV2oBEySEjsefZ82Lb3wqUe62Low
-X-Proofpoint-ORIG-GUID: CD7lMV2oBEySEjsefZ82Lb3wqUe62Low
+ a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=cgMUl_j-H115-_3Hw7UA:9
+X-Proofpoint-ORIG-GUID: Kmc_seossRwssWuUqkbXQ26MaVC5x2ED
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-03-02_05,2026-03-03_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 priorityscore=1501 spamscore=0 phishscore=0 adultscore=0
- bulkscore=0 clxscore=1015 impostorscore=0 malwarescore=0 lowpriorityscore=0
+ impostorscore=0 suspectscore=0 phishscore=0 clxscore=1015 priorityscore=1501
+ adultscore=0 bulkscore=0 spamscore=0 malwarescore=0 lowpriorityscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2603030099
 
-bpf_get_func_ip() helper function returns the address of the traced
-function. It relies on the IP address stored at ctx - 16 by the bpf
-trampoline. On 64-bit powerpc, this address is recovered from LR
-accounting for OOL trampoline. But the address stored here was off
-by 4-bytes. Ensure the address is the actual start of the traced
-function.
+Commit 61688a82e047 ("powerpc/bpf: enable kfunc call") inadvertently
+enabled kfunc call support for 32-bit powerpc but that support will
+not be possible until ABI mismatch between 32-bit powerpc and eBPF is
+handled in 32-bit powerpc JIT code. Till then, advertise support only
+for 64-bit powerpc. Also, in powerpc ABI, caller needs to extend the
+arguments properly based on signedness. The JIT code is responsible
+for handling this explicitly for kfunc calls as verifier can't handle
+this for each architecture-specific ABI needs. But this was not taken
+care of while kfunc call support was enabled for powerpc. Fix it by
+handling this with bpf_jit_find_kfunc_model() and using zero_extend()
+& sign_extend() helper functions.
 
-Reported-by: Abhishek Dubey <adubey@linux.ibm.com>
-Fixes: d243b62b7bd3 ("powerpc64/bpf: Add support for bpf trampolines")
+Fixes: 61688a82e047 ("powerpc/bpf: enable kfunc call")
 Cc: stable@vger.kernel.org
-Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
 Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
 ---
 
 Changes in v3:
-- Added Tested-by tag from Venkat.
-- Updated comments based on suggestions from Abhishek.
+- New patch to fix kfunc call ABI issue on powerpc while passing arguments.
 
 
- arch/powerpc/net/bpf_jit_comp.c | 28 +++++++++++++++++++---------
- 1 file changed, 19 insertions(+), 9 deletions(-)
+ arch/powerpc/net/bpf_jit_comp.c   |   2 +-
+ arch/powerpc/net/bpf_jit_comp64.c | 101 +++++++++++++++++++++++++++---
+ 2 files changed, 94 insertions(+), 9 deletions(-)
 
 diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-index 52162e4a7f84..95f208229b09 100644
+index 85457bcb2040..a62a9a92b7b5 100644
 --- a/arch/powerpc/net/bpf_jit_comp.c
 +++ b/arch/powerpc/net/bpf_jit_comp.c
-@@ -785,9 +785,9 @@ static int __arch_prepare_bpf_trampoline(struct bpf_tramp_image *im, void *rw_im
- 	 *       retval_off             [ return value      ]
- 	 *                              [ reg argN          ]
- 	 *                              [ ...               ]
--	 *       regs_off               [ reg_arg1          ] prog ctx context
--	 *       nregs_off              [ args count        ]
--	 *       ip_off                 [ traced function   ]
-+	 *       regs_off               [ reg_arg1          ] prog_ctx
-+	 *       nregs_off              [ args count        ] ((u64 *)prog_ctx)[-1]
-+	 *       ip_off                 [ traced function   ] ((u64 *)prog_ctx)[-2]
- 	 *                              [ ...               ]
- 	 *       run_ctx_off            [ bpf_tramp_run_ctx ]
- 	 *                              [ reg argN          ]
-@@ -895,7 +895,7 @@ static int __arch_prepare_bpf_trampoline(struct bpf_tramp_image *im, void *rw_im
+@@ -450,7 +450,7 @@ bool bpf_jit_supports_subprog_tailcalls(void)
  
- 	bpf_trampoline_save_args(image, ctx, func_frame_offset, nr_regs, regs_off);
+ bool bpf_jit_supports_kfunc_call(void)
+ {
+-	return true;
++	return IS_ENABLED(CONFIG_PPC64);
+ }
  
--	/* Save our return address */
-+	/* Save our LR/return address */
- 	EMIT(PPC_RAW_MFLR(_R3));
- 	if (IS_ENABLED(CONFIG_PPC_FTRACE_OUT_OF_LINE))
- 		EMIT(PPC_RAW_STL(_R3, _R1, alt_lr_off));
-@@ -903,24 +903,34 @@ static int __arch_prepare_bpf_trampoline(struct bpf_tramp_image *im, void *rw_im
- 		EMIT(PPC_RAW_STL(_R3, _R1, bpf_frame_size + PPC_LR_STKOFF));
+ bool bpf_jit_supports_arena(void)
+diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+index 04e76440d1ad..3a6bd12eecfd 100644
+--- a/arch/powerpc/net/bpf_jit_comp64.c
++++ b/arch/powerpc/net/bpf_jit_comp64.c
+@@ -499,6 +499,83 @@ int bpf_jit_emit_func_call_rel(u32 *image, u32 *fimage, struct codegen_context *
+ 	return 0;
+ }
  
- 	/*
--	 * Save ip address of the traced function.
--	 * We could recover this from LR, but we will need to address for OOL trampoline,
--	 * and optional GEP area.
-+	 * Derive IP address of the traced function.
-+	 * In case of CONFIG_PPC_FTRACE_OUT_OF_LINE or BPF program, LR points to the instruction
-+	 * after the 'bl' instruction in the OOL stub. Refer to ftrace_init_ool_stub() and
-+	 * bpf_arch_text_poke() for OOL stub of kernel functions and bpf programs respectively.
-+	 * Relevant stub sequence:
-+	 *
-+	 *               bl <tramp>
-+	 *   LR (R3) =>  mtlr r0
-+	 *               b <func_addr+4>
-+	 *
-+	 * Recover kernel function/bpf program address from the unconditional
-+	 * branch instruction at the end of OOL stub.
- 	 */
- 	if (IS_ENABLED(CONFIG_PPC_FTRACE_OUT_OF_LINE) || flags & BPF_TRAMP_F_IP_ARG) {
- 		EMIT(PPC_RAW_LWZ(_R4, _R3, 4));
- 		EMIT(PPC_RAW_SLWI(_R4, _R4, 6));
- 		EMIT(PPC_RAW_SRAWI(_R4, _R4, 6));
- 		EMIT(PPC_RAW_ADD(_R3, _R3, _R4));
--		EMIT(PPC_RAW_ADDI(_R3, _R3, 4));
- 	}
- 
- 	if (flags & BPF_TRAMP_F_IP_ARG)
- 		EMIT(PPC_RAW_STL(_R3, _R1, ip_off));
- 
--	if (IS_ENABLED(CONFIG_PPC_FTRACE_OUT_OF_LINE))
-+	if (IS_ENABLED(CONFIG_PPC_FTRACE_OUT_OF_LINE)) {
- 		/* Fake our LR for unwind */
-+		EMIT(PPC_RAW_ADDI(_R3, _R3, 4));
- 		EMIT(PPC_RAW_STL(_R3, _R1, bpf_frame_size + PPC_LR_STKOFF));
++static int zero_extend(u32 *image, struct codegen_context *ctx, u32 src_reg, u32 dst_reg, u32 size)
++{
++	switch (size) {
++	case 1:
++		 /* zero-extend 8 bits into 64 bits */
++		EMIT(PPC_RAW_RLDICL(dst_reg, dst_reg, 0, 56));
++		return 0;
++	case 2:
++		 /* zero-extend 16 bits into 64 bits */
++		EMIT(PPC_RAW_RLDICL(dst_reg, dst_reg, 0, 48));
++		return 0;
++	case 4:
++		 /* zero-extend 32 bits into 64 bits */
++		EMIT(PPC_RAW_RLDICL(dst_reg, dst_reg, 0, 32));
++		fallthrough;
++	case 8:
++		/* Nothing to do */
++		return 0;
++	default:
++		return -1;
 +	}
++}
++
++static int sign_extend(u32 *image, struct codegen_context *ctx, u32 src_reg, u32 dst_reg, u32 size)
++{
++	switch (size) {
++	case 1:
++		 /* sign-extend 8 bits into 64 bits */
++		EMIT(PPC_RAW_EXTSB(dst_reg, src_reg));
++		return 0;
++	case 2:
++		 /* sign-extend 16 bits into 64 bits */
++		EMIT(PPC_RAW_EXTSH(dst_reg, src_reg));
++		return 0;
++	case 4:
++		 /* sign-extend 32 bits into 64 bits */
++		EMIT(PPC_RAW_EXTSW(dst_reg, src_reg));
++		fallthrough;
++	case 8:
++		/* Nothing to do */
++		return 0;
++	default:
++		return -1;
++	}
++}
++
++/*
++ * Handle powerpc ABI expectations from caller:
++ *   - Unsigned arguments are zero-extended.
++ *   - Signed arguments are sign-extended.
++ */
++static int prepare_for_kfunc_call(const struct bpf_prog *fp, u32 *image,
++				  struct codegen_context *ctx,
++				  const struct bpf_insn *insn)
++{
++	const struct btf_func_model *m = bpf_jit_find_kfunc_model(fp, insn);
++	int i;
++
++	if (!m)
++		return -1;
++
++	for (i = 0; i < m->nr_args; i++) {
++		/* Note that BPF ABI only allows up to 5 args for kfuncs */
++		u32 reg = bpf_to_ppc(BPF_REG_1 + i), size = m->arg_size[i];
++
++		if (!(m->arg_flags[i] & BTF_FMODEL_SIGNED_ARG)) {
++			if (zero_extend(image, ctx, reg, reg, size))
++				return -1;
++		} else {
++			if (sign_extend(image, ctx, reg, reg, size))
++				return -1;
++		}
++	}
++
++	return 0;
++}
++
+ static int bpf_jit_emit_tail_call(u32 *image, struct codegen_context *ctx, u32 out)
+ {
+ 	/*
+@@ -1143,14 +1220,16 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
+ 				/* special mov32 for zext */
+ 				EMIT(PPC_RAW_RLWINM(dst_reg, dst_reg, 0, 0, 31));
+ 				break;
+-			} else if (off == 8) {
+-				EMIT(PPC_RAW_EXTSB(dst_reg, src_reg));
+-			} else if (off == 16) {
+-				EMIT(PPC_RAW_EXTSH(dst_reg, src_reg));
+-			} else if (off == 32) {
+-				EMIT(PPC_RAW_EXTSW(dst_reg, src_reg));
+-			} else if (dst_reg != src_reg)
+-				EMIT(PPC_RAW_MR(dst_reg, src_reg));
++			}
++			if (off == 0) {
++				/* MOV */
++				if (dst_reg != src_reg)
++					EMIT(PPC_RAW_MR(dst_reg, src_reg));
++			} else {
++				/* MOVSX: dst = (s8,s16,s32)src (off = 8,16,32) */
++				if (sign_extend(image, ctx, src_reg, dst_reg, off / 8))
++					return -1;
++			}
+ 			goto bpf_alu32_trunc;
+ 		case BPF_ALU | BPF_MOV | BPF_K: /* (u32) dst = imm */
+ 		case BPF_ALU64 | BPF_MOV | BPF_K: /* dst = (s64) imm */
+@@ -1618,6 +1697,12 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
+ 			if (ret < 0)
+ 				return ret;
  
- 	/* Save function arg count -- see bpf_get_func_arg_cnt() */
- 	EMIT(PPC_RAW_LI(_R3, nr_regs));
++			/* Take care of powerpc ABI requirements before kfunc call */
++			if (insn[i].src_reg == BPF_PSEUDO_KFUNC_CALL) {
++				if (prepare_for_kfunc_call(fp, image, ctx, &insn[i]))
++					return -1;
++			}
++
+ 			ret = bpf_jit_emit_func_call_rel(image, fimage, ctx, func_addr);
+ 			if (ret)
+ 				return ret;
 -- 
 2.53.0
 
