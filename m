@@ -1,85 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-17579-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17580-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5584EB362F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2026 14:59:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CCE32EDA681
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2026 15:09:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fQJqQ1gnwz3bn4;
-	Wed, 04 Mar 2026 01:59:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772549970;
-	cv=none; b=ONQKpGssHXRZFYZP96jqZUETeVrwcf2KZA8LAJvzDtEgAbxnsLNh4HLNwkqUnbgzaEf1yqmb7o6sClCJJSs4wPR8f8RqoXNpcGfbJ80P3uXtYJzo39erqcSDPyw4cZMxmWxTfCcG1NjTTq+BFzfb3kejUZoDv8zRghcpqAChjOeW8kd1hjfe5A4o5Z4bIUGLod7GNA/nhIL+Tj+DZ4FZzgMr1W0ZuB4lJ/DQAk+0qVQujfbqaFZmm8HhR1Fyc2O2U5goKM1H6syCfemnVcHr77dsVMJCdnZKLRUlrFHZDKrUy07Q5t5VGis7ZBrUPlxU8PGFRlEoZUKPcAkpifMHWw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fQK2w1bFnz3bt1;
+	Wed, 04 Mar 2026 02:09:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772550568;
+	cv=none; b=LflnxgCjcWPYE4RKbl568InbUg5VSXRF0YK2xdkaN6B+mvNsBj5HzGo/AhBR94QXKyjSSVKjeL8QttFeleVKv91wNr9MbZsiErXVpKSnvaEnHuf5wXHzh/Y0q+av9ustsEapgnZNTOpe+dF5hgLIDxlcYElSaJeqOIMMT8nvmNPGA+cGOIeSUgXAhfcLHxqhH8wU/B6odoJcfmaj22S0Nqz4dDkN1s1ZtbK3bY90bFG8LJuyoZ6xOGj7ooOGw5+UKWz38w9fqN64TZls4RJ27JGTr6H5e4Y5ai1a/xqgUSbqX99whdzSATczwMdAvK5V3L8SlEnQY2kQ7V4ma1ijZQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772549970; c=relaxed/relaxed;
-	bh=L3ODhxKhXKAZO7Qt/XBU+6JDWqfCEUC3cU3LlDcofqQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=GEE7wMWreJZpLmqU1sBf5iyO1RM0m55oaBgTugOoS1+dDpNT8i5qdBxdjdzeRcx9XlJRF32vLpWmTPNvCopBFYoumUZ1hURjsQb5l/JYE9W8KLx40BZIt7qly/26XjYm0pdWnpmqt657s7i8Nfj+lWaFZKHRAcTqGeY/2Nj/ojWW+VNIbzp/a/kI1OL+l/+qWEjx/8V9whNwuBXxc8pf9mBceXaeV1pRenhumKKJvqWPbghh7fg1BXGbkdrTn+LkpasovoTPq2bwc0h5IiYz2RDByFVTZv7MQPei141EbSdiQsuQpbRGbP+ZDsOk6GCPxeRQQ32hb2Ohnbp7PSvDzA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GVyV580I; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GVyV580I;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQJqN6sHNz30Lw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 01:59:28 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62318Jtl1528090;
-	Tue, 3 Mar 2026 14:58:36 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=L3ODhxKhXKAZO7Qt/XBU+6JDWqfCEU
-	C3cU3LlDcofqQ=; b=GVyV580IL1plO6OVvHgFBibi2SYBUYbLHRKt/PW6RAKIX8
-	ZNxSHFUAPTjcGor8439GSbAcRWABCzrCl4KWVYgeidJiqhTKKRLYmrlxZ/lC112r
-	BhE7GClvSJqH1EwCTMxKxAjiDt0HT//j7di0r2UsuUYk9yYkWYKNyyY+NVKq3iGs
-	WnkSNQ5k0FGQw5D7PKikzwzZneAwwbpxQgshIz15CJKYT3yyOQIcE9hVGcPVqABv
-	TqZQfevDM4KizvZ1IuJ93bbdUYIdWo7VJtyQV0wFNB9akdl1wFLorEfFm6mp6qMk
-	SJd1PI85FGQmFATC/AgjpzE0b5y33gtB25fVeGdg==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ckssmk87x-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 03 Mar 2026 14:58:35 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 623DdaQK003266;
-	Tue, 3 Mar 2026 14:58:35 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4cmb2y2wmu-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 03 Mar 2026 14:58:35 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 623EwUwZ10420604
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 3 Mar 2026 14:58:31 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E206720043;
-	Tue,  3 Mar 2026 14:58:30 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E8EED20040;
-	Tue,  3 Mar 2026 14:58:27 +0000 (GMT)
-Received: from linux.ibm.com (unknown [9.39.17.34])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Tue,  3 Mar 2026 14:58:27 +0000 (GMT)
-Date: Tue, 3 Mar 2026 20:28:25 +0530
-From: Saket Kumar Bhaskar <skb99@linux.ibm.com>
-To: Viktor Malik <vmalik@redhat.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Joe Perches <joe@perches.com>, Paul Mackerras <paulus@ozlabs.org>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        atrajeev@linux.ibm.com, linux-perf-users@vger.kernel.org,
-        linux-kernel@vger.kernel.org, bpf@vger.kernel.org
-Subject: Re: [PATCH] powerpc, perf: Check that current->mm is alive before
- getting user callchain
-Message-ID: <aab3EW1LfDcjSzzy@linux.ibm.com>
-References: <20260227082502.1882395-1-vmalik@redhat.com>
+	t=1772550568; c=relaxed/relaxed;
+	bh=u1irBI3Qg9XV0N5BV64pChl7BI8sZcObWb8NEpaom+g=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Sj2OKRbBF+x6omI08Y6gi/BuwIbspYyEhJzA4H39V+CQ76ngHxhI6HlyGT/a7n0Vs03MunxynD2p/5PGu1RiGFkrzrcAVyWUM5lrK3+8a4/jIPGZQ24QytKlijHQg9a4UlP1MuUwk8rnVRBN3SCUtKTiu4+j6GVV+/Edo7HX2EEDhWSPu7WdSYlJF1zNB3GsQwQtX725mYJiKt/fax3TVk02tSwLw8BY7wUEvRnUesNTWeFYBFPt37OaHmpALWBukIVDu7RJW06YhHpCLBu011S/2urEAhscwOEd5LoJmFIbXvhhEJ55OfZzSAln86prwa+MSyFq+eedwQ53qE+dLQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fQK2v1CkQz3bsC
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 02:09:26 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 36D46339;
+	Tue,  3 Mar 2026 07:08:49 -0800 (PST)
+Received: from e125769.cambridge.arm.com (e125769.cambridge.arm.com [10.1.196.27])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 5C1D23F73B;
+	Tue,  3 Mar 2026 07:08:51 -0800 (PST)
+From: Ryan Roberts <ryan.roberts@arm.com>
+To: Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	Kees Cook <kees@kernel.org>,
+	"Gustavo A. R. Silva" <gustavoars@kernel.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Mark Rutland <mark.rutland@arm.com>,
+	"Jason A. Donenfeld" <Jason@zx2c4.com>,
+	Ard Biesheuvel <ardb@kernel.org>,
+	Jeremy Linton <jeremy.linton@arm.com>,
+	David Laight <david.laight.linux@gmail.com>
+Cc: Ryan Roberts <ryan.roberts@arm.com>,
+	linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	loongarch@lists.linux.dev,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org,
+	linux-hardening@vger.kernel.org
+Subject: [PATCH v5 0/2] Fix bugs and performance of kstack offset randomisation
+Date: Tue,  3 Mar 2026 15:08:37 +0000
+Message-ID: <20260303150840.3789438-1-ryan.roberts@arm.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,113 +77,151 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260227082502.1882395-1-vmalik@redhat.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzAzMDExNiBTYWx0ZWRfX7Dd5Z/y41l1k
- /SANOxAC4+lXSdqZ/hRQjt/rCdE0vlzSV9k5GEwsQytQqj9Xb3FfO1ozUNbIevCPZIYOCzZx9r9
- SXg5H1so7/1H/rVedql1FhxwaWehZlodp2DZDdLSYLzJnpR12H3+k7sHSB4va77oCbzQcWyjjrz
- yGmu+19DwOhl8hvpyehjq5rqvi46pn9S2OiMQsIRCxrQF2boFqTyiuS0crXgniwwEFsHBjzCMtl
- dcBmaV+nQrgBslGy8lWfs+21Gu6ZIpeTLL2lACDe1cK75+7oG3W/5bIlFUuCXmf5yyfc3sgg4C/
- b3WG/OGZ7IUVtUtkWw1f59K6maaROmy6t2pcCUi62O2UfNVy73v+8KTHykxcHoIp2qeL2kx6M+m
- INmC7RiOl73qOqZc5mf16/VK3SAwyJ4RWc+bj4BezxVf8+8FE5jOLLJyTlPkwUHRgux+FMpr6TX
- uSC+upSrXyOdQ63nSDg==
-X-Proofpoint-ORIG-GUID: UxO3AEXIgiJCB3nAkpq02ep1r8COpOQz
-X-Proofpoint-GUID: fEH3ii7yaMN7S0fzhhWOkdXCFhxb0nm0
-X-Authority-Analysis: v=2.4 cv=AobjHe9P c=1 sm=1 tr=0 ts=69a6f71c cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=kj9zAlcOel0A:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
- a=20KFwNOVAAAA:8 a=e-EAHXkKvpEb-08ajsIA:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-02_05,2026-03-03_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 lowpriorityscore=0 bulkscore=0 impostorscore=0 malwarescore=0
- spamscore=0 clxscore=1011 suspectscore=0 adultscore=0 priorityscore=1501
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2603030116
+Content-Transfer-Encoding: 8bit
 
-On Fri, Feb 27, 2026 at 09:25:02AM +0100, Viktor Malik wrote:
-> It may happen that mm is already released, which leads to kernel panic.
-> This adds the NULL check for current->mm, similarly to 20afc60f892d
-> ("x86, perf: Check that current->mm is alive before getting user
-> callchain").
-> 
-> I was getting this panic when running a profiling BPF program
-> (profile.py from bcc-tools):
-> 
->     [26215.051935] Kernel attempted to read user page (588) - exploit attempt? (uid: 0)
->     [26215.051950] BUG: Kernel NULL pointer dereference on read at 0x00000588
->     [26215.051952] Faulting instruction address: 0xc00000000020fac0
->     [26215.051957] Oops: Kernel access of bad area, sig: 11 [#1]
->     [...]
->     [26215.052049] Call Trace:
->     [26215.052050] [c000000061da6d30] [c00000000020fc10] perf_callchain_user_64+0x2d0/0x490 (unreliable)
->     [26215.052054] [c000000061da6dc0] [c00000000020f92c] perf_callchain_user+0x1c/0x30
->     [26215.052057] [c000000061da6de0] [c0000000005ab2a0] get_perf_callchain+0x100/0x360
->     [26215.052063] [c000000061da6e70] [c000000000573bc8] bpf_get_stackid+0x88/0xf0
->     [26215.052067] [c000000061da6ea0] [c008000000042258] bpf_prog_16d4ab9ab662f669_do_perf_event+0xf8/0x274
->     [...]
-> 
-> Fixes: 20002ded4d93 ("perf_counter: powerpc: Add callchain support")
-> Signed-off-by: Viktor Malik <vmalik@redhat.com>
-> ---
->  arch/powerpc/perf/callchain_32.c | 3 +++
->  arch/powerpc/perf/callchain_64.c | 3 +++
->  2 files changed, 6 insertions(+)
-> 
-> diff --git a/arch/powerpc/perf/callchain_32.c b/arch/powerpc/perf/callchain_32.c
-> index ddcc2d8aa64a..b46e21679566 100644
-> --- a/arch/powerpc/perf/callchain_32.c
-> +++ b/arch/powerpc/perf/callchain_32.c
-> @@ -144,6 +144,9 @@ void perf_callchain_user_32(struct perf_callchain_entry_ctx *entry,
->  	sp = regs->gpr[1];
->  	perf_callchain_store(entry, next_ip);
->  
-> +	if (!current->mm)
-> +		return;
-> +
->  	while (entry->nr < entry->max_stack) {
->  		fp = (unsigned int __user *) (unsigned long) sp;
->  		if (invalid_user_sp(sp) || read_user_stack_32(fp, &next_sp))
-> diff --git a/arch/powerpc/perf/callchain_64.c b/arch/powerpc/perf/callchain_64.c
-> index 115d1c105e8a..eaaadd6fa81b 100644
-> --- a/arch/powerpc/perf/callchain_64.c
-> +++ b/arch/powerpc/perf/callchain_64.c
-> @@ -79,6 +79,9 @@ void perf_callchain_user_64(struct perf_callchain_entry_ctx *entry,
->  	sp = regs->gpr[1];
->  	perf_callchain_store(entry, next_ip);
->  
-> +	if (!current->mm)
-> +		return;
-> +
->  	while (entry->nr < entry->max_stack) {
->  		fp = (unsigned long __user *) sp;
->  		if (invalid_user_sp(sp) || read_user_stack_64(fp, &next_sp))
-> -- 
-> 2.53.0
-> 
-Sorry, I missed adding cc list for the last conversation so adding this for reference:
+[Kees; I'm hoping this is now good-to-go via your hardening tree? It would be
+good to get some linux-next testing.]
 
-> Wouldn't be good if we check this in perf_callchain_user() as it will
-> cover both cases.
+Hi All,
 
-to which Viktor replied:
-I considered it but in that case, we'd also miss the top-level stack
-frame (the perf_callchain_store call above). Other arches include it so
-I followed the behavior for powerpc.
+As I reported at [1], kstack offset randomisation suffers from a couple of bugs
+and, on arm64 at least, the performance is poor. This series attempts to fix
+both; patch 1 provides back-portable fixes for the functional bugs. Patch 2
+proposes a performance improvement approach.
 
-Viktor, agreed with your first point. I have another concern:
+I've looked at a few different options but ultimately decided that Jeremy's
+original prng approach is the fastest. I made the argument that this approach is
+secure "enough" in the RFC [2] and the responses indicated agreement.
 
-I was hitting this issue with stacktrace_build_id_nmi in bpf and
-applied this patch https://lore.kernel.org/bpf/20260126074331.815684-1-chen.dylane@linux.dev/T/#mf901967ebe77506f1bd6e3d876c2a85824d9519d
+More details in the commit logs.
 
-Wondering if the above generic fix is working do we need to add this
-check in powerpc specific code?
+
+Performance
+===========
+
+Mean and tail performance of 3 "small" syscalls was measured. syscall was made
+10 million times and each individually measured and binned. These results have
+low noise so I'm confident that they are trustworthy.
+
+The baseline is v6.18-rc5 with stack randomization turned *off*. So I'm showing
+performance cost of turning it on without any changes to the implementation,
+then the reduced performance cost of turning it on with my changes applied.
+
+**NOTE**: The below results were generated using the RFC patches but there is no
+meaningful change, so the numbers are still valid. I've also rerun the tests
+with this version on top of v7.0-rc2 on arm64 and confirmed simialr results.
+
+arm64 (AWS Graviton3):
++-----------------+--------------+-------------+---------------+
+| Benchmark       | Result Class |   v6.18-rc5 |  per-cpu-prng |
+|                 |              | rndstack-on |               |
+|                 |              |             |               |
++=================+==============+=============+===============+
+| syscall/getpid  | mean (ns)    |  (R) 15.62% |     (R) 3.43% |
+|                 | p99 (ns)     | (R) 155.01% |     (R) 3.20% |
+|                 | p99.9 (ns)   | (R) 156.71% |     (R) 2.93% |
++-----------------+--------------+-------------+---------------+
+| syscall/getppid | mean (ns)    |  (R) 14.09% |     (R) 2.12% |
+|                 | p99 (ns)     | (R) 152.81% |         1.55% |
+|                 | p99.9 (ns)   | (R) 153.67% |         1.77% |
++-----------------+--------------+-------------+---------------+
+| syscall/invalid | mean (ns)    |  (R) 13.89% |     (R) 3.32% |
+|                 | p99 (ns)     | (R) 165.82% |     (R) 3.51% |
+|                 | p99.9 (ns)   | (R) 168.83% |     (R) 3.77% |
++-----------------+--------------+-------------+---------------+
+
+Because arm64 was previously using get_random_u16(), it was expensive when it
+didn't have any buffered bits and had to call into the crng. That's what caused
+the enormous tail latency.
+
+
+x86 (AWS Sapphire Rapids):
++-----------------+--------------+-------------+---------------+
+| Benchmark       | Result Class |   v6.18-rc5 |  per-cpu-prng |
+|                 |              | rndstack-on |               |
+|                 |              |             |               |
++=================+==============+=============+===============+
+| syscall/getpid  | mean (ns)    |  (R) 13.32% |     (R) 4.60% |
+|                 | p99 (ns)     |  (R) 13.38% |    (R) 18.08% |
+|                 | p99.9 (ns)   |      16.26% |    (R) 19.38% |
++-----------------+--------------+-------------+---------------+
+| syscall/getppid | mean (ns)    |  (R) 11.96% |     (R) 5.26% |
+|                 | p99 (ns)     |  (R) 11.83% |     (R) 8.35% |
+|                 | p99.9 (ns)   |  (R) 11.42% |    (R) 22.37% |
++-----------------+--------------+-------------+---------------+
+| syscall/invalid | mean (ns)    |  (R) 10.58% |     (R) 2.91% |
+|                 | p99 (ns)     |  (R) 10.51% |     (R) 4.36% |
+|                 | p99.9 (ns)   |  (R) 10.35% |    (R) 21.97% |
++-----------------+--------------+-------------+---------------+
+
+I was surprised to see that the baseline cost on x86 is 10-12% since it is just
+using rdtsc. But as I say, I believe the results are accurate.
+
+
+Changes since v4 [5]
+====================
+
+- Moved add_random_kstack_offset() later in syscall entry code for powerpc, s390
+  and x86. On these platforms it was previously within noinstr sections but for
+  some exotic Kconfigs, [get|put]_cpu_var() was calling out to instrumentable
+  code. (reported by kernel test robot)
+- Removed what was previously patch 2 (inline version of prandom_u32_state()).
+  With the above change, there is no longer an issue with calling the
+  out-of-line version.
+
+Changes since v3 [4]
+====================
+
+- Patch 1: Fixed typo in commit log (per David L)
+- Patch 2: Reinstated prandom_u32_state() as out-of-line function, which
+  forwards to inline version (per David L)
+- Patch 3: Added supplementary info about benefits of removing
+  choose_random_kstack_offset() (per Mark R)
+
+Changes since v2 [3]
+====================
+
+- Moved late_initcall() to initialize kstack_rnd_state out of
+  randomize_kstack.h and into main.c. (issue noticed by kernel test robot)
+
+Changes since v1 (RFC) [2]
+==========================
+
+- Introduced patch 2 to make prandom_u32_state() __always_inline (needed since
+  its called from noinstr code)
+- In patch 3, prng is now per-cpu instead of per-task (per Ard)
+
+
+[1] https://lore.kernel.org/all/dd8c37bc-795f-4c7a-9086-69e584d8ab24@arm.com/
+[2] https://lore.kernel.org/all/20251127105958.2427758-1-ryan.roberts@arm.com/
+[3] https://lore.kernel.org/all/20251215163520.1144179-1-ryan.roberts@arm.com/
+[4] https://lore.kernel.org/all/20260102131156.3265118-1-ryan.roberts@arm.com/
+[5] https://lore.kernel.org/all/20260119130122.1283821-1-ryan.roberts@arm.com
 
 Thanks,
-Saket
+Ryan
+
+
+Ryan Roberts (2):
+  randomize_kstack: Maintain kstack_offset per task
+  randomize_kstack: Unify random source across arches
+
+ arch/Kconfig                         |  5 ++-
+ arch/arm64/kernel/syscall.c          | 11 ------
+ arch/loongarch/kernel/syscall.c      | 11 ------
+ arch/powerpc/kernel/syscall.c        | 16 ++-------
+ arch/riscv/kernel/traps.c            | 12 -------
+ arch/s390/include/asm/entry-common.h |  8 -----
+ arch/s390/kernel/syscall.c           |  2 +-
+ arch/x86/entry/syscall_32.c          |  4 +--
+ arch/x86/entry/syscall_64.c          |  2 +-
+ arch/x86/include/asm/entry-common.h  | 12 -------
+ include/linux/randomize_kstack.h     | 54 +++++++++++-----------------
+ init/main.c                          |  9 ++++-
+ kernel/fork.c                        |  1 +
+ 13 files changed, 37 insertions(+), 110 deletions(-)
+
+--
+2.43.0
+
 
