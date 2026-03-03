@@ -1,73 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-17571-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17572-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E090EC1451
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2026 13:43:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D34C8EC1449
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2026 13:46:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fQH7q4jgSz3bn4;
-	Wed, 04 Mar 2026 00:43:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772545415;
-	cv=none; b=JBQiaiNm4JYDnpPHwdqxyml2+m7H9te3LxW14jrwx64s0Xxos16LwwLpGM2SzTb71W+NkMPBVXi7cJO6EvWjVvBQtftkd6FrvYP4qznsnPhKqbpoebIRsJdwO8xOkE4pa8utGdRxmJPEge/eiKSlZocXx3IaG7Mgc4xG3jXWtXCtiNeh+7UlImgLEDlyqM9x8zEr1XrBg2g88kK7FOVVpYhDRCKsM4w87fWw9lNF/LvAiLnXfpRnMUNb1CgQbLs7T06pNra1mp8PVR43K93dnwl0YvJZCLVhAKgWHU6Oykh2vLWOzhrjgylskUJ93BdlGgt7Te4Pr13VYvArcS4uqg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fQHCR1fC8z3bn4;
+	Wed, 04 Mar 2026 00:46:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772545603;
+	cv=none; b=aMPnrhNKyJbJXy6M8yw8geCB6ccL/TD0RiOfib9Ms5SKbmnf/FcLuts65UUrPXnDtqAzhv4bYq8NWEpxHuTVu3dSo+MF+9WSJt0esC2MvrkxRHynuP/3ieqjmgBw1vUNqyKJbCY6Pyj5asVQql0P4jw+Z2cx/U7NzFvJNombCV5MYdEd4Q5ehF9AsoLOULOUrW0K6VwvMgFbABTPhpo/UvehIWscp4czmclxwtAtcPE/Vo1NsLrjOTZXXfphnv5KhI5QLnpi2lWn4du9rCOyQUlmW91+7OXDy4MQNKaRDaiDqm2Zo0xQZTzu9FFWoZTyiq/oZRmzjx2+nDuJK/68qA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772545415; c=relaxed/relaxed;
-	bh=iI9XLsBxKF1pU4sam6F9+GLKbEwO8agz8U2CA2J372o=;
+	t=1772545603; c=relaxed/relaxed;
+	bh=asy+thlMkMBwcQz4UGE0S+RGOlnm/ut2DPcQvsToO1Y=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=hRS1YQkf4gwG6asGUMzd5ScdHrujOpsH2CfgjopSDwGexIpOEdEKpxTEgfUL4eDMxDBWPKsv9hPmZ17TVOHxruXKczPJ/Naqt72qfWLgJIvnd6PI9MmYeTuh+zYyfq6a0WWDtRWCAI66x0QqEn9fvFXHeFICSr4Mx8f5j6D1Y8/hh8ZCg3XviDP91aTMNjxXWoYDMMeah6EPW/TG3nisPE+7QBcm2jLFBxMzqivTMd9zowc19QR/MkGbDVoUtUOajHQT7PyrpZU6rVxORpicnvRhKQt9vYcnGyX/r1JAyJK5oF0rRVFUXbkrHPHT6TwMbRmO+u8qm58VXgSWHZ3Qxg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cgGl4+iU; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 In-Reply-To:Content-Type; b=CYp0SgXeQT68U5C0xJM3Cf008NJwfPIxRXCIVcwm4qKOpTaqnt6pXyaAXjxVjWrZwR0iW/wh4JIQfg9rX48UrDOiw5Y6xxQrLpuYJg17YzQ0Yd5gk5bmvOwW6wVQXJzy0juJ7QdTT00uqvxYe6T5opfNKqCEJ2OPQtR/+VaWCkgd5DpqaEwr3+kYiEGd1McpVXlEJt/4G/w2V8MZH/Cs3BgbPdHCO4jFmgM5uaBL4Lk4BGfiywBryiGp1dgZGwOPQtvwxHSlte59O4jhootZ3rckpzq4OjTvJ9RB4lgnRrBpXC01iOT/maJfiigEgyxXn6W2jhWNxDCuN0JyFPIRcw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JKUv0IT1; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cgGl4+iU;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JKUv0IT1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQH7p5NYnz30Lw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 00:43:34 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6236pX0R1943382;
-	Tue, 3 Mar 2026 13:43:21 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQHCP4PjHz30Lw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 00:46:41 +1100 (AEDT)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62363ILB2080896;
+	Tue, 3 Mar 2026 13:46:27 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=iI9XLs
-	BxKF1pU4sam6F9+GLKbEwO8agz8U2CA2J372o=; b=cgGl4+iUIGIcRyPSr5C/rC
-	nw7DYJ2svGWb7MjyHtNLwN605Fk2nqADv0YvEqJv346Lt1/bV8ryOkFX+MV7NYLQ
-	PscPOCEArYgx53y+tGNWXlj2kT3Bo8rmHVmAJFHTWmOpc/AlYCD+UuD9GhXFWge0
-	XHrfolTDRo+3ANVA8oHHxaXfoF8nQnch2Pg0Tc1PA8V8VrPPWSI/eXvzoeQhaWQZ
-	efGGseEhkEMRZTwlA3X1OUxjyNSZuocJtu0XXd8MJbExcwu87lnwhray6JlFbRUt
-	Zp9nFAVSy3odsyC+Hgiz6OiZjAWaczE3ll4PHOWwspOvmMxJrBX/BMH6W4puPltQ
+	:message-id:mime-version:references:subject:to; s=pp1; bh=asy+th
+	lMkMBwcQz4UGE0S+RGOlnm/ut2DPcQvsToO1Y=; b=JKUv0IT1QAaSv4S3o5fR8E
+	FZvIefQMcvMmufl2o5oieEyvhQOiO8MGhlkFDMHEz546ZAeJ4FdaBkxYv1gbzS1Y
+	PaN0Nd3Rsrj56dXxRYYfqdrzOAWkrM6eBCd02TxV+BE7zKKkTVLoJo32vplMqzQP
+	YpflQprcEMs0bZuegYgDHdP4/BlTy3S0/kTEiYFJaMc1P9CTutOIbMdd8dnkbuOB
+	Ah8jtNdnIxByykgRW0kXM2vJNP5gsWM/dj70jFhx1mvJ06vAMq49Z8zpdCbfDOh8
+	q1ED54KRrp8PtOh4CoJaNVX5v4gOk49EtuJassq3VgZTwpIahGON+SS92ULvLOZg
 	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ckskcu5mk-1
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ckssmjxaw-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 03 Mar 2026 13:43:20 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 623APDXI016384;
-	Tue, 3 Mar 2026 13:43:19 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4cmbpn2fc7-1
+	Tue, 03 Mar 2026 13:46:26 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 623Aw4O6027704;
+	Tue, 3 Mar 2026 13:46:26 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4cmcwja807-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 03 Mar 2026 13:43:19 +0000
+	Tue, 03 Mar 2026 13:46:26 +0000
 Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 623DhFIF55443728
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 623DkMix49283430
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 3 Mar 2026 13:43:15 GMT
+	Tue, 3 Mar 2026 13:46:22 GMT
 Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 872F220043;
-	Tue,  3 Mar 2026 13:43:15 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 5DF532004F;
+	Tue,  3 Mar 2026 13:46:22 +0000 (GMT)
 Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1A6BE20040;
-	Tue,  3 Mar 2026 13:43:14 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id C0A5420040;
+	Tue,  3 Mar 2026 13:46:20 +0000 (GMT)
 Received: from [9.78.106.17] (unknown [9.78.106.17])
 	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  3 Mar 2026 13:43:13 +0000 (GMT)
-Message-ID: <30d026c1-5d0d-4679-95e3-cd39b670d353@linux.ibm.com>
-Date: Tue, 3 Mar 2026 19:13:13 +0530
+	Tue,  3 Mar 2026 13:46:20 +0000 (GMT)
+Message-ID: <0183a042-01c1-4d6d-aa6d-9724cef74978@linux.ibm.com>
+Date: Tue, 3 Mar 2026 19:16:20 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,8 +82,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 3/5] powerpc64/bpf: use consistent tailcall offset in
- trampoline
+Subject: Re: [PATCH v2 5/5] powerpc64/bpf: fix handling of BPF stack in
+ exception callback
 To: adubey <adubey@linux.ibm.com>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, bpf@vger.kernel.org,
         Madhavan Srinivasan <maddy@linux.ibm.com>,
@@ -91,65 +91,154 @@ Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, bpf@vger.kernel.org,
         Daniel Borkmann <daniel@iogearbox.net>,
         Andrii Nakryiko <andrii@kernel.org>,
         Saket Kumar Bhaskar <skb99@linux.ibm.com>,
-        Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+        Venkat Rao Bagalkote <venkat88@linux.ibm.com>, bot+bpf-ci@kernel.org
 References: <20260220063933.196141-1-hbathini@linux.ibm.com>
- <20260220063933.196141-4-hbathini@linux.ibm.com>
- <2f33ecbbe8272184111c5406d167b6b0@linux.ibm.com>
+ <20260220063933.196141-6-hbathini@linux.ibm.com>
+ <7be71e61b6e9c522b03f96b1c4158b53@linux.ibm.com>
 Content-Language: en-US
 From: Hari Bathini <hbathini@linux.ibm.com>
-In-Reply-To: <2f33ecbbe8272184111c5406d167b6b0@linux.ibm.com>
+In-Reply-To: <7be71e61b6e9c522b03f96b1c4158b53@linux.ibm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: l8VTyG3UgxY0iVvA9BQnq-bN8x8KDGvE
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzAzMDEwOCBTYWx0ZWRfX1ACPhmQcCAiT
- oboLBiA+Cq5tWxASWZaqkePBcKKpJ2UaQ7A9ZblPQmdqCKMY6yeBSK40mIEBT4qp+Ysk9Ojsw4c
- aMId/5GOGkZ8nErDbqMVoy6NUt6wrfM4jZBoydYdWb+fa3FAQ1C6hdln+PuKi2vr7vuqiP42Fvq
- +d/BpneEi3NUJlBMhSLm8MlE86hUNSKpGLWmnqVuSWsOFMKNujoqM5iYZbJD/NwjcDjblKEryLV
- Fnc69W3ZpSzQ+VUcuf7nUN4ZxEe1tvfaSz9o3/5AisE3r3mmc8xZZhrDRRQrLAD22Is+SJq1ORK
- QbyPRnsp+J8+if+/2+pCbEOJUOAcx6EWI8+UbrRKFD/PuCyjstohZCwOCQVnRrOVEm2j/D7mxto
- vmaV4Zhm/EOPqPiTP40jJ3jWwflPuCvC1d8uzAT+r/SRXxCAKPURPpl8oG7PyuHIo/o+/5P+9W+
- 0SnCjGlt2rk8EKuuL3g==
-X-Authority-Analysis: v=2.4 cv=H7DWAuYi c=1 sm=1 tr=0 ts=69a6e578 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzAzMDEwOCBTYWx0ZWRfX4M3we9Vg0yum
+ wyMRObApQkFbZGRFcx7jEnQ1E5a12/R5+Z9B/Pl5mdwVwqD7B8Xolu6BVoqwncQpxwQQ9m6+qqs
+ 6uEGtWugCiLl0Yh9BmfLkg2OeJTYie2XNZTCwTnQCs4MllihAGEhKWngh1/leGqiIJ+kROkNLMI
+ 29wG49z/7z8V6a8RuQn0n5m5gtYiOAKjbdrbnwPr6mGQFMsIt7AAtoj69/dUNKfwt09sUKrGve+
+ 5fV8eFtpVYmlLgpn0/0j4ltX83a2YjIF2Rx6GiVDPPguxsuB8BniKvc5EiMbxkYA1d/8yLu59rz
+ mq7PLyYW0yTV03CHDkqYuueP60PmETgxDV8au5imjWzcp6ONk9xlYaAT9C+4XiyJxIEAIw+Qjq4
+ MhjWxtHwasD4oc+WIt1U1PMuWb8cfo0Kr9cW6Gg3EjaGXtkauw3JNLs+Wj0X8RFBAHp5qLQGIoC
+ FJe09iDl24UD15KPFLw==
+X-Proofpoint-ORIG-GUID: AwiqV9rMivse3059pViol0b0l3Up0otx
+X-Proofpoint-GUID: AwiqV9rMivse3059pViol0b0l3Up0otx
+X-Authority-Analysis: v=2.4 cv=AobjHe9P c=1 sm=1 tr=0 ts=69a6e632 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
  a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=hklsHozHma9wGV9YwB4A:9
- a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: l8VTyG3UgxY0iVvA9BQnq-bN8x8KDGvE
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=FE_IyaicahEbgNOQyFYA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-03-02_05,2026-03-03_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 suspectscore=0 phishscore=0 clxscore=1015 priorityscore=1501
- adultscore=0 bulkscore=0 spamscore=0 malwarescore=0 lowpriorityscore=0
+ phishscore=0 lowpriorityscore=0 bulkscore=0 impostorscore=0 malwarescore=0
+ spamscore=0 clxscore=1015 suspectscore=0 adultscore=0 priorityscore=1501
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2603030108
 
 
 
-On 22/02/26 6:37 pm, adubey wrote:
+On 23/02/26 2:33 pm, adubey wrote:
 > On 2026-02-20 12:09, Hari Bathini wrote:
->> Ideally, the offset used to load the tail call info field and to find
->> the pass by reference address for tail call field should be the same.
->> But while setting up the tail call info in the trampoline, this was
->> not followed. This can be misleading and can lead to unpredictable
->> results if and when bpf_has_stack_frame() ends up returning true
->> for trampoline frame. Since commit 15513beeb673 ("powerpc64/bpf:
->> Moving tail_call_cnt to bottom of frame") and commit 2ed2d8f6fb38
->> ("powerpc64/bpf: Support tailcalls with subprogs") ensured tail call
->> field is at the bottom of the stack frame for BPF programs as well as
->> BPF trampoline, avoid relying on bpf_jit_stack_tailcallinfo_offset()
->> and bpf_has_stack_frame() for trampoline frame and always calculate
->> tail call field offset with reference to older frame.
-> 
+>> Exception callback reuses the stack frame of exception boundary. When
+>> exception boundary and exception callback programs have different BPF
+>> stack depth, the current stack unwind in exception callback will fail.
+>> Adjust the stack frame size of exception callback, in its prologue,
+>> if its BPF stack depth is different from that of exception boundary.
+>>
+>> Reported-by: bot+bpf-ci@kernel.org
+>> Closes:
+>> https://lore.kernel.org/ 
+>> bpf/2a310e86a59eb4c44c3ac9e5647814469d9c955580c9c0f1b3d9ca4a44717a34@mail.kernel.org/
+>> Fixes: 11d45eee9f42 ("powerpc64/bpf: Additional NVR handling for 
+>> bpf_throw")
+>> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
+>> ---
+>>
+>> Changes since v1:
+>> * Fixed incorrect use of PPC_RAW_SUB() as pointed out by
+>>   bot+bpf-ci@kernel.org.
+>>
+>>
+>>  arch/powerpc/net/bpf_jit_comp64.c | 30 ++++++++++++++++++++++--------
+>>  1 file changed, 22 insertions(+), 8 deletions(-)
+>>
+>> diff --git a/arch/powerpc/net/bpf_jit_comp64.c
+>> b/arch/powerpc/net/bpf_jit_comp64.c
+>> index 5d4d2bb23cef..33b2a7fd9067 100644
+>> --- a/arch/powerpc/net/bpf_jit_comp64.c
+>> +++ b/arch/powerpc/net/bpf_jit_comp64.c
+>> @@ -32,14 +32,15 @@
+>>   *
+>>   *        [    prev sp        ] <-------------
+>>   *        [    tail_call_info    ] 8        |
+>> - *        [   nv gpr save area    ] 6*8 + (12*8)    |
+>> + *        [   nv gpr save area    ] 6*8        |
+>> + *        [ addl. nv gpr save area] (12*8)    | <--- exception 
+>> boundary/callback program
+>>   *        [    local_tmp_var    ] 24        |
+>>   * fp (r31) -->    [   ebpf stack space    ] upto 512    |
+>>   *        [     frame header    ] 32/112    |
+>>   * sp (r1) --->    [    stack pointer    ] --------------
+>>   *
+>>   * Additional (12*8) in 'nv gpr save area' only in case of
+>> - * exception boundary.
+>> + * exception boundary/callback.
+>>   */
+>>
+>>  /* BPF non-volatile registers save area size */
+>> @@ -128,12 +129,13 @@ static inline bool bpf_has_stack_frame(struct
+>> codegen_context *ctx)
+>>   *        [      ...           ]         |
+>>   * sp (r1) --->    [    stack pointer    ] --------------
+>>   *        [    tail_call_info    ] 8
+>> - *        [   nv gpr save area    ] 6*8 + (12*8)
+>> + *        [   nv gpr save area    ] 6*8
+>> + *        [ addl. nv gpr save area] (12*8) <--- exception boundary/ 
+>> callback program
+>>   *        [    local_tmp_var    ] 24
+>>   *        [   unused red zone    ] 224
+>>   *
+>>   * Additional (12*8) in 'nv gpr save area' only in case of
+>> - * exception boundary.
+>> + * exception boundary/callback.
+>>   */
+>>  static int bpf_jit_stack_local(struct codegen_context *ctx)
+>>  {
+>> @@ -240,10 +242,6 @@ void bpf_jit_build_prologue(u32 *image, struct
+>> codegen_context *ctx)
+>>
+>>      if (bpf_has_stack_frame(ctx) && !ctx->exception_cb) {
+>>          /*
+>> -         * exception_cb uses boundary frame after stack walk.
+>> -         * It can simply use redzone, this optimization reduces
+>> -         * stack walk loop by one level.
+>> -         *
+>>           * We need a stack frame, but we don't necessarily need to
+>>           * save/restore LR unless we call other functions
+>>           */
+>> @@ -287,6 +285,22 @@ void bpf_jit_build_prologue(u32 *image, struct
+>> codegen_context *ctx)
+>>           * program(main prog) as third arg
+>>           */
+>>          EMIT(PPC_RAW_MR(_R1, _R5));
+>> +        /*
+>> +         * Exception callback reuses the stack frame of exception 
+>> boundary.
+>> +         * But BPF stack depth of exception callback and exception 
+>> boundary
+>> +         * don't have to be same. If BPF stack depth is different, 
+>> adjust the
+>> +         * stack frame size considering BPF stack depth of exception 
+>> callback.
+>> +         * The non-volatile register save area remains unchanged. 
+>> These non-
+>> +         * volatile registers are restored in exception callback's 
+>> epilogue.
+>> +         */
+>> +        EMIT(PPC_RAW_LD(bpf_to_ppc(TMP_REG_1), _R5, 0));
+>> +        EMIT(PPC_RAW_SUB(bpf_to_ppc(TMP_REG_2), 
+>> bpf_to_ppc(TMP_REG_1), _R1));
+>> +        EMIT(PPC_RAW_ADDI(bpf_to_ppc(TMP_REG_2), bpf_to_ppc(TMP_REG_2),
+>> +            -BPF_PPC_EXC_STACKFRAME));
+>> +        EMIT(PPC_RAW_CMPLDI(bpf_to_ppc(TMP_REG_2), ctx->stack_size));
+>> +        PPC_BCC_CONST_SHORT(COND_EQ, 12);
+> Can we avoid resizing when boundary_stack is greater? I think it's safe, 
+> NVR will be intact anyway and any reference within bounds of larger size.
+> Any corner case possible?
 
-> It's good to add comment about padding field placed after tailcall_info
-> in the trampoline stack layout. Visibly padding is following tailcall_info
-> but tailcall_info is bottom-most field. Clear comment around this
-> will be really helpful.
-
-"Generated stack layout:" does capture that clearly. Don't find it
-relevant to explain it again in this context..
+Did think about it but went with this approach to keep the tearing down
+of the stack consistent for all cases. Addressed the other comments
+and posted v3.
 
 - Hari
 
