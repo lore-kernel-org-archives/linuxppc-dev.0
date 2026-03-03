@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-17609-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17610-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B551FEDA698
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2026 16:41:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC8AEEDA6A0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2026 16:52:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fQM4g1xFGz30Lw;
-	Wed, 04 Mar 2026 03:41:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fQMKc2QH3z30Lw;
+	Wed, 04 Mar 2026 03:52:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772556067;
-	cv=none; b=H02OVexlFXYgekW46M3xrhuUWP1LgMAigweBV/K9wTH7AjgRE737e2xs4Ne3KsrH7/OxKJ35F/YYFzRIFKv94tiJvy5ZEtC9NxsM1sbjSSqR0PF7Qitfql9BtD1rbPsGYoYmJ4nf2303Rk4hUQYS6xj9+065dG9DaR+/N3kDiYadjnkEzOTzeKFS6vrQ4gVfj8tNgpFx/iMl0H4WJHGDtF29Pjwt09qOTdqjk4RHi/X0OCgXcfaKF86H51t/cJW4PzX8lgQqRgdwS8GvhSg0UIXWdZsFy7236wW5BecCb6XIXsmSdiTbPOYKEBGlcryIvUlsGGOaPOrVzLbBBu9FRQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772556740;
+	cv=none; b=R2uJk9fz3P0UuMPMm55sHNhF+bpdNYImMMD9Oin47Hd7grLqhMO/T7n9iVSyLYdL+AjOnPvTmDaF2CUtxI6YsXC9AxbiTUcK8724sximmLTPotLFw/38GKFLDK5ZqmOGZfuZGkMy3iZmC/RyE1bwUzQoGaQ3dzGnWJy/sWZ7BuKdjLSc9TXoAo8zgtwhE3V9sThaa3IRJKDAUB+Xi2+lD/lO0oYVr/6XHT/rRVu2P5gzVVHIVY5nJD81WLba9RWcOzXrXaonDqJ6UZ0UToPQJVp7MFX2nGtijtYgdUbmZA7JQhE83m3FNvpEFHQ0Em3AzGbUW3VwiiB8S/rVN4ZByA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772556067; c=relaxed/relaxed;
-	bh=qCSHDHc/8ypToeqPN8PoWJeRLF0T6o3MKkWY9OPr7/4=;
+	t=1772556740; c=relaxed/relaxed;
+	bh=IHR9YZ1MRDzAoFsWvBCLWO/s+2nLmcJAHaJM08OxmlE=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PhYYxm/dRi8IVq2v2Md7AAJ9x7fMp0yXkpW0+iHuZDP9nlVrtDY+GO9xpdgJ8mqlrkaUncqfEfS37sc+8IKKcHpnreVLHEHx6Eeh5DBPAJnAEYEt9QibvbS5tJJS8a9W9Q7X4gCEYHbYCqSVIHZ+5qn3Pl3GFcmehpdtWL15aog42AWpLYWsZuiKJt14h6ky93MqbyMQCrvG86qP45cz54SE19V5txvuyFx7YNlrpU4ojQVKnGezc9yknOVD5vbFsbpnFF6mxdrTiQHjNo8/rUi6dj1CyzSVHD88qWxB2XgGm0t4EnQDT2kND40ph7Qwk3+OJUddS4gjgrrTbCc1Ug==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hqoRkAxf; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=VpYeaF56HG62FYewiC0yvnDYNXMAAg/F01Vw6hQPi9uHO9Qe2Sy7HVqrT+F+drx3N4ccs0vFPR5FurR8+WkamuCZ7yui3zUIdsBPnGmj+eglGMJe+n8SEs8+SC3GMcRQUWRn9IEQ8NJkCyhG6u+VMHvNiIL2/nf2YQFB2CxEijT3KZUPhD5SfLDcuTvdRz1/dRkr5sGvxlpgxI66VhyJM4G1CEE09M8XHFQMh68jTqSxcbJvQ0OJa7/RGsTwPRVL2apEdDftPBA5UD+mDL70RMl3VQLp7dvWXdMGrNZfy6fVkuE4tnXlyaGT3Ja8SPA2DHBQ5Fr8Wrk17TNgBsxPsw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=klr7DOX9; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hqoRkAxf;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=klr7DOX9;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQM4f3QvQz2xQs
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 03:41:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQMKb1xlFz2xQs
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 03:52:19 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id B5D9E4349C;
-	Tue,  3 Mar 2026 16:41:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 98BD9C116C6;
-	Tue,  3 Mar 2026 16:40:58 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id F1A3840579;
+	Tue,  3 Mar 2026 16:52:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BB2AFC116C6;
+	Tue,  3 Mar 2026 16:52:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772556064;
-	bh=0LFa7vXZyD9LMEFVvzGin3tMycV+fpDYSnfRCbWLcEE=;
+	s=k20201202; t=1772556736;
+	bh=Qn6I79b9anQ0/JVDeoM+6n7E0s13tIg0fpBnemT2nlI=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=hqoRkAxfE5twbIJWM8Ud9CZqn2sf98qKjlHpYvR8ECBXvt8ol3xRSaeN3+irT6sZB
-	 /1GDoD4Y1P7qEsKPh92/JptcJVXV3grvE8FdpeQCTzoMK1VNA9NwLI/ddd3FOhN32B
-	 LAw9wRjM5pfLAUnQ/rFdLuhbIoBlD58yH08Q9Oa4Y9wZkmM4k4+jm9wUOFPWEJR0bB
-	 x7Rq7FGb3nH9RSRPkzdn9r7PUUIWIqAF4sA97GNw6Ewd3//K4RjHZWizQuO5U21W1S
-	 so3AlHzhXfaFGCsaJRJV83dn1sbvi62l2YHvxlUrwvYq0oMSKtiZyBjdhsMSS9T2Z8
-	 B9cHur4uyhIbg==
-Message-ID: <139c7644-99e8-4d5a-a88e-74bf2b14f2cc@kernel.org>
-Date: Tue, 3 Mar 2026 17:40:55 +0100
+	b=klr7DOX9CHzFzm6sWy1c0fxP6yxy6lrZYqHbKtF3f+fI+MGEtwe4cZKwqrR/95Ssl
+	 Aeua37APry0L/8w0eT88sD2fGPh/4VJH64DXNPH1NS855z51D11oYQRSugFIqIgO1d
+	 4m7Neylvc6Tqbn2sY3axAaZTr+uJBW0Dj6jWGveoCzv4ZJu42evjOqA/KXV8C1FCm0
+	 93GdR/i2wYBwLiZN6A43ZGrR9gTfLzcoTG6zxzxmN18c30/RGDtUCVBhV9u+s08KmI
+	 geGMBdGXOtGXllUkOqkQJ0zKjS7kPIMVmcnsUUQaVp5vA7+B4pX73hHI4vyWeKGOJO
+	 O1uScEXbqPl7A==
+Message-ID: <df6d4033-0e75-4dfa-a261-3d119c61ef4f@kernel.org>
+Date: Tue, 3 Mar 2026 17:52:07 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,7 +60,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 02/13] drm/amdkfd: Use migrate pfns internally
+Subject: Re: [PATCH v6 03/13] mm/migrate_device: Make
+ migrate_device_{pfns,range}() take mpfns
 To: Jordan Niethe <jniethe@nvidia.com>, linux-mm@kvack.org
 Cc: balbirs@nvidia.com, matthew.brost@intel.com, akpm@linux-foundation.org,
  linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
@@ -72,7 +73,7 @@ Cc: balbirs@nvidia.com, matthew.brost@intel.com, akpm@linux-foundation.org,
  jhubbard@nvidia.com, maddy@linux.ibm.com, mpe@ellerman.id.au,
  ying.huang@linux.alibaba.com
 References: <20260202113642.59295-1-jniethe@nvidia.com>
- <20260202113642.59295-3-jniethe@nvidia.com>
+ <20260202113642.59295-4-jniethe@nvidia.com>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -119,7 +120,7 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260202113642.59295-3-jniethe@nvidia.com>
+In-Reply-To: <20260202113642.59295-4-jniethe@nvidia.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
@@ -128,51 +129,44 @@ On 2/2/26 12:36, Jordan Niethe wrote:
 > address space. This will mean that device private pages no longer have a
 > pfn.
 > 
+> This causes an issue for migrate_device_{pfns,range}() which take pfn
+> parameters. Depending on if the device is MEMORY_DEVICE_PRIVATE or
+> MEMORY_DEVICE_COHERENT will effect how that parameter should be
+> interpreted.
+> 
 > A MIGRATE_PFN flag will be introduced that distinguishes between mpfns
-> that contain a pfn vs an offset into device private memory.
+> that contain a pfn vs an offset into device private memory, we will take
+> advantage of that here.
 > 
-> Replace usages of pfns and page_to_pfn() with mpfns and
-> migrate_pfn_to_page() to prepare for handling this distinction. This
-> will assist in continuing to use the same code paths for both
-> MEMORY_DEVICE_PRIVATE and MEMORY_DEVICE_COHERENT devices.
+> Update migrate_device_{pfns,range}() to take a mpfn instead of pfn.
 > 
-> Acked-by: Balbir Singh <balbirs@nvidia.com>
-> Reviewed-by: Felix Kuehling <felix.kuehling@amd.com>
+> Update the users of migrate_device_{pfns,range}() to pass in an mpfn.
+> 
+> To support this change, update
+> dpagemap_devmem_ops::populate_devmem_pfn() to instead return mpfns and
+> rename accordingly.
+> 
 > Signed-off-by: Jordan Niethe <jniethe@nvidia.com>
 > ---
-> v2:
->   - New to series
-> v3:
->   - No change
-> v4:
->   - No change
+> v2: New to series
+> v3: No change
 > ---
->  drivers/gpu/drm/amd/amdkfd/kfd_migrate.c | 15 +++++++--------
->  drivers/gpu/drm/amd/amdkfd/kfd_migrate.h |  2 +-
->  2 files changed, 8 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/gpu/drm/amd/amdkfd/kfd_migrate.c b/drivers/gpu/drm/amd/amdkfd/kfd_migrate.c
-> index 297fa108ccf9..b6075a2808c2 100644
-> --- a/drivers/gpu/drm/amd/amdkfd/kfd_migrate.c
-> +++ b/drivers/gpu/drm/amd/amdkfd/kfd_migrate.c
-> @@ -210,17 +210,17 @@ svm_migrate_copy_done(struct amdgpu_device *adev, struct dma_fence *mfence)
->  }
->  
->  unsigned long
-> -svm_migrate_addr_to_pfn(struct amdgpu_device *adev, unsigned long addr)
-> +svm_migrate_addr_to_mpfn(struct amdgpu_device *adev, unsigned long addr)
->  {
-> -	return (addr + adev->kfd.pgmap.range.start) >> PAGE_SHIFT;
-> +	return migrate_pfn((addr + adev->kfd.pgmap.range.start) >> PAGE_SHIFT);
->  }
 
-To make it clearer that the result is a "migrate pfn" I'd call this.
+The fact that "migrate pfns" are just dressed as ordinary pfns is
+confusing and error prone, especially when we suddenly have to derive
+from the variable name whether something is a pfn or an mpfn ...
 
-svm_addr_to_migrate_pfn()
+Something to think about would be treating migrate pfns as opaque
+objects and move from misleading "unsigned long" to something like
 
-Not sure if maintainers have any other preference.
+typedef struct migrate_pfn {
+	unsigned long data;
+} migrate_pfn_t;
 
-Apart from that LGTM (someone should convert this code to use folios ;) ).
+And providing proper accessors.
+
+That would make it much clearer when passing these things around what
+they are ... and the compiler can easily catch bugs.
 
 -- 
 Cheers,
