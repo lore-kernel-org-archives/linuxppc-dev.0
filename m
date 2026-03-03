@@ -1,109 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-17619-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17620-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54A89EDEBE3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2026 18:18:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99C64EDEBE6
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2026 18:47:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fQPDt5B2Gz3bf8;
-	Wed, 04 Mar 2026 05:18:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c10c::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772561902;
-	cv=pass; b=MY7etO/CtgF7ZLDl6WkH0w9kMXWu4E3o0WD1GIJ60ELL2mylTmahawFEus8AIKD3cEzlKQd5GtP1Bz8yEaOHOjTQqLbd9Wi/uBiA79JNPXw1kh6EA+W5YUbNTUbDGUR+1/WKJeRx6GhERoFmu3XZyX61DwflpPOIcMiis8kZyDxBQATJN26T9bqcbCM4HCfMxlFR6gZtU/WbDtjWUVlH0ragykz9A4z9VLFW900cJH/AQbY4yOFOtokOX0f2qHEbug4TNIpdp+0WAdAZRF86QIzEwuyv7fL473EhKYzjUgikHDO6rEcpZZ8GW4/vUUtvfdwUxb7jk4o5wEhlcOnn+w==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772561902; c=relaxed/relaxed;
-	bh=apViz8xjOxQ9VkZWmDYI5MdLZNluK0TbM6LPgUK0x3Q=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=Pi3VZBybOsV5FR0l1v8P812j1EuE0K0fm0k7njHOebThPsXbPe4n/6vKSv7m/1vEUQNyhpR0tHxEb9bbYKmRJe70GR7pSUYiHDadUps73zfh+QOjy1/lX+1OkYrcbi8hBSe5/0pO21GUEwKsAkN+xDs+H+xMRyGlCHMlUGDk/DaozchUWgaWeDfEzrL4GMD9dxLGHrOgJYPnzxzuNLU1sXIJWwzTQp626h/Mla8iOILZirasz2/cc4Xud7xfgNHGnj5nvmWrTyzP77+zUOuNI0IEcRphl5YvqWyvJ8zvmbBfEW5+U+pucEAcOe3MfijlqTx5Sx8Rfg4MRZ9o2Qg3bA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=OEwQigU+; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c10c::1; helo=sa9pr02cu001.outbound.protection.outlook.com; envelope-from=ynorov@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fQPtZ5ljfz3bp0;
+	Wed, 04 Mar 2026 05:47:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::136"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772563654;
+	cv=none; b=V7O1Tb47UqDkhgURwfVneYL27mYtxL2RtdRu81FbPsAAxUDzCKwRd37/sMqfr9gBeZTDWSXSnrkXXrR/oVZLUvJfpscch23sU65oBJG3OwDVs689DFuqb3YXVH9SXjHj7oJjwamGkzg96vQ3uL8uIX0GJTex0to4tXAOsp3uBgv/CjTO4t3XGZV0/pPlpkoLBaDv33vs4nu8tOjBkTs2PQOdBNn/GN9jxbKEsdH4VLWEvJz9frEmpwdVAWL3MeuqmcuF7On8H1/Z+NUyIQYxnDtIVhBNrQH9vqV3Q2ISqLVyQeApXrAzWRL3YNBPzHm6eNoWkX5Lz9UZk6RUdu8Nag==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1772563654; c=relaxed/relaxed;
+	bh=+zVA5SdbXqXmCBN/Z5gDUy/tneGY24otJLTMGQOtDJc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=euHZ+u2H9YVY0FgRO9emuHymM0BqBRb84hfyYRVg20lkLc8G0DrW6OiSMmLO9RFaPG8Gr18aWx8/DmAzsiJuvtcIOh6pNmqh7QANIYprGuoPZUUFll0RfAepSQ3D6sYodrAi95yM5IqZCVzgmyHXX+947m2DUWygnT2GdAK9Dr/VG5XaENe0c9s0FXHj54CSW0vln4hksWihBxUGxPiPUwlQP+OK3C4IWrRcay1GzxGZG/1hN0YaNyKwKyGy3M9cYsJdot0C0yMnjup6MbvJBK5GNIKrQkVER7NtSvVDD3f5W50N1uWImgOqszkScQHTFzSBIZNdwgKixPL6YTrNCA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zytor.com; dkim=pass (2048-bit key; unprotected) header.d=zytor.com header.i=@zytor.com header.a=rsa-sha256 header.s=2026022301 header.b=UDipitNJ; dkim-atps=neutral; spf=pass (client-ip=2607:7c80:54:3::136; helo=mail.zytor.com; envelope-from=hpa@zytor.com; receiver=lists.ozlabs.org) smtp.mailfrom=zytor.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zytor.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=OEwQigU+;
+	dkim=pass (2048-bit key; unprotected) header.d=zytor.com header.i=@zytor.com header.a=rsa-sha256 header.s=2026022301 header.b=UDipitNJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c10c::1; helo=sa9pr02cu001.outbound.protection.outlook.com; envelope-from=ynorov@nvidia.com; receiver=lists.ozlabs.org)
-Received: from SA9PR02CU001.outbound.protection.outlook.com (mail-southcentralusazlp170130001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c10c::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zytor.com (client-ip=2607:7c80:54:3::136; helo=mail.zytor.com; envelope-from=hpa@zytor.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 1078 seconds by postgrey-1.37 at boromir; Wed, 04 Mar 2026 05:47:32 AEDT
+Received: from mail.zytor.com (terminus.zytor.com [IPv6:2607:7c80:54:3::136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQPDr2hYVz2yrl
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 05:18:19 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=WnxuftgSEWCI2v8ybeeYF92YOnrbLX0xhU3tC8abOUtNHUEFHO4UsCW9B8mw2k/aULunOzoQQMDWHa8PYNmqyEQN2DUzdVZBmSqeQhs+KfBlfwwiAs3WTxEovXJsgK8DLPFIm6i2Idnfhi+idM5hIylJpbJdIxFwuGZ0o2fZmvfw+/wXmtv2HCIeejf7/J2oHKJtWZwdXgLhYfyHRX5ptmsJYFdL2c9DHiw54NdGeBmItHnFPkreuvO2LVgPlN9eovCNvXi3GAgBo/xMyu3w6ob5DtduRmVpDIQxqgv32EW9anefRvV7+/mB9btvj3kuvq6T43/smIH6/Q01Rt2Niw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=apViz8xjOxQ9VkZWmDYI5MdLZNluK0TbM6LPgUK0x3Q=;
- b=pkx78tnqx+P/Z+dKW+RgZBcQW63Fa99pMMsSCMtE80KR/mexBGI9RSHEQ3EYj/Ctuh5rti4q+R3G3xgtkTtIH9mr6bjWREgNNp9co1J8wNVx74ZxoonUAMIbdDSuS0w+2tV4yAol6Ll1g6x3o+TPFTsyjm6glBzKk/rCxzFGXeTfbzwHylIk4kE0xqOo1eub9g44r0nGlR0IFbjXXowc8eg7ZrVMJjaQIgZq97Hn03ChZPQ8U/M33s8OK+Q3R+HQ8xvgeDo2Vr0xOjXdXAHbWZNBC2Ja37c8mCYSOG7TOMT9ekQi0mAfb0h0stmssLZ/j50MOJ3CZpJAY7BxBGcqBA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=apViz8xjOxQ9VkZWmDYI5MdLZNluK0TbM6LPgUK0x3Q=;
- b=OEwQigU+UNobpscs6xF0BwpK4Scb2gSr7yQpOWY/CfOLm1Hof1eBtfMkJHH+9+3VaeOkRkqwD4AGuQmWp284SqTxjRv8A2m1J0ymrO9t3+hzYZKKXpkhwX3i+njjywEnx1xgOMFtDSao4WbmZnWI7ZJElp7me2Msx7EUBiuEprv+7XvPXWpaCXJXIhE5v5NolKBG8phn2ZBWHrRwHDYiQzHCWqBMr9i4Eytl2qc6NCM2QOpftQyWfe/4Mye7wHyV3iBbxWQp7mp6pG5dWn3BJh1SP48XJ4UZq7z+NQoGFY6JnUvQUdGL7pkRtFrUfyizURcjJ9GzJVgLaOzmZB7UGA==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from PH0PR12MB8800.namprd12.prod.outlook.com (2603:10b6:510:26f::12)
- by SJ0PR12MB8615.namprd12.prod.outlook.com (2603:10b6:a03:484::12) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9654.18; Tue, 3 Mar
- 2026 18:17:48 +0000
-Received: from PH0PR12MB8800.namprd12.prod.outlook.com
- ([fe80::f79d:ddc5:2ad7:762d]) by PH0PR12MB8800.namprd12.prod.outlook.com
- ([fe80::f79d:ddc5:2ad7:762d%4]) with mapi id 15.20.9654.022; Tue, 3 Mar 2026
- 18:17:48 +0000
-Date: Tue, 3 Mar 2026 13:17:46 -0500
-From: Yury Norov <ynorov@nvidia.com>
-To: Jakub Kicinski <kuba@kernel.org>
-Cc: linux-kernel@vger.kernel.org,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"David S. Miller" <davem@davemloft.net>,
-	"Peter Zijlstra (Intel)" <peterz@infradead.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-	Andrew Lunn <andrew+netdev@lunn.ch>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Antoine Tenart <atenart@kernel.org>,
-	Christian Brauner <brauner@kernel.org>,
-	Daniel Lezcano <daniel.lezcano@linaro.org>,
-	Eric Dumazet <edumazet@google.com>,
-	Geetha sowjanya <gakula@marvell.com>,
-	Ingo Molnar <mingo@kernel.org>,
-	James Clark <james.clark@linaro.org>,
-	Jerin Jacob <jerinj@marvell.com>,
-	Linu Cherian <lcherian@marvell.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Mike Leach <mike.leach@linaro.org>, Moritz Fischer <mdf@kernel.org>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Paolo Abeni <pabeni@redhat.com>,
-	Rasmus Villemoes <linux@rasmusvillemoes.dk>,
-	Simon Horman <horms@kernel.org>,
-	Stanislav Fomichev <sdf@fomichev.me>,
-	Subbaraya Sundeep <sbhatta@marvell.com>,
-	Sunil Goutham <sgoutham@marvell.com>,
-	Suzuki K Poulose <suzuki.poulose@arm.com>,
-	Tom Rix <trix@redhat.com>, Xu Yilun <yilun.xu@intel.com>,
-	Yajun Deng <yajun.deng@linux.dev>,
-	Yury Norov <yury.norov@gmail.com>, Zhang Rui <rui.zhang@intel.com>,
-	hariprasad <hkelam@marvell.com>, coresight@lists.linaro.org,
-	linux-arm-kernel@lists.infradead.org, linux-fpga@vger.kernel.org,
-	linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	netdev@vger.kernel.org
-Subject: Re: [PATCH 00/12] cleanup bitmaps printing in sysfs
-Message-ID: <aaclsPYLPdb0mSW2@yury>
-References: <20260219181407.290201-1-ynorov@nvidia.com>
- <20260219114120.0f4408f7@kernel.org>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260219114120.0f4408f7@kernel.org>
-X-ClientProxiedBy: BN9PR03CA0797.namprd03.prod.outlook.com
- (2603:10b6:408:13f::22) To PH0PR12MB8800.namprd12.prod.outlook.com
- (2603:10b6:510:26f::12)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQPtX4VQ1z3bnr
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 05:47:32 +1100 (AEDT)
+Received: from [IPV6:2601:646:8081:9481:7d9f:6fce:330c:4416] ([IPv6:2601:646:8081:9481:7d9f:6fce:330c:4416])
+	(authenticated bits=0)
+	by mail.zytor.com (8.18.1/8.17.1) with ESMTPSA id 623IBwxb3007270
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NO);
+	Tue, 3 Mar 2026 10:12:19 -0800
+DKIM-Filter: OpenDKIM Filter v2.11.0 mail.zytor.com 623IBwxb3007270
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zytor.com;
+	s=2026022301; t=1772561541;
+	bh=+zVA5SdbXqXmCBN/Z5gDUy/tneGY24otJLTMGQOtDJc=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=UDipitNJ+TnURncz+4axXj5t727f1dxWqKkdtf58mQoedGdBe2o6JBVgdoP8CO7Ry
+	 9CB3uFtQMRRW/yGu8Wm5Nr3ezlS0W7fWzd4ec6e+CvnVrSml2ZkMkpW+vdbh8cdE4A
+	 UWnWgRW5FF9zmA6VgvCm+uj0SnRi673RqA2gPwRn/NJknbzRxdD/hYAo9y3Ucezhr6
+	 yRzBTg3CHgnlPltD5GKLMqCzYLrOu80yOIJAODFtsiiesImNH+wMjPboHoThWc7fx9
+	 1tt7EA7eKrLMpdA0tuDDV81GNoJTInNE2aLg9ZprcxHpNhQk18AhMWWmmMkbRDsUvm
+	 OxPHbOmqHIh2g==
+Message-ID: <49b7c9f9-198a-49f7-880b-6ae74d7bd985@zytor.com>
+Date: Tue, 3 Mar 2026 10:11:52 -0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -117,76 +61,56 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH0PR12MB8800:EE_|SJ0PR12MB8615:EE_
-X-MS-Office365-Filtering-Correlation-Id: b399f740-90e5-473e-dda6-08de79512c6b
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|10070799003|366016|376014|7416014;
-X-Microsoft-Antispam-Message-Info:
-	h+kkDBGxURwJ8aJPm8i/9NV7AHrRQ0H0tpRXGUmb+SsXyObjRDMx4u3G2NVyz5EzP9EnBOi0YzkfCRYPyTgj8H3GtKma1tcMs/arL2hK1soloxH8vyWAPiJWasgaqXCvSLCNqz3k/eb6bdFtqJNBcur5YSLmm19TvrM36RW4dLjuZ5Z+yjBd9t0IAzMJT+PeAFTRh0wJ3W20O9+D5wycg4I9mABhNYEDR8ehpha/xuDqJwC2gvYPm5BJCHoeE0DF/L4kt4OvpM7b6n7LRVrESJeYD3284b+VeAu3//n9ejwUqfJj8RWJuWaj5lABlT69j8qQmHolaMYppExWbOkN0puJOpDb12OCA0dCgDmWOhOWMuJVRMZayG7KF11Lr/g1YHcohco69Pr84bTI7C2+8y2Al8m7kNb7d/ZOu9vm53KzP2vcXwUSvzQPatJrFwT2jBy0J1AIbiYMpK0UIx+Ca+6kU5Fokll4GaEeVvh6Vlp4N+P0qwfaDhfhG0359MuYSJ/LwvSa+ZCtZJIu7MXHDcH6gXjYJLqaRYWzE0n+blSPIlZoAN5s/7kBGkGyiIutiQmzAz6/HrjxowchjitDZVYxMvRDOMPCjhpeW2tGFv3QbMtMiqkVuGvcSqQEMVtBWqX1xK9CRtjwiJoFYZLyNw74LjQkUHLTeSnhrQ4OaD9l/RuSk3dyn0qKhiXuRZBttm4LyawFcV/B+g7gFJpj8Yasa47oiXJlzYTyfZNGLtQ=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR12MB8800.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(10070799003)(366016)(376014)(7416014);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?Bq+/kUd6LZmdnxICiDgmQMGWuUGFWn8tu+0nQipNHLqDDa75B9Hbms1CEhAI?=
- =?us-ascii?Q?mTfv9ZaBJ3ks1tmIL15+CPJrciD1choeYxgmsJYQVbJ3QiKdjKMsgsDkBWHC?=
- =?us-ascii?Q?Ul3K45UR2oLXl1y7/F6JiTeFNw0tncAxJZDsXFeqfIE/T2l3ukENtqG+G1ez?=
- =?us-ascii?Q?iifFLhQk09yqUQSamj2z3UUJ+eQo4E3plAiDvOvYVPQM8IsFQvRH7uUHvd1E?=
- =?us-ascii?Q?cbR2QtS9QjuwFFb5vnniippkyWQiDceq4YIDaBybTRcnzihySz9hHR1Iu6sK?=
- =?us-ascii?Q?YFMFsFJ5BNP7cgyuAc9kG9TZb8w+2J7MjmXb8DFJahbsEckHjjc+cw66vLSs?=
- =?us-ascii?Q?r6OTfqAC7IQN4/B81/u0ORatHFp8x1y8MXsSTN/TUVgr54VogVuOf4fUI1YK?=
- =?us-ascii?Q?zAcmk3S2222qoSZJlHlkVW4EOOVVzQ660GPwV5WfMBBjysOS27w1QiGxyIfS?=
- =?us-ascii?Q?cM0ZTFAcAeRBpFVfIru+X9ysbE+cJ/fT/O7lmmuYTDci0w+ASxFgwAPsmzAx?=
- =?us-ascii?Q?a9XXm8FIpld0JSQg5o0xes8arVzy25/lmb3JKlBtP15M/R/IPPgcy9gwOAE6?=
- =?us-ascii?Q?0NANEneYas/FtaVU+NBw/BGa+ZJxbwMx+Z3kNpjE8oK3lnGhfEQ88bP+4wcb?=
- =?us-ascii?Q?YFJ59eOUgCsglceN8clywar0mIZNdbhnseHfKK4jP+C52eE7c7nspiJDhXwh?=
- =?us-ascii?Q?1tWyqZX39kVxFsbKkGG1E3Ce9vfSUCVwpZJE9IWXwoBFI1ElFw4fRjMG6uqN?=
- =?us-ascii?Q?TvTKFeyLHMaCggm/YQRrhqa2giL1dLXblitpZLbnAZ3l9BlZHhX6JtqpfDT3?=
- =?us-ascii?Q?+Y0EuwAX3UevQAVbIsP8XurFhPsDsFhAF8voBiRMQRzSIoiu/zxiEOdn4G2N?=
- =?us-ascii?Q?kpAIb7XZD9OX7KAyZ4XBcb4j7W413gFhtpq7Z2yGUSw1mPIhpqrirLqad46E?=
- =?us-ascii?Q?1Ck3qq4xU/g9ggygRWxtPos/cHwahEZDa3ITkmhkROOmEan2i2OEdH59V12U?=
- =?us-ascii?Q?0JcT//kj4FD+nOo+bxiao/I71kd6b1VSfsY7loUXqNFyt035UrdvFOh8aoIH?=
- =?us-ascii?Q?BJ03yLabinMG6uVo4huAAV0VKw9VTfcMyR1F7x1iGCWYz4BgHErEMxOPYNY7?=
- =?us-ascii?Q?75amDl7ZW8HFO191dJknIQRCxf388q7ZXIDryi+B8c3CmhS1+GUSL/jekAL3?=
- =?us-ascii?Q?M6iG45fA1IsSlS1dwwbc6pUhMv0w9VSFNEA7bGBY14CO0NbKfy34DQl1qqKH?=
- =?us-ascii?Q?g3K1EI68bY0nVV0A5Zc+hdHQ1V+uTrJ67eYq5Mq3+HEbFWKTmMzpNfoj6z3g?=
- =?us-ascii?Q?UFYAMLq1Fk6pnTCtmvzoqJw8A2JDFyQgBLjlw1AMj3qAqv+gFNQWOKZHPZhx?=
- =?us-ascii?Q?hrRiBUODoNydAbaLl/vOLf3Ze/+d86hc3EA8JFV8oj18hy+fs6ySCHjwzo78?=
- =?us-ascii?Q?u4gyrkDxb7Q1oc72SbJcH/WHGb1smN6MTAhKruJ1VE2LMBWOWaujUcWrVJ8P?=
- =?us-ascii?Q?0FrvdFSzw7y/cjj09NlSqKuXu2JDF+n7YOtnX8eNsqJdDaKomw3l66AuoCYp?=
- =?us-ascii?Q?af77zWha81k0zgIFhbq2qYIj+hvP4pNFKjj+s4GwzAu9DHrFIWMV8N+usW5H?=
- =?us-ascii?Q?lCHi+6G0o9iLCDZXWQ5x4ajgifdGRLzYjgFfEn+tukF69U4+sZ8W+lgBvAZw?=
- =?us-ascii?Q?gsfMUjBcdnO5UJ6nboHsz07ntXqBYrFBBHXaHiwwaz5N7Vj1vbubIU76zSXy?=
- =?us-ascii?Q?Jd+98eprNR4J6a9wjaVYLuWIYxIHJ8hna2YeqhOMwL5CgtdximqH?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: b399f740-90e5-473e-dda6-08de79512c6b
-X-MS-Exchange-CrossTenant-AuthSource: PH0PR12MB8800.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Mar 2026 18:17:48.0090
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: sHr7rDoNUj7MUB5ba65Rba8zcQu7Ib0YBfSRB+9+EMqG1DrW8lRKil+xsuYHVdDavZNL9F4CjMVYVXwko3ZAWw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR12MB8615
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/7] x86/vdso: Respect COMPAT_32BIT_TIME
+To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
+        Arnd Bergmann <arnd@arndb.de>
+Cc: Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+        Russell King <linux@armlinux.org.uk>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Will Deacon <will@kernel.org>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Christophe Leroy <chleroy@kernel.org>,
+        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+        Vincenzo Frascino <vincenzo.frascino@arm.com>,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org
+References: <20260227-vdso-compat_32bit_time-v1-0-3f0286a7bac3@linutronix.de>
+ <20260227-vdso-compat_32bit_time-v1-1-3f0286a7bac3@linutronix.de>
+ <c29f5e70-bd17-4e1b-a005-5a3282e70075@app.fastmail.com>
+ <03cd1e21-a2f2-46a1-a674-cbaef9712016@app.fastmail.com>
+ <20260227103226-cc3bb32c-0107-4c09-b81a-ca33ea03ad5c@linutronix.de>
+Content-Language: en-US, sv-SE
+From: "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <20260227103226-cc3bb32c-0107-4c09-b81a-ca33ea03ad5c@linutronix.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Thu, Feb 19, 2026 at 11:41:20AM -0800, Jakub Kicinski wrote:
-> On Thu, 19 Feb 2026 13:13:52 -0500 Yury Norov wrote:
-> >  .../marvell/octeontx2/af/rvu_debugfs.c        | 28 +++----------
-> >  drivers/net/ethernet/meta/fbnic/fbnic_tlv.c   |  6 +--
-> >  drivers/s390/net/qeth_core_main.c             |  6 +--
-> >  net/core/net-sysfs.c                          |  2 +-
+On 2026-02-27 01:34, Thomas Weißschuh wrote:
+>>>
+>> The thing about gettimeofday() and time() is that they don't have
+>> a 64-bit version and libc implementations are expected to call
+>> clock_gettime() instead. The result was that there was never a
+>> patch to turn the off either.
 > 
-> Please split these changes out and submit them to the correct subsystem
-> after the merge window. Then push patch 12 during the next merge window.
+> gettimeofday() is currently the only way to get the timezone of the kernel.
+> But I guess this is a legacy thing anyways. If you say we should drop it,
+> let's drop it.
+> 
 
-OK, I'll split them out, will switch to sysfs_emit() where appropriate
-as suggested by Tomas. I'll move those tests cleanups by myself.
+The time zone in the kernel has never worked anyway, as it would require the
+kernel to contain at least the forward portion of the zoneinfo/tzdata table in
+order to actually work correctly. The only plausible use of it would be for
+local time-based filesystems like FAT, but I don't think we bother.
 
-Will resend shortly.
+A bigger question is whether or not we should omit these from the vDSO
+completely (potentially causing link failures) or replace them with stubs
+returning -ENOSYS.
 
-Thanks,
-Yury
+	-hpa
+
 
