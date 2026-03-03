@@ -1,49 +1,74 @@
-Return-Path: <linuxppc-dev+bounces-17641-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17642-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73A06EDEBF5
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2026 22:14:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BEE3BEDEBFA
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2026 22:18:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fQVTK4ZZlz3bf8;
-	Wed, 04 Mar 2026 09:14:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=178.251.229.89
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772554719;
-	cv=none; b=Bgj/wSZ5dLpYdlAF9exa/M+FHTrD/OK8MenxCh92LKvtZYYlv+0W0HXTFWj6GvAVcmqPYvM6oEFaMCbZ/+WoWJsbbWt3p1edo5AgdZvieoPI+xlLbQsYYC4t7zAyK6NON81a5ocFfkRBJIpqU+jMwkW1p5o7C4dDOTkpFen/lW2Xr4UBspk0NF/9l/6z5TVvFJo6Y1WzQdrfCiflWd3jmHROCvP6kc7gEqnnQDUb6sXvdDHOfsNnyQNbVoCG9/EJPyRZskZnnnD1nBSTh1n0KtEs3jbcCibSH7V7pYbBQIjD7Y5E2O/LrDZgwr12QBQ76wB1J1GBy5LzBiFcNZrWwA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fQVZ11mNXz3bf8;
+	Wed, 04 Mar 2026 09:18:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772576313;
+	cv=none; b=Z/nIRvJYjZaEkVqP+Q7AccMChpDhndxd+zLB4KohTbfyi0MZcrlDyeBgqlKAno/mR5fw+PBe6wrTZgdYEmbPeqSJU8BXcz35adjSgVTi9aOmSz9zMLY4ZNOIAAgoGEllGfw73iWOL+cny4ecYQDFTlvTEuV4xxJwsSFvGmFZmKSqfWGB3hgjOPwC+8SQQHiVfV2x/oJ3GXuRm2MS5PVzv7hdw4Ab5LrA7nsOayibVt3hIDsTSi4iKXxZk2Wv8dfsdFCFjut4Z1Ey099O524N/MevmoBezEk7+HlsPXH3ieQhGrZRX5lwIjkBijxYsodBqsAmly/5vzv60c8s4v2yZA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772554719; c=relaxed/relaxed;
-	bh=VxhQZwlQtVVJ3Lq0vxI3rNO5MwTyhZCb2R/bxcRNxHg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=IGxPgitPIJ53M+WLc8GSKERs/U91LOvL8J9neLxMop1o5GxAW65ibMw8WfS+3EN7xi/R+0uNDqP+20BzJ3WIGtBmLjmK+bqoOk7bTOaoqYNik7b4hp8EsxkltLnmVZ4hCPXhDn5C7KGref6i45ZFwLgIXjtf1yn9Y9zYEzCSdwRnRwI53jUgVNGxpgoQoqmz2KfxSw2EI9j/BOkj6FmWRWxyvulGz4vO7sK4BOUdtLgp6ob8nU+83ZeKosYm/C32GghNzbH/2+/RiK+rHjLIfDzLXtuFnODLklkEt+OVEMIrLscD227240ZTNlwrcp8YsyJw3fBnoq8CdqWgHHZoxQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nabladev.com; dkim=pass (2048-bit key; unprotected) header.d=nabladev.com header.i=@nabladev.com header.a=rsa-sha256 header.s=dkim header.b=L1h+yNm/; dkim-atps=neutral; spf=pass (client-ip=178.251.229.89; helo=mx.nabladev.com; envelope-from=hs@nabladev.com; receiver=lists.ozlabs.org) smtp.mailfrom=nabladev.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nabladev.com
+	t=1772576313; c=relaxed/relaxed;
+	bh=BP2R36w3xYUknyVVM5sNFE0Pq2fJT7cuN70tvl8P0F8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Bf/z51svJzX8uQKBYbO1TWpts5/OZk+3o2TmDOirhY27g2Lj2plxe4hDQDVn792ODkeqwqNcKO4pXUDb/zTssUD/ZPqxOF98QprnINqHg8Y2Xhff+vnVgSFL5/qegTyuhvp5/OthyLdA9tAfucDDh0jkbajnvOqfKbMOvKA7yNCl38P6cNwPgMn/I62P4W3AAV5KtDjAwwRJsqaU17C5oJ8PqH66BAJn2JjPmiBjUEF1LRrnPChihsX/UCwgy179Df27dW7WLoNODT81wZrMRC3TGYIoavW6HvYSzNjF5EemIRV6q/Bi06OMTYXYKnIpibWJl4Y5cAzxHbSKE5OUIg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=TDgirRMe; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nabladev.com header.i=@nabladev.com header.a=rsa-sha256 header.s=dkim header.b=L1h+yNm/;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=TDgirRMe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nabladev.com (client-ip=178.251.229.89; helo=mx.nabladev.com; envelope-from=hs@nabladev.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 547 seconds by postgrey-1.37 at boromir; Wed, 04 Mar 2026 03:18:37 AEDT
-Received: from mx.nabladev.com (mx.nabladev.com [178.251.229.89])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org)
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQLZj3RxYz2xP9
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 03:18:37 +1100 (AEDT)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 7CDC910E2DF;
-	Tue,  3 Mar 2026 17:09:21 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nabladev.com;
-	s=dkim; t=1772554166;
-	h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 content-transfer-encoding:content-language:in-reply-to:references;
-	bh=VxhQZwlQtVVJ3Lq0vxI3rNO5MwTyhZCb2R/bxcRNxHg=;
-	b=L1h+yNm/+l5KOsJkNM1WpjLK72qncYgzQ2105hTFLtxP1pCb7RZI5YO2ld6N34QenhRNqQ
-	cIcYcxYuqQPx804M+hhlx0ADVXnnNFfqnXt9UPUTSV9IxolN+J0yyvqu3VDmADo3rLjBOZ
-	9Sntk66x3lm28oRP5Vcg4lhOMTRIRDQUVbTZ9/R7Ik2BI16At7Ut09fuIXdtXdAApgidR1
-	2xWW8XcDjW4PbJ1xNeM5N3LMi0jSz8d8VpF4N/Q0w0XS0TTEagNcaLwLTpkQ+Qb6c3gYom
-	ptpSq0wFgRhAkJwITra5cOrxOuH8yqs3cGna2AzpuYEn6U9eURGaG21Hfu4nrw==
-Message-ID: <1549d9c4-1ac3-49cb-8d24-4fd01456f540@nabladev.com>
-Date: Tue, 3 Mar 2026 17:09:22 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQVYw0WBhz3bf2
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 09:18:26 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Transfer-Encoding:
+	Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
+	Sender:Reply-To:Content-ID:Content-Description;
+	bh=BP2R36w3xYUknyVVM5sNFE0Pq2fJT7cuN70tvl8P0F8=; b=TDgirRMe9e/+WYFoYTAQq7tOTs
+	n3lhPxA0uC4xXUHSKUoGdyS0FUEYdY1lsPT5yDeY3Jl04CutcDvjaJ6+Q3Vu/fL9sBAb+wTfurQgf
+	t0li1gR28N452WXjgi643PV+t5nUfSdHHLUCcr3US0LAE29SxoPZgIT3T8W3ga9RKqK18QBz4wp7R
+	LnCMIGqtRLRdW0teAYWqC/dxqac2YaDztPOn03I+oybc/z62V2MBEnsBSiG2HCMj9yv9s2/SIP6Mh
+	lL5pqNxRI3v1TIuIBG7viDAXylqbpfoKmluG3AcOeO3K2fvSOBBIkl7YyUDTo+enLV1giDl9ay39o
+	o2wr4APw==;
+Received: from willy by casper.infradead.org with local (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1vxY46-0000000CJPp-2JLA;
+	Tue, 03 Mar 2026 22:18:06 +0000
+Date: Tue, 3 Mar 2026 22:18:06 +0000
+From: Matthew Wilcox <willy@infradead.org>
+To: Suren Baghdasaryan <surenb@google.com>
+Cc: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, akpm@linux-foundation.org,
+	david@kernel.org, ziy@nvidia.com, matthew.brost@intel.com,
+	joshua.hahnjy@gmail.com, rakie.kim@sk.com, byungchul@sk.com,
+	gourry@gourry.net, ying.huang@linux.alibaba.com, apopple@nvidia.com,
+	baolin.wang@linux.alibaba.com, Liam.Howlett@oracle.com,
+	npache@redhat.com, ryan.roberts@arm.com, dev.jain@arm.com,
+	baohua@kernel.org, lance.yang@linux.dev, vbabka@suse.cz,
+	jannh@google.com, rppt@kernel.org, mhocko@suse.com,
+	pfalcato@suse.de, kees@kernel.org, maddy@linux.ibm.com,
+	npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org,
+	borntraeger@linux.ibm.com, frankja@linux.ibm.com,
+	imbrenda@linux.ibm.com, hca@linux.ibm.com, gor@linux.ibm.com,
+	agordeev@linux.ibm.com, svens@linux.ibm.com,
+	gerald.schaefer@linux.ibm.com, linux-mm@kvack.org,
+	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Subject: Re: [PATCH v3 2/3] mm: replace vma_start_write() with
+ vma_start_write_killable()
+Message-ID: <aadeHiMqhHF0EQkt@casper.infradead.org>
+References: <20260226070609.3072570-1-surenb@google.com>
+ <20260226070609.3072570-3-surenb@google.com>
+ <74bffc7a-2b8c-40ae-ab02-cd0ced082e18@lucifer.local>
+ <CAJuCfpHBfhKFeWAtQo4r-ofVtO=5MvG+OToEgc2DEY+cuZDSGw@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,49 +82,25 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.2.0
-Subject: Re: [PATCH] powerpc: 83xx: km83xx: Fix keymile vendor prefix
-Content-Language: en-US
-To: j.ne@posteo.net, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Holger Brunck <holger.brunck@keymile.com>, Heiko Schocher <hs@denx.de>,
- Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20260303-keymile-v1-1-463a11e71702@posteo.net>
-From: Heiko Schocher <hs@nabladev.com>
-In-Reply-To: <20260303-keymile-v1-1-463a11e71702@posteo.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Last-TLS-Session-Version: TLSv1.3
+In-Reply-To: <CAJuCfpHBfhKFeWAtQo4r-ofVtO=5MvG+OToEgc2DEY+cuZDSGw@mail.gmail.com>
 
-Hello!
-
-On 03.03.26 16:31, J. Neuschäfer via B4 Relay wrote:
-> From: "J. Neuschäfer" <j.ne@posteo.net>
+On Tue, Mar 03, 2026 at 02:11:31PM -0800, Suren Baghdasaryan wrote:
+> On Mon, Mar 2, 2026 at 6:53 AM Lorenzo Stoakes
+> <lorenzo.stoakes@oracle.com> wrote:
+> > Overall I'm a little concerned about whether callers can handle -EINTR in all
+> > cases, have you checked? Might we cause some weirdness in userspace if a syscall
+> > suddenly returns -EINTR when before it didn't?
 > 
-> When kmeter.c was refactored into km83xx.c in 2011, the "keymile" vendor
-> prefix was changed to upper-case "Keymile". The devicetree at
-> arch/powerpc/boot/dts/kmeter1.dts never underwent the same change,
-> suggesting that this was simply a mistake.
-> 
-> Fixes: 93e2b95c81042d ("powerpc/83xx: rename and update kmeter1")
-> Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
-> ---
->   arch/powerpc/platforms/83xx/km83xx.c | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
+> I did check the kernel users and put the patchset through AI reviews.
+> I haven't checked if any of the affected syscalls do not advertise
+> -EINTR as a possible error. Adding that to my todo list for the next
+> respin.
 
-Good catch! Thanks!
-
-Reviewed-by: Heiko Schocher <hs@nabladev.com>
-
-bye,
-Heiko
--- 
-Nabla Software Engineering
-HRB 40522 Augsburg
-Phone: +49 821 45592596
-E-Mail: office@nabladev.com
-Geschäftsführer : Stefano Babic
+This only allows interruption by *fatal* signals.  ie there's no way
+that userspace will see -EINTR because it's dead before the syscall
+returns to userspace.  That was the whole point of killable instead of
+interruptible.
 
