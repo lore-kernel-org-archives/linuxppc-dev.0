@@ -1,85 +1,109 @@
-Return-Path: <linuxppc-dev+bounces-17618-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17619-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45CB0EDEBE2
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2026 18:11:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54A89EDEBE3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2026 18:18:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fQP4Y4NbHz2yrl;
-	Wed, 04 Mar 2026 05:11:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772561469;
-	cv=none; b=jqqOqci63rcgo1840yv/7hc0i0MWYEroJoKmbS7dH8uNVJFEAKJ+XmDtgnZ+KJSLYqmJPN1qXJIyVQjdP3wAp7dCk7YbVlVf40luFDhSt6kjFzgHKmpPMl7wMpjCHdvHeWENFP6oZPgVgJBoukmipOod5Cw93BN++3kS43ebXHbA7s1E30Sr/R//eNhlXkUUcf3JV2T6zAAbEyeC7xqBpxcnj1oshW4Y27AIq3+RIuh81ncdveeCR9d4eUrMfAeQ1myjj2JfG+P4/fIZyjJsRPft44fLJ++RhepViU9Pk4v3dGUIiHu9cyLSVKa5LyHAo0t9V7bvv64+I7nXrX4Aeg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772561469; c=relaxed/relaxed;
-	bh=KoqA0eQ6AV3ndyHYiApU6L60lsiOT32TWmcerkEGRxs=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=jrxB1d2KyWnV0kU3C52LjjWNMfujNalYoBr6kk6HUk7h9U7ceFfRxCbPnHaiTRrOSD1HQWveCyH5e6wsGGkVDQpk1q6J12OaBJ8BEDfyplXq5DRCZoWEptk6ZNh/oxIiOgz3VadCdqvIfTDd2iT4eLd9kfJQNM6JRev8F8gVk/QgHs7zgHpXbWlWN0PGDV8Hr7zdYdA/HVrRFcbqu89epD5/WNPSqlL89/heLI6vdnNf1oDd9C9PmwZw2BgXxQXAS6abumtWIjeOlICEXIM9RZgH5sMovBmYIPoRrwX543ob1FWqL9Viw1gXKsWGHmwLKYnImHC6bQCMXugK1MdnnA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tgfTUa+R; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fQPDt5B2Gz3bf8;
+	Wed, 04 Mar 2026 05:18:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c10c::1" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772561902;
+	cv=pass; b=MY7etO/CtgF7ZLDl6WkH0w9kMXWu4E3o0WD1GIJ60ELL2mylTmahawFEus8AIKD3cEzlKQd5GtP1Bz8yEaOHOjTQqLbd9Wi/uBiA79JNPXw1kh6EA+W5YUbNTUbDGUR+1/WKJeRx6GhERoFmu3XZyX61DwflpPOIcMiis8kZyDxBQATJN26T9bqcbCM4HCfMxlFR6gZtU/WbDtjWUVlH0ragykz9A4z9VLFW900cJH/AQbY4yOFOtokOX0f2qHEbug4TNIpdp+0WAdAZRF86QIzEwuyv7fL473EhKYzjUgikHDO6rEcpZZ8GW4/vUUtvfdwUxb7jk4o5wEhlcOnn+w==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1772561902; c=relaxed/relaxed;
+	bh=apViz8xjOxQ9VkZWmDYI5MdLZNluK0TbM6LPgUK0x3Q=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=Pi3VZBybOsV5FR0l1v8P812j1EuE0K0fm0k7njHOebThPsXbPe4n/6vKSv7m/1vEUQNyhpR0tHxEb9bbYKmRJe70GR7pSUYiHDadUps73zfh+QOjy1/lX+1OkYrcbi8hBSe5/0pO21GUEwKsAkN+xDs+H+xMRyGlCHMlUGDk/DaozchUWgaWeDfEzrL4GMD9dxLGHrOgJYPnzxzuNLU1sXIJWwzTQp626h/Mla8iOILZirasz2/cc4Xud7xfgNHGnj5nvmWrTyzP77+zUOuNI0IEcRphl5YvqWyvJ8zvmbBfEW5+U+pucEAcOe3MfijlqTx5Sx8Rfg4MRZ9o2Qg3bA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=OEwQigU+; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c10c::1; helo=sa9pr02cu001.outbound.protection.outlook.com; envelope-from=ynorov@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tgfTUa+R;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=OEwQigU+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c10c::1; helo=sa9pr02cu001.outbound.protection.outlook.com; envelope-from=ynorov@nvidia.com; receiver=lists.ozlabs.org)
+Received: from SA9PR02CU001.outbound.protection.outlook.com (mail-southcentralusazlp170130001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c10c::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQP4X54LZz3bp0
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 05:11:08 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 623H5Ffu2060996;
-	Tue, 3 Mar 2026 18:10:55 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=KoqA0eQ6AV3ndyHYi
-	ApU6L60lsiOT32TWmcerkEGRxs=; b=tgfTUa+R0wbx0sKyoF8o2DCU0ojDUdkT2
-	vJzVzOLQ7Z5YPQl7LDERx3YOtdzsDU6hJGoTcMtpL8yw5efLaR1BcvEfMqdl0tLx
-	U2gT7yPUxai58S0DUIt6Wv/m3R73lHuDg3amjcstIDQyIC/fT2g5itImH1fn3N9b
-	nGbQJoRMLK0zd3/0EIWRBkPL9En6huATKG4Acwq3VwME2eZNWS5h5uXiud/Y6cc3
-	ehJEIYrVPcNpHRKz5MbAi7xy2xmOTU3yeRBoZinWyIL9CRSAdnNifbx7qFELA5eF
-	GANdiE3FlEBAIIBMAoxHST43nXkPvceWtB2IH4fsewhsJV6KOrfeQ==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cksrj49qa-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 03 Mar 2026 18:10:54 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 623Et6Z8010299;
-	Tue, 3 Mar 2026 18:10:53 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4cmc6k3dft-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 03 Mar 2026 18:10:53 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 623IAnYx16449872
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 3 Mar 2026 18:10:49 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8325D20040;
-	Tue,  3 Mar 2026 18:10:49 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6BC8420043;
-	Tue,  3 Mar 2026 18:10:47 +0000 (GMT)
-Received: from li-bd3f974c-2712-11b2-a85c-df1cec4d728e.ibm.com.com (unknown [9.43.53.81])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  3 Mar 2026 18:10:47 +0000 (GMT)
-From: Hari Bathini <hbathini@linux.ibm.com>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: bpf@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Alexei Starovoitov <ast@kernel.org>,
-        Daniel Borkmann <daniel@iogearbox.net>,
-        Andrii Nakryiko <andrii@kernel.org>,
-        Saket Kumar Bhaskar <skb99@linux.ibm.com>,
-        Abhishek Dubey <adubey@linux.ibm.com>,
-        Venkat Rao Bagalkote <venkat88@linux.ibm.com>, stable@vger.kernel.org
-Subject: [PATCH v4 6/6] powerpc64/bpf: fix kfunc call support
-Date: Tue,  3 Mar 2026 23:40:30 +0530
-Message-ID: <20260303181031.390073-7-hbathini@linux.ibm.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260303181031.390073-1-hbathini@linux.ibm.com>
-References: <20260303181031.390073-1-hbathini@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQPDr2hYVz2yrl
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 05:18:19 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=WnxuftgSEWCI2v8ybeeYF92YOnrbLX0xhU3tC8abOUtNHUEFHO4UsCW9B8mw2k/aULunOzoQQMDWHa8PYNmqyEQN2DUzdVZBmSqeQhs+KfBlfwwiAs3WTxEovXJsgK8DLPFIm6i2Idnfhi+idM5hIylJpbJdIxFwuGZ0o2fZmvfw+/wXmtv2HCIeejf7/J2oHKJtWZwdXgLhYfyHRX5ptmsJYFdL2c9DHiw54NdGeBmItHnFPkreuvO2LVgPlN9eovCNvXi3GAgBo/xMyu3w6ob5DtduRmVpDIQxqgv32EW9anefRvV7+/mB9btvj3kuvq6T43/smIH6/Q01Rt2Niw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=apViz8xjOxQ9VkZWmDYI5MdLZNluK0TbM6LPgUK0x3Q=;
+ b=pkx78tnqx+P/Z+dKW+RgZBcQW63Fa99pMMsSCMtE80KR/mexBGI9RSHEQ3EYj/Ctuh5rti4q+R3G3xgtkTtIH9mr6bjWREgNNp9co1J8wNVx74ZxoonUAMIbdDSuS0w+2tV4yAol6Ll1g6x3o+TPFTsyjm6glBzKk/rCxzFGXeTfbzwHylIk4kE0xqOo1eub9g44r0nGlR0IFbjXXowc8eg7ZrVMJjaQIgZq97Hn03ChZPQ8U/M33s8OK+Q3R+HQ8xvgeDo2Vr0xOjXdXAHbWZNBC2Ja37c8mCYSOG7TOMT9ekQi0mAfb0h0stmssLZ/j50MOJ3CZpJAY7BxBGcqBA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=apViz8xjOxQ9VkZWmDYI5MdLZNluK0TbM6LPgUK0x3Q=;
+ b=OEwQigU+UNobpscs6xF0BwpK4Scb2gSr7yQpOWY/CfOLm1Hof1eBtfMkJHH+9+3VaeOkRkqwD4AGuQmWp284SqTxjRv8A2m1J0ymrO9t3+hzYZKKXpkhwX3i+njjywEnx1xgOMFtDSao4WbmZnWI7ZJElp7me2Msx7EUBiuEprv+7XvPXWpaCXJXIhE5v5NolKBG8phn2ZBWHrRwHDYiQzHCWqBMr9i4Eytl2qc6NCM2QOpftQyWfe/4Mye7wHyV3iBbxWQp7mp6pG5dWn3BJh1SP48XJ4UZq7z+NQoGFY6JnUvQUdGL7pkRtFrUfyizURcjJ9GzJVgLaOzmZB7UGA==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from PH0PR12MB8800.namprd12.prod.outlook.com (2603:10b6:510:26f::12)
+ by SJ0PR12MB8615.namprd12.prod.outlook.com (2603:10b6:a03:484::12) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9654.18; Tue, 3 Mar
+ 2026 18:17:48 +0000
+Received: from PH0PR12MB8800.namprd12.prod.outlook.com
+ ([fe80::f79d:ddc5:2ad7:762d]) by PH0PR12MB8800.namprd12.prod.outlook.com
+ ([fe80::f79d:ddc5:2ad7:762d%4]) with mapi id 15.20.9654.022; Tue, 3 Mar 2026
+ 18:17:48 +0000
+Date: Tue, 3 Mar 2026 13:17:46 -0500
+From: Yury Norov <ynorov@nvidia.com>
+To: Jakub Kicinski <kuba@kernel.org>
+Cc: linux-kernel@vger.kernel.org,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"David S. Miller" <davem@davemloft.net>,
+	"Peter Zijlstra (Intel)" <peterz@infradead.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Antoine Tenart <atenart@kernel.org>,
+	Christian Brauner <brauner@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@linaro.org>,
+	Eric Dumazet <edumazet@google.com>,
+	Geetha sowjanya <gakula@marvell.com>,
+	Ingo Molnar <mingo@kernel.org>,
+	James Clark <james.clark@linaro.org>,
+	Jerin Jacob <jerinj@marvell.com>,
+	Linu Cherian <lcherian@marvell.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Mike Leach <mike.leach@linaro.org>, Moritz Fischer <mdf@kernel.org>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+	Simon Horman <horms@kernel.org>,
+	Stanislav Fomichev <sdf@fomichev.me>,
+	Subbaraya Sundeep <sbhatta@marvell.com>,
+	Sunil Goutham <sgoutham@marvell.com>,
+	Suzuki K Poulose <suzuki.poulose@arm.com>,
+	Tom Rix <trix@redhat.com>, Xu Yilun <yilun.xu@intel.com>,
+	Yajun Deng <yajun.deng@linux.dev>,
+	Yury Norov <yury.norov@gmail.com>, Zhang Rui <rui.zhang@intel.com>,
+	hariprasad <hkelam@marvell.com>, coresight@lists.linaro.org,
+	linux-arm-kernel@lists.infradead.org, linux-fpga@vger.kernel.org,
+	linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	netdev@vger.kernel.org
+Subject: Re: [PATCH 00/12] cleanup bitmaps printing in sysfs
+Message-ID: <aaclsPYLPdb0mSW2@yury>
+References: <20260219181407.290201-1-ynorov@nvidia.com>
+ <20260219114120.0f4408f7@kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260219114120.0f4408f7@kernel.org>
+X-ClientProxiedBy: BN9PR03CA0797.namprd03.prod.outlook.com
+ (2603:10b6:408:13f::22) To PH0PR12MB8800.namprd12.prod.outlook.com
+ (2603:10b6:510:26f::12)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,201 +117,76 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=Rp/I7SmK c=1 sm=1 tr=0 ts=69a7242e cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=cgMUl_j-H115-_3Hw7UA:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzAzMDE0NiBTYWx0ZWRfX5xrwatiaCXnT
- 3huUZcjM8NcL7Ju/kluSm6C/XcsEotx+uLYffcGgH6hAR5QdYPygo25D4V3T73GbmLvL6CnTPa4
- nFXCI+Gn30TGHIksPOWaX7zlsvYY867CYuaTV0FSEfVRqHCfhUw4ImC8SsNhE/DVsJU+kkM9wtt
- Q7SNe8m1Kplc1nSwi899znI9mEU2c//F2yaF+VoS0ZhqQ0TTbEf5WiEBsNnedh2/wuJhksv5EUd
- xvQaQJLedFHy4N4yEk0EeRSWSdeQz3io81oDRib8G2ztw5/FcvYBFcnACp8oOJUIXxwP9J3wPuJ
- W/BLewlCjyH+HdACNnFu/cGqsocRCvC/wp6GxSgkMB1BfoXvRy8YJ2R1nk0voMgi57trVnoYm1l
- 3+erjx/mn4L9kkCOaYu5CM+Ux547kPXVld1V1adQ4MtgHidmv5eId+N29kfskPk32tFKbN7hEvl
- cgOFs9V9B9WLRVmm8+w==
-X-Proofpoint-GUID: 7o_4C3H4WFgCekNUSbaUyE3zeEx9T8Lq
-X-Proofpoint-ORIG-GUID: 7o_4C3H4WFgCekNUSbaUyE3zeEx9T8Lq
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-03_02,2026-03-03_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 priorityscore=1501 spamscore=0 phishscore=0 adultscore=0
- bulkscore=0 clxscore=1015 impostorscore=0 malwarescore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2603030146
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH0PR12MB8800:EE_|SJ0PR12MB8615:EE_
+X-MS-Office365-Filtering-Correlation-Id: b399f740-90e5-473e-dda6-08de79512c6b
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|10070799003|366016|376014|7416014;
+X-Microsoft-Antispam-Message-Info:
+	h+kkDBGxURwJ8aJPm8i/9NV7AHrRQ0H0tpRXGUmb+SsXyObjRDMx4u3G2NVyz5EzP9EnBOi0YzkfCRYPyTgj8H3GtKma1tcMs/arL2hK1soloxH8vyWAPiJWasgaqXCvSLCNqz3k/eb6bdFtqJNBcur5YSLmm19TvrM36RW4dLjuZ5Z+yjBd9t0IAzMJT+PeAFTRh0wJ3W20O9+D5wycg4I9mABhNYEDR8ehpha/xuDqJwC2gvYPm5BJCHoeE0DF/L4kt4OvpM7b6n7LRVrESJeYD3284b+VeAu3//n9ejwUqfJj8RWJuWaj5lABlT69j8qQmHolaMYppExWbOkN0puJOpDb12OCA0dCgDmWOhOWMuJVRMZayG7KF11Lr/g1YHcohco69Pr84bTI7C2+8y2Al8m7kNb7d/ZOu9vm53KzP2vcXwUSvzQPatJrFwT2jBy0J1AIbiYMpK0UIx+Ca+6kU5Fokll4GaEeVvh6Vlp4N+P0qwfaDhfhG0359MuYSJ/LwvSa+ZCtZJIu7MXHDcH6gXjYJLqaRYWzE0n+blSPIlZoAN5s/7kBGkGyiIutiQmzAz6/HrjxowchjitDZVYxMvRDOMPCjhpeW2tGFv3QbMtMiqkVuGvcSqQEMVtBWqX1xK9CRtjwiJoFYZLyNw74LjQkUHLTeSnhrQ4OaD9l/RuSk3dyn0qKhiXuRZBttm4LyawFcV/B+g7gFJpj8Yasa47oiXJlzYTyfZNGLtQ=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR12MB8800.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(10070799003)(366016)(376014)(7416014);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?Bq+/kUd6LZmdnxICiDgmQMGWuUGFWn8tu+0nQipNHLqDDa75B9Hbms1CEhAI?=
+ =?us-ascii?Q?mTfv9ZaBJ3ks1tmIL15+CPJrciD1choeYxgmsJYQVbJ3QiKdjKMsgsDkBWHC?=
+ =?us-ascii?Q?Ul3K45UR2oLXl1y7/F6JiTeFNw0tncAxJZDsXFeqfIE/T2l3ukENtqG+G1ez?=
+ =?us-ascii?Q?iifFLhQk09yqUQSamj2z3UUJ+eQo4E3plAiDvOvYVPQM8IsFQvRH7uUHvd1E?=
+ =?us-ascii?Q?cbR2QtS9QjuwFFb5vnniippkyWQiDceq4YIDaBybTRcnzihySz9hHR1Iu6sK?=
+ =?us-ascii?Q?YFMFsFJ5BNP7cgyuAc9kG9TZb8w+2J7MjmXb8DFJahbsEckHjjc+cw66vLSs?=
+ =?us-ascii?Q?r6OTfqAC7IQN4/B81/u0ORatHFp8x1y8MXsSTN/TUVgr54VogVuOf4fUI1YK?=
+ =?us-ascii?Q?zAcmk3S2222qoSZJlHlkVW4EOOVVzQ660GPwV5WfMBBjysOS27w1QiGxyIfS?=
+ =?us-ascii?Q?cM0ZTFAcAeRBpFVfIru+X9ysbE+cJ/fT/O7lmmuYTDci0w+ASxFgwAPsmzAx?=
+ =?us-ascii?Q?a9XXm8FIpld0JSQg5o0xes8arVzy25/lmb3JKlBtP15M/R/IPPgcy9gwOAE6?=
+ =?us-ascii?Q?0NANEneYas/FtaVU+NBw/BGa+ZJxbwMx+Z3kNpjE8oK3lnGhfEQ88bP+4wcb?=
+ =?us-ascii?Q?YFJ59eOUgCsglceN8clywar0mIZNdbhnseHfKK4jP+C52eE7c7nspiJDhXwh?=
+ =?us-ascii?Q?1tWyqZX39kVxFsbKkGG1E3Ce9vfSUCVwpZJE9IWXwoBFI1ElFw4fRjMG6uqN?=
+ =?us-ascii?Q?TvTKFeyLHMaCggm/YQRrhqa2giL1dLXblitpZLbnAZ3l9BlZHhX6JtqpfDT3?=
+ =?us-ascii?Q?+Y0EuwAX3UevQAVbIsP8XurFhPsDsFhAF8voBiRMQRzSIoiu/zxiEOdn4G2N?=
+ =?us-ascii?Q?kpAIb7XZD9OX7KAyZ4XBcb4j7W413gFhtpq7Z2yGUSw1mPIhpqrirLqad46E?=
+ =?us-ascii?Q?1Ck3qq4xU/g9ggygRWxtPos/cHwahEZDa3ITkmhkROOmEan2i2OEdH59V12U?=
+ =?us-ascii?Q?0JcT//kj4FD+nOo+bxiao/I71kd6b1VSfsY7loUXqNFyt035UrdvFOh8aoIH?=
+ =?us-ascii?Q?BJ03yLabinMG6uVo4huAAV0VKw9VTfcMyR1F7x1iGCWYz4BgHErEMxOPYNY7?=
+ =?us-ascii?Q?75amDl7ZW8HFO191dJknIQRCxf388q7ZXIDryi+B8c3CmhS1+GUSL/jekAL3?=
+ =?us-ascii?Q?M6iG45fA1IsSlS1dwwbc6pUhMv0w9VSFNEA7bGBY14CO0NbKfy34DQl1qqKH?=
+ =?us-ascii?Q?g3K1EI68bY0nVV0A5Zc+hdHQ1V+uTrJ67eYq5Mq3+HEbFWKTmMzpNfoj6z3g?=
+ =?us-ascii?Q?UFYAMLq1Fk6pnTCtmvzoqJw8A2JDFyQgBLjlw1AMj3qAqv+gFNQWOKZHPZhx?=
+ =?us-ascii?Q?hrRiBUODoNydAbaLl/vOLf3Ze/+d86hc3EA8JFV8oj18hy+fs6ySCHjwzo78?=
+ =?us-ascii?Q?u4gyrkDxb7Q1oc72SbJcH/WHGb1smN6MTAhKruJ1VE2LMBWOWaujUcWrVJ8P?=
+ =?us-ascii?Q?0FrvdFSzw7y/cjj09NlSqKuXu2JDF+n7YOtnX8eNsqJdDaKomw3l66AuoCYp?=
+ =?us-ascii?Q?af77zWha81k0zgIFhbq2qYIj+hvP4pNFKjj+s4GwzAu9DHrFIWMV8N+usW5H?=
+ =?us-ascii?Q?lCHi+6G0o9iLCDZXWQ5x4ajgifdGRLzYjgFfEn+tukF69U4+sZ8W+lgBvAZw?=
+ =?us-ascii?Q?gsfMUjBcdnO5UJ6nboHsz07ntXqBYrFBBHXaHiwwaz5N7Vj1vbubIU76zSXy?=
+ =?us-ascii?Q?Jd+98eprNR4J6a9wjaVYLuWIYxIHJ8hna2YeqhOMwL5CgtdximqH?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: b399f740-90e5-473e-dda6-08de79512c6b
+X-MS-Exchange-CrossTenant-AuthSource: PH0PR12MB8800.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Mar 2026 18:17:48.0090
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: sHr7rDoNUj7MUB5ba65Rba8zcQu7Ib0YBfSRB+9+EMqG1DrW8lRKil+xsuYHVdDavZNL9F4CjMVYVXwko3ZAWw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR12MB8615
 
-Commit 61688a82e047 ("powerpc/bpf: enable kfunc call") inadvertently
-enabled kfunc call support for 32-bit powerpc but that support will
-not be possible until ABI mismatch between 32-bit powerpc and eBPF is
-handled in 32-bit powerpc JIT code. Till then, advertise support only
-for 64-bit powerpc. Also, in powerpc ABI, caller needs to extend the
-arguments properly based on signedness. The JIT code is responsible
-for handling this explicitly for kfunc calls as verifier can't handle
-this for each architecture-specific ABI needs. But this was not taken
-care of while kfunc call support was enabled for powerpc. Fix it by
-handling this with bpf_jit_find_kfunc_model() and using zero_extend()
-& sign_extend() helper functions.
+On Thu, Feb 19, 2026 at 11:41:20AM -0800, Jakub Kicinski wrote:
+> On Thu, 19 Feb 2026 13:13:52 -0500 Yury Norov wrote:
+> >  .../marvell/octeontx2/af/rvu_debugfs.c        | 28 +++----------
+> >  drivers/net/ethernet/meta/fbnic/fbnic_tlv.c   |  6 +--
+> >  drivers/s390/net/qeth_core_main.c             |  6 +--
+> >  net/core/net-sysfs.c                          |  2 +-
+> 
+> Please split these changes out and submit them to the correct subsystem
+> after the merge window. Then push patch 12 during the next merge window.
 
-Fixes: 61688a82e047 ("powerpc/bpf: enable kfunc call")
-Cc: stable@vger.kernel.org
-Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
----
+OK, I'll split them out, will switch to sysfs_emit() where appropriate
+as suggested by Tomas. I'll move those tests cleanups by myself.
 
-Changes in v4:
-- Fixed src_reg usage in zero_extend() helper - reported by
-  bot+bpf-ci@kernel.org.
+Will resend shortly.
 
-Changes in v3:
-- New patch to fix kfunc call ABI issue on powerpc while passing arguments.
-
-
- arch/powerpc/net/bpf_jit_comp.c   |   2 +-
- arch/powerpc/net/bpf_jit_comp64.c | 101 +++++++++++++++++++++++++++---
- 2 files changed, 94 insertions(+), 9 deletions(-)
-
-diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-index 85457bcb2040..a62a9a92b7b5 100644
---- a/arch/powerpc/net/bpf_jit_comp.c
-+++ b/arch/powerpc/net/bpf_jit_comp.c
-@@ -450,7 +450,7 @@ bool bpf_jit_supports_subprog_tailcalls(void)
- 
- bool bpf_jit_supports_kfunc_call(void)
- {
--	return true;
-+	return IS_ENABLED(CONFIG_PPC64);
- }
- 
- bool bpf_jit_supports_arena(void)
-diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
-index 04e76440d1ad..c5e26d231cd5 100644
---- a/arch/powerpc/net/bpf_jit_comp64.c
-+++ b/arch/powerpc/net/bpf_jit_comp64.c
-@@ -499,6 +499,83 @@ int bpf_jit_emit_func_call_rel(u32 *image, u32 *fimage, struct codegen_context *
- 	return 0;
- }
- 
-+static int zero_extend(u32 *image, struct codegen_context *ctx, u32 src_reg, u32 dst_reg, u32 size)
-+{
-+	switch (size) {
-+	case 1:
-+		 /* zero-extend 8 bits into 64 bits */
-+		EMIT(PPC_RAW_RLDICL(dst_reg, src_reg, 0, 56));
-+		return 0;
-+	case 2:
-+		 /* zero-extend 16 bits into 64 bits */
-+		EMIT(PPC_RAW_RLDICL(dst_reg, src_reg, 0, 48));
-+		return 0;
-+	case 4:
-+		 /* zero-extend 32 bits into 64 bits */
-+		EMIT(PPC_RAW_RLDICL(dst_reg, src_reg, 0, 32));
-+		fallthrough;
-+	case 8:
-+		/* Nothing to do */
-+		return 0;
-+	default:
-+		return -1;
-+	}
-+}
-+
-+static int sign_extend(u32 *image, struct codegen_context *ctx, u32 src_reg, u32 dst_reg, u32 size)
-+{
-+	switch (size) {
-+	case 1:
-+		 /* sign-extend 8 bits into 64 bits */
-+		EMIT(PPC_RAW_EXTSB(dst_reg, src_reg));
-+		return 0;
-+	case 2:
-+		 /* sign-extend 16 bits into 64 bits */
-+		EMIT(PPC_RAW_EXTSH(dst_reg, src_reg));
-+		return 0;
-+	case 4:
-+		 /* sign-extend 32 bits into 64 bits */
-+		EMIT(PPC_RAW_EXTSW(dst_reg, src_reg));
-+		fallthrough;
-+	case 8:
-+		/* Nothing to do */
-+		return 0;
-+	default:
-+		return -1;
-+	}
-+}
-+
-+/*
-+ * Handle powerpc ABI expectations from caller:
-+ *   - Unsigned arguments are zero-extended.
-+ *   - Signed arguments are sign-extended.
-+ */
-+static int prepare_for_kfunc_call(const struct bpf_prog *fp, u32 *image,
-+				  struct codegen_context *ctx,
-+				  const struct bpf_insn *insn)
-+{
-+	const struct btf_func_model *m = bpf_jit_find_kfunc_model(fp, insn);
-+	int i;
-+
-+	if (!m)
-+		return -1;
-+
-+	for (i = 0; i < m->nr_args; i++) {
-+		/* Note that BPF ABI only allows up to 5 args for kfuncs */
-+		u32 reg = bpf_to_ppc(BPF_REG_1 + i), size = m->arg_size[i];
-+
-+		if (!(m->arg_flags[i] & BTF_FMODEL_SIGNED_ARG)) {
-+			if (zero_extend(image, ctx, reg, reg, size))
-+				return -1;
-+		} else {
-+			if (sign_extend(image, ctx, reg, reg, size))
-+				return -1;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- static int bpf_jit_emit_tail_call(u32 *image, struct codegen_context *ctx, u32 out)
- {
- 	/*
-@@ -1143,14 +1220,16 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
- 				/* special mov32 for zext */
- 				EMIT(PPC_RAW_RLWINM(dst_reg, dst_reg, 0, 0, 31));
- 				break;
--			} else if (off == 8) {
--				EMIT(PPC_RAW_EXTSB(dst_reg, src_reg));
--			} else if (off == 16) {
--				EMIT(PPC_RAW_EXTSH(dst_reg, src_reg));
--			} else if (off == 32) {
--				EMIT(PPC_RAW_EXTSW(dst_reg, src_reg));
--			} else if (dst_reg != src_reg)
--				EMIT(PPC_RAW_MR(dst_reg, src_reg));
-+			}
-+			if (off == 0) {
-+				/* MOV */
-+				if (dst_reg != src_reg)
-+					EMIT(PPC_RAW_MR(dst_reg, src_reg));
-+			} else {
-+				/* MOVSX: dst = (s8,s16,s32)src (off = 8,16,32) */
-+				if (sign_extend(image, ctx, src_reg, dst_reg, off / 8))
-+					return -1;
-+			}
- 			goto bpf_alu32_trunc;
- 		case BPF_ALU | BPF_MOV | BPF_K: /* (u32) dst = imm */
- 		case BPF_ALU64 | BPF_MOV | BPF_K: /* dst = (s64) imm */
-@@ -1618,6 +1697,12 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
- 			if (ret < 0)
- 				return ret;
- 
-+			/* Take care of powerpc ABI requirements before kfunc call */
-+			if (insn[i].src_reg == BPF_PSEUDO_KFUNC_CALL) {
-+				if (prepare_for_kfunc_call(fp, image, ctx, &insn[i]))
-+					return -1;
-+			}
-+
- 			ret = bpf_jit_emit_func_call_rel(image, fimage, ctx, func_addr);
- 			if (ret)
- 				return ret;
--- 
-2.53.0
-
+Thanks,
+Yury
 
