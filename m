@@ -1,33 +1,33 @@
-Return-Path: <linuxppc-dev+bounces-17603-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17604-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7CD42EDA693
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2026 16:09:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4DB69EDA693
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2026 16:10:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fQLMy6qg7z3c5f;
-	Wed, 04 Mar 2026 03:09:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fQLNm5bXCz3c9l;
+	Wed, 04 Mar 2026 03:10:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=213.95.11.211
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772554158;
-	cv=none; b=jd/NqB2QML6VVxgdHjq7B865c3IU5yRc7UxKjJ77KKP7e1Ymnk0CxlxlJdAvRrnTbRxSaAdTYCaQTVMTsCW2tjRJrsHVvxCAzTOsdaDNh68eXGx9chVAC4mbPmLwqjayHGAW7AZBTzo3S5qJNQT6Zz/EDzsYSeEfAzOStQyHVjV6BQKaTaq9Qffv6eUWTdY3hXDhIAZseph+NX1xq59uDQsC9PtV0QOvWZf3Psi6eei10ioNXEcz05BH5yzuEwOwv/aSNG2jZp9cwvL6x0T/988VYg3eLMmzu54D1hRa1vq6pnLPpzJHqcQW371dLyuxoqfIKD2I0QPSxmjh+HUn2A==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772554200;
+	cv=none; b=humI6h5J6VxEs3cqJIsEt2whIOfEaJ2UtL98m0EsgCtnfkDaANZ+yBw9QFLIXFthxdj8Wj/NT6IC5bDC+Wnd8XlKwErKDGm9YmLGtezCKQ9jl4JaHwTc5YrKL15qW3qx6DR6N8XrKA65PmWaLLqhBfy1PipgTBsh6aORKpdt50E7rapKG5xO6ANeqdKnb/1ePQrzXY1rOXtlLn/FBnr95vEIwonQRs0JW6qpUIwEPuQuHr+g4THlVwz/1g+Ox+O92ERFi/lv+see4OAl7G+YAknNodjFuEBYwoEvFKRuib7kHimxyHVJRBAMkzL4toUVuSf/K4dqWtWUKrEHr4BQ9g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772554158; c=relaxed/relaxed;
-	bh=m0eugKb8aGos3h+sBAkFolXk5OApfEJAp9DK80wSVAw=;
+	t=1772554200; c=relaxed/relaxed;
+	bh=HZwhrmuRPeFiAL7U9ekfKCBSdNddOHmeVRgOtJ35nGY=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=TeWrF+a5AywxLL9er1D/2cZD98rnk5LodXrxsCOBvzSTd308ou1Fs3OCE67t0OEHLzcG/XINIeSDDi8cDHhXaerIngd8Gt6DXlczQ4biiQ7WrLQ4yNOy9QLGnytQYTeyi71tL6HHcTyLJwwXxtG2jjjNu8RaHLAPlwaS61zuB+q8vl1e7/6AAUG34FemFwg7axCcjn0fyFzodFyiQRYT/Ob0DITqG2NaX8KJ7C1ppgnf8pKpNkknwsTPc/MddCI9P08vk/xDnBwUI958PibKr2OwtzjTpLsLZyNpYRr4C5Uwk/UCSLkPPj4k3efBfXKLsiQGhJc+Zsu5Q+LBEW+Ucw==
+	 Content-Type:Content-Disposition:In-Reply-To; b=C9gDWNjNslo2iIMx53wHUcA+kGy3o3CIOob8a1PPGtCXEHTqdY0qxPI5BZxb3qegP1nboD1RA0gQyreSU/iJ/2N1ef3c1CpZ+k8Q+EmaBKncx3fImtL4iPMWE8dOsrTT7EuzDXAANb+E1JlpBuftsGLY0f5CF9irp9om7Wnae/D3AVLSC1L8rAEkr3mpqGhVGeWAh2r6aOuklJG+ptXHtRj3VzeCdl6mTy4avKre+0gxAJISbsRMuhfEPchKr8826cQdm5uHw30KzBmsNrBt+SsW68smfkiPKeOf8xXrTu6grY+AleTkbBsNCtcLdJvFm36anbQfI4eZrUvK150FjQ==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lst.de; spf=pass (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de; receiver=lists.ozlabs.org) smtp.mailfrom=lst.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lst.de (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de; receiver=lists.ozlabs.org)
 Received: from verein.lst.de (verein.lst.de [213.95.11.211])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQLMy1Vzfz3c55
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 03:09:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQLNm0wz5z3bn4
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 03:10:00 +1100 (AEDT)
 Received: by verein.lst.de (Postfix, from userid 2407)
-	id C608B68BFE; Tue,  3 Mar 2026 17:09:11 +0100 (CET)
-Date: Tue, 3 Mar 2026 17:09:11 +0100
+	id 6BC1768C4E; Tue,  3 Mar 2026 17:09:55 +0100 (CET)
+Date: Tue, 3 Mar 2026 17:09:55 +0100
 From: Christoph Hellwig <hch@lst.de>
 To: Eric Biggers <ebiggers@kernel.org>
 Cc: Christoph Hellwig <hch@lst.de>,
@@ -70,10 +70,10 @@ Cc: Christoph Hellwig <hch@lst.de>,
 	sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
 	linux-crypto@vger.kernel.org, linux-btrfs@vger.kernel.org,
 	linux-arch@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: [PATCH 09/25] xor: move generic implementations out of
- asm-generic/xor.h
-Message-ID: <20260303160911.GI7021@lst.de>
-References: <20260226151106.144735-1-hch@lst.de> <20260226151106.144735-10-hch@lst.de> <20260228071521.GK65277@quark>
+Subject: Re: [PATCH 24/25] xor: pass the entire operation to the low-level
+ ops
+Message-ID: <20260303160955.GJ7021@lst.de>
+References: <20260226151106.144735-1-hch@lst.de> <20260226151106.144735-25-hch@lst.de> <20260228065810.GJ65277@quark>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,26 +89,28 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260228071521.GK65277@quark>
+In-Reply-To: <20260228065810.GJ65277@quark>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 
-On Fri, Feb 27, 2026 at 11:15:21PM -0800, Eric Biggers wrote:
-> This makes the generic code always be included in xor.ko, even when the
-> architecture doesn't need it.  For example, x86_64 doesn't need it,
-> since it always selects either the AVX or SSE code.
+On Fri, Feb 27, 2026 at 10:58:10PM -0800, Eric Biggers wrote:
+> On Thu, Feb 26, 2026 at 07:10:36AM -0800, Christoph Hellwig wrote:
+> > +#define __DO_XOR_BLOCKS(_name, _handle1, _handle2, _handle3, _handle4)	\
+> > +void								\
+> > +xor_gen_##_name(void *dest, void **srcs, unsigned int src_cnt,		\
+> > +		unsigned int bytes)					\
+> > +{									\
+> > +	unsigned int src_off = 0;					\
+> > +									\
+> > +	while (src_cnt > 0) {						\
+> > +		unsigned int this_cnt = min(src_cnt, 4);		\
+> > +		unsigned long *p1 = (unsigned long *)srcs[src_off];	\
+> > +		unsigned long *p2 = (unsigned long *)srcs[src_off + 1];	\
+> > +		unsigned long *p3 = (unsigned long *)srcs[src_off + 2];	\
+> > +		unsigned long *p4 = (unsigned long *)srcs[src_off + 3];	\
+> 
+> This reads out of bounds if src_cnt isn't a multiple of 4.
 
-True.  OTOH it is tiny.
-
-> Have you considered putting the generic code in xor-core.c (or in
-> headers included by it) before xor_arch.h is included, and putting
-> __maybe_unused on the xor_block_template structs?  Then they'll still be
-> available for arch_xor_init() to use, but any of them that aren't used
-> in a particular build will be optimized out as dead code by the
-> compiler.
-
-And earlier version did this, but it's a bit ugly.  What I might
-consider is to require architectures that provide optimized version
-to opt into any generic one they want to use.  This would require
-extra kconfig symbols, but be a lot cleaner overall.
+Assuming the compiler doesn't do the obvious optimization and
+drop it, but yes, should be easy enough to avoid this.
 
 
