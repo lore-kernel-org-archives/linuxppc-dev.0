@@ -1,99 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-17632-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17633-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF9DDEDEBF0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2026 20:10:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 975BAEDEBF6
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Mar 2026 20:49:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fQRjH2ZKMz3cGC;
-	Wed, 04 Mar 2026 07:09:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c10c::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772568579;
-	cv=pass; b=S5AcJ+D9PxAk83LwUPTmWNgGb4N9oUcH9YAzFy2zIi5At/pQs7Do7+9pQDsweXHb6JDbAoKgDIS3Yl3ehpc5lgD9miHOpBt4xr8RjO4WZWzXhTX9uHZqHyzGJAP8JtAiIQjToXSGxOEa+C1jhQXFz4XmMGe93/ueLloRWzeUpinhil+11v1ncbMdwDnaIBTMwg0HBrYKW+UDYo8wESZ1LkhHoTJ/C76iA2sEcruzsFDXfs7YKbsTDGPJYq2wxH6ecpb9KmrpeHfKgz/aVt2d9CexoTXaS/6sxpMm+T84gFvETRfnhH9wBOFzqb9nqNTizgrs70AfEv1DOZDG5OEHGQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fQSb94PPzz2ySS;
+	Wed, 04 Mar 2026 07:49:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::132e" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772570965;
+	cv=pass; b=XaIlhBB+iFqKdt0xgZ0+AZZukzL0cuafVBXkDGK2E4tSQg9j2HuKUc8DwlNKjrtAYf9FYhApu3C41qylD5yrVK5PVf090bI2Uko3jLequSy47KQ0iywNabpZDOYuYjry7rwlnjqh8h/WgW51rxAjdbFCz9PYcpNNrQUrA6NOF+5/Z6XceHHzRxJxzREFwtOEP1YJ3Tn80p6nMA5lDWpt3WRODe9bOIo18S5x4ErbGMiAB+R2HOZgtjW1SMqh80ogTECzH8bZ/8Rm0tz2xceYXKr/lV3Xt7hPZUujydoxJan1VOxDlvMsnLyEQqAnPoeE49lxsYjwda26gmlcp6ubLg==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772568579; c=relaxed/relaxed;
-	bh=0/VHWhXnGBClQUIzaraUcabUFgCVEMWrKlPFqGY9d8c=;
-	h=From:To:Cc:Subject:Date:Message-ID:Content-Type:MIME-Version; b=dovdlvpp3fKnND/QWWzqmrrm6iQ2HoDx28iJveoVJ1XWMwLiERQgzLYgnQKtTP6O1aNIUtsuvukXMhg5z8B6P8jqk3NzywkBmYTaebmw8kXcZW51uxaz6yCn0GJSwYhD6l/1FSfDjR/NRJUmiEQRCuD5RA/FsdJksqE5ty4HtLMwTKnpBZRZ4heUb4HfM4916Du1SllN8yqYy/L3Q8w2GNKYJAE4xgWNEbaJU96zGGjK0OZX+ao4is/RG56SfIQS0GOXCHVAyt+MxZkmI4EH3iayvmbow6kspHDAIs8E9DgR9ew9PGlggOE7nxGJ0CvZ1GtIJ4bBLsqx0yJStkA4Lw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=hE4BPRUj; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c10c::1; helo=sa9pr02cu001.outbound.protection.outlook.com; envelope-from=ynorov@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+	t=1772570965; c=relaxed/relaxed;
+	bh=z5K9TC0MkEO8By22h3GqX8xxcKLeF0UtxgZ/D1gjfh8=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=mPrgMskmNkvUz8MJTPyhdi3nMYPvDTs166o+yMcZD3vx0jsa0wjc982/6CnONKlkbrNiEh50GOyH+BrWTUkAWI/TNijVkZt25A4ldh0m62uSaQt+wKa/9UUlcXliiTdGPn+Jc6sP0sPYs8Os6b9PFiGyKC2q90X5QzM7yteLKlMjflLlquaPx7FLT+Gcb1tG4Tmzh5NDfn3ojw/V+M1hDfw/MRu1gmYBkzmmvzEDJep+675F+qifb3P9G80iANLMpkyOIw4NOfzYCGQnyroinkE0EjsKJ7J+bH6M3AWSURYRB0hNPLZwttQqrO9CfbA8eF50f9+o0zIYEcEeqIV1aA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=i63FFcTI; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132e; helo=mail-dy1-x132e.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=hE4BPRUj;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=i63FFcTI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c10c::1; helo=sa9pr02cu001.outbound.protection.outlook.com; envelope-from=ynorov@nvidia.com; receiver=lists.ozlabs.org)
-Received: from SA9PR02CU001.outbound.protection.outlook.com (mail-southcentralusazlp170130001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c10c::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132e; helo=mail-dy1-x132e.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x132e.google.com (mail-dy1-x132e.google.com [IPv6:2607:f8b0:4864:20::132e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQRjG4ZgKz3cCJ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 07:09:38 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=ch9NCkBc7x+s5IqDHkTXseai4FZbbtrwaeRZRSfn3h2G4KfJX57ooH0uUkmH7ziMIHFiYZbpituPD3A2wTF4k0rEoccavuHJrMiEtgDMDP+4dgFBhZNE+LRj89Ex60VLEDKBX0M+TuXo3fTa7ibEVds41cVw+qB9xsjXgsvvHIWkuLLcr7TSSYEf2qvJwDupJTzz9mwmJ3odasbnz/zPsmsLaz1fM0VDux9u3eleTQH0lwBZcAu27EnBbw8KiosK7ubvTDjbr2aaNpb8Yf0+FuKZOi66qUScxdzLj0bB1r9+bJLK28nZPOrVI2TbsH+849PLTYUKCoYaE0913u7Iig==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=0/VHWhXnGBClQUIzaraUcabUFgCVEMWrKlPFqGY9d8c=;
- b=yFx77kS+NZbjU/lnNoFQasFGA36L0hQZp1J4fuVmdDnSov1cFDFfaQdo8q69kw2PVkG7bxBHbt6jfFEIVmPvp8/saWvizjcjJw/Kp181BqKBWVYr4Q3my+nGKi8+K15zQDaujfUAUVzEGL5sWzVdjyOmQrbOmdeCd8qhggNp9Y31NoI5pkCZyRo70xqdsvz3b7NoOhDU2nnZLsemnM+cgfVi7j7DoooKItMb4zsthtTIz65WmtU59ri7HASgSUn6P6KIReZPD6EB2Ehk7mJ2fvv6obnKVWTF1eqUOzHq4j8d1ArGw+Ct3VoAIJgDSQabfNzpGnNMfd1Tu0uibj5eag==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=0/VHWhXnGBClQUIzaraUcabUFgCVEMWrKlPFqGY9d8c=;
- b=hE4BPRUjgZ3zeXco87xkCNJq+hZS+HgxQu+95gO4F/5Izrhp1wMMUGIwgI7izsU2zHw9HMGdtQn4cG3K4ZaF5ZNt9PuzprI1E7sXhuTHGAec27h3zNXN+mYi3+vvQpWqO5qib9xoldwMDz/EUZ6ABvQKbQPmxqrccg1VqkraJhY2TpmlinbTjp/qJPJ89FTUdGlJ8k3FwTrv68CwqpnSt3xzg7Vqf7lgeS5GRgAnASPjx8yA2ATGFBp4Zvge53MbB3H/t03yPV882Z2Ob1/61FOBqgpGU2Bq71ET/kDN9K9nThg19EeJxXln1UExaCV91QaiNiW6H8m0NG8SI4rOUg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from PH0PR12MB8800.namprd12.prod.outlook.com (2603:10b6:510:26f::12)
- by CH1PR12MB9574.namprd12.prod.outlook.com (2603:10b6:610:2ae::16) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9654.14; Tue, 3 Mar
- 2026 20:08:45 +0000
-Received: from PH0PR12MB8800.namprd12.prod.outlook.com
- ([fe80::f79d:ddc5:2ad7:762d]) by PH0PR12MB8800.namprd12.prod.outlook.com
- ([fe80::f79d:ddc5:2ad7:762d%4]) with mapi id 15.20.9654.022; Tue, 3 Mar 2026
- 20:08:45 +0000
-From: Yury Norov <ynorov@nvidia.com>
-To: linux-kernel@vger.kernel.org,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Peter Zijlstra (Intel)" <peterz@infradead.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Ingo Molnar <mingo@kernel.org>,
-	James Clark <james.clark@linaro.org>,
-	Kees Cook <kees@kernel.org>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Mike Leach <mike.leach@linaro.org>,
-	Moritz Fischer <mdf@kernel.org>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Russ Weight <russ.weight@linux.dev>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Suki K Poulose <suzuki.poulose@arm.com>,
-	Tom Rix <trix@redhat.com>,
-	=?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <linux@weissschuh.net>,
-	Xu Yilun <yilun.xu@intel.com>,
-	Yury Norov <yury.norov@gmail.com>,
-	Zhang Rui <rui.zhang@intel.com>,
-	coresight@lists.linaro.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-fpga@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Cc: Yury Norov <ynorov@nvidia.com>,
-	Jakub Kicinski <kuba@kernel.org>
-Subject: [PATCH RESEND 0/5] bitmap: cleanup bitmaps printing
-Date: Tue,  3 Mar 2026 15:08:36 -0500
-Message-ID: <20260303200842.124996-1-ynorov@nvidia.com>
-X-Mailer: git-send-email 2.43.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: BN9PR03CA0746.namprd03.prod.outlook.com
- (2603:10b6:408:110::31) To PH0PR12MB8800.namprd12.prod.outlook.com
- (2603:10b6:510:26f::12)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQSb81Lvsz2xP9
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 07:49:23 +1100 (AEDT)
+Received: by mail-dy1-x132e.google.com with SMTP id 5a478bee46e88-2bda3b4318dso570472eec.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Mar 2026 12:49:23 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1772570960; cv=none;
+        d=google.com; s=arc-20240605;
+        b=blLaw8oE3N0kEc0cVfdwUpDKM9BPxqUELu12P+PpnTv/faGqcc6XR6cnlRMGw72R2x
+         iaq3NNc1FiZFWEbPhuDH/cT9U2cKYiVkQskjLfkkCkXSt2MGvJA47KgoaiLRHmQBlv1v
+         r1WWp6t0oTXiNAm10f9y0AgRiC2cZBmIzXpHxdZh8PhtuMP1BwCzrr5Y119YC/s8xrbL
+         uDhX7UmbK56cOibdl2am8Ck0p+C+qh1Kmnuq2NgLdi5bOamuCdGYu0cDuDFFDTtx9bJu
+         huYI9x9hjJCVOPZ7AFl1bEuLOfCpZmsgFiOswWKtMLJ7TJXDgxPIYkwvZR3LNyqsKqsG
+         OU2A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=z5K9TC0MkEO8By22h3GqX8xxcKLeF0UtxgZ/D1gjfh8=;
+        fh=khQVTGYy2Skv2EAIZaucjSXVED4WjT89tL6FFHgHlX4=;
+        b=EPvI7v5Kj6/1CKWayjmHVYNFcWRY254NPn9Ac49vP5wsyEJ1FT5lSNPUfWFrf6zjLU
+         ObHXtL+y4ks4EVs7dcFDdFg9ExLxk5SbMY2qbFQT2u9djJI0soDRxH3VptccuM301R9k
+         nXNQYL9krBIkDkYao9oKVqAEgYqzCrgRa+1mCUxKtziPdxWV+J3fvbHBv8Q1Pmj9MHEt
+         Xj5mt94S5fqZ6hbifXYdP9IjnpFwl84sxwnsMjGCzFHWQwAbuPaCLtBRzdoNTKDMEeOS
+         9j9563v9DhwkB3QLYZPE+DWA07VlAgHQGDMbxw/Wq2PC1eGDm9mQHs+gXBvNOqjuQjVA
+         u8uQ==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1772570960; x=1773175760; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=z5K9TC0MkEO8By22h3GqX8xxcKLeF0UtxgZ/D1gjfh8=;
+        b=i63FFcTIPQs6WSCsglhYhWqaI0XdaHiRx0L6cNSR8HWlQ3UR2js8igt++RCc7PkR0c
+         5VHoHOb+SD3HLU4sAEPBuKSxvKmLTDb6S9chFLhBAOIH8x7k2hMm9VgG5SCaUd3QjYRc
+         ewI30xm+ePIx7/768rXOmrXhHFmxYvSG8Lm3HrGGuXxwjp7zXuK4r0PEzPdpEB80n9W9
+         8D4g9t7UquWMdnw/zFADlFD4hruvwIf//oAIqdAbduL4zuVswi9YdcVNfucVxO/1XeyU
+         ZQcklHIOtJJCMy6/ZcYa1qniK+3JHJWBXPRq10PS0VgfzHzbD1BISA5L0XuAQ18ISQUh
+         KlXQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1772570960; x=1773175760;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=z5K9TC0MkEO8By22h3GqX8xxcKLeF0UtxgZ/D1gjfh8=;
+        b=GtFeeZk0lHXKBVj1swy7SkQ1vB6si+sI/ygwzi3bUxbCPEsxsW9KqlBYgHeRp4UC1J
+         fEWYbZRRijwYY8nHYGcK0CDwbfoIZT9Qi44Lz8K9Pq2MUYLiyPc34kdyDS0qwMGLmaoI
+         sVJLvSZbXeWumkHSLL0JiFQVpBxDJi+v8Kx319vmN7O49+cL5ib31IqbDXdts50t8MHv
+         H7n+67OyyVssRKxOqcjBq09ZU5CPvPBRqWj6eYo9+qWMOt5Yumwv88arGd3anGgfWUT7
+         nBXPafHq8Kwopbo+FLUvchkVSKA6tIbPvizIeylUOEIlCjmwrHF8NVngG2HIuHa8a1uW
+         Fctg==
+X-Forwarded-Encrypted: i=1; AJvYcCXJLD98gZQSUbYT49TAfVHyBB92QciOkL7LqM7sCyxIqJnFHO0umu0zSzrVRdz3HeyLLhxUfORRID0u4TA=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzprNXB0rsL3ecW2nkVBVppLSvasBbd+1xIWxppVRnS/CGuJea/
+	B7W8Sj7B19ihYRpjDck3r0l3qekv58UFRNHP1PVmAvZEV1epi35bjlHIDoxK02u9Tqgp6TC07v5
+	bUavL+4lILvf92Vl79MssGqo4ILcMTjk=
+X-Gm-Gg: ATEYQzzUBVTfjnXet+DHLEo5u5TXXCHw6cCGd+cFvuXDhDs1R7ybypRjGn1yzzpKxbK
+	Htfg17B4//KcDG90CvNVXb7RUdthSCdu8e84uZJa1Ep9Y0xp+isKkyagf31397wQWv2tjFon1E8
+	Sx2P1KkKsaTpxc3c3IAVCOBGFJCNZPVwkmy1HBDtJD1vJ0h/wJm2dir+/jDURVQlBzsOBtULsCs
+	R7lnaKhNLfI0QcTJn14nL+K8Z9CbqLRNgALHLxnAYg5aTYWAa2R9xd7heSwAx0VwruxT+9iznMD
+	vEHycHozTxc2rA9ovwpUq/ISI4p7GceN9Y/u92I5uBkEIZDM2aL3yM3MOzw5PpYdNmIgynDuS5H
+	J3bKLjA+jBCCV0SknwgNHXl+M
+X-Received: by 2002:a05:7300:231e:b0:2b7:103a:7697 with SMTP id
+ 5a478bee46e88-2bde1d4bc79mr3350396eec.5.1772570960234; Tue, 03 Mar 2026
+ 12:49:20 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -107,108 +102,67 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH0PR12MB8800:EE_|CH1PR12MB9574:EE_
-X-MS-Office365-Filtering-Correlation-Id: 1ca6503a-e86b-4e73-cb81-08de7960acb2
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|7416014|10070799003|376014|921020;
-X-Microsoft-Antispam-Message-Info:
-	sJ7aX3bjePPwEapk4Gi20xzTWSn+/8H0nztQVzs15dh9yi9fbONIA+cVXkaU9H0Vms9id6iID8DAYXMI6pq7pgWe6BJVVXUgcAket28ojSdUqAnMQvQNPBjzhfGFRofExKnvTgsxLMd9nzXqV8XjiZB6JQVHE6sHXmg/QU+VXN+ycgesAhGHcRAYDlyEmWW6YT5oHVy72vEjUD+ManMA9uJizd+j4yeWTZ3sk9q3/sZkVRc7wnWVXchOgig+IWK68MDHfUi2/NWJvmXawhzTwmM+bDGTv1/+omUZUDX0uF/qRcsgXh3I2/yl8ZyBSMpzvn5zzg0HuI0JRClwyG5sgu71EcN8JtqjL401N0eXT3FlitNlz11QVKfZkIAiA44gtHystHQoKGDkA9SVv5SjzTe4o99LSq6czg7HG8FFb5C6JsBoHI2uTc43Nk99SeKZIJbyhQMseb0rl0+Q+Fdlz4+uSASKIHP0B5U8kDeAZ7ye78PPsYDSFyrWpVpA1cfTx4CbxMfC/g0fbNeqHU7jAVRc9xT4wSd3WxfpPls5f9i3rS7EvrXZtbqNBVBhppDSSMYD3Jqpq/doUSYtfAwpGyxoHH4CKQ3CYEiTOz/vaZZATpVOEPfuyOwBqcXvUsZzds9xFrrFlXHy1lskIQaYnyANFp4TCo5PELOA89c6IckZ7iJjt8SYVwRaxcin8f/u/Eer/Le5gBuRjP1sosd1H02K6BklQXURGz04VAExWHI6YT/BHuCPKaoVd2z9UCIy7DpJ4rVhHYcQfzD6yWFbJU4JM1xT8TTax+WvbBHDgh0=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR12MB8800.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(7416014)(10070799003)(376014)(921020);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?ZUpTSEZHalJBWUN4MlE3bXZsd1ZBazdjdGJrcnJoVkZSWW9OYzUxWncwazJN?=
- =?utf-8?B?dDA3V0lFcExhWHpNb1VRVUdqaDdvWi93cEZGNjFYSDJ6SytCOGRJLzNGY2Fh?=
- =?utf-8?B?bHRYUFNLMnhFUUJPZlgzSktlQTROTVplSXdIdGJPdUg5b0t3Y1dyeHhqSVdU?=
- =?utf-8?B?OEJ1NElYdHRvNjZBeXB4ZXBxcVF6WEFYL09xWDdlRndVTG5NMWxpUXRmTU1i?=
- =?utf-8?B?cnpLcll0VHVzM3JGTGd4NndXNjl0TU1QQjhKOTBIRmdPRWtidUNITUlhbmph?=
- =?utf-8?B?SXRGeG52aUN2TjJuZDYwYy9rc0owNjlWRGRFTGwvMWYzMUpLTHJXK1hNOGdh?=
- =?utf-8?B?aVJFQzhpNCtKbUFFYlc5UHJKVEZNY1E4R2tSTmZCdDIwdW8xWm0vU3JEcjZB?=
- =?utf-8?B?cUNNY2doaHU1NmE4aFJ6aUE0aHNUWXZtV3NXQXJJdjlUSW1tT09FZEg5NmU2?=
- =?utf-8?B?SXErSzkyVE9rMHB4aVIza0dBRnpRL0ZDQjlwLzl6L0RJZFBvRDZpeGFVb3l2?=
- =?utf-8?B?VmFsZ011UDFGeU5tVWp3L3MzL05DUGZveVdLUkxONUkzUFVLdkU2ZHBmTjFs?=
- =?utf-8?B?M2sxMm9IcC9YTkR2aW04YmE3bFlRbkJRZ2tvM21PYnpLaGtWQjlpU3k4TUU3?=
- =?utf-8?B?TEo1ZStsWnk4K0FIUSszN2t1VitsR2JEamFSdHU4Z0dwZ0ltQ2VSRVdudHVJ?=
- =?utf-8?B?Nzdjek9qRG9vOWZTM2FvaGJaRGpJRUVrandzQXlkeUN6TGVreFJBNmJweVVn?=
- =?utf-8?B?eDlLYzJzcm9SbUQ2eVJKR004bGtBUlVOYUtOdytPTm1vK0owYitCSGEvN0Iw?=
- =?utf-8?B?R2pDNWVwR2FmaEhNcWN1V0FwL1M4SnM5YmNZalBYMjA4bHY5b2tRaC9QajRl?=
- =?utf-8?B?T0FHUkgweFlzRE5qQ3Y0d0ZaclYySHhjU2VZdlVnN2lFQ1ZzYmoyQTRTUUN6?=
- =?utf-8?B?RDlZUVU2VkZacGkxS2FkMHpncVlpS2w3Qm4wWGdZOTNUZDdtaS9zdjlNb3pZ?=
- =?utf-8?B?QVV1VFk4SEhvT2JRUkNRcTFBRjY3Z3E0MmZaRkptNlE1UXFxM3dZUG9kSTJD?=
- =?utf-8?B?NlYxZGY3T3FZWVVkUjVaS0dra21Tc0ZpSVczMmhrVGt0bzlhSVczLzhyVmJQ?=
- =?utf-8?B?OGwyUXF0dlEvVFhEQzN0R1ZxaHZwVG5DMFFDNUY5WW52dHNLNldyd0JaNUxw?=
- =?utf-8?B?MG94VUp4Z3djY1FyUjk5VmdlM3AwYnBXeVZZS0NVRzFNRk1jQmZkYW4yZll2?=
- =?utf-8?B?d0dzbWp0ckEvTGNWVmZCUmVTN2wyWXV0cVdCNmRGYldDQkpkdlZ0c04zeWpz?=
- =?utf-8?B?VVc5OVVzV2drd2JGbDFrSXJ4Nnk1dmlhWnhCUXRiUk1mVnZwL0JiMVF0RXIy?=
- =?utf-8?B?OC9uSTJkR2xCL3FoSDVEbERIZkJ2S1JFTENScW9DaGRueWdkMTQwZm45aW1S?=
- =?utf-8?B?eVAwZi8va0hpUmllNUZiV0ZuNnh3cG5pNmtPbU5iMVdjZk9wVnE5TW1VeDlI?=
- =?utf-8?B?QmZ0eG5ITGVySWttRkV6aDF3VWNJTHZrUnJXVjBobFlZQm81UkVremJkUDlk?=
- =?utf-8?B?REsvc3dYbnlPMGMxMnVveGw0SUV3aGU5NnczZ2I5dXQ0UlhYQ1RYSTAxdUxZ?=
- =?utf-8?B?b1dtRDBSakNHWVZGZ3lzU0JJRExGS1RLV2FQZnJsWng2dFh4NHhvRWxOSnE0?=
- =?utf-8?B?c1ZpTnRlVVRoQ3Y0bnhqbTN2OTdwWG13NXp2MGUxbUpuRkdzSzd5eWdkN29G?=
- =?utf-8?B?ejF2UklVSUplTzJpWWt4QUdoQ3p6eEVydFNZUU94NXZhSzhrM3czS1dEcTVD?=
- =?utf-8?B?WGdOZVRBUCtXdm5vSnVGZjBKVVNmMktpZG5RdEg4S2MvcmYxYnNpWmNrb0oy?=
- =?utf-8?B?Rjhub0UwMENEbDhhUVMvQVIxUG9VNTBJYTNvazhLUFV3UmVmT1Z1ZERRWTVx?=
- =?utf-8?B?clJzSmw2aDJhQThjME9CeVRVcGxKWFNMbjcwNldRQmNvWWZlVG1Zd3JNTGx6?=
- =?utf-8?B?ZFF3YXBRTVpMNi9RdnJsQ2dZUXFvMnJSWGJWSWV0S3JHRGRVZGpSV2JBUWxj?=
- =?utf-8?B?RGJnTXV6ZFRwN1JiYlpST0RaL21BdlU3cm10VmpLUVc5M0Y1OUJ4bTk0S3ZM?=
- =?utf-8?B?NC9pZUJhUVpYaFpWMlVyREVTVEVVczhoSTlwUHl1Z0dzeEdpQlJQZ3BvcVJ0?=
- =?utf-8?B?c21Ub1hWYktQdDN3SExTMDViakg1d2JQdlNrNVhrbzRCR0Nrd0tzSkloU1BN?=
- =?utf-8?B?bkloWDNvQTZpTEkwMFo2ay9Mc21oK1p5T1Vueno2SDJzaWRoVGpqQTlUYlp2?=
- =?utf-8?B?eFNsMG5TdnBsRVVCZjhQMWJwc1ZvcVJkOWVMSndOT1AvY2hRYVVWVy85RUQ3?=
- =?utf-8?Q?s8RAJ9Hqv25fI/llcGesIJaQVIgMohgcu/JCc?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1ca6503a-e86b-4e73-cb81-08de7960acb2
-X-MS-Exchange-CrossTenant-AuthSource: PH0PR12MB8800.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Mar 2026 20:08:45.5942
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 7OXHWcPdoepvfO7oAqFy/D/uSE6Ska9sfLHhXkaLF4UoCQ9RMC6xd4ZRErDjqwjmW38lc1cFLJX0l4JUVI8PVw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH1PR12MB9574
+References: <20260227200848.114019-1-david@kernel.org> <20260227200848.114019-3-david@kernel.org>
+ <aaLh2BxSgC9Jl5iS@google.com> <8a27e9ac-2025-4724-a46d-0a7c90894ba7@kernel.org>
+ <aaVf5gv4XjV6Ddt-@google.com> <f2f3a8a1-3dbf-4ef9-a89a-a6ec20791d1c@kernel.org>
+ <aaVnifbdxKhBddQp@google.com> <5f8dcb7f-9e4f-4484-b160-3a9ce541d63c@kernel.org>
+ <aaWvtn48X8UizaaN@google.com>
+In-Reply-To: <aaWvtn48X8UizaaN@google.com>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Tue, 3 Mar 2026 21:49:06 +0100
+X-Gm-Features: AaiRm50lUTXkxHRxiLsKpWNGF1HIgeoo2SkrDpQfQSxM22wzlSiellk8rvn7q80
+Message-ID: <CANiq72nK8P1rUYw=y3fMzWZR3f_mW2v0_LSLWR1i0dQTtOqu2w@mail.gmail.com>
+Subject: Re: [PATCH v1 02/16] mm/memory: remove "zap_details" parameter from zap_page_range_single()
+To: Alice Ryhl <aliceryhl@google.com>
+Cc: "David Hildenbrand (Arm)" <david@kernel.org>, linux-kernel@vger.kernel.org, 
+	"linux-mm @ kvack . org" <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>, 
+	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, "Liam R. Howlett" <Liam.Howlett@oracle.com>, 
+	Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
+	Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jann Horn <jannh@google.com>, 
+	Pedro Falcato <pfalcato@suse.de>, David Rientjes <rientjes@google.com>, 
+	Shakeel Butt <shakeel.butt@linux.dev>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
+	Claudio Imbrenda <imbrenda@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, 
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, 
+	Vasily Gorbik <gor@linux.ibm.com>, Jarkko Sakkinen <jarkko@kernel.org>, Thomas Gleixner <tglx@kernel.org>, 
+	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, =?UTF-8?B?QXJ2ZSBIasO4bm5ldsOlZw==?= <arve@android.com>, 
+	Todd Kjos <tkjos@android.com>, Christian Brauner <brauner@kernel.org>, 
+	Carlos Llamas <cmllamas@google.com>, Ian Abbott <abbotti@mev.co.uk>, 
+	H Hartley Sweeten <hsweeten@visionengravers.com>, Jani Nikula <jani.nikula@linux.intel.com>, 
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, 
+	Tvrtko Ursulin <tursulin@ursulin.net>, David Airlie <airlied@gmail.com>, 
+	Simona Vetter <simona@ffwll.ch>, Jason Gunthorpe <jgg@ziepe.ca>, Leon Romanovsky <leon@kernel.org>, 
+	Dimitri Sivanich <dimitri.sivanich@hpe.com>, Arnd Bergmann <arnd@arndb.de>, 
+	Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
+	Andrii Nakryiko <andrii@kernel.org>, Peter Zijlstra <peterz@infradead.org>, 
+	Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Andy Lutomirski <luto@kernel.org>, 
+	Vincenzo Frascino <vincenzo.frascino@arm.com>, Eric Dumazet <edumazet@google.com>, 
+	Neal Cardwell <ncardwell@google.com>, "David S. Miller" <davem@davemloft.net>, 
+	David Ahern <dsahern@kernel.org>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+	Miguel Ojeda <ojeda@kernel.org>, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
+	linux-s390@vger.kernel.org, linux-sgx@vger.kernel.org, 
+	intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org, 
+	linux-rdma@vger.kernel.org, bpf@vger.kernel.org, 
+	linux-perf-users@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
+	netdev@vger.kernel.org, rust-for-linux@vger.kernel.org, x86@kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Bitmap API has a bitmap_print_to_pagebuf() function that is intended to
-print bitmap into a human readable format, making sure that the output
-string will not get big enough to cross the current page limit.
+On Mon, Mar 2, 2026 at 4:41=E2=80=AFPM Alice Ryhl <aliceryhl@google.com> wr=
+ote:
+>
+> It's not relevant in this patch, but another thing that may be useful is
+> to add CLIPPY=3D1 to the make invocation when building normally. This
+> causes additional warnings to be checked using a tool called clippy.
 
-Some drivers use this function immediately before passing the result to
-scnprintf() with no modification. This is useless because scnprintf(),
-and helpers based on it like seq_pritf() and sysfs_emit(), take care of
-not overflowing the buffer by itself, and perfectly print bitmaps with
-"%*pb[l]".
+Yes, please do use `CLIPPY=3D1` -- the build should be Clippy clean
+modulo exceptional cases that may slip through (and soon linux-next
+will probably start reporting those warnings too).
 
-This is a resend of non-networking part of [1]. Patches #3,5 switch from
-plain scnprintf() to sysfs_emit(), as pointed out by Thomas Weißschuh.
+Thanks!
 
-[1] https://lore.kernel.org/all/20260219181407.290201-1-ynorov@nvidia.com/
-
-The networking part, for reference:
-
-https://lore.kernel.org/all/20260303185507.111841-1-ynorov@nvidia.com/
-
-Each patch can be applied individually per corresponding subsystem.
-
-Yury Norov (5):
-  powerpc/xive: simplify xive_spapr_debug_show()
-  thermal: intel: switch cpumask_get() to using
-    cpumask_print_to_pagebuf()
-  coresight: don't use bitmap_print_to_pagebuf()
-  lib/prime_numbers: drop temporary buffer in dump_primes()
-  fpga: m10bmc-sec: switch show_canceled_csk() to using sysfs_emit()
-
- arch/powerpc/sysdev/xive/spapr.c              | 12 ++-----
- drivers/fpga/intel-m10-bmc-sec-update.c       |  3 +-
- .../hwtracing/coresight/coresight-cti-sysfs.c | 32 ++++++++-----------
- drivers/thermal/intel/intel_powerclamp.c      |  3 +-
- lib/math/tests/prime_numbers_kunit.c          |  6 ++--
- 5 files changed, 21 insertions(+), 35 deletions(-)
-
--- 
-2.43.0
-
+Cheers,
+Miguel
 
