@@ -1,60 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-17672-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17673-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71D3DEDEC1B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2026 07:49:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A37FEB362F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2026 07:50:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fQlDY4gyKz3cG5;
-	Wed, 04 Mar 2026 18:49:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fQlDd5zhHz3cHH;
+	Wed, 04 Mar 2026 18:49:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772610557;
-	cv=none; b=ZzKlkDn7jJkqKWxbgnfpfk4tDQudUib1b2XazILkEn7/M0kMnDq85Z35aDrpK8dxqiDIEUjfFGfLr5rpoBbTpS8/cWtVG9s0Ns6dIIBnQq+4TQix+KTB+GzleDRa6faae8LZCwP/CZJVKttPdtcoGYclXz6HtZLjzp51HVVtc+sfO3xLj4pM9lTvpiHTIZ5fvof73lbwpd14cMkrznoGtkukiIokoMpNCKJFFmfCEMY3L7WO+xMOLtW+2vbV2BqpgY0RkHWf/agSBc9pJfkzCuJqM2vPuYeGyVjwFOTu9sPKaJ0eEe6OUcrUXfOk9UJYJStBVdm6jB2YpPjpoOrrgg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772610561;
+	cv=none; b=ZZG+m1xISQwz3sN5rYnyvO7qZnj8sbncnEYTDElzHQ+F0Fi4g5WXjzB9eqiHsnMtvN+2apS36GXoCjYAV48/5VeDuLWxg+a2OdgvDsNTt5KvztX8jn3MHiVHN+JbpJ+T50LUwcpXfBDtC/zBxC6iS+/cqIM7QunPvomJ/NPkOvX16fGaBYnUmP1m58iLJJ3rrBCzevBEX3wr/2GhHSEmPGqPlnuuxoYxHRGOGuYcHy03SghKLIwm8XqCVhEy7l+pEeMK0YDLBNj/MAz4Nme1dXiApAvCoqW7zlYDh5kQDpkN03uiCuRfm626u/6wLQVDlCmc6MyvbHZVRQ8Z5D57qQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772610557; c=relaxed/relaxed;
-	bh=Hnj7NK9+EESQajO58zJziHpx6y/buUwM86V1gnS791w=;
+	t=1772610561; c=relaxed/relaxed;
+	bh=stPu/Pg7Gwp256syBXoA2wyw5RrUxZ2jR6oZuDBIiJo=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=mN8FSnuJ9j8sQglD1YMV5xE8gnGLovAk9Um00mprY27YPaS4lMAe31+6gNHuHv8qbBVrk6cgrocOYqOzD2cnZRAdqcQxikudrrkx6X42nKrHsOz58F01U1SsIs7MX3q4+LKzAh+FNBkZQ0Z8+LPikD4m01OgMNAXzRQHDcvkjp0F0ZXGbsBvGJD7u9zhlcDf7jQDx7gSNyebVI1vT3LYGvJ9C5mC1yRwMcvHymFGoN+jkNfbsE2zC2ZVR0c11Ll76lrSMfJuoPLFRmiUxWD6gJk01EGvoeHeBREnQ9Jib1LZzaf7R1qHUO9LaY0So/PcOkQ5axOBtm4rJPrDm+mjjQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=ip/nm1Xq; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=Jt07OPnU; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=ZQ8WQed2jKweG8XDc3wECi6FlxNHq4Kqts9nYFM+pL702lfT/w59p1CN00mGAyvMPLuO8nmS1Pd3J3yR5eudSnfuW3/FQw4MWE6IXpGnQjpET3/FPCUznCnD0ZkRMDt7/a5xfzqzPqiXqfvrg5QpMvNMxJKO37dsCX9b18Asal3HdNVlzU2Ny0Nzw9RkWwOYIqxLolD9r4okud800CRGX9QfyqxEzdUWzEt8mdNOYuW56NwKIG5HWLefmGc/Mo8ZbLpug0h+x2FS0jgIB36WlE/bJrejJz5xxVrY0am6DO3poNmyr+X4qgWy76vRXt4gldRri5b0+zDCiSERRCLGjA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=TUma8354; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=TA4XhvsB; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=ip/nm1Xq;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=Jt07OPnU;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=TUma8354;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=TA4XhvsB;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQlDY0Bf1z3cDg
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 18:49:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQlDd1VdNz3cDg
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 18:49:21 +1100 (AEDT)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1772610553;
+	s=2020; t=1772610558;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Hnj7NK9+EESQajO58zJziHpx6y/buUwM86V1gnS791w=;
-	b=ip/nm1XqyI7wcCjokpOSiXYv2n4lYU7fwSpV26RLy9siZObCvemuLW2RP4YD1tdRMAI0S8
-	m+pQAaNqdYQ+QygPxVgvdAGCXk+06s3gMrKpXuEh7+flyTwmqsyaD2gML2Ee/87aOwrZMe
-	rkT21vqFiQ+eSMbBUCWSEJcvY2EtBXdR+uFvI30sCEhASj3CYKT6VwpRcNe2RjqfcoevWC
-	6Gy7UfRjSV5D94MjpJ7b/NaJ4APifgGovw2Hepb7xHBR+mJW15Wwj9n+xidp4akBsLGnF/
-	6KJn/Nt73SmPkpUD52uMOGRcrLgn4rC4amrE3fxiLeEM1pUuTjpdlB5wVP4oFg==
+	bh=stPu/Pg7Gwp256syBXoA2wyw5RrUxZ2jR6oZuDBIiJo=;
+	b=TUma8354NtDFrG+4mvtIyyxhQq+HbNOuW6P01b3HFq770OndKpi+KVGQjtmVZChDoJFHtO
+	rUOAFUFIPaIf/I2+EMWQxhXlSF9RZaQQaQJsfIvxMaeZVdX5F8x+Vu5qrRs1QNSlmRbxXL
+	xdX6cHqBHExnQzax2FZNXtcQZrSQ3JXCja5BO4C8fQ4jxbazWuPWYLlUAG1HOiM3FTIz8G
+	c8QTT+NVgmeQjWAFu6XPRLH6xPEnguKx+eYf6l5C9z62UeGDgdZfPd+jkInI2Z84B41Slr
+	7Z6S1bJi6Ay00ofBeqckEJyevjsjaROkKkvBwaE5NcOGCjfBZtVsWdT+FE+ncw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1772610553;
+	s=2020e; t=1772610558;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Hnj7NK9+EESQajO58zJziHpx6y/buUwM86V1gnS791w=;
-	b=Jt07OPnU+KT/z86+XHVkhIv4Yw0F2z4/1pj2e1Zuj+DMBO/23sXm5rdimCt979Ch6i0Lum
-	FZuSOtNue8YM41Cw==
-Date: Wed, 04 Mar 2026 08:49:02 +0100
-Subject: [PATCH v6 05/14] sparc64: vdso: Remove obsolete "fake section
- table" reservation
+	bh=stPu/Pg7Gwp256syBXoA2wyw5RrUxZ2jR6oZuDBIiJo=;
+	b=TA4XhvsBc/Q0Yq6jgA1qHBG/SEgChu3ZoC5WbDRldbPdXp9yt2MXZe5nFO1AFXq5csFCDJ
+	owQS7zApkrMG0UBA==
+Date: Wed, 04 Mar 2026 08:49:11 +0100
+Subject: [PATCH v6 14/14] clocksource: remove ARCH_CLOCKSOURCE_DATA
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,7 +69,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260304-vdso-sparc64-generic-2-v6-5-d8eb3b0e1410@linutronix.de>
+Message-Id: <20260304-vdso-sparc64-generic-2-v6-14-d8eb3b0e1410@linutronix.de>
 References: <20260304-vdso-sparc64-generic-2-v6-0-d8eb3b0e1410@linutronix.de>
 In-Reply-To: <20260304-vdso-sparc64-generic-2-v6-0-d8eb3b0e1410@linutronix.de>
 To: Andy Lutomirski <luto@kernel.org>, 
@@ -97,100 +96,69 @@ Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev, 
  linux-mips@vger.kernel.org, linux-s390@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1772610551; l=2603;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1772610551; l=1674;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=oQUOtMJuNveW+RclD59fWViVXCPJwVTHt+8MLrC6gp0=;
- b=ONjGMauf8t71olRAN5ufRU1QPoFqmeZuj0jaVTXePVPM/+6cJ1aj+IcJKK9s9JN0YdCHpDCxu
- e00adRtTraRBTXyKxFnAHlW8bX79J2+hczfZ7oL9CPomYAMSfq5sEXH
+ bh=9TopgYtPeKt3Ys7DxpwdywNMetiSuLHZh2lbdA88NxM=;
+ b=KDIxPtrm+ydN9kSM9xMEmIzwIYBDq8jh59lJNtxjYHfiL1HmOTsC+gGTurS+pBQQ1s0H9GjbY
+ onjpu6/WQ85D/1/+V1Td63v3IXx8HzglV4KTwC/Nx1uzM/E1ZG66gs4
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-When the vDSO logic was copied from x86 to SPARC some unused remnants of
-the fake section handling were copied, too. In x86 the original fake
-section handling had already been removed incompletely in commit
-da861e18eccc ("x86, vdso: Get rid of the fake section mechanism").
-On x86 the reservation was only cleaned up in commit 24b7c77bbb24
-("x86/vdso: Remove obsolete "fake section table" reservation").
+From: Arnd Bergmann <arnd@arndb.de>
 
-Remove the reservation for SPARC, too.
+After sparc64, there are no remaining users of ARCH_CLOCKSOURCE_DATA
+and it can just be removed.
 
-Fixes: 9a08862a5d2e ("vDSO for sparc")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Acked-by: John Stultz <jstultz@google.com>
+[Thomas: drop sparc64 bits from the patch]
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 Tested-by: Andreas Larsson <andreas@gaisler.com>
 Reviewed-by: Andreas Larsson <andreas@gaisler.com>
-Acked-by: Andreas Larsson <andreas@gaisler.com>
 ---
- arch/sparc/vdso/vdso-layout.lds.S | 21 ---------------------
- arch/sparc/vdso/vdso2c.c          |  8 --------
- 2 files changed, 29 deletions(-)
+ include/linux/clocksource.h | 6 +-----
+ kernel/time/Kconfig         | 4 ----
+ 2 files changed, 1 insertion(+), 9 deletions(-)
 
-diff --git a/arch/sparc/vdso/vdso-layout.lds.S b/arch/sparc/vdso/vdso-layout.lds.S
-index d31e57e8a3bb..9e0804789d11 100644
---- a/arch/sparc/vdso/vdso-layout.lds.S
-+++ b/arch/sparc/vdso/vdso-layout.lds.S
-@@ -4,16 +4,6 @@
-  * This script controls its layout.
-  */
+diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
+index 65b7c41471c3..12d853b18832 100644
+--- a/include/linux/clocksource.h
++++ b/include/linux/clocksource.h
+@@ -25,8 +25,7 @@ struct clocksource_base;
+ struct clocksource;
+ struct module;
  
--#if defined(BUILD_VDSO64)
--# define SHDR_SIZE 64
--#elif defined(BUILD_VDSO32)
--# define SHDR_SIZE 40
--#else
--# error unknown VDSO target
+-#if defined(CONFIG_ARCH_CLOCKSOURCE_DATA) || \
+-    defined(CONFIG_GENERIC_GETTIMEOFDAY)
++#if defined(CONFIG_GENERIC_GETTIMEOFDAY)
+ #include <asm/clocksource.h>
+ #endif
+ 
+@@ -106,9 +105,6 @@ struct clocksource {
+ 	u64			max_idle_ns;
+ 	u32			maxadj;
+ 	u32			uncertainty_margin;
+-#ifdef CONFIG_ARCH_CLOCKSOURCE_DATA
+-	struct arch_clocksource_data archdata;
 -#endif
--
--#define NUM_FAKE_SHDRS 7
--
- SECTIONS
- {
- 	/*
-@@ -47,19 +37,8 @@ SECTIONS
- 		*(.bss*)
- 		*(.dynbss*)
- 		*(.gnu.linkonce.b.*)
--
--		/*
--		 * Ideally this would live in a C file: kept in here for
--		 * compatibility with x86-64.
--		 */
--		VDSO_FAKE_SECTION_TABLE_START = .;
--		. = . + NUM_FAKE_SHDRS * SHDR_SIZE;
--		VDSO_FAKE_SECTION_TABLE_END = .;
- 	}						:text
+ 	u64			max_cycles;
+ 	u64			max_raw_delta;
+ 	const char		*name;
+diff --git a/kernel/time/Kconfig b/kernel/time/Kconfig
+index 7c6a52f7836c..fe3311877097 100644
+--- a/kernel/time/Kconfig
++++ b/kernel/time/Kconfig
+@@ -9,10 +9,6 @@
+ config CLOCKSOURCE_WATCHDOG
+ 	bool
  
--	.fake_shstrtab	: { *(.fake_shstrtab) }		:text
+-# Architecture has extra clocksource data
+-config ARCH_CLOCKSOURCE_DATA
+-	bool
 -
--
- 	.note		: { *(.note.*) }		:text	:note
- 
- 	.eh_frame_hdr	: { *(.eh_frame_hdr) }		:text	:eh_frame_hdr
-diff --git a/arch/sparc/vdso/vdso2c.c b/arch/sparc/vdso/vdso2c.c
-index dc81240aab6f..b97af5ec9f35 100644
---- a/arch/sparc/vdso/vdso2c.c
-+++ b/arch/sparc/vdso/vdso2c.c
-@@ -61,8 +61,6 @@ const char *outfilename;
- /* Symbols that we need in vdso2c. */
- enum {
- 	sym_vvar_start,
--	sym_VDSO_FAKE_SECTION_TABLE_START,
--	sym_VDSO_FAKE_SECTION_TABLE_END,
- };
- 
- struct vdso_sym {
-@@ -72,12 +70,6 @@ struct vdso_sym {
- 
- struct vdso_sym required_syms[] = {
- 	[sym_vvar_start] = {"vvar_start", 1},
--	[sym_VDSO_FAKE_SECTION_TABLE_START] = {
--		"VDSO_FAKE_SECTION_TABLE_START", 0
--	},
--	[sym_VDSO_FAKE_SECTION_TABLE_END] = {
--		"VDSO_FAKE_SECTION_TABLE_END", 0
--	},
- };
- 
- __attribute__((format(printf, 1, 2))) __attribute__((noreturn))
+ # Architecture has extra clocksource init called from registration
+ config ARCH_CLOCKSOURCE_INIT
+ 	bool
 
 -- 
 2.53.0
