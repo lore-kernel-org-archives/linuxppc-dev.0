@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-17689-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17690-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFA1DEB7EB3
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2026 09:00:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85ED1EB7EB1
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2026 09:02:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fQmpM0lXYz30hq;
-	Wed, 04 Mar 2026 20:00:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772614811;
-	cv=none; b=SD9B7ktXmLTd0KWH07fp62pZifWoruEPS7jetPq0Q6878pFYq0d60qgOqnYZowjhMDI5iA2eCVQJcVHo6drbeN7AQ25uXds8GH7DKUe6v9rT12SSs/qHbBB2eHGlIllD2f6veBycdfTW5M+kwWSqhw9vwmaGgJbwV5wJOE6OZ4bToIbFfAl0sxyqNvdpnH1bJ/U/pg7qDwiAwWXHzC07aH+TwmYERj7sQW/N2n60/VxBtue5t/Mi1Go/jb8oT+ZTrSUx5qVi1lElBY34cHf4b624uuSyUrgfvoKhLjTk3mi9On6DcfplP5+8bgIva0YNNQLU5NgMmMr9QMVfGQcFEQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fQmsT6hhqz30hq;
+	Wed, 04 Mar 2026 20:02:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772614973;
+	cv=none; b=UsswrcPmgUKA15Dhx3lOJrfUvGSgxXfJ+uRA9TZl/DI6bpKHP9wsEsqx4qNiJAazD4+mfikFG1dT3RzaZcrVKU2hY44h909mqLL5M19XcUxFT3vgD8Tqkr5lSxfaZSCm1d7gawlXzaBaQKSDTRfm7bCc5NlLVJdeCTidstW8GwoBXLc+vQ/KNen1gUK+TJQ6Vhf+qyLDnuU5OeS/IWks9MclaXEijea5aY8UanhHxUpImI8DZsiyW9PVTtuh3mCACfVuvdtCsCACX5dpZMIFMyeHoOh8qehvq4aaRBWjoPgOURaEIWE4kxzvR/CAQQcjtZQeWdQqqMNxnFas82asbw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772614811; c=relaxed/relaxed;
-	bh=8k5Yev2diQYM+kPrrSqykQkGj4em+aEHEpNJoOvXFHs=;
+	t=1772614973; c=relaxed/relaxed;
+	bh=7DHo8nnofvS0v9zWPBa2XQHrIeh/6sZBlfpPvEqhW5g=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Wg2gDTS6Xw4rxu/+cF27keiSBsPYT6drqF4TejcRM0CxuCTOPvfY/qV55n6LLUzaHhzKUyNrkNAB0L1gGTaCycWk9paiqkEmA/hUH6/ccvJhOAgmaLzlpX/6wxN2TvaxNw4LL1HSKcIzas0jGSuF6FAJjRJRaUT+FP5o/tDmlWGNSFkx9qibB0kVfIeNTrT/nxQO0NJvE8SxE+qqbzfPYJPMaJY9RhmoablHysvf7XSWDC82WeItrfZxp7j4xvu4fwQqTdpX2eaD2UzNXQLJwMl3R/G4QFE6PVHc+PtFvMi2hvSPkDD1A6T7XiFv2iag18szGtONXVc8tPaive1kKQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=s1E1RcXB; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=XcL3roOlo9KsHMRn/mUpo1653fQIiyicGGg1FvB92E2dopMSaVKNml0OcQ+vJxoUVcR9U0aqBaMmlIx/D0E1r+68JtanOedHXaJG15dB+5fvwGabW3E8WEpjkSO1lCdkdfIZWHO5uAhF5z8Ij5ut/nhZgq5R0I/UV0zIdQrgEmKV3ydKFmFL+/+bG3RLZsGCA4S1o2582lNIyhPW/xoxY1hS0Az2PVuvZ7462fxHqlf1jhzg3spP6rO900f923tCu9Qho+MxBGNoGhqsDDaqFcxViWLb8xln7HA6sqmNYdAexIWt+bzxn3RMheuVRW3L/4z2guspATlZVxpVYZDGgA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HhixUQ6H; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=s1E1RcXB;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HhixUQ6H;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQmpL0yPwz2yFY
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 20:00:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQmsS6M1mz2yFY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 20:02:52 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id C3D126057A;
-	Wed,  4 Mar 2026 09:00:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 966CCC19423;
-	Wed,  4 Mar 2026 09:00:05 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id DB11F60097;
+	Wed,  4 Mar 2026 09:02:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A6A82C19423;
+	Wed,  4 Mar 2026 09:02:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772614807;
-	bh=gifGbD6JMEv6L9NlQtyraekK4duLMCrGJ52WNb14fOM=;
+	s=k20201202; t=1772614970;
+	bh=kxfIGChB2wC+nGHup8CVs7dyrylhcmHq5LK6PQjxQRc=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=s1E1RcXBmTr/rW3gJAHmwNQJoKtvL+v8v747G71JRzSxTXgoW+GDONtMSk20kLetk
-	 7AH8uwWvEQPoGjsuGXGXxWcXOWHpJm5wALSqafUS0AcBkFNVUntTME9KyZLJahOWJM
-	 ULDgMDC3uttYxif/9Y0f6PPd0NUx1j62TETbLrUyNnmmuxNPeFNmfr08XSzk4uoA1O
-	 ZLKMCrREaVbS2HHUc27Go0ipAJIb3xfm9rKw6yeCIv9KMcl8U8Eut+wPPrlWLx/UKT
-	 wyc10bJs0N9jjVbBZvepuSWxI41FXgfj0U9sPrjijWQR4+aJiz5j+W8aNmt56x1hrs
-	 o/3VOvOrQsDpA==
-Message-ID: <e1eabcbf-40da-4899-9db6-828a7b697328@kernel.org>
-Date: Wed, 4 Mar 2026 10:00:03 +0100
+	b=HhixUQ6Hh4hoRpXlkVOmTId9s+P0IjU3EDdIeeT9+mpTbOUx+A28yRnTUnROHq7y7
+	 JdwDgCknbvOQ8P4fwjeO82HZKw4HYFFSZqansP/wuuPBpm/b3ldEYMU5ieW8DmGakr
+	 fJHL4DP0s8AddWHaYFgzv54RvRLx9oiN6ycuU0jK7mroppUgjLyzi8X5GhxYSKZ+u4
+	 rfUEaoVOOZo0SQBMWziJ5uh94KT5cN2O7wwEDZRWpMav6EwASPxK8pST3CiQOUkJ3q
+	 KTX+0X8FOUH+zchvZ7qlwozteoijtM7XLPnXqtCyYvoitu6x/Q6mVfWu3G1ho8y+k8
+	 uRWnMQmllPnfA==
+Message-ID: <9d07ed92-ca0d-4012-bbb9-b2dc37f17f44@kernel.org>
+Date: Wed, 4 Mar 2026 10:02:46 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,8 +60,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC v1 05/10] powerpc/64s: Move serialize_against_pte_lookup()
- to hash_pgtable.c
+Subject: Re: [RFC v1 06/10] powerpc/64s: Kill the unused argument of
+ exit_lazy_flush_tlb
 To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
  linuxppc-dev@lists.ozlabs.org
 Cc: linux-mm@kvack.org, Hugh Dickins <hughd@google.com>,
@@ -71,128 +71,120 @@ Cc: linux-mm@kvack.org, Hugh Dickins <hughd@google.com>,
  "Aneesh Kumar K . V" <aneesh.kumar@kernel.org>,
  Venkat Rao Bagalkote <venkat88@linux.ibm.com>
 References: <cover.1772013273.git.ritesh.list@gmail.com>
- <dd9b5abdcc56d935681f7f95fa018bd886d59ba0.1772013273.git.ritesh.list@gmail.com>
+ <9385e4fbc4bb99ba47ea6070fd82233e6576c228.1772013273.git.ritesh.list@gmail.com>
 Content-Language: fr-FR
 From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <dd9b5abdcc56d935681f7f95fa018bd886d59ba0.1772013273.git.ritesh.list@gmail.com>
+In-Reply-To: <9385e4fbc4bb99ba47ea6070fd82233e6576c228.1772013273.git.ritesh.list@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 
 
 Le 25/02/2026 à 12:04, Ritesh Harjani (IBM) a écrit :
-> Originally,
-> commit fa4531f753f1 ("powerpc/mm: Don't send IPI to all cpus on THP updates")
-> introduced serialize_against_pte_lookup() call for both Radix and Hash.
+> In previous patch we removed the only caller of exit_lazy_flush_tlb()
+> which was passing always_flush = false in it's second argument.
 > 
-> However below commit fixed the race with Radix
-> commit 70cbc3cc78a9 ("mm: gup: fix the fast GUP race against THP collapse")
+> With that gone, all the callers of exit_lazy_flush_tlb() are local to
+> radix_pgtable.c and there is no need of an additional argument.
 > 
-> And therefore following commit removed the
-> serialize_against_pte_lookup() call from radix_pgtable.c
-> commit bedf03416913
-> ("powerpc/64s/radix: don't need to broadcast IPI for radix pmd collapse flush")
-> 
-> Now since serialize_against_pte_lookup() only gets called from
-> hash__pmdp_collapse_flush(), thus move the related functions to
-> hash_pgtable.c
-> 
-> Hence this patch:
-> - moves serialize_against_pte_lookup() from radix_pgtable.c to hash_pgtable.c
-> - removes the radix specific calls from do_serialize()
-> - renames do_serialize() to do_nothing().
-> 
-> There should not be any functionality change in this patch.
+> This patch does the required cleanup. There should not be any
+> functionality change in this patch.
 > 
 > Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 
 Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
 
 > ---
->   arch/powerpc/include/asm/book3s/64/pgtable.h |  1 -
->   arch/powerpc/mm/book3s64/hash_pgtable.c      | 21 ++++++++++++++++
->   arch/powerpc/mm/book3s64/pgtable.c           | 25 --------------------
->   3 files changed, 21 insertions(+), 26 deletions(-)
+>   arch/powerpc/mm/book3s64/internal.h  |  2 --
+>   arch/powerpc/mm/book3s64/pgtable.c   |  2 --
+>   arch/powerpc/mm/book3s64/radix_tlb.c | 14 +++++---------
+>   3 files changed, 5 insertions(+), 13 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> index 1a91762b455d..ff264d930fe8 100644
-> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> @@ -1400,7 +1400,6 @@ static inline bool arch_needs_pgtable_deposit(void)
->   		return false;
->   	return true;
->   }
-> -extern void serialize_against_pte_lookup(struct mm_struct *mm);
+> diff --git a/arch/powerpc/mm/book3s64/internal.h b/arch/powerpc/mm/book3s64/internal.h
+> index cad08d83369c..f7055251c8b7 100644
+> --- a/arch/powerpc/mm/book3s64/internal.h
+> +++ b/arch/powerpc/mm/book3s64/internal.h
+> @@ -31,6 +31,4 @@ static inline bool slb_preload_disabled(void)
 >   
->   #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+>   void hpt_do_stress(unsigned long ea, unsigned long hpte_group);
 >   
-> diff --git a/arch/powerpc/mm/book3s64/hash_pgtable.c b/arch/powerpc/mm/book3s64/hash_pgtable.c
-> index ac2a24d15d2e..d9b5b751d7b7 100644
-> --- a/arch/powerpc/mm/book3s64/hash_pgtable.c
-> +++ b/arch/powerpc/mm/book3s64/hash_pgtable.c
-> @@ -221,6 +221,27 @@ unsigned long hash__pmd_hugepage_update(struct mm_struct *mm, unsigned long addr
->   	return old;
->   }
->   
-> +static void do_nothing(void *arg)
-> +{
-> +
-> +}
-> +
-> +/*
-> + * Serialize against __find_linux_pte() which does lock-less
-> + * lookup in page tables with local interrupts disabled. For huge pages
-> + * it casts pmd_t to pte_t. Since format of pte_t is different from
-> + * pmd_t we want to prevent transit from pmd pointing to page table
-> + * to pmd pointing to huge page (and back) while interrupts are disabled.
-> + * We clear pmd to possibly replace it with page table pointer in
-> + * different code paths. So make sure we wait for the parallel
-> + * __find_linux_pte() to finish.
-> + */
-> +static void serialize_against_pte_lookup(struct mm_struct *mm)
-> +{
-> +	smp_mb();
-> +	smp_call_function_many(mm_cpumask(mm), do_nothing, mm, 1);
-> +}
-> +
->   pmd_t hash__pmdp_collapse_flush(struct vm_area_struct *vma, unsigned long address,
->   			    pmd_t *pmdp)
->   {
+> -void exit_lazy_flush_tlb(struct mm_struct *mm, bool always_flush);
+> -
+>   #endif /* ARCH_POWERPC_MM_BOOK3S64_INTERNAL_H */
 > diff --git a/arch/powerpc/mm/book3s64/pgtable.c b/arch/powerpc/mm/book3s64/pgtable.c
-> index 359092001670..84284dff650a 100644
+> index 84284dff650a..52d3e0c4a030 100644
 > --- a/arch/powerpc/mm/book3s64/pgtable.c
 > +++ b/arch/powerpc/mm/book3s64/pgtable.c
-> @@ -150,31 +150,6 @@ void set_pud_at(struct mm_struct *mm, unsigned long addr,
->   	return set_pte_at_unchecked(mm, addr, pudp_ptep(pudp), pud_pte(pud));
->   }
+> @@ -23,8 +23,6 @@
+>   #include <mm/mmu_decl.h>
+>   #include <trace/events/thp.h>
 >   
-> -static void do_serialize(void *arg)
-> -{
-> -	/* We've taken the IPI, so try to trim the mask while here */
-> -	if (radix_enabled()) {
-> -		struct mm_struct *mm = arg;
-> -		exit_lazy_flush_tlb(mm, false);
-> -	}
-> -}
+> -#include "internal.h"
 > -
-> -/*
-> - * Serialize against __find_linux_pte() which does lock-less
-> - * lookup in page tables with local interrupts disabled. For huge pages
-> - * it casts pmd_t to pte_t. Since format of pte_t is different from
-> - * pmd_t we want to prevent transit from pmd pointing to page table
-> - * to pmd pointing to huge page (and back) while interrupts are disabled.
-> - * We clear pmd to possibly replace it with page table pointer in
-> - * different code paths. So make sure we wait for the parallel
-> - * __find_linux_pte() to finish.
-> - */
-> -void serialize_against_pte_lookup(struct mm_struct *mm)
-> -{
-> -	smp_mb();
-> -	smp_call_function_many(mm_cpumask(mm), do_serialize, mm, 1);
-> -}
+>   struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT];
+>   EXPORT_SYMBOL_GPL(mmu_psize_defs);
+>   
+> diff --git a/arch/powerpc/mm/book3s64/radix_tlb.c b/arch/powerpc/mm/book3s64/radix_tlb.c
+> index 9e1f6558d026..339bd276840b 100644
+> --- a/arch/powerpc/mm/book3s64/radix_tlb.c
+> +++ b/arch/powerpc/mm/book3s64/radix_tlb.c
+> @@ -19,8 +19,6 @@
+>   #include <asm/cputhreads.h>
+>   #include <asm/plpar_wrappers.h>
+>   
+> -#include "internal.h"
 > -
 >   /*
->    * We use this to invalidate a pmdp entry before switching from a
->    * hugepte to regular pmd entry.
+>    * tlbiel instruction for radix, set invalidation
+>    * i.e., r=1 and is=01 or is=10 or is=11
+> @@ -660,7 +658,7 @@ static bool mm_needs_flush_escalation(struct mm_struct *mm)
+>    * If always_flush is true, then flush even if this CPU can't be removed
+>    * from mm_cpumask.
+>    */
+> -void exit_lazy_flush_tlb(struct mm_struct *mm, bool always_flush)
+> +static void exit_lazy_flush_tlb(struct mm_struct *mm)
+>   {
+>   	unsigned long pid = mm->context.id;
+>   	int cpu = smp_processor_id();
+> @@ -703,19 +701,17 @@ void exit_lazy_flush_tlb(struct mm_struct *mm, bool always_flush)
+>   	if (cpumask_test_cpu(cpu, mm_cpumask(mm))) {
+>   		dec_mm_active_cpus(mm);
+>   		cpumask_clear_cpu(cpu, mm_cpumask(mm));
+> -		always_flush = true;
+>   	}
+>   
+>   out:
+> -	if (always_flush)
+> -		_tlbiel_pid(pid, RIC_FLUSH_ALL);
+> +	_tlbiel_pid(pid, RIC_FLUSH_ALL);
+>   }
+>   
+>   #ifdef CONFIG_SMP
+>   static void do_exit_flush_lazy_tlb(void *arg)
+>   {
+>   	struct mm_struct *mm = arg;
+> -	exit_lazy_flush_tlb(mm, true);
+> +	exit_lazy_flush_tlb(mm);
+>   }
+>   
+>   static void exit_flush_lazy_tlbs(struct mm_struct *mm)
+> @@ -777,7 +773,7 @@ static enum tlb_flush_type flush_type_needed(struct mm_struct *mm, bool fullmm)
+>   			 * to trim.
+>   			 */
+>   			if (tick_and_test_trim_clock()) {
+> -				exit_lazy_flush_tlb(mm, true);
+> +				exit_lazy_flush_tlb(mm);
+>   				return FLUSH_TYPE_NONE;
+>   			}
+>   		}
+> @@ -823,7 +819,7 @@ static enum tlb_flush_type flush_type_needed(struct mm_struct *mm, bool fullmm)
+>   		if (current->mm == mm)
+>   			return FLUSH_TYPE_LOCAL;
+>   		if (cpumask_test_cpu(cpu, mm_cpumask(mm)))
+> -			exit_lazy_flush_tlb(mm, true);
+> +			exit_lazy_flush_tlb(mm);
+>   		return FLUSH_TYPE_NONE;
+>   	}
+>   
 
 
