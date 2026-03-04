@@ -1,68 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-17721-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17722-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6534BEF8FEA
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2026 13:56:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 829ABEF8FF0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2026 14:51:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fQvNX6Sgpz3btw;
-	Thu, 05 Mar 2026 00:56:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.67.36.65
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772632604;
-	cv=none; b=cjQ+XWkgzsaotKWVzj+DkSxXey6wsEa7ANcRcoiEa9yybB9D9FuZkDw7YVF6hkxIh6Bpjj5bBtk+jx1I3QyQGH9AoVCU9yZVSQyac3Y8EfQBZodwHqMSGaJJxYgeQCTS7qEV111DYd3bKfpK312+9WeH1c/M1unhRTZ9Zp13ybyq92koa9rfifqWP7al15NeM/zzlzVGclfX968g8v8U9HTt3/J3tl1cMVUf4t5rkDBvf/9vtr5z0aPaIyIHa4vW3wsMDIhDAN/sepmubYViZUO1HsdNgLA66HjBwxw0EKPzz5wWTBpQH6roeN1ucFx5/k9CZMsG29fXj1YdxKVzCQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fQwc84wZnz3btw;
+	Thu, 05 Mar 2026 01:51:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=213.95.11.211
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772635912;
+	cv=none; b=QUPQdjqMQjuEB8ySY7a1g5CIne1GjjhBUJlY6n380/kgVg+YYZPs9O0AcCA30XeFciTCc2Ws+D1iSfPHsmjVcAmOEUggarjEcVBvbKCDVj9Tw69AJEvn+uBSdP9RN5qeHBKvzK7WZBbJo5pujyFwdoedzPIlf60jCEzgK8MuMQFE7yaOoHEvM3+iF239UyEcNwoY3tzrbuv79yejORMzPnSH5zx66Cim7rhSwdbq26U9kvWzeFMSrgWNkflezo86YzDWNJwWYfljNRKqB270gfLOKxLTmnLoyZo1SbDaUn/icO3JPuNg6ANulVgefl9UtAqXy2htd9TDDMGvSUMhrw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772632604; c=relaxed/relaxed;
-	bh=XvWO//MuUaF6FBIn1Hrn9Rw3nUdY24HmHHsAA/muNLo=;
+	t=1772635912; c=relaxed/relaxed;
+	bh=7OwA86SnZzNUGB3TVCWM5+M7FjnAjt0P/s/l7EZvY0k=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=jrrMe7TkoHdfWnVlo2rIsue/3gNlXkZrMHZDM7TRyJvsKRDRLNky/n/666iYDe4zxW1G43zE3Ch6TlugbqdYK2+UXmYv3gZbRRrtsiEfVNlb+IWv3lNx1ogt3hN/A/CCRpzUzEsTY6rNZsbMhjQbAWGcHqixgdo6TMwGh4EDexagWXOnc1Ris5QomL0nQLP77i2lhJjAYNxqRymQLfkbySt7dKZpflcUxfm5b5nN3WI+L+MbT4oxWghpW6eIih3HT3OAiRogVaYImy0SEcSIn2ut0S58SvlRlDxU+BrHpa2m/R1Bc2tDbxzH324Ou01it/aIKaGwH3xl3pqmHH7UFA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=posteo.net; dkim=pass (2048-bit key; secure) header.d=posteo.net header.i=@posteo.net header.a=rsa-sha256 header.s=2017 header.b=imS/u9Bv; dkim-atps=neutral; spf=pass (client-ip=185.67.36.65; helo=mout01.posteo.de; envelope-from=j.ne@posteo.net; receiver=lists.ozlabs.org) smtp.mailfrom=posteo.net
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=posteo.net
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=posteo.net header.i=@posteo.net header.a=rsa-sha256 header.s=2017 header.b=imS/u9Bv;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=posteo.net (client-ip=185.67.36.65; helo=mout01.posteo.de; envelope-from=j.ne@posteo.net; receiver=lists.ozlabs.org)
-X-Greylist: delayed 564 seconds by postgrey-1.37 at boromir; Thu, 05 Mar 2026 00:56:41 AEDT
-Received: from mout01.posteo.de (mout01.posteo.de [185.67.36.65])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 Content-Type:Content-Disposition:In-Reply-To; b=O7YXEfFkcO2a7BnENQg6G/71T5NDCtu42zEcqQ3pj4HzjMzXzr66MvB5msZwP++Q0tURGYdfNawZQruOXLLc4ICpANDZOao8iX+l6CEWFoZdJJpaGH9KNQucMa5USwnes6UuYFoH98VFVNHzq2jNE0Gcb1Hf8P5vnsSTeX3GnDWiEoNtm3rSIWSljHbvGzG9bnjtox5aiBAbAT9lrFVr/MAzMlAnP4e+DErX6VBb2lgNpvb+csiBcDY746o+wpG3GFvIj/xbNxwfXm+I9YOByydQkqJ1CjuptgWnMH9/K048Zx5QAB7ixduh4Hdua5MZAcsjXVGTO8YNAfd4ZRn8fA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lst.de; spf=pass (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de; receiver=lists.ozlabs.org) smtp.mailfrom=lst.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lst.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lst.de (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de; receiver=lists.ozlabs.org)
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQvNT4NmPz3btg
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Mar 2026 00:56:40 +1100 (AEDT)
-Received: from submission (posteo.de [185.67.36.169]) 
-	by mout01.posteo.de (Postfix) with ESMTPS id DD8AC240027
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2026 14:47:08 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=posteo.net; s=2017;
-	t=1772632028; bh=XvWO//MuUaF6FBIn1Hrn9Rw3nUdY24HmHHsAA/muNLo=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:Content-Transfer-Encoding:From;
-	b=imS/u9BveXyiCdVz3nuiVXmt0F72RQBrDvQqnbvEjJKKUIBqKC/hovKSaG9kra/WP
-	 2BFeOlA9f4dAgXaT5dblKaaepKJWe7U3MSXbC1Q+c7rKa7KZOIjX3T0qNabn1peoWN
-	 zr7bUkZVmrEFQymu8ApIyz0wTJEhRRsY+Xh8CMq2jGLDhVB4wOQR3EOUNQwQu2n8BL
-	 WYGCfKT/bNLs9gmMp8tDMf+O6a0szmYcCX965XBQ+9BaW97d1rWpR/+95WtAPDZ3hx
-	 rlI5a/V9oGoMlcL0XoVKvjD9/FPaLaZsXmD7/+fycM0mikxUHHVF/t4exNVg/G9Z/z
-	 qtEz1UBYsbcow==
-Received: from customer (localhost [127.0.0.1])
-	by submission (posteo.de) with ESMTPSA id 4fQv9Q1f3sz9rxc;
-	Wed,  4 Mar 2026 14:47:05 +0100 (CET)
-Date: Wed, 04 Mar 2026 13:47:08 +0000
-From: =?utf-8?Q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: j.ne@posteo.net, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQwc75zkCz3btg
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Mar 2026 01:51:50 +1100 (AEDT)
+Received: by verein.lst.de (Postfix, from userid 2407)
+	id 23B5068AFE; Wed,  4 Mar 2026 15:51:35 +0100 (CET)
+Date: Wed, 4 Mar 2026 15:51:34 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Eric Biggers <ebiggers@kernel.org>
+Cc: Christoph Hellwig <hch@lst.de>, Peter Zijlstra <peterz@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Richard Henderson <richard.henderson@linaro.org>,
+	Matt Turner <mattst88@gmail.com>,
+	Magnus Lindholm <linmag7@gmail.com>,
+	Russell King <linux@armlinux.org.uk>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>, Huacai Chen <chenhuacai@kernel.org>,
+	WANG Xuerui <kernel@xen0n.name>,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RESEND] powerpc: dts: Build devicetrees of enabled
- platforms
-Message-ID: <aag32bMA9aiEbSIP@probook>
-References: <20260303-mpc83xx-dtb-v1-1-592d27492019@posteo.net>
- <CAMuHMdXZYuDn5RRFFUp7kXFDn_fMZuqHbXmSJie4ofEv8NxXfw@mail.gmail.com>
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Richard Weinberger <richard@nod.at>,
+	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	Dan Williams <dan.j.williams@intel.com>, Chris Mason <clm@fb.com>,
+	David Sterba <dsterba@suse.com>, Arnd Bergmann <arnd@arndb.de>,
+	Song Liu <song@kernel.org>, Yu Kuai <yukuai@fnnas.com>,
+	Li Nan <linan122@huawei.com>, linux-alpha@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+	sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
+	linux-crypto@vger.kernel.org, linux-btrfs@vger.kernel.org,
+	linux-arch@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: [PATCH 01/25] xor: assert that xor_blocks is not called from
+ interrupt context
+Message-ID: <20260304145134.GA21983@lst.de>
+References: <20260226151106.144735-1-hch@lst.de> <20260226151106.144735-2-hch@lst.de> <20260227142455.GG1282955@noisy.programming.kicks-ass.net> <20260303160050.GB7021@lst.de> <20260303195517.GC2846@sol>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,75 +87,23 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAMuHMdXZYuDn5RRFFUp7kXFDn_fMZuqHbXmSJie4ofEv8NxXfw@mail.gmail.com>
+In-Reply-To: <20260303195517.GC2846@sol>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 
-On Tue, Mar 03, 2026 at 10:34:26PM +0100, Geert Uytterhoeven wrote:
-> Hi J,
-> 
-> On Tue, 3 Mar 2026 at 16:56, J. Neuschäfer via B4 Relay
-> <devnull+j.ne.posteo.net@kernel.org> wrote:
-> > From: "J. Neuschäfer" <j.ne@posteo.net>
-> >
-> > Follow the same approach as other architectures such as Arm or RISC-V,
-> > and build devicetrees based on platforms selected in Kconfig. This makes
-> > it unnecessary to use CONFIG_OF_ALL_DTBS on PowerPC in order to build
-> > DTB files.
-> >
-> > This makes it easier to use other build and test infrastructure such as
-> > `make dtbs_check`, and is a first step towards generating FIT images
-> > that include all the relevant DTBs with `make image.fit`.
-> >
-> > Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
-> 
-> Thanks for your patch!
-> 
-> > --- a/arch/powerpc/boot/dts/Makefile
-> > +++ b/arch/powerpc/boot/dts/Makefile
-> > @@ -3,3 +3,158 @@
-> >  subdir-y += fsl
-> >
-> >  dtb-$(CONFIG_OF_ALL_DTBS) := $(patsubst $(src)/%.dts,%.dtb, $(wildcard $(src)/*.dts))
-> > +
-> > +# PPC44x platforms
-> > +dtb-$(CONFIG_PPC44x_SIMPLE) += \
-> > +       arches.dtb \
-[...]
-> > +       icon.dtb
-> > +dtb-$(CONFIG_EBONY) += \
-> > +       ebony.dtb
-> 
-> This fits on a single line (many more below)
-> 
-> [...]
-> 
-> > +# MPC5200 platforms
-> > +dtb-$(CONFIG_PPC_MPC5200_SIMPLE) += \
-[...]
-> > +       tqm5200.dtb \
-> > +       uc101.dtb
-> 
-> Even when it wouldn't fit on a single line, having separate
-> 
->     dtb-$(CONFIG_FOO) += bar1.dtb
->     dtb-$(CONFIG_FOO) += bar2.dtb
-> 
-> lines not only makes it a little bit shorter, but avoids the churn of
-> adding a backslash to the previous line when adding new entries.
+On Tue, Mar 03, 2026 at 11:55:17AM -0800, Eric Biggers wrote:
+> may_use_simd() is the "generic" way to check "can the FPU/vector/SIMD
+> registers be used".  However, what it does varies by architecture, and
+> it's kind of a questionable abstraction in the first place.  It's used
+> mostly by architecture-specific code.
 
-Sounds good, I'll do that for v2.
+Yeah, I don't think that is quite right here.
 
-> 
-> Gr{oetje,eeting}s,
-> 
->                         Geert
-> 
-> -- 
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                 -- Linus Torvalds
+> How about "WARN_ON_ONCE(!preemptible())"?  I think that covers the union
+> of the context restrictions correctly.  (Compared to in_task(), it
+> handles the cases where hardirqs or softirqs are disabled.)
+
+Good enough I guess.  Peter?
+
 
