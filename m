@@ -1,99 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-17705-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17706-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E45F2EB7EB3
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2026 09:04:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1463EB7EAC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Mar 2026 09:04:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fQmtZ5rwSz3c9d;
-	Wed, 04 Mar 2026 20:03:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.180.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772615030;
-	cv=none; b=Er67oxM3zisy58NfmCfjm5LuWKxThjTF/DWLprD8i0NohxtzjAEI+iqaaYt0vaGjMG0nNhpYoWVKtxAypIExHnYqZYXQeeuyji9Gdx1pTS6IRAz16qbZeVttsmg7BTyhE9fVcSXr53nbGAXsM0mmKye/06sx4E/y1HWMhuHhEfyiHrVhbHD8T8bbBKiZZK48ZKljRG9La3sVDK/fK5U+vtNqaI0FE19k1+/ZOE0wMEfwi8JgcL/p7mHqO8qwjDuF80wGz4ww4UJyn/50K3A2fGmlFfH706TSygnIz/cCK8a2PmgZm1KX6wM0OTj+MpceR8RVfj32EHDNfUNWvWkMZg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fQmtw3ksFz3c9l;
+	Wed, 04 Mar 2026 20:04:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772615048;
+	cv=none; b=f/BBwfflDCoMUArSD7kLCq0oKzgODQ9MSt1FiEjdzzrVV8ndo3YqGHEd0Lxr+YwZsSmyh0AdXZQo3jMYlKYkqvpUftpY+9D07QIy7xSfP+qL7z+NyQz+4P+5b9MgphYwBERdCYIa5f8L/5Exyk0dh+E7eeuRWo/FF/dbrx5OaSA8tL/7Ej1xrQLJMep7Uhjj9JNUUOXBxizdm2mjPAHvSemvoNkEZFdfXbiRuHnUS2iIrEJ85gVM8u12V5AShr2yyiaU4p2jqL7a04mwdko0uon3yS/Es4QL1rQN6UP63iaY1YtlwSDUgZ7lbPdyMGXdMMhkc2pFFKJY8FPp+tNY8g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772615030; c=relaxed/relaxed;
-	bh=fo8hOHsMcpRWpT+37kKvxNuUEm/9ffpY1iawyCnqVM0=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=TVg1/C2gg2nLGwIDXf1uya8SaIQ+S4GqdqhGfwOsQpV9/DJ/0XKiDK21xErJHOufm3RcHvl1JzSJ0f4TB7GMCQ2ydgfm9qJl2ZtoYae/4buIz9/pDq+N0vBVDiiDoAptOUkTz0pV/BT9rTULkTrTvXZC58nY2vgFNYFtbYPGGm3hNw8lrZLoiKDdYM2hwPrmlPKOC8Qu5vI3dmClbfRobjwCPzEgyEuR43TyIESQwXSYzwLPtmBb1hdICtxnr3jSvyYG5xBCwkyhVBdPcY969OuYYkmonZY80qrmWknQz1+paj5IxdAPK6NQ1OxVcEq6DShNHYnjD+7Z1Dgs02nz0w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=LZ5ZeC1k; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=YL++9V3G; dkim-atps=neutral; spf=pass (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=bartosz.golaszewski@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+	t=1772615048; c=relaxed/relaxed;
+	bh=sOQlj6naO92JugN1Y9eyq9OsCaSmpPv2KoT7HaBPRQc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=lGDUqv+c6fJ1HicpJhIUB+C+nu0/k7smlqBky66PwNIdxAG/M+7JfDAiVxmOf7dRETcqxDE2FuLlFO9g2dqpFyARa19DNQng0YM8n1ISyKjBZAImwR05mEsmIgEPb1nuIed5mq67v+eY1ON05/6K9mOyWxrzh2DaBdG8cLY871M2VybSAU/K0ASeencNi+wo1MduNsIigd9iX/RrdyXFl0PXjn+/WOkAX33rtuQK94hti4CJgdJmcEJcJuZPYqXI/vitGVC9Asfx1nMS/7TbNu37DRmNmFei+Zu3bfPlo7OFfkETpTKMy3HZRkGFpB6IZdlz5U+6M7GcH/DR7T9wVw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LO5cFKB3; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=LZ5ZeC1k;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=YL++9V3G;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LO5cFKB3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=bartosz.golaszewski@oss.qualcomm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQmtZ08YSz3c9M
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 20:03:49 +1100 (AEDT)
-Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6245SQG9957040
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Mar 2026 09:03:48 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	fo8hOHsMcpRWpT+37kKvxNuUEm/9ffpY1iawyCnqVM0=; b=LZ5ZeC1kqTnN1jFh
-	vCca7TV1UKLuarWNNA4j74IoHQZeS4rJ8wyjWtEjFDwOeF5LL3i4PnB/RtNWZk9c
-	WyhH4S9YFRvmPpc5DDWtNq0Lq7gVxrQuyl7jXzEbNBoJOvYqY4FEi2nhcWKRIYhc
-	Zn0ZezifGODDAv6RguH2+n4lz6j6XJtVzi8WCuvy6g0/Rm2g1Za1QiGg18MnZsQt
-	LxXLnZIpg4RalfuDBpF/CIraKi91ur9+sQIPVX3xDa9cuFhzDc9DYM+q8+wJzJlF
-	TMjqx7cw9Gq5Cw3kk2q8+PQ+IyRTcHcTOFocmDDfXcv5qgLhgSrVLF0TRjDNjCBg
-	YOz7wQ==
-Received: from mail-qk1-f197.google.com (mail-qk1-f197.google.com [209.85.222.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4cp6qga757-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 09:03:47 +0000 (GMT)
-Received: by mail-qk1-f197.google.com with SMTP id af79cd13be357-8c71156fe09so4094916285a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 01:03:47 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1772615027; x=1773219827; darn=lists.ozlabs.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=fo8hOHsMcpRWpT+37kKvxNuUEm/9ffpY1iawyCnqVM0=;
-        b=YL++9V3Gn5UuFaSNxCSHCSji9zYOH2PXuOXPbndVwu2gRknUUY5erOyr2HKn8nL2JX
-         uIfLUmHKIA8cq+KL0LagOG6xYLlf95pfSrqzFOuwsqDXqwpYAgdgy6VfFvy6j+CqnCJs
-         14Bu7ioDmoQm83rWPUpkgskMZwq7PW7lGSsY/LWZCGIQvGOXpaCokg3RmMzoKTZN/9uT
-         o2VDwdY4+zLZGkywxJRzdO3X4SZ6EGvXLui+uhoknQxpIcR9gvb90Hor+IT7ysZJyv1P
-         1emt3og6KjvgxSps6+YSCy+/iB1xLi6H3yccg/jUXXZARHYNiZHI2brVUZxWSonUcDfj
-         vQWA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772615027; x=1773219827;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=fo8hOHsMcpRWpT+37kKvxNuUEm/9ffpY1iawyCnqVM0=;
-        b=I9fQX6X9kBSa2JmXo73g8U1Widg12hIHYXZhqZVVmUh5bczxB/ArnwgWSdQyXj2uG9
-         XKOVHmRnAQXVulcQsVU6ru/95mk5E78AAMlm+7WUam+ksuO9O+HAbBiH4N7FwHtNaNxC
-         yi+IAfJa+sbX7mKlBsvI8LIosXctI+BOMewQ31ECOYTFTZA3+s19MtJOmLOr8C66yYlN
-         sMP+rxRA/LHTuM9tFJMWgf65hcYwsB+1NniP162i2Q7MnH0E3/IvUd5HnOS8WzNGO+Hh
-         ZzcWCgHpu9wmQ5cCD3BVQmo0/iTDC31Qp7JkBlooE8VidpxPXcYPVltqqyYeoUVNcvm+
-         Ztdg==
-X-Forwarded-Encrypted: i=1; AJvYcCUQGFNb2C0XWZiGEN7cMvi5sWexFGj7rbcM43S3mf+Hd2/MoSmV1hCBoZuPaNYay8g6CNfInpLwtEU5LBM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx1tdNjqQdwTyNHJd38/25vpMefWNcl+Noa5kPwCq5QtPsKx9MA
-	Wg1EBaouERM7WYO6tPBOJuLouJW37pStLe87MtTlcdFn1WhT1KI+8997VwoF4BGk7594iHT5/SJ
-	2VkO4b6vbArwMaZaJs87o+zfzOyEJI3zuwgx8arqilyd5MHo0c8yNdB3jhUxBfSZf1kP1
-X-Gm-Gg: ATEYQzyD1x3s+tTCK9hfXFCSYkT7NwYUOazaWkVV6N5w+L4Aa+jJzOUhq+ABTQmvc8h
-	wOZ8hXzyYEbqlWBP8WMC6K0Abq27B1wROyZWVgpyVEpKWmZkZ6NfHc8wOkHh3Kpj4FYl2UJBlHg
-	rLHe1QC3mz2FcMr/mB0q0KoFqXMnw3xWqu+ynqi9+yaEcchOvqZk4qEP6ksneEk+v0bAIdw3d/E
-	WR/7VyHLVtgWlOSsHpLYcjdrqDUJB9ko6nfZtxgM72UiYgiABN4kTXFNi3eBctxoqRDt/MysRZf
-	Qcw0PV5xuckT9h0b4/Yysa/qPTvBnWQb+7VOAF97wokNh1Ou0iEYAOylng/qTFUjx+zT7FRc4OI
-	lvM99s6iAJgWbpz6L8hB7A3DxmH9329EnpUzNxJCkpsIn/Ofi4eA3
-X-Received: by 2002:a05:620a:31a4:b0:8c6:a539:55cd with SMTP id af79cd13be357-8cd5af818b8mr152243185a.41.1772615027065;
-        Wed, 04 Mar 2026 01:03:47 -0800 (PST)
-X-Received: by 2002:a05:620a:31a4:b0:8c6:a539:55cd with SMTP id af79cd13be357-8cd5af818b8mr152238485a.41.1772615026584;
-        Wed, 04 Mar 2026 01:03:46 -0800 (PST)
-Received: from brgl-qcom.local ([2a01:cb1d:dc:7e00:edb0:af14:f4c7:c6ac])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4851ad02ffcsm3644895e9.20.2026.03.04.01.03.43
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Mar 2026 01:03:45 -0800 (PST)
-From: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Date: Wed, 04 Mar 2026 10:02:35 +0100
-Subject: [PATCH 14/14] media: i2c: drop unneeded dependencies on OF_GPIO
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQmtv5Vrtz3c9M
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2026 20:04:07 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 3387C40B99;
+	Wed,  4 Mar 2026 09:04:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2F464C19423;
+	Wed,  4 Mar 2026 09:04:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1772615046;
+	bh=duYFPXRSVqTWjpnCYbxKCrWGKHrn4IMlEvOkeRB4SBc=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=LO5cFKB3INrXPIS9/Zzl0WPAjo/Xz417AVxD+S6wAoYl8T2a9o4qmbHKzaF3yafXU
+	 qPupfGUV3z8mC/GJE5HSVUjlpZr/zfH/n8eG1iWtPbkj5xC4dE5vQqHN3pRq/NJY5p
+	 UNgtygr9jbQ5jthBp+wJPEHAwxOUPwCoo/6O6de4EnKslc+KW8thlzk44/3Q0fr+x0
+	 +9ttAdacuqh4wTMayA0UCQME/k/uUScbhIcelDUYRXOWs8gX4QALILX4bsw7L6V6dg
+	 tz9Jci+tOojITSRXWYmLBR01xP02JIAi0LHkPMAQtNNFCWjlsFZPmK6FeP0QEpjE8P
+	 NgjYWXUy5RhYQ==
+Message-ID: <88b77e80-8b6c-44de-b74f-ad589d49b6cd@kernel.org>
+Date: Wed, 4 Mar 2026 10:04:02 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -107,164 +59,120 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260304-gpio-of-kconfig-v1-14-d597916e79e7@oss.qualcomm.com>
-References: <20260304-gpio-of-kconfig-v1-0-d597916e79e7@oss.qualcomm.com>
-In-Reply-To: <20260304-gpio-of-kconfig-v1-0-d597916e79e7@oss.qualcomm.com>
-To: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
-        Alexey Brodkin <abrodkin@synopsys.com>,
-        Vineet Gupta <vgupta@kernel.org>, Scott Wood <oss@buserror.net>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Andrew Lunn <andrew@lunn.ch>, Heiner Kallweit <hkallweit1@gmail.com>,
-        Russell King <linux@armlinux.org.uk>,
-        "David S. Miller" <davem@davemloft.net>,
-        Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
-        Paolo Abeni <pabeni@redhat.com>, Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>, Linus Walleij <linusw@kernel.org>,
-        Bartosz Golaszewski <brgl@kernel.org>,
-        Neil Armstrong <neil.armstrong@linaro.org>,
-        Kevin Hilman <khilman@baylibre.com>,
-        Jerome Brunet <jbrunet@baylibre.com>,
-        Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
-        Dvorkin Dmitry <dvorkin@tibbo.com>, Wells Lu <wellslutw@gmail.com>,
-        Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Wim Van Sebroeck <wim@linux-watchdog.org>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Sebastian Reichel <sre@kernel.org>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-snps-arc@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
-        netdev@vger.kernel.org, linux-gpio@vger.kernel.org,
-        linux-amlogic@lists.infradead.org, linux-leds@vger.kernel.org,
-        linux-hwmon@vger.kernel.org, linux-watchdog@vger.kernel.org,
-        linux-media@vger.kernel.org, linux-staging@lists.linux.dev,
-        linux-pm@vger.kernel.org, brgl@kernel.org,
-        Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2430;
- i=bartosz.golaszewski@oss.qualcomm.com; h=from:subject:message-id;
- bh=MCUltpFZ7WmEs+Zx30xfCDFOTCP7ddjGHJyyrYpihXQ=;
- b=owEBbQKS/ZANAwAKAQWdLsv/NoTDAcsmYgBpp/U2S+uVTRDUZjbW42G7Pde+e98yExCfHmKSl
- HuuGodjDTOJAjMEAAEKAB0WIQSR5RMt5bVGHXuiZfwFnS7L/zaEwwUCaaf1NgAKCRAFnS7L/zaE
- w04sD/4l9ifYSWVyk+wcaQpjTACkURD2eCeWi7XG5/uxKcFxPRjOjYbnVCNmKnRiNYQHTnOdZAD
- RHEPNL9Tmn5V/K3zGBvodWKK7DoWQJZcGQLrC8VNmiFODSfkjheHHtNx6K9SzWyk4fsz/3U9/Do
- uRHRJZ7f7yJAP3QJaZ9QxWkzuAC8If42NLay9hfVcfo+kS0TOu1NNRM+6gXMA5Y/pP4FlXYs8DC
- IsZC4Qjx9Hx0bhbmMqrIpAUFk9OaN3t+oV92DLq/zFIvuNHMy0/L8N/wiyzmLbnZcfTpsf6+Qgp
- 4P2FgxgqxO9yyi+cm3IA9XfiOCzuJOPteySq4NcdBekIwuXhYMeYRNqInw0HjhWFwbiAeFthwO3
- DOQAqM86R5V0bfFnCvwu7MoqjY1SjVWit3ZOt/iTOhJSvBydJJ8pgS8/ULEYw/m0sZuvYNvGOV6
- lYD11td3ysN/HbFMLVs6zX9Rr75VDl7CdXbXSc4aQbBdsN1WHf0tu+5dKq1slodk3V/ZxT2jL86
- Ns5Z37xaPgZ8pZRZw86cfDDtlRD4+3qaW4Zkd8uc9TQlPBg2iVpIMvoZdChHXBocSpd4F921tHV
- NqGZ8FhAn8Awi3Dn3ouTs3qouRo73WZp98ukYqMVfXEjl4gbfeCP/mjH85au2MmJuJ/7PUDuHTk
- DzYrk83TwNVNPsA==
-X-Developer-Key: i=bartosz.golaszewski@oss.qualcomm.com; a=openpgp;
- fpr=169DEB6C0BC3C46013D2C79F11A72EA01471D772
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzA0MDA2NyBTYWx0ZWRfX4puhFphQ+gGk
- LmUMnAWge/WewusfM6LgeTZW7nkkZUdxQwvDeMTY9CnvxZgGyn2UlA17K8M0JuxCAto5Az82mSQ
- 7bfStA9nqLs0iUljHYyGdYfbD2isXU+0BAOK0B46MiA0XqX7T/Cg7N6GiEXng4OyWyUlxYuj/24
- NJq70fmiMknWBbg/XLw4Ezjft15EC+9muaTKmVviJOj0VpuQMXKlRwGcBzoXWik9KKniIG5cVIS
- DgHp3cG3gT20+SLkMjEP6T0UszRedsGUXMoHVuAKyze1ONfhaWbRk8moHz1AzNQF+qLnydst1hK
- X8nMFyzj+Bf0mzSSsFz13HVDITCDbJDfSHhkddxuBTDDSO8ZqAVOwmqc0IoXkPl7+dShNGC/4V1
- iHzIP/DZRCfvzAUwsrR3AR9qZkC8aCJLJ2SwBITBNQGigeMJbz0ac3sylkcX2NDUF4HaM8YHcaf
- n5WSXn8RTw+b8ePSvyQ==
-X-Authority-Analysis: v=2.4 cv=UJ3Q3Sfy c=1 sm=1 tr=0 ts=69a7f573 cx=c_pps
- a=50t2pK5VMbmlHzFWWp8p/g==:117 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
- a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22 a=EUspDBNiAAAA:8
- a=jH2LZSAcktARuhmwcr4A:9 a=QEXdDO2ut3YA:10 a=IoWCM6iH3mJn3m4BftBB:22
-X-Proofpoint-ORIG-GUID: xcRnRE7eS7FXUNUQsIogSuqJV2JEypjc
-X-Proofpoint-GUID: xcRnRE7eS7FXUNUQsIogSuqJV2JEypjc
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-04_04,2026-03-03_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 priorityscore=1501 clxscore=1015 malwarescore=0 spamscore=0
- adultscore=0 bulkscore=0 phishscore=0 impostorscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2603040067
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC v1 07/10] powerpc: book3s64: Rename tlbie_va_lpid to
+ tlbie_va_pid_lpid
+To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: linux-mm@kvack.org, Hugh Dickins <hughd@google.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@kernel.org>,
+ Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+References: <cover.1772013273.git.ritesh.list@gmail.com>
+ <465a2aac31f00d395be0d551574de37786ace094.1772013273.git.ritesh.list@gmail.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <465a2aac31f00d395be0d551574de37786ace094.1772013273.git.ritesh.list@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-OF_GPIO is selected automatically on all OF systems. Any symbols it
-controls also provide stubs so there's really no reason to select it
-explicitly. For Kconfig entries that have no other dependencies: convert
-it to requiring OF to avoid new symbols popping up for everyone in make
-config, for others just drop it altogether.
 
-Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
----
- drivers/media/i2c/Kconfig | 12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/media/i2c/Kconfig b/drivers/media/i2c/Kconfig
-index 5eb1e0e0a87ab350060567f578960c0e98940d6d..40b6fa3fe38b8d64d029d385f1acd1de4480aa69 100644
---- a/drivers/media/i2c/Kconfig
-+++ b/drivers/media/i2c/Kconfig
-@@ -237,7 +237,7 @@ config VIDEO_IMX319
- 
- config VIDEO_IMX334
- 	tristate "Sony IMX334 sensor support"
--	depends on OF_GPIO
-+	depends on OF
- 	select V4L2_CCI_I2C
- 	help
- 	  This is a Video4Linux2 sensor driver for the Sony
-@@ -248,7 +248,7 @@ config VIDEO_IMX334
- 
- config VIDEO_IMX335
- 	tristate "Sony IMX335 sensor support"
--	depends on OF_GPIO
-+	depends on OF
- 	select V4L2_CCI_I2C
- 	help
- 	  This is a Video4Linux2 sensor driver for the Sony
-@@ -268,7 +268,7 @@ config VIDEO_IMX355
- 
- config VIDEO_IMX412
- 	tristate "Sony IMX412 sensor support"
--	depends on OF_GPIO
-+	depends on OF
- 	help
- 	  This is a Video4Linux2 sensor driver for the Sony
- 	  IMX412 camera.
-@@ -278,7 +278,7 @@ config VIDEO_IMX412
- 
- config VIDEO_IMX415
- 	tristate "Sony IMX415 sensor support"
--	depends on OF_GPIO
-+	depends on OF
- 	select V4L2_CCI_I2C
- 	help
- 	  This is a Video4Linux2 sensor driver for the Sony
-@@ -689,7 +689,7 @@ config VIDEO_OV8865
- 
- config VIDEO_OV9282
- 	tristate "OmniVision OV9282 sensor support"
--	depends on OF_GPIO
-+	depends on OF
- 	help
- 	  This is a Video4Linux2 sensor driver for the OmniVision
- 	  OV9282 camera sensor.
-@@ -1244,7 +1244,6 @@ config VIDEO_BT866
- config VIDEO_ISL7998X
- 	tristate "Intersil ISL7998x video decoder"
- 	depends on VIDEO_DEV && I2C
--	depends on OF_GPIO
- 	select MEDIA_CONTROLLER
- 	select VIDEO_V4L2_SUBDEV_API
- 	select V4L2_FWNODE
-@@ -1282,7 +1281,6 @@ config VIDEO_MAX9286
- 	tristate "Maxim MAX9286 GMSL deserializer support"
- 	depends on I2C && I2C_MUX
- 	depends on VIDEO_DEV
--	depends on OF_GPIO
- 	select V4L2_FWNODE
- 	select VIDEO_V4L2_SUBDEV_API
- 	select MEDIA_CONTROLLER
+Le 25/02/2026 à 12:04, Ritesh Harjani (IBM) a écrit :
+> It only make sense to rename these functions, so it's better reflect what
+> they are supposed to do. For e.g. __tlbie_va_pid_lpid name better reflect
+> that it is invalidating tlbie using VA, PID and LPID.
+> 
+> No functional change in this patch.
+> 
+> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 
--- 
-2.47.3
+Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+
+> ---
+>   arch/powerpc/mm/book3s64/radix_tlb.c | 20 ++++++++++----------
+>   1 file changed, 10 insertions(+), 10 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/book3s64/radix_tlb.c b/arch/powerpc/mm/book3s64/radix_tlb.c
+> index 339bd276840b..1adf20798ca6 100644
+> --- a/arch/powerpc/mm/book3s64/radix_tlb.c
+> +++ b/arch/powerpc/mm/book3s64/radix_tlb.c
+> @@ -1411,7 +1411,7 @@ static __always_inline void __tlbie_pid_lpid(unsigned long pid,
+>   	trace_tlbie(0, 0, rb, rs, ric, prs, r);
+>   }
+>   
+> -static __always_inline void __tlbie_va_lpid(unsigned long va, unsigned long pid,
+> +static __always_inline void __tlbie_va_pid_lpid(unsigned long va, unsigned long pid,
+>   					    unsigned long lpid,
+>   					    unsigned long ap, unsigned long ric)
+>   {
+> @@ -1443,7 +1443,7 @@ static inline void fixup_tlbie_pid_lpid(unsigned long pid, unsigned long lpid)
+>   
+>   	if (cpu_has_feature(CPU_FTR_P9_TLBIE_STQ_BUG)) {
+>   		asm volatile("ptesync" : : : "memory");
+> -		__tlbie_va_lpid(va, pid, lpid, mmu_get_ap(MMU_PAGE_64K),
+> +		__tlbie_va_pid_lpid(va, pid, lpid, mmu_get_ap(MMU_PAGE_64K),
+>   				RIC_FLUSH_TLB);
+>   	}
+>   }
+> @@ -1474,7 +1474,7 @@ static inline void _tlbie_pid_lpid(unsigned long pid, unsigned long lpid,
+>   	asm volatile("eieio; tlbsync; ptesync" : : : "memory");
+>   }
+>   
+> -static inline void fixup_tlbie_va_range_lpid(unsigned long va,
+> +static inline void fixup_tlbie_va_range_pid_lpid(unsigned long va,
+>   					     unsigned long pid,
+>   					     unsigned long lpid,
+>   					     unsigned long ap)
+> @@ -1486,11 +1486,11 @@ static inline void fixup_tlbie_va_range_lpid(unsigned long va,
+>   
+>   	if (cpu_has_feature(CPU_FTR_P9_TLBIE_STQ_BUG)) {
+>   		asm volatile("ptesync" : : : "memory");
+> -		__tlbie_va_lpid(va, pid, lpid, ap, RIC_FLUSH_TLB);
+> +		__tlbie_va_pid_lpid(va, pid, lpid, ap, RIC_FLUSH_TLB);
+>   	}
+>   }
+>   
+> -static inline void __tlbie_va_range_lpid(unsigned long start, unsigned long end,
+> +static inline void __tlbie_va_range_pid_lpid(unsigned long start, unsigned long end,
+>   					 unsigned long pid, unsigned long lpid,
+>   					 unsigned long page_size,
+>   					 unsigned long psize)
+> @@ -1499,12 +1499,12 @@ static inline void __tlbie_va_range_lpid(unsigned long start, unsigned long end,
+>   	unsigned long ap = mmu_get_ap(psize);
+>   
+>   	for (addr = start; addr < end; addr += page_size)
+> -		__tlbie_va_lpid(addr, pid, lpid, ap, RIC_FLUSH_TLB);
+> +		__tlbie_va_pid_lpid(addr, pid, lpid, ap, RIC_FLUSH_TLB);
+>   
+> -	fixup_tlbie_va_range_lpid(addr - page_size, pid, lpid, ap);
+> +	fixup_tlbie_va_range_pid_lpid(addr - page_size, pid, lpid, ap);
+>   }
+>   
+> -static inline void _tlbie_va_range_lpid(unsigned long start, unsigned long end,
+> +static inline void _tlbie_va_range_pid_lpid(unsigned long start, unsigned long end,
+>   					unsigned long pid, unsigned long lpid,
+>   					unsigned long page_size,
+>   					unsigned long psize, bool also_pwc)
+> @@ -1512,7 +1512,7 @@ static inline void _tlbie_va_range_lpid(unsigned long start, unsigned long end,
+>   	asm volatile("ptesync" : : : "memory");
+>   	if (also_pwc)
+>   		__tlbie_pid_lpid(pid, lpid, RIC_FLUSH_PWC);
+> -	__tlbie_va_range_lpid(start, end, pid, lpid, page_size, psize);
+> +	__tlbie_va_range_pid_lpid(start, end, pid, lpid, page_size, psize);
+>   	asm volatile("eieio; tlbsync; ptesync" : : : "memory");
+>   }
+>   
+> @@ -1563,7 +1563,7 @@ void do_h_rpt_invalidate_prt(unsigned long pid, unsigned long lpid,
+>   			_tlbie_pid_lpid(pid, lpid, RIC_FLUSH_TLB);
+>   			return;
+>   		}
+> -		_tlbie_va_range_lpid(start, end, pid, lpid,
+> +		_tlbie_va_range_pid_lpid(start, end, pid, lpid,
+>   				     (1UL << def->shift), psize, false);
+>   	}
+>   }
 
 
