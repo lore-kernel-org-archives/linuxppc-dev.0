@@ -1,95 +1,105 @@
-Return-Path: <linuxppc-dev+bounces-17774-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17776-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D13EF30946
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Mar 2026 12:45:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7EF6DF3092C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Mar 2026 12:55:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fRTmP5t6Nz3c5f;
-	Thu, 05 Mar 2026 23:45:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772714757;
-	cv=none; b=RJ7/uWoIWej+JhCVO2eWPcKP/64UkL5fvEDpSP7Dc2jO+pkaRkSDTl58rGiGxROooiH9d6cCCMtQZnZW8/HCIlmvgYia2gxSxWrqYqJpk5ro+6hjdhGji50f0m+RokaK/Z67DTXwtbMcQHWx9KQOImYT3GqnXE7L52nJ0VR7mGeKe9o5sy+P8O0bH3K/6edKfjGZEV+dF2ixc3l4y2ehxf90D9B3vNagRoDqnPIK7v9rFU4fRDDSfTLmR2IYV9XAZkWdBO9fTxro29c6oe6pzS5ASrEGidUAnsnE7qEEAmq+0+C/yfnkV3z+qf5AcAfk33wUPKMqrlEAKPPj4I0vdw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fRTzw3YQzz3c5y;
+	Thu, 05 Mar 2026 23:55:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772715356;
+	cv=none; b=fkWbbiSuxngKhz6wKuishAaoIr7bHWTH/BKno+AzwDVnuhYfH2XHv0vKQWfWYBXzkVzme5BwqG1SzpHum6Cvxy8xbALlSmrB58eJ5C9YFMuKNTp3awL/zEzpeh8L/9Mm18Q9Za2poJMXFJ9hCMQLxgII5XtDlhk7/T1eVbUiBexE1snFHAlW3E/slfqimXazkBTfi3E8DBdj1e+66QiYLBK02Fd7YpVKx708Yp23PayKGog0siFqkW7NzLHHtohXgvP34qsdyT9FMgtvztrUW1HM6p0tWiQH9+4VMMpyAwpFErxEdXjZVkt2zZNAFBLzDBePWnxkyAAiqA/mk+hYbg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772714757; c=relaxed/relaxed;
-	bh=8lkxI+3lOCvkC886PGfDKxPOQ08Kegpy+JUcXJYkgXA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=EqCJcN6vrxUh/kGagkGKPdADC0D4Y+uMCCEdNoqDgT++5QsapgghneyWWkQ2Vs7PlWIDX0+utfEcLJOstspumk3brpeh8904o6A2sxA/WXDzrAZW3zNys2PXqOQ8mWbWd/hdkM5c83ByL8haPpJHEpj9bExV61NrxmbAODypA+9HnyRIaygLJjRgcvJOYTOf5ei4TjlQsG7dQfLcvTUR4eaCz8xgPsnDgrjkPanwFD0jomPBJ03/SR5Gf2/kJbTzczEcpyLRvw5Ha/4hG6w0KAhPjLk4l6Uq/yKi/74qxz0eM9o4uhadxVyyOOnNaTzGZutB1KzNMOsP9UH8LFv5uA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=SOWBUKRc; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=SOWBUKRc; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=vmalik@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1772715356; c=relaxed/relaxed;
+	bh=j46n/Cl/uiusceyLFOPeUtqO6xM+QOc9rxRmh/YsaFw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=LrkpnFPfUtWtebTqTAFugO8wekcoEeL7H3o6K76HURseXilz7Yd02QjaVLh+TggCaXfzfXB8LgdyXYeqZD07MCP/rKCCk4ElG4iZJmmVkSl33elZ12G2nsaKHB+YlX+0gbBCFkOk5B3HkEPXKGvKaFcXFEmL/nzq+3GEqskcA2OWoLPi/nIjAysgu9x3QDIf/WeIax8g41FW/1V1kGyiubFTKmFYAyp6YDjpxri7K4qnjR+N2xhwd7seK5/W/iYdSbzX1Bl4XkJezuq/z5mcOhE/zqhNS2e0ZMgOLRhvd67tTbPp1ML4VvCWr36Jy8R0A6EgzUd7vGAqJbORDdmO3A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Go259zIj; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gor@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=SOWBUKRc;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=SOWBUKRc;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Go259zIj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=vmalik@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gor@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fRTmN3Yzmz30MZ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Mar 2026 23:45:53 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1772714749;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=8lkxI+3lOCvkC886PGfDKxPOQ08Kegpy+JUcXJYkgXA=;
-	b=SOWBUKRce6kIWv1MyUgZleDb4nVRyNebl8d3hG5ea+s4k2w4j36aUaAgLYRQJgrFfFUf+4
-	JFjeglKehjjD+8ZyOyqMZv3s/tEqsJ4Xs/y7PYgRXFytWXXJ0kZZdknK7BervQD/6k0Es0
-	1qPbCHkl0dasRNoWyWITkzRohQUd6Nc=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1772714749;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=8lkxI+3lOCvkC886PGfDKxPOQ08Kegpy+JUcXJYkgXA=;
-	b=SOWBUKRce6kIWv1MyUgZleDb4nVRyNebl8d3hG5ea+s4k2w4j36aUaAgLYRQJgrFfFUf+4
-	JFjeglKehjjD+8ZyOyqMZv3s/tEqsJ4Xs/y7PYgRXFytWXXJ0kZZdknK7BervQD/6k0Es0
-	1qPbCHkl0dasRNoWyWITkzRohQUd6Nc=
-Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
- [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-306-tW0PjIoBOLuuUxBlgo29QA-1; Thu, 05 Mar 2026 07:45:48 -0500
-X-MC-Unique: tW0PjIoBOLuuUxBlgo29QA-1
-X-Mimecast-MFC-AGG-ID: tW0PjIoBOLuuUxBlgo29QA_1772714747
-Received: by mail-wm1-f70.google.com with SMTP id 5b1f17b1804b1-483786a09b1so79465905e9.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Mar 2026 04:45:47 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772714747; x=1773319547;
-        h=content-transfer-encoding:in-reply-to:content-language:from
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=8lkxI+3lOCvkC886PGfDKxPOQ08Kegpy+JUcXJYkgXA=;
-        b=BctcQcRUeZ0jhvr+NGWYJ1sxHu5p+ZTGTXs8BkGM/5aWZCAkydzyO5SLjRV810Zbav
-         BxJgXd14lNqzLVNbvEqrQHraOTFM82+LiYF6XNpTRFle6l0ymdUgcNfIWf8T0VFp8IHJ
-         v9Hba8re0HfJV8bAgy5RMdXjG61C9l30V3Crqv+RccKl8ExC2ATnQZE6b+YYnkXK9Df/
-         5H9JePrxWumgyyqygLjPZJaPfXPsD+/fEQJUIHJhLkhaN9GH7HTsCHWR1hK9i+zJrj/T
-         RE9WjA8bfJ3MvkYiIuhDTY5EM608/0Ft5BKTINzUSzF5Lrz7hqxFV4Dd9TUcKudtRTEV
-         xusA==
-X-Gm-Message-State: AOJu0Yxa2SKtfWwZCdN9ny9RF3F7SKgIUo2YuF2HD3E4CqTdKdvdOvLo
-	n6ZsoIj+E9I3rNjkO++YI63p4+2/ldnQpYpyjTlyTSmVKRIVFUBFnNZTOBaHk9O29NfoEh8QwjG
-	UuWqxm62CsvfWLlNAqDy+/l+cE7V5eT/sJFB7hQ0UMEwRSNRsNUFhzqJ157of8gj9iA==
-X-Gm-Gg: ATEYQzyTbRyZ0VyIG7ncfVRFZ7EBmddcuLxkpkQPxfUMZ9Jan9Bj/LZZnCPr0A2Qc+t
-	wTZucSWJ/pd27FxWDAfcFx4ccmJ5+sOVlEtDuRz2A5bWno2YTNOegkQhaTb4Gs+rnnzdrTvi0S9
-	sChuX0NocQB0zaDTT1UmbIOinUiZd22SOq0qj3r2K94ir9fWoUF2guEBCHdD0PdRwdiggWtSVcQ
-	4K2T9XrQCZEWpQiY5Q7UHprksrNL1m3E5jBvEQnd7qDH7v8/daKNU8f+T3mnfshMLbHJZXyuWCo
-	oj+lMgBY6VkHW73D+HLdU7OVm0g4jRf8K7mDJBqsVGE9jRiPHvdn+YGShwopKafm5xFXsSotdIc
-	pK7gPf+3uI6djRbU4M3Rsd9lCLqE20hh57Bo5fg5+bHSJQc3bTyJYSDfH
-X-Received: by 2002:a05:600c:458d:b0:482:eec4:74c with SMTP id 5b1f17b1804b1-4851988a630mr86649785e9.22.1772714746625;
-        Thu, 05 Mar 2026 04:45:46 -0800 (PST)
-X-Received: by 2002:a05:600c:458d:b0:482:eec4:74c with SMTP id 5b1f17b1804b1-4851988a630mr86649485e9.22.1772714746130;
-        Thu, 05 Mar 2026 04:45:46 -0800 (PST)
-Received: from [192.168.0.135] (185-219-167-205-static.vivo.cz. [185.219.167.205])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4851fb33815sm80533045e9.12.2026.03.05.04.45.45
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 05 Mar 2026 04:45:45 -0800 (PST)
-Message-ID: <80766050-c745-411b-8ee6-8141d2cfe4ff@redhat.com>
-Date: Thu, 5 Mar 2026 13:45:44 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fRTzv29rkz30MZ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Mar 2026 23:55:54 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 624LUFuQ2339714;
+	Thu, 5 Mar 2026 12:55:18 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=j46n/C
+	l/uiusceyLFOPeUtqO6xM+QOc9rxRmh/YsaFw=; b=Go259zIjpiUsEZ2/VSp1+C
+	ajKQN/kmWvrD0WAn+M79WyyoB6eOAjm9paqjImI05Yg622mR0mwRGhjnXuimibrj
+	imWAt59vofH6aAXQmFuz70TaypdqlBR1ZzA6Q5Z5HE8VzRH1/+Y0FyFZ11MP2xg/
+	djIhFxbFZxz7DOBJRaJdWke1zUk+0N1OmXQDfXEf2VNEd46D1UE09yiJ1eusG9k0
+	TpQSWdUgSf/SkopozJf/rEgUa0cx+Cr0vmZQFa/YYWdSqG4hPqJtlcLM9LOt4m4v
+	GQPiWRGYBa+47ir2Dyv3nQxU1LEyXbjQ7/2wgwFTH/D8FD4SmraXknK5jBRt0EGA
+	==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cksrjbrkg-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 05 Mar 2026 12:55:17 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 6259TYY3016397;
+	Thu, 5 Mar 2026 12:55:16 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4cmbpnbb4u-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 05 Mar 2026 12:55:16 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 625CtCPS24380116
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 5 Mar 2026 12:55:12 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 85D2E20043;
+	Thu,  5 Mar 2026 12:55:12 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id AAC6C20040;
+	Thu,  5 Mar 2026 12:55:10 +0000 (GMT)
+Received: from localhost (unknown [9.111.42.248])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Thu,  5 Mar 2026 12:55:10 +0000 (GMT)
+Date: Thu, 5 Mar 2026 13:55:09 +0100
+From: Vasily Gorbik <gor@linux.ibm.com>
+To: Mimi Zohar <zohar@linux.ibm.com>
+Cc: linux-integrity@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>,
+        Alexander Egorenkov <egorenar@linux.ibm.com>,
+        Ard Biesheuvel <ardb@kernel.org>, Dave Hansen <dave.hansen@intel.com>,
+        Coiby Xu <coxu@redhat.com>, Roberto Sassu <roberto.sassu@huawei.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Alexander Gordeev <agordeev@linux.ibm.com>,
+        Christian Borntraeger <borntraeger@linux.ibm.com>,
+        Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@kernel.org>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        "maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <x86@kernel.org>,
+        "H. Peter Anvin" <hpa@zytor.com>,
+        Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+        Eric Snowberg <eric.snowberg@oracle.com>,
+        Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
+        "Serge E. Hallyn" <serge@hallyn.com>,
+        Jarkko Sakkinen <jarkko@kernel.org>,
+        open list <linux-kernel@vger.kernel.org>,
+        "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>,
+        "open list:S390 ARCHITECTURE" <linux-s390@vger.kernel.org>,
+        "open list:EXTENSIBLE FIRMWARE INTERFACE (EFI)" <linux-efi@vger.kernel.org>,
+        "open list:SECURITY SUBSYSTEM" <linux-security-module@vger.kernel.org>,
+        "open list:KEYS/KEYRINGS_INTEGRITY" <keyrings@vger.kernel.org>
+Subject: [PATCH 1/1] s390/ipl: Fix missing arch_get_secureboot() prototype
+ warning
+Message-ID: <p01-01.g9ec0a81d34d1.ttbfdx5@ub.hpns>
+References: <20260213012851.2532722-2-coxu@redhat.com>
+ <c00-01.ttbfdx5@ub.hpns>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,119 +113,62 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc, perf: Check that current->mm is alive before
- getting user callchain
-To: Saket Kumar Bhaskar <skb99@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Joe Perches <joe@perches.com>, Paul Mackerras <paulus@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, atrajeev@linux.ibm.com,
- linux-perf-users@vger.kernel.org, linux-kernel@vger.kernel.org,
- bpf@vger.kernel.org
-References: <20260227082502.1882395-1-vmalik@redhat.com>
- <aab3EW1LfDcjSzzy@linux.ibm.com>
-From: Viktor Malik <vmalik@redhat.com>
-In-Reply-To: <aab3EW1LfDcjSzzy@linux.ibm.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: J3zQWcpqPwi2_qpsV1-MRWYC0NJQ5iRJLVoMvgu8P3o_1772714747
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c00-01.ttbfdx5@ub.hpns>
+X-Patchwork-Bot: notify
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=Rp/I7SmK c=1 sm=1 tr=0 ts=69a97d36 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8
+ a=xVpku4ZQUFglSi1p0tMA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzA1MDEwMyBTYWx0ZWRfX+RUQn6BMd6jT
+ SH21bGK5IhuRS3+4aQfGKCoOdauWr6O8JO/otto6IL/mxask6aIaBTJKuK/BfMWXbWSVe7hJqMS
+ IclNLXFmKCZ6YKMVqlWCSzEpHzITp8/HIx8PMJjdO2RzdiROBdj2xXW/ydOeq/9toaBoUxpzllk
+ 1aMqO/wmDBfEDrpAEQaCC4q39mStv0Ds3eBLOiGR0LCffXuc30hXi1plumFympjJRXPfrmVi6Vc
+ ey1yJs4AgDFoEi4HVj+fU3G50EgNmoeslm5M/Y+8PZDtx+khYV+Lyt7KSJ9iaGPANH1DcvJ14ZB
+ X1YdAuHhY3EuO47eqGxtmP32mRip1+IQQxDlFcKiQf4ba8UHtCjjqayW+Wx0WmNOeGbExaBTXOQ
+ pRdskS0tqYVg+SufInrncQzxcQ+rSORmJLb+dGRtryi+DMoXnxzhFrzxjlhLPrEd9Qu/UUOrA1B
+ aoUYVM+cJv650sOf6xQ==
+X-Proofpoint-GUID: 18tUCaDZUazDvapJ0KrrVhGhLVF5GXbk
+X-Proofpoint-ORIG-GUID: ySm98qxoHM4Lds6ch4Hca4o4NZD8yC-P
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-05_04,2026-03-04_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 priorityscore=1501 spamscore=0 phishscore=0 adultscore=0
+ bulkscore=0 clxscore=1015 impostorscore=0 malwarescore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2603050103
 
-On 3/3/26 15:58, Saket Kumar Bhaskar wrote:
-> On Fri, Feb 27, 2026 at 09:25:02AM +0100, Viktor Malik wrote:
->> It may happen that mm is already released, which leads to kernel panic.
->> This adds the NULL check for current->mm, similarly to 20afc60f892d
->> ("x86, perf: Check that current->mm is alive before getting user
->> callchain").
->>
->> I was getting this panic when running a profiling BPF program
->> (profile.py from bcc-tools):
->>
->>     [26215.051935] Kernel attempted to read user page (588) - exploit attempt? (uid: 0)
->>     [26215.051950] BUG: Kernel NULL pointer dereference on read at 0x00000588
->>     [26215.051952] Faulting instruction address: 0xc00000000020fac0
->>     [26215.051957] Oops: Kernel access of bad area, sig: 11 [#1]
->>     [...]
->>     [26215.052049] Call Trace:
->>     [26215.052050] [c000000061da6d30] [c00000000020fc10] perf_callchain_user_64+0x2d0/0x490 (unreliable)
->>     [26215.052054] [c000000061da6dc0] [c00000000020f92c] perf_callchain_user+0x1c/0x30
->>     [26215.052057] [c000000061da6de0] [c0000000005ab2a0] get_perf_callchain+0x100/0x360
->>     [26215.052063] [c000000061da6e70] [c000000000573bc8] bpf_get_stackid+0x88/0xf0
->>     [26215.052067] [c000000061da6ea0] [c008000000042258] bpf_prog_16d4ab9ab662f669_do_perf_event+0xf8/0x274
->>     [...]
->>
->> Fixes: 20002ded4d93 ("perf_counter: powerpc: Add callchain support")
->> Signed-off-by: Viktor Malik <vmalik@redhat.com>
->> ---
->>  arch/powerpc/perf/callchain_32.c | 3 +++
->>  arch/powerpc/perf/callchain_64.c | 3 +++
->>  2 files changed, 6 insertions(+)
->>
->> diff --git a/arch/powerpc/perf/callchain_32.c b/arch/powerpc/perf/callchain_32.c
->> index ddcc2d8aa64a..b46e21679566 100644
->> --- a/arch/powerpc/perf/callchain_32.c
->> +++ b/arch/powerpc/perf/callchain_32.c
->> @@ -144,6 +144,9 @@ void perf_callchain_user_32(struct perf_callchain_entry_ctx *entry,
->>  	sp = regs->gpr[1];
->>  	perf_callchain_store(entry, next_ip);
->>  
->> +	if (!current->mm)
->> +		return;
->> +
->>  	while (entry->nr < entry->max_stack) {
->>  		fp = (unsigned int __user *) (unsigned long) sp;
->>  		if (invalid_user_sp(sp) || read_user_stack_32(fp, &next_sp))
->> diff --git a/arch/powerpc/perf/callchain_64.c b/arch/powerpc/perf/callchain_64.c
->> index 115d1c105e8a..eaaadd6fa81b 100644
->> --- a/arch/powerpc/perf/callchain_64.c
->> +++ b/arch/powerpc/perf/callchain_64.c
->> @@ -79,6 +79,9 @@ void perf_callchain_user_64(struct perf_callchain_entry_ctx *entry,
->>  	sp = regs->gpr[1];
->>  	perf_callchain_store(entry, next_ip);
->>  
->> +	if (!current->mm)
->> +		return;
->> +
->>  	while (entry->nr < entry->max_stack) {
->>  		fp = (unsigned long __user *) sp;
->>  		if (invalid_user_sp(sp) || read_user_stack_64(fp, &next_sp))
->> -- 
->> 2.53.0
->>
-> Sorry, I missed adding cc list for the last conversation so adding this for reference:
-> 
->> Wouldn't be good if we check this in perf_callchain_user() as it will
->> cover both cases.
-> 
-> to which Viktor replied:
-> I considered it but in that case, we'd also miss the top-level stack
-> frame (the perf_callchain_store call above). Other arches include it so
-> I followed the behavior for powerpc.
-> 
-> Viktor, agreed with your first point. I have another concern:
-> 
-> I was hitting this issue with stacktrace_build_id_nmi in bpf and
-> applied this patch https://lore.kernel.org/bpf/20260126074331.815684-1-chen.dylane@linux.dev/T/#mf901967ebe77506f1bd6e3d876c2a85824d9519d
-> 
-> Wondering if the above generic fix is working do we need to add this
-> check in powerpc specific code?
+Include <linux/secure_boot.h> so arch_get_secureboot() has a visible
+prototype and -Wmissing-prototypes no longer triggers.
 
-I tried to apply that patch series but, unfortunately, keep getting the
-panic when running the BCC profile tool.
+arch/s390/kernel/ipl.c:2507:6: warning: no previous prototype for ‘arch_get_secureboot’ [-Wmissing-prototypes]
+ 2507 | bool arch_get_secureboot(void)
+      |      ^~~~~~~~~~~~~~~~~~~
 
-Also, looking at the patch, it seems that it would only solve the issue
-when perf_callchain_user is called from a BPF context, however, I assume
-that it may be called from other contexts, too.
+Fixes: 63e8a44395a4 ("integrity: Make arch_ima_get_secureboot integrity-wide")
+Signed-off-by: Vasily Gorbik <gor@linux.ibm.com>
+---
+ arch/s390/kernel/ipl.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Since perf_callchain_user_{32,64} are dereferencing current->mm while
-walking the stack, I think that an explicit protection against
-current->mm being NULL makes sense here, even in the presence of the
-above patch. Especially since other arches have it, too.
-
-Viktor
-
+diff --git a/arch/s390/kernel/ipl.c b/arch/s390/kernel/ipl.c
+index bdbbedf52580..2d01a1713938 100644
+--- a/arch/s390/kernel/ipl.c
++++ b/arch/s390/kernel/ipl.c
+@@ -21,6 +21,7 @@
+ #include <linux/crash_dump.h>
+ #include <linux/debug_locks.h>
+ #include <linux/vmalloc.h>
++#include <linux/secure_boot.h>
+ #include <asm/asm-extable.h>
+ #include <asm/machine.h>
+ #include <asm/diag.h>
+-- 
+2.53.0
 
