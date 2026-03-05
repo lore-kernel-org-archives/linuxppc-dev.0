@@ -1,104 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-17775-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17777-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1501AF30946
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Mar 2026 12:55:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E28DF33A86
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Mar 2026 15:12:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fRTzw356kz3c5j;
-	Thu, 05 Mar 2026 23:55:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772715356;
-	cv=none; b=BzJE8JE0ki2HrV0aNnKe/zclkCiPoRGKo25vMFQ+VEsDMzsQ2B9fDfvjaZpjXE8IhfdR5MuBJKF4GzI2MozoJ+0tKtXTI/gYkaIlttQHp+TTQNUCLKMsB4UIBm9F4H3v59+14Qp2PaDmtX784QANlT133flr0KopDAiZVomrcfmgxLJY28VSneDSnGjAOxvYW4Oj7VJrmiPxho6KKDnBZKRPK+X6KQorDyZYzsjaX8CCrtVAoGt2MyskSu0D285b7iwXZlKJcvkTHcDae6aF0kqqNQUdFG4udd6gpXfRzqOtcYn3Y2zwCyEwH2aBBDbaJLfNXkqtc2DgF9QzR93QQA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fRY1005Wfz3c5f;
+	Fri, 06 Mar 2026 02:12:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772723523;
+	cv=none; b=J2TXi9EPR3yANY9UUMeu4UIfddhcJnChtBoCi0JGYTG9FoXxRmSv/UpFpWJse0Y4Ok+X5VjgWBy5SdNlJE3VhE0nhrEwyaOccmr0OXXJhyHZ/0oBfXFmoygKYe15BVo7usF4OiSDq1x0j3HKJMH0dapfHWgLvQ1lxXvubNkZLyGWr3MSMOca6UbTZi+bcXaaV7BtFoclzEupSq3dNl2PRVh/D1aty1Kf6qAhl4Iw+RjoZR+cxYHh14YH8kSaIGHdAFdm9zRqzz5A5xeFnh+JOIxj/x3CDrUjLu7daQgMIJD95i+ArZV6TZVPJQHcQ8XYmeC4mCwR+B/OxqTC21+GrQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772715356; c=relaxed/relaxed;
-	bh=vvGE6gnHSscvdSevVqCN3duQguMw4Y0vtNGaQUI/n54=;
+	t=1772723523; c=relaxed/relaxed;
+	bh=1X3B8ZvjtR5He0Zt/JlxrbXMg/KalrCLjBQ+uAPKBJw=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=mzbp89NrvmmIaD2wobTvlqM9W4lNaXr98GH4TTzEpcLWLo5IWYT1pSH5FZWu793XH0jeDkIKGDsowFbjAYCBZM9FpD9Y2GzoX+jDWf5G+tQt0Cj5AodN4PAYWxZcjRVvM0gX5ANsSwaszQ/NRYH8kcTttTgBlzN2QZfc7KC8V4aakL6davMJ4pKlyfMC2iPhCSmMMt9iubZBQ7X5ZpEf6OKb7yWmD5rkXaVD5Fx3y2I+8Rl57yL9VrWqJCTw138JK30kV7IuhAzQ64zE3dQQslt766jALTlhS13mclYnuCkPBKrdDHgQ/dOG0AeWGu6uJRz4e0djZgcF0z2EULivlA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rU0+40/r; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gor@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=Pz34DggzrHi56SfTEgGZuUfYD1vjOmVHhVclvZzmSrkOu0eZ/WZwJRPKFH6XXJZmZ4j9ev2q+9JwXqTN865Mq0neZ5qKm1fbzaAoL36ljB16vP0iVBMbVUNWJaXdbBukD1ft8WwdbcOBqQ5rVinm3fB+4O4baAA3C2jz3kpafdjSNRf1B3iXsGK2JvxtbLCRfgqcI8q3aTugyZeg5YstTIpQp5DL0iell4+qrP3Cyx/RBuKabxfxyp70ULX262wRhNyHr4i5C1d5z4x4aLE0Hw8WnykkXgSM+9G1MZDerUz/5KZKwCYUf8DkVHLgWfY9ccVtBROsH0D/Ma6HT9qNgQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ex3wCC+J; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rU0+40/r;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ex3wCC+J;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gor@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fRTzv2X9vz3c5f
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Mar 2026 23:55:54 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6250DwQk1552778;
-	Thu, 5 Mar 2026 12:55:14 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=vvGE6g
-	nHSscvdSevVqCN3duQguMw4Y0vtNGaQUI/n54=; b=rU0+40/rklJ4Syo/f8qHlA
-	iULLan9ce2jSkdk1hwIYX8aJvwUhrJQaTNlDN/hyEU4a/6tUoXN5JfjkYf9ert3w
-	dyra/TNvT60EaK44h1HiWViFS4diLGoBgUQUtDb3DiB6t0wB993tEuftoSg54i6f
-	H6/5SGeonnwwfzvHBikf6ZZWekceEOOk34c+2W42UsVNnhgzu7hxtEhjNb7s5rLl
-	S68ztLCJPhe86AkgbbuEurqF8Hg8wSzM7Bi+ETdpr9wtq1TQISqt0VnE13Gs1TYP
-	NhNmT/C1v9/98MmNK3PgSXEv5UH3e0vJl8Qkqrw/fWclsLVl24JIDaOSiMJvEIBA
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cksjdkpxc-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 05 Mar 2026 12:55:13 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 625AVi0p027713;
-	Thu, 5 Mar 2026 12:55:12 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4cmcwjk22v-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 05 Mar 2026 12:55:12 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 625Ct8KR42008960
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 5 Mar 2026 12:55:08 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 399BE20040;
-	Thu,  5 Mar 2026 12:55:08 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4A91420043;
-	Thu,  5 Mar 2026 12:55:06 +0000 (GMT)
-Received: from localhost (unknown [9.111.42.248])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Thu,  5 Mar 2026 12:55:06 +0000 (GMT)
-Date: Thu, 5 Mar 2026 13:55:04 +0100
-From: Vasily Gorbik <gor@linux.ibm.com>
-To: Mimi Zohar <zohar@linux.ibm.com>
-Cc: linux-integrity@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>,
-        Alexander Egorenkov <egorenar@linux.ibm.com>,
-        Ard Biesheuvel <ardb@kernel.org>, Dave Hansen <dave.hansen@intel.com>,
-        Coiby Xu <coxu@redhat.com>, Roberto Sassu <roberto.sassu@huawei.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Alexander Gordeev <agordeev@linux.ibm.com>,
-        Christian Borntraeger <borntraeger@linux.ibm.com>,
-        Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@kernel.org>,
-        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        "maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <x86@kernel.org>,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
-        Eric Snowberg <eric.snowberg@oracle.com>,
-        Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
-        "Serge E. Hallyn" <serge@hallyn.com>,
-        Jarkko Sakkinen <jarkko@kernel.org>,
-        open list <linux-kernel@vger.kernel.org>,
-        "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>,
-        "open list:S390 ARCHITECTURE" <linux-s390@vger.kernel.org>,
-        "open list:EXTENSIBLE FIRMWARE INTERFACE (EFI)" <linux-efi@vger.kernel.org>,
-        "open list:SECURITY SUBSYSTEM" <linux-security-module@vger.kernel.org>,
-        "open list:KEYS/KEYRINGS_INTEGRITY" <keyrings@vger.kernel.org>
-Subject: Re: [PATCH v3 1/3] integrity: Make arch_ima_get_secureboot
- integrity-wide
-Message-ID: <c00-01.ttbfdx5@ub.hpns>
-References: <20260213012851.2532722-2-coxu@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fRY0z0GRJz3c2R
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Mar 2026 02:12:02 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id D50A2600C4;
+	Thu,  5 Mar 2026 15:12:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 578C9C116C6;
+	Thu,  5 Mar 2026 15:11:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1772723520;
+	bh=q1buLjmzD5jbK93Cjaihu7DOmq2FTMtHLYbDWWbjkHU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ex3wCC+JaWlFApWmQC1RpIrMzQdZ5NuE1BkNO9eSb2gDMStp0cduTuMmGASi+XXOB
+	 hlQICsyFRIkfjXYEzIACShBO8fmdzIzB2yGTqVJHhJYLHstIredee+wI/nti5JlRit
+	 dEl/2+yuwEgVTPOopoUYST9Ai3149HUVFuIivMmkks7aAEmdAsz8TvUwo5M6/dEf7F
+	 BZ/oAwTofzldPDt54iqsSicV2lO6Yw89HM1uk87FiXMxpR5NCKFilbpoRVPH48l/Ts
+	 pmyTyICj0Nh6K7yZ+o+U3zz90xD+xhlkr7EW/U2cwe6e5QpFzWOmXwIif0tEKwhzyL
+	 FRklqZgQXl4NQ==
+Date: Thu, 5 Mar 2026 15:11:55 +0000
+From: Mark Brown <broonie@kernel.org>
+To: Shengjiu Wang <shengjiu.wang@nxp.com>
+Cc: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com,
+	nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz,
+	tiwai@suse.com, linux-sound@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 1/3] ASoC: fsl_utils: Add snd_kcontrol functions for
+ specific cases
+Message-ID: <7665641b-1cad-4a65-94a1-771701363bf2@sirena.org.uk>
+References: <20260305031031.3808182-1-shengjiu.wang@nxp.com>
+ <20260305031031.3808182-2-shengjiu.wang@nxp.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -112,85 +69,173 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="UC7QFUi5U5Qdzx8l"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260213012851.2532722-2-coxu@redhat.com>
-X-Patchwork-Bot: notify
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=M9BA6iws c=1 sm=1 tr=0 ts=69a97d31 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8
- a=i0EeH86SAAAA:8 a=20KFwNOVAAAA:8 a=AUlwxuCtR7j_SLPSBWAA:9 a=3ZKOabzyN94A:10
- a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: EPcEyA01XF8bdQhKETyO0He0srC1ORqs
-X-Proofpoint-GUID: fcB-38EVrhsK1gZUaLMNQDW0DoyhHbQ2
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzA1MDEwMyBTYWx0ZWRfX6AqyKde6/uqz
- 060pERTYdbInWNW/0rjlV3pi+zAeTCerv+KA3vR9RMpOmATjWEBML18lzhudcK92tX66IFNcc8K
- xEKFaXlqifwFaQuw/qo22apWK/RnUUBPnuAxyYMTFQ1VPmoVFjyHcjQnuxaBFHBpfnYOdz7z0qh
- rsRT3RY0WsFBQN0/GEMSvzyhEGesCzEs1alXtqxCCJz5wJQlnDr05XQNSLo2PfInPDNryldDGtV
- dYjTQ7MejGFk5ZXRSrGnfg2SCuRUkgfhXPW7ERu7e3AMGYPAMaK9sFVIGvJPtkBLt1TM4knl4ov
- GAG6U9ydv7SJy6/PSQM/h1YBuRDA+cc3Q9L/yL7wj17/zvDxsHK8q1MfGJSIAof4YZtJcouRLuv
- 61WhY0/z8/4KVy1SwpnbsucrybPa4Kvs8vZPvAmmVOULiaFrr7MQ1ehoFPR/UEPtdxEA5VQMcXC
- xam3fJ/WXRoyHGHahuw==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-05_04,2026-03-04_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1011 priorityscore=1501 spamscore=0 adultscore=0 malwarescore=0
- bulkscore=0 lowpriorityscore=0 impostorscore=0 phishscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2603050103
+In-Reply-To: <20260305031031.3808182-2-shengjiu.wang@nxp.com>
+X-Cookie: Onward through the fog.
 
-On Fri, Feb 13, 2026 at 09:28:46AM +0800, Coiby Xu wrote:
-> EVM and other LSMs need the ability to query the secure boot status of
-> the system, without directly calling the IMA arch_ima_get_secureboot
-> function. Refactor the secure boot status check into a general function
-> named arch_get_secureboot.
-> 
-> Reported-and-suggested-by: Mimi Zohar <zohar@linux.ibm.com>
-> Suggested-by: Roberto Sassu <roberto.sassu@huawei.com>
-> Signed-off-by: Coiby Xu <coxu@redhat.com>
-> ---
->  MAINTAINERS                                   |  1 +
->  arch/powerpc/kernel/ima_arch.c                |  5 --
->  arch/powerpc/kernel/secure_boot.c             |  6 ++
->  arch/s390/kernel/ima_arch.c                   |  6 --
->  arch/s390/kernel/ipl.c                        |  5 ++
->  arch/x86/include/asm/efi.h                    |  4 +-
->  arch/x86/platform/efi/efi.c                   |  2 +-
->  include/linux/ima.h                           |  7 +--
->  include/linux/secure_boot.h                   | 19 +++++++
->  security/integrity/Makefile                   |  3 +-
->  security/integrity/efi_secureboot.c           | 56 +++++++++++++++++++
->  security/integrity/ima/ima_appraise.c         |  2 +-
->  security/integrity/ima/ima_efi.c              | 47 +---------------
->  security/integrity/ima/ima_main.c             |  3 +-
->  security/integrity/integrity.h                |  1 +
->  security/integrity/platform_certs/load_uefi.c |  2 +-
->  security/integrity/secure_boot.c              | 16 ++++++
->  17 files changed, 115 insertions(+), 70 deletions(-)
->  create mode 100644 include/linux/secure_boot.h
->  create mode 100644 security/integrity/efi_secureboot.c
->  create mode 100644 security/integrity/secure_boot.c
 
-This triggers a warning on s390:
+--UC7QFUi5U5Qdzx8l
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-arch/s390/kernel/ipl.c:2507:6: warning: no previous prototype for ‘arch_get_secureboot’ [-Wmissing-prototypes]
- 2507 | bool arch_get_secureboot(void)
-      |      ^~~~~~~~~~~~~~~~~~~
+On Thu, Mar 05, 2026 at 11:10:29AM +0800, Shengjiu Wang wrote:
 
-@Mimi: could you please squash this fixup into the offending commit,
-or pick it up separately?
+> +int fsl_asoc_get_xr_sx(struct snd_kcontrol *kcontrol,
+> +		       struct snd_ctl_elem_value *ucontrol)
+> +{
+> +	struct snd_soc_component *component =3D snd_kcontrol_chip(kcontrol);
+> +	bool pm_active =3D pm_runtime_active(component->dev);
+> +
+> +	if (!pm_active) {
+> +		ucontrol->value.integer.value[0] =3D 0;
+> +		return 0;
+> +	}
+> +
+> +	return snd_soc_get_xr_sx(kcontrol, ucontrol);
+> +}
 
-Vasily Gorbik (1):
-  s390/ipl: Fix missing arch_get_secureboot() prototype warning
+This is racy, what happens if we race with runtime PM disabling the
+device so it gets powered off between the check and the call to the
+generic function?  I think we need to take a runtime reference here,=20
+this is annoying but I can't see how else to do things robustly and
+probably in practice there's not much performance impact.
 
- arch/s390/kernel/ipl.c | 1 +
- 1 file changed, 1 insertion(+)
+> +EXPORT_SYMBOL(fsl_asoc_get_xr_sx);
+> +
+> +int fsl_asoc_put_xr_sx(struct snd_kcontrol *kcontrol,
+> +		       struct snd_ctl_elem_value *ucontrol)
+> +{
+> +	struct snd_soc_component *component =3D snd_kcontrol_chip(kcontrol);
+> +	bool pm_active =3D pm_runtime_active(component->dev);
+> +
+> +	if (!pm_active)
+> +		return 0;
+> +
+> +	return snd_soc_put_xr_sx(kcontrol, ucontrol);
+> +}
+> +EXPORT_SYMBOL(fsl_asoc_put_xr_sx);
+> +
+> +int fsl_asoc_get_enum_double(struct snd_kcontrol *kcontrol,
+> +			     struct snd_ctl_elem_value *ucontrol)
+> +{
+> +	struct snd_soc_component *component =3D snd_kcontrol_chip(kcontrol);
+> +	bool pm_active =3D pm_runtime_active(component->dev);
+> +
+> +	if (!pm_active) {
+> +		ucontrol->value.enumerated.item[0] =3D 0;
+> +		return 0;
+> +	}
+> +
+> +	return snd_soc_get_enum_double(kcontrol, ucontrol);
+> +}
+> +EXPORT_SYMBOL(fsl_asoc_get_enum_double);
+> +
+> +int fsl_asoc_put_enum_double(struct snd_kcontrol *kcontrol,
+> +			     struct snd_ctl_elem_value *ucontrol)
+> +{
+> +	struct snd_soc_component *component =3D snd_kcontrol_chip(kcontrol);
+> +	bool pm_active =3D pm_runtime_active(component->dev);
+> +
+> +	if (!pm_active)
+> +		return 0;
+> +
+> +	return snd_soc_put_enum_double(kcontrol, ucontrol);
+> +}
+> +EXPORT_SYMBOL(fsl_asoc_put_enum_double);
+> +
+> +int fsl_asoc_get_volsw(struct snd_kcontrol *kcontrol,
+> +		       struct snd_ctl_elem_value *ucontrol)
+> +{
+> +	struct snd_soc_component *component =3D snd_kcontrol_chip(kcontrol);
+> +	bool pm_active =3D pm_runtime_active(component->dev);
+> +
+> +	if (!pm_active) {
+> +		ucontrol->value.integer.value[0] =3D 0;
+> +		return 0;
+> +	}
+> +
+> +	return snd_soc_get_volsw(kcontrol, ucontrol);
+> +}
+> +EXPORT_SYMBOL(fsl_asoc_get_volsw);
+> +
+> +int fsl_asoc_put_volsw(struct snd_kcontrol *kcontrol,
+> +		       struct snd_ctl_elem_value *ucontrol)
+> +{
+> +	struct snd_soc_component *component =3D snd_kcontrol_chip(kcontrol);
+> +	bool pm_active =3D pm_runtime_active(component->dev);
+> +
+> +	if (!pm_active)
+> +		return 0;
+> +
+> +	return snd_soc_put_volsw(kcontrol, ucontrol);
+> +}
+> +EXPORT_SYMBOL(fsl_asoc_put_volsw);
+> +
+>  MODULE_AUTHOR("Timur Tabi <timur@freescale.com>");
+>  MODULE_DESCRIPTION("Freescale ASoC utility code");
+>  MODULE_LICENSE("GPL v2");
+> diff --git a/sound/soc/fsl/fsl_utils.h b/sound/soc/fsl/fsl_utils.h
+> index 21b25a11ecda..0cf9d1e7fb14 100644
+> --- a/sound/soc/fsl/fsl_utils.h
+> +++ b/sound/soc/fsl/fsl_utils.h
+> @@ -31,4 +31,34 @@ void fsl_asoc_constrain_rates(struct snd_pcm_hw_constr=
+aint_list *target_constr,
+>  			      const struct snd_pcm_hw_constraint_list *original_constr,
+>  			      struct clk *pll8k_clk, struct clk *pll11k_clk,
+>  			      struct clk *ext_clk, int *target_rates);
+> +
+> +/* Similar to SOC_SINGLE_XR_SX, but it is for read only registers. */
+> +#define FSL_ASOC_SINGLE_XR_SX_EXT_RO(xname, xregbase, xregcount, xnbits,=
+ \
+> +				xmin, xmax, xinvert, xhandler_get) \
+> +{	.iface =3D SNDRV_CTL_ELEM_IFACE_MIXER, .name =3D (xname), \
+> +	.access =3D SNDRV_CTL_ELEM_ACCESS_READ |		\
+> +		SNDRV_CTL_ELEM_ACCESS_VOLATILE,		\
+> +	.info =3D snd_soc_info_xr_sx, .get =3D xhandler_get, \
+> +	.private_value =3D (unsigned long)&(struct soc_mreg_control) \
+> +		{.regbase =3D xregbase, .regcount =3D xregcount, .nbits =3D xnbits, \
+> +		.invert =3D xinvert, .min =3D xmin, .max =3D xmax} }
+> +
+> +int fsl_asoc_get_xr_sx(struct snd_kcontrol *kcontrol,
+> +		       struct snd_ctl_elem_value *ucontrol);
+> +
+> +int fsl_asoc_put_xr_sx(struct snd_kcontrol *kcontrol,
+> +		       struct snd_ctl_elem_value *ucontrol);
+> +
+> +int fsl_asoc_get_enum_double(struct snd_kcontrol *kcontrol,
+> +			     struct snd_ctl_elem_value *ucontrol);
+> +
+> +int fsl_asoc_put_enum_double(struct snd_kcontrol *kcontrol,
+> +			     struct snd_ctl_elem_value *ucontrol);
+> +
+> +int fsl_asoc_get_volsw(struct snd_kcontrol *kcontrol,
+> +		       struct snd_ctl_elem_value *ucontrol);
+> +
+> +int fsl_asoc_put_volsw(struct snd_kcontrol *kcontrol,
+> +		       struct snd_ctl_elem_value *ucontrol);
+> +
+>  #endif /* _FSL_UTILS_H */
+> --=20
+> 2.34.1
+>=20
 
--- 
-2.53.0
+--UC7QFUi5U5Qdzx8l
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmmpnToACgkQJNaLcl1U
+h9BUtwf/SUJrv0BSLPoLx0UoPadMjZdLjMQghGYP+9ZzbYDakVCLWvAeftuYKJDA
+M3IZLMBpsa6QT/hM3rQDhRK0+esTlNFhqsvRWCQW0RAnYG2Y/7tSI8enCOieuuLd
+ickCQ73DSVWBdRw6TlZMzjqSxEP8ZkscW9+e35aRV66sgIttGP3fMz/g9BQYjMQj
+zMDTbduWpfhrsX7T1IfjNFrhfcZLWwS8KgODp87CYw8TVMcMCJmPzlVwORx8gdmt
+AHpiMelkUtbMrm31/5IZW4pKAnbg9VjHk8Fyy+6YcvlOJVZ5RHTF78gMBkL3m+Iq
+MqKntiVHR6lo0PHUWsey53gTdBKKJA==
+=GSRC
+-----END PGP SIGNATURE-----
+
+--UC7QFUi5U5Qdzx8l--
 
