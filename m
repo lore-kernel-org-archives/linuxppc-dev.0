@@ -1,86 +1,119 @@
-Return-Path: <linuxppc-dev+bounces-17856-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17857-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4571CFCB624
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2026 23:17:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7120CFC9EC4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2026 23:29:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fSMkR2xBPz3c9y;
-	Sat, 07 Mar 2026 10:17:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772839039;
-	cv=none; b=QzlL+lhV7AJ1aEyc26ZWL1NNRWJ4szowBv4rngwF4blu+60EDdGRuPVSInqDiUbdkPjxlXKo/AA31YNhWNST/02UUVyC8VkIlMPMWtkGRKSjlUqmik3lLIFL64ab9yakq0NggsdSkXJ6b/OMJ96xfBOPTFEK7u9h2K8AGh1P4WD1y4auQoj5RyQO/Hg1x0jc45A2bfzZq+9UbC6tloisv7/JpZAnef2epUsruz/uVwbqUF4mBqIbwgN40yNUhTLdG3wh2N+Z8cGDbkJudNYesPlmixwZucDwarmrsdZD9UEOKLRmeIcox98izL8v9CfOo4n1TqOlYepPOYlnKGpP9A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fSN025Xz6z3c9y;
+	Sat, 07 Mar 2026 10:29:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::436"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772839746;
+	cv=none; b=YupvELnQpe+l63Qj7ZPsBAXE3nutQoIRRA+V+J+wSOyZTWRcL5LkvdJlrr2uRs9H1imb8wU8sQHaP29gvy4dRDhuPgIsovfbDUe4NyNKUEeTiTmBoUoMe98U2b0mRTpf3DtCLiNBf8vrVKPzuzsQgz8bH08tUUfsf5+3XmYWxu39w524pA4kH9K5a81FskVIfF9dyRfwY+/GR4S5YixOt50AndgbNv0n6nw8eMVBA4G0iefG3V5Da9Ea/ygfWApYwKjtq8FLMFo49SZMd5ad/TaPxefFdtuYoQrCbH+t3moAyZTa0kxsb9LA3v8yLr682B86aikDKTVYYzVG07m/0g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772839039; c=relaxed/relaxed;
-	bh=8ZR7Dp2IPiEMUD6BfjnRAuZaSEUl5mI6F5vABdqGEZ0=;
+	t=1772839746; c=relaxed/relaxed;
+	bh=jmuJidMV1Wwe0qpdw07DaES1yYrCFjR7mRIMJgUWNXw=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ViK4sj5qQcZQf6eMvUt98xeNwFW6OsIw1XZNF/2ammAXFaq2z0Sht10mgt5vEvkGYcoMidMYP3XxjpXGRWPyr5QgGjVdV2T3XlKx/mUE382sAdo//hMsS61rlVoXOXddJJOJxSjr+cfPMz6yXS4o4yielq10c8todi0b4VKyeiVmGWVOP7jaySmILb3UBW/FixTxBMeRZbddaQRBCcEEs5M2XURgkFXmy66ioLO9PYs0TnGrlOmRgn1LpO9PaVrZU6VWxMDUPVCCuxz8JV8hiaV/x33UGSe18Zxkr1xO1jtEYF05n36OJ2MmZoAw1XCQzlAZfeEPzv5DftAWawmCvA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CiNTmhly; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=THJ/rKiU+Y2cptqlO9rXmBdEhYHgri1UDSyaVhQgyjGLAiaKJKN0RDu+g1x4/UqiWolW8/eJEA4ES56S4PCVmp33zfUaU8dX2axxpYOuweFiAMqE2W/0+trgKhX3AKtqpI5f8n0XQOqetrWdZ2G0cEw1W18Q6bMktCzZAGi9GqxreLyc4DpWoMuvUOiN77sRHQ4EKqDG1CysGGyOFEoFQZhcoylScEt5F8D+1xu4x44xGZGIb4S3J/MFALcbFmac1EC/8kLx46yFShXMcrsH/yXhHDHpczdL3jjB7ol8iz3wkBX7qjUWDmJVB1ZaBENO5D+2smt9H8bBqCjiRbBr6w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=XAICvB62; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CiNTmhly;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=XAICvB62;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com [IPv6:2607:f8b0:4864:20::436])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fSMkQ11Gmz3c9l
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Mar 2026 10:17:18 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 79D9260018;
-	Fri,  6 Mar 2026 23:17:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 86B13C4CEF7;
-	Fri,  6 Mar 2026 23:17:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772839035;
-	bh=A/uuCYUUHbNrrdKdzYdGzSe5pMInGIZfaSIgsjBFQtg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=CiNTmhly2/1kTdtRkuNAgOXwAQT7A+wQx51m3gawq6ph2TOb1AmR20TS/sy1txYNU
-	 iElaZlD0mEOexw6DRDS/H4TTDu/pyj/oV6d7iSt93lYyho/X6/HC8T986ocCrdSX8f
-	 W0fMhB4DiENlMrX0hKOJVXylpR8JdeJwPK1us4hrvgF/gpr5p0tTJy8J9/hBJuGZ7x
-	 J6oOaB9DvzC1IcXPWbDiXcwZ6M+56B4nTerYJlMNfl+KbCI8z/0xfmHkRzg6Ie7YMn
-	 mh/kZD1RDkMqTowspybgiAXSVWjmzHV1BRX2XnLenj50feqtNdUtqkWd/KSVt0jhRK
-	 6S7laj3n5tF8A==
-Date: Fri, 6 Mar 2026 16:17:05 -0700
-From: Nathan Chancellor <nathan@kernel.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Nicolas Schier <nsc@kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>, Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-	Helge Deller <deller@gmx.de>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fSN010xfrz3c9l
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Mar 2026 10:29:03 +1100 (AEDT)
+Received: by mail-pf1-x436.google.com with SMTP id d2e1a72fcca58-82735a41920so3743979b3a.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Mar 2026 15:29:03 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1772839741; x=1773444541; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:sender:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=jmuJidMV1Wwe0qpdw07DaES1yYrCFjR7mRIMJgUWNXw=;
+        b=XAICvB62+KGP9ue7Ll7LppEnxdPN9TwryMA/qiFeMsQBwLxo/5MfGFBnoA91901vbo
+         5Za8vi1hNUUbzOcPX83q6EtMThmW8y+RQNPZllSZKabj4r0Au5sXqVX9ob1pGD+Kz7Su
+         OvX+evD3oMxgzON4ZAPau0ThcSsQXzv54raZVLZe4mi3g8QJOJniLu6wyJUGcg8eUut7
+         1NrZ2y7JFFXqEPp1s5DvWrWF4094v5kLJD/+QGFinJmb/OquNzAEL7OseCMY4ndBXisF
+         zgzwYv4UChDyAQH3cKYrN8HUrgWAj7MGrC/0lMiVLTSzhfbPXg/YWp96rg+1LPm4fCrA
+         GPvQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1772839741; x=1773444541;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:sender:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=jmuJidMV1Wwe0qpdw07DaES1yYrCFjR7mRIMJgUWNXw=;
+        b=UleBWytVuN/xNDcgp5Fr5R2EzI2zyCHse85GNflr/yn+E1X8vVrf3Rc7J7Z1i5azlP
+         V6i5GApE25d0AKu3onnVmo5RSHMq4YC1w6HGDLMb5eB4gP2vWvnFoV6e8j5ENITdE9Yo
+         ZQCXq7XLnvtDpVYf7O96l24HtTZraXZqFzLjSNQtd0gZpKQ2GHzxyrtM6PdED1B9m1wp
+         soEIACnOqYJm/eu487hiRJhFchdzCn9Vn2eaCwliP8gT4+76eq5OgxV3rQKKfL+mShaY
+         tKUmuL0RcZcB3OOFG2Q5CRMX9lYwU2r7EJ33Y4Yal+gh4D5bY7QKy79KKGqRLpRnpCOw
+         ebyQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXHG6Xhuen/4uQlJfecZqikLpYIKAY+N5YdZL5CE7fB7pzG1FWMl2LSKlKIq5piiAUHti6j2touvDTL7zc=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxXSOTt9ozd0xcaixXu4iE8ey0yYPGCS/DTtRnY8ge7K7bG9zGw
+	Tjgab7KHkCkQjr1bTBwkQCyBDgqtR+O0nen6hYOilZYGSvFo3FYUkmkH
+X-Gm-Gg: ATEYQzy69V11E74JKiqHQs5dwPVrA5xzgEttU8WU1pH0NpxHRmoTBMU76wMBZGKZzuM
+	EC2gxgSip8DGiu/7utfq2DixcS8vafHZdGjTl9Y1MmWL+h7SDJ64dJ1xgEPkl7y5OGEbshRRFEv
+	cQa40jO9kcssIfKlPB9b4/dkaUVrWHPReZIjprvAK7zF28fQDfsbidGDHnMnCo0NMK5eTfb/xzi
+	HWymIVEQwwe7MHYUzbkm0ixhfV+l+L/qOAEej05d8WBeg+Fg7+bWQdlt3U+QsfcycBC7it40ELf
+	f5QMVVgfncZxznZ2vGbAjisJsfXcgvyHLSP4OkdbuabbcsKk0d2T0zDz1/OHqungRpJ6P01wG9S
+	+dMYWd9aPc3no/2qBpWzMiHU0fVDVXiE/zvPT5nsQI84Q6QXcNZGPCPRCne8wFitl6qQQlvLpmQ
+	MVoRROrD+7qr9TNs6yKU9TqPxFfNUM03M7DsKa
+X-Received: by 2002:a05:6a00:9510:b0:829:8942:2c93 with SMTP id d2e1a72fcca58-829a2d86b43mr3749707b3a.9.1772839741072;
+        Fri, 06 Mar 2026 15:29:01 -0800 (PST)
+Received: from server.roeck-us.net ([2600:1700:e321:62f0:da43:aeff:fecc:bfd5])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-829a48d3621sm3213092b3a.62.2026.03.06.15.29.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 06 Mar 2026 15:29:00 -0800 (PST)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Date: Fri, 6 Mar 2026 15:28:59 -0800
+From: Guenter Roeck <linux@roeck-us.net>
+To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>,
+	Alexey Brodkin <abrodkin@synopsys.com>,
+	Vineet Gupta <vgupta@kernel.org>, Scott Wood <oss@buserror.net>,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	Ard Biesheuvel <ardb@kernel.org>,
-	Ilias Apalodimas <ilias.apalodimas@linaro.org>,
-	Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
-	Bill Wendling <morbo@google.com>,
-	Justin Stitt <justinstitt@google.com>, Kees Cook <kees@kernel.org>,
-	linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
-	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org, linux-efi@vger.kernel.org,
-	llvm@lists.linux.dev
-Subject: Re: [PATCH 0/2] kbuild: Switch from '-fms-extensions' to
- '-fms-anonymous-structs' when available
-Message-ID: <20260306231705.GD2746259@ax162>
-References: <20260223-fms-anonymous-structs-v1-0-8ee406d3c36c@kernel.org>
- <01433066-eb9b-4a96-8d7f-794af941d365@zytor.com>
+	Andrew Lunn <andrew@lunn.ch>,
+	Heiner Kallweit <hkallweit1@gmail.com>,
+	Russell King <linux@armlinux.org.uk>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>, Linus Walleij <linusw@kernel.org>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Kevin Hilman <khilman@baylibre.com>,
+	Jerome Brunet <jbrunet@baylibre.com>,
+	Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+	Dvorkin Dmitry <dvorkin@tibbo.com>, Wells Lu <wellslutw@gmail.com>,
+	Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>,
+	Wim Van Sebroeck <wim@linux-watchdog.org>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Sebastian Reichel <sre@kernel.org>,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-snps-arc@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+	netdev@vger.kernel.org, linux-gpio@vger.kernel.org,
+	linux-amlogic@lists.infradead.org, linux-leds@vger.kernel.org,
+	linux-hwmon@vger.kernel.org, linux-watchdog@vger.kernel.org,
+	linux-media@vger.kernel.org, linux-staging@lists.linux.dev,
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH 10/14] watchdog: convert the Kconfig dependency on
+ OF_GPIO to OF
+Message-ID: <2c6ad0ca-fd72-4bf5-9180-f45c20e60d37@roeck-us.net>
+References: <20260304-gpio-of-kconfig-v1-0-d597916e79e7@oss.qualcomm.com>
+ <20260304-gpio-of-kconfig-v1-10-d597916e79e7@oss.qualcomm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,28 +129,55 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <01433066-eb9b-4a96-8d7f-794af941d365@zytor.com>
+In-Reply-To: <20260304-gpio-of-kconfig-v1-10-d597916e79e7@oss.qualcomm.com>
 
-On Thu, Mar 05, 2026 at 03:43:29PM -0800, H. Peter Anvin wrote:
-> Question: does clang allow this with __extension__, or only if the option is
-> on the command line?  It would be desirable in the long run if both clang and
+On Wed, Mar 04, 2026 at 10:02:31AM +0100, Bartosz Golaszewski wrote:
+> OF_GPIO is selected automatically on all OF systems. Any symbols it
+> controls also provide stubs so there's really no reason to select it
+> explicitly. We could simply remove the dependency but in order to avoid
+> a new symbol popping up for everyone in make config - just convert it to
+> requiring CONFIG_OF.
+> 
+> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+> Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+> ---
+>  drivers/watchdog/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
+> index dc78729ba2a5d6e035ed3cbe5c2b631d11b76b20..ef200339a22a6f9c51a46c9c0b8466add74313e2 100644
+> --- a/drivers/watchdog/Kconfig
+> +++ b/drivers/watchdog/Kconfig
+> @@ -250,7 +250,7 @@ config DA9062_WATCHDOG
+>  
+>  config GPIO_WATCHDOG
+>  	tristate "Watchdog device controlled through GPIO-line"
+> -	depends on OF_GPIO
+> +	depends on OF
 
-It looks like only on the command line:
+AI feedback:
 
-  https://godbolt.org/z/zrE766obe
+  Could this change inadvertently allow the driver to be selected when GPIOLIB
+  is disabled?
 
-> gcc would allow this with __extension__, as that would be required to use it
-> in uapi headers (at least without some doable-but-nontrivial preprocessing,
-> which might be worthwhile to do anyway...)
+  In drivers/gpio/Kconfig, OF_GPIO is defined inside the "if GPIOLIB" block,
+  so it implicitly depends on GPIOLIB. By changing the dependency directly to
+  OF, the GPIOLIB dependency is lost.
 
-I agree that would be desirable but wouldn't that change how
-__extension__ works? As far as I can tell from reading GCC's
-documentation [1], __extension__ just supresses warnings from -pedantic
-and such, it does not actually enable a used extension if it conflicts
-with whatever -std= value is passed?
+  If GPIOLIB is disabled, the driver will still compile because of the stubs
+  in include/linux/gpio/consumer.h, but devm_gpiod_get() will unconditionally
+  return -ENOSYS, causing the probe to fail. Since the driver's sole purpose
+  is to control a watchdog via a GPIO line, should it be prevented from being
+  configured without GPIOLIB by using something like:
 
-[1]: https://gcc.gnu.org/onlinedocs/gcc/Alternate-Keywords.html
+	depends on OF && GPIOLIB
 
-Cheers,
-Nathan
+It has a point. Please update.
+
+Thanks,
+Guenter
+
+>  	select WATCHDOG_CORE
+>  	help
+>  	  If you say yes here you get support for watchdog device
 
