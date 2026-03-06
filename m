@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-17831-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17832-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99AC8FCB61E
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2026 16:00:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9BB2DFCB61F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2026 16:03:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fSB2260FBz2xqm;
-	Sat, 07 Mar 2026 03:00:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772812810;
-	cv=none; b=P1p4jJhzAFU3y5tPooOZT1Vr1PTXClCRyzT/smF+aPFKwTlH+B2mjzpJR3XJqxTBznSvzId5lp1kUiICT+EmSMEqLYybQAinDZLXQgGeL0qZ+e7k0HnQ3xPWrZOt1sCW8xR6xvlULThM3S0H+eFWZkZNOD4APM9zFCYwrhIFxngLgvUz6Q/+N8wX/NVl+JL+LxU00EY9yN7/yuVPnNJpme7j/kdppNGZIHiTKmdVuYVf6uZ/gTBhu9rSL0+Kl3SF6wTCj3pNm7CXrg1a1Z50VLMXwR9hYXL40vTmA2x2u13HvGne4d34gjpnJNjuK3Xfhx8ag0EyslqdooGahWBUAg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fSB5M5tmbz30T9;
+	Sat, 07 Mar 2026 03:03:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772812983;
+	cv=none; b=WMosF/1pIvpx5MAypOGOuAEEjMEXUwXZLEegcozjIBDN1tH/hC8v3NJQMtJInUOLaNmW8eOZipo1rIgtG4zcsugsQt1ZJiZqEDK4rquQdFsS4mkYoH4ugDvnVpClHgLZ3hgSfDfnlDRVpBhqnYUujz5MhTnya1DXeLk3WAwaHfViEjnYEk6djVxkPYtW/PARGMSlxgqIzymFFovWm0mC8MloSnEjPYtDaUorbPKhYnvp2PgKWK2YbwQKoNV/MS89AvDWc5NiPGOvNTQzMoLMo9z+lhJFcXiQC1vlhgWSegshHunnEx/UmlhxSxexTNsHjuGT2AZ4+7DcfekXAYoUUw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772812810; c=relaxed/relaxed;
-	bh=LhA+IXdOnWx0hCMkw/la6PJLWhXffuq9fpj/Z4yD+/c=;
+	t=1772812983; c=relaxed/relaxed;
+	bh=FqEWLVTLGCemuDY2A4v9I3atmDnyeDlcblEgWkQMhyw=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=lN+b8XiRxGTZb9ignw4fPeiwhbsQBJdi7OO8GoYclxU5hyR94R3KCEILR2JwKg34m1z1x4t4NELJElxM7qXXxPpbclkoFs/EoNBhNX+UkntkiZYoVt7r6F22XyaQwaCtAXvxRSXm+xuSHi7DIBJPakOxtqqs3/0OkUqSXJglL3P+GW5hkbW4OBRoOdmitmsKwoaZRe5eYn8JpebCJrQ6lPJLlHd2hZJLmoR2mFbgm8oh/GbGGzD8f8N8LZJi6vgMQdzLwZA5u7Zg6Txv49F8LSLsBtdHsQB+yHNIVT6HglyVq0ThZ8azue5zu1+/X8O1ZJWrdoRdbVszIixsvLz1wg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=j8WNbSnN; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=XDkQuNDa9IzkiXwllR3r1kZzecfXRrF6iuEgObjzHcyO/0jMNk7X1xKC24wc5p90Iis7Up3pWjrm6TdQZ3NQ9n0nAYQ5whFHKoJh9zJupfrQFUi5wD/yjR9SHDL19C7AgF2ABrH2jQ21FRVoZIO1+uGwlgP9b9JaMmBcOCBzcB5nCyQTtWH5QgNn0LkFE0q+uiLtb8T7M6aDHRwxWYfwrPadN6Own0k27HTFESTxhfjKM61UzVDUZuH2g5Uf/E/ZX79R8/oo2fmm5Uxx0TMOIZJQ/zd77EiQWv3j/PWWbPv1AfUuDAF0PmEK1dy02FSTP/ObKVA39fJ7LXy6ObRMBg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FC22dvTm; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=j8WNbSnN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FC22dvTm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fSB220CKgz2xNT
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Mar 2026 03:00:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fSB5L6tQHz2ySS
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Mar 2026 03:03:02 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id B511A60053;
-	Fri,  6 Mar 2026 16:00:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 79BB7C4CEF7;
-	Fri,  6 Mar 2026 16:00:00 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id D6FDA6012A;
+	Fri,  6 Mar 2026 16:03:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3AACEC2BC86;
+	Fri,  6 Mar 2026 16:02:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772812807;
-	bh=b454bzPbl55ULZOmmc23V4LQKs1U8z6A+oTB2cMxkSw=;
+	s=k20201202; t=1772812980;
+	bh=/Ys4d0/mU9CmjC7P2UTEA2TWEWGsOTVSEX2kYD8lsO4=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=j8WNbSnNmvDwOEQchSrC+awLU1F9TWqkmTuQb3KvRpAWzLZUou3D2zzmuiS70gZst
-	 Bwh7Rl9TvfXwyWnldJX5HHuaemXXQi7DRfRcLyJPjVFKnw1+1TlSa2TwmtDO4gC3qZ
-	 SsjHQhoYF375E35KJUUMbA3z9iVJvPN1gmhF5c+qtjvl8fDY/ZAsG4pCvqkzZOlwrZ
-	 96lpeY6THs1o2800tnctleliaxJ6DVjEL58BBvLikn6o6CIi0KBcSywr5bhQOmeG6k
-	 fANs39ciRtTxyGcNUR7fDgCyNsxmJGtaT5oJWRjq5/I1L9qFqOKV9/oNAUWE9k2uGs
-	 OxrKcLaTxIjkg==
-Message-ID: <546df3d8-2f63-4a83-be44-4cfe21ddb4c6@kernel.org>
-Date: Fri, 6 Mar 2026 16:59:56 +0100
+	b=FC22dvTmruFfxpWA6NszR02HUo2o/qCQ0KdUmuj7ED8Er/3uYpMui5k5QgE4IY6WQ
+	 EGmUsIR4S72LF/kMcaxN9t669WYnACus4K3IOV+2wXDFFwMsbdnn9j6NhWdl8oeNoK
+	 8oIq+df8Y7QHFsyOauk+pIwvlmjL4AhKZcMySpOJb7iiekjHby2I3ssMur6IDNk7wV
+	 Rol8lxycOQ6UIUSMtt8Qv17v36qJhsfb8lCXSxUgvksbk4XjOzIIQQYP6qdwT8wYAW
+	 ZnvRyA4BnwmIGdqnp0Zw9OPLq5fZgBsrlzuu/bRSrfi/5d/1Ne54tIyA3r715O/wvu
+	 kNrwR26Zee/zg==
+Message-ID: <e5374250-6fa6-4d39-8a0f-4b1804c35dbe@kernel.org>
+Date: Fri, 6 Mar 2026 17:02:49 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,8 +60,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 06/13] mm: Add helpers to create migration entries from
- struct pages
+Subject: Re: [PATCH v6 11/13] mm/util: Add flag to track device private pages
+ in page snapshots
 To: Jordan Niethe <jniethe@nvidia.com>, linux-mm@kvack.org
 Cc: balbirs@nvidia.com, matthew.brost@intel.com, akpm@linux-foundation.org,
  linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
@@ -73,7 +73,7 @@ Cc: balbirs@nvidia.com, matthew.brost@intel.com, akpm@linux-foundation.org,
  jhubbard@nvidia.com, maddy@linux.ibm.com, mpe@ellerman.id.au,
  ying.huang@linux.alibaba.com
 References: <20260202113642.59295-1-jniethe@nvidia.com>
- <20260202113642.59295-7-jniethe@nvidia.com>
+ <20260202113642.59295-12-jniethe@nvidia.com>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -120,93 +120,85 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260202113642.59295-7-jniethe@nvidia.com>
+In-Reply-To: <20260202113642.59295-12-jniethe@nvidia.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 2/2/26 12:36, Jordan Niethe wrote:
-> To create a new migration entry for a given struct page, that page is
-> first converted to its pfn, before passing the pfn to
-> make_readable_migration_entry() (and friends).
-> 
 > A future change will remove device private pages from the physical
-> address space. This will mean that device private pages no longer have a
-> pfn and must be handled separately.
+> address space. This will mean that device private pages no longer have
+> normal pfns and must be handled separately.
 > 
-> Prepare for this with a new set of helpers:
-> 
->   - make_readable_migration_entry_from_page()
->   - make_readable_exclusive_migration_entry_from_page()
->   - make_writable_migration_entry_from_page()
-
-This is pretty horrible. And everything I see in successive patches
-around that is not any better.
-
-Seriously, look at how terrible
-make_readable_exclusive_migration_entry_from_page() is.
-make_readable_exclusive_migration_device_private_entry is not any
-better, but at least doesn't have this questionable flags parameter.
-
-Correct me if I am wrong: all we want is:
-
-make_readable_migration_entry() etc. to create something that
-softleaf_to_page() / softleaf_to_folio() can properly convert to a
-folio, right?
-
-So maybe we should convert make_readable_migration_entry() and friends
-to consume a page (not add new functions ...), and let it internally
-figure out how to communicate in the entry that what we are dealing with
-is not an ordinary pfn, but a special device-private entry.
-
-
+> Add a new flag PAGE_SNAPSHOT_DEVICE_PRIVATE to track when the pfn of a
+> page snapshot is a device private page.
 > 
 > Signed-off-by: Jordan Niethe <jniethe@nvidia.com>
+> Signed-off-by: Alistair Popple <apopple@nvidia.com>
 > ---
 > v1:
->   - New to series
+>   - No change
 > v2:
->   - Add flags param
+>   - No change
 > v3:
 >   - No change
 > v4:
->   - s/make_writeable_migration_entry_from_page/make_writable_migration_entry_from_page/
->     for the !CONFIG_MIGRATION case
+>   - Move logical continuation to previous line
 > ---
->  include/linux/leafops.h | 14 ++++++++++++++
->  include/linux/swapops.h | 34 ++++++++++++++++++++++++++++++++++
->  mm/huge_memory.c        | 29 +++++++++++++++++------------
->  mm/hugetlb.c            | 15 +++++++++------
->  mm/memory.c             |  5 +++--
->  mm/migrate_device.c     | 12 ++++++------
->  mm/mprotect.c           | 10 +++++++---
->  mm/rmap.c               | 12 ++++++------
->  8 files changed, 96 insertions(+), 35 deletions(-)
+>  fs/proc/page.c     | 6 ++++--
+>  include/linux/mm.h | 7 ++++---
+>  mm/util.c          | 3 +++
+>  3 files changed, 11 insertions(+), 5 deletions(-)
 > 
-> diff --git a/include/linux/leafops.h b/include/linux/leafops.h
-> index a9ff94b744f2..52a1af3eb954 100644
-> --- a/include/linux/leafops.h
-> +++ b/include/linux/leafops.h
-> @@ -363,6 +363,20 @@ static inline unsigned long softleaf_to_pfn(softleaf_t entry)
->  	return swp_offset(entry) & SWP_PFN_MASK;
->  }
+> diff --git a/fs/proc/page.c b/fs/proc/page.c
+> index f9b2c2c906cd..bc14f7ebc369 100644
+> --- a/fs/proc/page.c
+> +++ b/fs/proc/page.c
+> @@ -191,10 +191,12 @@ u64 stable_page_flags(const struct page *page)
+>  	         folio_test_large_rmappable(folio)) {
+>  		/* Note: we indicate any THPs here, not just PMD-sized ones */
+>  		u |= 1 << KPF_THP;
+> -	} else if (is_huge_zero_pfn(ps.pfn)) {
+> +	} else if (!(ps.flags & PAGE_SNAPSHOT_DEVICE_PRIVATE) &&
+> +		   is_huge_zero_pfn(ps.pfn)) {
+>  		u |= 1 << KPF_ZERO_PAGE;
+>  		u |= 1 << KPF_THP;
+> -	} else if (is_zero_pfn(ps.pfn)) {
+> +	} else if (!(ps.flags & PAGE_SNAPSHOT_DEVICE_PRIVATE) &&
+> +		   is_zero_pfn(ps.pfn)) {
+>  		u |= 1 << KPF_ZERO_PAGE;
+>  	}
 >  
-> +/**
-> + * softleaf_to_flags() - Obtain flags encoded within leaf entry.
-> + * @entry: Leaf entry, softleaf_has_pfn(@entry) must return true.
-> + *
-> + * Returns: The flags associated with the leaf entry.
-> + */
-> +static inline unsigned long softleaf_to_flags(softleaf_t entry)
-> +{
-> +	VM_WARN_ON_ONCE(!softleaf_has_pfn(entry));
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index f0d5be9dc736..a52979536a5e 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -4627,9 +4627,10 @@ static inline bool page_pool_page_is_pp(const struct page *page)
+>  }
+>  #endif
+>  
+> -#define PAGE_SNAPSHOT_FAITHFUL (1 << 0)
+> -#define PAGE_SNAPSHOT_PG_BUDDY (1 << 1)
+> -#define PAGE_SNAPSHOT_PG_IDLE  (1 << 2)
+> +#define PAGE_SNAPSHOT_FAITHFUL		(1 << 0)
+> +#define PAGE_SNAPSHOT_PG_BUDDY		(1 << 1)
+> +#define PAGE_SNAPSHOT_PG_IDLE		(1 << 2)
+> +#define PAGE_SNAPSHOT_DEVICE_PRIVATE	(1 << 3)
+>  
+>  struct page_snapshot {
+>  	struct folio folio_snapshot;
+> diff --git a/mm/util.c b/mm/util.c
+> index 97cae40c0209..65e3f1a97d76 100644
+> --- a/mm/util.c
+> +++ b/mm/util.c
+> @@ -1218,6 +1218,9 @@ static void set_ps_flags(struct page_snapshot *ps, const struct folio *folio,
+>  
+>  	if (folio_test_idle(folio))
+>  		ps->flags |= PAGE_SNAPSHOT_PG_IDLE;
 > +
-> +	/* Temporary until swp_entry_t eliminated. */
-> +	return swp_offset(entry) & (SWP_MIG_YOUNG | SWP_MIG_DIRTY);
-> +}
+> +	if (is_device_private_page(page))
+> +		ps->flags |= PAGE_SNAPSHOT_DEVICE_PRIVATE;
 
-The whole flags stuff does not really belong in this patch. If there are
-cleanups to be had, perform them separately, please.
-
+stable_page_flags() has access to the page and can simply test that instead?
 
 -- 
 Cheers,
