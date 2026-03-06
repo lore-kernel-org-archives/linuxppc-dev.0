@@ -1,91 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-17852-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17853-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26DF1FCC07C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2026 21:18:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E547FCC07C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2026 21:23:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fSK5l3j9gz3bf8;
-	Sat, 07 Mar 2026 08:18:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772801007;
-	cv=none; b=kMhgk/uMjeR+GYqF7UO5jP0T58JsiPZRJw0sTpVBJyyxKrSprM3gMQXewChvlN9bJONsdUci0U/6Th5mtCO8on6LltXDlQOVTzArhiQzP3oBgJfjkq4K1MtuK5dDUjouAOff48R/r7NXNt1oXpIA2TyZLG3Vjl8+8OjUeK2CBg/qnYTEKkUYuGg0q6BSQWKY/qk1n5vpSNjk9zF601ggR3hSKl/T9LlpPBN0G8SHEGL/82OT2REPA9NmayT0VhqhH9dTTigZ9irfzbsN12kwKVQjhvhAY9TqVwbbIE9m122zSNToIVZ9V5QFHFwpwR1yzXc1y+CifFerVtYswkDTaQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fSKCN4zRwz2xll;
+	Sat, 07 Mar 2026 08:23:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772832224;
+	cv=none; b=oPDCDBHmR+NZg+tgyZ+bf0Qe5TK/uQY2d6p8AtU1Dffv+Qnr4edMP7PwRF8SSJpJsklnxflx/HIsgnAT35428u1s6aNehXbtJdHCmHdll9Z756YhVXcwj2SAUOsWefOhbR2dU0pkhz/J3u81S9520FHHfZzX6j+hRxX34SpADtjdhAxTtBWwebi5pHwiZI0mRvTKX7f6yUnwufX3vCVKmTcHLybpH4TfRa225OZ657dvAFt+HWTV6QwpTX6pQEDEoyWPhYWvkXiEPKSlCVN/oJe96Jvhc5OaFT5IPxOwnfWu08eqz70fr1kFqS8FDaZzO6tGMvkNz5h5gXRbCHOWdQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772801007; c=relaxed/relaxed;
-	bh=QWdPDMTwGM6a5JRcgYVSuAzDD6OQV73Y1dH59k1txJQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=kMpfNgjL3/1z9hGx0xO2ccXPsPYhzHdnU+vmLpmVa2pc3mOERu7gfcbMtxXqsHQSVJM/YEWgCUIs1I0L3CakdAZjTmuen+UI23W8uSy7GZ65QEyUljCArAjhALpuEI9a7kIYrwBBVV5yndoYl70oeYLzssaWjHuNH/PFKcd/X30u7SA2RO/cAHutarizRlJP13v63nZvF3P37QAEFiSSYXcfqsLEllt03kygvoG2YGYQywPus2DFpk+CN5VhKQAGbS18Bwd4WKJ68g10kDWrZ+5oMb/GbpdaRfHvwAnIdX1rD65cmUopttvE48yBr+L7LZIP9ePhMZ2f0vKeu2HeuA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=p9mC0Dtb; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1772832224; c=relaxed/relaxed;
+	bh=qfSAcTzbabDbWNK2J+FCB3tCrQy+A2yi+Bw0kC47bnk=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=hs98DEhw6AqwhrGYDlj2iZIUEp+vhIaj1pIptdDa8vMAUlCwPMIe+ouX203YGLzk8pSjPmXN1hN3qlLbgHZguCRFoGWdDu0se3HPq3Ld6md3Yo2v9Gmo6CVTqNs7au3y1eyOK0nOyuvz+TLArvQVauq7B0KPlo8HuBAFdHLGGYu3qnzx9K7N9DycmKoqNcIaveXASPSm7V2NRyIGl6Xw7BErhw78ePVClOGJv3sVcsk6BgEhP9iJXecyeENmFCFHP2CYvTDv7cX3wUHVJk/TOn/Eyy74xP9dVBOi95h451DxGTpUp8tyWl48kBMKavA16ijfG9Dz0JFTq9nnG1KHHA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=I94WaO42; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=p9mC0Dtb;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=I94WaO42;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fS5g25tx6z30T9
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Mar 2026 23:43:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fSKCN0D9Sz2xjQ
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Mar 2026 08:23:43 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id C43F340571;
-	Fri,  6 Mar 2026 12:43:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 149B7C4CEF7;
-	Fri,  6 Mar 2026 12:43:24 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 546606001D;
+	Fri,  6 Mar 2026 21:23:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D2BA0C4CEF7;
+	Fri,  6 Mar 2026 21:23:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772801004;
-	bh=laI5Gks8UKTtQyxqn7mx9nW4b8iCTs15iKu2otVUFHw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=p9mC0Dtb5HP8pcPpgD7riizGZNEqblFXhyCBB7gyX3iYqVlML2IEu/E46TQAfJ6kB
-	 5ES8F1tVf64ZhuAJ2vES+zOK4kRMzYtKhCjqesskIYnO8sAKVgRvaUWEnRMwLwSDQe
-	 6ozGy1rqY43AQN4mamdsvpi0UFTEWG/1ua9kPc8CcoyCTro7l1nx6xbY3HJtSjDB33
-	 HoXIf0/JjwlmXYcHIiJHIJDR1zTA/RgIid+TR7+6DmUz/5MSsmXaWj5qjtxVswmSpB
-	 y7qIWK2NRTkB+QK0r3eC/5U81n1lw5TgFlHl0zqxfvXpiP2u3XAAAbXR9+cd9x48Kv
-	 4L7tL1NMHpRqQ==
-Date: Fri, 6 Mar 2026 12:43:21 +0000
-From: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
-To: "David Hildenbrand (Arm)" <david@kernel.org>
-Cc: linux-kernel@vger.kernel.org, 
-	"linux-mm @ kvack . org" <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>, 
-	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, "Liam R. Howlett" <Liam.Howlett@oracle.com>, 
-	Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
-	Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jann Horn <jannh@google.com>, 
-	Pedro Falcato <pfalcato@suse.de>, David Rientjes <rientjes@google.com>, 
-	Shakeel Butt <shakeel.butt@linux.dev>, "Matthew Wilcox (Oracle)" <willy@infradead.org>, 
-	Alice Ryhl <aliceryhl@google.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
-	Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, 
-	Alexander Gordeev <agordeev@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@linux.ibm.com>, 
-	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
-	Jarkko Sakkinen <jarkko@kernel.org>, Thomas Gleixner <tglx@kernel.org>, 
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Arve =?utf-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>, 
-	Todd Kjos <tkjos@android.com>, Christian Brauner <brauner@kernel.org>, 
-	Carlos Llamas <cmllamas@google.com>, Ian Abbott <abbotti@mev.co.uk>, 
-	H Hartley Sweeten <hsweeten@visionengravers.com>, Jani Nikula <jani.nikula@linux.intel.com>, 
-	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, 
-	Tvrtko Ursulin <tursulin@ursulin.net>, David Airlie <airlied@gmail.com>, 
-	Simona Vetter <simona@ffwll.ch>, Jason Gunthorpe <jgg@ziepe.ca>, 
-	Leon Romanovsky <leon@kernel.org>, Dimitri Sivanich <dimitri.sivanich@hpe.com>, 
-	Arnd Bergmann <arnd@arndb.de>, Alexei Starovoitov <ast@kernel.org>, 
-	Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, 
-	Peter Zijlstra <peterz@infradead.org>, Arnaldo Carvalho de Melo <acme@kernel.org>, 
-	Namhyung Kim <namhyung@kernel.org>, Andy Lutomirski <luto@kernel.org>, 
-	Vincenzo Frascino <vincenzo.frascino@arm.com>, Eric Dumazet <edumazet@google.com>, 
-	Neal Cardwell <ncardwell@google.com>, "David S. Miller" <davem@davemloft.net>, 
-	David Ahern <dsahern@kernel.org>, Jakub Kicinski <kuba@kernel.org>, 
-	Paolo Abeni <pabeni@redhat.com>, Miguel Ojeda <ojeda@kernel.org>, linuxppc-dev@lists.ozlabs.org, 
-	kvm@vger.kernel.org, linux-s390@vger.kernel.org, linux-sgx@vger.kernel.org, 
-	intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org, 
-	bpf@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
-	netdev@vger.kernel.org, rust-for-linux@vger.kernel.org, x86@kernel.org
-Subject: Re: [PATCH v1 16/16] mm/memory: support VM_MIXEDMAP in
- zap_special_vma_range()
-Message-ID: <f2a7bdf4-8db7-4101-b7c6-3f5d9c20e078@lucifer.local>
-References: <20260227200848.114019-1-david@kernel.org>
- <20260227200848.114019-17-david@kernel.org>
+	s=k20201202; t=1772832220;
+	bh=OuYfbVudPcdD1WrPShIxTEXnVYwKm2phYB5eMZ+H0o8=;
+	h=Date:From:To:Cc:Subject:From;
+	b=I94WaO42tFN+vaFenM3V1l4H6JjVtNcYaspg8KQ9SDlT4s0gUbjrv14TRisqPbzu5
+	 nzb9SZ0vjqydlXxZCVCu4IbrSTFB8sxmL8AkKrQiSMZ8FyuXqY10BK0psZpEYdKt8X
+	 QBzWuEjG06BqdWVmxVWHLlsRmIX33eaWV3lZMwqabkLt/ALDRxUdDDoVHZMvt3Rc3/
+	 j3rUHAB2rG/gjqm3gvLdrHZfLF5RhZIH8EfeObRLMpQ6Eci39nYQLXF80TatHWbXgb
+	 svMR6SFT2W8oBFSq9JGRWZ2hPAuRm/03ZKtONHm1BzN9yx/y4vHsZy0r69CZJYpXkT
+	 ock2FYdrQ3LxA==
+Date: Fri, 6 Mar 2026 15:23:38 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Nilay Shroff <nilay@linux.ibm.com>,
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+	Nam Cao <namcao@linutronix.de>,
+	Vivian Wang <wangruikang@iscas.ac.cn>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Han Gao <gaohan@iscas.ac.cn>,
+	Nathaniel Roach <nroach44@nroach44.id.au>,
+	"David S. Miller" <davem@davemloft.net>,
+	Andreas Larsson <andreas@gaisler.com>, sparclinux@vger.kernel.org,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	linuxppc-dev@lists.ozlabs.org,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	Joyce Ooi <joyce.ooi@intel.com>
+Subject: [GIT PULL] PCI fixes for v7.0
+Message-ID: <20260306212338.GA241358@bhelgaas>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,58 +81,36 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260227200848.114019-17-david@kernel.org>
 
-On Fri, Feb 27, 2026 at 09:08:47PM +0100, David Hildenbrand (Arm) wrote:
-> There is demand for also zapping page table entries by drivers in
-> VM_MIXEDMAP VMAs[1].
->
-> Nothing really speaks against supporting VM_MIXEDMAP for driver use. We
-> just don't want arbitrary drivers to zap in ordinary (non-special) VMAs.
->
-> [1] https://lore.kernel.org/r/aYSKyr7StGpGKNqW@google.com
+The following changes since commit 6de23f81a5e08be8fbf5e8d7e9febc72a5b5f27f:
 
-Dude, you have to start your indices with 0 what kind of programmer are
-you? ;)
+  Linux 7.0-rc1 (2026-02-22 13:18:59 -0800)
 
->
-> Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
+are available in the Git repository at:
 
-Agreed that there's no reason not to allow this, so LGTM and:
+  git://git.kernel.org/pub/scm/linux/kernel/git/pci/pci.git tags/pci-v7.0-fixes-3
 
-Reviewed-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
+for you to fetch changes up to 9f2c7349b2810c671badfc1adc804f711a83e420:
 
-Thanks for this series overall, very nice cleanup and I was frustra^Whappy
-to see that there was nothing major or really of note to comment on here, a
-rare occurrence in review :)
+  MAINTAINERS: Orphan Altera PCIe controller driver (2026-03-05 11:34:21 -0600)
 
-> ---
->  mm/memory.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/mm/memory.c b/mm/memory.c
-> index f3b7b7e16138..3fe30dc2f179 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -2239,13 +2239,13 @@ void zap_vma_range(struct vm_area_struct *vma, unsigned long address,
->   * @size: number of bytes to zap
->   *
->   * This function does nothing when the provided address range is not fully
-> - * contained in @vma, or when the @vma is not VM_PFNMAP.
-> + * contained in @vma, or when the @vma is not VM_PFNMAP or VM_MIXEDMAP.
->   */
->  void zap_special_vma_range(struct vm_area_struct *vma, unsigned long address,
->  		unsigned long size)
->  {
->  	if (!range_in_vma(vma, address, address + size) ||
-> -	    		!(vma->vm_flags & VM_PFNMAP))
-> +	   !(vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP)))
->  		return;
->
->  	zap_vma_range(vma, address, size);
-> --
-> 2.43.0
->
+----------------------------------------------------------------
 
-Cheers, Lorenzo
+- Initialize msi_addr_mask for OF-created PCI devices to fix sparc and
+  powerpc probe regressions (Nilay Shroff)
+
+- Orphan the Altera PCIe controller driver (Dave Hansen)
+
+----------------------------------------------------------------
+Dave Hansen (1):
+      MAINTAINERS: Orphan Altera PCIe controller driver
+
+Nilay Shroff (2):
+      powerpc/pci: Initialize msi_addr_mask for OF-created PCI devices
+      sparc/PCI: Initialize msi_addr_mask for OF-created PCI devices
+
+ MAINTAINERS                       | 6 ++----
+ arch/powerpc/kernel/pci_of_scan.c | 7 +++++++
+ arch/sparc/kernel/pci.c           | 7 +++++++
+ 3 files changed, 16 insertions(+), 4 deletions(-)
 
