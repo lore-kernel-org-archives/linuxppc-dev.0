@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-17810-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17811-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6265FF0182F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2026 12:24:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65866F0182F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2026 12:24:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fS5FM5Sd4z3bnJ;
-	Fri, 06 Mar 2026 23:24:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fS5FW6YVzz3bnJ;
+	Fri, 06 Mar 2026 23:24:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772798610;
-	cv=none; b=W6UJnOSbL8xMtY64PTkYtO6Eo38DH9EliHq+IBUZMZa7cwpTObna40ZQp5i0jUc4Zu/MmW2bfoNdGC3jCGQ7rsTBc/am2ghp6lIAnXLvSuz5eAnhJ+GlwzSTpyBxUxMkvPg9qkZxfbz6vMJwKPfFAoG+qb0nw42OD9D50rpVT7tRag0eKu0AwSwPdLxZS8PYayOcSW+EJGJwLIy7dz14FpkTxIBl60/Ie6eKfMMlEww9oPKAxFuVe6EEMq9hrUBgtgr8A5UZDeLyquCgOR3GUgzGTCU6K6yTmHdgrTnVHPpFN+KqyKYZV2bBi920YFf5lFIQwpkRsBJ/O3/bzDWuCw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772798821;
+	cv=none; b=Gih2jWtRMbGVcxc0+cdCpU+xpUnMac0BFf5WbjYmn+unSY4pGmI8aIY0t8d56TZWf1AkgcV31OhDWT9377VNe3pt8mzRdOMkhiwZfU97NqUvG4IznzD9f23Y09t4Q3w9rZ6We6NAw13ihcsVWeajLiBaw/uij1cITwiF+dHDKeuGDBPBGy46c2zY/NT99jBWvRA8fTenJ2lBqyqXUck1LsHuUMpWYfWLKVdsndjdbMshkLcyzKLR6ytmpU3g4/zphtr12mmNkvLgSjFaBa1NoqriIuGnUbJpEJGxuP7wlqfoaTs1InOkusrWbotTiJN3Pw4120p8uKE/I5PGUiwk8w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772798610; c=relaxed/relaxed;
-	bh=MaeKwxlFADDb0SCG7LFbZRQ+3aRrnHNNxNfktnf9Iog=;
+	t=1772798821; c=relaxed/relaxed;
+	bh=zziktpr8HktYa7qEDALXh8cUdjlrPh7LBKj9C+z5yBI=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=PiLJ/6xCajCSpNzEkxddsSz3b/lguKwaV66IWvI84JtcOD62RwEZEybGymhehz6uMIgiYUx43FkE5soZNhbt0y94oWmqtnw/uIOm9+GMJ0GI/4v6/CTO2pnjPtiodD3tAKREqgSR1LWbUNarsi89kALlQMmxDM3CD1V6Lnoz20v0ixav5cd61BQa886JafVM9yCGR6iDUUwpUm9Y5erOCweknq3lA6XXaMkQgYLlW1ADmOzHFMTy6tauPoW7UgkTqkiWajJvgJsAEMETBakbMspI29+wz+t4VSB5Wns1JbMiWxy9eoEss4FErQgRu1Da7ny2Q4IxzocVfmbXLz9qTA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=h1hNNt/g; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=eTRrLoSsNUG8y4B55AXHrDSeUlQYI5JvKVUqGP/I09VoQ19PA2AC0GtNQyJ3u/CzRtpiT87Vy08AXyGeIH496tbN7P+Wdw8JX4JOJDo+rpr15uJh4tA5ANgD+k7fHri+IA+V0ptmU8ebn8E7EUFKKSh4lbTIdK0ruKqzPiKB1TxbXlksjE4Q4QdIDPSZuJxncT1aR7o4xTmAjHw/splChapUJjwXKMQTZ/ZMgHJcfAAWfrJIzsInTOzF5vP4zTuEoq2CHxFLXkfWDHm5ZXfcgRrPudyHWhZ0qGQwVGfohBeT7EESyz3eTDR9xhYXKlythgcJ6PAjMNKJ418KOzqKXQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AkmrBFKC; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=h1hNNt/g;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AkmrBFKC;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fS4mx62hzz30T9
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Mar 2026 23:03:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fS4s01DqVz30T9
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Mar 2026 23:07:00 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 2C88E6013E;
-	Fri,  6 Mar 2026 12:03:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6488CC4CEF7;
-	Fri,  6 Mar 2026 12:03:26 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id E508260127;
+	Fri,  6 Mar 2026 12:06:57 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DFC1EC4CEF7;
+	Fri,  6 Mar 2026 12:06:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772798607;
-	bh=8tIEjkmwTnv14wqiBx5utAVT1y4BywX848doWLEUMyQ=;
+	s=k20201202; t=1772798817;
+	bh=vBj3woozlRPQJAsoS5/IW+klSPAITAbOF218ghzCguY=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=h1hNNt/ggkmOIg6nOIs6YVKXxpvjxXfuNC1/E243FERUMlrdAP/1JGuS8WftUsd7f
-	 sEmFfcrfCzizYh1WflGJxM+Mh8s8/NGzCybtmxDbPIa+RYlLhAC8M2mVomjBVzk4GJ
-	 ovvi/YoGsX9AnKFqWBjW+IpIUt/t0ThtH++DKgi9JosbOXhePSuaAgqwo9ysipyiZZ
-	 tJR6V8PVm0Q3rJsUQBZpi2/tPfiYYA+aTsakBMmVszHI4rXW/zZE1/jrzMC/3s/CgY
-	 3bcJ8hm+9ce3MEINimXRaNGIqZXC4Xd93/yIA5/AX590NC8dE2fbRiLTj205GiFNUz
-	 8UXcS4I1Opdeg==
-Date: Fri, 6 Mar 2026 12:03:24 +0000
+	b=AkmrBFKCRbCHZUTyW9ICY4wBEh7Pe2S+YM/wqEXDcxFbGGnByiHHlbb3EYKuqNZO0
+	 q2Usn/TeECRhZl/rRCEONLCagepvAgIirItP2eC3qQ8ChVybtdQP4cnbuxMspCqW2l
+	 NuRTEQcZ4fNf0tnEm2Vt9rwza2i3hBvcHJoaSIUIev91gK+ZQxbmGNyuTbfBNfDzL8
+	 uczsg8/HVlnzzRmWjuPHT7rnXFdsVjPMqku8Ani2QkPzrZQ1tx0APw0DKJ47bqWkCl
+	 F3GWu9zvI/f7ShUPFDiLOLuo7Nr5RGLGYycyCEDy+H2U/X6/mJjX+zGqmWubbpWaHm
+	 6cB2ohevQ1byA==
+Date: Fri, 6 Mar 2026 12:06:54 +0000
 From: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
 To: "David Hildenbrand (Arm)" <david@kernel.org>
 Cc: linux-kernel@vger.kernel.org, 
@@ -81,11 +81,11 @@ Cc: linux-kernel@vger.kernel.org,
 	intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org, 
 	bpf@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
 	netdev@vger.kernel.org, rust-for-linux@vger.kernel.org, x86@kernel.org
-Subject: Re: [PATCH v1 01/16] mm/madvise: drop range checks in
- madvise_free_single_vma()
-Message-ID: <c5a89c14-0c6b-4c1e-a68c-0680c7d64f4c@lucifer.local>
+Subject: Re: [PATCH v1 02/16] mm/memory: remove "zap_details" parameter from
+ zap_page_range_single()
+Message-ID: <6ad209ea-4be2-42f0-94ef-a2da69292dc2@lucifer.local>
 References: <20260227200848.114019-1-david@kernel.org>
- <20260227200848.114019-2-david@kernel.org>
+ <20260227200848.114019-3-david@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,73 +101,209 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260227200848.114019-2-david@kernel.org>
+In-Reply-To: <20260227200848.114019-3-david@kernel.org>
 
-On Fri, Feb 27, 2026 at 09:08:32PM +0100, David Hildenbrand (Arm) wrote:
-> madvise_vma_behavior()-> madvise_dontneed_free()->madvise_free_single_vma()
-> is only called from madvise_walk_vmas()
->
-> (a) After try_vma_read_lock() confirmed that the whole range falls into
->     a single VMA (see is_vma_lock_sufficient()).
->
-> (b) After adjusting the range to the VMA in the loop afterwards.
->
-> madvise_dontneed_free() might drop the MM lock when handling
-> userfaultfd, but it properly looks up the VMA again to adjust the range.
->
-> So in madvise_free_single_vma(), the given range should always fall into
-> a single VMA and should also span at least one page.
->
-> Let's drop the error checks.
->
-> The code now matches what we do in madvise_dontneed_single_vma(), where
-> we call zap_vma_range_batched() that documents: "The range must fit into
-> one VMA.". Although that function still adjusts that range, we'll change
-> that soon.
+On Fri, Feb 27, 2026 at 09:08:33PM +0100, David Hildenbrand (Arm) wrote:
+> Nobody except memory.c should really set that parameter to non-NULL. So
+> let's just drop it and make unmap_mapping_range_vma() use
+> zap_page_range_single_batched() instead.
 >
 > Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
 
-Yeah I did wonder about some of these checks, thanks for going through and
-confirming these are useless.
+This is nice, good cleanup.
 
-Checked the madvise_dontneed_free() case to be sure and LGTM so overall:
+Assuming rust side is all sorted (seems it from thread)... LGTM, so:
 
 Reviewed-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
 
 > ---
->  mm/madvise.c | 13 ++++---------
->  1 file changed, 4 insertions(+), 9 deletions(-)
+>  arch/s390/mm/gmap_helpers.c    |  2 +-
+>  drivers/android/binder_alloc.c |  2 +-
+>  include/linux/mm.h             |  5 ++---
+>  kernel/bpf/arena.c             |  3 +--
+>  kernel/events/core.c           |  2 +-
+>  mm/madvise.c                   |  3 +--
+>  mm/memory.c                    | 16 ++++++++++------
+>  net/ipv4/tcp.c                 |  5 ++---
+>  rust/kernel/mm/virt.rs         |  2 +-
+>  9 files changed, 20 insertions(+), 20 deletions(-)
 >
+> diff --git a/arch/s390/mm/gmap_helpers.c b/arch/s390/mm/gmap_helpers.c
+> index dea83e3103e5..ae2d59a19313 100644
+> --- a/arch/s390/mm/gmap_helpers.c
+> +++ b/arch/s390/mm/gmap_helpers.c
+> @@ -89,7 +89,7 @@ void gmap_helper_discard(struct mm_struct *mm, unsigned long vmaddr, unsigned lo
+>  		if (!vma)
+>  			return;
+>  		if (!is_vm_hugetlb_page(vma))
+> -			zap_page_range_single(vma, vmaddr, min(end, vma->vm_end) - vmaddr, NULL);
+> +			zap_page_range_single(vma, vmaddr, min(end, vma->vm_end) - vmaddr);
+>  		vmaddr = vma->vm_end;
+>  	}
+>  }
+> diff --git a/drivers/android/binder_alloc.c b/drivers/android/binder_alloc.c
+> index 241f16a9b63d..dd2046bd5cde 100644
+> --- a/drivers/android/binder_alloc.c
+> +++ b/drivers/android/binder_alloc.c
+> @@ -1185,7 +1185,7 @@ enum lru_status binder_alloc_free_page(struct list_head *item,
+>  	if (vma) {
+>  		trace_binder_unmap_user_start(alloc, index);
+>
+> -		zap_page_range_single(vma, page_addr, PAGE_SIZE, NULL);
+> +		zap_page_range_single(vma, page_addr, PAGE_SIZE);
+>
+>  		trace_binder_unmap_user_end(alloc, index);
+>  	}
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index ecff8268089b..a8138ff7d1fa 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -2835,11 +2835,10 @@ struct page *vm_normal_page_pud(struct vm_area_struct *vma, unsigned long addr,
+>  void zap_vma_ptes(struct vm_area_struct *vma, unsigned long address,
+>  		  unsigned long size);
+>  void zap_page_range_single(struct vm_area_struct *vma, unsigned long address,
+> -			   unsigned long size, struct zap_details *details);
+> +			   unsigned long size);
+>  static inline void zap_vma_pages(struct vm_area_struct *vma)
+>  {
+> -	zap_page_range_single(vma, vma->vm_start,
+> -			      vma->vm_end - vma->vm_start, NULL);
+> +	zap_page_range_single(vma, vma->vm_start, vma->vm_end - vma->vm_start);
+>  }
+>  struct mmu_notifier_range;
+>
+> diff --git a/kernel/bpf/arena.c b/kernel/bpf/arena.c
+> index 144f30e740e8..c34510d83b1f 100644
+> --- a/kernel/bpf/arena.c
+> +++ b/kernel/bpf/arena.c
+> @@ -656,8 +656,7 @@ static void zap_pages(struct bpf_arena *arena, long uaddr, long page_cnt)
+>  	guard(mutex)(&arena->lock);
+>  	/* iterate link list under lock */
+>  	list_for_each_entry(vml, &arena->vma_list, head)
+> -		zap_page_range_single(vml->vma, uaddr,
+> -				      PAGE_SIZE * page_cnt, NULL);
+> +		zap_page_range_single(vml->vma, uaddr, PAGE_SIZE * page_cnt);
+>  }
+>
+>  static void arena_free_pages(struct bpf_arena *arena, long uaddr, long page_cnt, bool sleepable)
+> diff --git a/kernel/events/core.c b/kernel/events/core.c
+> index ac70d68217b6..c94c56c94104 100644
+> --- a/kernel/events/core.c
+> +++ b/kernel/events/core.c
+> @@ -7215,7 +7215,7 @@ static int map_range(struct perf_buffer *rb, struct vm_area_struct *vma)
+>  #ifdef CONFIG_MMU
+>  	/* Clear any partial mappings on error. */
+>  	if (err)
+> -		zap_page_range_single(vma, vma->vm_start, nr_pages * PAGE_SIZE, NULL);
+> +		zap_page_range_single(vma, vma->vm_start, nr_pages * PAGE_SIZE);
+>  #endif
+>
+>  	return err;
 > diff --git a/mm/madvise.c b/mm/madvise.c
-> index c0370d9b4e23..efc04334a000 100644
+> index efc04334a000..557a360f7919 100644
 > --- a/mm/madvise.c
 > +++ b/mm/madvise.c
-> @@ -799,9 +799,10 @@ static int madvise_free_single_vma(struct madvise_behavior *madv_behavior)
->  {
->  	struct mm_struct *mm = madv_behavior->mm;
->  	struct vm_area_struct *vma = madv_behavior->vma;
-> -	unsigned long start_addr = madv_behavior->range.start;
-> -	unsigned long end_addr = madv_behavior->range.end;
-> -	struct mmu_notifier_range range;
-> +	struct mmu_notifier_range range = {
-> +		.start = madv_behavior->range.start,
-> +		.end = madv_behavior->range.end,
-> +	};
->  	struct mmu_gather *tlb = madv_behavior->tlb;
->  	struct mm_walk_ops walk_ops = {
->  		.pmd_entry		= madvise_free_pte_range,
-> @@ -811,12 +812,6 @@ static int madvise_free_single_vma(struct madvise_behavior *madv_behavior)
->  	if (!vma_is_anonymous(vma))
->  		return -EINVAL;
+> @@ -1193,8 +1193,7 @@ static long madvise_guard_install(struct madvise_behavior *madv_behavior)
+>  		 * OK some of the range have non-guard pages mapped, zap
+>  		 * them. This leaves existing guard pages in place.
+>  		 */
+> -		zap_page_range_single(vma, range->start,
+> -				range->end - range->start, NULL);
+> +		zap_page_range_single(vma, range->start, range->end - range->start);
+>  	}
 >
-> -	range.start = max(vma->vm_start, start_addr);
-> -	if (range.start >= vma->vm_end)
-> -		return -EINVAL;
-> -	range.end = min(vma->vm_end, end_addr);
-> -	if (range.end <= vma->vm_start)
-> -		return -EINVAL;
->  	mmu_notifier_range_init(&range, MMU_NOTIFY_CLEAR, 0, mm,
->  				range.start, range.end);
+>  	/*
+> diff --git a/mm/memory.c b/mm/memory.c
+> index 9385842c3503..19f5f9a60995 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -2203,17 +2203,16 @@ void zap_page_range_single_batched(struct mmu_gather *tlb,
+>   * @vma: vm_area_struct holding the applicable pages
+>   * @address: starting address of pages to zap
+>   * @size: number of bytes to zap
+> - * @details: details of shared cache invalidation
+>   *
+>   * The range must fit into one VMA.
+>   */
+>  void zap_page_range_single(struct vm_area_struct *vma, unsigned long address,
+> -		unsigned long size, struct zap_details *details)
+> +		unsigned long size)
+>  {
+>  	struct mmu_gather tlb;
+>
+>  	tlb_gather_mmu(&tlb, vma->vm_mm);
+> -	zap_page_range_single_batched(&tlb, vma, address, size, details);
+> +	zap_page_range_single_batched(&tlb, vma, address, size, NULL);
+>  	tlb_finish_mmu(&tlb);
+>  }
+>
+> @@ -2235,7 +2234,7 @@ void zap_vma_ptes(struct vm_area_struct *vma, unsigned long address,
+>  	    		!(vma->vm_flags & VM_PFNMAP))
+>  		return;
+>
+> -	zap_page_range_single(vma, address, size, NULL);
+> +	zap_page_range_single(vma, address, size);
+>  }
+>  EXPORT_SYMBOL_GPL(zap_vma_ptes);
+>
+> @@ -3003,7 +3002,7 @@ static int remap_pfn_range_notrack(struct vm_area_struct *vma, unsigned long add
+>  	 * maintain page reference counts, and callers may free
+>  	 * pages due to the error. So zap it early.
+>  	 */
+> -	zap_page_range_single(vma, addr, size, NULL);
+> +	zap_page_range_single(vma, addr, size);
+>  	return error;
+>  }
+>
+> @@ -4226,7 +4225,12 @@ static void unmap_mapping_range_vma(struct vm_area_struct *vma,
+>  		unsigned long start_addr, unsigned long end_addr,
+>  		struct zap_details *details)
+>  {
+> -	zap_page_range_single(vma, start_addr, end_addr - start_addr, details);
+> +	struct mmu_gather tlb;
+> +
+> +	tlb_gather_mmu(&tlb, vma->vm_mm);
+> +	zap_page_range_single_batched(&tlb, vma, start_addr,
+> +				      end_addr - start_addr, details);
+> +	tlb_finish_mmu(&tlb);
+>  }
+>
+>  static inline void unmap_mapping_range_tree(struct rb_root_cached *root,
+> diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
+> index f84d9a45cc9d..befcde27dee7 100644
+> --- a/net/ipv4/tcp.c
+> +++ b/net/ipv4/tcp.c
+> @@ -2104,7 +2104,7 @@ static int tcp_zerocopy_vm_insert_batch_error(struct vm_area_struct *vma,
+>  		maybe_zap_len = total_bytes_to_map -  /* All bytes to map */
+>  				*length + /* Mapped or pending */
+>  				(pages_remaining * PAGE_SIZE); /* Failed map. */
+> -		zap_page_range_single(vma, *address, maybe_zap_len, NULL);
+> +		zap_page_range_single(vma, *address, maybe_zap_len);
+>  		err = 0;
+>  	}
+>
+> @@ -2269,8 +2269,7 @@ static int tcp_zerocopy_receive(struct sock *sk,
+>  	total_bytes_to_map = avail_len & ~(PAGE_SIZE - 1);
+>  	if (total_bytes_to_map) {
+>  		if (!(zc->flags & TCP_RECEIVE_ZEROCOPY_FLAG_TLB_CLEAN_HINT))
+> -			zap_page_range_single(vma, address, total_bytes_to_map,
+> -					      NULL);
+> +			zap_page_range_single(vma, address, total_bytes_to_map);
+>  		zc->length = total_bytes_to_map;
+>  		zc->recv_skip_hint = 0;
+>  	} else {
+> diff --git a/rust/kernel/mm/virt.rs b/rust/kernel/mm/virt.rs
+> index da21d65ccd20..b8e59e4420f3 100644
+> --- a/rust/kernel/mm/virt.rs
+> +++ b/rust/kernel/mm/virt.rs
+> @@ -124,7 +124,7 @@ pub fn zap_page_range_single(&self, address: usize, size: usize) {
+>          // sufficient for this method call. This method has no requirements on the vma flags. The
+>          // address range is checked to be within the vma.
+>          unsafe {
+> -            bindings::zap_page_range_single(self.as_ptr(), address, size, core::ptr::null_mut())
+> +            bindings::zap_page_range_single(self.as_ptr(), address, size)
+>          };
+>      }
 >
 > --
 > 2.43.0
