@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-17850-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17851-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36153FCC076
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2026 21:18:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 800F1FCC076
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2026 21:18:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fSK5K3Fkmz3cB5;
-	Sat, 07 Mar 2026 08:18:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fSK5Y62r3z2xm5;
+	Sat, 07 Mar 2026 08:18:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772800813;
-	cv=none; b=UsLhbEc26tsSW+BZm9alcjZ8+WCFv6KYnopug7RhIVpqFK7homH13Fdn6BUuFV5HrNL2NWbaVD9V/rTkL27+SZh1o2xHrEQXjS3I2fuJjaajjwfrWGisY6OBX9rajFa8l+S5L+12idlCEIK2lJCrat71p7gC9ffXPKYpc3kiG6nOjldqc3KJbjt7q/Dq7G+lvHnTuPSbv7moSXa3FheZeC8hh2++iGdrRqdmDPRFmgpamZzJUyVzOMkJSPf2Be5mXc3/Z+jj7yyMVMUbFWHJKdwFE2soY3mQIoTP67+6N+tQnLFveQzcxl1gKMEJpu+KN9K0xtkYtI/TRk0qD7nkTg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772800876;
+	cv=none; b=AB6kiOQQuhtvFyO0UyTxn+Od9KSnPpO+GF+nEWgzKqIMMcDD76Hxew8/B0WeQXHJkAKdCn61tP4vGuoZ+oJGry9uQ1shPMYV35SRZ0BXKvHChZMMZRmEfaXtzCPLWuZHFLl2vA44mz9o8SJxNuuQyxNShpXUt+30ESf+IPgG5q4oEBF3O5gDNwlbNjSc3LK9IwRKk4cMnxKpZxw2CzfFOgUKfhFqe4yw3mUDzcKxBE0JU6WR77mNrmF1sboZyJfpwFwPf3BRzdE08uVQdDsgDk0jVV9SYqdtg3qbfe4ReWUTTyeoCbRJW+4HI9fEz8wI6HuLlIsFI3YZTRLUGwL93A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772800813; c=relaxed/relaxed;
-	bh=TpDZjWzos6QZl9FjPk//2imOO7vtv9Ovb5TykMgmnq4=;
+	t=1772800876; c=relaxed/relaxed;
+	bh=UR8CfjV1tUrpLDvSF5b3+Dv//Kr4G++1kk561g+r+8A=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=L2TCnb8z129vTnSx0fhMUR7Z6P+niPR42V8Aw3FpPJhjm0YkT/oL5RwDrHoi/MrF+JHc6ZN4LW2lD6bq1wWTyHrwpPdyKW3VsxIJh7N8HeCDTGe67R7Ce9Qk9cEcLhoRNmzrQh6A3h7mSulSrMyrNqypGy9nPUcM1vYPdGqSXrdwbncA18NK7YKestzc8Ytgfx8xUBNALi1/ExQakC8olm4C/Gquu5+A6fwpjrsCrPqN0c8a+dsHDEWGCpuB291AYC4FdHgUB3lprlnIbx3ePwB/mLh/yCmGzOMnLYB78GoMV/c1jq+SZrQRHdSMaHkiXa7ISW8xhB6HSdVSK3wJFA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=teU+WZvc; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=ZG/jVh1dSrsfKmFnfVjFnt/Tv9NK9orZhffnx2PYAIClys48P8udnk/AekUzhwKG+b5vZ20OjPjZmb9l7XkT2xPn6w4/vFXnvYNuOotemAjJlepOshUuEUUKh0ch9GOVNF/KvuQW8L7BJyw6aVY4mQ2J3v6PDXOLiG3P21/3BECSfb0HP4YsoQyJru8d4rKmNdqEEPHQJD/3zOZuj/8LwsxT7fP9qF2lyTqSi+csgRDX2OW2cj/mklYegPc6pub7TNeE3PAveRX/+q3YV/12CMqvluTWg6JoQf2rdTZxpybKT1Ut1P6z2NxTwmv0BCup4I6loMNTon8WBO8n+9C1fA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PpKc6rDA; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=teU+WZvc;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PpKc6rDA;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fS5bJ74Rnz2xYk
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Mar 2026 23:40:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fS5cX0w7Bz30T9
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Mar 2026 23:41:16 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 466E2444A2;
-	Fri,  6 Mar 2026 12:40:10 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8E997C4CEF7;
-	Fri,  6 Mar 2026 12:40:09 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 4D83B44204;
+	Fri,  6 Mar 2026 12:41:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 964FFC4CEF7;
+	Fri,  6 Mar 2026 12:41:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772800810;
-	bh=momqQiCPeBiESmsNjbCQuXjIElnPD5t8ixlqkLdaUNY=;
+	s=k20201202; t=1772800874;
+	bh=lq+50juxWpZTD6H0V77Zyv6OGyq7pL6MoSFSgCZf0CQ=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=teU+WZvcr3Vfjfj4PS79KVLwqpyqTY1ONa1PtwIvjXtMon6hdWoFyi7tYSgQVQlA7
-	 7WqNZXjH072FsKlQxHwMb1xYD4ogJ/HhRqFMhvz7mUpomd6qDRF1LsEb2Nx0xCA20F
-	 Q306mWNpenrHSDponyi32Ye/+ALDPg+T87ZCaJf9rHbmPLs7TEcXwfiNFZJ08Qk58i
-	 YudRyMnPxWInwwAAt3CqHvwKRQrMAo7VQbC5DvtngGuMvZuxZUii1u78G4eRDQ1D/r
-	 cgHhuLioq6MaNE+pd+1wCN6iTybUQcrEBmRwhDJWiYLDD7kyNQioEEvs3ECG9KmNxt
-	 q/+pMMPgggcHw==
-Date: Fri, 6 Mar 2026 12:40:07 +0000
+	b=PpKc6rDA59KGYIRFwtyM9Sadr3C/wX3fkFV3gIPSOjYDFuYBwWa3LLeEUMWZvdUF/
+	 3G8BuvDsxyOn2WfkGJ83plefNiGw3aWzaX9FsviZQvjodMO4vhRQjPb/3a5QaHhww+
+	 S2tDdIhK/WCnvNQyRu8Yz57kR9mVFrOxIG8qMWl67LGh9WILqiJV1HThKPDwhyxgZD
+	 5N7vrK4zWbwHpmUbYWwGrY8KJ1KlCFzx5cMVqwe83rI13dEt/fd3J3VgWWNyc66R4Y
+	 YdYvrCSktLxQzE/goRvNKT5ONqH1zXpLdBdwAe1BCtmd1nNFbiMMpRVKGpP+LFmrGQ
+	 kQaNSV2mvY+qA==
+Date: Fri, 6 Mar 2026 12:41:11 +0000
 From: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
 To: "David Hildenbrand (Arm)" <david@kernel.org>
 Cc: linux-kernel@vger.kernel.org, 
@@ -81,11 +81,11 @@ Cc: linux-kernel@vger.kernel.org,
 	intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org, 
 	bpf@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
 	netdev@vger.kernel.org, rust-for-linux@vger.kernel.org, x86@kernel.org
-Subject: Re: [PATCH v1 08/16] mm/memory: move adjusting of address range to
- unmap_vmas()
-Message-ID: <6858ccdd-5065-4396-81c9-489bf2d43c9e@lucifer.local>
+Subject: Re: [PATCH v1 15/16] mm: rename zap_vma_ptes() to
+ zap_special_vma_range()
+Message-ID: <c77c1bed-f04e-4f21-87d9-6c5da3f0ad69@lucifer.local>
 References: <20260227200848.114019-1-david@kernel.org>
- <20260227200848.114019-9-david@kernel.org>
+ <20260227200848.114019-16-david@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,126 +101,188 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260227200848.114019-9-david@kernel.org>
+In-Reply-To: <20260227200848.114019-16-david@kernel.org>
 
-On Fri, Feb 27, 2026 at 09:08:39PM +0100, David Hildenbrand (Arm) wrote:
-> __zap_vma_range() has two callers, whereby
-> zap_page_range_single_batched() documents that the range must fit into
-> the VMA range.
+On Fri, Feb 27, 2026 at 09:08:46PM +0100, David Hildenbrand (Arm) wrote:
+> zap_vma_ptes() is the only zapping function we export to modules.
 >
-> So move adjusting the range to unmap_vmas() where it is actually
-> required and add a safety check in __zap_vma_range() instead. In
-> unmap_vmas(), we'd never expect to have empty ranges (otherwise, why
-> have the vma in there in the first place).
+> It's essentially a wrapper around zap_vma_range(), however, with some
+> safety checks:
+> * That the passed range fits fully into the VMA
+> * That it's only used for VM_PFNMAP
 >
-> __zap_vma_range() will no longer be called with start == end, so
-> cleanup the function a bit. While at it, simplify the overly long
-> comment to its core message.
+> We might want to support VM_MIXEDMAP soon as well, so use the
+
+I think you should say we _are_ going to since patch 16/16 does that :)
+
+> more-generic term "special vma", although "special" is a bit overloaded.
+> Maybe we'll later just support any VM_SPECIAL flag.
+
+Yeah I hate the name, but I guess it's probably the best we can manage
+because VM_SPECIAL and both VM_PFNMAP and VM_MIXEDMAP _are_ 'special' in
+this sense so meh I guess it's the best we can do.
+
 >
-> We will no longer call uprobe_munmap() for start == end, which actually
-> seems to be the right thing to do.
->
-> Note that hugetlb_zap_begin()->...->adjust_range_if_pmd_sharing_possible()
-> cannot result in the range exceeding the vma range.
+> While at it, improve the kerneldoc.
 >
 > Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
 
-LGTM, So:
+LGTM, so:
 
 Reviewed-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
 
 > ---
->  mm/memory.c | 58 +++++++++++++++++++++--------------------------------
->  1 file changed, 23 insertions(+), 35 deletions(-)
+>  arch/x86/kernel/cpu/sgx/encl.c        |  2 +-
+>  drivers/comedi/comedi_fops.c          |  2 +-
+>  drivers/gpu/drm/i915/i915_mm.c        |  4 ++--
+>  drivers/infiniband/core/uverbs_main.c |  6 +++---
+>  drivers/misc/sgi-gru/grumain.c        |  2 +-
+>  include/linux/mm.h                    |  2 +-
+>  mm/memory.c                           | 16 +++++++---------
+>  7 files changed, 16 insertions(+), 18 deletions(-)
 >
+> diff --git a/arch/x86/kernel/cpu/sgx/encl.c b/arch/x86/kernel/cpu/sgx/encl.c
+> index ac60ebde5d9b..3f0222d10f6e 100644
+> --- a/arch/x86/kernel/cpu/sgx/encl.c
+> +++ b/arch/x86/kernel/cpu/sgx/encl.c
+> @@ -1220,7 +1220,7 @@ void sgx_zap_enclave_ptes(struct sgx_encl *encl, unsigned long addr)
+>
+>  			ret = sgx_encl_find(encl_mm->mm, addr, &vma);
+>  			if (!ret && encl == vma->vm_private_data)
+> -				zap_vma_ptes(vma, addr, PAGE_SIZE);
+> +				zap_special_vma_range(vma, addr, PAGE_SIZE);
+>
+>  			mmap_read_unlock(encl_mm->mm);
+>
+> diff --git a/drivers/comedi/comedi_fops.c b/drivers/comedi/comedi_fops.c
+> index 48a8a607a84c..b91e0b5ac394 100644
+> --- a/drivers/comedi/comedi_fops.c
+> +++ b/drivers/comedi/comedi_fops.c
+> @@ -2588,7 +2588,7 @@ static int comedi_mmap(struct file *file, struct vm_area_struct *vma)
+>  	 * remap_pfn_range() because we call remap_pfn_range() in a loop.
+>  	 */
+>  	if (retval)
+> -		zap_vma_ptes(vma, vma->vm_start, size);
+> +		zap_special_vma_range(vma, vma->vm_start, size);
+>  #endif
+>
+>  	if (retval == 0) {
+> diff --git a/drivers/gpu/drm/i915/i915_mm.c b/drivers/gpu/drm/i915/i915_mm.c
+> index c33bd3d83069..fd89e7c7d8d6 100644
+> --- a/drivers/gpu/drm/i915/i915_mm.c
+> +++ b/drivers/gpu/drm/i915/i915_mm.c
+> @@ -108,7 +108,7 @@ int remap_io_mapping(struct vm_area_struct *vma,
+>
+>  	err = apply_to_page_range(r.mm, addr, size, remap_pfn, &r);
+>  	if (unlikely(err)) {
+> -		zap_vma_ptes(vma, addr, (r.pfn - pfn) << PAGE_SHIFT);
+> +		zap_special_vma_range(vma, addr, (r.pfn - pfn) << PAGE_SHIFT);
+>  		return err;
+>  	}
+>
+> @@ -156,7 +156,7 @@ int remap_io_sg(struct vm_area_struct *vma,
+>
+>  	err = apply_to_page_range(r.mm, addr, size, remap_sg, &r);
+>  	if (unlikely(err)) {
+> -		zap_vma_ptes(vma, addr, r.pfn << PAGE_SHIFT);
+> +		zap_special_vma_range(vma, addr, r.pfn << PAGE_SHIFT);
+>  		return err;
+>  	}
+>
+> diff --git a/drivers/infiniband/core/uverbs_main.c b/drivers/infiniband/core/uverbs_main.c
+> index 7b68967a6301..f5837da47299 100644
+> --- a/drivers/infiniband/core/uverbs_main.c
+> +++ b/drivers/infiniband/core/uverbs_main.c
+> @@ -756,7 +756,7 @@ static void rdma_umap_open(struct vm_area_struct *vma)
+>  	 * point, so zap it.
+>  	 */
+>  	vma->vm_private_data = NULL;
+> -	zap_vma_ptes(vma, vma->vm_start, vma->vm_end - vma->vm_start);
+> +	zap_special_vma_range(vma, vma->vm_start, vma->vm_end - vma->vm_start);
+>  }
+>
+>  static void rdma_umap_close(struct vm_area_struct *vma)
+> @@ -782,7 +782,7 @@ static void rdma_umap_close(struct vm_area_struct *vma)
+>  }
+>
+>  /*
+> - * Once the zap_vma_ptes has been called touches to the VMA will come here and
+> + * Once the zap_special_vma_range has been called touches to the VMA will come here and
+>   * we return a dummy writable zero page for all the pfns.
+>   */
+>  static vm_fault_t rdma_umap_fault(struct vm_fault *vmf)
+> @@ -878,7 +878,7 @@ void uverbs_user_mmap_disassociate(struct ib_uverbs_file *ufile)
+>  				continue;
+>  			list_del_init(&priv->list);
+>
+> -			zap_vma_ptes(vma, vma->vm_start,
+> +			zap_special_vma_range(vma, vma->vm_start,
+>  				     vma->vm_end - vma->vm_start);
+>
+>  			if (priv->entry) {
+> diff --git a/drivers/misc/sgi-gru/grumain.c b/drivers/misc/sgi-gru/grumain.c
+> index 8d749f345246..278b76cbd281 100644
+> --- a/drivers/misc/sgi-gru/grumain.c
+> +++ b/drivers/misc/sgi-gru/grumain.c
+> @@ -542,7 +542,7 @@ void gru_unload_context(struct gru_thread_state *gts, int savestate)
+>  	int ctxnum = gts->ts_ctxnum;
+>
+>  	if (!is_kernel_context(gts))
+> -		zap_vma_ptes(gts->ts_vma, UGRUADDR(gts), GRU_GSEG_PAGESIZE);
+> +		zap_special_vma_range(gts->ts_vma, UGRUADDR(gts), GRU_GSEG_PAGESIZE);
+>  	cch = get_cch(gru->gs_gru_base_vaddr, ctxnum);
+>
+>  	gru_dbg(grudev, "gts %p, cbrmap 0x%lx, dsrmap 0x%lx\n",
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 833bedd3f739..07f6819db02d 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -2833,7 +2833,7 @@ struct page *vm_normal_page_pmd(struct vm_area_struct *vma, unsigned long addr,
+>  struct page *vm_normal_page_pud(struct vm_area_struct *vma, unsigned long addr,
+>  		pud_t pud);
+>
+> -void zap_vma_ptes(struct vm_area_struct *vma, unsigned long address,
+> +void zap_special_vma_range(struct vm_area_struct *vma, unsigned long address,
+>  		  unsigned long size);
+>  void zap_vma_range(struct vm_area_struct *vma, unsigned long address,
+>  			   unsigned long size);
 > diff --git a/mm/memory.c b/mm/memory.c
-> index f0aaec57a66b..fdcd2abf29c2 100644
+> index dd737b6d28c0..f3b7b7e16138 100644
 > --- a/mm/memory.c
 > +++ b/mm/memory.c
-> @@ -2073,44 +2073,28 @@ static void unmap_page_range(struct mmu_gather *tlb, struct vm_area_struct *vma,
->  	tlb_end_vma(tlb, vma);
+> @@ -2233,17 +2233,15 @@ void zap_vma_range(struct vm_area_struct *vma, unsigned long address,
 >  }
 >
-> -
-> -static void __zap_vma_range(struct mmu_gather *tlb,
-> -		struct vm_area_struct *vma, unsigned long start_addr,
-> -		unsigned long end_addr, struct zap_details *details)
-> +static void __zap_vma_range(struct mmu_gather *tlb, struct vm_area_struct *vma,
-> +		unsigned long start, unsigned long end,
-> +		struct zap_details *details)
+>  /**
+> - * zap_vma_ptes - remove ptes mapping the vma
+> - * @vma: vm_area_struct holding ptes to be zapped
+> - * @address: starting address of pages to zap
+> + * zap_special_vma_range - zap all page table entries in a special vma range
+> + * @vma: the vma covering the range to zap
+> + * @address: starting address of the range to zap
+>   * @size: number of bytes to zap
+>   *
+> - * This function only unmaps ptes assigned to VM_PFNMAP vmas.
+> - *
+> - * The entire address range must be fully contained within the vma.
+> - *
+> + * This function does nothing when the provided address range is not fully
+> + * contained in @vma, or when the @vma is not VM_PFNMAP.
+>   */
+> -void zap_vma_ptes(struct vm_area_struct *vma, unsigned long address,
+> +void zap_special_vma_range(struct vm_area_struct *vma, unsigned long address,
+>  		unsigned long size)
 >  {
-> -	unsigned long start = max(vma->vm_start, start_addr);
-> -	unsigned long end;
-> -
-> -	if (start >= vma->vm_end)
-> -		return;
-> -	end = min(vma->vm_end, end_addr);
-> -	if (end <= vma->vm_start)
-> -		return;
-> +	VM_WARN_ON_ONCE(start >= end || !range_in_vma(vma, start, end));
+>  	if (!range_in_vma(vma, address, address + size) ||
+> @@ -2252,7 +2250,7 @@ void zap_vma_ptes(struct vm_area_struct *vma, unsigned long address,
 >
->  	if (vma->vm_file)
->  		uprobe_munmap(vma, start, end);
->
-> -	if (start != end) {
-> -		if (unlikely(is_vm_hugetlb_page(vma))) {
-> -			/*
-> -			 * It is undesirable to test vma->vm_file as it
-> -			 * should be non-null for valid hugetlb area.
-> -			 * However, vm_file will be NULL in the error
-> -			 * cleanup path of mmap_region. When
-> -			 * hugetlbfs ->mmap method fails,
-> -			 * mmap_region() nullifies vma->vm_file
-> -			 * before calling this function to clean up.
-> -			 * Since no pte has actually been setup, it is
-> -			 * safe to do nothing in this case.
-> -			 */
-> -			if (vma->vm_file) {
-> -				zap_flags_t zap_flags = details ?
-> -				    details->zap_flags : 0;
-> -				__unmap_hugepage_range(tlb, vma, start, end,
-> -							     NULL, zap_flags);
-> -			}
-> -		} else
-> -			unmap_page_range(tlb, vma, start, end, details);
-> +	if (unlikely(is_vm_hugetlb_page(vma))) {
-> +		zap_flags_t zap_flags = details ? details->zap_flags : 0;
-> +
-> +		/*
-> +		 * vm_file will be NULL when we fail early while instantiating
-> +		 * a new mapping. In this case, no pages were mapped yet and
-> +		 * there is nothing to do.
-> +		 */
-> +		if (!vma->vm_file)
-> +			return;
-> +		__unmap_hugepage_range(tlb, vma, start, end, NULL, zap_flags);
-> +	} else {
-> +		unmap_page_range(tlb, vma, start, end, details);
->  	}
+>  	zap_vma_range(vma, address, size);
 >  }
+> -EXPORT_SYMBOL_GPL(zap_vma_ptes);
+> +EXPORT_SYMBOL_GPL(zap_special_vma_range);
 >
-> @@ -2174,8 +2158,9 @@ void unmap_vmas(struct mmu_gather *tlb, struct unmap_desc *unmap)
->  				unmap->vma_start, unmap->vma_end);
->  	mmu_notifier_invalidate_range_start(&range);
->  	do {
-> -		unsigned long start = unmap->vma_start;
-> -		unsigned long end = unmap->vma_end;
-> +		unsigned long start = max(vma->vm_start, unmap->vma_start);
-> +		unsigned long end = min(vma->vm_end, unmap->vma_end);
-> +
->  		hugetlb_zap_begin(vma, &start, &end);
->  		__zap_vma_range(tlb, vma, start, end, &details);
->  		hugetlb_zap_end(vma, &details);
-> @@ -2204,6 +2189,9 @@ void zap_page_range_single_batched(struct mmu_gather *tlb,
->
->  	VM_WARN_ON_ONCE(!tlb || tlb->mm != vma->vm_mm);
->
-> +	if (unlikely(!size))
-> +		return;
-> +
->  	mmu_notifier_range_init(&range, MMU_NOTIFY_CLEAR, 0, vma->vm_mm,
->  				address, end);
->  	hugetlb_zap_begin(vma, &range.start, &range.end);
+>  static pmd_t *walk_to_pmd(struct mm_struct *mm, unsigned long addr)
+>  {
 > --
 > 2.43.0
 >
