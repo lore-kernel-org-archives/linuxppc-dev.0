@@ -1,51 +1,103 @@
-Return-Path: <linuxppc-dev+bounces-17802-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17803-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5798FF01821
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2026 10:43:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A4A1F01825
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2026 11:13:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fS30m2nPlz3bnJ;
-	Fri, 06 Mar 2026 21:43:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772793816;
-	cv=none; b=Xnk/nm77k5In4iopAzAxiRirO1BecFnACpxo/Ci+wwaPw/iaKDWLVWGmTm6B2C3+ez8BA9YHIsdpPPy1z7+1aXdnNfzSGFV2hbAAigZ0iz37es/83znFBtF1w58v62b8HhpVacFnWB7al6FFNkyKhPU6FkTZPSoDbAytH3i8zVgbeAfZbkVu9rEVu8T4v/m0OuOLMnRxvmh3w8zpwTNkh55Mi01RC2dVxp4afrTaoSQu89qqIAT0w+Gb+XQypv5HgawtNokJ/8onno+PUBDI/+Y1AnLzC9Ltr6KHn8FFg2OenQ8e5wOq+uIACJtraC9XvIsrPbNy6pzCEUuT0cwdSw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fS3gn4ckNz3bnJ;
+	Fri, 06 Mar 2026 22:13:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772795637;
+	cv=none; b=ISTNrJKfaIsy3kNCOH9wopbkvycPHch9p62GMTXjPTpgPiQB9nB16Q3Ja2vNmBJyQEw7x+uIU5eLp2nxof+BmUWfR6nDDzyM8ip2T6zPieWw4cg+CTOqqZP4NnyWcVu5HY1EZD42H5VBtKn0q4O6Hda9Z1DkkRP0uIRXtTari51HVftJMgdlJBbjhn+NtA07FP9kSFYM7joio+rt/Vh8KNA0wLlPQQPjmWyFv/OgjHLNEE8/7tX2WtlAcqS4l1y4LhP47YG2RDkWBHRp2EttitlyESPxbxlArR3lBp1lOR+Wethqgh8bFYcpzt6Fun6AhhfUe5KfCMRh5nK8tqCOOw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772793816; c=relaxed/relaxed;
-	bh=xw51UHimXbuvHkvrh4C5tgrv5o29CeDYxDWm+24Rni4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=oEr/XuFVg5FBbEJzwcLkHLz8CDu/B2Y0WmDXOuj60R0+bAH7T4GiKl+C+eG9fp+wCTGurG+p8uoz/cGFrkc8JNVKFr/qJVO5VqD5fYc8U+z2wmomvIHzfWvCnBNjT/KsMHAmosVgkGGid/6hnL2an51wl7s5OhM27mA4CxH7IjKOoh6K0MOd9B7VLB9wSqzDH23TUU3WdLmnlj6mv4n7bPrWIAJwwIvwMTRjkO7+miOMbmVLKraFpW1L3/P3bTeZNAzRTbtXsZtGbaHfNPTQPfe7Hsnu9KEvtxjQMKgxW9LCbNquqzhRV726lVrVDDCoB3FPR2vg6o+5wEYywcUDIQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BzVtHObI; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1772795637; c=relaxed/relaxed;
+	bh=MFDy3mPH4NjmVrHKBxbSgKTS73hgxOdxEWk4nSkOndU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=cF2rZQbhB438pGiqgUTIxLr7Ck8i4+Yzbv91R8l/cymLHjH0sOzGxfR5UP1F0gmtndejma4rM3s6XcN5UXhyUis/lr1Pd+BshHEWxUlJECW85udwvb9aBy9avvb85v33DHOXQ5/B5Csy8LdWzd8ZZDYQu/n+4tAPqdP0bEHG8mEv7gp5+Zkmxhkvsd0lOBtDJKQfDgcvjFSgFWMR3xP93kslipeoorN4lH8k5RPLAfJFgWCvsNfDoNP/c40It94lWQBZR6DiRqIO+GYVFlx7psc5e66624coSf+7ky8KBQLcXMdV69VND+8ibva8qQQ0UX0tTXS4jYKUGQu0CDV26Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=vL4DUgk0; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=bYCXQtON; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=m55eivUy; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=vyBaWIVr; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=pfalcato@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BzVtHObI;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=vL4DUgk0;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=bYCXQtON;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=m55eivUy;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=vyBaWIVr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=pfalcato@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fS30l3K2wz30T9
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Mar 2026 21:43:35 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 3CC036012A;
-	Fri,  6 Mar 2026 10:43:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B76D3C4CEF7;
-	Fri,  6 Mar 2026 10:43:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772793812;
-	bh=jKZEF3IUSt1J91757T2vSUpKudKOAuc0I9XBO5Sn7ko=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=BzVtHObIL82/q9O+sOb2/+FweppM29b9mnTSAfc69usZmapfE8B7l+05Z7ufxsOTk
-	 CRb055OLrA9Fy0yEzPfSTSO3b4HQdk2eAUXkpLJI5GsUQVNu5xWwHe/INBvaNDqBZg
-	 g48NgVDztPTNO6Bd1g9Q+EQL2umvqAmLBE0LYiE6WC7dKN/L9rELZLCDr3TfV/KUNo
-	 0vqW/J+Wr4G4E1dUk3ZG5r6MLRBygEtiuFa87etC+eXlXVJtK5o7NcTKq8hG2Vvqvj
-	 DK52IoDgQ/NqyZ4P0Mzc/8FITgp1u7NKxRK8gEjFAVqYwr+lNx6ZLS/spi4VZXOb/Q
-	 8lsBXIqpub5Vg==
-Message-ID: <96cdd223-5139-4535-b82d-831dac472cc3@kernel.org>
-Date: Fri, 6 Mar 2026 11:43:24 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fS3gm1D2Dz30T9
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Mar 2026 22:13:56 +1100 (AEDT)
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id D2AB23E732;
+	Fri,  6 Mar 2026 11:13:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1772795625; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=MFDy3mPH4NjmVrHKBxbSgKTS73hgxOdxEWk4nSkOndU=;
+	b=vL4DUgk0v/L/3CUv9SxUSaftBMk8NhHHABnsXjxDGcCdoH1oiTD/xz+/I/n3MdV7ToXXIx
+	V8LiVrJoNauf/tg8ZoStpt1VJSU3xf+KKl3dNgjkNEvMXD04W3qhCGUMVVUaYjQWICuYZz
+	Mz71Na2lz2x0yWejULElNR4Q1tKWyXI=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1772795625;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=MFDy3mPH4NjmVrHKBxbSgKTS73hgxOdxEWk4nSkOndU=;
+	b=bYCXQtON6yDnKmZ3aKuWDpdKv4t7vJ7xTNt+IexnRe+Ai1tbt+5s14elVSQ3PM3GomXNkl
+	qNKs1ulOf4eyAODg==
+Authentication-Results: smtp-out1.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1772795624; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=MFDy3mPH4NjmVrHKBxbSgKTS73hgxOdxEWk4nSkOndU=;
+	b=m55eivUyjBSUSCnbe+niTSegT7FmMA9p+gLBFl5TEKQ0mZg0c8I93cLkT16KprZTKSuC8n
+	bWWLvdgME0995C3y5ZPeqf0FDWtJ+BSvXxtTGmAaVS5j+q//F6lCHTzZmUyCg24uGJ6ftJ
+	JIU+zwNFr0QmjWJcc4edouVMk6d69b8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1772795624;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=MFDy3mPH4NjmVrHKBxbSgKTS73hgxOdxEWk4nSkOndU=;
+	b=vyBaWIVr/wdi4MydAjPdePLE4DZi9z/doIFgj4j6TJS5Pu0eviD2WccjGLJl1xAT1kwMcy
+	GxF6WXoRQH9KU4CA==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 8045C3EA75;
+	Fri,  6 Mar 2026 11:13:43 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id sNnrG+e2qmkkaAAAD6G6ig
+	(envelope-from <pfalcato@suse.de>); Fri, 06 Mar 2026 11:13:43 +0000
+Date: Fri, 6 Mar 2026 11:13:41 +0000
+From: Pedro Falcato <pfalcato@suse.de>
+To: "David Hildenbrand (Arm)" <david@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, 
+	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+	Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, 
+	Lorenzo Stoakes <ljs@kernel.org>, "Liam R. Howlett" <Liam.Howlett@oracle.com>, 
+	Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
+	Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jann Horn <jannh@google.com>, 
+	Paolo Bonzini <pbonzini@redhat.com>, Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [PATCH v1 0/4] mm: move vma_(kernel|mmu)_pagesize() out of
+ hugetlb.c
+Message-ID: <4rzf46kw6hq3b5ivv7cvgyza4yfrvk2shrncytobabxef644nm@wzu2bw63co37>
+References: <20260306101600.57355-1-david@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,65 +111,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 0/5] vDSO: Use 32-bit CHECKFLAGS for compat vDSO
-To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
- "David S. Miller" <davem@davemloft.net>,
- Andreas Larsson <andreas@gaisler.com>, Andy Lutomirski <luto@kernel.org>,
- Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
- x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
- Arnd Bergmann <arnd@arndb.de>, Heiko Carstens <hca@linux.ibm.com>,
- Vasily Gorbik <gor@linux.ibm.com>, Alexander Gordeev
- <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- David Laight <david.laight.linux@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Sun Jian <sun.jian.kdev@gmail.com>, kernel test robot <lkp@intel.com>,
- Dan Carpenter <dan.carpenter@linaro.org>
-References: <20260302-vdso-compat-checkflags-v2-0-78e55baa58ba@linutronix.de>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <20260302-vdso-compat-checkflags-v2-0-78e55baa58ba@linutronix.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260306101600.57355-1-david@kernel.org>
+X-Spamd-Result: default: False [-7.80 / 50.00];
+	REPLY(-4.00)[];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	MID_RHS_NOT_FQDN(0.50)[];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	MISSING_XM_UA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[21];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	TO_DN_SOME(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[vger.kernel.org,kvack.org,lists.ozlabs.org,linux-foundation.org,linux.ibm.com,gmail.com,ellerman.id.au,kernel.org,linux.dev,suse.de,oracle.com,google.com,suse.com,redhat.com,intel.com];
+	RCVD_TLS_ALL(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:email,imap1.dmz-prg2.suse.org:helo,linux.dev:email,suse.de:email,linux-foundation.org:email]
 
-
-
-Le 02/03/2026 à 08:58, Thomas Weißschuh a écrit :
-> When building the compat vDSO the CHECKFLAGS from the 64-bit kernel
-> are used. These are combined with the 32-bit CFLAGS. This confuses
-> sparse, producing false-positive warnings or potentially missing
-> real issues.
+On Fri, Mar 06, 2026 at 11:15:56AM +0100, David Hildenbrand (Arm) wrote:
+> Looking into vma_(kernel|mmu)_pagesize(), I realized that there is one
+> scenario where DAX would not do the right thing when the kernel is
+> not compiled with hugetlb support.
 > 
-> Manually override the CHECKFLAGS for the compat vDSO with the correct
-> 32-bit configuration.
+> Without hugetlb support, vma_(kernel|mmu)_pagesize() will always return
+> PAGE_SIZE instead of using the ->pagesize() result provided by dax-device
+> code.
 > 
-> Not all architectures are supported, as many do not use sparse for their
-> (compat) vDSO. These can be enabled later.
+> Fix that by moving vma_kernel_pagesize() to core MM code, where it belongs.
+> I don't think this is stable material, but am not 100% sure.
 > 
-> Also add some checks to bitsperlong.h to detect such issues earlier.
+> Also, move vma_mmu_pagesize() while at it. Remove the unnecessary hugetlb.h
+> inclusion from KVM code.
 > 
-> Based on tip/timers/vdso.
+> Cross-compiled heavily.
 > 
-> Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
-> ---
-> Changes in v2:
-> - Simplify __BITS_PER_LONG consistency checks
-> - Fix an inconsistency in the powerpc audit code
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+> Cc: Nicholas Piggin <npiggin@gmail.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+> Cc: Muchun Song <muchun.song@linux.dev>
+> Cc: Oscar Salvador <osalvador@suse.de>
+> Cc: Lorenzo Stoakes <ljs@kernel.org>
+> Cc: "Liam R. Howlett" <Liam.Howlett@oracle.com>
+> Cc: Vlastimil Babka <vbabka@kernel.org>
+> Cc: Mike Rapoport <rppt@kernel.org>
+> Cc: Suren Baghdasaryan <surenb@google.com>
+> Cc: Michal Hocko <mhocko@suse.com>
+> Cc: Jann Horn <jannh@google.com>
+> Cc: Pedro Falcato <pfalcato@suse.de>
+> Cc: Paolo Bonzini <pbonzini@redhat.com>
+> Cc: Dan Williams <dan.j.williams@intel.com>
 
-The powerpc audit code should be replaced by generic 
-AUDIT_ARCH_COMPAT_GENERIC, as there is no difference between them 
-apparently.
+Although we all love less mail, FYI it seems like this didn't work properly
+for the patches (no CC's on there).
 
-A tentative was made in the past but was declined by audit maintainers 
-because we were not able to test it allthought the failure was the same 
-before and after the patch, see 
-https://github.com/linuxppc/issues/issues/412
+Did you try git-email --cc-cover?
 
-Christophe
-
+-- 
+Pedro
 
