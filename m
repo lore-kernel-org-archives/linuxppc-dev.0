@@ -1,61 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-17804-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17805-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F4177F0182B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2026 12:05:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95CE1F01832
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2026 12:21:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fS4pg0sdyz3bnJ;
-	Fri, 06 Mar 2026 23:04:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fS59L70NQz3bnJ;
+	Fri, 06 Mar 2026 23:21:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772798699;
-	cv=none; b=hzM0nqH2FvGVk89BjOPLeZ1V8jHAZXw337Fq95+0PCBtwTZJZFYfpYEUTCjllyPB5oBP9inT5q67J/4B1itOShLY0nAPxw/OsG7jEh1gYVRy8XweDAc8mJuKM0eRl98p56e5aOhD0H/1fURM0xKnQuTdr7jjFwV1va4IgrJRNAOuENr49lhI7imhRUyvjllv9SNA+g/kDd2IJweBof4M3TWncW4I0BpDrtp31JgnmuOqhnNnXnf39gZ4e3ECLKnj5NVLwfaPQ2ALkPQM0+eNJgCvBuYb/FrbIuM7LO+dMP0EerP+h9l5OuNNAR6KLItGX0ZTP7iYFe1IuBdGgcXOsQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772795265;
+	cv=none; b=ovcHPijJuoWGxLOB/Z87BlSPw5XhJSv4/qoX/DInBlRdKHKhPKhsmsqb1vi1SfI/PFq07ABvrU4Hzihi6vBWRvQNS3ubq3/OQpIZpiXzT8TmHq8rtSPEzfQuywfY3/b3es2DrU+vRudxyO5DhYSvPkXxIGEA19HBuN4fkaEVLcITK1drf8Eo4KLBfCnAUS3+fSwsx0NatdIPJUW81Zqjt+iMHbAbL1b+KbL+uiNzzLosAkc8MrL8wPazqtdULlF7IAI0TLHEIVJVmy2hi6TTU8c+wGnALLy9m5UayiAFwgp9pRCK7O6IDtWZiNoBJe4rHttWUbkiq2FXD9Lk6zuq5w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772798699; c=relaxed/relaxed;
-	bh=OK/V7WgT+BtAQCQInwPGXadurJ8C6F9OPr0IpggRc9A=;
+	t=1772795265; c=relaxed/relaxed;
+	bh=pNkRqhf2OEYfDr/sk/mw7yv47Dg5A+NNPlMn4giuCwU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=YWumlqatng6doxFQlc5sQwCRuhiv7gjQSZb+v7ObVf3iue9K1RyXcWVbbFQ3Tl+VQKEA+f9yaZqp6fYpY0/uTaMfcst+W8fZNEnJledZP5zlYR1Qvr0e3HQBW2WLgT+EleTKRMh0vTu1xMBFTqfGeGQTOz5rbnsIzgw3BRJWqiIYelVioBc7N3E2vuKF9dS7AJrD0sNNtu1bpOtLlD4/A2kNsJ5ZB5n4B9saC3AmWK6u9uu5b9+HIF9tEL3gdyX9sNlSOzcsh0iQBRjeGPPCekH9kP6jxleSihH3QI8z1KlsVLRVlaMpkoCZJThvB7d2b9YKtV2GE37pFJN9PtoCtg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FE8qIcXw; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=aRCJ5H/FVeuANNMphq6Qo16asP1VsOgKkiembcFkYnjimVVnSWa+MkZyBtQnozf0aJG885Iu0CxWmVy+E2V7tKceUivH7KwzYN7oW7uz6I7qzhOlZvXWIubJfesHOX1LKCNAK9BLSdRm9oQtLSpSxHyCbBPUHeyKFL4qosVKxkl03j8N8RCtqgw0gIlMYA+577eRws+aXclBSxQMWPS+3I7K620jo6u/MEyW7wWjmiTrqcHS/K3Ro0514yMZGTtZqA45ASzFwqebZNQRIsomTsknEeQGzwkksKFLjcrete2Bpdx6dSUdZcvMBFaV5eDQN4IAQTpW2vC5fqzMD+HLug==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LfXrGnQj; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FE8qIcXw;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LfXrGnQj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fS4pf39h1z30T9
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Mar 2026 23:04:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fS3Xc4JFyz30T9
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Mar 2026 22:07:44 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 7617E60018;
-	Fri,  6 Mar 2026 12:04:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0D8A3C2BC87;
-	Fri,  6 Mar 2026 12:04:53 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 4DB1E60130;
+	Fri,  6 Mar 2026 11:07:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7CD42C4CEF7;
+	Fri,  6 Mar 2026 11:07:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772798696;
-	bh=OK/V7WgT+BtAQCQInwPGXadurJ8C6F9OPr0IpggRc9A=;
+	s=k20201202; t=1772795262;
+	bh=xHA3xv8H6bWtNG4YWuzx0gTRR1QZaKIgnv1aEOMe/sI=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=FE8qIcXwuwa4rIAFBSmP0FKHWuwRqhRCstfE0Wn9aAhYo5O/CQCk6WLD5n98ngask
-	 TBrE/SWVXAdrctaNZV0xgXe2qrCiUImfriM9W/aim2EibVhVJKsLbt1AcWXGrQXVxZ
-	 zfoW/N5NSokhmUPuZpvKtx5sJg8hHgveItqbg8uGmEevdcDhX2Yb/6KmFnCB5nIEue
-	 LAsPqmKdCsEaYcYq2TXceFGAtwfTr+xQEk+qt51CFlL0WYQpeX07HaHWQ8+mnh1xkT
-	 iPyCOm1nD0DyRoTqzargcPQV+TssjQi9Bk2G4HbF3hj0tem1wqkhdprXJdQ3fN8Gzo
-	 YEdbJpsZeJKzg==
-Date: Fri, 6 Mar 2026 12:04:51 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Shengjiu Wang <shengjiu.wang@nxp.com>
-Cc: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com,
-	nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz,
-	tiwai@suse.com, linux-sound@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 1/3] ASoC: fsl_utils: Add snd_kcontrol functions for
- specific cases
-Message-ID: <0b110f10-dcc0-4573-803c-4dcf21643c3b@sirena.org.uk>
-References: <20260306093949.1647452-1-shengjiu.wang@nxp.com>
- <20260306093949.1647452-2-shengjiu.wang@nxp.com>
+	b=LfXrGnQjHWNBBCETU/U4oSl/XQLAxUW5IW4VzDgbJuqr8rMv2CC9tqLHt++rzGNHE
+	 t0r7h92NQurOz8dlsIXe9stMOQlmA9ZH6uLf2rKEazE2DmsuCUq0OtForVaXI/uXVW
+	 xtlO4A6wks/mXhKXFf8pRc21P5Mj4x0jcKTcGp5pDBK5Rz7C8/7ojyk95zx5cNCewp
+	 1u29pZldqh+4VOJ/ZgmA75LILHILbY+xmhXnvOKJTsfxC6LVYIr2RXdmffQ1gmyK+q
+	 OgN6lcJBXIMNxzWGvz7oM3X3rkkwdktXnGjssSHgVBLcvQYAK7mQTpIC3PR4xxKLyg
+	 qnM/YAedK++bQ==
+Date: Fri, 6 Mar 2026 11:07:38 +0000
+From: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
+To: "David Hildenbrand (Arm)" <david@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, 
+	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [PATCH v1 1/4] mm: move vma_kernel_pagesize() from hugetlb to
+ mm.h
+Message-ID: <833950ef-e01d-4914-b5f9-bc1f6261b184@lucifer.local>
+References: <20260306101600.57355-1-david@kernel.org>
+ <20260306101600.57355-2-david@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,41 +67,167 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="pz9X0x5TI724p1R2"
-Content-Disposition: inline
-In-Reply-To: <20260306093949.1647452-2-shengjiu.wang@nxp.com>
-X-Cookie: A nuclear war can ruin your whole day.
-
-
---pz9X0x5TI724p1R2
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20260306101600.57355-2-david@kernel.org>
 
-On Fri, Mar 06, 2026 at 05:39:47PM +0800, Shengjiu Wang wrote:
-> There are some registers which are volatile, at pm runtime suspend state,
-> the regmap cache only is enabled, regmap will return -EBUSY when trying to
-> access these registers.
+On Fri, Mar 06, 2026 at 11:15:57AM +0100, David Hildenbrand (Arm) wrote:
+> In the past, only hugetlb had special "vma_kernel_pagesize()"
+> requirements, so it provided its own implementation.
+>
+> In commit 05ea88608d4e ("mm, hugetlbfs: introduce ->pagesize() to
+> vm_operations_struct") we generalized that approach by providing a
+> vm_ops->pagesize() callback to be used by device-dax.
+>
+> Once device-dax started using that callback in commit c1d53b92b95c
+> ("device-dax: implement ->pagesize() for smaps to report MMUPageSize")
+> it was missed that CONFIG_DEV_DAX does not depend on hugetlb support.
+>
+> So building a kernel with CONFIG_DEV_DAX but without CONFIG_HUGETLBFS
+> would not pick up that value.
+>
+> Fix it by moving vma_kernel_pagesize() to mm.h, providing only a single
+> implementation. While at it, improve the kerneldoc a bit.
+>
+> Ideally, we'd move vma_mmu_pagesize() as well to the header. However,
+> its __weak symbol might be overwritten by a PPC variant in hugetlb code.
+> So let's leave it in there for now, as it really only matters for some
+> hugetlb oddities.
+>
+> This was found by code inspection.
+>
+> Fixes: c1d53b92b95c ("device-dax: implement ->pagesize() for smaps to report MMUPageSize")
+> Cc: Dan Williams <dan.j.williams@intel.com>
+> Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
 
-> +EXPORT_SYMBOL(fsl_asoc_get_xr_sx);
+LGTM, but you need to fix up VMA tests, I attach a patch below to do this. Will
+this resolved:
 
-Please make anything that exports ASoC or regmap functionality _GPL, the
-underlying APIs are _GPL.
+Reviewed-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
 
---pz9X0x5TI724p1R2
-Content-Type: application/pgp-signature; name="signature.asc"
+> ---
+>  include/linux/hugetlb.h |  7 -------
+>  include/linux/mm.h      | 20 ++++++++++++++++++++
+>  mm/hugetlb.c            | 17 -----------------
+>  3 files changed, 20 insertions(+), 24 deletions(-)
+>
+> diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+> index 65910437be1c..44c1848a2c21 100644
+> --- a/include/linux/hugetlb.h
+> +++ b/include/linux/hugetlb.h
+> @@ -777,8 +777,6 @@ static inline unsigned long huge_page_size(const struct hstate *h)
+>  	return (unsigned long)PAGE_SIZE << h->order;
+>  }
+>
+> -extern unsigned long vma_kernel_pagesize(struct vm_area_struct *vma);
+> -
+>  extern unsigned long vma_mmu_pagesize(struct vm_area_struct *vma);
+>
+>  static inline unsigned long huge_page_mask(struct hstate *h)
+> @@ -1177,11 +1175,6 @@ static inline unsigned long huge_page_mask(struct hstate *h)
+>  	return PAGE_MASK;
+>  }
+>
+> -static inline unsigned long vma_kernel_pagesize(struct vm_area_struct *vma)
+> -{
+> -	return PAGE_SIZE;
+> -}
+> -
+>  static inline unsigned long vma_mmu_pagesize(struct vm_area_struct *vma)
+>  {
+>  	return PAGE_SIZE;
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 44e04a42fe77..227809790f1a 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -1307,6 +1307,26 @@ static inline bool vma_is_shared_maywrite(const struct vm_area_struct *vma)
+>  	return is_shared_maywrite(&vma->flags);
+>  }
+>
+> +/**
+> + * vma_kernel_pagesize - Default page size granularity for this VMA.
+> + * @vma: The user mapping.
+> + *
+> + * The kernel page size specifies in which granularity VMA modifications
+> + * can be performed. Folios in this VMA will be aligned to, and at least
+> + * the size of the number of bytes returned by this function.
+> + *
+> + * The default kernel page size is not affected by Transparent Huge Pages
+> + * being in effect.
+> + *
+> + * Return: The default page size granularity for this VMA.
+> + */
+> +static inline unsigned long vma_kernel_pagesize(struct vm_area_struct *vma)
+> +{
+> +	if (unlikely(vma->vm_ops && vma->vm_ops->pagesize))
+> +		return vma->vm_ops->pagesize(vma);
+> +	return PAGE_SIZE;
+> +}
+> +
+>  static inline
+>  struct vm_area_struct *vma_find(struct vma_iterator *vmi, unsigned long max)
+>  {
+> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+> index 1d41fa3dd43e..66eadfa9e958 100644
+> --- a/mm/hugetlb.c
+> +++ b/mm/hugetlb.c
+> @@ -1017,23 +1017,6 @@ static pgoff_t vma_hugecache_offset(struct hstate *h,
+>  			(vma->vm_pgoff >> huge_page_order(h));
+>  }
+>
+> -/**
+> - * vma_kernel_pagesize - Page size granularity for this VMA.
+> - * @vma: The user mapping.
+> - *
+> - * Folios in this VMA will be aligned to, and at least the size of the
+> - * number of bytes returned by this function.
+> - *
+> - * Return: The default size of the folios allocated when backing a VMA.
+> - */
+> -unsigned long vma_kernel_pagesize(struct vm_area_struct *vma)
+> -{
+> -	if (vma->vm_ops && vma->vm_ops->pagesize)
+> -		return vma->vm_ops->pagesize(vma);
+> -	return PAGE_SIZE;
+> -}
+> -EXPORT_SYMBOL_GPL(vma_kernel_pagesize);
+> -
+>  /*
+>   * Return the page size being used by the MMU to back a VMA. In the majority
+>   * of cases, the page size used by the kernel matches the MMU size. On
+> --
+> 2.43.0
+>
 
------BEGIN PGP SIGNATURE-----
+----8<----
+This breaks the VMA tests when patch 2/4 removes the references in other
+headers. So this patch should also update them, I enclose a simple fix for
+convenience:
 
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmmqwuIACgkQJNaLcl1U
-h9AIwAf+K+r3S9KAElHMGCrYoq9nCdr8s4aLSb2bGWX8gkmQ000L840fz/C/xb85
-mLuFuCsL0I1ouP4TxE0Nn4BUMpSsC9vVYkynQIq2BxJYZWapmPwp1yABbqK5KGJP
-Z1VoihCfeF/qNdnqU/zHvdnfWaBlQ89tWlXQSoZ36O613/lMMBkCFnFUAogBrxqE
-zbsxPLVtdH/06BAgkN2PradMy3hDZ698G0Lf9Cy3J3r3ZzCiDwwbDqrDhjmeNOku
-Ir2ppo+Fm9QiTsiO5TUSfpvrWwAAQ0A/sLTXx+rMkyLvfibEeyDDkTOh1vwM9n+c
-enP3CeLjEpv7mWdxHP1SKT6LJPe4MA==
-=Ex6A
------END PGP SIGNATURE-----
+From bec84895cbdbe28e3495c4d90e097074598419e5 Mon Sep 17 00:00:00 2001
+From: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
+Date: Fri, 6 Mar 2026 11:05:12 +0000
+Subject: [PATCH] fix
 
---pz9X0x5TI724p1R2--
+---
+ tools/testing/vma/include/dup.h | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/tools/testing/vma/include/dup.h b/tools/testing/vma/include/dup.h
+index 3078ff1487d3..65b1030a7fdf 100644
+--- a/tools/testing/vma/include/dup.h
++++ b/tools/testing/vma/include/dup.h
+@@ -1318,3 +1318,10 @@ static inline void vma_set_file(struct vm_area_struct *vma, struct file *file)
+ 	swap(vma->vm_file, file);
+ 	fput(file);
+ }
++
++static inline unsigned long vma_kernel_pagesize(struct vm_area_struct *vma)
++{
++	if (unlikely(vma->vm_ops && vma->vm_ops->pagesize))
++		return vma->vm_ops->pagesize(vma);
++	return PAGE_SIZE;
++}
+--
+2.53.0
 
