@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-17820-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17821-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7763CF0182F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2026 13:13:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D504F01834
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2026 13:16:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fS6KC6mXtz2xqm;
-	Sat, 07 Mar 2026 00:13:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772802783;
-	cv=none; b=QcU1kgqAIH9eIn6itMBCyTHw+6ruqpLFImKCVh5adbmIZVf1dZK8fuQhXhG8YzHU2jeZdWkOA15LXN8LUzcEMZIBF3U8F3EnhipPTPcMDJtX+SDHPEPIgqUFjJTu7p2KhzWOcIf0uPL6Knon6iuA3cUwuIY8qgw7HvKwPcPikWMjHco3eVUYM/OVK3bcSNm0EDJt2utGqtcFmSrNlDHrUiOBQaHJwR8iLsgNoY9qqd8T2XussKjeDWLo9Euea6BfOB9Yxx+LuMu+2VaowA3Dmln6vE7RquAoYu/209jN0hz5d7CsO0eKCgRcxrWiBLfSLb2nRPzrr0jsDiYY1s4Jjw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fS6Pd5XqQz2xqm;
+	Sat, 07 Mar 2026 00:16:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772803013;
+	cv=none; b=GAF1YA5+OurAl4iEkf0wgR9THzNbyTQ6EjnpAkjH/22M5klBNQhxvDQGf3+HKWHlgU6NtSW5GOS4IajV19o7/852xda8902OJgxUpl6SmJUP3/U8u77OCR1C/tRsE1ov59Ls3sT+K9/bECBvSOM3H/cvlsXZNMqwVRXWcNYNPRwoG1X3e6NeYK8IVesiUiQuKhSWDg2mSRpJ8yCO1Drz5a4CsXU+AXdjsd/N30SyQCJhwHGYDPtUoDbn2ePLQ8r8NLshuIb4To/Kt8iJweNberg1nrISYRUD1jke1KWfFidwhCjR2txuc3OtaWXg1NF+Fryg1lZj/KYdjps34nu1/Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772802783; c=relaxed/relaxed;
-	bh=BWR4rhexMM4dZTHGgKsgheaMANnYbsrVr9EOC5as+xY=;
+	t=1772803013; c=relaxed/relaxed;
+	bh=D/KbYbH7145k5H6ul3BXhxYr3QJZdY2mM5sRTOfoVHs=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=a3M6/bcuElp+P2XK8e8buH5a9DwM5k1oT3VLaHGzC5hcGD2f/iDLrS9JXeFf+SUzR5fL4kYUqjqV43SRVgo9kpN2XOaO+St/aNHz9dkLu/BksJWe5AiymuoGdUSHq2QKWM7BDXQtgaSXW/JYF6lPYbqdO+BHwRQS4v3oThpebY5k3VZRTMfaKeOtXB3644dXAw7mtdUbR3e80wyNJEeCAXJgKxw0FMDAfSvcu7cCR0fRJDPT6Ybnb8fEbaMyHMJgeML641VLDH6YDvwkS09vZUffkgZyyWieoFwM+rJuYAHJMXsALEzey13GWCjjYUsxHe6Tnv2j3go88PMEdpUxXQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nWpDUj1P; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=JED5P+CcMXg4MeUcbuSxmaxPCPFPh3kUvLi0KOI+bBPwn3JPZB+kJSTI04Uh8rD5VkG4/uZN81/4BvuApfoZSlMn/8W4J5QV0M8+N5NbTADYW0sIjBclz3Mph0v6+TCFFg+1Bx4e3g7hQ4F2aJciT7qHGXLP7O86Ou2w4WAgQlMi57on+4ICKTXw5xct9v094wH+G3z74oEGu5IzyKmJKBVA2sAd0mzWNYdrXtxHCOwXok42YA+EQKlkCBIu3fMVreXCkXtYKXxqpuAf+pgN6r+N0UM6rnbv81FrwYki/IZl1P4wTF8DYW5SRi9VpevmcgHp9FsK3lTVAam5wXfKuw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iIIEqtJ3; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nWpDUj1P;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iIIEqtJ3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fS6KB74thz2xT4
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Mar 2026 00:13:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fS6Pc6qNfz2xT4
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Mar 2026 00:16:52 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id E8E496012A;
-	Fri,  6 Mar 2026 13:13:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BCEDFC4CEF7;
-	Fri,  6 Mar 2026 13:12:54 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id A15F74414E;
+	Fri,  6 Mar 2026 13:16:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6669FC2BC86;
+	Fri,  6 Mar 2026 13:16:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772802780;
-	bh=izAH7dOf8eqdf91LErrTFaY5YvIH5GE/JtUI+1Y7mtA=;
+	s=k20201202; t=1772803010;
+	bh=1s6QLN/ghCrLJXZlKMxpYlFZehpnA7MCuk3K8EQdMlY=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=nWpDUj1PH6Agz8kEDINJ/DTPJoUdefAnjHjlMfer1lZXMWDScb8iVkE9sC/l83qoR
-	 blwBJ/DMmmvEkHljMsbppZB9hnCdVdNm86pHe/hzz8Y/IiHed6dKlqWLJ3ggGz2K7f
-	 m6uYXBclsRpE2FgeB9AasWCp5WRKoQjVDhLo8y9oHsO+fI08bBLMpCbw0bEbk0KW61
-	 DvmdltJJHBSSmGuzS9QLD2zMYhkLC6kS5ZXtj0Dy/8W8O1RvO9STgGlTDxT1ka2oWy
-	 qy0DO4zM+bTNZzwL4zxZOJMiFqoERgA8VtbUho+fzCXlrS4+RsWEARvuPaM92yFS0x
-	 WQ81jcztD1kcg==
-Message-ID: <5eae6c52-c3f9-407e-8fb8-01a950b282bf@kernel.org>
-Date: Fri, 6 Mar 2026 14:12:50 +0100
+	b=iIIEqtJ3tRMZ/QwYlyeMDf3S9PjzkVQkuz2ZOMvO4eTfkXzL8qKoudLNUlR5NEwQD
+	 8FNqliqMzEOtiPWm6TIg7UUBnmrYObcaHyEepfOoLaAtXjffktNCOYCvabXVOP1m8L
+	 WJWa/LFj2mYn+sTemJgm9xHc/mm1r4dw2qOUR4BC6BQDtNsfRS2HCk7BhPy2gHFDrM
+	 CKBuhXifw+SCwzUcqO1D7W/TEfS/I5MBdPyFBT1LQbyQbzFAGTL26JGaPzs1Dl7ZPx
+	 ban9iQy4V/ZbzDBUMQy/CEPCUCXZ2WyARWnTuLMg+eRLJIQUk3cWU2Qe3v1kpB6X3N
+	 pJOexzVCg18Yg==
+Message-ID: <bc5cfcc4-5e51-4da1-9ce9-ea0831bec400@kernel.org>
+Date: Fri, 6 Mar 2026 14:16:26 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,25 +60,57 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 0/4] mm: move vma_(kernel|mmu)_pagesize() out of
- hugetlb.c
-To: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>,
- Pedro Falcato <pfalcato@suse.de>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>,
+Subject: Re: [PATCH v1 11/16] mm/memory: inline unmap_page_range() into
+ __zap_vma_range()
+To: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
+Cc: linux-kernel@vger.kernel.org, "linux-mm @ kvack . org"
+ <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
  "Liam R. Howlett" <Liam.Howlett@oracle.com>,
  Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>,
  Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
- Jann Horn <jannh@google.com>, Paolo Bonzini <pbonzini@redhat.com>,
- Dan Williams <dan.j.williams@intel.com>
-References: <20260306101600.57355-1-david@kernel.org>
- <4rzf46kw6hq3b5ivv7cvgyza4yfrvk2shrncytobabxef644nm@wzu2bw63co37>
- <371cf0f7-4b30-4d8c-99e7-ae0543f8be23@lucifer.local>
+ Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>,
+ David Rientjes <rientjes@google.com>, Shakeel Butt <shakeel.butt@linux.dev>,
+ "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+ Alice Ryhl <aliceryhl@google.com>, Madhavan Srinivasan
+ <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Janosch Frank <frankja@linux.ibm.com>,
+ Claudio Imbrenda <imbrenda@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Jarkko Sakkinen <jarkko@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ =?UTF-8?Q?Arve_Hj=C3=B8nnev=C3=A5g?= <arve@android.com>,
+ Todd Kjos <tkjos@android.com>, Christian Brauner <brauner@kernel.org>,
+ Carlos Llamas <cmllamas@google.com>, Ian Abbott <abbotti@mev.co.uk>,
+ H Hartley Sweeten <hsweeten@visionengravers.com>,
+ Jani Nikula <jani.nikula@linux.intel.com>,
+ Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+ Rodrigo Vivi <rodrigo.vivi@intel.com>, Tvrtko Ursulin
+ <tursulin@ursulin.net>, David Airlie <airlied@gmail.com>,
+ Simona Vetter <simona@ffwll.ch>, Jason Gunthorpe <jgg@ziepe.ca>,
+ Leon Romanovsky <leon@kernel.org>,
+ Dimitri Sivanich <dimitri.sivanich@hpe.com>, Arnd Bergmann <arnd@arndb.de>,
+ Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>,
+ Andrii Nakryiko <andrii@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Namhyung Kim <namhyung@kernel.org>, Andy Lutomirski <luto@kernel.org>,
+ Vincenzo Frascino <vincenzo.frascino@arm.com>,
+ Eric Dumazet <edumazet@google.com>, Neal Cardwell <ncardwell@google.com>,
+ "David S. Miller" <davem@davemloft.net>, David Ahern <dsahern@kernel.org>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Miguel Ojeda <ojeda@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, linux-s390@vger.kernel.org, linux-sgx@vger.kernel.org,
+ intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+ linux-rdma@vger.kernel.org, bpf@vger.kernel.org,
+ linux-perf-users@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ netdev@vger.kernel.org, rust-for-linux@vger.kernel.org, x86@kernel.org
+References: <20260227200848.114019-1-david@kernel.org>
+ <20260227200848.114019-12-david@kernel.org>
+ <a5765cac-69d6-4314-82d5-80ee363906de@lucifer.local>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -125,59 +157,79 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <371cf0f7-4b30-4d8c-99e7-ae0543f8be23@lucifer.local>
+In-Reply-To: <a5765cac-69d6-4314-82d5-80ee363906de@lucifer.local>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 3/6/26 12:19, Lorenzo Stoakes (Oracle) wrote:
-> On Fri, Mar 06, 2026 at 11:13:41AM +0000, Pedro Falcato wrote:
->> On Fri, Mar 06, 2026 at 11:15:56AM +0100, David Hildenbrand (Arm) wrote:
->>> Looking into vma_(kernel|mmu)_pagesize(), I realized that there is one
->>> scenario where DAX would not do the right thing when the kernel is
->>> not compiled with hugetlb support.
->>>
->>> Without hugetlb support, vma_(kernel|mmu)_pagesize() will always return
->>> PAGE_SIZE instead of using the ->pagesize() result provided by dax-device
->>> code.
->>>
->>> Fix that by moving vma_kernel_pagesize() to core MM code, where it belongs.
->>> I don't think this is stable material, but am not 100% sure.
->>>
->>> Also, move vma_mmu_pagesize() while at it. Remove the unnecessary hugetlb.h
->>> inclusion from KVM code.
->>>
->>> Cross-compiled heavily.
->>>
->>> Cc: Andrew Morton <akpm@linux-foundation.org>
->>> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
->>> Cc: Nicholas Piggin <npiggin@gmail.com>
->>> Cc: Michael Ellerman <mpe@ellerman.id.au>
->>> Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
->>> Cc: Muchun Song <muchun.song@linux.dev>
->>> Cc: Oscar Salvador <osalvador@suse.de>
->>> Cc: Lorenzo Stoakes <ljs@kernel.org>
->>> Cc: "Liam R. Howlett" <Liam.Howlett@oracle.com>
->>> Cc: Vlastimil Babka <vbabka@kernel.org>
->>> Cc: Mike Rapoport <rppt@kernel.org>
->>> Cc: Suren Baghdasaryan <surenb@google.com>
->>> Cc: Michal Hocko <mhocko@suse.com>
->>> Cc: Jann Horn <jannh@google.com>
->>> Cc: Pedro Falcato <pfalcato@suse.de>
->>> Cc: Paolo Bonzini <pbonzini@redhat.com>
->>> Cc: Dan Williams <dan.j.williams@intel.com>
+On 3/6/26 13:29, Lorenzo Stoakes (Oracle) wrote:
+> On Fri, Feb 27, 2026 at 09:08:42PM +0100, David Hildenbrand (Arm) wrote:
+>> Let's inline it into the single caller to reduce the number of confusing
+>> unmap/zap helpers.
 >>
->> Although we all love less mail, FYI it seems like this didn't work properly
->> for the patches (no CC's on there).
+>> Get rid of the unnecessary BUG_ON().
 >>
->> Did you try git-email --cc-cover?
+>> Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
 > 
-> Yeah I noticed this also :>) Assumed it was a new way of doing things somehow?
-> :P
+> Small nits below, but overall LGTM so:
+> 
+> Reviewed-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
+> 
+>> ---
+>>  mm/memory.c | 32 ++++++++++++--------------------
+>>  1 file changed, 12 insertions(+), 20 deletions(-)
+>>
+>> diff --git a/mm/memory.c b/mm/memory.c
+>> index 394b2e931974..1c0bcdfc73b7 100644
+>> --- a/mm/memory.c
+>> +++ b/mm/memory.c
+>> @@ -2056,25 +2056,6 @@ static inline unsigned long zap_p4d_range(struct mmu_gather *tlb,
+>>  	return addr;
+>>  }
+>>
+>> -static void unmap_page_range(struct mmu_gather *tlb, struct vm_area_struct *vma,
+>> -		unsigned long addr, unsigned long end,
+>> -		struct zap_details *details)
+>> -{
+>> -	pgd_t *pgd;
+>> -	unsigned long next;
+>> -
+>> -	BUG_ON(addr >= end);
+>> -	tlb_start_vma(tlb, vma);
+>> -	pgd = pgd_offset(vma->vm_mm, addr);
+>> -	do {
+>> -		next = pgd_addr_end(addr, end);
+>> -		if (pgd_none_or_clear_bad(pgd))
+>> -			continue;
+>> -		next = zap_p4d_range(tlb, vma, pgd, addr, next, details);
+>> -	} while (pgd++, addr = next, addr != end);
+>> -	tlb_end_vma(tlb, vma);
+>> -}
+>> -
+>>  static void __zap_vma_range(struct mmu_gather *tlb, struct vm_area_struct *vma,
+>>  		unsigned long start, unsigned long end,
+>>  		struct zap_details *details)
+>> @@ -2100,7 +2081,18 @@ static void __zap_vma_range(struct mmu_gather *tlb, struct vm_area_struct *vma,
+>>  			return;
+>>  		__unmap_hugepage_range(tlb, vma, start, end, NULL, zap_flags);
+>>  	} else {
+>> -		unmap_page_range(tlb, vma, start, end, details);
+>> +		unsigned long next, cur = start;
+> 
+> VERY nitty, but generally current is abbreviated to curr not cur.
+> 
 
-"--cc-cover" is apparently not the git default on my new machine.
+The following might not be fully expressive (but simple to grep):
 
-"See, I CCed you, I totally did not try to sneak something in. Oh, I
-messed up my tooling, stupid me ...". :)
+$ git grep "cur_" | wc -l
+24261
+$ git grep "curr_" | wc -l
+9288
+
+Tells me that "cur" is rather common.
+
+> It's not a big deal, but why not addr?
+
+Good question, I can just do that. :)
 
 -- 
 Cheers,
