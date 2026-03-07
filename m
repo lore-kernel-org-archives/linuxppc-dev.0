@@ -1,52 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-17860-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17861-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DFE59FC9EC4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Mar 2026 23:48:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38CBDFC9ECF
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Mar 2026 05:21:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fSNQk1nyFz3cB3;
-	Sat, 07 Mar 2026 10:48:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::136"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772840926;
-	cv=none; b=ixcOHy9dBBJrX70ApZeHmNHmvRH5T+C/FIk7KR4q7kgBAyMkweGADOPLDk26ThksY++w+ox90C0z8nAn0WwfcsXT+PZvcj3PsBWOLa1LUZRSb5gqewFMyadeFpYQM6Jrc7Vd5FPpZlfTUJ/O87ZBgcUBos02NWBmbB8un/y5AlC3UcKQ+I7fCoX+uAH5O1A9Geq7/9jl0Rk/zvIO5yXlNvv/izIbFzXP5ej9nyIn/Wts0TZuMqt9Cyk5Xzjgmqjyy60bpYlOpReNLQwLM633VpqnBzq+f8+bA10lQJ7ULiTDMrQy9Zcakn2+aMF4tWFW3ilr6obOBVomISAETa3Izg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fSWph1CJ9z3cBd;
+	Sat, 07 Mar 2026 16:21:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772860892;
+	cv=none; b=Wc6psTHUk4rtmoEsPoKsVcBu+dBMkDpoX9kNAEJPMsJ7oxHAAjgJoJfZQAGcngiH/ZSW5VOTSAihYY4RjZkeWPpmvPDV6j86VTZ8Prf1fzNTstOZDlRbhQ4mtuxtgVis+KAFuNlkXkwI/Ce6s8+iYZehT4td6eqxwlkQixWnjOqfWwqRL6gsmfxzhwhYWrI/pnaH11Sc3bJyqhfx6TMmkF62NFZqmVXO5hcvulbcejglz7bPBGQszgk1MAx3JHXSt9J4PCw+cxAaeidzDkiczzOaJk+22ZiPlLEdk3EUvdNmF4M54B1LkVeEn9KOATzYEAnDa987hg5ymvqDKdqZow==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772840926; c=relaxed/relaxed;
-	bh=+EuyHHVP1ezysh+DOMChYpQ6YLA93nDMuTUQuNAbUKI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=RBiE8kfssWiu+4HLOZH0MM0p7QBfGwKMpxupn2LW9sf8kuCEjZ/LNi2eaj4a2cLNUY9sPMnc6ZCO4cIor1IBSEAhWasxS7iv2SZ9+F2OXhZmXsggHBI6ZLM50VgyODqZySg8evR8i1+fXenGITniaXeMZSWHLHteE3sPCdwthLKYJfNgsuibMZl7JjId6CPrISpmvRnMNwVKcO5D+hXntlLf8VyZuR3JE3RpfCJ7A/aRvwjAoswIlKttxprxSNyAIqGtZZg4Bc83TezzWjm22gKarJFIB7MNCWVtWK8jM9z5Ut8gOjiq8OIRnMukpD0/STissrZ8YATQR5hXJEbCZw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zytor.com; dkim=pass (2048-bit key; unprotected) header.d=zytor.com header.i=@zytor.com header.a=rsa-sha256 header.s=2026022301 header.b=PioK8n1G; dkim-atps=neutral; spf=pass (client-ip=2607:7c80:54:3::136; helo=mail.zytor.com; envelope-from=hpa@zytor.com; receiver=lists.ozlabs.org) smtp.mailfrom=zytor.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zytor.com
+	t=1772860892; c=relaxed/relaxed;
+	bh=C+1lRCwA/BOdt4Xrg4fOGnfGGg39mu0/9ApPD+bCW+M=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=RvWQbmtX/vohRTYWW714r2JiwrHe5DrNUrIfKJY8UJ8is7kXzylthygMkzit8l4Cb5YcMEo2Zi71y4443XELWl+koZOyw+pTB5k6xkXLZhgTfIEWD0q073AxxeuM7sSmjJu/EiRk3ri9gosfOKCapCG9tIRZ1JzI+clBeovYfHIF2sRYEviVtGiTQ+lwVY8XFmTI1A2epG9PZ2P6RxC/DY9zCeEpx96W/W4DslnJd72Ih47I3fd/VVtQy22avN1o++ofvMjUiZtu39smb3KGJgUsz6Ob18cQ33RcI6VFByoFUaGGBSRx081ngzCce1h1OjiXDPsSNgGRkm5H030ARQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mo3ueJfE; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=zytor.com header.i=@zytor.com header.a=rsa-sha256 header.s=2026022301 header.b=PioK8n1G;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mo3ueJfE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zytor.com (client-ip=2607:7c80:54:3::136; helo=mail.zytor.com; envelope-from=hpa@zytor.com; receiver=lists.ozlabs.org)
-Received: from mail.zytor.com (terminus.zytor.com [IPv6:2607:7c80:54:3::136])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fSNQh2Qbgz3c9y
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Mar 2026 10:48:43 +1100 (AEDT)
-Received: from [172.27.2.41] (c-76-133-66-138.hsd1.ca.comcast.net [76.133.66.138])
-	(authenticated bits=0)
-	by mail.zytor.com (8.18.1/8.17.1) with ESMTPSA id 626NVQj92208026
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NO);
-	Fri, 6 Mar 2026 15:31:58 -0800
-DKIM-Filter: OpenDKIM Filter v2.11.0 mail.zytor.com 626NVQj92208026
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zytor.com;
-	s=2026022301; t=1772839922;
-	bh=+EuyHHVP1ezysh+DOMChYpQ6YLA93nDMuTUQuNAbUKI=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=PioK8n1GDOCMylG5Zt2121yBqaQjmuAgAG8ArmoqbSGk+AY2HjiUf0EtOT1DsexRY
-	 3XzpMhpcVWr9RPSEgwVE9ESR7uck6X+0Brpr8WoubZ+TlXmlH4lDGa0CVViVEYVOPr
-	 a2U1eLnne4Jq8YkGPdE7tatxcJ2Gd+LMg66XDUlWERyyYKh8whYexkpditNEyz4ILx
-	 yckiGOkMmhcxGYFKzQD0ff8pydvHcvjyUktvDHaVTIquZDk64YCElixBnK+5hWClOa
-	 uRJidGVd5gvOOIeokQ5EcbFwoFLXBWjUIyo+ZDse7szoWgdzIXdm2JW1VkFzyB6i6x
-	 eQ3pvQwa4welw==
-Message-ID: <75d0ca29-b227-49c1-8204-b305f64b009b@zytor.com>
-Date: Fri, 6 Mar 2026 15:31:21 -0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fSWpg13zfz3bcf
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Mar 2026 16:21:30 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6274TUrk877795;
+	Sat, 7 Mar 2026 05:21:19 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=C+1lRCwA/BOdt4Xrg4fOGnfGGg39mu0/9ApPD+bCW
+	+M=; b=mo3ueJfEv2YsaVe+NFFHJ8gnUxAsiaZLb7ZHsVS/TaPYsRinISAjhJtlT
+	zGM2WkMw7xY9dTe/u+d+GSSd+5Yi9A2Tm4z2i/wU1vnAo6BZAAnw7iurKKb4k09N
+	cpxWuT+OgH6QbaqUxDEfyPhtX5kZuIKG2l/n2PLFCH6XfYuCMwo9M/hXM6Obv4YQ
+	/zfYiomg03CU+zHg2/nTNrSeuu3QXfjzQo+ImGMU5FCzRYRL7IjhKldT5VzmOSaB
+	L6VRQZr9Gr99VOvt4QM6UW3+EhLb5gf9g74uugXoubeAzDEVXkkHtIWLOLMtq5HK
+	lBvK2DZMIZiAdGM3zD8HVoxX+K5Uw==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4crd1m83ar-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 07 Mar 2026 05:21:18 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 6274o6Fh010305;
+	Sat, 7 Mar 2026 05:21:18 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4cmc6kjkvb-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 07 Mar 2026 05:21:18 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6275LELF16908684
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sat, 7 Mar 2026 05:21:14 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3264A20040;
+	Sat,  7 Mar 2026 05:21:14 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6B95820043;
+	Sat,  7 Mar 2026 05:21:11 +0000 (GMT)
+Received: from li-4f5ba44c-27d4-11b2-a85c-a08f5b49eada.ibm.com.domain.name (unknown [9.124.213.92])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Sat,  7 Mar 2026 05:21:11 +0000 (GMT)
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Sourabh Jain <sourabhjain@linux.ibm.com>,
+        Hari Bathini <hbathini@linux.ibm.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Mahesh Salgaonkar <mahesh@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Shivang Upadhyay <shivangu@linux.ibm.com>
+Subject: [PATCH v2 0/2] powerpc/crash: backup region offset update to eflcorehdr
+Date: Sat,  7 Mar 2026 10:50:55 +0530
+Message-ID: <20260307052102.944952-1-sourabhjain@linux.ibm.com>
+X-Mailer: git-send-email 2.52.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,87 +90,123 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/2] kbuild: Switch from '-fms-extensions' to
- '-fms-anonymous-structs' when available
-To: Nathan Chancellor <nathan@kernel.org>
-Cc: Nicolas Schier <nsc@kernel.org>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Will Deacon <will@kernel.org>, Huacai Chen <chenhuacai@kernel.org>,
-        WANG Xuerui <kernel@xen0n.name>,
-        "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-        Helge Deller <deller@gmx.de>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
-        Alexander Gordeev <agordeev@linux.ibm.com>,
-        Christian Borntraeger <borntraeger@linux.ibm.com>,
-        Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@kernel.org>,
-        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-        Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-        Ard Biesheuvel <ardb@kernel.org>,
-        Ilias Apalodimas <ilias.apalodimas@linaro.org>,
-        Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
-        Bill Wendling <morbo@google.com>,
-        Justin Stitt <justinstitt@google.com>, Kees Cook <kees@kernel.org>,
-        linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
-        linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-s390@vger.kernel.org, linux-efi@vger.kernel.org,
-        llvm@lists.linux.dev
-References: <20260223-fms-anonymous-structs-v1-0-8ee406d3c36c@kernel.org>
- <01433066-eb9b-4a96-8d7f-794af941d365@zytor.com>
- <20260306231705.GD2746259@ax162>
-Content-Language: en-US, sv-SE
-From: "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20260306231705.GD2746259@ax162>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=ds3Wylg4 c=1 sm=1 tr=0 ts=69abb5cf cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=V8glGbnc2Ofi9Qvn3v5h:22 a=NEAV23lmAAAA:8 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=pGLkceISAAAA:8 a=h0ihOahIyXu_IyCkdeYA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzA3MDA0MyBTYWx0ZWRfX7fQwW71xdjMn
+ EE3r4ylktUB9yMKCzkfPLZVL64S46KCZZi9mn2SjnvA4RxJSNgpTFGFdHOHwegyNVU5gPtIfKn0
+ WSYmg8qRcFSaA8aC7OggfCmW6yJj9ZsevsBuyQMWfuoot69BUX8Ff0Liijtv8choA3ZQkXgjwLs
+ BChcoXbQ1+a4eb+OVynSE4yGm2wpg7usNhfeY8KabI65rdcdZTzPaBWNHR+f3pJangc4FBRLztq
+ Z+/1s/i+RftYoSCc1IxyxGLeS/SQ4ZH2+8XsIZsBnjojuW4u8bhY6L6jNo9idSKfKxWPJTdf3Xg
+ nC/UZIfVsCJp+I5jpPWhU2JaDYP5mjocF8UfNI+rHMyEfizWONkmCD1+03J3A2DB2HhKs87vqOd
+ 1bANR1913zOeBpcOO8yjfbq7HvkKIUp7bsE1MCGXdz45EP3AxxMOrc9gcdIaFgZEpOIjOAzicYZ
+ +83vLXlTDqZCMzQorOQ==
+X-Proofpoint-GUID: PmWa31avfGOtjdb_a7-h61HnElloWNmG
+X-Proofpoint-ORIG-GUID: L74ujOM5pA7bVnZ61RL8LvzYdZ8Kp4Bz
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-07_02,2026-03-06_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 phishscore=0 clxscore=1015 impostorscore=0 suspectscore=0
+ priorityscore=1501 lowpriorityscore=0 malwarescore=0 adultscore=0 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2603070043
 
-On 2026-03-06 15:17, Nathan Chancellor wrote:
-> On Thu, Mar 05, 2026 at 03:43:29PM -0800, H. Peter Anvin wrote:
->> Question: does clang allow this with __extension__, or only if the option is
->> on the command line?  It would be desirable in the long run if both clang and
-> 
-> It looks like only on the command line:
-> 
->   https://godbolt.org/z/zrE766obe
-> 
->> gcc would allow this with __extension__, as that would be required to use it
->> in uapi headers (at least without some doable-but-nontrivial preprocessing,
->> which might be worthwhile to do anyway...)
-> 
-> I agree that would be desirable but wouldn't that change how
-> __extension__ works? As far as I can tell from reading GCC's
-> documentation [1], __extension__ just supresses warnings from -pedantic
-> and such, it does not actually enable a used extension if it conflicts
-> with whatever -std= value is passed?
-> 
-> [1]: https://gcc.gnu.org/onlinedocs/gcc/Alternate-Keywords.html
-> 
+On a kernel crash, purgatory copies the first 64 KB of the crashed
+kernel memory to the backup memory region reserved within crashkernel
+memory for the kdump kernel. This ensures that the capture kernel can
+use the first 64 KB of memory to place the exception vectors and other
+required data.
 
-Maybe it does, but it's explicit purpose is to allow code to be compiled with
-a -std= setting lower than the system libraries.
+However, in the elfcorehdr prepared using the kexec_file_load syscall,
+or the one recreated during a memory hotplug event, the offset of the
+program header representing the first 64 KB of memory is set to 0,
+whereas it should point to the backup region.
 
-I was a little surprised to see that -std=c90 doesn't actually enforce C90
-compatibility; even with -Wall -Wextra it requires -pedantic to issue
-warnings; the same seems to apply to -std=c99 for at least some features that
-were included in gnu* standards like anonymous structures and unions.
+This has not caused issues so far because the first 64 KB is usually
+identical in both the crashed and capture kernels. However, this is
+only an assumption and is not guaranteed to always hold true.
 
-The latter is probably a particular indication about the desirability of this,
-since the extension we are talking about is a relatively obvious extension of
-the anonymous struct/union construct!
+Therefore, update the offset of the program header representing the
+first 64 KB of the crashed kernel memory in the elfcorehdr prepared for
+the kdump kernel.
 
-It is an incredibly useful thing in ABI headers, because it lets you avoid the
-"copy/macro this entire structure definition into another."
+Testing:
+=======
 
-	-hpa
+Git Tree: https://github.com/sourabhjains/linux/commits/kdump-backup-region-offset/
 
+The above tree contains an additional patch that introduces a new sysfs
+interface to dump the kdump elfcorehdr to the dmesg/console.
 
+$> cat /sys/kernel/kexec/crash_elfcorehdr_print 
+ELF Program Header Summary:
+  Total Program Headers: 13 (0xd)
+  PT_LOAD segments:      4 (0x4)
+  PT_NOTE segments:      9 (0x9)
 
+Program Headers:
+Index Type               Offset             VirtAddr           PhysAddr     FileSize     MemSize  Flags   
+================================================================================
+0x0   PT_NOTE            0x3fd966400        0x0                0x3fd966400        0x218              0x218              ---
+0x1   PT_NOTE            0x3fd996400        0x0                0x3fd996400        0x218              0x218              ---
+0x2   PT_NOTE            0x3fd9c6400        0x0                0x3fd9c6400        0x218              0x218              ---
+0x3   PT_NOTE            0x3fd9f6400        0x0                0x3fd9f6400        0x218              0x218              ---
+0x4   PT_NOTE            0x3fda26400        0x0                0x3fda26400        0x218              0x218              ---
+0x5   PT_NOTE            0x3fda56400        0x0                0x3fda56400        0x218              0x218              ---
+0x6   PT_NOTE            0x3fda86400        0x0                0x3fda86400        0x218              0x218              ---
+0x7   PT_NOTE            0x3fdab6400        0x0                0x3fdab6400        0x218              0x218              ---
+0x8   PT_NOTE            0xa2c0000          0x0                0xa2c0000          0x10024            0x10024            ---
+0x9   PT_LOAD            0x1af40000         0xc000000000000000 0x0                0x10000            0x10000            RWX
+0xa   PT_LOAD            0x10000            0xc000000000010000 0x10000            0x17ff0000         0x17ff0000         RWX
+0xb   PT_LOAD            0x2ec70000         0xc00000002ec70000 0x2ec70000         0x1390000          0x1390000          RWX
+0xc   PT_LOAD            0x58000000         0xc000000058000000 0x58000000         0x3a8000000        0x3a8000000        RWX
 
+So, once kdump is successfully loaded using the kexec command,
+for example:
+
+$ kexec --initrd=/boot/initramfs-`uname -r`.img /boot/vmlinuz-`uname -r` --append="`cat /proc/cmdline`" -pds
+
+Running cat /sys/kernel/kexec/crash_elfcorehdr_print prints the
+elfcorehdr in the above format. The offset of the program header
+representing the first 64 KB can be easily observed.
+
+Changlog:
+
+v1:
+https://lore.kernel.org/all/20260303134722.2814049-1-sourabhjain@linux.ibm.com/
+
+v2:
+ - Fix build error: 'struct kimage' has no member named 'arch'
+   How?
+   Define ARCH_HAS_KIMAGE_ARCH and struct kimage_arch when
+   CONFIG_KEXEC_FILE or CONFIG_CRASH_DUMP is enabled so that
+   kimage->arch.backup_start is available with the kexec_load syscall.
+
+Cc: Hari Bathini <hbathini@linux.ibm.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Cc: Shivang Upadhyay <shivangu@linux.ibm.com>
+Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
+
+Sourabh Jain (2):
+  powerpc/crash: fix backup region offset update to eflcorehdr
+  powerpc/crash: Update backup region offset in elfcorehdr on memory
+    hotplug
+
+ arch/powerpc/include/asm/kexec.h  | 14 ++++++--
+ arch/powerpc/kexec/crash.c        | 60 +++++++++++++++++++++++++++++++
+ arch/powerpc/kexec/file_load_64.c | 29 +--------------
+ 3 files changed, 72 insertions(+), 31 deletions(-)
+
+-- 
+2.52.0
 
 
