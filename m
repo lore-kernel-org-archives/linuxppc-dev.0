@@ -1,58 +1,104 @@
-Return-Path: <linuxppc-dev+bounces-17891-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17892-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 188D1EFCD9C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Mar 2026 11:51:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4EDE1EFCD9B
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Mar 2026 12:00:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fTwN82F71z309P;
-	Mon, 09 Mar 2026 22:51:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773057112;
-	cv=none; b=dlsY/FNbWLq643JrrRTCyPhN9K43tF8z12itAb12I2XV8OGemp+2/U23i0xgTMmaMgOSiwYXnQiLxDEllaUqL4A5rFaV7y9jMM4urlyEv6h9BUNs0tH3IF7HrTT5lKWfV4A1//7MwmJQG9vFsnuMLIRkTlnC4ynpAdjvvYSae3osQ2I07E/d1aroqGNznWbL1/OnHgfqQyIlPlnw8BMKV53xiXnDkP8fYq5gKb/2vj/ipMBZzwRmblYIYucbOpiCRKPY19lXG1wRAlOv2uNMoLDlQIMQcP0bhpSSNdOY3xKgFrCfpeiNFzArQwgGUr2jCZwxG3/+rlgFdEEfISHcxg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fTwYZ3m7bz309P;
+	Mon, 09 Mar 2026 23:00:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773057602;
+	cv=none; b=lcOgp3kgVvDwYdUiIsf4L8iffgBw0R5LcFzAE6dYV+ARVUa6g6D2skEttsP2j0EW70FwVVqTF3w0wVROu781hUASh0OXlyvWO48ZnOeWLj29CnHUlqj28+iMGrMJ23ezGTZ+829lcjo5OxVqKIMdbFqEItF0JTAJNVPD1OF012HPRm3VUH6Bh70Z6MyztNYn+tll4CqrwTDto6ljrWnARjYDsL9E116iBKV7cylt3uywBxZgbHK3e0TRn0fa2z2PyOEnCZ5I5VCFHv4+lyBf0VbLXux2yVrEhOuJ7WBnU8PeJOClreqWsI4YZjuldJUvxuuDqJpQ/RuDHsIJ80KruA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773057112; c=relaxed/relaxed;
-	bh=E6ni+V15gEXaXXBvNzq+0rhu2ZSMmb0xp9G3k1TvHqc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=WD73FvyoIkcusRNS7Gqu7+5q3erW1rjEFyZTeJugD2+adHdLZELhDaVOxkSgGsPiibMUTf7I7pbWk+V1g6EpKxvI4QlGd9BOKvxtP9ikEZPHbR3pzr8DcTCwUj7ehUURo2YSrbq3YC/Mq7r5ObyPzqS8LTtBcBilq91UHD7GU/KB39u1ngsBzhfCldKfUxoqsizBGoAf+CMKTqwXfbPG9dZ1gNJHZ/9rSv37gnUz8HSjU9MrXM7Rs2+icIcNjRsQtlxEwsUXzX0EcJdcbIBAZq39/6X2l7P5QueerfcUEvLhRm0G7RVSumR4s3IgdrH/8ryOMl3LtH7pc9JaTTUY0w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=jXElw1yS; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::; helo=out-188.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1773057602; c=relaxed/relaxed;
+	bh=Y2XKH/glVvKIHxkYZx605ZSWZPl5fwhHS9csfxByePA=;
+	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=Xe/6nE3Ba16oXeHLie3U0gXZHhXp1KPnn/AXf+5QS19zNaPHGI0qgmTs0fmzqm9uZLNyD02+UDHYh5k5dp1Qy+xltddao4Lo31on1U3DHClP3BSl0OqafL5ifFtMYGPpYybGzgLke2y982wFoFsZnERqVx8taLXxCPoxnbxNsUK1XHacHUfRQNbpQN+as4xQCH84TwGgGicnZdSY2bd+qXuEJDkv5zv2JWZ6CdnxtogNRISn5yENcU5k1PWG3POjjhZxCcepYtIgO066KljWPZaR1Dps+BJHszX852PSIhVX/w+z4bTBtnghaEg8tttKqlJjjuzrPEMiku/lvz50Qg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=qZYEnqzK; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=iqg9jVsT; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=qZYEnqzK; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=iqg9jVsT; dkim-atps=neutral; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=jXElw1yS;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=qZYEnqzK;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=iqg9jVsT;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=qZYEnqzK;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=iqg9jVsT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::; helo=out-188.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
-X-Greylist: delayed 461 seconds by postgrey-1.37 at boromir; Mon, 09 Mar 2026 22:51:48 AEDT
-Received: from out-188.mta1.migadu.com (mta1.migadu.com [IPv6:2001:41d0:203:375::])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fTwN45wwqz2yFY
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Mar 2026 22:51:48 +1100 (AEDT)
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1773056617;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=E6ni+V15gEXaXXBvNzq+0rhu2ZSMmb0xp9G3k1TvHqc=;
-	b=jXElw1ySaZIGt0aOj4NcaVRPGdTR+68a8jfgKGMZjOR/3sUe4ETq+t/RN2Ngm1MrwhJ9BR
-	HxSCqmgoVVJNQFCZ2Mz8nJb9TfWmngGIS3/rks5ZAMPn0YVjhQFTLHX4BxSsjpq2Gg4451
-	LviTw7z0nNdzIKgAcSr1+eHqB0i7HrU=
-From: Thorsten Blum <thorsten.blum@linux.dev>
-To: Johannes Berg <johannes@sipsolutions.net>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fTwYX51GJz2yFY
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Mar 2026 23:00:00 +1100 (AEDT)
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 72E635BDE4;
+	Mon,  9 Mar 2026 11:59:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1773057596; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Y2XKH/glVvKIHxkYZx605ZSWZPl5fwhHS9csfxByePA=;
+	b=qZYEnqzK1ikbR4BBvUHdBv6bvyU7unV1bvQVy1rkjjWBoyibGQGLKF0ThiTVEJYbSpxlfA
+	QtdToMFPyvsISRgEJsm3Acdfhd6t98dwveMR4Hm5aRSE08pH2IpAZFuTOT9U2el/8g0hp4
+	SCp8Kxu4wGRp+XLhRV12tw39Ro7J8ls=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1773057596;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Y2XKH/glVvKIHxkYZx605ZSWZPl5fwhHS9csfxByePA=;
+	b=iqg9jVsTGgYSE3XjbD39+BsLT+VLoJYPcMqfLmN+wW6odLoUsiFSrpWuPIr1BxsKQy55we
+	4BWoayVgXwkdC0Dg==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1773057596; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Y2XKH/glVvKIHxkYZx605ZSWZPl5fwhHS9csfxByePA=;
+	b=qZYEnqzK1ikbR4BBvUHdBv6bvyU7unV1bvQVy1rkjjWBoyibGQGLKF0ThiTVEJYbSpxlfA
+	QtdToMFPyvsISRgEJsm3Acdfhd6t98dwveMR4Hm5aRSE08pH2IpAZFuTOT9U2el/8g0hp4
+	SCp8Kxu4wGRp+XLhRV12tw39Ro7J8ls=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1773057596;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Y2XKH/glVvKIHxkYZx605ZSWZPl5fwhHS9csfxByePA=;
+	b=iqg9jVsTGgYSE3XjbD39+BsLT+VLoJYPcMqfLmN+wW6odLoUsiFSrpWuPIr1BxsKQy55we
+	4BWoayVgXwkdC0Dg==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 2B0E33EEB0;
+	Mon,  9 Mar 2026 11:59:56 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id 8bgzCTy2rmkFHgAAD6G6ig
+	(envelope-from <tiwai@suse.de>); Mon, 09 Mar 2026 11:59:56 +0000
+Date: Mon, 09 Mar 2026 12:59:55 +0100
+Message-ID: <87zf4hmcw4.wl-tiwai@suse.de>
+From: Takashi Iwai <tiwai@suse.de>
+To: Thorsten Blum <thorsten.blum@linux.dev>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
 	Jaroslav Kysela <perex@perex.cz>,
 	Takashi Iwai <tiwai@suse.com>,
-	Kees Cook <kees@kernel.org>
-Cc: Thorsten Blum <thorsten.blum@linux.dev>,
+	Kees Cook <kees@kernel.org>,
 	stable@vger.kernel.org,
 	Takashi Iwai <tiwai@suse.de>,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-sound@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH] ALSA: aoa: Handle empty codec list in i2sbus_pcm_prepare()
-Date: Mon,  9 Mar 2026 12:41:59 +0100
-Message-ID: <20260309114159.765304-3-thorsten.blum@linux.dev>
+Subject: Re: [PATCH] ALSA: aoa: Handle empty codec list in i2sbus_pcm_prepare()
+In-Reply-To: <20260309114159.765304-3-thorsten.blum@linux.dev>
+References: <20260309114159.765304-3-thorsten.blum@linux.dev>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) Emacs/30.2 Mule/6.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,71 +111,45 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2247; i=thorsten.blum@linux.dev; h=from:subject; bh=RlF+xgJCNuvzFdIDPLMyD53b705fRJwJDPrTPtFEut8=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDJnrNrHvXpf5KdbN7HPRj+gmq51nTr44wue80Tl3Q4/S9 0cSiyd6dpSyMIhxMciKKbI8mPVjhm9pTeUmk4idMHNYmUCGMHBxCsBELqUw/Hf9Guiac7dYUzIl kXU+S/nnj5a17zMviF9b6dsWmJPfOofhf7mjQ27dwVCvR1+Zf2kqMO2reP1t/cQzeyOdulc2vCh dzg0A
-X-Developer-Key: i=thorsten.blum@linux.dev; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
-Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
+MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
+Content-Type: text/plain; charset=US-ASCII
+X-Spamd-Result: default: False [-3.30 / 50.00];
+	BAYES_HAM(-3.00)[99.99%];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	RCPT_COUNT_SEVEN(0.00)[10];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid]
 
-Replace two list_for_each_entry() loops with list_first_entry_or_null()
-in i2sbus_pcm_prepare().
+On Mon, 09 Mar 2026 12:41:59 +0100,
+Thorsten Blum wrote:
+> 
+> Replace two list_for_each_entry() loops with list_first_entry_or_null()
+> in i2sbus_pcm_prepare().
 
-Handle an empty codec list explicitly by returning -ENODEV, which avoids
-using uninitialized 'bi.sysclock_factor' in the 32-bit code path.
+Hmm, I guess both can be simply list_first_entry(), as the codec list
+in this code path is guaranteed to be non-empty (it's called after
+i2sbus_pcm_open() which has the check of the valid codecs).
 
-Fixes: f3d9478b2ce4 ("[ALSA] snd-aoa: add snd-aoa")
-Cc: stable@vger.kernel.org
-Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
----
- sound/aoa/soundbus/i2sbus/pcm.c | 22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+> Handle an empty codec list explicitly by returning -ENODEV, which avoids
+> using uninitialized 'bi.sysclock_factor' in the 32-bit code path.
 
-diff --git a/sound/aoa/soundbus/i2sbus/pcm.c b/sound/aoa/soundbus/i2sbus/pcm.c
-index aff99003d833..65653601662d 100644
---- a/sound/aoa/soundbus/i2sbus/pcm.c
-+++ b/sound/aoa/soundbus/i2sbus/pcm.c
-@@ -314,7 +314,7 @@ static int i2sbus_pcm_prepare(struct i2sbus_dev *i2sdev, int in)
- 	int i, periodsize, nperiods;
- 	dma_addr_t offset;
- 	struct bus_info bi;
--	struct codec_info_item *cii;
-+	struct codec_info_item *cii = NULL;
- 	int sfr = 0;		/* serial format register */
- 	int dws = 0;		/* data word sizes reg */
- 	int input_16bit;
-@@ -390,13 +390,11 @@ static int i2sbus_pcm_prepare(struct i2sbus_dev *i2sdev, int in)
- 	case SNDRV_PCM_FORMAT_U16_BE:
- 		/* FIXME: if we add different bus factors we need to
- 		 * do more here!! */
--		bi.bus_factor = 0;
--		list_for_each_entry(cii, &i2sdev->sound.codec_list, list) {
--			bi.bus_factor = cii->codec->bus_factor;
--			break;
--		}
--		if (!bi.bus_factor)
-+		cii = list_first_entry_or_null(&i2sdev->sound.codec_list,
-+					       struct codec_info_item, list);
-+		if (!cii)
- 			return -ENODEV;
-+		bi.bus_factor = cii->codec->bus_factor;
- 		input_16bit = 1;
- 		break;
- 	case SNDRV_PCM_FORMAT_S32_BE:
-@@ -410,10 +408,12 @@ static int i2sbus_pcm_prepare(struct i2sbus_dev *i2sdev, int in)
- 		return -EINVAL;
- 	}
- 	/* we assume all sysclocks are the same! */
--	list_for_each_entry(cii, &i2sdev->sound.codec_list, list) {
--		bi.sysclock_factor = cii->codec->sysclock_factor;
--		break;
--	}
-+	if (!cii)
-+		cii = list_first_entry_or_null(&i2sdev->sound.codec_list,
-+					       struct codec_info_item, list);
-+	if (!cii)
-+		return -ENODEV;
-+	bi.sysclock_factor = cii->codec->sysclock_factor;
- 
- 	if (clock_and_divisors(bi.sysclock_factor,
- 			       bi.bus_factor,
+Which 32bit code path are you referring to...?
+
+
+thanks,
+
+Takashi
 
