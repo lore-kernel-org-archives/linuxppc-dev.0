@@ -1,81 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-17890-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17891-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6AB73EFCD9D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Mar 2026 11:51:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 188D1EFCD9C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Mar 2026 11:51:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fTwMw4hyfz309P;
-	Mon, 09 Mar 2026 22:51:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=194.117.254.33
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773057100;
-	cv=none; b=WZDa74MpevJ31Ev1uywaqdZykSSaV4K2h2VE28Bs60C94gs3lumUkCt4FpbdJTJCWKvDSqPhbi24MSWahMJonZkR5ej2+GJ5yGQdBOI9QiEblhjySUzxP3s6MeYWmwJH8W/PbVsZr6LnmIJ75ACdgEA6PmTqtZ8B4sbe5nRsXaXS+svfFplC/jSckBD/xECPpLc0elPHfMdsb7ael9YQzoob/oQk0Bi1ui9pGA/WqCiS0y6kvKuHg47AjjYaq+yeFsH90jhUHiEjeOCRNNDWMHmDUOsvf259DoXliuveQMU/PKHiXTXYMcQRxOyDAHzhOogL+y+3nZ7s1NAgQvyosg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fTwN82F71z309P;
+	Mon, 09 Mar 2026 22:51:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773057112;
+	cv=none; b=dlsY/FNbWLq643JrrRTCyPhN9K43tF8z12itAb12I2XV8OGemp+2/U23i0xgTMmaMgOSiwYXnQiLxDEllaUqL4A5rFaV7y9jMM4urlyEv6h9BUNs0tH3IF7HrTT5lKWfV4A1//7MwmJQG9vFsnuMLIRkTlnC4ynpAdjvvYSae3osQ2I07E/d1aroqGNznWbL1/OnHgfqQyIlPlnw8BMKV53xiXnDkP8fYq5gKb/2vj/ipMBZzwRmblYIYucbOpiCRKPY19lXG1wRAlOv2uNMoLDlQIMQcP0bhpSSNdOY3xKgFrCfpeiNFzArQwgGUr2jCZwxG3/+rlgFdEEfISHcxg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773057100; c=relaxed/relaxed;
-	bh=9Obo8Gy0XA25wtJr5nUH75+SmBoDD9gzbxy0pse51zo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Fj7vd0K76PC+/3zMGESdOh7uv5MkKBObXhXMO+inobXTFD382VF5GQmddf/kO++f6ffWZNcyL+dhl0/pN/O/K+GMcpPsD0WY2XbyhwFTVWwtlmLU+4b0QL4NHCeqY/N47Enc8zo371yiPBxQDrCIiHDzVdXjh9W8EBvUHkzh7CRc22ZLzQ/2Bd4LQqGrEpLSGya8tnbb/P1aky1B0IJUim8HwjQZqWbySsnEU2aZLc0XsxzQT6H+wiVu0LimJZ/zrMGxhk9mmevUDIVMN19JESY7j6b9re/e6GrWs080cV3oANvFvuHf395nuOVltV7XYIhj/ndyxVXmjtFS/l2Jng==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=sang-engineering.com; dkim=pass (2048-bit key; secure) header.d=sang-engineering.com header.i=@sang-engineering.com header.a=rsa-sha256 header.s=k1 header.b=SG4bHQQm; dkim-atps=neutral; spf=pass (client-ip=194.117.254.33; helo=mail.zeus03.de; envelope-from=wsa+renesas@sang-engineering.com; receiver=lists.ozlabs.org) smtp.mailfrom=sang-engineering.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=sang-engineering.com
+	t=1773057112; c=relaxed/relaxed;
+	bh=E6ni+V15gEXaXXBvNzq+0rhu2ZSMmb0xp9G3k1TvHqc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=WD73FvyoIkcusRNS7Gqu7+5q3erW1rjEFyZTeJugD2+adHdLZELhDaVOxkSgGsPiibMUTf7I7pbWk+V1g6EpKxvI4QlGd9BOKvxtP9ikEZPHbR3pzr8DcTCwUj7ehUURo2YSrbq3YC/Mq7r5ObyPzqS8LTtBcBilq91UHD7GU/KB39u1ngsBzhfCldKfUxoqsizBGoAf+CMKTqwXfbPG9dZ1gNJHZ/9rSv37gnUz8HSjU9MrXM7Rs2+icIcNjRsQtlxEwsUXzX0EcJdcbIBAZq39/6X2l7P5QueerfcUEvLhRm0G7RVSumR4s3IgdrH/8ryOMl3LtH7pc9JaTTUY0w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=jXElw1yS; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::; helo=out-188.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=sang-engineering.com header.i=@sang-engineering.com header.a=rsa-sha256 header.s=k1 header.b=SG4bHQQm;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=jXElw1yS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sang-engineering.com (client-ip=194.117.254.33; helo=mail.zeus03.de; envelope-from=wsa+renesas@sang-engineering.com; receiver=lists.ozlabs.org)
-Received: from mail.zeus03.de (zeus03.de [194.117.254.33])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::; helo=out-188.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
+X-Greylist: delayed 461 seconds by postgrey-1.37 at boromir; Mon, 09 Mar 2026 22:51:48 AEDT
+Received: from out-188.mta1.migadu.com (mta1.migadu.com [IPv6:2001:41d0:203:375::])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fTwMq1XFQz2yFY
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Mar 2026 22:51:32 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	sang-engineering.com; h=date:from:to:cc:subject:message-id
-	:references:mime-version:content-type:in-reply-to; s=k1; bh=9Obo
-	8Gy0XA25wtJr5nUH75+SmBoDD9gzbxy0pse51zo=; b=SG4bHQQmR0rX7VosFKnI
-	NElZQF8NdYgOe6TZz/zGTk1VPqhuefyIBm986kOuXEbLJyoUtjAg5041Z+EkkKZf
-	4ePH4CzS1xgHvbO3mQL86Ls2+SDzm7nzk55wJKUo+v3KXq0/Rvw5VfIQKT3KG1/4
-	uIcnJJEQNdmNDIUvQEsxWY9RFjKycq1zHcstssectbzJXGPr/ce0HvwyMwDtKpD5
-	R5DoL5RAMLa2YblMV71ZYCGqsKzHBIQn4jmf0IzKEZ9cdUoDykSTCUeNbAQkB9D7
-	KYqzk3Pp+blknRp5JwyNhRu7bGiAkuIskoATFCvKQxbufrTiTWzSgkWCoYFj4GaE
-	Lg==
-Received: (qmail 2760960 invoked from network); 9 Mar 2026 12:51:25 +0100
-Received: by mail.zeus03.de with ESMTPSA (TLS_AES_256_GCM_SHA384 encrypted, authenticated); 9 Mar 2026 12:51:25 +0100
-X-UD-Smtp-Session: l3s3148p1@NX63BZZMwKMgAwDPXzF+ANZpdrMKUeLI
-Date: Mon, 9 Mar 2026 12:51:24 +0100
-From: Wolfram Sang <wsa+renesas@sang-engineering.com>
-To: Johan Hovold <johan@kernel.org>
-Cc: Bartosz Golaszewski <brgl@kernel.org>,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-	Andi Shyti <andi.shyti@kernel.org>, Chen-Yu Tsai <wens@kernel.org>,
-	Jernej Skrabec <jernej.skrabec@gmail.com>,
-	Samuel Holland <samuel@sholland.org>,
-	Khalil Blaiech <kblaiech@nvidia.com>,
-	Asmaa Mnebhi <asmaa@nvidia.com>, Jean Delvare <jdelvare@suse.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Andreas =?utf-8?Q?F=C3=A4rber?= <afaerber@suse.de>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-sunxi@lists.linux.dev,
-	linuxppc-dev@lists.ozlabs.org, linux-actions@lists.infradead.org,
-	linux-media@vger.kernel.org
-Subject: Re: [PATCH v2 00/13] i2c: add and start using i2c_adapter-specific
- printk helpers
-Message-ID: <aa60PCE3wsEAZbcu@shikoro>
-References: <aaFcs1miP88QWmtH@hovoldconsulting.com>
- <aaFfEsfh0xTh0b1y@shikoro>
- <aaFsZbiLYSz_YEjw@hovoldconsulting.com>
- <CAMRc=MfcvD1nJy=zpoCkSkJq6WjyXQxFUZ4QE6vyCS+XFCn5AA@mail.gmail.com>
- <aaHI_VavZugXjVoL@hovoldconsulting.com>
- <CAMRc=MdKF29McBJ9U=qELkzf9GYV1CQpRF7U6OweDNtVzMXo7A@mail.gmail.com>
- <aacE-27iaYneKCJi@hovoldconsulting.com>
- <CAMRc=Mcx8Hu407arSEo3o-Xhmep_ZK4BM2TVi_55nXGwYcaijw@mail.gmail.com>
- <aagSewpM88KAZDcJ@shikoro>
- <aar3rj7Db6NmTVS_@hovoldconsulting.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fTwN45wwqz2yFY
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Mar 2026 22:51:48 +1100 (AEDT)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1773056617;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=E6ni+V15gEXaXXBvNzq+0rhu2ZSMmb0xp9G3k1TvHqc=;
+	b=jXElw1ySaZIGt0aOj4NcaVRPGdTR+68a8jfgKGMZjOR/3sUe4ETq+t/RN2Ngm1MrwhJ9BR
+	HxSCqmgoVVJNQFCZ2Mz8nJb9TfWmngGIS3/rks5ZAMPn0YVjhQFTLHX4BxSsjpq2Gg4451
+	LviTw7z0nNdzIKgAcSr1+eHqB0i7HrU=
+From: Thorsten Blum <thorsten.blum@linux.dev>
+To: Johannes Berg <johannes@sipsolutions.net>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>,
+	Kees Cook <kees@kernel.org>
+Cc: Thorsten Blum <thorsten.blum@linux.dev>,
+	stable@vger.kernel.org,
+	Takashi Iwai <tiwai@suse.de>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-sound@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] ALSA: aoa: Handle empty codec list in i2sbus_pcm_prepare()
+Date: Mon,  9 Mar 2026 12:41:59 +0100
+Message-ID: <20260309114159.765304-3-thorsten.blum@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,27 +66,70 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <aar3rj7Db6NmTVS_@hovoldconsulting.com>
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2247; i=thorsten.blum@linux.dev; h=from:subject; bh=RlF+xgJCNuvzFdIDPLMyD53b705fRJwJDPrTPtFEut8=; b=owGbwMvMwCUWt7pQ4caZUj3G02pJDJnrNrHvXpf5KdbN7HPRj+gmq51nTr44wue80Tl3Q4/S9 0cSiyd6dpSyMIhxMciKKbI8mPVjhm9pTeUmk4idMHNYmUCGMHBxCsBELqUw/Hf9Guiac7dYUzIl kXU+S/nnj5a17zMviF9b6dsWmJPfOofhf7mjQ27dwVCvR1+Zf2kqMO2reP1t/cQzeyOdulc2vCh dzg0A
+X-Developer-Key: i=thorsten.blum@linux.dev; a=openpgp; fpr=1D60735E8AEF3BE473B69D84733678FD8DFEEAD4
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-Hi Johan,
+Replace two list_for_each_entry() loops with list_first_entry_or_null()
+in i2sbus_pcm_prepare().
 
-> I don't know what was said a conference some years ago or whether there
-> was any misunderstanding on either side. What matters is what was
-> posted.
+Handle an empty codec list explicitly by returning -ENODEV, which avoids
+using uninitialized 'bi.sysclock_factor' in the 32-bit code path.
 
-What was posted was in accordance with what was discussed at said
-conference. The people in the room (including gkh) were OK with the
-compromise solution. If you are not and willing to provide a better
-solution...
+Fixes: f3d9478b2ce4 ("[ALSA] snd-aoa: add snd-aoa")
+Cc: stable@vger.kernel.org
+Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
+---
+ sound/aoa/soundbus/i2sbus/pcm.c | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
-> Bartosz seems to agree that my suggestion to decouple the driver data
-> from the i2c_adapter would be better, and I'm willing to do the job.
-
-... you get all my support.
-
-Thanks and happy hacking,
-
-   Wolfram
+diff --git a/sound/aoa/soundbus/i2sbus/pcm.c b/sound/aoa/soundbus/i2sbus/pcm.c
+index aff99003d833..65653601662d 100644
+--- a/sound/aoa/soundbus/i2sbus/pcm.c
++++ b/sound/aoa/soundbus/i2sbus/pcm.c
+@@ -314,7 +314,7 @@ static int i2sbus_pcm_prepare(struct i2sbus_dev *i2sdev, int in)
+ 	int i, periodsize, nperiods;
+ 	dma_addr_t offset;
+ 	struct bus_info bi;
+-	struct codec_info_item *cii;
++	struct codec_info_item *cii = NULL;
+ 	int sfr = 0;		/* serial format register */
+ 	int dws = 0;		/* data word sizes reg */
+ 	int input_16bit;
+@@ -390,13 +390,11 @@ static int i2sbus_pcm_prepare(struct i2sbus_dev *i2sdev, int in)
+ 	case SNDRV_PCM_FORMAT_U16_BE:
+ 		/* FIXME: if we add different bus factors we need to
+ 		 * do more here!! */
+-		bi.bus_factor = 0;
+-		list_for_each_entry(cii, &i2sdev->sound.codec_list, list) {
+-			bi.bus_factor = cii->codec->bus_factor;
+-			break;
+-		}
+-		if (!bi.bus_factor)
++		cii = list_first_entry_or_null(&i2sdev->sound.codec_list,
++					       struct codec_info_item, list);
++		if (!cii)
+ 			return -ENODEV;
++		bi.bus_factor = cii->codec->bus_factor;
+ 		input_16bit = 1;
+ 		break;
+ 	case SNDRV_PCM_FORMAT_S32_BE:
+@@ -410,10 +408,12 @@ static int i2sbus_pcm_prepare(struct i2sbus_dev *i2sdev, int in)
+ 		return -EINVAL;
+ 	}
+ 	/* we assume all sysclocks are the same! */
+-	list_for_each_entry(cii, &i2sdev->sound.codec_list, list) {
+-		bi.sysclock_factor = cii->codec->sysclock_factor;
+-		break;
+-	}
++	if (!cii)
++		cii = list_first_entry_or_null(&i2sdev->sound.codec_list,
++					       struct codec_info_item, list);
++	if (!cii)
++		return -ENODEV;
++	bi.sysclock_factor = cii->codec->sysclock_factor;
+ 
+ 	if (clock_and_divisors(bi.sysclock_factor,
+ 			       bi.bus_factor,
 
