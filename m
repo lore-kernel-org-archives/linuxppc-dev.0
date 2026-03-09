@@ -1,87 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-17885-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17886-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9927AEFCD7E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Mar 2026 10:31:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EEFADEFCD93
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Mar 2026 10:37:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fTtbD4zLwz309P;
-	Mon, 09 Mar 2026 21:31:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773052280;
-	cv=none; b=KVeW0zciEMW6xtULcG+GlAewbKB628hFzqRdSK7gmQt6e71OQfZDE4hFHBn/RHG93dvaW7wTWzd4ZN6CJcpjIyML5vvsRWy9VdT47Hi/YB89ol+6DosIRZ5akiQ/CKattJ2Scm0fpRZEbQ5DWG2CzuFDMcAgxaHaIwhekQ5WXIXHeNqJkK0wOTj6HGLJLtM1UBjYVYRjY9N3dwCbxsbULwq/wgXYSHc58i3u1RfkpQe0I0fxmi/ZoZElyMtvfbqESYXbrVrmY6giTswy3NLDIdiWFAiA7tujczi8YgkWs6zpM5VLhMj4Ndo3jueYxJn3QS5QqQtd0BaJduUvhaEQQg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fTtk62BQGz309P;
+	Mon, 09 Mar 2026 21:37:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.121.94.184
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773052638;
+	cv=none; b=fIoMiov3b60NDiewEV9oUXAPX4uzUg2e2RfU80QhhMMd/tVcJeLxvtqHKeb7mt0VbqsmemP0L5e6WSekhhcfm+Sy6n9hrRDwfWNyZfsFuL66BR0d2AsKDZk75WJri5p3VtXDs+bA2vuoEc/tYSUfZU2EzrUHpti0zjhxI/XZXCwkwmga7U1qprJH+GSM+xxVdtht+Wx0N5mAaRoN63LNAGwzC1B4RSNV1DJVdYD5IWvFj8tdCDmCUYNE9t1avaM+sEPcmnQLWPzee6cfYlqpVDgCC6sSMxaJgqgsl+8x28O/hXi7jwQhUa3IfFrmR1qJUmL8DXRdu5AxtJ8gB4k8FA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773052280; c=relaxed/relaxed;
-	bh=ysvPiqp562qCZQnJw5l8TL8cq4IhZO2GmAxe8p0UZ7I=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XxTdqLMABS63FF13niIFIaykRg1DZEs6lJIX0rWNAtsaFqZhqiZeCNg3bijvUhi3wwP0c+7UKaa5MvxkUJ48Fnr8F/nsvKZxafgXu+4Zf4yhcTiyIfTmB9+hcF4qUBgIbTwX9RuKAE63rD6yQuzUd5f8f1k7k+bIMBdXPtSdNJnJo791VoS3RxhUCU/FFA4tP1siivGFYpuiCsxPy6IPx0Ue6QIY2oIwYXBZzObX1bv/KlaR/B9jPWAd2fXIxQwkv0jnlT5JHTfeF91lCya5x8Y/V5ysobi9MoQ4ACAOnuDvVQU4O02rSRZ7pgVm5eDhzOf1Vf7WWyOJYFJ9500C9Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=X6j5855B; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=johan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1773052638; c=relaxed/relaxed;
+	bh=ckpEHAnulgmol8HBXr9yJMJtjL8J1gGJjXBTIEoqxfQ=;
+	h=Date:From:To:Cc:Message-ID:In-Reply-To:References:Subject:
+	 MIME-Version:Content-Type; b=CGdMWZcsBfwZdl0VhsDzfLJ8MqTfA6UAeJW/LDdCIT/l77zo+S0P/LrRx+MOdyvWeJ70+jfFwphZeOYLDVi4B5Yx36CN4uQiuWIrs3DNIEar0G3yBKPJYw/GVcTgUurvmqKPYdqfkatnGKslNVI6nkjTdoO6G88P1gzpavc5MSNsLpFPwVZL3SSZbOyXz0WbFem1vVr2iWIq5qfaRKLy5TdyThWg4Jfj/Qu2ZnDd6Q6kWmDQ0gf2bYL+jnwXfXnffzW3pItJqJ+taB0vi/kaiTo9OCkvgdf030hd6YWp9Uu5L7uciAUwnXnJOFK/oKlMcmF9q7BL05vhwq7DZPiANg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xs4all.nl; dkim=pass (2048-bit key; secure) header.d=xs4all.nl header.i=@xs4all.nl header.a=rsa-sha256 header.s=xs4all01 header.b=betPpnhE; dkim-atps=neutral; spf=pass (client-ip=195.121.94.184; helo=ewsoutbound.kpnmail.nl; envelope-from=jkoolstra@xs4all.nl; receiver=lists.ozlabs.org) smtp.mailfrom=xs4all.nl
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xs4all.nl
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=X6j5855B;
+	dkim=pass (2048-bit key; secure) header.d=xs4all.nl header.i=@xs4all.nl header.a=rsa-sha256 header.s=xs4all01 header.b=betPpnhE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=johan@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=xs4all.nl (client-ip=195.121.94.184; helo=ewsoutbound.kpnmail.nl; envelope-from=jkoolstra@xs4all.nl; receiver=lists.ozlabs.org)
+Received: from ewsoutbound.kpnmail.nl (ewsoutbound.kpnmail.nl [195.121.94.184])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fTtbC4SlVz2yFY
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Mar 2026 21:31:19 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id C257B600AD;
-	Mon,  9 Mar 2026 10:31:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 71FDCC4CEF7;
-	Mon,  9 Mar 2026 10:31:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773052276;
-	bh=1dv+XhP5OwvToCXeXxaL6H6crc5uBccvLhwiXF5Big4=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=X6j5855B86hH8+1MUUbQdzfRXXIEh36roQzDmNtZdLVlt+VtMSp7FWhuEC7HxLg+4
-	 3ASrEfhKmLdpAm/VP1gGb5GQPHRZyzlA9Wv0XEN1P9t9gflLXWiWM6s0bOGH7yvuC+
-	 bzFzU3sZ14p5clqbm5EJMcExCvTp6B+pn4mlEtyJ/vArl5P4gUHyApQeDYt0UIVnjD
-	 fa5DgkOvoLJmWeP1nzIlE2PZbnVc5lUB/zjgDz6l71LVoy9/1JqpjV41i5czOq4RpO
-	 WHnzI5JOAaJobCwW4FNmaOORDUiIpodIFsZfZXzTtQ7X18XgT4XUH6FBc26i7cEHtL
-	 xVdATdgxh1BHQ==
-Received: from johan by xi.lan with local (Exim 4.98.2)
-	(envelope-from <johan@kernel.org>)
-	id 1vzXtJ-000000006A5-3p2H;
-	Mon, 09 Mar 2026 11:31:13 +0100
-Date: Mon, 9 Mar 2026 11:31:13 +0100
-From: Johan Hovold <johan@kernel.org>
-To: Bartosz Golaszewski <brgl@kernel.org>
-Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-	Andi Shyti <andi.shyti@kernel.org>, Chen-Yu Tsai <wens@kernel.org>,
-	Jernej Skrabec <jernej.skrabec@gmail.com>,
-	Samuel Holland <samuel@sholland.org>,
-	Khalil Blaiech <kblaiech@nvidia.com>,
-	Asmaa Mnebhi <asmaa@nvidia.com>, Jean Delvare <jdelvare@suse.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fTtk30bZGz2yFY
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Mar 2026 21:37:12 +1100 (AEDT)
+X-KPN-MessageId: b75f9fa6-1ba3-11f1-afd7-005056994fde
+Received: from mta.kpnmail.nl (unknown [10.31.161.188])
+	by ewsoutbound.so.kpn.org (Halon) with ESMTPS
+	id b75f9fa6-1ba3-11f1-afd7-005056994fde;
+	Mon, 09 Mar 2026 11:35:39 +0100 (CET)
+Received: from mtaoutbound.kpnmail.nl (unknown [10.128.135.189])
+	by mta.kpnmail.nl (Halon) with ESMTP
+	id b75e7f88-1ba3-11f1-80ea-00505699693e;
+	Mon, 09 Mar 2026 11:35:39 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=xs4all.nl; s=xs4all01;
+	h=content-type:mime-version:subject:message-id:to:from:date;
+	bh=ckpEHAnulgmol8HBXr9yJMJtjL8J1gGJjXBTIEoqxfQ=;
+	b=betPpnhEzwQX/UPLP4miwpty+/3PT4ryhB2ClfVPG3UZKsUEuay54fkuOGJcm1400454Cs5eddqKG
+	 1L6htMJrKI/FJqKK5y60X5/CKYTEbLx9uL6uN5YEKCPGwMtxqkjxSAZWHmH6kLI6w1c/4QRsZMOmFR
+	 YMhXLwj28U2PPUpyjimufSi69bMopqB0rQaQpmaFN3H1o2qe/gI3axo+PzuRtIgMAddzOh/0reBX/9
+	 oHqcJyydPnewQ+/ENRjAoiawag9StFDngyVXTUU3Bn+oQWBNmOb/9BOAMi2L9V5Mx4Jd6Q9wLnm8kI
+	 f4fb5GZb0BdyPm3vCNadksDCmevx/Gw==
+X-KPN-MID: 33|B/nqTAMxH8tNNBEQ2l6omfk+YWEqk+RsbTcGI6Ph9UEDsCGZc+wALV8EqdyMBZr
+ eRo45Ll9OJa8nvoRIhPbRxC0FljnzLZm93X0Qou7OZ8w=
+X-CMASSUN: 33|jD1L4Lvah775wR+nw4Jzauk4eyFG/bQZVUAqg3Mdj/OHmihexivhkwbBVVb8sT0
+ p5TZbEJRjHnfAay5TrhoW+w==
+X-KPN-VerifiedSender: Yes
+Received: from cpxoxapps-mh05 (cpxoxapps-mh05.personalcloud.so.kpn.org [10.128.135.211])
+	by mtaoutbound.kpnmail.nl (Halon) with ESMTPSA
+	id b7535740-1ba3-11f1-94b1-00505699eff2;
+	Mon, 09 Mar 2026 11:35:39 +0100 (CET)
+Date: Mon, 9 Mar 2026 11:35:39 +0100 (CET)
+From: Jori Koolstra <jkoolstra@xs4all.nl>
+To: Greg KH <gregkh@linuxfoundation.org>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Andreas =?utf-8?Q?F=C3=A4rber?= <afaerber@suse.de>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-sunxi@lists.linux.dev,
-	linuxppc-dev@lists.ozlabs.org, linux-actions@lists.infradead.org,
-	linux-media@vger.kernel.org
-Subject: Re: [PATCH v2 00/13] i2c: add and start using i2c_adapter-specific
- printk helpers
-Message-ID: <aa6hcT7MROZqxF1j@hovoldconsulting.com>
-References: <aaFcs1miP88QWmtH@hovoldconsulting.com>
- <aaFfEsfh0xTh0b1y@shikoro>
- <aaFsZbiLYSz_YEjw@hovoldconsulting.com>
- <CAMRc=MfcvD1nJy=zpoCkSkJq6WjyXQxFUZ4QE6vyCS+XFCn5AA@mail.gmail.com>
- <aaHI_VavZugXjVoL@hovoldconsulting.com>
- <CAMRc=MdKF29McBJ9U=qELkzf9GYV1CQpRF7U6OweDNtVzMXo7A@mail.gmail.com>
- <aacE-27iaYneKCJi@hovoldconsulting.com>
- <CAMRc=Mcx8Hu407arSEo3o-Xhmep_ZK4BM2TVi_55nXGwYcaijw@mail.gmail.com>
- <aar1PDUB2t7DgEP6@hovoldconsulting.com>
- <CAMRc=Mcv+ZMGaC_MD8WRH113rDuuxdiZXuW5JAXWga1V7vM_ng@mail.gmail.com>
+	Haren Myneni <haren@linux.ibm.com>,
+	Srikar Dronamraju <srikar@linux.ibm.com>,
+	Jonathan Greental <yonatan02greental@gmail.com>,
+	Kees Cook <kees@kernel.org>, Shrikanth Hegde <sshegde@linux.ibm.com>,
+	"open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
+Message-ID: <1788533150.912368.1773052539444@kpc.webmail.kpnmail.nl>
+In-Reply-To: <2026030924-penniless-hermit-ffc0@gregkh>
+References: <20260308214634.1215051-1-jkoolstra@xs4all.nl>
+ <2026030924-penniless-hermit-ffc0@gregkh>
+Subject: Re: [PATCH v2] powerpc: vas-api: constify dynamic struct class in
+ coproc api register
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,36 +88,93 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAMRc=Mcv+ZMGaC_MD8WRH113rDuuxdiZXuW5JAXWga1V7vM_ng@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+Importance: Normal
+X-Originating-IP: 178.229.142.230
 
-On Fri, Mar 06, 2026 at 06:34:43PM +0100, Bartosz Golaszewski wrote:
-> On Fri, Mar 6, 2026 at 4:39 PM Johan Hovold <johan@kernel.org> wrote:
 
-> > You have posted changes that will prevent driver from accessing the
-> > struct device of core i2c structures. This is unexpected, non-idiomatic
-> > and subsystem specific and therefore a bad idea.
+> Op 09-03-2026 07:01 CET schreef Greg KH <gregkh@linuxfoundation.org>:
 > 
-> That's not true, the changes provide a helper to that end.
-
-That was supposed to say "prevent drivers from accessing the struct
-device *directly*".
-
-> > Again, this is a core feature of the driver model. You can't just ignore
-> > it and come up with random ways to work around just because you disagree
-> > with design decisions that were made 25 years ago.
+> > 
+> > diff --git a/arch/powerpc/platforms/book3s/vas-api.c b/arch/powerpc/platforms/book3s/vas-api.c
+> > index ea4ffa63f043..e377981fd533 100644
+> > --- a/arch/powerpc/platforms/book3s/vas-api.c
+> > +++ b/arch/powerpc/platforms/book3s/vas-api.c
+> > @@ -45,7 +45,7 @@ static struct coproc_dev {
+> >  	struct device *device;
+> >  	char *name;
+> >  	dev_t devt;
+> > -	struct class *class;
+> > +	const struct class *class;
+> >  	enum vas_cop_type cop_type;
+> >  	const struct vas_user_win_ops *vops;
+> >  } coproc_device;
+> > @@ -599,6 +599,21 @@ static struct file_operations coproc_fops = {
+> >  	.unlocked_ioctl = coproc_ioctl,
+> >  };
+> >  
+> > +static const struct class nx_gzip_class = {
+> > +	.name		= "nx-gzip",
+> > +	.devnode	= coproc_devnode
+> > +};
+> > +
+> > +static const struct class* cop_to_class(enum vas_cop_type cop)
+> > +{
+> > +	switch (cop) {
+> > +	case VAS_COP_TYPE_GZIP:		return &nx_gzip_class;
+> > +	default:
+> > +		pr_err("No device class defined for cop type %d\n", cop);
+> > +		return NULL;
+> > +	}
+> > +}
+> > +
+> >  /*
+> >   * Supporting only nx-gzip coprocessor type now, but this API code
+> >   * extended to other coprocessor types later.
+> > @@ -609,6 +624,10 @@ int vas_register_coproc_api(struct module *mod, enum vas_cop_type cop_type,
+> >  {
+> >  	int rc = -EINVAL;
+> >  	dev_t devno;
+> > +	const struct class* class = cop_to_class(cop_type);
+> > +
+> > +	if (!class)
+> > +		return rc;
 > 
-> It absolutely *can* be done differently. There's nothing that imposes
-> a certain API design on susbsystems. If you design the subsystem code
-> well, provider drivers don't need more than one reference (taken in
-> probe(), released in remove(), for instance via the
-> register()/unregister() pair) so the counting can be hidden within the
-> subsystems that control them.
+> How can this happen?
+> 
+> This feels odd, are different types of devices being registered here?  I
+> don't see where VAS_COP_TYPE_GZIP was being tested in the original code,
+> why add this additional logic?
+> 
 
-Yes, there is nothing preventing you from diverting from the idiomatic
-way of doing things. But my point is that that's not a good idea.
+My line of thought is this:
 
-Johan
+There is a function vas_register_coproc_api() that does some kind of registering
+for different coprocessor types. It has the following comment above:
+
+/*
+ * Supporting only nx-gzip coprocessor type now, but this API code
+ * extended to other coprocessor types later.
+ */
+
+If you look at where this function is eventually triggered it is indeed only ever
+passed VAS_COP_TYPE_GZIP. For instance, line 1238 of drivers/crypto/nx/nx-common-series.c
+has the call
+
+	ret = vas_register_api_pseries(THIS_MODULE, VAS_COP_TYPE_GZIP,
+				       "nx-gzip");
+
+(which immediately calls vas_register_coproc_api())
+
+It also passes a hard-coded name for the device, and this name is also used as thedevice
+class name. Now, this is
+
+There is a function static char *cop_to_str(int cop) that strangely takes
+an int instead of an enum vas_cop_type, and also misses an option I think.
+
+> thanks,
+> 
+> greg k-h
 
