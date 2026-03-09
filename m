@@ -1,93 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-17874-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17875-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E92BAEA8525
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Mar 2026 03:40:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35CCEEA8556
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Mar 2026 05:00:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fTjT529x1z3bnm;
-	Mon, 09 Mar 2026 14:40:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::102b" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773027625;
-	cv=pass; b=hqYpZ+oFyAw4nkDm+KH+08pJ7NSR/EeiR1jxdzbL7UqcL+SElF7S+tn7xN/iLRzPcEMgm4R0knXZhltLXMQozzyuD+k1X219wbbO2N2mVkz1mTqJnx6pir03MejRc3jq1TqyatMNy/GBBwEtJmF+zHPRfjcwTU8xCcQIPzxbbMQ51kIfQ3y58PMAmfNLRXKA1cGdiseAb/aqnXFps4Aa+fIcGb7VSd0AjcKwXCiDqQsYCsfPdh73rE3AvzHDnToYf9NL1rydHwk4C44QtXmpyqmJTRywGIV36FwNnFHEprRDGrMGdGR0s3qcSkO7OKwQ3AH5MxlCFT640ESa/bM5gA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773027625; c=relaxed/relaxed;
-	bh=FKiYlaBVKzKkQ0fFD3dOHjGBjZMlXmQaDGVeIVxSCw8=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=m51C6itlpqTIdL+C8pHiUbp0USDuck7d3FO9iUFuGJMZwN9hI49LuG9+SH94dXn3NoxgVuTqYneKK2ctsyH2HPMzOWZozf9d6qE8d1SCVSJghu/5AJyv+TG4paJo7QpkWni09KOLLzSXejnlAbUpJct0x66fMBYHSlSetR8SfbPb+VbYHqU1nqsR76Y/TVdhDnYp+JBWQc20jkxey3u41zcnIcKCzjGUFtzI4fOiezGdh/Rqh+4MMxZyQCuRIPDItcvFs/4uWJYsXnUGEBS5dTRB5F1iqkRP9VLWtGIJ90nw4fE+2W9zi8zKw58WVUmY6z/0d0EpH+RhERPEiUEllg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=JApr0713; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fTlFk2rQSz3bnm;
+	Mon, 09 Mar 2026 16:00:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773032442;
+	cv=none; b=oMrKYy76KyY79i0cz79hPMnwuSOTN17RjrwsrQ68Nrh8yv+UrtaepqsNEG27atchqRmMNAqiWLghG9cHppgYi2a9wdr38FT12KliEki/c5emHoxzQFx/H6Zrn+c3fFJuQtNWhfZ2Y+s5TeUH4XM9Abt8IpZ6OVyuWm6RbUyvzmytPH7z2Z7TJ0rTblYFePfwMH0AA0Q6sDBPInamniM0CatX3LlA0nDsNuob8QBo0tyJMKZB3gJmpY8nOBwYaxNL8SYvNoSNi/erqdFTYQ/Lc9laLVEC1ioTIcYRzLZoR9NRdjJz5QdQO52CoT8XKTu0NAjZPQxxyZGki46Ihli1fQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1773032442; c=relaxed/relaxed;
+	bh=cxozLQNSCLncfQGPIISdNaCtaA18du4zEn7iM8F4d3I=;
+	h=Date:Message-Id:From:To:Cc:Subject; b=PMHgTsNElnv7cIgm+7lcUKT3SNY2lDQO5zqZ3YIOYdYqdK6m09G/HHBu5fMeNEU8HbyZssA57NLpYTEYu/gg1b7+09UTMBcwJ80lNuBtJVfzNUewrOhFlqa62FUjZTTe9s6cap98v1GzbEeB+39jcyr1cMq4OAt49koFUJbwbobwI9B5E7rO/bm170J0c9BOAnHRgWBjaXmbkREvE8KwGTU7V8OSG/VcbOSQRChdHMxMdHTOW+ByVaA5MTKpvoj/c7xPBQ9QnV+U3cMrbt+Cz56oNu3ixbiVbK8nNsXSiXEvVWC1c3uCqE0LDk+D1Qj+BbLK7+SCLDbcA3lvNgcM6w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=bn7rsYTo; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=JApr0713;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=bn7rsYTo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fTjT34z6Yz2xdL
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Mar 2026 14:40:22 +1100 (AEDT)
-Received: by mail-pj1-x102b.google.com with SMTP id 98e67ed59e1d1-3597fea200dso5926414a91.3
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Mar 2026 20:40:22 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1773027621; cv=none;
-        d=google.com; s=arc-20240605;
-        b=KuggvjOuoVfQrv9O+nUxF5fWI+tXOxMW1owTCLY4zOFzIkRHsT1xH/V6LP5liAgiUC
-         Z61XP8wZh1Th4qPRJuRzwpfF54TXQVuQrvgXWTNb7fAcVYCywDDg7uG51Q6oEcnrzl4W
-         ulgQFjKTm9RKNB5rAKOYk0r5UgugyLLxzqWCBWcN4KBGq9ZpeEuH2aBcj0eYRSePsQae
-         kTBah2JkW+fDMNKjJWNUiEGsc+sjV4IJGMnnQdI0N3xmtR6OTBBbat9CDYuvxxVU4+9S
-         XTfVGWGP1RE9PNLISHh2nIZEg8HYnNcFVbyHY5eufJqUZyh795PZPMNv5c9nn16NZXUo
-         d/Cw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=FKiYlaBVKzKkQ0fFD3dOHjGBjZMlXmQaDGVeIVxSCw8=;
-        fh=DZTLy9PGqDBvv9t0zCgBlwmn1MVCsAxRDkBduH6ZFMk=;
-        b=R7VclAtn2TZ9REMhrH5nd4ZEL5iB5rrh7Sit7yHm8K3h+ODGtGD9Aj8in7P4Icofgq
-         nnIimnEpGLcOvZBTNMSAqTjEEJfLe3RldvJkrEBxkjpGQxl71/G7A0kcUt7wh6RqbmCr
-         sq3Vre3RdCbYcnYKGS72O0NoHpdnLbjLHryFyBz4riBITTcIFVxJ5+W4p+D3U+/qCEAA
-         J3yvZgcUJrDadHkna6BiN92TcsXLbcRgR++AOeJRvsx5CN9ZUAy2zlOYqYAwmlkAVPRJ
-         Xn2LDQVQu+8QnWTotPUfyhwsuN3I2f1x0mlb/xK3xkg4b+vOaFaiWVvN0jBJw2hDC6cr
-         yh4A==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fTlFh61q3z2xdL
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Mar 2026 16:00:40 +1100 (AEDT)
+Received: by mail-pl1-x62c.google.com with SMTP id d9443c01a7336-2ae4d919f9bso47023525ad.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Mar 2026 22:00:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1773027621; x=1773632421; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
+        d=gmail.com; s=20230601; t=1773032438; x=1773637238; darn=lists.ozlabs.org;
+        h=subject:cc:to:from:message-id:date:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=FKiYlaBVKzKkQ0fFD3dOHjGBjZMlXmQaDGVeIVxSCw8=;
-        b=JApr0713lTCKZ6L5+bWAvFBkdrZJ+JLQO0NW0rpIRCvWAJYYBmBe+dIQiDwZQyobSk
-         OEubyQlauzjUw6GSjABu6618to+71jZhZZPzbdqmLTD7l6r7Fk4bWU/E2alU9yVE+qqB
-         kteOsxUTdmOLJw/uva8U6WR75ImLa7uFk1h6lMH+ZBQXhIc4TKHtr4c8LfQOSD7VSGxR
-         cLljESoYLt88mRHjnbJoTfPSqb5jHoxs3RJtlciLOK2y0ndc3GJ1IizOf/6FuEbkfaX1
-         mN5+y6BEQffjG5Kas+MIXBcNCa8TwJGDjuOK+ejzoBcEP+Y2Ul0VI0/3CcRz+DrFsgbq
-         uK8A==
+        bh=cxozLQNSCLncfQGPIISdNaCtaA18du4zEn7iM8F4d3I=;
+        b=bn7rsYTofK6nUDGuaHiZPwXz9HL4FHuZHdN+1wt5EGzpZ0ICOtkwWqwUcMUmP/No0O
+         KD81WNm/Sr6ZAgtwnnY65DVNi15MuRR/tD8R+saQp00H/WziBUfvWVPvWPhp4pCWoWrN
+         9STHojT15PD1Mzi88gAhei1dNRYwDjLh9wLP+kIH7ucRmihw24ajdzIV9qHaqPous9gk
+         vK8uJXC92C7/a3rOY6OWuFkSfdsl3G4qeBYrkQE3jf6QigdYhvWG199LQGqsS6A+uCww
+         kBVnCO+4hKcFuSEqJok+rvPm8+S96Fw050swwg1S3gbdpH2UvWklRS0xQ7b0OzSgFy8j
+         o2PQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773027621; x=1773632421;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+        d=1e100.net; s=20230601; t=1773032438; x=1773637238;
+        h=subject:cc:to:from:message-id:date:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=FKiYlaBVKzKkQ0fFD3dOHjGBjZMlXmQaDGVeIVxSCw8=;
-        b=BZq5ZKbJPqu+TTzsLN7m7FXZLqUeuUyYX+vZRvux7KOFkPcQY+gxX+B1/nDDIiwRq4
-         6MZfHF4p/qlesYcFqY0/mSpqp2qyO5q7GTu1hO/C5OJzJsTnfKMlj7/MKkwRqTJl4Jkf
-         V8c7DdfHfa04cyq04Dl4u9C40DOUI4AkXIAEcKXZhy8us17zFRHnd6fT7NnNbsN3TBKn
-         fpa5HNeIs0dQHonIJg5mHDNdqT1K2C2UcVlUQ/jdEU5kaY3JKAdrUODiNkvZ5hD4OS4V
-         Cnb+Qxy6OzWs2kxHU6Qz66aOM0YAQrAi5rlVLmiff/ZuFa0YZ4bKt8qKRiWwCJT+NgPW
-         XUEg==
-X-Forwarded-Encrypted: i=1; AJvYcCVquU5YeBj7j2o8g+Zh51IiZsNMWXmHyOmj021eGF/3D6xr7em5fT09pP3DGrHbnQ+7JsXt2QNkA8dl3Hs=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx1w2/AcJxGSUgJmQS1kw3Azsfglvqn6H+osJ2KomS2jWgKdekM
-	orHSdrSEtnne25dTKFHL4EGs2SyTksJz8ph3W6DejtE03QDEL6spMv13A3S1ttsv9galVUEalF+
-	cOuKTCaIdPjnVnu5lYX7fS9Dp9DBco58=
-X-Gm-Gg: ATEYQzzV5ZIDoQ9tgZGHrzMnjk8Fzmz8XfQxvawFJWzpaeIy9w+xdExGm2YIaDEK8ta
-	jK20gXIy42Db+zD1Gm6D2AmduNN5NGcHIsJ6D+Y2feulVcQl2/Nepatc51pGmBFyNq5/BTo5fbO
-	ozBd1J4enxRH58cdoeRJTqeWdvhXxuwFZbYC/4dDgwmhljtKEf4aNfbxFb03dMyiso0tcoxQlI+
-	ZyHcQEsSlwhCOfHOkCOtxIOx4YO+NERJFnBa/LrPfqhPZyC3M6Z3Cf6cf5clkZw/0VD7VYuMl4D
-	CR58lJE=
-X-Received: by 2002:a17:90b:3f46:b0:354:c602:a573 with SMTP id
- 98e67ed59e1d1-359be31e12amr7562851a91.27.1773027620836; Sun, 08 Mar 2026
- 20:40:20 -0700 (PDT)
+        bh=cxozLQNSCLncfQGPIISdNaCtaA18du4zEn7iM8F4d3I=;
+        b=ZLu6YdoHVhszKMBlP6y8R5F1Oe/Xjvef0NvVLH+3lYx17C/xkELut1Mzj6w8C844hy
+         nRxjzinYgHoFsvgQQYxSaM8uzytVMLUsY36pOxIs+zIpgSGeyC+Oe3spAaR5B6o4vtFt
+         FRCEFBSOHBGdz72QJuFVCNHXLV5iaDkINCvvgLFAnic3XMvOIxMXbdK46FXgsi/i8S2S
+         Wgd4IgPdqQIjhVCj00MbBqG/ghai95WSgbL0ceBQjUQbhPEvLcjxGD1eU5zdY7WSO96s
+         HmGjY3m6u+KXVI+0UFXleW6Exi37X6/P2UMDJLMmrD+ZUQxK+jV2dMqj/tJeCrvpwTJk
+         ilEQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUaGjXKNf993Ps4RG4+H8sQnfUro2EpgMSkrkDl8VGPEpb/ka8IZzWFZgr/kZn5e2BVyrQ9Yh/z1sWTwzE=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxHsK9fuqJiyi332AWrvftC2dFQlurSjzaZfohBIoo8FhXa8X0f
+	KYVbPujtP1oyZ6zbED8wc5vwAOTyaqm6G2cuFb8WY9jz58//mkMTmeaj
+X-Gm-Gg: ATEYQzwZ8wTV48LC6ygnPx1TaXHIPbxZd0Gx2qz5ZbLnT+GJN3M8YHVngJOOEq57Fy2
+	W5RViJKXLUuJdIZx9+xqzjb3QwDdZO+Tc6VQGoGMdll8m+FJaomsXEawjVHpIMGegrF9WlrOmST
+	9pQKZV3K0iJnbg1yGrhticBcbL0AFkj8LnD6Kq33MZSs5p6TLftFcRuUQCexAhMlspF67n/soQk
+	aNJir5OS5G4/7qWsMuiA5v6rjPKa+F5BiqDUPC4vs4BD+4yeJEcUZ2UsTP68YTux3G6Tn55EE3+
+	+Cv2MfrWyp5MrNMqttcqpgVUYsM3+aTHFHbedJFXaf4+p6U6nBXcotjPPOkgg5BApvNCHOwxqo4
+	e1aX0vrZo5WRlkeP6rNHIYTzDis2iCYzkPRv/XOMGD1xyPLo9GhtKvOTamD7chyYR4VJlyQUae6
+	/pFLsuX8C+EqBhuI78b8pWWg==
+X-Received: by 2002:a17:903:8cb:b0:2ae:4dce:7e99 with SMTP id d9443c01a7336-2ae8238fa64mr98363155ad.20.1773032437731;
+        Sun, 08 Mar 2026 22:00:37 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ae83eafc64sm130814465ad.40.2026.03.08.22.00.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 08 Mar 2026 22:00:37 -0700 (PDT)
+Date: Mon, 09 Mar 2026 10:30:31 +0530
+Message-Id: <ecltlhqo.ritesh.list@gmail.com>
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Sayali Patil <sayalip@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com
+Cc: aboorvad@linux.ibm.com, sshegde@linux.ibm.com, chleroy@kernel.org, riteshh@linux.ibm.com, hbathini@linux.ibm.com, ming.lei@redhat.com, csander@purestorage.com, czhong@redhat.com, venkat88@linux.ibm.com
+Subject: Re: [PATCH v4 1/2] powerpc: fix KUAP warning in VMX usercopy path
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,42 +86,64 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-References: <20260306093949.1647452-1-shengjiu.wang@nxp.com>
- <20260306093949.1647452-2-shengjiu.wang@nxp.com> <0b110f10-dcc0-4573-803c-4dcf21643c3b@sirena.org.uk>
-In-Reply-To: <0b110f10-dcc0-4573-803c-4dcf21643c3b@sirena.org.uk>
-From: Shengjiu Wang <shengjiu.wang@gmail.com>
-Date: Mon, 9 Mar 2026 11:40:06 +0800
-X-Gm-Features: AaiRm52wW7uO2soGEpfwj9NXlS5UrI1EZUcVw7BAu75E0A6zzAyAyjbuUGgZVeU
-Message-ID: <CAA+D8APr18xrX2ftRH_evVby5n1VQ1MSzqAref2bA9GnJUveeQ@mail.gmail.com>
-Subject: Re: [PATCH v4 1/3] ASoC: fsl_utils: Add snd_kcontrol functions for
- specific cases
-To: Mark Brown <broonie@kernel.org>
-Cc: Shengjiu Wang <shengjiu.wang@nxp.com>, Xiubo.Lee@gmail.com, festevam@gmail.com, 
-	nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, 
-	linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Fri, Mar 6, 2026 at 8:04=E2=80=AFPM Mark Brown <broonie@kernel.org> wrot=
-e:
->
-> On Fri, Mar 06, 2026 at 05:39:47PM +0800, Shengjiu Wang wrote:
-> > There are some registers which are volatile, at pm runtime suspend stat=
-e,
-> > the regmap cache only is enabled, regmap will return -EBUSY when trying=
- to
-> > access these registers.
->
-> > +EXPORT_SYMBOL(fsl_asoc_get_xr_sx);
->
-> Please make anything that exports ASoC or regmap functionality _GPL, the
-> underlying APIs are _GPL.
+Sayali Patil <sayalip@linux.ibm.com> writes:
 
-Ok.  I will update to use  EXPORT_SYMBOL_GPL.
-Thanks.
+> On powerpc with PREEMPT_FULL or PREEMPT_LAZY and function tracing enabled,
+> KUAP warnings can be triggered from the VMX usercopy path under memory
+> stress workloads.
+>
+> KUAP requires that no subfunctions are called once userspace access has
+> been enabled. The existing VMX copy implementation violates this
+> requirement by invoking enter_vmx_usercopy() from the assembly path after
+> userspace access has already been enabled. If preemption occurs
+> in this window, the AMR state may not be preserved correctly,
+> leading to unexpected userspace access state and resulting in
+> KUAP warnings.
+>
+> Fix this by restructuring the VMX usercopy flow so that VMX selection
+> and VMX state management are centralized in raw_copy_tofrom_user(),
+> which is invoked by the raw_copy_{to,from,in}_user() wrappers.
+>
+> The new flow is:
+>
+>   - raw_copy_{to,from,in}_user() calls raw_copy_tofrom_user()
+>   - raw_copy_tofrom_user() decides whether to use the VMX path
+>     based on size and CPU capability
+>   - Call enter_vmx_usercopy() before enabling userspace access
+>   - Enable userspace access as per the copy direction
+>     and perform the VMX copy
+>   - Disable userspace access as per the copy direction
+>   - Call exit_vmx_usercopy()
+>   - Fall back to the base copy routine if the VMX copy faults
+>
+> With this change, the VMX assembly routines no longer perform VMX state
+> management or call helper functions; they only implement the
+> copy operations.
+> The previous feature-section based VMX selection inside
+> __copy_tofrom_user_power7() is removed, and a dedicated
+> __copy_tofrom_user_power7_vmx() entry point is introduced.
+>
+> This ensures correct KUAP ordering, avoids subfunction calls
+> while KUAP is unlocked, and eliminates the warnings while preserving
+> the VMX fast path.
+>
+> Fixes: de78a9c42a79 ("powerpc: Add a framework for Kernel Userspace Access Protection")
+> Reported-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+> Closes: https://lore.kernel.org/all/20260109064917.777587-2-sshegde@linux.ibm.com/
+> Suggested-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+> Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+> Co-developed-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
+> Signed-off-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
+> Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
+> ---
 
-Best regards
-Shengjiu Wang
+Thanks Sayali & Christophe for the help on this. I liked the new
+wrappers which removed the code duplication by calling into a common
+function call raw_copy_tofrom_user().
+
+The new changes looks good to me too. Please feel free to add:
+
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+
 
