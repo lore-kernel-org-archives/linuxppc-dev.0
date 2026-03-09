@@ -1,64 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-17879-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17880-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 868C6EA855E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Mar 2026 06:01:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4274FEF36E7
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Mar 2026 06:49:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fTmbl3RbTz3bnm;
-	Mon, 09 Mar 2026 17:01:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fTng93YXjz309P;
+	Mon, 09 Mar 2026 17:49:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773036083;
-	cv=none; b=GsdEF3g7TlKaXeGAnTRR8t1t0cxQaAVK3jtgn4/LtzrlsZeIwgTKGwX+vAKiC8MZVumNNeeEBSsZqvNiGvFM6uWMjHTW3ngOmgHNoneftj8DCdvN1X1p62V0fxrFId1me0btTKWqefINNdDBcyE1jR57PggKkySp2q+Gwu2TS4SUKcnpYQUrVshag6Qaz4Ar5oPUk3e/L0Zrlb7qvG4RHbUR4Kvk6IUWM2hbP/AXDg1Bgj2MTgI5+BPYcX/ssqd3aV35ySzR1Hn76yEcPWNhGcAAA28c0284qfWsyLjLCMSMqZ50FfRov7F1OIDItxbmbjpcNHSylDdXVTEN86lEbw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773038965;
+	cv=none; b=ZlpaL48fdZ907GZVeXBT/b4jwVaguNhyI33qZ/Y/zLDvwg3FYJ6fI99W6lyPwEVFdMhmbP8I78T8p8XS8qfTev2AaytZ7LfRI+2ijC5mSUgIAyfF0TV6hOCrrClMSNl9LRmi5ypAdrGXIB56hGT4qZzO12Qr3IunqFtYEu9u9FXFDnOUw65ltnpa3mgHcudhAtcoakYr2XbcsTBGxB1r5/iMgyzw1NgtT/FOshyW/a/Wii+r/pljUkLfcMWXhXiRVUpreBqoUMGjB4djDASxir7Cc4noa1JDhnwo7jI6/V5TicaMae4CItTdu2WMcKMNQ/2pqwetSWxSY1Wk8jyhtw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773036083; c=relaxed/relaxed;
-	bh=aCjqZ83PN27u1yW2cYM4O41Gwgt4NwEqHKj8GqUj1YE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=mBr5NnyJbWKa4yqqXIFlKIGguttbZIgY1YTK+gChhKtgHsQeZB37NP2ujMln1chRbCqFzc/GMQEgqxYKSPxp07whw1nYb2TQc7lQVJRbIVLLe8h1PJbTijigY1+DAtylMoy50Oc+9cCb605SQ55bREyM1wZEX5ixjvjlmY23JqCC2lbU1P7U2KI4Q4NbMraZ+HmQzNbC5A3bUPh4xl5kgVS4ogPY8rACKFEug6WPlWDC/ujfcV3YeXUF3PwYpps0mJdu2rYes5mrML83O5qwtPNtIAy2VyPfX7QuABi0SkG4C9wkGuimf7SL/MlgPLTOon4ZIwy928ul5qdcnSvSLA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=15RTuOMn; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
+	t=1773038965; c=relaxed/relaxed;
+	bh=9rea/vjeMUUW3SPeWNeQvX4Qfy/WVzcqQb0NrtwQ8Ck=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=XdJrusXYE9Qe3trCXUFnLvciMxm+Dv9X0XL4XqcqOpi6jfnbz2noWExrTCCdu2UFw15+EGFG8NRSTq0f7xd65/WRpRYg+cmIZT6bQYNzEY4UqwDvRhhkrqZ0rEi1AFAGanDdi2NTDXSQgdwVFhdOLHkIBnDgY2kvMtMPAB2XJgflY95bqud9C3PQEZ++Fx16M3zEQIuf5F+utzscalYMp9WhnTbUT4oOktfVNWdJ3mpPQ413D+F1rLXU252ShAc1j2/K4PG8IgdV2P41i1gqdn0YxXta1Gg9KsxnheM/ForpZLp6zg8MadwLI+QOn+etiXNGNdQ0BpG7MP54A3xwxQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SAHCok30; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=nsc@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=15RTuOMn;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SAHCok30;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=nsc@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fTmbj5mcbz2xdL
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Mar 2026 17:01:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fTng81HnPz2xlh
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Mar 2026 17:49:24 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id BB6F540350;
-	Mon,  9 Mar 2026 06:01:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 063A3C4CEF7;
-	Mon,  9 Mar 2026 06:01:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1773036078;
-	bh=gVxcvHJNBraLn9M5BiTJWU/1HdTbvq+6QHUIrPxzgXk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=15RTuOMn5e9UtCmYbatnqrEpDrmYSoEuuiG6YS2iMtIHowfu0e7HEWq/oFZRIWHSS
-	 +SfPyuwociimJ283zgBd62ohu7PhxSeh3A28z4Eoa8aEnC26cyvVMtYCO3JafeiPPV
-	 YEFL3ecS5neM52NaHKjfqf+PyF5Kt6S5Dn2CuLYg=
-Date: Mon, 9 Mar 2026 07:01:03 +0100
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Jori Koolstra <jkoolstra@xs4all.nl>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	by sea.source.kernel.org (Postfix) with ESMTP id 11FFB4411F;
+	Mon,  9 Mar 2026 06:49:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6A789C4CEF7;
+	Mon,  9 Mar 2026 06:49:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773038961;
+	bh=mBGAy+m59z4WIEXrNU6lVwn2ubiB5FyyhHyt/vKyIwQ=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=SAHCok30el3I22tEqGLE1AsTFRcIxNAv18AGEYQTYGnuLynlmwQV37mqVXirUlEej
+	 z4I4v2lMrfd9uGw2WKlMubgUAX/oKqjPAYO0K5hKm6yXr25Y5FotuZ0D/r+YEkSdAM
+	 0EZY59yCS3qEnIhTmaI5ofWEtmyWNmIa2iEt45YWJ2h7IDT4in6/Z2FsGx8l0OqNn+
+	 gCQVwJ8jSVG5Qv5KjuL62+1sfKbp1nVDoJRB0C79e9WFAazt8pc1FLS/lNZQSYuPVI
+	 X+0LuwPPOLpnusHuaR0u/h3HuW/1BocPwfNrtCLot/ti//rWfPsZdw4Rp1z4IzG5jQ
+	 8a5GB68SEb+ag==
+From: Nicolas Schier <nsc@kernel.org>
+To: Nathan Chancellor <nathan@kernel.org>
+Cc: Nicolas Schier <nsc@kernel.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	WANG Xuerui <kernel@xen0n.name>,
+	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	Helge Deller <deller@gmx.de>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Haren Myneni <haren@linux.ibm.com>,
-	Srikar Dronamraju <srikar@linux.ibm.com>,
-	Jonathan Greental <yonatan02greental@gmail.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Ard Biesheuvel <ardb@kernel.org>,
+	Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+	Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
+	Bill Wendling <morbo@google.com>,
+	Justin Stitt <justinstitt@google.com>,
 	Kees Cook <kees@kernel.org>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	"open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>,
-	open list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2] powerpc: vas-api: constify dynamic struct class in
- coproc api register
-Message-ID: <2026030924-penniless-hermit-ffc0@gregkh>
-References: <20260308214634.1215051-1-jkoolstra@xs4all.nl>
+	linux-kbuild@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	loongarch@lists.linux.dev,
+	linux-parisc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	linux-efi@vger.kernel.org,
+	llvm@lists.linux.dev
+Subject: Re: [PATCH 0/2] kbuild: Switch from '-fms-extensions' to '-fms-anonymous-structs' when available
+Date: Mon,  9 Mar 2026 07:49:13 +0100
+Message-ID: <177303890212.240716.12941791284325631253.b4-ty@kernel.org>
+X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20260223-fms-anonymous-structs-v1-0-8ee406d3c36c@kernel.org>
+References: <20260223-fms-anonymous-structs-v1-0-8ee406d3c36c@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,87 +103,46 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260308214634.1215051-1-jkoolstra@xs4all.nl>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 
-On Sun, Mar 08, 2026 at 10:46:31PM +0100, Jori Koolstra wrote:
-> The class_create() call has been deprecated in favor of class_register()
-> as the driver core now allows for a struct class to be in read-only
-> memory.
+On Mon, 23 Feb 2026 12:10:27 -0700, Nathan Chancellor wrote:
+> The kernel enabled '-fms-extensions' in commit c4781dc3d1cf ("Kbuild:
+> enable -fms-extensions") in 6.19 to gain access to a Microsoft
+> (originally Plan 9) extension around including a tagged structure/union
+> anonymously in an other structure/union. Since then, Clang 23.0.0
+> (current main) has added a flag to enable only that extension, rather
+> than all Microsoft extensions, '-fms-anonymous-structs' [1]. Using this
+> narrower compiler option would have avoided the build error fixed by
+> commit a6773e6932cb ("jfs: Rename _inline to avoid conflict with clang's
+> '-fms-extensions'"). While these errors are not expected to be common,
+> using the narrower option when available has no drawbacks because the
+> kernel only cares about this extension in '-fms-extensions', no others.
+> While this could result in build errors for folks using
+> '-fms-anonymous-structs' if a developer uses another extension in
+> '-fms-extensions' (either intentionally or unintentionally), flagging
+> these uses for further scrutiny seems worthwhile.
 > 
-> In vas_register_coproc_api() the dynamic allocation of the struct class
-> corresonding to the coprocessor type (right now only nx-gzip) is
-> replaced by calling
-> 
-> 	static const struct class* cop_to_class(enum vas_cop_type cop)
-> 
-> which links the coprocessor type to the appropriate static const struct
-> class.
-> 
-> Compile tested only.
-> 
-> Link: https://lore.kernel.org/all/2023040244-duffel-pushpin-f738@gregkh/
-> 
-> Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Signed-off-by: Jori Koolstra <jkoolstra@xs4all.nl>
-> ---
-> v2: undo whitespace removal
-> 
->  arch/powerpc/platforms/book3s/vas-api.c | 34 +++++++++++++++++++------
->  1 file changed, 26 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/book3s/vas-api.c b/arch/powerpc/platforms/book3s/vas-api.c
-> index ea4ffa63f043..e377981fd533 100644
-> --- a/arch/powerpc/platforms/book3s/vas-api.c
-> +++ b/arch/powerpc/platforms/book3s/vas-api.c
-> @@ -45,7 +45,7 @@ static struct coproc_dev {
->  	struct device *device;
->  	char *name;
->  	dev_t devt;
-> -	struct class *class;
-> +	const struct class *class;
->  	enum vas_cop_type cop_type;
->  	const struct vas_user_win_ops *vops;
->  } coproc_device;
-> @@ -599,6 +599,21 @@ static struct file_operations coproc_fops = {
->  	.unlocked_ioctl = coproc_ioctl,
->  };
->  
-> +static const struct class nx_gzip_class = {
-> +	.name		= "nx-gzip",
-> +	.devnode	= coproc_devnode
-> +};
-> +
-> +static const struct class* cop_to_class(enum vas_cop_type cop)
-> +{
-> +	switch (cop) {
-> +	case VAS_COP_TYPE_GZIP:		return &nx_gzip_class;
-> +	default:
-> +		pr_err("No device class defined for cop type %d\n", cop);
-> +		return NULL;
-> +	}
-> +}
-> +
->  /*
->   * Supporting only nx-gzip coprocessor type now, but this API code
->   * extended to other coprocessor types later.
-> @@ -609,6 +624,10 @@ int vas_register_coproc_api(struct module *mod, enum vas_cop_type cop_type,
->  {
->  	int rc = -EINVAL;
->  	dev_t devno;
-> +	const struct class* class = cop_to_class(cop_type);
-> +
-> +	if (!class)
-> +		return rc;
+> [...]
 
-How can this happen?
+Applied to kbuild/linux.git (kbuild-next-unstable), thanks!
 
-This feels odd, are different types of devices being registered here?  I
-don't see where VAS_COP_TYPE_GZIP was being tested in the original code,
-why add this additional logic?
+[1/2] kbuild: Consolidate C dialect options
+      https://git.kernel.org/kbuild/c/f3fead1c
+[2/2] kbuild: Use '-fms-anonymous-structs' if it is available
+      https://git.kernel.org/kbuild/c/c14d8386
 
-thanks,
+Acks and review trailers are still welcome!
 
-greg k-h
+Please look out for regression or issue reports or other follow up
+comments, as they may result in the patch/series getting dropped,
+reverted or modified (e.g. trailers). Patches applied to the
+kbuild-next-unstable branch are accepted pending wider testing in
+linux-next and any post-commit review; they will generally be moved
+to the kbuild-next branch in about a week if no issues are found.
+
+Best regards,
+-- 
+Nicolas
+
 
