@@ -1,106 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-17937-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17938-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED965FCA191
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Mar 2026 22:49:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40369FCA191
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Mar 2026 22:51:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fVByb6b63z3c8W;
-	Tue, 10 Mar 2026 09:49:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.155
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773093378;
-	cv=none; b=niXmKhdz8RWbZNKZVL7zeUAUt3k64VfBlvgvu/6jn2KrNGVBF3GYsZ1MsYoNStJP0VGCnY0JWdiJD70CYtSsPV4J8sbW8FM67MxejrAJCZU0RFdKQdkbDT/UyUBw5F1WbaUQ1doV0LMgNhlt9SWb8P0kcfShWG2TdyxHzQBrBb7Y+/cVdQCJlxwVZJ+V0CQLl0+XCAr7XrMaJnHfoXcfGHGs5y8Eb24Zs7mENOooE8ec8yS6pHzreFuyAKYnDlb96iL2DIkPEG3GZScx27cBs7ZVTLqSnIwWHVXbOt3vuzT5tewbBaIrktGivzX37smE7Zo+pDvCYvvJ1eP4VY4qZg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fVC0f4SXNz3c8W;
+	Tue, 10 Mar 2026 09:50:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1034"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773073539;
+	cv=none; b=Nxp2xFxxZQCRGEkeqQ//g1lz0/JkbDq96AL9QAYw8w/WdoBk4Ku0zYueKt/FiQRfxeEiTIQC3Ry7BuAyqNDuJNfCZ+J7TVq7ylnCWPs542XbOBW2JNrep/trodrNbvkd9LbTh/M2Kj4wj1uMgyDXENIcjS7LmSSjTbe5tfQYJIG/8t/2F3WHYaaj2qHVl/HOZteUSGAttz9NbD4gZ58CPeJjIhwNZbahlCkf4PMdSsVM/3D6OEIyDHo0CxZ257zhhRkTEAUHqHbkOiRGfD4Kky0LxfNtVdGHGEv2bO3/Oka2uNVxGCsALO0Qtd2HLnzNfKr2f5Y6T29SFbd/Dh2yuQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773093378; c=relaxed/relaxed;
-	bh=pNMQxrTvWN57AG9Ak2GM8Z+gnkCL4ATfy4hgapY0eDQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=D6qG9XMZRyBAA3ycCfTXPWVM+tXnMV/cuK2uKRSwRJwqli1Lodyih3CQjj21Q2G4aKeUJo6pFDEbAyYRvPFBT53tYNzHzVM0ofWFNlbyd3npfPOYxaiVl88CzTgFOP7aRtBqLBUObP+dkq2YDxQlYVTOrNgZJOzkiWoEorM79W9mQ8g+AI53ABWR6C2dZudLlgeXvI9Tewi7kTrnoCgedzajPxF86miPqwIwVIlg7+OBo50EC0vxWVDxGzq6qQ1QbOVVgSXnU07CffjwoZApAtHf7zI7cRpnohk1ASztZos9Lhr/LhhTIXrH8br61WPqUmJOPROj9M1+R08ndIvkaQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=shazbot.org; dkim=pass (2048-bit key; unprotected) header.d=shazbot.org header.i=@shazbot.org header.a=rsa-sha256 header.s=fm3 header.b=ER0mN4Xi; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=hNj5e+g5; dkim-atps=neutral; spf=pass (client-ip=103.168.172.155; helo=fhigh-a4-smtp.messagingengine.com; envelope-from=alex@shazbot.org; receiver=lists.ozlabs.org) smtp.mailfrom=shazbot.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=shazbot.org
+	t=1773073539; c=relaxed/relaxed;
+	bh=amj6Vi3JmO2oRqniQL19eS7V9c7NrB8GmPrszxzYH5Q=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=LTz3LfFRIfYeTLuGrcTqnxQN1wVWd+DLdwekpzUfws/+rc+Ay8zqXVYpA04AR+0PDmtNvtDKlCbpJxGNToQuarIOEP2E9UOSycCeEBfhElHtu4wzZ/eiJNcUE1um5RWyMdzA1FJII/dcY6mo03Ifqc/PDDcaIw5i3JnCycRNsRzfpj6LoDkw9jHqaSgwWedmAWYKSp5W6kT8vfNr1wp/S+ThOFfsh0O0I3Kx7OAnse9oE6bl/1XVJ5LOk5In7Rq39+E3nd6NY3gYdkm5wvZ6SJbIYx6zzC0WHlaCzLRbnActSuxYQy/f7zEw04mHzNluvH3ogIt/TBOLpMRZkaWwJg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=DOceSecZ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=ustc.gu@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=shazbot.org header.i=@shazbot.org header.a=rsa-sha256 header.s=fm3 header.b=ER0mN4Xi;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=hNj5e+g5;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=DOceSecZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=shazbot.org (client-ip=103.168.172.155; helo=fhigh-a4-smtp.messagingengine.com; envelope-from=alex@shazbot.org; receiver=lists.ozlabs.org)
-X-Greylist: delayed 570 seconds by postgrey-1.37 at boromir; Tue, 10 Mar 2026 08:56:14 AEDT
-Received: from fhigh-a4-smtp.messagingengine.com (fhigh-a4-smtp.messagingengine.com [103.168.172.155])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=ustc.gu@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com [IPv6:2607:f8b0:4864:20::1034])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fV9nV5S7sz2xNg
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2026 08:56:14 +1100 (AEDT)
-Received: from phl-compute-06.internal (phl-compute-06.internal [10.202.2.46])
-	by mailfhigh.phl.internal (Postfix) with ESMTP id 3C5B614001B2;
-	Mon,  9 Mar 2026 17:46:39 -0400 (EDT)
-Received: from phl-frontend-03 ([10.202.2.162])
-  by phl-compute-06.internal (MEProxy); Mon, 09 Mar 2026 17:46:39 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=shazbot.org; h=
-	cc:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm3; t=1773092799;
-	 x=1773179199; bh=pNMQxrTvWN57AG9Ak2GM8Z+gnkCL4ATfy4hgapY0eDQ=; b=
-	ER0mN4Xieq0aEpyr2Y4T9JPq/qIzSDzZDIkU+GqMSDjgULXK3ZojVWaFNMn9dmOc
-	Md7lKL96wp9Kg97nrLtmHsGi/KRHvH3/OjGufKJlyD6DdE00qVKKB9dpWr1VR6VT
-	T1/WHskbJ9qrLttbzqdJeMLX5uuPcKVA70/2K24ZaUDbSumnapUUPTcaB5Mrdig8
-	CsDYMouBWOad8x0jUp9MQzE66clVH2XaSgmqVv8RCOXQ+NqvByGaUc4zihslfyFv
-	nhFTOFD2C6Veyhor4rJ2zErXcMHC3FmbyngAH2h9BrvnwEyOP3MguHDosWKXQaIx
-	3Yq1UkuNNF+rlhBmWBUUBw==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1773092799; x=
-	1773179199; bh=pNMQxrTvWN57AG9Ak2GM8Z+gnkCL4ATfy4hgapY0eDQ=; b=h
-	Nj5e+g5qC5e/J3L7YLCaO9TcsNLn1bi2aHDhDaPoZhCNJGZbP8gXZBlAhrCjTAg0
-	o+KI9YsoJ25u8kBNfm2uLByS5WFqaOMZUhfUeGbTqNxsyZDSfQEuamqUV0QyuxBS
-	dYlOAUsuQyWClnyKv4CgwPcZoKONMerSrxjISVXcUQ5qOcrGDLOwd+HID5F9MgEo
-	+ZgNq/NZ19hU1ozRn9CUtyMGjBTBrXK/RoqvLI0eIkpwS+RpQJvMG5CjPK452ALl
-	oZ58AXB6xf3poW4XTOTFlsmgo9znMz4B2TiXuE0j4EGyu8F9EJxnUxPbQsndak5t
-	vBylqm2jnbGv8MV6OSx4A==
-X-ME-Sender: <xms:vj-vaVrdRJpJGFxkQ8JrEYoQbTDle3FI-5BWPgerncvobysh9r5n0g>
-    <xme:vj-vaToZ4Ymee86AW9uRr4rzKi3GsJXkJCn4d-vfT39vM7hgBLkRoXPlByeXFzQfv
-    emHgWKtdDvOR9rC4hkgx-XKiJjdW9QmrbPNlEJByiOc_Ibehps7>
-X-ME-Received: <xmr:vj-vaUYqvQEI-cyHyAiS8Qn4MOMtlq8oNGDo8g7xydIO6NGN7JAYnpKYpyA>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefgedrtddtgddvjeelvdehucetufdoteggodetrf
-    dotffvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfurfetoffkrfgpnffqhgenuceu
-    rghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujf
-    gurhepfffhvfevuffkjghfofggtgfgsehtqhertdertdejnecuhfhrohhmpeetlhgvgicu
-    hghilhhlihgrmhhsohhnuceorghlvgigsehshhgriigsohhtrdhorhhgqeenucggtffrrg
-    htthgvrhhnpeetuefgleefhfdvueegffdtffevhfffgfffiedutdetgffhheejtdekfeek
-    ieehgfenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecuvehluhhsthgvrhfuihiivg
-    eptdenucfrrghrrghmpehmrghilhhfrhhomheprghlvgigsehshhgriigsohhtrdhorhhg
-    pdhnsggprhgtphhtthhopeekpdhmohguvgepshhmthhpohhuthdprhgtphhtthhopehrih
-    htvghshhdrlhhishhtsehgmhgrihhlrdgtohhmpdhrtghpthhtoheplhhinhhugihpphgt
-    qdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrghdprhgtphhtthhopehmrgguugihse
-    hlihhnuhigrdhisghmrdgtohhmpdhrtghpthhtoheptghhlhgvrhhohieskhgvrhhnvghl
-    rdhorhhgpdhrtghpthhtoheplhhinhhugidqmhhmsehkvhgrtghkrdhorhhgpdhrtghpth
-    htohepkhhvmhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehpvghtvghr
-    giesrhgvughhrghtrdgtohhmpdhrtghpthhtoheprghlvgigsehshhgriigsohhtrdhorh
-    hg
-X-ME-Proxy: <xmx:vj-vaR_EwZAnrT2pYrOehA4E935LJ47UYXG7Jat2rB_06a7GwOH3Ng>
-    <xmx:vj-vaSkwZu6q2NK-gkaDkYoJypyKav0xrY4CW6KvvOgYLWMN9Ciy2Q>
-    <xmx:vj-vaewMIFI-8DzcnX86t6Z0KZNTDE_6G464zTpp5jf5OQDrAHrBHQ>
-    <xmx:vj-vaU64UdZ3Z9H6LG_PxcOjZb9fuSjrS1hq00T34k-9sMKHm2HFBQ>
-    <xmx:vz-vaRadkRTVmYW3fguCihEDIZVohjG_73koUf7cPmbSiaz3zhUzy02e>
-Feedback-ID: i03f14258:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
- 9 Mar 2026 17:46:38 -0400 (EDT)
-Date: Mon, 9 Mar 2026 15:46:37 -0600
-From: Alex Williamson <alex@shazbot.org>
-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan
- <maddy@linux.ibm.com>, Christophe Leroy <chleroy@kernel.org>,
- linux-mm@kvack.org, kvm@vger.kernel.org, Peter Xu <peterx@redhat.com>,
- alex@shazbot.org
-Subject: Re: [PATCH v2 1/2] drivers/vfio_pci_core: Change PXD_ORDER check
- from switch case to if/else block
-Message-ID: <20260309154637.3abf76af@shazbot.org>
-In-Reply-To: <b155e19993ee1f5584c72050192eb468b31c5029.1773058761.git.ritesh.list@gmail.com>
-References: <b155e19993ee1f5584c72050192eb468b31c5029.1773058761.git.ritesh.list@gmail.com>
-X-Mailer: Claws Mail 4.3.1 (GTK 3.24.51; x86_64-pc-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fV2S15j4hz3c9l
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2026 03:25:36 +1100 (AEDT)
+Received: by mail-pj1-x1034.google.com with SMTP id 98e67ed59e1d1-3598b2318c2so4977620a91.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Mar 2026 09:25:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1773073534; x=1773678334; darn=lists.ozlabs.org;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=amj6Vi3JmO2oRqniQL19eS7V9c7NrB8GmPrszxzYH5Q=;
+        b=DOceSecZC5AKX4OOvt4HSneRjKgXc9gC0K6jMhrF+0Bp5qQKxXex2DbGitCzF+yuri
+         W8MDKKZQ9Fpws77sglu5VycPmF4xZXxViiqr9ZUd6JYwDF9JHJbBUz5k+0FihHML92sy
+         DySr5EQDvIaxgbKRuQPYgvGBqqeE4cz3PzRw3xex0k7Fyqte3IEI43ELaoQnkTOzqBDd
+         EJMStIShNAhlSpUyfvuzWaWPZOZW66HZw1rJUwf/ZPJcBWWHRooejvZ8t3AThGEVOI2G
+         +n2xmX11YZFgTICl6tv80Nq3rcoJhKH91so9hqtPAhB37yE4k/84hkTDZd+E9sRLD2S0
+         B4Ew==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1773073534; x=1773678334;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=amj6Vi3JmO2oRqniQL19eS7V9c7NrB8GmPrszxzYH5Q=;
+        b=U4uL40p4o70TyIdmmdy5vKJhT+10tBAyqkYfX6IE/3DJSdA+5V5Rl+lPS02DhD1wRB
+         u1lIdMDX1Q9GewhqwVRItQ5Rtn+FRxI2DQ1fAREDzTpLUEr0R8YiBJa9gudbwt1dbqMR
+         IUswFQPi0O5Kr+DPmE/6LKfgQbneR7XRwIViopGbkDR+PygtVVNvJvkUrK2xgEWyXE9U
+         Ye7Wm06QcmBQbynA8pp0lIuYOKcN2f0VSSnmNBRvKtYO7kWLaVrzbm85UrxAWEvyvbab
+         9k7cC0svrILh++tPc+nx+HFDJsJlzcUR9SHxaNeM+VEa4lxcYJfjDOswu0yqoPfgqTs3
+         Ld8Q==
+X-Gm-Message-State: AOJu0YwdGElKD/OA8KWV8MaEyQAJv1Kf0mwZ5K4yNFWPijWB1RKAhBtY
+	S914GNjJVdjPKYPfr/JVOfC2ig0zT9vOLdVa4AOLgkfaH5fzkKuIHlxF
+X-Gm-Gg: ATEYQzxicniTJ9ua0I5Ne7v1rHeEzwNCw5phMltEpSTpjCnGRk15TqlYMWz+79p2j3G
+	cX3LL3K2UiyawtCbMN9kJFZ+L5p9JUJY8zpOd2utgoNjchrScdD8bRURGk5HQrRgIhUjhoiIWIo
+	hN9iHys3qmleyKD0b3+gxwHBNenktwXVaAPpFoKWpe6V/F6PZCpfUqBwS34tGog0NeD/BrVddUS
+	GJfmkyVAV5+VMyqdvFpDJ4j/m1fTl51HtaqrO0jpZx+mYk+cvv1QawtBzMTtyoVBVcR5V3cGrM8
+	HRfuzGtTtad45PD/wdPa9xdl9nd4Dn3acnK+iJd9bvqhNQnf/rFMNs/o0PUblBa79OiH9SefV2p
+	cS9HRKhW8PSrxmM18xuPzM7sZQFPppJT08iJ5U9uYKeUO0t0lcbev97FALkh3TE0Or8UkacXs/a
+	JSAvUxWmTzu3I59PFIKi44AtOMXmPOS16C35LC
+X-Received: by 2002:a17:90b:184c:b0:336:b60f:3936 with SMTP id 98e67ed59e1d1-359be2bfbfdmr10994814a91.12.1773073533488;
+        Mon, 09 Mar 2026 09:25:33 -0700 (PDT)
+Received: from junjungu-PC.localdomain ([2408:820c:9009:3f2:a816:d74a:dc19:1ab8])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-359f05ee51csm93198a91.1.2026.03.09.09.25.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 09 Mar 2026 09:25:33 -0700 (PDT)
+From: Felix Gu <ustc.gu@gmail.com>
+Date: Tue, 10 Mar 2026 00:25:30 +0800
+Subject: [PATCH] soc: fsl: qe_ports_ic: Add missing cleanup on device
+ removal
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -114,104 +85,98 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260310-qe_ports_ic-v1-1-608293026561@gmail.com>
+X-B4-Tracking: v=1; b=H4sIAHn0rmkC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
+ vPSU3UzU4B8JSMDIzMDY0MD3cLU+IL8opLi+Mxk3eREk2RLi6QUw2STNCWgjoKi1LTMCrBp0bG
+ 1tQBw1Lw+XQAAAA==
+X-Change-ID: 20260310-qe_ports_ic-ca4c98bd1c4f
+To: Qiang Zhao <qiang.zhao@nxp.com>, 
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
+ linux-kernel@vger.kernel.org, Felix Gu <ustc.gu@gmail.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1773073531; l=2073;
+ i=ustc.gu@gmail.com; h=from:subject:message-id;
+ bh=f/RO7d/NYBpPJNaikZKFHoe0PWI37oNS5SAvFGmT8u8=;
+ b=rQOMzyC4PngOHoIqO/7Df48MEyWpk4Oq7n+UJMoMvx/yCaEy1QVE4QxtLf/8M0dTWTRlNeTre
+ OBK6HibNoz9BSdq5rxEWpjidNyO7PJHufEyodw+dTqpnS22U+VATvl+
+X-Developer-Key: i=ustc.gu@gmail.com; a=ed25519;
+ pk=fjUXwmjchVN7Ja6KGP55IXOzFeCl9edaHoQIEUA+/hw=
 
+Add a devm action handler to properly clean up the irq_domain and
+chained handler when the device is removed.
 
-Subject prefix should be "vfio/pci:".
+Fixes: f0bcd784e1b7 ("soc: fsl: qe: Add an interrupt controller for QUICC Engine Ports")
+Signed-off-by: Felix Gu <ustc.gu@gmail.com>
+---
+ drivers/soc/fsl/qe/qe_ports_ic.c | 21 +++++++++++++++------
+ 1 file changed, 15 insertions(+), 6 deletions(-)
 
-On Mon,  9 Mar 2026 18:08:37 +0530
-"Ritesh Harjani (IBM)" <ritesh.list@gmail.com> wrote:
+diff --git a/drivers/soc/fsl/qe/qe_ports_ic.c b/drivers/soc/fsl/qe/qe_ports_ic.c
+index 8e2107e2cde5..5e3fae19f314 100644
+--- a/drivers/soc/fsl/qe/qe_ports_ic.c
++++ b/drivers/soc/fsl/qe/qe_ports_ic.c
+@@ -17,6 +17,7 @@
+ struct qepic_data {
+ 	void __iomem *reg;
+ 	struct irq_domain *host;
++	int irq;
+ };
+ 
+ static void qepic_mask(struct irq_data *d)
+@@ -92,11 +93,18 @@ static const struct irq_domain_ops qepic_host_ops = {
+ 	.map = qepic_host_map,
+ };
+ 
++static void qepic_remove(void *res)
++{
++	struct qepic_data *data = res;
++
++	irq_set_chained_handler_and_data(data->irq, NULL, NULL);
++	irq_domain_remove(data->host);
++}
++
+ static int qepic_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+ 	struct qepic_data *data;
+-	int irq;
+ 
+ 	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
+ 	if (!data)
+@@ -106,17 +114,18 @@ static int qepic_probe(struct platform_device *pdev)
+ 	if (IS_ERR(data->reg))
+ 		return PTR_ERR(data->reg);
+ 
+-	irq = platform_get_irq(pdev, 0);
+-	if (irq < 0)
+-		return irq;
++	data->irq = platform_get_irq(pdev, 0);
++	if (data->irq < 0)
++		return data->irq;
+ 
+ 	data->host = irq_domain_add_linear(dev->of_node, 32, &qepic_host_ops, data);
+ 	if (!data->host)
+ 		return -ENODEV;
+ 
+-	irq_set_chained_handler_and_data(irq, qepic_cascade, data);
++	irq_set_chained_handler_and_data(data->irq, qepic_cascade, data);
++
++	return devm_add_action_or_reset(dev, qepic_remove, data);
+ 
+-	return 0;
+ }
+ 
+ static const struct of_device_id qepic_match[] = {
 
-> Architectures like PowerPC uses runtime defined values for
+---
+base-commit: a0ae2a256046c0c5d3778d1a194ff2e171f16e5f
+change-id: 20260310-qe_ports_ic-ca4c98bd1c4f
 
-s/uses/use/
+Best regards,
+-- 
+Felix Gu <ustc.gu@gmail.com>
 
-> PMD_ORDER/PUD_ORDER. This is because it can use either RADIX or HASH MMU
-> at runtime using kernel cmdline. So the pXd_index_size is not known at
-> compile time. Without this fix, when we add huge pfn support on powerpc
-> in the next patch, vfio_pci_core driver compilation can fail with the
-> following errors.
->=20
->   CC [M]  drivers/vfio/vfio_main.o
->   CC [M]  drivers/vfio/group.o
->   CC [M]  drivers/vfio/container.o
->   CC [M]  drivers/vfio/virqfd.o
->   CC [M]  drivers/vfio/vfio_iommu_spapr_tce.o
->   CC [M]  drivers/vfio/pci/vfio_pci_core.o
->   CC [M]  drivers/vfio/pci/vfio_pci_intrs.o
->   CC [M]  drivers/vfio/pci/vfio_pci_rdwr.o
->   CC [M]  drivers/vfio/pci/vfio_pci_config.o
->   CC [M]  drivers/vfio/pci/vfio_pci.o
->   AR      kernel/built-in.a
-> ../drivers/vfio/pci/vfio_pci_core.c: In function =E2=80=98vfio_pci_vmf_in=
-sert_pfn=E2=80=99:
-> ../drivers/vfio/pci/vfio_pci_core.c:1678:9: error: case label does not re=
-duce to an integer constant
->  1678 |         case PMD_ORDER:
->       |         ^~~~
-> ../drivers/vfio/pci/vfio_pci_core.c:1682:9: error: case label does not re=
-duce to an integer constant
->  1682 |         case PUD_ORDER:
->       |         ^~~~
-> make[6]: *** [../scripts/Makefile.build:289: drivers/vfio/pci/vfio_pci_co=
-re.o] Error 1
-> make[6]: *** Waiting for unfinished jobs....
-> make[5]: *** [../scripts/Makefile.build:546: drivers/vfio/pci] Error 2
-> make[5]: *** Waiting for unfinished jobs....
-> make[4]: *** [../scripts/Makefile.build:546: drivers/vfio] Error 2
-> make[3]: *** [../scripts/Makefile.build:546: drivers] Error 2
->=20
-> Fixes: f9e54c3a2f5b7 ("vfio/pci: implement huge_fault support")
-> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-> ---
-> v1 -> v2:
-> 1. addressed review comments from Christophe [1]
-> [1]: https://lore.kernel.org/linuxppc-dev/0b8fce7a61561640634317a5e287cdb=
-4794715fd.1772170860.git.ritesh.list@gmail.com/
->=20
->  drivers/vfio/pci/vfio_pci_core.c | 19 +++++++------------
->  1 file changed, 7 insertions(+), 12 deletions(-)
->=20
-> diff --git a/drivers/vfio/pci/vfio_pci_core.c b/drivers/vfio/pci/vfio_pci=
-_core.c
-> index d43745fe4c84..0967307235b8 100644
-> --- a/drivers/vfio/pci/vfio_pci_core.c
-> +++ b/drivers/vfio/pci/vfio_pci_core.c
-> @@ -1670,21 +1670,16 @@ vm_fault_t vfio_pci_vmf_insert_pfn(struct vfio_pc=
-i_core_device *vdev,
->  	if (vdev->pm_runtime_engaged || !__vfio_pci_memory_enabled(vdev))
->  		return VM_FAULT_SIGBUS;
->=20
-> -	switch (order) {
-> -	case 0:
-> +	if (!order)
->  		return vmf_insert_pfn(vmf->vma, vmf->address, pfn);
-> -#ifdef CONFIG_ARCH_SUPPORTS_PMD_PFNMAP
-> -	case PMD_ORDER:
-> +
-> +	if (IS_ENABLED(CONFIG_ARCH_SUPPORTS_PMD_PFNMAP) && order =3D=3D PMD_ORD=
-ER)
->  		return vmf_insert_pfn_pmd(vmf, pfn, false);
-> -#endif
-> -#ifdef CONFIG_ARCH_SUPPORTS_PUD_PFNMAP
-> -	case PUD_ORDER:
-> +
-> +	if (IS_ENABLED(CONFIG_ARCH_SUPPORTS_PUD_PFNMAP) && order =3D=3D PUD_ORD=
-ER)
->  		return vmf_insert_pfn_pud(vmf, pfn, false);
-> -		break;
-> -#endif
-> -	default:
-> -		return VM_FAULT_FALLBACK;
-> -	}
-> +
-> +	return VM_FAULT_FALLBACK;
->  }
->  EXPORT_SYMBOL_GPL(vfio_pci_vmf_insert_pfn);
-
-Otherwise LGTM.  This appears to be no change for current use cases, so
-I assume this will go in through ppc trees.
-
-Reviewed-by: Alex Williamson <alex@shazbot.org>
 
