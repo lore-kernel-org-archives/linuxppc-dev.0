@@ -1,59 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-17954-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17955-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A42FF3C27D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Mar 2026 10:06:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BEFC4EB1040
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Mar 2026 10:17:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fVTzc4K1jz3bjb;
-	Tue, 10 Mar 2026 21:06:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773137164;
-	cv=none; b=ljMX79/tn7IzgbPX2MB1FhKF17KS4iClNsIcXZFzc6Mll0FkCQymy/sZVgTlz6zgc/lZRhJ9eY4HfzIBTHLnhSV7BEP0vUkFQ1kr4TtlzXUcOfayITVFY8Yza/Gl0ffKCbpX0apFPKT6u7ZcYaWaqx/n7u0jFpnT2WH7HzameyBB42OTLf7lXKssi0PcoYIiMY5CkKyvyoby9HYzzLo5hVpUi/LsVLtiuyAGkWrPRbdWO3Mmp7nSTMffJPrVRYV5u+x/b9a63B2Efxk8rhFMleAs8rQ1o5lDiCk0qK/4xOpXEGIlTTic+JShoGGOLF66ZTHB97sqsEYfMTA+g/CSEQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fVVDf1Yvgz3bjb;
+	Tue, 10 Mar 2026 21:17:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773137842;
+	cv=none; b=m6vMAc4Oa5VsKMtzTGJH9sVDEbXKPZlhdyOpXOOUsQNdx9VSGMKSCyBg97/Z4ZSJRWIUNyqsAWgmpkSmwpi0lmucooNyUtdTcUv/1/4t+z9pec3i2ROzsgmGq7fAlpUZHuXmNH/3ditfIbXIfZi2/rYfe6ifnNTxrdmm3qxb6UbURaOcgriuOvjBwKFJ2JRq1rEG3Hbj42iayk82OP7zIFWxc7ehuNdcGDApY57yA9ferSBEkmZlrQHhn7CELcm0R5kP+ppTBxSHIuzCVcc0zn4dskRZhpLnK9hmDC0HFM4bRD1uBKqUCPNak0bRtmmk8qM8348aD3tRwHkC3kpLLw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773137164; c=relaxed/relaxed;
-	bh=px7eofF6K0alRKUSh2jaYAGbXVP1E8PYz55EApOAztk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=MvErqaazfGO/wu9I8nIJNJsN/yYXmkZl0iNsWzEYu7oH/uDOeLkPxFq+gsBZS2afSJJglk4mNlXI348rO3szrRwcBxeLF1TBAE2gIqhde8e18USfM2FDueW3/zmJzLLIxnQsvjqYFh2POBBQz36nNYN6TEUiMFoqmxwrmDAjJa4WuJ/HBk0jYdMPnbOjZsaPw8/eGm7RE0DaR+K3m7cCXzLVd90LQTL8+Abg6MEY2/Tm1fZRQNcp7rj9UQVofxA55wi7JcA4FD1MS/BllqbdF0gR05hLxLzQY0clW41DtT35LoMGuDraUSuxiBotW+0MY2xhjkdcCc6+mH13fCYRlw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QEXIomXH; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1773137842; c=relaxed/relaxed;
+	bh=iesZ9SxOi2m5Xy54SPaHS4tPpuhwx5hKwA7bM2riaBk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=WOdSZ6YQ4Tz9RehLU8hMixhrnms507lzgrRT1MJ9QJkXueq8Y8PcJjuweSnFQR2JNlZwyymDgxtRThxtZu2V2xACkp3zdWsdm5/bpiu7idv57oUY4lovIVHgV8CxyUzikvLC3Y91Agx9DUJudHVHCtKqW+AQ+ub1/CFSc1nfVIabWVY4oLwPHqAg5ymzyK7sLjhjWDwrFo1V4gQbx7hRLXiEsGJ9Iu/i4yWYVVkq2US+lQtPEk0u2NYSTlPEyQ+Oy8fNVKPhBp/W4vxbL85kJZiNuwsh3NKAqtXfM5xPBxRLBOK6iyPds79GTxhdaW8j0Y8jFhLTMECPCmu1cbGVxg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fbUZpbJe; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QEXIomXH;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fbUZpbJe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fVTzb3nN3z2yFY
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2026 21:06:03 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 8A67360097;
-	Tue, 10 Mar 2026 10:06:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 67ADFC19423;
-	Tue, 10 Mar 2026 10:05:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773137161;
-	bh=ppw/8xwp1YwwQnJfhBLYs/4VlvY8xgS+sm8YKor45qA=;
-	h=From:To:Cc:Subject:Date:From;
-	b=QEXIomXHcDvmmenDaDW+bWZgZ2cK/EJHXV2lRH712n701DcQFv/pVoSS1VyAFn1kU
-	 1d7JA649Tqx6HHO2LkLiLkkfMeKiMBk4pFqYWT6AdnsCoSipa41hk8fSt7ROuKygzo
-	 AROSth005/Rc0j62RmTYtY0mYB9YGDedyOAPj5mZZ67spzKjCrgYTCnKWienKR2kp9
-	 OwGz2dep2RaASLjKMvVxMw7UTU0zZUCr+CTyShyQXs1MKKaQI1trvupJx2NipAx+tT
-	 WD1Ror9vKUWOPIQjEM9RaLT14ZahDbDJykJr+tvB8l6z9ZQODeFOoPM90SrXTpA50m
-	 NwtAFjyMEevtg==
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/net: Inline checksum wrappers and convert to scoped user access
-Date: Tue, 10 Mar 2026 11:05:54 +0100
-Message-ID: <f44e1b2760dbed35b237040001a91bc8304b726b.1773137098.git.chleroy@kernel.org>
-X-Mailer: git-send-email 2.49.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fVVDc3kSnz2yFY
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2026 21:17:19 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62A56bJw509351;
+	Tue, 10 Mar 2026 10:17:02 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=pp1; bh=iesZ9SxOi2m5Xy54SPaHS4tPpuhw
+	x5hKwA7bM2riaBk=; b=fbUZpbJeNDwKAQMTeAaCF7xreNu8EyEew4UI8JG58i+G
+	a4UldEbNuKfrdXxaNjPyndu+R8eR8eMfxZZ7NFM6T5w61Gk5/EF1IZCouIjd+rGs
+	pEuAhnJT6DKMYf5VujmeUoWQ54xDI1VLinA/n1y/6C9AmKqROWY57Suy5G63F4pB
+	rZtVkUB4KMSuk62GtN551XjPRsa4VN4e/o12XskLdD1eckDTsVo1dUtl5FQ5nwDm
+	v/xl9TnbhNQ9Vf5Qed7W3k+BAMFoYq59OEHAs/XEDVG7fQXBgszlVas39+Lv7zyf
+	atSnMbj357y0+rWxOBfmKTLdfeAbZtnQH8jOBhVsBQ==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4crcywabqx-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 10 Mar 2026 10:17:01 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62A60odp021365;
+	Tue, 10 Mar 2026 10:17:01 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4crxbsrrxx-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 10 Mar 2026 10:17:00 +0000
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62AAGv2949545652
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 10 Mar 2026 10:16:57 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5FA9E2004D;
+	Tue, 10 Mar 2026 10:16:57 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 78DFA2004E;
+	Tue, 10 Mar 2026 10:16:55 +0000 (GMT)
+Received: from mac.in.ibm.com (unknown [9.98.111.16])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 10 Mar 2026 10:16:55 +0000 (GMT)
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Vaibhav Jain <vaibhav@linux.ibm.com>,
+        Amit Machhiwal <amachhiw@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Christophe Leroy <chleroy@kernel.org>, Greg Kurz <groug@kaod.org>,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] selftests/powerpc: Suppress false positive -Wmaybe-uninitialized with GCC 15
+Date: Tue, 10 Mar 2026 15:45:19 +0530
+Message-ID: <20260310101519.67157-1-amachhiw@linux.ibm.com>
+X-Mailer: git-send-email 2.50.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -67,147 +89,112 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=4911; i=chleroy@kernel.org; h=from:subject:message-id; bh=ppw/8xwp1YwwQnJfhBLYs/4VlvY8xgS+sm8YKor45qA=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWSuf8tk6RwSEXL+/bND27ldbv7lXD8xNiXsE5+f8J6EU Hu5CoO2jlIWBjEuBlkxRZbj/7l3zej6kpo/dZc+zBxWJpAhDFycAjCRFh1GhkOycwQTnKPsZssf +cDU//vJ1qa9/DNWzetd0ujzKcBS/zbD/9xLxgt55FW85Lz7p6Zx8pTFdi9e8NB3+jmBb9NW7Cp oYAcA
-X-Developer-Key: i=chleroy@kernel.org; a=openpgp; fpr=10FFE6F8B390DE17ACC2632368A92FEB01B8DD78
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzEwMDA4MSBTYWx0ZWRfX1NisxH/IH940
+ L+2ztO8/+HyWqpgi5Ft0KC2S5cjni+JtxwHdGf4XqppgOG0EVYsmeYWUGUZgRt+Lr67v0B0eYT1
+ h6SIosiM5XPhp5vNIaU7YMJ1HirksTVEEP4a6audyUNbdJa2lPbd16Jw/JhM2Se29bq9T08bL8C
+ 5EIjn4ZMyJ6CLXnei+n8LYoucIq9JX0tdM56+QsnYIwC50edDoUqbxMzXI6xbeMg6iQwdVTeZ8w
+ AW8dspbS9+2WYIkdIbh248iKQsaB2NLKw49ngU3+lW+uhHk92zPR4Mzm/QPjwVcMCO4Us9LzbTM
+ ihQ82X4mZYTCmhjWKg6vXFHizpbYbTzLyTAVLEbkT6i8/IgqIkhcP4uubM+8JcNji6x+/ivnMV/
+ B+4TMQPMBFyjJqPbHAJJ33nFtAyfIgLMY2Dp39rHdxLIgiCWRLgPEiokKCg/wLQ8kRJI2caODjb
+ ij7Al73dTee832YhI5A==
+X-Authority-Analysis: v=2.4 cv=QaVrf8bv c=1 sm=1 tr=0 ts=69afef9e cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=mDV3o1hIAAAA:8
+ a=VnNF1IyMAAAA:8 a=TLf-jbbItdWWZ-izWCQA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: SVtSYDVzzIvTFT2n0xrlB1Pu1W_q6LTU
+X-Proofpoint-ORIG-GUID: cl2Q4MMu8IC3_A4RcuuuAxi2u91kZuam
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-10_01,2026-03-09_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 spamscore=0 impostorscore=0 clxscore=1011 adultscore=0
+ bulkscore=0 lowpriorityscore=0 priorityscore=1501 suspectscore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2603100081
 
-Commit 861574d51bbd ("powerpc/uaccess: Implement masked user access")
-provides optimised user access by avoiding the cost of access_ok().
+GCC 15 reports the below false positive '-Wmaybe-uninitialized' warning
+in vphn_unpack_associativity() when building the powerpc selftests.
 
-Convert csum_and_copy_to_user() and csum_and_copy_from_user() to
-scoped user access to benefit from masked user access.
+  # make -C tools/testing/selftests TARGETS="powerpc"
+  [...]
+    CC       test-vphn
+  In file included from test-vphn.c:3:
+  In function ‘vphn_unpack_associativity’,
+      inlined from ‘test_one’ at test-vphn.c:371:2,
+      inlined from ‘test_vphn’ at test-vphn.c:399:9:
+  test-vphn.c:10:33: error: ‘be_packed’ may be used uninitialized [-Werror=maybe-uninitialized]
+     10 | #define be16_to_cpup(x)         bswap_16(*x)
+        |                                 ^~~~~~~~
+  vphn.c:42:27: note: in expansion of macro ‘be16_to_cpup’
+     42 |                 u16 new = be16_to_cpup(field++);
+        |                           ^~~~~~~~~~~~
+  In file included from test-vphn.c:19:
+  vphn.c: In function ‘test_vphn’:
+  vphn.c:27:16: note: ‘be_packed’ declared here
+     27 |         __be64 be_packed[VPHN_REGISTER_COUNT];
+        |                ^~~~~~~~~
+  cc1: all warnings being treated as errors
 
-csum_and_copy_to_user() and csum_and_copy_from_user() are only
-called respectively by csum_and_copy_to_iter() and
-csum_and_copy_from_iter_full() and they are only called twice.
+When vphn_unpack_associativity() is called from hcall_vphn(), this error
+is not seen during compilation because GCC 15 seems to consider 'retbuf'
+always populated from the hypervisor which is eventually referred by
+'be_packed'. However, GCC 15's dataflow analysis can’t prove the same
+before the first dereference when vphn_unpack_associativity() is called
+from test_one() with pre-initialized array of 'struct test'. This
+results in a false positive warning which is promoted to an error under
+'-Werror'. This problem is not seen when the compilation is performed
+with GCC 13 and 14.
 
-Those functions used to be large but they were first reduced by
-commit c693cc4676a0 ("saner calling conventions for
-csum_and_copy_..._user()") then commit 70d65cd555c5 ("ppc: propagate
-the calling conventions change down to csum_partial_copy_generic()").
-With the additional size reduction provided by conversion to scoped
-user access they are not worth being kept out of line.
+Suppress the warning locally around the offending statement when
+building with GCC 15 using a diagnostic pragma. This keeps the build
+working while limiting the scope of the suppression to the specific
+statement that triggers the false positive. An issue [1] has also been
+created on GCC bugzilla.
 
-  $ ./scripts/bloat-o-meter vmlinux.0 vmlinux.1
-  add/remove: 0/2 grow/shrink: 2/0 up/down: 136/-176 (-40)
-  Function                                     old     new   delta
-  csum_and_copy_to_iter                       2416    2488     +72
-  csum_and_copy_from_iter_full                2272    2336     +64
-  csum_and_copy_to_user                         88       -     -88
-  csum_and_copy_from_user                       88       -     -88
-  Total: Before=11514471, After=11514431, chg -0.00%
+[1] https://gcc.gnu.org/bugzilla/show_bug.cgi?id=124427
 
-Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+Fixes: 58dae82843f5 ("selftests/powerpc: Add test for VPHN")
+Reviewed-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
 ---
-This patch applies on top of v7.0-rc3, it requires commit af4e9ef3d784 ("uaccess: Fix scoped_user_read_access() for 'pointer to const'")
----
- arch/powerpc/include/asm/checksum.h  | 22 +++++++++++++---
- arch/powerpc/lib/Makefile            |  3 +--
- arch/powerpc/lib/checksum_wrappers.c | 39 ----------------------------
- 3 files changed, 19 insertions(+), 45 deletions(-)
- delete mode 100644 arch/powerpc/lib/checksum_wrappers.c
+ arch/powerpc/platforms/pseries/vphn.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/checksum.h b/arch/powerpc/include/asm/checksum.h
-index 4b573a3b7e17..52921ea2494a 100644
---- a/arch/powerpc/include/asm/checksum.h
-+++ b/arch/powerpc/include/asm/checksum.h
-@@ -8,6 +8,7 @@
+diff --git a/arch/powerpc/platforms/pseries/vphn.c b/arch/powerpc/platforms/pseries/vphn.c
+index 3f85ece3c872..9bc891143fec 100644
+--- a/arch/powerpc/platforms/pseries/vphn.c
++++ b/arch/powerpc/platforms/pseries/vphn.c
+@@ -39,7 +39,22 @@ static int vphn_unpack_associativity(const long *packed, __be32 *unpacked)
+ 		be_packed[i] = cpu_to_be64(packed[i]);
  
- #include <linux/bitops.h>
- #include <linux/in6.h>
-+#include <linux/uaccess.h>
- /*
-  * Computes the checksum of a memory block at src, length len,
-  * and adds in "sum" (32-bit), while copying the block to dst.
-@@ -21,11 +22,24 @@
- extern __wsum csum_partial_copy_generic(const void *src, void *dst, int len);
+ 	for (i = 1; i < VPHN_ASSOC_BUFSIZE; i++) {
++/*
++ * When this function is called from hcall_vphn(), GCC 15 seems to consider
++ * 'retbuf' always populated from the hypervisor which is eventually referred by
++ * 'be_packed'. However, GCC 15's dataflow analysis can’t prove the same before
++ * the first dereference when this function is called from test_one() with
++ * pre-initialized array of 'struct test'. This results in a false positive
++ * '-Wmaybe-uninitialized' warning which is promoted to an error under
++ * '-Werror'. This problem is not seen when the compilation is performed with
++ * older GCC versions.
++ */
++#pragma GCC diagnostic push
++#if defined(__GNUC__) && __GNUC__ >= 15
++#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
++#endif
+ 		u16 new = be16_to_cpup(field++);
++#pragma GCC diagnostic pop
  
- #define _HAVE_ARCH_COPY_AND_CSUM_FROM_USER
--extern __wsum csum_and_copy_from_user(const void __user *src, void *dst,
--				      int len);
-+static inline __wsum csum_and_copy_from_user(const void __user *src, void *dst, int len)
-+{
-+	scoped_user_read_access_size(src, len, efault)
-+		return csum_partial_copy_generic((void __force *)src, dst, len);
-+
-+efault:
-+	return 0;
-+}
-+
- #define HAVE_CSUM_COPY_USER
--extern __wsum csum_and_copy_to_user(const void *src, void __user *dst,
--				    int len);
-+static inline __wsum csum_and_copy_to_user(const void *src, void __user *dst, int len)
-+{
-+	scoped_user_write_access_size(dst, len, efault)
-+		return csum_partial_copy_generic(src, (void __force *)dst, len);
-+
-+efault:
-+	return 0;
-+}
- 
- #define _HAVE_ARCH_CSUM_AND_COPY
- #define csum_partial_copy_nocheck(src, dst, len)   \
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index f14ecab674a3..bcdf387f3998 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -62,8 +62,7 @@ obj64-$(CONFIG_ALTIVEC)	+= vmx-helper.o
- obj64-$(CONFIG_KPROBES_SANITY_TEST)	+= test_emulate_step.o \
- 					   test_emulate_step_exec_instr.o
- 
--obj-y			+= checksum_$(BITS).o checksum_wrappers.o \
--			   string_$(BITS).o
-+obj-y			+= checksum_$(BITS).o string_$(BITS).o
- 
- obj-y			+= sstep.o
- obj-$(CONFIG_PPC_FPU)	+= ldstfp.o
-diff --git a/arch/powerpc/lib/checksum_wrappers.c b/arch/powerpc/lib/checksum_wrappers.c
-deleted file mode 100644
-index 1a14c8780278..000000000000
---- a/arch/powerpc/lib/checksum_wrappers.c
-+++ /dev/null
-@@ -1,39 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
--/*
-- *
-- * Copyright (C) IBM Corporation, 2010
-- *
-- * Author: Anton Blanchard <anton@au.ibm.com>
-- */
--#include <linux/export.h>
--#include <linux/compiler.h>
--#include <linux/types.h>
--#include <asm/checksum.h>
--#include <linux/uaccess.h>
--
--__wsum csum_and_copy_from_user(const void __user *src, void *dst,
--			       int len)
--{
--	__wsum csum;
--
--	if (unlikely(!user_read_access_begin(src, len)))
--		return 0;
--
--	csum = csum_partial_copy_generic((void __force *)src, dst, len);
--
--	user_read_access_end();
--	return csum;
--}
--
--__wsum csum_and_copy_to_user(const void *src, void __user *dst, int len)
--{
--	__wsum csum;
--
--	if (unlikely(!user_write_access_begin(dst, len)))
--		return 0;
--
--	csum = csum_partial_copy_generic(src, (void __force *)dst, len);
--
--	user_write_access_end();
--	return csum;
--}
+ 		if (is_32bit) {
+ 			/*
+
+base-commit: 1f318b96cc84d7c2ab792fcc0bfd42a7ca890681
 -- 
-2.49.0
+2.50.1 (Apple Git-155)
 
 
