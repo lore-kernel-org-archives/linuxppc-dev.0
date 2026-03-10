@@ -1,59 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-17958-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17959-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21D0CEB104A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Mar 2026 10:41:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B06EEB104A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Mar 2026 10:41:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fVVmn199sz2yFY;
-	Tue, 10 Mar 2026 21:41:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773139305;
-	cv=pass; b=fgCE19igoeH6d0LcOuDyYTYYfiJ187OiyyL1dF95Pktrheb5EQ5KJ8VD9UOH+bWD3LmI7IIbbrHnrtRC+sobpVObprw50qcgVZa0ai9xAbQHS1xx+C9RLHjcVf37RAivLB3WdnO3ueH9zmB95D/4PmEDwdVtP9TIn4RroD27BC0vViadLlR+69V2letBJb6GWT+2l5G7Hz3LEQSLrxI+XkSJWHWHwfYMPnYMNVUCbmj6Q96SbYd6Jc9Ub2qkhe2L7UMPxzJyKq3SetQ3Q9orN84hCYzhxah3HAvEPHhphQ+pmoGdPY9zbhbFUCU50PEmrg46xwkbvZHJDcOKp0nYJw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fVVms0x40z3cF8;
+	Tue, 10 Mar 2026 21:41:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::1" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773139309;
+	cv=pass; b=gBfALvlIJlZYhDPFTjpv5vw48ZAc4lbndN7ACH8vvPSA9oQbr7cAlMgd8bMC3M3ila+tcqi33dHNszdHxFBXfotchcFVOVvPNC2eTgdqLcflRhPyM50I7JFfERRo/Ob0/tB+u/YcDV8mIh1kYWQN+/kpvn81iQ4SfQemf607Xsn1rdO7E7H4XZ2poAo20xBaPj7xRUduCjB7rgALcLRReFxJcBBkkfiAdDVrkay5p2nwTsFZmrn0DBYl7s4AwX3yXsjVclue1PlyVY+l6Q0hCU2UhqNmhlGLIl/IYsz+Dh08yz0P091KbGyAZxQGD52oGNXy/2Xjvm3N4+RAafzp6Q==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773139305; c=relaxed/relaxed;
-	bh=bC1g5V1knsd+6TigkKWA7GrUPBXlK08jLmYX1yVGaSo=;
+	t=1773139309; c=relaxed/relaxed;
+	bh=cDlDabGl6nl3C5GaKNJ4DyQBhEmaCtae7mOJ3W/o3PY=;
 	h=From:To:Subject:Date:Message-Id:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=HedZLNwIlxx71Sv5UPon8yoZ1Z6FycaRaEPxODOfbpLGJcd673IEmo9TCXl6hm7wFepkdVawAo/IGu+JwYRCzxBYdOzE/ZQ58uv07HwZpHi10S9CLcoC4387jE3HTKCDOVagXxJ8IKfu+uw6OC160Q4JqJPEDXZmZLTZp6hZeIhzC+sT/N7MS5rJeL6gEBOpOOTIylOV7504OG7gGU76SCQpe1xp1FbSQ046yq50EHAcBRAA9dwLWaYG3uEpcdLx35/OgSx9QC3FUOHyUKt3tw+Oted0U/R61hEJL4ZS6BAsCUe4LX5pym/rx7hqrM6jsCQ0NwQyJGsK7VoMFqM+Sg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=nxbTGjx4; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::3; helo=du2pr03cu002.outbound.protection.outlook.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+	 Content-Type:MIME-Version; b=c91t7ZEiAiMq5o65HYM5mapr+8UjUDuGR6p8fHEp9mh2aIG2soHK8Ah12l7+Cmp0FtKnrAPiOFAXAww2q/RwSn33uJ1OWhhLphfzExhB+eRgJDdzHDXZwyHd06TobAfZ2ftRyjPsxWQJ1/MHcs3fZfMPb+6zbw2HSJlnU4kQwKPlpq+ZI7P/Kd2ymCmQIzkGC02zAKtMAJKh8gNFLzHonkLy7+2i7CA4RCCWMCJ++PCw+AntUwTLPCyjakf77/EwSo41JkBjsn9i2YtTiyNoePOK1m/2i/hfDeSMZTtCt5OFTBPl0ugcU8ijAlQzcFmRAj5vxyIeP9y/HStaYRFO6w==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=EEGli6jV; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=nxbTGjx4;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=EEGli6jV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c200::3; helo=du2pr03cu002.outbound.protection.outlook.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
-Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::3])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
+Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fVVmm16mNz3cBP
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2026 21:41:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fVVmr1jZQz3cBP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2026 21:41:48 +1100 (AEDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=F4T0fNGxSeHRrXeOfKrS2I4kkBy3Hel1xFOLCWO7WyyazmA1BCf1OfSJUddy0y2tOuDbdtqmOv4LHsO46GdXOvLkJHObkWGhlmI8HSeMp2/vXED+dqYxWM18GG09gbZ3fstbeVe8U78u5TQlkTdtsmh8zywNpQc/SySg/JrKUG8gSV7QZSogRWZCg26xbESr5xOUGgH9tnG/WAW0UD2Da7NAk+pOi2/0uC0Fsmc8wCeEInfYRGVmqLix/2E2kFDKk+Nm1W8FqW1OBGR+96XWoN9dsmyDJz4IVscfqYQBwDlS3SMVoEyUsP2GiejycOZA/oPeMTJck66M7Xx/8Jm0fw==
+ b=rsy+qwJQ9PgbyQ9ut71tig0hzryyvfobt44h49iVMd2ccYZvZ/KXekKl/r/mZ6KKSBeyRh5j4BU1I28uVRJdda/c/imDF30x4xrdJ/cxwParhDKFNOblrGpjUkdD3vB6PDaYDA3cg3v6hLhAH/k1YHoaXsHoNc0+JMeJXVX4LsNyZlXkWkBvMRUh68oakm7qKmuK2aBSVRF27/pys49A+eo47JtZbGVw0ZLl2FKZ3BvgNl77ACjrIqrcH2dySItvVizk5v+OAXxSPzEgIJMY+MlCaszHSNkEBKWXsbf3QIfZwIoakSHBAfuFgkIlCb5z43G7bmZKguNfwGeVgt2UvQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=bC1g5V1knsd+6TigkKWA7GrUPBXlK08jLmYX1yVGaSo=;
- b=FGUxo+r+nl4PXWJzFk7rJK2qivaYh6QTwyGJ0P14YcEq4qpnO9p9ffWAZ9kwzvIxTw5fLHETPfEwVPeWGM8ItEqL8mCa6n5Iop6P32OmspgDAxMiiv3/kvb4eMkdjm2NffwfrEGwkaZvqbEHyap89bbmSibvDUx22ABzsQ4DDuKDijEd4xHUOLBuco4uULkkb+R4QktFiZnPXpasZtKZOOULHeZdbvTcW/QoY8mOLIBpVaXLPlqqz1UV/pkWuRDAf+NPoMaJUdyu8WWQ0Oa72pz2ussabtopNUNM6XnO8Sr7sGZT2MW9MnMssz7v3Wz/kbmaluvnYYkJtQ9bX6r8DA==
+ bh=cDlDabGl6nl3C5GaKNJ4DyQBhEmaCtae7mOJ3W/o3PY=;
+ b=x+C8j6xEqv6a0LQZY6kl+IfSsvWHHC61hfW+nutU/ui4wHzbaPSsBpnbujw3KuASCZfUjQ5yrEDbYAw6+GREH1mlD1KjdiseYavVJZ4L+hVgV0Cv9f9dq20nLHhVsQRbjWHOjovNR6h+DIeKxd9Xd80NCi+ZyLhHqdU4uZ3cgJ9kyYKul/bM0YGE+AFowbGjs2YBX0CqtHYPsGx90vm31mJHI8pjxyDGF6wf10peajqNrTdAI7NWo0RRDn8Xn4L0KemJm1BtVn5cBJ3z/+OTRyf6C0pEOdURN0yf759+XhVNFVe1BagPeJEu5rz1nM+CfPzQTdQcB4iWILaiRyotVw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
  header.d=nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=bC1g5V1knsd+6TigkKWA7GrUPBXlK08jLmYX1yVGaSo=;
- b=nxbTGjx42mFqL3A1oG5FBDY0roPY8gYI3w6TVHhfBJ2u0MWsF2PFB7Oyx5mtKqXpJyKxDA3ljQkJbMBpqNZxLjYQVGLBLtQSHiPzNvYCDVERme5cV7ogq4Ff0LmF03B/Y3IafYhVdO/75dLtqPsD6GbEEczMtcnv7ib7mUjJzajUOL8A478mP5RDkgN8WC1KVKeXXn8Xd6qZp/Kj3ontsTuBGDxxVEo6JDY/SyCmSxMjhsaL983vFIjo+vXDCQHykD763xk6r3d+fQDpDSW9g8nGAKFZS/WCYDKF5hGIDTIrckDGAvdMCstg4M3Fm5H5ObN6wvg1qrPVZym9NFiXQw==
+ bh=cDlDabGl6nl3C5GaKNJ4DyQBhEmaCtae7mOJ3W/o3PY=;
+ b=EEGli6jVmvhGb8pbL+VDwZ8bY+/vqh552V/YILM4OnXfVkQL0EWnkjAsqy9zXmTcMw7ha5fvl3aMoXiTokmjBQo9RTx5SF//fL+wX0fzso9SH3uytBKJL7LGqR4iQnk7KTenO+xzSbxtc5NHjAH3w2vpjus5otI7g6W/o5bjhb527muI09tz5eboCR2P3YJZ91jy+V4eMlJOYQNS8YZiFZ1j+f1fpc9zAUOPdgbKZ7bf9+BVb2YljlKCYHyi3BP62GrA7t7HhEMFCuRKjLCo7ltkaMPjKTl2Xl8e1JCbEaDfkSUj0g5PEag4e7IANzr/U5EpR/N8kj3/v5frb2K7kQ==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nxp.com;
 Received: from AM0PR04MB7044.eurprd04.prod.outlook.com (2603:10a6:208:191::20)
- by PA2PR04MB10279.eurprd04.prod.outlook.com (2603:10a6:102:406::7) with
+ by GV2PR04MB11833.eurprd04.prod.outlook.com (2603:10a6:150:2fc::16) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9678.25; Tue, 10 Mar
- 2026 10:41:20 +0000
+ 2026 10:41:24 +0000
 Received: from AM0PR04MB7044.eurprd04.prod.outlook.com
  ([fe80::bab2:d15c:fcf8:ef2b]) by AM0PR04MB7044.eurprd04.prod.outlook.com
  ([fe80::bab2:d15c:fcf8:ef2b%3]) with mapi id 15.20.9678.024; Tue, 10 Mar 2026
- 10:41:20 +0000
+ 10:41:24 +0000
 From: Shengjiu Wang <shengjiu.wang@nxp.com>
 To: shengjiu.wang@gmail.com,
 	Xiubo.Lee@gmail.com,
@@ -66,9 +66,9 @@ To: shengjiu.wang@gmail.com,
 	linux-sound@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v6 1/3] ASoC: fsl_utils: Add snd_kcontrol functions for specific cases
-Date: Tue, 10 Mar 2026 18:42:33 +0800
-Message-Id: <20260310104235.1234569-2-shengjiu.wang@nxp.com>
+Subject: [PATCH v6 2/3] ASoC: fsl_sai: add bitcount and timestamp controls
+Date: Tue, 10 Mar 2026 18:42:34 +0800
+Message-Id: <20260310104235.1234569-3-shengjiu.wang@nxp.com>
 X-Mailer: git-send-email 2.37.1
 In-Reply-To: <20260310104235.1234569-1-shengjiu.wang@nxp.com>
 References: <20260310104235.1234569-1-shengjiu.wang@nxp.com>
@@ -91,300 +91,201 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: AM0PR04MB7044:EE_|PA2PR04MB10279:EE_
-X-MS-Office365-Filtering-Correlation-Id: ac9a8691-2831-4aab-549e-08de7e919121
+X-MS-TrafficTypeDiagnostic: AM0PR04MB7044:EE_|GV2PR04MB11833:EE_
+X-MS-Office365-Filtering-Correlation-Id: 3fa5ea65-abdf-4b66-9898-08de7e919354
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|19092799006|52116014|7416014|376014|1800799024|38350700014|921020;
+	BCL:0;ARA:13230040|376014|366016|7416014|52116014|19092799006|1800799024|38350700014|921020;
 X-Microsoft-Antispam-Message-Info:
-	k2q30Jg5xo/un0UdvlFfuelcvHg1nFQM5diPClFr3OsA43s31H8DvV7FoRBFc6Lih2hewNpLjFkdGA9G6LkS8Z5VNRzjTLG9PUwWJiw4V/uMApuSIVVirvD8aFuJhts+UhcqHP+2+mF0CRoknqzkM04jpN8vS1/jC2ys9QUH8ziA7d9qmXOwR8Dhy6NJJ0CDXybRiLzYmCgfLy8xgkJtlnjw34ikodPaXlnzv6jwlNr3WnXNYin4G6ZzUA+GgMQDlAw5JBHJA4ixytkwJ2fMfTjRyVqpf7GQA5r/FtMjlSHxTeFg/wWaMdSP2Gfjongmts6cukPw6K5tvoMnmU3C0jYlEZejnJxZ2Nk5BugUW9GvuKCwC3ckluec/8dvmUZni0wl69CTSWMHHgwyOfMNSsxm7drdJPoznR95Ou2CgIhCJ5BaomvPPBz4nNuvOld5i7LieqYyNaz6a1NUUDdw71o7+rCDpwNXHq50W0R42aCO7xBfpOhBau0YKsMm5cBBH7/UU3bRryfo9vBa9H0uvL6ddk/0tS38MKtpb8d/Qtko1+Bw1fZW8KVfqBvLNi7eVpMh32wNEYgqXQBVCnV+bKlKcj6CXE0g1WYMq/yXuEmTcMyzaZf1p6OZWpJIt1eh+GP7D3YfPM4GI4nOLNXVRcx7BUMZcfoCsGPnwNMQULnG12MRuOsOL510hlrBjAdtPMLjWBl6NK3rWiYOPxhxdbXZDfuLjbDjFtzDXRAmA4N7dUn4CL8jE6+u6JdM3ZJi4vOgeSxbMFI4xF4KJw+JRSKsr4BYSV0iGEm/B0rgDUvMhpwPWcWnbuAjUXiHojYG
+	wtzUx+ekpkG6xFkuXIxVMJCVGwLa36My1YTHMgjjtuugCkaLl3iC1gj70Bv/93IbdOlE9OWCqMKnNbRI8lcSMn6GQwD220Uw79am4TCizPrKk2AXZ5Lkcc4t+OD9xpwHJNGFHwOZ/S/zL1p1ZITJXE8THR2Ibu4oRxAchd/r+7p8vxpgXasVQpUzoLYMF5swpWvoq1zTDpjeflwRuXKQPGtt2lNII2PHUFlUVZrkAXDYJTsd98QPGS7y1W4cz8PCuzCJG1tDUfjWtFBZ8vWPE2yL6N5s6GVMjUWGtVrqtZgP5+tLJathmZV7f9dscZFkrtDkPqs3oRCS4aJ07kcTLezFvROLw0e4Z1ui3SEWv3/m5wZYyTjbjPH9m4QFE9mPDN5YeoA6B0Uj/zkzuPI8DQpKWkkxB4MSNkM5CzAs/n2JKwEp8FA8C0XoaeCU0bPKzLs8b1BM8TvUwlpEwfXK4LK8dTV9nIvioSxht47iroGNySrN7pzMhiKwbYMLsR1a6Foat2oeQN+p0JxWAkB3iM15GEvR82iPctgU+yP9zPx1Nzb9JFojnce3Re2/MjLcYeaKxCFd8dfi3+hm5AzBjCUfqnSRPfkgCLr6ONrgYUEFt4SVtOWlzKwOsVEFdMV3LZEor9XfGz6SJsSNOUwffkLTHQQs8L2v8unjQT88jakvExzLF3OMueLqyu742OZuAz2vXk83iNbdIGJOf2/+kXDuhvstGVRPqOpaYq1fqt2RlPBASmMGkpdviBx+y66GzAJnoSxIKThItBqOnseVsaaflmGU1ODC0RzKP5oosexy1fffcs+nwqlbBzcc24PI
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR04MB7044.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(19092799006)(52116014)(7416014)(376014)(1800799024)(38350700014)(921020);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR04MB7044.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(366016)(7416014)(52116014)(19092799006)(1800799024)(38350700014)(921020);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?iHYbAJs+wpmc7sawIeSuryapsumU1TPcqfC+13zRLe0fXbUQiOvLKX2j9j9x?=
- =?us-ascii?Q?hTNweNvMy+MPXbFcxsLxAcV8aM7dORJPieo/UR7eZ2BlJqdspUpO461pZRyx?=
- =?us-ascii?Q?mZ214qLDUzK8khDt3N00nEWLut7aGW79HBt2bYuDTIjmhuZ8kpO+84kLsAGu?=
- =?us-ascii?Q?OMClDhXG7/56koHgHea5jp3jvB7rDfdHKTJLryHY0fZVF7bCbMU+31o/JqCb?=
- =?us-ascii?Q?jb6KqMqWE9q4Bt1cPmF3rolwPPn6bvEJLt29GpodB9WMQahsd96nlKmr1KMa?=
- =?us-ascii?Q?VJwOCyvxsK69vkTlX0FHAQ9G+TiTbiXUpzJe7ArztImWDPZjorlF8wefDI7w?=
- =?us-ascii?Q?i3sGswlIzg7NlVnvy9vtrLSAKEDK6K9cQ/sD6lSUmTTe2i1WlPgQZmERWom0?=
- =?us-ascii?Q?acfXZ2YZPKxg3Si42ENmfWtEVL0mW6oTeE8Hx3UNCbVVnmayj1Xhsn24oQV/?=
- =?us-ascii?Q?5FV4huaw4t2p3utcmcHdBXd1OdNFhKP5bdwISu5bC17YscgYbc4Xrpr8UcMx?=
- =?us-ascii?Q?GHFC3f75aYOwyREHHRZdxtTnKVvtfT5N4CLwMU/sfMOTvcReSZLYnxlTQxMF?=
- =?us-ascii?Q?qldiAZOXyb1IDUvnsyTmjnNSZ+u1JWagLv2dsceBFJiKS1SBO3QBQY1kHWRo?=
- =?us-ascii?Q?Ve+m2L0C7wyOGzYvxLvIsbflyozXOOXf30KXYnvcLzUWghUMzRzbZPREuJJI?=
- =?us-ascii?Q?HHyfaYTzoAgwJhkZrfBGW0Muopi+qfJTb8FvMU0mdLHUyEIHJgoeUKVdTNUU?=
- =?us-ascii?Q?2G4f1TilQJp0h4Qc+qT9N4bp7xv5w2g4l99+CrHkizxNk91JgVdOtZ2ErPgh?=
- =?us-ascii?Q?tIHpgSpyN6w25V6I3QDkRYd050BTadgjR0yUrXFhC7r8WlvVuDTX9bSmmyru?=
- =?us-ascii?Q?J5zVwbtF7V6kuJL6kparw8Cepl/kkHeMAZpY5kMy9AJX0ixFD88SNoQVFTZY?=
- =?us-ascii?Q?Eoo97U8f8BE74TutIUgakVnxzKDwaKe4XA6neAksePYrnSRdjodunm6Ampt6?=
- =?us-ascii?Q?G204B+7sBEr/IC/zG16fniK7Uftp97s0g12uOlDyaNZ9p/m1rS/RKJb4Nh5o?=
- =?us-ascii?Q?/VGIwQrqQmkzI9Yxj/E59ecSpKouh8oiVAfEM7VYrNdHaE7bQtq1OShOEtUq?=
- =?us-ascii?Q?2165n0GSvemW+xZ2b6HrR0Z8GzBGUS3M4p86lHYzc4KYDf+eudn0iPhGdhaQ?=
- =?us-ascii?Q?LWx3tHai7mg8/mqytpsuwAILj+ja7uQ2YyHoPJBz0Dsz0zZf+WC3pQspeCth?=
- =?us-ascii?Q?4fD9C+CWiwW2hloCj76QWOw/VdMtAUmxCaR2+sSFr7lpITaYhQQv8Ok7O4/w?=
- =?us-ascii?Q?ENn207H5h1VmrYr1ms3o2cjwiYsvH1OdWXfPu5+MU0NCAghz9EVKSoYiWDG/?=
- =?us-ascii?Q?ViH62wmcp2vBL1iRa12fvLDdvK5R9exlkjYaVJF6yEYmFT+iHdwPux1+Fjga?=
- =?us-ascii?Q?Dx3Q2EmwkXpqP1NBXzlzQUy/0ggfoFZp3K0Uar/CitCE1nXNoGy6nZ8bCKeu?=
- =?us-ascii?Q?xr82QqBWj43fM9Dw/n/R5OjbQIe8rgmmxMDzoCnMGw7AJM15FpzdJz0iB1A+?=
- =?us-ascii?Q?b5qyytoots9WQa6KKcaRwyV4nEvGFIYWgmacp7odyhkNk1q+k5neXqH8yRBw?=
- =?us-ascii?Q?02bKaS0QJ/M1lCnraG+tWE1cL/CFGkCA/kH6d3U5xlWa6RCo7aAnjfOOUBOZ?=
- =?us-ascii?Q?TlDjZWGubM4MsDJWX9oP+UBDLkJGB70UEu/CM37deah2p01X7zqml53N+PON?=
- =?us-ascii?Q?SB2VaUckkA=3D=3D?=
+	=?us-ascii?Q?956lanA41kpjR/QDe7/KHEHCFi0TjS/gPO7ArFSJ5QTM8y88PLBISeWqW5rd?=
+ =?us-ascii?Q?KEkfv1YSSLMd0ryNL0baK6vqO9Uj+S20OrM9M5/LOxkso1TQnG8E5K7ncuSP?=
+ =?us-ascii?Q?Pt5MBWmUTKUvJXOgTE8dYSlhO9tE1SpOTI0aHm2hQSN1L59SLKptcFZJtO3b?=
+ =?us-ascii?Q?VNwTd/cRjqHI0K44adZuDJ5f1NC9lK4mLj/j5gaEEwMpE2yHE5I7r1ya2S+M?=
+ =?us-ascii?Q?i++q77P7xH4kiJNCQDg0AbeNtq18ajxQDnkgocWsg4o4tQcbn0DpAOU3bhvD?=
+ =?us-ascii?Q?WgG7SJxQDvZPkTjfsqaOo4KRBPpJRLXoXQV8Boy4E377X2P2fthM7g7tskV8?=
+ =?us-ascii?Q?mczm1IleNL3LdcLG/d6cQ9+yHaGgfcbKRLycm+Ym9CHMP+xqxY0rP0s2O9ag?=
+ =?us-ascii?Q?H2IAPyUOOb6qwLT1mtn3meIf484d4FDcxD/bxNJn9OHSCXvZCjrdVSr9fAhZ?=
+ =?us-ascii?Q?ew5omWFNwSKQU6/Zdz5Rac3AS7V7Q8DDr6x9IB+Bu0HMbL4Jq48dhrAQ0eYF?=
+ =?us-ascii?Q?+FEF3iWPbE15NadZIPvtMmydWpPI2eJtB7qWMqS1DPXdPDrR4CCy0tAnFgoP?=
+ =?us-ascii?Q?/EzpsvC/UWMHuFWvPiSK4T0Qfyzk52JGW+M7Qwl1S9qvoIXuH06EbHEYSOS4?=
+ =?us-ascii?Q?pfrrfiPkYG32IUkDiHlK835DC7rTM0f3m9XJfsjLNcVDc4xhryy0CVIOe7lq?=
+ =?us-ascii?Q?mNMVE6NPVLbHBSk7DnkRDwPsSU6BBUNJ69EKMWm6K0XbH4lTs/U4ERS6Au5x?=
+ =?us-ascii?Q?j+Q5su9aHfxYe2bdoGH1GqQ+F7UAZGijplJ6CxKTkjX5wqj3RYc1XlSpXfP2?=
+ =?us-ascii?Q?zy922A+8p67AKCplSQYbw5G9oTzWB/BRo2liYzspkBb9oKhfKeYswaJHv/IX?=
+ =?us-ascii?Q?tb77tQKFfkFbRBPtoLhdKLtsg9bBggv86bleHXbIkHvRr2Tfb0v/F3MHOoWr?=
+ =?us-ascii?Q?C/LYAMnUisT83ZDhdCzBqEmw/PX6VPx1cDZdqdOf/SwcOGZvQHZ6QRloQEE2?=
+ =?us-ascii?Q?tmMuFapIzodGCkrNoefDA9BmqSNc1v7Mz0e6Gnda7DJ6a6Zd9y42/BMFNm1Z?=
+ =?us-ascii?Q?v6iwLTrd8q7fj/8q2Gj3DlOfVIgGgIh9BpqS26bCTPdOpmgJ3MwhBqlL7rPz?=
+ =?us-ascii?Q?EtpbGZ6TNakpwDHO9NCjc8kuD0liBZHIfMx5zlDXOpP5k8ZBgR+TCnABHRom?=
+ =?us-ascii?Q?EHZohaiiNPF29gx4092k4/RsBwQsTJqa1pxbQa/tfxh7yDYm1GqeMWmoQyug?=
+ =?us-ascii?Q?Hy66I/g1TmuuC/lhOr4BIYyT4eLfJ4xbNirKUh5LTpmb5vhutSORb2V6KUDp?=
+ =?us-ascii?Q?fHaPoOZCrBJ0JUggP1ME9sWpS+l4Qh9Bn2f8EdScVBadCrb51EK21ynNuQb4?=
+ =?us-ascii?Q?t/69yjPUy+ltFF1wtbSocsuSHTYMgzEBoBD1IuTDD3P50s9zV9kNtNSDRhao?=
+ =?us-ascii?Q?IViT9iabT3feBAKbt2AuxwcHrHwzzubKMv71Di+LDIcYQyMWxG5klo2eWe28?=
+ =?us-ascii?Q?xAusTl1432akb5Pl2rWklNyuxKdb+Q1vR6bbDEylYm1tkvrHYHEhpv06npi+?=
+ =?us-ascii?Q?wVVSF5k5UF/lHFHW1apS+sNCzHyXv4N6OmzZ1Ttmx/Sn8bEOD5eeHISRgTLH?=
+ =?us-ascii?Q?o5UJZ/vwTsboD+uh7go51IVFOZDr7h8W6Fw8OFzQZKviMdFQzEt9XLEk+x0B?=
+ =?us-ascii?Q?lTGUCShvQ/cg2KY42Xv98CTMmSKnfHf4TY1F1Ah67twIQI3AIm/aLKT0WCF3?=
+ =?us-ascii?Q?2swOvIc1aA=3D=3D?=
 X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: ac9a8691-2831-4aab-549e-08de7e919121
+X-MS-Exchange-CrossTenant-Network-Message-Id: 3fa5ea65-abdf-4b66-9898-08de7e919354
 X-MS-Exchange-CrossTenant-AuthSource: AM0PR04MB7044.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Mar 2026 10:41:20.5031
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Mar 2026 10:41:24.2011
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: FB611/HhxzP/8UAlBihJbrSFpAO+57PNyPEFJ3NDuh/bouvd8b6thkz/Pg2dMkjfbAHGzLyvLh1JETJDPo7FoA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA2PR04MB10279
+X-MS-Exchange-CrossTenant-UserPrincipalName: xTPbsnAOe/ezEeoVo9ja0ZGkiCpZRXanX/0ef33486KHrHu0bD5hruX9kQb/uOQshmARTODsIaHJCV0O67ohFA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: GV2PR04MB11833
 
-There are some registers which are volatile, at pm runtime suspend state,
-the regmap cache only is enabled, regmap will return -EBUSY when trying to
-access these registers.
+The transmitter and receiver implement separate timestamp counters and
+bit counters. The bit counter increments at the end of each bit in a
+frame whenever the transmitter or receiver is enabled. The bit counter
+can be reset by software. The timestamp counter increments on the bus
+interface clock whenever it is enabled. The current value of the
+timestamp counter is latched whenever the bit counter increments.
+Reading the bit counter register will cause the latched timestamp
+value to be saved in the bit counter timestamp register. The timestamp
+counter can be reset by software, this also resets the latched timestamp
+value and the bit counter timestamp register.
 
-static int _regmap_read(struct regmap *map, unsigned int reg,
-                        unsigned int *val)
-{
-        int ret;
-        void *context = _regmap_map_get_context(map);
+The timestamp counter and bit counter can be used by software to track
+the progress of the transmitter and receiver. It can also be used to
+calculate the relative frequency of the bit clock against the bus
+interface clock.
 
-        if (!map->cache_bypass) {
-                ret = regcache_read(map, reg, val);
-                if (ret == 0)
-                        return 0;
-        }
-
-        if (map->cache_only)
-                return -EBUSY;
-
-        if (!regmap_readable(map, reg))
-                return -EIO;
-
-When exporting these registers by amixer interface to user space, there
-will be -EBUSY errors in mixer-test when the cpu dai is in idle. In order
-to avoid such error, needs to define FSL own functions to take a pm
-runtime reference before calling snd_soc_get_xr_sx(),
-snd_soc_get_enum_double(), snd_soc_get_volsw(), and so on.
+These bitcount and timestamp registers are volatile, and supported when
+the module has timestamp features.
 
 Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 ---
- sound/soc/fsl/fsl_utils.c | 131 ++++++++++++++++++++++++++++++++++++++
- sound/soc/fsl/fsl_utils.h |  48 ++++++++++++++
- 2 files changed, 179 insertions(+)
+ sound/soc/fsl/fsl_sai.c | 66 +++++++++++++++++++++++++++++++++++++++++
+ sound/soc/fsl/fsl_sai.h |  4 +++
+ 2 files changed, 70 insertions(+)
 
-diff --git a/sound/soc/fsl/fsl_utils.c b/sound/soc/fsl/fsl_utils.c
-index d69a6b9795bf..7651c64bc837 100644
---- a/sound/soc/fsl/fsl_utils.c
-+++ b/sound/soc/fsl/fsl_utils.c
-@@ -10,6 +10,7 @@
- #include <linux/clk-provider.h>
- #include <linux/module.h>
- #include <linux/of_address.h>
-+#include <linux/pm_runtime.h>
- #include <sound/soc.h>
+diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+index 148e09e58dfa..bd336d2e4cb3 100644
+--- a/sound/soc/fsl/fsl_sai.c
++++ b/sound/soc/fsl/fsl_sai.c
+@@ -41,6 +41,52 @@ static const struct snd_pcm_hw_constraint_list fsl_sai_rate_constraints = {
+ 	.list = fsl_sai_rates,
+ };
  
- #include "fsl_utils.h"
-@@ -197,6 +198,136 @@ void fsl_asoc_constrain_rates(struct snd_pcm_hw_constraint_list *target_constr,
++static const char * const inc_mode[] = {
++	"On enabled and bitcount increment", "On enabled"
++};
++
++static SOC_ENUM_SINGLE_DECL(transmit_tstmp_enum,
++			    FSL_SAI_TTCTL, FSL_SAI_xTCTL_TSINC_SHIFT, inc_mode);
++static SOC_ENUM_SINGLE_DECL(receive_tstmp_enum,
++			    FSL_SAI_RTCTL, FSL_SAI_xTCTL_TSINC_SHIFT, inc_mode);
++
++static const struct snd_kcontrol_new fsl_sai_timestamp_ctrls[] = {
++	FSL_ASOC_SINGLE_EXT("Transmit Timestamp Control Switch", FSL_SAI_TTCTL,
++			    FSL_SAI_xTCTL_TSEN_SHIFT, 1, 0,
++			    fsl_asoc_get_volsw, fsl_asoc_put_volsw),
++	FSL_ASOC_ENUM_EXT("Transmit Timestamp Increment", transmit_tstmp_enum,
++			  fsl_asoc_get_enum_double, fsl_asoc_put_enum_double),
++	FSL_ASOC_SINGLE_EXT("Transmit Timestamp Reset Switch", FSL_SAI_TTCTL,
++			    FSL_SAI_xTCTL_RTSC_SHIFT, 1, 0,
++			    fsl_asoc_get_volsw, fsl_asoc_put_volsw),
++	FSL_ASOC_SINGLE_EXT("Transmit Bit Counter Reset Switch", FSL_SAI_TTCTL,
++			    FSL_SAI_xTCTL_RBC_SHIFT, 1, 0,
++			    fsl_asoc_get_volsw, fsl_asoc_put_volsw),
++	FSL_ASOC_SINGLE_XR_SX_EXT_RO("Transmit Timestamp Counter", FSL_SAI_TTCTN,
++				     1, 32, 0, 0xffffffff, 0, fsl_asoc_get_xr_sx),
++	FSL_ASOC_SINGLE_XR_SX_EXT_RO("Transmit Bit Counter", FSL_SAI_TBCTN,
++				     1, 32, 0, 0xffffffff, 0, fsl_asoc_get_xr_sx),
++	FSL_ASOC_SINGLE_XR_SX_EXT_RO("Transmit Latched Timestamp Counter", FSL_SAI_TTCAP,
++				     1, 32, 0, 0xffffffff, 0, fsl_asoc_get_xr_sx),
++	FSL_ASOC_SINGLE_EXT("Receive Timestamp Control Switch", FSL_SAI_RTCTL,
++			    FSL_SAI_xTCTL_TSEN_SHIFT, 1, 0,
++			    fsl_asoc_get_volsw, fsl_asoc_put_volsw),
++	FSL_ASOC_ENUM_EXT("Receive Timestamp Increment", receive_tstmp_enum,
++			  fsl_asoc_get_enum_double, fsl_asoc_put_enum_double),
++	FSL_ASOC_SINGLE_EXT("Receive Timestamp Reset Switch", FSL_SAI_RTCTL,
++			    FSL_SAI_xTCTL_RTSC_SHIFT, 1, 0,
++			    fsl_asoc_get_volsw, fsl_asoc_put_volsw),
++	FSL_ASOC_SINGLE_EXT("Receive Bit Counter Reset Switch", FSL_SAI_RTCTL,
++			    FSL_SAI_xTCTL_RBC_SHIFT, 1, 0,
++			    fsl_asoc_get_volsw, fsl_asoc_put_volsw),
++	FSL_ASOC_SINGLE_XR_SX_EXT_RO("Receive Timestamp Counter", FSL_SAI_RTCTN,
++				     1, 32, 0, 0xffffffff, 0, fsl_asoc_get_xr_sx),
++	FSL_ASOC_SINGLE_XR_SX_EXT_RO("Receive Bit Counter", FSL_SAI_RBCTN,
++				     1, 32, 0, 0xffffffff, 0, fsl_asoc_get_xr_sx),
++	FSL_ASOC_SINGLE_XR_SX_EXT_RO("Receive Latched Timestamp Counter", FSL_SAI_RTCAP,
++				     1, 32, 0, 0xffffffff, 0, fsl_asoc_get_xr_sx),
++};
++
+ /**
+  * fsl_sai_dir_is_synced - Check if stream is synced by the opposite stream
+  *
+@@ -1010,6 +1056,17 @@ static int fsl_sai_dai_resume(struct snd_soc_component *component)
+ 	return 0;
  }
- EXPORT_SYMBOL(fsl_asoc_constrain_rates);
  
-+/*
-+ * Below functions are used by mixer interface to avoid accessing registers
-+ * which are volatile at pm runtime suspend state (cache_only is enabled).
-+ */
-+int fsl_asoc_get_xr_sx(struct snd_kcontrol *kcontrol,
-+		       struct snd_ctl_elem_value *ucontrol)
++static int fsl_sai_component_probe(struct snd_soc_component *component)
 +{
-+	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-+	int ret = 0;
++	struct fsl_sai *sai = snd_soc_component_get_drvdata(component);
 +
-+	ret = pm_runtime_resume_and_get(component->dev);
-+	if (ret)
-+		return ret;
++	if (sai->verid.feature & FSL_SAI_VERID_TSTMP_EN)
++		snd_soc_add_component_controls(component, fsl_sai_timestamp_ctrls,
++					       ARRAY_SIZE(fsl_sai_timestamp_ctrls));
 +
-+	ret = snd_soc_get_xr_sx(kcontrol, ucontrol);
-+
-+	pm_runtime_put_autosuspend(component->dev);
-+
-+	return ret;
++	return 0;
 +}
-+EXPORT_SYMBOL_GPL(fsl_asoc_get_xr_sx);
 +
-+int fsl_asoc_put_xr_sx(struct snd_kcontrol *kcontrol,
-+		       struct snd_ctl_elem_value *ucontrol)
-+{
-+	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-+	int ret = 0;
-+
-+	ret = pm_runtime_resume_and_get(component->dev);
-+	if (ret)
-+		return ret;
-+
-+	ret = snd_soc_put_xr_sx(kcontrol, ucontrol);
-+	/*
-+	 * As this function only used by the SNDRV_CTL_ELEM_ACCESS_VOLATILE
-+	 * case. return 0 to avoid control event notification.
-+	 */
-+	if (ret > 0)
-+		ret = 0;
-+
-+	pm_runtime_put_autosuspend(component->dev);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(fsl_asoc_put_xr_sx);
-+
-+int fsl_asoc_get_enum_double(struct snd_kcontrol *kcontrol,
-+			     struct snd_ctl_elem_value *ucontrol)
-+{
-+	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-+	int ret = 0;
-+
-+	ret = pm_runtime_resume_and_get(component->dev);
-+	if (ret)
-+		return ret;
-+
-+	ret = snd_soc_get_enum_double(kcontrol, ucontrol);
-+
-+	pm_runtime_put_autosuspend(component->dev);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(fsl_asoc_get_enum_double);
-+
-+int fsl_asoc_put_enum_double(struct snd_kcontrol *kcontrol,
-+			     struct snd_ctl_elem_value *ucontrol)
-+{
-+	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-+	int ret = 0;
-+
-+	ret = pm_runtime_resume_and_get(component->dev);
-+	if (ret)
-+		return ret;
-+
-+	ret = snd_soc_put_enum_double(kcontrol, ucontrol);
-+	/*
-+	 * As this function only used by the SNDRV_CTL_ELEM_ACCESS_VOLATILE
-+	 * case. return 0 to avoid control event notification.
-+	 */
-+	if (ret > 0)
-+		ret = 0;
-+
-+	pm_runtime_put_autosuspend(component->dev);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(fsl_asoc_put_enum_double);
-+
-+int fsl_asoc_get_volsw(struct snd_kcontrol *kcontrol,
-+		       struct snd_ctl_elem_value *ucontrol)
-+{
-+	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-+	int ret = 0;
-+
-+	ret = pm_runtime_resume_and_get(component->dev);
-+	if (ret)
-+		return ret;
-+
-+	ret = snd_soc_get_volsw(kcontrol, ucontrol);
-+
-+	pm_runtime_put_autosuspend(component->dev);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(fsl_asoc_get_volsw);
-+
-+int fsl_asoc_put_volsw(struct snd_kcontrol *kcontrol,
-+		       struct snd_ctl_elem_value *ucontrol)
-+{
-+	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
-+	int ret = 0;
-+
-+	ret = pm_runtime_resume_and_get(component->dev);
-+	if (ret)
-+		return ret;
-+
-+	ret = snd_soc_put_volsw(kcontrol, ucontrol);
-+	/*
-+	 * As this function only used by the SNDRV_CTL_ELEM_ACCESS_VOLATILE
-+	 * case. return 0 to avoid control event notification.
-+	 */
-+	if (ret > 0)
-+		ret = 0;
-+
-+	pm_runtime_put_autosuspend(component->dev);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(fsl_asoc_put_volsw);
-+
- MODULE_AUTHOR("Timur Tabi <timur@freescale.com>");
- MODULE_DESCRIPTION("Freescale ASoC utility code");
- MODULE_LICENSE("GPL v2");
-diff --git a/sound/soc/fsl/fsl_utils.h b/sound/soc/fsl/fsl_utils.h
-index 21b25a11ecda..1aab0c1cee62 100644
---- a/sound/soc/fsl/fsl_utils.h
-+++ b/sound/soc/fsl/fsl_utils.h
-@@ -31,4 +31,52 @@ void fsl_asoc_constrain_rates(struct snd_pcm_hw_constraint_list *target_constr,
- 			      const struct snd_pcm_hw_constraint_list *original_constr,
- 			      struct clk *pll8k_clk, struct clk *pll11k_clk,
- 			      struct clk *ext_clk, int *target_rates);
-+
-+/* Similar to SOC_SINGLE_XR_SX, but it is for read only registers. */
-+#define FSL_ASOC_SINGLE_XR_SX_EXT_RO(xname, xregbase, xregcount, xnbits, \
-+				xmin, xmax, xinvert, xhandler_get) \
-+{	.iface = SNDRV_CTL_ELEM_IFACE_MIXER, .name = (xname), \
-+	.access = SNDRV_CTL_ELEM_ACCESS_READ |		\
-+		SNDRV_CTL_ELEM_ACCESS_VOLATILE,		\
-+	.info = snd_soc_info_xr_sx, .get = xhandler_get, \
-+	.private_value = (unsigned long)&(struct soc_mreg_control) \
-+		{.regbase = xregbase, .regcount = xregcount, .nbits = xnbits, \
-+		.invert = xinvert, .min = xmin, .max = xmax} }
-+
-+/* Similar to SOC_SINGLE_EXT, but it is for volatile register. */
-+#define FSL_ASOC_SINGLE_EXT(xname, xreg, xshift, xmax, xinvert,\
-+	 xhandler_get, xhandler_put) \
-+{	.iface = SNDRV_CTL_ELEM_IFACE_MIXER, .name = xname, \
-+	.access = SNDRV_CTL_ELEM_ACCESS_VOLATILE |	\
-+		  SNDRV_CTL_ELEM_ACCESS_READWRITE,	\
-+	.info = snd_soc_info_volsw, \
-+	.get = xhandler_get, .put = xhandler_put, \
-+	.private_value = SOC_SINGLE_VALUE(xreg, xshift, 0, xmax, xinvert, 0) }
-+
-+#define FSL_ASOC_ENUM_EXT(xname, xenum, xhandler_get, xhandler_put) \
-+{	.iface = SNDRV_CTL_ELEM_IFACE_MIXER, .name = xname, \
-+	.access = SNDRV_CTL_ELEM_ACCESS_VOLATILE |	\
-+		  SNDRV_CTL_ELEM_ACCESS_READWRITE,	\
-+	.info = snd_soc_info_enum_double, \
-+	.get = xhandler_get, .put = xhandler_put, \
-+	.private_value = (unsigned long)&xenum }
-+
-+int fsl_asoc_get_xr_sx(struct snd_kcontrol *kcontrol,
-+		       struct snd_ctl_elem_value *ucontrol);
-+
-+int fsl_asoc_put_xr_sx(struct snd_kcontrol *kcontrol,
-+		       struct snd_ctl_elem_value *ucontrol);
-+
-+int fsl_asoc_get_enum_double(struct snd_kcontrol *kcontrol,
-+			     struct snd_ctl_elem_value *ucontrol);
-+
-+int fsl_asoc_put_enum_double(struct snd_kcontrol *kcontrol,
-+			     struct snd_ctl_elem_value *ucontrol);
-+
-+int fsl_asoc_get_volsw(struct snd_kcontrol *kcontrol,
-+		       struct snd_ctl_elem_value *ucontrol);
-+
-+int fsl_asoc_put_volsw(struct snd_kcontrol *kcontrol,
-+		       struct snd_ctl_elem_value *ucontrol);
-+
- #endif /* _FSL_UTILS_H */
+ static struct snd_soc_dai_driver fsl_sai_dai_template[] = {
+ 	{
+ 		.name = "sai-tx-rx",
+@@ -1063,6 +1120,7 @@ static struct snd_soc_dai_driver fsl_sai_dai_template[] = {
+ 
+ static const struct snd_soc_component_driver fsl_component = {
+ 	.name			= "fsl-sai",
++	.probe			= fsl_sai_component_probe,
+ 	.resume			= fsl_sai_dai_resume,
+ 	.legacy_dai_naming	= 1,
+ };
+@@ -1211,6 +1269,14 @@ static bool fsl_sai_volatile_reg(struct device *dev, unsigned int reg)
+ 	case FSL_SAI_RDR5:
+ 	case FSL_SAI_RDR6:
+ 	case FSL_SAI_RDR7:
++	case FSL_SAI_TTCTN:
++	case FSL_SAI_RTCTN:
++	case FSL_SAI_TTCTL:
++	case FSL_SAI_TBCTN:
++	case FSL_SAI_TTCAP:
++	case FSL_SAI_RTCTL:
++	case FSL_SAI_RBCTN:
++	case FSL_SAI_RTCAP:
+ 		return true;
+ 	default:
+ 		return false;
+diff --git a/sound/soc/fsl/fsl_sai.h b/sound/soc/fsl/fsl_sai.h
+index 7605cbaca3d8..af967833b6ed 100644
+--- a/sound/soc/fsl/fsl_sai.h
++++ b/sound/soc/fsl/fsl_sai.h
+@@ -196,9 +196,13 @@
+ #define FSL_SAI_MDIV_MASK	    0xFFFFF
+ 
+ /* SAI timestamp and bitcounter */
++#define FSL_SAI_xTCTL_TSEN_SHIFT   0
+ #define FSL_SAI_xTCTL_TSEN         BIT(0)
++#define FSL_SAI_xTCTL_TSINC_SHIFT  1
+ #define FSL_SAI_xTCTL_TSINC        BIT(1)
++#define FSL_SAI_xTCTL_RTSC_SHIFT   8
+ #define FSL_SAI_xTCTL_RTSC         BIT(8)
++#define FSL_SAI_xTCTL_RBC_SHIFT    9
+ #define FSL_SAI_xTCTL_RBC          BIT(9)
+ 
+ /* SAI type */
 -- 
 2.34.1
 
