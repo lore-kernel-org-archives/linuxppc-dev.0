@@ -1,56 +1,105 @@
-Return-Path: <linuxppc-dev+bounces-17970-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17971-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C25BFD2D9A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Mar 2026 14:02:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCDD5EB1060
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Mar 2026 15:07:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fVbDL0KGfz3cGK;
-	Wed, 11 Mar 2026 01:02:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773151345;
-	cv=none; b=blc1HL+Qx5KWJG3ARKuVhCMmpzRaeurAFzKPoSXqgseL+70CnqU1/LEp9z684PZi+1lHyjDOKkOJdFFYCe5k3ZrhLdWp1hR+pEz2Xddj7XwTmHJ+7fEgGhGZ2kMUHZ0KrYMSCAEUw8rccc00NXE0kLCdpaDSjhY3wJqhGZBMfmtFzpceRxoUnKUfxuBGTzRm+grOlcZlyAseuy9VqYO6qysUYKT4qyii/0E3xJQ3Jrw17gQicmyLBIP78082e8Ibxr9r1VQY5i+BRdSIwcNqMNiwgif86iGNSEEnHdSKiIN1Fgo8SiKW5zyDWniNyCgx8QC8nOrSVWvJyT/LZGFkcw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fVcgm3RZLz3bmM;
+	Wed, 11 Mar 2026 02:07:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773155268;
+	cv=none; b=mdDCtzRGdR5gYTOtmgg5HB3+LBJ9NFmlIS/uX3dUVr8bjUUB0pQP/kHGq0js/THb5knG1+SokzPlTokZo0RGDK7bN2SPw0D9QpocnYmBixFNmolCtOLy0sKf3OmatClfZPUMgSJeD5dzZ6Ym7pjTBJnJalHWMb4Asz9XVqsphlkKE2gCcFtdEwuJt1APXyAviNssHAQVi/aG2cSFC6pBaJ12fcwmMbVZtYwONh/OlP9wENOs2N092mDHxM/7J5LV2ZiyB4VpYzsOn7FVRsKCRZZJTXbISkozpWxxEgMMrP+tDDvf4BhDE6hF1cNSxX6kk57dP8Px8v15rPtquK/CCA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773151345; c=relaxed/relaxed;
-	bh=DslaNb19DfeVhpacm4nk/mIFTbz7d90d1ejbt66KOaU=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Hq5/23pSB5UEZXjeO5BX4Om4G32b6uopI8dRkqzo766iqpndoC+OQuemDG3zL9MJkUTcdcNZJe8+dI3jFRUEYZUUOuRWrOzBXoXAmw9WMQsF9xU3IZRY17I1FasrmB8kJKcN9/yj0m9Gjj0e0y0oiQY19KKuq6QI3W6Bjg5xDXoYqnFIMzGXz9RaFEJkfoDE6ShNFo3ElXlxXUGYcV1qW8CT7pCerOFKbsVXfJmRvD6RjFQYEeGwTa5j+Q3xggQxVGPOGCfjZ04YrWjSG4+Q486gOae9qQbPeRzSB09i4EQHmItXv7OalEqZmc0RfQKoQnfNQZH3PstnFZ8Os/ZNMg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=g/rXouWQ; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1773155268; c=relaxed/relaxed;
+	bh=gMxUZjTf0fkPqQOSMlmI9PQkeO5iBltUcV8wio/rEnE=;
+	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=Lplvrraah+ZUh46xlHhZOQKBqPQWuwEzxLBFK1E29f+CcO6SGL6sluNEKo9EeZVWdRnXd7aB6nqnRHkpKqRufmWTNyFuwWyIvhcRtAkKNIBB67owiP0Y4TH8p71bA/iXuTcRwDPJxT7ws2uQFwgTixLnbPEroonCHf2NOJqynAkjPUCQ2QCA4GVRSmBNYu1nS/DD/7l6IKQSAITKh/cPc0RGXghL4FKV5NmpSD3WzGpMhCp8jHDHPoaUeA63WBNXz/eb5MzUAhMKGSaUoqnX4uUp284pIUTWf0V+GcplFKiYMSS0FRhHDenRkzplOfu5mi6k4nbhC9doEyUdNeCRag==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=gt5oTT6q; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Y0zwAQzE; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=B8KBkKIG; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=EnJ+ZysA; dkim-atps=neutral; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=g/rXouWQ;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=gt5oTT6q;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Y0zwAQzE;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=B8KBkKIG;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=EnJ+ZysA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fVbDJ0ZLxz3cBP
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 01:02:23 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 4E46460133;
-	Tue, 10 Mar 2026 14:02:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id DAF3CC2BCAF;
-	Tue, 10 Mar 2026 14:02:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773151341;
-	bh=GpQHCMLy/+U8kyMZUGmI9yqiy5cIdh0/0TbBdyLaW4M=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=g/rXouWQ7QGvp+LlKvpXqU8CgzMvER3Lipgr3OQ3ca47w9sHbqwcIi/oiyueQdIx6
-	 VQ/DYQ7ncsC6iUdO1ioa7t06hpt3hhc3y3isnzKZ0Gx8VS5o4KSv/mpKFEckrYvwHz
-	 vRk+/d45Gcrdep1VaGBn2ixgshfkNLFz535d0O17UXJ/EEvKkPXJdAxpX/kZAwjC1l
-	 TWRoc898Q4VHGxo6mq5OR2uOMAt1HMP9MP2tAFhamdb4xC1oon50Y5BDrVIW+sXz94
-	 q7VOUu/h2i27LBjVJcC5W2T2JUk/cznmn30Ma5+RKPiloc70hsQCL7wKGXrpn3hwWy
-	 C3GibuSe7j9Dg==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C9519FD2D9A;
-	Tue, 10 Mar 2026 14:02:20 +0000 (UTC)
-From: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>
-Date: Tue, 10 Mar 2026 19:32:00 +0530
-Subject: [PATCH v7 2/4] PCI: host-common: Add link down handling for Root
- Ports
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fVcgk3WF7z30Lw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 02:07:46 +1100 (AEDT)
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 0E0835BCFF;
+	Tue, 10 Mar 2026 15:07:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1773155263; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=gMxUZjTf0fkPqQOSMlmI9PQkeO5iBltUcV8wio/rEnE=;
+	b=gt5oTT6qwuntLkeowNMdA8iXmLMS5caVPTKEtfsJrUqmq0lhjmdkv063RGZ4r0ZaMe4eBi
+	F/iDFTX/re5MLkamm5YhlI20HNlooLD326Mbr8aAVwIq+NtZR2yEgeOIjQBLK/yCB5dr7F
+	tU1R5g7v7fAv0WWAChw6snt126YxTgE=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1773155263;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=gMxUZjTf0fkPqQOSMlmI9PQkeO5iBltUcV8wio/rEnE=;
+	b=Y0zwAQzENQUhHJU79wwJodOb+PiIZNNMRz2R5nqfW0/nEcFGcHub7Ajv8gTWo9JNIt89lX
+	+4eJQ+0TkHaP8PCQ==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=B8KBkKIG;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=EnJ+ZysA
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1773155262; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=gMxUZjTf0fkPqQOSMlmI9PQkeO5iBltUcV8wio/rEnE=;
+	b=B8KBkKIGC1jlMt6mWQXGlSnUURmAa6Fg34C8DnNpPdK8HauOqDCLGkHiI22HqjTDAxocEU
+	k4QdOnf6YA5VWwt/8lJqjt8SKKDyu2PJap1VKOv5eDaY5+xYLzgOLvdAdvedqMJ7Ap43kM
+	q+uYZMGo1Me4nvIYfZ1T4NJlQM0nC/g=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1773155262;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=gMxUZjTf0fkPqQOSMlmI9PQkeO5iBltUcV8wio/rEnE=;
+	b=EnJ+ZysAzSrNqsl0CMa1GmScbFVyqMBTTVBVge6hKFrNiD69EFyZExt/ajsyTn3Yfzjp4W
+	odvxkXAtWfhPK8CA==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id DAD723F4FB;
+	Tue, 10 Mar 2026 15:07:41 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id xsiqNL0zsGmmPwAAD6G6ig
+	(envelope-from <tiwai@suse.de>); Tue, 10 Mar 2026 15:07:41 +0000
+Date: Tue, 10 Mar 2026 16:07:26 +0100
+Message-ID: <878qbzradt.wl-tiwai@suse.de>
+From: Takashi Iwai <tiwai@suse.de>
+To: Thorsten Blum <thorsten.blum@linux.dev>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>,
+	Kees Cook <kees@kernel.org>,
+	stable@vger.kernel.org,
+	Takashi Iwai <tiwai@suse.de>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-sound@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] ALSA: aoa: Skip devices with no codecs in i2sbus_resume()
+In-Reply-To: <20260310102921.210109-3-thorsten.blum@linux.dev>
+References: <20260310102921.210109-3-thorsten.blum@linux.dev>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) Emacs/30.2 Mule/6.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,177 +112,62 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260310-pci-port-reset-v7-2-9dd00ccc25ab@oss.qualcomm.com>
-References: <20260310-pci-port-reset-v7-0-9dd00ccc25ab@oss.qualcomm.com>
-In-Reply-To: <20260310-pci-port-reset-v7-0-9dd00ccc25ab@oss.qualcomm.com>
-To: Bjorn Helgaas <bhelgaas@google.com>, 
- Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
- Oliver O'Halloran <oohall@gmail.com>, Will Deacon <will@kernel.org>, 
- Lorenzo Pieralisi <lpieralisi@kernel.org>, 
- =?utf-8?q?Krzysztof_Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
- Manivannan Sadhasivam <mani@kernel.org>, Rob Herring <robh@kernel.org>, 
- Heiko Stuebner <heiko@sntech.de>, Philipp Zabel <p.zabel@pengutronix.de>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
- linux-arm-msm@vger.kernel.org, linux-rockchip@lists.infradead.org, 
- Niklas Cassel <cassel@kernel.org>, 
- Wilfred Mallawa <wilfred.mallawa@wdc.com>, 
- Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>, 
- mani@kernel.org, Lukas Wunner <lukas@wunner.de>, 
- Richard Zhu <hongxing.zhu@nxp.com>, Brian Norris <briannorris@chromium.org>, 
- Wilson Ding <dingwei@marvell.com>, 
- Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, 
- Frank Li <Frank.Li@nxp.com>, Manivannan Sadhasivam <mani@kernel.org>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5047;
- i=manivannan.sadhasivam@oss.qualcomm.com; h=from:subject:message-id;
- bh=aFkx7QcjgWXLjqxldAdhXr9ROuajXIiL4yi0K0WOE5c=;
- b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBpsCRqrlJW+b7djwMK1Ei7k62UFLEXZ1gYZNshe
- vHMm6FRURuJATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCabAkagAKCRBVnxHm/pHO
- 9SvAB/427KkqnhQGX1Vab4Rm6k/g6XchDY2PORDJ+5iwcCnCf9Krh5sdAjTOPlxS/HuGaFWLQX8
- D8CC26e9shL+jLIW9lLal+zwYf88gxcByt2TRMXFpR+HKjMSC0g+9BENXS0h/YjQBdhrUrY3T4Z
- thDUb3YalcqRLDZR0eo6tr/kZiz5WY7jEXdhaACyp0Z9xqzftp03RGn2/M2ouk0FeXke8CaUIvl
- CKfeDrps41NgtH3KQXW0YdUbPiSqdtqFGATgAnpiZI+vWxwnYosZFUO3LU8kqvSMDW+svgOTAbH
- wAc/ZKEfGHGP0gevdD0RvdFzQm34buVpT1/dSdqL3pZIyxFY
-X-Developer-Key: i=manivannan.sadhasivam@oss.qualcomm.com; a=openpgp;
- fpr=C668AEC3C3188E4C611465E7488550E901166008
-X-Endpoint-Received: by B4 Relay for
- manivannan.sadhasivam@oss.qualcomm.com/default with auth_id=461
-X-Original-From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-Reply-To: manivannan.sadhasivam@oss.qualcomm.com
+MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
+Content-Type: text/plain; charset=US-ASCII
+X-Rspamd-Action: no action
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Spamd-Result: default: False [-3.51 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	TO_DN_SOME(0.00)[];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	RCVD_TLS_ALL(0.00)[];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	RCPT_COUNT_SEVEN(0.00)[10];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,suse.de:dkim,suse.de:mid];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	DKIM_TRACE(0.00)[suse.de:+]
+X-Rspamd-Queue-Id: 0E0835BCFF
 
-From: Manivannan Sadhasivam <mani@kernel.org>
+On Tue, 10 Mar 2026 11:29:20 +0100,
+Thorsten Blum wrote:
+> --- a/sound/aoa/soundbus/i2sbus/core.c
+> +++ b/sound/aoa/soundbus/i2sbus/core.c
+> @@ -405,6 +405,9 @@ static int i2sbus_resume(struct macio_dev* dev)
+>  	int err, ret = 0;
+>  
+>  	list_for_each_entry(i2sdev, &control->list, item) {
+> +		if (list_empty(&i2sdev->sound.codec_list))
+> +			continue;
 
-The PCI link, when down, needs to be recovered to bring it back. But on
-some platforms, that cannot be done in a generic way as link recovery
-procedure is platform specific. So add a new API
-pci_host_handle_link_down() that could be called by the host bridge drivers
-for a specific Root Port when the link goes down.
+This can be even outside the loop and immediately return 0, as the
+remaining part is also the loop of codec_list.
 
-The API accepts the 'pci_dev' corresponding to the Root Port which observed
-the link down event. If CONFIG_PCIEAER is enabled, the API calls
-pcie_do_recovery() function with 'pci_channel_io_frozen' as the state. This
-will result in the execution of the AER Fatal error handling code. Since
-the link down recovery is pretty much the same as AER Fatal error handling,
-pcie_do_recovery() helper is reused here. First, the AER error_detected()
-callback will be triggered for the bridge and then for the downstream
-devices. Finally, pci_host_reset_root_port() will be called for the Root
-Port, which will reset the Root Port using 'reset_root_port' callback to
-recover the link. Once that's done, resume message will be broadcasted to
-the bridge and the downstream devices, indicating successful link recovery.
-
-But if CONFIG_PCIEAER is not enabled in the kernel, only
-pci_host_reset_root_port() API will be called, which will in turn call
-pci_bus_error_reset() to just reset the Root Port as there is no way we
-could inform the drivers about link recovery.
-
-Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
-Tested-by: Brian Norris <briannorris@chromium.org>
-Tested-by: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
-Tested-by: Richard Zhu <hongxing.zhu@nxp.com>
-Reviewed-by: Frank Li <Frank.Li@nxp.com>
----
- drivers/pci/controller/pci-host-common.c | 35 ++++++++++++++++++++++++++++++++
- drivers/pci/controller/pci-host-common.h |  1 +
- drivers/pci/pci.c                        |  1 +
- drivers/pci/pcie/err.c                   |  1 +
- 4 files changed, 38 insertions(+)
-
-diff --git a/drivers/pci/controller/pci-host-common.c b/drivers/pci/controller/pci-host-common.c
-index d6258c1cffe5..15ebff8a542a 100644
---- a/drivers/pci/controller/pci-host-common.c
-+++ b/drivers/pci/controller/pci-host-common.c
-@@ -12,9 +12,11 @@
- #include <linux/of.h>
- #include <linux/of_address.h>
- #include <linux/of_pci.h>
-+#include <linux/pci.h>
- #include <linux/pci-ecam.h>
- #include <linux/platform_device.h>
- 
-+#include "../pci.h"
- #include "pci-host-common.h"
- 
- static void gen_pci_unmap_cfg(void *ptr)
-@@ -106,5 +108,38 @@ void pci_host_common_remove(struct platform_device *pdev)
- }
- EXPORT_SYMBOL_GPL(pci_host_common_remove);
- 
-+static pci_ers_result_t pci_host_reset_root_port(struct pci_dev *dev)
-+{
-+	int ret;
-+
-+	pci_lock_rescan_remove();
-+	ret = pci_bus_error_reset(dev);
-+	pci_unlock_rescan_remove();
-+	if (ret) {
-+		pci_err(dev, "Failed to reset Root Port: %d\n", ret);
-+		return PCI_ERS_RESULT_DISCONNECT;
-+	}
-+
-+	pci_info(dev, "Root Port has been reset\n");
-+
-+	return PCI_ERS_RESULT_RECOVERED;
-+}
-+
-+static void pci_host_recover_root_port(struct pci_dev *port)
-+{
-+#if IS_ENABLED(CONFIG_PCIEAER)
-+	pcie_do_recovery(port, pci_channel_io_frozen, pci_host_reset_root_port);
-+#else
-+	pci_host_reset_root_port(port);
-+#endif
-+}
-+
-+void pci_host_handle_link_down(struct pci_dev *port)
-+{
-+	pci_info(port, "Recovering Root Port due to Link Down\n");
-+	pci_host_recover_root_port(port);
-+}
-+EXPORT_SYMBOL_GPL(pci_host_handle_link_down);
-+
- MODULE_DESCRIPTION("Common library for PCI host controller drivers");
- MODULE_LICENSE("GPL v2");
-diff --git a/drivers/pci/controller/pci-host-common.h b/drivers/pci/controller/pci-host-common.h
-index b5075d4bd7eb..dd12dd1a1b23 100644
---- a/drivers/pci/controller/pci-host-common.h
-+++ b/drivers/pci/controller/pci-host-common.h
-@@ -17,6 +17,7 @@ int pci_host_common_init(struct platform_device *pdev,
- 			 struct pci_host_bridge *bridge,
- 			 const struct pci_ecam_ops *ops);
- void pci_host_common_remove(struct platform_device *pdev);
-+void pci_host_handle_link_down(struct pci_dev *port);
- 
- struct pci_config_window *pci_host_common_ecam_create(struct device *dev,
- 	struct pci_host_bridge *bridge, const struct pci_ecam_ops *ops);
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 6f09057d83e0..1b37bfe6d079 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -5650,6 +5650,7 @@ int pci_bus_error_reset(struct pci_dev *bridge)
- 	mutex_unlock(&pci_slot_mutex);
- 	return pci_bus_reset(bridge->subordinate, PCI_RESET_DO_RESET);
- }
-+EXPORT_SYMBOL_GPL(pci_bus_error_reset);
- 
- /**
-  * pci_probe_reset_bus - probe whether a PCI bus can be reset
-diff --git a/drivers/pci/pcie/err.c b/drivers/pci/pcie/err.c
-index 13b9d9eb714f..d77403d8855b 100644
---- a/drivers/pci/pcie/err.c
-+++ b/drivers/pci/pcie/err.c
-@@ -292,3 +292,4 @@ pci_ers_result_t pcie_do_recovery(struct pci_dev *dev,
- 
- 	return status;
- }
-+EXPORT_SYMBOL_GPL(pcie_do_recovery);
-
--- 
-2.51.0
+  	int err, ret = 0;
+  
+ +	if (list_empty(&i2sdev->sound.codec_list))
+ +		return 0;
+ +
+  	list_for_each_entry(i2sdev, &control->list, item) {
+  		/* reset i2s bus format etc. */
+  		i2sbus_pcm_prepare_both(i2sdev);
 
 
+thanks,
+
+Takashi
 
