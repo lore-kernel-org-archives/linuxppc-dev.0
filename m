@@ -1,77 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-17938-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17939-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40369FCA191
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Mar 2026 22:51:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1827BFCC9A5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Mar 2026 01:34:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fVC0f4SXNz3c8W;
-	Tue, 10 Mar 2026 09:50:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1034"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773073539;
-	cv=none; b=Nxp2xFxxZQCRGEkeqQ//g1lz0/JkbDq96AL9QAYw8w/WdoBk4Ku0zYueKt/FiQRfxeEiTIQC3Ry7BuAyqNDuJNfCZ+J7TVq7ylnCWPs542XbOBW2JNrep/trodrNbvkd9LbTh/M2Kj4wj1uMgyDXENIcjS7LmSSjTbe5tfQYJIG/8t/2F3WHYaaj2qHVl/HOZteUSGAttz9NbD4gZ58CPeJjIhwNZbahlCkf4PMdSsVM/3D6OEIyDHo0CxZ257zhhRkTEAUHqHbkOiRGfD4Kky0LxfNtVdGHGEv2bO3/Oka2uNVxGCsALO0Qtd2HLnzNfKr2f5Y6T29SFbd/Dh2yuQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fVGdd13sMz3bjb;
+	Tue, 10 Mar 2026 12:34:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.224
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773106485;
+	cv=none; b=KfDXY9yjQVLNppaXxZs60KrAfhhcKs26IilQFDIY7GaDEWcZ+9xazf8ltNky72ROc77CFqeYgUXnv2UmZHt8oxPGvr2f8Xa39u9aZXUGVi26uomOTnjoTGPgyhTu+wX+GpL1nTaBMvcABJDc7JLDM3rrnrNEzjx8WYidiDFbK4BMoFTG63YuOZJcCPU3d1iFUIfvSWkKfZW8sVhvpBfa3j59Cri5m5qMKA8aiqW7iAN7onM2w1D8gEz+mkb2B9EkKetyjI+bGoSr8vzEwrYtdS9sW/MxShC/AWScUz73Oc92zwvNG6J1/bnoLd0h44u1lj4az1dk37RQErL6bUChFA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773073539; c=relaxed/relaxed;
-	bh=amj6Vi3JmO2oRqniQL19eS7V9c7NrB8GmPrszxzYH5Q=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=LTz3LfFRIfYeTLuGrcTqnxQN1wVWd+DLdwekpzUfws/+rc+Ay8zqXVYpA04AR+0PDmtNvtDKlCbpJxGNToQuarIOEP2E9UOSycCeEBfhElHtu4wzZ/eiJNcUE1um5RWyMdzA1FJII/dcY6mo03Ifqc/PDDcaIw5i3JnCycRNsRzfpj6LoDkw9jHqaSgwWedmAWYKSp5W6kT8vfNr1wp/S+ThOFfsh0O0I3Kx7OAnse9oE6bl/1XVJ5LOk5In7Rq39+E3nd6NY3gYdkm5wvZ6SJbIYx6zzC0WHlaCzLRbnActSuxYQy/f7zEw04mHzNluvH3ogIt/TBOLpMRZkaWwJg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=DOceSecZ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=ustc.gu@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1773106485; c=relaxed/relaxed;
+	bh=KynWhPmsq2hgGRdlS5xCodsoSRLB81yWfnaTYob3MHk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=JiH6QZvU+kex/ia2u9MGv5svxXlqT3bLEz89ZuTGKOK7g28q10jTOvrCBC0vtlU0t/SHBRPO9wpmksbG+B2cng786QPoDbmK7bg8HmNlauXuQHogKqB6IL2by/fKch1yiFKw4Z3LzS2LT/f4KkKIlsX4LqW0a+cFUFTgKAAVUhoCxvkMQX2JhcXAZLrvjZe1zk3RiEiHPusQvju7XJyEmYeZrUbxTVvrVTIaQ4pF28zdDaeVcu+JeB1LRf0/ZmmgQwfLJR2Tvwor8IRljNLISssvoYlx9bgrktINU8+AY0NKsIWchl8a376Nbwt4ZJeUTvO8kDx1bwoKEe0oHOFyjQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=Kh676+Q/; dkim-atps=neutral; spf=pass (client-ip=113.46.200.224; helo=canpmsgout09.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=DOceSecZ;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=Kh676+Q/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=ustc.gu@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com [IPv6:2607:f8b0:4864:20::1034])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.224; helo=canpmsgout09.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout09.his.huawei.com (canpmsgout09.his.huawei.com [113.46.200.224])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fV2S15j4hz3c9l
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2026 03:25:36 +1100 (AEDT)
-Received: by mail-pj1-x1034.google.com with SMTP id 98e67ed59e1d1-3598b2318c2so4977620a91.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Mar 2026 09:25:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1773073534; x=1773678334; darn=lists.ozlabs.org;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=amj6Vi3JmO2oRqniQL19eS7V9c7NrB8GmPrszxzYH5Q=;
-        b=DOceSecZC5AKX4OOvt4HSneRjKgXc9gC0K6jMhrF+0Bp5qQKxXex2DbGitCzF+yuri
-         W8MDKKZQ9Fpws77sglu5VycPmF4xZXxViiqr9ZUd6JYwDF9JHJbBUz5k+0FihHML92sy
-         DySr5EQDvIaxgbKRuQPYgvGBqqeE4cz3PzRw3xex0k7Fyqte3IEI43ELaoQnkTOzqBDd
-         EJMStIShNAhlSpUyfvuzWaWPZOZW66HZw1rJUwf/ZPJcBWWHRooejvZ8t3AThGEVOI2G
-         +n2xmX11YZFgTICl6tv80Nq3rcoJhKH91so9hqtPAhB37yE4k/84hkTDZd+E9sRLD2S0
-         B4Ew==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773073534; x=1773678334;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=amj6Vi3JmO2oRqniQL19eS7V9c7NrB8GmPrszxzYH5Q=;
-        b=U4uL40p4o70TyIdmmdy5vKJhT+10tBAyqkYfX6IE/3DJSdA+5V5Rl+lPS02DhD1wRB
-         u1lIdMDX1Q9GewhqwVRItQ5Rtn+FRxI2DQ1fAREDzTpLUEr0R8YiBJa9gudbwt1dbqMR
-         IUswFQPi0O5Kr+DPmE/6LKfgQbneR7XRwIViopGbkDR+PygtVVNvJvkUrK2xgEWyXE9U
-         Ye7Wm06QcmBQbynA8pp0lIuYOKcN2f0VSSnmNBRvKtYO7kWLaVrzbm85UrxAWEvyvbab
-         9k7cC0svrILh++tPc+nx+HFDJsJlzcUR9SHxaNeM+VEa4lxcYJfjDOswu0yqoPfgqTs3
-         Ld8Q==
-X-Gm-Message-State: AOJu0YwdGElKD/OA8KWV8MaEyQAJv1Kf0mwZ5K4yNFWPijWB1RKAhBtY
-	S914GNjJVdjPKYPfr/JVOfC2ig0zT9vOLdVa4AOLgkfaH5fzkKuIHlxF
-X-Gm-Gg: ATEYQzxicniTJ9ua0I5Ne7v1rHeEzwNCw5phMltEpSTpjCnGRk15TqlYMWz+79p2j3G
-	cX3LL3K2UiyawtCbMN9kJFZ+L5p9JUJY8zpOd2utgoNjchrScdD8bRURGk5HQrRgIhUjhoiIWIo
-	hN9iHys3qmleyKD0b3+gxwHBNenktwXVaAPpFoKWpe6V/F6PZCpfUqBwS34tGog0NeD/BrVddUS
-	GJfmkyVAV5+VMyqdvFpDJ4j/m1fTl51HtaqrO0jpZx+mYk+cvv1QawtBzMTtyoVBVcR5V3cGrM8
-	HRfuzGtTtad45PD/wdPa9xdl9nd4Dn3acnK+iJd9bvqhNQnf/rFMNs/o0PUblBa79OiH9SefV2p
-	cS9HRKhW8PSrxmM18xuPzM7sZQFPppJT08iJ5U9uYKeUO0t0lcbev97FALkh3TE0Or8UkacXs/a
-	JSAvUxWmTzu3I59PFIKi44AtOMXmPOS16C35LC
-X-Received: by 2002:a17:90b:184c:b0:336:b60f:3936 with SMTP id 98e67ed59e1d1-359be2bfbfdmr10994814a91.12.1773073533488;
-        Mon, 09 Mar 2026 09:25:33 -0700 (PDT)
-Received: from junjungu-PC.localdomain ([2408:820c:9009:3f2:a816:d74a:dc19:1ab8])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-359f05ee51csm93198a91.1.2026.03.09.09.25.31
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 Mar 2026 09:25:33 -0700 (PDT)
-From: Felix Gu <ustc.gu@gmail.com>
-Date: Tue, 10 Mar 2026 00:25:30 +0800
-Subject: [PATCH] soc: fsl: qe_ports_ic: Add missing cleanup on device
- removal
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fVGdZ1254z2yFY
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2026 12:34:40 +1100 (AEDT)
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=KynWhPmsq2hgGRdlS5xCodsoSRLB81yWfnaTYob3MHk=;
+	b=Kh676+Q/BlPxtpIddEk+9ICljaWAqVwx0/XgQUgVlvFz1XcZ20W27ChKwIzLEUVcWTbJx6HbV
+	ikPNF9Y2vHA7hELlqoXqrDU2ad2lXumKu5JNd9anYgbNv9VSKDnpeFJJS+kiKxEVvLmGqL2v9A7
+	aE0Nov/WUJOUyJeqCQokOIQ=
+Received: from mail.maildlp.com (unknown [172.19.162.92])
+	by canpmsgout09.his.huawei.com (SkyGuard) with ESMTPS id 4fVGWm0gfVz1cyTP;
+	Tue, 10 Mar 2026 09:29:40 +0800 (CST)
+Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
+	by mail.maildlp.com (Postfix) with ESMTPS id 60F4240565;
+	Tue, 10 Mar 2026 09:34:34 +0800 (CST)
+Received: from [10.67.109.254] (10.67.109.254) by
+ dggpemf500011.china.huawei.com (7.185.36.131) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.11; Tue, 10 Mar 2026 09:34:29 +0800
+Message-ID: <f46f7987-3d47-ec25-ea45-e1b643d380e3@huawei.com>
+Date: Tue, 10 Mar 2026 09:34:28 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,98 +61,116 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
+ Thunderbird/102.2.0
+Subject: Re: [PATCH v8 0/5] arm64/riscv: Add support for crashkernel CMA
+ reservation
+Content-Language: en-US
+To: <corbet@lwn.net>, <skhan@linuxfoundation.org>, <catalin.marinas@arm.com>,
+	<will@kernel.org>, <chenhuacai@kernel.org>, <kernel@xen0n.name>,
+	<maddy@linux.ibm.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
+	<chleroy@kernel.org>, <pjw@kernel.org>, <palmer@dabbelt.com>,
+	<aou@eecs.berkeley.edu>, <alex@ghiti.fr>, <tglx@kernel.org>,
+	<mingo@redhat.com>, <bp@alien8.de>, <dave.hansen@linux.intel.com>,
+	<hpa@zytor.com>, <robh@kernel.org>, <saravanak@kernel.org>,
+	<akpm@linux-foundation.org>, <bhe@redhat.com>, <vgoyal@redhat.com>,
+	<dyoung@redhat.com>, <rdunlap@infradead.org>, <pmladek@suse.com>,
+	<dapeng1.mi@linux.intel.com>, <kees@kernel.org>, <paulmck@kernel.org>,
+	<lirongqing@baidu.com>, <fvdl@google.com>, <rppt@kernel.org>,
+	<ardb@kernel.org>, <leitao@debian.org>, <sourabhjain@linux.ibm.com>,
+	<jbohac@suse.cz>, <cfsworks@gmail.com>, <osandov@fb.com>,
+	<tangyouling@kylinos.cn>, <ritesh.list@gmail.com>, <hbathini@linux.ibm.com>,
+	<eajames@linux.ibm.com>, <songshuaishuai@tinylab.org>,
+	<kevin.brodsky@arm.com>, <samuel.holland@sifive.com>,
+	<vishal.moola@gmail.com>, <junhui.liu@pigmoral.tech>, <coxu@redhat.com>,
+	<liaoyuanhong@vivo.com>, <fuqiang.wang@easystack.cn>, <brgerst@gmail.com>,
+	<x86@kernel.org>, <linux-doc@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
+	<linux-riscv@lists.infradead.org>, <devicetree@vger.kernel.org>,
+	<kexec@lists.infradead.org>
+References: <20260302035315.3892241-1-ruanjinjie@huawei.com>
+From: Jinjie Ruan <ruanjinjie@huawei.com>
+In-Reply-To: <20260302035315.3892241-1-ruanjinjie@huawei.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260310-qe_ports_ic-v1-1-608293026561@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAHn0rmkC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDIzMDY0MD3cLU+IL8opLi+Mxk3eREk2RLi6QUw2STNCWgjoKi1LTMCrBp0bG
- 1tQBw1Lw+XQAAAA==
-X-Change-ID: 20260310-qe_ports_ic-ca4c98bd1c4f
-To: Qiang Zhao <qiang.zhao@nxp.com>, 
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
- linux-kernel@vger.kernel.org, Felix Gu <ustc.gu@gmail.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1773073531; l=2073;
- i=ustc.gu@gmail.com; h=from:subject:message-id;
- bh=f/RO7d/NYBpPJNaikZKFHoe0PWI37oNS5SAvFGmT8u8=;
- b=rQOMzyC4PngOHoIqO/7Df48MEyWpk4Oq7n+UJMoMvx/yCaEy1QVE4QxtLf/8M0dTWTRlNeTre
- OBK6HibNoz9BSdq5rxEWpjidNyO7PJHufEyodw+dTqpnS22U+VATvl+
-X-Developer-Key: i=ustc.gu@gmail.com; a=ed25519;
- pk=fjUXwmjchVN7Ja6KGP55IXOzFeCl9edaHoQIEUA+/hw=
+X-Originating-IP: [10.67.109.254]
+X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
+ dggpemf500011.china.huawei.com (7.185.36.131)
 
-Add a devm action handler to properly clean up the irq_domain and
-chained handler when the device is removed.
 
-Fixes: f0bcd784e1b7 ("soc: fsl: qe: Add an interrupt controller for QUICC Engine Ports")
-Signed-off-by: Felix Gu <ustc.gu@gmail.com>
----
- drivers/soc/fsl/qe/qe_ports_ic.c | 21 +++++++++++++++------
- 1 file changed, 15 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/soc/fsl/qe/qe_ports_ic.c b/drivers/soc/fsl/qe/qe_ports_ic.c
-index 8e2107e2cde5..5e3fae19f314 100644
---- a/drivers/soc/fsl/qe/qe_ports_ic.c
-+++ b/drivers/soc/fsl/qe/qe_ports_ic.c
-@@ -17,6 +17,7 @@
- struct qepic_data {
- 	void __iomem *reg;
- 	struct irq_domain *host;
-+	int irq;
- };
- 
- static void qepic_mask(struct irq_data *d)
-@@ -92,11 +93,18 @@ static const struct irq_domain_ops qepic_host_ops = {
- 	.map = qepic_host_map,
- };
- 
-+static void qepic_remove(void *res)
-+{
-+	struct qepic_data *data = res;
-+
-+	irq_set_chained_handler_and_data(data->irq, NULL, NULL);
-+	irq_domain_remove(data->host);
-+}
-+
- static int qepic_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
- 	struct qepic_data *data;
--	int irq;
- 
- 	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
- 	if (!data)
-@@ -106,17 +114,18 @@ static int qepic_probe(struct platform_device *pdev)
- 	if (IS_ERR(data->reg))
- 		return PTR_ERR(data->reg);
- 
--	irq = platform_get_irq(pdev, 0);
--	if (irq < 0)
--		return irq;
-+	data->irq = platform_get_irq(pdev, 0);
-+	if (data->irq < 0)
-+		return data->irq;
- 
- 	data->host = irq_domain_add_linear(dev->of_node, 32, &qepic_host_ops, data);
- 	if (!data->host)
- 		return -ENODEV;
- 
--	irq_set_chained_handler_and_data(irq, qepic_cascade, data);
-+	irq_set_chained_handler_and_data(data->irq, qepic_cascade, data);
-+
-+	return devm_add_action_or_reset(dev, qepic_remove, data);
- 
--	return 0;
- }
- 
- static const struct of_device_id qepic_match[] = {
+On 2026/3/2 11:53, Jinjie Ruan wrote:
+> The crash memory allocation, and the exclude of crashk_res, crashk_low_res
+> and crashk_cma memory are almost identical across different architectures,
+> This patch set handle them in crash core in a general way, which eliminate
+> a lot of duplication code.
+> 
+> And add support for crashkernel CMA reservation for arm64 and riscv.
 
----
-base-commit: a0ae2a256046c0c5d3778d1a194ff2e171f16e5f
-change-id: 20260310-qe_ports_ic-ca4c98bd1c4f
+Hi all,
 
-Best regards,
--- 
-Felix Gu <ustc.gu@gmail.com>
+Do you have any new review comments on this patch set?
 
+Thanks,
+
+> 
+> Rebased on v7.0-rc1.
+> 
+> Basic second kernel boot test were performed on QEMU platforms for x86,
+> ARM64, and RISC-V architectures with the following parameters:
+> 
+> 	"cma=256M crashkernel=256M crashkernel=64M,cma"
+> 
+> Changes in v8:
+> - Fix the build issues reported by kernel test robot and Sourabh.
+> - Link to v7: https://lore.kernel.org/all/20260226130437.1867658-1-ruanjinjie@huawei.com/
+> 
+> Changes in v7:
+> - Correct the inclusion of CMA-reserved ranges for kdump kernel in of/kexec
+>   for arm64 and riscv.
+> - Add Acked-by.
+> - Link to v6: https://lore.kernel.org/all/20260224085342.387996-1-ruanjinjie@huawei.com/
+> 
+> Changes in v6:
+> - Update the crash core exclude code as Mike suggested.
+> - Rebased on v7.0-rc1.
+> - Add acked-by.
+> - Link to v5: https://lore.kernel.org/all/20260212101001.343158-1-ruanjinjie@huawei.com/
+> 
+> Changes in v5:
+> - Fix the kernel test robot build warnings.
+> - Sort crash memory ranges before preparing elfcorehdr for powerpc
+> - Link to v4: https://lore.kernel.org/all/20260209095931.2813152-1-ruanjinjie@huawei.com/
+> 
+> Changes in v4:
+> - Move the size calculation (and the realloc if needed) into the
+>   generic crash.
+> - Link to v3: https://lore.kernel.org/all/20260204093728.1447527-1-ruanjinjie@huawei.com/
+> 
+> Jinjie Ruan (4):
+>   crash: Exclude crash kernel memory in crash core
+>   crash: Use crash_exclude_core_ranges() on powerpc
+>   arm64: kexec: Add support for crashkernel CMA reservation
+>   riscv: kexec: Add support for crashkernel CMA reservation
+> 
+> Sourabh Jain (1):
+>   powerpc/crash: sort crash memory ranges before preparing elfcorehdr
+> 
+>  .../admin-guide/kernel-parameters.txt         |  16 +--
+>  arch/arm64/kernel/machine_kexec_file.c        |  39 +++----
+>  arch/arm64/mm/init.c                          |   5 +-
+>  arch/loongarch/kernel/machine_kexec_file.c    |  39 +++----
+>  arch/powerpc/include/asm/kexec_ranges.h       |   1 -
+>  arch/powerpc/kexec/crash.c                    |   5 +-
+>  arch/powerpc/kexec/ranges.c                   | 101 +-----------------
+>  arch/riscv/kernel/machine_kexec_file.c        |  38 +++----
+>  arch/riscv/mm/init.c                          |   5 +-
+>  arch/x86/kernel/crash.c                       |  89 +++------------
+>  drivers/of/fdt.c                              |   9 +-
+>  drivers/of/kexec.c                            |   9 ++
+>  include/linux/crash_core.h                    |   9 ++
+>  kernel/crash_core.c                           |  89 ++++++++++++++-
+>  14 files changed, 178 insertions(+), 276 deletions(-)
+> 
 
