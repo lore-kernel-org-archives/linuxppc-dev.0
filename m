@@ -1,89 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-17984-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17985-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21207FD88C1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Mar 2026 22:06:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F6D7FD88D5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 00:56:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fVnyd1VyYz2xZK;
-	Wed, 11 Mar 2026 09:06:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773180377;
-	cv=none; b=Lf+vPYc2dIIGlGCvEdVZd+p8DxZtVUrV9p9mHCYWAANlAwUMExDxNWXbNu7lkCvPMgFi8L0ogBQPlNzgJ7L/P1z/Kb8Yz05Ij9qSrxOtMQIOcK8RyBdBAI1ScQi5lk8wD1/TyxTk1j70m/NymahsQBd7eB7ZlPQsCj+wZubmCMb+3u0bYFwqHhG0y0cp3s69ibRCINPOdIVn2TJAZeHKIUFOzMGt+7YI/oBXHlVB7EdAy6zHCNAJbKflblSG7sYqfeuQrQ20ZZsFmeLmp/MnrTqqBz/nxP4U6Rhy4KUrERuib3IyooC9XAh3QMQ8dvvA8qLrODN7Sp8IjJM2XtRCfg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fVskW4szpz2xZK;
+	Wed, 11 Mar 2026 11:56:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.205.221.221
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773148518;
+	cv=none; b=ACx0hJMRwnui+ZAiV0s3wHt8xgvz7EjJTqu3Hkv+Kp/KB7y4WCc+GikEl9J2ozlTLwMCzTeClGHXXATlkOaXQPC7baLr/Gm8aQKRf1UzJDduGM7As7jyXJCWzW9YJ/0XzALQkvvBaHo/s6r05NjkTaR0z4s4aSYCq/JXXMfNFBDH+fmv998WuJCEhKbb9OeorEaO8ZaG2lDMQY+tW/DmlkX8GORmx8BIRK8/BestIr7VPoZTO44UposR3claY7NuYiHUBtJBmPV2tNY//Dgwn/6hjByoKKI9Eoava/AUAQMYmzKjen7CtSiVJLIj7WTPQqBjtWlmd4oS+g9WLS4QsA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773180377; c=relaxed/relaxed;
-	bh=d5zUlKZcI58cDAmfLQJhGLb2FQvK8CqI8lxmoJER0RQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=etk6TQRJa5VF7Kz4xmvdBwyylhQhEM5MVy38DNyCilUrrjYy/Hs9a44LtapuPqmzC9ussIxbgSFSY3pDP+UvGWgXF5zHJ16zm0NeTzL91GwlWfwT5GyXI0guulczVSddR6xaldLbDi1NAVep2HkU2h6nbIUh9HiIJbEZhNu68FeZk2lR4v8t3JLSKQ1sro3MEcCqO/BnhHpYYDmtJIlU7XAd2cjXgiK70gbvhLcBYzQfm1kJwIVM+RaurzT0ad7WfLfwv5A1ac7vRflCxO1N4jHTDuvB9DMgg+pQvluMUB9rhWIeXceB897lfKf9ZTI5M2RbM78RCntDJTiAo7eAQQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=niMNHIJg; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1773148518; c=relaxed/relaxed;
+	bh=dAaAL2bSaHFST8Z7y7B5rVa7Pqgb3PRmEPcRCp/FoW4=;
+	h=Message-ID:From:To:Cc:Subject:Date:MIME-Version; b=jw7LpCDitP0BSL8SiwLwamMqzip/d6Ig+TKyUxWJzQMMgNcS8TSZkYUcM5DgElqstRIt+Lhofk2F1yO2MkAG7NXcWh5LywkHMokA7i5TUIls6oZV7v76koaxRBFxLnVQGrpoFJ6akMlXjxh3b7EN/YFk8LBQ+g3VfLMsmeIQuJ5XR54XqvyYY3X6RVbPLULK9OMpRLh8WLinnCwHvKs3jLG7hZjjESO29ME2z+Q6SzceJozb1tI9NilcOKel7joGK3p+qaGNEvTBZlHbKZtwb9V5ZmODmEnSubPPNKmp5+yMZsg5s+IEOx3+qUtxnk9PZKT0K3l5Er5QN09v40Rlwg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com; dkim=pass (1024-bit key; unprotected) header.d=qq.com header.i=@qq.com header.a=rsa-sha256 header.s=s201512 header.b=gua0ykss; dkim-atps=neutral; spf=pass (client-ip=203.205.221.221; helo=out203-205-221-221.mail.qq.com; envelope-from=1742789905@qq.com; receiver=lists.ozlabs.org) smtp.mailfrom=qq.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=niMNHIJg;
+	dkim=pass (1024-bit key; unprotected) header.d=qq.com header.i=@qq.com header.a=rsa-sha256 header.s=s201512 header.b=gua0ykss;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=qq.com (client-ip=203.205.221.221; helo=out203-205-221-221.mail.qq.com; envelope-from=1742789905@qq.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 3757 seconds by postgrey-1.37 at boromir; Wed, 11 Mar 2026 00:15:14 AEDT
+Received: from out203-205-221-221.mail.qq.com (out203-205-221-221.mail.qq.com [203.205.221.221])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fVnyc49bgz2x99
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 09:06:16 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 622E660054;
-	Tue, 10 Mar 2026 22:06:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A5FEEC19423;
-	Tue, 10 Mar 2026 22:06:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773180374;
-	bh=Z2giByPPRkEFQ5qLqYmDyLPdv5AowAZxy5PkqD3GqNs=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=niMNHIJgC+Fz1U3WEaHZP1AZ6A6ndoOiIOXNnbFOQJsdOYzSy3crlWDdkLKjeR5b2
-	 XvH4lmIKveB2sp9jzY5WkaDtkmeDQejcg4IoTi7DNKUO4WaucUDLPOcBnVCGS1QaHH
-	 ICRtc+Db7OW7Hf/vBq/22p+5js/WsiX+rFyr51i3UUtyH2VXaO0tDFHxTHghJbweVK
-	 i+CrRjzWn8CB8fcmxJoA7FgucAgGM6YYIdwLcXufx7WeQLdm6py7P49e5bjDU/9vu1
-	 /yJPj/0yLUiv46KoZXKcBlDm0/zuidupWpweJ0iRXBwOexeMyAnrcoUyEaC0VC8aoU
-	 LxihD60Qr2aPA==
-Date: Tue, 10 Mar 2026 15:06:11 -0700
-From: Eric Biggers <ebiggers@kernel.org>
-To: Thomas =?iso-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>
-Cc: Nathan Chancellor <nathan@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-	Luis Chamberlain <mcgrof@kernel.org>,
-	Petr Pavlu <petr.pavlu@suse.com>,
-	Sami Tolvanen <samitolvanen@google.com>,
-	Daniel Gomez <da.gomez@samsung.com>,
-	Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
-	"Serge E. Hallyn" <serge@hallyn.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Naveen N Rao <naveen@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>,
-	Roberto Sassu <roberto.sassu@huawei.com>,
-	Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
-	Eric Snowberg <eric.snowberg@oracle.com>,
-	Nicolas Schier <nicolas.schier@linux.dev>,
-	Daniel Gomez <da.gomez@kernel.org>,
-	Aaron Tomlin <atomlin@atomlin.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Nicolas Schier <nsc@kernel.org>,
-	Nicolas Bouchinet <nicolas.bouchinet@oss.cyber.gouv.fr>,
-	Xiu Jianfeng <xiujianfeng@huawei.com>,
-	Fabian =?iso-8859-1?Q?Gr=FCnbichler?= <f.gruenbichler@proxmox.com>,
-	Arnout Engelen <arnout@bzzt.net>,
-	Mattia Rizzolo <mattia@mapreri.org>, kpcyrd <kpcyrd@archlinux.org>,
-	Christian Heusel <christian@heusel.eu>,
-	=?iso-8859-1?Q?C=E2ju?= Mihai-Drosi <mcaju95@gmail.com>,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-arch@vger.kernel.org, linux-modules@vger.kernel.org,
-	linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
-Subject: Re: [PATCH v4 10/17] module: Move integrity checks into dedicated
- function
-Message-ID: <20260310220611.GF120274@quark>
-References: <20260113-module-hashes-v4-0-0b932db9b56b@weissschuh.net>
- <20260113-module-hashes-v4-10-0b932db9b56b@weissschuh.net>
+	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4fVZ9t3mw9z2xlx
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 00:15:11 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qq.com; s=s201512;
+	t=1773148506; bh=dAaAL2bSaHFST8Z7y7B5rVa7Pqgb3PRmEPcRCp/FoW4=;
+	h=From:To:Cc:Subject:Date;
+	b=gua0ykssCzJhftY013wUODugDjYJIza7uXuTIn+uE9mk7XX1HoG4RYnrV61B3S61A
+	 QLmKVVsicxAXwPlw/plj3tgx2shHA5T7Pdw58LGcn3rQ10fnubfMDIz0PKmoXnjCDG
+	 vRcWrxkzK3kQ5+IXnorDy5oeiRhJA5wC/rR1tkrY=
+Received: from June.localdomain ([123.121.145.35])
+	by newxmesmtplogicsvrsza56-0.qq.com (NewEsmtp) with SMTP
+	id 2D22C8B4; Tue, 10 Mar 2026 20:11:18 +0800
+X-QQ-mid: xmsmtpt1773144678t5qus6dj6
+Message-ID: <tencent_770FE404794D670E2ACDFA144EFDA35AC305@qq.com>
+X-QQ-XMAILINFO: OVFdYp27KdlJBOgVfCMaPom1z1vdwQSoYB1zGpFNKYpnXZmwXGoubgpCDvQClD
+	 joVU98FQEheYN78vjc8/kNxRrDf7yWqDNYcuDV+Ddw17EqXPyHMIYLFy2f4qAobGbOmtKXODuJCo
+	 n2SbtZ3YmvccWa6+vuGoo1ZZWmVBUK4A6K3ui3HL7ozotj+qgesAnXJZ8RWe533ym3V7mAM4t8En
+	 01O7gAitaotAN2/ljZc4B5mg4k/G0cP86SGDqzz3u9YlEemcguUESI6SJ34Q7i+tBdZNC9GMlSxx
+	 GoPYs64mk0pyDc5kdJwyPrzZG5t5Vd+MnMOilA4tVpG9biqCIMBgmweYvRZOdDETi0U3ghJQ3Qcg
+	 dq5+2lBMh+nZvXMJbNgZTLXFT16RHPwcJhhYEqhHMC6GClhS/K48wFBkOBJUeZNGrwBbX3ep72mn
+	 p+PWIoXMVRQy4ogaAA5Imq9Fx6Ms+DP7Ua6sI58T/P/8SyRFe9qZl1Jchc+qLZOV8MrFCfmGivmr
+	 boDQ4TK6kF9AIDxIuJl65doHM3fYCQlyzvwnxfY0N4pR68kcfmzmKPBYxZqjnGFmMZZw5DdNvgUL
+	 NLKsSdCDlE/RT2jhG/9neuL9IzXkNz9LpoUwz+2jeWo80Y/XiITymbVlPUCQcd0KCMxFufwDjdly
+	 SxASAOxuK9gER8iW+Mknal1aH6GDN9/iWhzkQwEJ7LnZ0hyRZTHwek+i4nAiRAUnz5BF9LRjkndr
+	 qf9zxyBGLFJqABAPd+B8p+ng50xsaqwq3iLrBheG6BQhGmdoXY988tpoin1ETEqUyxQKeFziHdE9
+	 ZZIdK7Yk0rB+x24Pvtnwn4Uh9v1FHMZLz9dabK/QMbkg9TnSvDBGxF/om4AWb+vw6/V1CNNRoboK
+	 sYkWhmrxK7XRFwaw+b+OZMahMYt4ohFSeX8jpySl+zfOejl5pd8mltOR3BaHlPoxbMHQP/1IVk6P
+	 rppfGd+0UCJb6eVU61NYVMuvwgN7Jj5ybEhsbsMZF8/VrrKaLjU/3UEKrUdnIsSCj8biywlcjHgM
+	 hQd+Vc3HWWpgUUCbSzO3JMHVR65i4iP/h/i5FTp0JwCLdCo3BB6oLSmKPg2PZNFUA4bLgXCg==
+X-QQ-XMRINFO: Nq+8W0+stu50tPAe92KXseR0ZZmBTk3gLg==
+From: Wang Jun <1742789905@qq.com>
+To: Qiang Zhao <qiang.zhao@nxp.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org,
+	gszhai@bjtu.edu.cn,
+	25125332@bjtu.edu.cn,
+	25125283@bjtu.edu.cn,
+	23120469@bjtu.edu.cn,
+	Wang Jun <1742789905@qq.com>
+Subject: [PATCH] soc: fsl: qe: Fix potential NULL pointer dereference in qe_reset()
+Date: Tue, 10 Mar 2026 20:11:14 +0800
+X-OQ-MSGID: <20260310121114.34906-1-1742789905@qq.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,24 +83,38 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260113-module-hashes-v4-10-0b932db9b56b@weissschuh.net>
 
-On Tue, Jan 13, 2026 at 01:28:54PM +0100, Thomas Weißschuh wrote:
-> +static int module_integrity_check(struct load_info *info, int flags)
-> +{
-> +	int err = 0;
-> +
-> +	if (IS_ENABLED(CONFIG_MODULE_SIG))
-> +		err = module_sig_check(info, flags);
-> +
-> +	return err;
-> +}
+The function qe_reset() uses qe_immr without checking if it is NULL,
+which could happen if ioremap() failed earlier. Add a NULL check and
+perform ioremap() if needed; if it still fails, print an error and
+return to avoid crashing the system.
 
-Maybe module_authenticity_check()?  The purpose is authenticity, not
-merely integrity.
+Signed-off-by: Wang Jun <1742789905@qq.com>
+---
+ drivers/soc/fsl/qe/qe.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-- Eric
+diff --git a/drivers/soc/fsl/qe/qe.c b/drivers/soc/fsl/qe/qe.c
+index 70b6eddb867b..6dcfa340970a 100644
+--- a/drivers/soc/fsl/qe/qe.c
++++ b/drivers/soc/fsl/qe/qe.c
+@@ -86,8 +86,13 @@ static phys_addr_t get_qe_base(void)
+ 
+ void qe_reset(void)
+ {
+-	if (qe_immr == NULL)
++	if (qe_immr == NULL) {
+ 		qe_immr = ioremap(get_qe_base(), QE_IMMAP_SIZE);
++		if (qe_immr == NULL) {
++			pr_err("QE: cannot remap IMMR\n");
++			return;
++		}
++	}
+ 
+ 	qe_snums_init();
+ 
+-- 
+2.43.0
+
 
