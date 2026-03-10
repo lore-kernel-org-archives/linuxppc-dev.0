@@ -1,68 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-17946-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17947-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5AEAEA8550
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Mar 2026 09:02:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 05BAAEA8550
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Mar 2026 09:11:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fVSZW2XWxz3bjb;
-	Tue, 10 Mar 2026 20:02:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773133363;
-	cv=none; b=ZFZQTP531pKnjyhsv2Ya+ueGr0eeXY2mnCBR+4UTh9QMyDEfR6W9VStI34qBWgKRrqtGOX25DvoCjOLTbLE1c+k0R0wIOznzqZhrd9sqlsGT+6dTVe04WQFor1S6LXhbbJjO9nrXPH6ZSsDTSMf6ENfvfWG0TAiH1wZ/PGENxKho7J0rs8ZP7sXSpsmQwz7L040y5PF1PZh45Hi2I7PlgV7D6qhxvJTjHBXLtEy4b8/JB2lrKURtocUemiusclEgFwpH6Bom8QCiJVIZhrPi6UTOzloMfaT5tNlNxy6dbavDn8PL5NciYHpFOIGVGwEyK7qM+gRHwerAtae8prcxeQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fVSn06fj5z3bjb;
+	Tue, 10 Mar 2026 20:11:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773133908;
+	cv=none; b=R1dRG4Hl5GnuSOPNuYlV8MZnAe9Z88Oy7f9meA+gWEfN6FtuerrjujSn+1VrQcKcOToZfpR9odsXyTqRnPEcr0YsnTDBvEvzUtalJFwbrdIeTxLJt1s9gstROt3AOqm0oblguMUaQERrpwa8Ed4xsehjez181dwQzh17pEpfk9UAZaOXgpA5mrbYPcNOksWhAIYVmmJsTxdorZOAWiNGBdtDR91snwp/WpHiJeqztuCeQO1yxwfPrfztbDpge0HcePi04zCp/uf8cP7IkQlTy8z7jEbmq6kCvTvolq+QvUPjIy8dPAQcBTq1gCed1NJuhz3+n6z3j1BwEXmoPg5l3A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773133363; c=relaxed/relaxed;
-	bh=hcgXHgtFNbqe5vp1LaIY7fnxoJDvViHMQXyB0sO4CPw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=giQcNkQtWjGeCQyC26BXHpOrQZpON4Ao76YECoYLNrpp5J8svaYEvQyu4aYWVb3O0OUadlSm/vPvYc/V8DJo6kZxX1id6VhQUNMsKM83o5iKhxWcoPGx85jfhB3OswZDEw08YXJrh80zcUXoSiJoRfBhw7TqguoEfZU3uVd785xPEELqvNK/ABlvY+3M25HQ/mlcNMANE9zYilPqf1le8g/GKJbAQK1JVtuDTr88sZN2vi/xekV9qliUn/T834UdJxmtL1W37HE1gjKqaQapViniJu4MSGdD7l3tF2CDMy19PBmtBXJriU7Fx5DBarVk1aXYSMAceonsTuqv0Ooqlg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=t8/wlkIH; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1773133908; c=relaxed/relaxed;
+	bh=k2F848Zif0ENv+dioxwCTNyt1oN71pv8VacY1VvtFtA=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=EdXhr3m6msRIZbT1fH0ea+shh0slkYrM2GTVkmtK65+ZNF5qg2OE6Smi5RL0Reyed9c/zdnK90tP+aBgzpsVyHxSg1QjNXk7JQNGIFP4z8vtH3pE0XUK3FjXm9aOh2WT8a3eyKKAxslgJq96soGwYKZqox7ITClqvCmXoMRodEaB4tQzKdEzey/R14mn8/0+MgSRxgZfmKLbd7q80NdTSQr+wVrzx1dOJit9K+nMlle4jIXhFbC1cS2EDmLjgUeWxXNpO8IbcIu5Kqj2bhzFMXPH3jg+0aIwwyZQjkWOSgK2C+BEiJFU9j7ynQUlJzcAwrgaeMXlCvud0ClpbkGi9g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iAC9yuid; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=t8/wlkIH;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iAC9yuid;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fVSZR0Q9xz2yFY
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2026 20:02:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fVSn00QThz2yFY
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2026 20:11:47 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 933B9418A1;
-	Tue, 10 Mar 2026 09:02:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3E29AC2BC87;
-	Tue, 10 Mar 2026 09:02:36 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 41C976011F
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2026 09:11:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E3D3FC2BCB3
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2026 09:11:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773133357;
-	bh=X04MSuYe+0MX6O5qj8SOGjt38XEk63ORDpQb1AL4ryc=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=t8/wlkIH7GY+DUoXnJhbYmXkY0fQXl94txQX1hIVj4mXpHVi9atcgdqXGizPrIosp
-	 oErLFgAgU6agX85/8Gi4zDP3o6lL4Et2Qg2qCZxSWjVudIWe0sCGwDa7y2vDRiCwcq
-	 DdAfNWJrT7gnc/siExMFTxlAgyOdsD6Eyn3gXfapph06eephp3yuL5MDZ+Y7DjM5Tt
-	 CkE+Pc0UF1IKoJWKskOZ5RCojyaZLUHI/bYaxstrrHsq9qvmx2juuRzf2u/oabrjSu
-	 2crISrknGhgCNd3CTkXpCigo6fu7dhO/DeoUwKLZSHSxl1cQIUPEJj9ymun6+sn35F
-	 5tleAGH2gLGsw==
-From: Sasha Levin <sashal@kernel.org>
-To: patches@lists.linux.dev,
-	stable@vger.kernel.org
-Cc: Mark Brown <broonie@kernel.org>,
-	Sasha Levin <sashal@kernel.org>,
-	shengjiu.wang@gmail.com,
-	Xiubo.Lee@gmail.com,
-	lgirdwood@gmail.com,
-	perex@perex.cz,
-	tiwai@suse.com,
-	linux-sound@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.19-5.10] ASoC: fsl_easrc: Fix event generation in fsl_easrc_iec958_put_bits()
-Date: Tue, 10 Mar 2026 05:01:35 -0400
-Message-ID: <20260310090145.2709021-35-sashal@kernel.org>
-X-Mailer: git-send-email 2.51.0
-In-Reply-To: <20260310090145.2709021-1-sashal@kernel.org>
-References: <20260310090145.2709021-1-sashal@kernel.org>
+	s=k20201202; t=1773133904;
+	bh=k2F848Zif0ENv+dioxwCTNyt1oN71pv8VacY1VvtFtA=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=iAC9yuid2s68RAiwdOVhUAT93xNVNA2ATIxfFQW4dQE+FXIxaOjCapUEbvNoJpl3y
+	 h2pplicze6P7A4b+Z6qbUbtprHuZrE9SX0jf3Sb4kCb/xuO4g9UYyRBe8uvfafxgRT
+	 MlAX+ROJ8fI/1IOzq7SkCPxxTiIpFKn+NYkqTzRN0dUhcjO7WBb3lfQwjlgSF/mA+T
+	 2usZruX6YvLaJaQhmlbepRt3wWrMdiACaKI2164NU4H61OgYEdZxJ1pAz5ZSFsRuvC
+	 WcmI0hJYuRpJWSR7Y2rPjq/q7wgBF2MIdaG1bDSswPwS60nWibUKDp0Oxtc2EMhkSk
+	 Up1JqmHIxcM/g==
+Received: by mail-yx1-f51.google.com with SMTP id 956f58d0204a3-64ca4dfdd88so12343633d50.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2026 02:11:44 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCXa5yawyubD0yY2eGQ2ymEXxJtf1Hj309AvwwxQ+bbozvyoSoQHLEjiMNsBDkhHCG0Ttfi8MaCRrhLqu+A=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxKIdJCoprxrJYZ8msV/PL1XQ1aqI/XHra0NtzVFl0yS9jjSUXJ
+	Cov4zqJmHKuaiw+0NW42GDyrV5JZnU3zcBbMWkc2/HgDLEK00prL9erEDerlcGCbIEYD37TVliM
+	El0Tx3VFwaqwnNwarNldzz7Dg+jx8eMI=
+X-Received: by 2002:a05:690e:b8c:b0:64c:905:6f2c with SMTP id
+ 956f58d0204a3-64d1411d8b4mr13101525d50.20.1773133904182; Tue, 10 Mar 2026
+ 02:11:44 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,118 +66,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.19.6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+References: <20260304-gpio-of-kconfig-v1-0-d597916e79e7@oss.qualcomm.com> <20260304-gpio-of-kconfig-v1-7-d597916e79e7@oss.qualcomm.com>
+In-Reply-To: <20260304-gpio-of-kconfig-v1-7-d597916e79e7@oss.qualcomm.com>
+From: Linus Walleij <linusw@kernel.org>
+Date: Tue, 10 Mar 2026 10:11:32 +0100
+X-Gmail-Original-Message-ID: <CAD++jL=pOw2ZZqMXFK4cQ67g3yUGho6mjbW3JM8iQDQpiKL8TA@mail.gmail.com>
+X-Gm-Features: AaiRm53Xu9gGfY3MrM83r361-dKQ36aGj99vP6wgofH18qCwDYgWNRZvm6MhVmA
+Message-ID: <CAD++jL=pOw2ZZqMXFK4cQ67g3yUGho6mjbW3JM8iQDQpiKL8TA@mail.gmail.com>
+Subject: Re: [PATCH 07/14] pinctrl: Kconfig: drop unneeded dependencies on OF_GPIO
+To: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
+	Alexey Brodkin <abrodkin@synopsys.com>, Vineet Gupta <vgupta@kernel.org>, Scott Wood <oss@buserror.net>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Andrew Lunn <andrew@lunn.ch>, 
+	Heiner Kallweit <hkallweit1@gmail.com>, Russell King <linux@armlinux.org.uk>, 
+	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Liam Girdwood <lgirdwood@gmail.com>, 
+	Mark Brown <broonie@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, 
+	Neil Armstrong <neil.armstrong@linaro.org>, Kevin Hilman <khilman@baylibre.com>, 
+	Jerome Brunet <jbrunet@baylibre.com>, 
+	Martin Blumenstingl <martin.blumenstingl@googlemail.com>, Dvorkin Dmitry <dvorkin@tibbo.com>, 
+	Wells Lu <wellslutw@gmail.com>, Lee Jones <lee@kernel.org>, Pavel Machek <pavel@kernel.org>, 
+	Guenter Roeck <linux@roeck-us.net>, Wim Van Sebroeck <wim@linux-watchdog.org>, 
+	Mauro Carvalho Chehab <mchehab@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Sebastian Reichel <sre@kernel.org>, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, linux-snps-arc@lists.infradead.org, 
+	linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, 
+	linux-gpio@vger.kernel.org, linux-amlogic@lists.infradead.org, 
+	linux-leds@vger.kernel.org, linux-hwmon@vger.kernel.org, 
+	linux-watchdog@vger.kernel.org, linux-media@vger.kernel.org, 
+	linux-staging@lists.linux.dev, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-From: Mark Brown <broonie@kernel.org>
+On Wed, Mar 4, 2026 at 10:03=E2=80=AFAM Bartosz Golaszewski
+<bartosz.golaszewski@oss.qualcomm.com> wrote:
 
-[ Upstream commit 54a86cf48eaa6d1ab5130d756b718775e81e1748 ]
+> OF_GPIO is selected automatically on all OF systems. Any symbols it
+> controls also provide stubs so there's really no reason to select it
+> explicitly.
+>
+> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
 
-ALSA controls should return 1 if the value in the control changed but the
-control put operation fsl_easrc_iec958_put_bits() unconditionally returns
-0, causing ALSA to not generate any change events. This is detected by
-mixer-test with large numbers of messages in the form:
+Patch applied to the pinctrl tree!
 
-    No event generated for Context 3 IEC958 CS5
-    Context 3 IEC958 CS5.0 orig 5224 read 5225, is_volatile 0
-
-Add a suitable check.
-
-Signed-off-by: Mark Brown <broonie@kernel.org>
-Link: https://patch.msgid.link/20260205-asoc-fsl-easrc-fix-events-v1-1-39d4c766918b@kernel.org
-Signed-off-by: Mark Brown <broonie@kernel.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
-
-LLM Generated explanations, may be completely bogus:
-
-The driver has been present since v5.8 (2020), so it exists in all
-current stable trees.
-
-## Analysis
-
-**What the commit fixes:**
-The `fsl_easrc_iec958_put_bits()` function is an ALSA control put
-callback. Per the ALSA API contract, put callbacks must return 1 when
-the control value changes and 0 when it doesn't. This function
-unconditionally returned 0, which meant ALSA never generated change
-events for IEC958 controls on this hardware. The fix adds a simple
-comparison before the assignment and returns whether the value changed.
-
-**Bug category:** Incorrect return value / missing event generation — a
-real functional bug.
-
-**Scope and risk:**
-- 3 lines changed (adding `int ret`, comparing old vs new value,
-  returning `ret` instead of `0`)
-- Purely local to one function in one driver
-- The fix is obviously correct — standard ALSA pattern used across
-  hundreds of drivers
-- Zero risk of regression — the only behavioral change is that change
-  events are now properly generated
-
-**Author:** Mark Brown, the ASoC subsystem maintainer. He is both the
-author and committer, demonstrating high confidence in the fix.
-
-**Stable criteria:**
-- Obviously correct: Yes — trivial pattern
-- Fixes real bug: Yes — missing change events mean userspace
-  applications (mixers, audio daemons) don't get notified of control
-  changes
-- Small and contained: Yes — 3 lines in one function
-- No new features: Correct — just fixes existing behavior to match API
-  contract
-- Tested: Detected by mixer-test, fix validated by same
-
-**User impact:** Any system using the NXP/Freescale EASRC (Enhanced
-Asynchronous Sample Rate Converter) where userspace monitors IEC958
-control changes would silently miss updates. This affects audio
-applications relying on ALSA event notifications.
-
-## Verification
-
-- Read the current code at `sound/soc/fsl/fsl_easrc.c:46-62` — confirmed
-  the fix is applied and is the standard pattern (compare before assign,
-  return difference)
-- `git log master --reverse` confirmed driver was introduced in commit
-  955ac624058f9 (2020-04-16, v5.8 cycle), so it exists in all maintained
-  stable trees
-- The function is referenced at line 125 as `.put =
-  fsl_easrc_iec958_put_bits` in a macro, confirming it's used as an ALSA
-  control callback
-- Author is Mark Brown (broonie@kernel.org), the ASoC maintainer —
-  verified from commit metadata
-- The fix pattern (checking old != new before returning from put
-  callback) is a well-established ALSA convention — no novel logic
-
-**YES**
-
- sound/soc/fsl/fsl_easrc.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/sound/soc/fsl/fsl_easrc.c b/sound/soc/fsl/fsl_easrc.c
-index 733374121196e..6c56134c60cc8 100644
---- a/sound/soc/fsl/fsl_easrc.c
-+++ b/sound/soc/fsl/fsl_easrc.c
-@@ -52,10 +52,13 @@ static int fsl_easrc_iec958_put_bits(struct snd_kcontrol *kcontrol,
- 	struct soc_mreg_control *mc =
- 		(struct soc_mreg_control *)kcontrol->private_value;
- 	unsigned int regval = ucontrol->value.integer.value[0];
-+	int ret;
-+
-+	ret = (easrc_priv->bps_iec958[mc->regbase] != regval);
- 
- 	easrc_priv->bps_iec958[mc->regbase] = regval;
- 
--	return 0;
-+	return ret;
- }
- 
- static int fsl_easrc_iec958_get_bits(struct snd_kcontrol *kcontrol,
--- 
-2.51.0
-
+Yours,
+Linus Walleij
 
