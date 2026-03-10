@@ -1,72 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-17963-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17964-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2094DFD2D88
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Mar 2026 13:37:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32A5FFD2D81
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Mar 2026 13:46:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fVZh54Kgbz3bjb;
-	Wed, 11 Mar 2026 00:37:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773149877;
-	cv=none; b=m6YPzqEpUMPVg9jqQOMeePY0yyclt4Oi6h/xq4rF5YZaO5pjnukTwKnNXQT/Cq+hqCSC+A88r7T7hY1AFguRYu0D9YxJInS9c8zVLu8ri6cFjj4BtG0hHdE13fg6wHisXJdrPHeJSegV3NrA1TuFwl0tAeK7xgi3VX+oveg36iH2Yv43MtynV49k8FzxpeIaNNG2CB5ikj5QLLXOJlT0ISKHADnaVZ7u5N2N6Y4hRjv6/j2rK5js7JNwGctz5715cefGV1F0GqyRca87Zc5GECzHlhnBb9bKb3GcttI1kq/qN9t16Y4YBaIU5QbiMTqxu+CBppJOJbYE6pkg/ZsYaw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fVZtR3S88z3bjb;
+	Wed, 11 Mar 2026 00:46:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773150415;
+	cv=none; b=VMGe5VnBBk56uUzYa8QJkRVAw5L7gmhX4QoWXfVaV7Sz/OmmgZIIZEUPHOPXyV7qZ3pm+2UR0J5fz/1hPZB+tPRndkWFdh9UqDrrAhCDn3wCVp0Al8+RLkd+cTFL2OzRGJ/Nn6Vr9n8vsfugTHtce318LKOd7REJvFhy7INc32o2kgCyIk/V1lUhGp/lZkRe4Dqc1aW50dQCeEc3mTLityi5XhHaZTU+lRn9pCtmIzPBGX9TpD6c55uHrM8agUlfBkNuaYPaQEOhzbj38FSgmz7ALXlTr8IbGiDqK/P1a9NbIkXwQhrEHb7B0bg4I2Q6ciFzdnnsCGMhvYaRA/wUPw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773149877; c=relaxed/relaxed;
-	bh=j2y11TztidFb9gX358CPpWDLxwG42gGstwtjC9lyfVQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=jypjneBw3Byn3YbQ0cHqIIYuUY0nLPaLOKe11iMCrZXz0sXyciBg05lRbBhcnQPPNgLLEdQre8r3iuf+5qvvLn6mfEA5VjiN3jkIqF5k80XwO6Df2xaixB4rtG8f1nkdvgnWt8OHKyH4pLjMyoMETJo6vdZ9k6RsOdXi6lMErcCBhHNNtMylNDqR7REHQHGXOOfXis0Tk7lGYF4aRiED0cFQvxC7erh+Xph8FL+nqaagcGdkRDutJxvJFaKjVodh3muEnhfw8dIyrfX1gKkAWnvp/9Ecxs7OSo/TDBbvUCsZe5x1RlwHmWaPHjlj7AaKHVBToF8eam9bzU2L+7GwaQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Wfg6Pb3J; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1773150415; c=relaxed/relaxed;
+	bh=+r1/kWU/ZhoiFi0HIKuxYURswD1WxrctwpOtF8ptAWc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ColQNuxFpErpgdN1CDRHMsEhiXe/dpjOP6kNvOY9hVKK/Huu5GkG/uQJDmqN0GC79GThqNYfPDeY3UkmzeYchW/yDgsoTfFpRMVsIxqACDKIithKLmTGLo0u7zSesQi1NSsV4cKiQJYVMLDl/tGPmt5c2Q03GOtv1Te+owZ+t4DZJmfuE9as85jupfuDajvp47a1O7A2hr8hi8KmsDKye5XGJNOzuw46LaTa1EkvyUDAsmEY4M4036hycmVjmav3ZKqVFfQK00/iy9iSMUOdj9h59y2oaJghbLul8zjcLQGoM7iLqnh9KESDvUrd2ewOseyPONTvxCcbf6smb26y+w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lQFEzD3d; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Wfg6Pb3J;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lQFEzD3d;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fVZh45ZtBz30Lw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 00:37:56 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id D4FDA600B0;
-	Tue, 10 Mar 2026 13:37:54 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2E847C19423;
-	Tue, 10 Mar 2026 13:37:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773149874;
-	bh=7n4LiLaeOu7Y781LaaH2FD19YKv/KTfp5uLzE86UGvU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Wfg6Pb3Jv9nz87f4TL4NjXyJ5y2dr7izkZZumUwjox9UckLpwcrxyLugMkVY+Fey7
-	 SfYvsQTEuFF2OfasvZRT2nw7myg1Oo+0tpDr4v1qpwoxvtd+ZkHD0PTQEuXq7PqGPD
-	 VANFVMhmUBZpDbWl3YRwC++GuB6Cjau8tEg2hWOXuW/zpDPqnyJzDayYz9eU9Nx3CH
-	 9FK6bCQ6MNNb+lTG6RIyqf2b0qh7VM1vKivIZkCqrqJ5w25XEKS5hiJJf1wJLL76Pw
-	 M0Cfc/d/TzPtaGqx4SK9wWTSCS8weZqpmNtfBtEfEAtfujyVf0xgDxIHy3dGER0wnr
-	 +juElQl3Sas9A==
-Date: Tue, 10 Mar 2026 19:07:39 +0530
-From: Manivannan Sadhasivam <mani@kernel.org>
-To: Niklas Cassel <cassel@kernel.org>
-Cc: manivannan.sadhasivam@oss.qualcomm.com, 
-	Bjorn Helgaas <bhelgaas@google.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
-	Oliver O'Halloran <oohall@gmail.com>, Will Deacon <will@kernel.org>, 
-	Lorenzo Pieralisi <lpieralisi@kernel.org>, Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
-	Rob Herring <robh@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
-	Philipp Zabel <p.zabel@pengutronix.de>, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
-	linux-arm-msm@vger.kernel.org, linux-rockchip@lists.infradead.org, 
-	Wilfred Mallawa <wilfred.mallawa@wdc.com>, Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>, 
-	Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH v6 0/4] PCI: Add support for resetting the Root Ports in
- a platform specific way
-Message-ID: <mevtdhght66tds7yhmr5a6xg5a75fb667b6lyvguoxqexmc74p@mroqidhzptxk>
-References: <20250715-pci-port-reset-v6-0-6f9cce94e7bb@oss.qualcomm.com>
- <aHoh1XfhR8EB_5yY@ryzen>
- <aHokdhpJUhSZ5FSp@ryzen>
- <tujurux64if24z7w7h6wjxhrnh4owkgiv33u2fftp7zr5ucv2m@2ijo5ok5jhfk>
- <aJ743hJw-T9y3waX@ryzen>
- <lakgphb7ym3cybwmpdqyipzi4tlkwbfijzhd4r6hvhho3pc7iu@6ludgw6wqkjh>
- <aLmcO8ukT-CDZMuT@ryzen>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fVZtQ0qx9z30Lw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 00:46:53 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62A9B1KU1597685;
+	Tue, 10 Mar 2026 13:46:48 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=+r1/kW
+	U/ZhoiFi0HIKuxYURswD1WxrctwpOtF8ptAWc=; b=lQFEzD3dieKGkGmdvSLLPt
+	QJo7Fe4lLUnv5o1eLiY5o/+u3s9z0iMsgssnDmBOgNwLDZo1mVy8jVpu7VMwJcYp
+	okhAAlSaH5dr+VSUWGbRMteRFvR8gaAw0MRO6POBxGZUaxSEI2WqEBun253bvYWO
+	0E0BvyXta2nYwL51k2vtCy2GMn84X/f2b1aOZqlfrZ+EdXxf977/PltVk7hy/AXI
+	hxz2csi4VIxu7ANcdo+sQ9f6z2Bo5Y7jXUF39uzyGLNNzMgjt/hVHkKkisHXByLN
+	hVkJqYzVGZSpdPyzfMs5rn5U8LsPyVzBjDbIQoEoLdKM+xQxW23nF3C6nngOh49A
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4crcunaseq-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 10 Mar 2026 13:46:47 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62AAt39g029306;
+	Tue, 10 Mar 2026 13:46:47 GMT
+Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4csp6unxd1-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 10 Mar 2026 13:46:47 +0000
+Received: from smtpav04.wdc07v.mail.ibm.com (smtpav04.wdc07v.mail.ibm.com [10.39.53.231])
+	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62ADkj2W26477080
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 10 Mar 2026 13:46:46 GMT
+Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A94DD58045;
+	Tue, 10 Mar 2026 13:46:45 +0000 (GMT)
+Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id EA93958050;
+	Tue, 10 Mar 2026 13:46:42 +0000 (GMT)
+Received: from [9.61.246.162] (unknown [9.61.246.162])
+	by smtpav04.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 10 Mar 2026 13:46:42 +0000 (GMT)
+Message-ID: <f42fc693-b5be-4b3f-9bb2-7aab5b8bc599@linux.ibm.com>
+Date: Tue, 10 Mar 2026 19:16:41 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,226 +81,114 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 00/10] Misc powerpc selftests kernel fixes and cleanups
+Content-Language: en-GB
+To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Christophe Leroy <chleroy@kernel.org>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Sayali Patil <sayalip@linux.ibm.com>,
+        Aboorva Devarajan <aboorvad@linux.ibm.com>,
+        Donet Tom <donettom@linux.ibm.com>
+References: <cover.1773078178.git.ritesh.list@gmail.com>
+From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+In-Reply-To: <cover.1773078178.git.ritesh.list@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <aLmcO8ukT-CDZMuT@ryzen>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: KyIzHA5ToXL8i1f1QzSFVYBzTmtWQOI4
+X-Authority-Analysis: v=2.4 cv=Hp172kTS c=1 sm=1 tr=0 ts=69b020c8 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8
+ a=OD7_wTj3uD1QJsR5MugA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzEwMDExOCBTYWx0ZWRfX6p1rhjmUAOiJ
+ 2s65X+CYU08hiG6bS+Bbnl37Xh0qr58YYFxZa4VPazzceU4jC08+UVBnSv5gMAh7L4P5+xfc918
+ PfSODKrxuREQ7pyUpYDPJX7ZIL55aq1Y9Ah59wsoRWCJyhIDlAir7iyM+6uWLDOiISt8SfHsCCT
+ QDTasTBvSjuo86en9OxckCwpSWPU4SE5yg8Dl5Q9DKUNpgKo6yJU8kZG8BAlmHvQs4dPLvS5ELR
+ KdqhgW+Tj0bYcPpLS59h+fTSGKPwA6weC3HTSUiTBz8KCKoX0XCFta+CyWmRNFgghT7Tpn80v8P
+ RhX7tRHZKazwI71XCt7b02Zfo4jKqajpiWa/1q5kRK432EgUdbZteTNn55bWOyAPTJ/kU/FyWJc
+ 6X2VyfmvvB9giLCT/I8WRfvdesiuIfzsWU/tI6ZN+2NEMXR6vIJ2vQ8Hn35kwsjpPtNsi94B997
+ IuOiSCtxFMq0NlHTVTA==
+X-Proofpoint-ORIG-GUID: 0ueR_sQNWBE3hRoD0l-dHFAgfsaUhL7j
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-10_02,2026-03-09_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 adultscore=0 malwarescore=0 impostorscore=0 suspectscore=0
+ spamscore=0 phishscore=0 clxscore=1015 priorityscore=1501 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2603100118
 
-Hi Niklas,
 
-Sorry for replying very late. I lost access to my EP setup, and just got it
-back.
+On 09/03/26 11:44 pm, Ritesh Harjani (IBM) wrote:
+> v1->v2:
+>
+> - dropped debug_vm_pgtable patch which adds a testcase to simulate the
+>    failure scenario. Since it belongs to linux-mm, I will send that out
+>    separately.
+> - Modified Patch-2 in this series to also cover PMD device migration
+>    entry (in addition to PMD THP migration entry). Hence dropped the
+>    previous RB tag.
+> - Added a new Patch-3 to fix another selftests WARNING.
+> - Fixed commit subject of Patch-10.
+> - Changed subject pre-fix of few patches to be consistent with others
+>    (powerpc/64s)
+> - Added RB tags
+>
+> This patch series addresses selftests issues w.r.t warnings or
+> VM_BUG_ONs seen mainly on book3s64 powerpc kernel. This also carries
+> cleanups and refactoring changes which I identified while reviewing
+> other's patches and/or during code walkthrough.
+>
+> Suggestions and feedback are welcome!
+>
+> Ritesh Harjani (IBM) (10):
+>    powerpc/pgtable-frag: Fix bad page state in pte_frag_destroy
+>    powerpc/64s: Fix unmap race with PMD migration entries
+>    powerpc/64s: Fix _HPAGE_CHG_MASK to include _PAGE_SPECIAL bit
+>    powerpc/64s/tlbflush-radix: Remove unused radix__flush_tlb_pwc()
+>    powerpc/64s: Move serialize_against_pte_lookup() to hash_pgtable.c
+>    powerpc/64s: Kill the unused argument of exit_lazy_flush_tlb
+>    powerpc/64s: Rename tlbie_va_lpid to tlbie_va_pid_lpid
+>    powerpc/64s: Rename tlbie_lpid_va to tlbie_va_lpid
+>    powerpc/64s: Make use of H_RPTI_TYPE_ALL macro
+>    powerpc: Print MMU_FTRS_POSSIBLE & MMU_FTRS_ALWAYS at startup
+>
+>   arch/powerpc/include/asm/book3s/64/pgtable.h  | 20 +++++-
+>   .../include/asm/book3s/64/tlbflush-radix.h    |  1 -
+>   arch/powerpc/kernel/setup-common.c            |  4 ++
+>   arch/powerpc/mm/book3s64/hash_pgtable.c       | 21 +++++++
+>   arch/powerpc/mm/book3s64/internal.h           |  2 -
+>   arch/powerpc/mm/book3s64/pgtable.c            | 40 +++---------
+>   arch/powerpc/mm/book3s64/radix_tlb.c          | 61 ++++++++-----------
+>   arch/powerpc/mm/pgtable-frag.c                |  1 +
+>   8 files changed, 79 insertions(+), 71 deletions(-)
+>
+Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
 
-On Thu, Sep 04, 2025 at 04:03:39PM +0200, Niklas Cassel wrote:
-> Hello Mani,
-> 
-> On Fri, Aug 29, 2025 at 09:44:08PM +0530, Manivannan Sadhasivam wrote:
-> > On Fri, Aug 15, 2025 at 11:07:42AM GMT, Niklas Cassel wrote:
-> 
-> (snip)
-> 
-> > > > > > ## On EP side:
-> > > > > > # echo 0 > /sys/kernel/config/pci_ep/controllers/a40000000.pcie-ep/start && \
-> > > > > >   sleep 0.1 && echo 1 > /sys/kernel/config/pci_ep/controllers/a40000000.pcie-ep/start
-> > > > > > 
-> > > > > > Basically all tests timeout
-> > > > > > # FAILED: 1 / 16 tests passed.
-> > > > > > 
-> > > > > > Which is the same as before this patch series.
-> > > > 
-> > > > This is kind of expected since the pci_endpoint_test driver doesn't have the AER
-> > > > err_handlers defined.
-> > > 
-> > > I see.
-> > > Would be nice if we could add them then, so that we can verify that this
-> > > series is working as intended.
-> 
-> (snip)
-> 
-> > Ok, thanks for the logs. I guess what is happening here is that we are not
-> > saving/restoring the config space of the devices under the Root Port if linkdown
-> > is happens. TBH, we cannot do that from the PCI core since once linkdown
-> > happens, we cannot access any devices underneath the Root Port. But if
-> > err_handlers are available for drivers for all devices, they could do something
-> > smart like below:
-> > 
-> > diff --git a/drivers/misc/pci_endpoint_test.c b/drivers/misc/pci_endpoint_test.c
-> > index c4e5e2c977be..9aabf1fe902e 100644
-> > --- a/drivers/misc/pci_endpoint_test.c
-> > +++ b/drivers/misc/pci_endpoint_test.c
-> > @@ -989,6 +989,8 @@ static int pci_endpoint_test_probe(struct pci_dev *pdev,
-> >  
-> >         pci_set_drvdata(pdev, test);
-> >  
-> > +       pci_save_state(pdev);
-> > +
-> >         id = ida_alloc(&pci_endpoint_test_ida, GFP_KERNEL);
-> >         if (id < 0) {
-> >                 ret = id;
-> > @@ -1140,12 +1142,31 @@ static const struct pci_device_id pci_endpoint_test_tbl[] = {
-> >  };
-> >  MODULE_DEVICE_TABLE(pci, pci_endpoint_test_tbl);
-> >  
-> > +static pci_ers_result_t pci_endpoint_test_error_detected(struct pci_dev *pdev,
-> > +                                              pci_channel_state_t state)
-> > +{
-> > +       return PCI_ERS_RESULT_NEED_RESET;
-> > +}
-> > +
-> > +static pci_ers_result_t pci_endpoint_test_slot_reset(struct pci_dev *pdev)
-> > +{
-> > +       pci_restore_state(pdev);
-> > +
-> > +       return PCI_ERS_RESULT_RECOVERED;
-> > +}
-> > +
-> > +static const struct pci_error_handlers pci_endpoint_test_err_handler = {
-> > +       .error_detected = pci_endpoint_test_error_detected,
-> > +       .slot_reset = pci_endpoint_test_slot_reset,
-> > +};
-> > +
-> >  static struct pci_driver pci_endpoint_test_driver = {
-> >         .name           = DRV_MODULE_NAME,
-> >         .id_table       = pci_endpoint_test_tbl,
-> >         .probe          = pci_endpoint_test_probe,
-> >         .remove         = pci_endpoint_test_remove,
-> >         .sriov_configure = pci_sriov_configure_simple,
-> > +       .err_handler    = &pci_endpoint_test_err_handler,
-> >  };
-> >  module_pci_driver(pci_endpoint_test_driver);
-> > 
-> > This essentially saves the good known config space during probe and restores it
-> > during the slot_reset callback. Ofc, the state would've been overwritten if
-> > suspend/resume happens in-between, but the point I'm making is that unless all
-> > device drivers restore their known config space, devices cannot be resumed
-> > properly post linkdown recovery.
-> > 
-> > I can add a patch based on the above diff in next revision if that helps. Right
-> > now, I do not have access to my endpoint test setup. So can't test anything.
-> 
-> I tested your patch series + your suggested change above, and after a:
-> 
-> ## On EP side:
-> # echo 0 > /sys/kernel/config/pci_ep/controllers/a40000000.pcie-ep/start && \
->   sleep 0.1 && echo 1 > /sys/kernel/config/pci_ep/controllers/a40000000.pcie-ep/start
-> 
-> Instead of:
-> 
-> # FAILED: 1 / 16 tests passed.
-> 
-> I now get:
-> # FAILED: 7 / 16 tests passed.
-> 
-> Test cases 1-7 now passes (the test cases related to BARs),
-> all other test cases still fail:
-> 
-> # /pcitest 
-> TAP version 13
-> 1..16
-> # Starting 16 tests from 9 test cases.
-> #  RUN           pci_ep_bar.BAR0.BAR_TEST ...
-> #            OK  pci_ep_bar.BAR0.BAR_TEST
-> ok 1 pci_ep_bar.BAR0.BAR_TEST
-> #  RUN           pci_ep_bar.BAR1.BAR_TEST ...
-> #            OK  pci_ep_bar.BAR1.BAR_TEST
-> ok 2 pci_ep_bar.BAR1.BAR_TEST
-> #  RUN           pci_ep_bar.BAR2.BAR_TEST ...
-> #            OK  pci_ep_bar.BAR2.BAR_TEST
-> ok 3 pci_ep_bar.BAR2.BAR_TEST
-> #  RUN           pci_ep_bar.BAR3.BAR_TEST ...
-> #            OK  pci_ep_bar.BAR3.BAR_TEST
-> ok 4 pci_ep_bar.BAR3.BAR_TEST
-> #  RUN           pci_ep_bar.BAR4.BAR_TEST ...
-> #      SKIP      BAR is disabled
-> #            OK  pci_ep_bar.BAR4.BAR_TEST
-> ok 5 pci_ep_bar.BAR4.BAR_TEST # SKIP BAR is disabled
-> #  RUN           pci_ep_bar.BAR5.BAR_TEST ...
-> #            OK  pci_ep_bar.BAR5.BAR_TEST
-> ok 6 pci_ep_bar.BAR5.BAR_TEST
-> #  RUN           pci_ep_basic.CONSECUTIVE_BAR_TEST ...
-> #            OK  pci_ep_basic.CONSECUTIVE_BAR_TEST
-> ok 7 pci_ep_basic.CONSECUTIVE_BAR_TEST
-> #  RUN           pci_ep_basic.LEGACY_IRQ_TEST ...
-> # pci_endpoint_test.c:106:LEGACY_IRQ_TEST:Expected 0 (0) == ret (-110)
-> # pci_endpoint_test.c:106:LEGACY_IRQ_TEST:Test failed for Legacy IRQ
-> # LEGACY_IRQ_TEST: Test failed
-> #          FAIL  pci_ep_basic.LEGACY_IRQ_TEST
-> not ok 8 pci_ep_basic.LEGACY_IRQ_TEST
-> #  RUN           pci_ep_basic.MSI_TEST ...
-> # pci_endpoint_test.c:118:MSI_TEST:Expected 0 (0) == ret (-110)
-> # pci_endpoint_test.c:118:MSI_TEST:Test failed for MSI1
-> # pci_endpoint_test.c:118:MSI_TEST:Expected 0 (0) == ret (-110)
-> # pci_endpoint_test.c:118:MSI_TEST:Test failed for MSI2
-> # pci_endpoint_test.c:118:MSI_TEST:Expected 0 (0) == ret (-110)
-> # pci_endpoint_test.c:118:MSI_TEST:Test failed for MSI3
-> ...
-> 
-> 
-> I think I know the reason.. you save the state before the IRQs have been allocated.
-> 
-> Perhaps we need to save the state after enabling IRQs?
-> 
-> I tried this patch on top of your patch:
-> --- a/drivers/misc/pci_endpoint_test.c
-> +++ b/drivers/misc/pci_endpoint_test.c
-> @@ -851,6 +851,8 @@ static int pci_endpoint_test_set_irq(struct pci_endpoint_test *test,
->                 return ret;
->         }
->  
-> +       pci_save_state(pdev);
-> +
->         return 0;
->  }
-> 
-> 
-> But still:
-> # FAILED: 7 / 16 tests passed.
-> 
-> So... apparently that did not help...
-> 
-> I tried with the following change as well (on top of my patch above):
-> 
-> +static pci_ers_result_t pci_endpoint_test_slot_reset(struct pci_dev *pdev)
-> +{
-> +       struct pci_endpoint_test *test = pci_get_drvdata(pdev);
-> +       int irq_type = test->irq_type;
-> +
-> +       pci_restore_state(pdev);
-> +
-> +       if (irq_type != PCITEST_IRQ_TYPE_UNDEFINED) {
-> +               pci_endpoint_test_clear_irq(test);
-> +               pci_endpoint_test_set_irq(test, irq_type);
-> +       }
-> +
-> +       return PCI_ERS_RESULT_RECOVERED;
-> +}
-> 
-> But still only:
-> # FAILED: 7 / 16 tests passed.
-> 
-> Do you have any suggestions?
-> 
+I applied the patch series on top of mainline and verified that the kernel
+builds and boots successfully.
 
-I guess what is going wrong here is that you might be rebooting the device
-*after* restoring the config space in 'slot_reset()' callback. So all the
-previous config space contents would be lost and the device would've started
-afresh.
+I also ran the following test suites on both RADIX (POWER11) and HASH 
+(POWER9)
+MMU configurations:
 
-I don't think we can restore the config space after rebooting the EP device,
-because host has no idea about it. It can only restore the content after
-recovering the device through platform specific means.
+   - tools/testing/selftests/mm
+   - tools/testing/selftests/memory-hotplug
+   - tools/testing/selftests/powerpc/mm
+   - tools/testing/selftests/powerpc/cache_shape
+   - tools/testing/selftests/powerpc/copyloops
 
-So I think you should just remove the PCI device from sysfs before rebooting and
-rescan the bus. If your Root Port supports Data Link Layer interrupts such as
-Link up/down, then you might get Hotplug MSIs which will take care of removing
-the device and rescanning the bus again once it has rebooted.
+In addition, I executed basic sanity and stress tests, including:
+stutter, eatmemory, hugepage_sanity, fork_mem, memory_api mprotect,
+vatest, and several transparent-hugepage sanity checks.
 
-The core idea behind this series is that to make the PCI bus useable on the host
-after LDn and without rebooting. So if the device can recover with the help of
-recovery steps carried out by the host, it should be in a useable state again.
+All tests passed without regressions.
 
-- Mani
-
--- 
-மணிவண்ணன் சதாசிவம்
+Regards,
+Venkat
 
