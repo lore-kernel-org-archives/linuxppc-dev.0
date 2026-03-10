@@ -1,65 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-17972-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17973-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF724EB1060
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Mar 2026 15:08:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18E65EB1070
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Mar 2026 15:28:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fVchN0VBHz3bjb;
-	Wed, 11 Mar 2026 02:08:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773155300;
-	cv=none; b=lvFI0j8foaDbSL1hy3MImK6D7a/8LZtP81gpATMXp5u1TorDP0EEfgPBBwx+eYNVe/zjIgwr1jHCaePw9kPq4hBwJJnLjJYth9ZmpjIvvsdWGZufLkMwMDcc6j06MwGHCn22BqdIUKM9P8J5yPDu0P5gI9PiY0CR7wQwhsPcBuVZ+RojIwI3ap4V8jcR4c3A1YVdNtsUDYTerp4JZbiXlLUL7GqDSIeYTffysiH3t4aVGRAezwNRpWJE70sVmhoCdwED6X5nOBCQsb89zt/gYIk5UohdcXPxkQaX1sgdTCEYdTDg8Q5pPtXQsjIOOFkH07W8dOKSdZqy6MA/jLhGPQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fVd841mFXz3bjb;
+	Wed, 11 Mar 2026 02:28:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773156532;
+	cv=none; b=K8g7GNyf3HG5+gpX58JCaxU84qLWAAt+703nXDSc2DW1QJjDVu34a+KP5tgBvlWdSO6+LRNUC5iSrTgn92m+lUKEnRX1O1BthiBT9nMvFwaZ8vowr6JmFcfzR3ch92lgnsQjkmD0KPXiyvQ+/Gmz8Dgy6nfw3k1WB1YSPzjjfnEGTiNphjw2ihou5C/BPiI0nbKQRaFYnubvhZbjAnvMXkFZb8aY3HL6jvkn6IXVS91hbNsK3zfK1ri2JZp2B1ainsTMtnRavRJJYji6cNDfvi209p75UK4v0SHqnA8ndaLAO+viVg9vtkKYyhAA7R6xLYLliR2BOm1KMeafXfkbdA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773155300; c=relaxed/relaxed;
-	bh=XDBIGY8/Xt4fpY7Mp1CJGca+BJyvr3hFvThe7Mb4Kg0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=SgzsXF1dV9Wpe1f1TtiMz/JNBZJADscQg9GnQ7MDh/ytjEBOVXjtx+OOTSx9GnZPqh7Z1koYr8sd1aEuUIxgtz36aCS5wjOdx3gAkte9FzdAzG2HyhdFGSVMd3zxIGx/82SX/2wZrkmKTt2HbDntxp3/FEPgeUDsXnhDT9/S29zzCdNKm/9qvxA39fhSmJ0tKR9jPgaJFpDGmJ9//+GgYO1Pk1B50mdnBuUQ6/jYTcXsABytTbBHygg4P1R1WoDxu6CUTa4+/o0CAVs1EmbtGrnMUw8rmc+eUI543LKx6LNL7hskb6mlvNfZP0fHsaF6U91AT4g8zYHkOCA+6GvocA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=o5FS6g8L; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1773156532; c=relaxed/relaxed;
+	bh=VoS5VdqWpdJCS2AVm6kQCi4KjrYiIfwmUfteJw1vaOU=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Y2yFp9xYxrzO2rKCe/HFm1al6I1GIToXSpDW1qNS6oxwZuVl3tTvboJZTiI6tuLBsAC6zD5KbbDXiEM+9LBJzMFg7UYakupr6AUPrzofI7oHB4gI95nn+vGpR8YY0xULa37HBOdU/VaGKSytEl99yQswa1yFRswvk7pJMJ3sNJCcY01/I9WaZmBkHIa3zeNAAc4XGp9yyhBXpQMcACvaZxqm2QNN5bGMdqKTvlfAWhQlZ/EVzf8elsdeRviz5IEPWefa1euZ9BEOQTXtNQa6hUMP8jBYgnnlNGQHKUnewFEAHeAm/FhWYpwCE0RZa8XZexLYUeLKmV8rHe7TaL3XDg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VmHS65R3; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=o5FS6g8L;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VmHS65R3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fVchM1zY0z30Lw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 02:08:19 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 099A4436FD;
-	Tue, 10 Mar 2026 15:08:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C413FC19423;
-	Tue, 10 Mar 2026 15:08:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773155296;
-	bh=qqYMWrM29fKZ0bq5/e1TqlgdXppZ9irTHMV+0rGa9XY=;
-	h=From:To:Cc:Subject:Date:From;
-	b=o5FS6g8LyNefMnJSHguOW5tuLdFfRIHKBXcEjdN+EA0QLHFNwalNQCBE79sgbBBmR
-	 qfKMp2ApyllMLf/owAh4L0Oh1HpdcTGyCaYY7UxCUJe4zYek4LSRCRNResNE2POgQQ
-	 PyakZH4flOttFCzVH8kkNJuBzDu98G51Y+ksD82jF1BgtAoMouN/S6lZyxafxQQtDu
-	 iLAva3urM8ppBZOmq/7W8Fcv8GCzd4anslAHHuvbJCyRX9gxrD7aalkKqrjkVsbnT+
-	 Ze51iPAKyYoga9AViSgK74ZUNyUsI/Uht49nFD/dC0Gd7ul3Tu75HJ2CI5+cExgvzZ
-	 bPJz0AR1GxRAQ==
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Paul Moore <paul@paul-moore.com>,
-	Eric Paris <eparis@redhat.com>,
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	audit@vger.kernel.org,
-	Thomas Weissschuh <thomas.weissschuh@linutronix.de>,
-	=?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-Subject: [PATCH v3] powerpc/audit: Convert powerpc to AUDIT_ARCH_COMPAT_GENERIC
-Date: Tue, 10 Mar 2026 16:08:07 +0100
-Message-ID: <261b1be5b8dc526b83d73e8281e682a73536ea28.1773155031.git.chleroy@kernel.org>
-X-Mailer: git-send-email 2.49.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fVd830z5cz30Lw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 02:28:50 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62A75pKG1561657;
+	Tue, 10 Mar 2026 15:28:44 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=VoS5VdqWpdJCS2AVm6kQCi4KjrYiIfwmUfteJw1va
+	OU=; b=VmHS65R3R7lMQeCiZ+mU6DzhpFMxtYyPrrDLU7nVxCtBWJyAidEITrP+9
+	pp2IdVsCOevttKTsqAXgGR0JYq5PUCIfi/ZOuMVNnCWkBKmOE3cURPsVm9UqYi9N
+	RQGyxddeaJtZzCfHLL9FKChhczLOcAjmcTEbq7bCd3PCtQfoI5isRjkACk8/eRum
+	Oi6HRVDQi52YCpelOOJPMRsaaxJLedueMFalH82I+RLf72L+9k89YuRfNWsmDn37
+	Gk6pRzwRevDm1xoHHi3MQDcw0WpvEt5tzQNjHuT5D2CFxFxhAoAG9yMqwID8trxW
+	A0cIZcxrNnrQ/EtDP8AhE0Xq+nC3w==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4crcvmbka0-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 10 Mar 2026 15:28:44 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62ABV4EH023013;
+	Tue, 10 Mar 2026 15:28:43 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ct8ng2m9n-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 10 Mar 2026 15:28:43 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62AFSdYS32637270
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 10 Mar 2026 15:28:39 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3EA882004E;
+	Tue, 10 Mar 2026 15:28:39 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4BC032004B;
+	Tue, 10 Mar 2026 15:28:37 +0000 (GMT)
+Received: from li-7bb28a4c-2dab-11b2-a85c-887b5c60d769.ibm.com.com (unknown [9.39.21.172])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 10 Mar 2026 15:28:37 +0000 (GMT)
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com
+Cc: sshegde@linux.ibm.com, chleroy@kernel.org, nysal@linux.ibm.com,
+        mkchauras@linux.ibm.com, rafael@kernel.org, daniel.lezcano@kernel.org,
+        christian.loehle@arm.com
+Subject: [PATCH] cpuidle: powerpc: avoid double clear when breaking snooze
+Date: Tue, 10 Mar 2026 20:58:11 +0530
+Message-ID: <20260310152811.1131119-1-sshegde@linux.ibm.com>
+X-Mailer: git-send-email 2.51.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -73,248 +86,80 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=6632; i=chleroy@kernel.org; h=from:subject:message-id; bh=U0nKvdJf3YL3PNU5hi1XIC6LU4/nhFywRBRqUPF+Rik=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWRuML4xq0m8YsZ0Y0mZ1wt4/p6RVUsTV9SZ8d/1UHRPo VVoVIFZRykLgxgXg6yYIsvx/9y7ZnR9Sc2fuksfZg4rE8gQBi5OAZhI8Q5GhifdSz0Xal+Mfxhz ZtVb2yzXdK+1P7Y/q7aZecsquW/GrZUM/4xTNNVb7qT98+P+4G7lUDUny3PmEacEcb4bwU0yZ1y W8wMA
-X-Developer-Key: i=chleroy@kernel.org; a=openpgp; fpr=10FFE6F8B390DE17ACC2632368A92FEB01B8DD78
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: xxrWStqe6qlRhXSyzHLhMuvNKGsiNv5p
+X-Proofpoint-ORIG-GUID: xxrWStqe6qlRhXSyzHLhMuvNKGsiNv5p
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzEwMDEzMSBTYWx0ZWRfXx3JMAEJQJC6s
+ skgMFuHF62v8cujvCbeio3o6VptK5tZXRJ3emFe4PtFOYdtjh6KEtgE9av5JW1pMUvsj0WNAgZ6
+ C1GJwDMADr+fVd0MzdW01PZve1MKy2Z0uZPB8DFctOtJPSduSeAqhWUPmb+Mvd/NlF3/QqvCAKu
+ 6jk7813h+B6//SZCGzFhPweNcR5aaK9/G9CBOztFt8djhrpQZaskQKF2jPFxY9f1/lfM6x7+R/o
+ sruflTzolJeRoJXn1LH+dYtLX/XvH7gkUgz89BKfg5anF2Sodkqg4FrxslVshG7ipUJg11lIvsf
+ 6UvoJKFRy4af0teOOafV/b6LvJGmwZX325E3gzmFucvUZ0AkfkEJa2CesmyLL5198Da7IzZT2JW
+ 7isnOKDzKVHc2aL0+ixURmqVqaTeXHkM89wmmz1JXA9xmUIbdl8ME/TfBAXCuCMXIEN2FCW6fpL
+ rg9t9CqjN6Po1yq2qvA==
+X-Authority-Analysis: v=2.4 cv=B5q0EetM c=1 sm=1 tr=0 ts=69b038ac cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8 a=cpfb22mzQ2lXxqSQ9ucA:9
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-10_03,2026-03-09_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 phishscore=0 adultscore=0 lowpriorityscore=0 bulkscore=0
+ priorityscore=1501 spamscore=0 clxscore=1011 impostorscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2603100131
 
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
+snooze_loop is done often in any system which has fair bit of
+idle time. So it qualifies for even micro-optimizations. 
 
-Commit e65e1fc2d24b ("[PATCH] syscall class hookup for all normal
-targets") added generic support for AUDIT but that didn't include
-support for bi-arch like powerpc.
+When breaking the snooze due to timeout, TIF_POLLING_NRFLAG is cleared
+twice. Clearing the bit invokes atomics. Avoid double clear and thereby
+avoid one atomic write.
 
-Commit 4b58841149dc ("audit: Add generic compat syscall support")
-added generic support for bi-arch.
+dev->poll_time_limit indicates whether the loop was broken due to
+timeout. Use that instead of defining a new variable.
 
-Convert powerpc to that bi-arch generic audit support.
-
-With this change generated text is similar.
-
-Thomas has confirmed that the previously failing filter_exclude/test
-is now successful both without and with this patch, see [1]
-
-[1] https://lore.kernel.org/all/20260306115350-ef265661-6d6b-4043-9bd0-8e6b437d0d67@linutronix.de/
-
-Link: https://github.com/linuxppc/issues/issues/412
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Reviewed-by: Cédric Le Goater <clg@kaod.org>
+Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
 ---
-Venkat, a test result with https://github.com/linux-audit/audit-testsuite would be appreciated.
+ drivers/cpuidle/cpuidle-powernv.c | 5 ++++-
+ drivers/cpuidle/cpuidle-pseries.c | 5 ++++-
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
-v3: Rebased on v7.0-rc1
-
-v2: https://lore.kernel.org/all/a4b3951d1191d4183d92a07a6097566bde60d00a.1629812058.git.christophe.leroy@csgroup.eu/
----
- arch/powerpc/Kconfig                |  5 +-
- arch/powerpc/include/asm/unistd32.h |  7 +++
- arch/powerpc/kernel/Makefile        |  3 -
- arch/powerpc/kernel/audit.c         | 87 -----------------------------
- arch/powerpc/kernel/compat_audit.c  | 49 ----------------
- 5 files changed, 8 insertions(+), 143 deletions(-)
- create mode 100644 arch/powerpc/include/asm/unistd32.h
- delete mode 100644 arch/powerpc/kernel/audit.c
- delete mode 100644 arch/powerpc/kernel/compat_audit.c
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 10240cb80904..4bb8cfa37d79 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -188,6 +188,7 @@ config PPC
- 	select ARCH_WANT_OPTIMIZE_DAX_VMEMMAP	if PPC_RADIX_MMU
- 	select ARCH_WANTS_MODULES_DATA_IN_VMALLOC	if PPC_BOOK3S_32 || PPC_8xx
- 	select ARCH_WEAK_RELEASE_ACQUIRE
-+	select AUDIT_ARCH_COMPAT_GENERIC
- 	select BINFMT_ELF
- 	select BUILDTIME_TABLE_SORT
- 	select CLONE_BACKWARDS
-@@ -370,10 +371,6 @@ config GENERIC_TBSYNC
- 	bool
- 	default y if PPC32 && SMP
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index 9ebedd972df0..b89e7111e7b8 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -95,7 +95,10 @@ static int snooze_loop(struct cpuidle_device *dev,
  
--config AUDIT_ARCH
--	bool
--	default y
--
- config GENERIC_BUG
- 	bool
- 	default y
-diff --git a/arch/powerpc/include/asm/unistd32.h b/arch/powerpc/include/asm/unistd32.h
-new file mode 100644
-index 000000000000..07689897d206
---- /dev/null
-+++ b/arch/powerpc/include/asm/unistd32.h
-@@ -0,0 +1,7 @@
-+/* SPDX-License-Identifier: GPL-2.0-or-later */
-+#ifndef _ASM_POWERPC_UNISTD32_H_
-+#define _ASM_POWERPC_UNISTD32_H_
+ 	HMT_medium();
+ 	ppc64_runlatch_on();
+-	clear_thread_flag(TIF_POLLING_NRFLAG);
 +
-+#include <asm/unistd_32.h>
++	/* Avoid double clear when breaking */
++	if (!dev->poll_time_limit)
++		clear_thread_flag(TIF_POLLING_NRFLAG);
+ 
+ 	local_irq_disable();
+ 
+diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
+index f68c65f1d023..864dd5d6e627 100644
+--- a/drivers/cpuidle/cpuidle-pseries.c
++++ b/drivers/cpuidle/cpuidle-pseries.c
+@@ -64,7 +64,10 @@ int snooze_loop(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ 	}
+ 
+ 	HMT_medium();
+-	clear_thread_flag(TIF_POLLING_NRFLAG);
 +
-+#endif /* _ASM_POWERPC_UNISTD32_H_ */
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 2f0a2e69c607..7bf6b16b2d93 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -149,9 +149,6 @@ obj-$(CONFIG_PCI)		+= pci_$(BITS).o $(pci64-y) \
- 				   pci-common.o pci_of_scan.o
- obj-$(CONFIG_PCI_MSI)		+= msi.o
++       /* Avoid double clear when breaking */
++	if (!dev->poll_time_limit)
++		clear_thread_flag(TIF_POLLING_NRFLAG);
  
--obj-$(CONFIG_AUDIT)		+= audit.o
--obj64-$(CONFIG_AUDIT)		+= compat_audit.o
--
- obj-y				+= trace/
+ 	raw_local_irq_disable();
  
- ifneq ($(CONFIG_PPC_INDIRECT_PIO),y)
-diff --git a/arch/powerpc/kernel/audit.c b/arch/powerpc/kernel/audit.c
-deleted file mode 100644
-index 92298d6a3a37..000000000000
---- a/arch/powerpc/kernel/audit.c
-+++ /dev/null
-@@ -1,87 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0
--#include <linux/init.h>
--#include <linux/types.h>
--#include <linux/audit.h>
--#include <asm/unistd.h>
--
--#include "audit_32.h"
--
--static unsigned dir_class[] = {
--#include <asm-generic/audit_dir_write.h>
--~0U
--};
--
--static unsigned read_class[] = {
--#include <asm-generic/audit_read.h>
--~0U
--};
--
--static unsigned write_class[] = {
--#include <asm-generic/audit_write.h>
--~0U
--};
--
--static unsigned chattr_class[] = {
--#include <asm-generic/audit_change_attr.h>
--~0U
--};
--
--static unsigned signal_class[] = {
--#include <asm-generic/audit_signal.h>
--~0U
--};
--
--int audit_classify_arch(int arch)
--{
--#ifdef CONFIG_PPC64
--	if (arch == AUDIT_ARCH_PPC)
--		return 1;
--#endif
--	return 0;
--}
--
--int audit_classify_syscall(int abi, unsigned syscall)
--{
--#ifdef CONFIG_PPC64
--	if (abi == AUDIT_ARCH_PPC)
--		return ppc32_classify_syscall(syscall);
--#endif
--	switch(syscall) {
--	case __NR_open:
--		return AUDITSC_OPEN;
--	case __NR_openat:
--		return AUDITSC_OPENAT;
--	case __NR_socketcall:
--		return AUDITSC_SOCKETCALL;
--	case __NR_execve:
--		return AUDITSC_EXECVE;
--	case __NR_openat2:
--		return AUDITSC_OPENAT2;
--	default:
--		return AUDITSC_NATIVE;
--	}
--}
--
--static int __init audit_classes_init(void)
--{
--#ifdef CONFIG_PPC64
--	extern __u32 ppc32_dir_class[];
--	extern __u32 ppc32_write_class[];
--	extern __u32 ppc32_read_class[];
--	extern __u32 ppc32_chattr_class[];
--	extern __u32 ppc32_signal_class[];
--	audit_register_class(AUDIT_CLASS_WRITE_32, ppc32_write_class);
--	audit_register_class(AUDIT_CLASS_READ_32, ppc32_read_class);
--	audit_register_class(AUDIT_CLASS_DIR_WRITE_32, ppc32_dir_class);
--	audit_register_class(AUDIT_CLASS_CHATTR_32, ppc32_chattr_class);
--	audit_register_class(AUDIT_CLASS_SIGNAL_32, ppc32_signal_class);
--#endif
--	audit_register_class(AUDIT_CLASS_WRITE, write_class);
--	audit_register_class(AUDIT_CLASS_READ, read_class);
--	audit_register_class(AUDIT_CLASS_DIR_WRITE, dir_class);
--	audit_register_class(AUDIT_CLASS_CHATTR, chattr_class);
--	audit_register_class(AUDIT_CLASS_SIGNAL, signal_class);
--	return 0;
--}
--
--__initcall(audit_classes_init);
-diff --git a/arch/powerpc/kernel/compat_audit.c b/arch/powerpc/kernel/compat_audit.c
-deleted file mode 100644
-index 57b38c592b9f..000000000000
---- a/arch/powerpc/kernel/compat_audit.c
-+++ /dev/null
-@@ -1,49 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0
--#undef __powerpc64__
--#include <linux/audit_arch.h>
--#include <asm/unistd.h>
--
--#include "audit_32.h"
--
--unsigned ppc32_dir_class[] = {
--#include <asm-generic/audit_dir_write.h>
--~0U
--};
--
--unsigned ppc32_chattr_class[] = {
--#include <asm-generic/audit_change_attr.h>
--~0U
--};
--
--unsigned ppc32_write_class[] = {
--#include <asm-generic/audit_write.h>
--~0U
--};
--
--unsigned ppc32_read_class[] = {
--#include <asm-generic/audit_read.h>
--~0U
--};
--
--unsigned ppc32_signal_class[] = {
--#include <asm-generic/audit_signal.h>
--~0U
--};
--
--int ppc32_classify_syscall(unsigned syscall)
--{
--	switch(syscall) {
--	case __NR_open:
--		return AUDITSC_OPEN;
--	case __NR_openat:
--		return AUDITSC_OPENAT;
--	case __NR_socketcall:
--		return AUDITSC_SOCKETCALL;
--	case __NR_execve:
--		return AUDITSC_EXECVE;
--	case __NR_openat2:
--		return AUDITSC_OPENAT2;
--	default:
--		return AUDITSC_COMPAT;
--	}
--}
 -- 
-2.49.0
+2.43.0
 
 
