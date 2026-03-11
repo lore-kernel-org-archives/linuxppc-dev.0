@@ -1,79 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-18009-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18010-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F40BFD4F0D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 06:17:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBA71FD0620
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 06:36:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fW0sf1t9Pz30hP;
-	Wed, 11 Mar 2026 17:17:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773209862;
-	cv=none; b=X9zRWgy12A4aHUF/wgfdp4QaEjiaIbQ3xwWd+SuFhxiKCkSGdDJQDsxW6T4Zods+P9I0j/Nkq0FClLyH34zOtbsrVik/CdLBzwXWx5L8r3TlCBYbVdaaPqMkcYeoWTKJXwd+85IlS00evNXKe6mQx+LBz/pW3oP0MkQsc5RJ0peoB4eenTJtP+DrXYwkMMuNhZnms+bhd+PhEhZPdlHsdwSS4HUXlsa7xnst0i/MBMKIl+aQj23EGNXBL4tLEOfFSj/hvjUEtD6E2/lHz02TtDDAe80reFLgDWQwpyBii5yfi/clHMo42rGFMbrbSCwh+X9pvL1JRjO+gdrvxDcv9Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fW1H82B72z30hP;
+	Wed, 11 Mar 2026 17:36:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773210980;
+	cv=none; b=RnkMqu+cMY3rPngjFfCqRJ7qn9VxCs+Up7z9YPOqZebWwIyRNZOycQWCZQon44lFOq57d7naDNOUyeCQ/9FNUFu/8urGy+TB4/iR+1i4iu57yW1hPV1d5J+/gaFNROnWoV3kPKn9SjHiszCQmddXESL7Sv3n1Jk5k8IJ1Ueg290mD/DtGTwGWUnMzofgpl1zy4Q+IwdsJ2YUoK0DRiTTfbKkJgXO/5GdaVlG7pJxgaEAn0AJe2dDzNfKAfPSUwHOnADd7LVYi6CHvhBWhZp/8IcMGR64kW3pcwTCJbC3mWMi7x4WH4Ql5PDPwHNWNERHwLNDPGJr6NVXDvdeXHyUaQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773209862; c=relaxed/relaxed;
-	bh=7F7of/pioiEzfSaxmZRMCX3Fg2mJoOP4EB0Z/kFfvfc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Wpc44FHdHhOv8UuA/Gafj/6piJU0Lrg2guQpQ8KHovRHrQEAJ5ESzJoum8fEoKrrzIAVs+EP0w7rGN90Z9uhgdpqIR/40YKuyuxqJTZxlzkCie16dOdnI/oy5no+fAUjeAGVwAYZCXHmyNdpkO95bh7KKZwfvievQSVD4Zkqx8cDDalUPFDdlRvT+XHXysrxTRYE66icDtQO8wJVNNOMk3mVORIxvFHBhSilVXIsSV9K8fAWbGMP0cFCA05+wUF0ki/QaJogfPjcrgBp8ghnLEdMzJ2eMx5oqhDARrRszp2yhRt/u5CGC010kC6tuFdCm0dNlNTK6c71tJF4ALjzLg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WdfUPqE2; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1773210980; c=relaxed/relaxed;
+	bh=dy9KuQEbVQgzbwRcGgVxm/f+pSuLtPsEG/8Re2owlSQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=i2pu2ZNeCh2hN2XiPtAWEamS01hc2/je1Dmm0KvWrsrEEhsNgfeTdYGQsmUK+4yOo/gd/vDMFmL1p1TgmJj47A6TIieH/Rl+duy5mO8aTafG8wboXAGYWI3xDuZTXQC5DYZJoKRrC/iTQvyhola3EOSbA/UwT4kZlbs2olXTYAc5IAomzUsh142fsrEJHZYl+gsSikS/wGeilXES0WSma3fEqC50hLvD4huCJ00ElWJss2S+s3SX8d8Esf27qti/0WOdOwIxLf5eglqF3wPddW2lfXPJMOImgqztgGY96xYGCI2XJPEFcfydpYesIDnZp+wHYupaLzqmGVNf/r7A6w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fJYnITz2; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WdfUPqE2;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fJYnITz2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fW0sd1kK1z2xTh
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 17:17:40 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62AHN4NH153178;
-	Wed, 11 Mar 2026 06:17:32 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=7F7of/pioiEzfSaxmZRMCX3Fg2mJoOP4EB0Z/kFfv
-	fc=; b=WdfUPqE23fcAEdtiEj9iapy3pSScU4VjAghhrcdwmt2X3SgVFXSkSEPxb
-	/VdlRUx5esipp+8IUMIRl4aUCLmX3jhaz/ikAy5y5yycHMc0YRD4UFd7B2VcCUPD
-	4/eZIrhw+SS+Raw0DHXxD4vMa1g5ZFFqEm2YIPXg2j5fkXbg8vkQbMkEV0xY+Ui/
-	NdqZTXn3v7YhyKEfkdR6FCNMuKj8DXh7CZ7jZLk0inEv24Fs38mt/amH4zn9ZrfT
-	fS0D5+DeiaGwfqL+L28rTB44DqTDo58lUGc366pfyUbfS9zgA5goUge1y8A1yh8H
-	/jt11qcdMv7nBz9kVPCmQ5LhAehbw==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4crd1mnywj-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 11 Mar 2026 06:17:32 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62B12Xvn015653;
-	Wed, 11 Mar 2026 06:17:31 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4crybncady-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 11 Mar 2026 06:17:31 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62B6HR6N12255660
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 11 Mar 2026 06:17:27 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 585B02005A;
-	Wed, 11 Mar 2026 06:17:27 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B30A42004E;
-	Wed, 11 Mar 2026 06:17:24 +0000 (GMT)
-Received: from li-7bb28a4c-2dab-11b2-a85c-887b5c60d769.ibm.com.com (unknown [9.39.22.168])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 11 Mar 2026 06:17:24 +0000 (GMT)
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com
-Cc: sshegde@linux.ibm.com, chleroy@kernel.org, nysal@linux.ibm.com,
-        mkchauras@linux.ibm.com, rafael@kernel.org, daniel.lezcano@kernel.org,
-        christian.loehle@arm.com, mkchauras@gmail.com, npiggin@gmail.com,
-        linux-pm@vger.kernel.org, stable@vger.kernel.org
-Subject: [PATCH v2] cpuidle: powerpc: avoid double clear when breaking snooze
-Date: Wed, 11 Mar 2026 11:47:09 +0530
-Message-ID: <20260311061709.1230440-1-sshegde@linux.ibm.com>
-X-Mailer: git-send-email 2.51.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fW1H71yThz2xTh
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 17:36:19 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 4CB9F43C2C;
+	Wed, 11 Mar 2026 06:36:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 50B7FC4CEF7;
+	Wed, 11 Mar 2026 06:36:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773210977;
+	bh=AaTYLl8pCEA3iXBWjihENeLR+q/W7z4IGa5dYA772EQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=fJYnITz2osAqv0HH//ILVmEPzzOf8UT4nPZBKqx+knGPqv1f6TRUA7INVPTOtfYNK
+	 IHjDdoKMq+rQ544yAK1id8Ee6ZsB/exdPnLaFhET8oE574S0L8gaMeBlbV+5zD1brD
+	 cAe0fcMTGl75c4tXnpOWH3rRvl/11IPJrgaD3cC9Afin7LOJ88FCUAm9bFg4hEKj80
+	 8tpfoCkdZB7aFKkwCPC1yJwEf0+NuWUVID9a9HjqZL09Ql9ZO2InbKNq21PYiPTN4w
+	 F4QPa6cWdA69B5knnhLRvTN4ot63Na+2vyccxLuTRkqeYKUnN3txDXUJpRTRvrtUYF
+	 Ecc8eG//9Vlng==
+Date: Wed, 11 Mar 2026 12:05:59 +0530
+From: Manivannan Sadhasivam <mani@kernel.org>
+To: Niklas Cassel <cassel@kernel.org>
+Cc: Minghuan Lian <minghuan.Lian@nxp.com>, Mingkai Hu <mingkai.hu@nxp.com>, 
+	Roy Zang <roy.zang@nxp.com>, Lorenzo Pieralisi <lpieralisi@kernel.org>, 
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Bjorn Helgaas <bhelgaas@google.com>, Srikanth Thokala <srikanth.thokala@intel.com>, 
+	Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
+	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, Masami Hiramatsu <mhiramat@kernel.org>, 
+	Marek Vasut <marek.vasut+renesas@gmail.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, 
+	Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, 
+	Kishon Vijay Abraham I <kishon@kernel.org>, Manikanta Maddireddy <mmaddireddy@nvidia.com>, 
+	Koichiro Den <den@valinux.co.jp>, Damien Le Moal <dlemoal@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
+	linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	imx@lists.linux.dev, linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org
+Subject: Re: [PATCH v3 1/9] PCI: endpoint: Introduce pci_epc_bar_type
+ BAR_64BIT_UPPER
+Message-ID: <dtxdgxrewfby5hu3cu3pu5kljylm627uc43sw75gk7loimmm6r@ei4w6wmqgd6a>
+References: <20260302095913.48155-11-cassel@kernel.org>
+ <20260302095913.48155-12-cassel@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,90 +78,211 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=ds3Wylg4 c=1 sm=1 tr=0 ts=69b108fc cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8
- a=cVrzkdVh9Pqr8fURmIoA:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzExMDA0OSBTYWx0ZWRfX5OlTuLCxBycs
- bsoQQt2MYTPFxkbG+pgCJpHm6FfnYhFm7WQ2aE4LrjClRvwwvtcE+XTQJyLAieMDac4/2tqAJiH
- KLoVPhxvV5WcI/S2qBVPVyEIr5bvDC5oiDkcq6sJNZdpERMHxXib4rdDSwxWkz5z9jilH1Pdi+e
- Mf3XiBpkV4Ha+e6N3w2bc4ZtQHugpGFnM5+IaXqnjDQsZ6cHizwXJoVawQkxIIWOH2QaOwteQ/K
- 2LTKxDDvND7F5d4lNvU31db5x0DUv+6khf5TJMEjGxB7O4QWnyfYCV9yboD2QCG4w1M/06Obf9V
- fJ7rOJqJct2fNJAkTaEBvOePpWCirvJddfYO+9G7R3S0XRYz0hn/u3tKiq7F/f29cEywnjp/Jl0
- qEgxf1CjR+9BoXrOt6LlKs4b9PeQfDVxW3LJe1NjgEd6WXhIiF2lH0hE/gLVTZmP5hPlRyrplIz
- kbVhZoMlQm2qrbkir9w==
-X-Proofpoint-GUID: IwXrcu66crhxX1fWNSOJmNmD6fEejyAe
-X-Proofpoint-ORIG-GUID: KUkcok53n_Viifrr4RsG4gVX4qwPZMwN
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-10_05,2026-03-09_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 phishscore=0 clxscore=1011 impostorscore=0 suspectscore=0
- priorityscore=1501 lowpriorityscore=0 malwarescore=0 adultscore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2603110049
+In-Reply-To: <20260302095913.48155-12-cassel@kernel.org>
 
-snooze_loop is done often in any system which has fair bit of
-idle time. So it qualifies for even micro-optimizations. 
+On Mon, Mar 02, 2026 at 10:59:13AM +0100, Niklas Cassel wrote:
+> Add a pci_epc_bar_type BAR_64BIT_UPPER to more clearly differentiate from
+> BAR_RESERVED.
+> 
+> This BAR type will only be used for a BAR following a "only_64bit" BAR.
+> 
+> This makes the BAR description more clear, and the reader does no longer
+> need to check the BAR type for the preceding BAR to know how to interpret
+> the BAR type.
+> 
 
-When breaking the snooze due to timeout, TIF_POLLING_NRFLAG is cleared
-twice. Clearing the bit invokes atomics. Avoid double clear and thereby
-avoid one atomic write.
+I find the naming a bit confusing. How about BAR_64BIT_UPPER_BASE? This also
+brings the question, do we really need to mark the preceding BAR? Why can't we
+let the PCI EPC core to always assume that if the previous BAR has 'only_64bit'
+bit set, next BAR cannot be used as a standalone 32bit BAR?
 
-dev->poll_time_limit indicates whether the loop was broken due to
-timeout. Use that instead of defining a new variable.
+I find it weird or redundant to mark both BARs.
 
-Fixes: 7ded429152e8 ("cpuidle: powerpc: no memory barrier after break from idle")
-Cc: stable@vger.kernel.org
-Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
----
-v1->v2:
-- Added rwb tag - Thanks to Mukesh Kumar Chaurasiya
-- Added fixes tag
-v1: https://lore.kernel.org/all/20260310152811.1131119-1-sshegde@linux.ibm.com/
+- Mani
 
- drivers/cpuidle/cpuidle-powernv.c | 5 ++++-
- drivers/cpuidle/cpuidle-pseries.c | 5 ++++-
- 2 files changed, 8 insertions(+), 2 deletions(-)
+> No functional changes.
+> 
+> Tested-by: Manikanta Maddireddy <mmaddireddy@nvidia.com>
+> Reviewed-by: Frank Li <Frank.Li@nxp.com>
+> Tested-by: Koichiro Den <den@valinux.co.jp>
+> Signed-off-by: Niklas Cassel <cassel@kernel.org>
+> ---
+>  drivers/pci/controller/dwc/pci-layerscape-ep.c |  4 ++--
+>  drivers/pci/controller/dwc/pcie-keembay.c      |  6 +++---
+>  drivers/pci/controller/dwc/pcie-qcom-ep.c      |  4 ++--
+>  drivers/pci/controller/dwc/pcie-tegra194.c     |  2 +-
+>  drivers/pci/controller/dwc/pcie-uniphier-ep.c  | 10 +++++-----
+>  drivers/pci/controller/pcie-rcar-ep.c          |  6 +++---
+>  drivers/pci/endpoint/pci-epc-core.c            |  3 ++-
+>  include/linux/pci-epc.h                        |  5 ++++-
+>  8 files changed, 22 insertions(+), 18 deletions(-)
+> 
+> diff --git a/drivers/pci/controller/dwc/pci-layerscape-ep.c b/drivers/pci/controller/dwc/pci-layerscape-ep.c
+> index a4a800699f89..5a03a8f895f9 100644
+> --- a/drivers/pci/controller/dwc/pci-layerscape-ep.c
+> +++ b/drivers/pci/controller/dwc/pci-layerscape-ep.c
+> @@ -251,9 +251,9 @@ static int __init ls_pcie_ep_probe(struct platform_device *pdev)
+>  	pci->ops = pcie->drvdata->dw_pcie_ops;
+>  
+>  	ls_epc->bar[BAR_2].only_64bit = true;
+> -	ls_epc->bar[BAR_3].type = BAR_RESERVED;
+> +	ls_epc->bar[BAR_3].type = BAR_64BIT_UPPER;
+>  	ls_epc->bar[BAR_4].only_64bit = true;
+> -	ls_epc->bar[BAR_5].type = BAR_RESERVED;
+> +	ls_epc->bar[BAR_5].type = BAR_64BIT_UPPER;
+>  	ls_epc->linkup_notifier = true;
+>  
+>  	pcie->pci = pci;
+> diff --git a/drivers/pci/controller/dwc/pcie-keembay.c b/drivers/pci/controller/dwc/pcie-keembay.c
+> index 2666a9c3d67e..5a00b8cf5b53 100644
+> --- a/drivers/pci/controller/dwc/pcie-keembay.c
+> +++ b/drivers/pci/controller/dwc/pcie-keembay.c
+> @@ -313,11 +313,11 @@ static const struct pci_epc_features keembay_pcie_epc_features = {
+>  	.msi_capable		= true,
+>  	.msix_capable		= true,
+>  	.bar[BAR_0]		= { .only_64bit = true, },
+> -	.bar[BAR_1]		= { .type = BAR_RESERVED, },
+> +	.bar[BAR_1]		= { .type = BAR_64BIT_UPPER, },
+>  	.bar[BAR_2]		= { .only_64bit = true, },
+> -	.bar[BAR_3]		= { .type = BAR_RESERVED, },
+> +	.bar[BAR_3]		= { .type = BAR_64BIT_UPPER, },
+>  	.bar[BAR_4]		= { .only_64bit = true, },
+> -	.bar[BAR_5]		= { .type = BAR_RESERVED, },
+> +	.bar[BAR_5]		= { .type = BAR_64BIT_UPPER, },
+>  	.align			= SZ_16K,
+>  };
+>  
+> diff --git a/drivers/pci/controller/dwc/pcie-qcom-ep.c b/drivers/pci/controller/dwc/pcie-qcom-ep.c
+> index 18460f01b2c6..e55675b3840a 100644
+> --- a/drivers/pci/controller/dwc/pcie-qcom-ep.c
+> +++ b/drivers/pci/controller/dwc/pcie-qcom-ep.c
+> @@ -850,9 +850,9 @@ static const struct pci_epc_features qcom_pcie_epc_features = {
+>  	.msi_capable = true,
+>  	.align = SZ_4K,
+>  	.bar[BAR_0] = { .only_64bit = true, },
+> -	.bar[BAR_1] = { .type = BAR_RESERVED, },
+> +	.bar[BAR_1] = { .type = BAR_64BIT_UPPER, },
+>  	.bar[BAR_2] = { .only_64bit = true, },
+> -	.bar[BAR_3] = { .type = BAR_RESERVED, },
+> +	.bar[BAR_3] = { .type = BAR_64BIT_UPPER, },
+>  };
+>  
+>  static const struct pci_epc_features *
+> diff --git a/drivers/pci/controller/dwc/pcie-tegra194.c b/drivers/pci/controller/dwc/pcie-tegra194.c
+> index 06571d806ab3..31aa9a494dbc 100644
+> --- a/drivers/pci/controller/dwc/pcie-tegra194.c
+> +++ b/drivers/pci/controller/dwc/pcie-tegra194.c
+> @@ -1993,7 +1993,7 @@ static const struct pci_epc_features tegra_pcie_epc_features = {
+>  	.msi_capable = true,
+>  	.bar[BAR_0] = { .type = BAR_FIXED, .fixed_size = SZ_1M,
+>  			.only_64bit = true, },
+> -	.bar[BAR_1] = { .type = BAR_RESERVED, },
+> +	.bar[BAR_1] = { .type = BAR_64BIT_UPPER, },
+>  	.bar[BAR_2] = { .type = BAR_RESERVED, },
+>  	.bar[BAR_3] = { .type = BAR_RESERVED, },
+>  	.bar[BAR_4] = { .type = BAR_RESERVED, },
+> diff --git a/drivers/pci/controller/dwc/pcie-uniphier-ep.c b/drivers/pci/controller/dwc/pcie-uniphier-ep.c
+> index d52753060970..f873a1659592 100644
+> --- a/drivers/pci/controller/dwc/pcie-uniphier-ep.c
+> +++ b/drivers/pci/controller/dwc/pcie-uniphier-ep.c
+> @@ -426,9 +426,9 @@ static const struct uniphier_pcie_ep_soc_data uniphier_pro5_data = {
+>  		.msix_capable = false,
+>  		.align = 1 << 16,
+>  		.bar[BAR_0] = { .only_64bit = true, },
+> -		.bar[BAR_1] = { .type = BAR_RESERVED, },
+> +		.bar[BAR_1] = { .type = BAR_64BIT_UPPER, },
+>  		.bar[BAR_2] = { .only_64bit = true, },
+> -		.bar[BAR_3] = { .type = BAR_RESERVED, },
+> +		.bar[BAR_3] = { .type = BAR_64BIT_UPPER, },
+>  		.bar[BAR_4] = { .type = BAR_RESERVED, },
+>  		.bar[BAR_5] = { .type = BAR_RESERVED, },
+>  	},
+> @@ -445,11 +445,11 @@ static const struct uniphier_pcie_ep_soc_data uniphier_nx1_data = {
+>  		.msix_capable = false,
+>  		.align = 1 << 12,
+>  		.bar[BAR_0] = { .only_64bit = true, },
+> -		.bar[BAR_1] = { .type = BAR_RESERVED, },
+> +		.bar[BAR_1] = { .type = BAR_64BIT_UPPER, },
+>  		.bar[BAR_2] = { .only_64bit = true, },
+> -		.bar[BAR_3] = { .type = BAR_RESERVED, },
+> +		.bar[BAR_3] = { .type = BAR_64BIT_UPPER, },
+>  		.bar[BAR_4] = { .only_64bit = true, },
+> -		.bar[BAR_5] = { .type = BAR_RESERVED, },
+> +		.bar[BAR_5] = { .type = BAR_64BIT_UPPER, },
+>  	},
+>  };
+>  
+> diff --git a/drivers/pci/controller/pcie-rcar-ep.c b/drivers/pci/controller/pcie-rcar-ep.c
+> index 657875ef4657..9b3f5391fabe 100644
+> --- a/drivers/pci/controller/pcie-rcar-ep.c
+> +++ b/drivers/pci/controller/pcie-rcar-ep.c
+> @@ -440,13 +440,13 @@ static const struct pci_epc_features rcar_pcie_epc_features = {
+>  	/* use 64-bit BARs so mark BAR[1,3,5] as reserved */
+>  	.bar[BAR_0] = { .type = BAR_FIXED, .fixed_size = 128,
+>  			.only_64bit = true, },
+> -	.bar[BAR_1] = { .type = BAR_RESERVED, },
+> +	.bar[BAR_1] = { .type = BAR_64BIT_UPPER, },
+>  	.bar[BAR_2] = { .type = BAR_FIXED, .fixed_size = 256,
+>  			.only_64bit = true, },
+> -	.bar[BAR_3] = { .type = BAR_RESERVED, },
+> +	.bar[BAR_3] = { .type = BAR_64BIT_UPPER, },
+>  	.bar[BAR_4] = { .type = BAR_FIXED, .fixed_size = 256,
+>  			.only_64bit = true, },
+> -	.bar[BAR_5] = { .type = BAR_RESERVED, },
+> +	.bar[BAR_5] = { .type = BAR_64BIT_UPPER, },
+>  };
+>  
+>  static const struct pci_epc_features*
+> diff --git a/drivers/pci/endpoint/pci-epc-core.c b/drivers/pci/endpoint/pci-epc-core.c
+> index e546b3dbb240..1ad2f62963c8 100644
+> --- a/drivers/pci/endpoint/pci-epc-core.c
+> +++ b/drivers/pci/endpoint/pci-epc-core.c
+> @@ -104,7 +104,8 @@ enum pci_barno pci_epc_get_next_free_bar(const struct pci_epc_features
+>  
+>  	for (i = bar; i < PCI_STD_NUM_BARS; i++) {
+>  		/* If the BAR is not reserved, return it. */
+> -		if (epc_features->bar[i].type != BAR_RESERVED)
+> +		if (epc_features->bar[i].type != BAR_RESERVED &&
+> +		    epc_features->bar[i].type != BAR_64BIT_UPPER)
+>  			return i;
+>  	}
+>  
+> diff --git a/include/linux/pci-epc.h b/include/linux/pci-epc.h
+> index c021c7af175f..c22f8a6cf9a3 100644
+> --- a/include/linux/pci-epc.h
+> +++ b/include/linux/pci-epc.h
+> @@ -192,12 +192,15 @@ struct pci_epc {
+>   *		   NOTE: An EPC driver can currently only set a single supported
+>   *		   size.
+>   * @BAR_RESERVED: The BAR should not be touched by an EPF driver.
+> + * @BAR_64BIT_UPPER: Should only be set on a BAR if the preceding BAR is marked
+> + *		     as only_64bit.
+>   */
+>  enum pci_epc_bar_type {
+>  	BAR_PROGRAMMABLE = 0,
+>  	BAR_FIXED,
+>  	BAR_RESIZABLE,
+>  	BAR_RESERVED,
+> +	BAR_64BIT_UPPER,
+>  };
+>  
+>  /**
+> @@ -207,7 +210,7 @@ enum pci_epc_bar_type {
+>   * @only_64bit: if true, an EPF driver is not allowed to choose if this BAR
+>   *		should be configured as 32-bit or 64-bit, the EPF driver must
+>   *		configure this BAR as 64-bit. Additionally, the BAR succeeding
+> - *		this BAR must be set to type BAR_RESERVED.
+> + *		this BAR must be set to type BAR_64BIT_UPPER.
+>   *
+>   *		only_64bit should not be set on a BAR of type BAR_RESERVED.
+>   *		(If BARx is a 64-bit BAR that an EPF driver is not allowed to
+> -- 
+> 2.53.0
+> 
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 9ebedd972df0..b89e7111e7b8 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -95,7 +95,10 @@ static int snooze_loop(struct cpuidle_device *dev,
- 
- 	HMT_medium();
- 	ppc64_runlatch_on();
--	clear_thread_flag(TIF_POLLING_NRFLAG);
-+
-+	/* Avoid double clear when breaking */
-+	if (!dev->poll_time_limit)
-+		clear_thread_flag(TIF_POLLING_NRFLAG);
- 
- 	local_irq_disable();
- 
-diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-index f68c65f1d023..864dd5d6e627 100644
---- a/drivers/cpuidle/cpuidle-pseries.c
-+++ b/drivers/cpuidle/cpuidle-pseries.c
-@@ -64,7 +64,10 @@ int snooze_loop(struct cpuidle_device *dev, struct cpuidle_driver *drv,
- 	}
- 
- 	HMT_medium();
--	clear_thread_flag(TIF_POLLING_NRFLAG);
-+
-+       /* Avoid double clear when breaking */
-+	if (!dev->poll_time_limit)
-+		clear_thread_flag(TIF_POLLING_NRFLAG);
- 
- 	raw_local_irq_disable();
- 
 -- 
-2.43.0
-
+மணிவண்ணன் சதாசிவம்
 
