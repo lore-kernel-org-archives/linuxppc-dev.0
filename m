@@ -1,88 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-17986-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-17987-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88999FD88D5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 00:56:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4709CFD88D4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 01:12:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fVsky2QSXz2yFY;
-	Wed, 11 Mar 2026 11:56:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773149108;
-	cv=none; b=NAJeazPksjuPG1TMlH3BuiasVEr8b33V6gx3AWXm4lMP52f7Rc//d1Y9zk15kcIXJSpL3xoSm+UVzT2qWtphCQNVg4ugByy/K6iIWMfUzDKU0IWpOZ0vswnvi4eA92/hUMwvUEHIVyu7NqbTs3Wh2PlTKzIPrqDiMLb7IubDfpcr4siIdmOiml2ok3EsrXoF0c2KluEG4xGcD/OPQX/GZ26yI7ckJMkm4g+H9P35QYcHILabuZQgEhTwpW/yDCohWEfP2PsE7LtyLMRgLS9V9KNy/NArjdxvCUIdxedjRtiljAh6jjIfmaAFBIOkopZXj9nKjDlODZXbVVgZllkgCQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fVt5N50yHz30BR;
+	Wed, 11 Mar 2026 12:12:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773191544;
+	cv=none; b=jGwGL52VkX697SIsYqa18E17iI46njSo7E9rN6vhH2Xf2msTQbwkxpZOT6mA9dbV53IVE43qyspwyWCMrf2hgYL9K+W/NtpsS6sy+em5W3Z9lDJguO4yFznEk2mGBZmp3R/8dhCBm2vEpMiZt6HJWrt3vGmqrsK7rQ7W1u+S4+hXjtJIs47W+ajvMkws0dpu8Y36/Ggf72Gz0OQ9fhnE18zXv16078gr4JYMkNca4/635gYSZr5Z1i+kvfPsGr6Ffx3HCnF4Bx7KIQ1oXRdSCG22xPgMGccWb0clGQAOD5HdTGbMzWDsJcIwKueR+OjPJQqg6aiT82W8I9Kq8WhpKw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773149108; c=relaxed/relaxed;
-	bh=+mRiZHd3hjy9wYbcMzg1z2YcvSrUrPgvmFfUtqm16Gs=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=mvE3n5UsSqJu8ZwFt19P/DHppK6n/RiqvhIqqiDmO+Qdkl6DDclg+7/aGjFkIa4XGWTNJrRr4znqGmC2vkfYyVXU1I0P3oI/N87qEZi2G63pzfTnivzc/DDSgBTVxcPRiYss3OgRi89AntQ/EuV/vJqxY4cCHUsnxRP5lNWUxnbhj39lUoqHgjUwibMTIts5Rp7InVMJkUsnfXkjQDb+XaltXC/bUVr1RAieP4ErgP/ulRxwIdJV3BvYkQKeWF/U0WZOWKqOim3OkVP0q58uXR6hSm21m9X3f+M17BSEgT9TgMbmZPKO3dhnDq9DSqZyM3HkKdLTrJhT4j0IkGDZdQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Rbrb7M3Q; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Rbrb7M3Q; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=qzhao@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1773191544; c=relaxed/relaxed;
+	bh=A27qAJx6FI9YasLb8t9m8pvAvF+c2BJWEpdEuHe7+Uk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=WBbkfkjdb1kL4qkmjsLIel1EzN11KAOvLJPAMkwroVLepk1iQECX6MDTmy9z4PGib3T4YYKS7ejeDljtr7bbSuxs8yHvk4gProAhR4cwEPJ2THwYnlhSGFqFeHM8AFSWfqIZ3zr9t1PYxC4aQ0d8nzx90Ly+jVllThq1XcJoRA8S4ngfL8LZlo0+RpcfUCB5zICZ9wK87t/650pxhWQJBXeOZYFBpS5XaTkc9ZluT6kjqNgGXrFHhuwUXFBmt78Voykz2uvxj4U10WBf7gCpgS0SAry/f3Ighas7urfsnhaGcAr6A78aVZNU3/GYWfBwL4crdkdyTkjPnXyzt/cxQg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sdt6QFSr; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Rbrb7M3Q;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Rbrb7M3Q;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sdt6QFSr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=qzhao@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fVZPG3tzqz30Lw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 00:25:06 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1773149102;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=+mRiZHd3hjy9wYbcMzg1z2YcvSrUrPgvmFfUtqm16Gs=;
-	b=Rbrb7M3Qt9WoZRx5L/JJuPnYTxOnPxdbv/KYDxPkU42E8wnHWz0ErFX85xwS/jMSgAuF/P
-	lS3thVQG5d01WQzJpDQ3a8+Q38/NahV8xZhdvVQOpSO8h5CBjiLFR7l94YpKPkMpTbNsnx
-	hWwLDrncBN4wttRO4FWgN6nffc/TFI0=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1773149102;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=+mRiZHd3hjy9wYbcMzg1z2YcvSrUrPgvmFfUtqm16Gs=;
-	b=Rbrb7M3Qt9WoZRx5L/JJuPnYTxOnPxdbv/KYDxPkU42E8wnHWz0ErFX85xwS/jMSgAuF/P
-	lS3thVQG5d01WQzJpDQ3a8+Q38/NahV8xZhdvVQOpSO8h5CBjiLFR7l94YpKPkMpTbNsnx
-	hWwLDrncBN4wttRO4FWgN6nffc/TFI0=
-Received: from mail-oo1-f72.google.com (mail-oo1-f72.google.com
- [209.85.161.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-116-TRKrFlQNPjWbc6S0XVCj_g-1; Tue, 10 Mar 2026 09:25:00 -0400
-X-MC-Unique: TRKrFlQNPjWbc6S0XVCj_g-1
-X-Mimecast-MFC-AGG-ID: TRKrFlQNPjWbc6S0XVCj_g_1773149100
-Received: by mail-oo1-f72.google.com with SMTP id 006d021491bc7-67bb47e67f4so29240610eaf.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2026 06:25:00 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773149099; x=1773753899;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=+mRiZHd3hjy9wYbcMzg1z2YcvSrUrPgvmFfUtqm16Gs=;
-        b=K7Wanuhyt1KGLEBMSuigjLlaHCCL8/iG4wWvtDXZ1l6aaU1Q/PhFs2hUo50FzDXOeL
-         1uI26/K/3SA1LmA9LoadympPDumpK5wphEtIUFC9GJCZok4RPFFM0ffbtI86q4l4PwQV
-         PPyhfkdcJ3KlqwDGxILdmaM+7VsGGkx+uJNmpmlPhFoQc/F/9/w+DS5ZthbvFi8h3H1I
-         QXUIFxpnQ0vHLrYg+NIjOvtylnucCS9LeVvJWx/HWBnZe1aCy1uGSkQg6jfAO4t2mrc8
-         ekbVu5/f75TJdz+suT0YI2L5UACxy7lzu03FtT48B0C3qADLfMskgswEx33SOxu+QT2u
-         nDcg==
-X-Gm-Message-State: AOJu0YwsXqz83iLdJtTafaqPmQYSeb4F0vE8j2QMsRppBt7iNcbOVXq/
-	grwklA0f4zY7f2I9EBKoUfWjcbi38JeZXhnmjKoYMAAimVlKRcLuI5E21kKhS3Bbrn5JM9Rl4FG
-	Z5R+DhGUCQo6v0DPQi+bsTVbCNgGebn6QEHoz8/R1/ecGQ8zfqx0nqGxYe+qHPUcBqBtlvm+SS6
-	KQv+ACFZQnYFn5qkE2PQxylAfeKh9h95LlSRgt5STIuSfYEiuvMB9d
-X-Gm-Gg: ATEYQzwrmabF8hZUbUc5AGSTda+tvCUNtV6UMLxH483ql0ogZo1WW0mZzNKUo04UfCS
-	GmWON3nUG3iMYRYFuQadIlRzLPqHE0qQysQJuUX9H1GtjJT4Gz2cAEjEvdIgURE/0waejmnAlen
-	OhfE5aXOhyL4WQGCw63voCcQf5iApKaYBcbbMBflOp4Gh24bQp6DJjvJGcfc2s/bIyonj3rudzx
-	R4RywE=
-X-Received: by 2002:a05:6820:2188:b0:67b:c08f:c646 with SMTP id 006d021491bc7-67bc08fc867mr800210eaf.45.1773149099377;
-        Tue, 10 Mar 2026 06:24:59 -0700 (PDT)
-X-Received: by 2002:a05:6820:2188:b0:67b:c08f:c646 with SMTP id
- 006d021491bc7-67bc08fc867mr800178eaf.45.1773149098970; Tue, 10 Mar 2026
- 06:24:58 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fVt5M4M1Nz2x99
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 12:12:23 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 9957D42A22;
+	Wed, 11 Mar 2026 01:12:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E371FC19423;
+	Wed, 11 Mar 2026 01:12:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773191541;
+	bh=U/SQlh9eoA7aNwhrztie/y/wf13I3qMxDdkdMOCTE1c=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=sdt6QFSrTCNLiZBwKHlduCFIqUyGtdRPe5EFgpkF9YeyDcF3v3jNsJscSUkGuqXvL
+	 d5P/Ui/E5sCPsCJm+cGK+Ear/ZMW1+OstQw2o5RYIdgPe9Y6Gf77hLvxJuoV+J6CLL
+	 +XBDMxYZXyY8ct5nR/O6mvNq8tC9q2VPa47380Ks78EqPMbMK0QpGUtLSMzBlM0Wz+
+	 yojTIufSanR7vEU7B1goXkTIBlA4ySiZoJhbcTZnHDSUG2Cu+bHafIUTuUch3hTD9C
+	 u9kXjtUnuL66e/t++jOmq2Et+/hBvUdZoeJYVK895TToskvqqvrQZgYYAjvXbNfbqo
+	 BUUPS7Xy7eppg==
+Date: Tue, 10 Mar 2026 18:12:18 -0700
+From: Eric Biggers <ebiggers@kernel.org>
+To: Thomas =?iso-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>
+Cc: Nathan Chancellor <nathan@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+	Luis Chamberlain <mcgrof@kernel.org>,
+	Petr Pavlu <petr.pavlu@suse.com>,
+	Sami Tolvanen <samitolvanen@google.com>,
+	Daniel Gomez <da.gomez@samsung.com>,
+	Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
+	"Serge E. Hallyn" <serge@hallyn.com>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Naveen N Rao <naveen@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>,
+	Roberto Sassu <roberto.sassu@huawei.com>,
+	Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+	Eric Snowberg <eric.snowberg@oracle.com>,
+	Nicolas Schier <nicolas.schier@linux.dev>,
+	Daniel Gomez <da.gomez@kernel.org>,
+	Aaron Tomlin <atomlin@atomlin.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Nicolas Schier <nsc@kernel.org>,
+	Nicolas Bouchinet <nicolas.bouchinet@oss.cyber.gouv.fr>,
+	Xiu Jianfeng <xiujianfeng@huawei.com>,
+	Fabian =?iso-8859-1?Q?Gr=FCnbichler?= <f.gruenbichler@proxmox.com>,
+	Arnout Engelen <arnout@bzzt.net>,
+	Mattia Rizzolo <mattia@mapreri.org>, kpcyrd <kpcyrd@archlinux.org>,
+	Christian Heusel <christian@heusel.eu>,
+	=?iso-8859-1?Q?C=E2ju?= Mihai-Drosi <mcaju95@gmail.com>,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-arch@vger.kernel.org, linux-modules@vger.kernel.org,
+	linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
+Subject: Re: [PATCH v4 15/17] module: Introduce hash-based integrity checking
+Message-ID: <20260311011218.GA212983@quark>
+References: <20260113-module-hashes-v4-0-0b932db9b56b@weissschuh.net>
+ <20260113-module-hashes-v4-15-0b932db9b56b@weissschuh.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,132 +96,259 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260309144045.169427-1-vmalik@redhat.com>
-In-Reply-To: <20260309144045.169427-1-vmalik@redhat.com>
-From: Qiao Zhao <qzhao@redhat.com>
-Date: Tue, 10 Mar 2026 21:24:47 +0800
-X-Gm-Features: AaiRm52us4L_x-yzPwkJaPK73H8lBCzWxkyJHukmqBE4DeWQ1HyAoAtPgAw11Ks
-Message-ID: <CAATMXfmc8VAGh3d1D2MYPvZQiUpwua8o7FyRngSw4CmyRPZkrQ@mail.gmail.com>
-Subject: Re: [PATCH v2] powerpc, perf: Check that current->mm is alive before
- getting user callchain
-To: Viktor Malik <vmalik@redhat.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, 
-	Paul Mackerras <paulus@ozlabs.org>, linux-perf-users@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, bpf@vger.kernel.org, 
-	Saket Kumar Bhaskar <skb99@linux.ibm.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: 3wLKIzhkqQ7v4dsbdQbXiUbMKARTDeAbRZrsayAPHtc_1773149100
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260113-module-hashes-v4-15-0b932db9b56b@weissschuh.net>
 
-Run the BPF profiling program (profile.py from bcc-tools) on a ppc64le
-machine and passed.
+On Tue, Jan 13, 2026 at 01:28:59PM +0100, Thomas Weißschuh wrote:
+> The current signature-based module integrity checking has some drawbacks
+> in combination with reproducible builds. Either the module signing key
+> is generated at build time, which makes the build unreproducible, or a
+> static signing key is used, which precludes rebuilds by third parties
+> and makes the whole build and packaging process much more complicated.
 
-Tested-by: Qiao Zhao <qzhao@redhat.com>
+I think this actually undersells the feature.  It's also much simpler
+than the signature-based module authentication.  The latter relies on
+PKCS#7, X.509, ASN.1, OID registry, crypto_sig API, etc in addition to
+the implementations of the actual signature algorithm (RSA / ECDSA /
+ML-DSA) and at least one hash algorithm.
 
-Thanks,
-Qiao
+I've even seen a case where the vmlinux size decreases by almost 200KB
+just by disabling module signing.  That's not even counting the
+signatures themselves, which ML-DSA has increased to 2-5 KB each.
 
-On Mon, Mar 9, 2026 at 10:43=E2=80=AFPM Viktor Malik <vmalik@redhat.com> wr=
-ote:
->
-> It may happen that mm is already released, which leads to kernel panic.
-> This adds the NULL check for current->mm, similarly to 20afc60f892d
-> ("x86, perf: Check that current->mm is alive before getting user
-> callchain").
->
-> I was getting this panic when running a profiling BPF program
-> (profile.py from bcc-tools):
->
->     [26215.051935] Kernel attempted to read user page (588) - exploit att=
-empt? (uid: 0)
->     [26215.051950] BUG: Kernel NULL pointer dereference on read at 0x0000=
-0588
->     [26215.051952] Faulting instruction address: 0xc00000000020fac0
->     [26215.051957] Oops: Kernel access of bad area, sig: 11 [#1]
->     [...]
->     [26215.052049] Call Trace:
->     [26215.052050] [c000000061da6d30] [c00000000020fc10] perf_callchain_u=
-ser_64+0x2d0/0x490 (unreliable)
->     [26215.052054] [c000000061da6dc0] [c00000000020f92c] perf_callchain_u=
-ser+0x1c/0x30
->     [26215.052057] [c000000061da6de0] [c0000000005ab2a0] get_perf_callcha=
-in+0x100/0x360
->     [26215.052063] [c000000061da6e70] [c000000000573bc8] bpf_get_stackid+=
-0x88/0xf0
->     [26215.052067] [c000000061da6ea0] [c008000000042258] bpf_prog_16d4ab9=
-ab662f669_do_perf_event+0xf8/0x274
->     [...]
->
-> In addition, move storing the top-level stack entry to generic
-> perf_callchain_user to make sure the top-evel entry is always captured,
-> even if current->mm is NULL.
->
-> Fixes: 20002ded4d93 ("perf_counter: powerpc: Add callchain support")
-> Signed-off-by: Viktor Malik <vmalik@redhat.com>
-> ---
-> Changes in v2:
-> - Move call to perf_callchain_store() for the top-level stack entry to
->   common perf_callchain_user (Saket)
->
->  arch/powerpc/perf/callchain.c    | 5 +++++
->  arch/powerpc/perf/callchain_32.c | 1 -
->  arch/powerpc/perf/callchain_64.c | 1 -
->  3 files changed, 5 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/perf/callchain.c b/arch/powerpc/perf/callchain.=
-c
-> index 26aa26482c9a..992cc5c98214 100644
-> --- a/arch/powerpc/perf/callchain.c
-> +++ b/arch/powerpc/perf/callchain.c
-> @@ -103,6 +103,11 @@ perf_callchain_kernel(struct perf_callchain_entry_ct=
-x *entry, struct pt_regs *re
->  void
->  perf_callchain_user(struct perf_callchain_entry_ctx *entry, struct pt_re=
-gs *regs)
->  {
-> +       perf_callchain_store(entry, perf_arch_instruction_pointer(regs));
+The hashes are much simpler, even accounting for the Merkle tree proofs
+that make them scalable.  They're less likely to have vulnerabilities
+like the PKCS#7 bugs the kernel has had historically.  They also
+eliminate the dependency on a lot of userspace libcrypto functionality
+that has been causing portability problems, such as the CMS functions.
+
+So I think this is how module authentication should have been done
+originally, and I'm glad to see this is finally being fixed.
+
+> +struct module_hashes_proof {
+> +	__be32 pos;
+> +	u8 hash_sigs[][MODULE_HASHES_HASH_SIZE];
+> +} __packed;
+
+Is the choice of big endian for consistency with struct
+module_signature?  Little endian is the usual choice in new code.
+
+> diff --git a/include/linux/module_signature.h b/include/linux/module_signature.h
+> index a45ce3b24403..3b510651830d 100644
+> --- a/include/linux/module_signature.h
+> +++ b/include/linux/module_signature.h
+> @@ -18,6 +18,7 @@ enum pkey_id_type {
+>  	PKEY_ID_PGP,		/* OpenPGP generated key ID */
+>  	PKEY_ID_X509,		/* X.509 arbitrary subjectKeyIdentifier */
+>  	PKEY_ID_PKCS7,		/* Signature in PKCS#7 message */
+> +	PKEY_ID_MERKLE,		/* Merkle proof for modules */
+
+I recommend making the hash algorithm explicit:
+
+        PKEY_ID_MERKLE_SHA256,	/* SHA-256 merkle proof for modules */
+
+While I wouldn't encourage the addition of another hash algorithm
+(specifying one good algorithm for now is absolutely the right choice),
+if someone ever does need to add another one, we'd want them to be
+guided to simply introduce a new value of this enum rather than hack it
+in some other way.
+
+> +static void hash_entry(const void *left, const void *right, void *out)
+
+Byte arrays should use u8 instead of void
+
+> diff --git a/scripts/modules-merkle-tree.c b/scripts/modules-merkle-tree.c
+[...]
+
+> +struct file_entry {
+> +	char *name;
+> +	unsigned int pos;
+> +	unsigned char hash[EVP_MAX_MD_SIZE];
+
+Considering that the hash algorithm is fixed, EVP_MAX_MD_SIZE can be
+replaced with a tighter local definition:
+
+    #define MAX_HASH_SIZE 32
+
+> +static struct file_entry *fh_list;
+> +static size_t num_files;
 > +
-> +       if (!current->mm)
-> +               return;
+> +struct leaf_hash {
+> +	unsigned char hash[EVP_MAX_MD_SIZE];
+> +};
 > +
->         if (!is_32bit_task())
->                 perf_callchain_user_64(entry, regs);
->         else
-> diff --git a/arch/powerpc/perf/callchain_32.c b/arch/powerpc/perf/callcha=
-in_32.c
-> index ddcc2d8aa64a..0de21c5d272c 100644
-> --- a/arch/powerpc/perf/callchain_32.c
-> +++ b/arch/powerpc/perf/callchain_32.c
-> @@ -142,7 +142,6 @@ void perf_callchain_user_32(struct perf_callchain_ent=
-ry_ctx *entry,
->         next_ip =3D perf_arch_instruction_pointer(regs);
->         lr =3D regs->link;
->         sp =3D regs->gpr[1];
-> -       perf_callchain_store(entry, next_ip);
->
->         while (entry->nr < entry->max_stack) {
->                 fp =3D (unsigned int __user *) (unsigned long) sp;
-> diff --git a/arch/powerpc/perf/callchain_64.c b/arch/powerpc/perf/callcha=
-in_64.c
-> index 115d1c105e8a..30fb61c5f0cb 100644
-> --- a/arch/powerpc/perf/callchain_64.c
-> +++ b/arch/powerpc/perf/callchain_64.c
-> @@ -77,7 +77,6 @@ void perf_callchain_user_64(struct perf_callchain_entry=
-_ctx *entry,
->         next_ip =3D perf_arch_instruction_pointer(regs);
->         lr =3D regs->link;
->         sp =3D regs->gpr[1];
-> -       perf_callchain_store(entry, next_ip);
->
->         while (entry->nr < entry->max_stack) {
->                 fp =3D (unsigned long __user *) sp;
-> --
-> 2.53.0
->
->
+> +struct mtree {
+> +	struct leaf_hash **l;
+> +	unsigned int *entries;
+> +	unsigned int levels;
+> +};
 
+'struct leaf_hash' is confusing because it's actually used for the
+hashes of internal nodes, not leaf nodes.
+
+Maybe rename it to 'struct hash' and use it for both the hashes and leaf
+nodes and internal nodes.
+
+Also, clearer naming would improve readability, e.g.:
+
+    struct merkle_tree {
+            struct hash **level_hashes;
+            unsigned int level_size;
+            unsigned int num_levels;
+    };
+
+> +static void hash_data(void *p, unsigned int pos, size_t size, void *ret_hash)
+
+static void hash_data(const uint8_t *data, unsigned int pos,
+                      size_t size, struct hash *ret_hash)
+
+> +	unsigned char magic = 0x01;
+
+uint8_t
+
+Also, when defining these magic numbers, maybe explicitly document that
+they are domain separation prefixes:
+
+        uint8_t magic = 0x01; /* domain separation prefix */
+
+> +	unsigned int pos_be;
+
+uint32_t
+
+> +static void hash_entry(void *left, void *right, void *ret_hash)
+
+Could use stronger typing:
+
+static void hash_entry(const struct hash *left, const struct hash *right,
+                       struct hash *ret_hash)
+
+> +static struct mtree *build_merkle(struct file_entry *fh, size_t num)
+
+Could use clearer names, and constify the file_entry array:
+
+static struct merkle_tree *build_merkle(const struct file_entry *files,
+                                        size_t num_files)
+
+> +	/* First level of pairs */
+> +	for (unsigned int i = 0; i < num; i += 2) {
+> +		if (i == num - 1) {
+> +			/* Odd number of files, no pair. Hash with itself */
+> +			hash_entry(fh[i].hash, fh[i].hash, mt->l[0][i / 2].hash);
+> +		} else {
+> +			hash_entry(fh[i].hash, fh[i + 1].hash, mt->l[0][i / 2].hash);
+> +		}
+> +	}
+> +	for (unsigned int i = 1; i < mt->levels; i++) {
+> +		int odd = 0;
+> +
+> +		if (le & 1) {
+> +			le++;
+> +			odd++;
+> +		}
+> +
+> +		mt->entries[i] = le / 2;
+> +		mt->l[i] = xcalloc(sizeof(**mt->l), le);
+> +
+> +		for (unsigned int n = 0; n < le; n += 2) {
+> +			if (n == le - 2 && odd) {
+> +				/* Odd number of pairs, no pair. Hash with itself */
+> +				hash_entry(mt->l[i - 1][n].hash, mt->l[i - 1][n].hash,
+> +					   mt->l[i][n / 2].hash);
+> +			} else {
+> +				hash_entry(mt->l[i - 1][n].hash, mt->l[i - 1][n + 1].hash,
+> +					   mt->l[i][n / 2].hash);
+> +			}
+> +		}
+> +		le =  mt->entries[i];
+> +	}
+
+There should be an assertion at the end that we ended up with exactly 1
+hash in the root level.
+
+It might also be possible to refactor this code such that the leaf nodes
+and internal nodes are handled in the same loop, rather than handling
+the leaf nodes as a special case.
+
+> +static void write_merkle_root(struct mtree *mt, const char *fp)
+
+fp => filename since it's a string, not e.g. a 'FILE *'.
+
+> +{
+> +	char buf[1024];
+> +	unsigned int levels;
+> +	unsigned char *h;
+> +	FILE *f;
+> +
+> +	if (mt) {
+> +		levels = mt->levels;
+> +		h = mt->l[mt->levels - 1][0].hash;
+> +	} else {
+> +		levels = 0;
+> +		h = xcalloc(1, hash_size);
+> +	}
+> +
+> +	f = fopen(fp, "w");
+> +	if (!f)
+> +		err(1, "Failed to create %s", buf);
+
+Above should log the name of the file.  'buf' should be removed.
+
+> +static char *xstrdup_replace_suffix(const char *str, const char *new_suffix)
+> +{
+> +	const char *current_suffix;
+> +	size_t base_len;
+> +
+> +	current_suffix = strchr(str, '.');
+> +	if (!current_suffix)
+> +		errx(1, "No existing suffix in '%s'", str);
+
+This doesn't handle base names that contain a period.  strrchr() would
+work if the old suffix always contains exactly one period.  Otherwise
+another solution would be needed to identify the old suffix.
+
+> +static __attribute__((noreturn))
+> +void format(void)
+
+usage()
+
+> +{
+> +	fprintf(stderr,
+> +		"Usage: scripts/modules-merkle-tree <root definition>\n");
+> +	exit(2);
+
+This should show both parameters, <root hash> <new suffix>
+
+But they probably should be flipped to put the output second.
+
+Though, is <new suffix> needed at all?  It looks like it doesn't
+actually affect the output.
+
+> +	hash_evp = EVP_get_digestbyname("sha256");
+
+EVP_sha256()
+
+> +	hash_size = EVP_MD_get_size(hash_evp);
+
+The old name 'EVP_MD_size()' would have wider compatibility.
+
+> +	ERR(hash_size <= 0, "EVP_get_digestbyname");
+
+Log message should say EVP_MD_size
+
+> +	for (unsigned int i = 0; i < num_files; i++) {
+
+size_t, for consistency with the type of num_files
+
+> +		fd = open(signame, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+> +		if (fd < 0)
+> +			err(1, "Can't create %s", signame);
+> +
+> +		build_proof(mt, i, fd);
+> +		append_module_signature_magic(fd, lseek(fd, 0, SEEK_CUR));
+
+Maybe build_and_append_proof()?
+
+- Eric
 
