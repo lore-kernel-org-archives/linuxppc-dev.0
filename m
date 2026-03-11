@@ -1,42 +1,42 @@
-Return-Path: <linuxppc-dev+bounces-18057-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18058-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E92B1062896
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 12:59:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F6211125806
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 13:19:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fW9nf0WZtz3cC9;
-	Wed, 11 Mar 2026 23:59:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fWBCv2Gx5z3cC9;
+	Thu, 12 Mar 2026 00:19:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773233990;
-	cv=none; b=AkB3OoSsc/gffGkGVjNBwix3Y6UIDaw9NdJQSVWwkyJfy4N2z20zoajkmi3r7l59Zrbe9MxU9MRsjX2CG4wbQk3hBMd6+4lPJelc3s0RM4dIn+KORiRGsJDMTK7lcE0hCL8V8CuqewEDlg7iWgvQuFPR55QCCi4lLGgnkKQ3OLGM6QnVRO4gI9xMF8Wvn+gMcP4O2k2ITde+matKBmViUzx3kfziPCuoW9taoCVGm2UBLJO7V/wNF5afqr/YJWWX2HxDaRwqLTEoX4MvLLZpdQdT/k56K/CiXiT5U3wPMw2eZidvqJIOI9JICJMbF+VUKsvfP2GueFOBVyJhV1NE5w==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773235147;
+	cv=none; b=eeOq1IyMrjNAl+PlzM/EnuZTAOeEyeuj3uD2Hlukcb6vr5Fep19VN1jL9NhNUCzdL3OKRC8l1gKdLiudwGcScpLby9wIeAfgWaihvfVotBeOadF/7aAiaDXWshVKAlW61uZ1spUF7Boyq1g1+e2ImBsoeXXWkvj1PobTkhEgoq6fY2LwfJXrYzMcdLsc5bhBYf4C6ECC8InjdJ/oPUDsqKQfFm1klvKr+EHILwRMOIh9Vnw1VQ3eVVSdda4pcIft8/4SwfdkbD5BEqf3YSfN/9m1drJQ2X0vaS+jtGWDYsRDq4d1QWUL1SrO0/jFyk3+dbvazUOw3bflKyvrI3+nGg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773233990; c=relaxed/relaxed;
-	bh=bC0kY/4Na/XlNuC6qk5L4uZyWLWZIZvZpwIjsprH2kw=;
+	t=1773235147; c=relaxed/relaxed;
+	bh=+SMjKaB3sSi5nScBoqEvttRN0u+goKS17vQ/BC5xWIk=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Ceo5PFrCSsfbd4pCek8kQv2iRlDedoSoSk6jGgOTNA5c0MOoPJMSbZGIB5Tz6R/pDGIB2GrqdC0UETXwgI7f4kvQ6SAbUzWtJRtkzzK+WbaB3pRwOJVMaQSMvavT3rkvCsRnKg/2EGTvGLjTOWnlgwQQ5XlAn03ythkuDKpbQQ0RL5DFqH2GKXMI8aXf8yXk+OoSc9JDVwAIdmCpK83kXoXeiH65sl5uupBivCel8cVsw3/PYrtOWz14SPeDaVKTh/iYHhcm6LadnaU1yp3in2Uwn2HcrDBfwvzZuThrPPwQtm6P0vc8CvSyRe2Z2shiNILDW9daWuKjFiVsSXeacQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=CEiZ87VU; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+	 Content-Type:Content-Disposition:In-Reply-To; b=XJen9nCMwLqZaOUmdgfv8oIfxjqxtxmVkDNydYFgG549jrXl843z0hj7Z+poLLH5ppE2pmyI4yS/yRq5rruFNhSzwNrmBMcIxO8f9Cd6mLXtvFC6B6dnVAe4SPIHCxTuRTqtgNeF93nXje5Q6hfRrxzRWRRLk86EZ7S3ebDoSd6Y6ubp6UKzzmm1SwRlwKyUc/lYSzuJxVgGiNhHsbTLcAa2UQOQzhsA5oKKJS1XS+afUi/7x2gkx3umvBKWwAYJYuu18mWrKkPCV2lee5bFMUIer3kuOxXvBm5rP8gb4GTcv9utknhGoNcZb5PfoFUWXPGw1oC8OCrBfCGwwfmMkA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=HQsb0mto; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=CEiZ87VU;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=HQsb0mto;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fW9nd3DMkz3cBW
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 23:59:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWBCt0Vs1z3cBW
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 00:19:05 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1773233984;
-	bh=6iMI2XFYcGmArDxHVD1cNM01BLfDHO/WY4pBP+fXMLQ=;
+	s=mail; t=1773235142;
+	bh=yORSnb4FKH66tX09G1qK8g0oY/Uo2rIpyvZkEjNDm84=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=CEiZ87VUhKkkjxvvSxzMolbjRXZkdgJY0Rzic3nGaTRS6rUPbCgJmnQ+/+MVDz77B
-	 T0VB914Hs6kRIOMVG/+6qkbqwiEQ6Ju+JDASONipQYTCXd3FloBmK2xVggCqy7Xgzr
-	 wkmrvsN0vaq/eTWXkiLVV77iXHXn2bYLd9icP6MQ=
-Date: Wed, 11 Mar 2026 13:59:44 +0100
+	b=HQsb0mtoTbwEGco/L3lRbJ0WTajceIyEQmoKsZbs3ijP9DIl6uMUH7DyCJEKEf4Nm
+	 owAHusHX0qnegQ4fOa4IysSRsA4AurPsIoJqlTnoeOwj3DxmUIvbEJueidEPMQxkvz
+	 Uowp8NlWKsfgXCHMDcyu0Ko9Yx9jg/4i7nHbYH8o=
+Date: Wed, 11 Mar 2026 14:19:02 +0100
 From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>
 To: Eric Biggers <ebiggers@kernel.org>
 Cc: Nathan Chancellor <nathan@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
@@ -58,12 +58,11 @@ Cc: Nathan Chancellor <nathan@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
 	linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, 
 	linux-modules@vger.kernel.org, linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org, 
 	linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
-Subject: Re: [PATCH v4 09/17] module: Make module loading policy usable
- without MODULE_SIG
-Message-ID: <2f702140-32cf-40aa-80fb-3650145a2adf@t-8ch.de>
+Subject: Re: [PATCH v4 15/17] module: Introduce hash-based integrity checking
+Message-ID: <5726fc65-7d24-4353-b341-81b785f2575c@t-8ch.de>
 References: <20260113-module-hashes-v4-0-0b932db9b56b@weissschuh.net>
- <20260113-module-hashes-v4-9-0b932db9b56b@weissschuh.net>
- <20260310220146.GE120274@quark>
+ <20260113-module-hashes-v4-15-0b932db9b56b@weissschuh.net>
+ <20260311011218.GA212983@quark>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,51 +79,114 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260310220146.GE120274@quark>
+In-Reply-To: <20260311011218.GA212983@quark>
 
-On 2026-03-10 15:01:46-0700, Eric Biggers wrote:
-> On Tue, Jan 13, 2026 at 01:28:53PM +0100, Thomas Weißschuh wrote:
-> > The loading policy functionality will also be used by the hash-based
-> > module validation. Split it out from CONFIG_MODULE_SIG so it is usable
-> > by both.
-> > 
-> > Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
-> > ---
-> >  include/linux/module.h  |  8 ++++----
-> >  kernel/module/Kconfig   |  5 ++++-
-> >  kernel/module/main.c    | 26 +++++++++++++++++++++++++-
-> >  kernel/module/signing.c | 21 ---------------------
-> >  4 files changed, 33 insertions(+), 27 deletions(-)
-> > 
-> > diff --git a/include/linux/module.h b/include/linux/module.h
-> > index f288ca5cd95b..f9601cba47cd 100644
-> > --- a/include/linux/module.h
-> > +++ b/include/linux/module.h
-> > @@ -444,7 +444,7 @@ struct module {
-> >  	const u32 *gpl_crcs;
-> >  	bool using_gplonly_symbols;
-> >  
-> > -#ifdef CONFIG_MODULE_SIG
-> > +#ifdef CONFIG_MODULE_SIG_POLICY
-> >  	/* Signature was verified. */
-> >  	bool sig_ok;
-> >  #endif
+On 2026-03-10 18:12:18-0700, Eric Biggers wrote:
+> On Tue, Jan 13, 2026 at 01:28:59PM +0100, Thomas Weißschuh wrote:
+> > The current signature-based module integrity checking has some drawbacks
+> > in combination with reproducible builds. Either the module signing key
+> > is generated at build time, which makes the build unreproducible, or a
+> > static signing key is used, which precludes rebuilds by third parties
+> > and makes the whole build and packaging process much more complicated.
+> 
+> I think this actually undersells the feature.
+
+(...)
+
+> So I think this is how module authentication should have been done
+> originally, and I'm glad to see this is finally being fixed.
+
+Thanks, that is nice to hear.
+
+> > +struct module_hashes_proof {
+> > +	__be32 pos;
+> > +	u8 hash_sigs[][MODULE_HASHES_HASH_SIZE];
+> > +} __packed;
+> 
+> Is the choice of big endian for consistency with struct
+> module_signature?  Little endian is the usual choice in new code.
+
+Yes, it's for consistency. But I am fine with either way. Given that
+this is essentially an internal ABI, we could always change it later.
+
+> > diff --git a/include/linux/module_signature.h b/include/linux/module_signature.h
+> > index a45ce3b24403..3b510651830d 100644
+> > --- a/include/linux/module_signature.h
+> > +++ b/include/linux/module_signature.h
+> > @@ -18,6 +18,7 @@ enum pkey_id_type {
+> >  	PKEY_ID_PGP,		/* OpenPGP generated key ID */
+> >  	PKEY_ID_X509,		/* X.509 arbitrary subjectKeyIdentifier */
+> >  	PKEY_ID_PKCS7,		/* Signature in PKCS#7 message */
+> > +	PKEY_ID_MERKLE,		/* Merkle proof for modules */
+> 
+> I recommend making the hash algorithm explicit:
+> 
+>         PKEY_ID_MERKLE_SHA256,	/* SHA-256 merkle proof for modules */
+> 
+> While I wouldn't encourage the addition of another hash algorithm
+> (specifying one good algorithm for now is absolutely the right choice),
+> if someone ever does need to add another one, we'd want them to be
+> guided to simply introduce a new value of this enum rather than hack it
+> in some other way.
+
+The idea here was that this will only ever be used for module built as
+part of the kernel build. So the actual implementation could change freely
+without affecting anything.
+
+But I don't have hard feelings about it.
+
+> > +static void hash_entry(const void *left, const void *right, void *out)
+> 
+> Byte arrays should use u8 instead of void
+
+Ack.
+
+> > diff --git a/scripts/modules-merkle-tree.c b/scripts/modules-merkle-tree.c
 > [...]
-> > +config MODULE_SIG_POLICY
-> > +	def_bool MODULE_SIG
 > 
-> Maybe MODULE_AUTH_POLICY?  Hash-based module authentication does not use
-> signatures.
+> > +struct file_entry {
+> > +	char *name;
+> > +	unsigned int pos;
+> > +	unsigned char hash[EVP_MAX_MD_SIZE];
 > 
-> This issue appears elsewhere in the code too.  There are lots of places
-> that still refer to module signatures or "sigs", when really module
-> authentication is meant.
-> 
-> I'm not sure how far you want to go with the renaming, but it's
-> something to think about.  It's confusing to use the term "signature" to
-> mean something that is not a signature.
+> Considering that the hash algorithm is fixed, EVP_MAX_MD_SIZE can be
+> replaced with a tighter local definition:
 
-Ack. "authentication" is much better, I'll use that.
+Ack.
+
+>     #define MAX_HASH_SIZE 32
+
+IMO it shouldn't even mention 'MAX', as there is only one hash
+algorithm.
+
+(...)
+
+> > +{
+> > +	fprintf(stderr,
+> > +		"Usage: scripts/modules-merkle-tree <root definition>\n");
+> > +	exit(2);
+> 
+> This should show both parameters, <root hash> <new suffix>
+
+Ack.
+
+> But they probably should be flipped to put the output second.
+
+Ack.
+
+> Though, is <new suffix> needed at all?  It looks like it doesn't
+> actually affect the output.
+
+It will be required for compatibility with INSTALL_MOD_STRIP,
+two patches later. I'll move this code into the later patch.
+
+> > +	hash_evp = EVP_get_digestbyname("sha256");
+> 
+> EVP_sha256()
+
+(...)
+
+Ack to all other remarks.
 
 
 Thomas
