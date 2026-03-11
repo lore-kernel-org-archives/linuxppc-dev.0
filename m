@@ -1,81 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-18004-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18005-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1AD38FD88E2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 03:02:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73AD5FD88EC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 03:37:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fVwXg232Zz3bTf;
-	Wed, 11 Mar 2026 14:02:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773198163;
-	cv=none; b=i6CoD/rqosuDaEQictCPAPPX34L5ubb+Q24ndhTe1LMZdj3sj2fdEITgqhinFftT2rzLJqTXRmWb2PVv7oiwGLoTkIDnR15ETka+EalwoDGpnr/6F33J04MVl4ryJFBpPo3cf+VVLab192k050zF2KxWWHvl7XnRRs/tdZAKUuxK+plr3MfowY8zepS74ijE5NxHmcw6lo+Zz72eShI1Mlm7nqXZXzPWQDApbmqSSSWG2+Bz7WgJEj1f1nPKWLrFnv3EINRHt0y2fRT7T0B8R1aKzYLUSE/Xo/EJN51ZRR8HXhHfBmMZf6paUjvXRNj5ujOQpeBE7awffu5vf8/ALg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fVxJd4ddzz3bTf;
+	Wed, 11 Mar 2026 14:37:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::433"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773200241;
+	cv=none; b=YB+Dd9WfIp8Lejff1ern4Kjtn/oNafXaa80aq9bbegi54AhJjLLMFXuHMo39ndb6BYBRUeXuWRCQh6Sy69O7VmsmD1ggDprvW/zYmL+58xXyqv4/AYIMWNQoIlc8SqxpWBHo9vsiJhHYiry2cg6qNPn6P5QP5+9xRQV0dcRc2k95ZbajFBQ+uC7uwe4vXT8Ydmbbukt6sWmcK956uhsX4mlKiqNmvA6awjWSnmq2Sukw7veypIY0F8/XgN4tHVvP2zWeVV/3NmM3OGEG3XyyZMThYJSuSW8k6tKoBEsn0r2H496DwfbQi+qiopKx4DS5NJXtzBf7FEoq4byhcqIoXQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773198163; c=relaxed/relaxed;
-	bh=vO8RhD7fGikYRNYtDoD/8DClVqthT19fczPJykhciJA=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=Ynx452Dw7P9dw1/iINNN7Fz0+g0f8SAVskCXDmXeprOczZbNulztay76XMNgZyQZvmmXVyoBMTmKiKAK6YAqY8QL9p79hTMfZJ3lciSCY7tzXn8p+FPpa7DLsQ+Yx+AKPIAhP5QU9CvM9A8G1GZKSmOL+8gYhLyfasvYJLlkFcLJS0Y56cmrGK8+BNW1Ld6SBdcHtv+Z+PP2e+9fhZrN9wqZJR4ztGGmMUkzhZ62kN7v4AOcSquAA3qdrbgzPoB094qGqLkZt203agDRAYyRlNBXk4EyFu0bggPtbWcKGmShgIc8Bzw8/vKZBRbNkgAN81XHonLHbGX0oiQfxwrASw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=aNTGTaNK; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1773200241; c=relaxed/relaxed;
+	bh=rHxXiAvo6zOonxHyAewJkbWbuOENn2paNkRQUdILloA=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=C/w4kSYYfX+kvkvq6ujHC8ZTDUWtarzjnq0YaEESx4KMSJdkhVJUnAzXyf2Hs5K/Re/mq9dwT/GDBrz44PFlLJTTMrYapZlY/n1iDcklQ6zOqHkeYN2gx0K5lCsCURx4H3RFyXqps25HJ9W8EUBcHIO+PgjxMFYiVC7J3WR1Ov6PkHZjCOl1YyzfuNRJg0dhTp6TwnwjW+rVpJjLn3UhUN6H0tTlTObIz1wtnyuOepzceLx5m+0GQNU9OyQBNuEP6F4kmr5Dm2MSD2/He0nu6eGjblUnH5gN1AL8sqi9WYJ/a5n18NKrWtF428yyapRZzdZMFRx7Sr+XY/nAo22fNQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Amca++Pi; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::433; helo=mail-pf1-x433.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=aNTGTaNK;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Amca++Pi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com [IPv6:2607:f8b0:4864:20::42e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::433; helo=mail-pf1-x433.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fVwXf1jmbz30hq
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 14:02:41 +1100 (AEDT)
-Received: by mail-pf1-x42e.google.com with SMTP id d2e1a72fcca58-829a9c03780so4478007b3a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2026 20:02:41 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fVxJc1gSdz30hq
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 14:37:19 +1100 (AEDT)
+Received: by mail-pf1-x433.google.com with SMTP id d2e1a72fcca58-82735a41920so5038977b3a.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2026 20:37:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1773198159; x=1773802959; darn=lists.ozlabs.org;
+        d=gmail.com; s=20230601; t=1773200238; x=1773805038; darn=lists.ozlabs.org;
         h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=vO8RhD7fGikYRNYtDoD/8DClVqthT19fczPJykhciJA=;
-        b=aNTGTaNK0xgpMGwEbQOyn4xZdLuopMnx1Avjj9QkzqONLuo7FEkT7xj/IdLp8cI7mj
-         llHNKXY4Xcp/JyiL1lE39Ni+LnFG58JGE/ABIqtA4seJwrLq4hK64r06NPaMHblRpdgE
-         3EPrDjw/WmrAd7oUTmSDCCq5CHpB/oM0l5wWtUBE40D8ymNadvZn0ObYaNM1c4LVY0Qg
-         pDv2CIu2BR22VyXrqr0/XSnoWQYxiHCKJNUPkguS/LWVi+savz5LKp2lYa41LE7My9it
-         Nt0g6TpW1XMGj+87bnmxm0bfGLnrJflvaTwYJfJji/LIJ3k7/20WuJyI2QbMIgP57WIk
-         lg4g==
+        bh=rHxXiAvo6zOonxHyAewJkbWbuOENn2paNkRQUdILloA=;
+        b=Amca++PitSeJqU+i8tG7WLQR64TdYMWUi4FhDApk7/YkqAJavpNj8dRkCMH3LaVqss
+         IpP2v+Q5iMLyoWq7c9K9kGgdpTnVz7Loe1oUD7jxGfjVxtVxS5klon8Kyqqz2UUy4ku3
+         yPnAHDsqee1mEOn90t60EdLqJ4sp0QMmpX02SV9PuYt4yEgc4OAI5CxVZ7Y0p0M4aldn
+         utQtIKKN3T9NYzZQBSoI/LpbqzJ73McgjCUqpvQ26ku6iUhzvp3auOpaa6wlJTXcD7EM
+         crSf8TIl5zYJ68zThggVzcykwMI32CUSz+i8MYVweSHgug1fjxp2XBEWAS6GLHDdLNuy
+         KFgw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773198159; x=1773802959;
+        d=1e100.net; s=20230601; t=1773200238; x=1773805038;
         h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=vO8RhD7fGikYRNYtDoD/8DClVqthT19fczPJykhciJA=;
-        b=rBAPxLhSFeWW5sKgxEruK6TLSb/jLuBb6mzO5BIthbyDqbzDlcT1Ub3CQP/+NGHfdu
-         n97QYNQU9ClJbgq+G1d2cCKySb/0eG8g4ZVe3yTmflIfdYkk5d1UtHKhg2GzBmFwLyPe
-         MS437DuekmwQxckTvED6f1iAzXPJO71szS2Z1vPX7sCE/RGpuwN7O4S+/Q1SQSgldjAh
-         h48ZPsFJ8J0Kh6JZzIQTygXvYLCS3p9QtRGpLY/rB0WTjyeyQG0+ohYBKCtYRk8MZbdH
-         5Ksw4Vf4H5xe8xXrH3W7MXoqc0dd0bYRlOAyC6za9rOkTU1KoPcGErmDEuB9JBu61s+B
-         aqxA==
-X-Forwarded-Encrypted: i=1; AJvYcCXy8xONmOHmauhb4TZh+5DujL5vjY69G+bt1bJEgO67WMgwZq2rfoWlPew+NMEaYV2kAC/Tt5ogPNCbI5A=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yw18oC5d8KALdPC1ucaqUgT3IB0fpb3KD+aM31NGnQuVIyVXRXJ
-	enME7ls5p6PJ5fEXkuBGfGvnamh4tNa2Ggf+fAvWf2yJsxNoJhBBUqZy
-X-Gm-Gg: ATEYQzxi8lkb4lY3+lJE5EY4t1FLsS25A/PpxTE7bCt7DDAsVMtNDgauO20AqWIRB4Z
-	7dYPRdQ52ge5r8WqSd+WpAN7e01tVWwY6Y2yKJq2y8I4FVrYmZsgEAlH6YztU9+5mF9ew418dN8
-	eOZU1TrOT7U+vdImjfqgF6Q/tdeWSifV4AXG5Qu06PqnQiPXxEto7dGkRaiJlaTag9XzjCEbv59
-	2n9/QiEE5F4EA1PqvmjdXQjSjV5aYfq4tIbFNqe/zXMFYss1jtiLxryeE9XJahKcbbT8TwM1sF4
-	5+300Ux5LZg1UQxRFZFHpkmOGkIP2BZPZ7a743i7FidBRapjinRPUquuF8bsQdzUz21tzIxUTJj
-	s99url9bzEdsj8y+f4yciuu3+2qYN74Bwx9UFg0CvC53dqGdIXb9vE+lWTk//FNHBfU08mw+9uz
-	NV4yKnN+ES3nSK19HbX6CSzQ==
-X-Received: by 2002:a05:6a21:38a:b0:398:778f:6973 with SMTP id adf61e73a8af0-398c60e5857mr818593637.40.1773198159334;
-        Tue, 10 Mar 2026 20:02:39 -0700 (PDT)
+        bh=rHxXiAvo6zOonxHyAewJkbWbuOENn2paNkRQUdILloA=;
+        b=D//8XhucZ7+AMa9uzqgz86tYaWAfLI4OMezfyi+P5eKIJ2vn4Lk5WrQk46x8sMRyqV
+         Dxd9F49szAFjBtoesbrboc889443ZdgpubWLd66eFldqlsJ61aZ/tZrdQmsH6oYMiUmC
+         p8e9/uiiHjU2sspjjNkPzlcXvUY78HbtTwGxQb4j1Y+dqFKm2wc26ejQxoiRraHLT/uP
+         iFuY/2wIMU+MMNZTtwhvPuaGZIXzFt5DL+nR6IXRNVpEfDnQAczlV4R4eGprMcOlRZ0O
+         LJH+Q6qLxF/TNqWS4ZJ5fy5hgrxM1C6Bj3+QeNeEA6asI9uFmFj6OOl44M+Y/fB49D1g
+         GKyg==
+X-Forwarded-Encrypted: i=1; AJvYcCWbrz3X6fBqjR1AKpoTTbeHaAnHgT6BWpseWBvYAu2efYOT5bjL1s/imOptK4Viw6AxYzXBdapf9BX42pM=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzEsQJ+RuHiYxpvoQUF/Qrteeqj4DYew/JDi3EZqw0Rt5SMKC2B
+	sMKlzQMPItV5i9riSguzCXY8IZYe1gd/5EHzPOTvJoZW6uWsmASYzdXK
+X-Gm-Gg: ATEYQzwJbNYdNZQKyHI6dnjvR6V9tQ40+DqZ5yt88YTwuzZAYPJUlbyUQnCtR3WL4+a
+	DruKnrjpsTQSVs8nwU8/aZ1eGw59feT+MUAsD1QPi3eHYLfBc7az4sFp8Q+s2w8GYVsWEVa8+Z6
+	T+Ym/TWEbgzfMCCX6DRIDyV365pxd1KPGQ7dXqSJjB1sEAaSv8tH3zKFKFHjwEnrTA0O4JJu4bp
+	/awZMiS9p7d+IvhRM8csZW0r++Fq8V5eEq98cv37OoRhR3zt+fdgsB+fY85ABUxBG8LjIo6q9jr
+	r/IT0vjE3rVgPN7Zpdu94kDLltF3bva3t+lcVphpr49zQ0Rbw93np3hgx42CjQVrWCX4C0gd8DL
+	4NMDOo2qqwTxHxA0o0p6dab9Sa1KP+iq5xgIWFgCwOyAQ36fT/Pa8hVP5OJZ15/f6qYBjyIJu/6
+	SXLPYQp88Z7BKmuMsDmxFyxvA3ke5eQVmx
+X-Received: by 2002:a05:6a00:bc93:b0:829:7d88:34c4 with SMTP id d2e1a72fcca58-829f7274b2dmr1088865b3a.64.1773200238028;
+        Tue, 10 Mar 2026 20:37:18 -0700 (PDT)
 Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c73cdf2725csm548196a12.13.2026.03.10.20.02.34
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-829f6df3bcbsm752506b3a.15.2026.03.10.20.37.11
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Mar 2026 20:02:38 -0700 (PDT)
+        Tue, 10 Mar 2026 20:37:17 -0700 (PDT)
 From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Alexander Gordeev <agordeev@linux.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Pasha Tatashin <pasha.tatashin@soleen.com>, Andrew Morton <akpm@linux-foundation.org>, Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>
-Cc: linux-s390@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v2 1/4] mm/page_table_check: Pass mm_struct to pxx_user_accessible_page()
-In-Reply-To: <ca77f3489453c2fe01b25e50e53b778929e0dfc5.1772812343.git.agordeev@linux.ibm.com>
-Date: Wed, 11 Mar 2026 08:29:53 +0530
-Message-ID: <zf4ft6ja.ritesh.list@gmail.com>
-References: <cover.1772812343.git.agordeev@linux.ibm.com> <ca77f3489453c2fe01b25e50e53b778929e0dfc5.1772812343.git.agordeev@linux.ibm.com>
+To: "David Hildenbrand (Arm)" <david@kernel.org>, linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, "David Hildenbrand (Arm)" <david@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, Lorenzo Stoakes <ljs@kernel.org>, "Liam R. Howlett" <Liam.Howlett@oracle.com>, Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, Paolo Bonzini <pbonzini@redhat.com>, Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [PATCH v2 4/4] KVM: PPC: remove hugetlb.h inclusion
+In-Reply-To: <20260309151901.123947-5-david@kernel.org>
+Date: Wed, 11 Mar 2026 09:06:06 +0530
+Message-ID: <y0jzt4ux.ritesh.list@gmail.com>
+References: <20260309151901.123947-1-david@kernel.org> <20260309151901.123947-5-david@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,35 +89,36 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 
-Alexander Gordeev <agordeev@linux.ibm.com> writes:
+"David Hildenbrand (Arm)" <david@kernel.org> writes:
 
-> From: Tobias Huschle <huschle@linux.ibm.com>
+> hugetlb.h is no longer required now that we moved vma_kernel_pagesize()
+> to mm.h.
 >
-> Unlike other architectures, s390 does not have means to
-> distinguish kernel vs user page table entries - neither
-> an entry itself, nor the address could be used for that.
-> It is only the mm_struct that indicates whether an entry
-> in question is mapped to a user space. So pass mm_struct
-> to pxx_user_accessible_page() callbacks.
->
-> [agordeev@linux.ibm.com: rephrased commit message, removed braces]
->
-> Reviewed-by: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
-> Reviewed-by: Andrew Morton <akpm@linux-foundation.org>
-> Signed-off-by: Tobias Huschle <huschle@linux.ibm.com>
-> Signed-off-by: Alexander Gordeev <agordeev@linux.ibm.com>
+> Reviewed-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
+> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
 > ---
->  arch/arm64/include/asm/pgtable.h             |  6 +++---
->  arch/powerpc/include/asm/book3s/32/pgtable.h |  2 +-
->  arch/powerpc/include/asm/book3s/64/pgtable.h | 10 +++++-----
->  arch/powerpc/include/asm/nohash/pgtable.h    |  2 +-
->  arch/powerpc/include/asm/pgtable.h           |  4 ++--
+>  arch/powerpc/kvm/book3s_hv.c | 1 -
 
-straightforward change for adding mm struct param in the page table
-check calls. Also verified building different powerpc configs using ci.
+Make sense to me. Please feel free to add:
 
-The changes looks good to me. Please feel free to add:
+Reviewed-by: Ritesh Harjani <ritesh.list@gmail.com>
 
-Reviewed-by Ritesh Harjani (IBM) <ritesh.list@gmail.com> #powerpc
 
+>  1 file changed, 1 deletion(-)
+>
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 08e5816fdd61..61dbeea317f3 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -36,7 +36,6 @@
+>  #include <linux/gfp.h>
+>  #include <linux/vmalloc.h>
+>  #include <linux/highmem.h>
+> -#include <linux/hugetlb.h>
+>  #include <linux/kvm_irqfd.h>
+>  #include <linux/irqbypass.h>
+>  #include <linux/module.h>
+> -- 
+> 2.43.0
 
