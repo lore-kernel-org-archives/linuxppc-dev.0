@@ -1,72 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-18072-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18073-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9520D1125857
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 17:13:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 502AF1125859
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 17:36:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fWHQ52Vn2z3bnJ;
-	Thu, 12 Mar 2026 04:13:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fWHwf2M5Tz3bnJ;
+	Thu, 12 Mar 2026 04:36:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773249197;
-	cv=none; b=NVU6BGv6XyZrWZlt/W1rVN7PcZJwzB2jclHcQ3haCkJuUxLl0gw3a3Xv0vVVH/jK1L1fYCeNzuPydRQ3kaHo7he6wmD/+dxdl3/krd12+IHrIfTnkB4zcUe65ne3FZtu+Is5sTaMZeoQh+Lfrv6XlvEChFHgA3OoNLK9/Ay/Sy792GFlSyX50Vfm/A1T/9UTur3EtvXY+ZPumt6G6ZcFvw26JGPgxl1p6z6R66DSJRYxBawcReB5KaWYj5nxlsw1EGEOZCHBlkFRb620YGGhLCAQjxWcu85HawZseekmuvKzRjoiexh1Mnii8UYc6MEJiqYQof0VYDbPoNWTEOOMVA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773250578;
+	cv=none; b=AefUqTWRoEm6IT5bm9necQ6/5GCa7nkbdqpptB/CrsFfuk6ZAWzNB4IG/ip4v1fgUI4XU9LWufti0xTUOS2/1iWswX64Wlk8IWb7dIqOhDe81wQTwkSEhe2hFvy/s8kWJ6eQo832u1RyBsWwan9LQesXPPotZoi6Ju+dwStmVAYt+lq9XBfJwnWG9JwZZw9qqciylORaNoPj4llUSN61Ja5Tzljr6GcyLBSXjNJkGkj3TO0fVB8eqmBdXuFO/oHLBTHziS6hjXABjO0AA5r3IohgmmeRqOFJQd29+6efY5PQkudkcxSpt+gDsJ/XOjXIAaE0AFoSY+eOknrDtQC9dg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773249197; c=relaxed/relaxed;
-	bh=9LVSuSaXQ9BgK0Bmfla/t/18Rpzx3jf4FXS7kg3VvUA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XbhN+Ac14XqFePSwXU4NMcaVSUhl7n+Bcrl56PAJSENTUkLzA57bVww3PCC8JUnqKh0ZAAtDQ1B0FsCzgepU7mRewulbGw/qUzBXmhEI4A7qg8ncPVW5fnjud5fZiY1pp9529oq/2koogS5JhaO4DbJljlzHJ/pxMYaYVvZiEVh4mPOg8i10cRYzYfkV9osH1OBIV/h/gg02yj8PgAc9u16f0ds7ap/93kagPh4TtyjYZh50XJENA68d3NRsjDps0M2MtoSy0T0N7Lm4tYvUlcjKkLnLYUBgpEmDbL5G4y7b4GAeHewWF6H1JJi1T5xdZcWGIVDUlP1tOGKSmpu6kA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RcjXj8/D; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1773250578; c=relaxed/relaxed;
+	bh=/n4FZenIz8wQOxAo+5+aDnwYgrj0fGGzeSXpZxRkgHE=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=IJZe2Mfh6MPqw7m+lsLNv1k8ErzWUvFCAs8c34dofSFZRhdr9T7grrI7gTtHEr4by8wxHGpJj70UHcuGE0ZQCgVuXFIDSaulNssLVd7M5S55Jb1PxfU1/b/czZDoIMJCsyNl7k+Vxn/BLDPLXRqaWYLcaWp7CfLV4NyZb/fLTBI3rae/jltYxp6otA5dfI1YRYwROHXG32dp0DjNa5/cm5MRg4FiZVJdPFVCVYQGHDF27A/HrZGhVe/RTbivZ1l55bCjM3vUrLR123hBd85v5ISjCfvPgI5AlzsEer+kgTn69qEdcEZ1WY58dvHiB1tUqvru6V0acYktMyOk/6WlRQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SZtIEoqG; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RcjXj8/D;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SZtIEoqG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWHQ418yMz3bf8
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 04:13:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWHwd3Txhz3bf8
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 04:36:17 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 8A6184055B;
-	Wed, 11 Mar 2026 17:13:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9331FC4CEF7;
-	Wed, 11 Mar 2026 17:13:05 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id A3BE24456B;
+	Wed, 11 Mar 2026 17:36:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 7CF13C2BC9E;
+	Wed, 11 Mar 2026 17:36:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773249194;
-	bh=HnZ43XwIpl7dh8HMwqHbhWOqb5h5K/qibXtHrWYtI2M=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=RcjXj8/DHiK3t9Ki5/dVU994YOCV7pkhmvdfHpP4Ni5RfLuvggNyoukzjJy+iUcM/
-	 yYF4laxETNu7z5UX4GLlXBVcBKhNJCJHqn6mM3E6eHbZq7wMw2ouAYu1SN2ILjvQYw
-	 J8A0r77BE53yNF+8d7rbvjB6vSmCFGwqsiLHpGE/KW2Dt37kEJJc9RlFVidiyXemGr
-	 p5YdhtPe4yojoe38FQJsWiCJ6ye2eC5KbXlgTUSM8cF8v1rQrqBC/ZvzQa1rfEeFJm
-	 k4tniKn4qUAyyWP4hNn60exginXUH7wdQa2jvpFX2LMzC2CHmbNC5do1atv2h6UAyW
-	 cn5vNsYhBsrUw==
-Date: Wed, 11 Mar 2026 22:42:56 +0530
-From: Manivannan Sadhasivam <mani@kernel.org>
-To: Niklas Cassel <cassel@kernel.org>
-Cc: Minghuan Lian <minghuan.Lian@nxp.com>, Mingkai Hu <mingkai.hu@nxp.com>, 
-	Roy Zang <roy.zang@nxp.com>, Lorenzo Pieralisi <lpieralisi@kernel.org>, 
-	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>, Rob Herring <robh@kernel.org>, 
-	Bjorn Helgaas <bhelgaas@google.com>, Srikanth Thokala <srikanth.thokala@intel.com>, 
-	Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
-	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, Masami Hiramatsu <mhiramat@kernel.org>, 
-	Marek Vasut <marek.vasut+renesas@gmail.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, 
-	Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, 
-	Kishon Vijay Abraham I <kishon@kernel.org>, Manikanta Maddireddy <mmaddireddy@nvidia.com>, 
-	Koichiro Den <den@valinux.co.jp>, Damien Le Moal <dlemoal@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
-	linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	imx@lists.linux.dev, linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org, 
-	linux-renesas-soc@vger.kernel.org
-Subject: Re: [PATCH v3 1/9] PCI: endpoint: Introduce pci_epc_bar_type
- BAR_64BIT_UPPER
-Message-ID: <6b6w7ni62ty3oimj3cwfzyv75evslx2vhojp3f6rpnbxtamv7g@o35zul3tkbrf>
-References: <20260302095913.48155-11-cassel@kernel.org>
- <20260302095913.48155-12-cassel@kernel.org>
- <dtxdgxrewfby5hu3cu3pu5kljylm627uc43sw75gk7loimmm6r@ei4w6wmqgd6a>
- <abFGOoZUX_vexLWR@fedora>
+	s=k20201202; t=1773250575;
+	bh=sYp6SDAoGDNbT6mgkoV4qYqYzFe4douGMtogxZUg/TI=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=SZtIEoqG91q8bUKj+cVruHBbPaK25z3wGdLyYgPV2+t/vlxsG1aqrte0zYaQc6azB
+	 qCbDVJgKj+ti9uV8xqrbT+ExZlDCsEYcBGE0h9IJscWZEK7ff5wzmdT6Ifm75wZ99g
+	 e3e8nJxE6uia3fKMw/gJw+0FT1cZckfnZy+VecQTDTWwV4rEfi6ezgDoT3aD8rrOwm
+	 jkbX/DcHbbXHz855KxHcd7Ilk5yg1zX9kl4Vfh3KNrBMw/vYbGYAnn/34rLPafLJN2
+	 WFr0yaUD4ybRfTKbrGU6dWKJQW4uI/KBFGLSeF71mz2VLI67MX1rqWLvm1hrawwXKw
+	 XmSNb3EgBs2yg==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A86C1125859;
+	Wed, 11 Mar 2026 17:36:15 +0000 (UTC)
+From: =?utf-8?q?J=2E_Neusch=C3=A4fer_via_B4_Relay?= <devnull+j.ne.posteo.net@kernel.org>
+Date: Wed, 11 Mar 2026 18:35:57 +0100
+Subject: [PATCH 2/3] powerpc: wii: Fix GPIO key name pattern
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,79 +63,65 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <abFGOoZUX_vexLWR@fedora>
+Message-Id: <20260311-wii-schema-v1-2-1563ac4aefa8@posteo.net>
+References: <20260311-wii-schema-v1-0-1563ac4aefa8@posteo.net>
+In-Reply-To: <20260311-wii-schema-v1-0-1563ac4aefa8@posteo.net>
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+ linux-kernel@vger.kernel.org, Link Mauve <linkmauve@linkmauve.fr>, 
+ =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1773250574; l=841;
+ i=j.ne@posteo.net; s=20240329; h=from:subject:message-id;
+ bh=tYdEm39DKLsN+x1RpeowsrJyD+YP6FEzuLwykYwk9Tg=;
+ b=eu9NoxwayNEl+/lwzPRUx2hDf2f/CIq8ukS16+rS7u1veFXrlYg4Je6EO0OllPuFTl0P/IFJQ
+ m4mqXChvjZiDuGcPr2pjiPZEde5GpJVtDCvkqzolstrWf79oQpkrfo5
+X-Developer-Key: i=j.ne@posteo.net; a=ed25519;
+ pk=NIe0bK42wNaX/C4bi6ezm7NJK0IQE+8MKBm7igFMIS4=
+X-Endpoint-Received: by B4 Relay for j.ne@posteo.net/20240329 with
+ auth_id=156
+X-Original-From: =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
+Reply-To: j.ne@posteo.net
 
-On Wed, Mar 11, 2026 at 11:38:50AM +0100, Niklas Cassel wrote:
-> Hello Mani,
-> 
-> On Wed, Mar 11, 2026 at 12:05:59PM +0530, Manivannan Sadhasivam wrote:
-> 
-> (snip)
-> 
-> > This also brings the question, do we really need to mark the preceding BAR?
-> 
-> From a pure code PoV, marking the preceding BAR is enough even with the
-> current code:
-> https://github.com/torvalds/linux/blob/v7.0-rc3/drivers/pci/endpoint/pci-epc-core.c#L101-L103
-> 
-> However, the current documentation claims that the succeeding BAR must be
-> marked as BAR_RESERVED:
-> https://github.com/torvalds/linux/blob/v7.0-rc3/include/linux/pci-epc.h#L207-L210
-> 
-> I want to change this to BAR_64BIT_UPPER / BAR_64BIT_UPPER_BASE, so we can use
-> BAR_RESERVED for BARs that expose fixed hardware resources (e.g. eDMA regs).
-> 
-> 
-> Thus, an EPC driver does not strictly need mark the succeeding BAR with anything.
-> This was done mostly for clarity. (E.g. with BAR_64BIT_UPPER_BASE it is obvious
-> that this BAR cannot be a standalone 32-bit BAR.)
-> 
-> If we don't mark the succeeding BAR with anything, IMO, it is less obvious that
-> the succeeding BAR cannot be used as a standalone 32-bit BAR.
-> 
-> But... since the code already does the "right thing". We could simply nuke this
-> part of the documentation, and drop the .type for all BARs succeeding a
-> .only_64bit BAR, if you prefer that option over having a dedicated type for the
-> "upper base of a 64-bit BAR".
-> 
+From: "J. Neuschäfer" <j.ne@posteo.net>
 
-Yes, let's just remove that comment.
+Adjust the names of GPIO key nodes to comply with the schema in
+Documentation/devicetree/bindings/input/gpio-keys.yaml.
 
-> 
-> > Why can't we let the PCI EPC core to always assume that if the previous BAR
-> > has 'only_64bit' bit set, next BAR cannot be used as a standalone 32bit BAR?
-> > 
-> > I find it weird or redundant to mark both BARs.
-> 
-> Redundant, yes, but in my opinion marking both BARs makes it unambigious
-> that two BARs are used when a BAR is "only_64bit".
-> 
-> E.g. Manikanta originally wanted to add code comments for the upper part of
-> the 64-bit BAR:
-> https://lore.kernel.org/linux-pci/20260217-master-v1-2-727e26cdfaf5@nvidia.com/
-> 
-> Sure, we can just skip the .type for the succeeding BAR...
-> But is that really better than clearly showing that a "forced" 64-bit BAR will
-> always occupy two BARs?
-> 
+Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
+---
+ arch/powerpc/boot/dts/wii.dts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-To whom are we showing? If it is a developer, then he should understand that a
-64bit BAR occupies two consecutive 32bit BARs. The flag should only be set for
-the code not for the reader.
-
-> 
-> Tell me what you prefer:
-> 1) s/BAR_RESERVED/BAR_64BIT_UPPER_BASE/
-> 2) Change documentation and drop .type for a BAR following a .only_64bit BAR.
-> 
-
-Let's go with 2.
-
-- Mani
+diff --git a/arch/powerpc/boot/dts/wii.dts b/arch/powerpc/boot/dts/wii.dts
+index e001c4c6fd79ad..57d428b1f78740 100644
+--- a/arch/powerpc/boot/dts/wii.dts
++++ b/arch/powerpc/boot/dts/wii.dts
+@@ -256,13 +256,13 @@ drive-slot {
+ 	gpio-keys {
+ 		compatible = "gpio-keys";
+ 
+-		power {
++		button-power {
+ 			label = "Power Button";
+ 			gpios = <&GPIO 0 GPIO_ACTIVE_HIGH>;
+ 			linux,code = <KEY_POWER>;
+ 		};
+ 
+-		eject {
++		button-eject {
+ 			label = "Eject Button";
+ 			gpios = <&GPIO 6 GPIO_ACTIVE_HIGH>;
+ 			linux,code = <KEY_EJECTCD>;
 
 -- 
-மணிவண்ணன் சதாசிவம்
+2.51.0
+
+
 
