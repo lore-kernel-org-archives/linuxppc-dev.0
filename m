@@ -1,51 +1,74 @@
-Return-Path: <linuxppc-dev+bounces-18061-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18062-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4661D1125821
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 13:45:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E23AFD0651
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 14:19:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fWBpZ3qGpz30hP;
-	Thu, 12 Mar 2026 00:45:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773236742;
-	cv=none; b=OMcsms1sPhCsiEubwjJizAQu4pL2FvdxlaVnDaQEF3KnJsrsgeRyYx2CXereCqj5hxmywKBByWe65WLCh8pJcXReU9+0EkpTDUx+Jfkc/RPtWvvx1dBoDvcFUpHAt3YgtiD9Jk2SLCNPRns5W+SDXSPjooUuWaZZYKVTERiAJhIfUHIJhveQbHolS7R0MBQhkFNDFdG3L1HFoEDr7ElRn0pIZ5P8DCHvI71Ljtg5g5DHpUPn2YzaHQpLFrYECe+o4JvSrFCAN9rpY3g13MkP+k86sJlZWcfc01tpf/1OHh2MLa8pORPN/9mAptgosWX7StLey0esIfP43aTVKiRqiQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fWCYq6s42z30hP;
+	Thu, 12 Mar 2026 01:19:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773238783;
+	cv=none; b=WFMDUS8SHRnUNG+gWp3eJ4EwDnX+FZN1th5m/0XCeqmU3yE46IgiBWkVTOFkeIqhe+0E91n5AQNxSjQKWSxPJYn5ilPbe+Y/kPH7X5lEx7fr0o3XIE2C9Euax6bcsc9XG8V0gcBfeEFIwD0GAjNc2V+6tjbdVvUa3AnDGgm6YLcKIHzbfzv2rxXNST9v3wXidHpo5WRMxjXii/z+W5afiThJZHo545tnT7dkHYNvjtfGxfpkcXlzD1x0XUYIMko6ZhMUPMfpcT8yDPhSX7YlaF9sZ9BDSo9cGi/KHWZuLX7VrO5A8ibPoeqmFvKoDFNAHVAWPO4MiybJFsBf0eJJlA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773236742; c=relaxed/relaxed;
-	bh=vQ4iu44KrKU3o2jrT82L1DnCVLibpR24izxdjZQOz88=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=DRgwg/vJRFRoBwdqolCFtqCZrYTkO4nOhrQreidDFYVwTnpvzQF535jGP/u3m6CRwyeZAAJhRwcegFosmPHfnjbNW6JO3m/vtTMbyb1GAvCY+elHMfJZ4X2Lcfen7pu6VOGglfow5DQ2LWS4duQGpwnlAab6AFRWuRFan4Zy9Iy2g8OcUxKdNEKCXQoR31XS6RrbMBRuQjrjo/bzivNpCyoRBd4XpB4CjCjM5a7HJ+9Q4X7npt2IC1H8kGWXJ12jVaEKaLoTkKCgWrUI4lg/iGYFhILuzIMJ7msXO18LBxfA780kPlXcckuruG5ZDJVv+ijbulzyGt6ipQQEFkPeOg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=n5q57R+D; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1773238783; c=relaxed/relaxed;
+	bh=zxwsUH5NxYcd7eAP3KCFt8MlCNMC8DPCTU47ttb2/Io=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=bd8R3Y1Q5FGm/jHdX/y2AOjGF7sl2a4g5tG11ViCOLKrwxLS0OoyH0v5Gy6YETILsH5so30S1/nWVvqAc/WGEIqXI3kx3wQd+pDOcaUoB8TsCKTSYI+/nykBd3uSANjbIsd5mKcUy9Bx2YrCBlxfIK8tUbhsVFsSFptMzxJGD1rK97CCo07bxgSUO1xS8uYoI5PhWy6EiaOoERDCIrWk9inFKWuW8fhPRtNxl9xmws02pqUQSDD9/FgFWeMHyKaiD8WgMlv9TVdWg4t/P8FC3xohdrWABK9dDgWPRKZIW9vJQjqTtQhW9jXYaafAq4JrVGSf6606F1ReQGnsY06cHA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=N7wEdddL; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=n5q57R+D;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=N7wEdddL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWBpY0P1Mz303F
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 00:45:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWCYp642kz303F
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 01:19:42 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id E46274165A;
-	Wed, 11 Mar 2026 13:45:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B22AFC4CEF7;
-	Wed, 11 Mar 2026 13:45:35 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 37CA36012A;
+	Wed, 11 Mar 2026 14:19:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 54B07C19424;
+	Wed, 11 Mar 2026 14:19:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773236738;
-	bh=FwJxugIu51rQzGKdILW6u0ISvFSH2WHg0PrqiwtyazI=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=n5q57R+D60bNK5VQOoQEW0xHP9oy//qLAmqok7x5ChmA1xGz8HsL55NKgQnTRfeuT
-	 ZwIobAY5LFRNie6ioRNae5VPHG/4ZIkaKJ+n3JcPlCDSRjbaSqJbjritvPIOKXM6Z2
-	 iSH/X/mpWo4Z+OVjbPDH7OSoI5eZQOY9fr+2Zj0kGNaXyoWcQkggJWip7tz2W7yTTH
-	 cDXwQdB8VYAk1cZeNARo9IezenM0PpaX245E58OBaeygPu0VI5MqUv8zLgqK/KdxRZ
-	 AHLwvSHcl64nT4KPKV/GcZpwfDcCr/+sYRDJNjRgIXLvJ8MKSH39nR7DU2Ht4bz7Ua
-	 Tv1hPn2waTMMw==
-Message-ID: <16f02f0a-09ef-456c-886f-c774e51de34d@kernel.org>
-Date: Wed, 11 Mar 2026 14:45:32 +0100
+	s=k20201202; t=1773238778;
+	bh=4rspw70lAXPaOuNzAVTpF3DEdU6++Hs8qNZtz9nP5TU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=N7wEdddLJiDMDeFh9fRzF+0AA/jXYO0kBBjbzURmzLnta3Acyr9OALzeu3zxpMSGz
+	 ZrjGvpciOTY4AuauFhvmS3Wy3ddEbuZETYuOSCzwcRrzzlbKYSdame0ojFrSrdvEBJ
+	 vVrnwnGdPwejHqQtOF00rp1scWaAMrnV3hg8RYSkNXHwB6li0T02sarbLcTMsTlC6Y
+	 IjWWtjC1KHZZmC7w1VB9Lg2H0+V6dAXzPndwp63I3ERDG8PIVGK/5eQnXaVXcglpvC
+	 /MayvYHwZ7hYB9D7x0mFv4UhX1G4EdDHcCODregjf3maJAIZNh4R4ysMR3ky/ZNwNb
+	 4gJZ0556zKdUw==
+Date: Wed, 11 Mar 2026 19:49:23 +0530
+From: Manivannan Sadhasivam <mani@kernel.org>
+To: Niklas Cassel <cassel@kernel.org>
+Cc: manivannan.sadhasivam@oss.qualcomm.com, 
+	Bjorn Helgaas <bhelgaas@google.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
+	Oliver O'Halloran <oohall@gmail.com>, Will Deacon <will@kernel.org>, 
+	Lorenzo Pieralisi <lpieralisi@kernel.org>, Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
+	Rob Herring <robh@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
+	Philipp Zabel <p.zabel@pengutronix.de>, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
+	linux-arm-msm@vger.kernel.org, linux-rockchip@lists.infradead.org, 
+	Wilfred Mallawa <wilfred.mallawa@wdc.com>, Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>, 
+	Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH v6 0/4] PCI: Add support for resetting the Root Ports in
+ a platform specific way
+Message-ID: <hof7aknmmkeug6et7cj3zrwpj3cu77bofqllm25numelratbg6@pfiep2xaqlbd>
+References: <20250715-pci-port-reset-v6-0-6f9cce94e7bb@oss.qualcomm.com>
+ <aHoh1XfhR8EB_5yY@ryzen>
+ <aHokdhpJUhSZ5FSp@ryzen>
+ <tujurux64if24z7w7h6wjxhrnh4owkgiv33u2fftp7zr5ucv2m@2ijo5ok5jhfk>
+ <aJ743hJw-T9y3waX@ryzen>
+ <lakgphb7ym3cybwmpdqyipzi4tlkwbfijzhd4r6hvhho3pc7iu@6ludgw6wqkjh>
+ <aLmcO8ukT-CDZMuT@ryzen>
+ <mevtdhght66tds7yhmr5a6xg5a75fb667b6lyvguoxqexmc74p@mroqidhzptxk>
+ <abFLGRn9TYrsycRs@fedora>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,191 +82,66 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3] powerpc: dts: Build devicetrees of enabled platforms
-To: j.ne@posteo.net, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
-References: <20260311-mpc83xx-dtb-v3-1-4aa43bb9ffa0@posteo.net>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <20260311-mpc83xx-dtb-v3-1-4aa43bb9ffa0@posteo.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <abFLGRn9TYrsycRs@fedora>
 
+On Wed, Mar 11, 2026 at 11:59:37AM +0100, Niklas Cassel wrote:
+> On Tue, Mar 10, 2026 at 07:07:39PM +0530, Manivannan Sadhasivam wrote:
+> > > 
+> > > I tested your patch series + your suggested change above, and after a:
+> > > 
+> > > ## On EP side:
+> > > # echo 0 > /sys/kernel/config/pci_ep/controllers/a40000000.pcie-ep/start && \
+> > >   sleep 0.1 && echo 1 > /sys/kernel/config/pci_ep/controllers/a40000000.pcie-ep/start
+> > > 
+> > > Instead of:
+> > > 
+> > > # FAILED: 1 / 16 tests passed.
+> > > 
+> > > I now get:
+> > > # FAILED: 7 / 16 tests passed.
+> > > 
+> > > Test cases 1-7 now passes (the test cases related to BARs),
+> > > all other test cases still fail:
+> 
+> (snip)
+> 
+> > I guess what is going wrong here is that you might be rebooting the device
+> > *after* restoring the config space in 'slot_reset()' callback. So all the
+> > previous config space contents would be lost and the device would've started
+> > afresh.
+> 
+> I'm confused.
+> 
+> # echo 0 > /sys/kernel/config/pci_ep/controllers/a40000000.pcie-ep/start && \
+>   sleep 0.1 && echo 1 > /sys/kernel/config/pci_ep/controllers/a40000000.pcie-ep/start
+> 
+> Will not reboot the device.
+> 
+> 
+> > 
+> > I don't think we can restore the config space after rebooting the EP device,
+> > because host has no idea about it. It can only restore the content after
+> > recovering the device through platform specific means.
+> 
+> Am I missing something, or why are we talking about rebooting the device?
+> 
 
+Sorry, I just went with reboot scenario since I remember you referring to it in
+the thread. But I must admit that I didn't read your repro steps where you just
+write to the 'start' parameter.
 
-Le 11/03/2026 à 14:41, J. Neuschäfer via B4 Relay a écrit :
-> From: "J. Neuschäfer" <j.ne@posteo.net>
-> 
-> Follow the same approach as other architectures such as Arm or RISC-V,
-> and build devicetrees based on platforms selected in Kconfig. This makes
-> it unnecessary to use CONFIG_OF_ALL_DTBS on PowerPC in order to build
-> DTB files.
-> 
-> This makes it easier to use other build and test infrastructure such as
-> `make dtbs_check`, and is a first step towards generating FIT images
-> that include all the relevant DTBs with `make image.fit`.
-> 
-> Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
+But I did test with toggling the LTSSM alone on the EP and was able to execute
+the test successfully on the host. So I'm not entirely sure what is going wrong
+on yours.
 
-Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+I need to look into it more in detail, but I do not want to block the series
+from getting merged due to this.
 
-> ---
-> Changes in v3:
-> - Group multiple files per line, while still avoiding backslashes
->    (suggested by Christophe Leroy)
-> - Link to v2: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Fr%2F20260305-mpc83xx-dtb-v2-1-cdb751458445%40posteo.net&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C650d11e9592c4331941d08de7f73ec27%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639088333042053456%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=wKfdk852k15VIWe%2Bxbm7pjQs44hN52v%2F4blEEP1H0qg%3D&reserved=0
-> 
-> Changes in v2:
-> - Use "dtb-$(FOO) += foo.dtb" format on every line, avoid backslashes
->    (suggested by Geert Uytterhoeven)
-> - Link to v1: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Fr%2F20260119-mpc83xx-dtb-v1-1-522f841290bf%40posteo.net&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C650d11e9592c4331941d08de7f73ec27%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639088333042082472%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=1qV8q5ayBIDzl%2FEbWBW17l9atuWG%2BYM9bywRPv9Ju4E%3D&reserved=0
-> ---
->   arch/powerpc/boot/dts/Makefile     | 72 ++++++++++++++++++++++++++++++++++++++
->   arch/powerpc/boot/dts/fsl/Makefile | 43 +++++++++++++++++++++++
->   2 files changed, 115 insertions(+)
-> 
-> diff --git a/arch/powerpc/boot/dts/Makefile b/arch/powerpc/boot/dts/Makefile
-> index 0cd0d8558b475c..56581c2489df0f 100644
-> --- a/arch/powerpc/boot/dts/Makefile
-> +++ b/arch/powerpc/boot/dts/Makefile
-> @@ -3,3 +3,75 @@
->   subdir-y += fsl
->   
->   dtb-$(CONFIG_OF_ALL_DTBS) := $(patsubst $(src)/%.dts,%.dtb, $(wildcard $(src)/*.dts))
-> +
-> +# PPC44x platforms
-> +dtb-$(CONFIG_PPC44x_SIMPLE) += arches.dtb bamboo.dtb bluestone.dtb glacier.dtb
-> +dtb-$(CONFIG_PPC44x_SIMPLE) += eiger.dtb katmai.dtb rainier.dtb redwood.dtb
-> +dtb-$(CONFIG_PPC44x_SIMPLE) += sequoia.dtb taishan.dtb yosemite.dtb icon.dtb
-> +dtb-$(CONFIG_EBONY) += ebony.dtb
-> +dtb-$(CONFIG_SAM440EP) += sam440ep.dtb
-> +dtb-$(CONFIG_WARP) += warp.dtb
-> +dtb-$(CONFIG_ISS4xx) += iss4xx.dtb iss4xx-mpic.dtb
-> +dtb-$(CONFIG_CANYONLANDS) += canyonlands.dtb
-> +dtb-$(CONFIG_CURRITUCK) += currituck.dtb
-> +dtb-$(CONFIG_AKEBONO) += akebono.dtb
-> +dtb-$(CONFIG_FSP2) += fsp2.dtb
-> +
-> +# Embedded 6xx platforms
-> +dtb-$(CONFIG_LINKSTATION) += kuroboxHG.dtb kuroboxHD.dtb
-> +dtb-$(CONFIG_STORCENTER) += storcenter.dtb
-> +dtb-$(CONFIG_PPC_HOLLY) += holly.dtb
-> +dtb-$(CONFIG_GAMECUBE) += gamecube.dtb
-> +dtb-$(CONFIG_WII) += wii.dtb
-> +dtb-$(CONFIG_MVME5100) += mvme5100.dtb
-> +
-> +# MPC8xx platforms
-> +dtb-$(CONFIG_MPC885ADS) += mpc885ads.dtb
-> +dtb-$(CONFIG_MPC86XADS) += mpc866ads.dtb
-> +dtb-$(CONFIG_PPC_EP88XC) += ep88xc.dtb
-> +dtb-$(CONFIG_PPC_ADDER875) += adder875-redboot.dtb adder875-uboot.dtb
-> +dtb-$(CONFIG_TQM8XX) += tqm8xx.dtb
-> +
-> +# MPC512x platforms
-> +dtb-$(CONFIG_MPC5121_ADS) += mpc5121ads.dtb
-> +dtb-$(CONFIG_MPC512x_GENERIC) += mpc5125twr.dtb ac14xx.dts
-> +dtb-$(CONFIG_PDM360NG) += pdm360ng.dtb
-> +
-> +# MPC5200 platforms
-> +dtb-$(CONFIG_PPC_MPC5200_SIMPLE) += a3m071.dtb a4m072.dtb charon.dtb cm5200.dtb
-> +dtb-$(CONFIG_PPC_MPC5200_SIMPLE) += digsy_mtc.dtb motionpro.dtb mucmc52.dtb
-> +dtb-$(CONFIG_PPC_MPC5200_SIMPLE) += o2d.dtb o2d300.dtb o2dnt2.dtb o2i.dtb
-> +dtb-$(CONFIG_PPC_MPC5200_SIMPLE) += o2mnt.dtb o3dnt.dtb pcm030.dtb pcm032.dtb
-> +dtb-$(CONFIG_PPC_MPC5200_SIMPLE) += tqm5200.dtb uc101.dtb
-> +dtb-$(CONFIG_PPC_LITE5200) += lite5200.dtb lite5200b.dtb
-> +dtb-$(CONFIG_PPC_MEDIA5200) += media5200.dtb
-> +
-> +# MPC82xx platforms
-> +dtb-$(CONFIG_EP8248E) += ep8248e.dtb
-> +dtb-$(CONFIG_MGCOGE) += mgcoge.dtb
-> +
-> +# MPC83xx platforms
-> +dtb-$(CONFIG_MPC830x_RDB) += mpc8308rdb.dtb mpc8308_p1m.dtb
-> +dtb-$(CONFIG_MPC831x_RDB) += mpc8313erdb.dtb mpc8315erdb.dtb
-> +dtb-$(CONFIG_MPC832x_RDB) += mpc832x_rdb.dtb
-> +dtb-$(CONFIG_MPC834x_ITX) += mpc8349emitx.dtb mpc8349emitxgp.dtb
-> +dtb-$(CONFIG_ASP834x) += asp834x-redboot.dtb
-> +dtb-$(CONFIG_MPC836x_RDK) += mpc836x_rdk.dtb
-> +dtb-$(CONFIG_KMETER1) += kmeter1.dtb
-> +dtb-$(CONFIG_MPC837x_RDB) += mpc8377_rdb.dtb mpc8378_rdb.dtb mpc8379_rdb.dtb
-> +dtb-$(CONFIG_MPC837x_RDB) += mpc8377_wlan.dtb
-> +
-> +# MPC85xx platforms
-> +dtb-$(CONFIG_STX_GP3) += stx_gp3_8560.dtb stxssa8555.dtb
-> +dtb-$(CONFIG_TQM85xx) += tqm8540.dtb tqm8541.dtb tqm8548.dtb
-> +dtb-$(CONFIG_TQM85xx) += tqm8548-bigflash.dtb tqm8555.dtb tqm8560.dtb
-> +dtb-$(CONFIG_SOCRATES) += socrates.dtb
-> +dtb-$(CONFIG_KSI8560) += ksi8560.dtb
-> +dtb-$(CONFIG_XES_MPC85xx) += xcalibur1501.dtb xpedite5200.dtb
-> +dtb-$(CONFIG_XES_MPC85xx) += xpedite5200_xmon.dtb xpedite5301.dtb
-> +dtb-$(CONFIG_XES_MPC85xx) += xpedite5330.dtb xpedite5370.dtb
-> +
-> +# Misc. platforms
-> +dtb-$(CONFIG_PPC_MICROWATT) += microwatt.dtb
-> +dtb-$(CONFIG_AMIGAONE) += amigaone.dtb
-> +dtb-$(CONFIG_PPC_PS3) += ps3.dtb
-> diff --git a/arch/powerpc/boot/dts/fsl/Makefile b/arch/powerpc/boot/dts/fsl/Makefile
-> index d3ecdf14bc42e7..be784cbda6b56d 100644
-> --- a/arch/powerpc/boot/dts/fsl/Makefile
-> +++ b/arch/powerpc/boot/dts/fsl/Makefile
-> @@ -1,3 +1,46 @@
->   # SPDX-License-Identifier: GPL-2.0
->   
->   dtb-$(CONFIG_OF_ALL_DTBS) := $(patsubst $(src)/%.dts,%.dtb, $(wildcard $(src)/*.dts))
-> +
-> +# MPC85xx platforms
-> +dtb-$(CONFIG_BSC9131_RDB) += bsc9131rdb.dtb
-> +dtb-$(CONFIG_BSC9132_QDS) += bsc9132qds.dtb
-> +dtb-$(CONFIG_C293_PCIE) += c293pcie.dtb
-> +dtb-$(CONFIG_MPC8536_DS) += mpc8536ds.dtb mpc8536ds_36b.dtb
-> +dtb-$(CONFIG_MPC85xx_DS) += mpc8544ds.dtb mpc8572ds_camp_core0.dtb
-> +dtb-$(CONFIG_MPC85xx_DS) += mpc8572ds_camp_core1.dtb mpc8572ds_36b.dtb
-> +dtb-$(CONFIG_MPC85xx_DS) += mpc8572ds.dtb
-> +dtb-$(CONFIG_MPC85xx_MDS) += mpc8568mds.dtb mpc8569mds.dtb p1021mds.dtb
-> +dtb-$(CONFIG_MPC85xx_RDB) += p1020mbg-pc_32b.dtb p1020mbg-pc_36b.dtb
-> +dtb-$(CONFIG_MPC85xx_RDB) += p1020rdb_36b.dtb p1020rdb.dtb p1020rdb-pc_32b.dtb
-> +dtb-$(CONFIG_MPC85xx_RDB) += p1020rdb-pc_36b.dtb p1020rdb-pc_camp_core0.dtb
-> +dtb-$(CONFIG_MPC85xx_RDB) += p1020rdb-pc_camp_core1.dtb p1020rdb-pd.dtb
-> +dtb-$(CONFIG_MPC85xx_RDB) += p1020utm-pc_32b.dtb p1020utm-pc_36b.dtb
-> +dtb-$(CONFIG_MPC85xx_RDB) += p1021rdb-pc_32b.dtb p1021rdb-pc_36b.dtb
-> +dtb-$(CONFIG_MPC85xx_RDB) += p1024rdb_32b.dtb p1024rdb_36b.dtb p1025rdb_32b.dtb
-> +dtb-$(CONFIG_MPC85xx_RDB) += p1025rdb_36b.dtb
-> +dtb-$(CONFIG_P1010_RDB) += p1010rdb-pa_36b.dtb p1010rdb-pa.dtb
-> +dtb-$(CONFIG_P1010_RDB) += p1010rdb-pb_36b.dtb p1010rdb-pb.dtb
-> +dtb-$(CONFIG_P1022_DS) += p1022ds_32b.dtb p1022ds_36b.dtb
-> +dtb-$(CONFIG_P1022_RDK) += p1022rdk.dtb
-> +dtb-$(CONFIG_P1023_RDB) += p1023rdb.dtb
-> +dtb-$(CONFIG_PPC_P2020) += p2020ds.dtb turris1x.dtb
-> +dtb-$(CONFIG_TWR_P102x) += p1025twr.dtb
-> +dtb-$(CONFIG_CORENET_GENERIC) += b4420qds.dtb b4860qds.dtb cyrus_p5020.dtb
-> +dtb-$(CONFIG_CORENET_GENERIC) += kmcent2.dtb kmcoge4.dtb oca4080.dtb
-> +dtb-$(CONFIG_CORENET_GENERIC) += p2041rdb.dtb p3041ds.dtb p4080ds.dtb
-> +dtb-$(CONFIG_CORENET_GENERIC) += p5020ds.dtb p5040ds.dtb t1023rdb.dtb
-> +dtb-$(CONFIG_CORENET_GENERIC) += t1024qds.dtb t1024rdb.dtb t1040d4rdb.dtb
-> +dtb-$(CONFIG_CORENET_GENERIC) += t1040qds.dtb t1040rdb.dtb t1040rdb-rev-a.dtb
-> +dtb-$(CONFIG_CORENET_GENERIC) += t1042d4rdb.dtb t1042qds.dtb t1042rdb.dtb
-> +dtb-$(CONFIG_CORENET_GENERIC) += t1042rdb_pi.dtb t2080qds.dtb t2080rdb.dtb
-> +dtb-$(CONFIG_CORENET_GENERIC) += t2081qds.dtb t4240qds.dtb t4240rdb.dtb
-> +dtb-$(CONFIG_PPA8548) += ppa8548.dtb
-> +dtb-$(CONFIG_GE_IMP3A) += ge_imp3a.dtb
-> +dtb-$(CONFIG_MVME2500) += mvme2500.dtb
-> +
-> +# MPC86xx platforms
-> +dtb-$(CONFIG_GEF_SBC310) += gef_sbc310.dtb
-> +dtb-$(CONFIG_GEF_SBC610) += gef_sbc610.dtb
-> +dtb-$(CONFIG_GEF_PPC9A) += gef_ppc9a.dtb
-> +dtb-$(CONFIG_MVME7100) += mvme7100.dtb
-> 
-> ---
-> base-commit: 11439c4635edd669ae435eec308f4ab8a0804808
-> change-id: 20260101-mpc83xx-dtb-23d98a190e23
-> 
-> Best regards,
+- Mani
 
+-- 
+மணிவண்ணன் சதாசிவம்
 
