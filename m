@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-18048-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18049-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E1821049513
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 09:15:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0628C1049514
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 09:20:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fW4pq3jGgz3cMG;
-	Wed, 11 Mar 2026 20:15:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773220531;
-	cv=none; b=AogIBf+vekOkE6clWHgWJzm2ID2hZfCHp9E5zFY4WfAkixsnEBPBDv/NndiKGpPawxA951gv2wZ3g95udA/WK3qS+34qavVAOzm0z52v3TbezCKSgdRcuAU7iPtXxgp/Fxon1iDIy1fecbFiSx6JHxf5fwmH0WTVArjSxQpSXcoAFlbj9qK39j61LA2IkOFC+qmtBu5w0uj1z6IF3Htz8VpTCDKRXN9LSeCM8WuemHf3lLK+RTYMXunp36d5DxcxUPVEP48BuIryuk9elWPy5Lcu3o1OTUdJ+SX3EiyKMfIUODI5Gj6DbqWv2X/m9PuJtZP38WIQsXPWUscFOZDHHw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fW4wb2X7Fz3cND;
+	Wed, 11 Mar 2026 20:20:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773220831;
+	cv=none; b=J9Gi9ZHH/ZFNwSJJ4NuHG9yzU8f6w+6tnx8flMcPnm+zepS1tGMjxrHTZ+yLjBTSuhX0n+Pv6prtGAMQ4bcienPfh2LzfaYqrhM568cRb1+dK8l/4y3wClvceZ14MsslUqD7ZqLTqj1CwZyGVJLXPr+wqfittY2V62x+eusDaNwHJWM2i5f7305OQxIwRt+brNHb5FofWqpDnVIwbpRrfbz4atvd+VUpmmhw92CkIFghSajdgEGLNToMrrHVpQbRn84oRLUQfzFUASPEpOHrzulY+W5CnU8grVyYXSWRUpNowF6o+sdoHTqGvk7irACZvTjiTgYHP6bAmGS9g4/MUg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773220531; c=relaxed/relaxed;
-	bh=GoQUTWPs5uJ9sIVTj3JBtc39v4T/2J1JaJMwIAHWnnE=;
+	t=1773220831; c=relaxed/relaxed;
+	bh=JVWRqFzLUnoGwGbaRrq1u921035ZV5YkTsGPPJzAwyk=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Ww/IceuJ9pNfWTjPTpWXKB/SHMBMROXYBKSgZ5tCj4vHludsJ191SYF/jxgis3zz+38Rm7G/vrZmU3BSg40OdH65X+kP6xWf2XBu1XzchfB1TOlvVgRP4A2lYeO98J9j4tCA8hg3TWpDh9eBH/lhaFe1CEL9uKDMEhhso8yZPmCxPjwaKnljoBh5EjoTyBiFG5u7UTZfHxawvokR9kRww6jyjinxySFGI0hk1Pfrb20u0RNkUR28Hvp9idK9kLb7sJu9Bw2X/hT0qeVhDIgvFQ7t+ZIvHsrhkSjUZkOPOiPc8Qfg9l9DHG+1MDFRNGTNHKM4DkOr8dQ258r5hz27cQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LgDro3Eo; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=FI43ZQ+2ZcMM+KOiVRBd98wTQr3zITuo/HJXuQIkBWctDALTc657F7d7finpVRsBGjTHtHxssA2K5J47WYV+vcm5FGH/Ojynm/YCDxVIqOu/HxRrrTPEcKxp8uiKWO/xOQg2p1A0COqoz6HWp3FPkaS4icF6tF5U9edq9BJGw4CpJUb3M14Gv9s9MJSab/Yv8VIJC2YbGtgSNmRgZ7oBX0k4G5CNwQCBt2zseCNkm8OR6kG/Lmp7BLVWb2hMXNy3oFk+pETHtpQNucQ7lQYuOpCRfhpcJCzlAh2Uz0HQvTrzR3x0u+QVncUjwsZdUJW44XTbbA1Zy5LYCI2IKL2Gow==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UNr8gI0S; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LgDro3Eo;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UNr8gI0S;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fW4pp4jLNz3cJF
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 20:15:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fW4wZ43ZZz3cNB
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 20:20:30 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id B51E8600B0;
-	Wed, 11 Mar 2026 09:15:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5FCD9C4CEF7;
-	Wed, 11 Mar 2026 09:15:14 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id A86F543F11;
+	Wed, 11 Mar 2026 09:20:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D1923C4CEF7;
+	Wed, 11 Mar 2026 09:20:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773220527;
-	bh=/qi/E3sx1wLUyctUK7y+OHXYZPNKh6z9xCAoPwaS9tY=;
+	s=k20201202; t=1773220828;
+	bh=JpypEF1J5OgRJiCd/MihIRnK/CNO9ssCWYiKbHTS/ro=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=LgDro3Eo6GuEp/c7KpExTwow2lUTl/Pn1bh3kCtPgx5EZkzvkzK56JY3zwHnUDcCc
-	 2as2PvShmmr1XG14DpK2Vlg+JLgJPDOEbIdyLQiZA99gO2VhR6aNobJIyS0CqNvQtn
-	 yBA+KuKdx+4dfgWg9peWZmhGw4/QosQ2PPXaLIeUrGAHySdhxN3QZSvEY8TJQRF4w5
-	 5y2vcF8WS6Vs3oTWyB2qlm1mbS5CYuB5pIK+WazvnWck2cAfQHHfFT1RCTg/MOj6af
-	 KpqT4L8GJkV64xMCr6wNACXlhye3na8PI6Nzf9xRvk9/jbbFZy4EGpTLuB6A51j2SG
-	 LfTqtyCu5LFfA==
-Message-ID: <61df6369-333c-430a-bd18-c5b1acae68ea@kernel.org>
-Date: Wed, 11 Mar 2026 10:15:12 +0100
+	b=UNr8gI0SByGHmNtlUSwlW+rMeQgLKwbKy37F7Orbw5cWliVwlEh9uriCZXl35osx4
+	 Gw/7mXt+rvp3qbR1zONjRRSPW1LQcMXs1I3jF7fvjSRRFECl6QESr5xFHbldEjXoBK
+	 xzePRByzI3h9l9oF4gdxDX88nnD21W8X4ZZ9iq5eZsEt8l+SW02ToX5cRCuG9EpAVy
+	 TDnxPmjMA3KczLO+KXtYlACtFf7fJ5Z7eOttw+nFSb/RzNIKLXmsDlW8uqwHDPrtPp
+	 LeqCp9BSEiV8ut8oRObfPr4IIizsaEgqT3OXxVjiF2mqYoDhInBziLF3PchK1zUQTI
+	 FP9g9QL+vFfMw==
+Message-ID: <f7732d1c-0e85-4a14-948a-912c417018b5@kernel.org>
+Date: Wed, 11 Mar 2026 10:20:13 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,9 +60,9 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 16/16] mm/memory: support VM_MIXEDMAP in
- zap_special_vma_range()
-To: Jason Gunthorpe <jgg@ziepe.ca>
+Subject: Re: [PATCH v1 11/16] mm/memory: inline unmap_page_range() into
+ __zap_vma_range()
+To: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
 Cc: linux-kernel@vger.kernel.org, "linux-mm @ kvack . org"
  <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>,
  Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
@@ -91,7 +91,8 @@ Cc: linux-kernel@vger.kernel.org, "linux-mm @ kvack . org"
  Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
  Rodrigo Vivi <rodrigo.vivi@intel.com>, Tvrtko Ursulin
  <tursulin@ursulin.net>, David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>, Leon Romanovsky <leon@kernel.org>,
+ Simona Vetter <simona@ffwll.ch>, Jason Gunthorpe <jgg@ziepe.ca>,
+ Leon Romanovsky <leon@kernel.org>,
  Dimitri Sivanich <dimitri.sivanich@hpe.com>, Arnd Bergmann <arnd@arndb.de>,
  Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>,
  Andrii Nakryiko <andrii@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
@@ -108,8 +109,10 @@ Cc: linux-kernel@vger.kernel.org, "linux-mm @ kvack . org"
  linux-perf-users@vger.kernel.org, linux-fsdevel@vger.kernel.org,
  netdev@vger.kernel.org, rust-for-linux@vger.kernel.org, x86@kernel.org
 References: <20260227200848.114019-1-david@kernel.org>
- <20260227200848.114019-17-david@kernel.org>
- <20260309142954.GM1687929@ziepe.ca>
+ <20260227200848.114019-12-david@kernel.org>
+ <a5765cac-69d6-4314-82d5-80ee363906de@lucifer.local>
+ <bc5cfcc4-5e51-4da1-9ce9-ea0831bec400@kernel.org>
+ <737a88b8-8221-44e6-aa90-3be326bc8612@lucifer.local>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -156,52 +159,65 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260309142954.GM1687929@ziepe.ca>
+In-Reply-To: <737a88b8-8221-44e6-aa90-3be326bc8612@lucifer.local>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 3/9/26 15:29, Jason Gunthorpe wrote:
-> On Fri, Feb 27, 2026 at 09:08:47PM +0100, David Hildenbrand (Arm) wrote:
->> There is demand for also zapping page table entries by drivers in
->> VM_MIXEDMAP VMAs[1].
 >>
->> Nothing really speaks against supporting VM_MIXEDMAP for driver use. We
->> just don't want arbitrary drivers to zap in ordinary (non-special) VMAs.
+>> Tells me that "cur" is rather common.
 >>
->> [1] https://lore.kernel.org/r/aYSKyr7StGpGKNqW@google.com
+>>> It's not a big deal, but why not addr?
+>>
+>> Good question, I can just do that. :)
 > 
-> Are we sure about this?
+> Thanks!
 
-Yes, I don't think relaxing this for drivers to use it on VM_MIXEDMAP is
-a problem.
 
-> 
-> This whole function seems like a hack to support drivers that are not
-> using an address_space.
+@Andrew, the following fixup on top
 
-I assume, then using
-unmap_mapping_folio()/unmap_mapping_pages()/unmap_mapping_range() instead.
+From 8470e94c57b89819753c8f31e23320f33c14cd58 Mon Sep 17 00:00:00 2001
+From: "David Hildenbrand (Arm)" <david@kernel.org>
+Date: Wed, 11 Mar 2026 10:19:00 +0100
+Subject: [PATCH] fixup: mm/memory: inline unmap_page_range() into
+ __zap_vma_range()
 
-> 
-> I say that as one of the five driver authors who have made this
-> mistake.
-> 
-> The locking to safely use this function is really hard to do properly,
-> IDK if binder can shift to use address_space ??
-I cannot really tell.
+Let's call the local variable simply "addr".
 
-Skimming over the code, it looks like it really always handles "single
-VMA" stuff ("Since a binder_alloc can only be mapped once, we ensure the
-vma corresponds to this mapping by checking whether the binder_alloc is
-still mapped"), which makes the locking rather trivial.
+Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
+---
+ mm/memory.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-It does seem to mostly allocate/free pages in a single VMA, where I
-think the existing usage of zap_vma_range() makes sense.
+diff --git a/mm/memory.c b/mm/memory.c
+index 1c0bcdfc73b7..5f7607140de1 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -2081,17 +2081,17 @@ static void __zap_vma_range(struct mmu_gather *tlb, struct vm_area_struct *vma,
+ 			return;
+ 		__unmap_hugepage_range(tlb, vma, start, end, NULL, zap_flags);
+ 	} else {
+-		unsigned long next, cur = start;
++		unsigned long next, addr = start;
+ 		pgd_t *pgd;
+ 
+ 		tlb_start_vma(tlb, vma);
+-		pgd = pgd_offset(vma->vm_mm, cur);
++		pgd = pgd_offset(vma->vm_mm, addr);
+ 		do {
+-			next = pgd_addr_end(cur, end);
++			next = pgd_addr_end(addr, end);
+ 			if (pgd_none_or_clear_bad(pgd))
+ 				continue;
+-			next = zap_p4d_range(tlb, vma, pgd, cur, next, details);
+-		} while (pgd++, cur = next, cur != end);
++			next = zap_p4d_range(tlb, vma, pgd, addr, next, details);
++		} while (pgd++, addr = next, addr != end);
+ 		tlb_end_vma(tlb, vma);
+ 	}
+ }
+-- 
+2.43.0
 
-So I'm not sure if using address_space would really be an improvement there.
-
-Having that said, maybe binder folks can be motivated to look into that.
-But I would consider that future work.
 
 -- 
 Cheers,
