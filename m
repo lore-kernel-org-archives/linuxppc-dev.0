@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-18040-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18041-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 177C7FD0652
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 08:19:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F373FFD0654
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 08:21:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fW3Yc4WXDz3f5L;
-	Wed, 11 Mar 2026 19:19:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773217140;
-	cv=none; b=dpVjKCEc5jSft6KIhC47I+G+/ULyXHULCT661SGVonq0G3Zv4e0Ws3yMegshB898vIKVVGVc2xlbsGwDXE+XW/TPOWvrLE/UTsr3R/s++thHYvLsurPr0E7+dJECCNSi8lTczvhfacxHMEmRn5QqxrVMyO5Qq3OqhpSmx6cYHmSVkt6ATrqeNwN2vvIvJSYZ1JhDxK87yng1+t9WxKKlWvLaMTOwAhgei5FjIKHSKmt+Q7wOYZz8x5YLQ/P482UOk07+6K4alEy1VIDVvbbCFbE41sEad4d0qa6TRfrcsG5DXPpq+7q9TzOFaV8tA/+IlHjroV0IuVb5GXkihRw2yw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fW3c82d4Dz3f1K;
+	Wed, 11 Mar 2026 19:21:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773217272;
+	cv=none; b=hxfyqIuYs5FZqp9Ll8KIZs0u29bjeVk/oQm23YuC0Z9y/a2yqIvK+UxahUnkzU0f+1xz3ko6rh96KEdpCvpJBdGru5dMRLkqXMhgmkhcjaCpQMl1zfsStWNX9lpRynjqY8gSi++0W0Jmnfx6k3NpXi0ditv4a3xtvBvsChoUfHcfdZOgnnOj8HYmtl4z4jGPRl45+ljfxI+mdeHFFBuBNaIZH3ZAulZZEtD8djG1K19Eln0t0QSQB24JiBO0wT531InEhZKXizVOIHFCxAvP1sbYd/27NTbxcXl/gQp5YEHDC2+fVAR2kX535L8Cb3D2aARJUZCRfKD15LgmTDPMiA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773217140; c=relaxed/relaxed;
-	bh=VPJU5tLY+hr3VIoB4RINhNwxWFMBmbJhEC+ALKgsJRg=;
+	t=1773217272; c=relaxed/relaxed;
+	bh=iAiwtRFwPzXQ4OfTrxFFusVMutEu4CCJxk1LHiPPWCs=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=FAz+eb3+SQP29EN/QDrJbrKdvfs7HiGCYWuyp8znedrSnV+kvTQbaQzcx6v0+OyQpAhN2VKsU99oOcJUrC4Dp9tze/fkz2jhoST1aAEnkyBgHSOk6T5exKYnOEwcVmfo5hYybPJiIBenK1+6myu26y58sZvfhZmlkalOYanCyCs6RSl7yzYVIpzraLmwrONBVugboGBlBvP4MKCfsDewf5Q6vGtCO7ssKhuBCVRjG7LvMUbKz0/LWVq23CHu7fKCFBmq+I1+XL9GaNeQnLYpJLO3SIKX9DIg/ccT351oS1y5jZH7jUgdoYmGrpLLx/jCMz/I+Ui1pQ7w3DXIMey4FQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IQx2TkN6; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=ekKhetz41zbd3YB4BXVlQmvFdu6qFcH9iZSY+/eHJyWvIbJw+OI/T2j9W0foAR4wDN5j9op6Pnqk22mCBI3OtVoTkurv43Vkg2CAtTN2fxSNoiqzIyclS+hWKsZFPGkMqYivZh6xLL3gdoaKPi1alnEFjXpMU77v1UcAIXFFYSiHK27dvFMiMLI5VwAikprt0yI3iP76U8g7W/iS+qyS8cW9iBJwLg069jqmXnq4qB6T6VwtqxStbb0niRO95YLJTbsNQdQWQQZ3CeXl3e1XeHY396N9nZFd0TYZ1BHLxHxr9wgr0BP6nzZC+kKyJMC+kRmbDNuGk2hojwiLaboxaQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cTf0RnmN; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IQx2TkN6;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cTf0RnmN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fW3Yb6000z3f5F
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 19:18:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fW3c73qSHz3dRP
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 19:21:11 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 46D2B6012A;
-	Wed, 11 Mar 2026 08:18:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 021A4C2BC9E;
-	Wed, 11 Mar 2026 08:18:42 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 5376A44021;
+	Wed, 11 Mar 2026 08:21:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EA254C4CEF7;
+	Wed, 11 Mar 2026 08:20:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773217136;
-	bh=6ImKPFcivnEAhhMGOB4v8zVHkoArioNqdVSwhniKfY0=;
+	s=k20201202; t=1773217268;
+	bh=yoy2hHq0mlIZwc0kYZnvrnYvl8EpuwxGFzXVdSAUfiw=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=IQx2TkN6ijhwUgYfcXSxBlRFTvqzQnZqutdbsFVRfHZbbWuzccTqcseRhNL0b0foU
-	 Ng3g2HiyK98YrTxKAnEhVA4j4nfwEDDPK36OCkI4JU4UKUI4B7NXTPkSBP1oQe98Q5
-	 nyE6Lmc4iPLMHq9THZP5u7ukJaP1F4rSYY8MQnD7Xb2jP1T9c1swNonrT7xVgzdJtb
-	 /hQNO3nIdqBLmqznQevDPfg0KMMh8xhvaarxTmwbEmXmOmt3BrUaykrMQXXqbwpwuz
-	 4mqhZZebsiw61CDatCJAAvMa/ObPo82EA1jzuNk51n4TnWChokW82M4xFiT6Wq9VYu
-	 5dx9/JXZAyOKA==
-Message-ID: <55b27bbf-6572-4f5f-a843-39ef8e01fd17@kernel.org>
-Date: Wed, 11 Mar 2026 09:18:41 +0100
+	b=cTf0RnmNDiJr/UaiIX68oNKNUMmk3eM19LeszXExEX5Januo2/40zQJ3oD4JOmvzx
+	 Q2n49GaHe97cnoonNB/JqiqpsNtHzHtLAbRLdZ6sYh863gpXifwvSx7D1dp/3sEvyZ
+	 Cz19hxeRzhZi2oJc0Wnk73bnhQ7wwkYnI2D4U6uKEPrCI8z4dlK812Jb3PAW7M303a
+	 WltTUBSwdhPNJlyqR7bREVbYU/2K/pT8iN+GLG9OQeR/gH5ZpF6uteOR+s/mrsI5qK
+	 e+MW9EWzf5J2dJKuPFzc/B0cyPzhCcoIHrW0iFi+aZAA5GHI2ocqzHfiCCK5nJI5En
+	 3rzrG7ue05B/Q==
+Message-ID: <9cd2794a-63c6-4645-b42b-10412899865f@kernel.org>
+Date: Wed, 11 Mar 2026 09:20:53 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,8 +60,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 10/16] mm/memory: use __zap_vma_range() in
- zap_vma_for_reaping()
+Subject: Re: [PATCH v1 15/16] mm: rename zap_vma_ptes() to
+ zap_special_vma_range()
 To: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
 Cc: linux-kernel@vger.kernel.org, "linux-mm @ kvack . org"
  <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>,
@@ -109,8 +109,8 @@ Cc: linux-kernel@vger.kernel.org, "linux-mm @ kvack . org"
  linux-perf-users@vger.kernel.org, linux-fsdevel@vger.kernel.org,
  netdev@vger.kernel.org, rust-for-linux@vger.kernel.org, x86@kernel.org
 References: <20260227200848.114019-1-david@kernel.org>
- <20260227200848.114019-11-david@kernel.org>
- <c03e1ced-6fa5-4d66-9c91-66693193383f@lucifer.local>
+ <20260227200848.114019-16-david@kernel.org>
+ <c77c1bed-f04e-4f21-87d9-6c5da3f0ad69@lucifer.local>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -157,51 +157,29 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <c03e1ced-6fa5-4d66-9c91-66693193383f@lucifer.local>
+In-Reply-To: <c77c1bed-f04e-4f21-87d9-6c5da3f0ad69@lucifer.local>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 3/6/26 13:26, Lorenzo Stoakes (Oracle) wrote:
-> On Fri, Feb 27, 2026 at 09:08:41PM +0100, David Hildenbrand (Arm) wrote:
->> Let's call __zap_vma_range() instead of unmap_page_range() to prepare
->> for further cleanups.
+On 3/6/26 13:41, Lorenzo Stoakes (Oracle) wrote:
+> On Fri, Feb 27, 2026 at 09:08:46PM +0100, David Hildenbrand (Arm) wrote:
+>> zap_vma_ptes() is the only zapping function we export to modules.
 >>
->> To keep the existing behavior, whereby we do not call uprobe_munmap()
->> which could block, add a new "reaping" member to zap_details and use it.
-> 
-> I am always in favour of making further use of helper structs :)
-> 
+>> It's essentially a wrapper around zap_vma_range(), however, with some
+>> safety checks:
+>> * That the passed range fits fully into the VMA
+>> * That it's only used for VM_PFNMAP
 >>
->> Likely we should handle the possible blocking in uprobe_munmap()
->> differently, but for now keep it unchanged.
->>
->> Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
+>> We might want to support VM_MIXEDMAP soon as well, so use the
 > 
-> OK this looks like it's doing the equivalent of what was there before, so:
-> 
-> Reviewed-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
+> I think you should say we _are_ going to since patch 16/16 does that :)
 
-[...]
+Heh, had that patch separate first before I decided to support
+VM_MIXEDMAP in the same series.
 
->> @@ -2111,11 +2115,12 @@ static void __zap_vma_range(struct mmu_gather *tlb, struct vm_area_struct *vma,
->>   */
->>  int zap_vma_for_reaping(struct vm_area_struct *vma)
->>  {
->> +	struct zap_details details = {
->> +		.reaping = true,
->> +	};
->>  	struct mmu_notifier_range range;
->>  	struct mmu_gather tlb;
->>
->> -	VM_WARN_ON_ONCE(is_vm_hugetlb_page(vma));
->> -
-> 
-> I guess because you've moved this safety check into __zap_vma_range()?
+@Andrew, can you fix that up? Thanks!
 
-Yes exactly, considered the change too trivial to mention it in the
-patch description.
-
-Thanks!
+"We will add support for VM_MIXEDMAP next, so ..."
 
 -- 
 Cheers,
