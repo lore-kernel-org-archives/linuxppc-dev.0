@@ -1,79 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-18060-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18061-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 713081125823
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 13:44:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4661D1125821
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 13:45:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fWBn14t9gz3cC9;
-	Thu, 12 Mar 2026 00:44:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773236661;
-	cv=none; b=k4fFB4n4BWk20CbaZkx9WzK653QkzvVW6WLFkoiKinflrC7VC0+rDITQJv4cFY48aCTCgMi+Ap8nE1IZSh+S1QAeEPqpBNcZ+LAk+RHP1cVda4c1QYEsP1fAyfIPMFaM8fibPRZ23IkVQRjLkpOFVGgrM8wSLUcC2jZtjwYfv3allejpjsrev0ibXx8ayhMwFL0/o9PJHnt3yhgxTneKnbHc6WquQ6Atlx0Sis3cGpa0tm8mN7hXBZC05UHpvKrAqmtKwrJlxD8a5zkofO/5TWxEo9DFsnq0Cf1cwjTWv376Dm9puyzwh8dFpz3YfQZSDItu60bACp2ztOvKmXyk8w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fWBpZ3qGpz30hP;
+	Thu, 12 Mar 2026 00:45:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773236742;
+	cv=none; b=OMcsms1sPhCsiEubwjJizAQu4pL2FvdxlaVnDaQEF3KnJsrsgeRyYx2CXereCqj5hxmywKBByWe65WLCh8pJcXReU9+0EkpTDUx+Jfkc/RPtWvvx1dBoDvcFUpHAt3YgtiD9Jk2SLCNPRns5W+SDXSPjooUuWaZZYKVTERiAJhIfUHIJhveQbHolS7R0MBQhkFNDFdG3L1HFoEDr7ElRn0pIZ5P8DCHvI71Ljtg5g5DHpUPn2YzaHQpLFrYECe+o4JvSrFCAN9rpY3g13MkP+k86sJlZWcfc01tpf/1OHh2MLa8pORPN/9mAptgosWX7StLey0esIfP43aTVKiRqiQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773236661; c=relaxed/relaxed;
-	bh=5k1WkWwJZfkjKD9Do2HFw1TYnOgPIRSt3Wavyyczgjw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=bF/VmYZXB1vaExyySwlbjRQ8JeWZmyB5xstSJm51Qu7cfBE9fzFdG+ERWDPhxCXfSmLFUx/eTHxmamUgcOK9Q3Q8Tw5AvaooCcZwOemXETRvaaFVBXxgjtJj3euM2evT3Oth4MfOa57tNQX4+nA9rGhM8mozPwIpUFyl6EFsLf7C5c6jePIZlrRQJycpE/j7b94MoVE+LCR54zGyn/pPO7dqJU1cm4TyX3QI8061UOcm3EOwvNfF7+YSDtl6wOiVd0jF2fk+xrE3QWnOB8K0Eg9VQx3jGYpDuXbpxD4q1HPULcGj8UtoQf7ghk6JolFBr+JvQZj1+l1ldvs6vUGmhw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mzsfhPXh; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nilay@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1773236742; c=relaxed/relaxed;
+	bh=vQ4iu44KrKU3o2jrT82L1DnCVLibpR24izxdjZQOz88=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=DRgwg/vJRFRoBwdqolCFtqCZrYTkO4nOhrQreidDFYVwTnpvzQF535jGP/u3m6CRwyeZAAJhRwcegFosmPHfnjbNW6JO3m/vtTMbyb1GAvCY+elHMfJZ4X2Lcfen7pu6VOGglfow5DQ2LWS4duQGpwnlAab6AFRWuRFan4Zy9Iy2g8OcUxKdNEKCXQoR31XS6RrbMBRuQjrjo/bzivNpCyoRBd4XpB4CjCjM5a7HJ+9Q4X7npt2IC1H8kGWXJ12jVaEKaLoTkKCgWrUI4lg/iGYFhILuzIMJ7msXO18LBxfA780kPlXcckuruG5ZDJVv+ijbulzyGt6ipQQEFkPeOg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=n5q57R+D; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mzsfhPXh;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=n5q57R+D;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nilay@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWBn048Y0z303F
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 00:44:20 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62BDCor61997845;
-	Wed, 11 Mar 2026 13:43:53 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=5k1WkWwJZfkjKD9Do2HFw1TYnOgPIRSt3Wavyyczg
-	jw=; b=mzsfhPXhEvc4nwelrVH4U7BGp4dLGugt9eUu/imYDhVhctwImNUSLioAj
-	uLSKcLhVXc0By3x0UNemgZDIYHLH61jcfNIgaapiDkCkanpVX/zvUsxWhjIqkDDz
-	HcYOkvzBnTJyppe4tYFPwgNRcVlkGB2qR/mh6QvDdfUaJurtEjw3XnQ8k1lko7wK
-	LiatXDmRRdn7H4YuewMaXT5OnpoYD1YNDCnay3F+fym4Zw7muFENYLccgvo2714O
-	UjD6hX+1hjCTO3RulPQGIWCFD33y1xe/pTwt0W320beKIjo4Z1tBoRN9X0VvUt+0
-	mZASAfqCvxL9zC7RactR91uTq/2cQ==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4crcvmg78e-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 11 Mar 2026 13:43:53 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62BD1n1M024649;
-	Wed, 11 Mar 2026 13:43:52 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4cs0jk5fph-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 11 Mar 2026 13:43:52 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62BDhmEi56492426
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 11 Mar 2026 13:43:48 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3C8BA2004E;
-	Wed, 11 Mar 2026 13:43:48 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 88BF12004B;
-	Wed, 11 Mar 2026 13:43:44 +0000 (GMT)
-Received: from li-a84c74cc-2b13-11b2-a85c-acdd023f0674.ibm.com.com (unknown [9.39.22.162])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 11 Mar 2026 13:43:44 +0000 (GMT)
-From: Nilay Shroff <nilay@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: namcao@linutronix.de, maddy@linux.ibm.com, mpe@ellerman.id.au,
-        npiggin@gmail.com, christophe.leroy@csgroup.eu, tglx@linutronix.de,
-        maz@kernel.org, ritesh.list@gmail.com, gautam@linux.ibm.com,
-        Nilay Shroff <nilay@linux.ibm.com>, stable@vger.kernel.org
-Subject: [PATCH] powerpc/xive: fix kmemleak caused by incorrect chip_data lookup
-Date: Wed, 11 Mar 2026 19:13:31 +0530
-Message-ID: <20260311134336.326996-1-nilay@linux.ibm.com>
-X-Mailer: git-send-email 2.53.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWBpY0P1Mz303F
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 00:45:41 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id E46274165A;
+	Wed, 11 Mar 2026 13:45:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B22AFC4CEF7;
+	Wed, 11 Mar 2026 13:45:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773236738;
+	bh=FwJxugIu51rQzGKdILW6u0ISvFSH2WHg0PrqiwtyazI=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=n5q57R+D60bNK5VQOoQEW0xHP9oy//qLAmqok7x5ChmA1xGz8HsL55NKgQnTRfeuT
+	 ZwIobAY5LFRNie6ioRNae5VPHG/4ZIkaKJ+n3JcPlCDSRjbaSqJbjritvPIOKXM6Z2
+	 iSH/X/mpWo4Z+OVjbPDH7OSoI5eZQOY9fr+2Zj0kGNaXyoWcQkggJWip7tz2W7yTTH
+	 cDXwQdB8VYAk1cZeNARo9IezenM0PpaX245E58OBaeygPu0VI5MqUv8zLgqK/KdxRZ
+	 AHLwvSHcl64nT4KPKV/GcZpwfDcCr/+sYRDJNjRgIXLvJ8MKSH39nR7DU2Ht4bz7Ua
+	 Tv1hPn2waTMMw==
+Message-ID: <16f02f0a-09ef-456c-886f-c774e51de34d@kernel.org>
+Date: Wed, 11 Mar 2026 14:45:32 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,131 +59,191 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3] powerpc: dts: Build devicetrees of enabled platforms
+To: j.ne@posteo.net, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
+References: <20260311-mpc83xx-dtb-v3-1-4aa43bb9ffa0@posteo.net>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20260311-mpc83xx-dtb-v3-1-4aa43bb9ffa0@posteo.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: Lcapkis-v769aIZLGt4_AYUvHMxk2dEr
-X-Proofpoint-ORIG-GUID: NPOW6rCHcgISKzW5iGNE44AI8M38VY9k
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzExMDExNCBTYWx0ZWRfX1X3eayjuss4d
- lj7WXGJ+/etTW4mzOjVPrFw2XaYt4mdut3eptIpy63Bp5y/YbWuhbAHali6s1mjEI1PG5ECLPW7
- 307uXX246STKD3y72/FIhximP6MwbUM7sQYzmZ5C5F8XKtYsLzgI3qS1EKfE2xYgQsfFPtZapbr
- d0+y9W9k5mBDj8NkWY36Cbh4jrKJFS1tmnCpgU4l/BknXqtIS0/YS+A5yCsHOafHdkBTenEygD0
- zVwxGm3UrOD8is5Nn0ao+PqRiuylxHy3x0vH5GTnDedDD2jfFGzVDuMasLC9lYXfpTFKytt9lRq
- pFHfubE548R5nzNFK/7r+a0g9k4Nm03+vfIfjT+dtcTb9q2j9UW3eP6K3XTpAwObgRjsQZ3CD/r
- xcKwv2eiuXf+6yv3noMq7hKilQNI6CAZ0qaOpasuj92gmu0azaeDILxwuYvTRXZYMLkFhmCZCFG
- UB0ffsVa0fCc45Uxo5g==
-X-Authority-Analysis: v=2.4 cv=B5q0EetM c=1 sm=1 tr=0 ts=69b17199 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=YDLeHvHTvU_vrB_0PgUA:9
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-11_01,2026-03-09_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 phishscore=0 adultscore=0 lowpriorityscore=0 bulkscore=0
- priorityscore=1501 spamscore=0 clxscore=1015 impostorscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2602130000 definitions=main-2603110114
 
-The kmemleak reports the following memory leak:
 
-Unreferenced object 0xc0000002a7fbc640 (size 64):
-  comm "kworker/8:1", pid 540, jiffies 4294937872
-  hex dump (first 32 bytes):
-    01 00 00 00 00 00 00 00 00 00 09 04 00 04 00 00  ................
-    00 00 a7 81 00 00 0a c0 00 00 08 04 00 04 00 00  ................
-  backtrace (crc 177d48f6):
-    __kmalloc_cache_noprof+0x520/0x730
-    xive_irq_alloc_data.constprop.0+0x40/0xe0
-    xive_irq_domain_alloc+0xd0/0x1b0
-    irq_domain_alloc_irqs_parent+0x44/0x6c
-    pseries_irq_domain_alloc+0x1cc/0x354
-    irq_domain_alloc_irqs_parent+0x44/0x6c
-    msi_domain_alloc+0xb0/0x220
-    irq_domain_alloc_irqs_locked+0x138/0x4d0
-    __irq_domain_alloc_irqs+0x8c/0xfc
-    __msi_domain_alloc_irqs+0x214/0x4d8
-    msi_domain_alloc_irqs_all_locked+0x70/0xf8
-    pci_msi_setup_msi_irqs+0x60/0x78
-    __pci_enable_msix_range+0x54c/0x98c
-    pci_alloc_irq_vectors_affinity+0x16c/0x1d4
-    nvme_pci_enable+0xac/0x9c0 [nvme]
-    nvme_probe+0x340/0x764 [nvme]
 
-This occurs when allocating MSI-X vectors for an NVMe device. During
-allocation the XIVE code creates a struct xive_irq_data and stores it
-in irq_data->chip_data.
+Le 11/03/2026 à 14:41, J. Neuschäfer via B4 Relay a écrit :
+> From: "J. Neuschäfer" <j.ne@posteo.net>
+> 
+> Follow the same approach as other architectures such as Arm or RISC-V,
+> and build devicetrees based on platforms selected in Kconfig. This makes
+> it unnecessary to use CONFIG_OF_ALL_DTBS on PowerPC in order to build
+> DTB files.
+> 
+> This makes it easier to use other build and test infrastructure such as
+> `make dtbs_check`, and is a first step towards generating FIT images
+> that include all the relevant DTBs with `make image.fit`.
+> 
+> Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
 
-When the MSI-X irqdomain is later freed, xive_irq_free_data() is
-responsible for retrieving this structure and freeing it. However,
-after commit cc0cc23babc9 ("powerpc/xive: Untangle xive from child
-interrupt controller drivers"), xive_irq_free_data() retrieves the
-chip_data using irq_get_chip_data(), which looks up the data through
-the child domain.
+Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
 
-This is incorrect because the XIVE-specific irq data is associated with
-the XIVE (parent) domain. As a result the lookup fails and the allocated
-struct xive_irq_data is never freed, leading to the kmemleak report
-shown above.
-
-Fix this by retrieving the irq_data from the correct domain using
-irq_domain_get_irq_data() and then accessing the chip_data via
-irq_data_get_irq_chip_data().
-
-Cc: stable@vger.kernel.org
-Fixes: cc0cc23babc9 ("powerpc/xive: Untangle xive from child interrupt controller drivers")
-Signed-off-by: Nilay Shroff <nilay@linux.ibm.com>
----
- arch/powerpc/sysdev/xive/common.c | 16 +++++++++++-----
- 1 file changed, 11 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-index e1a4f8a97393..6b1b7541ca31 100644
---- a/arch/powerpc/sysdev/xive/common.c
-+++ b/arch/powerpc/sysdev/xive/common.c
-@@ -1038,13 +1038,19 @@ static struct xive_irq_data *xive_irq_alloc_data(unsigned int virq, irq_hw_numbe
- 	return xd;
- }
- 
--static void xive_irq_free_data(unsigned int virq)
-+static void xive_irq_free_data(struct irq_domain *domain, unsigned int virq)
- {
--	struct xive_irq_data *xd = irq_get_chip_data(virq);
-+	struct xive_irq_data *xd;
-+	struct irq_data *data = irq_domain_get_irq_data(domain, virq);
-+
-+	if (!data)
-+		return;
- 
-+	xd = irq_data_get_irq_chip_data(data);
- 	if (!xd)
- 		return;
--	irq_set_chip_data(virq, NULL);
-+
-+	irq_domain_reset_irq_data(data);
- 	xive_cleanup_irq_data(xd);
- 	kfree(xd);
- }
-@@ -1305,7 +1311,7 @@ static int xive_irq_domain_map(struct irq_domain *h, unsigned int virq,
- 
- static void xive_irq_domain_unmap(struct irq_domain *d, unsigned int virq)
- {
--	xive_irq_free_data(virq);
-+	xive_irq_free_data(d, virq);
- }
- 
- static int xive_irq_domain_xlate(struct irq_domain *h, struct device_node *ct,
-@@ -1443,7 +1449,7 @@ static void xive_irq_domain_free(struct irq_domain *domain,
- 	pr_debug("%s %d #%d\n", __func__, virq, nr_irqs);
- 
- 	for (i = 0; i < nr_irqs; i++)
--		xive_irq_free_data(virq + i);
-+		xive_irq_free_data(domain, virq + i);
- }
- #endif
- 
--- 
-2.53.0
+> ---
+> Changes in v3:
+> - Group multiple files per line, while still avoiding backslashes
+>    (suggested by Christophe Leroy)
+> - Link to v2: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Fr%2F20260305-mpc83xx-dtb-v2-1-cdb751458445%40posteo.net&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C650d11e9592c4331941d08de7f73ec27%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639088333042053456%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=wKfdk852k15VIWe%2Bxbm7pjQs44hN52v%2F4blEEP1H0qg%3D&reserved=0
+> 
+> Changes in v2:
+> - Use "dtb-$(FOO) += foo.dtb" format on every line, avoid backslashes
+>    (suggested by Geert Uytterhoeven)
+> - Link to v1: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Fr%2F20260119-mpc83xx-dtb-v1-1-522f841290bf%40posteo.net&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C650d11e9592c4331941d08de7f73ec27%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639088333042082472%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=1qV8q5ayBIDzl%2FEbWBW17l9atuWG%2BYM9bywRPv9Ju4E%3D&reserved=0
+> ---
+>   arch/powerpc/boot/dts/Makefile     | 72 ++++++++++++++++++++++++++++++++++++++
+>   arch/powerpc/boot/dts/fsl/Makefile | 43 +++++++++++++++++++++++
+>   2 files changed, 115 insertions(+)
+> 
+> diff --git a/arch/powerpc/boot/dts/Makefile b/arch/powerpc/boot/dts/Makefile
+> index 0cd0d8558b475c..56581c2489df0f 100644
+> --- a/arch/powerpc/boot/dts/Makefile
+> +++ b/arch/powerpc/boot/dts/Makefile
+> @@ -3,3 +3,75 @@
+>   subdir-y += fsl
+>   
+>   dtb-$(CONFIG_OF_ALL_DTBS) := $(patsubst $(src)/%.dts,%.dtb, $(wildcard $(src)/*.dts))
+> +
+> +# PPC44x platforms
+> +dtb-$(CONFIG_PPC44x_SIMPLE) += arches.dtb bamboo.dtb bluestone.dtb glacier.dtb
+> +dtb-$(CONFIG_PPC44x_SIMPLE) += eiger.dtb katmai.dtb rainier.dtb redwood.dtb
+> +dtb-$(CONFIG_PPC44x_SIMPLE) += sequoia.dtb taishan.dtb yosemite.dtb icon.dtb
+> +dtb-$(CONFIG_EBONY) += ebony.dtb
+> +dtb-$(CONFIG_SAM440EP) += sam440ep.dtb
+> +dtb-$(CONFIG_WARP) += warp.dtb
+> +dtb-$(CONFIG_ISS4xx) += iss4xx.dtb iss4xx-mpic.dtb
+> +dtb-$(CONFIG_CANYONLANDS) += canyonlands.dtb
+> +dtb-$(CONFIG_CURRITUCK) += currituck.dtb
+> +dtb-$(CONFIG_AKEBONO) += akebono.dtb
+> +dtb-$(CONFIG_FSP2) += fsp2.dtb
+> +
+> +# Embedded 6xx platforms
+> +dtb-$(CONFIG_LINKSTATION) += kuroboxHG.dtb kuroboxHD.dtb
+> +dtb-$(CONFIG_STORCENTER) += storcenter.dtb
+> +dtb-$(CONFIG_PPC_HOLLY) += holly.dtb
+> +dtb-$(CONFIG_GAMECUBE) += gamecube.dtb
+> +dtb-$(CONFIG_WII) += wii.dtb
+> +dtb-$(CONFIG_MVME5100) += mvme5100.dtb
+> +
+> +# MPC8xx platforms
+> +dtb-$(CONFIG_MPC885ADS) += mpc885ads.dtb
+> +dtb-$(CONFIG_MPC86XADS) += mpc866ads.dtb
+> +dtb-$(CONFIG_PPC_EP88XC) += ep88xc.dtb
+> +dtb-$(CONFIG_PPC_ADDER875) += adder875-redboot.dtb adder875-uboot.dtb
+> +dtb-$(CONFIG_TQM8XX) += tqm8xx.dtb
+> +
+> +# MPC512x platforms
+> +dtb-$(CONFIG_MPC5121_ADS) += mpc5121ads.dtb
+> +dtb-$(CONFIG_MPC512x_GENERIC) += mpc5125twr.dtb ac14xx.dts
+> +dtb-$(CONFIG_PDM360NG) += pdm360ng.dtb
+> +
+> +# MPC5200 platforms
+> +dtb-$(CONFIG_PPC_MPC5200_SIMPLE) += a3m071.dtb a4m072.dtb charon.dtb cm5200.dtb
+> +dtb-$(CONFIG_PPC_MPC5200_SIMPLE) += digsy_mtc.dtb motionpro.dtb mucmc52.dtb
+> +dtb-$(CONFIG_PPC_MPC5200_SIMPLE) += o2d.dtb o2d300.dtb o2dnt2.dtb o2i.dtb
+> +dtb-$(CONFIG_PPC_MPC5200_SIMPLE) += o2mnt.dtb o3dnt.dtb pcm030.dtb pcm032.dtb
+> +dtb-$(CONFIG_PPC_MPC5200_SIMPLE) += tqm5200.dtb uc101.dtb
+> +dtb-$(CONFIG_PPC_LITE5200) += lite5200.dtb lite5200b.dtb
+> +dtb-$(CONFIG_PPC_MEDIA5200) += media5200.dtb
+> +
+> +# MPC82xx platforms
+> +dtb-$(CONFIG_EP8248E) += ep8248e.dtb
+> +dtb-$(CONFIG_MGCOGE) += mgcoge.dtb
+> +
+> +# MPC83xx platforms
+> +dtb-$(CONFIG_MPC830x_RDB) += mpc8308rdb.dtb mpc8308_p1m.dtb
+> +dtb-$(CONFIG_MPC831x_RDB) += mpc8313erdb.dtb mpc8315erdb.dtb
+> +dtb-$(CONFIG_MPC832x_RDB) += mpc832x_rdb.dtb
+> +dtb-$(CONFIG_MPC834x_ITX) += mpc8349emitx.dtb mpc8349emitxgp.dtb
+> +dtb-$(CONFIG_ASP834x) += asp834x-redboot.dtb
+> +dtb-$(CONFIG_MPC836x_RDK) += mpc836x_rdk.dtb
+> +dtb-$(CONFIG_KMETER1) += kmeter1.dtb
+> +dtb-$(CONFIG_MPC837x_RDB) += mpc8377_rdb.dtb mpc8378_rdb.dtb mpc8379_rdb.dtb
+> +dtb-$(CONFIG_MPC837x_RDB) += mpc8377_wlan.dtb
+> +
+> +# MPC85xx platforms
+> +dtb-$(CONFIG_STX_GP3) += stx_gp3_8560.dtb stxssa8555.dtb
+> +dtb-$(CONFIG_TQM85xx) += tqm8540.dtb tqm8541.dtb tqm8548.dtb
+> +dtb-$(CONFIG_TQM85xx) += tqm8548-bigflash.dtb tqm8555.dtb tqm8560.dtb
+> +dtb-$(CONFIG_SOCRATES) += socrates.dtb
+> +dtb-$(CONFIG_KSI8560) += ksi8560.dtb
+> +dtb-$(CONFIG_XES_MPC85xx) += xcalibur1501.dtb xpedite5200.dtb
+> +dtb-$(CONFIG_XES_MPC85xx) += xpedite5200_xmon.dtb xpedite5301.dtb
+> +dtb-$(CONFIG_XES_MPC85xx) += xpedite5330.dtb xpedite5370.dtb
+> +
+> +# Misc. platforms
+> +dtb-$(CONFIG_PPC_MICROWATT) += microwatt.dtb
+> +dtb-$(CONFIG_AMIGAONE) += amigaone.dtb
+> +dtb-$(CONFIG_PPC_PS3) += ps3.dtb
+> diff --git a/arch/powerpc/boot/dts/fsl/Makefile b/arch/powerpc/boot/dts/fsl/Makefile
+> index d3ecdf14bc42e7..be784cbda6b56d 100644
+> --- a/arch/powerpc/boot/dts/fsl/Makefile
+> +++ b/arch/powerpc/boot/dts/fsl/Makefile
+> @@ -1,3 +1,46 @@
+>   # SPDX-License-Identifier: GPL-2.0
+>   
+>   dtb-$(CONFIG_OF_ALL_DTBS) := $(patsubst $(src)/%.dts,%.dtb, $(wildcard $(src)/*.dts))
+> +
+> +# MPC85xx platforms
+> +dtb-$(CONFIG_BSC9131_RDB) += bsc9131rdb.dtb
+> +dtb-$(CONFIG_BSC9132_QDS) += bsc9132qds.dtb
+> +dtb-$(CONFIG_C293_PCIE) += c293pcie.dtb
+> +dtb-$(CONFIG_MPC8536_DS) += mpc8536ds.dtb mpc8536ds_36b.dtb
+> +dtb-$(CONFIG_MPC85xx_DS) += mpc8544ds.dtb mpc8572ds_camp_core0.dtb
+> +dtb-$(CONFIG_MPC85xx_DS) += mpc8572ds_camp_core1.dtb mpc8572ds_36b.dtb
+> +dtb-$(CONFIG_MPC85xx_DS) += mpc8572ds.dtb
+> +dtb-$(CONFIG_MPC85xx_MDS) += mpc8568mds.dtb mpc8569mds.dtb p1021mds.dtb
+> +dtb-$(CONFIG_MPC85xx_RDB) += p1020mbg-pc_32b.dtb p1020mbg-pc_36b.dtb
+> +dtb-$(CONFIG_MPC85xx_RDB) += p1020rdb_36b.dtb p1020rdb.dtb p1020rdb-pc_32b.dtb
+> +dtb-$(CONFIG_MPC85xx_RDB) += p1020rdb-pc_36b.dtb p1020rdb-pc_camp_core0.dtb
+> +dtb-$(CONFIG_MPC85xx_RDB) += p1020rdb-pc_camp_core1.dtb p1020rdb-pd.dtb
+> +dtb-$(CONFIG_MPC85xx_RDB) += p1020utm-pc_32b.dtb p1020utm-pc_36b.dtb
+> +dtb-$(CONFIG_MPC85xx_RDB) += p1021rdb-pc_32b.dtb p1021rdb-pc_36b.dtb
+> +dtb-$(CONFIG_MPC85xx_RDB) += p1024rdb_32b.dtb p1024rdb_36b.dtb p1025rdb_32b.dtb
+> +dtb-$(CONFIG_MPC85xx_RDB) += p1025rdb_36b.dtb
+> +dtb-$(CONFIG_P1010_RDB) += p1010rdb-pa_36b.dtb p1010rdb-pa.dtb
+> +dtb-$(CONFIG_P1010_RDB) += p1010rdb-pb_36b.dtb p1010rdb-pb.dtb
+> +dtb-$(CONFIG_P1022_DS) += p1022ds_32b.dtb p1022ds_36b.dtb
+> +dtb-$(CONFIG_P1022_RDK) += p1022rdk.dtb
+> +dtb-$(CONFIG_P1023_RDB) += p1023rdb.dtb
+> +dtb-$(CONFIG_PPC_P2020) += p2020ds.dtb turris1x.dtb
+> +dtb-$(CONFIG_TWR_P102x) += p1025twr.dtb
+> +dtb-$(CONFIG_CORENET_GENERIC) += b4420qds.dtb b4860qds.dtb cyrus_p5020.dtb
+> +dtb-$(CONFIG_CORENET_GENERIC) += kmcent2.dtb kmcoge4.dtb oca4080.dtb
+> +dtb-$(CONFIG_CORENET_GENERIC) += p2041rdb.dtb p3041ds.dtb p4080ds.dtb
+> +dtb-$(CONFIG_CORENET_GENERIC) += p5020ds.dtb p5040ds.dtb t1023rdb.dtb
+> +dtb-$(CONFIG_CORENET_GENERIC) += t1024qds.dtb t1024rdb.dtb t1040d4rdb.dtb
+> +dtb-$(CONFIG_CORENET_GENERIC) += t1040qds.dtb t1040rdb.dtb t1040rdb-rev-a.dtb
+> +dtb-$(CONFIG_CORENET_GENERIC) += t1042d4rdb.dtb t1042qds.dtb t1042rdb.dtb
+> +dtb-$(CONFIG_CORENET_GENERIC) += t1042rdb_pi.dtb t2080qds.dtb t2080rdb.dtb
+> +dtb-$(CONFIG_CORENET_GENERIC) += t2081qds.dtb t4240qds.dtb t4240rdb.dtb
+> +dtb-$(CONFIG_PPA8548) += ppa8548.dtb
+> +dtb-$(CONFIG_GE_IMP3A) += ge_imp3a.dtb
+> +dtb-$(CONFIG_MVME2500) += mvme2500.dtb
+> +
+> +# MPC86xx platforms
+> +dtb-$(CONFIG_GEF_SBC310) += gef_sbc310.dtb
+> +dtb-$(CONFIG_GEF_SBC610) += gef_sbc610.dtb
+> +dtb-$(CONFIG_GEF_PPC9A) += gef_ppc9a.dtb
+> +dtb-$(CONFIG_MVME7100) += mvme7100.dtb
+> 
+> ---
+> base-commit: 11439c4635edd669ae435eec308f4ab8a0804808
+> change-id: 20260101-mpc83xx-dtb-23d98a190e23
+> 
+> Best regards,
 
 
