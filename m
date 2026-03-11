@@ -1,42 +1,42 @@
-Return-Path: <linuxppc-dev+bounces-18056-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18057-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16D1A1062899
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 12:58:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E92B1062896
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 12:59:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fW9lw2cf6z3cC9;
-	Wed, 11 Mar 2026 23:58:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:c010:41de::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773233900;
-	cv=none; b=GO7t+sbOlWFDSBcWv8JWM4OpMZjGbKtbGpFzKlh0GFFUCZY3wxqSGE/pYauP/AvapMe4Zxb4wgd3dClMLOjg6qBUFbFGgOr5XJpgTiO9qmfd3IFcc1AQlsDl5sj51T9Dvc9u391mrl3jB95s0XzIK2S09R2nZtMYSDaF1ytoH0mYjp6pFZTIUUfjdJRgXrStOIvP6yaeSPxuHUiF9C+Xs8syBynpMOp0vL4kLw7+9UIicyoiRtyisHLkJHTRi+wPkLo6oSKqlaB+N2RzSpuuJcUNRLlaxA3o8u8Tnq9/MXX8I6rRr/dUCSFeCN+uGAO6uCAA6OajYh5mgco4qR7qMA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fW9nf0WZtz3cC9;
+	Wed, 11 Mar 2026 23:59:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773233990;
+	cv=none; b=AkB3OoSsc/gffGkGVjNBwix3Y6UIDaw9NdJQSVWwkyJfy4N2z20zoajkmi3r7l59Zrbe9MxU9MRsjX2CG4wbQk3hBMd6+4lPJelc3s0RM4dIn+KORiRGsJDMTK7lcE0hCL8V8CuqewEDlg7iWgvQuFPR55QCCi4lLGgnkKQ3OLGM6QnVRO4gI9xMF8Wvn+gMcP4O2k2ITde+matKBmViUzx3kfziPCuoW9taoCVGm2UBLJO7V/wNF5afqr/YJWWX2HxDaRwqLTEoX4MvLLZpdQdT/k56K/CiXiT5U3wPMw2eZidvqJIOI9JICJMbF+VUKsvfP2GueFOBVyJhV1NE5w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773233900; c=relaxed/relaxed;
-	bh=BZ3v/Fdh39v0Wn0XeTx6KcU/v7DuGXGCaVIr6QBF7qc=;
+	t=1773233990; c=relaxed/relaxed;
+	bh=bC0kY/4Na/XlNuC6qk5L4uZyWLWZIZvZpwIjsprH2kw=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=fFmR3NeYNQh0qqmmeWmgH5ipJoe/GoZQdoDvW0BlqpbrvlU7SDKz62nvmSP+a3a05UMU3qu1IcdUuofXoAsxMjXEv8aXwWL61PePAdiMzd5unB9qV1LuAOWJGOWB1IplRPqeVdkj9zEBDi6qG/yfgnVDZX89WhAZ3OWjFFVypHCcwXjpxRQ2HEq2zhX45mrqbzHyRhl6ExmZ+aumfO1ecdFGsaH29yCgRhyl5DCkw/W6Q36bO/bUcRiW9r3edQZUcMCOlH81nDgJN/465yq1tIdyaJrZ5i9Nyn/c5r54OAT2dJzr4xh+4QhwpYY+vlq2ocZyhmI3cW+eEJeRFUBhxw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=k90soJZP; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+	 Content-Type:Content-Disposition:In-Reply-To; b=Ceo5PFrCSsfbd4pCek8kQv2iRlDedoSoSk6jGgOTNA5c0MOoPJMSbZGIB5Tz6R/pDGIB2GrqdC0UETXwgI7f4kvQ6SAbUzWtJRtkzzK+WbaB3pRwOJVMaQSMvavT3rkvCsRnKg/2EGTvGLjTOWnlgwQQ5XlAn03ythkuDKpbQQ0RL5DFqH2GKXMI8aXf8yXk+OoSc9JDVwAIdmCpK83kXoXeiH65sl5uupBivCel8cVsw3/PYrtOWz14SPeDaVKTh/iYHhcm6LadnaU1yp3in2Uwn2HcrDBfwvzZuThrPPwQtm6P0vc8CvSyRe2Z2shiNILDW9daWuKjFiVsSXeacQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=CEiZ87VU; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=k90soJZP;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=CEiZ87VU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
-Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
+Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fW9lt6JGhz3cBW
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 23:58:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fW9nd3DMkz3cBW
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 23:59:49 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1773233887;
-	bh=mRn/wE2BOJdmVXtetURpi3qdtZ2DQzJb6SnV9QqyjkE=;
+	s=mail; t=1773233984;
+	bh=6iMI2XFYcGmArDxHVD1cNM01BLfDHO/WY4pBP+fXMLQ=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=k90soJZPKmK3WO0aN0btxQNxuBpFawAlVAt8Y/y5iCKKutCz/URHVI6erF06qEnJb
-	 UErb09oCmFeFT4NoInvtsQ57j4bPe83GaAnwXmLf73CWGB4LgUkwkKHVTuqOzhv039
-	 l997WH4HQ39CRI7rjR0x4LOMudFJrvf8taL+1xCg=
-Date: Wed, 11 Mar 2026 13:58:07 +0100
+	b=CEiZ87VUhKkkjxvvSxzMolbjRXZkdgJY0Rzic3nGaTRS6rUPbCgJmnQ+/+MVDz77B
+	 T0VB914Hs6kRIOMVG/+6qkbqwiEQ6Ju+JDASONipQYTCXd3FloBmK2xVggCqy7Xgzr
+	 wkmrvsN0vaq/eTWXkiLVV77iXHXn2bYLd9icP6MQ=
+Date: Wed, 11 Mar 2026 13:59:44 +0100
 From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>
 To: Eric Biggers <ebiggers@kernel.org>
 Cc: Nathan Chancellor <nathan@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
@@ -58,11 +58,12 @@ Cc: Nathan Chancellor <nathan@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
 	linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, 
 	linux-modules@vger.kernel.org, linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org, 
 	linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
-Subject: Re: [PATCH v4 06/17] kbuild: add stamp file for vmlinux BTF data
-Message-ID: <cf122165-ebf3-4027-aa31-a37755eb352f@t-8ch.de>
+Subject: Re: [PATCH v4 09/17] module: Make module loading policy usable
+ without MODULE_SIG
+Message-ID: <2f702140-32cf-40aa-80fb-3650145a2adf@t-8ch.de>
 References: <20260113-module-hashes-v4-0-0b932db9b56b@weissschuh.net>
- <20260113-module-hashes-v4-6-0b932db9b56b@weissschuh.net>
- <20260310213606.GD120274@quark>
+ <20260113-module-hashes-v4-9-0b932db9b56b@weissschuh.net>
+ <20260310220146.GE120274@quark>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -79,97 +80,51 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260310213606.GD120274@quark>
+In-Reply-To: <20260310220146.GE120274@quark>
 
-On 2026-03-10 14:36:06-0700, Eric Biggers wrote:
-> On Tue, Jan 13, 2026 at 01:28:50PM +0100, Thomas Weißschuh wrote:
-> > The upcoming module hashes functionality will build the modules in
-> > between the generation of the BTF data and the final link of vmlinux.
-> > Having a dependency from the modules on vmlinux would make this
-> > impossible as it would mean having a cyclic dependency.
-> > Break this cyclic dependency by introducing a new target.
+On 2026-03-10 15:01:46-0700, Eric Biggers wrote:
+> On Tue, Jan 13, 2026 at 01:28:53PM +0100, Thomas Weißschuh wrote:
+> > The loading policy functionality will also be used by the hash-based
+> > module validation. Split it out from CONFIG_MODULE_SIG so it is usable
+> > by both.
 > > 
 > > Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 > > ---
-> >  scripts/Makefile.modfinal | 4 ++--
-> >  scripts/link-vmlinux.sh   | 6 ++++++
-> >  2 files changed, 8 insertions(+), 2 deletions(-)
+> >  include/linux/module.h  |  8 ++++----
+> >  kernel/module/Kconfig   |  5 ++++-
+> >  kernel/module/main.c    | 26 +++++++++++++++++++++++++-
+> >  kernel/module/signing.c | 21 ---------------------
+> >  4 files changed, 33 insertions(+), 27 deletions(-)
 > > 
-> > diff --git a/scripts/Makefile.modfinal b/scripts/Makefile.modfinal
-> > index 149e12ff5700..adfef1e002a9 100644
-> > --- a/scripts/Makefile.modfinal
-> > +++ b/scripts/Makefile.modfinal
-> > @@ -56,8 +56,8 @@ if_changed_except = $(if $(call newer_prereqs_except,$(2))$(cmd-check),      \
-> >  	printf '%s\n' 'savedcmd_$@ := $(make-cmd)' > $(dot-target).cmd, @:)
+> > diff --git a/include/linux/module.h b/include/linux/module.h
+> > index f288ca5cd95b..f9601cba47cd 100644
+> > --- a/include/linux/module.h
+> > +++ b/include/linux/module.h
+> > @@ -444,7 +444,7 @@ struct module {
+> >  	const u32 *gpl_crcs;
+> >  	bool using_gplonly_symbols;
 > >  
-> >  # Re-generate module BTFs if either module's .ko or vmlinux changed
-> > -%.ko: %.o %.mod.o .module-common.o $(objtree)/scripts/module.lds $(and $(CONFIG_DEBUG_INFO_BTF_MODULES),$(KBUILD_BUILTIN),$(objtree)/vmlinux) FORCE
-> > -	+$(call if_changed_except,ld_ko_o,$(objtree)/vmlinux)
-> > +%.ko: %.o %.mod.o .module-common.o $(objtree)/scripts/module.lds $(and $(CONFIG_DEBUG_INFO_BTF_MODULES),$(KBUILD_BUILTIN),$(objtree)/.tmp_vmlinux_btf.stamp) FORCE
-> > +	+$(call if_changed_except,ld_ko_o,$(objtree)/.tmp_vmlinux_btf.stamp)
-> >  ifdef CONFIG_DEBUG_INFO_BTF_MODULES
-> >  	+$(if $(newer-prereqs),$(call cmd,btf_ko))
-> >  endif
-> > diff --git a/scripts/link-vmlinux.sh b/scripts/link-vmlinux.sh
-> > index 4ab44c73da4d..8c98f8645a5c 100755
-> > --- a/scripts/link-vmlinux.sh
-> > +++ b/scripts/link-vmlinux.sh
-> > @@ -111,6 +111,7 @@ vmlinux_link()
-> >  gen_btf()
-> >  {
-> >  	local btf_data=${1}.btf.o
-> > +	local btf_stamp=.tmp_vmlinux_btf.stamp
-> >  
-> >  	info BTF "${btf_data}"
-> >  	LLVM_OBJCOPY="${OBJCOPY}" ${PAHOLE} -J ${PAHOLE_FLAGS} ${1}
-> > @@ -131,6 +132,11 @@ gen_btf()
-> >  	fi
-> >  	printf "${et_rel}" | dd of="${btf_data}" conv=notrunc bs=1 seek=16 status=none
-> >  
-> > +	info STAMP $btf_stamp
-> > +	if ! cmp --silent $btf_data $btf_stamp; then
-> > +		cp $btf_data $btf_stamp
-> > +	fi
+> > -#ifdef CONFIG_MODULE_SIG
+> > +#ifdef CONFIG_MODULE_SIG_POLICY
+> >  	/* Signature was verified. */
+> >  	bool sig_ok;
+> >  #endif
+> [...]
+> > +config MODULE_SIG_POLICY
+> > +	def_bool MODULE_SIG
+> 
+> Maybe MODULE_AUTH_POLICY?  Hash-based module authentication does not use
+> signatures.
+> 
+> This issue appears elsewhere in the code too.  There are lots of places
+> that still refer to module signatures or "sigs", when really module
+> authentication is meant.
+> 
+> I'm not sure how far you want to go with the renaming, but it's
+> something to think about.  It's confusing to use the term "signature" to
+> mean something that is not a signature.
 
-This patch will be gone from the next revision of the series.
-Making use of the recently introduced vmlinux.unstripped,
-as suggested by Petr, removes any modifications to link-vmlinux.sh
-and the issue that this patch tried to address.
-
-> A "stamp file" is traditionally an empty file that is written when some
-> build step has completed.  The above code is instead copying the entire
-> .tmp_vmlinux1.btf.o file (megabytes in size) to .tmp_vmlinux_btf.stamp.
-
-The goal here was not to only have a reference timestamp, but
-specifically the reference file contents.
-
-Note: The duplicated vmlinux.unstripped in its current form is by far
-larger than .tmp_vmlinux1.btf.o.
-
-> So, it's not clear to me why the stamp file is needed at all, versus
-> depending directly on .tmp_vmlinux1.btf.o.
->
-> I guess 'make' doesn't know about the dependencies of
-> .tmp_vmlinux1.btf.o.  But the same is true of the stamp file, right?  So
-> either way, how would 'make' know to finish rebuilding the file before
-> starting to execute the "Re-generate module BTFs" rule?
-
-The problem was not the ordering, this is handled within link-vmlinux.sh.
-IIRC originally without this patch even no-op rebuilds would end up
-rebuilding the modules. Using .tmp_vmlinux1.btf.o may have worked too.
-But in v4, the patch "kbuild: generate module BTF based on
-vmlinux.unstripped" was added, which also solves this problem.
-
-> Also, passing the long option '--silent' to 'cmp' creates a dependency
-> on the GNU implementation of 'cmp', which isn't documented as a kernel
-> build dependency.  Probably better to use the short option '-s'.
-
-Ack.
-
-> Also, the stamp file isn't being deleted by 'make clean'.  It looks like
-> it would need to be added to cleanup() in link-vmlinux.sh.
-
-Ack.
+Ack. "authentication" is much better, I'll use that.
 
 
 Thomas
