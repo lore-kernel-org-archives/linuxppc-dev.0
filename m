@@ -1,46 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-18078-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18079-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A03F31125864
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 18:16:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76FCE112586A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 18:58:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fWJpR6SK3z3cCK;
-	Thu, 12 Mar 2026 05:15:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.180
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773252959;
-	cv=none; b=MvuDmmFcPRy7ScSHYeRVkw6UUwtgokpkhDV9deHITCD4cFiInEMlygHoZbuH0qanzfy69pkFOzP9uSGF83tgtmvlocUnNF+L9ep1G7NXPO8yU30ZcGiMCfiFT4DrKe2jlcLACXHNzFKMJaEZezLG7QuhzPkd7MKyjH9DaJXMihJMsuZtVWjyjscz4MfpcG3UojlKSC3GMKELGnQARFoFor3W1zejX2wRmoHU2x7knnusJUBSuhhD+2IHjtkFvyvzb6KdrZ9t10IWkmDetK00u0q1UcRaVyL0uxf1grqUXULQQOycxqVlqse7qkExQOFWSz61KsQqxHaIKkj3ykC8xg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fWKkx1jLhz3cCK;
+	Thu, 12 Mar 2026 05:58:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773255481;
+	cv=none; b=FA6GufZ83bSdvUVV6LiRtrMHAusgh+8REeJsYFYB9OjrwM3lSH3JD7s9Rzbta7nrVfVLDkXJwMG6yyVdvSqyWKFV1TOkK7ev5ZjOrami6o618eNRBMNXmLthAKelkzXpwTRN8z3QJjkdJMqQc7ARVaqVxmU4MVKiERj45IvPCkpJ3FJXkMG3zXwA4Ag4q1Is+xBzBG8pqXCX19Kku9R2kuC2JVD5qMpMditAUzbY4wKkKk60MAYLiD7asuQdi+SSN7bS6BjvGnc4iubMUh5KBDtkEbHny6wVaEc29PUweqVIA/iUSFglvffnia5fZAxHeU54nfGgMcLx3vlanK6e0A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773252959; c=relaxed/relaxed;
-	bh=Jjq49ouwOstajWDDHsipi40+8r2DGwcxFw4hkhofWGU=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=N2eITRXXE/xi0SDz2C1iwrFfgFo3ns/GvBIudDd+pYr6jWHKbD7ZvXtJM7qBdkS8JfyihjyzI6lC557NTSaULjUAe6QAxoohRV6uNR9DoF8FAbkcuESHTC9XUwySn8aUFqyDkWQcfD+H+eOmY2+D0OlutAoVm+NVCDIiDQs1nIBna7t/B7ayjQD/AsvjL7PhkDSaQth7m6bwDorwQqnB7QEVN0FKGXw6F8T7sa1wJWS5ni2F5LbPzIxdyrfljnLUOiacqyOyur7YxWy0HsM+ex8LUW+nn+ZFI5lvGSHJ06WrxUjuBIVRltMQ1iuUccCRr2r9W5I57MvBBkGguBXruA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=YRmUOewu; dkim-atps=neutral; spf=pass (client-ip=95.215.58.180; helo=out-180.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1773255481; c=relaxed/relaxed;
+	bh=+5HOp+D2LeHu2UXe/cUBxg6LHj8EqqG/+j5Xu/msN7c=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=YwWmT5kKPPg0nx3NjJBy262I7D+QMy2CNh3flXiw4MIajFbhSPUfU7BRUeq9mOuxYwdWJttyhjomyKI2LqucYtiK2nGa0mzRbm6zb6hrml0vAjWTPgpTBq6IvsV1A1Wg3/viVtrXSB1N6ghsp991bI7HaiyE8bPZbALURfHf/YowfF3fps5XFBl6JDtRMJFN08hr4tDdzlNtObNCw0rPNInoXzUiwxuiJLD3SEBBe4towd46zZm9f+IL4iNBJ/hAZ8fZYvVG8vuGysKIrTopWRsDp2nWdhTn1Ov7f9ZY/qhYEjQcx4fRenPJNEJdAjR9CEPJJk0sqO0dT5DapvwUAg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=lwNHqHof; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=YRmUOewu;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=lwNHqHof;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.180; helo=out-180.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-180.mta1.migadu.com (out-180.mta1.migadu.com [95.215.58.180])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWJpN6NdCz3cCC
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 05:15:55 +1100 (AEDT)
-Content-Type: text/plain;
-	charset=us-ascii
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1773252935;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Jjq49ouwOstajWDDHsipi40+8r2DGwcxFw4hkhofWGU=;
-	b=YRmUOewu0aO319izp478Y0xTx7rGxwboIxXbrhev80N21WY8O3DvaGE9epGDrrLNs7li+F
-	WhBuL59DlXs0ZajuRcVMtcd9oTzASTPmzKWa8Wl8/x1K+qfm/+5yPjHZzKrJ3VxI0ARc7h
-	gL4aIP6QSdvrgtldxvJBfntRA77FeRo=
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWKkw2B5Pz2xlv
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 05:57:59 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id AAB79441C3;
+	Wed, 11 Mar 2026 18:57:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E4B60C4CEF7;
+	Wed, 11 Mar 2026 18:57:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
+	s=korg; t=1773255476;
+	bh=RIP4VTL8ZKfCAED/llWzV24bhb3+EBezOHbYfQlNNVw=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=lwNHqHofCZymV9ZwzL4O4QC3oCCorqSKfgbbui0vSPfhppxGKPRL/IJ69bcF8P337
+	 vhDG95oCrnrO9ZlV2DZHEmUO88ZgVNVnKPQNiPvM1Z9VRi+eMXmLsJiRCJ8qnumnHG
+	 0HNrR7TfydlMZ9E+xCePC4BRnc2O1ZREJXn9QWnU=
+Date: Wed, 11 Mar 2026 11:57:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Hellwig <hch@lst.de>
+Cc: Richard Henderson <richard.henderson@linaro.org>, Matt Turner
+ <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>, Russell King
+ <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will
+ Deacon <will@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui
+ <kernel@xen0n.name>, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael
+ Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Paul Walmsley
+ <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou
+ <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, Heiko Carstens
+ <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, Alexander Gordeev
+ <agordeev@linux.ibm.com>, Christian Borntraeger
+ <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>,
+ "David S. Miller" <davem@davemloft.net>, Andreas Larsson
+ <andreas@gaisler.com>, Richard Weinberger <richard@nod.at>, Anton Ivanov
+ <anton.ivanov@cambridgegreys.com>, Johannes Berg
+ <johannes@sipsolutions.net>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar
+ <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen
+ <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin"
+ <hpa@zytor.com>, Herbert Xu <herbert@gondor.apana.org.au>, Dan Williams
+ <dan.j.williams@intel.com>, Chris Mason <clm@fb.com>, David Sterba
+ <dsterba@suse.com>, Arnd Bergmann <arnd@arndb.de>, Song Liu
+ <song@kernel.org>, Yu Kuai <yukuai@fnnas.com>, Li Nan
+ <linan122@huawei.com>, "Theodore Ts'o" <tytso@mit.edu>,
+ "Jason A. Donenfeld" <Jason@zx2c4.com>, linux-alpha@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
+ linux-crypto@vger.kernel.org, linux-btrfs@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: cleanup the RAID5 XOR library v2
+Message-Id: <20260311115754.ca2206d1428c49c3bd6e93cf@linux-foundation.org>
+In-Reply-To: <20260311070416.972667-1-hch@lst.de>
+References: <20260311070416.972667-1-hch@lst.de>
+X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,63 +91,29 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3826.700.81.1.4\))
-Subject: Re: [PATCH] crypto: nx - fix memory leaks in
- nx842_crypto_{alloc,free}_ctx
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Thorsten Blum <thorsten.blum@linux.dev>
-In-Reply-To: <47dd8932-7347-4744-be8d-79106bc76f4b@app.fastmail.com>
-Date: Wed, 11 Mar 2026 19:15:00 +0100
-Cc: Haren Myneni <haren@us.ibm.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>,
- Dan Streetman <ddstreet@ieee.org>,
- stable@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,
- linux-crypto@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <2169F556-EB9F-449E-AD21-BAB1D34E81B7@linux.dev>
-References: <20260311150922.382941-3-thorsten.blum@linux.dev>
- <47dd8932-7347-4744-be8d-79106bc76f4b@app.fastmail.com>
-To: Ard Biesheuvel <ardb@kernel.org>
-X-Migadu-Flow: FLOW_OUT
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-On 11. Mar 2026, at 16:16, Ard Biesheuvel wrote:
-> On Wed, 11 Mar 2026, at 16:09, Thorsten Blum wrote:
->> The bounce buffers are allocated with __get_free_pages() using
->> BOUNCE_BUFFER_ORDER (order 2 =3D 4 pages), but both the allocation =
-error
->> path and nx842_crypto_free_ctx() release the buffers with =
-free_page().
->> Use free_pages() with the matching order instead.
->>=20
->> Also, since the scomp conversion, nx842_crypto_alloc_ctx() allocates =
-the
->> context separately, but nx842_crypto_free_ctx() never releases it. =
-Add
->> the missing kfree(ctx) in nx842_crypto_free_ctx(), and reuse
->> nx842_crypto_free_ctx() in the allocation error path.
->>=20
->> Fixes: ed70b479c2c0 ("crypto: nx - add hardware 842 crypto comp alg")
->> Fixes: 980b5705f4e7 ("crypto: nx - Migrate to scomp API")
->=20
-> Thanks for the fixes.
->=20
-> Given that you are fixing two separate issues that were introduced ~10 =
-years apart, I think it would be better to split this up.
+On Wed, 11 Mar 2026 08:03:32 +0100 Christoph Hellwig <hch@lst.de> wrote:
 
-Yes, good idea. I submitted them separately here:
+> the XOR library used for the RAID5 parity is a bit of a mess right now.
+> The main file sits in crypto/ despite not being cryptography and not
+> using the crypto API, with the generic implementations sitting in
+> include/asm-generic and the arch implementations sitting in an asm/
+> header in theory.  The latter doesn't work for many cases, so
+> architectures often build the code directly into the core kernel, or
+> create another module for the architecture code.
+> 
+> Changes this to a single module in lib/ that also contains the
+> architecture optimizations, similar to the library work Eric Biggers
+> has done for the CRC and crypto libraries later.  After that it changes
+> to better calling conventions that allow for smarter architecture
+> implementations (although none is contained here yet), and uses
+> static_call to avoid indirection function call overhead.
 
-=
-https://lore.kernel.org/lkml/20260311155645.397083-4-thorsten.blum@linux.d=
-ev/
+Cool, thanks, I updated mm.git's mm-nonmm-unstable branch (and hence
+linux-next) to this version.
 
-Thanks,
-Thorsten
-
+I retained Heiko's ack on [17/27].
 
