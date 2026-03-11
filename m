@@ -1,84 +1,90 @@
-Return-Path: <linuxppc-dev+bounces-18079-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18080-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76FCE112586A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 18:58:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9FDB4103E2E4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 21:14:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fWKkx1jLhz3cCK;
-	Thu, 12 Mar 2026 05:58:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fWNmc3Q3Sz2xTh;
+	Thu, 12 Mar 2026 08:14:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773255481;
-	cv=none; b=FA6GufZ83bSdvUVV6LiRtrMHAusgh+8REeJsYFYB9OjrwM3lSH3JD7s9Rzbta7nrVfVLDkXJwMG6yyVdvSqyWKFV1TOkK7ev5ZjOrami6o618eNRBMNXmLthAKelkzXpwTRN8z3QJjkdJMqQc7ARVaqVxmU4MVKiERj45IvPCkpJ3FJXkMG3zXwA4Ag4q1Is+xBzBG8pqXCX19Kku9R2kuC2JVD5qMpMditAUzbY4wKkKk60MAYLiD7asuQdi+SSN7bS6BjvGnc4iubMUh5KBDtkEbHny6wVaEc29PUweqVIA/iUSFglvffnia5fZAxHeU54nfGgMcLx3vlanK6e0A==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773263680;
+	cv=none; b=kjAw6BHXt9ONto9VJVqU8NbHEz+X+pShmuBXfsGKzSTxlV4Zz+T9FmtUMhofxCCk2l+UraRwGUSBrR7fzw6r2hi+Yk8UY7z4o0C/2nCJuSEG5NZiu3wIAwO1qhDniwXc7ftqsJbLDeSJEAqIO/UQk4531Yx9IIh7NlGraSPgbcQTchfjt2/yBKzDcdwGE3dIz4jR1hfvwJHkytCpcbbRYRtXBSKjCgkZRjAjExSqurfLxRyANNTfi4bInrHCE4NccOLww0UPLM+HJWTdmHbgAUTYwwmt4kJnKuFTWMdNMMSiDJgl0FIVnox+OAVyRgv+zgEkxMeuy0LAFwzz+sz5Qg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773255481; c=relaxed/relaxed;
-	bh=+5HOp+D2LeHu2UXe/cUBxg6LHj8EqqG/+j5Xu/msN7c=;
-	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=YwWmT5kKPPg0nx3NjJBy262I7D+QMy2CNh3flXiw4MIajFbhSPUfU7BRUeq9mOuxYwdWJttyhjomyKI2LqucYtiK2nGa0mzRbm6zb6hrml0vAjWTPgpTBq6IvsV1A1Wg3/viVtrXSB1N6ghsp991bI7HaiyE8bPZbALURfHf/YowfF3fps5XFBl6JDtRMJFN08hr4tDdzlNtObNCw0rPNInoXzUiwxuiJLD3SEBBe4towd46zZm9f+IL4iNBJ/hAZ8fZYvVG8vuGysKIrTopWRsDp2nWdhTn1Ov7f9ZY/qhYEjQcx4fRenPJNEJdAjR9CEPJJk0sqO0dT5DapvwUAg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=lwNHqHof; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	t=1773263680; c=relaxed/relaxed;
+	bh=6olQe5Znja+kHj66m/qnC2ILJgRuydjqp+R7FkQCPAA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=D7ndrcE3hJqvdNmQztxuSrHz+AQ0eQtNsiHmIVHIc9spECa8Kt7dpbGAPoQ3cbsKvQ0fujWY2yzPzpsM25z48ObD3nA5YQCEOShddvw5Nomvc7XMeswwrj9N8DpTvkEKlMF+O7Cg0irve8NhbpRxbRN1jLtu2VhPVzMhCw6IYAxUhP5Brw6Kj3ZGVRX7yv1r07URA8+EGeHCQaseD94cnv4dRRH/VPpklC7I0Rln575wZm87Sc6uMfpTBW5Gaei62ToD28hCGrjNYK2ZEiQMixS69l+JBeijogdMrYs7Iudj6MxtIJ+WTlfjR/4+i0Zp5UfpAIFkdw4kaotqXUI4cw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nB1ceOIT; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=lwNHqHof;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nB1ceOIT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWKkw2B5Pz2xlv
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 05:57:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWNmb5Kncz2xSD
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 08:14:39 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id AAB79441C3;
-	Wed, 11 Mar 2026 18:57:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E4B60C4CEF7;
-	Wed, 11 Mar 2026 18:57:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
-	s=korg; t=1773255476;
-	bh=RIP4VTL8ZKfCAED/llWzV24bhb3+EBezOHbYfQlNNVw=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=lwNHqHofCZymV9ZwzL4O4QC3oCCorqSKfgbbui0vSPfhppxGKPRL/IJ69bcF8P337
-	 vhDG95oCrnrO9ZlV2DZHEmUO88ZgVNVnKPQNiPvM1Z9VRi+eMXmLsJiRCJ8qnumnHG
-	 0HNrR7TfydlMZ9E+xCePC4BRnc2O1ZREJXn9QWnU=
-Date: Wed, 11 Mar 2026 11:57:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Hellwig <hch@lst.de>
-Cc: Richard Henderson <richard.henderson@linaro.org>, Matt Turner
- <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>, Russell King
- <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will
- Deacon <will@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui
- <kernel@xen0n.name>, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael
- Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Paul Walmsley
- <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou
- <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, Heiko Carstens
- <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, Alexander Gordeev
- <agordeev@linux.ibm.com>, Christian Borntraeger
- <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>,
- "David S. Miller" <davem@davemloft.net>, Andreas Larsson
- <andreas@gaisler.com>, Richard Weinberger <richard@nod.at>, Anton Ivanov
- <anton.ivanov@cambridgegreys.com>, Johannes Berg
- <johannes@sipsolutions.net>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar
- <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen
- <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin"
- <hpa@zytor.com>, Herbert Xu <herbert@gondor.apana.org.au>, Dan Williams
- <dan.j.williams@intel.com>, Chris Mason <clm@fb.com>, David Sterba
- <dsterba@suse.com>, Arnd Bergmann <arnd@arndb.de>, Song Liu
- <song@kernel.org>, Yu Kuai <yukuai@fnnas.com>, Li Nan
- <linan122@huawei.com>, "Theodore Ts'o" <tytso@mit.edu>,
- "Jason A. Donenfeld" <Jason@zx2c4.com>, linux-alpha@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
- linux-crypto@vger.kernel.org, linux-btrfs@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: cleanup the RAID5 XOR library v2
-Message-Id: <20260311115754.ca2206d1428c49c3bd6e93cf@linux-foundation.org>
-In-Reply-To: <20260311070416.972667-1-hch@lst.de>
-References: <20260311070416.972667-1-hch@lst.de>
-X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	by sea.source.kernel.org (Postfix) with ESMTP id 6AFC940BB4;
+	Wed, 11 Mar 2026 21:14:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BB722C4CEF7;
+	Wed, 11 Mar 2026 21:14:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773263677;
+	bh=4AK1rqDz6/A4qjK/w9x6JibTYdqI2D5USa9Uljlor+U=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=nB1ceOIToPCiG2Ga6fYFvAKYgRMq4rBLUcUJz61ILzyuOdXns1FvKE63ZPdgZQHZl
+	 Sb4nNTfsbw0QQI5n6wXKZka0cIrk//AuTKoo0ISRoDGLOBcwr8YHsLLIUfXs3ewVur
+	 Y//Sw9zR3uoc7l0O5LZdS/vroMKyuP4eog+uvpPQG9u86rx9FDtkb5kBULGBJiQpKA
+	 ykMX0LdNVLH7xwVNGKzNvHSeT8rR69Tat3JUo29pWbE2YUJJsafK9N2xB5JCRpAIUo
+	 okDFx5h1iJaRVeUidyBXYGIr+WO3tVsGNN7BB1kj1hqBJl5sHNlsdHbQV7Px/yDwRA
+	 t4r5txKCfn75g==
+Date: Wed, 11 Mar 2026 21:14:34 +0000
+From: Eric Biggers <ebiggers@kernel.org>
+To: Thomas =?iso-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>
+Cc: Nathan Chancellor <nathan@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+	Luis Chamberlain <mcgrof@kernel.org>,
+	Petr Pavlu <petr.pavlu@suse.com>,
+	Sami Tolvanen <samitolvanen@google.com>,
+	Daniel Gomez <da.gomez@samsung.com>,
+	Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
+	"Serge E. Hallyn" <serge@hallyn.com>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Naveen N Rao <naveen@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>,
+	Roberto Sassu <roberto.sassu@huawei.com>,
+	Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+	Eric Snowberg <eric.snowberg@oracle.com>,
+	Nicolas Schier <nicolas.schier@linux.dev>,
+	Daniel Gomez <da.gomez@kernel.org>,
+	Aaron Tomlin <atomlin@atomlin.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Nicolas Schier <nsc@kernel.org>,
+	Nicolas Bouchinet <nicolas.bouchinet@oss.cyber.gouv.fr>,
+	Xiu Jianfeng <xiujianfeng@huawei.com>,
+	Fabian =?iso-8859-1?Q?Gr=FCnbichler?= <f.gruenbichler@proxmox.com>,
+	Arnout Engelen <arnout@bzzt.net>,
+	Mattia Rizzolo <mattia@mapreri.org>, kpcyrd <kpcyrd@archlinux.org>,
+	Christian Heusel <christian@heusel.eu>,
+	=?iso-8859-1?Q?C=E2ju?= Mihai-Drosi <mcaju95@gmail.com>,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-arch@vger.kernel.org, linux-modules@vger.kernel.org,
+	linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
+Subject: Re: [PATCH v4 15/17] module: Introduce hash-based integrity checking
+Message-ID: <20260311211434.GA4173404@google.com>
+References: <20260113-module-hashes-v4-0-0b932db9b56b@weissschuh.net>
+ <20260113-module-hashes-v4-15-0b932db9b56b@weissschuh.net>
+ <20260311011218.GA212983@quark>
+ <5726fc65-7d24-4353-b341-81b785f2575c@t-8ch.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,29 +97,47 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <5726fc65-7d24-4353-b341-81b785f2575c@t-8ch.de>
 
-On Wed, 11 Mar 2026 08:03:32 +0100 Christoph Hellwig <hch@lst.de> wrote:
-
-> the XOR library used for the RAID5 parity is a bit of a mess right now.
-> The main file sits in crypto/ despite not being cryptography and not
-> using the crypto API, with the generic implementations sitting in
-> include/asm-generic and the arch implementations sitting in an asm/
-> header in theory.  The latter doesn't work for many cases, so
-> architectures often build the code directly into the core kernel, or
-> create another module for the architecture code.
+On Wed, Mar 11, 2026 at 02:19:02PM +0100, Thomas Weißschuh wrote:
+> > > diff --git a/include/linux/module_signature.h b/include/linux/module_signature.h
+> > > index a45ce3b24403..3b510651830d 100644
+> > > --- a/include/linux/module_signature.h
+> > > +++ b/include/linux/module_signature.h
+> > > @@ -18,6 +18,7 @@ enum pkey_id_type {
+> > >  	PKEY_ID_PGP,		/* OpenPGP generated key ID */
+> > >  	PKEY_ID_X509,		/* X.509 arbitrary subjectKeyIdentifier */
+> > >  	PKEY_ID_PKCS7,		/* Signature in PKCS#7 message */
+> > > +	PKEY_ID_MERKLE,		/* Merkle proof for modules */
+> > 
+> > I recommend making the hash algorithm explicit:
+> > 
+> >         PKEY_ID_MERKLE_SHA256,	/* SHA-256 merkle proof for modules */
+> > 
+> > While I wouldn't encourage the addition of another hash algorithm
+> > (specifying one good algorithm for now is absolutely the right choice),
+> > if someone ever does need to add another one, we'd want them to be
+> > guided to simply introduce a new value of this enum rather than hack it
+> > in some other way.
 > 
-> Changes this to a single module in lib/ that also contains the
-> architecture optimizations, similar to the library work Eric Biggers
-> has done for the CRC and crypto libraries later.  After that it changes
-> to better calling conventions that allow for smarter architecture
-> implementations (although none is contained here yet), and uses
-> static_call to avoid indirection function call overhead.
+> The idea here was that this will only ever be used for module built as
+> part of the kernel build. So the actual implementation could change freely
+> without affecting anything.
+> 
+> But I don't have hard feelings about it.
 
-Cool, thanks, I updated mm.git's mm-nonmm-unstable branch (and hence
-linux-next) to this version.
+Ah, okay.  That's even better then: if someone adds another algorithm it
+would simply be a kconfig option.
 
-I retained Heiko's ack on [17/27].
+It seems 'struct module_signature' itself is intended to be a stable
+ABI, though.  So I think there's an opportunity for confusion here.  It
+might be worth leaving a note somewhere that the format of the
+PKEY_ID_MERKLE portion of the struct does not need to be kept stable and
+can freely change in each kernel build.
+
+- Eric
 
