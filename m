@@ -1,72 +1,150 @@
-Return-Path: <linuxppc-dev+bounces-18053-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18054-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C862105D29D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 11:05:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1887106286D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 12:04:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fW7Fg3NSBz3cJF;
-	Wed, 11 Mar 2026 22:05:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773227127;
-	cv=none; b=A57/20xBDm4oQmC7xZJTgvRKxT0qutToB2soxYDQ8NaFD7Fv/BqLaR6re7QtYWUnCFScdvdeK7JOlpGwNKUJ07YZO+2VKg32j8n9TmiAg1L+u/7MvgZNGQMTOWDOY89ArlX2QIESuq8dzSvNUtPIWbJAAcKSfa/vafYasjxbzcg/Tw5daiRI7qQDGZoJb/c7op+r9WOgJeFRtSTH7KTnnZD6nTWfI12TbRcZ/IUzRQzmf4wisLF3nTZe0Qowo2e3q1BDkSBTkb1mknODt6qwkj+BgKhsKKXx60OieRoHRgYRkgRCUtKSaNs4SfYuMqpkPPxItSBiJROQNMYaDb3hmg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fW8Yj4hcpz3cFG;
+	Wed, 11 Mar 2026 23:04:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::f2a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773230665;
+	cv=none; b=C4GOc2RMFJ6ktUpttWXnVi4/KPgM1Cp/TaUDl1GGc/+0QpImqeQmyLxejqxflmdeFdiuCywF5JVTyi+Dowdts4R3cAKfNL6mQXJsJd/2aky6ESZv06j9gmvTbLIImY1IXVqwsq2Pl2wXvNjyvvAmy5Jjjludgw7rhdE5vOIfiYHcOQu6IO3NhWnariEddOXE055M7rFHplrbxaVtctEfmzwjZWyyXKMyB/kfmDgEjTgytPgFZ0Ek6/sQA8gLkFxU363CL4ZV+reG0mz6jOwxYgQJNcsvH/0tepl1R9+3TSYuSOgd3b/zaXXdnqtCAs26yu9VRzwHHwidGz0hjfT2kw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773227127; c=relaxed/relaxed;
-	bh=aqeXgG0YlkIhVkSKx1066/go5LgrSNrZPxNBAAiS4aI=;
+	t=1773230665; c=relaxed/relaxed;
+	bh=s5EMe7bYHKODG/rm1X+QIPDr4bQTLFjKqTjmSxuIYLA=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=fHNGWGGRb2pwp0iXfz7fnbkaR6PLRJEx3lT2N4AwFwju5AKf8YRAMKjmbAFhcVhUFsxaLZQOxuXTAYR4oYttUc293TT4Y5NmweMnrkNdtCzSLlcxlndFt9kVI63IFJn5fV7kRRi1NVQ1MWmwKkk4brHlDj1RM2rcIevQwzOqt9/9Xns5djarty1w/1XzI8TJC5yxV6zy2yJstgZ1Ymvrxh+a4TYelkI+b1mf41zO6y31cQftAFrUsp2lzwj6ZlSeDs2y3u+eSTSsbvEz26OnGUIB5DxkPXaLcNEUEbBYM+ak0C9ufVxqXC3YgS0WDjAV1gVXNHNnUyl6ViUFRAUrBw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Eq24ij66; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=cassel@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=M4BQ5rIwFrVLT2XieXuZENZp7EmUSgCvDqsLbDx9iY/7YcQ9rZJ8UidpKcbmNjCCrDpNvUN/Towzm9QFaYqeet/rP++MglENyUC6AAYAxvT9/3H44eGDBkuuZ1PmXo8caYZ/cW3y7fSigVM1ZaDnTsjobHG2DpAKLNPVY/S3ULT2D0/BINtte4Ry3wYE0OmMPSZpf5YbWwyYMtS5tjKfieXUAOP2BJ913R8zkBFYiA575S8DugZx0daAZJ8ik5sgamxUBWePKVvb5OlhBveCehYV2fR6nNeJTZclasyDABjmOHFRcWfwWuOSBczsZ6Zwr6ClW5KrIJBppEU161ZzaQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=I3EkCtFN; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::f2a; helo=mail-qv1-xf2a.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Eq24ij66;
+	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=I3EkCtFN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=cassel@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::f2a; helo=mail-qv1-xf2a.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
+Received: from mail-qv1-xf2a.google.com (mail-qv1-xf2a.google.com [IPv6:2607:f8b0:4864:20::f2a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fW7Ff4VYyz3cHf
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 22:05:26 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id E84CA6013E;
-	Wed, 11 Mar 2026 11:05:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3B6B7C4CEF7;
-	Wed, 11 Mar 2026 11:05:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773227124;
-	bh=BgLuLCpNt8YikxfkQc3yHUtyj3A7U731tcqZVJqZcPM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Eq24ij66oMbyTp1yMVUcNGzHc65udFXi7P4njEUQUTlsmxGbZAXKzJnJ9FlGX4OH5
-	 8EJdF+H5q/pNCEc9m2zibOEiho3mYxp4rAL9uS9PPqOtvTL8xHBpnRMGEbfimxABGW
-	 iwMIRCPAVGeGn0VdA1SK0UaD2BwdtnTi6a4F0LutKSrnZ0AUkgwHiWqYHeq2Yo+hQB
-	 BX77RFSPRFEXfbCIFMcHngXlOR7zC1ZXJuzsO2W8TO5YKYMAyOP3XiWDOWdC2AEfyb
-	 Py7eKU8OcsajO4JUfyO2uBjjwKK/FMz5jqIaK34DcCF4ou2NdzrBnCexEbFUbfSP1d
-	 bXzS+9ypNh3XA==
-Date: Wed, 11 Mar 2026 12:05:15 +0100
-From: Niklas Cassel <cassel@kernel.org>
-To: manivannan.sadhasivam@oss.qualcomm.com
-Cc: Bjorn Helgaas <bhelgaas@google.com>,
-	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Oliver O'Halloran <oohall@gmail.com>, Will Deacon <will@kernel.org>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>,
-	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Rob Herring <robh@kernel.org>, Heiko Stuebner <heiko@sntech.de>,
-	Philipp Zabel <p.zabel@pengutronix.de>, linux-pci@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
-	linux-rockchip@lists.infradead.org,
-	Wilfred Mallawa <wilfred.mallawa@wdc.com>,
-	Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>,
-	Lukas Wunner <lukas@wunner.de>, Richard Zhu <hongxing.zhu@nxp.com>,
-	Brian Norris <briannorris@chromium.org>,
-	Wilson Ding <dingwei@marvell.com>, Frank Li <Frank.Li@nxp.com>
-Subject: Re: [PATCH v7 0/4] PCI: Add support for resetting the Root Ports in
- a platform specific way
-Message-ID: <abFMa6DCGGLUHddA@fedora>
-References: <20260310-pci-port-reset-v7-0-9dd00ccc25ab@oss.qualcomm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fW8Yg6BNZz3cF6
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 23:04:22 +1100 (AEDT)
+Received: by mail-qv1-xf2a.google.com with SMTP id 6a1803df08f44-89a6ac6f389so5815046d6.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 05:04:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ziepe.ca; s=google; t=1773230661; x=1773835461; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=s5EMe7bYHKODG/rm1X+QIPDr4bQTLFjKqTjmSxuIYLA=;
+        b=I3EkCtFNG4y1F12XTmEvooKLNdyxOH8ZKk/+B4vju0NLS97zEdDtM+llnOf0GCykFO
+         3MU2GDQNED4stIHrU6FWySsaoqrgwIp68oI9hG5MxnVUgGDxWHsuiOTD4PMPOvBXnUGT
+         0B800y3Hj+siVi8AYGnBJWbajPpIsae56UBFLGNJfCgo16js+XLOKJXvbXkmvA8xtM3p
+         ZIleNDJkX0FO9/6iP5gYNqeBOO3hfXbqP5vp9Dal64lBp+4NCourWRv0YbQjfsK89s6Z
+         JZ+Jt7pO6F/4ZkPklCreLb/79bBVR5neIMPIw6xxUYav7dDf/xFO6GOoBQjGtdZoCfhX
+         VynQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1773230661; x=1773835461;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=s5EMe7bYHKODG/rm1X+QIPDr4bQTLFjKqTjmSxuIYLA=;
+        b=ffWmNSzz9YOpKKt9HjbNFLJXcgsSXmZl0mgI+9NJtdoD4V0FGQmn6S3tJuySWqdFB8
+         RxvWkx1+iXNBemix9Lnbus6TUdIMgKnLdnOEKHpgHVJwVQI+CkUMwRJJ5gaCGRps3LQ7
+         oHp5X95VM038WA0ACcM2OVbj4Y0zW1f/WiyT8Kggr+ZNJ3EICk124y48XdkVCzAE7PxN
+         VszixgUS2ew7HOxm87kxEo3gdhQHpfWZ7zA29RbwKF/arAKOxhY/0WzhuHlSS8i8c15+
+         2WcuTCg7qighJ3wcFODTX/6ERxpzedke0X19nfmkp/ScbUsCKG1dtPCKb6e1vz82ZrQh
+         kvWg==
+X-Forwarded-Encrypted: i=1; AJvYcCWB07Q1eBCi4e0QyRedBiqNl61FI/sxpGrL03NqSGr9tgqa6x/D6bhacU+o4BcngaCWAY+3JiYlr1tYOgs=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yze1izkbh9ClcHXTB8a8i7UU2vBryuJI/YHX0yGnwYNcr2jfFcD
+	eqdvXAe0W+/FekyB8aF8o+IoeU87XBsS8vPgRHeqmsvfcAdKcDwBFrxA+fE8t1NA4dI=
+X-Gm-Gg: ATEYQzzy62ogxYx1pyIg32YdlbWkviDC3cx9mAul6fJ2eRfGXGPZ0iqFN9mcCfzYH0Q
+	/n6G8ichi0aYduilqmvmbUS1WtlS2+VZXB6WiPc0MmPws7bH0jTw9RUMdOfSf3HVsR79eNfalJ2
+	mDY6Ac7IgMoUjONV7uBnQUn4Ot5hPcEd9F37cLx9I7R4WymdK8did1kTgGhxC1JbI/uItLMm7U2
+	OduBHNsMGunhtaso4V5mNZFyuSGdK4KEboqdCl3l2KxmqcV1BIjnuLil3Jy5OFJP29+gFobP6Ek
+	JAwQA76qgDMQYhFbhOddhwAD6ALcFsrUjIafuFxldUXctKkdrNy+oVVFDnZeGoX1Wq5CfFvYuyo
+	GmK1aCnc8gnJpBqQWMsGTTt2D9nbUg5wC4Y7k1ABPiBufuuhU03IXndPcD9uCLzU4l0RRM9fpXG
+	NFi7xS0YMu2R/g/WSY8PdlBiYCO7iI5lPH1u98MwSubwItGzYaaXi3Ab8Q8j8w9vfPcRVCGaaCG
+	VNPA6gT60PnxqnX/WI=
+X-Received: by 2002:a05:6214:f2d:b0:899:fd8c:55c6 with SMTP id 6a1803df08f44-89a66a5858dmr29432376d6.23.1773230660563;
+        Wed, 11 Mar 2026 05:04:20 -0700 (PDT)
+Received: from ziepe.ca (hlfxns017vw-142-162-112-119.dhcp-dynamic.fibreop.ns.bellaliant.net. [142.162.112.119])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-89a65d17023sm12745086d6.49.2026.03.11.05.04.19
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 11 Mar 2026 05:04:19 -0700 (PDT)
+Received: from jgg by wakko with local (Exim 4.97)
+	(envelope-from <jgg@ziepe.ca>)
+	id 1w0IIU-000000069iv-3jx0;
+	Wed, 11 Mar 2026 09:04:18 -0300
+Date: Wed, 11 Mar 2026 09:04:18 -0300
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: Alice Ryhl <aliceryhl@google.com>
+Cc: "David Hildenbrand (Arm)" <david@kernel.org>,
+	linux-kernel@vger.kernel.org,
+	"linux-mm @ kvack . org" <linux-mm@kvack.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+	"Liam R. Howlett" <Liam.Howlett@oracle.com>,
+	Vlastimil Babka <vbabka@kernel.org>,
+	Mike Rapoport <rppt@kernel.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>, Jann Horn <jannh@google.com>,
+	Pedro Falcato <pfalcato@suse.de>,
+	David Rientjes <rientjes@google.com>,
+	Shakeel Butt <shakeel.butt@linux.dev>,
+	"Matthew Wilcox (Oracle)" <willy@infradead.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Janosch Frank <frankja@linux.ibm.com>,
+	Claudio Imbrenda <imbrenda@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Jarkko Sakkinen <jarkko@kernel.org>,
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Arve =?utf-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>,
+	Todd Kjos <tkjos@android.com>,
+	Christian Brauner <brauner@kernel.org>,
+	Carlos Llamas <cmllamas@google.com>, Ian Abbott <abbotti@mev.co.uk>,
+	H Hartley Sweeten <hsweeten@visionengravers.com>,
+	Jani Nikula <jani.nikula@linux.intel.com>,
+	Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+	Rodrigo Vivi <rodrigo.vivi@intel.com>,
+	Tvrtko Ursulin <tursulin@ursulin.net>,
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+	Leon Romanovsky <leon@kernel.org>,
+	Dimitri Sivanich <dimitri.sivanich@hpe.com>,
+	Arnd Bergmann <arnd@arndb.de>, Alexei Starovoitov <ast@kernel.org>,
+	Daniel Borkmann <daniel@iogearbox.net>,
+	Andrii Nakryiko <andrii@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Arnaldo Carvalho de Melo <acme@kernel.org>,
+	Namhyung Kim <namhyung@kernel.org>,
+	Andy Lutomirski <luto@kernel.org>,
+	Vincenzo Frascino <vincenzo.frascino@arm.com>,
+	Eric Dumazet <edumazet@google.com>,
+	Neal Cardwell <ncardwell@google.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	David Ahern <dsahern@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
+	Paolo Abeni <pabeni@redhat.com>, Miguel Ojeda <ojeda@kernel.org>,
+	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+	linux-s390@vger.kernel.org, linux-sgx@vger.kernel.org,
+	intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+	linux-rdma@vger.kernel.org, bpf@vger.kernel.org,
+	linux-perf-users@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+	netdev@vger.kernel.org, rust-for-linux@vger.kernel.org,
+	x86@kernel.org
+Subject: Re: [PATCH v1 16/16] mm/memory: support VM_MIXEDMAP in
+ zap_special_vma_range()
+Message-ID: <20260311120418.GU1687929@ziepe.ca>
+References: <20260227200848.114019-1-david@kernel.org>
+ <20260227200848.114019-17-david@kernel.org>
+ <20260309142954.GM1687929@ziepe.ca>
+ <61df6369-333c-430a-bd18-c5b1acae68ea@kernel.org>
+ <abE4JYo223OxWCBQ@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,31 +160,23 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260310-pci-port-reset-v7-0-9dd00ccc25ab@oss.qualcomm.com>
+In-Reply-To: <abE4JYo223OxWCBQ@google.com>
 
-On Tue, Mar 10, 2026 at 07:31:58PM +0530, Manivannan Sadhasivam via B4 Relay wrote:
-> Changes in v7:
-> - Dropped Rockchip Root port reset patch due to reported issues. But the series
->   works on other platforms as tested by others.
+On Wed, Mar 11, 2026 at 09:38:45AM +0000, Alice Ryhl wrote:
+> It doesn't really make sense to have multiple binder VMAs. What happens
+> with Rust Binder is that process A is receiving transactions and has the
+> VMA mapped once.
 
-Are you referring to
+IIRC the problem is the kernel doesn't guarentee singleton VMAs,
+userspace can always clone them with fork or something. Did binder
+solve this somehow?
 
-## On EP side:
-# echo 0 > /sys/kernel/config/pci_ep/controllers/a40000000.pcie-ep/start && \
-  sleep 0.1 && echo 1 > /sys/kernel/config/pci_ep/controllers/a40000000.pcie-ep/start
+Since you can't assume there is only one VMA the locking becomes a
+mess to cover all the cases where userspace can trigger a VMA clone.
 
-Then running pcitest only having 7 / 16 tests passed ?
+address space deals with this internally.
 
-If so, isn't that a problem also for qcom?
+Thus, zap_special_vma_range() is extremely hard to use.
 
-
-There is no chance that the patch:
-"misc: pci_endpoint_test: Add AER error handlers"
-improves things in this regard?
-
-Or will it simply avoid the "AER: device recovery failed" print?
-
-
-Kind regards,
-Niklas
+Jason
 
