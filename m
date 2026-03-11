@@ -1,68 +1,54 @@
-Return-Path: <linuxppc-dev+bounces-18058-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18059-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F6211125806
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 13:19:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20B4F112580A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 13:41:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fWBCv2Gx5z3cC9;
-	Thu, 12 Mar 2026 00:19:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773235147;
-	cv=none; b=eeOq1IyMrjNAl+PlzM/EnuZTAOeEyeuj3uD2Hlukcb6vr5Fep19VN1jL9NhNUCzdL3OKRC8l1gKdLiudwGcScpLby9wIeAfgWaihvfVotBeOadF/7aAiaDXWshVKAlW61uZ1spUF7Boyq1g1+e2ImBsoeXXWkvj1PobTkhEgoq6fY2LwfJXrYzMcdLsc5bhBYf4C6ECC8InjdJ/oPUDsqKQfFm1klvKr+EHILwRMOIh9Vnw1VQ3eVVSdda4pcIft8/4SwfdkbD5BEqf3YSfN/9m1drJQ2X0vaS+jtGWDYsRDq4d1QWUL1SrO0/jFyk3+dbvazUOw3bflKyvrI3+nGg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fWBjx3ljDz3cC9;
+	Thu, 12 Mar 2026 00:41:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773236501;
+	cv=none; b=EN9q5llFDB0bU+DHpS3qxzrVB+2opNJoi3QEsvzq/eHTE7+v1TUCoMix8wDXsr6/nxrUpo0FF2wAl+vOlGbECAB3JtcyTzWEjwAhwT8xZJj5bWuqL5l8DzzChv+MorcBmd2enfA+MFU+mZkOTVC9PiHsYXddSsuMvzbOIuHuShA7o6nfw0lXarVIp/l8vGlE6y6JJvVq2XQ1wE9FB60AN3Le/Fvu17vHmdn0J9Xere8z07upBptGaoYNAohOH7wH1+linUMna1LHeiIBSZ6658fV74SzYNfvmFr3+LChvqYGLJIGiebLodGPqpETnu8iL3miy5Q9ZfUqwJX7qT/3qw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773235147; c=relaxed/relaxed;
-	bh=+SMjKaB3sSi5nScBoqEvttRN0u+goKS17vQ/BC5xWIk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XJen9nCMwLqZaOUmdgfv8oIfxjqxtxmVkDNydYFgG549jrXl843z0hj7Z+poLLH5ppE2pmyI4yS/yRq5rruFNhSzwNrmBMcIxO8f9Cd6mLXtvFC6B6dnVAe4SPIHCxTuRTqtgNeF93nXje5Q6hfRrxzRWRRLk86EZ7S3ebDoSd6Y6ubp6UKzzmm1SwRlwKyUc/lYSzuJxVgGiNhHsbTLcAa2UQOQzhsA5oKKJS1XS+afUi/7x2gkx3umvBKWwAYJYuu18mWrKkPCV2lee5bFMUIer3kuOxXvBm5rP8gb4GTcv9utknhGoNcZb5PfoFUWXPGw1oC8OCrBfCGwwfmMkA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=HQsb0mto; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
+	t=1773236501; c=relaxed/relaxed;
+	bh=H6BLpwULPSTanMya9Pa5DUg83dcN8bQ/Mu4XoGpJEJk=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=kXisTa/XhOTOLxiwHYUJKa6kldlnQcZBaIQFgi10tLN+c3E5Ln0luoCGYsvyHyQJdNtpjRKVcZajA6KdeF+l6aAhUIPPgipCdyefg0+xSRBo/NRe743s7STW1Fwxs8Y0AsIBreppWI/tT5/5INFJGJSMg2gUbZPAl8zXSsd2xzDWu9wC9K4zJAWpRXkWnYDjsQepk7TUIsfk8WlNzU5iWLeKCMGwi3JhAJlJM1l0t0q1MeEXmpwnKLohYX8icEV0uxVBhyCqN+zK+fqwsyUDuplyW+kgmFPLc/70dE0qx4zctnj7aAGe8C4kCeW8ggt6F0fLw1TFrhLSRer5tHKqpw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Mb6o23uh; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=HQsb0mto;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Mb6o23uh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
-Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWBCt0Vs1z3cBW
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 00:19:05 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
-	s=mail; t=1773235142;
-	bh=yORSnb4FKH66tX09G1qK8g0oY/Uo2rIpyvZkEjNDm84=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=HQsb0mtoTbwEGco/L3lRbJ0WTajceIyEQmoKsZbs3ijP9DIl6uMUH7DyCJEKEf4Nm
-	 owAHusHX0qnegQ4fOa4IysSRsA4AurPsIoJqlTnoeOwj3DxmUIvbEJueidEPMQxkvz
-	 Uowp8NlWKsfgXCHMDcyu0Ko9Yx9jg/4i7nHbYH8o=
-Date: Wed, 11 Mar 2026 14:19:02 +0100
-From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>
-To: Eric Biggers <ebiggers@kernel.org>
-Cc: Nathan Chancellor <nathan@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
-	Luis Chamberlain <mcgrof@kernel.org>, Petr Pavlu <petr.pavlu@suse.com>, 
-	Sami Tolvanen <samitolvanen@google.com>, Daniel Gomez <da.gomez@samsung.com>, 
-	Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, 
-	"Serge E. Hallyn" <serge@hallyn.com>, Jonathan Corbet <corbet@lwn.net>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>, 
-	Mimi Zohar <zohar@linux.ibm.com>, Roberto Sassu <roberto.sassu@huawei.com>, 
-	Dmitry Kasatkin <dmitry.kasatkin@gmail.com>, Eric Snowberg <eric.snowberg@oracle.com>, 
-	Nicolas Schier <nicolas.schier@linux.dev>, Daniel Gomez <da.gomez@kernel.org>, 
-	Aaron Tomlin <atomlin@atomlin.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Nicolas Schier <nsc@kernel.org>, Nicolas Bouchinet <nicolas.bouchinet@oss.cyber.gouv.fr>, 
-	Xiu Jianfeng <xiujianfeng@huawei.com>, Fabian =?utf-8?Q?Gr=C3=BCnbichler?= <f.gruenbichler@proxmox.com>, 
-	Arnout Engelen <arnout@bzzt.net>, Mattia Rizzolo <mattia@mapreri.org>, 
-	kpcyrd <kpcyrd@archlinux.org>, Christian Heusel <christian@heusel.eu>, 
-	=?utf-8?B?Q8OianU=?= Mihai-Drosi <mcaju95@gmail.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, 
-	linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, 
-	linux-modules@vger.kernel.org, linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
-Subject: Re: [PATCH v4 15/17] module: Introduce hash-based integrity checking
-Message-ID: <5726fc65-7d24-4353-b341-81b785f2575c@t-8ch.de>
-References: <20260113-module-hashes-v4-0-0b932db9b56b@weissschuh.net>
- <20260113-module-hashes-v4-15-0b932db9b56b@weissschuh.net>
- <20260311011218.GA212983@quark>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWBjw11q5z303F
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 00:41:40 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id D7594437D5;
+	Wed, 11 Mar 2026 13:41:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id B0188C19425;
+	Wed, 11 Mar 2026 13:41:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773236497;
+	bh=rj/Ux+J4aQEtb+6hA+P+Gc64uJpLa+VvxwhCfCZeID8=;
+	h=From:Date:Subject:To:Cc:Reply-To:From;
+	b=Mb6o23uhRrLywuuH8I1Je7o7zQpxnLDjXF7vyPK63iO5fihjBzliMIqv6kVyeAgDN
+	 ygxeU6RzhezYYuusxOxuB/9yhkIwVQKo/bATf5+fiBnvrSeyvAEcuwO3HSQrAzY5CE
+	 eofMr5nJ57q7gvDHmRh2CFB2gUToewTF3134yTQrKcyLp/MgeB1t8QUlXHrO3LYUpO
+	 KbO1fliTPsEHfSKbtpw8x9yCuVR/ViwGxe45ALd43MGDU8c+2fogLSMv0/akdXbPlt
+	 O25FFx296XiZ3mvHTyV8mT+jYhZOrybSmXeN4twaqUBPtSsCT8xUTLTK+SUh8Vb4Fy
+	 KaJErmLwXPFJA==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B2ED112580A;
+	Wed, 11 Mar 2026 13:41:37 +0000 (UTC)
+From: =?utf-8?q?J=2E_Neusch=C3=A4fer_via_B4_Relay?= <devnull+j.ne.posteo.net@kernel.org>
+Date: Wed, 11 Mar 2026 14:41:14 +0100
+Subject: [PATCH v3] powerpc: dts: Build devicetrees of enabled platforms
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,118 +62,201 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260311011218.GA212983@quark>
+Message-Id: <20260311-mpc83xx-dtb-v3-1-4aa43bb9ffa0@posteo.net>
+X-B4-Tracking: v=1; b=H4sIAPlwsWkC/1XMQQ6DIBCF4asY1qVhBmmhq96j6UJlrCwqBgixM
+ d69aJo0Lt9L/m9hkYKjyG7VwgJlF50fy5CninVDM76IO1s2Q4EXAQL4e+q0nGduU8tRWqMbMIJ
+ QslJMgXo379rjWfbgYvLhs+MZtvfngDk4GThwhdjrGtCItr9PPiby55ES26CM/1gKdYyxxJ1tr
+ wpqpetaHeJ1Xb9ig9hT5AAAAA==
+X-Change-ID: 20260101-mpc83xx-dtb-23d98a190e23
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+ linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, 
+ =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1773236496; l=7456;
+ i=j.ne@posteo.net; s=20240329; h=from:subject:message-id;
+ bh=3WyfYes++NmFGCY5z0O0TGYhJubV0Rr/Y7//Z3EAy18=;
+ b=CqCwPkr91j+ic7g5/HSLx8DgbVEjeMrvcIQ+/3OTMplnPH9pij/ISZqjQkHq/iiEXQXsjkcO+
+ i4eSYXHyXnEAoTkLiyBNyFsLQfhR9pR88eNamZJGJ4r34zuNSBoa9QJ
+X-Developer-Key: i=j.ne@posteo.net; a=ed25519;
+ pk=NIe0bK42wNaX/C4bi6ezm7NJK0IQE+8MKBm7igFMIS4=
+X-Endpoint-Received: by B4 Relay for j.ne@posteo.net/20240329 with
+ auth_id=156
+X-Original-From: =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
+Reply-To: j.ne@posteo.net
 
-On 2026-03-10 18:12:18-0700, Eric Biggers wrote:
-> On Tue, Jan 13, 2026 at 01:28:59PM +0100, Thomas Weißschuh wrote:
-> > The current signature-based module integrity checking has some drawbacks
-> > in combination with reproducible builds. Either the module signing key
-> > is generated at build time, which makes the build unreproducible, or a
-> > static signing key is used, which precludes rebuilds by third parties
-> > and makes the whole build and packaging process much more complicated.
-> 
-> I think this actually undersells the feature.
+From: "J. Neuschäfer" <j.ne@posteo.net>
 
-(...)
+Follow the same approach as other architectures such as Arm or RISC-V,
+and build devicetrees based on platforms selected in Kconfig. This makes
+it unnecessary to use CONFIG_OF_ALL_DTBS on PowerPC in order to build
+DTB files.
 
-> So I think this is how module authentication should have been done
-> originally, and I'm glad to see this is finally being fixed.
+This makes it easier to use other build and test infrastructure such as
+`make dtbs_check`, and is a first step towards generating FIT images
+that include all the relevant DTBs with `make image.fit`.
 
-Thanks, that is nice to hear.
+Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
+---
+Changes in v3:
+- Group multiple files per line, while still avoiding backslashes
+  (suggested by Christophe Leroy)
+- Link to v2: https://lore.kernel.org/r/20260305-mpc83xx-dtb-v2-1-cdb751458445@posteo.net
 
-> > +struct module_hashes_proof {
-> > +	__be32 pos;
-> > +	u8 hash_sigs[][MODULE_HASHES_HASH_SIZE];
-> > +} __packed;
-> 
-> Is the choice of big endian for consistency with struct
-> module_signature?  Little endian is the usual choice in new code.
+Changes in v2:
+- Use "dtb-$(FOO) += foo.dtb" format on every line, avoid backslashes
+  (suggested by Geert Uytterhoeven)
+- Link to v1: https://lore.kernel.org/r/20260119-mpc83xx-dtb-v1-1-522f841290bf@posteo.net
+---
+ arch/powerpc/boot/dts/Makefile     | 72 ++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/Makefile | 43 +++++++++++++++++++++++
+ 2 files changed, 115 insertions(+)
 
-Yes, it's for consistency. But I am fine with either way. Given that
-this is essentially an internal ABI, we could always change it later.
+diff --git a/arch/powerpc/boot/dts/Makefile b/arch/powerpc/boot/dts/Makefile
+index 0cd0d8558b475c..56581c2489df0f 100644
+--- a/arch/powerpc/boot/dts/Makefile
++++ b/arch/powerpc/boot/dts/Makefile
+@@ -3,3 +3,75 @@
+ subdir-y += fsl
+ 
+ dtb-$(CONFIG_OF_ALL_DTBS) := $(patsubst $(src)/%.dts,%.dtb, $(wildcard $(src)/*.dts))
++
++# PPC44x platforms
++dtb-$(CONFIG_PPC44x_SIMPLE) += arches.dtb bamboo.dtb bluestone.dtb glacier.dtb
++dtb-$(CONFIG_PPC44x_SIMPLE) += eiger.dtb katmai.dtb rainier.dtb redwood.dtb
++dtb-$(CONFIG_PPC44x_SIMPLE) += sequoia.dtb taishan.dtb yosemite.dtb icon.dtb
++dtb-$(CONFIG_EBONY) += ebony.dtb
++dtb-$(CONFIG_SAM440EP) += sam440ep.dtb
++dtb-$(CONFIG_WARP) += warp.dtb
++dtb-$(CONFIG_ISS4xx) += iss4xx.dtb iss4xx-mpic.dtb
++dtb-$(CONFIG_CANYONLANDS) += canyonlands.dtb
++dtb-$(CONFIG_CURRITUCK) += currituck.dtb
++dtb-$(CONFIG_AKEBONO) += akebono.dtb
++dtb-$(CONFIG_FSP2) += fsp2.dtb
++
++# Embedded 6xx platforms
++dtb-$(CONFIG_LINKSTATION) += kuroboxHG.dtb kuroboxHD.dtb
++dtb-$(CONFIG_STORCENTER) += storcenter.dtb
++dtb-$(CONFIG_PPC_HOLLY) += holly.dtb
++dtb-$(CONFIG_GAMECUBE) += gamecube.dtb
++dtb-$(CONFIG_WII) += wii.dtb
++dtb-$(CONFIG_MVME5100) += mvme5100.dtb
++
++# MPC8xx platforms
++dtb-$(CONFIG_MPC885ADS) += mpc885ads.dtb
++dtb-$(CONFIG_MPC86XADS) += mpc866ads.dtb
++dtb-$(CONFIG_PPC_EP88XC) += ep88xc.dtb
++dtb-$(CONFIG_PPC_ADDER875) += adder875-redboot.dtb adder875-uboot.dtb
++dtb-$(CONFIG_TQM8XX) += tqm8xx.dtb
++
++# MPC512x platforms
++dtb-$(CONFIG_MPC5121_ADS) += mpc5121ads.dtb
++dtb-$(CONFIG_MPC512x_GENERIC) += mpc5125twr.dtb ac14xx.dts
++dtb-$(CONFIG_PDM360NG) += pdm360ng.dtb
++
++# MPC5200 platforms
++dtb-$(CONFIG_PPC_MPC5200_SIMPLE) += a3m071.dtb a4m072.dtb charon.dtb cm5200.dtb
++dtb-$(CONFIG_PPC_MPC5200_SIMPLE) += digsy_mtc.dtb motionpro.dtb mucmc52.dtb
++dtb-$(CONFIG_PPC_MPC5200_SIMPLE) += o2d.dtb o2d300.dtb o2dnt2.dtb o2i.dtb
++dtb-$(CONFIG_PPC_MPC5200_SIMPLE) += o2mnt.dtb o3dnt.dtb pcm030.dtb pcm032.dtb
++dtb-$(CONFIG_PPC_MPC5200_SIMPLE) += tqm5200.dtb uc101.dtb
++dtb-$(CONFIG_PPC_LITE5200) += lite5200.dtb lite5200b.dtb
++dtb-$(CONFIG_PPC_MEDIA5200) += media5200.dtb
++
++# MPC82xx platforms
++dtb-$(CONFIG_EP8248E) += ep8248e.dtb
++dtb-$(CONFIG_MGCOGE) += mgcoge.dtb
++
++# MPC83xx platforms
++dtb-$(CONFIG_MPC830x_RDB) += mpc8308rdb.dtb mpc8308_p1m.dtb
++dtb-$(CONFIG_MPC831x_RDB) += mpc8313erdb.dtb mpc8315erdb.dtb
++dtb-$(CONFIG_MPC832x_RDB) += mpc832x_rdb.dtb
++dtb-$(CONFIG_MPC834x_ITX) += mpc8349emitx.dtb mpc8349emitxgp.dtb
++dtb-$(CONFIG_ASP834x) += asp834x-redboot.dtb
++dtb-$(CONFIG_MPC836x_RDK) += mpc836x_rdk.dtb
++dtb-$(CONFIG_KMETER1) += kmeter1.dtb
++dtb-$(CONFIG_MPC837x_RDB) += mpc8377_rdb.dtb mpc8378_rdb.dtb mpc8379_rdb.dtb
++dtb-$(CONFIG_MPC837x_RDB) += mpc8377_wlan.dtb
++
++# MPC85xx platforms
++dtb-$(CONFIG_STX_GP3) += stx_gp3_8560.dtb stxssa8555.dtb
++dtb-$(CONFIG_TQM85xx) += tqm8540.dtb tqm8541.dtb tqm8548.dtb
++dtb-$(CONFIG_TQM85xx) += tqm8548-bigflash.dtb tqm8555.dtb tqm8560.dtb
++dtb-$(CONFIG_SOCRATES) += socrates.dtb
++dtb-$(CONFIG_KSI8560) += ksi8560.dtb
++dtb-$(CONFIG_XES_MPC85xx) += xcalibur1501.dtb xpedite5200.dtb
++dtb-$(CONFIG_XES_MPC85xx) += xpedite5200_xmon.dtb xpedite5301.dtb
++dtb-$(CONFIG_XES_MPC85xx) += xpedite5330.dtb xpedite5370.dtb
++
++# Misc. platforms
++dtb-$(CONFIG_PPC_MICROWATT) += microwatt.dtb
++dtb-$(CONFIG_AMIGAONE) += amigaone.dtb
++dtb-$(CONFIG_PPC_PS3) += ps3.dtb
+diff --git a/arch/powerpc/boot/dts/fsl/Makefile b/arch/powerpc/boot/dts/fsl/Makefile
+index d3ecdf14bc42e7..be784cbda6b56d 100644
+--- a/arch/powerpc/boot/dts/fsl/Makefile
++++ b/arch/powerpc/boot/dts/fsl/Makefile
+@@ -1,3 +1,46 @@
+ # SPDX-License-Identifier: GPL-2.0
+ 
+ dtb-$(CONFIG_OF_ALL_DTBS) := $(patsubst $(src)/%.dts,%.dtb, $(wildcard $(src)/*.dts))
++
++# MPC85xx platforms
++dtb-$(CONFIG_BSC9131_RDB) += bsc9131rdb.dtb
++dtb-$(CONFIG_BSC9132_QDS) += bsc9132qds.dtb
++dtb-$(CONFIG_C293_PCIE) += c293pcie.dtb
++dtb-$(CONFIG_MPC8536_DS) += mpc8536ds.dtb mpc8536ds_36b.dtb
++dtb-$(CONFIG_MPC85xx_DS) += mpc8544ds.dtb mpc8572ds_camp_core0.dtb
++dtb-$(CONFIG_MPC85xx_DS) += mpc8572ds_camp_core1.dtb mpc8572ds_36b.dtb
++dtb-$(CONFIG_MPC85xx_DS) += mpc8572ds.dtb
++dtb-$(CONFIG_MPC85xx_MDS) += mpc8568mds.dtb mpc8569mds.dtb p1021mds.dtb
++dtb-$(CONFIG_MPC85xx_RDB) += p1020mbg-pc_32b.dtb p1020mbg-pc_36b.dtb
++dtb-$(CONFIG_MPC85xx_RDB) += p1020rdb_36b.dtb p1020rdb.dtb p1020rdb-pc_32b.dtb
++dtb-$(CONFIG_MPC85xx_RDB) += p1020rdb-pc_36b.dtb p1020rdb-pc_camp_core0.dtb
++dtb-$(CONFIG_MPC85xx_RDB) += p1020rdb-pc_camp_core1.dtb p1020rdb-pd.dtb
++dtb-$(CONFIG_MPC85xx_RDB) += p1020utm-pc_32b.dtb p1020utm-pc_36b.dtb
++dtb-$(CONFIG_MPC85xx_RDB) += p1021rdb-pc_32b.dtb p1021rdb-pc_36b.dtb
++dtb-$(CONFIG_MPC85xx_RDB) += p1024rdb_32b.dtb p1024rdb_36b.dtb p1025rdb_32b.dtb
++dtb-$(CONFIG_MPC85xx_RDB) += p1025rdb_36b.dtb
++dtb-$(CONFIG_P1010_RDB) += p1010rdb-pa_36b.dtb p1010rdb-pa.dtb
++dtb-$(CONFIG_P1010_RDB) += p1010rdb-pb_36b.dtb p1010rdb-pb.dtb
++dtb-$(CONFIG_P1022_DS) += p1022ds_32b.dtb p1022ds_36b.dtb
++dtb-$(CONFIG_P1022_RDK) += p1022rdk.dtb
++dtb-$(CONFIG_P1023_RDB) += p1023rdb.dtb
++dtb-$(CONFIG_PPC_P2020) += p2020ds.dtb turris1x.dtb
++dtb-$(CONFIG_TWR_P102x) += p1025twr.dtb
++dtb-$(CONFIG_CORENET_GENERIC) += b4420qds.dtb b4860qds.dtb cyrus_p5020.dtb
++dtb-$(CONFIG_CORENET_GENERIC) += kmcent2.dtb kmcoge4.dtb oca4080.dtb
++dtb-$(CONFIG_CORENET_GENERIC) += p2041rdb.dtb p3041ds.dtb p4080ds.dtb
++dtb-$(CONFIG_CORENET_GENERIC) += p5020ds.dtb p5040ds.dtb t1023rdb.dtb
++dtb-$(CONFIG_CORENET_GENERIC) += t1024qds.dtb t1024rdb.dtb t1040d4rdb.dtb
++dtb-$(CONFIG_CORENET_GENERIC) += t1040qds.dtb t1040rdb.dtb t1040rdb-rev-a.dtb
++dtb-$(CONFIG_CORENET_GENERIC) += t1042d4rdb.dtb t1042qds.dtb t1042rdb.dtb
++dtb-$(CONFIG_CORENET_GENERIC) += t1042rdb_pi.dtb t2080qds.dtb t2080rdb.dtb
++dtb-$(CONFIG_CORENET_GENERIC) += t2081qds.dtb t4240qds.dtb t4240rdb.dtb
++dtb-$(CONFIG_PPA8548) += ppa8548.dtb
++dtb-$(CONFIG_GE_IMP3A) += ge_imp3a.dtb
++dtb-$(CONFIG_MVME2500) += mvme2500.dtb
++
++# MPC86xx platforms
++dtb-$(CONFIG_GEF_SBC310) += gef_sbc310.dtb
++dtb-$(CONFIG_GEF_SBC610) += gef_sbc610.dtb
++dtb-$(CONFIG_GEF_PPC9A) += gef_ppc9a.dtb
++dtb-$(CONFIG_MVME7100) += mvme7100.dtb
 
-> > diff --git a/include/linux/module_signature.h b/include/linux/module_signature.h
-> > index a45ce3b24403..3b510651830d 100644
-> > --- a/include/linux/module_signature.h
-> > +++ b/include/linux/module_signature.h
-> > @@ -18,6 +18,7 @@ enum pkey_id_type {
-> >  	PKEY_ID_PGP,		/* OpenPGP generated key ID */
-> >  	PKEY_ID_X509,		/* X.509 arbitrary subjectKeyIdentifier */
-> >  	PKEY_ID_PKCS7,		/* Signature in PKCS#7 message */
-> > +	PKEY_ID_MERKLE,		/* Merkle proof for modules */
-> 
-> I recommend making the hash algorithm explicit:
-> 
->         PKEY_ID_MERKLE_SHA256,	/* SHA-256 merkle proof for modules */
-> 
-> While I wouldn't encourage the addition of another hash algorithm
-> (specifying one good algorithm for now is absolutely the right choice),
-> if someone ever does need to add another one, we'd want them to be
-> guided to simply introduce a new value of this enum rather than hack it
-> in some other way.
+---
+base-commit: 11439c4635edd669ae435eec308f4ab8a0804808
+change-id: 20260101-mpc83xx-dtb-23d98a190e23
 
-The idea here was that this will only ever be used for module built as
-part of the kernel build. So the actual implementation could change freely
-without affecting anything.
-
-But I don't have hard feelings about it.
-
-> > +static void hash_entry(const void *left, const void *right, void *out)
-> 
-> Byte arrays should use u8 instead of void
-
-Ack.
-
-> > diff --git a/scripts/modules-merkle-tree.c b/scripts/modules-merkle-tree.c
-> [...]
-> 
-> > +struct file_entry {
-> > +	char *name;
-> > +	unsigned int pos;
-> > +	unsigned char hash[EVP_MAX_MD_SIZE];
-> 
-> Considering that the hash algorithm is fixed, EVP_MAX_MD_SIZE can be
-> replaced with a tighter local definition:
-
-Ack.
-
->     #define MAX_HASH_SIZE 32
-
-IMO it shouldn't even mention 'MAX', as there is only one hash
-algorithm.
-
-(...)
-
-> > +{
-> > +	fprintf(stderr,
-> > +		"Usage: scripts/modules-merkle-tree <root definition>\n");
-> > +	exit(2);
-> 
-> This should show both parameters, <root hash> <new suffix>
-
-Ack.
-
-> But they probably should be flipped to put the output second.
-
-Ack.
-
-> Though, is <new suffix> needed at all?  It looks like it doesn't
-> actually affect the output.
-
-It will be required for compatibility with INSTALL_MOD_STRIP,
-two patches later. I'll move this code into the later patch.
-
-> > +	hash_evp = EVP_get_digestbyname("sha256");
-> 
-> EVP_sha256()
-
-(...)
-
-Ack to all other remarks.
+Best regards,
+-- 
+J. Neuschäfer <j.ne@posteo.net>
 
 
-Thomas
 
