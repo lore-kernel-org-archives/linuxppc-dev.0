@@ -1,69 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-18065-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18066-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC94A1125842
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 15:14:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D996F112583A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 15:16:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fWDn70R9dz3bf8;
-	Thu, 12 Mar 2026 02:14:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773242074;
-	cv=none; b=fUdTZ1mcko+D0I3l3DWv1XjpQ/VY1zHVGzlDrjhD9rIopruBgpShnhPlF04Ac1kh+c6nu2tCqQpp9V81+gdLfkgEHDK48MTJpti4DHER6D8W0X9APM44MDoh5aflVOey57L3zTl6P1MHfO3DZcwRPdRZQJECH8l96FabcmGCb1jm9oTrs6xFl2vzV2bjVH4YEF6GaYxKdvmoBPKPYZ6OGfBTgso6d2vhCmoSmVYA4I6SC4dLHtpZNZSd8qF2e3K14D7TfhsQX54GNVIqZtguGu3jkaZD286Z6WgHd4/KZHvhLBYXOElQp92gA9pFjhjf9g3IGYAD8P++MhG7UY5NTA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fWDqb2FMVz3bf8;
+	Thu, 12 Mar 2026 02:16:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773242203;
+	cv=none; b=b1l8RsoASfRZhGMkc9TVaCUY9VQotgtpb+VfrfxYTRtnCw6n4C8YxjoFaRZto+XdPKxSa5iO3v6QIpl99Hz0K1r/j8B6IlA7IpbotH98J8fVUlZdqWh+/wrPdK+NB8uS52gFnFVgboZ3/4wx2SzoMm0IlCHTKqDO3xi559SnpywpnDEVMQwPGgmHeJb4tR/qKJ+0EDj0zyfpZAUC3vI+1krVkz81J1Ye4rQ449gUs32oEJF70Ll8yM+ZjDorxBBBJ0ERtBTxZLJQ12y7a7ASj1RL09bfrZS93dyELWVWcDQfky18QfVQOH46fOpeUcfy1KZsnqqcbXj+CzTbyJIW3g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773242074; c=relaxed/relaxed;
-	bh=M5HW8gZn9DLJaXwfIzx6dQqzrvbrYl5qq5NFuE4o/f4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AU+Wq3xwjEIjwKH6VdHpF02fgLdoI94clHHK5D0v8NNx7BjbBY2gCif1/Ylca+vLDxbOjkOjHHjhqvUlac4P4Zu/oQx3TvRuQGNdaowVdzR+J5AGoe/rLNzay/ne17bp/pWImUbaLorJdmX7eSfqa+LZqmLwDFBS690Rs87WFT3gCV5NNGQSZeXSvfAkJgPGz3rZAS3y85hTEOD5RUTBFth3J3er3s17WRLlorh0og1xBzkYknihPqHeiHauT9EDpd/R5eu5tBaLgnsXWDSpSjjnU542OL+8pxonDw0dr2JQASFuh1g7vWvJgVNK1Slebpjfo2O8ZWxGygfUmo/D8g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NzduROdM; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1773242203; c=relaxed/relaxed;
+	bh=F00Y1VOXMkGh5fI+xpEZJV+zT5hVxwEfpxSmPV9tdhA=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=jUWqzJPPRvCNfuPQNAj4re9MwWDVqIuJb5veAabreM7R6Lkd3EtYaK8BxSGZLdr+3YHAdaOcNSAUBLM4MPrYhNAqz9WGVIQfbG3zLUnqmdqWTkbjpjMBuj8degx9sbYn7sUGs9zI46mVK6U6WHY/zucGRu/pNXhscu01mRjFibscFsAVHfDHwOimksCS/QH9ir4a70+N22RTVVjPIjwl82Am00aC0y35u8W7W+jTjHuiu1zHRl7rTKNBmMVai4xCegBKE/cbs4tp4nYmMDAnmHZYg2YZ+XnOdbroRoJx1kzR757WQBGZR8Uut36x7UCnZ6R3R6UtFQ/ZU7tOfWMHew==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=c77hS1at; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ardb@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NzduROdM;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=c77hS1at;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ardb@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWDn62Bhmz30hP
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 02:14:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWDqZ2H4Xz30hP
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 02:16:42 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 1833F40631;
-	Wed, 11 Mar 2026 15:14:32 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 545D8C4CEF7;
-	Wed, 11 Mar 2026 15:14:24 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 3FAE76013F;
+	Wed, 11 Mar 2026 15:16:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 961D7C19421;
+	Wed, 11 Mar 2026 15:16:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773242072;
-	bh=6G03Vmq9qwAjWyaMz8DPlElYYLptRloaQTWWkg09UaE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=NzduROdM4NtDkaC97uFQCxBxcQk2+/sdIAEDxDo46Sa1HI+QkJr/W69c2Ir2IcqT8
-	 yDFVqxVG6Uoy2C1u7z8hbctT5e6H4204OSpR7P4iULIE+LNSCndBNOIlZ0dDXL8MlQ
-	 l4WIr8beXU+M/Luz551S9xo13BT7i3wJ96J0SEPoSvzwaHCkwyUbIDiq2XIy4jfYuz
-	 6lmGZwceMWkMXv51jWNVTUZo9r1cbbfyd0lp6Nu0cpBU+Bp0/EqnBMeyriu5GpJ1GK
-	 ZQDhBsPe9f31JSjasOZkllQzRP2VjuZ7cfXP+Wwfto/f9PR5NPTFQ2Q6BSl5Ll9Fqa
-	 0LqOaXelYUCfA==
-Date: Wed, 11 Mar 2026 20:44:15 +0530
-From: Manivannan Sadhasivam <mani@kernel.org>
-To: Niklas Cassel <cassel@kernel.org>
-Cc: manivannan.sadhasivam@oss.qualcomm.com, 
-	Bjorn Helgaas <bhelgaas@google.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
-	Oliver O'Halloran <oohall@gmail.com>, Will Deacon <will@kernel.org>, 
-	Lorenzo Pieralisi <lpieralisi@kernel.org>, Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>, 
-	Rob Herring <robh@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
-	Philipp Zabel <p.zabel@pengutronix.de>, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
-	linux-arm-msm@vger.kernel.org, linux-rockchip@lists.infradead.org, 
-	Wilfred Mallawa <wilfred.mallawa@wdc.com>, Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>, 
-	Lukas Wunner <lukas@wunner.de>, Richard Zhu <hongxing.zhu@nxp.com>, 
-	Brian Norris <briannorris@chromium.org>, Wilson Ding <dingwei@marvell.com>, Frank Li <Frank.Li@nxp.com>
-Subject: Re: [PATCH v7 0/4] PCI: Add support for resetting the Root Ports in
- a platform specific way
-Message-ID: <srdn3bspgwff7f7tnst7wzg4us4buifrv7o3ylo527hmuciyl3@6ioyrl6rfhaz>
-References: <20260310-pci-port-reset-v7-0-9dd00ccc25ab@oss.qualcomm.com>
- <abFMa6DCGGLUHddA@fedora>
- <dp2rem4gj7zhfgykvekmcrhq4ticm6m6ido6tbgflwzfcuuwkl@4wuxgle27eyx>
+	s=k20201202; t=1773242198;
+	bh=F00Y1VOXMkGh5fI+xpEZJV+zT5hVxwEfpxSmPV9tdhA=;
+	h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
+	b=c77hS1at/JZblP0fVHkdgqdxmbNk0m29v/+B9SqPsQ0OJEPe7IYswS03++eyeezhM
+	 1E5riyLZFGcHmsM2vknxf2FMbFwpwu2/IUx0Bc89GpVwxoFcX+M5BUtCF/dN2364kZ
+	 eTYbgtTHSI8W7kTfRc5o8unvXlVBEWrKPo5B/DKOJUr7ZZig7fzrZgEhhDd2Lnp0B0
+	 yjJPrfWhLMn060FOAgegTeUSHeC8WvsBEW8YAx7t0Kag4FcNCp2iRvlLjZrwalMQ0c
+	 fVerqa3ahYYrA25+60L81YEzjrL/qTeyCza8Tq0AO6cCzkOheuY1Xi5j0tUpMSNlkG
+	 IpVe59ZgiZfSQ==
+Received: from phl-compute-01.internal (phl-compute-01.internal [10.202.2.41])
+	by mailfauth.phl.internal (Postfix) with ESMTP id 527FFF40068;
+	Wed, 11 Mar 2026 11:16:37 -0400 (EDT)
+Received: from phl-imap-02 ([10.202.2.81])
+  by phl-compute-01.internal (MEProxy); Wed, 11 Mar 2026 11:16:37 -0400
+X-ME-Sender: <xms:VYexadI4kNrjs5As7xl3i7OxQxe8g963MATQjSe2AhXM2Bc5Lp9i2Q>
+    <xme:VYexaT-xm_sBM_b5I6B2D0qfphLF9dGrxOS90Ah-Imot3bQ8VisbN2wVi3hojApem
+    YwnMqfOZvomSY6D6VbTPUHhQKL8Hx06HS3_uyGiOiVrmiZm-qEK1AY>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefgedrtddtgddvkeegvdefucetufdoteggodetrf
+    dotffvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfurfetoffkrfgpnffqhgenuceu
+    rghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujf
+    gurhepofggfffhvfevkfgjfhfutgfgsehtjeertdertddtnecuhfhrohhmpedftehrugcu
+    uehivghshhgvuhhvvghlfdcuoegrrhgusgeskhgvrhhnvghlrdhorhhgqeenucggtffrrg
+    htthgvrhhnpedvueehiedtvedtleekuddutefgffdtleetfeetveejveejieehfefhjeei
+    jeefudenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpe
+    grrhguodhmvghsmhhtphgruhhthhhpvghrshhonhgrlhhithihqdduieejtdehtddtjeel
+    qdeffedvudeigeduhedqrghruggspeepkhgvrhhnvghlrdhorhhgseifohhrkhhofhgrrh
+    gurdgtohhmpdhnsggprhgtphhtthhopedufedpmhhouggvpehsmhhtphhouhhtpdhrtghp
+    thhtohepuggrvhgvmhesuggrvhgvmhhlohhfthdrnhgvthdprhgtphhtthhopehmphgvse
+    gvlhhlvghrmhgrnhdrihgurdgruhdprhgtphhtthhopehnphhighhgihhnsehgmhgrihhl
+    rdgtohhmpdhrtghpthhtohephhgvrhgsvghrthesghhonhguohhrrdgrphgrnhgrrdhorh
+    hgrdgruhdprhgtphhtthhopeguughsthhrvggvthesihgvvggvrdhorhhgpdhrtghpthht
+    oheptghhlhgvrhhohieskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepthhhohhrshhtvg
+    hnrdgslhhumheslhhinhhugidruggvvhdprhgtphhtthhopehmrgguugihsehlihhnuhig
+    rdhisghmrdgtohhmpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrd
+    hoiihlrggsshdrohhrgh
+X-ME-Proxy: <xmx:VYexaTa3KyQNAKenEWbm-legEnEE-14ZJ4WIf3sUpH219oAoRymVyQ>
+    <xmx:VYexaTD24scrPaIp175ec8rwsHiGUjiQEl8WN7bIYXFinXP73xIyog>
+    <xmx:VYexaRHCo-_iPPz20mcu1_t6aDW9mn_-ePP09NKn74psZdEVYaCEuw>
+    <xmx:VYexaePxa-niW0sg38AOI014nJbCsxBBAT_xGxXwK3v4P2EahmII-g>
+    <xmx:VYexaShPP-mq6-G7rZdHmFZ_TFtiXDTV8IcwvSqhGtNo3f1qqm1ZNngX>
+Feedback-ID: ice86485a:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id 2D7F6700065; Wed, 11 Mar 2026 11:16:37 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,52 +92,44 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <dp2rem4gj7zhfgykvekmcrhq4ticm6m6ido6tbgflwzfcuuwkl@4wuxgle27eyx>
+X-ThreadId: AZ_gtfwdS8bs
+Date: Wed, 11 Mar 2026 16:16:16 +0100
+From: "Ard Biesheuvel" <ardb@kernel.org>
+To: "Thorsten Blum" <thorsten.blum@linux.dev>,
+ "Haren Myneni" <haren@us.ibm.com>,
+ "Madhavan Srinivasan" <maddy@linux.ibm.com>,
+ "Michael Ellerman" <mpe@ellerman.id.au>,
+ "Nicholas Piggin" <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ "Herbert Xu" <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>, "Dan Streetman" <ddstreet@ieee.org>
+Cc: stable@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-Id: <47dd8932-7347-4744-be8d-79106bc76f4b@app.fastmail.com>
+In-Reply-To: <20260311150922.382941-3-thorsten.blum@linux.dev>
+References: <20260311150922.382941-3-thorsten.blum@linux.dev>
+Subject: Re: [PATCH] crypto: nx - fix memory leaks in nx842_crypto_{alloc,free}_ctx
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-On Wed, Mar 11, 2026 at 08:09:53PM +0530, Manivannan Sadhasivam wrote:
-> On Wed, Mar 11, 2026 at 12:05:15PM +0100, Niklas Cassel wrote:
-> > On Tue, Mar 10, 2026 at 07:31:58PM +0530, Manivannan Sadhasivam via B4 Relay wrote:
-> > > Changes in v7:
-> > > - Dropped Rockchip Root port reset patch due to reported issues. But the series
-> > >   works on other platforms as tested by others.
-> > 
-> > Are you referring to
-> > 
-> > ## On EP side:
-> > # echo 0 > /sys/kernel/config/pci_ep/controllers/a40000000.pcie-ep/start && \
-> >   sleep 0.1 && echo 1 > /sys/kernel/config/pci_ep/controllers/a40000000.pcie-ep/start
-> > 
-> > Then running pcitest only having 7 / 16 tests passed ?
-> > 
-> > If so, isn't that a problem also for qcom?
-> > 
-> 
-> No, tests are passing on my setup after link up.
-> 
-> > 
-> > There is no chance that the patch:
-> > "misc: pci_endpoint_test: Add AER error handlers"
-> > improves things in this regard?
-> > 
-> > Or will it simply avoid the "AER: device recovery failed" print?
-> > 
-> 
-> Yes, as mentioned in the commit message, it just avoids the AER recovery failure
-> message.
-> 
+Hi Thorsten,
 
-I also realized that Endpoint state is not saved in all the code paths. So the
-pci_endpoint_test driver has to save/restore the state also. But it is still not
-clear why that didn't help you.
+On Wed, 11 Mar 2026, at 16:09, Thorsten Blum wrote:
+> The bounce buffers are allocated with __get_free_pages() using
+> BOUNCE_BUFFER_ORDER (order 2 = 4 pages), but both the allocation error
+> path and nx842_crypto_free_ctx() release the buffers with free_page().
+> Use free_pages() with the matching order instead.
+>
+> Also, since the scomp conversion, nx842_crypto_alloc_ctx() allocates the
+> context separately, but nx842_crypto_free_ctx() never releases it. Add
+> the missing kfree(ctx) in nx842_crypto_free_ctx(), and reuse
+> nx842_crypto_free_ctx() in the allocation error path.
+>
+> Fixes: ed70b479c2c0 ("crypto: nx - add hardware 842 crypto comp alg")
+> Fixes: 980b5705f4e7 ("crypto: nx - Migrate to scomp API")
 
-Can you share the snapshot of the entire config space before and after reset
-using 'lspci -xxxx -s "0000:01:00"'?
+Thanks for the fixes.
 
-- Mani
+Given that you are fixing two separate issues that were introduced ~10 years apart, I think it would be better to split this up.
 
--- 
-மணிவண்ணன் சதாசிவம்
 
