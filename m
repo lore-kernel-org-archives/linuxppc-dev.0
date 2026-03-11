@@ -1,48 +1,48 @@
-Return-Path: <linuxppc-dev+bounces-18032-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18033-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD41DFD0640
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 07:09:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11D78FD062F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 07:09:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fW21b2bVjz3dVH;
-	Wed, 11 Mar 2026 18:09:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fW21r39DTz3dW6;
+	Wed, 11 Mar 2026 18:09:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::133"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773212979;
-	cv=none; b=G5UMagMNuQ00wQwtb6K+MpIc/c+ldzYGIb9w/OUkVAz6c/yMGwgMtUzDl+wIaFzMKeV3i6SdrF8Z11ybqK6l3jza9UM5eDWoZmMGhbJoyh85yy5Kafkz2iihOxyUkuuTHLTo8fTVGl6971ORQ8JIAJDfitTGnN2NldrYsIJsEPk09ZljFGfxyILm9JGVWAu7wJOMxutVVfkLRe5+6o2OLiXkGU1c8VPrLxQnuWW6iz17FzyB6VBrIMpZr0STo2SYvpZYK4lcov0qQPppE6MriN+Quao3rt5mT3wU6xRVIFnlzknuAuUue9cHcyJSbGSSb5xEoF2pyeJuVwVEzVeLOQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773212992;
+	cv=none; b=fAvvdHKACSoctIkkc9hC2JyXfWmR5W/jQ8HD2T8TYY8fCLFrNTJDNGe359oL2eELxU99soqsHhZ3u18RxiXEDHMB7dT1U7ysePKqdGw+hpbzbU98DHyR6Yi6MQ4R7qAw6IFNP7aQiU7wwnLOe/cj8rnqls8S5ypU1cOv8mCa9RVSOg0LTdQ3uR2Nn5LpGowYU3IndOSEzCbCyMmu2aqJHEyvqsnugstgysv04Tpj89hghzwmmu4uFgwaH6rYHvtdZRDAGRcIXJjSAKtLtXk/zrp6JADeXAFNwkpiPTvIWICPSgcGYHZrKdYHHRqL9rC68qJy7hQn6xqR1UjUlDayzw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773212979; c=relaxed/relaxed;
-	bh=9fvnUIU7nYzp+spbrgNcfNOp4SrOTES6+fJpo+CBdYA=;
+	t=1773212992; c=relaxed/relaxed;
+	bh=LPpvndNjqPvjZburtt7bAObV12ltu7OwMomHBwz06KI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=GR7pPz0Po0ajrEqlGV+IRqg/uw8xHCwq44ERUnaVgYFwMWDlsMaB53GQBBoYJZcCUvFoMgOldfeOy4LOiVgmMwtqOMd0Ez1INqqYJG7+3ArAPqbsqTQG8jRdGwpjk8y3z0oTXOzDo/rq8kGiEb0BP4JZCgW9NcoqBxQoFwjFsXIMW608GJ4ZEgxidz1n4Wr/SU+PtLMApF47ZxVPa35V7laTHeVsw4WlORl+M0U5p6dw9ZBdNpT4fdDmSNCuyF+xE25ZrWpp6h+xFjOukEniWV3E8txlKEQnuO+LKFGdOMkby/BFKVuOn/Wxn8U4K3tG5x9NvSS42kjEw2HSMurNCg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=lst.de; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=2AOHWBeq; dkim-atps=neutral; spf=none (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+bcc67bb7b2d0717eac20+8235+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=bombadil.srs.infradead.org
+	 MIME-Version; b=kID+Jkv4u1XoFQRb+mOqf49TKdpFu4lxQiTh7xNR8FwRtZfbkBg+hX3xTvu8aN46WjQtxuf/0J8Ucjrel7IQUs/acChlZJbekLowh4hn7IfhZLPu4bJqN74pw9YjMaIcpY3vdbIDVA8/HCUPR4RzdQn1se3zRUq8CoXqHul7Kt8S391WWZ+zBWSU1SWjP67E7HkaP850NP3+V9BSWYsumXfWBAc+Y4+wi/iCO9U0/JMwyxqFjd6CwlkW2MU5Xrj+JxGpo3Scay39oJHyt0hHaZmew4epzEQx4TsFlGx6DQ81ytO6MD3FnP7HXws3Buh1UnQRbjvfrD3RTwMVnYLgvA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=lst.de; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=qKeCzr0S; dkim-atps=neutral; spf=none (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+bcc67bb7b2d0717eac20+8235+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=bombadil.srs.infradead.org
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=2AOHWBeq;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=qKeCzr0S;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+bcc67bb7b2d0717eac20+8235+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org)
 Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fW21Z5kpKz3dTw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 18:09:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fW21q6SKkz3dSV
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2026 18:09:51 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender
 	:Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=9fvnUIU7nYzp+spbrgNcfNOp4SrOTES6+fJpo+CBdYA=; b=2AOHWBeqnBOKCbCqQD/Dv51tWP
-	FhXGZ7dxnT3Wb6tan/33z+XTuAVt1CAJLx+4IN6HHcPtmoOx4pYyP0mh3LR9IrzRSx3j6c6nB0SxF
-	cBJudpV23GMI+nuXXVdwlKcZgUT0EDn3aZEJqgK9ZesGu7KAmeIf3I21n9iWPal2aO4IcWTRa+IT/
-	Gw2kISYfXpS+3+SUjl0qj4IeLF07yy5VGCVBHD/r36qMuKLtNhJhxsZHQEZw5dOZd3LGKslQhB0Fr
-	ofzOddPTw5xuXpto3KmykY0xyei2og7OtC5N5t/EsgYOx/Lc0LyY1xjeTQyqx05o9bCHORVE9Jepj
-	a5Luyefw==;
+	bh=LPpvndNjqPvjZburtt7bAObV12ltu7OwMomHBwz06KI=; b=qKeCzr0So3ysR+1cdg18iJh0KE
+	0FGQ2DkfImNo904eeDW/QgWj9Kuawrfc9N+lQWnMqTjWvCt+wYHo4kxptZLKW1Hx1C/PFgCU1YEE4
+	aaXMBvuanLQncnRZKiQ0ifJaKC8pDzcbH/FkPKPskaxL4VrpcVLCu5k8/13+Q2ihYQbcLjLsD+f3v
+	azpECTy1t/wNaUr0F6xAM/Lr3Zczx+gplroNTaGO/x0Dpo0AaiOkkw8Z59zAy/GsDZHqjsOLFSdAk
+	FALjzNk9t8WNLTaY5AoBdMzSwo3U5eQc1T7kFvGW1htFlNCMLLRHlirUFDEqPQ6thJBTOMBK9whM4
+	nNsWqxMg==;
 Received: from [212.243.42.10] (helo=localhost)
 	by bombadil.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w0Dh3-0000000B0qJ-3xXB;
-	Wed, 11 Mar 2026 07:09:22 +0000
+	id 1w0DhI-0000000B0zT-2L9L;
+	Wed, 11 Mar 2026 07:09:36 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Richard Henderson <richard.henderson@linaro.org>,
@@ -100,9 +100,9 @@ Cc: Richard Henderson <richard.henderson@linaro.org>,
 	linux-btrfs@vger.kernel.org,
 	linux-arch@vger.kernel.org,
 	linux-raid@vger.kernel.org
-Subject: [PATCH 21/27] xor: add a better public API
-Date: Wed, 11 Mar 2026 08:03:53 +0100
-Message-ID: <20260311070416.972667-22-hch@lst.de>
+Subject: [PATCH 22/27] async_xor: use xor_gen
+Date: Wed, 11 Mar 2026 08:03:54 +0100
+Message-ID: <20260311070416.972667-23-hch@lst.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260311070416.972667-1-hch@lst.de>
 References: <20260311070416.972667-1-hch@lst.de>
@@ -122,73 +122,84 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 
-xor_blocks is very annoying to use, because it is limited to 4 + 1
-sources / destinations, has an odd argument order and is completely
-undocumented.
-
-Lift the code that loops around it from btrfs and async_tx/async_xor into
-common code under the name xor_gen and properly document it.
+Replace use of the loop around xor_blocks with the easier to use xor_gen
+API.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- include/linux/raid/xor.h |  2 ++
- lib/raid/xor/xor-core.c  | 32 ++++++++++++++++++++++++++++++++
- 2 files changed, 34 insertions(+)
+ crypto/async_tx/async_xor.c | 34 ++++++++++------------------------
+ 1 file changed, 10 insertions(+), 24 deletions(-)
 
-diff --git a/include/linux/raid/xor.h b/include/linux/raid/xor.h
-index 02bda8d99534..6d9a39fd85dd 100644
---- a/include/linux/raid/xor.h
-+++ b/include/linux/raid/xor.h
-@@ -7,4 +7,6 @@
- extern void xor_blocks(unsigned int count, unsigned int bytes,
- 	void *dest, void **srcs);
+diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c
+index 2c499654a36c..84458375b202 100644
+--- a/crypto/async_tx/async_xor.c
++++ b/crypto/async_tx/async_xor.c
+@@ -103,7 +103,6 @@ do_sync_xor_offs(struct page *dest, unsigned int offset,
+ {
+ 	int i;
+ 	int xor_src_cnt = 0;
+-	int src_off = 0;
+ 	void *dest_buf;
+ 	void **srcs;
  
-+void xor_gen(void *dest, void **srcs, unsigned int src_cnt, unsigned int bytes);
+@@ -117,23 +116,12 @@ do_sync_xor_offs(struct page *dest, unsigned int offset,
+ 		if (src_list[i])
+ 			srcs[xor_src_cnt++] = page_address(src_list[i]) +
+ 				(src_offs ? src_offs[i] : offset);
+-	src_cnt = xor_src_cnt;
 +
- #endif /* _XOR_H */
-diff --git a/lib/raid/xor/xor-core.c b/lib/raid/xor/xor-core.c
-index 47e09ae954b2..64f12f579e96 100644
---- a/lib/raid/xor/xor-core.c
-+++ b/lib/raid/xor/xor-core.c
-@@ -46,6 +46,38 @@ xor_blocks(unsigned int src_count, unsigned int bytes, void *dest, void **srcs)
+ 	/* set destination address */
+ 	dest_buf = page_address(dest) + offset;
+-
+ 	if (submit->flags & ASYNC_TX_XOR_ZERO_DST)
+ 		memset(dest_buf, 0, len);
+-
+-	while (src_cnt > 0) {
+-		/* process up to 'MAX_XOR_BLOCKS' sources */
+-		xor_src_cnt = min(src_cnt, MAX_XOR_BLOCKS);
+-		xor_blocks(xor_src_cnt, len, dest_buf, &srcs[src_off]);
+-
+-		/* drop completed sources */
+-		src_cnt -= xor_src_cnt;
+-		src_off += xor_src_cnt;
+-	}
+-
++	xor_gen(dest_buf, srcs, xor_src_cnt, len);
+ 	async_tx_sync_epilog(submit);
  }
- EXPORT_SYMBOL(xor_blocks);
  
-+/**
-+ * xor_gen - generate RAID-style XOR information
-+ * @dest:	destination vector
-+ * @srcs:	source vectors
-+ * @src_cnt:	number of source vectors
-+ * @bytes:	length in bytes of each vector
-+ *
-+ * Performs bit-wise XOR operation into @dest for each of the @src_cnt vectors
-+ * in @srcs for a length of @bytes bytes.  @src_count must be non-zero, and the
-+ * memory pointed to by @dest and each member of @srcs must be at least 32-byte
-+ * aligned.  @bytes must be non-zero and a multiple of 512.
-+ *
-+ * Note: for typical RAID uses, @dest either needs to be zeroed, or filled with
-+ * the first disk, which then needs to be removed from @srcs.
-+ */
-+void xor_gen(void *dest, void **srcs, unsigned int src_cnt, unsigned int bytes)
-+{
-+	unsigned int src_off = 0;
-+
-+	WARN_ON_ONCE(bytes & 511);
-+
-+	while (src_cnt > 0) {
-+		unsigned int this_cnt = min(src_cnt, MAX_XOR_BLOCKS);
-+
-+		xor_blocks(this_cnt, bytes, dest, srcs + src_off);
-+
-+		src_cnt -= this_cnt;
-+		src_off += this_cnt;
-+	}
-+}
-+EXPORT_SYMBOL(xor_gen);
-+
- /* Set of all registered templates.  */
- static struct xor_block_template *__initdata template_list;
- static bool __initdata xor_forced = false;
+@@ -168,11 +156,10 @@ dma_xor_aligned_offsets(struct dma_device *device, unsigned int offset,
+  *
+  * honored flags: ASYNC_TX_ACK, ASYNC_TX_XOR_ZERO_DST, ASYNC_TX_XOR_DROP_DST
+  *
+- * xor_blocks always uses the dest as a source so the
+- * ASYNC_TX_XOR_ZERO_DST flag must be set to not include dest data in
+- * the calculation.  The assumption with dma engines is that they only
+- * use the destination buffer as a source when it is explicitly specified
+- * in the source list.
++ * xor_gen always uses the dest as a source so the ASYNC_TX_XOR_ZERO_DST flag
++ * must be set to not include dest data in the calculation.  The assumption with
++ * dma engines is that they only use the destination buffer as a source when it
++ * is explicitly specified in the source list.
+  *
+  * src_list note: if the dest is also a source it must be at index zero.
+  * The contents of this array will be overwritten if a scribble region
+@@ -259,11 +246,10 @@ EXPORT_SYMBOL_GPL(async_xor_offs);
+  *
+  * honored flags: ASYNC_TX_ACK, ASYNC_TX_XOR_ZERO_DST, ASYNC_TX_XOR_DROP_DST
+  *
+- * xor_blocks always uses the dest as a source so the
+- * ASYNC_TX_XOR_ZERO_DST flag must be set to not include dest data in
+- * the calculation.  The assumption with dma engines is that they only
+- * use the destination buffer as a source when it is explicitly specified
+- * in the source list.
++ * xor_gen always uses the dest as a source so the ASYNC_TX_XOR_ZERO_DST flag
++ * must be set to not include dest data in the calculation.  The assumption with
++ * dma engines is that they only use the destination buffer as a source when it
++ * is explicitly specified in the source list.
+  *
+  * src_list note: if the dest is also a source it must be at index zero.
+  * The contents of this array will be overwritten if a scribble region
 -- 
 2.47.3
 
