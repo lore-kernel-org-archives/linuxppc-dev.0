@@ -1,66 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-18071-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18072-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 986301125851
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 16:36:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9520D1125857
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 17:13:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fWGc23r4wz3bf8;
-	Thu, 12 Mar 2026 03:36:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=154.81.10.179
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773247010;
-	cv=none; b=R2x41aiR2io/FkF7vjHjTlHDAz3Od4cYTYpv7aePRddAKRJGyULeOW0pVL/y1eAySDdjlnUW0UG4KR2CKutEkMG1Y38IfqILsPCdALTluf2hF679e7CZLu9EI09tsGlr00QlWAZYFSlNt4Wx8NrweDFsyNSVBpG9of69S5FES28kH6BKvzT4vKw6K49BnHc+3uCiapMqfrxxRsnSNCi/OFIdy3LmrWvvF3UDpwS9I5cJaw62WDRV8u0HEe9OVJF9ET63KSUPzQyZI7HGybbd5hGnOjoA5r1/D8Ckk47nEFKtqwOGGwU45SlECVj0TReOluof99Ikzdi42dE9TMmJJA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fWHQ52Vn2z3bnJ;
+	Thu, 12 Mar 2026 04:13:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773249197;
+	cv=none; b=NVU6BGv6XyZrWZlt/W1rVN7PcZJwzB2jclHcQ3haCkJuUxLl0gw3a3Xv0vVVH/jK1L1fYCeNzuPydRQ3kaHo7he6wmD/+dxdl3/krd12+IHrIfTnkB4zcUe65ne3FZtu+Is5sTaMZeoQh+Lfrv6XlvEChFHgA3OoNLK9/Ay/Sy792GFlSyX50Vfm/A1T/9UTur3EtvXY+ZPumt6G6ZcFvw26JGPgxl1p6z6R66DSJRYxBawcReB5KaWYj5nxlsw1EGEOZCHBlkFRb620YGGhLCAQjxWcu85HawZseekmuvKzRjoiexh1Mnii8UYc6MEJiqYQof0VYDbPoNWTEOOMVA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773247010; c=relaxed/relaxed;
-	bh=PAFS6SUaQW7xKOcNcQrq2ISZ+ChhVUr2hv2lfFTcIcs=;
-	h=Cc:Subject:To:References:From:Message-ID:Date:MIME-Version:
-	 In-Reply-To:Content-Type; b=OKr6jB5+z89V2g8ROepNkzbpO1uDYUfZeM2tmBQVSA1uZuUhrHTxQgisAdVW6lLp/1GT9mSCkQavW1xvHv7whQRJOUITL5p7JUK0x12v4bQP02p9HzmRJGu+wwGLxu9kuNnSe1fUIcKNIxLCHq8GM0KAXfQcAznDaget50MQtLAG9I5i9/RuWPx++KS0XDzTV1gOEb6S9tp5ckn7g+X+gnzYJcJ6yXVV0U5jO4EmvLryQAKdFgq6VYpnKasv6qPPTHK06JIBJIyQUVPYT+adMmJCvJ/zOXDl7I9ezGEry9+zFjXGwLliOIHgJeolpOoGdy/hMMMFYYTiwa9d5TKnVg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com; dkim=pass (1024-bit key; unprotected) header.d=rock-chips.com header.i=@rock-chips.com header.a=rsa-sha256 header.s=default header.b=WBhuHUzX; dkim-atps=neutral; spf=pass (client-ip=154.81.10.179; helo=mail-m10179.netease.com; envelope-from=shawn.lin@rock-chips.com; receiver=lists.ozlabs.org) smtp.mailfrom=rock-chips.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=rock-chips.com
+	t=1773249197; c=relaxed/relaxed;
+	bh=9LVSuSaXQ9BgK0Bmfla/t/18Rpzx3jf4FXS7kg3VvUA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=XbhN+Ac14XqFePSwXU4NMcaVSUhl7n+Bcrl56PAJSENTUkLzA57bVww3PCC8JUnqKh0ZAAtDQ1B0FsCzgepU7mRewulbGw/qUzBXmhEI4A7qg8ncPVW5fnjud5fZiY1pp9529oq/2koogS5JhaO4DbJljlzHJ/pxMYaYVvZiEVh4mPOg8i10cRYzYfkV9osH1OBIV/h/gg02yj8PgAc9u16f0ds7ap/93kagPh4TtyjYZh50XJENA68d3NRsjDps0M2MtoSy0T0N7Lm4tYvUlcjKkLnLYUBgpEmDbL5G4y7b4GAeHewWF6H1JJi1T5xdZcWGIVDUlP1tOGKSmpu6kA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RcjXj8/D; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=rock-chips.com header.i=@rock-chips.com header.a=rsa-sha256 header.s=default header.b=WBhuHUzX;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RcjXj8/D;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=rock-chips.com (client-ip=154.81.10.179; helo=mail-m10179.netease.com; envelope-from=shawn.lin@rock-chips.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 40539 seconds by postgrey-1.37 at boromir; Thu, 12 Mar 2026 03:36:46 AEDT
-Received: from mail-m10179.netease.com (mail-m10179.netease.com [154.81.10.179])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWGby5qFgz2yFm
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 03:36:43 +1100 (AEDT)
-Received: from [172.16.12.17] (unknown [58.22.7.114])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 3681eb934;
-	Wed, 11 Mar 2026 13:20:56 +0800 (GMT+08:00)
-Cc: shawn.lin@rock-chips.com, manivannan.sadhasivam@oss.qualcomm.com,
- Bjorn Helgaas <bhelgaas@google.com>,
- Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
- Oliver O'Halloran <oohall@gmail.com>, Will Deacon <will@kernel.org>,
- Lorenzo Pieralisi <lpieralisi@kernel.org>,
- =?UTF-8?Q?Krzysztof_Wilczy=c5=84ski?= <kwilczynski@kernel.org>,
- Rob Herring <robh@kernel.org>, Heiko Stuebner <heiko@sntech.de>,
- Philipp Zabel <p.zabel@pengutronix.de>, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
- linux-rockchip@lists.infradead.org, Niklas Cassel <cassel@kernel.org>,
- Wilfred Mallawa <wilfred.mallawa@wdc.com>,
- Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>,
- Lukas Wunner <lukas@wunner.de>, Richard Zhu <hongxing.zhu@nxp.com>,
- Brian Norris <briannorris@chromium.org>, Wilson Ding <dingwei@marvell.com>,
- Frank Li <Frank.Li@nxp.com>
-Subject: Re: [PATCH v7 2/4] PCI: host-common: Add link down handling for Root
- Ports
-To: Manivannan Sadhasivam <mani@kernel.org>
-References: <20260310-pci-port-reset-v7-0-9dd00ccc25ab@oss.qualcomm.com>
- <20260310-pci-port-reset-v7-2-9dd00ccc25ab@oss.qualcomm.com>
- <2eb738fb-9dfe-1e88-6ea7-afdba9cb3d25@rock-chips.com>
- <vnsmjvtwaeticdxwz6u43dxnpi6duhc3r5motwnfer4l2bpqcm@noeme6lgq4jf>
-From: Shawn Lin <shawn.lin@rock-chips.com>
-Message-ID: <b80b2364-2b13-44e0-fc3f-df335fc426a0@rock-chips.com>
-Date: Wed, 11 Mar 2026 13:20:55 +0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.11.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWHQ418yMz3bf8
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 04:13:16 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 8A6184055B;
+	Wed, 11 Mar 2026 17:13:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9331FC4CEF7;
+	Wed, 11 Mar 2026 17:13:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773249194;
+	bh=HnZ43XwIpl7dh8HMwqHbhWOqb5h5K/qibXtHrWYtI2M=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=RcjXj8/DHiK3t9Ki5/dVU994YOCV7pkhmvdfHpP4Ni5RfLuvggNyoukzjJy+iUcM/
+	 yYF4laxETNu7z5UX4GLlXBVcBKhNJCJHqn6mM3E6eHbZq7wMw2ouAYu1SN2ILjvQYw
+	 J8A0r77BE53yNF+8d7rbvjB6vSmCFGwqsiLHpGE/KW2Dt37kEJJc9RlFVidiyXemGr
+	 p5YdhtPe4yojoe38FQJsWiCJ6ye2eC5KbXlgTUSM8cF8v1rQrqBC/ZvzQa1rfEeFJm
+	 k4tniKn4qUAyyWP4hNn60exginXUH7wdQa2jvpFX2LMzC2CHmbNC5do1atv2h6UAyW
+	 cn5vNsYhBsrUw==
+Date: Wed, 11 Mar 2026 22:42:56 +0530
+From: Manivannan Sadhasivam <mani@kernel.org>
+To: Niklas Cassel <cassel@kernel.org>
+Cc: Minghuan Lian <minghuan.Lian@nxp.com>, Mingkai Hu <mingkai.hu@nxp.com>, 
+	Roy Zang <roy.zang@nxp.com>, Lorenzo Pieralisi <lpieralisi@kernel.org>, 
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Bjorn Helgaas <bhelgaas@google.com>, Srikanth Thokala <srikanth.thokala@intel.com>, 
+	Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
+	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, Masami Hiramatsu <mhiramat@kernel.org>, 
+	Marek Vasut <marek.vasut+renesas@gmail.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, 
+	Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, 
+	Kishon Vijay Abraham I <kishon@kernel.org>, Manikanta Maddireddy <mmaddireddy@nvidia.com>, 
+	Koichiro Den <den@valinux.co.jp>, Damien Le Moal <dlemoal@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
+	linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	imx@lists.linux.dev, linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org, 
+	linux-renesas-soc@vger.kernel.org
+Subject: Re: [PATCH v3 1/9] PCI: endpoint: Introduce pci_epc_bar_type
+ BAR_64BIT_UPPER
+Message-ID: <6b6w7ni62ty3oimj3cwfzyv75evslx2vhojp3f6rpnbxtamv7g@o35zul3tkbrf>
+References: <20260302095913.48155-11-cassel@kernel.org>
+ <20260302095913.48155-12-cassel@kernel.org>
+ <dtxdgxrewfby5hu3cu3pu5kljylm627uc43sw75gk7loimmm6r@ei4w6wmqgd6a>
+ <abFGOoZUX_vexLWR@fedora>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -74,148 +80,79 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-In-Reply-To: <vnsmjvtwaeticdxwz6u43dxnpi6duhc3r5motwnfer4l2bpqcm@noeme6lgq4jf>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-HM-Tid: 0a9cdb5748be09cckunm13bcff7618b6f0
-X-HM-MType: 1
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFDSUNOT01LS0k3V1ktWUFJV1kPCRoVCBIfWUFZQksZTlYeGEJMH0wYHR0dGk1WFRQJFh
-	oXVRMBExYaEhckFA4PWVdZGBILWUFZTkNVSUlVTFVKSk9ZV1kWGg8SFR0UWUFZT0tIVUpLSU9PT0
-	hVSktLVUpCS0tZBg++
-DKIM-Signature: a=rsa-sha256;
-	b=WBhuHUzXt2thVHZYmxTGM2+dktPzKjU3jRcVDumQwxTvN/ZF6KuBXlPAi4h5K/L4IimlhmM+BbLJDa1D98M3hAq5vc++t3KYr2IAaYi9QbJWLCfjlJ6VuL+uK780xW/Y7YrqYFB1C+e/4XPMs1PH4dDDf/0+IhPo0LR+UmCll+8=; c=relaxed/relaxed; s=default; d=rock-chips.com; v=1;
-	bh=PAFS6SUaQW7xKOcNcQrq2ISZ+ChhVUr2hv2lfFTcIcs=;
-	h=date:mime-version:subject:message-id:from;
+In-Reply-To: <abFGOoZUX_vexLWR@fedora>
 
-在 2026/03/11 星期三 13:04, Manivannan Sadhasivam 写道:
-> On Wed, Mar 11, 2026 at 08:55:01AM +0800, Shawn Lin wrote:
->> Hi Mani
->>
->> 在 2026/03/10 星期二 22:02, Manivannan Sadhasivam via B4 Relay 写道:
->>> From: Manivannan Sadhasivam <mani@kernel.org>
->>>
->>> The PCI link, when down, needs to be recovered to bring it back. But on
->>> some platforms, that cannot be done in a generic way as link recovery
->>> procedure is platform specific. So add a new API
->>> pci_host_handle_link_down() that could be called by the host bridge drivers
->>> for a specific Root Port when the link goes down.
->>>
->>> The API accepts the 'pci_dev' corresponding to the Root Port which observed
->>> the link down event. If CONFIG_PCIEAER is enabled, the API calls
->>> pcie_do_recovery() function with 'pci_channel_io_frozen' as the state. This
->>> will result in the execution of the AER Fatal error handling code. Since
->>> the link down recovery is pretty much the same as AER Fatal error handling,
->>> pcie_do_recovery() helper is reused here. First, the AER error_detected()
->>> callback will be triggered for the bridge and then for the downstream
->>> devices. Finally, pci_host_reset_root_port() will be called for the Root
->>> Port, which will reset the Root Port using 'reset_root_port' callback to
->>> recover the link. Once that's done, resume message will be broadcasted to
->>> the bridge and the downstream devices, indicating successful link recovery.
->>>
->>> But if CONFIG_PCIEAER is not enabled in the kernel, only
->>> pci_host_reset_root_port() API will be called, which will in turn call
->>> pci_bus_error_reset() to just reset the Root Port as there is no way we
->>> could inform the drivers about link recovery.
->>>
->>> Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
->>> Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
->>> Tested-by: Brian Norris <briannorris@chromium.org>
->>> Tested-by: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
->>> Tested-by: Richard Zhu <hongxing.zhu@nxp.com>
->>> Reviewed-by: Frank Li <Frank.Li@nxp.com>
->>> ---
->>>    drivers/pci/controller/pci-host-common.c | 35 ++++++++++++++++++++++++++++++++
->>>    drivers/pci/controller/pci-host-common.h |  1 +
->>>    drivers/pci/pci.c                        |  1 +
->>>    drivers/pci/pcie/err.c                   |  1 +
->>>    4 files changed, 38 insertions(+)
->>>
->>> diff --git a/drivers/pci/controller/pci-host-common.c b/drivers/pci/controller/pci-host-common.c
->>> index d6258c1cffe5..15ebff8a542a 100644
->>> --- a/drivers/pci/controller/pci-host-common.c
->>> +++ b/drivers/pci/controller/pci-host-common.c
->>> @@ -12,9 +12,11 @@
->>>    #include <linux/of.h>
->>>    #include <linux/of_address.h>
->>>    #include <linux/of_pci.h>
->>> +#include <linux/pci.h>
->>>    #include <linux/pci-ecam.h>
->>>    #include <linux/platform_device.h>
->>> +#include "../pci.h"
->>>    #include "pci-host-common.h"
->>>    static void gen_pci_unmap_cfg(void *ptr)
->>> @@ -106,5 +108,38 @@ void pci_host_common_remove(struct platform_device *pdev)
->>>    }
->>>    EXPORT_SYMBOL_GPL(pci_host_common_remove);
->>> +static pci_ers_result_t pci_host_reset_root_port(struct pci_dev *dev)
->>> +{
->>> +	int ret;
->>> +
->>> +	pci_lock_rescan_remove();
->>> +	ret = pci_bus_error_reset(dev);
->>> +	pci_unlock_rescan_remove();
->>> +	if (ret) {
->>> +		pci_err(dev, "Failed to reset Root Port: %d\n", ret);
->>> +		return PCI_ERS_RESULT_DISCONNECT;
->>> +	}
->>> +
->>> +	pci_info(dev, "Root Port has been reset\n");
->>> +
->>> +	return PCI_ERS_RESULT_RECOVERED;
->>> +}
->>> +
->>> +static void pci_host_recover_root_port(struct pci_dev *port)
->>> +{
->>> +#if IS_ENABLED(CONFIG_PCIEAER)
->>> +	pcie_do_recovery(port, pci_channel_io_frozen, pci_host_reset_root_port);
->>> +#else
->>> +	pci_host_reset_root_port(port);
->>
->> Since pci_host_reset_root_port() returns pci_ers_result_t, shouldn't we
->> check the result? If the return value is intentionally ignored here,
->> maybe pci_host_reset_root_port actually doesn't need a return value at
->> all?
->>
+On Wed, Mar 11, 2026 at 11:38:50AM +0100, Niklas Cassel wrote:
+> Hello Mani,
 > 
-> The return value is mostly for pcie_do_recovery() which iterates through the
-> subordinate devices and calls pci_host_reset_root_port(). It also makes use of
-> the return value, so we cannot make it void.
+> On Wed, Mar 11, 2026 at 12:05:59PM +0530, Manivannan Sadhasivam wrote:
 > 
-> The reason why I skipped the return value in pci_host_handle_link_down() is
-> that, we canot do much in the case of failure other than reporting the failure,
-> which is already taken care in pci_host_reset_root_port().
+> (snip)
+> 
+> > This also brings the question, do we really need to mark the preceding BAR?
+> 
+> From a pure code PoV, marking the preceding BAR is enough even with the
+> current code:
+> https://github.com/torvalds/linux/blob/v7.0-rc3/drivers/pci/endpoint/pci-epc-core.c#L101-L103
+> 
+> However, the current documentation claims that the succeeding BAR must be
+> marked as BAR_RESERVED:
+> https://github.com/torvalds/linux/blob/v7.0-rc3/include/linux/pci-epc.h#L207-L210
+> 
+> I want to change this to BAR_64BIT_UPPER / BAR_64BIT_UPPER_BASE, so we can use
+> BAR_RESERVED for BARs that expose fixed hardware resources (e.g. eDMA regs).
+> 
+> 
+> Thus, an EPC driver does not strictly need mark the succeeding BAR with anything.
+> This was done mostly for clarity. (E.g. with BAR_64BIT_UPPER_BASE it is obvious
+> that this BAR cannot be a standalone 32-bit BAR.)
+> 
+> If we don't mark the succeeding BAR with anything, IMO, it is less obvious that
+> the succeeding BAR cannot be used as a standalone 32-bit BAR.
+> 
+> But... since the code already does the "right thing". We could simply nuke this
+> part of the documentation, and drop the .type for all BARs succeeding a
+> .only_64bit BAR, if you prefer that option over having a dedicated type for the
+> "upper base of a 64-bit BAR".
 > 
 
-Ok, it makes sense to me, thanks for the explanation.
-Feel free to add:
+Yes, let's just remove that comment.
 
-Reviewed-by: Shawn Lin <shawn.lin@rock-chips.com>
+> 
+> > Why can't we let the PCI EPC core to always assume that if the previous BAR
+> > has 'only_64bit' bit set, next BAR cannot be used as a standalone 32bit BAR?
+> > 
+> > I find it weird or redundant to mark both BARs.
+> 
+> Redundant, yes, but in my opinion marking both BARs makes it unambigious
+> that two BARs are used when a BAR is "only_64bit".
+> 
+> E.g. Manikanta originally wanted to add code comments for the upper part of
+> the 64-bit BAR:
+> https://lore.kernel.org/linux-pci/20260217-master-v1-2-727e26cdfaf5@nvidia.com/
+> 
+> Sure, we can just skip the .type for the succeeding BAR...
+> But is that really better than clearly showing that a "forced" 64-bit BAR will
+> always occupy two BARs?
+> 
 
->>> +#endif
->>> +}
->>> +
->>> +void pci_host_handle_link_down(struct pci_dev *port)
->>> +{
->>> +	pci_info(port, "Recovering Root Port due to Link Down\n");
->>> +	pci_host_recover_root_port(port);
->>> +}
->>> +EXPORT_SYMBOL_GPL(pci_host_handle_link_down);
->>
->> This function shouldn't be called like in interrupt context because of
->> the pci_lock_rescan_remove() and pci_bus_error_reset()::pci_slot_mutex,
->> but it's not so obvious from the API name. It's prone for host drivers
->> to use it like:
->>
->> register_LDn_irq -> irq isr -> pci_host_handle_link_down()
->>
->> So perhaps add a comment about it would be better.
->>
+To whom are we showing? If it is a developer, then he should understand that a
+64bit BAR occupies two consecutive 32bit BARs. The flag should only be set for
+the code not for the reader.
+
 > 
-> Yes, I agree. I mentioned in the cover letter that this API should be called
-> from a threaded IRQ handler, but it should be mentioned in the API description
-> too. I will add it in next version or ammend it while applying.
+> Tell me what you prefer:
+> 1) s/BAR_RESERVED/BAR_64BIT_UPPER_BASE/
+> 2) Change documentation and drop .type for a BAR following a .only_64bit BAR.
 > 
-> - Mani
-> 
+
+Let's go with 2.
+
+- Mani
+
+-- 
+மணிவண்ணன் சதாசிவம்
 
