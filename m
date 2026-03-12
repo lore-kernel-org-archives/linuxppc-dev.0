@@ -1,98 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-18082-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18083-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27C6A103E2F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Mar 2026 23:27:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D60C103E2F7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2026 00:40:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fWRkN2lx0z3cDg;
-	Thu, 12 Mar 2026 10:27:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773271676;
-	cv=none; b=igAJBCnRKZCqZhD2xH0DWi+RB3CRAx4ONYF4QfoSHfFVgQ1RkDwWOrIYkdaHotiCMZl/R9le1cL19KUgPTs+EuIXuc2TjzUAx1GzlC33o3+1KSLaYcuPggQhLFteTy9Ei1jZwohQEs1i/d/BTcbv82+6oIKs7awi4URu81MyyAnlblepPebEL6U4PGo4pUrMQPoNHTuGWM+XUzMn6SKA1lKOhXJWX0RL6D0cdZR2++VVg4orZnn6TcmjAV+MlpuJxOdrq57BFkVBbAu9yesr7bJHQaboGXPxjJu95UmLPuJAKpN7+CQi2lJmcBSuYDxbv/UOzro8cBSTiqpgASfK4A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fWTKl1Vkhz3cDg;
+	Thu, 12 Mar 2026 11:40:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773276011;
+	cv=none; b=VRYz2pSEo8a+zqp9dh+Om5zzx6UwhPRTOfP2clG+eEWxN8qQT27FUTjQ/xP1iD5volXoVKVY3SVgJahhKts39YFM+ao5sYNkC/aU4hEcUZijf4PyS7G4zdlKEH09iFNH03pALppJNV7H8/XgaGaAMcKJxAZIYeo9IrBMsQakzdLtVpgPfwEV3JSIU8z6uAHMM9dZSaRwN2zB3Ja9XuvBF0qdDeH1USpDfqff/cJptURT6Od3uNZVO+nTdpd06nsr60T7/j72MZry+V3YidTWJevX1u+d+KFm++5xMh1DejPNXdYQxqU3ie4NNLoO8ShWaTJkoenpzXyScArX7GJkBQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773271676; c=relaxed/relaxed;
-	bh=RjABVGqkiAaJE4QBP6ftpwozdzffVALVCEoTxCzK7hA=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=iohPG2qsURsIyutfZvi6EnhgA58/DWoDkeoZ6JZzxz8aLwqRu4MIlHnpSYfLRheebRsi9OhftiU+AZ2bDQwwot1pJdnvbzeVZtk+xcJkAfdSlJxnz5C+dluohaCLLOi21P8NJHCJWsupOCS5dMZi7ck9ft+q1t7lKxCJi7Rd98oYA09+jEZUHeUOYprrYhSkgVCU+AbhsZ4d5mhvySVA6UniAj1zB520j3Us1Dp0/oY3/U7KPGsD5rBEFMw2urDcKIuCYog+Bma7fJpMuGEyZPHCLHcpzBIlU4DHOX8iYmNFNkV+6T9/NOpWDHx8N4rqXdjr+hX4XzGYgLknxpqbCw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=d7UoJ+pd; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1773276011; c=relaxed/relaxed;
+	bh=zt17eJgcaCmtPqU0NUbDq3q4F61cpuFUJ1rXABkExBs=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=JL0eu6tYl9c8kfMqFsqIzHzyEtZkzVjTc3X221o4SsMKOm9AFPgc+uNWWHN/ufoluTTzifFQLS7ehLlm5g4tnOylbsMYwVdhr+FaNuHOtBTLPN1vuIvBXjPC4bFVYeI1i22hjXhCRxAu3E31hoTH5lwsW18zm3ma/swZuuksNf/tyqZ0YvG1LRxT5p7hHN7qeTyvpENw81XVXWV+VmX6qmQ59keSbg51qGSptudtlVsQ6/44TcNPmMKBtmE+dBjLhfHDW8LoYZcWnyvn2BmaXnH4OoOCfkw6FjwUpk37uw4WZ7pcB1DtbQXcUgVKeXHA8xPDpskQj8PAD5JGkitLPA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mycyTdB0; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=d7UoJ+pd;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mycyTdB0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWRkM0QbQz3cDf
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 10:27:54 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62BMWKYO2581579;
-	Wed, 11 Mar 2026 23:27:43 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=RjABVG
-	qkiAaJE4QBP6ftpwozdzffVALVCEoTxCzK7hA=; b=d7UoJ+pdyV9szBRhw39iTa
-	8HsKjFQBoBVBriDY/MZ2eQo5ePn11tkwP/iQ0DozPX4W7yF4xSv8EQkoywhy4yBQ
-	/NMbWcdUf66SEBhprEm0FYEGmKXkk97VBnBQb8W67yXwdiG52WTMR3aqxWqYG/A7
-	S54FaWHLeTJ+hwz7OT+ThujGibOVXoZPVGuydRKlNr4YlWg+lGto5sKtFISK38ul
-	+J/+fLA26s57n/xXlzKM0vbPcX7t0nR68jVqi2gBmSzo3cxnRrkSbBxDK6Yf8xyW
-	Z7KPq99kIQSnwf2esO9SELAm/Nl0DdQJviStlobs5D93gC+xekSwvkBOq7fhMK8g
-	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cuh94r448-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 11 Mar 2026 23:27:42 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62BMY9Ao018361;
-	Wed, 11 Mar 2026 23:27:41 GMT
-Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4cuha80476-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 11 Mar 2026 23:27:41 +0000
-Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
-	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62BNRe9714156298
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 11 Mar 2026 23:27:40 GMT
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7606A58054;
-	Wed, 11 Mar 2026 23:27:40 +0000 (GMT)
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DD4455803F;
-	Wed, 11 Mar 2026 23:27:38 +0000 (GMT)
-Received: from li-4c4c4544-0038-3410-8038-c4c04f423534.ibm.com (unknown [9.61.190.127])
-	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 11 Mar 2026 23:27:38 +0000 (GMT)
-Message-ID: <b0a99a20f5f56ad8291d91b209d8ad5f7515bb23.camel@linux.ibm.com>
-Subject: Re: [PATCH v2] powerpc: vas-api: constify dynamic struct class in
- coproc api register
-From: Haren Myneni <haren@linux.ibm.com>
-To: Greg KH <gregkh@linuxfoundation.org>, Jori Koolstra <jkoolstra@xs4all.nl>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman	
- <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe
- Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Srikar Dronamraju
- <srikar@linux.ibm.com>,
-        Jonathan Greental	 <yonatan02greental@gmail.com>,
-        Kees Cook <kees@kernel.org>, Shrikanth Hegde	 <sshegde@linux.ibm.com>,
-        "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"	
- <linuxppc-dev@lists.ozlabs.org>,
-        open list <linux-kernel@vger.kernel.org>
-Date: Wed, 11 Mar 2026 16:27:38 -0700
-In-Reply-To: <2026031154-labored-frivolous-154b@gregkh>
-References: <20260308214634.1215051-1-jkoolstra@xs4all.nl>
-	 <2026030924-penniless-hermit-ffc0@gregkh>
-	 <1304966204.915283.1773053337271@kpc.webmail.kpnmail.nl>
-	 <2026031154-labored-frivolous-154b@gregkh>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2 (3.56.2-1.fc42) 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWTKk1mtmz3cDf
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 11:40:10 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 1F2FE40B33;
+	Thu, 12 Mar 2026 00:40:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 51DBBC4CEF7;
+	Thu, 12 Mar 2026 00:40:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773276008;
+	bh=nQbnEBithESt6CWLnUtQicYUaszVzxppnpWJix1YO4c=;
+	h=From:Date:Subject:To:Cc:From;
+	b=mycyTdB0jUEBRJxMCkU9s2dIJp8qM2LyFyXSqjinha7qnpewU7pSnFDftq4TrEf/H
+	 W1CqMhZHFofopo6AlQr0AjOqLQvfZ4Ot7kB0Lb0Z1HX5dCFG8jDQsNvlfc6OzdY2P+
+	 TbTzXdKE9P3Yz9Ow0byFIgf/ghWMV77mogaHbnPfkwCTtc+cyYcgTMGhd/KCl1vlIy
+	 c6jjjcQmWYIGKoTnJWxf8yR/MVP6YFxdnK4TM5mfa1ztfCsd2uLT30dT3wo/C4pJPO
+	 w+IWParo2OHLKWYOWze2/NVC69sDI4nZjfnnywCeuLHpXSuY3Qo/8fMAdUdu4UDas3
+	 Lu+s23amTNCsg==
+From: Nathan Chancellor <nathan@kernel.org>
+Date: Wed, 11 Mar 2026 17:39:56 -0700
+Subject: [PATCH] powerpc/vdso: Drop -DCC_USING_PATCHABLE_FUNCTION_ENTRY
+ from 32-bit flags with clang
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -106,156 +60,91 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=QKtlhwLL c=1 sm=1 tr=0 ts=69b1fa6f cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=ag1SF4gXAAAA:8
- a=xbhhHmXtY4ggDRbBbxIA:9 a=QEXdDO2ut3YA:10 a=Yupwre4RP9_Eg_Bd0iYG:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzExMDE5NiBTYWx0ZWRfX7mNCMTsPv/As
- AhnjpeWDOZa80b0LhZP7UtbyT6HUHkjlTR93RXuERmKF9v1YJuYHMZFDIFeer8ZV2ykFViwmtZh
- 15tkWFDDVtTPp+nzsZch45MUhtfFUxrs/qPi15KvGMMpiv69l4vpTHg1ia8OtCbc8wXdBe1Wsjf
- k/M+nkoykUhB9kMbGOCJxrCwT5nwF9exhZIBzb7chBu98TjWjjkEzvvH16KDEMCjpxdBA/5RPJ3
- 9anqHRdFrCW9yNrMbShUR/pk3hzceRL0cYxs7I9vTSWQVVj4CQTIS4J3yO/e6XTY9MUgPqJ/Qby
- Kl4Bxe6l50hsy1jUD2bxpKL6+X1NfmdZBlpOF/KYYa3zJ3Xt1bbQA80p95qG1FLPKlVs4vF6sZU
- 7EH7nlSuZyJwSN150QVMgDLDziYksMMVZ20De2jgViJP607lo5xu4wNDYck4JaYZX//6g7xngg0
- 48jG2lKusR8bgSa3FcA==
-X-Proofpoint-ORIG-GUID: hy_UYmg9igAjqUoquy-DtDUOn5OpeS7V
-X-Proofpoint-GUID: DJFV2naKAfwyUL8WAzm_qBPS3TuJ6i7v
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-11_02,2026-03-09_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 suspectscore=0 impostorscore=0 clxscore=1011
- priorityscore=1501 bulkscore=0 adultscore=0 phishscore=0 spamscore=0
- lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
- definitions=main-2603110196
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260311-ppc-vdso-drop-cc-using-pfe-define-clang-v1-1-66c790e22650@kernel.org>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yWNQQrCMBBFr1Jm7UBS0yy8irjQyaSOSBIytgild
+ 3fU5ePx399AuQsrnIYNOq+iUouBPwxA92uZGSUZw+jG6I7eY2uEa9KKqdeGRLiolBlbZkycpTD
+ S03YYYop5csFPIYDVWjf7/j2dL3/W5fZgen3zsO8fescys4sAAAA=
+X-Change-ID: 20260311-ppc-vdso-drop-cc-using-pfe-define-clang-46d6f5041544
+To: Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+ Hari Bathini <hbathini@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, llvm@lists.linux.dev, 
+ patches@lists.linux.dev, Nathan Chancellor <nathan@kernel.org>
+X-Mailer: b4 0.15-dev
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2955; i=nathan@kernel.org;
+ h=from:subject:message-id; bh=nQbnEBithESt6CWLnUtQicYUaszVzxppnpWJix1YO4c=;
+ b=owGbwMvMwCUmm602sfCA1DTG02pJDJmbuFPffHHdcnzStz/ZYr1zUnJestRtvXTi2QXzTf/vK
+ /Sa9My52VHKwiDGxSArpshS/Vj1uKHhnLOMN05NgpnDygQyhIGLUwAmcjmV4b+LIrc5w1+lWd4/
+ ircvUrrFz9qX1cv5PrbdUqiS+XFaCDPD//QrrpsWmCbtmtP+/c820Y/Xs8sf1Z848UfMcDvLbid
+ fNVYA
+X-Developer-Key: i=nathan@kernel.org; a=openpgp;
+ fpr=2437CB76E544CB6AB3D9DFD399739260CB6CB716
 
-On Wed, 2026-03-11 at 09:23 +0100, Greg KH wrote:
-> On Mon, Mar 09, 2026 at 11:48:57AM +0100, Jori Koolstra wrote:
-> > My bad, the earlier email went out to soon.
-> >=20
-> > > Op 09-03-2026 07:01 CET schreef Greg KH
-> > > <gregkh@linuxfoundation.org>:
-> > > > =C2=A0arch/powerpc/platforms/book3s/vas-api.c | 34
-> > > > +++++++++++++++++++------
-> > > > =C2=A01 file changed, 26 insertions(+), 8 deletions(-)
-> > > >=20
-> > > > diff --git a/arch/powerpc/platforms/book3s/vas-api.c
-> > > > b/arch/powerpc/platforms/book3s/vas-api.c
-> > > > index ea4ffa63f043..e377981fd533 100644
-> > > > --- a/arch/powerpc/platforms/book3s/vas-api.c
-> > > > +++ b/arch/powerpc/platforms/book3s/vas-api.c
-> > > > @@ -45,7 +45,7 @@ static struct coproc_dev {
-> > > > =C2=A0	struct device *device;
-> > > > =C2=A0	char *name;
-> > > > =C2=A0	dev_t devt;
-> > > > -	struct class *class;
-> > > > +	const struct class *class;
-> > > > =C2=A0	enum vas_cop_type cop_type;
-> > > > =C2=A0	const struct vas_user_win_ops *vops;
-> > > > =C2=A0} coproc_device;
-> > > > @@ -599,6 +599,21 @@ static struct file_operations coproc_fops
-> > > > =3D {
-> > > > =C2=A0	.unlocked_ioctl =3D coproc_ioctl,
-> > > > =C2=A0};
-> > > > =C2=A0
-> > > > +static const struct class nx_gzip_class =3D {
-> > > > +	.name		=3D "nx-gzip",
-> > > > +	.devnode	=3D coproc_devnode
-> > > > +};
-> > > > +
-> > > > +static const struct class* cop_to_class(enum vas_cop_type cop)
-> > > > +{
-> > > > +	switch (cop) {
-> > > > +	case VAS_COP_TYPE_GZIP:		return
-> > > > &nx_gzip_class;
-> > > > +	default:
-> > > > +		pr_err("No device class defined for cop type
-> > > > %d\n", cop);
-> > > > +		return NULL;
-> > > > +	}
-> > > > +}
-> > > > +
-> > > > =C2=A0/*
-> > > > =C2=A0 * Supporting only nx-gzip coprocessor type now, but this API
-> > > > code
-> > > > =C2=A0 * extended to other coprocessor types later.
-> > > > @@ -609,6 +624,10 @@ int vas_register_coproc_api(struct module
-> > > > *mod, enum vas_cop_type cop_type,
-> > > > =C2=A0{
-> > > > =C2=A0	int rc =3D -EINVAL;
-> > > > =C2=A0	dev_t devno;
-> > > > +	const struct class* class =3D cop_to_class(cop_type);
-> > > > +
-> > > > +	if (!class)
-> > > > +		return rc;
-> > >=20
-> > > How can this happen?
-> > >=20
-> > > This feels odd, are different types of devices being registered
-> > > here?=C2=A0 I
-> > > don't see where VAS_COP_TYPE_GZIP was being tested in the
-> > > original code,
-> > > why add this additional logic?
-> > >=20
-> >=20
-> > My line of thought is this:
-> >=20
-> > There is a function vas_register_coproc_api() that does some kind
-> > of registering
-> > for different coprocessor types. It has the following comment
-> > above:
-> >=20
-> > /*
-> > =C2=A0* Supporting only nx-gzip coprocessor type now, but this API code
-> > =C2=A0* extended to other coprocessor types later.
-> > =C2=A0*/
->=20
-> I guess "later" never happened :(
+After commit 73cdf24e81e4 ("powerpc64: make clang cross-build
+friendly"), building 64-bit little endian + CONFIG_COMPAT=y with clang
+results in many warnings along the lines of:
 
-Yes, VAS is virtual accelerator switchboard which can support multiple
-accelerator types. Hence added vas_register_api* interface for
-different accelerators.=C2=A0But no plans to add other accelerators on
-powerpc right now. So can we use only VAS_COP_TYPE_GZIP class and can
-visit later.=20
+  $ cat arch/powerpc/configs/compat.config
+  CONFIG_COMPAT=y
 
+  $ make -skj"$(nproc)" ARCH=powerpc LLVM=1 ppc64le_defconfig compat.config arch/powerpc/kernel/vdso/
+  ...
+  In file included from <built-in>:4:
+  In file included from lib/vdso/gettimeofday.c:6:
+  In file included from include/vdso/datapage.h:15:
+  In file included from include/vdso/cache.h:5:
+  arch/powerpc/include/asm/cache.h:77:8: warning: unknown attribute 'patchable_function_entry' ignored [-Wunknown-attributes]
+     77 | static inline u32 l1_icache_bytes(void)
+        |        ^~~~~~
+  include/linux/compiler_types.h:235:58: note: expanded from macro 'inline'
+    235 | #define inline inline __gnu_inline __inline_maybe_unused notrace
+        |                                                          ^~~~~~~
+  include/linux/compiler_types.h:215:34: note: expanded from macro 'notrace'
+    215 | #define notrace                 __attribute__((patchable_function_entry(0, 0)))
+        |                                                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ...
 
-diff --git a/arch/powerpc/platforms/powernv/vas-window.c
-b/arch/powerpc/platforms/powernv/vas-window.c
-index 9f093176b8db..360fdd8f200e 100644
---- a/arch/powerpc/platforms/powernv/vas-window.c
-+++ b/arch/powerpc/platforms/powernv/vas-window.c
-@@ -1459,6 +1459,8 @@ static const struct vas_user_win_ops vops =3D  {
- int vas_register_api_powernv(struct module *mod, enum vas_cop_type
-cop_type,
-                             const char *name)
- {
-+       if (cop_type !=3D VAS_COP_TYPE_GZIP)
-+               return -ENOTSUPP;
-=20
-        return vas_register_coproc_api(mod, cop_type, name, &vops);
- }
-diff --git a/arch/powerpc/platforms/pseries/vas.c
-b/arch/powerpc/platforms/pseries/vas.c
-index 9a28f2899716..19e11056e6aa 100644
---- a/arch/powerpc/platforms/pseries/vas.c
-+++ b/arch/powerpc/platforms/pseries/vas.c
-@@ -574,6 +574,9 @@ int vas_register_api_pseries(struct module *mod,
-enum vas_cop_type cop_type,
-        if (!copypaste_feat)
-                return -ENOTSUPP;
-=20
-+       if (cop_type !=3D VAS_COP_TYPE_GZIP)
-+               return -ENOTSUPP;
-+
-        return vas_register_coproc_api(mod, cop_type, name,
-&vops_pseries);
- }
- EXPORT_SYMBOL_GPL(vas_register_api_pseries);
+arch/powerpc/Makefile adds -DCC_USING_PATCHABLE_FUNCTION_ENTRY to
+KBUILD_CPPFLAGS, which is inherited by the 32-bit vDSO. However, the
+32-bit little endian target does not support
+'-fpatchable-function-entry', resulting in the warnings above.
 
-Thanks
-Haren
+Remove -DCC_USING_PATCHABLE_FUNCTION_ENTRY from the 32-bit vDSO flags
+when building with clang to avoid the warnings.
+
+Fixes: 73cdf24e81e4 ("powerpc64: make clang cross-build friendly")
+Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+---
+ arch/powerpc/kernel/vdso/Makefile | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/arch/powerpc/kernel/vdso/Makefile b/arch/powerpc/kernel/vdso/Makefile
+index 8834dfe9d727..368759f81708 100644
+--- a/arch/powerpc/kernel/vdso/Makefile
++++ b/arch/powerpc/kernel/vdso/Makefile
+@@ -62,6 +62,12 @@ CC32FLAGSREMOVE += -fno-stack-clash-protection
+ # 32-bit one. clang validates the values passed to these arguments during
+ # parsing, even when -fno-stack-protector is passed afterwards.
+ CC32FLAGSREMOVE += -mstack-protector-guard%
++# ftrace is disabled for the vdso but arch/powerpc/Makefile adds this define to
++# KBUILD_CPPFLAGS, which enables use of the 'patchable_function_entry'
++# attribute in the 'inline' define via 'notrace'. This attribute is not
++# supported for the powerpcle target, resulting in many instances of
++# -Wunknown-attributes.
++CC32FLAGSREMOVE += -DCC_USING_PATCHABLE_FUNCTION_ENTRY
+ endif
+ LD32FLAGS := -Wl,-soname=linux-vdso32.so.1
+ AS32FLAGS := -D__VDSO32__
+
+---
+base-commit: 35e4f2a17eb40288f9bcdb09549fa04a63a96279
+change-id: 20260311-ppc-vdso-drop-cc-using-pfe-define-clang-46d6f5041544
+
+Best regards,
+--  
+Nathan Chancellor <nathan@kernel.org>
+
 
