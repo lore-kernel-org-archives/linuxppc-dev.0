@@ -1,74 +1,109 @@
-Return-Path: <linuxppc-dev+bounces-18123-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18124-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7CAE106703C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2026 15:18:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34534106ACC2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2026 16:08:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fWrqV5737z3cG5;
-	Fri, 13 Mar 2026 02:18:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773328726;
-	cv=none; b=O4bdfrmd7acm1VR95xjdob0XRwehGwYrGycgMjg+SkjMjZsoUdYrneoB/eO6TeEPa7XiIZYacxMIbbeG/hV1MaV0ceHJ0nOEMQN4LGa/xtvlt6u3nR7Aj6z0MV/GfdzV7RaAXy+I0zxNulz+shNX4dgvFErKcM0jDHSyfsOrUcJeaj4gVZi4Qu7e+49ReaVr+SRCsoonJCRqACX8Ls0oesmdFuVquM0Hmh3uZqKlZwLroDG6EcO5TED5akR3qSgp8a5ZzWmv0zvLyKxFw8Gv9aNxwZ/9+R/DTDVVgJXphwLEhDWsJewffXsZdc+8SRpC9dGDZRj/60Vi7Ko2oUQOag==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fWsxM2X8hz3cGf;
+	Fri, 13 Mar 2026 03:08:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773331735;
+	cv=none; b=YNRh4bAceNVVHcsKI2txjhdhppOgW4tyEli7+GTw7N7gR3esS544E8pxlhiIYMdgFibnZt3QPobNhCotVEPn2YLAv+AK/TZ9SibExyArYJ/97RdYXSeTbxUJ+oIPdNWx1e4wKhDdZSfNABrDT74rVaI61qk4vAi4+UP78Js/q3IKG2gEODiWxbbM12Cs2uwfvsBXQeGZWy0Dp5n3SSmKnoZmDndDKtXBE6lEXIFu6nXktnrEqDWBm6/jq/CPejQwA2qMwQPNiuJvQmRN3abYtu2IK+s7VHR9/yetORWpOclJ/4kxITOnDnVg3snxusyrJ/6rduwISotRbSIQJi1b6g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773328726; c=relaxed/relaxed;
-	bh=hRkr9tlQtutDgkuphlYmn7fRBgJ/GwVX/ag0J9/X/gI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=eI2LxVpPQj4FJH0xlSP1G6JbdRuz/vXR9L2tpBTtkX07TRhJc7ises5LxL0viBKe6XItGsrJQJCTs8nYXm1nM2pY4UjDn951OTlw2T4tDi+iamoKI5JQrg8MBSlzi0XLVx215z6B5YpCPPaB0ZwiCG3+2/6+xA2woIjKTa2B6Embgd1WAIarWaYwVgqx8n8x9pb4xqGp8L+h1XT8RTOEIEOIl3ccYa7U3yExXwT8LqVH1orP2akd4v3jUAMy7HQ1yYhC71M1KMM+2GtKAGdby59JtBKvBr0VSjsAW1nz8OCJSMDUMlAV5+Pb2CqFIyM5qW5c5uN8mIkdXjLBwzOTsg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=V1k65cmJ; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
+	t=1773331735; c=relaxed/relaxed;
+	bh=bpARq/22MlkdkIcDYt3KaU2yN2WmyKPIBxyZS1yDLSM=;
+	h=Message-ID:Subject:From:To:Cc:In-Reply-To:References:Content-Type:
+	 Date:MIME-Version; b=lCRi/3O8sAvdYxVVda8qgrvthRVbg5JazIv1wrxNMn66XCN9iuUo8i8wmC3jGG+C8Es7XSYMmji4dRKgz9/JkSQASoEhXZoXg3YywwZ9PJAbSkwglhlYRZkgd3D8qPjvpD5SaivvFkhGKbYQDwUlTiVl15pHW2Dmat7PLXTQIwKoqQFJcH4IrEwZj0d68gxnV+jyMPnf6kL9B9S3mnTP8XDouPuTgQk49UPB6amWKe1mTB07AO81aoJa4pAZBS3o6ckBrdsvAiEbNW15c05sGzxBmHmZR7hChusxdoxZpCZiPvVpi4zVINbWwN6L4g1t3YZigPRdEVlV7d27eRh1yA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cbhRaBmG; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=zohar@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=V1k65cmJ;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cbhRaBmG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=zohar@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWrqT5GjQz3c9r
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2026 02:18:45 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 4452960142;
-	Thu, 12 Mar 2026 15:18:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 24701C4CEF7;
-	Thu, 12 Mar 2026 15:18:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1773328722;
-	bh=RU7mCgn4p4aFt4z17AtB/HzQEKVXpAiuBbfZS5Sysa4=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=V1k65cmJmmo+ZdpjbsNZv8nsCPVPi61VKALCKXZeOdH3/KVdSz+l5mdTs2j4pTFLz
-	 TjGA79gCGU23W5C90XwC6e0xdRba2zTRj0weRhQoxKvJs12V/HeNxVa41VKe9AjWPv
-	 fXDGMebsWeyd/6rYWviq9pQAuQImG1jFn3xPJpkk=
-Date: Thu, 12 Mar 2026 16:18:38 +0100
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Bartosz Golaszewski <brgl@kernel.org>
-Cc: Rob Herring <robh@kernel.org>,
-	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
-	Saravana Kannan <saravanak@kernel.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Danilo Krummrich <dakr@kernel.org>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Shawn Guo <shawnguo@kernel.org>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Magnus Damm <magnus.damm@gmail.com>, Chen-Yu Tsai <wens@kernel.org>,
-	Jernej Skrabec <jernej.skrabec@gmail.com>,
-	Samuel Holland <samuel@sholland.org>, Frank Li <Frank.Li@nxp.com>,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-	imx@lists.linux.dev, linux-renesas-soc@vger.kernel.org,
-	linux-sunxi@lists.linux.dev, driver-core@lists.linux.dev,
-	Peng Fan <peng.fan@nxp.com>
-Subject: Re: [PATCH v2 0/9] soc: remove direct accesses to of_root from
- drivers/soc/
-Message-ID: <2026031231-whiff-speculate-805a@gregkh>
-References: <20260223-soc-of-root-v2-0-b45da45903c8@oss.qualcomm.com>
- <20260224183832.GB3239922-robh@kernel.org>
- <CAMRc=Mft5vc-C8miKVdw6C-qRdYsqfgm-UgLZJOctFwagMF0iA@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWsxL1WVDz3cGZ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2026 03:08:53 +1100 (AEDT)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62CF7R1j2308232;
+	Thu, 12 Mar 2026 16:07:45 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=bpARq/
+	22MlkdkIcDYt3KaU2yN2WmyKPIBxyZS1yDLSM=; b=cbhRaBmG7CfCW+OmsuYhkY
+	YCLEmeZVQQFXXQfhTbVdmUGBJTi4zAs2pFlmGsc6naTXMyzthVFVscq6lny3zcv8
+	4L5zngnOkUAT6zBhEb7JNPPgdcENjB/U9oRf4GGM0OBLUUdGht72CkEFWGAAIY/v
+	1q8caOOLYMmok6/g+GP1gjduNx6ISLAvgyzELj2QoTI98lnFJLd5jtaRztLUjA0S
+	1Flkq3ESiMgFzvi90gg3vB0M/BlhRPIFxOusayplXUNuDr248CcHVY0rLLgiMyJQ
+	g029VNB0RXRVo9yB9JnwfuIPNXwCUfhQaUo2TKMUK5XbIAvrYrF0kelc7i28TrzQ
+	==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cuh96bg7g-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 12 Mar 2026 16:07:45 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62CEVxS3006091;
+	Thu, 12 Mar 2026 16:07:44 GMT
+Received: from smtprelay04.dal12v.mail.ibm.com ([172.16.1.6])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4cuha9k0ug-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 12 Mar 2026 16:07:44 +0000
+Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
+	by smtprelay04.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62CG7hJc25100956
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 12 Mar 2026 16:07:43 GMT
+Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2312658056;
+	Thu, 12 Mar 2026 16:07:43 +0000 (GMT)
+Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7C05B58052;
+	Thu, 12 Mar 2026 16:07:41 +0000 (GMT)
+Received: from li-43857255-d5e6-4659-90f1-fc5cee4750ad.ibm.com (unknown [9.61.148.157])
+	by smtpav04.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 12 Mar 2026 16:07:41 +0000 (GMT)
+Message-ID: <a985c90d9df8ba0fc63f65117cc8e884f70e6035.camel@linux.ibm.com>
+Subject: Re: [PATCH] integrity: Eliminate weak definition of
+ arch_get_secureboot()
+From: Mimi Zohar <zohar@linux.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>, Nathan Chancellor <nathan@kernel.org>,
+        Roberto Sassu <roberto.sassu@huawei.com>,
+        Dmitry Kasatkin
+ <dmitry.kasatkin@gmail.com>,
+        Eric Snowberg	 <eric.snowberg@oracle.com>,
+        Alexander Egorenkov <egorenar@linux.ibm.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman	
+ <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Christophe Leroy
+	 <chleroy@kernel.org>,
+        Heiko Carstens <hca@linux.ibm.com>,
+        Vasily Gorbik	
+ <gor@linux.ibm.com>,
+        Alexander Gordeev <agordeev@linux.ibm.com>,
+        Christian
+ Borntraeger <borntraeger@linux.ibm.com>,
+        Sven Schnelle
+ <svens@linux.ibm.com>,
+        Paul Moore	 <paul@paul-moore.com>, James Morris
+ <jmorris@namei.org>,
+        "Serge E. Hallyn"	 <serge@hallyn.com>, Coiby Xu
+ <coxu@redhat.com>,
+        linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-s390@vger.kernel.org, linux-integrity@vger.kernel.org,
+        linux-security-module@vger.kernel.org, llvm@lists.linux.dev
+In-Reply-To: <d2089740-16d8-4ca4-a61c-8c381f8e30a0@app.fastmail.com>
+References: 
+	<20260309-integrity-drop-weak-arch-get-secureboot-v1-1-6460d5c4bb89@kernel.org>
+	 <d2089740-16d8-4ca4-a61c-8c381f8e30a0@app.fastmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Date: Thu, 12 Mar 2026 12:07:41 -0400
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,43 +117,71 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAMRc=Mft5vc-C8miKVdw6C-qRdYsqfgm-UgLZJOctFwagMF0iA@mail.gmail.com>
+User-Agent: Evolution 3.56.2 (3.56.2-2.fc42) 
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzEyMDEyMSBTYWx0ZWRfX6UYp50rgI7wC
+ LaHgcaw2Q4XsqduGci08N/mmOkAcwyd88LS27/zQo0/FEc02AxD1omQE3M89xwgC6RjNi415jns
+ AX68w12J6/N1n28xLuTJQE+z7uPWuUxu+qdcd8nG+95r7XjiIPwsFa8o/ha+rEX+wKgbQ66SQQ2
+ +GJiZVL5H+kAiKF9Bbc1KABQivndGOYBy0cqGS6jMfGPKbnP3j5GlnOpIMDls7R8UBgbFsEa+51
+ 2kcR6LjnDSHHWHn+zfCyO11vPDJoE6Mb6a9rUEBZMRAUMVNJrx9Z+TB5q3PwuPTS9vSk94Uhxif
+ tBWallf8Pl0UObKLXM2Zvnwno50mYWgu+bT0N0bLxU5g/Ooh0TersgoW2otvLQ0zrg8ZX4bUBpl
+ +DcbtwoZuctBfKpU+rLLkJfPARE5pnTb/RnvOiNNXVX2kKoFpCM9md6DYnEcGXibZARx1TKgtUq
+ 2XhBEvszNA5u8dDJtTg==
+X-Proofpoint-ORIG-GUID: hgxryyvWqyznJw2FLc1GUC70EGzpkxFi
+X-Authority-Analysis: v=2.4 cv=RLO+3oi+ c=1 sm=1 tr=0 ts=69b2e4d1 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
+ a=mHT-XC4fkXfe5xHyWCkA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: mzVZk3RoAFTvORT2kumWTYvu4FMdCjI7
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-12_01,2026-03-12_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 lowpriorityscore=0 priorityscore=1501 phishscore=0 suspectscore=0
+ clxscore=1015 impostorscore=0 bulkscore=0 adultscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603120121
 
-On Thu, Feb 26, 2026 at 10:28:26AM +0100, Bartosz Golaszewski wrote:
-> On Tue, Feb 24, 2026 at 7:38 PM Rob Herring <robh@kernel.org> wrote:
-> >
-> > On Mon, Feb 23, 2026 at 02:37:15PM +0100, Bartosz Golaszewski wrote:
-> > > linux/of.h declares a set of variables providing addresses of certain
-> > > key OF nodes. The pointers being variables can't profit from stubs
-> > > provided for when CONFIG_OF is disabled which means that drivers
-> > > accessing these variables can't profit from CONFIG_COMPILE_TEST=y
-> > > coverage.
-> > >
-> > > There are drivers under drivers/soc/ that access the of_root node. This
-> > > series introduces new OF helpers for reading the machine compatible and
-> > > model strings, exports an existing SoC helper that reads the machine
-> > > string from the root node and finally replaces all direct accesses to
-> > > of_root with new or already existing helper functions.
-> > >
-> > > Merging strategy: first two patches should be either acked by Rob or
-> > > picked up into an immutable branch based on v7.0-rc1, the rest can go
-> > > through the SoC tree.
-> >
-> > SoC tree is good.
-> >
-> > For all but patch 8,
-> >
-> > Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
-> >
-> 
-> FYI Rob also reviewed patch 8 now. Who would pick the patches up? Greg
-> KH? There does not seem to be a centralized SoC maintainer in
-> MAINTAINERS?
+On Thu, 2026-03-12 at 16:03 +0100, Arnd Bergmann wrote:
+> On Mon, Mar 9, 2026, at 21:37, Nathan Chancellor wrote:
+> > security/integrity/secure_boot.c contains a single __weak function,
+> > which breaks recordmcount when building with clang:
+> >=20
+> >   $ make -skj"$(nproc)" ARCH=3Dpowerpc LLVM=3D1 ppc64_defconfig=20
+> > security/integrity/secure_boot.o
+> >   Cannot find symbol for section 2: .text.
+> >   security/integrity/secure_boot.o: failed
+> >=20
+> > Introduce a Kconfig symbol, CONFIG_HAVE_ARCH_GET_SECUREBOOT, to indicat=
+e
+> > that an architecture provides a definition of arch_get_secureboot().
+> > Provide a static inline stub when this symbol is not defined to achieve
+> > the same effect as the __weak function, allowing secure_boot.c to be
+> > removed altogether. Move the s390 definition of arch_get_secureboot()
+> > out of the CONFIG_KEXEC_FILE block to ensure it is always available, as
+> > it does not actually depend on KEXEC_FILE.
+> >=20
+> > Fixes: 31a6a07eefeb ("integrity: Make arch_ima_get_secureboot integrity=
+-wide")
+> > Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+>=20
+> Acked-by: Arnd Bergmann <arnd@arndb.de>
 
-Sure, let me take them now, thanks.
+I pushed out the patch to next-integrity, but am a bit concerned about=C2=
+=A0the
+definition:
 
-greg k-h
++config HAVE_ARCH_GET_SECUREBOOT
++       def_bool EFI
++
+
+Has anyone actually tested this patch on s390, not just compiled it?  If so=
+, I'd
+appreciate a tested-by tag.
+
+thanks,
+
+Mimi
 
