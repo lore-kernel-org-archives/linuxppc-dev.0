@@ -1,59 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-18127-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18128-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6DB10106ACCD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2026 17:35:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16D80106ACCD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2026 17:35:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fWvrR617Pz3cLG;
-	Fri, 13 Mar 2026 04:34:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773336887;
-	cv=none; b=avR6xRURxxH/sIRu4FdyyHh6d+QUOzLAn3whNVuF0s/+H9bWux8eOD2iXR9r3HcN/JdGMsQ92oSDiT5oh+9sgk0Bz/7Tn/nUObohxTK2p/aSswcB5d/BIrA3rjAQmkj41m9BY6IhRG7i+PnPVb5M6NIpZTqXCtck4LL655VuwDsT4gIeGiAKc5JmvQ4TOIOK8OzVVJ4tlJUhkEFgcQlhtSAzoNnwgYsJgyew1IHi/TSLgUzzvvfzPY7Ga0vOg5+UQ3DBe1G7V8B46MFrv5KLpI9rzNyDRGz3Gy5j3XH3DRJzFk3auJFvH9kaiapPrr3IZlw9NF8j4/pm6QYpPQo1mA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fWvrT5Hw9z3cM4;
+	Fri, 13 Mar 2026 04:34:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773336889;
+	cv=none; b=ieaRmVu0eY1JaD6yvRxwBQrYD6FDZVrfHFT1dUfLJhuA3SpR80/x5OlxEQyM7w66l0x1ck/LcCh2PRt4eW9QBNhggXgz03lfwuoG/jSqljtPefM9l0eDgAwweV8ZQxV/YgR/SwdxzgOEuu4rZDUjhtuN2NoT8SXCMWSzqjcvCHAylCSs+VVRDzq8zUjTpHqrLX533QCH3avg7UgLFkvT/RBEu8M8QWZtoOUZmMJ1E8bSSzaGBskeKahog9G3T3gOxndxHwU7f7ozyFhNjZpLT6qDJGx2ol4MhBF72vRakwA2xuCWtt6eS21LSJxCTwlJBw7cBOeepdNrUlVGqhZ4fQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773336887; c=relaxed/relaxed;
-	bh=W/f6m3Ignvfm/TI4XOSQpU1tAUFYssuKTKydcCYvkug=;
+	t=1773336889; c=relaxed/relaxed;
+	bh=sjBRZPBfPtxn/CCRDfk1DaRPxCe/fVxqblUBFgX45ew=;
 	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=B5G+cgGj3Gn69r/tsgFf/CLghLxASXnJZ7j5yY4oV4A/3QkiQQH97hz4vQq/uPT0BxasDZ9tOflW+p0+eA8czJlRfz1JXcngKRw4NFCQK6JsT6rqfbU9wIKgg2RWy9/wbpWss0w2pRO72xz5KWeS6QkxN8EeJYdwNz8+Ys/PaZIBhswop+w0ndMJCevxkXp5vNGWvl1r7FodvPb3iixTCUPGoLAWbRK0okJ6Qgvyy1J9BfR8+iOPdKrQnCoLGpG5+gsEOpPUE0bSSdLzP0GhdZPDi5cbP905Y7A/ZWnwYuJC+aqN1bDAt3btq5leWIEpKt4zd3CQA1gKMNTRCHpcGA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ObhSNXY8; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=IgCZLZ0NMJmJPZy3I+rnoZ363JM6u0F8WDiNJUESiA0EmUH4dxafyQMZGP+rbSFOXW2rxgFeHtmGMMzPHzOjdm7kQZHKSFW/51iiB97748sirfPf37WLlT/wWyTfzpLYBeqBruG+LFvIW8dg2Zc7VzetOarCbcX4qlnGIkGV1E9cfwOpxTqpm97//MPETX30er/5teTa5ml4OOiomr7FrRBWffbD2dNbDlG3rorBP5xSnJJnmL2Fct4g2zO4BTHHrTAqQepC9sEPExpw9iR/dFt52+wetco08AkHMhaDFPKZGzTLvfB5a29dHGEbnj6QcOiBLRbfElKn3gxtCYq0Vg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WKb+WTyh; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ObhSNXY8;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WKb+WTyh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWvrR1Ypzz3cH4
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2026 04:34:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWvrT2157z3cH4
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2026 04:34:49 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id E76CA4426D;
-	Thu, 12 Mar 2026 17:34:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D22EAC116C6;
-	Thu, 12 Mar 2026 17:34:42 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 788AE61337;
+	Thu, 12 Mar 2026 17:34:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 54BCDC4CEF7;
+	Thu, 12 Mar 2026 17:34:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773336884;
-	bh=MUa7DRBVFoO81wEfsHpcvITgOYtf8fWifxP9N3J/Fz8=;
+	s=k20201202; t=1773336887;
+	bh=+sDX0nZTz7G3iewP7byXnUpGAi/xcHABbYOl+PvDl7w=;
 	h=From:To:In-Reply-To:References:Subject:Date:From;
-	b=ObhSNXY8ZVDNmsPYN0pGf8KKgIgZPobeEzg5JVcu0+cUhAeCiDtHv9RhUfktm0MRK
-	 zETgf42oZUi/dB7EDm7wavQr1rxs0kw0mNjzd0Qy+K0IezrhNQV4pyXmBpfgYFym1b
-	 N6TB5M4xx+fOYXocsr+/n59LYfyqkwhYvsyglXfPWFVpKH5E2Z81gtX85sCylbtSK9
-	 9S2U0XkLkL+Y0356qx+JUC/mRm102YiikBJbkmFYWpEs+bevexkP/wI8PMVzvLwvYu
-	 HzXLvjwNKGy5HfNcXCGwan5gU9Q/XkGgqxRFX9MKPBIti3P5iwMN0yZKn12QyNQd/q
-	 OOO/Hb/UBiHIg==
+	b=WKb+WTyhLLO226hEa7IxsGIegwpL6r5ihWpMvvgkVAzW5WEHXo/TZn5EDmvOJNHjp
+	 TQ3IuMXMwWZ+jKzPTNhKB90YJ7yKK8pRFnIj5rlLISZT9aG+gjSIgx6kArfugmX7qX
+	 yjVPVF1BqoUntZVDhrlgkEKJbyvg5mHKyL70fCHnsWgk/OXiZLY3ld3HnSE8ASr/89
+	 uqy7OCwcDHQS1/buno8xP0DCUhRbTrvCn239+Q0DzUiE9zWo8yKDwQV6CT4F3UBCNW
+	 kWBrFM6FsIS/tuFrgygguYgO8SSUAGa/B2+0IpSXrBnRR1zKY92ZlM3w9vtMIsEkhz
+	 +nxEda8vB2ACQ==
 From: Mark Brown <broonie@kernel.org>
 To: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com, 
  nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, 
  linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
  linux-kernel@vger.kernel.org, Shengjiu Wang <shengjiu.wang@nxp.com>
-In-Reply-To: <20260309083530.2977163-1-shengjiu.wang@nxp.com>
-References: <20260309083530.2977163-1-shengjiu.wang@nxp.com>
-Subject: Re: [PATCH v5 0/3] ASoC: fsl: add bitcount and timestamp controls
-Message-Id: <177333688260.302961.12179311060278151580.b4-ty@kernel.org>
-Date: Thu, 12 Mar 2026 17:34:42 +0000
+In-Reply-To: <20260310104235.1234569-1-shengjiu.wang@nxp.com>
+References: <20260310104235.1234569-1-shengjiu.wang@nxp.com>
+Subject: Re: [PATCH v6 0/3] ASoC: fsl: add bitcount and timestamp controls
+Message-Id: <177333688509.302961.7348877736206320073.b4-ty@kernel.org>
+Date: Thu, 12 Mar 2026 17:34:45 +0000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,14 +71,17 @@ Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.15-dev-68380
 
-On Mon, 09 Mar 2026 16:35:27 +0800, Shengjiu Wang wrote:
+On Tue, 10 Mar 2026 18:42:32 +0800, Shengjiu Wang wrote:
 > The SAI and XCVR have the timestamp counters and bit counters, which can
 > be used by software to track the progress of the transmitter and receiver.
 > They can also be used to calculate the relative frequency of the bit clock
 > against the bus interface clock.
 > 
-> changes in v5:
-> - use EXPORT_SYMBOL_GPL to replace EXPORT_SYMBOL in patch 1/3
+> changes in v6:
+> - define FSL_ASOC_SINGLE_EXT and FSL_ASOC_ENUM_EXT, which are
+>   SNDRV_CTL_ELEM_ACCESS_VOLATILE.
+> - return 0 in fsl_asoc_put_volsw, fsl_asoc_put_enum_double and
+>   fsl_asoc_put_xr_sx to avoid control event notification.
 > 
 > [...]
 
