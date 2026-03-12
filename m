@@ -1,73 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-18093-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18094-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AADA1103E302
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2026 10:44:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD391105A583
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2026 11:13:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fWkkw6SMtz3cFN;
-	Thu, 12 Mar 2026 21:44:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773312264;
-	cv=none; b=XskJvm2Luaq6h1EB2tEXFPVpH/Glpcf3Hc6l6OnGE6aGoJB6QO8yeKDdfevWjldlHupSz4ur26oDnA8NxoEmpPH16cY+MvRgWGr+t84/hfQvIpG1t1kKEc2iy8t35rpidAisHut0L4afUQ54GPoMaoqoj8gf+bQL//GLPXRJAwbNlVJYjehYaXQUzx/fLo+D6FPLkdDtY7TQrZzMf5O0kac/sDrTYE/7LtfbU5WohyfXqZPWdrHbIOI16qBqphoMMrTTXt/0KE7Rk0PAS92BSm+NpwBSRCjO7zRvPMC83mhqog5iQIYgcHTAvp6KpJehxU9908qsXIVtreciu/9JEQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fWlN40HLmz3cFN;
+	Thu, 12 Mar 2026 22:13:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773313987;
+	cv=none; b=Db9cCxdURJ82ICHAM/Rzsn/ebqgHLHAAxnUXUpn4GowXCuS76p2osn4tc6bMkyT/06uv64tLh/nH6lPTZE9P0au8J2g+QOd6po6buCo0oX4d/vIqNYmqEfz6f6zdvd2H4tUT7haSr1v+XEZSv6AIkAEDjfvDUscnFDtJj9RLjsbeWkKPrqGDEskdhHnYHOd9kpcm28WqyIqCLW+VusGTljCgY1wk2sjKeNWj2AUYb+DeBY6rM9F5S7A4B9zgj3+ckMdSX0xXZznj9gWkegJQtN0cVd+wV9iSESeZhg+F8Yu7iYOJxCCZSUxeyCSBEkzDX9lR2I+bEETeYEpn0BuqXg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773312264; c=relaxed/relaxed;
-	bh=ZIk1u1+PGsswnTzj4NHzJSBJEXkoeOKWDZlGd/YfKnA=;
+	t=1773313987; c=relaxed/relaxed;
+	bh=qFwb11X0zrrF96hDRnrNne+UfFUOQp/uf8JCpdTCVwI=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=G5t1feM5pFHKiFGMPd8gGvD7xQjDGfdxAp9s+DNaeGSWKaTjQE7kBJs6snM8UviFAtDheX5XyiV1vGmR3FgyMyE0eVZh6Xt1V/qVDYsJuvzR+M+tbCanD6y+Y7SNukcm4HJyTu3yzhBJ5Nx3fOWEJ8XxGAMeWbcZxkPwjGMhIRB1Mon4HzofXVPU9RXDdiqe1jFYdtPp3K35sLcQYAnskY2wZW2z+p68FDBW9belw3Ltua3jvuceCEwAgt6WA9MtWEQHcNWS7H3ApiPHG+GwfJjl7ahJTZRPp3BeeDex18H6ToiMlIu/Xj48dVn6HBoDIuSqGpP8+j17Rx04AceNuQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=htP2a+8I; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 In-Reply-To:Content-Type; b=E3WMSMnrCaeNaWokhywY1/N83JYh/nnJn7+N1qB5PWLoCl8jNB/MCVo6eUVAUuePqzIyep9VCAt8DWCxdvebCYJDz4/qUN7C/ac6+Pyw62WxIkGKwGdJXXYjy7+ZFjSmKFIEbx3MY9Cjo2maFW2XctTqYPNL2iNzotevOzCQI3rPsOtynkDxsAsA5J3y5YORQ+FQ72wWqdYrjxrrktg35QPrCI2xsluocGdRWHKyySnI2UZ//+cGXZRSRkwsx5oPm3P+0wdt0d8xYTqYfPqTyxEe6jdb2T/ufa1jqR1LgeBhjkkqLvRyQM9VZDGXcdpIGwZbr5dgI8FisJ/2hGbQsw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CkvJemL8; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=htP2a+8I;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CkvJemL8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWkkv5h24z3cCJ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 21:44:22 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62BMWYsX2206309;
-	Thu, 12 Mar 2026 10:44:14 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWlN317hdz3cCJ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 22:13:06 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62BMWPq02279397;
+	Thu, 12 Mar 2026 11:12:53 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=ZIk1u1
-	+PGsswnTzj4NHzJSBJEXkoeOKWDZlGd/YfKnA=; b=htP2a+8IqD3h94ioeDhoEP
-	W/mSu2uuucj6lP0FunWNyPnGDZh0jr3ICh/MnEAhtCcBBWtryHcrjzRyc64Xk2S9
-	w2ZaLtcOkXZnuVuVLlYxeH3VAJeBLwjm2vCqljPC3/qOknpgU3LVMGtW6BgiXyqu
-	opUKzALmeKDv2zrlWTuGJvcEnB+W4lUQuIvRLf1oIF5DOiG57yEtteegJiXopaDh
-	985mclPWfMldISybr48FYmEYDnD0EyIQZR0OrEXaasjkF0abOc4Wniwqhgvu4un7
-	GKFKBmC26mu71OAvkS5pHVmujf9OBy2ZTCI54QmpsToV1D07Z7ZPU7WSzYqjHlZA
+	:message-id:mime-version:references:subject:to; s=pp1; bh=qFwb11
+	X0zrrF96hDRnrNne+UfFUOQp/uf8JCpdTCVwI=; b=CkvJemL88mOKrQnUYcuUw9
+	v/lgsBx8TN5vdU6h/SIF8Ldu3K8Ug6D+Yp5oOpfuyZmsQt8w7UWAJS27LWxzO2AB
+	qJiJZKWL+I2Ssbtc0opT3qdsA44BKHuwAaYqVM6g7nsQbGEODsco5l+huQ5I+xxx
+	BZauCHcdzpBAr+cc4WxU22UEDZypALbDY+VCjW8DLlk/6wxbAXi1ZFzuAYIAmh+O
+	k+3Slj+7c9xAMUhN9xjLSefjQUt4axPosk4bfZ0jp7bigiV9LjFIJtfSfaUqWV/p
+	lktUd/dgHUAUJ+cXeQbwo7JBL0aKhao8/lM1CDSj9CGS2NQB30kI8Vv4JtgGvZwA
 	==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cuh98a4d5-1
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cuh91jb9v-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 12 Mar 2026 10:44:14 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62C9eO7m006036;
-	Thu, 12 Mar 2026 10:44:13 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4cuha9hyb0-1
+	Thu, 12 Mar 2026 11:12:53 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62C9aRxI014797;
+	Thu, 12 Mar 2026 11:12:52 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4cuha8a1xj-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 12 Mar 2026 10:44:13 +0000
+	Thu, 12 Mar 2026 11:12:51 +0000
 Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62CAi9fP30015866
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62CBCoTr36503948
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 12 Mar 2026 10:44:09 GMT
+	Thu, 12 Mar 2026 11:12:50 GMT
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7C1B32006A;
-	Thu, 12 Mar 2026 10:44:09 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id F28362004B;
+	Thu, 12 Mar 2026 11:12:49 +0000 (GMT)
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D805720063;
-	Thu, 12 Mar 2026 10:44:07 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 1A21220040;
+	Thu, 12 Mar 2026 11:12:47 +0000 (GMT)
 Received: from [9.109.204.116] (unknown [9.109.204.116])
 	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 12 Mar 2026 10:44:07 +0000 (GMT)
-Message-ID: <09ad3753-76c3-4f08-b62a-de2f911c7635@linux.ibm.com>
-Date: Thu, 12 Mar 2026 16:14:06 +0530
+	Thu, 12 Mar 2026 11:12:46 +0000 (GMT)
+Message-ID: <71921cca-b890-41c4-93e9-957d3f647ffa@linux.ibm.com>
+Date: Thu, 12 Mar 2026 16:42:45 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,87 +82,131 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 1/2] powerpc/crash: fix backup region offset update to
- elfcorehdr
-To: Hari Bathini <hbathini@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Mahesh Salgaonkar <mahesh@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-        Shivang Upadhyay <shivangu@linux.ibm.com>,
-        Aditya Gupta <adityag@linux.ibm.com>
-References: <20260312083051.1935737-1-sourabhjain@linux.ibm.com>
- <20260312083051.1935737-2-sourabhjain@linux.ibm.com>
- <37e21f51-5872-4498-aed6-6db4dd874b11@linux.ibm.com>
+Subject: Re: [PATCH v5 09/15] arch/powerpc: don't initialize kasan if it's
+ disabled
+To: Baoquan He <bhe@redhat.com>, kasan-dev@googlegroups.com
+Cc: linux-mm@kvack.org, andreyknvl@gmail.com, ryabinin.a.a@gmail.com,
+        glider@google.com, dvyukov@google.com, linux-kernel@vger.kernel.org,
+        linux-um@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
+        loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+        linux-riscv@lists.infradead.org, x86@kernel.org, chris@zankel.net,
+        jcmvbkbc@gmail.com, linux-s390@vger.kernel.org, hca@linux.ibm.com
+References: <20260225081412.76502-1-bhe@redhat.com>
+ <20260225081412.76502-10-bhe@redhat.com>
 Content-Language: en-US
 From: Sourabh Jain <sourabhjain@linux.ibm.com>
-In-Reply-To: <37e21f51-5872-4498-aed6-6db4dd874b11@linux.ibm.com>
+In-Reply-To: <20260225081412.76502-10-bhe@redhat.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=M+pA6iws c=1 sm=1 tr=0 ts=69b298fe cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+X-Proofpoint-GUID: sK4H9fwZp-KLt_Uh6QEN1FURiK-VcUay
+X-Authority-Analysis: v=2.4 cv=E6/AZKdl c=1 sm=1 tr=0 ts=69b29fb5 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
  a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8
- a=WCuK3GOqNBlAgzNa_eUA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: THfNYA28gvF_5xiDuZWQG813eDdNxy9q
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzEyMDA4MiBTYWx0ZWRfX5l2WSPV/ajGc
- i/YP8JjjJshPs7S8/P4T0e/T6hKrPXH+cLFC9acKypmAwKoxFXuK0WlVCoQsByQWKeqRx1bVzUG
- jBue+1pWwNgDXRv+1dcXBiIOt9IbxzUloFpX+EJCYk61k9sDzvLAKyxB1Q5cL10wStiFfSiDrHD
- LcAZcMQJJep1X3moPI6q+yWBr0eHmmhk57zK25YnFemMphZzbtWjASRANwsufs51sB9QUTEJ8TR
- G33dkAGXujv5Vg/ygqWEdcAKloBTRLc3dWvesFI37tDhSCp0p5jnUXYVrusOFmmVXtF7JmrBhC8
- xPcrj7pa6eudIFuyTzV9Fn2h8rY+CZdfHHgThBxRinrH24+0kDdz0QgquLPZd0+SvvWpzOAkPVS
- 48+VvqIeHXFciSOSXnrX9nzd4b9RcWOg+VVsCVstPcmbQ6+ERcd8qaghevT+EJq9GQ1Q4RvH9RX
- tE88VNmR5MAo1NUSe/A==
-X-Proofpoint-ORIG-GUID: XyACPrHT_XbyLLXpJuJkBkJhGSE4amY6
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=20KFwNOVAAAA:8
+ a=voM4FWlXAAAA:8 a=VnNF1IyMAAAA:8 a=e6XaAvPcIE9lEXRYuwcA:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10 a=IC2XNlieTeVoXbcui8wp:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzEyMDA4NyBTYWx0ZWRfX/mtfNCEYEuc6
+ WHnW4p9iVwWYhz47Or92vnI3HCFHwJtfujDrjNzVlJPrH+HNMFrM5rei+tcs68Z8xKbUMLW4OGS
+ nCC3o1olVSQZigyKu8dPplVewbl+wRYHv9pug6m4GgXDTxjkx/bFrguphZ3UlQo8DTuZgOK7pT7
+ XoX/Pn2toTKs0nsYAIR0bSRishOkQI7WvgwwfqCbulME6FSQeiA+c1uiCQVkk5pmlyfJAVn0xAp
+ Pd2bmli4VyUJXDxXTGZdXRFpkSuVHPAXPQU/E02hIaN/9uTz9550KWyukcPEC/RWPfdtgQaWvnT
+ dA5KdZMWC431ZuagttMr9l48fgf2ZsGNNBHZ778481DcVjv3LdLN4uwlF7NKiDY3IpRloCGz839
+ sR9Hlsf9U+wi24kTc7YK1aOscBc/I0desU0vcau1oECfMdpaWfrggI5bqsG8fSprzOHFsV0rdAa
+ 5fL4EVBZVPzrPv5kKmA==
+X-Proofpoint-ORIG-GUID: appgZUPYvO44oILc1-ob_bhU232DA-fp
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-03-11_02,2026-03-09_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0 spamscore=0 suspectscore=0 priorityscore=1501
- impostorscore=0 phishscore=0 clxscore=1015 bulkscore=0 adultscore=0
- malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
- definitions=main-2603120082
+ adultscore=0 impostorscore=0 clxscore=1011 malwarescore=0 phishscore=0
+ suspectscore=0 priorityscore=1501 spamscore=0 lowpriorityscore=0 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603120087
 
 
 
-On 12/03/26 14:06, Hari Bathini wrote:
+On 25/02/26 13:44, Baoquan He wrote:
+> Here, kasan is disabled if specified 'kasan=off' in kernel cmdline.
 >
+> This includes 32bit, book3s/64 and book3e/64.
 >
-> On 12/03/26 2:00 pm, Sourabh Jain wrote:
->> update_backup_region_phdr() in file_load_64.c iterates over all the
->> program headers in the kdump kernel’s elfcorehdr and updates the
->> p_offset of the program header whose physical address starts at 0.
->>
->> However, the loop logic is incorrect because the program header pointer
->> is not updated during iteration. Since elfcorehdr typically contains
->> PT_NOTE entries first, the PT_LOAD program header with physical address
->> 0 is never reached. As a result, its p_offset is not updated to point to
->> the backup region.
->>
->> Because of this behavior, the capture kernel exports the first 64 KB of
->> the crashed kernel’s memory at offset 0, even though that memory
->> actually lives in the backup region. When a crash happens, purgatory
->> copies the first 64 KB of the crashed kernel’s memory into the backup
->> region so the capture kernel can safely use it.
->>
->> This has not caused problems so far because the first 64 KB is usually
->> identical in both the crashed and capture kernels. However, this is
->> just an assumption and is not guaranteed to always hold true.
->>
->> Fix update_backup_region_phdr() to correctly update the p_offset of the
->> program header with a starting physical address of 0 by correcting the
->> logic used to iterate over the program headers.
->>
+> Signed-off-by: Baoquan He <bhe@redhat.com>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> ---
+>   arch/powerpc/mm/kasan/init_32.c        | 6 +++++-
+>   arch/powerpc/mm/kasan/init_book3e_64.c | 4 ++++
+>   arch/powerpc/mm/kasan/init_book3s_64.c | 4 ++++
+>   3 files changed, 13 insertions(+), 1 deletion(-)
 >
-> Thanks for fixing this.
-> Looks good to me.
->
-> Reviewed-by: Hari Bathini <hbathini@linux.ibm.com>
+> diff --git a/arch/powerpc/mm/kasan/init_32.c b/arch/powerpc/mm/kasan/init_32.c
+> index 1d083597464f..0ea2a636c992 100644
+> --- a/arch/powerpc/mm/kasan/init_32.c
+> +++ b/arch/powerpc/mm/kasan/init_32.c
+> @@ -141,6 +141,10 @@ void __init kasan_init(void)
+>   	u64 i;
+>   	int ret;
+>   
+> +	/* If KASAN is disabled via command line, don't initialize it. */
+> +	if (kasan_arg_disabled)
+> +		return;
+> +
+>   	for_each_mem_range(i, &base, &end) {
+>   		phys_addr_t top = min(end, total_lowmem);
+>   
+> @@ -170,7 +174,7 @@ void __init kasan_init(void)
+>   
+>   void __init kasan_late_init(void)
+>   {
+> -	if (IS_ENABLED(CONFIG_KASAN_VMALLOC))
+> +	if (IS_ENABLED(CONFIG_KASAN_VMALLOC) && kasan_enabled())
+>   		kasan_unmap_early_shadow_vmalloc();
+>   }
+>   
+> diff --git a/arch/powerpc/mm/kasan/init_book3e_64.c b/arch/powerpc/mm/kasan/init_book3e_64.c
+> index 0d3a73d6d4b0..fbe4c9a7e460 100644
+> --- a/arch/powerpc/mm/kasan/init_book3e_64.c
+> +++ b/arch/powerpc/mm/kasan/init_book3e_64.c
+> @@ -111,6 +111,10 @@ void __init kasan_init(void)
+>   	u64 i;
+>   	pte_t zero_pte = pfn_pte(virt_to_pfn(kasan_early_shadow_page), PAGE_KERNEL_RO);
+>   
+> +	/* If KASAN is disabled via command line, don't initialize it. */
+> +	if (kasan_arg_disabled)
+> +		return;
+> +
+>   	for_each_mem_range(i, &start, &end)
+>   		kasan_init_phys_region(phys_to_virt(start), phys_to_virt(end));
+>   
+> diff --git a/arch/powerpc/mm/kasan/init_book3s_64.c b/arch/powerpc/mm/kasan/init_book3s_64.c
+> index dcafa641804c..f7906f9ef9be 100644
+> --- a/arch/powerpc/mm/kasan/init_book3s_64.c
+> +++ b/arch/powerpc/mm/kasan/init_book3s_64.c
+> @@ -54,6 +54,10 @@ void __init kasan_init(void)
+>   	u64 i;
+>   	pte_t zero_pte = pfn_pte(virt_to_pfn(kasan_early_shadow_page), PAGE_KERNEL);
+>   
+> +	/* If KASAN is disabled via command line, don't initialize it. */
+> +	if (kasan_arg_disabled)
+> +		return;
+> +
+>   	if (!early_radix_enabled()) {
+>   		pr_warn("KASAN not enabled as it requires radix!");
+>   		return;
 
-Thanks for the review Hari.
+Should we log in the kernel log buffer that KASAN is disabled?
+
+Right now, I don't see the kernel advertising the same.
+
+$ dmesg | grep -i kasan
+[    0.000000] Kernel command line: 
+BOOT_IMAGE=(ieee1275//vdevice/v-scsi@30000070/disk@8100000000000000,msdos2)/vmlinuz-7.0.0-rc3+ 
+crashkernel=2G kasan=off
+
+Tested this series on powerpc Pseries platform.
+So feel free to add:
+Tested-by: Sourabh Jain <sourabhjain@linux.ibm.com>
 
 - Sourabh Jain
 
