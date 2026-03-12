@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-18112-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18113-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 334A9105A595
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2026 12:43:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5738105A594
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2026 12:46:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fWnNf3Nzcz3cFN;
-	Thu, 12 Mar 2026 23:43:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773319426;
-	cv=none; b=iNhhbDp3lOa8U0FvAjF5+AGXaIMRmF+dke4LOQoDBFvjB75mJwMFl4ZluDXmz8o+eY52lzYm397Qq/c5jxMAFftziJ6dSXoSMjgYOigpjdLfAsp4glFMRMn5Wayz28Kr4u/msnVl64TFZZ7bisRjrPSeb9W093FSVBphVX4Q5gu1LTJOhP+w6xDlyxhgn6ovj3cpssXp2E9ebIXdnuOHchjJIz7IRapRGekhcR8rrR1jzPU5PZDQFjCPBXfpfM3+pKU3REusQrrDP5yQJ4TLOolSSX3O0NEw/ctRIv037RnIo/2kSUVhY9XzCBPrToke4JX09gtYq4wkP5QbIpTPNw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fWnRl1MRPz3cFN;
+	Thu, 12 Mar 2026 23:46:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773319587;
+	cv=none; b=TQEVGc6uHqRqymtLLcAkkIM06kL9eKVxoKPa/D+dNynsnoLL9LiKllhXNMiQPYA8cppkXBc6Ua8YLZwC+y+POW+ofkkMUVx0ud1lYWqb2ENMmrxU9UV2nXthtYPNHxzXE6pVzOde6N2PXdPTh8tKq+9eSKxA5c651Or1LhdVYnFaGzn/0bHai1VEqZsi0ITSu6atTZvJTXZa/UWWqKSVoBNLdjf/j6HZ5A9MHjJEzeWkASVrsiyg32cemmBU+ErRWZkhNfKhGzY07Ea7rJOWfZSk9ORy8iRQPOTa8dISHMNcjfPv+T24O3e3d/6Ps2+QY/GbY8/pPFrliHDcAJITiA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773319426; c=relaxed/relaxed;
-	bh=fWBhCLBHGmJ8wtt0t/KRwm/Hep5/ScU15Z6q3+Nta4I=;
+	t=1773319587; c=relaxed/relaxed;
+	bh=pSVUnbqBoh+e50vqL3FsO0vfZ/QPKzwAS3aajmmAfGE=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=W9s6cyzdsfzU43pkvxTikfIJxpDCWusgcFTOebvJvpksT9bW84PiPYSjVXurTkhqkBoslW7apnOpZ0+ZLS+oTyS5wNe720sANxGYrnzhPmME9RmRBipoXPfoHWkc6tdeifYobMJnKgri+fQabI2loDPZz3lGEy2mBjdRdDUUZcRTtX+VIgvrsVc8Yy28oAFaYqHr1tax7CAMna2ypEOoFEpi4oaerbIaaePphkfjByMhAb7jcUOryVqJGpOW+7a4hgwWv73q9bdX7luOTW/6WMKWBNkZJQEKnnRH/9en/8IAojoKv7kdrVOds0IwI7wEMjqaJxUOoQJsDDSGycTE2A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eRUBf3dX; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=X07GG6u9FbUOYZFfNmR/nWwDdNZFJhZRrS4vMWTWM13oFSWcIApvOu3nRwm/0sOjyBWF+yPXDsHgCAYMFPHUyfN2iy0ImRxve7BYabZs9PYg41s1TqwAE8RxR5gR2sQxD6Xiw7v83sJzZ+YLNQU0x9mJqRJHVC8MA6LWAAw6CoU2VLKah+/lOmNk797xvEVZ3RDn2jTuxBkHlfWHGNoLmwqnI27NKGoofxq21Mr5At6Vv6JTN/IpVHcB4urFejcRF/T4smePONgCadam524BvW5uUZ5GyvQaQ4Lx2HxUYtE7QMq0X0fkPZEIMvwpZJPHMbA4TQ9ckpZoPVjDOkzSRg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LmCitdoM; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eRUBf3dX;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LmCitdoM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWnNd3Lybz3cCJ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 23:43:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWnRk2SZMz3cCJ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 23:46:26 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 69EF160054;
-	Thu, 12 Mar 2026 12:43:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 55DD1C4CEF7;
-	Thu, 12 Mar 2026 12:43:40 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 36B69432A7;
+	Thu, 12 Mar 2026 12:46:24 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3A5F6C4CEF7;
+	Thu, 12 Mar 2026 12:46:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773319423;
-	bh=8S9bNJmF6iH82u3xXOAn4AoJikaKrAnFf4WVKPEmGxk=;
+	s=k20201202; t=1773319584;
+	bh=20CETLvjxD3z+mW9Z3ubspvxhFteql+I+VlzbtPBQyw=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=eRUBf3dX6tDFd/wdJL0RAiR1hAauissEfjHzMqVRjfgm6+A8cJRjSAe1kA+dx/TfN
-	 ufTmt8h43/s25vH+jIPrmSlRHhwv30uARgMBqTfJJ9yaXkPQkHPVqfyY8ppn7whChp
-	 frS5QsFEy3F1KNz3/ylj/Cwi+KL7+0iGNFM2Yfr+kCfhPuT6FsDjoSfkZ1qQMntmhj
-	 yN1Hb+b3I99HYlAnXrMkjez3roLSMj9i9rD9AB2BP4zwu027cv0ySlc33z8GT+3rNV
-	 XARl5ZCnCHUgKcB5kbQa7s429uEUlEap6X6vSpvcQ2GM8OFLLW9JVLEQb9fOpVjodd
-	 7ofK99QQPtwxw==
-Message-ID: <536527d3-6ffb-409d-a119-93c13a87823d@kernel.org>
-Date: Thu, 12 Mar 2026 13:43:37 +0100
+	b=LmCitdoMcHqTnvQU+INOApLZaqDy4HXuWxSaIqLXfAqbitAIu1fyUb+4JkelvePJa
+	 KZFLAceFbpytteLKErnKIwYMITurgWszw+f5PJ4iz9mhgjBv7ZW5vU82jHmkhNR62k
+	 L683nSexvZo6jWxdemjVfqrSQaxglYWSJ6J4tYiMjPrLOpcOOw3XarTASdem1c/adq
+	 LFCmvwdifqj585wxkch3ebML/B67qao4kRTUNnLbi7CMxZOz/CbY72Y2kWcSDwq+FT
+	 xqVc3znHEkN9To4K0GkysibGcLFPCk9B//rnyQamhHo/5to4z7lOu+6IyHgZJFiQzx
+	 8F+c+l0gARg5A==
+Message-ID: <c2a1adb3-7078-4979-8eac-579d86b3f244@kernel.org>
+Date: Thu, 12 Mar 2026 13:46:19 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,8 +60,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 01/13] selftests/mm: restore default nr_hugepages value
- during cleanup in charge_reserved_hugetlb.sh
+Subject: Re: [PATCH v2 05/13] selftests/mm: size tmpfs according to PMD page
+ size in split_huge_page_test
 To: Sayali Patil <sayalip@linux.ibm.com>,
  Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
  linux-mm@kvack.org, linux-kernel@vger.kernel.org,
@@ -71,7 +71,7 @@ Cc: Zi Yan <ziy@nvidia.com>, Michal Hocko <mhocko@kernel.org>,
  Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, Dev Jain <dev.jain@arm.com>,
  Liam.Howlett@oracle.com, linuxppc-dev@lists.ozlabs.org
 References: <cover.1773305677.git.sayalip@linux.ibm.com>
- <9d150c91d4fe18732f9a90234e6878b7bd7f61f7.1773305677.git.sayalip@linux.ibm.com>
+ <94c18dd26cf88f10b4b496cb3de08d81439a8909.1773305677.git.sayalip@linux.ibm.com>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -118,38 +118,78 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <9d150c91d4fe18732f9a90234e6878b7bd7f61f7.1773305677.git.sayalip@linux.ibm.com>
+In-Reply-To: <94c18dd26cf88f10b4b496cb3de08d81439a8909.1773305677.git.sayalip@linux.ibm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 3/12/26 13:25, Sayali Patil wrote:
-> During cleanup, the value of /proc/sys/vm/nr_hugepages is currently being
-> set to 0.  At the end of the test, if all tests pass, the original
-> nr_hugepages value is restored.  However, if any test fails, it remains
-> set to 0.
-> With this patch, we ensure that the original nr_hugepages value is
-> restored during cleanup, regardless of whether the test passes or fails.
+> The split_file_backed_thp() test mounts a tmpfs with a fixed size of
+> "4m". This works on systems with smaller PMD page sizes,
+> but fails on configurations where the PMD huge page size is
+> larger (e.g. 16MB).
 > 
-> Fixes: 7d695b1c3695b ("selftests/mm: save and restore nr_hugepages value")
+> On such systems, the fixed 4MB tmpfs is insufficient to allocate even
+> a single PMD-sized THP, causing the test to fail.
+> 
+> Fix this by sizing the tmpfs dynamically based on the runtime
+> pmd_pagesize, allocating space for two PMD-sized pages.
+> 
+> Before patch:
+>   running ./split_huge_page_test /tmp/xfs_dir_YTrI5E
+>   --------------------------------------------------
+>   TAP version 13
+>   1..55
+>   ok 1 Split zero filled huge pages successful
+>   ok 2 Split huge pages to order 0 successful
+>   ok 3 Split huge pages to order 2 successful
+>   ok 4 Split huge pages to order 3 successful
+>   ok 5 Split huge pages to order 4 successful
+>   ok 6 Split huge pages to order 5 successful
+>   ok 7 Split huge pages to order 6 successful
+>   ok 8 Split huge pages to order 7 successful
+>   ok 9 Split PTE-mapped huge pages successful
+>    Please enable pr_debug in split_huge_pages_in_file() for more info.
+>    Failed to write data to testing file: Success (0)
+>   Bail out! Error occurred
+>    Planned tests != run tests (55 != 9)
+>    Totals: pass:9 fail:0 xfail:0 xpass:0 skip:0 error:0
+>  [FAIL]
+> 
+> After patch:
+>   --------------------------------------------------
+>   running ./split_huge_page_test /tmp/xfs_dir_bMvj6o
+>   --------------------------------------------------
+>   TAP version 13
+>   1..55
+>   ok 1 Split zero filled huge pages successful
+>   ok 2 Split huge pages to order 0 successful
+>   ok 3 Split huge pages to order 2 successful
+>   ok 4 Split huge pages to order 3 successful
+>   ok 5 Split huge pages to order 4 successful
+>   ok 6 Split huge pages to order 5 successful
+>   ok 7 Split huge pages to order 6 successful
+>   ok 8 Split huge pages to order 7 successful
+>   ok 9 Split PTE-mapped huge pages successful
+>    Please enable pr_debug in split_huge_pages_in_file() for more info.
+>    Please check dmesg for more information
+>   ok 10 File-backed THP split to order 0 test done
+>    Please enable pr_debug in split_huge_pages_in_file() for more info.
+>    Please check dmesg for more information
+>   ok 11 File-backed THP split to order 1 test done
+>    Please enable pr_debug in split_huge_pages_in_file() for more info.
+>    Please check dmesg for more information
+>   ok 12 File-backed THP split to order 2 test done
+> ...
+>   ok 55 Split PMD-mapped pagecache folio to order 7 at
+>     in-folio offset 128 passed
+>    Totals: pass:55 fail:0 xfail:0 xpass:0 skip:0 error:0
+>    [PASS]
+> ok 1 split_huge_page_test /tmp/xfs_dir_bMvj6o
+> 
+> Fixes: fbe37501b252 ("mm: huge_memory: debugfs for file-backed THP split")
 > Reviewed-by: Zi Yan <ziy@nvidia.com>
 > Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
 > ---
->  tools/testing/selftests/mm/charge_reserved_hugetlb.sh | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/tools/testing/selftests/mm/charge_reserved_hugetlb.sh b/tools/testing/selftests/mm/charge_reserved_hugetlb.sh
-> index 447769657634..c9fe68b6fcf9 100755
-> --- a/tools/testing/selftests/mm/charge_reserved_hugetlb.sh
-> +++ b/tools/testing/selftests/mm/charge_reserved_hugetlb.sh
-> @@ -65,7 +65,7 @@ function cleanup() {
->    if [[ -e $cgroup_path/hugetlb_cgroup_test2 ]]; then
->      rmdir $cgroup_path/hugetlb_cgroup_test2
->    fi
-> -  echo 0 >/proc/sys/vm/nr_hugepages
-> +  echo "$nr_hugepgs" > /proc/sys/vm/nr_hugepages
->    echo CLEANUP DONE
->  }
->  
 
 Reviewed-by: David Hildenbrand (Arm) <david@kernel.org>
 
