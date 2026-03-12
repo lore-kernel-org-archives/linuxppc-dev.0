@@ -1,92 +1,74 @@
-Return-Path: <linuxppc-dev+bounces-18122-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18123-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 254D61067041
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2026 15:03:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7CAE106703C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2026 15:18:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fWrV716byz3cFN;
-	Fri, 13 Mar 2026 02:03:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=202.12.124.139
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773327823;
-	cv=none; b=I+2WL4nbKDext1020J6afxyjwnQeDVEFQs9cZ5O3J2nXqj3f4K1SFPyueH4bOKn2qyZHSGEWglNFLAGti7X0dyDTQ2h+E/W6uJ1Uj9Zx2FFVdwMp79sysPWnNK65HBdb9fmWw5TOmR+btqc2Jyu3PlO9LWY64WgZx//4iHvwiGgrGqw+sryPszHk3vwUIRhfUQZmrqyBnvrZkQQ9nRjmqxuKQX/xAqJ8TFDAz3ov9q1L8h3MF+pCbdyQa+0VlQIivaoj4GWko2JyzMC/3Eu3t3sukmW/anQaywPB2cie/MCfWR4veeZ8LrIJJwMuzDeIOVEGXwKGdOTyc9t+cAJLDg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fWrqV5737z3cG5;
+	Fri, 13 Mar 2026 02:18:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773328726;
+	cv=none; b=O4bdfrmd7acm1VR95xjdob0XRwehGwYrGycgMjg+SkjMjZsoUdYrneoB/eO6TeEPa7XiIZYacxMIbbeG/hV1MaV0ceHJ0nOEMQN4LGa/xtvlt6u3nR7Aj6z0MV/GfdzV7RaAXy+I0zxNulz+shNX4dgvFErKcM0jDHSyfsOrUcJeaj4gVZi4Qu7e+49ReaVr+SRCsoonJCRqACX8Ls0oesmdFuVquM0Hmh3uZqKlZwLroDG6EcO5TED5akR3qSgp8a5ZzWmv0zvLyKxFw8Gv9aNxwZ/9+R/DTDVVgJXphwLEhDWsJewffXsZdc+8SRpC9dGDZRj/60Vi7Ko2oUQOag==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773327823; c=relaxed/relaxed;
-	bh=SaJoBOWdSuPgCxv7hYpeAKeVFQyklTNNXObk3qvPfvI=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=QKLsMfpUGmExL1Qh0cOvHxDIykI5HJyrEurUWwPiotPRVwcoh9w68p2q0O0rdCRVTL2p63oqqNRXX0yqPVRX+V/ztLJKEaMY/2oZUXE9vo+b5lM/MwPWFCplMqnMnfmb3IY80nU2DsXSkpW2tGamjIaN9KgCR6mDxIfrTTs9hjELEcQOY5Cl5sbR9CiKKCB6zdHJkeHV89w08BJxxLz9P/UcnmQHSpxZxlzKJOVPoJKVRvBwSpglWcyZ5t7UO55zdQZNHyAmrBJykNfDDefV5oDPhCHHeHppxPYXQa/CI6GTupOprl5Pyrx5zSxbeT2RAzkLpqxti0dLdIQU48z6VQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=bGvJqXL+; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=o81mzw52; dkim-atps=neutral; spf=pass (client-ip=202.12.124.139; helo=flow-b4-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+	t=1773328726; c=relaxed/relaxed;
+	bh=hRkr9tlQtutDgkuphlYmn7fRBgJ/GwVX/ag0J9/X/gI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=eI2LxVpPQj4FJH0xlSP1G6JbdRuz/vXR9L2tpBTtkX07TRhJc7ises5LxL0viBKe6XItGsrJQJCTs8nYXm1nM2pY4UjDn951OTlw2T4tDi+iamoKI5JQrg8MBSlzi0XLVx215z6B5YpCPPaB0ZwiCG3+2/6+xA2woIjKTa2B6Embgd1WAIarWaYwVgqx8n8x9pb4xqGp8L+h1XT8RTOEIEOIl3ccYa7U3yExXwT8LqVH1orP2akd4v3jUAMy7HQ1yYhC71M1KMM+2GtKAGdby59JtBKvBr0VSjsAW1nz8OCJSMDUMlAV5+Pb2CqFIyM5qW5c5uN8mIkdXjLBwzOTsg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=V1k65cmJ; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=bGvJqXL+;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=o81mzw52;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=V1k65cmJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=202.12.124.139; helo=flow-b4-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
-Received: from flow-b4-smtp.messagingengine.com (flow-b4-smtp.messagingengine.com [202.12.124.139])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWrV31qk7z3cCJ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2026 02:03:38 +1100 (AEDT)
-Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
-	by mailflow.stl.internal (Postfix) with ESMTP id 989381301A09;
-	Thu, 12 Mar 2026 11:03:34 -0400 (EDT)
-Received: from phl-imap-02 ([10.202.2.81])
-  by phl-compute-04.internal (MEProxy); Thu, 12 Mar 2026 11:03:35 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm3; t=1773327814;
-	 x=1773335014; bh=SaJoBOWdSuPgCxv7hYpeAKeVFQyklTNNXObk3qvPfvI=; b=
-	bGvJqXL+CssgN9qcX6cryh57mVbGY/RIgqlwo0DFIBN1SUBMT453trmu9eYBrm37
-	hVMySZEnXc1sCYAT9luPhCcccEYQp/GcoeeL5U11WztDI9Kos7lHLrpQ7DSbCIFb
-	VLAX1fDkP4Nbox42DREjtOpPaVpQ2CaKlMC0wEOW6Ixb98oVCagr9dRR/BRbIaPl
-	K/lb1IRzMjRLEPNHLPQSjcHtJQ1m20e4/ueYZYoaNXNdTsNxeu1Gejx5wqTYw3/Q
-	RpyIxEQzLw3Ffvb7AgeIffzCQVwtg6Ehi2jf9DErhilCuB9EAgUUQolo0Ybod/MK
-	AAKTvyOsypVX9Hsl7BV73A==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1773327814; x=
-	1773335014; bh=SaJoBOWdSuPgCxv7hYpeAKeVFQyklTNNXObk3qvPfvI=; b=o
-	81mzw52m7Y8g0esA44ovBldf2w1mCxrd2Nk9Hq8Q6NGnMoMh5sV1H75k6hYOWrkn
-	/IqenwKMsv4+S+qDpNTCEa08jDAdQW4w94TEalRfExX+/5d9PfHjY+TEoW+X2+FE
-	nFWMlydaHFMouUdZ/ynE6XSlGki1Iwh7MbfViMcd7rfUxiDrbaymgAmqcCF2/f1F
-	cAQXtApjwSKqnLbWj14/DUBi6KTSwyGikFO7OdhTu2t8k4XPTUo85uY97bxS6W+o
-	Sai+Jorj6mgUE1c18wQdKIG3yLYOGQ4rF1wH3nc5mWaOz/5kRWpuG+ckYl2Q0kTR
-	2GoP9XsLVT3rcDlxDQxYw==
-X-ME-Sender: <xms:xdWyaZDkEMiQgozqvnBiLyFjtP28g1ahKIBoyZrE_DaQA6uTpqgKTA>
-    <xme:xdWyaSWF2czmKEqMg2Cvo9TuyFgPMGQGQ8na5IFTOatpC2gB6mVkngxTfEJgl3h66
-    xHSsQTi-DP2fTzR5tNK-koMttWfQPwS9rU9OAGV2evxTVEPYx7rE-NE>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefgedrtddtgddvkeejtdelucetufdoteggodetrf
-    dotffvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfurfetoffkrfgpnffqhgenuceu
-    rghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujf
-    gurhepofggfffhvfevkfgjfhfutgfgsehtjeertdertddtnecuhfhrohhmpedftehrnhgu
-    uceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrdguvgeqnecuggftrfgrthhtvg
-    hrnhepfeeuudfgtdfhfeejjeetfeeutddufffgheejjeekudelkeekvddvvefftdejjefg
-    necuffhomhgrihhnpehtvgigthdrshgvtghurhhithihnecuvehluhhsthgvrhfuihiivg
-    eptdenucfrrghrrghmpehmrghilhhfrhhomheprghrnhgusegrrhhnuggsrdguvgdpnhgs
-    pghrtghpthhtohepvdegpdhmohguvgepshhmthhpohhuthdprhgtphhtthhopehmphgvse
-    gvlhhlvghrmhgrnhdrihgurdgruhdprhgtphhtthhopegumhhithhrhidrkhgrshgrthhk
-    ihhnsehgmhgrihhlrdgtohhmpdhrtghpthhtohepnhhpihhgghhinhesghhmrghilhdrtg
-    homhdprhgtphhtthhopehsvghrghgvsehhrghllhihnhdrtghomhdprhgtphhtthhopehr
-    ohgsvghrthhordhsrghsshhusehhuhgrfigvihdrtghomhdprhgtphhtthhopegthhhlvg
-    hrohihsehkvghrnhgvlhdrohhrghdprhgtphhtthhopehnrghthhgrnheskhgvrhhnvghl
-    rdhorhhgpdhrtghpthhtoheprghgohhruggvvghvsehlihhnuhigrdhisghmrdgtohhmpd
-    hrtghpthhtohepsghorhhnthhrrggvghgvrheslhhinhhugidrihgsmhdrtghomh
-X-ME-Proxy: <xmx:xdWyaRetzDGkS5SKI9bnsPzbkpuMdRANOtnlcfTJPNlcWisTF1b1rQ>
-    <xmx:xdWyadUGzj6XKM0U8A8TXpxoxcXoRD1syeMM2bNSJaTyZXuR_9okgQ>
-    <xmx:xdWyaVGeL5I89cDQK5OzddGLqJwI522nV9L0TkeDyZinXQQiEKbXQw>
-    <xmx:xdWyafdE08ACWNnAG8Xfy_DAQnVumhTLT3b6G07k1mGbHRJic4s2OQ>
-    <xmx:xtWyaSNd2Rb7zlX_iGsR_SmDs79ks89ndHprjg7QyEwUf6Qyb8gfZZoH>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.phl.internal (Postfix, from userid 501)
-	id A99AC700065; Thu, 12 Mar 2026 11:03:32 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWrqT5GjQz3c9r
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2026 02:18:45 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 4452960142;
+	Thu, 12 Mar 2026 15:18:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 24701C4CEF7;
+	Thu, 12 Mar 2026 15:18:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1773328722;
+	bh=RU7mCgn4p4aFt4z17AtB/HzQEKVXpAiuBbfZS5Sysa4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=V1k65cmJmmo+ZdpjbsNZv8nsCPVPi61VKALCKXZeOdH3/KVdSz+l5mdTs2j4pTFLz
+	 TjGA79gCGU23W5C90XwC6e0xdRba2zTRj0weRhQoxKvJs12V/HeNxVa41VKe9AjWPv
+	 fXDGMebsWeyd/6rYWviq9pQAuQImG1jFn3xPJpkk=
+Date: Thu, 12 Mar 2026 16:18:38 +0100
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Bartosz Golaszewski <brgl@kernel.org>
+Cc: Rob Herring <robh@kernel.org>,
+	Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
+	Saravana Kannan <saravanak@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Shawn Guo <shawnguo@kernel.org>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Magnus Damm <magnus.damm@gmail.com>, Chen-Yu Tsai <wens@kernel.org>,
+	Jernej Skrabec <jernej.skrabec@gmail.com>,
+	Samuel Holland <samuel@sholland.org>, Frank Li <Frank.Li@nxp.com>,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+	imx@lists.linux.dev, linux-renesas-soc@vger.kernel.org,
+	linux-sunxi@lists.linux.dev, driver-core@lists.linux.dev,
+	Peng Fan <peng.fan@nxp.com>
+Subject: Re: [PATCH v2 0/9] soc: remove direct accesses to of_root from
+ drivers/soc/
+Message-ID: <2026031231-whiff-speculate-805a@gregkh>
+References: <20260223-soc-of-root-v2-0-b45da45903c8@oss.qualcomm.com>
+ <20260224183832.GB3239922-robh@kernel.org>
+ <CAMRc=Mft5vc-C8miKVdw6C-qRdYsqfgm-UgLZJOctFwagMF0iA@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,55 +82,43 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-ThreadId: AHq5N6LSCfHR
-Date: Thu, 12 Mar 2026 16:03:12 +0100
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Nathan Chancellor" <nathan@kernel.org>,
- "Mimi Zohar" <zohar@linux.ibm.com>,
- "Roberto Sassu" <roberto.sassu@huawei.com>,
- "Dmitry Kasatkin" <dmitry.kasatkin@gmail.com>,
- "Eric Snowberg" <eric.snowberg@oracle.com>
-Cc: "Madhavan Srinivasan" <maddy@linux.ibm.com>,
- "Michael Ellerman" <mpe@ellerman.id.au>,
- "Nicholas Piggin" <npiggin@gmail.com>,
- "Christophe Leroy" <chleroy@kernel.org>,
- "Heiko Carstens" <hca@linux.ibm.com>, "Vasily Gorbik" <gor@linux.ibm.com>,
- "Alexander Gordeev" <agordeev@linux.ibm.com>,
- "Christian Borntraeger" <borntraeger@linux.ibm.com>,
- "Sven Schnelle" <svens@linux.ibm.com>, "Paul Moore" <paul@paul-moore.com>,
- "James Morris" <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>,
- "Coiby Xu" <coxu@redhat.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-integrity@vger.kernel.org, linux-security-module@vger.kernel.org,
- llvm@lists.linux.dev
-Message-Id: <d2089740-16d8-4ca4-a61c-8c381f8e30a0@app.fastmail.com>
-In-Reply-To: 
- <20260309-integrity-drop-weak-arch-get-secureboot-v1-1-6460d5c4bb89@kernel.org>
-References: 
- <20260309-integrity-drop-weak-arch-get-secureboot-v1-1-6460d5c4bb89@kernel.org>
-Subject: Re: [PATCH] integrity: Eliminate weak definition of arch_get_secureboot()
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAMRc=Mft5vc-C8miKVdw6C-qRdYsqfgm-UgLZJOctFwagMF0iA@mail.gmail.com>
 
-On Mon, Mar 9, 2026, at 21:37, Nathan Chancellor wrote:
-> security/integrity/secure_boot.c contains a single __weak function,
-> which breaks recordmcount when building with clang:
->
->   $ make -skj"$(nproc)" ARCH=powerpc LLVM=1 ppc64_defconfig 
-> security/integrity/secure_boot.o
->   Cannot find symbol for section 2: .text.
->   security/integrity/secure_boot.o: failed
->
-> Introduce a Kconfig symbol, CONFIG_HAVE_ARCH_GET_SECUREBOOT, to indicate
-> that an architecture provides a definition of arch_get_secureboot().
-> Provide a static inline stub when this symbol is not defined to achieve
-> the same effect as the __weak function, allowing secure_boot.c to be
-> removed altogether. Move the s390 definition of arch_get_secureboot()
-> out of the CONFIG_KEXEC_FILE block to ensure it is always available, as
-> it does not actually depend on KEXEC_FILE.
->
-> Fixes: 31a6a07eefeb ("integrity: Make arch_ima_get_secureboot integrity-wide")
-> Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+On Thu, Feb 26, 2026 at 10:28:26AM +0100, Bartosz Golaszewski wrote:
+> On Tue, Feb 24, 2026 at 7:38 PM Rob Herring <robh@kernel.org> wrote:
+> >
+> > On Mon, Feb 23, 2026 at 02:37:15PM +0100, Bartosz Golaszewski wrote:
+> > > linux/of.h declares a set of variables providing addresses of certain
+> > > key OF nodes. The pointers being variables can't profit from stubs
+> > > provided for when CONFIG_OF is disabled which means that drivers
+> > > accessing these variables can't profit from CONFIG_COMPILE_TEST=y
+> > > coverage.
+> > >
+> > > There are drivers under drivers/soc/ that access the of_root node. This
+> > > series introduces new OF helpers for reading the machine compatible and
+> > > model strings, exports an existing SoC helper that reads the machine
+> > > string from the root node and finally replaces all direct accesses to
+> > > of_root with new or already existing helper functions.
+> > >
+> > > Merging strategy: first two patches should be either acked by Rob or
+> > > picked up into an immutable branch based on v7.0-rc1, the rest can go
+> > > through the SoC tree.
+> >
+> > SoC tree is good.
+> >
+> > For all but patch 8,
+> >
+> > Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+> >
+> 
+> FYI Rob also reviewed patch 8 now. Who would pick the patches up? Greg
+> KH? There does not seem to be a centralized SoC maintainer in
+> MAINTAINERS?
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+Sure, let me take them now, thanks.
+
+greg k-h
 
