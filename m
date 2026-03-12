@@ -1,87 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-18110-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18111-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69B7B105A591
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2026 12:27:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6FA05105A594
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2026 12:30:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fWn1M01krz3cGv;
-	Thu, 12 Mar 2026 23:27:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fWn5k5lNbz3cFN;
+	Thu, 12 Mar 2026 23:30:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773318422;
-	cv=none; b=ht5USxtW7B6XnPW8jzCDVjbwxTmK0YgsMkB67BkcCu9DIfkBd77YgtEOMnDLle05mShfPhQv9RTLQG/bnDFArkgAaZimhFEAqhIbx7D00ICFEUpcsnvCfRg6Y0eivSeY6gatCcyX+xYePGKC66wuWFcAiAOaO955iVawOcz8I1JiTlXIMsmxqUcUZiaQRpr+FaELMR9g4xFoMbWGf8jyygSpqb7NTVHs3D4qKq2/D3wUTAEHq1R1cfG4OrDgIx/AYnw2D1yASsaJ/VeQVUrWuRbVhXBzdHrZxy8jmrKOCAKQdzaLJ4lOuZLPyASb0D/FvgLy+SJwvKq8lk4Mjh8mBw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773318650;
+	cv=none; b=B+0wrtqNlVjU0/EKh10UtAT6hZ/oicH3aOJPqQJanGnYTRRDAp6YNx4SrTU3q31v90HIc67XBKrscY69qkREsERNMeSKV5of/uhofMiXDj4wMZtvXp2HXYXOr3TFKGGobNkUtS6DGbZszVq7QWH+aVw5DN/Ka0bgIwgqT7gwSYyGTYB+F8XfpF/8e26etoEcRE3Sq2xiKvgoEBF5rJYia3h8b69NahIYEud1lq3l3Fa3SPR/L0HlUDBNziVWH8+iDecCXbtLo2sWuz4ZUoautIIeXVOCtN9LYyl4neag4jwlvQu/j1lUPEhX0na+jU4B2iRP4o+5W9LwRU+Yetnnrw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773318422; c=relaxed/relaxed;
-	bh=Y4e5DFl5siWIhnuxgccuPdSzyDnLoJB3bmNN+u1miYM=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=kSSEGRgNziz/HyNxAs6efA5GKu+QDqf9qYVR7CFGHd9iVA74N0AciPuxiEBzu9hViBQfDn/a3RAve57bQho2mpGwk53R4noTFLUT57AsBZkR5NGlbBdz9HgCVTPdbB6QHlYquYz5RC1OGdzWGyTSC7/k+U+SCYcocXlj850r5aUAuFRC2fCdMpVMpU/LU8OKOso18fJbo6S1gJ+uE/vfQvW07MAobKiTfPZ4ByYzcW8N+CqkjFxl0+5p9s93wj8dKUHeEoy0n2eNBNUZ3dzQf2797JG9zSKzrpLwb6n6ynXvtXIPR3M4EedU4uq/3cd9TtLrCfYxB1UNZbgniGcv2w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=C/0eh1RB; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1773318650; c=relaxed/relaxed;
+	bh=2ugqha6TIjTFrrat+VHqZ7HSOGCxoVBntdBAw7yQLvQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=c8E0nUacoSrFPFN/5fDYTVhtVouAWrjGwSgKP3cv7aR5z+S9Rl/7TMY1yT11Xu4IVDCjI5S/2D2BQY3e3N2Hbuy9WxKMKd1gAVs1u5TmYx6DnlH2sz0URWq0zLywfzTXmlhXnkkUSw/GYdo7/Hji0Cdpyx02wGfIbZLumGABDVUci4i9lYwEzbNz+XLr2bizzyRxI4RGAxUC23VvxNtuw7wRxtOP1geOjL4ulcug1hWKqZbL1pmj9/ZcoW6vqyLVPB7X7yub+n7K8XdLfLYFVVc6UfIN+z7VvElJNlNwuj/Jr+tw9lHyspZgwZNBXaO5Na7yw0MV5lKViYmLLmSJhw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TwkM32wI; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=C/0eh1RB;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TwkM32wI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWn1L1pDtz3cGc
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 23:27:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWn5j4567z3cCJ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 23:30:49 +1100 (AEDT)
 Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62BMVq5w2278406;
-	Thu, 12 Mar 2026 12:26:46 GMT
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62BMWSvI2279420;
+	Thu, 12 Mar 2026 12:30:37 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=Y4e5DFl5siWIhnuxg
-	ccuPdSzyDnLoJB3bmNN+u1miYM=; b=C/0eh1RBMF1yUyCpP2ePstZuumJZYW5Xq
-	v8P5R3peYXQo89huDfnhZEugvCORSIMAxOgRlrBt3VnPu0mC6tyMVxkNSd91bZry
-	NLQ3hLDWwxnnD0unHaBs/yW/r0xe4on7p1gaQiK2Ltv0EL/ccOo4xnXmK8Xw08eV
-	ccSmcsnwWNV1jlLnICyeeJeq+KAVva2FTlL+lSrwJKrPl3hVKwwLosUyN3Iwiujm
-	KmIxxC84ayjqVX8nvK2IrdLY7t2nu4u7V+LsE5JGKzpqB9z5XXmqc2mv5Uej5MVZ
-	zLatWKwVMO39a5ncO15v9rWW4QxEuNqRunU8eQYNfKE67/CqNy3fQ==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cuh91jm2x-1
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=2ugqha
+	6TIjTFrrat+VHqZ7HSOGCxoVBntdBAw7yQLvQ=; b=TwkM32wIr7bQPXNNl5SyhW
+	AndjABsuh/pT9ayLEw6lZ5Ud25AUCx0PI/WfJk4LbnPEhcmZSPQBRxmf/6benwYi
+	MFsKvTnOj5cBEGegHpSfj5kk1QqHepwteU27kTyCGVInue7pm0gwW0Bqv0oaFBKn
+	8G0j0ekdQE5FCoShFsViwHEwf2Y8h2zsv/LOK8fDHCOftybZ/qgicimewC7QGTU8
+	MF0esgSwCqnWB1zX8ULk3cNCyrC5vaFGZ07k3liBA8tvtMMQXUFjWjNz8XT9Ot+Z
+	roSU47WaIIp+FGbBRD2A61BmXmc+bhkC70LxEChrheCTmR9RoRcNHWF+LAAW7G8A
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cuh91jmy7-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 12 Mar 2026 12:26:45 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62C9ZAmR014631;
-	Thu, 12 Mar 2026 12:26:44 GMT
+	Thu, 12 Mar 2026 12:30:37 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62C9U5GP025697;
+	Thu, 12 Mar 2026 12:30:36 GMT
 Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4cuha8a8u0-1
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4cuha8a9vr-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 12 Mar 2026 12:26:44 +0000
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62CCQgZQ47513976
+	Thu, 12 Mar 2026 12:30:36 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62CCUW7549152350
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 12 Mar 2026 12:26:42 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2919A20043;
-	Thu, 12 Mar 2026 12:26:42 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 161E42005A;
-	Thu, 12 Mar 2026 12:26:39 +0000 (GMT)
-Received: from li-3f69264c-2ce6-11b2-a85c-c3f414d24014.in.ibm.com (unknown [9.109.243.201])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 12 Mar 2026 12:26:38 +0000 (GMT)
-From: Sayali Patil <sayalip@linux.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
-        linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-        linux-kselftest@vger.kernel.org,
-        Ritesh Harjani <ritesh.list@gmail.com>
-Cc: David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>,
-        Michal Hocko <mhocko@kernel.org>, Oscar Salvador <osalvador@suse.de>,
-        Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-        Dev Jain <dev.jain@arm.com>, Liam.Howlett@oracle.com,
-        linuxppc-dev@lists.ozlabs.org, Sayali Patil <sayalip@linux.ibm.com>,
-        Miaohe Lin <linmiaohe@huawei.com>
-Subject: [PATCH v2 12/13] selftests/mm: move hwpoison setup into run_test() and silence modprobe output for memory-failure category
-Date: Thu, 12 Mar 2026 17:55:39 +0530
-Message-ID: <35a44ccc4d1587255e8f920b22e983f74c024f2e.1773305678.git.sayalip@linux.ibm.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <cover.1773305677.git.sayalip@linux.ibm.com>
-References: <cover.1773305677.git.sayalip@linux.ibm.com>
+	Thu, 12 Mar 2026 12:30:32 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 46ABF20063;
+	Thu, 12 Mar 2026 12:30:32 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8747D20040;
+	Thu, 12 Mar 2026 12:30:30 +0000 (GMT)
+Received: from fedora (unknown [9.5.7.39])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Thu, 12 Mar 2026 12:30:30 +0000 (GMT)
+Date: Thu, 12 Mar 2026 13:16:26 +0000
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Amit Machhiwal <amachhiw@linux.ibm.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        linuxppc-dev@lists.ozlabs.org, Vaibhav Jain <vaibhav@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>, Greg Kurz <groug@kaod.org>,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] selftests/powerpc: Suppress false positive
+ -Wmaybe-uninitialized with GCC 15
+Message-ID: <20260312123856.65bb5484-2e-amachhiw@linux.ibm.com>
+Mail-Followup-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, 
+	Vaibhav Jain <vaibhav@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, Greg Kurz <groug@kaod.org>, linux-kernel@vger.kernel.org
+References: <20260310101519.67157-1-amachhiw@linux.ibm.com>
+ <3f26916b-5a1f-40b0-9c47-8b53e066e08c@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,24 +97,28 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <3f26916b-5a1f-40b0-9c47-8b53e066e08c@kernel.org>
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: -4pIdlppxyqzTJZJKqAjAXzEJT4ik-7G
-X-Authority-Analysis: v=2.4 cv=E6/AZKdl c=1 sm=1 tr=0 ts=69b2b105 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=uAbxVGIbfxUO_5tXvNgY:22 a=Ikd4Dj_1AAAA:8 a=i0EeH86SAAAA:8 a=VnNF1IyMAAAA:8
- a=QWbft6qDQSdZu_5rdncA:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzEyMDA5NSBTYWx0ZWRfX6HTZkZX6Uuz9
- r423AdpuJXda5Dk4Sdkv1O7v1mXXqhC+Ttb9xad8jUTEP/eFTtIHKgvFXQQVqqMGIYiGN84pnGp
- kLYNsRKNMUhJ2CKqoNWF4lGcax03V80JBZjSrQ3GKLJnhnL+5lMhIyb19ZTt1E+E9qWC6K594ua
- gt4YI4tn9bGnTrVmS0jsZtZkiXk96UcLdINqzACX/cpX6L52nb2C4Zpb/ejpa0tdka1kIXUvr38
- M5IaOFaHrxQc9rvtZ/S64Na6QPH4+xL+01m54+s4u6gox+AF5Q1DP6QbOyh+0dxSu+yZQSzplES
- acS5o5qUDLT+yhAR2lQPmz7oubA+ci3Le0rSp2WeoEmzGJF0sEeNAsoGPhUQ1w2HhIhrQh9XmCZ
- g8omQ02s3wnlqhtvWdDgPVLxMqTlFUiQ9Y9aiRnl9oZJmwlL/KcVfVu/EZIYVqTnlfJs+yczEux
- Hko5BFpGzAdYj2il3EA==
-X-Proofpoint-ORIG-GUID: Q3CaJOTqwSzc-HTzDttj7c7yIAnlKCjj
+X-Proofpoint-GUID: EUviJyIetQ_D9gl8CCpZSSmBAJ86Ma8p
+X-Authority-Analysis: v=2.4 cv=E6/AZKdl c=1 sm=1 tr=0 ts=69b2b1ed cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=mDV3o1hIAAAA:8
+ a=UqCG9HQmAAAA:8 a=VnNF1IyMAAAA:8 a=1UX6Do5GAAAA:8 a=WRv-CGeHkRw9IIwHw9EA:9
+ a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10 a=Et2XPkok5AAZYJIKzHr1:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzEyMDA5NSBTYWx0ZWRfX0+ltF1iUdhE2
+ dl2rjSKFdp3vGEYcIkK6Hr7d+32gMHuuHPclgSaheYQ0e29u4mpKirJU+31+wIvxlfU/FaaNWSq
+ FmbSeat7kEHMK5K3EO0Z+5OpmkNIBxRpwSNRICIjigT+sI0ft2DQmp2dSNKWf8s93qTT9TeXk+R
+ uyHTLe8fPQAhAAUfXUFUFGER4PovPCypfuLMKZRNdtm/6SkBCMhLFpCvE6gom/AzC4isnfqGm52
+ YqgyfZkiwN2iisPDkNl5C12HOBFqhmfIum4NBhSLBc2fBKEw9ROkLRlKgkNSiOv0sn18hGzK2N/
+ 096apDO/cGfL8NQPUr8LGTj5tU0ids8AmjA65a/idAkgsHlle4KXR9Z8waS5wrdp7o5QoMJuooi
+ VyNLcqcdOipJwyvXNhK6Tgf+kMAR8Kv4rgmESLyDh4Tq+A+qBpK15wmrPbaGPCveu4hYIX+hkPG
+ Tn11UPCGq7/7HgoAutA==
+X-Proofpoint-ORIG-GUID: -nVACrxDguyncZZsIx_MPmZlPW1V-0OO
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-03-12_01,2026-03-09_02,2025-10-01_01
@@ -122,121 +128,118 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603120095
 
-run_vmtests.sh contains special handling to ensure the hwpoison_inject
-module is available for the memory-failure tests. This logic was
-implemented outside of run_test(), making the setup category-specific
-but managed globally.
 
-Move the hwpoison_inject handling into run_test() and restrict it
-to the memory-failure category so that:
-1. the module is checked and loaded only when memory-failure tests run,
-2. the test is skipped if the module or the debugfs interface
-(/sys/kernel/debug/hwpoison/) is not available.
-3. the module is unloaded after the test if it was loaded by the script.
+Hi Christhophe,
 
-This localizes category-specific setup and makes the test flow
-consistent with other per-category preparations.
+Thanks for looking at the patch. Please find my comments inline:j
 
-While updating this logic, fix the module availability check.
-The script previously used:
+On 2026/03/10 11:54 AM, Christophe Leroy (CS GROUP) wrote:
+> 
+> 
+> Le 10/03/2026 à 11:15, Amit Machhiwal a écrit :
+> > GCC 15 reports the below false positive '-Wmaybe-uninitialized' warning
+> > in vphn_unpack_associativity() when building the powerpc selftests.
+> > 
+> >    # make -C tools/testing/selftests TARGETS="powerpc"
+> >    [...]
+> >      CC       test-vphn
+> >    In file included from test-vphn.c:3:
+> >    In function ‘vphn_unpack_associativity’,
+> >        inlined from ‘test_one’ at test-vphn.c:371:2,
+> >        inlined from ‘test_vphn’ at test-vphn.c:399:9:
+> >    test-vphn.c:10:33: error: ‘be_packed’ may be used uninitialized [-Werror=maybe-uninitialized]
+> >       10 | #define be16_to_cpup(x)         bswap_16(*x)
+> >          |                                 ^~~~~~~~
+> >    vphn.c:42:27: note: in expansion of macro ‘be16_to_cpup’
+> >       42 |                 u16 new = be16_to_cpup(field++);
+> >          |                           ^~~~~~~~~~~~
+> >    In file included from test-vphn.c:19:
+> >    vphn.c: In function ‘test_vphn’:
+> >    vphn.c:27:16: note: ‘be_packed’ declared here
+> >       27 |         __be64 be_packed[VPHN_REGISTER_COUNT];
+> >          |                ^~~~~~~~~
+> >    cc1: all warnings being treated as errors
+> > 
+> > When vphn_unpack_associativity() is called from hcall_vphn(), this error
+> > is not seen during compilation because GCC 15 seems to consider 'retbuf'
+> > always populated from the hypervisor which is eventually referred by
+> > 'be_packed'. However, GCC 15's dataflow analysis can’t prove the same
+> > before the first dereference when vphn_unpack_associativity() is called
+> > from test_one() with pre-initialized array of 'struct test'. This
+> > results in a false positive warning which is promoted to an error under
+> > '-Werror'. This problem is not seen when the compilation is performed
+> > with GCC 13 and 14.
+> > 
+> > Suppress the warning locally around the offending statement when
+> > building with GCC 15 using a diagnostic pragma. This keeps the build
+> > working while limiting the scope of the suppression to the specific
+> > statement that triggers the false positive. An issue [1] has also been
+> > created on GCC bugzilla.
+> 
+> Usually when we get this kind of warning this is because the code is too
+> complex. We should try to make it more obvious instead of just hiding the
+> warning.
 
-	modprobe -R hwpoison_inject
+The real issue here is that GCC 15 emits '-Wmaybe-uninitialized' due to
+type punning between __be64[] and __b16* when accessing the buffer via
+be16_to_cpup(). The underlying object is fully initialized but GCC 15
+fails to track the aliasing due to the strict aliasing violation here.
+Please refer [1] and [2].
 
-The -R option prints the resolved module name to stdout, causing every
-run to print:
+The selftest compiles fine with '-fno-strict-aliasing'. I see that when
+we build vphn.c while compiling the kernel, the top level Makefile
+includes '-fno-strict-aliasing' flag always.
 
-	hwpoison_inject
+So, I believe the same flag should be used to build vphn tests when
+compiling vphn.c via the selftests. I'll send the v2 to achieve this
+thus avoiding the compilation failure.
 
-in the test output, even when no action is required, introducing
-unnecessary noise.
+Please let me know you have different thoughts.
 
-Replace this with:
+[1] https://gcc.gnu.org/bugzilla/show_bug.cgi?id=124427 
+[2] https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99768
 
-	modprobe -n hwpoison_inject
+~Amit
 
-which verifies that the module is loadable without producing output,
-keeping the selftest logs clean and consistent.
-
-Fixes: ff4ef2fbd101 ("selftests/mm: add memory failure anonymous page test")
-Acked-by: Zi Yan <ziy@nvidia.com>
-Acked-by: Miaohe Lin <linmiaohe@huawei.com>
-Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
----
- tools/testing/selftests/mm/run_vmtests.sh | 46 ++++++++++++++---------
- 1 file changed, 28 insertions(+), 18 deletions(-)
-
-diff --git a/tools/testing/selftests/mm/run_vmtests.sh b/tools/testing/selftests/mm/run_vmtests.sh
-index eecec0b6eb13..606558cc3b09 100755
---- a/tools/testing/selftests/mm/run_vmtests.sh
-+++ b/tools/testing/selftests/mm/run_vmtests.sh
-@@ -250,6 +250,27 @@ run_test() {
- 			fi
- 		fi
- 
-+		# Ensure hwpoison_inject is available for memory-failure tests
-+		if [ "${CATEGORY}" = "memory-failure" ]; then
-+			# Try to load hwpoison_inject if not present.
-+			HWPOISON_DIR=/sys/kernel/debug/hwpoison/
-+			if [ ! -d "$HWPOISON_DIR" ]; then
-+				if ! modprobe -n hwpoison_inject > /dev/null 2>&1; then
-+					echo "Module hwpoison_inject not found, skipping..." \
-+						| tap_prefix
-+					skip=1
-+				else
-+					modprobe hwpoison_inject > /dev/null 2>&1
-+					LOADED_MOD=1
-+				fi
-+			fi
-+
-+			if [ ! -d "$HWPOISON_DIR" ]; then
-+				echo "hwpoison debugfs interface not present" | tap_prefix
-+				skip=1
-+			fi
-+		fi
-+
- 		local test=$(pretty_name "$*")
- 		local title="running $*"
- 		local sep=$(echo -n "$title" | tr "[:graph:][:space:]" -)
-@@ -261,6 +282,12 @@ run_test() {
- 		else
- 			local ret=$ksft_skip
- 		fi
-+
-+		# Unload hwpoison_inject if we loaded it
-+		if [ -n "${LOADED_MOD}" ]; then
-+			modprobe -r hwpoison_inject > /dev/null 2>&1
-+		fi
-+
- 		count_total=$(( count_total + 1 ))
- 		if [ $ret -eq 0 ]; then
- 			count_pass=$(( count_pass + 1 ))
-@@ -540,24 +567,7 @@ CATEGORY="page_frag" run_test ./test_page_frag.sh nonaligned
- 
- CATEGORY="rmap" run_test ./rmap
- 
--# Try to load hwpoison_inject if not present.
--HWPOISON_DIR=/sys/kernel/debug/hwpoison/
--if [ ! -d "$HWPOISON_DIR" ]; then
--	if ! modprobe -q -R hwpoison_inject; then
--		echo "Module hwpoison_inject not found, skipping..."
--	else
--		modprobe hwpoison_inject > /dev/null 2>&1
--		LOADED_MOD=1
--	fi
--fi
--
--if [ -d "$HWPOISON_DIR" ]; then
--	CATEGORY="memory-failure" run_test ./memory-failure
--fi
--
--if [ -n "${LOADED_MOD}" ]; then
--	modprobe -r hwpoison_inject > /dev/null 2>&1
--fi
-+CATEGORY="memory-failure" run_test ./memory-failure
- 
- if [ "${HAVE_HUGEPAGES}" = 1 ]; then
- 	echo "$orig_nr_hugepgs" > /proc/sys/vm/nr_hugepages
--- 
-2.52.0
-
+> 
+> Here the for loop is a bit misleading.
+> 
+> > 
+> > [1] https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgcc.gnu.org%2Fbugzilla%2Fshow_bug.cgi%3Fid%3D124427&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C06a4d55b55f24c5cf00208de7e8e3676%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639087346428583316%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=xEfO94N6IfGYhmmapNFduv3OrMarxpjTpZR6B38uR1s%3D&reserved=0
+> > 
+> > Fixes: 58dae82843f5 ("selftests/powerpc: Add test for VPHN")
+> > Reviewed-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+> > Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
+> > ---
+> >   arch/powerpc/platforms/pseries/vphn.c | 15 +++++++++++++++
+> >   1 file changed, 15 insertions(+)
+> > 
+> > diff --git a/arch/powerpc/platforms/pseries/vphn.c b/arch/powerpc/platforms/pseries/vphn.c
+> > index 3f85ece3c872..9bc891143fec 100644
+> > --- a/arch/powerpc/platforms/pseries/vphn.c
+> > +++ b/arch/powerpc/platforms/pseries/vphn.c
+> > @@ -39,7 +39,22 @@ static int vphn_unpack_associativity(const long *packed, __be32 *unpacked)
+> >   		be_packed[i] = cpu_to_be64(packed[i]);
+> >   	for (i = 1; i < VPHN_ASSOC_BUFSIZE; i++) {
+> > +/*
+> > + * When this function is called from hcall_vphn(), GCC 15 seems to consider
+> > + * 'retbuf' always populated from the hypervisor which is eventually referred by
+> > + * 'be_packed'. However, GCC 15's dataflow analysis can’t prove the same before
+> > + * the first dereference when this function is called from test_one() with
+> > + * pre-initialized array of 'struct test'. This results in a false positive
+> > + * '-Wmaybe-uninitialized' warning which is promoted to an error under
+> > + * '-Werror'. This problem is not seen when the compilation is performed with
+> > + * older GCC versions.
+> > + */
+> > +#pragma GCC diagnostic push
+> > +#if defined(__GNUC__) && __GNUC__ >= 15
+> > +#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+> > +#endif
+> >   		u16 new = be16_to_cpup(field++);
+> > +#pragma GCC diagnostic pop
+> >   		if (is_32bit) {
+> >   			/*
+> > 
+> > base-commit: 1f318b96cc84d7c2ab792fcc0bfd42a7ca890681
+> 
 
