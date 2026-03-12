@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-18140-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18141-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D818A106ACE1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2026 19:17:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 377E3106ACE2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2026 19:18:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fWy6P3D0fz3cZC;
-	Fri, 13 Mar 2026 06:17:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fWy6R3sFkz3cJr;
+	Fri, 13 Mar 2026 06:17:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773343021;
-	cv=none; b=DZUMt9GpaDtPmx2s0b1MZkhGs2U3NuOB6Irax9BMuB/Fq9Jkp+PrkXHMnX0hFt6bvNddLGssQYcVpaYZkTEgCaXbx37QWIe27gkE4+hhS8Xg7sPWpFW2EEsMge2UIn77mgfARSChZ7qTQ8ebMAgsjLWOZKPFlBe2+YatY0nCghTw/BYUve66q8A/bZ5Sj+5rFWBT/GulFUYsAPW3rViLNo0ymA9NPdEkZf6g76INjmQU4NyTamFL6ibs/5EkPY/PDVwPVXoR5icWzITckdc3ZR85aYxReGpVuquXcauAEdQmSpeZ6Wp3RnykmQ0ZvIezsdJJvQFe54Rmh6BVFuGi6Q==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773343023;
+	cv=none; b=ZxFT2r4Hf/AzJiCa4LNr1xLE8zOHsPGwHBGmQGxQPQDEksltHQ4/I5ed4oIhEcY/Qy/VUDx4Puxy2LeDEPuiro0f1+tgHVKSBBrUg7Y+G33h/Ueq76Q1B2TX8E0v0qMznrYZHg26GBq7ewSbWCgY5UP64ia3RAIci6byff2qCiIdFRIQdncKtvdvziZX3lWWLi/uhsxNRSVlWk4IhMyPWHuS6btxTHyniEYqjQrFjjTPLc/Fzvp6sHOrT6wzNwbmTfQV332IhrMWal/PLEoLD5GUQivWAz0gdqp3ghriKWFqaQKPj+xZWHRmvFWpOCHmm5duU53CsJdxJPgfVjgNAQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773343021; c=relaxed/relaxed;
-	bh=pXNtwefo3DI5PZqVhmiWEXF190WSl3hBxhRdARXxK9g=;
+	t=1773343023; c=relaxed/relaxed;
+	bh=DwGOZRbwhBdf5acnHMPso1glGeuIqeOOIoOqiLq32Eo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=JCgaiGp565Esv736AnEQWc5m4RK8H2zQfvQiS9gHeAi3jpwF5CtPi/O6MFlL3low8atgXlHUxiX5XIrXk1CKEC60/bhbO4o/9/qEbma6XEfzW3Bl74VRExLrMfTtgGqRoR8IJAvCh7a4Zm8wLqZWR5Z9iJ5r21zgQT7hy5DrPoHiNl5UySrHTzWDhdEBrjm+xUEQUGu+6fAlX4rRil3pP7t9j6ZGAL55mje2KFZmd9d+tlmrt0Xc6zJCQBgsQIwKoiEOnrS8LDwJuRLn3jXL30GPoyH1g9WGqe6EzRYe7L4iKOkgjtxLCvAKDwBqF41R/+lK1ZcxDn3kJ0IHOamyQg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cEiK7/n4; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=QS5eYC9V4Pr0zl65yEcBbvgUjMFDL/oTyU7HsjbXXGWaXEx1WEdaUOq9zPjaecm0gIFPvxP/zzoTSzOY7C7wZLU7PF/8VMwy5VMLwKViofHF6OvYJzNW9CMeO6m7RApBlHD1OdZQtr08pe8RAoVefrnvITu1GMqkbROi02TmihhGew7OylZxc0Li16RTHQFj3p4ak6o2/TKzbZLMfxFWCtoQEQWcjj159q09K6FvwiyWRJeo7L/x5rC4kHtOv1lCgZg5EtNvGtrXvpctQtfFVZwRQh93KFze5aQ43ZPF+ug6zjhzV1auI43n9oL8liDCejtT4qRCBW39FfunUCb2Fg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gMJh0BE1; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cEiK7/n4;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gMJh0BE1;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWy6N4MHbz3cYK
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2026 06:17:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWy6Q6Bhmz3cYK
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2026 06:17:02 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id A3BDB44517;
-	Thu, 12 Mar 2026 19:16:58 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 126E0C2BC9E;
-	Thu, 12 Mar 2026 19:16:58 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 1F905434DB;
+	Thu, 12 Mar 2026 19:17:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7C000C2BC86;
+	Thu, 12 Mar 2026 19:17:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773343018;
-	bh=cMZvtYTbVi8gGI62iqsWZ4caZrMQ/fPLlqyhjNcRyx0=;
+	s=k20201202; t=1773343021;
+	bh=YB+Prps3NXNgyZK18AV53Ial+ZlTulYn7HfTP5zg1OA=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=cEiK7/n40R+U6XNkiSalA/AXJ/bEgYclxYDzCqR94yWMygwmC794VCL0NxoNYMt3J
-	 RHgWYcxQkKel2D7y5Qt7KDsDDMbbnor8tS00TxPxTu7yixFOVnFjv/PAKh+RDo3tpd
-	 yGc6lmIpIhzsiJVtCyAB02NBMWdKtc6jRMZms3t37fq7iqSAm8xvmcKPPar1qbfOd9
-	 EvzQJ8XXrWFAYsPwnjWKyAaJA6DLfoLru6ENVdQxEMDyebpaZ7Ji0O9VLo8T3kTXXo
-	 yolKRFYDkMz5uAmNg47v7Mny0fse4ZkcVEuNAaoLI86leo+dqL+SZpfMRoIRQSV5f/
-	 wEw5+9/hlVO1A==
+	b=gMJh0BE1l4pIrUpBOQOh9D0ec4tGxSzEvRYmthhi119lf9iOWb5fcVzwx49BnIuUB
+	 VWRKKNEjlXklZ/MKcv7E9t7zFb59I8aEqvkXuVrDSllPkBxGHpolum72wTTsrJTkiF
+	 spDfNyLhWiSKFHWQGTVB1CTVmT2QoazGq+/sClR9wwRC9VCKIplL93es7Lv21glqdQ
+	 CZufPhsaTQS2n43UB/AzEjxhUY7DikC3bKimUKGl2QZqa/JNpaabr3g6beHKXS7pyn
+	 87i8vn+8SWsQ5SYUtU6mVrSnrjAtpeGs4vonxtw21ga3DSoEIPnbwZPIZ/ZFWaaY+R
+	 YnxNze0QQkOUQ==
 From: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: David Hildenbrand <david@kernel.org>,
@@ -107,9 +107,9 @@ Cc: David Hildenbrand <david@kernel.org>,
 	linux-um@lists.infradead.org,
 	linux-fsdevel@vger.kernel.org,
 	selinux@vger.kernel.org
-Subject: [PATCH 10/20] mm/vma: introduce vma_flags_same[_mask/_pair]()
-Date: Thu, 12 Mar 2026 19:16:08 +0000
-Message-ID: <64129ea327a7280732291e3481f1fd138aaf4caa.1773342102.git.ljs@kernel.org>
+Subject: [PATCH 11/20] mm/vma: introduce [vma_flags,legacy]_to_[legacy,vma_flags]() helpers
+Date: Thu, 12 Mar 2026 19:16:09 +0000
+Message-ID: <b5c3c0f9a2f4b016bdf032dc959b988f585f0afc.1773342102.git.ljs@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <cover.1773342102.git.ljs@kernel.org>
 References: <cover.1773342102.git.ljs@kernel.org>
@@ -128,116 +128,91 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add helpers to determine if two sets of VMA flags are precisely the same,
-that is - that every flag set one is set in another, and neither contain
-any flags not set in the other.
+While we are still converting VMA flags from vma_flags_t to vm_flags_t,
+introduce helpers to convert between the two to allow for iterative
+development without having to 'change the world' in a single commit'.
 
-We also introduce vma_flags_same_pair() for cases where we want to compare
-two sets of VMA flags which are both non-const values.
-
-Also update the VMA tests to reflect the change, we already implicitly test
-that this functions correctly having used it for testing purposes
-previously.
+Also update VMA flags tests to reflect the change.
 
 Signed-off-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
 ---
- include/linux/mm.h                 | 28 ++++++++++++++++++++++++++++
- tools/testing/vma/include/custom.h | 12 ------------
- tools/testing/vma/include/dup.h    | 21 +++++++++++++++++++++
- 3 files changed, 49 insertions(+), 12 deletions(-)
+ include/linux/mm_types.h        | 26 ++++++++++++++++++++++++++
+ tools/testing/vma/include/dup.h | 26 ++++++++++++++++++++++++++
+ 2 files changed, 52 insertions(+)
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 2c16c744d49d..33d0c2af2c75 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1209,6 +1209,34 @@ static __always_inline vma_flags_t vma_flags_diff_pair(const vma_flags_t *flags,
- 	return dst;
+diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+index ea76821c01e3..63a25f97cd1c 100644
+--- a/include/linux/mm_types.h
++++ b/include/linux/mm_types.h
+@@ -1069,6 +1069,32 @@ static __always_inline void vma_flags_clear_all(vma_flags_t *flags)
+ 	bitmap_zero(flags->__vma_flags, NUM_VMA_FLAG_BITS);
  }
  
-+/* Determine if flags and flags_other have precisely the same flags set. */
-+static __always_inline bool vma_flags_same_pair(const vma_flags_t *flags,
-+						const vma_flags_t *flags_other)
++/*
++ * Helper function which converts a vma_flags_t value to a legacy vm_flags_t
++ * value. This is only valid if the input flags value can be expressed in a
++ * system word.
++ *
++ * Will be removed once the conversion to VMA flags is complete.
++ */
++static __always_inline vm_flags_t vma_flags_to_legacy(vma_flags_t flags)
 +{
-+	const unsigned long *bitmap = flags->__vma_flags;
-+	const unsigned long *bitmap_other = flags_other->__vma_flags;
-+
-+	return bitmap_equal(bitmap, bitmap_other, NUM_VMA_FLAG_BITS);
-+}
-+
-+/* Determine if flags and flags_other have precisely the same flags set.  */
-+static __always_inline bool vma_flags_same_mask(const vma_flags_t *flags,
-+						vma_flags_t flags_other)
-+{
-+	const unsigned long *bitmap = flags->__vma_flags;
-+	const unsigned long *bitmap_other = flags_other.__vma_flags;
-+
-+	return bitmap_equal(bitmap, bitmap_other, NUM_VMA_FLAG_BITS);
++	return (vm_flags_t)flags.__vma_flags[0];
 +}
 +
 +/*
-+ * Helper macro to determine if only the specific flags are set, e.g.:
++ * Helper function which converts a legacy vm_flags_t value to a vma_flags_t
++ * value.
 + *
-+ * if (vma_flags_same(&flags, VMA_WRITE_BIT) { ... }
++ * Will be removed once the conversion to VMA flags is complete.
 + */
-+#define vma_flags_same(flags, ...) \
-+	vma_flags_same_mask(flags, mk_vma_flags(__VA_ARGS__))
++static __always_inline vma_flags_t legacy_to_vma_flags(vm_flags_t flags)
++{
++	vma_flags_t ret;
++
++	ret.__vma_flags[0] = (unsigned long)flags;
++	return ret;
++}
 +
  /*
-  * Helper to test that ALL specified flags are set in a VMA.
+  * Copy value to the first system word of VMA flags, non-atomically.
   *
-diff --git a/tools/testing/vma/include/custom.h b/tools/testing/vma/include/custom.h
-index 433b3396c281..92fe156ed7d6 100644
---- a/tools/testing/vma/include/custom.h
-+++ b/tools/testing/vma/include/custom.h
-@@ -99,17 +99,5 @@ static inline void vma_lock_init(struct vm_area_struct *vma, bool reset_refcnt)
- 	if (reset_refcnt)
- 		refcount_set(&vma->vm_refcnt, 0);
- }
--
--/* Place here until needed in the kernel code. */
--static __always_inline bool vma_flags_same_mask(vma_flags_t *flags,
--						vma_flags_t flags_other)
--{
--	const unsigned long *bitmap = flags->__vma_flags;
--	const unsigned long *bitmap_other = flags_other.__vma_flags;
--
--	return bitmap_equal(bitmap, bitmap_other, NUM_VMA_FLAG_BITS);
--}
--#define vma_flags_same(flags, ...) \
--	vma_flags_same_mask(flags, mk_vma_flags(__VA_ARGS__))
- #define VMA_SPECIAL_FLAGS mk_vma_flags(VMA_IO_BIT, VMA_DONTEXPAND_BIT, \
- 				       VMA_PFNMAP_BIT, VMA_MIXEDMAP_BIT)
 diff --git a/tools/testing/vma/include/dup.h b/tools/testing/vma/include/dup.h
-index c3be8a2381e1..fa2df96f9dee 100644
+index fa2df96f9dee..c27fcfb50d8d 100644
 --- a/tools/testing/vma/include/dup.h
 +++ b/tools/testing/vma/include/dup.h
-@@ -951,6 +951,27 @@ static __always_inline vma_flags_t vma_flags_diff_pair(const vma_flags_t *flags,
- 	return dst;
+@@ -800,6 +800,32 @@ static __always_inline void vma_flags_clear_all(vma_flags_t *flags)
+ 	bitmap_zero(ACCESS_PRIVATE(flags, __vma_flags), NUM_VMA_FLAG_BITS);
  }
  
-+static __always_inline bool vma_flags_same_pair(const vma_flags_t *flags,
-+						const vma_flags_t *flags_other)
++/*
++ * Helper function which converts a vma_flags_t value to a legacy vm_flags_t
++ * value. This is only valid if the input flags value can be expressed in a
++ * system word.
++ *
++ * Will be removed once the conversion to VMA flags is complete.
++ */
++static __always_inline vm_flags_t vma_flags_to_legacy(vma_flags_t flags)
 +{
-+	const unsigned long *bitmap = flags->__vma_flags;
-+	const unsigned long *bitmap_other = flags_other->__vma_flags;
-+
-+	return bitmap_equal(bitmap, bitmap_other, NUM_VMA_FLAG_BITS);
++	return (vm_flags_t)flags.__vma_flags[0];
 +}
 +
-+static __always_inline bool vma_flags_same_mask(const vma_flags_t *flags,
-+						vma_flags_t flags_other)
++/*
++ * Helper function which converts a legacy vm_flags_t value to a vma_flags_t
++ * value.
++ *
++ * Will be removed once the conversion to VMA flags is complete.
++ */
++static __always_inline vma_flags_t legacy_to_vma_flags(vm_flags_t flags)
 +{
-+	const unsigned long *bitmap = flags->__vma_flags;
-+	const unsigned long *bitmap_other = flags_other.__vma_flags;
++	vma_flags_t ret;
 +
-+	return bitmap_equal(bitmap, bitmap_other, NUM_VMA_FLAG_BITS);
++	ret.__vma_flags[0] = (unsigned long)flags;
++	return ret;
 +}
 +
-+#define vma_flags_same(flags, ...) \
-+	vma_flags_same_mask(flags, mk_vma_flags(__VA_ARGS__))
-+
- static inline bool vma_test_all_mask(const struct vm_area_struct *vma,
- 				     vma_flags_t flags)
+ static __always_inline void vma_flags_set_flag(vma_flags_t *flags,
+ 		vma_flag_t bit)
  {
 -- 
 2.53.0
