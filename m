@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-18113-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18114-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5738105A594
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2026 12:46:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54940105A594
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2026 12:50:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fWnRl1MRPz3cFN;
-	Thu, 12 Mar 2026 23:46:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fWnXK3hskz3cFN;
+	Thu, 12 Mar 2026 23:50:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773319587;
-	cv=none; b=TQEVGc6uHqRqymtLLcAkkIM06kL9eKVxoKPa/D+dNynsnoLL9LiKllhXNMiQPYA8cppkXBc6Ua8YLZwC+y+POW+ofkkMUVx0ud1lYWqb2ENMmrxU9UV2nXthtYPNHxzXE6pVzOde6N2PXdPTh8tKq+9eSKxA5c651Or1LhdVYnFaGzn/0bHai1VEqZsi0ITSu6atTZvJTXZa/UWWqKSVoBNLdjf/j6HZ5A9MHjJEzeWkASVrsiyg32cemmBU+ErRWZkhNfKhGzY07Ea7rJOWfZSk9ORy8iRQPOTa8dISHMNcjfPv+T24O3e3d/6Ps2+QY/GbY8/pPFrliHDcAJITiA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773319825;
+	cv=none; b=HuUqZ61P1qV9bayRXu8OitQUupTMcRvY3e9EC5/wfxksWCOzwhjtBVHdrCPPNGRxNj0/iB13b38oAXwg8w4E7xehzBXzGqtafarndUy6ocsB+M5/fPedmXebTVEFV0eLMBsPq9Oim2MTBCcxFmaOlx5aIoqCGpBq7KsGjGTV6VQB5hPhAqTODYuBjvSbZTpnlYxfXMKJs6Le5ZbKS2dGuj8Dh+3G2ZTZAGadQvqI2JaqYZr0W2keHc7TgXJJvSBQriWDSvXgAJAyWt8DnFrHoVyAKqs6vm5KSIGugfTiujhRVJYrYeUiLwzb+osAQV/6wLXKGVVWoTO1phdHk+2uQA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773319587; c=relaxed/relaxed;
-	bh=pSVUnbqBoh+e50vqL3FsO0vfZ/QPKzwAS3aajmmAfGE=;
+	t=1773319825; c=relaxed/relaxed;
+	bh=BYhjd6jcLP1hr1/xaeJSYUqysSjFfTJ2y3WjTHu8X+w=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=X07GG6u9FbUOYZFfNmR/nWwDdNZFJhZRrS4vMWTWM13oFSWcIApvOu3nRwm/0sOjyBWF+yPXDsHgCAYMFPHUyfN2iy0ImRxve7BYabZs9PYg41s1TqwAE8RxR5gR2sQxD6Xiw7v83sJzZ+YLNQU0x9mJqRJHVC8MA6LWAAw6CoU2VLKah+/lOmNk797xvEVZ3RDn2jTuxBkHlfWHGNoLmwqnI27NKGoofxq21Mr5At6Vv6JTN/IpVHcB4urFejcRF/T4smePONgCadam524BvW5uUZ5GyvQaQ4Lx2HxUYtE7QMq0X0fkPZEIMvwpZJPHMbA4TQ9ckpZoPVjDOkzSRg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LmCitdoM; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=AFZWK+YjWpRYrQZwHsCnqhienfUOkdrrO/nXlKHgX6YKdcllUkugTwCBn3vu7kWFcl0ny6fPrvngW0iq+rk87w1PUDP/vKQM3hPY1klAPnKRXjHiF1cV2Y9SpJTptjtS3W7elsJ1uL6qcvy+D2ErbeQAAMJNeVsCRODT3SRK5JNGU8klQqGj9HRSSJVRiGnIe+R/mu+oUKWWy4BDorqwKbwgJud8keKHYGPVnyHtnKoROSCEoO0VFdOxIjV7PlrbrnEAICDPLjSxkCTG3po2KRbFWAh7lZaBSKhgziTv/sYxiqw1H1Yt5ayKfNrmqy+1DZ/jfmyECqMomyb2YtgMxg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=R3VxknOD; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LmCitdoM;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=R3VxknOD;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWnRk2SZMz3cCJ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 23:46:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWnXJ5QQkz3cCJ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 23:50:24 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 36B69432A7;
-	Thu, 12 Mar 2026 12:46:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3A5F6C4CEF7;
-	Thu, 12 Mar 2026 12:46:21 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id E46AE42D68;
+	Thu, 12 Mar 2026 12:50:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DF3CCC4CEF7;
+	Thu, 12 Mar 2026 12:50:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773319584;
-	bh=20CETLvjxD3z+mW9Z3ubspvxhFteql+I+VlzbtPBQyw=;
+	s=k20201202; t=1773319822;
+	bh=adjljW+VNbO+pN1pMra4pZwRC1mZke1wNpJ+7Qa+hJ4=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=LmCitdoMcHqTnvQU+INOApLZaqDy4HXuWxSaIqLXfAqbitAIu1fyUb+4JkelvePJa
-	 KZFLAceFbpytteLKErnKIwYMITurgWszw+f5PJ4iz9mhgjBv7ZW5vU82jHmkhNR62k
-	 L683nSexvZo6jWxdemjVfqrSQaxglYWSJ6J4tYiMjPrLOpcOOw3XarTASdem1c/adq
-	 LFCmvwdifqj585wxkch3ebML/B67qao4kRTUNnLbi7CMxZOz/CbY72Y2kWcSDwq+FT
-	 xqVc3znHEkN9To4K0GkysibGcLFPCk9B//rnyQamhHo/5to4z7lOu+6IyHgZJFiQzx
-	 8F+c+l0gARg5A==
-Message-ID: <c2a1adb3-7078-4979-8eac-579d86b3f244@kernel.org>
-Date: Thu, 12 Mar 2026 13:46:19 +0100
+	b=R3VxknODXNCIPm7LSy8wUZk8DApPOKFgkwpKvijaRHBrYIEUoEwRgOLK7boYLNW1O
+	 b1Picp4lm4PXJWe1N9ubhs0Qg4gsdrTZgFn5Rtsgx2uMZkdce17nMRfmoOPtGDda51
+	 L85Kv79rMkwquASxcKxRCTRcJ3EMqOVJKIqOFZUGK+VLE4MRwBgqNf0VFW0PbehFd8
+	 FyBVTJp6tW61g89/dUb97UcWJTyj+pzroFsrt55cPMGj6CowugbTL/bR+dnO0Uz30B
+	 eUcpGwOpiB3HeKsgDMK3Lk7EQ5iMpDDKnxk7YbqHjy1BM/D1sJxOGx46a/qXnAjbYE
+	 UNd/jtMKxTJ2w==
+Message-ID: <457dddf1-04ec-4d1e-8640-b04997fac4f1@kernel.org>
+Date: Thu, 12 Mar 2026 13:50:17 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,8 +60,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 05/13] selftests/mm: size tmpfs according to PMD page
- size in split_huge_page_test
+Subject: Re: [PATCH v2 09/13] selftests/mm: skip uffd-wp-mremap if UFFD
+ write-protect is unsupported
 To: Sayali Patil <sayalip@linux.ibm.com>,
  Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
  linux-mm@kvack.org, linux-kernel@vger.kernel.org,
@@ -71,7 +71,7 @@ Cc: Zi Yan <ziy@nvidia.com>, Michal Hocko <mhocko@kernel.org>,
  Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, Dev Jain <dev.jain@arm.com>,
  Liam.Howlett@oracle.com, linuxppc-dev@lists.ozlabs.org
 References: <cover.1773305677.git.sayalip@linux.ibm.com>
- <94c18dd26cf88f10b4b496cb3de08d81439a8909.1773305677.git.sayalip@linux.ibm.com>
+ <ed23ff57a80881c9d087d22709862af40addf49b.1773305678.git.sayalip@linux.ibm.com>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -118,80 +118,85 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <94c18dd26cf88f10b4b496cb3de08d81439a8909.1773305677.git.sayalip@linux.ibm.com>
+In-Reply-To: <ed23ff57a80881c9d087d22709862af40addf49b.1773305678.git.sayalip@linux.ibm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 3/12/26 13:25, Sayali Patil wrote:
-> The split_file_backed_thp() test mounts a tmpfs with a fixed size of
-> "4m". This works on systems with smaller PMD page sizes,
-> but fails on configurations where the PMD huge page size is
-> larger (e.g. 16MB).
+> The uffd-wp-mremap test requires the UFFD_FEATURE_PAGEFAULT_FLAG_WP
+> capability. On systems where userfaultfd write-protect is
+> not supported, uffd_register() fails and the test reports failures.
 > 
-> On such systems, the fixed 4MB tmpfs is insufficient to allocate even
-> a single PMD-sized THP, causing the test to fail.
-> 
-> Fix this by sizing the tmpfs dynamically based on the runtime
-> pmd_pagesize, allocating space for two PMD-sized pages.
+> Check for the required feature at startup and skip the test when the
+> UFFD_FEATURE_PAGEFAULT_FLAG_WP capability is not present,
+> preventing false failures on unsupported configurations.
 > 
 > Before patch:
->   running ./split_huge_page_test /tmp/xfs_dir_YTrI5E
->   --------------------------------------------------
->   TAP version 13
->   1..55
->   ok 1 Split zero filled huge pages successful
->   ok 2 Split huge pages to order 0 successful
->   ok 3 Split huge pages to order 2 successful
->   ok 4 Split huge pages to order 3 successful
->   ok 5 Split huge pages to order 4 successful
->   ok 6 Split huge pages to order 5 successful
->   ok 7 Split huge pages to order 6 successful
->   ok 8 Split huge pages to order 7 successful
->   ok 9 Split PTE-mapped huge pages successful
->    Please enable pr_debug in split_huge_pages_in_file() for more info.
->    Failed to write data to testing file: Success (0)
->   Bail out! Error occurred
->    Planned tests != run tests (55 != 9)
->    Totals: pass:9 fail:0 xfail:0 xpass:0 skip:0 error:0
+>  running ./uffd-wp-mremap
+>  ------------------------
+>   [INFO] detected THP size: 256 KiB
+>   [INFO] detected THP size: 512 KiB
+>   [INFO] detected THP size: 1024 KiB
+>   [INFO] detected THP size: 2048 KiB
+>   [INFO] detected hugetlb page size: 2048 KiB
+>   [INFO] detected hugetlb page size: 1048576 KiB
+>  1..24
+>   [RUN] test_one_folio(size=65536, private=false, swapout=false,
+>   hugetlb=false)
+>  not ok 1 uffd_register() failed
+>   [RUN] test_one_folio(size=65536, private=true, swapout=false,
+>   hugetlb=false)
+>  not ok 2 uffd_register() failed
+>   [RUN] test_one_folio(size=65536, private=false, swapout=true,
+>   hugetlb=false)
+>  not ok 3 uffd_register() failed
+>   [RUN] test_one_folio(size=65536, private=true, swapout=true,
+>   hugetlb=false)
+>  not ok 4 uffd_register() failed
+>   [RUN] test_one_folio(size=262144, private=false, swapout=false,
+>   hugetlb=false)
+>  not ok 5 uffd_register() failed
+>   [RUN] test_one_folio(size=524288, private=false, swapout=false,
+>   hugetlb=false)
+>  not ok 6 uffd_register() failed
+>  .
+>  .
+>  .
+>  Bail out! 24 out of 24 tests failed
+>   Totals: pass:0 fail:24 xfail:0 xpass:0 skip:0 error:0
 >  [FAIL]
+> not ok 1 uffd-wp-mremap # exit=1
 > 
 > After patch:
->   --------------------------------------------------
->   running ./split_huge_page_test /tmp/xfs_dir_bMvj6o
->   --------------------------------------------------
->   TAP version 13
->   1..55
->   ok 1 Split zero filled huge pages successful
->   ok 2 Split huge pages to order 0 successful
->   ok 3 Split huge pages to order 2 successful
->   ok 4 Split huge pages to order 3 successful
->   ok 5 Split huge pages to order 4 successful
->   ok 6 Split huge pages to order 5 successful
->   ok 7 Split huge pages to order 6 successful
->   ok 8 Split huge pages to order 7 successful
->   ok 9 Split PTE-mapped huge pages successful
->    Please enable pr_debug in split_huge_pages_in_file() for more info.
->    Please check dmesg for more information
->   ok 10 File-backed THP split to order 0 test done
->    Please enable pr_debug in split_huge_pages_in_file() for more info.
->    Please check dmesg for more information
->   ok 11 File-backed THP split to order 1 test done
->    Please enable pr_debug in split_huge_pages_in_file() for more info.
->    Please check dmesg for more information
->   ok 12 File-backed THP split to order 2 test done
-> ...
->   ok 55 Split PMD-mapped pagecache folio to order 7 at
->     in-folio offset 128 passed
->    Totals: pass:55 fail:0 xfail:0 xpass:0 skip:0 error:0
->    [PASS]
-> ok 1 split_huge_page_test /tmp/xfs_dir_bMvj6o
+>  running ./uffd-wp-mremap
+>  ------------------------
+>  1..0 # SKIP uffd-wp feature not supported
+>  [SKIP]
+> ok 1 uffd-wp-mremap # SKIP
 > 
-> Fixes: fbe37501b252 ("mm: huge_memory: debugfs for file-backed THP split")
-> Reviewed-by: Zi Yan <ziy@nvidia.com>
+> Acked-by: Zi Yan <ziy@nvidia.com>
 > Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
 > ---
+>  tools/testing/selftests/mm/uffd-wp-mremap.c | 13 +++++++++++++
+>  1 file changed, 13 insertions(+)
+> 
+> diff --git a/tools/testing/selftests/mm/uffd-wp-mremap.c b/tools/testing/selftests/mm/uffd-wp-mremap.c
+> index 17186d4a4147..73d53a4da389 100644
+> --- a/tools/testing/selftests/mm/uffd-wp-mremap.c
+> +++ b/tools/testing/selftests/mm/uffd-wp-mremap.c
+> @@ -19,6 +19,17 @@ static size_t thpsizes[20];
+>  static int nr_hugetlbsizes;
+>  static size_t hugetlbsizes[10];
+>  
+> +static void uffd_wp_feature_supported(void)
 
-Reviewed-by: David Hildenbrand (Arm) <david@kernel.org>
+Likely that function should be called
+
+"check_uffd_wp_feature_supported()"
+
+Because right now it reads as if it would be returning a bool.
+
+Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 
 -- 
 Cheers,
