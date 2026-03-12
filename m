@@ -1,79 +1,104 @@
-Return-Path: <linuxppc-dev+bounces-18116-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18117-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52617105A596
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2026 12:53:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C76E2105A596
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Mar 2026 13:03:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fWncF4Xv0z3cFN;
-	Thu, 12 Mar 2026 23:53:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4860:4864:20::31"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773320029;
-	cv=none; b=Fc6b1XJwiXG3gRZzxYc3871XQHzQfjLa14HoKC5w+97KJcsxh6o7u0AjcAJQ5CVNACw4cM5QKW+odblBr0c82wzFwHxhxk2cIaV2KesUQ6zfwyBc7XER/cz3/DaWUoCwFdgVRn+ZpWqifAXWvwWs0I7HK8xQzBj5YIaiV98j8pIaMSacZLkJUs5Fj0EieMdlKk/2UEwDlKx2QuNNtuLc+BgYCXbAFjfvUZaaDe+bpWeyPvtaSXyxLiviRJ24qcF+Nude5Ma8SAKL/3pPYMuPlhI/ozMHVAllmWbr/uAGq5N6qkqB0+/iOQiBbYVWxheRQqlOoLOliBz2chx59W390Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fWnpr28g3z3cG3;
+	Fri, 13 Mar 2026 00:03:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773320580;
+	cv=none; b=AicrGPfliBhvSTY0Wt4+JdNQ96WcAkUta5Saxo8g6Uj9KEIiYfdK9RDeHHZwMfKii+HD+LhFVftaPWMu3UzZwmbBMnHJZGKFHc1dy8RE9c6WEyvbttZwB+jIgfMv44iNf+uh3CxmK5ylTM5zq6Ax+okrP/R6UREefE64WThfN9TOcUPNdJiG+BCMIIAUF/vi14w3Srv+albn8yfKAg7KvFAyzt85NPs2pgRsAqTCcbzF1DkikGfvmvBMuSAXWJLHSI30or+5i+0Ywf+iaWB8YQUKSq5BNx/Smht/fO5Ilhe8+QbmLmWqH9g54EyOwolouxsAd/atpl5z2K4j71RLxw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773320029; c=relaxed/relaxed;
-	bh=Ky7U0hmCeNi6OyUrf2MxogfDAlaxZWXxIQIvc2Y9k8Y=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PeL2Guk9w3FKmeRMF4voIVdKtXm8Tddj2Ew6yKgbduUvj276bvNtOIxUH9Ah1bd5bbEFJ4hyPuJujbz6LBhScNXVB6eNqFpzzTHKKGqP/evIHn271PfWF9itJP0sRDJqw7mevZJ0veVqouZsuH9HtF68+KER8KIkZ4S1YC9XS9LraR1JDLqq5nE04Xk0KHUvI7evlnaUZNfEAL0Y4jTUkbywu/cxyBnnIma+1pZy/C6YorUDsu1sebKI+WhfFeVd6Y3g9mRAtriSqMCvziu+XQYrpA761x7GeaKZpUoJcORA+2ywYPR/A0EKMflnmTohBj/DrjykQ4756fb3YbRHFw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=sifive.com; dkim=pass (2048-bit key; unprotected) header.d=sifive.com header.i=@sifive.com header.a=rsa-sha256 header.s=google header.b=CDSQkie2; dkim-atps=neutral; spf=pass (client-ip=2001:4860:4864:20::31; helo=mail-oa1-x31.google.com; envelope-from=samuel.holland@sifive.com; receiver=lists.ozlabs.org) smtp.mailfrom=sifive.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=sifive.com
+	t=1773320580; c=relaxed/relaxed;
+	bh=LnxlnVOb5TyYgEvHN5BMY9iis0HtzfsvyVsVH2jzcPE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=dIPugyuW2vl8ZuVDhqHnE1OLibXhpFSEyKEjBizovXyvLC9SS7XqemJkVoJJsU7I0Vr+IypTAVC8Pk376xPfelChtp8PFp25+nBuR6TUgcGEpA983swtqH5svgxI1c4nIqIxyBQm4i/uWDWxIncYXtaXMcIqqedzi/UpKjWQVsgItRzc+KJN7XZKDYASvr9foM/MzjpxnfPYgfm9eUJRnmiSday3J97ifuzzGkdR1HqynxvVEJnMRdQ5OMgGine7m9yxVXnMbLyQGGqusGfEd28G9cMiQEkzwUVdCN2qwWwbwDM5aoO24mt0KZVB5n7nMBeT4hT+u28taa9YToYMfg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=l9mus12T; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=cassel@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=sifive.com header.i=@sifive.com header.a=rsa-sha256 header.s=google header.b=CDSQkie2;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=l9mus12T;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sifive.com (client-ip=2001:4860:4864:20::31; helo=mail-oa1-x31.google.com; envelope-from=samuel.holland@sifive.com; receiver=lists.ozlabs.org)
-Received: from mail-oa1-x31.google.com (mail-oa1-x31.google.com [IPv6:2001:4860:4864:20::31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=cassel@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWncC4qJpz3cCJ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 23:53:47 +1100 (AEDT)
-Received: by mail-oa1-x31.google.com with SMTP id 586e51a60fabf-40ef10ec84cso666899fac.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2026 05:53:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=sifive.com; s=google; t=1773320025; x=1773924825; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:content-language:from
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=Ky7U0hmCeNi6OyUrf2MxogfDAlaxZWXxIQIvc2Y9k8Y=;
-        b=CDSQkie2UH0DeieRa1/qeF2sRX/CAREKPuo/AekTt3EzXpomo5iZYWu+eGz11Nwivj
-         jLrqmQFYI1Oa/W2hXuAGtHxRGDwLCB9f/jMLU5iStjm7QftkH9JLkGHl+36kRzMrSMWu
-         JKWL5rwu1W8UDi4vVs8v6Y69EZl+lzz5ZCg+NiTZG/TB253Uf7bm9wZtk39wakRZCqbw
-         fzcjaRPXbLG6B1AnW1gZSqsvFlGBvr1BaxtZLlD8NYOhfHRovRm3LN4ERpy6XmlDlPv5
-         NOC6EqiY1Ew4rzhG1R9Z52c9Q5R40CwHokUNJSD3JZSlNZEV+lG8Q0Kxxs3rm5vke74o
-         FAoA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773320025; x=1773924825;
-        h=content-transfer-encoding:in-reply-to:content-language:from
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Ky7U0hmCeNi6OyUrf2MxogfDAlaxZWXxIQIvc2Y9k8Y=;
-        b=luZWM+7BrgQ2QWS2t9bBxSQUVA5HZtYDa8iD/15vopO6NkwMsYS+cGhRrkAkyV10wj
-         c/31xuDQ+bMs2FaLrX1YrFiD78Yov6cSUZ0O6WUNW/LFb0ZHGe1nyUrKohPX15RH2tp/
-         N9Iu9DCKIipC6Gfo17IFX7ClZKOVhP75KpR7m7TGRcOmMQoGEvJ38qabX0P/Hi11QQkd
-         mUxdHLJc30lObgsYMvNCO2oH1+iZZ5e3/S5H84/RHWmt10BdurD4+Is9k6Pjz7z8AbNf
-         4ejjkEtHMRO6Fx8xVB+Ad0foYdwBbPn1izyxj1siqnvuosHkM5STOEGv+sI4d3NZfUmu
-         eF/Q==
-X-Forwarded-Encrypted: i=1; AJvYcCXfcZIqokSbQfDzwpQCsJGeTeYcR1In3vrtt0K+GrLvjBcvwqorWqI92zaX31ZJxF2pX/4ljHmduoZBvnk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Ywz80dhL8B/tcs6ntHr7OxUfbtPX5314B3Y37U7Az7HK1cqEyeg
-	71uSQBPlwT2B+VWy6vU8RhwASNZKAdPK3s7PXN3l82YYcPL2NuJF7pgmY+ffiMYe66c=
-X-Gm-Gg: ATEYQzwp/LBvAs3Eqj/756ZwGMjE4otjz7iXJrv7Wml3RQqXJhEsYEX9q+k7gdF0dvx
-	35H9Hr5pvoOsKIDJiSTN1w9Rnq+9MrQHattEbio1fATLNbwtc5HVj/3Jj2484I6q+5S119Obu7r
-	EuzCVlKkgRSgRJGJvukgw5NHjGZU0fUk9B+5+EFsQI+vr3TwhjyBmx32c5bqIvntlOTa4zJOupr
-	r6DiBW+fZPPZZq1gCGe6Ucu3rQa0ZZLiCEMja+IkFg73tSbg3PQE4Q869G49XqQ6w9B/ZeA2Olj
-	qka7EzqE6naHgzbBa73EMCgeE+phUE6F8NFV9ByiwOWy8oFBt18NGXBNYt/b9Y428/B2tMZhJzF
-	B6PONQg1xk6z9pQ9MnUgBbSfk10yYf4HMd/QdSAWQ5i29nmhsSJem8n2RFPwAxWt/DXYAdgRp/J
-	z3duVuyUjlTP8rwmA6P1zzlutYCM609ba1DosjXDk=
-X-Received: by 2002:a05:6870:649f:b0:409:74c7:1cbb with SMTP id 586e51a60fabf-4177c6f1d08mr3392540fac.7.1773320024820;
-        Thu, 12 Mar 2026 05:53:44 -0700 (PDT)
-Received: from [100.64.0.1] ([170.85.103.0])
-        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-41791432d87sm3765785fac.1.2026.03.12.05.53.43
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 12 Mar 2026 05:53:44 -0700 (PDT)
-Message-ID: <f7054184-dca2-4c7c-9e2e-4a5e3e1c81da@sifive.com>
-Date: Thu, 12 Mar 2026 07:53:42 -0500
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fWnpp210Tz3cFN
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2026 00:02:58 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 83A4460054;
+	Thu, 12 Mar 2026 13:02:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9AB65C4CEF7;
+	Thu, 12 Mar 2026 13:02:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773320576;
+	bh=TgSk+4s2logLCJYw1/1V/0WBGOGe8vlm4vuaxQUrDRo=;
+	h=From:To:Cc:Subject:Date:From;
+	b=l9mus12TCdN4ONMZHKmRMj7JZrcmLc6V/uu15lWYvKQwiyXIeEccIOyh9QWblL840
+	 XKM9Xj20k3BUXAaQOUbsjssa36sXddRoOn+uRISawFuV/ynuA8loLqmzVY9HKBy8Bo
+	 OjxdKGCE0Bfv/BXS+gzNCxBUQFPqi9bwEC9IWLa50KFU/wHaTQiY0fQ+Fnyb1zQd+j
+	 qMeTgvH6J3q+E9LZyxMAdMjNGGxOVx0WqEKl4wo6QB3VrnwudN4kwgt/eKKj1CqQJ5
+	 p7QaIEBtR82xTJJxeiMar/y7cMH4nNfKM+k8CkFlOsZ2HuDTwU4gBQ2ce0bX39jILm
+	 3gn4Z9eMAEnSw==
+From: Niklas Cassel <cassel@kernel.org>
+To: Manivannan Sadhasivam <mani@kernel.org>,
+	=?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kwilczynski@kernel.org>,
+	Kishon Vijay Abraham I <kishon@kernel.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Vignesh Raghavendra <vigneshr@ti.com>,
+	Siddharth Vadapalli <s-vadapalli@ti.com>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Richard Zhu <hongxing.zhu@nxp.com>,
+	Lucas Stach <l.stach@pengutronix.de>,
+	Frank Li <Frank.Li@nxp.com>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Minghuan Lian <minghuan.Lian@nxp.com>,
+	Mingkai Hu <mingkai.hu@nxp.com>,
+	Roy Zang <roy.zang@nxp.com>,
+	Jesper Nilsson <jesper.nilsson@axis.com>,
+	Jingoo Han <jingoohan1@gmail.com>,
+	Heiko Stuebner <heiko@sntech.de>,
+	Srikanth Thokala <srikanth.thokala@intel.com>,
+	Marek Vasut <marek.vasut+renesas@gmail.com>,
+	Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Christian Bruel <christian.bruel@foss.st.com>,
+	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+	Alexandre Torgue <alexandre.torgue@foss.st.com>,
+	Thierry Reding <thierry.reding@gmail.com>,
+	Jonathan Hunter <jonathanh@nvidia.com>,
+	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Shuah Khan <shuah@kernel.org>
+Cc: Manikanta Maddireddy <mmaddireddy@nvidia.com>,
+	Koichiro Den <den@valinux.co.jp>,
+	Damien Le Moal <dlemoal@kernel.org>,
+	Niklas Cassel <cassel@kernel.org>,
+	linux-pci@vger.kernel.org,
+	linux-omap@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	imx@lists.linux.dev,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@axis.com,
+	linux-rockchip@lists.infradead.org,
+	linux-arm-msm@vger.kernel.org,
+	linux-renesas-soc@vger.kernel.org,
+	linux-stm32@st-md-mailman.stormreply.com,
+	linux-tegra@vger.kernel.org,
+	linux-kselftest@vger.kernel.org
+Subject: [PATCH v4 00/10] PCI: endpoint: Differentiate between disabled and reserved BARs
+Date: Thu, 12 Mar 2026 14:02:28 +0100
+Message-ID: <20260312130229.2282001-12-cassel@kernel.org>
+X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,71 +112,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 14/15] mm/kasan: add document into
- kernel-parameters.txt
-To: Baoquan He <bhe@redhat.com>, kasan-dev@googlegroups.com
-Cc: linux-mm@kvack.org, andreyknvl@gmail.com, ryabinin.a.a@gmail.com,
- glider@google.com, dvyukov@google.com, linux-kernel@vger.kernel.org,
- linux-um@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, x86@kernel.org, chris@zankel.net,
- jcmvbkbc@gmail.com, linux-s390@vger.kernel.org, hca@linux.ibm.com
-References: <20260225081412.76502-1-bhe@redhat.com>
- <20260225081412.76502-15-bhe@redhat.com>
-From: Samuel Holland <samuel.holland@sifive.com>
-Content-Language: en-US
-In-Reply-To: <20260225081412.76502-15-bhe@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2686; i=cassel@kernel.org; h=from:subject; bh=TgSk+4s2logLCJYw1/1V/0WBGOGe8vlm4vuaxQUrDRo=; b=owGbwMvMwCV2MsVw8cxjvkWMp9WSGDI37UzN2dLNHDzr3bFkpbmbuvLOSQax7F/j874n3+aSi KahfSdLRykLgxgXg6yYIovvD5f9xd3uU44r3rGBmcPKBDKEgYtTACbydSYjw1PmY1NLXJUtzn+R 6X1joBrv12+ZfCb7h5VwRsB0F9bjFxkZVoT+ns4Zd255TqnKJrPrnfdf5v57cd3wNjOP3VTX8r9 LGAA=
+X-Developer-Key: i=cassel@kernel.org; a=openpgp; fpr=5ADE635C0E631CBBD5BE065A352FE6582ED9B5DA
+Content-Transfer-Encoding: 8bit
 
-Hi Baoquan,
+Hello all,
 
-On 2026-02-25 2:14 AM, Baoquan He wrote:
-> And also remove the relevant description in dev-tools/kasan.rst
-> which is hw_tags specificially.
-> 
-> Signed-off-by: Baoquan He <bhe@redhat.com>
-> ---
->  Documentation/admin-guide/kernel-parameters.txt | 4 ++++
->  Documentation/dev-tools/kasan.rst               | 2 --
->  2 files changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-> index cb850e5290c2..e0115fad9e60 100644
-> --- a/Documentation/admin-guide/kernel-parameters.txt
-> +++ b/Documentation/admin-guide/kernel-parameters.txt
-> @@ -2899,6 +2899,10 @@ Kernel parameters
->  	js=		[HW,JOY] Analog joystick
->  			See Documentation/input/joydev/joystick.rst.
->  
-> +	kasan=		[KNL] controls whether KASAN is enabled.
-> +			Format: off | on
-> +			default: on
-> +
->  	kasan_multi_shot
->  			[KNL] Enforce KASAN (Kernel Address Sanitizer) to print
->  			report on every invalid memory access. Without this
-> diff --git a/Documentation/dev-tools/kasan.rst b/Documentation/dev-tools/kasan.rst
-> index a034700da7c4..eaae83fcb5e4 100644
-> --- a/Documentation/dev-tools/kasan.rst
-> +++ b/Documentation/dev-tools/kasan.rst
-> @@ -129,8 +129,6 @@ Hardware Tag-Based KASAN mode is intended for use in production as a security
->  mitigation. Therefore, it supports additional boot parameters that allow
->  disabling KASAN altogether or controlling its features:
+This series was originally written in response to the patch series from
+Manikanta Maddireddy that was posted here:
+https://lore.kernel.org/linux-pci/291dab65-3fa6-4fc8-90a2-4ad608ca015c@nvidia.com/T/#t
 
-The sentence above is now incorrect as well. I would recommend documenting the
-parameter earlier in the "Boot parameters" section instead of removing it from
-this document entirely.
+Manikanta has reviewed this series and will send a small series on top of
+this one.
 
-Regards,
-Samuel
 
->  
-> -- ``kasan=off`` or ``=on`` controls whether KASAN is enabled (default: ``on``).
-> -
->  - ``kasan.mode=sync``, ``=async`` or ``=asymm`` controls whether KASAN
->    is configured in synchronous, asynchronous or asymmetric mode of
->    execution (default: ``sync``).
+Changes since v3:
+-Modified patch 1 to simply drop BAR_RESERVED for a BAR following an
+ only_64bit BAR (Manivannan).
+-Added a patch from Manikanta, to make his follow-up series smaller,
+ since this series touches the same lines anyway.
+
+Link to v3:
+https://lore.kernel.org/linux-pci/20260302095913.48155-11-cassel@kernel.org/
+
+
+Koichiro Den (2):
+  PCI: endpoint: Describe reserved subregions within BARs
+  PCI: dw-rockchip: Describe RK3588 BAR4 DMA ctrl window
+
+Manikanta Maddireddy (1):
+  PCI: endpoint: Allow only_64bit on BAR_RESERVED
+
+Niklas Cassel (7):
+  PCI: endpoint: Do not mark the BAR succeeding a 64-bit BAR as
+    BAR_RESERVED
+  PCI: endpoint: Introduce pci_epc_bar_type BAR_DISABLED
+  PCI: dwc: Replace certain BAR_RESERVED with BAR_DISABLED in glue
+    drivers
+  PCI: dwc: Disable BARs in common code instead of in each glue driver
+  PCI: endpoint: pci-epf-test: Advertise reserved BARs
+  misc: pci_endpoint_test: Give reserved BARs a distinct error code
+  selftests: pci_endpoint: Skip reserved BARs
+
+ drivers/misc/pci_endpoint_test.c              | 21 ++++++++-
+ drivers/pci/controller/dwc/pci-dra7xx.c       |  4 --
+ drivers/pci/controller/dwc/pci-imx6.c         | 22 +++------
+ drivers/pci/controller/dwc/pci-keystone.c     | 12 +++++
+ .../pci/controller/dwc/pci-layerscape-ep.c    |  6 ---
+ drivers/pci/controller/dwc/pcie-artpec6.c     |  4 --
+ .../pci/controller/dwc/pcie-designware-ep.c   | 24 ++++++++++
+ .../pci/controller/dwc/pcie-designware-plat.c | 10 ----
+ drivers/pci/controller/dwc/pcie-dw-rockchip.c | 23 ++++++----
+ drivers/pci/controller/dwc/pcie-keembay.c     |  3 --
+ drivers/pci/controller/dwc/pcie-qcom-ep.c     | 12 -----
+ drivers/pci/controller/dwc/pcie-rcar-gen4.c   | 16 ++-----
+ drivers/pci/controller/dwc/pcie-stm32-ep.c    | 10 ----
+ drivers/pci/controller/dwc/pcie-tegra194.c    | 19 ++------
+ drivers/pci/controller/dwc/pcie-uniphier-ep.c | 19 +-------
+ drivers/pci/controller/pcie-rcar-ep.c         |  3 --
+ drivers/pci/endpoint/functions/pci-epf-test.c | 24 ++++++++++
+ drivers/pci/endpoint/pci-epc-core.c           |  5 +-
+ include/linux/pci-epc.h                       | 46 +++++++++++++++----
+ .../pci_endpoint/pci_endpoint_test.c          |  4 ++
+ 20 files changed, 154 insertions(+), 133 deletions(-)
+
+
+base-commit: 0b74f7d72399d4c4422ed3d68ef28b3612f71e74
+-- 
+2.53.0
 
 
