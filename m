@@ -1,73 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-18162-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18163-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24A9F106FD97
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Mar 2026 07:27:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE541106FD9A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Mar 2026 08:33:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fXGKg1G94z3cJk;
-	Fri, 13 Mar 2026 18:27:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773386871;
-	cv=none; b=Vo2qSrgMIUl/UgVKmXa73kaHBMKd4vD97dVklbuR5FyQWWGnU/oQ/REKJcH1P7CCY7vHKBAVoDUzxRbDiU/++b8gZaNG/ZCRmmeajuQk9BjzYqMlvwf4Qy6vuN0v/VfBUJDcBYf1MLGhBrdXPjy1b3aQX3/8k48WKE9HXA2yR7Igl6syARJp1fCen1W0XAq7gz90Kcob6Oit0a/t48UL8SOWtn11LMa69EqdRTavC/RmKkHjAPm3EcyVRGYHp8ZADhGVzhFmQIzALnvGmrEJxw2DVwJN3+lNwZfsBFyeRUgjENwjyJfyffPUZufK/+20/QtgjYp6/23QuX0Tby64UA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fXHn80tWqz3cJk;
+	Fri, 13 Mar 2026 19:33:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773390796;
+	cv=none; b=LJZjM/HFlWPVA2bTXMkHt2ztfkvlH1EPBU41a+Y2KqwTDvO0wwlDiCfE/Tr3zMt9Bwurvyh9XTdFSYmihz/BPiV6FicmRSaf6Y6fzlAHWUYFUjHnLHQTlCv4tfhTCt+UmgljEq8bYa9UWTKU+5GdWe74KZxYrXxRvHTxKEneOq/DKyY9DzPDQM+CaNyMqvRuKFuCOvUne9OHKCVxUAhp+QkZGJ6jtRtvTiypzsWWem8sx/QEmUXADRMnzMyTyEBINpp01pqnTgyrHIZ5LGr6h35TCi1gt3s9tLKKfzlB339Vd0n0bg3CScGU9fG7d67WoQIpdg2gIoLwVDLINwFEzg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773386871; c=relaxed/relaxed;
-	bh=iAenRQtYFFXZgQjstRc4Jy6sCLPp0tS71T2Ij/xkLAI=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=c6fYaxk9fEduuMkbD19zP9wx7QzTabfoXSeoDIEebVNXhTDSRiBqYlY8CTL5PlfSU26MJ+k7iUp1TlUg0+KQFPhetzSe6/0M5Xkgx+KFOdnDnYVoVxnCn2l8ClHfZrOMYcwQ7pr11GYcZcvIfDHB5AxKS3QdsqtCBhnzKyJ7DaVMsTiTVIJI/n7HcYeMFA9nBf58K0ZnG/Cdx2TUHdxIoY7c1f7tlFesALgHM7OeVvJi7Z6SkCxyeWHhlmnA9ZdC2i9PekabnnqWkRsyeU1JnNaf8Ii/tCaPqwjOd4eHbQpfq8D84kiYMI8UVDjE7stHS4hwChTGTIPpvUodwHxyhQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qKEp4ZvE; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1773390796; c=relaxed/relaxed;
+	bh=UGqZspYfyqyLgIgQr82dubLPnelKQQ/kfB/qXYLTb84=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=BBNxDNFlOZ3aNpWqgiXzYqZP0vyUe3EcGjTAFgxV7lGgIcfG3YZ7pDGTL1TGtR5EkNzIasvUuryc5b2JsK9Jgo0fqWOqOfBwnLBxd3AWsLBSeJgemDYauEVFWibUcXEXHLDEDZhRH98lx3KnuvczdOkI/4clBza/WmgqpsueNIoQLrf91Q75iylZDgMRc3ywNF/wSR/xVUZOu253H/s3GpQ9M4MC/YGBZONEpE8JJlcbnggpBkKG9fUUKwofx7XxvruVigaztSQjpHdOL2NjrCujM3whLmfmBpcbacw3/sU2Grz5quZPV+HDt1c/hSP+9qRJE2JmfP/VNRmsLo/7yA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NZDZWOS6; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=jirislaby@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qKEp4ZvE;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NZDZWOS6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=jirislaby@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fXGKd4DCxz3cGM
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2026 18:27:49 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62D4Xw982581620;
-	Fri, 13 Mar 2026 07:23:41 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=iAenRQ
-	tYFFXZgQjstRc4Jy6sCLPp0tS71T2Ij/xkLAI=; b=qKEp4ZvEBqxRVikttbrntF
-	WWQ203Lua+crG05r6VAtBa0/bkbghmmMFp7CSi/eBIF8c/7Umd/HOwFvOAsO3Bwk
-	aOBgWBWDw8W+mnEpWmbvnXwY/B07gZFUhhEy0+PmOo4+nhj+vNUP2Mww72hck3CU
-	oIrRFe39/axbwiM28eqxsn3HpLE/8mBQrBshD4Tns0yNyBzWAojtrHyDUdOYkUj+
-	NRjFuEzjs+AXjzld4+GB4tMgSyZ0r067coC5jcB34vhdrtLl2fEmeMG6fd/YxZKQ
-	KospVEVdZE7lQq3MtjpUTVu5IsJIFKd+oBdxAUl4XWHZdZKnA66Bjj0g4dlyCX3A
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cuh94xn7v-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 13 Mar 2026 07:23:41 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62D4u7OK025674;
-	Fri, 13 Mar 2026 07:23:40 GMT
-Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4cuha8dnmm-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 13 Mar 2026 07:23:40 +0000
-Received: from smtpav05.wdc07v.mail.ibm.com (smtpav05.wdc07v.mail.ibm.com [10.39.53.232])
-	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62D7Ncwu19268138
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 13 Mar 2026 07:23:39 GMT
-Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CABA158043;
-	Fri, 13 Mar 2026 07:23:38 +0000 (GMT)
-Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 098B658053;
-	Fri, 13 Mar 2026 07:23:35 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.61.241.43])
-	by smtpav05.wdc07v.mail.ibm.com (Postfix) with ESMTPS;
-	Fri, 13 Mar 2026 07:23:34 +0000 (GMT)
-Content-Type: text/plain;
-	charset=utf-8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fXHn62xbwz3cGf
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2026 19:33:14 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 91FB34023C;
+	Fri, 13 Mar 2026 08:33:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 98979C19421;
+	Fri, 13 Mar 2026 08:33:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773390791;
+	bh=h5B+Q34OJ/9ZfyBFa9p5JECO17+rGiviv61mrDR5FG0=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=NZDZWOS6qaZ/o6xl26zpKpfVm601rbfc2WwNQLAEZbkKQ+S6cJAHOpCzHNPeSGjUx
+	 Moy74d9OJcHJ97UCN52hDl7SEKZnOEIwN7U0V09w7Ix8iKHQhdtgj2cQArXuGvJ9vV
+	 2IcPEOZLXBBnFwvf1oAmACddoTjYvsbgsH1uV2EwpVadqvmP2oyBu+PNskowl3wr00
+	 ZzDUnW0CcAmwvObR7Q7Wha6OFE/MCEq8R3Cpa7Akhl82kXF0voofjA38To1jqAnv5n
+	 n6OEV+vcDXnmSul/U31URWMTQFLotDowLfyUQTp8MZl9sVKJBdlb9MIJKyQUGl6YSn
+	 mXpcOqeoriWcA==
+Message-ID: <8e5974b1-da6d-4718-9140-1f943cdd2404@kernel.org>
+Date: Fri, 13 Mar 2026 09:33:07 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,109 +58,94 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.300.41.1.7\))
-Subject: Re: [PATCH] powerpc/xive: fix kmemleak caused by incorrect chip_data
- lookup
-From: Venkat <venkat88@linux.ibm.com>
-In-Reply-To: <878qbw5lfb.fsf@yellow.woof>
-Date: Fri, 13 Mar 2026 12:53:22 +0530
-Cc: Nilay Shroff <nilay@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        christophe.leroy@csgroup.eu, tglx@linutronix.de, maz@kernel.org,
-        ritesh.list@gmail.com, gautam@linux.ibm.com, stable@vger.kernel.org
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <F3269117-075D-481E-AFD2-D4AE703C8EF2@linux.ibm.com>
-References: <20260311134336.326996-1-nilay@linux.ibm.com>
- <878qbw5lfb.fsf@yellow.woof>
-To: Nam Cao <namcao@linutronix.de>, Nilay Shroff <nilay@linux.ibm.com>
-X-Mailer: Apple Mail (2.3864.300.41.1.7)
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=QKtlhwLL c=1 sm=1 tr=0 ts=69b3bb7d cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8
- a=VwQbUJbxAAAA:8 a=f1nbpkWOvNJN98Hr3BgA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzEzMDA1NSBTYWx0ZWRfX0c3fQme1dENq
- YrcBizyhRLpCW5TXMdEUMGtZCAd9tj8u3CjW/vv3XNMk2GVeRKHtghkuIrkPC+f96aOZuAh6wCR
- icjsi8tZxP7ukmc41XkSvTh6XFTDAC7KKrFu25zAPV/fyBA6gsm0VKVBGf/18PlyAgQXTtFg09G
- wIxHEB28IsFfkks5xSgRiW4tKANX4e4CP7eRPbJwCRU/pg99fU21rNkl76VfUviZXB8DowGAxNz
- QdMsL/NuvDZVF7Aw2qQKSrUyyK5r+C6AGLCv1t4b+b84crTyItAs+SIB05vgORtCICvdz40r0wd
- SEJdhTR4LelqdVGNV0Kzqe16hy02Moavo2G7e0A2Ku1nOdfnAG1t5w1mK1uSixqMmwIkn+5L7do
- UWKBfTcw9KnEji5dAb/Bcxu5BWT2W1c7gLj3dzg/tFgFDs1o6csR3OTgexE1P+pRBcpKr+FYvqw
- Qdf00CbosAV6Lwf8avA==
-X-Proofpoint-ORIG-GUID: VcDjfrF1Vbhv5Eu-Xo1_Va33LsTkOq-G
-X-Proofpoint-GUID: 7GB6S0IcmAyA1Q_LC7OwYbR91m6gc0ab
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-13_01,2026-03-12_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 suspectscore=0 impostorscore=0 clxscore=1015
- priorityscore=1501 bulkscore=0 adultscore=0 phishscore=0 spamscore=0
- lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
- definitions=main-2603130055
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] hvc/xen: Check console connection flag
+To: Jason Andryuk <jason.andryuk@amd.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Juergen Gross <jgross@suse.com>, Stefano Stabellini
+ <sstabellini@kernel.org>,
+ Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-serial@vger.kernel.org, xen-devel@lists.xenproject.org
+References: <20260312173845.47235-1-jason.andryuk@amd.com>
+Content-Language: en-US
+From: Jiri Slaby <jirislaby@kernel.org>
+Autocrypt: addr=jirislaby@kernel.org; keydata=
+ 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
+In-Reply-To: <20260312173845.47235-1-jason.andryuk@amd.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
+On 12. 03. 26, 18:38, Jason Andryuk wrote:
+> --- a/include/xen/interface/io/console.h
+> +++ b/include/xen/interface/io/console.h
+> @@ -19,6 +19,19 @@ struct xencons_interface {
+>       char out[2048];
+>       XENCONS_RING_IDX in_cons, in_prod;
+>       XENCONS_RING_IDX out_cons, out_prod;
+> +/*
+> + * Flag values signaling from backend to frontend whether the console is
+> + * connected.  i.e. Whether it will be serviced and emptied.
+> + *
+> + * The flag starts as disconnected.
+> + */
+> +#define XENCONSOLE_DISCONNECTED 1
+> +/*
+> + * The flag is set to connected when the backend connects and the console
+> + * will be serviced.
+> + */
+> +#define XENCONSOLE_CONNECTED    0
 
+This all should be an enum. And you can document it using kernel-doc 
+properly then.
 
-> On 13 Mar 2026, at 11:18=E2=80=AFAM, Nam Cao <namcao@linutronix.de> =
-wrote:
->=20
-> Nilay Shroff <nilay@linux.ibm.com> writes:
->> The kmemleak reports the following memory leak:
-> ...
->> Fix this by retrieving the irq_data from the correct domain using
->> irq_domain_get_irq_data() and then accessing the chip_data via
->> irq_data_get_irq_chip_data().
->>=20
->> Cc: stable@vger.kernel.org
->> Fixes: cc0cc23babc9 ("powerpc/xive: Untangle xive from child =
-interrupt controller drivers")
->> Signed-off-by: Nilay Shroff <nilay@linux.ibm.com>
+> +    uint8_t connection;
 
-Hi,
+And type check as well.
 
-
-I have tested this patch, and it fixes the reported kmemleak issue.
-
-Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-
-
-Below is the kmemleak output without this patch applied:
-
-cat /sys/kernel/debug/kmemleak
-unreferenced object 0xc00000000606fc80 (size 64):
-  comm "kworker/0:1", pid 11, jiffies 4294937450
-  hex dump (first 32 bytes):
-    01 00 00 00 00 00 00 00 00 00 ab 0d 00 04 00 00  ................
-    00 00 a1 80 00 00 0a c0 00 00 aa 0d 00 04 00 00  ................
-  backtrace (crc 642b8a1d):
-    __kmalloc_cache_noprof+0x350/0x7a4
-    xive_irq_alloc_data.constprop.0+0x40/0xe0
-    xive_irq_domain_alloc+0xd4/0x1ac
-    irq_domain_alloc_irqs_parent+0x44/0x6c
-    pseries_irq_domain_alloc+0x1c4/0x34c
-    irq_domain_alloc_irqs_parent+0x44/0x6c
-    msi_domain_alloc+0xb0/0x214
-    irq_domain_alloc_irqs_locked+0x138/0x4d0
-    __irq_domain_alloc_irqs+0x8c/0xfc
-    __msi_domain_alloc_irqs+0x214/0x4c8
-    msi_domain_alloc_irqs_all_locked+0x70/0xf8
-    pci_msi_setup_msi_irqs+0x60/0x78
-    msix_setup_interrupts+0x17c/0x318
-    __pci_enable_msix_range+0x41c/0x770
-    pci_alloc_irq_vectors_affinity+0x170/0x1d8
-    nvme_pci_enable+0xa0/0x3b0 [nvme]
-
-unreferenced object 0xc00000000606f900 (size 64):
-  comm "kworker/0:1", pid 11, jiffies 4294937451
-
-With the patch applied, no kmemleak reports are observed after repeated =
-MSI=E2=80=91X enable/disable cycles on the NVMe controller.
-
-Regards,
-Venkat
-> Reviewed-by: Nam Cao <namcao@linutronix.de>
->=20
-
+thanks,
+-- 
+js
+suse labs
 
