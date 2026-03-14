@@ -1,92 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-18186-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18187-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A49F107BCF1
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Mar 2026 04:33:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64285107BCFE
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Mar 2026 07:46:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fXpQM4hd2z2xb3;
-	Sat, 14 Mar 2026 15:33:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c407::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773462827;
-	cv=pass; b=XtVC/RngOGWoHck7mPu2e3RUFPiuXGViYmNOOeYqoUcJRUWOuld5+B0kChrjfSE6r1gda/wA4wHCIrrCphgOY3rPPb0PpESud+giPCi241qCPz/AlFUImYi/Fx4+oSp5Dd4L/OoOZT2EUhXlLoiGpp3hOT6qFCMKs9VlhY3YiQiD6POCV6pjw2LSlNsz4T1ex7jjK0YKFk3qC2kAUhb6jA6BdqdSQbWNsUtYBVxatV4IlrSqYBrgBpbqvh9Rq0mB8Ic744y4GswzTFk/uo5MGd8su0CUUHb+3ZTT/U3enjeCPMER/jwrlG1MYccz8DC6Aep5eULkaqC6cLJ3kR7wCA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773462827; c=relaxed/relaxed;
-	bh=Lt6l5l5f8bedU3Nd+YRqBu7yp+ZT/u5xRLV9E/MiwpY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=ROPq6dld9OVdJeby8ADb06EJmZ3IGoMX37DO4B41YOTveTQ3Sm9Wr1oEu4jOFvofuFFCTr8yT2tEkjSRx5F8gaTfdEMXbWXKP/tE+ejRbAoLTzMFh0LSn/3U1fHWwBPLxu/9RfPIyXn/tBmzrDJXN8WY5Mn7N+ljMZr1+o1vQP+8srURtMym0kM6ogFF5a21e+MlHMW+PRM8njG4DSOU1ONYUVxIZuSl4XxZQiwejcMYEGf23mj9ij0meZ6NSAAi7I3gPZOrAR/PY9l5lOzN4JaWGL77F2Od+YOCBAs1tHFMsibMrAI4bmLZ+ndtpAD9CY/9lmT+AIs7dsZHbIKWnw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=valinux.co.jp; dkim=pass (1024-bit key; unprotected) header.d=valinux.co.jp header.i=@valinux.co.jp header.a=rsa-sha256 header.s=selector1 header.b=iXdgjwwa; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c407::3; helo=os0p286cu011.outbound.protection.outlook.com; envelope-from=den@valinux.co.jp; receiver=lists.ozlabs.org) smtp.mailfrom=valinux.co.jp
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=valinux.co.jp
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fXthy20mpz2xgv;
+	Sat, 14 Mar 2026 18:46:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773474402;
+	cv=none; b=e5anlkG1vcJBDaicJRxwcK4MUqdf8ta9x6wFLhsROvBCWMTVrPYz3NPSf9lXc/Edci/i6eOmDX3RxrbFDUkWc6/cT9kIoSwD6Wfj3a0xByzE8GV/8+QdwrGLRParkw0QHrxa0I8WXew1tZik8bRvqcd2vaLDup8OOHyEpfkSzqxxVelbZ17rgoq8xiM81qtFbElkr4LsLgyxUp0tNu89Jalo3UVrlJEYkhLF1xMPHzcdU4yxnQCMcbHRtXWIUTB6UjYEXTQ+N8Jx3i6fV2ntcqqYPDtFtXM+T+k4dhtCjGHGRdXrKC6yEsK4cieKhHOFzWDmzv2BXp7jB7nKQqkOMQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1773474402; c=relaxed/relaxed;
+	bh=bqs72lIeJ93Co8annkkLCJzb1UYqUT148EQmsY1AIe8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=lO9Z7pnar1XxY153qK70iFOnc7ZSYUA3amcANK3BumUTFdjOps538bA0KPNKWWKthpALLvzQPuC0z2mWldQnG0SVMDxEEFDXFXGKRtChto4QCRVRwImsEAjH6r/hnxmR7s0gg1gl795pPf5UxCizBLqIA0V4/x23crUI/YGy3qnvPYk68axMXvA6Uj/CPfqG85RH8asJlIFXI0APcOpVe8NfaAomCidfSw/HGboMGLir6xFDViASwVw2vFJioUVnUA2Y9QHjyst1s+euXCommmbwqh3FtqKYAVDGuKoZX5z0j9yidclnUtukY2jhTXEG0HqHZiRtu+8eLn4OyRe+KQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ILB767sQ; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=valinux.co.jp header.i=@valinux.co.jp header.a=rsa-sha256 header.s=selector1 header.b=iXdgjwwa;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ILB767sQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=valinux.co.jp (client-ip=2a01:111:f403:c407::3; helo=os0p286cu011.outbound.protection.outlook.com; envelope-from=den@valinux.co.jp; receiver=lists.ozlabs.org)
-Received: from OS0P286CU011.outbound.protection.outlook.com (mail-japanwestazlp170100003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c407::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fXpQF5MwJz2xYw
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Mar 2026 15:33:40 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=lbGy4t/XKTq7k9GazfZnjB2a0UTQy4Mh2N0jfTEBLpnEUQ4af/qSMlNfsu+t61poW7GFWe9lLfOVGmIpOnfvpkE7wJhRX3qWqRetgQyeXLbmR6oj6FqhtoSmM6kPtWZ7viOnM+YkrfAhlt8OwnPU2JyYWfE9EfVXv5VBtTeXo6fIQolDWdIRW58fPnRkIM+g18IA6IO59ZRAjPqN0XUVlTATpl5fR0q0LlD1p3R0BGXdCV1xENT+k5/eg9kymxU0AYJbZhyOkJLW779a0zzWU1SHtpIigv/S2y6PNfyFMjPcdQA7sA/Hcb6J5NV4vEBQ661gDNfbD8vaau3/HuiVcQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Lt6l5l5f8bedU3Nd+YRqBu7yp+ZT/u5xRLV9E/MiwpY=;
- b=zJyV0BBwkU0kp71ooCUeDTAIyZ7/3sG4ygnopVSsT0FgsZL8niSlldjQlKN/8V276Jog8V6n3f1qVaqEnBa/rAF58hx9U+TjMUtV6Juz3/Rc1WdNJkxPOXhZ1Ghj2MEcCbQ1OJmiw7dMYomnrNdGyazTI/VgbKZrahocS7cpJuWH7+D4VBdSQJ31VOY1l7tw+qTA6asAdWIPZiYHqL5zFCYSJiepsbA0VCQTQufdWOYD30N6WUanXCCOZSjnAb/NxTZtMsf7sEe7aoTavtCZO8+T07VQqB9QYCYoVnyErf4Z9Ec7b99n0h9WYkwxpCI3g608KrC29TunBWBemugyPQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=valinux.co.jp; dmarc=pass action=none
- header.from=valinux.co.jp; dkim=pass header.d=valinux.co.jp; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=valinux.co.jp;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Lt6l5l5f8bedU3Nd+YRqBu7yp+ZT/u5xRLV9E/MiwpY=;
- b=iXdgjwwaQxYgiw7B8FmgKaVrug7Qn+C5ZL/r7BTbeHM4LXA0LvjCwWT3saegToCRnIaLIrqDJHF987FKgvIDbK3iI+IzZswhxEAaQj2Oh8jeVXeLTXjwtFtILhV8xNyVzFK7aOfZFTeZp6jw/m4acRyX+tns5j+UTq15C8sRlPU=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=valinux.co.jp;
-Received: from TY7P286MB7722.JPNP286.PROD.OUTLOOK.COM (2603:1096:405:38f::10)
- by TYRP286MB5686.JPNP286.PROD.OUTLOOK.COM (2603:1096:405:2d8::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9700.17; Sat, 14 Mar
- 2026 04:33:17 +0000
-Received: from TY7P286MB7722.JPNP286.PROD.OUTLOOK.COM
- ([fe80::2305:327c:28ec:9b32]) by TY7P286MB7722.JPNP286.PROD.OUTLOOK.COM
- ([fe80::2305:327c:28ec:9b32%5]) with mapi id 15.20.9700.015; Sat, 14 Mar 2026
- 04:33:16 +0000
-Date: Sat, 14 Mar 2026 13:33:14 +0900
-From: Koichiro Den <den@valinux.co.jp>
-To: Christian Bruel <christian.bruel@foss.st.com>
-Cc: jingoohan1@gmail.com, mani@kernel.org, lpieralisi@kernel.org, 
-	kwilczynski@kernel.org, robh@kernel.org, bhelgaas@google.com, cassel@kernel.org, 
-	Frank.Li@nxp.com, vigneshr@ti.com, s-vadapalli@ti.com, hongxing.zhu@nxp.com, 
-	l.stach@pengutronix.de, shawnguo@kernel.org, s.hauer@pengutronix.de, 
-	kernel@pengutronix.de, festevam@gmail.com, minghuan.Lian@nxp.com, mingkai.hu@nxp.com, 
-	roy.zang@nxp.com, jesper.nilsson@axis.com, heiko@sntech.de, 
-	srikanth.thokala@intel.com, marek.vasut+renesas@gmail.com, yoshihiro.shimoda.uh@renesas.com, 
-	geert+renesas@glider.be, magnus.damm@gmail.com, mcoquelin.stm32@gmail.com, 
-	alexandre.torgue@foss.st.com, thierry.reding@gmail.com, jonathanh@nvidia.com, 
-	hayashi.kunihiko@socionext.com, mhiramat@kernel.org, kishon@kernel.org, jirislaby@kernel.org, 
-	rongqianfeng@vivo.com, 18255117159@163.com, shawn.lin@rock-chips.com, 
-	nicolas.frattaroli@collabora.com, linux.amoon@gmail.com, vidyas@nvidia.com, shuah@kernel.org, 
-	linux-omap@vger.kernel.org, linux-pci@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, imx@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
-	linux-arm-kernel@axis.com, linux-rockchip@lists.infradead.org, 
-	linux-arm-msm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, 
-	linux-stm32@st-md-mailman.stormreply.com, linux-tegra@vger.kernel.org, linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH v10 3/8] PCI: dwc: Advertise dynamic inbound mapping
- support
-Message-ID: <tkfhaovpmaoodo35attvmbnpukcqgmwyrxmfgiwjy2dga65cgl@hmj4mx2n44ki>
-References: <20260124145012.2794108-1-den@valinux.co.jp>
- <20260124145012.2794108-4-den@valinux.co.jp>
- <b2b03ebe-9482-4a13-b22f-7b44da096eed@foss.st.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b2b03ebe-9482-4a13-b22f-7b44da096eed@foss.st.com>
-X-ClientProxiedBy: TYCPR01CA0060.jpnprd01.prod.outlook.com
- (2603:1096:405:2::24) To TY7P286MB7722.JPNP286.PROD.OUTLOOK.COM
- (2603:1096:405:38f::10)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fXthw1Vq2z2xdV
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Mar 2026 18:46:40 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id C2C4760008;
+	Sat, 14 Mar 2026 07:46:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 44BD6C116C6;
+	Sat, 14 Mar 2026 07:46:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773474396;
+	bh=MHGzmKFozUpafxnV8AnZXEkdvC5yVTHrFIee/jJtQKk=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=ILB767sQQa0rzjADbPtKPLWo8s56cXtC0NQySmWuaZ24sgrGkSVZ396RUFYd4iDQX
+	 Ekv26R/dC1g6RM5htRa/JEhHrewo2dDRT611oC1MKn4dETHDcAZcTXy6jZZaKUubbm
+	 vZSl6rzuCITgxGD/h4Jo00+YngC6lS/ezLnR0Eul5l1/rjqvONLUkkcupIKfScUzF/
+	 IoWuZAQ4aobO4JpiDtcSD38b/cFe0rgKDBMMZE5OyrPD7jcH2+3qd7PGVaGr1ocg8n
+	 lnQOw5ruX5c1dHAl51hQqdy+l6v3h9Anab4OlT+BxsowGKdwof63Twr5wEIctiM7F6
+	 jpgAZFUCElh6g==
+Message-ID: <95fdd9f7-f7b7-4ab4-9506-f952b9af3a33@kernel.org>
+Date: Sat, 14 Mar 2026 08:46:27 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,174 +59,125 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: TY7P286MB7722:EE_|TYRP286MB5686:EE_
-X-MS-Office365-Filtering-Correlation-Id: 117befd6-b300-496f-07bb-08de8182cf76
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|376014|7416014|10070799003|366016|22082099003|56012099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	wBhPz6v9XhyEg9APV0PbwPu0Hgog0VsuiwLQJvjWIFZlkmy8jdUpH5CoaX9ALIQWZQXrtAC47Wh8LS4OJ2a8JF6nGjMATddFqdiq+fDLHGSaKqTvUPd7JKHZlzeH8Vg//PP6vsDDGYxB/AWBpChjrgmO/GAWXKu9mP2a+TyHN3eDRrYWkjHLq3oXJzhL4thb967G77n7++B9R4per46UL0XvGamr/eAH+R6/guzguriIkZ6Yyl4/ktJunClecqm0Z+fz16/lRL5CplTjNGeqg7svT6ujYgNrsYNr1lyb95Rz1QN6vYCbFss8Fe+m2IlPtCJ9tcdEq1WeghmFLUzA34Q30WU9UQH2W7EAJyDvV0exZa66EsQGX7axEDdDh3WacfnwgM/Y9ZR9PtclRZ+Ytv/UdGjJ852H7Ba3MLqjuvug0rmmch33d6wFbT4b61C3b2C9vPaDW/4FesgPK5163asmjLBBBrm5PPD7i6wq3suz3EyMWiowiaoTHAL5S9RQlwKDtF2xIbe+EqvXUMbuh7ibKhG/QQdkgDSWRRA9O89hQ6QqHKp7nl0M2smNZOYJW4dT03NK7hMcmd9Uv6fS3rdCFwbUS0mOlK06Jq7953rmgenkxm4jwTkyo0HzstCIRzM91UnFw5orba0oQeGfJxULRLhhAtABfPNdTXtpylpnEUkzPIVuw+T4Uxh0tJVYu3geme6lbDkvuFU9h0s64KgyEi+vyJk/Z03fFE40QxY=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TY7P286MB7722.JPNP286.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(7416014)(10070799003)(366016)(22082099003)(56012099003)(18002099003);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?GYzknUcMI1HL8nkg4o4Wlt4IQY6UJoMR3ZeGWhwbR97UwKpkRmnc35ILuvK2?=
- =?us-ascii?Q?jDVuYk3cxfeemXG7VNgwtGUljrEkd/IV6v/cZusdAEuUQb59l74/gCTmhvhZ?=
- =?us-ascii?Q?SAf+bxVoORnBPLNB5NLM0/rxIqfxi4wgxX2zr4yJdlEjsYlr5oQmMeL5DhVq?=
- =?us-ascii?Q?pLMoNgX7kJO6geo+h12+AFTM2/XgUXEqNN6gNS2Qk1LbxDhRJaiD1lmCEOwT?=
- =?us-ascii?Q?FjZwvBJTF76md6CsIrfqNyTh81L0LdXpwpMwSoxQry/yR+jks9iWq8xtDFc9?=
- =?us-ascii?Q?/aBjX1E5t+Sy0+k1/OLXU2xF68UusQypd8kjUSIRdCbBcM6GaTcKzDVwWxuW?=
- =?us-ascii?Q?R/+eRhr6ttPBzXj4ORmOqNaf3YapI+zXnlF/NE7M0x5brkK+9uq6L/PBGx+6?=
- =?us-ascii?Q?3xEhJS+LOwUdiPIAqz6nJZGQ0PeMP6vEtA2wtUP1cBqoPMwWysVk4Hg6yRFh?=
- =?us-ascii?Q?/Wa1KRS6oGrBpptqM/w/u5ZImTh/RBRWFRyK0fKrfMKbvTnHhhiv3maKROib?=
- =?us-ascii?Q?h7b1/8J+1/8DERi3y9J+VKMtrpqUN/YSKCOXjwSlxJg59pvNTB2UE30BXerU?=
- =?us-ascii?Q?vdGSzPHts0J5P6u54HJrlWAG6Feitk3tmfoiFSLM73/A1Xv0CViF2R4yzKcQ?=
- =?us-ascii?Q?Y234+aOiR+bIQRp+7ina23iFvboweqP4ZyWJK/dRiQe7CODHz42e/4mD+K5F?=
- =?us-ascii?Q?Dk9t8+nuNmRGHTtLvq0iNjCDHhM27Higj79NoP4pjU0UOhk0Sx6tc+LgfIIq?=
- =?us-ascii?Q?Jfi6B8yo1d+4dEy8DSgpyhYCrXAozKLlx0O2DMASUXzQmKHbD8FlDaSykBld?=
- =?us-ascii?Q?SJKGutO+CW9HoV0P4lUx/vbIyKcz6Mlztt7TUC885mTtKoNC9CFCUt+z3IYk?=
- =?us-ascii?Q?q2kQhmVpto89s6iFApN3WbVTQDZeeoXHdoawUa7//pFDMyM3dje4XteB9bqd?=
- =?us-ascii?Q?Baf+WeI+AnFdzqK2OLlt6YcET9uSgmizfzbo/jzQG1Z1HGrnOL+blWzEt5rC?=
- =?us-ascii?Q?1JnZjGRfPGaE+MqoR654SSgsBS2D3qn2KU+wao9pELNze+8eXLMyHGl55hzu?=
- =?us-ascii?Q?NNZP+/dpcgiSaLQb35ndfeReVUHDmWz5uoFPsKe+EhGhCMsxFYE8F/h0Ipim?=
- =?us-ascii?Q?MJgobvmUCmRT/cIUb4VhyonBMLZh72UQtVLSpayhQX2FQuV3aP+n4r6lpEBn?=
- =?us-ascii?Q?/762MVCcWTje/Su5w+4rnDa/DalMI9Bs7xoL+dVr3APoskwsV4PrZKPZEBfk?=
- =?us-ascii?Q?LRjWqTb+xQcF2icLlLzEkrnNlqV8F1nNPt7MBSKPZEq8Y1A52z1zuZ8TmihA?=
- =?us-ascii?Q?7+mvurcQgIEyj4c1lmFRDE44vs5nUL68ZoatZYQhJ2nrqU+V2dq9EEOx9Rpl?=
- =?us-ascii?Q?pi5qq2dJV7Oa/L0F8apFSgREVgMF9h289MfmcFzS5AgG/CjA6TMVJ7J66Y0c?=
- =?us-ascii?Q?Yq9nLgrc2IozKbJv7sdC3Qh9VW6dFID9rRDIT3VhkuH909b/CJYlIR6vHT9L?=
- =?us-ascii?Q?q5fh0dQcGD+bE03zy2kNqy8dJULbLIQS5aiW+MvRap8gQZlNfmsQvt7hRX4M?=
- =?us-ascii?Q?v9C/zafN5OB51nEp7JVWpAqlow1PqnNf24BHeqFpmMO4QWitItEfCgpCbVEH?=
- =?us-ascii?Q?wZTMTrEi9g35PBI3p/eIGQcZvn1gjeaeeTtpaxENHzGPebrUlxdBdMzuldOB?=
- =?us-ascii?Q?5qmbuKgoMUDdYbGIzUEGaN4RP/HbnQFmizrd72QlNGogqga2GsJ7M1SeqSHG?=
- =?us-ascii?Q?6OqcOqjGtA5nfgipPeoeQDat8oox5VlCxItWhJVcMiU/8ouUFB7F?=
-X-OriginatorOrg: valinux.co.jp
-X-MS-Exchange-CrossTenant-Network-Message-Id: 117befd6-b300-496f-07bb-08de8182cf76
-X-MS-Exchange-CrossTenant-AuthSource: TY7P286MB7722.JPNP286.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Mar 2026 04:33:16.0321
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 7a57bee8-f73d-4c5f-a4f7-d72c91c8c111
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: qvIGl8wXaSAv8XF8Qn9pSc8/wVRucu58oFrKdRQsToXRou08snlwVJto8KmYMOjOpLKl0oEkyGJgGFgQSi+siw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYRP286MB5686
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc/powermac: Remove pmac_low_i2c_{lock,unlock}()
+To: Bart Van Assche <bvanassche@acm.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+ Kees Cook <kees@kernel.org>
+References: <20260313194430.2396286-1-bvanassche@acm.org>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20260313194430.2396286-1-bvanassche@acm.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Fri, Mar 13, 2026 at 04:59:26PM +0100, Christian Bruel wrote:
-> Hello,
-> 
-> While testing after this series, I encountered regressions on the STM32MP2,
-> which I am unsure how to fix. The failures depend on the order in which the
-> tests are run.
-> 
-> The STM32 ATU has 4 inbound entries. After enumeration, the first 4 ATU
-> entries are allocated within ib_window_map.
-> 
-> On the first run of ./pci_endpoint_test -v BAR3(for example),
-> SUBRRANGE_SETUP calls dw_pcie_ep_ib_atu_addr(), which frees only one ATU
-> entry (BAR3), because we were in the bar_to_atu case, for the first submap
-> but fails to allocate the second submap. So the test FAILs.
-> 
-> On the second run with a different BAR, SUBRRANGE_SETUP test calls
-> dw_pcie_ep_ib_atu_addr() again, freeing the required ATU entry (BAR1) and
-> successfully using the second ATU entry (3), which was left unallocated by
-> the first test. then now the test PASSes
-> 
-> Therefore, the first invocation of ./pci_endpoint_test on any BAR always
-> fails. Other invocations are fine because the first one has left the missing
-> necessary ATU entry free. Whatever initial BAR number is used
-> 
-> I am unsure how to fix this. Always freeing all BARs before calling
-> set_bar() in the epf-test seems overkill, but safe.
-> I am also considering modifying dw_pcie_ep_clear_ib_maps() to clear N
-> num_submap entries even if ib_atu_indexes was not used yet, since only the
-> full BAR is used during the first invocation from bar_to_atu. But the
-> question is which ATU entry to select ? BAR+1 ?. This seems empirical.
-> 
-> I am not bothered by test failures due to an insufficient number of BARs
-> (this is already the case for BAR5,6), but the fact that the failures depend
-> on the test order is frustrating and show a regression.
-> 
-> But I'm not satisfied with either of the 2 possible fixes mentioned above.
-> 
-> Do you have any other thought ?
 
-Hi Christian,
 
-Thanks for the report/analysis and sorry for the inconvenience.
+Le 13/03/2026 à 20:44, Bart Van Assche a écrit :
+> I haven't been able to find any callers of the functions mentioned in
+> the subject in the kernel tree nor in the history of the kernel tree.
+> Hence, remove these two functions.
 
-If I understand it correctly, I think pci_epf_test_bar_subrange_setup() should
-simply roll back to the original BAR mapping when subrange setup fails.
+As far as I can see it was used by i2c-keywest driver until commit 
+a28d3af2a26c ("[PATCH] 2/5 powerpc: Rework PowerMac i2c part 2")
 
-In other words, if there are not enough free inbound regions for the subrange
-test, the test should fail consistently and without leaving any side effect
-behind. At the moment, it seems the failed setup leaves the BAR in a different
-state (i.e. cleared), which then affects subsequent runs. That looks like a bug
-in pci_epf_test_bar_subrange_setup().
+a28d3af2a26c89aaa6470ca36edb212e05143d67~:drivers/i2c/busses/i2c-keywest.c: 
+     if (pmac_low_i2c_lock(iface->node))
+a28d3af2a26c89aaa6470ca36edb212e05143d67~:drivers/i2c/busses/i2c-keywest.c: 
+     if (pmac_low_i2c_lock(iface->node))
+a28d3af2a26c89aaa6470ca36edb212e05143d67~:drivers/i2c/busses/i2c-keywest.c: 
+     if (pmac_low_i2c_lock(np))
+a28d3af2a26c89aaa6470ca36edb212e05143d67~:drivers/i2c/busses/i2c-keywest.c: 
+     if (pmac_low_i2c_lock(iface->node))
 
-If I understood the problem correctly, would something like the patch below
-address it? My expectation is that the subrange mapping test would then fail
-consistently on platforms that do not have enough free IB iATU regions.
+a28d3af2a26c89aaa6470ca36edb212e05143d67~:drivers/i2c/busses/i2c-keywest.c: 
+     pmac_low_i2c_unlock(iface->node);
+a28d3af2a26c89aaa6470ca36edb212e05143d67~:drivers/i2c/busses/i2c-keywest.c: 
+     pmac_low_i2c_unlock(iface->node);
+a28d3af2a26c89aaa6470ca36edb212e05143d67~:drivers/i2c/busses/i2c-keywest.c: 
+             pmac_low_i2c_unlock(np);
+a28d3af2a26c89aaa6470ca36edb212e05143d67~:drivers/i2c/busses/i2c-keywest.c: 
+             pmac_low_i2c_unlock(np);
+a28d3af2a26c89aaa6470ca36edb212e05143d67~:drivers/i2c/busses/i2c-keywest.c: 
+             pmac_low_i2c_unlock(np);
+a28d3af2a26c89aaa6470ca36edb212e05143d67~:drivers/i2c/busses/i2c-keywest.c: 
+     pmac_low_i2c_unlock(np);
+a28d3af2a26c89aaa6470ca36edb212e05143d67~:drivers/i2c/busses/i2c-keywest.c: 
+     pmac_low_i2c_unlock(iface->node);
 
-[---8<---]
-From 039548c87a5c7a038ac562272447c4620a4c1ad2 Mon Sep 17 00:00:00 2001
-From: Koichiro Den <den@valinux.co.jp>
-Date: Sat, 14 Mar 2026 12:58:04 +0900
-Subject: [PATCH] PCI: endpoint: pci-epf-test: Roll back BAR mapping when
- subrange setup fails
-
-When the BAR subrange mapping test on DWC-based platforms fails due to
-insufficient free inbound iATU regions,
-pci_epf_test_bar_subrange_setup() returns an error (-ENOSPC) but does
-not restore the original BAR mapping. This causes subsequent test runs
-become confusing, since the failure leaves a room for the next subrange
-mapping test to pass.
-
-Fix this by restoring the original BAR mapping when preparation of the
-subrange mapping fails.
-
-Fixes: 6c5e6101423b ("PCI: endpoint: pci-epf-test: Add BAR subrange mapping test support")
-Reported-by: Christian Bruel <christian.bruel@foss.st.com>
-Signed-off-by: Koichiro Den <den@valinux.co.jp>
----
- drivers/pci/endpoint/functions/pci-epf-test.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/pci/endpoint/functions/pci-epf-test.c b/drivers/pci/endpoint/functions/pci-epf-test.c
-index 582938b7b4f1..0e5958088b8f 100644
---- a/drivers/pci/endpoint/functions/pci-epf-test.c
-+++ b/drivers/pci/endpoint/functions/pci-epf-test.c
-@@ -891,12 +891,15 @@ static void pci_epf_test_bar_subrange_setup(struct pci_epf_test *epf_test,
-
-        ret = pci_epc_set_bar(epc, epf->func_no, epf->vfunc_no, bar);
-        if (ret) {
-                dev_err(&epf->dev, "pci_epc_set_bar() failed: %d\n", ret);
-                bar->submap = old_submap;
-                bar->num_submap = old_nsub;
-+               if (pci_epc_set_bar(epc, epf->func_no, epf->vfunc_no, bar))
-+                       dev_warn(&epf->dev, "failed to roll back\n");
-+
-                kfree(submap);
-                goto err;
-        }
-        kfree(old_submap);
-
-        /*
---
-2.51.0
-
-[---8<---]
-
-I'd appreciate it if you could test this. Or, if I'm still missing the point of
-your report, please let me know.
-
-Best regards,
-Koichiro
 
 > 
-> thank you
+> Signed-off-by: Bart Van Assche <bvanassche@acm.org>
+
+Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+
+> ---
+>   arch/powerpc/include/asm/pmac_low_i2c.h   |  4 ---
+>   arch/powerpc/platforms/powermac/low_i2c.c | 34 -----------------------
+>   2 files changed, 38 deletions(-)
 > 
-> Christian
+> diff --git a/arch/powerpc/include/asm/pmac_low_i2c.h b/arch/powerpc/include/asm/pmac_low_i2c.h
+> index 21bd7297c87f..fead8fae08ab 100644
+> --- a/arch/powerpc/include/asm/pmac_low_i2c.h
+> +++ b/arch/powerpc/include/asm/pmac_low_i2c.h
+> @@ -79,10 +79,6 @@ extern int pmac_i2c_match_adapter(struct device_node *dev,
+>   				  struct i2c_adapter *adapter);
+>   
+>   
+> -/* (legacy) Locking functions exposed to i2c-keywest */
+> -extern int pmac_low_i2c_lock(struct device_node *np);
+> -extern int pmac_low_i2c_unlock(struct device_node *np);
+> -
+>   /* Access functions for platform code */
+>   extern int pmac_i2c_open(struct pmac_i2c_bus *bus, int polled);
+>   extern void pmac_i2c_close(struct pmac_i2c_bus *bus);
+> diff --git a/arch/powerpc/platforms/powermac/low_i2c.c b/arch/powerpc/platforms/powermac/low_i2c.c
+> index 73b7f4e8c047..da72a30ab865 100644
+> --- a/arch/powerpc/platforms/powermac/low_i2c.c
+> +++ b/arch/powerpc/platforms/powermac/low_i2c.c
+> @@ -1058,40 +1058,6 @@ int pmac_i2c_match_adapter(struct device_node *dev, struct i2c_adapter *adapter)
+>   }
+>   EXPORT_SYMBOL_GPL(pmac_i2c_match_adapter);
+>   
+> -int pmac_low_i2c_lock(struct device_node *np)
+> -{
+> -	struct pmac_i2c_bus *bus, *found = NULL;
+> -
+> -	list_for_each_entry(bus, &pmac_i2c_busses, link) {
+> -		if (np == bus->controller) {
+> -			found = bus;
+> -			break;
+> -		}
+> -	}
+> -	if (!found)
+> -		return -ENODEV;
+> -	return pmac_i2c_open(bus, 0);
+> -}
+> -EXPORT_SYMBOL_GPL(pmac_low_i2c_lock);
+> -
+> -int pmac_low_i2c_unlock(struct device_node *np)
+> -{
+> -	struct pmac_i2c_bus *bus, *found = NULL;
+> -
+> -	list_for_each_entry(bus, &pmac_i2c_busses, link) {
+> -		if (np == bus->controller) {
+> -			found = bus;
+> -			break;
+> -		}
+> -	}
+> -	if (!found)
+> -		return -ENODEV;
+> -	pmac_i2c_close(bus);
+> -	return 0;
+> -}
+> -EXPORT_SYMBOL_GPL(pmac_low_i2c_unlock);
+> -
+> -
+>   int pmac_i2c_open(struct pmac_i2c_bus *bus, int polled)
+>   {
+>   	int rc;
+
 
