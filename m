@@ -1,80 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-18239-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18240-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51DE0F506C3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2026 12:41:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F027BF506C4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2026 12:47:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fZF8J5hKpz2xpn;
-	Mon, 16 Mar 2026 23:41:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::6" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773664896;
-	cv=pass; b=mKawJcLAEdBDiPeI3Y66YStz9D1EAkWkCdIVu6JtkUmpaiZUwudasX0Fn1a1UIyf1GrKGE9/AFwLnXYNepupvpjIuKSHANqb9OMysUghx45IDocJFUQ/q5ZRDuJvvRmFHzpt9QnQ1Yb/heJJ39logH0p3COYsajxNgiu16fdCSb8qFghfYu5qAIWR+9GeYsG1bbO/tb1L9XDk0Ljri4tzo4TkzSXg0d9M1PYwDAxCu0mXfoYuRi8rZZROeIAkeue4S99JF05GrIvl027UFvKQatB+X+X4BOPHKSfE+68j05aDhWBqmLnuru+ZxImSpZ+P0dKTxrdcCeNNDW/lXdm8Q==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773664896; c=relaxed/relaxed;
-	bh=vFeTKtO1ufI5gH/H4m5HJwsDUC2IS5k935VF2z9Nx1c=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=l3sLlBF6lszryMZY8EZ+BrXX8/zOubqXHPSeIYIlX4Za7JAGLswK7J9C0M0alUGAoqFIAoncWSqlbqzLBx3mPGdrRuQKhtQswubD5ZqFGDWobronUPxQtQcg4L2Dgy0e0xi0uqNElkNm6jhIaRUlZoYOXGXNksYmM5gq2R6R9GfJWjKGuhxAxfSrMTpSy4ijdYAXaKjgmW+7rlXYMGVFZs5L9euHs7XA7dDGVvJsutFwG9lVuhqaL7bhsEgQ7t1F5j79Y1sm4KFZtp20eOaJIdbh1teS+QRYLUvxJNJx2M80L2MU3bzHyevHMGZPKwjsjyOU4L1RRV93CyA7nCvvMg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=foss.st.com; dkim=pass (2048-bit key; unprotected) header.d=foss.st.com header.i=@foss.st.com header.a=rsa-sha256 header.s=selector2 header.b=liO/lMAS; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=christian.bruel@foss.st.com; receiver=lists.ozlabs.org) smtp.mailfrom=foss.st.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=foss.st.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fZFHb4Ls1z2xpn;
+	Mon, 16 Mar 2026 23:47:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773665275;
+	cv=none; b=ljQ/VRJ+hslyemer9v/7DDblOCA/IPX73AKNcWd2aIO9v3zhdIDyUcuFsHvC2UCWG+GgK87LqnyBaIsvwG3tvLxbaaipdga6oCoBY9TMvchUx230s9Tci48I8b16HkiQ5HxPtAwPMMwIRiw79PfgwDYsqDx/+WICBj3yvv8qSMuLMuv0PS+OmT/aUX70+g37FTTymFvH8HejoHUz6HIvM270uY0gkrGnspszbAiEwtbvzmV41mZm7dfc1Kn61WkJM/evQD7gX5RehPX2wxuPCJtRnYZA998+uZc4T7oPNndAdFcmHPAgZKcwEthb91JJ6S580wYn93U2DG9h0G8FUw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1773665275; c=relaxed/relaxed;
+	bh=6ejYt5CXdn4QwItL4+2YTkxnhxpuLLBew7wWwP5rLLc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=lMDiUbQYnVh7FVYlOYECzX5VG/PZGoh8NnHeMvgFNIXB7VyxGhi4L7jcU1K51/nrg5k/pWNa8jDQH7YfIpxiCBa6GOGxTahr49CVW3fu2VcAXAOTceaes1KnjehLseyGyqbz5AOWC9APzLKe2e4/WNKK71zQ76R05b+Npdue9IF7CtnvEB3GC4zatvITDGYulZYsYfLpY28efyW2pOsdhdCUEa7DC/3ORaRdQK8Iy/QmeNZFr3t4jJk4pGmRjgN7Y5fJIAkMzBWcwKhjLOoDTrxSHVAm6AH3uASn5tswtEke6uxRmYAgS8qJFall/2+6WGnoPsYsSR0YVbqio/H8zw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pKg+pW6o; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=nsc@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=foss.st.com header.i=@foss.st.com header.a=rsa-sha256 header.s=selector2 header.b=liO/lMAS;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pKg+pW6o;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=foss.st.com (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=christian.bruel@foss.st.com; receiver=lists.ozlabs.org)
-Received: from AM0PR02CU008.outbound.protection.outlook.com (mail-westeuropeazlp170130006.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::6])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=nsc@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZF8H5nsgz2xS3
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2026 23:41:35 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=plr7mGkKohhlBk72S6qefmuQMGhdGq5t2UDSZIkfwj6yQRpxACWuKG6ZPy2O99It1Vy5NhLYL9hpkpac8nCnAKxeBSfKISdMGz5Ffu+FP624iAtCYtWfkJOAn72jpJmmTFu25VgwBkYeyEVjzTPYdCuRGkKSbQ5IYcqXM7W8tNCJpgZm9R7NgS2fvsN8cjqOT1vWhzBuHSWILZL29dy8TEjrarPVzYz0qCi17xGF7UpP3YdAe4lhzixk5aByglqnJDP5MWo1a+H/Y3yuLS/yvQJMmb9W4WvJJDgVNF6zu7AUJDL8bZbKMesPM2KtYNCfmwwjY++f3W/TEa5VJHjRuw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=vFeTKtO1ufI5gH/H4m5HJwsDUC2IS5k935VF2z9Nx1c=;
- b=Nan0sTpyKOJkK7EooSRfsBToB/vCA36ze6ixdDqy0B7e/BwxKyNZXIu23pdQoQiDZNWxtbkmdMa+KsMhhG1rrfgNNUeLtJSisJDmc1BpBbRc2FB7SOvpJlt/ArnyKky9qB1w82gw7S8/7plik6jwCXCQplQgcq9zmy5+V9RmBe2rjvA9msHQ+H6opLOyapA/unYRZTkg+6Pg6KjwldBCgOqCqqFCDbIpnxmduDv4Jx5ccZ/uHpU8QfHsfi89sHyhUvNOQMGB+bKcVKUuIPuLq79z45+G16OMQR4ON0DxsC+ECr7EY09YXj/ZNQcmlGpEtuPT1cfGInkGGLTTiC63kg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=fail (sender ip is
- 164.130.1.60) smtp.rcpttodomain=valinux.co.jp smtp.mailfrom=foss.st.com;
- dmarc=fail (p=none sp=none pct=100) action=none header.from=foss.st.com;
- dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foss.st.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=vFeTKtO1ufI5gH/H4m5HJwsDUC2IS5k935VF2z9Nx1c=;
- b=liO/lMASiQtS7DjhTtyfORdBJkSHW3/jVOr6IEyHK7yBjzm5ORKGeKI/ZMi80jY6NeH6iGh6LwdhmAD9fiQREkWfU+PfeCOSfw2uHRxqSXUGbHql6BueymhKo3DwSxtWsf9vokCAX7p0GlcSkrLfx8QeDOBlVYbabrS3NjkmjBZ2HeJ+C218WZr4hCOzcy2zdNMUz1NZV9iQiS87hhI7M0HnlikEDARE+ust61G4JoF+gFnJ71xp4c0PlAeANogTF4PojjJjNNgQzRBU9v3g8+v6xN3J/Uql+l/yz6jjm2k0YeDxCrpe9ltTzWQDbFexa6EWIQIkdRBYKZAcAXK7YQ==
-Received: from DU6P191CA0049.EURP191.PROD.OUTLOOK.COM (2603:10a6:10:53e::8) by
- GVXPR10MB9428.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:150:2a9::15) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9700.24; Mon, 16 Mar
- 2026 12:41:07 +0000
-Received: from DB1PEPF00039230.eurprd03.prod.outlook.com
- (2603:10a6:10:53e:cafe::5b) by DU6P191CA0049.outlook.office365.com
- (2603:10a6:10:53e::8) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9700.24 via Frontend Transport; Mon,
- 16 Mar 2026 12:41:04 +0000
-X-MS-Exchange-Authentication-Results: spf=fail (sender IP is 164.130.1.60)
- smtp.mailfrom=foss.st.com; dkim=none (message not signed)
- header.d=none;dmarc=fail action=none header.from=foss.st.com;
-Received-SPF: Fail (protection.outlook.com: domain of foss.st.com does not
- designate 164.130.1.60 as permitted sender) receiver=protection.outlook.com;
- client-ip=164.130.1.60; helo=smtpO365.st.com;
-Received: from smtpO365.st.com (164.130.1.60) by
- DB1PEPF00039230.mail.protection.outlook.com (10.167.8.103) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9678.18 via Frontend Transport; Mon, 16 Mar 2026 12:41:06 +0000
-Received: from STKDAG1NODE2.st.com (10.75.128.133) by smtpO365.st.com
- (10.250.44.72) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.29; Mon, 16 Mar
- 2026 13:43:24 +0100
-Received: from [10.130.77.120] (10.130.77.120) by STKDAG1NODE2.st.com
- (10.75.128.133) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.29; Mon, 16 Mar
- 2026 13:41:04 +0100
-Message-ID: <5e485218-becf-499b-8a07-d25358504807@foss.st.com>
-Date: Mon, 16 Mar 2026 13:41:03 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZFHZ4LFqz2xS3
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2026 23:47:54 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 5531141B0B;
+	Mon, 16 Mar 2026 12:47:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A8A27C19421;
+	Mon, 16 Mar 2026 12:47:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773665271;
+	bh=6ejYt5CXdn4QwItL4+2YTkxnhxpuLLBew7wWwP5rLLc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=pKg+pW6o7PPJy2g2+OfqVM8Y88Z5o4U5yImsjdq/WZ87bV24v8ZyBYZJRLv2YNhyO
+	 paWIx11abE6L+k1bdyE3qmRJmWPeH+/EUV3g5x9CPUUUiQiZc+J3iHMUtijPYCDqZE
+	 Dj5QzspSB45f6DJ8ONtzLXLSHOqB8KxDuGcJowExeyREBa3wW5WGXB0xE8JYG1glQQ
+	 M94NDfJpoNJjiDx/9aNjbuNtEi+teqE9sCEVckUIG7y/QDELOtmjnkf4cLID7n76ti
+	 IXfQtGBoenzB0LL6gvZNtAZsPIe415FMjpGooC1IcmYFu68gEfQ3RiTOs7+YN4LpTs
+	 Ysic6bSQxA6pQ==
+Date: Mon, 16 Mar 2026 13:39:47 +0100
+From: Nicolas Schier <nsc@kernel.org>
+To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	Linux Next Mailing List <linux-next@vger.kernel.org>,
+	broonie@kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Masahiro Yamada <masahiroy@kernel.org>, xur@google.com,
+	Nathan Chancellor <nathan@kernel.org>, Kees Cook <kees@kernel.org>
+Subject: Re: [next-20260313] kernel =?utf-8?Q?build?=
+ =?utf-8?Q?_fails_with_=E2=80=9Car=3A_unrecognized_option_'--thin'?=
+ =?utf-8?B?4oCd?=
+Message-ID: <abf6E7rFDdjNiKcT@levanger>
+References: <476507c9-a371-4864-9e87-572c1ecae82d@linux.ibm.com>
+ <de14e6d6-fad4-4e9a-8004-66a28db31faa@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,98 +72,282 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v10 3/8] PCI: dwc: Advertise dynamic inbound mapping
- support
-To: Koichiro Den <den@valinux.co.jp>
-CC: <jingoohan1@gmail.com>, <mani@kernel.org>, <lpieralisi@kernel.org>,
-	<kwilczynski@kernel.org>, <robh@kernel.org>, <bhelgaas@google.com>,
-	<cassel@kernel.org>, <Frank.Li@nxp.com>, <vigneshr@ti.com>,
-	<s-vadapalli@ti.com>, <hongxing.zhu@nxp.com>, <l.stach@pengutronix.de>,
-	<shawnguo@kernel.org>, <s.hauer@pengutronix.de>, <kernel@pengutronix.de>,
-	<festevam@gmail.com>, <minghuan.Lian@nxp.com>, <mingkai.hu@nxp.com>,
-	<roy.zang@nxp.com>, <jesper.nilsson@axis.com>, <heiko@sntech.de>,
-	<srikanth.thokala@intel.com>, <marek.vasut+renesas@gmail.com>,
-	<yoshihiro.shimoda.uh@renesas.com>, <geert+renesas@glider.be>,
-	<magnus.damm@gmail.com>, <mcoquelin.stm32@gmail.com>,
-	<alexandre.torgue@foss.st.com>, <thierry.reding@gmail.com>,
-	<jonathanh@nvidia.com>, <hayashi.kunihiko@socionext.com>,
-	<mhiramat@kernel.org>, <kishon@kernel.org>, <jirislaby@kernel.org>,
-	<rongqianfeng@vivo.com>, <18255117159@163.com>, <shawn.lin@rock-chips.com>,
-	<nicolas.frattaroli@collabora.com>, <linux.amoon@gmail.com>,
-	<vidyas@nvidia.com>, <shuah@kernel.org>, <linux-omap@vger.kernel.org>,
-	<linux-pci@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-kernel@vger.kernel.org>, <imx@lists.linux.dev>,
-	<linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@axis.com>,
-	<linux-rockchip@lists.infradead.org>, <linux-arm-msm@vger.kernel.org>,
-	<linux-renesas-soc@vger.kernel.org>,
-	<linux-stm32@st-md-mailman.stormreply.com>, <linux-tegra@vger.kernel.org>,
-	<linux-kselftest@vger.kernel.org>
-References: <20260124145012.2794108-1-den@valinux.co.jp>
- <20260124145012.2794108-4-den@valinux.co.jp>
- <b2b03ebe-9482-4a13-b22f-7b44da096eed@foss.st.com>
- <tkfhaovpmaoodo35attvmbnpukcqgmwyrxmfgiwjy2dga65cgl@hmj4mx2n44ki>
-Content-Language: en-US
-From: Christian Bruel <christian.bruel@foss.st.com>
-In-Reply-To: <tkfhaovpmaoodo35attvmbnpukcqgmwyrxmfgiwjy2dga65cgl@hmj4mx2n44ki>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.130.77.120]
-X-ClientProxiedBy: ENXCAS1NODE2.st.com (10.75.128.138) To STKDAG1NODE2.st.com
- (10.75.128.133)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DB1PEPF00039230:EE_|GVXPR10MB9428:EE_
-X-MS-Office365-Filtering-Correlation-Id: 40765379-7348-4900-8e15-08de83594b29
-X-LD-Processed: 75e027c9-20d5-47d5-b82f-77d7cd041e8f,ExtAddr
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
- BCL:0;ARA:13230040|1800799024|376014|7416014|82310400026|36860700016|18002099003|56012099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
- QqAcbgBlXt6JRa8dGSi2Cxdiu6q3lBdEv0/nJ4sp9M7FHeF5cUmCuVrOSmEqjvwn+CVZhG8IOpeBxpnovf+xL5mxjamgTPkJ5kojPmXyjFeHILkoC2neCROylq7YiZkh/NbpBOYzaM+6qgPBGo4VhZ01lg6n3qiGKZ7umw0q8isEoDRa2LiWTTOBrag79phrLurCgkzkBC7xYvjDxRhYm71nLFUYx0M8On+AD4Ylgxavqvs1jG5OXfBeR/phXf040DsGZmWZU0t2V3SVKU6UFSUFMAGN+FmsnPDGgOqNMx+eN+Yq/P+qh5nbo6PhwzknMeTCxs59ceyZ+NZdFDbw0ZMMxl6/X0SVWb40uIwGG/QtthmCbR7bjPR8U7pJblPAL7MUgU75I4MLKixSqcWhtXZjlPse4R3jxryUWlEwkUqFhRWeuTb4mx0979CkgICSdnMlwvAznj0RC5qB07dm5Kjnkjs7XHkXqhb7MUWzpU1S9sISSHoVDoyrzppWxtPuDOlNqQ6WITFQ6y76px51fgOHsML8Ec7g5L242zYhFcqoLPraRV61EAXNIwd12oixkjBBJbUKTe36VYVJQqFxsZxt9XgQtSeb84gzpy+uXlH58TF5mg4TsjKPeiE231PR3gwB/XWxxyD7a9XLVDbyi8ty4qQnGf8yMp7EO6w8SyBcnZNSQxw+2T3WsboMOlN7aZyiRv4CEgKuh/Cnud2dyPSsonBSvlrK10whyY1gysMSfRia2EZsg5l34n/dHjRk9/DpBYbZ/Ffoktl4YH8MYA==
-X-Forefront-Antispam-Report:
- CIP:164.130.1.60;CTRY:IT;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:smtpO365.st.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(376014)(7416014)(82310400026)(36860700016)(18002099003)(56012099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
- myyTgjPCpS6E9Wq7PZExwdOA/nLUpsH32pzqkeb2Ityek2ZD6/RtoZRmKcPOGJ2MlrIiC5cbVWH0LqTa+0vFAof+AtA9zgZoO9euVtBY4nPjmO1OF7gIuTGFZ/+RkMtqWKmgZAXp2nV7AVp3GWNNMklMpIGXYL8LEI9ZMPi9dIUocHij+5OWLFvjf7VvxukYzN6XdJa0BsdT75KXAhi6kYVCIyiZW8dxYNTZssRpJvQDDEO9MYadsjXe3Cb7odvx9M/+jplwnSC7Fask53tqL899njMgiQoVS2VwkzDpuBzA50MkQ8Ik8Dhw+yKKzO0IxsQ974zjfJhGWrRsRqq6vvzlUF7xRGMGgw3+sL2D46VhhBPH2iulbB9t6OXGOlmrE/D4GMPpFJvUpmxYAHaGFx3vTrvxb9DkIIJTXHZsL6B9C2gWcutDnBzLyPByHpY/
-X-OriginatorOrg: foss.st.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Mar 2026 12:41:06.8725
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 40765379-7348-4900-8e15-08de83594b29
-X-MS-Exchange-CrossTenant-Id: 75e027c9-20d5-47d5-b82f-77d7cd041e8f
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=75e027c9-20d5-47d5-b82f-77d7cd041e8f;Ip=[164.130.1.60];Helo=[smtpO365.st.com]
-X-MS-Exchange-CrossTenant-AuthSource: DB1PEPF00039230.eurprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: GVXPR10MB9428
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="p7c/EquZ8SSZofNx"
+Content-Disposition: inline
+In-Reply-To: <de14e6d6-fad4-4e9a-8004-66a28db31faa@linux.ibm.com>
 
-Hi Koichiro,
 
-> 
-> If I understood the problem correctly, would something like the patch below
-> address it? My expectation is that the subrange mapping test would then fail
-> consistently on platforms that do not have enough free IB iATU regions.
-> 
+--p7c/EquZ8SSZofNx
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thank you for your patch. Yes, now the bar subrange tests fail 
-consistently, so that is enough to say this is not a regression.
+Hi Venkat,
 
-However, I think there was a clear BAR missing somewhere before running 
-the tests in the EPF driver, as the BARs could be reallocated during the 
-other tests. This is not due to the subrange tests, but the EPF test 
-driver supposes a 1:1 BAR/ATU mapping. Now this assumption is broken. 
-I'm wondering if this could be improved to make the subrange tests pass 
-on all platforms
+On Mon, Mar 16, 2026 at 03:18:50PM +0530, Venkat Rao Bagalkote wrote:
+>=20
+> On 16/03/26 11:41 am, Venkat Rao Bagalkote wrote:
+> > Greetings!!
+> >=20
+> >=20
+> > I am seeing a repeatable build failure in current mainline when
+> > generating vmlinux.a.
+> >=20
+> > The build stops with an error from ar regarding the --thin option.
+> >=20
+> > This issue is seen on IBM Power11 System.
+> >=20
+> > Attached is the .config file.
+> >=20
+> > Also, I see couple of build warnings, before the build fails.
+> > Note: These warnings and build failure are not see on 20260312 build.
+> >=20
+> >=20
+> > Warnings:
+> >=20
+> > In file included from ./include/linux/seqlock.h:20,
+> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0from ./in=
+clude/linux/mmzone.h:17,
+> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0from ./in=
+clude/linux/gfp.h:7,
+> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0from ./in=
+clude/linux/umh.h:4,
+> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0from ./in=
+clude/linux/kmod.h:9,
+> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0from ./in=
+clude/linux/module.h:18,
+> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0from driv=
+ers/char/nvram.c:34:
+> > drivers/char/nvram.c:56:21: warning: =E2=80=98nvram_mutex=E2=80=99 defi=
+ned but not used
+> > [-Wunused-variable]
+> > =C2=A0 =C2=A056 | static DEFINE_MUTEX(nvram_mutex);
+> > =C2=A0 =C2=A0 =C2=A0 |=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0^~~~~~~~~~~
+> > ./include/linux/mutex.h:87:22: note: in definition of macro
+> > =E2=80=98DEFINE_MUTEX=E2=80=99
+> > =C2=A0 =C2=A087 |=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0struct mutex mutexna=
+me =3D __MUTEX_INITIALIZER(mutexname)
+> >=20
+> >=20
+> > Below are the failure logs.
+> >=20
+> >=20
+> > ar: unrecognized option '--thin'
 
-Cheers
+Thanks a lot for your report!
 
-Christian
+We missed, that 'ar --thin' is available since binutils 2.38 (released
+02/2022), but Documentation/process/changes.rst still lists binutils
+0.30 as build dependency.
+
+I removed the related patch set from kbuild-for-next; we'll discuss
+further at https://lore.kernel.org/linux-kbuild/20251028182822.3210436-2-xu=
+r@google.com
+
+Kind regards,
+Nicolas
 
 
 
 
+> > Usage: ar [emulation options] [-]{dmpqrstx}[abcDfilMNoOPsSTuvV]
+> > [--plugin <name>] [member-name] [count] archive-file file...
+> > =C2=A0 =C2=A0 =C2=A0 =C2=A0ar -M [<mri-script]
+> > =C2=A0commands:
+> > =C2=A0 d=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 - delete file(s) from=
+ the archive
+> > =C2=A0 m[ab]=C2=A0 =C2=A0 =C2=A0 =C2=A0 - move file(s) in the archive
+> > =C2=A0 p=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 - print file(s) found=
+ in the archive
+> > =C2=A0 q[f]=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0- quick append file(s) to =
+the archive
+> > =C2=A0 r[ab][f][u]=C2=A0 - replace existing or insert new file(s) into =
+the archive
+> > =C2=A0 s=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 - act as ranlib
+> > =C2=A0 t[O][v]=C2=A0 =C2=A0 =C2=A0 - display contents of the archive
+> > =C2=A0 x[o]=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0- extract file(s) from the=
+ archive
+> > =C2=A0command specific modifiers:
+> > =C2=A0 [a]=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 - put file(s) after [membe=
+r-name]
+> > =C2=A0 [b]=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 - put file(s) before [memb=
+er-name] (same as [i])
+> > =C2=A0 [D]=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 - use zero for timestamps =
+and uids/gids
+> > =C2=A0 [U]=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 - use actual timestamps an=
+d uids/gids (default)
+> > =C2=A0 [N]=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 - use instance [count] of =
+name
+> > =C2=A0 [f]=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 - truncate inserted file n=
+ames
+> > =C2=A0 [P]=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 - use full path names when=
+ matching
+> > =C2=A0 [o]=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 - preserve original dates
+> > =C2=A0 [O]=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 - display offsets of files=
+ in the archive
+> > =C2=A0 [u]=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 - only replace files that =
+are newer than current archive
+> > contents
+> > =C2=A0generic modifiers:
+> > =C2=A0 [c]=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 - do not warn if the libra=
+ry had to be created
+> > =C2=A0 [s]=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 - create an archive index =
+(cf. ranlib)
+> > =C2=A0 [S]=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 - do not build a symbol ta=
+ble
+> > =C2=A0 [T]=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 - make a thin archive
+> > =C2=A0 [v]=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 - be verbose
+> > =C2=A0 [V]=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 - display the version numb=
+er
+> > =C2=A0 @<file>=C2=A0 =C2=A0 =C2=A0 - read options from <file>
+> > =C2=A0 --target=3DBFDNAME - specify the target object format as BFDNAME
+> > =C2=A0 --output=3DDIRNAME - specify the output directory for extraction
+> > operations
+> > =C2=A0optional:
+> > =C2=A0 --plugin <p> - load the specified plugin
+> > =C2=A0emulation options:
+> > =C2=A0 No emulation specific options
+> > ar: supported targets: elf64-powerpcle elf64-powerpc elf32-powerpcle
+> > elf32-powerpc aixcoff-rs6000 aixcoff64-rs6000 aix5coff64-rs6000
+> > elf64-little elf64-big elf32-little elf32-big ppcboot elf32-spu
+> > pe-x86-64 pei-x86-64 pe-bigobj-x86-64 elf64-x86-64 elf64-l1om elf64-k1om
+> > pe-i386 pei-i386 elf32-i386 elf32-iamcu elf64-bpfle elf64-bpfbe srec
+> > symbolsrec verilog tekhex binary ihex plugin
+> > make[2]: *** [scripts/Makefile.vmlinux_a:22: built-in-fixup.a] Error 1
+> > make[1]: *** [/root/linux-next/Makefile:1278: vmlinux_a] Error 2
+> > make: *** [Makefile:248: __sub-make] Error 2
+> >=20
+> >=20
+>=20
+> Git bisect is pointing to below commit as first bad commit.
+>=20
+>=20
+> 4519221849f26a3b0c0dc45b9914a0f9cdc00740 is the first bad commit
+> commit 4519221849f26a3b0c0dc45b9914a0f9cdc00740 (HEAD)
+> Author: Masahiro Yamada <masahiroy@kernel.org>
+> Date:=C2=A0 =C2=A0Tue Oct 28 18:28:21 2025 +0000
+>=20
+> =C2=A0 =C2=A0 kbuild: move vmlinux.a build rule to scripts/Makefile.vmlin=
+ux_a
+>=20
+> =C2=A0 =C2=A0 Move the build rule for vmlinux.a to a separate file in pre=
+paration
+> =C2=A0 =C2=A0 for supporting distributed builds with Clang ThinLTO.
+>=20
+> =C2=A0 =C2=A0 Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
+> =C2=A0 =C2=A0 Tested-by: Rong Xu <xur@google.com>
+> =C2=A0 =C2=A0 Reviewed-by: Nathan Chancellor <nathan@kernel.org>
+> =C2=A0 =C2=A0 Tested-by: Nathan Chancellor <nathan@kernel.org>
+> =C2=A0 =C2=A0 Link: https://patch.msgid.link/20251028182822.3210436-2-xur=
+@google.com
+> =C2=A0 =C2=A0 Signed-off-by: Nicolas Schier <nsc@kernel.org>
+>=20
+> =C2=A0Makefile=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0| 16 ++++++----------
+> =C2=A0scripts/Makefile.vmlinux_a | 46
+> ++++++++++++++++++++++++++++++++++++++++++++++
+> =C2=A02 files changed, 52 insertions(+), 10 deletions(-)
+> =C2=A0create mode 100644 scripts/Makefile.vmlinux_a
+>=20
+>=20
+> Git bisect log:
+>=20
+> git bisect log
+> git bisect start
+> # status: waiting for both good and bad commits
+> # bad: [b84a0ebe421ca56995ff78b66307667b62b3a900] Add linux-next specific
+> files for 20260313
+> git bisect bad b84a0ebe421ca56995ff78b66307667b62b3a900
+> # status: waiting for good commit(s), bad commit known
+> # good: [1f318b96cc84d7c2ab792fcc0bfd42a7ca890681] Linux 7.0-rc3
+> git bisect good 1f318b96cc84d7c2ab792fcc0bfd42a7ca890681
+> # bad: [ddc6cc7f66af99528c8a827d4ba835fb650b6446] Merge branch 'main' of
+> https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net-next.git
+> git bisect bad ddc6cc7f66af99528c8a827d4ba835fb650b6446
+> # bad: [06da2b04b5f2f11952969e813d8dd8f0c7617b79] Merge branch 'for-next'=
+ of
+> https://git.kernel.org/pub/scm/linux/kernel/git/krzk/linux.git
+> git bisect bad 06da2b04b5f2f11952969e813d8dd8f0c7617b79
+> # good: [85689b69dad24170252dc5be8238de2388e68871] Merge branch
+> 'rust-analyzer-next' of https://github.com/Rust-for-Linux/linux.git
+> git bisect good 85689b69dad24170252dc5be8238de2388e68871
+> # bad: [5457bcbc73733c7268108a2acfc35c6505f3cbf3] Merge branch
+> 'for-next/core' of
+> https://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux
+> git bisect bad 5457bcbc73733c7268108a2acfc35c6505f3cbf3
+> # good: [5473c1ee6462a5d3543c2b4c7dc6f1aac71eb082] userfaultfd: introduce
+> mfill_copy_folio_locked() helper
+> git bisect good 5473c1ee6462a5d3543c2b4c7dc6f1aac71eb082
+> # good: [d1b4433308592363d133a788f0443d5d63872bdd] CREDITS: simplify the
+> end-of-file alphabetical order comment
+> git bisect good d1b4433308592363d133a788f0443d5d63872bdd
+> # good: [ff28b3bb65c3eafeece9334b908e62c492f341e5] mm/damon/core: allow
+> quota goals set zero effective size quota
+> git bisect good ff28b3bb65c3eafeece9334b908e62c492f341e5
+> # bad: [4f6ad15007039f296611ee76dad9f6ed071e63fb] Merge branch
+> 'kbuild-for-next' of
+> https://git.kernel.org/pub/scm/linux/kernel/git/kbuild/linux.git
+> git bisect bad 4f6ad15007039f296611ee76dad9f6ed071e63fb
+> # good: [07bc816c63b94e83dbe311d84b0278e54f6b83db] Merge branch
+> 'mm-unstable' of https://git.kernel.org/pub/scm/linux/kernel/git/akpm/mm
+> git bisect good 07bc816c63b94e83dbe311d84b0278e54f6b83db
+> # good: [aad94ba683adc6ff7ff4e29ae48184b42782dd97] kbuild: uapi: provide
+> stub includes for some libc headers
+> git bisect good aad94ba683adc6ff7ff4e29ae48184b42782dd97
+> # good: [0d3fccf68d9873a3c824fb70be0dbb2c4642aa90] kbuild: Use
+> '-fms-anonymous-structs' if it is available
+> git bisect good 0d3fccf68d9873a3c824fb70be0dbb2c4642aa90
+> # bad: [8e786d89efce381609bd7fb9e8d6c52429e8b753] kbuild: distributed bui=
+ld
+> support for Clang ThinLTO
+> git bisect bad 8e786d89efce381609bd7fb9e8d6c52429e8b753
+> # bad: [4519221849f26a3b0c0dc45b9914a0f9cdc00740] kbuild: move vmlinux.a
+> build rule to scripts/Makefile.vmlinux_a
+> git bisect bad 4519221849f26a3b0c0dc45b9914a0f9cdc00740
+> # first bad commit: [4519221849f26a3b0c0dc45b9914a0f9cdc00740] kbuild: mo=
+ve
+> vmlinux.a build rule to scripts/Makefile.vmlinux_a
+>=20
+>=20
+> Regards,
+>=20
+> Venkat.
+>=20
+> >=20
+> > If you happen to fix this issue, please add below tag.
+> >=20
+> >=20
+> > Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+> >=20
+> >=20
+> > Regards,
+> >=20
+> > Venkat.
 
+--=20
+Nicolas
 
+--p7c/EquZ8SSZofNx
+Content-Type: application/pgp-signature; name="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEh0E3p4c3JKeBvsLGB1IKcBYmEmkFAmm3+hIACgkQB1IKcBYm
+EmnBAQ/9G2QPGXBX5BOlLaikaNJtS2yhtIVd3mavHh1EDNrXkP8sUcipmvYhaDYc
+B04N250gtvr4oo5XlmgpglrqBUOLn1ety4EKJD2llFrUCL4XXraSkgfmLw/Pjh75
+paZIOEtkP6td8mN4IyVf2h4yknNNLNYcntLs1cdSEVGvXDRFgqBTDazKDCx4pSxf
+wtYB75N2rE2lillzdCZmSpZHwEQ+CxucDzL2L+q2xYexRVzLn6lOkdDmxaNpYCHZ
+4Id9j57C/LqKOkoV6hapICsh3timDRWYAbtHbWoocF8WxS9feQjhRNz+uxma5m3r
+oh/h6cdBa7A4IuTj30fzgOryS/vzSt32wWBccHdOTkUjkhazbkPW6VqkevjQiOXk
+TuS9cOwjWv9sT2cda6HfMgtQASUS1eomqMwWTZxUTJZ0G/euwqPLPf/ZWDiWK3ZG
+5UJK1c2EQ7Rd6fPqd+hqKKULbrXmmMyji8Aeib7DlynXzhI/CwyaKnQ1egoJVr2P
+yj0016AkhcL5Oqy3QiUiTRs9gBineWiJh4Cm40qojgYPMAGVqeEr9l8wTEIjF0yq
+FdWn1dpTm4LC7aYRjqLnQeIxAbQnJfFNWPIK/92gp9lrEjFNbTB2sKAELtwPRtaK
+bWqI3PcHNsIQfmEybwQFDo3s9dqpPcqZVxxewnb2sli/9VGX7LE=
+=2Oow
+-----END PGP SIGNATURE-----
+
+--p7c/EquZ8SSZofNx--
 
