@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-18249-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18250-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3BFEF506D2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2026 13:09:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45D27F506D0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2026 13:09:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fZFmF6V8fz2yrW;
-	Tue, 17 Mar 2026 00:09:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773666557;
-	cv=none; b=XOgnJ2PPC5ZbgY/J3aa69q3OBAZtmO22k3DVuobusGitL4LbSn+41PeM+7+ZawnT9IJYLQ0jH3PHtO89kISQRpduhgyMj1RAygAI1ws0WZDYE5wFacpVFq/iSVPcg2Ig11ugJzcaJa3FsDwfOmo7rfFH3REAPEvmEBNDJD6hUCZc2G+tC+YbqT6opT6Po2/O295uccBFXZx9N4Qr8B3yr4h0B0vPFdJ3pgbRV+9mj6zLWNTMyi3KUangJ8+ejdDHmYyeK5bZom8JL/v/cP+wtgBMcKZlcxqYTFer+Nxry+gkUfGyv8z5+lJoQliW8fn1yrKXB1L1Ca6+eAYp8/47OA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fZFmH6mF7z2ywS;
+	Tue, 17 Mar 2026 00:09:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773666559;
+	cv=none; b=a5JbnKvra8wWWZhj3ycmYG0eN3qqIT2vns0kbwGorRkAN0mfHKjDm6BJLy4e3Dj3hDzxWgaoZ7+RPrxNmv5hwwn1dlI/kNxli9X2+6jFagTZiwMhFgg8ZBSv6K3gpU19+w3j56KwO2BgOPU6fB2BL88Hc7g7zIa0KuBfnbR0AHMu0F4re2cikMd7CEWs3T7EFnRoAfBJDypFiCVvgzslCQ17Py/8wQJH6lpVBD18UrMvoT2KeAnmBGsPp0Rv2l56aj1/oIuNS4CeLpXx/b0WHm5D6PoCvy6JeeZlRZACeAAt7C7oT2imrZMHwKCQquiA8OvX13lEgqfDjG5OIt1Zsw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773666557; c=relaxed/relaxed;
-	bh=+dO4mX80n5A/XtOUjUDPwEn3uKn4e5mOjIgZdU02nPo=;
+	t=1773666559; c=relaxed/relaxed;
+	bh=j4kG0RbL3l029ryDrxTmQzkYAT92Dc0c2piFlYr1zFA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=V7tiuWtu6kP+aY4SflBJBkQN8qtpCUhuRas4YvGuh2KUJosOp2IAlMxx/tQu4Xv8mdHtDq5ef852lWp0ZPFreut7H3r9p7QQ5SCZ2WFRFaH86oln4nFKabsmGgZvBp/pNDiRklUO3zGq/VpsJ3j9rGI0dErFEKKCFX1cfcbNz6/jtZ2yc2qNMVd2jeAUjgMh86iYZhUd6GpsDrv5cGpsBccjHgp5txxNbhLOkNZs2HVyhp/Dq/tEVeSPhaFoVFpLu1w3ZzJH5uCCNJ7ltpBNgY23xdvDi5/S0fKGmB4eUKGe91DBlXYWK2/+0NAdx6Ofs6+nfjRIrRymr1iaTpgiWA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Hk4WTrBo; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=VyGpNyb9dRqy40coJfMX5kCLqnK6r2cDnx583cnpHvrRpBfaf2p0SFVJlxh2t2QejEcRARwQdQYNjpw0BG5ZFyL34+RNX5qi8Fp4Dq7LkzqzG/DACJRksjTR2qOW4WYlwpsD0gy7zBBrGae0BVenIHLrYlP9DNeBN4qtZaENywPrDRH7qNkshNcK/J43oVXexj5TDlQq5Em/OOtAs708uWIPM5sTkkrSioeu0PqQk9olE/oIH+7SpWAYMiukMbYHF4+SnMEMe1Qn4cmO0I6mQ2J/TzolCHa9daI2cpA5YS0zDmJoV7PtNHcQ314191equyzurRtSfsFpe4GH4sXBvQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kYw7DD7g; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Hk4WTrBo;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kYw7DD7g;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZFmD4qlmz2ygn
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2026 00:09:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZFmH1sPyz2ygn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2026 00:09:19 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 87FD8438FE;
-	Mon, 16 Mar 2026 13:09:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C17E0C2BCB2;
-	Mon, 16 Mar 2026 13:09:13 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id A2796445BF;
+	Mon, 16 Mar 2026 13:09:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B2FEDC2BCB1;
+	Mon, 16 Mar 2026 13:09:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773666554;
-	bh=bbEhjgEqkd4dPM1XP+mWknexfvrvA44Gz/j1bC4Udqw=;
+	s=k20201202; t=1773666557;
+	bh=VG9qmmmFOegmFxOvw//0MFdBoWLaQ29ukQyS87tCN9Y=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Hk4WTrBoPWOBisLqTaABf9fprbTvuJu/Ce8nfzyYRukSQ7cCNTw9jbplRWm+5ptKs
-	 wRDV9EpK7zX6W187Q18m4r4W/fvBdSHHbvfyXUEYWIEQq5b2HABkd4R9mI1+zkQjDp
-	 04H2T0NwBBwr/oK+x559mQRTMaugWTrORpGgLy2B7zM1M33rshsneJ/YQPtsNws255
-	 aN/7Vr+NoO+o0qFIovTO8QzIrFgfQgIr9xylOgtxNyMEbumME14YoxQkHfWK+DrI3k
-	 NUMXWGY2EXXXuknHM29ID1lox1bk0xSspJIU9KeGcEvkNQkoOWr+CvdRbrilZnPzgN
-	 LrgcIxD6b2N2g==
+	b=kYw7DD7gHjlD8HQJ1arhnEYfasRRA/k4Bstjh5nze0eUneMwI7Gat2tEEico37Joq
+	 YFLs6klU3jz97aBpGDKboLlJ4lZ8/Yi1vy11O1+GuvU9L5qByshxed7GjngGpUWAfa
+	 8VQJ2KI6kNkiHuDMI+sUWk7sKWjH9XpgcxRvHBw1PgPTCh+Wllm4lHTjPLxF4v+no6
+	 UfyF4AvrJ9cWuhh94T0mwyeRO7Z/PcFvTv5c9oCskCIS8sQxvubdRAPlzoanyeqmu5
+	 MsmeTurX8AaYhahNG8wyPPMrR1L+jCuqqomTjL79sIBu3wRVDMEUb+CXX69VnE9mBS
+	 e6f2HZNziUBqA==
 From: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: David Hildenbrand <david@kernel.org>,
@@ -107,9 +107,9 @@ Cc: David Hildenbrand <david@kernel.org>,
 	linux-um@lists.infradead.org,
 	linux-fsdevel@vger.kernel.org,
 	selinux@vger.kernel.org
-Subject: [PATCH v2 07/23] mm/vma: add append_vma_flags() helper
-Date: Mon, 16 Mar 2026 13:07:56 +0000
-Message-ID: <756b9c46ee23e00c2fe64d453ff61dd3b98aa3fc.1773665966.git.ljs@kernel.org>
+Subject: [PATCH v2 08/23] tools/testing/vma: add simple test for append_vma_flags()
+Date: Mon, 16 Mar 2026 13:07:57 +0000
+Message-ID: <8253a553f354e6ef9b1ddea4831c0033e64eb796.1773665966.git.ljs@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <cover.1773665966.git.ljs@kernel.org>
 References: <cover.1773665966.git.ljs@kernel.org>
@@ -128,97 +128,73 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-In order to be able to efficiently combine VMA flag masks with additional
-VMA flag bits we need to extend the concept introduced in mk_vma_flags()
-and __mk_vma_flags() by allowing the specification of a VMA flag mask to
-append VMA flag bits to.
+Add a simple test for append_vma_flags() to assert that it behaves as
+expected.
 
-Update __mk_vma_flags() to allow for this and update mk_vma_flags()
-accordingly, and also provide append_vma_flags() to allow for the caller to
-specify which VMA flags mask to append to.
-
-Finally, update the VMA flags tests to reflect the change.
+Additionally, include the VMA_REMAP_FLAGS definition in the VMA tests to
+allow us to use this value in the testing.
 
 Signed-off-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
 ---
- include/linux/mm.h              | 20 ++++++++++++++------
- tools/testing/vma/include/dup.h | 14 +++++++-------
- 2 files changed, 21 insertions(+), 13 deletions(-)
+ tools/testing/vma/include/dup.h |  3 +++
+ tools/testing/vma/tests/vma.c   | 25 +++++++++++++++++++++++++
+ 2 files changed, 28 insertions(+)
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index b75e089dfd65..0c35423177bf 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1047,13 +1047,11 @@ static __always_inline void vma_flags_set_flag(vma_flags_t *flags,
- 	__set_bit((__force int)bit, bitmap);
- }
- 
--static __always_inline vma_flags_t __mk_vma_flags(size_t count,
--		const vma_flag_t *bits)
-+static __always_inline vma_flags_t __mk_vma_flags(vma_flags_t flags,
-+		size_t count, const vma_flag_t *bits)
- {
--	vma_flags_t flags;
- 	int i;
- 
--	vma_flags_clear_all(&flags);
- 	for (i = 0; i < count; i++)
- 		vma_flags_set_flag(&flags, bits[i]);
- 	return flags;
-@@ -1069,8 +1067,18 @@ static __always_inline vma_flags_t __mk_vma_flags(size_t count,
-  * The compiler cleverly optimises away all of the work and this ends up being
-  * equivalent to aggregating the values manually.
-  */
--#define mk_vma_flags(...) __mk_vma_flags(COUNT_ARGS(__VA_ARGS__), \
--					 (const vma_flag_t []){__VA_ARGS__})
-+#define mk_vma_flags(...) __mk_vma_flags(EMPTY_VMA_FLAGS,			\
-+		COUNT_ARGS(__VA_ARGS__), (const vma_flag_t []){__VA_ARGS__})
-+
-+/*
-+ * Helper macro which acts like mk_vma_flags, only appending to a copy of the
-+ * specified flags rather than establishing new flags. E.g.:
-+ *
-+ * vma_flags_t flags = append_vma_flags(VMA_STACK_DEFAULT_FLAGS, VMA_STACK_BIT,
-+ *              VMA_ACCOUNT_BIT);
-+ */
-+#define append_vma_flags(flags, ...) __mk_vma_flags(flags,			\
-+		COUNT_ARGS(__VA_ARGS__), (const vma_flag_t []){__VA_ARGS__})
- 
- /*
-  * Test whether a specific VMA flag is set, e.g.:
 diff --git a/tools/testing/vma/include/dup.h b/tools/testing/vma/include/dup.h
-index 64b9089a0018..cbdeb03ee7e5 100644
+index cbdeb03ee7e5..47ad01c5d15e 100644
 --- a/tools/testing/vma/include/dup.h
 +++ b/tools/testing/vma/include/dup.h
-@@ -854,21 +854,21 @@ static inline void vm_flags_clear(struct vm_area_struct *vma,
- 	vma_flags_clear_word(&vma->flags, flags);
- }
+@@ -345,6 +345,9 @@ enum {
+  */
+ #define VM_SPECIAL (VM_IO | VM_DONTEXPAND | VM_PFNMAP | VM_MIXEDMAP)
  
--static __always_inline vma_flags_t __mk_vma_flags(size_t count,
--		const vma_flag_t *bits)
-+static __always_inline vma_flags_t __mk_vma_flags(vma_flags_t flags,
-+		size_t count, const vma_flag_t *bits)
- {
--	vma_flags_t flags;
- 	int i;
- 
--	vma_flags_clear_all(&flags);
- 	for (i = 0; i < count; i++)
- 		vma_flags_set_flag(&flags, bits[i]);
--
- 	return flags;
- }
- 
--#define mk_vma_flags(...) __mk_vma_flags(COUNT_ARGS(__VA_ARGS__),	\
--		(const vma_flag_t []){__VA_ARGS__})
-+#define mk_vma_flags(...) __mk_vma_flags(EMPTY_VMA_FLAGS,			\
-+		COUNT_ARGS(__VA_ARGS__), (const vma_flag_t []){__VA_ARGS__})
++#define VMA_REMAP_FLAGS mk_vma_flags(VMA_IO_BIT, VMA_PFNMAP_BIT,	\
++				     VMA_DONTEXPAND_BIT, VMA_DONTDUMP_BIT)
 +
-+#define append_vma_flags(flags, ...) __mk_vma_flags(flags,			\
-+		COUNT_ARGS(__VA_ARGS__), (const vma_flag_t []){__VA_ARGS__})
+ #define DEFAULT_MAP_WINDOW	((1UL << 47) - PAGE_SIZE)
+ #define TASK_SIZE_LOW		DEFAULT_MAP_WINDOW
+ #define TASK_SIZE_MAX		DEFAULT_MAP_WINDOW
+diff --git a/tools/testing/vma/tests/vma.c b/tools/testing/vma/tests/vma.c
+index feea6d270233..98e465fb1bf2 100644
+--- a/tools/testing/vma/tests/vma.c
++++ b/tools/testing/vma/tests/vma.c
+@@ -555,6 +555,30 @@ static bool test_vma_flags_and(void)
+ 	return true;
+ }
  
- static __always_inline bool vma_flags_test(const vma_flags_t *flags,
- 		vma_flag_t bit)
++/* Ensure append_vma_flags() acts as expected. */
++static bool test_append_vma_flags(void)
++{
++	vma_flags_t flags = append_vma_flags(VMA_REMAP_FLAGS, VMA_READ_BIT,
++					     VMA_WRITE_BIT
++#if NUM_VMA_FLAG_BITS > 64
++					     , 64, 65
++#endif
++		);
++
++	ASSERT_FLAGS_SAME(&flags, VMA_IO_BIT, VMA_PFNMAP_BIT,
++			  VMA_DONTEXPAND_BIT, VMA_DONTDUMP_BIT, VMA_READ_BIT,
++			  VMA_WRITE_BIT
++#if NUM_VMA_FLAG_BITS > 64
++					     , 64, 65
++#endif
++		);
++
++	flags = append_vma_flags(EMPTY_VMA_FLAGS, VMA_READ_BIT, VMA_WRITE_BIT);
++	ASSERT_FLAGS_SAME(&flags, VMA_READ_BIT, VMA_WRITE_BIT);
++
++	return true;
++}
++
+ static void run_vma_tests(int *num_tests, int *num_fail)
+ {
+ 	TEST(copy_vma);
+@@ -569,4 +593,5 @@ static void run_vma_tests(int *num_tests, int *num_fail)
+ 	TEST(vma_flags_empty);
+ 	TEST(vma_flags_diff);
+ 	TEST(vma_flags_and);
++	TEST(append_vma_flags);
+ }
 -- 
 2.53.0
 
