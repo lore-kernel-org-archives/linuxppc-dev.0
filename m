@@ -1,118 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-18265-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18266-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F0B1F506CD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2026 13:11:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA1A3F506D2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2026 13:30:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fZFn747g2z2ygn;
-	Tue, 17 Mar 2026 00:10:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773666603;
-	cv=none; b=AFR1APZZUiRqnLewTHXawJY3PRirvkoVfJo/L2nfjLt56sHSwBHjo0wwsFlHK1i+Qj8CgsOiR2V5TMGp18tlkJxWjOyKivz7XDPU/ISA9vxt0wm/Xvm7iiymn/IeG2u/W7nf1GAQlFawt5RjFKpYPU6ji5ENI4TbSqvxrlj0wyBrc9zB++/5al48bwGPxvgNxvGSBhi8n7IeqS6TTT3rHKdSpSau+NZ9sFwhyK2lXmFbEef9XO+AOAbWuGmbQMnXFvjN+e2UdM6B3VlF24C4e1BJRSDRH5MQpFgaw1S+RtCkaHNGT4dvrz3Mcj49Ga93E2csu1Poxf62kg5c4MX1QQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773666603; c=relaxed/relaxed;
-	bh=XJhkZ9xN4CW9TfZgA50y8nzxWrR7CHVNqFjmCv+5x1o=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=X+7tI3qpP9HOo+5BcTLShRhDMgfW+3UmJyHWIU0vm04FVPYl4n4xTf7IGSul7tPyTn4UZLPozymxn1oGSHfJpL1sUWvXeDOUAlMjx2qKJeW4IW67wwrfsVZp63Y9ozB/3xCB2adJ+KarKQeZO3lY307yJjQzcHJu5w4UMnOoGnjuZ9TNX39uRal0Ig09H3S08CjiuJ3Xzfi/sIXuOKVzM9UusC0A7iiBjpA0mPP/pZZhIYzxBinS9yxGDugZIOgD1Zydx8n0x3LYzfyzaJi2lU6KLbzdVXG15VuAO2+YHjwxIyYgDjOsGu14QzIjEhvZ+Uva/lAG40MNcvEeddVzAw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=f0c6FqdH; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fZGDn4GTrz2xlm;
+	Tue, 17 Mar 2026 00:30:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::1" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773667833;
+	cv=pass; b=QxtRoFbZ/fDS7sa/KODgrK9sZIj4z6OVeYROMODrun4EEIWw2SYNcR0ubSlwE6KRaMTqEmCWPf68A8NyBTGBExF17S3bAZe/E7OEpj8SwRg/jHh/g9SV30PxTrKV4/eU7/+mP7t2kJiJB9AmSzH5RP63DupxBjpaJ0V9Rg9GDJI/uZTf0uCR1brvvgM6HZCqhjx/1ZGiKPEv0UI9bRfTgallozQSWaXxWJd/NDB1njcA+d5375/zu9+oF0C5HBco8j1aHnQk/Rd6oD2Ytm85ipaEHrijuARgriemxHAgQ4Y13OJTGNAShttUcepTsxW3JuY6sGiJsEq5843QBgDoiA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1773667833; c=relaxed/relaxed;
+	bh=jPEC+zuO/pn/G+M5SaOjIZmt9JY9xQeBNzANAeikaWQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=VzT7mdkdqNZo59nbbynJSILI8o/m2cEDz4pBIseloXAN/Kvfk6ThdQVcDkuYvz6mdIv4cvbIuszgMVyIUsvx9blniWOxm2bsQV2IeuaYNNt8WI2Dx8mVykvsQ/sFmNmDlFUPwWNUdpnlwx1H5Ds90dYDF6db13AVHDfxaQiwkVPEGuWsDaiDfucki9WwX/g8nA/WGuIqouz5TDrFR5PAGw/2w8nr8Y91731TiunFRhgNbvqt3i2USs7CUnN0Cqs6dYGLR5h/Flwv/0FgdcX44fpZsNSs65ASjDwXnz28kXA5SI97Trt7dOnh52K1mNS/M+KZh72ozFhWWcP9fd9ajw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=foss.st.com; dkim=pass (2048-bit key; unprotected) header.d=foss.st.com header.i=@foss.st.com header.a=rsa-sha256 header.s=selector2 header.b=Wl8JXgAK; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=christian.bruel@foss.st.com; receiver=lists.ozlabs.org) smtp.mailfrom=foss.st.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=foss.st.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=f0c6FqdH;
+	dkim=pass (2048-bit key; unprotected) header.d=foss.st.com header.i=@foss.st.com header.a=rsa-sha256 header.s=selector2 header.b=Wl8JXgAK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=foss.st.com (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=christian.bruel@foss.st.com; receiver=lists.ozlabs.org)
+Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZFn63jGhz2yjx
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2026 00:10:02 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 44DCD6012B;
-	Mon, 16 Mar 2026 13:10:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 56090C19421;
-	Mon, 16 Mar 2026 13:09:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773666599;
-	bh=HlwQws2GiwC3VPBALr2/PhG0TCVrel/OsdG0jnr2Xwc=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=f0c6FqdH4BOMwU2R0p0hwlGjfE0ECoL29OCMEkEyGFqh0UJudhJrCS+npgEh2jkTV
-	 ht/QRY95JyNoDyCmflE5lB6aLEhaN+jVZNbZBP9SuJdmZYehf+8r33SwOkiJOoRVjE
-	 DAKJBSJS/J9GgR0EpKwtGyC3ikPHYiDIXvdBes7SpUKAFDsL3NwO7ivo/EpAWpKDB4
-	 wjQXfY4fTwoRQhaFmmK/VEEV/aItFrHGllQrRPq8QLWyUzz2CBgDoWzUyYbrDIDztq
-	 hVyAPoKCDzGOvXeQh2WhuQrbE/jUvmuQq17f/pysd1slBp49p78C3UjQx0Z53Be3IL
-	 1NQjeRM5i3u7g==
-From: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Hildenbrand <david@kernel.org>,
-	"Liam R . Howlett" <Liam.Howlett@oracle.com>,
-	Vlastimil Babka <vbabka@kernel.org>,
-	Jann Horn <jannh@google.com>,
-	Pedro Falcato <pfalcato@suse.de>,
-	Mike Rapoport <rppt@kernel.org>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Kees Cook <kees@kernel.org>,
-	linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org,
-	Vineet Gupta <vgupta@kernel.org>,
-	Russell King <linux@armlinux.org.uk>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>,
-	Brian Cain <bcain@kernel.org>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Dinh Nguyen <dinguyen@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	x86@kernel.org,
-	"H . Peter Anvin" <hpa@zytor.com>,
-	Richard Weinberger <richard@nod.at>,
-	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	Alexander Viro <viro@zeniv.linux.org.uk>,
-	Christian Brauner <brauner@kernel.org>,
-	Jan Kara <jack@suse.cz>,
-	Xu Xin <xu.xin16@zte.com.cn>,
-	Chengming Zhou <chengming.zhou@linux.dev>,
-	Michal Hocko <mhocko@suse.com>,
-	Paul Moore <paul@paul-moore.com>,
-	Stephen Smalley <stephen.smalley.work@gmail.com>,
-	Ondrej Mosnacek <omosnace@redhat.com>,
-	linux-snps-arc@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-hexagon@vger.kernel.org,
-	loongarch@lists.linux.dev,
-	linux-mips@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org,
-	linux-s390@vger.kernel.org,
-	linux-um@lists.infradead.org,
-	linux-fsdevel@vger.kernel.org,
-	selinux@vger.kernel.org
-Subject: [PATCH v2 23/23] mm/vma: convert __mmap_region() to use vma_flags_t
-Date: Mon, 16 Mar 2026 13:08:12 +0000
-Message-ID: <0dfdae451f825437e042db9b434a7d509dce6841.1773665966.git.ljs@kernel.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <cover.1773665966.git.ljs@kernel.org>
-References: <cover.1773665966.git.ljs@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZGDl6cPqz2xS3
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2026 00:30:31 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=caRSxI2H1FSt52og450186K7J0hbEvLOCBnRoImqx476oODEGPoR0ictPR5sVptHcRWJ7rXuxNh+gHPWmjhPJa3UiZkCZNQ3Y8TkvvgRtcNkFmu2BwIhgMTYRcy3Kf/92a0Na6Vz5LEGfLIjCq9Ri+B7s9v6G9WjmUgFtHjVnV+2JkXkH0ZyUBmvVJw5H+vhF3pwQmHGSI1YVkpMHJ4sEzqkxfqorsOg2oFQPTGK1H16aA+f46cip7lDscbPFKxV4wTM6Co+ZanU2b/Ry6aJz6Bx6M+gLennpiPM8/7ERiOKiXvTElrGRMuT8pmIEpUOJP+zVZsn+ch7gf+FCduaQA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=jPEC+zuO/pn/G+M5SaOjIZmt9JY9xQeBNzANAeikaWQ=;
+ b=uOS+NiuHZkVzGZ2u3uO1iis1UKmm0O1NsAWdgGyRj63WCQySuHa5LPI7aOhlRN+YZQQO+RIQEFRALPMCrKZtT5e3OBvC0ElAAie7FjGQQG2KfoL9qUaigq2Mw+hy4Neh+sDDUanqaqaA0IQZCdTS1huHB93tNFCuwKVPEeBoM6tAXazdRtGSSsVGzAzosYGEddtkoqyX2uyyK+JwQji/mqTX3/T1YL/N5InOl4z7G/gMDJb31ksEO6RzvtyqF5gzjA+rTpkjmAsd+BFxztNoxrTV7tSh3eUEy71nW5M5+unTaxPeAe9xHOkWsP2ZsgOQXKye4Q1q1XI441KvBh+wRw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=fail (sender ip is
+ 164.130.1.60) smtp.rcpttodomain=kernel.org smtp.mailfrom=foss.st.com;
+ dmarc=fail (p=none sp=none pct=100) action=none header.from=foss.st.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foss.st.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=jPEC+zuO/pn/G+M5SaOjIZmt9JY9xQeBNzANAeikaWQ=;
+ b=Wl8JXgAKnnbMaS+XOvXrYb5Vpe6zZfqRppXeI55Fu0yipzOlaZUyyEGZPUWOgyXXp8Bo0ja+qFCNShvXpm0m37nwabvMKH/lRTmrbJrdGDQlUpjS8D3DBsmxLOQuto4OW7bNxbtZqpsvaDe3QvkATknAjrRZPlVZ619ogM1N5KeRNB9jlLR11eOqLQO0DkImwcfD8b9uMPsS6T5buRVuFVy6EHrX1HN6o0Er5z192D/ZEbPEMLccagjDbdIUZ3Ht97eGrgIQLAlRjE8gXU8KD3Aohp6aJgaleenjcLCUFn+TYrAYWvH5ynHvWSdGA/Beg+zGuXxjYUqy6M2Ie4ErzQ==
+Received: from DB9PR01CA0015.eurprd01.prod.exchangelabs.com
+ (2603:10a6:10:1d8::20) by PRAPR10MB5251.EURPRD10.PROD.OUTLOOK.COM
+ (2603:10a6:102:291::15) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9700.24; Mon, 16 Mar
+ 2026 13:29:57 +0000
+Received: from DB1PEPF000509F5.eurprd02.prod.outlook.com
+ (2603:10a6:10:1d8:cafe::fe) by DB9PR01CA0015.outlook.office365.com
+ (2603:10a6:10:1d8::20) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9700.24 via Frontend Transport; Mon,
+ 16 Mar 2026 13:29:46 +0000
+X-MS-Exchange-Authentication-Results: spf=fail (sender IP is 164.130.1.60)
+ smtp.mailfrom=foss.st.com; dkim=none (message not signed)
+ header.d=none;dmarc=fail action=none header.from=foss.st.com;
+Received-SPF: Fail (protection.outlook.com: domain of foss.st.com does not
+ designate 164.130.1.60 as permitted sender) receiver=protection.outlook.com;
+ client-ip=164.130.1.60; helo=smtpO365.st.com;
+Received: from smtpO365.st.com (164.130.1.60) by
+ DB1PEPF000509F5.mail.protection.outlook.com (10.167.242.151) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9700.17 via Frontend Transport; Mon, 16 Mar 2026 13:29:57 +0000
+Received: from STKDAG1NODE2.st.com (10.75.128.133) by smtpO365.st.com
+ (10.250.44.72) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.29; Mon, 16 Mar
+ 2026 14:32:14 +0100
+Received: from [10.130.77.120] (10.130.77.120) by STKDAG1NODE2.st.com
+ (10.75.128.133) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.29; Mon, 16 Mar
+ 2026 14:29:54 +0100
+Message-ID: <ba3ae9a0-11ba-4000-b2ed-08aeede0dc54@foss.st.com>
+Date: Mon, 16 Mar 2026 14:29:54 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -126,418 +88,157 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v10 3/8] PCI: dwc: Advertise dynamic inbound mapping
+ support
+To: Niklas Cassel <cassel@kernel.org>
+CC: Koichiro Den <den@valinux.co.jp>, <jingoohan1@gmail.com>,
+	<mani@kernel.org>, <lpieralisi@kernel.org>, <kwilczynski@kernel.org>,
+	<robh@kernel.org>, <bhelgaas@google.com>, <Frank.Li@nxp.com>,
+	<vigneshr@ti.com>, <s-vadapalli@ti.com>, <hongxing.zhu@nxp.com>,
+	<l.stach@pengutronix.de>, <shawnguo@kernel.org>, <s.hauer@pengutronix.de>,
+	<kernel@pengutronix.de>, <festevam@gmail.com>, <minghuan.Lian@nxp.com>,
+	<mingkai.hu@nxp.com>, <roy.zang@nxp.com>, <jesper.nilsson@axis.com>,
+	<heiko@sntech.de>, <srikanth.thokala@intel.com>,
+	<marek.vasut+renesas@gmail.com>, <yoshihiro.shimoda.uh@renesas.com>,
+	<geert+renesas@glider.be>, <magnus.damm@gmail.com>,
+	<mcoquelin.stm32@gmail.com>, <alexandre.torgue@foss.st.com>,
+	<thierry.reding@gmail.com>, <jonathanh@nvidia.com>,
+	<hayashi.kunihiko@socionext.com>, <mhiramat@kernel.org>, <kishon@kernel.org>,
+	<jirislaby@kernel.org>, <rongqianfeng@vivo.com>, <18255117159@163.com>,
+	<shawn.lin@rock-chips.com>, <nicolas.frattaroli@collabora.com>,
+	<linux.amoon@gmail.com>, <vidyas@nvidia.com>, <shuah@kernel.org>,
+	<linux-omap@vger.kernel.org>, <linux-pci@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
+	<imx@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
+	<linux-arm-kernel@axis.com>, <linux-rockchip@lists.infradead.org>,
+	<linux-arm-msm@vger.kernel.org>, <linux-renesas-soc@vger.kernel.org>,
+	<linux-stm32@st-md-mailman.stormreply.com>, <linux-tegra@vger.kernel.org>,
+	<linux-kselftest@vger.kernel.org>
+References: <20260124145012.2794108-1-den@valinux.co.jp>
+ <20260124145012.2794108-4-den@valinux.co.jp>
+ <b2b03ebe-9482-4a13-b22f-7b44da096eed@foss.st.com>
+ <tkfhaovpmaoodo35attvmbnpukcqgmwyrxmfgiwjy2dga65cgl@hmj4mx2n44ki>
+ <5e485218-becf-499b-8a07-d25358504807@foss.st.com> <abf-LKj8V2MpJFEE@ryzen>
+Content-Language: en-US
+From: Christian Bruel <christian.bruel@foss.st.com>
+In-Reply-To: <abf-LKj8V2MpJFEE@ryzen>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.130.77.120]
+X-ClientProxiedBy: ENXCAS1NODE2.st.com (10.75.128.138) To STKDAG1NODE2.st.com
+ (10.75.128.133)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DB1PEPF000509F5:EE_|PRAPR10MB5251:EE_
+X-MS-Office365-Filtering-Correlation-Id: 53be0679-0954-4526-d233-08de83601dd0
+X-LD-Processed: 75e027c9-20d5-47d5-b82f-77d7cd041e8f,ExtAddr
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+ BCL:0;ARA:13230040|1800799024|7416014|376014|82310400026|36860700016|56012099003|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+ w/ld2OerSgnEdqrgQ0RdamQ21qOEylZeCydFipF8mJnZyAVIS7CJvynj4Imj+jErIi3dya6aV0FWrRJuj2UjGLBck7fXBv713rOD/Hxy2L+hBQGVFOm0Hjuh9ZvhFzRSsvi9iPDGR2DR6Xs/lyhQs1dAPtGiLz84/oUTbPj7T2TwJ6Ikpp1/w6xqTpQMeDz6CQ94PSSxFcbP7QuiwsSSZ8FUWMf3a94en8oblHV3RSpAa19s6HUbNfK/I6isGHcgvpYbBNwYiRgFtPoEH1gOfRk85Y+7xf3/tyqY+2Ypz9QVMrQ9N/S1hWMVPKE42TSc3E8FUExABtP6BjWpOE5l6jv0N/xFlaMjbtfCZYlrEh9vPRpksc3x4ZgHUeGVCD0lNiKAmyj+hdrKInnS/I0LgIEEXlcptlP7pwoOgJUhNuhrsoeY0wOWR6n7rix3cT/VhHRUFHUOvI3QzTtkdCfDVUPpn9Rqq1ytswA2/ygyTbIsz0Rbee3KlHyO/p4Iil86T4FxAuQfVoI2DbQdsbo/6OXVXswdaz8SPIJUhyWvt9ymHl+yiELmBJkNUVVvU+PP9+TzSeLzv7fkW6dLmgWcQGiPNKnZ5r94Qq7fCI1B6PVjZLskCCRdwE331Evk7xEvMFd+HjyjUmFZo00lIbFaN/FpXuAlLC+HT5cZbg0X2/7HqnFc3kRc6KTAGV8QZyuGmLWQKDX2w3KvHGpSr2fl1Sqv3tIU/goN6bqV6jp7DkAqc9JZTnEwZH0HFr3BrIO6ghrFxI43KtROnq5IlcrERA==
+X-Forefront-Antispam-Report:
+ CIP:164.130.1.60;CTRY:IT;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:smtpO365.st.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(7416014)(376014)(82310400026)(36860700016)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+ 8jXt8t9NF+j+2zWoWJ2RHif/fjiC+LJpZ5mXgstTilWjXM0hjIWwv4Ruf3iDOGqG4386AfahhGwiMjnXI6ZULQOT/TBE1weqINTN+gobmxVs/ZLPxoSWnHKcNX2PihUb8CtWGGh7tMxtmeOYy/c3XTI4G4B/tJb9wzM7XuWF/pqubP4bxSSQKo5LvkH9DOZArMPFXLTUR0lbqEq5/HwLz9HU+fvn6WkTnANc8sr5r6uhHcIXFYYr02qe8oZOtF0+VvDClxax/ZEHPWwOhb+lkSyXRKAPySIx4JebMl2utrKoj6rj2IOXXTf72Knm4JN2q80/Hb4X4qiA9vziJJ2q6gee2+42M10I+Xyqz2/nI/iBycO2Tct3fk+wqf531GAmRLNFMapHAoFbuMjQ98SQUTTnap2lb1dZgXQwsEFWRl0WzznsFYbYHMKTI7nqBbi3
+X-OriginatorOrg: foss.st.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Mar 2026 13:29:57.2710
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 53be0679-0954-4526-d233-08de83601dd0
+X-MS-Exchange-CrossTenant-Id: 75e027c9-20d5-47d5-b82f-77d7cd041e8f
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=75e027c9-20d5-47d5-b82f-77d7cd041e8f;Ip=[164.130.1.60];Helo=[smtpO365.st.com]
+X-MS-Exchange-CrossTenant-AuthSource: DB1PEPF000509F5.eurprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PRAPR10MB5251
 
-Update the mmap() implementation logic implemented in __mmap_region() and
-functions invoked by it. The mmap_region() function converts its input
-vm_flags_t parameter to a vma_flags_t value which it then passes to
-__mmap_region() which uses the vma_flags_t value consistently from then on.
 
-As part of the change, we convert map_deny_write_exec() to using
-vma_flags_t (it was incorrectly using unsigned long before), and place it
-in vma.h, as it is only used internal to mm.
 
-With this change, we eliminate the legacy is_shared_maywrite_vm_flags()
-helper function which is now no longer required.
+On 3/16/26 13:57, Niklas Cassel wrote:
+> On Mon, Mar 16, 2026 at 01:41:03PM +0100, Christian Bruel wrote:
+>> Hi Koichiro,
+>>
+>>>
+>>> If I understood the problem correctly, would something like the patch below
+>>> address it? My expectation is that the subrange mapping test would then fail
+>>> consistently on platforms that do not have enough free IB iATU regions.
+>>>
+>>
+>> Thank you for your patch. Yes, now the bar subrange tests fail consistently,
+>> so that is enough to say this is not a regression.
+>>
+>> However, I think there was a clear BAR missing somewhere before running the
+>> tests in the EPF driver, as the BARs could be reallocated during the other
+>> tests. This is not due to the subrange tests, but the EPF test driver
+>> supposes a 1:1 BAR/ATU mapping. Now this assumption is broken. I'm wondering
+>> if this could be improved to make the subrange tests pass on all platforms
+> 
+> Normally, you want one inbound iATU per enabled BAR, since you want the host
+> to be able to access all the enabled BARs at any time.
+> 
+> If you are thinking that we should somehow temporarily disable inbound
+> address translation for one of the enabled BARs, such that we can do "steal"
+> that iATU to test inbound subrange mapping, then I think that is a bad idea.
 
-We are also able to update the MMAP_STATE() and VMG_MMAP_STATE() macros to
-use the vma_flags_t value.
+yes, I was thinking something about restricting the iATU entry lifetime 
+during the BAR test duration and restoring after. But OK I agree, not good.
 
-Finally, we update the VMA tests to reflect the change.
+> 
+> I think we should just let the test fail. Possibly we could call some API that
+> tells us that all inbound iATUs are occupied, and then SKIP instead of FAIL
+> the inbound subrange test case.
+> 
+> If you really want to test/use inbound subrange mapping, even if your SoC has
+> a very limited number of inbound iATUs, then I think a better solution is to
+> mark one or multiple of your BARs as disabled:
+> https://git.kernel.org/pub/scm/linux/kernel/git/pci/pci.git/commit/?h=endpoint&id=33642e9e36dc084e4fc9245a266c9843bc8303b9
+> 
+> Then you should have at least one more inbound iATU available, and should be
+> able to run the inbound subrange test case.
 
-Signed-off-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
----
- include/linux/mm.h              | 18 ++++++++----
- include/linux/mman.h            | 49 -------------------------------
- mm/mprotect.c                   |  4 ++-
- mm/vma.c                        | 25 ++++++++--------
- mm/vma.h                        | 51 +++++++++++++++++++++++++++++++++
- tools/testing/vma/include/dup.h | 34 +++++-----------------
- tools/testing/vma/tests/mmap.c  | 18 ++++--------
- 7 files changed, 92 insertions(+), 107 deletions(-)
+Yes cherry-picking the BAR_DISABLED support, I can now test the subrange 
+with Koichiro's fixup.
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 174b1d781ca0..42cc40aa63d9 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1529,12 +1529,6 @@ static inline bool vma_is_accessible(const struct vm_area_struct *vma)
- 	return vma->vm_flags & VM_ACCESS_FLAGS;
- }
- 
--static inline bool is_shared_maywrite_vm_flags(vm_flags_t vm_flags)
--{
--	return (vm_flags & (VM_SHARED | VM_MAYWRITE)) ==
--		(VM_SHARED | VM_MAYWRITE);
--}
--
- static inline bool is_shared_maywrite(const vma_flags_t *flags)
- {
- 	return vma_flags_test_all(flags, VMA_SHARED_BIT, VMA_MAYWRITE_BIT);
-@@ -4351,12 +4345,24 @@ static inline bool range_in_vma(const struct vm_area_struct *vma,
- 
- #ifdef CONFIG_MMU
- pgprot_t vm_get_page_prot(vm_flags_t vm_flags);
-+
-+static inline pgprot_t vma_get_page_prot(vma_flags_t vma_flags)
-+{
-+	const vm_flags_t vm_flags = vma_flags_to_legacy(vma_flags);
-+
-+	return vm_get_page_prot(vm_flags);
-+}
-+
- void vma_set_page_prot(struct vm_area_struct *vma);
- #else
- static inline pgprot_t vm_get_page_prot(vm_flags_t vm_flags)
- {
- 	return __pgprot(0);
- }
-+static inline pgprot_t vma_get_page_prot(vma_flags_t vma_flags)
-+{
-+	return __pgprot(0);
-+}
- static inline void vma_set_page_prot(struct vm_area_struct *vma)
- {
- 	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
-diff --git a/include/linux/mman.h b/include/linux/mman.h
-index 0ba8a7e8b90a..389521594c69 100644
---- a/include/linux/mman.h
-+++ b/include/linux/mman.h
-@@ -170,53 +170,4 @@ static inline bool arch_memory_deny_write_exec_supported(void)
- }
- #define arch_memory_deny_write_exec_supported arch_memory_deny_write_exec_supported
- #endif
--
--/*
-- * Denies creating a writable executable mapping or gaining executable permissions.
-- *
-- * This denies the following:
-- *
-- * 	a)	mmap(PROT_WRITE | PROT_EXEC)
-- *
-- *	b)	mmap(PROT_WRITE)
-- *		mprotect(PROT_EXEC)
-- *
-- *	c)	mmap(PROT_WRITE)
-- *		mprotect(PROT_READ)
-- *		mprotect(PROT_EXEC)
-- *
-- * But allows the following:
-- *
-- *	d)	mmap(PROT_READ | PROT_EXEC)
-- *		mmap(PROT_READ | PROT_EXEC | PROT_BTI)
-- *
-- * This is only applicable if the user has set the Memory-Deny-Write-Execute
-- * (MDWE) protection mask for the current process.
-- *
-- * @old specifies the VMA flags the VMA originally possessed, and @new the ones
-- * we propose to set.
-- *
-- * Return: false if proposed change is OK, true if not ok and should be denied.
-- */
--static inline bool map_deny_write_exec(unsigned long old, unsigned long new)
--{
--	/* If MDWE is disabled, we have nothing to deny. */
--	if (!mm_flags_test(MMF_HAS_MDWE, current->mm))
--		return false;
--
--	/* If the new VMA is not executable, we have nothing to deny. */
--	if (!(new & VM_EXEC))
--		return false;
--
--	/* Under MDWE we do not accept newly writably executable VMAs... */
--	if (new & VM_WRITE)
--		return true;
--
--	/* ...nor previously non-executable VMAs becoming executable. */
--	if (!(old & VM_EXEC))
--		return true;
--
--	return false;
--}
--
- #endif /* _LINUX_MMAN_H */
-diff --git a/mm/mprotect.c b/mm/mprotect.c
-index 2b8a85689ab7..ef09cd1aa33f 100644
---- a/mm/mprotect.c
-+++ b/mm/mprotect.c
-@@ -882,6 +882,7 @@ static int do_mprotect_pkey(unsigned long start, size_t len,
- 	tmp = vma->vm_start;
- 	for_each_vma_range(vmi, vma, end) {
- 		vm_flags_t mask_off_old_flags;
-+		vma_flags_t new_vma_flags;
- 		vm_flags_t newflags;
- 		int new_vma_pkey;
- 
-@@ -904,6 +905,7 @@ static int do_mprotect_pkey(unsigned long start, size_t len,
- 		new_vma_pkey = arch_override_mprotect_pkey(vma, prot, pkey);
- 		newflags = calc_vm_prot_bits(prot, new_vma_pkey);
- 		newflags |= (vma->vm_flags & ~mask_off_old_flags);
-+		new_vma_flags = legacy_to_vma_flags(newflags);
- 
- 		/* newflags >> 4 shift VM_MAY% in place of VM_% */
- 		if ((newflags & ~(newflags >> 4)) & VM_ACCESS_FLAGS) {
-@@ -911,7 +913,7 @@ static int do_mprotect_pkey(unsigned long start, size_t len,
- 			break;
- 		}
- 
--		if (map_deny_write_exec(vma->vm_flags, newflags)) {
-+		if (map_deny_write_exec(&vma->flags, &new_vma_flags)) {
- 			error = -EACCES;
- 			break;
- 		}
-diff --git a/mm/vma.c b/mm/vma.c
-index f52fe7f9bae4..c1f183235756 100644
---- a/mm/vma.c
-+++ b/mm/vma.c
-@@ -44,7 +44,7 @@ struct mmap_state {
- 	bool file_doesnt_need_get :1;
- };
- 
--#define MMAP_STATE(name, mm_, vmi_, addr_, len_, pgoff_, vm_flags_, file_) \
-+#define MMAP_STATE(name, mm_, vmi_, addr_, len_, pgoff_, vma_flags_, file_) \
- 	struct mmap_state name = {					\
- 		.mm = mm_,						\
- 		.vmi = vmi_,						\
-@@ -52,9 +52,9 @@ struct mmap_state {
- 		.end = (addr_) + (len_),				\
- 		.pgoff = pgoff_,					\
- 		.pglen = PHYS_PFN(len_),				\
--		.vm_flags = vm_flags_,					\
-+		.vma_flags = vma_flags_,				\
- 		.file = file_,						\
--		.page_prot = vm_get_page_prot(vm_flags_),		\
-+		.page_prot = vma_get_page_prot(vma_flags_),		\
- 	}
- 
- #define VMG_MMAP_STATE(name, map_, vma_)				\
-@@ -63,7 +63,7 @@ struct mmap_state {
- 		.vmi = (map_)->vmi,					\
- 		.start = (map_)->addr,					\
- 		.end = (map_)->end,					\
--		.vm_flags = (map_)->vm_flags,				\
-+		.vma_flags = (map_)->vma_flags,				\
- 		.pgoff = (map_)->pgoff,					\
- 		.file = (map_)->file,					\
- 		.prev = (map_)->prev,					\
-@@ -2745,14 +2745,14 @@ static int call_action_complete(struct mmap_state *map,
- }
- 
- static unsigned long __mmap_region(struct file *file, unsigned long addr,
--		unsigned long len, vm_flags_t vm_flags, unsigned long pgoff,
--		struct list_head *uf)
-+		unsigned long len, vma_flags_t vma_flags,
-+		unsigned long pgoff, struct list_head *uf)
- {
- 	struct mm_struct *mm = current->mm;
- 	struct vm_area_struct *vma = NULL;
- 	bool have_mmap_prepare = file && file->f_op->mmap_prepare;
- 	VMA_ITERATOR(vmi, mm, addr);
--	MMAP_STATE(map, mm, &vmi, addr, len, pgoff, vm_flags, file);
-+	MMAP_STATE(map, mm, &vmi, addr, len, pgoff, vma_flags, file);
- 	struct vm_area_desc desc = {
- 		.mm = mm,
- 		.file = file,
-@@ -2836,16 +2836,17 @@ static unsigned long __mmap_region(struct file *file, unsigned long addr,
-  * been performed.
-  */
- unsigned long mmap_region(struct file *file, unsigned long addr,
--			  unsigned long len, vm_flags_t vm_flags, unsigned long pgoff,
--			  struct list_head *uf)
-+			  unsigned long len, vm_flags_t vm_flags,
-+			  unsigned long pgoff, struct list_head *uf)
- {
- 	unsigned long ret;
- 	bool writable_file_mapping = false;
-+	const vma_flags_t vma_flags = legacy_to_vma_flags(vm_flags);
- 
- 	mmap_assert_write_locked(current->mm);
- 
- 	/* Check to see if MDWE is applicable. */
--	if (map_deny_write_exec(vm_flags, vm_flags))
-+	if (map_deny_write_exec(&vma_flags, &vma_flags))
- 		return -EACCES;
- 
- 	/* Allow architectures to sanity-check the vm_flags. */
-@@ -2853,7 +2854,7 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
- 		return -EINVAL;
- 
- 	/* Map writable and ensure this isn't a sealed memfd. */
--	if (file && is_shared_maywrite_vm_flags(vm_flags)) {
-+	if (file && is_shared_maywrite(&vma_flags)) {
- 		int error = mapping_map_writable(file->f_mapping);
- 
- 		if (error)
-@@ -2861,7 +2862,7 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
- 		writable_file_mapping = true;
- 	}
- 
--	ret = __mmap_region(file, addr, len, vm_flags, pgoff, uf);
-+	ret = __mmap_region(file, addr, len, vma_flags, pgoff, uf);
- 
- 	/* Clear our write mapping regardless of error. */
- 	if (writable_file_mapping)
-diff --git a/mm/vma.h b/mm/vma.h
-index 270008e5babc..adc18f7dd9f1 100644
---- a/mm/vma.h
-+++ b/mm/vma.h
-@@ -704,4 +704,55 @@ int create_init_stack_vma(struct mm_struct *mm, struct vm_area_struct **vmap,
- int relocate_vma_down(struct vm_area_struct *vma, unsigned long shift);
- #endif
- 
-+#ifdef CONFIG_MMU
-+/*
-+ * Denies creating a writable executable mapping or gaining executable permissions.
-+ *
-+ * This denies the following:
-+ *
-+ *	a)	mmap(PROT_WRITE | PROT_EXEC)
-+ *
-+ *	b)	mmap(PROT_WRITE)
-+ *		mprotect(PROT_EXEC)
-+ *
-+ *	c)	mmap(PROT_WRITE)
-+ *		mprotect(PROT_READ)
-+ *		mprotect(PROT_EXEC)
-+ *
-+ * But allows the following:
-+ *
-+ *	d)	mmap(PROT_READ | PROT_EXEC)
-+ *		mmap(PROT_READ | PROT_EXEC | PROT_BTI)
-+ *
-+ * This is only applicable if the user has set the Memory-Deny-Write-Execute
-+ * (MDWE) protection mask for the current process.
-+ *
-+ * @old specifies the VMA flags the VMA originally possessed, and @new the ones
-+ * we propose to set.
-+ *
-+ * Return: false if proposed change is OK, true if not ok and should be denied.
-+ */
-+static inline bool map_deny_write_exec(const vma_flags_t *old,
-+				       const vma_flags_t *new)
-+{
-+	/* If MDWE is disabled, we have nothing to deny. */
-+	if (!mm_flags_test(MMF_HAS_MDWE, current->mm))
-+		return false;
-+
-+	/* If the new VMA is not executable, we have nothing to deny. */
-+	if (!vma_flags_test(new, VMA_EXEC_BIT))
-+		return false;
-+
-+	/* Under MDWE we do not accept newly writably executable VMAs... */
-+	if (vma_flags_test(new, VMA_WRITE_BIT))
-+		return true;
-+
-+	/* ...nor previously non-executable VMAs becoming executable. */
-+	if (!vma_flags_test(old, VMA_EXEC_BIT))
-+		return true;
-+
-+	return false;
-+}
-+#endif
-+
- #endif	/* __MM_VMA_H */
-diff --git a/tools/testing/vma/include/dup.h b/tools/testing/vma/include/dup.h
-index b5660c470a5c..999357e18eb0 100644
---- a/tools/testing/vma/include/dup.h
-+++ b/tools/testing/vma/include/dup.h
-@@ -1118,12 +1118,6 @@ static __always_inline void vma_desc_clear_flags_mask(struct vm_area_desc *desc,
- #define vma_desc_clear_flags(desc, ...) \
- 	vma_desc_clear_flags_mask(desc, mk_vma_flags(__VA_ARGS__))
- 
--static inline bool is_shared_maywrite_vm_flags(vm_flags_t vm_flags)
--{
--	return (vm_flags & (VM_SHARED | VM_MAYWRITE)) ==
--		(VM_SHARED | VM_MAYWRITE);
--}
--
- static inline bool is_shared_maywrite(const vma_flags_t *flags)
- {
- 	return vma_flags_test_all(flags, VMA_SHARED_BIT, VMA_MAYWRITE_BIT);
-@@ -1440,27 +1434,6 @@ static inline bool mlock_future_ok(const struct mm_struct *mm,
- 	return locked_pages <= limit_pages;
- }
- 
--static inline bool map_deny_write_exec(unsigned long old, unsigned long new)
--{
--	/* If MDWE is disabled, we have nothing to deny. */
--	if (mm_flags_test(MMF_HAS_MDWE, current->mm))
--		return false;
--
--	/* If the new VMA is not executable, we have nothing to deny. */
--	if (!(new & VM_EXEC))
--		return false;
--
--	/* Under MDWE we do not accept newly writably executable VMAs... */
--	if (new & VM_WRITE)
--		return true;
--
--	/* ...nor previously non-executable VMAs becoming executable. */
--	if (!(old & VM_EXEC))
--		return true;
--
--	return false;
--}
--
- static inline int mapping_map_writable(struct address_space *mapping)
- {
- 	return atomic_inc_unless_negative(&mapping->i_mmap_writable) ?
-@@ -1512,3 +1485,10 @@ static inline int get_sysctl_max_map_count(void)
- #ifndef pgtable_supports_soft_dirty
- #define pgtable_supports_soft_dirty()	IS_ENABLED(CONFIG_MEM_SOFT_DIRTY)
- #endif
-+
-+static inline pgprot_t vma_get_page_prot(vma_flags_t vma_flags)
-+{
-+	const vm_flags_t vm_flags = vma_flags_to_legacy(vma_flags);
-+
-+	return vm_get_page_prot(vm_flags);
-+}
-diff --git a/tools/testing/vma/tests/mmap.c b/tools/testing/vma/tests/mmap.c
-index bded4ecbe5db..c85bc000d1cb 100644
---- a/tools/testing/vma/tests/mmap.c
-+++ b/tools/testing/vma/tests/mmap.c
-@@ -2,6 +2,8 @@
- 
- static bool test_mmap_region_basic(void)
- {
-+	const vma_flags_t vma_flags = mk_vma_flags(VMA_READ_BIT, VMA_WRITE_BIT,
-+			VMA_MAYREAD_BIT, VMA_MAYWRITE_BIT);
- 	struct mm_struct mm = {};
- 	unsigned long addr;
- 	struct vm_area_struct *vma;
-@@ -10,27 +12,19 @@ static bool test_mmap_region_basic(void)
- 	current->mm = &mm;
- 
- 	/* Map at 0x300000, length 0x3000. */
--	addr = __mmap_region(NULL, 0x300000, 0x3000,
--			     VM_READ | VM_WRITE | VM_MAYREAD | VM_MAYWRITE,
--			     0x300, NULL);
-+	addr = __mmap_region(NULL, 0x300000, 0x3000, vma_flags, 0x300, NULL);
- 	ASSERT_EQ(addr, 0x300000);
- 
- 	/* Map at 0x250000, length 0x3000. */
--	addr = __mmap_region(NULL, 0x250000, 0x3000,
--			     VM_READ | VM_WRITE | VM_MAYREAD | VM_MAYWRITE,
--			     0x250, NULL);
-+	addr = __mmap_region(NULL, 0x250000, 0x3000, vma_flags, 0x250, NULL);
- 	ASSERT_EQ(addr, 0x250000);
- 
- 	/* Map at 0x303000, merging to 0x300000 of length 0x6000. */
--	addr = __mmap_region(NULL, 0x303000, 0x3000,
--			     VM_READ | VM_WRITE | VM_MAYREAD | VM_MAYWRITE,
--			     0x303, NULL);
-+	addr = __mmap_region(NULL, 0x303000, 0x3000, vma_flags, 0x303, NULL);
- 	ASSERT_EQ(addr, 0x303000);
- 
- 	/* Map at 0x24d000, merging to 0x250000 of length 0x6000. */
--	addr = __mmap_region(NULL, 0x24d000, 0x3000,
--			     VM_READ | VM_WRITE | VM_MAYREAD | VM_MAYWRITE,
--			     0x24d, NULL);
-+	addr = __mmap_region(NULL, 0x24d000, 0x3000, vma_flags, 0x24d, NULL);
- 	ASSERT_EQ(addr, 0x24d000);
- 
- 	ASSERT_EQ(mm.map_count, 2);
--- 
-2.53.0
+  ./pci_endpoint_test -t BAR_SUBRANGE_TEST
+TAP version 13
+1..6
+# Starting 6 tests from 6 test cases.
+#  RUN           pci_ep_bar.BAR0.BAR_SUBRANGE_TEST ...
+#      SKIP      BAR is test register space
+#            OK  pci_ep_bar.BAR0.BAR_SUBRANGE_TEST
+ok 1 pci_ep_bar.BAR0.BAR_SUBRANGE_TEST # SKIP BAR is test register space
+#  RUN           pci_ep_bar.BAR1.BAR_SUBRANGE_TEST ...
+#            OK  pci_ep_bar.BAR1.BAR_SUBRANGE_TEST
+ok 2 pci_ep_bar.BAR1.BAR_SUBRANGE_TEST
+#  RUN           pci_ep_bar.BAR2.BAR_SUBRANGE_TEST ...
+#            OK  pci_ep_bar.BAR2.BAR_SUBRANGE_TEST
+ok 3 pci_ep_bar.BAR2.BAR_SUBRANGE_TEST
+#  RUN           pci_ep_bar.BAR3.BAR_SUBRANGE_TEST ...
+#      SKIP      BAR is disabled
+#            OK  pci_ep_bar.BAR3.BAR_SUBRANGE_TEST
+ok 4 pci_ep_bar.BAR3.BAR_SUBRANGE_TEST # SKIP BAR is disabled
+#  RUN           pci_ep_bar.BAR4.BAR_SUBRANGE_TEST ...
+#      SKIP      BAR is disabled
+#            OK  pci_ep_bar.BAR4.BAR_SUBRANGE_TEST
+ok 5 pci_ep_bar.BAR4.BAR_SUBRANGE_TEST # SKIP BAR is disabled
+#  RUN           pci_ep_bar.BAR5.BAR_SUBRANGE_TEST ...
+#      SKIP      BAR is disabled
+#            OK  pci_ep_bar.BAR5.BAR_SUBRANGE_TEST
+ok 6 pci_ep_bar.BAR5.BAR_SUBRANGE_TEST # SKIP BAR is disabled
+# PASSED: 6 / 6 tests passed.
+# 4 skipped test(s) detected. Consider enabling relevant config options 
+to improve coverage.
+# Totals: pass:2 fail:0 xfail:0 xpass:0 skip:4 error:0
+
+Thank you,
+
+Christian
+> 
+> 
+> Kind regards,
+> Niklas
 
 
