@@ -1,87 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-18272-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18273-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC04DF53D72
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2026 16:21:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D22F4F53D76
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2026 17:25:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fZL2P6qc9z2yZc;
-	Tue, 17 Mar 2026 03:21:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773678109;
-	cv=none; b=hZ5OIoxjfgzewkIUcJD5mkcZn8TR8C6uatA/OJi5c8ll2P2Q/V81VllEgeFjof5tbqmn4xa2AqREI6KiIDZ/wI1ntJaalx5YhcCnqa7dU5A6kiA+XsyuN2ksQHPICWVER7aZlOtfYy94Flj6dyJWMNAf7TF3r7uX9Dd55QOFs+zXePGSQZSginXGfJDW0BBA8yZgTwn09Xj7rAUiOM0zulDOt9gJa+IzvPmtLLvovqWxQ8bIvogbK7jmZK89FVDlZvSUIUxFQIUTDdATG3TysR3B8vO7m9UY4069VPUYo6WjwOGem5GijYO5ly+r+HVyXXMa0CVPOAXejzYlN5jQSA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fZMRM1vkcz2yh4;
+	Tue, 17 Mar 2026 04:25:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=199.89.1.16
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773681903;
+	cv=none; b=VDBOydJtLBEEXwmQ7LAFPzx3frdxJTNJ+GeT/TkpjgL1LGgy1pDXe2JPgp6IPCq+qgnT/mavBPBcFWI2Ej84rB6I3EIrta1RZ1Bc0eWp2xJLuVVPuCs4iEDKIxCQekWPbTTtbgfZlwbkbLf2AT5HEICYI4BAnSOfsZtad7+5EAnYl40foeHFvmWFKo9wnCSULoCjLzaAzXwF4BpBZRUIJGL+a3uOXbrfvZeXVMbbULBzZWtFBs/LkAgSQDXLXbqLFPUoHskFR5v7LauMJWKk2Fu38tO1BTX9LZNIOLSxhRAzMt4U8nWwLgQ57JjN0Ww+4TplTah7ayMce+fO2ibEhw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773678109; c=relaxed/relaxed;
-	bh=hfGtXfbpPdwas3QjdGehFHPv4zwj1YVVlL17/dmAXWY=;
-	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=mZs6t3dEp2ArMNS/UrqLOi+YwCp57T1awff51ynauEWKfxYMftElfaGTRMsPq0lBEtVsYNHOaFsRvGuQFWWjVDVpbF8NaI5PTPsWcHb55Obqqg2PZNr+odl3ziGWxX40izsNFnN0gfVmcW+VUavWkRK82Mx+yz1VUiPhG8/KbyddgES5yzEcaLkKRkJCFm2mTyUBqqAC++Y/og9nz62yLRmR+nnrtmFGlpGlYCI18Sb/8c5gGARFZFFogR2DoV8rxTbRrkwm66MUzV7s+eE/kluUcmAuuHUp2Mvdf7WEHP+6gHEyf6E7XedS41CI3JpQfWGN02qibbZiHK0cHyOegA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=C78b3RIn; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	t=1773681903; c=relaxed/relaxed;
+	bh=2zIpJWDuED12p8lWwNhOhNGCbt4qgGPHoPJlAldvFns=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=oy32VKrQEnPky6UvkaeMzyKmYIWuI51qLR3M1PGEihlUX7jYSosCzszvIqk2w4Sy0xR/bYQYzUL6IsmD+bDrlK5yNDVic+DioY34JZ7onsDKxzqp+vWiUrHipw2M33hyGrrnL80WpvUsqhN2J5WIca1m2wzVADH78vN2nt0lreP+SYgeqZHphcoczMBDHLDumjb247sC1Cy+HqKm6e3ws3uh2lhXUSz7/ctoQi9GxDjk/6MZ+A0dkE7igO2eRJ+0W5nBepsyNvyvErlFdhIDrxLj/KxDkxy96UYd9w6Udq5oJlpoww/TI6ZiZpcW7GA0IUs6tQj32Qim9W3/nnrFqA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=acm.org; dkim=pass (2048-bit key; unprotected) header.d=acm.org header.i=@acm.org header.a=rsa-sha256 header.s=mr01 header.b=fVftXI+h; dkim-atps=neutral; spf=pass (client-ip=199.89.1.16; helo=013.lax.mailroute.net; envelope-from=bvanassche@acm.org; receiver=lists.ozlabs.org) smtp.mailfrom=acm.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=acm.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=C78b3RIn;
+	dkim=pass (2048-bit key; unprotected) header.d=acm.org header.i=@acm.org header.a=rsa-sha256 header.s=mr01 header.b=fVftXI+h;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=acm.org (client-ip=199.89.1.16; helo=013.lax.mailroute.net; envelope-from=bvanassche@acm.org; receiver=lists.ozlabs.org)
+Received: from 013.lax.mailroute.net (013.lax.mailroute.net [199.89.1.16])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZL2N6TQcz2xS3
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2026 03:21:48 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 76B8260097;
-	Mon, 16 Mar 2026 16:21:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 63D22C19421;
-	Mon, 16 Mar 2026 16:21:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
-	s=korg; t=1773678106;
-	bh=T+QCEG7rS4slK+eGQWKuSmiAa6E+o4G10P1NpOZ/x3k=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=C78b3RInQ6E9r2o5eQWhKAKKyMjBu8BuYuFLtQb2c4U384vA029N6GED42iVwexvs
-	 Qy02HSzj4wC9NG5ChI3KVHgChg8X9Mmh5uG9/p43xcgZK3sY2KpRjz4FNz2ddxVAic
-	 WH+xVUhU8+zr+WxlOE3+Sik0WbkV22WKcpegZwQQ=
-Date: Mon, 16 Mar 2026 09:21:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
-Cc: David Hildenbrand <david@kernel.org>, "Liam R . Howlett"
- <Liam.Howlett@oracle.com>, Vlastimil Babka <vbabka@kernel.org>, Jann Horn
- <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, Mike Rapoport
- <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Kees Cook
- <kees@kernel.org>, linux-mm@kvack.org, linux-kernel@vger.kernel.org, Vineet
- Gupta <vgupta@kernel.org>, Russell King <linux@armlinux.org.uk>, Catalin
- Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Brian
- Cain <bcain@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui
- <kernel@xen0n.name>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Dinh
- Nguyen <dinguyen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <chleroy@kernel.org>, Paul Walmsley <pjw@kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Alexandre Ghiti <alex@ghiti.fr>, Heiko Carstens <hca@linux.ibm.com>, Vasily
- Gorbik <gor@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle
- <svens@linux.ibm.com>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar
- <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen
- <dave.hansen@linux.intel.com>, x86@kernel.org, "H . Peter Anvin"
- <hpa@zytor.com>, Richard Weinberger <richard@nod.at>, Anton Ivanov
- <anton.ivanov@cambridgegreys.com>, Johannes Berg
- <johannes@sipsolutions.net>, Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, Xu Xin
- <xu.xin16@zte.com.cn>, Chengming Zhou <chengming.zhou@linux.dev>, Michal
- Hocko <mhocko@suse.com>, Paul Moore <paul@paul-moore.com>, Stephen Smalley
- <stephen.smalley.work@gmail.com>, Ondrej Mosnacek <omosnace@redhat.com>,
- linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev,
- linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- linux-um@lists.infradead.org, linux-fsdevel@vger.kernel.org,
- selinux@vger.kernel.org
-Subject: Re: [PATCH v2 00/23] mm/vma: convert vm_flags_t to vma_flags_t in
- vma code
-Message-Id: <20260316092143.8b21650c803eb99511395b83@linux-foundation.org>
-In-Reply-To: <cover.1773665966.git.ljs@kernel.org>
-References: <cover.1773665966.git.ljs@kernel.org>
-X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZMRK25QTz2ygn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2026 04:25:00 +1100 (AEDT)
+Received: from localhost (localhost [127.0.0.1])
+	by 013.lax.mailroute.net (Postfix) with ESMTP id 4fZMRG0fnBzlh1Sr;
+	Mon, 16 Mar 2026 17:24:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=acm.org; h=
+	content-transfer-encoding:content-type:content-type:in-reply-to
+	:from:from:content-language:references:subject:subject
+	:user-agent:mime-version:date:date:message-id:received:received;
+	 s=mr01; t=1773681895; x=1776273896; bh=2zIpJWDuED12p8lWwNhOhNGC
+	bt4qgGPHoPJlAldvFns=; b=fVftXI+hgj2mCsUicY7DROKvKKGI7G9KCjuXCc0R
+	8RxdZDElx5mPeuXDvD0B+g61xV/+K9EdxWS79kpTyKYMrxpJPybt/RqA+9r1Amrx
+	eyX8m6jR40EPJYu4DnT/QWZKMvQV0j4m3tjxaxu0wobFKtVvXxR5HxJUjkBzFkBY
+	lv5pLMq1VLNbpyJsvmwBAMCXSF2tydFL1bsav+Om6e7UnhecaQ7qHjhNRy13UpkH
+	YaAm0Wo1AZ/yv0RBlSCWIsS8gAMpBic6nIMup60GKIMwZeSzVOnpAqtf1LQP+Fqs
+	AijiLyyaEMf0FwpoTKyMq2UZLNyi1I4jJNDzD1HLKGlO7w==
+X-Virus-Scanned: by MailRoute
+Received: from 013.lax.mailroute.net ([127.0.0.1])
+ by localhost (013.lax [127.0.0.1]) (mroute_mailscanner, port 10029) with LMTP
+ id w3T8FYDL1gUx; Mon, 16 Mar 2026 17:24:55 +0000 (UTC)
+Received: from [100.119.48.131] (unknown [104.135.180.219])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: bvanassche@acm.org)
+	by 013.lax.mailroute.net (Postfix) with ESMTPSA id 4fZMR86Ycczlh1ST;
+	Mon, 16 Mar 2026 17:24:52 +0000 (UTC)
+Message-ID: <972328d4-d870-4674-b5cb-7d32fbe2b3a2@acm.org>
+Date: Mon, 16 Mar 2026 10:24:51 -0700
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,14 +68,29 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc/powermac: Remove pmac_low_i2c_{lock,unlock}()
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>, Thomas Gleixner <tglx@kernel.org>,
+ Kees Cook <kees@kernel.org>
+References: <20260313194430.2396286-1-bvanassche@acm.org>
+ <95fdd9f7-f7b7-4ab4-9506-f952b9af3a33@kernel.org>
+Content-Language: en-US
+From: Bart Van Assche <bvanassche@acm.org>
+In-Reply-To: <95fdd9f7-f7b7-4ab4-9506-f952b9af3a33@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
-On Mon, 16 Mar 2026 13:07:49 +0000 "Lorenzo Stoakes (Oracle)" <ljs@kernel.org> wrote:
+On 3/14/26 12:46 AM, Christophe Leroy (CS GROUP) wrote:
+> As far as I can see it was used by i2c-keywest driver until commit 
+> a28d3af2a26c ("[PATCH] 2/5 powerpc: Rework PowerMac i2c part 2")
 
-> This series converts a lot of the existing use of the legacy vm_flags_t
-> data type to the new vma_flags_t type which replaces it.
+Thanks Christophe for the feedback. I will integrate your feedback in a
+new version of this patch and post it soon.
 
-Thanks, added to mm-new.  I suppressed the usual email storm.
+Bart.
 
