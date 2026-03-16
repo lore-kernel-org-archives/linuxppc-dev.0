@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-18260-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18261-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61429F506CB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2026 13:11:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60B0CF506CD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2026 13:11:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fZFmr4Kz9z3bbm;
-	Tue, 17 Mar 2026 00:09:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fZFmv2qTLz3bfF;
+	Tue, 17 Mar 2026 00:09:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773666588;
-	cv=none; b=iIUvXt8T/SXFQ/n2CP3NTiEOujV9Z0GXvG2Pa9zhc90lEgpO1Fim7InmrzmQz4viMvvCivOr7wgqVIJyfNEHXZ+73F/BBQJ5R3Y+abFgFRYMWvaAmFEX8oT+fJ2mTBckfJHRNXfEg6k287NONVZk9swl7VhWe52rO4MwFcLJ+9GihgqApMzbzA+WxOzpS6e5Lr8Yf9L66i/HrAP18yxNhQPrcYO7ePfRWdfmhMY9bsFTNj5rIpQ+1ujDVJ72zybcMA9qsJcBKU0mOj8Yd8H1A2MXRJdnDwAI7mDiprK4qimEHAFL8BEmchnJdL3djIYne8KiyphoLAQ/rVUckYuHGQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773666591;
+	cv=none; b=hubd3V//lsJS3KuVvWD54wsQoWtsLEfpse2GU0xiDPtI0oiWQww4ExUZ0QCPLqyJyQ29RzVdDvyFF4NUfNMbK2eIWctvzSJB0WtoKFiwiyHSWEdu0N94/TLibH00a+p1fO9sDpD+VbgF8sMXCw6cyK7wG9yGogygpN31gL8zsCKGmzkyclKNGjehnSNMnmd/qlc64P7WgA9KXk13Vyu1DlXY47ItwCYM4AC4iv0a0w/99TDXT+8AcBSemS8DXw4F8RnbF2K1kBZBnsEigBrYbJZsRMqIAgIcNwCtXN1VdR0+q0PBFaMfMoRoCSiize583u7vAdrkCR9tOHkFVT6FWw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773666588; c=relaxed/relaxed;
-	bh=QgtlNgL5opTpBn73U5l71gRYTR0A4QeyxntZU129xEE=;
+	t=1773666591; c=relaxed/relaxed;
+	bh=PVDkn4Iea63x/iUjKGqsNgWSDwaAjBUcPqsY3IzSXW4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Tp7Hb6Wco/lXNYapdPkElrHHfnA6tdUsBV6MSXk7f/2DZsUiFtPWIOi0ans/L8j/4R7zvv/ECZmi/oNV/3cG+2CPlaPWESq/eqCVsi042tr9HD8LBkb+EuBaeHS1qGgLUH7Z7lYY+Q7duFtWiZnE0hhoWOZ8ixoW3RDfNqIt/fvY4+phVIYoEivxT1io0xzbs4vY5Jj4EnlsxVe8OhE9rGCKUh7jDjwxkTPYr2HS5DkFDvlQR/ZJDi9PlsaXk8PUsYHKj+T2T0l5MesVdkJOoBrcfbL6rx2DJUxbMd9NszIaaKiiXGIH1EhibbH/9beCs7GcBHFqJT6wTaIjN+T7gw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GoYjdYK+; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=Q+9JkbUGi6kvphILLazrKhn9B0iMdyfeIYk2ngv/NDg1XDXYdESFjEFEUSDtWmAJrNVLt6LjsShgI4aozoZFAG4VLnWkSQj8SKnywHfeg1u0B7xSGGK6NONcflTg0ujBHsOyzCct6a6K02hh2fE3D02chOx665Ial4mj9kAALaHt3UlUY3K8+BX3HE0tarBiK3wAIbPd5+PuaLBr1zuWHrbMh63pso3XNzcLc6FnxglmGb9ftb9kkVx5FkxHV73G7iZAYeqee6vTAzB+iHIvxcNDaoc3TCfX3859ehw5mj85JKE8vA4IZeOC+hfdKraq+Evc1pr+hOcaiT+w1lGTPg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=L9ClPzfO; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GoYjdYK+;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=L9ClPzfO;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZFmq6JK1z2ygn
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2026 00:09:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZFmt4gmGz2ygn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2026 00:09:50 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id EA3284082E;
-	Mon, 16 Mar 2026 13:09:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 35B5AC2BC87;
-	Mon, 16 Mar 2026 13:09:45 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id AD5A340609;
+	Mon, 16 Mar 2026 13:09:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EEC0CC2BC87;
+	Mon, 16 Mar 2026 13:09:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773666585;
-	bh=cshoMqhmsXn21+m564V6gRodJOxo+/21XTwmvJpWcIw=;
+	s=k20201202; t=1773666588;
+	bh=VYCGf0WaVtwDjxvr9LYOu82c/eRoRD87luS4chwjGHE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=GoYjdYK+uvokPnGKuT3tc4SmdUKqIx09gnlf1i1/a6ik3xs2zAiEgRyMQmBT7XnHq
-	 5W0IXEMJIsxuNBLQoFNXi+P7nWI71CHQCAclhg6VRgt3ctqVGnmM0+ba8uvws/wIzN
-	 WHLV4C8QGtteLWCCHBdv5Ri58aZ95Cmo+uDYbFCBwbVw2TH0mo+x0PQuZWczCJa7lF
-	 0WrejdRKjymUGNI5gFdHuyMUwTEDpsxZZroj6vnq3ALslUw5YYLkoz87Ksi63EALhr
-	 4DEgEdhyB8ia4nSpei+grNhfrdUn/u5yx27XEj6UK9j6N/d+BrLJXs+U0omOi8nV/n
-	 UH0Yws4m9dtZQ==
+	b=L9ClPzfObkNEhL332KF/QsJjLdy0Fa0xLfyvSh61rjRN/BLUc3TuvXAWwaGBQ8G7c
+	 GrPR02Wp03hFy51gh/NzNNgJQh3ikS6t8NdZQoyd7tiagwoHharLCpKdXjRdVDcjDd
+	 Z93+eqGfFfbfHQCfyc0492bN6xXyWKxnPUAXhPgpMO7c5TlVo1FnE8xQNocNbL/d+A
+	 Vme4UVDf6vAPXLLNngj55BlkvIg+fLN/ZvoPcQ4G6TnTdpJKa3DPU1F2eNnJ463akL
+	 grY0yOUO5yzdAHsdG1vqOwD71rrNYWbV3r3uqj+7loTkJo7ibd1m7/M9Tsf4bH34Pe
+	 sZZ9+w/i+EySw==
 From: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: David Hildenbrand <david@kernel.org>,
@@ -107,9 +107,9 @@ Cc: David Hildenbrand <david@kernel.org>,
 	linux-um@lists.infradead.org,
 	linux-fsdevel@vger.kernel.org,
 	selinux@vger.kernel.org
-Subject: [PATCH v2 18/23] mm: update vma_supports_mlock() to use new VMA flags
-Date: Mon, 16 Mar 2026 13:08:07 +0000
-Message-ID: <2f82b5b93599e89b391ee4672928cefdfd2fb2f8.1773665966.git.ljs@kernel.org>
+Subject: [PATCH v2 19/23] mm/vma: introduce vma_clear_flags[_mask]()
+Date: Mon, 16 Mar 2026 13:08:08 +0000
+Message-ID: <397c67b154a4868e19db9be1012e976148901de2.1773665966.git.ljs@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <cover.1773665966.git.ljs@kernel.org>
 References: <cover.1773665966.git.ljs@kernel.org>
@@ -128,29 +128,69 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-We now have the ability to test all of this using the new vma_flags_t
-approach, so let's do so.
+Introduce a helper function and helper macro to easily clear a VMA's flags
+using the new vma_flags_t vma->flags field:
+
+* vma_clear_flags_mask() - Clears all of the flags in a specified mask in
+			   the VMA's flags field.
+* vma_clear_flags() - Clears all of the specified individual VMA flag bits
+		      in a VMA's flags field.
+
+Also update the VMA tests to reflect the change.
 
 Signed-off-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
 ---
- mm/internal.h | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ include/linux/mm.h              | 16 ++++++++++++++++
+ tools/testing/vma/include/dup.h |  9 +++++++++
+ 2 files changed, 25 insertions(+)
 
-diff --git a/mm/internal.h b/mm/internal.h
-index 80d8651441a7..708d240b4198 100644
---- a/mm/internal.h
-+++ b/mm/internal.h
-@@ -1252,7 +1252,9 @@ static inline struct file *maybe_unlock_mmap_for_io(struct vm_fault *vmf,
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index eb1cbb60e63b..4ba1229676ad 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1368,6 +1368,22 @@ static __always_inline void vma_set_flags_mask(struct vm_area_struct *vma,
+ #define vma_set_flags(vma, ...) \
+ 	vma_set_flags_mask(vma, mk_vma_flags(__VA_ARGS__))
  
- static inline bool vma_supports_mlock(const struct vm_area_struct *vma)
++/* Helper to clear all VMA flags in a VMA. */
++static __always_inline void vma_clear_flags_mask(struct vm_area_struct *vma,
++		vma_flags_t flags)
++{
++	vma_flags_clear_mask(&vma->flags, flags);
++}
++
++/*
++ * Helper macro for clearing VMA flags, e.g.:
++ *
++ * vma_clear_flags(vma, VMA_IO_BIT, VMA_PFNMAP_BIT, VMA_DONTEXPAND_BIT,
++ * 		VMA_DONTDUMP_BIT);
++ */
++#define vma_clear_flags(vma, ...) \
++	vma_clear_flags_mask(vma, mk_vma_flags(__VA_ARGS__))
++
+ /*
+  * Test whether a specific VMA flag is set in a VMA descriptor, e.g.:
+  *
+diff --git a/tools/testing/vma/include/dup.h b/tools/testing/vma/include/dup.h
+index e68d3eb78178..1c4a58f11852 100644
+--- a/tools/testing/vma/include/dup.h
++++ b/tools/testing/vma/include/dup.h
+@@ -1063,6 +1063,15 @@ static __always_inline void vma_set_flags_mask(struct vm_area_struct *vma,
+ #define vma_set_flags(vma, ...) \
+ 	vma_set_flags_mask(vma, mk_vma_flags(__VA_ARGS__))
+ 
++static __always_inline void vma_clear_flags_mask(struct vm_area_struct *vma,
++		vma_flags_t flags)
++{
++	vma_flags_clear_mask(&vma->flags, flags);
++}
++
++#define vma_clear_flags(vmag, ...) \
++	vma_clear_flags_mask(vmag, mk_vma_flags(__VA_ARGS__))
++
+ static __always_inline bool vma_desc_test(const struct vm_area_desc *desc,
+ 		vma_flag_t bit)
  {
--	if (vma->vm_flags & (VM_SPECIAL | VM_DROPPABLE))
-+	if (vma_test_any_mask(vma, VMA_SPECIAL_FLAGS))
-+		return false;
-+	if (vma_test_single_mask(vma, VMA_DROPPABLE))
- 		return false;
- 	if (vma_is_dax(vma) || is_vm_hugetlb_page(vma))
- 		return false;
 -- 
 2.53.0
 
