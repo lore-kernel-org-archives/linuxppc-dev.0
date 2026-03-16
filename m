@@ -1,59 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-18207-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18208-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D06C8D58B21
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2026 04:43:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6094ED58B21
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2026 05:16:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fZ2Xc395Nz2xln;
-	Mon, 16 Mar 2026 15:43:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.205.221.236
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773632190;
-	cv=none; b=Jy1v54cOWW5J7Mdm65HqW4PtTNi97xLDHjO0gxi/PIlWMHuMoZykkXp+w1TvXO9oh2Aacuw9q+fEtUCR3dlRLERxvgYR0r//GO9b9iboHhxic00ejqAQJS9MNEM2frJyGF/TQlY6LSzQRWm+Z1k7r7DaIprgd1Lcirc8z7wtn+wHbSno9nureZOoCTyAsspm2AYhYZYBZVmIWBF7U3HcYEOBw9nMOUXZRS93FC7QiFlK4X4eakf89IerGqZCLA4wJH5yigjdkKIciKs4x+gcGRvPOv1G2/L7vKaZNZdIxDdkhu/ZI99cCkr8Ew6JZs1bpjYgvEj/v861sl0iJ63seQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fZ3Gd049vz2xln;
+	Mon, 16 Mar 2026 16:16:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773638184;
+	cv=none; b=OXUlLO8PUiMB3WjcoWeg9k8AVjQSrZBumNlouSpqrF1F0I0JTZnszG4XycFPQIvsfTggLsBknd5lXaKR3cCjJZ0JkaTGPVGr6WjqNWTBZgQyrmR9IW14CWqT4VQu4rz5kNnaSS19boWGYQOmDA8osoHPZ04IjC6W4RznKk/Qiff7EHPNjvBEqcD8E2GOtpg9NiACvdmmR3XTMPGK2fjmjqdp8IQIPW+qpw5FEqWo8msZTJM8J1z8cEmokdmSdmA9IA2EJ7fdRX1bLhlKsmEk4WJ42rkFtROnumB5orelQX3EFZXUyrc4mFjLLu37pitTfB1x1u8+FSK6foqS6vWpYA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773632190; c=relaxed/relaxed;
-	bh=9Pbc200y9cGOM7VUoBOvC0Jrh8toMJDIoMsog8qlVrg=;
-	h=From:To:Cc:Subject:Mime-Version:Content-Type:Date:Message-ID:
-	 References:In-Reply-To; b=gZfRR25BzG4rRSKF/SoadvE+Xwi0Cpnw6do8KlUWvieHtbh8bF+FYdpG5lPJ7uksMhmdLYtGouAhD7P/0W28ztuOm8SlwgmgDBMJOZgP/SJLfu2YUe09OAxza3WE2iyU47SekfngVWhHOweTUYwfn9lp2eTSTTO5I8o8MupPRFUUi7N7F18vsL0XuWf64qx63K8PJCtBB/PkF7qwNC2bYdpAnJVUVlVSz1ufuYZbjygkuTK8TzJlfSeoqcH4S2zEhQEPonxNv7mjyiwG2T7jhODAcRKLSpnbSgx7L7MlOFmj99co8iBbeIasp8a6t3ngaZZFP/MhGbAT0LwloSF/NA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com; dkim=pass (1024-bit key; unprotected) header.d=qq.com header.i=@qq.com header.a=rsa-sha256 header.s=s201512 header.b=Kj76k6PC; dkim-atps=neutral; spf=pass (client-ip=203.205.221.236; helo=out203-205-221-236.mail.qq.com; envelope-from=1742789905@qq.com; receiver=lists.ozlabs.org) smtp.mailfrom=qq.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com
+	t=1773638184; c=relaxed/relaxed;
+	bh=fYLnzMhAivmX8BBDReQHzyLJUbnKWpDe1iNJUKQM7VI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=LjSxenEgeAc9x7y55OYsJ5UK9Y0exJamK5frqpJPug3k+B9zlCyBzD6gSQlwin0OOHBzp4zXi1gIHNteuwZijVyRHTuumRzMdVcsiTcdcfTW4FbhqhaCdifizHhfHRfah5++WAVAInjyKvNQOCQc/ZKixLvjVZziKS4X5WmnUi44xXLx6oXVEsGOwHlwsm3g6bSnZc/yDck5U69zjZGrqwaVo5z249Qeypp2JVaf358c5xmmKkXYy9N2bZp1Z8p40SPg/SOkoUIe55jcYrymsbxXAgWjIDlF1nWkuoWRQOazln0D91kJBTahOLBUyJoOR9vwL1eP79OhmK1hWoE2QA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DA9cYGjn; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=qq.com header.i=@qq.com header.a=rsa-sha256 header.s=s201512 header.b=Kj76k6PC;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DA9cYGjn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=qq.com (client-ip=203.205.221.236; helo=out203-205-221-236.mail.qq.com; envelope-from=1742789905@qq.com; receiver=lists.ozlabs.org)
-Received: from out203-205-221-236.mail.qq.com (out203-205-221-236.mail.qq.com [203.205.221.236])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4fZ13H60d0z2xS6
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2026 14:36:27 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qq.com; s=s201512;
-	t=1773632180; bh=9Pbc200y9cGOM7VUoBOvC0Jrh8toMJDIoMsog8qlVrg=;
-	h=From:To:Cc:Subject:Date:References:In-Reply-To;
-	b=Kj76k6PCVOgoXHY9Z2XV6F4QK7xXubplBL1tUIBYUhT1n7KNzET9MlMf8wzZ3i0BF
-	 KPtHzAkPsa+AFYqA+W262UVnYMLd3KhmHr/Wey42PcCKBFMq4D24QQCDbFR1fpLRRg
-	 vgAOB3CX56fl7QlemeJK95uOydCS6YnL4QIagMlI=
-X-QQ-XMRINFO: OWPUhxQsoeAV9JJYqJL1ZSmSKRl7Mmdk1Q==
-X-QQ-XMAILINFO: NAvK98dRmgdf8Hsn/tIFw9dG/6RfaFxBn0x5RRfrfR85Hyl0kc2P7NvTJm9JBj
-	 tMsb4JW/EU1K1xbjSgI5ihEEKNcVPjRFF7Z6YuckjTzWqx1DiZ9s6Ng1WgK8tO9e2U1pKfvWDbgvW
-	 E9ge63NvRjlaClqt3+xdzxy+LcWqbWSw8gyezfurcr0INLUxRbbkX4wb7BzxbOZZn/hNFv7FAMLld
-	 k/YK9sCyNx0CWCA0O9VqtyJ7sHUzMnkEF3pvto0vUz4PvxMUH4ve9YgipieLoRLYFi21F/WejsPa2
-	 BmBS63uya1Vj5w/e4R+k0c5rdLiMngTzFARRy/NNo/6b/Z8LuFgT9vM3Msbu4sOBE5CbWV8R7K7oN
-	 p7B+/k972hdpZc7P4MTSsxw1KrsSCs+kv8QFgbs7sG6knPZI6+WwVF2krbli5Vsp7TLuff+KnVA91
-	 QHFhj1EqJaJTuklQ6/dTHNjZxc7p1jk0VVtp75MO/Ra8UGTi9AUj9uRhsRII1+1NrfByvD7SG147S
-	 NBUHW6yMqx9LHdvIIfTANkqeJ5YVPRww2TTusC3quS2xhrka0Em/dNBlRYCu3MPPZ34DWPKtfZoHS
-	 SsI8umNEuYrZsG9JIzGV7yLUn458sbSknJDmAG+vXs/MD0umyU9CtyHrgVbFzMW9mMXDB/zfJYcq7
-	 wboVu0RcKs9RY6cJgFlB7/qhwqvjmydKkBNGGlicSZnX8cO07Ih+TfhSTsy4ER5wTJwuEUVwt7TWM
-	 X+I5CAyX5PyuHtP8HvYikOWSqPl9BcRTU7mGI0/J0p2UNddeb/RIdPYR7SaZpO1rxbPXQLlG6HEiw
-	 Yx/fbmGv2iZ8zv70hWE9Gf6RqkMC+uxy4GYqqzKV2mCPO/wlJ5gm3jT5n5uOmrrW/Ggpab0gMPWxv
-	 PVgN2N8gEn9CBM/o/p1LAgK4wIunf/+qpXWAT41awHKgAAy2uiPNTz/JkAN3x9isqnbZnJVfv4vRz
-	 LAkxEiXsb4SHWudBjUByaQFpHk7Sqp5j6RF0rhDokrJ+QE+8HUyXOAndobnx3OCVedUPstmTF9wv8
-	 qEiUrY2TWpPtH9f0f0cMyAEf/ZY15K+5deOrpjpxe105vV/NUvJrNqcuu7oBFZC3Qt1K/
-From: "=?utf-8?B?5pyq5ZCb?=" <1742789905@qq.com>
-To: "=?utf-8?B?Q2hyaXN0b3BoZSBMZXJveSAoQ1MgR1JPVVAp?=" <chleroy@kernel.org>, "=?utf-8?B?cWlhbmcuemhhbw==?=" <qiang.zhao@nxp.com>, "=?utf-8?B?bGludXgtYXJtLWtlcm5lbA==?=" <linux-arm-kernel@lists.infradead.org>, "=?utf-8?B?bGludXhwcGMtZGV2?=" <linuxppc-dev@lists.ozlabs.org>
-Cc: "=?utf-8?B?bGludXgta2VybmVs?=" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] soc: fsl: qe: Fix potential NULL pointer dereference inqe_reset()
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZ3Gb2bTrz2xlP
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2026 16:16:22 +1100 (AEDT)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62FKOCOf711828;
+	Mon, 16 Mar 2026 05:15:56 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=fYLnzM
+	hAivmX8BBDReQHzyLJUbnKWpDe1iNJUKQM7VI=; b=DA9cYGjnmvbz12yo/Nme+k
+	ae8DXvwLgv4/qgUugNRnw3B2f9csDcj5ol2te4oM3CjlZBgesf+I9ktOtq/AZTrO
+	CHU0gnsEUC76RudeG581kC4UMsVLrONbMvbgQlWB9xXlCDUOZSZIfW9yG6usUcbQ
+	Edt5z3RskBx/QRH1I7aHqKE035l2Vjy8hB9dgAtfOn0mZp8CUomf3L0qv4/d6q9L
+	BpFwcG/xT9HMYfIodZcZoGd0RUrNGKOM+5VWqbm15Oi4AN7eSRpC25XQPsGe6xXR
+	Zkb+TpFkc74LqAFBg+4F1ZJwCqi56kfctfxinuJT0m8iLbOB1Ma5BQuCFKBS9uvg
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cvyau5y72-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 16 Mar 2026 05:15:55 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62G0NdVG032404;
+	Mon, 16 Mar 2026 05:15:54 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4cwm7jkc6b-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 16 Mar 2026 05:15:54 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62G5FpoZ61407622
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 16 Mar 2026 05:15:51 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0CB8F2004B;
+	Mon, 16 Mar 2026 05:15:51 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3969220043;
+	Mon, 16 Mar 2026 05:15:49 +0000 (GMT)
+Received: from fedora (unknown [9.5.7.39])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Mon, 16 Mar 2026 05:15:49 +0000 (GMT)
+Date: Mon, 16 Mar 2026 06:01:54 +0000
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: David Laight <david.laight.linux@gmail.com>
+Cc: Amit Machhiwal <amachhiw@linux.ibm.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        linuxppc-dev@lists.ozlabs.org, Vaibhav Jain <vaibhav@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>, Greg Kurz <groug@kaod.org>,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] selftests/powerpc: Suppress false positive
+ -Wmaybe-uninitialized with GCC 15
+Message-ID: <20260316055822.cd40bb30-47-amachhiw@linux.ibm.com>
+Mail-Followup-To: David Laight <david.laight.linux@gmail.com>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	linuxppc-dev@lists.ozlabs.org, Vaibhav Jain <vaibhav@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Greg Kurz <groug@kaod.org>, 
+	linux-kernel@vger.kernel.org
+References: <20260310101519.67157-1-amachhiw@linux.ibm.com>
+ <3f26916b-5a1f-40b0-9c47-8b53e066e08c@kernel.org>
+ <20260312123856.65bb5484-2e-amachhiw@linux.ibm.com>
+ <20260312185653.3b8570a9@pumpkin>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,339 +100,190 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_69B778EF_D0383040_21BE8247"
-Content-Transfer-Encoding: 8Bit
-Date: Mon, 16 Mar 2026 11:28:47 +0800
-X-Priority: 3
-Message-ID: <tencent_89405091B7744EA070AC53E11A3FFA355609@qq.com>
-X-QQ-MIME: TCMime 1.0 by Tencent
-X-Mailer: QQMail 2.x
-X-QQ-Mailer: QQMail 2.x
-References: <tencent_770FE404794D670E2ACDFA144EFDA35AC305@qq.com>
-	<7e0425c2-debe-448a-a5f9-26039de71db5@kernel.org>
-In-Reply-To: <7e0425c2-debe-448a-a5f9-26039de71db5@kernel.org>
-X-QQ-mid: xmsepub6-1t1773631727tp09vhoz7
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260312185653.3b8570a9@pumpkin>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzE2MDAzNyBTYWx0ZWRfX8HXab0e/c0pp
+ V0zcd1UCkczE9K61dA3ivno55gBLxbLIVz/q733JMth836EKqlZNFY6Jyk/Jj/itQnCObFErpxC
+ MY2lgjIF8lW+oRVjiKbAgSQebGa1hUFhcbgCZoIx6zTtoIUaOyxhsdb64jU2uywkyQCdv+ezgQO
+ PKMAnWyqMEuxaQ0Uk1nifjI1GcRr1Si4+e2mb4lo6Mo/fZTWtfTxRB0/wVUNoDFtB8dWuQZ9+8l
+ yxe9w0q1hjA91JcpnaFXaSizyUgeQlZkkbJVJSdoQuXyQIQ1UWfwBMEi70+Jww1eZpwzPorrvn8
+ 1aKotR0X2Xcm04dUdeN/zme4aS918LZzN/GgqjBJk6vVNTiLiwsH3fHF6kerZngKB3IdCojACVs
+ ZJUSrwmcptxfYtm9B4sdk5bDJqxZhZuu1Pq57z5LeHVaxI0m6mk5olvWqCZSzu2O0Nhy32Tg5RK
+ KAnurjwOE0/Heq91QVA==
+X-Authority-Analysis: v=2.4 cv=GIQF0+NK c=1 sm=1 tr=0 ts=69b7920c cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=mDV3o1hIAAAA:8
+ a=UqCG9HQmAAAA:8 a=VnNF1IyMAAAA:8 a=1UX6Do5GAAAA:8 a=uqyPSVgkIIOpVusapscA:9
+ a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10 a=Et2XPkok5AAZYJIKzHr1:22
+X-Proofpoint-ORIG-GUID: uH78DoSEz-1TF6TUkoRBkz4mkomLmQ14
+X-Proofpoint-GUID: LjHMg8SuoYyZuwgTv5nxGeWLOEiGurDu
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-16_02,2026-03-13_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 priorityscore=1501 bulkscore=0 lowpriorityscore=0 malwarescore=0
+ phishscore=0 impostorscore=0 suspectscore=0 adultscore=0 clxscore=1015
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603160037
 
-This is a multi-part message in MIME format.
+Hi David,
 
-------=_NextPart_69B778EF_D0383040_21BE8247
-Content-Type: text/plain;
-	charset="utf-8"
-Content-Transfer-Encoding: base64
+Thanks for looking into the patch and apologies for a late response.
+Please find my comments inline below:
 
-SGksDQoNCg0KVGhhbmsgeW91IGZvciB0aGUgZGV0YWlsZWQgcmV2aWV3LiBZb3UgYXJlIGNv
-bXBsZXRlbHkgcmlnaHQuDQoNCg0KTXkgY29tbWl0IG1lc3NhZ2Ugd2FzIGNvbmZ1c2luZywg
-YW5kIHJldHVybmluZyBlYXJseSBpbiBxZV9yZXNldCgpIGp1c3Qgc2hpZnRzIHRoZSBOVUxM
-IHBvaW50ZXIgZGVyZWZlcmVuY2UgdG8gdGhlIGRlcGVuZGVudCBkcml2ZXJzIGxhdGVyIG9u
-LCB3aXRob3V0IGFjdHVhbGx5IGZpeGluZyB0aGUgcm9vdCBjYXVzZS4NCg0KDQpUbyBhY2hp
-ZXZlIHdoYXQgeW91IHN1Z2dlc3RlZCAoImlmIHFlX2ltbXIgcmVtYXAgZmFpbHMsIGFsbCBk
-cml2ZXJzIGRlcGVuZGluZyBvbiBpdCBkb24ndCBnZXQgcHJvYmVkIiksIEkgcGxhbiB0byBk
-byB0aGUgZm9sbG93aW5nIGluIHRoZSB2MiBwYXRjaDoNCg0KDQoxLiBDaGFuZ2UgdGhlIHJl
-dHVybiB0eXBlIG9mIHFlX3Jlc2V0KCkgZnJvbSBgdm9pZGAgdG8gYGludGAuDQoyLiBSZXR1
-cm4gYC1FTk9NRU1gIGlmIHRoZSBpb3JlbWFwKCkgZmFpbHMuDQozLiBVcGRhdGUgdGhlIGNh
-bGxlcnMgb2YgcWVfcmVzZXQoKSAoZS5nLiwgcWVfcHJvYmUoKSBhbmQgb3RoZXIgYm9hcmQt
-c3BlY2lmaWMgc2V0dXAgZnVuY3Rpb25zKSB0byBjaGVjayB0aGlzIHJldHVybiB2YWx1ZS4g
-SWYgcWVfcmVzZXQoKSBmYWlscywgdGhlIGNhbGxlcnMgd2lsbCBhYm9ydCB0aGVpciBpbml0
-aWFsaXphdGlvbi9wcm9iaW5nLCB3aGljaCB3aWxsIHByb3Blcmx5IHByZXZlbnQgdGhlIGNo
-aWxkIGRldmljZXMgZnJvbSBiZWluZyBwcm9iZWQuDQoNCg0KRG9lcyB0aGlzIGFwcHJvYWNo
-IHNvdW5kIGNvcnJlY3QgdG8geW91PyBJZiBzbywgSSB3aWxsIHByZXBhcmUgYW5kIHN1Ym1p
-dCB0aGUgdjIgcGF0Y2ggYWNjb3JkaW5nbHkuDQoNCg0KQmVzdCByZWdhcmRzLA0KV2FuZyBK
-dW4NCg0KDQrmnKrlkJsNCjE3NDI3ODk5MDVAcXEuY29tDQoNCg0KDQogICAgICAgIA0KDQoN
-Cg0KICAgICAgICAgT3JpZ2luYWwNCiAgICAgICAgIA0KICAgICAgIA0KRnJvbTogQ2hyaXN0
-b3BoZSBMZXJveSAoQ1MgR1JPVVApIDxjaGxlcm95QGtlcm5lbC5vcmcmZ3Q7DQpEYXRlOiAy
-MDI2LTAzLTEzIDE3OjQ4DQpUbzogV2FuZyBKdW4gPDE3NDI3ODk5MDVAcXEuY29tJmd0Oywg
-UWlhbmcgWmhhbyA8cWlhbmcuemhhb0BueHAuY29tJmd0OywgbGludXhwcGMtZGV2IDxsaW51
-eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZyZndDssIGxpbnV4LWFybS1rZXJuZWwgPGxpbnV4
-LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZyZndDsNCkNjOiBsaW51eC1rZXJuZWwg
-PGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcmZ3Q7LCBnc3poYWkgPGdzemhhaUBianR1
-LmVkdS5jbiZndDssIDI1MTI1MzMyIDwyNTEyNTMzMkBianR1LmVkdS5jbiZndDssIDI1MTI1
-MjgzIDwyNTEyNTI4M0BianR1LmVkdS5jbiZndDssIDIzMTIwNDY5IDwyMzEyMDQ2OUBianR1
-LmVkdS5jbiZndDsNClN1YmplY3Q6IFJlOiBbUEFUQ0hdIHNvYzogZnNsOiBxZTogRml4IHBv
-dGVudGlhbCBOVUxMIHBvaW50ZXIgZGVyZWZlcmVuY2UgaW5xZV9yZXNldCgpDQoNCg0KDQoN
-Cg0KTGUmbmJzcDsxMC8wMy8yMDI2Jm5ic3A7w6AmbmJzcDsxMzoxMSwmbmJzcDtXYW5nJm5i
-c3A7SnVuJm5ic3A7YSZuYnNwO8OpY3JpdCZuYnNwOzoNCiZndDsmbmJzcDtbVm91cyZuYnNw
-O25lJm5ic3A7cmVjZXZleiZuYnNwO3BhcyZuYnNwO3NvdXZlbnQmbmJzcDtkZSZuYnNwO2Nv
-dXJyaWVycyZuYnNwO2RlJm5ic3A7MTc0Mjc4OTkwNUBxcS5jb20uJm5ic3A7RMOpY291dnJl
-eiZuYnNwO3BvdXJxdW9pJm5ic3A7Y2VjaSZuYnNwO2VzdCZuYnNwO2ltcG9ydGFudCZuYnNw
-O8OgJm5ic3A7aHR0cHM6Ly9ha2EubXMvTGVhcm5BYm91dFNlbmRlcklkZW50aWZpY2F0aW9u
-Jm5ic3A7XQ0KJmd0OyZuYnNwOw0KJmd0OyZuYnNwO1RoZSZuYnNwO2Z1bmN0aW9uJm5ic3A7
-cWVfcmVzZXQoKSZuYnNwO3VzZXMmbmJzcDtxZV9pbW1yJm5ic3A7d2l0aG91dCZuYnNwO2No
-ZWNraW5nJm5ic3A7aWYmbmJzcDtpdCZuYnNwO2lzJm5ic3A7TlVMTCwNCiZndDsmbmJzcDt3
-aGljaCZuYnNwO2NvdWxkJm5ic3A7aGFwcGVuJm5ic3A7aWYmbmJzcDtpb3JlbWFwKCkmbmJz
-cDtmYWlsZWQmbmJzcDtlYXJsaWVyLiZuYnNwO0FkZCZuYnNwO2EmbmJzcDtOVUxMJm5ic3A7
-Y2hlY2smbmJzcDthbmQNCiZndDsmbmJzcDtwZXJmb3JtJm5ic3A7aW9yZW1hcCgpJm5ic3A7
-aWYmbmJzcDtuZWVkZWQ7Jm5ic3A7aWYmbmJzcDtpdCZuYnNwO3N0aWxsJm5ic3A7ZmFpbHMs
-Jm5ic3A7cHJpbnQmbmJzcDthbiZuYnNwO2Vycm9yJm5ic3A7YW5kDQomZ3Q7Jm5ic3A7cmV0
-dXJuJm5ic3A7dG8mbmJzcDthdm9pZCZuYnNwO2NyYXNoaW5nJm5ic3A7dGhlJm5ic3A7c3lz
-dGVtLg0KDQpJJm5ic3A7ZG9uJ3QmbmJzcDt1bmRlcnN0YW5kJm5ic3A7d2hhdCZuYnNwO3lv
-dSZuYnNwO2FyZSZuYnNwO3RyeWluZyZuYnNwO3RvJm5ic3A7c2F5Jm5ic3A7aGVyZS4mbmJz
-cDtXaGF0Jm5ic3A7eW91Jm5ic3A7c2F5Jm5ic3A7aXMmbmJzcDsNCmFscmVhZHkmbmJzcDt3
-aGF0Jm5ic3A7cWVfcmVzZXQoKSZuYnNwO2RvZXM6Jm5ic3A7aXQmbmJzcDtkb2VzJm5ic3A7
-YSZuYnNwO05VTEwmbmJzcDtjaGVjayZuYnNwO2FuZCZuYnNwO3BlcmZvcm1zJm5ic3A7DQpp
-b3JlbWFwKCkmbmJzcDt3aGVuJm5ic3A7aXQmbmJzcDtpcyZuYnNwO05VTEw6DQoNCglpZiZu
-YnNwOyhxZV9pbW1yJm5ic3A7PT0mbmJzcDtOVUxMKQ0KCQlxZV9pbW1yJm5ic3A7PSZuYnNw
-O2lvcmVtYXAoZ2V0X3FlX2Jhc2UoKSwmbmJzcDtRRV9JTU1BUF9TSVpFKTsNCg0KWW91Jm5i
-c3A7YXJlJm5ic3A7YWRkaW5nJm5ic3A7YSZuYnNwO3NlY29uZCZuYnNwO05VTEwmbmJzcDtj
-aGVjayZuYnNwO2FuZCZuYnNwO3JldHVybiZuYnNwO2Vhcmx5Jm5ic3A7ZnJvbSZuYnNwO3Fl
-X3Jlc2V0KCkuJm5ic3A7QnV0Jm5ic3A7DQppdCZuYnNwO2RvZXNuJ3QmbmJzcDtyZWFsbHkm
-bmJzcDtmaXgmbmJzcDt0aGUmbmJzcDtwcm9ibGVtJm5ic3A7YmVjYXVzZSZuYnNwO3FlX2lt
-bXImbmJzcDtpcyZuYnNwO3VzZWQmbmJzcDtpbiZuYnNwO21hbnkmbmJzcDtvdGhlciZuYnNw
-Ow0KcGxhY2VzJm5ic3A7c28mbmJzcDt5b3UmbmJzcDthcmUmbmJzcDtqdXN0Jm5ic3A7ZGVs
-YXlpbmcmbmJzcDt0aGUmbmJzcDtwcm9ibGVtLg0KDQpXaGF0Jm5ic3A7bmVlZHMmbmJzcDt0
-byZuYnNwO2JlJm5ic3A7ZG9uZSZuYnNwO2lzJm5ic3A7dGhhdCZuYnNwO2lmJm5ic3A7cWVf
-aW1tciZuYnNwO3JlbWFwJm5ic3A7ZmFpbHMsJm5ic3A7YWxsJm5ic3A7ZHJpdmVycyZuYnNw
-Ow0KZGVwZW5kaW5nJm5ic3A7b24mbmJzcDtpdCZuYnNwO2Rvbid0Jm5ic3A7Z2V0Jm5ic3A7
-cHJvYmVkLg0KDQomZ3Q7Jm5ic3A7DQomZ3Q7Jm5ic3A7U2lnbmVkLW9mZi1ieTombmJzcDtX
-YW5nJm5ic3A7SnVuJm5ic3A7PDE3NDI3ODk5MDVAcXEuY29tJmd0Ow0KJmd0OyZuYnNwOy0t
-LQ0KJmd0OyZuYnNwOyZuYnNwOyZuYnNwO2RyaXZlcnMvc29jL2ZzbC9xZS9xZS5jJm5ic3A7
-fCZuYnNwOzcmbmJzcDsrKysrKystDQomZ3Q7Jm5ic3A7Jm5ic3A7Jm5ic3A7MSZuYnNwO2Zp
-bGUmbmJzcDtjaGFuZ2VkLCZuYnNwOzYmbmJzcDtpbnNlcnRpb25zKCspLCZuYnNwOzEmbmJz
-cDtkZWxldGlvbigtKQ0KJmd0OyZuYnNwOw0KJmd0OyZuYnNwO2RpZmYmbmJzcDstLWdpdCZu
-YnNwO2EvZHJpdmVycy9zb2MvZnNsL3FlL3FlLmMmbmJzcDtiL2RyaXZlcnMvc29jL2ZzbC9x
-ZS9xZS5jDQomZ3Q7Jm5ic3A7aW5kZXgmbmJzcDs3MGI2ZWRkYjg2N2IuLjZkY2ZhMzQwOTcw
-YSZuYnNwOzEwMDY0NA0KJmd0OyZuYnNwOy0tLSZuYnNwO2EvZHJpdmVycy9zb2MvZnNsL3Fl
-L3FlLmMNCiZndDsmbmJzcDsrKysmbmJzcDtiL2RyaXZlcnMvc29jL2ZzbC9xZS9xZS5jDQom
-Z3Q7Jm5ic3A7QEAmbmJzcDstODYsOCZuYnNwOys4NiwxMyZuYnNwO0BAJm5ic3A7c3RhdGlj
-Jm5ic3A7cGh5c19hZGRyX3QmbmJzcDtnZXRfcWVfYmFzZSh2b2lkKQ0KJmd0OyZuYnNwOw0K
-Jmd0OyZuYnNwOyZuYnNwOyZuYnNwO3ZvaWQmbmJzcDtxZV9yZXNldCh2b2lkKQ0KJmd0OyZu
-YnNwOyZuYnNwOyZuYnNwO3sNCiZndDsmbmJzcDstJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
-Jm5ic3A7Jm5ic3A7Jm5ic3A7aWYmbmJzcDsocWVfaW1tciZuYnNwOz09Jm5ic3A7TlVMTCkN
-CiZndDsmbmJzcDsrJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
-aWYmbmJzcDsocWVfaW1tciZuYnNwOz09Jm5ic3A7TlVMTCkmbmJzcDt7DQomZ3Q7Jm5ic3A7
-Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
-Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7cWVfaW1t
-ciZuYnNwOz0mbmJzcDtpb3JlbWFwKGdldF9xZV9iYXNlKCksJm5ic3A7UUVfSU1NQVBfU0la
-RSk7DQomZ3Q7Jm5ic3A7KyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
-YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwO2lm
-Jm5ic3A7KHFlX2ltbXImbmJzcDs9PSZuYnNwO05VTEwpJm5ic3A7ew0KJmd0OyZuYnNwOysm
-bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
-bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
-bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDtwcl9lcnIoIlFFOiZuYnNwO2Nhbm5vdCZu
-YnNwO3JlbWFwJm5ic3A7SU1NUlxuIik7DQomZ3Q7Jm5ic3A7KyZuYnNwOyZuYnNwOyZuYnNw
-OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
-OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
-OyZuYnNwOyZuYnNwO3JldHVybjsNCiZndDsmbmJzcDsrJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
-c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
-c3A7Jm5ic3A7Jm5ic3A7fQ0KJmd0OyZuYnNwOysmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
-bmJzcDsmbmJzcDsmbmJzcDt9DQomZ3Q7Jm5ic3A7DQomZ3Q7Jm5ic3A7Jm5ic3A7Jm5ic3A7
-Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7cWVfc251bXNfaW5p
-dCgpOw0KJmd0OyZuYnNwOw0KJmd0OyZuYnNwOy0tDQomZ3Q7Jm5ic3A7Mi40My4wDQomZ3Q7
-Jm5ic3A7
+On 2026/03/12 06:56 PM, David Laight wrote:
+> On Thu, 12 Mar 2026 13:16:26 +0000
+> Amit Machhiwal <amachhiw@linux.ibm.com> wrote:
+> 
+> > Hi Christhophe,
+> > 
+> > Thanks for looking at the patch. Please find my comments inline:j
+> > 
+> > On 2026/03/10 11:54 AM, Christophe Leroy (CS GROUP) wrote:
+> > > 
+> > > 
+> > > Le 10/03/2026 à 11:15, Amit Machhiwal a écrit :  
+> > > > GCC 15 reports the below false positive '-Wmaybe-uninitialized' warning
+> > > > in vphn_unpack_associativity() when building the powerpc selftests.
+> > > > 
+> > > >    # make -C tools/testing/selftests TARGETS="powerpc"
+> > > >    [...]
+> > > >      CC       test-vphn
+> > > >    In file included from test-vphn.c:3:
+> > > >    In function ‘vphn_unpack_associativity’,
+> > > >        inlined from ‘test_one’ at test-vphn.c:371:2,
+> > > >        inlined from ‘test_vphn’ at test-vphn.c:399:9:
+> > > >    test-vphn.c:10:33: error: ‘be_packed’ may be used uninitialized [-Werror=maybe-uninitialized]
+> > > >       10 | #define be16_to_cpup(x)         bswap_16(*x)
+> > > >          |                                 ^~~~~~~~
+> > > >    vphn.c:42:27: note: in expansion of macro ‘be16_to_cpup’
+> > > >       42 |                 u16 new = be16_to_cpup(field++);
+> > > >          |                           ^~~~~~~~~~~~
+> > > >    In file included from test-vphn.c:19:
+> > > >    vphn.c: In function ‘test_vphn’:
+> > > >    vphn.c:27:16: note: ‘be_packed’ declared here
+> > > >       27 |         __be64 be_packed[VPHN_REGISTER_COUNT];
+> > > >          |                ^~~~~~~~~
+> > > >    cc1: all warnings being treated as errors
+> > > > 
+> > > > When vphn_unpack_associativity() is called from hcall_vphn(), this error
+> > > > is not seen during compilation because GCC 15 seems to consider 'retbuf'
+> > > > always populated from the hypervisor which is eventually referred by
+> > > > 'be_packed'. However, GCC 15's dataflow analysis can’t prove the same
+> > > > before the first dereference when vphn_unpack_associativity() is called
+> > > > from test_one() with pre-initialized array of 'struct test'. This
+> > > > results in a false positive warning which is promoted to an error under
+> > > > '-Werror'. This problem is not seen when the compilation is performed
+> > > > with GCC 13 and 14.
+> > > > 
+> > > > Suppress the warning locally around the offending statement when
+> > > > building with GCC 15 using a diagnostic pragma. This keeps the build
+> > > > working while limiting the scope of the suppression to the specific
+> > > > statement that triggers the false positive. An issue [1] has also been
+> > > > created on GCC bugzilla.  
+> > > 
+> > > Usually when we get this kind of warning this is because the code is too
+> > > complex. We should try to make it more obvious instead of just hiding the
+> > > warning.  
+> > 
+> > The real issue here is that GCC 15 emits '-Wmaybe-uninitialized' due to
+> > type punning between __be64[] and __b16* when accessing the buffer via
+> > be16_to_cpup(). The underlying object is fully initialized but GCC 15
+> > fails to track the aliasing due to the strict aliasing violation here.
+> 
+> Nope, I think it is tracking it correctly.
+> The writes to be_packed[] are of 64bit values.
+> The only reads of that memory are 16bit ones through field[].
+> With 'strict aliasing' the compiler doesn't have to order those accesses.
+> Indeed, it is allowed to completely optimise away the first loop.
 
-------=_NextPart_69B778EF_D0383040_21BE8247
-Content-Type: text/html;
-	charset="utf-8"
-Content-Transfer-Encoding: base64
+Quoting the below statement from the discussion with GCC folks at [1]
 
-PGRpdiBzdHlsZT0iZm9udC1mYW1pbHk6IC1hcHBsZS1zeXN0ZW0sIHN5c3RlbS11aTsgZm9u
-dC1zaXplOiAxNHB4OyBjb2xvcjogcmdiKDAsIDAsIDApOyBsaW5lLWhlaWdodDogMS40Mzsi
-PkhpLDwvZGl2PjxkaXYgc3R5bGU9ImZvbnQtZmFtaWx5OiAtYXBwbGUtc3lzdGVtLCBzeXN0
-ZW0tdWk7IGZvbnQtc2l6ZTogMTRweDsgY29sb3I6IHJnYigwLCAwLCAwKTsgbGluZS1oZWln
-aHQ6IDEuNDM7Ij48YnIgIC8+PC9kaXY+PGRpdiBzdHlsZT0iZm9udC1mYW1pbHk6IC1hcHBs
-ZS1zeXN0ZW0sIHN5c3RlbS11aTsgZm9udC1zaXplOiAxNHB4OyBjb2xvcjogcmdiKDAsIDAs
-IDApOyBsaW5lLWhlaWdodDogMS40MzsiPlRoYW5rIHlvdSBmb3IgdGhlIGRldGFpbGVkIHJl
-dmlldy4gWW91IGFyZSBjb21wbGV0ZWx5IHJpZ2h0LjwvZGl2PjxkaXYgc3R5bGU9ImZvbnQt
-ZmFtaWx5OiAtYXBwbGUtc3lzdGVtLCBzeXN0ZW0tdWk7IGZvbnQtc2l6ZTogMTRweDsgY29s
-b3I6IHJnYigwLCAwLCAwKTsgbGluZS1oZWlnaHQ6IDEuNDM7Ij48YnIgIC8+PC9kaXY+PGRp
-diBzdHlsZT0iZm9udC1mYW1pbHk6IC1hcHBsZS1zeXN0ZW0sIHN5c3RlbS11aTsgZm9udC1z
-aXplOiAxNHB4OyBjb2xvcjogcmdiKDAsIDAsIDApOyBsaW5lLWhlaWdodDogMS40MzsiPk15
-IGNvbW1pdCBtZXNzYWdlIHdhcyBjb25mdXNpbmcsIGFuZCByZXR1cm5pbmcgZWFybHkgaW4g
-cWVfcmVzZXQoKSBqdXN0IHNoaWZ0cyB0aGUgTlVMTCBwb2ludGVyIGRlcmVmZXJlbmNlIHRv
-IHRoZSBkZXBlbmRlbnQgZHJpdmVycyBsYXRlciBvbiwgd2l0aG91dCBhY3R1YWxseSBmaXhp
-bmcgdGhlIHJvb3QgY2F1c2UuPC9kaXY+PGRpdiBzdHlsZT0iZm9udC1mYW1pbHk6IC1hcHBs
-ZS1zeXN0ZW0sIHN5c3RlbS11aTsgZm9udC1zaXplOiAxNHB4OyBjb2xvcjogcmdiKDAsIDAs
-IDApOyBsaW5lLWhlaWdodDogMS40MzsiPjxiciAgLz48L2Rpdj48ZGl2IHN0eWxlPSJmb250
-LWZhbWlseTogLWFwcGxlLXN5c3RlbSwgc3lzdGVtLXVpOyBmb250LXNpemU6IDE0cHg7IGNv
-bG9yOiByZ2IoMCwgMCwgMCk7IGxpbmUtaGVpZ2h0OiAxLjQzOyI+VG8gYWNoaWV2ZSB3aGF0
-IHlvdSBzdWdnZXN0ZWQgKCJpZiBxZV9pbW1yIHJlbWFwIGZhaWxzLCBhbGwgZHJpdmVycyBk
-ZXBlbmRpbmcgb24gaXQgZG9uJ3QgZ2V0IHByb2JlZCIpLCBJIHBsYW4gdG8gZG8gdGhlIGZv
-bGxvd2luZyBpbiB0aGUgdjIgcGF0Y2g6PC9kaXY+PGRpdiBzdHlsZT0iZm9udC1mYW1pbHk6
-IC1hcHBsZS1zeXN0ZW0sIHN5c3RlbS11aTsgZm9udC1zaXplOiAxNHB4OyBjb2xvcjogcmdi
-KDAsIDAsIDApOyBsaW5lLWhlaWdodDogMS40MzsiPjxiciAgLz48L2Rpdj48ZGl2IHN0eWxl
-PSJmb250LWZhbWlseTogLWFwcGxlLXN5c3RlbSwgc3lzdGVtLXVpOyBmb250LXNpemU6IDE0
-cHg7IGNvbG9yOiByZ2IoMCwgMCwgMCk7IGxpbmUtaGVpZ2h0OiAxLjQzOyI+MS4gQ2hhbmdl
-IHRoZSByZXR1cm4gdHlwZSBvZiBxZV9yZXNldCgpIGZyb20gYHZvaWRgIHRvIGBpbnRgLjwv
-ZGl2PjxkaXYgc3R5bGU9ImZvbnQtZmFtaWx5OiAtYXBwbGUtc3lzdGVtLCBzeXN0ZW0tdWk7
-IGZvbnQtc2l6ZTogMTRweDsgY29sb3I6IHJnYigwLCAwLCAwKTsgbGluZS1oZWlnaHQ6IDEu
-NDM7Ij4yLiBSZXR1cm4gYC1FTk9NRU1gIGlmIHRoZSBpb3JlbWFwKCkgZmFpbHMuPC9kaXY+
-PGRpdiBzdHlsZT0iZm9udC1mYW1pbHk6IC1hcHBsZS1zeXN0ZW0sIHN5c3RlbS11aTsgZm9u
-dC1zaXplOiAxNHB4OyBjb2xvcjogcmdiKDAsIDAsIDApOyBsaW5lLWhlaWdodDogMS40Mzsi
-PjMuIFVwZGF0ZSB0aGUgY2FsbGVycyBvZiBxZV9yZXNldCgpIChlLmcuLCBxZV9wcm9iZSgp
-IGFuZCBvdGhlciBib2FyZC1zcGVjaWZpYyBzZXR1cCBmdW5jdGlvbnMpIHRvIGNoZWNrIHRo
-aXMgcmV0dXJuIHZhbHVlLiBJZiBxZV9yZXNldCgpIGZhaWxzLCB0aGUgY2FsbGVycyB3aWxs
-IGFib3J0IHRoZWlyIGluaXRpYWxpemF0aW9uL3Byb2JpbmcsIHdoaWNoIHdpbGwgcHJvcGVy
-bHkgcHJldmVudCB0aGUgY2hpbGQgZGV2aWNlcyBmcm9tIGJlaW5nIHByb2JlZC48L2Rpdj48
-ZGl2IHN0eWxlPSJmb250LWZhbWlseTogLWFwcGxlLXN5c3RlbSwgc3lzdGVtLXVpOyBmb250
-LXNpemU6IDE0cHg7IGNvbG9yOiByZ2IoMCwgMCwgMCk7IGxpbmUtaGVpZ2h0OiAxLjQzOyI+
-PGJyICAvPjwvZGl2PjxkaXYgc3R5bGU9ImZvbnQtZmFtaWx5OiAtYXBwbGUtc3lzdGVtLCBz
-eXN0ZW0tdWk7IGZvbnQtc2l6ZTogMTRweDsgY29sb3I6IHJnYigwLCAwLCAwKTsgbGluZS1o
-ZWlnaHQ6IDEuNDM7Ij5Eb2VzIHRoaXMgYXBwcm9hY2ggc291bmQgY29ycmVjdCB0byB5b3U/
-IElmIHNvLCBJIHdpbGwgcHJlcGFyZSBhbmQgc3VibWl0IHRoZSB2MiBwYXRjaCBhY2NvcmRp
-bmdseS48L2Rpdj48ZGl2IHN0eWxlPSJmb250LWZhbWlseTogLWFwcGxlLXN5c3RlbSwgc3lz
-dGVtLXVpOyBmb250LXNpemU6IDE0cHg7IGNvbG9yOiByZ2IoMCwgMCwgMCk7IGxpbmUtaGVp
-Z2h0OiAxLjQzOyI+PGJyICAvPjwvZGl2PjxkaXYgc3R5bGU9ImZvbnQtZmFtaWx5OiAtYXBw
-bGUtc3lzdGVtLCBzeXN0ZW0tdWk7IGZvbnQtc2l6ZTogMTRweDsgY29sb3I6IHJnYigwLCAw
-LCAwKTsgbGluZS1oZWlnaHQ6IDEuNDM7Ij5CZXN0IHJlZ2FyZHMsPC9kaXY+PGRpdiBzdHls
-ZT0iZm9udC1mYW1pbHk6IC1hcHBsZS1zeXN0ZW0sIHN5c3RlbS11aTsgZm9udC1zaXplOiAx
-NHB4OyBjb2xvcjogcmdiKDAsIDAsIDApOyBsaW5lLWhlaWdodDogMS40MzsiPldhbmcgSnVu
-PC9kaXY+PGRpdiBjb250ZW50ZWRpdGFibGU9ImZhbHNlIj48ZGl2IHN0eWxlPSJkaXNwbGF5
-OmJsb2NrO3dpZHRoOjE1MHB4O2hlaWdodDoxcHg7Ym9yZGVyOm5vbmU7bWFyZ2luOjMycHgg
-MHB4IDEwcHg7YmFja2dyb3VuZDpyZ2IoMjMwLCAyMzIsIDIzNSkiPjwvZGl2PjxkaXY+PGEg
-dGFyZ2V0PSJfYmxhbmsiIGhyZWY9Imh0dHBzOi8vd3gubWFpbC5xcS5jb20vaG9tZS9pbmRl
-eD90PXJlYWRtYWlsX2J1c2luZXNzY2FyZF9taWRwYWdlJmFtcDtub2NoZWNrPXRydWUmYW1w
-O25hbWU9JUU2JTlDJUFBJUU1JTkwJTlCJmFtcDtpY29uPWh0dHAlM0ElMkYlMkZ0aGlyZHFx
-LnFsb2dvLmNuJTJGZWtfcXFhcHAlMkZBUVNDT2liclF4cjZiWWNxdm4wdjVpY2V5S0oxR0Ni
-WEZqZkRyY3dLMmMxaWJkaWNiNk05Vnd1S3lHRHVLVFNMTU5RMmNZbExwMXdtJTJGMCZhbXA7
-bWFpbD0xNzQyNzg5OTA1JTQwcXEuY29tJmFtcDtjb2RlPS1SMUxjN295UUpNbVRHd3g4VEVu
-ZnJhSnpNWV9PbVNRTzJjNk5yNWZwMkRBOE1QRVJ1d1UyNDlXRk5kNTVpY2NlZEt0Y0lqdmdG
-UHhDbDdWNE5HTTdBIiBzdHlsZT0idGV4dC1kZWNvcmF0aW9uOiB1bmRlcmxpbmU7ZGlzcGxh
-eTppbmxpbmUtYmxvY2s7dGV4dC1kZWNvcmF0aW9uOm5vbmUgIWltcG9ydGFudDtmb250LWZh
-bWlseTotYXBwbGUtc3lzdGVtLEJsaW5rTWFjU3lzdGVtRm9udCxQaW5nRmFuZyBTQyxNaWNy
-b3NvZnQgWWFIZWkiIGNsYXNzPSJ4bV93cml0ZV9jYXJkIj48dGFibGUgY2VsbHNwYWNpbmc9
-IjAiIGNlbGxwYWRkaW5nPSIwIiBzdHlsZT0idGFibGUtbGF5b3V0OmZpeGVkO3BhZGRpbmct
-cmlnaHQ6MjBweCI+PHRib2R5Pjx0ciB2YWxpZ249InRvcCI+PHRkIHN0eWxlPSJ3aWR0aDo0
-MHB4O21pbi13aWR0aDo0MHB4O3BhZGRpbmctdG9wOjEwcHgiPjxkaXYgc3R5bGU9IndpZHRo
-OjM4cHg7aGVpZ2h0OjM4cHg7Ym9yZGVyOjFweCAjRkZGIHNvbGlkO2JvcmRlci1yYWRpdXM6
-NTAlO21hcmdpbjowO3ZlcnRpY2FsLWFsaWduOnRvcDtib3gtc2hhZG93OjAgMCAxMHB4IDAg
-cmdiYSgxMjcsMTUyLDE3OCwwLjE0KSI+PGltZyBzdHlsZT0idmVydGljYWwtYWxpZ246IGJv
-dHRvbTt3aWR0aDoxMDAlO2hlaWdodDoxMDAlO2JvcmRlci1yYWRpdXM6NTAlO3BvaW50ZXIt
-ZXZlbnRzOm5vbmUiIHNyYz0iaHR0cDovL3RoaXJkcXEucWxvZ28uY24vZWtfcXFhcHAvQVFT
-Q09pYnJReHI2YlljcXZuMHY1aWNleUtKMUdDYlhGamZEcmN3SzJjMWliZGljYjZNOVZ3dUt5
-R0R1S1RTTE1OUTJjWWxMcDF3bS8wIiAgLz48L2Rpdj48L3RkPjx0ZCBzdHlsZT0icGFkZGlu
-ZzoxMHB4IDAgOHB4IDEwcHgiPjxkaXYgc3R5bGU9ImZvbnQtc2l6ZToxNHB4O2NvbG9yOiMz
-MzMxMkU7bGluZS1oZWlnaHQ6MjBweDtwYWRkaW5nLWJvdHRvbToycHg7bWFyZ2luOjA7Zm9u
-dC13ZWlnaHQ6NTAwIiBjbGFzcz0iYnVzaW5lc3NDYXJkX25hbWUiPuacquWQmzwvZGl2Pjxk
-aXYgc3R5bGU9ImZvbnQtc2l6ZToxMnB4O2NvbG9yOiM5OTk4OTY7bGluZS1oZWlnaHQ6MThw
-eDttYXJnaW46MCIgY2xhc3M9ImJ1c2luZXNzQ2FyZF9tYWlsIj4xNzQyNzg5OTA1QHFxLmNv
-bTwvZGl2PjwvdGQ+PC90cj48L3Rib2R5PjwvdGFibGU+PC9hPjwvZGl2PjwvZGl2PgogICAg
-ICAKPGRpdiBzdHlsZT0ibGluZS1oZWlnaHQ6IDEuNDM7Ij48YnIgIC8+PC9kaXY+PGRpdiBz
-dHlsZT0ibGluZS1oZWlnaHQ6IDEuNDM7Ij48YnIgIC8+PC9kaXY+PGFydGljbGUgc3R5bGU9
-ImxpbmUtaGVpZ2h0OiAxLjQzOyI+PGRpdiBzdHlsZT0iZGlzcGxheTpmbGV4O2FsaWduLWl0
-ZW1zOmNlbnRlcjtwYWRkaW5nLXRvcDo4cHgiIGNvbnRlbnRlZGl0YWJsZT0iZmFsc2UiPgog
-ICAgICAgIDxkaXYgc3R5bGU9ImNvbG9yOiM5NTlEQTY7Zm9udC1zaXplOjEycHg7bGluZS1o
-ZWlnaHQ6MzBweCI+T3JpZ2luYWw8L2Rpdj4KICAgICAgICA8aHIgc3R5bGU9ImJvcmRlcjog
-bm9uZTtmbGV4LWdyb3c6MTtib3JkZXItdG9wOjFweCBzb2xpZCByZ2JhKDIxLCA0NiwgNzQs
-IDAuMDcpO21hcmdpbi1sZWZ0OjhweCIgIC8+CiAgICAgIDwvZGl2Pjx0YWJsZSBkYXRhLXVu
-ZWRpdGFibGU9InRydWUiIHN0eWxlPSJsaW5lLWhlaWdodDogMjBweDsgYm9yZGVyLXJhZGl1
-czogNnB4OyBiYWNrZ3JvdW5kLWNvbG9yOiByZ2JhKDIwLCA0NiwgNzcsIDAuMDUpOyBtYXJn
-aW46IDBweDsgd2lkdGg6IDEwMCU7Ij48dGJvZHk+PHRyPjx0ZCBzdHlsZT0ibGluZS1oZWln
-aHQ6IDIwcHg7IHBhZGRpbmc6IDhweDsiPjxkaXYgc3R5bGU9ImxpbmUtaGVpZ2h0OiAyMHB4
-OyBmb250LXNpemU6IDEycHg7Ij48c3BhbiBzdHlsZT0iY29sb3I6IHJnYig5MiwgOTcsIDEw
-Mik7Ij5Gcm9tOiA8L3NwYW4+PHNwYW4gc3R5bGU9ImNvbG9yOiByZ2IoMCwgMCwgMCk7Ij5D
-aHJpc3RvcGhlIExlcm95IChDUyBHUk9VUCk8L3NwYW4+IDxzcGFuIHN0eWxlPSJjb2xvcjog
-cmdiKDE0OSwgMTU3LCAxNjYpOyI+Jmx0O2NobGVyb3lAa2VybmVsLm9yZyZndDs8L3NwYW4+
-PC9kaXY+PGRpdiBzdHlsZT0ibGluZS1oZWlnaHQ6IDIwcHg7IGZvbnQtc2l6ZTogMTJweDsi
-PjxzcGFuIHN0eWxlPSJjb2xvcjogcmdiKDkyLCA5NywgMTAyKTsiPkRhdGU6IDwvc3Bhbj48
-c3BhbiBzdHlsZT0iY29sb3I6IHJnYigwLCAwLCAwKTsiPjIwMjYtMDMtMTMgMTc6NDg8L3Nw
-YW4+PC9kaXY+PGRpdiBzdHlsZT0ibGluZS1oZWlnaHQ6IDIwcHg7IGZvbnQtc2l6ZTogMTJw
-eDsiPjxzcGFuIHN0eWxlPSJjb2xvcjogcmdiKDkyLCA5NywgMTAyKTsiPlRvOiA8L3NwYW4+
-PHNwYW4gc3R5bGU9ImNvbG9yOiByZ2IoMCwgMCwgMCk7Ij5XYW5nIEp1bjwvc3Bhbj4gPHNw
-YW4gc3R5bGU9ImNvbG9yOiByZ2IoMTQ5LCAxNTcsIDE2Nik7Ij4mbHQ7MTc0Mjc4OTkwNUBx
-cS5jb20mZ3Q7LCA8L3NwYW4+PHNwYW4gc3R5bGU9ImNvbG9yOiByZ2IoMCwgMCwgMCk7Ij5R
-aWFuZyBaaGFvPC9zcGFuPiA8c3BhbiBzdHlsZT0iY29sb3I6IHJnYigxNDksIDE1NywgMTY2
-KTsiPiZsdDtxaWFuZy56aGFvQG54cC5jb20mZ3Q7LCA8L3NwYW4+PHNwYW4gc3R5bGU9ImNv
-bG9yOiByZ2IoMCwgMCwgMCk7Ij5saW51eHBwYy1kZXY8L3NwYW4+IDxzcGFuIHN0eWxlPSJj
-b2xvcjogcmdiKDE0OSwgMTU3LCAxNjYpOyI+Jmx0O2xpbnV4cHBjLWRldkBsaXN0cy5vemxh
-YnMub3JnJmd0OywgPC9zcGFuPjxzcGFuIHN0eWxlPSJjb2xvcjogcmdiKDAsIDAsIDApOyI+
-bGludXgtYXJtLWtlcm5lbDwvc3Bhbj4gPHNwYW4gc3R5bGU9ImNvbG9yOiByZ2IoMTQ5LCAx
-NTcsIDE2Nik7Ij4mbHQ7bGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnJmd0
-Ozwvc3Bhbj48L2Rpdj48ZGl2IHN0eWxlPSJsaW5lLWhlaWdodDogMjBweDsgZm9udC1zaXpl
-OiAxMnB4OyI+PHNwYW4gc3R5bGU9ImNvbG9yOiByZ2IoOTIsIDk3LCAxMDIpOyI+Q2M6IDwv
-c3Bhbj48c3BhbiBzdHlsZT0iY29sb3I6IHJnYigwLCAwLCAwKTsiPmxpbnV4LWtlcm5lbDwv
-c3Bhbj4gPHNwYW4gc3R5bGU9ImNvbG9yOiByZ2IoMTQ5LCAxNTcsIDE2Nik7Ij4mbHQ7bGlu
-dXgta2VybmVsQHZnZXIua2VybmVsLm9yZyZndDssIDwvc3Bhbj48c3BhbiBzdHlsZT0iY29s
-b3I6IHJnYigwLCAwLCAwKTsiPmdzemhhaTwvc3Bhbj4gPHNwYW4gc3R5bGU9ImNvbG9yOiBy
-Z2IoMTQ5LCAxNTcsIDE2Nik7Ij4mbHQ7Z3N6aGFpQGJqdHUuZWR1LmNuJmd0OywgPC9zcGFu
-PjxzcGFuIHN0eWxlPSJjb2xvcjogcmdiKDAsIDAsIDApOyI+MjUxMjUzMzI8L3NwYW4+IDxz
-cGFuIHN0eWxlPSJjb2xvcjogcmdiKDE0OSwgMTU3LCAxNjYpOyI+Jmx0OzI1MTI1MzMyQGJq
-dHUuZWR1LmNuJmd0OywgPC9zcGFuPjxzcGFuIHN0eWxlPSJjb2xvcjogcmdiKDAsIDAsIDAp
-OyI+MjUxMjUyODM8L3NwYW4+IDxzcGFuIHN0eWxlPSJjb2xvcjogcmdiKDE0OSwgMTU3LCAx
-NjYpOyI+Jmx0OzI1MTI1MjgzQGJqdHUuZWR1LmNuJmd0OywgPC9zcGFuPjxzcGFuIHN0eWxl
-PSJjb2xvcjogcmdiKDAsIDAsIDApOyI+MjMxMjA0Njk8L3NwYW4+IDxzcGFuIHN0eWxlPSJj
-b2xvcjogcmdiKDE0OSwgMTU3LCAxNjYpOyI+Jmx0OzIzMTIwNDY5QGJqdHUuZWR1LmNuJmd0
-Ozwvc3Bhbj48L2Rpdj48ZGl2IHN0eWxlPSJsaW5lLWhlaWdodDogMjBweDsgZm9udC1zaXpl
-OiAxMnB4OyI+PHNwYW4gc3R5bGU9ImNvbG9yOiByZ2IoOTIsIDk3LCAxMDIpOyI+U3ViamVj
-dDogPC9zcGFuPjxzcGFuIHN0eWxlPSJjb2xvcjogcmdiKDAsIDAsIDApOyI+UmU6IFtQQVRD
-SF0gc29jOiBmc2w6IHFlOiBGaXggcG90ZW50aWFsIE5VTEwgcG9pbnRlciBkZXJlZmVyZW5j
-ZSBpbnFlX3Jlc2V0KCk8L3NwYW4+PC9kaXY+PC90ZD48L3RyPjwvdGJvZHk+PC90YWJsZT48
-ZGl2PjxiciAgLz48L2Rpdj48YnIgIC8+PGJyICAvPkxlJm5ic3A7MTAvMDMvMjAyNiZuYnNw
-O8OgJm5ic3A7MTM6MTEsJm5ic3A7V2FuZyZuYnNwO0p1biZuYnNwO2EmbmJzcDvDqWNyaXQm
-bmJzcDs6PGJyICAvPiZndDsmbmJzcDtbVm91cyZuYnNwO25lJm5ic3A7cmVjZXZleiZuYnNw
-O3BhcyZuYnNwO3NvdXZlbnQmbmJzcDtkZSZuYnNwO2NvdXJyaWVycyZuYnNwO2RlJm5ic3A7
-MTc0Mjc4OTkwNUBxcS5jb20uJm5ic3A7RMOpY291dnJleiZuYnNwO3BvdXJxdW9pJm5ic3A7
-Y2VjaSZuYnNwO2VzdCZuYnNwO2ltcG9ydGFudCZuYnNwO8OgJm5ic3A7aHR0cHM6Ly9ha2Eu
-bXMvTGVhcm5BYm91dFNlbmRlcklkZW50aWZpY2F0aW9uJm5ic3A7XTxiciAgLz4mZ3Q7Jm5i
-c3A7PGJyICAvPiZndDsmbmJzcDtUaGUmbmJzcDtmdW5jdGlvbiZuYnNwO3FlX3Jlc2V0KCkm
-bmJzcDt1c2VzJm5ic3A7cWVfaW1tciZuYnNwO3dpdGhvdXQmbmJzcDtjaGVja2luZyZuYnNw
-O2lmJm5ic3A7aXQmbmJzcDtpcyZuYnNwO05VTEwsPGJyICAvPiZndDsmbmJzcDt3aGljaCZu
-YnNwO2NvdWxkJm5ic3A7aGFwcGVuJm5ic3A7aWYmbmJzcDtpb3JlbWFwKCkmbmJzcDtmYWls
-ZWQmbmJzcDtlYXJsaWVyLiZuYnNwO0FkZCZuYnNwO2EmbmJzcDtOVUxMJm5ic3A7Y2hlY2sm
-bmJzcDthbmQ8YnIgIC8+Jmd0OyZuYnNwO3BlcmZvcm0mbmJzcDtpb3JlbWFwKCkmbmJzcDtp
-ZiZuYnNwO25lZWRlZDsmbmJzcDtpZiZuYnNwO2l0Jm5ic3A7c3RpbGwmbmJzcDtmYWlscywm
-bmJzcDtwcmludCZuYnNwO2FuJm5ic3A7ZXJyb3ImbmJzcDthbmQ8YnIgIC8+Jmd0OyZuYnNw
-O3JldHVybiZuYnNwO3RvJm5ic3A7YXZvaWQmbmJzcDtjcmFzaGluZyZuYnNwO3RoZSZuYnNw
-O3N5c3RlbS48YnIgIC8+PGJyICAvPkkmbmJzcDtkb24ndCZuYnNwO3VuZGVyc3RhbmQmbmJz
-cDt3aGF0Jm5ic3A7eW91Jm5ic3A7YXJlJm5ic3A7dHJ5aW5nJm5ic3A7dG8mbmJzcDtzYXkm
-bmJzcDtoZXJlLiZuYnNwO1doYXQmbmJzcDt5b3UmbmJzcDtzYXkmbmJzcDtpcyZuYnNwOzxi
-ciAgLz5hbHJlYWR5Jm5ic3A7d2hhdCZuYnNwO3FlX3Jlc2V0KCkmbmJzcDtkb2VzOiZuYnNw
-O2l0Jm5ic3A7ZG9lcyZuYnNwO2EmbmJzcDtOVUxMJm5ic3A7Y2hlY2smbmJzcDthbmQmbmJz
-cDtwZXJmb3JtcyZuYnNwOzxiciAgLz5pb3JlbWFwKCkmbmJzcDt3aGVuJm5ic3A7aXQmbmJz
-cDtpcyZuYnNwO05VTEw6PGJyICAvPjxiciAgLz4JaWYmbmJzcDsocWVfaW1tciZuYnNwOz09
-Jm5ic3A7TlVMTCk8YnIgIC8+CQlxZV9pbW1yJm5ic3A7PSZuYnNwO2lvcmVtYXAoZ2V0X3Fl
-X2Jhc2UoKSwmbmJzcDtRRV9JTU1BUF9TSVpFKTs8YnIgIC8+PGJyICAvPllvdSZuYnNwO2Fy
-ZSZuYnNwO2FkZGluZyZuYnNwO2EmbmJzcDtzZWNvbmQmbmJzcDtOVUxMJm5ic3A7Y2hlY2sm
-bmJzcDthbmQmbmJzcDtyZXR1cm4mbmJzcDtlYXJseSZuYnNwO2Zyb20mbmJzcDtxZV9yZXNl
-dCgpLiZuYnNwO0J1dCZuYnNwOzxiciAgLz5pdCZuYnNwO2RvZXNuJ3QmbmJzcDtyZWFsbHkm
-bmJzcDtmaXgmbmJzcDt0aGUmbmJzcDtwcm9ibGVtJm5ic3A7YmVjYXVzZSZuYnNwO3FlX2lt
-bXImbmJzcDtpcyZuYnNwO3VzZWQmbmJzcDtpbiZuYnNwO21hbnkmbmJzcDtvdGhlciZuYnNw
-OzxiciAgLz5wbGFjZXMmbmJzcDtzbyZuYnNwO3lvdSZuYnNwO2FyZSZuYnNwO2p1c3QmbmJz
-cDtkZWxheWluZyZuYnNwO3RoZSZuYnNwO3Byb2JsZW0uPGJyICAvPjxiciAgLz5XaGF0Jm5i
-c3A7bmVlZHMmbmJzcDt0byZuYnNwO2JlJm5ic3A7ZG9uZSZuYnNwO2lzJm5ic3A7dGhhdCZu
-YnNwO2lmJm5ic3A7cWVfaW1tciZuYnNwO3JlbWFwJm5ic3A7ZmFpbHMsJm5ic3A7YWxsJm5i
-c3A7ZHJpdmVycyZuYnNwOzxiciAgLz5kZXBlbmRpbmcmbmJzcDtvbiZuYnNwO2l0Jm5ic3A7
-ZG9uJ3QmbmJzcDtnZXQmbmJzcDtwcm9iZWQuPGJyICAvPjxiciAgLz4mZ3Q7Jm5ic3A7PGJy
-ICAvPiZndDsmbmJzcDtTaWduZWQtb2ZmLWJ5OiZuYnNwO1dhbmcmbmJzcDtKdW4mbmJzcDsm
-bHQ7MTc0Mjc4OTkwNUBxcS5jb20mZ3Q7PGJyICAvPiZndDsmbmJzcDstLS08YnIgIC8+Jmd0
-OyZuYnNwOyZuYnNwOyZuYnNwO2RyaXZlcnMvc29jL2ZzbC9xZS9xZS5jJm5ic3A7fCZuYnNw
-OzcmbmJzcDsrKysrKystPGJyICAvPiZndDsmbmJzcDsmbmJzcDsmbmJzcDsxJm5ic3A7Zmls
-ZSZuYnNwO2NoYW5nZWQsJm5ic3A7NiZuYnNwO2luc2VydGlvbnMoKyksJm5ic3A7MSZuYnNw
-O2RlbGV0aW9uKC0pPGJyICAvPiZndDsmbmJzcDs8YnIgIC8+Jmd0OyZuYnNwO2RpZmYmbmJz
-cDstLWdpdCZuYnNwO2EvZHJpdmVycy9zb2MvZnNsL3FlL3FlLmMmbmJzcDtiL2RyaXZlcnMv
-c29jL2ZzbC9xZS9xZS5jPGJyICAvPiZndDsmbmJzcDtpbmRleCZuYnNwOzcwYjZlZGRiODY3
-Yi4uNmRjZmEzNDA5NzBhJm5ic3A7MTAwNjQ0PGJyICAvPiZndDsmbmJzcDstLS0mbmJzcDth
-L2RyaXZlcnMvc29jL2ZzbC9xZS9xZS5jPGJyICAvPiZndDsmbmJzcDsrKysmbmJzcDtiL2Ry
-aXZlcnMvc29jL2ZzbC9xZS9xZS5jPGJyICAvPiZndDsmbmJzcDtAQCZuYnNwOy04Niw4Jm5i
-c3A7Kzg2LDEzJm5ic3A7QEAmbmJzcDtzdGF0aWMmbmJzcDtwaHlzX2FkZHJfdCZuYnNwO2dl
-dF9xZV9iYXNlKHZvaWQpPGJyICAvPiZndDsmbmJzcDs8YnIgIC8+Jmd0OyZuYnNwOyZuYnNw
-OyZuYnNwO3ZvaWQmbmJzcDtxZV9yZXNldCh2b2lkKTxiciAgLz4mZ3Q7Jm5ic3A7Jm5ic3A7
-Jm5ic3A7ezxiciAgLz4mZ3Q7Jm5ic3A7LSZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
-OyZuYnNwOyZuYnNwO2lmJm5ic3A7KHFlX2ltbXImbmJzcDs9PSZuYnNwO05VTEwpPGJyICAv
-PiZndDsmbmJzcDsrJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7
-aWYmbmJzcDsocWVfaW1tciZuYnNwOz09Jm5ic3A7TlVMTCkmbmJzcDt7PGJyICAvPiZndDsm
-bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
-bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDtx
-ZV9pbW1yJm5ic3A7PSZuYnNwO2lvcmVtYXAoZ2V0X3FlX2Jhc2UoKSwmbmJzcDtRRV9JTU1B
-UF9TSVpFKTs8YnIgIC8+Jmd0OyZuYnNwOysmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
-cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
-cDsmbmJzcDtpZiZuYnNwOyhxZV9pbW1yJm5ic3A7PT0mbmJzcDtOVUxMKSZuYnNwO3s8YnIg
-IC8+Jmd0OyZuYnNwOysmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
-cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
-cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDtwcl9lcnIoIlFF
-OiZuYnNwO2Nhbm5vdCZuYnNwO3JlbWFwJm5ic3A7SU1NUlxuIik7PGJyICAvPiZndDsmbmJz
-cDsrJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
-c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
-c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7cmV0dXJuOzxiciAgLz4mZ3Q7Jm5i
-c3A7KyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
-YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwO308YnIgIC8+Jmd0OyZu
-YnNwOysmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDt9PGJyICAv
-PiZndDsmbmJzcDs8YnIgIC8+Jmd0OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
-YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwO3FlX3NudW1zX2luaXQoKTs8YnIgIC8+Jmd0
-OyZuYnNwOzxiciAgLz4mZ3Q7Jm5ic3A7LS08YnIgIC8+Jmd0OyZuYnNwOzIuNDMuMDxiciAg
-Lz4mZ3Q7Jm5ic3A7PGJyICAvPgo8L2FydGljbGU+PGRpdiBzdHlsZT0ibGluZS1oZWlnaHQ6
-IDEuNDM7Ij48YnIgIC8+PC9kaXY+
+  "This code has aliasing violations in it. The uninitialized happens due 
+  to the undefined code due to the alias violations."
+  
+Having mentioned that and looking at the discussion happened at [2],
+the '-Wmaybe-uninitialized' seems to be a case of a bad diagnostic
+instead where the actual warning should have been pointing to a
+Wstrict-aliasing issue which already is being tracked in the issue.
 
-------=_NextPart_69B778EF_D0383040_21BE8247--
+> If you cast to 'unsigned char *' then the accesses do have to be ordered.
+> gcc will also treat accesses to different members of a union as being ordered
+> (the C stand doesn't require this, IIRC s/union/struct/ is valid).
 
+True, an union could be used to avoid this type punning problem but I
+think its easier (and probablty better at this point) to avoid the
+warning while building the vphn.c in test with '-fno-strict-aliasing'
+immitating the way its compiled in kernel.
+
+~Amit
+
+> 	David 
+> 
+> > Please refer [1] and [2].
+> > 
+> > The selftest compiles fine with '-fno-strict-aliasing'. I see that when
+> > we build vphn.c while compiling the kernel, the top level Makefile
+> > includes '-fno-strict-aliasing' flag always.
+> > 
+> > So, I believe the same flag should be used to build vphn tests when
+> > compiling vphn.c via the selftests. I'll send the v2 to achieve this
+> > thus avoiding the compilation failure.
+> > 
+> > Please let me know you have different thoughts.
+> > 
+> > [1] https://gcc.gnu.org/bugzilla/show_bug.cgi?id=124427 
+> > [2] https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99768
+> > 
+> > ~Amit
+> > 
+> > > 
+> > > Here the for loop is a bit misleading.
+> > >   
+> > > > 
+> > > > [1] https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgcc.gnu.org%2Fbugzilla%2Fshow_bug.cgi%3Fid%3D124427&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C06a4d55b55f24c5cf00208de7e8e3676%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639087346428583316%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=xEfO94N6IfGYhmmapNFduv3OrMarxpjTpZR6B38uR1s%3D&reserved=0
+> > > > 
+> > > > Fixes: 58dae82843f5 ("selftests/powerpc: Add test for VPHN")
+> > > > Reviewed-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+> > > > Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
+> > > > ---
+> > > >   arch/powerpc/platforms/pseries/vphn.c | 15 +++++++++++++++
+> > > >   1 file changed, 15 insertions(+)
+> > > > 
+> > > > diff --git a/arch/powerpc/platforms/pseries/vphn.c b/arch/powerpc/platforms/pseries/vphn.c
+> > > > index 3f85ece3c872..9bc891143fec 100644
+> > > > --- a/arch/powerpc/platforms/pseries/vphn.c
+> > > > +++ b/arch/powerpc/platforms/pseries/vphn.c
+> > > > @@ -39,7 +39,22 @@ static int vphn_unpack_associativity(const long *packed, __be32 *unpacked)
+> > > >   		be_packed[i] = cpu_to_be64(packed[i]);
+> > > >   	for (i = 1; i < VPHN_ASSOC_BUFSIZE; i++) {
+> > > > +/*
+> > > > + * When this function is called from hcall_vphn(), GCC 15 seems to consider
+> > > > + * 'retbuf' always populated from the hypervisor which is eventually referred by
+> > > > + * 'be_packed'. However, GCC 15's dataflow analysis can’t prove the same before
+> > > > + * the first dereference when this function is called from test_one() with
+> > > > + * pre-initialized array of 'struct test'. This results in a false positive
+> > > > + * '-Wmaybe-uninitialized' warning which is promoted to an error under
+> > > > + * '-Werror'. This problem is not seen when the compilation is performed with
+> > > > + * older GCC versions.
+> > > > + */
+> > > > +#pragma GCC diagnostic push
+> > > > +#if defined(__GNUC__) && __GNUC__ >= 15
+> > > > +#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+> > > > +#endif
+> > > >   		u16 new = be16_to_cpup(field++);
+> > > > +#pragma GCC diagnostic pop
+> > > >   		if (is_32bit) {
+> > > >   			/*
+> > > > 
+> > > > base-commit: 1f318b96cc84d7c2ab792fcc0bfd42a7ca890681  
+> > >   
+> > 
+> 
 
