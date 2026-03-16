@@ -1,97 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-18267-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18268-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C15D5F506D2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2026 13:51:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1506F506D5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2026 13:55:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fZGhx38hRz2xlm;
-	Tue, 17 Mar 2026 00:51:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c407::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773669089;
-	cv=pass; b=RKFKM2LcsocAgOCtaVrdPUsFRNSCdd0kgXb/7A4Ab77woXgQrnHGaDsosnyHrIT2PoabnyN9SQMH6EKiXwXcvBVhW/XHw4Adp3ifH6pXWb/6UVYvcckDZlfFHautEPBfSa9DHoAn+2uEAbGLUb9K5U+d2tBN7MCAGGQrmYLZkJITlYRhh55XBrGijcmoVw2mZkE24n4VWl8An22lOKjT+X9a3QpVn2i86doebayb8xgoEI+2BdVJ2CEGSMaFYNgxPUCTtollpoOzs5sLEDPF/h5ImuUY+8gHYLCn2ua3mHUqoQ0Du1IVf5fI2ZWKaJSwiqcOwSVGtWoyUrG7DABzlQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fZGnc3RZdz2xlm;
+	Tue, 17 Mar 2026 00:55:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::1331" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773669332;
+	cv=pass; b=eh/D/LVUvq/GU5lyMqU3XaTVpS7N3/E2prll0RiKhBjq9YREl8wy323/KaM+KtogIvrURBFXEzDhcHRD6Hc4vRxAajtMR9+/+YHneShCPMe7UCdyLDmxUXK4hieem2T5zhJVK9HuNK2SAm/5Nbvsm9VXMfDHRSXwegikWZzRlGAToMdv4QzGGwaTiMvh7hWB/lVpDYhMoH5dDvMxj+gEx5ZnE6Puui4PPq00EUIsTK5fIaFxrZWWQ0CvihpIaJzyi/rRFwMfzT6mGdpAMRp9PWMnJs2i1k41kQzVisVo7Z1Y7OM31ZXqCKpwyqlhwVwi70zgU+RNrayYh+OxE0/F0g==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773669089; c=relaxed/relaxed;
-	bh=Xz9qD/SKsAlsa+wqAgGW40WZZRz4YGvxjtS94F4GrWw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=GP5Kf2QkhDErov7V6m2hN5a0Ea4yNDzUdQdZ8vwiwhVc3rc0mG+fDKvkFmR/99cM+nRLoaa9KG/HxpywdYaRT8fdtCtw30IzctCBQK6JEJx/QHe59ibCDIOg5s44nE8A/pYQb3u0LXWSh9sbebTcACAUDNeMJNUSiTjD7XRJOqIuilCSq/N9WffGi9HT6k+tZH9L0QGEnT0XJpf7xiIkeThTeak1iUK+HM8B2t4UVsnW0lfmgvi8UuOp7tk5xjaN6rJ4YUEGBZJ+K2A9mBTaMa09LbNLU1BjDzC318ZWhStmXcPLt3OYehuOeF2ctymjpUT5wDviHqmv93iWRgzFow==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=valinux.co.jp; dkim=pass (1024-bit key; unprotected) header.d=valinux.co.jp header.i=@valinux.co.jp header.a=rsa-sha256 header.s=selector1 header.b=tJh14C+4; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c407::3; helo=os0p286cu011.outbound.protection.outlook.com; envelope-from=den@valinux.co.jp; receiver=lists.ozlabs.org) smtp.mailfrom=valinux.co.jp
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=valinux.co.jp
+	t=1773669332; c=relaxed/relaxed;
+	bh=FTI7NQgAEhMnCW1csRakxcCdxdVfEQWy93QY+u6DtxA=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Kr+lKnGkh5lp4BVFVQ5hzN/ON2ArrnB7m+w/x5F159D7Y0rbHlko+uZCvaXmlbZQ+pNFytBKgwF+WvDsUdXQB/cohY01s5yTWUYBN5ZjaHKW/OzI/ONbXbbCl6yYzs04dC4MxRirpUj5lG3fRsLX5fwf17L96XkmyL/SjpPlOvvDHSSu17VqovNha3BmfQfy/9Lq71RF2BaHA2jlKokVgsB+V41JlE9NyelpW8+CUsqXjfDbSHydWm0auFbuXokwKT+aGKFAMjmvne7f8oa7fSV1cHPHgYA2xJXo+TRqylqFrGZZP6uylgaR5n5amjOktEZYZ9Kb6606+o978R9x5w==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=FsjPymeZ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1331; helo=mail-dy1-x1331.google.com; envelope-from=alexdeucher@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=valinux.co.jp header.i=@valinux.co.jp header.a=rsa-sha256 header.s=selector1 header.b=tJh14C+4;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=FsjPymeZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=valinux.co.jp (client-ip=2a01:111:f403:c407::3; helo=os0p286cu011.outbound.protection.outlook.com; envelope-from=den@valinux.co.jp; receiver=lists.ozlabs.org)
-Received: from OS0P286CU011.outbound.protection.outlook.com (mail-japanwestazlp170100003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c407::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1331; helo=mail-dy1-x1331.google.com; envelope-from=alexdeucher@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x1331.google.com (mail-dy1-x1331.google.com [IPv6:2607:f8b0:4864:20::1331])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZGht08Zzz2xS3
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2026 00:51:23 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=HxZYcYZs/XxFbP2wsjEn5Yk8WbJ5c0Cf1HOgBEvHBSq90116oF1W6Ax4yIoEwIVRFW7ETHIPaaqdwO8lMt4uu6AAOPk0Z4wo4yWoXQMkozHap2fVtk08f9CEhtfY2wOfXoLMs09uuj/idr507JCvG4qrWZO6GF/2xYT5GWuRnyV1jf8Z4t7zXhgkrwktJPGti4BG2y8/CxXsg20MVn5B6TWc7L+Ay9nzQ0qYc1SOabFmuMfmwh2lycH31HyLKoWbKve3UXfjZbYp7+EtbmNoziBZFJF3X7mfB6vrP3lO4Q0V6mDpWr+k5BFg7hs0f265zmSE61tAtC+DB4zEYcEGtg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Xz9qD/SKsAlsa+wqAgGW40WZZRz4YGvxjtS94F4GrWw=;
- b=CdCNST2DwdiEDCWpTfoniNY6Aq6jvkGCQo/Zbtc8gg2A+c9WkvS3vzskrxDxx2jsRDpaMWz7/q7vvNmQ7s23QzWJNSmW7dNyEUTju3lJJidMxJMq/2/pPwzP9UxulPv8OvE15vebvF0mhMJJ63ILZkzPqSRroCRKUe8TfFo335BcnVDa1pdWj5Hg6EsHBau8QvkCWVJyVkdEEbZgMmxMq7ZyO4tiRlP4TqlX1TtgAjFiIL4rijq/scJslbG5NVOFPXVmliEPL7rH0EGVMxNuhS3zcxjX8T1gbEU4uxen8NIWJK7YG3oymC/fdiT6+GS2QAa21L2PdWBhBxP2uwUDXw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=valinux.co.jp; dmarc=pass action=none
- header.from=valinux.co.jp; dkim=pass header.d=valinux.co.jp; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=valinux.co.jp;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Xz9qD/SKsAlsa+wqAgGW40WZZRz4YGvxjtS94F4GrWw=;
- b=tJh14C+4mC2xoPJy5uNdTfWRwHmoxNpnggm4XxSuz3COVludEGXtwDxmCMcw7Y9jl1uMVSJULBWDne5/teS1+7MF9+1YG2TSgWGF2oRRrZpXM9tXOZw83iwRRc3iaBI3YKG4K/EqNFdiWTprTFW+B5rQQSMYVAzo7aGc9joNgw4=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=valinux.co.jp;
-Received: from TY7P286MB7722.JPNP286.PROD.OUTLOOK.COM (2603:1096:405:38f::10)
- by TYYP286MB5707.JPNP286.PROD.OUTLOOK.COM (2603:1096:405:299::5) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9700.24; Mon, 16 Mar
- 2026 13:51:01 +0000
-Received: from TY7P286MB7722.JPNP286.PROD.OUTLOOK.COM
- ([fe80::2305:327c:28ec:9b32]) by TY7P286MB7722.JPNP286.PROD.OUTLOOK.COM
- ([fe80::2305:327c:28ec:9b32%5]) with mapi id 15.20.9700.018; Mon, 16 Mar 2026
- 13:50:59 +0000
-Date: Mon, 16 Mar 2026 22:50:58 +0900
-From: Koichiro Den <den@valinux.co.jp>
-To: Christian Bruel <christian.bruel@foss.st.com>, 
-	Niklas Cassel <cassel@kernel.org>, Bjorn Helgaas <helgaas@kernel.org>
-Cc: jingoohan1@gmail.com, mani@kernel.org, lpieralisi@kernel.org, 
-	kwilczynski@kernel.org, robh@kernel.org, Frank.Li@nxp.com, vigneshr@ti.com, 
-	s-vadapalli@ti.com, hongxing.zhu@nxp.com, l.stach@pengutronix.de, 
-	shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de, 
-	festevam@gmail.com, minghuan.Lian@nxp.com, mingkai.hu@nxp.com, roy.zang@nxp.com, 
-	jesper.nilsson@axis.com, heiko@sntech.de, srikanth.thokala@intel.com, 
-	marek.vasut+renesas@gmail.com, yoshihiro.shimoda.uh@renesas.com, geert+renesas@glider.be, 
-	magnus.damm@gmail.com, mcoquelin.stm32@gmail.com, alexandre.torgue@foss.st.com, 
-	thierry.reding@gmail.com, jonathanh@nvidia.com, hayashi.kunihiko@socionext.com, 
-	mhiramat@kernel.org, kishon@kernel.org, jirislaby@kernel.org, rongqianfeng@vivo.com, 
-	18255117159@163.com, shawn.lin@rock-chips.com, nicolas.frattaroli@collabora.com, 
-	linux.amoon@gmail.com, vidyas@nvidia.com, shuah@kernel.org, linux-omap@vger.kernel.org, 
-	linux-pci@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, imx@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
-	linux-arm-kernel@axis.com, linux-rockchip@lists.infradead.org, 
-	linux-arm-msm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, 
-	linux-stm32@st-md-mailman.stormreply.com, linux-tegra@vger.kernel.org, linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH v10 3/8] PCI: dwc: Advertise dynamic inbound mapping
- support
-Message-ID: <m5wembfzeyyk33wml3r2kug7l27wf7bvxq2ymkxgky6ieoy76o@d7oxiqjoluat>
-References: <20260124145012.2794108-1-den@valinux.co.jp>
- <20260124145012.2794108-4-den@valinux.co.jp>
- <b2b03ebe-9482-4a13-b22f-7b44da096eed@foss.st.com>
- <tkfhaovpmaoodo35attvmbnpukcqgmwyrxmfgiwjy2dga65cgl@hmj4mx2n44ki>
- <5e485218-becf-499b-8a07-d25358504807@foss.st.com>
- <abf-LKj8V2MpJFEE@ryzen>
- <ba3ae9a0-11ba-4000-b2ed-08aeede0dc54@foss.st.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ba3ae9a0-11ba-4000-b2ed-08aeede0dc54@foss.st.com>
-X-ClientProxiedBy: TYCPR01CA0177.jpnprd01.prod.outlook.com
- (2603:1096:400:2b2::16) To TY7P286MB7722.JPNP286.PROD.OUTLOOK.COM
- (2603:1096:405:38f::10)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZGnZ2mh4z2xS3
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2026 00:55:29 +1100 (AEDT)
+Received: by mail-dy1-x1331.google.com with SMTP id 5a478bee46e88-2c0ba72d097so92856eec.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2026 06:55:29 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1773669327; cv=none;
+        d=google.com; s=arc-20240605;
+        b=JGY8ejCOwc+Nt4/FI2/larClkM4wAHbFCHz96joJ+XXBPw0dn77vO1qrvk7HR/E3tz
+         tTMTezMqbCusnO42MNxFpfLBFHymMixfM4QkyEkFb4CxDV1pACScV9s2/UX1ciPP2W0y
+         oKWBUDmpadCCnBQ8TKD7eVoXuhwCnainZJPQuMamIOzBY+U1aOJuUMYCzT+EsC5FCXYM
+         ek7boEVDGyvyPJTnJjNstSWLASf9PmxskyCPI05Dprt4hZlfmT8/eKhPpehRRS756fYd
+         gnESKEqnMUoIaPx++tDwvRKJDMRYE30d1M7TplqeoiXDpKyslS4soxOoIRtnHFD9K0nn
+         cXoQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=FTI7NQgAEhMnCW1csRakxcCdxdVfEQWy93QY+u6DtxA=;
+        fh=S5DhNwmRNJBnE7HJuOsOMlA42WDWubFtIS3FuK77mFY=;
+        b=HjOGUBSot9ZnYvGzHmNmQj6hkgtdCDD0YbL/7OhyX4O237cx+JMOXrEW5ywcyRp7mc
+         arjBle/fHHAwFo4VzYKt3S9NjygF+AaeaO2U/CLd/8PpRa5sCYIvuTKLC4iC4kce4CSe
+         p+XPDWBTGqbtueVIgWGYSz0ykV+SwLIDdK0ACgvIcZqhkFCnNE4q5hrnaP7Dswbtl3RP
+         0ckjchrI5wk58tziZZAXYE/wxkHfurGWdehL+jQ5P6HPTyTA6zlc7B9l9pwIHnOeKI27
+         qBcCRcKvs5F786Ng1vqO5VhL9OVDPnxI+a4ZNqt74AqKF3KAPR6FGP1ZLNs1tZWA/gI9
+         zwiA==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1773669327; x=1774274127; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=FTI7NQgAEhMnCW1csRakxcCdxdVfEQWy93QY+u6DtxA=;
+        b=FsjPymeZiKomAhlyTgi/t3JP8jHFILOsjAJP05puugzUeWgyNDhMXtMz0Rq/UVvTUD
+         5PvfUCHa4WVWCYAOb0VukZTrRwFZvsV0A6A/kpDCflXI8hAyf71DdiaNlCmK36b5iN6P
+         k5W/+NhHoK4oDD2IKhZ58QvRRIEZc/c82w1DKpetTqSNpknAdzbCiCelBfarFouJK6EH
+         uV92aFwDE8JX5gVYKbutgSYGmgMxbGN1ek7qeyalAjAv0mBB3GKKJb12Nf83xRDbNSEn
+         xtHlJfecdg/l085eBTkdz1UZLIJyV8ZBHwW+RI5p4klFJCD2Rq9RcTiTwZBXCvbduBL5
+         vjuw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1773669327; x=1774274127;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=FTI7NQgAEhMnCW1csRakxcCdxdVfEQWy93QY+u6DtxA=;
+        b=CDwjpJ/I4LfATaTtQpvhpwSfb+lv3KXImX4//HkStaOkhBH5rVypossJn+pf0WbzG7
+         d1MfG5/MgBg7fL7+cOz1vKYqWxf9/F1ifx8olF1LTgjEQ5Bu+VUIVcw8qv+gkNdQ1kuu
+         iu5k06CZ0GY8G7OAJ4WT0TH10BFMNDesng/wdZN4PspzkxaYIQI2fqaT7M62dFPr2/FC
+         6pnIZUNDlBJAFlhQH9MnktguWhwP2WIAZPp72oXVNQ1H5fdAySFRPGe+npYtYdaz620Z
+         1hl4GhRLY6x35uJVTOg0oILiE6VDVtWIe9/ny64XURQPLesn+2VTLomGgwpF9jFjaJjQ
+         QMoQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXzi2Z8JywGRybgbqTpj5ghhXgVwOFSEQaIh+AWGrwZflOouQ/KdwBvA9cnLlG5vwKT1jWyFfRBhd5E1B4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxsI6jYwrQ4lc/xmPKTKJMFw31NDZ2m5z5bimP1ts4OIt7uUDpg
+	EybIWM21h+QqzUbuGFTzHCwzEVSK+CzuD/J9LIRxA/14H5PIzoEHiPX74e8SaV9aLsXEEToV8sQ
+	HvWjJ7Rd9BR6lithjquJ3A1/HLIC7N2Y=
+X-Gm-Gg: ATEYQzyQY+lJyzR4WSbmU179tvx+GNDluLt0NGxV0p1LXiDy99uBggZT0Q9gPE06wyZ
+	SWoonKg1GNHvN3SA7gBlZxT+DTSAYUurlatXHdFwH/owQFOZxCQNJWNELwIYwDW7pMIMJm9bA28
+	58Y62gG2tm9OYgar7hIxfR2doZgZ3avt5dT8qlDmk5+WZbC1CPDT7233LuwTQknrGNKrThfs1Yw
+	9r2f7YIOkgyMZl9IaqLYecWTiRt5cF9IjZptS1J1E5Bg1Ay10S/WOg+t7ERl/JuNFPHgCkd4zFo
+	7lO8C4Fk4XLRO2PWH3B0BaSZxnPGICdAllBjjwW/huVaCB62yOqpZi9V9F8ajxe8GPwE4A==
+X-Received: by 2002:a05:7300:5381:b0:2be:7eb2:2ed3 with SMTP id
+ 5a478bee46e88-2bea539bff3mr2901460eec.1.1773669326880; Mon, 16 Mar 2026
+ 06:55:26 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,156 +101,165 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: TY7P286MB7722:EE_|TYYP286MB5707:EE_
-X-MS-Office365-Filtering-Correlation-Id: 08c13086-ed56-4d0c-3df9-08de83630ddd
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|10070799003|1800799024|376014|7416014|22082099003|56012099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	PuuYAtyXFeaZLri1rNI8o1u3vReYEPbg4MWVoylY+qE6Lar+XRqyO5GfRTWoMFeeFQDF67zZWmg+IxxePJAVXnkR4B1Lskh0hRcbR5gQ2sS802fRSWzyWYasJDJy2RjD8MMqYs0zWBSPUq9RWfxxWNxsBqBlOt6vIS0NUEWDr68tGY2wVVNwjdcxB0PL4Tf2WnvZqQDNCmOkR/ocHOgoPp/aqOm4m1dmHexW/G1Nrs5Ccog9I5YcC+WzInehfzTk/K6BW9FzMyhU8WogMR95LyOOaKXvA9ogJbWJfpL0k9+8ebRhS8BRLoRspkrQAju4Dr6MyFGsyOV+iKAEpkxu0MZmpYcIaQ+6Jw4VU0EFs9TBoipsk61YQVyH8WiC747BMVculqRvSiIYFIuc/CazSmrXgmTT8rPI8gRg0pSoMC7hD9dQTQYX4qc6YbxPCWeqcljlsNNxqLTXtiN8d6iBKksKAi5XVZ/vCeCeN9orXb8yeqQHkLrVHqU/DrAFqu8G9p6biRKTZS3kIwlG+wrOAfDm+MhoVX0bzrx4aTEUQRFi0Krv7WVYDDFK+eGUS6d/hyXk2TrrxDl+RL3no7Njj5y3GZj3h6VSqe9V5W3tehGzF6/L9w+Gf4McTpFQLBlPj8E4siNiThZXPUpZ0CpjFj6broJboTQBthL5DNs+fvxMMTtq2HL5fIbUpjni3XErC3sQTLpET9lMHFP4y6QobWJb4WNXC3LR92iskyY+0/c=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TY7P286MB7722.JPNP286.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(366016)(10070799003)(1800799024)(376014)(7416014)(22082099003)(56012099003)(18002099003);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?MdTesi1NtNVzfhoTREixlQ/aftNUuz57gYdRA4yO0KerEdkTL0ARLT4+OXVG?=
- =?us-ascii?Q?IA4Nyt0INLal6M4toY49lDoSZQDk9fRgD4kgPbgETd7aGTfjRZ5E8dtrZcN5?=
- =?us-ascii?Q?p4FIwsICw4kVjo/OCf66EOGUJ3LjswyoOYU5p6kkFzk1qxoV2g6s1ZehojSf?=
- =?us-ascii?Q?d+gMgxNX+f3t3IjoiTlKiDjoSsASwnFXU+rqGHE9K+Rm0ZbaONLzUtCoED6z?=
- =?us-ascii?Q?UsYlwXpBBMYGjKU0MYkOMK7FfZ6SbHc0kh/5u/4kZVyYdOCBt7+b0TQxHigf?=
- =?us-ascii?Q?OBKgsWCPgnwlWHOhwHxHKWcdt+ZS3odNJeWDlYXfBJWjyV5frrrTZffCC9Bk?=
- =?us-ascii?Q?WP2rG73ywgKVJZ91YkEfQVYuWtmEwcX9wNKQ7PNhhZjJUG0eL2xXvh9KGo46?=
- =?us-ascii?Q?hASxHOXt8XV5nY7Z6w9yMY2Ilfy2/OtbRv+YHVJsdfWpesHqtzWwSlj3T/oU?=
- =?us-ascii?Q?goT+KKJjGa4U99wC00yBt5Zi5fKz9onCqQdzUrMmZD4fmNDMJcVIoVsWHp0I?=
- =?us-ascii?Q?YL3c9iIWWgSpRi6ElWQ4wwlav2m9RlI032SO3zBdMPtBA+BvUN3ycW3i14QM?=
- =?us-ascii?Q?6oDKgmCY5lMtIHqNr8G62/bqX7YpnHCQke/iIbtBTFE63U0V9a7gjVMLYzH2?=
- =?us-ascii?Q?zAukRFNhW5dmiG1hr7nCd+Rne/RChb+DSf1SLvjp76x/IOKG018UHCC266Qb?=
- =?us-ascii?Q?3KlV1sRldLiDNngbq67IEAZDcryeBL3sQuDPqikpYp1EcKfHKuObWfVyKEjr?=
- =?us-ascii?Q?NuMRAA1+kdS7frPD2NzR/BblSFAAnIl4LFaDaHr02OS+7+0CBAn8wukjetC6?=
- =?us-ascii?Q?uTvhwSbJ3uzO1w9ThyWPJ6pe8oHziCgOvm6O2+mHS2XsvrCtAWB7+GtHu3pU?=
- =?us-ascii?Q?06pDq0ZQ5dqqY4qr5sFnWUr9zKyv2kj5TTb/BSg2E7f1/HrJ37JVqZ9pzyfi?=
- =?us-ascii?Q?obAwdA26+Jqe7rHZ1tR58h0TR35TRTlvhDan3+hQfh9cU2RoQgDwceYQJYIQ?=
- =?us-ascii?Q?xMLZmdEGFdaFaK6yO3k36F/mroB0ZJh8PUsNMCxs611yuEpvUqT8CALrSLKW?=
- =?us-ascii?Q?eOafb2XgtkfwlrRPyasK1OH3aXDTyubKA3iMpZnn2qS1/1OwiPC3PjCJcnv9?=
- =?us-ascii?Q?onqATUyJ+4T5Gq0YOB0gg+p+wUzvZRHbX7YPN7KFLuXzgH+Xjt6dWRvY6zqX?=
- =?us-ascii?Q?hnBrxQexyXzYUv5KOC4eccS8ivCGQE6uQPuTqgoRYUOBiP1zKuRNnDwsNsPj?=
- =?us-ascii?Q?GJYwaIQ4wcqzVdCy2sDmAhTkU22LjnS2enM3oCE7XUqlYaBdn6qlLOLkkgZn?=
- =?us-ascii?Q?7JxRySD5hEI93hrkALGtk3V83N5nhVpaC9pKm5WgEkEbeHC9vgsXddW8i+nB?=
- =?us-ascii?Q?WkQ9M3aNpP9b+O2P9dy//PdngMjZGxr5xh5zGTqPwJk1YIhOUBxKP3jkxLp4?=
- =?us-ascii?Q?4xccTWCTWIehQyEePBLfLNW+abKXJnuReELZHNtp/gMnAgbT5ngLmIwBRy/T?=
- =?us-ascii?Q?57E5+QW+r4cpe/3HIc4+YbvapguWW7GAaOj2e/CylypJ7icxq/eio6zpw9mq?=
- =?us-ascii?Q?nQ2Z/7VOaJiTEY4hmRsrkkO+APonN2TuzsWfHQ6M2NVNHoNRrE7ccJyWL8cx?=
- =?us-ascii?Q?FzJQO87KxAb8dJBLwJ0FmwPX5WIDg0BobM+l46lWN6QStuKZHFvHMlF+D5n0?=
- =?us-ascii?Q?/kJ7xi5nuh3qzQQyfWURU+ixvrXIcTqQxnF9mN715HKWwnJiWokxK6SqExFJ?=
- =?us-ascii?Q?9y1FYxsTR2BTRJIp36pLruAu4Y2JLhDcVIqqjMHiTi8Z5zThwAlK?=
-X-OriginatorOrg: valinux.co.jp
-X-MS-Exchange-CrossTenant-Network-Message-Id: 08c13086-ed56-4d0c-3df9-08de83630ddd
-X-MS-Exchange-CrossTenant-AuthSource: TY7P286MB7722.JPNP286.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Mar 2026 13:50:59.1812
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 7a57bee8-f73d-4c5f-a4f7-d72c91c8c111
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: Wk8aSj/PzRo/b1XzyoE3urFxHjU/VAdFLPGiA3qqrxXciF3R3RXjkDAOrHI8Vd39q+t7V1xjc1RZzKbsWv3hMg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYYP286MB5707
+References: <20260313142351.609bc4c3efe1184f64ca5f44@danny.cz> <1phlu3bs.ritesh.list@gmail.com>
+In-Reply-To: <1phlu3bs.ritesh.list@gmail.com>
+From: Alex Deucher <alexdeucher@gmail.com>
+Date: Mon, 16 Mar 2026 09:55:15 -0400
+X-Gm-Features: AaiRm53_ccrgezS35W1n8IrX8XVanOeDHAQj2R8ZIMS0L2p2PMNUMQSQA2nolFQ
+Message-ID: <CADnq5_Mk+D5CSe61F6DewQjevjhsduiga21f8dVrLwR28zcwvQ@mail.gmail.com>
+Subject: Re: amdgpu driver fails to initialize on ppc64le in 7.0-rc1 and newer
+To: Ritesh Harjani <ritesh.list@gmail.com>
+Cc: =?UTF-8?Q?Dan_Hor=C3=A1k?= <dan@danny.cz>, linuxppc-dev@lists.ozlabs.org, 
+	Gaurav Batra <gbatra@linux.ibm.com>, amd-gfx@lists.freedesktop.org, 
+	Donet Tom <donettom@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Mar 16, 2026 at 02:29:54PM +0100, Christian Bruel wrote:
-> 
-> 
-> On 3/16/26 13:57, Niklas Cassel wrote:
-> > On Mon, Mar 16, 2026 at 01:41:03PM +0100, Christian Bruel wrote:
-> > > Hi Koichiro,
-> > > 
-> > > > 
-> > > > If I understood the problem correctly, would something like the patch below
-> > > > address it? My expectation is that the subrange mapping test would then fail
-> > > > consistently on platforms that do not have enough free IB iATU regions.
-> > > > 
-> > > 
-> > > Thank you for your patch. Yes, now the bar subrange tests fail consistently,
-> > > so that is enough to say this is not a regression.
-> > > 
-> > > However, I think there was a clear BAR missing somewhere before running the
-> > > tests in the EPF driver, as the BARs could be reallocated during the other
-> > > tests. This is not due to the subrange tests, but the EPF test driver
-> > > supposes a 1:1 BAR/ATU mapping. Now this assumption is broken. I'm wondering
-> > > if this could be improved to make the subrange tests pass on all platforms
-> > 
-> > Normally, you want one inbound iATU per enabled BAR, since you want the host
-> > to be able to access all the enabled BARs at any time.
-> > 
-> > If you are thinking that we should somehow temporarily disable inbound
-> > address translation for one of the enabled BARs, such that we can do "steal"
-> > that iATU to test inbound subrange mapping, then I think that is a bad idea.
-> 
-> yes, I was thinking something about restricting the iATU entry lifetime
-> during the BAR test duration and restoring after. But OK I agree, not good.
-> 
-> > 
-> > I think we should just let the test fail. Possibly we could call some API that
-> > tells us that all inbound iATUs are occupied, and then SKIP instead of FAIL
-> > the inbound subrange test case.
-> > 
-> > If you really want to test/use inbound subrange mapping, even if your SoC has
-> > a very limited number of inbound iATUs, then I think a better solution is to
-> > mark one or multiple of your BARs as disabled:
-> > https://git.kernel.org/pub/scm/linux/kernel/git/pci/pci.git/commit/?h=endpoint&id=33642e9e36dc084e4fc9245a266c9843bc8303b9
-> > 
-> > Then you should have at least one more inbound iATU available, and should be
-> > able to run the inbound subrange test case.
-> 
-> Yes cherry-picking the BAR_DISABLED support, I can now test the subrange
-> with Koichiro's fixup.
-> 
->  ./pci_endpoint_test -t BAR_SUBRANGE_TEST
-> TAP version 13
-> 1..6
-> # Starting 6 tests from 6 test cases.
-> #  RUN           pci_ep_bar.BAR0.BAR_SUBRANGE_TEST ...
-> #      SKIP      BAR is test register space
-> #            OK  pci_ep_bar.BAR0.BAR_SUBRANGE_TEST
-> ok 1 pci_ep_bar.BAR0.BAR_SUBRANGE_TEST # SKIP BAR is test register space
-> #  RUN           pci_ep_bar.BAR1.BAR_SUBRANGE_TEST ...
-> #            OK  pci_ep_bar.BAR1.BAR_SUBRANGE_TEST
-> ok 2 pci_ep_bar.BAR1.BAR_SUBRANGE_TEST
-> #  RUN           pci_ep_bar.BAR2.BAR_SUBRANGE_TEST ...
-> #            OK  pci_ep_bar.BAR2.BAR_SUBRANGE_TEST
-> ok 3 pci_ep_bar.BAR2.BAR_SUBRANGE_TEST
-> #  RUN           pci_ep_bar.BAR3.BAR_SUBRANGE_TEST ...
-> #      SKIP      BAR is disabled
-> #            OK  pci_ep_bar.BAR3.BAR_SUBRANGE_TEST
-> ok 4 pci_ep_bar.BAR3.BAR_SUBRANGE_TEST # SKIP BAR is disabled
-> #  RUN           pci_ep_bar.BAR4.BAR_SUBRANGE_TEST ...
-> #      SKIP      BAR is disabled
-> #            OK  pci_ep_bar.BAR4.BAR_SUBRANGE_TEST
-> ok 5 pci_ep_bar.BAR4.BAR_SUBRANGE_TEST # SKIP BAR is disabled
-> #  RUN           pci_ep_bar.BAR5.BAR_SUBRANGE_TEST ...
-> #      SKIP      BAR is disabled
-> #            OK  pci_ep_bar.BAR5.BAR_SUBRANGE_TEST
-> ok 6 pci_ep_bar.BAR5.BAR_SUBRANGE_TEST # SKIP BAR is disabled
-> # PASSED: 6 / 6 tests passed.
-> # 4 skipped test(s) detected. Consider enabling relevant config options to
-> improve coverage.
-> # Totals: pass:2 fail:0 xfail:0 xpass:0 skip:4 error:0
-> 
-> Thank you,
+On Mon, Mar 16, 2026 at 5:44=E2=80=AFAM Ritesh Harjani <ritesh.list@gmail.c=
+om> wrote:
+>
+> Dan Hor=C3=A1k <dan@danny.cz> writes:
+>
+> +cc Gaurav,
+>
+> > Hi,
+> >
+> > starting with 7.0-rc1 (meaning 6.19 is OK) the amdgpu driver fails to
+> > initialize on my Linux/ppc64le Power9 based system (with Radeon Pro WX4=
+100)
+> > with the following in the log
+> >
+> > ...
+> > b=C5=99e 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: GART: =
+256M 0x000000FF00000000 - 0x000000FF0FFFFFFF
+>
+>                   ^^^^
+> So looks like this is a PowerNV (Power9) machine.
+>
+> > b=C5=99e 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: [drm] =
+Detected VRAM RAM=3D4096M, BAR=3D4096M
+> > b=C5=99e 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: [drm] =
+RAM width 128bits GDDR5
+> > b=C5=99e 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: iommu:=
+ 64-bit OK but direct DMA is limited by 0
+> > b=C5=99e 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: dma_io=
+mmu_get_required_mask: returning bypass mask 0xfffffffffffffff
+> > b=C5=99e 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0:  4096M=
+ of VRAM memory ready
+> > b=C5=99e 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0:  32570=
+M of GTT memory ready.
+> > b=C5=99e 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: (-12) =
+failed to allocate kernel bo
+> > b=C5=99e 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: [drm] =
+Debug VRAM access will use slowpath MM access
+> > b=C5=99e 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: [drm] =
+GART: num cpu pages 4096, num gpu pages 65536
+> > b=C5=99e 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: [drm] =
+PCIE GART of 256M enabled (table at 0x000000F4FFF80000).
+> > b=C5=99e 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: (-12) =
+failed to allocate kernel bo
+> > b=C5=99e 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: (-12) =
+create WB bo failed
+> > b=C5=99e 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: amdgpu=
+_device_wb_init failed -12
+> > b=C5=99e 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: amdgpu=
+_device_ip_init failed
+> > b=C5=99e 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: Fatal =
+error during GPU init
+> > b=C5=99e 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: finish=
+ing device.
+> > b=C5=99e 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: probe =
+with driver amdgpu failed with error -12
+> > b=C5=99e 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0:  ttm f=
+inalized
+> > ...
+> >
+> > After some hints from Alex and bisecting and other investigation I have
+> > found that https://github.com/torvalds/linux/commit/1471c517cf7dae1a634=
+2fb821d8ed501af956dd0
+> > is the culprit and reverting it makes amdgpu load (and work) again.
+>
+> Thanks for confirming this. Yes, this was recently added [1]
+>
+> [1]: https://lore.kernel.org/linuxppc-dev/20251107161105.85999-1-gbatra@l=
+inux.ibm.com/
+>
+>
+> @Gaurav,
+>
+> I am not too familiar with the area, however looking at the logs shared
+> by Dan, it looks like we might be always going for dma direct allocation
+> path and maybe the device doesn't support this address limit.
 
-Christian, thank you for testing.
+The device only supports a 40 bit DMA mask.
 
-Niklas, thank you for the follow-up. I agree with your assessment.
+Alex
 
-Bjorn, I'll submit the tested-patch shortly. Sorry for the trouble.
-
-Best regards,
-Koichiro
-
-> 
-> Christian
-> > 
-> > 
-> > Kind regards,
-> > Niklas
-> 
+>
+>  b=C5=99e 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: iommu: =
+64-bit OK but direct DMA is limited by 0
+>  b=C5=99e 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: dma_iom=
+mu_get_required_mask: returning bypass mask 0xfffffffffffffff
+>
+> Looking at the code..
+>
+> diff --git a/kernel/dma/mapping.c b/kernel/dma/mapping.c
+> index fe7472f13b10..d5743b3c3ab3 100644
+> --- a/kernel/dma/mapping.c
+> +++ b/kernel/dma/mapping.c
+> @@ -654,7 +654,7 @@ void *dma_alloc_attrs(struct device *dev, size_t size=
+, dma_addr_t *dma_handle,
+>         /* let the implementation decide on the zone to allocate from: */
+>         flag &=3D ~(__GFP_DMA | __GFP_DMA32 | __GFP_HIGHMEM);
+>
+> -       if (dma_alloc_direct(dev, ops)) {
+> +       if (dma_alloc_direct(dev, ops) || arch_dma_alloc_direct(dev)) {
+>                 cpu_addr =3D dma_direct_alloc(dev, size, dma_handle, flag=
+, attrs);
+>         } else if (use_dma_iommu(dev)) {
+>                 cpu_addr =3D iommu_dma_alloc(dev, size, dma_handle, flag,=
+ attrs);
+>
+> Now, do we need arch_dma_alloc_direct() here? It always returns true if
+> dev->dma_ops_bypass is set to true, w/o checking for checks that
+> dma_go_direct() has.
+>
+> whereas...
+>
+> /*
+>  * Check if the devices uses a direct mapping for streaming DMA operation=
+s.
+>  * This allows IOMMU drivers to set a bypass mode if the DMA mask is larg=
+e
+>  * enough.
+>  */
+> static inline bool
+> dma_alloc_direct(struct device *dev, const struct dma_map_ops *ops)
+> ..dma_go_direct(dev, dev->coherent_dma_mask, ops);
+> ....  ...
+>       #ifdef CONFIG_DMA_OPS_BYPASS
+>           if (dev->dma_ops_bypass)
+>               return min_not_zero(mask, dev->bus_dma_limit) >=3D
+>                       dma_direct_get_required_mask(dev);
+>       #endif
+>
+> dma_alloc_direct() already checks for dma_ops_bypass and also if
+> dev->coherent_dma_mask >=3D dma_direct_get_required_mask(). So...
+>
+> .... Do we really need the machinary of arch_dma_{alloc|free}_direct()?
+> Isn't dma_alloc_direct() checks sufficient?
+>
+> Thoughts?
+>
+> -ritesh
+>
+>
+> >
+> > for the record, I have originally opened https://gitlab.freedesktop.org=
+/drm/amd/-/issues/5039
+> >
+> >
+> >       With regards,
+> >
+> >               Dan
 
