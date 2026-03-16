@@ -1,59 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-18227-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18228-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B8127F4643B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2026 09:41:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1905F4643A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Mar 2026 09:41:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fZ98L1QCzz2yhP;
-	Mon, 16 Mar 2026 20:41:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::6" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773654082;
-	cv=pass; b=TyW2OS9Xcy1NKPbVqnel3+xnBIic8iesqEnvOVCA2nCcl8n5AJPYgGAiM1kTzx+Gc2OMbX3qbLOh7B4KWkbIYzE5NYPUAsf23ky6b1EeSCm1WUM4VUb27/R6+aNnmDXbaBpmeZ6QFdrwo7h2aNd237mQXZy6wWXXLqH69bZwQoL9XkGgz+KlxalFrmucF9iM9VqWGUiDbRvLMNqMYR7FQ+eYVho2WcenHkRnm+lOtvKzXBE91NVz3FvKusdEPWYGJv2li67km3BlUUWW4+OyKXTdwE48dFStOI1JwbwVn9PNC2TfUe/LuGz7VG3Vp8M3VENY4Bl4adJlAsCWkvWNAQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fZ98d0Kzlz2yhG;
+	Mon, 16 Mar 2026 20:41:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20f::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773654097;
+	cv=pass; b=ib1hgqjChvab+/vR/pBC4Gw5Xks/p/Bc4m8nYfTFqJ1kn2oI/F/bvMZmco9ArU0ISlljNQXLM5jRLtfb3KTT7t87/7FVdLypp++rcLOMEAWJfXWir/bnn2PAfVLVuxJeQ7JOTnP5ezXJXrANimJqC2dx/ToQCjUGCVTJZ2ptC6KPac5OJXy+/uUodouL6+n34jTBISDjEkN1GToepOfLylO+YqERhIwh/nE8Y9RXnROWuBZPe3X2FHk+2wr/SMx/SsXvchoX4EICjGWwTjEaVpgLVNqRe45+xOQZOclUfTotbgLTUf8MXNqEnyn9M8OBUtHJkzZAPP0LubZCSoyyQA==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773654082; c=relaxed/relaxed;
-	bh=TVX/wrHm3G4dGqNAC5ffQGFcekO9fLvQl9oiAcEDw5Q=;
+	t=1773654097; c=relaxed/relaxed;
+	bh=pKEUnRJ5C1qQcspSblD9yav6rNUhmBFQRiaqsPx2hd8=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=NbECivzN33oW2Heoozwgo6j8ULZFzzQacI6r67UI9DQNd/HKVz3vPfR9Z602hEtludGmoHaTFJyEvCIBg2x7oJ5BHsZf/3gqIdJP39aLCKu4p8VzsMypBpuLPimWRhZCDWzBUF7pwZk2JwpcX+t3hT85TFmfJbvrTsKzAdSd1qMpAmoYo/KjLNhXqGb0AhRhXG0mosmSClS0xiexKGPLAJe7mlP+yRNtpR9XMrrREWEQzn4/J6Gw/0RaRecsol6zjt+8SDHlNfGo9jUJZfj74LkGhqwKqLgFD57MoY0d39eYkegHsIFnIz0xaEu3rLfVk+CtDICRuxH998j7jOBCVQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=md/zo4ks; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+	 Content-Type:MIME-Version; b=ca4VAeApz2Qg4gH6+V8ORduPqOA6PLppKhsuYDUXRBuk3UqKpURLfQRcgzcJY+R5651r0aSpn1Dd9HrCbCVJmGdeJIzLEGbfi97QAweXebxAoW86WeIwAMUJI3rHmtsvS0PX/Q9wtTquPExPzMgEUx1gIMUaNgYGgWrlPaV0A062itBTkJqE10p0FjytuwMo/2VNUKaVg71JlXhhBSrVGUd0ARPpgdxk4aQzd8GhS6QucF2oVmGG62TYblIjVoAywsOKXHAUmwfmHO/qhDwBbZjBYvlfcvS30WXI1XXlJOSD7AqQBnWzEx61bCF/sl0g3t4n0wHMwqR/Og9DScMcJQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=HHLb90KG; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=md/zo4ks;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=HHLb90KG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
-Received: from AM0PR02CU008.outbound.protection.outlook.com (mail-westeuropeazlp170130006.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::6])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
+Received: from OSPPR02CU001.outbound.protection.outlook.com (mail-norwayeastazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20f::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZ98K3sg9z2yhG
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2026 20:41:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZ98c0fHFz2yhD
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2026 20:41:36 +1100 (AEDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=lP1ZuCJ68HSVwDRXR13WyI9hNIlr9sq+oEssBesV2KsyoCt3gBsQ4X2zc6vOivT1kH0ZlbXDslvz6WEDdotaW6gWDpCKjfIRtjQbLHigIXxuOdDScwqGqVpFVjWhqxdDQkawK87vjELmEnx0Q29aAOUtyFStzhuD0QPbiQrxeG7ItEtL/7GuLjcEwSn1l7f3pouaPWHRt43oRIcYKEP8vNQ0mhgKNpVDw5xySPvRi1PmccOSNZ2Wm4AG48sH47i/UAYfARUXcyVOts3FDHskAcsgLeZiK8b/XjG1aKC1JuarFdtSMLAgY55GcSlkhduMvOZHeHTyH5BNLCvOmtOTEg==
+ b=I1hGSNbh+DaudfuNBGkhQCjHcL2ojNVIODJW0YPCJibRHEHz2GuTwdWFm3sVVn8iVYYxU9CrndWXl9/qG7pzeDcEycQi8YG57sQlWM0REr8fpCBPiKTgdHyOqqWN65Y3SNiKplrXHXDadjZhRFrtG779Qf9veMf9Q4uWvwmyVbiZnNWoNkjp2W0pr0U3C70NPY4ST5lxuJq6PjWUSpnIoJmXyWGjKTWJy8iSO1R2wz9R45INwu/BGwetQ0UG4/uUXT/KkekrPD20fI/OM/wW873p1Rsu0TtZPmRjJEZ/wIT2jfv8Il8MvpNbNe2gV7wotpDpXMLK2u118xz49dgVww==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=TVX/wrHm3G4dGqNAC5ffQGFcekO9fLvQl9oiAcEDw5Q=;
- b=SH7tuPb9Alh4BpEIHePczM3pZOlFmFQQhLYytvQuHVHSmzRbHpo/LpQ+4eGhKNV6wzb/m+CuKqSglIZ8oCLHDNNp0OgeGETkAvojnc7C6t68WKSiwL+T/3ERgcQYf1zGOMkvao6ZMoGffnbuAz4CUI2H53jFfTa8pPlWEXUert8bPwzznI6uK+gBt55mTmHYNxDqliO0ZbH0G1YfumKnThWGYnCQH55o9iNuxb/FNuQr3IzN6liZtUEMBcDmfbc46wuaaV3k7ujpQUig1+VF6OKYYDmd8R5A6VB9U+lmokN7FX/60m2F4gfWjDxx2vMU4IWFl7uY5ESTPECod+/ozQ==
+ bh=pKEUnRJ5C1qQcspSblD9yav6rNUhmBFQRiaqsPx2hd8=;
+ b=lMYU/+XNueSOme/3rpwY79rhw+HWE1HU0BtNf/c2Bis9Q3fobABlwv7/DSB+NxjdkBJ+skl5DD5VK19fq/IgOlGfBMddsHWLwTsqcLg4Q4m9jZPgx3yIw2ucTl1V0ky2+VGMMT2SLyRjaCa33kxx3jJk4oT0QmdQ26r7i2Dk/MGW0BFzYmLDgmxbILzNTkAQqlcnnGnafoDFtYeXppaWuPb9+Me2A58hPqV6Axn6lrgiErllVPs1wfaXChqkYxjW5sNfsI5BYuRes3qESEfCw/wBO8WqIYgqNh3+5lERh1UlUIk833hmOUrIWUf707Pl6gQyrnfNBzfM6emIMpPIKQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
  header.d=nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=TVX/wrHm3G4dGqNAC5ffQGFcekO9fLvQl9oiAcEDw5Q=;
- b=md/zo4ksudg4l19+mPGnoM3YTmj2DCfT3lVkSkq6/trL3NeIvxqyk9Hkm2CmTR8mNaN0f4sa5gmmlF/uQJwyiPzY1KX8XpMqWXP04CLY5L8xocNx2H5ecSMJYMfm1cTOVxM2n1bKozluwiKUXIlvdBGruszvGJ7DlKvyeA9qAqTAs6SN20ws+9C6LpaJ0OlL9o4leWq47y9MlxcpQ5wn36LxFtQWSwzxG/mZYqu6PnlekyrM9kGCRvfkqZADwWAOmlLn7TBBqjK3gk6GTIj7WBKF/rJZF3y3g4EjDn0TyjyYwGPe13rMuogTIQCFBdLjeHM83VwhFDmW98RavKMQGA==
+ bh=pKEUnRJ5C1qQcspSblD9yav6rNUhmBFQRiaqsPx2hd8=;
+ b=HHLb90KGbS7jpZ+2eWz2BllJmO1H6O6ipzfRgXIvmxjJu6nMhc1q+JSkk38lSN2siJZLu7NorJY2rvhHOYS+zpXtGM6hD9KjJpUG8HB0TW6WrzLyZhXe4XE+KES81E0bWAuUIq8fpQIxPBe59UsMsh2wgFvdBpg4VCk6nlaXI7H3ikhyfjqIDKR9+13dlu95l6lnwbcnW0XTDfzUG8YrBZ1lrg0omYsIXhy5V3iFLiSzkK0Vjqn/yZo6KJikXQF2BN/Etw+CooD0lrnVUhlQtJ1sTCqPDxn9OWLpMksBEWWZOozIrt1vrMx/zz5Nn+cRqLiZlxVDbwmEtNO9PYoHJQ==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nxp.com;
 Received: from PAXPR04MB8510.eurprd04.prod.outlook.com (2603:10a6:102:211::7)
- by AMBPR04MB12412.eurprd04.prod.outlook.com (2603:10a6:20b:75f::10) with
+ by AM9PR04MB8195.eurprd04.prod.outlook.com (2603:10a6:20b:3b7::21) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9700.24; Mon, 16 Mar
- 2026 09:40:49 +0000
+ 2026 09:40:46 +0000
 Received: from PAXPR04MB8510.eurprd04.prod.outlook.com
  ([fe80::b476:c19a:24cd:3694]) by PAXPR04MB8510.eurprd04.prod.outlook.com
  ([fe80::b476:c19a:24cd:3694%3]) with mapi id 15.20.9700.022; Mon, 16 Mar 2026
- 09:41:00 +0000
+ 09:41:14 +0000
 From: Wei Fang <wei.fang@nxp.com>
 To: claudiu.manoil@nxp.com,
 	vladimir.oltean@nxp.com,
@@ -77,9 +77,9 @@ Cc: netdev@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org,
 	imx@lists.linux.dev
-Subject: [PATCH net-next 05/14] net: enetc: add support for the "Add" operation to VLAN filter table
-Date: Mon, 16 Mar 2026 17:41:43 +0800
-Message-Id: <20260316094152.1558671-6-wei.fang@nxp.com>
+Subject: [PATCH net-next 07/14] net: enetc: add support for "Add" and "Delete" operations to IPFT
+Date: Mon, 16 Mar 2026 17:41:45 +0800
+Message-Id: <20260316094152.1558671-8-wei.fang@nxp.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260316094152.1558671-1-wei.fang@nxp.com>
 References: <20260316094152.1558671-1-wei.fang@nxp.com>
@@ -102,122 +102,124 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PAXPR04MB8510:EE_|AMBPR04MB12412:EE_
-X-MS-Office365-Filtering-Correlation-Id: 53ce8436-497e-4c33-7fe5-08de83402222
+X-MS-TrafficTypeDiagnostic: PAXPR04MB8510:EE_|AM9PR04MB8195:EE_
+X-MS-Office365-Filtering-Correlation-Id: ed523a2c-dc74-4b88-69ef-08de83402a19
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|19092799006|52116014|376014|7416014|366016|38350700014|921020|22082099003|56012099003|18002099003;
+	BCL:0;ARA:13230040|19092799006|366016|1800799024|376014|7416014|52116014|921020|38350700014|18002099003|56012099003|22082099003;
 X-Microsoft-Antispam-Message-Info:
-	uVrnmD7/M4hrv9kLN43mB0VH/LVG3882fOY0falnUPRwvs02ffB2tMPa3vQRGFixncrkmNKhksvor4aJ99MCIxDRo19zkl+8us8RgCZ4rdlpdZl6D7kYHEGNh1QGlaY26ZVgublVz39q+bppaq72R6yOgz9VBE9TOly8fX45wh+L+F8W40rX71bgSIpWnkkrvSjxAkpQEkkm97XUVuaxeGQ/SM399yohwwrZ2AnpRlldBM/FASTb6QW8px3ZlwS5JPUf1KjbH+fEhVOCRNhbQ2LCSHgsTpfjyOGQ66GWmBst1AvTXt02sylbdDzSsrkU74AoNvL4lPEHu7VVYRjeGj3zeO9AMqmK+4eJIQZ+NnlJLHAnhmzORpQiEqAyXZ/mZKKRo/YqSujU5F+9WcMsXk5G8nyz+jFe6+Hg+JFIDDWUO3K92booNZb/nnI1wdH2LtPguewtcmTdipDebc3UcabQgbKfyhI5bC3X3V48zOTvg56qScQ4jSAN100L9ZJ537/Cflm05HSwpz54CuM/1ppRmWQzh1s9FhMlsKGYNUHilV05WQ+lY13Yr/H4dV74IiAPNXytVI1SLQPjH8JbMC4JBoUW0g5ylvA39gc+gzppt6CMEHFhVAxIRPqHU4DCZJqF8+mdAe1U0aAfs8TuyrG+49gePsmjj+sFoHhtNqOx2K1HIZxyeNcmPXRBusurEYnbGfL/wwnveJwxKAGeFzLdGO7G857yWAWOe3AdMrXDD7XhNE4Mp6xVpKC0LnlWXzF72DbU8DIyD7IQtLQnKfYnceaMOBP5L+h6qvJJGDzvv72NKmJssIx1ARjgq1/4
+	ieZxePBwsdB4/f7fHfpSGzrnrd9whKc2LlrdbDRlwAlqV7lvbarFI5b9EwGnW5evon+V2kCtksldpztDAhikrYNJHVvNwH6WCNocXyZuNX+eJaQ8ulFCF2rrNPElmNHizxQ2s2je3WPGdK7Txe0poCm6CNyQ91HswJGF3XKrq9bx0u3N5VpJCSmgiX1BRcoVx8zdo29S7iFuRqtsdy7VZ0Iy8KEJmSsCOKlXnDwPhFfP5x7svWB53K2dMQl3v01hpupPY+uYVm4wxK3Vy0hMPMVDBJl0XaXsEKCP9pxYWj9QFuJG9Tk+H8A0bGwpX8QYzqW8lGNZ33DVkC8uTpgkLj1D9nln8l76Y6wCywHho9ZyRsiBOIXwqQMsYuKrngQ222Y8VfzbgIVz/50hDcL6ml+uG9v1Jlc6liiLEvzLjtM20/RrV6VlCCxHtA8ouCjA5/CAPzO+t2M9hN/brSVkpntN6rlgQe1dhT9Xv34UijuGnyluyXSpjzM2SclIzlNQUplodeSNmYmEWuRn1H3/0277DXp2wNEJks+fXEgrC8tEVrvKDgnQddb9Yee1xiGf1rKYChGdkkXvfIEpt5ChH3JgVxifCKu3iEl6xT7cou5MPHpTjFGsRvG2WU0+/QPRKd+f1rzEKesVtBNgZjklUCv0v327HsggwVGR8/q67d9Yq6osxrvz7TZwckumKh5hj1zkhtBfyLMAvZavPSZO4RAGmJj9Gnt4OAwL7A11NPcRGQg0MlMKLYJXVFd/DuvHftB/fRN7ZayLNXb2sx+iT4ERe6OqnHkmNpECXMLulVSoHWY3EAV15aHsxyF0Q4hJ
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB8510.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(19092799006)(52116014)(376014)(7416014)(366016)(38350700014)(921020)(22082099003)(56012099003)(18002099003);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB8510.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(366016)(1800799024)(376014)(7416014)(52116014)(921020)(38350700014)(18002099003)(56012099003)(22082099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?WQNiDmSir7mZuQlUwxYKbpEKuXhnPog5A826rdxHa/hDzifsF4gKuEKm/lk+?=
- =?us-ascii?Q?GW3rJ9Rm4pLnJd2aMgXU1g498IgItS0MHbpZ1UwLt8tkmPAJCMl6oKzBuRPW?=
- =?us-ascii?Q?nPpcP0RIiBhRv1UHD49i0REinR3ED8j0g0V8E+1F12V2/eJt3TNvwE2nuWeJ?=
- =?us-ascii?Q?ngMtFSIN1+yIlLEMJafVgAW+KqwVbbbVvxO1xiEl8Lh6v4S3WGQGMn8igxJS?=
- =?us-ascii?Q?+DNxlMtN5j8AS57+1HtDAPh95S/ZERXNFt3LeeTV3RQ4d5XXSqdj8/6Pxnen?=
- =?us-ascii?Q?ONL6fuZ/lMgf2byeacWqZuRFkfRrRKsafIVTrwOHAuQ5VI7PgEOBiVo6OH7I?=
- =?us-ascii?Q?yW9/lBjQZ2ObJIUVozeKJrogMR5qF7fOZpn1Gs7uoItpWwTyzBeeIinl42/z?=
- =?us-ascii?Q?8mHU5Y45SsCuqPyRbHIeDcxoPquJYkR14tOFBLg5oeCSRYvEoznMF0DczPNb?=
- =?us-ascii?Q?wD98iOapMfArC8fiKKyCgwn7lDdpoeST2kC6SWn2kuOSX2S6WYk8C3aNTq6x?=
- =?us-ascii?Q?tW/Tj9PEBXgT9Dxd8Hg0FK8BmTeWgpym8kOBXIpm6g945OI8cnGWwAiztaOs?=
- =?us-ascii?Q?wJl73C1B50zsUEiPnyybfZAxwp/KAW6VVnL4UlJ/ulmTDfwjJqkFUlGsfAfy?=
- =?us-ascii?Q?GOnRdCwSe9LW+bmUdJSifZbFMfngUvlBBLJyD71cUTllQNlc6sebHH8UDcpj?=
- =?us-ascii?Q?6PoZnpfZMa+cD6IQNs08OXhvYdp2di+oi721EfY+nzRzkcir3NGK5SvzvDfQ?=
- =?us-ascii?Q?mfsYnFf9iHswLHug9BCDorkXX9te1mYpGnAU+0IYX4J4In5m2G28epMK0iGF?=
- =?us-ascii?Q?2ls0CfkthfBixfEesDUCw7OW2dXB146hdxTP/fPW6oENmIuN33VD8KWRDGHo?=
- =?us-ascii?Q?2AUy5gDL7EyMo7flNEiNO8JbmWbmGb2eLhh6ld4icsHQMDaVkDGApeH5r6eP?=
- =?us-ascii?Q?o0ov/lZtmBSkscJKtaLeQwfZyTd0zXp71b7gVYsvOns9oBZUrYgU73sXuKel?=
- =?us-ascii?Q?BOXf3gQ5B4wwhd5NG+giF/+azBKnEjvFmbzTr6VMWwqRHzjhK8YGMg4Zr1d9?=
- =?us-ascii?Q?KR2IkrfUf7ImuLeYvbDDD8v3mr2AWY41wNtlewjOUD3RjIdwn2E3DKAMKieJ?=
- =?us-ascii?Q?Z+squkuBNlbRyoN/P7slYY4JPgcYLAadyh3IJIbAp3kH7IoNTXcuZiAssDM2?=
- =?us-ascii?Q?7RynrynSJzkzNveT9gDkRgJmPj3TAvM9nuzyfx2mAHwDW7IBAjXedZo/zuuA?=
- =?us-ascii?Q?xkPpXZKRufreV257EPQTsakrR9WxeNXVR3O0eNRuXkbiClX3qizvXsWsqqSH?=
- =?us-ascii?Q?6le8gWaP5h37hd+b4zuQF4rB2T+LlS6gvvpZlpbIA8oKR5WPPt/9MSIMeqjj?=
- =?us-ascii?Q?02f9kVBDz36YWjVkX1WhcN3cj642hMDtOrtglyDC6s5cdSuDsCrsiIgyeOPt?=
- =?us-ascii?Q?ARyJb4zllMV4s86L5hVC9Io4kIozRlg0jC6YOXWW5zmj4q1GafmOnzCqxLaG?=
- =?us-ascii?Q?O+o4xdt4dmLPl2xj9TAGdXztKcMmgMSSukLHuuKTBuvgdB96OAqljZ9D9fiA?=
- =?us-ascii?Q?G9nsXeVZQ/0CbVEe7Wr3Uov74j8Z7If2XT5s2F/8gEmscZeZsiuwjGYHAcTb?=
- =?us-ascii?Q?nEbVoMK/mP6K6d0bhkLwIalFCMKMSNdbzKgMFXUH+PZbBdq6xIYbsIbEsImS?=
- =?us-ascii?Q?8hy+cRdrB5oqy04Ua16CFkQ4z1vMrhH8CVtNEoeApqsjwrs4?=
+	=?us-ascii?Q?8UJB9vDSTGT3PYd/9di2nVwMVtu4NmyRxQPBgaq4pkb9/ePsOnq2RD1g1EmO?=
+ =?us-ascii?Q?fsJCaRrYejkXMTp2UpLDvcWiW+HlIDSYaiw9COh7uOXrRW35i9xSwNbDkR6X?=
+ =?us-ascii?Q?wCNaVe1Oy6v/jY6q1oHa/QKBn/YVCaAI+DYd0wsF1HjMov0Rf1SIpkc6ITiP?=
+ =?us-ascii?Q?vMEEqrHh+k9LQnzvGm2MFNFUC9IYEgzgrqCOpiiP/FUdIPOnMwk8FsAgtsMT?=
+ =?us-ascii?Q?+UPx88lno5O8/ZjAFPEfqbUPDfEe7WNGa1JjZ2OTLTRVxTRIDTWrG1UpfgNF?=
+ =?us-ascii?Q?OyXSF27HToIB6iYav5UbETGd87ZKA3UOKSM8Va6oEg9Ma0KdQwrcRlS9alEc?=
+ =?us-ascii?Q?1ScfUzBlJg/l7tvB0SZc2rrFkMeJ2SOgrAbCMRJArhegFQDplFInNs5AGrsr?=
+ =?us-ascii?Q?Z9NPOLwEMZIjQ8pqZgu1F00zyJ1ZCsEVBLDB1+SxEF6bV9g6CucTh34W+TUv?=
+ =?us-ascii?Q?bL+7K+uTOiCoZu8kHqMgO0+HjbNLH5tRGbd/Z+X4Dknv7oItzkkJ/AjESfUg?=
+ =?us-ascii?Q?X6AsgbZ7Q2nnXfqXFVu+56HtUplmZLyV689nCM2IjE4VuFyKZFSdoDs2+H2O?=
+ =?us-ascii?Q?H9j7FVizlMabrMwiee0K3Y07sJKmOCWKuIq1C7XdHxO6rQHBlz+4hCp6oUAu?=
+ =?us-ascii?Q?selez4yGxvXNclkIGvOszApYSm4pgbFRYPi7Gm5TbFPWMYf0zjpGvTfU5EOK?=
+ =?us-ascii?Q?ckQPvEgXrQas40nTyasUPQcTrnPJf6c2AcT5mvQXUw6UQI8miRjQPbdnfjxU?=
+ =?us-ascii?Q?socMKbibZqCBy7OhxDTXgQYXg/EPZnSYAKzlnS+RH9ADP/2+P/BTHPJkM7ZX?=
+ =?us-ascii?Q?f/55xRrFNNFRgAySx1zQiD6fSyK8UTWT2z0Wzs//oj5/M0wJC0bRtKLw5Y6d?=
+ =?us-ascii?Q?pJENrufX5iytxfTHxz7qG8SXKT/INFl6i7hiBNXuI0Iq6gyhRK/FKPtafX0Y?=
+ =?us-ascii?Q?tMxZb47wYAkn5ojLxsB9cA0/gxanqebVJAI/miGqD25aUN23P5FC+a/IvtHY?=
+ =?us-ascii?Q?oRCmLzGka/39vrdY2C9cKOf3rJIpSQFAXSpKo2XaFeMB5ktM74qmx1JTcqu7?=
+ =?us-ascii?Q?BoHbhwwGuAaKCUDJIKZlEnM/2nid7Go1WOt0qMWdor7rU5SV+u/w4UjfnqYb?=
+ =?us-ascii?Q?pD6l5/fVzPkegs3vq82BDWvEHTzif7JIntzmxfX9QxDUY/yYeEEOsIgVhur4?=
+ =?us-ascii?Q?OWOFilMqcwBnJFOjprT7NpSWG6A9+SGR5DB36zIOeOTTZ0e5nwfek3iUoJpp?=
+ =?us-ascii?Q?1R77DZWVKt5jxGRxzAATPt54qTD/9ySq7HZa+vXSgjGUoKi5u5p1ybaEdUXw?=
+ =?us-ascii?Q?N36GOizviNGiIkX804juQkFcm0Acm8pIyqXjyLp3XAGtt9Ha0K/F6Sv+Zobd?=
+ =?us-ascii?Q?EMDrhZPCOUmXtrG/7mFpV2YXlAGWhFJQA54bAH4uBlHg9WDpatyHNCTvNI+D?=
+ =?us-ascii?Q?086MBmfUuphhz75W4hG2QaCir1CZP5cGBAgIPMoS728Tk3fZ9HeHGBJiK2CH?=
+ =?us-ascii?Q?V/9UmdkzFSE5IA2/Q4PdBNwiqU6gUCBv4dMr+ZyIR0DOH6dW8FG6V+PJavnY?=
+ =?us-ascii?Q?2sroWVi3oB/D3Emtkzw2q3WKYDr77cAIw/czTaX+UprFzGQokSQOveDRtHhC?=
+ =?us-ascii?Q?GryWi0FVkajCqVOvmkN/R7IqlNcL3JW+zzkDe/uQpD1gmBRllV68/VAv+Nx8?=
+ =?us-ascii?Q?TB1Rfqwk1Khnw8LKkUMlC1e2YbqmBBhj1lP8suE7h5E5lcd2?=
 X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 53ce8436-497e-4c33-7fe5-08de83402222
+X-MS-Exchange-CrossTenant-Network-Message-Id: ed523a2c-dc74-4b88-69ef-08de83402a19
 X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB8510.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Mar 2026 09:41:00.8425
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Mar 2026 09:41:14.4259
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 66fLRzjo7wL8FFJGs1l+eYs0oPvNtPYXjzS1mCf509MWAlJfsE8QYYdQjbaNyRkjhLiHEdWXiKJWEU0yV5U1Cw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AMBPR04MB12412
+X-MS-Exchange-CrossTenant-UserPrincipalName: A5OPSiwavZ5a1SgNREtbak9Bzb1Kba1ZEPdzxGeCd4I9GTquiTJ7Qt/pI5x0zUYI+yugdhE5olfe7qeg/NXoQQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR04MB8195
 
-The VLAN filter table contains configuration and control information for
-each VLAN configured on the switch. Each VLAN entry includes the VLAN
-port membership, which FID to use in the FDB lookup, which spanning tree
-group to use, the egress frame modification actions to apply to a frame
-exiting form this VLAN, and various configuration and control parameters
-for this VLAN.
-
-The VLAN filter table can only be managed by the command BD ring using
-table management protocol version 2.0. The table supports Add, Delete,
-Update and Query operations. And the table supports 3 access methods:
-Entry ID, Exact Match Key Element and Search. But currently we only add
-the ntmp_vft_add_entry() helper to support the upcoming switch driver to
-add an entry to the VLAN filter table. Other interfaces will be added in
-the future.
+The ingress port filter table (IPFT )contains a set of filters each
+capable of classifying incoming traffic using a mix of L2, L3, and L4
+parsed and arbitrary field data. As a result of a filter match, several
+actions can be specified such as on whether to deny or allow a frame,
+overriding internal QoS attributes associated with the frame and setting
+parameters for the subsequent frame processing functions, such as stream
+identification, policing, ingress mirroring. Each entry corresponds to a
+filter. The ingress port filter entries are added using a precedence
+value. If a frame matches multiple entries, the entry with the higher
+precedence is used. Currently, this patch only adds "Add" and "Delete"
+operations to the ingress port filter table. These two interfaces will
+be used by both ENETC driver and NETC switch driver.
 
 Signed-off-by: Wei Fang <wei.fang@nxp.com>
 ---
- drivers/net/ethernet/freescale/enetc/ntmp.c   | 50 +++++++++++++++++++
- .../ethernet/freescale/enetc/ntmp_private.h   | 19 +++++++
- include/linux/fsl/ntmp.h                      | 30 +++++++++++
- 3 files changed, 99 insertions(+)
+ drivers/net/ethernet/freescale/enetc/ntmp.c   |  76 +++++++++++++
+ .../ethernet/freescale/enetc/ntmp_private.h   |  36 ++++++
+ include/linux/fsl/ntmp.h                      | 104 ++++++++++++++++++
+ 3 files changed, 216 insertions(+)
 
 diff --git a/drivers/net/ethernet/freescale/enetc/ntmp.c b/drivers/net/ethernet/freescale/enetc/ntmp.c
-index f6f4316169b6..e8c94157ceb1 100644
+index ef38ebe94da8..9fc3422137fc 100644
 --- a/drivers/net/ethernet/freescale/enetc/ntmp.c
 +++ b/drivers/net/ethernet/freescale/enetc/ntmp.c
-@@ -21,6 +21,7 @@
+@@ -20,6 +20,7 @@
+ /* Define NTMP Table ID */
  #define NTMP_MAFT_ID			1
  #define NTMP_RSST_ID			3
++#define NTMP_IPFT_ID			13
  #define NTMP_FDBT_ID			15
-+#define NTMP_VFT_ID			18
- 
- /* Generic Update Actions for most tables */
- #define NTMP_GEN_UA_CFGEU		BIT(0)
-@@ -231,6 +232,8 @@ static const char *ntmp_table_name(int tbl_id)
+ #define NTMP_VFT_ID			18
+ #define NTMP_BPT_ID			41
+@@ -234,6 +235,8 @@ static const char *ntmp_table_name(int tbl_id)
+ 		return "MAC Address Filter Table";
+ 	case NTMP_RSST_ID:
  		return "RSS Table";
++	case NTMP_IPFT_ID:
++		return "Ingress Port Filter Table";
  	case NTMP_FDBT_ID:
  		return "FDB Table";
-+	case NTMP_VFT_ID:
-+		return "VLAN Filter Table";
- 	default:
- 		return "Unknown Table";
- 	}
-@@ -652,5 +655,52 @@ int ntmp_fdbt_search_port_entry(struct ntmp_user *user, int port,
+ 	case NTMP_VFT_ID:
+@@ -468,6 +471,79 @@ int ntmp_rsst_query_entry(struct ntmp_user *user, u32 *table, int count)
  }
- EXPORT_SYMBOL_GPL(ntmp_fdbt_search_port_entry);
+ EXPORT_SYMBOL_GPL(ntmp_rsst_query_entry);
  
 +/**
-+ * ntmp_vft_add_entry - add an entry into the VLAN filter table
++ * ntmp_ipft_add_entry - add an entry into the ingress port filter table
 + * @user: target ntmp_user struct
-+ * @vid: VLAN ID
-+ * @cfge: configuration element data
++ * @entry: the entry data, entry->cfge (configuration element data) and
++ * entry->keye (key element data) are used as input. Since the entry ID
++ * is assigned by the hardware, so entry->entry_id is a returned value
++ * for the driver to use, the driver can update/delete/query the entry
++ * based on the entry_id.
 + *
 + * Return: 0 on success, otherwise a negative error code
 + */
-+int ntmp_vft_add_entry(struct ntmp_user *user, u16 vid,
-+		       const struct vft_cfge_data *cfge)
++int ntmp_ipft_add_entry(struct ntmp_user *user,
++			struct ipft_entry_data *entry)
 +{
 +	struct ntmp_dma_buf data = {
 +		.dev = user->dev,
-+		.size = sizeof(struct vft_req_ua),
++		.size = sizeof(struct ipft_resp_query),
 +	};
-+	struct vft_req_ua *req;
++	struct ipft_resp_query *resp;
++	struct ipft_req_ua *req;
 +	union netc_cbd cbd;
 +	u32 len;
 +	int err;
@@ -226,121 +228,244 @@ index f6f4316169b6..e8c94157ceb1 100644
 +	if (err)
 +		return err;
 +
-+	/* Request data */
-+	ntmp_fill_crd(&req->crd, user->tbl.vft_ver, 0,
-+		      NTMP_GEN_UA_CFGEU);
-+	req->ak.exact.vid = cpu_to_le16(vid);
-+	req->cfge = *cfge;
++	ntmp_fill_crd(&req->crd, user->tbl.ipft_ver, NTMP_QA_ENTRY_ID,
++		      NTMP_GEN_UA_CFGEU | NTMP_GEN_UA_STSEU);
++	req->ak.keye = entry->keye;
++	req->cfge = entry->cfge;
 +
-+	/* Request header */
-+	len = NTMP_LEN(data.size, NTMP_STATUS_RESP_LEN);
-+	ntmp_fill_request_hdr(&cbd, data.dma, len, NTMP_VFT_ID,
-+			      NTMP_CMD_ADD, NTMP_AM_EXACT_KEY);
++	len = NTMP_LEN(sizeof(*req), data.size);
++	ntmp_fill_request_hdr(&cbd, data.dma, len, NTMP_IPFT_ID,
++			      NTMP_CMD_AQ, NTMP_AM_TERNARY_KEY);
 +
 +	err = netc_xmit_ntmp_cmd(user, &cbd);
-+	if (err)
-+		dev_err(user->dev,
-+			"Failed to add %s entry, vid: %u, err: %pe\n",
-+			ntmp_table_name(NTMP_VFT_ID), vid, ERR_PTR(err));
++	if (err) {
++		dev_err(user->dev, "Failed to add %s entry, err: %pe\n",
++			ntmp_table_name(NTMP_IPFT_ID), ERR_PTR(err));
 +
++		goto end;
++	}
++
++	resp = (struct ipft_resp_query *)req;
++	entry->entry_id = le32_to_cpu(resp->entry_id);
++
++end:
 +	ntmp_free_data_mem(&data);
 +
 +	return err;
 +}
-+EXPORT_SYMBOL_GPL(ntmp_vft_add_entry);
++EXPORT_SYMBOL_GPL(ntmp_ipft_add_entry);
 +
- MODULE_DESCRIPTION("NXP NETC Library");
- MODULE_LICENSE("Dual BSD/GPL");
++/**
++ * ntmp_ipft_delete_entry - delete a specified ingress port filter table entry
++ * @user: target ntmp_user struct
++ * @entry_id: the specified ID of the ingress port filter table entry
++ *
++ * Return: 0 on success, otherwise a negative error code
++ */
++int ntmp_ipft_delete_entry(struct ntmp_user *user, u32 entry_id)
++{
++	u32 req_len = sizeof(struct ipft_req_qd);
++
++	return ntmp_delete_entry_by_id(user, NTMP_IPFT_ID,
++				       user->tbl.ipft_ver,
++				       entry_id, req_len,
++				       NTMP_STATUS_RESP_LEN);
++}
++EXPORT_SYMBOL_GPL(ntmp_ipft_delete_entry);
++
+ /**
+  * ntmp_fdbt_add_entry - add an entry into the FDB table
+  * @user: target ntmp_user struct
 diff --git a/drivers/net/ethernet/freescale/enetc/ntmp_private.h b/drivers/net/ethernet/freescale/enetc/ntmp_private.h
-index 9e2a18cf3507..8f94572eaf0d 100644
+index c5f6dca7b660..9411ec9f1777 100644
 --- a/drivers/net/ethernet/freescale/enetc/ntmp_private.h
 +++ b/drivers/net/ethernet/freescale/enetc/ntmp_private.h
-@@ -160,4 +160,23 @@ struct fdbt_resp_query {
- 	u8 resv[3];
+@@ -103,6 +103,42 @@ struct rsst_req_update {
+ 	u8 groups[];
  };
  
-+/* Access Key Format of VLAN Filter Table */
-+struct vft_ak_exact {
-+	__le16 vid; /* bit0~11: VLAN ID, other bits are reserved */
-+	__le16 resv;
++/* Ingress Port Filter Table Response Data Buffer Format of Query action */
++struct ipft_resp_query {
++	__le32 status;
++	__le32 entry_id;
++	struct ipft_keye_data keye;
++	__le64 match_count; /* STSE_DATA */
++	struct ipft_cfge_data cfge;
++} __packed;
++
++struct ipft_ak_eid {
++	__le32 entry_id;
++	__le32 resv[52];
 +};
 +
-+union vft_access_key {
-+	__le32 entry_id; /* entry_id match */
-+	struct vft_ak_exact exact;
-+	__le32 resume_entry_id; /* search */
++union ipft_access_key {
++	struct ipft_ak_eid eid;
++	struct ipft_keye_data keye;
 +};
 +
-+/* VLAN Filter Table Request Data Buffer Format of Update and Add actions */
-+struct vft_req_ua {
++/* Ingress Port Filter Table Request Data Buffer Format of Update and
++ * Add actions
++ */
++struct ipft_req_ua {
 +	struct ntmp_cmn_req_data crd;
-+	union vft_access_key ak;
-+	struct vft_cfge_data cfge;
++	union ipft_access_key ak;
++	struct ipft_cfge_data cfge;
 +};
 +
- #endif
++/* Ingress Port Filter Table Request Data Buffer Format of Query and
++ * Delete actions
++ */
++struct ipft_req_qd {
++	struct ntmp_req_by_eid rbe;
++	__le32 resv[52];
++};
++
+ /* Access Key Format of FDB Table */
+ struct fdbt_ak_eid {
+ 	__le32 entry_id;
 diff --git a/include/linux/fsl/ntmp.h b/include/linux/fsl/ntmp.h
-index ba56d4ae0ff4..6fb2c8c525de 100644
+index 925a455935b0..f6d3bb2e318d 100644
 --- a/include/linux/fsl/ntmp.h
 +++ b/include/linux/fsl/ntmp.h
-@@ -32,6 +32,7 @@ struct netc_tbl_vers {
- 	u8 maft_ver;
- 	u8 rsst_ver;
+@@ -7,6 +7,7 @@
+ #include <linux/if_ether.h>
+ 
+ #define NTMP_NULL_ENTRY_ID		0xffffffffU
++#define IPFT_MAX_PLD_LEN		24
+ 
+ struct maft_keye_data {
+ 	u8 mac_addr[ETH_ALEN];
+@@ -34,6 +35,7 @@ struct netc_tbl_vers {
  	u8 fdbt_ver;
-+	u8 vft_ver;
+ 	u8 vft_ver;
+ 	u8 bpt_ver;
++	u8 ipft_ver;
  };
  
  struct netc_cbdr {
-@@ -94,6 +95,27 @@ struct fdbt_entry_data {
- #define FDBT_ACT_FLAG		BIT(7)
+@@ -66,6 +68,94 @@ struct maft_entry_data {
+ 	struct maft_cfge_data cfge;
  };
  
-+struct vft_cfge_data {
-+	__le32 bitmap_stg;
-+#define VFT_PORT_MEMBERSHIP	GENMASK(23, 0)
-+#define VFT_STG_ID_MASK		GENMASK(27, 24)
-+#define VFT_STG_ID(g)		FIELD_PREP(VFT_STG_ID_MASK, (g))
-+	__le16 fid;
-+#define VFT_FID			GENMASK(11, 0)
-+	__le16 cfg;
-+#define VFT_MLO			GENMASK(2, 0)
-+#define VFT_MFO			GENMASK(4, 3)
-+#define VFT_IPMFE		BIT(6)
-+#define VFT_IPMFLE		BIT(7)
-+#define VFT_PGA			BIT(8)
-+#define VFT_SFDA		BIT(10)
-+#define VFT_OSFDA		BIT(11)
-+#define VFT_FDBAFSS		BIT(12)
-+	__le32 eta_port_bitmap;
-+#define VFT_ETA_PORT_BITMAP	GENMASK(23, 0)
-+	__le32 et_eid;
++struct ipft_pld_byte {
++	u8 data;
++	u8 mask;
 +};
 +
- #if IS_ENABLED(CONFIG_NXP_NETC_LIB)
- int ntmp_init_cbdr(struct netc_cbdr *cbdr, struct device *dev,
- 		   const struct netc_cbdr_regs *regs);
-@@ -118,6 +140,8 @@ int ntmp_fdbt_delete_entry(struct ntmp_user *user, u32 entry_id);
- int ntmp_fdbt_search_port_entry(struct ntmp_user *user, int port,
- 				u32 *resume_entry_id,
- 				struct fdbt_entry_data *entry);
-+int ntmp_vft_add_entry(struct ntmp_user *user, u16 vid,
-+		       const struct vft_cfge_data *cfge);
- #else
- static inline int ntmp_init_cbdr(struct netc_cbdr *cbdr, struct device *dev,
- 				 const struct netc_cbdr_regs *regs)
-@@ -183,6 +207,12 @@ static inline int ntmp_fdbt_search_port_entry(struct ntmp_user *user, int port,
++struct ipft_keye_data {
++	__le16 precedence;
++	__le16 resv0[3];
++	__le16 frm_attr_flags;
++#define IPFT_FAF_OVLAN		BIT(2)
++#define IPFT_FAF_IVLAN		BIT(3)
++#define IPFT_FAF_IP_HDR		BIT(7)
++#define IPFT_FAF_IP_VER6	BIT(8)
++#define IPFT_FAF_L4_CODE	GENMASK(11, 10)
++#define  IPFT_FAF_TCP_HDR	1
++#define  IPFT_FAF_UDP_HDR	2
++#define  IPFT_FAF_SCTP_HDR	3
++#define IPFT_FAF_WOL_MAGIC	BIT(12)
++	__le16 frm_attr_flags_mask;
++	__le16 dscp;
++#define IPFT_DSCP		GENMASK(5, 0)
++#define IPFT_DSCP_MASK		GENMASK(11, 0)
++#define IPFT_DSCP_MASK_ALL	0x3f
++	__le16 src_port; /* This field is reserved for ENETC */
++#define IPFT_SRC_PORT		GENMASK(4, 0)
++#define IPFT_SRC_PORT_MASK	GENMASK(9, 5)
++#define IPFT_SRC_PORT_MASK_ALL	0x1f
++	__be16 outer_vlan_tci;
++	__be16 outer_vlan_tci_mask;
++	u8 dmac[ETH_ALEN];
++	u8 dmac_mask[ETH_ALEN];
++	u8 smac[ETH_ALEN];
++	u8 smac_mask[ETH_ALEN];
++	__be16 inner_vlan_tci;
++	__be16 inner_vlan_tci_mask;
++	__be16 ethertype;
++	__be16 ethertype_mask;
++	u8 ip_protocol;
++	u8 ip_protocol_mask;
++	__le16 resv1[7];
++	__be32 ip_src[4];
++	__le32 resv2[2];
++	__be32 ip_src_mask[4];
++	__be16 l4_src_port;
++	__be16 l4_src_port_mask;
++	__le32 resv3;
++	__be32 ip_dst[4];
++	__le32 resv4[2];
++	__be32 ip_dst_mask[4];
++	__be16 l4_dst_port;
++	__be16 l4_dst_port_mask;
++	__le32 resv5;
++	struct ipft_pld_byte byte[IPFT_MAX_PLD_LEN];
++};
++
++struct ipft_cfge_data {
++	__le32 cfg;
++#define IPFT_IPV		GENMASK(3, 0)
++#define IPFT_OIPV		BIT(4)
++#define IPFT_DR			GENMASK(6, 5)
++#define IPFT_ODR		BIT(7)
++#define IPFT_FLTFA		GENMASK(10, 8)
++#define  IPFT_FLTFA_DISCARD	0
++#define  IPFT_FLTFA_PERMIT	1
++/* Redirect is only for switch */
++#define  IPFT_FLTFA_REDIRECT	2
++#define IPFT_IMIRE		BIT(11)
++#define IPFT_WOLTE		BIT(12)
++#define IPFT_FLTA		GENMASK(14, 13)
++#define  IPFT_FLTA_RP		1
++#define  IPFT_FLTA_IS		2
++#define  IPFT_FLTA_SI_BITMAP	3
++#define IPFT_RPR		GENMASK(16, 15)
++#define IPFT_CTD		BIT(17)
++#define IPFT_HR			GENMASK(21, 18)
++#define IPFT_TIMECAPE		BIT(22)
++#define IPFT_RRT		BIT(23)
++#define IPFT_BL2F		BIT(24)
++#define IPFT_EVMEID		GENMASK(31, 28)
++	__le32 flta_tgt;
++};
++
++struct ipft_entry_data {
++	u32 entry_id; /* hardware assigns entry ID */
++	struct ipft_keye_data keye;
++	struct ipft_cfge_data cfge;
++};
++
+ struct fdbt_keye_data {
+ 	u8 mac_addr[ETH_ALEN]; /* big-endian */
+ 	__le16 resv0;
+@@ -155,6 +245,9 @@ int ntmp_rsst_update_entry(struct ntmp_user *user, const u32 *table,
+ 			   int count);
+ int ntmp_rsst_query_entry(struct ntmp_user *user,
+ 			  u32 *table, int count);
++int ntmp_ipft_add_entry(struct ntmp_user *user,
++			struct ipft_entry_data *entry);
++int ntmp_ipft_delete_entry(struct ntmp_user *user, u32 entry_id);
+ int ntmp_fdbt_add_entry(struct ntmp_user *user, u32 *entry_id,
+ 			const struct fdbt_keye_data *keye,
+ 			const struct fdbt_cfge_data *cfge);
+@@ -208,6 +301,17 @@ static inline int ntmp_rsst_query_entry(struct ntmp_user *user,
  	return 0;
  }
  
-+static inline int ntmp_vft_add_entry(struct ntmp_user *user, u16 vid,
-+				     const struct vft_cfge_data *cfge)
++static inline int ntmp_ipft_add_entry(struct ntmp_user *user,
++				      struct ipft_entry_data *entry)
 +{
 +	return 0;
 +}
 +
- #endif
- 
- #endif
++static inline int ntmp_ipft_delete_entry(struct ntmp_user *user, u32 entry_id)
++{
++	return 0;
++}
++
+ static inline int ntmp_fdbt_add_entry(struct ntmp_user *user, u32 *entry_id,
+ 				      const struct fdbt_keye_data *keye,
+ 				      const struct fdbt_cfge_data *data)
 -- 
 2.34.1
 
