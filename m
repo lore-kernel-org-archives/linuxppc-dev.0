@@ -1,53 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-18311-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18312-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 208D6FD8763
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2026 13:09:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0109FD8766
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2026 13:09:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fZskF5rFgz2yjV;
-	Wed, 18 Mar 2026 00:09:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773739061;
-	cv=none; b=AUiHlt3arv9xs3fuQkozkrqPc2s+Pgi7pstG3wQn3Y1bWsoUbzxVsxbtlbxzLMrTsgzAD97dCjA4lmfGh+RQYR43mJbkbtGM+FppOqa4gM6l1wuLuzoakrWKlJD6EvWlwzBOW3NqhF1RNUaH1w+7c8G99uDG1dbAPQ8CqRjNHjxSCxPMJXKPbAPFB4Sl2KSyOMtRbx1JVAtQLy87h6ktvSi68bBnMeRCBaSogCNTWCXNWC1rlE90OO7FTI8LIdl1cfaxvO3hK9yhjyu/5rJPdugKpBaaaYdhZ6kEkAIvo2SR1EVIifU5awx91Di1JG+5s5DjoJtM0UVJWWYRNYIhcw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fZskP1wRpz2yk6;
+	Wed, 18 Mar 2026 00:09:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773739082;
+	cv=none; b=TIk7H4t4Fh8CMfz+SMqR/wswqiU93IXQWz/QvyHVsVVEfe0RMPLV7JNpWs/k7qPVvzrEve3utgTnausBmVg8EHbBlrluSeuvplNR1FpPvOz77V6YoN80z+5TTjUiW/xtUtbe3fP8hJfgK7SrWD9BfSR9xieruWdtLwk1oqAFJPGTdz34ZTkoJiY+jT5qjg4rwGgMMY7KjqVijVWxHKJ4+lyw93Zp8HJ1qFvATIBFqzDH3Eslbcc8Riw3gOe7jQ4D18iJxy2OPhac0CgLmZ93zz/N1Zl4nhrwKMcVkR8l/savsJXlBjz/lMCIlIZOjSDVvIPgRnaVnjsVPAeZ8V6KDw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773739061; c=relaxed/relaxed;
-	bh=t+RmgPpu0wXpMUlpLJkPQ6KEI4UNzhvFvtooO8e8o08=;
+	t=1773739082; c=relaxed/relaxed;
+	bh=6wv/uc2cCXmJz3o0ZF2F3E5RqSkAYRf5rVj1/QzEIvg=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=h+RKDFYnNeqZnHWo6aKQPCNPLcixvIrj4G6s5BN2hRqF4s8rmZSXlN4Eos2L4yAnnxJ6yZU6Te3jPAkOti3UhPbgJC4GFrOzkiPx+DCtNfGzgj40KKNMx2ydVV8AYCPiG5DtItRfChKGxKtfFAIvh7XhW87szlQxSWTmHbM0zXS9SzG1BHuE3+fB1V6ZO8fI/bwbY4q5WqK5+UWPgq1S80O2VNZzkbX5wdZ/H9BDsiTi+JZjMzmFs3F/QfaR8XuGO9O03154LA/9nFf3Gr1Rt5XCPyU0TQW/C8MmQEFz4aRSORiSNDlcEfN9XwWaMRkfCcYGr4Rh3S8Zd9A/yh+x4Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=H1I3ECya; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=mailhol@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=bDazm1C3XFSAaMBv+q037TBbd+1///BH54nA+rCBWT3vA5rBTAERrDm5HvM9vEkk6tf/xQeQOPVoPuU2jQmMpp29jXh0RVEXxqkFL2ZDOeflZIRGrmXCKx1wGc78oNTjhZ/Z6EErT94cWfcVHJh7MERRsN5q+sC2tYP6fBQDODFHfRV8II7bZY9VEhdPhw2YDBP/FowCIzm6b2AkWKtn2h4TSfctu4GG7ljrfhTGxQAZNumSL1KzzLXoPBKnF9ujf1PhBqwQ5fL6TgZBmjdtvPGT4kf0+W3BA0ruyGvp3TsPNq4mrEedfclfKzhJqnYBMsJMcBmFfDB4rragbVsMOw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XpwVmfZw; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=mailhol@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=H1I3ECya;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XpwVmfZw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=mailhol@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=mailhol@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZmZX6cHnz2yfP;
-	Tue, 17 Mar 2026 20:17:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZmZx5JT1z2yfP;
+	Tue, 17 Mar 2026 20:18:01 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 954EA43672;
+	by tor.source.kernel.org (Postfix) with ESMTP id 0A71261336;
+	Tue, 17 Mar 2026 09:17:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DF11CC4CEF7;
 	Tue, 17 Mar 2026 09:17:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 65A00C19425;
-	Tue, 17 Mar 2026 09:17:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773739058;
-	bh=6y8Kwkh/OaXUAUrCp7sWLG87zBC+NAUQTwYE5Ak5GSk=;
+	s=k20201202; t=1773739078;
+	bh=rijEHchLteNXFaviNnGMZpirNppt7OUDLa0dnxKFYl8=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=H1I3ECyaVjAv8V07VjWoO7K3OMvYB22GI6ioEMAE14Wyqr4QC8SGYtafcvejqr4tN
-	 qkx09x1luYXw8AvU+giJ+A7A4+asAI6nN1a1tTkMTXa5crQz2UlxrwaynyHw6Xg5iS
-	 ndnhrVrDu/Daj2vNgsuAeUI7tdajy/rGJsr/PW2pkui/ixmfWQvZ89O4lzr4NWwqRl
-	 W25J76tfRi7iGQd4MxwKw+Duwb+cAfZScCi/jM2WeSlEQlMAEKbjlqshOzHiUiEAXA
-	 yI3Yv5R4+kKjT4h5ZT+11yWuT/6kGkEA/4gLqjKkv8UAaQwPVa/Fvpmy3aJBxuYs8L
-	 vYjjCxUe6vaHg==
+	b=XpwVmfZw0JgXdiE+9Wy7h/YBbFNV2OF2PkFXJirhrMjyHVETav4IuXybm/nhrKbEk
+	 Pcg5g9eXGagveMnhb0pPNJ8ekcfyChtxtDD5u2bKbV2IwVUcQjWuIPLtZXV88xWRRa
+	 fnDRnXz0+h1/HEJktAYm6Drw56s0I6YC8BoaYLXdGr+PUP2mZV9/o9ApAbuj2nAF9K
+	 ErkJ/xyOxGtDap4AMHhLUg25qX9nEzNONDGvrUbRvLzJglPEHUZ2AsG9H5jLTpfJDF
+	 KVAR7LFPE5HIoLf8DdWDaFSuDNPAVr5+fhJpCw8JZw0bqDYX7yEO/ZXVvE6cGlE5AW
+	 xj983+NGdjTjg==
 From: "Vincent Mailhol (Arm)" <mailhol@kernel.org>
-Date: Tue, 17 Mar 2026 10:13:43 +0100
-Subject: [PATCH 7/9] arm64: defconfig: remove incorrect assignment to
- IPQ_APSS_5018
+Date: Tue, 17 Mar 2026 10:13:44 +0100
+Subject: [PATCH 8/9] arm64: defconfig: remove obsolete assignment to
+ SENSORS_SA67MCU
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260317-arm_defconf_cleanup-v1-7-8eecb7fdd24d@kernel.org>
+Message-Id: <20260317-arm_defconf_cleanup-v1-8-8eecb7fdd24d@kernel.org>
 References: <20260317-arm_defconf_cleanup-v1-0-8eecb7fdd24d@kernel.org>
 In-Reply-To: <20260317-arm_defconf_cleanup-v1-0-8eecb7fdd24d@kernel.org>
 To: Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nsc@kernel.org>, 
@@ -133,35 +133,37 @@ Cc: Alexandre Gonzalo <alexandre.gonzalo@arm.com>,
  linux-renesas-soc@vger.kernel.org, linux-parisc@vger.kernel.org, 
  openbmc@lists.ozlabs.org, "Vincent Mailhol (Arm)" <mailhol@kernel.org>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=709; i=mailhol@kernel.org;
- h=from:subject:message-id; bh=6y8Kwkh/OaXUAUrCp7sWLG87zBC+NAUQTwYE5Ak5GSk=;
- b=owGbwMvMwCV2McXO4Xp97WbG02pJDJk7pfv+h06fUW+wxn1x9lH+P27C01ptVGM+Ga740GTrJ
- v7U9dWJjlIWBjEuBlkxRZZl5ZzcCh2F3mGH/lrCzGFlAhnCwMUpABPZsZSR4brMbJ/EW5ziP5d7
- r+t6Me136Islt3+dvjLx2rIGM61v6y4x/GI+sbVb4fQH233qzxrtQj9dOamXqLWOT8bzoa3QZJf
- 7//gB
+X-Developer-Signature: v=1; a=openpgp-sha256; l=824; i=mailhol@kernel.org;
+ h=from:subject:message-id; bh=rijEHchLteNXFaviNnGMZpirNppt7OUDLa0dnxKFYl8=;
+ b=owGbwMvMwCV2McXO4Xp97WbG02pJDJk7pfu4z51qK2SKqPyQF71s5huv6GT+Csa9LQnOJ5L/9
+ gfNT5/fUcrCIMbFICumyLKsnJNboaPQO+zQX0uYOaxMIEMYuDgFYCISDxn+KfF26bU9O/vIh/dw
+ l+z03NxrCSeWyx/higu0+Sy2KKSwk+F/xaT++zem3G88G3/mbKnKgUheFcFqpQOPWvq2f7hTUC/
+ DAQA=
 X-Developer-Key: i=mailhol@kernel.org; a=openpgp;
  fpr=ED8F700574E67F20E574E8E2AB5FEB886DBB99C2
 
-CONFIG_IPQ_APSS_5018 does not exist and never existed. Remove it.
+The Kontron SMARC-sAM67 board management controller is not in the
+kernel tree anymore. Clean-up the leftover reference to
+CONFIG_SENSORS_SA67MCU which was left in the defconfig.
 
-Fixes: 7f0c87348fb5 ("arm64: defconfig: Enable IPQ5018 SoC base configs")
+Fixes: e710b2283725 ("Revert "hwmon: add SMARC-sAM67 support"")
 Signed-off-by: Vincent Mailhol (Arm) <mailhol@kernel.org>
 ---
  arch/arm64/configs/defconfig | 1 -
  1 file changed, 1 deletion(-)
 
 diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
-index 0b307e2ab384..1fda77bca432 100644
+index 1fda77bca432..c5e23beeaebf 100644
 --- a/arch/arm64/configs/defconfig
 +++ b/arch/arm64/configs/defconfig
-@@ -1456,7 +1456,6 @@ CONFIG_QCOM_CLK_APCC_MSM8996=y
- CONFIG_QCOM_CLK_SMD_RPM=y
- CONFIG_QCOM_CLK_RPMH=y
- CONFIG_IPQ_APSS_6018=y
--CONFIG_IPQ_APSS_5018=y
- CONFIG_IPQ_CMN_PLL=m
- CONFIG_IPQ_GCC_5018=y
- CONFIG_IPQ_GCC_5332=y
+@@ -743,7 +743,6 @@ CONFIG_SENSORS_LM75=m
+ CONFIG_SENSORS_LM90=m
+ CONFIG_SENSORS_PWM_FAN=m
+ CONFIG_SENSORS_RASPBERRYPI_HWMON=m
+-CONFIG_SENSORS_SA67MCU=m
+ CONFIG_SENSORS_SL28CPLD=m
+ CONFIG_SENSORS_INA2XX=m
+ CONFIG_SENSORS_INA3221=m
 
 -- 
 2.43.0
