@@ -1,83 +1,116 @@
-Return-Path: <linuxppc-dev+bounces-18316-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18317-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E254FD875E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2026 13:20:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7947FD8769
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2026 13:33:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fZsz41RWlz2yjV;
-	Wed, 18 Mar 2026 00:20:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773753648;
-	cv=none; b=DFcJ9dqZOeRaGxxPnXsXDzpQzdaNBQBwSqBlkc+iuuZdccBkkfbmHhWYIIgOQea8KTUQR7T+I+SkibtJH3vRy9Q6eUcWLy/zjwP5ZDVFZ80+RMfJXXvWfpBBhaAoIM2q6aU/pTX8QqjjLH+IBU3EYOq2GURvAor9RPcEWVBK/TNT1s9JyX7YHBEUkGfONMzxZjK9J3+qH21deporu+AhzuJd4AftUTnOlqSbCEheLNDyozdOsIsEgrp9cX+7SNPWTfq9D/YrSOgSqu0Ccy9OuVObR8zoYNOM4s60zcVnE7XZ2wPmLiXwLWIBdHLXlLlKk9K6vksXbwYeeyJK38zCQg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fZtFr3MSYz2yh4;
+	Wed, 18 Mar 2026 00:33:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.180.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773754416;
+	cv=none; b=M4GO9ZpRdbHvXd94xxzcMizNve2M84aDnuzK13A0wf0ZGsJ1sFFlhZlN6vk6NQ7jz8XYWkQRMaiEgdQ5Zk4IbOZAx/PISw1DoksZx+r3lhIC148VESiRLLUQyfZO6OixiWj6oJh+q9P+6koRWz8eZUdunUqz3fQXfqH815HO3gAtmv4bpCLFh13R9im343boOc++KI0JzrodFx+s1yAn2RjZK7MUNWAdREpVYD0OJBb91c06njWrW678tEQi6VmR1uUbjO4Gah/iE/8Pct6furIAYbHJz35nsPZ9+IMFvg/2/JBMGCeBeC9VbVB/rNqNnjneCRX6JsdM+qj0B7gFnQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773753648; c=relaxed/relaxed;
-	bh=TjpfVxjcr+NMQLZx4OdK5lf1pCwYZzZGvbDIy4rSp4w=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
-	 MIME-version:Content-type; b=N/sOfm7t0qYSAvdeBFTmZhxMd7uWe4LcjWvZdE7B98TnQ1C58qTZZmsvf8bh5gL75EIVCgQKZT7yRKmwOzAhI+6JZOkmcLiZokXh24HubGSohjK1bXa3ieyQPn4mjes2+4UxgngnBoXmAL1+uY02lnfilf4bZ/kl7TTFPMos1IZx9LxqMI++TZ8GpegnUXfxfbmJlF7K10VxzP6BEmp/azVupPobPiuboAZtBdp845CLrVQ4UhZEZoIQWXHqg37Y32d114lkKW0yaqvZ3/k+5//MOHNdgumoPOWGyefefIbIum+EydQ3BtFOBuqNo6SOzTJB4rD5Tdg1hY8HDvop6w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=EhKiVbjw; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102a; helo=mail-pj1-x102a.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1773754416; c=relaxed/relaxed;
+	bh=wClwdHi//EKovApGGp/o1/cMKxisBXL2sxG8w7zO7Fo=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=CB5mgEWrPWCFnKuDuwdzgyvcPkhXNlesxMbzI3hqiMTgLORU7drnYkFq4YaI5/n4d9QVwNdpkO2RpB75eQjSNEBWp3vUNN4L6OONi5rSlEGkkIOPlfg3tOPon80lq4YQ/Qz59xc81mbwu61dszhPUs82TnkRiYPtmX4ny8XXQLl0ELtiqK+ae22O5VZEgFJz1RN2ZK2vM+gx04NX9g96alj04kw/P35hxOCf00e2GrOE56FSjqkxW36ocMsQC8uYDsPzyi2Jz6o2C4yDD8srS9+6YiPpe7iTHB9uwg91sFt0kofQSf8LzDY17obm+gSWDvxacoXtz0d5bYc4Ejy1tA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=WviHE7c4; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Azswk/0R; dkim-atps=neutral; spf=pass (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=krzysztof.kozlowski@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=EhKiVbjw;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=WviHE7c4;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Azswk/0R;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102a; helo=mail-pj1-x102a.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102a.google.com (mail-pj1-x102a.google.com [IPv6:2607:f8b0:4864:20::102a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=krzysztof.kozlowski@oss.qualcomm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZsz21qSfz2yjN
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2026 00:20:45 +1100 (AEDT)
-Received: by mail-pj1-x102a.google.com with SMTP id 98e67ed59e1d1-35a1230c60eso2978595a91.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2026 06:20:45 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZtFq3yX0z2ySq
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2026 00:33:35 +1100 (AEDT)
+Received: from pps.filterd (m0279868.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62H7JHwB3124251
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2026 13:33:33 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=qcppdkim1; bh=wClwdHi//EK
+	ovApGGp/o1/cMKxisBXL2sxG8w7zO7Fo=; b=WviHE7c47v4b8vtDxvJ8wLNIoZF
+	wDW5J0+PHQkkFtKsjRWL3zkN7SZtLJ6uZGuM1pjHLf3+EQbVbopONeHZHLTeUtsW
+	ypqItiR0/MKI4R2RNqxreyLF/+GuAYYXjBxFsHE8kuPCyBJ1tuKJpheINGAwEF4r
+	5vKMn40mnMB2FpSfLO3eFPO0H5cBGJbnvf3N72eXOzQshVmWE0VGoCZknvu6D2ON
+	eyqUvSl1Gx8wnL186Cueb/cKbzRTcN9GDK5DPo0+9whQFGXfNlmvg7z95qzQdYdW
+	VBUM341PVCfGFAf7vc6iOc3Lu7MP7uExqa1xeQxE9VTuok1K3Q7+2fz+hbA==
+Received: from mail-qk1-f197.google.com (mail-qk1-f197.google.com [209.85.222.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4cy2fbsaxg-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2026 13:33:33 +0000 (GMT)
+Received: by mail-qk1-f197.google.com with SMTP id af79cd13be357-8cd7fec8d44so460778285a.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2026 06:33:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1773753644; x=1774358444; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:message-id:date
-         :in-reply-to:subject:cc:to:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=TjpfVxjcr+NMQLZx4OdK5lf1pCwYZzZGvbDIy4rSp4w=;
-        b=EhKiVbjw+QUuf2k+jwyOg5ZBXScCPsgSTosVtwU98ZhSrQpO/SHv5NMcz+yw0dqakk
-         o4z6ZakTi/njSsDXvu3DPKaz1lOvzYgxnmAr39OYZ2ejhHystw03lsfdtBZGpHisUfhf
-         nlELq8HJyI6/1QI4odj0lf3S+GMbtjgbZqsYJiJyIvfJMvRsCkjDe3YvIJakIFZJuTd4
-         9qcixjjH1zs5lEVtftxDGXfkYTm+jwhE4k7C5vZ2Pz3zc8jAA6bzS04asR723QkqpIrz
-         bFuBeoFl827KHNWoP/Irsr4H4BCCzveFguCGbUpMj4WVnxEFyJYWuJK7czplhWM70CiY
-         OCEw==
+        d=oss.qualcomm.com; s=google; t=1773754412; x=1774359212; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=wClwdHi//EKovApGGp/o1/cMKxisBXL2sxG8w7zO7Fo=;
+        b=Azswk/0R5x18NpuUjdRMveEtLx1Iz1dPwSx80kEe1TzymgJljkHM2Fr1nq3hQTtN9s
+         IBNbBdFJcvWo6pVftPxNiGFYWyo9pXN4htdauVTFtE5wxz4JOp35eBTHPVNknhPVnymf
+         pCE6tMgpeeIcDSwV863JMDE/nuLYeVhuUbZMSpp6qI0qg8QpSEmhDQrRvvEYkHn+vTZS
+         OgnqpDFeQoINWg61gVGKC54FzjMXRhrzEyGS9nYRCyGsxjylmT+tFkdvn/vwGW0XqO+Y
+         7tm2qwR4QJVkMi4UvH+MT/8J2VWycKQnPCBn3lJSkizC7z5Fgl06r7XyhuJpCMbCD7oX
+         sqcw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773753644; x=1774358444;
-        h=content-transfer-encoding:mime-version:references:message-id:date
-         :in-reply-to:subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=TjpfVxjcr+NMQLZx4OdK5lf1pCwYZzZGvbDIy4rSp4w=;
-        b=Zb0a+Eyb/cjBG3c6dJY2CkLzotvOlp+GfqAb3nSB+Z0bHNYoWAZZBejyC3agBVmxi2
-         O1JiV5hYWs6tfySHgA8g66sjG5mc6nd45I7RcWNeHu08s3Mm2UB5hlUTyEHlae+fb6zv
-         ToY5Sr5kK4A3UaUY+k+PneB98F9GnarBwRzFLx+xCZ5XxxaTSgxHzKmV1cJxWKFkfdz9
-         K4As3VcrlXXexV2dMO1ygdULfa5gsDAkAhh6s0ui2xB4CRemreufuhgdSXbBr8JSTBOf
-         0n4b4BHBd9vGUveurlu39eoZXPtYklWcjcySRX5rWWMvRnTindLaf17BJpPJJoJSbJqc
-         79Og==
-X-Gm-Message-State: AOJu0YwcInnSbZm0gTfylDrKYRCFg7EGZzVdcEhxw1Eh25+lcZg6MK0V
-	LfGpB+i49pXTpYopydgkzaqElSpzOO3FkxbVy5TT4n86CDSi3BT8GS2P
-X-Gm-Gg: ATEYQzxrZh/pTD3pYjz8mY73OkWMAWLq9syfO1tIr/wZFHVN6YYx+FivHpMgoDOukiJ
-	5erN3Eq136J/F/4X+L1+0mTcG5eU9A4Jn8n3rIXvHcDwdjpBzTG3nqJJx0YzW/j0Ega0L/kW/3C
-	+fnozs+YPctLzHBO3x+FlQltt6Q9FjbTZbLR4AgpUkdHlRZkO5Iyooq9hIZJElt9xt1Is8sjWhs
-	TubC9oVeIjOsP8eLgXaSQVB7i+RJrWdmMlN1ihji35e8rzSQTsfseTqlrQnBWYqpr2tAz4fTXj9
-	UfXcjhto9c94C93Km1VNozR4u6bSzxKjEJd4AI50cTvfy4wn573r3crBJAOSCFFg2tUrhiRCWbP
-	h7CqId21r3j0+dofghJQW+Z2hYk/Rk0cWjg+IZSXSj+RYgYJusVMIeP5CBvfuvCgJYDEj11H0vg
-	KwG/gv71HFyCyAA9RTbmNvWQ==
-X-Received: by 2002:a17:90b:2496:b0:35b:952c:43b9 with SMTP id 98e67ed59e1d1-35b952c450amr5243491a91.10.1773753643761;
-        Tue, 17 Mar 2026 06:20:43 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35bada5d18fsm2970098a91.7.2026.03.17.06.20.40
+        d=1e100.net; s=20251104; t=1773754412; x=1774359212;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=wClwdHi//EKovApGGp/o1/cMKxisBXL2sxG8w7zO7Fo=;
+        b=FLlGrVuSlEZmt51XMxtK7PO0IXISfr+NC+Kd+9R5G3japODnCWboxNBDp6P2d8VkVK
+         jBcT/oyg8nlC0qVByc6SeWe2aYJmBZZh/u7CMf97bm4tBMa3JddkJOeI+LAla9441nc8
+         0dSOq85eVysgBGOtAIoJ5cXgz8TrqrssJe2P/AZ9RaaDQwcxidhr5lBgNzApXWFR1EnN
+         rL0pQMDRnYvUjHBlOfufMAMh6V1v1VVyhSGTnrzEQprF1dD+UDV9F5WhnBCpFgq8SDJC
+         FOXxQsUNm/IS25ItCmSmZu/VhO0ZMInHcyZctTcHTDAW3gHN4i0zWw6w2lWixJi84NRo
+         rr/A==
+X-Forwarded-Encrypted: i=1; AJvYcCXl0kh45r/PvM48mVYJA/w4DFjVq3BOOTnf5ud8+M6OujOBNXbLzc4mESLdGI+IeeQXLjGaGDmKfpmUyVQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxmESGJCftgGFc7H/iiF4xf0IG32iaj6yKfsbk0JRUxZH7qmUER
+	VaVRrMDQ9gW+ktwmPfb8GXb3GQan8L+KB52wozXycGiawXKgN2+6djk8LzZy0iXVwfF812kgHVd
+	Wti7hRGZ+7IzH4MTc4lz4t75NrS0O/MCR2PcF/5pNjQqHMHPn3t8ozDtCN19MMrBnmIm/
+X-Gm-Gg: ATEYQzyPTyFkwAA9RD9aNhb9/hHQyH/Vt1ZIqp3Tp6qzElt9+la7TkjSx0PmrfGiFyb
+	u41Q1G64o6yPZTjvRi4G6HyJBUKoLl3skaeuKnmdMeYC944beLeGMAcE85YDZbBFLC7Wx3O4wNP
+	buU9pwgQGrBPBc4TxdE0Ck8+kLuOmm38UFYi/j3xwpaawqilJjahzdNooK3dP5YF0moT8fOsqY0
+	6+KU34lW+5etYPA5xBWbtWnyNm+nxdlKewT56s7KNgfu19ylsypRlKyUEVmNFVR6hkZE4j8Wj2R
+	0LZPRLGPNNWryA9DEjx9iUbYuEQr70fl23KDhknMjSqXA3vrCJCAnElhjzNOQtICVQR+wbcnbl2
+	VrWhumzx60z/wky4wLwnzYC6xgGBrA090I2Cn
+X-Received: by 2002:a05:620a:4415:b0:8cd:c239:12d6 with SMTP id af79cd13be357-8cdc2391360mr1562496785a.57.1773754412597;
+        Tue, 17 Mar 2026 06:33:32 -0700 (PDT)
+X-Received: by 2002:a05:620a:4415:b0:8cd:c239:12d6 with SMTP id af79cd13be357-8cdc2391360mr1562493985a.57.1773754412127;
+        Tue, 17 Mar 2026 06:33:32 -0700 (PDT)
+Received: from quoll ([178.197.219.94])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-439fe19aec5sm51358613f8f.4.2026.03.17.06.33.30
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 17 Mar 2026 06:20:42 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Dan =?utf-8?Q?Hor=C3=A1k?= <dan@danny.cz>
-Cc: linuxppc-dev@lists.ozlabs.org, Gaurav Batra <gbatra@linux.ibm.com>, amd-gfx@lists.freedesktop.org, Donet Tom <donettom@linux.ibm.com>
-Subject: Re: amdgpu driver fails to initialize on ppc64le in 7.0-rc1 and newer
-In-Reply-To: <20260315105021.667e52d4a99b154ef1e6aa34@danny.cz>
-Date: Tue, 17 Mar 2026 17:13:31 +0530
-Message-ID: <ms06y93w.ritesh.list@gmail.com>
-References: <20260313142351.609bc4c3efe1184f64ca5f44@danny.cz> <1phlu3bs.ritesh.list@gmail.com> <20260315105021.667e52d4a99b154ef1e6aa34@danny.cz>
+        Tue, 17 Mar 2026 06:33:31 -0700 (PDT)
+From: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+To: Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
+        =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>,
+        Lorenzo Pieralisi <lpieralisi@kernel.org>,
+        =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kwilczynski@kernel.org>,
+        Manivannan Sadhasivam <mani@kernel.org>, Rob Herring <robh@kernel.org>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Tyrel Datwyler <tyreld@linux.ibm.com>, linux-pci@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org
+Cc: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Subject: [PATCH v2 2/4] PCI: mvebu: Keep child node refcnt for probe duration
+Date: Tue, 17 Mar 2026 14:33:24 +0100
+Message-ID: <20260317133322.266102-6-krzysztof.kozlowski@oss.qualcomm.com>
+X-Mailer: git-send-email 2.51.0
+In-Reply-To: <20260317133322.266102-5-krzysztof.kozlowski@oss.qualcomm.com>
+References: <20260317133322.266102-5-krzysztof.kozlowski@oss.qualcomm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,99 +123,103 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
+MIME-Version: 1.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1813; i=krzysztof.kozlowski@oss.qualcomm.com;
+ h=from:subject; bh=ov8hIF8M1z6R9wDtFRkRAkC1i3judy0L71MjXuy8SHg=;
+ b=owEBbQKS/ZANAwAKAcE3ZuaGi4PXAcsmYgBpuVgjxjL35h3b9GCXehstfFtvOosrOCx8JxD2V
+ bgJIU/Bh3aJAjMEAAEKAB0WIQTd0mIoPREbIztuuKjBN2bmhouD1wUCablYIwAKCRDBN2bmhouD
+ 18tgEACBChVuehaRRjXAcrbdPTAAOq8QiLCEu7p6Pr7DdrcGnP96ZGP6kQRDGpNuLliO0VXS+yR
+ jNn9sk6o+QZGrTtyvblDWjoNzUVg1prOXD/W8W7Bry9CbI7qYGRRiurn7iXRM/N1+jM9CBgkeuZ
+ oyAMsnTFxY4y1mejiT6HJHuhMAGiE2DPMPCiW22FUkHEty5cDdGNg64oVzKdjjgFVIEOl52mVQe
+ n+gfhwwGT0ymaijzo+fDLlae47j31+DioYBLirU3ZNoUCRfYShYjCSm7wVqq1G4HTEVJTTNHHzn
+ xr8b7d4BK0GKo0W6IqD5DnL/lDkb0XcENij1mjljbeBd0A/E6HD1CpNpWdLyMuZjCCwpACAjTum
+ cXCmlQpySC4nsMjGvAOhmfpQzDYR8XAW9R4fGlezSXROFZw33Eifcmd6yL6PWmh6KIqBeAJIh97
+ 3ydvTovr/VBY4XsM5Jv6WNkJOZ7OyvJTU0YklLgXfuPQHHSnzzseaAer8RfmKF83jNJeu4lVVwI
+ hBYIbU7FlkxAX/l5h1h8upvYM3lB77DeBdfScFy2FYWFg3P6J43T0yEoNfikkNGYV0jBXmzsSfU
+ 3FRhfSjASj95faSgWbmZEahgvCFpZIBzGG+/C6vtU40xTJzA+Ye2HMwtKyBzV3s4sq8YGw0PaTm zYDaS/53uZbqY/w==
+X-Developer-Key: i=krzysztof.kozlowski@oss.qualcomm.com; a=openpgp; fpr=9BD07E0E0C51F8D59677B7541B93437D3B41629B
 Content-Transfer-Encoding: 8bit
+X-Proofpoint-ORIG-GUID: ihPOdazdp2l6VGNCfv6uSrJmfwSg43pp
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzE3MDExOSBTYWx0ZWRfXz9EUOjS5kR7F
+ GJgrXBESRAmHPYY0XgsOCkaAyQWJceOYcqF5w01TUzezLg3KOdvUThQiUM0BLsCkKgHsvi5oNLD
+ wHoM3W3opily9QovoPX9n5LqVjbJm7sQN32SIub+zahJu2cxf9Q4zVA0wwnPPllNga5nfGz6bRI
+ xXeXObqxI1+Ue+ucUO9MIAJIrPWuQ4nF3dupguuc5kjm/7/O6nY1OICRUbQUmD17nsk5ScnYIvt
+ wajjEuuekIbu/pPb5bonstyvHw7abMRlE/Vi10u/oX7cZnmaM8Gcp8M+bSPHbBFr9190KJAUxqj
+ JnDssM52IXzXkWJXderYJ8UlTMVGXEAUrkT7qgJkkwb4dLiuxuCAIsYWYaogVbjdn6oseDs21Wn
+ QtCRaZEHngpJPdXlkKEMHWuOA+kAVlgdnFgPwQLde0n+Jxj1NzDGwEokL9nd0nAhl3hUYzu8yO+
+ VrKZcdpJfrW0qrIbKTA==
+X-Authority-Analysis: v=2.4 cv=fa6gCkQF c=1 sm=1 tr=0 ts=69b9582d cx=c_pps
+ a=50t2pK5VMbmlHzFWWp8p/g==:117 a=gOEeR9iKwsj33Yj5oN/cWg==:17
+ a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=ZpdpYltYx_vBUK5n70dp:22 a=EUspDBNiAAAA:8
+ a=pABr9VbpVV2WwmlfmZwA:9 a=IoWCM6iH3mJn3m4BftBB:22
+X-Proofpoint-GUID: ihPOdazdp2l6VGNCfv6uSrJmfwSg43pp
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-17_01,2026-03-17_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 priorityscore=1501 spamscore=0 lowpriorityscore=0
+ impostorscore=0 adultscore=0 bulkscore=0 malwarescore=0 suspectscore=0
+ clxscore=1015 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
+ definitions=main-2603170119
 
-Dan Horák <dan@danny.cz> writes:
+Driver in probe() first iterates over child device nodes, storing the OF
+node pointer but does not take the reference to it for the remaining
+part of the probe where it is used.
 
-> Hi Ritesh,
->
-> On Sun, 15 Mar 2026 09:55:11 +0530
-> Ritesh Harjani (IBM) <ritesh.list@gmail.com> wrote:
->
->> Dan Horák <dan@danny.cz> writes:
->> 
->> +cc Gaurav,
->> 
->> > Hi,
->> >
->> > starting with 7.0-rc1 (meaning 6.19 is OK) the amdgpu driver fails to
->> > initialize on my Linux/ppc64le Power9 based system (with Radeon Pro WX4100)
->> > with the following in the log
->> >
->> > ...
->> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: GART: 256M 0x000000FF00000000 - 0x000000FF0FFFFFFF
->> 
->>                   ^^^^
->> So looks like this is a PowerNV (Power9) machine.
->
-> correct :-)
->  
->> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: [drm] Detected VRAM RAM=4096M, BAR=4096M
->> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: [drm] RAM width 128bits GDDR5
->> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: iommu: 64-bit OK but direct DMA is limited by 0
->> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: dma_iommu_get_required_mask: returning bypass mask 0xfffffffffffffff
->> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0:  4096M of VRAM memory ready
->> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0:  32570M of GTT memory ready.
->> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: (-12) failed to allocate kernel bo
->> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: [drm] Debug VRAM access will use slowpath MM access
->> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: [drm] GART: num cpu pages 4096, num gpu pages 65536
->> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: [drm] PCIE GART of 256M enabled (table at 0x000000F4FFF80000).
->> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: (-12) failed to allocate kernel bo
->> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: (-12) create WB bo failed
->> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: amdgpu_device_wb_init failed -12
->> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: amdgpu_device_ip_init failed
->> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: Fatal error during GPU init
->> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: finishing device.
->> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: probe with driver amdgpu failed with error -12
->> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0:  ttm finalized
->> > ...
->> >
->> > After some hints from Alex and bisecting and other investigation I have
->> > found that https://github.com/torvalds/linux/commit/1471c517cf7dae1a6342fb821d8ed501af956dd0
->> > is the culprit and reverting it makes amdgpu load (and work) again.
->> 
->> Thanks for confirming this. Yes, this was recently added [1]
->> 
->> [1]: https://lore.kernel.org/linuxppc-dev/20251107161105.85999-1-gbatra@linux.ibm.com/ 
->> 
->> 
->> @Gaurav,
->> 
->> I am not too familiar with the area, however looking at the logs shared
->> by Dan, it looks like we might be always going for dma direct allocation
->> path and maybe the device doesn't support this address limit. 
->> 
->>  bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: iommu: 64-bit OK but direct DMA is limited by 0
->>  bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: dma_iommu_get_required_mask: returning bypass mask 0xfffffffffffffff
->
-> a complete kernel log is at
-> https://gitlab.freedesktop.org/-/project/4522/uploads/c4935bca6f37bbd06bb4045c07d00b5b/kernel.log
->
-> Please let me know if you need more info.
+The pointer thus could become invalid if children OF nodes are being
+removed from the Devicetree, e.g. by removing OF overlay, while the
+probe is being executed.  That's is highly theoretical issue, thus it
+does not look like bug with any effect.
 
-Hi Dan,
+Nevertheless, make the code logically correct, so acquire the OF node
+refcnt for entire lifetime of the device, since the pointer is stored in
+each port state container structure.
 
-Thanks for sharing the kernel log. Is it also possible to kindly share
-your full kernel config with which you saw this issue.
+Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-I think Gaurav, is still looking into reported issue. However I was
-interested in this kernel log output..
+---
 
-bře 05 08:35:34 talos.danny.cz kernel: radix-mmu: Mapped 0x00002007fad00000-0x00002007fcd00000 with 64.0 KiB pages
+Changes in v2:
+1. New patch
 
-This shows that the system is using 64K pagesize. So I was interested in
-knowing the kernel configs you have enabled. Donet has recently posted
-64K pagesize support with amdgpu [1][2] on Power. However, I think, we
-can still use it w/o Donet's changes if we have CONFIG_HSA_AMD_SVM
-disabled.
+Note: Not a fix, because practical impact is absolutely zero since
+of_node_get is a noop.
+---
+ drivers/pci/controller/pci-mvebu.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-So, can you kindly share the kernel configs and the AMD GPU HW details
-attached to your Power9 baremetal system, if it's possible?
+diff --git a/drivers/pci/controller/pci-mvebu.c b/drivers/pci/controller/pci-mvebu.c
+index 4d3c97b62fe0..7fb9c7393588 100644
+--- a/drivers/pci/controller/pci-mvebu.c
++++ b/drivers/pci/controller/pci-mvebu.c
+@@ -1236,6 +1236,11 @@ static void mvebu_pcie_port_clk_put(void *data)
+ 	clk_put(port->clk);
+ }
+ 
++static void mvebu_pcie_port_of_node_put(void *data)
++{
++	of_node_put(data);
++}
++
+ static int mvebu_pcie_parse_port(struct mvebu_pcie *pcie,
+ 	struct mvebu_pcie_port *port, struct device_node *child)
+ {
+@@ -1482,7 +1487,11 @@ static int mvebu_pcie_probe(struct platform_device *pdev)
+ 		else if (ret == 0)
+ 			continue;
+ 
+-		port->dn = child;
++		port->dn = of_node_get(child);
++		ret = devm_add_action_or_reset(dev, mvebu_pcie_port_of_node_put,
++					       child);
++		if (ret)
++			return ret;
+ 		i++;
+ 	}
+ 	pcie->nports = i;
+-- 
+2.51.0
 
-[1]: https://lore.kernel.org/amd-gfx/cover.1768223974.git.donettom@linux.ibm.com/#t     #merged
-[2]: https://lore.kernel.org/amd-gfx/cover.1771656655.git.donettom@linux.ibm.com/       #in-review
-
--ritesh
 
