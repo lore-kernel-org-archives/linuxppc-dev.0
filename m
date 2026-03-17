@@ -1,79 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-18287-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18288-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B617FB5EAE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2026 03:50:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C520FB5EA5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2026 04:04:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fZdJR1x88z2yVP;
-	Tue, 17 Mar 2026 14:49:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4860:4864:20::2c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773719399;
-	cv=none; b=ULKhu1brbgalHj9skGFyHHKJcxCJ8HL6eWVU/JGYLROj5Jh5v9HwPM3FprNDCPQ8Hh5tr7LmhfplPgHjPVu9lEm4QcrgqTrkiD4mcWF462rt/DUwd5q3EFP3qoQjl7kxuvt4zkpFsbd7A9AmDCs3N+kQxhLmtq+7Bbv09gwGYkrUJpGTLwqlXB6HNdJGpAxf+NxBe/WhMf31R2c75bOXmW9VxDfl/0noem2lfTJvTDZv0YGWSChhkRhn2NmOnB5bZs3UJbVt2FSpNO8Ul3LvppO/hW4808U8LCvEZ3kSvLc4qEpTpSp9MSc0t9DL+1Zcq4M8CUSYVA8Fan9YNHJyxg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fZddh4dm6z2yVP;
+	Tue, 17 Mar 2026 15:04:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773720296;
+	cv=none; b=Pfa0wOeVsgM+AHMepOfV5PmbLp/S+UQusaod1heMGezmCrxtY5eoy50psiglsbwuFMWH4EnghmrEFLr9FiToSxXiHLZm0fKjby92G7y/U3OUSf1O59vlDWODo912UI2N/JhYD8u/UsLpzuEt+ChfpnsuC33WawlV4Rt5avxicbTx/uPnIFwTNN/6ijl3TX8iJC9VhWWbmhlGEILNr4mqCxyH166Q+Xr+otbUz65QE313ptoHavyWJa1ce17x+ufCBzsEq03yKlMgE2VIfBQs2t4qQ0y+LULJh8AfZiF2K2HNJ6+3O1v0ln/Z+P0KpqFJmCV8XEw10N/elqrPS8lY6A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773719399; c=relaxed/relaxed;
-	bh=5VINWEtY9aZvz9HaKBZW/WHE45MWpLM833fNP+ydNw4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=HD6GtSvNw/PDEYl56+cRuyzs0id3kIORZu12CCKWtVR4EzcDnXUMDoyyRfNcLR4KLfuIfbubwHuDn26kKXOVVRgMrbjEuEbyYb3UQWc1YQGoHWk5TERzfayEqBxzpYAmASP6XQ86DjtDio84UdWG3MjjhYuhreo73RmczHD+zz199sp1yXTE57uCKUPzni30F/s+KR7Os66FZE2jSbtzE+iq1TFLn0XPwSqW7M46PM2uxO4+C2swdTfRiNiA1qnsQoNRVjmgRiz+Rs1BL2+r5awk7SBqvprVYH1KxXbAmy0K2po8TFFnBpAzjKV0VowUXQgCMgDR9fe4Sds0PcKdKw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=sifive.com; dkim=pass (2048-bit key; unprotected) header.d=sifive.com header.i=@sifive.com header.a=rsa-sha256 header.s=google header.b=l/w0Nlcq; dkim-atps=neutral; spf=pass (client-ip=2001:4860:4864:20::2c; helo=mail-oa1-x2c.google.com; envelope-from=samuel.holland@sifive.com; receiver=lists.ozlabs.org) smtp.mailfrom=sifive.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=sifive.com
+	t=1773720296; c=relaxed/relaxed;
+	bh=1UxM0GTbu4QPeNsMu1/x8o49ICeSGApJ5XK6IMTdTrc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=EfCevfOpr9BdkczKqpvdqpWN91mNFZYSfFi/MVOywXDPW2D2fb8xXN+7cd5Z6C7kEGzS0FloKYjPGW37dn/f0NRptas6RjyAyoMpSCvzLiq6Elr41eekY9oh7mTbD2nsQIxRZ80QD1o+HyD7dcgUL5pHK13X8RUqPYRlRbGSphpYM3eDAKZIXuiPhs1WxslGkiwvUmnbvCD/w+JUbp/RslpTorX5ZJgYteZ/kg6uUbqPGYsHcO2+RNzuudEJkBX8fXbHWx1QFei9VlcXw2IgYfYA2WdlRL4eJBbKfvLc5n8JEzayFvcNLIhP0eESQjIO8QPN4NQUim2XoAMcTKbT7w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eQVc5AHo; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=sifive.com header.i=@sifive.com header.a=rsa-sha256 header.s=google header.b=l/w0Nlcq;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eQVc5AHo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sifive.com (client-ip=2001:4860:4864:20::2c; helo=mail-oa1-x2c.google.com; envelope-from=samuel.holland@sifive.com; receiver=lists.ozlabs.org)
-Received: from mail-oa1-x2c.google.com (mail-oa1-x2c.google.com [IPv6:2001:4860:4864:20::2c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZdJP6hfpz2xVT
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2026 14:49:56 +1100 (AEDT)
-Received: by mail-oa1-x2c.google.com with SMTP id 586e51a60fabf-40f1ffba6a0so3130033fac.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2026 20:49:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=sifive.com; s=google; t=1773719394; x=1774324194; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:content-language:from
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=5VINWEtY9aZvz9HaKBZW/WHE45MWpLM833fNP+ydNw4=;
-        b=l/w0NlcqkZe/stB3qWlAmb4xwGmzB/lTi7wl00rjWCzK5alE1BBbZfnfHbsauqNyvZ
-         FSHFjBr3KGj4u1F/mTOhHtZHCWx07WXOZz1PvKsSXTdFIIW2AQIfGar/IWahwQW/3WXf
-         a5KMgWET8ahForJ43AgWD9uQXjU15sUkafOcM66jfl3kco26GXHOV4B42ZiUZDQchGYg
-         qweih1VA5ZZO33jjTqY62WaX2B8JozMbXXwWaDiDRdfXeaUzdCU+f4edQemXIFp2pCWQ
-         McADjzXU1zzkKFmErk1BREzmjG01F5w57oNjSRg+4xNipYMPdFja7/WcpJS0IlSerw9d
-         zrCw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773719394; x=1774324194;
-        h=content-transfer-encoding:in-reply-to:content-language:from
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=5VINWEtY9aZvz9HaKBZW/WHE45MWpLM833fNP+ydNw4=;
-        b=mrPAm5NiAc43B7QypSR3Xek5YbsddgS5bJPydlNoXSPq+CHVA+JBzYWNOOt3DQDqn0
-         bUoJz4kZ2llLG1dumOCqkc3pQHnEOPT2C6VkQfKh91Du/LXIeeBh6eYGmET3OwebDrmp
-         y/2Rxn0GceoEMGMSIblCMCl21C2QUFrw0rAorr8XQG0KJsAgD/wYCzFhAFN9AohOBXHM
-         yBl347IrnKr5sygTF5YCdQdCl3zoB2kdIObs5r7cNRXdSNW1I3bjcvM/Ju4koqRgQUpT
-         HPNNQJnerXKsWmHn0J4pk2I6g2/ELlHAgn+/Aygvx1xZxd0KksAjmu73iAqSsqqRSFhV
-         GcYg==
-X-Forwarded-Encrypted: i=1; AJvYcCWrZ4c+Athp5j2rUllYmdGhUB0QdP/TvdZRscuZd6k5jXJgVEKfH7Hj+2qgisJnfFSzIsAMofWWK3t7SBY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz4lLsUupDPwqTvH6nzjQTxMzXfGN8HUdpWazRTlYlSGi2TE7lH
-	cPZzl2ARyez7QDW6N2+8k2XV9FzX7lVlElzc/MmqdJOaRLU6779YHocTXgDDIzDY+fY=
-X-Gm-Gg: ATEYQzxxNR6njkaGItKJvBJmJ1jXhtebRJ+WeI2m6hYpBvg+VVx+RWzwBFPbw5jMGlV
-	5ncLTz71vDTVIaqVggKBUUkrAT4oBq/eiwMR8VZEyglykykxOSQsxNj7WAkS24Gdi0QEhLg0sK3
-	RKdg/EPbbwf3/bfQwpVDPoqs51tNDKilnITo91o8HMPWqnndIi+RW8QeZ0rtxpbTIvhzUV+A1hT
-	Y7G9n+iFShMmYVJoL31YT0SS32h9TFbuleocfmKjiyR8M4eppQNITgU47959nIPfssivmDWR+ff
-	Uvtgi56EWsivroDpcQ48L9xQ4Golc4P6GLEPEPhjOh8Z3aOqT3nEms2SR2W2jHKjGu+2KHbDfke
-	tG85FWmfxBRebH/2ZSZ+RcbDuXo+pCpkOtQZDJwerbQlaAOX/Aj/qUBJgOnJF6xqn2oQ85Wgctd
-	Ew43XLPtIJ5ES93Xajag7vBQwG
-X-Received: by 2002:a05:6870:d406:b0:409:74c7:1cbb with SMTP id 586e51a60fabf-417b906d206mr9213737fac.7.1773719394528;
-        Mon, 16 Mar 2026 20:49:54 -0700 (PDT)
-Received: from [100.64.0.1] ([170.85.103.33])
-        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-4177e6ae0e3sm19148337fac.16.2026.03.16.20.49.53
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 16 Mar 2026 20:49:54 -0700 (PDT)
-Message-ID: <da8c8b57-6d5e-461a-83b3-9339a712aca4@sifive.com>
-Date: Mon, 16 Mar 2026 22:49:52 -0500
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZddg3jtsz2xb3
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2026 15:04:54 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62GEr4uu708076;
+	Tue, 17 Mar 2026 04:04:51 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=1UxM0GTbu4QPeNsMu1/x8o49ICeSGApJ5XK6IMTdT
+	rc=; b=eQVc5AHojSCGnuAA54E+bV7JDzriGjeN794cezCk8AE+g0AIKWrAcxM6y
+	VYBF8p1/JLmXLd1p3I2JkqsPhlv0veVyYmRIMnPnsvs9fUj+P1NVHYInk+A4XUuZ
+	GDJsFKGwJT4ny1pIQoPu2iW252djuc6cZAxVC0/xQjUeFl0TykyVB1IMYb3ozDG8
+	aOK7TaW2dwOIDAmFuKw22HzVpbMy/gtxtMsFf+s4BlG0TYF1swl8S+idM9uQM3IF
+	eWKPEfQOeFe6LjyONCIDDOgAdR+o9Ali6cfzeZ2pNVqNKkhP+QNmDgrYUiWWB29D
+	mYrgjzuobQs8iDPRsY+x7nlPteDFg==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4cvybs2xa7-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 17 Mar 2026 04:04:51 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62H1PaM7013987;
+	Tue, 17 Mar 2026 04:04:50 GMT
+Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4cwjcxyknk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 17 Mar 2026 04:04:50 +0000
+Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
+	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62H44lw019923638
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 17 Mar 2026 04:04:47 GMT
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6CD745805C;
+	Tue, 17 Mar 2026 04:04:47 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B98E858054;
+	Tue, 17 Mar 2026 04:04:46 +0000 (GMT)
+Received: from li-4c4c4544-0038-3410-8038-c4c04f423534.ibm.com.com (unknown [9.61.190.127])
+	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 17 Mar 2026 04:04:46 +0000 (GMT)
+From: Haren Myneni <haren@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: maddy@linux.ibm.com, brauner@kernel.org, hbabu@us.ibm.com,
+        haren@linux.ibm.com
+Subject: [PATCH] powerpc/pseries: Fix UAF reference for src_info after list_add
+Date: Mon, 16 Mar 2026 21:04:44 -0700
+Message-ID: <20260317040444.2785741-1-haren@linux.ibm.com>
+X-Mailer: git-send-email 2.50.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,121 +85,75 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 14/15] mm/kasan: add document into
- kernel-parameters.txt
-To: Baoquan He <bhe@redhat.com>
-Cc: kasan-dev@googlegroups.com, linux-mm@kvack.org, andreyknvl@gmail.com,
- ryabinin.a.a@gmail.com, glider@google.com, dvyukov@google.com,
- linux-kernel@vger.kernel.org, linux-um@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
- linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
- x86@kernel.org, chris@zankel.net, jcmvbkbc@gmail.com,
- linux-s390@vger.kernel.org, hca@linux.ibm.com
-References: <20260225081412.76502-1-bhe@redhat.com>
- <20260225081412.76502-15-bhe@redhat.com>
- <f7054184-dca2-4c7c-9e2e-4a5e3e1c81da@sifive.com> <abjMP58VdUu_eElh@fedora>
-From: Samuel Holland <samuel.holland@sifive.com>
-Content-Language: en-US
-In-Reply-To: <abjMP58VdUu_eElh@fedora>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Authority-Analysis: v=2.4 cv=MMttWcZl c=1 sm=1 tr=0 ts=69b8d2e3 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8 a=fkcf8siyGy-vGtCwvIAA:9
+X-Proofpoint-ORIG-GUID: -G-KilzOlCrL-_zmd2-CfIBgpb7f3Tz8
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzE3MDAyOCBTYWx0ZWRfX8zQPqIl46DjS
+ e2FXcgwwTnbT9glWS0F0qBRIMkWpV2DOrWPnWKHpZ5b9r6HXa+IHsrE0gggc5DxRuk7tzE+93ne
+ WNfHgu5P/sbQRsmlNGnIlzB2Ykg0IGnWZskKaWr9cYn83UP0/772BjE8BGRwr7waMft8DII0/oA
+ NR6b32fnwpHs/eW8TfVpBGnSxuU1a3RLtiHJEX2A1XCrhu11Uh2XKdORMKLv91KWVzKkle4aUT6
+ ynZlHc0QFjZ47gmFTi8aqtk9cRe/gOapKbXhVs2xOtxq7Fb0v1m8wQh/9NUz7Hn2GNpzMPCihUY
+ 5j1GIFbZHBOD15n/BRMeIUk1VqFhlkCSO0JCJ/8v3X9+EB3D0QXmr6GqCbNpFt+6rHVKRC9lyzm
+ yDXvSbjN5aBjS/QdPoE93BuWFBQIihCbjtLvUoBT+DwXmZPo3QASC9xBfpdVvX1yqTyAcUEZ2wq
+ rcpH7fUKrNb//plKI6w==
+X-Proofpoint-GUID: -G-KilzOlCrL-_zmd2-CfIBgpb7f3Tz8
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-17_01,2026-03-16_06,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 lowpriorityscore=0 malwarescore=0 spamscore=0
+ priorityscore=1501 impostorscore=0 adultscore=0 phishscore=0 clxscore=1011
+ bulkscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
+ definitions=main-2603170028
 
-On 2026-03-16 10:36 PM, Baoquan He wrote:
-> On 03/12/26 at 07:53am, Samuel Holland wrote:
->> Hi Baoquan,
->>
->> On 2026-02-25 2:14 AM, Baoquan He wrote:
->>> And also remove the relevant description in dev-tools/kasan.rst
->>> which is hw_tags specificially.
->>>
->>> Signed-off-by: Baoquan He <bhe@redhat.com>
->>> ---
->>>  Documentation/admin-guide/kernel-parameters.txt | 4 ++++
->>>  Documentation/dev-tools/kasan.rst               | 2 --
->>>  2 files changed, 4 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
->>> index cb850e5290c2..e0115fad9e60 100644
->>> --- a/Documentation/admin-guide/kernel-parameters.txt
->>> +++ b/Documentation/admin-guide/kernel-parameters.txt
->>> @@ -2899,6 +2899,10 @@ Kernel parameters
->>>  	js=		[HW,JOY] Analog joystick
->>>  			See Documentation/input/joydev/joystick.rst.
->>>  
->>> +	kasan=		[KNL] controls whether KASAN is enabled.
->>> +			Format: off | on
->>> +			default: on
->>> +
->>>  	kasan_multi_shot
->>>  			[KNL] Enforce KASAN (Kernel Address Sanitizer) to print
->>>  			report on every invalid memory access. Without this
->>> diff --git a/Documentation/dev-tools/kasan.rst b/Documentation/dev-tools/kasan.rst
->>> index a034700da7c4..eaae83fcb5e4 100644
->>> --- a/Documentation/dev-tools/kasan.rst
->>> +++ b/Documentation/dev-tools/kasan.rst
->>> @@ -129,8 +129,6 @@ Hardware Tag-Based KASAN mode is intended for use in production as a security
->>>  mitigation. Therefore, it supports additional boot parameters that allow
->>>  disabling KASAN altogether or controlling its features:
->>
->> The sentence above is now incorrect as well. I would recommend documenting the
->> parameter earlier in the "Boot parameters" section instead of removing it from
->> this document entirely.
-> 
-> Good catch and the suggestion is good to me. Thanks.
-> 
-> Is below change OK to you?
-> 
-> 
-> From 317be48b9c1bf9d33b8d8fff5e401e3155531d81 Mon Sep 17 00:00:00 2001
-> From: Baoquan He <bhe@redhat.com>
-> Date: Tue, 17 Mar 2026 11:28:39 +0800
-> Subject: [PATCH] mm/kasan: adjust documentation
+Getting the following kernel panic in papr_hvpipe_dev_create_handle()
+when trying to add src_info to the list.
+ Kernel attempted to write user page (0) - exploit attempt? (uid: 0)
+ BUG: Kernel NULL pointer dereference on write at 0x00000000
+ Faulting instruction address: 0xc0000000001b44a0
+ Oops: Kernel access of bad area, sig: 11 [#1]
+ ...
+ Call Trace:
+ papr_hvpipe_dev_ioctl+0x1f4/0x48c (unreliable)
+ sys_ioctl+0x528/0x1064
+ system_call_exception+0x128/0x360
+ system_call_vectored_common+0x15c/0x2ec
 
-I'd suggest something a bit more specific, maybe like "mm/kasan: document kasan=
-for all modes".
+The current code adds src_info to the list after UAF for src_info.
+So move the retain_and_null_ptr(src_info) after this list add.
 
-> Content-type: text/plain
-> 
-> To reflect the change of kasan=on|off.
-> 
-> Signed-off-by: Baoquan He <bhe@redhat.com>
-> ---
->  Documentation/dev-tools/kasan.rst | 7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
-> 
-> diff --git a/Documentation/dev-tools/kasan.rst b/Documentation/dev-tools/kasan.rst
-> index a034700da7c4..8e65bc04dbcd 100644
-> --- a/Documentation/dev-tools/kasan.rst
-> +++ b/Documentation/dev-tools/kasan.rst
-> @@ -103,6 +103,9 @@ Boot parameters
->  KASAN is affected by the generic ``panic_on_warn`` command line parameter.
->  When it is enabled, KASAN panics the kernel after printing a bug report.
->  
-> +The generic ``kasan=off`` or ``=on`` command line parameter controls
-> +whether KASAN is enabled (default: ``on``).
-> +
+Fixes: 6d3789d347a7 ("papr-hvpipe: convert papr_hvpipe_dev_create_handle() to FD_PREPARE()")
+Signed-off-by: Haren Myneni <haren@linux.ibm.com>
+---
+ arch/powerpc/platforms/pseries/papr-hvpipe.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-This is in the middle of paragraphs describing the fault reporting options. I'd
-suggest to move it to the beginning of the section.
-
-With those fixes, you can add
-
-Reviewed-by: Samuel Holland <samuel.holland@sifive.com>
-
->  By default, KASAN prints a bug report only for the first invalid memory access.
->  With ``kasan_multi_shot``, KASAN prints a report on every invalid access. This
->  effectively disables ``panic_on_warn`` for KASAN reports.
-> @@ -127,9 +130,7 @@ modes below) support altering stack trace collection behavior:
->  
->  Hardware Tag-Based KASAN mode is intended for use in production as a security
->  mitigation. Therefore, it supports additional boot parameters that allow
-> -disabling KASAN altogether or controlling its features:
-> -
-> -- ``kasan=off`` or ``=on`` controls whether KASAN is enabled (default: ``on``).
-> +controlling its features:
->  
->  - ``kasan.mode=sync``, ``=async`` or ``=asymm`` controls whether KASAN
->    is configured in synchronous, asynchronous or asymmetric mode of
+diff --git a/arch/powerpc/platforms/pseries/papr-hvpipe.c b/arch/powerpc/platforms/pseries/papr-hvpipe.c
+index 14ae480d060a..5121c87d1fad 100644
+--- a/arch/powerpc/platforms/pseries/papr-hvpipe.c
++++ b/arch/powerpc/platforms/pseries/papr-hvpipe.c
+@@ -509,7 +509,6 @@ static int papr_hvpipe_dev_create_handle(u32 srcID)
+ 	if (fdf.err)
+ 		return fdf.err;
+ 
+-	retain_and_null_ptr(src_info);
+ 	spin_lock(&hvpipe_src_list_lock);
+ 	/*
+ 	 * If two processes are executing ioctl() for the same
+@@ -522,6 +521,7 @@ static int papr_hvpipe_dev_create_handle(u32 srcID)
+ 	}
+ 	list_add(&src_info->list, &hvpipe_src_list);
+ 	spin_unlock(&hvpipe_src_list_lock);
++	retain_and_null_ptr(src_info);
+ 	return fd_publish(fdf);
+ }
+ 
+-- 
+2.50.1
 
 
