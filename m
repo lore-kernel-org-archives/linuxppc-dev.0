@@ -1,117 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-18320-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18321-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFA46FD876B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2026 13:33:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4492FD877B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2026 14:31:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fZtFw5FDrz2yrS;
-	Wed, 18 Mar 2026 00:33:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.168.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773754420;
-	cv=none; b=BumJ98jXw3cBHO3jGw1LZgIBcLtomwBzNIhyVRP/i7JcYCNbmFq8jD/dKhaOGBeALw4Bnm8gMoG00zsle+wuggLQ0LN7GzWGn7AbijiEVJrzAdLpgq0V1+JBSWn9xGKwX9k6HHS3wOpfccBfIxLWhzK5BA0Y193MyEce/b+3NPBlFxPSPEG2+y7gC/SESBzKMJeYDxT0c4Dvq1Vv/NgCVkO7bLZNr9b0GzNsnj49X0FfmDGNG/50MGghkwkX2to/xMDJZBeK8uPjxE2AE1QyXWXk3wi9dH+AZInFf8uXOZDViqwXCfXYvyfvvgVj1hUfb5Qt1yYcO0UJjLUnjbjFtA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fZvXL5xVsz2yh4;
+	Wed, 18 Mar 2026 01:31:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=37.157.195.192
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773757874;
+	cv=none; b=j3aSqPoijYpePzX2qky/SM39UNuaDfTRTI8nzdH+VoTh5ju+drxwZeWvgcv0naji9fyDKHwKQ9dpPQ7nZtR+vOC5nhwon4aw9lJc3nIWqr+R+BjHCPqFHCpLjVfS8c9t4kGoAnSaaWO/Ls8B8oe21+/gPChNeNwJbfio5cvXV/yt5NsQL84wggvggFQUPVglziEjrJ9JKgnG5Kv2PPx26p/Hw1lnfVJFcpxyx99KyOIxTjkxP1rlCi4QQuNiGn1ORVr1WSTjjaZlk/HxvP/qes+KfwU/QCKgT7WA624c8QbJqDN1w0+dRcEcV7aPSnurdI0t2OJlLdZk2ERkxCgIbw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773754420; c=relaxed/relaxed;
-	bh=tXmfvTYJB8OfseCvx8dXYrfeCi5XnyrDEhI3+3eVAeI=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=H4N91Q1sol5wj8SNH4JEHvl+z76JdnZRa+LMzWWhARft4mmaENjnNI3T5BF4rXdNbpLcc207UQrjFuvCG8wDr3aJcD6GpfPkG5TedhuGQZbc0efclCBy0/xiWQC6RAEkXEC/vdwR8jah89YL7PYsPCOm6teYgeprxm/Oclv7VtWd0iZdLUgSYB7ggXxybI30Kb7sEX4h2+AWIWcY+q0P3yqa2Vr99OxljmJHsxYjSeXv6pRW5yEEGWzLCwinLpI8O9ORda9FGTHIEBLD+A2CXnHdJfy7gPVgbr7XWw1m2ifzjtUEnoZbq6TwcmN3FhIcs4UuRo3WLYeGDLtfAYoNDA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=cMxosxFZ; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=jfIs6Hqm; dkim-atps=neutral; spf=pass (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=krzysztof.kozlowski@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=cMxosxFZ;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=jfIs6Hqm;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=krzysztof.kozlowski@oss.qualcomm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1773757874; c=relaxed/relaxed;
+	bh=VSYZo/uxUYak4QqWko4Nw7QCsNj3OoQLFcgEeOB5IWA=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=fhrE6DE7d3FkMindbR7WpvhiVkKS2IOZY80dc+EawBGZlYFx9vjoOiiQbhhisXO6BhJMYE6a9QxxtGmGDDl50osZYtESY2ZsvPqlTBr2sdSQQPVw6aG1EpNOxqja7p+U279lmBDUIgAs2zLIPYRK13GCOxI/Kmdj403SMGw6End98yXK+XSN7ibCYm6wSAv/NWriy+SFHHcfWuCEgxtyGCheJRHZSYcA+jRbGnBm6m7yKUj70T8qFbrSvZN4VPEzO8wTgYi8we9zfMzze+JOv3yIZGTLfbwgA3bIBhkUQeEJAeencmVzg3svr2F+8fwANNMEuXhNmkxoCg369Tuvtw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=danny.cz; spf=pass (client-ip=37.157.195.192; helo=redcrew.org; envelope-from=dan@danny.cz; receiver=lists.ozlabs.org) smtp.mailfrom=danny.cz
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=danny.cz
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=danny.cz (client-ip=37.157.195.192; helo=redcrew.org; envelope-from=dan@danny.cz; receiver=lists.ozlabs.org)
+Received: from redcrew.org (redcrew.org [37.157.195.192])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZtFw0KH2z2ynW
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2026 00:33:39 +1100 (AEDT)
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62HAkCaY254649
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2026 13:33:38 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=qcppdkim1; bh=tXmfvTYJB8O
-	fseCvx8dXYrfeCi5XnyrDEhI3+3eVAeI=; b=cMxosxFZ8lMtSuzLZd9dc1eK8NO
-	RPXekCCxrh6w3zA16OeDJNRZx1hvdrq85XrvtodSEJD6cgAB+Cm169juIzbKNSQL
-	8GabAcQqBSUq7BFQm4M8lWn85PuWFM/fyldaBF9SeJl7XmW70XkcjX4sGGjllwIs
-	VxUxnFjd8p/5vCxY7MNtkJ0pJpVFrqj7cGrGnd7AAD5w+O/FsWezKXKmpxuV4/Gh
-	4kDO+Nf/0zo9PPKaSuR4fzNonmSqaZmVBUR8DsNbdpyMg5k5DcnT0fZ/yO4tZCNd
-	1iahqJxVKqH2p/wdDcDO/wB5qk/pmD8XqkfXAVHtR9LzzccGZxE5it41GDg==
-Received: from mail-qt1-f200.google.com (mail-qt1-f200.google.com [209.85.160.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4cy5g8ghn0-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2026 13:33:38 +0000 (GMT)
-Received: by mail-qt1-f200.google.com with SMTP id d75a77b69052e-50900e9803aso385927701cf.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2026 06:33:37 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1773754417; x=1774359217; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=tXmfvTYJB8OfseCvx8dXYrfeCi5XnyrDEhI3+3eVAeI=;
-        b=jfIs6HqmPBpNRxJo3bwbwhsRT5arlcgo/3lSefVB9H25SFmEFl64aQh+eAQmZ+8Lb1
-         KbkVw2VpAGwYyqEc/SQT900ufo1jJL2kMjZVIvdml8CBzCuuH9XU617uqTFb8mEk+Rz5
-         /4Yf7zcQIRCnNW2cvJpJ36BAhfKMbD1RLifVrHqn298lWpaeRCmo1seb6gOnq0w3yLFK
-         8oifo54PIiB1y/vuBqDr0F7DIycERT+jkGHMpCl16bnOvgfhf0V3gAdA+GKwuJj7dE8j
-         i0Wfcz12TuRR/Wj7BEY5M1PxG4XYvQcWPPWx1+5h0KRhiFJyO42gbgAoHgwDmOrZHip5
-         TZ7A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773754417; x=1774359217;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=tXmfvTYJB8OfseCvx8dXYrfeCi5XnyrDEhI3+3eVAeI=;
-        b=tIQTcKvY3hOSV+0QN7UQSlEEyULSwkJ7Gf38fSCa1X9Xp8TvBJ2DVf1fauxzfFbX1K
-         kgVHroh0wHCdbLvA/Feky0kpbjfBVZj+nhzIWIIA3lSSPO4Q8Hzw/ZS7jr85tLghtpiF
-         kpHi5r6TdrHkhO5u+GeX+edbcaT8mSH+Mwy2mwL+0RSC+b6q7jXNg7caHZVS90GXHMq3
-         UMNPtoM/UukIcE/HoVGK0ndeHylv/l6aM4HfCrB3p0Zfdimfr65Rwjb2yrYTQ6GVJvSc
-         9o6DKVFeXaXONPfENmqyi5axuDrgnwKz3lu+IrZS+q4UhMtRydctr7EiZS2zQBxQDx1+
-         TRpg==
-X-Forwarded-Encrypted: i=1; AJvYcCWyRqtfYqxZmUbnHNRsnve/KJRHtMGoqT5K+9Dsb7y9Jv9kQZ4dsvXfsduJED7QZyWWTbl68AxeowWNQhc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzyrYKDjDsqHFxC6ZJYR+DsJLhNYMa6zqhN8TbTAnBmxUwZ0UYs
-	HUfFiq0za1p4hRNC8bGh62UmfIp9pxXOktCHvlYmT36TWLFSQy+Aq24Terox7yG07UM/v8bFzAy
-	wEaFe5otDHoZ2TGypmlg+4BPXjpkZORl7SKIE6zJwe3K1TFtgiLuEKmjAXlx3jaMLjrWl
-X-Gm-Gg: ATEYQzyq0+VWRN10GJsJe/KpOdMViwD16xy4uFG7Y0j4lWwbyT713LBgTAe8rtek4Yz
-	co8odDmGTGnRku/w8ETLUN/2vm2yT4LjhpD//pVSv05Bz3jygBUtpapuQywLVkgMVRmaskAEEkp
-	kdbPYLWp4z4UEOdcsQ7QygOw5zELpVVKM1Uz/IXwMT9kxWE2YhTJnXMjYPNOrAjKZNRuHK7K2tr
-	PkUxX8W0SKvi5RASsFmwT6QNTrOjOkZKEOKOr/DL267IeurlquS/loMTmJzdy3S2X/Yk0ssKGSD
-	lsaA4Kxeq6erHiDfWHnyXTZGSDZdsgWw2hDJJI7KyBsTU4d7azVkO9fjqWs+R3EXBTyKqezNJcN
-	W3hCt/uDVPCLgzdE05GymhKSTuBpJoCbGGsNt
-X-Received: by 2002:a05:622a:22a6:b0:509:5987:f4ff with SMTP id d75a77b69052e-5095987fccbmr240504881cf.61.1773754416977;
-        Tue, 17 Mar 2026 06:33:36 -0700 (PDT)
-X-Received: by 2002:a05:622a:22a6:b0:509:5987:f4ff with SMTP id d75a77b69052e-5095987fccbmr240504151cf.61.1773754416323;
-        Tue, 17 Mar 2026 06:33:36 -0700 (PDT)
-Received: from quoll ([178.197.219.94])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-439fe19aec5sm51358613f8f.4.2026.03.17.06.33.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 17 Mar 2026 06:33:35 -0700 (PDT)
-From: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-To: Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
-        =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kwilczynski@kernel.org>,
-        Manivannan Sadhasivam <mani@kernel.org>, Rob Herring <robh@kernel.org>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        Tyrel Datwyler <tyreld@linux.ibm.com>, linux-pci@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org
-Cc: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
-        Jonathan Cameron <jonathan.cameron@huawei.com>
-Subject: [PATCH v2 4/4] PCI: rpaphp: Simplify with scoped for each OF child loop
-Date: Tue, 17 Mar 2026 14:33:26 +0100
-Message-ID: <20260317133322.266102-8-krzysztof.kozlowski@oss.qualcomm.com>
-X-Mailer: git-send-email 2.51.0
-In-Reply-To: <20260317133322.266102-5-krzysztof.kozlowski@oss.qualcomm.com>
-References: <20260317133322.266102-5-krzysztof.kozlowski@oss.qualcomm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZvXJ1Gwkz2ySq
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2026 01:31:10 +1100 (AEDT)
+Received: from server.danny.cz (85-71-161-19.rce.o2.cz [85.71.161.19])
+	by redcrew.org (Postfix) with ESMTP id D2BA5D4;
+	Tue, 17 Mar 2026 15:31:05 +0100 (CET)
+DKIM-Filter: OpenDKIM Filter v2.11.0 redcrew.org D2BA5D4
+Received: from talos.danny.cz (talos [IPv6:2001:470:5c11:160:47df:83f6:718e:218])
+	by server.danny.cz (Postfix) with SMTP id 9BE0A16A001;
+	Tue, 17 Mar 2026 15:31:05 +0100 (CET)
+Date: Tue, 17 Mar 2026 15:31:05 +0100
+From: Dan =?UTF-8?B?SG9yw6Fr?= <dan@danny.cz>
+To: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Gaurav Batra <gbatra@linux.ibm.com>,
+ amd-gfx@lists.freedesktop.org, Donet Tom <donettom@linux.ibm.com>
+Subject: Re: amdgpu driver fails to initialize on ppc64le in 7.0-rc1 and
+ newer
+Message-Id: <20260317153105.99c2618bdfd3f8c49c0c2779@danny.cz>
+In-Reply-To: <ms06y93w.ritesh.list@gmail.com>
+References: <20260313142351.609bc4c3efe1184f64ca5f44@danny.cz>
+	<1phlu3bs.ritesh.list@gmail.com>
+	<20260315105021.667e52d4a99b154ef1e6aa34@danny.cz>
+	<ms06y93w.ritesh.list@gmail.com>
+X-Mailer: Sylpheed 3.7.0 (GTK+ 2.24.33; powerpc64le-redhat-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -124,86 +58,215 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1220; i=krzysztof.kozlowski@oss.qualcomm.com;
- h=from:subject; bh=9DhCCDFm896xvW9DJLZa0Xniri5OwyXWSIHDphJEFYs=;
- b=owEBbQKS/ZANAwAKAcE3ZuaGi4PXAcsmYgBpuVgl+jPVUMZ1Xl2C8Qlcx/qCoESwPPQQ93fLy
- DPdpQXgiXuJAjMEAAEKAB0WIQTd0mIoPREbIztuuKjBN2bmhouD1wUCablYJQAKCRDBN2bmhouD
- 18g/D/9yRaLcZiBvBPgCkpLNKJ5s3HApSEcdu8UX2CGfgGYAHuQpfm74UP1W+AY0IsIPbBm7jU7
- oC7Mt+tXTWlC9RYfv2MsR+wYkbEaYY6V0gdZtIObXmLsqYmMJvLkQkZdHCktv99zxBPp7QhsTx4
- XObU/2EkTdzr3wFJUahjdM8a2feprqGSrY6EK/+TD5pbXeOsl/1Hp8ULTWveF7H15rGznW8Ck5G
- d0FizsAFr5hbgfk7EPLq+fHBsA+UKqJ13lyXoTz1tTgGSMqZ24/47l7RrYTQucxFkMlQEiIHJHb
- GbZD4PmufA/zUmSVCXw9DgujtZz4XmWCgXftbAN2BDAOLJofujvKp4PsKtPmaiEYayUy2e5UHYr
- Wrc9YQRjW6N98OJvyHLLuOii6NX6CO85UVtZKtqNV4uehkYKxznGkvJ6bjGmPuTEnKqJr/iLx+w
- YtI4A5/mJs7rWMYKxtrH7CDDrRIYKs9IAQOpyMGrT2BCsPQHVyFClrhOAxfSOfkdsj4Gp6krEuk
- M9pAY09ONTTpqte8ntrwAUMgJ5CLjJNn9IjnYSftwB6yHb+TunyWIy/T1JmMgxwelgJmy2MwbZc
- M0fzOQScJG7f5MTk3p++jmm4ts3+qBP4MxhhTjDrfOu2moH78UvcuXv1i6MwCZvdYA6kjVZAqlJ ThqBrzVmPBpQhag==
-X-Developer-Key: i=krzysztof.kozlowski@oss.qualcomm.com; a=openpgp; fpr=9BD07E0E0C51F8D59677B7541B93437D3B41629B
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-GUID: lbe41D8Ai0Swr_KUurYlyVJqIndsxn3w
-X-Authority-Analysis: v=2.4 cv=EeTFgfmC c=1 sm=1 tr=0 ts=69b95832 cx=c_pps
- a=JbAStetqSzwMeJznSMzCyw==:117 a=gOEeR9iKwsj33Yj5oN/cWg==:17
- a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22 a=i0EeH86SAAAA:8
- a=EUspDBNiAAAA:8 a=d5zWgTKZ4CwGW_Y1MEAA:9 a=uxP6HrT_eTzRwkO_Te1X:22
-X-Proofpoint-ORIG-GUID: lbe41D8Ai0Swr_KUurYlyVJqIndsxn3w
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzE3MDExOSBTYWx0ZWRfX54CJI/xEnUg0
- GqpV3y9cBgl733lQG/4Qz78UJdXhWvEKL0b/2AXUCpQy+C9nd1pwAlNWo1YDembPfZVJBsr0hsL
- LTeiIOZVSEDhV6wsb1Lac1Sq8ravOFaniECHImv2tZmxFIVpp3/WXTd4kQKhcZX8UAC7LXafNIx
- 1xykDF7WaEVvYTzAsLuGl/+zJ/Gntz+ydzTaOwIrYzJUb4/xbwWyB3s4cEKcBk5229tDk8WYaV2
- jd6HgAU8/ymCT+Opz2kLEXruoApC1tLl1YtDN+BIWaIB15K3aDUwDw6aqMymL0VV0VA/2UFX/8o
- z/62XWYngqrD1R7ZjcHb0+4UqzIj9hc5CjYFX0wVaf/bK8cd2LhUHu7WGwVBjd952rnfQ1xFcih
- sBGwblIsZPOIMjrr9jaQ/YwxBqS0N0Ddq+khv0dwwFAVCTq2IdM+AN6hM9wF3uI514lUwjjEYDw
- Nfjcr/px6dWYRiulBFA==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-17_01,2026-03-17_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 lowpriorityscore=0 bulkscore=0 adultscore=0 spamscore=0
- phishscore=0 impostorscore=0 priorityscore=1501 malwarescore=0 clxscore=1015
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603170119
 
-Use scoped for-each loop when iterating over device nodes to make code a
-bit simpler.
+Hi Ritesh,
 
-Reviewed-by: Jonathan Cameron <jonathan.cameron@huawei.com>
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+On Tue, 17 Mar 2026 17:13:31 +0530
+Ritesh Harjani (IBM) <ritesh.list@gmail.com> wrote:
 
----
+> Dan Horák <dan@danny.cz> writes:
+> 
+> > Hi Ritesh,
+> >
+> > On Sun, 15 Mar 2026 09:55:11 +0530
+> > Ritesh Harjani (IBM) <ritesh.list@gmail.com> wrote:
+> >
+> >> Dan Horák <dan@danny.cz> writes:
+> >> 
+> >> +cc Gaurav,
+> >> 
+> >> > Hi,
+> >> >
+> >> > starting with 7.0-rc1 (meaning 6.19 is OK) the amdgpu driver fails to
+> >> > initialize on my Linux/ppc64le Power9 based system (with Radeon Pro WX4100)
+> >> > with the following in the log
+> >> >
+> >> > ...
+> >> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: GART: 256M 0x000000FF00000000 - 0x000000FF0FFFFFFF
+> >> 
+> >>                   ^^^^
+> >> So looks like this is a PowerNV (Power9) machine.
+> >
+> > correct :-)
+> >  
+> >> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: [drm] Detected VRAM RAM=4096M, BAR=4096M
+> >> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: [drm] RAM width 128bits GDDR5
+> >> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: iommu: 64-bit OK but direct DMA is limited by 0
+> >> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: dma_iommu_get_required_mask: returning bypass mask 0xfffffffffffffff
+> >> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0:  4096M of VRAM memory ready
+> >> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0:  32570M of GTT memory ready.
+> >> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: (-12) failed to allocate kernel bo
+> >> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: [drm] Debug VRAM access will use slowpath MM access
+> >> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: [drm] GART: num cpu pages 4096, num gpu pages 65536
+> >> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: [drm] PCIE GART of 256M enabled (table at 0x000000F4FFF80000).
+> >> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: (-12) failed to allocate kernel bo
+> >> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: (-12) create WB bo failed
+> >> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: amdgpu_device_wb_init failed -12
+> >> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: amdgpu_device_ip_init failed
+> >> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: Fatal error during GPU init
+> >> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: finishing device.
+> >> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: probe with driver amdgpu failed with error -12
+> >> > bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0:  ttm finalized
+> >> > ...
+> >> >
+> >> > After some hints from Alex and bisecting and other investigation I have
+> >> > found that https://github.com/torvalds/linux/commit/1471c517cf7dae1a6342fb821d8ed501af956dd0
+> >> > is the culprit and reverting it makes amdgpu load (and work) again.
+> >> 
+> >> Thanks for confirming this. Yes, this was recently added [1]
+> >> 
+> >> [1]: https://lore.kernel.org/linuxppc-dev/20251107161105.85999-1-gbatra@linux.ibm.com/ 
+> >> 
+> >> 
+> >> @Gaurav,
+> >> 
+> >> I am not too familiar with the area, however looking at the logs shared
+> >> by Dan, it looks like we might be always going for dma direct allocation
+> >> path and maybe the device doesn't support this address limit. 
+> >> 
+> >>  bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: iommu: 64-bit OK but direct DMA is limited by 0
+> >>  bře 05 08:35:40 talos.danny.cz kernel: amdgpu 0000:01:00.0: dma_iommu_get_required_mask: returning bypass mask 0xfffffffffffffff
+> >
+> > a complete kernel log is at
+> > https://gitlab.freedesktop.org/-/project/4522/uploads/c4935bca6f37bbd06bb4045c07d00b5b/kernel.log
+> >
+> > Please let me know if you need more info.
+> 
+> Hi Dan,
+> 
+> Thanks for sharing the kernel log. Is it also possible to kindly share
+> your full kernel config with which you saw this issue.
 
-Changes in v2:
-Tags
----
- drivers/pci/hotplug/rpaphp_slot.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+the log is from an official Fedora kernel, thus the config is
+https://src.fedoraproject.org/rpms/kernel/blob/8477f609d4875a2c20717519243fb2e6fb1cdb8f/f/kernel-ppc64le-fedora.config
 
-diff --git a/drivers/pci/hotplug/rpaphp_slot.c b/drivers/pci/hotplug/rpaphp_slot.c
-index 33ca19200c1b..67362e5b9971 100644
---- a/drivers/pci/hotplug/rpaphp_slot.c
-+++ b/drivers/pci/hotplug/rpaphp_slot.c
-@@ -82,7 +82,6 @@ EXPORT_SYMBOL_GPL(rpaphp_deregister_slot);
- int rpaphp_register_slot(struct slot *slot)
- {
- 	struct hotplug_slot *php_slot = &slot->hotplug_slot;
--	struct device_node *child;
- 	u32 my_index;
- 	int retval;
- 	int slotno = -1;
-@@ -97,11 +96,10 @@ int rpaphp_register_slot(struct slot *slot)
- 		return -EAGAIN;
- 	}
+and yes, Fedora, like RHEL, uses 64k kernel page size for ppc64le and
+except years ago I haven't had a 64k related issue with my card. IIRC
+there were page size related issues with the newer (Navi?) cards, but
+those also had been solved.
+
  
--	for_each_child_of_node(slot->dn, child) {
-+	for_each_child_of_node_scoped(slot->dn, child) {
- 		retval = of_property_read_u32(child, "ibm,my-drc-index", &my_index);
- 		if (my_index == slot->index) {
- 			slotno = PCI_SLOT(PCI_DN(child)->devfn);
--			of_node_put(child);
- 			break;
- 		}
- 	}
--- 
-2.51.0
+> I think Gaurav, is still looking into reported issue. However I was
+> interested in this kernel log output..
+> 
+> bře 05 08:35:34 talos.danny.cz kernel: radix-mmu: Mapped 0x00002007fad00000-0x00002007fcd00000 with 64.0 KiB pages
+> 
+> This shows that the system is using 64K pagesize. So I was interested in
+> knowing the kernel configs you have enabled. Donet has recently posted
+> 64K pagesize support with amdgpu [1][2] on Power. However, I think, we
+> can still use it w/o Donet's changes if we have CONFIG_HSA_AMD_SVM
+> disabled.
+> 
+> So, can you kindly share the kernel configs and the AMD GPU HW details
+> attached to your Power9 baremetal system, if it's possible?
 
+output of "lspci -nn -vvv"
+
+0000:01:00.0 VGA compatible controller [0300]: Advanced Micro Devices, Inc. [AMD/ATI] Baffin [Radeon Pro WX 4100] [1002:67e3] (prog-if 00 [VGA controller])
+        Subsystem: Advanced Micro Devices, Inc. [AMD/ATI] Device [1002:0b0d]
+        Device tree node: /sys/firmware/devicetree/base/pciex@600c3c0000000/pci@0/vga@0
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B- DisINTx+
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 0
+        Interrupt: pin A routed to IRQ 194
+        NUMA node: 0
+        IOMMU group: 0
+        Region 0: Memory at 6000000000000 (64-bit, prefetchable) [size=4G]
+        Region 2: Memory at 6000100000000 (64-bit, prefetchable) [size=2M]
+        Region 5: Memory at 600c000000000 (32-bit, non-prefetchable) [size=256K]
+        Expansion ROM at 600c000040000 [disabled] [size=128K]
+        Capabilities: [48] Vendor Specific Information: Len=08 <?>
+        Capabilities: [50] Power Management version 3
+                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0-,D1+,D2+,D3hot+,D3cold+)
+                Status: D0 NoSoftRst+ PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [58] Express (v2) Legacy Endpoint, IntMsgNum 0
+                DevCap: MaxPayload 256 bytes, PhantFunc 0, Latency L0s <4us, L1 unlimited
+                        ExtTag+ AttnBtn- AttnInd- PwrInd- RBE+ FLReset- TEE-IO-
+                DevCtl: CorrErr- NonFatalErr+ FatalErr+ UnsupReq+
+                        RlxdOrd+ ExtTag+ PhantFunc- AuxPwr- NoSnoop+
+                        MaxPayload 256 bytes, MaxReadReq 512 bytes
+                DevSta: CorrErr- NonFatalErr- FatalErr- UnsupReq- AuxPwr- TransPend-
+                LnkCap: Port #0, Speed 8GT/s, Width x8, ASPM L1, Exit Latency L1 <1us
+                        ClockPM- Surprise- LLActRep- BwNot- ASPMOptComp+
+                LnkCtl: ASPM Disabled; RCB 64 bytes, LnkDisable- CommClk-
+                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt- FltModeDis-
+                LnkSta: Speed 8GT/s, Width x8
+                        TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
+                DevCap2: Completion Timeout: Not Supported, TimeoutDis- NROPrPrP- LTR+
+                         10BitTagComp- 10BitTagReq- OBFF Not Supported, ExtFmt+ EETLPPrefix+, MaxEETLPPrefixes 1
+                         EmergencyPowerReduction Not Supported, EmergencyPowerReductionInit-
+                         FRS-
+                         AtomicOpsCap: 32bit+ 64bit+ 128bitCAS-
+                DevCtl2: Completion Timeout: 50us to 50ms, TimeoutDis-
+                         AtomicOpsCtl: ReqEn-
+                         IDOReq- IDOCompl- LTR- EmergencyPowerReductionReq-
+                         10BitTagReq- OBFF Disabled, EETLPPrefixBlk-
+                LnkCap2: Supported Link Speeds: 2.5-8GT/s, Crosslink- Retimer- 2Retimers- DRS-
+                LnkCtl2: Target Link Speed: 8GT/s, EnterCompliance- SpeedDis-
+                         Transmit Margin: Normal Operating Range, EnterModifiedCompliance- ComplianceSOS-
+                         Compliance Preset/De-emphasis: -6dB de-emphasis, 0dB preshoot
+                LnkSta2: Current De-emphasis Level: -6dB, EqualizationComplete+ EqualizationPhase1+
+                         EqualizationPhase2+ EqualizationPhase3+ LinkEqualizationRequest-
+                         Retimer- 2Retimers- CrosslinkRes: unsupported, FltMode-
+        Capabilities: [a0] MSI: Enable+ Count=1/1 Maskable- 64bit+
+                Address: 1000000000000000  Data: 0000
+        Capabilities: [100 v1] Vendor Specific Information: ID=0001 Rev=1 Len=010 <?>
+        Capabilities: [150 v2] Advanced Error Reporting
+                UESta:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF- MalfTLP-
+                        ECRC- UnsupReq- ACSViol- UncorrIntErr- BlockedTLP- AtomicOpBlocked- TLPBlockedErr-
+                        PoisonTLPBlocked- DMWrReqBlocked- IDECheck- MisIDETLP- PCRC_CHECK- TLPXlatBlocked-
+                UEMsk:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF- MalfTLP-
+                        ECRC- UnsupReq- ACSViol- UncorrIntErr- BlockedTLP- AtomicOpBlocked- TLPBlockedErr-
+                        PoisonTLPBlocked- DMWrReqBlocked- IDECheck- MisIDETLP- PCRC_CHECK- TLPXlatBlocked-
+                UESvrt: DLP+ SDES+ TLP- FCP+ CmpltTO- CmpltAbrt- UnxCmplt- RxOF+ MalfTLP+
+                        ECRC- UnsupReq- ACSViol- UncorrIntErr+ BlockedTLP- AtomicOpBlocked- TLPBlockedErr-
+                        PoisonTLPBlocked- DMWrReqBlocked- IDECheck- MisIDETLP- PCRC_CHECK- TLPXlatBlocked-
+                CESta:  RxErr- BadTLP- BadDLLP- Rollover- Timeout- AdvNonFatalErr- CorrIntErr- HeaderOF-
+                CEMsk:  RxErr- BadTLP- BadDLLP- Rollover- Timeout- AdvNonFatalErr+ CorrIntErr- HeaderOF-
+                AERCap: First Error Pointer: 00, ECRCGenCap+ ECRCGenEn+ ECRCChkCap+ ECRCChkEn+
+                        MultHdrRecCap- MultHdrRecEn- TLPPfxPres- HdrLogCap-
+                HeaderLog: 00000000 00000000 00000000 00000000
+        Capabilities: [200 v1] Physical Resizable BAR
+                BAR 0: current size: 4GB, supported: 256MB 512MB 1GB 2GB 4GB
+        Capabilities: [270 v1] Secondary PCI Express
+                LnkCtl3: LnkEquIntrruptEn- PerformEqu-
+                LaneErrStat: 0
+        Capabilities: [2b0 v1] Address Translation Service (ATS)
+                ATSCap: Invalidate Queue Depth: 00
+                ATSCtl: Enable-, Smallest Translation Unit: 00
+        Capabilities: [2c0 v1] Page Request Interface (PRI)
+                PRICtl: Enable- Reset-
+                PRISta: RF- UPRGI- Stopped+ PASID-
+                Page Request Capacity: 00000020, Page Request Allocation: 00000000
+        Capabilities: [2d0 v1] Process Address Space ID (PASID)
+                PASIDCap: Exec+ Priv+, Max PASID Width: 10
+                PASIDCtl: Enable- Exec- Priv-
+        Capabilities: [320 v1] Latency Tolerance Reporting
+                Max snoop latency: 0ns
+                Max no snoop latency: 0ns
+        Capabilities: [328 v1] Alternative Routing-ID Interpretation (ARI)
+                ARICap: MFVC- ACS-, Next Function: 1
+                ARICtl: MFVC- ACS-, Function Group: 0
+        Capabilities: [370 v1] L1 PM Substates
+                L1SubCap: PCI-PM_L1.2+ PCI-PM_L1.1+ ASPM_L1.2+ ASPM_L1.1+ L1_PM_Substates+
+                          PortCommonModeRestoreTime=0us PortTPowerOnTime=170us
+                L1SubCtl1: PCI-PM_L1.2- PCI-PM_L1.1- ASPM_L1.2- ASPM_L1.1-
+                           T_CommonMode=0us LTR1.2_Threshold=0ns
+                L1SubCtl2: T_PwrOn=10us
+        Kernel driver in use: amdgpu
+        Kernel modules: amdgpu
+
+
+> [1]: https://lore.kernel.org/amd-gfx/cover.1768223974.git.donettom@linux.ibm.com/#t     #merged
+> [2]: https://lore.kernel.org/amd-gfx/cover.1771656655.git.donettom@linux.ibm.com/       #in-review
+> 
+> -ritesh
+
+if some other is needed, let me know
+
+
+		Dan
 
