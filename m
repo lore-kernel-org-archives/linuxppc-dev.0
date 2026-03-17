@@ -1,53 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-18309-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18310-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B8F45FD8763
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2026 13:09:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B90DFD8766
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Mar 2026 13:09:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fZsjn20Qwz2ypY;
-	Wed, 18 Mar 2026 00:09:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773739022;
-	cv=none; b=hANQ4XFF0JdScJ8MLxNfTfKMxmCVSfCl3HxfMGERcHqwKo66yelsHnO92AuDL+oSPGlB4PJ5FcK6sSrLpSwjJm+daSnceWYDfelUgXEjFpAopaOllad/U0uDT07wiquxB3u4x+4v0GpFIgdhirINU6TcfqK7B87kQYnpaZ3xbpt4DO1Lna+/1tyBIWHtQibIBUesyZlrPSYf4aqpV4+rqFlDYwMbGy7L3Y5NnDG7Fzr050rRUDuWVKg6xauY+OabJGqd8wuXr+aWmiLmLnMtO4Q6JgUen0I0IAsqCl85TsNeS2Dg8yDPGrz4BGUXWKt+WEkMjHAE8n9rwq+xRONZng==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fZsk20rNdz2yh4;
+	Wed, 18 Mar 2026 00:09:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773739042;
+	cv=none; b=UQISDY91YM2wDEtRod1D2mPLU158FXHdAH9+J/SHu8fuTGWXjQGXcvXox1uSpXN/nW4lUdpxaducIPvMqphza67mSgbTSDcL66V9T6QAxhKi5ra5QIBbkQhul+sxbKnJejUU+N2E1zK0q64sOHBNV32Bswmj5VtXp6d8Zpz+ewkg9bdV+cwed0u1fxxMUQpbAyMIOnam2pKrSXu7Zf7Eh8AhrHfhaAfxTlqC1lk01fRVvCzK8SRalzrTr7YPzscvFoAkalmpjb9y0y0jYnOdsZ8AQFuqP0+/4pYg9b4c262u+Scr1mbKiDDDQ0BkBeiuvo+OquU/W/ZQDw/ta7HkUg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773739022; c=relaxed/relaxed;
-	bh=V27gIRVRx5KuFzAchtms7mRgL0MBJ3ywci9UIgbbhRM=;
+	t=1773739042; c=relaxed/relaxed;
+	bh=OYgogGVtIQ3baUxyrRMHvUttYC8fsQ6tS90p1mP8BSE=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=fYSbIbADAWLrKCfxnsy6a9deeUgf2ZPeMScA2YRj3r8COLfMBlcBt2R7gbWIfwOkweaLrklAoTylEyz4DWpDWuCtxyVwRJ1k3FYAXK6YNvpS54lcZzqW9BjYQEdamfMGIcv/W+JwNjrFNlerPfmHqLcD7aPNP5vQDnCTlA2kkJOyRbCi7Ap++xPUzFSlwFZtPpg597x8UvSEjeg+BByZK8iYuJMLW8Vdig1C8RQbC5B27mehyUMFQTw7ETFvS0t0DuxyPKmUZ0BpM8Bq4DIzYJFMKEQ4Rj8EB79HnzeXZCDRw9IzH/zytugvil1kuWGeRVW0f+7saFy6Bf6yG0EieQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XX7M7zEC; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=mailhol@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=URleZHYh2raQO/VZktMuV4VC0huHEqsoWeNlc/PvYSVPLZHOFKQQ/I2mBa1HbM2QT5cMyfFyWX9JyyD/izQM4aYxknCnX6MqBxtWP0tzy09cGSVYirdEelHxc7SNkPjr9FfgVvnxeZ4FptpbTLCETZKT86acSgFNGQv0thVshyPU+boNatQT9XBcUtknkhvXy1sRvCGEfa1ColzRZJy6EVcdn4gy9iqL8RSBbsPlfsaE5mIULchXO7X+slag+tdAbzOwb0pW94aanov6M9+YSTpF7Q6XVCLL1LNQo/l0jgFeeLBSdQ0t+lyq/rKzS2wqSLzNCWFC1v0cls2wnuCsAg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QYiqhmAp; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=mailhol@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XX7M7zEC;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QYiqhmAp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=mailhol@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=mailhol@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZmYn22kJz2yfP;
-	Tue, 17 Mar 2026 20:17:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZmZ96LLpz2yfP;
+	Tue, 17 Mar 2026 20:17:21 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 100E46132E;
+	by tor.source.kernel.org (Postfix) with ESMTP id 4383B6132E;
+	Tue, 17 Mar 2026 09:17:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2E7D7C2BC9E;
 	Tue, 17 Mar 2026 09:16:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DA256C4CEF7;
-	Tue, 17 Mar 2026 09:16:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773739018;
-	bh=BznAsGmiCeBt3HfillpWJCB2/zJ7nKDTHjSQK2m08KQ=;
+	s=k20201202; t=1773739039;
+	bh=Mk/oX5hILYiP7pQGn6SnTdlX4gw/NbWPzyO/VnCZiBw=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=XX7M7zECNwKjK5OS+FeyBaOmMGOyngmufddo0EkGyv+uwFy4SUPrN43+m5BxPCC/J
-	 AtY6vBCtM75tLbOaimM0mq5BNahVBzf3ZdUFVG/0qr0bUJ1EFjlFpWketC9SLf+UiW
-	 /1ThQVxStc01xyZs7XwnrXMBIzigJROfdez3IXj8LyEWgwyUEsurLhdKoP8UmbCdov
-	 uTOsSNgSHRBEcmj9OQ5ee5TFgXCxHCQNmg47OTy7MYreKutl7ijjjsx4VHdmo29uE7
-	 zFtco1D5MfjELO7PpN6LQdLakf1erUIRe8Ko5bCj42aoPhDR9DX7jOAmsYoRVfYxfv
-	 UP/sVsuffC8zw==
+	b=QYiqhmApnfyMWRd7nudSPadPclrdwy7KxdA/OH/prej1bKJmrgKSW2/u8En/1GZFl
+	 GADrJmqNxGcuowwqrzMLce6Pvim9wcvbSG94OR/DtA2tcYUoPIqXvXMagiGgAmvm9r
+	 UYShmiHGLg4MVujYG2dC9kLKNbvh+ZX3xMQ0k62lXxkatQWHcm5Bb8E4qeGHUqt40J
+	 J+qafXs1BUKRJvtXC/efFzZztQ0OHgYDVz/WsPcSAYX+/QtTmIcN8s6fbGbth/BBqa
+	 kuOj6yI3LSDNBAos0ImceSwNrKiS6eQ6Mgv6KnrL08LXvTM6WcdhnhxBLoR0RMPoBp
+	 r83OCR3II7PBw==
 From: "Vincent Mailhol (Arm)" <mailhol@kernel.org>
-Date: Tue, 17 Mar 2026 10:13:41 +0100
-Subject: [PATCH 5/9] arm: configs: remove obsolete assignments to
- SND_SOC_ROCKCHIP
+Date: Tue, 17 Mar 2026 10:13:42 +0100
+Subject: [PATCH 6/9] arm64: defconfig: remove implicit assignment to
+ CRYPTO_SHA3
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260317-arm_defconf_cleanup-v1-5-8eecb7fdd24d@kernel.org>
+Message-Id: <20260317-arm_defconf_cleanup-v1-6-8eecb7fdd24d@kernel.org>
 References: <20260317-arm_defconf_cleanup-v1-0-8eecb7fdd24d@kernel.org>
 In-Reply-To: <20260317-arm_defconf_cleanup-v1-0-8eecb7fdd24d@kernel.org>
 To: Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nsc@kernel.org>, 
@@ -133,57 +133,47 @@ Cc: Alexandre Gonzalo <alexandre.gonzalo@arm.com>,
  linux-renesas-soc@vger.kernel.org, linux-parisc@vger.kernel.org, 
  openbmc@lists.ozlabs.org, "Vincent Mailhol (Arm)" <mailhol@kernel.org>
 X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1527; i=mailhol@kernel.org;
- h=from:subject:message-id; bh=BznAsGmiCeBt3HfillpWJCB2/zJ7nKDTHjSQK2m08KQ=;
- b=owGbwMvMwCV2McXO4Xp97WbG02pJDJk7pfv2X1zzc02wu+AB9wRVzxmZoUwhQq/7dX4HLinKl
- dp6fntbRykLgxgXg6yYIsuyck5uhY5C77BDfy1h5rAygQxh4OIUgIn0BzIyXPxQ/PNgWqLjqoTX
- F6Mqypbdvrsmo+jK18rAynstrp//H2L47x5/7Mrb/I26Ias/a50Reum3t/hzyZ6rWx2DUma0R+W
- lsgAA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1248; i=mailhol@kernel.org;
+ h=from:subject:message-id; bh=Mk/oX5hILYiP7pQGn6SnTdlX4gw/NbWPzyO/VnCZiBw=;
+ b=owGbwMvMwCV2McXO4Xp97WbG02pJDJk7pfvCDmS/Fdlwpjpxl/HUlTsWl1YJKocsKREOWyxfz
+ /nk6WPvjlIWBjEuBlkxRZZl5ZzcCh2F3mGH/lrCzGFlAhnCwMUpABN50sDIMDGI6bOjM1dktH8q
+ uzZX4bngw3XnnPlWbXi+fEvY5dmGNgz/s7cXHqhREZXlj9wTNi+p9WXLxKYl/7+u2bUwIk51rtF
+ ZbgA=
 X-Developer-Key: i=mailhol@kernel.org; a=openpgp;
  fpr=ED8F700574E67F20E574E8E2AB5FEB886DBB99C2
 
-CONFIG_SND_SOC_ROCKCHIP was removed in commit cae3cc435db5 ("ASoC:
-rockchip: Standardize ASoC menu"). However it is still referenced in
-some defconfigs.
+When given the arm64 defconfig, merge_config.sh yields below warning:
 
-Remove any references to CONFIG_SND_SOC_ROCKCHIP.
+  $ ARCH=arm64 ./scripts/kconfig/merge_config.sh arch/arm64/configs/defconfig
+  <...>
+  WARNING: CONFIG_CRYPTO_SHA3 differs:
+  Requested value: CONFIG_CRYPTO_SHA3=m
+  Actual value:    CONFIG_CRYPTO_SHA3=y
 
-FYI, the suppressions were done using:
+This is because one of CRYPTO_SHA3 child dependency, CRYPTO_JITTERENTROPY,
+is set to "y" thus preventing CRYPTO_SHA3 to be built as a module.
 
-  git ls-files -z 'arch/*/configs/*defconfig' |\
-    xargs -0 sed -i -E '/^CONFIG_SND_SOC_ROCKCHIP/d'
+CRYPTO_SHA3 is automatically selected anyway, so just remove it from
+the defconfig and let the kconfig scripts set it to the correct value.
 
-Fixes: cae3cc435db5 ("ASoC: rockchip: Standardize ASoC menu")
+Fixes: 1e29a750572a ("lib/crypto: arm64/sha3: Migrate optimized code into library")
 Signed-off-by: Vincent Mailhol (Arm) <mailhol@kernel.org>
 ---
- arch/arm/configs/multi_v7_defconfig | 1 -
- arch/arm64/configs/defconfig        | 1 -
- 2 files changed, 2 deletions(-)
+ arch/arm64/configs/defconfig | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
-index a9bb85873c0a..e7028dc2f9d5 100644
---- a/arch/arm/configs/multi_v7_defconfig
-+++ b/arch/arm/configs/multi_v7_defconfig
-@@ -814,7 +814,6 @@ CONFIG_SND_MMP_SOC_SSPA=m
- CONFIG_SND_PXA910_SOC=m
- CONFIG_SND_SOC_QCOM=m
- CONFIG_SND_SOC_APQ8016_SBC=m
--CONFIG_SND_SOC_ROCKCHIP=m
- CONFIG_SND_SOC_SH4_FSI=m
- CONFIG_SND_SOC_RCAR=m
- CONFIG_SND_SOC_ROCKCHIP_SPDIF=m
 diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
-index baff2cd34721..7f6334d1d040 100644
+index 7f6334d1d040..0b307e2ab384 100644
 --- a/arch/arm64/configs/defconfig
 +++ b/arch/arm64/configs/defconfig
-@@ -1085,7 +1085,6 @@ CONFIG_SND_SOC_SC8280XP=m
- CONFIG_SND_SOC_SC7180=m
- CONFIG_SND_SOC_SC7280=m
- CONFIG_SND_SOC_X1E80100=m
--CONFIG_SND_SOC_ROCKCHIP=m
- CONFIG_SND_SOC_ROCKCHIP_I2S_TDM=m
- CONFIG_SND_SOC_ROCKCHIP_SAI=m
- CONFIG_SND_SOC_ROCKCHIP_SPDIF=m
+@@ -1901,7 +1901,6 @@ CONFIG_CRYPTO_CHACHA20=m
+ CONFIG_CRYPTO_BENCHMARK=m
+ CONFIG_CRYPTO_ECHAINIV=y
+ CONFIG_CRYPTO_MICHAEL_MIC=m
+-CONFIG_CRYPTO_SHA3=m
+ CONFIG_CRYPTO_USER_API_RNG=m
+ CONFIG_CRYPTO_GHASH_ARM64_CE=y
+ CONFIG_CRYPTO_SM3_ARM64_CE=m
 
 -- 
 2.43.0
