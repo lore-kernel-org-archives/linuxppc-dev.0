@@ -1,99 +1,99 @@
-Return-Path: <linuxppc-dev+bounces-18366-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18367-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34DA5103E195
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2026 15:00:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 896E6103E195
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2026 15:01:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fbX796GfNz2ykV;
-	Thu, 19 Mar 2026 02:00:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fbX8N24QQz2yk6;
+	Thu, 19 Mar 2026 02:01:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.168.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773846005;
-	cv=none; b=Cmzp0DThBcbOk92zJgUsdDTFoEMljJdUHRfj6ybldtrRGqoVicfIVp27GluJ7Y0tEbRpkREwy0kGJx1U8ocZjj5pnzJAEAlDsZy+u/Dq/AlXvRJsj/6kpFUOdFkgN1zJmuKakfZ/7Vc2BmXIGKi1wV7RDf04cvP8MAcoZyuMG+as8MpDu7BB3mtvCiOKjD1SngzICNgxTj1gNQFdhvBS/2byJPB+WV7Mz+kjFCkIKCTVGChqHST0EknDqrRJdKu8TyP21xx8g3btWkwlJqrXqFkMVPQc1nyKcnpISwnaEfJp8ZuTJUtUMUZqRqgQ/xbZmENNDEz3bY/0u044UfDS8w==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773846068;
+	cv=none; b=i18WS0h1DehRFXYzgqx3kHVq2+MlHHk3w4aTVlgNIyhjZ6mMXxlEv69DCNDrSKVlc4rqWRhEnAscDjeqF29TeA2PDBRFPWC8UIBRtO8IJB5fh6eY3JYXdBccfjA842wYlE73Qejpv2t5Fu197OyjLbeeqsGSOaeOomYv6hkGGvDDr41qdfLuz5D0IIwaLJRSQ8MOpaFhkKHlk+kGNcg8BfgY0EQKN5FhmBOtQtzxD3exdMg6HEU5qePpC7sIwbR88CCQwwVeaZ97zUZs7ENdZtD9ZLlIJiIXqPcmeZAOGfF2KdvN9RYbCnMGyHlWWlefeBlXw/u3TOT/Mwo4QAK5kg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773846005; c=relaxed/relaxed;
-	bh=Uh4fOJXtDJzMwDO/bK1gSi/CJGtyJDbqAAiuVzFFqxw=;
+	t=1773846068; c=relaxed/relaxed;
+	bh=GoRA2L8D/wURa/t15xJL/5XRoOAzSYwjg4eZrkQhmRQ=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=gvLa431fn4rPtZCV54m86q8WpKy2sEX4ZRnP5c4ETCI1Yr2MXxqM9kzvYZl8v0JdqaLsr0E5Ip7aTQTlIfhYOZ09YGACvZo5t3xm67BlmeTQ3yqhhqXcVJaGLrx20b6EvrD5UrH09lYBwM1tkDC7OvefHST4t+CkbzXvNgvmfZlgYP0Ve7LGGAQiH4C4kkBHgSuywwXzp3kIKM2aXidoe/pZsvhv4Qo09cICacVcgDc3vg33hcMd6ZRTRkTTLAzh66qzKO2xOxnIIBxUcqBuG2Bl0ikRrAkzaR86vXdv2YpCHNUA8QTA33wB5FiOaZFfRIMYgmGTOLTV9wqSRu0gZQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=n1A+JtJH; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=ULk9GLtT; dkim-atps=neutral; spf=pass (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=krzysztof.kozlowski@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
+	 In-Reply-To:Content-Type; b=d0vJAGVj9JMAXhybO/kzzP/50hpZXw3dmg/TIeFBOII0Rlohixd+M5wd8T3aorCo4Lz4QaoAP3D5/g4Uq8CoipwPnf7E6OFTJpWmWd1TINU0aQoZs49fOTV9hs0uM5CINjxc8Tzvlc5/C6XHYO/JAMHDzmYUY6aDDlrphWYs2TlsdXWJlO7e+x9/Bu76ZpMKh6ZRxmv2ofMWM7OEnG0tZHXqksAvnnswRPQh7GShlrnkXdMLKQYZZYouMdHTIi4GHg4vrYlS9p2SFva6RUWWVSORg6BNn342NyhWTBu+OgOv+kISQc1gp0qivZhozc/uLbuQiipvt71q7CC/HGzqrg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=AtqAR6tM; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=blLCZpnq; dkim-atps=neutral; spf=pass (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=krzysztof.kozlowski@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=n1A+JtJH;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=ULk9GLtT;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=AtqAR6tM;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=blLCZpnq;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=krzysztof.kozlowski@oss.qualcomm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbX782gWHz2yk6
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 02:00:03 +1100 (AEDT)
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62ICUHUs2878103
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2026 15:00:01 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbX8M4Hghz2yjp
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 02:01:06 +1100 (AEDT)
+Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62I8mtHB084761
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2026 15:01:04 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	Uh4fOJXtDJzMwDO/bK1gSi/CJGtyJDbqAAiuVzFFqxw=; b=n1A+JtJHtip4cIYV
-	if9eIluoDP/ws/9uHbs2v4qOjcRVDBCaI984p6EhO9c/OJWpivq9p3muAWeUqGvm
-	lZXU9ps6stZh4m+6iOw4AVyZgH6G/AGwAcJBk8yUBj8FFOY7lO6hNEM1FJ3+uivq
-	Phih/Tdvs4GooweewWKbyZUyz/v14RtNf/hf8nZbxy0yjMxMMiZzl64ExfHTBCKY
-	ysdsBnF7bIElDKdRAFBORWv+OAnPzeZDVGWMrCBtghwtRHHhBhUIltrsqr5Ca405
-	rp5PWweIYAafo/P5pZwT6q6Mg8vfvbd5Iw55oVterNcAk6bqkWSB2dKltaKxcRIT
-	DyNaFA==
-Received: from mail-qt1-f197.google.com (mail-qt1-f197.google.com [209.85.160.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4cypwr20c2-1
+	GoRA2L8D/wURa/t15xJL/5XRoOAzSYwjg4eZrkQhmRQ=; b=AtqAR6tMi3ikpWkL
+	in8e0PAi3EBWndJlXJobe6bmgyDzv2lkO+SkJOoZb6pRkKPjhAhtE4/qCbLXxG5o
+	C69L+LZtpBAg00LODkiljNSvZ+jlxNUztu5kEHU5a3g+L8xaDCL1tFWJglhcpDRD
+	AjXCL3C3ZbH9JbbuSOjqM0RS9Tm/9lWMwuyxj02QtagIBzgSz1biNYK08n/fL0rC
+	t0fSKdq25gqKBxOMl+dZYg20x7gWEpzJwqu2DBubchpcHM0SelkUR5LNyPSxMf5W
+	XT6mMDnH7ICg9U98Fcwfngn25xLUJ6ftJF4SKpHAZiemlSW7tRPJfQqyDL81SYV+
+	kM+Oxg==
+Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com [209.85.160.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4cykqets0u-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2026 15:00:01 +0000 (GMT)
-Received: by mail-qt1-f197.google.com with SMTP id d75a77b69052e-509007aea22so321797821cf.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2026 08:00:01 -0700 (PDT)
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2026 15:01:03 +0000 (GMT)
+Received: by mail-qt1-f198.google.com with SMTP id d75a77b69052e-5093787e2fdso1008619341cf.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2026 08:01:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1773846000; x=1774450800; darn=lists.ozlabs.org;
+        d=oss.qualcomm.com; s=google; t=1773846063; x=1774450863; darn=lists.ozlabs.org;
         h=content-transfer-encoding:in-reply-to:autocrypt:content-language
          :from:references:cc:to:subject:user-agent:mime-version:date
          :message-id:from:to:cc:subject:date:message-id:reply-to;
-        bh=Uh4fOJXtDJzMwDO/bK1gSi/CJGtyJDbqAAiuVzFFqxw=;
-        b=ULk9GLtTFh0XDkBU2J+MwvZDEWEreOPL/V3NuuPk+3+6N6oxT8R18FX6PJYutA1RRU
-         Dn+GQRaImK7xwIZ0IRURlsA2ihZPaRIt1Ajwd1WbWcejs2JBw2zFE4VwBKG1pCpaX1Yt
-         EQd8cRvx/1nvqiZlbNn5lgbYzhuEHuAJl9MxAa7NdS9QgI28r9UqUlg3EiG0kvQoRwOj
-         2qMgL7x2X/n61HhdRKnGdXyd2ksZauRxMgW8GbbDOW4dDf0jkHoj04lP2oQ3A4ykgc0f
-         CccG5Yt7GHh+ULoSdShWO17IDuO0MvaUxPehgt+QnFT6Xa9pQPv56DovTDUP6j59aP93
-         cG2g==
+        bh=GoRA2L8D/wURa/t15xJL/5XRoOAzSYwjg4eZrkQhmRQ=;
+        b=blLCZpnql3yT9Nj0YrXI3lTFDW+yf195+3royJU5DSv8/YEs077SoqBsdUbcqolqd1
+         kKnbj+7QrEfGwOWoyHOBwdWXziPGUHSpqJJ8oJl+71CfzNt8HMqYS916MKxF3FYAtrR4
+         lpeZgCkB8m95A0lg5IdoUMn4lKCOg6MLtPMxppVcvEclKw5z2cbboYxW7vsSpZbc7SAf
+         Uq7/2m8HL305xYRO6P84x/RyPQNudYbNsh+lqu165U4XghpvsUEwyuqwaz/VjlQGYOx5
+         B1WqI5n+udi4jGJFjr+wVwLRhvnUKSAGeZ9pvL/1hnilPF4Mn4hg91JjKWHH4iANW1C2
+         OVQQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773846000; x=1774450800;
+        d=1e100.net; s=20251104; t=1773846063; x=1774450863;
         h=content-transfer-encoding:in-reply-to:autocrypt:content-language
          :from:references:cc:to:subject:user-agent:mime-version:date
          :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=Uh4fOJXtDJzMwDO/bK1gSi/CJGtyJDbqAAiuVzFFqxw=;
-        b=c74kotdorbNr/0zkmeD4kGoiOKIRQwLgVuIkf70LrRn7VYTIH5q7w/QcmH4mANpl2m
-         CTmL/acwNFt2IyLOF9ryzkwG8rjvWIgJ4xii30WzQS51ge+TqTr1xIFM54Bnc86/hJgx
-         brYYnVbTRC/cJA19/4CgMDxeOUSccCfut+TuWIIbURd9D4Zi6tIyWgM60iK0wR/ikHdu
-         3Fjj+IRSOLgHv+epvaV+unS9vY/O2xfwtrb1tJeH5DGd8wzig+3/AzdrSjXEC84CgFFh
-         a2f8OTyvxkldffbgjP1Bpw0wDXJkHFkc7GV2SJX2E7WVuWbmmKvLoPTBc6Tiu9gmKvio
-         lgmA==
-X-Forwarded-Encrypted: i=1; AJvYcCWpv6SwrPLbsEYMTATO5Sih7IXZDsjwDiK6nayB7AACq18ENAZvrDIEOdWYv5Bk+9F/K4n6Ctbmtnw7wNY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwTBgGASpnSIEdIOoYgqyyZyX4rwb4j7d7Nqhb+Fjq2CB46I0xK
-	2PEdoxNt3i+6Q69Nks0n68XEWfLJvlwbK+5DPzl4Z8mW4eAoEoezPm5T6eZCkN0sQZdS56j5hJs
-	qOvwnN0mL/6D7roiY1Mwksaw3DYCXsmCXhClmZfHqFmUQNP6kCDklBkrmfNcZ46GewpM5
-X-Gm-Gg: ATEYQzwUJwvMrsz4wvpvT7jcQ2tQPP2jdwoTmkKW9KTdoKG1RL2eFW65N0BvSklEWHZ
-	fjzTuz5ha/T6HveYQUYuWeNFGw5v67Ghz6mQkM4j0WGEdXhsaPNiMhOmHr3Lrd6sz8Fr3OoFHHE
-	Wzly4Nck0ni1LF0YIPO1CbZFy5iqIbNFiawZffKlXZgk7zSEVlEAZ1NLfgWq/Z0/dnTq86tfCb4
-	IqAkFeYn9jnfd7/Ry979XbwadGNh+g5p0z4JFZEeJquQH7V6lhrtWsvooqqFT3uyqpSiCOOmvPX
-	jQr6lhRIdKDnX7jADRMHn4lr4bWU+hsX7CD4z3VMoXoHd8/FjIj64J/Dv9ql3nPT5cqxSk2XWoC
-	V4Ki1xqS3r+HoThUOcUBaDz/AvhC0eJu6tBfQ57QfqhaBpAHU
-X-Received: by 2002:ac8:5f93:0:b0:509:44c3:5ffa with SMTP id d75a77b69052e-50b148bc253mr47157191cf.52.1773845999908;
-        Wed, 18 Mar 2026 07:59:59 -0700 (PDT)
-X-Received: by 2002:ac8:5f93:0:b0:509:44c3:5ffa with SMTP id d75a77b69052e-50b148bc253mr47156641cf.52.1773845999308;
-        Wed, 18 Mar 2026 07:59:59 -0700 (PDT)
+        bh=GoRA2L8D/wURa/t15xJL/5XRoOAzSYwjg4eZrkQhmRQ=;
+        b=T7+JXHCWxOLsmfaoaNgNNl0M6WWXvfK3lTI6AGNRbiXczfy85bHvBxcXb6oStK5P0p
+         ElnqnDX5VBDP29Wwpox3Tsp30vbrCuJWMnIveBW1rgSWbgXFfyKlRa6d9bG/RoCedWiC
+         dGiA5JfkPmf2lkv2sGDZnWRsjlUwXZ5cJlJ9wrWvlFGTy5p5vtITF3j1peTRTcg/L7o9
+         9VG9mMxElnn/OkH9/iVMjuWw8YjueF1SiCLtL6paSuQFsLCu6uHR/fe5WE1N1B2nQG+D
+         /e7osAHhw5/LZroZoxuQQbaA2bJsOvR//Lqf4AWWGH8sj6N1RxoRM/KzKYpNjgLu6MV8
+         8jfg==
+X-Forwarded-Encrypted: i=1; AJvYcCUi47noqFRpapBOfAXmDiLV1l5jRXFbPHV1Dkf106LHPXVLk9li6VhklrxTDifR18aCya0WQRU8pSOtSWo=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yxny1NFYe8WPuOg3SGmbGaOtdZqQsOdu7EDCf/CqTM/nXjv+vLV
+	FwL55VgRVdQtD+dRYcPOogtBglDcgvOJBv7+qAcGNjPONqEMMV7ybatYeOsUCBaAZibepoArvgv
+	xYKAlXLub97GtydQTIFjI943T2iPtKGSF97n/0FPZSRlpdZxrwjPuVyRqS58C28R4sNbP
+X-Gm-Gg: ATEYQzxuCDLHWMeWQXi7k91MwZiLJNd+RNa4bI15Ptd+Spa4Sy/+zHjC7SC03JT1Pp6
+	kJe1kVPgZdgsnAM2v7V4GZA1OyQ+dM+czZYKCi6U2NuDBQZ29ITTtC/nLTDygURVCXSPUWokbMa
+	YrUO+Py5YUeFJhmc0P/aLmLFzF0J9w6EB6iJLp+C1qtmfgIiv9QcX6SkfDeMkxsXAW/kmosKjbk
+	bKgQ7OsGRNWJU7efuLf6qJrU8P4YXCI8RDQTgDWMsIXMtBQatFxsiv2UnJ6WNXal6watoArkoDp
+	0hCtgFIbssq7DtPnYqCOrI9ejRMeLNWxry7K3jrLE5abXVM4n/NXoQ3g9JoFPeWT/3jsCBfHfpz
+	2hXu/dXdNd1IniSHaQsJebdn6kHPWUgNuH4N7t9Pauf7FTOQR
+X-Received: by 2002:ac8:5755:0:b0:509:4410:4492 with SMTP id d75a77b69052e-50b14796234mr47711671cf.22.1773846062596;
+        Wed, 18 Mar 2026 08:01:02 -0700 (PDT)
+X-Received: by 2002:ac8:5755:0:b0:509:4410:4492 with SMTP id d75a77b69052e-50b14796234mr47710741cf.22.1773846061978;
+        Wed, 18 Mar 2026 08:01:01 -0700 (PDT)
 Received: from [192.168.1.29] ([178.197.219.94])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-667b0eb9c02sm1767039a12.19.2026.03.18.07.59.57
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4856eaee04fsm144565215e9.13.2026.03.18.08.01.00
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 18 Mar 2026 07:59:58 -0700 (PDT)
-Message-ID: <ec20e380-e68e-47a9-ace6-6488de14228e@oss.qualcomm.com>
-Date: Wed, 18 Mar 2026 15:59:56 +0100
+        Wed, 18 Mar 2026 08:01:01 -0700 (PDT)
+Message-ID: <f40ec9bb-ab51-4f20-b67d-c2eda1b646d0@oss.qualcomm.com>
+Date: Wed, 18 Mar 2026 16:00:59 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -109,11 +109,11 @@ Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH RESEND 1/2] powerpc/ps3: Drop redundant result assignment
-To: Segher Boessenkool <segher@kernel.crashing.org>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Segher Boessenkool <segher@kernel.crashing.org>
 Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
         Michael Ellerman <mpe@ellerman.id.au>,
         Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
         Geoff Levand <geoff@infradead.org>,
         Nathan Chancellor <nathan@kernel.org>,
         Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
@@ -123,9 +123,7 @@ Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
 References: <20260317130823.240279-3-krzysztof.kozlowski@oss.qualcomm.com>
  <abqRvDiAI85w2bCe@gate>
  <dfb53d65-ee34-47bf-b305-5694c7224ec7@oss.qualcomm.com>
- <abqTSG-wg-9ahRTe@gate>
- <42b99f91-02bc-4062-93ad-02db3fe81b49@oss.qualcomm.com>
- <abqWvBj5_t_Q-y6m@gate>
+ <abqTSG-wg-9ahRTe@gate> <9434f836-aa96-44e7-8f34-243d6c94f6dc@kernel.org>
 From: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 Content-Language: en-US
 Autocrypt: addr=krzysztof.kozlowski@oss.qualcomm.com; keydata=
@@ -172,81 +170,78 @@ Autocrypt: addr=krzysztof.kozlowski@oss.qualcomm.com; keydata=
  v+PKIVf+zFKuh0At/TN/618e/QVlZPbMeNSp3S3ieMP9Q6y4gw5CfgiDRJ2K9g99m6Rvlx1q
  wom6QbU06ltbvJE2K9oKd9nPp1NrBfBdEhX8oOwdCLJXEq83vdtOEqE42RxfYta4P3by0BHp
  cwzYbmi/Et7T2+47PN9NZAOyb771QoVr8A==
-In-Reply-To: <abqWvBj5_t_Q-y6m@gate>
+In-Reply-To: <9434f836-aa96-44e7-8f34-243d6c94f6dc@kernel.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Authority-Analysis: v=2.4 cv=bIcb4f+Z c=1 sm=1 tr=0 ts=69babdf1 cx=c_pps
- a=EVbN6Ke/fEF3bsl7X48z0g==:117 a=gOEeR9iKwsj33Yj5oN/cWg==:17
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzE4MDEyNyBTYWx0ZWRfX8/3f80LpCr4M
+ 4JEhY6gAYM9NhAHUfrRijyQxdb0/MSWuOBhaEG807fkPMiuvYjdJ8NiiQCzFonEez1gQRErimZJ
+ hibjL6qZRJqmNYLsh/D3/oGxye40DHDphnD6q8Ry6osyEZDsFpXktyhS+MVIwZpiIVgAbCuqGrz
+ XxM9at0dFXVITqsb2rb9LWMUu+xOQlTeuIFey8EPgkFJbzsbEDfP9EnAQuK6FEEk/PgYdkr74zp
+ H9za2dQZV/mPkhysiY5ocaHS+E+0LY4BFNb17DJTixblhEH+Tp1gczc7ZPp+G52VqCkTQkE/RYq
+ qay54gy8qO3nqiP6ld3V2Q4oEzgy/IgqHacSVi4lfrFFbtNc7bSYmIJASYGguBNgBRVGTaf57J6
+ FhqHyRtu8YNvCQX8SmmII99LS557afG9kqyCN9PgJM6712GQJZYDVSd5qP1UxA/V9rhtlDC+f7L
+ UuDgnkA7t5f4MJsWJOg==
+X-Authority-Analysis: v=2.4 cv=Cd4FJbrl c=1 sm=1 tr=0 ts=69babe2f cx=c_pps
+ a=mPf7EqFMSY9/WdsSgAYMbA==:117 a=gOEeR9iKwsj33Yj5oN/cWg==:17
  a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22
- a=Pn7rgDPiDJE6iWDejmcA:9 a=QEXdDO2ut3YA:10 a=a_PwQJl-kcHnX1M80qC6:22
-X-Proofpoint-ORIG-GUID: vfCWd7mZQiLy2CaEOAW1jXPX96l9U3Bs
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzE4MDEyNyBTYWx0ZWRfX1PxgndpBxq9r
- UeYzM8/X9XDU0At7PUKQSya4miLCbrkkt14mzpHqQiMNa7D1sh7eCE6PIF3ZH80RMEErRdaBezZ
- VrZ5zizPk+QRhDqV3qhDlOpdGds2nGj8KqMVuescsjvwMufcuiTcMDt6a+cR2ZEQQOnVGtlybm9
- VnGOkyx3rshVVgoCP+h20agFyPCofansL6aW0V8df3arZSbhYRB75dJ1oZpRwIL2O1us8Nv8OTQ
- kYTgrwxbfAeXBmc+MglHXo0ZxjiM0s+bgOzcdYBc9dXpo/WBTzxvkhZAmZNqFSv+n56zfJhyDGz
- QDTNvir97E7citdEsyejhoIWA1r7NXV/3b67zb/BsGrj2DGwW+sGp6mmPRoiTge77FlYKIbYfZ1
- h+fm5xSf2MzXZN4gOSuXewkSkk/ZEJAlXp6cljk77rcZUN2HGTpi8nha1AI5SktEXUOdBGzDZP0
- +SnXCR3+OKBlLMNUQCg==
-X-Proofpoint-GUID: vfCWd7mZQiLy2CaEOAW1jXPX96l9U3Bs
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
+ a=LO4XtezffzH7F-Og_NQA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=dawVfQjAaf238kedN5IG:22
+X-Proofpoint-ORIG-GUID: d0A-CNaeeNW356z8SSQ4RF--fDbuWkNZ
+X-Proofpoint-GUID: d0A-CNaeeNW356z8SSQ4RF--fDbuWkNZ
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-03-18_01,2026-03-17_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 impostorscore=0 malwarescore=0 adultscore=0 lowpriorityscore=0
- clxscore=1015 priorityscore=1501 bulkscore=0 phishscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603180127
+ clxscore=1015 phishscore=0 impostorscore=0 lowpriorityscore=0
+ priorityscore=1501 spamscore=0 adultscore=0 bulkscore=0 suspectscore=0
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
+ definitions=main-2603180127
 
-On 18/03/2026 13:12, Segher Boessenkool wrote:
-> On Wed, Mar 18, 2026 at 01:03:03PM +0100, Krzysztof Kozlowski wrote:
->> On 18/03/2026 12:58, Segher Boessenkool wrote:
->>> On Wed, Mar 18, 2026 at 12:54:30PM +0100, Krzysztof Kozlowski wrote:
->>>> On 18/03/2026 12:51, Segher Boessenkool wrote:
->>>>> On Tue, Mar 17, 2026 at 02:08:24PM +0100, Krzysztof Kozlowski wrote:
->>>>>> Return value of ps3_start_probe_thread() is not used, so code can be
->>>>>> simplified to fix W=1 clang warnings:
->>>>>>
->>>>>>   arch/powerpc/platforms/ps3/device-init.c:953:6: error: variable 'result' set but not used [-Werror,-Wunused-but-set-variable]
+On 18/03/2026 13:21, Christophe Leroy (CS GROUP) wrote:
+> 
+> 
+> Le 18/03/2026 à 12:58, Segher Boessenkool a écrit :
+>> On Wed, Mar 18, 2026 at 12:54:30PM +0100, Krzysztof Kozlowski wrote:
+>>> On 18/03/2026 12:51, Segher Boessenkool wrote:
+>>>> On Tue, Mar 17, 2026 at 02:08:24PM +0100, Krzysztof Kozlowski wrote:
+>>>>> Return value of ps3_start_probe_thread() is not used, so code can be
+>>>>> simplified to fix W=1 clang warnings:
 >>>>>
->>>>> And this is exactly why -Werror is harmful.  A boring harmless warning
->>>>> turned into a build break :-(
+>>>>>    arch/powerpc/platforms/ps3/device-init.c:953:6: error: variable 'result' set but not used [-Werror,-Wunused-but-set-variable]
 >>>>
->>>> -Werror does not matter here. We do not want warnings either, assuming
->>>> of course they are correct.
->>>>
->>>> So if this warning is correct, then patch should be applied and WERROR
->>>> is irrelevant.
+>>>> And this is exactly why -Werror is harmful.  A boring harmless warning
+>>>> turned into a build break :-(
 >>>
->>> The build is broken.  -Werror is positively harmful.
+>>> -Werror does not matter here. We do not want warnings either, assuming
+>>> of course they are correct.
 >>>
->>> Yes, you want the warnings fixed, but maybe something else has priority
->>> right now?
+>>> So if this warning is correct, then patch should be applied and WERROR
+>>> is irrelevant.
 >>
->> What do you mean? This is waiting on the list for long time - note that
->> it is a resend - so if warning is correct, for how long it should wait
->> to get to the "priority" box?
+>> The build is broken.  -Werror is positively harmful.
 >>
->> And why anything needs even the priority here? Why priority has to be
->> discussed, especially for some legacy (I think?) code? Why correct
->> patches cannot be simply applied after some time/review?
+>> Yes, you want the warnings fixed, but maybe something else has priority
+>> right now?
 > 
-> It is totally simple: without -Werror, you can build a kernel.  With it,
-> you cannot.
+> But if I understand correctly this is a build performed with W=1
 
-What are you discussing here? This is a patch, not WERROR talk.
+Yes
 
 > 
-> The ***warning*** is correct, there is something in the code that can be
-> improved.  That is why such things are warnings: the compiler can
-> produce useful output, there is no reason to scream bloody murder.
+> Without W=1 there is no build breakage.
+
+There is no build breakage with W=1.
+
+This is somehow total offtopic or trolling. :/
+
 > 
-> The main reason some people like -Werror is because they are too lazy to
-> look at the warning messages they get from normal builds.  Such
-> developers need potty training, this is not a reason to punish all more
-> reasonable people!
-How is this relevant to this warning?
+> Someone who forces W=1 on its build can be expected to unselect 
+> CONFIG_PPC_WERROR if it is needed for him, no ?
+
+Of course :).
+
 
 Best regards,
 Krzysztof
