@@ -1,48 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-18342-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18343-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58907103E162
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2026 10:58:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5563103E163
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2026 10:58:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fbQml74Cmz2ygT;
-	Wed, 18 Mar 2026 21:58:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fbQmy3nWXz2ygd;
+	Wed, 18 Mar 2026 21:58:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773831527;
-	cv=none; b=nPzDWqC4NnrUjjjnIhPo3Hck6RAajC1Cs2n0N0Sv4uY4qCAcbwg+Escftu7ByuoddxxPI3vy9/cAQlcwjZhVvReiuxHdtR7cpr3hqu2Tm/qKXUl/X7YXV/ysPc8ZZfVRZDY9XpZitdXHXpEkXWvDe/Ij8wNJ00bvxNB9wM6J+eVpxft5QUmz+xboj87wGHPzXF/l0oWtKScsurPftYLVJk4oYCMVXB+QCPvCqUm2wAjSuRF5xF8PmtFR7SyWc8RIDUVFmJ14cYIMwBWoQVt4dDXzGAonnPrzYHxe+idDxxYAZ1N+Le3jzA3S3/KRKpQBKAQZJ7bv84s4sDnWE0679Q==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773831538;
+	cv=none; b=eBHOnjIZih3eZRTMmtt/es9QP+dHKcGzbTznbXigTc8BIGmrScfaN1TgjwQnY5VYRxlEOMkO3N5p9yG0mIutXyXnUC3SlIW7r4KNMeuqFPmriLuww9cvAEAGjTXCaAYF1ZM7WfR8OCfDoIizkgd1DIrCMfH9aaLOZTHvx7lKYGL7Ce8I9bvNCV16m6i9Zf/F0DOr7H/MuVhIFNuj44o7fjPOO/D933qZtxlG+erSqum5ODZC9ydMAQz1pj0Ah2ULIOV5JIL5Pg2BKcqT5DuqxqFJ9lngCBqvM/CdDk1yTglUDHknuqqP0nx+KtwEs0D718fUnU/Qx1cQm6eGUKvxqw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773831527; c=relaxed/relaxed;
-	bh=YpWbdmy2u35pquIoQDOkSYbA2SDw10dr75CUG2SUk9Y=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=BBsRrs3LSrJABI7aVABcoSyk7Ny4s1EPgdixMezI8tv3HGEglVvfqPypHOH48RtOXhzu7ZPqhzM0lkt7Co8yq0u5GHxCZJHf27mru6PZIaGXI/q56RxEaGr+iPyv/ANzS+IowYDIKFy+ovQzp/WEZqNyzJ3/TIhXhsqSE8RFm5YqeNxkwo/D71eDWNztWg4xvIGINi2GCRaQlhFYD6dx0kXokm2JfAGMRiWYDhClt4/3Vvt33p/22lf7K228Jj6s4+4sBbWr2KY/eWDuI8zdKuRoMT6Ml+zyLxgFoj7b5KOibimzptDo/roue2FFheV6mMSG/jQaFQb+nqp/kKGwVA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eKiMcZ85; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1773831538; c=relaxed/relaxed;
+	bh=UCYUk5kHzwVrneMFO2DR59QD+1jmDCykkPv1b8HhVv4=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=AkVK3CEqcKGXblDclqxsJSLNP7LQdmjMUypWWbw7c9MoCjRdcnThQscwMTyA8kI/3XWpMcj5wDuBSfI3d++nOIwdvzx7UgY4fnwjqJFyRtF/rzOPCAFDJBXvVD7wQLBL7CzmmWbIpRdcitgAADiE6naYQcMTdnEDm1pmMJpJ8IEZhXMKmc9kcXJmL5AQcxyh7B5pXa1GYL53bw8mVkNX0zpy8+4XJO3DnNQYcSeBtY6xGuNR8yPaCoBichQayAeKrvV5G2R/JwTtEB3RBnkGCY4sacqbKYjyfQ0tH2RGU3CeHAGtxWPmEEgfmnh/BMTNC8kRyJt5TNVuauaB0Km4DA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pcCtAXo9; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eKiMcZ85;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pcCtAXo9;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbQml1Hl6z2xlx
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2026 21:58:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbQmx52MDz2xlx
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2026 21:58:57 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id AC42B4474A;
+	by sea.source.kernel.org (Postfix) with ESMTP id 8A06A4474E;
+	Wed, 18 Mar 2026 10:58:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5C28CC19424;
 	Wed, 18 Mar 2026 10:58:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 65881C19421;
-	Wed, 18 Mar 2026 10:58:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773831521;
-	bh=kLYySycm4Q+kO2x2jmLEs+z7oAnQtdjmqDIbHrWcbjw=;
-	h=From:To:Cc:Subject:Date:From;
-	b=eKiMcZ85WLFC8bXWA/cKx5AD46CSeZMTj7t+7hTK626aenEZLjVU/M1bTaE/8BRRS
-	 X6S1Y6bTAssMWXPL91D/crg1FtPFmAE77lAntj2Q7m/PYz0wUHGJzu4AZOtr5VKYhD
-	 O9x+2NB3x0e+Qee3RPqpqmkTck/x41t2dPoDUPGIkmdpXAuih590JlibeZmTDiQlQj
-	 +q9tqVFXNLT50Bo4J93EDhzKNN36MtH2iOtNw1iebPTvJL5rSLJyP/H3K7GSINY4cU
-	 Jl739DvgI4xC+TxFvGCyIhqDj4Pg7a/bTjrprZ63VJjVDKtRWfpfjBV+NYDfdH+Dsr
-	 4yKWpa/0srIqQ==
+	s=k20201202; t=1773831532;
+	bh=Xt2trVGOu+O7P4h2C+N66P7rMFK2F5qGGY0Nx9maAnI=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=pcCtAXo9HFjeLmxxQDz1bWFGhGz3cgAlZqqVZqUib3biO4lA09lDRUAnvR7VPd8xK
+	 xud5VSvoOVpP/uusVxy/mEj9ZPuFa9FBiEZXenJRIhcJDaFVEfdONJUF/a5DeLxg/6
+	 9eJWF8V9iJtWLHumgV17GT6fy0gRDiS3mfXFa5ikPxnCcIM5ggnEsU6yokHlyO3U1v
+	 z1M3PIiEZAT6J/8aMQ7R2ZMjIU13s+SJp+4B5zRJ5Z2M0LcqXMaYHaFCkfTXOiu6r5
+	 wdkBq5ZN/Uu4ADC4SCCEps0JuPHvaJpv8CueQ5TFX51Ua5WHxeubzTq7aqhN6Hf77n
+	 s2wD6ho9PQsRQ==
 From: Mike Rapoport <rppt@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Alexander Potapenko <glider@google.com>,
@@ -93,10 +94,12 @@ Cc: Alexander Potapenko <glider@google.com>,
 	linuxppc-dev@lists.ozlabs.org,
 	sparclinux@vger.kernel.org,
 	x86@kernel.org
-Subject: [PATCH 0/8] memblock: improve late freeing of reserved memory
-Date: Wed, 18 Mar 2026 12:58:19 +0200
-Message-ID: <20260318105827.1358927-1-rppt@kernel.org>
+Subject: [PATCH 1/8] powerpc: fadump: pair alloc_pages_exact() with free_pages_exact()
+Date: Wed, 18 Mar 2026 12:58:20 +0200
+Message-ID: <20260318105827.1358927-2-rppt@kernel.org>
 X-Mailer: git-send-email 2.51.0
+In-Reply-To: <20260318105827.1358927-1-rppt@kernel.org>
+References: <20260318105827.1358927-1-rppt@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -114,46 +117,53 @@ Content-Transfer-Encoding: 8bit
 
 From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
 
-Hi,
+fadump allocates buffers with alloc_pages_exact(), but then marks them
+as reserved and frees using free_reserved_area().
 
-Following a recent discussion about leaks in x86 EFI [1], I audited usage of
-memblock_free_late() and free_reserved_area() and made some imporovements how
-we handle late freeing of the memory allocated with memblock.
+This is completely unnecessary and the pages allocated with
+alloc_pages_exact() can be naturally freed with free_pages_exact().
 
-[1] https://lore.kernel.org/all/ec2aaef14783869b3be6e3c253b2dcbf67dbc12a.camel@kernel.crashing.org/
+Replace freeing of memory in fadump_free_buffer() with
+free_pages_exact() and simplify allocation code so that it won't mark
+allocated pages as reserved.
 
-Mike Rapoport (Microsoft) (8):
-  powerpc: fadump: pair alloc_pages_exact() with free_pages_exact()
-  powerpc: opal-core: pair alloc_pages_exact() with free_pages_exact()
-  mm: move free_reserved_area() to mm/memblock.c
-  memblock: make free_reserved_area() more robust
-  memblock: extract page freeing from free_reserved_area() into a helper
-  memblock: make free_reserved_area() update memblock if ARCH_KEEP_MEMBLOCK=y
-  memblock, treewide: make memblock_free() handle late freeing
-  memblock: warn when freeing reserved memory before memory map is
-    initialized
+Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+---
+ arch/powerpc/kernel/fadump.c | 16 ++--------------
+ 1 file changed, 2 insertions(+), 14 deletions(-)
 
- arch/arm64/mm/init.c                       |   3 -
- arch/powerpc/kernel/fadump.c               |  16 +--
- arch/powerpc/platforms/powernv/opal-core.c |   9 +-
- arch/sparc/kernel/mdesc.c                  |   4 +-
- arch/x86/kernel/setup.c                    |   2 +-
- arch/x86/platform/efi/memmap.c             |   5 +-
- arch/x86/platform/efi/quirks.c             |   2 +-
- drivers/firmware/efi/apple-properties.c    |   2 +-
- drivers/of/kexec.c                         |   2 +-
- include/linux/memblock.h                   |   2 -
- init/initramfs.c                           |   7 --
- kernel/dma/swiotlb.c                       |   6 +-
- lib/bootconfig.c                           |   2 +-
- mm/internal.h                              |  10 ++
- mm/kfence/core.c                           |   4 +-
- mm/memblock.c                              | 110 ++++++++++++++-------
- mm/page_alloc.c                            |  46 ---------
- 17 files changed, 102 insertions(+), 130 deletions(-)
-
-
-base-commit: 1f318b96cc84d7c2ab792fcc0bfd42a7ca890681
---
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index 4ebc333dd786..501d43bf18f3 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -775,24 +775,12 @@ void __init fadump_update_elfcore_header(char *bufp)
+ 
+ static void *__init fadump_alloc_buffer(unsigned long size)
+ {
+-	unsigned long count, i;
+-	struct page *page;
+-	void *vaddr;
+-
+-	vaddr = alloc_pages_exact(size, GFP_KERNEL | __GFP_ZERO);
+-	if (!vaddr)
+-		return NULL;
+-
+-	count = PAGE_ALIGN(size) / PAGE_SIZE;
+-	page = virt_to_page(vaddr);
+-	for (i = 0; i < count; i++)
+-		mark_page_reserved(page + i);
+-	return vaddr;
++	return  alloc_pages_exact(size, GFP_KERNEL | __GFP_ZERO);
+ }
+ 
+ static void fadump_free_buffer(unsigned long vaddr, unsigned long size)
+ {
+-	free_reserved_area((void *)vaddr, (void *)(vaddr + size), -1, NULL);
++	free_pages_exact((void *)vaddr, size);
+ }
+ 
+ s32 __init fadump_setup_cpu_notes_buf(u32 num_cpus)
+-- 
 2.51.0
+
 
