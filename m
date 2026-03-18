@@ -1,93 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-18399-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18400-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3BE271088E50
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2026 22:42:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 855641088E58
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2026 23:51:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fbkNc4sZ7z2yhX;
-	Thu, 19 Mar 2026 09:42:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773873744;
-	cv=pass; b=ThRZXXxx7TDyEIZLzlmI4aONZhYnaSzdU+n/yiDNYiR8mEtSpxzpP3j3OI63gWChPM826wz6njJNjdYb0Jc76fDeJV+dpqH9Jdj9xCkotWWQXqqeFSXswbWnVOGX1sfzNo7C8B2Vnoxa454XqjBdcfWL366A3njQltkfQrwpC6XEFSl/eAsORPtBTKb7whnli7iI2pj+RKFps+qCDNJuMq2kWl46uMJjyM/O5wF7I1eHpEC+llSBPIws+c10byQo+uHREsSa5ER3PBUf/al5xwahGtIrJggXdnNa6UiwVnHVDbLX5FxgeMUWnFvq5OlMzQZ+dS/w7xORmvzgcg1zoA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fblvy10pJz2yYK;
+	Thu, 19 Mar 2026 10:51:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c105::1" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773877870;
+	cv=pass; b=VGo3eFTqwoAnvMHX6Qh+WUOWnlHo268eyIHg7mZDaTEkBiCA8JY8WdKUi4BmuJvQkDQHDKIOHnxQDpKEZ+iMPpr+v8iwCXeFdsekRXTYRcMFJChX+5+tIGWcAHaKsQi+G3AkPlRPqHbmwakppLZXEu7CaGCurDQKCFSIEGgq5+pUD0YTx/lVOhO9K/kiPjgWETFvMw9W68y5+mEraeItKZU9XtXYPcfOntj8zbJTDOzo37nMY0y7/NBh7bzwhZxwu+XowO4xDXnHtZ+tGFoLhAH2QhGS/Kc6BHFoX5H4Tk8IVQ/2enw14yuNXPCQyqOkUBk/n2xwgt+4rVYB/8BUgA==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773873744; c=relaxed/relaxed;
-	bh=RYyflVuz+2J7uOWBP/9aazAzaECW1sELMfxFY3GsYbE=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=IZA5geHdkSDqkShS8HU77KD5TQjUaJKFojVpafMH0I8ajC6eDjDxxOJcJz2ZEVfWU5y4nkfnlZq9Xo/amkzpJ+LOaEsKmKYbKjrPF5JSFmySDxcxicHQe/Pxidu9lSXqcLyMejtdL46GPMzrNH1yvXtRpdR/61nNqECwO+5gM18fJ+DYxsiP8wYfxCEA34QkcddHVyVinqaSL/tXk/Ik+KBvv2jU2BlwFa5tW+GyrBFb5jHqIUAZEpBr3GQQYZyeCz2bG61eemBYeUde5OXmltxnrU704NGy5yIf5CkeIPjSLHZWXjnEdLK1JO9lMMbRiT3WFm8iYVPt1ZgtjMXCGQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=a0V5VApP; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::3; helo=du2pr03cu002.outbound.protection.outlook.com; envelope-from=frank.li@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+	t=1773877870; c=relaxed/relaxed;
+	bh=nLbg1HDH6l1jiTK+VlQOSblYz6M6mENO37elpcq0i8w=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=SdISZsKvHTJoM9UUHZlt9mpOYP0DVLfsyxVvgU1E0LKiIP+j8zMFS7MngCUaxEXjwGyHjLSx31ae2FJ6QqSgj3UP/gv37CyozV4vEYWZaRLhMOgohPyvy1NSaXVPCw1pnIAxUSK7DH4wPvsRA78CPB3lJffHhdWnl6lWqhJHvgzp0/EorVvCG6+wT2QFCXPiv8Xhxg8i5/4DrwuT7N2yi1+nH/RXWU8sDWyTG8vagTak3Lkap6SFAY67qdrKBUUjnLNZrkyLE6C+mSO89mXyeuWywP2QHCG0/Yra0H3LP5aoL25j+HOdFCNM0weCww6tLZGahZBpTl2g7m1JlOjorA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=wKpv8XDl; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c105::1; helo=ch1pr05cu001.outbound.protection.outlook.com; envelope-from=jason.andryuk@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=a0V5VApP;
+	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=wKpv8XDl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c200::3; helo=du2pr03cu002.outbound.protection.outlook.com; envelope-from=frank.li@nxp.com; receiver=lists.ozlabs.org)
-Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c105::1; helo=ch1pr05cu001.outbound.protection.outlook.com; envelope-from=jason.andryuk@amd.com; receiver=lists.ozlabs.org)
+Received: from CH1PR05CU001.outbound.protection.outlook.com (mail-northcentralusazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c105::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbkNb3x5yz2yr4
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 09:42:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fblvv1vHVz2xYk
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 10:51:06 +1100 (AEDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=WhqwYmS9XW7BP1nJtoaAXwz3gMqZPA45y4dzwaaa0rCD0jZTAJNfEXqCe0/Ic1ej6zGpBfWYhiRx7CdkPxzANq1ODpecZNqpx8K2hgrwatepdYpAnApncEMl1jYQ7m5k9vseMPsjpnhZ/2BaRj0qwQxxCZ5rUlyazFoHQnOGUxogYbzSe+B2B37GRzhv1YhJHAC3MeLsmGExYGPUL6S+oettTmVfzYM//qUlzsq9g/CH4MMWVtcvaWC2rMInKUOWWmgXn+DtOW3znof9wirub2fu0UnruwFYaILZgGn2umnfKbWcguJZdZKh9bnWFOKVH6IRjmkS8XHikFtLVLaiuA==
+ b=hBzBtaG702yy45jke0ewfT8X7DiQeQVoXUt2JuY8ikUfhfTI3jXmRSfFHHoLRfe2cAy1tSNy08pCqkniTuRl0SfbpkMTSrdblUqL+hI6hOCMcR5UKfrKpAJLcO5vK9wJhJD9lrsGIlZ+4TM2Xes+e4EV3P+3ltbbYdLVsl7DfMCYmHQ1wRvYLXI+FEaC28lAwlT4OaefcC3IPJlQ3CAUrTannyelXfNHhVGYJYZs38uKSo4xNgDUAo3aJcxUnukJecSedlDb77i6mjYO1Xt8bKj+n0hf8OLpLsv7zyfxT4SFQNwOTZSWvKOjyVAMSSobfJKVbJ7IwrpeyFB2vCjJTQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=RYyflVuz+2J7uOWBP/9aazAzaECW1sELMfxFY3GsYbE=;
- b=GjANhvd/m9KB/6sa16O2VC9a5Wfmn/AyL7VWWvmdDeKm8Wkmu2D/wANsDyqdpbsPb+NxeQS7IjvSrxmUwaNZ7ETkj9s/KKk19lQzcspZ0hhQjl+FWXlTB7R80TnMd3rF2/8YB1BFyzEvVWIcj4QFcVJJSz3Zj0+v3UKfHfTrNpRri0PI7FBlw9O+GoGcjHdKPWPVsMk8wg1dWW2KxTZ3Stq9FulrxA5jEQh8DEK84g7N3DHjvvdRLza3lrirJj6B/hX7dMTVAAmjjP5g3jbAZMa34SplUFu6FMuy9IevX7TT8i4CCxOqvCfMw/Thpjqafj0wCyMj8FdTW9eiXCfKdQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ bh=nLbg1HDH6l1jiTK+VlQOSblYz6M6mENO37elpcq0i8w=;
+ b=vXP4jftYwy+QIsCiGSlyXR96xHP4UFvWn4+im5iT6Ykq2EfQ8ul2gq/6JbcaE6NSnOlDISz18+meiroCRWKYvNqoEUKrCrHDd37Lp03Frd9SEYdWGCKaOnVr7ykLUYV7gdQavuoIRuxeLSespB61weCkYZQpcpthwgtlJoeh2jK0ImJ5VxG2T2jnUGmnCa/oKYmWEf4IMiq7v/s6MXmw2sGwla+qEGPFvWGU+l9xQ78iuZjaocwHhPNq0Y2ZXcEDUtquM546Crfeq7uNeJZ/nN+0XKmcjUvQH6OfOkZ3INNJ/jMz7zB3NB+yzBso1aYP4Bb5ooT3U6ck3J6Wx5ETdQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=linuxfoundation.org smtp.mailfrom=amd.com;
+ dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
+ header.from=amd.com; dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=RYyflVuz+2J7uOWBP/9aazAzaECW1sELMfxFY3GsYbE=;
- b=a0V5VApPIgA+wZDQrbaKEaZ1mDDKbLvsxUo6meJtplFrPbooTssqyO2RfBhOCFIyUGQ5MAv9pXpnoYYhIxiCMdhcMEaS7uaOu4euq0Ps/6+cDJG1iR/VgSuAk3lFhX4Mjh2tGysLpgw2gLHkHqEUCefMaY/X/GcgdN39ZFZetDs10+MfJYuanR9UOV4jWjkqFA3KQk7fvhHLit/iuddbTsBACQQABvOzul7Q03WgyHKifbAtnfLu7jYyvUUSAs+3AiZDrc6afF1A908QNKsIPMQ4tDioojQLVPd7k4ghfWY1DyBLNvnWDyaKVzLSVeNDtM1eFCylKdJ4rYhVt1coxQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Received: from PA4PR04MB9366.eurprd04.prod.outlook.com (2603:10a6:102:2a9::8)
- by PA2PR04MB10471.eurprd04.prod.outlook.com (2603:10a6:102:41f::18) with
+ bh=nLbg1HDH6l1jiTK+VlQOSblYz6M6mENO37elpcq0i8w=;
+ b=wKpv8XDlNd5MrHitoRRfdUbJ7/T0NCLSYao+CZFh92ssSdHBM8kTz+ae6RmhYzahF/+3owUR6jHwKuTfBgXVwZ/QZExc6/lXK57s/TZ2aKUm+cp899bhFIpbwnO8R08jdtnFsL8AJs2SHscsrBDMsjxn5Y9mqLlylNF/pK6yKmQ=
+Received: from BLAPR03CA0083.namprd03.prod.outlook.com (2603:10b6:208:329::28)
+ by MN2PR12MB4359.namprd12.prod.outlook.com (2603:10b6:208:265::24) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9723.19; Wed, 18 Mar
- 2026 22:41:57 +0000
-Received: from PA4PR04MB9366.eurprd04.prod.outlook.com
- ([fe80::75e4:8143:ddbc:6588]) by PA4PR04MB9366.eurprd04.prod.outlook.com
- ([fe80::75e4:8143:ddbc:6588%6]) with mapi id 15.20.9723.018; Wed, 18 Mar 2026
- 22:42:00 +0000
-From: Frank Li <Frank.Li@nxp.com>
-To: claudiu.manoil@nxp.com,
-	vladimir.oltean@nxp.com,
-	xiaoning.wang@nxp.com,
-	andrew+netdev@lunn.ch,
-	davem@davemloft.net,
-	edumazet@google.com,
-	kuba@kernel.org,
-	pabeni@redhat.com,
-	robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	f.fainelli@gmail.com,
-	frank.li@nxp.com,
-	chleroy@kernel.org,
-	horms@kernel.org,
-	linux@armlinux.org.uk
-Cc: netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org,
-	imx@lists.linux.dev
-Subject: Re: [PATCH net-next 08/14] net: enetc: add multiple command BD rings support
-Date: Wed, 18 Mar 2026 18:41:40 -0400
-Message-ID: <20260318224143.911762-1-Frank.Li@nxp.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260316094152.1558671-9-wei.fang@nxp.com>
-References: <20260316094152.1558671-9-wei.fang@nxp.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: SA9PR13CA0165.namprd13.prod.outlook.com
- (2603:10b6:806:28::20) To PA4PR04MB9366.eurprd04.prod.outlook.com
- (2603:10a6:102:2a9::8)
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.9; Wed, 18 Mar
+ 2026 23:50:38 +0000
+Received: from MN1PEPF0000F0E2.namprd04.prod.outlook.com
+ (2603:10b6:208:329:cafe::7a) by BLAPR03CA0083.outlook.office365.com
+ (2603:10b6:208:329::28) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9700.27 via Frontend Transport; Wed,
+ 18 Mar 2026 23:50:30 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
+Received: from satlexmb07.amd.com (165.204.84.17) by
+ MN1PEPF0000F0E2.mail.protection.outlook.com (10.167.242.40) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9723.19 via Frontend Transport; Wed, 18 Mar 2026 23:50:37 +0000
+Received: from satlexmb08.amd.com (10.181.42.217) by satlexmb07.amd.com
+ (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.17; Wed, 18 Mar
+ 2026 18:50:37 -0500
+Received: from amd-BIRMANPLUS.mshome.net (10.180.168.240) by
+ satlexmb08.amd.com (10.181.42.217) with Microsoft SMTP Server id 15.2.2562.17
+ via Frontend Transport; Wed, 18 Mar 2026 18:50:36 -0500
+From: Jason Andryuk <jason.andryuk@amd.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby
+	<jirislaby@kernel.org>, Juergen Gross <jgross@suse.com>, Stefano Stabellini
+	<sstabellini@kernel.org>, Oleksandr Tyshchenko
+	<oleksandr_tyshchenko@epam.com>
+CC: Jason Andryuk <jason.andryuk@amd.com>, <linuxppc-dev@lists.ozlabs.org>,
+	<linux-kernel@vger.kernel.org>, <linux-serial@vger.kernel.org>,
+	<xen-devel@lists.xenproject.org>
+Subject: [PATCH v2] hvc/xen: Check console connection flag
+Date: Wed, 18 Mar 2026 19:53:26 -0400
+Message-ID: <20260318235326.14568-1-jason.andryuk@amd.com>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,95 +95,109 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-EOPAttributedMessage: 0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PA4PR04MB9366:EE_|PA2PR04MB10471:EE_
-X-MS-Office365-Filtering-Correlation-Id: 53bf4bc6-dca3-455b-70bd-08de853f911d
+X-MS-TrafficTypeDiagnostic: MN1PEPF0000F0E2:EE_|MN2PR12MB4359:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1b892e22-8846-4191-c11f-08de854927bf
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|19092799006|376014|52116014|7416014|1800799024|18002099003|56012099003|22082099003|20052099010|921020|38350700014;
+	BCL:0;ARA:13230040|36860700016|376014|82310400026|1800799024|56012099003|18002099003;
 X-Microsoft-Antispam-Message-Info:
-	fa9rL8msH5qo7uddGU67chGhM9RksmgT4pXCzTFLQRmlYUzLjQPpVcLSTJK3lmZ6dIndmmCE6M4fZsyByaXgFkndMkXqXZHCXmrcoe8S9Nl48AubIB1o+f6UO6MrhbMCqZKNvBmQsl02s7lgRF7gHF0wsbKcJ5DHS2FiAzokbbFNsgH8A14w3P1GpBrf7t8isxvD4TDKrOMaVJe4BYG1rbLKjGFofGdEdKcX5OYURyXJzcRwmuXp/4MTdG3oUdcy2Mh1NhRmeAadAtsD0iNcnwe+4KgGY9/2uTbsfXFZwPOGtoYxBC6vA1ftQ3q7I9pI1qcUII4+5xFe3mph5v3mdMeRx1YsyxOw5O92MCTKco0D13OUtbNADX7zv/EU5dikdDl26xaDBQZgAl+pEIcY2ypjmm+4AyNjufgDbwZbPkdpkBAVJ6lFtE/rIp313k9OxHE0cOiNdIzR+N+pWj6Rx8F0o9Y9OOTbbtj7204WMzj582ojATpzw8BgmoCX0dFzuCSjlAzCypKLgxXIdY5oYgus327xO3eRA3LPTxHoOCRsW4XgN4eKrnBv4IWx/P2t4KI93hcsrFTUgcSqWNmyFHpsqvnGKvTMZHrnCFYnCr7c32WCNyD4Lw/QNicdgaBeiYQSsONyGQRH+ottOSgOmQybfpc/x/EHd+KSLtmv1ocoJ2SkGooRC7J8PpPmWxDQFxdNXap307qNL1tpGTQIFcSZzoploMk7v3+Q3Ux1Znx2GldfF50SYIsv5AzG5jrJXyMYZ/69WF4r7GT+/1pKDn5rS4SsUHxIhtb72hRlRqnbgIq7Kec//KGWQUfz38dt
+	JkpSHBDnsSk4aQuRibFmwQXefmYAh6y5Xn1e11gx4juQwNPfvxDVrn5/fmALEA4rhp95KsS4HR73G2/gtxikIZeBvXrE4I2tH+WrboeZnPUvokSTwQdllxEjJwrEIl31NeZm1MZgJ4kKkKpYJQBGPeGzSV0i3wZ5w2YB/VBF54OCPeQoKt/hS2X66M50emcTi2+oligKZAeDbX2ETviI98fATgQrsjag6iXoWtv4/vz3A6FYvalQ5wLi0g6yRN2MWh7pLNqjZTL7M9bDSdsk/GDJ77IHKEzZBlrwOJ6JtXOIxnMw3VffbyXvJZg/c/DF7TSQi4GTKfidCkOKaNuhs5o+F5rn0fQgFXPcfwIYaIB0BnhiFu44BNS49/jpsdpWL/vmdbdcK8lSe4eNmrSh/kMvpNsrK1NMUSERKhCT+ZCv9xtLngWD+OEEjvC+PyK62U9tnqtmUEw3LJyXqmhjcTMG5zD8CZVNaGlMbm0i1GroMHJ9qZeSzhtnxiwRSuqsuVQFr/R976a0jsgdfthhqU1JPFExXVBXhDpkJq1kn5czvZvCtsNUt3xaKIx2YTaCXsSgb9UEgHtL8sItqncw91Dz7FwokLIZBcwrtqviSE0R/tHpC0rIKOWxooXypwgOJhfKC/c+iGcnEI1UvqUAKTWI/ZRHHbtfjKMTAqHOuMxsX2nBGqwPE1yBuXZnw10oAHUoLZ+VOSIOejs1IE/tGBL7HMu0e8FCKSZkGhKHo/s7uBIa9gptvno3fbNJcHmq8MFkXldRhscT4Oh7TwyQXg==
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PA4PR04MB9366.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(19092799006)(376014)(52116014)(7416014)(1800799024)(18002099003)(56012099003)(22082099003)(20052099010)(921020)(38350700014);DIR:OUT;SFP:1101;
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(376014)(82310400026)(1800799024)(56012099003)(18002099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?Q+8h8ZvFkirk2Qfm+vAx47pcw/gJzkXUeSqsSB+KlTYs4MOqLX/MjcTHe21R?=
- =?us-ascii?Q?LYPOCZN7eujRS7eW4CZeBLarKNd62ct2Q2GUxEpIVRbQUKu4u72Jg1c5ERi7?=
- =?us-ascii?Q?3xg3mJW5i3OjPfexfV/E0wCdvBzqQkwcOGzXGa9e1TCr6S2ncUTvhdc08xIm?=
- =?us-ascii?Q?VrIYN5k0f5mlp8LVUpJA168064kJiWXGHMFMFOwrs+7NW5+JRN5dPuYx0wqq?=
- =?us-ascii?Q?1NCMkuIEN9gB684ikVmdCf6Tz8427JcmxwPidieQFeogth/WuK7fP82WTXZv?=
- =?us-ascii?Q?AscQyLericw2X2xQ3M21Qh9KELsEEnbHhJ4uRpkDJlPP1kdQwduUmIJo/Xgr?=
- =?us-ascii?Q?00usnypoTWU+SgP6vp5gvO4pm7idR3djiw+EgM6I0pmyY+xuURry6DhWhSVi?=
- =?us-ascii?Q?4wdkmv5wMW8LRQPoaH7jYEsKDIhErFa/8XY3zDIlBJ1WuBphSXVQlwlT9Pt/?=
- =?us-ascii?Q?G7mkBjVNLH/MIzPBcxq7yRxDPSAIrVjPPVG6yI8m1VYMZnwxQ/3zlFtKdyUK?=
- =?us-ascii?Q?kgp34wZzjsctLEvsKiQvwP8ek0LY59OKgsqLNK9OJ4Psx14CI1lZm5QNRraN?=
- =?us-ascii?Q?5pFZ+6DqKvJAKWjJU7mip1TDXzE2enM55ulZDklixYlLpxipT0JG643avbA+?=
- =?us-ascii?Q?wrZtLD8XnvRWacNUYnKLodGuk2u3Yq2VX0RXTIYNScjaQCfHXUMN4fiz5f89?=
- =?us-ascii?Q?ZgSJIH8z+O491IfIkpkBAkyUA3XZ/Tt7ngFlX8teaG5UFILtSVLV9Pkl3oVB?=
- =?us-ascii?Q?4tu4S/juiYxSejQh6TgCAVPDFS29P2oiKY/gB6TJAYHTjAtGfJJBKA0+EYjg?=
- =?us-ascii?Q?dagtLiXDdtMiP2/I9G54dNOsuLvsgR5fZ8vQTdHGqHCgx5X52FIu3c17xYPB?=
- =?us-ascii?Q?KBbLJ8Z+wwon1qO0wSjOOiOmdW+VI7WzICagqaqloM/uDE1deSBKUSJPk8p9?=
- =?us-ascii?Q?yNdpXKJkvaW31bDa7c3bWYvvp3IF5FtJNW6+XMj37sykNJss+p0Tyqjane2Q?=
- =?us-ascii?Q?SrL8pfx6+yKxF1cJRlO53PSqgpo5SbZQl6eBjBzNhu7C6PghfefcJidN3xcl?=
- =?us-ascii?Q?ytpedrXAkIB0xxNssAtnG92t2uKYxEkEw5eAxd5Speu/kwZtivbZbMyAqqOF?=
- =?us-ascii?Q?YMj3AgaPgsq0HfnOaZJwI+SzTznrZ91l6EpUnfpqG0eH4Rnhz583Cinkh0vH?=
- =?us-ascii?Q?7USCIHuzOwgSPNAH/bw/bbhFyES8vnL+Yo6fiMCDYaD+ZhsNW8EF1U8O/5QL?=
- =?us-ascii?Q?9NK2Y1YdIlGL2QB9cvGcOUCnJwpPmuDrvJy34pKhN7L5ZTvzl9nxZAszsI/X?=
- =?us-ascii?Q?IijJiqfntbxs9dG5UBlxL6r540/clUh/D2AxYCXR7eC+4A3g/QGz15LkORjQ?=
- =?us-ascii?Q?I4R4ldrNwJ+6JHeL4HclhVX8639UvOX/dmFR9ZSDetXfLqMeaKi7DPKGeBfh?=
- =?us-ascii?Q?VgyYiH3v4igyEBlzubpECcUBmzu1VgaQxsOzPq9cmQyBQlVj4Em3+4OTb2T2?=
- =?us-ascii?Q?H+9zs11PDDBOSdOX+ixw6aDoPK9/wRSdvUCTVBC6nMxxwDQ0aK9h9640fOBc?=
- =?us-ascii?Q?I8Ws1eLMxnSMquLcPH+MWDMu30qJiHvIpMEyCgFlxmKNzAS5BBwmJkwcECqc?=
- =?us-ascii?Q?SQix3Z+ZPwTNrCr3aRk5HeYF2l7QA8aqPgzMiVcOW9coYWcx3INbwyZj3fKg?=
- =?us-ascii?Q?wLK9XRSyfZs3JcAi7w1up9ZLGHDIGy8JNHaLT8congIhlS6LLUCTJXqQQ8vx?=
- =?us-ascii?Q?GqppeedkpA=3D=3D?=
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 53bf4bc6-dca3-455b-70bd-08de853f911d
-X-MS-Exchange-CrossTenant-AuthSource: PA4PR04MB9366.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Mar 2026 22:42:00.0646
+	re72hxWdptHIQ8P0TrugEA9BkVeKN6QYE49F6BlYwS38FuCoV+FnEbeNfWLmzCILrqnVDCDRtwTN5KDMI9eoM68Dbysezgyflkxt6qMw9u/9gCLxxeNkI1VixNFdJYpeC0FJ5D7TdgQzxgo77AauPFMAFSlPEca3ufcNboYbBXNRodihLoguxCbGIJq88uGjBBxRFfN+/k9HouYnJVUnUz4mUchYLrlFgsPRG1uNxyTTfhZxbRhhlUJa3WWhypnhgYH80bf+ZP4ImoZVJYC9KRr+1yzAA+y4YGuLuWgskIFgJx576w4HlrkHFmPGcHtbTaqM1Zs1kSD1cacQTbNHwkrYSUmdNLHvmh/HP5dHoJbktaoXHERrqqeU6Lq40KZfMkTVtGduh5mtRXPu8mPTrBpEGx2KSwVHNkSLdqNZAxNmFgyGZ6j1t4gpgIw2H4U2
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Mar 2026 23:50:37.8718
  (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: nf8CHkWgKHmAOIkK9KqvC3SvrV04gyCAF4Gof4/bTduMDGEK0ZF/b1eeyLSW3C8s4cV4Tr96dJt7hEFtssRCLA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA2PR04MB10471
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1b892e22-8846-4191-c11f-08de854927bf
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	MN1PEPF0000F0E2.namprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN2PR12MB4359
 
-From: Frank Li (AI-BOT) <frank.li@nxp.com>
+When the console out buffer is filled, __write_console() will return 0
+as it cannot send any data.  domU_write_console() will then spin in
+`while (len)` as len doesn't decrement until xenconsoled attaches.  This
+would block a domU and nullify the parallelism of Hyperlaunch until dom0
+userspace starts xenconsoled, which empties the buffer.
 
-> +static struct netc_cbdr *netc_select_cbdr(struct ntmp_user *user)
-> +{
-> +	int cpu, i;
-> +
-> +	for (i = 0; i < user->cbdr_num; i++) {
-> +		if (spin_is_locked(&user->ring[i].ring_lock))
-> +			continue;
-> +
-> +		return &user->ring[i];
-> +	}
-> +
-> +	/* If all the command BDRs are busy now, we select
-> +	 * one of them, but need to wait for a while to use.
-> +	 */
-> +	cpu = smp_processor_id();
-> +
-> +	return &user->ring[cpu % user->cbdr_num];
-> +}
+Xen 4.21 added a connection field to the xen console page.  This is set
+to XENCONSOLE_DISCONNECTED (1) when a domain is built, and xenconsoled
+will set it to XENCONSOLE_CONNECTED (0) when it connects.
 
-AI: spin_is_locked() is not reliable for lockless checks on all architectures.
-Consider using spin_trylock() instead, or document why this racy check isi
-acceptable here.
+Update the hvc_xen driver to check the field.  When the field is
+disconnected, drop the write with -ENOTCONN.  We only drop the write
+when the field is XENCONSOLE_DISCONNECTED (1) to try for maximum
+compatibility.  The Xen toolstack has historically zero initialized the
+console, so it should see XENCONSOLE_CONNECTED (0) by default.  If an
+implemenation used uninitialized memory, only checking for
+XENCONSOLE_DISCONNECTED could have the lowest chance of not connecting.
 
-> +	if (user->cbdr_num == 1)
-> +		cbdr = &user->ring[0];
-> +	else
-> +		cbdr = netc_select_cbdr(user);
+This lets the hyperlaunched domU boot without stalling.  Once dom0
+starts xenconsoled, xl console can be used to access the domU's hvc0.
 
-AI: The special case for cbdr_num == 1 is redundant; netc_select_cbdr() handles
-it correctly. Simplify to: cbdr = netc_select_cbdr(user);
+Paritally sync console.h from xen.git to bring in the new field.
 
-Need owner do futher judgement
+Reviewed-by: Stefano Stabellini <sstabellini@kernel.org>
+Signed-off-by: Jason Andryuk <jason.andryuk@amd.com>
+---
+v2:
+s/XENCONSOLED/XENCONSOLE/ in commit message
+Mention sync from xen.git in commit message
+R-b: Stefano
+---
+ drivers/tty/hvc/hvc_xen.c          |  3 +++
+ include/xen/interface/io/console.h | 13 +++++++++++++
+ 2 files changed, 16 insertions(+)
 
-Frank
+diff --git a/drivers/tty/hvc/hvc_xen.c b/drivers/tty/hvc/hvc_xen.c
+index 7f0b6262488c..c407592442cd 100644
+--- a/drivers/tty/hvc/hvc_xen.c
++++ b/drivers/tty/hvc/hvc_xen.c
+@@ -139,6 +139,9 @@ static ssize_t domU_write_console(uint32_t vtermno, const u8 *data, size_t len)
+ 	if (cons == NULL)
+ 		return -EINVAL;
+ 
++	if (cons->intf->connection == XENCONSOLE_DISCONNECTED)
++		return -ENOTCONN;
++
+ 	/*
+ 	 * Make sure the whole buffer is emitted, polling if
+ 	 * necessary.  We don't ever want to rely on the hvc daemon
+diff --git a/include/xen/interface/io/console.h b/include/xen/interface/io/console.h
+index cf17e89ed861..687949bdebb1 100644
+--- a/include/xen/interface/io/console.h
++++ b/include/xen/interface/io/console.h
+@@ -19,6 +19,19 @@ struct xencons_interface {
+     char out[2048];
+     XENCONS_RING_IDX in_cons, in_prod;
+     XENCONS_RING_IDX out_cons, out_prod;
++/*
++ * Flag values signaling from backend to frontend whether the console is
++ * connected.  i.e. Whether it will be serviced and emptied.
++ *
++ * The flag starts as disconnected.
++ */
++#define XENCONSOLE_DISCONNECTED 1
++/*
++ * The flag is set to connected when the backend connects and the console
++ * will be serviced.
++ */
++#define XENCONSOLE_CONNECTED    0
++    uint8_t connection;
+ };
+ 
+ #endif /* __XEN_PUBLIC_IO_CONSOLE_H__ */
+-- 
+2.34.1
+
 
