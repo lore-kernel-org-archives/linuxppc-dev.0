@@ -1,61 +1,105 @@
-Return-Path: <linuxppc-dev+bounces-18394-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18397-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D57D610775F8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2026 17:22:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F820107761C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2026 20:52:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fbbH43f62z2ykX;
-	Thu, 19 Mar 2026 04:22:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773854528;
-	cv=none; b=V5ndpkhA5vWNoN/bLbh0F/u4kXG3y9Tb9g9eXdx3DJeHbNZSBBJu5UfVprq2AJDv9RRzC1yezTyAfovRtbg8oHJYRPkQJY64/i10w4FpVvJSsNQ3YpcNyIDcOF3ZoyGLNhN51ddSUpmN7LgGQTqs5r7eqMKi/BXOmGwCCjJWHW87YGhRe9HQkXk+Km1Ewr6Ok9rHAG9DNxN4xh3WFeriJ46W08QFTbfO4wn5hOiOrDv6EinKiSk9N5potHgU8kveKZdyoHjW0Wg0CkLtJvXXZ21SzuEGzUeEvdU5QhBp7DVgfejlDKwHsPfFKvy5/0LQIipapL4gk1Bz0Noz5DKmVg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fbgy20Tn5z2ynC;
+	Thu, 19 Mar 2026 07:52:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773867161;
+	cv=none; b=EXatBHk/I4FkIQhviTvG59kQlp0MjgbF4c1s4ancuwvpxncYznj6aiVBQ0zmn/nhfCVLvIbE8eXuYmSRfhOtf80VwCM/3qhjPPyYsOGNQEU3EgdS6ZvPrFogpqjAgcFh/lxOJ4GownXhIXP1fhsOyWYrukoTZjeWKu74H+8e14I9VbSKWi02U4b/DcZnGip5I3x5oUmilkY0hQlVWdBPmvBhgs2IfDLEksznNKenZSMSe6XRV+tciiTVjVbNx2tRdJmKhZVTfLT5r8MMrirI0C5CkuU0kk9RVvpE1ySRLZpkV9tZSddEwje1Dc+lERVouIT4ecwWqTHk1xOlZ48A0g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773854528; c=relaxed/relaxed;
-	bh=AJyREjtgCw6461uj+yUH0Yr/yT+t0sqn4NCNwtgjPjE=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=Y8JTgSDjINurF6KQZufUykXXTmxa2bzsvVlg+ZMY2E4KFS4bL3mhC+YiJbwMWAdOoD7Xzl/Qm/1HzC3hEbNRNpaHaXfUzIju8fSM8oRDK6b6BQeOtdYxfCx/h+JKtN6TG7SUBPqR6Ty7gLR0Aly0UbMl+iD4iP3rlZpLI/2qYM+yM/19W4XJ2ENkTeeqjTHFieamSn/bzPlMmFk8avAOT7T1s7JHMDV0X5j/21+dMDWk2+YC5TsHBExZo0mS3j0PsaakDX6je30hewTe8OLyX/lxoLvd3AbtNJlxms0fB4C+M9uqn2Hrz3Gwx2naFi2WmYU6s0YM0qJG5MdWsNUqHg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=blvhD7Bq; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1773867161; c=relaxed/relaxed;
+	bh=v0KbAbSrDD+LwNPPQOnmwucCZsjcovNfZ7tqg9JQnkM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=ZqWRAz82kLohdUik5M4R+V4fEcv6mTBclkOAdATeSi+rBUXBJIv6Vle5ucSCakEzUGcerOPgW+iMz/dEoi6/GgTo86tZvJM2p9iuymFbLCfHaQO94b51+dVYnkjyTraY3dRicJ7G7x+eTHd2NUoGAnI5T6uh5oCUq5X82v58gvGI7my030TcldHETjxap01i8HtaeH6z8Kke58bPRTL5hYfEpTjZs/pL0eVK/zVtmyDcDc0U8GvwHLQlQwnIPfn3iSsHI3/K+MJJ6wp1gewxIx3OuxedDwK7f/7INsgQMDYECJqa4yccsriXlJdi7hYjc9LYa+WwkYPZsJ7CxAU5nQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=k7zvu5MI; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=blvhD7Bq;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=k7zvu5MI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbbH364gZz2yjV
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 04:22:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbgy06HSZz2ykf
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 07:52:40 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 1FDC560132;
-	Wed, 18 Mar 2026 17:22:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AB944C19421;
-	Wed, 18 Mar 2026 17:22:04 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 3D39D6011F;
+	Wed, 18 Mar 2026 20:52:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2EF7BC19421;
+	Wed, 18 Mar 2026 20:52:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773854524;
-	bh=1OgHpLEuNBi1/jSYIEf8g9ynIW7/JAsqHQFct/Wozi4=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:From;
-	b=blvhD7BqkUeHkikxU+oCyjYifKIxbD6EbW3EJmowgbboNYWrRUGNGeFQEIun+eJi3
-	 lR2vhQUBEgPwOQbMBfK8dh9E8vxcTqJzN0oTVEjLwMQbXQhPhTj27jdGw4b/vljs5c
-	 31mjjzTrUi8syI1ikynyLcmzFTthlx2c3PbIm/pr5vUHx6sanDRCk81qcetC0NMfYW
-	 mBwW9AQ7mtlf30kT/zXLgN8NAce3/ya8aLBBQFmwAkOyz+BjPknC9efMDwk+J1Bt50
-	 tr52pbfT2HZ2/M+exhel6tnbSLqlJztTgz1iFh1Lb5AsA8nh3E76MBycpvwY/YsAQO
-	 RGYqF5YRbLzjA==
-Date: Wed, 18 Mar 2026 12:22:03 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>,
-	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Oliver OHalloran <oohall@gmail.com>,
-	Jon Pan-Doh <pandoh@google.com>, linux-pci@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Sizhe Liu <liusizhe5@huawei.com>
-Subject: Re: [PATCH v1] PCI/DPC: Fix AER error logging for DPC/EDR triggered
- events
-Message-ID: <20260318172203.GA51847@bhelgaas>
+	s=k20201202; t=1773867157;
+	bh=kbGM3c4xh2xtlPKItuu8b0plWdnAptUOEmkS13CYnz8=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=k7zvu5MIc5CYIGmjWx+P+mS8/hs2GooJWHfXhDPqFeWyum4sz6NQ2neYQyXlUtlCv
+	 SOoz9lLS4EQYDGViVf0oRa8oUQ4wZWHCy5DjVMkrRZlzhDZfSxX8btIRC6pKKcZtqq
+	 HqFvYKZdPu6NZcu/RPV8yxBpMtnFC8Ki3vcf/rOBJrcG5AcAzdMR2gnTomxyf7IP8H
+	 zHZMPsz/wlq4Amx6dQtpM7EHwIuIilXwCtH35+nfGyIdYuPry8qYRVdyy1g3sS3ITk
+	 esmcmpAq0Qm7xqoPTPtpTIaBIFFTr4xbzEGttviQsDf6G2SgDxhQSQi5C5yhB9KCwG
+	 yOFQuYZFuGWzw==
+From: Mike Rapoport <rppt@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alexander Potapenko <glider@google.com>,
+	Alexander Viro <viro@zeniv.linux.org.uk>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Ard Biesheuvel <ardb@kernel.org>,
+	Borislav Petkov <bp@alien8.de>,
+	Brendan Jackman <jackmanb@google.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Christian Brauner <brauner@kernel.org>,
+	"David S. Miller" <davem@davemloft.net>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	David Hildenbrand <david@kernel.org>,
+	Dmitry Vyukov <dvyukov@google.com>,
+	Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Jan Kara <jack@suse.cz>,
+	Johannes Weiner <hannes@cmpxchg.org>,
+	"Liam R. Howlett" <Liam.Howlett@oracle.com>,
+	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Marco Elver <elver@google.com>,
+	Marek Szyprowski <m.szyprowski@samsung.com>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Michal Hocko <mhocko@suse.com>,
+	Mike Rapoport <rppt@kernel.org>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Rob Herring <robh@kernel.org>,
+	Robin Murphy <robin.murphy@arm.com>,
+	Saravana Kannan <saravanak@kernel.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Vlastimil Babka <vbabka@kernel.org>,
+	Will Deacon <will@kernel.org>,
+	Zi Yan <ziy@nvidia.com>,
+	devicetree@vger.kernel.org,
+	iommu@lists.linux.dev,
+	kasan-dev@googlegroups.com,
+	linux-arm-kernel@lists.infradead.org,
+	linux-efi@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org,
+	linux-trace-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	sparclinux@vger.kernel.org,
+	x86@kernel.org
+Subject: [PATCH 9/8] memblock tests: add stubs required for free_reserved_area()
+Date: Wed, 18 Mar 2026 22:52:21 +0200
+Message-ID: <20260318205221.1402161-1-rppt@kernel.org>
+X-Mailer: git-send-email 2.51.0
+In-Reply-To: <20260318105827.1358927-1-rppt@kernel.org>
+References: <20260318105827.1358927-1-rppt@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,55 +113,84 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260318170449.2733581-1-sathyanarayanan.kuppuswamy@linux.intel.com>
+Content-Transfer-Encoding: 8bit
 
-[+cc Sizhe]
+From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
 
-On Wed, Mar 18, 2026 at 10:04:49AM -0700, Kuppuswamy Sathyanarayanan wrote:
-> aer_print_error() skips printing if ratelimit_print[i] is not set.
-> In the native AER path, ratelimit_print is initialized by
-> add_error_device() during source device discovery, and is set to 1
-> for fatal errors to bypass rate limiting since fatal errors should
-> always be logged.
-> 
-> The DPC/EDR path uses the DPC-capable port as the error source and
-> reads its AER uncorrectable error status registers directly in
-> dpc_get_aer_uncorrect_severity(). Since it does not go through
-> add_error_device(), ratelimit_print[0] is left uninitialized and zero.
-> As a result, aer_print_error() silently drops all AER error messages
-> for DPC/EDR triggered events.
-> 
-> Set ratelimit_print[0] to 1 to bypass rate limiting and always print
-> AER logs for fatal errors.
-> 
-> Fixes: a57f2bfb4a58 ("PCI/AER: Ratelimit correctable and non-fatal error logging")
-> Co-developed-by: Goudar Manjunath Ramanagouda <manjunath.ramanagouda.goudar@intel.com>
-> Signed-off-by: Goudar Manjunath Ramanagouda <manjunath.ramanagouda.goudar@intel.com>
-> Signed-off-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+After moving free_reserved_area() function to mm/memblock.c memblock
+tests lack stubs for several functions and macros this function calls.
 
-I think this does the same as
-https://git.kernel.org/cgit/linux/kernel/git/pci/pci.git/commit/?id=d4d1ecff2c2d
-which is already queued for v7.1.
+Add them.
 
-> ---
->  drivers/pci/pcie/dpc.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/pci/pcie/dpc.c b/drivers/pci/pcie/dpc.c
-> index fc18349614d7..7605ddd9f0ba 100644
-> --- a/drivers/pci/pcie/dpc.c
-> +++ b/drivers/pci/pcie/dpc.c
-> @@ -256,6 +256,7 @@ static int dpc_get_aer_uncorrect_severity(struct pci_dev *dev,
->  
->  	info->dev[0] = dev;
->  	info->error_dev_num = 1;
-> +	info->ratelimit_print[0] = 1;
->  
->  	return 1;
->  }
-> -- 
-> 2.43.0
-> 
+Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+---
+ tools/include/linux/mm.h          |  1 +
+ tools/testing/memblock/internal.h | 28 +++++++++++++++++++++++++---
+ 2 files changed, 26 insertions(+), 3 deletions(-)
+
+diff --git a/tools/include/linux/mm.h b/tools/include/linux/mm.h
+index 028f3faf46e7..4407d8396108 100644
+--- a/tools/include/linux/mm.h
++++ b/tools/include/linux/mm.h
+@@ -17,6 +17,7 @@
+ 
+ #define __va(x) ((void *)((unsigned long)(x)))
+ #define __pa(x) ((unsigned long)(x))
++#define __pa_symbol(x) ((unsigned long)(x))
+ 
+ #define pfn_to_page(pfn) ((void *)((pfn) * PAGE_SIZE))
+ 
+diff --git a/tools/testing/memblock/internal.h b/tools/testing/memblock/internal.h
+index 009b97bbdd22..7ff61172ab24 100644
+--- a/tools/testing/memblock/internal.h
++++ b/tools/testing/memblock/internal.h
+@@ -11,9 +11,16 @@ static int memblock_debug = 1;
+ 
+ #define pr_warn_ratelimited(fmt, ...)    printf(fmt, ##__VA_ARGS__)
+ 
++#define K(x) ((x) << (PAGE_SHIFT-10))
++
+ bool mirrored_kernelcore = false;
+ 
+ struct page {};
++static inline void *page_address(struct page *page)
++{
++	BUG();
++	return page;
++}
+ 
+ void memblock_free_pages(unsigned long pfn, unsigned int order)
+ {
+@@ -23,10 +30,25 @@ static inline void accept_memory(phys_addr_t start, unsigned long size)
+ {
+ }
+ 
+-static inline unsigned long free_reserved_area(void *start, void *end,
+-					       int poison, const char *s)
++unsigned long free_reserved_area(void *start, void *end, int poison, const char *s);
++void free_reserved_page(struct page *page);
++
++static inline bool deferred_pages_enabled(void)
++{
++	return false;
++}
++
++#define for_each_valid_pfn(pfn, start_pfn, end_pfn)			 \
++	for ((pfn) = (start_pfn); (pfn) < (end_pfn); (pfn)++)
++
++static inline void *kasan_reset_tag(const void *addr)
++{
++	return (void *)addr;
++}
++
++static inline bool __is_kernel(unsigned long addr)
+ {
+-	return 0;
++	return false;
+ }
+ 
+ #endif
+-- 
+2.51.0
+
 
