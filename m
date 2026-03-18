@@ -1,79 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-18362-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18363-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 944C4103E183
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2026 14:47:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D80DF103E190
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2026 14:53:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fbWrL1cxkz2yjV;
-	Thu, 19 Mar 2026 01:47:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773845234;
-	cv=none; b=RNp1QmJQfM26ZzU9bDX5/2otSLkzv0BV7gXFIbQ3z89TBSPCnCTID4DHoLXQ8/NwGqjRnopaSzIIfQYovCZXmTCHQKvDNVovYeYyz/erF17hUVdAqpNcvE0aGa6mnKKLKZsl3Lg+ArJ9XDCLICKKAzIG6Ke3iyPzH3R2V4WbOz2BLuvbN09cPZVQUm2rbT/fTlm6vHfcSI/Cp+qBvFNAke3Eb9Ba+brfgBcpM+2hqpgSoRuPT3x6F/CKiZkWQPWO3oo2JGKCsrdPfeDDDPL4iAVCDrQN7MoQkrpmghSaf+Heu+LzxvMM/XncSqSDODfX8pkw+DhL1AkoNCDTzNO/8Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fbWzR48mSz2yjp;
+	Thu, 19 Mar 2026 01:53:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773845603;
+	cv=none; b=YhAlZFVneVkCCh7GW8pgViVDKyTJRCvBNTW5j4Imd5zQf2rfES0GnrYXVYD32KPmh1Left7YC+VBRxJKmIWiIZbitBHy4FYeueTprXMSmDoPjfI0GpPwzWY02mBhue4tz9xsgNcQEb7V30yOB7iWeFP4+gIdjeEdx/vHoBI1mOYtgke0uRfo0CSGiEnii9v9Xp4vnOerR8SpWPoUHcR3wfOgVswrvEipZhezLfplJAQGT/+x4zDXqOEu/xWj/Uet2dEJAs4mzj48kPcPVRJuGP+yReQY9+GLgpfg9G5xX6RoEtzRJL8v6eF2v80+2LSy81UU0nANtkvj5EGljSnT9g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773845234; c=relaxed/relaxed;
-	bh=OAUsju3w6+seco0DBwBvgWL+6NjPkS7WGoDZc8oY+gw=;
+	t=1773845603; c=relaxed/relaxed;
+	bh=o11Iy2EUiKEQzzjcnzv2FzaG64egcxcdSF/X7Q0VS8Y=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=XRkAOHMi450butkeA/wyhW6zOy8OG2tH5wt7Qlo1H9qG5801flarD7T9d+FTw9Zk8xQHhnSPP8JY9kVP4ba4OKBsZgUhYFJ8JRpiNV76lLbo7o8YLbDa9UJaFg2lO9KgKdtxfEcvaz/cObC32/Qc1zGLLGpmnzPNE8kk3RtsIYgiW+p6K3lZ3rLAUa/Vh8jH1Vp5NPoswoVWOMgH/oZpZrW4bHNCrmWeB2DvtafJSFx/6q9m39TsJ9Htr7s6CmASwkLVaSXtUKQm/lNxADj8UoikgL8DMdVDkk/xNJ09kGUq+H8i8X+XNjRBavxM6KvZTjnCOPGd3odrxdfC3t9Mug==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lNEXEXFH; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=horms@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=DQzEjblBdvKI2Z9yYXG9HCnRTG1ma1XDS8ZI9Id2+8HvH7USkfSC3n/G2woP+Vnxs78iPMqizykN6jdTI4e9hNeWiEkQcm2AAyoB1vWVIYdQJogvkBVnnt98ZauaHycAmC/lDheeOWm2aW9HIR+cTSHUWfjdq9U4QVJi7b6/PMu+yjF6iRossTh5cVhym4OqiLqvKGK1hdcDNZODEm9DPSeM3+egj18YutdGxpmosqdGlLlvNa95N8Iyp9NmlldxIAhBv0zdYv7D6WQxjPcDbvbAPGrW23QMCcWRxyGcL+ULjZ5tmnwJUVqHz46e6gHIRP4bQwQPEDzclqMp9os+rA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fAtjlSky; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=horms@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lNEXEXFH;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fAtjlSky;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=horms@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=horms@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbWrK1XKvz2ygd
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 01:47:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbWzP6b3wz2x99
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 01:53:21 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 1F82B42D8D;
-	Wed, 18 Mar 2026 14:47:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F2CE2C19421;
-	Wed, 18 Mar 2026 14:47:06 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 488A060133;
+	Wed, 18 Mar 2026 14:53:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EC5C1C19421;
+	Wed, 18 Mar 2026 14:53:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773845231;
-	bh=sOGhleK/nOFjGylRZPX91uK0mo+r2D9Kaglk5zGCV1M=;
+	s=k20201202; t=1773845599;
+	bh=felRz9HjKIpiMojzCYck9P/yFifvYQCbmR4et9IJMCE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=lNEXEXFHtHqqr5+jSR8/WPIZ+t95wCNVVoFyFK6S3X5ngF1Z0hz/dGpE0/8EVWyzB
-	 7mFxzM+0bUnUaAhTlEuc+9AknVBfSI9p5RHBxJWrrAvHGw/j+0E6tA3hZYfaqyW8OI
-	 3qeaNgswbe4lvpsnrdMYYgKytxx1PEPv7MSrbOGaa3g8CmFStN9NXTdAjn8hQtLhjO
-	 8VQ1bPGUgw/WxjL8g9punuvgQVYnky6+kVtBTz+q+WuZUomr0+eYyGnze5a5zLO7rs
-	 Xul8ho2Ds77F5cnV2Odc+IaNBY2ZPyljYTpCY3FqWe/wRWhVHahuEr8FNWykrSONbu
-	 lV9haUJJi9Hxg==
+	b=fAtjlSkyrrMyzIBZ7N2NlRzPZBtw8remOkjH7r+8O59bkBW9qIQf+rzgbHGyeJBZK
+	 0+T4qwG8pBLnqm5DlGljHViPzqML4ExtKFxOgILq0kFmbQ4uvSAukqpPijCffZKz5k
+	 Y7SBwklP6pAK+QeUH6IaeFjQHqZO+bN3SRjdRExWC97ff3txc5AZ03kJMwY0a8UlDW
+	 Od9QgSz11fcD99EJ8ap1pH+Sv8ZBKcHDb5mms12ptgEjzCziEJPXor9Pn/4l4lV15A
+	 92QuVOu/VnAHsV+FpmWB25zl5ivwjGt0EdgLwJPp1oONsKUcmW0Oon4456rAUBshvk
+	 SdVMgMdIqIi2w==
 From: Simon Horman <horms@kernel.org>
 To: wei.fang@nxp.com
 Cc: Simon Horman <horms@kernel.org>,
-	f.fainelli@gmail.com,
-	krzk+dt@kernel.org,
-	netdev@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	imx@lists.linux.dev,
-	linux-kernel@vger.kernel.org,
-	claudiu.manoil@nxp.com,
-	xiaoning.wang@nxp.com,
-	linux-arm-kernel@lists.infradead.org,
-	linux@armlinux.org.uk,
-	pabeni@redhat.com,
-	conor+dt@kernel.org,
-	chleroy@kernel.org,
-	edumazet@google.com,
-	frank.li@nxp.com,
-	kuba@kernel.org,
-	vladimir.oltean@nxp.com,
-	linuxppc-dev@lists.ozlabs.org,
 	robh@kernel.org,
+	pabeni@redhat.com,
+	claudiu.manoil@nxp.com,
+	devicetree@vger.kernel.org,
+	f.fainelli@gmail.com,
+	frank.li@nxp.com,
+	imx@lists.linux.dev,
+	krzk+dt@kernel.org,
+	linux-kernel@vger.kernel.org,
+	edumazet@google.com,
+	xiaoning.wang@nxp.com,
 	davem@davemloft.net,
-	andrew+netdev@lunn.ch
-Subject: Re: [net-next,11/14] net: dsa: netc: add phylink MAC operations
-Date: Wed, 18 Mar 2026 14:46:51 +0000
-Message-ID: <20260318144651.1891670-1-horms@kernel.org>
+	linux@armlinux.org.uk,
+	kuba@kernel.org,
+	chleroy@kernel.org,
+	conor+dt@kernel.org,
+	andrew+netdev@lunn.ch,
+	linux-arm-kernel@lists.infradead.org,
+	linuxppc-dev@lists.ozlabs.org,
+	vladimir.oltean@nxp.com,
+	netdev@vger.kernel.org
+Subject: Re: [net-next,12/14] net: dsa: netc: add more basic functions support
+Date: Wed, 18 Mar 2026 14:49:56 +0000
+Message-ID: <20260318144954.1893193-3-horms@kernel.org>
 X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260316094152.1558671-12-wei.fang@nxp.com>
-References: <20260316094152.1558671-12-wei.fang@nxp.com>
+In-Reply-To: <20260316094152.1558671-13-wei.fang@nxp.com>
+References: <20260316094152.1558671-13-wei.fang@nxp.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,206 +94,168 @@ email has considered the AI review valid, or at least plausible.
 
 For local reproduction steps see https://netdev-ai.bots.linux.dev/ai-local.html
 ---
-net: dsa: netc: add phylink MAC operations
+net: dsa: netc: add more basic functions support
 
-This commit adds phylink MAC operations to the NETC DSA switch driver,
-including support for different PHY interface modes (RGMII, RMII, MII,
-REVMII, SGMII, 2500BASE-X).
+This patch expands the NETC switch driver with several foundational
+features, including FDB and MDB management, STP state handling, MTU
+configuration, port setup/teardown, and host flooding support.
+At this stage, the driver operates only in standalone port mode.
 
 > diff --git a/drivers/net/dsa/netc/netc_main.c b/drivers/net/dsa/netc/netc_main.c
-> index bc7d48b99610..884ee899fc89 100644
+> index 884ee899fc89..fd952b507cbd 100644
 > --- a/drivers/net/dsa/netc/netc_main.c
 > +++ b/drivers/net/dsa/netc/netc_main.c
 
 [ ... ]
 
-> @@ -595,10 +595,221 @@ static void netc_switch_get_ip_revision(struct netc_switch *priv)
+> @@ -427,24 +658,57 @@ static int netc_setup(struct dsa_switch *ds)
+>  	if (err)
+>  		goto free_mdio_bus;
+>
+> +	INIT_HLIST_HEAD(&priv->fdb_list);
+> +	mutex_init(&priv->fdbt_lock);
+> +
+>  	netc_switch_fixed_config(priv);
+>
+>  	/* default setting for ports */
+>  	dsa_switch_for_each_available_port(dp, ds)
+>  		netc_port_default_config(priv->ports[dp->index]);
+>
+> +	err = netc_add_standalone_vlan_entry(priv);
+> +	if (err)
+> +		goto free_ntmp_user;
+> +
+> +	err = netc_add_standalone_fdb_bcast_entry(priv);
+> +	if (err)
+> +		goto free_ntmp_user;
+> +
+>  	return 0;
+>
+> +free_ntmp_user:
+> +	netc_free_ntmp_user(priv);
+>  free_mdio_bus:
+>  	netc_free_mdio_bus(priv);
+>
+>  	return err;
+>  }
+
+Does the error path handle the mutex properly?
+
+In netc_setup(), the mutex is initialized with mutex_init(&priv->fdbt_lock).
+If netc_add_standalone_vlan_entry() or netc_add_standalone_fdb_bcast_entry()
+fails, the error path jumps to free_ntmp_user:
+
+drivers/net/dsa/netc/netc_main.c:netc_setup() {
+	...
+	INIT_HLIST_HEAD(&priv->fdb_list);
+	mutex_init(&priv->fdbt_lock);
+	...
+	err = netc_add_standalone_vlan_entry(priv);
+	if (err)
+		goto free_ntmp_user;
+
+	err = netc_add_standalone_fdb_bcast_entry(priv);
+	if (err)
+		goto free_ntmp_user;
+
+	return 0;
+
+free_ntmp_user:
+	netc_free_ntmp_user(priv);
+free_mdio_bus:
+	netc_free_mdio_bus(priv);
+
+	return err;
+}
+
+But netc_free_ntmp_user() and netc_free_mdio_bus() don't call
+mutex_destroy(&priv->fdbt_lock) to clean up the mutex.
+
+Looking at the normal teardown path in netc_teardown(), it calls
+netc_destroy_all_lists() which properly handles both the FDB list and
+mutex cleanup:
+
+drivers/net/dsa/netc/netc_main.c:netc_destroy_all_lists() {
+	netc_destroy_fdb_list(priv);
+	mutex_destroy(&priv->fdbt_lock);
+}
+
+drivers/net/dsa/netc/netc_main.c:netc_teardown() {
+	struct netc_switch *priv = ds->priv;
+
+	netc_destroy_all_lists(priv);
+	netc_free_host_flood_rules(priv);
+	netc_free_ntmp_user(priv);
+	netc_free_mdio_bus(priv);
+}
+
+Should the error path in netc_setup() call netc_destroy_all_lists() before
+calling netc_free_ntmp_user()?
+
+> @@ -595,6 +859,261 @@ static void netc_switch_get_ip_revision(struct netc_switch *priv)
 >  	priv->revision = val & IPBRR0_IP_REV;
 >  }
 >
-> +static void netc_phylink_get_caps(struct dsa_switch *ds, int port,
-> +				  struct phylink_config *config)
+> +static void netc_destroy_all_lists(struct netc_switch *priv)
 > +{
-> +	struct netc_switch *priv = ds->priv;
-> +
-> +	priv->info->phylink_get_caps(port, config);
+> +	netc_destroy_fdb_list(priv);
+> +	mutex_destroy(&priv->fdbt_lock);
 > +}
 > +
-> +static void netc_port_set_mac_mode(struct netc_port *np,
-> +				   unsigned int mode,
-> +				   phy_interface_t phy_mode)
+> +static void netc_free_host_flood_rules(struct netc_switch *priv)
 > +{
-> +	u32 mask = PM_IF_MODE_IFMODE | PM_IF_MODE_ENA;
-> +	u32 val = 0;
+> +	struct dsa_port *dp;
 > +
-> +	switch (phy_mode) {
-> +	case PHY_INTERFACE_MODE_RGMII:
-> +	case PHY_INTERFACE_MODE_RGMII_ID:
-> +	case PHY_INTERFACE_MODE_RGMII_RXID:
-> +	case PHY_INTERFACE_MODE_RGMII_TXID:
-> +		val |= IFMODE_RGMII;
-> +		/* Enable auto-negotiation for the MAC if its
-> +		 * RGMII interface supports In-Band status.
-> +		 */
-> +		if (phylink_autoneg_inband(mode))
-> +			val |= PM_IF_MODE_ENA;
-> +		break;
-> +	case PHY_INTERFACE_MODE_RMII:
-> +		val |= IFMODE_RMII;
-> +		break;
-> +	case PHY_INTERFACE_MODE_REVMII:
-> +		val |= PM_IF_MODE_REVMII;
-> +		fallthrough;
-> +	case PHY_INTERFACE_MODE_MII:
-> +		val |= IFMODE_MII;
-> +		break;
-
-Does the mask need to include PM_IF_MODE_REVMII? Looking at
-netc_port_set_mac_mode(), the mask is set to:
-
-    u32 mask = PM_IF_MODE_IFMODE | PM_IF_MODE_ENA;
-
-which expands to GENMASK(2,0) | BIT(15) = 0x8007. When the REVMII
-case sets val |= PM_IF_MODE_REVMII (BIT(3)), this makes val = 0x9.
-
-In netc_mac_port_rmw(), there's a check:
-
-    WARN_ON((mask | val) != mask)
-
-This check would fire on every REVMII configuration since 0x800F != 0x8007.
-
-Additionally, REVMII is reachable because imx94_switch_phylink_get_caps()
-advertises PHY_INTERFACE_MODE_REVMII as supported for port 2. When
-transitioning FROM REVMII to another mode, PM_IF_MODE_REVMII (BIT(3))
-won't be cleared since it's not in the mask, leaving stale configuration.
-
-Should the mask be:
-
-    u32 mask = PM_IF_MODE_IFMODE | PM_IF_MODE_REVMII | PM_IF_MODE_ENA;
-
-> +	case PHY_INTERFACE_MODE_SGMII:
-> +	case PHY_INTERFACE_MODE_2500BASEX:
-> +		val |= IFMODE_SGMII;
-> +		break;
-> +	default:
-> +		break;
+> +	dsa_switch_for_each_user_port(dp, priv->ds) {
+> +		struct netc_port *np = priv->ports[dp->index];
+> +
+> +		kfree(np->host_flood);
+> +		np->host_flood = NULL;
 > +	}
-> +
-> +	netc_mac_port_rmw(np, NETC_PM_IF_MODE(0), mask, val);
 > +}
 
-[ ... ]
+[Simon says: I think this is a false positive and the clean-up
+ suggestion is not needed in tear down]
 
-> +static void netc_port_force_set_rgmii_mac(struct netc_port *np,
-> +					  int speed, int duplex)
-> +{
-> +	u32 mask, val;
-> +
-> +	mask = PM_IF_MODE_ENA | PM_IF_MODE_SSP | PM_IF_MODE_HD |
-> +	       PM_IF_MODE_M10 | PM_IF_MODE_REVMII;
-> +
-> +	switch (speed) {
-> +	default:
-> +	case SPEED_1000:
-> +		val = FIELD_PREP(PM_IF_MODE_SSP, SSP_1G);
-> +		break;
-> +	case SPEED_100:
-> +		val = FIELD_PREP(PM_IF_MODE_SSP, SSP_100M);
-> +		break;
-> +	case SPEED_10:
-> +		val = FIELD_PREP(PM_IF_MODE_SSP, SSP_10M);
-> +		break;
-> +	}
-> +
-> +	if (duplex != DUPLEX_FULL)
-> +		val |= PM_IF_MODE_HD;
-> +
-> +	netc_mac_port_rmw(np, NETC_PM_IF_MODE(0), mask, val);
-> +}
-> +
-> +static void net_port_set_rmii_mii_mac(struct netc_port *np,
+Does this properly clean up the hardware state?
 
-This isn't a bug, but should this function be named
-netc_port_set_rmii_mii_mac() instead of net_port_set_rmii_mii_mac()?
-All other functions in this driver use the netc_ prefix
-(netc_port_set_speed, netc_port_force_set_rgmii_mac,
-netc_port_set_mac_mode, etc.).
+netc_free_host_flood_rules() just frees the host_flood memory and sets
+the pointer to NULL:
 
-> +				      int speed, int duplex)
-> +{
-> +	u32 mask, val = 0;
-> +
-> +	mask = PM_IF_MODE_ENA | PM_IF_MODE_SSP | PM_IF_MODE_HD |
-> +	       PM_IF_MODE_M10;
-> +
-> +	if (speed == SPEED_10)
-> +		val |= PM_IF_MODE_M10;
-> +
-> +	if (duplex != DUPLEX_FULL)
-> +		val |= PM_IF_MODE_HD;
-> +
-> +	netc_mac_port_rmw(np, NETC_PM_IF_MODE(0), mask, val);
-> +}
+drivers/net/dsa/netc/netc_main.c:netc_free_host_flood_rules() {
+	struct dsa_port *dp;
 
-[ ... ]
+	dsa_switch_for_each_user_port(dp, priv->ds) {
+		struct netc_port *np = priv->ports[dp->index];
 
-> +static void netc_mac_link_up(struct phylink_config *config,
-> +			     struct phy_device *phy, unsigned int mode,
-> +			     phy_interface_t interface, int speed,
-> +			     int duplex, bool tx_pause, bool rx_pause)
-> +{
-> +	struct dsa_port *dp = dsa_phylink_to_port(config);
-> +	struct netc_port *np;
-> +
-> +	np = NETC_PORT(dp->ds, dp->index);
-> +	netc_port_set_speed(np, speed);
-> +
-> +	if (phy_interface_mode_is_rgmii(interface) &&
-> +	    !phylink_autoneg_inband(mode)) {
-> +		netc_port_force_set_rgmii_mac(np, speed, duplex);
-> +	}
-> +
-> +	if (interface == PHY_INTERFACE_MODE_RMII ||
-> +	    interface == PHY_INTERFACE_MODE_REVMII ||
-> +	    interface == PHY_INTERFACE_MODE_MII) {
-> +		net_port_set_rmii_mii_mac(np, speed, duplex);
-> +	}
-> +
-> +	netc_port_set_hd_flow_control(np, duplex == DUPLEX_HALF);
-> +	netc_port_mac_rx_enable(np);
-> +}
-> +
-> +static void netc_mac_link_down(struct phylink_config *config,
-> +			       unsigned int mode,
-> +			       phy_interface_t interface)
-> +{
-> +	struct dsa_port *dp = dsa_phylink_to_port(config);
-> +
-> +	netc_port_mac_rx_graceful_stop(NETC_PORT(dp->ds, dp->index));
-> +}
-> +
-> +static const struct phylink_mac_ops netc_phylink_mac_ops = {
-> +	.mac_config		= netc_mac_config,
-> +	.mac_link_up		= netc_mac_link_up,
-> +	.mac_link_down		= netc_mac_link_down,
-> +};
-> +
->  static const struct dsa_switch_ops netc_switch_ops = {
->  	.get_tag_protocol		= netc_get_tag_protocol,
->  	.setup				= netc_setup,
->  	.teardown			= netc_teardown,
-> +	.phylink_get_caps		= netc_phylink_get_caps,
->  };
->
->  static int netc_switch_probe(struct pci_dev *pdev,
-> @@ -639,6 +850,7 @@ static int netc_switch_probe(struct pci_dev *pdev,
->  	ds->num_ports = priv->info->num_ports;
->  	ds->num_tx_queues = NETC_TC_NUM;
->  	ds->ops = &netc_switch_ops;
-> +	ds->phylink_mac_ops = &netc_phylink_mac_ops;
->  	ds->priv = priv;
->
->  	priv->ds = ds;
+		kfree(np->host_flood);
+		np->host_flood = NULL;
+	}
+}
 
-[ ... ]
+But it doesn't delete the hardware IPFT entry or disable the PIPFCR register.
+
+Compare with netc_port_remove_host_flood() which performs complete cleanup:
+
+drivers/net/dsa/netc/netc_main.c:netc_port_remove_host_flood() {
+	struct netc_switch *priv = np->switch_priv;
+
+	if (!np->host_flood)
+		return;
+
+	ntmp_ipft_delete_entry(&priv->ntmp, np->host_flood->entry_id);
+	kfree(np->host_flood);
+	np->host_flood = NULL;
+	np->uc = false;
+	np->mc = false;
+	/* Disable ingress port filter table lookup */
+	netc_port_wr(np, NETC_PIPFCR, 0);
+}
+
+In netc_teardown(), netc_free_host_flood_rules() is called before
+netc_free_ntmp_user(), so the NTMP command infrastructure is still
+operational at that point.
+
+Should netc_free_host_flood_rules() call netc_port_remove_host_flood(np)
+for each user port instead of directly calling kfree()?
 
