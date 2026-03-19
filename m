@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-18461-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18462-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6752B1091905
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2026 18:09:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63EAD1091906
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2026 18:10:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fcDGy2R3Jz2ypW;
-	Fri, 20 Mar 2026 05:09:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773943754;
-	cv=none; b=SFL3ua+EA3uMFn5AGvH42vBoTgpueRO56EnP7NFqimyvo3CXruWXib+V7PQD3jdGPU9DXfQdT6dNJTiVsqjGp9U0ybnf7LzMHCDwPeGg5nAKUH5zNZGv5E10sUSA3DuKJLAz4nASQ0bECJRzGgfu25dlZleB4O8X1VPU7PDfETer5KQ0yo3zGG08b8DkMs4q/484boDJuFsaIvJgJRtpEoKIZdVGXGjCMgOY8GowzWSBytGk6qLhXpaCdBQTRJQ1EjL3GfmRWMJSA5YnnXdUdW6IxusiW+KZ+x6NozSuTpbzIsyTauHxrVLJ6nu6SB+x8tcSDsi5qvzuqqYzbXjHqQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fcDJJ5TYFz2ypW;
+	Fri, 20 Mar 2026 05:10:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773943824;
+	cv=none; b=bZtu0vXVZqwhtoyUpxaxc7O8EZ8SbT8R+ZdhOnaEg5Tr+TZw7X2cVjirPJKNYS49maZJbk+HGAQ0gvrJTwdhBPRKyw6q285m8gbTQCZjiT/OUCsPXgwTMMUem85v50zB5OdURLFOlV4eeKyNzNo+6/mg9hKpnqVfzwjzxktg2oa7/91PFmTc+nsks8zW8LylBRkZjrmLX+7EF14J5+ReLBEs+4yCkBmVNyL1YVe40oeVVaW2LGWtyKnOPFKpPNuw6yC9jZkHGz1BkumXM/ggYTdrewzPIp4NSa9DfurSWPp9DZyCNVc5lHhkCqvPhM8+8Ufw8qjfUNdeRyCNQrq+9g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773943754; c=relaxed/relaxed;
-	bh=s0/Rtf4mdU/0HDs0A9SNaDuzgSU+uL/VU12OEEC0CB8=;
+	t=1773943824; c=relaxed/relaxed;
+	bh=EnJPpD1HlmrCYa5F8eQoZ8HPYDU7ptWzeLwvguZaldU=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Nre2DYQkCm8vHsy0Z85bdQWF9zSlVJxkiytbvUALZJJsmu4H9CFSfBygEoMsdHLntSqN4TTsK3jGGvVZ4FF8eoSEZKmYVI63wLRAP5TRXyC+KJAAwRsadCsBX+neZ0Yfu950CvDHcUupmo4M/3Pqu8WpxT/hqpBF+8dj2G7c7HnZv+gWdHswnplE+otkhvovw0CUT7S4wAA+08vIgbdCmC9mLSK5iwphG0IcjSoF6g4ZVJ46KUc8GV7EsL7ZmdzXJOpwPhwV5LNDRZAWpc3sMM19amkw52tO983nB29eIpjAHOa2fXXOjwfkbb1/Tb1WpFmtseTvawr2Dy/FUGkQSQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qX+5ATXa; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=LPW/qn6g1s1XyUwDk7+GxU0jEboCMWobAo1Qj3x/UvgtjKEPsrffJlGCUQCj0SN2UKqHAMH1ANSRrbeYqxBaAEDZxqTM1I7LLYhWXGRv/ZuVvQUd2TkMFewFW1YHsOPnIGnY1BC1Bqj2Mqm/2pwxEJyAl03fYoQ2zM7/YBHzKI1OWBGLwQ2oNh4J8ZdcNOiCUmLA9YAlDZ7ETjGl8rTJYELsc7MaxYtr7PnEMZ1Iw83+cIJtJWz9QlqL1cGPVzv12RR39kA9ssY0DVcCc9e8401FqViYn26Cn7bhjd56f1/IBGHMnLZB3nrgTLMqHVrXqeCo4tX4ilWzr1B7xdsFuQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=X0Euv4a8; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qX+5ATXa;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=X0Euv4a8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fcDGx0mR5z2ynW
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2026 05:09:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fcDJH68JYz2ynW
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2026 05:10:23 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 52D3B434F6;
-	Thu, 19 Mar 2026 18:09:10 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 957E3C19424;
-	Thu, 19 Mar 2026 18:08:59 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id CCE7560053;
+	Thu, 19 Mar 2026 18:10:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8C03DC19424;
+	Thu, 19 Mar 2026 18:10:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773943750;
-	bh=6e0EEIIbFUQq892CEmzGoS89gmnjToRL3GjT58TAgu0=;
+	s=k20201202; t=1773943820;
+	bh=qiycmf8FVsKgiwJW+WF27BXoBUYgMXO2nKq2qH8/V9w=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=qX+5ATXaTeCVWnoq1pb3+DCvmHvgnPIAYR73j5oOUNNdhwJKMvxcxvMznp8qHd0GX
-	 xv9Nr4ET8PVsG4aPWJihjD17Yv4iSbwgqNwABsBQW9fob6yyIX9OL4T2HWsZX6uCus
-	 TFTxhLxBv3my3hJsS7WCE9HsFSKoBMrCM00nIZRsc3Cjm5vt8s5urJsnDYrzNSpl5W
-	 iLWAQ195xdMWcV+3wWlfcPK8SqBN9pQvzG7SgVOkmXFjAbrbNl7km4EVw8CntlIph+
-	 dgN4D/4rF2yXtEVk2ehm0cNMmvNiiHv2w0hPJ/ndW32TV+0f0DlGB7PdfcvTzv01cO
-	 LSmnz5V9S1qOw==
-Message-ID: <e166588e-036c-4fa3-81fc-d7aca9f02c29@kernel.org>
-Date: Thu, 19 Mar 2026 19:08:57 +0100
+	b=X0Euv4a8xyCYdsckpAbt8fT6LqhKk7IuU0UqphcoasZc2okaGlb+kQYu+uazvOUtq
+	 85f+tSHFspaDj1edmQOYfSf5Ln5e81IFaOedSogu+LxydtG1FDpGmK9cZBlZ5AYzRa
+	 3uKZfLc+Mxf0MDYXO0yxgs9q6RIzLjuRbFSenCg/KJjHEyTHUYURQrV5WpCEGCaa0E
+	 N97jKwxLfoj1ZChZKwjSPam7zTLbwQPiCGk+kCz60PShf3Pl02lf55TnKyqVR6fsWG
+	 h4sM7htBfcjdWtB4m4kvmy0dLFujX92gd2g9Mr2Log7dTfXYTuA10MgzgiWcha4EYZ
+	 7d5LBzU69n9gw==
+Message-ID: <571af145-df68-4f5d-8f21-a244552e104b@kernel.org>
+Date: Thu, 19 Mar 2026 19:10:07 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,7 +61,7 @@ Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH 1/2] mm: remove CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE
-To: Gregory Price <gourry@gourry.net>
+To: Mike Rapoport <rppt@kernel.org>
 Cc: linux-kernel@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
  Will Deacon <will@kernel.org>, Huacai Chen <chenhuacai@kernel.org>,
  WANG Xuerui <kernel@xen0n.name>, Madhavan Srinivasan <maddy@linux.ibm.com>,
@@ -78,12 +78,12 @@ Cc: linux-kernel@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
  "H. Peter Anvin" <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>,
  Lorenzo Stoakes <ljs@kernel.org>, "Liam R. Howlett"
  <Liam.Howlett@oracle.com>, Vlastimil Babka <vbabka@kernel.org>,
- Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
- Michal Hocko <mhocko@suse.com>, Zi Yan <ziy@nvidia.com>,
- Matthew Brost <matthew.brost@intel.com>,
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
+ Zi Yan <ziy@nvidia.com>, Matthew Brost <matthew.brost@intel.com>,
  Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>,
- Byungchul Park <byungchul@sk.com>, Ying Huang
- <ying.huang@linux.alibaba.com>, Alistair Popple <apopple@nvidia.com>,
+ Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>,
+ Ying Huang <ying.huang@linux.alibaba.com>,
+ Alistair Popple <apopple@nvidia.com>,
  Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
  Clark Williams <clrkwllms@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
  linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
@@ -92,7 +92,7 @@ Cc: linux-kernel@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
  linux-rt-devel@lists.linux.dev
 References: <20260319-config_migration-v1-0-42270124966f@kernel.org>
  <20260319-config_migration-v1-1-42270124966f@kernel.org>
- <abwVK8nLpSLVcT5G@gourry-fedora-PF4VCD3F>
+ <abwhzkhM9Bk9xPIf@kernel.org>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -139,42 +139,34 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <abwVK8nLpSLVcT5G@gourry-fedora-PF4VCD3F>
+In-Reply-To: <abwhzkhM9Bk9xPIf@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 3/19/26 16:24, Gregory Price wrote:
-> On Thu, Mar 19, 2026 at 09:19:40AM +0100, David Hildenbrand (Arm) wrote:
->> All architectures that select CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE also
->> select CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG. So we can just remove
->> CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE.
+
+>>  arch/arm64/Kconfig     | 1 -
+>>  arch/loongarch/Kconfig | 1 -
+>>  arch/powerpc/Kconfig   | 1 -
+>>  arch/riscv/Kconfig     | 1 -
+>>  arch/s390/Kconfig      | 1 -
+>>  arch/x86/Kconfig       | 1 -
+>>  mm/Kconfig             | 9 +++------
+>>  7 files changed, 3 insertions(+), 12 deletions(-)
 >>
->> For CONFIG_MIGRATION, make it depend on CONFIG_MEMORY_HOTREMOVE instead,
->> and make CONFIG_MEMORY_HOTREMOVE select CONFIG_MIGRATION (just like
->> CONFIG_CMA and CONFIG_COMPACTION already do).
->>
->> We'll clean up CONFIG_MIGRATION next.
->>
->> Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
+>> diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+>> index edc927d9e85a..d01800962d84 100644
+>> --- a/arch/s390/Kconfig
+>> +++ b/arch/s390/Kconfig
+>> @@ -85,7 +85,6 @@ config S390
+>>  	select ARCH_32BIT_USTAT_F_TINODE
+>>  	select ARCH_CORRECT_STACKTRACE_ON_KRETPROBE
+>>  	select ARCH_ENABLE_MEMORY_HOTPLUG if SPARSEMEM
 > 
-> HOTREMOVE has long been a thorn in my side, I appreciate you cleaning
-> this up.
+> Not really related, but s390 does not have anything but SPARSEMEM_VMEMMAP.
 
-On a long cardrive today I was wondering: do we still need a separate
-MEMORY_HOTREMOVE
+yeah, spotted that as well but decided to leave it as is for now.
 
-Now we'll have
-
-config MEMORY_HOTREMOVE
-	bool "Allow for memory hot remove"
-	select HAVE_BOOTMEM_INFO_NODE if (X86_64 || PPC64)
-	depends on MEMORY_HOTPLUG
-	select MIGRATION
-
-I'll try to get rid of that HAVE_BOOTMEM_INFO_NODE shite next.
-
-Then it's really just MIGRATION and some sprinkled
-CONFIG_MEMORY_HOTREMOVE. Not a lot of code.
+Thanks!
 
 -- 
 Cheers,
