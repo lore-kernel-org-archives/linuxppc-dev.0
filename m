@@ -1,87 +1,133 @@
-Return-Path: <linuxppc-dev+bounces-18400-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18401-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 855641088E58
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Mar 2026 23:51:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C84831088E5E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2026 02:02:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fblvy10pJz2yYK;
-	Thu, 19 Mar 2026 10:51:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c105::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773877870;
-	cv=pass; b=VGo3eFTqwoAnvMHX6Qh+WUOWnlHo268eyIHg7mZDaTEkBiCA8JY8WdKUi4BmuJvQkDQHDKIOHnxQDpKEZ+iMPpr+v8iwCXeFdsekRXTYRcMFJChX+5+tIGWcAHaKsQi+G3AkPlRPqHbmwakppLZXEu7CaGCurDQKCFSIEGgq5+pUD0YTx/lVOhO9K/kiPjgWETFvMw9W68y5+mEraeItKZU9XtXYPcfOntj8zbJTDOzo37nMY0y7/NBh7bzwhZxwu+XowO4xDXnHtZ+tGFoLhAH2QhGS/Kc6BHFoX5H4Tk8IVQ/2enw14yuNXPCQyqOkUBk/n2xwgt+4rVYB/8BUgA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fbpq2012Qz2yZ5;
+	Thu, 19 Mar 2026 13:02:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::6" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773885725;
+	cv=pass; b=QE1lpaUpKRF4dw1m56thYeLBqQH1RMbnRw64ACZkTuPOqY/y0qhh9cbBdLef5Ae45oorXNYeSKlGXMeP1SqCxsVgCh5nIetv80fHOO3wwfjwaap+Q2MsSylia8ad4LjTMO2/RObvINCHVy5DmD+xCvIrJZrbCG6S9N2bklZvqZAlXHjNYJx7SRauxlmXpiPAzXpcShhsxohlk8MWxTDX6Ijyf2GAi5Mc/LYoKqUqPPqfqztUE3qnKnLtv1MJEXiMZm3s7xf8K9YfGYRO1PX4JFikv0zseGyd9oGJkJJf+h9/olQo3dAk5IxVeAAcY9PRluM2BBNsOMuMmZAQtB53DQ==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773877870; c=relaxed/relaxed;
-	bh=nLbg1HDH6l1jiTK+VlQOSblYz6M6mENO37elpcq0i8w=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=SdISZsKvHTJoM9UUHZlt9mpOYP0DVLfsyxVvgU1E0LKiIP+j8zMFS7MngCUaxEXjwGyHjLSx31ae2FJ6QqSgj3UP/gv37CyozV4vEYWZaRLhMOgohPyvy1NSaXVPCw1pnIAxUSK7DH4wPvsRA78CPB3lJffHhdWnl6lWqhJHvgzp0/EorVvCG6+wT2QFCXPiv8Xhxg8i5/4DrwuT7N2yi1+nH/RXWU8sDWyTG8vagTak3Lkap6SFAY67qdrKBUUjnLNZrkyLE6C+mSO89mXyeuWywP2QHCG0/Yra0H3LP5aoL25j+HOdFCNM0weCww6tLZGahZBpTl2g7m1JlOjorA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=wKpv8XDl; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c105::1; helo=ch1pr05cu001.outbound.protection.outlook.com; envelope-from=jason.andryuk@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+	t=1773885725; c=relaxed/relaxed;
+	bh=Ux/B5ft0ciVtBVF/Y9dTNq/HeACtD3BsAvCxH90ZBXA=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=hlBV7AvyB6Yi0iMQ2Pd6Bn5FxjrRKNiF2l0BUGgsv0FZ4QtVdmU8o+tBlDr2hrv7H5SXqKtb0zm22BikYtSbYcFN61aB4/wv9Gs8tpQrLmMeEZCeWOg7o2kcUD0mO1BIQqEf0z+7IwDPM3Kgptcc0wYwiODjc2ao8YjKyYdaiKYYi2VBTmm6LJ5an2TxLZmRlO2hLKMyCWliBIl2GjKZbGMDhMi7BqJxUPPEP2tBhzEu5VjQR5QkfptUtOqcjpcbSDE8/j5jiVFffVOJTHenxa86M3L0UYyRMIvYdf3urwEVGvF1l1Aph++Iw5IvikmxLgW6mmEoACtZPmXOLR8+GQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=VFJv7k4/; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=wKpv8XDl;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=VFJv7k4/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c105::1; helo=ch1pr05cu001.outbound.protection.outlook.com; envelope-from=jason.andryuk@amd.com; receiver=lists.ozlabs.org)
-Received: from CH1PR05CU001.outbound.protection.outlook.com (mail-northcentralusazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c105::1])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
+Received: from AM0PR02CU008.outbound.protection.outlook.com (mail-westeuropeazlp170130006.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::6])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fblvv1vHVz2xYk
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 10:51:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbpq00Knlz2xZK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 13:02:02 +1100 (AEDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=hBzBtaG702yy45jke0ewfT8X7DiQeQVoXUt2JuY8ikUfhfTI3jXmRSfFHHoLRfe2cAy1tSNy08pCqkniTuRl0SfbpkMTSrdblUqL+hI6hOCMcR5UKfrKpAJLcO5vK9wJhJD9lrsGIlZ+4TM2Xes+e4EV3P+3ltbbYdLVsl7DfMCYmHQ1wRvYLXI+FEaC28lAwlT4OaefcC3IPJlQ3CAUrTannyelXfNHhVGYJYZs38uKSo4xNgDUAo3aJcxUnukJecSedlDb77i6mjYO1Xt8bKj+n0hf8OLpLsv7zyfxT4SFQNwOTZSWvKOjyVAMSSobfJKVbJ7IwrpeyFB2vCjJTQ==
+ b=srp+DdkTs3Zuc+/qrZKdqa83v5jtIgFQ4Z0e0McJfMuwIRMd/pRpIVHQhzDwYpEDo3f/zlfbc42oPQkVKhxWpIiL/4ostbEn4nWD9YzP6Zo+fciE6DQf0s8kznMaILSido7Z9055o2kwYRjYZESPep1jl6HKoh/0Rjk8R0eCpQCKYId2YL7XU2d1pEjMxzVFcr973VvcAjv4dIcsGt3qIUxXOL790cDMvIU0JNLk1bzH9QFVlo/0vl56fSHMV0Jt/VUB+Cn8j/GQFnYU9vyqZ0gxdvTfYC7uWLhyvlHN0BesUxyF5AcJC1RJ7kLA4X5J5ssL0PqbekGJ+m76+L4Fhw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=nLbg1HDH6l1jiTK+VlQOSblYz6M6mENO37elpcq0i8w=;
- b=vXP4jftYwy+QIsCiGSlyXR96xHP4UFvWn4+im5iT6Ykq2EfQ8ul2gq/6JbcaE6NSnOlDISz18+meiroCRWKYvNqoEUKrCrHDd37Lp03Frd9SEYdWGCKaOnVr7ykLUYV7gdQavuoIRuxeLSespB61weCkYZQpcpthwgtlJoeh2jK0ImJ5VxG2T2jnUGmnCa/oKYmWEf4IMiq7v/s6MXmw2sGwla+qEGPFvWGU+l9xQ78iuZjaocwHhPNq0Y2ZXcEDUtquM546Crfeq7uNeJZ/nN+0XKmcjUvQH6OfOkZ3INNJ/jMz7zB3NB+yzBso1aYP4Bb5ooT3U6ck3J6Wx5ETdQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=linuxfoundation.org smtp.mailfrom=amd.com;
- dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
- header.from=amd.com; dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ bh=Ux/B5ft0ciVtBVF/Y9dTNq/HeACtD3BsAvCxH90ZBXA=;
+ b=FilghwWyDTY5enEqYt2QBhTsCfkOPbmFMF3eM1/gs2W7Iff5PekDrTjjnVbBBDm042jSW/cBMvLz4eGRLK9opmUz2dz6QOEDJhDgV3CzISUTTvqJJNPv0aH/+vNiEkUgPjttHcA4xImhGZSdVNBhUqlE73cLoClW6Vw0jtephOOmlE5Ne64tIDNVPoJ5PnR7tmWOc8f4vu2zI0BA72Pw7ey4RZ3G3lry2Ax33fF1R0RuBBgI3OxMbRrVbbXsIyjFx013eQgBwJPk/C19Q+dKTJth1sjTXEJwQY092lsQJ5SfcXJIiw4u8PuSo+mUm/VdAJE8m9Sb51r/jO8Zpg3v9g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=nLbg1HDH6l1jiTK+VlQOSblYz6M6mENO37elpcq0i8w=;
- b=wKpv8XDlNd5MrHitoRRfdUbJ7/T0NCLSYao+CZFh92ssSdHBM8kTz+ae6RmhYzahF/+3owUR6jHwKuTfBgXVwZ/QZExc6/lXK57s/TZ2aKUm+cp899bhFIpbwnO8R08jdtnFsL8AJs2SHscsrBDMsjxn5Y9mqLlylNF/pK6yKmQ=
-Received: from BLAPR03CA0083.namprd03.prod.outlook.com (2603:10b6:208:329::28)
- by MN2PR12MB4359.namprd12.prod.outlook.com (2603:10b6:208:265::24) with
+ bh=Ux/B5ft0ciVtBVF/Y9dTNq/HeACtD3BsAvCxH90ZBXA=;
+ b=VFJv7k4/BQ73oLTF+x44LnSs5+ZC+BFEnXOHscMibFv0uZiSMkihuO8vQj5Rtb2e8OKtdqaKcZ41tw93/MCF11tSnuMKWrf9zC8kAhXGQDRqn7VOmjyLSPXP8ASgN55jZv47E9xvV+dIaPM5YNa6nrHtdSA20XdkVj4P8MaH1mE7qOdPL4qZCjp8+/9eBzI+noo6yR5Dxs8j9kUs9kfU8DVkeMNI9po0MTNhJYGzNKBS6iB4FZG/f2fJyJmrCr/0hx6lLMubiAxUyy/tmEI4ojoVG0TWyX4xPPGVY0sglVLCEtBYpPCyy9J38PFiPuycte+f9Z613zKF7joUWwX8xg==
+Received: from PAXPR04MB8510.eurprd04.prod.outlook.com (2603:10a6:102:211::7)
+ by VI1PR04MB6862.eurprd04.prod.outlook.com (2603:10a6:803:130::22) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.9; Wed, 18 Mar
- 2026 23:50:38 +0000
-Received: from MN1PEPF0000F0E2.namprd04.prod.outlook.com
- (2603:10b6:208:329:cafe::7a) by BLAPR03CA0083.outlook.office365.com
- (2603:10b6:208:329::28) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9700.27 via Frontend Transport; Wed,
- 18 Mar 2026 23:50:30 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
-Received: from satlexmb07.amd.com (165.204.84.17) by
- MN1PEPF0000F0E2.mail.protection.outlook.com (10.167.242.40) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9723.19 via Frontend Transport; Wed, 18 Mar 2026 23:50:37 +0000
-Received: from satlexmb08.amd.com (10.181.42.217) by satlexmb07.amd.com
- (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.17; Wed, 18 Mar
- 2026 18:50:37 -0500
-Received: from amd-BIRMANPLUS.mshome.net (10.180.168.240) by
- satlexmb08.amd.com (10.181.42.217) with Microsoft SMTP Server id 15.2.2562.17
- via Frontend Transport; Wed, 18 Mar 2026 18:50:36 -0500
-From: Jason Andryuk <jason.andryuk@amd.com>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby
-	<jirislaby@kernel.org>, Juergen Gross <jgross@suse.com>, Stefano Stabellini
-	<sstabellini@kernel.org>, Oleksandr Tyshchenko
-	<oleksandr_tyshchenko@epam.com>
-CC: Jason Andryuk <jason.andryuk@amd.com>, <linuxppc-dev@lists.ozlabs.org>,
-	<linux-kernel@vger.kernel.org>, <linux-serial@vger.kernel.org>,
-	<xen-devel@lists.xenproject.org>
-Subject: [PATCH v2] hvc/xen: Check console connection flag
-Date: Wed, 18 Mar 2026 19:53:26 -0400
-Message-ID: <20260318235326.14568-1-jason.andryuk@amd.com>
-X-Mailer: git-send-email 2.34.1
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9723.19; Thu, 19 Mar
+ 2026 02:01:35 +0000
+Received: from PAXPR04MB8510.eurprd04.prod.outlook.com
+ ([fe80::b476:c19a:24cd:3694]) by PAXPR04MB8510.eurprd04.prod.outlook.com
+ ([fe80::b476:c19a:24cd:3694%3]) with mapi id 15.20.9723.018; Thu, 19 Mar 2026
+ 02:01:33 +0000
+From: Wei Fang <wei.fang@nxp.com>
+To: Simon Horman <horms@kernel.org>
+CC: "f.fainelli@gmail.com" <f.fainelli@gmail.com>, "krzk+dt@kernel.org"
+	<krzk+dt@kernel.org>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+	"imx@lists.linux.dev" <imx@lists.linux.dev>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, Claudiu Manoil <claudiu.manoil@nxp.com>,
+	Clark Wang <xiaoning.wang@nxp.com>, "linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "linux@armlinux.org.uk"
+	<linux@armlinux.org.uk>, "pabeni@redhat.com" <pabeni@redhat.com>,
+	"conor+dt@kernel.org" <conor+dt@kernel.org>, "chleroy@kernel.org"
+	<chleroy@kernel.org>, "edumazet@google.com" <edumazet@google.com>, Frank Li
+	<frank.li@nxp.com>, "kuba@kernel.org" <kuba@kernel.org>, Vladimir Oltean
+	<vladimir.oltean@nxp.com>, "linuxppc-dev@lists.ozlabs.org"
+	<linuxppc-dev@lists.ozlabs.org>, "robh@kernel.org" <robh@kernel.org>,
+	"davem@davemloft.net" <davem@davemloft.net>, "andrew+netdev@lunn.ch"
+	<andrew+netdev@lunn.ch>
+Subject: RE: [net-next,11/14] net: dsa: netc: add phylink MAC operations
+Thread-Topic: [net-next,11/14] net: dsa: netc: add phylink MAC operations
+Thread-Index: AQHctuYdi2RS4ohQoEi1ABW3N7J/OrW1GkGw
+Date: Thu, 19 Mar 2026 02:01:33 +0000
+Message-ID:
+ <PAXPR04MB8510EC449C87545449418ED1884FA@PAXPR04MB8510.eurprd04.prod.outlook.com>
+References: <20260316094152.1558671-12-wei.fang@nxp.com>
+ <20260318144651.1891670-1-horms@kernel.org>
+In-Reply-To: <20260318144651.1891670-1-horms@kernel.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: PAXPR04MB8510:EE_|VI1PR04MB6862:EE_
+x-ms-office365-filtering-correlation-id: df88fd56-f2f1-45c2-1f26-08de855b7215
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|1800799024|7416014|376014|366016|19092799006|38070700021|56012099003|22082099003|18002099003;
+x-microsoft-antispam-message-info:
+ nO1hitNVNFHplyfyFnhIEL03CqSwOf/obGMyxfEvEAcW1grqSLY61lHSdTfYfWPxKwX+LgCJqXxcYHLInEVUoDSE0KGcCWNfO1e5GP1xpc2uj1EiK84bJFeajuUYksAfktpMDmNnztT3QtuDnmBa50gSBplfLOfyItKM3erY79NvAEnp1OnpB1aDn9ijVO0IsJ4afH4fAiDqztD2ID+mkChceGy3o/IGmZo4wLnlqU9IgUMDyqyxO2UMt8zG4gYtjrCZOLJEiEqJPozOhocW5uciLu+16BjlnDUu2062wivUf27VETJnLYCD1bv2rj6cndaj9YlqkgQKUvS06UF3T0h4ZHO31tSVpuoV0Abos4L/6Gr/+oeSaEhOXL49DjK/+eqKaJ/jM9tAeFdDWgP5wjgBtZZqYljt63rbSh/Bam+K9k6NcRDxmkcWZrJn35F/XD2TN2XG0PBd1ke6yqkR5heSXOwiyuRkQHiNg2BVcJ93ICyhHhwDRX40iCqvFtZ0RMawOGtZXhKWv7oAmMVXgyIjeaaUi86Yk8xPa+fkFEbKTqjbpKOdh7XkflECvzoKyobh03+WUKUvO7Lwy6aHs2UM0AGlaTFCQ4vwKaNXYy73iyXawRsHqWf23rT0FZJCulIcW86KKwiZcFBGGx/v2l8DYKkzrbsKYMzlYwV/VuQWN0brvDhnKTUqJ6cpDOH0H2qUppenJ4fxpL9vwHzlwo5kwGNSsS8dWCUCFKF+3iuwEKz83RxFeFLa4BaBo135coRwMVUJTzTvevjIdmoFTCCXD7w14PQUb0rnUHvoiv4=
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB8510.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(7416014)(376014)(366016)(19092799006)(38070700021)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?us-ascii?Q?og/xGaGK10khvmfNssLMTtuxA2VFvkPiJN/JD7JtLGkG+y2JuPrHX1MtIZXF?=
+ =?us-ascii?Q?oBWu1nwzCpf1PmI82SocMP9XGQHzyvsLfkf0h922yuZfcqs9CfPSm1f9iEOv?=
+ =?us-ascii?Q?3VOJlpv18WXa5FDM/2RHgiU9Qp/TpjwqYefZ+wnUE3DEmdjm5f5ut/nnKAOx?=
+ =?us-ascii?Q?6KerHpPll47SSPtBkVtDofE4cl9HGYoF/7mO1wwvZVHYisZIX765mQy9vz6L?=
+ =?us-ascii?Q?cEfy3irb1d+rmiRngEFUohG7wFH8aAV2QKxHn+JOFPk5XOJJUDixPZ/E9DNU?=
+ =?us-ascii?Q?mmgsen4IE4t6agN/SLdhWUfG2zy3tXg5eQ7kRHNc3LRz59PEzEAN1HMTxSDI?=
+ =?us-ascii?Q?qXbrTGQbQlDAtD7wrxQsFaZW97i1qjoRk/z10oyBFR1/I3LPsgOViV7boyDa?=
+ =?us-ascii?Q?bVY64zG5vXBovO8pkquA7si718Yd34GIr/ZiAtuHZjjUnnVhFybMN4zJbdCu?=
+ =?us-ascii?Q?0pqpbqhS/c+HISYmO/4vFcneMTrr6zKyNzV+Lwg89AtD1xffdhq2Dg/f3i69?=
+ =?us-ascii?Q?cfcdnpD9TwW4ZOzNE9lkIVIZZ1nmo2XhPGa+Vcfj/ifKXhIJ0nkB9b+xWeIA?=
+ =?us-ascii?Q?YWQBX7ykSvABk3PMj/Nv4AJuPI0w8m7Kk9miPYQGbSZ/fS7yXJPgOqbXJMPy?=
+ =?us-ascii?Q?T8pxINDtIadCqw5HcozWeQpadWBBoPX+9slwze3io2Pze0GPtULVIHTwAUgS?=
+ =?us-ascii?Q?Yd/UpN209xnch/c9UKPRgK5T3QQdPKYOEZYGnPLX1uS1tMToZOo+z/r/1hys?=
+ =?us-ascii?Q?HF0xi1HJAojFSjKLiRPSHw8Qhzl2KkKzESVnhMqADw1486mGly8ManET5V3S?=
+ =?us-ascii?Q?+p16DU7LyRTNxtUM2m8IkHmIpBQCAZt3o7rFS7CBtLJubqk7tfYtQl7h0WFS?=
+ =?us-ascii?Q?mIANTBWU8/Rgo6UIa2v1OBLMGSeyje4AnURJ70ckINbxo9rf8kbQpoyGUNyX?=
+ =?us-ascii?Q?dEEFLzcm815OScUXL7Mex1Q04B0zHfTVFjFLKaEHcTAuxlwNacMb4hQq5AOX?=
+ =?us-ascii?Q?B5IisxKKaeglQYs6XDn/bPq0BJzczjhGPLJJzwv/Y4AAkfN2AFKV1EnjV9hR?=
+ =?us-ascii?Q?P7z3SMZ32bwYcrjShuYfb5dsywOCpOk8S9EwhOFaAF5Uk2KDidrFeAT8Y7OJ?=
+ =?us-ascii?Q?cGvqtciF/nUsDpuFAGj1yj49gby/w14BTsfkYf66ckRg45bgeaeJR1Lv7XyM?=
+ =?us-ascii?Q?1WhcvaVByT86Tr7RLPDu04LrI6uN7WbVbgrcHQcg3ls4lYbRZpVf3debz04l?=
+ =?us-ascii?Q?W+cX+kgREd2V3mvgbLnP2oSheCDGYCdafmqXXqLbTa9q/Nqg4sropGXILTt4?=
+ =?us-ascii?Q?fNm/c2vq6CvO2sFvnQxFTl8yJuDmlMt/fP3+x4hSzCbJ40g/NKQdgFL4xOG/?=
+ =?us-ascii?Q?F+0uvKaL/GeUAlpmXDzTIIVwSELbSqjJH4LsaC7N4YlqINFPtNP4vvf1Is4o?=
+ =?us-ascii?Q?uEfB8hcaYQdom25RhOZS0uSqLgZHoRBw7dxvVPZ2TGs7XhX2gc5v7MPwvTUD?=
+ =?us-ascii?Q?SKj11n/B30pkS6LnZFG7akuHgtViqLg0h7tO9U6cFANT0lqjLK3HJ9HpvtO7?=
+ =?us-ascii?Q?aJbr6SimWgFEEbLRSasVZQTiGH9MA5gDw52gHs/mFJpgpEIYKp3H0ISPEEE2?=
+ =?us-ascii?Q?F1Hlb/lVGadpiuCcgIwQBwIw0KL/0NeSPO4LS0A5pEZTsk1rpms3t5v9YvQi?=
+ =?us-ascii?Q?KIGmsPoB3zMZ3okcn3PAG5amaJc4U1QllTae+ZbT/qr8aEDP?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,109 +141,131 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: MN1PEPF0000F0E2:EE_|MN2PR12MB4359:EE_
-X-MS-Office365-Filtering-Correlation-Id: 1b892e22-8846-4191-c11f-08de854927bf
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|36860700016|376014|82310400026|1800799024|56012099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	JkpSHBDnsSk4aQuRibFmwQXefmYAh6y5Xn1e11gx4juQwNPfvxDVrn5/fmALEA4rhp95KsS4HR73G2/gtxikIZeBvXrE4I2tH+WrboeZnPUvokSTwQdllxEjJwrEIl31NeZm1MZgJ4kKkKpYJQBGPeGzSV0i3wZ5w2YB/VBF54OCPeQoKt/hS2X66M50emcTi2+oligKZAeDbX2ETviI98fATgQrsjag6iXoWtv4/vz3A6FYvalQ5wLi0g6yRN2MWh7pLNqjZTL7M9bDSdsk/GDJ77IHKEzZBlrwOJ6JtXOIxnMw3VffbyXvJZg/c/DF7TSQi4GTKfidCkOKaNuhs5o+F5rn0fQgFXPcfwIYaIB0BnhiFu44BNS49/jpsdpWL/vmdbdcK8lSe4eNmrSh/kMvpNsrK1NMUSERKhCT+ZCv9xtLngWD+OEEjvC+PyK62U9tnqtmUEw3LJyXqmhjcTMG5zD8CZVNaGlMbm0i1GroMHJ9qZeSzhtnxiwRSuqsuVQFr/R976a0jsgdfthhqU1JPFExXVBXhDpkJq1kn5czvZvCtsNUt3xaKIx2YTaCXsSgb9UEgHtL8sItqncw91Dz7FwokLIZBcwrtqviSE0R/tHpC0rIKOWxooXypwgOJhfKC/c+iGcnEI1UvqUAKTWI/ZRHHbtfjKMTAqHOuMxsX2nBGqwPE1yBuXZnw10oAHUoLZ+VOSIOejs1IE/tGBL7HMu0e8FCKSZkGhKHo/s7uBIa9gptvno3fbNJcHmq8MFkXldRhscT4Oh7TwyQXg==
-X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(36860700016)(376014)(82310400026)(1800799024)(56012099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	re72hxWdptHIQ8P0TrugEA9BkVeKN6QYE49F6BlYwS38FuCoV+FnEbeNfWLmzCILrqnVDCDRtwTN5KDMI9eoM68Dbysezgyflkxt6qMw9u/9gCLxxeNkI1VixNFdJYpeC0FJ5D7TdgQzxgo77AauPFMAFSlPEca3ufcNboYbBXNRodihLoguxCbGIJq88uGjBBxRFfN+/k9HouYnJVUnUz4mUchYLrlFgsPRG1uNxyTTfhZxbRhhlUJa3WWhypnhgYH80bf+ZP4ImoZVJYC9KRr+1yzAA+y4YGuLuWgskIFgJx576w4HlrkHFmPGcHtbTaqM1Zs1kSD1cacQTbNHwkrYSUmdNLHvmh/HP5dHoJbktaoXHERrqqeU6Lq40KZfMkTVtGduh5mtRXPu8mPTrBpEGx2KSwVHNkSLdqNZAxNmFgyGZ6j1t4gpgIw2H4U2
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Mar 2026 23:50:37.8718
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB8510.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: df88fd56-f2f1-45c2-1f26-08de855b7215
+X-MS-Exchange-CrossTenant-originalarrivaltime: 19 Mar 2026 02:01:33.5304
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1b892e22-8846-4191-c11f-08de854927bf
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	MN1PEPF0000F0E2.namprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN2PR12MB4359
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: 0RyQEeTl/VW1u+Z1bBIHgkT0NiZaUnQvPmhC6RY0etIaskPOlrYk7Pf4Ekq9DYw3/FYiwEGjaiJuDDHJSGL09g==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB6862
 
-When the console out buffer is filled, __write_console() will return 0
-as it cannot send any data.  domU_write_console() will then spin in
-`while (len)` as len doesn't decrement until xenconsoled attaches.  This
-would block a domU and nullify the parallelism of Hyperlaunch until dom0
-userspace starts xenconsoled, which empties the buffer.
+> > +static void netc_phylink_get_caps(struct dsa_switch *ds, int port,
+> > +				  struct phylink_config *config)
+> > +{
+> > +	struct netc_switch *priv =3D ds->priv;
+> > +
+> > +	priv->info->phylink_get_caps(port, config);
+> > +}
+> > +
+> > +static void netc_port_set_mac_mode(struct netc_port *np,
+> > +				   unsigned int mode,
+> > +				   phy_interface_t phy_mode)
+> > +{
+> > +	u32 mask =3D PM_IF_MODE_IFMODE | PM_IF_MODE_ENA;
+> > +	u32 val =3D 0;
+> > +
+> > +	switch (phy_mode) {
+> > +	case PHY_INTERFACE_MODE_RGMII:
+> > +	case PHY_INTERFACE_MODE_RGMII_ID:
+> > +	case PHY_INTERFACE_MODE_RGMII_RXID:
+> > +	case PHY_INTERFACE_MODE_RGMII_TXID:
+> > +		val |=3D IFMODE_RGMII;
+> > +		/* Enable auto-negotiation for the MAC if its
+> > +		 * RGMII interface supports In-Band status.
+> > +		 */
+> > +		if (phylink_autoneg_inband(mode))
+> > +			val |=3D PM_IF_MODE_ENA;
+> > +		break;
+> > +	case PHY_INTERFACE_MODE_RMII:
+> > +		val |=3D IFMODE_RMII;
+> > +		break;
+> > +	case PHY_INTERFACE_MODE_REVMII:
+> > +		val |=3D PM_IF_MODE_REVMII;
+> > +		fallthrough;
+> > +	case PHY_INTERFACE_MODE_MII:
+> > +		val |=3D IFMODE_MII;
+> > +		break;
+>=20
+> Does the mask need to include PM_IF_MODE_REVMII? Looking at
+> netc_port_set_mac_mode(), the mask is set to:
+>=20
+>     u32 mask =3D PM_IF_MODE_IFMODE | PM_IF_MODE_ENA;
+>=20
+> which expands to GENMASK(2,0) | BIT(15) =3D 0x8007. When the REVMII
+> case sets val |=3D PM_IF_MODE_REVMII (BIT(3)), this makes val =3D 0x9.
+>=20
+> In netc_mac_port_rmw(), there's a check:
+>=20
+>     WARN_ON((mask | val) !=3D mask)
+>=20
+> This check would fire on every REVMII configuration since 0x800F !=3D 0x8=
+007.
+>=20
+> Additionally, REVMII is reachable because imx94_switch_phylink_get_caps()
+> advertises PHY_INTERFACE_MODE_REVMII as supported for port 2. When
+> transitioning FROM REVMII to another mode, PM_IF_MODE_REVMII (BIT(3))
+> won't be cleared since it's not in the mask, leaving stale configuration.
+>=20
+> Should the mask be:
+>=20
+>     u32 mask =3D PM_IF_MODE_IFMODE | PM_IF_MODE_REVMII |
+> PM_IF_MODE_ENA;
 
-Xen 4.21 added a connection field to the xen console page.  This is set
-to XENCONSOLE_DISCONNECTED (1) when a domain is built, and xenconsoled
-will set it to XENCONSOLE_CONNECTED (0) when it connects.
+Thanks for pointing this issue, I will fix it.
 
-Update the hvc_xen driver to check the field.  When the field is
-disconnected, drop the write with -ENOTCONN.  We only drop the write
-when the field is XENCONSOLE_DISCONNECTED (1) to try for maximum
-compatibility.  The Xen toolstack has historically zero initialized the
-console, so it should see XENCONSOLE_CONNECTED (0) by default.  If an
-implemenation used uninitialized memory, only checking for
-XENCONSOLE_DISCONNECTED could have the lowest chance of not connecting.
+>=20
+> > +	case PHY_INTERFACE_MODE_SGMII:
+> > +	case PHY_INTERFACE_MODE_2500BASEX:
+> > +		val |=3D IFMODE_SGMII;
+> > +		break;
+> > +	default:
+> > +		break;
+> > +	}
+> > +
+> > +	netc_mac_port_rmw(np, NETC_PM_IF_MODE(0), mask, val);
+> > +}
+>=20
+> [ ... ]
+>=20
+> > +static void netc_port_force_set_rgmii_mac(struct netc_port *np,
+> > +					  int speed, int duplex)
+> > +{
+> > +	u32 mask, val;
+> > +
+> > +	mask =3D PM_IF_MODE_ENA | PM_IF_MODE_SSP | PM_IF_MODE_HD |
+> > +	       PM_IF_MODE_M10 | PM_IF_MODE_REVMII;
+> > +
+> > +	switch (speed) {
+> > +	default:
+> > +	case SPEED_1000:
+> > +		val =3D FIELD_PREP(PM_IF_MODE_SSP, SSP_1G);
+> > +		break;
+> > +	case SPEED_100:
+> > +		val =3D FIELD_PREP(PM_IF_MODE_SSP, SSP_100M);
+> > +		break;
+> > +	case SPEED_10:
+> > +		val =3D FIELD_PREP(PM_IF_MODE_SSP, SSP_10M);
+> > +		break;
+> > +	}
+> > +
+> > +	if (duplex !=3D DUPLEX_FULL)
+> > +		val |=3D PM_IF_MODE_HD;
+> > +
+> > +	netc_mac_port_rmw(np, NETC_PM_IF_MODE(0), mask, val);
+> > +}
+> > +
+> > +static void net_port_set_rmii_mii_mac(struct netc_port *np,
+>=20
+> This isn't a bug, but should this function be named
+> netc_port_set_rmii_mii_mac() instead of net_port_set_rmii_mii_mac()?
+> All other functions in this driver use the netc_ prefix
+> (netc_port_set_speed, netc_port_force_set_rgmii_mac,
+> netc_port_set_mac_mode, etc.).
 
-This lets the hyperlaunched domU boot without stalling.  Once dom0
-starts xenconsoled, xl console can be used to access the domU's hvc0.
-
-Paritally sync console.h from xen.git to bring in the new field.
-
-Reviewed-by: Stefano Stabellini <sstabellini@kernel.org>
-Signed-off-by: Jason Andryuk <jason.andryuk@amd.com>
----
-v2:
-s/XENCONSOLED/XENCONSOLE/ in commit message
-Mention sync from xen.git in commit message
-R-b: Stefano
----
- drivers/tty/hvc/hvc_xen.c          |  3 +++
- include/xen/interface/io/console.h | 13 +++++++++++++
- 2 files changed, 16 insertions(+)
-
-diff --git a/drivers/tty/hvc/hvc_xen.c b/drivers/tty/hvc/hvc_xen.c
-index 7f0b6262488c..c407592442cd 100644
---- a/drivers/tty/hvc/hvc_xen.c
-+++ b/drivers/tty/hvc/hvc_xen.c
-@@ -139,6 +139,9 @@ static ssize_t domU_write_console(uint32_t vtermno, const u8 *data, size_t len)
- 	if (cons == NULL)
- 		return -EINVAL;
- 
-+	if (cons->intf->connection == XENCONSOLE_DISCONNECTED)
-+		return -ENOTCONN;
-+
- 	/*
- 	 * Make sure the whole buffer is emitted, polling if
- 	 * necessary.  We don't ever want to rely on the hvc daemon
-diff --git a/include/xen/interface/io/console.h b/include/xen/interface/io/console.h
-index cf17e89ed861..687949bdebb1 100644
---- a/include/xen/interface/io/console.h
-+++ b/include/xen/interface/io/console.h
-@@ -19,6 +19,19 @@ struct xencons_interface {
-     char out[2048];
-     XENCONS_RING_IDX in_cons, in_prod;
-     XENCONS_RING_IDX out_cons, out_prod;
-+/*
-+ * Flag values signaling from backend to frontend whether the console is
-+ * connected.  i.e. Whether it will be serviced and emptied.
-+ *
-+ * The flag starts as disconnected.
-+ */
-+#define XENCONSOLE_DISCONNECTED 1
-+/*
-+ * The flag is set to connected when the backend connects and the console
-+ * will be serviced.
-+ */
-+#define XENCONSOLE_CONNECTED    0
-+    uint8_t connection;
- };
- 
- #endif /* __XEN_PUBLIC_IO_CONSOLE_H__ */
--- 
-2.34.1
+Oh, sorry for this typo, I will correct the name.
 
 
