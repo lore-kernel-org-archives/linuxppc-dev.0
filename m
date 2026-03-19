@@ -1,86 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-18403-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18404-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72EF91088E63
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2026 02:48:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5CC11088E66
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2026 03:00:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fbqs16wDbz2yZ5;
-	Thu, 19 Mar 2026 13:48:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773888533;
-	cv=pass; b=C5W5y/ks+zLd2JtndxX9uToSYzOtpG158Sfr9IN0NkW7gTT6W6kyFMktSiUSGRPxlA7yjPvTE0LxFQbTw9vVA4qS30aI3N0ljUrcb+gidEq9bzWl8i5+r5DIu+ffkw8Vtp1m+J0whVK+5ufM3EXZZ10AQhZ6nDqWSgj6wxTmdCzaiCmXLu+WVrdg944zGwxZ/oNxBSZw76lCxkbcDEZ4sireiRWYFpGP9/61pDom05wuzLMY06RyBjynK9xIJAG7vMVINl7mdLTC35dshNFhZa5jqAgCXnfM1yL2xSCf7TCbCsSNNBcnwkaF/Tfh0jL0t6kUQdBcOxAl8dZLi5Y2hg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fbr68376pz2ynv;
+	Thu, 19 Mar 2026 14:00:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20a::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773889216;
+	cv=pass; b=Zbkewt4rs8rrQtzSBDYBC1PYA4YCWyaoScEVXZG/IZcG/6+HNY00LZjIXy4jBIWJx2urKA86l/Ium/m1YmLqJ6STgoWII7OGeTSv7PSPfFOY84TgU4jJyCkGnNv/g+l6iWakfmUhRlPWmDLKCl4dt8FzV5UogpCaon78e7ybGfmGFBgogUt31MBSVUFHj9LyMO3gnqJm1ZlZwi6Nd+nqDj4NTULQC4FvXJIGyG7dD+Lw10UstEzgy946untTXcBMbqueXZoVVLa0c/oq9yYXLEUGSuFKYvlj4gikPrv9f/XM/HELq9w6omOcMEZhDexdhTQdRHTaHjPcSFWbBPbvwQ==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773888533; c=relaxed/relaxed;
-	bh=gq8MPB1isOeFiGybYUHtJAjlPVEK1tAEpIt1cScU16A=;
+	t=1773889216; c=relaxed/relaxed;
+	bh=2bJ7kA9ej++G09B/+8ohAipN9ABF8VWdt8S3XAnBics=;
 	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=dUKpAiNj1tQbpTwrjwpEMcFJxYamo01IpSvDWzI286WzZDAiV7ecSHI+KYX0NPV9LYUacErx2fKqEQ+2lZOdGsUtgcMuLqDofK8vZowWIvbZ5U5CZikXm7U4B6AZoswFCcCB0jkrpBuv6OJa5nrlRioodbaEhNPgAfNhDoiXxxtw/LvW9TzifY7bgSeM2PQlEmIksIjzQqNho68y/XyddEsfgwU3ORH1wTfygUo+/3TrEQ1FaWy53QawIeb9BloigyOUoArcA+/EiY59iE7axoMoDNrAFjuiSunNekGqtgn1P0tSJQHC3/OM+jcdfdJQI3/Ns6TkeeUPvk+zR2/UCQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=OvW9073o; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+	 Content-Type:MIME-Version; b=HMI8G9PS9LNLkWDTl6QJpQQzJHRrnnBVilwtZjwJeZiusQECh3mys/TjkTvHBWUxcH1PejVgCp85BdHRWLzv6D3jPNcGW1n6nQUi8JPJqi326ErHJgwkyB2Fw2j1i8Qip9J2tFySHGuhOGsZz0ZNCOiBLjcvEkpiXpdqzJVEI/0GqGLv7/+1qXkPWuAjy0cPkiz49E23DdPBq+xpS2PxuOdK6O9g4pHZ4ucnwKZBeeeOENMS7KUVlM5KiPKS6vzIWkiD+Kz431ecDNdpGGQ75CROw6OKu3UZsZPAbr0d8JPogMY+7BQWHyqfkR1JBYgN7E0GpEzJxs0kRMNZY1cV1A==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=M1RL/rqQ; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c20a::7; helo=pa4pr04cu001.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=OvW9073o;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=M1RL/rqQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
-Received: from AS8PR04CU009.outbound.protection.outlook.com (mail-westeuropeazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::3])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c20a::7; helo=pa4pr04cu001.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
+Received: from PA4PR04CU001.outbound.protection.outlook.com (mail-francecentralazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20a::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbqs05Vpgz2xVT
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 13:48:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbr664QMxz2yr4
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 14:00:14 +1100 (AEDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=yQk1VJ+Tm13JgsAx4/YFGq3oiSyz0n09YSuEzRDcrxS5D7dCBfIQSfteLLPUM392EfXc47ze3sUjcfwkuluOuyk+1r6V6OKu8+7N3d+GRpGKs/v3gGmKAyGYadaf5cchCtSbPjkhE6QccWujTJ3UYEp8W9zeSA3AB39erH4f302yOhmJnuRZZ+gylS3QPJNrLkp0/23fTiHpF9bBgccJ9fgidfc/8E25bbuKW+HHj5aLeXQmFr01q8nCBFMqYTx8tjxpjiCKOtr3ZqtP3AE9YY3XvLDdnsvO+uaXKMTil9rWMlAeNiR1w2hddyomIOHB+vrxxq1JcLHLsYbuageRvA==
+ b=F7BWDGyhDsYe5BO2xZo9nxHfzhDExibIOZGdbE6aDSe0vVKCSsLTv4heXk5bZYZG4yj+xLl4fufHLNFI5jUkwV2RFLqwAas39RtdfMRy4/8mP7yTfYowS4PviGLjJP0pHAc8f3qqleeGbZqAjaP1TYR4QY/Ag+nCNAO07unoHrUB3B3OMBNNG8CLSHubuQtK1u3ACudaUPqWziJAETRp8n3vwa0K48NPrqpO851DtNEN2DfDCJAx52MZ8lwcO0OeaTGYoKUq/pfMfaEAZ9gtrjvS4h+0PaqT7H1Z6oIpx49Vm7R1OegTEAlk1Ni0UuRLErPa30ZP1+HmeeVkuUjHWQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=gq8MPB1isOeFiGybYUHtJAjlPVEK1tAEpIt1cScU16A=;
- b=XW6kwX/z+1XzU/Gqli33JqJqBxY7jkoSv4fxrvihzTkQ67VzisMl5d8Gq1R/YjS58UmAlVUmPEHNSe7v0UXkfprWDuAmo7Ppj5kvqY4qn0nUCd51e7V4bWyHTuQ992UArmNcwTgXRjjxlyZ/k13hzBE1JnurS7Mgs8cO4+Jt5Aj71lm8Q/He0p09HlTvCDS2B3ViDvAHcpg29voVYSPvJeM32j1sRQGmE7VsixZIuaxp9LdNotpvKWmSD1XXynpOqg8YRoW0aSIDPu54NHVXxzJIAYbfDher/oA0nWgtATbDWKfY+MczAOCiwte3VmDUUj5YaO9FSHPQgow62ZRQ7A==
+ bh=2bJ7kA9ej++G09B/+8ohAipN9ABF8VWdt8S3XAnBics=;
+ b=SiBfVUYvK7nis66K/Qs/N8D21NJKAnM2ZhzkAuiIb8lQLYR/UbHvTQutng2KkPrCSIrrsGNaU1cvODSm5ggzXx40/hSPISIvVR78cpZ55VDHR0p4SdBq8NM5CLEqjWcyy3OkaKNBjNu0osfHADlWyHfpG5TypQPqsyc7yBpDC0UtpZ0bTjdwOOzp00x9cVnkgVpYWkvkfSm4RFTvfr+jTH2PltfQ8LIiNz7zWvvzDH41a4PgGwCWtdn2VMdqZmlK11H6OPzxZtsuYmUPuVHnm/VZH8qMCRbg47jxAW0GfBb4zTMaRmgv0AJ3RCjJ7nxbHNM+3dmz6UrPN363Ng+BOA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
  header.d=nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=gq8MPB1isOeFiGybYUHtJAjlPVEK1tAEpIt1cScU16A=;
- b=OvW9073oO58Q3g/2cZQ/sLf5OmfSFGPVC3sNx93Hf5dI7UmiuzOjeZyeZPUBA7bO/q+QlQIAFAdgGFRCmdOgSZJCwDqf4oyiM7StNplaSnN9Fa2FfiQOdScNBDG2PORvTPZIdVg48rSUPJWBVXiR7yqE5bcmH6gwbZRJ1uvAC53CCLvn/5F8LG4wfhpBLXYR2dshEZppLrSRuBv1I8NgUKnn6TDwOwtxerpVYYu1lROa775XmsKBGHZ4LeJzXO3Uo1qtmzKf1blppOq7FYMtkEtSV85rrKDGlUc5qfXCRIUUVVBA7iNpot6sZG/y87uzx+r0rrrJSojdYj/xnUYfHw==
+ bh=2bJ7kA9ej++G09B/+8ohAipN9ABF8VWdt8S3XAnBics=;
+ b=M1RL/rqQQOFRqNNcPwb3IFP1YSEJNQMKL7KOa1rdGVTzW0IpOV+fNDU995UAgTYyLsQOzYpuoGoadPSygo5jUPy8fV3XiwnUvUBtwZ+aM3czNFPDa0v6/clrT6IbfSVw9HpgrVGo4VL4WQBbE8mMqF6pbvwOYVQjcnbi/oq5nonBQluzOUvrSa03Cfx+798BZ88EyaZpEkYfiRdBX7Xg5i6QVTXNsCgyegiH3L4g+uPy8IE+ruZHqDQJOrnx95IyH7U9WNo5rfHslxu2vbCwrvyVynywNvIJSG16NohsengTIfKk76JY8RqPOoJl567d3e9hRDOAPqtqvinMXqdAiA==
 Received: from PAXPR04MB8510.eurprd04.prod.outlook.com (2603:10a6:102:211::7)
- by PA2PR04MB10373.eurprd04.prod.outlook.com (2603:10a6:102:416::13) with
+ by PAXPR04MB8318.eurprd04.prod.outlook.com (2603:10a6:102:1c0::7) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9723.19; Thu, 19 Mar
- 2026 02:48:26 +0000
+ 2026 02:59:49 +0000
 Received: from PAXPR04MB8510.eurprd04.prod.outlook.com
  ([fe80::b476:c19a:24cd:3694]) by PAXPR04MB8510.eurprd04.prod.outlook.com
  ([fe80::b476:c19a:24cd:3694%3]) with mapi id 15.20.9723.018; Thu, 19 Mar 2026
- 02:48:23 +0000
+ 02:59:45 +0000
 From: Wei Fang <wei.fang@nxp.com>
 To: Simon Horman <horms@kernel.org>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-	"linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "conor+dt@kernel.org"
-	<conor+dt@kernel.org>, "andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>,
-	"edumazet@google.com" <edumazet@google.com>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, Frank Li <frank.li@nxp.com>, Vladimir Oltean
-	<vladimir.oltean@nxp.com>, "kuba@kernel.org" <kuba@kernel.org>,
-	"f.fainelli@gmail.com" <f.fainelli@gmail.com>, "krzk+dt@kernel.org"
-	<krzk+dt@kernel.org>, Claudiu Manoil <claudiu.manoil@nxp.com>,
-	"robh@kernel.org" <robh@kernel.org>, "linuxppc-dev@lists.ozlabs.org"
-	<linuxppc-dev@lists.ozlabs.org>, Clark Wang <xiaoning.wang@nxp.com>,
-	"davem@davemloft.net" <davem@davemloft.net>, "linux@armlinux.org.uk"
-	<linux@armlinux.org.uk>, "chleroy@kernel.org" <chleroy@kernel.org>,
+CC: "robh@kernel.org" <robh@kernel.org>, "pabeni@redhat.com"
+	<pabeni@redhat.com>, Claudiu Manoil <claudiu.manoil@nxp.com>,
 	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-	"pabeni@redhat.com" <pabeni@redhat.com>, "imx@lists.linux.dev"
-	<imx@lists.linux.dev>
-Subject: RE: [net-next,10/14] net: dsa: netc: introduce NXP NETC switch driver
- for i.MX94
-Thread-Topic: [net-next,10/14] net: dsa: netc: introduce NXP NETC switch
- driver for i.MX94
-Thread-Index: AQHctuUb/Fe9SCkKDEK7tta4eDFZArW1Jgiw
-Date: Thu, 19 Mar 2026 02:48:23 +0000
+	"f.fainelli@gmail.com" <f.fainelli@gmail.com>, Frank Li <frank.li@nxp.com>,
+	"imx@lists.linux.dev" <imx@lists.linux.dev>, "krzk+dt@kernel.org"
+	<krzk+dt@kernel.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, "edumazet@google.com" <edumazet@google.com>,
+	Clark Wang <xiaoning.wang@nxp.com>, "davem@davemloft.net"
+	<davem@davemloft.net>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>,
+	"kuba@kernel.org" <kuba@kernel.org>, "chleroy@kernel.org"
+	<chleroy@kernel.org>, "conor+dt@kernel.org" <conor+dt@kernel.org>,
+	"andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>,
+	"linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org"
+	<linuxppc-dev@lists.ozlabs.org>, Vladimir Oltean <vladimir.oltean@nxp.com>,
+	"netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Subject: RE: [net-next,12/14] net: dsa: netc: add more basic functions support
+Thread-Topic: [net-next,12/14] net: dsa: netc: add more basic functions
+ support
+Thread-Index: AQHctub30hADsLC0r06uQJxn29cQ0LW1KBOQ
+Date: Thu, 19 Mar 2026 02:59:45 +0000
 Message-ID:
- <PAXPR04MB85104613AA8EDC3169D28DD0884FA@PAXPR04MB8510.eurprd04.prod.outlook.com>
-References: <20260316094152.1558671-11-wei.fang@nxp.com>
- <20260318143930.1890017-1-horms@kernel.org>
-In-Reply-To: <20260318143930.1890017-1-horms@kernel.org>
+ <PAXPR04MB85109C928E024E0D2506CAA0884FA@PAXPR04MB8510.eurprd04.prod.outlook.com>
+References: <20260316094152.1558671-13-wei.fang@nxp.com>
+ <20260318144954.1893193-3-horms@kernel.org>
+In-Reply-To: <20260318144954.1893193-3-horms@kernel.org>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach:
@@ -88,47 +87,47 @@ X-MS-TNEF-Correlator:
 authentication-results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nxp.com;
 x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: PAXPR04MB8510:EE_|PA2PR04MB10373:EE_
-x-ms-office365-filtering-correlation-id: 64f8fab5-a9b3-4a02-b7e7-08de8561fd15
+x-ms-traffictypediagnostic: PAXPR04MB8510:EE_|PAXPR04MB8318:EE_
+x-ms-office365-filtering-correlation-id: 919dd5eb-5e02-4c94-4bd9-08de8563938e
 x-ms-exchange-senderadcheck: 1
 x-ms-exchange-antispam-relay: 0
 x-microsoft-antispam:
- BCL:0;ARA:13230040|19092799006|366016|1800799024|376014|7416014|56012099003|18002099003|22082099003|38070700021;
+ BCL:0;ARA:13230040|1800799024|7416014|366016|376014|19092799006|22082099003|18002099003|56012099003|38070700021;
 x-microsoft-antispam-message-info:
- 9vm6ezmKZUjLp1qGKjQgApfvQSOPq/e6lVxoQPqyL86jJXDKZELcXlxw93AGxWEOD9WqJ638D1+b7vsL8WQ4oYPTCZqIJWsYYtrDGmBy7ZG8e9ZDJNGsIjewd5yN66qxbYE/Ikgs0Di5bJpKbqpG9HzSrLHBOrv4fJ117JnsH6g1QFL57hd/f1WUZdGQqOwsjCX1oY3uoxqMTG395YLqJPJastewM/Wqaqp0CFHAax0w7y/U7MDokQTSudXU0ajQgbuz3GBPpPWA4T9r49LUimHytcnHM5CmrJ6F9OqVaBn/p53u0/DntXLZzjIyKP6x5rPTqj1rFts4fpJBO9aGdm3WP6QaNBWR6OKTmkAt6aPZWLXSnGMI4S/e0d2kpB9pRcnK4UP/O8l7RLbxKFpRP6aG5ucD8d8XF5rEMAkhk3zSNYJpdLf65JuXn4xoI5ti9JJUY27h0KI3eOyZiFnmMCprulF+50gXpjJLYUNJh+R29h0NIwZNY0ZlD12aBnekMTM5ElNSxXvGmYt48GXu6RPbPLGlBkThd9SihK8n5usENYsheXhFc33nc12igELsQIvZM5f4UTPp86kzaI4N4X/yq4MAtPx0uTLdEsnVbV3wvWHmYxLegflmvyflhOch6Cf4D8GW/c2TzecL5jWWylLywDBVxr4E/c8wbQrzMyo0JZ09yjyCrjOMdw8xOtn0SStEI11W6AhEaamwoSn6+MzeIb9zDWLIVnDeSZMilez42wsoD4iEcLV8ywkIV4ra
+ W6ECTeLKtHbomk9dNutnCQB0JuKmiJhAfHIhAqlhZc7jlM+LCHs1lAcE2ydYp24oQnWM6euCoo3hd3mSpqs7rpSSFg8szefF1WZgVg/3W492CPjo/VUPHC2kA53F+VDZkYvZOss3XrgM7gb/diJ+LzgXCLPrgyU4RGyUDhUgMibpj3UqfnDrRaFcB6Yq6GyRaU7kPRxeNumNWDT/rWMGiFnOiCx/DeyPk94AKb+K/0f4m44KaQI5oool/2lLO1ARYpLeLFhDFDNSqQ0PSVmXJCzlAFw0cfEpOMCagFpYH1o7CZVO0ialTKoks0ag2TsGAvRPpdcQwsstByiezRapWSN9c/VXn+xtVDOM8HWWmPtPnl05J+w/iqKv1OaO1VVHrSMJ1p0cqi2BsrD+4Di5D2ydW71PXb/odYv/sMan6FzJxmOfNobURcUG2NTZl6Lgyv9nq5obMk5lxARr2f0ADAL337G13pk89wTtiJq/mKfNGaEO7a/V+LAhzKlFgOWUenWtMSGTVU0MEZ6dopIaXcYOR0AP/zEbESiZOiU7v4QqQjqV/utsxYfdxeqSXpTTHrx2OfDj4bhU6Ri01LO7j/SvSsT++MgxS2/JUVfTmzwonSCvlhTsbbgGqiJ6G1OyhL9QfVpNmIgM2QtM0AABQOOb/xlLyUAZ1Zn7VGkqQxkJ1de11oEVH/3ka07or3YthcLO/uf0ehuhBbWQ41wYbccTCPuQ8LSZYDBdpwQ7WSlvkKsmNt3DWv16XENzMPnJki+BWLaQX1y2G4fjKwIttNhLWQoYDbJUF93Yk4g3qKQ=
 x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB8510.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(366016)(1800799024)(376014)(7416014)(56012099003)(18002099003)(22082099003)(38070700021);DIR:OUT;SFP:1101;
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB8510.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(7416014)(366016)(376014)(19092799006)(22082099003)(18002099003)(56012099003)(38070700021);DIR:OUT;SFP:1101;
 x-ms-exchange-antispam-messagedata-chunkcount: 1
 x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?Hq49FxfvHeywjoMIHKywFLYgjJa74whlvwK0lK34a9x8HmMhFrgC8LVhhDff?=
- =?us-ascii?Q?wgmj2fEgG62EhUzxTmZd3shuu6OAbd3A1o7IKTQgIJCki5QNECaNWlEQUnCi?=
- =?us-ascii?Q?bUP2sMzSPk6UZ0efllWOFiOJpvzxeK0ShxM3nHDvjtB6GemlpUSKAWaEa1kl?=
- =?us-ascii?Q?BMC8j2vmU6rd4W2bplTTEDr7fZHQrSfukEQR+YCGXwYDzG+UupvQFi0Y3s6e?=
- =?us-ascii?Q?yMViD4fDO2avfQjbCXOVenThqCsAPQvBVd25OIaLJi+fFz+edFkorYwj8fa4?=
- =?us-ascii?Q?eX5Ipi7q3kLvMmBos/M7RqwYcvf9gJeQAKuG1NhzEgm9FMJNdo2dZLM9XdQi?=
- =?us-ascii?Q?+EjcexTHFDiGsNRvgD08VYu6OPQPgGZ0nDxeD3TYQ2SzAg8duiSPESZBP03b?=
- =?us-ascii?Q?FLSjybD7GA00HH/w1TNzrO9sEaHnCsVHGGh4WoQ94vZxhk0NtXyO5ILAH2O5?=
- =?us-ascii?Q?idbB6d7xWEbvh9f9aJ854UYMrj+UrSYi0nwnk4VtEO6htTLqwTsA1EQL58/d?=
- =?us-ascii?Q?kTUy2OVhl62h2z0hkKnCXSVHMvWxiOWOOt8VyNldGKKpq1LmPWxocObJYaWJ?=
- =?us-ascii?Q?+ahOGSXxtwa+tS6feP6hct9wwVADG8oBmQy7ZIW07NrydLLfS1ch01YLOt4B?=
- =?us-ascii?Q?/M+G39O5wTondTJW34T2xrICCvvwtpbqdSdfVmmkEe567rk/Jtp4cpRTHlFx?=
- =?us-ascii?Q?Ph8qlC722EmOesjFiG5vI8VP+TSXxxrb4qJSQiDyQpFMWbGQAs7GmfxxW0Yz?=
- =?us-ascii?Q?g/1vh8eka8ho4U/ku0L3rPi5CyffDhh7QP/v4kS7RjRFtyDp9yeufyMGH0tN?=
- =?us-ascii?Q?U3NR8aZ+tAXyrEIktfAZJ9DujIb+w1eb0TQnBkhCqGkcIeMJwA9vE2LOKLL4?=
- =?us-ascii?Q?bTOoezAlwb3ULmQhq/9aF0bBgx5CXi4EYyQPPR69naeuSs88ap2+hersAjfx?=
- =?us-ascii?Q?mgbshz22r2AU4WAXs9a79E/3w38cclnSC1OEXfBucXDhxH8fSuAUkcAlJN+K?=
- =?us-ascii?Q?t/HI/pR+oq5qtFOxqIBY9fB+c64dqEVV84PQZYw48QFM+oM9GUMhSUQ16sTA?=
- =?us-ascii?Q?5q6zbGyhK+BTsAysrNOwAu1oK94lrUkEb/gXuTromLS17EozECUyxrPfYPma?=
- =?us-ascii?Q?mg+S+kr12TJA+WK5bR7k1AR6kz5rcbShUg9OuHfix4H+ix/wgJ5R9YvURHMh?=
- =?us-ascii?Q?rqKYzqwW4b3YDRiy6TuBzItESW/pELCpkhH11oc0qW62Gwuam66c6aH61B+J?=
- =?us-ascii?Q?U5EytrTptnKunGJ/rh+kQA4jWbTzOH0aaUNDgMA17Kqi5uI0VFjGJwndpEYk?=
- =?us-ascii?Q?aJCEJnR4updHKY0HSFkfy/qiuLJqYtfajBwLme3qWkJbr+BcOyGanC9cI/QS?=
- =?us-ascii?Q?u82J9AMD4qi0XMZ0GGt1wx9aByrCFIZomZB7h3LvwRLRfc6TG3rJWqA6OX1N?=
- =?us-ascii?Q?s1F5PrkWh8BLUbm7tijEM9aAJ6o6gHd4mPP6v/sYPXU2YSFI8nkkLpf25Zci?=
- =?us-ascii?Q?Zj7QR/KgyudDytUC6h40SGQqy7oyE9QVg7K+k8W/KjTupY9Jar2dR09jlPY/?=
- =?us-ascii?Q?gq8wzTEDWOHJh+Hbstdg1HAmqOEaQIcz8CTsw5/y5OJo7y7Op5olk7JfWCM4?=
- =?us-ascii?Q?fTBL/pxo1+pn8weXA81q/VoUn04CKFNuuWeEb9lZSWMgFhX7v5vw/zLJk5uj?=
- =?us-ascii?Q?DfQEEFiCiaJXi32aGH0+pk7IuZhFEDC7ajJaQHOL2bv376F2?=
+ =?us-ascii?Q?HAm9xvCjliz0WXI2IFx0AFkPXigjRI2f0srK/9LaV0SD+Zcg8nBVae+P49X3?=
+ =?us-ascii?Q?8f68JgszzcYqiXFJ/oi+ifuKWVQ5NGgKyzuwxC/7+fZlBKXmWSWuQwwTKZ8j?=
+ =?us-ascii?Q?1PHEGJhRF7e5x2Qpit7NI9kWVuXktrK7w6H0EqYVCs/tLRMzsc3e0QIOhk4f?=
+ =?us-ascii?Q?LFH7hDphNeIjZgt9kKFObL5JmuZZeqId3oaOWetRISwdhz1XW3g19gNj21wd?=
+ =?us-ascii?Q?oswrf7Supc+SYYB3xn80vGyfZ/bvurp1DZSW239Y+y8IL1HKY6OlyoaSUkYM?=
+ =?us-ascii?Q?AOIdUx2FYiUGBGbrQGdD/5clDX2kYyeFptQGMICcuM4QTAuow7Ksl0RCIsXV?=
+ =?us-ascii?Q?4zqNBfNM7asuVpMUTOst5KBPJxRZxsmetJbhmv95iJERdfRO7JZoWe/Z7eYd?=
+ =?us-ascii?Q?5rhu+Qk+TbjXNyhx4T+DwPH9ujx5Ig4jJXyhf9PJSDQb+QI/MsGajdNqku/m?=
+ =?us-ascii?Q?4ni2f3aNFivxx+GBNW1AvFI5gMyuksGmvHZiD++UK1JU/kFH/0OoIVRruUmU?=
+ =?us-ascii?Q?KFaIA4/gWE8id4radVhisVp3pU4ExNL1T/7MzbpHcDFuL4G61w/Pn2Odj/Zf?=
+ =?us-ascii?Q?p+iyQXJk83PwokacKaXDcVU6laSeQkqIwUuQE1HwKb6FLLrNVzW3A+dlHFg3?=
+ =?us-ascii?Q?qTKEjDme0DF8+qsbhXEJiZhx5unhAgovDE3PDKoVjCK8FKADD0HSWQpX1aZX?=
+ =?us-ascii?Q?lVs0VpCymhr862iPwUIsxpyIumoxw1T7vAnmuwNxO1NJX5xva2x7FF5SpMgP?=
+ =?us-ascii?Q?sS6cKLYAaUB1uA6zZYm8Wj1QLR1JSFx0EQUBD1M0Ch6CDr2h5M0xTbu/lLsc?=
+ =?us-ascii?Q?tZuOTmJzUxW226qOwfDaneY0UiH4AtI2GxofVEZdGFkXSvNoNBvkla6NZ1dy?=
+ =?us-ascii?Q?RtfSCstAgbsV7YyMFrU9FLts/4HG9M2u2vsueUfy3r+LVhJNMUq/58/Gtqop?=
+ =?us-ascii?Q?u3OU08es8U9lHMj98Fzaeq+fj16h7+/iUQP0ebRDNRCOKtp39XzgCKlyXBmF?=
+ =?us-ascii?Q?DTey/DOYuS4B+S8LpwBlRrqmZyvEB3NINnfluSbBGHlAU1GAUIDz07SWzpKZ?=
+ =?us-ascii?Q?fLCEyK21LQ/L+NIKU0zNn+9RYRWTIdDtK7Ev8baMhF7PiP6vWZDY5QYOwl4d?=
+ =?us-ascii?Q?NnznLRziRkLyPyA+Uly0l4e3CEhWqhAjPUyl8bwO3729GsB4eQkdEN+kzM6h?=
+ =?us-ascii?Q?5eC75vFxHdQky2k5BFIhsXdxNMo06md7xIMQhM8AkvbolsFn2levmln01+iG?=
+ =?us-ascii?Q?E9SIFLg5Eoaq3/GFsO65IwO5Ki60PDVUz09psq0snwA3J0L9FDyouG8pR8AJ?=
+ =?us-ascii?Q?KqYK6MG0x7B9X1t9rCDc8sVye9Ru2Xyn7dosdXLf+eYp4Wv3UULgKzqf1H52?=
+ =?us-ascii?Q?eeUG2t1aCGmLZJDtXOxjINtgVt6sbhdodTIPTHHvUJYYvqUO7AmbqwLTbmLW?=
+ =?us-ascii?Q?Tx8DBFLGAyL/i+I0+xAZnQ0l/4yVRgfhaE94+vUz1UJGCkLTERSQ4KaQ1JMd?=
+ =?us-ascii?Q?lJWgoX3MS9ozOQhNdnhz5qmqXHp2l/xtLIRJ6pjyBSH/DATHUzxvrn17d5dJ?=
+ =?us-ascii?Q?KHZQjbNzzt+Rvgbnu5X/kbSgU5FO0J//E+KxlQKR0dwxBlQp/XbRVmgDAxAJ?=
+ =?us-ascii?Q?SVqXL3rsVPkWzrOSe/oLnn79ewheKQw5ZKMpd0InIJxPnagLg4Z3snRlcd+X?=
+ =?us-ascii?Q?voonxLspY4WKBFpANK5N5rhP7gv0qCTYWU9sTZR6UOo9XIko?=
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -147,164 +146,179 @@ MIME-Version: 1.0
 X-OriginatorOrg: nxp.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
 X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB8510.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 64f8fab5-a9b3-4a02-b7e7-08de8561fd15
-X-MS-Exchange-CrossTenant-originalarrivaltime: 19 Mar 2026 02:48:23.7413
+X-MS-Exchange-CrossTenant-Network-Message-Id: 919dd5eb-5e02-4c94-4bd9-08de8563938e
+X-MS-Exchange-CrossTenant-originalarrivaltime: 19 Mar 2026 02:59:45.5976
  (UTC)
 X-MS-Exchange-CrossTenant-fromentityheader: Hosted
 X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: B8c2MUwjELvF76hftdyHlmUbsf2wKnas/Jui1zJ2bkPjhJTQyLNxkKox5YBlTXkJG2Kg/53RdJ1rYomh2jXo/A==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA2PR04MB10373
+X-MS-Exchange-CrossTenant-userprincipalname: fWzbmKexZSu5NDNEs5ML2ufoS+Z2W/3YkgoULaT5U7uAOlv67JSmmn78L8zzDrQ/c0PhGe4/Dyx4acFQaNsKwQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR04MB8318
 
-> > @@ -0,0 +1,698 @@
-> > +static int netc_port_create_emdio_bus(struct netc_port *np,
-> > +				      struct device_node *node)
-> > +{
-> > +	struct netc_switch *priv =3D np->switch_priv;
-> > +	struct enetc_mdio_priv *mdio_priv;
-> > +	struct device *dev =3D priv->dev;
-> > +	struct enetc_hw *hw;
-> > +	struct mii_bus *bus;
-> > +	int err;
+> > @@ -427,24 +658,57 @@ static int netc_setup(struct dsa_switch *ds)
+> >  	if (err)
+> >  		goto free_mdio_bus;
+> >
+> > +	INIT_HLIST_HEAD(&priv->fdb_list);
+> > +	mutex_init(&priv->fdbt_lock);
 > > +
-> > +	hw =3D enetc_hw_alloc(dev, np->iobase);
-> > +	if (IS_ERR(hw))
-> > +		return dev_err_probe(dev, PTR_ERR(hw),
-> > +				     "Failed to allocate enetc_hw\n");
-> > +
-> > +	bus =3D devm_mdiobus_alloc_size(dev, sizeof(*mdio_priv));
-> > +	if (!bus)
-> > +		return -ENOMEM;
-> > +
-> > +	bus->name =3D "NXP NETC switch external MDIO Bus";
-> > +	bus->read =3D enetc_mdio_read_c22;
-> > +	bus->write =3D enetc_mdio_write_c22;
-> > +	bus->read_c45 =3D enetc_mdio_read_c45;
-> > +	bus->write_c45 =3D enetc_mdio_write_c45;
-> > +	bus->parent =3D dev;
-> > +	mdio_priv =3D bus->priv;
-> > +	mdio_priv->hw =3D hw;
-> > +	mdio_priv->mdio_base =3D NETC_EMDIO_BASE;
-> > +	snprintf(bus->id, MII_BUS_ID_SIZE, "%s-p%d-emdio",
-> > +		 dev_name(dev), np->dp->index);
-> > +
-> > +	err =3D devm_of_mdiobus_register(dev, bus, node);
+> >  	netc_switch_fixed_config(priv);
+> >
+> >  	/* default setting for ports */
+> >  	dsa_switch_for_each_available_port(dp, ds)
+> >  		netc_port_default_config(priv->ports[dp->index]);
+> >
+> > +	err =3D netc_add_standalone_vlan_entry(priv);
 > > +	if (err)
-> > +		return dev_err_probe(dev, err,
-> > +				     "Cannot register EMDIO bus\n");
+> > +		goto free_ntmp_user;
 > > +
-> > +	np->emdio =3D bus;
+> > +	err =3D netc_add_standalone_fdb_bcast_entry(priv);
+> > +	if (err)
+> > +		goto free_ntmp_user;
 > > +
-> > +	return 0;
+> >  	return 0;
+> >
+> > +free_ntmp_user:
+> > +	netc_free_ntmp_user(priv);
+> >  free_mdio_bus:
+> >  	netc_free_mdio_bus(priv);
+> >
+> >  	return err;
+> >  }
+>=20
+> Does the error path handle the mutex properly?
+>=20
+> In netc_setup(), the mutex is initialized with mutex_init(&priv->fdbt_loc=
+k).
+> If netc_add_standalone_vlan_entry() or
+> netc_add_standalone_fdb_bcast_entry()
+> fails, the error path jumps to free_ntmp_user:
+>=20
+> drivers/net/dsa/netc/netc_main.c:netc_setup() {
+> 	...
+> 	INIT_HLIST_HEAD(&priv->fdb_list);
+> 	mutex_init(&priv->fdbt_lock);
+> 	...
+> 	err =3D netc_add_standalone_vlan_entry(priv);
+> 	if (err)
+> 		goto free_ntmp_user;
+>=20
+> 	err =3D netc_add_standalone_fdb_bcast_entry(priv);
+> 	if (err)
+> 		goto free_ntmp_user;
+>=20
+> 	return 0;
+>=20
+> free_ntmp_user:
+> 	netc_free_ntmp_user(priv);
+> free_mdio_bus:
+> 	netc_free_mdio_bus(priv);
+>=20
+> 	return err;
+> }
+>=20
+> But netc_free_ntmp_user() and netc_free_mdio_bus() don't call
+> mutex_destroy(&priv->fdbt_lock) to clean up the mutex.
+>=20
+> Looking at the normal teardown path in netc_teardown(), it calls
+> netc_destroy_all_lists() which properly handles both the FDB list and
+> mutex cleanup:
+>=20
+> drivers/net/dsa/netc/netc_main.c:netc_destroy_all_lists() {
+> 	netc_destroy_fdb_list(priv);
+> 	mutex_destroy(&priv->fdbt_lock);
+> }
+>=20
+> drivers/net/dsa/netc/netc_main.c:netc_teardown() {
+> 	struct netc_switch *priv =3D ds->priv;
+>=20
+> 	netc_destroy_all_lists(priv);
+> 	netc_free_host_flood_rules(priv);
+> 	netc_free_ntmp_user(priv);
+> 	netc_free_mdio_bus(priv);
+> }
+>=20
+> Should the error path in netc_setup() call netc_destroy_all_lists() befor=
+e
+> calling netc_free_ntmp_user()?
+
+Yes, I will fix it.
+
+>=20
+> > @@ -595,6 +859,261 @@ static void netc_switch_get_ip_revision(struct
+> netc_switch *priv)
+> >  	priv->revision =3D val & IPBRR0_IP_REV;
+> >  }
+> >
+> > +static void netc_destroy_all_lists(struct netc_switch *priv)
+> > +{
+> > +	netc_destroy_fdb_list(priv);
+> > +	mutex_destroy(&priv->fdbt_lock);
 > > +}
 > > +
-> > +static int netc_port_create_mdio_bus(struct netc_port *np,
-> > +				     struct device_node *node)
+> > +static void netc_free_host_flood_rules(struct netc_switch *priv)
 > > +{
-> > +	struct device_node *mdio_node;
-> > +	int err;
+> > +	struct dsa_port *dp;
 > > +
-> > +	mdio_node =3D of_get_child_by_name(node, "mdio");
-> > +	if (mdio_node) {
-> > +		err =3D netc_port_create_emdio_bus(np, mdio_node);
-> > +		of_node_put(mdio_node);
-> > +		if (err)
-> > +			return err;
+> > +	dsa_switch_for_each_user_port(dp, priv->ds) {
+> > +		struct netc_port *np =3D priv->ports[dp->index];
+> > +
+> > +		kfree(np->host_flood);
+> > +		np->host_flood =3D NULL;
 > > +	}
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static void netc_port_free_mdio_bus(struct netc_port *np)
-> > +{
-> > +	if (np->emdio)
-> > +		mdiobus_unregister(np->emdio);
->                          ^^^^
->=20
-> Does this cause a double unregister? The MDIO bus is registered with
-> devm_of_mdiobus_register() in netc_port_create_emdio_bus(), which
-> installs a devres action that automatically calls mdiobus_unregister()
-> during device removal.
->=20
-> However, netc_port_free_mdio_bus() also explicitly calls
-> mdiobus_unregister(np->emdio).
->=20
-> During device removal:
->=20
->   netc_switch_remove()
->     -> dsa_unregister_switch()
->       -> dsa_switch_teardown()
->         -> netc_teardown()
->           -> netc_free_mdio_bus()
->             -> netc_port_free_mdio_bus()
->               -> mdiobus_unregister()  // first call
->=20
-> Then devres cleanup fires:
->=20
->   devm_mdiobus_unregister()
->     -> mdiobus_unregister()  // second call
->       -> WARN_ON_ONCE(bus->state !=3D MDIOBUS_REGISTERED)
->=20
-> The second call triggers a warning at drivers/net/phy/mdio_bus_provider.c=
-:675
-> because the bus state is already MDIOBUS_UNREGISTERED. With
-> panic_on_warn=3D1, this causes a kernel panic.
-
-Good catch, I changed mdiobus_register() to devm_of_mdiobus_register(), but=
- I
-forgot to remove mdiobus_unregister(). I will fix this issue.
-
->=20
-> The same double-unregister occurs on the error path of
-> netc_init_all_ports(), where netc_free_mdio_bus() is called, but devres
-> will also fire during device teardown.
->=20
 > > +}
 >=20
-> [ ... ]
+> [Simon says: I think this is a false positive and the clean-up
+>  suggestion is not needed in tear down]
 >=20
-> > +static int netc_switch_pci_init(struct pci_dev *pdev)
-> > +{
-> > +	struct device *dev =3D &pdev->dev;
-> > +	struct netc_switch_regs *regs;
-> > +	struct netc_switch *priv;
-> > +	int err;
-> > +
-> > +	pcie_flr(pdev);
-> > +	err =3D pci_enable_device_mem(pdev);
-> > +	if (err)
-> > +		return dev_err_probe(dev, err, "Failed to enable device\n");
-> > +
-> > +	/* The command BD rings and NTMP tables need DMA */
-> > +	dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64));
->                                        ^^^^
->=20
-> Is the return value being checked? The comment states "command BD rings
-> and NTMP tables need DMA", confirming DMA is essential for this driver.
+> Does this properly clean up the hardware state?
 
-No need to check the return value, because dma_set_mask_and_coherent()
-never return fail when DMA_BIT_MASK(64).
-
-See https://elixir.bootlin.com/linux/v7.0-rc4/source/Documentation/core-api=
-/dma-api-howto.rst#L269
+No need to clear the hardware IPFT entry in tear down. Because PCIe FLR wil=
+l
+be performed when the switch is registered, it will reset hardware state. T=
+he
+driver only needs to free the memory to avoid memory leak.
 
 >=20
-> The function can fail with -EIO when dma_supported() returns false for
-> the 64-bit mask (from dma_set_mask() in kernel/dma/mapping.c:902).
+> netc_free_host_flood_rules() just frees the host_flood memory and sets
+> the pointer to NULL:
 >=20
-> The sibling enetc driver from the same NXP NETC subsystem checks this
-> return value in enetc.c:
+> drivers/net/dsa/netc/netc_main.c:netc_free_host_flood_rules() {
+> 	struct dsa_port *dp;
 >=20
->   err =3D dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
->   if (err) {
->       ...
->       goto err_dma;
->   }
+> 	dsa_switch_for_each_user_port(dp, priv->ds) {
+> 		struct netc_port *np =3D priv->ports[dp->index];
 >=20
-> If the 64-bit DMA mask setup fails, the DMA mask remains at the default,
-> and subsequent DMA operations for NTMP table management (added in later
-> commits) may silently fail or produce incorrect results on systems with
-> memory above 4GB.
+> 		kfree(np->host_flood);
+> 		np->host_flood =3D NULL;
+> 	}
+> }
 >=20
-
+> But it doesn't delete the hardware IPFT entry or disable the PIPFCR regis=
+ter.
+>=20
+> Compare with netc_port_remove_host_flood() which performs complete
+> cleanup:
+>=20
+> drivers/net/dsa/netc/netc_main.c:netc_port_remove_host_flood() {
+> 	struct netc_switch *priv =3D np->switch_priv;
+>=20
+> 	if (!np->host_flood)
+> 		return;
+>=20
+> 	ntmp_ipft_delete_entry(&priv->ntmp, np->host_flood->entry_id);
+> 	kfree(np->host_flood);
+> 	np->host_flood =3D NULL;
+> 	np->uc =3D false;
+> 	np->mc =3D false;
+> 	/* Disable ingress port filter table lookup */
+> 	netc_port_wr(np, NETC_PIPFCR, 0);
+> }
+>=20
+> In netc_teardown(), netc_free_host_flood_rules() is called before
+> netc_free_ntmp_user(), so the NTMP command infrastructure is still
+> operational at that point.
+>=20
+> Should netc_free_host_flood_rules() call netc_port_remove_host_flood(np)
+> for each user port instead of directly calling kfree()?
 
