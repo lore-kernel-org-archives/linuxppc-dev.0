@@ -1,51 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-18449-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18450-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 517211090234
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2026 14:51:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 026031090239
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2026 14:59:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fc7tN6Yybz2ynv;
-	Fri, 20 Mar 2026 01:51:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773931868;
-	cv=none; b=DCc4v6M3hazF1trj91PspEpmqVTBMyQAOIgE3aY5hXGcz2EePJb17aEvAxCXvzOxnluGfgkChUZhA/dc1ESmbWe2EfaqH1jfHF1ZEtu6nea17YAnB5CKb8p+goed2W90RS6Bx9W7r/O0dQNdbY4fnwuLFWCAalKq+N5EWgkLLgjejdOgxuaLXX1ZUNlZJfVYYv7Z6aT3kYDnc1Xsp2I6QeBCOhTL4+sB5z4RO/emyOVnAEYc59imVBW/todthmLVbqdPDbGdZAhej7Bo65X9FqIpnfFLlWNCdiLXJg20ztJh/OHLBT9bVLzW9vWTvQfPSxTQ6FDBNVaWM8iTTcLaNw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fc8474BLCz2ypV;
+	Fri, 20 Mar 2026 01:59:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773932375;
+	cv=none; b=W+lSFeDqNESDO1vr9AH1XzxWM4YJe1vUODrl38bMNYa2URIA/nl2erfVpg02tyDLORkF2LbxDNWgrr/VUi3uf3BNShMm7/+pGxkhmmQtoday9sWEW5GL0v33fhiHPDwBLaVMHEQy4hCRz3q9+Ut0eQg5sIEg1fPDHgrJ0PCQNspQhiZBzU76PkPDvVuNhyedCFFsqumK+SCig1KlDhYekLM8R3gslS1gKez9Ddf+1xABEgEkIeVcFOKzofreWJwnqh+6e9MY1onfepxqZlHivrbO67zMzM7JlcIeUIe++HPasbd2noFXoVhuWx2G4bUSBQsx7TOFsvZ+GAGIvPPevQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773931868; c=relaxed/relaxed;
-	bh=aInfBWWVLqS+IZS5bb9QXC0z00kfS+2upSPaZ4RfgCg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=LttgALFxGHjnIz26KpMNZ+LhvuNLDNN1G3EoqCtQYM5kgDqHwMKv855pfh6r4CF+TGgj0RjhwsLU6B0TH7KhqyugBJRSvOiFbf63cnzRqvp/gyMv5WiwynXwV2gcDkc4k7rADFnKQimyeJu2e4iEW/ha/ECJBYVjQc885lpG3jpX7906W88+Cnh/Fo8kCwT/eim2Cf6AgfuK9hiVB57GUxMTlWbUR61ywwFMA2+RyHLF41XWnyzT9vHUpRMgcw9vlWqrXmB8lO7RxKyXkWyZjmfwRzPYjM9JjWJmc2N1OYbAk9Beq7tK2GG6I2b9Peuq7b3nP63CzCLGVbhaE96NbA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tlQhb5U8; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1773932375; c=relaxed/relaxed;
+	bh=Sqg7Bg6kJ/lBh3mPGVMcJxUkJteTeiLK4JhXhZl+frg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=GQAeDZjhvvcy1EFljTAHyNfHgM9Cy7abZkNbDgB/sSohc5qw2Tb0hIPklpVgFs4mq9V93pItLzU+b3ABu7KI9WwPjGXhLPC6jxBoijzuCoRhBtH5FktJbhN/9OXsXID/ng3god/qJwvlTP8NmE3IPCtzLWuzf3u4whkS3vKLR3gwYINoXFR+hll4Fnx5pOWB9uX1y0X8d+8radRiMTTXD2VTQ02yP4T6VtceJjtWm4iEGg+etIkOr7JXjlLSh7VVz0GPhgQVx2/HVJ9kYxJU99807mQ4c0gMRYb1tbL+pSbN5da5niL2m7HnZS/G3FPejAMMnpPtLTUic4qgOZo0Gg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jW7rO0Qy; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=horms@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tlQhb5U8;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jW7rO0Qy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=horms@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fc7tM0hX5z2yng
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2026 01:51:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fc8465sxjz2ynv
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2026 01:59:34 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 492516011F;
-	Thu, 19 Mar 2026 14:51:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BB216C19424;
-	Thu, 19 Mar 2026 14:50:52 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 91A36438AA;
+	Thu, 19 Mar 2026 14:59:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 53334C19424;
+	Thu, 19 Mar 2026 14:59:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773931864;
-	bh=NA2DgZthntn+Bg9p76vM8EhmWgvmuxh9uchtbNyldWI=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=tlQhb5U8pIGZhJaEn9uhM9ipP5ZvbmouNAA4Ihk1ejHR3ke0/ewxTzj1Uka5Mlbsz
-	 pLFIkb5W+Mw6Rsis43iKa0qN6vLRn0ljIl1K4AqJpZBa80h16MTiD8oqj+iJM4WThc
-	 kusDk2vZvs4JUK3T949S1jzI/YslUIbM6gzh5sJRM/vYH93dJ4dxbk4gkNrT+X16Rx
-	 fUr3JhyrOpq3I7hQhysr+JmVqv9MscUTJ92KmOG7AbffJcsmGWC2CNA1DN6cSCgLY3
-	 7MUiaGRvcclIs1U/sbbK8uxKQlHPcpehRaRJjgR5eByOaTptAwSYsjLR7y5Yus/f0a
-	 wIhLrOmaLh76g==
-Message-ID: <ee4029ba-87e9-4ec8-9391-c2c3a96bdbc7@kernel.org>
-Date: Thu, 19 Mar 2026 15:50:50 +0100
+	s=k20201202; t=1773932372;
+	bh=wRKFuj1RBd5OZOCmeqHIDv8olqwZDaGYrjqF4N72VFY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=jW7rO0Qydnm24fZKKcNCk97+5Di3gMM+w16JSsYYW7tDtJp8J3pvi9WBBBzht7Zxh
+	 dNFCYlDNcdV+fZwaxhrxXOFxyAJhHxe+vHCiZdVszjUQ5eoOuoP9OmqFA0zGMVzliZ
+	 h3HPi7AKag3uiE8aF1QXJXkXLsNp0vgEZ+WH7Qmfw4+ljSIfnVFtuMu0/REh97DcxT
+	 7iR6kJkVmbQgIKxp3tA04eOS4QpiNxsJ9oUo+gVw6J6QA+5Mg3ZILbvmV+swM1MKj/
+	 XjUC87ffsuXDpc8EQPT37CLR67gh92yBtV1tpDAr22vxx6BSKO/Joi/klO/asPmBES
+	 zjxeZO8y0oMVw==
+Date: Thu, 19 Mar 2026 14:59:18 +0000
+From: Simon Horman <horms@kernel.org>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: wei.fang@nxp.com, netdev@vger.kernel.org, xiaoning.wang@nxp.com,
+	vladimir.oltean@nxp.com, kuba@kernel.org, davem@davemloft.net,
+	linuxppc-dev@lists.ozlabs.org, krzk+dt@kernel.org, frank.li@nxp.com,
+	claudiu.manoil@nxp.com, chleroy@kernel.org,
+	linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+	robh@kernel.org, imx@lists.linux.dev, pabeni@redhat.com,
+	f.fainelli@gmail.com, linux@armlinux.org.uk, edumazet@google.com,
+	conor+dt@kernel.org, andrew+netdev@lunn.ch,
+	linux-arm-kernel@lists.infradead.org
+Subject: Re: [net-next,13/14] net: dsa: netc: initialize buffer bool table
+ and implement flow-control
+Message-ID: <20260319145918.GF1753385@horms.kernel.org>
+References: <20260316094152.1558671-14-wei.fang@nxp.com>
+ <20260318145452.1898637-2-horms@kernel.org>
+ <3dab3f5b-fb94-4c63-bcfd-aad4268e2ac3@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,64 +75,23 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 05/23] mm/vma: use new VMA flags for sticky flags logic
-Content-Language: en-US
-To: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>
-Cc: David Hildenbrand <david@kernel.org>,
- "Liam R . Howlett" <Liam.Howlett@oracle.com>, Jann Horn <jannh@google.com>,
- Pedro Falcato <pfalcato@suse.de>, Mike Rapoport <rppt@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>, Kees Cook <kees@kernel.org>,
- linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- Vineet Gupta <vgupta@kernel.org>, Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
- Brian Cain <bcain@kernel.org>, Huacai Chen <chenhuacai@kernel.org>,
- WANG Xuerui <kernel@xen0n.name>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Dinh Nguyen <dinguyen@kernel.org>, Madhavan Srinivasan
- <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>,
- Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
- Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
- "H . Peter Anvin" <hpa@zytor.com>, Richard Weinberger <richard@nod.at>,
- Anton Ivanov <anton.ivanov@cambridgegreys.com>,
- Johannes Berg <johannes@sipsolutions.net>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
- Xu Xin <xu.xin16@zte.com.cn>, Chengming Zhou <chengming.zhou@linux.dev>,
- Michal Hocko <mhocko@suse.com>, Paul Moore <paul@paul-moore.com>,
- Stephen Smalley <stephen.smalley.work@gmail.com>,
- Ondrej Mosnacek <omosnace@redhat.com>, linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, linux-hexagon@vger.kernel.org,
- loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, linux-um@lists.infradead.org,
- linux-fsdevel@vger.kernel.org, selinux@vger.kernel.org
-References: <cover.1773846935.git.ljs@kernel.org>
- <fd4276d39055290061f87e9fded20b6a6b712975.1773846935.git.ljs@kernel.org>
-From: "Vlastimil Babka (SUSE)" <vbabka@kernel.org>
-In-Reply-To: <fd4276d39055290061f87e9fded20b6a6b712975.1773846935.git.ljs@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3dab3f5b-fb94-4c63-bcfd-aad4268e2ac3@kernel.org>
 
-On 3/18/26 16:50, Lorenzo Stoakes (Oracle) wrote:
-> Use the new vma_flags_t flags implementation to perform the logic around
-> sticky flags and what flags are ignored on VMA merge.
+On Wed, Mar 18, 2026 at 03:56:39PM +0100, Krzysztof Kozlowski wrote:
+> On 18/03/2026 15:54, Simon Horman wrote:
+> > This is an AI-generated review of your patch. The human sending this
+> > email has considered the AI review valid, or at least plausible.
+> > 
 > 
-> We make use of the new vma_flags_empty(), vma_flags_diff_pair(), and
-> vma_flags_and_mask() functionality.
+> Why are you removing the "PATCH" part in the email subject?
 > 
-> Also update the VMA tests accordingly.
-> 
-> Signed-off-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
+> This completely messes up with the filters and causes this email to pop
+> up in places it should not.
 
-Acked-by: Vlastimil Babka (SUSE) <vbabka@kernel.org>
+Thanks for pointing this out.
 
+I sent this patch using some tooling.
+I'll look into why this happened.
 
