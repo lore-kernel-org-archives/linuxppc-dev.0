@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-18420-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18421-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C11F71075261
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2026 06:20:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AEC2A1075261
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2026 06:20:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fbwX02bxrz2ynZ;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fbwX06ZhKz304r;
 	Thu, 19 Mar 2026 17:19:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773901168;
-	cv=none; b=QBvCttpHsCA2fMS6ykp9ug2pCdWYD0HyVc0V1Hk5wpwv5SnyWX1rdmbDizsXAtjDB16blxX2TZxZNnoflcQ9a839aTFzd6djLJmv+guk+p0BDKWxSILxx+qicMgUkbUNynZcEAngAa+5Ud0Uh5BJO9G20+FohhrAC6/ikuDGipifkMdRpCKx2lzd5WIqW8LjXFwkMOdlttXaa+AjUOHMuctFcDkwjCMPEx30PJvVX+fVGqVAueQAst0LftratH8VHEf5FJyJ293bQg8fyU8Gckg240N9CUiDXAilRQEZlqztO7XGmOdM9pELCEGkUubVLegkkw/W5F2cVB7Xx2+19A==
+	cv=none; b=HUa0KwTlLcLw2bxv7fRl88AmuKqdu8k8UsSokA2LjxPEx5Kjk3MxympvWAIjgKc6dOyKQe+GeRaAudpmiAp9E17Ko0shbAsiTkXtoHXiD0e5/2uijZsqo8XTNES5wo6/La8r7/59/ZMAl9eHnsq0yEW+AKLS4mfy40BvT5vxydtgR0HCi8aLrOSxBiyZVaeKm5JTrFrKfuyABB6sDtWYTLF/0i/9BMHL1k2klZOCa5pO24/upOoeD0tinC26ZcC89smk9n0clzP8TBUosrX3uZ9X6o6cC1taC1sn6/65l+kDFTZiHRm/zwcMuvwNIouZ3Ne/GKcCqPIidFMvKJtcmQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1773901168; c=relaxed/relaxed;
-	bh=tbY0lD9y6Ny/NRRdO5SCDID/z3y4KwAoHSYoVy1slKo=;
+	bh=cSbyihBcOkRYzk4JTErXtr+2Rer4KNT3dMzzhaBGIkA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=O19orwR77bHQ9u1xsKfhByL7zyQHcq2ljtXNJeknGDRqjgKIuhQLpYrrhMp92EMysgPzlzGSvHfhFAMKhn6cTML/UeE+fnGujEkHL/r4h1L8u7BjZXcMwOvkqXHVEi0kS7wGZdtXWLVceMaOFTF0w1uAw0DviMqSnT4QhhekSAfNOClzNlrm9wMh8cP6NOQER9Upd9+kUe/7ivBeKzvmYcSPXMIvKle+/JKFZR5WyMja9sT0K96tWbU+nXqLyqaTO6p/G80qF1SVfVlyVpd8Br6b1pd6Ho1WWJrL6hLtI5AhpjI7xINQq5+y74C7NfMqTA1lPFBggzjF8D8gm5HQrg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lbL6kp8Q; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=coJsvmLYwx0kuCfWssP0y+r2VW54RYgIGao+Q0r0QRV1f+MBX54QQ76OwNpGMOERXxg5zKe2xxHiV9M1pxZlFca21jLGXPRj/q/HsNuXRHmnLlPLGUKaKIAZC1eZH4B+5hzkO/QJsWmWxuROA/TikNgDKqQFEdKRQWa4VGme59MXFm4R3B0Ic80zVZ3eE+xmCdecK6ev5C8RzskzxZ0cL8m4aSxGElip79g9TIWoojIffehQKyj/2NnYk94TCcKOXKDgAGA2lIrdm5OiO8T//TJ/H9qB2BgL2dGILsqG/i97S2KYfucq0qO3cKwrRLUVzrPaS/o6WtRBvHs33MTMRA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uw8zDhbS; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lbL6kp8Q;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uw8zDhbS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbwWr5Y2gz2yr7
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 17:19:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbwWr3jtwz2yqt
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 17:19:19 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 76B6E404E5;
-	Thu, 19 Mar 2026 06:19:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 11745C2BCB0;
-	Thu, 19 Mar 2026 06:19:18 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id E799E60134;
+	Thu, 19 Mar 2026 06:19:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 47733C2BCB0;
+	Thu, 19 Mar 2026 06:19:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773901158;
-	bh=sJchU+D5iVBtqxo0a18kfpJyCQYQXaGhsufyuqET8E4=;
+	s=k20201202; t=1773901156;
+	bh=XUHU2r86SR48mQ3AE6CcnrCUHzAbQqfAQdblCGnw44Q=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=lbL6kp8QtwQt8SUU7QXIx/mdm74G/ku13WvGixi/vBNv5Du0xPzxmE1PDcwA/J6wT
-	 JSqjT/FxIdPQIloxJPuHBBJjeTnsThSf+2uYnwqAKBwB6MY3GlTWfsuE3tgH+slGJA
-	 rOCsYVjqL4L5cJ/eXlX61ibF6/NaWBk2MtL33rqJc6y/RJhXD5UnwbG0fmpKu3pAMI
-	 jiHAJwCI4ag7YrUABdu8XeW/a/Z4BRs+FMLOPGv2R/Z+s8xSRJLYD6PsyzlZxnnvQB
-	 OnZAcTqchQKuQX0ffqjJ4mfjP9jSrk7lAOwTiNO632g3rsXKtgNMC2wJVf8M57DJxH
-	 r1kurhQF8AIaA==
+	b=uw8zDhbSvx+0bDfe49vNP7qxI4XvC7y/00dzjALest3xnJ6DnvxDCmylSODAjFt3o
+	 e8uG5uW6fjK6blRywulpbwIhV34QJLV1BcQQH9FMeLKMKnVLCylVZovOutL220lAld
+	 R6QcZAgmBaVebxt8eGh4UZRV19fLzHMU3FGkM+3e0MyBvaUMBJOz/DQpbHkt5GOAOx
+	 /+HHE6mgINMhNK6wsCQf3cqgIqMJVg7A9sWGyDFVhvh4uEig95DQM8xxG2mc+wmdQr
+	 tVme4a8MU1QqzKOJjFh8Kv20uPE6WFtaFjUiA1p/HxGWpJTbOipPg2eeHrP2G2b1fT
+	 XkrLTWlMOgOWQ==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -56,9 +56,9 @@ Cc: linux-kernel@vger.kernel.org,
 	linux-s390@vger.kernel.org,
 	x86@kernel.org,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH 08/19] crypto: arm64/ghash - Move NEON GHASH assembly into its own file
-Date: Wed, 18 Mar 2026 23:17:09 -0700
-Message-ID: <20260319061723.1140720-9-ebiggers@kernel.org>
+Subject: [PATCH 04/19] lib/crypto: tests: Add KUnit tests for GHASH
+Date: Wed, 18 Mar 2026 23:17:05 -0700
+Message-ID: <20260319061723.1140720-5-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260319061723.1140720-1-ebiggers@kernel.org>
 References: <20260319061723.1140720-1-ebiggers@kernel.org>
@@ -77,585 +77,591 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-arch/arm64/crypto/ghash-ce-core.S implements pmull_ghash_update_p8(),
-which is used only by a crypto_shash implementation of GHASH.  It also
-implements other functions, including pmull_ghash_update_p64() and
-others, which are used only by a crypto_aead implementation of AES-GCM.
+Add a KUnit test suite for the GHASH library functions.
 
-While some code is shared between pmull_ghash_update_p8() and
-pmull_ghash_update_p64(), it's not very much.  Since
-pmull_ghash_update_p8() will also need to be migrated into lib/crypto/
-to achieve parity in the standalone GHASH support, let's move it into a
-separate file ghash-neon-core.S.
+It closely mirrors the POLYVAL test suite.
 
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- arch/arm64/crypto/Makefile          |   2 +-
- arch/arm64/crypto/ghash-ce-core.S   | 207 ++-----------------------
- arch/arm64/crypto/ghash-neon-core.S | 226 ++++++++++++++++++++++++++++
- 3 files changed, 239 insertions(+), 196 deletions(-)
- create mode 100644 arch/arm64/crypto/ghash-neon-core.S
+ lib/crypto/.kunitconfig             |   1 +
+ lib/crypto/tests/Kconfig            |   8 ++
+ lib/crypto/tests/Makefile           |   1 +
+ lib/crypto/tests/ghash-testvecs.h   | 186 ++++++++++++++++++++++++++
+ lib/crypto/tests/ghash_kunit.c      | 194 ++++++++++++++++++++++++++++
+ scripts/crypto/gen-hash-testvecs.py |  63 ++++++++-
+ 6 files changed, 452 insertions(+), 1 deletion(-)
+ create mode 100644 lib/crypto/tests/ghash-testvecs.h
+ create mode 100644 lib/crypto/tests/ghash_kunit.c
 
-diff --git a/arch/arm64/crypto/Makefile b/arch/arm64/crypto/Makefile
-index 8a8e3e551ed3..b7ba43ce8584 100644
---- a/arch/arm64/crypto/Makefile
-+++ b/arch/arm64/crypto/Makefile
-@@ -25,11 +25,11 @@ sm4-ce-gcm-y := sm4-ce-gcm-glue.o sm4-ce-gcm-core.o
+diff --git a/lib/crypto/.kunitconfig b/lib/crypto/.kunitconfig
+index 63a592731d1d..391836511c8b 100644
+--- a/lib/crypto/.kunitconfig
++++ b/lib/crypto/.kunitconfig
+@@ -4,10 +4,11 @@ CONFIG_CRYPTO_LIB_ENABLE_ALL_FOR_KUNIT=y
  
- obj-$(CONFIG_CRYPTO_SM4_ARM64_NEON_BLK) += sm4-neon.o
- sm4-neon-y := sm4-neon-glue.o sm4-neon-core.o
+ CONFIG_CRYPTO_LIB_AES_CBC_MACS_KUNIT_TEST=y
+ CONFIG_CRYPTO_LIB_BLAKE2B_KUNIT_TEST=y
+ CONFIG_CRYPTO_LIB_BLAKE2S_KUNIT_TEST=y
+ CONFIG_CRYPTO_LIB_CURVE25519_KUNIT_TEST=y
++CONFIG_CRYPTO_LIB_GHASH_KUNIT_TEST=y
+ CONFIG_CRYPTO_LIB_MD5_KUNIT_TEST=y
+ CONFIG_CRYPTO_LIB_MLDSA_KUNIT_TEST=y
+ CONFIG_CRYPTO_LIB_NH_KUNIT_TEST=y
+ CONFIG_CRYPTO_LIB_POLY1305_KUNIT_TEST=y
+ CONFIG_CRYPTO_LIB_POLYVAL_KUNIT_TEST=y
+diff --git a/lib/crypto/tests/Kconfig b/lib/crypto/tests/Kconfig
+index aa627b6b9855..279ff1a339be 100644
+--- a/lib/crypto/tests/Kconfig
++++ b/lib/crypto/tests/Kconfig
+@@ -33,10 +33,18 @@ config CRYPTO_LIB_CURVE25519_KUNIT_TEST
+ 	default KUNIT_ALL_TESTS
+ 	select CRYPTO_LIB_BENCHMARK_VISIBLE
+ 	help
+ 	  KUnit tests for the Curve25519 Diffie-Hellman function.
  
- obj-$(CONFIG_CRYPTO_GHASH_ARM64_CE) += ghash-ce.o
--ghash-ce-y := ghash-ce-glue.o ghash-ce-core.o
-+ghash-ce-y := ghash-ce-glue.o ghash-ce-core.o ghash-neon-core.o
++config CRYPTO_LIB_GHASH_KUNIT_TEST
++	tristate "KUnit tests for GHASH" if !KUNIT_ALL_TESTS
++	depends on KUNIT && CRYPTO_LIB_GF128HASH
++	default KUNIT_ALL_TESTS
++	select CRYPTO_LIB_BENCHMARK_VISIBLE
++	help
++	  KUnit tests for GHASH library functions.
++
+ config CRYPTO_LIB_MD5_KUNIT_TEST
+ 	tristate "KUnit tests for MD5" if !KUNIT_ALL_TESTS
+ 	depends on KUNIT && CRYPTO_LIB_MD5
+ 	default KUNIT_ALL_TESTS
+ 	select CRYPTO_LIB_BENCHMARK_VISIBLE
+diff --git a/lib/crypto/tests/Makefile b/lib/crypto/tests/Makefile
+index f864e0ffbee4..751ae507fdd0 100644
+--- a/lib/crypto/tests/Makefile
++++ b/lib/crypto/tests/Makefile
+@@ -2,10 +2,11 @@
  
- obj-$(CONFIG_CRYPTO_AES_ARM64_CE_CCM) += aes-ce-ccm.o
- aes-ce-ccm-y := aes-ce-ccm-glue.o aes-ce-ccm-core.o
- 
- obj-$(CONFIG_CRYPTO_AES_ARM64_CE_BLK) += aes-ce-blk.o
-diff --git a/arch/arm64/crypto/ghash-ce-core.S b/arch/arm64/crypto/ghash-ce-core.S
-index 23ee9a5eaf27..4344fe213d14 100644
---- a/arch/arm64/crypto/ghash-ce-core.S
-+++ b/arch/arm64/crypto/ghash-ce-core.S
-@@ -1,8 +1,8 @@
- /* SPDX-License-Identifier: GPL-2.0-only */
- /*
-- * Accelerated GHASH implementation with ARMv8 PMULL instructions.
-+ * Accelerated AES-GCM implementation with ARMv8 Crypto Extensions.
-  *
-  * Copyright (C) 2014 - 2018 Linaro Ltd. <ard.biesheuvel@linaro.org>
-  */
- 
- #include <linux/linkage.h>
-@@ -17,35 +17,10 @@
- 	XM		.req	v5
- 	XL		.req	v6
- 	XH		.req	v7
- 	IN1		.req	v7
- 
--	k00_16		.req	v8
--	k32_48		.req	v9
--
--	t3		.req	v10
--	t4		.req	v11
--	t5		.req	v12
--	t6		.req	v13
--	t7		.req	v14
--	t8		.req	v15
--	t9		.req	v16
--
--	perm1		.req	v17
--	perm2		.req	v18
--	perm3		.req	v19
--
--	sh1		.req	v20
--	sh2		.req	v21
--	sh3		.req	v22
--	sh4		.req	v23
--
--	ss1		.req	v24
--	ss2		.req	v25
--	ss3		.req	v26
--	ss4		.req	v27
--
- 	XL2		.req	v8
- 	XM2		.req	v9
- 	XH2		.req	v10
- 	XL3		.req	v11
- 	XM3		.req	v12
-@@ -58,94 +33,10 @@
- 	HH34		.req	v19
- 
- 	.text
- 	.arch		armv8-a+crypto
- 
--	.macro		__pmull_p64, rd, rn, rm
--	pmull		\rd\().1q, \rn\().1d, \rm\().1d
--	.endm
--
--	.macro		__pmull2_p64, rd, rn, rm
--	pmull2		\rd\().1q, \rn\().2d, \rm\().2d
--	.endm
--
--	.macro		__pmull_p8, rq, ad, bd
--	ext		t3.8b, \ad\().8b, \ad\().8b, #1		// A1
--	ext		t5.8b, \ad\().8b, \ad\().8b, #2		// A2
--	ext		t7.8b, \ad\().8b, \ad\().8b, #3		// A3
--
--	__pmull_p8_\bd	\rq, \ad
--	.endm
--
--	.macro		__pmull2_p8, rq, ad, bd
--	tbl		t3.16b, {\ad\().16b}, perm1.16b		// A1
--	tbl		t5.16b, {\ad\().16b}, perm2.16b		// A2
--	tbl		t7.16b, {\ad\().16b}, perm3.16b		// A3
--
--	__pmull2_p8_\bd	\rq, \ad
--	.endm
--
--	.macro		__pmull_p8_SHASH, rq, ad
--	__pmull_p8_tail	\rq, \ad\().8b, SHASH.8b, 8b,, sh1, sh2, sh3, sh4
--	.endm
--
--	.macro		__pmull_p8_SHASH2, rq, ad
--	__pmull_p8_tail	\rq, \ad\().8b, SHASH2.8b, 8b,, ss1, ss2, ss3, ss4
--	.endm
--
--	.macro		__pmull2_p8_SHASH, rq, ad
--	__pmull_p8_tail	\rq, \ad\().16b, SHASH.16b, 16b, 2, sh1, sh2, sh3, sh4
--	.endm
--
--	.macro		__pmull_p8_tail, rq, ad, bd, nb, t, b1, b2, b3, b4
--	pmull\t		t3.8h, t3.\nb, \bd			// F = A1*B
--	pmull\t		t4.8h, \ad, \b1\().\nb			// E = A*B1
--	pmull\t		t5.8h, t5.\nb, \bd			// H = A2*B
--	pmull\t		t6.8h, \ad, \b2\().\nb			// G = A*B2
--	pmull\t		t7.8h, t7.\nb, \bd			// J = A3*B
--	pmull\t		t8.8h, \ad, \b3\().\nb			// I = A*B3
--	pmull\t		t9.8h, \ad, \b4\().\nb			// K = A*B4
--	pmull\t		\rq\().8h, \ad, \bd			// D = A*B
--
--	eor		t3.16b, t3.16b, t4.16b			// L = E + F
--	eor		t5.16b, t5.16b, t6.16b			// M = G + H
--	eor		t7.16b, t7.16b, t8.16b			// N = I + J
--
--	uzp1		t4.2d, t3.2d, t5.2d
--	uzp2		t3.2d, t3.2d, t5.2d
--	uzp1		t6.2d, t7.2d, t9.2d
--	uzp2		t7.2d, t7.2d, t9.2d
--
--	// t3 = (L) (P0 + P1) << 8
--	// t5 = (M) (P2 + P3) << 16
--	eor		t4.16b, t4.16b, t3.16b
--	and		t3.16b, t3.16b, k32_48.16b
--
--	// t7 = (N) (P4 + P5) << 24
--	// t9 = (K) (P6 + P7) << 32
--	eor		t6.16b, t6.16b, t7.16b
--	and		t7.16b, t7.16b, k00_16.16b
--
--	eor		t4.16b, t4.16b, t3.16b
--	eor		t6.16b, t6.16b, t7.16b
--
--	zip2		t5.2d, t4.2d, t3.2d
--	zip1		t3.2d, t4.2d, t3.2d
--	zip2		t9.2d, t6.2d, t7.2d
--	zip1		t7.2d, t6.2d, t7.2d
--
--	ext		t3.16b, t3.16b, t3.16b, #15
--	ext		t5.16b, t5.16b, t5.16b, #14
--	ext		t7.16b, t7.16b, t7.16b, #13
--	ext		t9.16b, t9.16b, t9.16b, #12
--
--	eor		t3.16b, t3.16b, t5.16b
--	eor		t7.16b, t7.16b, t9.16b
--	eor		\rq\().16b, \rq\().16b, t3.16b
--	eor		\rq\().16b, \rq\().16b, t7.16b
--	.endm
--
- 	.macro		__pmull_pre_p64
- 	add		x8, x3, #16
- 	ld1		{HH.2d-HH4.2d}, [x8]
- 
- 	trn1		SHASH2.2d, SHASH.2d, HH.2d
-@@ -158,47 +49,10 @@
- 
- 	movi		MASK.16b, #0xe1
- 	shl		MASK.2d, MASK.2d, #57
- 	.endm
- 
--	.macro		__pmull_pre_p8
--	ext		SHASH2.16b, SHASH.16b, SHASH.16b, #8
--	eor		SHASH2.16b, SHASH2.16b, SHASH.16b
--
--	// k00_16 := 0x0000000000000000_000000000000ffff
--	// k32_48 := 0x00000000ffffffff_0000ffffffffffff
--	movi		k32_48.2d, #0xffffffff
--	mov		k32_48.h[2], k32_48.h[0]
--	ushr		k00_16.2d, k32_48.2d, #32
--
--	// prepare the permutation vectors
--	mov_q		x5, 0x080f0e0d0c0b0a09
--	movi		T1.8b, #8
--	dup		perm1.2d, x5
--	eor		perm1.16b, perm1.16b, T1.16b
--	ushr		perm2.2d, perm1.2d, #8
--	ushr		perm3.2d, perm1.2d, #16
--	ushr		T1.2d, perm1.2d, #24
--	sli		perm2.2d, perm1.2d, #56
--	sli		perm3.2d, perm1.2d, #48
--	sli		T1.2d, perm1.2d, #40
--
--	// precompute loop invariants
--	tbl		sh1.16b, {SHASH.16b}, perm1.16b
--	tbl		sh2.16b, {SHASH.16b}, perm2.16b
--	tbl		sh3.16b, {SHASH.16b}, perm3.16b
--	tbl		sh4.16b, {SHASH.16b}, T1.16b
--	ext		ss1.8b, SHASH2.8b, SHASH2.8b, #1
--	ext		ss2.8b, SHASH2.8b, SHASH2.8b, #2
--	ext		ss3.8b, SHASH2.8b, SHASH2.8b, #3
--	ext		ss4.8b, SHASH2.8b, SHASH2.8b, #4
--	.endm
--
--	//
--	// PMULL (64x64->128) based reduction for CPUs that can do
--	// it in a single instruction.
--	//
- 	.macro		__pmull_reduce_p64
- 	pmull		T2.1q, XL.1d, MASK.1d
- 	eor		XM.16b, XM.16b, T1.16b
- 
- 	mov		XH.d[0], XM.d[1]
-@@ -207,51 +61,27 @@
- 	eor		XL.16b, XM.16b, T2.16b
- 	ext		T2.16b, XL.16b, XL.16b, #8
- 	pmull		XL.1q, XL.1d, MASK.1d
- 	.endm
- 
--	//
--	// Alternative reduction for CPUs that lack support for the
--	// 64x64->128 PMULL instruction
--	//
--	.macro		__pmull_reduce_p8
--	eor		XM.16b, XM.16b, T1.16b
--
--	mov		XL.d[1], XM.d[0]
--	mov		XH.d[0], XM.d[1]
--
--	shl		T1.2d, XL.2d, #57
--	shl		T2.2d, XL.2d, #62
--	eor		T2.16b, T2.16b, T1.16b
--	shl		T1.2d, XL.2d, #63
--	eor		T2.16b, T2.16b, T1.16b
--	ext		T1.16b, XL.16b, XH.16b, #8
--	eor		T2.16b, T2.16b, T1.16b
--
--	mov		XL.d[1], T2.d[0]
--	mov		XH.d[0], T2.d[1]
--
--	ushr		T2.2d, XL.2d, #1
--	eor		XH.16b, XH.16b, XL.16b
--	eor		XL.16b, XL.16b, T2.16b
--	ushr		T2.2d, T2.2d, #6
--	ushr		XL.2d, XL.2d, #1
--	.endm
--
--	.macro		__pmull_ghash, pn
-+	/*
-+	 * void pmull_ghash_update_p64(int blocks, u64 dg[], const char *src,
-+	 *			       u64 const h[][2], const char *head)
-+	 */
-+SYM_TYPED_FUNC_START(pmull_ghash_update_p64)
- 	ld1		{SHASH.2d}, [x3]
- 	ld1		{XL.2d}, [x1]
- 
--	__pmull_pre_\pn
-+	__pmull_pre_p64
- 
- 	/* do the head block first, if supplied */
- 	cbz		x4, 0f
- 	ld1		{T1.2d}, [x4]
- 	mov		x4, xzr
- 	b		3f
- 
--0:	.ifc		\pn, p64
-+0:
- 	tbnz		w0, #0, 2f		// skip until #blocks is a
- 	tbnz		w0, #1, 2f		// round multiple of 4
- 
- 1:	ld1		{XM3.16b-TT4.16b}, [x2], #64
- 
-@@ -312,11 +142,10 @@
- 	eor		T2.16b, T2.16b, XH.16b
- 	eor		XL.16b, XL.16b, T2.16b
- 
- 	cbz		w0, 5f
- 	b		1b
--	.endif
- 
- 2:	ld1		{T1.2d}, [x2], #16
- 	sub		w0, w0, #1
- 
- 3:	/* multiply XL by SHASH in GF(2^128) */
-@@ -325,42 +154,30 @@ CPU_LE(	rev64		T1.16b, T1.16b	)
- 	ext		T2.16b, XL.16b, XL.16b, #8
- 	ext		IN1.16b, T1.16b, T1.16b, #8
- 	eor		T1.16b, T1.16b, T2.16b
- 	eor		XL.16b, XL.16b, IN1.16b
- 
--	__pmull2_\pn	XH, XL, SHASH			// a1 * b1
-+	pmull2		XH.1q, XL.2d, SHASH.2d		// a1 * b1
- 	eor		T1.16b, T1.16b, XL.16b
--	__pmull_\pn 	XL, XL, SHASH			// a0 * b0
--	__pmull_\pn	XM, T1, SHASH2			// (a1 + a0)(b1 + b0)
-+	pmull		XL.1q, XL.1d, SHASH.1d		// a0 * b0
-+	pmull		XM.1q, T1.1d, SHASH2.1d		// (a1 + a0)(b1 + b0)
- 
- 4:	eor		T2.16b, XL.16b, XH.16b
- 	ext		T1.16b, XL.16b, XH.16b, #8
- 	eor		XM.16b, XM.16b, T2.16b
- 
--	__pmull_reduce_\pn
-+	__pmull_reduce_p64
- 
- 	eor		T2.16b, T2.16b, XH.16b
- 	eor		XL.16b, XL.16b, T2.16b
- 
- 	cbnz		w0, 0b
- 
- 5:	st1		{XL.2d}, [x1]
- 	ret
--	.endm
--
--	/*
--	 * void pmull_ghash_update(int blocks, u64 dg[], const char *src,
--	 *			   struct ghash_key const *k, const char *head)
--	 */
--SYM_TYPED_FUNC_START(pmull_ghash_update_p64)
--	__pmull_ghash	p64
- SYM_FUNC_END(pmull_ghash_update_p64)
- 
--SYM_TYPED_FUNC_START(pmull_ghash_update_p8)
--	__pmull_ghash	p8
--SYM_FUNC_END(pmull_ghash_update_p8)
--
- 	KS0		.req	v8
- 	KS1		.req	v9
- 	KS2		.req	v10
- 	KS3		.req	v11
- 
-diff --git a/arch/arm64/crypto/ghash-neon-core.S b/arch/arm64/crypto/ghash-neon-core.S
+ obj-$(CONFIG_CRYPTO_LIB_AES_CBC_MACS_KUNIT_TEST) += aes_cbc_macs_kunit.o
+ obj-$(CONFIG_CRYPTO_LIB_BLAKE2B_KUNIT_TEST) += blake2b_kunit.o
+ obj-$(CONFIG_CRYPTO_LIB_BLAKE2S_KUNIT_TEST) += blake2s_kunit.o
+ obj-$(CONFIG_CRYPTO_LIB_CURVE25519_KUNIT_TEST) += curve25519_kunit.o
++obj-$(CONFIG_CRYPTO_LIB_GHASH_KUNIT_TEST) += ghash_kunit.o
+ obj-$(CONFIG_CRYPTO_LIB_MD5_KUNIT_TEST) += md5_kunit.o
+ obj-$(CONFIG_CRYPTO_LIB_MLDSA_KUNIT_TEST) += mldsa_kunit.o
+ obj-$(CONFIG_CRYPTO_LIB_NH_KUNIT_TEST) += nh_kunit.o
+ obj-$(CONFIG_CRYPTO_LIB_POLY1305_KUNIT_TEST) += poly1305_kunit.o
+ obj-$(CONFIG_CRYPTO_LIB_POLYVAL_KUNIT_TEST) += polyval_kunit.o
+diff --git a/lib/crypto/tests/ghash-testvecs.h b/lib/crypto/tests/ghash-testvecs.h
 new file mode 100644
-index 000000000000..6157135ad566
+index 000000000000..759eb4072336
 --- /dev/null
-+++ b/arch/arm64/crypto/ghash-neon-core.S
-@@ -0,0 +1,226 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
++++ b/lib/crypto/tests/ghash-testvecs.h
+@@ -0,0 +1,186 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later */
++/* This file was generated by: ./scripts/crypto/gen-hash-testvecs.py ghash */
++
++static const struct {
++	size_t data_len;
++	u8 digest[GHASH_DIGEST_SIZE];
++} hash_testvecs[] = {
++	{
++		.data_len = 0,
++		.digest = {
++			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++		},
++	},
++	{
++		.data_len = 1,
++		.digest = {
++			0x13, 0x91, 0xa1, 0x11, 0x08, 0xc3, 0x7e, 0xeb,
++			0x21, 0x42, 0x4a, 0xd6, 0x45, 0x0f, 0x41, 0xa7,
++		},
++	},
++	{
++		.data_len = 2,
++		.digest = {
++			0xde, 0x00, 0x63, 0x3f, 0x71, 0x0f, 0xc6, 0x29,
++			0x53, 0x2e, 0x49, 0xd9, 0xc2, 0xb7, 0x73, 0xce,
++		},
++	},
++	{
++		.data_len = 3,
++		.digest = {
++			0xcf, 0xc7, 0xa8, 0x20, 0x24, 0xe9, 0x7a, 0x6c,
++			0x2c, 0x2a, 0x34, 0x70, 0x26, 0xba, 0xd5, 0x9a,
++		},
++	},
++	{
++		.data_len = 16,
++		.digest = {
++			0xaa, 0xe0, 0xdc, 0x7f, 0xcf, 0x8b, 0xe6, 0x0c,
++			0x2e, 0x93, 0x89, 0x7d, 0x68, 0x4e, 0xc2, 0x63,
++		},
++	},
++	{
++		.data_len = 32,
++		.digest = {
++			0x4b, 0x8b, 0x93, 0x5c, 0x79, 0xad, 0x85, 0x08,
++			0xd3, 0x8a, 0xcd, 0xdd, 0x4c, 0x6e, 0x0e, 0x6f,
++		},
++	},
++	{
++		.data_len = 48,
++		.digest = {
++			0xfa, 0xa0, 0x25, 0xdd, 0x61, 0x9a, 0x52, 0x9a,
++			0xea, 0xee, 0xc6, 0x62, 0xb2, 0xba, 0x11, 0x49,
++		},
++	},
++	{
++		.data_len = 49,
++		.digest = {
++			0x23, 0xf1, 0x05, 0xeb, 0x30, 0x40, 0xb9, 0x1d,
++			0xe6, 0x35, 0x51, 0x4e, 0x0f, 0xc0, 0x1b, 0x9e,
++		},
++	},
++	{
++		.data_len = 63,
++		.digest = {
++			0x8d, 0xcf, 0xa0, 0xc8, 0x83, 0x21, 0x06, 0x81,
++			0xc6, 0x36, 0xd5, 0x62, 0xbf, 0xa0, 0xcd, 0x9c,
++		},
++	},
++	{
++		.data_len = 64,
++		.digest = {
++			0xe7, 0xca, 0xbe, 0xe7, 0x66, 0xc8, 0x85, 0xad,
++			0xbc, 0xaf, 0x58, 0x21, 0xd7, 0x67, 0x82, 0x15,
++		},
++	},
++	{
++		.data_len = 65,
++		.digest = {
++			0x9f, 0x48, 0x10, 0xd9, 0xa2, 0x6b, 0x9d, 0xe0,
++			0xb1, 0x87, 0xe1, 0x39, 0xc3, 0xd7, 0xee, 0x09,
++		},
++	},
++	{
++		.data_len = 127,
++		.digest = {
++			0xa4, 0x36, 0xb7, 0x82, 0xd2, 0x67, 0x7e, 0xaf,
++			0x5d, 0xfd, 0x67, 0x9c, 0x1d, 0x9f, 0xe4, 0xf7,
++		},
++	},
++	{
++		.data_len = 128,
++		.digest = {
++			0x57, 0xe7, 0x1d, 0x78, 0xf0, 0x8e, 0xc7, 0x0c,
++			0x15, 0xee, 0x18, 0xc4, 0xd1, 0x75, 0x90, 0xaa,
++		},
++	},
++	{
++		.data_len = 129,
++		.digest = {
++			0x9b, 0xad, 0x81, 0xa9, 0x22, 0xb2, 0x19, 0x53,
++			0x60, 0x30, 0xe7, 0xa0, 0x4f, 0xd6, 0x72, 0x42,
++		},
++	},
++	{
++		.data_len = 256,
++		.digest = {
++			0xf7, 0x33, 0x42, 0xbf, 0x58, 0xde, 0x88, 0x0f,
++			0x8d, 0x3d, 0xa6, 0x11, 0x14, 0xc3, 0xf1, 0xdc,
++		},
++	},
++	{
++		.data_len = 511,
++		.digest = {
++			0x59, 0xdc, 0xa9, 0xc0, 0x4e, 0xd6, 0x97, 0xb3,
++			0x60, 0xaf, 0xa8, 0xa0, 0xea, 0x54, 0x8e, 0xc3,
++		},
++	},
++	{
++		.data_len = 513,
++		.digest = {
++			0xa2, 0x23, 0x37, 0xcc, 0x97, 0xec, 0xea, 0xbe,
++			0xd6, 0xc7, 0x13, 0xf7, 0x93, 0x73, 0xc0, 0x64,
++		},
++	},
++	{
++		.data_len = 1000,
++		.digest = {
++			0x46, 0x8b, 0x43, 0x77, 0x9b, 0xc2, 0xfc, 0xa4,
++			0x68, 0x6a, 0x6c, 0x07, 0xa4, 0x6f, 0x47, 0x65,
++		},
++	},
++	{
++		.data_len = 3333,
++		.digest = {
++			0x69, 0x7f, 0x19, 0xc3, 0xb9, 0xa4, 0xff, 0x40,
++			0xe3, 0x03, 0x71, 0xa3, 0x88, 0x8a, 0xf1, 0xbd,
++		},
++	},
++	{
++		.data_len = 4096,
++		.digest = {
++			0x4d, 0x65, 0xe6, 0x9c, 0xeb, 0x6a, 0x46, 0x8d,
++			0xe9, 0x32, 0x96, 0x72, 0xb3, 0x0d, 0x08, 0xa9,
++		},
++	},
++	{
++		.data_len = 4128,
++		.digest = {
++			0xfc, 0xa1, 0x74, 0x46, 0x21, 0x64, 0xa7, 0x64,
++			0xbe, 0x47, 0x03, 0x1e, 0x05, 0xf7, 0xd8, 0x37,
++		},
++	},
++	{
++		.data_len = 4160,
++		.digest = {
++			0x70, 0x5b, 0xe9, 0x17, 0xab, 0xd5, 0xa2, 0xee,
++			0xcb, 0x39, 0xa4, 0x81, 0x2f, 0x41, 0x70, 0xae,
++		},
++	},
++	{
++		.data_len = 4224,
++		.digest = {
++			0x07, 0xbd, 0xb6, 0x52, 0xe2, 0x75, 0x2c, 0x33,
++			0x6d, 0x1b, 0x63, 0x56, 0x58, 0xda, 0x98, 0x55,
++		},
++	},
++	{
++		.data_len = 16384,
++		.digest = {
++			0x9c, 0xb5, 0xf4, 0x14, 0xe8, 0xa8, 0x4a, 0xde,
++			0xee, 0x7b, 0xbb, 0xd6, 0x21, 0x6d, 0x6a, 0x69,
++		},
++	},
++};
++
++static const u8 hash_testvec_consolidated[GHASH_DIGEST_SIZE] = {
++	0x08, 0xef, 0xf5, 0x27, 0xb1, 0xca, 0xd4, 0x1d,
++	0xad, 0x38, 0x69, 0x88, 0x6b, 0x16, 0xdf, 0xa8,
++};
++
++static const u8 ghash_allones_hashofhashes[GHASH_DIGEST_SIZE] = {
++	0xef, 0x85, 0x58, 0xf8, 0x54, 0x9c, 0x5e, 0x54,
++	0xd9, 0xbe, 0x04, 0x1f, 0xff, 0xff, 0xff, 0xff,
++};
+diff --git a/lib/crypto/tests/ghash_kunit.c b/lib/crypto/tests/ghash_kunit.c
+new file mode 100644
+index 000000000000..68b3837a3607
+--- /dev/null
++++ b/lib/crypto/tests/ghash_kunit.c
+@@ -0,0 +1,194 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
-+ * Accelerated GHASH implementation with ARMv8 ASIMD instructions.
-+ *
-+ * Copyright (C) 2014 - 2018 Linaro Ltd. <ard.biesheuvel@linaro.org>
++ * Copyright 2026 Google LLC
 + */
++#include <crypto/gf128hash.h>
++#include "ghash-testvecs.h"
 +
-+#include <linux/linkage.h>
-+#include <linux/cfi_types.h>
-+#include <asm/assembler.h>
++/*
++ * A fixed key used when presenting GHASH as an unkeyed hash function in order
++ * to reuse hash-test-template.h.  At the beginning of the test suite, this is
++ * initialized to a key prepared from bytes generated from a fixed seed.
++ */
++static struct ghash_key test_key;
 +
-+	SHASH		.req	v0
-+	SHASH2		.req	v1
-+	T1		.req	v2
-+	T2		.req	v3
-+	XM		.req	v5
-+	XL		.req	v6
-+	XH		.req	v7
-+	IN1		.req	v7
++static void ghash_init_withtestkey(struct ghash_ctx *ctx)
++{
++	ghash_init(ctx, &test_key);
++}
 +
-+	k00_16		.req	v8
-+	k32_48		.req	v9
++static void ghash_withtestkey(const u8 *data, size_t len,
++			      u8 out[GHASH_BLOCK_SIZE])
++{
++	ghash(&test_key, data, len, out);
++}
 +
-+	t3		.req	v10
-+	t4		.req	v11
-+	t5		.req	v12
-+	t6		.req	v13
-+	t7		.req	v14
-+	t8		.req	v15
-+	t9		.req	v16
++/* Generate the HASH_KUNIT_CASES using hash-test-template.h. */
++#define HASH ghash_withtestkey
++#define HASH_CTX ghash_ctx
++#define HASH_SIZE GHASH_BLOCK_SIZE
++#define HASH_INIT ghash_init_withtestkey
++#define HASH_UPDATE ghash_update
++#define HASH_FINAL ghash_final
++#include "hash-test-template.h"
 +
-+	perm1		.req	v17
-+	perm2		.req	v18
-+	perm3		.req	v19
++/*
++ * Test a key and messages containing all one bits.  This is useful to detect
++ * overflow bugs in implementations that emulate carryless multiplication using
++ * a series of standard multiplications with the bits spread out.
++ */
++static void test_ghash_allones_key_and_message(struct kunit *test)
++{
++	struct ghash_key key;
++	struct ghash_ctx hashofhashes_ctx;
++	u8 hash[GHASH_BLOCK_SIZE];
 +
-+	sh1		.req	v20
-+	sh2		.req	v21
-+	sh3		.req	v22
-+	sh4		.req	v23
++	static_assert(TEST_BUF_LEN >= 4096);
++	memset(test_buf, 0xff, 4096);
 +
-+	ss1		.req	v24
-+	ss2		.req	v25
-+	ss3		.req	v26
-+	ss4		.req	v27
++	ghash_preparekey(&key, test_buf);
++	ghash_init(&hashofhashes_ctx, &key);
++	for (size_t len = 0; len <= 4096; len += 16) {
++		ghash(&key, test_buf, len, hash);
++		ghash_update(&hashofhashes_ctx, hash, sizeof(hash));
++	}
++	ghash_final(&hashofhashes_ctx, hash);
++	KUNIT_ASSERT_MEMEQ(test, hash, ghash_allones_hashofhashes,
++			   sizeof(hash));
++}
 +
-+	.text
++#define MAX_LEN_FOR_KEY_CHECK 1024
 +
-+	.macro		__pmull_p8, rq, ad, bd
-+	ext		t3.8b, \ad\().8b, \ad\().8b, #1		// A1
-+	ext		t5.8b, \ad\().8b, \ad\().8b, #2		// A2
-+	ext		t7.8b, \ad\().8b, \ad\().8b, #3		// A3
++/*
++ * Given two prepared keys which should be identical (but may differ in
++ * alignment and/or whether they are followed by a guard page or not), verify
++ * that they produce consistent results on various data lengths.
++ */
++static void check_key_consistency(struct kunit *test,
++				  const struct ghash_key *key1,
++				  const struct ghash_key *key2)
++{
++	u8 *data = test_buf;
++	u8 hash1[GHASH_BLOCK_SIZE];
++	u8 hash2[GHASH_BLOCK_SIZE];
 +
-+	__pmull_p8_\bd	\rq, \ad
-+	.endm
++	rand_bytes(data, MAX_LEN_FOR_KEY_CHECK);
++	KUNIT_ASSERT_MEMEQ(test, key1, key2, sizeof(*key1));
 +
-+	.macro		__pmull2_p8, rq, ad, bd
-+	tbl		t3.16b, {\ad\().16b}, perm1.16b		// A1
-+	tbl		t5.16b, {\ad\().16b}, perm2.16b		// A2
-+	tbl		t7.16b, {\ad\().16b}, perm3.16b		// A3
++	for (int i = 0; i < 100; i++) {
++		size_t len = rand_length(MAX_LEN_FOR_KEY_CHECK);
 +
-+	__pmull2_p8_\bd	\rq, \ad
-+	.endm
++		ghash(key1, data, len, hash1);
++		ghash(key2, data, len, hash2);
++		KUNIT_ASSERT_MEMEQ(test, hash1, hash2, sizeof(hash1));
++	}
++}
 +
-+	.macro		__pmull_p8_SHASH, rq, ad
-+	__pmull_p8_tail	\rq, \ad\().8b, SHASH.8b, 8b,, sh1, sh2, sh3, sh4
-+	.endm
++/* Test that no buffer overreads occur on either raw_key or ghash_key. */
++static void test_ghash_with_guarded_key(struct kunit *test)
++{
++	u8 raw_key[GHASH_BLOCK_SIZE];
++	u8 *guarded_raw_key = &test_buf[TEST_BUF_LEN - sizeof(raw_key)];
++	struct ghash_key key1, key2;
++	struct ghash_key *guarded_key =
++		(struct ghash_key *)&test_buf[TEST_BUF_LEN - sizeof(key1)];
 +
-+	.macro		__pmull_p8_SHASH2, rq, ad
-+	__pmull_p8_tail	\rq, \ad\().8b, SHASH2.8b, 8b,, ss1, ss2, ss3, ss4
-+	.endm
++	/* Prepare with regular buffers. */
++	rand_bytes(raw_key, sizeof(raw_key));
++	ghash_preparekey(&key1, raw_key);
 +
-+	.macro		__pmull2_p8_SHASH, rq, ad
-+	__pmull_p8_tail	\rq, \ad\().16b, SHASH.16b, 16b, 2, sh1, sh2, sh3, sh4
-+	.endm
++	/* Prepare with guarded raw_key, then check that it works. */
++	memcpy(guarded_raw_key, raw_key, sizeof(raw_key));
++	ghash_preparekey(&key2, guarded_raw_key);
++	check_key_consistency(test, &key1, &key2);
 +
-+	.macro		__pmull_p8_tail, rq, ad, bd, nb, t, b1, b2, b3, b4
-+	pmull\t		t3.8h, t3.\nb, \bd			// F = A1*B
-+	pmull\t		t4.8h, \ad, \b1\().\nb			// E = A*B1
-+	pmull\t		t5.8h, t5.\nb, \bd			// H = A2*B
-+	pmull\t		t6.8h, \ad, \b2\().\nb			// G = A*B2
-+	pmull\t		t7.8h, t7.\nb, \bd			// J = A3*B
-+	pmull\t		t8.8h, \ad, \b3\().\nb			// I = A*B3
-+	pmull\t		t9.8h, \ad, \b4\().\nb			// K = A*B4
-+	pmull\t		\rq\().8h, \ad, \bd			// D = A*B
++	/* Prepare guarded ghash_key, then check that it works. */
++	ghash_preparekey(guarded_key, raw_key);
++	check_key_consistency(test, &key1, guarded_key);
++}
 +
-+	eor		t3.16b, t3.16b, t4.16b			// L = E + F
-+	eor		t5.16b, t5.16b, t6.16b			// M = G + H
-+	eor		t7.16b, t7.16b, t8.16b			// N = I + J
++/*
++ * Test that ghash_key only needs to be aligned to
++ * __alignof__(struct ghash_key), i.e. 8 bytes.  The assembly code may prefer
++ * 16-byte or higher alignment, but it mustn't require it.
++ */
++static void test_ghash_with_minimally_aligned_key(struct kunit *test)
++{
++	u8 raw_key[GHASH_BLOCK_SIZE];
++	struct ghash_key key;
++	struct ghash_key *minaligned_key =
++		(struct ghash_key *)&test_buf[MAX_LEN_FOR_KEY_CHECK +
++					      __alignof__(struct ghash_key)];
 +
-+	uzp1		t4.2d, t3.2d, t5.2d
-+	uzp2		t3.2d, t3.2d, t5.2d
-+	uzp1		t6.2d, t7.2d, t9.2d
-+	uzp2		t7.2d, t7.2d, t9.2d
++	KUNIT_ASSERT_TRUE(test, IS_ALIGNED((uintptr_t)minaligned_key,
++					   __alignof__(struct ghash_key)));
++	KUNIT_ASSERT_TRUE(test, !IS_ALIGNED((uintptr_t)minaligned_key,
++					    2 * __alignof__(struct ghash_key)));
 +
-+	// t3 = (L) (P0 + P1) << 8
-+	// t5 = (M) (P2 + P3) << 16
-+	eor		t4.16b, t4.16b, t3.16b
-+	and		t3.16b, t3.16b, k32_48.16b
++	rand_bytes(raw_key, sizeof(raw_key));
++	ghash_preparekey(&key, raw_key);
++	ghash_preparekey(minaligned_key, raw_key);
++	check_key_consistency(test, &key, minaligned_key);
++}
 +
-+	// t7 = (N) (P4 + P5) << 24
-+	// t9 = (K) (P6 + P7) << 32
-+	eor		t6.16b, t6.16b, t7.16b
-+	and		t7.16b, t7.16b, k00_16.16b
++struct ghash_irq_test_state {
++	struct ghash_key expected_key;
++	u8 raw_key[GHASH_BLOCK_SIZE];
++};
 +
-+	eor		t4.16b, t4.16b, t3.16b
-+	eor		t6.16b, t6.16b, t7.16b
++static bool ghash_irq_test_func(void *state_)
++{
++	struct ghash_irq_test_state *state = state_;
++	struct ghash_key key;
 +
-+	zip2		t5.2d, t4.2d, t3.2d
-+	zip1		t3.2d, t4.2d, t3.2d
-+	zip2		t9.2d, t6.2d, t7.2d
-+	zip1		t7.2d, t6.2d, t7.2d
++	ghash_preparekey(&key, state->raw_key);
++	return memcmp(&key, &state->expected_key, sizeof(key)) == 0;
++}
 +
-+	ext		t3.16b, t3.16b, t3.16b, #15
-+	ext		t5.16b, t5.16b, t5.16b, #14
-+	ext		t7.16b, t7.16b, t7.16b, #13
-+	ext		t9.16b, t9.16b, t9.16b, #12
++/*
++ * Test that ghash_preparekey() produces the same output regardless of whether
++ * FPU or vector registers are usable when it is called.
++ */
++static void test_ghash_preparekey_in_irqs(struct kunit *test)
++{
++	struct ghash_irq_test_state state;
 +
-+	eor		t3.16b, t3.16b, t5.16b
-+	eor		t7.16b, t7.16b, t9.16b
-+	eor		\rq\().16b, \rq\().16b, t3.16b
-+	eor		\rq\().16b, \rq\().16b, t7.16b
-+	.endm
++	rand_bytes(state.raw_key, sizeof(state.raw_key));
++	ghash_preparekey(&state.expected_key, state.raw_key);
++	kunit_run_irq_test(test, ghash_irq_test_func, 200000, &state);
++}
 +
-+	.macro		__pmull_pre_p8
-+	ext		SHASH2.16b, SHASH.16b, SHASH.16b, #8
-+	eor		SHASH2.16b, SHASH2.16b, SHASH.16b
++static int ghash_suite_init(struct kunit_suite *suite)
++{
++	u8 raw_key[GHASH_BLOCK_SIZE];
 +
-+	// k00_16 := 0x0000000000000000_000000000000ffff
-+	// k32_48 := 0x00000000ffffffff_0000ffffffffffff
-+	movi		k32_48.2d, #0xffffffff
-+	mov		k32_48.h[2], k32_48.h[0]
-+	ushr		k00_16.2d, k32_48.2d, #32
++	rand_bytes_seeded_from_len(raw_key, sizeof(raw_key));
++	ghash_preparekey(&test_key, raw_key);
++	return hash_suite_init(suite);
++}
 +
-+	// prepare the permutation vectors
-+	mov_q		x5, 0x080f0e0d0c0b0a09
-+	movi		T1.8b, #8
-+	dup		perm1.2d, x5
-+	eor		perm1.16b, perm1.16b, T1.16b
-+	ushr		perm2.2d, perm1.2d, #8
-+	ushr		perm3.2d, perm1.2d, #16
-+	ushr		T1.2d, perm1.2d, #24
-+	sli		perm2.2d, perm1.2d, #56
-+	sli		perm3.2d, perm1.2d, #48
-+	sli		T1.2d, perm1.2d, #40
++static void ghash_suite_exit(struct kunit_suite *suite)
++{
++	hash_suite_exit(suite);
++}
 +
-+	// precompute loop invariants
-+	tbl		sh1.16b, {SHASH.16b}, perm1.16b
-+	tbl		sh2.16b, {SHASH.16b}, perm2.16b
-+	tbl		sh3.16b, {SHASH.16b}, perm3.16b
-+	tbl		sh4.16b, {SHASH.16b}, T1.16b
-+	ext		ss1.8b, SHASH2.8b, SHASH2.8b, #1
-+	ext		ss2.8b, SHASH2.8b, SHASH2.8b, #2
-+	ext		ss3.8b, SHASH2.8b, SHASH2.8b, #3
-+	ext		ss4.8b, SHASH2.8b, SHASH2.8b, #4
-+	.endm
++static struct kunit_case ghash_test_cases[] = {
++	HASH_KUNIT_CASES,
++	KUNIT_CASE(test_ghash_allones_key_and_message),
++	KUNIT_CASE(test_ghash_with_guarded_key),
++	KUNIT_CASE(test_ghash_with_minimally_aligned_key),
++	KUNIT_CASE(test_ghash_preparekey_in_irqs),
++	KUNIT_CASE(benchmark_hash),
++	{},
++};
 +
-+	.macro		__pmull_reduce_p8
-+	eor		XM.16b, XM.16b, T1.16b
++static struct kunit_suite ghash_test_suite = {
++	.name = "ghash",
++	.test_cases = ghash_test_cases,
++	.suite_init = ghash_suite_init,
++	.suite_exit = ghash_suite_exit,
++};
++kunit_test_suite(ghash_test_suite);
 +
-+	mov		XL.d[1], XM.d[0]
-+	mov		XH.d[0], XM.d[1]
++MODULE_DESCRIPTION("KUnit tests and benchmark for GHASH");
++MODULE_LICENSE("GPL");
+diff --git a/scripts/crypto/gen-hash-testvecs.py b/scripts/crypto/gen-hash-testvecs.py
+index 34b7c48f3456..e69ce213fb33 100755
+--- a/scripts/crypto/gen-hash-testvecs.py
++++ b/scripts/crypto/gen-hash-testvecs.py
+@@ -66,10 +66,56 @@ class Poly1305:
+     # nondestructive, i.e. not changing any field of self.
+     def digest(self):
+         m = (self.h + self.s) % 2**128
+         return m.to_bytes(16, byteorder='little')
+ 
++GHASH_POLY = sum((1 << i) for i in [128, 7, 2, 1, 0])
++GHASH_BLOCK_SIZE = 16
 +
-+	shl		T1.2d, XL.2d, #57
-+	shl		T2.2d, XL.2d, #62
-+	eor		T2.16b, T2.16b, T1.16b
-+	shl		T1.2d, XL.2d, #63
-+	eor		T2.16b, T2.16b, T1.16b
-+	ext		T1.16b, XL.16b, XH.16b, #8
-+	eor		T2.16b, T2.16b, T1.16b
++# A straightforward, unoptimized implementation of GHASH.
++class Ghash:
 +
-+	mov		XL.d[1], T2.d[0]
-+	mov		XH.d[0], T2.d[1]
++    @staticmethod
++    def reflect_bits_in_bytes(v):
++        res = 0
++        for offs in range(0, 128, 8):
++            for bit in range(8):
++                if (v & (1 << (offs + bit))) != 0:
++                    res ^= 1 << (offs + 7 - bit)
++        return res
 +
-+	ushr		T2.2d, XL.2d, #1
-+	eor		XH.16b, XH.16b, XL.16b
-+	eor		XL.16b, XL.16b, T2.16b
-+	ushr		T2.2d, T2.2d, #6
-+	ushr		XL.2d, XL.2d, #1
-+	.endm
++    @staticmethod
++    def bytes_to_poly(data):
++        return Ghash.reflect_bits_in_bytes(int.from_bytes(data, byteorder='little'))
 +
-+	/*
-+	 * void pmull_ghash_update_p8(int blocks, u64 dg[], const char *src,
-+	 *			      u64 const h[][2], const char *head)
-+	 */
-+SYM_TYPED_FUNC_START(pmull_ghash_update_p8)
-+	ld1		{SHASH.2d}, [x3]
-+	ld1		{XL.2d}, [x1]
++    @staticmethod
++    def poly_to_bytes(poly):
++        return Ghash.reflect_bits_in_bytes(poly).to_bytes(16, byteorder='little')
 +
-+	__pmull_pre_p8
++    def __init__(self, key):
++        assert len(key) == 16
++        self.h = Ghash.bytes_to_poly(key)
++        self.acc = 0
 +
-+	/* do the head block first, if supplied */
-+	cbz		x4, 0f
-+	ld1		{T1.2d}, [x4]
-+	mov		x4, xzr
-+	b		3f
++    # Note: this supports partial blocks only at the end.
++    def update(self, data):
++        for i in range(0, len(data), 16):
++            # acc += block
++            self.acc ^= Ghash.bytes_to_poly(data[i:i+16])
++            # acc = (acc * h) mod GHASH_POLY
++            product = 0
++            for j in range(127, -1, -1):
++                if (self.h & (1 << j)) != 0:
++                    product ^= self.acc << j
++                if (product & (1 << (128 + j))) != 0:
++                    product ^= GHASH_POLY << j
++            self.acc = product
++        return self
 +
-+0:	ld1		{T1.2d}, [x2], #16
-+	sub		w0, w0, #1
++    def digest(self):
++        return Ghash.poly_to_bytes(self.acc)
 +
-+3:	/* multiply XL by SHASH in GF(2^128) */
-+CPU_LE(	rev64		T1.16b, T1.16b	)
+ POLYVAL_POLY = sum((1 << i) for i in [128, 127, 126, 121, 0])
+ POLYVAL_BLOCK_SIZE = 16
+ 
+ # A straightforward, unoptimized implementation of POLYVAL.
+ # Reference: https://datatracker.ietf.org/doc/html/rfc8452
+@@ -101,10 +147,12 @@ def hash_init(alg):
+     # The keyed hash functions are assigned a fixed random key here, to present
+     # them as unkeyed hash functions.  This allows all the test cases for
+     # unkeyed hash functions to work on them.
+     if alg == 'aes-cmac':
+         return AesCmac(rand_bytes(AES_256_KEY_SIZE))
++    if alg == 'ghash':
++        return Ghash(rand_bytes(GHASH_BLOCK_SIZE))
+     if alg == 'poly1305':
+         return Poly1305(rand_bytes(POLY1305_KEY_SIZE))
+     if alg == 'polyval':
+         return Polyval(rand_bytes(POLYVAL_BLOCK_SIZE))
+     return hashlib.new(alg)
+@@ -255,10 +303,19 @@ def gen_additional_poly1305_testvecs():
+             data += ctx.digest()
+     print_static_u8_array_definition(
+             'poly1305_allones_macofmacs[POLY1305_DIGEST_SIZE]',
+             Poly1305(key).update(data).digest())
+ 
++def gen_additional_ghash_testvecs():
++    key = b'\xff' * GHASH_BLOCK_SIZE
++    hashes = b''
++    for data_len in range(0, 4097, 16):
++        hashes += Ghash(key).update(b'\xff' * data_len).digest()
++    print_static_u8_array_definition(
++            'ghash_allones_hashofhashes[GHASH_DIGEST_SIZE]',
++            Ghash(key).update(hashes).digest())
 +
-+	ext		T2.16b, XL.16b, XL.16b, #8
-+	ext		IN1.16b, T1.16b, T1.16b, #8
-+	eor		T1.16b, T1.16b, T2.16b
-+	eor		XL.16b, XL.16b, IN1.16b
-+
-+	__pmull2_p8	XH, XL, SHASH			// a1 * b1
-+	eor		T1.16b, T1.16b, XL.16b
-+	__pmull_p8 	XL, XL, SHASH			// a0 * b0
-+	__pmull_p8	XM, T1, SHASH2			// (a1 + a0)(b1 + b0)
-+
-+	eor		T2.16b, XL.16b, XH.16b
-+	ext		T1.16b, XL.16b, XH.16b, #8
-+	eor		XM.16b, XM.16b, T2.16b
-+
-+	__pmull_reduce_p8
-+
-+	eor		T2.16b, T2.16b, XH.16b
-+	eor		XL.16b, XL.16b, T2.16b
-+
-+	cbnz		w0, 0b
-+
-+	st1		{XL.2d}, [x1]
-+	ret
-+SYM_FUNC_END(pmull_ghash_update_p8)
+ def gen_additional_polyval_testvecs():
+     key = b'\xff' * POLYVAL_BLOCK_SIZE
+     hashes = b''
+     for data_len in range(0, 4097, 16):
+         hashes += Polyval(key).update(b'\xff' * data_len).digest()
+@@ -266,11 +323,12 @@ def gen_additional_polyval_testvecs():
+             'polyval_allones_hashofhashes[POLYVAL_DIGEST_SIZE]',
+             Polyval(key).update(hashes).digest())
+ 
+ if len(sys.argv) != 2:
+     sys.stderr.write('Usage: gen-hash-testvecs.py ALGORITHM\n')
+-    sys.stderr.write('ALGORITHM may be any supported by Python hashlib; or poly1305, polyval, or sha3.\n')
++    sys.stderr.write('ALGORITHM may be any supported by Python hashlib;\n')
++    sys.stderr.write('  or aes-cmac, ghash, nh, poly1305, polyval, or sha3.\n')
+     sys.stderr.write('Example: gen-hash-testvecs.py sha512\n')
+     sys.exit(1)
+ 
+ alg = sys.argv[1]
+ print('/* SPDX-License-Identifier: GPL-2.0-or-later */')
+@@ -278,10 +336,13 @@ print(f'/* This file was generated by: {sys.argv[0]} {" ".join(sys.argv[1:])} */
+ if alg == 'aes-cmac':
+     gen_unkeyed_testvecs(alg)
+ elif alg.startswith('blake2'):
+     gen_unkeyed_testvecs(alg)
+     gen_additional_blake2_testvecs(alg)
++elif alg == 'ghash':
++    gen_unkeyed_testvecs(alg)
++    gen_additional_ghash_testvecs()
+ elif alg == 'nh':
+     gen_nh_testvecs()
+ elif alg == 'poly1305':
+     gen_unkeyed_testvecs(alg)
+     gen_additional_poly1305_testvecs()
 -- 
 2.53.0
 
