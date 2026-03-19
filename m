@@ -1,67 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-18434-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18435-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB3871075260
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2026 06:21:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E9BA1075274
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2026 08:20:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fbwXF2nRDz3blv;
-	Thu, 19 Mar 2026 17:19:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773901181;
-	cv=none; b=khAdd5EdgaOreE8kvq6AEq0viqZMLNg+jxOS5B5VlbjJAE4bGKoxxbCE/Fy71F49BkP1+x8wv3kQPy44nqQ/VpNCrTkOzNE/NkVdVw9mM6YeerqSegNHybYyTgtkRuLGsvZVS8s10ztUobE8jxVlr29CtBVL9Pdu1MoWDfehcx2tWKLFh7jXg4oAVcEty45mwkizxQ5myJs5EPSOSCr/GTEklyoX+m0sX5I0pYY/Sam4TyKNIrjPyBztodhMWfsKGLDIEwaAzJzJIu+jRQVWnqUTkQ6nB4qPEnCWDXZ/UzgwdLiSRBHm1HOmovRNPuSPE1XDvJkNRoEYBoaV/BY/bQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fbzCK6f3fz2ykV;
+	Thu, 19 Mar 2026 19:20:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773908413;
+	cv=none; b=fPipcIjMK9ebRRrv6rFCwb77N+zuzs7083QwZRK6YyVjaXUeMPn5Ba0UIG279DDAtzkB7cVxIzvceQ0ohtipgle2y8O5eHflyuqehEsyaY5M/k8+Xl7p7sRLbpIjyHziwayAuwV7ZMQeaD5d++IJwey1ebHSdeMx315hKtqDIPrMrgIQ/L5xzYSjDGiWIgbrv2jaK7RGN0Q2A+IX2AZcEVQUrbO5ftbKe75+FyDscL9a972BT9c4cI2OlUT83jr9KlQWKa4m4FYcQDVe5faE1oCvl5eJd3X+7ISPMx61JS+kgDdRf2tsI7hVK6sLEAEHlcPveJEA9z/FbvEWUqslfA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773901181; c=relaxed/relaxed;
-	bh=Ews+SaNXC4g16N6suJzU028kWzdWjI2UIVzYKFKekLA=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=F6jmyRv7gqHICyFQUtbl6BE7fdnl9L5WaWnnyBCb67vLSEu0tie0fPPjNGvsE0ezh12N+98ztft6QCoPB0j17WNL+tSF2W9ja0sgpn6e59z3RGInlD38+nCjqW4x7r5Dnl4i+Ebj3QjkvcPY6aoJ5ovXanOREZHNJMFptzGn/KBD/f5R3X/mYLKYJXRdwnl1XUkei/dYiALcY9p9pgOSLVyE094jfrTsXGNdYrefJt3Wq8tP8Y4a9b7Uzx+LkTJ9CrsQGPaPQ0t901+PkeFX1+z1s1/hulltvywetSmBw/rxrcV0C6epvnTLAIWnwmAoi818OK6DyigyCA4LaYlWTA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rLuXxi5J; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1773908413; c=relaxed/relaxed;
+	bh=9vONOIrqW/UJkG8W01y5FtYV4fnBAGfruHFEOeSnnYw=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=hb+hAFKeTHzMKKGz+T+gGTqUUK6CKNwdX+WF7F1DDIvQVCdQA+b0dKJOQ7Nv6fvtFrRgh0sFxL1ZGHSNU0/FHq8GCvgjHR0xVmUvzVgn/awm3G5+XoBIqnCgYfaEiBc4bx9Amcg1+P04MbvXL25qKcn1/wTXZvzbr1o3ZFjX+t59EaWzYDiCgtWxUTYIvp7MR1G/j659GGh5yKcTjJ5AhJyUg4flqeCj0eW8gzOPYTcTI366CshW/rXW/6zi1RGtyxhzIiKekWdn0iyRVegIBrjDyzrPuJy2UQJ5YzaBc29FYmUVlmXwCwfThZi+ijeRPoygAXfowxTKJYxj7b7Itg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nW9ab7On; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rLuXxi5J;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nW9ab7On;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbwX30Dlzz2yqt
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 17:19:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbzCJ1x8Zz2xZK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 19:20:12 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 83AA56185A;
-	Thu, 19 Mar 2026 06:19:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DD107C2BCC4;
-	Thu, 19 Mar 2026 06:19:21 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 1E02D43D39;
+	Thu, 19 Mar 2026 08:20:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4E3B1C19424;
+	Thu, 19 Mar 2026 08:19:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773901162;
-	bh=A17Or1mhILOD8g/OauvklfFcseA7rh2PNPCFHHxYHps=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=rLuXxi5JU7e4lhDja+r/raWzll947pWc4MN189ypr8SfFoCCk+3TWuQLyZg5+aqur
-	 KtJWSfl0m9oJzz/nIxydzurMQxR/TXkO3B2H6vPc8ohT6HxPfCtyBjfA+jfePcJTLv
-	 iXWK9SuB8JbbOGVLAdzzUmS/keEKFG5TpF5elm5N3dm7pANpOfiyrfurP6rzophpj0
-	 PgPEoS+zkDU/xnBynkSgZcrtmGPnxFbVyqi30/9F0B7YBbz8fyFYdGGZgkOat5RGXw
-	 RDkNDtSWLFnuvY0vc62CKN9KHXl5vaSu/UIq1pYiP609MOnMgpbb18sNPGGJfx/fIG
-	 WUzFLC7v2SSNg==
-From: Eric Biggers <ebiggers@kernel.org>
-To: linux-crypto@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org,
-	Ard Biesheuvel <ardb@kernel.org>,
-	"Jason A . Donenfeld" <Jason@zx2c4.com>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	linux-arm-kernel@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org,
-	linux-s390@vger.kernel.org,
-	x86@kernel.org,
-	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH 16/19] crypto: ghash - Remove ghash from crypto_shash API
-Date: Wed, 18 Mar 2026 23:17:17 -0700
-Message-ID: <20260319061723.1140720-17-ebiggers@kernel.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260319061723.1140720-1-ebiggers@kernel.org>
-References: <20260319061723.1140720-1-ebiggers@kernel.org>
+	s=k20201202; t=1773908409;
+	bh=GAQ9b9edKTgGxU+mpQzf5vrvp0GbZiNpB68nUzbzDyY=;
+	h=From:Subject:Date:To:Cc:From;
+	b=nW9ab7OnkN7S00RxQQ6fV539CUU/HXaHfFwpCsfjk1vZa9nrCehAKXmvHkrdByEwi
+	 UTuF8w219c0gp/9PlGkyTjPCXYgHMu+wuB+VcuJDOAEMR4YYArxHQyQe1bdwRE69iq
+	 6KnzMuHTxJ83BywVs82C5DCGxHXYPZw/XiMZC3jCTCs7Ed7M20epXUlpSA58uZXblU
+	 VhVWCftNRHTP6Wysxkep+z8UHXRrW+AIwQJO/Iq01wPPGebHyKnPiUVOyGVPTWywxV
+	 gA0MkkSVRuNWrkUsu2BUt2gfc0ropCqtacyuIkXHK1ZCQaGyBOonZgNXG1/Y1ey4xt
+	 IYgm8NZf2LthQ==
+From: "David Hildenbrand (Arm)" <david@kernel.org>
+Subject: [PATCH 0/2] mm: remove CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE and
+ cleanup CONFIG_MIGRATION
+Date: Thu, 19 Mar 2026 09:19:39 +0100
+Message-Id: <20260319-config_migration-v1-0-42270124966f@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,410 +61,81 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAJuxu2kC/x2MQQqAIBAAvxJ7TlhNjPpKRISttocsNCIQ/550H
+ JiZDIkiU4KxyRDp4cRnqCDbBuy+Bk+Ct8qgUBnsZC/sGRz75WAf17vKQpuOFGpEPQxQsyuS4/d
+ fTnMpH8Y9x3JiAAAA
+To: linux-kernel@vger.kernel.org
+Cc: Catalin Marinas <catalin.marinas@arm.com>, 
+ Will Deacon <will@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, 
+ WANG Xuerui <kernel@xen0n.name>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+ Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
+ Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+ Alexander Gordeev <agordeev@linux.ibm.com>, 
+ Christian Borntraeger <borntraeger@linux.ibm.com>, 
+ Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@kernel.org>, 
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+ "H. Peter Anvin" <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>, 
+ Lorenzo Stoakes <ljs@kernel.org>, 
+ "Liam R. Howlett" <Liam.Howlett@oracle.com>, 
+ Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, 
+ Zi Yan <ziy@nvidia.com>, Matthew Brost <matthew.brost@intel.com>, 
+ Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, 
+ Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, 
+ Ying Huang <ying.huang@linux.alibaba.com>, 
+ Alistair Popple <apopple@nvidia.com>, 
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>, 
+ Clark Williams <clrkwllms@kernel.org>, Steven Rostedt <rostedt@goodmis.org>, 
+ linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev, 
+ linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, 
+ linux-s390@vger.kernel.org, linux-mm@kvack.org, 
+ linux-rt-devel@lists.linux.dev, 
+ "David Hildenbrand (Arm)" <david@kernel.org>
+X-Mailer: b4 0.13.0
 
-Now that there are no users of the "ghash" crypto_shash algorithm,
-remove it.  GHASH remains supported via the library API.
+While working on memory hotplug code cleanups, I realized that
+CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE is not really required anymore.
 
-Signed-off-by: Eric Biggers <ebiggers@kernel.org>
+Changing that revealed some rather nasty looking CONFIG_MIGRATION
+handling.
+
+Let's clean that up by introducing a dedicated CONFIG_NUMA_MIGRATION
+option and reducing the dependencies that CONFIG_MIGRATION has.
+
+Heavily cross compiled. I assume these changes are fine, but messing
+with kconfig sometimes feels like playing with fire :)
+
+Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
 ---
- crypto/Kconfig         |   7 --
- crypto/Makefile        |   1 -
- crypto/ghash-generic.c | 162 -----------------------------------------
- crypto/tcrypt.c        |   9 ---
- crypto/testmgr.c       |   6 --
- crypto/testmgr.h       | 109 ---------------------------
- 6 files changed, 294 deletions(-)
- delete mode 100644 crypto/ghash-generic.c
+David Hildenbrand (Arm) (2):
+      mm: remove CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE
+      mm: introduce CONFIG_NUMA_MIGRATION and simplify CONFIG_MIGRATION
 
-diff --git a/crypto/Kconfig b/crypto/Kconfig
-index 13ccf5ac2f1a..efb482ea192d 100644
---- a/crypto/Kconfig
-+++ b/crypto/Kconfig
-@@ -886,17 +886,10 @@ config CRYPTO_CMAC
- 	select CRYPTO_MANAGER
- 	help
- 	  CMAC (Cipher-based Message Authentication Code) authentication
- 	  mode (NIST SP800-38B and IETF RFC4493)
- 
--config CRYPTO_GHASH
--	tristate "GHASH"
--	select CRYPTO_HASH
--	select CRYPTO_LIB_GF128MUL
--	help
--	  GCM GHASH function (NIST SP800-38D)
--
- config CRYPTO_HMAC
- 	tristate "HMAC (Keyed-Hash MAC)"
- 	select CRYPTO_HASH
- 	select CRYPTO_MANAGER
- 	help
-diff --git a/crypto/Makefile b/crypto/Makefile
-index 04e269117589..17f4fca9b9e5 100644
---- a/crypto/Makefile
-+++ b/crypto/Makefile
-@@ -169,11 +169,10 @@ CFLAGS_jitterentropy.o = -O0
- KASAN_SANITIZE_jitterentropy.o = n
- UBSAN_SANITIZE_jitterentropy.o = n
- jitterentropy_rng-y := jitterentropy.o jitterentropy-kcapi.o
- obj-$(CONFIG_CRYPTO_JITTERENTROPY_TESTINTERFACE) += jitterentropy-testing.o
- obj-$(CONFIG_CRYPTO_BENCHMARK) += tcrypt.o
--obj-$(CONFIG_CRYPTO_GHASH) += ghash-generic.o
- obj-$(CONFIG_CRYPTO_USER_API) += af_alg.o
- obj-$(CONFIG_CRYPTO_USER_API_HASH) += algif_hash.o
- obj-$(CONFIG_CRYPTO_USER_API_SKCIPHER) += algif_skcipher.o
- obj-$(CONFIG_CRYPTO_USER_API_RNG) += algif_rng.o
- obj-$(CONFIG_CRYPTO_USER_API_AEAD) += algif_aead.o
-diff --git a/crypto/ghash-generic.c b/crypto/ghash-generic.c
-deleted file mode 100644
-index e5803c249c12..000000000000
---- a/crypto/ghash-generic.c
-+++ /dev/null
-@@ -1,162 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * GHASH: hash function for GCM (Galois/Counter Mode).
-- *
-- * Copyright (c) 2007 Nokia Siemens Networks - Mikko Herranen <mh1@iki.fi>
-- * Copyright (c) 2009 Intel Corp.
-- *   Author: Huang Ying <ying.huang@intel.com>
-- */
--
--/*
-- * GHASH is a keyed hash function used in GCM authentication tag generation.
-- *
-- * The original GCM paper [1] presents GHASH as a function GHASH(H, A, C) which
-- * takes a 16-byte hash key H, additional authenticated data A, and a ciphertext
-- * C.  It formats A and C into a single byte string X, interprets X as a
-- * polynomial over GF(2^128), and evaluates this polynomial at the point H.
-- *
-- * However, the NIST standard for GCM [2] presents GHASH as GHASH(H, X) where X
-- * is the already-formatted byte string containing both A and C.
-- *
-- * "ghash" in the Linux crypto API uses the 'X' (pre-formatted) convention,
-- * since the API supports only a single data stream per hash.  Thus, the
-- * formatting of 'A' and 'C' is done in the "gcm" template, not in "ghash".
-- *
-- * The reason "ghash" is separate from "gcm" is to allow "gcm" to use an
-- * accelerated "ghash" when a standalone accelerated "gcm(aes)" is unavailable.
-- * It is generally inappropriate to use "ghash" for other purposes, since it is
-- * an "ε-almost-XOR-universal hash function", not a cryptographic hash function.
-- * It can only be used securely in crypto modes specially designed to use it.
-- *
-- * [1] The Galois/Counter Mode of Operation (GCM)
-- *     (http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.694.695&rep=rep1&type=pdf)
-- * [2] Recommendation for Block Cipher Modes of Operation: Galois/Counter Mode (GCM) and GMAC
-- *     (https://csrc.nist.gov/publications/detail/sp/800-38d/final)
-- */
--
--#include <crypto/gf128mul.h>
--#include <crypto/ghash.h>
--#include <crypto/internal/hash.h>
--#include <crypto/utils.h>
--#include <linux/err.h>
--#include <linux/kernel.h>
--#include <linux/module.h>
--#include <linux/string.h>
--
--static int ghash_init(struct shash_desc *desc)
--{
--	struct ghash_desc_ctx *dctx = shash_desc_ctx(desc);
--
--	memset(dctx, 0, sizeof(*dctx));
--
--	return 0;
--}
--
--static int ghash_setkey(struct crypto_shash *tfm,
--			const u8 *key, unsigned int keylen)
--{
--	struct ghash_ctx *ctx = crypto_shash_ctx(tfm);
--	be128 k;
--
--	if (keylen != GHASH_BLOCK_SIZE)
--		return -EINVAL;
--
--	if (ctx->gf128)
--		gf128mul_free_4k(ctx->gf128);
--
--	BUILD_BUG_ON(sizeof(k) != GHASH_BLOCK_SIZE);
--	memcpy(&k, key, GHASH_BLOCK_SIZE); /* avoid violating alignment rules */
--	ctx->gf128 = gf128mul_init_4k_lle(&k);
--	memzero_explicit(&k, GHASH_BLOCK_SIZE);
--
--	if (!ctx->gf128)
--		return -ENOMEM;
--
--	return 0;
--}
--
--static int ghash_update(struct shash_desc *desc,
--			 const u8 *src, unsigned int srclen)
--{
--	struct ghash_desc_ctx *dctx = shash_desc_ctx(desc);
--	struct ghash_ctx *ctx = crypto_shash_ctx(desc->tfm);
--	u8 *dst = dctx->buffer;
--
--	do {
--		crypto_xor(dst, src, GHASH_BLOCK_SIZE);
--		gf128mul_4k_lle((be128 *)dst, ctx->gf128);
--		src += GHASH_BLOCK_SIZE;
--		srclen -= GHASH_BLOCK_SIZE;
--	} while (srclen >= GHASH_BLOCK_SIZE);
--
--	return srclen;
--}
--
--static void ghash_flush(struct shash_desc *desc, const u8 *src,
--			unsigned int len)
--{
--	struct ghash_ctx *ctx = crypto_shash_ctx(desc->tfm);
--	struct ghash_desc_ctx *dctx = shash_desc_ctx(desc);
--	u8 *dst = dctx->buffer;
--
--	if (len) {
--		crypto_xor(dst, src, len);
--		gf128mul_4k_lle((be128 *)dst, ctx->gf128);
--	}
--}
--
--static int ghash_finup(struct shash_desc *desc, const u8 *src,
--		       unsigned int len, u8 *dst)
--{
--	struct ghash_desc_ctx *dctx = shash_desc_ctx(desc);
--	u8 *buf = dctx->buffer;
--
--	ghash_flush(desc, src, len);
--	memcpy(dst, buf, GHASH_BLOCK_SIZE);
--
--	return 0;
--}
--
--static void ghash_exit_tfm(struct crypto_tfm *tfm)
--{
--	struct ghash_ctx *ctx = crypto_tfm_ctx(tfm);
--	if (ctx->gf128)
--		gf128mul_free_4k(ctx->gf128);
--}
--
--static struct shash_alg ghash_alg = {
--	.digestsize	= GHASH_DIGEST_SIZE,
--	.init		= ghash_init,
--	.update		= ghash_update,
--	.finup		= ghash_finup,
--	.setkey		= ghash_setkey,
--	.descsize	= sizeof(struct ghash_desc_ctx),
--	.base		= {
--		.cra_name		= "ghash",
--		.cra_driver_name	= "ghash-generic",
--		.cra_priority		= 100,
--		.cra_flags		= CRYPTO_AHASH_ALG_BLOCK_ONLY,
--		.cra_blocksize		= GHASH_BLOCK_SIZE,
--		.cra_ctxsize		= sizeof(struct ghash_ctx),
--		.cra_module		= THIS_MODULE,
--		.cra_exit		= ghash_exit_tfm,
--	},
--};
--
--static int __init ghash_mod_init(void)
--{
--	return crypto_register_shash(&ghash_alg);
--}
--
--static void __exit ghash_mod_exit(void)
--{
--	crypto_unregister_shash(&ghash_alg);
--}
--
--module_init(ghash_mod_init);
--module_exit(ghash_mod_exit);
--
--MODULE_LICENSE("GPL");
--MODULE_DESCRIPTION("GHASH hash function");
--MODULE_ALIAS_CRYPTO("ghash");
--MODULE_ALIAS_CRYPTO("ghash-generic");
-diff --git a/crypto/tcrypt.c b/crypto/tcrypt.c
-index aded37546137..1773f5f71351 100644
---- a/crypto/tcrypt.c
-+++ b/crypto/tcrypt.c
-@@ -1648,14 +1648,10 @@ static int do_test(const char *alg, u32 type, u32 mask, int m, u32 num_mb)
- 
- 	case 45:
- 		ret = min(ret, tcrypt_test("rfc4309(ccm(aes))"));
- 		break;
- 
--	case 46:
--		ret = min(ret, tcrypt_test("ghash"));
--		break;
--
- 	case 48:
- 		ret = min(ret, tcrypt_test("sha3-224"));
- 		break;
- 
- 	case 49:
-@@ -2249,15 +2245,10 @@ static int do_test(const char *alg, u32 type, u32 mask, int m, u32 num_mb)
- 		fallthrough;
- 	case 317:
- 		test_hash_speed("blake2b-512", sec, generic_hash_speed_template);
- 		if (mode > 300 && mode < 400) break;
- 		fallthrough;
--	case 318:
--		klen = 16;
--		test_hash_speed("ghash", sec, generic_hash_speed_template);
--		if (mode > 300 && mode < 400) break;
--		fallthrough;
- 	case 319:
- 		test_hash_speed("crc32c", sec, generic_hash_speed_template);
- 		if (mode > 300 && mode < 400) break;
- 		fallthrough;
- 	case 322:
-diff --git a/crypto/testmgr.c b/crypto/testmgr.c
-index 0b0ad358e091..dd01f86dd6fe 100644
---- a/crypto/testmgr.c
-+++ b/crypto/testmgr.c
-@@ -4983,16 +4983,10 @@ static const struct alg_test_desc alg_test_descs[] = {
- 		.generic_driver = "gcm_base(ctr(sm4-generic),ghash-lib)",
- 		.test = alg_test_aead,
- 		.suite = {
- 			.aead = __VECS(sm4_gcm_tv_template)
- 		}
--	}, {
--		.alg = "ghash",
--		.test = alg_test_hash,
--		.suite = {
--			.hash = __VECS(ghash_tv_template)
--		}
- 	}, {
- 		.alg = "hctr2(aes)",
- 		.generic_driver = "hctr2_base(xctr(aes-lib),polyval-lib)",
- 		.test = alg_test_skcipher,
- 		.suite = {
-diff --git a/crypto/testmgr.h b/crypto/testmgr.h
-index 1c69c11c0cdb..a3274abacfde 100644
---- a/crypto/testmgr.h
-+++ b/crypto/testmgr.h
-@@ -6181,119 +6181,10 @@ static const struct hash_testvec wp256_tv_template[] = {
- 			  "\x8A\x7A\x5A\x52\xDE\xEE\x65\x62"
- 			  "\x07\xC5\x62\xF9\x88\xE9\x5C\x69",
- 	},
- };
- 
--static const struct hash_testvec ghash_tv_template[] =
--{
--	{
--		.key	= "\xdf\xa6\xbf\x4d\xed\x81\xdb\x03"
--			  "\xff\xca\xff\x95\xf8\x30\xf0\x61",
--		.ksize	= 16,
--		.plaintext = "\x95\x2b\x2a\x56\xa5\x60\x04a\xc0"
--			     "\xb3\x2b\x66\x56\xa0\x5b\x40\xb6",
--		.psize	= 16,
--		.digest	= "\xda\x53\xeb\x0a\xd2\xc5\x5b\xb6"
--			  "\x4f\xc4\x80\x2c\xc3\xfe\xda\x60",
--	}, {
--		.key	= "\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b"
--			  "\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b",
--		.ksize	= 16,
--		.plaintext = "what do ya want for nothing?",
--		.psize	= 28,
--		.digest	= "\x3e\x1f\x5c\x4d\x65\xf0\xef\xce"
--			  "\x0d\x61\x06\x27\x66\x51\xd5\xe2",
--	}, {
--		.key	= "\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa"
--			  "\xaa\xaa\xaa\xaa\xaa\xaa\xaa\xaa",
--		.ksize	= 16,
--		.plaintext = "\xdd\xdd\xdd\xdd\xdd\xdd\xdd\xdd\xdd\xdd\xdd\xdd"
--			"\xdd\xdd\xdd\xdd\xdd\xdd\xdd\xdd\xdd\xdd\xdd\xdd\xdd"
--			"\xdd\xdd\xdd\xdd\xdd\xdd\xdd\xdd\xdd\xdd\xdd\xdd\xdd"
--			"\xdd\xdd\xdd\xdd\xdd\xdd\xdd\xdd\xdd\xdd\xdd\xdd",
--		.psize	= 50,
--		.digest	= "\xfb\x49\x8a\x36\xe1\x96\xe1\x96"
--			  "\xe1\x96\xe1\x96\xe1\x96\xe1\x96",
--	}, {
--		.key	= "\xda\x53\xeb\x0a\xd2\xc5\x5b\xb6"
--			  "\x4f\xc4\x80\x2c\xc3\xfe\xda\x60",
--		.ksize	= 16,
--		.plaintext = "\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd"
--			"\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd"
--			"\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd"
--			"\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd",
--		.psize	= 50,
--		.digest	= "\x2b\x5c\x0c\x7f\x52\xd1\x60\xc2"
--			  "\x49\xed\x6e\x32\x7a\xa9\xbe\x08",
--	}, {
--		.key	= "\x95\x2b\x2a\x56\xa5\x60\x04a\xc0"
--			  "\xb3\x2b\x66\x56\xa0\x5b\x40\xb6",
--		.ksize	= 16,
--		.plaintext = "Test With Truncation",
--		.psize	= 20,
--		.digest	= "\xf8\x94\x87\x2a\x4b\x63\x99\x28"
--			  "\x23\xf7\x93\xf7\x19\xf5\x96\xd9",
--	}, {
--		.key	= "\x0a\x1b\x2c\x3d\x4e\x5f\x64\x71"
--			"\x82\x93\xa4\xb5\xc6\xd7\xe8\xf9",
--		.ksize	= 16,
--		.plaintext = "\x56\x6f\x72\x20\x6c\x61\x75\x74"
--			"\x65\x72\x20\x4c\x61\x75\x73\x63"
--			"\x68\x65\x6e\x20\x75\x6e\x64\x20"
--			"\x53\x74\x61\x75\x6e\x65\x6e\x20"
--			"\x73\x65\x69\x20\x73\x74\x69\x6c"
--			"\x6c\x2c\x0a\x64\x75\x20\x6d\x65"
--			"\x69\x6e\x20\x74\x69\x65\x66\x74"
--			"\x69\x65\x66\x65\x73\x20\x4c\x65"
--			"\x62\x65\x6e\x3b\x0a\x64\x61\x73"
--			"\x73\x20\x64\x75\x20\x77\x65\x69"
--			"\xc3\x9f\x74\x20\x77\x61\x73\x20"
--			"\x64\x65\x72\x20\x57\x69\x6e\x64"
--			"\x20\x64\x69\x72\x20\x77\x69\x6c"
--			"\x6c\x2c\x0a\x65\x68\x20\x6e\x6f"
--			"\x63\x68\x20\x64\x69\x65\x20\x42"
--			"\x69\x72\x6b\x65\x6e\x20\x62\x65"
--			"\x62\x65\x6e\x2e\x0a\x0a\x55\x6e"
--			"\x64\x20\x77\x65\x6e\x6e\x20\x64"
--			"\x69\x72\x20\x65\x69\x6e\x6d\x61"
--			"\x6c\x20\x64\x61\x73\x20\x53\x63"
--			"\x68\x77\x65\x69\x67\x65\x6e\x20"
--			"\x73\x70\x72\x61\x63\x68\x2c\x0a"
--			"\x6c\x61\x73\x73\x20\x64\x65\x69"
--			"\x6e\x65\x20\x53\x69\x6e\x6e\x65"
--			"\x20\x62\x65\x73\x69\x65\x67\x65"
--			"\x6e\x2e\x0a\x4a\x65\x64\x65\x6d"
--			"\x20\x48\x61\x75\x63\x68\x65\x20"
--			"\x67\x69\x62\x74\x20\x64\x69\x63"
--			"\x68\x2c\x20\x67\x69\x62\x20\x6e"
--			"\x61\x63\x68\x2c\x0a\x65\x72\x20"
--			"\x77\x69\x72\x64\x20\x64\x69\x63"
--			"\x68\x20\x6c\x69\x65\x62\x65\x6e"
--			"\x20\x75\x6e\x64\x20\x77\x69\x65"
--			"\x67\x65\x6e\x2e\x0a\x0a\x55\x6e"
--			"\x64\x20\x64\x61\x6e\x6e\x20\x6d"
--			"\x65\x69\x6e\x65\x20\x53\x65\x65"
--			"\x6c\x65\x20\x73\x65\x69\x74\x20"
--			"\x77\x65\x69\x74\x2c\x20\x73\x65"
--			"\x69\x20\x77\x65\x69\x74\x2c\x0a"
--			"\x64\x61\x73\x73\x20\x64\x69\x72"
--			"\x20\x64\x61\x73\x20\x4c\x65\x62"
--			"\x65\x6e\x20\x67\x65\x6c\x69\x6e"
--			"\x67\x65\x2c\x0a\x62\x72\x65\x69"
--			"\x74\x65\x20\x64\x69\x63\x68\x20"
--			"\x77\x69\x65\x20\x65\x69\x6e\x20"
--			"\x46\x65\x69\x65\x72\x6b\x6c\x65"
--			"\x69\x64\x0a\xc3\xbc\x62\x65\x72"
--			"\x20\x64\x69\x65\x20\x73\x69\x6e"
--			"\x6e\x65\x6e\x64\x65\x6e\x20\x44"
--			"\x69\x6e\x67\x65\x2e\x2e\x2e\x0a",
--		.psize	= 400,
--		.digest = "\xad\xb1\xc1\xe9\x56\x70\x31\x1d"
--			"\xbb\x5b\xdf\x5e\x70\x72\x1a\x57",
--	},
--};
--
- /*
-  * HMAC-MD5 test vectors from RFC2202
-  * (These need to be fixed to not use strlen).
-  */
- static const struct hash_testvec hmac_md5_tv_template[] =
+ arch/arm64/Kconfig           |  1 -
+ arch/loongarch/Kconfig       |  1 -
+ arch/powerpc/Kconfig         |  1 -
+ arch/riscv/Kconfig           |  1 -
+ arch/s390/Kconfig            |  1 -
+ arch/x86/Kconfig             |  1 -
+ include/linux/memory-tiers.h |  2 +-
+ init/Kconfig                 |  2 +-
+ mm/Kconfig                   | 33 +++++++++++++++------------------
+ mm/memory-tiers.c            | 12 ++++++------
+ mm/mempolicy.c               |  2 +-
+ mm/migrate.c                 |  5 ++---
+ 12 files changed, 26 insertions(+), 36 deletions(-)
+---
+base-commit: fbf55982f31ae6aa11f890c36bccc130ce70a312
+change-id: 20260317-config_migration-463e20400499
+
+Best regards,
 -- 
-2.53.0
+David Hildenbrand (Arm) <david@kernel.org>
 
 
