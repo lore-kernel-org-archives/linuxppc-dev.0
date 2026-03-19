@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-18419-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18420-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 863061075262
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2026 06:19:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C11F71075261
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2026 06:20:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fbwWy1G2yz2yvc;
-	Thu, 19 Mar 2026 17:19:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fbwX02bxrz2ynZ;
+	Thu, 19 Mar 2026 17:19:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773901166;
-	cv=none; b=Xie0ymBwH0ZSYNS7uwRu1eXfQVUdzvngBZsBtFNtMUgpebsOZuowrNl6jtYgEpnp35CRnkjR9njaUCWLjtZVqC32WUsrNZmGeeyuVruFL8p1U5QI5FWPhu9I4ZKU3TSKwEJSwJ2KhGgQAhnFuswuHqaVSvFlxFgMm66pJqd7VF76ZaDXmjkex7IyhGp5e8nBA4nMwcMfR9ntgVv51HV4SNSc0T5kMxZWoxkHMpEzG0l5BMJ01yrw2TaRnaB+S0smmDojlJFgeGi0h9PmseLSpfWoEYqfPmdI10ig9raRxitzOc9OSTJrm6e9/asKyPb5inAYUgPjVon0+2YN7wjzHQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773901168;
+	cv=none; b=QBvCttpHsCA2fMS6ykp9ug2pCdWYD0HyVc0V1Hk5wpwv5SnyWX1rdmbDizsXAtjDB16blxX2TZxZNnoflcQ9a839aTFzd6djLJmv+guk+p0BDKWxSILxx+qicMgUkbUNynZcEAngAa+5Ud0Uh5BJO9G20+FohhrAC6/ikuDGipifkMdRpCKx2lzd5WIqW8LjXFwkMOdlttXaa+AjUOHMuctFcDkwjCMPEx30PJvVX+fVGqVAueQAst0LftratH8VHEf5FJyJ293bQg8fyU8Gckg240N9CUiDXAilRQEZlqztO7XGmOdM9pELCEGkUubVLegkkw/W5F2cVB7Xx2+19A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773901166; c=relaxed/relaxed;
-	bh=kFykPFUGR/xC2rE0WexNgGP2FpE/gsisi0tt/nEvwHI=;
+	t=1773901168; c=relaxed/relaxed;
+	bh=tbY0lD9y6Ny/NRRdO5SCDID/z3y4KwAoHSYoVy1slKo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=BDVjWipHwou8daPpSath+/HaKWJRzx/DD7XHsA86CG/Shk6PuFRYPnULqnxZDFiVrkIEO3Q8DxhS+RLVIFu4szemUr+gR+aQTrZscibgkkf7e41A+/VMipwEcT5KQ+eQ4KkfEnKpZY5b5ZOpNfRWwRqLy9m8qwoXxX9MzIDrVkx7P7/3CJRgVr2f7+j8SzFf6fAVzpD6P4dbHWjzipo77RJd6sNvNk+WhzKOaom4fzYWvbl3OR30G/Rdh+3eHXC3wqWngwqqv5gqifUJ1ujJguS3muwbS3ootqjoArccaBLLe3OJP3fjIdvtN2oyAT/rAWGbRTqiwygzoEFe7g/lNA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mDxFlaf2; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=O19orwR77bHQ9u1xsKfhByL7zyQHcq2ljtXNJeknGDRqjgKIuhQLpYrrhMp92EMysgPzlzGSvHfhFAMKhn6cTML/UeE+fnGujEkHL/r4h1L8u7BjZXcMwOvkqXHVEi0kS7wGZdtXWLVceMaOFTF0w1uAw0DviMqSnT4QhhekSAfNOClzNlrm9wMh8cP6NOQER9Upd9+kUe/7ivBeKzvmYcSPXMIvKle+/JKFZR5WyMja9sT0K96tWbU+nXqLyqaTO6p/G80qF1SVfVlyVpd8Br6b1pd6Ho1WWJrL6hLtI5AhpjI7xINQq5+y74C7NfMqTA1lPFBggzjF8D8gm5HQrg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lbL6kp8Q; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mDxFlaf2;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lbL6kp8Q;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbwWp1ZLzz2ynZ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 17:19:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbwWr5Y2gz2yr7
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 17:19:20 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 48C114453F;
-	Thu, 19 Mar 2026 06:19:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CF37DC2BCB1;
-	Thu, 19 Mar 2026 06:19:15 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 76B6E404E5;
+	Thu, 19 Mar 2026 06:19:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 11745C2BCB0;
+	Thu, 19 Mar 2026 06:19:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773901156;
-	bh=vAFsFueFVZjX8UrC9CKtb1LtlzSIZdgQBkLXwrqPjDQ=;
+	s=k20201202; t=1773901158;
+	bh=sJchU+D5iVBtqxo0a18kfpJyCQYQXaGhsufyuqET8E4=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=mDxFlaf2E9+JpBiICNMPfdXCbnzZlGDYC4q9HiG1RWXZUJy60eoR5S/7Z2KT20zm7
-	 xz43ekPxXVtElzkcASlkj081iP1m4QuoUdnrJ1uhyTKuiiY/lFCqe3zry5n371t+nz
-	 DgetuYl9Ut1aKCfwQQVhUGHH/BJZcigsTpzjuLgpetdX72Nne1hJbU0FylVjsQoQME
-	 D9LhY4/DHIXUgkFpcNVYFrvhbhZA1o8NrEyzzKufVX9SFpc/nz0NmzVpGx6G574zb5
-	 XGy+1PIDsumKRAEEVb/BZs/QXbQMZFBlIOnB94E5UNmGgVFogk3iOpm08ibdsx9ytz
-	 uEtdqikcnUIKQ==
+	b=lbL6kp8QtwQt8SUU7QXIx/mdm74G/ku13WvGixi/vBNv5Du0xPzxmE1PDcwA/J6wT
+	 JSqjT/FxIdPQIloxJPuHBBJjeTnsThSf+2uYnwqAKBwB6MY3GlTWfsuE3tgH+slGJA
+	 rOCsYVjqL4L5cJ/eXlX61ibF6/NaWBk2MtL33rqJc6y/RJhXD5UnwbG0fmpKu3pAMI
+	 jiHAJwCI4ag7YrUABdu8XeW/a/Z4BRs+FMLOPGv2R/Z+s8xSRJLYD6PsyzlZxnnvQB
+	 OnZAcTqchQKuQX0ffqjJ4mfjP9jSrk7lAOwTiNO632g3rsXKtgNMC2wJVf8M57DJxH
+	 r1kurhQF8AIaA==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -56,9 +56,9 @@ Cc: linux-kernel@vger.kernel.org,
 	linux-s390@vger.kernel.org,
 	x86@kernel.org,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH 03/19] lib/crypto: gf128hash: Add GHASH support
-Date: Wed, 18 Mar 2026 23:17:04 -0700
-Message-ID: <20260319061723.1140720-4-ebiggers@kernel.org>
+Subject: [PATCH 08/19] crypto: arm64/ghash - Move NEON GHASH assembly into its own file
+Date: Wed, 18 Mar 2026 23:17:09 -0700
+Message-ID: <20260319061723.1140720-9-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260319061723.1140720-1-ebiggers@kernel.org>
 References: <20260319061723.1140720-1-ebiggers@kernel.org>
@@ -77,422 +77,585 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add GHASH support to the gf128hash module.
+arch/arm64/crypto/ghash-ce-core.S implements pmull_ghash_update_p8(),
+which is used only by a crypto_shash implementation of GHASH.  It also
+implements other functions, including pmull_ghash_update_p64() and
+others, which are used only by a crypto_aead implementation of AES-GCM.
 
-This will replace the GHASH support in the crypto_shash API.  It will be
-used by the "gcm" template and by the AES-GCM library (when an
-arch-optimized implementation of the full AES-GCM is unavailable).
-
-This consists of a simple API that mirrors the existing POLYVAL API, a
-generic implementation of that API based on the existing efficient and
-side-channel-resistant polyval_mul_generic(), and the framework for
-architecture-optimized implementations of the GHASH functions.
-
-The GHASH accumulator is stored in POLYVAL format rather than GHASH
-format, since this is what most modern GHASH implementations actually
-need.  The few implementations that expect the accumulator in GHASH
-format will just convert the accumulator to/from GHASH format
-temporarily.  (Supporting architecture-specific accumulator formats
-would be possible, but doesn't seem worth the complexity.)
-
-However, architecture-specific formats of struct ghash_key will be
-supported, since a variety of formats will be needed there anyway.  The
-default format is just the key in POLYVAL format.
+While some code is shared between pmull_ghash_update_p8() and
+pmull_ghash_update_p64(), it's not very much.  Since
+pmull_ghash_update_p8() will also need to be migrated into lib/crypto/
+to achieve parity in the standalone GHASH support, let's move it into a
+separate file ghash-neon-core.S.
 
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- include/crypto/gf128hash.h |  95 ++++++++++++++++++++++++
- lib/crypto/gf128hash.c     | 145 +++++++++++++++++++++++++++++++++----
- 2 files changed, 227 insertions(+), 13 deletions(-)
+ arch/arm64/crypto/Makefile          |   2 +-
+ arch/arm64/crypto/ghash-ce-core.S   | 207 ++-----------------------
+ arch/arm64/crypto/ghash-neon-core.S | 226 ++++++++++++++++++++++++++++
+ 3 files changed, 239 insertions(+), 196 deletions(-)
+ create mode 100644 arch/arm64/crypto/ghash-neon-core.S
 
-diff --git a/include/crypto/gf128hash.h b/include/crypto/gf128hash.h
-index 1052041e3499..5090fbaa87f8 100644
---- a/include/crypto/gf128hash.h
-+++ b/include/crypto/gf128hash.h
-@@ -9,10 +9,12 @@
- #define _CRYPTO_GF128HASH_H
+diff --git a/arch/arm64/crypto/Makefile b/arch/arm64/crypto/Makefile
+index 8a8e3e551ed3..b7ba43ce8584 100644
+--- a/arch/arm64/crypto/Makefile
++++ b/arch/arm64/crypto/Makefile
+@@ -25,11 +25,11 @@ sm4-ce-gcm-y := sm4-ce-gcm-glue.o sm4-ce-gcm-core.o
  
- #include <linux/string.h>
- #include <linux/types.h>
+ obj-$(CONFIG_CRYPTO_SM4_ARM64_NEON_BLK) += sm4-neon.o
+ sm4-neon-y := sm4-neon-glue.o sm4-neon-core.o
  
-+#define GHASH_BLOCK_SIZE	16
-+#define GHASH_DIGEST_SIZE	16
- #define POLYVAL_BLOCK_SIZE	16
- #define POLYVAL_DIGEST_SIZE	16
+ obj-$(CONFIG_CRYPTO_GHASH_ARM64_CE) += ghash-ce.o
+-ghash-ce-y := ghash-ce-glue.o ghash-ce-core.o
++ghash-ce-y := ghash-ce-glue.o ghash-ce-core.o ghash-neon-core.o
  
- /**
-  * struct polyval_elem - An element of the POLYVAL finite field
-@@ -31,10 +33,20 @@ struct polyval_elem {
- 			__le64 hi;
- 		};
- 	};
- };
+ obj-$(CONFIG_CRYPTO_AES_ARM64_CE_CCM) += aes-ce-ccm.o
+ aes-ce-ccm-y := aes-ce-ccm-glue.o aes-ce-ccm-core.o
  
-+/**
-+ * struct ghash_key - Prepared key for GHASH
-+ *
-+ * Use ghash_preparekey() to initialize this.
-+ */
-+struct ghash_key {
-+	/** @h: The hash key H, in POLYVAL format */
-+	struct polyval_elem h;
-+};
-+
- /**
-  * struct polyval_key - Prepared key for POLYVAL
-  *
-  * This may contain just the raw key H, or it may contain precomputed key
-  * powers, depending on the platform's POLYVAL implementation.  Use
-@@ -52,10 +64,24 @@ struct polyval_key {
- 	/** @h: The hash key H */
- 	struct polyval_elem h;
- #endif
- };
- 
-+/**
-+ * struct ghash_ctx - Context for computing a GHASH value
-+ * @key: Pointer to the prepared GHASH key.  The user of the API is
-+ *	 responsible for ensuring that the key lives as long as the context.
-+ * @acc: The accumulator.  It is stored in POLYVAL format rather than GHASH
-+ *	 format, since most implementations want it in POLYVAL format.
-+ * @partial: Number of data bytes processed so far modulo GHASH_BLOCK_SIZE
-+ */
-+struct ghash_ctx {
-+	const struct ghash_key *key;
-+	struct polyval_elem acc;
-+	size_t partial;
-+};
-+
- /**
-  * struct polyval_ctx - Context for computing a POLYVAL value
-  * @key: Pointer to the prepared POLYVAL key.  The user of the API is
-  *	 responsible for ensuring that the key lives as long as the context.
-  * @acc: The accumulator
-@@ -65,10 +91,22 @@ struct polyval_ctx {
- 	const struct polyval_key *key;
- 	struct polyval_elem acc;
- 	size_t partial;
- };
- 
-+/**
-+ * ghash_preparekey() - Prepare a GHASH key
-+ * @key: (output) The key structure to initialize
-+ * @raw_key: The raw hash key
-+ *
-+ * Initialize a GHASH key structure from a raw key.
-+ *
-+ * Context: Any context.
-+ */
-+void ghash_preparekey(struct ghash_key *key,
-+		      const u8 raw_key[GHASH_BLOCK_SIZE]);
-+
- /**
-  * polyval_preparekey() - Prepare a POLYVAL key
-  * @key: (output) The key structure to initialize
-  * @raw_key: The raw hash key
-  *
-@@ -79,10 +117,22 @@ struct polyval_ctx {
-  * Context: Any context.
-  */
- void polyval_preparekey(struct polyval_key *key,
- 			const u8 raw_key[POLYVAL_BLOCK_SIZE]);
- 
-+/**
-+ * ghash_init() - Initialize a GHASH context for a new message
-+ * @ctx: The context to initialize
-+ * @key: The key to use.  Note that a pointer to the key is saved in the
-+ *	 context, so the key must live at least as long as the context.
-+ */
-+static inline void ghash_init(struct ghash_ctx *ctx,
-+			      const struct ghash_key *key)
-+{
-+	*ctx = (struct ghash_ctx){ .key = key };
-+}
-+
- /**
-  * polyval_init() - Initialize a POLYVAL context for a new message
-  * @ctx: The context to initialize
-  * @key: The key to use.  Note that a pointer to the key is saved in the
-  *	 context, so the key must live at least as long as the context.
-@@ -123,10 +173,22 @@ static inline void polyval_export_blkaligned(const struct polyval_ctx *ctx,
- 					     struct polyval_elem *acc)
- {
- 	*acc = ctx->acc;
- }
- 
-+/**
-+ * ghash_update() - Update a GHASH context with message data
-+ * @ctx: The context to update; must have been initialized
-+ * @data: The message data
-+ * @len: The data length in bytes.  Doesn't need to be block-aligned.
-+ *
-+ * This can be called any number of times.
-+ *
-+ * Context: Any context.
-+ */
-+void ghash_update(struct ghash_ctx *ctx, const u8 *data, size_t len);
-+
- /**
-  * polyval_update() - Update a POLYVAL context with message data
-  * @ctx: The context to update; must have been initialized
-  * @data: The message data
-  * @len: The data length in bytes.  Doesn't need to be block-aligned.
-@@ -135,10 +197,24 @@ static inline void polyval_export_blkaligned(const struct polyval_ctx *ctx,
-  *
-  * Context: Any context.
-  */
- void polyval_update(struct polyval_ctx *ctx, const u8 *data, size_t len);
- 
-+/**
-+ * ghash_final() - Finish computing a GHASH value
-+ * @ctx: The context to finalize
-+ * @out: The output value
-+ *
-+ * If the total data length isn't a multiple of GHASH_BLOCK_SIZE, then the
-+ * final block is automatically zero-padded.
-+ *
-+ * After finishing, this zeroizes @ctx.  So the caller does not need to do it.
-+ *
-+ * Context: Any context.
-+ */
-+void ghash_final(struct ghash_ctx *ctx, u8 out[GHASH_BLOCK_SIZE]);
-+
- /**
-  * polyval_final() - Finish computing a POLYVAL value
-  * @ctx: The context to finalize
-  * @out: The output value
-  *
-@@ -149,10 +225,29 @@ void polyval_update(struct polyval_ctx *ctx, const u8 *data, size_t len);
-  *
-  * Context: Any context.
-  */
- void polyval_final(struct polyval_ctx *ctx, u8 out[POLYVAL_BLOCK_SIZE]);
- 
-+/**
-+ * ghash() - Compute a GHASH value
-+ * @key: The prepared key
-+ * @data: The message data
-+ * @len: The data length in bytes.  Doesn't need to be block-aligned.
-+ * @out: The output value
-+ *
-+ * Context: Any context.
-+ */
-+static inline void ghash(const struct ghash_key *key, const u8 *data,
-+			 size_t len, u8 out[GHASH_BLOCK_SIZE])
-+{
-+	struct ghash_ctx ctx;
-+
-+	ghash_init(&ctx, key);
-+	ghash_update(&ctx, data, len);
-+	ghash_final(&ctx, out);
-+}
-+
- /**
-  * polyval() - Compute a POLYVAL value
-  * @key: The prepared key
-  * @data: The message data
-  * @len: The data length in bytes.  Doesn't need to be block-aligned.
-diff --git a/lib/crypto/gf128hash.c b/lib/crypto/gf128hash.c
-index 05f44a9193f7..2650603d8ba8 100644
---- a/lib/crypto/gf128hash.c
-+++ b/lib/crypto/gf128hash.c
-@@ -10,27 +10,34 @@
- #include <linux/module.h>
- #include <linux/string.h>
- #include <linux/unaligned.h>
- 
+ obj-$(CONFIG_CRYPTO_AES_ARM64_CE_BLK) += aes-ce-blk.o
+diff --git a/arch/arm64/crypto/ghash-ce-core.S b/arch/arm64/crypto/ghash-ce-core.S
+index 23ee9a5eaf27..4344fe213d14 100644
+--- a/arch/arm64/crypto/ghash-ce-core.S
++++ b/arch/arm64/crypto/ghash-ce-core.S
+@@ -1,8 +1,8 @@
+ /* SPDX-License-Identifier: GPL-2.0-only */
  /*
-- * POLYVAL is an almost-XOR-universal hash function.  Similar to GHASH, POLYVAL
-- * interprets the message as the coefficients of a polynomial in GF(2^128) and
-- * evaluates that polynomial at a secret point.  POLYVAL has a simple
-- * mathematical relationship with GHASH, but it uses a better field convention
-- * which makes it easier and faster to implement.
-+ * GHASH and POLYVAL are almost-XOR-universal hash functions.  They interpret
-+ * the message as the coefficients of a polynomial in the finite field GF(2^128)
-+ * and evaluate that polynomial at a secret point.
+- * Accelerated GHASH implementation with ARMv8 PMULL instructions.
++ * Accelerated AES-GCM implementation with ARMv8 Crypto Extensions.
   *
-- * POLYVAL is not a cryptographic hash function, and it should be used only by
-- * algorithms that are specifically designed to use it.
-+ * Neither GHASH nor POLYVAL is a cryptographic hash function.  They should be
-+ * used only by algorithms that are specifically designed to use them.
-  *
-- * POLYVAL is specified by "AES-GCM-SIV: Nonce Misuse-Resistant Authenticated
-- * Encryption" (https://datatracker.ietf.org/doc/html/rfc8452)
-+ * GHASH is the older variant, defined as part of GCM in NIST SP 800-38D
-+ * (https://nvlpubs.nist.gov/nistpubs/legacy/sp/nistspecialpublication800-38d.pdf).
-+ * GHASH is hard to implement directly, due to its backwards mapping between
-+ * bits and polynomial coefficients.  GHASH implementations typically pre and
-+ * post-process the inputs and outputs (mainly by byte-swapping) to convert the
-+ * GHASH computation into an equivalent computation over a different,
-+ * easier-to-use representation of GF(2^128).
-  *
-- * POLYVAL is also used by HCTR2.  See "Length-preserving encryption with HCTR2"
-- * (https://eprint.iacr.org/2021/1441.pdf).
-+ * POLYVAL is a newer GF(2^128) polynomial hash, originally defined as part of
-+ * AES-GCM-SIV (https://datatracker.ietf.org/doc/html/rfc8452) and also used by
-+ * HCTR2 (https://eprint.iacr.org/2021/1441.pdf).  It uses that easier-to-use
-+ * field representation directly, eliminating the data conversion steps.
-  *
-- * This file provides a library API for POLYVAL.  This API can delegate to
-- * either a generic implementation or an architecture-optimized implementation.
-+ * This file provides library APIs for GHASH and POLYVAL.  These APIs can
-+ * delegate to either a generic implementation or an architecture-optimized
-+ * implementation.  Due to the mathematical relationship between GHASH and
-+ * POLYVAL, in some cases code for one is reused with the other.
-  *
-  * For the generic implementation, we don't use the traditional table approach
-  * to GF(2^128) multiplication.  That approach is not constant-time and requires
-  * a lot of memory.  Instead, we use a different approach which emulates
-  * carryless multiplication using standard multiplications by spreading the data
-@@ -203,10 +210,23 @@ polyval_mul_generic(struct polyval_elem *a, const struct polyval_elem *b)
- 	/* Return (c2, c3).  This implicitly multiplies by x^-128. */
- 	a->lo = cpu_to_le64(c2);
- 	a->hi = cpu_to_le64(c3);
- }
+  * Copyright (C) 2014 - 2018 Linaro Ltd. <ard.biesheuvel@linaro.org>
+  */
  
-+static void __maybe_unused ghash_blocks_generic(struct polyval_elem *acc,
-+						const struct polyval_elem *key,
-+						const u8 *data, size_t nblocks)
-+{
-+	do {
-+		acc->lo ^=
-+			cpu_to_le64(get_unaligned_be64((__be64 *)(data + 8)));
-+		acc->hi ^= cpu_to_le64(get_unaligned_be64((__be64 *)data));
-+		polyval_mul_generic(acc, key);
-+		data += GHASH_BLOCK_SIZE;
-+	} while (--nblocks);
-+}
-+
- static void __maybe_unused
- polyval_blocks_generic(struct polyval_elem *acc, const struct polyval_elem *key,
- 		       const u8 *data, size_t nblocks)
- {
- 	do {
-@@ -215,14 +235,112 @@ polyval_blocks_generic(struct polyval_elem *acc, const struct polyval_elem *key,
- 		polyval_mul_generic(acc, key);
- 		data += POLYVAL_BLOCK_SIZE;
- 	} while (--nblocks);
- }
+ #include <linux/linkage.h>
+@@ -17,35 +17,10 @@
+ 	XM		.req	v5
+ 	XL		.req	v6
+ 	XH		.req	v7
+ 	IN1		.req	v7
  
-+/* Convert the key from GHASH format to POLYVAL format. */
-+static void __maybe_unused ghash_key_to_polyval(const u8 in[GHASH_BLOCK_SIZE],
-+						struct polyval_elem *out)
-+{
-+	u64 hi = get_unaligned_be64(&in[0]);
-+	u64 lo = get_unaligned_be64(&in[8]);
-+	u64 mask = (s64)hi >> 63;
-+
-+	hi = (hi << 1) ^ (lo >> 63) ^ (mask & ((u64)0xc2 << 56));
-+	lo = (lo << 1) ^ (mask & 1);
-+	out->lo = cpu_to_le64(lo);
-+	out->hi = cpu_to_le64(hi);
-+}
-+
-+/* Convert the accumulator from POLYVAL format to GHASH format. */
-+static void polyval_acc_to_ghash(const struct polyval_elem *in,
-+				 u8 out[GHASH_BLOCK_SIZE])
-+{
-+	put_unaligned_be64(le64_to_cpu(in->hi), &out[0]);
-+	put_unaligned_be64(le64_to_cpu(in->lo), &out[8]);
-+}
-+
-+/* Convert the accumulator from GHASH format to POLYVAL format. */
-+static void __maybe_unused ghash_acc_to_polyval(const u8 in[GHASH_BLOCK_SIZE],
-+						struct polyval_elem *out)
-+{
-+	out->lo = cpu_to_le64(get_unaligned_be64(&in[8]));
-+	out->hi = cpu_to_le64(get_unaligned_be64(&in[0]));
-+}
-+
- #ifdef CONFIG_CRYPTO_LIB_GF128HASH_ARCH
- #include "gf128hash.h" /* $(SRCARCH)/gf128hash.h */
- #endif
+-	k00_16		.req	v8
+-	k32_48		.req	v9
+-
+-	t3		.req	v10
+-	t4		.req	v11
+-	t5		.req	v12
+-	t6		.req	v13
+-	t7		.req	v14
+-	t8		.req	v15
+-	t9		.req	v16
+-
+-	perm1		.req	v17
+-	perm2		.req	v18
+-	perm3		.req	v19
+-
+-	sh1		.req	v20
+-	sh2		.req	v21
+-	sh3		.req	v22
+-	sh4		.req	v23
+-
+-	ss1		.req	v24
+-	ss2		.req	v25
+-	ss3		.req	v26
+-	ss4		.req	v27
+-
+ 	XL2		.req	v8
+ 	XM2		.req	v9
+ 	XH2		.req	v10
+ 	XL3		.req	v11
+ 	XM3		.req	v12
+@@ -58,94 +33,10 @@
+ 	HH34		.req	v19
  
-+void ghash_preparekey(struct ghash_key *key, const u8 raw_key[GHASH_BLOCK_SIZE])
-+{
-+#ifdef ghash_preparekey_arch
-+	ghash_preparekey_arch(key, raw_key);
-+#else
-+	ghash_key_to_polyval(raw_key, &key->h);
-+#endif
-+}
-+EXPORT_SYMBOL_GPL(ghash_preparekey);
-+
-+static void ghash_mul(struct ghash_ctx *ctx)
-+{
-+#ifdef ghash_mul_arch
-+	ghash_mul_arch(&ctx->acc, ctx->key);
-+#elif defined(ghash_blocks_arch)
-+	static const u8 zeroes[GHASH_BLOCK_SIZE];
-+
-+	ghash_blocks_arch(&ctx->acc, ctx->key, zeroes, 1);
-+#else
-+	polyval_mul_generic(&ctx->acc, &ctx->key->h);
-+#endif
-+}
-+
-+/* nblocks is always >= 1. */
-+static void ghash_blocks(struct ghash_ctx *ctx, const u8 *data, size_t nblocks)
-+{
-+#ifdef ghash_blocks_arch
-+	ghash_blocks_arch(&ctx->acc, ctx->key, data, nblocks);
-+#else
-+	ghash_blocks_generic(&ctx->acc, &ctx->key->h, data, nblocks);
-+#endif
-+}
-+
-+void ghash_update(struct ghash_ctx *ctx, const u8 *data, size_t len)
-+{
-+	if (unlikely(ctx->partial)) {
-+		size_t n = min(len, GHASH_BLOCK_SIZE - ctx->partial);
-+
-+		len -= n;
-+		while (n--)
-+			ctx->acc.bytes[GHASH_BLOCK_SIZE - 1 - ctx->partial++] ^=
-+				*data++;
-+		if (ctx->partial < GHASH_BLOCK_SIZE)
-+			return;
-+		ghash_mul(ctx);
-+	}
-+	if (len >= GHASH_BLOCK_SIZE) {
-+		size_t nblocks = len / GHASH_BLOCK_SIZE;
-+
-+		ghash_blocks(ctx, data, nblocks);
-+		data += len & ~(GHASH_BLOCK_SIZE - 1);
-+		len &= GHASH_BLOCK_SIZE - 1;
-+	}
-+	for (size_t i = 0; i < len; i++)
-+		ctx->acc.bytes[GHASH_BLOCK_SIZE - 1 - i] ^= data[i];
-+	ctx->partial = len;
-+}
-+EXPORT_SYMBOL_GPL(ghash_update);
-+
-+void ghash_final(struct ghash_ctx *ctx, u8 out[GHASH_BLOCK_SIZE])
-+{
-+	if (unlikely(ctx->partial))
-+		ghash_mul(ctx);
-+	polyval_acc_to_ghash(&ctx->acc, out);
-+	memzero_explicit(ctx, sizeof(*ctx));
-+}
-+EXPORT_SYMBOL_GPL(ghash_final);
-+
- void polyval_preparekey(struct polyval_key *key,
- 			const u8 raw_key[POLYVAL_BLOCK_SIZE])
- {
- #ifdef polyval_preparekey_arch
- 	polyval_preparekey_arch(key, raw_key);
-@@ -251,10 +369,11 @@ static void polyval_mul(struct polyval_ctx *ctx)
- #else
- 	polyval_mul_generic(&ctx->acc, &ctx->key->h);
- #endif
- }
+ 	.text
+ 	.arch		armv8-a+crypto
  
-+/* nblocks is always >= 1. */
- static void polyval_blocks(struct polyval_ctx *ctx,
- 			   const u8 *data, size_t nblocks)
- {
- #ifdef polyval_blocks_arch
- 	polyval_blocks_arch(&ctx->acc, ctx->key, data, nblocks);
+-	.macro		__pmull_p64, rd, rn, rm
+-	pmull		\rd\().1q, \rn\().1d, \rm\().1d
+-	.endm
+-
+-	.macro		__pmull2_p64, rd, rn, rm
+-	pmull2		\rd\().1q, \rn\().2d, \rm\().2d
+-	.endm
+-
+-	.macro		__pmull_p8, rq, ad, bd
+-	ext		t3.8b, \ad\().8b, \ad\().8b, #1		// A1
+-	ext		t5.8b, \ad\().8b, \ad\().8b, #2		// A2
+-	ext		t7.8b, \ad\().8b, \ad\().8b, #3		// A3
+-
+-	__pmull_p8_\bd	\rq, \ad
+-	.endm
+-
+-	.macro		__pmull2_p8, rq, ad, bd
+-	tbl		t3.16b, {\ad\().16b}, perm1.16b		// A1
+-	tbl		t5.16b, {\ad\().16b}, perm2.16b		// A2
+-	tbl		t7.16b, {\ad\().16b}, perm3.16b		// A3
+-
+-	__pmull2_p8_\bd	\rq, \ad
+-	.endm
+-
+-	.macro		__pmull_p8_SHASH, rq, ad
+-	__pmull_p8_tail	\rq, \ad\().8b, SHASH.8b, 8b,, sh1, sh2, sh3, sh4
+-	.endm
+-
+-	.macro		__pmull_p8_SHASH2, rq, ad
+-	__pmull_p8_tail	\rq, \ad\().8b, SHASH2.8b, 8b,, ss1, ss2, ss3, ss4
+-	.endm
+-
+-	.macro		__pmull2_p8_SHASH, rq, ad
+-	__pmull_p8_tail	\rq, \ad\().16b, SHASH.16b, 16b, 2, sh1, sh2, sh3, sh4
+-	.endm
+-
+-	.macro		__pmull_p8_tail, rq, ad, bd, nb, t, b1, b2, b3, b4
+-	pmull\t		t3.8h, t3.\nb, \bd			// F = A1*B
+-	pmull\t		t4.8h, \ad, \b1\().\nb			// E = A*B1
+-	pmull\t		t5.8h, t5.\nb, \bd			// H = A2*B
+-	pmull\t		t6.8h, \ad, \b2\().\nb			// G = A*B2
+-	pmull\t		t7.8h, t7.\nb, \bd			// J = A3*B
+-	pmull\t		t8.8h, \ad, \b3\().\nb			// I = A*B3
+-	pmull\t		t9.8h, \ad, \b4\().\nb			// K = A*B4
+-	pmull\t		\rq\().8h, \ad, \bd			// D = A*B
+-
+-	eor		t3.16b, t3.16b, t4.16b			// L = E + F
+-	eor		t5.16b, t5.16b, t6.16b			// M = G + H
+-	eor		t7.16b, t7.16b, t8.16b			// N = I + J
+-
+-	uzp1		t4.2d, t3.2d, t5.2d
+-	uzp2		t3.2d, t3.2d, t5.2d
+-	uzp1		t6.2d, t7.2d, t9.2d
+-	uzp2		t7.2d, t7.2d, t9.2d
+-
+-	// t3 = (L) (P0 + P1) << 8
+-	// t5 = (M) (P2 + P3) << 16
+-	eor		t4.16b, t4.16b, t3.16b
+-	and		t3.16b, t3.16b, k32_48.16b
+-
+-	// t7 = (N) (P4 + P5) << 24
+-	// t9 = (K) (P6 + P7) << 32
+-	eor		t6.16b, t6.16b, t7.16b
+-	and		t7.16b, t7.16b, k00_16.16b
+-
+-	eor		t4.16b, t4.16b, t3.16b
+-	eor		t6.16b, t6.16b, t7.16b
+-
+-	zip2		t5.2d, t4.2d, t3.2d
+-	zip1		t3.2d, t4.2d, t3.2d
+-	zip2		t9.2d, t6.2d, t7.2d
+-	zip1		t7.2d, t6.2d, t7.2d
+-
+-	ext		t3.16b, t3.16b, t3.16b, #15
+-	ext		t5.16b, t5.16b, t5.16b, #14
+-	ext		t7.16b, t7.16b, t7.16b, #13
+-	ext		t9.16b, t9.16b, t9.16b, #12
+-
+-	eor		t3.16b, t3.16b, t5.16b
+-	eor		t7.16b, t7.16b, t9.16b
+-	eor		\rq\().16b, \rq\().16b, t3.16b
+-	eor		\rq\().16b, \rq\().16b, t7.16b
+-	.endm
+-
+ 	.macro		__pmull_pre_p64
+ 	add		x8, x3, #16
+ 	ld1		{HH.2d-HH4.2d}, [x8]
+ 
+ 	trn1		SHASH2.2d, SHASH.2d, HH.2d
+@@ -158,47 +49,10 @@
+ 
+ 	movi		MASK.16b, #0xe1
+ 	shl		MASK.2d, MASK.2d, #57
+ 	.endm
+ 
+-	.macro		__pmull_pre_p8
+-	ext		SHASH2.16b, SHASH.16b, SHASH.16b, #8
+-	eor		SHASH2.16b, SHASH2.16b, SHASH.16b
+-
+-	// k00_16 := 0x0000000000000000_000000000000ffff
+-	// k32_48 := 0x00000000ffffffff_0000ffffffffffff
+-	movi		k32_48.2d, #0xffffffff
+-	mov		k32_48.h[2], k32_48.h[0]
+-	ushr		k00_16.2d, k32_48.2d, #32
+-
+-	// prepare the permutation vectors
+-	mov_q		x5, 0x080f0e0d0c0b0a09
+-	movi		T1.8b, #8
+-	dup		perm1.2d, x5
+-	eor		perm1.16b, perm1.16b, T1.16b
+-	ushr		perm2.2d, perm1.2d, #8
+-	ushr		perm3.2d, perm1.2d, #16
+-	ushr		T1.2d, perm1.2d, #24
+-	sli		perm2.2d, perm1.2d, #56
+-	sli		perm3.2d, perm1.2d, #48
+-	sli		T1.2d, perm1.2d, #40
+-
+-	// precompute loop invariants
+-	tbl		sh1.16b, {SHASH.16b}, perm1.16b
+-	tbl		sh2.16b, {SHASH.16b}, perm2.16b
+-	tbl		sh3.16b, {SHASH.16b}, perm3.16b
+-	tbl		sh4.16b, {SHASH.16b}, T1.16b
+-	ext		ss1.8b, SHASH2.8b, SHASH2.8b, #1
+-	ext		ss2.8b, SHASH2.8b, SHASH2.8b, #2
+-	ext		ss3.8b, SHASH2.8b, SHASH2.8b, #3
+-	ext		ss4.8b, SHASH2.8b, SHASH2.8b, #4
+-	.endm
+-
+-	//
+-	// PMULL (64x64->128) based reduction for CPUs that can do
+-	// it in a single instruction.
+-	//
+ 	.macro		__pmull_reduce_p64
+ 	pmull		T2.1q, XL.1d, MASK.1d
+ 	eor		XM.16b, XM.16b, T1.16b
+ 
+ 	mov		XH.d[0], XM.d[1]
+@@ -207,51 +61,27 @@
+ 	eor		XL.16b, XM.16b, T2.16b
+ 	ext		T2.16b, XL.16b, XL.16b, #8
+ 	pmull		XL.1q, XL.1d, MASK.1d
+ 	.endm
+ 
+-	//
+-	// Alternative reduction for CPUs that lack support for the
+-	// 64x64->128 PMULL instruction
+-	//
+-	.macro		__pmull_reduce_p8
+-	eor		XM.16b, XM.16b, T1.16b
+-
+-	mov		XL.d[1], XM.d[0]
+-	mov		XH.d[0], XM.d[1]
+-
+-	shl		T1.2d, XL.2d, #57
+-	shl		T2.2d, XL.2d, #62
+-	eor		T2.16b, T2.16b, T1.16b
+-	shl		T1.2d, XL.2d, #63
+-	eor		T2.16b, T2.16b, T1.16b
+-	ext		T1.16b, XL.16b, XH.16b, #8
+-	eor		T2.16b, T2.16b, T1.16b
+-
+-	mov		XL.d[1], T2.d[0]
+-	mov		XH.d[0], T2.d[1]
+-
+-	ushr		T2.2d, XL.2d, #1
+-	eor		XH.16b, XH.16b, XL.16b
+-	eor		XL.16b, XL.16b, T2.16b
+-	ushr		T2.2d, T2.2d, #6
+-	ushr		XL.2d, XL.2d, #1
+-	.endm
+-
+-	.macro		__pmull_ghash, pn
++	/*
++	 * void pmull_ghash_update_p64(int blocks, u64 dg[], const char *src,
++	 *			       u64 const h[][2], const char *head)
++	 */
++SYM_TYPED_FUNC_START(pmull_ghash_update_p64)
+ 	ld1		{SHASH.2d}, [x3]
+ 	ld1		{XL.2d}, [x1]
+ 
+-	__pmull_pre_\pn
++	__pmull_pre_p64
+ 
+ 	/* do the head block first, if supplied */
+ 	cbz		x4, 0f
+ 	ld1		{T1.2d}, [x4]
+ 	mov		x4, xzr
+ 	b		3f
+ 
+-0:	.ifc		\pn, p64
++0:
+ 	tbnz		w0, #0, 2f		// skip until #blocks is a
+ 	tbnz		w0, #1, 2f		// round multiple of 4
+ 
+ 1:	ld1		{XM3.16b-TT4.16b}, [x2], #64
+ 
+@@ -312,11 +142,10 @@
+ 	eor		T2.16b, T2.16b, XH.16b
+ 	eor		XL.16b, XL.16b, T2.16b
+ 
+ 	cbz		w0, 5f
+ 	b		1b
+-	.endif
+ 
+ 2:	ld1		{T1.2d}, [x2], #16
+ 	sub		w0, w0, #1
+ 
+ 3:	/* multiply XL by SHASH in GF(2^128) */
+@@ -325,42 +154,30 @@ CPU_LE(	rev64		T1.16b, T1.16b	)
+ 	ext		T2.16b, XL.16b, XL.16b, #8
+ 	ext		IN1.16b, T1.16b, T1.16b, #8
+ 	eor		T1.16b, T1.16b, T2.16b
+ 	eor		XL.16b, XL.16b, IN1.16b
+ 
+-	__pmull2_\pn	XH, XL, SHASH			// a1 * b1
++	pmull2		XH.1q, XL.2d, SHASH.2d		// a1 * b1
+ 	eor		T1.16b, T1.16b, XL.16b
+-	__pmull_\pn 	XL, XL, SHASH			// a0 * b0
+-	__pmull_\pn	XM, T1, SHASH2			// (a1 + a0)(b1 + b0)
++	pmull		XL.1q, XL.1d, SHASH.1d		// a0 * b0
++	pmull		XM.1q, T1.1d, SHASH2.1d		// (a1 + a0)(b1 + b0)
+ 
+ 4:	eor		T2.16b, XL.16b, XH.16b
+ 	ext		T1.16b, XL.16b, XH.16b, #8
+ 	eor		XM.16b, XM.16b, T2.16b
+ 
+-	__pmull_reduce_\pn
++	__pmull_reduce_p64
+ 
+ 	eor		T2.16b, T2.16b, XH.16b
+ 	eor		XL.16b, XL.16b, T2.16b
+ 
+ 	cbnz		w0, 0b
+ 
+ 5:	st1		{XL.2d}, [x1]
+ 	ret
+-	.endm
+-
+-	/*
+-	 * void pmull_ghash_update(int blocks, u64 dg[], const char *src,
+-	 *			   struct ghash_key const *k, const char *head)
+-	 */
+-SYM_TYPED_FUNC_START(pmull_ghash_update_p64)
+-	__pmull_ghash	p64
+ SYM_FUNC_END(pmull_ghash_update_p64)
+ 
+-SYM_TYPED_FUNC_START(pmull_ghash_update_p8)
+-	__pmull_ghash	p8
+-SYM_FUNC_END(pmull_ghash_update_p8)
+-
+ 	KS0		.req	v8
+ 	KS1		.req	v9
+ 	KS2		.req	v10
+ 	KS3		.req	v11
+ 
+diff --git a/arch/arm64/crypto/ghash-neon-core.S b/arch/arm64/crypto/ghash-neon-core.S
+new file mode 100644
+index 000000000000..6157135ad566
+--- /dev/null
++++ b/arch/arm64/crypto/ghash-neon-core.S
+@@ -0,0 +1,226 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Accelerated GHASH implementation with ARMv8 ASIMD instructions.
++ *
++ * Copyright (C) 2014 - 2018 Linaro Ltd. <ard.biesheuvel@linaro.org>
++ */
++
++#include <linux/linkage.h>
++#include <linux/cfi_types.h>
++#include <asm/assembler.h>
++
++	SHASH		.req	v0
++	SHASH2		.req	v1
++	T1		.req	v2
++	T2		.req	v3
++	XM		.req	v5
++	XL		.req	v6
++	XH		.req	v7
++	IN1		.req	v7
++
++	k00_16		.req	v8
++	k32_48		.req	v9
++
++	t3		.req	v10
++	t4		.req	v11
++	t5		.req	v12
++	t6		.req	v13
++	t7		.req	v14
++	t8		.req	v15
++	t9		.req	v16
++
++	perm1		.req	v17
++	perm2		.req	v18
++	perm3		.req	v19
++
++	sh1		.req	v20
++	sh2		.req	v21
++	sh3		.req	v22
++	sh4		.req	v23
++
++	ss1		.req	v24
++	ss2		.req	v25
++	ss3		.req	v26
++	ss4		.req	v27
++
++	.text
++
++	.macro		__pmull_p8, rq, ad, bd
++	ext		t3.8b, \ad\().8b, \ad\().8b, #1		// A1
++	ext		t5.8b, \ad\().8b, \ad\().8b, #2		// A2
++	ext		t7.8b, \ad\().8b, \ad\().8b, #3		// A3
++
++	__pmull_p8_\bd	\rq, \ad
++	.endm
++
++	.macro		__pmull2_p8, rq, ad, bd
++	tbl		t3.16b, {\ad\().16b}, perm1.16b		// A1
++	tbl		t5.16b, {\ad\().16b}, perm2.16b		// A2
++	tbl		t7.16b, {\ad\().16b}, perm3.16b		// A3
++
++	__pmull2_p8_\bd	\rq, \ad
++	.endm
++
++	.macro		__pmull_p8_SHASH, rq, ad
++	__pmull_p8_tail	\rq, \ad\().8b, SHASH.8b, 8b,, sh1, sh2, sh3, sh4
++	.endm
++
++	.macro		__pmull_p8_SHASH2, rq, ad
++	__pmull_p8_tail	\rq, \ad\().8b, SHASH2.8b, 8b,, ss1, ss2, ss3, ss4
++	.endm
++
++	.macro		__pmull2_p8_SHASH, rq, ad
++	__pmull_p8_tail	\rq, \ad\().16b, SHASH.16b, 16b, 2, sh1, sh2, sh3, sh4
++	.endm
++
++	.macro		__pmull_p8_tail, rq, ad, bd, nb, t, b1, b2, b3, b4
++	pmull\t		t3.8h, t3.\nb, \bd			// F = A1*B
++	pmull\t		t4.8h, \ad, \b1\().\nb			// E = A*B1
++	pmull\t		t5.8h, t5.\nb, \bd			// H = A2*B
++	pmull\t		t6.8h, \ad, \b2\().\nb			// G = A*B2
++	pmull\t		t7.8h, t7.\nb, \bd			// J = A3*B
++	pmull\t		t8.8h, \ad, \b3\().\nb			// I = A*B3
++	pmull\t		t9.8h, \ad, \b4\().\nb			// K = A*B4
++	pmull\t		\rq\().8h, \ad, \bd			// D = A*B
++
++	eor		t3.16b, t3.16b, t4.16b			// L = E + F
++	eor		t5.16b, t5.16b, t6.16b			// M = G + H
++	eor		t7.16b, t7.16b, t8.16b			// N = I + J
++
++	uzp1		t4.2d, t3.2d, t5.2d
++	uzp2		t3.2d, t3.2d, t5.2d
++	uzp1		t6.2d, t7.2d, t9.2d
++	uzp2		t7.2d, t7.2d, t9.2d
++
++	// t3 = (L) (P0 + P1) << 8
++	// t5 = (M) (P2 + P3) << 16
++	eor		t4.16b, t4.16b, t3.16b
++	and		t3.16b, t3.16b, k32_48.16b
++
++	// t7 = (N) (P4 + P5) << 24
++	// t9 = (K) (P6 + P7) << 32
++	eor		t6.16b, t6.16b, t7.16b
++	and		t7.16b, t7.16b, k00_16.16b
++
++	eor		t4.16b, t4.16b, t3.16b
++	eor		t6.16b, t6.16b, t7.16b
++
++	zip2		t5.2d, t4.2d, t3.2d
++	zip1		t3.2d, t4.2d, t3.2d
++	zip2		t9.2d, t6.2d, t7.2d
++	zip1		t7.2d, t6.2d, t7.2d
++
++	ext		t3.16b, t3.16b, t3.16b, #15
++	ext		t5.16b, t5.16b, t5.16b, #14
++	ext		t7.16b, t7.16b, t7.16b, #13
++	ext		t9.16b, t9.16b, t9.16b, #12
++
++	eor		t3.16b, t3.16b, t5.16b
++	eor		t7.16b, t7.16b, t9.16b
++	eor		\rq\().16b, \rq\().16b, t3.16b
++	eor		\rq\().16b, \rq\().16b, t7.16b
++	.endm
++
++	.macro		__pmull_pre_p8
++	ext		SHASH2.16b, SHASH.16b, SHASH.16b, #8
++	eor		SHASH2.16b, SHASH2.16b, SHASH.16b
++
++	// k00_16 := 0x0000000000000000_000000000000ffff
++	// k32_48 := 0x00000000ffffffff_0000ffffffffffff
++	movi		k32_48.2d, #0xffffffff
++	mov		k32_48.h[2], k32_48.h[0]
++	ushr		k00_16.2d, k32_48.2d, #32
++
++	// prepare the permutation vectors
++	mov_q		x5, 0x080f0e0d0c0b0a09
++	movi		T1.8b, #8
++	dup		perm1.2d, x5
++	eor		perm1.16b, perm1.16b, T1.16b
++	ushr		perm2.2d, perm1.2d, #8
++	ushr		perm3.2d, perm1.2d, #16
++	ushr		T1.2d, perm1.2d, #24
++	sli		perm2.2d, perm1.2d, #56
++	sli		perm3.2d, perm1.2d, #48
++	sli		T1.2d, perm1.2d, #40
++
++	// precompute loop invariants
++	tbl		sh1.16b, {SHASH.16b}, perm1.16b
++	tbl		sh2.16b, {SHASH.16b}, perm2.16b
++	tbl		sh3.16b, {SHASH.16b}, perm3.16b
++	tbl		sh4.16b, {SHASH.16b}, T1.16b
++	ext		ss1.8b, SHASH2.8b, SHASH2.8b, #1
++	ext		ss2.8b, SHASH2.8b, SHASH2.8b, #2
++	ext		ss3.8b, SHASH2.8b, SHASH2.8b, #3
++	ext		ss4.8b, SHASH2.8b, SHASH2.8b, #4
++	.endm
++
++	.macro		__pmull_reduce_p8
++	eor		XM.16b, XM.16b, T1.16b
++
++	mov		XL.d[1], XM.d[0]
++	mov		XH.d[0], XM.d[1]
++
++	shl		T1.2d, XL.2d, #57
++	shl		T2.2d, XL.2d, #62
++	eor		T2.16b, T2.16b, T1.16b
++	shl		T1.2d, XL.2d, #63
++	eor		T2.16b, T2.16b, T1.16b
++	ext		T1.16b, XL.16b, XH.16b, #8
++	eor		T2.16b, T2.16b, T1.16b
++
++	mov		XL.d[1], T2.d[0]
++	mov		XH.d[0], T2.d[1]
++
++	ushr		T2.2d, XL.2d, #1
++	eor		XH.16b, XH.16b, XL.16b
++	eor		XL.16b, XL.16b, T2.16b
++	ushr		T2.2d, T2.2d, #6
++	ushr		XL.2d, XL.2d, #1
++	.endm
++
++	/*
++	 * void pmull_ghash_update_p8(int blocks, u64 dg[], const char *src,
++	 *			      u64 const h[][2], const char *head)
++	 */
++SYM_TYPED_FUNC_START(pmull_ghash_update_p8)
++	ld1		{SHASH.2d}, [x3]
++	ld1		{XL.2d}, [x1]
++
++	__pmull_pre_p8
++
++	/* do the head block first, if supplied */
++	cbz		x4, 0f
++	ld1		{T1.2d}, [x4]
++	mov		x4, xzr
++	b		3f
++
++0:	ld1		{T1.2d}, [x2], #16
++	sub		w0, w0, #1
++
++3:	/* multiply XL by SHASH in GF(2^128) */
++CPU_LE(	rev64		T1.16b, T1.16b	)
++
++	ext		T2.16b, XL.16b, XL.16b, #8
++	ext		IN1.16b, T1.16b, T1.16b, #8
++	eor		T1.16b, T1.16b, T2.16b
++	eor		XL.16b, XL.16b, IN1.16b
++
++	__pmull2_p8	XH, XL, SHASH			// a1 * b1
++	eor		T1.16b, T1.16b, XL.16b
++	__pmull_p8 	XL, XL, SHASH			// a0 * b0
++	__pmull_p8	XM, T1, SHASH2			// (a1 + a0)(b1 + b0)
++
++	eor		T2.16b, XL.16b, XH.16b
++	ext		T1.16b, XL.16b, XH.16b, #8
++	eor		XM.16b, XM.16b, T2.16b
++
++	__pmull_reduce_p8
++
++	eor		T2.16b, T2.16b, XH.16b
++	eor		XL.16b, XL.16b, T2.16b
++
++	cbnz		w0, 0b
++
++	st1		{XL.2d}, [x1]
++	ret
++SYM_FUNC_END(pmull_ghash_update_p8)
 -- 
 2.53.0
 
