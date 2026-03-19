@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-18426-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18427-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0EE001075261
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BDF081075262
 	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2026 06:20:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fbwX655v4z30Wg;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fbwX65HCLz30Wh;
 	Thu, 19 Mar 2026 17:19:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773901174;
-	cv=none; b=Qn5eU3Ylo3l2H5OrvPoR87eaC8strWeD6Big98xTDEoZjqNXEUnopHi4aI/3ACMjCVJQ1fiaM2+U5/NM/HahRhohP707/9qxNSnH1ZD899rSvtuZbuIDf6RIBZPHeCAivLtHGiQxPBG9twaxi07nWMPHyZRwLQs1FGnZms8kmCE3qqxQN+0qv8loOEBFpdMcUJxHm4kiKO01yfjpnU2Evc9Hfs9fScBuqucJtPfbskN4HwMzMZtIWI3eB7YIaaPXYhXCgV7uKd15iaVNrSWjt3vaSBtCbeCpl13W3AANre2b2Ra4BnQmUNOPV5vsLupnE1jDaEh63CVa11joJKSeQw==
+	cv=none; b=gsVEJ4dwV7O6KffBXlP1x/vuesHcMiWG1pDrUtnWPrcd/KqaW5NcF3ENiOxnEHejxZw0GMxuSAiZhTwgJZYm9WLk/dl5f37lobwL123guOYWYoGyMje/XqLMoHcqPWhwX86fkhmUMttVnxTSjSVSOWGUNwr++FJk9IorF7BSH412GBcaFPcwhyduU+Q7/3rzOna/Ry7+mQKAkvMiYhMy3BLALJ3BHDZyKJWemjMERlwfmfoy94SXXEG23hiw2xK45U0ij3pFnK9HsnVLlh9neV1aw6bbo5Xvcp8AlMnf9kADhswrN+XTsIMvXIwGHXJppOPCoR0wfj88yPGvPlnAmQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1773901174; c=relaxed/relaxed;
-	bh=xfJ2dNX6qcg7JsyNY/6ZZAa1IOFEHhXrgFhm/UAjRf8=;
+	bh=33KTucnLU+VJdkf+Koy62bkJyMfrD+/Fe3LqzQr7h5I=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=oydKfGxFvLG9GDGmhk5HaDq+o6QIsgnD0E1s8O5+8t7Ke9Q95aKdOVYtRcwfASCzS4GK29r95E10NzEYPTkboVuZjjTabPVGwHsxkqT7uZdAMDBZHgSfwhoSPuzSDZswMEIodAx/SFC5mGunxK0JFn0yAOQirDGfkIms6r9Ixb9tYlVWKmT9rMlFOMZu082AVEFWkBi6qyOLGUlvd22tkMEDn1cragX4m/5JhJ0k4Pu0dvwvcd4z/T8rJ3+D0DXsKipvbNRCpD0CmPXH0h9xbgO9Lh7ZsJPoebQ4N1evDpbztM4Db9sw6iFfFrwnu15lxH9xOHcH1+00loGGV5ivWw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hnean7F5; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=DvLfKYDhwJAV+gbQLmjk34kqHa+4W5XMxPyc84GSI4CK171KSSdE1hd12UiycFvi9FXcs8UUggWfEpFtFOlp3taRwDWmjnqh4DRKcA5+2YYrfk3jgu7WqmZ5PQYUULVGboB1CVPzuMvDzqpzeMwtAnB8mA0uVmYEvgXjfI6+vwExcKaKCtu2rdpZfJU6xPN0xdlXrXFqYUNFgo55lyMxDcoyo8qzXkIahWP9v6JiXp9UNSwg+lUEzmP4HZalqpkPAzQsApFRHxXxTvoZozjqhKCnvqp3YXGWabYTqtA1W1KQmeVoDM9sHR7641oXZFjiDxTXZexySvTu7m/5M1jmmA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qUjaGrt7; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hnean7F5;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qUjaGrt7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbwWv0vHGz2yv3
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 17:19:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbwWw4Chsz2ynW
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 17:19:24 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 6F8966185C;
-	Thu, 19 Mar 2026 06:19:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E9139C2BCB1;
-	Thu, 19 Mar 2026 06:19:19 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 064BF44720;
+	Thu, 19 Mar 2026 06:19:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 78620C2BCB3;
+	Thu, 19 Mar 2026 06:19:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773901160;
-	bh=+ZmjSDH5DIbHkhs8sGfuQZibCGDn1Tzw/dqhYSngFD8=;
+	s=k20201202; t=1773901162;
+	bh=mTRLUTdGzhcdizBLZYtXG0wi5TCm65S4qlvgr+wYUYI=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=hnean7F5sIW0j/PDDxjaqGyGILEQL5LWC1ZOa2gtGq3EkrwAV03/l3rgTmOOHTpHf
-	 zuWiucXxFt0bIE/omsLvX3AYzKLw35DJ0KiTAXUiu9rnnVV3Go7xE7twTP3m4a9u4k
-	 kuPIiu4CjMhPqmQlqBhSgq836J+HHGm9m7WGDcJHOWIDXrjaGPWWdc9IThZSx53uz8
-	 H4ZXX1uojF+l9CmYgAMCgkuREmq7GPg5yOYWBKCe7vY+YlOQDe0U1ZT7l6KuRL/+a1
-	 Cto/yQ8kWtV3VUj+9ES3MrtArOdzHHnqThiXY2S9ptS6HVrdHf4U3bv7k3V7NpVhmB
-	 i8tqNk8NcHEbw==
+	b=qUjaGrt7RFDnbK+cIlqFbgJnk6RjjiIP4nOUXjksgVsooOttsP6ts10f9DTl8O1LL
+	 fltmBuZVfF4AgTiJWgwJpoljMMtZvb1kGG1F8wwoAvdwrtEKtC+mdAi2Ie7ox16kJ0
+	 aPxVeBkcYFwJLXZB2NkYHm93FvphnZNvhSEZ1qO6kngwuTmb64LuUjgHg3brwwDaVz
+	 rvUSK30xdWlSDu5/JM8w8gPwvKmXljbiOQiOhp7P9c5k91Qe88X67tUuicrNsDvd7e
+	 X9JHCcVGW72qMY4IPT8WssLvoWtjXoBYf8FZoAx4HmznfMi6YdscUdMDOR1zRH+lfJ
+	 cMpc+5cqAOd/A==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -56,9 +56,9 @@ Cc: linux-kernel@vger.kernel.org,
 	linux-s390@vger.kernel.org,
 	x86@kernel.org,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH 12/19] lib/crypto: riscv/ghash: Migrate optimized code into library
-Date: Wed, 18 Mar 2026 23:17:13 -0700
-Message-ID: <20260319061723.1140720-13-ebiggers@kernel.org>
+Subject: [PATCH 17/19] lib/crypto: gf128mul: Remove unused 4k_lle functions
+Date: Wed, 18 Mar 2026 23:17:18 -0700
+Message-ID: <20260319061723.1140720-18-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260319061723.1140720-1-ebiggers@kernel.org>
 References: <20260319061723.1140720-1-ebiggers@kernel.org>
@@ -77,388 +77,152 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Remove the "ghash-riscv64-zvkg" crypto_shash algorithm.  Move the
-corresponding assembly code into lib/crypto/, modify it to take the
-length in blocks instead of bytes, and wire it up to the GHASH library.
-
-This makes the GHASH library be optimized with the RISC-V Vector
-Cryptography Extension.  It also greatly reduces the amount of
-riscv-specific glue code that is needed, and it fixes the issue where
-this optimized GHASH code was disabled by default.
-
-Note that this RISC-V code has multiple opportunities for improvement,
-such as adding more parallelism, providing an optimized multiplication
-function, and directly supporting POLYVAL.  But for now, this commit
-simply tweaks ghash_zvkg() slightly to make it compatible with the
-library, then wires it up to ghash_blocks_arch().
-
-ghash_preparekey_arch() is also implemented to store the copy of the raw
-key needed by the vghsh.vv instruction.
+Remove the 4k_lle multiplication functions and the associated
+gf128mul_table_le data table.  Their only user was the generic
+implementation of GHASH, which has now been changed to use a different
+implementation based on standard integer multiplication.
 
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- arch/riscv/crypto/Kconfig                     |  11 --
- arch/riscv/crypto/Makefile                    |   3 -
- arch/riscv/crypto/ghash-riscv64-glue.c        | 146 ------------------
- include/crypto/gf128hash.h                    |   3 +
- lib/crypto/Kconfig                            |   2 +
- lib/crypto/Makefile                           |   1 +
- lib/crypto/riscv/gf128hash.h                  |  57 +++++++
- .../crypto/riscv}/ghash-riscv64-zvkg.S        |  13 +-
- 8 files changed, 69 insertions(+), 167 deletions(-)
- delete mode 100644 arch/riscv/crypto/ghash-riscv64-glue.c
- create mode 100644 lib/crypto/riscv/gf128hash.h
- rename {arch/riscv/crypto => lib/crypto/riscv}/ghash-riscv64-zvkg.S (91%)
+ include/crypto/gf128mul.h | 17 ++-------
+ lib/crypto/gf128mul.c     | 73 +--------------------------------------
+ 2 files changed, 4 insertions(+), 86 deletions(-)
 
-diff --git a/arch/riscv/crypto/Kconfig b/arch/riscv/crypto/Kconfig
-index 22d4eaab15f3..c208f54afbcd 100644
---- a/arch/riscv/crypto/Kconfig
-+++ b/arch/riscv/crypto/Kconfig
-@@ -15,21 +15,10 @@ config CRYPTO_AES_RISCV64
- 	  - Zvkned vector crypto extension
- 	  - Zvbb vector extension (XTS)
- 	  - Zvkb vector crypto extension (CTR)
- 	  - Zvkg vector crypto extension (XTS)
+diff --git a/include/crypto/gf128mul.h b/include/crypto/gf128mul.h
+index b0853f7cada0..6ed2a8351902 100644
+--- a/include/crypto/gf128mul.h
++++ b/include/crypto/gf128mul.h
+@@ -213,29 +213,18 @@ static inline void gf128mul_x_ble(le128 *r, const le128 *x)
  
--config CRYPTO_GHASH_RISCV64
--	tristate "Hash functions: GHASH"
--	depends on 64BIT && TOOLCHAIN_HAS_VECTOR_CRYPTO && \
--		   RISCV_EFFICIENT_VECTOR_UNALIGNED_ACCESS
--	select CRYPTO_GCM
--	help
--	  GCM GHASH function (NIST SP 800-38D)
--
--	  Architecture: riscv64 using:
--	  - Zvkg vector crypto extension
--
- config CRYPTO_SM3_RISCV64
- 	tristate "Hash functions: SM3 (ShangMi 3)"
- 	depends on 64BIT && TOOLCHAIN_HAS_VECTOR_CRYPTO && \
- 		   RISCV_EFFICIENT_VECTOR_UNALIGNED_ACCESS
- 	select CRYPTO_HASH
-diff --git a/arch/riscv/crypto/Makefile b/arch/riscv/crypto/Makefile
-index 183495a95cc0..5c9ee1b876fa 100644
---- a/arch/riscv/crypto/Makefile
-+++ b/arch/riscv/crypto/Makefile
-@@ -2,13 +2,10 @@
+ 	r->a = cpu_to_le64((a << 1) | (b >> 63));
+ 	r->b = cpu_to_le64((b << 1) ^ _tt);
+ }
  
- obj-$(CONFIG_CRYPTO_AES_RISCV64) += aes-riscv64.o
- aes-riscv64-y := aes-riscv64-glue.o aes-riscv64-zvkned.o \
- 		 aes-riscv64-zvkned-zvbb-zvkg.o aes-riscv64-zvkned-zvkb.o
- 
--obj-$(CONFIG_CRYPTO_GHASH_RISCV64) += ghash-riscv64.o
--ghash-riscv64-y := ghash-riscv64-glue.o ghash-riscv64-zvkg.o
+-/* 4k table optimization */
 -
- obj-$(CONFIG_CRYPTO_SM3_RISCV64) += sm3-riscv64.o
- sm3-riscv64-y := sm3-riscv64-glue.o sm3-riscv64-zvksh-zvkb.o
- 
- obj-$(CONFIG_CRYPTO_SM4_RISCV64) += sm4-riscv64.o
- sm4-riscv64-y := sm4-riscv64-glue.o sm4-riscv64-zvksed-zvkb.o
-diff --git a/arch/riscv/crypto/ghash-riscv64-glue.c b/arch/riscv/crypto/ghash-riscv64-glue.c
-deleted file mode 100644
-index d86073d25387..000000000000
---- a/arch/riscv/crypto/ghash-riscv64-glue.c
-+++ /dev/null
-@@ -1,146 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * GHASH using the RISC-V vector crypto extensions
-- *
-- * Copyright (C) 2023 VRULL GmbH
-- * Author: Heiko Stuebner <heiko.stuebner@vrull.eu>
-- *
-- * Copyright (C) 2023 SiFive, Inc.
-- * Author: Jerry Shih <jerry.shih@sifive.com>
-- */
--
--#include <asm/simd.h>
--#include <asm/vector.h>
--#include <crypto/b128ops.h>
--#include <crypto/gf128mul.h>
--#include <crypto/ghash.h>
--#include <crypto/internal/hash.h>
--#include <crypto/internal/simd.h>
--#include <crypto/utils.h>
--#include <linux/errno.h>
--#include <linux/kernel.h>
--#include <linux/module.h>
--#include <linux/string.h>
--
--asmlinkage void ghash_zvkg(be128 *accumulator, const be128 *key, const u8 *data,
--			   size_t len);
--
--struct riscv64_ghash_tfm_ctx {
--	be128 key;
+-struct gf128mul_4k {
+-	be128 t[256];
 -};
 -
--struct riscv64_ghash_desc_ctx {
--	be128 accumulator;
--};
--
--static int riscv64_ghash_setkey(struct crypto_shash *tfm, const u8 *key,
--				unsigned int keylen)
+-struct gf128mul_4k *gf128mul_init_4k_lle(const be128 *g);
+-void gf128mul_4k_lle(be128 *a, const struct gf128mul_4k *t);
+ void gf128mul_x8_ble(le128 *r, const le128 *x);
+-static inline void gf128mul_free_4k(struct gf128mul_4k *t)
 -{
--	struct riscv64_ghash_tfm_ctx *tctx = crypto_shash_ctx(tfm);
--
--	if (keylen != GHASH_BLOCK_SIZE)
--		return -EINVAL;
--
--	memcpy(&tctx->key, key, GHASH_BLOCK_SIZE);
--
--	return 0;
+-	kfree_sensitive(t);
 -}
 -
--static int riscv64_ghash_init(struct shash_desc *desc)
--{
--	struct riscv64_ghash_desc_ctx *dctx = shash_desc_ctx(desc);
--
--	*dctx = (struct riscv64_ghash_desc_ctx){};
--
--	return 0;
--}
--
--static inline void
--riscv64_ghash_blocks(const struct riscv64_ghash_tfm_ctx *tctx,
--		     struct riscv64_ghash_desc_ctx *dctx,
--		     const u8 *src, size_t srclen)
--{
--	/* The srclen is nonzero and a multiple of 16. */
--	if (crypto_simd_usable()) {
--		kernel_vector_begin();
--		ghash_zvkg(&dctx->accumulator, &tctx->key, src, srclen);
--		kernel_vector_end();
--	} else {
--		do {
--			crypto_xor((u8 *)&dctx->accumulator, src,
--				   GHASH_BLOCK_SIZE);
--			gf128mul_lle(&dctx->accumulator, &tctx->key);
--			src += GHASH_BLOCK_SIZE;
--			srclen -= GHASH_BLOCK_SIZE;
--		} while (srclen);
--	}
--}
--
--static int riscv64_ghash_update(struct shash_desc *desc, const u8 *src,
--				unsigned int srclen)
--{
--	const struct riscv64_ghash_tfm_ctx *tctx = crypto_shash_ctx(desc->tfm);
--	struct riscv64_ghash_desc_ctx *dctx = shash_desc_ctx(desc);
--
--	riscv64_ghash_blocks(tctx, dctx, src,
--			     round_down(srclen, GHASH_BLOCK_SIZE));
--	return srclen - round_down(srclen, GHASH_BLOCK_SIZE);
--}
--
--static int riscv64_ghash_finup(struct shash_desc *desc, const u8 *src,
--			       unsigned int len, u8 *out)
--{
--	const struct riscv64_ghash_tfm_ctx *tctx = crypto_shash_ctx(desc->tfm);
--	struct riscv64_ghash_desc_ctx *dctx = shash_desc_ctx(desc);
--
--	if (len) {
--		u8 buf[GHASH_BLOCK_SIZE] = {};
--
--		memcpy(buf, src, len);
--		riscv64_ghash_blocks(tctx, dctx, buf, GHASH_BLOCK_SIZE);
--		memzero_explicit(buf, sizeof(buf));
--	}
--
--	memcpy(out, &dctx->accumulator, GHASH_DIGEST_SIZE);
--	return 0;
--}
--
--static struct shash_alg riscv64_ghash_alg = {
--	.init = riscv64_ghash_init,
--	.update = riscv64_ghash_update,
--	.finup = riscv64_ghash_finup,
--	.setkey = riscv64_ghash_setkey,
--	.descsize = sizeof(struct riscv64_ghash_desc_ctx),
--	.digestsize = GHASH_DIGEST_SIZE,
--	.base = {
--		.cra_blocksize = GHASH_BLOCK_SIZE,
--		.cra_ctxsize = sizeof(struct riscv64_ghash_tfm_ctx),
--		.cra_priority = 300,
--		.cra_flags = CRYPTO_AHASH_ALG_BLOCK_ONLY,
--		.cra_name = "ghash",
--		.cra_driver_name = "ghash-riscv64-zvkg",
--		.cra_module = THIS_MODULE,
--	},
--};
--
--static int __init riscv64_ghash_mod_init(void)
--{
--	if (riscv_isa_extension_available(NULL, ZVKG) &&
--	    riscv_vector_vlen() >= 128)
--		return crypto_register_shash(&riscv64_ghash_alg);
--
--	return -ENODEV;
--}
--
--static void __exit riscv64_ghash_mod_exit(void)
--{
--	crypto_unregister_shash(&riscv64_ghash_alg);
--}
--
--module_init(riscv64_ghash_mod_init);
--module_exit(riscv64_ghash_mod_exit);
--
--MODULE_DESCRIPTION("GHASH (RISC-V accelerated)");
--MODULE_AUTHOR("Heiko Stuebner <heiko.stuebner@vrull.eu>");
--MODULE_LICENSE("GPL");
--MODULE_ALIAS_CRYPTO("ghash");
-diff --git a/include/crypto/gf128hash.h b/include/crypto/gf128hash.h
-index 650652dd6003..b798438cce23 100644
---- a/include/crypto/gf128hash.h
-+++ b/include/crypto/gf128hash.h
-@@ -42,10 +42,13 @@ struct polyval_elem {
-  */
- struct ghash_key {
- #if defined(CONFIG_CRYPTO_LIB_GF128HASH_ARCH) && defined(CONFIG_PPC64)
- 	/** @htable: GHASH key format used by the POWER8 assembly code */
- 	u64 htable[4][2];
-+#elif defined(CONFIG_CRYPTO_LIB_GF128HASH_ARCH) && defined(CONFIG_RISCV)
-+	/** @h_raw: The hash key H, in GHASH format */
-+	u8 h_raw[GHASH_BLOCK_SIZE];
- #endif
- 	/** @h: The hash key H, in POLYVAL format */
- 	struct polyval_elem h;
+ 
+ /* 64k table optimization, implemented for bbe */
+ 
+ struct gf128mul_64k {
+-	struct gf128mul_4k *t[16];
++	struct {
++		be128 t[256];
++	} *t[16];
  };
  
-diff --git a/lib/crypto/Kconfig b/lib/crypto/Kconfig
-index f54add7d9070..027802e0de33 100644
---- a/lib/crypto/Kconfig
-+++ b/lib/crypto/Kconfig
-@@ -120,10 +120,12 @@ config CRYPTO_LIB_GF128HASH_ARCH
- 	bool
- 	depends on CRYPTO_LIB_GF128HASH && !UML
- 	default y if ARM && KERNEL_MODE_NEON
- 	default y if ARM64
- 	default y if PPC64 && VSX
-+	default y if RISCV && 64BIT && TOOLCHAIN_HAS_VECTOR_CRYPTO && \
-+		     RISCV_EFFICIENT_VECTOR_UNALIGNED_ACCESS
- 	default y if X86_64
+ /* First initialize with the constant factor with which you
+  * want to multiply and then call gf128mul_64k_bbe with the other
+  * factor in the first argument, and the table in the second.
+diff --git a/lib/crypto/gf128mul.c b/lib/crypto/gf128mul.c
+index e5a727b15f07..7ebf07ce1168 100644
+--- a/lib/crypto/gf128mul.c
++++ b/lib/crypto/gf128mul.c
+@@ -125,31 +125,13 @@
+ 	(i & 0x20 ? 0x3840 : 0) ^ (i & 0x10 ? 0x1c20 : 0) ^ \
+ 	(i & 0x08 ? 0x0e10 : 0) ^ (i & 0x04 ? 0x0708 : 0) ^ \
+ 	(i & 0x02 ? 0x0384 : 0) ^ (i & 0x01 ? 0x01c2 : 0) \
+ )
  
- config CRYPTO_LIB_MD5
- 	tristate
- 	help
-diff --git a/lib/crypto/Makefile b/lib/crypto/Makefile
-index 8a9084188778..8950509833af 100644
---- a/lib/crypto/Makefile
-+++ b/lib/crypto/Makefile
-@@ -171,10 +171,11 @@ $(obj)/powerpc/ghashp8-ppc.S: $(src)/powerpc/ghashp8-ppc.pl FORCE
- 	$(call if_changed,perlasm_ghash)
- targets += powerpc/ghashp8-ppc.S
- OBJECT_FILES_NON_STANDARD_powerpc/ghashp8-ppc.o := y
- endif
+-static const u16 gf128mul_table_le[256] = gf128mul_dat(xda_le);
+ static const u16 gf128mul_table_be[256] = gf128mul_dat(xda_be);
  
-+libgf128hash-$(CONFIG_RISCV) += riscv/ghash-riscv64-zvkg.o
- libgf128hash-$(CONFIG_X86) += x86/polyval-pclmul-avx.o
- endif # CONFIG_CRYPTO_LIB_GF128HASH_ARCH
+-/*
+- * The following functions multiply a field element by x^8 in
+- * the polynomial field representation.  They use 64-bit word operations
+- * to gain speed but compensate for machine endianness and hence work
+- * correctly on both styles of machine.
+- */
+-
+-static void gf128mul_x8_lle(be128 *x)
+-{
+-	u64 a = be64_to_cpu(x->a);
+-	u64 b = be64_to_cpu(x->b);
+-	u64 _tt = gf128mul_table_le[b & 0xff];
+-
+-	x->b = cpu_to_be64((b >> 8) | (a << 56));
+-	x->a = cpu_to_be64((a >> 8) ^ (_tt << 48));
+-}
+-
+-/* time invariant version of gf128mul_x8_lle */
++/* A table-less implementation of multiplying by x^8 */
+ static void gf128mul_x8_lle_ti(be128 *x)
+ {
+ 	u64 a = be64_to_cpu(x->a);
+ 	u64 b = be64_to_cpu(x->b);
+ 	u64 _tt = xda_le(b & 0xff); /* avoid table lookup */
+@@ -303,60 +285,7 @@ void gf128mul_64k_bbe(be128 *a, const struct gf128mul_64k *t)
+ 		be128_xor(r, r, &t->t[i]->t[ap[15 - i]]);
+ 	*a = *r;
+ }
+ EXPORT_SYMBOL(gf128mul_64k_bbe);
  
- # clean-files must be defined unconditionally
- clean-files += powerpc/ghashp8-ppc.S
-diff --git a/lib/crypto/riscv/gf128hash.h b/lib/crypto/riscv/gf128hash.h
-new file mode 100644
-index 000000000000..4301a0384f60
---- /dev/null
-+++ b/lib/crypto/riscv/gf128hash.h
-@@ -0,0 +1,57 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/*
-+ * GHASH, RISC-V optimized
-+ *
-+ * Copyright (C) 2023 VRULL GmbH
-+ * Copyright (C) 2023 SiFive, Inc.
-+ * Copyright 2026 Google LLC
-+ */
-+
-+#include <asm/simd.h>
-+#include <asm/vector.h>
-+
-+static __ro_after_init DEFINE_STATIC_KEY_FALSE(have_zvkg);
-+
-+asmlinkage void ghash_zvkg(u8 accumulator[GHASH_BLOCK_SIZE],
-+			   const u8 key[GHASH_BLOCK_SIZE],
-+			   const u8 *data, size_t nblocks);
-+
-+#define ghash_preparekey_arch ghash_preparekey_arch
-+static void ghash_preparekey_arch(struct ghash_key *key,
-+				  const u8 raw_key[GHASH_BLOCK_SIZE])
-+{
-+	/* Save key in POLYVAL format for fallback */
-+	ghash_key_to_polyval(raw_key, &key->h);
-+
-+	/* Save key in GHASH format for zvkg */
-+	memcpy(key->h_raw, raw_key, GHASH_BLOCK_SIZE);
-+}
-+
-+#define ghash_blocks_arch ghash_blocks_arch
-+static void ghash_blocks_arch(struct polyval_elem *acc,
-+			      const struct ghash_key *key,
-+			      const u8 *data, size_t nblocks)
-+{
-+	if (static_branch_likely(&have_zvkg) && likely(may_use_simd())) {
-+		u8 ghash_acc[GHASH_BLOCK_SIZE];
-+
-+		polyval_acc_to_ghash(acc, ghash_acc);
-+
-+		kernel_vector_begin();
-+		ghash_zvkg(ghash_acc, key->h_raw, data, nblocks);
-+		kernel_vector_end();
-+
-+		ghash_acc_to_polyval(ghash_acc, acc);
-+		memzero_explicit(ghash_acc, sizeof(ghash_acc));
-+	} else {
-+		ghash_blocks_generic(acc, &key->h, data, nblocks);
-+	}
-+}
-+
-+#define gf128hash_mod_init_arch gf128hash_mod_init_arch
-+static void gf128hash_mod_init_arch(void)
-+{
-+	if (riscv_isa_extension_available(NULL, ZVKG) &&
-+	    riscv_vector_vlen() >= 128)
-+		static_branch_enable(&have_zvkg);
-+}
-diff --git a/arch/riscv/crypto/ghash-riscv64-zvkg.S b/lib/crypto/riscv/ghash-riscv64-zvkg.S
-similarity index 91%
-rename from arch/riscv/crypto/ghash-riscv64-zvkg.S
-rename to lib/crypto/riscv/ghash-riscv64-zvkg.S
-index f2b43fb4d434..2839ff1a990c 100644
---- a/arch/riscv/crypto/ghash-riscv64-zvkg.S
-+++ b/lib/crypto/riscv/ghash-riscv64-zvkg.S
-@@ -48,25 +48,24 @@
- .option arch, +zvkg
- 
- #define ACCUMULATOR	a0
- #define KEY		a1
- #define DATA		a2
--#define LEN		a3
-+#define NBLOCKS		a3
- 
--// void ghash_zvkg(be128 *accumulator, const be128 *key, const u8 *data,
--//		   size_t len);
--//
--// |len| must be nonzero and a multiple of 16 (GHASH_BLOCK_SIZE).
-+// void ghash_zvkg(u8 accumulator[GHASH_BLOCK_SIZE],
-+//		   const u8 key[GHASH_BLOCK_SIZE],
-+//		   const u8 *data, size_t nblocks);
- SYM_FUNC_START(ghash_zvkg)
- 	vsetivli	zero, 4, e32, m1, ta, ma
- 	vle32.v		v1, (ACCUMULATOR)
- 	vle32.v		v2, (KEY)
- .Lnext_block:
- 	vle32.v		v3, (DATA)
- 	vghsh.vv	v1, v2, v3
- 	addi		DATA, DATA, 16
--	addi		LEN, LEN, -16
--	bnez		LEN, .Lnext_block
-+	addi		NBLOCKS, NBLOCKS, -1
-+	bnez		NBLOCKS, .Lnext_block
- 
- 	vse32.v		v1, (ACCUMULATOR)
- 	ret
- SYM_FUNC_END(ghash_zvkg)
+-/*      This version uses 4k bytes of table space.
+-    A 16 byte buffer has to be multiplied by a 16 byte key
+-    value in GF(2^128).  If we consider a GF(2^128) value in a
+-    single byte, we can construct a table of the 256 16 byte
+-    values that result from the 256 values of this byte.
+-    This requires 4096 bytes. If we take the highest byte in
+-    the buffer and use this table to get the result, we then
+-    have to multiply by x^120 to get the final value. For the
+-    next highest byte the result has to be multiplied by x^112
+-    and so on. But we can do this by accumulating the result
+-    in an accumulator starting with the result for the top
+-    byte.  We repeatedly multiply the accumulator value by
+-    x^8 and then add in (i.e. xor) the 16 bytes of the next
+-    lower byte in the buffer, stopping when we reach the
+-    lowest byte. This requires a 4096 byte table.
+-*/
+-struct gf128mul_4k *gf128mul_init_4k_lle(const be128 *g)
+-{
+-	struct gf128mul_4k *t;
+-	int j, k;
+-
+-	t = kzalloc_obj(*t);
+-	if (!t)
+-		goto out;
+-
+-	t->t[128] = *g;
+-	for (j = 64; j > 0; j >>= 1)
+-		gf128mul_x_lle(&t->t[j], &t->t[j+j]);
+-
+-	for (j = 2; j < 256; j += j)
+-		for (k = 1; k < j; ++k)
+-			be128_xor(&t->t[j + k], &t->t[j], &t->t[k]);
+-
+-out:
+-	return t;
+-}
+-EXPORT_SYMBOL(gf128mul_init_4k_lle);
+-
+-void gf128mul_4k_lle(be128 *a, const struct gf128mul_4k *t)
+-{
+-	u8 *ap = (u8 *)a;
+-	be128 r[1];
+-	int i = 15;
+-
+-	*r = t->t[ap[15]];
+-	while (i--) {
+-		gf128mul_x8_lle(r);
+-		be128_xor(r, r, &t->t[ap[i]]);
+-	}
+-	*a = *r;
+-}
+-EXPORT_SYMBOL(gf128mul_4k_lle);
+-
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Functions for multiplying elements of GF(2^128)");
 -- 
 2.53.0
 
