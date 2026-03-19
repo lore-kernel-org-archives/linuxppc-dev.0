@@ -1,84 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-18414-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18415-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1179C1088E6C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2026 03:37:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0D60103E19D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2026 06:19:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fbrwz0P8Bz2yr9;
-	Thu, 19 Mar 2026 14:37:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c107::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773891442;
-	cv=pass; b=l+GkgCKlGYWmeSO+aHgWy7dVPmGQWY/HGu1TxoppI+aR99wNVpj8cmIQHE8uHffxDfgJusqN9cgrygKtkcPsry1j5y84e0z2t0Osi9WascnHOG5qtquB3Ds5Dlweu0FwWqtpb1nztnTyHFhwH1Ly44OqscrvKMQibdZXhRXbpGefo8vHkWkXq0CXkciYQJemRi5FSAls8Eg7iDoev53xPjSEk2qms//+fnCxBw29G4wDeZ6TBW6x/VPNXWD6Vl3f6LQ8NPiXxm1QbuYMyUzyjeEdJJx6s3M+bgMSPiHI1jLCRmPchyviEfSUfKnEI8Q1iat1/bW4AzE0Ga3DniMwCA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773891442; c=relaxed/relaxed;
-	bh=3IER9p+mDI1F3D6BQZH4KGfcsMhix8+8DRdKC5N0HzU=;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fbwWq0nbzz2ynf;
+	Thu, 19 Mar 2026 17:19:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773901158;
+	cv=none; b=avQQNm8fngZaXDFi/VHoprolrhk9tFxUoRb07G+tYPdS77+uAantmGnSm/N/zjb737ljYD1zxpYKpOIglySToJ5JWyROQ47gMilefy31hkBvIcUD3vHQFjaK+FlnYNnTlQpXSt+7t+FTAGHKgvrpmH+Zuly3N3o/roeaUxgN+Su+sRREhDTHAvtQ8y7s++wKhIQdprsvJO9yBGSuY27AcxDqJfvndWT+VIu7dl1EF+ouY5SDUi8QWEGIT0QZ4IL1CXepUaWP12Ql6DdmvM92m8zsVKrknhPrHmKs8zuXxda61BjvrW4IY5O2sgrjqKH47R+Vv/4bNqzVa79Vug1rHA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1773901158; c=relaxed/relaxed;
+	bh=2EbREB4CacwU0B1n4tG2bSIO7Fa7aPQB68kWfgcrbc8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=SV1YZglu/5dZbfha01MipHXzhbX5I17c+xEqLiqCr0c+jsoMFF3FyIABmsqPtUFNUV7Bnt2Dl3yDvTUrtVzrWx9CPfp/uZIdrlPuJ6YR2/MaXkrifqFPdlLVe9/FWeTd6B6tTtb3jiEvWyHNizW3DFQJ0Du35Nq8GP+D/c2MaD3aBoR2xswlcTMa365Ry43+NjenHxYrziPVKd7iV13bXxPO3jZP8VIoZ5bHxLzcmOq5ga13GpgbjAqMrXGE9b0s4hqMO1plemSEyqy4bdYbfUYheCyphsYx2N7MfnysEY6M2w/xBP0XOxIQjG97Mdlpib8bbTUOoa+T8bk0eHOQYQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=Rzd51ag+; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c107::3; helo=ph0pr06cu001.outbound.protection.outlook.com; envelope-from=ynorov@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+	 MIME-Version; b=a4gpvxwjkR17Gcrry9/FIYfw2ssyTXU8t42IFNpKlc+PjjiD4S3MPUT18UB/3D5bnnyVWlpJJ6G0FdBOFg6c3ZHIRJ8QmBd+qDGTEBFET9Vd+IJ8gZjK0Dg3dy86+zRWBrcBUIYMV8NyeLw6Qfr/kw/gjYB+tvuSrwyFHPonh5XCY+D++JY+qgdMgaNSwLimyasm/BHZjLvPcVdhKV1Fj7gu3dtE5bqgO3AdmitRLE7aysFLTKWfqlqHhK0/KeH6Mi4RVD2W7ud+AZtl6ci5/dERbvXbVUMXo1Jvk6dD7ysLPDG7EbPc7JVkvVJdvMH/pqh5X10PRjnfkpP3skq8EQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qme/wxlp; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=Rzd51ag+;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qme/wxlp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c107::3; helo=ph0pr06cu001.outbound.protection.outlook.com; envelope-from=ynorov@nvidia.com; receiver=lists.ozlabs.org)
-Received: from PH0PR06CU001.outbound.protection.outlook.com (mail-westus3azlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c107::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbrwy2Qpqz2yqT
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 14:37:22 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=X9cEGQ5zzv/AaGIdrjpGW5/yAx/cphHkdRi6hhhOND7X7en++157us/irxz6Cmw2+8jqoA+QFfOIkNnB1qkhDwrGgpqNUlmlBq0Ynxt+3GFLBGmeQvoZ42D6tNEAE0IIVeOBhB5SvZ99cv8Dq8waT+Wubahu2Zol+JbsuUE+oSZldvXt76fcI0TP07kWxVd5o9A2bTQBMSpPIO/Ps66tXjLPAhGnLfLuah+GGos8x76O57koFXCyTkTKi0+iZtvIIdY7KOdTP6uxS5pb5ZycgYuEd9DKluvARKZj+mjrYFQcjSPP/Y1SpOUz2cUckBguUYBg/RPreXUJF5UY8SAYGA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=3IER9p+mDI1F3D6BQZH4KGfcsMhix8+8DRdKC5N0HzU=;
- b=VQ/JQ1WMtIF/wjb9YUaWnnC1timE4OKrrr5LfUshEpJMYu9r8IfzQLf5hHmZ98soZtC52X0bNCB010yE/DtZbY+T/S0u9+F8KNjIeDrGafDe4ftARNRnkcEGmzq1sUrQcLn5oKoaFi0Xl8bfpARXB1F8TcoraR1RFFylRIcIVJKqrXz75zAH+eud+n5/SxqphkDHfymuoJQExUDXh29Lx9o+INhcDJf0zH2B9nRKbQShVC0X48vUJr0D5HQkzuO/t9nAh9+lYPE2cNS4w6hiN9W7cYmhlcT/KqLJUsJAOoa1Kk6ciZqYyyB5U6bSXFOtf1+9oQ5wyeT1LBpDel+3Ow==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=3IER9p+mDI1F3D6BQZH4KGfcsMhix8+8DRdKC5N0HzU=;
- b=Rzd51ag+zJwGJhb7tiNYkVUk+65HOVhAxRXlrtS9GT6F2jHH6eLlOfeg5M39id1WeFFiZGlE8qoqObWIezELhU8q4SNwxSsEo6WupQERuB/khQ5rX4AZY3znhqnU8CwQ7xbNcUWe7pmE2JZLKd15fFyISW8pR4UfYPaChToTgrRFK1Fnh4k8j+rUCZQ/Vg8gdIT1MvIPntvHvU2EIc4/otyrRMbTn7Eiaa19uINy6HANq5KRA2eUgoX2tkPT9ExWxiLS90QeCiiP0foqDnTEaKAu7uBe6es/xCnduzkNPV31987JJxXDzlVmtHyTFjwCTHpqXtmhJRdnv4dmCl57SQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from PH0PR12MB8800.namprd12.prod.outlook.com (2603:10b6:510:26f::12)
- by DS0PR12MB8199.namprd12.prod.outlook.com (2603:10b6:8:de::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.9; Thu, 19 Mar
- 2026 03:36:55 +0000
-Received: from PH0PR12MB8800.namprd12.prod.outlook.com
- ([fe80::f79d:ddc5:2ad7:762d]) by PH0PR12MB8800.namprd12.prod.outlook.com
- ([fe80::f79d:ddc5:2ad7:762d%4]) with mapi id 15.20.9745.007; Thu, 19 Mar 2026
- 03:36:55 +0000
-From: Yury Norov <ynorov@nvidia.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Nam Cao <namcao@linutronix.de>,
-	"Jiri Slaby (SUSE)" <jirislaby@kernel.org>,
-	Yury Norov <ynorov@nvidia.com>,
-	Kees Cook <kees@kernel.org>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbwWn1lZ8z2ynT
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 17:19:17 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 6034B432E8;
+	Thu, 19 Mar 2026 06:19:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E91D1C2BCB2;
+	Thu, 19 Mar 2026 06:19:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773901155;
+	bh=2RnBJCTFrD0ohcPH8mcR5XHGHKUTn3w5CDa+XMF3VZs=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=qme/wxlpFt5vEOTbM9QLsloHawmga9oHXECrQF9aFqJ+c22qswdZvB1tt8zMSpFDD
+	 gj3SR5bJOOOI/CwrWD6c/OJFWl6EoLqissuqhMXuLElf33A+M8eFK3/akwhQUYCPvv
+	 fHA/MWnN0WFeo0BwGMowPsFpuS1BfPQExabl5O8liLGii9wcok730wyc+yhgqX4k1Y
+	 dtF3PmCJMvNkwrSj+l+Q1BAbG0f3bn6mstN4ZrdizPGgfPaae6hGPJvH9JSvRQJSV7
+	 a7U0XkjSLJgXrpcZOsY81qaijqTblYWUKaPClmI5/TznDuh/7d/w2RxYSaODwp1DcK
+	 XlkYCLJv7+YuA==
+From: Eric Biggers <ebiggers@kernel.org>
+To: linux-crypto@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org,
+	Ard Biesheuvel <ardb@kernel.org>,
+	"Jason A . Donenfeld" <Jason@zx2c4.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	linux-arm-kernel@lists.infradead.org,
 	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH 2/2] powerpc/xive: rework xive_find_target_in_mask()
-Date: Wed, 18 Mar 2026 23:36:46 -0400
-Message-ID: <20260319033647.881246-3-ynorov@nvidia.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20260319033647.881246-1-ynorov@nvidia.com>
-References: <20260319033647.881246-1-ynorov@nvidia.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: BN0PR04CA0048.namprd04.prod.outlook.com
- (2603:10b6:408:e8::23) To PH0PR12MB8800.namprd12.prod.outlook.com
- (2603:10b6:510:26f::12)
+	linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org,
+	x86@kernel.org,
+	Eric Biggers <ebiggers@kernel.org>
+Subject: [PATCH 01/19] lib/crypto: gf128hash: Rename polyval module to gf128hash
+Date: Wed, 18 Mar 2026 23:17:02 -0700
+Message-ID: <20260319061723.1140720-2-ebiggers@kernel.org>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260319061723.1140720-1-ebiggers@kernel.org>
+References: <20260319061723.1140720-1-ebiggers@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,125 +75,442 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH0PR12MB8800:EE_|DS0PR12MB8199:EE_
-X-MS-Office365-Filtering-Correlation-Id: fb84cb08-3a08-4a82-46d3-08de8568c483
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|7416014|376014|10070799003|366016|22082099003|18002099003|56012099003|921020;
-X-Microsoft-Antispam-Message-Info:
-	QVpQ+BUtkrfUTVpfAuQwMTBY2uv/1oB5lzgB5wBE1p3uHSzhNeaW2bFiW2DRmDmnRP7kj8sH9cL9mPUiqHs3oYIsk9XFjpMdd4ZlNctKmXlV30/FfOPc0I3At0x96JDnhUgyQrLCTyclSQUwQoCJjQEMufy0I3fWZj+0tQDRsrPhlzbzVOhohhtESURAQRfsBzGkHDRaI+lODIWum6HPbHfubsk8dsPhrU8Yd8Ua5zCA+JlNZMxlEkPkKFsw/AxPK3fLPzPb3IiTxC2UIldz0kWd6ttaYQ3TwaAgxZIY7mSB2UU0HDS5MfdE4y5SpCnr6D46h7xoryYzI3VZdqAfVeKA83GunH62ZuE3Sut8onwERhZLc7fKxdDQO4v7XrvaFqXWpec9EpdPYu842LyvGHL33Nv5aOYkf5HUPenoPj+L2Bay7EBFT4lyMV6XjGEo3cTtr87XC+t92cEkI649UW4IOtPod9e7GqpUebTtEtjuyJom+qO8F1TzXyO+/YlUz1TYg9CjCU+/5tC+mUaUHp8R7AMO5ByL5g0CcDH/oGN3+ud8cwJCgi/gA0pjk3o7q18J8XWLx+98ewIFo92txRzEEsyTY50T0RdCceMUxBbu8GWR692h+0Y8QjNsTuj09YBab8+N7wFzSPhRc8tOtQ6TXRlXl2w1RqOBhpX8NcoMDC1B0o9TAyXimVRLvJCLkYmqABD9GJGXrPrYZ5mCjZSovBM2lPLiSdvY/oZxpW5RIimEPXU997mqTo+dFXnLCSwYBVSODkvmNYjgtK1l+Q==
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR12MB8800.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(7416014)(376014)(10070799003)(366016)(22082099003)(18002099003)(56012099003)(921020);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?jQFkHFMor5Q5HKNv8Ubp9NPnphVmN3yc7qjw4LqfA3SOT6doZmb+Kh7igb+7?=
- =?us-ascii?Q?ae0dxTmFppSFOPAY5HPwZlsKaVk1vK1V5gyY+OzMY1iKQjD1Iu0lP9DTOLy9?=
- =?us-ascii?Q?N0QWCVGBD4052Dp8tuNLntWK7z9uq+hD5WowmHwZEHVKG0xWTmj2yIfTXqtD?=
- =?us-ascii?Q?6IelF96Nr2mIgMF3QTQ83Yxq8VXqaZ2pSIp5C5dNfpgMKLQKplWG3cvmoBk+?=
- =?us-ascii?Q?HysMo9aWjVHqB/nVevZvteRGoqux6GVUU4S90Xnz+DMoH9d8Zj2TGydjdKhF?=
- =?us-ascii?Q?QTRkp90lWUhKu7ie90b/kQMt7FNk84wkAP6+kaexXTaduCWYaPmmL8B5T0KE?=
- =?us-ascii?Q?HfDljUodhpJKEvEjzkWN3pviIg+o4mhlSPJV5t2VKDWsJg3cfcADNs3VyUYt?=
- =?us-ascii?Q?4Ia3smUju9mINomWwXk2As6OTYcE1Uww032tYpLr1A/eq2uH1BMRmQcinySo?=
- =?us-ascii?Q?wRm5fq1x/htNQcr0YvSA4+bChkYy+8kJR7Hi+5YdEr00mfM5d4SUiA4yxeIX?=
- =?us-ascii?Q?jS0idaZX+SC3dct1X6faeCFKuw3FDxSegDS52QD4YYFBTP4nzRA7GzxSuNsi?=
- =?us-ascii?Q?hr31aKXw9GTwrA8NcV+utmlTSxKUqHDDj3QGgu6p6cXej+7/2Jd3gOnQJuHT?=
- =?us-ascii?Q?yUXVxfSEMlMP60pgxb3jp13isCGZ6SArY+4u++gUAW53Vu34NzPJQUxgTIb0?=
- =?us-ascii?Q?M8CflzJNGrdaU+Filw0/vKnET0kNri1eYdJJFAOfixX1ynxbKkuf6Qg3Sn2G?=
- =?us-ascii?Q?P5kTfKVSSjB60fr21N7DTAfLD7W6PMAbMvZS3XCsBdxJLJ7tI5jz4ijPh664?=
- =?us-ascii?Q?xzq/9hYt+zmGvqQS0YHRgNDiHwOIDGMGaDZikbz1Qj6A8jMHZOWwb1r2pONF?=
- =?us-ascii?Q?MJdo0xw0osCvjHGUGnxR825lOOHT+ylNOxGqoQOKyDxsFWVVwiIn91pCW+dK?=
- =?us-ascii?Q?jbA6lBIzuPunmYHdOmPXe+uEJ9hvRMNNWwdhHDyBgequtgaHaQrMi8RCgg9+?=
- =?us-ascii?Q?DZNn7n367kkkAY64GEBG/DwqKpMJmytjCljmVeieAnSRxkV7sz+xFc/kPZ7O?=
- =?us-ascii?Q?0wZIq/Z8FesMhHa+0Rpe7nsYKWY/9LbBeCG3S9jTuLjynMP+cv5pFq15sPum?=
- =?us-ascii?Q?Q+5sKZ6l+N8FdofTjNpJ3EJetbz5KXJUZS1POOJo1GdgR3PHFDHOkr9+JzqX?=
- =?us-ascii?Q?roY57cgaCOa5lfcnQtSKLDUupUYNHsn7n5Ujk+xPXDsgCsyt08m8BtebAZZb?=
- =?us-ascii?Q?qQzEFxtBu0ZdYiSXX00rZK9YAfvG5SSUyI+WPZdUdF0aBqf3BwBWrwTCyOVc?=
- =?us-ascii?Q?X+MvO5RR1q/muR61AcZkEE1MzU/yRStmUaA7NdrKuMpsFDkWAnF6XLgCg2oO?=
- =?us-ascii?Q?iVGO98Q8gzTqWyhTIZAK8Uy0uesVyI7iDlIeh8QaGhaO+TO1EuAVpNSfGCst?=
- =?us-ascii?Q?p5Lwya4q6zBYfDGFho46aL+qqyIx6CrT+OJjiB8GmUt0E6/aR4h/B5FxgR5T?=
- =?us-ascii?Q?4pxDKJXypAiV7la+REhWn4U3TyhV9c5/9LnaxAPLw7YsfrWJccftJukjVdEC?=
- =?us-ascii?Q?mpu5xVSrsUVetkO21dYvANn1ml+ETY6GwZHdNqh7+UYimH/OtG08PbutOxoe?=
- =?us-ascii?Q?jphpkxYNYv7QAzbzi8yR7J0hIpaYM62PkeZhu5fsWtW/njTsRkUJ9J6rWIwX?=
- =?us-ascii?Q?rnLwprTPOxPeVRXTmYj0vsJEufWCkNhdUgAO2NUimLEahOzSy9wYo/ZAytlS?=
- =?us-ascii?Q?kqtc2kTSAg+DFC92Y1WyCMak2Ilw85tTIckXBp5l09/Jc/r3Hx9R?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: fb84cb08-3a08-4a82-46d3-08de8568c483
-X-MS-Exchange-CrossTenant-AuthSource: PH0PR12MB8800.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Mar 2026 03:36:55.4225
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: Xoj4+WljdA1feVA6XfljvhixYAM36yarYFTyIcW4mHmVMB5JztQZUtWyUJF8Th1QPzKPbp2x+fcIm4Fze6Fx+A==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB8199
+Content-Transfer-Encoding: 8bit
 
-Switch the function to using modern cpumask API and drop most of the
-housekeeping code.
+Currently, the standalone GHASH code is coupled with crypto_shash.  This
+has resulted in unnecessary complexity and overhead, as well as the code
+being unavailable to library code such as the AES-GCM library.  Like was
+done with POLYVAL, it needs to find a new home in lib/crypto/.
 
-Notice, if first >= nr_cpu_ids, for_each_cpu_wrap() iterator behaves just
-like for_each_cpu(), i.e. begins from 0. So even if WARN_ON() is triggered,
-no special handling is needed.
+GHASH and POLYVAL are closely related and can each be implemented in
+terms of each other.  Optimized code for one can be reused with the
+other.  But also since GHASH tends to be difficult to implement directly
+due to its unnatural bit order, most modern GHASH implementations
+(including the existing arm, arm64, powerpc, and x86 optimized GHASH
+code, and the new generic GHASH code I'll be adding) actually
+reinterpret the GHASH computation as an equivalent POLYVAL computation,
+pre and post-processing the inputs and outputs to map to/from POLYVAL.
 
-Signed-off-by: Yury Norov <ynorov@nvidia.com>
+Given this close relationship, it makes sense to group the GHASH and
+POLYVAL code together in the same module.  This gives us a wide range of
+options for implementing them, reusing code between the two and properly
+utilizing whatever instructions each architecture provides.
+
+Thus, GHASH support will be added to the library module that is
+currently called "polyval".  Rename it to an appropriate name:
+"gf128hash".  Rename files, options, functions, etc. where appropriate
+to reflect the upcoming sharing with GHASH.  (Note: polyval_kunit is not
+renamed, as ghash_kunit will be added alongside it instead.)
+
+Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- arch/powerpc/sysdev/xive/common.c | 31 ++++++-------------------------
- 1 file changed, 6 insertions(+), 25 deletions(-)
+ crypto/Kconfig                              |  2 +-
+ crypto/hctr2.c                              |  2 +-
+ include/crypto/{polyval.h => gf128hash.h}   | 16 ++++++-------
+ lib/crypto/Kconfig                          | 24 +++++++++----------
+ lib/crypto/Makefile                         | 20 ++++++++--------
+ lib/crypto/arm64/{polyval.h => gf128hash.h} |  4 ++--
+ lib/crypto/{polyval.c => gf128hash.c}       | 26 ++++++++++-----------
+ lib/crypto/tests/Kconfig                    |  4 ++--
+ lib/crypto/tests/polyval_kunit.c            |  2 +-
+ lib/crypto/x86/{polyval.h => gf128hash.h}   |  4 ++--
+ 10 files changed, 52 insertions(+), 52 deletions(-)
+ rename include/crypto/{polyval.h => gf128hash.h} (94%)
+ rename lib/crypto/arm64/{polyval.h => gf128hash.h} (95%)
+ rename lib/crypto/{polyval.c => gf128hash.c} (94%)
+ rename lib/crypto/x86/{polyval.h => gf128hash.h} (95%)
 
-diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-index e91ec9036ad8..4e05f678e171 100644
---- a/arch/powerpc/sysdev/xive/common.c
-+++ b/arch/powerpc/sysdev/xive/common.c
-@@ -548,40 +548,21 @@ static void xive_dec_target_count(int cpu)
- static int xive_find_target_in_mask(const struct cpumask *mask,
- 				    unsigned int fuzz)
+diff --git a/crypto/Kconfig b/crypto/Kconfig
+index b8608ef6823b..5627b3691561 100644
+--- a/crypto/Kconfig
++++ b/crypto/Kconfig
+@@ -684,11 +684,11 @@ config CRYPTO_ECB
+ 	  ECB (Electronic Codebook) mode (NIST SP800-38A)
+ 
+ config CRYPTO_HCTR2
+ 	tristate "HCTR2"
+ 	select CRYPTO_XCTR
+-	select CRYPTO_LIB_POLYVAL
++	select CRYPTO_LIB_GF128HASH
+ 	select CRYPTO_MANAGER
+ 	help
+ 	  HCTR2 length-preserving encryption mode
+ 
+ 	  A mode for storage encryption that is efficient on processors with
+diff --git a/crypto/hctr2.c b/crypto/hctr2.c
+index f4cd6c29b4d3..ad5edf9366ac 100644
+--- a/crypto/hctr2.c
++++ b/crypto/hctr2.c
+@@ -14,13 +14,13 @@
+  *
+  * For more details, see the paper: "Length-preserving encryption with HCTR2"
+  * (https://eprint.iacr.org/2021/1441.pdf)
+  */
+ 
++#include <crypto/gf128hash.h>
+ #include <crypto/internal/cipher.h>
+ #include <crypto/internal/skcipher.h>
+-#include <crypto/polyval.h>
+ #include <crypto/scatterwalk.h>
+ #include <linux/module.h>
+ 
+ #define BLOCKCIPHER_BLOCK_SIZE		16
+ 
+diff --git a/include/crypto/polyval.h b/include/crypto/gf128hash.h
+similarity index 94%
+rename from include/crypto/polyval.h
+rename to include/crypto/gf128hash.h
+index b28b8ef11353..5ffa86f5c13f 100644
+--- a/include/crypto/polyval.h
++++ b/include/crypto/gf128hash.h
+@@ -1,14 +1,14 @@
+ /* SPDX-License-Identifier: GPL-2.0-or-later */
+ /*
+- * POLYVAL library API
++ * GF(2^128) polynomial hashing: GHASH and POLYVAL
+  *
+  * Copyright 2025 Google LLC
+  */
+ 
+-#ifndef _CRYPTO_POLYVAL_H
+-#define _CRYPTO_POLYVAL_H
++#ifndef _CRYPTO_GF128HASH_H
++#define _CRYPTO_GF128HASH_H
+ 
+ #include <linux/string.h>
+ #include <linux/types.h>
+ 
+ #define POLYVAL_BLOCK_SIZE	16
+@@ -42,24 +42,24 @@ struct polyval_elem {
+  *
+  * By H^i we mean H^(i-1) * H * x^-128, with base case H^1 = H.  I.e. the
+  * exponentiation repeats the POLYVAL dot operation, with its "extra" x^-128.
+  */
+ struct polyval_key {
+-#ifdef CONFIG_CRYPTO_LIB_POLYVAL_ARCH
++#ifdef CONFIG_CRYPTO_LIB_GF128HASH_ARCH
+ #ifdef CONFIG_ARM64
+ 	/** @h_powers: Powers of the hash key H^8 through H^1 */
+ 	struct polyval_elem h_powers[8];
+ #elif defined(CONFIG_X86)
+ 	/** @h_powers: Powers of the hash key H^8 through H^1 */
+ 	struct polyval_elem h_powers[8];
+ #else
+ #error "Unhandled arch"
+ #endif
+-#else /* CONFIG_CRYPTO_LIB_POLYVAL_ARCH */
++#else /* CONFIG_CRYPTO_LIB_GF128HASH_ARCH */
+ 	/** @h: The hash key H */
+ 	struct polyval_elem h;
+-#endif /* !CONFIG_CRYPTO_LIB_POLYVAL_ARCH */
++#endif /* !CONFIG_CRYPTO_LIB_GF128HASH_ARCH */
+ };
+ 
+ /**
+  * struct polyval_ctx - Context for computing a POLYVAL value
+  * @key: Pointer to the prepared POLYVAL key.  The user of the API is
+@@ -82,11 +82,11 @@ struct polyval_ctx {
+  * copy, or it may involve precomputing powers of the key, depending on the
+  * platform's POLYVAL implementation.
+  *
+  * Context: Any context.
+  */
+-#ifdef CONFIG_CRYPTO_LIB_POLYVAL_ARCH
++#ifdef CONFIG_CRYPTO_LIB_GF128HASH_ARCH
+ void polyval_preparekey(struct polyval_key *key,
+ 			const u8 raw_key[POLYVAL_BLOCK_SIZE]);
+ 
+ #else
+ static inline void polyval_preparekey(struct polyval_key *key,
+@@ -185,6 +185,6 @@ static inline void polyval(const struct polyval_key *key,
+ 	polyval_init(&ctx, key);
+ 	polyval_update(&ctx, data, len);
+ 	polyval_final(&ctx, out);
+ }
+ 
+-#endif /* _CRYPTO_POLYVAL_H */
++#endif /* _CRYPTO_GF128HASH_H */
+diff --git a/lib/crypto/Kconfig b/lib/crypto/Kconfig
+index 4910fe20e42a..98cedd95c2a5 100644
+--- a/lib/crypto/Kconfig
++++ b/lib/crypto/Kconfig
+@@ -108,10 +108,22 @@ config CRYPTO_LIB_CURVE25519_GENERIC
+ 	default y if !CRYPTO_LIB_CURVE25519_ARCH || ARM || X86_64
+ 
+ config CRYPTO_LIB_DES
+ 	tristate
+ 
++config CRYPTO_LIB_GF128HASH
++	tristate
++	help
++	  The GHASH and POLYVAL library functions.  Select this if your module
++	  uses any of the functions from <crypto/gf128hash.h>.
++
++config CRYPTO_LIB_GF128HASH_ARCH
++	bool
++	depends on CRYPTO_LIB_GF128HASH && !UML
++	default y if ARM64
++	default y if X86_64
++
+ config CRYPTO_LIB_MD5
+ 	tristate
+ 	help
+ 	  The MD5 and HMAC-MD5 library functions.  Select this if your module
+ 	  uses any of the functions from <crypto/md5.h>.
+@@ -176,22 +188,10 @@ config CRYPTO_LIB_POLY1305_RSIZE
+ 	default 2 if MIPS || RISCV
+ 	default 11 if X86_64
+ 	default 9 if ARM || ARM64
+ 	default 1
+ 
+-config CRYPTO_LIB_POLYVAL
+-	tristate
+-	help
+-	  The POLYVAL library functions.  Select this if your module uses any of
+-	  the functions from <crypto/polyval.h>.
+-
+-config CRYPTO_LIB_POLYVAL_ARCH
+-	bool
+-	depends on CRYPTO_LIB_POLYVAL && !UML
+-	default y if ARM64
+-	default y if X86_64
+-
+ config CRYPTO_LIB_CHACHA20POLY1305
+ 	tristate
+ 	select CRYPTO_LIB_CHACHA
+ 	select CRYPTO_LIB_POLY1305
+ 	select CRYPTO_LIB_UTILS
+diff --git a/lib/crypto/Makefile b/lib/crypto/Makefile
+index a961615c8c7f..fc30622123d2 100644
+--- a/lib/crypto/Makefile
++++ b/lib/crypto/Makefile
+@@ -152,10 +152,20 @@ endif
+ obj-$(CONFIG_CRYPTO_LIB_DES)			+= libdes.o
+ libdes-y					:= des.o
+ 
+ ################################################################################
+ 
++obj-$(CONFIG_CRYPTO_LIB_GF128HASH) += libgf128hash.o
++libgf128hash-y := gf128hash.o
++ifeq ($(CONFIG_CRYPTO_LIB_GF128HASH_ARCH),y)
++CFLAGS_gf128hash.o += -I$(src)/$(SRCARCH)
++libgf128hash-$(CONFIG_ARM64) += arm64/polyval-ce-core.o
++libgf128hash-$(CONFIG_X86) += x86/polyval-pclmul-avx.o
++endif
++
++################################################################################
++
+ obj-$(CONFIG_CRYPTO_LIB_MD5) += libmd5.o
+ libmd5-y := md5.o
+ ifeq ($(CONFIG_CRYPTO_LIB_MD5_ARCH),y)
+ CFLAGS_md5.o += -I$(src)/$(SRCARCH)
+ libmd5-$(CONFIG_PPC) += powerpc/md5-asm.o
+@@ -249,20 +259,10 @@ clean-files += arm/poly1305-core.S \
+ 	       riscv/poly1305-core.S \
+ 	       x86/poly1305-x86_64-cryptogams.S
+ 
+ ################################################################################
+ 
+-obj-$(CONFIG_CRYPTO_LIB_POLYVAL) += libpolyval.o
+-libpolyval-y := polyval.o
+-ifeq ($(CONFIG_CRYPTO_LIB_POLYVAL_ARCH),y)
+-CFLAGS_polyval.o += -I$(src)/$(SRCARCH)
+-libpolyval-$(CONFIG_ARM64) += arm64/polyval-ce-core.o
+-libpolyval-$(CONFIG_X86) += x86/polyval-pclmul-avx.o
+-endif
+-
+-################################################################################
+-
+ obj-$(CONFIG_CRYPTO_LIB_SHA1) += libsha1.o
+ libsha1-y := sha1.o
+ ifeq ($(CONFIG_CRYPTO_LIB_SHA1_ARCH),y)
+ CFLAGS_sha1.o += -I$(src)/$(SRCARCH)
+ ifeq ($(CONFIG_ARM),y)
+diff --git a/lib/crypto/arm64/polyval.h b/lib/crypto/arm64/gf128hash.h
+similarity index 95%
+rename from lib/crypto/arm64/polyval.h
+rename to lib/crypto/arm64/gf128hash.h
+index a39763395e9b..c1012007adcf 100644
+--- a/lib/crypto/arm64/polyval.h
++++ b/lib/crypto/arm64/gf128hash.h
+@@ -70,11 +70,11 @@ static void polyval_blocks_arch(struct polyval_elem *acc,
+ 		polyval_blocks_generic(acc, &key->h_powers[NUM_H_POWERS - 1],
+ 				       data, nblocks);
+ 	}
+ }
+ 
+-#define polyval_mod_init_arch polyval_mod_init_arch
+-static void polyval_mod_init_arch(void)
++#define gf128hash_mod_init_arch gf128hash_mod_init_arch
++static void gf128hash_mod_init_arch(void)
  {
--	int cpu, first, num, i;
-+	int cpu, first;
+ 	if (cpu_have_named_feature(PMULL))
+ 		static_branch_enable(&have_pmull);
+ }
+diff --git a/lib/crypto/polyval.c b/lib/crypto/gf128hash.c
+similarity index 94%
+rename from lib/crypto/polyval.c
+rename to lib/crypto/gf128hash.c
+index 5796275f574a..8bb848bf26b7 100644
+--- a/lib/crypto/polyval.c
++++ b/lib/crypto/gf128hash.c
+@@ -1,13 +1,13 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ /*
+- * POLYVAL library functions
++ * GF(2^128) polynomial hashing: GHASH and POLYVAL
+  *
+  * Copyright 2025 Google LLC
+  */
  
- 	/* Pick up a starting point CPU in the mask based on  fuzz */
--	num = cpumask_weight(mask);
--	first = fuzz % num;
--
--	/* Locate it */
--	cpu = cpumask_first(mask);
--	for (i = 0; i < first && cpu < nr_cpu_ids; i++)
--		cpu = cpumask_next(cpu, mask);
--
--	/* Sanity check */
--	if (WARN_ON(cpu >= nr_cpu_ids))
--		cpu = cpumask_first(cpu_online_mask);
--
--	/* Remember first one to handle wrap-around */
--	first = cpu;
-+	fuzz %= cpumask_weight(mask);
-+	first = cpumask_nth(fuzz, mask);
-+	WARN_ON(first >= nr_cpu_ids);
+-#include <crypto/polyval.h>
++#include <crypto/gf128hash.h>
+ #include <linux/export.h>
+ #include <linux/module.h>
+ #include <linux/string.h>
+ #include <linux/unaligned.h>
  
- 	/*
- 	 * Now go through the entire mask until we find a valid
- 	 * target.
- 	 */
--	do {
--		/*
--		 * We re-check online as the fallback case passes us
--		 * an untested affinity mask
--		 */
-+	for_each_cpu_wrap(cpu, mask, first) {
- 		if (cpu_online(cpu) && xive_try_pick_target(cpu))
- 			return cpu;
--		cpu = cpumask_next(cpu, mask);
--		/* Wrap around */
--		if (cpu >= nr_cpu_ids)
--			cpu = cpumask_first(mask);
--	} while (cpu != first);
-+	}
+@@ -216,12 +216,12 @@ polyval_blocks_generic(struct polyval_elem *acc, const struct polyval_elem *key,
+ 		data += POLYVAL_BLOCK_SIZE;
+ 	} while (--nblocks);
+ }
  
- 	return -1;
+ /* Include the arch-optimized implementation of POLYVAL, if one is available. */
+-#ifdef CONFIG_CRYPTO_LIB_POLYVAL_ARCH
+-#include "polyval.h" /* $(SRCARCH)/polyval.h */
++#ifdef CONFIG_CRYPTO_LIB_GF128HASH_ARCH
++#include "gf128hash.h" /* $(SRCARCH)/gf128hash.h */
+ void polyval_preparekey(struct polyval_key *key,
+ 			const u8 raw_key[POLYVAL_BLOCK_SIZE])
+ {
+ 	polyval_preparekey_arch(key, raw_key);
+ }
+@@ -236,21 +236,21 @@ EXPORT_SYMBOL_GPL(polyval_preparekey);
+  * code is needed to pass the appropriate key argument.
+  */
+ 
+ static void polyval_mul(struct polyval_ctx *ctx)
+ {
+-#ifdef CONFIG_CRYPTO_LIB_POLYVAL_ARCH
++#ifdef CONFIG_CRYPTO_LIB_GF128HASH_ARCH
+ 	polyval_mul_arch(&ctx->acc, ctx->key);
+ #else
+ 	polyval_mul_generic(&ctx->acc, &ctx->key->h);
+ #endif
+ }
+ 
+ static void polyval_blocks(struct polyval_ctx *ctx,
+ 			   const u8 *data, size_t nblocks)
+ {
+-#ifdef CONFIG_CRYPTO_LIB_POLYVAL_ARCH
++#ifdef CONFIG_CRYPTO_LIB_GF128HASH_ARCH
+ 	polyval_blocks_arch(&ctx->acc, ctx->key, data, nblocks);
+ #else
+ 	polyval_blocks_generic(&ctx->acc, &ctx->key->h, data, nblocks);
+ #endif
+ }
+@@ -287,21 +287,21 @@ void polyval_final(struct polyval_ctx *ctx, u8 out[POLYVAL_BLOCK_SIZE])
+ 	memcpy(out, &ctx->acc, POLYVAL_BLOCK_SIZE);
+ 	memzero_explicit(ctx, sizeof(*ctx));
+ }
+ EXPORT_SYMBOL_GPL(polyval_final);
+ 
+-#ifdef polyval_mod_init_arch
+-static int __init polyval_mod_init(void)
++#ifdef gf128hash_mod_init_arch
++static int __init gf128hash_mod_init(void)
+ {
+-	polyval_mod_init_arch();
++	gf128hash_mod_init_arch();
+ 	return 0;
+ }
+-subsys_initcall(polyval_mod_init);
++subsys_initcall(gf128hash_mod_init);
+ 
+-static void __exit polyval_mod_exit(void)
++static void __exit gf128hash_mod_exit(void)
+ {
+ }
+-module_exit(polyval_mod_exit);
++module_exit(gf128hash_mod_exit);
+ #endif
+ 
+-MODULE_DESCRIPTION("POLYVAL almost-XOR-universal hash function");
++MODULE_DESCRIPTION("GF(2^128) polynomial hashing: GHASH and POLYVAL");
+ MODULE_LICENSE("GPL");
+diff --git a/lib/crypto/tests/Kconfig b/lib/crypto/tests/Kconfig
+index 42e1770e1883..aa627b6b9855 100644
+--- a/lib/crypto/tests/Kconfig
++++ b/lib/crypto/tests/Kconfig
+@@ -67,11 +67,11 @@ config CRYPTO_LIB_POLY1305_KUNIT_TEST
+ 	help
+ 	  KUnit tests for the Poly1305 library functions.
+ 
+ config CRYPTO_LIB_POLYVAL_KUNIT_TEST
+ 	tristate "KUnit tests for POLYVAL" if !KUNIT_ALL_TESTS
+-	depends on KUNIT && CRYPTO_LIB_POLYVAL
++	depends on KUNIT && CRYPTO_LIB_GF128HASH
+ 	default KUNIT_ALL_TESTS
+ 	select CRYPTO_LIB_BENCHMARK_VISIBLE
+ 	help
+ 	  KUnit tests for the POLYVAL library functions.
+ 
+@@ -120,15 +120,15 @@ config CRYPTO_LIB_ENABLE_ALL_FOR_KUNIT
+ 	tristate "Enable all crypto library code for KUnit tests"
+ 	depends on KUNIT
+ 	select CRYPTO_LIB_AES_CBC_MACS
+ 	select CRYPTO_LIB_BLAKE2B
+ 	select CRYPTO_LIB_CURVE25519
++	select CRYPTO_LIB_GF128HASH
+ 	select CRYPTO_LIB_MD5
+ 	select CRYPTO_LIB_MLDSA
+ 	select CRYPTO_LIB_NH
+ 	select CRYPTO_LIB_POLY1305
+-	select CRYPTO_LIB_POLYVAL
+ 	select CRYPTO_LIB_SHA1
+ 	select CRYPTO_LIB_SHA256
+ 	select CRYPTO_LIB_SHA512
+ 	select CRYPTO_LIB_SHA3
+ 	help
+diff --git a/lib/crypto/tests/polyval_kunit.c b/lib/crypto/tests/polyval_kunit.c
+index f47f41a39a41..d1f53a690ab8 100644
+--- a/lib/crypto/tests/polyval_kunit.c
++++ b/lib/crypto/tests/polyval_kunit.c
+@@ -1,10 +1,10 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ /*
+  * Copyright 2025 Google LLC
+  */
+-#include <crypto/polyval.h>
++#include <crypto/gf128hash.h>
+ #include "polyval-testvecs.h"
+ 
+ /*
+  * A fixed key used when presenting POLYVAL as an unkeyed hash function in order
+  * to reuse hash-test-template.h.  At the beginning of the test suite, this is
+diff --git a/lib/crypto/x86/polyval.h b/lib/crypto/x86/gf128hash.h
+similarity index 95%
+rename from lib/crypto/x86/polyval.h
+rename to lib/crypto/x86/gf128hash.h
+index ef8797521420..fe506cf6431b 100644
+--- a/lib/crypto/x86/polyval.h
++++ b/lib/crypto/x86/gf128hash.h
+@@ -72,12 +72,12 @@ static void polyval_blocks_arch(struct polyval_elem *acc,
+ 		polyval_blocks_generic(acc, &key->h_powers[NUM_H_POWERS - 1],
+ 				       data, nblocks);
+ 	}
+ }
+ 
+-#define polyval_mod_init_arch polyval_mod_init_arch
+-static void polyval_mod_init_arch(void)
++#define gf128hash_mod_init_arch gf128hash_mod_init_arch
++static void gf128hash_mod_init_arch(void)
+ {
+ 	if (boot_cpu_has(X86_FEATURE_PCLMULQDQ) &&
+ 	    boot_cpu_has(X86_FEATURE_AVX))
+ 		static_branch_enable(&have_pclmul_avx);
  }
 -- 
-2.43.0
+2.53.0
 
 
