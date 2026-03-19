@@ -1,43 +1,43 @@
-Return-Path: <linuxppc-dev+bounces-18410-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18411-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9182A1088E76
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2026 03:24:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E588AFB5EAA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2026 03:25:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fbrf946b0z2yv4;
-	Thu, 19 Mar 2026 14:24:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.111
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773890673;
-	cv=none; b=ojoh4lO8X9bz9vVIWZqNTAivdRZBZ5pU7vLzugumMB3qpFXHR34joFqxwHWQjrUKspXNC2oC7ommP93fCGhPNokJydVmP0+2DyoorL+m0JO+tRSn9jzTpTBkxAkOnSKnhOlKyd4YEv+y8zq9MKmx549/I5QrzxOlzjrgleEnVAWtEA4Kul329XIxCzQ6nDT+kyXtj/HxjA9cM4CiHUu+Om3LmsHVsHqH4fSKUhlvEbw/5JB1P+U7QCfB+oHs6w6E6L0T6lnQv4IT7g3GxOaTQ4lXhqvOgzNwUEaHDOLILLqO8ayUxpXrNXBItCyjxES/A07+VyD/EnRAkHdPEcHDBA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fbrfB52Hyz2xVT;
+	Thu, 19 Mar 2026 14:24:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.97
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773890674;
+	cv=none; b=XLGuOIUhTBs398clpv8cKSdki4g6QOwAs7NAtOR2czbYFoFGQDdb+Z+soJfUn6i6WfwCgqICA/TpKDfr/WxCWC5L9UA24w6YQzFDwiYFM4OD6wM4aRBM/2ZpEWqemRckStY9Ipy4hTaW+c/ZbDIfan++Naw8jgVcBr0P1H5cedC7TUYLQ1Wr1LB1/i1Yywr24EqSt8A/x7/DaNSYrnGJqbvltNXDPM9eKVTzOwYmg5Q+TthWHVftbG8mA/wE9/RDFjVkHlXDCJ4aa7HyBExUaAwuwDv4Ob86wUayYhLvTpAH2bCWPhmX3yLV1Uu41A6EYz8QTHpSF5h9nEMn1TMh6Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773890673; c=relaxed/relaxed;
-	bh=wZ0qad0Pm6XxHYmd2R3Uz8rTNICSFBFKR16MZOCoaNo=;
+	t=1773890674; c=relaxed/relaxed;
+	bh=O+Oqx9om1vJiKb5RGT19b6Dh94x/Qwy2GWOZjY+2XAc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=LATTQ2ViHaJ65G5RQHBtMgD5iggArqFQ7ST3Cr2Kdz0BXpYboIqC+Ku0wYcuTy/Ekpp71YFOGI6WrOciQyL1YoIb0dVZFRFw4+IdltaGvsPZJqeIx456DmwF46FgI2Gse/U+cozgcFT3C7pF4WW8c+HDsnEa22hfzMKyZkaeRqUEJSnUBJBTELAXgxHzG6gDyv1qrQPkoEIfrrfl43KcnkWY/0SYykkRjyLzfzudZPFQmnjdKauqsqUXbXss8StGu/DSnIV9CoyMeCd1MVnbVgpoD60YTiPcANauYL0pxtqglXmdlozj85JF70f/zIX5FWqM/r2wSWb0zoqjOIdtiQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=RReSa4/D; dkim-atps=neutral; spf=pass (client-ip=115.124.30.111; helo=out30-111.freemail.mail.aliyun.com; envelope-from=baolin.wang@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
+	 MIME-Version; b=Bg1zuDeOTLJXkA9tRb3ORJo4fgXW5n9wFRdT2crSsQ4LoYaACbnVTqjKjmyD5U1haRTmgFXKnDrWijGZ+po6kk7XWPX+lHAPnBnhJPlOom73Inr0vrV0gOobKqK5yD/eR6GQJ8fO0emwug8IS3OtbyTijiThEyL2hAAwQsYmXC5jvu7plFKOBj4bwwpKvwsH/6U9ae2kBOD554ktNa4ugPkbUKFtzQA/ENL4sVhumODYHA5sKwA9+9D9/aF38u3bagAiKRe8A1DPhZMI/kBCFiVgwWidpDkvFrSmPDeMtMz+Xcln04igm5EG6MIUBNfBWy9XB8n4abQdx1vPbFg8oQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=NyouX9Pt; dkim-atps=neutral; spf=pass (client-ip=115.124.30.97; helo=out30-97.freemail.mail.aliyun.com; envelope-from=baolin.wang@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=RReSa4/D;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=NyouX9Pt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.111; helo=out30-111.freemail.mail.aliyun.com; envelope-from=baolin.wang@linux.alibaba.com; receiver=lists.ozlabs.org)
-Received: from out30-111.freemail.mail.aliyun.com (out30-111.freemail.mail.aliyun.com [115.124.30.111])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.97; helo=out30-97.freemail.mail.aliyun.com; envelope-from=baolin.wang@linux.alibaba.com; receiver=lists.ozlabs.org)
+Received: from out30-97.freemail.mail.aliyun.com (out30-97.freemail.mail.aliyun.com [115.124.30.97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbrf42t2sz2ynW
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 14:24:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbrf86wVPz2ynT
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 14:24:32 +1100 (AEDT)
 DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
 	d=linux.alibaba.com; s=default;
-	t=1773890663; h=From:To:Subject:Date:Message-ID:MIME-Version;
-	bh=wZ0qad0Pm6XxHYmd2R3Uz8rTNICSFBFKR16MZOCoaNo=;
-	b=RReSa4/D4qAiZLUALt4pgzPc1AW+fu/yDbF6zaeoD5dxv8YfbWgLj76TLNnIFgRIXXMM1hohNRMQjh5J+KRIlntl3pRHnNvcHSgoqdI72yn+At3wRnrw/ApxnFO+5q66kf0DXEvI748nAg5C4gkT0Ro8twSQBTA//CElk7ACFao=
-X-Alimail-AntiSpam:AC=PASS;BC=-1|-1;BR=01201311R111e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033032089153;MF=baolin.wang@linux.alibaba.com;NM=1;PH=DS;RN=18;SR=0;TI=SMTPD_---0X.Gt-CL_1773890660;
-Received: from localhost(mailfrom:baolin.wang@linux.alibaba.com fp:SMTPD_---0X.Gt-CL_1773890660 cluster:ay36)
+	t=1773890668; h=From:To:Subject:Date:Message-ID:MIME-Version;
+	bh=O+Oqx9om1vJiKb5RGT19b6Dh94x/Qwy2GWOZjY+2XAc=;
+	b=NyouX9PtM6LOZsootQaJqFq+75NYhuM+DbugMEwjA2d/vLs7tOGi7VpMTImjQnl1r2gfNqpx9mEc7s4s0bEIsqGTSFLl49/PEdJ+///jC0jFwnoMfwQHJQrn0NiTOWVLXdYgLSS7xpOUkU7ejuljB7VGVSz/iTCMIv416p7ZSE0=
+X-Alimail-AntiSpam:AC=PASS;BC=-1|-1;BR=01201311R171e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam011083073210;MF=baolin.wang@linux.alibaba.com;NM=1;PH=DS;RN=18;SR=0;TI=SMTPD_---0X.Gnlvu_1773890665;
+Received: from localhost(mailfrom:baolin.wang@linux.alibaba.com fp:SMTPD_---0X.Gnlvu_1773890665 cluster:ay36)
           by smtp.aliyun-inc.com;
-          Thu, 19 Mar 2026 11:24:21 +0800
+          Thu, 19 Mar 2026 11:24:25 +0800
 From: Baolin Wang <baolin.wang@linux.alibaba.com>
 To: akpm@linux-foundation.org,
 	david@kernel.org
@@ -57,9 +57,9 @@ Cc: ljs@kernel.org,
 	kvm@vger.kernel.org,
 	linux-mm@kvack.org (open),
 	linux-kernel@vger.kernel.org
-Subject: [PATCH 3/6] mm: change to return bool for pmdp_test_and_clear_young()
-Date: Thu, 19 Mar 2026 11:24:02 +0800
-Message-ID: <8025b898d0841a4bcbd766998959b4e2ae4d4abc.1773890510.git.baolin.wang@linux.alibaba.com>
+Subject: [PATCH 6/6] mm: change to return bool for the MMU notifier's young flag check
+Date: Thu, 19 Mar 2026 11:24:05 +0800
+Message-ID: <545847c132da5d957cfc74ab19e849b16127aa8f.1773890510.git.baolin.wang@linux.alibaba.com>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <cover.1773890510.git.baolin.wang@linux.alibaba.com>
 References: <cover.1773890510.git.baolin.wang@linux.alibaba.com>
@@ -78,186 +78,343 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Callers use pmdp_test_and_clear_young() to clear the young flag and check
-whether it was set for this PMD entry. Change the return type to bool to
-make the intention clearer.
+The MMU notifier young flag check related functions only return whether
+the young flag was set. Change the return type to bool to make the
+intention clearer.
 
 Signed-off-by: Baolin Wang <baolin.wang@linux.alibaba.com>
 ---
- arch/arm64/include/asm/pgtable.h             |  6 +++---
- arch/powerpc/include/asm/book3s/64/pgtable.h | 10 +++++-----
- arch/powerpc/mm/book3s64/pgtable.c           |  4 ++--
- arch/riscv/include/asm/pgtable.h             |  2 +-
- arch/s390/include/asm/pgtable.h              |  4 ++--
- arch/x86/include/asm/pgtable.h               |  4 ++--
- arch/x86/mm/pgtable.c                        |  6 +++---
- include/linux/pgtable.h                      | 19 +++++++++----------
- 8 files changed, 27 insertions(+), 28 deletions(-)
+ include/linux/mmu_notifier.h | 76 +++++++++++++++++-------------------
+ mm/internal.h                | 16 ++++----
+ mm/mmu_notifier.c            | 20 +++++-----
+ virt/kvm/kvm_main.c          | 40 +++++++++----------
+ 4 files changed, 72 insertions(+), 80 deletions(-)
 
-diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
-index 393a9d1873f6..7ea16f6ad564 100644
---- a/arch/arm64/include/asm/pgtable.h
-+++ b/arch/arm64/include/asm/pgtable.h
-@@ -1321,9 +1321,9 @@ static inline bool __ptep_clear_flush_young(struct vm_area_struct *vma,
+diff --git a/include/linux/mmu_notifier.h b/include/linux/mmu_notifier.h
+index 3705d350c863..17f2cdc77dd5 100644
+--- a/include/linux/mmu_notifier.h
++++ b/include/linux/mmu_notifier.h
+@@ -97,20 +97,20 @@ struct mmu_notifier_ops {
+ 	 * Start-end is necessary in case the secondary MMU is mapping the page
+ 	 * at a smaller granularity than the primary MMU.
+ 	 */
+-	int (*clear_flush_young)(struct mmu_notifier *subscription,
+-				 struct mm_struct *mm,
+-				 unsigned long start,
+-				 unsigned long end);
++	bool (*clear_flush_young)(struct mmu_notifier *subscription,
++				  struct mm_struct *mm,
++				  unsigned long start,
++				  unsigned long end);
  
- #if defined(CONFIG_TRANSPARENT_HUGEPAGE) || defined(CONFIG_ARCH_HAS_NONLEAF_PMD_YOUNG)
- #define __HAVE_ARCH_PMDP_TEST_AND_CLEAR_YOUNG
--static inline int pmdp_test_and_clear_young(struct vm_area_struct *vma,
--					    unsigned long address,
--					    pmd_t *pmdp)
-+static inline bool pmdp_test_and_clear_young(struct vm_area_struct *vma,
-+					     unsigned long address,
-+					     pmd_t *pmdp)
- {
- 	/* Operation applies to PMD table entry only if FEAT_HAFT is enabled */
- 	VM_WARN_ON(pmd_table(READ_ONCE(*pmdp)) && !system_supports_haft());
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 25e3a86943e2..0f34011665a6 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -1161,13 +1161,13 @@ pud_hugepage_update(struct mm_struct *mm, unsigned long addr, pud_t *pudp,
-  * For radix we should always find H_PAGE_HASHPTE zero. Hence
-  * the below will work for radix too
-  */
--static inline int __pmdp_test_and_clear_young(struct mm_struct *mm,
--					      unsigned long addr, pmd_t *pmdp)
-+static inline bool __pmdp_test_and_clear_young(struct mm_struct *mm,
-+					       unsigned long addr, pmd_t *pmdp)
- {
- 	unsigned long old;
+ 	/*
+ 	 * clear_young is a lightweight version of clear_flush_young. Like the
+ 	 * latter, it is supposed to test-and-clear the young/accessed bitflag
+ 	 * in the secondary pte, but it may omit flushing the secondary tlb.
+ 	 */
+-	int (*clear_young)(struct mmu_notifier *subscription,
+-			   struct mm_struct *mm,
+-			   unsigned long start,
+-			   unsigned long end);
++	bool (*clear_young)(struct mmu_notifier *subscription,
++			    struct mm_struct *mm,
++			    unsigned long start,
++			    unsigned long end);
  
- 	if ((pmd_raw(*pmdp) & cpu_to_be64(_PAGE_ACCESSED | H_PAGE_HASHPTE)) == 0)
--		return 0;
-+		return false;
- 	old = pmd_hugepage_update(mm, addr, pmdp, _PAGE_ACCESSED, 0);
- 	return ((old & _PAGE_ACCESSED) != 0);
- }
-@@ -1300,8 +1300,8 @@ extern int pudp_set_access_flags(struct vm_area_struct *vma,
- 				 pud_t entry, int dirty);
+ 	/*
+ 	 * test_young is called to check the young/accessed bitflag in
+@@ -118,9 +118,9 @@ struct mmu_notifier_ops {
+ 	 * frequently used without actually clearing the flag or tearing
+ 	 * down the secondary mapping on the page.
+ 	 */
+-	int (*test_young)(struct mmu_notifier *subscription,
+-			  struct mm_struct *mm,
+-			  unsigned long address);
++	bool (*test_young)(struct mmu_notifier *subscription,
++			   struct mm_struct *mm,
++			   unsigned long address);
  
- #define __HAVE_ARCH_PMDP_TEST_AND_CLEAR_YOUNG
--extern int pmdp_test_and_clear_young(struct vm_area_struct *vma,
--				     unsigned long address, pmd_t *pmdp);
-+extern bool pmdp_test_and_clear_young(struct vm_area_struct *vma,
-+				      unsigned long address, pmd_t *pmdp);
- #define __HAVE_ARCH_PUDP_TEST_AND_CLEAR_YOUNG
- extern int pudp_test_and_clear_young(struct vm_area_struct *vma,
- 				     unsigned long address, pud_t *pudp);
-diff --git a/arch/powerpc/mm/book3s64/pgtable.c b/arch/powerpc/mm/book3s64/pgtable.c
-index 4b09c04654a8..aed39bba891e 100644
---- a/arch/powerpc/mm/book3s64/pgtable.c
-+++ b/arch/powerpc/mm/book3s64/pgtable.c
-@@ -98,8 +98,8 @@ int pudp_set_access_flags(struct vm_area_struct *vma, unsigned long address,
- }
+ 	/*
+ 	 * invalidate_range_start() and invalidate_range_end() must be
+@@ -376,14 +376,12 @@ mmu_interval_check_retry(struct mmu_interval_notifier *interval_sub,
  
- 
--int pmdp_test_and_clear_young(struct vm_area_struct *vma,
--			      unsigned long address, pmd_t *pmdp)
-+bool pmdp_test_and_clear_young(struct vm_area_struct *vma,
-+			       unsigned long address, pmd_t *pmdp)
- {
- 	return __pmdp_test_and_clear_young(vma->vm_mm, address, pmdp);
- }
-diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-index 11f57ccf6dc9..bac559d29036 100644
---- a/arch/riscv/include/asm/pgtable.h
-+++ b/arch/riscv/include/asm/pgtable.h
-@@ -1015,7 +1015,7 @@ static inline int pmdp_set_access_flags(struct vm_area_struct *vma,
- }
- 
- #define __HAVE_ARCH_PMDP_TEST_AND_CLEAR_YOUNG
--static inline int pmdp_test_and_clear_young(struct vm_area_struct *vma,
-+static inline bool pmdp_test_and_clear_young(struct vm_area_struct *vma,
- 					unsigned long address, pmd_t *pmdp)
- {
- 	return ptep_test_and_clear_young(vma, address, (pte_t *)pmdp);
-diff --git a/arch/s390/include/asm/pgtable.h b/arch/s390/include/asm/pgtable.h
-index c9ab81caaf75..1f5efb7be71d 100644
---- a/arch/s390/include/asm/pgtable.h
-+++ b/arch/s390/include/asm/pgtable.h
-@@ -1683,8 +1683,8 @@ static inline int pmdp_set_access_flags(struct vm_area_struct *vma,
+ extern void __mmu_notifier_subscriptions_destroy(struct mm_struct *mm);
+ extern void __mmu_notifier_release(struct mm_struct *mm);
+-extern int __mmu_notifier_clear_flush_young(struct mm_struct *mm,
+-					  unsigned long start,
+-					  unsigned long end);
+-extern int __mmu_notifier_clear_young(struct mm_struct *mm,
+-				      unsigned long start,
+-				      unsigned long end);
+-extern int __mmu_notifier_test_young(struct mm_struct *mm,
+-				     unsigned long address);
++bool __mmu_notifier_clear_flush_young(struct mm_struct *mm,
++		unsigned long start, unsigned long end);
++bool __mmu_notifier_clear_young(struct mm_struct *mm,
++		unsigned long start, unsigned long end);
++bool __mmu_notifier_test_young(struct mm_struct *mm,
++		unsigned long address);
+ extern int __mmu_notifier_invalidate_range_start(struct mmu_notifier_range *r);
+ extern void __mmu_notifier_invalidate_range_end(struct mmu_notifier_range *r);
+ extern void __mmu_notifier_arch_invalidate_secondary_tlbs(struct mm_struct *mm,
+@@ -403,30 +401,28 @@ static inline void mmu_notifier_release(struct mm_struct *mm)
+ 		__mmu_notifier_release(mm);
  }
  
- #define __HAVE_ARCH_PMDP_TEST_AND_CLEAR_YOUNG
--static inline int pmdp_test_and_clear_young(struct vm_area_struct *vma,
--					    unsigned long addr, pmd_t *pmdp)
-+static inline bool pmdp_test_and_clear_young(struct vm_area_struct *vma,
-+					     unsigned long addr, pmd_t *pmdp)
+-static inline int mmu_notifier_clear_flush_young(struct mm_struct *mm,
+-					  unsigned long start,
+-					  unsigned long end)
++static inline bool mmu_notifier_clear_flush_young(struct mm_struct *mm,
++		unsigned long start, unsigned long end)
  {
- 	pmd_t pmd = *pmdp;
- 
-diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
-index 554dea93eb99..bd02ee730a23 100644
---- a/arch/x86/include/asm/pgtable.h
-+++ b/arch/x86/include/asm/pgtable.h
-@@ -1295,8 +1295,8 @@ extern int pudp_set_access_flags(struct vm_area_struct *vma,
- 				 pud_t entry, int dirty);
- 
- #define __HAVE_ARCH_PMDP_TEST_AND_CLEAR_YOUNG
--extern int pmdp_test_and_clear_young(struct vm_area_struct *vma,
--				     unsigned long addr, pmd_t *pmdp);
-+extern bool pmdp_test_and_clear_young(struct vm_area_struct *vma,
-+				      unsigned long addr, pmd_t *pmdp);
- extern int pudp_test_and_clear_young(struct vm_area_struct *vma,
- 				     unsigned long addr, pud_t *pudp);
- 
-diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
-index 0007dc3d739e..10a5e0b2be36 100644
---- a/arch/x86/mm/pgtable.c
-+++ b/arch/x86/mm/pgtable.c
-@@ -456,10 +456,10 @@ bool ptep_test_and_clear_young(struct vm_area_struct *vma,
- }
- 
- #if defined(CONFIG_TRANSPARENT_HUGEPAGE) || defined(CONFIG_ARCH_HAS_NONLEAF_PMD_YOUNG)
--int pmdp_test_and_clear_young(struct vm_area_struct *vma,
--			      unsigned long addr, pmd_t *pmdp)
-+bool pmdp_test_and_clear_young(struct vm_area_struct *vma,
-+			       unsigned long addr, pmd_t *pmdp)
- {
--	int ret = 0;
-+	bool ret = false;
- 
- 	if (pmd_young(*pmdp))
- 		ret = test_and_clear_bit(_PAGE_BIT_ACCESSED,
-diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
-index 1198e216fde3..e53220b0a9a3 100644
---- a/include/linux/pgtable.h
-+++ b/include/linux/pgtable.h
-@@ -507,25 +507,24 @@ static inline bool ptep_test_and_clear_young(struct vm_area_struct *vma,
- 
- #ifndef __HAVE_ARCH_PMDP_TEST_AND_CLEAR_YOUNG
- #if defined(CONFIG_TRANSPARENT_HUGEPAGE) || defined(CONFIG_ARCH_HAS_NONLEAF_PMD_YOUNG)
--static inline int pmdp_test_and_clear_young(struct vm_area_struct *vma,
--					    unsigned long address,
--					    pmd_t *pmdp)
-+static inline bool pmdp_test_and_clear_young(struct vm_area_struct *vma,
-+		unsigned long address, pmd_t *pmdp)
- {
- 	pmd_t pmd = *pmdp;
--	int r = 1;
-+	bool young = true;
-+
- 	if (!pmd_young(pmd))
--		r = 0;
-+		young = false;
- 	else
- 		set_pmd_at(vma->vm_mm, address, pmdp, pmd_mkold(pmd));
--	return r;
-+	return young;
- }
- #else
--static inline int pmdp_test_and_clear_young(struct vm_area_struct *vma,
--					    unsigned long address,
--					    pmd_t *pmdp)
-+static inline bool pmdp_test_and_clear_young(struct vm_area_struct *vma,
-+		unsigned long address, pmd_t *pmdp)
- {
- 	BUILD_BUG();
+ 	if (mm_has_notifiers(mm))
+ 		return __mmu_notifier_clear_flush_young(mm, start, end);
 -	return 0;
 +	return false;
  }
- #endif /* CONFIG_TRANSPARENT_HUGEPAGE || CONFIG_ARCH_HAS_NONLEAF_PMD_YOUNG */
- #endif
+ 
+-static inline int mmu_notifier_clear_young(struct mm_struct *mm,
+-					   unsigned long start,
+-					   unsigned long end)
++static inline bool mmu_notifier_clear_young(struct mm_struct *mm,
++		unsigned long start, unsigned long end)
+ {
+ 	if (mm_has_notifiers(mm))
+ 		return __mmu_notifier_clear_young(mm, start, end);
+-	return 0;
++	return false;
+ }
+ 
+-static inline int mmu_notifier_test_young(struct mm_struct *mm,
+-					  unsigned long address)
++static inline bool mmu_notifier_test_young(struct mm_struct *mm,
++		unsigned long address)
+ {
+ 	if (mm_has_notifiers(mm))
+ 		return __mmu_notifier_test_young(mm, address);
+-	return 0;
++	return false;
+ }
+ 
+ static inline void
+@@ -552,24 +548,22 @@ static inline void mmu_notifier_release(struct mm_struct *mm)
+ {
+ }
+ 
+-static inline int mmu_notifier_clear_flush_young(struct mm_struct *mm,
+-					  unsigned long start,
+-					  unsigned long end)
++static inline bool mmu_notifier_clear_flush_young(struct mm_struct *mm,
++		unsigned long start, unsigned long end)
+ {
+-	return 0;
++	return false;
+ }
+ 
+-static inline int mmu_notifier_clear_young(struct mm_struct *mm,
+-					   unsigned long start,
+-					   unsigned long end)
++static inline bool mmu_notifier_clear_young(struct mm_struct *mm,
++		unsigned long start, unsigned long end)
+ {
+-	return 0;
++	return false;
+ }
+ 
+-static inline int mmu_notifier_test_young(struct mm_struct *mm,
+-					  unsigned long address)
++static inline bool mmu_notifier_test_young(struct mm_struct *mm,
++		unsigned long address)
+ {
+-	return 0;
++	return false;
+ }
+ 
+ static inline void
+diff --git a/mm/internal.h b/mm/internal.h
+index 0eaca2f0eb6a..3d6eba216364 100644
+--- a/mm/internal.h
++++ b/mm/internal.h
+@@ -1831,10 +1831,10 @@ static inline int io_remap_pfn_range_complete(struct vm_area_struct *vma,
+ }
+ 
+ #ifdef CONFIG_MMU_NOTIFIER
+-static inline int clear_flush_young_ptes_notify(struct vm_area_struct *vma,
++static inline bool clear_flush_young_ptes_notify(struct vm_area_struct *vma,
+ 		unsigned long addr, pte_t *ptep, unsigned int nr)
+ {
+-	int young;
++	bool young;
+ 
+ 	young = clear_flush_young_ptes(vma, addr, ptep, nr);
+ 	young |= mmu_notifier_clear_flush_young(vma->vm_mm, addr,
+@@ -1842,30 +1842,30 @@ static inline int clear_flush_young_ptes_notify(struct vm_area_struct *vma,
+ 	return young;
+ }
+ 
+-static inline int pmdp_clear_flush_young_notify(struct vm_area_struct *vma,
++static inline bool pmdp_clear_flush_young_notify(struct vm_area_struct *vma,
+ 		unsigned long addr, pmd_t *pmdp)
+ {
+-	int young;
++	bool young;
+ 
+ 	young = pmdp_clear_flush_young(vma, addr, pmdp);
+ 	young |= mmu_notifier_clear_flush_young(vma->vm_mm, addr, addr + PMD_SIZE);
+ 	return young;
+ }
+ 
+-static inline int test_and_clear_young_ptes_notify(struct vm_area_struct *vma,
++static inline bool test_and_clear_young_ptes_notify(struct vm_area_struct *vma,
+ 		unsigned long addr, pte_t *ptep, unsigned int nr)
+ {
+-	int young;
++	bool young;
+ 
+ 	young = test_and_clear_young_ptes(vma, addr, ptep, nr);
+ 	young |= mmu_notifier_clear_young(vma->vm_mm, addr, addr + nr * PAGE_SIZE);
+ 	return young;
+ }
+ 
+-static inline int pmdp_test_and_clear_young_notify(struct vm_area_struct *vma,
++static inline bool pmdp_test_and_clear_young_notify(struct vm_area_struct *vma,
+ 		unsigned long addr, pmd_t *pmdp)
+ {
+-	int young;
++	bool young;
+ 
+ 	young = pmdp_test_and_clear_young(vma, addr, pmdp);
+ 	young |= mmu_notifier_clear_young(vma->vm_mm, addr, addr + PMD_SIZE);
+diff --git a/mm/mmu_notifier.c b/mm/mmu_notifier.c
+index 2502474b83b6..3e3e7e727ba2 100644
+--- a/mm/mmu_notifier.c
++++ b/mm/mmu_notifier.c
+@@ -364,12 +364,11 @@ void __mmu_notifier_release(struct mm_struct *mm)
+  * unmap the address and return 1 or 0 depending if the mapping previously
+  * existed or not.
+  */
+-int __mmu_notifier_clear_flush_young(struct mm_struct *mm,
+-					unsigned long start,
+-					unsigned long end)
++bool __mmu_notifier_clear_flush_young(struct mm_struct *mm,
++		unsigned long start, unsigned long end)
+ {
+ 	struct mmu_notifier *subscription;
+-	int young = 0, id;
++	bool young = false, id;
+ 
+ 	id = srcu_read_lock(&srcu);
+ 	hlist_for_each_entry_srcu(subscription,
+@@ -384,12 +383,11 @@ int __mmu_notifier_clear_flush_young(struct mm_struct *mm,
+ 	return young;
+ }
+ 
+-int __mmu_notifier_clear_young(struct mm_struct *mm,
+-			       unsigned long start,
+-			       unsigned long end)
++bool __mmu_notifier_clear_young(struct mm_struct *mm,
++		unsigned long start, unsigned long end)
+ {
+ 	struct mmu_notifier *subscription;
+-	int young = 0, id;
++	bool young = false, id;
+ 
+ 	id = srcu_read_lock(&srcu);
+ 	hlist_for_each_entry_srcu(subscription,
+@@ -404,11 +402,11 @@ int __mmu_notifier_clear_young(struct mm_struct *mm,
+ 	return young;
+ }
+ 
+-int __mmu_notifier_test_young(struct mm_struct *mm,
+-			      unsigned long address)
++bool __mmu_notifier_test_young(struct mm_struct *mm,
++		unsigned long address)
+ {
+ 	struct mmu_notifier *subscription;
+-	int young = 0, id;
++	bool young = false, id;
+ 
+ 	id = srcu_read_lock(&srcu);
+ 	hlist_for_each_entry_srcu(subscription,
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index d0ab29672c71..6bcfc1b3021d 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -646,11 +646,11 @@ static __always_inline kvm_mn_ret_t kvm_handle_hva_range(struct kvm *kvm,
+ 	return r;
+ }
+ 
+-static __always_inline int kvm_age_hva_range(struct mmu_notifier *mn,
+-						unsigned long start,
+-						unsigned long end,
+-						gfn_handler_t handler,
+-						bool flush_on_ret)
++static __always_inline bool kvm_age_hva_range(struct mmu_notifier *mn,
++					      unsigned long start,
++					      unsigned long end,
++					      gfn_handler_t handler,
++					      bool flush_on_ret)
+ {
+ 	struct kvm *kvm = mmu_notifier_to_kvm(mn);
+ 	const struct kvm_mmu_notifier_range range = {
+@@ -666,10 +666,10 @@ static __always_inline int kvm_age_hva_range(struct mmu_notifier *mn,
+ 	return kvm_handle_hva_range(kvm, &range).ret;
+ }
+ 
+-static __always_inline int kvm_age_hva_range_no_flush(struct mmu_notifier *mn,
+-						      unsigned long start,
+-						      unsigned long end,
+-						      gfn_handler_t handler)
++static __always_inline bool kvm_age_hva_range_no_flush(struct mmu_notifier *mn,
++						       unsigned long start,
++						       unsigned long end,
++						       gfn_handler_t handler)
+ {
+ 	return kvm_age_hva_range(mn, start, end, handler, false);
+ }
+@@ -829,10 +829,10 @@ static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
+ 		rcuwait_wake_up(&kvm->mn_memslots_update_rcuwait);
+ }
+ 
+-static int kvm_mmu_notifier_clear_flush_young(struct mmu_notifier *mn,
+-					      struct mm_struct *mm,
+-					      unsigned long start,
+-					      unsigned long end)
++static bool kvm_mmu_notifier_clear_flush_young(struct mmu_notifier *mn,
++					       struct mm_struct *mm,
++					       unsigned long start,
++					       unsigned long end)
+ {
+ 	trace_kvm_age_hva(start, end);
+ 
+@@ -840,10 +840,10 @@ static int kvm_mmu_notifier_clear_flush_young(struct mmu_notifier *mn,
+ 				 !IS_ENABLED(CONFIG_KVM_ELIDE_TLB_FLUSH_IF_YOUNG));
+ }
+ 
+-static int kvm_mmu_notifier_clear_young(struct mmu_notifier *mn,
+-					struct mm_struct *mm,
+-					unsigned long start,
+-					unsigned long end)
++static bool kvm_mmu_notifier_clear_young(struct mmu_notifier *mn,
++					 struct mm_struct *mm,
++					 unsigned long start,
++					 unsigned long end)
+ {
+ 	trace_kvm_age_hva(start, end);
+ 
+@@ -863,9 +863,9 @@ static int kvm_mmu_notifier_clear_young(struct mmu_notifier *mn,
+ 	return kvm_age_hva_range_no_flush(mn, start, end, kvm_age_gfn);
+ }
+ 
+-static int kvm_mmu_notifier_test_young(struct mmu_notifier *mn,
+-				       struct mm_struct *mm,
+-				       unsigned long address)
++static bool kvm_mmu_notifier_test_young(struct mmu_notifier *mn,
++					struct mm_struct *mm,
++					unsigned long address)
+ {
+ 	trace_kvm_test_age_hva(address);
+ 
 -- 
 2.47.3
 
