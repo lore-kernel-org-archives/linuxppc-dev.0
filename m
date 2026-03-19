@@ -1,53 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-18437-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18438-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7FDD1075273
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2026 08:20:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DEC84108E1E9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2026 11:20:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fbzCw0LTvz2ynW;
-	Thu, 19 Mar 2026 19:20:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773908443;
-	cv=none; b=F8jl2AU0h5n5I92YE2rXKiVnqXoV19ENwCYgKqjh86BR8vdwt8bnBW/EGrLNXf+x/HxUrL+KjnXrRrPNg5K4UxIur+2VdyG3/Rmk+M8lE18l0DWOweIF44fJ/VZUxjq1X1aWTpuNxu2SLVkoRd+dBLMEj3n6WYzLFEg9CkVKz5LgTk8xqIDg/rY2PwNIW0a/nmMSWlCe6umWiAay6dNPafpGZHXPLnR7vQMRinFvRcSDaX87gykaKfcQej8WiZCXuHMcQq5/AQzkUV4/eiSvS0hOGpfIVthd/CS0QwslO73qp1fuwEoS4LQQmf+HbZembmFnVgie73Jiy8JdIO54PQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fc3CN2ZYpz2ynW;
+	Thu, 19 Mar 2026 22:20:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.176.79.56
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773919232;
+	cv=none; b=k6X0JY4fJKQc698jA4FuJjNvikeyK6o7IB1YGzLapDcGNt+xWmPxNPwoPrGMBFtTm/A0QL6mSh2fuKTpuDP/KPEXmuTAygGLmbsYRa4qFyFVyMRR8mWevf+COoctbSZVaSnmTwzqQ4RMzfezleqskU6fTLEgtMg6s0pScTzwdkdU/Lhp2OYRv0um3PB26jfFumtbpRCHsM/ty7X5Vzfnv3XYt/8V+bzLDuDE4ePwUHSSW2Wx6PzmOfZlurxB1NHFBZDb5c6H50nzwoR1yNtD+/Vu1uSOhsHx0vMwXaHsyFnjipfuWQO9+6Y1LL0ek/trZ1eFySxvudvwKlD93PENtw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773908443; c=relaxed/relaxed;
-	bh=Ezpg7w5q4XnNfDvDAitPA6Fnpfes/ZiPnx45JraZYPo=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=HoYn14XBxCjA44jq5/iJ9+Az2J9UxWXKFq4y1I7ni/5r+61LBZkCUwESg0dNG9mpI9QkzAB7JE+qFm7qW4cUcAF3+NYEt32UsoUx5ro3ZXMQjQ2Olssc2mEXHYswylXG+03wrUsQFzJdWgTEl0GbuW3YL+idrhne7nQFQ56mx5m4qQQipGw4PUfPi2Z1xbFm3JKQBgZbD9wWPMi1i3Bu4+L68HIa/aJOz9lT/6LuzTutXhvUR7ukca0FVbg56COrwgBfMzOIAt3NOXmoPlRV3y4Gq14hyoqojBS9Lw/x+0PFJ4iQHfT3z+Slp2kpvIaw5uYZVaYlvRCLYoYQ3yA4nw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=siMioE97; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=siMioE97;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	t=1773919232; c=relaxed/relaxed;
+	bh=YifErqMt+itpLBDIu2BIswknjpV1SuqoYtwD8GJqUn4=;
+	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=c60epE7x4vK1QaiIE7/GB3sQFTLQrSJSh5qc/+DEesdWNuWNIBc1pS+QcEY3M7sf4zYiHZpBdiHCen40ezIamztNeSFwpquzQwMkjivC8kHu2+3odfSxwV0Cqma5m80vzwh7dSaDnIQVgULd6TOkOt3EkeMhor5ac7b1rcb+JBjMYX8mTCAJoeZyAyd/Hk6qIdktozboGLX48/9ld79CDX1dAFvfa8JY4bLunKwVhYAOqJh7yIZlch79MP6Eu82lFNzEcCD/f/cpEouyf/OcZ/JIx76irraHQZLRCMkfj30nBlZZ+yCGmFrvipbIAFRsYC8kpT073l9FWFOgw4kNrQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 994 seconds by postgrey-1.37 at boromir; Thu, 19 Mar 2026 22:20:30 AEDT
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fbzCv1fqQz2xZK
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 19:20:43 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id D558E6011F;
-	Thu, 19 Mar 2026 08:20:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E1B22C19425;
-	Thu, 19 Mar 2026 08:20:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773908440;
-	bh=XZSmlU5qQZSk3ikAK6msWkB0C1hCUr2T8dbTi52alcU=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=siMioE97YWmWg3dsdee3PkKgH+n8pqPcHCbnc6EAggNIaenWaU7afq+6ydhGwa1BV
-	 A1iG9LJmU8Lw5Tyz4SQpmVDsf+kP8nwdPtOu2fYoKB7hmSN+p6wqjYPSjuRjkpCvAu
-	 yuoo5OzG1ERSTgAj2PzV7QqiSHxS6taM56a0Cg+9bqTj6qeXnvjSmxGHAZ4tkb/Wtw
-	 X265+BTIO1cRd7v9TnTwUz5dk9/alFXI0lrS9w9uSVwU17/ghw21lOa64OHs+SuJQc
-	 0lM+E29w+qg+o9jxGyY/qD2fpzZewxKBhdYf2j2PJ3cWdle21nX3QEdot45buM5NqD
-	 +/zAc5cFalR8A==
-From: "David Hildenbrand (Arm)" <david@kernel.org>
-Date: Thu, 19 Mar 2026 09:19:41 +0100
-Subject: [PATCH 2/2] mm: introduce CONFIG_NUMA_MIGRATION and simplify
- CONFIG_MIGRATION
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fc3CL5bvGz2ySj
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 22:20:28 +1100 (AEDT)
+Received: from mail.maildlp.com (unknown [172.18.224.83])
+	by frasgout.his.huawei.com (SkyGuard) with ESMTPS id 4fc2py5dyzzJ46Dn;
+	Thu, 19 Mar 2026 19:02:50 +0800 (CST)
+Received: from dubpeml500005.china.huawei.com (unknown [7.214.145.207])
+	by mail.maildlp.com (Postfix) with ESMTPS id 0A71A40086;
+	Thu, 19 Mar 2026 19:03:50 +0800 (CST)
+Received: from localhost (10.203.177.15) by dubpeml500005.china.huawei.com
+ (7.214.145.207) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Thu, 19 Mar
+ 2026 11:03:48 +0000
+Date: Thu, 19 Mar 2026 11:03:46 +0000
+From: Jonathan Cameron <jonathan.cameron@huawei.com>
+To: "David Hildenbrand (Arm)" <david@kernel.org>
+CC: <linux-kernel@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, "WANG
+ Xuerui" <kernel@xen0n.name>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Paul Walmsley
+	<pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou
+	<aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, Heiko Carstens
+	<hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, Alexander Gordeev
+	<agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, "Thomas Gleixner" <tglx@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen
+	<dave.hansen@linux.intel.com>, <x86@kernel.org>, "H. Peter Anvin"
+	<hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>, Lorenzo Stoakes
+	<ljs@kernel.org>, "Liam R. Howlett" <Liam.Howlett@oracle.com>, Vlastimil
+ Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, Suren
+ Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Zi Yan
+	<ziy@nvidia.com>, Matthew Brost <matthew.brost@intel.com>, Joshua Hahn
+	<joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, Byungchul Park
+	<byungchul@sk.com>, Gregory Price <gourry@gourry.net>, Ying Huang
+	<ying.huang@linux.alibaba.com>, "Alistair Popple" <apopple@nvidia.com>,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Clark Williams
+	<clrkwllms@kernel.org>, "Steven Rostedt" <rostedt@goodmis.org>,
+	<linux-arm-kernel@lists.infradead.org>, <loongarch@lists.linux.dev>,
+	<linuxppc-dev@lists.ozlabs.org>, <linux-riscv@lists.infradead.org>,
+	<linux-s390@vger.kernel.org>, <linux-mm@kvack.org>,
+	<linux-rt-devel@lists.linux.dev>
+Subject: Re: [PATCH 0/2] mm: remove CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE and
+ cleanup CONFIG_MIGRATION
+Message-ID: <20260319110346.000034a5@huawei.com>
+In-Reply-To: <20260319-config_migration-v1-0-42270124966f@kernel.org>
+References: <20260319-config_migration-v1-0-42270124966f@kernel.org>
+X-Mailer: Claws Mail 4.3.0 (GTK 3.24.42; x86_64-w64-mingw32)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,266 +85,55 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260319-config_migration-v1-2-42270124966f@kernel.org>
-References: <20260319-config_migration-v1-0-42270124966f@kernel.org>
-In-Reply-To: <20260319-config_migration-v1-0-42270124966f@kernel.org>
-To: linux-kernel@vger.kernel.org
-Cc: Catalin Marinas <catalin.marinas@arm.com>, 
- Will Deacon <will@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, 
- WANG Xuerui <kernel@xen0n.name>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
- Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
- Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
- Alexander Gordeev <agordeev@linux.ibm.com>, 
- Christian Borntraeger <borntraeger@linux.ibm.com>, 
- Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@kernel.org>, 
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
- Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
- "H. Peter Anvin" <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>, 
- Lorenzo Stoakes <ljs@kernel.org>, 
- "Liam R. Howlett" <Liam.Howlett@oracle.com>, 
- Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, 
- Zi Yan <ziy@nvidia.com>, Matthew Brost <matthew.brost@intel.com>, 
- Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>, 
- Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>, 
- Ying Huang <ying.huang@linux.alibaba.com>, 
- Alistair Popple <apopple@nvidia.com>, 
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>, 
- Clark Williams <clrkwllms@kernel.org>, Steven Rostedt <rostedt@goodmis.org>, 
- linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev, 
- linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, 
- linux-s390@vger.kernel.org, linux-mm@kvack.org, 
- linux-rt-devel@lists.linux.dev, 
- "David Hildenbrand (Arm)" <david@kernel.org>
-X-Mailer: b4 0.13.0
+X-Originating-IP: [10.203.177.15]
+X-ClientProxiedBy: lhrpeml500009.china.huawei.com (7.191.174.84) To
+ dubpeml500005.china.huawei.com (7.214.145.207)
 
-CONFIG_MEMORY_HOTREMOVE, CONFIG_COMPACTION and CONFIG_CMA all select
-CONFIG_MIGRATION, because they require it to work (users).
+On Thu, 19 Mar 2026 09:19:39 +0100
+"David Hildenbrand (Arm)" <david@kernel.org> wrote:
 
-Only CONFIG_NUMA_BALANCING and CONFIG_BALLOON_MIGRATION depend on
-CONFIG_MIGRATION. CONFIG_BALLOON_MIGRATION is not an actual user, but
-an implementation of migration support, so the dependency is correct
-(CONFIG_BALLOON_MIGRATION does not make any sense without
-CONFIG_MIGRATION).
+> While working on memory hotplug code cleanups, I realized that
+> CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE is not really required anymore.
+> 
+> Changing that revealed some rather nasty looking CONFIG_MIGRATION
+> handling.
+> 
+> Let's clean that up by introducing a dedicated CONFIG_NUMA_MIGRATION
+> option and reducing the dependencies that CONFIG_MIGRATION has.
+> 
+> Heavily cross compiled. I assume these changes are fine, but messing
+> with kconfig sometimes feels like playing with fire :)
+Seems fine to me, but I agree it always feels a bit like playing with fire.
+So more eyes good!
 
-However, kconfig-language.rst  clearly states "In general use select only
-for non-visible symbols". So far CONFIG_MIGRATION is user-visible ...
-and the dependencies rather confusing.
+Reviewed-by: Jonathan Cameron <jonathan.cameron@huawei.com>
 
-The whole reason why CONFIG_MIGRATION is user-visible is because of
-CONFIG_NUMA: some users might want CONFIG_NUMA but not page migration
-support.
-
-Let's clean all that up by introducing a dedicated CONFIG_NUMA_MIGRATION
-config option for that purpose only. Make CONFIG_NUMA_BALANCING that so
-far depended on CONFIG_NUMA && CONFIG_MIGRATION to depend on
-CONFIG_MIGRATION instead. CONFIG_NUMA_MIGRATION will depend on
-CONFIG_NUMA && CONFIG_MMU.
-
-CONFIG_NUMA_MIGRATION is user-visible and will default to "y". We
-use that default so new configs will automatically enable it, just
-like it was the case with CONFIG_MIGRATION. The downside is that
-some configs that used to have CONFIG_MIGRATION=n might get it
-re-enabled by CONFIG_NUMA_MIGRATION=y, which shouldn't be a problem.
-
-CONFIG_MIGRATION is now a non-visible config option. Any code that
-select CONFIG_MIGRATION (as before) must depend directly or indirectly
-on CONFIG_MMU.
-
-CONFIG_NUMA_MIGRATION is responsible for any NUMA migration code, which is
-mempolicy migration code, memory-tiering code, and move_pages() code in
-migrate.c. CONFIG_NUMA_BALANCING uses its functionality.
-
-Note that this implies that with CONFIG_NUMA_MIGRATION=n, move_pages() will
-not be available even though CONFIG_MIGRATION=y, which is an expected
-change.
-
-In migrate.c, we can remove the CONFIG_NUMA check as both
-CONFIG_NUMA_MIGRATION and CONFIG_NUMA_BALANCING depend on it.
-
-With this change, CONFIG_MIGRATION is an internal config, all users of
-migration selects CONFIG_MIGRATION, and only CONFIG_BALLOON_MIGRATION
-depends on it.
-
-Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
----
- include/linux/memory-tiers.h |  2 +-
- init/Kconfig                 |  2 +-
- mm/Kconfig                   | 26 +++++++++++++-------------
- mm/memory-tiers.c            | 12 ++++++------
- mm/mempolicy.c               |  2 +-
- mm/migrate.c                 |  5 ++---
- 6 files changed, 24 insertions(+), 25 deletions(-)
-
-diff --git a/include/linux/memory-tiers.h b/include/linux/memory-tiers.h
-index 96987d9d95a8..7999c58629ee 100644
---- a/include/linux/memory-tiers.h
-+++ b/include/linux/memory-tiers.h
-@@ -52,7 +52,7 @@ int mt_perf_to_adistance(struct access_coordinate *perf, int *adist);
- struct memory_dev_type *mt_find_alloc_memory_type(int adist,
- 						  struct list_head *memory_types);
- void mt_put_memory_types(struct list_head *memory_types);
--#ifdef CONFIG_MIGRATION
-+#ifdef CONFIG_NUMA_MIGRATION
- int next_demotion_node(int node, const nodemask_t *allowed_mask);
- void node_get_allowed_targets(pg_data_t *pgdat, nodemask_t *targets);
- bool node_is_toptier(int node);
-diff --git a/init/Kconfig b/init/Kconfig
-index 444ce811ea67..3648e401b78b 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -997,7 +997,7 @@ config NUMA_BALANCING
- 	bool "Memory placement aware NUMA scheduler"
- 	depends on ARCH_SUPPORTS_NUMA_BALANCING
- 	depends on !ARCH_WANT_NUMA_VARIABLE_LOCALITY
--	depends on SMP && NUMA && MIGRATION && !PREEMPT_RT
-+	depends on SMP && NUMA_MIGRATION && !PREEMPT_RT
- 	help
- 	  This option adds support for automatic NUMA aware memory/task placement.
- 	  The mechanism is quite primitive and is based on migrating memory when
-diff --git a/mm/Kconfig b/mm/Kconfig
-index b2e21d873d3f..bd283958d675 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -627,20 +627,20 @@ config PAGE_REPORTING
- 	  those pages to another entity, such as a hypervisor, so that the
- 	  memory can be freed within the host for other uses.
- 
--#
--# support for page migration
--#
--config MIGRATION
--	bool "Page migration"
-+config NUMA_MIGRATION
-+	bool "NUMA page migration"
- 	default y
--	depends on (NUMA || MEMORY_HOTREMOVE || COMPACTION || CMA) && MMU
--	help
--	  Allows the migration of the physical location of pages of processes
--	  while the virtual addresses are not changed. This is useful in
--	  two situations. The first is on NUMA systems to put pages nearer
--	  to the processors accessing. The second is when allocating huge
--	  pages as migration can relocate pages to satisfy a huge page
--	  allocation instead of reclaiming.
-+	depends on NUMA && MMU
-+	select MIGRATION
-+	help
-+	  Support the migration of pages to other NUMA nodes, available to
-+	  user space through interfaces like migrate_pages(), move_pages(),
-+	  and mbind(). Selecting this option also enables support for page
-+	  demotion for memory tiering.
-+
-+config MIGRATION
-+	bool
-+	depends on MMU
- 
- config DEVICE_MIGRATION
- 	def_bool MIGRATION && ZONE_DEVICE
-diff --git a/mm/memory-tiers.c b/mm/memory-tiers.c
-index 986f809376eb..54851d8a195b 100644
---- a/mm/memory-tiers.c
-+++ b/mm/memory-tiers.c
-@@ -69,7 +69,7 @@ bool folio_use_access_time(struct folio *folio)
- }
- #endif
- 
--#ifdef CONFIG_MIGRATION
-+#ifdef CONFIG_NUMA_MIGRATION
- static int top_tier_adistance;
- /*
-  * node_demotion[] examples:
-@@ -129,7 +129,7 @@ static int top_tier_adistance;
-  *
-  */
- static struct demotion_nodes *node_demotion __read_mostly;
--#endif /* CONFIG_MIGRATION */
-+#endif /* CONFIG_NUMA_MIGRATION */
- 
- static BLOCKING_NOTIFIER_HEAD(mt_adistance_algorithms);
- 
-@@ -273,7 +273,7 @@ static struct memory_tier *__node_get_memory_tier(int node)
- 				     lockdep_is_held(&memory_tier_lock));
- }
- 
--#ifdef CONFIG_MIGRATION
-+#ifdef CONFIG_NUMA_MIGRATION
- bool node_is_toptier(int node)
- {
- 	bool toptier;
-@@ -519,7 +519,7 @@ static void establish_demotion_targets(void)
- 
- #else
- static inline void establish_demotion_targets(void) {}
--#endif /* CONFIG_MIGRATION */
-+#endif /* CONFIG_NUMA_MIGRATION */
- 
- static inline void __init_node_memory_type(int node, struct memory_dev_type *memtype)
- {
-@@ -911,7 +911,7 @@ static int __init memory_tier_init(void)
- 	if (ret)
- 		panic("%s() failed to register memory tier subsystem\n", __func__);
- 
--#ifdef CONFIG_MIGRATION
-+#ifdef CONFIG_NUMA_MIGRATION
- 	node_demotion = kzalloc_objs(struct demotion_nodes, nr_node_ids);
- 	WARN_ON(!node_demotion);
- #endif
-@@ -938,7 +938,7 @@ subsys_initcall(memory_tier_init);
- 
- bool numa_demotion_enabled = false;
- 
--#ifdef CONFIG_MIGRATION
-+#ifdef CONFIG_NUMA_MIGRATION
- #ifdef CONFIG_SYSFS
- static ssize_t demotion_enabled_show(struct kobject *kobj,
- 				     struct kobj_attribute *attr, char *buf)
-diff --git a/mm/mempolicy.c b/mm/mempolicy.c
-index e5528c35bbb8..fd08771e2057 100644
---- a/mm/mempolicy.c
-+++ b/mm/mempolicy.c
-@@ -1239,7 +1239,7 @@ static long do_get_mempolicy(int *policy, nodemask_t *nmask,
- 	return err;
- }
- 
--#ifdef CONFIG_MIGRATION
-+#ifdef CONFIG_NUMA_MIGRATION
- static bool migrate_folio_add(struct folio *folio, struct list_head *foliolist,
- 				unsigned long flags)
- {
-diff --git a/mm/migrate.c b/mm/migrate.c
-index fdbb20163f66..05cb408846f2 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -2224,8 +2224,7 @@ struct folio *alloc_migration_target(struct folio *src, unsigned long private)
- 	return __folio_alloc(gfp_mask, order, nid, mtc->nmask);
- }
- 
--#ifdef CONFIG_NUMA
--
-+#ifdef CONFIG_NUMA_MIGRATION
- static int store_status(int __user *status, int start, int value, int nr)
- {
- 	while (nr-- > 0) {
-@@ -2624,6 +2623,7 @@ SYSCALL_DEFINE6(move_pages, pid_t, pid, unsigned long, nr_pages,
- {
- 	return kernel_move_pages(pid, nr_pages, pages, nodes, status, flags);
- }
-+#endif /* CONFIG_NUMA_MIGRATION */
- 
- #ifdef CONFIG_NUMA_BALANCING
- /*
-@@ -2766,4 +2766,3 @@ int migrate_misplaced_folio(struct folio *folio, int node)
- 	return nr_remaining ? -EAGAIN : 0;
- }
- #endif /* CONFIG_NUMA_BALANCING */
--#endif /* CONFIG_NUMA */
-
--- 
-2.43.0
+> 
+> Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
+> ---
+> David Hildenbrand (Arm) (2):
+>       mm: remove CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE
+>       mm: introduce CONFIG_NUMA_MIGRATION and simplify CONFIG_MIGRATION
+> 
+>  arch/arm64/Kconfig           |  1 -
+>  arch/loongarch/Kconfig       |  1 -
+>  arch/powerpc/Kconfig         |  1 -
+>  arch/riscv/Kconfig           |  1 -
+>  arch/s390/Kconfig            |  1 -
+>  arch/x86/Kconfig             |  1 -
+>  include/linux/memory-tiers.h |  2 +-
+>  init/Kconfig                 |  2 +-
+>  mm/Kconfig                   | 33 +++++++++++++++------------------
+>  mm/memory-tiers.c            | 12 ++++++------
+>  mm/mempolicy.c               |  2 +-
+>  mm/migrate.c                 |  5 ++---
+>  12 files changed, 26 insertions(+), 36 deletions(-)
+> ---
+> base-commit: fbf55982f31ae6aa11f890c36bccc130ce70a312
+> change-id: 20260317-config_migration-463e20400499
+> 
+> Best regards,
 
 
