@@ -1,62 +1,102 @@
-Return-Path: <linuxppc-dev+bounces-18444-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18445-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8BC95108E1F3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2026 11:39:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B7D4109022C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Mar 2026 13:59:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fc3dj1rt5z2ynW;
-	Thu, 19 Mar 2026 22:39:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773920393;
-	cv=none; b=SSeLe+zFmvR5Y2YXbPkBMj2cDdUDxEB3Fa+05Jf5N4al/H2ut9FFcLn3/L7mkLw6d3t06Msdq5ycM8cPW/gOlZSOKStgh2HBOYOuJspI7GIdyXEiNIkunUNH7rL/kBwWL8iH/RY2YTAg6nO1cqQG82cHSvz+aF+CUl5Fdbb0prc088mJc0eOf1ivsDs6sPniBvuSD+Xo+D1FmGPR3K+ebkgYGatNj44gibOXQBkYz3Xn3tvBkE3vPER6nVG1NVC0pRLGRqM3T7rYl9zf7YrxgoFwipmycJhUhHbgKPmfjsN0Qx/ABYjToFqghJZn8merIKDja5PDfJ82Fs+ex3ZOLQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773920393; c=relaxed/relaxed;
-	bh=azYdaoPZnn6it2VTTXYh7qzbW7/06tkvfxtyss4A7z8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=U7XLrxtvpompFeHFnlGGpFAu/Lb/mzSgjFgi0rsYQebOiuMZ4Tlcz1wnWELFyVESC1pEjyIWtqNbuzJZPP8HBh+6HG3Iy9OJqeQbM1xku4ckAOWpSLoMICE57pj1SJvK1Wd1tmmj2kQToW+K+WLYIapwzku3k+JAhf/C1LOFsRJ40pt8IytMqqjYXH3NEtiukN+LhJ4yia9AlxrE8JHie2/pTm+PRdZbIwJkyL2sLxgjqe6WaNxC8khZV/IbB/1EQ+Sj7n6fJ9krzVAPFluhRj2ix/5zBj5EjzpeFf/cgxutZAZoVm9LonF/ENqoyTYrpxO/zQYTtsWQlWW86/8Q/w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BGx7WrTw; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fc6lG4k9Rz2ynW;
+	Fri, 20 Mar 2026 00:59:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c001::2" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773928794;
+	cv=pass; b=iO1o8XLbcTKS2WWsa0g/sxR1m4T2wvAXX2eMvV92MFm0TrsT/VjYy4nB0YXSv1j6x4iMv6hBxjaugxI61mr8dk0vIBn0Ggnm5xOnjefnn8Kc0C/OA8PjVQ6VfxIXoAgcnz25UnwOpq+iCDz8Vc0mpyrvyYUF/A/OqzY1GZAXLYsKbOxzDCnA1l7LUEBAG7DjKQPIjeJMMoH0OiElu2VbUI/FQ+1c8c7wTaMsanjIiKkRNzMmeyrXc9nrYfIV/szei7nlg8qYUAb1dqWz+rm05C3DrKLhml0/J55IATR0QD44+VjTO/wiYL/tQe0FComANW9ZhVx7dqXpak0+qgwRoQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1773928794; c=relaxed/relaxed;
+	bh=PbnkeDegTtGlpTl1DhG+dvN17k89G4cK3h8wfBQ49co=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=fvwikSmbEsVJ+pn8kUTl0kySkPM1i47wImPF0CMu5m/rfpfEAouPvfvkanR8KU0zDvFGqxDRbRqCx6sDUnNG5eg+bBB/Yz/ZZiAWLcjIHYZI+WVjAhXDxyWimRM2BQ3izr/e13Khb8PotSkNIUIFus6o6cAMSLR8dptA1HmhcocrzocVdy9K3A+yAx9CDF3E5oIjC9hzRfm3IkaY++JsUwHw7VUtjQRIwkdO5XvNcS68orpQmqLPC7YRLC4jnbYyWzYCPsoZMZOWp31VFt3AvDl6YprTZCb62aTzikNJkXVGICOnSxjZLlU1fE0ZysXLcErSrFHrVb5l4CD8t+sXuw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=j6FPaD9L; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c001::2; helo=sj2pr03cu001.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BGx7WrTw;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=j6FPaD9L;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c001::2; helo=sj2pr03cu001.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org)
+Received: from SJ2PR03CU001.outbound.protection.outlook.com (mail-westusazlp170120002.outbound.protection.outlook.com [IPv6:2a01:111:f403:c001::2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fc3dh1gC4z2ygT
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 22:39:52 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id B28436011F;
-	Thu, 19 Mar 2026 11:39:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A442FC19424;
-	Thu, 19 Mar 2026 11:39:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1773920389;
-	bh=E9JhBbwIf2oYiVeQO98SXyjx4quJ+BMudZAgGLFcb+g=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=BGx7WrTwHUihAjtcSbFNMAICzyKVLizTimomndMFC17GigIHl2O5lLd1sAboSBwgz
-	 teTLnani2q02pnMpHF5I64dZ3BvIk/JIUF/u8u/Bd2YHImY7IFL2+OvVZNa41u0ra+
-	 0OMaJIIAcvUg7Gjcw8smNDGGOYsDwc1/HwLmjvPFzWx3oYGtRvNe6urP8AOJm5vdM5
-	 jYzKtGiYHfkigeu6+1gWkC9Uvr0NJ8lJV5m9qVwNrOYChDvk1FHRUJG/M5g2z/kZLI
-	 daNPIHfmjTPYD/PMmFMMlmRs2UzfU3YqHjEfUY4w3wEM9yjit59oEp/L1Mbz0Ga+4j
-	 3P7vBOv+qa4qQ==
-Date: Thu, 19 Mar 2026 11:39:43 +0000
-From: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
-To: Baolin Wang <baolin.wang@linux.alibaba.com>
-Cc: akpm@linux-foundation.org, david@kernel.org, Liam.Howlett@oracle.com, 
-	vbabka@kernel.org, rppt@kernel.org, surenb@google.com, mhocko@suse.com, 
-	linux-arm-kernel@lists.infradead.org, x86@kernel.org, linux-parisc@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
-	kvm@vger.kernel.org, open <linux-mm@kvack.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/6] mm: change to return bool for the MMU notifier's
- young flag check
-Message-ID: <67c670e2-c98f-490b-bbb9-2960f8175b5a@lucifer.local>
-References: <cover.1773890510.git.baolin.wang@linux.alibaba.com>
- <545847c132da5d957cfc74ab19e849b16127aa8f.1773890510.git.baolin.wang@linux.alibaba.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fc6lD49s4z2ygT
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2026 00:59:51 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=GyCPddHBpr/Y2iMT1U3I1QwupvK8vhimsBXSjzWatFjcXESkUcbHhGEMDRgIP6je/mnhIf46oYqc5L48nKTCJdVWKfd9n8lITxxin2jV/VBmEFnAvrTWgN52io8bKT6QT6WcLsRYAuXdFPVKbcUgvAkWehZiZSQ5t6WESsjnPTw05WBgJbt7kfLkU0qpAAyc7J7kdj95DFbVNpmEctCBXAY8/ZE1ClMKzA5pKfXT4rYADt3EpjPu6gwOYyWCen1yQS7bDdeEPS/FDbJGm7ctuLlkeYJueSLyKo6FyYRCdfVGjeUqx6Js5jUMrxTG4YyTr+Kteimw0EuUf7n7o60eVw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=PbnkeDegTtGlpTl1DhG+dvN17k89G4cK3h8wfBQ49co=;
+ b=qRp6rYx4wfSQjX8KmMOjkEI32nhk8OMKGMFoxq37nwO8mu/qewOctfrIlvoR6lkFSw/hhwpHLBudhZoFovB6CDlvYRI7kyqmZFVtRZMHKdckeiHUad7jt3Jw7ZZaTiRQYhwuUdrHpmA0RtZUD6GxFYARG2U5NCZR9dz1XNH7XrtnqLgOmgvQP2uEfsRPWJ+ioJnee+diUSStUlBER25iYqdeJnk/TUUl25lZKD9q0Ot7hfgCBl0BGsCm3kCfg9vM6AKjOV+7lokvkugYpJEdL8z2HrEf0lmHpaV8FgqAIDSc6KMRiBB1mFzqQrEuOyRiTWZlEpADl5824Nl1WVSBKg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=PbnkeDegTtGlpTl1DhG+dvN17k89G4cK3h8wfBQ49co=;
+ b=j6FPaD9LqzF2X5OC7OOAOT11uqNUS2ZY2UM9cd4p26XX+FAAYCblOAXAQAzuArpZh/bHpUQr5X4kmq2WU5XySL2Z49GycUotGaFUbFHuBBx5Kowkthw3sgMRO1ckB+50wT2gv57mj2unR7L3XvsqwR0mPdd1E5b+8Ye0wBcOVWXy62Tfap2P25pLoq7rgOouxlGhv0L5Z44q9ng9ZctOBHz/vGnShrZETA1JtiGUBhhdOmz/sfzjJ+bXoVoCHJE8hBGiQLnoC8gsUgNZnt2pK2vJHvfOmYKq657wx0xOf06vqmprpisI/orY8IkMP/ayMDaNkVp+INm5PuEAzjW7pQ==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from DS7PR12MB9473.namprd12.prod.outlook.com (2603:10b6:8:252::5) by
+ SA1PR12MB999108.namprd12.prod.outlook.com (2603:10b6:806:4a2::13) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.9; Thu, 19 Mar
+ 2026 13:59:27 +0000
+Received: from DS7PR12MB9473.namprd12.prod.outlook.com
+ ([fe80::f01d:73d2:2dda:c7b2]) by DS7PR12MB9473.namprd12.prod.outlook.com
+ ([fe80::f01d:73d2:2dda:c7b2%4]) with mapi id 15.20.9723.016; Thu, 19 Mar 2026
+ 13:59:27 +0000
+From: Zi Yan <ziy@nvidia.com>
+To: "David Hildenbrand (Arm)" <david@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will@kernel.org>, Huacai Chen <chenhuacai@kernel.org>,
+ WANG Xuerui <kernel@xen0n.name>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Lorenzo Stoakes <ljs@kernel.org>,
+ "Liam R. Howlett" <Liam.Howlett@oracle.com>,
+ Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
+ Matthew Brost <matthew.brost@intel.com>,
+ Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>,
+ Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>,
+ Ying Huang <ying.huang@linux.alibaba.com>,
+ Alistair Popple <apopple@nvidia.com>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ Clark Williams <clrkwllms@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+ linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
+ linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, linux-mm@kvack.org,
+ linux-rt-devel@lists.linux.dev
+Subject: Re: [PATCH 1/2] mm: remove CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE
+Date: Thu, 19 Mar 2026 09:59:18 -0400
+X-Mailer: MailMate (2.0r6290)
+Message-ID: <3149685B-963F-473E-ABF8-916D41AEB4B7@nvidia.com>
+In-Reply-To: <20260319-config_migration-v1-1-42270124966f@kernel.org>
+References: <20260319-config_migration-v1-0-42270124966f@kernel.org>
+ <20260319-config_migration-v1-1-42270124966f@kernel.org>
+Content-Type: text/plain
+X-ClientProxiedBy: BYAPR06CA0043.namprd06.prod.outlook.com
+ (2603:10b6:a03:14b::20) To DS7PR12MB9473.namprd12.prod.outlook.com
+ (2603:10b6:8:252::5)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,389 +110,88 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <545847c132da5d957cfc74ab19e849b16127aa8f.1773890510.git.baolin.wang@linux.alibaba.com>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS7PR12MB9473:EE_|SA1PR12MB999108:EE_
+X-MS-Office365-Filtering-Correlation-Id: 960d6495-a2fb-460c-b6a1-08de85bfbb91
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|7416014|1800799024|366016|7053199007|18002099003|22082099003|56012099003;
+X-Microsoft-Antispam-Message-Info:
+	yI4d3EWY+nRTmA2sUUBMYPx8nuD7Cf/jY1FbW0brj0jrlQg9kqDPTxdHFV8bMcJJ7Qq+Lt8gNLu7AkOjrFZAsItiNTN/L0s8U52/7aiCshLIKh0x+i5TWRxqYhCBh4ErsO6PaY0QMfgJ0cGWlcGB8hDAV9A77M9QdT5c97LUye9T4p2OVRfjC/BaDhO8aSQBdpWbxKqxT/VMcKyQF90qSmPhpLn7IS9Dn6emzf/MwAkJcNXCyrcl0D3coLEGU9crp/Ud1muQVM8vvo6JT+T1/n3alY/cGf6Tyj6toTL6lxPktsO1g58IAnGvRJUY9QDCx8mQD11E8KeP8K6ux2SARLilCnxHxSrdozw8WEoSUff8i+E5sWmKVgx88jsvubyFkRqDWo/yGwM0/PPNHfC+vLchaoDet0ijKXN3Xx5+n6KyitlTYLXjdaaZTU+IvR1/eVfeLyQNYuUcd4adfdh2NteTiO7nNQ6pj4uJXl22eeMGnuVsG+eETH9SZioc90+ImbTw3Lau8i8gggKVrz8lD30cZdZ/TCjLnrOkqk2nE7rrhSiNHA8WVePXpMKVn3DScJ5gaKD2MGXIKsx0LNLAigWBUmaSqM19wNt18DXNZmkffpKkhbx0DRatjXWV516/baRQEW8fHrPamvNJMtwSbiCpqwgNn0sCjW1PpFKqtsHKpn/czx3NU5YElH2F0WyFWxS3F0lmY1O0iKnWdeeUIt2pgCHQ/+jKv8lqOxi1R0U=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS7PR12MB9473.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(366016)(7053199007)(18002099003)(22082099003)(56012099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?tWlr7GM+Qbe0UFhRvCRS74i8dyqXLFtZDvTFrYS4/pEoD6CQFenMMKcr21VN?=
+ =?us-ascii?Q?RbdXpEhSxiOEq0xESYH/YYfGwmZ5K5qfzjWXUOPzTuNfjQra/3DcYXsYOmQo?=
+ =?us-ascii?Q?yApb6a8RKEMmfSgGWk6kkQ2ZOsQU7Zdw8d+ILzk3N/WXrcj4fzjWDvxhMbXq?=
+ =?us-ascii?Q?6PZMpstQHjHmK/OrOQUqkTMWc5VbcfIqLglxqTbv3yS1LgrzlNlGhqmj4DdJ?=
+ =?us-ascii?Q?5Fv9RSvOfFQ7GEKTUOPiVMq/E0IW4LoD7iJeaFcUBsDD4x95hgP2MRl+A9vY?=
+ =?us-ascii?Q?GDL5uPd/L8hFjgE9c1A4ELTHias2DtvaOAYrZVQ+sWq/St7IK4Z1chFV3Bsu?=
+ =?us-ascii?Q?IZU1pZsZ2uVh1ll3U+XllSTwILnzM0YPKmkNTIqKBSRMnTxd2h5dgZzpMiOj?=
+ =?us-ascii?Q?2gmpuOdpbN5BlwmM6Jd//hihcEysiT9a/4JpBQj2DyLRcxCG0huQ77AvTXv/?=
+ =?us-ascii?Q?riZMZooBLIaUUaQ4oLrpjH9O5BGoj1NjV4v9ghaeEUEe97D2G5p9iRiNjwD3?=
+ =?us-ascii?Q?2fbvo9VBQAFuoYCHYaaYQSAHoulJhSLQe6In+eErXuyWE6A7htrUoNMfj3Y9?=
+ =?us-ascii?Q?IsDDHqu+m9zXWvp3/hP07RRNjqjCWwG/ARbH4oJnsykhJaUNCrn47oXmx6Uz?=
+ =?us-ascii?Q?N1qCh80j618E5hKGscqfdBgirQEJOk/7JVTxSTkbHLbh0u6/DByiSy4V6OW+?=
+ =?us-ascii?Q?xbVpFouUbU3SFRVJyFVNVJTE01ox0oK9FetGQ1fxGXrWoaqfsO55tQCmyjp+?=
+ =?us-ascii?Q?+jXy3816CvKr4pMvFST11s5KZCkn9qRUXbkdKpK4xBVFsZT5PebH3hWhklej?=
+ =?us-ascii?Q?077Cr0CX1Ip/Ht02tHFk1gVx2FMohBCIOVzmboXbvl+HubukHYd9+lSrkcfm?=
+ =?us-ascii?Q?5bsbOFPtQZp7CH4U1z6ZuxfJ2L4cCOaPRo6I2ZIppGQZ4WrnXpHbKPczOQ3s?=
+ =?us-ascii?Q?bUckdlHpB9w0Pq2bUmon/Z6JIVLhEq3O/tEymtgGYIPN+24jaiwPnob8fUrx?=
+ =?us-ascii?Q?IwUo80XL+DqT0ZGJX1Xstm4d/Q/YaC+3waf+sNYrg+9pABEKJAI/38kqgN/V?=
+ =?us-ascii?Q?Jl+6+EUmuNzlEQ96SRom7aRSwzhyMKOExFFiQPS2FTibDEfevb0xiVm7IMLh?=
+ =?us-ascii?Q?Blo185ZAc2erN7Ex8frktjkYHdO56DRmw8t81kLz3DbcHOuAOpkOu1wi9puv?=
+ =?us-ascii?Q?1Ymnn2xqCnxSiPd08tm/plWft2NBoevmNwNsGK+vluCNbb9JtupIbkhCZOPP?=
+ =?us-ascii?Q?rJxmuQRLuqQ+/v63Hzu9v2lMA9SISwL/sIGXmlDJuyOOQGJuAgo/mr8JdvXN?=
+ =?us-ascii?Q?KidOvh9xWT9I0CvAf5PdVw/NNZMtjkA5QfeeJY+jK2X1Yjdk3dHqCbXmHl13?=
+ =?us-ascii?Q?QHCBu+allyoV8WQEV8ArQuxEzaq/m2ve1LcdBa1VzNWTulYgk7a5s35zNsdm?=
+ =?us-ascii?Q?VuTJgco1In8mza/jHbd+smurlC+o9pvOQDwWW0ZL+nPN4hqwImbmB1yT/Ihs?=
+ =?us-ascii?Q?7ce33QXVYWbFj4X9USu3xLMaNilq7QdbfKvzWUi+wKSCO5siYZCx92EObNjx?=
+ =?us-ascii?Q?e7LHj0TgEaL5tgTiOHD013XsiN+pVLhmsqjkRpbKf7e3PWEL86aoFJL+f03v?=
+ =?us-ascii?Q?mTNFnz0O5CM/nJPjRXWgA/8387JGjSJara+8STF2CGLvgyENdw4VBnCNRoAs?=
+ =?us-ascii?Q?lMk658LAYNW5uXKfhgQGr7AZOac5Lm7nB6kPf3erSJsM8MowJwpFYEqIR4qv?=
+ =?us-ascii?Q?iQ7Xy2L7jw=3D=3D?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 960d6495-a2fb-460c-b6a1-08de85bfbb91
+X-MS-Exchange-CrossTenant-AuthSource: DS7PR12MB9473.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Mar 2026 13:59:27.2957
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: ywYTzJGDYYjf6VoPyKO85bKBKhFdsBcSPj+10+PyWKiYnq2whU44+Z1zL3/dQtBL
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR12MB999108
 
-On Thu, Mar 19, 2026 at 11:24:05AM +0800, Baolin Wang wrote:
-> The MMU notifier young flag check related functions only return whether
-> the young flag was set. Change the return type to bool to make the
-> intention clearer.
+On 19 Mar 2026, at 4:19, David Hildenbrand (Arm) wrote:
+
+> All architectures that select CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE also
+> select CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG. So we can just remove
+> CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE.
 >
-> Signed-off-by: Baolin Wang <baolin.wang@linux.alibaba.com>
-
-I can see KVM is the only user for the mmu_notifier_ops clear_flush_young,
-clear_young and test_young hooks, which map to
-kvm_mmu_notifier_[clear_flush,clear,test]_young() functions, and you have
-updated them all.
-
-So this LGTM with nits below, and so (with nits addressed as per the other R-b
-tags :):
-
-Reviewed-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
-
-Thanks for doing this! Int as bool is a pet peeve of mine :))
-
-Cheers, Lorenzo
-
+> For CONFIG_MIGRATION, make it depend on CONFIG_MEMORY_HOTREMOVE instead,
+> and make CONFIG_MEMORY_HOTREMOVE select CONFIG_MIGRATION (just like
+> CONFIG_CMA and CONFIG_COMPACTION already do).
+>
+> We'll clean up CONFIG_MIGRATION next.
+>
+> Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
 > ---
->  include/linux/mmu_notifier.h | 76 +++++++++++++++++-------------------
->  mm/internal.h                | 16 ++++----
->  mm/mmu_notifier.c            | 20 +++++-----
->  virt/kvm/kvm_main.c          | 40 +++++++++----------
->  4 files changed, 72 insertions(+), 80 deletions(-)
+>  arch/arm64/Kconfig     | 1 -
+>  arch/loongarch/Kconfig | 1 -
+>  arch/powerpc/Kconfig   | 1 -
+>  arch/riscv/Kconfig     | 1 -
+>  arch/s390/Kconfig      | 1 -
+>  arch/x86/Kconfig       | 1 -
+>  mm/Kconfig             | 9 +++------
+>  7 files changed, 3 insertions(+), 12 deletions(-)
 >
-> diff --git a/include/linux/mmu_notifier.h b/include/linux/mmu_notifier.h
-> index 3705d350c863..17f2cdc77dd5 100644
-> --- a/include/linux/mmu_notifier.h
-> +++ b/include/linux/mmu_notifier.h
-> @@ -97,20 +97,20 @@ struct mmu_notifier_ops {
->  	 * Start-end is necessary in case the secondary MMU is mapping the page
->  	 * at a smaller granularity than the primary MMU.
->  	 */
-> -	int (*clear_flush_young)(struct mmu_notifier *subscription,
-> -				 struct mm_struct *mm,
-> -				 unsigned long start,
-> -				 unsigned long end);
-> +	bool (*clear_flush_young)(struct mmu_notifier *subscription,
-> +				  struct mm_struct *mm,
-> +				  unsigned long start,
-> +				  unsigned long end);
->
->  	/*
->  	 * clear_young is a lightweight version of clear_flush_young. Like the
->  	 * latter, it is supposed to test-and-clear the young/accessed bitflag
->  	 * in the secondary pte, but it may omit flushing the secondary tlb.
->  	 */
-> -	int (*clear_young)(struct mmu_notifier *subscription,
-> -			   struct mm_struct *mm,
-> -			   unsigned long start,
-> -			   unsigned long end);
-> +	bool (*clear_young)(struct mmu_notifier *subscription,
-> +			    struct mm_struct *mm,
-> +			    unsigned long start,
-> +			    unsigned long end);
->
->  	/*
->  	 * test_young is called to check the young/accessed bitflag in
-> @@ -118,9 +118,9 @@ struct mmu_notifier_ops {
->  	 * frequently used without actually clearing the flag or tearing
->  	 * down the secondary mapping on the page.
->  	 */
-> -	int (*test_young)(struct mmu_notifier *subscription,
-> -			  struct mm_struct *mm,
-> -			  unsigned long address);
-> +	bool (*test_young)(struct mmu_notifier *subscription,
-> +			   struct mm_struct *mm,
-> +			   unsigned long address);
->
->  	/*
->  	 * invalidate_range_start() and invalidate_range_end() must be
-> @@ -376,14 +376,12 @@ mmu_interval_check_retry(struct mmu_interval_notifier *interval_sub,
->
->  extern void __mmu_notifier_subscriptions_destroy(struct mm_struct *mm);
->  extern void __mmu_notifier_release(struct mm_struct *mm);
-> -extern int __mmu_notifier_clear_flush_young(struct mm_struct *mm,
-> -					  unsigned long start,
-> -					  unsigned long end);
-> -extern int __mmu_notifier_clear_young(struct mm_struct *mm,
-> -				      unsigned long start,
-> -				      unsigned long end);
-> -extern int __mmu_notifier_test_young(struct mm_struct *mm,
-> -				     unsigned long address);
-> +bool __mmu_notifier_clear_flush_young(struct mm_struct *mm,
-> +		unsigned long start, unsigned long end);
-> +bool __mmu_notifier_clear_young(struct mm_struct *mm,
-> +		unsigned long start, unsigned long end);
-> +bool __mmu_notifier_test_young(struct mm_struct *mm,
-> +		unsigned long address);
->  extern int __mmu_notifier_invalidate_range_start(struct mmu_notifier_range *r);
->  extern void __mmu_notifier_invalidate_range_end(struct mmu_notifier_range *r);
->  extern void __mmu_notifier_arch_invalidate_secondary_tlbs(struct mm_struct *mm,
+Makes sense to me.
 
-I mean damn, at this point maybe it's legit to drop the surrounding externs here
-too? But maybe not :))
+Acked-by: Zi Yan <ziy@nvidia.com>
 
-> @@ -403,30 +401,28 @@ static inline void mmu_notifier_release(struct mm_struct *mm)
->  		__mmu_notifier_release(mm);
->  }
->
-> -static inline int mmu_notifier_clear_flush_young(struct mm_struct *mm,
-> -					  unsigned long start,
-> -					  unsigned long end)
-> +static inline bool mmu_notifier_clear_flush_young(struct mm_struct *mm,
-> +		unsigned long start, unsigned long end)
->  {
->  	if (mm_has_notifiers(mm))
->  		return __mmu_notifier_clear_flush_young(mm, start, end);
-> -	return 0;
-> +	return false;
->  }
->
-> -static inline int mmu_notifier_clear_young(struct mm_struct *mm,
-> -					   unsigned long start,
-> -					   unsigned long end)
-> +static inline bool mmu_notifier_clear_young(struct mm_struct *mm,
-> +		unsigned long start, unsigned long end)
->  {
->  	if (mm_has_notifiers(mm))
->  		return __mmu_notifier_clear_young(mm, start, end);
-> -	return 0;
-> +	return false;
->  }
->
-> -static inline int mmu_notifier_test_young(struct mm_struct *mm,
-> -					  unsigned long address)
-> +static inline bool mmu_notifier_test_young(struct mm_struct *mm,
-> +		unsigned long address)
->  {
->  	if (mm_has_notifiers(mm))
->  		return __mmu_notifier_test_young(mm, address);
-> -	return 0;
-> +	return false;
->  }
->
->  static inline void
-> @@ -552,24 +548,22 @@ static inline void mmu_notifier_release(struct mm_struct *mm)
->  {
->  }
->
-> -static inline int mmu_notifier_clear_flush_young(struct mm_struct *mm,
-> -					  unsigned long start,
-> -					  unsigned long end)
-> +static inline bool mmu_notifier_clear_flush_young(struct mm_struct *mm,
-> +		unsigned long start, unsigned long end)
->  {
-> -	return 0;
-> +	return false;
->  }
->
-> -static inline int mmu_notifier_clear_young(struct mm_struct *mm,
-> -					   unsigned long start,
-> -					   unsigned long end)
-> +static inline bool mmu_notifier_clear_young(struct mm_struct *mm,
-> +		unsigned long start, unsigned long end)
->  {
-> -	return 0;
-> +	return false;
->  }
->
-> -static inline int mmu_notifier_test_young(struct mm_struct *mm,
-> -					  unsigned long address)
-> +static inline bool mmu_notifier_test_young(struct mm_struct *mm,
-> +		unsigned long address)
->  {
-> -	return 0;
-> +	return false;
->  }
->
->  static inline void
-> diff --git a/mm/internal.h b/mm/internal.h
-> index 0eaca2f0eb6a..3d6eba216364 100644
-> --- a/mm/internal.h
-> +++ b/mm/internal.h
-> @@ -1831,10 +1831,10 @@ static inline int io_remap_pfn_range_complete(struct vm_area_struct *vma,
->  }
->
->  #ifdef CONFIG_MMU_NOTIFIER
-> -static inline int clear_flush_young_ptes_notify(struct vm_area_struct *vma,
-> +static inline bool clear_flush_young_ptes_notify(struct vm_area_struct *vma,
->  		unsigned long addr, pte_t *ptep, unsigned int nr)
->  {
-> -	int young;
-> +	bool young;
->
->  	young = clear_flush_young_ptes(vma, addr, ptep, nr);
->  	young |= mmu_notifier_clear_flush_young(vma->vm_mm, addr,
-> @@ -1842,30 +1842,30 @@ static inline int clear_flush_young_ptes_notify(struct vm_area_struct *vma,
->  	return young;
->  }
->
-> -static inline int pmdp_clear_flush_young_notify(struct vm_area_struct *vma,
-> +static inline bool pmdp_clear_flush_young_notify(struct vm_area_struct *vma,
->  		unsigned long addr, pmd_t *pmdp)
->  {
-> -	int young;
-> +	bool young;
->
->  	young = pmdp_clear_flush_young(vma, addr, pmdp);
->  	young |= mmu_notifier_clear_flush_young(vma->vm_mm, addr, addr + PMD_SIZE);
->  	return young;
->  }
->
-> -static inline int test_and_clear_young_ptes_notify(struct vm_area_struct *vma,
-> +static inline bool test_and_clear_young_ptes_notify(struct vm_area_struct *vma,
->  		unsigned long addr, pte_t *ptep, unsigned int nr)
->  {
-> -	int young;
-> +	bool young;
->
->  	young = test_and_clear_young_ptes(vma, addr, ptep, nr);
->  	young |= mmu_notifier_clear_young(vma->vm_mm, addr, addr + nr * PAGE_SIZE);
->  	return young;
->  }
->
-> -static inline int pmdp_test_and_clear_young_notify(struct vm_area_struct *vma,
-> +static inline bool pmdp_test_and_clear_young_notify(struct vm_area_struct *vma,
->  		unsigned long addr, pmd_t *pmdp)
->  {
-> -	int young;
-> +	bool young;
->
->  	young = pmdp_test_and_clear_young(vma, addr, pmdp);
->  	young |= mmu_notifier_clear_young(vma->vm_mm, addr, addr + PMD_SIZE);
-> diff --git a/mm/mmu_notifier.c b/mm/mmu_notifier.c
-> index 2502474b83b6..3e3e7e727ba2 100644
-> --- a/mm/mmu_notifier.c
-> +++ b/mm/mmu_notifier.c
-> @@ -364,12 +364,11 @@ void __mmu_notifier_release(struct mm_struct *mm)
->   * unmap the address and return 1 or 0 depending if the mapping previously
->   * existed or not.
->   */
-> -int __mmu_notifier_clear_flush_young(struct mm_struct *mm,
-> -					unsigned long start,
-> -					unsigned long end)
-> +bool __mmu_notifier_clear_flush_young(struct mm_struct *mm,
-> +		unsigned long start, unsigned long end)
->  {
->  	struct mmu_notifier *subscription;
-> -	int young = 0, id;
-> +	bool young = false, id;
->
->  	id = srcu_read_lock(&srcu);
->  	hlist_for_each_entry_srcu(subscription,
-> @@ -384,12 +383,11 @@ int __mmu_notifier_clear_flush_young(struct mm_struct *mm,
->  	return young;
->  }
->
-> -int __mmu_notifier_clear_young(struct mm_struct *mm,
-> -			       unsigned long start,
-> -			       unsigned long end)
-> +bool __mmu_notifier_clear_young(struct mm_struct *mm,
-> +		unsigned long start, unsigned long end)
->  {
->  	struct mmu_notifier *subscription;
-> -	int young = 0, id;
-> +	bool young = false, id;
->
->  	id = srcu_read_lock(&srcu);
->  	hlist_for_each_entry_srcu(subscription,
-> @@ -404,11 +402,11 @@ int __mmu_notifier_clear_young(struct mm_struct *mm,
->  	return young;
->  }
->
-> -int __mmu_notifier_test_young(struct mm_struct *mm,
-> -			      unsigned long address)
-> +bool __mmu_notifier_test_young(struct mm_struct *mm,
-> +		unsigned long address)
->  {
->  	struct mmu_notifier *subscription;
-> -	int young = 0, id;
-> +	bool young = false, id;
->
->  	id = srcu_read_lock(&srcu);
->  	hlist_for_each_entry_srcu(subscription,
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index d0ab29672c71..6bcfc1b3021d 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -646,11 +646,11 @@ static __always_inline kvm_mn_ret_t kvm_handle_hva_range(struct kvm *kvm,
->  	return r;
->  }
->
-> -static __always_inline int kvm_age_hva_range(struct mmu_notifier *mn,
-> -						unsigned long start,
-> -						unsigned long end,
-> -						gfn_handler_t handler,
-> -						bool flush_on_ret)
-> +static __always_inline bool kvm_age_hva_range(struct mmu_notifier *mn,
-> +					      unsigned long start,
-> +					      unsigned long end,
-> +					      gfn_handler_t handler,
-> +					      bool flush_on_ret)
-
-Can we please fix this terrrible indentation while we're here :)?
-
-static __always_inline bool kvm_age_hva_range(struct mmu_notifier *mn,
-		unsigned long start, unsigned long end, gfn_handler_t handler,
-		bool flush_on_ret)
-
-Would be nicer, thanks!
-
->  {
->  	struct kvm *kvm = mmu_notifier_to_kvm(mn);
->  	const struct kvm_mmu_notifier_range range = {
-> @@ -666,10 +666,10 @@ static __always_inline int kvm_age_hva_range(struct mmu_notifier *mn,
->  	return kvm_handle_hva_range(kvm, &range).ret;
->  }
->
-> -static __always_inline int kvm_age_hva_range_no_flush(struct mmu_notifier *mn,
-> -						      unsigned long start,
-> -						      unsigned long end,
-> -						      gfn_handler_t handler)
-> +static __always_inline bool kvm_age_hva_range_no_flush(struct mmu_notifier *mn,
-> +						       unsigned long start,
-> +						       unsigned long end,
-> +						       gfn_handler_t handler)
-
-Same indentation comment here.
-
->  {
->  	return kvm_age_hva_range(mn, start, end, handler, false);
->  }
-> @@ -829,10 +829,10 @@ static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
->  		rcuwait_wake_up(&kvm->mn_memslots_update_rcuwait);
->  }
->
-> -static int kvm_mmu_notifier_clear_flush_young(struct mmu_notifier *mn,
-> -					      struct mm_struct *mm,
-> -					      unsigned long start,
-> -					      unsigned long end)
-> +static bool kvm_mmu_notifier_clear_flush_young(struct mmu_notifier *mn,
-> +					       struct mm_struct *mm,
-> +					       unsigned long start,
-> +					       unsigned long end)
-
-Same indentation comment here.
-
->  {
->  	trace_kvm_age_hva(start, end);
->
-> @@ -840,10 +840,10 @@ static int kvm_mmu_notifier_clear_flush_young(struct mmu_notifier *mn,
->  				 !IS_ENABLED(CONFIG_KVM_ELIDE_TLB_FLUSH_IF_YOUNG));
->  }
->
-> -static int kvm_mmu_notifier_clear_young(struct mmu_notifier *mn,
-> -					struct mm_struct *mm,
-> -					unsigned long start,
-> -					unsigned long end)
-> +static bool kvm_mmu_notifier_clear_young(struct mmu_notifier *mn,
-> +					 struct mm_struct *mm,
-> +					 unsigned long start,
-> +					 unsigned long end)
-
-Same indentation comment here.
-
->  {
->  	trace_kvm_age_hva(start, end);
->
-> @@ -863,9 +863,9 @@ static int kvm_mmu_notifier_clear_young(struct mmu_notifier *mn,
->  	return kvm_age_hva_range_no_flush(mn, start, end, kvm_age_gfn);
->  }
->
-> -static int kvm_mmu_notifier_test_young(struct mmu_notifier *mn,
-> -				       struct mm_struct *mm,
-> -				       unsigned long address)
-> +static bool kvm_mmu_notifier_test_young(struct mmu_notifier *mn,
-> +					struct mm_struct *mm,
-> +					unsigned long address)
-
-Same indentation comment here.
-
->  {
->  	trace_kvm_test_age_hva(address);
->
-> --
-> 2.47.3
->
+Best Regards,
+Yan, Zi
 
