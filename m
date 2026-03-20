@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-18508-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18509-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A99681099B37
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2026 19:39:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 422B71099B37
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2026 19:40:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fctDG2V0mz2ydq;
-	Sat, 21 Mar 2026 06:39:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774035550;
-	cv=none; b=okChGTb0r03j1XaqzmT22O0YIurprP5p7Cv+oHRe3iUPK9WS5dwzNnBIThCOIJBHPFD75ygKTo9MvGBKtEFWa7nHABK2wUz6Kiw13IIQSoi/6HU5Vm+L7nIlUS3AjxaOozyT54pCDmsC2Ir6N6nAvQNTILm65yF+VnspjSdUT51ETR8ibvRmtAphuTiR6E6okzwMyb9PY76Sys5Q3dp9V2hGkXLGVQCKxNPRwMDBxK/kaFfQx5s7sPcWuk4NtZpFrHRq4dLJa1pd0+7jLEByq7GmPW2bNU01Ah4lSyncRBcgEjyE3Fqr8ETTIRfgVRi6YWJKpZgRgFkk/WfdgkV3Uw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fctDJ0YMXz2yvH;
+	Sat, 21 Mar 2026 06:39:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774035552;
+	cv=none; b=HLBWzWp6ZB4sJtFEtUOkLT/VzhyUqZY4nUyjIasd3xtLyc4Mdv5Jby74DqvMr13XtKiH2wDjB7v2ri5+mFVy2sPPyaMQTfXThSz4NMM1iCIvB6ZeQARXxy3fifis0tGdM73Opbk+IlE3HoPQKVGY9i4dEtMJSFT3uooLgE9LbZHzLY2vST69KrYpv4miMH/JbPdx7679Zjg+FbSD7Ps6tTRAq1W4R+vj1oPv2kIvAmTAUN3PWKj83G+wEZrJ9DffF6KTxMqqykcJjXHrocxhS1ydKGQoXeilSIPCmUR9K2Y/0ZsvAjVJGh04SF+mydZ27cBeAInHoH8WXCZ/MqMEhA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774035550; c=relaxed/relaxed;
-	bh=7Bh1w+z0JWOqUddQi7wko3Cw3Y50TUDCTLtrQm/GK+I=;
+	t=1774035552; c=relaxed/relaxed;
+	bh=/Z5avGS6EHhMJiTz187qMhIz4EdfpX9po9jzXvdoiEs=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=WGHixNyPPFK0lZP1bGmH6C22swojyC3+4dhXF0dw7JfGqHmQadatZhZB4ZJDqMN7gtAuTaD+OztmprqBZ3oFDhvHw44Wkt1Iz7GRSHmhbm6uj+eIy7MU9QKnGVvp8sZMBhT7FsRFS8XyHeOFYjbZKTpXnA+Dnvh3l3C7mC22TOL4k8Q029wPrJSIX6TSnLuZnR1GfGX7qXY13Q7dG6Pug679kwJrjqyaiFtphXW5Xu9ajhOuk/XUbPJh7It+Fg7YZjvrRHvCidBL2i3WueqYfi6t3QUpyp31+gPUlwWgRKgWQESpQsOuKij+IsBNu2AyLZ/u6/G9C+ll7PqZyKE1tg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Uhu53cZC; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=TZc832m9wEmH4IiVDGo8avT9NX+gDvAgeDQsXK3HQlVre+4SEtSRgbaO+JoJdfhVnzuwb5kHb/1bLtH2JqUvSuU4o1YWOcR6aWhdOy4zlw9QQvj8vhtFa3pluPY43vuFnbBXFgDp6TwJlal8K2NOYqUADkolPDwsArP400oSiXexhgR/t22rxQ/gc0FWWiAF1FYDPE22JYdjsJtr0sVc5MAFSgc+u4rb5TWRz4kpRRo8KBSsQtawjqLf3GjrXkDwBd7sTL8MTrn0fwn57UvrjNBkWgpX2LAcVTzxYbWgvTyXpr0edF9eOvqdakifiI3y4fu+9J1N1xIylPigtZN0Zw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=A8fVFJ3G; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Uhu53cZC;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=A8fVFJ3G;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fctDF3ycbz2yvH
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2026 06:39:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fctDH2QLpz307V
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2026 06:39:11 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id A2A0840A5D;
-	Fri, 20 Mar 2026 19:39:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0929DC2BCB0;
-	Fri, 20 Mar 2026 19:39:07 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id A361240AE1;
+	Fri, 20 Mar 2026 19:39:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1C1B1C19425;
+	Fri, 20 Mar 2026 19:39:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774035547;
-	bh=86x1e2KlqpteSaaM7lejP1Bl+dRpcwhLokvktrA9jqY=;
+	s=k20201202; t=1774035549;
+	bh=9aWXzHQRv4gbTjT9rqsyf0H1rogJGGwItdb5fmQ3ask=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Uhu53cZC/i9jnIgNtZl9DHyCJPNP7M2+7D0KPd9H0fOR7q4bemzt8shuQyEUWwhgw
-	 1ceG+HynjH/FwHZBb0jwxNV8M1Q8u6YMdqWyVhbOh8oWKDv5uQ4TGn6HzZegbrrAqH
-	 4TZ1iaZ6kqLTGCKwcLPz/ya6pD3aVyEPJTuAeq1ihituF+qqu/HxmZnuwCKmTMcuKw
-	 7SqEgTRKI6Q9dEnoOjZp4wk31l0zJ8YG/iHBXji2ff9HJpgBY20Q6q9JQccuLxQsOQ
-	 hGqeIqAOlGLcNYOfBJ7exBVzVbmnejqpV+UXJ5zxhlED6Nvu0YgE/UA8CGIIK7x8cD
-	 +7qbaWZY4pG/g==
+	b=A8fVFJ3GCBEUnRthGRP1kE/0URQNcl+KsRUsadd+fIhbQe/2gfYOv2D5S6mV0FVNZ
+	 IqByOoFx7gjlJH8WMXXirBT0TLE71Xaz7p3bBKO2IbHx1lWWFZj1nAedZ1DZN2fB3K
+	 BwlR7td0TPqdBqMNbeWCVoPUdCXxwwoNW1Nw9yUZyKVkBywUnZquLJ4ohjmSFySN6r
+	 7AGiYC8+L/ouGqqrMeqCtyGU6zBcUM0LT5S8L7egr7xFVMOju9p4zYJrNsSsk7SXqw
+	 SdHetqFtTo5raiZKWGQELIBuTzc51Mq23jvzKPe/a463OBWqpA4GP30daza6Swf3tW
+	 UthlC5Piprkdw==
 From: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: David Hildenbrand <david@kernel.org>,
@@ -107,9 +107,9 @@ Cc: David Hildenbrand <david@kernel.org>,
 	linux-um@lists.infradead.org,
 	linux-fsdevel@vger.kernel.org,
 	selinux@vger.kernel.org
-Subject: [PATCH v4 09/25] mm: unexport vm_brk_flags() and eliminate vm_flags parameter
-Date: Fri, 20 Mar 2026 19:38:26 +0000
-Message-ID: <7bada48ddf3f9dbd3e6c4fc50ec2f4de97706f52.1774034900.git.ljs@kernel.org>
+Subject: [PATCH v4 10/25] mm/vma: introduce vma_flags_same[_mask/_pair]()
+Date: Fri, 20 Mar 2026 19:38:27 +0000
+Message-ID: <4f764bf619e77205837c7c819b62139ef6337ca3.1774034900.git.ljs@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <cover.1774034900.git.ljs@kernel.org>
 References: <cover.1774034900.git.ljs@kernel.org>
@@ -128,102 +128,117 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This function is only used by elf_load(), and that is a static function
-that doesn't need an exported symbol to invoke an internal function, so
-un-EXPORT_SYMBOLS() it.
+Add helpers to determine if two sets of VMA flags are precisely the same,
+that is - that every flag set one is set in another, and neither contain
+any flags not set in the other.
 
-Also, the vm_flags parameter is unnecessary, as we only ever set VM_EXEC,
-so simply make this parameter a boolean.
+We also introduce vma_flags_same_pair() for cases where we want to compare
+two sets of VMA flags which are both non-const values.
 
-While we're here, clean up the mm.h definitions for the various vm_xxx()
-helpers so we actually specify parameter names and elide the redundant
-extern's.
+Also update the VMA tests to reflect the change, we already implicitly
+test that this functions correctly having used it for testing purposes
+previously.
 
 Acked-by: Vlastimil Babka (SUSE) <vbabka@kernel.org>
 Signed-off-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
 ---
- fs/binfmt_elf.c    |  3 +--
- include/linux/mm.h | 12 ++++++------
- mm/mmap.c          |  8 ++------
- 3 files changed, 9 insertions(+), 14 deletions(-)
+ include/linux/mm.h                 | 28 ++++++++++++++++++++++++++++
+ tools/testing/vma/include/custom.h | 11 -----------
+ tools/testing/vma/include/dup.h    | 21 +++++++++++++++++++++
+ 3 files changed, 49 insertions(+), 11 deletions(-)
 
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index fb857faaf0d6..16a56b6b3f6c 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -453,14 +453,13 @@ static unsigned long elf_load(struct file *filep, unsigned long addr,
- 		zero_end = ELF_PAGEALIGN(zero_end);
- 
- 		error = vm_brk_flags(zero_start, zero_end - zero_start,
--				     prot & PROT_EXEC ? VM_EXEC : 0);
-+				     prot & PROT_EXEC);
- 		if (error)
- 			map_addr = error;
- 	}
- 	return map_addr;
- }
- 
--
- static unsigned long total_mapping_size(const struct elf_phdr *phdr, int nr)
- {
- 	elf_addr_t min_addr = -1;
 diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 0c35423177bf..42d346684678 100644
+index 42d346684678..b170cee95e25 100644
 --- a/include/linux/mm.h
 +++ b/include/linux/mm.h
-@@ -4005,12 +4005,12 @@ static inline void mm_populate(unsigned long addr, unsigned long len) {}
- #endif
- 
- /* This takes the mm semaphore itself */
--extern int __must_check vm_brk_flags(unsigned long, unsigned long, unsigned long);
--extern int vm_munmap(unsigned long, size_t);
--extern unsigned long __must_check vm_mmap(struct file *, unsigned long,
--        unsigned long, unsigned long,
--        unsigned long, unsigned long);
--extern unsigned long __must_check vm_mmap_shadow_stack(unsigned long addr,
-+int __must_check vm_brk_flags(unsigned long addr, unsigned long request, bool is_exec);
-+int vm_munmap(unsigned long start, size_t len);
-+unsigned long __must_check vm_mmap(struct file *file, unsigned long addr,
-+		unsigned long len, unsigned long prot,
-+		unsigned long flag, unsigned long offset);
-+unsigned long __must_check vm_mmap_shadow_stack(unsigned long addr,
- 		unsigned long len, unsigned long flags);
- 
- struct vm_unmapped_area_info {
-diff --git a/mm/mmap.c b/mm/mmap.c
-index 79544d893411..2d2b814978bf 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -1201,8 +1201,9 @@ SYSCALL_DEFINE5(remap_file_pages, unsigned long, start, unsigned long, size,
- 	return ret;
+@@ -1207,6 +1207,34 @@ static __always_inline vma_flags_t vma_flags_diff_pair(const vma_flags_t *flags,
+ 	return dst;
  }
  
--int vm_brk_flags(unsigned long addr, unsigned long request, vm_flags_t vm_flags)
-+int vm_brk_flags(unsigned long addr, unsigned long request, bool is_exec)
- {
-+	const vm_flags_t vm_flags = is_exec ? VM_EXEC : 0;
- 	struct mm_struct *mm = current->mm;
- 	struct vm_area_struct *vma = NULL;
- 	unsigned long len;
-@@ -1217,10 +1218,6 @@ int vm_brk_flags(unsigned long addr, unsigned long request, vm_flags_t vm_flags)
- 	if (!len)
- 		return 0;
++/* Determine if flags and flags_other have precisely the same flags set. */
++static __always_inline bool vma_flags_same_pair(const vma_flags_t *flags,
++						const vma_flags_t *flags_other)
++{
++	const unsigned long *bitmap = flags->__vma_flags;
++	const unsigned long *bitmap_other = flags_other->__vma_flags;
++
++	return bitmap_equal(bitmap, bitmap_other, NUM_VMA_FLAG_BITS);
++}
++
++/* Determine if flags and flags_other have precisely the same flags set.  */
++static __always_inline bool vma_flags_same_mask(const vma_flags_t *flags,
++						vma_flags_t flags_other)
++{
++	const unsigned long *bitmap = flags->__vma_flags;
++	const unsigned long *bitmap_other = flags_other.__vma_flags;
++
++	return bitmap_equal(bitmap, bitmap_other, NUM_VMA_FLAG_BITS);
++}
++
++/*
++ * Helper macro to determine if only the specific flags are set, e.g.:
++ *
++ * if (vma_flags_same(&flags, VMA_WRITE_BIT) { ... }
++ */
++#define vma_flags_same(flags, ...) \
++	vma_flags_same_mask(flags, mk_vma_flags(__VA_ARGS__))
++
+ /*
+  * Helper to test that ALL specified flags are set in a VMA.
+  *
+diff --git a/tools/testing/vma/include/custom.h b/tools/testing/vma/include/custom.h
+index 8f33df02816a..2c498e713fbd 100644
+--- a/tools/testing/vma/include/custom.h
++++ b/tools/testing/vma/include/custom.h
+@@ -102,16 +102,5 @@ static inline unsigned long vma_kernel_pagesize(struct vm_area_struct *vma)
+ 	return PAGE_SIZE;
+ }
  
--	/* Until we need other flags, refuse anything except VM_EXEC. */
--	if ((vm_flags & (~VM_EXEC)) != 0)
--		return -EINVAL;
+-/* Place here until needed in the kernel code. */
+-static __always_inline bool vma_flags_same_mask(vma_flags_t *flags,
+-						vma_flags_t flags_other)
+-{
+-	const unsigned long *bitmap = flags->__vma_flags;
+-	const unsigned long *bitmap_other = flags_other.__vma_flags;
 -
- 	if (mmap_write_lock_killable(mm))
- 		return -EINTR;
- 
-@@ -1246,7 +1243,6 @@ int vm_brk_flags(unsigned long addr, unsigned long request, vm_flags_t vm_flags)
- 	mmap_write_unlock(mm);
- 	return ret;
+-	return bitmap_equal(bitmap, bitmap_other, NUM_VMA_FLAG_BITS);
+-}
+-#define vma_flags_same(flags, ...) \
+-	vma_flags_same_mask(flags, mk_vma_flags(__VA_ARGS__))
+ #define VMA_SPECIAL_FLAGS mk_vma_flags(VMA_IO_BIT, VMA_DONTEXPAND_BIT, \
+ 				       VMA_PFNMAP_BIT, VMA_MIXEDMAP_BIT)
+diff --git a/tools/testing/vma/include/dup.h b/tools/testing/vma/include/dup.h
+index 802b3d97b627..65f630923461 100644
+--- a/tools/testing/vma/include/dup.h
++++ b/tools/testing/vma/include/dup.h
+@@ -954,6 +954,27 @@ static __always_inline vma_flags_t vma_flags_diff_pair(const vma_flags_t *flags,
+ 	return dst;
  }
--EXPORT_SYMBOL(vm_brk_flags);
  
- static
- unsigned long tear_down_vmas(struct mm_struct *mm, struct vma_iterator *vmi,
++static __always_inline bool vma_flags_same_pair(const vma_flags_t *flags,
++						const vma_flags_t *flags_other)
++{
++	const unsigned long *bitmap = flags->__vma_flags;
++	const unsigned long *bitmap_other = flags_other->__vma_flags;
++
++	return bitmap_equal(bitmap, bitmap_other, NUM_VMA_FLAG_BITS);
++}
++
++static __always_inline bool vma_flags_same_mask(const vma_flags_t *flags,
++						vma_flags_t flags_other)
++{
++	const unsigned long *bitmap = flags->__vma_flags;
++	const unsigned long *bitmap_other = flags_other.__vma_flags;
++
++	return bitmap_equal(bitmap, bitmap_other, NUM_VMA_FLAG_BITS);
++}
++
++#define vma_flags_same(flags, ...) \
++	vma_flags_same_mask(flags, mk_vma_flags(__VA_ARGS__))
++
+ static inline bool vma_test_all_mask(const struct vm_area_struct *vma,
+ 				     vma_flags_t flags)
+ {
 -- 
 2.53.0
 
