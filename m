@@ -1,88 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-18480-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18481-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE2131093177
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2026 06:01:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 450FF1093192
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2026 08:48:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fcX5234Q7z2yY1;
-	Fri, 20 Mar 2026 17:01:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1034"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773986502;
-	cv=none; b=fvULo2w64TSkaQy1i1mmj8Cm5+wIrdG8bWNhFkBW3rZSWfiueprdpvqwDtMZy2RZ851V6hNBgZ8bUQKrkzdEAZXgaytOGHRKNerlROeKv4JdFCXPJJnel3lsMBJaFQd+3C6pIs/zRd4ZYQfn57Ng9YLegNebaRsp02CqguHEM4lNfVq150HbEUXEuYidfNRLs7o98/G5RaWRxo7xJbXDxA9VGbyoqXLUBvMqAAtLpuHWrjR5bx60fX8ca6RSzoT9ROsy4IyspRF2p7WyjZjN0eq9/JrGslaYFlr+UUkG2tT2tyY9MAHzHnLgq53yeLvFI3zXXAHGBeJZo1C6JNtlgQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fcbp16N3xz2yYY;
+	Fri, 20 Mar 2026 19:48:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773996537;
+	cv=none; b=ihOndAjlsxFuRDbgyNKVd0DjY9pJe0YSg+ZYBAJJcPLm1jlIRYqPiKltQxlHBOH0pgjA5rtKzAM/e18ft62D8HBBauMZFqXQZRFd+IO/mVT0ze5zZSjUh+wjuaLzrErprV1GIiBydfmLtUbDptZgg0Hp3ol+Pd3Wk62dS3wfp8Z8Jdqs8NJXTQfsoAR2EQoJBraZ7tczabdIaVjGZ8g2lh1ICp0WmAqVJkhfqLwKsF8DdqRXSBEVMiOSejEKZdaiva64/8IAy19PSeuJn8aOPPhudOZ2xWRzWK9j5hAw4frvN0gcTLFdgFl+XgCEVk9qEadRJiBpndbAuBXYI6v1LQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773986502; c=relaxed/relaxed;
-	bh=8rYZZhUBJa1FZRzIhufjJuk9/UKzqdxasYFupJHj42A=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=bgIF56TcQQaUYs/h+OWQQLGJCjq3KUxiWz9rin0TrNMWavLYupV0YQZ+XdFxaXpzqKnxwnbxy8+fEJ1wcJboWgpR1t5zB3/fp54Hl+vOD6dQi647QZxKzjbX8ksxtmz5LvIyJvdvbzCXo61n6DcKGIq8di2sEmIDJRNLVVtxJBZ7qVsgHA3S9EH1qtlAidjuNHYITg1fuSj1MwRsNmvN7ShITKvlSN805R/x/0f2DqZryiDD+BA6GqKmX1FIpzLZ3uG5oWXMH+Hq3hw7Z/3hN/CLVpZ/7YX4cX4/AaQkGB4GT56ixdGBSOKvPERQi29mJUjpYzN1QkHWXwPjYIYFbw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=J4uVP5XX; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1773996537; c=relaxed/relaxed;
+	bh=IIQYWNglnf1cpJWekLlvTi81VUzC2YvRS4Y7/+4rsT0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=mfjGyyioalhOY2lCljugWlBiVeVAVpz55bGx43QlNhVtx4KPUZOYwrKcV1yjPuPf3Hf4D6O8NsLV+4xPpOEz3GGSKPCbhSyckKUA36V4mjI6JaJDuaeyxe9NrWkdnndpmAj5nBX5wvRV2neBpTzwmMLd8FEjVUgk7tljhm/HjKDh4Pzv7h2yIKw8d4S4UnI7zpkuTxHrVogPdBfHDWxAIyNZLTXve///tPxz0JyKTGVVeIqnqKBlOOf9bxuovRrRzpQaaKHTy9aBCsCzE3pk/eCLSDColAHo09bEhPyE8WRgVLDGNw6ErvL1/qQ4Fe+p7tv4J8Z/rkasz6WDPqdTCA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aVDuHUfd; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=J4uVP5XX;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aVDuHUfd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com [IPv6:2607:f8b0:4864:20::1034])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fcX513szHz2xm5
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2026 17:01:40 +1100 (AEDT)
-Received: by mail-pj1-x1034.google.com with SMTP id 98e67ed59e1d1-35b95a7444bso157948a91.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 23:01:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1773986499; x=1774591299; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=8rYZZhUBJa1FZRzIhufjJuk9/UKzqdxasYFupJHj42A=;
-        b=J4uVP5XXjkSj0fXc1VKDkqheFs0hdlceJvgGj7AToiljQxldFVgDuDTFm047+0yF+Q
-         2UTxSTMiow4FKe6q1usDdZ5kmvmfO6wUoNoLJGiBNy9rwZByE6lpUnEakgqM8lm1qind
-         ozf41kpahzr3ttp1cqD47BD9N83XZpUwoCU/CiRtzKglyBr7PPcmoogPCZNbAP+qAYx6
-         NJWMnzEl9BE3Eas14G4XU7b+Tz4IxbeKW6yUg/DyQCKGP63vQVodQsIU3Yf0H/u8iEsk
-         8Vlftq50Z+sZm/TSQOJjQ/4WyDrLyxmIDAUT88HV6b7VIEsZyItZdqh4w+/HUErxSPPZ
-         VL/g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773986499; x=1774591299;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=8rYZZhUBJa1FZRzIhufjJuk9/UKzqdxasYFupJHj42A=;
-        b=jfKDZJSXX6S/30K+MZIWDIleZfFkuTwd1z8e4Fr34HUAiBX7+XgDQKM3IhspC203hF
-         eXl8hdVW+KFYuKQoqJyjAh8Fs0vC5Ak/kJWD05t5hJ9kzqeMQDJ5OKIRTvRCAOkZXEif
-         +xAmC0TWEG2uex2/TozrXPK3+9X93kKPFEVT0Dlw8YLRvKn7JsafZ1NIaeiyf8nDNq23
-         5aM7+3FPCLaREx1zNP7ucUEnQjeAigYL9r3G1wMoyI4jPV1oQ+aDtMkn8GL/OHxJaVXa
-         87kSzSsvr8qFrws6gFOM1rdZnz9XZvgpDm80W2YnAnVjM21XplfR480G72nQ/x02DA8a
-         Rabw==
-X-Forwarded-Encrypted: i=1; AJvYcCUKAe/0Gn5Qhvg1zYuVhYp8ZHn5nzFlxYiawgWZtXt+hhJSo4cKZlP73AUoQ1v4mIDYaCfSbGl8xmT0vuU=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx8wnNSSSsgNUKy4rffOIEDARnsMd/PGyhHjoo8nOIAUJ+B7t78
-	2veFcpFJB6FF3eH14fn/ClysSVhZYjhqk70fHFVTjHbbuHti2+QVAiaT
-X-Gm-Gg: ATEYQzy6OlxBoS+wadB9kpsp3628uaZQOKu1bCb8y9lZQcmaernczKfAvRVh4VgZoWK
-	Lwc5ROhBRx/PQXlwxwb4BjDWl/ApUMV7IDNKt/1KCKtgyujI/555XnE9ttXksGVXOCaBEw4qTX3
-	Na3tB7qh60lE5SaChUQ+VVG6InO78Lc+hJD77GzLUPtKga/+5NKkUKj7n6AsMd2iMiNfgRiPxpQ
-	uq5fWBHKz/e4cIkSYGaTNzTL+okfLMFOyF+mYx0R29d8Swt719B2dQ00QEBCuiPIeQy5+nqm6zZ
-	M3dWl0eKu5DNTgiYfi58eCwGafUXMKBqAYRQnIku5JQ+PVS9Q/nwFWNPKiEaGvfOi1ULC2Ts7rO
-	DfLY+OQmdQLcf9ekrJGBG0Ai1zyhdONKb83jhmYKSubIQPpTSvDcek//RlvMdLEVY70pEjyjbMk
-	g7O9vZSfpenz8saWFS7/M56us3Rj3PuU2vk9OwjVySmsFO1ThMyEfsP3S4k4W8HFblXrGVTpwDR
-	pIlVumohw==
-X-Received: by 2002:a17:90b:4acb:b0:352:ccae:fe62 with SMTP id 98e67ed59e1d1-35bd2be6dcamr1563252a91.10.1773986498759;
-        Thu, 19 Mar 2026 23:01:38 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([49.207.193.112])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35bc5ff6789sm4491798a91.1.2026.03.19.23.01.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 19 Mar 2026 23:01:38 -0700 (PDT)
-Date: Fri, 20 Mar 2026 11:31:32 +0530
-From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: Yury Norov <ynorov@nvidia.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Thomas Gleixner <tglx@kernel.org>, 
-	Nam Cao <namcao@linutronix.de>, "Jiri Slaby (SUSE)" <jirislaby@kernel.org>, 
-	Kees Cook <kees@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
-	Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 0/2] powerpc/xive: rework xive_find_target_in_mask()
-Message-ID: <abzihT4xYCe65gVC@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <20260319033647.881246-1-ynorov@nvidia.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fcbp072DDz2yY9
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2026 19:48:56 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id D799E60121;
+	Fri, 20 Mar 2026 08:48:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 69C6FC4CEF7;
+	Fri, 20 Mar 2026 08:48:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773996533;
+	bh=AVThdTFHSI3D63/uFwXEr2OGdo0OiWz7degFLaawtVQ=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=aVDuHUfdDD8S+qMhhcb+8iyq+IuTk2K0qpRAv1mnSPjQTT7GWau5uX1CNTdDtfR/0
+	 LFp++8Dnz2QwIE1kWsO/Av6uPpJORJ9xnJDFjFTcwzcgktO9VxcKv+wSUvrzz529wf
+	 Jleh6q8+Izcw8eTwQjx9H+19qhhqrrp8JH/iFcDfQPCQTH5ptvLmvsD0tj3RuwnSdm
+	 11tBmRkm8T9VJyB6mHacHEUYXp0QrFVfjmR41FNwWWw2f9UTt8GR5oY9fomV0MX3gt
+	 Xge1GZpeSPAeqwc5HQZYEgN6ad+xpQ+XJTcqZodE/t9TJgLMJDqXmC2Sy8iqPyspGC
+	 oOpqQ4TUqrEMQ==
+Message-ID: <7bd728dc-f370-4e64-a120-bd8fdcd3207a@kernel.org>
+Date: Fri, 20 Mar 2026 09:48:40 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,27 +59,70 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260319033647.881246-1-ynorov@nvidia.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 13/23] mm/vma: introduce vma_test[_any[_mask]](), and
+ make inlining consistent
+Content-Language: en-US
+To: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>
+Cc: David Hildenbrand <david@kernel.org>,
+ "Liam R . Howlett" <Liam.Howlett@oracle.com>, Jann Horn <jannh@google.com>,
+ Pedro Falcato <pfalcato@suse.de>, Mike Rapoport <rppt@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>, Kees Cook <kees@kernel.org>,
+ linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ Vineet Gupta <vgupta@kernel.org>, Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ Brian Cain <bcain@kernel.org>, Huacai Chen <chenhuacai@kernel.org>,
+ WANG Xuerui <kernel@xen0n.name>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Dinh Nguyen <dinguyen@kernel.org>, Madhavan Srinivasan
+ <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>,
+ Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ "H . Peter Anvin" <hpa@zytor.com>, Richard Weinberger <richard@nod.at>,
+ Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+ Johannes Berg <johannes@sipsolutions.net>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
+ Xu Xin <xu.xin16@zte.com.cn>, Chengming Zhou <chengming.zhou@linux.dev>,
+ Michal Hocko <mhocko@suse.com>, Paul Moore <paul@paul-moore.com>,
+ Stephen Smalley <stephen.smalley.work@gmail.com>,
+ Ondrej Mosnacek <omosnace@redhat.com>, linux-snps-arc@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, linux-hexagon@vger.kernel.org,
+ loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, linux-um@lists.infradead.org,
+ linux-fsdevel@vger.kernel.org, selinux@vger.kernel.org
+References: <cover.1773846935.git.ljs@kernel.org>
+ <7ea63af87bd35f20b204a14ad4912592e02b15a6.1773846935.git.ljs@kernel.org>
+From: "Vlastimil Babka (SUSE)" <vbabka@kernel.org>
+In-Reply-To: <7ea63af87bd35f20b204a14ad4912592e02b15a6.1773846935.git.ljs@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Wed, Mar 18, 2026 at 11:36:44PM -0400, Yury Norov wrote:
-> Simplify the function by switching to using a modern cpumask API.
+On 3/18/26 16:50, Lorenzo Stoakes (Oracle) wrote:
+> Introduce helper functions and macros to make it convenient to test flags
+> and flag masks for VMAs, specifically:
 > 
-> Yury Norov (2):
->   Revert "powerpc/xive: Fix the size of the cpumask used in
->     xive_find_target_in_mask()"
->   powerpc/xive: rework xive_find_target_in_mask()
+> * vma_test() - determine if a single VMA flag is set in a VMA.
+> * vma_test_any_mask() - determine if any flags in a vma_flags_t value are
+> 			set in a VMA.
+> * vma_test_any() - Helper macro to test if any of specific flags are set.
 > 
->  arch/powerpc/sysdev/xive/common.c | 31 ++++++-------------------------
->  1 file changed, 6 insertions(+), 25 deletions(-)
+> Also, there are a mix of 'inline's and '__always_inline's in VMA helper
+> function declarations, update to consistently use __always_inline.
 > 
-> -- 
-> 2.43.0
+> Finally, update the VMA tests to reflect the changes.
 > 
-Tested the whole series with 
-https://lore.kernel.org/all/20260320054202.3245144-2-mkchauras@gmail.com/
+> Signed-off-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
 
-Tested-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+Acked-by: Vlastimil Babka (SUSE) <vbabka@kernel.org>
+
 
