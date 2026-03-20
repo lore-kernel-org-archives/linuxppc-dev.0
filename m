@@ -1,84 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-18492-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18493-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7BCF61098782
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2026 13:43:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8F8D1098792
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2026 14:32:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fckKc6z1zz2yY1;
-	Sat, 21 Mar 2026 00:43:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fclQn1ttCz2yYy;
+	Sat, 21 Mar 2026 01:32:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774014196;
-	cv=none; b=N64Q7jsIDwNIxENe84GIp5NCoYD1SMFlfjk8oSEzfssrn1gaa4eweNHr8jaqZ7InxUE2Uxgxe1XsmuEAk0w5RVCL5UbuLr6j7530Dz6vxl3eYPJ1YUhavArcZjJ/s4DnZPImak6KuYzpOxZIlq4WzqT9CuVQbAXq9elxZJGUhUyu3irHWcxIvLeKYpiEAzgpgPB/CwT/dX8zwkMzkF4C656e939L5ZtQu6HNton2fVmlGpEpFBMZafLTZal2jHNih6iu7UjwipfE/d31VB0z0w5JPHGuWtDB0JKtIbPhyY3X/u59mVhzL5faDwNb8KLY8YVr9zn/7h4n9WYloVc5yQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774017169;
+	cv=none; b=lt2O/sq8rKnhhxFu0ZSB7AfEMgG3yUtIDEdDr+uzkN7UDK1V9yTylj7aQ6Zh1m2Mdamsf6iGVBAyGU7d1zsfHBuVZOLAec9UbpmMTOXLJVf8KiFT/tl0cbWNApB2oRrScrwLJFWneLo3V3JOpaCvW0OTKhkDXNTZXyOVywIvRpnxHeW/YUd0dB13xUeKUCMkpJAyxnoEnQO/geS8JOnGko6EVOpXpV7L9UAtr4Ew/mxzka4oGu61xDkLM98KrRvLUifd0jQ3rstssL6WuerhFTNey+bBMLUPlRJRwhQKs2Fn2FROzwajmztA1z0LuiafsyFrz0GlY+VRYAsLA/FM2A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774014196; c=relaxed/relaxed;
-	bh=v/GF5cWba+z/Oi/4Q2mOyFeXrJeBcJW7/GUHv41K0pA=;
+	t=1774017169; c=relaxed/relaxed;
+	bh=jN8LPlcnWIT+O9lUgiEHJlx5i4AzCKqrrRl+PmDT8sg=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=gEOcY3VSswA6SgQFgj+6cMBG5xdolZ9l8jwW8iinwrIYUwwrlJ5Gh3MxUX/QXSY2Xu2zeo12B7CQGp1zCxmPisQ2Y5PQYqo7Tdda5QDisN4P/s6hyQsYETkRh97W6xN7nwHmx4XokgGeBMTTmnHtuO7TcFuqFPEAsaiu63eiw50Aftl6o8y9dzCYjEHZe5pX4f2+LmjqaMnjEVGWbT+53BEcW0KPdUjY59puOTmswY/y1oppNGCuWWpiPGle9KwtZkL2ejsicx0yBcEJx9r0mqvoMFqvg772J46LKgltt+i3wUwMTOjkpj2m9eacaQbbCHu2JK6KVTkTkqUb3QUphw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gK3cDFvh; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=Jekf/gv5sFBUmLM/fp1LJnLsCt8vpSqJnkfpb46Rmy4VGLeX/IFNAex1JNgNnQsxWQTbrIx36HjKVz55/XsX/CFMtppprdXfC7NK5QXJ2HaG2cl7jC0aqXucHMP2ZfXfO4KB+v2QP6rliNbWi4SG84hDYBPMorIWymP00yhRZkjrZCu1AsXcshis5/RMgqpPujYODDhfFid4AZDJ6obAtJqVVVDpqHgN/hTf4W6pb2dCrKASWtQKGo37tDVEZuEwfGa6+08r5527VvbRZLNUfoLZBEnSQAzKmCyU7fq4e5sgzoqXZD4yHxH8DY77NVCenVvxxm7JLW8MLA2+U5lCrw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=f4bIz4mq; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=frederic@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gK3cDFvh;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=f4bIz4mq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=frederic@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fckKb6CdZz2xKh
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2026 00:43:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fclQm2LjYz2yY9
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2026 01:32:48 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 575AB61860;
-	Fri, 20 Mar 2026 13:43:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id ADD9AC2BCB2;
-	Fri, 20 Mar 2026 13:42:59 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id D0D5261865;
+	Fri, 20 Mar 2026 14:32:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0EBA9C4CEF7;
+	Fri, 20 Mar 2026 14:32:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774014192;
-	bh=DyFuJFml7YVo8+/hTBGS9GQt/nh4Xv5125sbhWsDy3w=;
+	s=k20201202; t=1774017165;
+	bh=1NvHpmAa9Fni/8l7sXhAcVnHca3tIOm2h91PDLFzmVU=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=gK3cDFvh7dEcs9L3VC7fj0P6IM5YMZ5Mdb7e1aiwqcjRMNtOygIPq2gaIILFuUtTM
-	 vmqMlCjBU/8YqWSrn8GlSD1mbnyZvleBSG4NBi3zJJ69IUJMAI0DEdStZKy+UW0TaS
-	 RKgp2laFc8jVyXbKre2JResrGO8+VbexZHvQVEUDnIaYf1/UBEaFtXzWQkyAGtWvAC
-	 EC8EOzLMExEfD4QvcP/5iHkGjSQVu/uJiaSVg5HYyjsbtJBNdghidoAN6SiQA2nRu6
-	 m51U9AIWacLgoG0wrPS7G6Dn4d7v54+3rpqqUTSWe8f3RYfxZqr7UHrfRbAGSUWvmM
-	 y4Zk3Ov3DoF0w==
-Date: Fri, 20 Mar 2026 13:42:57 +0000
-From: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
-To: "Vlastimil Babka (SUSE)" <vbabka@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, 
-	David Hildenbrand <david@kernel.org>, "Liam R . Howlett" <Liam.Howlett@oracle.com>, 
-	Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, 
-	Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
-	Kees Cook <kees@kernel.org>, linux-mm@kvack.org, linux-kernel@vger.kernel.org, 
-	Vineet Gupta <vgupta@kernel.org>, Russell King <linux@armlinux.org.uk>, 
-	Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Brian Cain <bcain@kernel.org>, 
-	Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Dinh Nguyen <dinguyen@kernel.org>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, 
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
-	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
-	Alexander Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
-	Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@kernel.org>, 
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, "H . Peter Anvin" <hpa@zytor.com>, 
-	Richard Weinberger <richard@nod.at>, Anton Ivanov <anton.ivanov@cambridgegreys.com>, 
-	Johannes Berg <johannes@sipsolutions.net>, Alexander Viro <viro@zeniv.linux.org.uk>, 
-	Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, Xu Xin <xu.xin16@zte.com.cn>, 
-	Chengming Zhou <chengming.zhou@linux.dev>, Michal Hocko <mhocko@suse.com>, Paul Moore <paul@paul-moore.com>, 
-	Stephen Smalley <stephen.smalley.work@gmail.com>, Ondrej Mosnacek <omosnace@redhat.com>, 
-	linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-	linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
-	linux-um@lists.infradead.org, linux-fsdevel@vger.kernel.org, selinux@vger.kernel.org
-Subject: Re: [PATCH v3 17/23] mm: convert do_brk_flags() to use vma_flags_t
-Message-ID: <f47e24c4-3a11-4a58-96f5-871443660246@lucifer.local>
-References: <cover.1773846935.git.ljs@kernel.org>
- <981ed1afcd19115432e61778e7d226a36f8f5c2b.1773846935.git.ljs@kernel.org>
- <1d300b3b-2476-4381-b8df-a680f486b284@kernel.org>
+	b=f4bIz4mqNx8xJQ5yuRzB6rR6NAc63jDuiaEcDCWvutRBdmEhe8xMH24RDEiPMRem7
+	 uxOP0FR8I8xYjcGJTaYlXw0DNguxaf77vvGHs2Oc3ylv6EApITdDLmSEY2o8bNRZ5s
+	 2qwjX0KizCN7daNyG9Q5TXk3O8hjk8boyBH69lPq5xzoQ96nH6AotcVzVaACyH4ym3
+	 Si1V8IlTDX+izjBcrST12nY8bcyP4bHHvh3PDy8t9DH/COsXQ59nvAXfuuvAJgA8cR
+	 1luz4t69IPyL+JJAAJRAEwXaSzBN2I5+8sKy54FF1GrZ7OnaeWG71qImKoXSRCOWI/
+	 R5+HyhxH6wqNA==
+Date: Fri, 20 Mar 2026 15:32:42 +0100
+From: Frederic Weisbecker <frederic@kernel.org>
+To: Shrikanth Hegde <sshegde@linux.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Anna-Maria Behnsen <anna-maria@linutronix.de>,
+	Ben Segall <bsegall@google.com>, Boqun Feng <boqun.feng@gmail.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Heiko Carstens <hca@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+	Jan Kiszka <jan.kiszka@siemens.com>,
+	Joel Fernandes <joelagnelf@nvidia.com>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Kieran Bingham <kbingham@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Mel Gorman <mgorman@suse.de>, Michael Ellerman <mpe@ellerman.id.au>,
+	Neeraj Upadhyay <neeraj.upadhyay@kernel.org>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Paul E . McKenney" <paulmck@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Uladzislau Rezki <urezki@gmail.com>,
+	Valentin Schneider <vschneid@redhat.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Xin Zhao <jackzxcui1989@163.com>, linux-pm@vger.kernel.org,
+	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 14/15] sched/cputime: Handle idle irqtime gracefully
+Message-ID: <ab1airBcTiyxTgvH@localhost.localdomain>
+References: <20260206142245.58987-1-frederic@kernel.org>
+ <20260206142245.58987-15-frederic@kernel.org>
+ <415e925a-e9f0-40ad-9f53-263dd34dd2a9@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,233 +94,124 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1d300b3b-2476-4381-b8df-a680f486b284@kernel.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <415e925a-e9f0-40ad-9f53-263dd34dd2a9@linux.ibm.com>
 
-On Fri, Mar 20, 2026 at 10:57:32AM +0100, Vlastimil Babka (SUSE) wrote:
-> On 3/18/26 16:50, Lorenzo Stoakes (Oracle) wrote:
-> > In order to be able to do this, we need to change VM_DATA_DEFAULT_FLAGS
-> > and friends and update the architecture-specific definitions also.
-> >
-> > We then have to update some KSM logic to handle VMA flags, and introduce
-> > VMA_STACK_FLAGS to define the vma_flags_t equivalent of VM_STACK_FLAGS.
-> >
-> > We also introduce two helper functions for use during the time we are
-> > converting legacy flags to vma_flags_t values - vma_flags_to_legacy() and
-> > legacy_to_vma_flags().
->
-> Nit: this was done by an earlier patch.
+Le Tue, Mar 03, 2026 at 04:41:18PM +0530, Shrikanth Hegde a écrit :
+> Hi Frederic,
+> 
+> On 2/6/26 7:52 PM, Frederic Weisbecker wrote:
+> > The dyntick-idle cputime accounting always assumes that IRQ time
+> > accounting is enabled and consequently stops elapsing the idle time
+> > during dyntick-idle IRQs.
+> > 
+> > This doesn't mix up well with disabled IRQ time accounting because then
+> > idle IRQs become a cputime blind-spot. Also this feature is disabled
+> > on most configurations and the overhead of pausing dyntick-idle
+> > accounting while in idle IRQs could then be avoided.
+> > 
+> > Fix the situation with conditionally pausing dyntick-idle accounting
+> > during idle IRQs only if neither native vtime (which does IRQ time
+> > accounting) nor generic IRQ time accounting are enabled.
+> > 
+> > Also make sure that the accumulated IRQ time is not accidentally
+> > substracted from later accounting.
+> > 
+> > Signed-off-by: Frederic Weisbecker <frederic@kernel.org>
+> > ---
+> >   kernel/sched/cputime.c | 24 +++++++++++++++++++++---
+> >   kernel/sched/sched.h   |  1 +
+> >   2 files changed, 22 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/kernel/sched/cputime.c b/kernel/sched/cputime.c
+> > index d588a4a50e57..92fa2f037b6e 100644
+> > --- a/kernel/sched/cputime.c
+> > +++ b/kernel/sched/cputime.c
+> > @@ -46,7 +46,8 @@ static void irqtime_account_delta(struct irqtime *irqtime, u64 delta,
+> >   	u64_stats_update_begin(&irqtime->sync);
+> >   	cpustat[idx] += delta;
+> >   	irqtime->total += delta;
+> > -	irqtime->tick_delta += delta;
+> > +	if (!irqtime->idle_dyntick)
+> > +		irqtime->tick_delta += delta;
+> 
+> Wouldn't kcpustat_idle_dyntick achieve the same thing?
 
-Ack will fix up.
+Yes indeed.
 
->
-> > This enables us to iteratively make changes to break these changes up into
-> > separate parts.
-> >
-> > We use these explicitly here to keep VM_STACK_FLAGS around for certain
-> > users which need to maintain the legacy vm_flags_t values for the time
-> > being.
-> >
-> > We are no longer able to rely on the simple VM_xxx being set to zero if
-> > the feature is not enabled, so in the case of VM_DROPPABLE we introduce
-> > VMA_DROPPABLE as the vma_flags_t equivalent, which is set to
-> > EMPTY_VMA_FLAGS if the droppable flag is not available.
-> >
-> > While we're here, we make the description of do_brk_flags() into a kdoc
-> > comment, as it almost was already.
-> >
-> > We use vma_flags_to_legacy() to not need to update the vm_get_page_prot()
-> > logic as this time.
-> >
-> > Note that in create_init_stack_vma() we have to replace the BUILD_BUG_ON()
-> > with a VM_WARN_ON_ONCE() as the tested values are no longer build time
-> > available.
-> >
-> > We also update mprotect_fixup() to use VMA flags where possible, though we
-> > have to live with a little duplication between vm_flags_t and vma_flags_t
-> > values for the time being until further conversions are made.
-> >
-> > Finally, we update the VMA tests to reflect these changes.
-> >
-> > Acked-by: Paul Moore <paul@paul-moore.com>	[SELinux]
-> > Signed-off-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
->
-> Acked-by: Vlastimil Babka (SUSE) <vbabka@kernel.org>
-
-Thanks!
-
->
-> More nits below:
->
-> > diff --git a/arch/arm64/include/asm/page.h b/arch/arm64/include/asm/page.h
-> > index b39cc1127e1f..e25d0d18f6d7 100644
-> > --- a/arch/arm64/include/asm/page.h
-> > +++ b/arch/arm64/include/asm/page.h
-> > @@ -46,7 +46,12 @@ int pfn_is_map_memory(unsigned long pfn);
-> >
-> >  #endif /* !__ASSEMBLER__ */
-> >
-> > -#define VM_DATA_DEFAULT_FLAGS	(VM_DATA_FLAGS_TSK_EXEC | VM_MTE_ALLOWED)
-> > +#ifdef CONFIG_ARM64_MTE
-> > +#define VMA_DATA_DEFAULT_FLAGS	append_vma_flags(VMA_DATA_FLAGS_TSK_EXEC, \
-> > +						 VMA_MTE_ALLOWED_BIT)
->
-> I wonder what's the bloat-o-meter impact of these #define's (this
-> arm64-specific one isn't the only one) being no longer compile-time-constants?
-
-I mean there's a precedent for this, but the compiler _should_ figure out this
-as a constant value, I have repeatedly confirmed that it's good at that in
-godbolt, via make foo/bar.S etc.
-
-So it should have no measureable impact at 64-bit VMA flags anyway, but I can
-give it a go and see before/after.
-
->
-> > +#else
-> > +#define VMA_DATA_DEFAULT_FLAGS	VMA_DATA_FLAGS_TSK_EXEC
-> > +#endif
-> >
-> >  #include <asm-generic/getorder.h>
-> >
->
-> > --- a/include/linux/mm.h
-> > +++ b/include/linux/mm.h
->
-> >
-> > +#define VMA_STACK_FLAGS	append_vma_flags(VMA_STACK_DEFAULT_FLAGS,	\
-> > +		VMA_STACK_BIT, VMA_ACCOUNT_BIT)
-> > +
-> > +/* Temporary until VMA flags conversion complete. */
-> > +#define VM_STACK_FLAGS vma_flags_to_legacy(VMA_STACK_FLAGS)
-> > +
-> >  #define VM_STARTGAP_FLAGS (VM_GROWSDOWN | VM_SHADOW_STACK)
-> >
-> >  #ifdef CONFIG_MSEAL_SYSTEM_MAPPINGS
-> > @@ -536,8 +547,6 @@ enum {
-> >  #define VM_SEALED_SYSMAP	VM_NONE
-> >  #endif
-> >
-> > -#define VM_STACK_FLAGS	(VM_STACK | VM_STACK_DEFAULT_FLAGS | VM_ACCOUNT)
-> > -
-> >  /* VMA basic access permission flags */
-> >  #define VM_ACCESS_FLAGS (VM_READ | VM_WRITE | VM_EXEC)
-> >  #define VMA_ACCESS_FLAGS mk_vma_flags(VMA_READ_BIT, VMA_WRITE_BIT, VMA_EXEC_BIT)
-> > @@ -547,6 +556,9 @@ enum {
-> >   */
-> >  #define VM_SPECIAL (VM_IO | VM_DONTEXPAND | VM_PFNMAP | VM_MIXEDMAP)
-> >
-> > +#define VMA_SPECIAL_FLAGS mk_vma_flags(VMA_IO_BIT, VMA_DONTEXPAND_BIT, \
-> > +				       VMA_PFNMAP_BIT, VMA_MIXEDMAP_BIT)
->
-> Should VM_SPECIAL be also redefined using vma_flags_to_legacy()?
-
-Could do! It should be a pretty clear indicator this is legacy.
-
->
-> > +
-> >  /*
-> >   * Physically remapped pages are special. Tell the
-> >   * rest of the world about it:
-> > @@ -1412,7 +1424,7 @@ static __always_inline void vma_desc_set_flags_mask(struct vm_area_desc *desc,
-> >   * vm_area_desc object describing a proposed VMA, e.g.:
-> >   *
-> >   * vma_desc_set_flags(desc, VMA_IO_BIT, VMA_PFNMAP_BIT, VMA_DONTEXPAND_BIT,
-> > - *		VMA_DONTDUMP_BIT);
-> > + *              VMA_DONTDUMP_BIT);
->
-> Looks like spurious tabs-to-space change inconsistent with other instances.
-
-Yeah that's a mistake, will fixup.
-
->
-> >   */
-> >  #define vma_desc_set_flags(desc, ...) \
-> >  	vma_desc_set_flags_mask(desc, mk_vma_flags(__VA_ARGS__))
-> > @@ -4059,7 +4071,6 @@ extern int replace_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file);
-> >  extern struct file *get_mm_exe_file(struct mm_struct *mm);
-> >  extern struct file *get_task_exe_file(struct task_struct *task);
-> >
-> > -extern bool may_expand_vm(struct mm_struct *, vm_flags_t, unsigned long npages);
-> >  extern void vm_stat_account(struct mm_struct *, vm_flags_t, long npages);
-> >
-> >  extern bool vma_is_special_mapping(const struct vm_area_struct *vma,
-> > diff --git a/mm/internal.h b/mm/internal.h
-> > index f98f4746ac41..80d8651441a7 100644
->
-> > diff --git a/mm/mprotect.c b/mm/mprotect.c
-> > index 9681f055b9fc..eaa724b99908 100644
-> > --- a/mm/mprotect.c
-> > +++ b/mm/mprotect.c
->
-> > @@ -773,19 +778,24 @@ mprotect_fixup(struct vma_iterator *vmi, struct mmu_gather *tlb,
-> >
-> >  	change_protection(tlb, vma, start, end, mm_cp_flags);
-> >
-> > -	if ((oldflags & VM_ACCOUNT) && !(newflags & VM_ACCOUNT))
-> > +	if (vma_flags_test(&old_vma_flags, VMA_ACCOUNT_BIT) &&
-> > +	    !vma_flags_test(&new_vma_flags, VMA_ACCOUNT_BIT))
-> >  		vm_unacct_memory(nrpages);
-> >
-> >  	/*
-> >  	 * Private VM_LOCKED VMA becoming writable: trigger COW to avoid major
-> >  	 * fault on access.
-> >  	 */
-> > -	if ((oldflags & (VM_WRITE | VM_SHARED | VM_LOCKED)) == VM_LOCKED &&
-> > -			(newflags & VM_WRITE)) {
-> > -		populate_vma_page_range(vma, start, end, NULL);
-> > +	if (vma_flags_test(&new_vma_flags, VMA_WRITE_BIT)) {
-> > +		const vma_flags_t mask =
-> > +			vma_flags_and(&old_vma_flags, VMA_WRITE_BIT,
-> > +				      VMA_SHARED_BIT, VMA_LOCKED_BIT);
-> > +
-> > +		if (vma_flags_same(&mask, VMA_LOCKED_BIT))
->
-> That converts the original logic 1:1, but I wonder if it's now feasible to
-> write it more obviously as "VMA_LOCKED_BIT must be set, VM_WRITE_BIT and
-> VM_SHARED_BIT must not" ?
-
-Hmm, I'm not sure if I can express this more clearly, it's a pain either
-way. Could do:
-
-	if (vma_flags_test(&new_vma_flags, VMA_WRITE_BIT) &&
-	    !vma_flags_test_any(&old_vma_flags, VMA_WRITE_BIT, VMA_SHARED_BIT))
-		populate_vma_page_range(vma, start, end, NULL);
-
->
-> > +			populate_vma_page_range(vma, start, end, NULL);
-> >  	}
-> >
-> > -	vm_stat_account(mm, oldflags, -nrpages);
-> > +	vm_stat_account(mm, vma_flags_to_legacy(old_vma_flags), -nrpages);
-> >  	vm_stat_account(mm, newflags, nrpages);
-> >  	perf_event_mmap(vma);
-> >  	return 0;
->
-> > diff --git a/mm/vma.h b/mm/vma.h
-> > index cf8926558bf6..1f2de6cb3b97 100644
-> > --- a/mm/vma.h
-> > +++ b/mm/vma.h
->
-> > +static inline bool is_data_mapping_vma_flags(const vma_flags_t *vma_flags)
+> 
+> >   	u64_stats_update_end(&irqtime->sync);
+> >   }
+> > @@ -81,6 +82,16 @@ void irqtime_account_irq(struct task_struct *curr, unsigned int offset)
+> >   		irqtime_account_delta(irqtime, delta, CPUTIME_SOFTIRQ);
+> >   }
+> > +static inline void irqtime_dyntick_start(void)
 > > +{
-> > +	const vma_flags_t mask = vma_flags_and(vma_flags,
-> > +			VMA_WRITE_BIT, VMA_SHARED_BIT, VMA_STACK_BIT);
-> > +
-> > +	return vma_flags_same(&mask, VMA_WRITE_BIT);
->
-> Ditto?
-
-I may do both as a follow up patch given the series is a pain to rework at this point
-and I want at least the first version to be like-for-like intentionally.
-
->
+> > +	__this_cpu_write(cpu_irqtime.idle_dyntick, true);
 > > +}
-> >
-> >  static inline void vma_iter_config(struct vma_iterator *vmi,
-> >  		unsigned long index, unsigned long last)
-> > diff --git a/mm/vma_exec.c b/mm/vma_exec.c
-> > index 8134e1afca68..5cee8b7efa0f 100644
+> > +
+> > +static inline void irqtime_dyntick_stop(void)
+> > +{
+> > +	__this_cpu_write(cpu_irqtime.idle_dyntick, false);
+> > +}
+> > +
+> >   static u64 irqtime_tick_accounted(u64 maxtime)
+> >   {
+> >   	struct irqtime *irqtime = this_cpu_ptr(&cpu_irqtime);
+> > @@ -94,6 +105,9 @@ static u64 irqtime_tick_accounted(u64 maxtime)
+> >   #else /* !CONFIG_IRQ_TIME_ACCOUNTING: */
+> > +static inline void irqtime_dyntick_start(void) { }
+> > +static inline void irqtime_dyntick_stop(void) { }
+> > +
+> >   static u64 irqtime_tick_accounted(u64 dummy)
+> >   {
+> >   	return 0;
+> > @@ -444,6 +458,7 @@ void kcpustat_dyntick_stop(u64 now)
+> >   		WARN_ON_ONCE(!kc->idle_dyntick);
+> >   		kcpustat_idle_stop(kc, now);
+> >   		kc->idle_dyntick = false;
+> > +		irqtime_dyntick_stop();
+> >   		vtime_dyntick_stop();
+> >   		steal_account_process_time(ULONG_MAX);
+> >   	}
+> > @@ -455,6 +470,7 @@ void kcpustat_dyntick_start(u64 now)
+> >   	if (!vtime_generic_enabled_this_cpu()) {
+> >   		vtime_dyntick_start();
+> > +		irqtime_dyntick_start();
+> >   		kc->idle_dyntick = true;
+> >   		kcpustat_idle_start(kc, now);
+> >   	}
+> > @@ -464,7 +480,8 @@ void kcpustat_irq_enter(u64 now)
+> >   {
+> >   	struct kernel_cpustat *kc = kcpustat_this_cpu;
+> > -	if (!vtime_generic_enabled_this_cpu())
+> > +	if (!vtime_generic_enabled_this_cpu() &&
+> > +	    (irqtime_enabled() || vtime_accounting_enabled_this_cpu()))
+> >   		kcpustat_idle_stop(kc, now);
+> >   }
+> Scenario: context_tracking is not enabled(since nohz_full or isolcpus not specified) and
+> irqtime/native is not enabled. ( config is CONFIG_VIRT_CPU_ACCOUNTING_GEN + IRQ_TIME=n)
+> 
+> 
+> cpu goes into tickless mode. Gets irqs, but kcpustat_irq_enter/exit is nop.
+> Then the time it spent in irq is still accounted for idle time, during
+> kcpustat_dyntick_stop?
 
-Thanks, Lorenzo
+Right! As is the case for IRQs firing in system and user time. Basically this
+just consolidate the IRQ time accounting behaviour in CONFIG_VIRT_CPU_ACCOUNTING_GEN=n
+
+> Who is going to account the irq time in this case?
+
+Nothing, it's part of idle time.
+
+We could also decide to account the idle IRQ time as system time. I guess it's a
+matter of which semantic we want to give. Though that would be more overhead.
+
+Thanks.
+
+-- 
+Frederic Weisbecker
+SUSE Labs
 
