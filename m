@@ -1,74 +1,74 @@
-Return-Path: <linuxppc-dev+bounces-18476-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18477-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B8EA1093178
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2026 05:24:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4C9C109316E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2026 05:42:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fcWFy5Zlsz2yY1;
-	Fri, 20 Mar 2026 16:24:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773984262;
-	cv=none; b=mC87wmmCP4Zimum66JdrqH53MsHkwlSzKmEoIK5pDo1+dIUY0Vc8TcUgT2EM8jHfD2vowD1+fhtaAch6stuFA6DhDD+H1ugL+5681ssKmEWqotOfcnshRdoHynJnGmrX4VQi86A0V7bbWVyKFIw6jCISxl/Fgx6rFqLP5yi/nTT+tnLIUC3FnQnRiWFB8xM9Y/YK56fp4jqvLEb8hcJSj5X2GLvY5ulLIBGYHopaR85WUNGqmOkcy8+4tdyNQfmPw1Jksi4XJg2ET5I1Yv6hhSE9iTRV5WbBtbaX3HUr4NcjcxV6BUtH+5QXHZc5LKtWwCJgiXOTKF3UcKUYOyCM8g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fcWg239Fpz2yY1;
+	Fri, 20 Mar 2026 16:42:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773985358;
+	cv=none; b=lDCq1SQ28eU4g9RdunNIRs//FRIWJEda/NHUaiLIcKYj/LXeyYRzTYbsEiYLsyczBRMsdoWjiddIVXuSNYcouu2+9g202HHYgdR/y6ZFdaxkls5tq9+F3GScQ33zoTcJot0eV4ZIc7VFjgrV0XHFoD/cQ3SNICIyvI6MtZjOQrJIo42nhVgnAqaEwQX9C6x6n+je7GoMOkeiSX8HFiANebsSW3Nt9hOCS/1dOH91PEmNGJz1YfilYFagwo/WCeAypPhaB8jeCu7738g5UxhuYfE0aqa7gA26SLQNa33Goz7bzAz6XLr7v1GAESkQGZZpAiwjt1l+sRlUpfMwSpue0g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773984262; c=relaxed/relaxed;
-	bh=wLeUwMCfEp8eEcDYTzjt0sXlpqSHQtTVQ6yFHJWh/lI=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version; b=ZVuSlzEpBXXyJlKkcB8AtfzGgcFUxPRdusmCNE6Vc6xPd/o5xCbwvyrLL+CxT94aIZMya/hbT6oXy/gIPhFBhaN2oQSgND26aNbOT9Bdbrae8nF3REYVQi0n2tIzL7j13/lglUxpr5DhS9ZfRO8hME7ARI4qgOwcPWcBy9/eB4t78CiLph8LKFhNZGLcqUcWwWctCaYvd6UT8zl0eW2ZkF4DXbRQXT7sSPcQYsqXMcKBoE/pXUzNx98H5ap3wYrLnYbJcCvfkV3hucwUKVRSPFmqZnWNJ0TSMG2yH4uHXYKrILe2cRglxrFXwapucwXV9Ft2m5LRBs9vntso++TWHA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=AHnD8Ggr; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42f; helo=mail-pf1-x42f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1773985358; c=relaxed/relaxed;
+	bh=ICKlbeihDfz0tjEeNan7n5tL/L7z0Sgh1LpLkTKQTtY=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version; b=YuMBXD14DMomxwvJBEQ3Qn/dmHKxELE2tqtjAa/MuhkNdtqI+pF8tfSxIJF8qSBs1cgimuIcu1kxwRlA4N2XSBbd0h/Oj4z7lEDhb+qLM/LnR8snRY5jNeijduwX6+Z4yrcB8axy9H6jtravM6y3figGNyMxpHTPfN41KtOejd5xSw4K/tvLR1hSK4Vhsexub6R2niQU6ji9/ghRLY+pML6KtuvtguduLyJ+oKvdjaHtTQBy1SSpP2PbdlPM23bC+lyGd9Kgb+u0f2ihWPr0X1nnsECRZPcQ7RfdAlWY8Sv2gQtn2bl9R6bbyIK6paHbMAYGUU1TbUb4yYp3+bkxjQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=dSLIEGAw; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102c; helo=mail-pj1-x102c.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=AHnD8Ggr;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=dSLIEGAw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42f; helo=mail-pf1-x42f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42f.google.com (mail-pf1-x42f.google.com [IPv6:2607:f8b0:4864:20::42f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102c; helo=mail-pj1-x102c.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com [IPv6:2607:f8b0:4864:20::102c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fcWFx1zz4z2yWK
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2026 16:24:20 +1100 (AEDT)
-Received: by mail-pf1-x42f.google.com with SMTP id d2e1a72fcca58-829865a8471so252501b3a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 22:24:20 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fcWg067zdz2yWK
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2026 16:42:35 +1100 (AEDT)
+Received: by mail-pj1-x102c.google.com with SMTP id 98e67ed59e1d1-359fea895b5so1158814a91.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2026 22:42:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1773984257; x=1774589057; darn=lists.ozlabs.org;
+        d=gmail.com; s=20230601; t=1773985353; x=1774590153; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:to
          :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=wLeUwMCfEp8eEcDYTzjt0sXlpqSHQtTVQ6yFHJWh/lI=;
-        b=AHnD8GgrHk6Hk44w1mv3U1TJ0Ggxuv+YyEEukWy9pSNUZa/W3/kxs1HqJALWxguMwA
-         QzdUf7I+OEt5+lOXe9EL0vfYkOthf7QRRCTSySSZIc9IRNhCmrSQHdZxNzXE0RJDLviX
-         xfTpGNl4sfooIdBCqMAPF1r2e+GmjXqtA1UeX3P+bvpehBHLywTFFbad8IXnPDbYNz6O
-         PoMzyUb9k1IqEmQFGNEatdSTIFiC4fjmsn8DDMeEwLkroEV+tXyE0kMiKYZpw/ywNQQl
-         5q/ek0HC/0ZdZG6E0IOOrcn3EnDMVsw6gwDbE5yr3g4oQYo9aHiN4szXrjLum1dJTP4n
-         afpA==
+        bh=ICKlbeihDfz0tjEeNan7n5tL/L7z0Sgh1LpLkTKQTtY=;
+        b=dSLIEGAw2/d5hjw/Erx56Tjj0H3zYDH6KVes/6PskoyNh4cH+vbI4uk7hpMMxA0kAg
+         yLx4GsNqkFjvYiVPpTXPsn19zn4ktGVehX3wzVM0X+D4vbUYIIwkwp9QOGSM+hFn8MVx
+         o64SlU58Yb0Q6kQu7cCz4gnP5OE82rUeRjJ6C2LW0uDsc8i2HCto4MGsiNXuh5Lh9NeD
+         fqMJMsP9U9ZvnkLyrL1OK4VE96/d+rUVfAQ5Go6uoR7WMFt+4cjNiipbD0hRcxfJlJfl
+         7Qd8j/60NVbgsWtGftcnOFy71GIqZ35co6W3J92cVM+bPZh7xieqBspiVJR+p4s766hU
+         Rfrg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1773984257; x=1774589057;
+        d=1e100.net; s=20251104; t=1773985353; x=1774590153;
         h=content-transfer-encoding:mime-version:message-id:date:subject:to
          :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=wLeUwMCfEp8eEcDYTzjt0sXlpqSHQtTVQ6yFHJWh/lI=;
-        b=KRbxR55WXDqlmbHoL+TPungGDoNjzzrzJMK9nlslnbxR9DV5+nEgko5InkRPB6xECw
-         KN1uHMi5AuMZmNT3aBGBP7IAYqYtWKZWmcNZhMgXAc+DCj39js7nZ/H762gTY50iNI9A
-         O6XcIc5fn1ER/a63KkKgK/stB8oanrUxJ98YKb52jirHX2JFLpSi1CpHYbQOj8P1p9zn
-         jN5qgVPA/VZ8X1xsq8FeMW/LIS0FF0Phpijx2Zu98mumN/IPATGBwLT7FbbbbIcmdDa+
-         bmkd+mnrYLrjxXXvLN9j2Q/zEKfHToYUjQBYMomtxYLb8MvsotE+MB5AFpLQeECz13fF
-         L76A==
-X-Forwarded-Encrypted: i=1; AJvYcCWHt0ZhWlEbmNrF1QMi0Z3pbMZk5dM7PeRDHtBaeX2gAJ1W8O3l3fdPVR481h1a83IDyrVUHeuqLVGowdM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyqGbTZUmCBJBIYOpeuo2LIo5PCnbsObxFH66o/rrvZtLrF0HDG
-	Jq7Dn8ioU7OW8mbUzFVQa1AJ+PYIKz8kVrzwfhncPIZZcH7XTC91bdAq
-X-Gm-Gg: ATEYQzwUO6/URfIYHhjc3WRT9tvwbkvO3ZTl8cU+Z3p0xYJo8OZdpDC7xukwE9C4uEu
-	ZzgeLmm1cNxW+C7ZSn5J7cuEsn1IT/yvcrQuNaBz4D7PHm/Pw4mtzPKNJBcRGftpE//H+/EiPCR
-	YWyGsLiZcoLKIZfJzf9Ffw+u/UxLmJTpCKqwSjU5ZvAvfHwdmD20NO4gBnhW+2Xps1IdbwEXz9a
-	hoC2aOBHEHD6pXDegEwCzSfS+otmHALfD/exUsg5ik+xOk+SUjlkUVxcGbkIQLAAXQxlRXYumqH
-	Bbiz+umotenKGPBjozwl6wVm7OOZS1w4vvNZ1MTzbucpQqSdzprKpiQqQY1Jjy4I0CRZiLOuOre
-	nEeEtI+aS+VExGar2+FYgc3x4dxt1r1U3oxPIySlTujpq2SlNG5PZ12lHztzlohhlGtFTwOZiyF
-	FJuUAwzMM3Qjr/5+WyBLW/SOtVXfmDvHfmY7bPRrh45fJ6ya4cpcNjeoDfnc+futHXyFi8tug=
-X-Received: by 2002:a05:6a00:328c:b0:81f:3fa0:8c38 with SMTP id d2e1a72fcca58-82a8c285868mr1577867b3a.20.1773984256943;
-        Thu, 19 Mar 2026 22:24:16 -0700 (PDT)
+        bh=ICKlbeihDfz0tjEeNan7n5tL/L7z0Sgh1LpLkTKQTtY=;
+        b=id+YcvllGTG0X/enuqszoyxPzPrge+/omLy72vYFzCClJKSYD7A5yNvTuFN0iVFWVz
+         L8CDWXgJ4sq7OqJQhb1Da+RaokloauikoIkqU4KjAW3WRTF916DmX3D5pCXK00qYQG/w
+         ZwSvFJbq8X+iogFGl06AdRgJrPduWzK3uIsuZOEWi0/i3+kE5bSO49awvx6LZqJvS9Wh
+         xkXWIwQhkRl6T/Jnbe16bSITd+8f2MZi7Pnk5gRwcpJ0urJ8jSE8mLf6NKLEzRhv2nfP
+         As3VB/XNuKLDSvxz0xrMn73oFYbXphO1dBdiEQVVILws0j645maI18J6E/Hl5sl+q+kd
+         KM7g==
+X-Forwarded-Encrypted: i=1; AJvYcCX9ekqRXcWhlj68ZMm9HrWsLwGKBoCj8H3LTcIHNR3Lq0KwRiqj07oOIlWxYxXDv1X53U36DDpbOWoqjY8=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwMpZbeKNBg4u+dUGHHZPBG9O+0qGkuq+vVfA/I/bz78Lx4nzI0
+	QMkxboKjAp9Ax60w5Ato7pDeNQKy8MF0R2pdK29nLQotwc9lXwJvBHiZ
+X-Gm-Gg: ATEYQzzVlfXcx0GewtBcGmfQ0yZlKLdJRlOTQ0QPDxcQLT9kTJvgi6Oc4S7ZlbbCx0w
+	A4YfFyV9WVbIfADak/ViQWmAn0z7+0fStzJYSapD8DPKsN2tLmu94TP1sATj6bjIuYVAsbrVm4G
+	0NIubtJpWgylFq2vpN13cTIsIoRpGV57fdLZDqi7L+hjiFkTGLbtxigpo5gfLNwjy9tNsUKiCJ+
+	vouyvmzhkLwuONo6p5vQDXiThDefxKXJr1U3N1kvZ2mFm0hkr73u++zBiwGCw53dIytDKNQJBFp
+	vCuH4r1r6uSOxT/wAJzLrWJgw92kOot/YdfbDsZRaKYMiNl+oAE1MH0dnBJ7Qr4Jq18gBmMxQAK
+	IlkIADsu9rw8a9fuqUUOWwCo9phOPf9Z7FEjvjdqkAKopdRjSHJ703UYzfntlnRAMcAVdCNM5Id
+	9UV35IXf8+kcWwaO6k8wilEKJIKnGBtLoCD8MdHK0Lm4Zu8JJH+27sVpAXg9J9xLa/rLxY9PI=
+X-Received: by 2002:a17:90b:3a92:b0:359:f8c3:dada with SMTP id 98e67ed59e1d1-35bd2c22480mr1488873a91.13.1773985353336;
+        Thu, 19 Mar 2026 22:42:33 -0700 (PDT)
 Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([49.207.193.112])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82b0409c11asm802316b3a.30.2026.03.19.22.24.13
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35bc5ed0777sm4308004a91.0.2026.03.19.22.42.30
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 19 Mar 2026 22:24:16 -0700 (PDT)
+        Thu, 19 Mar 2026 22:42:33 -0700 (PDT)
 From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
 To: maddy@linux.ibm.com,
 	mpe@ellerman.id.au,
@@ -77,9 +77,9 @@ To: maddy@linux.ibm.com,
 	mkchauras@gmail.com,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/xive: KUnit tests for xive interrupt controller
-Date: Fri, 20 Mar 2026 10:54:00 +0530
-Message-ID: <20260320052400.3230999-1-mkchauras@gmail.com>
+Subject: [PATCH V2] powerpc/xive: Add KUnit tests for xive_find_target_in_mask()
+Date: Fri, 20 Mar 2026 11:12:03 +0530
+Message-ID: <20260320054202.3245144-2-mkchauras@gmail.com>
 X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -96,10 +96,34 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Kunit tests for xive interrupt controller.
+Add comprehensive KUnit test suite for the xive_find_target_in_mask()
+function, which is responsible for selecting target CPUs for interrupt
+routing in the XIVE interrupt controller.
+
+The test suite includes 8 test cases covering:
+- Empty CPU mask handling (returns -1)
+- Single CPU selection
+- Multiple CPU selection with various mask sizes
+- Fuzz parameter behavior and modulo arithmetic
+- Large fuzz values exceeding mask weight
+- Wrap-around behavior at mask boundaries
+- System online CPU mask handling
+- Edge case where fuzz equals mask weight
+
+Two tests require multiple CPUs and will skip gracefully in single-CPU
+environments (e.g., QEMU default configuration). All tests pass without
+requiring modifications to production code.
+
+The test can be run with:
+  ./tools/testing/kunit/kunit.py run --arch=powerpc \
+    --kunitconfig=arch/powerpc/sysdev/xive --qemu_args="-smp 4"
 
 Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
 ---
+V1 -> V2:
+- Updated commit message
+V1: https://lore.kernel.org/all/20260320052400.3230999-1-mkchauras@gmail.com/
+
  arch/powerpc/sysdev/xive/.kunitconfig |   4 +
  arch/powerpc/sysdev/xive/Kconfig      |   9 +
  arch/powerpc/sysdev/xive/Makefile     |   7 +-
