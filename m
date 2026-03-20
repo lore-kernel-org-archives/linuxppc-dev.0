@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-18487-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18488-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71BB8108B8ED
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2026 10:40:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6AAEF108B8F1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Mar 2026 10:51:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fcfGR4XCfz2yYY;
-	Fri, 20 Mar 2026 21:40:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fcfWK5StQz2yYY;
+	Fri, 20 Mar 2026 21:51:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774003215;
-	cv=none; b=dFbDYib4OQ4m4yn8sZGDwjCCYrcjQfgkE56IACUfS2Vb8lmq2Rb9odCpTIzwY6DGS5Q9hXl1yRxa/2W751vazvpZrhVOyQ88fA4VVFqYbC5i++REluuayoK2RBKZhCeQ7CgkbyyTTzclbEUlQ5ZYT7w6WDOj0QEGqhmDo7AczRT8d1kb7VOpS4jK8DwR2WGKRTLEiNp9dBVFbmaJFeYzOPDX55QTl+Vmb4x2ZGu3I5W+n29K9n07Hgrgdk/7KIDUBGDXSp+rk1jgKAhV1hDhehz95Qdu+dlqHEU7Hy9i03eEpQwm/RfPJVIKWx1Y3x2bJYnvNd12BUydshLzDVHKog==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774003885;
+	cv=none; b=VBPsGk/8QgILRO2g8Pth4+HBmnYE0vtZlxj21NRvvMZfVTp3S1CT6mBAVJ1fteCQ2e3mXZm69843FL9hQJYwIZfidC5Gr2dwqoYm+VGn9jCdgCgO8ZjEWNwXukLxyItfS4D6NHgmhjXMW6BNeN8yKUDB4VFHQhAPjLXWH48bC+X8nhyC3CBWjsWjDFHs5oTrY/cpNwDvw4ghVm3CuXd6bHGlTQifmdtBIhiBCeP9uBHiNRFgjH3HnjnVs5iM6jBeEtVWPE7RCTD2fZLAL1jVWxfEp98yOUud0Je6V7V8EDpKe2f/hchLUCLfbltGn6mASM+VTCTIbKDXk60DnudeLg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774003215; c=relaxed/relaxed;
-	bh=8cxqryyZslc+0au6kHOp8RKlnYLAKqQ15cL6fRqCMok=;
+	t=1774003885; c=relaxed/relaxed;
+	bh=DKbCoQ3qBquckvlp019kFw7hXpGdetOvucEiY8aIUmw=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=OFZrdAhzZM+K9tWGAzOGhLA9HscQ4E4ETxhowob/FGQZo6nYErVfAUPZlk2kyNPMRq1bk9n9aXrooNh3Dz9sTIaplA/MqrF1eiyfLJynGiRpxdt9OpPkUylgiT4r7QeRpQ5giSTkrQFuWUgPdTx8CLmkJtbeHOnmwGKkW0GPf/ttMipoS9pfzeyAyg9gTPPLhiwNLicN1qu+8n+faVk/vyslVrouk79ct72q8AWYW+kiHqZNq7hUPuG2oqnVjDKEKPUfKasjg6zYOmzZBiahn5pnk4OcNpHDQLKEduJnWGdHCrjEmNu8keXH2fvFLgSlwPz91TuxjlEitOaT1yT77w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XTP04ZGk; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=lNlLEJ5snb11z6tOB4bK+b8zRjNzgxz14GBNLNSOx+SEOaC7aTZ5GoWQY0i8lb0ZtgxPpMyUdE7iRZKO1RphiJLSNPeMMiuooisUcjdr6aYLXd7L8KbAHyCj5BijuswSscAbvesda8S5iQ4aAhC2QqQhxgLeVpB70zm6RZF4T+K+HsxHDb8kv5dWnSOzbjTlGc5AAtxmiWHNFPuMtsucz3V4IVqf884w6FXMTEdzYZr1Lqc06uUsiy4yGLbpD+mj680V6sYSQ0gnjyn2bxFk8f1gFBw21Zho4/CMGvckNdXxDDLzfVFjgr2hyYfJjZ+bIhgbVFebVVHSj8Q9HjsuAA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fvQ6q+Lt; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XTP04ZGk;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fvQ6q+Lt;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fcfGQ4qTlz2yY9
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2026 21:40:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fcfWJ4DM4z2yY9
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2026 21:51:24 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 8C07A6013C;
-	Fri, 20 Mar 2026 10:40:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E70CEC2BCB2;
-	Fri, 20 Mar 2026 10:39:59 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id D6D6F60132;
+	Fri, 20 Mar 2026 10:51:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3393BC4CEF7;
+	Fri, 20 Mar 2026 10:51:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774003211;
-	bh=jhOSmCqYQaS2DI24Bg78xyfLr/K/fkiEgn/15MWAEuU=;
+	s=k20201202; t=1774003881;
+	bh=1kycPrv8xITwEF0VVuzOopEOMjAdBs0UtmKgTytYl8w=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=XTP04ZGkahcK9b1vYtWAII4egDMA7ViD6CPQuR08AnZlAxqqDuWpTLYDeuf1s9y+k
-	 Bxe58tvv79PZpwFR1av496x4mE1lFIfGlMo1oVPWYxT8onJGrzM3kx9c5WcUASJsmP
-	 5YKkxHuKdg5bXFJVZSHEFiH6Je5WrKdzJWr7a+uZSmO+h0/PWe7ZWifgkhg8kdKA0W
-	 HQiDuDTxMGwA5o653RD4zCyEiOrtcgbj2fpj4wT71RjRawJrksbcfbGlWV16ZoQ/nq
-	 xvXQvJZUOroGzfa4zos8aCgqbt2QQNKiCH2GECGuUPpBb873LL6PXowpwclzgaXqEI
-	 1k6U5dVdH9LyA==
-Message-ID: <0b5765da-67e9-4e2e-99d8-08501730bf76@kernel.org>
-Date: Fri, 20 Mar 2026 11:39:58 +0100
+	b=fvQ6q+Lt6csXQ3LFLwYm6cnCeDtBGCr02CIsjl1UXjYlr3fZ8BMsG3AFhxo458ZCa
+	 +qYpGTorkZJUoSz2KLgM+8v53n1WJOnltl6z07l5stKzZpUnrWYEz5FYiN3Nd+Jdmh
+	 8SClfiC2LO/qPw7ZNAT9I5oEK8JjSkMNRE+Nrm7ekRgipBjhHQB3OmHjgPWwn3piDZ
+	 h9DkUtF/Zkavrff/L+X9y6IoV/GXTCjuHOFy4E/EZLIw/I9GYQQxnoeqCJ4GJE74BD
+	 X+Z2q8v5Urpdb/OoxHDRr56qpMqMhQXXZ8oYFfyAhWL2CpRfz05crij8p1GJ5Qo9Ia
+	 XZOMGmHBKHSXQ==
+Message-ID: <077b237c-32ab-46a0-947e-17657cca5b54@kernel.org>
+Date: Fri, 20 Mar 2026 11:51:08 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,7 +60,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 22/23] mm/vma: convert vma_modify_flags[_uffd]() to use
+Subject: Re: [PATCH v3 23/23] mm/vma: convert __mmap_region() to use
  vma_flags_t
 Content-Language: en-US
 To: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>,
@@ -101,172 +101,33 @@ Cc: David Hildenbrand <david@kernel.org>,
  linux-s390@vger.kernel.org, linux-um@lists.infradead.org,
  linux-fsdevel@vger.kernel.org, selinux@vger.kernel.org
 References: <cover.1773846935.git.ljs@kernel.org>
- <98a004bf89227ea9abaef5fef06ea7e584f77bcf.1773846935.git.ljs@kernel.org>
+ <c587f5ed177fd4f62b66cb8d5321fa56eeb6a69a.1773846935.git.ljs@kernel.org>
 From: "Vlastimil Babka (SUSE)" <vbabka@kernel.org>
-In-Reply-To: <98a004bf89227ea9abaef5fef06ea7e584f77bcf.1773846935.git.ljs@kernel.org>
+In-Reply-To: <c587f5ed177fd4f62b66cb8d5321fa56eeb6a69a.1773846935.git.ljs@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 3/18/26 16:50, Lorenzo Stoakes (Oracle) wrote:
-> Update the vma_modify_flags() and vma_modify_flags_uffd() functions to
-> accept a vma_flags_t parameter rather than a vm_flags_t one, and propagate
-> the changes as needed to implement this change.
+> Update the mmap() implementation logic implemented in __mmap_region() and
+> functions invoked by it.  The mmap_region() function converts its input
+> vm_flags_t parameter to a vma_flags_t value which it then passes to
+> __mmap_region() which uses the vma_flags_t value consistently from then
+> on.
 > 
-> Finally, update the VMA tests to reflect this.
+> As part of the change, we convert map_deny_write_exec() to using
+> vma_flags_t (it was incorrectly using unsigned long before), and place it
+> in vma.h, as it is only used internal to mm.
+> 
+> With this change, we eliminate the legacy is_shared_maywrite_vm_flags()
+> helper function which is now no longer required.
+> 
+> We are also able to update the MMAP_STATE() and VMG_MMAP_STATE() macros to
+> use the vma_flags_t value.
+> 
+> Finally, we update the VMA tests to reflect the change.
 > 
 > Signed-off-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
 
-> --- a/mm/mlock.c
-> +++ b/mm/mlock.c
-> @@ -415,13 +415,14 @@ static int mlock_pte_range(pmd_t *pmd, unsigned long addr,
->   * @vma - vma containing range to be mlock()ed or munlock()ed
->   * @start - start address in @vma of the range
->   * @end - end of range in @vma
-> - * @newflags - the new set of flags for @vma.
-> + * @new_vma_flags - the new set of flags for @vma.
->   *
->   * Called for mlock(), mlock2() and mlockall(), to set @vma VM_LOCKED;
->   * called for munlock() and munlockall(), to clear VM_LOCKED from @vma.
->   */
->  static void mlock_vma_pages_range(struct vm_area_struct *vma,
-> -	unsigned long start, unsigned long end, vm_flags_t newflags)
-> +	unsigned long start, unsigned long end,
-> +	vma_flags_t *new_vma_flags)
->  {
->  	static const struct mm_walk_ops mlock_walk_ops = {
->  		.pmd_entry = mlock_pte_range,
-> @@ -439,18 +440,18 @@ static void mlock_vma_pages_range(struct vm_area_struct *vma,
->  	 * combination should not be visible to other mmap_lock users;
->  	 * but WRITE_ONCE so rmap walkers must see VM_IO if VM_LOCKED.
->  	 */
-> -	if (newflags & VM_LOCKED)
-> -		newflags |= VM_IO;
-> +	if (vma_flags_test(new_vma_flags, VMA_LOCKED_BIT))
-> +		vma_flags_set(new_vma_flags, VMA_IO_BIT);
->  	vma_start_write(vma);
-> -	vm_flags_reset_once(vma, newflags);
-> +	WRITE_ONCE(vma->flags, *new_vma_flags);
+Acked-by: Vlastimil Babka (SUSE) <vbabka@kernel.org>
 
-It's not clear to me, how is switching from vm_flags_t to vma_flags_t
-allowing us to simply do WRITE_ONCE() instead of the full logic of
-vm_flags_reset_once()? Won't it fail to compile once once flags are more
-than single word? Or worse, will compile but silently allow tearing?
-
->  
->  	lru_add_drain();
->  	walk_page_range(vma->vm_mm, start, end, &mlock_walk_ops, NULL);
->  	lru_add_drain();
->  
-> -	if (newflags & VM_IO) {
-> -		newflags &= ~VM_IO;
-> -		vm_flags_reset_once(vma, newflags);
-> +	if (vma_flags_test(new_vma_flags, VMA_IO_BIT)) {
-> +		vma_flags_clear(new_vma_flags, VMA_IO_BIT);
-> +		WRITE_ONCE(vma->flags, *new_vma_flags);
-
-Ditto.
-
->  	}
->  }
->  
-> @@ -467,20 +468,22 @@ static int mlock_fixup(struct vma_iterator *vmi, struct vm_area_struct *vma,
->  	       struct vm_area_struct **prev, unsigned long start,
->  	       unsigned long end, vm_flags_t newflags)
->  {
-> +	vma_flags_t new_vma_flags = legacy_to_vma_flags(newflags);
-> +	const vma_flags_t old_vma_flags = vma->flags;
->  	struct mm_struct *mm = vma->vm_mm;
->  	int nr_pages;
->  	int ret = 0;
-> -	vm_flags_t oldflags = vma->vm_flags;
->  
-> -	if (newflags == oldflags || vma_is_secretmem(vma) ||
-> -	    !vma_supports_mlock(vma))
-> +	if (vma_flags_same_pair(&old_vma_flags, &new_vma_flags) ||
-> +	    vma_is_secretmem(vma) || !vma_supports_mlock(vma)) {
->  		/*
->  		 * Don't set VM_LOCKED or VM_LOCKONFAULT and don't count.
->  		 * For secretmem, don't allow the memory to be unlocked.
->  		 */
->  		goto out;
-> +	}
->  
-> -	vma = vma_modify_flags(vmi, *prev, vma, start, end, &newflags);
-> +	vma = vma_modify_flags(vmi, *prev, vma, start, end, &new_vma_flags);
->  	if (IS_ERR(vma)) {
->  		ret = PTR_ERR(vma);
->  		goto out;
-> @@ -490,9 +493,9 @@ static int mlock_fixup(struct vma_iterator *vmi, struct vm_area_struct *vma,
->  	 * Keep track of amount of locked VM.
->  	 */
->  	nr_pages = (end - start) >> PAGE_SHIFT;
-> -	if (!(newflags & VM_LOCKED))
-> +	if (!vma_flags_test(&new_vma_flags, VMA_LOCKED_BIT))
->  		nr_pages = -nr_pages;
-> -	else if (oldflags & VM_LOCKED)
-> +	else if (vma_flags_test(&old_vma_flags, VMA_LOCKED_BIT))
->  		nr_pages = 0;
->  	mm->locked_vm += nr_pages;
->  
-> @@ -501,12 +504,13 @@ static int mlock_fixup(struct vma_iterator *vmi, struct vm_area_struct *vma,
->  	 * It's okay if try_to_unmap_one unmaps a page just after we
->  	 * set VM_LOCKED, populate_vma_page_range will bring it back.
->  	 */
-> -	if ((newflags & VM_LOCKED) && (oldflags & VM_LOCKED)) {
-> +	if (vma_flags_test(&new_vma_flags, VMA_LOCKED_BIT) &&
-> +	    vma_flags_test(&old_vma_flags, VMA_LOCKED_BIT)) {
->  		/* No work to do, and mlocking twice would be wrong */
->  		vma_start_write(vma);
-> -		vm_flags_reset(vma, newflags);
-> +		vma->flags = new_vma_flags;
-
-This also does lot less than vm_flags_reset()?
-
->  	} else {
-> -		mlock_vma_pages_range(vma, start, end, newflags);
-> +		mlock_vma_pages_range(vma, start, end, &new_vma_flags);
->  	}
->  out:
->  	*prev = vma;
-> diff --git a/mm/mprotect.c b/mm/mprotect.c
-> index eaa724b99908..2b8a85689ab7 100644
-> --- a/mm/mprotect.c
-> +++ b/mm/mprotect.c
-> @@ -756,13 +756,11 @@ mprotect_fixup(struct vma_iterator *vmi, struct mmu_gather *tlb,
->  		vma_flags_clear(&new_vma_flags, VMA_ACCOUNT_BIT);
->  	}
->  
-> -	newflags = vma_flags_to_legacy(new_vma_flags);
-> -	vma = vma_modify_flags(vmi, *pprev, vma, start, end, &newflags);
-> +	vma = vma_modify_flags(vmi, *pprev, vma, start, end, &new_vma_flags);
->  	if (IS_ERR(vma)) {
->  		error = PTR_ERR(vma);
->  		goto fail;
->  	}
-> -	new_vma_flags = legacy_to_vma_flags(newflags);
->  
->  	*pprev = vma;
->  
-> @@ -771,7 +769,7 @@ mprotect_fixup(struct vma_iterator *vmi, struct mmu_gather *tlb,
->  	 * held in write mode.
->  	 */
->  	vma_start_write(vma);
-> -	vm_flags_reset_once(vma, newflags);
-> +	WRITE_ONCE(vma->flags, new_vma_flags);
-
-Ditto.
-
->  	if (vma_wants_manual_pte_write_upgrade(vma))
->  		mm_cp_flags |= MM_CP_TRY_CHANGE_WRITABLE;
->  	vma_set_page_prot(vma);
-> @@ -796,6 +794,7 @@ mprotect_fixup(struct vma_iterator *vmi, struct mmu_gather *tlb,
->  	}
->  
->  	vm_stat_account(mm, vma_flags_to_legacy(old_vma_flags), -nrpages);
-> +	newflags = vma_flags_to_legacy(new_vma_flags);
->  	vm_stat_account(mm, newflags, nrpages);
->  	perf_event_mmap(vma);
->  	return 0;
-> diff --git a/mm/mseal.c b/mm/mseal.c
-> index 316b5e1dec78..603df53ad267 100644
 
