@@ -1,88 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-18535-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18536-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4BCFF1093176
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2026 05:31:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DE751093170
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2026 05:41:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fd7NB66VPz2ygm;
-	Sat, 21 Mar 2026 16:31:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fd7bR41dsz2yYq;
+	Sat, 21 Mar 2026 16:41:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774071114;
-	cv=none; b=AEBcqbdIth6h9ae1d3sdGRye3kkttZIf9PYfXGH3vWZNN+ivN7VxNZuE/kwjTjh9Q4HdjVd9mjRQQLTki0iVh1UdkRzO5rbE55MfnLld/B2PZm2IaMZ6Al9prXDsb9ABV3GdwxmN55YJ1MNoFZpmJN7HWrIinTba848uu6t+wvS0TAyT14n7Pi3kgq//iedKKQdz1xFNOAfez4O5gQViXi8dBhuvbSn08VDGSVX81MtpbUhAMHsuCdJlPsOUdxsk63J6MN27MEdO9hFfbtAac5eW1hHr7is2oba/4sOguYbTQ4j8j7csfkBasIAMnJh24hD1bREJnrAob1xCJKc6Zw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774071699;
+	cv=none; b=UimqfWBlQBE0LsRVKopSbK4HtM7Db8V6NutYIMswCpLDc4asMqJsPj53r1lAuknOkF4TgeEoJuLfPhUzGn02qn0Qoy42Z3GJ55M31JUFOARjLn5CbLtcYmLZMAL4bQ9CuHF/LgfYb+5pHPBNkxMIQHX46FzPiPK+Xb3FiE08Xhn6E8QradqNWuVR7ur5gmj0FzVpluCEU9JtYvQanWkbJ68zQmueDrILKl28ks47xN+TVgrYkkX2b8IquWrRK3DTWFqRZFGEM9ueaUd2iNCUocsFT4FzVwms/r1w9AiCjaXNBr5oLW7azk4eoHeabbKL4P9IiC7PTmK61+djGRB5dA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774071114; c=relaxed/relaxed;
-	bh=wgKKwKDhFzDE8QZg+Ovca0ckS/q8PpXNJcAOANlcIPk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=hEYV62wDnURDCwqQjT8drSuv0Qmdvm+zoz9iTKrlMXgZJDJQQGjp0MEGWqK26CxCqhD9NeY/GJF2d+HaE4s2vqwaeLDr4tvVgSt9yZM1sGFD5lJiRHFCKsKs0Hm7MDEx0FDTYynCx1kHVcT5LYRWQ4+y/LEE3Du4nld5MMPYxKJbv7g9VZdCVQ+fMTfGhPzP5mTJlzP9/GZnwRNxqqcVohXdK/1sFs/DZnFWtpysS8v10AtPUARiP9s1HmgvCWTOWfEDOsussmp7FeagL8Kmt9gS1pEwsQNI1ozqAnU6zm3QI4RShrkL/OZlkxGaUgI5EDCpu0WRHMNoWFWwnUoOZg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RhzXFNsT; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1774071699; c=relaxed/relaxed;
+	bh=ObzTo0wGg+XyNZ4mG1moxUT2vqXJ5Ou4R8YvVWy9WBI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Vr/KRHyc+TJ8vKfLNQti3D0p2Jv3+yYKG5r3huE4F5FPOIeO3yr4JIPzUG6QOF/dLnajGRjKAGGPXldN2i2M6cQKIWgBiZPmE2AP7mF0UUmOP9IUoALHUnC5WW5HRksiDXvoxtrk1Tdr5tY3u3YNrdXF47eGWyZmqOqjqPkszm06uvOUE1jor0qMk8iXvHBMotZCPzJwQIDaIwxALahaZGwrw51oDlTF3lq4qqgFndfgI0ztUpsiw8oFcyWexgBVWT7NGvFbyt4Xk1icr7839N6266FtCBFNChRjGv7jdT2LjBc3jvxp67KeZZSL7dR85C/xIHF6AWE/632tnIaYHQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=osXYmP1L; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RhzXFNsT;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=osXYmP1L;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fd7N93f9Bz2ygh
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2026 16:31:53 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62L3wlmN4141480;
-	Sat, 21 Mar 2026 05:31:43 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fd7bQ0R2jz2xP9
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2026 16:41:37 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62L429sk4053591
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2026 05:41:35 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=wgKKwKDhFzDE8QZg+
-	Ovca0ckS/q8PpXNJcAOANlcIPk=; b=RhzXFNsTSfZ9J9pni3S0SMxgnKMEElxXI
-	yLRjodQO5xZjgWZ5K/maCPFTyp7aTnJBogsAXvyeBx9V49r9FgtNbMhpAkSvUjR6
-	nW/ElmDqs1uRbzWlFU9FM8zqbVVVs1dRbdOTDgqYzlPlRW3CNBft9jc2SlWlNgBL
-	0TlNKYQyizaIb/l9tTSVxPUNcVrwBFt9N9r2NR0jZCZdgdZpqqBdHmVKWp5tHgKp
-	a79ReA0/LO7XPVOfKTCrUTqFlM+PNIiJD+JudoaGLh6aMrOORK0EHS8bo9AMDdv6
-	w8XF5VrBFfqRs7Qxvs2ZlSMYMZ+K4w7Wc6TOGqH05ZambHMQLynlQ==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d1kum869c-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 21 Mar 2026 05:31:43 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62L44L12012771;
-	Sat, 21 Mar 2026 05:31:42 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4cwmq1tch7-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 21 Mar 2026 05:31:42 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62L5VcN643254060
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=ObzTo0
+	wGg+XyNZ4mG1moxUT2vqXJ5Ou4R8YvVWy9WBI=; b=osXYmP1LkEoxHTXEsUVr0g
+	aF9ySidnCJkEbkBGXCQW9hDs/q7KUo9qlxcdwEi6G24Ypz6hphjDKRHOq9DE26zA
+	AOiwPXFbh0+pt+phf8kQThMXu3bdN+vzb7/zibq3tggD/+svTfxJ00MRBCYpf2Vx
+	pjGqRg7ir7KsHHPOQq4qBSU055UOESUT6Uw3HwCfXklx6jbz5G+FmtygzpVibe4K
+	EvuvfXgH1H0EDelJ6BfA2u6LXYMYNpT85+d0icVvMxrj/MK0ji/Ofa+P2kCbUnI6
+	MpjjAQr3uLLtsEU1FtNyNt3CHTyzagUkKTabvHH+/fiG1UYRvvSo2PfH2UwZWwZQ
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d1kxyr6b4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2026 05:41:34 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62L44FGe016289
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2026 05:41:34 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4cwm7kafnk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2026 05:41:33 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62L5fTaD16712128
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 21 Mar 2026 05:31:38 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id ABD982004B;
-	Sat, 21 Mar 2026 05:31:38 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0383C20040;
-	Sat, 21 Mar 2026 05:31:35 +0000 (GMT)
-Received: from li-4f5ba44c-27d4-11b2-a85c-a08f5b49eada.ibm.com.domain.name (unknown [9.124.222.162])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sat, 21 Mar 2026 05:31:34 +0000 (GMT)
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Sourabh Jain <sourabhjain@linux.ibm.com>,
-        Aditya Gupta <adityag@linux.ibm.com>, Daniel Axtens <dja@axtens.net>,
-        Hari Bathini <hbathini@linux.ibm.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Mahesh Salgaonkar <mahesh@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-        Shivang Upadhyay <shivangu@linux.ibm.com>,
-        Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-        Aboorva Devarajan <aboorvad@linux.ibm.com>
-Subject: [PATCH 2/2] powerpc/kexec: Disable KASAN for VMX helpers used in MMU-off path
-Date: Sat, 21 Mar 2026 11:01:18 +0530
-Message-ID: <20260321053121.614022-2-sourabhjain@linux.ibm.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260321053121.614022-1-sourabhjain@linux.ibm.com>
-References: <20260321053121.614022-1-sourabhjain@linux.ibm.com>
+	Sat, 21 Mar 2026 05:41:29 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C4ED920040;
+	Sat, 21 Mar 2026 05:41:29 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5109B20043;
+	Sat, 21 Mar 2026 05:41:28 +0000 (GMT)
+Received: from [9.124.222.162] (unknown [9.124.222.162])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Sat, 21 Mar 2026 05:41:27 +0000 (GMT)
+Message-ID: <8ab4823d-cf84-4dd8-ac0e-ccfb781dd588@linux.ibm.com>
+Date: Sat, 21 Mar 2026 11:11:20 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,84 +81,445 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [mainline] KDUMP/FADUMP is broken on the mainline kernel on P11
+ System
+To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+        Hari Bathini <hbathini@linux.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>
+References: <1dee8891-8bcc-46b4-93f3-fc3a774abd5b@linux.ibm.com>
+ <9e1ba7b3-7204-4db8-9876-c1cef20141c9@linux.ibm.com>
+ <a0ad408a-988b-4baf-84d1-1af4584d8f7f@linux.ibm.com>
+Content-Language: en-US
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+In-Reply-To: <a0ad408a-988b-4baf-84d1-1af4584d8f7f@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: BB2qH-cHs7Gt6qDqU4Zqcp3kkktzSkq6
-X-Proofpoint-ORIG-GUID: wIhAUarcJTGoVFPatELpG8qhj7NS_8KU
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzIxMDA0MCBTYWx0ZWRfXw+qlIvD3pLoG
- m7QdabL8+mkfoslclvz+Iwl0NsxeLl9qJBV2Li9p/ctJ7SMRt9zzmHx37QDulRECGefoeAzjIk8
- M004o++Gt7qunUD9M5nac6u+hVgXjwAaCLI3Ji9bwo+8oPAxmT1rVraJDdZCCjpjjMitObtRdj/
- u1ch4qihbj+Ah9mxAc3+YdoamQVVXDmMcx4ym5hCRcKbOKzC44ymsU/eeuFZZJVEjrSbJsWh106
- 3VQpz93Qt628DhrPdsJ6ooh1jUd8m7YUcc2aAp1LvfslLF1hxdKMFgE/y09ycFWMCIxtdoubEu1
- mzVk1KVSDkfbS2LCaizNoniPykNpGGAYlUAIYBvnvUwFHhr5YT0HWKGGilkJN5M9IqYXdeoh6HA
- AbekSj6+TvTk1u58GFoCyvxEMTYdFWBlpswtijQFpaNKPigcrhvLOXA5slyAUTCpkSfUBBbWkQt
- JeTCKb2SIzA8S8so5MA==
-X-Authority-Analysis: v=2.4 cv=KbXfcAYD c=1 sm=1 tr=0 ts=69be2d3f cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=JuTF4qcAAAAA:8 a=pGLkceISAAAA:8
- a=Ch0cGf-TT9rgrewJZhwA:9 a=WlT8qwTXB_Kj6um4hl3b:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzIxMDA0MCBTYWx0ZWRfX83CBKAXV1nT/
+ 0sew7uzp8Ooba+TwrHhB3tWdPb/bfIo+dATEl2O6nPOTyjiH7MOvvaM6IF8ovQVjQBL1I40xWKX
+ 7mBFMPtbeDxBtcvTXJJi8znti7azor4+JuGZjmzEN2uyncttGcsyxNboJOrZw0RfiM+VbZzMbuv
+ ZoNfKuJHvJItJQfYUM5Vb1ZSpeOgWmJDBCXuhVErJ4JFSkGB9EWot37VAFH1sNmVyxpAwtkWa6O
+ gZHisD74OxARqg6ixYzZNmKstd+SDkt+/kLqLuS39b2y70Jcp4Ldby61R+yB3+lztvBxRnrji/0
+ jF+1jtp/P+kaAymYgGLTHL/V/9BlL5yoh7mgx98lxvkajPK8tg1MdtI6STfaFzJUXL0kRTOYFVR
+ a4z5EG72vACwHCQk4BcslC8NpWJLv8OcgdeZix82Zwl1DNUUeOg5At/BHmDA70Tg9qYVZK82EJ2
+ Hnpfo0lRtH9kQbBxSiw==
+X-Authority-Analysis: v=2.4 cv=JK42csKb c=1 sm=1 tr=0 ts=69be2f8e cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=74_OhrOYAAAA:8 a=AM-k9FoxXId6UO4VfQQA:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10 a=sXAPJFFmzZfmHMDDykbx:22
+X-Proofpoint-ORIG-GUID: 1tNcjnE4VxPNiW0jDhO2pfngZJYJ70Iq
+X-Proofpoint-GUID: 1tNcjnE4VxPNiW0jDhO2pfngZJYJ70Iq
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-03-21_02,2026-03-20_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 impostorscore=0 malwarescore=0 adultscore=0 clxscore=1011
- priorityscore=1501 bulkscore=0 lowpriorityscore=0 phishscore=0 spamscore=0
+ impostorscore=0 clxscore=1015 priorityscore=1501 malwarescore=0 adultscore=0
+ spamscore=0 suspectscore=0 phishscore=0 lowpriorityscore=0 bulkscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603210040
 
-The kexec sequence invokes enter_vmx_ops() and exit_vmx_ops() with the
-MMU disabled. In this context, code must not rely on normal virtual
-address translations or trigger page faults.
+Hello Venkat,
 
-With KASAN enabled, these functions get instrumented and may access
-shadow memory using regular address translation. When executed with
-the MMU off, this can lead to page faults (bad_page_fault) from which
-the kernel cannot recover in the kexec path, resulting in a hang.
+Please try the below fix patch series, it should fix the kdump issue.
+https://lore.kernel.org/all/20260321053121.614022-1-sourabhjain@linux.ibm.com/
 
-Mark enter_vmx_ops() and exit_vmx_ops() with __no_sanitize_address to
-avoid KASAN instrumentation and ensure kexec boots fine with KASAN
-enabled.
+I am unable to reproduce this issue with fadump. Dump collection with 
+fadump and CONFIG_KASAN
+works fine for me. Please share the kernel config you used.
 
-Cc: Aditya Gupta <adityag@linux.ibm.com>
-Cc: Daniel Axtens <dja@axtens.net>
-Cc: Hari Bathini <hbathini@linux.ibm.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-Cc: Shivang Upadhyay <shivangu@linux.ibm.com>
-Cc: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Reported-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
-Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
----
- arch/powerpc/lib/vmx-helper.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+- Sourabh Jain
 
-diff --git a/arch/powerpc/lib/vmx-helper.c b/arch/powerpc/lib/vmx-helper.c
-index 554b248002b4..c01b2d856650 100644
---- a/arch/powerpc/lib/vmx-helper.c
-+++ b/arch/powerpc/lib/vmx-helper.c
-@@ -52,7 +52,7 @@ int exit_vmx_usercopy(void)
- }
- EXPORT_SYMBOL(exit_vmx_usercopy);
- 
--int enter_vmx_ops(void)
-+int __no_sanitize_address enter_vmx_ops(void)
- {
- 	if (in_interrupt())
- 		return 0;
-@@ -69,7 +69,7 @@ int enter_vmx_ops(void)
-  * passed a pointer to the destination which we return as required by a
-  * memcpy implementation.
-  */
--void *exit_vmx_ops(void *dest)
-+void __no_sanitize_address *exit_vmx_ops(void *dest)
- {
- 	disable_kernel_altivec();
- 	preempt_enable();
--- 
-2.52.0
+
+On 13/01/26 10:37, Venkat Rao Bagalkote wrote:
+>
+> On 12/01/26 3:34 pm, Sourabh Jain wrote:
+>> Hello Venkat,
+>>
+>> Thanks for sharing the bug report.
+>>
+>> Can you please provide additional data about the environment.
+>>
+>> 1. What was the top commit in your git branch?
+>> 2. Kernel command-line of first/production kernel.
+>> 3. Is this issue specific to P11?
+>> 4. Since you used kdump service to load the capture kernel may I know 
+>> what distro was used?
+>
+>
+> 1. commit-id: 0f61b1860cc3f52aef9036d7235ed1f017632193
+>
+> 2. cat /proc/cmdline
+> BOOT_IMAGE=(ieee1275//vdevice/v-scsi@30000069/disk@8100000000000000,msdos3)/boot/vmlinuz-6.19.0-rc5 
+> root=UUID=6a163e3c-3a88-4cc6-800d-8d037bd4f0b0 ro 
+>  crashkernel=2G-4G:384M,4G-16G:512M,16G-64G:1G,64G-128G:2G,128G-:4G
+>
+> 3. Yes, on P9, its working.
+>
+> 4. "Red Hat Enterprise Linux 9.5 Beta (Plow)"
+>
+>>
+>>
+>> On 12/01/26 08:51, Venkat Rao Bagalkote wrote:
+>>> Greetings!!
+>>>
+>>>
+>>> KDUMP and FADUMP is broken on P11 system. After configuring 
+>>> KDUMP/FADUMP on the system, upon reboot, system dosent reboot to 
+>>> collect the vmcore. Its just stuck. Need to trigger reboot from HMC.
+>>
+>> What do you mean upon reboot? Did you on system crash?
+>
+> Sorry, my bad. Upon triggering crash, system doesnt reboot to collect 
+> the vmcore.
+>
+>>
+>>>
+>>>
+>>>
+>>> # makedumpfile -v
+>>> makedumpfile: version 1.7.7 (released on 21 Apr 2025)
+>>> lzo    enabled
+>>> snappy    enabled
+>>> zstd    disabled
+>>>
+>>> cd /root/
+>>> # makedumpfile -v
+>>> makedumpfile: version 1.7.7 (released on 21 Apr 2025)
+>>> lzo    enabled
+>>> snappy    enabled
+>>> zstd    disabled
+>>>
+>>> # systemctl stop kdump.service
+>>> # systemctl start kdump.service
+>>>  systemctl status kdump.service --no-pager
+>>> ● kdump.service - Crash recovery kernel arming
+>>>      Loaded: loaded (/usr/lib/systemd/system/kdump.service; enabled; 
+>>> preset: enabled)
+>>>      Active: active (exited) since Fri 2026-01-09 09:12:01 CST; 7s ago
+>>>     Process: 2071 ExecStart=/usr/bin/kdumpctl start (code=exited, 
+>>> status=0/SUCCESS)
+>>>    Main PID: 2071 (code=exited, status=0/SUCCESS)
+>>>         CPU: 41.857s
+>>>
+>>> Jan 09 09:11:55 ltcden8-lp5.ltc.tadn.ibm.com dracut[2839]: *** 
+>>> Install squash…**
+>>> Jan 09 09:11:56 ltcden8-lp5.ltc.tadn.ibm.com dracut[2839]: *** 
+>>> Stripping file…**
+>>> Jan 09 09:11:56 ltcden8-lp5.ltc.tadn.ibm.com dracut[2839]: *** 
+>>> Stripping file…**
+>>> Jan 09 09:11:56 ltcden8-lp5.ltc.tadn.ibm.com dracut[2839]: *** 
+>>> Squashing the …**
+>>> Jan 09 09:11:58 ltcden8-lp5.ltc.tadn.ibm.com dracut[2839]: *** 
+>>> Squashing the …**
+>>> Jan 09 09:11:58 ltcden8-lp5.ltc.tadn.ibm.com dracut[2839]: *** 
+>>> Creating image…**
+>>> Jan 09 09:11:58 ltcden8-lp5.ltc.tadn.ibm.com dracut[2839]: *** 
+>>> Creating initr…**
+>>> Jan 09 09:12:01 ltcden8-lp5.ltc.tadn.ibm.com kdumpctl[2074]: kdump: 
+>>> kexec: lo…el
+>>> Jan 09 09:12:01 ltcden8-lp5.ltc.tadn.ibm.com kdumpctl[2074]: kdump: 
+>>> Starting …K]
+>>> Jan 09 09:12:01 ltcden8-lp5.ltc.tadn.ibm.com systemd[1]: Finished 
+>>> Crash recov…g.
+>>> Hint: Some lines were ellipsized, use -l to show in full.
+>>> # echo 10 > /proc/sys/kernel/panic
+>>> # echo 1 > /proc/sys/kernel/sysrq
+>>> # echo c > /proc/sysrq-trigger
+>>> [  595.605706] sysrq: Trigger a crash
+>>> [  595.605721] Kernel panic - not syncing: sysrq triggered crash
+>>> [  595.605729] CPU: 0 UID: 0 PID: 1840 Comm: bash Kdump: loaded Not 
+>>> tainted 6.17.0 #6 VOLUNTARY
+>>> [  595.605739] Hardware name: IBM,9080-HEX Power11 (architected) 
+>>> 0x820200 0xf000007 of:IBM,FW1110.01 (NH1110_069) hv:phyp pSeries
+>>> [  595.605747] Call Trace:
+>>> [  595.605752] [c0000000a0e17920] [c00000000184c0e8] 
+>>> dump_stack_lvl+0xd0/0xe8 (unreliable)
+>>> [  595.605769] [c0000000a0e17950] [c0000000001b2434] vpanic+0x498/0x518
+>>> [  595.605781] [c0000000a0e17a00] [c0000000001b2504] 
+>>> nmi_panic+0x0/0x13c
+>>> [  595.605791] [c0000000a0e17a20] [c000000000e95d8c] 
+>>> sysrq_handle_crash+0x30/0x34
+>>> [  595.605804] [c0000000a0e17a80] [c000000000e96c98] 
+>>> __handle_sysrq+0x124/0x384
+>>> [  595.605814] [c0000000a0e17b40] [c000000000e97a9c] 
+>>> write_sysrq_trigger+0x184/0x228
+>>> [  595.605826] [c0000000a0e17bc0] [c0000000009f1c54] 
+>>> proc_reg_write+0x18c/0x240
+>>> [  595.605838] [c0000000a0e17c10] [c000000000896588] 
+>>> vfs_write+0x148/0x7d8
+>>> [  595.605848] [c0000000a0e17cf0] [c000000000896eb4] 
+>>> ksys_write+0xa0/0x184
+>>> [  595.605858] [c0000000a0e17d50] [c0000000000393d0] 
+>>> system_call_exception+0x1e0/0x460
+>>> [  595.605869] [c0000000a0e17e50] [c00000000000d05c] 
+>>> system_call_vectored_common+0x15c/0x2ec
+>>> [  595.605882] ---- interrupt: 3000 at 0x7fff9ab33e74
+>>> [  595.605890] NIP:  00007fff9ab33e74 LR: 00007fff9ab33e74 CTR: 
+>>> 0000000000000000
+>>> [  595.605897] REGS: c0000000a0e17e80 TRAP: 3000   Not tainted (6.17.0)
+>>> [  595.605904] MSR:  800000000280f033 
+>>> <SF,VEC,VSX,EE,PR,FP,ME,IR,DR,RI,LE>  CR: 44422408  XER: 00000000
+>>> [  595.605936] IRQMASK: 0
+>>> [  595.605936] GPR00: 0000000000000004 00007fffc3c7fab0 
+>>> 0000000135727e00 0000000000000001
+>>> [  595.605936] GPR04: 000000014b93c040 0000000000000002 
+>>> 0000000000000010 0000000000000001
+>>> [  595.605936] GPR08: 0000000000000001 0000000000000000 
+>>> 0000000000000000 0000000000000000
+>>> [  595.605936] GPR12: 0000000000000000 00007fff9adfab60 
+>>> 000000014b9fc1d0 00000001357287b8
+>>> [  595.605936] GPR16: 00000001357294d8 0000000020000000 
+>>> 0000000000000000 0000000135639070
+>>> [  595.605936] GPR20: 00000001356cbeb8 00007fffc3c7fc54 
+>>> 00000001356cf8a0 00000001357289bc
+>>> [  595.605936] GPR24: 0000000135728a50 0000000000000000 
+>>> 000000014b93c040 0000000000000002
+>>> [  595.605936] GPR28: 0000000000000002 00007fff9ac318e0 
+>>> 000000014b93c040 0000000000000002
+>>> [  595.606034] NIP [00007fff9ab33e74] 0x7fff9ab33e74
+>>> [  595.606040] LR [00007fff9ab33e74] 0x7fff9ab33e74
+>>> [  595.606046] ---- interrupt: 3000
+>>> 8:41
+>>> # cat /etc/kdump.conf
+>>> # This file contains a series of commands to perform (in order) in 
+>>> the kdump
+>>> # kernel after a kernel crash in the crash kernel(1st kernel) has 
+>>> happened.
+>>> #
+>>> # Directives in this file are only applicable to the kdump 
+>>> initramfs, and have
+>>> # no effect once the root filesystem is mounted and the normal init 
+>>> scripts are
+>>> # processed.
+>>> #
+>>> # Currently, only one dump target and path can be specified. If the 
+>>> dumping to
+>>> # the configured target fails, the failure action which can be 
+>>> configured via
+>>> # the "failure_action" directive will be performed.
+>>> #
+>>> # Supported options:
+>>> #
+>>> # auto_reset_crashkernel <yes|no>
+>>> #           - whether to reset kernel crashkernel to new default value
+>>> #             or not when kexec-tools updates the default 
+>>> crashkernel value and
+>>> #             existing kernels using the old default kernel 
+>>> crashkernel value.
+>>> #             The default value is yes.
+>>> #
+>>> # raw <partition>
+>>> #           - Will dd /proc/vmcore into <partition>.
+>>> #             Use persistent device names for partition devices,
+>>> #             such as /dev/vg/<devname>.
+>>> #
+>>> # nfs <nfs mount>
+>>> #           - Will mount nfs to <mnt>, and copy /proc/vmcore to
+>>> #             <mnt>/<path>/%HOST-%DATE/, supports DNS.
+>>> #
+>>> # ssh <user@server>
+>>> #           - Will save /proc/vmcore to 
+>>> <user@server>:<path>/%HOST-%DATE/,
+>>> #             supports DNS.
+>>> #             NOTE: make sure the user has write permissions on the 
+>>> server.
+>>> #
+>>> # sshkey <path>
+>>> #           - Will use the sshkey to do ssh dump.
+>>> #             Specify the path of the ssh key to use when dumping
+>>> #             via ssh. The default value is /root/.ssh/kdump_id_rsa.
+>>> #
+>>> # <fs type> <partition>
+>>> #           - Will mount -t <fs type> <partition> <mnt>, and copy
+>>> #             /proc/vmcore to <mnt>/<path>/%HOST_IP-%DATE/.
+>>> #             NOTE: <partition> can be a device node, label or uuid.
+>>> #             It's recommended to use persistent device names
+>>> #             such as /dev/vg/<devname>.
+>>> #             Otherwise it's suggested to use label or uuid.
+>>> #             Supported fs types: ext[234], xfs, btrfs, minix, virtiofs
+>>> #
+>>> # path <path>
+>>> #           - "path" represents the file system path in which vmcore
+>>> #             will be saved.  If a dump target is specified in
+>>> #             kdump.conf, then "path" is relative to the specified
+>>> #             dump target.
+>>> #
+>>> #             Interpretation of "path" changes a bit if the user didn't
+>>> #             specify any dump target explicitly in kdump.conf. In this
+>>> #             case, "path" represents the absolute path from root. The
+>>> #             dump target and adjusted path are arrived at 
+>>> automatically
+>>> #             depending on what's mounted in the current system.
+>>> #
+>>> #             Ignored for raw device dumps.  If unset, will use the 
+>>> default
+>>> #             "/var/crash".
+>>> #
+>>> # core_collector <command> <options>
+>>> #           - This allows you to specify the command to copy
+>>> #             the vmcore.  The default is makedumpfile, which on
+>>> #             some architectures can drastically reduce vmcore size.
+>>> #             See /sbin/makedumpfile --help for a list of options.
+>>> #             Note that the -i and -g options are not needed here,
+>>> #             as the initrd will automatically be populated with a
+>>> #             config file appropriate for the running kernel.
+>>> #             The default core_collector for raw/ssh dump is:
+>>> #             "makedumpfile -F -l --message-level 7 -d 31".
+>>> #             The default core_collector for other targets is:
+>>> #             "makedumpfile -l --message-level 7 -d 31".
+>>> #
+>>> #             "makedumpfile -F" will create a flattened vmcore.
+>>> #             You need to use "makedumpfile -R" to rearrange the 
+>>> dump data to
+>>> #             a normal dumpfile readable with analysis tools. For 
+>>> example:
+>>> #             "makedumpfile -R vmcore < vmcore.flat".
+>>> #
+>>> #             For core_collector format details, you can refer to
+>>> #             kexec-kdump-howto.txt or kdump.conf manpage.
+>>> #
+>>> # kdump_post <binary | script>
+>>> #           - This directive allows you to run a executable binary
+>>> #             or script after the vmcore dump process terminates.
+>>> #             The exit status of the current dump process is fed to
+>>> #             the executable binary or script as its first argument.
+>>> #             All files under /etc/kdump/post.d are collectively sorted
+>>> #             and executed in lexical order, before binary or script
+>>> #             specified kdump_post parameter is executed.
+>>> #
+>>> # kdump_pre <binary | script>
+>>> #           - Works like the "kdump_post" directive, but instead of 
+>>> running
+>>> #             after the dump process, runs immediately before it.
+>>> #             Exit status of this binary is interpreted as follows:
+>>> #               0 - continue with dump process as usual
+>>> #               non 0 - run the final action (reboot/poweroff/halt)
+>>> #             All files under /etc/kdump/pre.d are collectively 
+>>> sorted and
+>>> #             executed in lexical order, after binary or script 
+>>> specified
+>>> #             kdump_pre parameter is executed.
+>>> #             Even if the binary or script in /etc/kdump/pre.d 
+>>> directory
+>>> #             returns non 0 exit status, the processing is continued.
+>>> #
+>>> # extra_bins <binaries | shell scripts>
+>>> #           - This directive allows you to specify additional 
+>>> binaries or
+>>> #             shell scripts to be included in the kdump initrd.
+>>> #             Generally they are useful in conjunction with a 
+>>> kdump_post
+>>> #             or kdump_pre binary or script which depends on these 
+>>> extra_bins.
+>>> #
+>>> # extra_modules <module(s)>
+>>> #           - This directive allows you to specify extra kernel modules
+>>> #             that you want to be loaded in the kdump initrd.
+>>> #             Multiple modules can be listed, separated by spaces, 
+>>> and any
+>>> #             dependent modules will automatically be included.
+>>> #
+>>> # failure_action <reboot | halt | poweroff | shell | dump_to_rootfs>
+>>> #           - Action to perform in case dumping fails.
+>>> #             reboot:   Reboot the system.
+>>> #             halt:     Halt the system.
+>>> #             poweroff: Power down the system.
+>>> #             shell:    Drop to a bash shell.
+>>> #                       Exiting the shell reboots the system by 
+>>> default,
+>>> #                       or perform "final_action".
+>>> #             dump_to_rootfs:  Dump vmcore to rootfs from initramfs 
+>>> context and
+>>> #                       reboot by default or perform "final_action".
+>>> #                       Useful when non-root dump target is specified.
+>>> #             The default option is "reboot".
+>>> #
+>>> # default <reboot | halt | poweroff | shell | dump_to_rootfs>
+>>> #           - Same as the "failure_action" directive above, but this 
+>>> directive
+>>> #             is obsolete and will be removed in the future.
+>>> #
+>>> # final_action <reboot | halt | poweroff>
+>>> #           - Action to perform in case dumping succeeds. Also 
+>>> performed
+>>> #             when "shell" or "dump_to_rootfs" failure action finishes.
+>>> #             Each action is same as the "failure_action" directive 
+>>> above.
+>>> #             The default is "reboot".
+>>> #
+>>> # force_rebuild <0 | 1>
+>>> #           - By default, kdump initrd will only be rebuilt when 
+>>> necessary.
+>>> #             Specify 1 to force rebuilding kdump initrd every time 
+>>> when kdump
+>>> #             service starts.
+>>> #
+>>> # force_no_rebuild <0 | 1>
+>>> #           - By default, kdump initrd will be rebuilt when necessary.
+>>> #             Specify 1 to bypass rebuilding of kdump initrd.
+>>> #
+>>> #             force_no_rebuild and force_rebuild options are mutually
+>>> #             exclusive and they should not be set to 1 simultaneously.
+>>> #
+>>> # override_resettable <0 | 1>
+>>> #           - Usually an unresettable block device can't be a dump 
+>>> target.
+>>> #             Specifying 1 when you want to dump even though the block
+>>> #             target is unresettable
+>>> #             By default, it is 0, which will not try dumping 
+>>> destined to fail.
+>>> #
+>>> # dracut_args <arg(s)>
+>>> #           - Pass extra dracut options when rebuilding kdump initrd.
+>>> #
+>>> # fence_kdump_args <arg(s)>
+>>> #           - Command line arguments for fence_kdump_send (it can 
+>>> contain
+>>> #             all valid arguments except hosts to send notification 
+>>> to).
+>>> #
+>>> # fence_kdump_nodes <node(s)>
+>>> #           - List of cluster node(s) except localhost, separated by 
+>>> spaces,
+>>> #             to send fence_kdump notifications to.
+>>> #             (this option is mandatory to enable fence_kdump).
+>>> #
+>>>
+>>> #raw /dev/vg/lv_kdump
+>>> #ext4 /dev/vg/lv_kdump
+>>> #ext4 LABEL=/boot
+>>> #ext4 UUID=03138356-5e61-4ab3-b58e-27507ac41937
+>>> #virtiofs myfs
+>>> #nfs my.server.com:/export/tmp
+>>> #nfs [2001:db8::1:2:3:4]:/export/tmp
+>>> #ssh user@my.server.com
+>>> #ssh user@2001:db8::1:2:3:4
+>>> #sshkey /root/.ssh/kdump_id_rsa
+>>> auto_reset_crashkernel yes
+>>> path /var/crash
+>>> core_collector makedumpfile -l --message-level 7 -d 31
+>>> #core_collector scp
+>>> #kdump_post /var/crash/scripts/kdump-post.sh
+>>> #kdump_pre /var/crash/scripts/kdump-pre.sh
+>>> #extra_bins /usr/bin/lftp
+>>> #extra_modules gfs2
+>>> #failure_action shell
+>>> #force_rebuild 1
+>>> #force_no_rebuild 1
+>>> #dracut_args --omit-drivers "cfg80211 snd" --add-drivers "ext2 ext3"
+>>> #fence_kdump_args -p 7410 -f auto -c 0 -i 10
+>>> #fence_kdump_nodes node1 node2
+>>>
+>>>
+>>>
+>>> Regards,
+>>>
+>>> Venkat.
+>>>
+>>
 
 
