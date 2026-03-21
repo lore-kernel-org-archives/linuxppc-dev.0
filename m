@@ -1,73 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-18536-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18537-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DE751093170
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2026 05:41:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E62D1093174
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2026 06:43:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fd7bR41dsz2yYq;
-	Sat, 21 Mar 2026 16:41:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774071699;
-	cv=none; b=UimqfWBlQBE0LsRVKopSbK4HtM7Db8V6NutYIMswCpLDc4asMqJsPj53r1lAuknOkF4TgeEoJuLfPhUzGn02qn0Qoy42Z3GJ55M31JUFOARjLn5CbLtcYmLZMAL4bQ9CuHF/LgfYb+5pHPBNkxMIQHX46FzPiPK+Xb3FiE08Xhn6E8QradqNWuVR7ur5gmj0FzVpluCEU9JtYvQanWkbJ68zQmueDrILKl28ks47xN+TVgrYkkX2b8IquWrRK3DTWFqRZFGEM9ueaUd2iNCUocsFT4FzVwms/r1w9AiCjaXNBr5oLW7azk4eoHeabbKL4P9IiC7PTmK61+djGRB5dA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fd8yZ5yXNz2ydq;
+	Sat, 21 Mar 2026 17:43:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.119
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774075398;
+	cv=none; b=FIh6MULI2NZb3QwZqzzAon+uhqt1HBaZ4CmAWMeU+uvXilrDP56qRwpkqH7VdZ0i1D6/Ema9ADZFbAgdTYMoSgaonGkNfbThNiwMaDmyN0TFpounp+K+bop+DUK7uNOdH15ya5rJtSUa5+NMifvxRUYMywFX+IQ1BW90js7muohILM1lAjwHQTtO22O6Vvw/kOWqW5Gr3PkWTtjDLNqSwiFGVUopcUz/BetYoq+ACph5Od1E3xoFvFiiSUsLNpUr0QClM8QRlwCsMzcFFCUWMREdzNpECZonrFqq6IfCYT2ieWe+JwW21y4iav3hXDdetYuPq365pMFpyrHEchWwRw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774071699; c=relaxed/relaxed;
-	bh=ObzTo0wGg+XyNZ4mG1moxUT2vqXJ5Ou4R8YvVWy9WBI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Vr/KRHyc+TJ8vKfLNQti3D0p2Jv3+yYKG5r3huE4F5FPOIeO3yr4JIPzUG6QOF/dLnajGRjKAGGPXldN2i2M6cQKIWgBiZPmE2AP7mF0UUmOP9IUoALHUnC5WW5HRksiDXvoxtrk1Tdr5tY3u3YNrdXF47eGWyZmqOqjqPkszm06uvOUE1jor0qMk8iXvHBMotZCPzJwQIDaIwxALahaZGwrw51oDlTF3lq4qqgFndfgI0ztUpsiw8oFcyWexgBVWT7NGvFbyt4Xk1icr7839N6266FtCBFNChRjGv7jdT2LjBc3jvxp67KeZZSL7dR85C/xIHF6AWE/632tnIaYHQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=osXYmP1L; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1774075398; c=relaxed/relaxed;
+	bh=EB0hZwtUcZswaQsGgDirN1WuGzTF+UsTmqEkmKQ0NBQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=SEBQXjfFm3zvDL899PLEmsKU6ZIwz+H/8SB/5U/t6O96H1jmBkhyyv7lHjJHmotD/PhEU6RIKLmewPETiKUBvFx6ImYA9MPyEpGKKB2b/n1b8OVzuBGFAGw5moipqNBf88Z0IzJHdpjtUX/awy0LchOsObaTOQ4M2aJTEy9El19d+9b8tDCuitsVHkwIX+1q+rQ9iT6dVPgK5DCXor5u3+F7wUHYgspjE+Dz/L8FhWptxuKNYQbsYxY0hCghfyPA1tbPKszwxuOeHlLvlsSM7FsplDHvPIPrRnWN74a56hxNe9viq7YLDXT6CG480AJDMuItXsI//R9Wxw7zly0sSA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=aEF7TA7g; dkim-atps=neutral; spf=pass (client-ip=115.124.30.119; helo=out30-119.freemail.mail.aliyun.com; envelope-from=baolin.wang@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=osXYmP1L;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=aEF7TA7g;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.119; helo=out30-119.freemail.mail.aliyun.com; envelope-from=baolin.wang@linux.alibaba.com; receiver=lists.ozlabs.org)
+Received: from out30-119.freemail.mail.aliyun.com (out30-119.freemail.mail.aliyun.com [115.124.30.119])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fd7bQ0R2jz2xP9
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2026 16:41:37 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62L429sk4053591
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2026 05:41:35 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=ObzTo0
-	wGg+XyNZ4mG1moxUT2vqXJ5Ou4R8YvVWy9WBI=; b=osXYmP1LkEoxHTXEsUVr0g
-	aF9ySidnCJkEbkBGXCQW9hDs/q7KUo9qlxcdwEi6G24Ypz6hphjDKRHOq9DE26zA
-	AOiwPXFbh0+pt+phf8kQThMXu3bdN+vzb7/zibq3tggD/+svTfxJ00MRBCYpf2Vx
-	pjGqRg7ir7KsHHPOQq4qBSU055UOESUT6Uw3HwCfXklx6jbz5G+FmtygzpVibe4K
-	EvuvfXgH1H0EDelJ6BfA2u6LXYMYNpT85+d0icVvMxrj/MK0ji/Ofa+P2kCbUnI6
-	MpjjAQr3uLLtsEU1FtNyNt3CHTyzagUkKTabvHH+/fiG1UYRvvSo2PfH2UwZWwZQ
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d1kxyr6b4-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2026 05:41:34 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62L44FGe016289
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2026 05:41:34 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4cwm7kafnk-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2026 05:41:33 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62L5fTaD16712128
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 21 Mar 2026 05:41:29 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C4ED920040;
-	Sat, 21 Mar 2026 05:41:29 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5109B20043;
-	Sat, 21 Mar 2026 05:41:28 +0000 (GMT)
-Received: from [9.124.222.162] (unknown [9.124.222.162])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sat, 21 Mar 2026 05:41:27 +0000 (GMT)
-Message-ID: <8ab4823d-cf84-4dd8-ac0e-ccfb781dd588@linux.ibm.com>
-Date: Sat, 21 Mar 2026 11:11:20 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fd8yX3yLgz2yYq
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2026 17:43:13 +1100 (AEDT)
+DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux.alibaba.com; s=default;
+	t=1774075389; h=From:To:Subject:Date:Message-ID:MIME-Version;
+	bh=EB0hZwtUcZswaQsGgDirN1WuGzTF+UsTmqEkmKQ0NBQ=;
+	b=aEF7TA7gJxgUvHlppxiJTO7NxX4XJ+D5gexKEllA4k7fKaYeSSsJUewl8bh6mQtyyWga415ESA7lpy33BB1i7vbuUGg0ZUDFp/8R9MftG4O9yxmcFtGRhOUR7nbT7PGitU9fx5Fhddv7Q6TSOZFKBRqSuFE9ipfEyk4ASZlo59Q=
+X-Alimail-AntiSpam:AC=PASS;BC=-1|-1;BR=01201311R501e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033045133197;MF=baolin.wang@linux.alibaba.com;NM=1;PH=DS;RN=18;SR=0;TI=SMTPD_---0X.O5tHl_1774075386;
+Received: from localhost(mailfrom:baolin.wang@linux.alibaba.com fp:SMTPD_---0X.O5tHl_1774075386 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Sat, 21 Mar 2026 14:43:07 +0800
+From: Baolin Wang <baolin.wang@linux.alibaba.com>
+To: akpm@linux-foundation.org,
+	david@kernel.org
+Cc: ljs@kernel.org,
+	Liam.Howlett@oracle.com,
+	vbabka@kernel.org,
+	rppt@kernel.org,
+	surenb@google.com,
+	mhocko@suse.com,
+	baolin.wang@linux.alibaba.com,
+	linux-arm-kernel@lists.infradead.org,
+	x86@kernel.org,
+	linux-parisc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org,
+	kvm@vger.kernel.org,
+	linux-mm@kvack.org (open),
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2 1/6] mm: change to return bool for ptep_test_and_clear_young()
+Date: Sat, 21 Mar 2026 14:42:49 +0800
+Message-ID: <57e70efa9703d43959aa645246ea3cbdba14fa17.1774075004.git.baolin.wang@linux.alibaba.com>
+X-Mailer: git-send-email 2.47.3
+In-Reply-To: <cover.1774075004.git.baolin.wang@linux.alibaba.com>
+References: <cover.1774075004.git.baolin.wang@linux.alibaba.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,445 +76,343 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [mainline] KDUMP/FADUMP is broken on the mainline kernel on P11
- System
-To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-        Hari Bathini <hbathini@linux.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>
-References: <1dee8891-8bcc-46b4-93f3-fc3a774abd5b@linux.ibm.com>
- <9e1ba7b3-7204-4db8-9876-c1cef20141c9@linux.ibm.com>
- <a0ad408a-988b-4baf-84d1-1af4584d8f7f@linux.ibm.com>
-Content-Language: en-US
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-In-Reply-To: <a0ad408a-988b-4baf-84d1-1af4584d8f7f@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzIxMDA0MCBTYWx0ZWRfX83CBKAXV1nT/
- 0sew7uzp8Ooba+TwrHhB3tWdPb/bfIo+dATEl2O6nPOTyjiH7MOvvaM6IF8ovQVjQBL1I40xWKX
- 7mBFMPtbeDxBtcvTXJJi8znti7azor4+JuGZjmzEN2uyncttGcsyxNboJOrZw0RfiM+VbZzMbuv
- ZoNfKuJHvJItJQfYUM5Vb1ZSpeOgWmJDBCXuhVErJ4JFSkGB9EWot37VAFH1sNmVyxpAwtkWa6O
- gZHisD74OxARqg6ixYzZNmKstd+SDkt+/kLqLuS39b2y70Jcp4Ldby61R+yB3+lztvBxRnrji/0
- jF+1jtp/P+kaAymYgGLTHL/V/9BlL5yoh7mgx98lxvkajPK8tg1MdtI6STfaFzJUXL0kRTOYFVR
- a4z5EG72vACwHCQk4BcslC8NpWJLv8OcgdeZix82Zwl1DNUUeOg5At/BHmDA70Tg9qYVZK82EJ2
- Hnpfo0lRtH9kQbBxSiw==
-X-Authority-Analysis: v=2.4 cv=JK42csKb c=1 sm=1 tr=0 ts=69be2f8e cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=74_OhrOYAAAA:8 a=AM-k9FoxXId6UO4VfQQA:9 a=3ZKOabzyN94A:10
- a=QEXdDO2ut3YA:10 a=sXAPJFFmzZfmHMDDykbx:22
-X-Proofpoint-ORIG-GUID: 1tNcjnE4VxPNiW0jDhO2pfngZJYJ70Iq
-X-Proofpoint-GUID: 1tNcjnE4VxPNiW0jDhO2pfngZJYJ70Iq
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-21_02,2026-03-20_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 clxscore=1015 priorityscore=1501 malwarescore=0 adultscore=0
- spamscore=0 suspectscore=0 phishscore=0 lowpriorityscore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603210040
 
-Hello Venkat,
+Callers use ptep_test_and_clear_young() to clear the young flag and check
+whether it was set. Change the return type to bool to make the intention
+clearer.
 
-Please try the below fix patch series, it should fix the kdump issue.
-https://lore.kernel.org/all/20260321053121.614022-1-sourabhjain@linux.ibm.com/
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Reviewed-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
+Signed-off-by: Baolin Wang <baolin.wang@linux.alibaba.com>
+---
+ arch/arm64/include/asm/pgtable.h             | 16 +++++++---------
+ arch/arm64/mm/contpte.c                      |  7 +++----
+ arch/microblaze/include/asm/pgtable.h        |  2 +-
+ arch/parisc/include/asm/pgtable.h            |  7 ++++---
+ arch/powerpc/include/asm/book3s/32/pgtable.h |  4 ++--
+ arch/powerpc/include/asm/book3s/64/pgtable.h |  6 +++---
+ arch/powerpc/include/asm/nohash/pgtable.h    |  4 ++--
+ arch/riscv/include/asm/pgtable.h             |  4 ++--
+ arch/riscv/mm/pgtable.c                      |  7 +++----
+ arch/s390/include/asm/pgtable.h              |  4 ++--
+ arch/x86/include/asm/pgtable.h               |  4 ++--
+ arch/x86/mm/pgtable.c                        |  6 +++---
+ arch/xtensa/include/asm/pgtable.h            |  9 ++++-----
+ include/linux/pgtable.h                      | 16 ++++++++--------
+ 14 files changed, 46 insertions(+), 50 deletions(-)
 
-I am unable to reproduce this issue with fadump. Dump collection with 
-fadump and CONFIG_KASAN
-works fine for me. Please share the kernel config you used.
-
-- Sourabh Jain
-
-
-On 13/01/26 10:37, Venkat Rao Bagalkote wrote:
->
-> On 12/01/26 3:34 pm, Sourabh Jain wrote:
->> Hello Venkat,
->>
->> Thanks for sharing the bug report.
->>
->> Can you please provide additional data about the environment.
->>
->> 1. What was the top commit in your git branch?
->> 2. Kernel command-line of first/production kernel.
->> 3. Is this issue specific to P11?
->> 4. Since you used kdump service to load the capture kernel may I know 
->> what distro was used?
->
->
-> 1. commit-id: 0f61b1860cc3f52aef9036d7235ed1f017632193
->
-> 2. cat /proc/cmdline
-> BOOT_IMAGE=(ieee1275//vdevice/v-scsi@30000069/disk@8100000000000000,msdos3)/boot/vmlinuz-6.19.0-rc5 
-> root=UUID=6a163e3c-3a88-4cc6-800d-8d037bd4f0b0 ro 
->  crashkernel=2G-4G:384M,4G-16G:512M,16G-64G:1G,64G-128G:2G,128G-:4G
->
-> 3. Yes, on P9, its working.
->
-> 4. "Red Hat Enterprise Linux 9.5 Beta (Plow)"
->
->>
->>
->> On 12/01/26 08:51, Venkat Rao Bagalkote wrote:
->>> Greetings!!
->>>
->>>
->>> KDUMP and FADUMP is broken on P11 system. After configuring 
->>> KDUMP/FADUMP on the system, upon reboot, system dosent reboot to 
->>> collect the vmcore. Its just stuck. Need to trigger reboot from HMC.
->>
->> What do you mean upon reboot? Did you on system crash?
->
-> Sorry, my bad. Upon triggering crash, system doesnt reboot to collect 
-> the vmcore.
->
->>
->>>
->>>
->>>
->>> # makedumpfile -v
->>> makedumpfile: version 1.7.7 (released on 21 Apr 2025)
->>> lzo    enabled
->>> snappy    enabled
->>> zstd    disabled
->>>
->>> cd /root/
->>> # makedumpfile -v
->>> makedumpfile: version 1.7.7 (released on 21 Apr 2025)
->>> lzo    enabled
->>> snappy    enabled
->>> zstd    disabled
->>>
->>> # systemctl stop kdump.service
->>> # systemctl start kdump.service
->>>  systemctl status kdump.service --no-pager
->>> ● kdump.service - Crash recovery kernel arming
->>>      Loaded: loaded (/usr/lib/systemd/system/kdump.service; enabled; 
->>> preset: enabled)
->>>      Active: active (exited) since Fri 2026-01-09 09:12:01 CST; 7s ago
->>>     Process: 2071 ExecStart=/usr/bin/kdumpctl start (code=exited, 
->>> status=0/SUCCESS)
->>>    Main PID: 2071 (code=exited, status=0/SUCCESS)
->>>         CPU: 41.857s
->>>
->>> Jan 09 09:11:55 ltcden8-lp5.ltc.tadn.ibm.com dracut[2839]: *** 
->>> Install squash…**
->>> Jan 09 09:11:56 ltcden8-lp5.ltc.tadn.ibm.com dracut[2839]: *** 
->>> Stripping file…**
->>> Jan 09 09:11:56 ltcden8-lp5.ltc.tadn.ibm.com dracut[2839]: *** 
->>> Stripping file…**
->>> Jan 09 09:11:56 ltcden8-lp5.ltc.tadn.ibm.com dracut[2839]: *** 
->>> Squashing the …**
->>> Jan 09 09:11:58 ltcden8-lp5.ltc.tadn.ibm.com dracut[2839]: *** 
->>> Squashing the …**
->>> Jan 09 09:11:58 ltcden8-lp5.ltc.tadn.ibm.com dracut[2839]: *** 
->>> Creating image…**
->>> Jan 09 09:11:58 ltcden8-lp5.ltc.tadn.ibm.com dracut[2839]: *** 
->>> Creating initr…**
->>> Jan 09 09:12:01 ltcden8-lp5.ltc.tadn.ibm.com kdumpctl[2074]: kdump: 
->>> kexec: lo…el
->>> Jan 09 09:12:01 ltcden8-lp5.ltc.tadn.ibm.com kdumpctl[2074]: kdump: 
->>> Starting …K]
->>> Jan 09 09:12:01 ltcden8-lp5.ltc.tadn.ibm.com systemd[1]: Finished 
->>> Crash recov…g.
->>> Hint: Some lines were ellipsized, use -l to show in full.
->>> # echo 10 > /proc/sys/kernel/panic
->>> # echo 1 > /proc/sys/kernel/sysrq
->>> # echo c > /proc/sysrq-trigger
->>> [  595.605706] sysrq: Trigger a crash
->>> [  595.605721] Kernel panic - not syncing: sysrq triggered crash
->>> [  595.605729] CPU: 0 UID: 0 PID: 1840 Comm: bash Kdump: loaded Not 
->>> tainted 6.17.0 #6 VOLUNTARY
->>> [  595.605739] Hardware name: IBM,9080-HEX Power11 (architected) 
->>> 0x820200 0xf000007 of:IBM,FW1110.01 (NH1110_069) hv:phyp pSeries
->>> [  595.605747] Call Trace:
->>> [  595.605752] [c0000000a0e17920] [c00000000184c0e8] 
->>> dump_stack_lvl+0xd0/0xe8 (unreliable)
->>> [  595.605769] [c0000000a0e17950] [c0000000001b2434] vpanic+0x498/0x518
->>> [  595.605781] [c0000000a0e17a00] [c0000000001b2504] 
->>> nmi_panic+0x0/0x13c
->>> [  595.605791] [c0000000a0e17a20] [c000000000e95d8c] 
->>> sysrq_handle_crash+0x30/0x34
->>> [  595.605804] [c0000000a0e17a80] [c000000000e96c98] 
->>> __handle_sysrq+0x124/0x384
->>> [  595.605814] [c0000000a0e17b40] [c000000000e97a9c] 
->>> write_sysrq_trigger+0x184/0x228
->>> [  595.605826] [c0000000a0e17bc0] [c0000000009f1c54] 
->>> proc_reg_write+0x18c/0x240
->>> [  595.605838] [c0000000a0e17c10] [c000000000896588] 
->>> vfs_write+0x148/0x7d8
->>> [  595.605848] [c0000000a0e17cf0] [c000000000896eb4] 
->>> ksys_write+0xa0/0x184
->>> [  595.605858] [c0000000a0e17d50] [c0000000000393d0] 
->>> system_call_exception+0x1e0/0x460
->>> [  595.605869] [c0000000a0e17e50] [c00000000000d05c] 
->>> system_call_vectored_common+0x15c/0x2ec
->>> [  595.605882] ---- interrupt: 3000 at 0x7fff9ab33e74
->>> [  595.605890] NIP:  00007fff9ab33e74 LR: 00007fff9ab33e74 CTR: 
->>> 0000000000000000
->>> [  595.605897] REGS: c0000000a0e17e80 TRAP: 3000   Not tainted (6.17.0)
->>> [  595.605904] MSR:  800000000280f033 
->>> <SF,VEC,VSX,EE,PR,FP,ME,IR,DR,RI,LE>  CR: 44422408  XER: 00000000
->>> [  595.605936] IRQMASK: 0
->>> [  595.605936] GPR00: 0000000000000004 00007fffc3c7fab0 
->>> 0000000135727e00 0000000000000001
->>> [  595.605936] GPR04: 000000014b93c040 0000000000000002 
->>> 0000000000000010 0000000000000001
->>> [  595.605936] GPR08: 0000000000000001 0000000000000000 
->>> 0000000000000000 0000000000000000
->>> [  595.605936] GPR12: 0000000000000000 00007fff9adfab60 
->>> 000000014b9fc1d0 00000001357287b8
->>> [  595.605936] GPR16: 00000001357294d8 0000000020000000 
->>> 0000000000000000 0000000135639070
->>> [  595.605936] GPR20: 00000001356cbeb8 00007fffc3c7fc54 
->>> 00000001356cf8a0 00000001357289bc
->>> [  595.605936] GPR24: 0000000135728a50 0000000000000000 
->>> 000000014b93c040 0000000000000002
->>> [  595.605936] GPR28: 0000000000000002 00007fff9ac318e0 
->>> 000000014b93c040 0000000000000002
->>> [  595.606034] NIP [00007fff9ab33e74] 0x7fff9ab33e74
->>> [  595.606040] LR [00007fff9ab33e74] 0x7fff9ab33e74
->>> [  595.606046] ---- interrupt: 3000
->>> 8:41
->>> # cat /etc/kdump.conf
->>> # This file contains a series of commands to perform (in order) in 
->>> the kdump
->>> # kernel after a kernel crash in the crash kernel(1st kernel) has 
->>> happened.
->>> #
->>> # Directives in this file are only applicable to the kdump 
->>> initramfs, and have
->>> # no effect once the root filesystem is mounted and the normal init 
->>> scripts are
->>> # processed.
->>> #
->>> # Currently, only one dump target and path can be specified. If the 
->>> dumping to
->>> # the configured target fails, the failure action which can be 
->>> configured via
->>> # the "failure_action" directive will be performed.
->>> #
->>> # Supported options:
->>> #
->>> # auto_reset_crashkernel <yes|no>
->>> #           - whether to reset kernel crashkernel to new default value
->>> #             or not when kexec-tools updates the default 
->>> crashkernel value and
->>> #             existing kernels using the old default kernel 
->>> crashkernel value.
->>> #             The default value is yes.
->>> #
->>> # raw <partition>
->>> #           - Will dd /proc/vmcore into <partition>.
->>> #             Use persistent device names for partition devices,
->>> #             such as /dev/vg/<devname>.
->>> #
->>> # nfs <nfs mount>
->>> #           - Will mount nfs to <mnt>, and copy /proc/vmcore to
->>> #             <mnt>/<path>/%HOST-%DATE/, supports DNS.
->>> #
->>> # ssh <user@server>
->>> #           - Will save /proc/vmcore to 
->>> <user@server>:<path>/%HOST-%DATE/,
->>> #             supports DNS.
->>> #             NOTE: make sure the user has write permissions on the 
->>> server.
->>> #
->>> # sshkey <path>
->>> #           - Will use the sshkey to do ssh dump.
->>> #             Specify the path of the ssh key to use when dumping
->>> #             via ssh. The default value is /root/.ssh/kdump_id_rsa.
->>> #
->>> # <fs type> <partition>
->>> #           - Will mount -t <fs type> <partition> <mnt>, and copy
->>> #             /proc/vmcore to <mnt>/<path>/%HOST_IP-%DATE/.
->>> #             NOTE: <partition> can be a device node, label or uuid.
->>> #             It's recommended to use persistent device names
->>> #             such as /dev/vg/<devname>.
->>> #             Otherwise it's suggested to use label or uuid.
->>> #             Supported fs types: ext[234], xfs, btrfs, minix, virtiofs
->>> #
->>> # path <path>
->>> #           - "path" represents the file system path in which vmcore
->>> #             will be saved.  If a dump target is specified in
->>> #             kdump.conf, then "path" is relative to the specified
->>> #             dump target.
->>> #
->>> #             Interpretation of "path" changes a bit if the user didn't
->>> #             specify any dump target explicitly in kdump.conf. In this
->>> #             case, "path" represents the absolute path from root. The
->>> #             dump target and adjusted path are arrived at 
->>> automatically
->>> #             depending on what's mounted in the current system.
->>> #
->>> #             Ignored for raw device dumps.  If unset, will use the 
->>> default
->>> #             "/var/crash".
->>> #
->>> # core_collector <command> <options>
->>> #           - This allows you to specify the command to copy
->>> #             the vmcore.  The default is makedumpfile, which on
->>> #             some architectures can drastically reduce vmcore size.
->>> #             See /sbin/makedumpfile --help for a list of options.
->>> #             Note that the -i and -g options are not needed here,
->>> #             as the initrd will automatically be populated with a
->>> #             config file appropriate for the running kernel.
->>> #             The default core_collector for raw/ssh dump is:
->>> #             "makedumpfile -F -l --message-level 7 -d 31".
->>> #             The default core_collector for other targets is:
->>> #             "makedumpfile -l --message-level 7 -d 31".
->>> #
->>> #             "makedumpfile -F" will create a flattened vmcore.
->>> #             You need to use "makedumpfile -R" to rearrange the 
->>> dump data to
->>> #             a normal dumpfile readable with analysis tools. For 
->>> example:
->>> #             "makedumpfile -R vmcore < vmcore.flat".
->>> #
->>> #             For core_collector format details, you can refer to
->>> #             kexec-kdump-howto.txt or kdump.conf manpage.
->>> #
->>> # kdump_post <binary | script>
->>> #           - This directive allows you to run a executable binary
->>> #             or script after the vmcore dump process terminates.
->>> #             The exit status of the current dump process is fed to
->>> #             the executable binary or script as its first argument.
->>> #             All files under /etc/kdump/post.d are collectively sorted
->>> #             and executed in lexical order, before binary or script
->>> #             specified kdump_post parameter is executed.
->>> #
->>> # kdump_pre <binary | script>
->>> #           - Works like the "kdump_post" directive, but instead of 
->>> running
->>> #             after the dump process, runs immediately before it.
->>> #             Exit status of this binary is interpreted as follows:
->>> #               0 - continue with dump process as usual
->>> #               non 0 - run the final action (reboot/poweroff/halt)
->>> #             All files under /etc/kdump/pre.d are collectively 
->>> sorted and
->>> #             executed in lexical order, after binary or script 
->>> specified
->>> #             kdump_pre parameter is executed.
->>> #             Even if the binary or script in /etc/kdump/pre.d 
->>> directory
->>> #             returns non 0 exit status, the processing is continued.
->>> #
->>> # extra_bins <binaries | shell scripts>
->>> #           - This directive allows you to specify additional 
->>> binaries or
->>> #             shell scripts to be included in the kdump initrd.
->>> #             Generally they are useful in conjunction with a 
->>> kdump_post
->>> #             or kdump_pre binary or script which depends on these 
->>> extra_bins.
->>> #
->>> # extra_modules <module(s)>
->>> #           - This directive allows you to specify extra kernel modules
->>> #             that you want to be loaded in the kdump initrd.
->>> #             Multiple modules can be listed, separated by spaces, 
->>> and any
->>> #             dependent modules will automatically be included.
->>> #
->>> # failure_action <reboot | halt | poweroff | shell | dump_to_rootfs>
->>> #           - Action to perform in case dumping fails.
->>> #             reboot:   Reboot the system.
->>> #             halt:     Halt the system.
->>> #             poweroff: Power down the system.
->>> #             shell:    Drop to a bash shell.
->>> #                       Exiting the shell reboots the system by 
->>> default,
->>> #                       or perform "final_action".
->>> #             dump_to_rootfs:  Dump vmcore to rootfs from initramfs 
->>> context and
->>> #                       reboot by default or perform "final_action".
->>> #                       Useful when non-root dump target is specified.
->>> #             The default option is "reboot".
->>> #
->>> # default <reboot | halt | poweroff | shell | dump_to_rootfs>
->>> #           - Same as the "failure_action" directive above, but this 
->>> directive
->>> #             is obsolete and will be removed in the future.
->>> #
->>> # final_action <reboot | halt | poweroff>
->>> #           - Action to perform in case dumping succeeds. Also 
->>> performed
->>> #             when "shell" or "dump_to_rootfs" failure action finishes.
->>> #             Each action is same as the "failure_action" directive 
->>> above.
->>> #             The default is "reboot".
->>> #
->>> # force_rebuild <0 | 1>
->>> #           - By default, kdump initrd will only be rebuilt when 
->>> necessary.
->>> #             Specify 1 to force rebuilding kdump initrd every time 
->>> when kdump
->>> #             service starts.
->>> #
->>> # force_no_rebuild <0 | 1>
->>> #           - By default, kdump initrd will be rebuilt when necessary.
->>> #             Specify 1 to bypass rebuilding of kdump initrd.
->>> #
->>> #             force_no_rebuild and force_rebuild options are mutually
->>> #             exclusive and they should not be set to 1 simultaneously.
->>> #
->>> # override_resettable <0 | 1>
->>> #           - Usually an unresettable block device can't be a dump 
->>> target.
->>> #             Specifying 1 when you want to dump even though the block
->>> #             target is unresettable
->>> #             By default, it is 0, which will not try dumping 
->>> destined to fail.
->>> #
->>> # dracut_args <arg(s)>
->>> #           - Pass extra dracut options when rebuilding kdump initrd.
->>> #
->>> # fence_kdump_args <arg(s)>
->>> #           - Command line arguments for fence_kdump_send (it can 
->>> contain
->>> #             all valid arguments except hosts to send notification 
->>> to).
->>> #
->>> # fence_kdump_nodes <node(s)>
->>> #           - List of cluster node(s) except localhost, separated by 
->>> spaces,
->>> #             to send fence_kdump notifications to.
->>> #             (this option is mandatory to enable fence_kdump).
->>> #
->>>
->>> #raw /dev/vg/lv_kdump
->>> #ext4 /dev/vg/lv_kdump
->>> #ext4 LABEL=/boot
->>> #ext4 UUID=03138356-5e61-4ab3-b58e-27507ac41937
->>> #virtiofs myfs
->>> #nfs my.server.com:/export/tmp
->>> #nfs [2001:db8::1:2:3:4]:/export/tmp
->>> #ssh user@my.server.com
->>> #ssh user@2001:db8::1:2:3:4
->>> #sshkey /root/.ssh/kdump_id_rsa
->>> auto_reset_crashkernel yes
->>> path /var/crash
->>> core_collector makedumpfile -l --message-level 7 -d 31
->>> #core_collector scp
->>> #kdump_post /var/crash/scripts/kdump-post.sh
->>> #kdump_pre /var/crash/scripts/kdump-pre.sh
->>> #extra_bins /usr/bin/lftp
->>> #extra_modules gfs2
->>> #failure_action shell
->>> #force_rebuild 1
->>> #force_no_rebuild 1
->>> #dracut_args --omit-drivers "cfg80211 snd" --add-drivers "ext2 ext3"
->>> #fence_kdump_args -p 7410 -f auto -c 0 -i 10
->>> #fence_kdump_nodes node1 node2
->>>
->>>
->>>
->>> Regards,
->>>
->>> Venkat.
->>>
->>
+diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
+index ab451d20e4c5..79596cc05dcb 100644
+--- a/arch/arm64/include/asm/pgtable.h
++++ b/arch/arm64/include/asm/pgtable.h
+@@ -1282,9 +1282,8 @@ static inline void __pte_clear(struct mm_struct *mm,
+ 	__set_pte(ptep, __pte(0));
+ }
+ 
+-static inline int __ptep_test_and_clear_young(struct vm_area_struct *vma,
+-					      unsigned long address,
+-					      pte_t *ptep)
++static inline bool __ptep_test_and_clear_young(struct vm_area_struct *vma,
++		unsigned long address, pte_t *ptep)
+ {
+ 	pte_t old_pte, pte;
+ 
+@@ -1646,7 +1645,7 @@ extern void contpte_clear_full_ptes(struct mm_struct *mm, unsigned long addr,
+ extern pte_t contpte_get_and_clear_full_ptes(struct mm_struct *mm,
+ 				unsigned long addr, pte_t *ptep,
+ 				unsigned int nr, int full);
+-int contpte_test_and_clear_young_ptes(struct vm_area_struct *vma,
++bool contpte_test_and_clear_young_ptes(struct vm_area_struct *vma,
+ 				unsigned long addr, pte_t *ptep, unsigned int nr);
+ int contpte_clear_flush_young_ptes(struct vm_area_struct *vma,
+ 				unsigned long addr, pte_t *ptep, unsigned int nr);
+@@ -1813,9 +1812,8 @@ static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
+ }
+ 
+ #define test_and_clear_young_ptes test_and_clear_young_ptes
+-static inline int test_and_clear_young_ptes(struct vm_area_struct *vma,
+-					    unsigned long addr, pte_t *ptep,
+-					    unsigned int nr)
++static inline bool test_and_clear_young_ptes(struct vm_area_struct *vma,
++		unsigned long addr, pte_t *ptep, unsigned int nr)
+ {
+ 	if (likely(nr == 1 && !pte_cont(__ptep_get(ptep))))
+ 		return __ptep_test_and_clear_young(vma, addr, ptep);
+@@ -1824,8 +1822,8 @@ static inline int test_and_clear_young_ptes(struct vm_area_struct *vma,
+ }
+ 
+ #define __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
+-static inline int ptep_test_and_clear_young(struct vm_area_struct *vma,
+-				unsigned long addr, pte_t *ptep)
++static inline bool ptep_test_and_clear_young(struct vm_area_struct *vma,
++		unsigned long addr, pte_t *ptep)
+ {
+ 	return test_and_clear_young_ptes(vma, addr, ptep, 1);
+ }
+diff --git a/arch/arm64/mm/contpte.c b/arch/arm64/mm/contpte.c
+index 1519d090d5ea..a31cae78f712 100644
+--- a/arch/arm64/mm/contpte.c
++++ b/arch/arm64/mm/contpte.c
+@@ -508,9 +508,8 @@ pte_t contpte_get_and_clear_full_ptes(struct mm_struct *mm,
+ }
+ EXPORT_SYMBOL_GPL(contpte_get_and_clear_full_ptes);
+ 
+-int contpte_test_and_clear_young_ptes(struct vm_area_struct *vma,
+-					unsigned long addr, pte_t *ptep,
+-					unsigned int nr)
++bool contpte_test_and_clear_young_ptes(struct vm_area_struct *vma,
++		unsigned long addr, pte_t *ptep, unsigned int nr)
+ {
+ 	/*
+ 	 * ptep_clear_flush_young() technically requires us to clear the access
+@@ -525,7 +524,7 @@ int contpte_test_and_clear_young_ptes(struct vm_area_struct *vma,
+ 	 */
+ 
+ 	unsigned long end = addr + nr * PAGE_SIZE;
+-	int young = 0;
++	bool young = false;
+ 
+ 	ptep = contpte_align_addr_ptep(&addr, &end, ptep, nr);
+ 	for (; addr != end; ptep++, addr += PAGE_SIZE)
+diff --git a/arch/microblaze/include/asm/pgtable.h b/arch/microblaze/include/asm/pgtable.h
+index ea72291de553..7678c040a2fd 100644
+--- a/arch/microblaze/include/asm/pgtable.h
++++ b/arch/microblaze/include/asm/pgtable.h
+@@ -318,7 +318,7 @@ static inline void set_pte(pte_t *ptep, pte_t pte)
+ 
+ #define __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
+ struct vm_area_struct;
+-static inline int ptep_test_and_clear_young(struct vm_area_struct *vma,
++static inline bool ptep_test_and_clear_young(struct vm_area_struct *vma,
+ 		unsigned long address, pte_t *ptep)
+ {
+ 	return (pte_update(ptep, _PAGE_ACCESSED, 0) & _PAGE_ACCESSED) != 0;
+diff --git a/arch/parisc/include/asm/pgtable.h b/arch/parisc/include/asm/pgtable.h
+index f6fb99cb94d9..7097c785f690 100644
+--- a/arch/parisc/include/asm/pgtable.h
++++ b/arch/parisc/include/asm/pgtable.h
+@@ -438,16 +438,17 @@ static inline pte_t ptep_get(pte_t *ptep)
+ }
+ #define ptep_get ptep_get
+ 
+-static inline int ptep_test_and_clear_young(struct vm_area_struct *vma, unsigned long addr, pte_t *ptep)
++static inline bool ptep_test_and_clear_young(struct vm_area_struct *vma,
++		unsigned long addr, pte_t *ptep)
+ {
+ 	pte_t pte;
+ 
+ 	pte = ptep_get(ptep);
+ 	if (!pte_young(pte)) {
+-		return 0;
++		return false;
+ 	}
+ 	set_pte_at(vma->vm_mm, addr, ptep, pte_mkold(pte));
+-	return 1;
++	return true;
+ }
+ 
+ int ptep_clear_flush_young(struct vm_area_struct *vma, unsigned long addr, pte_t *ptep);
+diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
+index 001e28f9eabc..4a271318dee8 100644
+--- a/arch/powerpc/include/asm/book3s/32/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
+@@ -295,8 +295,8 @@ static inline pte_basic_t pte_update(struct mm_struct *mm, unsigned long addr, p
+  * for our hash-based implementation, we fix that up here.
+  */
+ #define __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
+-static inline int __ptep_test_and_clear_young(struct mm_struct *mm,
+-					      unsigned long addr, pte_t *ptep)
++static inline bool __ptep_test_and_clear_young(struct mm_struct *mm,
++		unsigned long addr, pte_t *ptep)
+ {
+ 	unsigned long old;
+ 	old = pte_update(mm, addr, ptep, _PAGE_ACCESSED, 0, 0);
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index 1a91762b455d..c049a2e26e25 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -349,13 +349,13 @@ static inline unsigned long pte_update(struct mm_struct *mm, unsigned long addr,
+  * For radix: H_PAGE_HASHPTE should be zero. Hence we can use the same
+  * function for both hash and radix.
+  */
+-static inline int __ptep_test_and_clear_young(struct mm_struct *mm,
+-					      unsigned long addr, pte_t *ptep)
++static inline bool __ptep_test_and_clear_young(struct mm_struct *mm,
++		unsigned long addr, pte_t *ptep)
+ {
+ 	unsigned long old;
+ 
+ 	if ((pte_raw(*ptep) & cpu_to_be64(_PAGE_ACCESSED | H_PAGE_HASHPTE)) == 0)
+-		return 0;
++		return false;
+ 	old = pte_update(mm, addr, ptep, _PAGE_ACCESSED, 0, 0);
+ 	return (old & _PAGE_ACCESSED) != 0;
+ }
+diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
+index e6da5eaccff6..3a6f20a1c800 100644
+--- a/arch/powerpc/include/asm/nohash/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/pgtable.h
+@@ -101,8 +101,8 @@ static inline pte_basic_t pte_update(struct mm_struct *mm, unsigned long addr, p
+ }
+ #endif
+ 
+-static inline int ptep_test_and_clear_young(struct vm_area_struct *vma,
+-					    unsigned long addr, pte_t *ptep)
++static inline bool ptep_test_and_clear_young(struct vm_area_struct *vma,
++		unsigned long addr, pte_t *ptep)
+ {
+ 	unsigned long old;
+ 
+diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
+index ab4ce1cc9d9c..643d12481b02 100644
+--- a/arch/riscv/include/asm/pgtable.h
++++ b/arch/riscv/include/asm/pgtable.h
+@@ -659,8 +659,8 @@ static inline void pte_clear(struct mm_struct *mm,
+ extern int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
+ 				 pte_t *ptep, pte_t entry, int dirty);
+ #define __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG	/* defined in mm/pgtable.c */
+-extern int ptep_test_and_clear_young(struct vm_area_struct *vma, unsigned long address,
+-				     pte_t *ptep);
++bool ptep_test_and_clear_young(struct vm_area_struct *vma,
++		unsigned long address, pte_t *ptep);
+ 
+ #define __HAVE_ARCH_PTEP_GET_AND_CLEAR
+ static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
+diff --git a/arch/riscv/mm/pgtable.c b/arch/riscv/mm/pgtable.c
+index b1ed2f14dc3a..9c4427d0b187 100644
+--- a/arch/riscv/mm/pgtable.c
++++ b/arch/riscv/mm/pgtable.c
+@@ -29,12 +29,11 @@ int ptep_set_access_flags(struct vm_area_struct *vma,
+ 	return true;
+ }
+ 
+-int ptep_test_and_clear_young(struct vm_area_struct *vma,
+-			      unsigned long address,
+-			      pte_t *ptep)
++bool ptep_test_and_clear_young(struct vm_area_struct *vma,
++		unsigned long address, pte_t *ptep)
+ {
+ 	if (!pte_young(ptep_get(ptep)))
+-		return 0;
++		return false;
+ 	return test_and_clear_bit(_PAGE_ACCESSED_OFFSET, &pte_val(*ptep));
+ }
+ EXPORT_SYMBOL_GPL(ptep_test_and_clear_young);
+diff --git a/arch/s390/include/asm/pgtable.h b/arch/s390/include/asm/pgtable.h
+index 1c3c3be93be9..ef4748ee3a2b 100644
+--- a/arch/s390/include/asm/pgtable.h
++++ b/arch/s390/include/asm/pgtable.h
+@@ -1164,8 +1164,8 @@ pte_t ptep_xchg_direct(struct mm_struct *, unsigned long, pte_t *, pte_t);
+ pte_t ptep_xchg_lazy(struct mm_struct *, unsigned long, pte_t *, pte_t);
+ 
+ #define __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
+-static inline int ptep_test_and_clear_young(struct vm_area_struct *vma,
+-					    unsigned long addr, pte_t *ptep)
++static inline bool ptep_test_and_clear_young(struct vm_area_struct *vma,
++		unsigned long addr, pte_t *ptep)
+ {
+ 	pte_t pte = *ptep;
+ 
+diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
+index 54289f4587a4..1d86fb33239f 100644
+--- a/arch/x86/include/asm/pgtable.h
++++ b/arch/x86/include/asm/pgtable.h
+@@ -1232,8 +1232,8 @@ extern int ptep_set_access_flags(struct vm_area_struct *vma,
+ 				 pte_t entry, int dirty);
+ 
+ #define __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
+-extern int ptep_test_and_clear_young(struct vm_area_struct *vma,
+-				     unsigned long addr, pte_t *ptep);
++bool ptep_test_and_clear_young(struct vm_area_struct *vma,
++		unsigned long addr, pte_t *ptep);
+ 
+ #define __HAVE_ARCH_PTEP_CLEAR_YOUNG_FLUSH
+ extern int ptep_clear_flush_young(struct vm_area_struct *vma,
+diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
+index 2e5ecfdce73c..5ee38dda9124 100644
+--- a/arch/x86/mm/pgtable.c
++++ b/arch/x86/mm/pgtable.c
+@@ -443,10 +443,10 @@ int pudp_set_access_flags(struct vm_area_struct *vma, unsigned long address,
+ }
+ #endif
+ 
+-int ptep_test_and_clear_young(struct vm_area_struct *vma,
+-			      unsigned long addr, pte_t *ptep)
++bool ptep_test_and_clear_young(struct vm_area_struct *vma,
++		unsigned long addr, pte_t *ptep)
+ {
+-	int ret = 0;
++	bool ret = false;
+ 
+ 	if (pte_young(*ptep))
+ 		ret = test_and_clear_bit(_PAGE_BIT_ACCESSED,
+diff --git a/arch/xtensa/include/asm/pgtable.h b/arch/xtensa/include/asm/pgtable.h
+index 61f07d981a94..f00a879dc298 100644
+--- a/arch/xtensa/include/asm/pgtable.h
++++ b/arch/xtensa/include/asm/pgtable.h
+@@ -304,15 +304,14 @@ set_pmd(pmd_t *pmdp, pmd_t pmdval)
+ 
+ struct vm_area_struct;
+ 
+-static inline int
+-ptep_test_and_clear_young(struct vm_area_struct *vma, unsigned long addr,
+-			  pte_t *ptep)
++static inline bool ptep_test_and_clear_young(struct vm_area_struct *vma,
++		unsigned long addr, pte_t *ptep)
+ {
+ 	pte_t pte = *ptep;
+ 	if (!pte_young(pte))
+-		return 0;
++		return false;
+ 	update_pte(ptep, pte_mkold(pte));
+-	return 1;
++	return true;
+ }
+ 
+ static inline pte_t
+diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
+index 17d961c612fc..8e75dc9f7932 100644
+--- a/include/linux/pgtable.h
++++ b/include/linux/pgtable.h
+@@ -491,17 +491,17 @@ static inline pgd_t pgdp_get(pgd_t *pgdp)
+ #endif
+ 
+ #ifndef __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
+-static inline int ptep_test_and_clear_young(struct vm_area_struct *vma,
+-					    unsigned long address,
+-					    pte_t *ptep)
++static inline bool ptep_test_and_clear_young(struct vm_area_struct *vma,
++		unsigned long address, pte_t *ptep)
+ {
+ 	pte_t pte = ptep_get(ptep);
+-	int r = 1;
++	bool young = true;
++
+ 	if (!pte_young(pte))
+-		r = 0;
++		young = false;
+ 	else
+ 		set_pte_at(vma->vm_mm, address, ptep, pte_mkold(pte));
+-	return r;
++	return young;
+ }
+ #endif
+ 
+@@ -1123,10 +1123,10 @@ static inline int clear_flush_young_ptes(struct vm_area_struct *vma,
+  *
+  * Returns: whether any PTE was young.
+  */
+-static inline int test_and_clear_young_ptes(struct vm_area_struct *vma,
++static inline bool test_and_clear_young_ptes(struct vm_area_struct *vma,
+ 		unsigned long addr, pte_t *ptep, unsigned int nr)
+ {
+-	int young = 0;
++	bool young = false;
+ 
+ 	for (;;) {
+ 		young |= ptep_test_and_clear_young(vma, addr, ptep);
+-- 
+2.47.3
 
 
