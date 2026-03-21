@@ -1,48 +1,48 @@
-Return-Path: <linuxppc-dev+bounces-18548-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18549-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10B051094471
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2026 12:18:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFCA31094471
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Mar 2026 12:18:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fdJP24TsMz2yZN;
-	Sat, 21 Mar 2026 23:18:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=114.132.77.159
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774091081;
-	cv=none; b=GchPdX8nOYy7nBAhYqCSHQOUAFdL4kGK1kpldXO0c4J6SiLt7Jmskr0ozgUIHQkdrTh9gu5qROuR30juhOJzuKF2huNqMgiaNkNFfhx9FAUd3i9cAhKqd7URABvIlo988sPk98yU2LK52i4Y/ks8f2hJTXNt2MMlHD5Z/gP8ktr9C1Omyam+gEqOkM0JT7Z72HiPYkVh6NUkebRMzfhB3ycE2ULH5mHs6KGMPUtJbVcyqf64ozORjXVlaPWjNIf06n4g+WnUDBeV0UqgCI7IUL0/nXTMG0HmmCF+zx8UyLotTgcd8fZEn8i4ZBjU0HOw+yLMo2Hg52JCdiGVsrCZxw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fdJPX1QcQz2yZN;
+	Sat, 21 Mar 2026 23:18:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=114.132.58.6
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774093340;
+	cv=none; b=gIUJxnXPomMoOvegR695uxBRrFtfrqB/I1fWt5dEnXZREeXoXw7Ui6zRgQnhKDy5UGJMPFoVA6iaVVyrW+2VmSwxDCSXUcM5jzx6X7QtkNdZp96/kcsSHsbupa/8d/fItyOhFjbW7RQQ99NzLcb4xImvGRCsYll8ZwhpNKMRcMUk8xnvl4PdiGRFPmfULax362erX6tUmYb799W6EbOxQq2Aj3PUdU4JhL+sQF+SsLezQqjKSAW7i72CybnNKhegJTkYz877E/Zk6oTV8eG7QRYsWSz1pC0uDcQBjESbTYSFm/jFtmq8rVrXDQwXACZcKp+ScufWxvNI1f5ySEzzxA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774091081; c=relaxed/relaxed;
-	bh=HIHEzaF/nPqHffBHVVWRyOkZRwX0b63WHjLr9Uc+nEM=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Tab+jA8mFrQ/Bg/01Ex2MFHmMfkeZdaqVPxxzlvRingQ81qGOBdEQbJ5haVGOJYvgGF++d55mm6cI8F6gQa6UBiiKRk2D1FU0T4x5wCVF+Cx6ubHJfMeZ0is4bM/tda2IimXU62KaA0YHlrC+pBcMC9qFiBIj2uzNYSzqa88Rxn+V/LaWtdo5ndmy8YWgRgjOJiR2ZO8dQWuy/7xL8X4vAkvHY9ca2D9SMXLwjaT5jviGTwfpe7e2KvkK4+KEHDLw7FMeOvcvy26bjA9s4mqnk3AeqlKtD6vNESQL6SS5hY5bAHgfiBqYAjYVCWLWt14aU7rWkiU6/7zDRRlBDdluQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=smail.nju.edu.cn; dkim=pass (1024-bit key; unprotected) header.d=smail.nju.edu.cn header.i=@smail.nju.edu.cn header.a=rsa-sha256 header.s=iohv2404 header.b=eE6iwN+Y; dkim-atps=neutral; spf=pass (client-ip=114.132.77.159; helo=bg1.exmail.qq.com; envelope-from=kexinsun@smail.nju.edu.cn; receiver=lists.ozlabs.org) smtp.mailfrom=smail.nju.edu.cn
+	t=1774093340; c=relaxed/relaxed;
+	bh=MpRbcYRDdY2DD4XTZv5ptcgOH3A3CX6WIWM+E+X7HKo=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=dX5av9aV6QNw9J7g1tw8Tj2/DUH8sa4Whq7ZaAfa903cBwXCvLIdwYwnQ8wR5N78p/lgbV/GI5MjPX9EGdQPM89bvcYHdr6HHkLe++AKz8+Ru2MmXJrZbw5qP2VeSLddwRACmg5pN64plALSPhInAUN9WdDegJb02DTrzCOcQbGBV3gQsVQ3tipuzF3waL5jhZ2k3oBZ9ySdu622qfmf/oRZTMLUGA829ZnwcnzyOLVqqf15k96k2MdyMdhcgCJGooM8wcaEdIUrJEClHjLPQYMCNBuRdT6Q9FQAdIfm/PNqzJ9hFa9KE6RFxsmTQqQly7tijGoq3wB+KNpjb3aPWA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=smail.nju.edu.cn; dkim=pass (1024-bit key; unprotected) header.d=smail.nju.edu.cn header.i=@smail.nju.edu.cn header.a=rsa-sha256 header.s=iohv2404 header.b=0pfvCRtX; dkim-atps=neutral; spf=pass (client-ip=114.132.58.6; helo=bg1.exmail.qq.com; envelope-from=kexinsun@smail.nju.edu.cn; receiver=lists.ozlabs.org) smtp.mailfrom=smail.nju.edu.cn
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=smail.nju.edu.cn
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=smail.nju.edu.cn header.i=@smail.nju.edu.cn header.a=rsa-sha256 header.s=iohv2404 header.b=eE6iwN+Y;
+	dkim=pass (1024-bit key; unprotected) header.d=smail.nju.edu.cn header.i=@smail.nju.edu.cn header.a=rsa-sha256 header.s=iohv2404 header.b=0pfvCRtX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=smail.nju.edu.cn (client-ip=114.132.77.159; helo=bg1.exmail.qq.com; envelope-from=kexinsun@smail.nju.edu.cn; receiver=lists.ozlabs.org)
-X-Greylist: delayed 183 seconds by postgrey-1.37 at boromir; Sat, 21 Mar 2026 22:04:39 AEDT
-Received: from bg1.exmail.qq.com (bg1.exmail.qq.com [114.132.77.159])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=smail.nju.edu.cn (client-ip=114.132.58.6; helo=bg1.exmail.qq.com; envelope-from=kexinsun@smail.nju.edu.cn; receiver=lists.ozlabs.org)
+X-Greylist: delayed 2633 seconds by postgrey-1.37 at boromir; Sat, 21 Mar 2026 22:42:10 AEDT
+Received: from bg1.exmail.qq.com (bg1.exmail.qq.com [114.132.58.6])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fdGm72KYwz2yWy
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2026 22:04:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fdHbQ31cRz2yWy
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2026 22:42:09 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=smail.nju.edu.cn;
-	s=iohv2404; t=1774091018;
-	bh=HIHEzaF/nPqHffBHVVWRyOkZRwX0b63WHjLr9Uc+nEM=;
+	s=iohv2404; t=1774093279;
+	bh=MpRbcYRDdY2DD4XTZv5ptcgOH3A3CX6WIWM+E+X7HKo=;
 	h=From:To:Subject:Date:Message-Id:MIME-Version;
-	b=eE6iwN+Y/0x0sNaWuIRpOltWA61/vOEVQOBKjI5MIxPlEv1MQqOnmSvMtiYWTd27I
-	 1GfyI+VcK5z3IdJJX8yGP6Svp6PB1ok2GlkKAMvorBlL0tq9ntHHR8+95YUHOtrAOV
-	 q6eYaVUX9yzPHFIuYCGjn+PUhXH2sdnh1shbpwxs=
-X-QQ-mid: esmtpgz10t1774090615t736d5583
-X-QQ-Originating-IP: lnfkjvlq7iaGG7WgKVTtD6UhUhtO2uG/Q9+eCbsmz9Y=
+	b=0pfvCRtXcWvrfeGQd0FLdIgaz/dPvr87LKKhy1NKa47TzNeJ97JJ8m1BGuqG4sllq
+	 GSrSCFy5cizS9oosW4IoqeYbhqAL/t89ezbRdNuDdQMnJMBBMF7jcI1GfXwfdW8VrW
+	 xHHfer90XU3no51mwQ1YyEeN1izdT4Jp+CiYmNzE=
+X-QQ-mid: esmtpsz16t1774093276t12b87290
+X-QQ-Originating-IP: ymC8t1IzwDI1Nkc8CKB2K+5dPkYBlabU7RGxjqi6S04=
 Received: from localhost.localdomain ( [116.172.93.199])
 	by bizesmtp.qq.com (ESMTP) with 
-	id ; Sat, 21 Mar 2026 18:56:53 +0800 (CST)
+	id ; Sat, 21 Mar 2026 19:41:13 +0800 (CST)
 X-QQ-SSF: 0000000000000000000000000000000
 X-QQ-GoodBg: 1
-X-BIZMAIL-ID: 17690428264591340367
+X-BIZMAIL-ID: 10421773967410276307
 EX-QQ-RecipientCnt: 16
 From: Kexin Sun <kexinsun@smail.nju.edu.cn>
 To: shengjiu.wang@gmail.com,
@@ -61,9 +61,9 @@ Cc: julia.lawall@inria.fr,
 	kexinsun@smail.nju.edu.cn,
 	yunbolyu@smu.edu.sg,
 	ratnadiraw@smu.edu.sg
-Subject: [PATCH] ASoC: update outdated comments for removed snd_soc_new_pcms()
-Date: Sat, 21 Mar 2026 18:56:52 +0800
-Message-Id: <20260321105652.5904-1-kexinsun@smail.nju.edu.cn>
+Subject: [PATCH v2] ASoC: update outdated comments for removed snd_soc_new_pcms()
+Date: Sat, 21 Mar 2026 19:41:13 +0800
+Message-Id: <20260321114113.9244-1-kexinsun@smail.nju.edu.cn>
 X-Mailer: git-send-email 2.25.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -80,24 +80,25 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-QQ-SENDSIZE: 520
-Feedback-ID: esmtpgz:smail.nju.edu.cn:qybglogicsvrgz:qybglogicsvrgz5b-0
-X-QQ-XMAILINFO: MoEtoil6yR/CSJLQ69IBvqA3ruw+bCAIrtC1eEqHhcCjZYOegjyRXeQr
-	x6A+ibf4gCk+A2vIM8OzRBbvs5ZmHEr4uqNW4pkFRU61+Vc8xeoiKsQ7LRDENmkbk/X8aWO
-	P8SH9a4avNQLsCvV48ENyvh/daJ74J6ky3TWCK7isPYwWaaDdVlysvhHYC7ntRIFuvN+C5Q
-	WWz4Z1LmIlM+LVlIkUpvQG6qSNutMOqll42wFmvgpHH/S7rcQrO0uxqNlJVr/br5oBvjXN1
-	LSl02sgyS9ikSkm81EkALPCMtcEyF3lFHa5I01jpQrrWYURkOR4jIA2hlydwp3zgJSMwoY7
-	4X37Fo5V5xURsRVemGC1Y0PPd+GPmST72to/czYPWY+LX/eZ7W2uyALW8Tys6Ws2hrY3u7d
-	pV+mxnWcxVM0ZijGAKMApKQSkjz1K4JnMtxdfm+UYuH7M1Jr6r/sIdCVRQp2M577MJjDIf1
-	vcnwE2BlFXUH1VYt3C5kIYV0SRS13kmdw9FNT4tS9K2fqC2Hju+qFhBuLT9VpQ524Meac+u
-	TGabv+3qH6MJ5FK43Tgcq0BaSsg+MHIkr7Kv8uCjyKNd16UOHSppwgTz+jzaooUM2j910Pk
-	/kgAbEtv3cYpYFRSO7ZR58bDaf2V8hBEJVeO3cBbMY0tO78hQ19nh5KHcHyIrJlgTYS2j0I
-	KehgoICQgW2PsAN88uZ1EYd0LE8xeMd+zVP+5EfTKRgNrddZgw9zvNEG9t4xKmGgjdfuFEh
-	Es+oekmy+0wxbEgOGI+qWslVrS+TRDUWc53mBc10xyPJOhQ4PLaGQD7CxpOknhW7KyN7S+h
-	s6wMDWDg6karZp8qO5Jm+NQ5iSY0eRKDItwdV4K5PE73esPdVy49DLeplwEpMTfzl6TaHYu
-	jM9YtyHVjzIrUaOYX0cVE+dRTDKGKxcRxzJ3FFjLBUo2hMThrf5gxx4W83tqPXouTSK/QHV
-	Fbj/EYK4/8lGT1OAn2H9Kan4ulsRgOzzjEmmJ8pe1yDL3gwdlhi7hwaShXFaQoA29e8iZUf
-	DKxi4AgJD9H0uNxApqArAaAc3BSbqy1kB+qzGBKzAJXNVwwwn7
-X-QQ-XMRINFO: MSVp+SPm3vtSI1QTLgDHQqIV1w2oNKDqfg==
+Feedback-ID: esmtpsz:smail.nju.edu.cn:qybglogicsvrgz:qybglogicsvrgz5b-0
+X-QQ-XMAILINFO: NvWYEgjCCjcVTRVjKnxJlE3+Nk+4rAk43FD1sVVbhqm8YtK8AYhDJFFh
+	tLmWCaVfSgLwW2ZePaDohjOflpO17cyhyBx6KqpgocBjF4tuARzA3uy+caNDc+loFzN9qsB
+	C8vXt1WIb291ViU57a5EEBkpvJ1/lDPgD+0LDhPj3ZqWiesugaG+a33j4Zg7npZT2n5ETTt
+	meuWL5ofnnak/nc558WFjCZ6+09Q93/8kmZJQe7dGYLV5I8wtWEupoHL+aXm5ps/M3wi8YP
+	L2Op2BMdzKIEAgCTuiVsoiIeWm98DRlbKpTgZ3C9Eus31LhjKx8F3ThmQ9jKl0QOajJ1+ij
+	ZzJXuu+WnR2ASVlH2Di5J6ypgVEG6TuJ2KYYBUE86j31Q45NlPmegfG68DuMqlAjFdfVkRS
+	lQTeAH6GM72mVuoNlW2/wQkZVLsHWXwy3+Ux/GmTjF7yqQmUg34Q3MoEL1dvjcjbRX7c38k
+	BQUfGB1rm47Vtu2Fa2eXaaOzEt/SbSED+ywiX9s8lpmLvAWF9JQ64zhYvauyYns/25MYCQh
+	kLPehekrrloohVrmqxYCQ/EAC8mNlFli7ajEkRtUiMIK+VMPZZNI0WZ+jdZNaYT6vU+X91W
+	KXefgizih2a0n/t2YnU/tfvC3ALCKKw4BNpGtIgT44ab4eX6VaqWeFRh6gALT5CaWIxxZ1k
+	pJzbHPSsfGQAV5VbDRj5+Xl61GFk3GybQZex50moDGpckNBf2cRh70vrPfe/E7RmYNDB3/P
+	N1KFO4qMitQJVI5KDCcwRipQEdNEiol3l3lhO85eDxp5RPkAWIOEXCXBrDyT7YFOTM8oclF
+	w3uemm1ZywnnUJMIcbCoa7OaY+Wqirud8iHPUwi/uY0V6zhWeHoCBzo4+b0wdhEn96zINVF
+	DaBmsMQtmODoBelIKtMg0QNbvXTTn1T23/R320fiurzJP6MQOpIHfXzOViRkBwGop+g/aBm
+	nCbgCk11JG/v4U2hFPeNAd/7+PTWSQ9aR7TvnctR6mwtmMGhc/t8MP3o/G5+Q534rKULhJQ
+	COCySMZ3XIGl6snZxZioqdsH2vxXdkJbo6f5lr1nLSo6KnUodqpK9wRC2CugKm0vi4lJ3cK
+	PSZExi1261+4OY8jthfaD4=
+X-QQ-XMRINFO: Nq+8W0+stu50tPAe92KXseR0ZZmBTk3gLg==
 X-QQ-RECHKSPAM: 0
 
 The function snd_soc_new_pcms() was removed during the
@@ -119,8 +120,9 @@ snd_soc_new_pcms() and the no-longer-existing socdev structure.
 Assisted-by: unnamed:deepseek-v3.2 coccinelle
 Signed-off-by: Kexin Sun <kexinsun@smail.nju.edu.cn>
 ---
- sound/soc/fsl/fsl_dma.c | 9 ++-------
- 1 file changed, 2 insertions(+), 7 deletions(-)
+ sound/soc/fsl/fsl_dma.c     | 9 ++-------
+ sound/soc/renesas/siu_pcm.c | 1 -
+ 2 files changed, 2 insertions(+), 8 deletions(-)
 
 diff --git a/sound/soc/fsl/fsl_dma.c b/sound/soc/fsl/fsl_dma.c
 index 26ddbe867b58..ec378e32ea71 100644
@@ -144,6 +146,18 @@ index 26ddbe867b58..ec378e32ea71 100644
   * Regardless of where the memory is actually allocated, since the device can
   * technically DMA to any 36-bit address, we do need to set the DMA mask to 36.
   */
+diff --git a/sound/soc/renesas/siu_pcm.c b/sound/soc/renesas/siu_pcm.c
+index f15ff36e7934..189d7e6f9750 100644
+--- a/sound/soc/renesas/siu_pcm.c
++++ b/sound/soc/renesas/siu_pcm.c
+@@ -483,7 +483,6 @@ siu_pcm_pointer_dma(struct snd_soc_component *component,
+ static int siu_pcm_new(struct snd_soc_component *component,
+ 		       struct snd_soc_pcm_runtime *rtd)
+ {
+-	/* card->dev == socdev->dev, see snd_soc_new_pcms() */
+ 	struct snd_card *card = rtd->card->snd_card;
+ 	struct snd_pcm *pcm = rtd->pcm;
+ 	struct siu_info *info = siu_i2s_data;
 -- 
 2.25.1
 
