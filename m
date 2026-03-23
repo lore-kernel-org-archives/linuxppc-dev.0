@@ -1,105 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-18608-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18609-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5091CEC01A1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2026 07:50:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE454EC01A1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2026 07:50:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ffQMF0GwWz2ypY;
-	Mon, 23 Mar 2026 18:50:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ffQMh35d5z2yfl;
+	Mon, 23 Mar 2026 18:50:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774252233;
-	cv=none; b=Gzliug63gk2cI6uce1AYfZm/6gPP07Hd9ryusn7YQFE0r3Vp5g1X/k4SK+HhiStRIfry65U3keA1k3UJx/7riW6K/E5dVaNr2MQfaI+UXxkEDMGm3zX3gWv4/CcW+iGH/H6w2UDpHSUY75qnLzMaSgKg/s47tFA6/XVAOYM8jmbh4gbQ+HIKhNAB+RkZEhmj4uZXgyzDtMHJrhEpkpdSIm7WBErjw0oc31xD61fpxe3gIpRX+Y9pt9b+OkUuyM+XoGYCApyjGw7N7HO+yVd1pJTf8A4n89H4PIpq0LJEG1y+Yq+dKM0mYkRpbPeyGtTfoixnl6UyM6uzvCWnixJc4A==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774252256;
+	cv=none; b=Mqg1v9/r8vX/eDagN5om5tcIXolU5IcSHGqK+z8K/Hn5zf+EkMVwmvEk2IFQ/BojWSo76jxF3z/T9Ld0HaVQfjRGXec4y99Nd0ue1f2kSpJ4mQJOiK3vo7BjaAznNip1+g2GHn6lsm4/uNtGFhpT+dVrkanr4bpA9uxZ38t4QHRwyQ9xBa8KIScpWIArE47VV1MYJJ5C+f3odtQMLbm5xER1hVASL1+IWLdZdImOa3ZYwFP/09MeYxM7Aif7/sWjTvpFNjFfhF5xGFtSetjaRiaXYynpbok8jsfypyYpVGcZEbhaqA5eYzjTRyYGfwsrTdzf6DPT5vs7opVsNQniuQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774252233; c=relaxed/relaxed;
-	bh=HBQ46eALmOXx1bXFmc5/BhXaBncR35rS+7D8fkUk74Y=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=KQBQ6Po4M7Ifb6NJZPw0AM8f655zhZlV1GZJv8BqdWi6BvqDk9RnZhkBnBPxnxtlTqGCc5LNlA4b4al9mWHJqcpJpbtxmKAkdqQ+/QoEo4/OJ1aTj/WJDnCxuUUz1K7v5HlmuYqV6Ps1Qv89WKBSEgP6ing8gQO8D2C0P2jAtdjLEEjl+S502j+Gw+MOiQIelnPQbhKjBk5KU2x4SiTHhBSoOMHFwUSlDbRMIzwSkCP+bmtwMYh0hzAixamvGjc4WrUvCxy45nIESnxc33GfeISTCMRUYy82FfzMfvJRaOE7pRmZOdDEAHQAzrBc+Xwy8TxZm8WFNDZ0E+HxgZfX8w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=l2yPHSZJ; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1774252256; c=relaxed/relaxed;
+	bh=InEtOX13C+WYX5juGdVt/QbMbLMFenzxfLEuqeNUPTU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=VqkmZN/saGwfnJ8UKknjw8wnBLwJdikaZi2PPxTTP6tiK5cUeNUR41lQ43LQMQfVbGGwT4mL6Ilm0V9NpfqlB6r/iPCajOE1lTn1KxCnoHXwNTWan8aHw3R1bGQlfBJ0mfH10D623XqdrN2+GblhOm6C+Rd6+Jz3axr/vGNNUp/qDXQjPNzk5PtrmzHHfA5bHT4Q0VJkfB4bcBFStQ96+LxCJjqEkXl48uxScCCnPk2XGrQK8RJrV7ctC7IsvvPD7PQ6qOi7UP+Pdwb0QONB5wlfm//QEQ/hkpAV08c6WHBr+cH1aw3/mi4oWhWm7DawjYg8WaF+aDn/JcmWMdoKvw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=TGqMdeOM; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=l2yPHSZJ;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=TGqMdeOM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffQMD2984z2yfl
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2026 18:50:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffQMg5GcKz2yZN
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2026 18:50:55 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id C11DB43704;
-	Mon, 23 Mar 2026 07:50:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0A012C4CEF7;
-	Mon, 23 Mar 2026 07:50:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774252230;
-	bh=2YaMKdXLS6q2N8eU5YUjQf/EJjPIOHb0bH+1NaX/nR8=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=l2yPHSZJSFV/2Xg29g07aWdlpqOxb4al6/yvYuIOUOc2J7tJq3yci9lYgN2Ad0Btc
-	 nh8HF9hH3MVm8s1S/WvMnipPqcfHyqAWEvEIecCcyDRi1zIUz73z0ufinHvS2jUzLd
-	 5aN1Ha8QPGf10iolGEgBJSw3s3hSAP0Nc5WD7PS9QgwP1azCodE+X0whKC6tqHZLc6
-	 x38IZNl+bgo7TYx0jvflmrbVMoc8805c5TR7QMdkpN9XA29LY99N0h9RQbpDy+SrSX
-	 EuBPFYqGifP/Y+eDtcoJ7SoPLUbAZ5a/FJM8kp8xH+wzmAySKlRhhdc4rhpWSVh4yl
-	 yYvsW9iWMARwA==
-From: Mike Rapoport <rppt@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alexander Potapenko <glider@google.com>,
-	Alexander Viro <viro@zeniv.linux.org.uk>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Ard Biesheuvel <ardb@kernel.org>,
-	Borislav Petkov <bp@alien8.de>,
-	Brendan Jackman <jackmanb@google.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Christian Brauner <brauner@kernel.org>,
-	"David S. Miller" <davem@davemloft.net>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	David Hildenbrand <david@kernel.org>,
-	Dmitry Vyukov <dvyukov@google.com>,
-	Ilias Apalodimas <ilias.apalodimas@linaro.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Jan Kara <jack@suse.cz>,
-	Johannes Weiner <hannes@cmpxchg.org>,
-	"Liam R. Howlett" <Liam.Howlett@oracle.com>,
-	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Marco Elver <elver@google.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Michal Hocko <mhocko@suse.com>,
-	Mike Rapoport <rppt@kernel.org>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Rob Herring <robh@kernel.org>,
-	Robin Murphy <robin.murphy@arm.com>,
-	Saravana Kannan <saravanak@kernel.org>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Vlastimil Babka <vbabka@kernel.org>,
-	Will Deacon <will@kernel.org>,
-	Zi Yan <ziy@nvidia.com>,
-	devicetree@vger.kernel.org,
-	iommu@lists.linux.dev,
-	kasan-dev@googlegroups.com,
-	linux-arm-kernel@lists.infradead.org,
-	linux-efi@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org,
-	linux-trace-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	sparclinux@vger.kernel.org,
-	x86@kernel.org
-Subject: [PATCH v2 9/9] memblock: warn when freeing reserved memory before memory map is initialized
-Date: Mon, 23 Mar 2026 09:48:36 +0200
-Message-ID: <20260323074836.3653702-10-rppt@kernel.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260323074836.3653702-1-rppt@kernel.org>
-References: <20260323074836.3653702-1-rppt@kernel.org>
+	by sea.source.kernel.org (Postfix) with ESMTP id 3694743DE7;
+	Mon, 23 Mar 2026 07:50:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8D31AC2BCB0;
+	Mon, 23 Mar 2026 07:50:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1774252254;
+	bh=VwtSJIp8ENHMSX+xFEF3sWtn+Y2VJrcUVbX8lQmkP+c=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=TGqMdeOMBMS40jbvN3VCndGyHRmX53aBTL8cPWIJ9jdvYJeiJ8heg2vZp7U4d7WVn
+	 1u/yLe04dbEr8J1T3VCKnJxf2AY7v5xpvA7cb7yvIjE6DAvM1Z7nWI+Dgc0bBgMU50
+	 qqH+S53n8p4Fd+UNSqcYmYHe4qs/l16LoK7Zr2R8=
+Date: Mon, 23 Mar 2026 08:50:32 +0100
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Cc: arnd@arndb.de, linux-kernel@vger.kernel.org,
+	linux-kbuild@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	nathan@kernel.org, nsc@kernel.org, ojeda@kernel.org,
+	masahiroy@kernel.org, linux@weissschuh.net, tamird@kernel.org,
+	rostedt@goodmis.org, ihor.solodrai@linux.dev, ritesh.list@gmail.com,
+	maddy@linux.ibm.com, peterz@infradead.org
+Subject: Re: [PATCH v2] char: nvram: Remove unused nvram_mutex to fix
+ -Wunused-variable warning
+Message-ID: <2026032305-cross-sensuous-8f4a@gregkh>
+References: <20260323073220.25798-1-venkat88@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -113,119 +67,39 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260323073220.25798-1-venkat88@linux.ibm.com>
 
-From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
+On Mon, Mar 23, 2026 at 01:02:20PM +0530, Venkat Rao Bagalkote wrote:
+> v2:
+>   - Added missing Suggested-by tag from Ritesh Harjani (IBM)
 
-When CONFIG_DEFERRED_STRUCT_PAGE_INIT is enabled, freeing of reserved
-memory before the memory map is fully initialized in deferred_init_memmap()
-would cause access to uninitialized struct pages and may crash when
-accessing spurious list pointers, like was recently discovered during
-discussion about memory leaks in x86 EFI code [1].
+Hi,
 
-The trace below is from an attempt to call free_reserved_page() before
-page_alloc_init_late():
+This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
+a patch that has triggered this response.  He used to manually respond
+to these common problems, but in order to save his sanity (he kept
+writing the same thing over and over, yet to different people), I was
+created.  Hopefully you will not take offence and will fix the problem
+in your patch and resubmit it so that it can be accepted into the Linux
+kernel tree.
 
-[    0.076840] BUG: unable to handle page fault for address: ffffce1a005a0788
-[    0.078226] #PF: supervisor read access in kernel mode
-[    0.078226] #PF: error_code(0x0000) - not-present page
-[    0.078226] PGD 0 P4D 0
-[    0.078226] Oops: Oops: 0000 [#1] PREEMPT SMP NOPTI
-[    0.078226] CPU: 0 UID: 0 PID: 0 Comm: swapper/0 Not tainted 6.12.68-92.123.amzn2023.x86_64 #1
-[    0.078226] Hardware name: Amazon EC2 t3a.nano/, BIOS 1.0 10/16/2017
-[    0.078226] RIP: 0010:__list_del_entry_valid_or_report+0x32/0xb0
-...
-[    0.078226]  __free_one_page+0x170/0x520
-[    0.078226]  free_pcppages_bulk+0x151/0x1e0
-[    0.078226]  free_unref_page_commit+0x263/0x320
-[    0.078226]  free_unref_page+0x2c8/0x5b0
-[    0.078226]  ? srso_return_thunk+0x5/0x5f
-[    0.078226]  free_reserved_page+0x1c/0x30
-[    0.078226]  memblock_free_late+0x6c/0xc0
+You are receiving this message because of the following common error(s)
+as indicated below:
 
-Currently there are not many callers of free_reserved_area() and they all
-appear to be at the right timings.
+- This looks like a new version of a previously submitted patch, but you
+  did not list below the --- line any changes from the previous version.
+  Please read the section entitled "The canonical patch format" in the
+  kernel file, Documentation/process/submitting-patches.rst for what
+  needs to be done here to properly describe this.
 
-Still, in order to protect against problematic code moves or additions of
-new callers add a warning that will inform that reserved pages cannot be
-freed until the memory map is fully initialized.
+If you wish to discuss this problem further, or you have questions about
+how to resolve this issue, please feel free to respond to this email and
+Greg will reply once he has dug out from the pending patches received
+from other developers.
 
-[1] https://lore.kernel.org/all/e5d5a1105d90ee1e7fe7eafaed2ed03bbad0c46b.camel@kernel.crashing.org/
+thanks,
 
-Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
----
- mm/internal.h   | 10 ++++++++++
- mm/memblock.c   |  5 +++++
- mm/page_alloc.c | 10 ----------
- 3 files changed, 15 insertions(+), 10 deletions(-)
-
-diff --git a/mm/internal.h b/mm/internal.h
-index cb0af847d7d9..f60c1edb2e02 100644
---- a/mm/internal.h
-+++ b/mm/internal.h
-@@ -1233,7 +1233,17 @@ static inline void vunmap_range_noflush(unsigned long start, unsigned long end)
- #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
- DECLARE_STATIC_KEY_TRUE(deferred_pages);
- 
-+static inline bool deferred_pages_enabled(void)
-+{
-+	return static_branch_unlikely(&deferred_pages);
-+}
-+
- bool __init deferred_grow_zone(struct zone *zone, unsigned int order);
-+#else
-+static inline bool deferred_pages_enabled(void)
-+{
-+	return false;
-+}
- #endif /* CONFIG_DEFERRED_STRUCT_PAGE_INIT */
- 
- void init_deferred_page(unsigned long pfn, int nid);
-diff --git a/mm/memblock.c b/mm/memblock.c
-index dc8811861c11..ab8f35c3bd41 100644
---- a/mm/memblock.c
-+++ b/mm/memblock.c
-@@ -899,6 +899,11 @@ static unsigned long __free_reserved_area(phys_addr_t start, phys_addr_t end,
- {
- 	unsigned long pages = 0, pfn;
- 
-+	if (deferred_pages_enabled()) {
-+		WARN(1, "Cannot free reserved memory because of deferred initialization of the memory map");
-+		return 0;
-+	}
-+
- 	for_each_valid_pfn(pfn, PFN_UP(start), PFN_DOWN(end)) {
- 		struct page *page = pfn_to_page(pfn);
- 		void *direct_map_addr;
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index df3d61253001..9ac47bab2ea7 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -331,11 +331,6 @@ int page_group_by_mobility_disabled __read_mostly;
-  */
- DEFINE_STATIC_KEY_TRUE(deferred_pages);
- 
--static inline bool deferred_pages_enabled(void)
--{
--	return static_branch_unlikely(&deferred_pages);
--}
--
- /*
-  * deferred_grow_zone() is __init, but it is called from
-  * get_page_from_freelist() during early boot until deferred_pages permanently
-@@ -348,11 +343,6 @@ _deferred_grow_zone(struct zone *zone, unsigned int order)
- 	return deferred_grow_zone(zone, order);
- }
- #else
--static inline bool deferred_pages_enabled(void)
--{
--	return false;
--}
--
- static inline bool _deferred_grow_zone(struct zone *zone, unsigned int order)
- {
- 	return false;
--- 
-2.53.0
-
+greg k-h's patch email bot
 
