@@ -1,59 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-18572-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18573-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82537D58CDD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2026 06:07:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CBFBD58CDF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2026 06:07:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ffN3P20qTz2ynZ;
-	Mon, 23 Mar 2026 17:06:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ffN3Q50k3z2yjn;
+	Mon, 23 Mar 2026 17:06:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774246001;
-	cv=pass; b=QO+kuqyIneWLEecTSiCfz5ntEFSh2QzpZKqvwfQ6y23b1KrDaU+wOLrHuaIY03I6dzoNVNBn1wFE0EEr2Woogt28D9laRC/P3c5I3qBsRb1r2qzwzEfv7olTJJ8Q3izH0cez6THcdh+GptBnd3sP1xpwkgvn/k/y8XmHk89/qZgUjIh9iSIFGuYLBd8+65ghVzzFzH+nT7HC/uIh1XUti+IXpFtBG5qz5q3QmV3t3VdqV9hGeRfQ4PtqW47j3YvgmPykYSPSWnAckp3tsDJNapYaJq9SpFbaodxlbuMPiO775Pxwg/SvaiVFiWPjhK8nBL8okSx8lfQduv5WbzfPSg==
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774246002;
+	cv=pass; b=KgHwMig9LowvKwHjpSXe8H0bbEU76RTJmwDo1FZRDFxCjd2fT9TidasiuzytLgDHvrjvokg6cOE06yINUW2/umJ9DCAvbX1qgGP3PuD6Hv41ePrE31x8X+OueORss2pIqAFsC+5/i3tEs7ZJE9+Xu23YEFP6suw+q+SsPBJX4k/3irPEVAwpb4dKg+QMiff7lQPvLvukaViQDiSQeKR/Vi076R9/2Cxhe175yN8AqYwwaL90cqrwilGAqO+v5MVvWScyEBArV7wx/sm+qKFVKlISjMDaVvXC/EYRpiOHQqsgWIjCyllWFaEQU/OHDEu8rxsuOPX3O6lpUX7MtiE3Tg==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774246001; c=relaxed/relaxed;
-	bh=tziJeOEw/BS+e7YU+4V7x/VXYezCf1g2NlxkGwA58ng=;
+	t=1774246002; c=relaxed/relaxed;
+	bh=Biz3Z8TYdAr8j8h6kXOQCq+Y3rJg0Nc/Tp8eWGxfvXE=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=VbdL8gNkkl518zI72WdF/9Xkoe+ByWa//PyYTvZzE8B14KJ+GnOO9HX76QxsHNLfKcy6zWV5qLnLz4V9co3v2Gn5Ioof3ihJVUbpv0OR8AzW1+E1ICo0ceR8OGjuNz47KIHdr1EhIQzqVXhr4b9H6YkiTwcF3HXmvYBwQrgx7qOaYhGyMsQfs/B4XAgIUok2hbu7vIXimrfRm5vPLKlzXANhtr6xKewMW5dI1Q6JZI20HnnqfqXGbP2rOJAC24BSijuFX+xlI1cDSrK8WkUgtYES2vk/qclM21bHvTOvuS/cL2eRtltgBfqlkovPG6Mdeo7sJ9H/gmUnemhreq6cmA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=jiL3XSZQ; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::1; helo=am0pr83cu005.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+	 Content-Type:MIME-Version; b=UtazXntp9/ZjpAQYVi1ITuvdHcq3QYYaxXiIswAveEwevXvVPsYMBVHzBuINd5F++Nof7tlR+GlzGINShApWFkfOxCtwf+hUChn80cSK+i3tTPappHdAYDtzJHEfLz2EAQutlQUgHcwpH9ie/H+lCzvR8EMh61kqYYyIibvup7XoW2/9uJIqOOmjUbS4hZ3hStQ2Ee7guCkAxxV+fVb3/PwZgFSw1Nejsl/s2yhQ6xAZ2HfS06zh2EOZaMRO1b0Vfa9YsL8YM4lWs+RkBfipXMBmHTVm+0/XB5EFo9r/KMzaIwP7EkkmjHi8AgmuD9aU09MQwpXNscWpc3o6dl5iVA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=OAVdRnQh; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::1; helo=am0pr83cu005.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=jiL3XSZQ;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=OAVdRnQh;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c201::1; helo=am0pr83cu005.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
 Received: from AM0PR83CU005.outbound.protection.outlook.com (mail-westeuropeazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffN3N1Rc4z2yjn
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2026 17:06:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffN3P3xjHz2ynv
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2026 17:06:41 +1100 (AEDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=pBd6ugO9f8jnjrI7POfMqY0s/TzDI60bfLBYmHhTzCZdepqa2/jT08FM371N2LCfjXGukos3ZP3Rj8+KAPg3+jLBmA1B2I2QOKFkQ3V0/ZpDWvY3DCRqu3NSNJS11ed4gqdAamyurDd5XnOni3UxGLhUb5QNhmzBJw5DaBB6HufJIZkl4Ln4Lp8cHs5LqMdXB1NNk4FRUxedq5Mf/3VP7ADTOo75Tk+JZqMrZye6fyIbeqWJmo/aS4wiySX8Uz9vvFwR2URe6IxaT/RoQoiLchUKXG6tgfJOebZyTbCiN2LA3WxazxIafTK1veQNb/pkqedZ7Vlq8yog3QEkTnHgtg==
+ b=kXrmouo2d/y7MrhkBTGjyhQ5s9mshc2k1DDGkdHXe7TerrFmAvRZ+mZSz4Tx97wYWs96G9afXgv3Jk/TCrhlcVdYhikWwUtIGWEtbGK7cc5DbHYQ/J4+hMPFhjI+zdOb2O+i4/D/XZQb1NROaBJbRqSkVeHC0GE7o8nOaCv86HhRsykf3t7zO/sfUKUvBogNQx4SjgqTs7VJXhag1NGpman7oFnb4lndjny/omA+7h3MTFz5qy23yE7jc8yf4RHsXQXISKrY22FA7nS1+VZgHFLGKc//TdzEVesxH3/2By3hjG2exHXL1CFZw6WldQ3s/jOioLqoD2+Dl5ZtQI77Yw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=tziJeOEw/BS+e7YU+4V7x/VXYezCf1g2NlxkGwA58ng=;
- b=RcPeG1X9ee/j6bpmm9D9N8cWdXv7UI8AKlitn82VLerUxweE5YK61uiqWz2cwpvZS+sLzc4jGmG0d8EvLC/TrftHTipMEMJRBJbjWda2IFWnKihde49im49Ej+Mx4aeGEBSxvzzJXWFz9mEd6wrvxS3v42HOxtek4NiHMAl92FK7arw/TNwYBPGKpP1ZnSj3wec46pzxBSW5WHGs2vegVahJdQeGyIlwgylyyiONn/WHaZvvnEGUu855IQxyRMCYimtxLiBhlzb9hoZ5fMI8P514WEGpEAZ9QIa7TeVwHR/0GMQbCl4W/UngqfAkT0054h8StsVeEFHnjfHJfTaOnA==
+ bh=Biz3Z8TYdAr8j8h6kXOQCq+Y3rJg0Nc/Tp8eWGxfvXE=;
+ b=QOsf6YNiyMQgy8S/IZyfn8wPcnIsOBRArPpo87Qukl2K85UJH2nZtnMC1f5rPWAFv0939a6PPMgNxjLxLa9CY6z42Mmll6R4oHStYSWGbsbY//OVNrxuZWqR8HR3Qq1urCEI5+ST3kTO/LLlojZiaCsmMQnZSsriZfPFl4mS9VV5d9eU+pO/HRuliShgGD+N/Cp3yTdpd/cZ5IVbM5gLREzXuTfpKW3hp0PBiCsiVw8ybcEHSF02vhzDOpK89Rc35E6AlOwJaAVfHHpRdwLUIzZ449c/30cV9UimWdDa+rtRLxDOTiqHozJLmyn+e+jP1v6YnOe62aqer7e4aMbw1A==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
  header.d=nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=tziJeOEw/BS+e7YU+4V7x/VXYezCf1g2NlxkGwA58ng=;
- b=jiL3XSZQEqlcDmKBLW0QXfgAQ/f5hOXQ7iWE03SWiDbkMdQzlQTYbQ1QqV8RNNO0qwuicb9826NfWeWXQcFp41/H5dDH11xxq1fUu1A9gnTG/3/AzBkW9ZwblT86GrplBmY9yjQWvejBsRwB6dFllWf2kiMzgKOt+ZMIvnxNVmjQ5zwQu3FlSL/A+ATymJsDYM7UBChqs3sk7kGL3O1zk+z7isWPzlnSvFeaARniPVQwS7d91LtYcmjYHjid0D72CxzfrS3Rxj2yVseOKiki++YGytih2TLdkCP5ey88d5Co1PXqpg9v0LxGck0bXu8BYbWlrixrtoNU94iygIQ90g==
+ bh=Biz3Z8TYdAr8j8h6kXOQCq+Y3rJg0Nc/Tp8eWGxfvXE=;
+ b=OAVdRnQhulgvkC6rD7cdmI4qZLhjtgyJtNURPwGZLhcY3r9ccDR6LYvPbWj/uOLmHuFKKmf7kNC2X/JyrSq1fcTRPuyAW52s7HyCdGq5tQltUWwC0aR4//ew+U0IbVVTmE3qfrkA8mzFfZU6YWJUZFGUO0z7+65INj+ja01C6iMp5SbcJYYatxDryc4J/8EJ5MqD7R9xtnF3TrDhRXZtDquCyVKhHF39k+519MlNlTWnIkhFSebqeTLTPMjWwSBgb/fqakDw9myISN8UxHiWFNZelwblB0+ibfAWE80GyAZoXhg3IG8MWAC77RfAdPx5CCaIFPVTfBELaXCZl9Y18w==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nxp.com;
 Received: from AM9PR04MB8505.eurprd04.prod.outlook.com (2603:10a6:20b:40a::14)
  by PAXPR04MB8911.eurprd04.prod.outlook.com (2603:10a6:102:20e::20) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9723.31; Mon, 23 Mar
- 2026 06:06:01 +0000
+ 2026 06:06:10 +0000
 Received: from AM9PR04MB8505.eurprd04.prod.outlook.com
  ([fe80::dc5a:b0aa:4a1b:c55e]) by AM9PR04MB8505.eurprd04.prod.outlook.com
  ([fe80::dc5a:b0aa:4a1b:c55e%6]) with mapi id 15.20.9723.030; Mon, 23 Mar 2026
- 06:06:25 +0000
+ 06:06:34 +0000
 From: Wei Fang <wei.fang@nxp.com>
 To: claudiu.manoil@nxp.com,
 	vladimir.oltean@nxp.com,
@@ -78,9 +78,9 @@ Cc: netdev@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org,
 	imx@lists.linux.dev
-Subject: [PATCH v2 net-next 03/14] net: enetc: add pre-boot initialization for i.MX94 switch
-Date: Mon, 23 Mar 2026 14:07:41 +0800
-Message-Id: <20260323060752.1157031-4-wei.fang@nxp.com>
+Subject: [PATCH v2 net-next 04/14] net: enetc: add basic operations to the FDB table
+Date: Mon, 23 Mar 2026 14:07:42 +0800
+Message-Id: <20260323060752.1157031-5-wei.fang@nxp.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260323060752.1157031-1-wei.fang@nxp.com>
 References: <20260323060752.1157031-1-wei.fang@nxp.com>
@@ -104,317 +104,505 @@ Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: AM9PR04MB8505:EE_|PAXPR04MB8911:EE_
-X-MS-Office365-Filtering-Correlation-Id: d5b3d3a5-3a0d-4a60-7a65-08de88a25071
+X-MS-Office365-Filtering-Correlation-Id: c8e94c9e-ca22-4a18-ef5b-08de88a2555b
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
 	BCL:0;ARA:13230040|366016|1800799024|19092799006|52116014|7416014|376014|921020|38350700014|22082099003|56012099003|18002099003;
 X-Microsoft-Antispam-Message-Info:
-	0j8U1IU8TzxbJMHo1OBQa6IxtgDY4VeclcJGqqsHNwZJpLHd7xDU2EYOwnTsKfhFAUZUHWlIG1IvxCjcMobv+DHYkhlheOxgE2tz3vgK8vP1FUllCs61sBlyfECviHubzUAIJcYntG7f7ieNavQAI1TmHAzoj+GoMbTgIMYJ9cy7SL8g8blbofQBtZdriRXEDVGPtJvWCmJXgJonnHskhQONBjKUpffidqN0e5B1SUo88/RnLJlWQdsiVydupgjYHs2C06GKeCggnw1YuccYM0Prr4MI1Dd6jrEsqJqptbuDcPxF06Ttm9VbJVgeCIo/UEnb9yZdn1NSp79HIylJFgejzqg3iILrz1lYEkYuGzmT8bf2zQQ5naiYUuVCzT4is/cgiHnZjlXsbUMy2PAfWIlCqpHaI+E/J4QAJb93mb5ncPjeDtar/kVfo0GFpPp1JaYRIQ8sHlD7OXFhFhUcX+mMTWNnFewdA7ZrPbpQk6591RwwpCWwHZYJm1nR4gaAQglC2JQP3WuYnvEy+oI2msoylfxVmM6HKDuQBXOCUX/VoqHAmsr3mGF7tnOOJ2e2M0k3+Rs/S0D0KEMhpD3E/L1aMmwmSHJHlPQubcfXiZxIED/l2qeMLdFqmUqcrUb9FGzhoumeytK5giAwgqcjmPlURqzaB4zoGRwE3oWHcdFYkKqS/uZOtPloshCqBq9Xlx0nil5GlWS/fzNoKYh4hKGnCiWTqlA/Dky6aRVHqb4opPoFVQjnvSbzt8t99SJvYjsvkvEQg5St8/ZkSA+nG6xr+EwowRZ3cqoXrMZIBU2LvNwnuinN7mbqUYM2gNE2
+	Nv306Di0i8ywRVIcbyY4HUkV/426wOVjgoMmbCJczE8zxKLU9tINffaGjdJqE4j0crRmE2GKTjPgNgiVgdJduEy7esosGNyhOmHADZzMsj0i2lcbwQDWiEHiS0MVS9ODuDsuj5HaDoiX8xWMndS0r3T6SIeM7H0GdUBU0MvbHtxKgiLY8rDteNlMqdLFD+YwMfroiZbXCbQvMz7KF18kpjoPq+FC2+Sj4grt3mtirUgLEAZ+s1GWXXyxeSEcP4FQQzWg6qhsCtuYG+d0VbKd8SaySYNqYYqxlGlXn7y+R2XGNS8MdexcBeBX4rcqitLlAGmVfwzcxWl3oMm7Wlf7xs+nvE1E8bsOGLRbglvGq4Jv4DE9X0mdK1aRd0VPzTUnhZd7rW3AOPnDMUdFmwEfhXzS2VzSciEVLxG8S5VGStlw+KT7d8NT+DVqd5biZ4q5+FQBuJW48/qRFD+yllYPnXhle9fdyzO4RNbhVqtuE8zsqqbitQ0ak9n9RrY3ATNV9nfThjxKV1zqy6sa4ehInFoCxWgEBrmCa/0XeNMARZtn2fd0a54sQl8tNd8LKCGIABIeu9vBlLONEcdX0deaorzdV8weDYHVaS8qT4vCl/k0DRWpQ+bumqMIhtKLjVgEmnBFGGI0q8scc9saLTNW4wQa+/kOT8YxxWqgm0urzWbcgFwiCgLQlBGl+Q0DRJB4c+ESJ9laZsmjL36yBIrBYLMt7tfrtOpjQbi/hMIMcMl1MWL/dlbRN9gCNVlAXYV/lOm0eKgsgkr6gdRjc+foFXfNHJHtbZLN23zld0OkH6P923WR7C+fggM8yp+l035K
 X-Forefront-Antispam-Report:
 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM9PR04MB8505.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(19092799006)(52116014)(7416014)(376014)(921020)(38350700014)(22082099003)(56012099003)(18002099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?b/JdZXzPL8mJq3Xgy86xlCQeCZOmIhXxg39IRE9HEl7Ez2+5yjMolleoLbjx?=
- =?us-ascii?Q?1JfvpsCsbhDVqFYC8RHm67g87aO3dhnektt2gEBlAYTL29911k61p97iWV97?=
- =?us-ascii?Q?lk9XpqghP71dVraUwy2sHugiwvFMfdOFqC8gypS3rDsCBGWAiTCxu9sDWPaW?=
- =?us-ascii?Q?Nh1JCB9iP0UAohYsJE5XLZHvG3ajrcHTaGS/AU6Slehb9QxAvTIRf2O4hnQQ?=
- =?us-ascii?Q?/13MF0FloEo2UM45HjnPKbKojP76iPo4ET66kEegx//WFkSGMaWgQt8xf5iF?=
- =?us-ascii?Q?uzvaqDy+dHnqGQYEapslhMoBRCgjbyo1uaLWNXm/TQSglcOnObzHoeAGGYAH?=
- =?us-ascii?Q?m1hejmnhsToPiQI0KWLSD03cN/yM0cUe4xTTlgB+dQhmhAekW5MCF0ETy5dP?=
- =?us-ascii?Q?tRMB0RrjGswf81zodgubrYUV0uXnWt5WjTx8FaSwvAyHXcGJl+88hiVF9XWy?=
- =?us-ascii?Q?AxxuscsWMSOjz+TwnquAZdMPk/mAQ7RFmtpIdnpIE5/kzZeK7rPcF5rZH9U0?=
- =?us-ascii?Q?rt9SKNtpr3TZIQxfb9lqOOy2ZTmkaYlFjyNPR6GCCFhLIPK6WHqhXVPTF1x2?=
- =?us-ascii?Q?too0t4FFbfiZLVkE4rUTuBziffXwECLW3dXfeXmdIag+0F2Xu+1Fi/Xh085T?=
- =?us-ascii?Q?vAW1BMqq6dcddRoDYaE7mke7mXkGszWKJxZkdPW/AhJ763pCC8i1l0ULQhWm?=
- =?us-ascii?Q?UKxJAUcz+oXNcUwFVdA1dwYGsWs6RgWPF519WhVLy7XQ7MuuFya7J7yxw199?=
- =?us-ascii?Q?MpF6Z4hgewx49PSzI6QYWZHsG0ea10ABLHUywLgswJksOxwGM86e5NszVl/l?=
- =?us-ascii?Q?EdSsHKL3wQPiPUhdivoW4i/EKsajrZLx78ex6eVyG6DRWu+RBBLUGwV108ug?=
- =?us-ascii?Q?QwxxuRrqQmVRuXIijAygKb+bMSdjctTk4CVOPSaJ0jZSkHG5HGoKlHH2u9gN?=
- =?us-ascii?Q?JBkbh3QXykYaGZh224EpmO7cPdfSVH9Heb+v8aKyqRGibF6DLjbZG5Pc364C?=
- =?us-ascii?Q?b57Ye3bJKhNJ7evVP7UhMc8PWycFfLNYH62dL3MYbg7EcbcT5S0AW3Acab3p?=
- =?us-ascii?Q?6jPeQkBGM2POoM1CYgmCEgTLy/KwRx5V1XdEcgywZkUvsH8Nygth4aVz+wNB?=
- =?us-ascii?Q?gJcncUVM//tXJxZSeD3poEKqBGKqUJBkjrcdQtW6sgW2yXpPvqvw+9FGXA//?=
- =?us-ascii?Q?GaR+gSNYjZ82BtRL8j2oldLTSWFajc1y4c3+Ix6P1HE1tfsDiD6Qtf4VP2D8?=
- =?us-ascii?Q?pk3HWVWcERmZtnLsSalAzQLoyOE+k7+XEIECWFmcKAQ7xW7V0o3CG8BSAT2G?=
- =?us-ascii?Q?ywFxL39Zk9Y057J+v1w3iHjjwX9IzKXAxWjfFU4ECeZQRiU5HUlpgKwa2FB5?=
- =?us-ascii?Q?TaxHB1AJ1+Y+qH5ek8zeTMeorzBRVuiGYBjf4j6mlMldyyRy9LKyzulNJwwK?=
- =?us-ascii?Q?jhc3gdqxqPcHozcGoITJFqErGuNErVgsq/vk690F8qmXkCHNTHKtPiF/teaX?=
- =?us-ascii?Q?ojBtAzdwdhpbxjzglt2MuWWZIO01jo8j/ZZCYGLCjEvw835gFWJZV3TaS2TT?=
- =?us-ascii?Q?f31/xI6W2vYE2pMy/UsIP6bnpt/rfrmnHybREU3RngrS1XNdCfn26bo1xkLT?=
- =?us-ascii?Q?h8VTqQCeV0Y82V0A/+iC1QQp67ZgA+TMMm4JQwEq8mHuQIJqOaEMsLJ8CoMD?=
- =?us-ascii?Q?r4TuQaGB2kwjMBZzID0B+4gZZwvg4ZGUvNZp2Ug5+8buMJKU?=
+	=?us-ascii?Q?yDX3g/F2rGKiq+9ZRHjKd524rZPPwmtRn/FCGUyX7Fq7+PjhAArCVSjpQzKj?=
+ =?us-ascii?Q?mc4T9bM+1GMR4s86bw0Cf9m5jyrPQNnuK7qQNBgUH4PVH0y9BzNpz7gaIxJH?=
+ =?us-ascii?Q?AQjX9hUxWDiTp1QIZl4/iXgBXD7B/sHp8P5mf7Y4ui8RYa1ux/RtYoiWdBNf?=
+ =?us-ascii?Q?aBXR7lEdBRJRF2NdpYbr4LXmquzv3vnTQ8W1Ttq6TwyxxtQ5LXVId0v38gFZ?=
+ =?us-ascii?Q?9KW0JGKCqD3eUSDedDyI5pWLKkfI5OLy9V62eT8ifvEh40NBUnXZbfGjNFYf?=
+ =?us-ascii?Q?87fET34v9WeOfwPQUWx/ir/kmL6Ol/99qNbc4O6qG1jw43ihVLGpbCDKod9e?=
+ =?us-ascii?Q?iSV77ILlANr87p4yAjcY70wToQwrYB4KQ+mnzY2vSgGqd064DxVwuQk/nTBv?=
+ =?us-ascii?Q?0XILnD/Fyj+qJGRgstjcfXzo6GvMo24HPUuPNIwhO/8wJNfdOqrKF3VIlvEH?=
+ =?us-ascii?Q?GSRvdFgeKJvn/njR3Dtt6lvIrQ4m2bIQMiieDGPbPGSLVZbNz1EUcI3wYfb/?=
+ =?us-ascii?Q?ibBYOMRuhEixrdOe12PAhpFhfQGQKOA4gzNreBN2ZKlMsnn1xYwXfK0bEbK0?=
+ =?us-ascii?Q?Gml4/m1zRG4UigM82SK3wFNO85IZfxIYijopH9aQ73uu27OC/CkIemd5IJTX?=
+ =?us-ascii?Q?hLWf9UIotAN5zYUP6LBVtyIJWfp08AGnwKz9mszBa9BAh+zqEgiJjY2UfTav?=
+ =?us-ascii?Q?kaiZHCk1cyFZXJ8W3eTnRUBUaDsm9omEhlKb1tUNolVEtWrpVThNxevp40F1?=
+ =?us-ascii?Q?DCGqsLcccinFvU0n1YCa7c0nrWztqs4rkqpuLuRtOXtWyWlopUTmxAAe/bqV?=
+ =?us-ascii?Q?rptECFCL8FPp33HlEr85Pb8QTGLMkZ61hvcoQkfziQOXtPAhKCjCgYLkEIpw?=
+ =?us-ascii?Q?+6U0vFgfq2oYpUEUKjl7oVXBcm1dmG3yvB9pleEe0sBH1kGubdKGDtC14b4U?=
+ =?us-ascii?Q?m0BSMfTsrRwusEhXycuOPF2u4C4U27orPFDLjD1CuTz53yP3cBAaSCVAle77?=
+ =?us-ascii?Q?UMsqS8vfXfyv4YX3Oy7OSHWKvLxiDmOZIERvo29QavUN09diSqGyqVdEWfFf?=
+ =?us-ascii?Q?XroE+0IdqtklKLmZCJoe4ElYXnHkgOLyexH1zYFhydc2nrrKkKLp08AGjmta?=
+ =?us-ascii?Q?dDYZhWksr4+lbvC+Ca+zFDsFgPooGbOJ9aik/ro83C3r8fHHyRzw26z7Y4H6?=
+ =?us-ascii?Q?jVZJTdIXY+jUV8G7LTJptH48eC/cST0i1qsawKx9D9KijSj8uX9uMh9VpfHs?=
+ =?us-ascii?Q?g3KYvdmjTAq1pkuAbJCJrG1vCY3GmxRxOmWHmDvA79sotWzIY9Cyi1HeDEhm?=
+ =?us-ascii?Q?Gw7ogcbbved0PGYR8QjjaPfMlb46dsKZfnqTjVQW0imWpmgpBlCo0ub3jWZW?=
+ =?us-ascii?Q?4v9GJ7qXQtV8Ly93U8Ba7JD+XxhN7HzpD/8In623i5yH0VLaGm4sEpNEqQTJ?=
+ =?us-ascii?Q?DuTt3WlMng7Hu3RhOpxLaxWqj1r3oHVaouKnc3S8BfoBX+s6XAwk6yUZVyrw?=
+ =?us-ascii?Q?ErBdiUaEE3JREAEXkiKFGaNF4ZLVJBxEs6JEojP5bACp1u49JUVjQHbAjO0r?=
+ =?us-ascii?Q?bQzqOGf4mLu6+tS9fxs+gHd1Nj4eP0gDa1PNecxT+b2sfVXUqkTGRgaxIq7z?=
+ =?us-ascii?Q?OoS3LD1pA14EBZG3Qe3cZt4xvaC3eVIJlPtnGQd+kefY8RKR8oxh5RVwt1Gr?=
+ =?us-ascii?Q?hiwywP1Ncb0m7ycA89gtM/04hGeYKpBhnwnlhBaN7N2qj8pb?=
 X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: d5b3d3a5-3a0d-4a60-7a65-08de88a25071
+X-MS-Exchange-CrossTenant-Network-Message-Id: c8e94c9e-ca22-4a18-ef5b-08de88a2555b
 X-MS-Exchange-CrossTenant-AuthSource: AM9PR04MB8505.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Mar 2026 06:06:25.2437
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Mar 2026 06:06:34.1955
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: /pr+726ofhtiG2L7D165f9m5N36um3JGfGnx+FXHgonYnMMfbjMLo7AlsIq6StFXO2q7qo9cLxNg0LFKwnZodA==
+X-MS-Exchange-CrossTenant-UserPrincipalName: cuVj+2e1u/0RhJEV2LzPA+e1t/bQVF5hH0ZVDCbqb1LYzW5EKh/amB9uFcBCMGn0/ezNh25q1QHT6RlZVxPddg==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR04MB8911
 
-Before probing the NETC switch driver, some pre-initialization needs to
-be set in NETCMIX and IERB to ensure that the switch can work properly.
-For example, i.MX94 NETC switch has three external ports and each port
-is bound to a link. And each link needs to be configured so that it can
-work properly, such as I/O variant and MII protocol.
+The FDB table is used for MAC learning lookups and MAC forwarding lookups.
+Each table entry includes information such as a FID and MAC address that
+may be unicast or multicast and a forwarding destination field containing
+a port bitmap identifying the associated port(s) with the MAC address.
+FDB table entries can be static or dynamic. Static entries are added from
+software whereby dynamic entries are added either by software or by the
+hardware as MAC addresses are learned in the datapath.
 
-In addition, the switch port 2 (MAC 2) and ENETC 0 (MAC 3) share the same
-parallel interface, they cannot be used at the same time due to the SoC
-constraint. And the MAC selection is controlled by the mac2_mac3_sel bit
-of EXT_PIN_CONTROL register. Currently, the interface is set for ENETC 0
-by default unless the switch port 2 is enabled in the DT node.
+The FDB table can only be managed by the command BD ring using table
+management protocol version 2.0. Table management command operations Add,
+Delete, Update and Query are supported. And the FDB table supports three
+access methods: Entry ID, Exact Match Key Element and Search. This patch
+adds the following basic supports to the FDB table.
 
-Like ENETC, each external port of the NETC switch can manage its external
-PHY through its port MDIO registers. And the port can only access its own
-external PHY by setting the PHY address to the LaBCR[MDIO_PHYAD_PRTAD].
-If the accessed PHY address is not equal to LaBCR[MDIO_PHYAD_PRTAD], then
-the MDIO access initiated by port MDIO will be invalid.
+ntmp_fdbt_update_entry() - update the configuration element data of a
+specified FDB entry
+
+ntmp_fdbt_delete_entry() - delete a specified FDB entry
+
+ntmp_fdbt_add_entry() - add an entry into the FDB table
+
+ntmp_fdbt_search_port_entry() - Search the FDB entry on the specified
+port based on RESUME_ENTRY_ID.
 
 Signed-off-by: Wei Fang <wei.fang@nxp.com>
 ---
- .../ethernet/freescale/enetc/netc_blk_ctrl.c  | 188 ++++++++++++++++--
- 1 file changed, 166 insertions(+), 22 deletions(-)
+ drivers/net/ethernet/freescale/enetc/ntmp.c   | 199 ++++++++++++++++++
+ .../ethernet/freescale/enetc/ntmp_private.h   |  59 ++++++
+ include/linux/fsl/ntmp.h                      |  67 ++++++
+ 3 files changed, 325 insertions(+)
 
-diff --git a/drivers/net/ethernet/freescale/enetc/netc_blk_ctrl.c b/drivers/net/ethernet/freescale/enetc/netc_blk_ctrl.c
-index 92a0f824dae7..c21230f7a7fb 100644
---- a/drivers/net/ethernet/freescale/enetc/netc_blk_ctrl.c
-+++ b/drivers/net/ethernet/freescale/enetc/netc_blk_ctrl.c
-@@ -261,40 +261,112 @@ static int imx94_link_config(struct netc_blk_ctrl *priv,
- }
+diff --git a/drivers/net/ethernet/freescale/enetc/ntmp.c b/drivers/net/ethernet/freescale/enetc/ntmp.c
+index 703752995e93..f6f4316169b6 100644
+--- a/drivers/net/ethernet/freescale/enetc/ntmp.c
++++ b/drivers/net/ethernet/freescale/enetc/ntmp.c
+@@ -20,11 +20,15 @@
+ /* Define NTMP Table ID */
+ #define NTMP_MAFT_ID			1
+ #define NTMP_RSST_ID			3
++#define NTMP_FDBT_ID			15
  
- static int imx94_enetc_link_config(struct netc_blk_ctrl *priv,
--				   struct device_node *np)
-+				   struct device_node *np,
-+				   bool *enetc0_en)
- {
- 	int link_id = imx94_enetc_get_link_id(np);
+ /* Generic Update Actions for most tables */
+ #define NTMP_GEN_UA_CFGEU		BIT(0)
+ #define NTMP_GEN_UA_STSEU		BIT(1)
  
- 	if (link_id < 0)
- 		return link_id;
- 
-+	if (link_id == IMX94_ENETC0_LINK && of_device_is_available(np))
-+		*enetc0_en = true;
++/* Query Action: 0: Full query, 1: Only query entry ID */
++#define NTMP_QA_ENTRY_ID		1
 +
- 	return imx94_link_config(priv, np, link_id);
- }
- 
-+static struct device_node *netc_get_switch_ports(struct device_node *np)
-+{
-+	struct device_node *ports;
-+
-+	ports = of_get_child_by_name(np, "ports");
-+	if (!ports)
-+		ports = of_get_child_by_name(np, "ethernet-ports");
-+
-+	return ports;
-+}
-+
-+static int imx94_switch_link_config(struct netc_blk_ctrl *priv,
-+				    struct device_node *np,
-+				    bool *swp2_en)
-+{
-+	struct device_node *ports;
-+	int port_id, err = 0;
-+
-+	ports = netc_get_switch_ports(np);
-+	if (!ports)
-+		return -ENODEV;
-+
-+	for_each_available_child_of_node_scoped(ports, child) {
-+		if (of_property_read_u32(child, "reg", &port_id) < 0) {
-+			err = -ENODEV;
-+			goto end;
-+		}
-+
-+		switch (port_id) {
-+		case 0 ... 2: /* External ports */
-+			err = imx94_link_config(priv, child, port_id);
-+			if (err)
-+				goto end;
-+
-+			if (port_id == 2)
-+				*swp2_en = true;
-+
-+			break;
-+		case 3: /* CPU port */
-+			break;
-+		default:
-+			err = -EINVAL;
-+			goto end;
-+		}
-+	}
-+
-+end:
-+	of_node_put(ports);
-+
-+	return err;
-+}
-+
- static int imx94_netcmix_init(struct platform_device *pdev)
- {
- 	struct netc_blk_ctrl *priv = platform_get_drvdata(pdev);
- 	struct device_node *np = pdev->dev.of_node;
-+	bool enetc0_en = false, swp2_en = false;
- 	u32 val;
- 	int err;
- 
- 	for_each_child_of_node_scoped(np, child) {
- 		for_each_child_of_node_scoped(child, gchild) {
--			if (!of_device_is_compatible(gchild, "pci1131,e101"))
--				continue;
--
--			err = imx94_enetc_link_config(priv, gchild);
--			if (err)
--				return err;
-+			if (of_device_is_compatible(gchild, "pci1131,e101")) {
-+				err = imx94_enetc_link_config(priv, gchild,
-+							      &enetc0_en);
-+				if (err)
-+					return err;
-+			} else if (of_device_is_compatible(gchild,
-+							   "pci1131,eef2")) {
-+				err = imx94_switch_link_config(priv, gchild,
-+							       &swp2_en);
-+				if (err)
-+					return err;
-+			}
- 		}
+ #define NTMP_ENTRY_ID_SIZE		4
+ #define RSST_ENTRY_NUM			64
+ #define RSST_STSE_DATA_SIZE(n)		((n) * 8)
+@@ -225,6 +229,8 @@ static const char *ntmp_table_name(int tbl_id)
+ 		return "MAC Address Filter Table";
+ 	case NTMP_RSST_ID:
+ 		return "RSS Table";
++	case NTMP_FDBT_ID:
++		return "FDB Table";
+ 	default:
+ 		return "Unknown Table";
  	}
- 
--	/* ENETC 0 and switch port 2 share the same parallel interface.
--	 * Currently, the switch is not supported, so this interface is
--	 * used by ENETC 0 by default.
-+	if (enetc0_en && swp2_en) {
-+		dev_err(&pdev->dev,
-+			"Cannot enable swp2 and enetc0 at the same time\n");
-+		return -EINVAL;
-+	}
-+
-+	/* ENETC 0 and switch port 2 share the same parallel interface, they
-+	 * cannot be enabled at the same time. The interface is set for the
-+	 * ENETC 0 by default unless the switch port 2 is enabled in the DTS.
- 	 */
- 	val = netc_reg_read(priv->netcmix, IMX94_EXT_PIN_CONTROL);
--	val |= MAC2_MAC3_SEL;
-+	if (!swp2_en)
-+		val |= MAC2_MAC3_SEL;
-+	else
-+		val &= ~MAC2_MAC3_SEL;
- 	netc_reg_write(priv->netcmix, IMX94_EXT_PIN_CONTROL, val);
- 
- 	return 0;
-@@ -610,6 +682,77 @@ static int imx94_enetc_mdio_phyaddr_config(struct netc_blk_ctrl *priv,
- 	return 0;
+@@ -453,5 +459,198 @@ int ntmp_rsst_query_entry(struct ntmp_user *user, u32 *table, int count)
  }
+ EXPORT_SYMBOL_GPL(ntmp_rsst_query_entry);
  
-+static int imx94_ierb_enetc_init(struct netc_blk_ctrl *priv,
-+				 struct device_node *np,
-+				 u32 phy_mask)
++/**
++ * ntmp_fdbt_add_entry - add an entry into the FDB table
++ * @user: target ntmp_user struct
++ * @entry_id: returned value, the entry ID of the new added entry
++ * @keye: key element data
++ * @cfge: configuration element data
++ *
++ * Return: 0 on success, otherwise a negative error code
++ */
++int ntmp_fdbt_add_entry(struct ntmp_user *user, u32 *entry_id,
++			const struct fdbt_keye_data *keye,
++			const struct fdbt_cfge_data *cfge)
 +{
++	struct ntmp_dma_buf data = {
++		.dev = user->dev,
++		.size = sizeof(struct fdbt_req_ua),
++	};
++	struct fdbt_resp_query *resp;
++	struct fdbt_req_ua *req;
++	union netc_cbd cbd;
++	u32 len;
 +	int err;
 +
-+	err = imx94_enetc_update_tid(priv, np);
++	err = ntmp_alloc_data_mem(&data, (void **)&req);
 +	if (err)
 +		return err;
 +
-+	return imx94_enetc_mdio_phyaddr_config(priv, np, phy_mask);
-+}
++	/* Request data */
++	ntmp_fill_crd(&req->crd, user->tbl.fdbt_ver, NTMP_QA_ENTRY_ID,
++		      NTMP_GEN_UA_CFGEU);
++	req->ak.exact.keye = *keye;
++	req->cfge = *cfge;
 +
-+static int imx94_switch_mdio_phyaddr_config(struct netc_blk_ctrl *priv,
-+					    struct device_node *np,
-+					    int port_id, u32 phy_mask)
-+{
-+	int addr;
-+
-+	/* The switch has 3 external ports at most */
-+	if (port_id > 2)
-+		return 0;
-+
-+	addr = netc_get_phy_addr(np);
-+	if (addr < 0) {
-+		if (addr == -ENODEV)
-+			return 0;
-+
-+		return addr;
++	len = NTMP_LEN(data.size, sizeof(*resp));
++	/* The entry ID is allotted by hardware, so we need to perform
++	 * a query action after the add action to get the entry ID from
++	 * hardware.
++	 */
++	ntmp_fill_request_hdr(&cbd, data.dma, len, NTMP_FDBT_ID,
++			      NTMP_CMD_AQ, NTMP_AM_EXACT_KEY);
++	err = netc_xmit_ntmp_cmd(user, &cbd);
++	if (err) {
++		dev_err(user->dev, "Failed to add %s entry, err: %pe\n",
++			ntmp_table_name(NTMP_FDBT_ID), ERR_PTR(err));
++		goto end;
 +	}
 +
-+	if (phy_mask & BIT(addr)) {
-+		dev_err(&priv->pdev->dev,
-+			"Found same PHY address in EMDIO and switch node\n");
-+		return -EINVAL;
-+	}
-+
-+	netc_reg_write(priv->ierb, IERB_LBCR(port_id),
-+		       LBCR_MDIO_PHYAD_PRTAD(addr));
-+
-+	return 0;
-+}
-+
-+static int imx94_ierb_switch_init(struct netc_blk_ctrl *priv,
-+				  struct device_node *np,
-+				  u32 phy_mask)
-+{
-+	struct device_node *ports;
-+	int port_id, err = 0;
-+
-+	ports = netc_get_switch_ports(np);
-+	if (!ports)
-+		return -ENODEV;
-+
-+	for_each_available_child_of_node_scoped(ports, child) {
-+		err = of_property_read_u32(child, "reg", &port_id);
-+		if (err)
-+			goto end;
-+
-+		err = imx94_switch_mdio_phyaddr_config(priv, child,
-+						       port_id, phy_mask);
-+		if (err)
-+			goto end;
++	if (entry_id) {
++		resp = (struct fdbt_resp_query *)req;
++		*entry_id = le32_to_cpu(resp->entry_id);
 +	}
 +
 +end:
-+	of_node_put(ports);
++	ntmp_free_data_mem(&data);
 +
 +	return err;
 +}
++EXPORT_SYMBOL_GPL(ntmp_fdbt_add_entry);
 +
- static int imx94_ierb_init(struct platform_device *pdev)
- {
- 	struct netc_blk_ctrl *priv = platform_get_drvdata(pdev);
-@@ -625,17 +768,18 @@ static int imx94_ierb_init(struct platform_device *pdev)
++/**
++ * ntmp_fdbt_update_entry - update the configuration element data of the
++ * specified FDB entry
++ * @user: target ntmp_user struct
++ * @entry_id: the specified entry ID of the FDB table
++ * @cfge: configuration element data
++ *
++ * Return: 0 on success, otherwise a negative error code
++ */
++int ntmp_fdbt_update_entry(struct ntmp_user *user, u32 entry_id,
++			   const struct fdbt_cfge_data *cfge)
++{
++	struct ntmp_dma_buf data = {
++		.dev = user->dev,
++		.size = sizeof(struct fdbt_req_ua),
++	};
++	struct fdbt_req_ua *req;
++	union netc_cbd cbd;
++	u32 len;
++	int err;
++
++	err = ntmp_alloc_data_mem(&data, (void **)&req);
++	if (err)
++		return err;
++
++	/* Request data */
++	ntmp_fill_crd(&req->crd, user->tbl.fdbt_ver, 0, NTMP_GEN_UA_CFGEU);
++	req->ak.eid.entry_id = cpu_to_le32(entry_id);
++	req->cfge = *cfge;
++
++	/* Request header */
++	len = NTMP_LEN(data.size, NTMP_STATUS_RESP_LEN);
++	ntmp_fill_request_hdr(&cbd, data.dma, len, NTMP_FDBT_ID,
++			      NTMP_CMD_UPDATE, NTMP_AM_ENTRY_ID);
++	err = netc_xmit_ntmp_cmd(user, &cbd);
++	if (err)
++		dev_err(user->dev, "Failed to update %s entry, err: %pe\n",
++			ntmp_table_name(NTMP_FDBT_ID), ERR_PTR(err));
++
++	ntmp_free_data_mem(&data);
++
++	return err;
++}
++EXPORT_SYMBOL_GPL(ntmp_fdbt_update_entry);
++
++/**
++ * ntmp_fdbt_delete_entry - delete the specified FDB entry
++ * @user: target ntmp_user struct
++ * @entry_id: the specified ID of the FDB entry
++ *
++ * Return: 0 on success, otherwise a negative error code
++ */
++int ntmp_fdbt_delete_entry(struct ntmp_user *user, u32 entry_id)
++{
++	u32 req_len = sizeof(struct fdbt_req_qd);
++
++	return ntmp_delete_entry_by_id(user, NTMP_FDBT_ID,
++				       user->tbl.fdbt_ver,
++				       entry_id, req_len,
++				       NTMP_STATUS_RESP_LEN);
++}
++EXPORT_SYMBOL_GPL(ntmp_fdbt_delete_entry);
++
++/**
++ * ntmp_fdbt_search_port_entry - Search the FDB entry on the specified
++ * port based on RESUME_ENTRY_ID
++ * @user: target ntmp_user struct
++ * @port: the specified switch port ID
++ * @resume_entry_id: it is both an input and an output. As an input, it
++ * represents the FDB entry ID to be searched. If it is a NULL entry ID,
++ * it indicates that the first FDB entry for that port is being searched.
++ * As an output, it represents the next FDB entry ID to be searched.
++ * @entry: returned value, the response data of the searched FDB entry
++ *
++ * Return: 0 on success, otherwise a negative error code
++ */
++int ntmp_fdbt_search_port_entry(struct ntmp_user *user, int port,
++				u32 *resume_entry_id,
++				struct fdbt_entry_data *entry)
++{
++	struct ntmp_dma_buf data = {
++		.dev = user->dev,
++		.size = sizeof(struct fdbt_req_qd),
++	};
++	struct fdbt_resp_query *resp;
++	struct fdbt_req_qd *req;
++	union netc_cbd cbd;
++	u32 len;
++	int err;
++
++	err = ntmp_alloc_data_mem(&data, (void **)&req);
++	if (err)
++		return err;
++
++	/* Request data */
++	ntmp_fill_crd(&req->crd, user->tbl.fdbt_ver, 0, 0);
++	req->ak.search.resume_eid = cpu_to_le32(*resume_entry_id);
++	req->ak.search.cfge.port_bitmap = cpu_to_le32(BIT(port));
++	/* Match CFGE_DATA[PORT_BITMAP] field */
++	req->ak.search.cfge_mc = FDBT_CFGE_MC_PORT_BITMAP;
++
++	/* Request header */
++	len = NTMP_LEN(data.size, sizeof(*resp));
++	ntmp_fill_request_hdr(&cbd, data.dma, len, NTMP_FDBT_ID,
++			      NTMP_CMD_QUERY, NTMP_AM_SEARCH);
++
++	err = netc_xmit_ntmp_cmd(user, &cbd);
++	if (err) {
++		dev_err(user->dev,
++			"Failed to search %s entry on port %d, err: %pe\n",
++			ntmp_table_name(NTMP_FDBT_ID), port, ERR_PTR(err));
++		goto end;
++	}
++
++	if (!cbd.resp_hdr.num_matched) {
++		entry->entry_id = NTMP_NULL_ENTRY_ID;
++		*resume_entry_id = NTMP_NULL_ENTRY_ID;
++		goto end;
++	}
++
++	resp = (struct fdbt_resp_query *)req;
++	*resume_entry_id = le32_to_cpu(resp->status);
++	entry->entry_id = le32_to_cpu(resp->entry_id);
++	entry->keye = resp->keye;
++	entry->cfge = resp->cfge;
++	entry->acte = resp->acte;
++
++end:
++	ntmp_free_data_mem(&data);
++
++	return err;
++}
++EXPORT_SYMBOL_GPL(ntmp_fdbt_search_port_entry);
++
+ MODULE_DESCRIPTION("NXP NETC Library");
+ MODULE_LICENSE("Dual BSD/GPL");
+diff --git a/drivers/net/ethernet/freescale/enetc/ntmp_private.h b/drivers/net/ethernet/freescale/enetc/ntmp_private.h
+index 34394e40fddd..9e2a18cf3507 100644
+--- a/drivers/net/ethernet/freescale/enetc/ntmp_private.h
++++ b/drivers/net/ethernet/freescale/enetc/ntmp_private.h
+@@ -11,6 +11,7 @@
+ #include <linux/fsl/ntmp.h>
  
- 	for_each_child_of_node_scoped(np, child) {
- 		for_each_child_of_node_scoped(child, gchild) {
--			if (!of_device_is_compatible(gchild, "pci1131,e101"))
--				continue;
--
--			err = imx94_enetc_update_tid(priv, gchild);
--			if (err)
--				return err;
--
--			err = imx94_enetc_mdio_phyaddr_config(priv, gchild,
--							      phy_mask);
--			if (err)
--				return err;
-+			if (of_device_is_compatible(gchild, "pci1131,e101")) {
-+				err = imx94_ierb_enetc_init(priv, gchild,
-+							    phy_mask);
-+				if (err)
-+					return err;
-+			} else if (of_device_is_compatible(gchild,
-+							   "pci1131,eef2")) {
-+				err = imx94_ierb_switch_init(priv, gchild,
-+							     phy_mask);
-+				if (err)
-+					return err;
-+			}
- 		}
- 	}
+ #define NTMP_EID_REQ_LEN	8
++#define NTMP_STATUS_RESP_LEN	4
+ #define NETC_CBDR_BD_NUM	256
  
+ union netc_cbd {
+@@ -27,6 +28,7 @@ union netc_cbd {
+ #define NTMP_CMD_QUERY		BIT(2)
+ #define NTMP_CMD_ADD		BIT(3)
+ #define NTMP_CMD_QU		(NTMP_CMD_QUERY | NTMP_CMD_UPDATE)
++#define NTMP_CMD_AQ		(NTMP_CMD_ADD | NTMP_CMD_QUERY)
+ 		u8 access_method;
+ #define NTMP_ACCESS_METHOD	GENMASK(7, 4)
+ #define NTMP_AM_ENTRY_ID	0
+@@ -101,4 +103,61 @@ struct rsst_req_update {
+ 	u8 groups[];
+ };
+ 
++/* Access Key Format of FDB Table */
++struct fdbt_ak_eid {
++	__le32 entry_id;
++	__le32 resv[7];
++};
++
++struct fdbt_ak_exact {
++	struct fdbt_keye_data keye;
++	__le32 resv[5];
++};
++
++struct fdbt_ak_search {
++	__le32 resume_eid;
++	struct fdbt_keye_data keye;
++	struct fdbt_cfge_data cfge;
++	u8 acte;
++	u8 keye_mc;
++#define FDBT_KEYE_MAC		GENMASK(1, 0)
++	u8 cfge_mc;
++#define FDBT_CFGE_MC		GENMASK(2, 0)
++#define FDBT_CFGE_MC_ANY		0
++#define FDBT_CFGE_MC_DYNAMIC		1
++#define FDBT_CFGE_MC_PORT_BITMAP	2
++#define FDBT_CFGE_MC_DYNAMIC_AND_PORT_BITMAP	3
++	u8 acte_mc;
++#define FDBT_ACTE_MC		BIT(0)
++};
++
++union fdbt_access_key {
++	struct fdbt_ak_eid eid;
++	struct fdbt_ak_exact exact;
++	struct fdbt_ak_search search;
++};
++
++/* FDB Table Request Data Buffer Format of Update and Add actions */
++struct fdbt_req_ua {
++	struct ntmp_cmn_req_data crd;
++	union fdbt_access_key ak;
++	struct fdbt_cfge_data cfge;
++};
++
++/* FDB Table Request Data Buffer Format of Query and Delete actions */
++struct fdbt_req_qd {
++	struct ntmp_cmn_req_data crd;
++	union fdbt_access_key ak;
++};
++
++/* FDB Table Response Data Buffer Format of Query action */
++struct fdbt_resp_query {
++	__le32 status;
++	__le32 entry_id;
++	struct fdbt_keye_data keye;
++	struct fdbt_cfge_data cfge;
++	u8 acte;
++	u8 resv[3];
++};
++
+ #endif
+diff --git a/include/linux/fsl/ntmp.h b/include/linux/fsl/ntmp.h
+index 916dc4fe7de3..ba56d4ae0ff4 100644
+--- a/include/linux/fsl/ntmp.h
++++ b/include/linux/fsl/ntmp.h
+@@ -6,6 +6,8 @@
+ #include <linux/bitops.h>
+ #include <linux/if_ether.h>
+ 
++#define NTMP_NULL_ENTRY_ID		0xffffffffU
++
+ struct maft_keye_data {
+ 	u8 mac_addr[ETH_ALEN];
+ 	__le16 resv;
+@@ -29,6 +31,7 @@ struct netc_cbdr_regs {
+ struct netc_tbl_vers {
+ 	u8 maft_ver;
+ 	u8 rsst_ver;
++	u8 fdbt_ver;
+ };
+ 
+ struct netc_cbdr {
+@@ -61,6 +64,36 @@ struct maft_entry_data {
+ 	struct maft_cfge_data cfge;
+ };
+ 
++struct fdbt_keye_data {
++	u8 mac_addr[ETH_ALEN]; /* big-endian */
++	__le16 resv0;
++	__le16 fid;
++#define FDBT_FID		GENMASK(11, 0)
++	__le16 resv1;
++};
++
++struct fdbt_cfge_data {
++	__le32 port_bitmap;
++#define FDBT_PORT_BITMAP	GENMASK(23, 0)
++	__le32 cfg;
++#define FDBT_OETEID		GENMASK(1, 0)
++#define FDBT_EPORT		GENMASK(6, 2)
++#define FDBT_IMIRE		BIT(7)
++#define FDBT_CTD		GENMASK(10, 9)
++#define FDBT_DYNAMIC		BIT(11)
++#define FDBT_TIMECAPE		BIT(12)
++	__le32 et_eid;
++};
++
++struct fdbt_entry_data {
++	u32 entry_id;
++	struct fdbt_keye_data keye;
++	struct fdbt_cfge_data cfge;
++	u8 acte;
++#define FDBT_ACT_CNT		GENMASK(6, 0)
++#define FDBT_ACT_FLAG		BIT(7)
++};
++
+ #if IS_ENABLED(CONFIG_NXP_NETC_LIB)
+ int ntmp_init_cbdr(struct netc_cbdr *cbdr, struct device *dev,
+ 		   const struct netc_cbdr_regs *regs);
+@@ -76,6 +109,15 @@ int ntmp_rsst_update_entry(struct ntmp_user *user, const u32 *table,
+ 			   int count);
+ int ntmp_rsst_query_entry(struct ntmp_user *user,
+ 			  u32 *table, int count);
++int ntmp_fdbt_add_entry(struct ntmp_user *user, u32 *entry_id,
++			const struct fdbt_keye_data *keye,
++			const struct fdbt_cfge_data *cfge);
++int ntmp_fdbt_update_entry(struct ntmp_user *user, u32 entry_id,
++			   const struct fdbt_cfge_data *cfge);
++int ntmp_fdbt_delete_entry(struct ntmp_user *user, u32 entry_id);
++int ntmp_fdbt_search_port_entry(struct ntmp_user *user, int port,
++				u32 *resume_entry_id,
++				struct fdbt_entry_data *entry);
+ #else
+ static inline int ntmp_init_cbdr(struct netc_cbdr *cbdr, struct device *dev,
+ 				 const struct netc_cbdr_regs *regs)
+@@ -116,6 +158,31 @@ static inline int ntmp_rsst_query_entry(struct ntmp_user *user,
+ 	return 0;
+ }
+ 
++static inline int ntmp_fdbt_add_entry(struct ntmp_user *user, u32 *entry_id,
++				      const struct fdbt_keye_data *keye,
++				      const struct fdbt_cfge_data *data)
++{
++	return 0;
++}
++
++static inline int ntmp_fdbt_update_entry(struct ntmp_user *user, u32 entry_id,
++					 const struct fdbt_cfge_data *cfge)
++{
++	return 0;
++}
++
++static inline int ntmp_fdbt_delete_entry(struct ntmp_user *user, u32 entry_id)
++{
++	return 0;
++}
++
++static inline int ntmp_fdbt_search_port_entry(struct ntmp_user *user, int port,
++					      u32 *resume_entry_id,
++					      struct fdbt_entry_data *entry)
++{
++	return 0;
++}
++
+ #endif
+ 
+ #endif
 -- 
 2.34.1
 
