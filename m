@@ -1,91 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-18610-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18611-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26F18EC01A0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2026 08:00:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 715BDEC01A9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2026 08:53:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ffQb56Jy2z2xd6;
-	Mon, 23 Mar 2026 19:00:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.149
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774252849;
-	cv=none; b=ltsAD39phMnfOHoJ+CTH5Djc3F0M65zA6sUUeN8c9A+K7gCUPiVHrx8zU6Ps+AGSsqhYBvauLqdzOCsZOCR/J5r32st1au61aK14ELKd3iRZMTWHUSUzPjref/fSiZiWSmqAGwuXE39KxBKnUdGpqg7LKJP4EBe2XNcxyoKriLxaEWg1MjWSy+W2cAqn1HyVNLJ/cIYwejUtJmFX+LSttJOPZaiO9HfHizhc8JEdjOGGfsIFKP8e8YqeNqA8X1bh+GUFg12z2KSoCNuS9Yx6pPjyie4Iy/zZlDyeDY1cm8yry8BjBsnWrvNXJksL7Pwz1X4NWrZQ4oGb89dvWu884g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ffRlq11wXz2ySb;
+	Mon, 23 Mar 2026 19:53:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774256007;
+	cv=none; b=XVgbrQE0WZQxlFSiZdaGoXwXMmjyyakad4efaEcBefqeIdcjz73+X+LWcN1o6JqHUrrb9jQEnNHrjl4BEdneYWmsWYJare2PMeuDXSGzEip+i2sn3pSXCK25jc7C0weCYm708VJd5QJDHG8CVt4c2/4cERystAcMx3OY9u1KbuFkBoN8AjO3HkQnDeVzDjOei9Og+Dlu2BIjaDkIAMq/dCIA/Q9hBAMxc9ViiUPyNQGTltGh4ToYLlbGUroS2tNXBkS5KwKHNEDtuajaLagoYSuMaYaHHyzkbBvfi6/s91IWE2o97ZLNt9Y9jPgas58vASSfoL9o5ZDjI8dT+O3GeQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774252849; c=relaxed/relaxed;
-	bh=ahNZBT3UKtkfPRUQ0dmTVXR+3jFla3v2yy/o2ErGnb8=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=T9LS7D3BAw6ZNU4sIYJVYDvV06T8dkKlleHQqC/piO2MrDGVfqgutNXMkQ2S85WRcC2AFuDeX/3meMdow0gHZqLP4PmKQPgQthF1qUxcX/S1mmxfs6X+ylv/Pee+2ByzcbW/4vzls9o2VELaf2OP6kBkM3RC1EiWipxDtbdknbJx1v0Nu65nsg1so1TRKq5CaQRv3/y+lj1Y0vtUMGJGDo4KN3oOw4dpJ6Vj8QQ6Tcytu94ew2gMX8oQDihb+Z+31RhtvlaI7vMCigDvu7JVIHUSCqQt9EPF12GOITc7UT4ITkFuRDqJwwj5SxK9z8J77ptOsBldp5by3pspiCfMnA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=Q4v0qSqV; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=QKI8n+1y; dkim-atps=neutral; spf=pass (client-ip=103.168.172.149; helo=fout-a6-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+	t=1774256007; c=relaxed/relaxed;
+	bh=DR9LUmWUR9exj2wJr9jxKL2NOIt/iKzdjwAN3yICP28=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=W7Ks71ga2XTA1HBxcH67r4V2iPGSeeXE76zhIJXwSDP4mkoeq9c6liIavHB0oXtYgP8u2IGtn7Gzj3PsASdvdNsJtQMAqNyZJDPyT+PJcobOjssBe+vDdN0LdgrRLzezeGoCFNCXeNIS9I/JQ2MG9ntYS11468k7mTeUwlv58XlAeutJhohGO0x80RRH4b5eHtNNTmv2WoniPxMe4LqIbVOemlgNA5MkrRwrJCJXdC5pU2Cb+Au28NOZhsPeawcnfljzpsyCOPA4NXca9V9HfAt4a3yaMn0Vfkb/CS3k7bgK/mKUpkiZ/0zDo3LZ4YkYT6rLIKqTTJSDfvF/1R4NVg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=a+bs9O7X; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=Q4v0qSqV;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=QKI8n+1y;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=a+bs9O7X;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=103.168.172.149; helo=fout-a6-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
-Received: from fout-a6-smtp.messagingengine.com (fout-a6-smtp.messagingengine.com [103.168.172.149])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffQb15kpsz2xLt
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2026 19:00:45 +1100 (AEDT)
-Received: from phl-compute-03.internal (phl-compute-03.internal [10.202.2.43])
-	by mailfout.phl.internal (Postfix) with ESMTP id B55C9EC01C3;
-	Mon, 23 Mar 2026 04:00:41 -0400 (EDT)
-Received: from phl-imap-02 ([10.202.2.81])
-  by phl-compute-03.internal (MEProxy); Mon, 23 Mar 2026 04:00:41 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm1; t=1774252841;
-	 x=1774339241; bh=ahNZBT3UKtkfPRUQ0dmTVXR+3jFla3v2yy/o2ErGnb8=; b=
-	Q4v0qSqVG/xHcEo6j1AUr1Uv4BgKmbCafCWBE0PPCHwn6FqXrM7oCY3FCEoUwWu3
-	Pl4VI3ViaokTfmGFQEhDHkr6K4GRrFw4nJBtjTV1vXDlscE5mhbjeky23Mhv1X36
-	37PZLtjE+Z9x52+PydsqrXhSXB4cKeYLXNNVmvyPaF7noMzPam///5vYiD8qyCSq
-	V1Y/OZh8ayCpEgtpxPoV3PeQMxwGOmmBcGhvi1sUavOEoMa73VlgK6PMnPe2/C7C
-	Y7zq0XU1g7MgYspfgmDEVqYtJWdi2B2H6UPtRl4QeepmvgbYOnJQFd/A5k7Kcwb/
-	lP0LvmIgMcqyZ2rlFZYS4A==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1774252841; x=
-	1774339241; bh=ahNZBT3UKtkfPRUQ0dmTVXR+3jFla3v2yy/o2ErGnb8=; b=Q
-	KI8n+1ybymxT55nAB5/jisKmAXhzqVtMjnGwyqzyHKvgKR7FYDraOlbseakSUo0z
-	+ecddqFl9NYcUHItbSANNr/C7SJ/8yvEktuGhCFybNNV/KPyB2aj08KtCGoKghQV
-	2QHgplj6VnFrsW2CHEYCWHVPrSxfWHYbTz/yRetX0bOgUv5pur8fLLLq7T+SrPlN
-	mIfwcNzfbSgph/LkZqnLhggCRW73XKF1j71hlFhaqPN7JAQ3M+vagFwlLkBPbeLm
-	zqIFE2QjH9NG2ChuRQfJppJtii1330RGATpJwjNLWX/UZqp0c3Sm56jD5H7oIGFM
-	zYRUn68+xoq+iBXArihXA==
-X-ME-Sender: <xms:KfPAacAnW-vORnnpt9Hc58_ZIMgB6dLMymk6zglUDhr0UCDKohS69Q>
-    <xme:KfPAaRL2XxTzZTRKqYoHBsbQhtEf8FtMLYPYZWCdoGl00EPLeHAM_b0Ft5l2QJ5Zq
-    cVZPEQUfWF7erOdMTaLmNow0JRUT5iFYLuOaoJls3-SCwxHZm5DCsI>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefgedrtddtgdefudekudekucetufdoteggodetrf
-    dotffvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfurfetoffkrfgpnffqhgenuceu
-    rghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujf
-    gurhepofggfffhvfevkfgjfhfutgfgsehtjeertdertddtnecuhfhrohhmpedftehrnhgu
-    uceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrdguvgeqnecuggftrfgrthhtvg
-    hrnhephfdthfdvtdefhedukeetgefggffhjeeggeetfefggfevudegudevledvkefhvdei
-    necuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomheprghrnh
-    gusegrrhhnuggsrdguvgdpnhgspghrtghpthhtohepudeipdhmohguvgepshhmthhpohhu
-    thdprhgtphhtthhopehrihhtvghshhdrlhhishhtsehgmhgrihhlrdgtohhmpdhrtghpth
-    htoheprhhoshhtvgguthesghhoohgumhhishdrohhrghdprhgtphhtthhopehpvghtvghr
-    iiesihhnfhhrrgguvggrugdrohhrghdprhgtphhtthhopehmrghsrghhihhrohihsehkvg
-    hrnhgvlhdrohhrghdprhgtphhtthhopehnrghthhgrnheskhgvrhhnvghlrdhorhhgpdhr
-    tghpthhtohepnhhstgeskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepohhjvggurgeskh
-    gvrhhnvghlrdhorhhgpdhrtghpthhtohepthgrmhhirhgusehkvghrnhgvlhdrohhrghdp
-    rhgtphhtthhopehihhhorhdrshholhhoughrrghisehlihhnuhigrdguvghv
-X-ME-Proxy: <xmx:KfPAaT_PO7zgxGZ-RrlfLdU5ZDHembkSUV-ynJwpMrnOl_21h9tnUA>
-    <xmx:KfPAaeXqz_xfe441Kf_Sh9phSjcAUg2JZZg5Am6dY9lMKsLPk8sYvQ>
-    <xmx:KfPAaVTORtP1FUFHLjHenjQSVCYker-ooAD5jSKm5eGzgCOYb7TdUg>
-    <xmx:KfPAae2ydQ0W-XbUaHOhwbXIUnFMuShwFYXmDIEnDA2n3josOQYKDw>
-    <xmx:KfPAaZufEv8dsEWXf4nEl-atNr5D1XC1_1rAf0xu2LJXSV98ocO8xdrE>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.phl.internal (Postfix, from userid 501)
-	id F1A37700065; Mon, 23 Mar 2026 04:00:40 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffRln63J7z2xly
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2026 19:53:24 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62MJUVB9506491;
+	Mon, 23 Mar 2026 08:53:12 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=DR9LUm
+	WUR9exj2wJr9jxKL2NOIt/iKzdjwAN3yICP28=; b=a+bs9O7XuXL8JikIWKwT4C
+	Dj+HjnZZHINfjHURe3AMhi9x1jTZBZugvzteJVzIM3hfM/zIf2ULHN62gR03ciV+
+	Ovlrlqt8Vsmem4f+H8nboVLQn92Wt9Gpr/r5+8cZEYE4Hm/ZA6Tl6og1OJAfEc4o
+	hmxN9F5e/2q5SvI6lQqhH4zdL5ptpnryX30e6BdVNzl3ZTy4l4Tw9raZuVYoYXbN
+	NZi1v3UqI+d2P+uUbXeG5YS9gZTCJ3891glKLfVwOwSA2PH0HCM2tlTlONQz8BhO
+	8UzaB8WobSraIbZgxruI9Rjj+RI1ebEDD8PS22Wkaunv67mACnMumduNbdghxC5Q
+	==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d1kxq62ss-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 23 Mar 2026 08:53:12 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62N73JhD009118;
+	Mon, 23 Mar 2026 08:53:11 GMT
+Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4d26nncp0m-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 23 Mar 2026 08:53:11 +0000
+Received: from smtpav04.wdc07v.mail.ibm.com (smtpav04.wdc07v.mail.ibm.com [10.39.53.231])
+	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62N8r9f126477134
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 23 Mar 2026 08:53:09 GMT
+Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4F86C58060;
+	Mon, 23 Mar 2026 08:53:09 +0000 (GMT)
+Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2DDB258056;
+	Mon, 23 Mar 2026 08:53:03 +0000 (GMT)
+Received: from [9.61.247.60] (unknown [9.61.247.60])
+	by smtpav04.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 23 Mar 2026 08:53:02 +0000 (GMT)
+Message-ID: <b99af481-a75a-4db5-9c51-92eee0b6b464@linux.ibm.com>
+Date: Mon, 23 Mar 2026 14:23:01 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,66 +81,107 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-ThreadId: Auc-q4hEjBcJ
-Date: Mon, 23 Mar 2026 08:59:35 +0100
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
- "Venkat Rao Bagalkote" <venkat88@linux.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, "Nathan Chancellor" <nathan@kernel.org>,
- "Nicolas Schier" <nsc@kernel.org>, "Miguel Ojeda" <ojeda@kernel.org>,
- "Masahiro Yamada" <masahiroy@kernel.org>,
- =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>, tamird@kernel.org,
- "Steven Rostedt" <rostedt@goodmis.org>, ihor.solodrai@linux.dev,
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- "Madhavan Srinivasan" <maddy@linux.ibm.com>,
- "Peter Zijlstra" <peterz@infradead.org>
-Message-Id: <eb864f61-9fa7-4366-bda0-eee586a8e0ad@app.fastmail.com>
-In-Reply-To: <2026032350-stardust-unselfish-ad61@gregkh>
-References: <20260323072422.25730-1-venkat88@linux.ibm.com>
- <2026032350-stardust-unselfish-ad61@gregkh>
-Subject: Re: [PATCH] char: nvram: Remove unused nvram_mutex to fix -Wunused-variable
- warning
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/2] powerpc/kdump: fix KASAN sanitization flag for
+ core_$(BITS).o
+Content-Language: en-GB
+To: Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Aboorva Devarajan <aboorvad@linux.ibm.com>,
+        Aditya Gupta <adityag@linux.ibm.com>, Daniel Axtens <dja@axtens.net>,
+        Hari Bathini <hbathini@linux.ibm.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Mahesh Salgaonkar <mahesh@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Shivang Upadhyay <shivangu@linux.ibm.com>
+References: <20260321053121.614022-1-sourabhjain@linux.ibm.com>
+From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+In-Reply-To: <20260321053121.614022-1-sourabhjain@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: 60tYBCLMejC0qMsbMHmGAP8BvdF7x_fO
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzIzMDA2NyBTYWx0ZWRfXxw7btvvjj5hs
+ wGjHR/JhBZi1YfQuaHNmmMpA2b6zXLhCxYpg7OOjLE/6P5e+NXoZ6HIqlwptwOWdfXeCzqwCidY
+ ZCuDgSCEgFbMk4zRpGT1GQyCdsbntzr36Qa1KdZdUQeRWgyBFac+Oq3g+Xiolf7RcS7hECWV00g
+ ycMWvVFuvUTZFbfQEiJ1t3wx1l+a3tk9Gm7Bkl3gyni1qhloghwdtN1agtjzxwoXuCDEhENJ+GQ
+ JNYI+3Nz77Sc6fx6p+Bx+pOgdYYG9qUIZ6TsZVeQGw4pFqGqDAf7xSJSye64tB+eHtK0W3NcWeV
+ 9ya1mzagd1m+8FCtlahXcyRIY+rVtdyzNmw63pCTWYmTu9pJ7agHF8TE0H0RQjjmJD9UHk/YF4z
+ DKXa13bWJXOLyeGkrxC3etAYa3dvRGvr015b5iM9Z5pgZD4dq6xHCkdcRmxbL8K6twE8Hl7ZHyP
+ hpFuu/KjY3EHxIhjphw==
+X-Authority-Analysis: v=2.4 cv=bLEb4f+Z c=1 sm=1 tr=0 ts=69c0ff78 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=JuTF4qcAAAAA:8 a=pGLkceISAAAA:8 a=ZSZbnnKFPOSW3gtc0DAA:9
+ a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10 a=WlT8qwTXB_Kj6um4hl3b:22
+X-Proofpoint-GUID: KfqCBUHr9RfKHwEOUQGq4AuQqnMw4nN_
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-23_02,2026-03-20_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 adultscore=0 clxscore=1011 phishscore=0 impostorscore=0
+ malwarescore=0 lowpriorityscore=0 suspectscore=0 bulkscore=0
+ priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
+ definitions=main-2603230067
 
-On Mon, Mar 23, 2026, at 08:36, Greg KH wrote:
-> On Mon, Mar 23, 2026 at 12:54:22PM +0530, Venkat Rao Bagalkote wrote:
->> drivers/char/nvram.c defines a static mutex 'nvram_mutex' which is never
->> used. This results in a compiler warning on linux-next builds:
->> 
->>   warning: 'nvram_mutex' defined but not used [-Wunused-variable]
->> 
->> Remove the unused definition to avoid the warning.
->> 
->> Signed-off-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
->> ---
->>  drivers/char/nvram.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->> 
->> diff --git a/drivers/char/nvram.c b/drivers/char/nvram.c
->> index 9eff426a9286..2ce3307663ed 100644
->> --- a/drivers/char/nvram.c
->> +++ b/drivers/char/nvram.c
->> @@ -53,7 +53,7 @@
->>  #include <asm/nvram.h>
->>  #endif
->>  
->> -static DEFINE_MUTEX(nvram_mutex);
->> +static __maybe_unused DEFINE_MUTEX(nvram_mutex);
+
+On 21/03/26 11:01 am, Sourabh Jain wrote:
+> KASAN instrumentation is intended to be disabled for the kexec core
+> code, but the existing Makefile entry misses the object suffix. As a
+> result, the flag is not applied correctly to core_$(BITS).o.
 >
-> If it is never used, why not actually delete it?  This just papers over
-> the real issue :(
+> So when KASAN is enabled, kexec_copy_flush and copy_segments in
+> kexec/core_64.c are instrumented, which can result in accesses to
+> shadow memory via normal address translation paths. Since these run
+> with the MMU disabled, such accesses may trigger page faults
+> (bad_page_fault) that cannot be handled in the kdump path, ultimately
+> causing a hang and preventing the kdump kernel from booting. The same
+> is true for kexec as well, since the same functions are used there.
+>
+> Update the entry to include the “.o” suffix so that KASAN
+> instrumentation is properly disabled for this object file.
+>
+> Fixes: 2ab2d5794f14 ("powerpc/kasan: Disable address sanitization in kexec paths")
+> Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+> Closes: https://lore.kernel.org/all/1dee8891-8bcc-46b4-93f3-fc3a774abd5b@linux.ibm.com/
+> Cc: Aboorva Devarajan <aboorvad@linux.ibm.com>
+> Cc: Aditya Gupta <adityag@linux.ibm.com>
+> Cc: Daniel Axtens <dja@axtens.net>
+> Cc: Hari Bathini <hbathini@linux.ibm.com>
+> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+> Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+> Cc: Shivang Upadhyay <shivangu@linux.ibm.com>
+> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+> ---
 
-It's used on ppc32, atari and x86, but not ppc64.
 
-However, I see that all the implementations that have the
-mutex in their code path also have an inner spinlock that
-does the same thing, while the mutex is a renmant from my
-613655fa39ff ("drivers: autoconvert trivial BKL users to
-private mutex").
+This patch fixes the reported issue. Please add below tag.
 
-I'm fairly sure we can actually remove it.
 
-      Arnd
+Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+
+
+Regards,
+
+Venkat.
+
+
+>   arch/powerpc/kexec/Makefile | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/kexec/Makefile b/arch/powerpc/kexec/Makefile
+> index 470eb0453e17..ec7a0eed75dc 100644
+> --- a/arch/powerpc/kexec/Makefile
+> +++ b/arch/powerpc/kexec/Makefile
+> @@ -16,4 +16,4 @@ GCOV_PROFILE_core_$(BITS).o := n
+>   KCOV_INSTRUMENT_core_$(BITS).o := n
+>   UBSAN_SANITIZE_core_$(BITS).o := n
+>   KASAN_SANITIZE_core.o := n
+> -KASAN_SANITIZE_core_$(BITS) := n
+> +KASAN_SANITIZE_core_$(BITS).o := n
 
