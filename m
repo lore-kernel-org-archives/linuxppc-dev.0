@@ -1,81 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-18589-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18590-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86CA9FC72C5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2026 07:25:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B9EDFC72A8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2026 07:26:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ffPny6pHmz2yZ6;
-	Mon, 23 Mar 2026 18:25:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774250710;
-	cv=none; b=MbMxwAK5SuEfNL5D0XuA4LSuzNnWkFliOOjruR+RbVwFKj+tmt9xZde+O5a4oaP4DSRG2g1njPRQeRUhwzK3ELM1azoHlksK9LwScYFKH1bj3rEmWp1+2TGfh0YkzCH4KlhpdEqhNQBieJJCnrKlygYjIpoBPy1Cr3yNlVtdbLX6841kFJrwQFLjoW2UY//sxJnzqabYMUayu/zsx/P/ueY5iWuGiUTI1lyPeByzpPOzxSZ1pHDkQGFVwKXi+mtzjBs9M8k2nyRZ6015fJi8HMIaEYQvWyq814lemUDHOOA+89BV6pvZMy79BWrLAL4TvfO9SR/jBdeTy6SOmIDfvg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ffPqS1rY8z2yZN;
+	Mon, 23 Mar 2026 18:26:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.221
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774250788;
+	cv=none; b=h9OXdwxIhl/1ivmGdTiD5J8+GO+gSlJi9SGtlWWTkFlPevNb8lTR7SZFmvxKw0p+aTcni9zZU6uDd4YmPcUBSzkFUt3tHiD3cPsU15Z6N2ALK0fM8kZzlrhQAnh3JTcLyWVbS0FbFNbjnn+eq2c5Lie2R7P4i+CfJNOenWPQGeLWMcN1nrDuhibhKz9elH9JIki5MrvcJ+DQxfv37iTbUzyFG368IDoTaBzMg0+8ZvKNLzLtdJzq/74Nwa9F83FGE0IpEXg48neu2eoc0LRkCmc23k5ZCYJWpu2ZtLbks2JBbkT7Kafa6ub6UtLtmjADKJ6n9SblDo4FScrvFAolYg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774250710; c=relaxed/relaxed;
-	bh=jAO59f310du7QormdyuLxv3apotxnRlrU6xoEvAIXr8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=GXkH9XHeYqNHLTDbiQrqAHayOCM/+P08TiKixCTbJRyJZj3yB439ZxWPQLX4dhjuhSjEPmJ9Z2eO3TlpnSw/Oo1Q9xdt6M3KLnZPUwE4JvBemUG0oUrq1UW2buwC0hLp/ZSoS9KDL9GjzCQ7xbg4kcvE7k3NpC0Pb+ZZmRYALn9YJ4f+bkxGpG1n0Www9hEbcjIE/dzAvy5ccDkRluuc4MXEzURtFjK+kr5aeGnGH0mOmlQGJDQKE/d4mT6JAXvlL/QgAx1G5iOm2PFFumPXLiqS8bJYaY4A9hICqJExUNptuWASjZrejL9VZmx1ucKzx3n46ayS1uszjPQLPntyyA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jx+o0ZDc; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1774250788; c=relaxed/relaxed;
+	bh=P7+CA/gJKk2oDSBZFVC25QnNzLGZnOPX7apSx5824Ug=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=i3VifChL8wbbDK7wfO1ackKZanYOfP/A1IQ2qB3eWl5TFNKhtTF+AJZ3kxrVv/mTV6f2tSfwN0lWl3AX1Wkx2xWrd8FbqgWwM93XmccYcfc56WdTU4L03dLmPAvU1t1Rrq/iVf0qHfindwxTg+hcA/AuV6bbSPFOH3P0GMO80kjWRFCRIi5o28wZsp6MmnAxQndaNDC7fZi9LaZx6tWd1mYdXGppMY8xKY8A5SX/Zi0GLUj/F+g55gGeYTelzF2B9Rfxk6eQwWqvDb+jiwA8PdjLpkZt+ncsXkM2lLnyUQGWKyWAOUN7tI7+VtBgyREXAA9ctR2Ykn+pSfFVm+84PQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=MTlCf/ht; dkim-atps=neutral; spf=pass (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jx+o0ZDc;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=MTlCf/ht;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout06.his.huawei.com (canpmsgout06.his.huawei.com [113.46.200.221])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffPnx46dMz2yYy
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2026 18:25:08 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62MB0K4o3743898;
-	Mon, 23 Mar 2026 07:24:42 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=jAO59f310du7QormdyuLxv3apotxnRlrU6xoEvAIX
-	r8=; b=jx+o0ZDcFg1AlC9LpBRt9rF3So2ZwVvjFn73OdrJB7f4nfFGLX6SngQ7P
-	E7B+NB+ytbBXaHjY1R1AMSuHkv7DcYEzLA2sUvZdf2y0OcxehirJE5/NUHDqySC7
-	+vCaksidPvjqXELkHbj6ENVvcsaKc8amxwS2+V0wVbNhsvqsCxjTipqBVH8/s9s1
-	Uu+YQ8GYY5CvnQAEU79omJJfPk7M5izU0zpZJ/wrooiZodJAHjjAda8pI/cyD+Ob
-	3PupuwebZwM6HqN31QFCRyANQotk6z81UDV7AQENf/gcuJE8qDOdobPm4uTFOEA9
-	6mFa332LxXX+cWz02gnURPr8YpPBw==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d1kxq5swq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 23 Mar 2026 07:24:41 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62N7ItZr008749;
-	Mon, 23 Mar 2026 07:24:40 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4d26nncdxa-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 23 Mar 2026 07:24:40 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62N7OawB22086016
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 23 Mar 2026 07:24:36 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 43EE92004E;
-	Mon, 23 Mar 2026 07:24:36 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A483020040;
-	Mon, 23 Mar 2026 07:24:27 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.61.247.60])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 23 Mar 2026 07:24:27 +0000 (GMT)
-From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-To: arnd@arndb.de, gregkh@linuxfoundation.org
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, nathan@kernel.org, nsc@kernel.org,
-        ojeda@kernel.org, masahiroy@kernel.org, linux@weissschuh.net,
-        tamird@kernel.org, rostedt@goodmis.org, ihor.solodrai@linux.dev,
-        ritesh.list@gmail.com, maddy@linux.ibm.com, peterz@infradead.org,
-        venkat88@linux.ibm.com
-Subject: [PATCH] char: nvram: Remove unused nvram_mutex to fix -Wunused-variable warning
-Date: Mon, 23 Mar 2026 12:54:22 +0530
-Message-ID: <20260323072422.25730-1-venkat88@linux.ibm.com>
-X-Mailer: git-send-email 2.45.2
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffPqP1F4kz2yYy
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2026 18:26:23 +1100 (AEDT)
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=P7+CA/gJKk2oDSBZFVC25QnNzLGZnOPX7apSx5824Ug=;
+	b=MTlCf/ht2Xd9I3O7L1EWgArEP8eIpFW1vLFTYR/6XkfJqR5wHICSlYfSwsHnztEYaNtHnJnBu
+	zZG/Hw22faXWb0IKh3UBLnZD0qvvX2sHfA7q52tqCNMgxMyhS7dp5dk+4aotcCz5qIgJDm6MQYS
+	+eNSDwUiCj42XdFdppXTdu8=
+Received: from mail.maildlp.com (unknown [172.19.163.104])
+	by canpmsgout06.his.huawei.com (SkyGuard) with ESMTPS id 4ffPhD3LRvzRhXY;
+	Mon, 23 Mar 2026 15:20:12 +0800 (CST)
+Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
+	by mail.maildlp.com (Postfix) with ESMTPS id BB91A4056E;
+	Mon, 23 Mar 2026 15:26:16 +0800 (CST)
+Received: from huawei.com (10.90.53.73) by dggpemf500011.china.huawei.com
+ (7.185.36.131) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Mon, 23 Mar
+ 2026 15:26:14 +0800
+From: Jinjie Ruan <ruanjinjie@huawei.com>
+To: <corbet@lwn.net>, <skhan@linuxfoundation.org>, <catalin.marinas@arm.com>,
+	<will@kernel.org>, <chenhuacai@kernel.org>, <kernel@xen0n.name>,
+	<maddy@linux.ibm.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
+	<chleroy@kernel.org>, <pjw@kernel.org>, <palmer@dabbelt.com>,
+	<aou@eecs.berkeley.edu>, <alex@ghiti.fr>, <tglx@kernel.org>,
+	<mingo@redhat.com>, <bp@alien8.de>, <dave.hansen@linux.intel.com>,
+	<hpa@zytor.com>, <robh@kernel.org>, <saravanak@kernel.org>,
+	<akpm@linux-foundation.org>, <bhe@redhat.com>, <vgoyal@redhat.com>,
+	<dyoung@redhat.com>, <rdunlap@infradead.org>, <peterz@infradead.org>,
+	<feng.tang@linux.alibaba.com>, <pawan.kumar.gupta@linux.intel.com>,
+	<dapeng1.mi@linux.intel.com>, <kees@kernel.org>, <elver@google.com>,
+	<paulmck@kernel.org>, <lirongqing@baidu.com>, <ruanjinjie@huawei.com>,
+	<safinaskar@gmail.com>, <rppt@kernel.org>, <ardb@kernel.org>,
+	<leitao@debian.org>, <jbohac@suse.cz>, <cfsworks@gmail.com>,
+	<osandov@fb.com>, <tangyouling@kylinos.cn>, <sourabhjain@linux.ibm.com>,
+	<ritesh.list@gmail.com>, <eajames@linux.ibm.com>,
+	<songshuaishuai@tinylab.org>, <kevin.brodsky@arm.com>,
+	<samuel.holland@sifive.com>, <vishal.moola@gmail.com>,
+	<junhui.liu@pigmoral.tech>, <coxu@redhat.com>, <liaoyuanhong@vivo.com>,
+	<fuqiang.wang@easystack.cn>, <x86@kernel.org>, <linux-doc@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
+	<linux-riscv@lists.infradead.org>, <devicetree@vger.kernel.org>,
+	<kexec@lists.infradead.org>
+Subject: [PATCH v9 0/5] arm64/riscv: Add support for crashkernel CMA reservation
+Date: Mon, 23 Mar 2026 15:27:40 +0800
+Message-ID: <20260323072745.2481719-1-ruanjinjie@huawei.com>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,60 +87,82 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: 7EOGw3xU-fF7FPWBWLwp8g_3yTZxUJat
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzIzMDA1NCBTYWx0ZWRfXwtVcgvRfCMLi
- 0BfkRj+clU+sJN9YBDTvMWimUa6YHaFe6EFWb1TLaTiD8xVd//sATAiUymq98oIQ9trSTp9gOk4
- 4wy6Rvf1iFWRkP/p99VYKxKigHU5Rldc5K/nbq0JMDrxnw0/gDFQGGjYR9V5FeQ6RlZuK7X151s
- rOSkjuz4fiymmocmIamRm+QGnMUHpR+1J6ZC3b6/fPoEnoedEdM2uJ9iO3Wk51WQr4eBzuYKqfr
- e3ZV4SD9ud0gGpwjhH6HkHWYBjW+xnCP0VE7r74VIrrqB4PtZLRMSsQfoinj3e86xuo3BaAFtT7
- 0WRFvgcKomKGFGk1lohR2XXEnmPfiCBB9/mo4iR586jY+bmMQcDToi+DP6NR4dnTr1K4UdanvbH
- XoSKmjlzG1AqKMBuqQ53yHlkb0686eoziIspB+ITz/5qB4xII2YDZgLjdZV29uEcvmJJARU/RwY
- GYAdZ6oZqAUna9zAYvg==
-X-Authority-Analysis: v=2.4 cv=bLEb4f+Z c=1 sm=1 tr=0 ts=69c0eaba cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8 a=HSj1x6wVMASIhtUHg4AA:9
- a=zZCYzV9kfG8A:10
-X-Proofpoint-GUID: _M4EmJC2Qippd94GV-49dPGM0g5gFrUc
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-23_02,2026-03-20_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 adultscore=0 clxscore=1011 phishscore=0 impostorscore=0
- malwarescore=0 lowpriorityscore=0 suspectscore=0 bulkscore=0
- priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
- definitions=main-2603230054
+X-Originating-IP: [10.90.53.73]
+X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
+ dggpemf500011.china.huawei.com (7.185.36.131)
 
-drivers/char/nvram.c defines a static mutex 'nvram_mutex' which is never
-used. This results in a compiler warning on linux-next builds:
+The crash memory allocation, and the exclude of crashk_res, crashk_low_res
+and crashk_cma memory are almost identical across different architectures,
+This patch set handle them in crash core in a general way, which eliminate
+a lot of duplication code.
 
-  warning: 'nvram_mutex' defined but not used [-Wunused-variable]
+And add support for crashkernel CMA reservation for arm64 and riscv.
 
-Remove the unused definition to avoid the warning.
+Rebased on v7.0-rc1.
 
-Signed-off-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
----
- drivers/char/nvram.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Basic second kernel boot test were performed on QEMU platforms for x86,
+ARM64, and RISC-V architectures with the following parameters:
 
-diff --git a/drivers/char/nvram.c b/drivers/char/nvram.c
-index 9eff426a9286..2ce3307663ed 100644
---- a/drivers/char/nvram.c
-+++ b/drivers/char/nvram.c
-@@ -53,7 +53,7 @@
- #include <asm/nvram.h>
- #endif
- 
--static DEFINE_MUTEX(nvram_mutex);
-+static __maybe_unused DEFINE_MUTEX(nvram_mutex);
- static DEFINE_SPINLOCK(nvram_state_lock);
- static int nvram_open_cnt;	/* #times opened */
- static int nvram_open_mode;	/* special open modes */
+	"cma=256M crashkernel=256M crashkernel=64M,cma"
+
+Changes in v9:
+- Collect Reviewed-by and Acked-by, and prepare for Sashiko AI review.
+- Link to v8: https://lore.kernel.org/all/20260302035315.3892241-1-ruanjinjie@huawei.com/
+
+Changes in v8:
+- Fix the build issues reported by kernel test robot and Sourabh.
+- Link to v7: https://lore.kernel.org/all/20260226130437.1867658-1-ruanjinjie@huawei.com/
+
+Changes in v7:
+- Correct the inclusion of CMA-reserved ranges for kdump kernel in of/kexec
+  for arm64 and riscv.
+- Add Acked-by.
+- Link to v6: https://lore.kernel.org/all/20260224085342.387996-1-ruanjinjie@huawei.com/
+
+Changes in v6:
+- Update the crash core exclude code as Mike suggested.
+- Rebased on v7.0-rc1.
+- Add acked-by.
+- Link to v5: https://lore.kernel.org/all/20260212101001.343158-1-ruanjinjie@huawei.com/
+
+Changes in v5:
+- Fix the kernel test robot build warnings.
+- Sort crash memory ranges before preparing elfcorehdr for powerpc
+- Link to v4: https://lore.kernel.org/all/20260209095931.2813152-1-ruanjinjie@huawei.com/
+
+Changes in v4:
+- Move the size calculation (and the realloc if needed) into the
+  generic crash.
+- Link to v3: https://lore.kernel.org/all/20260204093728.1447527-1-ruanjinjie@huawei.com/
+
+Jinjie Ruan (4):
+  crash: Exclude crash kernel memory in crash core
+  crash: Use crash_exclude_core_ranges() on powerpc
+  arm64: kexec: Add support for crashkernel CMA reservation
+  riscv: kexec: Add support for crashkernel CMA reservation
+
+Sourabh Jain (1):
+  powerpc/crash: sort crash memory ranges before preparing elfcorehdr
+
+ .../admin-guide/kernel-parameters.txt         |  16 +--
+ arch/arm64/kernel/machine_kexec_file.c        |  39 +++----
+ arch/arm64/mm/init.c                          |   5 +-
+ arch/loongarch/kernel/machine_kexec_file.c    |  39 +++----
+ arch/powerpc/include/asm/kexec_ranges.h       |   1 -
+ arch/powerpc/kexec/crash.c                    |   5 +-
+ arch/powerpc/kexec/ranges.c                   | 101 +-----------------
+ arch/riscv/kernel/machine_kexec_file.c        |  38 +++----
+ arch/riscv/mm/init.c                          |   5 +-
+ arch/x86/kernel/crash.c                       |  89 +++------------
+ drivers/of/fdt.c                              |   9 +-
+ drivers/of/kexec.c                            |   9 ++
+ include/linux/crash_core.h                    |   9 ++
+ kernel/crash_core.c                           |  89 ++++++++++++++-
+ 14 files changed, 178 insertions(+), 276 deletions(-)
+
 -- 
-2.45.2
+2.34.1
 
 
