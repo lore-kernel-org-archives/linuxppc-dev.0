@@ -1,73 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-18614-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18615-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CCA1EC01B1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2026 09:49:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1168EC01BE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2026 10:14:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ffT116G97z2ySc;
-	Mon, 23 Mar 2026 20:49:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4d48:ad52:32c8:5054:ff:fe00:142"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774259397;
-	cv=none; b=WRbbFBje6TaTDtJNB8KQSRag3orsgcZJnoNk817jDlM4GPuH0CRqytLEoRYgU7pEx5gSMoNyDVA7de+WFPjQPUeEyG3dtloaJ3NJaQ5cTH5HGW66+HY6vuO3sVziiLAJBjEzM4AC8Nx6obIXpUUsko1XQSe3nBope0uyvHroCQoedArHq6A74lKDcHOJT4B6dIvEi6b3YdL0JyJdHjmb2HoIG8XXuMTeCrPMWSpQBUxqsgAJ0YQh3+ccmm6tOIZD9MY+b2WhZtZ63HPqPA2U6cdWNTgIXUTCiL3mOhNsA35YAE2MHWLB8RrN3B33sg7gI3OcBBbjjQjLGXJsDSsrBA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ffTYZ2yc8z2ySc;
+	Mon, 23 Mar 2026 21:14:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774260882;
+	cv=none; b=XZ/LPkjFg7D0DcwmN+kGgsf67UsLcws1jcHkYDVQK70EP2/zW4Hcg4YbZ78IDJlGxYFKLnOGqvs6ikXt1Has+iUzioVh37eJA4gKvVGh99i+k41le6q+NXzQr4EGHI/M/FfO55pBn4frC3ZX8TI/qQncNDTDDHCWNPLxNLoQJNpffFUjAR0k+8pC6sNTcXCySOAkogn5FIgKjtL52zKcU29g7aSriXCP/uA6gJfQ7t70XY2fPgwTYKXXOsVrYEONWYJzRUAekGuclte3xaCP+oWKPQLXcMXYhHrayUoSxiWzSne2V1zWnJOu3z+QCY9rIprzNjA7rXaNwCXFAs4Jwg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774259397; c=relaxed/relaxed;
-	bh=ze5ETx/U/7MNxR8MXWbZ3oXcMSugHqDKn2wVuG7ra88=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=SZ+pyO4LM2udnb5EBUeUwXFlMXMuf9vbHZgveVKmZ6Dvk+mmymtmjS7OVCffqEjBn5Rm9H9gqyuI5tcKLxJ+pktP0/7FOC2jEpT+77RBmsILNY1Wn2lyo+2CEeGXeAVTMMj4k9znOLVzuK+OC4/D5bWx1HhvHSnlpoKE/Wsmed/1zSCu0WyBWqm5aciZteaFEyIVz/xTtaQY0sEKv5QUptCJ6Y7l/Hihm7r5S76QSbJNv8H54CXb68iVa/C9ui1X1I46o8V9JNzmJG+JWppuR86+9gtfVnNf7DX3jD4603WU2AcA7ENHdT/zLduHA2a0l9CUCCzFHowvrWJF18COjg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=armlinux.org.uk; dkim=pass (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=eUGrZECN; dkim-atps=neutral; spf=none (client-ip=2001:4d48:ad52:32c8:5054:ff:fe00:142; helo=pandora.armlinux.org.uk; envelope-from=linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=armlinux.org.uk
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=armlinux.org.uk
+	t=1774260882; c=relaxed/relaxed;
+	bh=ZVYi/3cA8gqc1iqgD7SprnfmKsToiopM2hIVs96pebE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=UO/f+5pLLdpVRTsZwVZFdFCytbOH5EpwGQgEEdSnMaCARWloYZq7duPeScgaJRD9pbNB/DWVZ6Gzdrv40xwgkJntWTW9+NkfGlSCn9pFYjuePFSYDb+LNRs8wvsP26emqoSg6+U+VeGNCIi3n0uzDi18ZVSEqTwqujD8BJX6oKXWb3iHT9UkhxMCRFOgmgWDgSnxhJKfyGQ2nN4d/u4rzpcoeZ+i5VonObKiLZjCWM6/dURtQoOyyFo5fqL/uPBu1IX1HrSYgiw+ut9tj4cvgEpvjGocyx6GIZHaLnsxzEy2R2/GORSsm1W6ROLpNcDZMFRQRJ8uKoIk8TdedEMUuQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OS3M+qbu; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=eUGrZECN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OS3M+qbu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=armlinux.org.uk (client-ip=2001:4d48:ad52:32c8:5054:ff:fe00:142; helo=pandora.armlinux.org.uk; envelope-from=linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk; receiver=lists.ozlabs.org)
-Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk [IPv6:2001:4d48:ad52:32c8:5054:ff:fe00:142])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffT106Bc1z2ySb
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2026 20:49:56 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=armlinux.org.uk; s=pandora-2019; h=Sender:In-Reply-To:Content-Type:
-	MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
-	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
-	List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-	bh=ze5ETx/U/7MNxR8MXWbZ3oXcMSugHqDKn2wVuG7ra88=; b=eUGrZECNA51voE32i31QjaUAjf
-	7OkBg63xFi7AlouLEgoG7RhJiyKaFD8UNYjySI3YXHajS8/lsDmdcUaiEfzWm7j+h4JrTGkNPstq0
-	gaLR8j09J+NralvErg9+2AqahEiteJHprUmtvwdRKQGwvpisOaKOTCXr8i611xKiWG3QOGEr58KHR
-	Rz36iy8O6wkx+5sdmC3XfHxNrsKsqC2HATT/StCU0d6fwNHx0HeU0CTYpWKQMShRe1WRqjo05fllQ
-	YZuuy2ehGzP+qKTk5NjXTQIIY2p35atMT/+Laf4vhLNVycY5M8n+8k8dphiOqmJdaXNOYnIlmValW
-	3pH+dkUw==;
-Received: from shell.armlinux.org.uk ([fd8f:7570:feb6:1:5054:ff:fe00:4ec]:58016)
-	by pandora.armlinux.org.uk with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.98.2)
-	(envelope-from <linux@armlinux.org.uk>)
-	id 1w4bS9-000000000Bx-0XtG;
-	Mon, 23 Mar 2026 09:20:05 +0000
-Received: from linux by shell.armlinux.org.uk with local (Exim 4.98.2)
-	(envelope-from <linux@shell.armlinux.org.uk>)
-	id 1w4bS6-000000003uf-0hU7;
-	Mon, 23 Mar 2026 09:20:02 +0000
-Date: Mon, 23 Mar 2026 09:20:02 +0000
-From: "Russell King (Oracle)" <linux@armlinux.org.uk>
-To: Wei Fang <wei.fang@nxp.com>
-Cc: claudiu.manoil@nxp.com, vladimir.oltean@nxp.com, xiaoning.wang@nxp.com,
-	andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
-	kuba@kernel.org, pabeni@redhat.com, robh@kernel.org,
-	krzk+dt@kernel.org, conor+dt@kernel.org, f.fainelli@gmail.com,
-	frank.li@nxp.com, chleroy@kernel.org, horms@kernel.org,
-	andrew@lunn.ch, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-	imx@lists.linux.dev
-Subject: Re: [PATCH v2 net-next 13/14] net: dsa: netc: initialize buffer bool
- table and implement flow-control
-Message-ID: <acEFwqmAvWls_9Ef@shell.armlinux.org.uk>
-References: <20260323060752.1157031-1-wei.fang@nxp.com>
- <20260323060752.1157031-14-wei.fang@nxp.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffTYY0y8dz2xly
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2026 21:14:40 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id E461660051;
+	Mon, 23 Mar 2026 10:14:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F2243C4CEF7;
+	Mon, 23 Mar 2026 10:14:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774260877;
+	bh=oerB1WWxL48/4S0FWQM8KbgtK24CS2HM+Renmll0YpM=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=OS3M+qbuwk0+Km6yV4c+36VvjE2OK2eRv7NgCJAXK4W8vQq0yOBtXYGchfu7/WEfL
+	 Zq7t5dic1U98tm3z4t0+c2ayBzYS5Jpc9kjttDS/9IEbYIzTPua/fz2xY7JY/VixPz
+	 Z0S2cwUEDUpz2ZfGg3gBC+Wpb84GOBDcihUXtRrbllrj/h/Xg+VULFKvCbJc94xmeD
+	 8srImhK1bsCRxfoJGcXF/advujhhMdrsBAsGRNbB/f5jlrS8GCExZlEWsuKqZcazQ7
+	 WiOkTqOUjefMDP8Otku1Y6jN2EW7hKLSqI5ylFSJqSH+xJp7UnSbeXUyLTVr1barvT
+	 0W8qRAM+p6i+g==
+Message-ID: <e6db8617-6b12-4f90-967d-85c9f7805823@kernel.org>
+Date: Mon, 23 Mar 2026 11:14:31 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,28 +59,100 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260323060752.1157031-14-wei.fang@nxp.com>
-Sender: Russell King (Oracle) <linux@armlinux.org.uk>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] char: nvram: Remove unused nvram_mutex to fix
+ -Wunused-variable warning
+To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>, arnd@arndb.de,
+ gregkh@linuxfoundation.org
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, nathan@kernel.org, nsc@kernel.org,
+ ojeda@kernel.org, masahiroy@kernel.org, linux@weissschuh.net,
+ tamird@kernel.org, rostedt@goodmis.org, ihor.solodrai@linux.dev,
+ ritesh.list@gmail.com, maddy@linux.ibm.com, peterz@infradead.org
+References: <20260323073220.25798-1-venkat88@linux.ibm.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20260323073220.25798-1-venkat88@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Mon, Mar 23, 2026 at 02:07:51PM +0800, Wei Fang wrote:
-> @@ -1288,7 +1411,17 @@ static void netc_mac_link_up(struct phylink_config *config,
->  		netc_port_set_rmii_mii_mac(np, speed, duplex);
->  	}
->  
-> +	if (duplex == DUPLEX_HALF) {
-> +		/* As per 802.3 annex 31B, PAUSE frames are only supported
-> +		 * when the link is configured for full duplex operation.
-> +		 */
-> +		tx_pause = false;
-> +		rx_pause = false;
-> +	}
 
-I keep seeing this totally unnecessary code in reviews of mac_link_up()
-methods. See phylink_resolve_an_pause().
 
--- 
-RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
-FTTP is here! 80Mbps down 10Mbps up. Decent connectivity at last!
+Le 23/03/2026 à 08:32, Venkat Rao Bagalkote a écrit :
+> v2:
+>    - Added missing Suggested-by tag from Ritesh Harjani (IBM)
+> 
+
+Patch history must go _after_ the --- below, otherwise it will appear in 
+the commit message when applied, which is pointless.
+
+> drivers/char/nvram.c defines a static mutex 'nvram_mutex' which is never
+> used. This results in a compiler warning on linux-next builds:
+
+It is probably not only linux-next builds, I think the problem exists 
+since 20e07af71f34 ("powerpc: Adopt nvram module for PPC64")
+
+> 
+>    warning: 'nvram_mutex' defined but not used [-Wunused-variable]
+> 
+> Remove the unused definition to avoid the warning.
+
+It is not what you are doing.
+
+You are just hiding the probleme by saying 'maybe it is used, maybe it 
+is not used, I don't know I don't care". Please properly fix the problem 
+instead.
+
+I think the fix is probably to remove the #ifdef CONFIG_PPC32 around 
+IOC_NVRAM_SYNC.
+If you think it is important to return -ENOTTY on CONFIG_PPC64, just add:
+
+diff --git a/drivers/char/nvram.c b/drivers/char/nvram.c
+index 9eff426a9286..2fd744bf9093 100644
+--- a/drivers/char/nvram.c
++++ b/drivers/char/nvram.c
+@@ -308,8 +308,10 @@ static long nvram_misc_ioctl(struct file *file, 
+unsigned int cmd,
+  		}
+  #endif
+  		break;
+-#ifdef CONFIG_PPC32
+  	case IOC_NVRAM_SYNC:
++		if (IS_ENABLED(CONFIG_PPC64))
++			break;
++
+  		if (ppc_md.nvram_sync != NULL) {
+  			mutex_lock(&nvram_mutex);
+  			ppc_md.nvram_sync();
+@@ -317,7 +319,6 @@ static long nvram_misc_ioctl(struct file *file, 
+unsigned int cmd,
+  		}
+  		ret = 0;
+  		break;
+-#endif
+  #elif defined(CONFIG_X86) || defined(CONFIG_M68K)
+  	case NVRAM_INIT:
+  		/* initialize NVRAM contents and checksum */
+
+> 
+> Suggested-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+> Signed-off-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+> ---
+>   drivers/char/nvram.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/char/nvram.c b/drivers/char/nvram.c
+> index 9eff426a9286..2ce3307663ed 100644
+> --- a/drivers/char/nvram.c
+> +++ b/drivers/char/nvram.c
+> @@ -53,7 +53,7 @@
+>   #include <asm/nvram.h>
+>   #endif
+>   
+> -static DEFINE_MUTEX(nvram_mutex);
+> +static __maybe_unused DEFINE_MUTEX(nvram_mutex);
+>   static DEFINE_SPINLOCK(nvram_state_lock);
+>   static int nvram_open_cnt;	/* #times opened */
+>   static int nvram_open_mode;	/* special open modes */
+
 
