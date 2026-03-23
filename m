@@ -1,73 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-18622-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18623-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74C21EC01BE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2026 10:37:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A2D4EC01C8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2026 10:40:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ffV3Y1HFTz2ySc;
-	Mon, 23 Mar 2026 21:37:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774262233;
-	cv=none; b=d3k7lIWazicC+iNTv1Uyhppued/j6omVKQ6bWu7RIR/XaSdzlpojR162/kSV/qgcX0f5Ji20DY5eEUEtDoMKKXW57f2IJewHqN3Y5S1e9cwe3CXdCGQRimP00xdaZrcrvdnB1bt4YsvxjE8LG8fzR4YKZum4cKAUIw+Y47usdwLo6T1elLmnPM4EKK385rG4vsUbZU2CDTbz85oWRYz6hrJ5qp5vVzIvTmMkqyQTTew/XzthDVgJ7ElxlVp6lc3GxgL2j7peAbMK4rDWYDvNCtb2j0SZ8IRavWETSWPRkXhOCvcpCESfbBXNjCXaWrf8NrZnKNkGcGiOpAFqhXXZYA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ffV706CV7z2ySc;
+	Mon, 23 Mar 2026 21:40:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774262412;
+	cv=none; b=ihrCmm1A5esSlEi2B37uRJqYGEDtmGCW9eE0F1nadPv29fuKyOCeHLIXflCtkzRiQH1UkaChcGsQ4gjuMPaHEeiL9XQitnb9MOCc7kU9PcEooo/8FJUjSIn0pZd61pciLAAWPi2w29g94bYqJtCCKB94MP0QNIk0owe1yKOqVJ9g1UKh5L9uXGKjc/VGmrUaIwvAiF9Tjoyq0IFO2vHVUK+5OK+iLzloFDUVOgDRZESAQ2krc9mApP5/qciF4EZIyg8hKlJ4WE7F7L8VB+sHYVpYlGFRNzb7ZAxHPGsMvdzM+wrGwz0rLlgvkWICQDokZUlzGwEioQ9GyQZ7j7Faog==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774262233; c=relaxed/relaxed;
-	bh=T3383Mj0OhhI3RdzIFRVWGQFrnU0fbaLEsxzdQehq9g=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=lcIkn3JU91Nwq3UHyZ3py5goHPvlRI/kRnn9gL8NHH24567Pjw6oE8IWuuog8IMtLkQEcIxMjXdDaPcYPuvA5XAQiewUVUrHGmVVvj07aFvpx/p1KZ6PZkTd047dUtqw3dOcZwZcIml3wdYZfDrVSLIYGwTj0GVX8blVrKNMLN8ctlC4yBnWjc78wYVy4LVULEplpmrvW0UKCb2Nv8za8hFgQQyLNtDn3jTo5FeGAu+wWjLQNL2227J+D8eCvo0oHZjYJmnYKrEBEqObtck/JcteOWulaURRHYWRYmuiTwhxz4rxyAVACbAX00pOr96yXJY4Ky+wx7lwAkT0r8tC0A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DBfJaX9z; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1774262412; c=relaxed/relaxed;
+	bh=q9+k3AWLO9c6QlrxhipUsA5HMEqJR/AhKnlNvWBHzXE=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=PnCyIyMUcUJXZDNBeT1LcGPApaiV1DFvAxXwhBhSeQXg73dURMvZwqErYb2FMjzIr7lO6xSLn7rkvHD2KK31bMmwR/rc0GDV0bwhe6RBxvhQe2xMQrxmg4pwk0L9KxpIWOFreWdyX+arr9m3s6qcdCpUYRASLOt6sn6oMR+3o2zUCaW6qiQZrhxpe9D/vDzgtIkB+wM0WMA0U007kQ1bsKKJYT04JqP6XRegYHe7RSpxyaTFUrhtLCSVsiQBuxJI4FvCNYZgS0uNhyzxUi8Ze19+gZzMs6MPQZBopx/iFUl+5PM6nbcJGBZvHGskIXYVvg9qi3FUek9VwvBYTmgMOw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RHbH5KWm; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DBfJaX9z;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RHbH5KWm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffV3X093jz2xN5
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2026 21:37:11 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62MNVoQX564224;
-	Mon, 23 Mar 2026 10:37:01 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffV6z6gy9z2xN5
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2026 21:40:11 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62MB0KH33743898;
+	Mon, 23 Mar 2026 10:40:03 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=T3383M
-	j0OhhI3RdzIFRVWGQFrnU0fbaLEsxzdQehq9g=; b=DBfJaX9zhaxAy0oLWJ4bv/
-	eyZSBDcgC0tYNnGMTHLFY/7pLcROw1Zz186DlQapmW49YpM4U/+sWDG6fq1RKTIb
-	kDjtbFkzengIG7ADavE1Sv0mWkPGtmkc8WJCJBTTuJMO9P1Wr7EqIyI6fh/hVDsq
-	4OhSlB+qqGZkaocR85W9u7nBJBPXmkyyteN/B+T/fzqrgJz40wD1n2zsMxSfJHWy
-	XgoLDNU4QfPLMSoYrTuJIi/ZMH7IIGvJbxhlnfv8cVgzJb8YIWPtlJxmREFluG9d
-	YLquWL/FSm0Yx/02PrrRq/qcmDw2S2oZJhC/243QUZrrFzQnnrjC/gZWw6ig9XgA
+	:message-id:mime-version:references:subject:to; s=pp1; bh=q9+k3A
+	WLO9c6QlrxhipUsA5HMEqJR/AhKnlNvWBHzXE=; b=RHbH5KWmSKcicGZB7z0xq/
+	nlrlZe6zDY84wSgS2eMUztTRCqv/SOko9Cxn7YJeca0q4d2v0GEZ4+DADGxuGWHW
+	5IRjuTxfKdiz/YVs8WeDW6fFO7r3PemZocT8f8b+RobHJr+nE3EXFPAn4bywziRG
+	Sn1AAdWFkL+vwupWS7zLJURyf7lC5jdr5jRlipMWP3GADM3f4arOO/bjlOXyj1XZ
+	P93RWjgIOkbqfglDtdeHGdisatWVytYnhVoLYa894cO2OfjtMxnGVFg8mcXuiE0I
+	/irGsyLFDNQE0590eYCgTG+/hq0yYJ49zmJeEgcv7yjqU6aEqNxzkHUfgtAeWycg
 	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d1kxyx3cj-1
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d1kxq6dun-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 23 Mar 2026 10:37:00 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62N8F79Y012213;
-	Mon, 23 Mar 2026 10:37:00 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4d27vjvsv9-1
+	Mon, 23 Mar 2026 10:40:02 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62N6k6pm005972;
+	Mon, 23 Mar 2026 10:40:01 GMT
+Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4d261yd3rm-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 23 Mar 2026 10:37:00 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62NAatO125231706
+	Mon, 23 Mar 2026 10:40:01 +0000
+Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
+	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62NAdwiC30540358
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 23 Mar 2026 10:36:56 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 077092004F;
-	Mon, 23 Mar 2026 10:36:55 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A20EE2005A;
-	Mon, 23 Mar 2026 10:36:52 +0000 (GMT)
-Received: from [9.123.14.142] (unknown [9.123.14.142])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 23 Mar 2026 10:36:52 +0000 (GMT)
-Message-ID: <f754e457-408e-4860-9ecd-fdff9f031f21@linux.ibm.com>
-Date: Mon, 23 Mar 2026 16:06:51 +0530
+	Mon, 23 Mar 2026 10:39:58 GMT
+Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 557D95806D;
+	Mon, 23 Mar 2026 10:39:58 +0000 (GMT)
+Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8715558071;
+	Mon, 23 Mar 2026 10:39:52 +0000 (GMT)
+Received: from smtpclient.apple (unknown [9.61.247.60])
+	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTPS;
+	Mon, 23 Mar 2026 10:39:52 +0000 (GMT)
+Content-Type: text/plain;
+	charset=utf-8
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,104 +80,173 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/2] powerpc/kdump: fix KASAN sanitization flag for
- core_$(BITS).o
-To: mahesh@linux.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org,
-        Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-        Aboorva Devarajan <aboorvad@linux.ibm.com>,
-        Aditya Gupta <adityag@linux.ibm.com>, Daniel Axtens <dja@axtens.net>,
-        Hari Bathini <hbathini@linux.ibm.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-        Shivang Upadhyay <shivangu@linux.ibm.com>
-References: <20260321053121.614022-1-sourabhjain@linux.ibm.com>
- <acDZNdku8sR_O9Ba@linux.ibm.com>
-Content-Language: en-US
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-In-Reply-To: <acDZNdku8sR_O9Ba@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.300.41.1.7\))
+Subject: Re: [PATCH] tools/perf/test: Check for perf stat return code in perf
+ all PMU test
+From: Venkat <venkat88@linux.ibm.com>
+In-Reply-To: <20260315105751.86835-1-atrajeev@linux.ibm.com>
+Date: Mon, 23 Mar 2026 16:09:37 +0530
+Cc: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
+        vmolnaro@redhat.com, mpetlan@redhat.com, tmricht@linux.ibm.com,
+        maddy@linux.ibm.com, irogers@google.com, namhyung@kernel.org,
+        linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        hbathini@linux.vnet.ibm.com, Tejas.Manhas1@ibm.com,
+        Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <7B7E5C6C-D15A-4B79-925B-B5F3EDD84774@linux.ibm.com>
+References: <20260315105751.86835-1-atrajeev@linux.ibm.com>
+To: Athira Rajeev <atrajeev@linux.ibm.com>
+X-Mailer: Apple Mail (2.3864.300.41.1.7)
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzIzMDA4MCBTYWx0ZWRfX0so057ALMt9S
- 6aXAxakv0Er1s4eSVUA5lzr8lxK1W/nQDuRbd4cT4SbTT/VzPnHQ2GDPLLtkadtROeCJsNNPmvc
- RUuxXub0pK51ByNF/kUyYDjbJ8JcbLsJqjlF1nMiGzE2nGQGvPH3GwrkcQrIi1iphT18JdcoXSN
- pnArNnVHfeUJq2MIbjOrwH8VWSDf4oq4YNwVYlBrxVA0+0MGqNRBelrHLYYF8pr4NwYGKlaRtw2
- ubW1/fMmeQD03fAbpM5+KZyEJXawKhi9iEhZ1OXZ1JDnNxugB0LRYnyPHrzM9JW1NQj3hI5HbZU
- lffb9Xr7CMSINJIalXrXg7o4lQ3re8UOMN4i7IbB6uENNVGdl6KanLqe0ruQzL8GU4VA/7LoCmY
- mEv+wSP82KA44G3wAaqHuTN+THbgaurUOlmJ5GsUFgMU9ya3gjRfD3LH37k/KWVOvmWsA+XeseQ
- VDoBKUXp+77/wAA7wZA==
-X-Authority-Analysis: v=2.4 cv=JK42csKb c=1 sm=1 tr=0 ts=69c117cd cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+X-Proofpoint-ORIG-GUID: OwuymmdhRHIngyHBs7YgYfHB2jyl0vao
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzIzMDA4MCBTYWx0ZWRfX1jsXhTpSrWlu
+ X+LbElu5PX3lwXZVSJUaVZq6cktxAP10QhulC+G0dOg+R+TjzIgZpazVdlgC7cZ80+6UPVidiCj
+ lkX65yQ9FA8tXRm5DIWsTtTc5kBI8CHLBGj4aysM5TUKkkzSk8vsN3623vGWXACi1Y800fQfi6g
+ 6t0SmjqMde18pqordd1p+hTBPn6xWQ79BiLGNjrMaYuIZG8KqO0Zcq22+0CX7RN7QLmJanKcndm
+ n5wGmmWoOr0q8LnB3j7tXtQtcjitxqN8JH0QnKe5E5G9ac343osAvosOgqF41DQI4U2uzY8RPI4
+ 3Wa/MowRYEMlJUzBZQLB//O7pIgqNC8qxK5nfzIlZrTxnaqSdgRumW6E0e6Hbj06rCkIU3Z6K0p
+ Er0IBJPKZVy5+xO8mg/40LQEt+0h8zKcwBLDl+tcJG121oTDI1Uips7MUvxaP9S7PPKg4gnxd+q
+ K7yLf35WfqZ0ukiIbtg==
+X-Authority-Analysis: v=2.4 cv=bLEb4f+Z c=1 sm=1 tr=0 ts=69c11883 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
  a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=JuTF4qcAAAAA:8 a=pGLkceISAAAA:8 a=z_-sTByYZSztUN-XcZAA:9
- a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10 a=WlT8qwTXB_Kj6um4hl3b:22
-X-Proofpoint-ORIG-GUID: 5h4jF0Psw1JgkLQscf_FZaMm7OpBehgb
-X-Proofpoint-GUID: 9iV5EsOwFEDn8KOvRbnaY0CGBF10LIiN
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8
+ a=AKmARop12Lt_5Hk6sGkA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: hIYsh4in3Phv7Mx4sKL0uhTvKdtyS6Cw
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-03-23_03,2026-03-20_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 clxscore=1015 priorityscore=1501 malwarescore=0 adultscore=0
- spamscore=0 suspectscore=0 phishscore=0 lowpriorityscore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603230080
+ spamscore=0 adultscore=0 clxscore=1011 phishscore=0 impostorscore=0
+ malwarescore=0 lowpriorityscore=0 suspectscore=0 bulkscore=0
+ priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
+ definitions=main-2603230080
 
 
 
-On 23/03/26 11:41, Mahesh J Salgaonkar wrote:
-> On 2026-03-21 11:01:17 Sat, Sourabh Jain wrote:
->> KASAN instrumentation is intended to be disabled for the kexec core
->> code, but the existing Makefile entry misses the object suffix. As a
->> result, the flag is not applied correctly to core_$(BITS).o.
->>
->> So when KASAN is enabled, kexec_copy_flush and copy_segments in
->> kexec/core_64.c are instrumented, which can result in accesses to
->> shadow memory via normal address translation paths. Since these run
->> with the MMU disabled, such accesses may trigger page faults
->> (bad_page_fault) that cannot be handled in the kdump path, ultimately
->> causing a hang and preventing the kdump kernel from booting. The same
->> is true for kexec as well, since the same functions are used there.
->>
->> Update the entry to include the “.o” suffix so that KASAN
->> instrumentation is properly disabled for this object file.
->>
->> Fixes: 2ab2d5794f14 ("powerpc/kasan: Disable address sanitization in kexec paths")
->> Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
->> Closes: https://lore.kernel.org/all/1dee8891-8bcc-46b4-93f3-fc3a774abd5b@linux.ibm.com/
->> Cc: Aboorva Devarajan <aboorvad@linux.ibm.com>
->> Cc: Aditya Gupta <adityag@linux.ibm.com>
->> Cc: Daniel Axtens <dja@axtens.net>
->> Cc: Hari Bathini <hbathini@linux.ibm.com>
->> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
->> Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
->> Cc: Michael Ellerman <mpe@ellerman.id.au>
->> Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
->> Cc: Shivang Upadhyay <shivangu@linux.ibm.com>
->> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
->> ---
->>   arch/powerpc/kexec/Makefile | 2 +-
->>   1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/kexec/Makefile b/arch/powerpc/kexec/Makefile
->> index 470eb0453e17..ec7a0eed75dc 100644
->> --- a/arch/powerpc/kexec/Makefile
->> +++ b/arch/powerpc/kexec/Makefile
->> @@ -16,4 +16,4 @@ GCOV_PROFILE_core_$(BITS).o := n
->>   KCOV_INSTRUMENT_core_$(BITS).o := n
->>   UBSAN_SANITIZE_core_$(BITS).o := n
->>   KASAN_SANITIZE_core.o := n
->> -KASAN_SANITIZE_core_$(BITS) := n
->> +KASAN_SANITIZE_core_$(BITS).o := n
-> Nice catch. Thakns for fixing.
->
-> Acked-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-Thanks for the Ack Mahesh.
+> On 15 Mar 2026, at 4:27=E2=80=AFPM, Athira Rajeev =
+<atrajeev@linux.ibm.com> wrote:
+>=20
+> Currently in "perf all PMU test", for "perf stat -e <event> true",
+> below checks are done:
+> - if return code is zero, look for "not supported" to decide pass
+>  scenario
+> - check for "not supported" to ignore the event
+> - looks for "No permission to enable" to skip the event.
+> - If output has "Bad event name", fail the test.
+> - Use "Access to performance monitoring and observability operations =
+is
+>  limited." to ignore fail due to access limitations
+>=20
+> If we failed to see event and it is supported, retries with longer
+> workload "perf bench internals synthesize".
+> - Here if output has <event>, the test is a pass.
+>=20
+> Snippet of code check:
+>  ```
+>  output=3D$(perf stat -e "$p" perf bench internals synthesize 2>&1)
+>  if echo "$output" | grep -q "$p"
+>  ```
+> - if output doesn't have event printed in logs, considers it fail.
+>=20
+> But this results in false pass for events in some cases.
+> Example, if perf stat fails as below:
+>=20
+> # ./perf stat -e pmu/event/  true
+> event syntax error: 'pmu/event/'
+>                     \___ Bad event or PMU
+>=20
+> Unable to find PMU or event on a PMU of 'pmu'
+> Run 'perf list' for a list of valid events
+>=20
+>  Usage: perf stat [<options>] [<command>]
+>=20
+>    -e, --event <event>   event selector. use 'perf list' to list =
+available events
+> # echo $?
+> 129
+>=20
+> Since this has non-zero return code and doesn't have the
+> fail strings being checked in the test, it will enter check using
+> longer workload. and since the output fail log has event, it
+> declares test as "supported".
+>=20
+> Since all the fail strings can't be added in the check, update
+> the testcase to check return code before proceeding to longer
+> workload run.
+>=20
+> Another missing scenario is when system wide monitoring is supported
+> example:
+> # ./perf stat -e pmu/event/ true
+> Error:
+> No supported events found.
+>  Unsupported event (pmu/event/H) in per-thread mode, enable system =
+wide with '-a'.
+>=20
+> Update testcase to check with "perf stat -a -e $p" as well
+>=20
+> Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
+> ---
 
-- Sourabh Jain
+Tested this patch.
+
+
+With this patch:
+
+Testing hv_24x7/CPM_ADJUNCT_INST/ -- perf stat failed with non-zero =
+return code
+Testing hv_24x7/CPM_ADJUNCT_PCYC/ -- perf stat failed with non-zero =
+return code
+
+
+
+Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+
+Regards,
+Venkat.
+
+
+
+> tools/perf/tests/shell/stat_all_pmu.sh | 20 ++++++++++++++++++++
+> 1 file changed, 20 insertions(+)
+>=20
+> diff --git a/tools/perf/tests/shell/stat_all_pmu.sh =
+b/tools/perf/tests/shell/stat_all_pmu.sh
+> index 9c466c0efa85..6c4d59cbfa5f 100755
+> --- a/tools/perf/tests/shell/stat_all_pmu.sh
+> +++ b/tools/perf/tests/shell/stat_all_pmu.sh
+> @@ -53,6 +53,26 @@ do
+>     continue
+>   fi
+>=20
+> +  # check with system wide if it is supported.
+> +  output=3D$(perf stat -a -e "$p" true 2>&1)
+> +  stat_result=3D$?
+> +  if echo "$output" | grep -q "not supported"
+> +  then
+> +    # Event not supported, so ignore.
+> +    echo "not supported"
+> +    continue
+> +  fi
+> +
+> +  # checked through possible access limitations and permissions.
+> +  # At this step, non-zero return code from "perf stat" needs to
+> +  # reported as fail for the user to investigate
+> +  if [ $stat_result -ne 0 ]
+> +  then
+> +    echo "perf stat failed with non-zero return code"
+> +    err=3D1
+> +    continue
+> +  fi
+> +
+>   # We failed to see the event and it is supported. Possibly the =
+workload was
+>   # too small so retry with something longer.
+>   output=3D$(perf stat -e "$p" perf bench internals synthesize 2>&1)
+> --=20
+> 2.47.3
+>=20
+
 
