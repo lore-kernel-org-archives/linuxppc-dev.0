@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-18630-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18631-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3E5CF4613C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2026 15:50:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D1F2D58B00
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2026 15:52:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ffd0T1Fs7z2ySB;
-	Tue, 24 Mar 2026 02:50:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774281001;
-	cv=none; b=VX3kbG6w29BOLWPlfblLeZ28kycqIxDFTVGq0tDmWHYq1zwIVmTP2VFoykHx9SHIEuHY0ty6/aH3CIHGgs2VG3Ar6xlz+YEVcvHMP4TKZ5Ua2HsQEGqih6tz7kv4WGcEFKFWX76yoXMFnC0rJSkZAd3L+J7sastYHgjw8Y7gOoR6SlXekjiB8P7KE5Ke42C7hl/x3BFNRbfn9RPvQbulegTe2OWdLpQvIQ1E1tki72lLpTE6PhJifNVSKsvGA5fiOZtubvq4zgHD4yDcL2xvx85K1757OZhmLP8RUC6yqrtpd2VRs7AgTL69Yj+BdLqGG5qbKYT6QW6ZyBqXemOP+A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ffd2l5hBbz2ySB;
+	Tue, 24 Mar 2026 02:51:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774281119;
+	cv=none; b=WBt2Qel7GuNO9BVzXZs+sC+sBl/QImEFOG7QHDlOokLvJhQSY7opEz4l+t7nsEtMG89HxDgWb7zdUxkY7GEKvvI3hyFrRJZ1mN1EWpH02iFzoN07B5XjYHXrm1esVIDD1BltarInjKhcy7gY79/RbAizS8ugptw7M1kKGJsPjO+A824/M63LqaTCT89Lhae4NFDRqhBsf1/bcYQqRKiKDhd3FL5AEHo7XOC//3bxHgvXl9S8ukx4dZGZs4OHQ956R294AnKGVc/rH6/PLre0n9bHYUHd2iCNV70CH6YR7KgaaLJPtDGERQvzSbloyJR1SY+IvKVvO0VocslybNeiGg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774281001; c=relaxed/relaxed;
-	bh=pBxuE79q0h/5XA82Gqv80sB/5+DcRUE+NdGM983xYdA=;
+	t=1774281119; c=relaxed/relaxed;
+	bh=2+P1LJbOhGaADXr0borEizC7CpTJv3YbpsxtYt/vS4k=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=YdJk2KYOLO3tV0pcOIR25Cs/QgxqefdWO9Kz3ykxgOpyft/hq+32JVGJLXsNOxaRmXIiy+i5JMEQFOJufh/OGovCA0EWObMnj4M1JDg9RcZU+O2IqnXG6BALLLcBJNB9xr5gHl87IrTCgp7Eg05geXOfgLUrBQkTTWl19pgJlyZ1IkFfqQ/MCdbAYUY81svb4FWUOx0JxDUYDXQDkSYQliU/UqlAVzCTHqZsnze3s/po/Qp0C0ZXFcCyokr8pjoMw89h/FSYSAQmJyWUA0equKHvnaYVfp4cWvRyp70902dT9gOkCfYgFmfLcQFmtchpwrYRFozYvnpiY4QfC9+tfg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XdKC0tlg; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=c9ArjwTXUZ2J9sBRPxgvwmt28W2+qKKY6j8CRGQlwaXhpuR46/hjd4JO1HMdB4kcFk3sZ+5cCUWSUJGnuBj7rg2wYUSr+yDRYG1jhomc9+uIeyObiKU7InTS8ZatSGDwZ++/fZ10WNks80XnIsa1B8i7+iOcnQSD+4DGp/aW7gdEhKksNptllJfCf2AzOjx3oGXhC4OaQPVwUII+qE12CeVOj91RtfGPu/t9CiveOS2CajPHiuWTrUo1LXRA93R4qamNcgrDSYqk/uontXBD4bObD9TFjNjnYS8EyWVpbCc+Xbm6ixZdPke36z7RsX8Oyk1Fc/3/ZtfVRKAsH28PNg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=o1THjGW8; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XdKC0tlg;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=o1THjGW8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffd0S1rYlz2xN5
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 02:50:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffd2k650Vz2xN5
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 02:51:58 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 30C9443D7C;
-	Mon, 23 Mar 2026 15:49:58 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 79346C4CEF7;
-	Mon, 23 Mar 2026 15:49:46 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id EE492600C4;
+	Mon, 23 Mar 2026 15:51:55 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DCA5BC4CEF7;
+	Mon, 23 Mar 2026 15:51:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774280998;
-	bh=PE+T0jq3B8ZtYRDz678LEyuTz6jmDPCQy5RpPTYrDcc=;
+	s=k20201202; t=1774281115;
+	bh=vZdm4GONA/O1jK4+M6185Q0giqh3AS1i2sFB5Pfd/2Y=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=XdKC0tlgf1MZ9+nFlKePnzFurNne6QPx1E6YWyTEqc5Cy4/MJ7viljpcXJeeYfD84
-	 LwWQhNPsI2I9K0v1c33u+VAYFjbd8O5XNRv7oB6hk9aWRLevlIqBhXTN/OJlKMwQKf
-	 P5Vz/q+wIiOUnPmbE+gPP+1XyMVrMVU51S9pyTagqqIblZpcRImI+DCS0rQGs9Ppmv
-	 uI4cbcMRaN1v0kgvKPt9I+2sGELYGp/hsRsweEovyazf3HWaMCdkqf89a80XhZaKnl
-	 owytQQeI/86OfShIGnWbjgDPLE70BmD03V3uE7cRvQ8417IfFC5O/o3RDSK2/SzDZz
-	 cVIvEtMGRKwxg==
-Message-ID: <3945a9c5-565f-4126-8d46-1db584b09e79@kernel.org>
-Date: Mon, 23 Mar 2026 16:49:44 +0100
+	b=o1THjGW87BBZn2ZRvUB/ZbG6Bpk46OGuXu9+rNxgEX1JPplRd0PmhhIVaepJQX2x+
+	 tNfnZZ2oJ/LEW/V1kb+Kd4rSlee9+4uD+RKeGWfnc/xNRMj7aASQw2bbJQ+4aFpnT4
+	 D5oU71wAa1icX022onJ8SXq1egN+wMrKLzs0GkJXDMxvnSocAjVWuUsitbcyyxaQfV
+	 JJXP9c4lBWKh9RLPX/Xy30cKFsVybbnBnhAp26jeybHA0vntxV0OkXb/w0rzQv6/lE
+	 VQ33MGCeDpT2FONGoMZBv7aFNGtJEznzEExGGKYXFQSBLYixZR0A4kZUSTFL4AAduW
+	 zfBJEYhpa4mqQ==
+Message-ID: <47f796ed-ac66-4a75-98c9-64afc8929f35@kernel.org>
+Date: Mon, 23 Mar 2026 16:51:41 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,8 +60,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 24/25] mm/vma: convert __mmap_region() to use
- vma_flags_t
+Subject: Re: [PATCH v4 25/25] mm: simplify VMA flag tests of excluded flags
 To: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>,
  Andrew Morton <akpm@linux-foundation.org>
 Cc: David Hildenbrand <david@kernel.org>,
@@ -100,32 +99,34 @@ Cc: David Hildenbrand <david@kernel.org>,
  linux-s390@vger.kernel.org, linux-um@lists.infradead.org,
  linux-fsdevel@vger.kernel.org, selinux@vger.kernel.org
 References: <cover.1774034900.git.ljs@kernel.org>
- <1fc33a404c962f02da778da100387cc19bd62153.1774034900.git.ljs@kernel.org>
+ <d395c5dd837a9864f5efcec42175910afbe3ce73.1774034900.git.ljs@kernel.org>
 From: "Vlastimil Babka (SUSE)" <vbabka@kernel.org>
 Content-Language: en-US
-In-Reply-To: <1fc33a404c962f02da778da100387cc19bd62153.1774034900.git.ljs@kernel.org>
+In-Reply-To: <d395c5dd837a9864f5efcec42175910afbe3ce73.1774034900.git.ljs@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 3/20/26 8:38 PM, Lorenzo Stoakes (Oracle) wrote:
-> Update the mmap() implementation logic implemented in __mmap_region() and
-> functions invoked by it.  The mmap_region() function converts its input
-> vm_flags_t parameter to a vma_flags_t value which it then passes to
-> __mmap_region() which uses the vma_flags_t value consistently from then
-> on.
+> We have implemented flag mask comparisons of the form:
 > 
-> As part of the change, we convert map_deny_write_exec() to using
-> vma_flags_t (it was incorrectly using unsigned long before), and place it
-> in vma.h, as it is only used internal to mm.
+> if ((vm_flags & (VM_FOO|VM_BAR|VM_BAZ) == VM_FOO) { ... }
 > 
-> With this change, we eliminate the legacy is_shared_maywrite_vm_flags()
-> helper function which is now no longer required.
+> Like-for-like in the code using a bitwise-and mask via vma_flags_and() and
+> using vma_flags_same() to ensure the final result equals only the required
+> flag value.
 > 
-> We are also able to update the MMAP_STATE() and VMG_MMAP_STATE() macros to
-> use the vma_flags_t value.
+> This is fine but confusing, make things clearer by instead explicitly
+> excluding undesired flags and including the desired one via tests of the
+> form:
 > 
-> Finally, we update the VMA tests to reflect the change.
+> 	if (vma_flags_test(&flags, VMA_FOO_BIT) &&
+> 	    !vma_flags_test_any(&flags, VMA_BAR_BIT, VMA_BAZ_BIT)) { ... }
 > 
+> Which makes it easier to understand what is going on.
+> 
+> No functional change intended.
+> 
+> Suggested-by: Vlastimil Babka (SUSE) <vbabka@kernel.org>
 > Signed-off-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
 
 Acked-by: Vlastimil Babka (SUSE) <vbabka@kernel.org>
