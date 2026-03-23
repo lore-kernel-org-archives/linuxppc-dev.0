@@ -1,75 +1,101 @@
-Return-Path: <linuxppc-dev+bounces-18617-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18618-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93B52EC01C1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2026 10:22:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A188EC01C3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2026 10:27:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ffTl40zhbz2ySc;
-	Mon, 23 Mar 2026 21:22:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41b8:202:deb::311:108"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774261376;
-	cv=none; b=e22MbhrSLkeQGn0ciLGHTMhqxTQ+ybt6viIxxmvmSNUXUE0Lljl+pdZg/NnW1KYNMilnZPBljGS+L2roPlNuUTf3uWzmg7PQNNM0J9iUKKByFomYXrkqxIv5oIF+Ut1ncQM/mq4wtP6ZRbV7mKCPWZmxlsGrqjkIoMylQtszCHXALPvD8cNCYrnJM+gfTw34cYKAwQLDAmD2YJU9hNyFy8DhfhdUBNrh41f5bd47rGFYPJ89F1KEpqBHUPWTeMOZXFgcSWjMgTCIxZMcXNpTXzOo1mc0y9GLsuUw6JyXQKqdRH6VEu/+8R9jxglgixZAr0jyvLP5s9cjk5ETtVChIg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ffTr025y3z2ySc;
+	Mon, 23 Mar 2026 21:27:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774261632;
+	cv=none; b=RdFPx7DHfnmXSa/Z6K+qAuLZbut5Ejzmq0u8G35zg5hGpf0ZwDfuY0tc2Qa+ffbCbmkWEZdPAoZX0qHxrhblG2zeGMIb5qUtPgb+wQazESq/r8JLHZN8Qou/bgc0B4Nk9OpJR28goO/nol8SuwYuF26skzfa/fiqTM42EQLHY7Wnf/ZRRYGw9QPQbtulLN8iep8y62DcOMxIiE58YdBGeeXdQL5VaIA69WF8IAIYC67+WbsClmS60nEegb76+zyW5KOYRF6Zkh0rkapwKvMVLiJLU/FR/9GHfqaW35zPSFJcKbNGKwfVRZAdzoUezFrrwwLtEO34vJv7eZFFZK+Xlw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774261376; c=relaxed/relaxed;
-	bh=DH+iNz08X6EuAL3xC9z+JByLMXFyPiPYDRa6C8Lo498=;
+	t=1774261632; c=relaxed/relaxed;
+	bh=Qds2uJ32pRLlQJWAzNsHGeIq2mrVMscPUZYgB/FLRhk=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=F9XskHJmDyvHgQk0rtEFLHHu27xMvbhMY/Bz0csIQSlOjjFsye1ox2YL9hYz8vgHqsEHke2LJIQf8qqXCp14g41mHVYkZJvqc1aZh6zPjUFSjQRZrqT0jQFgW8zfv4Jv8nBbx97EHyqrqm4v7KH1h5kC5Oz4ARZBIEGlGub086J1EyafJBHqZyAC24mNzR6G2VMkXi4VFqAT+U0Wgivyqijd6DohBCHTID6gm/Buj4rbOQv3Dmddb6wtTRpDRTA8ZIsFmHbnsy3t6Wr4kju5IPpHkk+3ZBqdB7ssLBSu3JWjTpjIyRYtiL8UrDntfFYZ5gHNnGFcwcd0eNel6pDANQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org; dkim=pass (2048-bit key; secure) header.d=debian.org header.i=@debian.org header.a=rsa-sha256 header.s=smtpauto.stravinsky header.b=cOELZ+Gz; dkim-atps=neutral; spf=none (client-ip=2001:41b8:202:deb::311:108; helo=stravinsky.debian.org; envelope-from=leitao@debian.org; receiver=lists.ozlabs.org) smtp.mailfrom=debian.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=SMtmL8G/FVxVEj7CKk+BslCO521/VaMVCKf/xIYqN+ZO1ZExT1Hrx/V1mzua9QDK3oeqAB87+VyFYEBa5KD6t4W7ftL/IbUe0lhvzRTA8H0y3Iqc8OWpu0pZMGcrtZqaJ/sig5c0HtrhqkJ5zVyomRX1xWMAm+iXp1DHLf8WJXyOjhfghPEIUBxHKRoWiV+s6CTlkoP3uV7w1Ol/9T/BYMmxB8BKVQRAJbFmxv38vKB62nyWiZEA36jWgQ96Z1pf0mmxyc2fHnDPwzqoKKpH/9wObULHp5ztxr2yEz5H8dulZNLss/DssFOIoh04wVn8ON2/6pRhZMqV0ABy8CXLsw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz; dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=trinx4GO; dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=6/90Tqg4; dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=trinx4GO; dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=6/90Tqg4; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=jack@suse.cz; receiver=lists.ozlabs.org) smtp.mailfrom=suse.cz
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=debian.org header.i=@debian.org header.a=rsa-sha256 header.s=smtpauto.stravinsky header.b=cOELZ+Gz;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=trinx4GO;
+	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=6/90Tqg4;
+	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=trinx4GO;
+	dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=6/90Tqg4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=debian.org (client-ip=2001:41b8:202:deb::311:108; helo=stravinsky.debian.org; envelope-from=leitao@debian.org; receiver=lists.ozlabs.org)
-Received: from stravinsky.debian.org (stravinsky.debian.org [IPv6:2001:41b8:202:deb::311:108])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=jack@suse.cz; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffTl303YWz2xly
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2026 21:22:54 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=debian.org;
-	s=smtpauto.stravinsky; h=X-Debian-User:In-Reply-To:Content-Transfer-Encoding:
-	Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
-	Reply-To:Content-ID:Content-Description;
-	bh=DH+iNz08X6EuAL3xC9z+JByLMXFyPiPYDRa6C8Lo498=; b=cOELZ+GzPUk5kjUi33kxf6Lu7p
-	GY3nwOVi920GJ9UbvJXatjMBuQEPT0FOX4okImlD8Vj3T4hBJwuD4uVDmjAO+AoxU+1owP1yMDUJv
-	6jIqukt9sJv843ocVhBm8CQf/EgCYlBeY70qonTJ07RkEANn/O90EI9F2qKxX/Ruiw+ig35xTfySr
-	TCQUi13ye1jWvFFXVEayi3gPh6rq4OrCVTXd3UdB4U39KNNRni9xgjm24sZzkklawm4ICVKu9C6Bt
-	6iaiADnz4fz5s6LsXVZRgEIBNtVWG99q9re5mqluxiVD7HtUILcAbo0RaYSXFH39nUpc6WAzPyJnG
-	O3Zbf8gA==;
-Received: from authenticated user
-	by stravinsky.debian.org with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
-	(Exim 4.94.2)
-	(envelope-from <leitao@debian.org>)
-	id 1w4cP7-007SfO-16; Mon, 23 Mar 2026 10:20:59 +0000
-Date: Mon, 23 Mar 2026 03:20:48 -0700
-From: Breno Leitao <leitao@debian.org>
-To: Jinjie Ruan <ruanjinjie@huawei.com>
-Cc: corbet@lwn.net, skhan@linuxfoundation.org, catalin.marinas@arm.com, 
-	will@kernel.org, chenhuacai@kernel.org, kernel@xen0n.name, maddy@linux.ibm.com, 
-	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, pjw@kernel.org, 
-	palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr, tglx@kernel.org, 
-	mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com, hpa@zytor.com, 
-	robh@kernel.org, saravanak@kernel.org, akpm@linux-foundation.org, bhe@redhat.com, 
-	vgoyal@redhat.com, dyoung@redhat.com, rdunlap@infradead.org, peterz@infradead.org, 
-	feng.tang@linux.alibaba.com, pawan.kumar.gupta@linux.intel.com, dapeng1.mi@linux.intel.com, 
-	kees@kernel.org, elver@google.com, paulmck@kernel.org, lirongqing@baidu.com, 
-	safinaskar@gmail.com, rppt@kernel.org, ardb@kernel.org, jbohac@suse.cz, 
-	cfsworks@gmail.com, osandov@fb.com, tangyouling@kylinos.cn, 
-	sourabhjain@linux.ibm.com, ritesh.list@gmail.com, eajames@linux.ibm.com, 
-	songshuaishuai@tinylab.org, kevin.brodsky@arm.com, samuel.holland@sifive.com, 
-	vishal.moola@gmail.com, junhui.liu@pigmoral.tech, coxu@redhat.com, liaoyuanhong@vivo.com, 
-	fuqiang.wang@easystack.cn, x86@kernel.org, linux-doc@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev, 
-	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, devicetree@vger.kernel.org, 
-	kexec@lists.infradead.org
-Subject: Re: [PATCH v9 4/5] arm64: kexec: Add support for crashkernel CMA
- reservation
-Message-ID: <acETyW3FYaWCShUc@gmail.com>
-References: <20260323072745.2481719-1-ruanjinjie@huawei.com>
- <20260323072745.2481719-5-ruanjinjie@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffTqy2bZLz2xly
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2026 21:27:09 +1100 (AEDT)
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 9257D4D2BA;
+	Mon, 23 Mar 2026 10:27:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+	t=1774261626; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Qds2uJ32pRLlQJWAzNsHGeIq2mrVMscPUZYgB/FLRhk=;
+	b=trinx4GO6i5sN4372NxLM4qCkPoaMj3kHn/Hhmz4fVIp58zBTue1ljOfnzf6S2A+7CCD68
+	1T+FZ6lbU0b7dsTPRkvLONny46JsvVyg/lVzj5kkijn710li1mJzPVn+DcZoeKfj6nEzKC
+	+6VVDk++EusnvpSCFBb1BRJ+kp24xf8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+	s=susede2_ed25519; t=1774261626;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Qds2uJ32pRLlQJWAzNsHGeIq2mrVMscPUZYgB/FLRhk=;
+	b=6/90Tqg4lLELhwZvxNqHMe1fk8jlJRaVsgM+Rn7IbjqqBHkGNsAps03gV0Pf2NYZDHl+6Q
+	gMPbBd9+VSEtksCA==
+Authentication-Results: smtp-out1.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+	t=1774261626; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Qds2uJ32pRLlQJWAzNsHGeIq2mrVMscPUZYgB/FLRhk=;
+	b=trinx4GO6i5sN4372NxLM4qCkPoaMj3kHn/Hhmz4fVIp58zBTue1ljOfnzf6S2A+7CCD68
+	1T+FZ6lbU0b7dsTPRkvLONny46JsvVyg/lVzj5kkijn710li1mJzPVn+DcZoeKfj6nEzKC
+	+6VVDk++EusnvpSCFBb1BRJ+kp24xf8=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+	s=susede2_ed25519; t=1774261626;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Qds2uJ32pRLlQJWAzNsHGeIq2mrVMscPUZYgB/FLRhk=;
+	b=6/90Tqg4lLELhwZvxNqHMe1fk8jlJRaVsgM+Rn7IbjqqBHkGNsAps03gV0Pf2NYZDHl+6Q
+	gMPbBd9+VSEtksCA==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 8508F43819;
+	Mon, 23 Mar 2026 10:27:06 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id pt12IHoVwWlGHwAAD6G6ig
+	(envelope-from <jack@suse.cz>); Mon, 23 Mar 2026 10:27:06 +0000
+Received: by quack3.suse.cz (Postfix, from userid 1000)
+	id 4A3E5A0B2E; Mon, 23 Mar 2026 11:27:06 +0100 (CET)
+Date: Mon, 23 Mar 2026 11:27:06 +0100
+From: Jan Kara <jack@suse.cz>
+To: Christoph Hellwig <hch@lst.de>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>, 
+	Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, x86@kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
+	linux-api@vger.kernel.org
+Subject: Re: [PATCH 1/3] fs: fix archiecture-specific compat_ftruncate64
+Message-ID: <47ovbvveajcppkfgjc3sqbfzuozmvyivz32fbvwoq444lny6eg@45awkyuwcmrx>
+References: <20260323070205.2939118-1-hch@lst.de>
+ <20260323070205.2939118-2-hch@lst.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -83,94 +109,238 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260323072745.2481719-5-ruanjinjie@huawei.com>
-X-Debian-User: leitao
+In-Reply-To: <20260323070205.2939118-2-hch@lst.de>
+X-Spamd-Result: default: False [-7.80 / 50.00];
+	REPLY(-4.00)[];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	MID_RHS_NOT_FQDN(0.50)[];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MISSING_XM_UA(0.00)[];
+	ARC_NA(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[12];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	RCVD_COUNT_THREE(0.00)[3];
+	TO_DN_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	URIBL_BLOCKED(0.00)[suse.com:email,suse.cz:email,imap1.dmz-prg2.suse.org:helo,lst.de:email];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DKIM_SIGNED(0.00)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
+	RCVD_TLS_LAST(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.com:email]
 
-On Mon, Mar 23, 2026 at 03:27:44PM +0800, Jinjie Ruan wrote:
-> Commit 35c18f2933c5 ("Add a new optional ",cma" suffix to the
-> crashkernel= command line option") and commit ab475510e042 ("kdump:
-> implement reserve_crashkernel_cma") added CMA support for kdump
-> crashkernel reservation.
+On Mon 23-03-26 08:01:44, Christoph Hellwig wrote:
+> The "small" argument to do_sys_ftruncate indicates if > 32-bit size
+> should be reject, but all the arch-specific compat ftruncate64
+> implementations get this wrong.  Merge do_sys_ftruncate and
+> ksys_ftruncate, replace the integer as boolean small flag with a
+> descriptive one about LFS semantics, and use it correctly in the
+> architecture-specific ftruncate64 implementations.
 > 
-> Crash kernel memory reservation wastes production resources if too
-> large, risks kdump failure if too small, and faces allocation difficulties
-> on fragmented systems due to contiguous block constraints. The new
-> CMA-based crashkernel reservation scheme splits the "large fixed
-> reservation" into a "small fixed region + large CMA dynamic region": the
-> CMA memory is available to userspace during normal operation to avoid
-> waste, and is reclaimed for kdump upon crash—saving memory while
-> improving reliability.
-> 
-> So extend crashkernel CMA reservation support to arm64. The following
-> changes are made to enable CMA reservation:
-> 
-> - Parse and obtain the CMA reservation size along with other crashkernel
->   parameters.
-> - Call reserve_crashkernel_cma() to allocate the CMA region for kdump.
-> - Include the CMA-reserved ranges for kdump kernel to use.
-> - Exclude the CMA-reserved ranges from the crash kernel memory to
->   prevent them from being exported through /proc/vmcore, which is already
->   done in the crash core.
-> 
-> Update kernel-parameters.txt to document CMA support for crashkernel on
-> arm64 architecture.
-> 
-> Acked-by: Rob Herring (Arm) <robh@kernel.org>
-> Acked-by: Baoquan He <bhe@redhat.com>
-> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> Acked-by: Ard Biesheuvel <ardb@kernel.org>
-> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
+> Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+> Fixes: 3dd681d944f6 ("arm64: 32-bit (compat) applications support")
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+
+Looks good. Feel free to add:
+
+Reviewed-by: Jan Kara <jack@suse.cz>
+
+								Honza
+
 > ---
-> v7:
-> - Correct the inclusion of CMA-reserved ranges for kdump
->   kernel in of/kexec.
-> v3:
-> - Add Acked-by.
-> v2:
-> - Free cmem in prepare_elf_headers()
-> - Add the mtivation.
-> ---
->  Documentation/admin-guide/kernel-parameters.txt | 2 +-
->  arch/arm64/kernel/machine_kexec_file.c          | 2 +-
->  arch/arm64/mm/init.c                            | 5 +++--
->  drivers/of/fdt.c                                | 9 +++++----
->  drivers/of/kexec.c                              | 9 +++++++++
->  5 files changed, 19 insertions(+), 8 deletions(-)
+>  arch/arm64/kernel/sys32.c       |  2 +-
+>  arch/mips/kernel/linux32.c      |  2 +-
+>  arch/parisc/kernel/sys_parisc.c |  4 ++--
+>  arch/powerpc/kernel/sys_ppc32.c |  2 +-
+>  arch/sparc/kernel/sys_sparc32.c |  2 +-
+>  arch/x86/kernel/sys_ia32.c      |  3 ++-
+>  fs/internal.h                   |  1 -
+>  fs/open.c                       | 12 ++++++------
+>  include/linux/syscalls.h        |  8 ++------
+>  9 files changed, 16 insertions(+), 20 deletions(-)
 > 
-> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-> index cb850e5290c2..afb3112510f7 100644
-> --- a/Documentation/admin-guide/kernel-parameters.txt
-> +++ b/Documentation/admin-guide/kernel-parameters.txt
-> @@ -1121,7 +1121,7 @@ Kernel parameters
->  			It will be ignored when crashkernel=X,high is not used
->  			or memory reserved is below 4G.
->  	crashkernel=size[KMG],cma
-> -			[KNL, X86, ppc] Reserve additional crash kernel memory from
-> +			[KNL, X86, ARM64, PPC] Reserve additional crash kernel memory from
->  			CMA. This reservation is usable by the first system's
->  			userspace memory and kernel movable allocations (memory
->  			balloon, zswap). Pages allocated from this memory range
-> diff --git a/arch/arm64/kernel/machine_kexec_file.c b/arch/arm64/kernel/machine_kexec_file.c
-> index c338506a580b..cc577d77df00 100644
-> --- a/arch/arm64/kernel/machine_kexec_file.c
-> +++ b/arch/arm64/kernel/machine_kexec_file.c
-> @@ -42,7 +42,7 @@ int arch_kimage_file_post_load_cleanup(struct kimage *image)
->  #ifdef CONFIG_CRASH_DUMP
->  unsigned int arch_get_system_nr_ranges(void)
+> diff --git a/arch/arm64/kernel/sys32.c b/arch/arm64/kernel/sys32.c
+> index 96bcfb907443..12a948f3a504 100644
+> --- a/arch/arm64/kernel/sys32.c
+> +++ b/arch/arm64/kernel/sys32.c
+> @@ -89,7 +89,7 @@ COMPAT_SYSCALL_DEFINE4(aarch32_truncate64, const char __user *, pathname,
+>  COMPAT_SYSCALL_DEFINE4(aarch32_ftruncate64, unsigned int, fd, u32, __pad,
+>  		       arg_u32p(length))
 >  {
-> -	unsigned int nr_ranges = 2; /* for exclusion of crashkernel region */
-> +	unsigned int nr_ranges = 2 + crashk_cma_cnt; /* for exclusion of crashkernel region */
-
-You update arch_get_system_nr_ranges() to account for CMA ranges, but
-prepare_elf_headers() in the same file (line 51) still has the
-hardcoded:
-
-        nr_ranges = 2; /* for exclusion of crashkernel region */
-
-and does not exclude CMA ranges from cmem. If the generic crash core
-handles CMA exclusion from vmcore, then shouldn't
-arch_get_system_nr_ranges() also not need this change?
+> -	return ksys_ftruncate(fd, arg_u64(length));
+> +	return ksys_ftruncate(fd, arg_u64(length), FTRUNCATE_LFS);
+>  }
+>  
+>  COMPAT_SYSCALL_DEFINE5(aarch32_readahead, int, fd, u32, __pad,
+> diff --git a/arch/mips/kernel/linux32.c b/arch/mips/kernel/linux32.c
+> index a0c0a7a654e9..fe9a787db569 100644
+> --- a/arch/mips/kernel/linux32.c
+> +++ b/arch/mips/kernel/linux32.c
+> @@ -60,7 +60,7 @@ SYSCALL_DEFINE4(32_truncate64, const char __user *, path,
+>  SYSCALL_DEFINE4(32_ftruncate64, unsigned long, fd, unsigned long, __dummy,
+>  	unsigned long, a2, unsigned long, a3)
+>  {
+> -	return ksys_ftruncate(fd, merge_64(a2, a3));
+> +	return ksys_ftruncate(fd, merge_64(a2, a3), FTRUNCATE_LFS);
+>  }
+>  
+>  SYSCALL_DEFINE5(32_llseek, unsigned int, fd, unsigned int, offset_high,
+> diff --git a/arch/parisc/kernel/sys_parisc.c b/arch/parisc/kernel/sys_parisc.c
+> index b2cdbb8a12b1..fcb0d8069139 100644
+> --- a/arch/parisc/kernel/sys_parisc.c
+> +++ b/arch/parisc/kernel/sys_parisc.c
+> @@ -216,7 +216,7 @@ asmlinkage long parisc_truncate64(const char __user * path,
+>  asmlinkage long parisc_ftruncate64(unsigned int fd,
+>  					unsigned int high, unsigned int low)
+>  {
+> -	return ksys_ftruncate(fd, (long)high << 32 | low);
+> +	return ksys_ftruncate(fd, (long)high << 32 | low, FTRUNCATE_LFS);
+>  }
+>  
+>  /* stubs for the benefit of the syscall_table since truncate64 and truncate 
+> @@ -227,7 +227,7 @@ asmlinkage long sys_truncate64(const char __user * path, unsigned long length)
+>  }
+>  asmlinkage long sys_ftruncate64(unsigned int fd, unsigned long length)
+>  {
+> -	return ksys_ftruncate(fd, length);
+> +	return ksys_ftruncate(fd, length, FTRUNCATE_LFS);
+>  }
+>  asmlinkage long sys_fcntl64(unsigned int fd, unsigned int cmd, unsigned long arg)
+>  {
+> diff --git a/arch/powerpc/kernel/sys_ppc32.c b/arch/powerpc/kernel/sys_ppc32.c
+> index d451a8229223..03fa487f2614 100644
+> --- a/arch/powerpc/kernel/sys_ppc32.c
+> +++ b/arch/powerpc/kernel/sys_ppc32.c
+> @@ -101,7 +101,7 @@ PPC32_SYSCALL_DEFINE4(ppc_ftruncate64,
+>  		       unsigned int, fd, u32, reg4,
+>  		       unsigned long, len1, unsigned long, len2)
+>  {
+> -	return ksys_ftruncate(fd, merge_64(len1, len2));
+> +	return ksys_ftruncate(fd, merge_64(len1, len2), FTRUNCATE_LFS);
+>  }
+>  
+>  PPC32_SYSCALL_DEFINE6(ppc32_fadvise64,
+> diff --git a/arch/sparc/kernel/sys_sparc32.c b/arch/sparc/kernel/sys_sparc32.c
+> index f84a02ab6bf9..04432b82b9e3 100644
+> --- a/arch/sparc/kernel/sys_sparc32.c
+> +++ b/arch/sparc/kernel/sys_sparc32.c
+> @@ -58,7 +58,7 @@ COMPAT_SYSCALL_DEFINE3(truncate64, const char __user *, path, u32, high, u32, lo
+>  
+>  COMPAT_SYSCALL_DEFINE3(ftruncate64, unsigned int, fd, u32, high, u32, low)
+>  {
+> -	return ksys_ftruncate(fd, ((u64)high << 32) | low);
+> +	return ksys_ftruncate(fd, ((u64)high << 32) | low, FTRUNCATE_LFS);
+>  }
+>  
+>  static int cp_compat_stat64(struct kstat *stat,
+> diff --git a/arch/x86/kernel/sys_ia32.c b/arch/x86/kernel/sys_ia32.c
+> index 6cf65397d225..610a1c2f4519 100644
+> --- a/arch/x86/kernel/sys_ia32.c
+> +++ b/arch/x86/kernel/sys_ia32.c
+> @@ -61,7 +61,8 @@ SYSCALL_DEFINE3(ia32_truncate64, const char __user *, filename,
+>  SYSCALL_DEFINE3(ia32_ftruncate64, unsigned int, fd,
+>  		unsigned long, offset_low, unsigned long, offset_high)
+>  {
+> -	return ksys_ftruncate(fd, ((loff_t) offset_high << 32) | offset_low);
+> +	return ksys_ftruncate(fd, ((loff_t) offset_high << 32) | offset_low,
+> +			FTRUNCATE_LFS);
+>  }
+>  
+>  /* warning: next two assume little endian */
+> diff --git a/fs/internal.h b/fs/internal.h
+> index cbc384a1aa09..2663823e273a 100644
+> --- a/fs/internal.h
+> +++ b/fs/internal.h
+> @@ -199,7 +199,6 @@ extern int build_open_flags(const struct open_how *how, struct open_flags *op);
+>  struct file *file_close_fd_locked(struct files_struct *files, unsigned fd);
+>  
+>  int do_ftruncate(struct file *file, loff_t length, int small);
+> -int do_sys_ftruncate(unsigned int fd, loff_t length, int small);
+>  int chmod_common(const struct path *path, umode_t mode);
+>  int do_fchownat(int dfd, const char __user *filename, uid_t user, gid_t group,
+>  		int flag);
+> diff --git a/fs/open.c b/fs/open.c
+> index 91f1139591ab..412d0d6fbaa7 100644
+> --- a/fs/open.c
+> +++ b/fs/open.c
+> @@ -197,7 +197,7 @@ int do_ftruncate(struct file *file, loff_t length, int small)
+>  				   ATTR_MTIME | ATTR_CTIME, file);
+>  }
+>  
+> -int do_sys_ftruncate(unsigned int fd, loff_t length, int small)
+> +int ksys_ftruncate(unsigned int fd, loff_t length, unsigned int flags)
+>  {
+>  	if (length < 0)
+>  		return -EINVAL;
+> @@ -205,18 +205,18 @@ int do_sys_ftruncate(unsigned int fd, loff_t length, int small)
+>  	if (fd_empty(f))
+>  		return -EBADF;
+>  
+> -	return do_ftruncate(fd_file(f), length, small);
+> +	return do_ftruncate(fd_file(f), length, !(flags & FTRUNCATE_LFS));
+>  }
+>  
+>  SYSCALL_DEFINE2(ftruncate, unsigned int, fd, off_t, length)
+>  {
+> -	return do_sys_ftruncate(fd, length, 1);
+> +	return ksys_ftruncate(fd, length, 0);
+>  }
+>  
+>  #ifdef CONFIG_COMPAT
+>  COMPAT_SYSCALL_DEFINE2(ftruncate, unsigned int, fd, compat_off_t, length)
+>  {
+> -	return do_sys_ftruncate(fd, length, 1);
+> +	return ksys_ftruncate(fd, length, 0);
+>  }
+>  #endif
+>  
+> @@ -229,7 +229,7 @@ SYSCALL_DEFINE2(truncate64, const char __user *, path, loff_t, length)
+>  
+>  SYSCALL_DEFINE2(ftruncate64, unsigned int, fd, loff_t, length)
+>  {
+> -	return do_sys_ftruncate(fd, length, 0);
+> +	return ksys_ftruncate(fd, length, FTRUNCATE_LFS);
+>  }
+>  #endif /* BITS_PER_LONG == 32 */
+>  
+> @@ -245,7 +245,7 @@ COMPAT_SYSCALL_DEFINE3(truncate64, const char __user *, pathname,
+>  COMPAT_SYSCALL_DEFINE3(ftruncate64, unsigned int, fd,
+>  		       compat_arg_u64_dual(length))
+>  {
+> -	return ksys_ftruncate(fd, compat_arg_u64_glue(length));
+> +	return ksys_ftruncate(fd, compat_arg_u64_glue(length), FTRUNCATE_LFS);
+>  }
+>  #endif
+>  
+> diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+> index 02bd6ddb6278..8787b3511c86 100644
+> --- a/include/linux/syscalls.h
+> +++ b/include/linux/syscalls.h
+> @@ -1283,12 +1283,8 @@ static inline long ksys_lchown(const char __user *filename, uid_t user,
+>  			     AT_SYMLINK_NOFOLLOW);
+>  }
+>  
+> -int do_sys_ftruncate(unsigned int fd, loff_t length, int small);
+> -
+> -static inline long ksys_ftruncate(unsigned int fd, loff_t length)
+> -{
+> -	return do_sys_ftruncate(fd, length, 1);
+> -}
+> +#define FTRUNCATE_LFS	(1u << 0)	/* allow truncating > 32-bit */
+> +int ksys_ftruncate(unsigned int fd, loff_t length, unsigned int flags);
+>  
+>  int do_sys_truncate(const char __user *pathname, loff_t length);
+>  
+> -- 
+> 2.47.3
+> 
+-- 
+Jan Kara <jack@suse.com>
+SUSE Labs, CR
 
