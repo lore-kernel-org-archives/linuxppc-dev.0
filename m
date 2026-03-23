@@ -1,93 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-18642-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18643-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A8CCF483E7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2026 19:29:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30399F483F1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2026 20:03:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ffjsk1158z2yWK;
-	Tue, 24 Mar 2026 06:29:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::829" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774294170;
-	cv=pass; b=LcKAsol1Wu8nc1rRHqbRXNEMTpX0pvaVP+1Gf+MvyNgsudBYwILrrEvYDGDbCDIWqI8pQBTSFbljDhgtwlaWcK30UtEbGdueZy0hKKEj8sTe1pip3Wh9Sei3ncE6wh+DDoXS+/orucgEt0wyOL+CADMFJkLpF6rnxtAJIjNQWpZrf4JfbV3vUfZQvvi8FsJwfbItAzpKRa6ncItWmOXUFSlbRJ1o8EV2+AE6EbhKKi5W060NQ4E8cCOStOM9pgUDshJbnGTEqdtSBJPCeOAO4EuJtqGwEw3vFR6ZUrvsHCCGOLae9xv0m+Uxe8o+b+bRO+di9uIvRMiXNmoLWgefmQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774294170; c=relaxed/relaxed;
-	bh=rL6rgT4p4eg6pWVBxL1qRwcnXbeBJSn9vYxp2HwXMQ4=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Ic58Znt6DQM9uMXzAX9E2JMUskG6r7NuLMDBg0uGNXde4aXbVPlhS7jAAcZBy1g2RZr6TpK030YDFJjWVsSOlSVUNjGQZceNj5hwjxKhXoB43m4hZ1ZKMnr6RVHLdC33/x4arcLB4VY1dDBSfDsHtZpFOIlpVjA4YCKUSgUGXp9Ruf2XDut+ZR+FkPkxw2ed+KLggtpIECOzyd+/9FAjbglEZHCWP69QJNyXx+GfZL85SER6Gp1rui/5f6JR+n8gV+0BcH1djFycS5tqNF6ue/HZPpSWzGXvTlPlR91HanY/TB7jkUiDY2seOB8d6Dv/nA5Fz6IUZtLnFk/eFRSAcg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=XYXMrP7O; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::829; helo=mail-qt1-x829.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ffkcl6QyMz2xGF;
+	Tue, 24 Mar 2026 07:03:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774296199;
+	cv=none; b=Wcf8Vy14m2jc6fHw6QTKWViabh6aKU62MfoOfF5YC04+zZ3IUT4Jb7Hgq6M2oytbXIYA9r0qoQfYb6BSU8zwwyl2b9t37PPNPavpx602g2ddfWSe8PlRGAYtydK1ejeOsfM/zbyMYkOz5EZNVPw0DNx6yE+yW4ThXCTxyeAnhCfkuQJuI4lTdXLofmGRhoGpZVdlgKbDoJpwYCmNm67efBcGBSSb+giRBVJfGH3xOjtGqYcYYaIPNY6xlpdkOOrRJ0PKQt79WgewfLU+EJ0O5lOJ6fLFCNla1Cke0/W9wRA6qIuOGGndnjlFJA3jSMrjTx0rGaNO+1Wh5Du4kvWMNw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1774296199; c=relaxed/relaxed;
+	bh=LMiD7aGBWRNBc8rw8Ru2feX03FfkuHXnCvx9PhfP2jU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=FgJDm9kYAJzapID+4k9a2yUXbKcSgVVytnCk3MVnOvVbyfJHtjL9+04wTJf1GK5UzAUYR2tZeRbJxZUboeh9zaNlst3cxOVU2tRXTDpFlT8gs+GDtm/DDteVw5+OSzh/QH2hO2qkk1I/gJF9lR8h70lYlroa9JnJF9uR1dhREWvtQ2JKeoNhDw+0mrZbAyBfuheW3SUMlhtMSX9agfB+ibEFZMNwdvG8Q71DeE/itXm2Z5MC/5t7aFsgd7dEERIoKcQHVD5LXo9SwgjTht7kHFb85QPKMm7ebZSOGh/m2aD/ho7UoZyKJ/xNOIywCPl1BJx8oUltzMGOuqnHnBgW7Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=V3bPvp4W; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=XYXMrP7O;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=V3bPvp4W;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::829; helo=mail-qt1-x829.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x829.google.com (mail-qt1-x829.google.com [IPv6:2607:f8b0:4864:20::829])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffjsj1PTHz2xs4
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 06:29:28 +1100 (AEDT)
-Received: by mail-qt1-x829.google.com with SMTP id d75a77b69052e-509062d829dso11201cf.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2026 12:29:28 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1774294166; cv=none;
-        d=google.com; s=arc-20240605;
-        b=jL2P+1f5NAWlKMwZNACyf9J1PSPrI4HhPKH/kTL4/q/YvJiymGTFQB09CVFhsWqxhZ
-         jtbINHigawv819YL8ekz2ub/tmjLKCS7NWVA5WlwZKfLOyi5TcsurZrz+mv7u2FosarE
-         7QZvemCuJsqfkUakOniUsEOHESM/cKvV3TDqGfiO3X9d2lWcYm2ZmtvYtMLLIEH0Mdki
-         BWtoakkxdR1kwIIIt0aB4ddc1vY3U40tTVQDUvJRhO0gq7PKmA0JsCjNQS8rNSFjmMnw
-         pD44b2O46I4340kwDuIu4hc8EpX7pDz3oqPggpMNX/kuL/dOTH0X6I/KiT7HX5ZbC6cV
-         zoOw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=rL6rgT4p4eg6pWVBxL1qRwcnXbeBJSn9vYxp2HwXMQ4=;
-        fh=TJEd4EfpmJ0rLA9/kdJErUdOKVbGOXLzIj2aNhV0ZLs=;
-        b=SYhS9cZa9vOdQITh9sCx1dfREKk7D7nOicrfoFGoPKp6lrSrJvWPoVE7x2qOqe4S9r
-         4yxk/VbbhoSzOAdyxxR9mb8gZqJcRxwBnG5lbtd1OLK3UMmG52mOdQq2784+Pmda+xSr
-         otJsZRFX73CX4q1ujN70KqKNGx6o4AKxDRaatHw++jxgDvuuBF0XWOjp0TNThrX3otTF
-         Fe7hZPF6QEsw36pR0BPpXUDpG1+zdrOu4+TniC/Mls/0mvG88eR9InYVAiowhPQ/EgLB
-         0vWYoErOT5bXP+JVFGtV4F51J7xAGg0uVJ89/kKoOoeXjn62cHXmvLJzgkK2qTGWe/tj
-         XRxg==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1774294166; x=1774898966; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=rL6rgT4p4eg6pWVBxL1qRwcnXbeBJSn9vYxp2HwXMQ4=;
-        b=XYXMrP7OZCZDA0oLjL7vPPhQxsmASndfqnSIC7E5YfDImBqvCEHGmmtcoq1gmGNyc3
-         KNq7MC24qHmdBrsJ/Q7KYcrPgYbud/Sv4SE0mTfYOXSq2bK6bolCMz1t/E/6GlIjuhoK
-         k921dr92Nr5Rwzkk2YWSZivrpFtyB3by+1+aS7AU29gJi5fucftJYCGsnU0O8zK0o1cg
-         MRZkJzNsQCh9fN4puCqbrynM8ZWjDJ5+0FkKOy8fcsEbsHLGp8Fd4lQRFMiDlmzYnypc
-         glCho6ChWQ9YTZqN0S+rkddvFW0abcjcoMYNxjKNPeebRi9ruAO6SsZ4QZJkV2Tiwyjg
-         q3yw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774294166; x=1774898966;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=rL6rgT4p4eg6pWVBxL1qRwcnXbeBJSn9vYxp2HwXMQ4=;
-        b=D33YD4M6qc58qGELXYpL0eKAJnqs9YQZVuJ51pHUFeyqR113FThQVpTtHhSorxJmyR
-         R0+L5lG6242xGXy4Yk3TlGLYsWV0oaZkU6+tGqlPoOCphhocVy3QnsxfMRqJghGbRQto
-         HOnBeA8nPku2c//cFf6PfJn9xJX0PqsSRoE2yfxUuNFKM2zpoLUXMGv4GZlSpicf955u
-         PFGGvFirhpa33n1dx0DtzYcj4DsAKEzV3fXHfvBPjQ3bzRzOgY1n9TNo2UwHTwj3r9gj
-         v9Bh/wBHCYEXQ3IiSxWbMTVSI0IMIquP9N8vCyZpmj9yz0J51qjEduvUrAdaJubsDsbV
-         qutQ==
-X-Forwarded-Encrypted: i=1; AJvYcCU171vhAtknXsolf2EZUZu6wma5xM14buJPf6MJUrRwoj6wQeFP4p+zuaM23XVHM/G2ZkeoEfPlmBqxzdM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxpBUsc/wRlKRjhnEb0jmSaLTv1kLT1qGnTnZWEsZCvaGHnkszr
-	9MPpnwX6xeihah044ZASp1MyO0qRSlCoUeW37yXoG3g/IJPPbxdjMXepu8HKa/keZY9kRUq+XWD
-	N2npG7i+LLBL1QLLPICX5htsiImPgD/bC5J4z/M2z
-X-Gm-Gg: ATEYQzxPdJYRB6Xwsg5bOCOexIKeCH0e/2xtwcJYLSGANpJkQefq789tPAgaaok7GWm
-	KubUiRwZ5aQ2UfukcU6K0prjJX7pCvJZq0E5xj2HS2jdwYiUZFs21olBujaO1sstDVNJJ8baGZf
-	2V6glWqcnmDLVBkDbJUDSA3i4IldsDGvFmC8fAZgD9U95tljRkTziErKjpE4swl/iHBT3uRSMKi
-	cFLLJWVzZi6CtPQqwHg+30wichPMGnhUYSb9lbcOb2S0/EdgXGMPxW2WczIqupWpGHDiit4D3Jn
-	jIrNkuaRd5vXa0sP
-X-Received: by 2002:a05:622a:a986:20b0:508:fd42:fd05 with SMTP id
- d75a77b69052e-50b6fe1094amr2337331cf.15.1774294165477; Mon, 23 Mar 2026
- 12:29:25 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffkck6x4Cz2x99
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 07:03:18 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 223E0600AC;
+	Mon, 23 Mar 2026 20:03:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 39E24C4CEF7;
+	Mon, 23 Mar 2026 20:03:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774296195;
+	bh=Ry9/ThWWm3NaJS9J3iVFhUufSXRZider2VTGGVSZX4U=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=V3bPvp4Wdw1HLhSEqO/pabWccNaY498YACGXN3O+FZpo9FjukTwWbpqvcmE2F/XmD
+	 QZL5OhTizu5WvdlI7OG0seoyzZnigqpECWskMbvqRy/y9M1XvKD8CVpPFfRAXqSgIl
+	 wJpSamxOoYYM2ZKor2b6GB3b1TGRpLT+zL4ApYg01UJVYUzPW2xL6nZSjhiXQAAR8q
+	 zmNnMhkLR9hRfdtYqtFizqt3jKTWaNYjU3zTRL4SU+tfgV3N6lW+hTKnChBljDrKTF
+	 SKtLZpYwbKPUYVGUAD2OFdab3ZuEmW2XCoCjxgABgbTr1TBT6CmU3SD4Br23pu5BNl
+	 fwmW91a7puHAw==
+Message-ID: <ad64f739-4cbd-42df-8dfb-2e5f89a96f2a@kernel.org>
+Date: Mon, 23 Mar 2026 21:03:09 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,244 +59,155 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260322054309.898214-1-surenb@google.com> <20260322054309.898214-5-surenb@google.com>
- <1c44dd0b-4f5a-4fc1-983f-f728b31c9e4d@lucifer.local>
-In-Reply-To: <1c44dd0b-4f5a-4fc1-983f-f728b31c9e4d@lucifer.local>
-From: Suren Baghdasaryan <surenb@google.com>
-Date: Mon, 23 Mar 2026 12:29:14 -0700
-X-Gm-Features: AQROBzCQaEF_cPLZfBQCzrdp1WYDK-0_JtC25zQIk1w6f-8rEEzfFfTeX5PuZ2c
-Message-ID: <CAJuCfpGk3sTw2_owiRZM=V2e0UGDad5MrDbCsPbY3GUvT4u63A@mail.gmail.com>
-Subject: Re: [PATCH v4 4/4] mm: use vma_start_write_killable() in process_vma_walk_lock()
-To: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
-Cc: akpm@linux-foundation.org, willy@infradead.org, david@kernel.org, 
-	ziy@nvidia.com, matthew.brost@intel.com, joshua.hahnjy@gmail.com, 
-	rakie.kim@sk.com, byungchul@sk.com, gourry@gourry.net, 
-	ying.huang@linux.alibaba.com, apopple@nvidia.com, lorenzo.stoakes@oracle.com, 
-	baolin.wang@linux.alibaba.com, Liam.Howlett@oracle.com, npache@redhat.com, 
-	ryan.roberts@arm.com, dev.jain@arm.com, baohua@kernel.org, 
-	lance.yang@linux.dev, vbabka@suse.cz, jannh@google.com, rppt@kernel.org, 
-	mhocko@suse.com, pfalcato@suse.de, kees@kernel.org, maddy@linux.ibm.com, 
-	npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org, 
-	borntraeger@linux.ibm.com, frankja@linux.ibm.com, imbrenda@linux.ibm.com, 
-	hca@linux.ibm.com, gor@linux.ibm.com, agordeev@linux.ibm.com, 
-	svens@linux.ibm.com, gerald.schaefer@linux.ibm.com, linux-mm@kvack.org, 
-	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6 05/13] mm/page_vma_mapped: Add flag to
+ page_vma_mapped_walk::flags to track device private pages
+To: Alistair Popple <apopple@nvidia.com>
+Cc: Jordan Niethe <jniethe@nvidia.com>, linux-mm@kvack.org,
+ balbirs@nvidia.com, matthew.brost@intel.com, akpm@linux-foundation.org,
+ linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ ziy@nvidia.com, lorenzo.stoakes@oracle.com, lyude@redhat.com,
+ dakr@kernel.org, airlied@gmail.com, simona@ffwll.ch, rcampbell@nvidia.com,
+ mpenttil@redhat.com, jgg@nvidia.com, willy@infradead.org,
+ linuxppc-dev@lists.ozlabs.org, intel-xe@lists.freedesktop.org, jgg@ziepe.ca,
+ Felix.Kuehling@amd.com, jhubbard@nvidia.com, maddy@linux.ibm.com,
+ mpe@ellerman.id.au, ying.huang@linux.alibaba.com
+References: <20260202113642.59295-1-jniethe@nvidia.com>
+ <20260202113642.59295-6-jniethe@nvidia.com>
+ <81e7bd1c-54d5-4f88-969a-685177447c51@kernel.org>
+ <abzSSHQUnDs_AFoz@nvdebian.thelocal>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=david@kernel.org; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <abzSSHQUnDs_AFoz@nvdebian.thelocal>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Mon, Mar 23, 2026 at 11:04=E2=80=AFAM Lorenzo Stoakes (Oracle)
-<ljs@kernel.org> wrote:
->
-> On Sat, Mar 21, 2026 at 10:43:08PM -0700, Suren Baghdasaryan wrote:
-> > Replace vma_start_write() with vma_start_write_killable() when
-> > process_vma_walk_lock() is used with PGWALK_WRLOCK option.
-> > Adjust its direct and indirect users to check for a possible error
-> > and handle it. Ensure users handle EINTR correctly and do not ignore
-> > it.
-> >
-> > Signed-off-by: Suren Baghdasaryan <surenb@google.com>
-> > ---
-> >  fs/proc/task_mmu.c |  5 ++++-
-> >  mm/mempolicy.c     |  1 +
-> >  mm/pagewalk.c      | 20 ++++++++++++++------
-> >  3 files changed, 19 insertions(+), 7 deletions(-)
-> >
-> > diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-> > index e091931d7ca1..2fe3d11aad03 100644
-> > --- a/fs/proc/task_mmu.c
-> > +++ b/fs/proc/task_mmu.c
-> > @@ -1797,6 +1797,7 @@ static ssize_t clear_refs_write(struct file *file=
-, const char __user *buf,
-> >               struct clear_refs_private cp =3D {
-> >                       .type =3D type,
-> >               };
-> > +             int err;
->
-> Maybe better to make it a ssize_t given return type of function?
+>>>  #define DEFINE_FOLIO_VMA_WALK(name, _folio, _vma, _address, _flags)	\
+>>>  	struct page_vma_mapped_walk name = {				\
+>>> -		.pfn = folio_pfn(_folio),				\
+>>> +		.pfn = folio_page_vma_walk_pfn(_folio),			\
+>>>  		.nr_pages = folio_nr_pages(_folio),			\
+>>>  		.pgoff = folio_pgoff(_folio),				\
+>>>  		.vma = _vma,						\
+>>>  		.address = _address,					\
+>>> -		.flags = _flags,					\
+>>> +		.flags = page_vma_walk_flags(_folio, _flags),		\
+>>>  	}
+>>
+>> That's all rather horrible ...
+>>
+>>
+>> I was asking myself recently, why something that is called
+>> "page_vma_mapped_walk" consume a pfn. It's just a horrible interface.
+> 
+> I don't disagree, and in fact it used to consume a page until 2aff7a4755be ("mm:
+> Convert page_vma_mapped_walk to work on PFNs"). If this was a page it would
+> basically resolve all the hackiness of this patch because we would no longer
+> have to pass PFN context around. So I wonder if there would be any opposition to
+> changing this back to taking a page?
 
-Ack.
+Are there cases where we pass a struct-page-less PFN?
 
->
-> >
-> >               if (mmap_write_lock_killable(mm)) {
-> >                       count =3D -EINTR;
-> > @@ -1824,7 +1825,9 @@ static ssize_t clear_refs_write(struct file *file=
-, const char __user *buf,
-> >                                               0, mm, 0, -1UL);
-> >                       mmu_notifier_invalidate_range_start(&range);
-> >               }
-> > -             walk_page_range(mm, 0, -1, &clear_refs_walk_ops, &cp);
-> > +             err =3D walk_page_range(mm, 0, -1, &clear_refs_walk_ops, =
-&cp);
-> > +             if (err)
-> > +                     count =3D err;
->
-> Hmm this is gross, but it's an established pattern here, ugh.
->
-> Now we have an err though, could we update:
->
->                 if (mmap_write_lock_killable(mm)) {
-> -                       count =3D -EINTR;
-> +                       err =3D -EINTR;
->                         goto out_mm;
->                 }
->
-> Then we can just do:
->
-> +               err =3D walk_page_range(mm, 0, -1, &clear_refs_walk_ops, =
-&cp);
->
-> And at the end do:
->
->         return err ?: count;
->
-> Which possibly _necessitates_ err being a ssize_t.
+The offenders are pfn_mkclean_range() and mapping_wrprotect_range().
 
-Sounds doable. Let me try that.
+pfn_mkclean_range() is only used by fs/dax.c
 
->
-> >               if (type =3D=3D CLEAR_REFS_SOFT_DIRTY) {
-> >                       mmu_notifier_invalidate_range_end(&range);
-> >                       flush_tlb_mm(mm);
-> > diff --git a/mm/mempolicy.c b/mm/mempolicy.c
-> > index 929e843543cf..bb5b0e83ce0f 100644
-> > --- a/mm/mempolicy.c
-> > +++ b/mm/mempolicy.c
-> > @@ -969,6 +969,7 @@ static const struct mm_walk_ops queue_pages_lock_vm=
-a_walk_ops =3D {
-> >   *      (a hugetlbfs page or a transparent huge page being counted as =
-1).
-> >   * -EIO - a misplaced page found, when MPOL_MF_STRICT specified withou=
-t MOVEs.
-> >   * -EFAULT - a hole in the memory range, when MPOL_MF_DISCONTIG_OK uns=
-pecified.
-> > + * -EINTR - walk got terminated due to pending fatal signal.
->
-> Thanks!
->
-> >   */
-> >  static long
-> >  queue_pages_range(struct mm_struct *mm, unsigned long start, unsigned =
-long end,
-> > diff --git a/mm/pagewalk.c b/mm/pagewalk.c
-> > index eda74273c8ec..a42cd6a6d812 100644
-> > --- a/mm/pagewalk.c
-> > +++ b/mm/pagewalk.c
-> > @@ -438,14 +438,13 @@ static inline void process_mm_walk_lock(struct mm=
-_struct *mm,
-> >               mmap_assert_write_locked(mm);
-> >  }
-> >
-> > -static inline void process_vma_walk_lock(struct vm_area_struct *vma,
-> > +static inline int process_vma_walk_lock(struct vm_area_struct *vma,
->
-> NIT: Don't need this to be an inline any longer. May as well fix up while=
- we're
-> here.
+At least the caller immediately does a
 
-Ack.
+	dax_flush(dax_dev, page_address(pfn_to_page(pfn)), count * PAGE_SIZE);
 
->
-> >                                        enum page_walk_lock walk_lock)
-> >  {
-> >  #ifdef CONFIG_PER_VMA_LOCK
-> >       switch (walk_lock) {
-> >       case PGWALK_WRLOCK:
-> > -             vma_start_write(vma);
-> > -             break;
-> > +             return vma_start_write_killable(vma);
->
-> LGTM
->
-> >       case PGWALK_WRLOCK_VERIFY:
-> >               vma_assert_write_locked(vma);
-> >               break;
-> > @@ -457,6 +456,7 @@ static inline void process_vma_walk_lock(struct vm_=
-area_struct *vma,
-> >               break;
-> >       }
-> >  #endif
-> > +     return 0;
-> >  }
-> >
-> >  /*
-> > @@ -500,7 +500,9 @@ int walk_page_range_mm_unsafe(struct mm_struct *mm,=
- unsigned long start,
-> >                       if (ops->pte_hole)
-> >                               err =3D ops->pte_hole(start, next, -1, &w=
-alk);
-> >               } else { /* inside vma */
-> > -                     process_vma_walk_lock(vma, ops->walk_lock);
-> > +                     err =3D process_vma_walk_lock(vma, ops->walk_lock=
-);
-> > +                     if (err)
-> > +                             break;
->
-> In every other case we set walk.vma =3D vma or NULL. Is it a problem not =
-setting
-> it at all in this code path?
+Afterwards where, apparently, a page for the PFN exists? :)
 
-IIUC the other cases set walk.vma because they later call
-ops->pte_hole(..., walk). In our case we immediately break out of the
-loop and exit the function, which pushes "walk" variable out of scope.
-So, walk.vma won't be used and setting it would achieve nothing.
 
->
-> >                       walk.vma =3D vma;
-> >                       next =3D min(end, vma->vm_end);
-> >                       vma =3D find_vma(mm, vma->vm_end);
-> > @@ -717,6 +719,7 @@ int walk_page_range_vma_unsafe(struct vm_area_struc=
-t *vma, unsigned long start,
-> >               .vma            =3D vma,
-> >               .private        =3D private,
-> >       };
-> > +     int err;
-> >
-> >       if (start >=3D end || !walk.mm)
-> >               return -EINVAL;
-> > @@ -724,7 +727,9 @@ int walk_page_range_vma_unsafe(struct vm_area_struc=
-t *vma, unsigned long start,
-> >               return -EINVAL;
-> >
-> >       process_mm_walk_lock(walk.mm, ops->walk_lock);
-> > -     process_vma_walk_lock(vma, ops->walk_lock);
-> > +     err =3D process_vma_walk_lock(vma, ops->walk_lock);
-> > +     if (err)
-> > +             return err;
->
-> LGTM
->
-> >       return __walk_page_range(start, end, &walk);
-> >  }
-> >
-> > @@ -747,6 +752,7 @@ int walk_page_vma(struct vm_area_struct *vma, const=
- struct mm_walk_ops *ops,
-> >               .vma            =3D vma,
-> >               .private        =3D private,
-> >       };
-> > +     int err;
-> >
-> >       if (!walk.mm)
-> >               return -EINVAL;
-> > @@ -754,7 +760,9 @@ int walk_page_vma(struct vm_area_struct *vma, const=
- struct mm_walk_ops *ops,
-> >               return -EINVAL;
-> >
-> >       process_mm_walk_lock(walk.mm, ops->walk_lock);
-> > -     process_vma_walk_lock(vma, ops->walk_lock);
-> > +     err =3D process_vma_walk_lock(vma, ops->walk_lock);
-> > +     if (err)
-> > +             return err;
->
-> LGTM
->
-> >       return __walk_page_range(vma->vm_start, vma->vm_end, &walk);
-> >  }
-> >
-> > --
-> > 2.53.0.1018.g2bb0e51243-goog
-> >
->
-> Thanks, Lorenzo
+mapping_wrprotect_range() is only used by drivers/video/fbdev/core/fb_defio.c
+
+fb_deferred_io_work() just calls page_to_pfn(page). Huh?
+
+Best to explore the history what's going on there.
+
+
+My best guess is that they don't want to modify page state. But that can
+be expressed by the helper functions and doesn't require us to have such
+a weird implementation.
+
+> 
+>>
+>>
+>> * DEFINE_FOLIO_VMA_WALK() users obviously receive a folio.
+>> * mm/migrate_device.c just abuses page_vma_mapped_walk() to make
+>>   set_pmd_migration_entry() work. But we have a folio.
+>> * page_mapped_in_vma() has a page/folio.
+>>
+>> mapping_wrprotect_range_one() and pfn_mkclean_range() are the real
+>> issues. They all end up calling page_vma_mkclean_one(), which does not
+>> operate on pages/folios.
+>>
+>> Ideally, the odd pfn case would use it's own simplified infrastructure.
+>>
+>>
+>> So, could we simply add a folio+page pointer in case we have one, and
+>> use that one if set, leaving leaving the pfn unset?
+>>
+>> Then, the pfn would only be set for the
+>> mapping_wrprotect_range_one/pfn_mkclean_range case. I don't think
+>> device-private folios would ever have to mess with that.
+>>
+>>
+>> Then, you just always have a folio+page and don't even have to worry
+>> about the pfn?
+> 
+> That sounds reasonable to me. We were hesitant to add a page back to the
+> interface given it had been removed previously but lets try implementing this to
+> see what it looks like.
+
+Thanks!
+
+-- 
+Cheers,
+
+David
 
