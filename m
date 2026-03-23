@@ -1,70 +1,91 @@
-Return-Path: <linuxppc-dev+bounces-18635-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18636-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60EDEF483D7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2026 17:53:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7804AF483DE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2026 17:59:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ffgkt0WH9z2yWK;
-	Tue, 24 Mar 2026 04:53:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774288405;
-	cv=none; b=Jd4AcGZB5CflDktcmo0Qfzf8fvhwujLmgB9zyVPhjjmnvwG9lR2AdEP0f5PqhOZoIFxZCpa3+mgNmxpzgp5uzOhgtiQ2NcebLgNXPv9d8PIji9I+addrIrDuVToBig96Zaxqf57gysxPTwu9Y4Rk5nlmXaTtuZAX+ZfFGARTLUOGv72WyI4eGpqaVvBSGrWBjA/1UL//qf2A6sZX26EtcCDHe0g/9BJtCFcLfwV856b+kWXVg8hiQr+2tfjJiFFAGG8o3QQyeNcTW2D7eDFbYsR7tUBdRIj1FxeArrmGoyqE5lKy5wK7U18vjbutFvOfgIAijhWpoq/9PqiT5nMXuw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ffgsY0HhCz2yWK;
+	Tue, 24 Mar 2026 04:59:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.159
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774288752;
+	cv=none; b=D4NvZEB8MbXo5n3wSjY8ynq51pgw6TGSY/WEs4diZoAlMVunCKMTCdKxk5ejXqXu1etywTz0hvyhyY8KwcN/OMngxudOgxuUipMHDDgnq16BmEpeci9UKBHIEvXaI9+mows9aRO+3XcprpBE3kUBVtGpSTK/wnJdfsonf7H3FMq77k3MoBfcs1JeeMKFalby38MefhknRxgarX1dNy2nQdpX06aSS5xVSnJNlEN+qSc980suIFooaR0CQ7dLgluKOieKpu86viV2ZeKretyDPurz7NnCLhpdifm0CxNPA2tLQN1rArgu20jiBjYkxTUCN3PzT8E7KZW3Vs1g+Dvenw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774288405; c=relaxed/relaxed;
-	bh=reWwq5ua+u6vmCZuUTKVBM0ZLloWVsOJt7na7m30eIU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=oSMDY8bh4FbvrHkUlIBo5dJA3koRqYF2DPvck2AQ0CDnRjPyxP2paa0BSR5TWuF/TNoiKLa34Tr2NTasPzPysgHPBK7J3dmHBsn8Y55fw2YK0psCm2Z9g4ffLusMoXiTO1DmI/tm14sV3xUQIo4MiYvdqyAlAVFm5Fxk55NGuxRx5QcuRe0BA96KcK5j+P3eenPN93K62omhF5aEtWIkpfMv+I5owDEJ8gnS7UTSyyDVLW+uOFwZbonrXhUcg1c/LluYJSY9b4PzTvdcD6gFSGG0/FPB+SRB+KQsd73Wdq2JoVVQ1Ag3WghBDVgm5HjCKscVIdHwBWmeHlZy5WzR6Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bV7mxTWB; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1774288752; c=relaxed/relaxed;
+	bh=9//ngg5kruKbTXJVMtBYvuO2Yyk5sA4yoS9uHWcYrNw=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=W+xrZ+Q+cNgWwT8FxDx8gL49ZMWYfdZoSSbpcrh0H65OdQgDjjf/AqNqFduQkkEFF09tszrihHZp46sOxYAJFCgmDHh2v/RX4WsurqePGsUv+cpAnAYAI5eb2aOzIH0fyIa7r4SJ6L42qaEIeBuyquDKFIGTSUtSwUTW/+iW1JXAJl0O1Ynu+TYF6N0ix4LKs7Chu/6+0p/RhcZ50tv8S+0AZ8slHtaHvFPbCjteDMZ8pAM7fBaEW67VHmymh5muDeb5F4LwFINjSiNsL+byg7+vFZ/YqpeuL9HNLADmOJBLi+Al8e9xxtsGxRGUYtBfd7fhKeR0U24vq3In4XHYeQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=rb8gdWzQ; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=opOP0Cn4; dkim-atps=neutral; spf=pass (client-ip=103.168.172.159; helo=fhigh-a8-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bV7mxTWB;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=rb8gdWzQ;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=opOP0Cn4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=103.168.172.159; helo=fhigh-a8-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
+Received: from fhigh-a8-smtp.messagingengine.com (fhigh-a8-smtp.messagingengine.com [103.168.172.159])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffgks3CQ2z2xs4
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 04:53:25 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 6A97444486;
-	Mon, 23 Mar 2026 17:53:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AFC77C2BCB0;
-	Mon, 23 Mar 2026 17:53:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774288403;
-	bh=AE6bvPRBuu/wn9CJ9Bc0lzK1gYt9cBL0a+aIcWO4eCU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=bV7mxTWBukFmR5V1TfAE3U4PHdCw+B18jcmZLFiYDg7lovpoVi6W/EcoLDOyawoWb
-	 c0G+I1soK0HNQ46qHJ+Kjhzxtr3DmCXIVcBDdGHe7lZgMwdP8lE4dOiU+1frxh5Oxk
-	 tg1wgR+cFyGJUFixQBX2maEdDM0hOlThkIbVZFptqw91KGyr/5gFVsKpksHc8l7FYm
-	 Zch52RON9+hDZ0Z7iCImIZ9bbmdEUsIctlSMiYO8s9e9QpKd6up+CSD0A/rQcEGzcG
-	 /9mMQ/b/RZUqQx95MmexN/E+miQtL0jHPA0oXOyJeIypJzez/ho+OREMjiHEL+dFS5
-	 JqIYFBD77kcJQ==
-Date: Mon, 23 Mar 2026 17:53:21 +0000
-From: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
-To: Suren Baghdasaryan <surenb@google.com>
-Cc: akpm@linux-foundation.org, willy@infradead.org, david@kernel.org, 
-	ziy@nvidia.com, matthew.brost@intel.com, joshua.hahnjy@gmail.com, 
-	rakie.kim@sk.com, byungchul@sk.com, gourry@gourry.net, 
-	ying.huang@linux.alibaba.com, apopple@nvidia.com, lorenzo.stoakes@oracle.com, 
-	baolin.wang@linux.alibaba.com, Liam.Howlett@oracle.com, npache@redhat.com, ryan.roberts@arm.com, 
-	dev.jain@arm.com, baohua@kernel.org, lance.yang@linux.dev, vbabka@suse.cz, 
-	jannh@google.com, rppt@kernel.org, mhocko@suse.com, pfalcato@suse.de, 
-	kees@kernel.org, maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au, 
-	chleroy@kernel.org, borntraeger@linux.ibm.com, frankja@linux.ibm.com, 
-	imbrenda@linux.ibm.com, hca@linux.ibm.com, gor@linux.ibm.com, agordeev@linux.ibm.com, 
-	svens@linux.ibm.com, gerald.schaefer@linux.ibm.com, linux-mm@kvack.org, 
-	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-s390@vger.kernel.org
-Subject: Re: [PATCH v4 3/4] KVM: s390: avoid kvm_s390_handle_pv() error
- overwrite
-Message-ID: <fb38ecc9-36f8-49a1-bf20-a2c03244e574@lucifer.local>
-References: <20260322054309.898214-1-surenb@google.com>
- <20260322054309.898214-4-surenb@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffgsT5bBnz2xs4
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 04:59:08 +1100 (AEDT)
+Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
+	by mailfhigh.phl.internal (Postfix) with ESMTP id E716D14001FA;
+	Mon, 23 Mar 2026 13:59:05 -0400 (EDT)
+Received: from phl-imap-02 ([10.202.2.81])
+  by phl-compute-04.internal (MEProxy); Mon, 23 Mar 2026 13:59:05 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm1; t=1774288745;
+	 x=1774375145; bh=9//ngg5kruKbTXJVMtBYvuO2Yyk5sA4yoS9uHWcYrNw=; b=
+	rb8gdWzQVB5tVaNMZwPuConUKvmU822ggoi5oYQm0vM0a02VJp5nSwpsad+tRnpK
+	/miIFh0la18u/BMLyobqy5Ud+kw3bjiAfMZH8gjDnpC2GVZcjGhA3xNIWySICxX0
+	LHCCgvQBXvmPjT0p5ShIrS2s6Syl07Dn625JBa0re8YmE6S0LURYtqXMmVo1oKuj
+	Htjw5XmqmWpc41JQPd9oiJxlGfqDSWz5rPpfXGSUMwVB4SPJHMjxPyIkXFpAuhIi
+	j62XN71hM16XUKF/7qYQpvIkllJdvBJ/KNTHNKEdUAS3i0aIys2U5thsaN2H2ywn
+	8DezqVbSfaqH3jIaQ3dFyw==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1774288745; x=
+	1774375145; bh=9//ngg5kruKbTXJVMtBYvuO2Yyk5sA4yoS9uHWcYrNw=; b=o
+	pOP0Cn4bvlSZuEaksJvdfg05x8HVkeAyEz0y29TJh18EQ2KQdTHlwKJlSMRKJWqN
+	IPAmAeIHRZXSNTj6DCtyV4qnqXz5eFoE2qXYePxvPB/zjsk9amuY+hCi1j39q1u4
+	IyfBuY3rVWXagnh1+zAAHSvOYmsq25vCmWu/RNEOYGN8GCzAMuTjxLqogv3BYePG
+	ejCXMYnnd+fHyDDZTGKaWp6hHOfc/2ARVmIayFYokNGvIjnRQ4ODPoum8z0xGiX9
+	JecXlCWzcKi13GcD6iPg2DvKeq1xqZyxlU9nrpXIW5znZng9UJf0rdpXxFfP7upe
+	d17voTdmfLIKJatMgWLMg==
+X-ME-Sender: <xms:aX_BaZtlt5TvwsgmuXNStxRb4wvwoAPnYiApLGAKgVQwgxJic-BTKA>
+    <xme:aX_BadRY0gcV1cpIAtgpC9xTrolETBK875HgJOcOSlOD7167i2ykkMAb3VZv5Il7r
+    fcMLo4lzuarkkmF7fzTuBIYi9h8IlsOtaVRRu2ZErRpfXa7mfYxAHI>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefgedrtddtgdefudelfeejucetufdoteggodetrf
+    dotffvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfurfetoffkrfgpnffqhgenuceu
+    rghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujf
+    gurhepofggfffhvfevkfgjfhfutgfgsehtqhertdertdejnecuhfhrohhmpedftehrnhgu
+    uceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrdguvgeqnecuggftrfgrthhtvg
+    hrnhepvdfhvdekueduveffffetgfdvveefvdelhedvvdegjedvfeehtdeggeevheefleej
+    necuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomheprghrnh
+    gusegrrhhnuggsrdguvgdpnhgspghrtghpthhtohepudejpdhmohguvgepshhmthhpohhu
+    thdprhgtphhtthhopehrihhtvghshhdrlhhishhtsehgmhgrihhlrdgtohhmpdhrtghpth
+    htoheprhhoshhtvgguthesghhoohgumhhishdrohhrghdprhgtphhtthhopehpvghtvghr
+    iiesihhnfhhrrgguvggrugdrohhrghdprhgtphhtthhopegthhhlvghrohihsehkvghrnh
+    gvlhdrohhrghdprhgtphhtthhopehmrghsrghhihhrohihsehkvghrnhgvlhdrohhrghdp
+    rhgtphhtthhopehnrghthhgrnheskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepnhhstg
+    eskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepohhjvggurgeskhgvrhhnvghlrdhorhhg
+    pdhrtghpthhtohepthgrmhhirhgusehkvghrnhgvlhdrohhrgh
+X-ME-Proxy: <xmx:aX_BaelCqb8kBDifuG9xZCCkolGtkjL57aUvhwlx2PrTq44MWS3DQg>
+    <xmx:aX_BaQisoIx-yth0qKcTpXtesnC_IwxK7D1gSOA2n3ynjitJhzxRXQ>
+    <xmx:aX_BaTQiGM-2boqCwl-kMf25dz8QWvNoL5qnuEKsWrn-Wwe2HZaHDw>
+    <xmx:aX_BadjjGRmY6WBMtQbWCvxirw6Iktw96dlR0nOzNK_FmOiK5XkuPw>
+    <xmx:aX_Bad3IPYan2AFPPeAdLSNcEZEzppxnYv0gOD7JjIK_M2Xn4u74tsQG>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id 83BEB700065; Mon, 23 Mar 2026 13:59:05 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,53 +99,54 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260322054309.898214-4-surenb@google.com>
+X-ThreadId: AKWsChL5O-hF
+Date: Mon, 23 Mar 2026 18:58:45 +0100
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Christophe Leroy" <chleroy@kernel.org>,
+ "Venkat Rao Bagalkote" <venkat88@linux.ibm.com>,
+ "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, "Nathan Chancellor" <nathan@kernel.org>,
+ "Nicolas Schier" <nsc@kernel.org>, "Miguel Ojeda" <ojeda@kernel.org>,
+ "Masahiro Yamada" <masahiroy@kernel.org>,
+ =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>, tamird@kernel.org,
+ "Steven Rostedt" <rostedt@goodmis.org>, ihor.solodrai@linux.dev,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ "Madhavan Srinivasan" <maddy@linux.ibm.com>,
+ "Peter Zijlstra" <peterz@infradead.org>
+Message-Id: <00d4c865-3068-4f98-a32f-e9565cf1499d@app.fastmail.com>
+In-Reply-To: <e6db8617-6b12-4f90-967d-85c9f7805823@kernel.org>
+References: <20260323073220.25798-1-venkat88@linux.ibm.com>
+ <e6db8617-6b12-4f90-967d-85c9f7805823@kernel.org>
+Subject: Re: [PATCH v2] char: nvram: Remove unused nvram_mutex to fix -Wunused-variable
+ warning
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-On Sat, Mar 21, 2026 at 10:43:07PM -0700, Suren Baghdasaryan wrote:
-> If kvm_s390_handle_pv() call fails its error code gets recorded but
-> execution proceeds as if the call was successful. If the next call to
-> copy_to_user() fails then the original error is overwritten.
-
-Is that really a big deal though, as you're returning an error in either case?
-
-> The follow-up patch adds fatal signal checks during VMA walk, which
-> makes it possible for kvm_s390_handle_pv() to return EINTR error.
-> Without this fix any error including EINTR can be overwritten and
-> original error will be lost.
->
-> Change error handling for kvm_s390_handle_pv() to alter normal flow
-> once failure happens. This is consistent with how kvm_arch_vm_ioctl
-> handles errors for other ioctl commands.
->
-> Signed-off-by: Suren Baghdasaryan <surenb@google.com>
-> ---
->  arch/s390/kvm/kvm-s390.c | 2 ++
->  1 file changed, 2 insertions(+)
->
-> diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-> index 3eb60aa932ec..ddad08c0926f 100644
-> --- a/arch/s390/kvm/kvm-s390.c
-> +++ b/arch/s390/kvm/kvm-s390.c
-> @@ -2947,6 +2947,8 @@ int kvm_arch_vm_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
->  		}
->  		/* must be called without kvm->lock */
->  		r = kvm_s390_handle_pv(kvm, &args);
-> +		if (r)
+On Mon, Mar 23, 2026, at 11:14, Christophe Leroy (CS GROUP) wrote:
+> Le 23/03/2026 =C3=A0 08:32, Venkat Rao Bagalkote a =C3=A9crit=C2=A0:
+> diff --git a/drivers/char/nvram.c b/drivers/char/nvram.c
+> index 9eff426a9286..2fd744bf9093 100644
+> --- a/drivers/char/nvram.c
+> +++ b/drivers/char/nvram.c
+> @@ -308,8 +308,10 @@ static long nvram_misc_ioctl(struct file *file,=20
+> unsigned int cmd,
+>   		}
+>   #endif
+>   		break;
+> -#ifdef CONFIG_PPC32
+>   	case IOC_NVRAM_SYNC:
+> +		if (IS_ENABLED(CONFIG_PPC64))
 > +			break;
->  		if (copy_to_user(argp, &args, sizeof(args))) {
+> +
+>   		if (ppc_md.nvram_sync !=3D NULL) {
+>   			mutex_lock(&nvram_mutex);
+>   			ppc_md.nvram_sync();
 
-Yeah as per Sashiko we probably need to copy_to_user() still.
+Right, this works as well, though I still like the idea better
+of removing the mutex and all its callers, leaving the locking
+to be done inside of the individual operations, as they all
+do.
 
-But in that case, do we even need a change at all? I'm not sure it really
-matters which error code terminates things does it?
-
->  			r = -EFAULT;
->  			break;
-> --
-> 2.53.0.1018.g2bb0e51243-goog
->
-
-Thanks, Lorenzo
+     Arnd
 
