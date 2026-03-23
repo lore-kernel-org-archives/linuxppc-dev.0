@@ -1,66 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-18588-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18589-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A31CFC72A8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2026 07:02:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86CA9FC72C5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2026 07:25:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ffPHs3CYVz2yYy;
-	Mon, 23 Mar 2026 18:02:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::133"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774249353;
-	cv=none; b=NAnqadlWVjd31O21hswyA4UcFmku694bQIzYJKr2ei0pzvduXESBdJWmcvM4fy4hi5kdRuv5d5m4GlI8OS3Km6qEtVK0i7eTJ5cOIceMD2ynjeWjQwRBLjec+KSO/M9ADXNXLY/rpmkXPdoIhNDFCaHsBguvSTFqKQwBQc9iup9h3C240eHtZ/lNLTr2o2IXYn6/Nol9n0G6HDAWTMNYExWLnhFo/ZqKww4Evq+aupXCcs+9WzwLHOeZo6qFlczFTyTzjfMSqyWTxqCMWcC3SRXaEFvo9arZ0Olye5+lDkKRP07R+QyGBVhkX4sWnthb3/XmdUGgjnfIqP44gGccOw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ffPny6pHmz2yZ6;
+	Mon, 23 Mar 2026 18:25:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774250710;
+	cv=none; b=MbMxwAK5SuEfNL5D0XuA4LSuzNnWkFliOOjruR+RbVwFKj+tmt9xZde+O5a4oaP4DSRG2g1njPRQeRUhwzK3ELM1azoHlksK9LwScYFKH1bj3rEmWp1+2TGfh0YkzCH4KlhpdEqhNQBieJJCnrKlygYjIpoBPy1Cr3yNlVtdbLX6841kFJrwQFLjoW2UY//sxJnzqabYMUayu/zsx/P/ueY5iWuGiUTI1lyPeByzpPOzxSZ1pHDkQGFVwKXi+mtzjBs9M8k2nyRZ6015fJi8HMIaEYQvWyq814lemUDHOOA+89BV6pvZMy79BWrLAL4TvfO9SR/jBdeTy6SOmIDfvg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774249353; c=relaxed/relaxed;
-	bh=Wlkrm0myB9P5DBDaclzihXCLak0GcKolkRDqx8ZruQ0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=mXDZ/VoI3lHbSayR4XJzq28HMRlnlvSM4hCT/NKF34bhs3vJOh6usJH+4j0YKI299edhlWq1KQv6104ZyGhb+dJwMaCjyT2ULoIUtkijlO74DjfZlnSCi4nSWpkdNPwIbzKsegfIn2G8W2L85Cd1MmAK2N6nyCgswcNiL+LmpxUa2ppj/mEidX13KdZupJ1/t5v16C/ulPmHfYSO+TluMAxMebtMzY/w01g5pY6VfWtf0jBX/2OOLfQ5uq8TYCZD/IbsLm+8Tg4DJtqCZ1aNmdkabCHP7pFWRissSxa/b1WVtAiHBDtKs6R7qSp/BIMvA530v6w3epE4TFqRx50Upw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=lst.de; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=TRdqtC3V; dkim-atps=neutral; spf=none (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+58733bf867d043cbf217+8247+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=bombadil.srs.infradead.org
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=lst.de
+	t=1774250710; c=relaxed/relaxed;
+	bh=jAO59f310du7QormdyuLxv3apotxnRlrU6xoEvAIXr8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=GXkH9XHeYqNHLTDbiQrqAHayOCM/+P08TiKixCTbJRyJZj3yB439ZxWPQLX4dhjuhSjEPmJ9Z2eO3TlpnSw/Oo1Q9xdt6M3KLnZPUwE4JvBemUG0oUrq1UW2buwC0hLp/ZSoS9KDL9GjzCQ7xbg4kcvE7k3NpC0Pb+ZZmRYALn9YJ4f+bkxGpG1n0Www9hEbcjIE/dzAvy5ccDkRluuc4MXEzURtFjK+kr5aeGnGH0mOmlQGJDQKE/d4mT6JAXvlL/QgAx1G5iOm2PFFumPXLiqS8bJYaY4A9hICqJExUNptuWASjZrejL9VZmx1ucKzx3n46ayS1uszjPQLPntyyA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jx+o0ZDc; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=TRdqtC3V;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jx+o0ZDc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+58733bf867d043cbf217+8247+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org)
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffPHr5CTfz2ySb
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2026 18:02:32 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender
-	:Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=Wlkrm0myB9P5DBDaclzihXCLak0GcKolkRDqx8ZruQ0=; b=TRdqtC3V4JFkKzclMhRAwPhHvy
-	haVphzi2M7zk2uFS2hNi2cvsdo3KRHQNhivSBcXRnQY04c/UZFTQUTWRBCRGlYddGLskEQJv3Y+62
-	SDFsbVLO+EL5tXadw1l46vFGdvKD9ppMVDE/hUbqjPRgrSFgAcAWkNETxhTUOlzZz9cuyrHZU9svb
-	+kW/i3TienruQ8EuClSUwk/Y+uSNWjzooEsCpDUbTCywABz1EyUkpWPW3kxAyRx3/MCoQfpRUNwzs
-	vhXUJmOuK5THFvsbqDy0IQ/jjLSkS0FvtgFwEY30dC0kyDFHrH8AkLvYUqfmJUz0Zd3bfW+Njpl7X
-	r2vG4dnA==;
-Received: from 2a02-8389-2341-5b80-d601-7564-c2e0-491c.cable.dynamic.v6.surfer.at ([2a02:8389:2341:5b80:d601:7564:c2e0:491c] helo=localhost)
-	by bombadil.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w4ZIz-0000000G9lB-1wml;
-	Mon, 23 Mar 2026 07:02:30 +0000
-From: Christoph Hellwig <hch@lst.de>
-To: Alexander Viro <viro@zeniv.linux.org.uk>,
-	Christian Brauner <brauner@kernel.org>
-Cc: Jan Kara <jack@suse.cz>,
-	x86@kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-mips@vger.kernel.org,
-	linux-parisc@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	sparclinux@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org,
-	linux-api@vger.kernel.org
-Subject: [PATCH 3/3] fs: remove do_sys_truncate
-Date: Mon, 23 Mar 2026 08:01:46 +0100
-Message-ID: <20260323070205.2939118-4-hch@lst.de>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20260323070205.2939118-1-hch@lst.de>
-References: <20260323070205.2939118-1-hch@lst.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffPnx46dMz2yYy
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2026 18:25:08 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62MB0K4o3743898;
+	Mon, 23 Mar 2026 07:24:42 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=jAO59f310du7QormdyuLxv3apotxnRlrU6xoEvAIX
+	r8=; b=jx+o0ZDcFg1AlC9LpBRt9rF3So2ZwVvjFn73OdrJB7f4nfFGLX6SngQ7P
+	E7B+NB+ytbBXaHjY1R1AMSuHkv7DcYEzLA2sUvZdf2y0OcxehirJE5/NUHDqySC7
+	+vCaksidPvjqXELkHbj6ENVvcsaKc8amxwS2+V0wVbNhsvqsCxjTipqBVH8/s9s1
+	Uu+YQ8GYY5CvnQAEU79omJJfPk7M5izU0zpZJ/wrooiZodJAHjjAda8pI/cyD+Ob
+	3PupuwebZwM6HqN31QFCRyANQotk6z81UDV7AQENf/gcuJE8qDOdobPm4uTFOEA9
+	6mFa332LxXX+cWz02gnURPr8YpPBw==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d1kxq5swq-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 23 Mar 2026 07:24:41 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62N7ItZr008749;
+	Mon, 23 Mar 2026 07:24:40 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4d26nncdxa-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 23 Mar 2026 07:24:40 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62N7OawB22086016
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 23 Mar 2026 07:24:36 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 43EE92004E;
+	Mon, 23 Mar 2026 07:24:36 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A483020040;
+	Mon, 23 Mar 2026 07:24:27 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.61.247.60])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 23 Mar 2026 07:24:27 +0000 (GMT)
+From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+To: arnd@arndb.de, gregkh@linuxfoundation.org
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, nathan@kernel.org, nsc@kernel.org,
+        ojeda@kernel.org, masahiroy@kernel.org, linux@weissschuh.net,
+        tamird@kernel.org, rostedt@goodmis.org, ihor.solodrai@linux.dev,
+        ritesh.list@gmail.com, maddy@linux.ibm.com, peterz@infradead.org,
+        venkat88@linux.ibm.com
+Subject: [PATCH] char: nvram: Remove unused nvram_mutex to fix -Wunused-variable warning
+Date: Mon, 23 Mar 2026 12:54:22 +0530
+Message-ID: <20260323072422.25730-1-venkat88@linux.ibm.com>
+X-Mailer: git-send-email 2.45.2
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,76 +90,59 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: 7EOGw3xU-fF7FPWBWLwp8g_3yTZxUJat
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzIzMDA1NCBTYWx0ZWRfXwtVcgvRfCMLi
+ 0BfkRj+clU+sJN9YBDTvMWimUa6YHaFe6EFWb1TLaTiD8xVd//sATAiUymq98oIQ9trSTp9gOk4
+ 4wy6Rvf1iFWRkP/p99VYKxKigHU5Rldc5K/nbq0JMDrxnw0/gDFQGGjYR9V5FeQ6RlZuK7X151s
+ rOSkjuz4fiymmocmIamRm+QGnMUHpR+1J6ZC3b6/fPoEnoedEdM2uJ9iO3Wk51WQr4eBzuYKqfr
+ e3ZV4SD9ud0gGpwjhH6HkHWYBjW+xnCP0VE7r74VIrrqB4PtZLRMSsQfoinj3e86xuo3BaAFtT7
+ 0WRFvgcKomKGFGk1lohR2XXEnmPfiCBB9/mo4iR586jY+bmMQcDToi+DP6NR4dnTr1K4UdanvbH
+ XoSKmjlzG1AqKMBuqQ53yHlkb0686eoziIspB+ITz/5qB4xII2YDZgLjdZV29uEcvmJJARU/RwY
+ GYAdZ6oZqAUna9zAYvg==
+X-Authority-Analysis: v=2.4 cv=bLEb4f+Z c=1 sm=1 tr=0 ts=69c0eaba cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8 a=HSj1x6wVMASIhtUHg4AA:9
+ a=zZCYzV9kfG8A:10
+X-Proofpoint-GUID: _M4EmJC2Qippd94GV-49dPGM0g5gFrUc
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-23_02,2026-03-20_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 adultscore=0 clxscore=1011 phishscore=0 impostorscore=0
+ malwarescore=0 lowpriorityscore=0 suspectscore=0 bulkscore=0
+ priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
+ definitions=main-2603230054
 
-do_sys_truncate ist only used to implement ksys_truncate and the native
-truncate syscalls.  Merge do_sys_truncate into ksys_truncate and return
-int from it as it only returns 0 or negative errnos.
+drivers/char/nvram.c defines a static mutex 'nvram_mutex' which is never
+used. This results in a compiler warning on linux-next builds:
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+  warning: 'nvram_mutex' defined but not used [-Wunused-variable]
+
+Remove the unused definition to avoid the warning.
+
+Signed-off-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
 ---
- fs/open.c                | 8 ++++----
- include/linux/syscalls.h | 8 +-------
- 2 files changed, 5 insertions(+), 11 deletions(-)
+ drivers/char/nvram.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/fs/open.c b/fs/open.c
-index 181c1597e73c..681d405bc61e 100644
---- a/fs/open.c
-+++ b/fs/open.c
-@@ -126,7 +126,7 @@ int vfs_truncate(const struct path *path, loff_t length)
- }
- EXPORT_SYMBOL_GPL(vfs_truncate);
- 
--int do_sys_truncate(const char __user *pathname, loff_t length)
-+int ksys_truncate(const char __user *pathname, loff_t length)
- {
- 	unsigned int lookup_flags = LOOKUP_FOLLOW;
- 	struct path path;
-@@ -151,13 +151,13 @@ int do_sys_truncate(const char __user *pathname, loff_t length)
- 
- SYSCALL_DEFINE2(truncate, const char __user *, path, long, length)
- {
--	return do_sys_truncate(path, length);
-+	return ksys_truncate(path, length);
- }
- 
- #ifdef CONFIG_COMPAT
- COMPAT_SYSCALL_DEFINE2(truncate, const char __user *, path, compat_off_t, length)
- {
--	return do_sys_truncate(path, length);
-+	return ksys_truncate(path, length);
- }
+diff --git a/drivers/char/nvram.c b/drivers/char/nvram.c
+index 9eff426a9286..2ce3307663ed 100644
+--- a/drivers/char/nvram.c
++++ b/drivers/char/nvram.c
+@@ -53,7 +53,7 @@
+ #include <asm/nvram.h>
  #endif
  
-@@ -222,7 +222,7 @@ COMPAT_SYSCALL_DEFINE2(ftruncate, unsigned int, fd, compat_off_t, length)
- #if BITS_PER_LONG == 32
- SYSCALL_DEFINE2(truncate64, const char __user *, path, loff_t, length)
- {
--	return do_sys_truncate(path, length);
-+	return ksys_truncate(path, length);
- }
- 
- SYSCALL_DEFINE2(ftruncate64, unsigned int, fd, loff_t, length)
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 8787b3511c86..f5639d5ac331 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -1285,13 +1285,7 @@ static inline long ksys_lchown(const char __user *filename, uid_t user,
- 
- #define FTRUNCATE_LFS	(1u << 0)	/* allow truncating > 32-bit */
- int ksys_ftruncate(unsigned int fd, loff_t length, unsigned int flags);
--
--int do_sys_truncate(const char __user *pathname, loff_t length);
--
--static inline long ksys_truncate(const char __user *pathname, loff_t length)
--{
--	return do_sys_truncate(pathname, length);
--}
-+int ksys_truncate(const char __user *pathname, loff_t length);
- 
- static inline unsigned int ksys_personality(unsigned int personality)
- {
+-static DEFINE_MUTEX(nvram_mutex);
++static __maybe_unused DEFINE_MUTEX(nvram_mutex);
+ static DEFINE_SPINLOCK(nvram_state_lock);
+ static int nvram_open_cnt;	/* #times opened */
+ static int nvram_open_mode;	/* special open modes */
 -- 
-2.47.3
+2.45.2
 
 
