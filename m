@@ -1,88 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-18584-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18585-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC640D58CDD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2026 06:12:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9E41FC72A8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Mar 2026 07:02:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ffN9m4FHYz2yYq;
-	Mon, 23 Mar 2026 17:12:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774246332;
-	cv=none; b=oHRuZWowljyZObp5sCOj3HxQhmkIcLH6VbvJEFnB/mY8KQFbUwnhio4cHdMEyfDSxKPT11PObk1nb5qhhFeb3OPv6vLBZSyWFqYs1awkkKkrpyHokumDZxn2CvXhSs/XUJnMt2mpSSyFPiYA6ep83GAgifv0RmWTtwfMPb8aIgW/aX1MGBbVzrk3JxguLCS+lbHa3ZWegCKk68rwxmTMphA84oUQHEaMxupcFZOacoGHZCHu1nmlJii4QlboRqwtbwSnP2aFBhP2uHZuTYKxMmisEDqcnflLQaRQh/E68ZzrH0G5dgaGFc+gf9y3CjDdAAyUPsAucXi8NThTjynbsA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ffPHk1vyRz2ySb;
+	Mon, 23 Mar 2026 18:02:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::133"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774249346;
+	cv=none; b=dPq69adI9xl0flVYYAyF48gcPCOK4BEIaITbH3n/kqorJh2xjbKy7wKrlLqg7hqQ/O2tJ1giGxvw/cIa8ebXx0tlSzEDrIj1cA2qcOh8bNo5/RJat+7KzJdraUeF/JhGZdOUT6+JYpltEQaG6x4HXoyxSBMvQjaATvkqPYx2nKcShP6s46g0njiSomGiaRAVhAhMzIKPMRBm72hkY6kuafISr4eWFaH8T1eihpyc1/ppcKEycNTwxOZvnPIVjBdTI1RIObc6Sq40Y9ytONKnqBGgg5LQDVYsRKvj+Bu3YZ8kO5m13c9SOorjGfiPPiim1fr/eLbbA74zAgVg8/1uBQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774246332; c=relaxed/relaxed;
-	bh=kSf+1FW7POK259mGvIfdCJA0DSomJSBcsPEGwaT/AFU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=SNiQyqDgtVteNK6ktbXKi0kgu/8IwYHG6WxXFfuebeBpFHJr0WE83fZDKaujZKW2QQIyaFyMvAp2Jbbe2JosjHNdqhRKDBZJyVtTZXENbcK6Qa26qnN0BeVygVURdZlifrmbsXylCHJk7zrs3mCa9PSpB2+AwW7Lc5BN8vSgAvxhhgelUiznLGCrlo38I6RgsVcPQXejp0bFIuya5NI1r8xj7Lt5My3P6jb/HWBuNZCxbB4zsN+1LfNWteXWLR9fPpyQm5OILyBJDS6/7NlFwA214xffWtAUVTPRjzSWSjzAU541hZmvrcwUfL0zddAr1KcP/6B0Kn0fnIoBdQ7Hug==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FP270o9T; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1774249346; c=relaxed/relaxed;
+	bh=ymKLyHDUS1Lu6tStQ0lnD46LWrM7guBhCULfBOM2RqI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=gM/5YSzwtez9FiyUA3rxEUto8a3GSHRLmD7Vd54yd9v0tpINTfBtsO9ckFFqpkj1ouT3bM38CaIg2MM+p9r/IDTTPQjFB8ynljxDvY5glaJroBF7n8bp2h0fsAw6B8lWB8/wEU1wvsHou1XwOXFuWEs8IIga+NPhTawMSuzXioJ2SuIFNnL6JCvuEnUaU8PHbsiTdclD5vqPLzoc1B42ZlytBThbcdaAafHgYt5HL7qc07DBtDPu7o8SVjX7xXMVjhty8/nPx+Ba2V7iscIxYlwNPDAsWLlmtp79E+IF8G0GisG8mvSghqcHoWR8ozgo1Zid/MjSzDJRuAX7f6kY2w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=lst.de; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=d7rz3TJI; dkim-atps=neutral; spf=none (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+58733bf867d043cbf217+8247+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=bombadil.srs.infradead.org
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FP270o9T;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=d7rz3TJI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mahesh@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+58733bf867d043cbf217+8247+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org)
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffN9l2qQ4z2ySc
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2026 17:12:10 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62MMKp8V510743;
-	Mon, 23 Mar 2026 06:11:58 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:reply-to:subject:to; s=pp1;
-	 bh=kSf+1FW7POK259mGvIfdCJA0DSomJSBcsPEGwaT/AFU=; b=FP270o9TLtiz
-	cK7wDXPjeuExGS1dzDQgzQUdmSyGKzFefi0aPnR5sohEb0z2rE5mSRvQ0SNkJSzL
-	l+3FAs2QyhX7LFo1lALvLojMzZVrhLSyxPQc7SWtFXH8fTS5l+Eb4L5npjI0cw4F
-	DMRzJw5+eW/88hC3ucKZ3EJNdFG8qDI75QrEnHx2uQk3KERjMQgwUCAmiCAInbFs
-	Afm0dcMzaZxU7FxQCNmStDAeYM5sX9zWjiM3+QelB73RGprgR7YS146PYycaJE0D
-	lFWRR06ACxJ4IvdozzYBSgJm1SKUwAXDfOCUXjQdkY8xC0XzSgNqIuIPh2TwOrlY
-	C1Tn4RHa+g==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d1kw9nkrv-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 23 Mar 2026 06:11:57 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62N2p9xx004392;
-	Mon, 23 Mar 2026 06:11:56 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4d28c1uy0f-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 23 Mar 2026 06:11:56 +0000
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62N6Bqbr50659662
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 23 Mar 2026 06:11:52 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B250C20043;
-	Mon, 23 Mar 2026 06:11:52 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 922BF20040;
-	Mon, 23 Mar 2026 06:11:50 +0000 (GMT)
-Received: from linux.ibm.com (unknown [9.123.6.78])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Mon, 23 Mar 2026 06:11:50 +0000 (GMT)
-Date: Mon, 23 Mar 2026 11:41:48 +0530
-From: Mahesh J Salgaonkar <mahesh@linux.ibm.com>
-To: Sourabh Jain <sourabhjain@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
-        Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-        Aboorva Devarajan <aboorvad@linux.ibm.com>,
-        Aditya Gupta <adityag@linux.ibm.com>, Daniel Axtens <dja@axtens.net>,
-        Hari Bathini <hbathini@linux.ibm.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-        Shivang Upadhyay <shivangu@linux.ibm.com>
-Subject: Re: [PATCH 1/2] powerpc/kdump: fix KASAN sanitization flag for
- core_$(BITS).o
-Message-ID: <acDZNdku8sR_O9Ba@linux.ibm.com>
-Reply-To: mahesh@linux.ibm.com
-References: <20260321053121.614022-1-sourabhjain@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffPHb5kg7z2xd6
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2026 18:02:17 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	MIME-Version:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
+	Content-ID:Content-Description:In-Reply-To:References;
+	bh=ymKLyHDUS1Lu6tStQ0lnD46LWrM7guBhCULfBOM2RqI=; b=d7rz3TJIO5VfLVTCv6nD8Xnzpy
+	b30BT6XjmyaGSr0JxhLjSl7zn3uR/MAH6ReoCZRgIETHDH9xETuWjVl1uRgMTja5hExmiG/huXj/+
+	I2j7olvaQhY8aeJoqZzCnwYVJC9uyiWYzhx7I3ddO77ONjJOXQbA2QyA/wh4b6nqNHihx0/fRnHR4
+	U/oe1EA/ztH2sNKmPNvEi78LRUy02mkByquMVrtYjUTjQO7csjDuoBO4q0uMiw9T+C2Qbwwp+ioUD
+	V9zGUDjjZp9w/vA6QMzaWpGFhnDn2zPvL6tx7CuC5bT3HTvyqKTRjd/H+KwKSftEdoFUHhJqPNQYx
+	SsVwiEzA==;
+Received: from 2a02-8389-2341-5b80-d601-7564-c2e0-491c.cable.dynamic.v6.surfer.at ([2a02:8389:2341:5b80:d601:7564:c2e0:491c] helo=localhost)
+	by bombadil.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1w4ZIi-0000000G9ib-15sM;
+	Mon, 23 Mar 2026 07:02:12 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: Alexander Viro <viro@zeniv.linux.org.uk>,
+	Christian Brauner <brauner@kernel.org>
+Cc: Jan Kara <jack@suse.cz>,
+	x86@kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-mips@vger.kernel.org,
+	linux-parisc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	sparclinux@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org,
+	linux-api@vger.kernel.org
+Subject: fix architecture-specific compat_ftruncate64 implementations
+Date: Mon, 23 Mar 2026 08:01:43 +0100
+Message-ID: <20260323070205.2939118-1-hch@lst.de>
+X-Mailer: git-send-email 2.47.3
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,88 +71,25 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260321053121.614022-1-sourabhjain@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: d_2zDFsAgxbVhK3fEFGOluwKH8KpQApJ
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzIzMDA0MiBTYWx0ZWRfX11Peyy0rm0my
- a+ll6mpPJhs8ruWI2zZTfYUtR3lHZdA+NQWlMXyOrKIUcFAkodwwvE6pc+HTin4nw94IxSq15sJ
- WfRsym/YqQM9KfXIdwJlK0KzwuWLDQGW4DSVXbnnpjVzr4vcMI3Y3ThQCO4tD55+E6Gw/gd9hZD
- XSl2I1/Sfla8rWi8c3afIpW59VbxAnpiZgYrQC1r9ip+Bvu0hBqRxpmc0mSrVQ4rtV+2fL5PCOH
- rjYHt9QIBDKZ64Svr+keWSesJz9dlIoa7eIx8wi3fi4+QjOkhHquNw7z2qNL7YL/hnRycOSoZrg
- rUEoPrxJhW3WHQkVad5QhhuWf3xesNrQaPGxsfyZCJ1oQgN6ByrFZ2a3zfk/GOM+NhzVtpZ6+XF
- mEqRTZT64W4TPEQZrdKH9Dnjw6Z8EtoOgojeZjbeEI6jVjZeyCwNPs0wRlmF3WZfFg6tRp+HXrU
- I7eOk3FJQ1ZO3uZrImw==
-X-Proofpoint-GUID: NSnrn3J8MyaMh5Z2zCc5wgiCh_Z5eS0K
-X-Authority-Analysis: v=2.4 cv=OsZCCi/t c=1 sm=1 tr=0 ts=69c0d9ad cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=JuTF4qcAAAAA:8 a=pGLkceISAAAA:8 a=ZSZbnnKFPOSW3gtc0DAA:9
- a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10 a=WlT8qwTXB_Kj6um4hl3b:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-23_02,2026-03-20_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 adultscore=0 clxscore=1011 phishscore=0 suspectscore=0
- lowpriorityscore=0 priorityscore=1501 bulkscore=0 spamscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603230042
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 
-On 2026-03-21 11:01:17 Sat, Sourabh Jain wrote:
-> KASAN instrumentation is intended to be disabled for the kexec core
-> code, but the existing Makefile entry misses the object suffix. As a
-> result, the flag is not applied correctly to core_$(BITS).o.
-> 
-> So when KASAN is enabled, kexec_copy_flush and copy_segments in
-> kexec/core_64.c are instrumented, which can result in accesses to
-> shadow memory via normal address translation paths. Since these run
-> with the MMU disabled, such accesses may trigger page faults
-> (bad_page_fault) that cannot be handled in the kdump path, ultimately
-> causing a hang and preventing the kdump kernel from booting. The same
-> is true for kexec as well, since the same functions are used there.
-> 
-> Update the entry to include the “.o” suffix so that KASAN
-> instrumentation is properly disabled for this object file.
-> 
-> Fixes: 2ab2d5794f14 ("powerpc/kasan: Disable address sanitization in kexec paths")
-> Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-> Closes: https://lore.kernel.org/all/1dee8891-8bcc-46b4-93f3-fc3a774abd5b@linux.ibm.com/
-> Cc: Aboorva Devarajan <aboorvad@linux.ibm.com>
-> Cc: Aditya Gupta <adityag@linux.ibm.com>
-> Cc: Daniel Axtens <dja@axtens.net>
-> Cc: Hari Bathini <hbathini@linux.ibm.com>
-> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-> Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-> Cc: Shivang Upadhyay <shivangu@linux.ibm.com>
-> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
-> ---
->  arch/powerpc/kexec/Makefile | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/kexec/Makefile b/arch/powerpc/kexec/Makefile
-> index 470eb0453e17..ec7a0eed75dc 100644
-> --- a/arch/powerpc/kexec/Makefile
-> +++ b/arch/powerpc/kexec/Makefile
-> @@ -16,4 +16,4 @@ GCOV_PROFILE_core_$(BITS).o := n
->  KCOV_INSTRUMENT_core_$(BITS).o := n
->  UBSAN_SANITIZE_core_$(BITS).o := n
->  KASAN_SANITIZE_core.o := n
-> -KASAN_SANITIZE_core_$(BITS) := n
-> +KASAN_SANITIZE_core_$(BITS).o := n
+Hi all,
 
-Nice catch. Thakns for fixing.
+this series fixes a really old bug found by code inspection, where the
+architecture-specific 32-bit compat ftruncate64 implementations enforce
+the non-LFS file size limit unless opened with O_LARGEFILE.
 
-Acked-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-
-Thanks,
--Mahesh.
-
--- 
-Mahesh J Salgaonkar
+Diffstat:
+ arch/arm64/kernel/sys32.c       |    2 +-
+ arch/mips/kernel/linux32.c      |    2 +-
+ arch/parisc/kernel/sys_parisc.c |    4 ++--
+ arch/powerpc/kernel/sys_ppc32.c |    2 +-
+ arch/sparc/kernel/sys_sparc32.c |    2 +-
+ arch/x86/kernel/sys_ia32.c      |    3 ++-
+ fs/internal.h                   |    3 +--
+ fs/open.c                       |   40 +++++++++++++++++++---------------------
+ include/linux/syscalls.h        |   16 +++-------------
+ io_uring/truncate.c             |    2 +-
+ 10 files changed, 32 insertions(+), 44 deletions(-)
 
