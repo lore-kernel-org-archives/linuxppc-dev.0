@@ -1,93 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-18721-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18722-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E8BAF54AD0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 16:00:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0190F54ADC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 16:42:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fgF9b5Y9Pz2ynP;
-	Wed, 25 Mar 2026 03:00:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::82a" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774368003;
-	cv=pass; b=Ya2X2L+Cr1GszML8wNIp7gJN087UVICrD7JFF+5BkX1VaFP6jk/osA8t3lOQQexOf8mFtl9/jhiy/o3W0jt0iKIpSzVK3J5xKYl/NtxET4PlHWAxy8WuK/ZmYVZVxHgvoTrcDipQjhxiU9ooj9GyAM+roQHicjeDLhdBTra1P5rlqoZDNk5MdlpjorOK2JD/Fi+pwcgEaotoyNBAmDoepq/eRhjH8j/Jd7CQzGAPlIa6s7poYD3LUGb2mESZHiKSNRpWj1nFUHZk+h5txucTz5aAvZ3Sgtr90kaAyTDtEfpF3eGLHqjpvl2MrO7KkSTm/7/K1u3762+CF9Gk6qdADw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774368003; c=relaxed/relaxed;
-	bh=XLrSVgO5Jwz0u6hqz5pvyqn1EORmtlk3PJkOIiSuuek=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=E1BLzk9Gqn5RwrRgoyFuUrBZ7BxeluGk3E3ammlaw5An3QxTC9Phib2Ta2Jxni0FrqxpVVYdzmkIVaNfjKploqe79a+8mG7++ohn+cyfKpatIGvuSHzvW7JgVDLjECVbkIjJeMzfNeWeVXnwOS9tWfKynRJ+CjmeS+wvzREHR7d01dHuO4fZfPkAggf+Kd8aBDX3ZtRY0fxtrVIlnZrWpfvYZzHMX/qKCXyXz4iU3Z2q+KvVSDQwdlo6rRLeMQ7qdpzUb/xtdsYj0mtp1dKBWUg6cRNXglPkenciY4RpcyqQrZutMfZnGfasoCa5LW9Djw4PUCXWfq24DLVokPsI5A==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=NLV39c87; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::82a; helo=mail-qt1-x82a.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fgG6W2tFvz2yng;
+	Wed, 25 Mar 2026 03:42:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774370547;
+	cv=none; b=TLP6vgagwrmg98vYdXY821acLfOEq8PxkT9ogHDm7f2KD9rL5H8r1IdI1ZTkiAg2+Y3kPHDkpXikNnPtj8LZ88dZ0BuMjAjvYfOJJm06wqqqdIsHD32LX8GO8mLoP9B1kfFw0hFsraouZlRo+zFVbEneR4igzwyHSmBXt2dK50OLP6hw54GzKm8k6ECLMeioxISReq8evzOJReTQ3JWUTt5zAz67vMgb6Mj+1si2DYjCA+ooVazlyMIHptuaWNNap1NIcVCSbm3yoXZXgdiDa76aqeEGUDn6Rp0v10d6LXzCd+8GfWSp2pa1X994YrjBfbswU7Mv6h6hyOXpIX/2mw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1774370547; c=relaxed/relaxed;
+	bh=3Xek2iy9qjmWdzaaTDCJksqUsRu7KHXrr0+xwjq5P+g=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=bMXea2rDojCEE882c2lqTrTbtjMK4PLeHX50XGgmzdBrGk6oNJ3CtL0moGMhPckKEzI5aHwhOVI+6nIAj6lfz0GpuR+ktDORP9y80zAmshZx6ZCp6Qub9Gv8AttXjpP6q+P0+Pbrejbzl9WYz/Sd3odbS0Rb9lwiwdwAmVTgY7A6DtuA33PF88BNHAFdkGOWnCXtNdunSggOsi4mQk+w5TbVSNaiUDHsPRPNQM6xc8id35EroTC0oztNqp9cI+6MMev+Z9r31eFXpy4M0Nnwy5y1WIWWOatbOZcJMDlave81cCs1j0p6nD7Sw7nM+/ywg/rQQpStrYKSLwWCZYMvOw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=DQOwZZrw; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=NLV39c87;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=DQOwZZrw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::82a; helo=mail-qt1-x82a.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x82a.google.com (mail-qt1-x82a.google.com [IPv6:2607:f8b0:4864:20::82a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fgF9Z1MG6z2yhZ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2026 03:00:01 +1100 (AEDT)
-Received: by mail-qt1-x82a.google.com with SMTP id d75a77b69052e-50b6c45781aso832601cf.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 09:00:01 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1774367999; cv=none;
-        d=google.com; s=arc-20240605;
-        b=CvBjX5rv0UJsbd1oXs7mPRvP2E5O0ZjE8WQwScYI7FOFab0v9nFhNHg2NbvIszUZ/B
-         rYgsQ0osR/TfJKDWaElPwRElPq1++DEoR/RT253ACFO88AxXHZizaZQvf5qIAc57OABi
-         0VSL8nTUoPSz1iXvWPtl2JssTqCNfIEodChGFLZcSl1Pnd+lvtQz0JGgnfKjluSk1ecX
-         7W6FiDTXO9sk8QpzroEaQmtlNCn+hWeGrhtcc4nOLe0sBiC2Rc4dmGgeT/0K3YHXs7Em
-         CMTV+p9Hs+CCdh0SIcsku1Mn7z+Sj89HBoxiyex0aUJYecco/NBbcjkFgXp5hgM4glSZ
-         Jm5g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=XLrSVgO5Jwz0u6hqz5pvyqn1EORmtlk3PJkOIiSuuek=;
-        fh=wzZU2niOOfGC3kBpBce+wU++wFumAiVkbSi/ctFcezE=;
-        b=fFyMLSc9yT3s25FuJRXIUpF+WuV63tcXLoLurXO40/q85iGOza2ksv2jTvVK/2P+At
-         vjkTrZNgSvEC+Bf/0++A0KLfEoWt3mCqfPnWiquO+4Y1Zn7F6xc8/W0pPhBq4TUgHn7V
-         8h/Tu1IihztWLq3XXhBxbQUwD9nlvBYaIDt18Mn24m9ZXW3Pklm1mq0Rz/WmGpIXZ56L
-         EiM2k2SMZ7/ZWo5Hgv05ZWlHcwGRcpkMvXP0yXVcSxDhLKD2dvW/TYV1r1tjDPW9S+fA
-         n09ANrf1yWt2YHPLQp64bBQk7B8NrQMosXg0vFmRA/LdYuhegRwG3HHg1VXKb0HBBSWc
-         rURg==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1774367999; x=1774972799; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=XLrSVgO5Jwz0u6hqz5pvyqn1EORmtlk3PJkOIiSuuek=;
-        b=NLV39c87C7gj5fELZc1hSwaz15vdMq+Md6heJ6LK7ydvq5e2qyvy4ySW/TmBNo3AiC
-         45raeVwUadHqq3K/nax5mpT9pA5r6LVm5nJ1sMuG0lBZZ5zWrG8C8viIg7knzbsCjDZS
-         38IJK6MwsX3Ga9QbtJ+iYf2ELLiEIz5pepr4Fs2VyywGG9DrdnSU+s0vmymkCgX+VWx0
-         YtSQBWMHnorsnVg9bUQi8OfO0heqTyayy9r6tkMTqjdp9w/uAPCLTZb1jSnSFpGFsysL
-         Q46Pbz/8nClx46d5dXsM4W6cHffJyO1UExHY7TFjbaNR4scZ1Ff9vvoMWd/Y2ZAN/9qa
-         q3Iw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774367999; x=1774972799;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=XLrSVgO5Jwz0u6hqz5pvyqn1EORmtlk3PJkOIiSuuek=;
-        b=Bn949cwGCGCKdA2FJKacRM+Kpx2S6Ro+dTevmY+yuKTUD06HvEXhC5mQiLIULt0AG7
-         J6kHg8OsRxRM+z6ljzMX7m5rkLTbD+66JD8od1Zt3K7xNe/qz7+l7Ir+u7BWAUrqcsv8
-         SK4Sd2CLfX/QDUPPDiGaqv14+GzSxD59B+BHxb1zlNrDQ5coo6ZkQ8b7u/W4aSGz64Ij
-         ex2GPG9Z+BzWOhVjvucvO8DQ0sBO8BCw0OR3X4oZWWhJ1CfK9itu7JJLK24WF8bhSyg1
-         AdX0z4k7tA9ajXCCgieOBWlJapgA8J6NLyVGit54JDTQrWWZ16ifOF8AIprNsEuA+CAU
-         G3AQ==
-X-Forwarded-Encrypted: i=1; AJvYcCX3oidYd50Egnh7QSaE4E/TDzT1nPM1HfXeQPqrfJ290cP/vcLuK51NzouQvWAVUZ2dTInj6CSNsCZ/WAw=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yyq1HnAZ9yybzRqsbqJq90PMhkOjfIwJH5y17O9rV3jRks7jUai
-	Ebo1/vjogBviF/YebfO7j+j2Iq7v++z3R6BCM9QvuDKuIzoagJBHX9OpIPucvoau3TvcFwpCcA6
-	LANnuFbfcAF9fbzr5KDB0+69W+tI0kWzbXmo3Jxgw
-X-Gm-Gg: ATEYQzztfR++AtaiXqB1GgTorwvMUHKamGx1qAVzVabLlrh49XikS47klkIDk6l7y7L
-	63rNdubED8w/cO6VgMycDHOl63BfPfeUdcxltbxtTxlxgHuUUW6Lv9GHkoKVHRaqu8Mgf3bqj2/
-	qhE5Rxpzz5VA9KLuOanGj9POXKxXzFpRoOc48mt2jAqhUnZTQ6ZAx5QG0Zf3/iCRRQpdeuGmBxr
-	K0WDvH6EdJ7iBlZ0SIx+onDT4y3rS8CMSyxRgc5vf0Uw1F2T3Me+l4B1ggx42XmcsmpIgX3clkm
-	bAEi4eAuw8zEe0NtuE78sQUebAxHUD/Q+icJCQ==
-X-Received: by 2002:a05:622a:8d15:b0:509:1eca:6d24 with SMTP id
- d75a77b69052e-50b6fab570emr14738871cf.2.1774367998125; Tue, 24 Mar 2026
- 08:59:58 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fgG6V0CSGz2ynP
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2026 03:42:25 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id B7A3344260;
+	Tue, 24 Mar 2026 16:42:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E44B6C19424;
+	Tue, 24 Mar 2026 16:42:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
+	s=korg; t=1774370542;
+	bh=TDgLcRhij5JQVZa60QmaxqOx203j51xbjV/q4WkoTac=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=DQOwZZrwl+GxIARWYI809PrjYZgIC0xfeubUvTNhKKAudWXflkBkHkOQxqHhcKfI5
+	 YEd8AoepFJifaDz0cIKUFkW85RTTMclmIhV4gfAqh3VY34KIx4Pm4UqjUG6y+A3vml
+	 FWjY7pXOdRDrlwOVcmMMkatFHeB/Fbf82T5tVjrs=
+Date: Tue, 24 Mar 2026 09:42:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Hellwig <hch@lst.de>
+Cc: Richard Henderson <richard.henderson@linaro.org>, Matt Turner
+ <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>, Russell King
+ <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will
+ Deacon <will@kernel.org>, Ard Biesheuvel <ardb@kernel.org>, Huacai Chen
+ <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, Madhavan
+ Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)"
+ <chleroy@kernel.org>, Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt
+ <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti
+ <alex@ghiti.fr>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik
+ <gor@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Christian
+ Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle
+ <svens@linux.ibm.com>, "David S. Miller" <davem@davemloft.net>, Andreas
+ Larsson <andreas@gaisler.com>, Richard Weinberger <richard@nod.at>, Anton
+ Ivanov <anton.ivanov@cambridgegreys.com>, Johannes Berg
+ <johannes@sipsolutions.net>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar
+ <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen
+ <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin"
+ <hpa@zytor.com>, Herbert Xu <herbert@gondor.apana.org.au>, Dan Williams
+ <dan.j.williams@intel.com>, Chris Mason <clm@fb.com>, David Sterba
+ <dsterba@suse.com>, Arnd Bergmann <arnd@arndb.de>, Song Liu
+ <song@kernel.org>, Yu Kuai <yukuai@fnnas.com>, Li Nan
+ <linan122@huawei.com>, "Theodore Ts'o" <tytso@mit.edu>,
+ "Jason A. Donenfeld" <Jason@zx2c4.com>, linux-alpha@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
+ linux-crypto@vger.kernel.org, linux-btrfs@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: cleanup the RAID5 XOR library v3
+Message-Id: <20260324094220.09e6eb90afc7f55937847f22@linux-foundation.org>
+In-Reply-To: <20260324062211.3216301-1-hch@lst.de>
+References: <20260324062211.3216301-1-hch@lst.de>
+X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,62 +91,29 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-References: <20260322054309.898214-1-surenb@google.com> <20260322091723.dbc1a8e45f4412fca43ba510@linux-foundation.org>
- <CAJuCfpGEA17hB4BMdr5a7=NxfeF1RUt0q=_w2WieVv0XoN24Gg@mail.gmail.com>
-In-Reply-To: <CAJuCfpGEA17hB4BMdr5a7=NxfeF1RUt0q=_w2WieVv0XoN24Gg@mail.gmail.com>
-From: Suren Baghdasaryan <surenb@google.com>
-Date: Tue, 24 Mar 2026 08:59:47 -0700
-X-Gm-Features: AQROBzAMqgNkN_nl_EndICe5F5XJG6Br11eHuUlOIjfDgcmYOvJ6ZgT0J1pHfxM
-Message-ID: <CAJuCfpHQ6ru79hjnRnz6vpb2-Rjff8QsM9d_4g9jd+_jb9-qvw@mail.gmail.com>
-Subject: Re: [PATCH v4 0/4] Use killable vma write locking in most places
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: willy@infradead.org, david@kernel.org, ziy@nvidia.com, 
-	matthew.brost@intel.com, joshua.hahnjy@gmail.com, rakie.kim@sk.com, 
-	byungchul@sk.com, gourry@gourry.net, ying.huang@linux.alibaba.com, 
-	apopple@nvidia.com, lorenzo.stoakes@oracle.com, baolin.wang@linux.alibaba.com, 
-	Liam.Howlett@oracle.com, npache@redhat.com, ryan.roberts@arm.com, 
-	dev.jain@arm.com, baohua@kernel.org, lance.yang@linux.dev, vbabka@suse.cz, 
-	jannh@google.com, rppt@kernel.org, mhocko@suse.com, pfalcato@suse.de, 
-	kees@kernel.org, maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au, 
-	chleroy@kernel.org, borntraeger@linux.ibm.com, frankja@linux.ibm.com, 
-	imbrenda@linux.ibm.com, hca@linux.ibm.com, gor@linux.ibm.com, 
-	agordeev@linux.ibm.com, svens@linux.ibm.com, gerald.schaefer@linux.ibm.com, 
-	linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, 
-	Roman Gushchin <kfree@google.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-On Sun, Mar 22, 2026 at 9:29=E2=80=AFPM Suren Baghdasaryan <surenb@google.c=
-om> wrote:
->
-> On Sun, Mar 22, 2026 at 9:17=E2=80=AFAM Andrew Morton <akpm@linux-foundat=
-ion.org> wrote:
-> >
-> > On Sat, 21 Mar 2026 22:43:04 -0700 Suren Baghdasaryan <surenb@google.co=
-m> wrote:
-> >
-> > > Now that we have vma_start_write_killable() we can replace most of th=
-e
-> > > vma_start_write() calls with it, improving reaction time to the kill
-> > > signal.
-> >
-> > Thanks.  Sashiko review raised a few possible issues:
-> >         https://sashiko.dev/#/patchset/20260322054309.898214-1-surenb@g=
-oogle.com
->
-> Thanks! This Sashiko dude is good :)
+On Tue, 24 Mar 2026 07:21:36 +0100 Christoph Hellwig <hch@lst.de> wrote:
 
-Interestingly Sashiko had one false flag: "Does this code leave
-mm->locked_vm permanently corrupted if vma_start_write_killable()
-fails?"
+> the XOR library used for the RAID5 parity is a bit of a mess right now.
+> The main file sits in crypto/ despite not being cryptography and not
+> using the crypto API, with the generic implementations sitting in
+> include/asm-generic and the arch implementations sitting in an asm/
+> header in theory.  The latter doesn't work for many cases, so
+> architectures often build the code directly into the core kernel, or
+> create another module for the architecture code.
+> 
+> Changes this to a single module in lib/ that also contains the
+> architecture optimizations, similar to the library work Eric Biggers
+> has done for the CRC and crypto libraries later.  After that it changes
+> to better calling conventions that allow for smarter architecture
+> implementations (although none is contained here yet), and uses
+> static_call to avoid indirection function call overhead.
 
-In mlock_fixup() the path that we call vma_start_write_killable()
-happens only if both new_vma_flags and old_vma_flags have their
-VMA_LOCKED_BIT set. In such case nr_pages is 0, so "mm->locked_vm +=3D
-nr_pages;" does not change the value of mm->locked_vm and we are fine.
-Perhaps this can be used to improve the model?
+Thanks, I've updated mm.git's mm-nonmm-unstable branch to this version
+of the patchset.
 
-CC'ing Roman.
+
 
