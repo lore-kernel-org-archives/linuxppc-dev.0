@@ -1,105 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-18658-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18659-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03DBDF532C3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 01:01:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50180F532CE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 04:03:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ffsDp560jz2yql;
-	Tue, 24 Mar 2026 12:01:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774314090;
-	cv=none; b=iG07O+Pxx/CAIke4jEL0QqBdmYwwuZesCzRA425wUAF/JHogz6ileOAr40oD7bt0Dliu98hlmtvFaEJKfdOHDpK7QqqK3eu1dImNcODFPOM/a/gdOl673Lbz1EfB/k2ee1348NbgiUeFf1HbxnQWupq9mhglNdf0MO0I9+X/d4dxStoq2H4wfJbERRyyBHllLeVEe4dG4AS+QTLDOyj782dv2GZKVT5s0soUFSMXhN2KSQLTE9Qs2ULGbHZFLjOldKgSSRNXSLQa8vNCB+DYMKLk6OB+DYkBAzw1voHeGN0bZ108jPNMHkHYdRTOzpaNQK0qVyibEc2KGPra8NsFPw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ffxGP5sKjz2yj3;
+	Tue, 24 Mar 2026 15:03:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.221
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774324989;
+	cv=none; b=L6FDprYdXsPEk0OmwEgd4ZxceTH4JMr8/6/owgQO5gUhuJItfMN+95lNhzLLxp1dw8LAPwzeBl7QcW0yUpCTNuUU5DT0AQXe8tI8p/U6x8ojT7ncegKKcEEn1/896M+U1Flq1J05IbcFO827ZIgey9m0gxfD+iK75jdwPp94GKNYn/O2ni74SXOpkVPtUMB1aSbe8rIOfJwSRz9lQa5yo1q1Z8L8tWkDoPQ6oFZeP3hYtOXk5LZORZ3W+2LLtCLXzPJv8hOf5ePCvZoQPSECByZRGovJf1iSqcw4r2SF5YkyO5dsSqbFuKqnltf3HDkT18UTnc0hoQFr/NrDRZ3R3Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774314090; c=relaxed/relaxed;
-	bh=6gpfpIFEo/UM2Vlf5EBuE34iIvnj7ck9nMpb5/Ds9cg=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Lh4N8di0WgtKdV/ZdVPsEdhXjMH4V9iqsljg2WDhwkCAGIk5Q3Fh3eSEWZzBpfMaV7HDhUSZKcJvilb5aSvpiHY7kd8esHQG7AZU90cRp+h8E53Yjr+NQTwHNg5zB2A8JLzEw+pZJSUpYkr6a0/4hKqaigNafYw4SEk4rX5Uv4dMCHc0Um+6bMGiDgqZndsz+n5jHpLO5uXQIxW+Zav+GTzP80qNiAAjgvPcV6b3FJr7OYym9s7bRwBGlVqayLJGHmscNbx5UA9IU+YwzuLorAhFk/jiQfYvaqW+Zk/L6cY3tyRvGvbocwbpqFCrK9vT7T5n0kI/aQF3Cfiita1yBA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rLAmVR6g; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1774324989; c=relaxed/relaxed;
+	bh=bDy1WqzyWZ4QXi9V76+nhfaX5tyIvisESl1ex2cgViU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=ZwFGpw9SxqJfLrULdR8RN+fg+7z6FL5/mkW9cWZRJD5xe5uIxjqoy6rCCecRlNn+ECLCkHuATio8kz5Cy5fg0+kZhrfGMDizubMRjXV7tsv6ufvi//n7Z93jZOWRfbpykopglpBx55jEh1P3kiMFn97bz+FsZk7HU8eiqFu2VHXUueikRXhorsEq8YxxeWsjYdwv7jlA+Vega9X3IZeh632f6J7oozHxmlordCqzAjS5WvuORGXCpI6XwAbn7YfHuH58EMS6m42hMbtLhevOhnk54zATpxTusK74aQwnU9QlkzRb6ca54VvXGFBGE7r2g6OHVV/4ykrSLrYerCbRCQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=ZdiH1pgl; dkim-atps=neutral; spf=pass (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rLAmVR6g;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=ZdiH1pgl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout06.his.huawei.com (canpmsgout06.his.huawei.com [113.46.200.221])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffsDn6Hpnz2yTQ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 12:01:29 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id E26DB6012B;
-	Tue, 24 Mar 2026 01:01:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9C0E8C4CEF7;
-	Tue, 24 Mar 2026 01:01:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774314087;
-	bh=KpxTlQdpK2jKnd62P5I8EEqT3CEkSotjkNoM+lvw6Dc=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=rLAmVR6groUQSZRplygjMn68KJDDiLrGR9Vctd6Afc3mLDKzHEaYGbMFZ3KXs4fK4
-	 MUoXCr/h6SfvTEE4yAlc7KGjraQ8CFJXtGn8f5BkmJWMm1J/pjXgfy9qXciydDWGLj
-	 XNYlWwVjufJG5KD0z7v9ARc0FuEyAjjiYRe15HPbrYCuuNFi4/b/eyHrklVGEVsCSm
-	 lE5k5muPCMjo/9hKdfl5T5LohS8mNpZoGcTFibqf76OQzdeH43NHUrx9bEVbSisncq
-	 g/N4LXJNuBtUlzaGXa8b6D8KnPgXir5STaz/+AS+2urYkPCvbB6vpDfKREYcWyPp9d
-	 47Lib8DntPlsA==
-From: Danilo Krummrich <dakr@kernel.org>
-To: Russell King <linux@armlinux.org.uk>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Ioana Ciornei <ioana.ciornei@nxp.com>,
-	Nipun Gupta <nipun.gupta@amd.com>,
-	Nikhil Agarwal <nikhil.agarwal@amd.com>,
-	"K. Y. Srinivasan" <kys@microsoft.com>,
-	Haiyang Zhang <haiyangz@microsoft.com>,
-	Wei Liu <wei.liu@kernel.org>,
-	Dexuan Cui <decui@microsoft.com>,
-	Long Li <longli@microsoft.com>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Armin Wolf <W_Armin@gmx.de>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Mathieu Poirier <mathieu.poirier@linaro.org>,
-	Vineeth Vijayan <vneethv@linux.ibm.com>,
-	Peter Oberparleiter <oberpar@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Harald Freudenberger <freude@linux.ibm.com>,
-	Holger Dengler <dengler@linux.ibm.com>,
-	Mark Brown <broonie@kernel.org>,
-	"Michael S. Tsirkin" <mst@redhat.com>,
-	Jason Wang <jasowang@redhat.com>,
-	Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
-	=?UTF-8?q?Eugenio=20P=C3=A9rez?= <eperezma@redhat.com>,
-	Alex Williamson <alex@shazbot.org>,
-	Juergen Gross <jgross@suse.com>,
-	Stefano Stabellini <sstabellini@kernel.org>,
-	Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: linux-kernel@vger.kernel.org,
-	driver-core@lists.linux.dev,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-hyperv@vger.kernel.org,
-	linux-pci@vger.kernel.org,
-	platform-driver-x86@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org,
-	linux-remoteproc@vger.kernel.org,
-	linux-s390@vger.kernel.org,
-	linux-spi@vger.kernel.org,
-	virtualization@lists.linux.dev,
-	kvm@vger.kernel.org,
-	xen-devel@lists.xenproject.org,
-	linux-arm-kernel@lists.infradead.org,
-	Danilo Krummrich <dakr@kernel.org>
-Subject: [PATCH 12/12] driver core: remove driver_set_override()
-Date: Tue, 24 Mar 2026 01:59:16 +0100
-Message-ID: <20260324005919.2408620-13-dakr@kernel.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260324005919.2408620-1-dakr@kernel.org>
-References: <20260324005919.2408620-1-dakr@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffxGL4SG1z2ygn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 15:03:04 +1100 (AEDT)
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=bDy1WqzyWZ4QXi9V76+nhfaX5tyIvisESl1ex2cgViU=;
+	b=ZdiH1pglApVl4a6IeiYB/RNIPfMQalqh1J1N6H54h+m4wVAkBIL12akP2v0PgO4JxJv57h8AL
+	Sz/Bww8R1NtzLrMTjBlHDOVrLDCImsP+6ecp+QIQd2fWrygKLGWJO1InyvsolTRvUDIfiWTeLx6
+	ALNTxdX6ngOuZZaJRk7Pqc4=
+Received: from mail.maildlp.com (unknown [172.19.163.104])
+	by canpmsgout06.his.huawei.com (SkyGuard) with ESMTPS id 4ffx7B5xTXzRhRB;
+	Tue, 24 Mar 2026 11:56:54 +0800 (CST)
+Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
+	by mail.maildlp.com (Postfix) with ESMTPS id A0A44404AD;
+	Tue, 24 Mar 2026 12:02:59 +0800 (CST)
+Received: from [10.67.109.254] (10.67.109.254) by
+ dggpemf500011.china.huawei.com (7.185.36.131) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.11; Tue, 24 Mar 2026 12:02:57 +0800
+Message-ID: <4cfde40c-673a-12b0-dfc5-703d582d6ea9@huawei.com>
+Date: Tue, 24 Mar 2026 12:02:51 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -113,125 +61,124 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
+ Thunderbird/102.2.0
+Subject: Re: [PATCH v9 0/5] arm64/riscv: Add support for crashkernel CMA
+ reservation
+Content-Language: en-US
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: <corbet@lwn.net>, <skhan@linuxfoundation.org>, <catalin.marinas@arm.com>,
+	<will@kernel.org>, <chenhuacai@kernel.org>, <kernel@xen0n.name>,
+	<maddy@linux.ibm.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
+	<chleroy@kernel.org>, <pjw@kernel.org>, <palmer@dabbelt.com>,
+	<aou@eecs.berkeley.edu>, <alex@ghiti.fr>, <tglx@kernel.org>,
+	<mingo@redhat.com>, <bp@alien8.de>, <dave.hansen@linux.intel.com>,
+	<hpa@zytor.com>, <robh@kernel.org>, <saravanak@kernel.org>, <bhe@redhat.com>,
+	<vgoyal@redhat.com>, <dyoung@redhat.com>, <rdunlap@infradead.org>,
+	<peterz@infradead.org>, <feng.tang@linux.alibaba.com>,
+	<pawan.kumar.gupta@linux.intel.com>, <dapeng1.mi@linux.intel.com>,
+	<kees@kernel.org>, <elver@google.com>, <paulmck@kernel.org>,
+	<lirongqing@baidu.com>, <safinaskar@gmail.com>, <rppt@kernel.org>,
+	<ardb@kernel.org>, <leitao@debian.org>, <jbohac@suse.cz>,
+	<cfsworks@gmail.com>, <osandov@fb.com>, <tangyouling@kylinos.cn>,
+	<sourabhjain@linux.ibm.com>, <ritesh.list@gmail.com>,
+	<eajames@linux.ibm.com>, <songshuaishuai@tinylab.org>,
+	<kevin.brodsky@arm.com>, <samuel.holland@sifive.com>,
+	<vishal.moola@gmail.com>, <junhui.liu@pigmoral.tech>, <coxu@redhat.com>,
+	<liaoyuanhong@vivo.com>, <fuqiang.wang@easystack.cn>, <x86@kernel.org>,
+	<linux-doc@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, <loongarch@lists.linux.dev>,
+	<linuxppc-dev@lists.ozlabs.org>, <linux-riscv@lists.infradead.org>,
+	<devicetree@vger.kernel.org>, <kexec@lists.infradead.org>
+References: <20260323072745.2481719-1-ruanjinjie@huawei.com>
+ <20260323095548.fa4e13d6e8ae5005ae585e13@linux-foundation.org>
+From: Jinjie Ruan <ruanjinjie@huawei.com>
+In-Reply-To: <20260323095548.fa4e13d6e8ae5005ae585e13@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
+X-Originating-IP: [10.67.109.254]
+X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
+ dggpemf500011.china.huawei.com (7.185.36.131)
 
-All buses have been converted from driver_set_override() to the generic
-driver_override infrastructure introduced in commit cb3d1049f4ea
-("driver core: generalize driver_override in struct device").
 
-Buses now either opt into the generic sysfs callbacks via the
-bus_type::driver_override flag, or use device_set_driver_override() /
-__device_set_driver_override() directly.
 
-Thus, remove the now-unused driver_set_override() helper.
+On 2026/3/24 0:55, Andrew Morton wrote:
+> On Mon, 23 Mar 2026 15:27:40 +0800 Jinjie Ruan <ruanjinjie@huawei.com> wrote:
+> 
+>> The crash memory allocation, and the exclude of crashk_res, crashk_low_res
+>> and crashk_cma memory are almost identical across different architectures,
+>> This patch set handle them in crash core in a general way, which eliminate
+>> a lot of duplication code.
+>>
+>> And add support for crashkernel CMA reservation for arm64 and riscv.
+> 
+> Thanks.  AI review has completed and it asks questions:
+> 	https://sashiko.dev/#/patchset/20260323072745.2481719-1-ruanjinjie@huawei.com
 
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=220789
-Signed-off-by: Danilo Krummrich <dakr@kernel.org>
----
- drivers/base/driver.c         | 75 -----------------------------------
- include/linux/device/driver.h |  2 -
- 2 files changed, 77 deletions(-)
+I believe it identified 4 valid issues:
 
-diff --git a/drivers/base/driver.c b/drivers/base/driver.c
-index 8ab010ddf709..7ed834f7199c 100644
---- a/drivers/base/driver.c
-+++ b/drivers/base/driver.c
-@@ -30,81 +30,6 @@ static struct device *next_device(struct klist_iter *i)
- 	return dev;
- }
- 
--/**
-- * driver_set_override() - Helper to set or clear driver override.
-- * @dev: Device to change
-- * @override: Address of string to change (e.g. &device->driver_override);
-- *            The contents will be freed and hold newly allocated override.
-- * @s: NUL-terminated string, new driver name to force a match, pass empty
-- *     string to clear it ("" or "\n", where the latter is only for sysfs
-- *     interface).
-- * @len: length of @s
-- *
-- * Helper to set or clear driver override in a device, intended for the cases
-- * when the driver_override field is allocated by driver/bus code.
-- *
-- * Returns: 0 on success or a negative error code on failure.
-- */
--int driver_set_override(struct device *dev, const char **override,
--			const char *s, size_t len)
--{
--	const char *new, *old;
--	char *cp;
--
--	if (!override || !s)
--		return -EINVAL;
--
--	/*
--	 * The stored value will be used in sysfs show callback (sysfs_emit()),
--	 * which has a length limit of PAGE_SIZE and adds a trailing newline.
--	 * Thus we can store one character less to avoid truncation during sysfs
--	 * show.
--	 */
--	if (len >= (PAGE_SIZE - 1))
--		return -EINVAL;
--
--	/*
--	 * Compute the real length of the string in case userspace sends us a
--	 * bunch of \0 characters like python likes to do.
--	 */
--	len = strlen(s);
--
--	if (!len) {
--		/* Empty string passed - clear override */
--		device_lock(dev);
--		old = *override;
--		*override = NULL;
--		device_unlock(dev);
--		kfree(old);
--
--		return 0;
--	}
--
--	cp = strnchr(s, len, '\n');
--	if (cp)
--		len = cp - s;
--
--	new = kstrndup(s, len, GFP_KERNEL);
--	if (!new)
--		return -ENOMEM;
--
--	device_lock(dev);
--	old = *override;
--	if (cp != s) {
--		*override = new;
--	} else {
--		/* "\n" passed - clear override */
--		kfree(new);
--		*override = NULL;
--	}
--	device_unlock(dev);
--
--	kfree(old);
--
--	return 0;
--}
--EXPORT_SYMBOL_GPL(driver_set_override);
--
- /**
-  * driver_for_each_device - Iterator for devices bound to a driver.
-  * @drv: Driver we're iterating.
-diff --git a/include/linux/device/driver.h b/include/linux/device/driver.h
-index bbc67ec513ed..aa3465a369f0 100644
---- a/include/linux/device/driver.h
-+++ b/include/linux/device/driver.h
-@@ -160,8 +160,6 @@ int __must_check driver_create_file(const struct device_driver *driver,
- void driver_remove_file(const struct device_driver *driver,
- 			const struct driver_attribute *attr);
- 
--int driver_set_override(struct device *dev, const char **override,
--			const char *s, size_t len);
- int __must_check driver_for_each_device(struct device_driver *drv, struct device *start,
- 					void *data, device_iter_t fn);
- struct device *driver_find_device(const struct device_driver *drv,
--- 
-2.53.0
+- The already discovered crashk_low_res not excluded bug in the existing
+RISC-V code.
 
+- An existing memory leak issue in the existing PowerPC code.
+
+- The ordering issue of adding CMA ranges to "linux,usable-memory-range".
+
+- An existing concurrency issue. A Concurrent memory hotplug may occur
+between reading memblock and attempting to fill cmem during kexec_load()
+for almost all existing architectures，I'm not sure if this is a
+practical issue in reality..
+
+ Race Condition Scenario
+
+  Timeline:
+  ---------------------------------------------------------------------
+  T1: kexec_load() syscall starts
+  T2: kexec_trylock() acquires kexec_lock
+  T3: crash_prepare_headers() is called
+  T4: arch_get_system_nr_ranges() queries memblock → finds 100 memory ranges
+  T5: cmem = alloc_cmem(100) allocates buffer for 100 ranges
+  T6: [RACE WINDOW] Another process triggers memory hotplug
+  T7: add_memory() → lock_device_hotplug() → memblock_add_node()
+  T8: New memory region added to memblock
+  T9: arch_crash_populate_cmem() iterates: now finds 102 ranges
+  T10: cmem->ranges[100] → OUT OF BOUNDS WRITE!
+  T11: cmem->ranges[101] → OUT OF BOUNDS WRITE!
+  T12: Kernel crash or memory corruption
+
+  Why This Happens
+
+  1. Different locks used:
+    - kexec_load() uses kexec_trylock (atomic_t)
+    - Memory hotplug uses device_hotplug_lock (mutex)
+  2. No synchronization between these two operations
+  3. Time-of-check to time-of-use (TOCTOU) issue:
+    - Step T4-T5: We query the number of ranges and allocate buffer
+    - Step T6-T9: Memory hotplug adds new ranges between query and
+population
+
+
+
+Any comments or suggestions on the following approach?
+
+
+int crash_prepare_headers(...)
+  {
+      unsigned int max_nr_ranges;
+      struct crash_mem *cmem;
+      int ret;
+
+      lock_device_hotplug();
+
+      max_nr_ranges = arch_get_system_nr_ranges();
+      // ...
+      ret = arch_crash_populate_cmem(cmem);
+      // ...
+
+      unlock_device_hotplug();
+      return ret;
+  }
+
+
+> 
 
