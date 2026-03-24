@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-18651-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18652-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85CA8F532C3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 01:00:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E6E7F532C3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 01:00:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ffsCX0ZSxz2yhZ;
-	Tue, 24 Mar 2026 12:00:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774314024;
-	cv=none; b=DY2OJubrYLP/6regqg5XREIZbDO+K9rAgVsWXUBeO7FGOGZLru9k6ztolo24bGgtoEUlpvQWz5qK8vGt6jVB6sLj1kl7zmgODjpgGOO+8yfaScBMGGw2I4xhuAVeetcZpu14t842kcS5KjXLE4+Z+O3cK+mc2cKABPMmVSibGCT0AOa6iu/GusCVxL/u0tEHJJoR8C4xkYZP62A3GMJ/bFLpg2cAVKpJTppkaOWen1ezFkTUn6erhYRsDUQaM7hbD5pOHCuxBgINK8A5/R7/WhNOZR0bglC2QA3NImpta5AI1gJadtlQ6pfpaIkwoDw5+U2Nkp+kPgKR6ocwDhUOSQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ffsCh5tj1z2ynP;
+	Tue, 24 Mar 2026 12:00:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774314032;
+	cv=none; b=V4CuLpq+tBamnANrV4NyJ0sPRJ2FDGUNgzcqQFUND7m7kCIhLqPsyVSZT3Yfr8QpfmGhgtYXRltJShkFYKLGDH9Xd3H2amrs4uKWQkz33y7kjUNn676LyLus37Hk/RjNyaCLCNK09r3I9/zlQhxUzK/0MiuN+8CUJ9fpFnea1RvK8CquztDcJTKR9TxAuoqgymCRdXbR8lTl1ESR7/5U0vGa/7Xfi5RZRBHhjqmVVywOhYcgTn+HHL5Eucff2MBIsJWEvZtnIMk8sHc1bymdQ+jLk0wYE5puA0c+KsdLJOs+dcJfb+sOpTLGjuoFnXJZod0UUsEQB9VuR/0iVEqAcA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774314024; c=relaxed/relaxed;
-	bh=UeBOeBvG8Jeys02kJSFgZxf+uoEjZl6S2BBJgW2am34=;
+	t=1774314032; c=relaxed/relaxed;
+	bh=fn+dyVg0jWABhyheD0BTAlzBYT3cZAafGE3UVIxuYUc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=TCeTPJfS8FzISdE718FQRrZvev/8kITYT4XiV78M0oH1k9c5KUZpKl8xdtF3Mn0E2PtTiS27hctlNaYdrS0wfblnVTzzCuZLiNLb+scqqtBgFyxZpki4JmnTalglGF5dlGv2rJA0/seEIRZmwK2n1/eEp0csG8Jf8V/wcrO46xiSRrr6l0zlh1bKxZbuqJ+GcrEuol+CYsnav7tqSk2Rm22qVmvfZDtTJQV7ImTLG6rhpCsx5gZml0M7JfoBp7gffppVfqSZfdzr6krzixulFxTOZwGqEtQtKfwgwzKxT6//tzzywG9VLqbDu/0PoWdCMJhDXxdCZHJ2i6LTEa7XZw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QIEgBZSe; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=T1/iKJewasNL7XUefIhOnArqUzlOk+U/9JbfmUTAkE73vNYPANR44W9/Kr/dP4oW+OB2E6PnKTav6ejYLIIgDMvY6gArd3xjjJETF47pz4Pc6KCDu5w/DyKNLQZGwX8oTKAQPK2tNhoG0H+r15x7HuQOm20cgwTZxuMXLNe2sSc7s2yxbib5eTZv1oemoLgdszbZIcL7HHl8vBffzyQxQ0nOj9HVOTOSVUQoopPPUffSTh2mjIhlf7wwWQgV1xK3bXY7JQcfYsxoQHAbakBdOmapbpJTjqYMXyqbbJndA/T6tCCWnFKtWUm7opAgMuF7kHUZDod9+ZmbXPp0yVEcXw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oy7fnz0d; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QIEgBZSe;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oy7fnz0d;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffsCW1FVGz2yVB
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 12:00:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffsCh06z9z2yVB
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 12:00:31 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 0775E60103;
-	Tue, 24 Mar 2026 01:00:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 88E74C2BCB0;
-	Tue, 24 Mar 2026 01:00:11 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 74AEC41714;
+	Tue, 24 Mar 2026 01:00:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2A3D3C4CEF7;
+	Tue, 24 Mar 2026 01:00:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774314020;
-	bh=zi0v4zurXgdLP04GC9K8onaZXN/N3Qlem6TWYef3iJk=;
+	s=k20201202; t=1774314030;
+	bh=dVVILhMfLU1pcFlan9xwtWDXjlzo37eXkY5X05ORIlo=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=QIEgBZSeprBd8eco5o8dw+zg/Y5BKWKjmLND8s3b+DopMyWSHVyEjpTlL4MeXNu6J
-	 X/vMHl5tcRAtlKG5k4UUt+iHGlqdNZ7OAGIqIUnN+AuKhAX5Gfvn1RJ2JN+B+b/8oV
-	 Dnw348XctBIWTV33IkRHOMoqJWQCsfR8SsPVZoMNEUBzpdW4p6GRIYIot6LJvdMFsS
-	 3QbEZOR+DnIpCdhzlekCzLxRc423a9T2znnXXKY+47An9vD8vHI4TrhpijQMqnokV+
-	 3RMAL22cwN1WStl+aUt4vfTVte+eCLX64fU0XiBT76DmRE+t61UwtJ1wkOziB9Utd8
-	 OLcnfwwHxuprw==
+	b=oy7fnz0d39vA8DeLusS4kHmpWkfMdqaP0nrRciue0f+NOlsV7gOuADpO1Y48Jjg9f
+	 MITiU8jQzjjQb8f5VUB0Og0V6KsNuJU5YifXigPhRS4NOb+330wbT3injb7ng50liP
+	 ZqYubh6zWsY6SNwUAyB+PO/HpqXevDVNbsUrBXfFeyOD+eL8N4tmQ16wvpDq7I+Ye8
+	 iZ8d4J+xr7mwhTpSI2vWE/qgDpXkD4QpCa5xOcpu1lnxoYQaD4trGqmzV3/Z0aby4P
+	 mzbq8SomMXXsM9/OneYtf9uUKMBhTaqwO7Z3Va8LBxv8TI9anEyvFJWgLAVmMmZ6P7
+	 5kfjdP36uus8A==
 From: Danilo Krummrich <dakr@kernel.org>
 To: Russell King <linux@armlinux.org.uk>,
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -95,9 +95,9 @@ Cc: linux-kernel@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	Danilo Krummrich <dakr@kernel.org>,
 	Gui-Dong Han <hanguidong02@gmail.com>
-Subject: [PATCH 05/12] PCI: use generic driver_override infrastructure
-Date: Tue, 24 Mar 2026 01:59:09 +0100
-Message-ID: <20260324005919.2408620-6-dakr@kernel.org>
+Subject: [PATCH 06/12] platform/wmi: use generic driver_override infrastructure
+Date: Tue, 24 Mar 2026 01:59:10 +0100
+Message-ID: <20260324005919.2408620-7-dakr@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260324005919.2408620-1-dakr@kernel.org>
 References: <20260324005919.2408620-1-dakr@kernel.org>
@@ -129,184 +129,109 @@ held is intentional. [1]
 Link: https://lore.kernel.org/driver-core/DGRGTIRHA62X.3RY09D9SOK77P@kernel.org/ [1]
 Reported-by: Gui-Dong Han <hanguidong02@gmail.com>
 Closes: https://bugzilla.kernel.org/show_bug.cgi?id=220789
-Fixes: 782a985d7af2 ("PCI: Introduce new device binding path using pci_dev.driver_override")
+Fixes: 12046f8c77e0 ("platform/x86: wmi: Add driver_override support")
 Signed-off-by: Danilo Krummrich <dakr@kernel.org>
 ---
- drivers/pci/pci-driver.c           | 11 +++++++----
- drivers/pci/pci-sysfs.c            | 28 ----------------------------
- drivers/pci/probe.c                |  1 -
- drivers/vfio/pci/vfio_pci_core.c   |  5 ++---
- drivers/xen/xen-pciback/pci_stub.c |  6 ++++--
- include/linux/pci.h                |  6 ------
- 6 files changed, 13 insertions(+), 44 deletions(-)
+ drivers/platform/wmi/core.c | 36 +++++-------------------------------
+ include/linux/wmi.h         |  4 ----
+ 2 files changed, 5 insertions(+), 35 deletions(-)
 
-diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-index dd9075403987..d10ece0889f0 100644
---- a/drivers/pci/pci-driver.c
-+++ b/drivers/pci/pci-driver.c
-@@ -138,9 +138,11 @@ static const struct pci_device_id *pci_match_device(struct pci_driver *drv,
- {
- 	struct pci_dynid *dynid;
- 	const struct pci_device_id *found_id = NULL, *ids;
-+	int ret;
- 
- 	/* When driver_override is set, only bind to the matching driver */
--	if (dev->driver_override && strcmp(dev->driver_override, drv->name))
-+	ret = device_match_driver_override(&dev->dev, &drv->driver);
-+	if (ret == 0)
- 		return NULL;
- 
- 	/* Look at the dynamic ids first, before the static ones */
-@@ -164,7 +166,7 @@ static const struct pci_device_id *pci_match_device(struct pci_driver *drv,
- 		 * matching.
- 		 */
- 		if (found_id->override_only) {
--			if (dev->driver_override)
-+			if (ret > 0)
- 				return found_id;
- 		} else {
- 			return found_id;
-@@ -172,7 +174,7 @@ static const struct pci_device_id *pci_match_device(struct pci_driver *drv,
- 	}
- 
- 	/* driver_override will always match, send a dummy id */
--	if (dev->driver_override)
-+	if (ret > 0)
- 		return &pci_device_id_any;
- 	return NULL;
+diff --git a/drivers/platform/wmi/core.c b/drivers/platform/wmi/core.c
+index b8e6b9a421c6..750e3619724e 100644
+--- a/drivers/platform/wmi/core.c
++++ b/drivers/platform/wmi/core.c
+@@ -842,39 +842,11 @@ static ssize_t expensive_show(struct device *dev,
  }
-@@ -452,7 +454,7 @@ static int __pci_device_probe(struct pci_driver *drv, struct pci_dev *pci_dev)
- static inline bool pci_device_can_probe(struct pci_dev *pdev)
- {
- 	return (!pdev->is_virtfn || pdev->physfn->sriov->drivers_autoprobe ||
--		pdev->driver_override);
-+		device_has_driver_override(&pdev->dev));
- }
- #else
- static inline bool pci_device_can_probe(struct pci_dev *pdev)
-@@ -1722,6 +1724,7 @@ static const struct cpumask *pci_device_irq_get_affinity(struct device *dev,
+ static DEVICE_ATTR_RO(expensive);
  
- const struct bus_type pci_bus_type = {
- 	.name		= "pci",
-+	.driver_override = true,
- 	.match		= pci_bus_match,
- 	.uevent		= pci_uevent,
- 	.probe		= pci_device_probe,
-diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
-index 16eaaf749ba9..a9006cf4e9c8 100644
---- a/drivers/pci/pci-sysfs.c
-+++ b/drivers/pci/pci-sysfs.c
-@@ -615,33 +615,6 @@ static ssize_t devspec_show(struct device *dev,
- static DEVICE_ATTR_RO(devspec);
- #endif
- 
--static ssize_t driver_override_store(struct device *dev,
--				     struct device_attribute *attr,
+-static ssize_t driver_override_show(struct device *dev, struct device_attribute *attr,
+-				    char *buf)
+-{
+-	struct wmi_device *wdev = to_wmi_device(dev);
+-	ssize_t ret;
+-
+-	device_lock(dev);
+-	ret = sysfs_emit(buf, "%s\n", wdev->driver_override);
+-	device_unlock(dev);
+-
+-	return ret;
+-}
+-
+-static ssize_t driver_override_store(struct device *dev, struct device_attribute *attr,
 -				     const char *buf, size_t count)
 -{
--	struct pci_dev *pdev = to_pci_dev(dev);
+-	struct wmi_device *wdev = to_wmi_device(dev);
 -	int ret;
 -
--	ret = driver_set_override(dev, &pdev->driver_override, buf, count);
--	if (ret)
+-	ret = driver_set_override(dev, &wdev->driver_override, buf, count);
+-	if (ret < 0)
 -		return ret;
 -
 -	return count;
 -}
--
--static ssize_t driver_override_show(struct device *dev,
--				    struct device_attribute *attr, char *buf)
--{
--	struct pci_dev *pdev = to_pci_dev(dev);
--	ssize_t len;
--
--	device_lock(dev);
--	len = sysfs_emit(buf, "%s\n", pdev->driver_override);
--	device_unlock(dev);
--	return len;
--}
 -static DEVICE_ATTR_RW(driver_override);
 -
- static struct attribute *pci_dev_attrs[] = {
- 	&dev_attr_power_state.attr,
- 	&dev_attr_resource.attr,
-@@ -669,7 +642,6 @@ static struct attribute *pci_dev_attrs[] = {
- #ifdef CONFIG_OF
- 	&dev_attr_devspec.attr,
- #endif
+ static struct attribute *wmi_attrs[] = {
+ 	&dev_attr_modalias.attr,
+ 	&dev_attr_guid.attr,
+ 	&dev_attr_instance_count.attr,
+ 	&dev_attr_expensive.attr,
 -	&dev_attr_driver_override.attr,
- 	&dev_attr_ari_enabled.attr,
- 	NULL,
+ 	NULL
  };
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index bccc7a4bdd79..b4707640e102 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -2488,7 +2488,6 @@ static void pci_release_dev(struct device *dev)
- 	pci_release_of_node(pci_dev);
- 	pcibios_release_device(pci_dev);
- 	pci_bus_put(pci_dev->bus);
--	kfree(pci_dev->driver_override);
- 	bitmap_free(pci_dev->dma_alias_mask);
- 	dev_dbg(dev, "device released\n");
- 	kfree(pci_dev);
-diff --git a/drivers/vfio/pci/vfio_pci_core.c b/drivers/vfio/pci/vfio_pci_core.c
-index d43745fe4c84..460852f79f29 100644
---- a/drivers/vfio/pci/vfio_pci_core.c
-+++ b/drivers/vfio/pci/vfio_pci_core.c
-@@ -1987,9 +1987,8 @@ static int vfio_pci_bus_notifier(struct notifier_block *nb,
- 	    pdev->is_virtfn && physfn == vdev->pdev) {
- 		pci_info(vdev->pdev, "Captured SR-IOV VF %s driver_override\n",
- 			 pci_name(pdev));
--		pdev->driver_override = kasprintf(GFP_KERNEL, "%s",
--						  vdev->vdev.ops->name);
--		WARN_ON(!pdev->driver_override);
-+		WARN_ON(device_set_driver_override(&pdev->dev,
-+						   vdev->vdev.ops->name));
- 	} else if (action == BUS_NOTIFY_BOUND_DRIVER &&
- 		   pdev->is_virtfn && physfn == vdev->pdev) {
- 		struct pci_driver *drv = pci_dev_driver(pdev);
-diff --git a/drivers/xen/xen-pciback/pci_stub.c b/drivers/xen/xen-pciback/pci_stub.c
-index e4b27aecbf05..79a2b5dfd694 100644
---- a/drivers/xen/xen-pciback/pci_stub.c
-+++ b/drivers/xen/xen-pciback/pci_stub.c
-@@ -598,6 +598,8 @@ static int pcistub_seize(struct pci_dev *dev,
- 	return err;
+ ATTRIBUTE_GROUPS(wmi);
+@@ -943,7 +915,6 @@ static void wmi_dev_release(struct device *dev)
+ {
+ 	struct wmi_block *wblock = dev_to_wblock(dev);
+ 
+-	kfree(wblock->dev.driver_override);
+ 	kfree(wblock);
  }
  
-+static struct pci_driver xen_pcibk_pci_driver;
-+
- /* Called when 'bind'. This means we must _NOT_ call pci_reset_function or
-  * other functions that take the sysfs lock. */
- static int pcistub_probe(struct pci_dev *dev, const struct pci_device_id *id)
-@@ -609,8 +611,8 @@ static int pcistub_probe(struct pci_dev *dev, const struct pci_device_id *id)
+@@ -952,10 +923,12 @@ static int wmi_dev_match(struct device *dev, const struct device_driver *driver)
+ 	const struct wmi_driver *wmi_driver = to_wmi_driver(driver);
+ 	struct wmi_block *wblock = dev_to_wblock(dev);
+ 	const struct wmi_device_id *id = wmi_driver->id_table;
++	int ret;
  
- 	match = pcistub_match(dev);
+ 	/* When driver_override is set, only bind to the matching driver */
+-	if (wblock->dev.driver_override)
+-		return !strcmp(wblock->dev.driver_override, driver->name);
++	ret = device_match_driver_override(dev, driver);
++	if (ret >= 0)
++		return ret;
  
--	if ((dev->driver_override &&
--	     !strcmp(dev->driver_override, PCISTUB_DRIVER_NAME)) ||
-+	if (device_match_driver_override(&dev->dev,
-+					 &xen_pcibk_pci_driver.driver) > 0 ||
- 	    match) {
+ 	if (id == NULL)
+ 		return 0;
+@@ -1076,6 +1049,7 @@ static struct class wmi_bus_class = {
+ static const struct bus_type wmi_bus_type = {
+ 	.name = "wmi",
+ 	.dev_groups = wmi_groups,
++	.driver_override = true,
+ 	.match = wmi_dev_match,
+ 	.uevent = wmi_dev_uevent,
+ 	.probe = wmi_dev_probe,
+diff --git a/include/linux/wmi.h b/include/linux/wmi.h
+index 75cb0c7cfe57..14fb644e1701 100644
+--- a/include/linux/wmi.h
++++ b/include/linux/wmi.h
+@@ -18,16 +18,12 @@
+  * struct wmi_device - WMI device structure
+  * @dev: Device associated with this WMI device
+  * @setable: True for devices implementing the Set Control Method
+- * @driver_override: Driver name to force a match; do not set directly,
+- *		     because core frees it; use driver_set_override() to
+- *		     set or clear it.
+  *
+  * This represents WMI devices discovered by the WMI driver core.
+  */
+ struct wmi_device {
+ 	struct device dev;
+ 	bool setable;
+-	const char *driver_override;
+ };
  
- 		if (dev->hdr_type != PCI_HEADER_TYPE_NORMAL
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 1c270f1d5123..57e9463e4347 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -575,12 +575,6 @@ struct pci_dev {
- 	u8		supported_speeds; /* Supported Link Speeds Vector */
- 	phys_addr_t	rom;		/* Physical address if not from BAR */
- 	size_t		romlen;		/* Length if not from BAR */
--	/*
--	 * Driver name to force a match.  Do not set directly, because core
--	 * frees it.  Use driver_set_override() to set or clear it.
--	 */
--	const char	*driver_override;
--
- 	unsigned long	priv_flags;	/* Private flags for the PCI driver */
- 
- 	/* These methods index pci_reset_fn_methods[] */
+ /**
 -- 
 2.53.0
 
