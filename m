@@ -1,48 +1,48 @@
-Return-Path: <linuxppc-dev+bounces-18683-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18684-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86EAEF532E6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 06:26:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84FA5F532E7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 06:26:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fg0Rk1j0vz2yv7;
-	Tue, 24 Mar 2026 17:26:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fg0Rx1qYFz2yvL;
+	Tue, 24 Mar 2026 17:26:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::133"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774333586;
-	cv=none; b=MPOELr3o5H6KG8rD2VKX78hIeNzSGWCMGm1xUd+raFNkLwQexnBYavqmG/7t9CKDbit3yfUrvNbKU5EiUDngemRsZSwNl4Wxcr0rngvG7cTCbFOZA9ds+ltwIOARkN/S5mHbutdCiC5hWRm7jRVJ7i3A7GOu906bjzjzI6E0/qIQOroHxPrmL7hbIj8zK+wRpT6BeKEGuwLfh+MmomhExQk3TwphkGvrH+TmTHqNBuBqzfFHwWxpoKnE03FdoEVA8IT+J31FsusZo5N2RKCwsNsb/O87/kd1ufKP6I2sdILVXV0APIDLZMhvTBShQ/dA1pirJg27kY7UltnnbULD3w==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774333597;
+	cv=none; b=D2UxSb5zBdm8Qjry/OiSnKkINiFTJov0fWZUJ4NQgvBencI3wGBIma7W3qPuPqibH19U1X3L1DJcx6ZcsGLk4oxmCoigARn43DqplxAB1rFR+edwoNUm78j6uIjsUNBBEHwTrs3zJx4y+BHu38h/oX1M9q7rC0JuNgQQ3Scw0QZSn0liOY2eSY99cMO9kMSex3IbGSYri6DrEa9tselCVTQFOpNQZvYYawFGwaS6lMZPk8TLmlxYUDK2DZvrSimp4sArgF1UJZCaFE7/3nODhht+Mov0NY+A5dVVIoljPd1DUsFyrQiTo2Ytu6dweqP9qb0cGfCccSMH6TaQpadTPg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774333586; c=relaxed/relaxed;
-	bh=L+6ojMJfwCWhLFRB0GPni+uSlsd8H4EJEa7++qGwg4w=;
+	t=1774333597; c=relaxed/relaxed;
+	bh=vfRQfd6HX2UIy1GEtF4WxXFvmD5740u62PQfhFgAIN8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=hgSjQMYUaOVmone8h/wb6ltjQh5UVqetkqVfXYZ4tHI4GeuUH2U7zZrWvzuK76W08NHAdBGkG/gZw9qJuPt+y3+CZrqC1fsKK8NwUbwXg5LsmR2soJBmmw+J9c5B9IQuIaefe1Oco4UGFhF4v/FUJ2eAecetQcMCUb8MDxj2GVhNaiwLjqNS0C4N7fI742yQrF3QvS1zQPZgjQoFL6Qwf3IF8YfdUvpQctGOBme0nWhZR3QItlwEejDuTwLUXffSQTdlEI5nv1VYoJLqelECNpe6Z1F9S9ELUUNLkCfMJExciLQLdEK++XaL+xdjThHSDoYLPYQhIkoK2Rww1VFjvA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=lst.de; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=OmSpRCS9; dkim-atps=neutral; spf=none (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+4a75e1166b7f241dd976+8248+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=bombadil.srs.infradead.org
+	 MIME-Version; b=V4mfb6OItlhNISRmu+zKb3KkDc9lMxZ1efDRXvqhmu234F3WC+xlG4kfgCSAtZb/Vixkv2X8dIWzCqtQQ2rYa34KyeeFownantBLhZ4mAmwgAe9ZNjPrr6zznkp8dJMrUh7eOf7M+VcNITwgAf/JIwhHwZBDiRiTtfylXWNEQjJn2NcCozg1SPg7B7REbGVR8r6m+ZNGaWzCjZW3uT5gxj/Ve7ukmVq/yeGBbujRWUKeiQXk7O/oguPZBcWohGnNPCOtMKVtebrljfVCpIWAKenVF5lH9J27j3OCDNUUo2oEox7lMWNbC5Pa2TOaaXXvlnMnEQkHYEKaL36R94en0g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=lst.de; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=WIio0EJ0; dkim-atps=neutral; spf=none (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+4a75e1166b7f241dd976+8248+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=bombadil.srs.infradead.org
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=OmSpRCS9;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=WIio0EJ0;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+4a75e1166b7f241dd976+8248+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org)
 Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fg0Rj03c8z2yvF
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 17:26:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fg0Rw3XqNz2yvH
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 17:26:36 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender
 	:Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=L+6ojMJfwCWhLFRB0GPni+uSlsd8H4EJEa7++qGwg4w=; b=OmSpRCS9xO1wzw8gKJ52ITn/II
-	gTJnO4rbGqVWEKJQUvwXMk7psPXmTvYhWztNq49+i9rSl3QEUrlkxo4ULMm1FzfkBbsnoxCNOVMDR
-	M5DUQ/ShTSUVCP3Z5fiKrSnf4RTTcP//w/jZzzvpz5hYY59bav5TQc1r1OhGxa40ePe0dgUwkvnC/
-	1jhu1wWaPYUDnuU13+fiKoGtRmvXLMsBJWsriYsAheImUpBJgQdyvpIPuRSdf+waGxqEYUM4jUQDw
-	jEsofk9tqNcke0bboOJSwd7Ly3TxAi/oTCEN8CC8TOMbro/wkPzlAVp6IzlFgBoOnJYGY27xi/ClY
-	n5XkKsiA==;
+	bh=vfRQfd6HX2UIy1GEtF4WxXFvmD5740u62PQfhFgAIN8=; b=WIio0EJ08rL26XOcadGF4gJkIa
+	LpcAwawKtksdY+RufeycPLc3SgsI6uMTonf4z8qAo9nYrTeF1Bc4LH7hhCJau31RqjH0gd3fQGA2O
+	USjaPWUmujm20eFMQddPVQP5oKvHIWsbXrjERDHXobZdD5vh7Ft0NeZBKTu9XSeGlZjRgmhTXXdDo
+	qaAVgyEPRA5RaqzXtVwNf48dgZIuaWY2WzOKXzTlLrNgsKk0B3KZbOjDkgcGyDfP8XtTg9JMlNbaz
+	/hm7DHjBWZBmYkMCOPXdJSZ86qVpLZMyewydYyuf3C76VZjFrWIG84eKqBEai3RWL4h0+wWZzTjMh
+	P4suN5kw==;
 Received: from 2a02-8389-2341-5b80-d601-7564-c2e0-491c.cable.dynamic.v6.surfer.at ([2a02:8389:2341:5b80:d601:7564:c2e0:491c] helo=localhost)
 	by bombadil.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w4vDM-00000000isH-3OBB;
-	Tue, 24 Mar 2026 06:26:09 +0000
+	id 1w4vDZ-00000000j1N-0p5u;
+	Tue, 24 Mar 2026 06:26:21 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Richard Henderson <richard.henderson@linaro.org>,
@@ -101,9 +101,9 @@ Cc: Richard Henderson <richard.henderson@linaro.org>,
 	linux-btrfs@vger.kernel.org,
 	linux-arch@vger.kernel.org,
 	linux-raid@vger.kernel.org
-Subject: [PATCH 18/26] x86: move the XOR code to lib/raid/
-Date: Tue, 24 Mar 2026 07:21:54 +0100
-Message-ID: <20260324062211.3216301-19-hch@lst.de>
+Subject: [PATCH 19/26] xor: avoid indirect calls for arm64-optimized ops
+Date: Tue, 24 Mar 2026 07:21:55 +0100
+Message-ID: <20260324062211.3216301-20-hch@lst.de>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20260324062211.3216301-1-hch@lst.de>
 References: <20260324062211.3216301-1-hch@lst.de>
@@ -123,1231 +123,325 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 
-Move the optimized XOR code out of line into lib/raid.
+Remove the inner xor_block_templates, and instead have two separate
+actual template that call into the neon-enabled compilation unit.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/x86/include/asm/xor.h                    | 518 ++----------------
- arch/x86/include/asm/xor_64.h                 |  32 --
- lib/raid/xor/Makefile                         |   2 +
- .../xor_avx.h => lib/raid/xor/x86/xor-avx.c   |  14 +-
- .../xor_32.h => lib/raid/xor/x86/xor-mmx.c    |  60 +-
- lib/raid/xor/x86/xor-sse.c                    | 476 ++++++++++++++++
- 6 files changed, 522 insertions(+), 580 deletions(-)
- delete mode 100644 arch/x86/include/asm/xor_64.h
- rename arch/x86/include/asm/xor_avx.h => lib/raid/xor/x86/xor-avx.c (95%)
- rename arch/x86/include/asm/xor_32.h => lib/raid/xor/x86/xor-mmx.c (90%)
- create mode 100644 lib/raid/xor/x86/xor-sse.c
+ arch/arm64/include/asm/xor.h       | 13 ++--
+ lib/raid/xor/arm64/xor-neon-glue.c | 95 +++++++++++++++---------------
+ lib/raid/xor/arm64/xor-neon.c      | 73 +++++++++--------------
+ lib/raid/xor/arm64/xor-neon.h      | 30 ++++++++++
+ 4 files changed, 114 insertions(+), 97 deletions(-)
+ create mode 100644 lib/raid/xor/arm64/xor-neon.h
 
-diff --git a/arch/x86/include/asm/xor.h b/arch/x86/include/asm/xor.h
-index 33f5620d8d69..d1aab8275908 100644
---- a/arch/x86/include/asm/xor.h
-+++ b/arch/x86/include/asm/xor.h
-@@ -2,498 +2,42 @@
- #ifndef _ASM_X86_XOR_H
- #define _ASM_X86_XOR_H
+diff --git a/arch/arm64/include/asm/xor.h b/arch/arm64/include/asm/xor.h
+index 81718f010761..4782c760bcac 100644
+--- a/arch/arm64/include/asm/xor.h
++++ b/arch/arm64/include/asm/xor.h
+@@ -7,15 +7,18 @@
+ #include <asm-generic/xor.h>
+ #include <asm/simd.h>
  
--/*
-- * Optimized RAID-5 checksumming functions for SSE.
-- */
--
--/*
-- * Cache avoiding checksumming functions utilizing KNI instructions
-- * Copyright (C) 1999 Zach Brown (with obvious credit due Ingo)
-- */
-+#include <asm/cpufeature.h>
-+#include <asm-generic/xor.h>
+-extern struct xor_block_template xor_block_arm64;
+-void __init xor_neon_init(void);
++extern struct xor_block_template xor_block_neon;
++extern struct xor_block_template xor_block_eor3;
  
--/*
-- * Based on
-- * High-speed RAID5 checksumming functions utilizing SSE instructions.
-- * Copyright (C) 1998 Ingo Molnar.
-- */
-+extern struct xor_block_template xor_block_pII_mmx;
-+extern struct xor_block_template xor_block_p5_mmx;
-+extern struct xor_block_template xor_block_sse;
-+extern struct xor_block_template xor_block_sse_pf64;
-+extern struct xor_block_template xor_block_avx;
- 
- /*
-- * x86-64 changes / gcc fixes from Andi Kleen.
-- * Copyright 2002 Andi Kleen, SuSE Labs.
-+ * When SSE is available, use it as it can write around L2.  We may also be able
-+ * to load into the L1 only depending on how the cpu deals with a load to a line
-+ * that is being prefetched.
-+ *
-+ * When AVX2 is available, force using it as it is better by all measures.
-  *
-- * This hasn't been optimized for the hammer yet, but there are likely
-- * no advantages to be gotten from x86-64 here anyways.
-+ * 32-bit without MMX can fall back to the generic routines.
-  */
--
--#include <asm/fpu/api.h>
--
--#ifdef CONFIG_X86_32
--/* reduce register pressure */
--# define XOR_CONSTANT_CONSTRAINT "i"
--#else
--# define XOR_CONSTANT_CONSTRAINT "re"
--#endif
--
--#define OFFS(x)		"16*("#x")"
--#define PF_OFFS(x)	"256+16*("#x")"
--#define PF0(x)		"	prefetchnta "PF_OFFS(x)"(%[p1])		;\n"
--#define LD(x, y)	"	movaps "OFFS(x)"(%[p1]), %%xmm"#y"	;\n"
--#define ST(x, y)	"	movaps %%xmm"#y", "OFFS(x)"(%[p1])	;\n"
--#define PF1(x)		"	prefetchnta "PF_OFFS(x)"(%[p2])		;\n"
--#define PF2(x)		"	prefetchnta "PF_OFFS(x)"(%[p3])		;\n"
--#define PF3(x)		"	prefetchnta "PF_OFFS(x)"(%[p4])		;\n"
--#define PF4(x)		"	prefetchnta "PF_OFFS(x)"(%[p5])		;\n"
--#define XO1(x, y)	"	xorps "OFFS(x)"(%[p2]), %%xmm"#y"	;\n"
--#define XO2(x, y)	"	xorps "OFFS(x)"(%[p3]), %%xmm"#y"	;\n"
--#define XO3(x, y)	"	xorps "OFFS(x)"(%[p4]), %%xmm"#y"	;\n"
--#define XO4(x, y)	"	xorps "OFFS(x)"(%[p5]), %%xmm"#y"	;\n"
--#define NOP(x)
--
--#define BLK64(pf, op, i)				\
--		pf(i)					\
--		op(i, 0)				\
--			op(i + 1, 1)			\
--				op(i + 2, 2)		\
--					op(i + 3, 3)
--
--static void
--xor_sse_2(unsigned long bytes, unsigned long * __restrict p1,
--	  const unsigned long * __restrict p2)
--{
--	unsigned long lines = bytes >> 8;
--
--	kernel_fpu_begin();
--
--	asm volatile(
--#undef BLOCK
--#define BLOCK(i)					\
--		LD(i, 0)				\
--			LD(i + 1, 1)			\
--		PF1(i)					\
--				PF1(i + 2)		\
--				LD(i + 2, 2)		\
--					LD(i + 3, 3)	\
--		PF0(i + 4)				\
--				PF0(i + 6)		\
--		XO1(i, 0)				\
--			XO1(i + 1, 1)			\
--				XO1(i + 2, 2)		\
--					XO1(i + 3, 3)	\
--		ST(i, 0)				\
--			ST(i + 1, 1)			\
--				ST(i + 2, 2)		\
--					ST(i + 3, 3)	\
--
--
--		PF0(0)
--				PF0(2)
--
--	" .align 32			;\n"
--	" 1:                            ;\n"
--
--		BLOCK(0)
--		BLOCK(4)
--		BLOCK(8)
--		BLOCK(12)
--
--	"       add %[inc], %[p1]       ;\n"
--	"       add %[inc], %[p2]       ;\n"
--	"       dec %[cnt]              ;\n"
--	"       jnz 1b                  ;\n"
--	: [cnt] "+r" (lines),
--	  [p1] "+r" (p1), [p2] "+r" (p2)
--	: [inc] XOR_CONSTANT_CONSTRAINT (256UL)
--	: "memory");
--
--	kernel_fpu_end();
--}
--
--static void
--xor_sse_2_pf64(unsigned long bytes, unsigned long * __restrict p1,
--	       const unsigned long * __restrict p2)
--{
--	unsigned long lines = bytes >> 8;
--
--	kernel_fpu_begin();
--
--	asm volatile(
--#undef BLOCK
--#define BLOCK(i)			\
--		BLK64(PF0, LD, i)	\
--		BLK64(PF1, XO1, i)	\
--		BLK64(NOP, ST, i)	\
--
--	" .align 32			;\n"
--	" 1:                            ;\n"
--
--		BLOCK(0)
--		BLOCK(4)
--		BLOCK(8)
--		BLOCK(12)
--
--	"       add %[inc], %[p1]       ;\n"
--	"       add %[inc], %[p2]       ;\n"
--	"       dec %[cnt]              ;\n"
--	"       jnz 1b                  ;\n"
--	: [cnt] "+r" (lines),
--	  [p1] "+r" (p1), [p2] "+r" (p2)
--	: [inc] XOR_CONSTANT_CONSTRAINT (256UL)
--	: "memory");
--
--	kernel_fpu_end();
--}
--
--static void
--xor_sse_3(unsigned long bytes, unsigned long * __restrict p1,
--	  const unsigned long * __restrict p2,
--	  const unsigned long * __restrict p3)
--{
--	unsigned long lines = bytes >> 8;
--
--	kernel_fpu_begin();
--
--	asm volatile(
--#undef BLOCK
--#define BLOCK(i) \
--		PF1(i)					\
--				PF1(i + 2)		\
--		LD(i, 0)				\
--			LD(i + 1, 1)			\
--				LD(i + 2, 2)		\
--					LD(i + 3, 3)	\
--		PF2(i)					\
--				PF2(i + 2)		\
--		PF0(i + 4)				\
--				PF0(i + 6)		\
--		XO1(i, 0)				\
--			XO1(i + 1, 1)			\
--				XO1(i + 2, 2)		\
--					XO1(i + 3, 3)	\
--		XO2(i, 0)				\
--			XO2(i + 1, 1)			\
--				XO2(i + 2, 2)		\
--					XO2(i + 3, 3)	\
--		ST(i, 0)				\
--			ST(i + 1, 1)			\
--				ST(i + 2, 2)		\
--					ST(i + 3, 3)	\
--
--
--		PF0(0)
--				PF0(2)
--
--	" .align 32			;\n"
--	" 1:                            ;\n"
--
--		BLOCK(0)
--		BLOCK(4)
--		BLOCK(8)
--		BLOCK(12)
--
--	"       add %[inc], %[p1]       ;\n"
--	"       add %[inc], %[p2]       ;\n"
--	"       add %[inc], %[p3]       ;\n"
--	"       dec %[cnt]              ;\n"
--	"       jnz 1b                  ;\n"
--	: [cnt] "+r" (lines),
--	  [p1] "+r" (p1), [p2] "+r" (p2), [p3] "+r" (p3)
--	: [inc] XOR_CONSTANT_CONSTRAINT (256UL)
--	: "memory");
--
--	kernel_fpu_end();
-+#define arch_xor_init arch_xor_init
-+static __always_inline void __init arch_xor_init(void)
-+{
-+	if (boot_cpu_has(X86_FEATURE_AVX) &&
-+	    boot_cpu_has(X86_FEATURE_OSXSAVE)) {
-+		xor_force(&xor_block_avx);
-+	} else if (IS_ENABLED(CONFIG_X86_64) || boot_cpu_has(X86_FEATURE_XMM)) {
-+		xor_register(&xor_block_sse);
-+		xor_register(&xor_block_sse_pf64);
-+	} else if (boot_cpu_has(X86_FEATURE_MMX)) {
-+		xor_register(&xor_block_pII_mmx);
-+		xor_register(&xor_block_p5_mmx);
-+	} else {
-+		xor_register(&xor_block_8regs);
-+		xor_register(&xor_block_8regs_p);
-+		xor_register(&xor_block_32regs);
-+		xor_register(&xor_block_32regs_p);
+ #define arch_xor_init arch_xor_init
+ static __always_inline void __init arch_xor_init(void)
+ {
+-	xor_neon_init();
+ 	xor_register(&xor_block_8regs);
+ 	xor_register(&xor_block_32regs);
+-	if (cpu_has_neon())
+-		xor_register(&xor_block_arm64);
++	if (cpu_has_neon()) {
++		if (cpu_have_named_feature(SHA3))
++			xor_register(&xor_block_eor3);
++		else
++			xor_register(&xor_block_neon);
 +	}
  }
+diff --git a/lib/raid/xor/arm64/xor-neon-glue.c b/lib/raid/xor/arm64/xor-neon-glue.c
+index 067a2095659a..08c3e3573388 100644
+--- a/lib/raid/xor/arm64/xor-neon-glue.c
++++ b/lib/raid/xor/arm64/xor-neon-glue.c
+@@ -7,51 +7,54 @@
+ #include <linux/raid/xor_impl.h>
+ #include <asm/simd.h>
+ #include <asm/xor.h>
++#include "xor-neon.h"
  
+-extern struct xor_block_template const xor_block_inner_neon;
+-
 -static void
--xor_sse_3_pf64(unsigned long bytes, unsigned long * __restrict p1,
--	       const unsigned long * __restrict p2,
--	       const unsigned long * __restrict p3)
+-xor_neon_2(unsigned long bytes, unsigned long * __restrict p1,
+-	   const unsigned long * __restrict p2)
 -{
--	unsigned long lines = bytes >> 8;
--
--	kernel_fpu_begin();
--
--	asm volatile(
--#undef BLOCK
--#define BLOCK(i)			\
--		BLK64(PF0, LD, i)	\
--		BLK64(PF1, XO1, i)	\
--		BLK64(PF2, XO2, i)	\
--		BLK64(NOP, ST, i)	\
--
--	" .align 32			;\n"
--	" 1:                            ;\n"
--
--		BLOCK(0)
--		BLOCK(4)
--		BLOCK(8)
--		BLOCK(12)
--
--	"       add %[inc], %[p1]       ;\n"
--	"       add %[inc], %[p2]       ;\n"
--	"       add %[inc], %[p3]       ;\n"
--	"       dec %[cnt]              ;\n"
--	"       jnz 1b                  ;\n"
--	: [cnt] "+r" (lines),
--	  [p1] "+r" (p1), [p2] "+r" (p2), [p3] "+r" (p3)
--	: [inc] XOR_CONSTANT_CONSTRAINT (256UL)
--	: "memory");
--
--	kernel_fpu_end();
+-	scoped_ksimd()
+-		xor_block_inner_neon.do_2(bytes, p1, p2);
 -}
 -
 -static void
--xor_sse_4(unsigned long bytes, unsigned long * __restrict p1,
--	  const unsigned long * __restrict p2,
--	  const unsigned long * __restrict p3,
--	  const unsigned long * __restrict p4)
+-xor_neon_3(unsigned long bytes, unsigned long * __restrict p1,
+-	   const unsigned long * __restrict p2,
+-	   const unsigned long * __restrict p3)
 -{
--	unsigned long lines = bytes >> 8;
--
--	kernel_fpu_begin();
--
--	asm volatile(
--#undef BLOCK
--#define BLOCK(i) \
--		PF1(i)					\
--				PF1(i + 2)		\
--		LD(i, 0)				\
--			LD(i + 1, 1)			\
--				LD(i + 2, 2)		\
--					LD(i + 3, 3)	\
--		PF2(i)					\
--				PF2(i + 2)		\
--		XO1(i, 0)				\
--			XO1(i + 1, 1)			\
--				XO1(i + 2, 2)		\
--					XO1(i + 3, 3)	\
--		PF3(i)					\
--				PF3(i + 2)		\
--		PF0(i + 4)				\
--				PF0(i + 6)		\
--		XO2(i, 0)				\
--			XO2(i + 1, 1)			\
--				XO2(i + 2, 2)		\
--					XO2(i + 3, 3)	\
--		XO3(i, 0)				\
--			XO3(i + 1, 1)			\
--				XO3(i + 2, 2)		\
--					XO3(i + 3, 3)	\
--		ST(i, 0)				\
--			ST(i + 1, 1)			\
--				ST(i + 2, 2)		\
--					ST(i + 3, 3)	\
--
--
--		PF0(0)
--				PF0(2)
--
--	" .align 32			;\n"
--	" 1:                            ;\n"
--
--		BLOCK(0)
--		BLOCK(4)
--		BLOCK(8)
--		BLOCK(12)
--
--	"       add %[inc], %[p1]       ;\n"
--	"       add %[inc], %[p2]       ;\n"
--	"       add %[inc], %[p3]       ;\n"
--	"       add %[inc], %[p4]       ;\n"
--	"       dec %[cnt]              ;\n"
--	"       jnz 1b                  ;\n"
--	: [cnt] "+r" (lines), [p1] "+r" (p1),
--	  [p2] "+r" (p2), [p3] "+r" (p3), [p4] "+r" (p4)
--	: [inc] XOR_CONSTANT_CONSTRAINT (256UL)
--	: "memory");
--
--	kernel_fpu_end();
+-	scoped_ksimd()
+-		xor_block_inner_neon.do_3(bytes, p1, p2, p3);
 -}
 -
 -static void
--xor_sse_4_pf64(unsigned long bytes, unsigned long * __restrict p1,
--	       const unsigned long * __restrict p2,
--	       const unsigned long * __restrict p3,
--	       const unsigned long * __restrict p4)
+-xor_neon_4(unsigned long bytes, unsigned long * __restrict p1,
+-	   const unsigned long * __restrict p2,
+-	   const unsigned long * __restrict p3,
+-	   const unsigned long * __restrict p4)
 -{
--	unsigned long lines = bytes >> 8;
--
--	kernel_fpu_begin();
--
--	asm volatile(
--#undef BLOCK
--#define BLOCK(i)			\
--		BLK64(PF0, LD, i)	\
--		BLK64(PF1, XO1, i)	\
--		BLK64(PF2, XO2, i)	\
--		BLK64(PF3, XO3, i)	\
--		BLK64(NOP, ST, i)	\
--
--	" .align 32			;\n"
--	" 1:                            ;\n"
--
--		BLOCK(0)
--		BLOCK(4)
--		BLOCK(8)
--		BLOCK(12)
--
--	"       add %[inc], %[p1]       ;\n"
--	"       add %[inc], %[p2]       ;\n"
--	"       add %[inc], %[p3]       ;\n"
--	"       add %[inc], %[p4]       ;\n"
--	"       dec %[cnt]              ;\n"
--	"       jnz 1b                  ;\n"
--	: [cnt] "+r" (lines), [p1] "+r" (p1),
--	  [p2] "+r" (p2), [p3] "+r" (p3), [p4] "+r" (p4)
--	: [inc] XOR_CONSTANT_CONSTRAINT (256UL)
--	: "memory");
--
--	kernel_fpu_end();
+-	scoped_ksimd()
+-		xor_block_inner_neon.do_4(bytes, p1, p2, p3, p4);
 -}
 -
 -static void
--xor_sse_5(unsigned long bytes, unsigned long * __restrict p1,
--	  const unsigned long * __restrict p2,
--	  const unsigned long * __restrict p3,
--	  const unsigned long * __restrict p4,
--	  const unsigned long * __restrict p5)
+-xor_neon_5(unsigned long bytes, unsigned long * __restrict p1,
+-	   const unsigned long * __restrict p2,
+-	   const unsigned long * __restrict p3,
+-	   const unsigned long * __restrict p4,
+-	   const unsigned long * __restrict p5)
 -{
--	unsigned long lines = bytes >> 8;
--
--	kernel_fpu_begin();
--
--	asm volatile(
--#undef BLOCK
--#define BLOCK(i) \
--		PF1(i)					\
--				PF1(i + 2)		\
--		LD(i, 0)				\
--			LD(i + 1, 1)			\
--				LD(i + 2, 2)		\
--					LD(i + 3, 3)	\
--		PF2(i)					\
--				PF2(i + 2)		\
--		XO1(i, 0)				\
--			XO1(i + 1, 1)			\
--				XO1(i + 2, 2)		\
--					XO1(i + 3, 3)	\
--		PF3(i)					\
--				PF3(i + 2)		\
--		XO2(i, 0)				\
--			XO2(i + 1, 1)			\
--				XO2(i + 2, 2)		\
--					XO2(i + 3, 3)	\
--		PF4(i)					\
--				PF4(i + 2)		\
--		PF0(i + 4)				\
--				PF0(i + 6)		\
--		XO3(i, 0)				\
--			XO3(i + 1, 1)			\
--				XO3(i + 2, 2)		\
--					XO3(i + 3, 3)	\
--		XO4(i, 0)				\
--			XO4(i + 1, 1)			\
--				XO4(i + 2, 2)		\
--					XO4(i + 3, 3)	\
--		ST(i, 0)				\
--			ST(i + 1, 1)			\
--				ST(i + 2, 2)		\
--					ST(i + 3, 3)	\
--
--
--		PF0(0)
--				PF0(2)
--
--	" .align 32			;\n"
--	" 1:                            ;\n"
--
--		BLOCK(0)
--		BLOCK(4)
--		BLOCK(8)
--		BLOCK(12)
--
--	"       add %[inc], %[p1]       ;\n"
--	"       add %[inc], %[p2]       ;\n"
--	"       add %[inc], %[p3]       ;\n"
--	"       add %[inc], %[p4]       ;\n"
--	"       add %[inc], %[p5]       ;\n"
--	"       dec %[cnt]              ;\n"
--	"       jnz 1b                  ;\n"
--	: [cnt] "+r" (lines), [p1] "+r" (p1), [p2] "+r" (p2),
--	  [p3] "+r" (p3), [p4] "+r" (p4), [p5] "+r" (p5)
--	: [inc] XOR_CONSTANT_CONSTRAINT (256UL)
--	: "memory");
--
--	kernel_fpu_end();
+-	scoped_ksimd()
+-		xor_block_inner_neon.do_5(bytes, p1, p2, p3, p4, p5);
 -}
 -
--static void
--xor_sse_5_pf64(unsigned long bytes, unsigned long * __restrict p1,
--	       const unsigned long * __restrict p2,
--	       const unsigned long * __restrict p3,
--	       const unsigned long * __restrict p4,
--	       const unsigned long * __restrict p5)
--{
--	unsigned long lines = bytes >> 8;
--
--	kernel_fpu_begin();
--
--	asm volatile(
--#undef BLOCK
--#define BLOCK(i)			\
--		BLK64(PF0, LD, i)	\
--		BLK64(PF1, XO1, i)	\
--		BLK64(PF2, XO2, i)	\
--		BLK64(PF3, XO3, i)	\
--		BLK64(PF4, XO4, i)	\
--		BLK64(NOP, ST, i)	\
--
--	" .align 32			;\n"
--	" 1:                            ;\n"
--
--		BLOCK(0)
--		BLOCK(4)
--		BLOCK(8)
--		BLOCK(12)
--
--	"       add %[inc], %[p1]       ;\n"
--	"       add %[inc], %[p2]       ;\n"
--	"       add %[inc], %[p3]       ;\n"
--	"       add %[inc], %[p4]       ;\n"
--	"       add %[inc], %[p5]       ;\n"
--	"       dec %[cnt]              ;\n"
--	"       jnz 1b                  ;\n"
--	: [cnt] "+r" (lines), [p1] "+r" (p1), [p2] "+r" (p2),
--	  [p3] "+r" (p3), [p4] "+r" (p4), [p5] "+r" (p5)
--	: [inc] XOR_CONSTANT_CONSTRAINT (256UL)
--	: "memory");
--
--	kernel_fpu_end();
--}
--
--static struct xor_block_template xor_block_sse_pf64 = {
--	.name = "prefetch64-sse",
--	.do_2 = xor_sse_2_pf64,
--	.do_3 = xor_sse_3_pf64,
--	.do_4 = xor_sse_4_pf64,
--	.do_5 = xor_sse_5_pf64,
--};
--
--#undef LD
--#undef XO1
--#undef XO2
--#undef XO3
--#undef XO4
--#undef ST
--#undef NOP
--#undef BLK64
--#undef BLOCK
--
--#undef XOR_CONSTANT_CONSTRAINT
--
--#ifdef CONFIG_X86_32
--# include <asm/xor_32.h>
--#else
--# include <asm/xor_64.h>
--#endif
--
- #endif /* _ASM_X86_XOR_H */
-diff --git a/arch/x86/include/asm/xor_64.h b/arch/x86/include/asm/xor_64.h
-deleted file mode 100644
-index 2d2ceb241866..000000000000
---- a/arch/x86/include/asm/xor_64.h
-+++ /dev/null
-@@ -1,32 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 */
--#ifndef _ASM_X86_XOR_64_H
--#define _ASM_X86_XOR_64_H
--
--static struct xor_block_template xor_block_sse = {
--	.name = "generic_sse",
--	.do_2 = xor_sse_2,
--	.do_3 = xor_sse_3,
--	.do_4 = xor_sse_4,
--	.do_5 = xor_sse_5,
--};
--
--
--/* Also try the AVX routines */
--#include <asm/xor_avx.h>
--
--/* We force the use of the SSE xor block because it can write around L2.
--   We may also be able to load into the L1 only depending on how the cpu
--   deals with a load to a line that is being prefetched.  */
--#define arch_xor_init arch_xor_init
--static __always_inline void __init arch_xor_init(void)
--{
--	if (boot_cpu_has(X86_FEATURE_AVX) &&
--	    boot_cpu_has(X86_FEATURE_OSXSAVE)) {
--		xor_force(&xor_block_avx);
--	} else {
--		xor_register(&xor_block_sse_pf64);
--		xor_register(&xor_block_sse);
--	}
--}
--
--#endif /* _ASM_X86_XOR_64_H */
-diff --git a/lib/raid/xor/Makefile b/lib/raid/xor/Makefile
-index 3db6c2b2f26a..05aca96041b3 100644
---- a/lib/raid/xor/Makefile
-+++ b/lib/raid/xor/Makefile
-@@ -21,6 +21,8 @@ xor-$(CONFIG_RISCV_ISA_V)	+= riscv/xor.o riscv/xor-glue.o
- xor-$(CONFIG_SPARC32)		+= sparc/xor-sparc32.o
- xor-$(CONFIG_SPARC64)		+= sparc/xor-sparc64.o sparc/xor-sparc64-glue.o
- xor-$(CONFIG_S390)		+= s390/xor.o
-+xor-$(CONFIG_X86_32)		+= x86/xor-avx.o x86/xor-sse.o x86/xor-mmx.o
-+xor-$(CONFIG_X86_64)		+= x86/xor-avx.o x86/xor-sse.o
+-struct xor_block_template xor_block_arm64 = {
+-	.name   = "arm64_neon",
+-	.do_2   = xor_neon_2,
+-	.do_3   = xor_neon_3,
+-	.do_4   = xor_neon_4,
+-	.do_5	= xor_neon_5
++#define XOR_TEMPLATE(_name)						\
++static void								\
++xor_##_name##_2(unsigned long bytes, unsigned long * __restrict p1,	\
++	   const unsigned long * __restrict p2)				\
++{									\
++	scoped_ksimd()							\
++		__xor_##_name##_2(bytes, p1, p2);			\
++}									\
++									\
++static void								\
++xor_##_name##_3(unsigned long bytes, unsigned long * __restrict p1,	\
++	   const unsigned long * __restrict p2,				\
++	   const unsigned long * __restrict p3)				\
++{									\
++	scoped_ksimd()							\
++		__xor_##_name##_3(bytes, p1, p2, p3);			\
++}									\
++									\
++static void								\
++xor_##_name##_4(unsigned long bytes, unsigned long * __restrict p1,	\
++	   const unsigned long * __restrict p2,				\
++	   const unsigned long * __restrict p3,				\
++	   const unsigned long * __restrict p4)				\
++{									\
++	scoped_ksimd()							\
++		__xor_##_name##_4(bytes, p1, p2, p3, p4);		\
++}									\
++									\
++static void								\
++xor_##_name##_5(unsigned long bytes, unsigned long * __restrict p1,	\
++	   const unsigned long * __restrict p2,				\
++	   const unsigned long * __restrict p3,				\
++	   const unsigned long * __restrict p4,				\
++	   const unsigned long * __restrict p5)				\
++{									\
++	scoped_ksimd()							\
++		__xor_##_name##_5(bytes, p1, p2, p3, p4, p5);		\
++}									\
++									\
++struct xor_block_template xor_block_##_name = {				\
++	.name   = __stringify(_name),					\
++	.do_2   = xor_##_name##_2,					\
++	.do_3   = xor_##_name##_3,					\
++	.do_4   = xor_##_name##_4,					\
++	.do_5	= xor_##_name##_5					\
+ };
++
++XOR_TEMPLATE(neon);
++XOR_TEMPLATE(eor3);
+diff --git a/lib/raid/xor/arm64/xor-neon.c b/lib/raid/xor/arm64/xor-neon.c
+index 8d2d185090db..61194c292917 100644
+--- a/lib/raid/xor/arm64/xor-neon.c
++++ b/lib/raid/xor/arm64/xor-neon.c
+@@ -8,9 +8,10 @@
+ #include <linux/cache.h>
+ #include <asm/neon-intrinsics.h>
+ #include <asm/xor.h>
++#include "xor-neon.h"
  
- 
- CFLAGS_arm/xor-neon.o		+= $(CC_FLAGS_FPU)
-diff --git a/arch/x86/include/asm/xor_avx.h b/lib/raid/xor/x86/xor-avx.c
-similarity index 95%
-rename from arch/x86/include/asm/xor_avx.h
-rename to lib/raid/xor/x86/xor-avx.c
-index c600888436bb..b49cb5199e70 100644
---- a/arch/x86/include/asm/xor_avx.h
-+++ b/lib/raid/xor/x86/xor-avx.c
-@@ -1,18 +1,16 @@
--/* SPDX-License-Identifier: GPL-2.0-only */
--#ifndef _ASM_X86_XOR_AVX_H
--#define _ASM_X86_XOR_AVX_H
--
-+// SPDX-License-Identifier: GPL-2.0-only
- /*
-- * Optimized RAID-5 checksumming functions for AVX
-+ * Optimized XOR parity functions for AVX
-  *
-  * Copyright (C) 2012 Intel Corporation
-  * Author: Jim Kukunas <james.t.kukunas@linux.intel.com>
-  *
-  * Based on Ingo Molnar and Zach Brown's respective MMX and SSE routines
-  */
--
- #include <linux/compiler.h>
-+#include <linux/raid/xor_impl.h>
- #include <asm/fpu/api.h>
-+#include <asm/xor.h>
- 
- #define BLOCK4(i) \
- 		BLOCK(32 * i, 0) \
-@@ -158,12 +156,10 @@ do { \
- 	kernel_fpu_end();
+-static void xor_arm64_neon_2(unsigned long bytes, unsigned long * __restrict p1,
+-	const unsigned long * __restrict p2)
++void __xor_neon_2(unsigned long bytes, unsigned long * __restrict p1,
++		const unsigned long * __restrict p2)
+ {
+ 	uint64_t *dp1 = (uint64_t *)p1;
+ 	uint64_t *dp2 = (uint64_t *)p2;
+@@ -36,9 +37,9 @@ static void xor_arm64_neon_2(unsigned long bytes, unsigned long * __restrict p1,
+ 	} while (--lines > 0);
  }
  
--static struct xor_block_template xor_block_avx = {
-+struct xor_block_template xor_block_avx = {
- 	.name = "avx",
- 	.do_2 = xor_avx_2,
- 	.do_3 = xor_avx_3,
- 	.do_4 = xor_avx_4,
- 	.do_5 = xor_avx_5,
- };
--
--#endif
-diff --git a/arch/x86/include/asm/xor_32.h b/lib/raid/xor/x86/xor-mmx.c
-similarity index 90%
-rename from arch/x86/include/asm/xor_32.h
-rename to lib/raid/xor/x86/xor-mmx.c
-index ee32d08c27bc..cf0fafea33b7 100644
---- a/arch/x86/include/asm/xor_32.h
-+++ b/lib/raid/xor/x86/xor-mmx.c
-@@ -1,15 +1,12 @@
--/* SPDX-License-Identifier: GPL-2.0-or-later */
--#ifndef _ASM_X86_XOR_32_H
--#define _ASM_X86_XOR_32_H
--
--/*
-- * Optimized RAID-5 checksumming functions for MMX.
-- */
--
-+// SPDX-License-Identifier: GPL-2.0-or-later
- /*
-- * High-speed RAID5 checksumming functions utilizing MMX instructions.
-+ * Optimized XOR parity functions for MMX.
-+ *
-  * Copyright (C) 1998 Ingo Molnar.
-  */
-+#include <linux/raid/xor_impl.h>
-+#include <asm/fpu/api.h>
-+#include <asm/xor.h>
- 
- #define LD(x, y)	"       movq   8*("#x")(%1), %%mm"#y"   ;\n"
- #define ST(x, y)	"       movq %%mm"#y",   8*("#x")(%1)   ;\n"
-@@ -18,8 +15,6 @@
- #define XO3(x, y)	"       pxor   8*("#x")(%4), %%mm"#y"   ;\n"
- #define XO4(x, y)	"       pxor   8*("#x")(%5), %%mm"#y"   ;\n"
- 
--#include <asm/fpu/api.h>
--
- static void
- xor_pII_mmx_2(unsigned long bytes, unsigned long * __restrict p1,
- 	      const unsigned long * __restrict p2)
-@@ -519,7 +514,7 @@ xor_p5_mmx_5(unsigned long bytes, unsigned long * __restrict p1,
- 	kernel_fpu_end();
+-static void xor_arm64_neon_3(unsigned long bytes, unsigned long * __restrict p1,
+-	const unsigned long * __restrict p2,
+-	const unsigned long * __restrict p3)
++void __xor_neon_3(unsigned long bytes, unsigned long * __restrict p1,
++		const unsigned long * __restrict p2,
++		const unsigned long * __restrict p3)
+ {
+ 	uint64_t *dp1 = (uint64_t *)p1;
+ 	uint64_t *dp2 = (uint64_t *)p2;
+@@ -72,10 +73,10 @@ static void xor_arm64_neon_3(unsigned long bytes, unsigned long * __restrict p1,
+ 	} while (--lines > 0);
  }
  
--static struct xor_block_template xor_block_pII_mmx = {
-+struct xor_block_template xor_block_pII_mmx = {
- 	.name = "pII_mmx",
- 	.do_2 = xor_pII_mmx_2,
- 	.do_3 = xor_pII_mmx_3,
-@@ -527,49 +522,10 @@ static struct xor_block_template xor_block_pII_mmx = {
- 	.do_5 = xor_pII_mmx_5,
- };
+-static void xor_arm64_neon_4(unsigned long bytes, unsigned long * __restrict p1,
+-	const unsigned long * __restrict p2,
+-	const unsigned long * __restrict p3,
+-	const unsigned long * __restrict p4)
++void __xor_neon_4(unsigned long bytes, unsigned long * __restrict p1,
++		const unsigned long * __restrict p2,
++		const unsigned long * __restrict p3,
++		const unsigned long * __restrict p4)
+ {
+ 	uint64_t *dp1 = (uint64_t *)p1;
+ 	uint64_t *dp2 = (uint64_t *)p2;
+@@ -117,11 +118,11 @@ static void xor_arm64_neon_4(unsigned long bytes, unsigned long * __restrict p1,
+ 	} while (--lines > 0);
+ }
  
--static struct xor_block_template xor_block_p5_mmx = {
-+struct xor_block_template xor_block_p5_mmx = {
- 	.name = "p5_mmx",
- 	.do_2 = xor_p5_mmx_2,
- 	.do_3 = xor_p5_mmx_3,
- 	.do_4 = xor_p5_mmx_4,
- 	.do_5 = xor_p5_mmx_5,
- };
--
--static struct xor_block_template xor_block_pIII_sse = {
--	.name = "pIII_sse",
--	.do_2 = xor_sse_2,
--	.do_3 = xor_sse_3,
--	.do_4 = xor_sse_4,
--	.do_5 = xor_sse_5,
+-static void xor_arm64_neon_5(unsigned long bytes, unsigned long * __restrict p1,
+-	const unsigned long * __restrict p2,
+-	const unsigned long * __restrict p3,
+-	const unsigned long * __restrict p4,
+-	const unsigned long * __restrict p5)
++void __xor_neon_5(unsigned long bytes, unsigned long * __restrict p1,
++		const unsigned long * __restrict p2,
++		const unsigned long * __restrict p3,
++		const unsigned long * __restrict p4,
++		const unsigned long * __restrict p5)
+ {
+ 	uint64_t *dp1 = (uint64_t *)p1;
+ 	uint64_t *dp2 = (uint64_t *)p2;
+@@ -171,14 +172,6 @@ static void xor_arm64_neon_5(unsigned long bytes, unsigned long * __restrict p1,
+ 	} while (--lines > 0);
+ }
+ 
+-struct xor_block_template xor_block_inner_neon __ro_after_init = {
+-	.name	= "__inner_neon__",
+-	.do_2	= xor_arm64_neon_2,
+-	.do_3	= xor_arm64_neon_3,
+-	.do_4	= xor_arm64_neon_4,
+-	.do_5	= xor_arm64_neon_5,
 -};
 -
--/* Also try the AVX routines */
--#include <asm/xor_avx.h>
+ static inline uint64x2_t eor3(uint64x2_t p, uint64x2_t q, uint64x2_t r)
+ {
+ 	uint64x2_t res;
+@@ -189,10 +182,9 @@ static inline uint64x2_t eor3(uint64x2_t p, uint64x2_t q, uint64x2_t r)
+ 	return res;
+ }
+ 
+-static void xor_arm64_eor3_3(unsigned long bytes,
+-	unsigned long * __restrict p1,
+-	const unsigned long * __restrict p2,
+-	const unsigned long * __restrict p3)
++void __xor_eor3_3(unsigned long bytes, unsigned long * __restrict p1,
++		const unsigned long * __restrict p2,
++		const unsigned long * __restrict p3)
+ {
+ 	uint64_t *dp1 = (uint64_t *)p1;
+ 	uint64_t *dp2 = (uint64_t *)p2;
+@@ -224,11 +216,10 @@ static void xor_arm64_eor3_3(unsigned long bytes,
+ 	} while (--lines > 0);
+ }
+ 
+-static void xor_arm64_eor3_4(unsigned long bytes,
+-	unsigned long * __restrict p1,
+-	const unsigned long * __restrict p2,
+-	const unsigned long * __restrict p3,
+-	const unsigned long * __restrict p4)
++void __xor_eor3_4(unsigned long bytes, unsigned long * __restrict p1,
++		const unsigned long * __restrict p2,
++		const unsigned long * __restrict p3,
++		const unsigned long * __restrict p4)
+ {
+ 	uint64_t *dp1 = (uint64_t *)p1;
+ 	uint64_t *dp2 = (uint64_t *)p2;
+@@ -268,12 +259,11 @@ static void xor_arm64_eor3_4(unsigned long bytes,
+ 	} while (--lines > 0);
+ }
+ 
+-static void xor_arm64_eor3_5(unsigned long bytes,
+-	unsigned long * __restrict p1,
+-	const unsigned long * __restrict p2,
+-	const unsigned long * __restrict p3,
+-	const unsigned long * __restrict p4,
+-	const unsigned long * __restrict p5)
++void __xor_eor3_5(unsigned long bytes, unsigned long * __restrict p1,
++		const unsigned long * __restrict p2,
++		const unsigned long * __restrict p3,
++		const unsigned long * __restrict p4,
++		const unsigned long * __restrict p5)
+ {
+ 	uint64_t *dp1 = (uint64_t *)p1;
+ 	uint64_t *dp2 = (uint64_t *)p2;
+@@ -314,12 +304,3 @@ static void xor_arm64_eor3_5(unsigned long bytes,
+ 		dp5 += 8;
+ 	} while (--lines > 0);
+ }
 -
--/* Also try the generic routines.  */
--#include <asm-generic/xor.h>
--
--/* We force the use of the SSE xor block because it can write around L2.
--   We may also be able to load into the L1 only depending on how the cpu
--   deals with a load to a line that is being prefetched.  */
--#define arch_xor_init arch_xor_init
--static __always_inline void __init arch_xor_init(void)
+-void __init xor_neon_init(void)
 -{
--	if (boot_cpu_has(X86_FEATURE_AVX) &&
--	    boot_cpu_has(X86_FEATURE_OSXSAVE)) {
--		xor_force(&xor_block_avx);
--	} else if (boot_cpu_has(X86_FEATURE_XMM)) {
--		xor_register(&xor_block_pIII_sse);
--		xor_register(&xor_block_sse_pf64);
--	} else if (boot_cpu_has(X86_FEATURE_MMX)) {
--		xor_register(&xor_block_pII_mmx);
--		xor_register(&xor_block_p5_mmx);
--	} else {
--		xor_register(&xor_block_8regs);
--		xor_register(&xor_block_8regs_p);
--		xor_register(&xor_block_32regs);
--		xor_register(&xor_block_32regs_p);
+-	if (cpu_have_named_feature(SHA3)) {
+-		xor_block_inner_neon.do_3 = xor_arm64_eor3_3;
+-		xor_block_inner_neon.do_4 = xor_arm64_eor3_4;
+-		xor_block_inner_neon.do_5 = xor_arm64_eor3_5;
 -	}
 -}
--
--#endif /* _ASM_X86_XOR_32_H */
-diff --git a/lib/raid/xor/x86/xor-sse.c b/lib/raid/xor/x86/xor-sse.c
+diff --git a/lib/raid/xor/arm64/xor-neon.h b/lib/raid/xor/arm64/xor-neon.h
 new file mode 100644
-index 000000000000..0e727ced8b00
+index 000000000000..cec0ac846fea
 --- /dev/null
-+++ b/lib/raid/xor/x86/xor-sse.c
-@@ -0,0 +1,476 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+/*
-+ * Optimized XOR parity functions for SSE.
-+ *
-+ * Cache avoiding checksumming functions utilizing KNI instructions
-+ * Copyright (C) 1999 Zach Brown (with obvious credit due Ingo)
-+ *
-+ * Based on
-+ * High-speed RAID5 checksumming functions utilizing SSE instructions.
-+ * Copyright (C) 1998 Ingo Molnar.
-+ *
-+ * x86-64 changes / gcc fixes from Andi Kleen.
-+ * Copyright 2002 Andi Kleen, SuSE Labs.
-+ */
-+#include <linux/raid/xor_impl.h>
-+#include <asm/fpu/api.h>
-+#include <asm/xor.h>
-+
-+#ifdef CONFIG_X86_32
-+/* reduce register pressure */
-+# define XOR_CONSTANT_CONSTRAINT "i"
-+#else
-+# define XOR_CONSTANT_CONSTRAINT "re"
-+#endif
-+
-+#define OFFS(x)		"16*("#x")"
-+#define PF_OFFS(x)	"256+16*("#x")"
-+#define PF0(x)		"	prefetchnta "PF_OFFS(x)"(%[p1])		;\n"
-+#define LD(x, y)	"	movaps "OFFS(x)"(%[p1]), %%xmm"#y"	;\n"
-+#define ST(x, y)	"	movaps %%xmm"#y", "OFFS(x)"(%[p1])	;\n"
-+#define PF1(x)		"	prefetchnta "PF_OFFS(x)"(%[p2])		;\n"
-+#define PF2(x)		"	prefetchnta "PF_OFFS(x)"(%[p3])		;\n"
-+#define PF3(x)		"	prefetchnta "PF_OFFS(x)"(%[p4])		;\n"
-+#define PF4(x)		"	prefetchnta "PF_OFFS(x)"(%[p5])		;\n"
-+#define XO1(x, y)	"	xorps "OFFS(x)"(%[p2]), %%xmm"#y"	;\n"
-+#define XO2(x, y)	"	xorps "OFFS(x)"(%[p3]), %%xmm"#y"	;\n"
-+#define XO3(x, y)	"	xorps "OFFS(x)"(%[p4]), %%xmm"#y"	;\n"
-+#define XO4(x, y)	"	xorps "OFFS(x)"(%[p5]), %%xmm"#y"	;\n"
-+#define NOP(x)
-+
-+#define BLK64(pf, op, i)				\
-+		pf(i)					\
-+		op(i, 0)				\
-+			op(i + 1, 1)			\
-+				op(i + 2, 2)		\
-+					op(i + 3, 3)
-+
-+static void
-+xor_sse_2(unsigned long bytes, unsigned long * __restrict p1,
-+	  const unsigned long * __restrict p2)
-+{
-+	unsigned long lines = bytes >> 8;
-+
-+	kernel_fpu_begin();
-+
-+	asm volatile(
-+#undef BLOCK
-+#define BLOCK(i)					\
-+		LD(i, 0)				\
-+			LD(i + 1, 1)			\
-+		PF1(i)					\
-+				PF1(i + 2)		\
-+				LD(i + 2, 2)		\
-+					LD(i + 3, 3)	\
-+		PF0(i + 4)				\
-+				PF0(i + 6)		\
-+		XO1(i, 0)				\
-+			XO1(i + 1, 1)			\
-+				XO1(i + 2, 2)		\
-+					XO1(i + 3, 3)	\
-+		ST(i, 0)				\
-+			ST(i + 1, 1)			\
-+				ST(i + 2, 2)		\
-+					ST(i + 3, 3)	\
-+
-+
-+		PF0(0)
-+				PF0(2)
-+
-+	" .align 32			;\n"
-+	" 1:                            ;\n"
-+
-+		BLOCK(0)
-+		BLOCK(4)
-+		BLOCK(8)
-+		BLOCK(12)
-+
-+	"       add %[inc], %[p1]       ;\n"
-+	"       add %[inc], %[p2]       ;\n"
-+	"       dec %[cnt]              ;\n"
-+	"       jnz 1b                  ;\n"
-+	: [cnt] "+r" (lines),
-+	  [p1] "+r" (p1), [p2] "+r" (p2)
-+	: [inc] XOR_CONSTANT_CONSTRAINT (256UL)
-+	: "memory");
-+
-+	kernel_fpu_end();
-+}
-+
-+static void
-+xor_sse_2_pf64(unsigned long bytes, unsigned long * __restrict p1,
-+	       const unsigned long * __restrict p2)
-+{
-+	unsigned long lines = bytes >> 8;
-+
-+	kernel_fpu_begin();
-+
-+	asm volatile(
-+#undef BLOCK
-+#define BLOCK(i)			\
-+		BLK64(PF0, LD, i)	\
-+		BLK64(PF1, XO1, i)	\
-+		BLK64(NOP, ST, i)	\
-+
-+	" .align 32			;\n"
-+	" 1:                            ;\n"
-+
-+		BLOCK(0)
-+		BLOCK(4)
-+		BLOCK(8)
-+		BLOCK(12)
-+
-+	"       add %[inc], %[p1]       ;\n"
-+	"       add %[inc], %[p2]       ;\n"
-+	"       dec %[cnt]              ;\n"
-+	"       jnz 1b                  ;\n"
-+	: [cnt] "+r" (lines),
-+	  [p1] "+r" (p1), [p2] "+r" (p2)
-+	: [inc] XOR_CONSTANT_CONSTRAINT (256UL)
-+	: "memory");
-+
-+	kernel_fpu_end();
-+}
-+
-+static void
-+xor_sse_3(unsigned long bytes, unsigned long * __restrict p1,
-+	  const unsigned long * __restrict p2,
-+	  const unsigned long * __restrict p3)
-+{
-+	unsigned long lines = bytes >> 8;
-+
-+	kernel_fpu_begin();
-+
-+	asm volatile(
-+#undef BLOCK
-+#define BLOCK(i) \
-+		PF1(i)					\
-+				PF1(i + 2)		\
-+		LD(i, 0)				\
-+			LD(i + 1, 1)			\
-+				LD(i + 2, 2)		\
-+					LD(i + 3, 3)	\
-+		PF2(i)					\
-+				PF2(i + 2)		\
-+		PF0(i + 4)				\
-+				PF0(i + 6)		\
-+		XO1(i, 0)				\
-+			XO1(i + 1, 1)			\
-+				XO1(i + 2, 2)		\
-+					XO1(i + 3, 3)	\
-+		XO2(i, 0)				\
-+			XO2(i + 1, 1)			\
-+				XO2(i + 2, 2)		\
-+					XO2(i + 3, 3)	\
-+		ST(i, 0)				\
-+			ST(i + 1, 1)			\
-+				ST(i + 2, 2)		\
-+					ST(i + 3, 3)	\
-+
-+
-+		PF0(0)
-+				PF0(2)
-+
-+	" .align 32			;\n"
-+	" 1:                            ;\n"
-+
-+		BLOCK(0)
-+		BLOCK(4)
-+		BLOCK(8)
-+		BLOCK(12)
-+
-+	"       add %[inc], %[p1]       ;\n"
-+	"       add %[inc], %[p2]       ;\n"
-+	"       add %[inc], %[p3]       ;\n"
-+	"       dec %[cnt]              ;\n"
-+	"       jnz 1b                  ;\n"
-+	: [cnt] "+r" (lines),
-+	  [p1] "+r" (p1), [p2] "+r" (p2), [p3] "+r" (p3)
-+	: [inc] XOR_CONSTANT_CONSTRAINT (256UL)
-+	: "memory");
-+
-+	kernel_fpu_end();
-+}
-+
-+static void
-+xor_sse_3_pf64(unsigned long bytes, unsigned long * __restrict p1,
-+	       const unsigned long * __restrict p2,
-+	       const unsigned long * __restrict p3)
-+{
-+	unsigned long lines = bytes >> 8;
-+
-+	kernel_fpu_begin();
-+
-+	asm volatile(
-+#undef BLOCK
-+#define BLOCK(i)			\
-+		BLK64(PF0, LD, i)	\
-+		BLK64(PF1, XO1, i)	\
-+		BLK64(PF2, XO2, i)	\
-+		BLK64(NOP, ST, i)	\
-+
-+	" .align 32			;\n"
-+	" 1:                            ;\n"
-+
-+		BLOCK(0)
-+		BLOCK(4)
-+		BLOCK(8)
-+		BLOCK(12)
-+
-+	"       add %[inc], %[p1]       ;\n"
-+	"       add %[inc], %[p2]       ;\n"
-+	"       add %[inc], %[p3]       ;\n"
-+	"       dec %[cnt]              ;\n"
-+	"       jnz 1b                  ;\n"
-+	: [cnt] "+r" (lines),
-+	  [p1] "+r" (p1), [p2] "+r" (p2), [p3] "+r" (p3)
-+	: [inc] XOR_CONSTANT_CONSTRAINT (256UL)
-+	: "memory");
-+
-+	kernel_fpu_end();
-+}
-+
-+static void
-+xor_sse_4(unsigned long bytes, unsigned long * __restrict p1,
-+	  const unsigned long * __restrict p2,
-+	  const unsigned long * __restrict p3,
-+	  const unsigned long * __restrict p4)
-+{
-+	unsigned long lines = bytes >> 8;
-+
-+	kernel_fpu_begin();
-+
-+	asm volatile(
-+#undef BLOCK
-+#define BLOCK(i) \
-+		PF1(i)					\
-+				PF1(i + 2)		\
-+		LD(i, 0)				\
-+			LD(i + 1, 1)			\
-+				LD(i + 2, 2)		\
-+					LD(i + 3, 3)	\
-+		PF2(i)					\
-+				PF2(i + 2)		\
-+		XO1(i, 0)				\
-+			XO1(i + 1, 1)			\
-+				XO1(i + 2, 2)		\
-+					XO1(i + 3, 3)	\
-+		PF3(i)					\
-+				PF3(i + 2)		\
-+		PF0(i + 4)				\
-+				PF0(i + 6)		\
-+		XO2(i, 0)				\
-+			XO2(i + 1, 1)			\
-+				XO2(i + 2, 2)		\
-+					XO2(i + 3, 3)	\
-+		XO3(i, 0)				\
-+			XO3(i + 1, 1)			\
-+				XO3(i + 2, 2)		\
-+					XO3(i + 3, 3)	\
-+		ST(i, 0)				\
-+			ST(i + 1, 1)			\
-+				ST(i + 2, 2)		\
-+					ST(i + 3, 3)	\
-+
-+
-+		PF0(0)
-+				PF0(2)
-+
-+	" .align 32			;\n"
-+	" 1:                            ;\n"
-+
-+		BLOCK(0)
-+		BLOCK(4)
-+		BLOCK(8)
-+		BLOCK(12)
-+
-+	"       add %[inc], %[p1]       ;\n"
-+	"       add %[inc], %[p2]       ;\n"
-+	"       add %[inc], %[p3]       ;\n"
-+	"       add %[inc], %[p4]       ;\n"
-+	"       dec %[cnt]              ;\n"
-+	"       jnz 1b                  ;\n"
-+	: [cnt] "+r" (lines), [p1] "+r" (p1),
-+	  [p2] "+r" (p2), [p3] "+r" (p3), [p4] "+r" (p4)
-+	: [inc] XOR_CONSTANT_CONSTRAINT (256UL)
-+	: "memory");
-+
-+	kernel_fpu_end();
-+}
-+
-+static void
-+xor_sse_4_pf64(unsigned long bytes, unsigned long * __restrict p1,
-+	       const unsigned long * __restrict p2,
-+	       const unsigned long * __restrict p3,
-+	       const unsigned long * __restrict p4)
-+{
-+	unsigned long lines = bytes >> 8;
-+
-+	kernel_fpu_begin();
-+
-+	asm volatile(
-+#undef BLOCK
-+#define BLOCK(i)			\
-+		BLK64(PF0, LD, i)	\
-+		BLK64(PF1, XO1, i)	\
-+		BLK64(PF2, XO2, i)	\
-+		BLK64(PF3, XO3, i)	\
-+		BLK64(NOP, ST, i)	\
-+
-+	" .align 32			;\n"
-+	" 1:                            ;\n"
-+
-+		BLOCK(0)
-+		BLOCK(4)
-+		BLOCK(8)
-+		BLOCK(12)
-+
-+	"       add %[inc], %[p1]       ;\n"
-+	"       add %[inc], %[p2]       ;\n"
-+	"       add %[inc], %[p3]       ;\n"
-+	"       add %[inc], %[p4]       ;\n"
-+	"       dec %[cnt]              ;\n"
-+	"       jnz 1b                  ;\n"
-+	: [cnt] "+r" (lines), [p1] "+r" (p1),
-+	  [p2] "+r" (p2), [p3] "+r" (p3), [p4] "+r" (p4)
-+	: [inc] XOR_CONSTANT_CONSTRAINT (256UL)
-+	: "memory");
-+
-+	kernel_fpu_end();
-+}
-+
-+static void
-+xor_sse_5(unsigned long bytes, unsigned long * __restrict p1,
-+	  const unsigned long * __restrict p2,
-+	  const unsigned long * __restrict p3,
-+	  const unsigned long * __restrict p4,
-+	  const unsigned long * __restrict p5)
-+{
-+	unsigned long lines = bytes >> 8;
-+
-+	kernel_fpu_begin();
-+
-+	asm volatile(
-+#undef BLOCK
-+#define BLOCK(i) \
-+		PF1(i)					\
-+				PF1(i + 2)		\
-+		LD(i, 0)				\
-+			LD(i + 1, 1)			\
-+				LD(i + 2, 2)		\
-+					LD(i + 3, 3)	\
-+		PF2(i)					\
-+				PF2(i + 2)		\
-+		XO1(i, 0)				\
-+			XO1(i + 1, 1)			\
-+				XO1(i + 2, 2)		\
-+					XO1(i + 3, 3)	\
-+		PF3(i)					\
-+				PF3(i + 2)		\
-+		XO2(i, 0)				\
-+			XO2(i + 1, 1)			\
-+				XO2(i + 2, 2)		\
-+					XO2(i + 3, 3)	\
-+		PF4(i)					\
-+				PF4(i + 2)		\
-+		PF0(i + 4)				\
-+				PF0(i + 6)		\
-+		XO3(i, 0)				\
-+			XO3(i + 1, 1)			\
-+				XO3(i + 2, 2)		\
-+					XO3(i + 3, 3)	\
-+		XO4(i, 0)				\
-+			XO4(i + 1, 1)			\
-+				XO4(i + 2, 2)		\
-+					XO4(i + 3, 3)	\
-+		ST(i, 0)				\
-+			ST(i + 1, 1)			\
-+				ST(i + 2, 2)		\
-+					ST(i + 3, 3)	\
-+
-+
-+		PF0(0)
-+				PF0(2)
-+
-+	" .align 32			;\n"
-+	" 1:                            ;\n"
-+
-+		BLOCK(0)
-+		BLOCK(4)
-+		BLOCK(8)
-+		BLOCK(12)
-+
-+	"       add %[inc], %[p1]       ;\n"
-+	"       add %[inc], %[p2]       ;\n"
-+	"       add %[inc], %[p3]       ;\n"
-+	"       add %[inc], %[p4]       ;\n"
-+	"       add %[inc], %[p5]       ;\n"
-+	"       dec %[cnt]              ;\n"
-+	"       jnz 1b                  ;\n"
-+	: [cnt] "+r" (lines), [p1] "+r" (p1), [p2] "+r" (p2),
-+	  [p3] "+r" (p3), [p4] "+r" (p4), [p5] "+r" (p5)
-+	: [inc] XOR_CONSTANT_CONSTRAINT (256UL)
-+	: "memory");
-+
-+	kernel_fpu_end();
-+}
-+
-+static void
-+xor_sse_5_pf64(unsigned long bytes, unsigned long * __restrict p1,
-+	       const unsigned long * __restrict p2,
-+	       const unsigned long * __restrict p3,
-+	       const unsigned long * __restrict p4,
-+	       const unsigned long * __restrict p5)
-+{
-+	unsigned long lines = bytes >> 8;
-+
-+	kernel_fpu_begin();
-+
-+	asm volatile(
-+#undef BLOCK
-+#define BLOCK(i)			\
-+		BLK64(PF0, LD, i)	\
-+		BLK64(PF1, XO1, i)	\
-+		BLK64(PF2, XO2, i)	\
-+		BLK64(PF3, XO3, i)	\
-+		BLK64(PF4, XO4, i)	\
-+		BLK64(NOP, ST, i)	\
-+
-+	" .align 32			;\n"
-+	" 1:                            ;\n"
-+
-+		BLOCK(0)
-+		BLOCK(4)
-+		BLOCK(8)
-+		BLOCK(12)
-+
-+	"       add %[inc], %[p1]       ;\n"
-+	"       add %[inc], %[p2]       ;\n"
-+	"       add %[inc], %[p3]       ;\n"
-+	"       add %[inc], %[p4]       ;\n"
-+	"       add %[inc], %[p5]       ;\n"
-+	"       dec %[cnt]              ;\n"
-+	"       jnz 1b                  ;\n"
-+	: [cnt] "+r" (lines), [p1] "+r" (p1), [p2] "+r" (p2),
-+	  [p3] "+r" (p3), [p4] "+r" (p4), [p5] "+r" (p5)
-+	: [inc] XOR_CONSTANT_CONSTRAINT (256UL)
-+	: "memory");
-+
-+	kernel_fpu_end();
-+}
-+
-+struct xor_block_template xor_block_sse = {
-+	.name = "sse",
-+	.do_2 = xor_sse_2,
-+	.do_3 = xor_sse_3,
-+	.do_4 = xor_sse_4,
-+	.do_5 = xor_sse_5,
-+};
-+
-+struct xor_block_template xor_block_sse_pf64 = {
-+	.name = "prefetch64-sse",
-+	.do_2 = xor_sse_2_pf64,
-+	.do_3 = xor_sse_3_pf64,
-+	.do_4 = xor_sse_4_pf64,
-+	.do_5 = xor_sse_5_pf64,
-+};
++++ b/lib/raid/xor/arm64/xor-neon.h
+@@ -0,0 +1,30 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++
++void __xor_neon_2(unsigned long bytes, unsigned long * __restrict p1,
++		const unsigned long * __restrict p2);
++void __xor_neon_3(unsigned long bytes, unsigned long * __restrict p1,
++		const unsigned long * __restrict p2,
++		const unsigned long * __restrict p3);
++void __xor_neon_4(unsigned long bytes, unsigned long * __restrict p1,
++		const unsigned long * __restrict p2,
++		const unsigned long * __restrict p3,
++		const unsigned long * __restrict p4);
++void __xor_neon_5(unsigned long bytes, unsigned long * __restrict p1,
++		const unsigned long * __restrict p2,
++		const unsigned long * __restrict p3,
++		const unsigned long * __restrict p4,
++		const unsigned long * __restrict p5);
++
++#define __xor_eor3_2	__xor_neon_2
++void __xor_eor3_3(unsigned long bytes, unsigned long * __restrict p1,
++		const unsigned long * __restrict p2,
++		const unsigned long * __restrict p3);
++void __xor_eor3_4(unsigned long bytes, unsigned long * __restrict p1,
++		const unsigned long * __restrict p2,
++		const unsigned long * __restrict p3,
++		const unsigned long * __restrict p4);
++void __xor_eor3_5(unsigned long bytes, unsigned long * __restrict p1,
++		const unsigned long * __restrict p2,
++		const unsigned long * __restrict p3,
++		const unsigned long * __restrict p4,
++		const unsigned long * __restrict p5);
 -- 
 2.47.3
 
