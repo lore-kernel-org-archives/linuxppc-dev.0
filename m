@@ -1,90 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-18742-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18743-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D112EFEC107
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 19:44:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D94D2FEC0FC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 19:48:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fgL932kZ7z2yng;
-	Wed, 25 Mar 2026 06:44:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774381495;
-	cv=none; b=f5wM8x0095XSETQIWc4SlqWwiSHpbN/GJT/N4vPZ36BZh97rsTMW1mdGVcNYcH5ogwLcqB+olTXYDBuu8ztUazhzBB7i7Yqs7sFkumNZCv1uaQCgp54ReAKMfE7vvQ8/g7dRL/onRCnRdMzEaou5KnFgalPWR6AW5r3Y+64Ax/j6toDDuNiLeuLGszxm0+9KIJcKpU4owGQbc3+O7dRMDpstbIWLMstWgzu5MfbOuTHnX1gzDWuYpkT8vyq3Wrv98UAc8z9jZkeZFxTRXa3tf+bSDQ46pzD7obAjmBTSMNevV8vT92cUWDGrFXRL9L1EYcxp5xxbiPk1lIVrZRTdpw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fgLFQ41Gkz2ynv;
+	Wed, 25 Mar 2026 06:48:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.227.15.18
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774381722;
+	cv=none; b=DY6OsIVq/J0V2mURF2Oc2vLI2PwlHoFYfIfB0Pygm+E8bqmF7Gp5odeG/GnMILC7gc+9rwoP2UrwOaVCQM/KfM1KgeAvg5xmgrUGpNMVw/K/i0jDn2UHXFavcPZFZVvYX2CoBEKE3240DQFscKF6m95uKhOe4/VJznERXUOLOmMXv5GazKY1X+EuBjgwX5T01t0exI9seBlkBhRTpUNyGr4H6d/QAsRKsfhPqXDQxjpZOfAjIyllRQ0MWVtRTVXtIpsM5swwS+7SjEQZ585lNb58RYRwTKEn1OvGyf+T9sntuO4WrfB3oEYMiqnlWJp7fAd5Sn/SRPcZqK3mi3Erhg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774381495; c=relaxed/relaxed;
-	bh=oTkOFqM2M39cWVqUtU9Hd88xIizvMwzDXk70xhu+U1I=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=dUmNBqCOkvjw1HTWpTqpBmYbc5cr+KQMZpJ7SykEb7QvIqQDIjqfenxNod5vv4jKFdd2fYECyplWWZaCEJwRfKWzgt+Spy+lB1gCvsNB60WFFt74MOh52svlzLpjhQnDMGa5RfGZpkFu5WQwBEZUhrUoTaETGWeFamscOussnuGyFwUlcNdoIKk9yRF2EVBcKG4Ne+e6OokhW/OERIdRAvt3YqRGc9jViGtNgU7KKjct7BuTpO/V9xyQYCMLZ+ci/E/NqugBbfIstvkXP87+hdo4kdAHLEyXUx3tZrwDB2wVXbuzKjc5U0xE6Hsw6XX3y+V9w2lO0Ctfz7DUw4xC3g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BI/PyKSY; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1774381722; c=relaxed/relaxed;
+	bh=GGWlvb2n3V4HaO8XQjVf9hW7XhuAzhwdcuVxgB5Di8o=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=RPQJuGLciJQfEMB6r9SNTy9aiTka46sdgGh4ZHOqFQcgbVRfftnCNw7ojwAft0Ij1ACOO3GjICHbrgsrbuXrG9LvWWAbEcPPco9ChVaTQw2q1fo0G+JIIHZgdXQebl4RLcNOU/I6TXY0ma8yXrBD+XfQcpyqUY22FOXDM8V7DUpsOroHETlsXSk8/YqJbmgrWgU2lTdGfaUQ+4RAWoomY2wLR5K2vF7vGlp1Yjzst7KOT8Vlq8fk+698DEE5ZFjIZnQoQuFJqXTLD9aGcmytVK6F0Wk8Pnfn8oJlUlq3LctQATxjEiQx2AkaLXIelMZMLxMdzo7iHiU1dcdxsrJrNQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de; dkim=pass (2048-bit key; secure) header.d=gmx.de header.i=w_armin@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=XStmUXF8; dkim-atps=neutral; spf=pass (client-ip=212.227.15.18; helo=mout.gmx.net; envelope-from=w_armin@gmx.de; receiver=lists.ozlabs.org) smtp.mailfrom=gmx.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=gmx.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BI/PyKSY;
+	dkim=pass (2048-bit key; secure) header.d=gmx.de header.i=w_armin@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=XStmUXF8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmx.de (client-ip=212.227.15.18; helo=mout.gmx.net; envelope-from=w_armin@gmx.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 368 seconds by postgrey-1.37 at boromir; Wed, 25 Mar 2026 06:48:38 AEDT
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fgL916RBTz2yYy
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2026 06:44:53 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 2B3A3600AC;
-	Tue, 24 Mar 2026 19:44:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AF553C19424;
-	Tue, 24 Mar 2026 19:44:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774381490;
-	bh=WRF/0A79XI/IfrPujL8sWiRG4jtPsIHG8/HKlYhxfwg=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=BI/PyKSYvjLJXWbEpQrc+czH+55hhTQfVKT55Uu1wKsITHQaRklHZhshTVjzHQFZN
-	 XI99w4CrCK+yRfm2877TM5yV4pPdvKaG1DWbUoq9X2UMljaiVAeNppp3zNtFe6VQcR
-	 Nbxio4BzKuKvbSdbHpiqyp9b0V4Wi4iBFmRLBu0AraFrnoul9PN3a4ntDRFnw+1WBV
-	 6VOLh/84HoNWnxFvJA4p13awciT/KZz8A8WdIkArI2aCUbV0ZkSk5h4r/JYUTPRIIT
-	 T8Jt8zQSnSc69wMDv4JXXRT2onYDSQlxz5UqGBDTvOp1c1OxGFbD7+EZxoeS8MPSTJ
-	 8n38/skizDzlQ==
-From: Mark Brown <broonie@kernel.org>
-To: Russell King <linux@armlinux.org.uk>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- "Rafael J. Wysocki" <rafael@kernel.org>, 
- Ioana Ciornei <ioana.ciornei@nxp.com>, Nipun Gupta <nipun.gupta@amd.com>, 
- Nikhil Agarwal <nikhil.agarwal@amd.com>, 
- "K. Y. Srinivasan" <kys@microsoft.com>, 
- Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>, 
- Dexuan Cui <decui@microsoft.com>, Long Li <longli@microsoft.com>, 
- Bjorn Helgaas <bhelgaas@google.com>, Armin Wolf <W_Armin@gmx.de>, 
- Bjorn Andersson <andersson@kernel.org>, 
- Mathieu Poirier <mathieu.poirier@linaro.org>, 
- Vineeth Vijayan <vneethv@linux.ibm.com>, 
- Peter Oberparleiter <oberpar@linux.ibm.com>, 
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
- Alexander Gordeev <agordeev@linux.ibm.com>, 
- Christian Borntraeger <borntraeger@linux.ibm.com>, 
- Sven Schnelle <svens@linux.ibm.com>, 
- Harald Freudenberger <freude@linux.ibm.com>, 
- Holger Dengler <dengler@linux.ibm.com>, 
- "Michael S. Tsirkin" <mst@redhat.com>, Jason Wang <jasowang@redhat.com>, 
- Xuan Zhuo <xuanzhuo@linux.alibaba.com>, 
- =?utf-8?q?Eugenio_P=C3=A9rez?= <eperezma@redhat.com>, 
- Alex Williamson <alex@shazbot.org>, Juergen Gross <jgross@suse.com>, 
- Stefano Stabellini <sstabellini@kernel.org>, 
- Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, 
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
- Danilo Krummrich <dakr@kernel.org>
-Cc: linux-kernel@vger.kernel.org, driver-core@lists.linux.dev, 
- linuxppc-dev@lists.ozlabs.org, linux-hyperv@vger.kernel.org, 
- linux-pci@vger.kernel.org, platform-driver-x86@vger.kernel.org, 
- linux-arm-msm@vger.kernel.org, linux-remoteproc@vger.kernel.org, 
- linux-s390@vger.kernel.org, linux-spi@vger.kernel.org, 
- virtualization@lists.linux.dev, kvm@vger.kernel.org, 
- xen-devel@lists.xenproject.org, linux-arm-kernel@lists.infradead.org
-In-Reply-To: <20260324005919.2408620-1-dakr@kernel.org>
-References: <20260324005919.2408620-1-dakr@kernel.org>
-Subject: Re: (subset) [PATCH 00/12] treewide: Convert buses to use generic
- driver_override
-Message-Id: <177436441990.98682.12977271865531185229.b4-ty@b4>
-Date: Tue, 24 Mar 2026 15:00:19 +0000
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fgLFL5tJgz2ynn
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2026 06:48:38 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmx.de;
+	s=s31663417; t=1774381712; x=1774986512; i=w_armin@gmx.de;
+	bh=GGWlvb2n3V4HaO8XQjVf9hW7XhuAzhwdcuVxgB5Di8o=;
+	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:cc:content-transfer-encoding:
+	 content-type:date:from:message-id:mime-version:reply-to:subject:
+	 to;
+	b=XStmUXF8K+IJI8C7LA4ocIU/wkbCX7yK0PkfEPyrfdtC4X4mcvUHRSne8PK0NKSO
+	 xxzBa2T4JvPtpafaXtvkCyFD8YJU1pFPxJpTmt0Vx2ihFBq/0YmKyypJWsnC16AQe
+	 g+jxFsP6x+icfVx9/Z9Wis+cLtZ5Qy1k70ZKF+B/KV0gb+1OQQ50IEHFxtUSNfqnH
+	 9WquI/Ybniptw/XqmSj9uq7DMwZ5yJT9VyWuxaZmtbp34FsJQE7h/NDzoVoctN2ms
+	 D3A3tCeIR+dOeXt1qEXiPHzCRYbqJCOsiLoR6O8uTAvOoQ8MF9kJFEqxnrhNV4EOV
+	 51VNnEqIhJduwln8XQ==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from client.hidden.invalid by mail.gmx.net (mrgmx004
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1MJE6L-1vpN8Z0wQN-00N053; Tue, 24
+ Mar 2026 20:42:04 +0100
+Message-ID: <50ed0e80-c1f3-48da-81f6-9edd2b1c35e1@gmx.de>
+Date: Tue, 24 Mar 2026 20:41:59 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,60 +63,253 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.16-dev-6cc06
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1523; i=broonie@kernel.org;
- h=from:subject:message-id; bh=WRF/0A79XI/IfrPujL8sWiRG4jtPsIHG8/HKlYhxfwg=;
- b=kA0DAAoBJNaLcl1Uh9AByyZiAGnC6amgudhaUXvPlk+pDm3GoyUp8H0DzJj7P23jodGH3vgaM
- YkBMwQAAQoAHRYhBK3maKpnVxi1n+Kf6iTWi3JdVIfQBQJpwumpAAoJECTWi3JdVIfQ7W4H/0HK
- bnLD6QxQOBC+fzyIxZ6G6kEKZPO4GVW3Pfn4yfAzX5qrdKQRkDgps7IYWut/u33hS3f+Z04EmOJ
- lYrLIJIM422nR6nge6hF8EhqNBiTq/w9q7cGC48hH540F15d0sLd2//XCIGupIA1RXpBqVdzq5x
- OT6qjdHSfs8FyZ+oeQmp08Rcg1XfVc+MneH1PzidJufZ+tJUtayZw29OlGfNk6vGZ389vkRi+Ec
- XFn5qSzIYh78B0Z0zXzPv2/IjG8frEcheWdi3dJbD2bUS4h2S1US62r3HG8U3Au0lRz8ggXRMML
- 03vuVW3IP0egShhpeZHJhBzFqhYb6LFlY+k9hXc=
-X-Developer-Key: i=broonie@kernel.org; a=openpgp;
- fpr=3F2568AAC26998F9E813A1C5C3F436CA30F5D8EB
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 06/12] platform/wmi: use generic driver_override
+ infrastructure
+To: Danilo Krummrich <dakr@kernel.org>, Russell King <linux@armlinux.org.uk>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Ioana Ciornei <ioana.ciornei@nxp.com>, Nipun Gupta <nipun.gupta@amd.com>,
+ Nikhil Agarwal <nikhil.agarwal@amd.com>, "K. Y. Srinivasan"
+ <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>,
+ Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
+ Long Li <longli@microsoft.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Bjorn Andersson <andersson@kernel.org>,
+ Mathieu Poirier <mathieu.poirier@linaro.org>,
+ Vineeth Vijayan <vneethv@linux.ibm.com>,
+ Peter Oberparleiter <oberpar@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>,
+ Harald Freudenberger <freude@linux.ibm.com>,
+ Holger Dengler <dengler@linux.ibm.com>, Mark Brown <broonie@kernel.org>,
+ "Michael S. Tsirkin" <mst@redhat.com>, Jason Wang <jasowang@redhat.com>,
+ Xuan Zhuo <xuanzhuo@linux.alibaba.com>, =?UTF-8?Q?Eugenio_P=C3=A9rez?=
+ <eperezma@redhat.com>, Alex Williamson <alex@shazbot.org>,
+ Juergen Gross <jgross@suse.com>, Stefano Stabellini
+ <sstabellini@kernel.org>,
+ Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: linux-kernel@vger.kernel.org, driver-core@lists.linux.dev,
+ linuxppc-dev@lists.ozlabs.org, linux-hyperv@vger.kernel.org,
+ linux-pci@vger.kernel.org, platform-driver-x86@vger.kernel.org,
+ linux-arm-msm@vger.kernel.org, linux-remoteproc@vger.kernel.org,
+ linux-s390@vger.kernel.org, linux-spi@vger.kernel.org,
+ virtualization@lists.linux.dev, kvm@vger.kernel.org,
+ xen-devel@lists.xenproject.org, linux-arm-kernel@lists.infradead.org,
+ Gui-Dong Han <hanguidong02@gmail.com>
+References: <20260324005919.2408620-1-dakr@kernel.org>
+ <20260324005919.2408620-7-dakr@kernel.org>
+Content-Language: en-US
+From: Armin Wolf <W_Armin@gmx.de>
+In-Reply-To: <20260324005919.2408620-7-dakr@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:KKKjGPofriNO2Y7ny8bzLW+ogpO7D8lGPS1ezTtV32qPriElMBO
+ jvtg2QtMPBSSFpK+K9f9/W3IHaIUxxM1SjbuL+eF3f/6Z6WRzj/HQbWdJ/0smqYXW/iekvq
+ A+6iz88zZSNd21TB/fuLIMalZH7T5q5DuSXS3//CqYIoGgOXkyuC7c9IHxbPHBnE7ZSgdkY
+ FFp1rdFLmEZzrK9+h1giQ==
+UI-OutboundReport: notjunk:1;M01:P0:d3EuPwV0q1k=;oepBLb9nUR78pAw3HQVMRrIKAdZ
+ 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
+ Eq63KBPNXbE159fng81d+29Q==
 
-On Tue, 24 Mar 2026 01:59:04 +0100, Danilo Krummrich wrote:
-> treewide: Convert buses to use generic driver_override
-> 
-> This is the follow-up of the driver_override generalization in [1], converting
-> the remaining 11 busses and removing the now-unused driver_set_override()
-> helper.
-> 
-> All of them (except AP, which has a different race condition) are prone to the
-> potential UAF described in [2], caused by accessing the driver_override field
-> from their corresponding match() callback.
-> 
-> [...]
+Am 24.03.26 um 01:59 schrieb Danilo Krummrich:
 
-Applied to
+> When a driver is probed through __driver_attach(), the bus' match()
+> callback is called without the device lock held, thus accessing the
+> driver_override field without a lock, which can cause a UAF.
+>
+> Fix this by using the driver-core driver_override infrastructure taking
+> care of proper locking internally.
+>
+> Note that calling match() from __driver_attach() without the device lock
+> held is intentional. [1]
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/spi.git for-7.0
+Reviewed-by: Armin Wolf <W_Armin@gmx.de>
 
-Thanks!
-
-[11/12] spi: use generic driver_override infrastructure
-        https://git.kernel.org/broonie/spi/c/cc34d77dd487
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
-
+> Link: https://lore.kernel.org/driver-core/DGRGTIRHA62X.3RY09D9SOK77P@ker=
+nel.org/ [1]
+> Reported-by: Gui-Dong Han <hanguidong02@gmail.com>
+> Closes: https://bugzilla.kernel.org/show_bug.cgi?id=3D220789
+> Fixes: 12046f8c77e0 ("platform/x86: wmi: Add driver_override support")
+> Signed-off-by: Danilo Krummrich <dakr@kernel.org>
+> ---
+>   drivers/platform/wmi/core.c | 36 +++++-------------------------------
+>   include/linux/wmi.h         |  4 ----
+>   2 files changed, 5 insertions(+), 35 deletions(-)
+>
+> diff --git a/drivers/platform/wmi/core.c b/drivers/platform/wmi/core.c
+> index b8e6b9a421c6..750e3619724e 100644
+> --- a/drivers/platform/wmi/core.c
+> +++ b/drivers/platform/wmi/core.c
+> @@ -842,39 +842,11 @@ static ssize_t expensive_show(struct device *dev,
+>   }
+>   static DEVICE_ATTR_RO(expensive);
+>  =20
+> -static ssize_t driver_override_show(struct device *dev, struct device_a=
+ttribute *attr,
+> -				    char *buf)
+> -{
+> -	struct wmi_device *wdev =3D to_wmi_device(dev);
+> -	ssize_t ret;
+> -
+> -	device_lock(dev);
+> -	ret =3D sysfs_emit(buf, "%s\n", wdev->driver_override);
+> -	device_unlock(dev);
+> -
+> -	return ret;
+> -}
+> -
+> -static ssize_t driver_override_store(struct device *dev, struct device_=
+attribute *attr,
+> -				     const char *buf, size_t count)
+> -{
+> -	struct wmi_device *wdev =3D to_wmi_device(dev);
+> -	int ret;
+> -
+> -	ret =3D driver_set_override(dev, &wdev->driver_override, buf, count);
+> -	if (ret < 0)
+> -		return ret;
+> -
+> -	return count;
+> -}
+> -static DEVICE_ATTR_RW(driver_override);
+> -
+>   static struct attribute *wmi_attrs[] =3D {
+>   	&dev_attr_modalias.attr,
+>   	&dev_attr_guid.attr,
+>   	&dev_attr_instance_count.attr,
+>   	&dev_attr_expensive.attr,
+> -	&dev_attr_driver_override.attr,
+>   	NULL
+>   };
+>   ATTRIBUTE_GROUPS(wmi);
+> @@ -943,7 +915,6 @@ static void wmi_dev_release(struct device *dev)
+>   {
+>   	struct wmi_block *wblock =3D dev_to_wblock(dev);
+>  =20
+> -	kfree(wblock->dev.driver_override);
+>   	kfree(wblock);
+>   }
+>  =20
+> @@ -952,10 +923,12 @@ static int wmi_dev_match(struct device *dev, const=
+ struct device_driver *driver)
+>   	const struct wmi_driver *wmi_driver =3D to_wmi_driver(driver);
+>   	struct wmi_block *wblock =3D dev_to_wblock(dev);
+>   	const struct wmi_device_id *id =3D wmi_driver->id_table;
+> +	int ret;
+>  =20
+>   	/* When driver_override is set, only bind to the matching driver */
+> -	if (wblock->dev.driver_override)
+> -		return !strcmp(wblock->dev.driver_override, driver->name);
+> +	ret =3D device_match_driver_override(dev, driver);
+> +	if (ret >=3D 0)
+> +		return ret;
+>  =20
+>   	if (id =3D=3D NULL)
+>   		return 0;
+> @@ -1076,6 +1049,7 @@ static struct class wmi_bus_class =3D {
+>   static const struct bus_type wmi_bus_type =3D {
+>   	.name =3D "wmi",
+>   	.dev_groups =3D wmi_groups,
+> +	.driver_override =3D true,
+>   	.match =3D wmi_dev_match,
+>   	.uevent =3D wmi_dev_uevent,
+>   	.probe =3D wmi_dev_probe,
+> diff --git a/include/linux/wmi.h b/include/linux/wmi.h
+> index 75cb0c7cfe57..14fb644e1701 100644
+> --- a/include/linux/wmi.h
+> +++ b/include/linux/wmi.h
+> @@ -18,16 +18,12 @@
+>    * struct wmi_device - WMI device structure
+>    * @dev: Device associated with this WMI device
+>    * @setable: True for devices implementing the Set Control Method
+> - * @driver_override: Driver name to force a match; do not set directly,
+> - *		     because core frees it; use driver_set_override() to
+> - *		     set or clear it.
+>    *
+>    * This represents WMI devices discovered by the WMI driver core.
+>    */
+>   struct wmi_device {
+>   	struct device dev;
+>   	bool setable;
+> -	const char *driver_override;
+>   };
+>  =20
+>   /**
 
