@@ -1,90 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-18713-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18714-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3516EE9A74D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 09:36:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2109FE9A767
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 10:54:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fg4gD2BQhz2yr7;
-	Tue, 24 Mar 2026 20:36:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774345000;
-	cv=none; b=LYuxAQvZXN5KATO23MEINHDlD5wOIlH/7JR9mI1122UXwBIylXkpxiFdk9HgxiQVKmWcC3Gzzvni2iVzkvbW//hE6pv4ZFxPMy24ZN/OFGOloIoFci4swB6eW9A/UbKiXbGOwGtmZ9KVidWK/ruk45z8zO20/8ywevfDzYSY/pu7vJ5KLELy60v1lA1I+4ICQv2HAwmtYiYxqmOJ4vIiR0178jxWzZvqTnUctyq3bJlyu4h7X8gLJ2j2pFGBZ89culJEgSFc1eaBEOZOaw6asJaAYiPd4/jdgJFSureUkZyPk4qowrtpaQf9rMOZCL+lnmli1p23TjYj2g3kBqsdSA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fg6Nk43Rxz2ynf;
+	Tue, 24 Mar 2026 21:54:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=188.40.3.216
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774349654;
+	cv=none; b=KDVaDTiJcxJNy5mTsWKupod0KW9TgZjqtbAO2UL2mGwttOmkGqDhMyZ/xQEYtZFxoqD+HKEoyysXSw1cRLzGtoKSCjfPoOzHlw53gPouM1rcuLtazhqPc8yj++9OgdjgzVmvYLuJVy99k6cBlIc0mCOM9joBGwt4Kn1Hzxh4bVtAXqqs53marGVmXJjNddryAioSfn+E09jaX5KtW+YZmvE1yqB7yA8KUOiLz1aj4rZTdPY4vPnH75rBpEaFDZnd52+a9+anzLDsJwSYRuEgzbQJR3UVnLFcW0wC7R0m7FJd6NS7SSI/2lwx85Z7y2H0G/pVcQTigyTvhKWv9AxlEw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774345000; c=relaxed/relaxed;
-	bh=Fz+pLbhFp0S4qTFWWddsgDGaQpvX0q+4gZ+/3kcTYd8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=TR+jS7hf5ECUujowXv987S55wF6avKi0hkQITNcKmaGLKQ7SbBr51qCRMoyXPoqecS/qx9jT3oAWfzVRQYXt0OtMkqFPPVNs972+HX4Rr6y+5MVTBK6P/ISdPPtoQ8vCHTdsY6md9Nh8l+vprq+qRWxz951gdFmI+g3cU1AWmBVmpneEmauQor/xQrVlMoOETRBt+vjN7ljV1GxpO8HkgtrjWo/NHp/st3yTvdi4lmjD3GISjfY4Ee8Mv3Yv3G7/D5FcwmsHGGoA58J5Y/Cq29H1BCxyA5otkFj0/j8Pw2KM6yHrlW/ur9Hk9/MCq/nHeBJ0WH8wLwyaoRej/QyRSA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=UQAB8Bnz; dkim-atps=neutral; spf=pass (client-ip=192.198.163.10; helo=mgamail.intel.com; envelope-from=yilun.xu@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	t=1774349654; c=relaxed/relaxed;
+	bh=S6uvvEM8Q8RkAK0BRhim+FMr5vS+WhCd8Ae7ZnBCYfM=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=LOubX28vyFLhe8VASih24sQcw5NEo6yEWmJmSza7HRC7dNpOPMxTgQKOcGHGzNdYEl0e1kr0CiVVNbcsZGXcn/224hqH1XogBXw8Cb528YuaSc8I4omp5qzYAOtli2FZTNUDYsuKOpNAJ5sL4+99TSvlrlKTTD19L+2koz8gH+5gdtYjycztbQG2eAoTb0kWNvEna1YHfTa1gNfO44S+4czWA5QN488lley1X5crbM9AFXG363YaL2hK3LN5wvMs1bjiSWM44zkc78mxh4IysmFvrMffRn7WuQhyiBXhPoHM68fJwKt9m1eaSJ2UFOLqtd/ixEX22v+tOzDcBu3F/g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=ew.tq-group.com; dkim=pass (2048-bit key; unprotected) header.d=ew.tq-group.com header.i=@ew.tq-group.com header.a=rsa-sha256 header.s=default2602 header.b=FrI/5Qh2; dkim-atps=neutral; spf=pass (client-ip=188.40.3.216; helo=www537.your-server.de; envelope-from=alexander.stein@ew.tq-group.com; receiver=lists.ozlabs.org) smtp.mailfrom=ew.tq-group.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=ew.tq-group.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=UQAB8Bnz;
+	dkim=pass (2048-bit key; unprotected) header.d=ew.tq-group.com header.i=@ew.tq-group.com header.a=rsa-sha256 header.s=default2602 header.b=FrI/5Qh2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.10; helo=mgamail.intel.com; envelope-from=yilun.xu@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ew.tq-group.com (client-ip=188.40.3.216; helo=www537.your-server.de; envelope-from=alexander.stein@ew.tq-group.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 1789 seconds by postgrey-1.37 at boromir; Tue, 24 Mar 2026 21:54:11 AEDT
+Received: from www537.your-server.de (www537.your-server.de [188.40.3.216])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fg4gB0S1Nz2yqc
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 20:36:36 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1774344998; x=1805880998;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=Cl9Jn50dUXWt3BrXPsUSkT+go0J8MdRhtpKlgBhriss=;
-  b=UQAB8Bnznny6EZBnIofXgQEx1nCwzRx7/SnDcrKX8KTzXFea98eTANMQ
-   Du4sUtsQDxQYMLfLlqLpgZzokH2Cf4/cIMJ3n+CNfjbyofDxrj/bWTkgR
-   1XyBOkl7/OFip9LXKWtxQbHvtcKU2ATnTfXRyBZiGPkeomnkPaHhAxJ+H
-   eVtKMO6b3YHz+c7x1cmRq1Ek2PFE5R5fJeiHFPA123CByo/Y7DW96f2E6
-   qhhwAGwQn2TdXTzLYy4CVP1HtKp5DFZak3cw04H1NiZuiBmrxDdK50IqJ
-   8YvvFDtKXI7CzLDxrKGq2wL0tPlTrsmbu5YlUm6ignne/JJkpmLvszGoH
-   A==;
-X-CSE-ConnectionGUID: Z5/FfsaOQUOUTD1JdbETlQ==
-X-CSE-MsgGUID: IQ83pXEBQXK/VqBnEbsswg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11738"; a="86725138"
-X-IronPort-AV: E=Sophos;i="6.23,138,1770624000"; 
-   d="scan'208";a="86725138"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
-  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Mar 2026 02:36:29 -0700
-X-CSE-ConnectionGUID: DmWR8uXHRDSrXII1rchdOA==
-X-CSE-MsgGUID: CPrU1x//RC2oHAiWQSJ1zA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,138,1770624000"; 
-   d="scan'208";a="229228806"
-Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
-  by orviesa005.jf.intel.com with ESMTP; 24 Mar 2026 02:36:21 -0700
-Date: Tue, 24 Mar 2026 17:15:33 +0800
-From: Xu Yilun <yilun.xu@linux.intel.com>
-To: Yury Norov <ynorov@nvidia.com>
-Cc: linux-kernel@vger.kernel.org,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Peter Zijlstra (Intel)" <peterz@infradead.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Ingo Molnar <mingo@kernel.org>,
-	James Clark <james.clark@linaro.org>, Kees Cook <kees@kernel.org>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Mike Leach <mike.leach@linaro.org>, Moritz Fischer <mdf@kernel.org>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Russ Weight <russ.weight@linux.dev>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Suki K Poulose <suzuki.poulose@arm.com>, Tom Rix <trix@redhat.com>,
-	Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>,
-	Xu Yilun <yilun.xu@intel.com>, Yury Norov <yury.norov@gmail.com>,
-	Zhang Rui <rui.zhang@intel.com>, coresight@lists.linaro.org,
-	linux-arm-kernel@lists.infradead.org, linux-fpga@vger.kernel.org,
-	linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Jakub Kicinski <kuba@kernel.org>
-Subject: Re: [PATCH 5/5] fpga: m10bmc-sec: switch show_canceled_csk() to
- using sysfs_emit()
-Message-ID: <acJWNRb1t96yu/H6@yilunxu-OptiPlex-7050>
-References: <20260303200842.124996-1-ynorov@nvidia.com>
- <20260303200842.124996-6-ynorov@nvidia.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fg6Ng1XcLz2ynW
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 21:54:10 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=ew.tq-group.com; s=default2602; h=Content-Type:Content-Transfer-Encoding:
+	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender
+	:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID;
+	bh=S6uvvEM8Q8RkAK0BRhim+FMr5vS+WhCd8Ae7ZnBCYfM=; b=FrI/5Qh26/Bf0qI2wuHwMH5x1o
+	l0ZcurgJMqFwdycKwHnU7AfnwWV6bVn3ESzW6v4BLnICtYS3M4Calj9U0lio62uJO4+cnP2WDDcbK
+	TqKYfj+nvFnnAK/LEcwUc1Rt6F7wzJxC4hZICVGRevdq/UXEML4WVK1VKDGvM5vPslKqNpBMuQ+vk
+	vJ9ZFIH4wqs3M480+9AEIz50WkRgbPM9d4o64BM2HZv3yg+Ks2fTLoKJaSC9uHldnkVrAVR1h7QHy
+	iXF8bweU2MiIjMdXFLSaXLP+Ir6MrWioUiHnx+lu5xoYvqZuYAOre828JcY9CgbYZ1NlVIeHZ4cbX
+	c6T9UXxQ==;
+Received: from sslproxy07.your-server.de ([78.47.199.104])
+	by www537.your-server.de with esmtpsa  (TLS1.3) tls TLS_AES_256_GCM_SHA384
+	(Exim 4.96.2)
+	(envelope-from <alexander.stein@ew.tq-group.com>)
+	id 1w4yvj-000E43-2Z;
+	Tue, 24 Mar 2026 11:24:11 +0100
+Received: from localhost ([127.0.0.1])
+	by sslproxy07.your-server.de with esmtpsa  (TLS1.3) tls TLS_AES_256_GCM_SHA384
+	(Exim 4.96)
+	(envelope-from <alexander.stein@ew.tq-group.com>)
+	id 1w4yvj-0006q3-0d;
+	Tue, 24 Mar 2026 11:24:10 +0100
+From: Alexander Stein <alexander.stein@ew.tq-group.com>
+To: Rob Herring <robh@kernel.org>, Saravana Kannan <saravanak@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Fabio Estevam <festevam@gmail.com>,
+ Geert Uytterhoeven <geert+renesas@glider.be>,
+ Magnus Damm <magnus.damm@gmail.com>, Chen-Yu Tsai <wens@kernel.org>,
+ Jernej Skrabec <jernej.skrabec@gmail.com>,
+ Samuel Holland <samuel@sholland.org>, Frank Li <Frank.Li@nxp.com>,
+ linux-arm-kernel@lists.infradead.org
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ imx@lists.linux.dev, linux-renesas-soc@vger.kernel.org,
+ linux-sunxi@lists.linux.dev, driver-core@lists.linux.dev,
+ Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
+ Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+Subject: Re: [PATCH v2 6/9] soc: imx8m: don't access of_root directly
+Date: Tue, 24 Mar 2026 11:24:09 +0100
+Message-ID: <6593091.DvuYhMxLoT@steina-w>
+Organization: TQ-Systems GmbH
+In-Reply-To: <20260223-soc-of-root-v2-6-b45da45903c8@oss.qualcomm.com>
+References:
+ <20260223-soc-of-root-v2-0-b45da45903c8@oss.qualcomm.com>
+ <20260223-soc-of-root-v2-6-b45da45903c8@oss.qualcomm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,50 +93,109 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260303200842.124996-6-ynorov@nvidia.com>
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
+X-Virus-Scanned: Clear (ClamAV 1.4.3/27950/Tue Mar 24 07:24:19 2026)
 
-On Tue, Mar 03, 2026 at 03:08:41PM -0500, Yury Norov wrote:
-> Switch show_canceled_csk() to use the proper sysfs_emit("%*pbl").
-> 
-> Reviewed-by: Russ Weight <russ.weight@linux.dev>
-> Suggested-by: Thomas Weißschuh <linux@weissschuh.net>
-> Signed-off-by: Yury Norov <ynorov@nvidia.com>
+Hi,
+
+Am Montag, 23. Februar 2026, 14:37:21 CET schrieb Bartosz Golaszewski:
+> Don't access of_root directly as it reduces the build test coverage for
+> this driver with COMPILE_TEST=3Dy and OF=3Dn. Use existing helper functio=
+ns
+> to retrieve the relevant information.
+>=20
+> Suggested-by: Rob Herring <robh@kernel.org>
+> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
+
+today I noticed the following warning running next-20260323:
+> caam 30900000.crypto: No clock data provided for i.MX SoC
+
+This happens when there is no matching against the soc_id.
+
+Checking the source it turns out this patch is the cause that the SoC info
+does not provide soc_id anymore.
+next-20260323:
+> $ grep . /sys/devices/soc0/*
+> /sys/devices/soc0/family:Freescale i.MX
+> /sys/devices/soc0/machine:TQ-Systems i.MX8MPlus TQMa8MPxL on MBa8MP-RAS314
+> grep: /sys/devices/soc0/power: Is a directory
+> /sys/devices/soc0/revision:unknown
+> /sys/devices/soc0/serial_number:0000000000000000
+> grep: /sys/devices/soc0/subsystem: Is a directory
+
+reverting this patch (2524b293a59e586afd06358d0b191ab57208a920):
+> $ grep . /sys/devices/soc0/*
+> /sys/devices/soc0/family:Freescale i.MX
+> /sys/devices/soc0/machine:TQ-Systems i.MX8MPlus TQMa8MPxL on MBa8MP-RAS314
+> grep: /sys/devices/soc0/power: Is a directory
+> /sys/devices/soc0/revision:1.1
+> /sys/devices/soc0/serial_number:469677A693A4B8CE131D180033E44903
+> /sys/devices/soc0/soc_id:i.MX8MP
+> grep: /sys/devices/soc0/subsystem: Is a directory
+
+soc_id is restored. Now that I write these lines I noticed that
+serial_number also contained empty value which is restored with the revert.
+
+Best regards,
+Alexander
+
 > ---
->  drivers/fpga/intel-m10-bmc-sec-update.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/fpga/intel-m10-bmc-sec-update.c b/drivers/fpga/intel-m10-bmc-sec-update.c
-> index 10f678b9ed36..ae364c6636eb 100644
-> --- a/drivers/fpga/intel-m10-bmc-sec-update.c
-> +++ b/drivers/fpga/intel-m10-bmc-sec-update.c
-> @@ -10,6 +10,7 @@
->  #include <linux/firmware.h>
->  #include <linux/mfd/intel-m10-bmc.h>
->  #include <linux/mod_devicetable.h>
-> +#include <linux/mm.h>
+>  drivers/soc/imx/soc-imx8m.c | 11 +++--------
+>  1 file changed, 3 insertions(+), 8 deletions(-)
+>=20
+> diff --git a/drivers/soc/imx/soc-imx8m.c b/drivers/soc/imx/soc-imx8m.c
+> index 8e2322999f0996d2723768469c6893b0ea22eb9d..77763a107edbd11302017e3f6=
+1ecb4369fda1ab0 100644
+> --- a/drivers/soc/imx/soc-imx8m.c
+> +++ b/drivers/soc/imx/soc-imx8m.c
+> @@ -226,7 +226,6 @@ static int imx8m_soc_probe(struct platform_device *pd=
+ev)
+>  	const struct imx8_soc_data *data;
+>  	struct imx8_soc_drvdata *drvdata;
+>  	struct device *dev =3D &pdev->dev;
+> -	const struct of_device_id *id;
+>  	struct soc_device *soc_dev;
+>  	u32 soc_rev =3D 0;
+>  	u64 soc_uid[2] =3D {0, 0};
+> @@ -244,15 +243,11 @@ static int imx8m_soc_probe(struct platform_device *=
+pdev)
+> =20
+>  	soc_dev_attr->family =3D "Freescale i.MX";
+> =20
+> -	ret =3D of_property_read_string(of_root, "model", &soc_dev_attr->machin=
+e);
+> +	ret =3D soc_attr_read_machine(soc_dev_attr);
+>  	if (ret)
+>  		return ret;
+> =20
+> -	id =3D of_match_node(imx8_soc_match, of_root);
+> -	if (!id)
+> -		return -ENODEV;
+> -
+> -	data =3D id->data;
+> +	data =3D device_get_match_data(dev);
+>  	if (data) {
+>  		soc_dev_attr->soc_id =3D data->name;
+>  		ret =3D imx8m_soc_prepare(pdev, data->ocotp_compatible);
+> @@ -326,7 +321,7 @@ static int __init imx8_soc_init(void)
+>  	int ret;
+> =20
+>  	/* No match means this is non-i.MX8M hardware, do nothing. */
+> -	if (!of_match_node(imx8_soc_match, of_root))
+> +	if (!of_machine_device_match(imx8_soc_match))
+>  		return 0;
+> =20
+>  	ret =3D platform_driver_register(&imx8m_soc_driver);
+>=20
+>=20
 
-Why add this header file?
 
-Thanks,
-Yilun
+=2D-=20
+TQ-Systems GmbH | M=FChlstra=DFe 2, Gut Delling | 82229 Seefeld, Germany
+Amtsgericht M=FCnchen, HRB 105018
+Gesch=E4ftsf=FChrer: Detlef Schneider, R=FCdiger Stahl, Stefan Schneider
+http://www.tq-group.com/
 
->  #include <linux/module.h>
->  #include <linux/platform_device.h>
->  #include <linux/slab.h>
-> @@ -183,7 +184,7 @@ show_canceled_csk(struct device *dev, u32 addr, char *buf)
->  
->  	bitmap_from_arr32(csk_map, csk32, CSK_BIT_LEN);
->  	bitmap_complement(csk_map, csk_map, CSK_BIT_LEN);
-> -	return bitmap_print_to_pagebuf(1, buf, csk_map, CSK_BIT_LEN);
-> +	return sysfs_emit(buf, "%*pbl\n", CSK_BIT_LEN, csk_map);
->  }
->  
->  #define DEVICE_ATTR_SEC_CSK_RO(_name)						\
-> -- 
-> 2.43.0
-> 
-> 
+
 
