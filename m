@@ -1,80 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-18724-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18725-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F66FF54ADA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 16:54:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31D28F54ADC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 16:58:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fgGNR0wR0z2yng;
-	Wed, 25 Mar 2026 03:54:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774371271;
-	cv=none; b=YgeGwyWgzNf9nGKKP9jpnGgjA4b3dBCFj70Tg9MYHhBzlld/KEM29Ub2KiAiR8nKsV8/+5BgFuU8+KgsQFhHacaEs4QAQfAXEDYfL0lr4w1tb52+ZU9wKkmvM7t6j/nZvpjJdjSgxGwB4rkNPQ6swh3hswfc4/83p+U5XnLWQP2BV/0DGA4FXuqRpBZLgMdyd7+M5m7A74lSQ71ZE9LJboMmh5fp/aLDjQ/m0omodtIAFNE47fNjJFXcyf1ZSdt7q2VZbEcCYPcqHZe39qB/oCen8RLOqFpKYJDMkeynW/DovuDJt4BV2yRCbLJWlhsiKFUKUO/CZDjoMtckth5rzA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fgGT55FZCz2yng;
+	Wed, 25 Mar 2026 03:58:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.13
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774371513;
+	cv=none; b=SgPzxWlIokDPAyZSRGrG8OySpQ3kXssvf15I53QtMRy563DIEUecywvWFRZjYjED2d8DPEPPZS4xi8x7Vt4EMEAXnjI/mE/oqFuSSEDsTAUeFVRdIafcK2GmT3N6IZS1lQWG4xvnjDt8xYx8434N01G+dMjydbjAjv+B11m4ZG3nlutgXlGKLz1JTFbZxh/M9enNA1jPLrlhBNmtLUvhp+Nf//BCCgyq03ebQEi+Kp7uZwV4NhClvsvT7Bcu6W6XnX/7CslvcjFZfm7nzdCcxlPW+t+O0eqcu6UpCSm2XOMYd8+dddrpdZrloemQ5x0cyt2vx6UIfVBJ/ejUHJF4ew==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774371271; c=relaxed/relaxed;
-	bh=+qZP+VgvzLamJo1dAJdHYYHUXDBPvcBzLScbznoiijc=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=AbDktqRJn4j5T7Mea3KXz4TU2afV7EPwMMxyPEpHufKLLVZEEG1heJ0WpmGrAxlpqJH8RKUlSg/2CngPKCKBQDC53JlPKjFYbu1NXmY1ekDr9r4hodPxKvcqMCjEec8t5CWWm3Jwzzv3USrBvQvU4A01KUwVQx72ImlAg3+kswmYDlHNqGHSVayxaP0q9Kr05lZJQCalK2J/i9NqgSaXh5WBAiRceOnCcAHxHzoToVnQLRoP3sSSwNflzXf1IiGQhBIJkVHSUrzxGGMKxvbtQuH7RAejhujBnKz37kO1r/u0kG+nxyypmJg8ESJYEMd3rDl5OvDlw94NSY/zJ1NqwQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aTiI3B0t; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=horms@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1774371513; c=relaxed/relaxed;
+	bh=vVIqBuyIq4R4/UVhTmLSRBTYm0AzPhhoH+Jbpk0DIV4=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=fAM1/Jh/aFwlFXMrw9qP/rO+LXAMjppNyYntOTCDqJBQMfZ33gxAnYtpIr1oJpQ8sIIKwRQfidZ5lFucX0nx0apOeU76XwaRnI9vvAh46CYD6zsz95P/X7w9YptScziyg4npzZQ1BKxwuDvHhI33fQ7HKFFygOSmodl0qe55En2CPAXmIiTwSin2jdDCGCmiF46iM0rlgGkP78ksgEoPK5xeznX6aJppgAZMwTGssaUQGLS2PqjWcSGfu+m05t6N7LF/V8UoiyEiaLyXM8FpyNG+s6xcI+mbOz6+8Ap0+assgV54IOeR5w/DKC4GIX/Bou89o/OUibLDu9ojSB6guw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=c88GHMjs; dkim-atps=neutral; spf=pass (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aTiI3B0t;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=c88GHMjs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=horms@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fgGNQ0hR3z2ynP
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2026 03:54:29 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 20CAD44265;
-	Tue, 24 Mar 2026 16:54:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9D065C19424;
-	Tue, 24 Mar 2026 16:54:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774371268;
-	bh=6XwTfsRWoS93cnxOuZ3FgxopYlNBweflJgztMgNywtw=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=aTiI3B0tekb0ODeo1RRtl5msPPkbfMkXmTJ3L5ORFH0Itzy3wlIM6tAAVk5QydB4B
-	 KaEOgbhfEsTubYPztwrfV8TY2GzNK2kaGJhKFBK8P9ajQPv6TPESIT5cEiYhpX4vMs
-	 xJSTkDI/eiuQOmX5b4SLYwqM2m2DXtgflsXglqPxTRwxXHmGiNDdeORax6MiiZBbvQ
-	 QfwBicuahSCqk0hOc/D7Gzvq83/OgDVE9irHbTzKBnK/mW9buEG3HVRovKQC+Nzn+F
-	 2pk4cJMey8KfztKJEuaqv8pziQvEaBid24S6q+oZU+7Rptxc7EbtGiaLNQ7t0sjOw3
-	 PpfVdS4/xXupw==
-From: Simon Horman <horms@kernel.org>
-To: wei.fang@nxp.com
-Cc: Simon Horman <horms@kernel.org>,
-	devicetree@vger.kernel.org,
-	robh@kernel.org,
-	andrew@lunn.ch,
-	vladimir.oltean@nxp.com,
-	frank.li@nxp.com,
-	pabeni@redhat.com,
-	conor+dt@kernel.org,
-	xiaoning.wang@nxp.com,
-	davem@davemloft.net,
-	krzk+dt@kernel.org,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fgGT24pHZz2ynP
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2026 03:58:28 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1774371511; x=1805907511;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=AVKqbcBAH58YtvbtTvUhV6tMedua8892v/x7yCDldr8=;
+  b=c88GHMjsrANGVFPo3lCuF6nvKHhvtB+jxAJP2kt1pg15zkVG5gW0Qxc8
+   /zzd8XNv3E/eJlGiN32dxNI96/9Ut6rYayjMw1hdkGUZYPd2U+F2puwLj
+   dOoHMfwo7ct31uI7cfFEOLp8A+0qn5CtYxlgghL5bXYhDf+T+Wn7rs6wt
+   dXzqBIzhBSemMwdh3voJQq8m8ZoQTmIw3ydAEokent5BKJE+wi4VRqGSd
+   S+IEZtftTqKvjDDMB+0cLHwiKF5ydjgNeF/G6weuqs8eV1mspwDes+KSm
+   yHEo+cGFyRkm8VSJnKMSMrK8f6LdofgKRYdXsepA07ZZYTCXo9FHhIWg3
+   Q==;
+X-CSE-ConnectionGUID: f45wNxILQp+hX5ePnP305w==
+X-CSE-MsgGUID: tbrkzNA5T2GFDKU4iOBrng==
+X-IronPort-AV: E=McAfee;i="6800,10657,11739"; a="86471511"
+X-IronPort-AV: E=Sophos;i="6.23,138,1770624000"; 
+   d="scan'208";a="86471511"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Mar 2026 09:58:25 -0700
+X-CSE-ConnectionGUID: aesm43ZmRSeKftw4Z5hIbQ==
+X-CSE-MsgGUID: C08Qc1D5Q9Gv1bbEQjAQVQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,138,1770624000"; 
+   d="scan'208";a="224421853"
+Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.217])
+  by orviesa008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Mar 2026 09:58:15 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+To: linux-pci@vger.kernel.org,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Guenter Roeck <linux@roeck-us.net>,
+	linux-alpha@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
-	imx@lists.linux.dev,
-	kuba@kernel.org,
-	edumazet@google.com,
-	linux-kernel@vger.kernel.org,
-	linux@armlinux.org.uk,
-	andrew+netdev@lunn.ch,
-	f.fainelli@gmail.com,
-	claudiu.manoil@nxp.com,
-	netdev@vger.kernel.org,
-	chleroy@kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 net-next 09/14] net: dsa: add NETC switch tag support
-Date: Tue, 24 Mar 2026 16:54:15 +0000
-Message-ID: <20260324165415.243214-1-horms@kernel.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260323060752.1157031-10-wei.fang@nxp.com>
-References: <20260323060752.1157031-10-wei.fang@nxp.com>
+	linux-m68k@lists.linux-m68k.org,
+	linux-mips@vger.kernel.org,
+	linux-parisc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	linux-sh@vger.kernel.org,
+	Russell King <linux@armlinux.org.uk>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	Helge Deller <deller@gmx.de>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Chris Zankel <chris@zankel.net>,
+	Max Filippov <jcmvbkbc@gmail.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Rich Felker <dalias@libc.org>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+Cc: linux-kernel@vger.kernel.org,
+	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Subject: [PATCH 00/10] PCI: Improve head free space usage
+Date: Tue, 24 Mar 2026 18:56:23 +0200
+Message-Id: <20260324165633.4583-1-ilpo.jarvinen@linux.intel.com>
+X-Mailer: git-send-email 2.39.5
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,215 +102,75 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-This is an AI-generated review of your patch. The human sending this
-email has considered the AI review valid, or at least plausible.
+Hi all,
 
-For local reproduction steps see https://netdev-ai.bots.linux.dev/ai-local.html
----
-net: dsa: add NETC switch tag support
+This series attempts to take advantage of free head space (the free
+space before the aligned start address) in order to generally produce a
+tighter packing of the resources/bridge windows.
 
-This commit introduces support for the NXP NETC switch tag protocol,
-a proprietary header used by NETC switches. The tag supports three
-types (Forward, To_Port, and To_Host) with variable length (6-14 bytes).
+The recent changes to the resource fitting algorithm caused resource
+allocation failures in some cases where a bridge window that is sized
+to be gapless could no longer be assigned. The previous algorithm left
+a huge gaps which allowed it to place the remainder (non-aligning part
+of the size) before the start address of used for the gapless fit,
+whereas the new gapless approach always had to place the remainder
+after the aligning part of the resources. There is not always space
+for the remainder triggering those failures (e.g., when the aligning
+part must be placed at the top of the window).
 
-> diff --git a/include/linux/dsa/tag_netc.h b/include/linux/dsa/tag_netc.h
-> new file mode 100644
-> index 000000000000..fe964722e5b0
-> --- /dev/null
-> +++ b/include/linux/dsa/tag_netc.h
-> @@ -0,0 +1,14 @@
-> +/* SPDX-License-Identifier: GPL-2.0
-> + *
-> + * Copyright 2025-2026 NXP
-> + */
-> +
-> +#ifndef __NET_DSA_TAG_NETC_H
-> +#define __NET_DSA_TAG_NETC_H
-> +
-> +#include <linux/skbuff.h>
-> +#include <net/dsa.h>
-> +
-> +#define NETC_TAG_MAX_LEN			14
-> +
-> +#endif
+This series attempts to allow placing the remainder once again before
+the aligning part, but now without leaving huge gaps to retain the
+benefits of the gapless bridge windows. The approach is somewhat hacky
+but should work thanks to PCI resources fundamentally consisting only
+power-of-two atoms.
 
-[ ... ]
+There maybe cases where architecture would not want to do such
+relocation. This series adds the relocation to arch
+pcibios_align_resource() functions to allow all of them taking
+advantage of the better resource packing but if somebody objects doing
+this relocation for a particular arch, I can remove it, please just let
+me know (this relocation doesn't seem critical unless there are
+regressions).
 
-> diff --git a/net/dsa/tag_netc.c b/net/dsa/tag_netc.c
-> new file mode 100644
-> index 000000000000..15b0dd5c5408
-> --- /dev/null
-> +++ b/net/dsa/tag_netc.c
+Ilpo Järvinen (10):
+  resource: Add __resource_contains_unbound() for internal contains
+    checks
+  resource: Pass full extent of empty space to resource_alignf CB
+  resource: Rename 'tmp' variable to 'full_avail'
+  ARM/PCI: Remove unnecessary second application of align
+  am68k/PCI: Remove unnecessary second application of align
+  MIPS: PCI: Remove unnecessary second application of align
+  parisc/PCI: Cleanup align handling
+  PCI: Rename window_alignment() to pci_min_window_alignment()
+  PCI: Align head space better
+  PCI: Fix alignment calculation for resource size larger than align
 
-[ ... ]
+ arch/alpha/kernel/pci.c          |  1 +
+ arch/arm/kernel/bios32.c         |  9 ++++---
+ arch/m68k/kernel/pcibios.c       |  8 +++++--
+ arch/mips/pci/pci-generic.c      |  8 ++++---
+ arch/mips/pci/pci-legacy.c       |  3 +++
+ arch/parisc/kernel/pci.c         | 17 ++++++++------
+ arch/powerpc/kernel/pci-common.c |  6 ++++-
+ arch/s390/pci/pci.c              |  1 +
+ arch/sh/drivers/pci/pci.c        |  6 ++++-
+ arch/x86/pci/i386.c              |  5 +++-
+ arch/xtensa/kernel/pci.c         |  3 +++
+ drivers/pci/pci.h                |  3 +++
+ drivers/pci/setup-bus.c          | 15 ++++++++----
+ drivers/pci/setup-res.c          | 40 +++++++++++++++++++++++++++++++-
+ drivers/pcmcia/rsrc_nonstatic.c  |  3 ++-
+ include/linux/ioport.h           | 22 +++++++++++++++---
+ include/linux/pci.h              | 12 +++++++---
+ kernel/resource.c                | 33 +++++++++++++-------------
+ 18 files changed, 149 insertions(+), 46 deletions(-)
 
-> @@ -0,0 +1,180 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Copyright 2025-2026 NXP
-> + */
-> +
-> +#include <linux/dsa/tag_netc.h>
-> +
-> +#include "tag.h"
-> +
-> +#define NETC_NAME			"nxp_netc"
-> +
-> +/* Forward NXP switch tag */
-> +#define NETC_TAG_FORWARD		0
-> +
-> +/* To_Port NXP switch tag */
-> +#define NETC_TAG_TO_PORT		1
-> +/* SubType0: No request to perform timestamping */
-> +#define NETC_TAG_TP_SUBTYPE0		0
-> +
-> +/* To_Host NXP switch tag */
-> +#define NETC_TAG_TO_HOST		2
-> +/* SubType0: frames redirected or copied to CPU port */
-> +#define NETC_TAG_TH_SUBTYPE0		0
-> +/* SubType1: frames redirected or copied to CPU port with timestamp */
-> +#define NETC_TAG_TH_SUBTYPE1		1
-> +/* SubType2: Transmit timestamp response (two-step timestamping) */
-> +#define NETC_TAG_TH_SUBTYPE2		2
-> +
-> +/* NETC switch tag lengths */
-> +#define NETC_TAG_FORWARD_LEN		6
-> +#define NETC_TAG_TP_SUBTYPE0_LEN	6
-> +#define NETC_TAG_TH_SUBTYPE0_LEN	6
-> +#define NETC_TAG_TH_SUBTYPE1_LEN	14
-> +#define NETC_TAG_TH_SUBTYPE2_LEN	14
-> +#define NETC_TAG_CMN_LEN		5
-> +
-> +#define NETC_TAG_SUBTYPE		GENMASK(3, 0)
-> +#define NETC_TAG_TYPE			GENMASK(7, 4)
-> +#define NETC_TAG_QV			BIT(0)
-> +#define NETC_TAG_IPV			GENMASK(4, 2)
-> +#define NETC_TAG_SWITCH			GENMASK(2, 0)
-> +#define NETC_TAG_PORT			GENMASK(7, 3)
-> +
-> +struct netc_tag_cmn {
-> +	__be16 tpid;
-> +	u8 type;
-> +	u8 qos;
-> +	u8 switch_port;
-> +} __packed;
 
-[ ... ]
+base-commit: 6de23f81a5e08be8fbf5e8d7e9febc72a5b5f27f
+-- 
+2.39.5
 
-> +static int netc_get_rx_tag_len(int rx_type)
-> +{
-> +	int type = FIELD_GET(NETC_TAG_TYPE, rx_type);
-> +
-> +	if (type == NETC_TAG_TO_HOST) {
-> +		u8 subtype = rx_type & NETC_TAG_SUBTYPE;
-> +
-> +		if (subtype == NETC_TAG_TH_SUBTYPE1)
-> +			return NETC_TAG_TH_SUBTYPE1_LEN;
-> +		else if (subtype == NETC_TAG_TH_SUBTYPE2)
-> +			return NETC_TAG_TH_SUBTYPE2_LEN;
-> +		else
-> +			return NETC_TAG_TH_SUBTYPE0_LEN;
-> +	}
-> +
-> +	return NETC_TAG_FORWARD_LEN;
-> +}
-> +
-> +static struct sk_buff *netc_rcv(struct sk_buff *skb,
-> +				struct net_device *ndev)
-> +{
-> +	struct netc_tag_cmn *tag_cmn = dsa_etype_header_pos_rx(skb);
-> +	int tag_len = netc_get_rx_tag_len(tag_cmn->type);
-                                             ^^^^^^^^^^^^
-
-Is the tag header guaranteed to be in the linear region of the skb?
-Looking at other EtherType-based DSA tag drivers (tag_ar9331, tag_lan9303,
-tag_dsa, tag_edsa, tag_a5psw, tag_brcm_legacy, tag_mxl-gsw1xx,
-tag_gswip, and tag_mtk), they all call pskb_may_pull() before accessing
-tag data to ensure the header is linearized.
-
-For example, tag_ar9331.c:
-
-static struct sk_buff *ar9331_tag_rcv(struct sk_buff *skb,
-                                      struct net_device *ndev)
-{
-    if (unlikely(!pskb_may_pull(skb, AR9331_HDR_LEN)))
-        return NULL;
-    ...
-}
-
-Similarly, tag_lan9303.c:
-
-static struct sk_buff *lan9303_rcv(struct sk_buff *skb,
-                                   struct net_device *ndev)
-{
-    if (unlikely(!pskb_may_pull(skb, LAN9303_TAG_LEN)))
-        return NULL;
-    ...
-}
-
-Without this check, netc_rcv() accesses tag_cmn->type, tag_cmn->tpid,
-tag_cmn->qos, and tag_cmn->switch_port before verifying these bytes are
-linearized. The struct netc_tag_cmn is 5 bytes, with 3 bytes at
-skb->data through skb->data+2 that may not be guaranteed to be in the
-linear region.
-
-Additionally, netc_get_rx_tag_len() can return up to 14 bytes
-(NETC_TAG_TH_SUBTYPE1_LEN or NETC_TAG_TH_SUBTYPE2_LEN), and this value
-is passed directly to skb_pull_rcsum():
-
-> +	int tag_len = netc_get_rx_tag_len(tag_cmn->type);
-> +	int sw_id, port;
-> +
-> +	if (ntohs(tag_cmn->tpid) != ETH_P_NXP_NETC) {
-> +		dev_warn_ratelimited(&ndev->dev, "Unknown TPID 0x%04x\n",
-> +				     ntohs(tag_cmn->tpid));
-> +
-> +		return NULL;
-> +	}
-> +
-> +	if (tag_cmn->qos & NETC_TAG_QV)
-> +		skb->priority = FIELD_GET(NETC_TAG_IPV, tag_cmn->qos);
-> +
-> +	sw_id = NETC_TAG_SWITCH & tag_cmn->switch_port;
-> +	/* ENETC VEPA switch ID (0) is not supported yet */
-> +	if (!sw_id) {
-> +		dev_warn_ratelimited(&ndev->dev,
-> +				     "VEPA switch ID is not supported yet\n");
-> +
-> +		return NULL;
-> +	}
-> +
-> +	port = FIELD_GET(NETC_TAG_PORT, tag_cmn->switch_port);
-> +	skb->dev = dsa_conduit_find_user(ndev, sw_id, port);
-> +	if (!skb->dev)
-> +		return NULL;
-> +
-> +	if (tag_cmn->type == NETC_TAG_FORWARD)
-> +		dsa_default_offload_fwd_mark(skb);
-> +
-> +	/* Remove Switch tag from the frame */
-> +	skb_pull_rcsum(skb, tag_len);
-                     ^^^^^^^^^^^^^^^^^^
-
-The skb_pull_rcsum() function contains BUG_ON(len > skb->len). If a
-truncated or malformed packet arrives with fewer than tag_len bytes
-remaining, the kernel will panic rather than gracefully handling the
-error.
-
-Should a check like this be added at the beginning of netc_rcv():
-
-if (unlikely(!pskb_may_pull(skb, NETC_TAG_MAX_LEN - 2)))
-    return NULL;
-
-The -2 would account for the EtherType bytes already consumed by
-eth_type_trans().
-
-> +	dsa_strip_etype_header(skb, tag_len);
-> +
-> +	return skb;
-> +}
-
-[ ... ]
 
