@@ -1,53 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-18659-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18660-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50180F532CE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 04:03:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D9C5F532D4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 04:22:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ffxGP5sKjz2yj3;
-	Tue, 24 Mar 2026 15:03:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.221
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774324989;
-	cv=none; b=L6FDprYdXsPEk0OmwEgd4ZxceTH4JMr8/6/owgQO5gUhuJItfMN+95lNhzLLxp1dw8LAPwzeBl7QcW0yUpCTNuUU5DT0AQXe8tI8p/U6x8ojT7ncegKKcEEn1/896M+U1Flq1J05IbcFO827ZIgey9m0gxfD+iK75jdwPp94GKNYn/O2ni74SXOpkVPtUMB1aSbe8rIOfJwSRz9lQa5yo1q1Z8L8tWkDoPQ6oFZeP3hYtOXk5LZORZ3W+2LLtCLXzPJv8hOf5ePCvZoQPSECByZRGovJf1iSqcw4r2SF5YkyO5dsSqbFuKqnltf3HDkT18UTnc0hoQFr/NrDRZ3R3Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ffxhY5xy1z2yj3;
+	Tue, 24 Mar 2026 15:22:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=114.132.77.159
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774326141;
+	cv=none; b=RHdmQOAf0HkH7VUB+8cCrqiWmWAysCT/S8Hjvy9ehAFBqgcY5GunhcaGeS0GnDTWe8R5EBRDN0tqHkn3z3bnmYqElzfMaaHNBbMBdCJKQRIda7xmNrwpS53CnkTcb8RSbxqQ9Gisz/Gr3/mGY77/KVk5WEoEtOKm+OdAIBEDThLVLEAPIyBxVPhE+hRKcaWkoTMBfJYxeej4qtWrjghPizvt7nYkDQhf7a4p59Owcs5REquIufLFYlchbisktVW66Px/iqSXxokoHr1W7eYLNTSfwQ53E3yAPM64oD+hJHDYFLiGBp3EC9Dl2utbaL3dIm8/YQgq90IPlTBjgKUVRw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774324989; c=relaxed/relaxed;
-	bh=bDy1WqzyWZ4QXi9V76+nhfaX5tyIvisESl1ex2cgViU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=ZwFGpw9SxqJfLrULdR8RN+fg+7z6FL5/mkW9cWZRJD5xe5uIxjqoy6rCCecRlNn+ECLCkHuATio8kz5Cy5fg0+kZhrfGMDizubMRjXV7tsv6ufvi//n7Z93jZOWRfbpykopglpBx55jEh1P3kiMFn97bz+FsZk7HU8eiqFu2VHXUueikRXhorsEq8YxxeWsjYdwv7jlA+Vega9X3IZeh632f6J7oozHxmlordCqzAjS5WvuORGXCpI6XwAbn7YfHuH58EMS6m42hMbtLhevOhnk54zATpxTusK74aQwnU9QlkzRb6ca54VvXGFBGE7r2g6OHVV/4ykrSLrYerCbRCQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=ZdiH1pgl; dkim-atps=neutral; spf=pass (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+	t=1774326141; c=relaxed/relaxed;
+	bh=aWjpVefODVGfVXeL4Actfzq6NNc7ecramkA8bo/aSVM=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=S5lno6PyLoNvNBjkCMJVII5MsYd4UataOUZ5bHfK8lDkEMaZGHXdp8dt1J4QpLcivT8VhasXSB6FB87yHB9ZhVRvRTJTBtxZYW1UGkU7bfuF/Y7boJRTnt9h8zVOAjMXryhGcUtm67jxkT7Kv6KSe4KQVSzJEKOTVGGNYH+AE1UVxOFlWb9NIgTtdfr5gKWLfYxiG7gmpF/mH2Sh0vmH/izCS+1l2S4C40ePjnVH0B2memUVebp0yEaSHPEnDnIEZzDmV8b9WIkrwzx+ApvkhNbiizzR2Jt7i7hNetwOM1foyn9yTJ5iwPH4TPBPkMLv+cmUcfKTGIBx0SmHREVH4w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=smail.nju.edu.cn; dkim=pass (1024-bit key; unprotected) header.d=smail.nju.edu.cn header.i=@smail.nju.edu.cn header.a=rsa-sha256 header.s=iohv2404 header.b=d0+L5eJr; dkim-atps=neutral; spf=pass (client-ip=114.132.77.159; helo=bg1.exmail.qq.com; envelope-from=kexinsun@smail.nju.edu.cn; receiver=lists.ozlabs.org) smtp.mailfrom=smail.nju.edu.cn
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=smail.nju.edu.cn
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=ZdiH1pgl;
+	dkim=pass (1024-bit key; unprotected) header.d=smail.nju.edu.cn header.i=@smail.nju.edu.cn header.a=rsa-sha256 header.s=iohv2404 header.b=d0+L5eJr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout06.his.huawei.com (canpmsgout06.his.huawei.com [113.46.200.221])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=smail.nju.edu.cn (client-ip=114.132.77.159; helo=bg1.exmail.qq.com; envelope-from=kexinsun@smail.nju.edu.cn; receiver=lists.ozlabs.org)
+Received: from bg1.exmail.qq.com (bg1.exmail.qq.com [114.132.77.159])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffxGL4SG1z2ygn
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 15:03:04 +1100 (AEDT)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=bDy1WqzyWZ4QXi9V76+nhfaX5tyIvisESl1ex2cgViU=;
-	b=ZdiH1pglApVl4a6IeiYB/RNIPfMQalqh1J1N6H54h+m4wVAkBIL12akP2v0PgO4JxJv57h8AL
-	Sz/Bww8R1NtzLrMTjBlHDOVrLDCImsP+6ecp+QIQd2fWrygKLGWJO1InyvsolTRvUDIfiWTeLx6
-	ALNTxdX6ngOuZZaJRk7Pqc4=
-Received: from mail.maildlp.com (unknown [172.19.163.104])
-	by canpmsgout06.his.huawei.com (SkyGuard) with ESMTPS id 4ffx7B5xTXzRhRB;
-	Tue, 24 Mar 2026 11:56:54 +0800 (CST)
-Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id A0A44404AD;
-	Tue, 24 Mar 2026 12:02:59 +0800 (CST)
-Received: from [10.67.109.254] (10.67.109.254) by
- dggpemf500011.china.huawei.com (7.185.36.131) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Tue, 24 Mar 2026 12:02:57 +0800
-Message-ID: <4cfde40c-673a-12b0-dfc5-703d582d6ea9@huawei.com>
-Date: Tue, 24 Mar 2026 12:02:51 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffxhQ0RmBz2yhv
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 15:22:12 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=smail.nju.edu.cn;
+	s=iohv2404; t=1774326110;
+	bh=aWjpVefODVGfVXeL4Actfzq6NNc7ecramkA8bo/aSVM=;
+	h=From:To:Subject:Date:Message-Id:MIME-Version;
+	b=d0+L5eJro8pKveucK3YjowvGDm1C7hfxtWEWq7QU/iBjW0QtiTnwGBKZEM31EPhOf
+	 DL0e4gqxfeHRGWgVYMvSv/jZyFJ5OKns6JhbBwFBE4GUEGisrZpe0ycJJKVANRcAAy
+	 +esYB0wjWt96gCmIaaF5cffbN+PafxuJhxzp4F6Y=
+X-QQ-mid: esmtpgz12t1774325682t71fc2e62
+X-QQ-Originating-IP: y39DWRFR+KvMsH7cahujPSS/bVwFdVvQK2xZT0ODzzY=
+Received: from localhost.localdomain ( [116.172.93.199])
+	by bizesmtp.qq.com (ESMTP) with 
+	id ; Tue, 24 Mar 2026 12:14:39 +0800 (CST)
+X-QQ-SSF: 0000000000000000000000000000000
+X-QQ-GoodBg: 1
+X-BIZMAIL-ID: 5138743655956083736
+EX-QQ-RecipientCnt: 17
+From: Kexin Sun <kexinsun@smail.nju.edu.cn>
+To: broonie@kernel.org,
+	lgirdwood@gmail.com
+Cc: shengjiu.wang@gmail.com,
+	Xiubo.Lee@gmail.com,
+	festevam@gmail.com,
+	nicoleotsuka@gmail.com,
+	kuninori.morimoto.gx@renesas.com,
+	perex@perex.cz,
+	tiwai@suse.com,
+	linux-sound@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	julia.lawall@inria.fr,
+	xutong.ma@inria.fr,
+	yunbolyu@smu.edu.sg,
+	ratnadiraw@smu.edu.sg,
+	Kexin Sun <kexinsun@smail.nju.edu.cn>
+Subject: [PATCH v3] ASoC: update outdated comments for removed snd_soc_new_pcms()
+Date: Tue, 24 Mar 2026 12:14:00 +0800
+Message-Id: <20260324041400.16217-1-kexinsun@smail.nju.edu.cn>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <8c20f43f-be8e-4a03-af80-9c91a4a233c6@sirena.org.uk>
+References: <8c20f43f-be8e-4a03-af80-9c91a4a233c6@sirena.org.uk>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,124 +81,91 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Thunderbird/102.2.0
-Subject: Re: [PATCH v9 0/5] arm64/riscv: Add support for crashkernel CMA
- reservation
-Content-Language: en-US
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: <corbet@lwn.net>, <skhan@linuxfoundation.org>, <catalin.marinas@arm.com>,
-	<will@kernel.org>, <chenhuacai@kernel.org>, <kernel@xen0n.name>,
-	<maddy@linux.ibm.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
-	<chleroy@kernel.org>, <pjw@kernel.org>, <palmer@dabbelt.com>,
-	<aou@eecs.berkeley.edu>, <alex@ghiti.fr>, <tglx@kernel.org>,
-	<mingo@redhat.com>, <bp@alien8.de>, <dave.hansen@linux.intel.com>,
-	<hpa@zytor.com>, <robh@kernel.org>, <saravanak@kernel.org>, <bhe@redhat.com>,
-	<vgoyal@redhat.com>, <dyoung@redhat.com>, <rdunlap@infradead.org>,
-	<peterz@infradead.org>, <feng.tang@linux.alibaba.com>,
-	<pawan.kumar.gupta@linux.intel.com>, <dapeng1.mi@linux.intel.com>,
-	<kees@kernel.org>, <elver@google.com>, <paulmck@kernel.org>,
-	<lirongqing@baidu.com>, <safinaskar@gmail.com>, <rppt@kernel.org>,
-	<ardb@kernel.org>, <leitao@debian.org>, <jbohac@suse.cz>,
-	<cfsworks@gmail.com>, <osandov@fb.com>, <tangyouling@kylinos.cn>,
-	<sourabhjain@linux.ibm.com>, <ritesh.list@gmail.com>,
-	<eajames@linux.ibm.com>, <songshuaishuai@tinylab.org>,
-	<kevin.brodsky@arm.com>, <samuel.holland@sifive.com>,
-	<vishal.moola@gmail.com>, <junhui.liu@pigmoral.tech>, <coxu@redhat.com>,
-	<liaoyuanhong@vivo.com>, <fuqiang.wang@easystack.cn>, <x86@kernel.org>,
-	<linux-doc@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <loongarch@lists.linux.dev>,
-	<linuxppc-dev@lists.ozlabs.org>, <linux-riscv@lists.infradead.org>,
-	<devicetree@vger.kernel.org>, <kexec@lists.infradead.org>
-References: <20260323072745.2481719-1-ruanjinjie@huawei.com>
- <20260323095548.fa4e13d6e8ae5005ae585e13@linux-foundation.org>
-From: Jinjie Ruan <ruanjinjie@huawei.com>
-In-Reply-To: <20260323095548.fa4e13d6e8ae5005ae585e13@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.67.109.254]
-X-ClientProxiedBy: kwepems100002.china.huawei.com (7.221.188.206) To
- dggpemf500011.china.huawei.com (7.185.36.131)
+X-QQ-SENDSIZE: 520
+Feedback-ID: esmtpgz:smail.nju.edu.cn:qybglogicsvrgz:qybglogicsvrgz5b-0
+X-QQ-XMAILINFO: Mom5ezI3X1cDlFd9Wlpm9yQYl6IUs67iGO2GVx0vSXqQuZtOMRLC1MJu
+	09sFGrdWlNzRp7HoGlMwczUOzMHZuqIR87UDoRTRatFVpnfaEFFQRpy0u9BTaDGEtjbjKlO
+	hfYZQQDqm6SeuXJreWecNLVf+3uvp/HdMkroHQbq0NClQDjfaSe/kvZ69ddWunxegnTh+h1
+	Fw/N22qkE5NtlKQr/PQbpLD1AhV2FeB+BFZdsVVIg9qMD+VdJCA2Io4MaAXpxO7DIqaoCjn
+	rRcqA+9+UUqVNVAn3lsvkJezRLm7nT708bTNEVyhECOrQjaStZx6kxa5Oo8dYwqQ0crewQP
+	wF1K7NwtRIx4BqUWSXnV6uICC1FofmuK8jNNJIBNFQYN3soBjFFCZ+0G+xwZihBiU8gcG1y
+	3RMH4cwmVpHqqXGB4wVXKAy1hmmoY6iENtYe1uLzvrxXp/uvBv64D+nZUjA2p7Sf2CBviZb
+	pt4clOgkKcVT0cZBBcxOwzYOrjx0aPqeIIpkOfNGY13GUVznANiYicDlhpcO8DWRKfJhWda
+	566aQykquw6GOojLqPe5w3g7LeG/9L3E8Qu9mi7obWHBtHJocCi8d7BhDLTO9LJ53UAxUAT
+	N4DatAgsW8rnjmUZOILq6sG+GnMcwWL35ZGf4M8LEPqoOO+TxLyjTG/vJ33n8Bq0L47xag7
+	WLRoMIESA+M1YAhNUPgNNo7xNureZ4mtVwTtV+jOxdNdg8FdlljD1zH5Y9n33D4faL4sIw1
+	NnHTTa2KOueM71Js11ZHBF7eIQhiWH5XW33K4pMOQB8kmWd0t8D9k+ACBsRgJm/3TpVJ/3W
+	ejfL3Ru9SlFG4WI7p4p5L3Gu2eK1NNKSbAFmSDMrRKFRoqtWzsQryy/2uF1N2yvItSyrJ5q
+	74RoeRBKc6daU3evuTc6AJ5wa7tAn+zZNLd+WaTXCFooJf+MT4UvX59+62RjEDr8+PR4rHI
+	MrqAxmII2CQGHt+wbElWZL/07t6D9NE6ZxyyL88jM5hWxv0BlAq3DAEB+za1gxdkSgNeQ+l
+	tiU0W7jVE2D/UDssxHx3WFPbdqckjudkaHQrv70qyThrVHnqLF
+X-QQ-XMRINFO: Mp0Kj//9VHAxzExpfF+O8yhSrljjwrznVg==
+X-QQ-RECHKSPAM: 0
 
+The function snd_soc_new_pcms() was removed during the
+multi-component refactoring in commit f0fba2ad1b6b ("ASoC:
+multi-component - ASoC Multi-Component Support").  Its PCM creation
+role is now handled by soc_new_pcm(), which was later moved to
+sound/soc/soc-pcm.c by commit ddee627cf6bb ("ASoC: core - Separate
+out PCM operations into new file.").
 
+In fsl_dma.c, update the comment to reference soc_new_pcm().  Also
+remove the stale paragraph about snd_dma_alloc_pages() always
+allocating in lowmem, since commit e159704f7920 ("ASoC: fsl_dma:
+Use managed buffer allocation") replaced that call with
+snd_pcm_set_fixed_buffer_all().
 
-On 2026/3/24 0:55, Andrew Morton wrote:
-> On Mon, 23 Mar 2026 15:27:40 +0800 Jinjie Ruan <ruanjinjie@huawei.com> wrote:
-> 
->> The crash memory allocation, and the exclude of crashk_res, crashk_low_res
->> and crashk_cma memory are almost identical across different architectures,
->> This patch set handle them in crash core in a general way, which eliminate
->> a lot of duplication code.
->>
->> And add support for crashkernel CMA reservation for arm64 and riscv.
-> 
-> Thanks.  AI review has completed and it asks questions:
-> 	https://sashiko.dev/#/patchset/20260323072745.2481719-1-ruanjinjie@huawei.com
+In siu_pcm.c, remove the stale comment referencing
+snd_soc_new_pcms() and the no-longer-existing socdev structure.
 
-I believe it identified 4 valid issues:
+Assisted-by: unnamed:deepseek-v3.2 coccinelle
+Signed-off-by: Kexin Sun <kexinsun@smail.nju.edu.cn>
+---
+v3:
+ - Drop "via the pcm_construct callback" from fsl_dma.c comment (Mark Brown)
 
-- The already discovered crashk_low_res not excluded bug in the existing
-RISC-V code.
+v2:
+ - Also fix the stale comment in siu_pcm.c
 
-- An existing memory leak issue in the existing PowerPC code.
+ sound/soc/fsl/fsl_dma.c     | 10 ++--------
+ sound/soc/renesas/siu_pcm.c |  1 -
+ 2 files changed, 2 insertions(+), 9 deletions(-)
 
-- The ordering issue of adding CMA ranges to "linux,usable-memory-range".
+diff --git a/sound/soc/fsl/fsl_dma.c b/sound/soc/fsl/fsl_dma.c
+index 26ddbe867b58..1facb7bf0b77 100644
+--- a/sound/soc/fsl/fsl_dma.c
++++ b/sound/soc/fsl/fsl_dma.c
+@@ -267,14 +267,8 @@ static irqreturn_t fsl_dma_isr(int irq, void *dev_id)
+ /**
+  * fsl_dma_new: initialize this PCM driver.
+  *
+- * This function is called when the codec driver calls snd_soc_new_pcms(),
+- * once for each .dai_link in the machine driver's snd_soc_card
+- * structure.
+- *
+- * snd_dma_alloc_pages() is just a front-end to dma_alloc_coherent(), which
+- * (currently) always allocates the DMA buffer in lowmem, even if GFP_HIGHMEM
+- * is specified. Therefore, any DMA buffers we allocate will always be in low
+- * memory, but we support for 36-bit physical addresses anyway.
++ * This function is called by soc_new_pcm(), once for each DAI link
++ * in the machine driver's snd_soc_card structure.
+  *
+  * Regardless of where the memory is actually allocated, since the device can
+  * technically DMA to any 36-bit address, we do need to set the DMA mask to 36.
+diff --git a/sound/soc/renesas/siu_pcm.c b/sound/soc/renesas/siu_pcm.c
+index f15ff36e7934..189d7e6f9750 100644
+--- a/sound/soc/renesas/siu_pcm.c
++++ b/sound/soc/renesas/siu_pcm.c
+@@ -483,7 +483,6 @@ siu_pcm_pointer_dma(struct snd_soc_component *component,
+ static int siu_pcm_new(struct snd_soc_component *component,
+ 		       struct snd_soc_pcm_runtime *rtd)
+ {
+-	/* card->dev == socdev->dev, see snd_soc_new_pcms() */
+ 	struct snd_card *card = rtd->card->snd_card;
+ 	struct snd_pcm *pcm = rtd->pcm;
+ 	struct siu_info *info = siu_i2s_data;
+-- 
+2.25.1
 
-- An existing concurrency issue. A Concurrent memory hotplug may occur
-between reading memblock and attempting to fill cmem during kexec_load()
-for almost all existing architectures，I'm not sure if this is a
-practical issue in reality..
-
- Race Condition Scenario
-
-  Timeline:
-  ---------------------------------------------------------------------
-  T1: kexec_load() syscall starts
-  T2: kexec_trylock() acquires kexec_lock
-  T3: crash_prepare_headers() is called
-  T4: arch_get_system_nr_ranges() queries memblock → finds 100 memory ranges
-  T5: cmem = alloc_cmem(100) allocates buffer for 100 ranges
-  T6: [RACE WINDOW] Another process triggers memory hotplug
-  T7: add_memory() → lock_device_hotplug() → memblock_add_node()
-  T8: New memory region added to memblock
-  T9: arch_crash_populate_cmem() iterates: now finds 102 ranges
-  T10: cmem->ranges[100] → OUT OF BOUNDS WRITE!
-  T11: cmem->ranges[101] → OUT OF BOUNDS WRITE!
-  T12: Kernel crash or memory corruption
-
-  Why This Happens
-
-  1. Different locks used:
-    - kexec_load() uses kexec_trylock (atomic_t)
-    - Memory hotplug uses device_hotplug_lock (mutex)
-  2. No synchronization between these two operations
-  3. Time-of-check to time-of-use (TOCTOU) issue:
-    - Step T4-T5: We query the number of ranges and allocate buffer
-    - Step T6-T9: Memory hotplug adds new ranges between query and
-population
-
-
-
-Any comments or suggestions on the following approach?
-
-
-int crash_prepare_headers(...)
-  {
-      unsigned int max_nr_ranges;
-      struct crash_mem *cmem;
-      int ret;
-
-      lock_device_hotplug();
-
-      max_nr_ranges = arch_get_system_nr_ranges();
-      // ...
-      ret = arch_crash_populate_cmem(cmem);
-      // ...
-
-      unlock_device_hotplug();
-      return ret;
-  }
-
-
-> 
 
