@@ -1,112 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-18691-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18692-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8F03F532E6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 06:28:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35DDBF532E5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 06:35:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fg0TZ3251z3cHH;
-	Tue, 24 Mar 2026 17:28:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::133"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774333682;
-	cv=none; b=lEpg0pQLtcm3eg+HlZp/oFVyhX9hHlRAd6W1m9JPgVALT9JmuZbzeKznL6isMfe2n1YtpE2Ox71vKD/+gKSORXbPQohzY7+Yfh760CaaSJHXB9geedfXue5bAxIjdBKQkn8Zj8McfWt1BUZeM64HI89wD4YtDYhiK6NINIhOnszyS0RKCZ8crhl65aZSksXHTI6h2D30KLU6H6NH1Esy17Uce2Hr7Zne3noWRRtVmoEYDSFTgeSddOep1XoBjDFDtPM+d3FR5U8jsEar38d3SpIH6HpM4KUPOvhSi1WiszqBEjpUdEg1CnpkcXVz5Tc3JtCzgRGp852sxmmSRySqgw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fg0fB6Cjyz3cZG;
+	Tue, 24 Mar 2026 17:35:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::430"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774334130;
+	cv=none; b=ccKhc4/Zt2PH2sY80vq5ejvcOUgxbi9UZrJRBptes5IiHTI/75adeoJtJuC1hOf6J3s9AzTsbH+zPxk8tRlGCfBBgioGLd4aSbbrSCONDAmtOo19LfbQzScIn99YtUqBjEVElwh3Bc+YXHFmQUnG8q0wYFfOWXvndDqQNd3tMkRnJx/WgCizb1cM6rH84zV+5ZZiPVtodVwQBDBl6GvfYFiYieI2NoVoqQDTemgm9NugLVu2y5J1fKoWW52b9+RBPFCpIIaU+L2c6jvvVgwMoZWwFVTFRseQ5VNdoJZf+yllb1bjV3FnazwCzfjRSdWdz24uVs6RTyWM30EaC4CTgg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774333682; c=relaxed/relaxed;
-	bh=x7leLyJg+eSoQFmpHbIkemSZEZJtNueFWjt+KK0UcFM=;
+	t=1774334130; c=relaxed/relaxed;
+	bh=Mifv6lV/1vhl2tnAgC+pUhj48DLTv7wevR0+F6OEtI0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=MnQ4g8fUliAUHjRTmGN+tXARr1KRQBwHmCVEINTyIOTY5yFxW4FujXJJNSCL1lhW63exgEqYSBcYCCF9TdQntSC45KbVBvaYZY7cXJe4Z2EEN5jXwphi24sNoVDcQOPq4DtO0Pjle4I3JSeWPCbzM/+8Z7tTzKGVtOxsak5LvksmT6pfT02nPYBbtupVbJvP4I4XZFTNbqpRLaMG77eE2+TUSI22+zy03wnJqi5QOvHVqTsAp6t8XbTl35LX82QmLZQfpE95iuhKHzJH2ZNpYMT2zSBBlURf86LhB4Ar/o5kJu4fYgSu56WJVeqNfbnUV0HjAaf1gyENOoAOU6wPwg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=lst.de; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=J3qoXPQB; dkim-atps=neutral; spf=none (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+4a75e1166b7f241dd976+8248+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=bombadil.srs.infradead.org
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=lst.de
+	 MIME-Version; b=XOjyENxmWPPqyNtMoX/Y4ZHR3QQK2U1q4ID2C8t9cWPiB6VjdsVKAhz8llyxcpLtzTNJW34sZWGB0zPawQ9burTIny4b38S/Wea4vj5Uv6T0IO72iHsyK9XM/ErFP0NSPINZEP7JKYREK2yp8NWTrXT0LOBfuILHZYy3Nu8G5xk3r2TbeveT8es+AUSUiSyGopw1IGEjsznUWnTVjIL+3vEkJHxEK6y5U/XPOwTblJgY/Iklh/BeyPLec4UaXD+ePCrr6PXhKz1zdVHarphaDl6c6gNe7+A4aqoqFJQJcgHkydjxGtxwZF/7qQRyM80ftT3pFORW/8jw00kia/xj5A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ry94KfbS; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::430; helo=mail-wr1-x430.google.com; envelope-from=safinaskar@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=J3qoXPQB;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ry94KfbS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+4a75e1166b7f241dd976+8248+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org)
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::430; helo=mail-wr1-x430.google.com; envelope-from=safinaskar@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fg0TY6LMcz3cD7
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 17:28:01 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender
-	:Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=x7leLyJg+eSoQFmpHbIkemSZEZJtNueFWjt+KK0UcFM=; b=J3qoXPQBh0LNwK3BZ8W2MzW7Wn
-	OuNH1NJn/S+9aRmvFmEzTTtLTLsDHbJ7tAIkw3nR94rLYtdyUK7OzjiZGzgJAt+hA4EqdrrSuOTKW
-	fvL0oThRu4JoI2WRxFfSQL1HFA4pF75jSkzleBFqJskiSF8Q9CRF6kp5u/Sy/acOB2nVKphEZtyFx
-	MZEBjsrK+M6hsCg4GTiMqxWj4kzvcC9ptnKh0HmWfPbwn5Kvno42tkXIio0kKtmhUqBuvo3CYglv2
-	pK5hEpf385IG5zE7Rs3P7J0DbHVhsgonwjHpqPSTFfZKN62U5glZWFSgUBjsjfkd9iXvRiderMMZW
-	0pNjXBdQ==;
-Received: from 2a02-8389-2341-5b80-d601-7564-c2e0-491c.cable.dynamic.v6.surfer.at ([2a02:8389:2341:5b80:d601:7564:c2e0:491c] helo=localhost)
-	by bombadil.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1w4vEw-00000000jze-2l0O;
-	Tue, 24 Mar 2026 06:27:47 +0000
-From: Christoph Hellwig <hch@lst.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Richard Henderson <richard.henderson@linaro.org>,
-	Matt Turner <mattst88@gmail.com>,
-	Magnus Lindholm <linmag7@gmail.com>,
-	Russell King <linux@armlinux.org.uk>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>,
-	Ard Biesheuvel <ardb@kernel.org>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	"David S. Miller" <davem@davemloft.net>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Richard Weinberger <richard@nod.at>,
-	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Chris Mason <clm@fb.com>,
-	David Sterba <dsterba@suse.com>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Song Liu <song@kernel.org>,
-	Yu Kuai <yukuai@fnnas.com>,
-	Li Nan <linan122@huawei.com>,
-	"Theodore Ts'o" <tytso@mit.edu>,
-	"Jason A. Donenfeld" <Jason@zx2c4.com>,
-	linux-alpha@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fg0f94zv2z3cZp
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 17:35:29 +1100 (AEDT)
+Received: by mail-wr1-x430.google.com with SMTP id ffacd0b85a97d-439c56e822eso830748f8f.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2026 23:35:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1774334125; x=1774938925; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Mifv6lV/1vhl2tnAgC+pUhj48DLTv7wevR0+F6OEtI0=;
+        b=ry94KfbSxbH1GsPHON9icdk3o1yZjCifqAayj42U/3361shgQZxrkAit+6QzO0PkVi
+         JNPC+tudYDG/2VCiWftZ73JWYHdqdP9jPiav+qp3kHSzlrrQJXF599ADf865jrfaBa0f
+         qnFgtJHTJqFbWeXjo8NLh0aE+s0TH7gaSNMRdmnwHDxLbu9BYXELdpl2ps+G6jdEVZ4u
+         e+iwSZzOIP2iIiCKCL6cXFYEHr8lqpMf2hKSOBXz4u3VJP8NKhekwUlmjcRTc9RL3Kqs
+         DvaMeFlh9fTVy3/7BXztVLTlOCA6XIXVpshQp7esSxB4mk1zprg9yTGJU2DtZdg36iys
+         H1Hw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774334125; x=1774938925;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=Mifv6lV/1vhl2tnAgC+pUhj48DLTv7wevR0+F6OEtI0=;
+        b=P0mUt/5V9iiZbSMpxg4mWFiV6S7cjcj5MWQU2KkbqNQuOVylwAaA2b4DnzAo07stba
+         L8W5BBP1wYGrdW1tIrYNrTV0xG0cS/BLHptLAmwdkZM4QXz+tOOm6Sqf34Q2/2ikQnVc
+         M4GMWdBFkxVbNx1jyFi6CSHhdVYjp/uAR50yIq2hl69ibRTphWJ2Jt6Fk197b8CHp2fL
+         3qYU6/EE1GfklaO9uvvHpf8C3HfBjxROo2cpqVWuVDZRCZsKupiomeOnGwpOpW+5k2LI
+         F0ZivkdX+1zcj523JrIdkUx1dGR92hWV4bRru7CVchBImjxufs3qkZ+mYXIu/AG1JaGk
+         WhSg==
+X-Forwarded-Encrypted: i=1; AJvYcCVbfTeG6Y6533oB1vLRlAZAMmbBIOMYnmEJgD+2j24TOayVhtjkpgw/CUfLQ/sptc9U+7zZ4AAc983vPpc=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwhHVW1iilQnjrWXlVzvcVbiPVXmoKTLXGZHZjpWiRgVDzj5r6a
+	ATvGIzW3UFfNJYiUpQJHdcVa8dT0BsCCBAUC38X2U4xIJjVNffOHnBDE
+X-Gm-Gg: ATEYQzw3AaWZ2psVooaSvtetdy/PGZ2E7QBWpnnW6aFhXqgOue+1Ga4jjO55UFnIBSu
+	9xnigI+RFgGiRBENCpooSUYs0TVycB60RrF8DMXytKkYsZDSzvHMQQoFP4elL9ppa6utc1SHo2j
+	n2pz9Hlstq2gkuQ03+OkwMySbCQll7P8BkKBnhm2WepjDNxcHNkZ5J9NFkIVQ90znCV4NV53UMs
+	JBfjirPl1Aydb5wmInIDbdGnMTspx9DGGlg9NlZE9Rag6HCjhwf3VDCXhC5M2Va1kIA6GCxAIDC
+	YU/v1KFp4Ws4Xs6cU9OAVUqRsU6U6zND2GYKuBpp3rO/WiAvq3gf1im+Ev+nlApWaYuy4vyCeZX
+	IvtRnx5lLmOrbWxmpJlnsJrHDxHHLn3ZSazbnC6ckiwcE8N5SnJQii+rPmt2j6zkFuX6ajPLwCW
+	ydIlzJf3WB9i7VjCtfN1E=
+X-Received: by 2002:a05:6000:1aca:b0:439:be78:e1e9 with SMTP id ffacd0b85a97d-43b6423fabamr24225594f8f.14.1774334124571;
+        Mon, 23 Mar 2026 23:35:24 -0700 (PDT)
+Received: from localhost ([212.73.77.104])
+        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-43b6470380asm34457509f8f.24.2026.03.23.23.35.22
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 23 Mar 2026 23:35:23 -0700 (PDT)
+From: Askar Safin <safinaskar@gmail.com>
+To: ruanjinjie@huawei.com
+Cc: devicetree@vger.kernel.org,
+	kexec@lists.infradead.org,
 	linux-arm-kernel@lists.infradead.org,
-	loongarch@lists.linux.dev,
-	linuxppc-dev@lists.ozlabs.org,
+	linux-doc@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
 	linux-riscv@lists.infradead.org,
-	linux-s390@vger.kernel.org,
-	sparclinux@vger.kernel.org,
-	linux-um@lists.infradead.org,
-	linux-crypto@vger.kernel.org,
-	linux-btrfs@vger.kernel.org,
-	linux-arch@vger.kernel.org,
-	linux-raid@vger.kernel.org
-Subject: [PATCH 26/26] xor: add a kunit test case
-Date: Tue, 24 Mar 2026 07:22:02 +0100
-Message-ID: <20260324062211.3216301-27-hch@lst.de>
+	linuxppc-dev@lists.ozlabs.org,
+	loongarch@lists.linux.dev,
+	x86@kernel.org
+Subject: Re: [PATCH v9 0/5] arm64/riscv: Add support for crashkernel CMA reservation
+Date: Tue, 24 Mar 2026 09:35:18 +0300
+Message-ID: <20260324063519.3258161-1-safinaskar@gmail.com>
 X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20260324062211.3216301-1-hch@lst.de>
-References: <20260324062211.3216301-1-hch@lst.de>
+In-Reply-To: <20260323072745.2481719-1-ruanjinjie@huawei.com>
+References: <20260323072745.2481719-1-ruanjinjie@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -121,267 +102,9 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 
-Add a test case for the XOR routines loosely based on the CRC kunit
-test.
+Please, remove me from CC list in future versions of this patchset
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- lib/raid/.kunitconfig          |   3 +
- lib/raid/Kconfig               |  11 ++
- lib/raid/xor/Makefile          |   2 +-
- lib/raid/xor/tests/Makefile    |   3 +
- lib/raid/xor/tests/xor_kunit.c | 187 +++++++++++++++++++++++++++++++++
- 5 files changed, 205 insertions(+), 1 deletion(-)
- create mode 100644 lib/raid/.kunitconfig
- create mode 100644 lib/raid/xor/tests/Makefile
- create mode 100644 lib/raid/xor/tests/xor_kunit.c
-
-diff --git a/lib/raid/.kunitconfig b/lib/raid/.kunitconfig
-new file mode 100644
-index 000000000000..351d22ed1954
---- /dev/null
-+++ b/lib/raid/.kunitconfig
-@@ -0,0 +1,3 @@
-+CONFIG_KUNIT=y
-+CONFIG_BTRFS_FS=y
-+CONFIG_XOR_KUNIT_TEST=y
-diff --git a/lib/raid/Kconfig b/lib/raid/Kconfig
-index 2ccf0c60de01..1fc4b00e0d71 100644
---- a/lib/raid/Kconfig
-+++ b/lib/raid/Kconfig
-@@ -17,3 +17,14 @@ config XOR_BLOCKS_ARCH
- 	default y if X86_32
- 	default y if X86_64
- 	bool
-+
-+config XOR_KUNIT_TEST
-+	tristate "KUnit tests for xor_gen" if !KUNIT_ALL_TESTS
-+	depends on KUNIT
-+	depends on XOR_BLOCKS
-+	default KUNIT_ALL_TESTS
-+	help
-+	  Unit tests for the XOR library functions.
-+
-+	  This is intended to help people writing architecture-specific
-+	  optimized versions.  If unsure, say N.
-diff --git a/lib/raid/xor/Makefile b/lib/raid/xor/Makefile
-index df55823c4d82..4d633dfd5b90 100644
---- a/lib/raid/xor/Makefile
-+++ b/lib/raid/xor/Makefile
-@@ -29,7 +29,7 @@ xor-$(CONFIG_SPARC64)		+= sparc/xor-sparc64.o sparc/xor-sparc64-glue.o
- xor-$(CONFIG_S390)		+= s390/xor.o
- xor-$(CONFIG_X86_32)		+= x86/xor-avx.o x86/xor-sse.o x86/xor-mmx.o
- xor-$(CONFIG_X86_64)		+= x86/xor-avx.o x86/xor-sse.o
--
-+obj-y				+= tests/
- 
- CFLAGS_arm/xor-neon.o		+= $(CC_FLAGS_FPU)
- CFLAGS_REMOVE_arm/xor-neon.o	+= $(CC_FLAGS_NO_FPU)
-diff --git a/lib/raid/xor/tests/Makefile b/lib/raid/xor/tests/Makefile
-new file mode 100644
-index 000000000000..661e8f6ffd1f
---- /dev/null
-+++ b/lib/raid/xor/tests/Makefile
-@@ -0,0 +1,3 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+
-+obj-$(CONFIG_XOR_KUNIT_TEST) += xor_kunit.o
-diff --git a/lib/raid/xor/tests/xor_kunit.c b/lib/raid/xor/tests/xor_kunit.c
-new file mode 100644
-index 000000000000..01cbdf44f6b0
---- /dev/null
-+++ b/lib/raid/xor/tests/xor_kunit.c
-@@ -0,0 +1,187 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+/*
-+ * Unit test the XOR library functions.
-+ *
-+ * Copyright 2024 Google LLC
-+ * Copyright 2026 Christoph Hellwig
-+ *
-+ * Based on the CRC tests by Eric Biggers <ebiggers@google.com>.
-+ */
-+#include <kunit/test.h>
-+#include <linux/prandom.h>
-+#include <linux/string_choices.h>
-+#include <linux/vmalloc.h>
-+#include <linux/raid/xor.h>
-+
-+#define XOR_KUNIT_SEED			42
-+#define XOR_KUNIT_MAX_BYTES		16384
-+#define XOR_KUNIT_MAX_BUFFERS		64
-+#define XOR_KUNIT_NUM_TEST_ITERS	1000
-+
-+static struct rnd_state rng;
-+static void *test_buffers[XOR_KUNIT_MAX_BUFFERS];
-+static void *test_dest;
-+static void *test_ref;
-+static size_t test_buflen;
-+
-+static u32 rand32(void)
-+{
-+	return prandom_u32_state(&rng);
-+}
-+
-+/* Reference implementation using dumb byte-wise XOR */
-+static void xor_ref(void *dest, void **srcs, unsigned int src_cnt,
-+		unsigned int bytes)
-+{
-+	unsigned int off, idx;
-+	u8 *d = dest;
-+
-+	for (off = 0; off < bytes; off++) {
-+		for (idx = 0; idx < src_cnt; idx++) {
-+			u8 *src = srcs[idx];
-+
-+			d[off] ^= src[off];
-+		}
-+	}
-+}
-+
-+/* Generate a random length that is a multiple of 512. */
-+static unsigned int random_length(unsigned int max_length)
-+{
-+	return (rand32() % (max_length + 1)) & ~511;
-+}
-+
-+/* Generate a random alignment that is a multiple of 64. */
-+static unsigned int random_alignment(unsigned int max_alignment)
-+{
-+	return (rand32() % (max_alignment + 1)) & ~63;
-+}
-+
-+static void xor_generate_random_data(void)
-+{
-+	int i;
-+
-+	prandom_bytes_state(&rng, test_dest, test_buflen);
-+	memcpy(test_ref, test_dest, test_buflen);
-+	for (i = 0; i < XOR_KUNIT_MAX_BUFFERS; i++)
-+		prandom_bytes_state(&rng, test_buffers[i], test_buflen);
-+}
-+
-+/* Test that xor_gen gives the same result as a reference implementation. */
-+static void xor_test(struct kunit *test)
-+{
-+	void *aligned_buffers[XOR_KUNIT_MAX_BUFFERS];
-+	size_t i;
-+
-+	for (i = 0; i < XOR_KUNIT_NUM_TEST_ITERS; i++) {
-+		unsigned int nr_buffers =
-+			(rand32() % XOR_KUNIT_MAX_BUFFERS) + 1;
-+		unsigned int len = random_length(XOR_KUNIT_MAX_BYTES);
-+		unsigned int max_alignment, align = 0;
-+		void *buffers;
-+
-+		if (rand32() % 8 == 0)
-+			/* Refresh the data occasionally. */
-+			xor_generate_random_data();
-+
-+		/*
-+		 * If we're not using the entire buffer size, inject randomize
-+		 * alignment into the buffer.
-+		 */
-+		max_alignment = XOR_KUNIT_MAX_BYTES - len;
-+		if (max_alignment == 0) {
-+			buffers = test_buffers;
-+		} else if (rand32() % 2 == 0) {
-+			/* Use random alignments mod 64 */
-+			int j;
-+
-+			for (j = 0; j < nr_buffers; j++)
-+				aligned_buffers[j] = test_buffers[j] +
-+					random_alignment(max_alignment);
-+			buffers = aligned_buffers;
-+			align = random_alignment(max_alignment);
-+		} else {
-+			/* Go up to the guard page, to catch buffer overreads */
-+			int j;
-+
-+			align = test_buflen - len;
-+			for (j = 0; j < nr_buffers; j++)
-+				aligned_buffers[j] = test_buffers[j] + align;
-+			buffers = aligned_buffers;
-+		}
-+
-+		/*
-+		 * Compute the XOR, and verify that it equals the XOR computed
-+		 * by a simple byte-at-a-time reference implementation.
-+		 */
-+		xor_ref(test_ref + align, buffers, nr_buffers, len);
-+		xor_gen(test_dest + align, buffers, nr_buffers, len);
-+		KUNIT_EXPECT_MEMEQ_MSG(test, test_ref + align,
-+				test_dest + align, len,
-+				"Wrong result with buffers=%u, len=%u, unaligned=%s, at_end=%s",
-+				nr_buffers, len,
-+				str_yes_no(max_alignment),
-+				str_yes_no(align + len == test_buflen));
-+	}
-+}
-+
-+static struct kunit_case xor_test_cases[] = {
-+	KUNIT_CASE(xor_test),
-+	{},
-+};
-+
-+static int xor_suite_init(struct kunit_suite *suite)
-+{
-+	int i;
-+
-+	/*
-+	 * Allocate the test buffer using vmalloc() with a page-aligned length
-+	 * so that it is immediately followed by a guard page.  This allows
-+	 * buffer overreads to be detected, even in assembly code.
-+	 */
-+	test_buflen = round_up(XOR_KUNIT_MAX_BYTES, PAGE_SIZE);
-+	test_ref = vmalloc(test_buflen);
-+	if (!test_ref)
-+		return -ENOMEM;
-+	test_dest = vmalloc(test_buflen);
-+	if (!test_dest)
-+		goto out_free_ref;
-+	for (i = 0; i < XOR_KUNIT_MAX_BUFFERS; i++) {
-+		test_buffers[i] = vmalloc(test_buflen);
-+		if (!test_buffers[i])
-+			goto out_free_buffers;
-+	}
-+
-+	prandom_seed_state(&rng, XOR_KUNIT_SEED);
-+	xor_generate_random_data();
-+	return 0;
-+
-+out_free_buffers:
-+	while (--i >= 0)
-+		vfree(test_buffers[i]);
-+	vfree(test_dest);
-+out_free_ref:
-+	vfree(test_ref);
-+	return -ENOMEM;
-+}
-+
-+static void xor_suite_exit(struct kunit_suite *suite)
-+{
-+	int i;
-+
-+	vfree(test_ref);
-+	vfree(test_dest);
-+	for (i = 0; i < XOR_KUNIT_MAX_BUFFERS; i++)
-+		vfree(test_buffers[i]);
-+}
-+
-+static struct kunit_suite xor_test_suite = {
-+	.name		= "xor",
-+	.test_cases	= xor_test_cases,
-+	.suite_init	= xor_suite_init,
-+	.suite_exit	= xor_suite_exit,
-+};
-+kunit_test_suite(xor_test_suite);
-+
-+MODULE_DESCRIPTION("Unit test for the XOR library functions");
-+MODULE_LICENSE("GPL");
 -- 
-2.47.3
-
+Askar Safin
 
