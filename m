@@ -1,96 +1,90 @@
-Return-Path: <linuxppc-dev+bounces-18712-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18713-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8600FF532ED
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 08:13:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3516EE9A74D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 09:36:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fg2qb04yfz2yvK;
-	Tue, 24 Mar 2026 19:13:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774340026;
-	cv=none; b=IO4DWOEQApFG43KoSvblFn0FpjinKi+5PVyDKKRiDKh4iY5BJ3e9XldhrWw30K0rV2q0+oKV2vtHZwz6ZG5VwDFhZNDpC/zvrrWOI67w+xLNIi/FPf9qPk73edkQe2jPh99AuWwIUos4Yn73EdHA5BpnZSoPK3Qxa97SEnyAAQJY2Bm3QB7F9j9QCorZlD3aPsifi8Mr/ueO5rhwy/LWK5Y1Wb7L0Z2TQJhydDMVHapPlMKoaec3pvac0Nflcjpoaa6xbnCB9NRAUUK68JTxhgpEkMP3pczPRyGQWc9Fo0MyXlvJ113cb2YQxvRnEm5OjM49sBHBsdURRj6sHRuf0A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fg4gD2BQhz2yr7;
+	Tue, 24 Mar 2026 20:36:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774345000;
+	cv=none; b=LYuxAQvZXN5KATO23MEINHDlD5wOIlH/7JR9mI1122UXwBIylXkpxiFdk9HgxiQVKmWcC3Gzzvni2iVzkvbW//hE6pv4ZFxPMy24ZN/OFGOloIoFci4swB6eW9A/UbKiXbGOwGtmZ9KVidWK/ruk45z8zO20/8ywevfDzYSY/pu7vJ5KLELy60v1lA1I+4ICQv2HAwmtYiYxqmOJ4vIiR0178jxWzZvqTnUctyq3bJlyu4h7X8gLJ2j2pFGBZ89culJEgSFc1eaBEOZOaw6asJaAYiPd4/jdgJFSureUkZyPk4qowrtpaQf9rMOZCL+lnmli1p23TjYj2g3kBqsdSA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774340026; c=relaxed/relaxed;
-	bh=ts8QTgurhQrOhcbvZk0taNObr5EoxTyEYtshId05lwo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=WeH5rP0A08godmNmrhEuzhad4AzSSTyGp7mBUpjhuPc/++mUKRG0jVq9fryWG1/9VKFrLI27/R/8oPtLjdOiwKkfXma+KXRGbsRPPRcXx+nwVEa0s/xYCA54+3ALGS67R4OJGslYoWnVEiSYWgstW1m1fbSK53HQ0rg6CO7oDKYfLX+VbxhVZfmCQhoKZM1llrELzZ5A8Gmm1H2b/gJnFQ5fILhmF+KBfCeXrIDUMGYt4ihta7bqC9F+w1j3S+/5th44wgHWmfw8Q0k2Y+zKSM3ToJUFpu+mCAwGxL6MGuvxRq9niS63OzBDmwy7ZBdVwAL4H5khmRPpCcEMSesbfw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KRybWXvQ; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KRybWXvQ; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pabeni@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1774345000; c=relaxed/relaxed;
+	bh=Fz+pLbhFp0S4qTFWWddsgDGaQpvX0q+4gZ+/3kcTYd8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=TR+jS7hf5ECUujowXv987S55wF6avKi0hkQITNcKmaGLKQ7SbBr51qCRMoyXPoqecS/qx9jT3oAWfzVRQYXt0OtMkqFPPVNs972+HX4Rr6y+5MVTBK6P/ISdPPtoQ8vCHTdsY6md9Nh8l+vprq+qRWxz951gdFmI+g3cU1AWmBVmpneEmauQor/xQrVlMoOETRBt+vjN7ljV1GxpO8HkgtrjWo/NHp/st3yTvdi4lmjD3GISjfY4Ee8Mv3Yv3G7/D5FcwmsHGGoA58J5Y/Cq29H1BCxyA5otkFj0/j8Pw2KM6yHrlW/ur9Hk9/MCq/nHeBJ0WH8wLwyaoRej/QyRSA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=UQAB8Bnz; dkim-atps=neutral; spf=pass (client-ip=192.198.163.10; helo=mgamail.intel.com; envelope-from=yilun.xu@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KRybWXvQ;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KRybWXvQ;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=UQAB8Bnz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pabeni@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.10; helo=mgamail.intel.com; envelope-from=yilun.xu@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fg2qY39qcz2yrX
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 19:13:44 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1774340020;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=ts8QTgurhQrOhcbvZk0taNObr5EoxTyEYtshId05lwo=;
-	b=KRybWXvQ80gGXgYv1c23dydsU7Z0wrtbN0JrcX49LukfczCW43bl9iQm0GCHsmKKGI7S2O
-	9pubgsOj86lY6d6Y9xooLCJzZ7buJ3mYcaASpSfqLUALjgBLUXD4iJ/gBEJZteiMJSWLBg
-	1z5lLWu6BPHf2qMZX+qOH2KRDGaPDhA=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1774340020;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=ts8QTgurhQrOhcbvZk0taNObr5EoxTyEYtshId05lwo=;
-	b=KRybWXvQ80gGXgYv1c23dydsU7Z0wrtbN0JrcX49LukfczCW43bl9iQm0GCHsmKKGI7S2O
-	9pubgsOj86lY6d6Y9xooLCJzZ7buJ3mYcaASpSfqLUALjgBLUXD4iJ/gBEJZteiMJSWLBg
-	1z5lLWu6BPHf2qMZX+qOH2KRDGaPDhA=
-Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
- [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-220-Vo-YqJa6OP6V5g2Sta8pVg-1; Tue, 24 Mar 2026 04:13:37 -0400
-X-MC-Unique: Vo-YqJa6OP6V5g2Sta8pVg-1
-X-Mimecast-MFC-AGG-ID: Vo-YqJa6OP6V5g2Sta8pVg_1774340016
-Received: by mail-wr1-f70.google.com with SMTP id ffacd0b85a97d-43b53023d60so3369754f8f.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 01:13:36 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774340016; x=1774944816;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=ts8QTgurhQrOhcbvZk0taNObr5EoxTyEYtshId05lwo=;
-        b=HgfVnV042OW/4omJ8OCOof9vzjnv9lq4PVFMqR8aTAnlweL+3F1DYDpiWDbnhomJlc
-         VvU5by1YWBJWZlCVIPe5Lea5y8tRFb0KIQHSdMeoyTwFib0Fgny375oSiw+XZOgyGPXl
-         LLMrvNd0tFQ50Bqwk/pz0Da1LiFhSfFVNDryOFwE1RteYSFLBpcGyR/PrauBFJc5z0Ub
-         uUSnZm91j1o0RRxXmMOEKB3pmdx7De1tnOa4CyFOzvnzwqRz9SfuBfongZiEt0soRT+f
-         bhtflEp3VJH8K1T4yqQhP7Jh8mIllRv/pY9SBaR9SexnIljMle2ZQsSay0tClhHy4reY
-         5N1Q==
-X-Forwarded-Encrypted: i=1; AJvYcCWB6aPN2e1b9wTCIq+hqLnKW/+1vlRQpFfDKQbVfQhOF3yq9eenHdNK6grzrSthXxxuS167JTRivceuGfs=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwuGtzVE5GUkal8yNbBGY1vOvQusVUTub/6M2aRy9MOI4C5AmvP
-	2CPHrhH76o5WRueTUKfyqOtrAablDikFqV+v06KzNqghItmkebkoEmBe4KP9d75bbhve7ok9/wc
-	IDnQhn5oJmf1VtEVN2ZN48gSC7GO75g2YpaIL0jYZakZTS3JCbujWIEXonM6v+TKwDEo=
-X-Gm-Gg: ATEYQzxze+M7EFCntPt5emC5aLp9ZbcmHGb7EtO9R+mtCJWI77YY4IGDfVSHGn/Fhaf
-	dhp0A96adZ/n/SbPgy47zWZdPfrDbLXqcHaFRM+QGfJUvHO0SViDV/9zGQXq57KBMxFPhfxD0DE
-	cAq/dpaQn3NynASNzVHXM4aiCOYgcDY0C+/+SH5HzuYDFqb4a3/o8AngrxQuQvqsrBbAWQZCB18
-	fgHiifdtiQ46XPgPd0qzJra7YEpFzEahZeeiJJKynYVg7Fkdqjc7MKZxnSeaeVa2SpTeb3Yl+rT
-	Qh81x9BBzKV0oX5u5Y9k7dKSYWhx03p7SOk7jjHfN0s0tiLFZ4+GtZyOKuONc498V7m5xqCd/W7
-	+4yukFcDeIYkplJW7nm/hA2taZY1Lf6LhkFdUef5KznmvfXJp9rtT/qvo
-X-Received: by 2002:a05:6000:4382:b0:43b:3e40:222d with SMTP id ffacd0b85a97d-43b64244451mr22895147f8f.19.1774340015837;
-        Tue, 24 Mar 2026 01:13:35 -0700 (PDT)
-X-Received: by 2002:a05:6000:4382:b0:43b:3e40:222d with SMTP id ffacd0b85a97d-43b64244451mr22895104f8f.19.1774340015382;
-        Tue, 24 Mar 2026 01:13:35 -0700 (PDT)
-Received: from [192.168.88.32] ([212.105.153.60])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43b644ae048sm35875560f8f.1.2026.03.24.01.13.33
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 24 Mar 2026 01:13:34 -0700 (PDT)
-Message-ID: <c4e3c49e-ecc0-4702-9d2c-88ff420c4647@redhat.com>
-Date: Tue, 24 Mar 2026 09:13:32 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fg4gB0S1Nz2yqc
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 20:36:36 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1774344998; x=1805880998;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=Cl9Jn50dUXWt3BrXPsUSkT+go0J8MdRhtpKlgBhriss=;
+  b=UQAB8Bnznny6EZBnIofXgQEx1nCwzRx7/SnDcrKX8KTzXFea98eTANMQ
+   Du4sUtsQDxQYMLfLlqLpgZzokH2Cf4/cIMJ3n+CNfjbyofDxrj/bWTkgR
+   1XyBOkl7/OFip9LXKWtxQbHvtcKU2ATnTfXRyBZiGPkeomnkPaHhAxJ+H
+   eVtKMO6b3YHz+c7x1cmRq1Ek2PFE5R5fJeiHFPA123CByo/Y7DW96f2E6
+   qhhwAGwQn2TdXTzLYy4CVP1HtKp5DFZak3cw04H1NiZuiBmrxDdK50IqJ
+   8YvvFDtKXI7CzLDxrKGq2wL0tPlTrsmbu5YlUm6ignne/JJkpmLvszGoH
+   A==;
+X-CSE-ConnectionGUID: Z5/FfsaOQUOUTD1JdbETlQ==
+X-CSE-MsgGUID: IQ83pXEBQXK/VqBnEbsswg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11738"; a="86725138"
+X-IronPort-AV: E=Sophos;i="6.23,138,1770624000"; 
+   d="scan'208";a="86725138"
+Received: from orviesa005.jf.intel.com ([10.64.159.145])
+  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Mar 2026 02:36:29 -0700
+X-CSE-ConnectionGUID: DmWR8uXHRDSrXII1rchdOA==
+X-CSE-MsgGUID: CPrU1x//RC2oHAiWQSJ1zA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,138,1770624000"; 
+   d="scan'208";a="229228806"
+Received: from yilunxu-optiplex-7050.sh.intel.com (HELO localhost) ([10.239.159.165])
+  by orviesa005.jf.intel.com with ESMTP; 24 Mar 2026 02:36:21 -0700
+Date: Tue, 24 Mar 2026 17:15:33 +0800
+From: Xu Yilun <yilun.xu@linux.intel.com>
+To: Yury Norov <ynorov@nvidia.com>
+Cc: linux-kernel@vger.kernel.org,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"Peter Zijlstra (Intel)" <peterz@infradead.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Ingo Molnar <mingo@kernel.org>,
+	James Clark <james.clark@linaro.org>, Kees Cook <kees@kernel.org>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Mike Leach <mike.leach@linaro.org>, Moritz Fischer <mdf@kernel.org>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Russ Weight <russ.weight@linux.dev>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Suki K Poulose <suzuki.poulose@arm.com>, Tom Rix <trix@redhat.com>,
+	Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>,
+	Xu Yilun <yilun.xu@intel.com>, Yury Norov <yury.norov@gmail.com>,
+	Zhang Rui <rui.zhang@intel.com>, coresight@lists.linaro.org,
+	linux-arm-kernel@lists.infradead.org, linux-fpga@vger.kernel.org,
+	linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Jakub Kicinski <kuba@kernel.org>
+Subject: Re: [PATCH 5/5] fpga: m10bmc-sec: switch show_canceled_csk() to
+ using sysfs_emit()
+Message-ID: <acJWNRb1t96yu/H6@yilunxu-OptiPlex-7050>
+References: <20260303200842.124996-1-ynorov@nvidia.com>
+ <20260303200842.124996-6-ynorov@nvidia.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,60 +98,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 net-next 11/14] net: dsa: netc: add phylink MAC
- operations
-To: "Russell King (Oracle)" <linux@armlinux.org.uk>
-Cc: claudiu.manoil@nxp.com, vladimir.oltean@nxp.com, xiaoning.wang@nxp.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
- f.fainelli@gmail.com, frank.li@nxp.com, chleroy@kernel.org,
- horms@kernel.org, andrew@lunn.ch, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- imx@lists.linux.dev, Wei Fang <wei.fang@nxp.com>
-References: <20260323060752.1157031-1-wei.fang@nxp.com>
- <20260323060752.1157031-12-wei.fang@nxp.com>
- <acEIQqI-_oyCym8O@shell.armlinux.org.uk>
-From: Paolo Abeni <pabeni@redhat.com>
-In-Reply-To: <acEIQqI-_oyCym8O@shell.armlinux.org.uk>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: LiSZHoZbPIaqz_cSLGflghORFx_K9kyWgNv4OgwOomU_1774340016
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260303200842.124996-6-ynorov@nvidia.com>
 
-On 3/23/26 10:30 AM, Russell King (Oracle) wrote:
-> On Mon, Mar 23, 2026 at 02:07:49PM +0800, Wei Fang wrote:
->> +static void netc_port_set_mac_mode(struct netc_port *np,
->> +				   unsigned int mode,
->> +				   phy_interface_t phy_mode)
->> +{
->> +	u32 mask = PM_IF_MODE_IFMODE | PM_IF_MODE_REVMII | PM_IF_MODE_ENA;
->> +	u32 val = 0;
->> +
->> +	switch (phy_mode) {
->> +	case PHY_INTERFACE_MODE_RGMII:
->> +	case PHY_INTERFACE_MODE_RGMII_ID:
->> +	case PHY_INTERFACE_MODE_RGMII_RXID:
->> +	case PHY_INTERFACE_MODE_RGMII_TXID:
->> +		val |= IFMODE_RGMII;
->> +		/* Enable auto-negotiation for the MAC if its
->> +		 * RGMII interface supports In-Band status.
->> +		 */
->> +		if (phylink_autoneg_inband(mode))
->> +			val |= PM_IF_MODE_ENA;
+On Tue, Mar 03, 2026 at 03:08:41PM -0500, Yury Norov wrote:
+> Switch show_canceled_csk() to use the proper sysfs_emit("%*pbl").
 > 
-> I would prefer newer drivers not to use phylink_autoneg_inband()
-> anymore. Note that there is no need to support RGMII inband in the
-> kernel (nor is there any proper support without a "phylink_pcs"
-> being present to provide the inband status.)
-Would you mind sharing a patch adding a comment nearby
-phylink_autoneg_inband(), explaining the above for future memory?
+> Reviewed-by: Russ Weight <russ.weight@linux.dev>
+> Suggested-by: Thomas Weißschuh <linux@weissschuh.net>
+> Signed-off-by: Yury Norov <ynorov@nvidia.com>
+> ---
+>  drivers/fpga/intel-m10-bmc-sec-update.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/fpga/intel-m10-bmc-sec-update.c b/drivers/fpga/intel-m10-bmc-sec-update.c
+> index 10f678b9ed36..ae364c6636eb 100644
+> --- a/drivers/fpga/intel-m10-bmc-sec-update.c
+> +++ b/drivers/fpga/intel-m10-bmc-sec-update.c
+> @@ -10,6 +10,7 @@
+>  #include <linux/firmware.h>
+>  #include <linux/mfd/intel-m10-bmc.h>
+>  #include <linux/mod_devicetable.h>
+> +#include <linux/mm.h>
+
+Why add this header file?
 
 Thanks,
+Yilun
 
-Paolo
-
+>  #include <linux/module.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/slab.h>
+> @@ -183,7 +184,7 @@ show_canceled_csk(struct device *dev, u32 addr, char *buf)
+>  
+>  	bitmap_from_arr32(csk_map, csk32, CSK_BIT_LEN);
+>  	bitmap_complement(csk_map, csk_map, CSK_BIT_LEN);
+> -	return bitmap_print_to_pagebuf(1, buf, csk_map, CSK_BIT_LEN);
+> +	return sysfs_emit(buf, "%*pbl\n", CSK_BIT_LEN, csk_map);
+>  }
+>  
+>  #define DEVICE_ATTR_SEC_CSK_RO(_name)						\
+> -- 
+> 2.43.0
+> 
+> 
 
