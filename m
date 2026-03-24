@@ -1,85 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-18714-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18715-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2109FE9A767
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 10:54:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF188D58CC9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 12:42:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fg6Nk43Rxz2ynf;
-	Tue, 24 Mar 2026 21:54:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=188.40.3.216
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774349654;
-	cv=none; b=KDVaDTiJcxJNy5mTsWKupod0KW9TgZjqtbAO2UL2mGwttOmkGqDhMyZ/xQEYtZFxoqD+HKEoyysXSw1cRLzGtoKSCjfPoOzHlw53gPouM1rcuLtazhqPc8yj++9OgdjgzVmvYLuJVy99k6cBlIc0mCOM9joBGwt4Kn1Hzxh4bVtAXqqs53marGVmXJjNddryAioSfn+E09jaX5KtW+YZmvE1yqB7yA8KUOiLz1aj4rZTdPY4vPnH75rBpEaFDZnd52+a9+anzLDsJwSYRuEgzbQJR3UVnLFcW0wC7R0m7FJd6NS7SSI/2lwx85Z7y2H0G/pVcQTigyTvhKWv9AxlEw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fg8n92Vdtz2xPL;
+	Tue, 24 Mar 2026 23:42:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774356125;
+	cv=none; b=KbrliNmpU267+953nIYkDVqKTbBdijJQvJPM0UggNABxAOkanKAOfPfuEfBmkE/bgMMPMlM9UivjPglY4SZjCx4RTZ7mMivXIdTmf+CiZNl6KI7RvLLBOq8mD6zsAKzmHpcTcuIBjqN8B5Z66QaffQ90vVXKf4QKkkRqtvxuSeDvULQ7+R74yb+ndr5lwk4qwU9W3mxUb9do2L+keCGnVMb48sQHJOiXG/1b7jJLI78bzrce8TbKNbj8DLpIpstFW25L7Y9nwjHEoYohZhJ5y4JDUTL0jcSw1rhGW4qqIwPNqKwup+V/qu9WpfWw7v2/adJ4qd9OZPXjytfDHgSixg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774349654; c=relaxed/relaxed;
-	bh=S6uvvEM8Q8RkAK0BRhim+FMr5vS+WhCd8Ae7ZnBCYfM=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=LOubX28vyFLhe8VASih24sQcw5NEo6yEWmJmSza7HRC7dNpOPMxTgQKOcGHGzNdYEl0e1kr0CiVVNbcsZGXcn/224hqH1XogBXw8Cb528YuaSc8I4omp5qzYAOtli2FZTNUDYsuKOpNAJ5sL4+99TSvlrlKTTD19L+2koz8gH+5gdtYjycztbQG2eAoTb0kWNvEna1YHfTa1gNfO44S+4czWA5QN488lley1X5crbM9AFXG363YaL2hK3LN5wvMs1bjiSWM44zkc78mxh4IysmFvrMffRn7WuQhyiBXhPoHM68fJwKt9m1eaSJ2UFOLqtd/ixEX22v+tOzDcBu3F/g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=ew.tq-group.com; dkim=pass (2048-bit key; unprotected) header.d=ew.tq-group.com header.i=@ew.tq-group.com header.a=rsa-sha256 header.s=default2602 header.b=FrI/5Qh2; dkim-atps=neutral; spf=pass (client-ip=188.40.3.216; helo=www537.your-server.de; envelope-from=alexander.stein@ew.tq-group.com; receiver=lists.ozlabs.org) smtp.mailfrom=ew.tq-group.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=ew.tq-group.com
+	t=1774356125; c=relaxed/relaxed;
+	bh=Shk48Guqth0dMGtPHiYWn3blJ70CgjGVRZHzaVpvLPY=;
+	h=MIME-Version:Date:From:To:Cc:Subject:In-Reply-To:References:
+	 Message-ID:Content-Type; b=GRlWH/jwKwPf1ADFJbt7qrkDn7N0IZNKzXoDViPWhM9voNi3Re84lqTWGlb6kfx/KFYSYcc5vsjWic1N4KGObe0Jw0UXbuvSGT/P8wVmXtHeJTvfr6DR6eadGwfseZpLbgwXoy4UQXrY+OrM+LrYj9GjZlfZAGKb+IG49p9NFUPxxFU5X32MCRWkk9By+aYe6Xuk+ILADr4bbsUeCdeOGz/sndXDiwiRwNM2LaS9w3NAS0vXr7eUHxBrFFYsK9nR7MJORia3IWFEHP3fLkE6AkPLIJr2IMJbAAoMy85U1dv5n3QFLkyEKbXuXcxW0dV5W/d9O86cKcBnSlbxOflJtw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nqs3h6Sk; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=freude@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ew.tq-group.com header.i=@ew.tq-group.com header.a=rsa-sha256 header.s=default2602 header.b=FrI/5Qh2;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nqs3h6Sk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ew.tq-group.com (client-ip=188.40.3.216; helo=www537.your-server.de; envelope-from=alexander.stein@ew.tq-group.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 1789 seconds by postgrey-1.37 at boromir; Tue, 24 Mar 2026 21:54:11 AEDT
-Received: from www537.your-server.de (www537.your-server.de [188.40.3.216])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=freude@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fg6Ng1XcLz2ynW
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 21:54:10 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=ew.tq-group.com; s=default2602; h=Content-Type:Content-Transfer-Encoding:
-	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender
-	:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID;
-	bh=S6uvvEM8Q8RkAK0BRhim+FMr5vS+WhCd8Ae7ZnBCYfM=; b=FrI/5Qh26/Bf0qI2wuHwMH5x1o
-	l0ZcurgJMqFwdycKwHnU7AfnwWV6bVn3ESzW6v4BLnICtYS3M4Calj9U0lio62uJO4+cnP2WDDcbK
-	TqKYfj+nvFnnAK/LEcwUc1Rt6F7wzJxC4hZICVGRevdq/UXEML4WVK1VKDGvM5vPslKqNpBMuQ+vk
-	vJ9ZFIH4wqs3M480+9AEIz50WkRgbPM9d4o64BM2HZv3yg+Ks2fTLoKJaSC9uHldnkVrAVR1h7QHy
-	iXF8bweU2MiIjMdXFLSaXLP+Ir6MrWioUiHnx+lu5xoYvqZuYAOre828JcY9CgbYZ1NlVIeHZ4cbX
-	c6T9UXxQ==;
-Received: from sslproxy07.your-server.de ([78.47.199.104])
-	by www537.your-server.de with esmtpsa  (TLS1.3) tls TLS_AES_256_GCM_SHA384
-	(Exim 4.96.2)
-	(envelope-from <alexander.stein@ew.tq-group.com>)
-	id 1w4yvj-000E43-2Z;
-	Tue, 24 Mar 2026 11:24:11 +0100
-Received: from localhost ([127.0.0.1])
-	by sslproxy07.your-server.de with esmtpsa  (TLS1.3) tls TLS_AES_256_GCM_SHA384
-	(Exim 4.96)
-	(envelope-from <alexander.stein@ew.tq-group.com>)
-	id 1w4yvj-0006q3-0d;
-	Tue, 24 Mar 2026 11:24:10 +0100
-From: Alexander Stein <alexander.stein@ew.tq-group.com>
-To: Rob Herring <robh@kernel.org>, Saravana Kannan <saravanak@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Fabio Estevam <festevam@gmail.com>,
- Geert Uytterhoeven <geert+renesas@glider.be>,
- Magnus Damm <magnus.damm@gmail.com>, Chen-Yu Tsai <wens@kernel.org>,
- Jernej Skrabec <jernej.skrabec@gmail.com>,
- Samuel Holland <samuel@sholland.org>, Frank Li <Frank.Li@nxp.com>,
- linux-arm-kernel@lists.infradead.org
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- imx@lists.linux.dev, linux-renesas-soc@vger.kernel.org,
- linux-sunxi@lists.linux.dev, driver-core@lists.linux.dev,
- Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>,
- Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-Subject: Re: [PATCH v2 6/9] soc: imx8m: don't access of_root directly
-Date: Tue, 24 Mar 2026 11:24:09 +0100
-Message-ID: <6593091.DvuYhMxLoT@steina-w>
-Organization: TQ-Systems GmbH
-In-Reply-To: <20260223-soc-of-root-v2-6-b45da45903c8@oss.qualcomm.com>
-References:
- <20260223-soc-of-root-v2-0-b45da45903c8@oss.qualcomm.com>
- <20260223-soc-of-root-v2-6-b45da45903c8@oss.qualcomm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fg8n81Cjrz2xMY
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 23:42:03 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62O7DT6Q481575;
+	Tue, 24 Mar 2026 12:41:32 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:reply-to:subject:to; s=pp1;
+	 bh=Shk48Guqth0dMGtPHiYWn3blJ70CgjGVRZHzaVpvLPY=; b=nqs3h6SkcQWZ
+	+OwoltQeMxOO6RblQPqe55tAVjsackvCM4KkhWNpCQq04FPsFlS93zfiGSC7Di4+
+	S9HKMl0Sjn5QTzbM3NfhhnAIAYBvkUkrdxOKSw7d0UM43AXyYRkeT8yYGAz8hak7
+	ZGJjdVwyS8NI2NFgL8wvwtd0s6FHAxSN4ucTbH9O2vRt2+dg7MkFcwB5Thprjrjc
+	U/howCgydGuthvICdFGdQd3XIc0EaU0k/lS6es2878jUgr/pm+7/onljXHYAZGv+
+	d2SOZp5c+3ZgwIjW+EEdkE2KjadPhRrKOtZM1Zuf8LiFRmTbl3wfp/kpxlXGAEqB
+	O8U48KsXUA==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d1ktxudx6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 24 Mar 2026 12:41:31 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62OC7Gcu008722;
+	Tue, 24 Mar 2026 12:41:30 GMT
+Received: from smtprelay03.wdc07v.mail.ibm.com ([172.16.1.70])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4d26nnhuw0-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 24 Mar 2026 12:41:30 +0000
+Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
+	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62OCf5V326608298
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 24 Mar 2026 12:41:05 GMT
+Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 201225803F;
+	Tue, 24 Mar 2026 12:41:29 +0000 (GMT)
+Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 946D658055;
+	Tue, 24 Mar 2026 12:41:25 +0000 (GMT)
+Received: from ltc.linux.ibm.com (unknown [9.5.196.140])
+	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 24 Mar 2026 12:41:25 +0000 (GMT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,109 +79,275 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
-X-Virus-Scanned: Clear (ClamAV 1.4.3/27950/Tue Mar 24 07:24:19 2026)
+Date: Tue, 24 Mar 2026 13:41:25 +0100
+From: Harald Freudenberger <freude@linux.ibm.com>
+To: Danilo Krummrich <dakr@kernel.org>
+Cc: Russell King <linux@armlinux.org.uk>,
+        Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Ioana
+ Ciornei <ioana.ciornei@nxp.com>,
+        Nipun Gupta <nipun.gupta@amd.com>,
+        Nikhil
+ Agarwal <nikhil.agarwal@amd.com>,
+        "K. Y. Srinivasan" <kys@microsoft.com>,
+        Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
+        Dexuan
+ Cui <decui@microsoft.com>, Long Li <longli@microsoft.com>,
+        Bjorn Helgaas
+ <bhelgaas@google.com>, Armin Wolf <W_Armin@gmx.de>,
+        Bjorn Andersson
+ <andersson@kernel.org>,
+        Mathieu Poirier <mathieu.poirier@linaro.org>,
+        Vineeth Vijayan <vneethv@linux.ibm.com>,
+        Peter Oberparleiter
+ <oberpar@linux.ibm.com>,
+        Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik
+ <gor@linux.ibm.com>,
+        Alexander Gordeev <agordeev@linux.ibm.com>,
+        Christian
+ Borntraeger <borntraeger@linux.ibm.com>,
+        Sven Schnelle
+ <svens@linux.ibm.com>,
+        Holger Dengler <dengler@linux.ibm.com>,
+        Mark Brown
+ <broonie@kernel.org>,
+        "Michael S. Tsirkin" <mst@redhat.com>,
+        Jason Wang
+ <jasowang@redhat.com>,
+        Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
+        =?UTF-8?Q?Eugenio_P=C3=A9rez?= <eperezma@redhat.com>,
+        Alex Williamson
+ <alex@shazbot.org>, Juergen Gross <jgross@suse.com>,
+        Stefano Stabellini
+ <sstabellini@kernel.org>,
+        Oleksandr Tyshchenko
+ <oleksandr_tyshchenko@epam.com>,
+        "Christophe Leroy (CS GROUP)"
+ <chleroy@kernel.org>,
+        linux-kernel@vger.kernel.org, driver-core@lists.linux.dev,
+        linuxppc-dev@lists.ozlabs.org, linux-hyperv@vger.kernel.org,
+        linux-pci@vger.kernel.org, platform-driver-x86@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-remoteproc@vger.kernel.org,
+        linux-s390@vger.kernel.org, linux-spi@vger.kernel.org,
+        virtualization@lists.linux.dev, kvm@vger.kernel.org,
+        xen-devel@lists.xenproject.org, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH 10/12] s390/ap: use generic driver_override infrastructure
+Reply-To: freude@linux.ibm.com
+Mail-Reply-To: freude@linux.ibm.com
+In-Reply-To: <20260324005919.2408620-11-dakr@kernel.org>
+References: <20260324005919.2408620-1-dakr@kernel.org>
+ <20260324005919.2408620-11-dakr@kernel.org>
+Message-ID: <b5a80e06aa0240348dfa6826c20f3aec@linux.ibm.com>
+X-Sender: freude@linux.ibm.com
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=IqITsb/g c=1 sm=1 tr=0 ts=69c2867c cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=kj9zAlcOel0A:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=V8-k01nbhAtxNRQPXScA:9 a=CjuIK1q_8ugA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzI0MDA5OCBTYWx0ZWRfX5BtF+dGcqKne
+ ud3qOj4gTSLR9zLNfAq3JG6g/oOlaoDuAoL5ugYqpH9s9vpJjplhqsv+C5Fn13wLfcNuqTFjG2K
+ 8B20fOIVvCqa5XvNqyGQnMAHAZ9m7lornaYpmzRxy2uj+A1xP4iQsysQ7y+S7A488UAEKXq5qZ6
+ LBbN3vhPXZJ/bEjV349pY7YewQW80X8aJiv4wUe79X39dz6GUwBnh+wAamLPOldfeVWA3ylebkO
+ fpE77uN6WRT54jS8FnW/ZhUlXkVn14gcYRIyrgSPpzwxEiZ3nS5fgK7DV0UKCoQQHx0EyIcKLvI
+ sxcDzd1vSEY19GMOKPv1ZW+MN86TCAn4dq3ojgq1Xg0hwRVL0L3YGoz9QETDntcaSlj/0kKtlA6
+ UfD/yUxgwr0WFEGPDCZ3E/gq/ajxwH4hTrddRdALUSslhqrcmAjUB1i/qil1QJJkf8vWuRKoJjs
+ AJigNCQkv9LzvxCAnUQ==
+X-Proofpoint-GUID: YK3KYDPHgye9e3NvrRpemo-oOEIjjzeD
+X-Proofpoint-ORIG-GUID: IG7OyOmEsbO9ZGMbJn71CzQus0Ee1qWf
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-24_02,2026-03-23_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 clxscore=1011 spamscore=0 impostorscore=0 suspectscore=0
+ phishscore=0 bulkscore=0 adultscore=0 priorityscore=1501 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603240098
 
-Hi,
-
-Am Montag, 23. Februar 2026, 14:37:21 CET schrieb Bartosz Golaszewski:
-> Don't access of_root directly as it reduces the build test coverage for
-> this driver with COMPILE_TEST=3Dy and OF=3Dn. Use existing helper functio=
-ns
-> to retrieve the relevant information.
->=20
-> Suggested-by: Rob Herring <robh@kernel.org>
-> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>
-
-today I noticed the following warning running next-20260323:
-> caam 30900000.crypto: No clock data provided for i.MX SoC
-
-This happens when there is no matching against the soc_id.
-
-Checking the source it turns out this patch is the cause that the SoC info
-does not provide soc_id anymore.
-next-20260323:
-> $ grep . /sys/devices/soc0/*
-> /sys/devices/soc0/family:Freescale i.MX
-> /sys/devices/soc0/machine:TQ-Systems i.MX8MPlus TQMa8MPxL on MBa8MP-RAS314
-> grep: /sys/devices/soc0/power: Is a directory
-> /sys/devices/soc0/revision:unknown
-> /sys/devices/soc0/serial_number:0000000000000000
-> grep: /sys/devices/soc0/subsystem: Is a directory
-
-reverting this patch (2524b293a59e586afd06358d0b191ab57208a920):
-> $ grep . /sys/devices/soc0/*
-> /sys/devices/soc0/family:Freescale i.MX
-> /sys/devices/soc0/machine:TQ-Systems i.MX8MPlus TQMa8MPxL on MBa8MP-RAS314
-> grep: /sys/devices/soc0/power: Is a directory
-> /sys/devices/soc0/revision:1.1
-> /sys/devices/soc0/serial_number:469677A693A4B8CE131D180033E44903
-> /sys/devices/soc0/soc_id:i.MX8MP
-> grep: /sys/devices/soc0/subsystem: Is a directory
-
-soc_id is restored. Now that I write these lines I noticed that
-serial_number also contained empty value which is restored with the revert.
-
-Best regards,
-Alexander
-
+On 2026-03-24 01:59, Danilo Krummrich wrote:
+> When the AP masks are updated via apmask_store() or aqmask_store(),
+> ap_bus_revise_bindings() is called after ap_attr_mutex has been
+> released.
+> 
+> This calls __ap_revise_reserved(), which accesses the driver_override
+> field without holding any lock, racing against a concurrent
+> driver_override_store() that may free the old string, resulting in a
+> potential UAF.
+> 
+> Fix this by using the driver-core driver_override infrastructure, which
+> protects all accesses with an internal spinlock.
+> 
+> Note that unlike most other buses, the AP bus does not check
+> driver_override in its match() callback; the override is checked in
+> ap_device_probe() and __ap_revise_reserved() instead.
+> 
+> Also note that we do not enable the driver_override feature of struct
+> bus_type, as AP - in contrast to most other buses - passes "" to
+> sysfs_emit() when the driver_override pointer is NULL. Thus, printing
+> "\n" instead of "(null)\n".
+> 
+> Additionally, AP has a custom counter that is modified in the
+> corresponding custom driver_override_store().
+> 
+> Fixes: d38a87d7c064 ("s390/ap: Support driver_override for AP queue 
+> devices")
+> Signed-off-by: Danilo Krummrich <dakr@kernel.org>
 > ---
->  drivers/soc/imx/soc-imx8m.c | 11 +++--------
->  1 file changed, 3 insertions(+), 8 deletions(-)
->=20
-> diff --git a/drivers/soc/imx/soc-imx8m.c b/drivers/soc/imx/soc-imx8m.c
-> index 8e2322999f0996d2723768469c6893b0ea22eb9d..77763a107edbd11302017e3f6=
-1ecb4369fda1ab0 100644
-> --- a/drivers/soc/imx/soc-imx8m.c
-> +++ b/drivers/soc/imx/soc-imx8m.c
-> @@ -226,7 +226,6 @@ static int imx8m_soc_probe(struct platform_device *pd=
-ev)
->  	const struct imx8_soc_data *data;
->  	struct imx8_soc_drvdata *drvdata;
->  	struct device *dev =3D &pdev->dev;
-> -	const struct of_device_id *id;
->  	struct soc_device *soc_dev;
->  	u32 soc_rev =3D 0;
->  	u64 soc_uid[2] =3D {0, 0};
-> @@ -244,15 +243,11 @@ static int imx8m_soc_probe(struct platform_device *=
-pdev)
-> =20
->  	soc_dev_attr->family =3D "Freescale i.MX";
-> =20
-> -	ret =3D of_property_read_string(of_root, "model", &soc_dev_attr->machin=
-e);
-> +	ret =3D soc_attr_read_machine(soc_dev_attr);
->  	if (ret)
->  		return ret;
-> =20
-> -	id =3D of_match_node(imx8_soc_match, of_root);
-> -	if (!id)
-> -		return -ENODEV;
+>  drivers/s390/crypto/ap_bus.c   | 34 +++++++++++++++++-----------------
+>  drivers/s390/crypto/ap_bus.h   |  1 -
+>  drivers/s390/crypto/ap_queue.c | 24 ++++++------------------
+>  3 files changed, 23 insertions(+), 36 deletions(-)
+> 
+> diff --git a/drivers/s390/crypto/ap_bus.c 
+> b/drivers/s390/crypto/ap_bus.c
+> index d652df96a507..f24e27add721 100644
+> --- a/drivers/s390/crypto/ap_bus.c
+> +++ b/drivers/s390/crypto/ap_bus.c
+> @@ -859,25 +859,24 @@ static int
+> __ap_queue_devices_with_id_unregister(struct device *dev, void *data)
+> 
+>  static int __ap_revise_reserved(struct device *dev, void *dummy)
+>  {
+> -	int rc, card, queue, devres, drvres;
+> +	int rc, card, queue, devres, drvres, ovrd;
+> 
+>  	if (is_queue_dev(dev)) {
+>  		struct ap_driver *ap_drv = to_ap_drv(dev->driver);
+>  		struct ap_queue *aq = to_ap_queue(dev);
+> -		struct ap_device *ap_dev = &aq->ap_dev;
+> 
+>  		card = AP_QID_CARD(aq->qid);
+>  		queue = AP_QID_QUEUE(aq->qid);
+> 
+> -		if (ap_dev->driver_override) {
+> -			if (strcmp(ap_dev->driver_override,
+> -				   ap_drv->driver.name)) {
+> -				pr_debug("reprobing queue=%02x.%04x\n", card, queue);
+> -				rc = device_reprobe(dev);
+> -				if (rc) {
+> -					AP_DBF_WARN("%s reprobing queue=%02x.%04x failed\n",
+> -						    __func__, card, queue);
+> -				}
+> +		ovrd = device_match_driver_override(dev, &ap_drv->driver);
+> +		if (ovrd > 0) {
+> +			/* override set and matches, nothing to do */
+> +		} else if (ovrd == 0) {
+> +			pr_debug("reprobing queue=%02x.%04x\n", card, queue);
+> +			rc = device_reprobe(dev);
+> +			if (rc) {
+> +				AP_DBF_WARN("%s reprobing queue=%02x.%04x failed\n",
+> +					    __func__, card, queue);
+>  			}
+>  		} else {
+>  			mutex_lock(&ap_attr_mutex);
+> @@ -928,7 +927,7 @@ int ap_owned_by_def_drv(int card, int queue)
+>  	if (aq) {
+>  		const struct device_driver *drv = aq->ap_dev.device.driver;
+>  		const struct ap_driver *ap_drv = to_ap_drv(drv);
+> -		bool override = !!aq->ap_dev.driver_override;
+> +		bool override = device_has_driver_override(&aq->ap_dev.device);
+> 
+>  		if (override && drv && ap_drv->flags & AP_DRIVER_FLAG_DEFAULT)
+>  			rc = 1;
+> @@ -977,7 +976,7 @@ static int ap_device_probe(struct device *dev)
+>  {
+>  	struct ap_device *ap_dev = to_ap_dev(dev);
+>  	struct ap_driver *ap_drv = to_ap_drv(dev->driver);
+> -	int card, queue, devres, drvres, rc = -ENODEV;
+> +	int card, queue, devres, drvres, rc = -ENODEV, ovrd;
+> 
+>  	if (!get_device(dev))
+>  		return rc;
+> @@ -991,10 +990,11 @@ static int ap_device_probe(struct device *dev)
+>  		 */
+>  		card = AP_QID_CARD(to_ap_queue(dev)->qid);
+>  		queue = AP_QID_QUEUE(to_ap_queue(dev)->qid);
+> -		if (ap_dev->driver_override) {
+> -			if (strcmp(ap_dev->driver_override,
+> -				   ap_drv->driver.name))
+> -				goto out;
+> +		ovrd = device_match_driver_override(dev, &ap_drv->driver);
+> +		if (ovrd > 0) {
+> +			/* override set and matches, nothing to do */
+> +		} else if (ovrd == 0) {
+> +			goto out;
+>  		} else {
+>  			mutex_lock(&ap_attr_mutex);
+>  			devres = test_bit_inv(card, ap_perms.apm) &&
+> diff --git a/drivers/s390/crypto/ap_bus.h 
+> b/drivers/s390/crypto/ap_bus.h
+> index 51e08f27bd75..04ea256ecf91 100644
+> --- a/drivers/s390/crypto/ap_bus.h
+> +++ b/drivers/s390/crypto/ap_bus.h
+> @@ -166,7 +166,6 @@ void ap_driver_unregister(struct ap_driver *);
+>  struct ap_device {
+>  	struct device device;
+>  	int device_type;		/* AP device type. */
+> -	const char *driver_override;
+>  };
+> 
+>  #define to_ap_dev(x) container_of((x), struct ap_device, device)
+> diff --git a/drivers/s390/crypto/ap_queue.c 
+> b/drivers/s390/crypto/ap_queue.c
+> index 3fe2e41c5c6b..ca9819e6f7e7 100644
+> --- a/drivers/s390/crypto/ap_queue.c
+> +++ b/drivers/s390/crypto/ap_queue.c
+> @@ -734,26 +734,14 @@ static ssize_t driver_override_show(struct device 
+> *dev,
+>  				    struct device_attribute *attr,
+>  				    char *buf)
+>  {
+> -	struct ap_queue *aq = to_ap_queue(dev);
+> -	struct ap_device *ap_dev = &aq->ap_dev;
+> -	int rc;
 > -
-> -	data =3D id->data;
-> +	data =3D device_get_match_data(dev);
->  	if (data) {
->  		soc_dev_attr->soc_id =3D data->name;
->  		ret =3D imx8m_soc_prepare(pdev, data->ocotp_compatible);
-> @@ -326,7 +321,7 @@ static int __init imx8_soc_init(void)
->  	int ret;
-> =20
->  	/* No match means this is non-i.MX8M hardware, do nothing. */
-> -	if (!of_match_node(imx8_soc_match, of_root))
-> +	if (!of_machine_device_match(imx8_soc_match))
->  		return 0;
-> =20
->  	ret =3D platform_driver_register(&imx8m_soc_driver);
->=20
->=20
+> -	device_lock(dev);
+> -	if (ap_dev->driver_override)
+> -		rc = sysfs_emit(buf, "%s\n", ap_dev->driver_override);
+> -	else
+> -		rc = sysfs_emit(buf, "\n");
+> -	device_unlock(dev);
+> -
+> -	return rc;
+> +	guard(spinlock)(&dev->driver_override.lock);
+> +	return sysfs_emit(buf, "%s\n", dev->driver_override.name ?: "");
+>  }
+> 
+>  static ssize_t driver_override_store(struct device *dev,
+>  				     struct device_attribute *attr,
+>  				     const char *buf, size_t count)
+>  {
+> -	struct ap_queue *aq = to_ap_queue(dev);
+> -	struct ap_device *ap_dev = &aq->ap_dev;
+>  	int rc = -EINVAL;
+>  	bool old_value;
+> 
+> @@ -764,13 +752,13 @@ static ssize_t driver_override_store(struct 
+> device *dev,
+>  	if (ap_apmask_aqmask_in_use)
+>  		goto out;
+> 
+> -	old_value = ap_dev->driver_override ? true : false;
+> -	rc = driver_set_override(dev, &ap_dev->driver_override, buf, count);
+> +	old_value = device_has_driver_override(dev);
+> +	rc = __device_set_driver_override(dev, buf, count);
+>  	if (rc)
+>  		goto out;
+> -	if (old_value && !ap_dev->driver_override)
+> +	if (old_value && !device_has_driver_override(dev))
+>  		--ap_driver_override_ctr;
+> -	else if (!old_value && ap_dev->driver_override)
+> +	else if (!old_value && device_has_driver_override(dev))
+>  		++ap_driver_override_ctr;
+> 
+>  	rc = count;
 
-
-=2D-=20
-TQ-Systems GmbH | M=FChlstra=DFe 2, Gut Delling | 82229 Seefeld, Germany
-Amtsgericht M=FCnchen, HRB 105018
-Gesch=E4ftsf=FChrer: Detlef Schneider, R=FCdiger Stahl, Stefan Schneider
-http://www.tq-group.com/
-
-
+Thanks Danilo
+Reviewed-by: Harald Freudenberger <freude@linux.ibm.com>
 
