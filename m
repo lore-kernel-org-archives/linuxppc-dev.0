@@ -1,60 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-18731-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18732-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1846F54ADA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 16:59:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7CF7EF54ADB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 17:00:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fgGVf4dRkz2yrT;
-	Wed, 25 Mar 2026 03:59:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.14
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774371594;
-	cv=none; b=Gb8eGPMSjgMpX2nBbvEUwcHV7Yfen0KaHr/LD2+QI920MywdkQv8kd08zzKp6zmlSVbKnk9FKpwgeTEtpCMgL9UWhYJcyH44F3nC7T+hFnNCgNKNM9EqfomnSevcod1vaW3wUORMelfOaEqxQVXk3tVfSRg1wxJys9kfLfH70q5shrmlNZlj4bHTTxSah1Gnq+fgjK5LdBtqbklVNRvKVNjWeawU2kMdrLAry/Md8+4+bpsH8knruDRBdLZ8xUbSsYp0VJmWkCcwCljYbyg6DoP3F5UEJcH3L5bUmNr9z48IEPRGNY0AgvkFX0cD/ispSwUbVzuq9OSU+OHpo4x6Gw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fgGVx1Sgwz2yrl;
+	Wed, 25 Mar 2026 04:00:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.19
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774371609;
+	cv=none; b=XAcsdubJmns7eu9L+VJL490NZy0st0o3bQocJfvblaNPb3EDOjWiMDEeQJEmSKx57RMvXjXhYxpxxapWIfd1/Q1ULpwX/09ZQacvJZzZPTqQAiiu9o29dc33vZLrhuk93wlramTRZJzWdJIcMAJXvDB/0/vwj5arOnqfGO+bi/r8k62WOxHIYdgiDXVvOz6+fuSwDvSZQ20bT3FONr0UPZeE1tLkkmC2UQTFeBfPEqnMFfC2+DuVYfysaXE1BlRIOa/l4Cx4oetK3kxoWdYLzOvgmZUzYgEwMY19oknijiZW4gLgPXSMD0TPzkMbCf8F3AaulyKLFB0HMVEOH/mZ2Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774371594; c=relaxed/relaxed;
-	bh=zeZp8zC8CS65Vocua5eoclRGzsQLhLqvXnUvfy5ofCc=;
+	t=1774371609; c=relaxed/relaxed;
+	bh=8+Jw00CvTMU1v2XHS+Iv9vE7g3+9u1r52N76fFD2Nsw=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=VQat1t5llGJILnXVcPL+I7TEepK24+X7m7Qwj6PSNfIs1r9SRzvN1bp3pkyW3lQVRtUhL0Lr4xGLMlw5amBlMA/qY4ovn0vmQ8Xyf9Zl0mrN29uG4ywEoZ+o9LU0DCif0v0wh+3w8HLtln0u73LSdmvLZOsBcft6kD444rXSbMe6nO8sWWKMr/WiJe3gqp+wooH8nX3sZOZca0PGZ0h+iEmG+tD9c9twJyIl2Bcl309DLnDTcUkigZ7RklBrsZ33JvLcfgyYlAq3vE1cA+JkNLrpRKXdD04vabETH5DBQSppRPuKSq1niEBtgATDG+2NnQ8s8VreQaE9zgTMuNkEcg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ITmjLgjg; dkim-atps=neutral; spf=pass (client-ip=198.175.65.14; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+	 MIME-Version:Content-Type; b=CtW4bpbQPqBSk5uqzB4Fn5eZ92v20flhp87dcRSAlD/jYQBbnnHnNsLlLbPXoYXYftKGOI5IQ3UDk8WkUUy1mkEgYUYzP/GqLPQLOX4kLthpn4Xt5U+/pnOEAJSle5mmTlnP0thIz6CqggmgXYkpKCA09GqQgcLsiSOY/MaE0HRyaLZ6ri/3BGBgwa+J0NZN4EJ16TMKhFC3rE/WRPK684ul+qvuoXdjXcQReW1goEiFrkIVTyWlMw9eWg9/Ap5GDCCcNvfWONdUf7BgU0Oq3RooWdBDlLVuXoBs2G93iP8BzMXlYIJAetjfwxwJnjfNGVbc1YbB60o0bZdou9FjEA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Mv0kA5a+; dkim-atps=neutral; spf=pass (client-ip=198.175.65.19; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ITmjLgjg;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Mv0kA5a+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.14; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.19; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fgGVd5KGNz2yng
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2026 03:59:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fgGVw2FTBz2yng
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2026 04:00:07 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1774371594; x=1805907594;
+  t=1774371608; x=1805907608;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=1PkvXAZOx3orpMkb8PpUbgz2WR5NIQkeHlnghDGYLjQ=;
-  b=ITmjLgjguMCPrAE93iS45eZuXkBZq4YW8Pkx3HuPBG1qmeNDpYP25jSn
-   Co9lEou84RDO3tVw5rG2fxFLkPHNXsT3NFOP6U2Uhmmbob0yUTRz+4zkG
-   qTlxJ9eGjYrwvQae6J7/olhOHIvwKowgjDr0uCbmMBCn/qpCGHWUjgk/8
-   0b/Ucd5SLOz8PXNrM6vcZpUddtO/0+BABGmMeRCzkIuRM/z1G7DP0CgOF
-   gogXK7AVbyNGRu3agiCZldnJRyakxsfAyNnxGObkgZet5rlAhJi/oVg7S
-   R2wXg1BXr60m7k3uKyBZeqpWc747Typ5sPU9aQbIAp2V946f+yKRWVTBl
-   Q==;
-X-CSE-ConnectionGUID: ilw5e6INS0anFCEOqThOXA==
-X-CSE-MsgGUID: NgnT9anzRUmYcdacvbMsvg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11739"; a="79252793"
+  bh=9hvV8PDAdyGkHU10me7VyjfjKt6p0yD22QH58KrfakU=;
+  b=Mv0kA5a+PivZj1Nb+A5j/b98XUl9f07yCNIVtj5qF4fI9W5nBTpYYqLl
+   bAn8A9OdD3v3R4Q7XqnO+o8jIuTdHTTyuij78lwWTfHKUXWdKzfgb4p+y
+   /TRpdb0GzB2jHbjdZ/nVH9anhYh1ngft0ogmwLqX0/RWiexg472OpGt1v
+   m7zpl9bWLH5nUeqqzBjUEXB+dKcEEC+8NtrFB+FP1oMDOEFjEAA8EWa8J
+   A6CNYsB/+gL1XL9bJRTIp3wO+HKXcDkxeCXWO5DJA0GW2Q7RMYcfTJwFR
+   Cr1OZlvTUyBBM+wAj37PWW1OFiBsOM9NlnVG/iX2q6ezGpqIhNYj95IOQ
+   w==;
+X-CSE-ConnectionGUID: BYFfDvAQRnCuDc11h8ZmDw==
+X-CSE-MsgGUID: 3vDBjaMLT+qHi7f0JQByJQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11739"; a="75281403"
 X-IronPort-AV: E=Sophos;i="6.23,138,1770624000"; 
-   d="scan'208";a="79252793"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
-  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Mar 2026 09:59:52 -0700
-X-CSE-ConnectionGUID: lSvW+pYLTSuPFRVG7+1ISg==
-X-CSE-MsgGUID: iJA4o6fzRaW9L3ZwLnjXfQ==
+   d="scan'208";a="75281403"
+Received: from fmviesa006.fm.intel.com ([10.60.135.146])
+  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Mar 2026 10:00:06 -0700
+X-CSE-ConnectionGUID: ZabKv/GtRfqHh4rMbY+IrQ==
+X-CSE-MsgGUID: KjVhSRgDSkWdd+eayrpYDg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.23,138,1770624000"; 
-   d="scan'208";a="228447959"
+   d="scan'208";a="219540084"
 Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.217])
-  by ORVIESA003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Mar 2026 09:59:38 -0700
+  by fmviesa006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Mar 2026 09:59:57 -0700
 From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
 To: linux-pci@vger.kernel.org,
 	Bjorn Helgaas <bhelgaas@google.com>,
@@ -86,9 +86,9 @@ To: linux-pci@vger.kernel.org,
 	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
 	linux-kernel@vger.kernel.org
 Cc: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Subject: [PATCH 05/10] am68k/PCI: Remove unnecessary second application of align
-Date: Tue, 24 Mar 2026 18:56:28 +0200
-Message-Id: <20260324165633.4583-6-ilpo.jarvinen@linux.intel.com>
+Subject: [PATCH 06/10] MIPS: PCI: Remove unnecessary second application of align
+Date: Tue, 24 Mar 2026 18:56:29 +0200
+Message-Id: <20260324165633.4583-7-ilpo.jarvinen@linux.intel.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <20260324165633.4583-1-ilpo.jarvinen@linux.intel.com>
 References: <20260324165633.4583-1-ilpo.jarvinen@linux.intel.com>
@@ -122,22 +122,22 @@ Thus, remove the duplicated aligning from pcibios_align_resource().
 
 Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
 ---
- arch/m68k/kernel/pcibios.c | 2 --
+ arch/mips/pci/pci-generic.c | 2 --
  1 file changed, 2 deletions(-)
 
-diff --git a/arch/m68k/kernel/pcibios.c b/arch/m68k/kernel/pcibios.c
-index 1415f6e4e5ce..7e286ee1976b 100644
---- a/arch/m68k/kernel/pcibios.c
-+++ b/arch/m68k/kernel/pcibios.c
-@@ -36,8 +36,6 @@ resource_size_t pcibios_align_resource(void *data, const struct resource *res,
- 	if ((res->flags & IORESOURCE_IO) && (start & 0x300))
+diff --git a/arch/mips/pci/pci-generic.c b/arch/mips/pci/pci-generic.c
+index f4957c26efc7..aaa1d6de8bef 100644
+--- a/arch/mips/pci/pci-generic.c
++++ b/arch/mips/pci/pci-generic.c
+@@ -32,8 +32,6 @@ resource_size_t pcibios_align_resource(void *data, const struct resource *res,
+ 	if (res->flags & IORESOURCE_IO && start & 0x300)
  		start = (start + 0x3ff) & ~0x3ff;
  
 -	start = (start + align - 1) & ~(align - 1);
 -
- 	return start;
- }
+ 	host_bridge = pci_find_host_bridge(dev->bus);
  
+ 	if (host_bridge->align_resource)
 -- 
 2.39.5
 
