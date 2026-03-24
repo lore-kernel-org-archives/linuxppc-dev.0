@@ -1,73 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-18717-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18718-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A5C6D58CCA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 12:59:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0D54F54AAD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 13:11:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fg99409P9z2yqF;
-	Tue, 24 Mar 2026 23:59:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774357159;
-	cv=none; b=CKJtkU0bDA0ZZbC5hDOqe9unAGOtdK+MfKbFqj17A/JFrPTJYTVZY58hrjH7Up68cKoufil4KOHu6iKWFNJ4QUpMyDwTF165RvR09UejC2+HF7F58DCttNIXxuOoANcXLnkCuusaJyiHy6udgSniYJaS/5KBEK40aFWrn8BHWLH/m/8iP3Q/5TPduY5tDgxnKteIHQHBafzBLNPv65tUFjqcrnbHf31sEuizglPpKNGb4qn3Q0kXYtdOJBEKzRLqCbsvb6R67j9lCnfQUUcypsbPrcCx7h+TX5+KOm8/lJ7/uJYH80FhKsqLH2RGJ/wT/7uoqMHCney7aAtkQNx/iw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fg9Qg2Xsfz2yVB;
+	Wed, 25 Mar 2026 00:11:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774357867;
+	cv=none; b=OplXqzBFnRsrilBZbYkokSrB0XcyOnz0IzfzOK8JNPx1rhSKpkwyPNUXYZ02uiosksJyWqzd3YxImyZRvHXhp9fN+eYTDriitznBsc+7i7iMERi3cK+948NDS0tW8fGZSkZA1F/v51e9g79n/SwyXZJPAIaemGOdYlU7Gz7MRVye93kNAnHWOILkGEjgN3LiYLgHhAF2PCWXI0WG4udPhCWWY5nc3Vrmf6AB8hmcbxfMj6w3fiYh3+QUIK9Nv+mlqLn/7BbdTR2k4lW7E0QPMYhVC+9vjLYXA4BaLyMbLxrgLsDbtrd0L6HbHFcGabNZ5u8AdQwCXQXlpSLCSZMXjQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774357159; c=relaxed/relaxed;
-	bh=Ej3Isx3J43WHcbqsXFspxuLWGfpG7XzaDk8RnET7IuY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Avn1FgLm+QZViQ+ib965QLJyJa5Jdr71m90KcSnvb9fM2yT+W/vwt5OT/AyR1k8bEf3vsUZHJpBXsoIyrDDAcZBj0MwtyoFNukWc+gRNZeQtkS79grO+YxD7hqf9gXNOTXIEpNmt50PfrRK5AhSbkgIyHm48VpySVkywmKjr0lZRpRT/gHj1wEjS8PggSMphLDP8YTKuwXWfcOzQAZi8r6/pNpPyLIsYOdXHGgfn1H2huIyMgyDLNzSUj3+/I+CC+E8QtoQv8Abo4oB1VqPU+B31x4MBTWnj35hhOl5r7gcjCkcgaACYGN71r3lI9cQTfO2HpoxuI5N3M1oMDDR+1g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Su7gQstz; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=dengler@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1774357867; c=relaxed/relaxed;
+	bh=DdTgT159JIe5UsGVZxZU4fNilugQ76lhx23zs8voJ/g=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NJsIaMBuyGOUDnSc1m5qi9YKcG6t33dSE1VRUq9JRr372/6YjjlszTcJD1XQ9/C//wwDqVpgwAXjXEfnZzjKcjsr6UP8DUfvSZUUHa6hKDLJfL7V78iVjm/pGy+h+0uWVGPK4qxMXky2m/DIeNmiwQm6IaG1NxHQcqjYq8qOIFiiho/F/ddXaBX45u9fAtCYXBrJ41fWPzI+5u+o+6GmryAzaqNZsrYL6ZHwYuc9I/wOq9Hmyi94DWD7VAOtTYLjY7qDSB2yQ62vvV4M6i104OioshZDAHeX31oq9lf6YoVKa8rqN3C9MguzOl/mrt3400S9xFdwmJMN8vFfBfn/lw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Uc81pgK0; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Su7gQstz;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Uc81pgK0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=dengler@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fg9930Zjdz2xVT
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 23:59:18 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62O9UV8t564224;
-	Tue, 24 Mar 2026 12:59:01 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=Ej3Isx
-	3J43WHcbqsXFspxuLWGfpG7XzaDk8RnET7IuY=; b=Su7gQstz3B6aM6PFBG8uQh
-	x01IvkgpF4akIkC2Yv8b74FadNo9e27ekRxXsakT3p1TARe7CZAY29h53xxd8wz1
-	F4kZz+lkiD78vGhCs+laxqnB5u9xFRGK/Tsh6twYP7thvfsNIeWAGdP1jRWjsBE2
-	2NrTa+0v/b8PhcVeJOs61gs29vpCXXnXjqWi5QPV0rxXNiDc7IpzG9wKPCFU1dJu
-	hyIdXPUJ8IHi1NA9903kpVA7KAIe5DifhKuhpq4v9lSgLr3r1ewpvKEptBjvZ2uB
-	zO3ARjeDVnRRo3nNzvOHwsDydcL2Hd5OJrLdyn0FWx65JkOT58sm1iZ5/kZyz6iA
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d1ky02vr9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 24 Mar 2026 12:59:00 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62OCedC1011824;
-	Tue, 24 Mar 2026 12:58:59 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4d27vk1pae-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 24 Mar 2026 12:58:59 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62OCwtnj51904902
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 24 Mar 2026 12:58:55 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8811920063;
-	Tue, 24 Mar 2026 12:58:55 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DD0782004E;
-	Tue, 24 Mar 2026 12:58:54 +0000 (GMT)
-Received: from [9.52.215.154] (unknown [9.52.215.154])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 24 Mar 2026 12:58:54 +0000 (GMT)
-Message-ID: <43139b81-2d3a-407b-9ddf-bd42aa70f780@linux.ibm.com>
-Date: Tue, 24 Mar 2026 13:58:54 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fg9QY6b6vz2yTQ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2026 00:11:01 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 9960C60132;
+	Tue, 24 Mar 2026 13:10:58 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 006FEC19424;
+	Tue, 24 Mar 2026 13:10:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774357858;
+	bh=QO0kpvVAgh/Hgzc5tsHrgKKHwBcJIs6GYao8LJCWqfc=;
+	h=From:To:Cc:Subject:Date:From;
+	b=Uc81pgK0e0HX6zMdOOYn0AkUePzJSAW6bE1lrPByz95zERpZU1tP25lnUcx8GUuQP
+	 ihuqJhCcu7+ipc2aHQ8p1uiAcwijlxs0VIi7+4m2N4mZNPzxvtQdmFIerLS1f33LPb
+	 U0t4dYXYiixLW+W8Mi4+e/9WNAsUlY8kC1XZ5VCZBUbqWpHt+zNlWuZXfPxqjaVj3R
+	 haH4k5UiLhtOF40aJTZ1a0Ra394c3tQOeSh6Qpj2TQy30DZ4E340LDd+fFiQpB5KNF
+	 e7dXUCk2KsAMiC8Al22ER4jmLte5UdtuQT7FgxVu0RKe2ULXiuiBf+jdguC2VZdwOB
+	 CtioSUkB5nV0Q==
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+To: David Laight <david.laight.linux@gmail.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3] powerpc: Simplify access_ok()
+Date: Tue, 24 Mar 2026 14:10:17 +0100
+Message-ID: <fb2f064d402da446dcddec4137d8a8f9e66762f4.1774357807.git.chleroy@kernel.org>
+X-Mailer: git-send-email 2.49.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,114 +68,77 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 10/12] s390/ap: use generic driver_override infrastructure
-To: Danilo Krummrich <dakr@kernel.org>, Russell King <linux@armlinux.org.uk>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Ioana Ciornei <ioana.ciornei@nxp.com>,
-        Nipun Gupta <nipun.gupta@amd.com>,
-        Nikhil Agarwal <nikhil.agarwal@amd.com>,
-        "K. Y. Srinivasan"
- <kys@microsoft.com>,
-        Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
-        Dexuan Cui <decui@microsoft.com>, Long Li <longli@microsoft.com>,
-        Bjorn Helgaas <bhelgaas@google.com>, Armin Wolf <W_Armin@gmx.de>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Mathieu Poirier <mathieu.poirier@linaro.org>,
-        Vineeth Vijayan <vneethv@linux.ibm.com>,
-        Peter Oberparleiter <oberpar@linux.ibm.com>,
-        Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
-        Alexander Gordeev <agordeev@linux.ibm.com>,
-        Christian Borntraeger <borntraeger@linux.ibm.com>,
-        Sven Schnelle <svens@linux.ibm.com>,
-        Harald Freudenberger <freude@linux.ibm.com>,
-        Mark Brown
- <broonie@kernel.org>,
-        "Michael S. Tsirkin" <mst@redhat.com>,
-        Jason Wang <jasowang@redhat.com>,
-        Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
-        =?UTF-8?Q?Eugenio_P=C3=A9rez?= <eperezma@redhat.com>,
-        Alex Williamson <alex@shazbot.org>, Juergen Gross <jgross@suse.com>,
-        Stefano Stabellini <sstabellini@kernel.org>,
-        Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: linux-kernel@vger.kernel.org, driver-core@lists.linux.dev,
-        linuxppc-dev@lists.ozlabs.org, linux-hyperv@vger.kernel.org,
-        linux-pci@vger.kernel.org, platform-driver-x86@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-remoteproc@vger.kernel.org,
-        linux-s390@vger.kernel.org, linux-spi@vger.kernel.org,
-        virtualization@lists.linux.dev, kvm@vger.kernel.org,
-        xen-devel@lists.xenproject.org, linux-arm-kernel@lists.infradead.org
-References: <20260324005919.2408620-1-dakr@kernel.org>
- <20260324005919.2408620-11-dakr@kernel.org>
-From: Holger Dengler <dengler@linux.ibm.com>
-Content-Language: en-US
-In-Reply-To: <20260324005919.2408620-11-dakr@kernel.org>
-Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2532; i=chleroy@kernel.org; h=from:subject:message-id; bh=QO0kpvVAgh/Hgzc5tsHrgKKHwBcJIs6GYao8LJCWqfc=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWQe6g2Ym7df+1WTXqZSSPJhk1A2zh+bDutsLVE+v+D7X CX3On75jlIWBjEuBlkxRZbj/7l3zej6kpo/dZc+zBxWJpAhDFycAjCR/VoM/3SbV8cWL8re9joj sP6vc3XFiQ+3r6xj1BZV0p2xvO6nIhPDX+ETC3am/1Rw8F3yP0vb5DC7S53cvaJTqzx2+tcUSAq eYgEA
+X-Developer-Key: i=chleroy@kernel.org; a=openpgp; fpr=10FFE6F8B390DE17ACC2632368A92FEB01B8DD78
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzI0MDEwMSBTYWx0ZWRfX6N1fBrtwZrfl
- aNao0Xhwv2iPArpXTciFzlHehJzd3FqyuyxByqEu+FLvzIew8kt3PjWdYdZtO7Ev/dzu1juD33i
- ULiVxPJi+Eu3Wm01+pD7w41oOcB6CO0eS2PR+DcOqwrlrsqbZgbqKoknbOSccN4kN1AdGDnpSh4
- giT9HWCMECWpapxDaYdMQ/IXQp+iHi2011iYdnklc4+iAjB4tA8YcsPMKFTESeLitzfCKx7CeYa
- F5bfAZ1prh5bHCsbzFtvW6c4E94vHNefJ4W5xyDv5bTOpwX5xpUV089SzGXBpTCh2Tn6j/1RJAy
- 8JrNkM5IZMTuuFxodSI3N0ItWWwaPezBykvTmfdz5CNBYNkZhJ/G7w4qUg5Kyf1QOlPIUBtuFZ0
- TaNFvnH1pIhI71CTLphAPYyjG3E9oMOG+wVPVi77oKaFO89fYZRslVgre89UqkZSjDGRx3OB3Tc
- tkfYq5p7x6UpUVDBiYg==
-X-Authority-Analysis: v=2.4 cv=JK42csKb c=1 sm=1 tr=0 ts=69c28a95 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=JtdtG7AWE7AhTqZWL1AA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: umcwOVG9OGh_DW7scW8FgcsJPpy_MgAT
-X-Proofpoint-GUID: iDlj1Pn5DnrzHKXcEcJoAVIWEUdMu_KQ
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-24_03,2026-03-23_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 clxscore=1011 priorityscore=1501 malwarescore=0 adultscore=0
- spamscore=0 suspectscore=0 phishscore=0 lowpriorityscore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603240101
 
-On 24/03/2026 01:59, Danilo Krummrich wrote:
-> When the AP masks are updated via apmask_store() or aqmask_store(),
-> ap_bus_revise_bindings() is called after ap_attr_mutex has been
-> released.
-> 
-> This calls __ap_revise_reserved(), which accesses the driver_override
-> field without holding any lock, racing against a concurrent
-> driver_override_store() that may free the old string, resulting in a
-> potential UAF.
-> 
-> Fix this by using the driver-core driver_override infrastructure, which
-> protects all accesses with an internal spinlock.
-> 
-> Note that unlike most other buses, the AP bus does not check
-> driver_override in its match() callback; the override is checked in
-> ap_device_probe() and __ap_revise_reserved() instead.
-> 
-> Also note that we do not enable the driver_override feature of struct
-> bus_type, as AP - in contrast to most other buses - passes "" to
-> sysfs_emit() when the driver_override pointer is NULL. Thus, printing
-> "\n" instead of "(null)\n".
-> 
-> Additionally, AP has a custom counter that is modified in the
-> corresponding custom driver_override_store().
-> 
-> Fixes: d38a87d7c064 ("s390/ap: Support driver_override for AP queue devices")
-> Signed-off-by: Danilo Krummrich <dakr@kernel.org>
+With the implementation of masked user access, we always have a memory
+gap between user memory space and kernel memory space, so use it to
+simplify access_ok() by relying on access fault in case of an access
+in the gap.
 
-Tested-by: Holger Dengler <dengler@linux.ibm.com>
-Reviewed-by: Holger Dengler <dengler@linux.ibm.com>
+Most of the time the size is known at build time.
 
+On powerpc64, the kernel space starts at 0x8000000000000000 which is
+always more than two times TASK_USER_MAX so when the size is known at
+build time and lower than TASK_USER_MAX, only the address needs to be
+verified. If not, a binary or of address and size must be lower than
+TASK_USER_MAX. As TASK_USER_MAX is a power of 2, just check that
+there is no bit set outside of TASK_USER_MAX - 1 mask.
+
+On powerpc32, there is a garanteed gap of 128KB so when the size is
+known at build time and not greater than 128KB, just check that the
+address is below TASK_SIZE. Otherwise use the original formula.
+
+Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+---
+v2: Fix build failure following untested last minute change :(
+
+v3: Using statically_true() following comment from David.
+---
+ arch/powerpc/include/asm/uaccess.h | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index 570b3d91e2e4..5921d5a7ffcd 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -15,8 +15,34 @@
+ #define TASK_SIZE_MAX		TASK_SIZE_USER64
+ #endif
+ 
++#define __access_ok __access_ok
++
+ #include <asm-generic/access_ok.h>
+ 
++/*
++ * On powerpc64, TASK_SIZE_MAX is 0x0010000000000000 then even if both ptr and size
++ * are TASK_SIZE_MAX we are still inside the memory gap. So make it simple.
++ */
++static __always_inline int __access_ok(const void __user *ptr, unsigned long size)
++{
++	unsigned long addr = (unsigned long)ptr;
++
++	if (IS_ENABLED(CONFIG_PPC64)) {
++		BUILD_BUG_ON(!is_power_of_2(TASK_SIZE_MAX));
++		BUILD_BUG_ON(TASK_SIZE_MAX > 0x0010000000000000);
++
++		if (statically_true(size > TASK_SIZE_MAX))
++			return false;
++		if (statically_true(size <= TASK_SIZE_MAX))
++			return !(addr & ~(TASK_SIZE_MAX - 1));
++		return !((size | addr) & ~(TASK_SIZE_MAX - 1));
++	} else {
++		if (statically_true(size <= SZ_128K))
++			return addr < TASK_SIZE;
++		return size <= TASK_SIZE && addr <= TASK_SIZE - size;
++	}
++}
++
+ /*
+  * These are the main single-value transfer routines.  They automatically
+  * use the right size if we just have the right pointer type.
 -- 
-Mit freundlichen Grüßen / Kind regards
-Holger Dengler
---
-IBM Systems, Linux on IBM Z Development
-dengler@linux.ibm.com
+2.49.0
 
 
