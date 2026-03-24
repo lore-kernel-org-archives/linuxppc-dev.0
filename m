@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-18657-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18658-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6789F532C3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 01:01:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03DBDF532C3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Mar 2026 01:01:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ffsDc4Ts7z2yqP;
-	Tue, 24 Mar 2026 12:01:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774314080;
-	cv=none; b=Ur+ytIm97zaZW2Up1CSwBPXbSyFaFvhSU1AVSj2mNeVGmeecP6HmpuZNNspR/dFaiVDwJrZyjCBKymZHT63R6SKKPoezlFfwC8aiGu5aqcSQqyd0aK8Utptmp3vMXuhjzUUVgeSAr2JCxUF0chdzji72oC6HhqzQocN3HSZS26pG1tULPUTlce5xnqzW45JL341ajhEJQJ2vxciJ2ak4nGrR044cb+iVk2IFLamUW4ui1jsNZxuLS/rJgRMI0wYkEKcgs3PlYH2DJz4kRUMLIzVp+APrXqAnPM42UsfDMa1BNae5Xa9sOo11KvKzJtHmPaXBbE8t3Brk2HPg1l1i/w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ffsDp560jz2yql;
+	Tue, 24 Mar 2026 12:01:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774314090;
+	cv=none; b=iG07O+Pxx/CAIke4jEL0QqBdmYwwuZesCzRA425wUAF/JHogz6ileOAr40oD7bt0Dliu98hlmtvFaEJKfdOHDpK7QqqK3eu1dImNcODFPOM/a/gdOl673Lbz1EfB/k2ee1348NbgiUeFf1HbxnQWupq9mhglNdf0MO0I9+X/d4dxStoq2H4wfJbERRyyBHllLeVEe4dG4AS+QTLDOyj782dv2GZKVT5s0soUFSMXhN2KSQLTE9Qs2ULGbHZFLjOldKgSSRNXSLQa8vNCB+DYMKLk6OB+DYkBAzw1voHeGN0bZ108jPNMHkHYdRTOzpaNQK0qVyibEc2KGPra8NsFPw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774314080; c=relaxed/relaxed;
-	bh=TNeWS9IZRrq6bM/qRkqvgkvOMLFGNLoWC2NEPDOb+eM=;
+	t=1774314090; c=relaxed/relaxed;
+	bh=6gpfpIFEo/UM2Vlf5EBuE34iIvnj7ck9nMpb5/Ds9cg=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=EzLY10XZj+DmQ9I6PtVeiOetAxxVCQKRl/jpBSeQfHH1k71QGgJwuycGr/THelXDnfWpZbhW6oz2/faQNtnSJp6AYQchmTUJA9jyU6HRfNapEFn8lUye9cpVYFTKXneQLaO0wwxYHI1APNIa5KWL6Kgj3UFGwEiGiyQVf5io3QUMswS/0MY8jhe3m+aMArA8rU4zi6nQBYgCt9h0ui9Kf3yG2iEuU63xfbtQKyASdfVWMJNjOQJj1B/Iz0yz2OFjT8maiRRI1wJkGke0NqkAz8M4GlNvVclBuYgXxpFZkyDImDbRD2+ABHgk5NpIBSNZ+hiQdPekUfTQ+BBxQurVng==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Nt7EnChi; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=Lh4N8di0WgtKdV/ZdVPsEdhXjMH4V9iqsljg2WDhwkCAGIk5Q3Fh3eSEWZzBpfMaV7HDhUSZKcJvilb5aSvpiHY7kd8esHQG7AZU90cRp+h8E53Yjr+NQTwHNg5zB2A8JLzEw+pZJSUpYkr6a0/4hKqaigNafYw4SEk4rX5Uv4dMCHc0Um+6bMGiDgqZndsz+n5jHpLO5uXQIxW+Zav+GTzP80qNiAAjgvPcV6b3FJr7OYym9s7bRwBGlVqayLJGHmscNbx5UA9IU+YwzuLorAhFk/jiQfYvaqW+Zk/L6cY3tyRvGvbocwbpqFCrK9vT7T5n0kI/aQF3Cfiita1yBA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rLAmVR6g; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Nt7EnChi;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rLAmVR6g;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffsDb6PKSz2yps
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 12:01:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffsDn6Hpnz2yTQ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2026 12:01:29 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 506F040596;
+	by tor.source.kernel.org (Postfix) with ESMTP id E26DB6012B;
+	Tue, 24 Mar 2026 01:01:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9C0E8C4CEF7;
 	Tue, 24 Mar 2026 01:01:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 08877C4CEF7;
-	Tue, 24 Mar 2026 01:01:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774314078;
-	bh=TSvMQrmWsjFbNL0IRf0H97QbCggIeEqWbPsKuLbLU4A=;
+	s=k20201202; t=1774314087;
+	bh=KpxTlQdpK2jKnd62P5I8EEqT3CEkSotjkNoM+lvw6Dc=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Nt7EnChiw/TSy7uxZL1NGCwc80dLd1NcsHa2f5yOYAsRoEuKZz3R4Zc2Jky7pI1PP
-	 fX38CD0xPqsoAlbl8ygm7B7pQvUt21fJRqnuUoJzuGo/w1SwTYIkOuYMzYD6++PKyO
-	 GlReyOV0V5oiuGn3d19d+P/0YVof0JWBUjpR7gvA94kKmmZrfsVK4M+LbO6J+BIjBR
-	 GNNZS00+k7bbnjV9HfcGI/slE84pV5D8Pfilwv3HA2XN5pcxtA4pjQBZ0SSOkup/06
-	 D6VUmZOVMXZtjDLE4b4uCWJCE0Qw6XcyAZU2CAHH+xAz/p1g0p71QYF5eQjsqdnxat
-	 5+zw/NsuVO7yw==
+	b=rLAmVR6groUQSZRplygjMn68KJDDiLrGR9Vctd6Afc3mLDKzHEaYGbMFZ3KXs4fK4
+	 MUoXCr/h6SfvTEE4yAlc7KGjraQ8CFJXtGn8f5BkmJWMm1J/pjXgfy9qXciydDWGLj
+	 XNYlWwVjufJG5KD0z7v9ARc0FuEyAjjiYRe15HPbrYCuuNFi4/b/eyHrklVGEVsCSm
+	 lE5k5muPCMjo/9hKdfl5T5LohS8mNpZoGcTFibqf76OQzdeH43NHUrx9bEVbSisncq
+	 g/N4LXJNuBtUlzaGXa8b6D8KnPgXir5STaz/+AS+2urYkPCvbB6vpDfKREYcWyPp9d
+	 47Lib8DntPlsA==
 From: Danilo Krummrich <dakr@kernel.org>
 To: Russell King <linux@armlinux.org.uk>,
 	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -93,11 +93,10 @@ Cc: linux-kernel@vger.kernel.org,
 	kvm@vger.kernel.org,
 	xen-devel@lists.xenproject.org,
 	linux-arm-kernel@lists.infradead.org,
-	Danilo Krummrich <dakr@kernel.org>,
-	Gui-Dong Han <hanguidong02@gmail.com>
-Subject: [PATCH 11/12] spi: use generic driver_override infrastructure
-Date: Tue, 24 Mar 2026 01:59:15 +0100
-Message-ID: <20260324005919.2408620-12-dakr@kernel.org>
+	Danilo Krummrich <dakr@kernel.org>
+Subject: [PATCH 12/12] driver core: remove driver_set_override()
+Date: Tue, 24 Mar 2026 01:59:16 +0100
+Message-ID: <20260324005919.2408620-13-dakr@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260324005919.2408620-1-dakr@kernel.org>
 References: <20260324005919.2408620-1-dakr@kernel.org>
@@ -116,109 +115,122 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-When a driver is probed through __driver_attach(), the bus' match()
-callback is called without the device lock held, thus accessing the
-driver_override field without a lock, which can cause a UAF.
+All buses have been converted from driver_set_override() to the generic
+driver_override infrastructure introduced in commit cb3d1049f4ea
+("driver core: generalize driver_override in struct device").
 
-Fix this by using the driver-core driver_override infrastructure taking
-care of proper locking internally.
+Buses now either opt into the generic sysfs callbacks via the
+bus_type::driver_override flag, or use device_set_driver_override() /
+__device_set_driver_override() directly.
 
-Note that calling match() from __driver_attach() without the device lock
-held is intentional. [1]
+Thus, remove the now-unused driver_set_override() helper.
 
-Also note that we do not enable the driver_override feature of struct
-bus_type, as SPI - in contrast to most other buses - passes "" to
-sysfs_emit() when the driver_override pointer is NULL. Thus, printing
-"\n" instead of "(null)\n".
-
-Link: https://lore.kernel.org/driver-core/DGRGTIRHA62X.3RY09D9SOK77P@kernel.org/ [1]
-Reported-by: Gui-Dong Han <hanguidong02@gmail.com>
-Closes: https://bugzilla.kernel.org/show_bug.cgi?id=220789
-Fixes: 5039563e7c25 ("spi: Add driver_override SPI device attribute")
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=220789
 Signed-off-by: Danilo Krummrich <dakr@kernel.org>
 ---
- drivers/spi/spi.c       | 19 +++++++------------
- include/linux/spi/spi.h |  5 -----
- 2 files changed, 7 insertions(+), 17 deletions(-)
+ drivers/base/driver.c         | 75 -----------------------------------
+ include/linux/device/driver.h |  2 -
+ 2 files changed, 77 deletions(-)
 
-diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
-index 53dee314d76a..4101c2803eb3 100644
---- a/drivers/spi/spi.c
-+++ b/drivers/spi/spi.c
-@@ -50,7 +50,6 @@ static void spidev_release(struct device *dev)
- 	struct spi_device	*spi = to_spi_device(dev);
- 
- 	spi_controller_put(spi->controller);
--	kfree(spi->driver_override);
- 	free_percpu(spi->pcpu_statistics);
- 	kfree(spi);
+diff --git a/drivers/base/driver.c b/drivers/base/driver.c
+index 8ab010ddf709..7ed834f7199c 100644
+--- a/drivers/base/driver.c
++++ b/drivers/base/driver.c
+@@ -30,81 +30,6 @@ static struct device *next_device(struct klist_iter *i)
+ 	return dev;
  }
-@@ -73,10 +72,9 @@ static ssize_t driver_override_store(struct device *dev,
- 				     struct device_attribute *a,
- 				     const char *buf, size_t count)
- {
--	struct spi_device *spi = to_spi_device(dev);
- 	int ret;
  
--	ret = driver_set_override(dev, &spi->driver_override, buf, count);
-+	ret = __device_set_driver_override(dev, buf, count);
- 	if (ret)
- 		return ret;
- 
-@@ -86,13 +84,8 @@ static ssize_t driver_override_store(struct device *dev,
- static ssize_t driver_override_show(struct device *dev,
- 				    struct device_attribute *a, char *buf)
- {
--	const struct spi_device *spi = to_spi_device(dev);
--	ssize_t len;
+-/**
+- * driver_set_override() - Helper to set or clear driver override.
+- * @dev: Device to change
+- * @override: Address of string to change (e.g. &device->driver_override);
+- *            The contents will be freed and hold newly allocated override.
+- * @s: NUL-terminated string, new driver name to force a match, pass empty
+- *     string to clear it ("" or "\n", where the latter is only for sysfs
+- *     interface).
+- * @len: length of @s
+- *
+- * Helper to set or clear driver override in a device, intended for the cases
+- * when the driver_override field is allocated by driver/bus code.
+- *
+- * Returns: 0 on success or a negative error code on failure.
+- */
+-int driver_set_override(struct device *dev, const char **override,
+-			const char *s, size_t len)
+-{
+-	const char *new, *old;
+-	char *cp;
+-
+-	if (!override || !s)
+-		return -EINVAL;
+-
+-	/*
+-	 * The stored value will be used in sysfs show callback (sysfs_emit()),
+-	 * which has a length limit of PAGE_SIZE and adds a trailing newline.
+-	 * Thus we can store one character less to avoid truncation during sysfs
+-	 * show.
+-	 */
+-	if (len >= (PAGE_SIZE - 1))
+-		return -EINVAL;
+-
+-	/*
+-	 * Compute the real length of the string in case userspace sends us a
+-	 * bunch of \0 characters like python likes to do.
+-	 */
+-	len = strlen(s);
+-
+-	if (!len) {
+-		/* Empty string passed - clear override */
+-		device_lock(dev);
+-		old = *override;
+-		*override = NULL;
+-		device_unlock(dev);
+-		kfree(old);
+-
+-		return 0;
+-	}
+-
+-	cp = strnchr(s, len, '\n');
+-	if (cp)
+-		len = cp - s;
+-
+-	new = kstrndup(s, len, GFP_KERNEL);
+-	if (!new)
+-		return -ENOMEM;
 -
 -	device_lock(dev);
--	len = sysfs_emit(buf, "%s\n", spi->driver_override ? : "");
+-	old = *override;
+-	if (cp != s) {
+-		*override = new;
+-	} else {
+-		/* "\n" passed - clear override */
+-		kfree(new);
+-		*override = NULL;
+-	}
 -	device_unlock(dev);
--	return len;
-+	guard(spinlock)(&dev->driver_override.lock);
-+	return sysfs_emit(buf, "%s\n", dev->driver_override.name ?: "");
- }
- static DEVICE_ATTR_RW(driver_override);
+-
+-	kfree(old);
+-
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(driver_set_override);
+-
+ /**
+  * driver_for_each_device - Iterator for devices bound to a driver.
+  * @drv: Driver we're iterating.
+diff --git a/include/linux/device/driver.h b/include/linux/device/driver.h
+index bbc67ec513ed..aa3465a369f0 100644
+--- a/include/linux/device/driver.h
++++ b/include/linux/device/driver.h
+@@ -160,8 +160,6 @@ int __must_check driver_create_file(const struct device_driver *driver,
+ void driver_remove_file(const struct device_driver *driver,
+ 			const struct driver_attribute *attr);
  
-@@ -376,10 +369,12 @@ static int spi_match_device(struct device *dev, const struct device_driver *drv)
- {
- 	const struct spi_device	*spi = to_spi_device(dev);
- 	const struct spi_driver	*sdrv = to_spi_driver(drv);
-+	int ret;
- 
- 	/* Check override first, and if set, only use the named driver */
--	if (spi->driver_override)
--		return strcmp(spi->driver_override, drv->name) == 0;
-+	ret = device_match_driver_override(dev, drv);
-+	if (ret >= 0)
-+		return ret;
- 
- 	/* Attempt an OF style match */
- 	if (of_driver_match_device(dev, drv))
-diff --git a/include/linux/spi/spi.h b/include/linux/spi/spi.h
-index af7cfee7b8f6..0dc671c07d3a 100644
---- a/include/linux/spi/spi.h
-+++ b/include/linux/spi/spi.h
-@@ -159,10 +159,6 @@ extern void spi_transfer_cs_change_delay_exec(struct spi_message *msg,
-  * @modalias: Name of the driver to use with this device, or an alias
-  *	for that name.  This appears in the sysfs "modalias" attribute
-  *	for driver coldplugging, and in uevents used for hotplugging
-- * @driver_override: If the name of a driver is written to this attribute, then
-- *	the device will bind to the named driver and only the named driver.
-- *	Do not set directly, because core frees it; use driver_set_override() to
-- *	set or clear it.
-  * @pcpu_statistics: statistics for the spi_device
-  * @word_delay: delay to be inserted between consecutive
-  *	words of a transfer
-@@ -224,7 +220,6 @@ struct spi_device {
- 	void			*controller_state;
- 	void			*controller_data;
- 	char			modalias[SPI_NAME_SIZE];
--	const char		*driver_override;
- 
- 	/* The statistics */
- 	struct spi_statistics __percpu	*pcpu_statistics;
+-int driver_set_override(struct device *dev, const char **override,
+-			const char *s, size_t len);
+ int __must_check driver_for_each_device(struct device_driver *drv, struct device *start,
+ 					void *data, device_iter_t fn);
+ struct device *driver_find_device(const struct device_driver *drv,
 -- 
 2.53.0
 
