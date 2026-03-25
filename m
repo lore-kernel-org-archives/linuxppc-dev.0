@@ -1,73 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-18779-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18780-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54B85109C02F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2026 14:56:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8E58109C02F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2026 15:49:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fgqjc6xNvz2xcB;
-	Thu, 26 Mar 2026 01:56:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774450580;
-	cv=none; b=Q8WorBxmTdlVkQgbrzK3wlIAgjgEwGAjQSAsSIBI0QBZzkts+kCV8Beyg3kyx9kNCrmAFcyOLIdyMKLsmVsYVegyFgxayGjofnfCrn3A3MjuvBZL5zrW2L6w0uS5DH0g9PqXMqhj4cmaFCs5g8bbmnKSDqkraVfdH7id0dfCuSBe/DpxsNGWaNvVrGjiYhtceINk0q8daXRpxe+roVj0KDgxdfH4v8FyAoxzii2kz64DRd5tZhZuAO0ZAzm1nMTgmuQ6U9mEvZD2ASyrXjegmuaRpDY0R4fwQ4K3zFs/omLvhNoVzgoGAcara/cKyLSZNS5PVgJs9Y+WI0TXuq1Ryw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774450580; c=relaxed/relaxed;
-	bh=5xhVPeMDWKI3xMon13upBC5mdBn5Z1mGbc+XZxH4Nns=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=B+vi5f9BzyZyfBGPePJLr/1R4CrECkrqgHllzdkco1ZlNgt9wdezGCrG1WnBPQmmLr8GxRN06x9qhSugsV8RDNGAbzPtC3ijvyH6q4Uk76t+NGJ4SGDSTixsghf0BA+2puiHsYxPn417RDcCGtX/cBgL5q0+jwSPp5MkuuHp4fBrV/oa1I2pRrBCWYih/O7dXWMLIETfaCPSAkP8j48FXpFOwBdmfk/zxNgKjBNQhEVF91OvVGNCg/9Ngjz7kdw8vhWoWtT6XE4pngvTe7xG9BRfZZQU2kjlfwSR/j2to6v6bSI2G/cnJP3mfTZ09TrVfu/sFnk3dP/HClK/kXIr9A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iI/M+cMH; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gbatra@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fgrvK3k8Mz2yS4;
+	Thu, 26 Mar 2026 02:49:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::535" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774453789;
+	cv=pass; b=C6sIkUw4/bxIqLiqHx8XXGsSpdrItcRqWHHFpMpRtvTwLSYZmxbCov+V6RepeUH1vqBdE4deyJFj8kRqINYWKldkYIxUENel1P6kOW07OIwkxbYdHS4mkSNhhcZBmux5lMRlLtvDeNb/rFCLI0zyfr912cKgOboKNgz4aH5/qIvfExB0zij5FKG/SsIHjHQfOzLXEYYLQx9rD1kDIF/ukUYubLISaPSLhsMyLnlMOergxNVv932+vkujWoJzC/N0x8ToG3LpQ4YnaXGk/oI04O9v1kr5NGeuEV6LKaHnW2cTtgEeWQHQQ93QiwWhdf6UiWVg+p+q+u9/PDpnLPC80A==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1774453789; c=relaxed/relaxed;
+	bh=PetZC3qxgw91I7G4PL1kgiG97oaIIgIA0g2FQ1jwb8M=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=WOZxs6WawuH54goZR87pt17esGqWV9iBqeHwG7fKlOuDlEKeb4FuulSF7BK1tT6URcn4GNxzhWwTtHD1NbDF3fzI/+DUFw8NxRzRZ2RO7Sd0lUTWnNslyTSqznmTUWvrt8oLsgsKCSY2YLnbvprZE7TcusXyfnSZklTjaf/uj+Tdquc2+EKRiSdBIGs/XQFPIZ9dIUCYEZhyrrM1awLocTWPJpi3kckd876RFkmboR4L1s52ecyeAyJrONs3nrZNM3VuxirAcqgPQrr8obYrJruLM5sQco9LoQCh+I3o5BMH/MyT+r0Uqoe6hspFaBkGrum1ElIjcKcJCF8RJi/TVw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=XsXzk/6Y; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::535; helo=mail-ed1-x535.google.com; envelope-from=mathieu.poirier@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iI/M+cMH;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=XsXzk/6Y;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gbatra@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::535; helo=mail-ed1-x535.google.com; envelope-from=mathieu.poirier@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x535.google.com (mail-ed1-x535.google.com [IPv6:2a00:1450:4864:20::535])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fgqjZ6DWDz2xS3
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2026 01:56:17 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62P9Xrp5092005;
-	Wed, 25 Mar 2026 14:56:12 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=5xhVPe
-	MDWKI3xMon13upBC5mdBn5Z1mGbc+XZxH4Nns=; b=iI/M+cMH60YUbGJ+eXRrBd
-	WQ/Hyjhewd8KVmXfu2Fjx8HP7pYS7Ci3JgN3L0NdQOfS8mPOa/+/yB+mpU90sjWQ
-	euzoEX9sNy7mCF+4k9oyvK0wb0KG1fopVy5JMPVpWzGV7JmUS6M+em9dkKySHBvU
-	y0axaiW5ps7ern1yu8R4WbqCFGGtDkplA4otYiQv0NcPz+RlXRHcrsZ4ugeSKYNh
-	q81IV6brKsnYPeW0YPV5RHUwe7qPHvrTbcdiEJyPrPTqI1gxHtiwlT+19zrQprvE
-	1VjpXgjQ63UJ2lxe40hw+rU6TczsEwMIf0TyAQIOSVMMw13OVcnQhlAqmIxvoA7w
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d1kwa0ymn-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 25 Mar 2026 14:56:12 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62PBJtBU009126;
-	Wed, 25 Mar 2026 14:56:11 GMT
-Received: from smtprelay04.wdc07v.mail.ibm.com ([172.16.1.71])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4d26nnpyw2-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 25 Mar 2026 14:56:11 +0000
-Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
-	by smtprelay04.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62PEuApd53477768
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 25 Mar 2026 14:56:10 GMT
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 48C365805E;
-	Wed, 25 Mar 2026 14:56:10 +0000 (GMT)
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 25EAC58051;
-	Wed, 25 Mar 2026 14:56:10 +0000 (GMT)
-Received: from [9.61.251.205] (unknown [9.61.251.205])
-	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 25 Mar 2026 14:56:10 +0000 (GMT)
-Message-ID: <a6b93f6d-500d-4307-a502-ce241ebe8aec@linux.ibm.com>
-Date: Wed, 25 Mar 2026 09:56:09 -0500
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fgrvH6093z2xSX
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2026 02:49:46 +1100 (AEDT)
+Received: by mail-ed1-x535.google.com with SMTP id 4fb4d7f45d1cf-66a33f61d80so4392969a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2026 08:49:46 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1774453783; cv=none;
+        d=google.com; s=arc-20240605;
+        b=AuQbAUg13ktpOUgOYAnfqadzuf2XeBkkV7l7/jL73SBNYnPsDnzmhIskzsKBgTw2pT
+         VmCqDF2LVPBKwlQDxoJdYTOvhW6EveBJ54oPdKULytVZr4v0x6gjFZDcAjAVF/S+P2JL
+         HidiJVgQxhhpWAHuA3v/HmOKEJzPNZRzDAuGJeRAq4vHFws+3jkssaXdWHTrWOI3a5KZ
+         3bJTujuhH62CEUJBuBL17oYyvUNM7HISK719wSyKONz178f2ynh1OP7ns9M1bu+JJp5K
+         zt7c0kdae3cqzuCYw5tU6xO1h5IO/hMCoZ5HZnhE2Gb+Qmd/J4Kyo6yjpJuYVtZg8IFD
+         0AgA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=PetZC3qxgw91I7G4PL1kgiG97oaIIgIA0g2FQ1jwb8M=;
+        fh=n3RDJkC9kCly9z9nxD+UaTJD06KjilbgEs2E9lCPEFI=;
+        b=HnwEQEfKMYTXjep4iXFknn1ayymIuqFcUoN5G+DRhLBefCTSBjHkFeDZyOnXWg1vNY
+         CmmmVEMRthsyJNFPElhNsfBC/mnJ0RCA0FyPC3/frk4He59yD6ZWozu4pL/+B+mpvU3J
+         ezglpBd2WwKJBRlZnA/epncloHC4QZYxYUeYcQ0wRgrCBk+unG6qD4psX7Y9JWLG732r
+         DQpxEz+tLAFz0nRU0NchArWh8035Q3lV4wbesZf5Y2ZNwU1cRT/KhVitlP+Q7FcDSJtd
+         md+jZOAYeOTHhuxM4JaAugXSaD3deAToEVBA5d4UBbffuAbLe9K0k3TiGWdwnFJgEUhc
+         3IoQ==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1774453782; x=1775058582; darn=lists.ozlabs.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=PetZC3qxgw91I7G4PL1kgiG97oaIIgIA0g2FQ1jwb8M=;
+        b=XsXzk/6YeXSDimhQGI28VLVhVQMH4B9YmsksAmde9pZT7PPsMwLlmFdvwZzrkDFuMv
+         50UJin73g8lX74tIUJq7cGpByRyAF5NumwO5HfdVI0yerU5NXWZ5oaiUn55yb5Y0YmTN
+         lYBRgdbuGbjKnaFnH9wMuV4EQozyGl4GhZWjQNhJzMpHg/Z7/xwiJIIyqdydgt1LsfF9
+         rrn1E212WegsM6vJh+tY6I/5fom2792LpeC6Lf+KQ77InOHSYFKGuM1jIh5NhnCoNM2L
+         AeOr9j9awzmB1dcehH+xF9DYVELERL9uyzgVix+nvHjyDsbLHEi2ZPT2+Ybn0maEyBZ4
+         Ea8Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774453782; x=1775058582;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=PetZC3qxgw91I7G4PL1kgiG97oaIIgIA0g2FQ1jwb8M=;
+        b=rt0PjCN8018RPU7Di3GRMaI8iBHtEH0TGvcNjWiXZh2EykqVEnkMGfjjokjoVgHvQd
+         zjn94hSG5rEFW/HPinzTmXSqE3S6Bu4tiO+/YfHcooDVHs1zLhXA2aWpqbmYs8u05SXD
+         4wNox+HmKvyZ1KorrBkb3UMLLQACbUZF++GOlOLe1yZ3hFHgdwV1DkKWTWQSb83w4R8L
+         eWEf6EIPq6eTrUjUklSN9jN0TVBufyHZOCHLnBwPSpdOJbhDlkFBBO298RGI13HsJtwb
+         wYSgpgFBbemq8yyaCoFvzLIpVwr/1QyVMA4oqDW/Lc8J0jI9/D2jCJdKVIKjLHKTPmAL
+         vyuA==
+X-Forwarded-Encrypted: i=1; AJvYcCV/QunW4kaf0lDXxzxf6nxZVCdCkyxYG7NsFYO8cLWUCi36a3msJ7EnLrXjISQeHQYTSWT49tER3qM9aEg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzZ1cxW9b0YZPlKUH4tdaiqQSzqVmhnziArj8wMNZgOaUAWjrno
+	DVQbSREnP4jUVbs252e87Kwfn45LK+HdzxV3OyNLrEMrynajRQiNOZZn3ZTYfrUBBfW+ObLZKjf
+	W8yrdR/Vc+CM22VOYg89ot433s0qhSKeJqrihTcnD2g==
+X-Gm-Gg: ATEYQzz1eK4sRm8nRZTxT6tQZE38j1YHE1IELkQMpNEw+KYlNrMghKiP6kZXCTJZ+6F
+	9D5bWPnJGr0o8UhhMxErGYQraQ4TU5AqEUUHJIxgwRlURX1Zi7j2QS1VpbgHBwoCdgCECgo+zQK
+	NQtcxdEQykLyB4TtTw6VUTZCGtxduMFZYSVDuouNISSWQi/Eb+N7cL2GJXD416BqIiqrmeEb9vw
+	cKKeBqQSGwEScGfgBgYv33LPjXmEd/kpZvD6XyNJILUQcOLmnQa5uqhB+oz+mJ1Lz5Fcx2pfcXv
+	FFsSiCMBdi0z/u0jtVu8QPMybFqK1YxIK33KUnrhiA==
+X-Received: by 2002:a05:6402:3251:b0:668:368b:38d3 with SMTP id
+ 4fb4d7f45d1cf-66a82634560mr2196905a12.12.1774453782373; Wed, 25 Mar 2026
+ 08:49:42 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,192 +100,215 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: amdgpu driver fails to initialize on ppc64le in 7.0-rc1 and newer
-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-        =?UTF-8?Q?Dan_Hor=C3=A1k?=
- <dan@danny.cz>
-Cc: linuxppc-dev@lists.ozlabs.org, amd-gfx@lists.freedesktop.org,
-        Donet Tom <donettom@linux.ibm.com>
-References: <20260313142351.609bc4c3efe1184f64ca5f44@danny.cz>
- <1phlu3bs.ritesh.list@gmail.com>
- <20260315105021.667e52d4a99b154ef1e6aa34@danny.cz>
- <da93575e-92ad-4a7b-83df-1cb956bd2bc2@linux.ibm.com>
- <5x6knm5q.ritesh.list@gmail.com>
-Content-Language: en-US
-From: Gaurav Batra <gbatra@linux.ibm.com>
-In-Reply-To: <5x6knm5q.ritesh.list@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: 2gWE4V00CCZF_jdDldHYBa-7LRBOMLD7
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzI1MDEwNiBTYWx0ZWRfX+jHLqdkP/aEd
- HFzMxZZ9EoyB29zvW3nLNdX4xNEd86zOpKDFqwFhwiiZWHjduhIcjs9fY+TtM5SRh8BaY7mw10H
- krSO61qrKPRVnsEBubJVOQ0h4B9vWEWYrcsfxxAbEH9Y9qbryjke/nJkXu2BYv9RQSU8cDEBNhm
- 1D5gcT8w2iXzFDU49PXjC6RBMxNytEO773S+W7kQqZyrM+L2TN6G1Ha4YeEg9b3rDHyoIopcIy2
- 7VAdvuiGy1GZWGxTrT9sMRZvCbntISz8jW1dxWKxpLvi2er8vp0ea90Gt/BhJoFyXzLna8X2vJX
- HcZRWYiA1pHjkK1N2SsGdbkXOF8MIT8SmUhOGMkl2NdisuMQXBTw2ydO51HV0DNHZwtr7+lGb4a
- kZRWZc0U+CNsoRkK76BiuKkLv+4hGqmADUoiH9Agf9h9up3wfz1aYBgOudmFHP5iU0eRM8Ll4Pw
- VHXL1djoYLvi0zZIOLw==
-X-Proofpoint-GUID: Fso7MjbKhQa6GwkFQdNebw7patyA51yp
-X-Authority-Analysis: v=2.4 cv=OsZCCi/t c=1 sm=1 tr=0 ts=69c3f78c cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8
- a=yeSHx0KCWZ4fTT9b9oQA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-25_04,2026-03-24_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 adultscore=0 clxscore=1015 phishscore=0 suspectscore=0
- lowpriorityscore=0 priorityscore=1501 bulkscore=0 spamscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603250106
+References: <20260324005919.2408620-1-dakr@kernel.org> <20260324005919.2408620-8-dakr@kernel.org>
+In-Reply-To: <20260324005919.2408620-8-dakr@kernel.org>
+From: Mathieu Poirier <mathieu.poirier@linaro.org>
+Date: Wed, 25 Mar 2026 09:49:31 -0600
+X-Gm-Features: AQROBzDaUkN0ZNcFR8HLoPUZ0UwwRolGugOyW2ifJVz-O5YTothUc8ZwonnT9P8
+Message-ID: <CANLsYkyNx+e=QrSc=ZOqgMcOpwqdpCWsuhrvByJYcXLHPSHMUw@mail.gmail.com>
+Subject: Re: [PATCH 07/12] rpmsg: use generic driver_override infrastructure
+To: Danilo Krummrich <dakr@kernel.org>
+Cc: Russell King <linux@armlinux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, Ioana Ciornei <ioana.ciornei@nxp.com>, 
+	Nipun Gupta <nipun.gupta@amd.com>, Nikhil Agarwal <nikhil.agarwal@amd.com>, 
+	"K. Y. Srinivasan" <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>, 
+	Dexuan Cui <decui@microsoft.com>, Long Li <longli@microsoft.com>, 
+	Bjorn Helgaas <bhelgaas@google.com>, Armin Wolf <W_Armin@gmx.de>, 
+	Bjorn Andersson <andersson@kernel.org>, Vineeth Vijayan <vneethv@linux.ibm.com>, 
+	Peter Oberparleiter <oberpar@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, 
+	Vasily Gorbik <gor@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, 
+	Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>, 
+	Harald Freudenberger <freude@linux.ibm.com>, Holger Dengler <dengler@linux.ibm.com>, 
+	Mark Brown <broonie@kernel.org>, "Michael S. Tsirkin" <mst@redhat.com>, Jason Wang <jasowang@redhat.com>, 
+	Xuan Zhuo <xuanzhuo@linux.alibaba.com>, =?UTF-8?Q?Eugenio_P=C3=A9rez?= <eperezma@redhat.com>, 
+	Alex Williamson <alex@shazbot.org>, Juergen Gross <jgross@suse.com>, 
+	Stefano Stabellini <sstabellini@kernel.org>, 
+	Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, linux-kernel@vger.kernel.org, 
+	driver-core@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
+	linux-hyperv@vger.kernel.org, linux-pci@vger.kernel.org, 
+	platform-driver-x86@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+	linux-remoteproc@vger.kernel.org, linux-s390@vger.kernel.org, 
+	linux-spi@vger.kernel.org, virtualization@lists.linux.dev, 
+	kvm@vger.kernel.org, xen-devel@lists.xenproject.org, 
+	linux-arm-kernel@lists.infradead.org, Gui-Dong Han <hanguidong02@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 
-Hello Ritesh,
-
-This fix needs to be re-worked. My design was to have both 
-"dma_ops_bypass" and bus_dma_limit set in case of pre-mapped TCEs.
-
-There were a lot of things to consider - a major one was "max_pfn". This 
-is not just reflective of "max memory". max_pfn changes when a GPU 
-memory is added, or when pmemory is converted to RAM with a DLPAR event. 
-This results in max_pfn to be much higher value than the actual RAM.
-
-This throws off dma_direct_get_required_mask().
-
-It will be better to revert this patch and re-work.
-
-Thanks,
-
-Gaurav
-
-On 3/25/26 7:12 AM, Ritesh Harjani (IBM) wrote:
-> Gaurav Batra <gbatra@linux.ibm.com> writes:
+On Mon, 23 Mar 2026 at 19:00, Danilo Krummrich <dakr@kernel.org> wrote:
 >
-> Hi Gaurav,
+> When a driver is probed through __driver_attach(), the bus' match()
+> callback is called without the device lock held, thus accessing the
+> driver_override field without a lock, which can cause a UAF.
 >
->> Hello Ritesh/Dan,
->>
->>
->> Here is the motivation for my patch and thoughts on the issue.
->>
->>
->> Before my patch, there were 2 scenarios to consider where, even when the
->> memory
->> was pre-mapped for DMA, coherent allocations were getting mapped from 2GB
->> default DMA Window. In case of pre-mapped memory, the allocations should
->> not be
->> directed towards 2GB default DMA window.
->>
->> 1. AMD GPU which has device DMA mask > 32 bits but less then 64 bits. In
->> this
->> case the PHB is put into Limited Addressability mode.
->>
->>      This scenario doesn't have vPMEM
->>
->> 2. Device that supports 64-bit DMA mask. The LPAR has vPMEM assigned.
->>
->>
->> In both the above scenarios, IOMMU has pre-mapped RAM from DDW (64-bit
->> PPC DMA
->> window).
->>
->>
->> Lets consider code paths for both the case, before my patch
->>
->> 1. AMD GPU
->>
->> dev->dma_ops_bypass = true
->>
->> dev->bus_dma_limit = 0
->>
->> - Here the AMD controller shows 3 functions on the PHB.
->>
->> - After the first function is probed, it sees that the memory is pre-mapped
->>     and doesn't direct DMA allocations towards 2GB default window.
->>     So, dma_go_direct() worked as expected.
->>
->> - AMD GPU driver, adds device memory to system pages. The stack is as below
->>
->> add_pages+0x118/0x130 (unreliable)
->> pagemap_range+0x404/0x5e0
->> memremap_pages+0x15c/0x3d0
->> devm_memremap_pages+0x38/0xa0
->> kgd2kfd_init_zone_device+0x110/0x210 [amdgpu]
->> amdgpu_device_ip_init+0x648/0x6d8 [amdgpu]
->> amdgpu_device_init+0xb10/0x10c0 [amdgpu]
->> amdgpu_driver_load_kms+0x2c/0xb0 [amdgpu]
->> amdgpu_pci_probe+0x2e4/0x790 [amdgpu]
->>
->> - This changed max_pfn to some high value beyond max RAM.
->>
->> - Subsequently, for each other functions on the PHB, the call to
->>     dma_go_direct() will return false which will then direct DMA
->> allocations towards
->>     2GB Default DMA window even if the memory is pre-mapped.
->>
->>      dev->dma_ops_bypass is true, dma_direct_get_required_mask() resulted
->> in large
->>      value for the mask (due to changed max_pfn) which is beyond AMD GPU
->> device DMA mask
->>
->>
->> 2. Device supports 64-bit DMA mask. The LPAR has vPMEM assigned
->>
->> dev->dma_ops_bypass = false
->> dev->bus_dma_limit = has some value depending on size of RAM (eg.
->> 0x0800001000000000)
->>
->> - Here the call to dma_go_direct() returns false since
->> dev->dma_ops_bypass = false.
->>
->>
->>
->> I crafted the solution to cover both the case. I tested today on an LPAR
->> with 7.0-rc4 and it works with AMDGPU.
->>
->> With my patch, allocations will go towards direct only when
->> dev->dma_ops_bypass = true,
->> which will be the case for "pre-mapped" RAM.
->>
->> Ritesh mentioned that this is PowerNV. I need to revisit this patch and
->> see why it is failing on PowerNV.
->> ...
->>  From the logs, I do see some issue. The log indicates
->> dev->bus_dma_limit is set to 0. This is incorrect. For pre-mapped RAM,
->> with my
->> patch, bus_dma_limit should always be set to some value.
->>
-> In that case, do you think adding an extra check for dev->bus_dma_limit
-> would help? I am sure you already would have thought of this and
-> probably are still working to find the correct fix?
+> Fix this by using the driver-core driver_override infrastructure taking
+> care of proper locking internally.
 >
-> +bool arch_dma_alloc_direct(struct device *dev)
-> +{
-> +	if (dev->dma_ops_bypass && dev->bus_dma_limit)
-> +		return true;
-> +
-> +	return false;
-> +}
-> +
-> +bool arch_dma_free_direct(struct device *dev, dma_addr_t dma_handle)
-> +{
-> +	if (!dev->dma_ops_bypass || !dev->bus_dma_limit)
-> +		return false;
-> +
-> +	return is_direct_handle(dev, dma_handle);
-> +}
+> Note that calling match() from __driver_attach() without the device lock
+> held is intentional. [1]
 >
-> <snip from Timothy>
+> Link: https://lore.kernel.org/driver-core/DGRGTIRHA62X.3RY09D9SOK77P@kernel.org/ [1]
+> Reported-by: Gui-Dong Han <hanguidong02@gmail.com>
+> Closes: https://bugzilla.kernel.org/show_bug.cgi?id=220789
+> Fixes: e95060478244 ("rpmsg: Introduce a driver override mechanism")
+> Signed-off-by: Danilo Krummrich <dakr@kernel.org>
+> ---
+>  drivers/rpmsg/qcom_glink_native.c |  2 --
+
+For the below files:
+
+Reviewed-by: Mathieu Poirier <mathieu.poirier@linaro.org>
+
+>  drivers/rpmsg/rpmsg_core.c        | 43 +++++--------------------------
+>  drivers/rpmsg/virtio_rpmsg_bus.c  |  1 -
+>  include/linux/rpmsg.h             |  4 ---
+>  4 files changed, 7 insertions(+), 43 deletions(-)
 >
->> introduced a serious regression into the kernel for a large number of
->> active users of the PowerNV platform, I would kindly ask that it be
->> reverted until it can be reworked not to break PowerNV support.  Bear
->> in mind there are other devices that are 40 bit DMA limited, and they
->> are also likely to break on Linux 7.0.
-> Looks like more people are facing an issue with this now.
+> diff --git a/drivers/rpmsg/qcom_glink_native.c b/drivers/rpmsg/qcom_glink_native.c
+> index 9ef17c2e45b0..e9d1b2082477 100644
+> --- a/drivers/rpmsg/qcom_glink_native.c
+> +++ b/drivers/rpmsg/qcom_glink_native.c
+> @@ -1623,7 +1623,6 @@ static void qcom_glink_rpdev_release(struct device *dev)
+>  {
+>         struct rpmsg_device *rpdev = to_rpmsg_device(dev);
 >
-> -ritesh
+> -       kfree(rpdev->driver_override);
+>         kfree(rpdev);
+>  }
+>
+> @@ -1859,7 +1858,6 @@ static void qcom_glink_device_release(struct device *dev)
+>
+>         /* Release qcom_glink_alloc_channel() reference */
+>         kref_put(&channel->refcount, qcom_glink_channel_release);
+> -       kfree(rpdev->driver_override);
+>         kfree(rpdev);
+>  }
+>
+> diff --git a/drivers/rpmsg/rpmsg_core.c b/drivers/rpmsg/rpmsg_core.c
+> index 96964745065b..2b9f6d5a9a4f 100644
+> --- a/drivers/rpmsg/rpmsg_core.c
+> +++ b/drivers/rpmsg/rpmsg_core.c
+> @@ -358,33 +358,6 @@ rpmsg_show_attr(src, src, "0x%x\n");
+>  rpmsg_show_attr(dst, dst, "0x%x\n");
+>  rpmsg_show_attr(announce, announce ? "true" : "false", "%s\n");
+>
+> -static ssize_t driver_override_store(struct device *dev,
+> -                                    struct device_attribute *attr,
+> -                                    const char *buf, size_t count)
+> -{
+> -       struct rpmsg_device *rpdev = to_rpmsg_device(dev);
+> -       int ret;
+> -
+> -       ret = driver_set_override(dev, &rpdev->driver_override, buf, count);
+> -       if (ret)
+> -               return ret;
+> -
+> -       return count;
+> -}
+> -
+> -static ssize_t driver_override_show(struct device *dev,
+> -                                   struct device_attribute *attr, char *buf)
+> -{
+> -       struct rpmsg_device *rpdev = to_rpmsg_device(dev);
+> -       ssize_t len;
+> -
+> -       device_lock(dev);
+> -       len = sysfs_emit(buf, "%s\n", rpdev->driver_override);
+> -       device_unlock(dev);
+> -       return len;
+> -}
+> -static DEVICE_ATTR_RW(driver_override);
+> -
+>  static ssize_t modalias_show(struct device *dev,
+>                              struct device_attribute *attr, char *buf)
+>  {
+> @@ -405,7 +378,6 @@ static struct attribute *rpmsg_dev_attrs[] = {
+>         &dev_attr_dst.attr,
+>         &dev_attr_src.attr,
+>         &dev_attr_announce.attr,
+> -       &dev_attr_driver_override.attr,
+>         NULL,
+>  };
+>  ATTRIBUTE_GROUPS(rpmsg_dev);
+> @@ -424,9 +396,11 @@ static int rpmsg_dev_match(struct device *dev, const struct device_driver *drv)
+>         const struct rpmsg_driver *rpdrv = to_rpmsg_driver(drv);
+>         const struct rpmsg_device_id *ids = rpdrv->id_table;
+>         unsigned int i;
+> +       int ret;
+>
+> -       if (rpdev->driver_override)
+> -               return !strcmp(rpdev->driver_override, drv->name);
+> +       ret = device_match_driver_override(dev, drv);
+> +       if (ret >= 0)
+> +               return ret;
+>
+>         if (ids)
+>                 for (i = 0; ids[i].name[0]; i++)
+> @@ -535,6 +509,7 @@ static const struct bus_type rpmsg_bus = {
+>         .name           = "rpmsg",
+>         .match          = rpmsg_dev_match,
+>         .dev_groups     = rpmsg_dev_groups,
+> +       .driver_override = true,
+>         .uevent         = rpmsg_uevent,
+>         .probe          = rpmsg_dev_probe,
+>         .remove         = rpmsg_dev_remove,
+> @@ -560,11 +535,9 @@ int rpmsg_register_device_override(struct rpmsg_device *rpdev,
+>
+>         device_initialize(dev);
+>         if (driver_override) {
+> -               ret = driver_set_override(dev, &rpdev->driver_override,
+> -                                         driver_override,
+> -                                         strlen(driver_override));
+> +               ret = device_set_driver_override(dev, driver_override);
+>                 if (ret) {
+> -                       dev_err(dev, "device_set_override failed: %d\n", ret);
+> +                       dev_err(dev, "device_set_driver_override() failed: %d\n", ret);
+>                         put_device(dev);
+>                         return ret;
+>                 }
+> @@ -573,8 +546,6 @@ int rpmsg_register_device_override(struct rpmsg_device *rpdev,
+>         ret = device_add(dev);
+>         if (ret) {
+>                 dev_err(dev, "device_add failed: %d\n", ret);
+> -               kfree(rpdev->driver_override);
+> -               rpdev->driver_override = NULL;
+>                 put_device(dev);
+>         }
+>
+> diff --git a/drivers/rpmsg/virtio_rpmsg_bus.c b/drivers/rpmsg/virtio_rpmsg_bus.c
+> index 8d9e2b4dc7c1..e0dacb736ef9 100644
+> --- a/drivers/rpmsg/virtio_rpmsg_bus.c
+> +++ b/drivers/rpmsg/virtio_rpmsg_bus.c
+> @@ -373,7 +373,6 @@ static void virtio_rpmsg_release_device(struct device *dev)
+>         struct rpmsg_device *rpdev = to_rpmsg_device(dev);
+>         struct virtio_rpmsg_channel *vch = to_virtio_rpmsg_channel(rpdev);
+>
+> -       kfree(rpdev->driver_override);
+>         kfree(vch);
+>  }
+>
+> diff --git a/include/linux/rpmsg.h b/include/linux/rpmsg.h
+> index fb7ab9165645..c2e3ef8480d5 100644
+> --- a/include/linux/rpmsg.h
+> +++ b/include/linux/rpmsg.h
+> @@ -41,9 +41,6 @@ struct rpmsg_channel_info {
+>   * rpmsg_device - device that belong to the rpmsg bus
+>   * @dev: the device struct
+>   * @id: device id (used to match between rpmsg drivers and devices)
+> - * @driver_override: driver name to force a match; do not set directly,
+> - *                   because core frees it; use driver_set_override() to
+> - *                   set or clear it.
+>   * @src: local address
+>   * @dst: destination address
+>   * @ept: the rpmsg endpoint of this channel
+> @@ -53,7 +50,6 @@ struct rpmsg_channel_info {
+>  struct rpmsg_device {
+>         struct device dev;
+>         struct rpmsg_device_id id;
+> -       const char *driver_override;
+>         u32 src;
+>         u32 dst;
+>         struct rpmsg_endpoint *ept;
+> --
+> 2.53.0
+>
 
