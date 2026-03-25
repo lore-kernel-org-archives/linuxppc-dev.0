@@ -1,134 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-18765-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18766-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 118B2FEA83B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2026 09:30:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51148FEA83B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2026 09:32:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fghTC5Prrz2xPL;
-	Wed, 25 Mar 2026 20:30:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774431007;
-	cv=none; b=fWLAikrMWKi3P2O9lXOBfnG/aswI/C5pEOtVGUPnrlHQ3Y6+ZI2N+UgbcwZszygDNAH6oHoSpw+GKCyK3GFoHE4b5OaVkv7WFMfnTh93RywSNcgfwLQe/qFIg6fjPo6nxMJnPavACaXMPGNGW+TEpA9rkQfX0vtk+6VJyjMj+iBBBdo+DGYTYS9pPjZpGSojd4J5aZpZfsYPlZSkOxM1UnLsaekIiGR8sq3AUT1DNBtl7jQg82S8d3fbPoWaoTl+jcfA7Dd5zNJcmAldlc6mplHkvP1QTIG4DXbL6NRqrNKSL5OMcaoyfm13Gk6b6IPyNn3jbyRtKKbmzV6snmJxfw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fghWQ0LGSz2y7r;
+	Wed, 25 Mar 2026 20:32:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1029"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774431121;
+	cv=none; b=HRYQ1JEo9QMpZ5gMGCB/MXRxESMfPZWvo69/NvykfSbdIAthlCFAsd7+PztuNYXFJfIyd/eN7+Lt5ZkDFBaVQ+imjLzuA2P8wMUWPRBX+Nma4z85RVQ6j+wmsLIHLmwH203RrPKjCzUqrG8GHO4FLRcC5H5CWCbVWulczI2AC3QLNLRxyEtL5YMdTIAH6neAsgouWBwAtuYFRqlDpWHJukIJxfB8AxTgHdgpFgVp2rSQ/VIN2VsYLiLWpCsa1poe1ppBWO9xPKQUI95JhA9tYys+gcdK/SZFHsTwOReYuT1Sc/cgAK2XXl6fglWRZhGnyGsW8O+DsmoUcssYFapIog==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774431007; c=relaxed/relaxed;
-	bh=/X6OQFIMMVlzQpHVcxvz5zk00vazKEddYu1a8TXBALA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 In-Reply-To:Content-Type:Content-Disposition; b=CBFbzykhbSVnvuElMMc2tW/w7C09T3kk3W3DIyxjUlVBcJRfkqHSmxeJvOthyzu0RMmV3V/EI9zshSONWIBmqumE7TZL+Vbo0EFVSm68veTfwWPx7bLQSTZFt9UF3pXQ0GyKUjZgtUdQQ5jGQjBLcwcrMNA9OlKdaeCi3j1QAl4O60UTfU5g+ezjobH6Pj6+uYnm7x7hlH0ttiH1H+3dOspmlrSeN5aFSCVFToSe8gnIsyx7trn2kRkEpBus9ifJBi3lyPNS00DDZza6+3JO8ZRrGXZAL/z6d8kPXZQT/s6GbJtKtUvy5tPXG0Q7zRExYx9wprVghl968bacAxwVGg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UIIwNU+n; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UIIwNU+n; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=mst@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1774431121; c=relaxed/relaxed;
+	bh=TF/+cxtFW65/t3CsODFg6Eg+Msha9EyFtJo/8aQf58o=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
+	 MIME-version:Content-type; b=FpqCCaZ4fhnk3glOJwOqJq7Nsdjs70JCniW4nhJS9YHKp4wGfJzsCfs/7wz0LVjzmhnCj/qWnbbk63whOtH3eU2Wj9Jg0mhMsqpjD5xK+T5R2VFRXzGAKARAEqQv76OCFPrkJkjznPUckYoxf/xUmHNqY6YAqbCMk3Rxie+iCBrnCJMMwtwJ/eQmCvVeEQojPuRKvfOKswcSIRaHnrol4QVAAj/82moS/DCgQ3h+app4GjDC+PUyyp/M2jOKtzElq/LRXJ53DuJHxy9AhVrnnDFtqh9lY+TMe0NTzo6eSpeakivRIVIKQEitcV/FAlELVQhcXgHQ8BSE0PsaeaSdtQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=TiFEigAE; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1029; helo=mail-pj1-x1029.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UIIwNU+n;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UIIwNU+n;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=TiFEigAE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=mst@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1029; helo=mail-pj1-x1029.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1029.google.com (mail-pj1-x1029.google.com [IPv6:2607:f8b0:4864:20::1029])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fghTB12yFz2xMt
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2026 20:30:04 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1774430996;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=/X6OQFIMMVlzQpHVcxvz5zk00vazKEddYu1a8TXBALA=;
-	b=UIIwNU+nPUJJvHBBie22wcCjzDVg3JpRuHuXBHiy0rjpN6rDxNAzNlOeQY2QG9m8DWuxEm
-	iaNmUUXhpXPFoYwUfpFYc/GchGtfpCQlnmZs/FYSLP7O1jEI3zV30Rr3AOr8Y9H0wsXSVL
-	jcPPi+BUVu4IYinrziQaqTXzZ8OPLkY=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1774430996;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=/X6OQFIMMVlzQpHVcxvz5zk00vazKEddYu1a8TXBALA=;
-	b=UIIwNU+nPUJJvHBBie22wcCjzDVg3JpRuHuXBHiy0rjpN6rDxNAzNlOeQY2QG9m8DWuxEm
-	iaNmUUXhpXPFoYwUfpFYc/GchGtfpCQlnmZs/FYSLP7O1jEI3zV30Rr3AOr8Y9H0wsXSVL
-	jcPPi+BUVu4IYinrziQaqTXzZ8OPLkY=
-Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
- [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-367-TDBkPqY-MOCVsJCRAUtWhw-1; Wed, 25 Mar 2026 05:29:55 -0400
-X-MC-Unique: TDBkPqY-MOCVsJCRAUtWhw-1
-X-Mimecast-MFC-AGG-ID: TDBkPqY-MOCVsJCRAUtWhw_1774430994
-Received: by mail-wr1-f69.google.com with SMTP id ffacd0b85a97d-43b4d3919e4so2320250f8f.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2026 02:29:54 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fghWN3bZ4z2xMt
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2026 20:32:00 +1100 (AEDT)
+Received: by mail-pj1-x1029.google.com with SMTP id 98e67ed59e1d1-35c124d2613so223255a91.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2026 02:32:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1774431117; x=1775035917; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:message-id:date
+         :in-reply-to:subject:cc:to:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=TF/+cxtFW65/t3CsODFg6Eg+Msha9EyFtJo/8aQf58o=;
+        b=TiFEigAEktPNb6o/AVn6Ral+rLqLCRWumaE9ZKvbb7qSvjdv5GYg8i3rV3PqwRWUdv
+         SfPTqiYMoNuz7f7i1RpNg16uLLDJo+1Px83bEzfxv3hWmsHqYLP9qm0e2eZqQnX4wu8c
+         rLj61DU7dSik5VVzQWO6/S3qbx4zMPWPjRvyx5N9GG3+SS80kVdw7YkkcaLdQyvlfvkk
+         HQrKdQCZtLCb6WHw6GYStLWlGnzRPI9f/oMlOSV/KQ22cCB0kxQZ706BUqr9XFrhePEO
+         KNVbKwRm62K2Dxio1NBeJqqnju3j1D0p2SfQrtiRgbEX3yBXRAmJ6Q7e2fKjmF3dtRg+
+         dWJg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774430994; x=1775035794;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=/X6OQFIMMVlzQpHVcxvz5zk00vazKEddYu1a8TXBALA=;
-        b=rxis7SkTXB8dJi1djdBN4HEnArYBVAocpkqA+wdVsBG/w+w9cZTvwjry7gkO+KlAMU
-         biXME/oRBC24CtQfglOwYhY/0NFs6Qo2/p8A0q0lEplTKkng26k+3ZsYB58pgYJgD4cj
-         LSXdHkrfSPspbRhqwuj13+WC3JGjgnwneTkADkj9SW2Heo+xGgGTeU4jNKZcdviAyYHY
-         ga7qJ9wE5065/j78wQo0ZG9irYEv/R+DYqPW0vnE71JiPK9r9ndL+mw9RGJ0vuvdrwDp
-         pN7rw9yIlagzmbLRZnK172OE/VuK/d7zLcQcv4edJKVwZaDwij2EyzPDEm1EKZ0Q6E2R
-         /lkQ==
-X-Forwarded-Encrypted: i=1; AJvYcCW1ukW6KgMMiR8o/y+0Nvp8zsaW+stbGjE8dIkQBoQVxZvy6t68jQ7/P/FM9tnjEFGHBPH+engVUcgR2eE=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Ywjw/4d7AKizXGwSBbOKYzsz/hX8omZp9gG+oGnUawDdpoFlocc
-	vQhMjJmp6TQFQAcu6TnD/w39ah26T90y0prkOCUCjc4txnPIi7QUdLGuOB167ww1Db0R4HkrCc0
-	1KPUhAvq6yOCvZqQ34HjU45y++zMtGmceAO/FCWA246EpmUUk/1Mxazrt2Tr4qj8ZfI4=
-X-Gm-Gg: ATEYQzzGeV6GWi7+lgJkbfjasnrd8OIpBv0GrldutV9ge6M2SYbEiGNoQQVe7cME101
-	iQkHULISgSOwJvAqH1L1mTf+smL8sO3iLApU2d2aF0FDtVmBXhK7/fno/eCZOJjw2cByw1PwVtz
-	1e+abNa6gsjZx50wuVZ+SS0bTfF0DZ0oggehZTWG9eCuMlg2cvp+MsGZDAJiUo7gpAXfWNuiDgR
-	6nvccqtl/QUO/GuU8wcln9dATRMOUQb2Lfkoe/j2LzyfSPcvx5H5ndeQJjI5BzO1ONJyV4ZAhaO
-	IHPCNfjplhHCfcA7QD0k8zcGRYnAWoQM1yV0Fk8WY52zu529EjFhcKJNA8mYt1kkvyGwj35JJnw
-	OZbpM01BEJAWHidKJ
-X-Received: by 2002:a05:6000:400c:b0:439:be78:e1e9 with SMTP id ffacd0b85a97d-43b88a3d3cdmr3692816f8f.14.1774430993597;
-        Wed, 25 Mar 2026 02:29:53 -0700 (PDT)
-X-Received: by 2002:a05:6000:400c:b0:439:be78:e1e9 with SMTP id ffacd0b85a97d-43b88a3d3cdmr3692727f8f.14.1774430992928;
-        Wed, 25 Mar 2026 02:29:52 -0700 (PDT)
-Received: from redhat.com ([2a0d:6fc0:1525:da00:3ac2:1a22:72ff:4256])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43b6470380asm44280922f8f.24.2026.03.25.02.29.47
+        d=1e100.net; s=20251104; t=1774431117; x=1775035917;
+        h=content-transfer-encoding:mime-version:references:message-id:date
+         :in-reply-to:subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=TF/+cxtFW65/t3CsODFg6Eg+Msha9EyFtJo/8aQf58o=;
+        b=Ia/XqY7o5rOjkUxMebys2n3ll9dhzvxXXEFJupcImvdYuno/GAClof5RmjzihFq6kD
+         ZaoPAUQgKJs7p25w24+8E9F56b9enZN3tKZ+OBDbwah8f8WaWQA49WHL2mWUhWJBBWQx
+         tW+Qlo4HMnNyah5V6wsSZpOAZgge90f4HjPFUkdigZq+tAstNXTClTUyq5/391iJyKYW
+         Iar3jE66/Ob3apw3rPA1lSJ+NHjU6jSyXKqEGYIDirpv9J9rGfWZxgngl3f7XbtvzxAf
+         g5hYJrPqNWnb5MXbUlbF1e7Mne+uIA6H8PKq6t/noWNOw9PCkHemOmStIURwQ4L/7ymZ
+         13qQ==
+X-Forwarded-Encrypted: i=1; AJvYcCW0LIfM/tTtFW1F2nAJU6RaFZNsbcd4b3PPwTi22DIQizzKd+MiCoyuurGCXgnuXxvrm1HhXMypie7AWnk=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxOXd+6r9vYSNzuqncWHFUYtV5yEu1Ju+Rr8MsL3QnqwTO0jUxc
+	xf69EjFtt9gws5wm4qsAZ4shgmcR+hsXW700SWk1CnG8sn+OObtyMonV
+X-Gm-Gg: ATEYQzxqhooCrhLtKTUU8PTV6RquKYkDIbTaLXkTOtMnArbRQUCNxyBnjrIGHX19J0D
+	LlAbiltXqYj7vYRV2+pCm972iWiQlcgu55wPAIoV0hBtK3/fY8SJ6GXa0z11QJmDVmLNsLDW+yg
+	HGgneIN8Xsbuq0YU0zpz7Yk78KYEUkT07RiWBkMOuKSozgJ89npQs0ZTSyes7M1Cdx1WlHpzLGi
+	EqMXUNJJlkaWNRhO4rUCPnDs6US4/+OmPNgXHWxlpu4p2sxhQUAY2EHQ4q289OqFg3FTI6Z1eKN
+	nUjjEBlSUwaZbXhwCciJ6W/q7rlynb1LACD4fBdJ+F2xjBi68lPxdWBvfZGAypmV7OJPMI+lf8g
+	FSMxqh2nPtpo7WTYI46eXCOBn8NXAP7MxDDELVUyIsR8uKAOubXfuvIQtP6Jflj3rlAlXDpMkKm
+	Lq9h5h8wZ0+/res63qVcA0wUNxT1dmKxDi
+X-Received: by 2002:a17:903:37cf:b0:2b0:41bf:ca83 with SMTP id d9443c01a7336-2b0b0a48b14mr30087295ad.23.1774431117028;
+        Wed, 25 Mar 2026 02:31:57 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b0b0129905sm25660755ad.27.2026.03.25.02.31.51
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 25 Mar 2026 02:29:52 -0700 (PDT)
-Date: Wed, 25 Mar 2026 05:29:45 -0400
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Danilo Krummrich <dakr@kernel.org>
-Cc: Russell King <linux@armlinux.org.uk>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Ioana Ciornei <ioana.ciornei@nxp.com>,
-	Nipun Gupta <nipun.gupta@amd.com>,
-	Nikhil Agarwal <nikhil.agarwal@amd.com>,
-	"K. Y. Srinivasan" <kys@microsoft.com>,
-	Haiyang Zhang <haiyangz@microsoft.com>,
-	Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
-	Long Li <longli@microsoft.com>, Bjorn Helgaas <bhelgaas@google.com>,
-	Armin Wolf <W_Armin@gmx.de>, Bjorn Andersson <andersson@kernel.org>,
-	Mathieu Poirier <mathieu.poirier@linaro.org>,
-	Vineeth Vijayan <vneethv@linux.ibm.com>,
-	Peter Oberparleiter <oberpar@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Harald Freudenberger <freude@linux.ibm.com>,
-	Holger Dengler <dengler@linux.ibm.com>,
-	Mark Brown <broonie@kernel.org>, Jason Wang <jasowang@redhat.com>,
-	Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
-	Eugenio =?iso-8859-1?Q?P=E9rez?= <eperezma@redhat.com>,
-	Alex Williamson <alex@shazbot.org>, Juergen Gross <jgross@suse.com>,
-	Stefano Stabellini <sstabellini@kernel.org>,
-	Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	linux-kernel@vger.kernel.org, driver-core@lists.linux.dev,
-	linuxppc-dev@lists.ozlabs.org, linux-hyperv@vger.kernel.org,
-	linux-pci@vger.kernel.org, platform-driver-x86@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org, linux-remoteproc@vger.kernel.org,
-	linux-s390@vger.kernel.org, linux-spi@vger.kernel.org,
-	virtualization@lists.linux.dev, kvm@vger.kernel.org,
-	xen-devel@lists.xenproject.org,
-	linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH 00/12] treewide: Convert buses to use generic
- driver_override
-Message-ID: <20260325052919-mutt-send-email-mst@kernel.org>
-References: <20260324005919.2408620-1-dakr@kernel.org>
+        Wed, 25 Mar 2026 02:31:56 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, arnd@arndb.de, gregkh@linuxfoundation.org
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, nathan@kernel.org, nsc@kernel.org, ojeda@kernel.org, masahiroy@kernel.org, linux@weissschuh.net, tamird@kernel.org, rostedt@goodmis.org, ihor.solodrai@linux.dev, maddy@linux.ibm.com, peterz@infradead.org
+Subject: Re: [PATCH v2] char: nvram: Remove unused nvram_mutex to fix -Wunused-variable warning
+In-Reply-To: <e6db8617-6b12-4f90-967d-85c9f7805823@kernel.org>
+Date: Wed, 25 Mar 2026 14:34:04 +0530
+Message-ID: <7br0nuuz.ritesh.list@gmail.com>
+References: <20260323073220.25798-1-venkat88@linux.ibm.com> <e6db8617-6b12-4f90-967d-85c9f7805823@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -141,111 +91,57 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-In-Reply-To: <20260324005919.2408620-1-dakr@kernel.org>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: iZm_xGarvwn74k7dyNFGVZZERyYFqB6xu-aPvopgTV4_1774430994
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 
-On Tue, Mar 24, 2026 at 01:59:04AM +0100, Danilo Krummrich wrote:
-> This is the follow-up of the driver_override generalization in [1], converting
-> the remaining 11 busses and removing the now-unused driver_set_override()
-> helper.
-> 
-> All of them (except AP, which has a different race condition) are prone to the
-> potential UAF described in [2], caused by accessing the driver_override field
-> from their corresponding match() callback.
-> 
-> In order to address this, the generalized driver_override field in struct device
-> is protected with a spinlock. The driver-core provides accessors, such as
-> device_match_driver_override(), device_has_driver_override() and
-> device_set_driver_override(), which all ensure proper locking internally.
-> 
-> Additionally, the driver-core provides a driver_override flag in struct
-> bus_type, which, once enabled, automatically registers generic sysfs callbacks,
-> allowing userspace to modify the driver_override field.
-> 
-> SPI and AP are a bit special; both print "\n" when driver_override is not set,
-> whereas all other buses (and thus the driver-core) produce "(null)\n" in this
-> case.
-> 
-> Hence, SPI and AP do not take advantage of the driver_override flag in struct
-> bus_type; AP additionally maintains a counter in its custom sysfs store().
-> 
-> Technically, we could support a custom fallback string when driver_override is
-> unset in struct bus_type, but only SPI would benefit from this, since AP has
-> additional custom logic in store() anyways.
-> 
-> (I'm not sure if there are userspace programs that strictly rely on this;
-> driverctl seems to check for both, but I rather not break some userspace tool
-> I'm not aware of. :)
-> 
-> This series is based on v7.0-rc5 with no additional dependencies, hence those
-> patches can be picked up by subsystems individually.
-> 
-> [1] https://lore.kernel.org/driver-core/20260303115720.48783-1-dakr@kernel.org/
-> [2] https://bugzilla.kernel.org/show_bug.cgi?id=220789
-> [3] https://gitlab.com/driverctl/driverctl/-/blob/0.121/driverctl?ref_type=tags#L99
+"Christophe Leroy (CS GROUP)" <chleroy@kernel.org> writes:
 
-vdpa bits:
+> Le 23/03/2026 à 08:32, Venkat Rao Bagalkote a écrit :
+>> v2:
+>>    - Added missing Suggested-by tag from Ritesh Harjani (IBM)
+>> 
+>
+> Patch history must go _after_ the --- below, otherwise it will appear in 
+> the commit message when applied, which is pointless.
+>
+>> drivers/char/nvram.c defines a static mutex 'nvram_mutex' which is never
+>> used. This results in a compiler warning on linux-next builds:
+>
+> It is probably not only linux-next builds, I think the problem exists 
+> since 20e07af71f34 ("powerpc: Adopt nvram module for PPC64")
+>
+>> 
+>>    warning: 'nvram_mutex' defined but not used [-Wunused-variable]
+>> 
+>> Remove the unused definition to avoid the warning.
+>
+> It is not what you are doing.
+>
+> You are just hiding the probleme by saying 'maybe it is used, maybe it 
+> is not used, I don't know I don't care".
 
-Acked-by: Michael S. Tsirkin <mst@redhat.com>
+Venkat, do cares about this warning, and hence he sent the patch in trying to fix it ;)
+I think, I missed seeing the upper #ifdef block of PPC, and hence
+suggested him to use __maybe_unused, instead of complicating it
+further with...  #if defined(CONFIG_PPC32) || defined(CONFIG_X86) || defined(CONFIG_M68K),
 
-I assume it'll all be merged together?
+> Please properly fix the problem instead.
+>
 
-> Danilo Krummrich (12):
->   amba: use generic driver_override infrastructure
->   bus: fsl-mc: use generic driver_override infrastructure
->   cdx: use generic driver_override infrastructure
->   hv: vmbus: use generic driver_override infrastructure
->   PCI: use generic driver_override infrastructure
->   platform/wmi: use generic driver_override infrastructure
->   rpmsg: use generic driver_override infrastructure
->   vdpa: use generic driver_override infrastructure
->   s390/cio: use generic driver_override infrastructure
->   s390/ap: use generic driver_override infrastructure
->   spi: use generic driver_override infrastructure
->   driver core: remove driver_set_override()
-> 
->  drivers/amba/bus.c                 | 37 +++------------
->  drivers/base/driver.c              | 75 ------------------------------
->  drivers/bus/fsl-mc/fsl-mc-bus.c    | 43 +++--------------
->  drivers/cdx/cdx.c                  | 40 ++--------------
->  drivers/hv/vmbus_drv.c             | 36 ++------------
->  drivers/pci/pci-driver.c           | 11 +++--
->  drivers/pci/pci-sysfs.c            | 28 -----------
->  drivers/pci/probe.c                |  1 -
->  drivers/platform/wmi/core.c        | 36 ++------------
->  drivers/rpmsg/qcom_glink_native.c  |  2 -
->  drivers/rpmsg/rpmsg_core.c         | 43 +++--------------
->  drivers/rpmsg/virtio_rpmsg_bus.c   |  1 -
->  drivers/s390/cio/cio.h             |  5 --
->  drivers/s390/cio/css.c             | 34 ++------------
->  drivers/s390/crypto/ap_bus.c       | 34 +++++++-------
->  drivers/s390/crypto/ap_bus.h       |  1 -
->  drivers/s390/crypto/ap_queue.c     | 24 +++-------
->  drivers/spi/spi.c                  | 19 +++-----
->  drivers/vdpa/vdpa.c                | 48 ++-----------------
->  drivers/vfio/fsl-mc/vfio_fsl_mc.c  |  4 +-
->  drivers/vfio/pci/vfio_pci_core.c   |  5 +-
->  drivers/xen/xen-pciback/pci_stub.c |  6 ++-
->  include/linux/amba/bus.h           |  5 --
->  include/linux/cdx/cdx_bus.h        |  4 --
->  include/linux/device/driver.h      |  2 -
->  include/linux/fsl/mc.h             |  4 --
->  include/linux/hyperv.h             |  5 --
->  include/linux/pci.h                |  6 ---
->  include/linux/rpmsg.h              |  4 --
->  include/linux/spi/spi.h            |  5 --
->  include/linux/vdpa.h               |  4 --
->  include/linux/wmi.h                |  4 --
->  32 files changed, 88 insertions(+), 488 deletions(-)
-> 
-> 
-> base-commit: c369299895a591d96745d6492d4888259b004a9e
-> -- 
-> 2.53.0
+I agree, make sense.
+
+> I think the fix is probably to remove the #ifdef CONFIG_PPC32 around 
+> IOC_NVRAM_SYNC.
+> If you think it is important to return -ENOTTY on CONFIG_PPC64, just add:
+>
+
+That make sense and I should have thought of that.
+
+However, I looked at the suggestions from Arnd, and I too agree that all
+underneath function operations already do their own locking, so I agree
+that we could just kill this nvram_mutex lock itself.
+
+-ritesh
 
 
