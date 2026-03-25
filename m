@@ -1,163 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-18784-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18785-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A55C109C04A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2026 17:29:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB8EF109C04A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2026 17:48:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fgv6744D5z2ySc;
-	Thu, 26 Mar 2026 04:29:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:d116::" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774459759;
-	cv=pass; b=UO+CpAEI+5RU0VnqSIoFiiothlGyiJaUCNiX6AXQeIsXZwSG98rhrN0W8bwGDe4TauWCWsX3cC4nj2oAiavdmBmhNZdIybsh/yO9e8fgTMdBnssqTDXl18tqOOyRa9HbeA2QKRNfgQrgGaKgCsHopHVAJOzisqt12hWu9lzZBs67T2QmQn/aFN73WXTLzdsn/qKARXR9641ZCxRR63poFJ0KXl0y97rjdyv3tLD3Rodd1L3WZ85+deTbwqaZDo95z5wMOLJGqWUV3xFdl3qfs+w9FqSVO6MUykRWFxzwH8Ov87Sjh/uVsCsAE6vwo1IbqlKnIv+PH2ebZ9x+6Uns4g==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774459759; c=relaxed/relaxed;
-	bh=XxHfHViKfT/KJvdZf18l85ejznK+DDKKxrW5WwShbCU=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=Q1pKuanBCUU6N77QAwDs49s4cAbHNLvw2c1cVhkqM8chMnTt2pMIAjNXKewP56q/j14Du2IVIcAPtXRsZtXdtCXpDLMy29TjdLtXqxBPGmpHIyri37KVAlfWSJ+JPwnW4u1Waf3gPHx74Ow2zTo6TS7/Z2SPISeJbp6a5gKEjW0W9Fl9KJQCTf2i3MJjQ7vqA7nKtztNEz0JFYdzv+V4Wdf7ttZS4kONO9+fe2pAzaufryazBZNne9xkDw/IpVl7TAInRkgCGQQLHK9cGkewIfjgykwTZx5dQU1XSU+Hm8WUbPyYiMqKpUoQfoKMLrtqf7CzaKoIXxe05h8yxUbpgg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=outlook.com; dkim=pass (2048-bit key; unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=GTqwa1eW; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:d116::; helo=ph8pr06cu001.outbound.protection.outlook.com; envelope-from=mhklinux@outlook.com; receiver=lists.ozlabs.org) smtp.mailfrom=outlook.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=outlook.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fgvX04Wjsz2yY0;
+	Thu, 26 Mar 2026 04:48:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::429"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774460896;
+	cv=none; b=K6uCTvfk9JihL1DKvY+GLzZdZZXPi3v9KsNQb0VnZg4fMQ4ftBa3vB1EE2jH5dnMnq9N2HhK5cTWF+PZgpI3dVSHCUA12xHKZYhrN8gORQktAZqGeJr/Q3ZCC1jZJwdvkTm5B8VtWbDYWgPPJuSBfsHEVTqxtr4v3CKo9Y/8sB0C/+wPWNoCO6sz1livFbOZqcCq2OuXR4W8LwikJxtS7aE+K71FOK/hFItttz54hEwL4PcEu2xHsREMklWTj6j9ex80/YJCVWWa2vBwE1i15U087olwlHG7lwKCbKhVuoZ6R2dgZHWoMSY0UosMKgvIKZDHW+gLWK+uRKOkgwRdLg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1774460896; c=relaxed/relaxed;
+	bh=i+6XwSK5H5qgv00vvEDadVF3Hm2TplkNoSLsjeJsXPE=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
+	 MIME-version:Content-type; b=HpjPiLup52cVJJbdDhttlE7T1xgG52Q8QWPBxYdyx9ihJCWYJTGZtyAxMPgcT81fph3uVJKXQ+mvPamsQCKI7xZ2xPhtZPSXzbNQnwqMtg4aQBZ+1KokQvbY1y3pSzQykTMe6J/0u3UiU7CVISMYqe9+mI4If3242U7cbYXJUWj+JhsPvgZ2Hcf3n/Zhf5dbIotZuA2+y9ob+UJeb9I7NjJf7jRRuyONqmUzByrKWofho3GLGpA0jUroH4KSIdlP9tX6/BGSFCieUzh0vD8qlamR1cH5dMeUHUo8f7Xwm5CMEvbOSMX4ZNTf8PfzXGTfFR/4qLop4/uvDyw0fX9xXg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=XoQtOvkm; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::429; helo=mail-pf1-x429.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=GTqwa1eW;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=XoQtOvkm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=outlook.com (client-ip=2a01:111:f403:d116::; helo=ph8pr06cu001.outbound.protection.outlook.com; envelope-from=mhklinux@outlook.com; receiver=lists.ozlabs.org)
-Received: from PH8PR06CU001.outbound.protection.outlook.com (mail-westus3azolkn190120000.outbound.protection.outlook.com [IPv6:2a01:111:f403:d116::])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::429; helo=mail-pf1-x429.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com [IPv6:2607:f8b0:4864:20::429])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fgv661Kh0z2yS4
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2026 04:29:18 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=A7niL8dK+tae6540T7P32RBaytyVW7zolF8lluf0r4R160iZvxMe8wz0w6vbYtaQIpwAjSMDr+dMe7EGtduuKqfdos64LihelGZuCCOvseUiqQzHnwIqIsGfLAquA+kP1kaJC4nC0Juoh386GRR1UboUJt1ZJpTBqskj9+q4dqEkMD+eo37Daomf0FTM/llT3T+FkOsxf6ip5NsucUlAUbbIKFudkCTIevCZSpHq1zthYC9rHMNAlt+RoZtUcQnHPGPeFUdpTQr5dFiDq9+qd6tmTeP8UAOZQdiObQLazoX5D5aGbLZORgkibaii+N6nHQuWHwzincJVMPUJAS3QKA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=XxHfHViKfT/KJvdZf18l85ejznK+DDKKxrW5WwShbCU=;
- b=UQ+SKI6p0Uxa6vVjtOYIiFTOYBWymNEmhVqJEKQ2Ufm+ODmhzci0x2irjrsmwG64klbVF9J7sj+F2jQoHC3uAGoJ1htf8Uqhz3S0bUayiUYcr4vKyGe+wHmjOkEx2Bs9ConhKsB3+SHH7xSGCfcRuSpMJOlOXtyhPJxAKBwecZrJLzflw7mt7kQKuKe37lFnilDoVuvFx88wLp/3c8C1q9dOsSsCLXX9tPsOz9ZAYgYY6FW08a6ykjdyOCuVGAthPDR7bsWiN/7eC28/QRDASNCgLixtRiDxD1Ru8Ujfxy6iJaisNN5X6xet/Pa5o4QTajUbJcfLdjpiqUHP1Bv8Lg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
- dkim=none; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=XxHfHViKfT/KJvdZf18l85ejznK+DDKKxrW5WwShbCU=;
- b=GTqwa1eWCRPC2rPEJoIg/aO0mDmO8aFoToC/PtO/QThE7d3SMDxLssVR/NFejVM+Y9Hwv6sZKhwmiGQvkBk7aD6FuxiBXjz01Bs/kDXcuattVT5iNAmikOt+xf1WFvobaERn2DKK4x5pk8fOblaBeuPQUyjxzwIKEksFKdZoX5fiLRr5njHKSqVs83dhBG3WVS2NTYEAtSFViFFeDuHowwM7hPDF4Dz2V2Lr0Lgp3bgpjvIvy2j88oZDVTzm0FVKbEAsmPQKIbfjqEP3Ttr32ZNbLlCvovbwSvq6kJ/xwEg5JXYa7qwEoHLp/iqJjT5UFZvY3jw+p+xihJljvzUALQ==
-Received: from BN7PR02MB4148.namprd02.prod.outlook.com (2603:10b6:406:f6::17)
- by SA3PR02MB11069.namprd02.prod.outlook.com (2603:10b6:806:45f::5) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.20; Wed, 25 Mar
- 2026 17:28:50 +0000
-Received: from BN7PR02MB4148.namprd02.prod.outlook.com
- ([fe80::6007:d1a1:bcf9:58ef]) by BN7PR02MB4148.namprd02.prod.outlook.com
- ([fe80::6007:d1a1:bcf9:58ef%2]) with mapi id 15.20.9745.019; Wed, 25 Mar 2026
- 17:28:49 +0000
-From: Michael Kelley <mhklinux@outlook.com>
-To: Danilo Krummrich <dakr@kernel.org>, Russell King <linux@armlinux.org.uk>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki"
-	<rafael@kernel.org>, Ioana Ciornei <ioana.ciornei@nxp.com>, Nipun Gupta
-	<nipun.gupta@amd.com>, Nikhil Agarwal <nikhil.agarwal@amd.com>, "K. Y.
- Srinivasan" <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, Wei
- Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>, Long Li
-	<longli@microsoft.com>, Bjorn Helgaas <bhelgaas@google.com>, Armin Wolf
-	<W_Armin@gmx.de>, Bjorn Andersson <andersson@kernel.org>, Mathieu Poirier
-	<mathieu.poirier@linaro.org>, Vineeth Vijayan <vneethv@linux.ibm.com>, Peter
- Oberparleiter <oberpar@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>, Alexander Gordeev
-	<agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, Harald Freudenberger
-	<freude@linux.ibm.com>, Holger Dengler <dengler@linux.ibm.com>, Mark Brown
-	<broonie@kernel.org>, "Michael S. Tsirkin" <mst@redhat.com>, Jason Wang
-	<jasowang@redhat.com>, Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
-	=?iso-8859-1?Q?Eugenio_P=E9rez?= <eperezma@redhat.com>, Alex Williamson
-	<alex@shazbot.org>, Juergen Gross <jgross@suse.com>, Stefano Stabellini
-	<sstabellini@kernel.org>, Oleksandr Tyshchenko
-	<oleksandr_tyshchenko@epam.com>, "Christophe Leroy (CS GROUP)"
-	<chleroy@kernel.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"driver-core@lists.linux.dev" <driver-core@lists.linux.dev>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
-	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-	"platform-driver-x86@vger.kernel.org" <platform-driver-x86@vger.kernel.org>,
-	"linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>,
-	"linux-remoteproc@vger.kernel.org" <linux-remoteproc@vger.kernel.org>,
-	"linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
-	"linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>,
-	"virtualization@lists.linux.dev" <virtualization@lists.linux.dev>,
-	"kvm@vger.kernel.org" <kvm@vger.kernel.org>, "xen-devel@lists.xenproject.org"
-	<xen-devel@lists.xenproject.org>, "linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, Gui-Dong Han <hanguidong02@gmail.com>
-Subject: RE: [PATCH 04/12] hv: vmbus: use generic driver_override
- infrastructure
-Thread-Topic: [PATCH 04/12] hv: vmbus: use generic driver_override
- infrastructure
-Thread-Index: AQEWuxLbDbmJwzc+SqngUlED+v4GuwG+YWLCtz2FqZA=
-Date: Wed, 25 Mar 2026 17:28:49 +0000
-Message-ID:
- <BN7PR02MB414825D0532A1DFE16F3B671D449A@BN7PR02MB4148.namprd02.prod.outlook.com>
-References: <20260324005919.2408620-1-dakr@kernel.org>
- <20260324005919.2408620-5-dakr@kernel.org>
-In-Reply-To: <20260324005919.2408620-5-dakr@kernel.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: BN7PR02MB4148:EE_|SA3PR02MB11069:EE_
-x-ms-office365-filtering-correlation-id: 3043ded6-cfcb-46d1-33ce-08de8a93fa3b
-x-microsoft-antispam:
- BCL:0;ARA:14566002|13091999003|461199028|8062599012|19110799012|8060799015|41001999006|31061999003|37011999003|15080799012|1602099012|53005399003|40105399003|31055399003|440099028|4302099013|3412199025|10035399007|102099032;
-x-microsoft-antispam-message-info:
- =?iso-8859-1?Q?xDdh4OAArEx6ipBroHecRSDruWPZ8ExFDTLtZ5cfbygyWS3S9xLqnFxe5s?=
- =?iso-8859-1?Q?a+ujbZc8vkR+pPBqoIu5ezFO7ZTQ0YMwUIho6WDhB8OHb5pGXMG44l5HxP?=
- =?iso-8859-1?Q?2vFoGJnVFSczIt6xeqUty9w+A0CzDDQjzi/ah2ScPaReFloPOT9u920x/Q?=
- =?iso-8859-1?Q?to6/PgXLfCt/+1NiOgPNFWZDryyzPWZlQXuPs5B9eLA0b/oJZLe55S1pa9?=
- =?iso-8859-1?Q?Y36FcKSy427n3M2rboUDjlP99+ndwk0CR6mUIm+t+dqAD2cOypVbw879Hi?=
- =?iso-8859-1?Q?XZIuNTaV1JlNfgfQ2T2w8eiG4zIyG1JIFswZ1DeYcdEYrMZauDEI7uGISt?=
- =?iso-8859-1?Q?C3RZ9ey0pFmhuctIIHxHUvs4oS968ub/ml+NRRJm6z8h+FzlC1Cp8KkCnt?=
- =?iso-8859-1?Q?voV3ynhpZRsb6Fjo7N+tiy2Vdvk+7L/rnHwk2/6toeLMDYknHd/nNjFhSG?=
- =?iso-8859-1?Q?6UyvYRI01YvAMZ6fpkCv2wF6CnAfZs0bcZJvXLDOvGsPbp93+DduaG9xGm?=
- =?iso-8859-1?Q?VNmNwcarrgCyoijB37EBaJbfXXLYpiPUrFJ2tWYHgjTmtbDt19IVmwgGcK?=
- =?iso-8859-1?Q?Gy5QSXMYKvy04YgQNa0RiQWKi0F9ECheTBwVoamVN5A/vj0XV4KGHdQgLa?=
- =?iso-8859-1?Q?3Rj1TcVwREklQpnpiFLI320GaEUL8JkxffxhJ8HUC5sPTYaKwwLKp3cj8Z?=
- =?iso-8859-1?Q?iwncBsf9WLRorbM8jkj+jKBb6zWet+qu83dQbCDgs0WXuaWTqnQTvSE5cy?=
- =?iso-8859-1?Q?+tm/BjYApvnbeiGnEbf/xCGzrXL55OcdWW0B6RY0Jadk7DyPAfgedFTiy3?=
- =?iso-8859-1?Q?3k+KbsMfO0zJWK9is3LGC1Vvoe7L9nrGWGQsOQPldv0fHlJaldowbAKDv4?=
- =?iso-8859-1?Q?9WNZYQdcXB4eG4iY0X5grHsh382uInTvK6EsWF4nsumGRenwLfI73pa7HL?=
- =?iso-8859-1?Q?cUP9jrZdOJlkwqHHyqi/bpuaH272HXE+UR5s2YocuLCK69o9dJOQXL1r4T?=
- =?iso-8859-1?Q?f9ObHjpDhoKGIUoEBowjh+YN0hrnlFaKaBaXFHhMhk4ktfvWaouBlSiRV/?=
- =?iso-8859-1?Q?QBwKb0V7oNXWC6MaKJYDN9MExgBx8a9akOy1PyhzXvSlPjBPuvT8dyKhFS?=
- =?iso-8859-1?Q?TMkVJyHhlyaWETFYlmQ4y4/joJuO/fBGf1cDUcsNn5dokg1D5e47+l7AbL?=
- =?iso-8859-1?Q?QKRZx67WyvRLZEzVfZIXyLC/h4GjRDfwqPs=3D?=
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?iso-8859-1?Q?mFtu/wRLMR80m+TtFnxJ48B9YizrMj6EnaIIOgVUnJ0WRooSmL4s/c64+0?=
- =?iso-8859-1?Q?BRUpvbE6jLLeEAcXqx2z4Oia+NoNpzg4qpVdbCK1F33yVfJ0zP37/uCCf6?=
- =?iso-8859-1?Q?dStD6w9DHSf0J29wLC7/fB0Iiw1A4kEzhFThe2gAQuSTaHSMPXVukYVdu5?=
- =?iso-8859-1?Q?0ZEjvHG2Mst9TO4qnhcP+dYVnrARk3WycHxGa98pqk3hMlO41QUhPYyD1S?=
- =?iso-8859-1?Q?qiMDNp3LLTXbcLVc7PkBNSzg723bKdZ9W77OvGgSz6NEe/VWl+YFcp5UXu?=
- =?iso-8859-1?Q?uWyoHtnrwG8pvZsn0GQ7kS5IyNhhZ/0CT2WlfY2vwOYM3zUkJi1WNStsrh?=
- =?iso-8859-1?Q?rEeIiWXucV3wjUiPTz/aVCxMVtn/ayI7vSFfeBMfR0D6UO1E7y2lOh+vYz?=
- =?iso-8859-1?Q?hub3yazex+VoZxOSVu39cQn/yIsTS9/T9SNsjUBnGFySpbcr4IFalfEoIo?=
- =?iso-8859-1?Q?W4yWlZVzYkmIcRmHUh3ZfHAMPQRyUImFPh1vYEa/jcoP1MDvrD9PCZICjQ?=
- =?iso-8859-1?Q?ViOywWR/g3MqPViFUdoiWfR2VlNKAKtHCqzTFtjGap7m0iH7H5Q5OLOCWa?=
- =?iso-8859-1?Q?wTgsyoosfRgaNXvKo8Blw5yxmPDzmfznJCcXqHgC+RobZac3e75k80KtCm?=
- =?iso-8859-1?Q?/ApbKF6+ybIwWQsmEbR2hNcBOa7t+ObJ8WloPHrGk3Bdp1mKuK3kQIJ49+?=
- =?iso-8859-1?Q?wmQ0tOgrN3UVjyI0mFdllicH3BNNTQQkcbVxRkGFW7MrPkCxkevIzQLH+5?=
- =?iso-8859-1?Q?N8tLzVGJXVMIl4H0Q4qgLgYLP+iPV8nHrDcJnZ6K+wpaIiULPdOS/uHLJ1?=
- =?iso-8859-1?Q?tfEdyILZHzwZrK2C2wrXMOVb2vq7gRtsLkHNMVq1lTOpJLowDRfkmaLfLo?=
- =?iso-8859-1?Q?8A+xgwdZry5BIGfYE6Q7NMsfKn+g8rIp8/yamr4R8sgTqAaWBHQESvqblI?=
- =?iso-8859-1?Q?TieTWqxSo5HJ3TDHVgkRXgC63CDxzg2dIKF1J1sKm7boa7ig7Rp84upZE+?=
- =?iso-8859-1?Q?Rs5Xq90tdKxWHNQpe29DvSEwVlQYmqVSx9LGSXuExmKIkiHKcS0Xn4z7//?=
- =?iso-8859-1?Q?lErzUgGK2FNrC9iFQzFGrg584FgJDjKQnITcprs8TI8wtoUhj+Vv8z9IM3?=
- =?iso-8859-1?Q?vFt7aNk/Y42iuZkeYSqFghCstl976KI29cqIl5P0iUo9tokW5Usfe89+od?=
- =?iso-8859-1?Q?na9qZS6uBtNnD8RDxUr2s6PkOUJQ/EhqJtxp6Kf2m2BVGLOjLK/D4E73A7?=
- =?iso-8859-1?Q?SZHPF6ZjZaVF78TnsLE8Jfcov57HBw3DxSgPk40VzlHZwuXya3ffTcEkSZ?=
- =?iso-8859-1?Q?OJ/IWTK++eEIt6tM0MpbZ31JfyDD3jp9XgyWNWJKjren3/fsE6hULgGP8l?=
- =?iso-8859-1?Q?X9qaEoQ7lAXLAsR/ksnRqKJWLh/SiBnTac7kf6PE/qG2TM4OlmzJw=3D?=
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fgvWy6nYJz2yVL
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2026 04:48:13 +1100 (AEDT)
+Received: by mail-pf1-x429.google.com with SMTP id d2e1a72fcca58-823c56765fdso57392b3a.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2026 10:48:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1774460892; x=1775065692; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:message-id:date
+         :in-reply-to:subject:cc:to:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=i+6XwSK5H5qgv00vvEDadVF3Hm2TplkNoSLsjeJsXPE=;
+        b=XoQtOvkm2Z7XualUCsU8RJUD6ERQXwQY3BcG3D9r6D0mKi8v31eOz0ONBGHQJATACI
+         Ghf/lAhZ+LPzaSRh1ypKxXYqmoAYJhujuump19HZTuRdJFYJxThKv7ejT1r9Lgr/lRgb
+         hIjS/HIo5FXoEN7VnNwwX6DAdtJVt7k3Z2ntJhPTiL83eARYkI+l7+yslLB+ACRwLQtk
+         fkDcz3bwwMqL085gqlsNd4ZfcC29YuYpU0uwN/YgXBYWdVaM2IGKo/h/bv3GWwDttuZo
+         rHbXThUJQW3ex5sRDNZb+gXXdGLATMsQ4Jupdz7DlSsXE8eUNimlg1r3HTWcqJ89o/m6
+         cmsA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774460892; x=1775065692;
+        h=content-transfer-encoding:mime-version:references:message-id:date
+         :in-reply-to:subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=i+6XwSK5H5qgv00vvEDadVF3Hm2TplkNoSLsjeJsXPE=;
+        b=iF2VVCqvv1Qh+QhTf3bIXXndoiVaUgS7aRlhhD033op7WBi4SO/So/YIspUDAwvS3S
+         Y/rfstzjD9WUg4xsmGka7hhDtAzqhn16Q9k1NLKOVNrM4YqMTuPBzO5/baz/o6i1D8PQ
+         qsJWTTJwSNfu2mg6Wan1l0nReA8on0iyjCnxmgVIXr8Xv8j7h2HUB1KFsjxAEOuO1USQ
+         j8rvYpAJVKWhpo2d7BZhyOY/6sZCpj/XzzbCuexpEgdNW7L2g4MnEhE4CIFTpYaTc0zK
+         BsjvfV+8JgjbNeeqX6o8RwbzPd4agMipabbKJLzViJwbouHKL94a8+fZBM5DJf6W5pPY
+         sW7w==
+X-Gm-Message-State: AOJu0Yz7UEn/TjXxcH3yCmJCL5zn2N4zJHCpb0c7VbLdW8qhufHW55WQ
+	MfwrUyuatevELUV8BTrJsm9ZWn5tSL7/KnUR9q9ZlfwysZSNU57La6S7
+X-Gm-Gg: ATEYQzxOTxp9X3Pg7nwwgzE7zSc6mu6eadkWE7bRdii/rinyw6anw1zLBwDld8bNLLp
+	LTtD/W6v5QN/cUjqFF4o9tbywCZu85Hl33PaSfdBbBshtLy4mZBGSPM2KNq4SSbuQkruL8Ub1SR
+	1F4QoWKPbrt4aTGS5HJzuvUDvjptItFaf6X96R2ZdK47SIMC5YWVv6mEbntPlmsUq+0cY6h3O0b
+	uDBfV9iW94ch31K0f+GJwA3jk28qc1QQTjputBN9Fg876yV9XsMkS8ZG7ELHzHrIk0ibNRcMYWP
+	BQIteeXYocIgvAYWjgAuMLVDjxc4zA/GD2E39TqTOG9kLsm5jF9JRRC7LtZdGd4EQXLb5gG2oyL
+	WbWZA09D0t7qyJjx30CNDdBbDadsfjhGE2zfI5hTnAS8CD1rpgfFc5xmKqhvYaoRbHLIKfkZ4q9
+	pfeGJ0hBGJQTvPpHe6USnFGg==
+X-Received: by 2002:a05:6a00:c95:b0:81f:17b:c70f with SMTP id d2e1a72fcca58-82c6df62c67mr4543895b3a.29.1774460891508;
+        Wed, 25 Mar 2026 10:48:11 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82c7d1e63c7sm388961b3a.2.2026.03.25.10.48.08
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 25 Mar 2026 10:48:10 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Gaurav Batra <gbatra@linux.ibm.com>, Dan =?utf-8?Q?Hor=C3=A1k?=
+ <dan@danny.cz>
+Cc: linuxppc-dev@lists.ozlabs.org, amd-gfx@lists.freedesktop.org, Donet Tom <donettom@linux.ibm.com>
+Subject: Re: amdgpu driver fails to initialize on ppc64le in 7.0-rc1 and newer
+In-Reply-To: <2d5fd6ec-003f-4d24-aa2e-06ba94d6cba4@linux.ibm.com>
+Date: Wed, 25 Mar 2026 23:12:16 +0530
+Message-ID: <341nolfr.ritesh.list@gmail.com>
+References: <20260313142351.609bc4c3efe1184f64ca5f44@danny.cz> <1phlu3bs.ritesh.list@gmail.com> <20260315105021.667e52d4a99b154ef1e6aa34@danny.cz> <da93575e-92ad-4a7b-83df-1cb956bd2bc2@linux.ibm.com> <5x6knm5q.ritesh.list@gmail.com> <2d5fd6ec-003f-4d24-aa2e-06ba94d6cba4@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -170,133 +91,48 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-X-OriginatorOrg: outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: BN7PR02MB4148.namprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-CrossTenant-Network-Message-Id: 3043ded6-cfcb-46d1-33ce-08de8a93fa3b
-X-MS-Exchange-CrossTenant-originalarrivaltime: 25 Mar 2026 17:28:49.5574
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
-X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA3PR02MB11069
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 
-From: Danilo Krummrich <dakr@kernel.org> Sent: Monday, March 23, 2026 5:59 =
-PM
->=20
+Gaurav Batra <gbatra@linux.ibm.com> writes:
 
-In the patch "Subject" line, the prefix for changes for vmbus_drv.c has
-historically been "Drivers: hv: vmbus:".  It's a mouthful, but has been kep=
-t
-fairly consistent over time.
+> Hello Ritesh
+>
+> I think, what you are proposing to add dev->bus_dma_limit in the check 
+> might work. In the case of PowerNV, this is not set, but 
+> dev->dma_ops_bypass is set. So, for PowerNV, it will fall back to how it 
+> was before.
+>
+> Also, since these both are set in LPAR mode, the current patch as-is 
+> will work.
+>
+> Dan, can you please try Ritesh proposed fix on your PowerNV box? I am 
+> not able to lay my hands on a PowerNV box yet.
+>
 
-> When a driver is probed through __driver_attach(), the bus' match()
-> callback is called without the device lock held, thus accessing the
-> driver_override field without a lock, which can cause a UAF.
->=20
-> Fix this by using the driver-core driver_override infrastructure taking
-> care of proper locking internally.
->=20
-> Note that calling match() from __driver_attach() without the device lock
-> held is intentional. [1]
+It would be this diff then. Note, I have only compile tested it.
 
-I've tested this patch in a Hyper-V VM with VMBus devices. Did a simple
-VMBus driver override, listed the overrides, and then removed the override.
-All the right things happened with driver binding, unbind, etc.
+diff --git a/arch/powerpc/kernel/dma-iommu.c b/arch/powerpc/kernel/dma-iommu.c
+index 73e10bd4d56d..8b4de508d2eb 100644
+--- a/arch/powerpc/kernel/dma-iommu.c
++++ b/arch/powerpc/kernel/dma-iommu.c
+@@ -67,7 +67,7 @@ bool arch_dma_unmap_sg_direct(struct device *dev, struct scatterlist *sg,
+ }
+ bool arch_dma_alloc_direct(struct device *dev)
+ {
+-       if (dev->dma_ops_bypass)
++       if (dev->dma_ops_bypass && dev->bus_dma_limit)
+                return true;
 
-Tested-by: Michael Kelley <mhklinux@outlook.com>
+        return false;
+@@ -75,7 +75,7 @@ bool arch_dma_alloc_direct(struct device *dev)
 
-Modulo updates to the comments that I've noted below (and the patch
-Subject line mentioned above):
+ bool arch_dma_free_direct(struct device *dev, dma_addr_t dma_handle)
+ {
+-       if (!dev->dma_ops_bypass)
++       if (!dev->dma_ops_bypass || !dev->bus_dma_limit)
+                return false;
 
-Reviewed-by: Michael Kelley <mhklinux@outlook.com>
-
->=20
-> Link: https://lore.kernel.org/driver-core/DGRGTIRHA62X.3RY09D9SOK77P@kern=
-el.org/ [1]
-> Reported-by: Gui-Dong Han <hanguidong02@gmail.com>
-> Closes: https://bugzilla.kernel.org/show_bug.cgi?id=3D220789
-> Fixes: d765edbb301c ("vmbus: add driver_override support")
-> Signed-off-by: Danilo Krummrich <dakr@kernel.org>
-> ---
->  drivers/hv/vmbus_drv.c | 36 +++++-------------------------------
->  include/linux/hyperv.h |  5 -----
->  2 files changed, 5 insertions(+), 36 deletions(-)
->=20
-> diff --git a/drivers/hv/vmbus_drv.c b/drivers/hv/vmbus_drv.c
-> index bc4fc1951ae1..bc8dfd136f3c 100644
-> --- a/drivers/hv/vmbus_drv.c
-> +++ b/drivers/hv/vmbus_drv.c
-
-[snip]
-
->=20
-> @@ -711,9 +682,11 @@ static const struct hv_vmbus_device_id
-> *hv_vmbus_get_id(const struct hv_driver *
->  {
->  	const guid_t *guid =3D &dev->dev_type;
->  	const struct hv_vmbus_device_id *id;
-> +	int ret;
->=20
->  	/* When driver_override is set, only bind to the matching driver */
-
-This reference to "driver_override" in the comment was originally to the
-"driver_override" field in struct hv_device, which has now gone away. Bette=
-r
-wording would be "If a driver override is set, only bind ...."
-
-> -	if (dev->driver_override && strcmp(dev->driver_override, drv->name))
-> +	ret =3D device_match_driver_override(&dev->device, &drv->driver);
-> +	if (ret =3D=3D 0)
->  		return NULL;
->=20
->  	/* Look at the dynamic ids first, before the static ones */
-> @@ -722,7 +695,7 @@ static const struct hv_vmbus_device_id *hv_vmbus_get_=
-id(const struct hv_driver *
->  		id =3D hv_vmbus_dev_match(drv->id_table, guid);
->=20
->  	/* driver_override will always match, send a dummy id */
-
-Again, the reference to "driver_override" no longer makes sense. The
-original comment is a bit opaque in its own way. Let me suggest this new
-wording:
-
-If there's a matching driver override, this function should succeed. So
-return a dummy device ID if no matching ID is found.
-
-> -	if (!id && dev->driver_override)
-> +	if (!id && ret > 0)
->  		id =3D &vmbus_device_null;
->=20
->  	return id;
-> @@ -1024,6 +997,7 @@ static const struct dev_pm_ops vmbus_pm =3D {
->  /* The one and only one */
->  static const struct bus_type  hv_bus =3D {
->  	.name =3D		"vmbus",
-> +	.driver_override =3D	true,
->  	.match =3D		vmbus_match,
->  	.shutdown =3D		vmbus_shutdown,
->  	.remove =3D		vmbus_remove,
-> diff --git a/include/linux/hyperv.h b/include/linux/hyperv.h
-> index dfc516c1c719..bf689d07d750 100644
-> --- a/include/linux/hyperv.h
-> +++ b/include/linux/hyperv.h
-> @@ -1272,11 +1272,6 @@ struct hv_device {
->  	u16 device_id;
->=20
->  	struct device device;
-> -	/*
-> -	 * Driver name to force a match.  Do not set directly, because core
-> -	 * frees it.  Use driver_set_override() to set or clear it.
-> -	 */
-> -	const char *driver_override;
->=20
->  	struct vmbus_channel *channel;
->  	struct kset	     *channels_kset;
-> --
-> 2.53.0
->=20
-
+        return is_direct_handle(dev, dma_handle);
 
