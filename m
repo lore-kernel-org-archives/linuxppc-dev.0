@@ -1,89 +1,54 @@
-Return-Path: <linuxppc-dev+bounces-18788-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18789-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2467D109C059
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2026 19:58:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ACD05109C059
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2026 20:00:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fgyQF4gNFz2yYJ;
-	Thu, 26 Mar 2026 06:58:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774468709;
-	cv=none; b=E+jJwiz/AjG8ND5Z7P61DtVlrwauKo9IZVHNaHm0tnNPdvfovYNd6ahr8/gVcYMmH3m6pQfTjFOuSQr8AlebnEi675ypwyruPQue2e5f/kgVK2UWweZm7cmWAZdnqEkmnbiKNiAKtz6aL1VLYnTGMFtupg4yYKhnRMkj//JVz9eN1YG07kjwygzNKSM5iaBMi3ANiURYmvIcS8ricuP3N33lyw4sc/w7axsorJ1v79zE52ckjxK3Kv4912njmi7eBhCxBMqPDOJPoY4FkTTofaSBs3aOMBvYHIfJB9opF+zBT6LsBkK2mj+H2ANXY5SvgfItdWW4/HtTtJXjkqfIWQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fgySr1msVz2yYJ;
+	Thu, 26 Mar 2026 07:00:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=37.157.195.192
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774468844;
+	cv=none; b=h43MijiDe+mwGS4S3rNruVUQ936vbEsBK0Q+uagA1F1YliV3IOwNGFte9IiAutFDvnWVqyLnP1EP3EUgf0gTinUFPEHL6F57zLtGM9y8mNUV/l2UE8eaBNv8kOimIteu6QOnje63Mk3rG3tgVSQpT7OY7aTAr6FhfizomLboPSIycLpe9aB19JdruvmuUGuJ2sg53CDte54ngvj53useBTt6N0YxA6usvFwe+MqW2Tr4AuFMKqIFphJ6PMrjVR8r4EU0LCEn3bWX6l7XlHuHqhmMXTlZKnTy7Zs+ReiPtjgvRkP3rdezPdGDN33PSciwgBke0VCy5pnbu7aGCy++LA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774468709; c=relaxed/relaxed;
-	bh=nONzcx8W390CboKOO06vi2+gLPQClQqV0TNZoiEU8YQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=kVQZd1L56jF2JYq0N4YcQBKd2P1RQ7Esagqjhq199WxoPEvQrSiC9oLtMMP7glVkU3re+kGAUzJXjyuekez4DN7V+x7bCmFtliZyfROMdsuR6ytPwyHm7BQJGElgL2br5JbdShkhZ8XetzDYGA5Ij8WnC2C9lXmBfVsjS/JVTspJmVa+lAbyYRYCUPLszcPhYe8+jph8ENw0xKh1yFTTl6JZ3MyvsxO2gUGDvB8c03ZjTj6iinEGO58weSJU8Buj8qc0iOwVspb8MBUMWm70D8yivqQ31qI8LXgjQTMwvp0TiVA6MqHI1XPinxLCxLjarwSRbIUfcADeAcCqYjOSfQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ge5aalab; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ge5aalab;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	t=1774468844; c=relaxed/relaxed;
+	bh=yFQsydCIOr74lS0wiVlCraWXMEEN0D0iIRy2COVKBVc=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=THWlnGNo39AIqYd4GWjUSNJwyBiIrDvIpF39MMEXPedhXgPhH+DDG06vvGhux1+Z9b2AL5eBtoiL1SEsXO7UVuPBxtxUwQ693HO3D6LzQcMiFUnmhEUJJR7z72mME1V0qjenm4Lfm9LR73g826oiyizggugDt58LMsO711lb0KrXHUmgeSCD+iJGdEaLr2r3AbM3UskPGVonCMO1w5Y6ulyS+SsG+qiGi+7TonYAKuEEvvPxUbfKvtTB5y//FL3bc1yv9DNUKgkGWwFbP3IqPJe+ussoEEHKwhTLjqoxsf5gJLpKDllViPZ/GS8fGqe951mztRE269Vlvquy8opdIA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=danny.cz; spf=pass (client-ip=37.157.195.192; helo=redcrew.org; envelope-from=dan@danny.cz; receiver=lists.ozlabs.org) smtp.mailfrom=danny.cz
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=danny.cz
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=danny.cz (client-ip=37.157.195.192; helo=redcrew.org; envelope-from=dan@danny.cz; receiver=lists.ozlabs.org)
+Received: from redcrew.org (redcrew.org [37.157.195.192])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fgyQD34Jmz2yY0
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2026 06:58:28 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 8107B43A4A;
-	Wed, 25 Mar 2026 19:58:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2D017C4CEF7;
-	Wed, 25 Mar 2026 19:58:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774468705;
-	bh=sejDKf3P8sESG5dibTCxwy1iyZIw53jwzdWcE7qNmpE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=ge5aalabCqZpp2QV5kqs/vYycoJuqkRoa8OBOAkbF709CENIyaMYwhDvGA5ZmhPZt
-	 uwKdRiC3Cl5ZK3d5Un9FUbs9cKXxNKCY6gkKzPEXJOUXDaqwkeVNlPxvdAJwqG7YKW
-	 lIYxvZcgfmDmflgygmhJEUImKL9vwBOfEzSiOFGHgfj3Klvy6w4NQMdlJgbR9hMqrG
-	 H4++cneHOvL+Ujzn+CcEgc7qA05317D8Q9rBGN3xJLw1p1s1oXuLQklwmmcYGJXV2A
-	 FM+3W2mqWxh2TwuA4BQio+NeDp+0q0ezZAW3u3LQYmFQINgb4M2bbIWWEdcCh46Isa
-	 Z617FMBDSIq2Q==
-Date: Wed, 25 Mar 2026 12:58:21 -0700
-From: Eric Biggers <ebiggers@kernel.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Christoph Hellwig <hch@lst.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>, Ard Biesheuvel <ardb@kernel.org>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	Dan Williams <dan.j.williams@intel.com>, Chris Mason <clm@fb.com>,
-	David Sterba <dsterba@suse.com>, Arnd Bergmann <arnd@arndb.de>,
-	Song Liu <song@kernel.org>,
-	Yu Kuai <yukuai@alb-78bjiv52429oh8qptp.cn-shenzhen.alb.aliyuncs.com>,
-	Li Nan <linan122@huawei.com>, linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
-	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
-	linux-s390@vger.kernel.org, linux-crypto@vger.kernel.org,
-	linux-btrfs@vger.kernel.org, linux-arch@vger.kernel.org,
-	linux-raid@vger.kernel.org
-Subject: Re: [PATCH 02/17] raid6: remove __KERNEL__ ifdefs
-Message-ID: <20260325195821.GD2305@quark>
-References: <20260324064115.3217136-1-hch@lst.de>
- <20260324064115.3217136-3-hch@lst.de>
- <59d1d178-c141-4229-81e9-a6c23fa81f2f@zytor.com>
- <fa11e4d3-1c70-4fa7-9f03-8772c002be6a@zytor.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fgySq0mT9z2yY0
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2026 07:00:41 +1100 (AEDT)
+Received: from server.danny.cz (85-71-161-19.rce.o2.cz [85.71.161.19])
+	by redcrew.org (Postfix) with ESMTP id 595E7D4;
+	Wed, 25 Mar 2026 21:00:37 +0100 (CET)
+DKIM-Filter: OpenDKIM Filter v2.11.0 redcrew.org 595E7D4
+Received: from talos.danny.cz (talos [IPv6:2001:470:5c11:160:47df:83f6:718e:218])
+	by server.danny.cz (Postfix) with SMTP id 2FA9F17A006;
+	Wed, 25 Mar 2026 21:00:37 +0100 (CET)
+Date: Wed, 25 Mar 2026 21:00:37 +0100
+From: Dan =?UTF-8?B?SG9yw6Fr?= <dan@danny.cz>
+To: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Cc: Gaurav Batra <gbatra@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ amd-gfx@lists.freedesktop.org, Donet Tom <donettom@linux.ibm.com>
+Subject: Re: amdgpu driver fails to initialize on ppc64le in 7.0-rc1 and
+ newer
+Message-Id: <20260325210037.1e5de5f6f99851088ceaf15a@danny.cz>
+In-Reply-To: <341nolfr.ritesh.list@gmail.com>
+References: <20260313142351.609bc4c3efe1184f64ca5f44@danny.cz>
+	<1phlu3bs.ritesh.list@gmail.com>
+	<20260315105021.667e52d4a99b154ef1e6aa34@danny.cz>
+	<da93575e-92ad-4a7b-83df-1cb956bd2bc2@linux.ibm.com>
+	<5x6knm5q.ritesh.list@gmail.com>
+	<2d5fd6ec-003f-4d24-aa2e-06ba94d6cba4@linux.ibm.com>
+	<341nolfr.ritesh.list@gmail.com>
+X-Mailer: Sylpheed 3.7.0 (GTK+ 2.24.33; powerpc64le-redhat-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,50 +61,56 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <fa11e4d3-1c70-4fa7-9f03-8772c002be6a@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-On Wed, Mar 25, 2026 at 09:13:16AM -0700, H. Peter Anvin wrote:
-> On 2026-03-25 08:13, H. Peter Anvin wrote:
-> > On 2026-03-23 23:40, Christoph Hellwig wrote:
-> >> With the test code ported to kernel space, none of this is required.
-> > 
-> > I really *really* don't like this.
-> > 
-> > The ability of running in user space is really useful when it comes to
-> > developing new code for new platforms, which happens often enough for this code.
-> > 
+On Wed, 25 Mar 2026 23:12:16 +0530
+Ritesh Harjani (IBM) <ritesh.list@gmail.com> wrote:
+
+> Gaurav Batra <gbatra@linux.ibm.com> writes:
 > 
-> That being said -- and I do say this as the original author of this code --
-> this should be reduced to the maximum extent possible to a (minimal) set of
-> #ifndef __KERNEL__, which should be localized as much as possible. The actual
-> user space components, even such a thing as a simple #include, should be moved
-> to a separate user space header.
+> > Hello Ritesh
+> >
+> > I think, what you are proposing to add dev->bus_dma_limit in the check 
+> > might work. In the case of PowerNV, this is not set, but 
+> > dev->dma_ops_bypass is set. So, for PowerNV, it will fall back to how it 
+> > was before.
+> >
+> > Also, since these both are set in LPAR mode, the current patch as-is 
+> > will work.
+> >
+> > Dan, can you please try Ritesh proposed fix on your PowerNV box? I am 
+> > not able to lay my hands on a PowerNV box yet.
+> >
 > 
-> But pretty please do leave the ability to debug the algorithms in user space.
-> This is hard code to write and debug; it is not just about regression testing.
+> It would be this diff then. Note, I have only compile tested it.
+> 
+> diff --git a/arch/powerpc/kernel/dma-iommu.c b/arch/powerpc/kernel/dma-iommu.c
+> index 73e10bd4d56d..8b4de508d2eb 100644
+> --- a/arch/powerpc/kernel/dma-iommu.c
+> +++ b/arch/powerpc/kernel/dma-iommu.c
+> @@ -67,7 +67,7 @@ bool arch_dma_unmap_sg_direct(struct device *dev, struct scatterlist *sg,
+>  }
+>  bool arch_dma_alloc_direct(struct device *dev)
+>  {
+> -       if (dev->dma_ops_bypass)
+> +       if (dev->dma_ops_bypass && dev->bus_dma_limit)
+>                 return true;
+> 
+>         return false;
+> @@ -75,7 +75,7 @@ bool arch_dma_alloc_direct(struct device *dev)
+> 
+>  bool arch_dma_free_direct(struct device *dev, dma_addr_t dma_handle)
+>  {
+> -       if (!dev->dma_ops_bypass)
+> +       if (!dev->dma_ops_bypass || !dev->bus_dma_limit)
+>                 return false;
+> 
+>         return is_direct_handle(dev, dma_handle);
 
-While I do like developing code in userspace as well, I've been doing it
-less over time as the kernel's tests and benchmarks have been improved.
-Running the KUnit tests is pretty straightforward and fast.
+yup, I will give it a try in the morning and report back
 
-The issues with providing userspace build support in the tree are that:
 
-- It has to be maintained.
-- It's fundamentally a bit of a hack that is used only by developers
-  (who always have the option of doing something locally that is
-  tailored to the specific function they're working on)
-- It diverts effort from the kernel's actual test and benchmark.
-
-So while the faster iteration speed that userspace development enables
-is definitely nice, I do think we should be cautious with committing to
-maintain it in the kernel tree.  If it's causing problems for the
-ongoing refactoring, dropping it for now seems reasonable to me.
-
-I would suggest adding a benchmark to the KUnit test similar to the
-crypto and CRC ones, though.
-
-- Eric
+		Dan
 
