@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-18770-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18771-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08DA0103A9AF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2026 11:31:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A11AF103A9AD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2026 11:32:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fgl9S5NWMz2xcB;
-	Wed, 25 Mar 2026 22:31:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fglBB2Qp6z2xlf;
+	Wed, 25 Mar 2026 22:32:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774438300;
-	cv=none; b=Xei6DvLbTc7udKVgVLLFtNO6t3a8Z11TWlxlKwPIlpF9LXAZI9H4Rt74rZp4EWF7/xuPq49PDlb5rxfN7niYy3vkW2nlaCEE1ylOadjW6tu5rDduSxo5ssFAKL7dHNRT85C3pxfGE1tzg8ywyR4FCj+mZBOFH2oj/j7RWXs5kuBJLLO0LziYO+UziqIAA8xVuHmM7bWPOky8Yf9OoSdwv96Q5UVwRMc+5xu/nCkH8KlHVPLRgBx0tNVTE+rGiQ1PhQnghSwDH55piuVCMeUH/BKqJEWU1yXM2kERYW693fgg7lN5LzlgIAMThbOpoAbYnv1avbs9gixI4S4lyUJ5KQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774438338;
+	cv=none; b=kK7xOqyqgiY+LCht+kpzkTpmZoe/RZ2tMpE5oQDlFsnYF/FP1EE/n4gZjDsHN70r9MRmpoxrT09oPX+KXA3clkMwDe4ebBKEPF3CgJsvab4LA0FSB/mK4f3fYXsOLwxxmaHD0TSBvFZ0E32XdVkCT8JVlqQnAA9j8qZjRNZ6OXzNCetIv/pDDo/W1ael87ZPt9fSWUO6XPN0EYNpglOeP0Dbk+2Ru2P0JPXBzDRQRUNxgTT+hLj6rkf/DSGBzOEnI4tD7RK+JNtdPhXG5Rk6llxZn2sIzgwvBTbrNvp4wd7iKJ+YrOETkgzJHOUNXFZ6tbSqRQNdvAsDV2tkIEEEaA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774438300; c=relaxed/relaxed;
-	bh=9EGI1scmAKm+pprVXxtWWutGI9fPw/DG3S6e9WMIiRQ=;
+	t=1774438338; c=relaxed/relaxed;
+	bh=HJIAg2huSXRf7/aVoaKjQ30vr6b0oAfPNY6cnw0ajmQ=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=KNe4nmfGAVzthfNHVxNglaP3U4fPSAT0s93V4Kw6j1g/JW++iwAWqCIQ3p8tWme08U20mr3dRhyKVvAyvrxaVfi3+U+FwGJT2dVCZtmxPkG9LraDeAaLDgO+psz4XhhdR/xgYs+tzAI4k8dloNnTzrJkhsLLPMkN+XU942jUTO+atmFXJsKMPoIJDaz2ieUvykpJ0CXb11aZkexU//5Ju2s448Z/BArKHapHkZBQAQePKV+BlfAR/4f+uqjTjB2NXhpaBmARQXVDBOMnLgOUlisRStYG7X5y/hTIwAgaBmVV+lXdUsdtr8Be1FdSbwnpml8r8OR4eBPwJfJhOXRXEQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=q7AMjbL5; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=mailhol@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=llentt/TZ0cPZGQzqYnbZqQz1Vu8Yeptf5eiq0XmlgdlSnmy7cU3Rc64jOnWy3LG+TcBhPPhORJ/B8qPnwmhkC+IitN0r9YXIyf0FnmgAcurVy5wsmnNqsbTV5unKZqdXc8NLw1bJ4wWmNkAodJ4MR0go6f/DhVdZGBRDY2a5v8rVd1RX6gEJKgsi+my7/y39wxD2cY5px0SL+Y2OFmcxVM/ewjreIrkD+Q2NdZeRegl+JAI1fm28sCvRu0y4XLJGk7MpA3286lI6VuhEnw4i9m9wlp1L2D30tFjNoYVVCa+0MKGZF05ZARLf1RpQTd1RI6CbKxDrWfaH6gG7qT7+g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=p9xj+yQr; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=mailhol@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=q7AMjbL5;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=p9xj+yQr;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=mailhol@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fgl9R4MSTz2xSX;
-	Wed, 25 Mar 2026 22:31:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fglB93f6hz2xcB;
+	Wed, 25 Mar 2026 22:32:17 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 098F560120;
-	Wed, 25 Mar 2026 11:31:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 89274C4CEF7;
-	Wed, 25 Mar 2026 11:31:17 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 4272160127;
+	Wed, 25 Mar 2026 11:32:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 35258C2BC9E;
+	Wed, 25 Mar 2026 11:31:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774438296;
-	bh=ylRm2gYh1SSNTms1TdIe/v1LeEn6b9whQkZPd++l0EY=;
+	s=k20201202; t=1774438335;
+	bh=UHl6aIxvtuzZoFfPKn0m6HqE+Ix+jQLwOiO6mcxm7gc=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=q7AMjbL5W0jOhmMe9L0gOLKFEqzai/JPUxmdE2mOpoQ36iaMfFZZLITyNzxhZlevK
-	 rA0SbrRURTtaztJltjjMS5YPxpAJmm/omGpFo3nDqFaJ37FJP4x4MIc5TH6RDrtCZ6
-	 +nUxPxPDn0Uc4uffmUPwMTzhwm8enjtoGEKl4XHmKc0Zq0dwCdpLgIqp7d6DrOZ7NL
-	 VvSnhuHBd0UkpP4vcl2ZxbmbBm0pA8yz1q/sjOs91mTiMNwSVhPHygkMwdAX3hVzTE
-	 a6rHjx1MiPC03K9uIW/rbqvMgTfTHiljj5xIVSJAw2Sm/y0jE0atJzrh4/qaZiCMEw
-	 TCsVxjvF/0UXQ==
-Message-ID: <efec4a41-3889-44f9-adbb-c74fddd63ae8@kernel.org>
-Date: Wed, 25 Mar 2026 12:31:15 +0100
+	b=p9xj+yQrGXkpoAF0fY9H5IaPcoHqI+j6qFDwyvc4yO1C747biO/reuY8t3d94mmup
+	 yQMdUZgPvj2v9edGgjvwa44Pe6FwmdZ43t/G8cYYldfmo7YsAt7eQsYUOQchWN8tEp
+	 lxT4aSMwTa3Lg9zV/TmzInC2IVkU8yAXXMuWflmPLvFoKuR5BI2SX5CUo5rJVYT1a9
+	 QJSXMoguTPIulqY0xz7WbsLHtpKTLSiyneymYrRj8U6WWUrJxGfwFv6fjWC6LeaTQu
+	 meTzpjdQXm6htU8OLApZ7jlovVUK4NVBzdOcUYZm4Uly3jpcZL4fYc0zooZuxOTQqt
+	 7cnUszMPYt6sQ==
+Message-ID: <d7ba53bd-e484-4ea1-b90b-e44321eef4c3@kernel.org>
+Date: Wed, 25 Mar 2026 12:31:51 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,8 +60,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 8/9] arm64: defconfig: remove obsolete assignment to
- SENSORS_SA67MCU
+Subject: Re: [PATCH 9/9] arm64: defconfig: remove obsolete assignment to
+ SLIM_QCOM_CTRL
 To: Krzysztof Kozlowski <krzk@kernel.org>
 Cc: Alexandre Gonzalo <alexandre.gonzalo@arm.com>,
  linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
@@ -128,33 +128,41 @@ Cc: Alexandre Gonzalo <alexandre.gonzalo@arm.com>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Anna Schumaker <anna.schumaker@oracle.com>
 References: <20260317-arm_defconf_cleanup-v1-0-8eecb7fdd24d@kernel.org>
- <20260317-arm_defconf_cleanup-v1-8-8eecb7fdd24d@kernel.org>
- <fa1e4d72-50e2-49d4-a458-1e3d300cce4f@kernel.org>
+ <20260317-arm_defconf_cleanup-v1-9-8eecb7fdd24d@kernel.org>
+ <9545b66c-f223-48a3-96fe-c906d2307654@kernel.org>
 From: "Vincent Mailhol (Arm)" <mailhol@kernel.org>
 Content-Language: en-US
-In-Reply-To: <fa1e4d72-50e2-49d4-a458-1e3d300cce4f@kernel.org>
+In-Reply-To: <9545b66c-f223-48a3-96fe-c906d2307654@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 3/17/26 12:33, Krzysztof Kozlowski wrote:
+On 3/17/26 12:35, Krzysztof Kozlowski wrote:
 > On 17/03/2026 10:13, Vincent Mailhol (Arm) wrote:
->> The Kontron SMARC-sAM67 board management controller is not in the
->> kernel tree anymore. Clean-up the leftover reference to
->> CONFIG_SENSORS_SA67MCU which was left in the defconfig.
+>> The Qcom Slimbus controller driver is not in the kernel tree
+>> anymore. Clean-up the leftover reference to CONFIG_SLIM_QCOM_CTRL
+>> which was left in the defconfig.
 >>
->> Fixes: e710b2283725 ("Revert "hwmon: add SMARC-sAM67 support"")
+>> Fixes: 7cbba32a2d62 ("slimbus: qcom: remove unused qcom controller driver")
 >> Signed-off-by: Vincent Mailhol (Arm) <mailhol@kernel.org>
 >> ---
 >>  arch/arm64/configs/defconfig | 1 -
 >>  1 file changed, 1 deletion(-)
 > 
-> https://lore.kernel.org/all/20260302122540.1377444-3-mwalle@kernel.org/
+> https://lore.kernel.org/all/20251223140645.3545658-1-mikko.rapeli@linaro.org/
 
-Meanwhile, that patch was picked. It has already landed in linux-next.
-So I will remove it from my series.
+I will add that this was initially reported by Mikko.
 
-> It is said to see that multiple people did the same work twice and did
-> work which was not sent to right addresses. :(
+> I even asked there to send it to qcom maintainers :/
+> 
+> Exactly that case also encouraged me to document this, since we do not
+> know how to fix get_maintainers. See commit
+> 6efe5322f060099c8bc51aaee83b857394e42dd5
+I read the thread in which you posted that patch. Thanks for updating
+the documentation, but as people anticipated, as long as the tool
+doesn't do the right thing, there will be people like me who will mess
+up the recipient list.
+
+Anyway, sorry for that.
 
 
 Yours sincerely,
