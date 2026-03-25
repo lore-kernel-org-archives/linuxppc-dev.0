@@ -1,95 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-18772-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18773-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE639106B506
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2026 12:02:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8EDD5106B506
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2026 12:04:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fglrZ2YT6z2xcB;
-	Wed, 25 Mar 2026 23:02:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20f::7" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774440126;
-	cv=pass; b=nvu59qfVP74QS7EgEAe4+uOSYW7FdEaXebJmwdmLsEB5uTxSdcTRG+7r0EhCVFXjrRE5HXPne2W27vW4IjixbFyHKRIucmXGGNKNwDgjkAClYkZ73YU0hdwG3J9tzyuqQBPMl61e6uJLSrcIO5XTeg5Rs9YZ0flUh/6ymNsQ/Z0t6AE7rpX3I1mN5iGE6DHxKpQLTwHvDngEolGDBsItBRryDtrTQwZosVjNkD19wIvba7Pd6N4cRokRWeJYqQZiNthmF7WoZG5FlKTWXf75xg/Wg7hjeBfNr9NlOhqmebBeRgRyfiKzd4go/bpWmDdISLqBmcwoj3Ppon4RDaHoqQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774440126; c=relaxed/relaxed;
-	bh=YXXBntpqyuvabK9QKfgQGbDJFMmQc0BuxpCyE+N0g9M=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=FnZdCCNxne9J2Ro5pevuVVmAv/3VMW654qMUWYk4deuErvo8QIuv7AzS9LNfBIOToXMKtAUrLcxziKy2jHjayguTe7uu70poFdRXc8xLiQw2BX+iGYX8wG7q4LzEpGFSBm1Tn+p8JdxpG8yMKOtfdvqCIfT7pbMbbY8XQ+C6bjtYBn6kHlJpHCWc2hiwqYIJPWs8/b27G/N1bpyCzmPowpp7yBXDx27uanQHBgcWa6M01VV4ju2T55QaRN+dcoUtdD6aC31d/v2OnzQ+BlOvuIvO5/TCtki4/BTFy0smhl5lH5DFsWkh+lCoJNFWcJHmY7LxHsmj3wvttgOwDlu/Wg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=J7wS3kOI; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=ioana.ciornei@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fglvB17X8z2xlt;
+	Wed, 25 Mar 2026 23:04:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.12
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774440262;
+	cv=none; b=R4ieYfj13+f/OvCvRrRyWASYon9gf4XV0aBKsWpBQqiMP0bdB5fUwV7IkcjRVWBdjiB4eCBvHtW1e5iRWAp+bKUr6QhfrAnuFfHu6DSsu+OZ73xygPRTU1fNwnEZxGmMp04HnO6qcKoHqLVyl78k0yLhuMWyZ8C/r3LYjmG6rbFsX1f2Xw9RRA0kvoXmHIOPLOkXsLrnHDjdEt5fcLMTThJ8vBmgsuE2KlKtmG1/MVL7BYmbgLdkcVDTpoWRJbCooL1wqUtiFqjTf2aItcfrMfxGU71J29EeWGcYCl3y3khtikaSgeamB/HFWM35nYUxYfQB7BcRyndu7bfRV/AhCQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1774440262; c=relaxed/relaxed;
+	bh=cUg0TZE02i0OBp5PS3uAaiZ2fcbewL1haWJ/BT+KAlo=;
+	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 MIME-Version:Content-Type; b=A+mh8IfyJz90yupRBofXbexXjmVF3cO7ypBI5QRHRqfy3gY1fvJB/PLEk55oSJ6C3QNG70YbriRjJekAjhV+uXTXSuNWH16QZHJgbATzQvxGxnh7fUiMMlMcS5w1OsCG20n+y2SyOR9jOBc1fUsQ7l3weWkFTJ48261xEwaMv1jUNhmQ9yxUphw3LooblHUt3OwV4DnFcvKX9LQ5Wd13hX3GHRp8IPvJUIhrR7/tujxJCjb/XC/8A/Vkoo33v80bENA/f5nGo3Yvyh0ZW7+2WR9wjD6c2nRJlArLldDIv4ZU/RPPBui7xO0wY/+ySIydTcznjmExEPQygwJhZkW4hA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=O/v7lq0B; dkim-atps=neutral; spf=pass (client-ip=192.198.163.12; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=J7wS3kOI;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=O/v7lq0B;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=ioana.ciornei@nxp.com; receiver=lists.ozlabs.org)
-Received: from OSPPR02CU001.outbound.protection.outlook.com (mail-norwayeastazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20f::7])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.12; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fglrX5cJhz2xSX
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2026 23:02:04 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=kttRFgI2/iylIRsj5YKB10FAyWAymytV5Lq2Au/ItdO/sXFz8Ow659hb8KKMq+gHsxYaakF/46S7IaN/3KDvO/5kyPTzlAx+JQRVhCIFRO+EFWxmXy9RjS3wr05ooQvgLdEBR4lyG9MItZZPiomX4sp+Da4DZigG6GfO9hBwczfJTuxw+hT/eW8FoNSc04UPMN2RL5jtEX1n1CkghV/zxGYua9ZHEN+wDhHz5jnQ2rSv06nT/DFcrzpeBzLagtSSqX5CO76TgT/myxzMgWrLYmxGpYppKg1WMhY+OxFuUoXZ9bRSenrtN9qBMyx3Gm8K63RDCZAAmQn+rTlDfNo1jA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=YXXBntpqyuvabK9QKfgQGbDJFMmQc0BuxpCyE+N0g9M=;
- b=LrQ3k0K7bQbLI7Ga/VdoS9zgSx0tF/y38T2czp4oQfSdl50dc1Bbj35Id8ErsxEFGUAZ3aUtRKGy9L/Nxq/IsFesr4kUloiYWhJXZYsDgHOKMM2QInNDDdK+6p9jWSbDIQkkyWgttVkLBz4Su06qJn45bnVYwqsss+NMRS2YRlijnuUpfw0AlXxrVnvqXuIw88tsNLBhvvKIDkjoT86Sv/CeS8mcfHZzA+C7tmoBHPPjiQE7do2lwMtrvDlPScc6taJeAgXUXVEjBF88cSgelNRuW276dFNy9exbssWFnhiV35VBQwVHomgtWnKX+lSIvBr09/gpjSSmQMYyMaiLYQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=YXXBntpqyuvabK9QKfgQGbDJFMmQc0BuxpCyE+N0g9M=;
- b=J7wS3kOIzOp/PM1Yoou83qDqv3RnBDES7+thUv0J/24R3LLR10nSMH9la88tBzqfn8aMvhoh/Fth2vqnZUhdNydapTA9hesLUSFZjoncUjWs+LE+FjJMnVVxBe/JkmMvL5F3lhA0Ak/TxLUmBgyeIP4gdk0Qvd4xkvBz5ZGktJwAIGEHKiVf169FqLaIHUUUk/A9EDg4vbRDMSWQCos9KeHmaaGo3qyNZr0cwK4vKIvQFTSPpC+EKroRKgLqr2bT8xNcbmAZs20jB2tNF4CP8lkGOjUHTfaAaMC/PGbNjAq1A7WayuEduk5jVOkpEpNgdWzWoNsOxmW9VzvUPlOZug==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Received: from PAXPR04MB8253.eurprd04.prod.outlook.com (2603:10a6:102:1bf::7)
- by PAXPR04MB8989.eurprd04.prod.outlook.com (2603:10a6:102:20c::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9723.31; Wed, 25 Mar
- 2026 12:01:36 +0000
-Received: from PAXPR04MB8253.eurprd04.prod.outlook.com
- ([fe80::2b4e:8130:4419:d633]) by PAXPR04MB8253.eurprd04.prod.outlook.com
- ([fe80::2b4e:8130:4419:d633%3]) with mapi id 15.20.9745.019; Wed, 25 Mar 2026
- 12:01:36 +0000
-Date: Wed, 25 Mar 2026 14:01:29 +0200
-From: Ioana Ciornei <ioana.ciornei@nxp.com>
-To: Danilo Krummrich <dakr@kernel.org>
-Cc: Russell King <linux@armlinux.org.uk>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Nipun Gupta <nipun.gupta@amd.com>, Nikhil Agarwal <nikhil.agarwal@amd.com>, 
-	"K. Y. Srinivasan" <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, 
-	Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>, Long Li <longli@microsoft.com>, 
-	Bjorn Helgaas <bhelgaas@google.com>, Armin Wolf <W_Armin@gmx.de>, 
-	Bjorn Andersson <andersson@kernel.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, 
-	Vineeth Vijayan <vneethv@linux.ibm.com>, Peter Oberparleiter <oberpar@linux.ibm.com>, 
-	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
-	Alexander Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
-	Sven Schnelle <svens@linux.ibm.com>, Harald Freudenberger <freude@linux.ibm.com>, 
-	Holger Dengler <dengler@linux.ibm.com>, Mark Brown <broonie@kernel.org>, 
-	"Michael S. Tsirkin" <mst@redhat.com>, Jason Wang <jasowang@redhat.com>, 
-	Xuan Zhuo <xuanzhuo@linux.alibaba.com>, Eugenio =?utf-8?B?UMSCwqlyZXo=?= <eperezma@redhat.com>, 
-	Alex Williamson <alex@shazbot.org>, Juergen Gross <jgross@suse.com>, 
-	Stefano Stabellini <sstabellini@kernel.org>, Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, linux-kernel@vger.kernel.org, driver-core@lists.linux.dev, 
-	linuxppc-dev@lists.ozlabs.org, linux-hyperv@vger.kernel.org, linux-pci@vger.kernel.org, 
-	platform-driver-x86@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-remoteproc@vger.kernel.org, 
-	linux-s390@vger.kernel.org, linux-spi@vger.kernel.org, virtualization@lists.linux.dev, 
-	kvm@vger.kernel.org, xen-devel@lists.xenproject.org, 
-	linux-arm-kernel@lists.infradead.org, Gui-Dong Han <hanguidong02@gmail.com>
-Subject: Re: [PATCH 02/12] bus: fsl-mc: use generic driver_override
- infrastructure
-Message-ID: <cvcetxkxjq2tz6n2vsofhyzove3qdi2e4r6rq6yxou3joejk2h@rmt5ygav7ssu>
-References: <20260324005919.2408620-1-dakr@kernel.org>
- <20260324005919.2408620-3-dakr@kernel.org>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260324005919.2408620-3-dakr@kernel.org>
-X-ClientProxiedBy: AM8P189CA0012.EURP189.PROD.OUTLOOK.COM
- (2603:10a6:20b:218::17) To PAXPR04MB8253.eurprd04.prod.outlook.com
- (2603:10a6:102:1bf::7)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fglv75235z2xcB
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2026 23:04:18 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1774440260; x=1805976260;
+  h=from:date:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=pthnvpb4bRgKrgjRM/7gqeUF0giUw3hMBAx3mtd0Tfk=;
+  b=O/v7lq0BkpL/9inHRU+zpx0ck0NkBuVkPeIZl47Xwjbo6Ss0WyNOIkZT
+   m3/eQu24mNDdU5zYVKbd3PXf8u0+Kk3qPe+JlTRLrOoJyqiEl96I2GFDb
+   AaoQHxFF2aUc7UzZs4FJy3xqSGB9eAA0+ob6oyQfAHeV6M79CKn63OeUt
+   SMnSXQApS3qVr29Q2Jw6jmew3/0ZfWTXYEMe7CRKAS7GC7bbacT8soVhe
+   5ZHmPA97U3C2oL8TDLsDhat2NMgey6UhX+EI82ZRaayWH80PCsv4mZtk2
+   yZ5bnQAfInlGX9SsTBMK1S1eZFu41Cd7pXg6A6qF44fGiH11VPmRuXQtP
+   w==;
+X-CSE-ConnectionGUID: b9vVka/8QWWS846xRH6udA==
+X-CSE-MsgGUID: dWOrvaVdSRaqrnFoSQKNwg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11739"; a="79381343"
+X-IronPort-AV: E=Sophos;i="6.23,140,1770624000"; 
+   d="scan'208";a="79381343"
+Received: from orviesa002.jf.intel.com ([10.64.159.142])
+  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Mar 2026 05:04:16 -0700
+X-CSE-ConnectionGUID: GDVCGG5yQPG4XMQBFBjvAw==
+X-CSE-MsgGUID: 2mzDZ70tTHGJhYkLqZAkRA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,140,1770624000"; 
+   d="scan'208";a="255160046"
+Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.125])
+  by orviesa002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Mar 2026 05:04:07 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Date: Wed, 25 Mar 2026 14:04:03 +0200 (EET)
+To: linux-pci@vger.kernel.org
+cc: Bjorn Helgaas <bhelgaas@google.com>, Guenter Roeck <linux@roeck-us.net>, 
+    linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+    linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, 
+    linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+    linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, 
+    Russell King <linux@armlinux.org.uk>, 
+    Geert Uytterhoeven <geert@linux-m68k.org>, 
+    Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
+    "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
+    Helge Deller <deller@gmx.de>, Michael Ellerman <mpe@ellerman.id.au>, 
+    Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
+    Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, 
+    "H. Peter Anvin" <hpa@zytor.com>, Chris Zankel <chris@zankel.net>, 
+    Max Filippov <jcmvbkbc@gmail.com>, 
+    Madhavan Srinivasan <maddy@linux.ibm.com>, 
+    Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
+    John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
+    Nicholas Piggin <npiggin@gmail.com>, 
+    "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, x86@kernel.org, 
+    LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 09/10] PCI: Align head space better
+In-Reply-To: <20260324165633.4583-10-ilpo.jarvinen@linux.intel.com>
+Message-ID: <3a51ad39-558f-860d-4920-9f757b7d5131@linux.intel.com>
+References: <20260324165633.4583-1-ilpo.jarvinen@linux.intel.com> <20260324165633.4583-10-ilpo.jarvinen@linux.intel.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,79 +95,82 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PAXPR04MB8253:EE_|PAXPR04MB8989:EE_
-X-MS-Office365-Filtering-Correlation-Id: 444f69f3-3f50-4dac-40a4-08de8a664393
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|7416014|1800799024|19092799006|366016|56012099003|7053199007|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	YauE1OL9qVz6Ghkd3J4iiweYC+KTDcwgtVBRc6SzyGeDcIvAqr9GqhVgU2IK4k2+zD1XxZPGsKYLsEqiaS8RfvJO+yGdO9WoswEWIvqsqEFASVmWheIaYF6Je+a++RK8CPtKoUmtGv0bPuHQKh69kpeVWHxQA8bfzVd9gd2G4mJHqF2R/yvxG+kaFflL98lVbOhBJZVh46//CdTR5tE+vo9FZKLdM/PRl0QIa3bNJbT1IaRCJM+wNaaqNBIzvTqtbT98uIsOogkVCldOOrVdOIf3BEt28eAOqFMZ+TV6ETNq7EP8+961S1GpXqtc3J70y71lXxATEDMw4M7LruoJUvQCiEtLcFoE1s1XQG91q/Nj6FXkloupIpOwpO473+cAm5hHdWM8Lk7DN4mhymvIm8xrXzQomkVk0NxAwKEqKbG1hLhuQNb9GFMLvFeZE7wHopHrdCggnTb1OInKne9bPE5qCv6pjzjBvuCNuCasTBGwOUxQunyzQ3hhubR4Y5OBTIbDBTi+2fWt6pSW58kN8BCEXnWy5UvBhChefiek3+SDDzHh8IC6jKp5Z97r8VmNAfpxZw2XP05S5Ns/ZXQeLnXH57l5nV+ceXhGsEnYLBhJBHqGuDr3dTgOpwloRdJVUaA27Kw+UJgstnRgDw4BljSRQ1rbyIFnP2TZ5QuxCAsf0Q+eVAioW0X7cYqdNsEmIbHoBc2xrdOVB3nvcWTPoD2bk6N4r430UGOrsCSf/nI=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB8253.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(19092799006)(366016)(56012099003)(7053199007)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?wCOZvBxNyCZSbHbedjI2V2n4mKP/k/5gUrgXOwWGXKwOn843BAEy0H3Lu4Jf?=
- =?us-ascii?Q?t44F1A4mUDlyXUpBILTQsalQEZqPTb+cgccdo7yvS+9mDAmiACTuVKmRxjl7?=
- =?us-ascii?Q?M9InKZa5Am5jYZR+Y6nl4ZdHDTt+hCMDHFlOxI8riOBJRZnOAJTz6yzIxFaW?=
- =?us-ascii?Q?NuMDAuy0o8Seeb2//8zVOsrPkVe3gADXMwB6++DuHMeIgAiNc+QyX8DkXR5q?=
- =?us-ascii?Q?aXO5ih1Tyr4trPF30eexsGtUxbZX/V34UnBKtUiXaYtMXX9HbRMMTpbk92Gt?=
- =?us-ascii?Q?W3VVjo6p1M/5FsoqIX6FIBBE04QhKDSZIjs2/bYt7tHIfc+gW/pXT3ErP3Pg?=
- =?us-ascii?Q?Qt23L/3abciooF+nRzpRJO+oiAGqlsGlj8DFB3f4iExSOluU3feBUrelvZWZ?=
- =?us-ascii?Q?FxSnZY09HaUgZUBPbbvoMIt3wbRpiW5bmvMMr940BU+Q3A16vVDypKtcz3NV?=
- =?us-ascii?Q?BU0Ai/kGVJmc8saIbewJrV7vIIOx9ablRosiAQQpIPpLGSNdnB/PM5htvMOd?=
- =?us-ascii?Q?tY3Cqz+BLDwhYnCGEBFjg52OnkE8ZrA8OpAQPUXis7s9E/fs7Es7xl2IyPKX?=
- =?us-ascii?Q?V7kOH3wgDFGeIdk7u4bQcFKCuIWl7nqfG/FWiXnb8NouOGV5DjHiFcog3DG9?=
- =?us-ascii?Q?D3NwL0JdIPZlmBs+gt4O4kPQNcuuailEOeHJZWjQjdbP3DajBo3zTqnqaA4O?=
- =?us-ascii?Q?gcbrXQjGO/JlVf7IAR7Xj9as5QqU/RiCVFD2Kf4P9AqJrbGbb7paHfrs+ghk?=
- =?us-ascii?Q?B5dSKXfEUK9B9FDjyJ93sA3zJphdWq8KRjLbs0MF24LtTWFyB/a1sPoQfaY7?=
- =?us-ascii?Q?1zjFk06ZXuV00pBCIc7/0lmVkFqzmc81hUg6Ezs4fYmUMbzjyImSJkNC/Sqs?=
- =?us-ascii?Q?WohdgnB6eAaLAyYHxSO9ChXnD2BFaDtkPBzhNiyCIoT78MxbQPbT2auRlzDC?=
- =?us-ascii?Q?v+jj3XxnIFr/JFs1Qcq8L6SZ4dYzvAQrfNQbx8aCfUpQhn/Hm0OoXMY1eXdQ?=
- =?us-ascii?Q?2YtNVHLe5xsnkRrmnSasZ/8Vhs0RclkimVYpMzvWd+2VhUKS1HNh+0PGXCLe?=
- =?us-ascii?Q?aW2prGUn9xxanWMbaMLFsxrRFF0jdUZNStlj455tQaK/4JyvBzmTFz+GYGv0?=
- =?us-ascii?Q?SKKHB5GUNuTYcMNxcbmcbn4DNkC2IyYPpM2R/Z6FTxYHx1MTZnpWN/WrIrst?=
- =?us-ascii?Q?hpTDu1KHxUK3hzNP1zioROI0d1O3u2bHMyK6Oe0dISAyEbs+/swDAEQuQSJM?=
- =?us-ascii?Q?oMJZ6UFrgjS3+94++VT/pbI7PFmWnZiEIOnCkYqGC9Ip6y6KIcMc6Na6G5+p?=
- =?us-ascii?Q?oK2MFDEYv0QtNh92FmTJn/Q3Laz5Qm7zQahprTiJbJYTHxmHwhwGruDzKrLx?=
- =?us-ascii?Q?Dtwe5YakcFHXbUyqLxoipZvV6ysWEsbAM2nO1VYpddukv9PWHPrxRQm8l5A7?=
- =?us-ascii?Q?0tyBj3eFzm9quJ+hx/7kBMUz87EFfDU0j82a8ylOOTuRtMqApXfhMjI7kEzB?=
- =?us-ascii?Q?u+H9bPwh+nLvLbW9uXZj5JjZaAy23me2qngR1rLKYU8CiT8GwTcSYRwWw54W?=
- =?us-ascii?Q?p+dVtKlYG+ALObSrmAromuRz7Yxo9Dhfv2pIVyJ46WHdX6+8yYfBZQijauNP?=
- =?us-ascii?Q?E+YNOs80TCBLXN3dW0tPjl711h0vaRrW5uqL5qfhEkGoQyn/iuS4IB//Jo1u?=
- =?us-ascii?Q?k6YfWxq4S/jk9UJRRJ2uNOSdmAu29mvcMsK+yqML/1LIa1SBVvmCnZM3ZcZp?=
- =?us-ascii?Q?GB9hLE4kFg=3D=3D?=
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 444f69f3-3f50-4dac-40a4-08de8a664393
-X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB8253.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Mar 2026 12:01:36.0520
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: Chgczccg4htJAVG6e4L1PTVeI+yR3WIw7pB21S+3KjxkMI90qw6f2G+r96bnAJFWq8f6hC+FMUaXR7ipTyy5SA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR04MB8989
+Content-Type: multipart/mixed; boundary="8323328-1062646629-1774440243=:976"
 
-On Tue, Mar 24, 2026 at 01:59:06AM +0100, Danilo Krummrich wrote:
-> When a driver is probed through __driver_attach(), the bus' match()
-> callback is called without the device lock held, thus accessing the
-> driver_override field without a lock, which can cause a UAF.
-> 
-> Fix this by using the driver-core driver_override infrastructure taking
-> care of proper locking internally.
-> 
-> Note that calling match() from __driver_attach() without the device lock
-> held is intentional. [1]
-> 
-> Link: https://lore.kernel.org/driver-core/DGRGTIRHA62X.3RY09D9SOK77P@kernel.org/ [1]
-> Reported-by: Gui-Dong Han <hanguidong02@gmail.com>
-> Closes: https://bugzilla.kernel.org/show_bug.cgi?id=220789
-> Fixes: 1f86a00c1159 ("bus/fsl-mc: add support for 'driver_override' in the mc-bus")
-> Signed-off-by: Danilo Krummrich <dakr@kernel.org>
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Tested-by: Ioana Ciornei <ioana.ciornei@nxp.com>
-Signed-off-by: Ioana Ciornei <ioana.ciornei@nxp.com>
+--8323328-1062646629-1774440243=:976
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
+On Tue, 24 Mar 2026, Ilpo J=C3=A4rvinen wrote:
+
+> When a bridge window contains big and small resource(s), the small
+> resource(s) may not amount to the half of the size of the big resource
+> which would allow calculate_head_align() to shrink the head alignment.
+> This results in always placing the small resource(s) after the big
+> resource.
+>=20
+> In general, it would be good to be able to place the small resource(s)
+> before the big resource to achieve better utilization of the address
+> space. In the cases where the large resource can only fit at the end
+> of the window, it is even required.
+>=20
+> However, carrying the information over from pbus_size_mem() and
+> calculate_head_align() to __pci_assign_resource() and
+> pcibios_align_resource() is not easy with the current data structures.
+>=20
+> A somewhat hacky way to move the non-aligning tail part to the head is
+> possible within pcibios_align_resource(). The free space between the
+> start of the free space span and the aligned start address can be
+> compared with the non-aligning remainder of the size. If the free space
+> is larger than the remainder, placing the remainder before the start
+> address is possible. This relocation should generally work, because PCI
+> resources consist only power-of-2 atoms.
+>=20
+> Various arch requirements may still need to override the relocation, so
+> the relocation is only applied selectively in such cases.
+>=20
+> Closes: https://bugzilla.kernel.org/show_bug.cgi?id=3D221205
+> Signed-off-by: Ilpo J=C3=A4rvinen <ilpo.jarvinen@linux.intel.com>
+> ---
+>  arch/arm/kernel/bios32.c         |  3 +++
+>  arch/m68k/kernel/pcibios.c       |  4 ++++
+>  arch/mips/pci/pci-generic.c      |  3 +++
+>  arch/mips/pci/pci-legacy.c       |  2 ++
+>  arch/parisc/kernel/pci.c         |  3 +++
+>  arch/powerpc/kernel/pci-common.c |  2 ++
+>  arch/sh/drivers/pci/pci.c        |  2 ++
+>  arch/x86/pci/i386.c              |  2 ++
+>  arch/xtensa/kernel/pci.c         |  2 ++
+>  drivers/pci/setup-res.c          | 39 +++++++++++++++++++++++++++++++-
+>  include/linux/pci.h              |  5 ++++
+>  kernel/resource.c                |  2 +-
+>  12 files changed, 67 insertions(+), 2 deletions(-)
+
+> diff --git a/arch/sh/drivers/pci/pci.c b/arch/sh/drivers/pci/pci.c
+> index 7a0522316ee3..994c3bd36ef2 100644
+> --- a/arch/sh/drivers/pci/pci.c
+> +++ b/arch/sh/drivers/pci/pci.c
+> @@ -185,6 +185,8 @@ resource_size_t pcibios_align_resource(void *data, co=
+nst struct resource *res,
+>  =09=09 */
+>  =09=09if (start & 0x300)
+>  =09=09=09start =3D (start + 0x3ff) & ~0x3ff;
+> +=09} else (res->flags & IORESOURCE_MEM) {
+
+I'll be adding the missing if into this in v2 (found by sashiko). It seems=
+=20
+lkp didn't test this so it was not caught earlier.
+
+> +=09=09start =3D pci_align_resource(dev, res, empty_res, size, align);
+>  =09}
+> =20
+>  =09return start;
+
+--=20
+ i.
+
+--8323328-1062646629-1774440243=:976--
 
