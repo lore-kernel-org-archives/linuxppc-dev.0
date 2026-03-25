@@ -1,57 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-18759-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18760-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0992FEA806
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2026 04:06:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5819DFEA806
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2026 04:14:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fgYJ96wTXz2yTK;
-	Wed, 25 Mar 2026 15:06:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fgYTB03z4z2yTK;
+	Wed, 25 Mar 2026 15:14:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774411609;
-	cv=none; b=Bx85XgWLbmwCsZkMD1ynWc2cWl4+zOqOBX2wSzZ/GR7ragHF6Mfm8S8ZDd8znVZe53TAXh6dur3duMo7uEAN5KP9F19nQUYY9SQF60b2c/vSTaYrXMviJMM57FAsWNkK4NKNqF2Y3TzGI1pheofnL0iTZwRhq7ohlbxyjoFmhj0f3jz+WL2Iuw2FWXDZDAqBkhxcO+7vK3W5jDE7lV+9o/NIzoPr9yUPlQGlMcxBFe4OIIbp9YKKmYD0XoGmnQ4vIXwnqWY2oe0bkQ3CcA3HsFXofaWtaaAhVW4KZmNrDAG6Se0AZ6QjeHOJIVpKUqCFe5StIC+99a90E00mh8Pj/A==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774412077;
+	cv=none; b=kABoYSGe2IKqVCC+ZFIzF19/1hWvEgzleF618SjLyiVY8hYMwV0itXINT3CjsR5mCh1e/kSGHvVLQWuRm6KldymxSCQ6OjGEysU6sc/2MPgfGooxIoMAaWYfk8c6zxLDzJfYj2PrHv+TQCVzLW6bAUa+QrjYF5/c23mDpYhSY82Z3El+WRmBivmLJ3HIj5l9ywXDio+UCWP/rcw9IqltwK+P2bKzx14A4fFdLVwaYKDdglkqn+cinfVHctK9wHC7RgC6PMBLctspiFYllezky9bCA/swOfM1rP1M+5r177/exrtTBkrPyBqj8nqtQ74qlhh5Lg7QwdmHBJbUqlEoVg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774411609; c=relaxed/relaxed;
-	bh=oikZdq+IKhmOORXBWkEbQjmrrU1iP/ab33eIDNTFj58=;
-	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=U+8oovVj9QpqutTVuIfOrpIAS500mLHJwTiorFV4dtehyuLX15fH8VyyFBiSfczWMtJXs9FOe9SdZizmNDC1vSTYMwBP5MAXWW2vJRVZnIO0lzRi2bhLsvnbkvB0t6axhqQ7EjRiG+vw1i0cdnrlVoHo4qvDaAvwdZfkRrcRjylkDcOtMQMXeLFxOvmlx+iZ5/1eRZS32QoOK9g/JLTTdmhoRgxkDIkZQI2K0yawfLRHwv2qGuRPGLZmg1+Gbp4WvnWj+g6SpSFJvPkN9aZrCzv30qydEv0ALvCeUWHiXFT8LjLEhRB/fhXkLnAZIllzkeTawgaDMIx1Po5NTZmCcg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=PfDGsqsk; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	t=1774412077; c=relaxed/relaxed;
+	bh=27fWtX4e+LV3z70kuuRuZ5e8ys9OszIAeG99fDZYuvA=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=M3RaFo4lVzWko90aZnm5V8nLqvOKM3sD4hYq+Hz+LiJWrLxvJXsmVw0ZOq4xIMX2fqkzQz5+BtYtdj/1eKG9dUtTQeOunXV+YJnrZTc54SNTTWUKnzyAbWM/JRK1CLah5OwvGw0Ctmw6398rMiBGsp0jxoK3RpIoUgtfsCnVL7NwgrH/xBVQDhlHe1mNOUjeRFxlkvJndgw3qyVZW2RyN5jPyBZEAtMoX+nrxXClQGN6EO2lfmiXDTEUPKg0ifQS52NOnK5ifK0IxKkvfOhxoSSP2TQ696gLaMjwzGDHHmCJYUWZPtTG1n/7ORh4sF4kQiSMxc5l6qDh/uHb2nKhYA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SRN8ph0p; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=PfDGsqsk;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SRN8ph0p;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fgYJ8617lz2yRl
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2026 15:06:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fgYT92CP2z2yRl
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2026 15:14:37 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id E84BA4443D;
-	Wed, 25 Mar 2026 04:06:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A34CCC2BCB2;
-	Wed, 25 Mar 2026 04:06:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
-	s=korg; t=1774411604;
-	bh=WsAQHOogDYWxLt316VoEo1PFk4jzaM4l6YS9sGhWqrs=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=PfDGsqskD39pLcCQXbYS2QFRFghCe4BEZzYtdfA21xdxwIIR4FoeGIkM064eBeWyY
-	 D40CifymkJxTpCyEpPpnuoQ9OggtlKZBCPGL6v20TO0xKp5+AhL5+CF3V7RgF7HOF0
-	 NjgD1tu5pmsYOFLipjeAqvBHsr0IFVKdBckI3XFk=
-Date: Tue, 24 Mar 2026 21:06:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Coiby Xu <coxu@redhat.com>
-Cc: kexec@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org
-Subject: Re: [PATCH v5 0/3] kdump: Enable LUKS-encrypted dump target support
- in ARM64 and PowerPC
-Message-Id: <20260324210644.28f6cf77a26dfadcc4b642e7@linux-foundation.org>
-In-Reply-To: <20260225060347.718905-1-coxu@redhat.com>
-References: <20260225060347.718905-1-coxu@redhat.com>
-X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	by sea.source.kernel.org (Postfix) with ESMTP id E09BA44182;
+	Wed, 25 Mar 2026 04:14:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B3C4AC4CEF7;
+	Wed, 25 Mar 2026 04:14:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774412074;
+	bh=DjQNBELJeTo8/+IvhIZ195gGXomNRX+U9eI4gj1CDvQ=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=SRN8ph0pe1XZdbFseT7tE70r/KjEUXruc5OYrwNk9RqqxCpNBz3lKttBmjvyR/V+F
+	 LtJrTZ+7anfXtgnic7l5VIoLbzWClqhGy86LYc5jTJ5WiLlspuvWPVcH7tVEo3bTZQ
+	 B3/V2PjFQujB3TmjH/YZDXYjGSvefpMLSF6ujW4kNal6dqlrgdyZy3xe5uuN8qioVt
+	 C5T8kZxf9GojeAa9XddOx6PZakiiMDHaZ25yl5D3ZSoIxAugmHnvVJo6l2b5/Lv/S0
+	 upiARQ+JCWrFKrTEs9313xFN7iKFbUBGQMZ2Z6A7i8ktSdEYDHgVOSA3WjPwRHv5Xc
+	 ZaeMKZnXKgm0Q==
+From: Kees Cook <kees@kernel.org>
+To: Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	"Gustavo A. R. Silva" <gustavoars@kernel.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Mark Rutland <mark.rutland@arm.com>,
+	"Jason A. Donenfeld" <Jason@zx2c4.com>,
+	Ard Biesheuvel <ardb@kernel.org>,
+	Jeremy Linton <jeremy.linton@arm.com>,
+	David Laight <david.laight.linux@gmail.com>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Ryan Roberts <ryan.roberts@arm.com>
+Cc: Kees Cook <kees@kernel.org>,
+	linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	loongarch@lists.linux.dev,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org,
+	linux-hardening@vger.kernel.org
+Subject: Re: [PATCH v5 0/2] Fix bugs and performance of kstack offset randomisation
+Date: Tue, 24 Mar 2026 21:14:20 -0700
+Message-Id: <177441205756.1333400.7749975219620417508.b4-ty@kernel.org>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260303150840.3789438-1-ryan.roberts@arm.com>
+References: <20260303150840.3789438-1-ryan.roberts@arm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,29 +94,33 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 
-On Wed, 25 Feb 2026 14:03:43 +0800 Coiby Xu <coxu@redhat.com> wrote:
-
-> CONFIG_CRASH_DM_CRYPT has been introduced to support LUKS-encrypted
-> device dump target by addressing two challenges [1],
->  - Kdump kernel may not be able to decrypt the LUKS partition. For some
->    machines, a system administrator may not have a chance to enter the
->    password to decrypt the device in kdump initramfs after the 1st kernel
->    crashes
+On Tue, 03 Mar 2026 15:08:37 +0000, Ryan Roberts wrote:
+> [Kees; I'm hoping this is now good-to-go via your hardening tree? It would be
+> good to get some linux-next testing.]
 > 
->  - LUKS2 by default use the memory-hard Argon2 key derivation function
->    which is quite memory-consuming compared to the limited memory reserved
->    for kdump.
+> Hi All,
 > 
-> To also enable this feature for ARM64 and PowerPC, we need to add a
-> device tree property dmcryptkeys [2] as similar to elfcorehdr to pass
-> the memory address of the stored info of dm-crypt keys to the kdump
-> kernel.
+> As I reported at [1], kstack offset randomisation suffers from a couple of bugs
+> and, on arm64 at least, the performance is poor. This series attempts to fix
+> both; patch 1 provides back-portable fixes for the functional bugs. Patch 2
+> proposes a performance improvement approach.
+> 
+> [...]
 
-We don't have any ack/review tags for this series.  Could someone
-please help out?
+Sorry for the delay! Applied to for-next/hardening, thanks. :)
+
+[1/2] randomize_kstack: Maintain kstack_offset per task
+      https://git.kernel.org/kees/c/37beb4256016
+[2/2] randomize_kstack: Unify random source across arches
+      https://git.kernel.org/kees/c/a96ef5848cb0
+
+Take care,
+
+-- 
+Kees Cook
 
 
