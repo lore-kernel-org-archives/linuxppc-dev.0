@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-18769-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18770-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34713103A9A7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2026 11:30:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08DA0103A9AF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2026 11:31:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fgl8N6Nj8z2xcB;
-	Wed, 25 Mar 2026 22:30:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774438244;
-	cv=none; b=nivJfq45ahNLlg3uKrHcsX+AeK9ESUogQPC3pOHDnJA5sP21lfZTGwrYDyc0dAQPN8ChJtBVWxMF+orfUSfs6PnCH/CMmaaszL+sY+kckpbQe8NlzSeVQlVgou9fiXFA9YhkrcpadozoON+5nbUHpLCheAeubfibArmrpudy0SU7xBGBlBMj34AhCZSThRV0PSI0fqXYJEu+5pCCLGH5xguZE4R1XK4WTdZDMM16hboO2RwoauwNKHqKSSwX526hRNGixg7tX+YAq2vcZSrfi5QKq5yeJiwqm4yZ94ahLogw2LjwYK/9WAw4u1kPNJowm7VJ/YCz9+X1a+c09sRYfg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fgl9S5NWMz2xcB;
+	Wed, 25 Mar 2026 22:31:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774438300;
+	cv=none; b=Xei6DvLbTc7udKVgVLLFtNO6t3a8Z11TWlxlKwPIlpF9LXAZI9H4Rt74rZp4EWF7/xuPq49PDlb5rxfN7niYy3vkW2nlaCEE1ylOadjW6tu5rDduSxo5ssFAKL7dHNRT85C3pxfGE1tzg8ywyR4FCj+mZBOFH2oj/j7RWXs5kuBJLLO0LziYO+UziqIAA8xVuHmM7bWPOky8Yf9OoSdwv96Q5UVwRMc+5xu/nCkH8KlHVPLRgBx0tNVTE+rGiQ1PhQnghSwDH55piuVCMeUH/BKqJEWU1yXM2kERYW693fgg7lN5LzlgIAMThbOpoAbYnv1avbs9gixI4S4lyUJ5KQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774438244; c=relaxed/relaxed;
-	bh=Zvt3G1hcsDJzzNs4t6l52o6k8uiMQDEzVp6CVhfBepg=;
+	t=1774438300; c=relaxed/relaxed;
+	bh=9EGI1scmAKm+pprVXxtWWutGI9fPw/DG3S6e9WMIiRQ=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UTvryYDwoIGMH/c2oEtkSJRZZFR97neR8epzKAYtZJ0mQZETjeAsRZS/XYDmIIo71r20MFE/et8qwyz6tvFJNNAlC3k6NAzlXWbWEsU5p1himRTEYGDoanKPmSJrkfXMaL5nxK8CC3wNo1Ng2F9EjDnJwHZ5h3HdBiI2uChadrYK591v+pOoYeZOXjBQsZTBV6qhux1ah27d8N5mg0nO486tIZu/Ev2wlxtcGy+iwoREZ/gwK3DM7F/ci4In7Tinqz7f6UTi4Yd4/Guk6bRqUl8lhg9FM/cyfhsonJX1n+RuCl/6aVGygnjqHSMEil3omXl75nSsCdYw+TntlZ9kkA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OHlhU4Kx; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=mailhol@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=KNe4nmfGAVzthfNHVxNglaP3U4fPSAT0s93V4Kw6j1g/JW++iwAWqCIQ3p8tWme08U20mr3dRhyKVvAyvrxaVfi3+U+FwGJT2dVCZtmxPkG9LraDeAaLDgO+psz4XhhdR/xgYs+tzAI4k8dloNnTzrJkhsLLPMkN+XU942jUTO+atmFXJsKMPoIJDaz2ieUvykpJ0CXb11aZkexU//5Ju2s448Z/BArKHapHkZBQAQePKV+BlfAR/4f+uqjTjB2NXhpaBmARQXVDBOMnLgOUlisRStYG7X5y/hTIwAgaBmVV+lXdUsdtr8Be1FdSbwnpml8r8OR4eBPwJfJhOXRXEQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=q7AMjbL5; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=mailhol@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OHlhU4Kx;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=q7AMjbL5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=mailhol@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=mailhol@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fgl8N0PRqz2xPL;
-	Wed, 25 Mar 2026 22:30:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fgl9R4MSTz2xSX;
+	Wed, 25 Mar 2026 22:31:39 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 9D9794452A;
-	Wed, 25 Mar 2026 11:30:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 86C58C4CEF7;
-	Wed, 25 Mar 2026 11:30:21 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 098F560120;
+	Wed, 25 Mar 2026 11:31:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 89274C4CEF7;
+	Wed, 25 Mar 2026 11:31:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774438241;
-	bh=8S5TmAtO06iPDjR/APd3b8qCxwJUHlbb5SphhpG276w=;
+	s=k20201202; t=1774438296;
+	bh=ylRm2gYh1SSNTms1TdIe/v1LeEn6b9whQkZPd++l0EY=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=OHlhU4KxW0ESflRCv12pLjiQ+K8rctrZiJQGTHZ5zqSdcRsrJ+cxVUo6WS8ygPrf1
-	 8g7tl4rlzjpeKvDFoE4D8YIq1qUwh+8UzaTuaKfUlkEcFDTQFwoJ4gJkmdiVlNp866
-	 AgerHFgrIEg9Q1Ks+TtwipZcpLqyLQgni7r62gXQTlpi/ASdCLwCySKW66kVtBDFTM
-	 RcmInCOhNJGbFq+WYNDvLuX3agPqqgYzgsGM4Fo0+aJucZNi6M1Pf/qL712D8Yyj9J
-	 z7332+wGqDsyg7Nd3cJPGVzCj6g5HdxtxMt1nQMHYvgjYotrDLvOO3LnEqXi4zoYya
-	 87r72ru0E6+Vw==
-Message-ID: <6f463bf9-7c17-405f-81d0-bcce82caa2a4@kernel.org>
-Date: Wed, 25 Mar 2026 12:30:19 +0100
+	b=q7AMjbL5W0jOhmMe9L0gOLKFEqzai/JPUxmdE2mOpoQ36iaMfFZZLITyNzxhZlevK
+	 rA0SbrRURTtaztJltjjMS5YPxpAJmm/omGpFo3nDqFaJ37FJP4x4MIc5TH6RDrtCZ6
+	 +nUxPxPDn0Uc4uffmUPwMTzhwm8enjtoGEKl4XHmKc0Zq0dwCdpLgIqp7d6DrOZ7NL
+	 VvSnhuHBd0UkpP4vcl2ZxbmbBm0pA8yz1q/sjOs91mTiMNwSVhPHygkMwdAX3hVzTE
+	 a6rHjx1MiPC03K9uIW/rbqvMgTfTHiljj5xIVSJAw2Sm/y0jE0atJzrh4/qaZiCMEw
+	 TCsVxjvF/0UXQ==
+Message-ID: <efec4a41-3889-44f9-adbb-c74fddd63ae8@kernel.org>
+Date: Wed, 25 Mar 2026 12:31:15 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,8 +60,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 7/9] arm64: defconfig: remove incorrect assignment to
- IPQ_APSS_5018
+Subject: Re: [PATCH 8/9] arm64: defconfig: remove obsolete assignment to
+ SENSORS_SA67MCU
 To: Krzysztof Kozlowski <krzk@kernel.org>
 Cc: Alexandre Gonzalo <alexandre.gonzalo@arm.com>,
  linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
@@ -126,60 +126,35 @@ Cc: Alexandre Gonzalo <alexandre.gonzalo@arm.com>,
  "Rob Herring (Arm)" <robh@kernel.org>,
  Dmitry Baryshkov <dmitry.baryshkov@oss.qualcomm.com>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Anna Schumaker <anna.schumaker@oracle.com>, soc@lists.linux.dev,
- Ross Burton <ross.burton@arm.com>, Bjorn Andersson <andersson@kernel.org>,
- Konrad Dybcio <konradybcio@kernel.org>
+ Anna Schumaker <anna.schumaker@oracle.com>
 References: <20260317-arm_defconf_cleanup-v1-0-8eecb7fdd24d@kernel.org>
- <20260317-arm_defconf_cleanup-v1-7-8eecb7fdd24d@kernel.org>
- <ff697bee-2173-4311-9089-0875114d54d8@kernel.org>
+ <20260317-arm_defconf_cleanup-v1-8-8eecb7fdd24d@kernel.org>
+ <fa1e4d72-50e2-49d4-a458-1e3d300cce4f@kernel.org>
 From: "Vincent Mailhol (Arm)" <mailhol@kernel.org>
 Content-Language: en-US
-In-Reply-To: <ff697bee-2173-4311-9089-0875114d54d8@kernel.org>
+In-Reply-To: <fa1e4d72-50e2-49d4-a458-1e3d300cce4f@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-+CC: soc@lists.linux.dev
-+CC: Bjorn Andersson <andersson@kernel.org>
-+CC: Konrad Dybcio <konradybcio@kernel.org>
-
-On 3/17/26 12:31, Krzysztof Kozlowski wrote:
+On 3/17/26 12:33, Krzysztof Kozlowski wrote:
 > On 17/03/2026 10:13, Vincent Mailhol (Arm) wrote:
->> CONFIG_IPQ_APSS_5018 does not exist and never existed. Remove it.
+>> The Kontron SMARC-sAM67 board management controller is not in the
+>> kernel tree anymore. Clean-up the leftover reference to
+>> CONFIG_SENSORS_SA67MCU which was left in the defconfig.
 >>
->> Fixes: 7f0c87348fb5 ("arm64: defconfig: Enable IPQ5018 SoC base configs")
+>> Fixes: e710b2283725 ("Revert "hwmon: add SMARC-sAM67 support"")
 >> Signed-off-by: Vincent Mailhol (Arm) <mailhol@kernel.org>
 >> ---
+>>  arch/arm64/configs/defconfig | 1 -
+>>  1 file changed, 1 deletion(-)
 > 
-> Just like try one year ago:
-> https://lore.kernel.org/all/20240104133241.2030193-1-ross.burton@arm.com/
-> 
-> No one will apply it if you do not send the patch to right people.
-> multi_vx and arm64 defconfig fall outside of get_maintainers thus policy
-> from maintainer soc profile applies.
+> https://lore.kernel.org/all/20260302122540.1377444-3-mwalle@kernel.org/
 
-As you guessed, I used get_maintainers.pl to generate the recipient
-list. I am just surprised to hear that the defconfigs fall out of the
-usual process. This is a pit fall as shown by the fact that both Ross
-and me failed to send it to the right people.
+Meanwhile, that patch was picked. It has already landed in linux-next.
+So I will remove it from my series.
 
-As you pointed in another answer, I saw that the documentation was
-updated. I will follow this from now on. Thanks for that!
-
-> This one should be send to platform maintainers, so to qcom.
-
-I will add linux-arm-msm@vger.kernel.org, Bjorn Andersson, Konrad Dybcio.
-
-I don't think this should be split though. My series does one thing:
-address the warnings from scripts/kconfig/merge_config.sh. When a series
-have a clear scope which spans other several trees, it is more common to
-collect Acked-by tags from the maintainers of the other domains rather
-than splitting.
-
-> Other ones: please send all arm and arm64 defconfig changes in one
-> patchset to soc folks. Here, at least provide credits with Reported-by
-> to Ross.
-OK. Although this was re-discovered independently on my side, will add
-the Reported-by tag to give proper credit.
+> It is said to see that multiple people did the same work twice and did
+> work which was not sent to right addresses. :(
 
 
 Yours sincerely,
