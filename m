@@ -1,69 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-18827-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18828-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22F0C10A88E7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2026 17:30:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5C0C10A88EE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2026 17:38:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fhW4w4cWCz2yVB;
-	Fri, 27 Mar 2026 04:30:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774546224;
-	cv=none; b=W6HuWGWvjtDuMXbExUsFG+sDdxDZN6LAi0brBTU/l0HPvpctu1aYLZgDKrc1nwHzPAf3FYGdWEAgSkIvT2x4HsZhjTAUDLBnA1UmiF+e4SgXUOFnTSIRgvKHhCAagF2vU/al8xy8K/LVot/hOm9PyX8PdJ0vBzwRhqd/kGhZZXcrVtHQrhdeRpt8qsq7HeFH1n1NCL8sR0cbEPLaEUpfQ3dbRX4/syns+ZJzjP05UqBTWq/hc1XAurco6K9tpwr8EutIHQMYxZe14Lom+XsrI6+2hf8ODjNoA55Rc+a2Up0YF6SieXJATFwCBvbltqWwt1YSp7Mqc8YYwE5jP+ikEQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fhWGd39FHz2yVB;
+	Fri, 27 Mar 2026 04:38:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774546729;
+	cv=none; b=NQDX2peoJ1V2LRllNZUejc0ahiEySP0A+/HfWoDycBZyo2PSEpSZzLoZF99n9hGgbpjyqRHEw07EwoM7RY+4K93CQkl0s/KV+lQoHLVBIhEzN4Tw5jTVoxePcsLiU9NenJ5NygyxgVs9u6sVOJzJ/UbilvB9skxc0yoaxx7nNhugsIsHxuzipUgdR1zzrRnPauVxWxE3X8n77Og/e5gqbDUAsDeQlCZFJlL88/ByIVMbBIM3f9K+0fE+gtLoaYUQrBMloo/OKDOlZmGrpaO10zWu3ZRRAAa0CDldQNwNqKWkTmpLI0J1rYPxBJFjjXUnW1vUt9xWLhtLCrBkO5ZJSQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774546224; c=relaxed/relaxed;
-	bh=BRxp6ywVIHuTWbk+IYoK9mL0f9IoYIIpSzoINaQ4Kgo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=RdBQsys0sJDFNZOfgNaAPwRG++gytPowLIpCY3xqIoHbvtEVYiEcN7QfPD7RM9/cMLhLas8Y7SgQeXx5EwLE7GkSf/jl7+K1JgHnseqIMrhjhHJqCX5bSAosHCnBUWpw+9kopwtsCoAyYVvNXzSG1uvvHWf7gUBBk63KWzeMEM0ReXIhsn5pix0T5pfeg3DbfhmYa4FcjikDW4wfKYKau3DAM3MmIKxOiQHoHdAUkw4TY7zB/hd14QbKoF7aH0GlJTQADwR02+2Nnrt4Q3xIOa7DGmpBY2ag2gNL9Hrl5kB3QaWpZgOhL9kQuFpzqBMt98COZUw7QDIBrU15nxYQIQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SPEn2foH; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1774546729; c=relaxed/relaxed;
+	bh=hAAiF8xSgL3z4E5G5/XmRxGLgvCy/D0+zQfYgHI39gw=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Cc:To:From:Subject:
+	 References:In-Reply-To; b=e1F5lotGOS8dBtW3eWDeMaP3iaap2qKNrp0YnZr+VqblnoPcpe4F8Tcjg8MIFkNTh/eZRzyq43AljYRLzwxwD5gwGWGyDGlif8C+bEarQn4MhvgSWlkJCyOfQwgjCvUIczpCxcKdzEkTSKkxnhN+kR0dPw6dHgWu7fKmVu0YgDch+4u2FIcl6ui1WdePCkmbB1jW1pZKf+pweRH9Xsz4L6NUONTw4GlNpvYgKKzP1aacPUSVmefUXYNp/6hkrdNxc2vYNiwCF7NwJzZvU+PC90J+lXdwqNLJcFeH01jDjftFO0dUiquI4KiUcCfizsHRwXRQFXzcWYk2pKqCV+0PHg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ArEAbT+s; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SPEn2foH;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ArEAbT+s;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhW4v3dV6z2yS4
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2026 04:30:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhWGc56Zzz2yS4
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2026 04:38:48 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id DF7EB60054;
-	Thu, 26 Mar 2026 17:30:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E24D5C19423;
-	Thu, 26 Mar 2026 17:30:18 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 2F2DE6011F;
+	Thu, 26 Mar 2026 17:38:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 64CF3C116C6;
+	Thu, 26 Mar 2026 17:38:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774546219;
-	bh=4B6IWxmcxmMnOxoBKxZipB+l8hxN/7ccnuWwqYeudjw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=SPEn2foHPCEzJ7DeO/tSryyi/zFWpbx/VuvZycUgOtYqpauG1SBu9gTe8uzv/oOMl
-	 eFgZqH/AxXoDbch0Tex8vszosgZLbtCbcZLeAt6j/o6/79wo6Gr06rYnctFY3Ech6q
-	 Ml+l/xnWPe9Rye0Rj8aEqYBGxNLHX6YsAxboenQhbot3tAaPfkAFbNZm+0a2y+V9ON
-	 MOAH7ElbYaTnr6fchNZDZ/OIHsAlZaV0RelhrHw70ayI2kY7YsgW+AwKOrUYaZxifm
-	 sTbUF7qyXypzkFYGWGPuNsDlIleF3JK01J4wG8nLfukFvvzXeW8SL0e5wzblW6NRdO
-	 JFbwnASOjjm0w==
-Date: Thu, 26 Mar 2026 17:30:17 +0000
-From: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
-To: Suren Baghdasaryan <surenb@google.com>
-Cc: akpm@linux-foundation.org, willy@infradead.org, david@kernel.org, 
-	ziy@nvidia.com, matthew.brost@intel.com, joshua.hahnjy@gmail.com, 
-	rakie.kim@sk.com, byungchul@sk.com, gourry@gourry.net, 
-	ying.huang@linux.alibaba.com, apopple@nvidia.com, lorenzo.stoakes@oracle.com, 
-	baolin.wang@linux.alibaba.com, Liam.Howlett@oracle.com, npache@redhat.com, ryan.roberts@arm.com, 
-	dev.jain@arm.com, baohua@kernel.org, lance.yang@linux.dev, vbabka@suse.cz, 
-	jannh@google.com, rppt@kernel.org, mhocko@suse.com, pfalcato@suse.de, 
-	kees@kernel.org, maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au, 
-	chleroy@kernel.org, borntraeger@linux.ibm.com, frankja@linux.ibm.com, 
-	imbrenda@linux.ibm.com, hca@linux.ibm.com, gor@linux.ibm.com, agordeev@linux.ibm.com, 
-	svens@linux.ibm.com, gerald.schaefer@linux.ibm.com, linux-mm@kvack.org, 
-	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-s390@vger.kernel.org
-Subject: Re: [PATCH v5 2/6] mm: use vma_start_write_killable() in mm syscalls
-Message-ID: <292e3a7e-44c8-448c-8381-a0bb7cd32dde@lucifer.local>
-References: <20260326080836.695207-1-surenb@google.com>
- <20260326080836.695207-3-surenb@google.com>
+	s=k20201202; t=1774546725;
+	bh=hAAiF8xSgL3z4E5G5/XmRxGLgvCy/D0+zQfYgHI39gw=;
+	h=Date:Cc:To:From:Subject:References:In-Reply-To:From;
+	b=ArEAbT+s3n7x1zNm2qUyfultheclQsMn7Cylk1mxfVokFRrNp3WpcDfI8mmayZ+0h
+	 m2cGLs0n6Sh6ZCu8EvHXqLDxmAX8LMqlZoRnQEfHReuoiYU3xPG1brRn0xv/B7nG91
+	 dfctDdAzWRRIBz5wDeTdWGKHbyzznewMhiup0tTEhLqFpUABWkXccnP5fkKD1V8bqG
+	 AQrp8yU+1knEeWB4pCRAjqoVJNKbnXs/r4tup9fByZXD5EgZfswwbwv0q7Wo741gye
+	 MvHPzW2Tb0nrON4/+fHRtWe9N46CjKkZ5ux8WM6YRAe6n1JfA4kFbYnKDRvMa6t1Pa
+	 3vRMCPXPpyakA==
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,239 +56,55 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260326080836.695207-3-surenb@google.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 26 Mar 2026 18:38:35 +0100
+Message-Id: <DHCWB6YQ7B8E.1I9WCHXJ6FBPH@kernel.org>
+Cc: "Russell King" <linux@armlinux.org.uk>, "Greg Kroah-Hartman"
+ <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ "Ioana Ciornei" <ioana.ciornei@nxp.com>, "Nipun Gupta"
+ <nipun.gupta@amd.com>, "Nikhil Agarwal" <nikhil.agarwal@amd.com>, "K. Y.
+ Srinivasan" <kys@microsoft.com>, "Haiyang Zhang" <haiyangz@microsoft.com>,
+ "Wei Liu" <wei.liu@kernel.org>, "Dexuan Cui" <decui@microsoft.com>, "Long
+ Li" <longli@microsoft.com>, "Bjorn Helgaas" <bhelgaas@google.com>, "Armin
+ Wolf" <W_Armin@gmx.de>, "Bjorn Andersson" <andersson@kernel.org>, "Mathieu
+ Poirier" <mathieu.poirier@linaro.org>, "Vineeth Vijayan"
+ <vneethv@linux.ibm.com>, "Peter Oberparleiter" <oberpar@linux.ibm.com>,
+ "Heiko Carstens" <hca@linux.ibm.com>, "Vasily Gorbik" <gor@linux.ibm.com>,
+ "Alexander Gordeev" <agordeev@linux.ibm.com>, "Christian Borntraeger"
+ <borntraeger@linux.ibm.com>, "Sven Schnelle" <svens@linux.ibm.com>, "Harald
+ Freudenberger" <freude@linux.ibm.com>, "Holger Dengler"
+ <dengler@linux.ibm.com>, "Mark Brown" <broonie@kernel.org>, "Jason Wang"
+ <jasowang@redhat.com>, "Xuan Zhuo" <xuanzhuo@linux.alibaba.com>,
+ =?utf-8?q?Eugenio_P=C3=A9rez?= <eperezma@redhat.com>, "Alex Williamson"
+ <alex@shazbot.org>, "Juergen Gross" <jgross@suse.com>, "Stefano Stabellini"
+ <sstabellini@kernel.org>, "Oleksandr Tyshchenko"
+ <oleksandr_tyshchenko@epam.com>, "Christophe Leroy (CS GROUP)"
+ <chleroy@kernel.org>, <linux-kernel@vger.kernel.org>,
+ <driver-core@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-hyperv@vger.kernel.org>, <linux-pci@vger.kernel.org>,
+ <platform-driver-x86@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
+ <linux-remoteproc@vger.kernel.org>, <linux-s390@vger.kernel.org>,
+ <linux-spi@vger.kernel.org>, <virtualization@lists.linux.dev>,
+ <kvm@vger.kernel.org>, <xen-devel@lists.xenproject.org>,
+ <linux-arm-kernel@lists.infradead.org>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+From: "Danilo Krummrich" <dakr@kernel.org>
+Subject: Re: [PATCH 00/12] treewide: Convert buses to use generic
+ driver_override
+References: <20260324005919.2408620-1-dakr@kernel.org>
+ <20260325052919-mutt-send-email-mst@kernel.org>
+In-Reply-To: <20260325052919-mutt-send-email-mst@kernel.org>
 
-On Thu, Mar 26, 2026 at 01:08:32AM -0700, Suren Baghdasaryan wrote:
-> Replace vma_start_write() with vma_start_write_killable() in syscalls,
-> improving reaction time to the kill signal.
+On Wed Mar 25, 2026 at 10:29 AM CET, Michael S. Tsirkin wrote:
+> vdpa bits:
 >
-> In a number of places we now lock VMA earlier than before to avoid
-> doing work and undoing it later if a fatal signal is pending. This
-> is safe because the moves are happening within sections where we
-> already hold the mmap_write_lock, so the moves do not change the
-> locking order relative to other kernel locks.
+> Acked-by: Michael S. Tsirkin <mst@redhat.com>
 >
-> Suggested-by: Matthew Wilcox <willy@infradead.org>
-> Signed-off-by: Suren Baghdasaryan <surenb@google.com>
+> I assume it'll all be merged together?
 
-LGTM, so:
-
-Reviewed-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
-
-> ---
->  mm/madvise.c   |  4 +++-
->  mm/memory.c    |  2 ++
->  mm/mempolicy.c | 11 +++++++++--
->  mm/mlock.c     | 28 ++++++++++++++++++++++------
->  mm/mprotect.c  |  5 ++++-
->  mm/mremap.c    |  8 +++++---
->  mm/mseal.c     |  5 ++++-
->  7 files changed, 49 insertions(+), 14 deletions(-)
->
-> diff --git a/mm/madvise.c b/mm/madvise.c
-> index 69708e953cf5..feaa16b0e1dc 100644
-> --- a/mm/madvise.c
-> +++ b/mm/madvise.c
-> @@ -175,7 +175,9 @@ static int madvise_update_vma(vm_flags_t new_flags,
->  	madv_behavior->vma = vma;
->
->  	/* vm_flags is protected by the mmap_lock held in write mode. */
-> -	vma_start_write(vma);
-> +	if (vma_start_write_killable(vma))
-> +		return -EINTR;
-> +
->  	vma->flags = new_vma_flags;
->  	if (set_new_anon_name)
->  		return replace_anon_vma_name(vma, anon_name);
-> diff --git a/mm/memory.c b/mm/memory.c
-> index e44469f9cf65..9f99ec634831 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -366,6 +366,8 @@ void free_pgd_range(struct mmu_gather *tlb,
->   * page tables that should be removed.  This can differ from the vma mappings on
->   * some archs that may have mappings that need to be removed outside the vmas.
->   * Note that the prev->vm_end and next->vm_start are often used.
-> + * We don't use vma_start_write_killable() because page tables should be freed
-> + * even if the task is being killed.
->   *
->   * The vma_end differs from the pg_end when a dup_mmap() failed and the tree has
->   * unrelated data to the mm_struct being torn down.
-> diff --git a/mm/mempolicy.c b/mm/mempolicy.c
-> index fd08771e2057..c38a90487531 100644
-> --- a/mm/mempolicy.c
-> +++ b/mm/mempolicy.c
-> @@ -1784,7 +1784,8 @@ SYSCALL_DEFINE4(set_mempolicy_home_node, unsigned long, start, unsigned long, le
->  		return -EINVAL;
->  	if (end == start)
->  		return 0;
-> -	mmap_write_lock(mm);
-> +	if (mmap_write_lock_killable(mm))
-> +		return -EINTR;
->  	prev = vma_prev(&vmi);
->  	for_each_vma_range(vmi, vma, end) {
->  		/*
-> @@ -1801,13 +1802,19 @@ SYSCALL_DEFINE4(set_mempolicy_home_node, unsigned long, start, unsigned long, le
->  			err = -EOPNOTSUPP;
->  			break;
->  		}
-> +		/*
-> +		 * Lock the VMA early to avoid extra work if fatal signal
-> +		 * is pending.
-> +		 */
-> +		err = vma_start_write_killable(vma);
-> +		if (err)
-> +			break;
->  		new = mpol_dup(old);
->  		if (IS_ERR(new)) {
->  			err = PTR_ERR(new);
->  			break;
->  		}
->
-> -		vma_start_write(vma);
->  		new->home_node = home_node;
->  		err = mbind_range(&vmi, vma, &prev, start, end, new);
->  		mpol_put(new);
-> diff --git a/mm/mlock.c b/mm/mlock.c
-> index 8c227fefa2df..3d9147f3d404 100644
-> --- a/mm/mlock.c
-> +++ b/mm/mlock.c
-> @@ -419,8 +419,10 @@ static int mlock_pte_range(pmd_t *pmd, unsigned long addr,
->   *
->   * Called for mlock(), mlock2() and mlockall(), to set @vma VM_LOCKED;
->   * called for munlock() and munlockall(), to clear VM_LOCKED from @vma.
-> + *
-> + * Return: 0 on success, -EINTR if fatal signal is pending.
->   */
-> -static void mlock_vma_pages_range(struct vm_area_struct *vma,
-> +static int mlock_vma_pages_range(struct vm_area_struct *vma,
->  	unsigned long start, unsigned long end,
->  	vma_flags_t *new_vma_flags)
->  {
-> @@ -442,7 +444,9 @@ static void mlock_vma_pages_range(struct vm_area_struct *vma,
->  	 */
->  	if (vma_flags_test(new_vma_flags, VMA_LOCKED_BIT))
->  		vma_flags_set(new_vma_flags, VMA_IO_BIT);
-> -	vma_start_write(vma);
-> +	if (vma_start_write_killable(vma))
-> +		return -EINTR;
-> +
->  	vma_flags_reset_once(vma, new_vma_flags);
->
->  	lru_add_drain();
-> @@ -453,6 +457,7 @@ static void mlock_vma_pages_range(struct vm_area_struct *vma,
->  		vma_flags_clear(new_vma_flags, VMA_IO_BIT);
->  		vma_flags_reset_once(vma, new_vma_flags);
->  	}
-> +	return 0;
->  }
->
->  /*
-> @@ -506,11 +511,13 @@ static int mlock_fixup(struct vma_iterator *vmi, struct vm_area_struct *vma,
->  	 */
->  	if (vma_flags_test(&new_vma_flags, VMA_LOCKED_BIT) &&
->  	    vma_flags_test(&old_vma_flags, VMA_LOCKED_BIT)) {
-> +		ret = vma_start_write_killable(vma);
-> +		if (ret)
-> +			goto out; /* mm->locked_vm is fine as nr_pages == 0 */
->  		/* No work to do, and mlocking twice would be wrong */
-> -		vma_start_write(vma);
->  		vma->flags = new_vma_flags;
->  	} else {
-> -		mlock_vma_pages_range(vma, start, end, &new_vma_flags);
-> +		ret = mlock_vma_pages_range(vma, start, end, &new_vma_flags);
->  	}
->  out:
->  	*prev = vma;
-> @@ -739,9 +746,18 @@ static int apply_mlockall_flags(int flags)
->
->  		error = mlock_fixup(&vmi, vma, &prev, vma->vm_start, vma->vm_end,
->  				    newflags);
-> -		/* Ignore errors, but prev needs fixing up. */
-> -		if (error)
-> +		if (error) {
-> +			/*
-> +			 * If we failed due to a pending fatal signal, return
-> +			 * now. If we locked the vma before signal arrived, it
-> +			 * will be unlocked when we drop mmap_write_lock.
-> +			 */
-> +			if (fatal_signal_pending(current))
-> +				return -EINTR;
-> +
-> +			/* Ignore errors, but prev needs fixing up. */
->  			prev = vma;
-> +		}
->  		cond_resched();
->  	}
->  out:
-> diff --git a/mm/mprotect.c b/mm/mprotect.c
-> index 110d47a36d4b..ae6ed882b600 100644
-> --- a/mm/mprotect.c
-> +++ b/mm/mprotect.c
-> @@ -768,7 +768,10 @@ mprotect_fixup(struct vma_iterator *vmi, struct mmu_gather *tlb,
->  	 * vm_flags and vm_page_prot are protected by the mmap_lock
->  	 * held in write mode.
->  	 */
-> -	vma_start_write(vma);
-> +	error = vma_start_write_killable(vma);
-> +	if (error)
-> +		goto fail;
-> +
->  	vma_flags_reset_once(vma, &new_vma_flags);
->  	if (vma_wants_manual_pte_write_upgrade(vma))
->  		mm_cp_flags |= MM_CP_TRY_CHANGE_WRITABLE;
-> diff --git a/mm/mremap.c b/mm/mremap.c
-> index e9c8b1d05832..0860102bddab 100644
-> --- a/mm/mremap.c
-> +++ b/mm/mremap.c
-> @@ -1348,6 +1348,11 @@ static unsigned long move_vma(struct vma_remap_struct *vrm)
->  	if (err)
->  		return err;
->
-> +	/* We don't want racing faults. */
-> +	err = vma_start_write_killable(vrm->vma);
-> +	if (err)
-> +		return err;
-> +
->  	/*
->  	 * If accounted, determine the number of bytes the operation will
->  	 * charge.
-> @@ -1355,9 +1360,6 @@ static unsigned long move_vma(struct vma_remap_struct *vrm)
->  	if (!vrm_calc_charge(vrm))
->  		return -ENOMEM;
->
-> -	/* We don't want racing faults. */
-> -	vma_start_write(vrm->vma);
-> -
->  	/* Perform copy step. */
->  	err = copy_vma_and_data(vrm, &new_vma);
->  	/*
-> diff --git a/mm/mseal.c b/mm/mseal.c
-> index 603df53ad267..3b7737ba7524 100644
-> --- a/mm/mseal.c
-> +++ b/mm/mseal.c
-> @@ -70,6 +70,7 @@ static int mseal_apply(struct mm_struct *mm,
->
->  		if (!vma_test(vma, VMA_SEALED_BIT)) {
->  			vma_flags_t vma_flags = vma->flags;
-> +			int err;
->
->  			vma_flags_set(&vma_flags, VMA_SEALED_BIT);
->
-> @@ -77,7 +78,9 @@ static int mseal_apply(struct mm_struct *mm,
->  					       curr_end, &vma_flags);
->  			if (IS_ERR(vma))
->  				return PTR_ERR(vma);
-> -			vma_start_write(vma);
-> +			err = vma_start_write_killable(vma);
-> +			if (err)
-> +				return err;
->  			vma_set_flags(vma, VMA_SEALED_BIT);
->  		}
->
-> --
-> 2.53.0.1018.g2bb0e51243-goog
->
+I can take it through the driver-core tree if you prefer, but you can also =
+pick
+it up yourself.
 
