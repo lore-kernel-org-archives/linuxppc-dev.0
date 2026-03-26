@@ -1,73 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-18831-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18832-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97D5910A88F1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2026 18:01:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7BE310A88F1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2026 18:08:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fhWmz02Fcz2yZc;
-	Fri, 27 Mar 2026 05:01:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774548098;
-	cv=none; b=ipstiN+KuA6T/MzNDDyGPrkBv253p39YhbOl2cqCE6PukmDjB8TfP1wwPN5OiUM+4m2+0Owedf0rE+ZEav0JnDhNZy8wbXviy0hH+o1sdQ1Q4FrsVK8uxoOzX3Cqf9Ph/KWvzMV2n0W+oV3iiLnoysZhOeKKzuQ/wtPPmSA78W6D1k8gKWB8HZ8/ZDNfX9/EiQ1Vkj40XGiYhmuhbgpk7CI9NnLwnEtWGyg0Ys/wUNhiw6hr1O3c2Gcq+WVlfD2j207IucEpzN63Z9S2SYKfHSEGBsrdUJDVxzj7xv4yl/FCtH4B3AARSmVg3BkLzS99hYiy1h5qWk+c2X4ZE7C23A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fhWwv0tlsz2yZc;
+	Fri, 27 Mar 2026 05:08:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774548511;
+	cv=none; b=N4UBvpSy3A0qo6I6vr48Rr78EyB6MNjcnWzPEnh/fA7shW52V++n7Qd9FXNYNBAo0WgfUFwjA6SanQjzncrDhEb2fy+UZotn/DBFmdhYe5HrwURh8qnr7Ic4wI7jRoyfUieq4WtEPFKmTp+jI1BvwTbFmFrSVHJZ8NzmEzfGT1zNUZx36u5k8bR4i7p10IQ7Ks3J5Ibrb30B+doZge6jnT+ixYQ16v5PnOBoxpxU0Wk0h+3THhIJOM+/U15kO1zc6qNPpUNPt3563BjNTHT+fNmtmmGGOxS7+qbTZcGfVUF5MbmVyVRokx5eWJQYhI/9FS8cZETcOR75DYVfv5O03Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774548098; c=relaxed/relaxed;
-	bh=qSUnD1397Zp9inDfLVskQJVGRWrzZd3vpYhC+uxeKwI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ZxloqjPCRwwwdeatjTiVsDsdbvsYd6bxO8W6w68LHKqj0pWY0OO1QpQOpjcJLKsUd7UeF1e/6yHHiSXf7dxp1IP9AnU8K6SVm8TJEu2PbaAgwbO89WhVwuLBTBc9dLmILxCQZJXMZdVeb7mapmMOp2ojwt7I3000G9hK9+HO6SQ5vukH/3E92ja3EkI6MWBvKxW3tH/tKfWEZrl8SS6cPw7uJtMXIjiF5lR0fB1vk5t/OqGZnL9lV/VQp+FSRPtJBsnvfN3d4QlhgzGIKVNUj0o87NSQrbHc5JCz05TuPagd7RVi9/cG9OkcfxQVB4JAZTnWiBgwzWugdGd2Uteflw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EBeFYv+j; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1774548511; c=relaxed/relaxed;
+	bh=KQAA/3jdFNq0DMspbi29xrGCTzsSDrM4GqWaOCAb5GY=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=EA39hK6WWvJqm6UIjn8GInEWLXyAOk7TDKSmjEsgYMutqm/Ybrw/WAh7/Yw4UzddZmXNqVkPlqMoOUKIV/3s60ZqdaJ9yOdK9yrGe7MPM2IZ6ie5QEzS1sKBFBVjRLmzGsV9qlP7a3AM3IIlezT87Q5JgIwY+a8JEUYymr/+v7WQAek/diDHaHL28TEUmozsI4LYRjU8FGYBPmSMNAVlynZfUqAxAhVS52GOE7HuqgehmHSx4VajigndCkqA6WipoxRnWMF9PhuN1/+KMrtsXQE29h1q/NBr/+0j2wmYjYXqTVbZlRhPftrfLtqu6x83fy7XaOswrjdjXIDe8t0SuA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NM6w98Z1; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EBeFYv+j;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NM6w98Z1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhWmx2KMGz2yVL
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2026 05:01:36 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62Q685vW3481709;
-	Thu, 26 Mar 2026 18:01:20 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=qSUnD1
-	397Zp9inDfLVskQJVGRWrzZd3vpYhC+uxeKwI=; b=EBeFYv+j/aODVnq9lrPG+8
-	aNOZT5Bm/Ezk0JS3MdTI0H/lP7+pHbnVwUMlRA5C2WOTtjuq/uO9fsPlEiaMSR1U
-	uMC4aU77pS63ldWAtbL98p0G36lqVUIG4oy+rVIQwpz0kgjYND8pNulejDrs+SyC
-	qJs+o7k8g9+xbpwCELqd/D8N/lPwdel+qR7pWUkf72wE6NznXdwGEE70AMl+ZD8E
-	3sYbK50hEpNPYPK+bUWuvY2h0FzdGNlC0J4UNLlvkJ5PEz4X+9Cty0cfDLo4SknD
-	JlGpLFo/yfIeqQZSL6XVt+BstHeyyve7Gn19LIFEKulwvhWejMaMuFiqbOsE8ZnA
-	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d1kxqpkcu-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 26 Mar 2026 18:01:19 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62QGw9vJ004407;
-	Thu, 26 Mar 2026 18:01:18 GMT
-Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4d28c2buec-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 26 Mar 2026 18:01:18 +0000
-Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
-	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62QI1H0c13042414
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 26 Mar 2026 18:01:17 GMT
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id AC67058043;
-	Thu, 26 Mar 2026 18:01:17 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 93BE558055;
-	Thu, 26 Mar 2026 18:01:13 +0000 (GMT)
-Received: from [9.39.28.25] (unknown [9.39.28.25])
-	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 26 Mar 2026 18:01:13 +0000 (GMT)
-Message-ID: <e6f03352-4f09-4238-a47a-6d4e84101a6c@linux.ibm.com>
-Date: Thu, 26 Mar 2026 23:31:10 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhWwt0ZnYz2xN8
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2026 05:08:29 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 34FE9439AF;
+	Thu, 26 Mar 2026 18:08:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E1DE6C116C6;
+	Thu, 26 Mar 2026 18:08:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774548507;
+	bh=0X1DCc+9Eo0RuIwrj7oY6TUZUNFxGIFKgMRZYFFzcYo=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:From;
+	b=NM6w98Z1qWs2v5XGqBHmCWm6JxAhr8BMb8fUamV5wL+wE7MKHdSXLxwSME5ezhUbH
+	 VOyIPsSXzcgwwfMsCgAvfntHYvRMCI5McoXeBkzm7PxpPr6CtwJ2j/g/tXcwFVa4Wo
+	 mfwgQnoNGj3+Q2qe/VwxwVJGO8tkG/hoHlV41bfq7nPm+ifUdXZJTQQCfLoSTGkKKZ
+	 GO/exOJI1I8y/8270z+FNS+HBZvuGqcXZFp+0eaxpOWl3481O7GW2mWATZewkwIy7q
+	 K/JDPU1QB11yIcAtsgX6nNiKmDxqpi1JcRBv8ZiWu3lRldZ84kirC/fAvXlie0d9kJ
+	 aLY5/Yv6bcogQ==
+Date: Thu, 26 Mar 2026 13:08:25 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Danilo Krummrich <dakr@kernel.org>
+Cc: Russell King <linux@armlinux.org.uk>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Ioana Ciornei <ioana.ciornei@nxp.com>,
+	Nipun Gupta <nipun.gupta@amd.com>,
+	Nikhil Agarwal <nikhil.agarwal@amd.com>,
+	"K. Y. Srinivasan" <kys@microsoft.com>,
+	Haiyang Zhang <haiyangz@microsoft.com>,
+	Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
+	Long Li <longli@microsoft.com>, Bjorn Helgaas <bhelgaas@google.com>,
+	Armin Wolf <W_Armin@gmx.de>, Bjorn Andersson <andersson@kernel.org>,
+	Mathieu Poirier <mathieu.poirier@linaro.org>,
+	Vineeth Vijayan <vneethv@linux.ibm.com>,
+	Peter Oberparleiter <oberpar@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Harald Freudenberger <freude@linux.ibm.com>,
+	Holger Dengler <dengler@linux.ibm.com>,
+	Mark Brown <broonie@kernel.org>,
+	"Michael S. Tsirkin" <mst@redhat.com>,
+	Jason Wang <jasowang@redhat.com>,
+	Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
+	Eugenio =?utf-8?B?UMOpcmV6?= <eperezma@redhat.com>,
+	Alex Williamson <alex@shazbot.org>, Juergen Gross <jgross@suse.com>,
+	Stefano Stabellini <sstabellini@kernel.org>,
+	Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	linux-kernel@vger.kernel.org, driver-core@lists.linux.dev,
+	linuxppc-dev@lists.ozlabs.org, linux-hyperv@vger.kernel.org,
+	linux-pci@vger.kernel.org, platform-driver-x86@vger.kernel.org,
+	linux-arm-msm@vger.kernel.org, linux-remoteproc@vger.kernel.org,
+	linux-s390@vger.kernel.org, linux-spi@vger.kernel.org,
+	virtualization@lists.linux.dev, kvm@vger.kernel.org,
+	xen-devel@lists.xenproject.org,
+	linux-arm-kernel@lists.infradead.org,
+	Gui-Dong Han <hanguidong02@gmail.com>
+Subject: Re: [PATCH 05/12] PCI: use generic driver_override infrastructure
+Message-ID: <20260326180825.GA1330769@bhelgaas>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,100 +101,213 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 09/13] selftests/mm: skip uffd-wp-mremap if UFFD
- write-protect is unsupported
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "David Hildenbrand (Arm)" <david@kernel.org>,
-        Shuah Khan <shuah@kernel.org>, linux-mm@kvack.org,
-        linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org,
-        Ritesh Harjani <ritesh.list@gmail.com>, Zi Yan <ziy@nvidia.com>,
-        Michal Hocko <mhocko@kernel.org>, Oscar Salvador <osalvador@suse.de>,
-        Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-        Dev Jain <dev.jain@arm.com>, Liam.Howlett@oracle.com,
-        linuxppc-dev@lists.ozlabs.org
-References: <cover.1773305677.git.sayalip@linux.ibm.com>
- <ed23ff57a80881c9d087d22709862af40addf49b.1773305678.git.sayalip@linux.ibm.com>
- <457dddf1-04ec-4d1e-8640-b04997fac4f1@kernel.org>
- <0e9cea41-7c49-446a-b67b-256584960516@linux.ibm.com>
- <20260324165606.d75200ac0e5458a5ffb83d5d@linux-foundation.org>
-Content-Language: en-IN
-From: Sayali Patil <sayalip@linux.ibm.com>
-In-Reply-To: <20260324165606.d75200ac0e5458a5ffb83d5d@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: Wgdjz0iWAZ5Gq1bxAzv-z7Cif8__vkRg
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzI2MDEyNyBTYWx0ZWRfXz7fQB5fcglC2
- y2SxH0yxzQZaQ1eeQnvSdKaa5MALDMceEq0+fjCDLfsKUVIv7kCQNETwTzkAzldnQiu9WJaMsrU
- 8XEXbSdEUa9olxB/hGpFR01i8TtawRrDvSmJw1SU4ZbMSnePIMJdhQiznJKooVmx6o0INzPK91O
- euDSEoYCckKklrv1qf4D9vl33wHnmzJett7SpJshEWLjpFV4DdyQfpqJMxG63x8AFeTCgYGIc1n
- 3LyS1Afg6iTqpLd6sM2erF9ayWujv2FVX/PROyoPeZyH8Sxwa4LxlfJiJC2pk9pRX52Zd4gLiQ+
- uBQxgFeJRvOfijdyUsubvOceiWJTMwW4FczLPcd6lCldLpUiV0tRWI28c4nLU8DNjIgACcLGFiM
- KB9tv+q9RGkdl9Va3dFFEegEBNHVyZTMe6wHeyjNMG9zahfv67Cpz3IIJjElFVz0++pMDfS3QHa
- smS66mFC8CO0DISw/ag==
-X-Authority-Analysis: v=2.4 cv=bLEb4f+Z c=1 sm=1 tr=0 ts=69c5746f cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8
- a=VwQbUJbxAAAA:8 a=YyDBODbz2JAAnCrYoEcA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: sD7t1P8T7SXxYhdPnjCwUf4tl7Jf37vN
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-26_03,2026-03-26_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 adultscore=0 clxscore=1015 phishscore=0 impostorscore=0
- malwarescore=0 lowpriorityscore=0 suspectscore=0 bulkscore=0
- priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
- definitions=main-2603260127
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260324005919.2408620-6-dakr@kernel.org>
 
+On Tue, Mar 24, 2026 at 01:59:09AM +0100, Danilo Krummrich wrote:
+> When a driver is probed through __driver_attach(), the bus' match()
+> callback is called without the device lock held, thus accessing the
+> driver_override field without a lock, which can cause a UAF.
+> 
+> Fix this by using the driver-core driver_override infrastructure taking
+> care of proper locking internally.
+> 
+> Note that calling match() from __driver_attach() without the device lock
+> held is intentional. [1]
+> 
+> Link: https://lore.kernel.org/driver-core/DGRGTIRHA62X.3RY09D9SOK77P@kernel.org/ [1]
+> Reported-by: Gui-Dong Han <hanguidong02@gmail.com>
+> Closes: https://bugzilla.kernel.org/show_bug.cgi?id=220789
+> Fixes: 782a985d7af2 ("PCI: Introduce new device binding path using pci_dev.driver_override")
+> Signed-off-by: Danilo Krummrich <dakr@kernel.org>
+> ---
+>  drivers/pci/pci-driver.c           | 11 +++++++----
+>  drivers/pci/pci-sysfs.c            | 28 ----------------------------
+>  drivers/pci/probe.c                |  1 -
+>  include/linux/pci.h                |  6 ------
 
-On 25/03/26 05:26, Andrew Morton wrote:
-> On Fri, 13 Mar 2026 19:56:01 +0530 Sayali Patil <sayalip@linux.ibm.com> wrote:
->
->>> Because right now it reads as if it would be returning a bool.
->>>
->>> Acked-by: David Hildenbrand (Arm) <david@kernel.org>
->>>
->> Thanks for the review. I'll rename it to
->> "check_uffd_wp_feature_supported()" in the next version.
-> There was no next version.  I added this:
->
-> --- a/tools/testing/selftests/mm/uffd-wp-mremap.c~selftests-mm-skip-uffd-wp-mremap-if-uffd-write-protect-is-unsupported-fix
-> +++ a/tools/testing/selftests/mm/uffd-wp-mremap.c
-> @@ -19,7 +19,7 @@ static size_t thpsizes[20];
->   static int nr_hugetlbsizes;
->   static size_t hugetlbsizes[10];
->   
-> -static void uffd_wp_feature_supported(void)
-> +static void check_uffd_wp_feature_supported(void)
->   {
->   	uint64_t features;
->   
-> @@ -347,7 +347,7 @@ int main(int argc, char **argv)
->   	struct thp_settings settings;
->   	int i, j, plan = 0;
->   
-> -	uffd_wp_feature_supported();
-> +	check_uffd_wp_feature_supported();
->   
->   	pagesize = getpagesize();
->   	nr_thpsizes = detect_thp_sizes(thpsizes, ARRAY_SIZE(thpsizes));
-> _
->
-Hi Andrew,
-I have some updates to [PATCH v2 04/13] selftests/mm: fix cgroup task 
-placement and tolerance in hugetlb_reparenting_test.sh, as Venkat 
-reported failures with the current version.
+For the above:
 
-Should I send a v3 of the full series, or just a fixup patch for 
-hugetlb_reparenting_test.sh? Also, if you prefer a v3, should I include 
-above fix for 
-selftests-mm-skip-uffd-wp-mremap-if-uffd-write-protect-is-unsupported as 
-well?
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 
-Thanks,
-Sayali
+"driver_override" is mentioned several places in
+Documentation/ABI/testing/sysfs-bus-*.  I assume this series doesn't
+change the behavior documented there?  Should any of this doc be
+consolidated?
+
+>  drivers/vfio/pci/vfio_pci_core.c   |  5 ++---
+>  drivers/xen/xen-pciback/pci_stub.c |  6 ++++--
+>  6 files changed, 13 insertions(+), 44 deletions(-)
+> 
+> diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+> index dd9075403987..d10ece0889f0 100644
+> --- a/drivers/pci/pci-driver.c
+> +++ b/drivers/pci/pci-driver.c
+> @@ -138,9 +138,11 @@ static const struct pci_device_id *pci_match_device(struct pci_driver *drv,
+>  {
+>  	struct pci_dynid *dynid;
+>  	const struct pci_device_id *found_id = NULL, *ids;
+> +	int ret;
+>  
+>  	/* When driver_override is set, only bind to the matching driver */
+> -	if (dev->driver_override && strcmp(dev->driver_override, drv->name))
+> +	ret = device_match_driver_override(&dev->dev, &drv->driver);
+> +	if (ret == 0)
+>  		return NULL;
+>  
+>  	/* Look at the dynamic ids first, before the static ones */
+> @@ -164,7 +166,7 @@ static const struct pci_device_id *pci_match_device(struct pci_driver *drv,
+>  		 * matching.
+>  		 */
+>  		if (found_id->override_only) {
+> -			if (dev->driver_override)
+> +			if (ret > 0)
+>  				return found_id;
+>  		} else {
+>  			return found_id;
+> @@ -172,7 +174,7 @@ static const struct pci_device_id *pci_match_device(struct pci_driver *drv,
+>  	}
+>  
+>  	/* driver_override will always match, send a dummy id */
+> -	if (dev->driver_override)
+> +	if (ret > 0)
+>  		return &pci_device_id_any;
+>  	return NULL;
+>  }
+> @@ -452,7 +454,7 @@ static int __pci_device_probe(struct pci_driver *drv, struct pci_dev *pci_dev)
+>  static inline bool pci_device_can_probe(struct pci_dev *pdev)
+>  {
+>  	return (!pdev->is_virtfn || pdev->physfn->sriov->drivers_autoprobe ||
+> -		pdev->driver_override);
+> +		device_has_driver_override(&pdev->dev));
+>  }
+>  #else
+>  static inline bool pci_device_can_probe(struct pci_dev *pdev)
+> @@ -1722,6 +1724,7 @@ static const struct cpumask *pci_device_irq_get_affinity(struct device *dev,
+>  
+>  const struct bus_type pci_bus_type = {
+>  	.name		= "pci",
+> +	.driver_override = true,
+>  	.match		= pci_bus_match,
+>  	.uevent		= pci_uevent,
+>  	.probe		= pci_device_probe,
+> diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
+> index 16eaaf749ba9..a9006cf4e9c8 100644
+> --- a/drivers/pci/pci-sysfs.c
+> +++ b/drivers/pci/pci-sysfs.c
+> @@ -615,33 +615,6 @@ static ssize_t devspec_show(struct device *dev,
+>  static DEVICE_ATTR_RO(devspec);
+>  #endif
+>  
+> -static ssize_t driver_override_store(struct device *dev,
+> -				     struct device_attribute *attr,
+> -				     const char *buf, size_t count)
+> -{
+> -	struct pci_dev *pdev = to_pci_dev(dev);
+> -	int ret;
+> -
+> -	ret = driver_set_override(dev, &pdev->driver_override, buf, count);
+> -	if (ret)
+> -		return ret;
+> -
+> -	return count;
+> -}
+> -
+> -static ssize_t driver_override_show(struct device *dev,
+> -				    struct device_attribute *attr, char *buf)
+> -{
+> -	struct pci_dev *pdev = to_pci_dev(dev);
+> -	ssize_t len;
+> -
+> -	device_lock(dev);
+> -	len = sysfs_emit(buf, "%s\n", pdev->driver_override);
+> -	device_unlock(dev);
+> -	return len;
+> -}
+> -static DEVICE_ATTR_RW(driver_override);
+> -
+>  static struct attribute *pci_dev_attrs[] = {
+>  	&dev_attr_power_state.attr,
+>  	&dev_attr_resource.attr,
+> @@ -669,7 +642,6 @@ static struct attribute *pci_dev_attrs[] = {
+>  #ifdef CONFIG_OF
+>  	&dev_attr_devspec.attr,
+>  #endif
+> -	&dev_attr_driver_override.attr,
+>  	&dev_attr_ari_enabled.attr,
+>  	NULL,
+>  };
+> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+> index bccc7a4bdd79..b4707640e102 100644
+> --- a/drivers/pci/probe.c
+> +++ b/drivers/pci/probe.c
+> @@ -2488,7 +2488,6 @@ static void pci_release_dev(struct device *dev)
+>  	pci_release_of_node(pci_dev);
+>  	pcibios_release_device(pci_dev);
+>  	pci_bus_put(pci_dev->bus);
+> -	kfree(pci_dev->driver_override);
+>  	bitmap_free(pci_dev->dma_alias_mask);
+>  	dev_dbg(dev, "device released\n");
+>  	kfree(pci_dev);
+> diff --git a/drivers/vfio/pci/vfio_pci_core.c b/drivers/vfio/pci/vfio_pci_core.c
+> index d43745fe4c84..460852f79f29 100644
+> --- a/drivers/vfio/pci/vfio_pci_core.c
+> +++ b/drivers/vfio/pci/vfio_pci_core.c
+> @@ -1987,9 +1987,8 @@ static int vfio_pci_bus_notifier(struct notifier_block *nb,
+>  	    pdev->is_virtfn && physfn == vdev->pdev) {
+>  		pci_info(vdev->pdev, "Captured SR-IOV VF %s driver_override\n",
+>  			 pci_name(pdev));
+> -		pdev->driver_override = kasprintf(GFP_KERNEL, "%s",
+> -						  vdev->vdev.ops->name);
+> -		WARN_ON(!pdev->driver_override);
+> +		WARN_ON(device_set_driver_override(&pdev->dev,
+> +						   vdev->vdev.ops->name));
+>  	} else if (action == BUS_NOTIFY_BOUND_DRIVER &&
+>  		   pdev->is_virtfn && physfn == vdev->pdev) {
+>  		struct pci_driver *drv = pci_dev_driver(pdev);
+> diff --git a/drivers/xen/xen-pciback/pci_stub.c b/drivers/xen/xen-pciback/pci_stub.c
+> index e4b27aecbf05..79a2b5dfd694 100644
+> --- a/drivers/xen/xen-pciback/pci_stub.c
+> +++ b/drivers/xen/xen-pciback/pci_stub.c
+> @@ -598,6 +598,8 @@ static int pcistub_seize(struct pci_dev *dev,
+>  	return err;
+>  }
+>  
+> +static struct pci_driver xen_pcibk_pci_driver;
+> +
+>  /* Called when 'bind'. This means we must _NOT_ call pci_reset_function or
+>   * other functions that take the sysfs lock. */
+>  static int pcistub_probe(struct pci_dev *dev, const struct pci_device_id *id)
+> @@ -609,8 +611,8 @@ static int pcistub_probe(struct pci_dev *dev, const struct pci_device_id *id)
+>  
+>  	match = pcistub_match(dev);
+>  
+> -	if ((dev->driver_override &&
+> -	     !strcmp(dev->driver_override, PCISTUB_DRIVER_NAME)) ||
+> +	if (device_match_driver_override(&dev->dev,
+> +					 &xen_pcibk_pci_driver.driver) > 0 ||
+>  	    match) {
+>  
+>  		if (dev->hdr_type != PCI_HEADER_TYPE_NORMAL
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 1c270f1d5123..57e9463e4347 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -575,12 +575,6 @@ struct pci_dev {
+>  	u8		supported_speeds; /* Supported Link Speeds Vector */
+>  	phys_addr_t	rom;		/* Physical address if not from BAR */
+>  	size_t		romlen;		/* Length if not from BAR */
+> -	/*
+> -	 * Driver name to force a match.  Do not set directly, because core
+> -	 * frees it.  Use driver_set_override() to set or clear it.
+> -	 */
+> -	const char	*driver_override;
+> -
+>  	unsigned long	priv_flags;	/* Private flags for the PCI driver */
+>  
+>  	/* These methods index pci_reset_fn_methods[] */
+> -- 
+> 2.53.0
+> 
 
