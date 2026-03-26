@@ -1,67 +1,54 @@
-Return-Path: <linuxppc-dev+bounces-18817-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18818-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17047106F311
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2026 09:19:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63B71106F31B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2026 10:29:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fhJ9v0Jy0z2xlM;
-	Thu, 26 Mar 2026 20:18:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774516738;
-	cv=none; b=FlAo5l9FuOWGrkQ5PiT/NIeUeZa+myj838uIkwHSRs+1oLfBnxksSs25gDF4/Q6YGlxlxQXMgIXViwa84ozeVi7lj+wter2KsfuGMdGheR8jJYtrdf+7moL/AwdQYWaAq6lS3xcvUZF9lNYXq0VhJ3cGGO49KBKNrMr0Y+La4NWkHISBagnkT7cV0tjnAWehrsUpG79gMB8IRi+U7oD6k3ZQCr9dsOXi8SDsrE4R0B2pz2Y1oG90rngKLYQ6fdico4Llm+HFe7IBcE4boWSWNnLp7jleyVown9Eebyb4SzcSamfw6VBbkIxt81fCRVfgo5uTynHglVkBFWxjr7zryA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fhKlB4V7yz2xlM;
+	Thu, 26 Mar 2026 21:29:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=37.157.195.192
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774520966;
+	cv=none; b=CSIq9TmV8NeCVZrPeMQMfCbfMETnUzwX1L1rduMgXTcyCW4PvYH4y/xddvttmmFJTYLFZo8uUApHsEMqmhZEnvfhd9VPqGEQs9uzXvoeSyEgI6i9PbWZAFrndqh7gezERWHn4SF/rNLpBn/UFVFr/gB4HipQTFCFLfjOmUbvuJdgdlpztYNe6AdmwBQmk3mkwdy9b7/GhPt/CaCkoPRAUdf9ITo9NKqYOTBlTJz3TDLHJqiKGbNeE/DHZ0Th8CsiKSjpPzK1pDrzWcC6obRAKA2ylcMMEYmJ9ZGZVSrOC1Et2k3TzjLBoTCkRC254+zFt06NPotCxQ+8YHXugjRISQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774516738; c=relaxed/relaxed;
-	bh=17UQkAQxmaKfoR8W2GntqiMQ4KoFR3kHaBUv9RbbRUQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=j4S8kLm6JV1pYZSKWPHNoe0lf3LTVhA1eftgtpCmtjOjAzegv48CM8A4Tr5STrWtJcdcdHec2dw2LVREk6HcSsmTsaF0Bb45bDwxc72x0SqxVLj47rzbNzPMxEZWSK/+pBTkOOvjlW9dW+8OqLgjbs01cHOX3o1/EQGzeEsfrpQKH2q+1H4qpvgYyoWk2L169eigSZDb4vfjX4vpD7UkVOz1if7yqEgK/cFHgMbxwI42shJPlLa/q8pAlWa5uJWUo7VffFaH/mclwbu/x2nfBv53vd6C3/vwxul9a6PObADIoUjyl6qBigZVXi4unPfoABxzrfi/qBA6O3Vr1Figtw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EGEvX/Tz; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EGEvX/Tz;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1774520966; c=relaxed/relaxed;
+	bh=DMbomI0K1dBxzSgGXdSenFtHAhLWFml8enUy3EmsNx8=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=eI+gUghZAl47Hq8oZ/4MZj/BfAXQpupkp+v6yxWj4RYh6fVSnx1xT+4autG3K46hkEScceVUh8JSGNKhfL1t6iNXJ5UeztPRQf/8peDpgqpRvp4fn0suDIWq5bp6BaWWZN0MkHPxGGG8tW3WrWdS7Axjccp3CdE5iTf+GnV38aeVU0qkJF2FnFlQUWHbPYHWOb3dS3at5H7z50UMY7eZh4TTZCjKCGPOckBB2IVuTaCvBFnq3Vsg86MVlWOAeubv9Kt8QRyvRdhCPpcyqG8NXUBih/lfO+YiYRPiR0lzYBSFSMyYsRlaivosF3JZYZ81Xdu9piLd/8LrZbRrqPwAVw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=danny.cz; spf=pass (client-ip=37.157.195.192; helo=redcrew.org; envelope-from=dan@danny.cz; receiver=lists.ozlabs.org) smtp.mailfrom=danny.cz
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=danny.cz
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=danny.cz (client-ip=37.157.195.192; helo=redcrew.org; envelope-from=dan@danny.cz; receiver=lists.ozlabs.org)
+Received: from redcrew.org (redcrew.org [37.157.195.192])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhJ9t1tkKz2xS5
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2026 20:18:58 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id C835C418F7;
-	Thu, 26 Mar 2026 09:18:55 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 12FB6C116C6;
-	Thu, 26 Mar 2026 09:18:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774516735;
-	bh=yUWBxeEHyviOPKRneK6j/gfx/J/uc8pAHvShiPb46kA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=EGEvX/Tza/tjOvP+jwHZtAfsQ9i3c7zrE71IAVXMEBQFuXXBY8J8Q7ke9WuRoZPaA
-	 Y+chvo99aGdYyVr/Ej6q7FyBK8u7WGGWRA7w0fOlldEtOkdpL64+VWh9BMNsNv3AvP
-	 C24e0feiTo3fMQgLeEi0DEnVobzVj0a1HCmGQBIDe89k5m+My6w495OfsTJWLoTXTk
-	 rW1jm4hUGy40vO8TEOhFBYjcPcB74lkZHpC2O6WO0jV8h/eZB2c+l21RdUfU2k8Ah1
-	 Rs4/PMwca7YEl/l752V++FgB8s2oggoqcfw9t8psB+h6tVJgd7Iz5Q8Myq1/LinSjR
-	 TSfqa9opHxHVg==
-Date: Thu, 26 Mar 2026 09:18:53 +0000
-From: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
-To: Suren Baghdasaryan <surenb@google.com>
-Cc: akpm@linux-foundation.org, willy@infradead.org, david@kernel.org, 
-	ziy@nvidia.com, matthew.brost@intel.com, joshua.hahnjy@gmail.com, 
-	rakie.kim@sk.com, byungchul@sk.com, gourry@gourry.net, 
-	ying.huang@linux.alibaba.com, apopple@nvidia.com, baolin.wang@linux.alibaba.com, 
-	Liam.Howlett@oracle.com, npache@redhat.com, ryan.roberts@arm.com, dev.jain@arm.com, 
-	baohua@kernel.org, lance.yang@linux.dev, vbabka@suse.cz, jannh@google.com, 
-	rppt@kernel.org, mhocko@suse.com, pfalcato@suse.de, kees@kernel.org, 
-	maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org, 
-	borntraeger@linux.ibm.com, frankja@linux.ibm.com, imbrenda@linux.ibm.com, hca@linux.ibm.com, 
-	gor@linux.ibm.com, agordeev@linux.ibm.com, svens@linux.ibm.com, 
-	gerald.schaefer@linux.ibm.com, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, 
-	kvm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Subject: Re: [PATCH v5 0/6] Use killable vma write locking in most places
-Message-ID: <44216135-ce6e-4c06-acf9-af09e224ddd8@lucifer.local>
-References: <20260326080836.695207-1-surenb@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhKl90B2Gz2xN8
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2026 21:29:23 +1100 (AEDT)
+Received: from server.danny.cz (85-71-161-19.rce.o2.cz [85.71.161.19])
+	by redcrew.org (Postfix) with ESMTP id 82805D4;
+	Thu, 26 Mar 2026 11:29:20 +0100 (CET)
+DKIM-Filter: OpenDKIM Filter v2.11.0 redcrew.org 82805D4
+Received: from talos.danny.cz (talos [IPv6:2001:470:5c11:160:47df:83f6:718e:218])
+	by server.danny.cz (Postfix) with SMTP id 421DD17A006;
+	Thu, 26 Mar 2026 11:29:20 +0100 (CET)
+Date: Thu, 26 Mar 2026 11:29:20 +0100
+From: Dan =?UTF-8?B?SG9yw6Fr?= <dan@danny.cz>
+To: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Cc: Gaurav Batra <gbatra@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ amd-gfx@lists.freedesktop.org, Donet Tom <donettom@linux.ibm.com>
+Subject: Re: amdgpu driver fails to initialize on ppc64le in 7.0-rc1 and
+ newer
+Message-Id: <20260326112920.07eb56ee6d133947d8bcf6f3@danny.cz>
+In-Reply-To: <341nolfr.ritesh.list@gmail.com>
+References: <20260313142351.609bc4c3efe1184f64ca5f44@danny.cz>
+	<1phlu3bs.ritesh.list@gmail.com>
+	<20260315105021.667e52d4a99b154ef1e6aa34@danny.cz>
+	<da93575e-92ad-4a7b-83df-1cb956bd2bc2@linux.ibm.com>
+	<5x6knm5q.ritesh.list@gmail.com>
+	<2d5fd6ec-003f-4d24-aa2e-06ba94d6cba4@linux.ibm.com>
+	<341nolfr.ritesh.list@gmail.com>
+X-Mailer: Sylpheed 3.7.0 (GTK+ 2.24.33; powerpc64le-redhat-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -74,91 +61,61 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260326080836.695207-1-surenb@google.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
--cc old email
+Hi Ritesh,
 
-(Gentle reminder to please send all new stuff to ljs@kernel.org - at some
-point I'm going to set a rule to ignore kernel mail sent to the old address
-so, if you need a response you should send to the new :)
+On Wed, 25 Mar 2026 23:12:16 +0530
+Ritesh Harjani (IBM) <ritesh.list@gmail.com> wrote:
+
+> Gaurav Batra <gbatra@linux.ibm.com> writes:
+> 
+> > Hello Ritesh
+> >
+> > I think, what you are proposing to add dev->bus_dma_limit in the check 
+> > might work. In the case of PowerNV, this is not set, but 
+> > dev->dma_ops_bypass is set. So, for PowerNV, it will fall back to how it 
+> > was before.
+> >
+> > Also, since these both are set in LPAR mode, the current patch as-is 
+> > will work.
+> >
+> > Dan, can you please try Ritesh proposed fix on your PowerNV box? I am 
+> > not able to lay my hands on a PowerNV box yet.
+> >
+> 
+> It would be this diff then. Note, I have only compile tested it.
+> 
+> diff --git a/arch/powerpc/kernel/dma-iommu.c b/arch/powerpc/kernel/dma-iommu.c
+> index 73e10bd4d56d..8b4de508d2eb 100644
+> --- a/arch/powerpc/kernel/dma-iommu.c
+> +++ b/arch/powerpc/kernel/dma-iommu.c
+> @@ -67,7 +67,7 @@ bool arch_dma_unmap_sg_direct(struct device *dev, struct scatterlist *sg,
+>  }
+>  bool arch_dma_alloc_direct(struct device *dev)
+>  {
+> -       if (dev->dma_ops_bypass)
+> +       if (dev->dma_ops_bypass && dev->bus_dma_limit)
+>                 return true;
+> 
+>         return false;
+> @@ -75,7 +75,7 @@ bool arch_dma_alloc_direct(struct device *dev)
+> 
+>  bool arch_dma_free_direct(struct device *dev, dma_addr_t dma_handle)
+>  {
+> -       if (!dev->dma_ops_bypass)
+> +       if (!dev->dma_ops_bypass || !dev->bus_dma_limit)
+>                 return false;
+> 
+>         return is_direct_handle(dev, dma_handle);
+
+this seems to fix the amdgpu initialization, full kernel log available
+as https://fedora.danny.cz/tmp/kernel-7.0-rc5.log
+
+Tested-by: Dan Horák <dan@danny.cz>
 
 
-On Thu, Mar 26, 2026 at 01:08:30AM -0700, Suren Baghdasaryan wrote:
-> Now that we have vma_start_write_killable() we can replace most of the
-> vma_start_write() calls with it, improving reaction time to the kill
-> signal.
->
-> There are several places which are left untouched by this patchset:
->
-> 1. free_pgtables() because function should free page tables even if a
-> fatal signal is pending.
->
-> 2. userfaultd code, where some paths calling vma_start_write() can
-> handle EINTR and some can't without a deeper code refactoring.
->
-> 3. mpol_rebind_mm() which is used by cpusset controller for migrations
-> and operates on a remote mm. Incomplete operations here would result
-> in an inconsistent cgroup state.
->
-> 4. vm_flags_{set|mod|clear} require refactoring that involves moving
-> vma_start_write() out of these functions and replacing it with
-> vma_assert_write_locked(), then callers of these functions should
-> lock the vma themselves using vma_start_write_killable() whenever
-> possible.
->
-> Changes since v4 [1]:
-> - added Reviewed-by, per Barry Song and Lorenzo Stoakes (wherever the code
-> stayed the same)
-> - split patch 2 into 3 parts, per Lorenzo Stoakes
-> - converted vma_start_write() in mseal_apply(), per Sashiko
-> - changed vma_start_write_killable() error handling in
-> set_mempolicy_home_node(), per Lorenzo Stoakes
-> - added comment why mm->locked_vm is fine even when we exit early,
-> per Sashiko
-> - moved vma locking before vrm_calc_charge() in move_vma(), per Sashiko
-> and Lorenzo Stoakes
-> - set give_up_on_oom on error in vma_merge_existing_range() to propagate
-> the error, per Lorenzo Stoakes
-> - moved validate_mm() out of the error path in expand_upwards(),
-> per Lorenzo Stoakes
-> - dropped the patch changing S390 error handling, per Sashiko and
-> Lorenzo Stoakes
-> - reworked error handling in clear_refs_write(), per Lorenzo Stoakes
-> - uninlined process_vma_walk_lock() while changing its return type,
-> per Lorenzo Stoakes
->
-> [1] https://lore.kernel.org/all/20260322054309.898214-1-surenb@google.com/
->
-> Suren Baghdasaryan (6):
->   mm/vma: cleanup error handling path in vma_expand()
->   mm: use vma_start_write_killable() in mm syscalls
->   mm/khugepaged: use vma_start_write_killable() in collapse_huge_page()
->   mm/vma: use vma_start_write_killable() in vma operations
->   mm: use vma_start_write_killable() in process_vma_walk_lock()
->   KVM: PPC: use vma_start_write_killable() in
->     kvmppc_memslot_page_merge()
->
->  arch/powerpc/kvm/book3s_hv_uvmem.c |   5 +-
->  fs/proc/task_mmu.c                 |  12 +--
->  mm/khugepaged.c                    |   5 +-
->  mm/madvise.c                       |   4 +-
->  mm/memory.c                        |   2 +
->  mm/mempolicy.c                     |  12 ++-
->  mm/mlock.c                         |  28 ++++--
->  mm/mprotect.c                      |   5 +-
->  mm/mremap.c                        |   8 +-
->  mm/mseal.c                         |   5 +-
->  mm/pagewalk.c                      |  22 +++--
->  mm/vma.c                           | 146 +++++++++++++++++++++--------
->  mm/vma_exec.c                      |   6 +-
->  13 files changed, 190 insertions(+), 70 deletions(-)
->
->
-> base-commit: e53c9040ab1b738dd2c83b57558f141902caaf4f
-> --
-> 2.53.0.1018.g2bb0e51243-goog
->
+		Dan
 
