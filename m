@@ -1,73 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-18820-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18821-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE09A10A1E62
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2026 10:46:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DB9B10A1E65
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2026 10:54:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fhL6Q37lkz2yS4;
-	Thu, 26 Mar 2026 21:46:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774518234;
-	cv=none; b=NuQIHsgGbesd1ji7fcHB0hAW3NP/zbd2pYr53lZ5+bZs9jPufb8tbkOxo6OZckZp4lQh5iTFMjW+xPkEne1LPEwGLeY9SALA8Zl3xZYalPdMWWFDXDnKsHe+KXlVHAMWSFy/SXz5dyvyXrUSeN2mR6a18nG/rsWPN8yGyBkU6nJbosHuDOI31WgQMV65hTgTyMYAXQXEwxDrZdzw/sc3eLFUcCFJxU9IQ8uwy1UA+qFkKkAIdnt+N6lmJFclTPVbP+7ya3yJBXsiC83nomJfYrKdUaEtQ+UReymsnDuOBHc0r1cpSxfqT/a3DI0AlTrA7r6jV7flhj7GgOhIjzkvwA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fhLHb5hsPz2yd7;
+	Thu, 26 Mar 2026 21:54:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774522443;
+	cv=none; b=TqLlAg7NfSvMTT6G+q5ENHnhXCSGVoubvj5wcEmRMSi8HPdW//73LgkHAhFf1/tQgqwg+8HkYIa+yAE4UQcBYhhgwbch1qJMyqoHyLmrIMNmaia24vQZ3utXZpec3WkJkxLH2z1ew39roUREOR6OTEF8b2336NA++NE6igWFxPaWIkwTujh+BAiZsn++bVPh/5NTXV+IQJZH6STuZu7KSYWoywi4h8/qnVHQC2zAbZAYqWQZdGaMz3usph9qVJDG7kJlC1DeCAXZ1bYltK3FT5jS8GK8CW+dLjkkfYvoYrs1YB+t1yCW6yciS41ZHXhLOeKQbeSM09msvswhFRqt9A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774518234; c=relaxed/relaxed;
-	bh=GQ61kuhdrfqFul0L2FFBXSHRCVEg6otwfwoaX1TK3/E=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PXOFxQaScRSjusXsqJX1UXVI/2uZ6n7X/vSNUiSHoEC5dAByzHfjJk79D0YviJFd7HUHvX3RXHaKGHKrQ3ea6Xz6fK6JUQgjGB0fWCqGwMVVmdeEyBHjvJS20tixmOTvXYGNZKGhLzgasmNVNIujPNMPqCzonjEbUMVjW3VmD+oGGaucYlrOCcYt2hIqAv9CQtuMYny82oO/+Ca+t9cd6iAoX2XdTdbxE9TPo9kycALdBbsK5Wg7Py9s9aVddOhNkq4wQNOJEdhh36pvBnlPX9xzW/0H7gIoGxT3NxBPMvaPv8iVhWj0+mZJW5w4y3J27VC056HaeJ7kiiE1wSgYSA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=avrMFIfO; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vneethv@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1774522443; c=relaxed/relaxed;
+	bh=DV/gCCOMldyoDdt4HqPHllB/Qo2XxEjw7eaoKAE9NtA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=KKmgs7piFfBuV1u/pGT3/k20R8Bn9wkknyddtlEry3mja+A8P9nK0og45YJneAWg4NC1fcPo0c0+Ir5UO3k7vZbUuvkhZMvYxK1H8NPYToXDAwU1RVlg7IWt4HXu/guDsAPdc+Tten56iHer/mBIek30hUXCpDCv79hEBzAbji3ScLgeIJ+X690ZJtRr6xP4+eEoIrFPehdoyetpTJgZdqBtAANPx43cIP9TKOdg95ZHqSw5ePxRQBDtmSMdz9zNcTLfPYNswl7+PuAT/8o7m+LIpYZcLZEpnFT7NK/KeWeG0WaHnCGJKIH30QPvIlBOBFse1Vez/zyKvU7xXmtcJA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=b4O8r4Jq; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=catalin.marinas@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=avrMFIfO;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=b4O8r4Jq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=vneethv@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhJkd5Wynz2xS5
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2026 20:43:52 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62Q59Wqg1479684;
-	Thu, 26 Mar 2026 09:43:19 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=GQ61ku
-	hdrfqFul0L2FFBXSHRCVEg6otwfwoaX1TK3/E=; b=avrMFIfOdugi4S/4hndTN+
-	CLl/8HIMGz5Y/Oum5eOm3OxGCkgJK5eRyIT5itUmQlmpPCJa5rd7cEhD70kd89Vx
-	sIkj70/bP26p1m99XZIqnezWszE2fOzkNLz1UKG/M+ZIpYxEchD1eZtuvPGMylcs
-	oeHmw2eVFKJjsgFq0pWIzHhgjEoKzXSvm+Q3IfGfuYz/X6Rtw3ddqbg74qyboisW
-	7VhJFSlPA/npMVSA1RxAqkj0qgcs/ITsZmLD/UBiIHDv6wpIicKFko9HHa1mxW7e
-	FX0uQjKv616F5kTpsv6tLKCb9nFCwCPKBw3DJM+rLF0pILZ/li0SeQnt8POSnByw
-	==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d1kxqmkhe-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 26 Mar 2026 09:43:18 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62Q70AQB026695;
-	Thu, 26 Mar 2026 09:43:16 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4d275m292g-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 26 Mar 2026 09:43:16 +0000
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62Q9hCts51970526
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 26 Mar 2026 09:43:12 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 59BB320049;
-	Thu, 26 Mar 2026 09:43:12 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B3A6C20040;
-	Thu, 26 Mar 2026 09:43:11 +0000 (GMT)
-Received: from [9.52.196.90] (unknown [9.52.196.90])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Thu, 26 Mar 2026 09:43:11 +0000 (GMT)
-Message-ID: <e232e227-b022-40b7-ae9b-085398172aaa@linux.ibm.com>
-Date: Thu, 26 Mar 2026 10:43:11 +0100
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=catalin.marinas@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fhLHY70wmz2yS4
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2026 21:54:00 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EC4611AED;
+	Thu, 26 Mar 2026 03:53:20 -0700 (PDT)
+Received: from arm.com (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 5BEE03FB90;
+	Thu, 26 Mar 2026 03:53:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
+	t=1774522406; bh=TbxaIif3p8WQ6+e44Bzl22FNO5C/zwaxFLGv4rhnrAI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=b4O8r4Jq2CFcar+ykaYubGzY5y5qXmjwpctKmzjtCbYrCy7ZWRYDuVV6rw/K5YRYE
+	 cFU8FIDuxcRiwzgg6ypdQsF6ZJHHAtZPQCtyFE9nn5+FJpKL3uUn2slYkKqObCNZpl
+	 vTALvEOciub+LB3zvVDl3q8MoMa8BSfaYZ27RjFc=
+Date: Thu, 26 Mar 2026 10:53:16 +0000
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Jinjie Ruan <ruanjinjie@huawei.com>
+Cc: corbet@lwn.net, skhan@linuxfoundation.org, will@kernel.org,
+	chenhuacai@kernel.org, kernel@xen0n.name, maddy@linux.ibm.com,
+	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
+	pjw@kernel.org, palmer@dabbelt.com, aou@eecs.berkeley.edu,
+	alex@ghiti.fr, tglx@kernel.org, mingo@redhat.com, bp@alien8.de,
+	dave.hansen@linux.intel.com, hpa@zytor.com, robh@kernel.org,
+	saravanak@kernel.org, akpm@linux-foundation.org, bhe@redhat.com,
+	vgoyal@redhat.com, dyoung@redhat.com, rdunlap@infradead.org,
+	peterz@infradead.org, pawan.kumar.gupta@linux.intel.com,
+	feng.tang@linux.alibaba.com, dapeng1.mi@linux.intel.com,
+	kees@kernel.org, elver@google.com, paulmck@kernel.org,
+	lirongqing@baidu.com, rppt@kernel.org, ardb@kernel.org,
+	leitao@debian.org, osandov@fb.com, cfsworks@gmail.com,
+	tangyouling@kylinos.cn, sourabhjain@linux.ibm.com,
+	ritesh.list@gmail.com, eajames@linux.ibm.com,
+	songshuaishuai@tinylab.org, kevin.brodsky@arm.com,
+	samuel.holland@sifive.com, vishal.moola@gmail.com,
+	junhui.liu@pigmoral.tech, coxu@redhat.com, liaoyuanhong@vivo.com,
+	jbohac@suse.cz, fuqiang.wang@easystack.cn, guoren@kernel.org,
+	chenjiahao16@huawei.com, hbathini@linux.ibm.com,
+	james.morse@arm.com, takahiro.akashi@linaro.org,
+	lizhengyu3@huawei.com, x86@kernel.org, linux-doc@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org, devicetree@vger.kernel.org,
+	kexec@lists.infradead.org
+Subject: Re: [PATCH v10 4/8] crash: Exclude crash kernel memory in crash core
+Message-ID: <acUQHCETMXaEtdK5@arm.com>
+References: <20260325025904.2811960-1-ruanjinjie@huawei.com>
+ <20260325025904.2811960-5-ruanjinjie@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,102 +84,33 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 09/12] s390/cio: use generic driver_override
- infrastructure
-To: Danilo Krummrich <dakr@kernel.org>, Russell King <linux@armlinux.org.uk>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Ioana Ciornei <ioana.ciornei@nxp.com>,
-        Nipun Gupta <nipun.gupta@amd.com>,
-        Nikhil Agarwal <nikhil.agarwal@amd.com>,
-        "K. Y. Srinivasan"
- <kys@microsoft.com>,
-        Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
-        Dexuan Cui <decui@microsoft.com>, Long Li <longli@microsoft.com>,
-        Bjorn Helgaas <bhelgaas@google.com>, Armin Wolf <W_Armin@gmx.de>,
-        Bjorn Andersson <andersson@kernel.org>,
-        Mathieu Poirier <mathieu.poirier@linaro.org>,
-        Peter Oberparleiter <oberpar@linux.ibm.com>,
-        Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
-        Alexander Gordeev <agordeev@linux.ibm.com>,
-        Christian Borntraeger <borntraeger@linux.ibm.com>,
-        Sven Schnelle <svens@linux.ibm.com>,
-        Harald Freudenberger <freude@linux.ibm.com>,
-        Holger Dengler <dengler@linux.ibm.com>,
-        Mark Brown <broonie@kernel.org>, "Michael S. Tsirkin" <mst@redhat.com>,
-        Jason Wang <jasowang@redhat.com>,
-        Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
-        =?UTF-8?Q?Eugenio_P=C3=A9rez?=
- <eperezma@redhat.com>,
-        Alex Williamson <alex@shazbot.org>, Juergen Gross <jgross@suse.com>,
-        Stefano Stabellini
- <sstabellini@kernel.org>,
-        Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: linux-kernel@vger.kernel.org, driver-core@lists.linux.dev,
-        linuxppc-dev@lists.ozlabs.org, linux-hyperv@vger.kernel.org,
-        linux-pci@vger.kernel.org, platform-driver-x86@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-remoteproc@vger.kernel.org,
-        linux-s390@vger.kernel.org, linux-spi@vger.kernel.org,
-        virtualization@lists.linux.dev, kvm@vger.kernel.org,
-        xen-devel@lists.xenproject.org, linux-arm-kernel@lists.infradead.org,
-        Gui-Dong Han <hanguidong02@gmail.com>
-References: <20260324005919.2408620-1-dakr@kernel.org>
- <20260324005919.2408620-10-dakr@kernel.org>
-Content-Language: en-US
-From: Vineeth Vijayan <vneethv@linux.ibm.com>
-In-Reply-To: <20260324005919.2408620-10-dakr@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: lM9ihgFyzDaKKK4hT6xbAWnBu4HPvbko
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzI2MDA2NyBTYWx0ZWRfX2in2v/sm6fVn
- 1EOEfnIWW9XHJhqTtN1dackcJvrGoIn6RYtzj2jaFpMYQNlaN3XxkuZ6dzpRGfvaZaU5moxAo8x
- trr+PwJfEqlepekJSKPo1fy9d5o6sgA5m683HkjOswpiKaLB0x2ZC2oGeSCAtUXbWtftJWxMU93
- r9db17SA3IR04n61jqkqo5Bm6YDmBdYR4V4J415d1oOQfmhBzzcsrs5XSBy2lSc6eI3Yyn+zNJA
- fVQxRgkOI9yEBwUOLE+1Bp0urJ3SQpsL6Mxqh1jqv0YqiavIDSQ9i78PTJ+7C/RudgHS8T2aNad
- w9soTfL5Lep9UESaYSAmOjYsSO5EEkxvuZXANkgGYCQiRzjVScD+Gyn69Rf+vvAYsxJQFXrQuWu
- UQoghhH9HNEe1gD65ozDrx3Bl3HFNi5z9FxZxdctIbC0r4+GoaXzUaZ2fC0g/Uri9kPCKMvcMLh
- 7P5IIMyCHlQF+nN31cA==
-X-Authority-Analysis: v=2.4 cv=bLEb4f+Z c=1 sm=1 tr=0 ts=69c4ffb7 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8
- a=pGLkceISAAAA:8 a=VnNF1IyMAAAA:8 a=rH2cy8X4UbemT2jZliAA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: sWD6kkjX1ahK5tMWR5AN0EWZ8NVBfHg-
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-26_02,2026-03-24_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 adultscore=0 clxscore=1011 phishscore=0 impostorscore=0
- malwarescore=0 lowpriorityscore=0 suspectscore=0 bulkscore=0
- priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
- definitions=main-2603260067
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260325025904.2811960-5-ruanjinjie@huawei.com>
 
-
-
-On 3/24/26 01:59, Danilo Krummrich wrote:
-> When a driver is probed through __driver_attach(), the bus' match()
-> callback is called without the device lock held, thus accessing the
-> driver_override field without a lock, which can cause a UAF.
+On Wed, Mar 25, 2026 at 10:59:00AM +0800, Jinjie Ruan wrote:
+> The crash memory alloc, and the exclude of crashk_res, crashk_low_res
+> and crashk_cma memory are almost identical across different architectures,
+> handling them in the crash core would eliminate a lot of duplication, so
+> do them in the common code.
 > 
-> Fix this by using the driver-core driver_override infrastructure taking
-> care of proper locking internally.
+> To achieve the above goal, three architecture-specific functions are
+> introduced:
 > 
-> Note that calling match() from __driver_attach() without the device lock
-> held is intentional. [1]
+> - arch_get_system_nr_ranges(). Pre-counts the max number of memory ranges.
 > 
-> Link:https://lore.kernel.org/driver-core/DGRGTIRHA62X.3RY09D9SOK77P@kernel.org/ [1]
-> Reported-by: Gui-Dong Han<hanguidong02@gmail.com>
-> Closes:https://bugzilla.kernel.org/show_bug.cgi?id=220789
-> Fixes: ebc3d1791503 ("s390/cio: introduce driver_override on the css bus")
-> Signed-off-by: Danilo Krummrich<dakr@kernel.org>
-> ---
+> - arch_crash_populate_cmem(). Collects the memory ranges and fills them
+>   into cmem.
+> 
+> - arch_crash_exclude_ranges(). Architecture's additional crash memory
+>   ranges exclusion, defaulting to empty.
+> 
+> Reviewed-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+> Acked-by: Baoquan He <bhe@redhat.com>
+> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
 
-Thank you Danilo.
+For arm64:
 
-Reviewed-by: Vineeth Vijayan <vneethv@linux.ibm.com>
+Acked-by: Catalin Marinas <catalin.marinas@arm.com>
 
