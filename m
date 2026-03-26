@@ -1,59 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-18805-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18806-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D0AE109E557
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2026 06:29:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 077DC109E54B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2026 06:29:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fhDPR2bKCz2yvc;
-	Thu, 26 Mar 2026 17:28:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fhDPS4TmVz30B7;
+	Thu, 26 Mar 2026 17:28:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774506523;
-	cv=pass; b=ihkE9TPNnEhd0JTWUroWnkpaUNKJ9ZZXcBoEPvaaOeNi6WU+8txW6xOWRXCC2/LkGaikH48TkR+81X16Ow4ZGdSisMKCLFAGzQXUE2SuTWWJYFDdI3BbtW0me+dJFPYFx63Ze4AMW+zl8qMzDqgoZ7AHddgNHWeynMN8eTKQS3wRRHxOb3IqSL03wx7e/diY0ohCpIrE39ZaACgpNaXsmB/dmOklmv8axKTwlCjlKLSvK+Hf84D6agIC4koBpS6DPlQ8ttvZMZ9adlnWwrUpU9xZxB95kIgkwh+kreSLrE57zXFJEEXQumiVCsM/5RlL6cBqms/SzjeoWgPbb5bopA==
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774506524;
+	cv=pass; b=idOaOii+N1Yx5w2cH2BjTx0b2uMwytbm69ZT5dxsF/hiuds6IxE38x9h6iSAKRYpDyZcH2/KDAC4elkAw62Mmany8+mjf43jy3jke5OuNS4ZWlZsSZzf3UzNyQeGv94OwV9Q9LYKnXblSXl1Voy5q305E+i7uFBrwkVXC56kSZpNwxhIbc89P+FOgC79oRL/CwjYG45XGRUREqxNpgooGayWALA8L2RxdpJI3qNNRJ9pNquKKk9Ly5OzW81TEIjJns6NHXZkR3J6uBBwDL83sOE2vr/r7bbP5WwcBHVA9d15furPsQQ0ZSSE+Ax3Pnn6jb0gBrevNDAgyWVc1b6GrQ==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774506523; c=relaxed/relaxed;
-	bh=X1dgHJxgvxB3sgkSaW5LAamd/8yMB2Fqr9LJeflLSdQ=;
+	t=1774506524; c=relaxed/relaxed;
+	bh=oqoeeUeQs94pCwHeizzvSYYBLJhpvBS5eR+sc3tiq1A=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=J7+aPhtq3kaPeeMiu0r8caE1lbBv4mZtp07BKDDRmyoeWTWTNGXYhmDHC9QOZVDLkjZl/z9qDJ2IgthPhImNEkcMTFZyMFNcgCA1pSnJbf72EY4vah8MOaNIyKn7iacqmgEU6rdMgLCLTKUzjni5d1jUk++P8ky0aRD5oMZtBK8cPC3q+ClBGC1hZAjw7chP4on+CbyV8Tcm/bzIxAleGLoXaGWOXNPvBA/fv/OSlZ584mrIoirkpJQ+a2T8K5lBdEAkGONrC1VWjoCqgd7NZuE6c1nCA5JzB2qb1VzYe9R2SUcNW9FQlyjwKD2tEM+9rG9xxdk2DZBO6oDV4V/DOg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=gVLmHYCC; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+	 Content-Type:MIME-Version; b=H3hBDs1VLhgFYo0TOyOGwmcMKa6gTSdvAtpUpzz0I9pqXyQBURted9XOM8a5W8SItzH14ruHN4HfsrN5quB8py5xOR8zBxbeUnbd5Hvc2bykMvZEKx7FKF0VlBFieMdpqyWLTlBWY+a/dNhBroTRTC6R8BQv5hFdn9j99sEEmT+3S7IPZGEUCdktW9LKsSZvyO5D93g6IVluQDsa3/HI0zt8fLjKObD/lHJGc439PJiFd8dmKM5OPUs60LnQIqQh5WtN3++yNwyFMdIvg6t5wZ++KUTiaTnebF4fiiOQPEW8dL40r30C9O8DCARbn6Tzp3g8wJFjOJnjkXq5N76UZw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=cwjnmJ0K; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=gVLmHYCC;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=cwjnmJ0K;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c200::1; helo=db3pr0202cu003.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
 Received: from DB3PR0202CU003.outbound.protection.outlook.com (mail-northeuropeazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhDPP56nMz3013
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2026 17:28:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhDPR4jMPz3069
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2026 17:28:43 +1100 (AEDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=m/Jewai8QWIxGqzIeISk8T8VuGl1WkE9F5pZ0TcfakWpY2EIwtOA/gnN+7+rg8DtgV+FcJP6GSYlWIthQPKGOk1xXQZT6e4gtbbzLXxwg8VeGOZ6JMZBOhlLM5TUK82SqEZaj6JvEfd0gh/UPOPk4sGapPQqa+1HOc/pTmUd5FIuM8L6+dVk+lE9tvdkEMsCZCr+Fcfwjxtd48yfRTT0ZDs/3JooiZ97b179QC2NU1/lTM7DUPsyupF7jFrp2DEN5nJGRZ4B8F91RGtlSc1MPVAxKJ+vui+qDIXu6X8AY53ZkldVkBc9mtW67XXII9TAjCXvhlxhXJ0gJEkIBWoIHw==
+ b=p8VWDByUuITAQsUW2guywArUyCd0cFrmAv2RdVX3mnWwIaYG8RDTfGb41m91qEgHD8jdhmgN3Mykh9TtEnD2QMalldWJJrYnZ7UAjSfkHMWSz/U13PnO4OHRKm4vJxo8BKixYoFyluYZoTKexthYNQSuGPhMINdDFRnBHmKmQIsqywNGsqvjVkOTySvm/w0XsgxStrnfgcB3TpU/EXjk55dZ0YCgk5oyynvk/+wd4GPD+TKTmRAuLKyAbB9dgqntnVtqtFLwz64QheyqFXdu5nXRPtUfbYpQokgnTMvVXvmfo5InPtVoXVnWBaB3wiYrllOC91qdKmlJAwrCU1S1kw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=X1dgHJxgvxB3sgkSaW5LAamd/8yMB2Fqr9LJeflLSdQ=;
- b=EquB90WVyH2hMPnXZD2kcCxvBYVqKpSXKv5QPkIebIg8wa5fK0a5Dp6r63Qvw5anM+MHRmPRkna+wQNSD7i37c01gGbzR4JIh9Xd6bfJjZ9GetjMPJax3vUnknGMGKfsofrYxqmLV40Vh4YX5XyNMqXH2PLHuYh1GFDVAZQSG6IpKQvenToqp0nIAQpxqRsyeMoLITFN7ZQJ4AjyqyNDCOPV1bDPvqof74ggWtvCkqjtZKHgbq/GfTtlxoTfFNiscObY3tQz9rFtOjuLZKaOUMhtqLt4X5di9nKCe7ThxZQLYAQiHhz6j7QiSnoysd/N5CDHNzApIovpCCS6q1j/mg==
+ bh=oqoeeUeQs94pCwHeizzvSYYBLJhpvBS5eR+sc3tiq1A=;
+ b=RSqZslmzFgaq6tGeAeTb+uuXy+/8d/L+9byGm16LeOqMfXjxL6GmVJaC4ivUGbpHPe8uSrTLR54lejnlCKP1iZKVZzryo5mPC+6rVLSixoEkGTeJWR4DQkMeJ0pltwVFE4+dmiu7KHyW8TPjJVdBXZ4GB4oGU8X0zSVecYuGfIIwNaDmFbfUM0zATKbLZejSDDnaqwE7oD/hfsRvy8JDQSAb7soRSM3S+nFwSeBjnVCSKuH1P1AY+/LDFsCQJY6bNDh76NnppwFn7lIU3odKeZaijNZrLyqfRc/U4rDDwZLcf+NmBtjbs9he8Km7Z3CYvWMqlvXqWeTx0ahOyTjLLQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
  header.d=nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=X1dgHJxgvxB3sgkSaW5LAamd/8yMB2Fqr9LJeflLSdQ=;
- b=gVLmHYCCOyoClA9pRkwkt4f2jho6TmHjMwyxFKC8+5D+ofZPSezuvJ8EZQJ4qWsDrlJmsmjYfpp8qa4T0sews3/pssfXdUj5Dg6uteiAvnxjYq2qq0mKOpcry+uQHModW3VwkvTDMrhy1L4+ijR4n644ZlGMT17UH/PfumMfLtLZl/JMms+FXed07Q6738U9rm1alUgKdv6jEKGxTaD/kRmwgD31HP9DO392T87Zuz1acIcdCgR6gR0i42K0iduoWClkuuu3tiUbHSq2RRb/Q3YtHPKhMxHno42GHeVE+yLmV0eQNvkXIojgQB0cCi85n1bWrlYMmtLluolWcRIg2A==
+ bh=oqoeeUeQs94pCwHeizzvSYYBLJhpvBS5eR+sc3tiq1A=;
+ b=cwjnmJ0KChlFkxxc+oUsnmOQbYlCgYA9TL9DCajDw6TWbWycvKlZ214Ek89W8K6+2RCaydt8f/8E/dDzOWp7+INfPmnDfVHsCgth++/JwKxhdbM2L6+WA8YyGO0sn0i4Wft8l4IC2poTpYE417g3WSyBjpv5+PQdkUioOUqUMB8+0jTBdHMpLp31NEY+wDJL44aPD0hX3isoVpOUwd2M9Bi1k5kgcN+BBSvGqLf6WQML16vXjfVWRNVkN9AB40a8LDpSpMU3+iFOafp5CoS2yKJ/nTSam2jmpCNsCuiJ+gOxaRTipzarIo4TK7M6rpyB0Lt5NxaqgoNEVLJmzxYf3Q==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nxp.com;
 Received: from PAXPR04MB8510.eurprd04.prod.outlook.com (2603:10a6:102:211::7)
  by AM9PR04MB8355.eurprd04.prod.outlook.com (2603:10a6:20b:3b7::20) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.20; Thu, 26 Mar
- 2026 06:28:33 +0000
+ 2026 06:28:40 +0000
 Received: from PAXPR04MB8510.eurprd04.prod.outlook.com
  ([fe80::b476:c19a:24cd:3694]) by PAXPR04MB8510.eurprd04.prod.outlook.com
  ([fe80::b476:c19a:24cd:3694%3]) with mapi id 15.20.9745.019; Thu, 26 Mar 2026
- 06:28:33 +0000
+ 06:28:40 +0000
 From: Wei Fang <wei.fang@nxp.com>
 To: claudiu.manoil@nxp.com,
 	vladimir.oltean@nxp.com,
@@ -78,9 +78,9 @@ Cc: netdev@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org,
 	imx@lists.linux.dev
-Subject: [PATCH v3 net-next 10/14] net: dsa: netc: introduce NXP NETC switch driver for i.MX94
-Date: Thu, 26 Mar 2026 14:29:13 +0800
-Message-Id: <20260326062917.3552334-11-wei.fang@nxp.com>
+Subject: [PATCH v3 net-next 11/14] net: dsa: netc: add phylink MAC operations
+Date: Thu, 26 Mar 2026 14:29:14 +0800
+Message-Id: <20260326062917.3552334-12-wei.fang@nxp.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260326062917.3552334-1-wei.fang@nxp.com>
 References: <20260326062917.3552334-1-wei.fang@nxp.com>
@@ -104,1145 +104,389 @@ Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: PAXPR04MB8510:EE_|AM9PR04MB8355:EE_
-X-MS-Office365-Filtering-Correlation-Id: 69263a0f-239f-4ad3-7c55-08de8b00e745
+X-MS-Office365-Filtering-Correlation-Id: f183b1db-926f-441a-3b4a-08de8b00eb98
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
 	BCL:0;ARA:13230040|1800799024|366016|19092799006|376014|7416014|52116014|38350700014|921020|22082099003|56012099003|18002099003;
 X-Microsoft-Antispam-Message-Info:
-	D8VyX8RhjfEGNkwrLylK0oShfg2o+SlmiW4OFP7LGSkX3a17u2Qf63kCZaD7K55Nn5EG5HSnxAE0K+9iFigYDxwVz4jE+BvF9Yy+VPljjuF8OBEC8jPW6yHmX2jBTDOMH9Mu6lmy1qBYFBquZJzjB62rYQa1IQllEcKrqfXNp7GUR9JZA3wyKMZ7hf2igjwhAaaO5O3xkO95a1RW3Q6xueoS7wNAslJfPuHWKopHY34iNECp/jamhdbg4usH3ZQTWjUBzrvf081eyo+rY3K1IHpU/7nwqLdWvKWY8naf1F0w56TvynrDQNtexKBBpsWKj/G2Q2pECYRMYiwz3oIMN6AB3fm9peai7SDY2DiQjJDtZR+U2+zL8pOOL+Gu5AWaPnABQrfMxEKuqK85nU4mKy9w3jRCYKKTVZH7ezWehQ4/RUAterBujdsGNGJMRvMldVyASaVBCZ45IT5Z0e2uttt/NgtQtvyjElSMR/qbt9bMiiFBEmRgEfpkdDXhLj83Dy19n2qjYjR219Yh7eoEBtIe7R5mF22bpXju1dVMbuQZbanxST4JihoT9Wn317P4XS4j+ZxhzX1t8Wx1wUM2SqZYhEfgSoujrarIURVD9aPVUM/oy9w8QlDqI+Ex06QM7v8YHWCKPT0xbClkK+LChIoDmtZl7e7XSrZLOmEvQ3XocsDzmI8o0yF3bPXoN66vL+bZ8F4AvRvg6zlqYCuPNm7/Qyjtc6JNJ6qBnFG8sFSwnU0u/sRIhu8yT8xpf58H3+EYzk5CgWuaKHbdzZI6kSicap/QICx1C2odmJMW4YAkVb6268hrxJ3fq8m9YA1V
+	8x1bTyP6kFO5brNhC97oEBtHuXQoTQOcchuUTAHn1IYZWxSj5IeH9fnysW6hddvxs5+Eb5YNYtxS6qjEpJNhCFpgn838OSWeGRC85dwG+Jxllppqg9J5zRo+UohRo2LZOfLDdM39yGS+rL18CCevWt5zbg3U9fRLyuXKwJalKb/GxmsTvHHavhP85Y5gUBzB1C+LnpwImIKOI53vpXGQYA1NhR0AAk0dZmasvSIZdEgWyWxyOCGnPrHRzIpYzyQL5uA22i4EM2I3snRTcXcmLVNFwrwZbAACxqJH81iJBsEHpdgqlAml07IY5rfZDOCIJsbN/wxOCjkSt1tzh7h8/PrC8uPEj1u0g4u1rO8vM4hNpOQ6txfLYWfnMc/O5I2Fe9uJy/0rJEXJ59aUpJ79syEL4B0IASxEQqXTIwRzPdZnA5AtSc4WBMj39fPTlx+iWNON5QI0eiKPmmBznm8M0rqPERv8fWejuqSGJMRi0xZsLK1qnQY60fy5capGXmC3r8Nf5HyJdc1CAItgXE7txwjMqFU5v1AtR/W9XWmKAcUBlxSH3tgcItzFj6TTNv7TH005dT5M9PX/b7ZMQeLT26v3hD9l0w5598RT5rC6S9+AKVmX/eSC5zxGBGyu3Ubc8hDxkfYxrr1UKxATXkkBLGMV1G1d2H5Sk5qnJKVQzDJb0rdkoYAI0SoXLDKc0X0FctxIaJbbOWOWCkPIujZmP590s7aehpTv003KqipmF/icuQFv7qjfSpEz4sW02/HDn7E/w/5/qKrOVPtYXJLaLyXGTedwTd+u+wijuE1AVbhWktbpxDuRIpd9yLG2YSoI
 X-Forefront-Antispam-Report:
 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB8510.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(19092799006)(376014)(7416014)(52116014)(38350700014)(921020)(22082099003)(56012099003)(18002099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?knxU9mITr6fNKtW08pP7JefYyPubhnBbo9JjYJ2UwgTtioVtejG/OboZtiCy?=
- =?us-ascii?Q?Pw5SS5Mtxtw6X2vGsKNOeKa+T757aO0g0NsSq3DjnpfXtYkyKf5p18qHcuUI?=
- =?us-ascii?Q?GSCNlUbHXLAsx5H8EDmpEnamDVw2Td6dtZx/0VFHjYKipxzEovc6moOFWOwA?=
- =?us-ascii?Q?OTUhE7KJqC5Ezo6V03Pww5c/ypNM16GI9TmUb3jdIeqShAVjF90ZXx679tHI?=
- =?us-ascii?Q?rrMbQoiJJVD5dOC7Ir8ZlCphCX/XU2KB6GtOrHOEyppG7KK73qZ257V3DFc7?=
- =?us-ascii?Q?/CqBi9H0VqjBHCnuNqcb4YhnfcI1eBlpXVgeyV4wAj/x1NTAyp5Phsyitrz/?=
- =?us-ascii?Q?W0CjlolcNPpvBGhiXjdyZQgqt1GHsQE3lUpL+dBtHlahhD3sWFXchwzEXS9G?=
- =?us-ascii?Q?3jfJ33jQzkgEQilbfu8/iQBIz7t0ca2w3NuwLSSARCfP0EaNj0mokY3iTLxh?=
- =?us-ascii?Q?39OQrowdum/FixufYYWdgRxmvH4HAd0NGZj12BV/40cYl73BlVufPjzioM/I?=
- =?us-ascii?Q?W0iNQMA+PLx9BI/XDMnGZkLxCpCPCwX3GcGkR4DlLDPy5Rj3PSBxrBPjqCC2?=
- =?us-ascii?Q?lmUPEKEyIOfVB+9xeJTXcZ6JuA/7eoY4xa0LtPH2f2pGTdl4ZjDg/xE4gURr?=
- =?us-ascii?Q?f1cJslbgSJHbWXBLB9rKbgCt6yGSILahzi59RkM33SHDAz3BIv0eRnkDHeWK?=
- =?us-ascii?Q?mTk46FxCqNJy3LJgBFeM//BpD2IbDqgSVYYsEbuJee98qyIl/Kd5MbO3xcNF?=
- =?us-ascii?Q?vahypCVmg9s2s8XwCRP6h1+z2xNd/FwZdDKLah87+sab3o57KyvB25WX9kDB?=
- =?us-ascii?Q?z5P8HJcMPDuruveqqtdmxqkiUlq4uYXJhjoUii8KS6BM2oUMJSvBl/DC0Dhi?=
- =?us-ascii?Q?fKfS80bOSmG/DmhcNKR0SOmH/jyKFB5Tcw6LQ0WuZw66joCknYzAdpjzlvHf?=
- =?us-ascii?Q?O4FVkyYbUQQo14g/kxAeNdiLJmTrT4sbguq47b6IAlyWzeVcwj5e3/Wn6lYR?=
- =?us-ascii?Q?xU8IKfosHuFdxCmcDOW9NdLPYIo4jqyYqTb7tafU0CsnTNnQjNoEA16fF+6z?=
- =?us-ascii?Q?QxHcVRyskPeyvHsmDeheyIQqYZ3XbWhbRNuEV4KlpmoP6fN/Nl7i+5dGhoJf?=
- =?us-ascii?Q?tpA1LuLCndhiROVVrmLgXbznKFpakBlEHoh4K4auECQhtecPwNCG+Ez/T0r7?=
- =?us-ascii?Q?6ghXq9C7tL6ed9agm5OTu3DLCRnQYRQTGylIRzO/bMTTcxWWPtGgJg/zpaB2?=
- =?us-ascii?Q?2x/A1hPG7vpx6ews2AvBT3Q34p0ms4aY1OTYtRs7vxnGiyOCPGVpMnv8ekLH?=
- =?us-ascii?Q?ZUCzx4rdCTxV375h7sYjHmPppFroHSVM1EMMRBYSrtE7nA3UWquH2WG5RZUm?=
- =?us-ascii?Q?8ScOmwyAIv2OyfytIksH6FwHfwuM55LN7PP/S3ry+U9gcdRNz6axtZYOfLMV?=
- =?us-ascii?Q?6ApKwV19vaksqFOYkh5wd60gXVy7oHSfBH7tlx0537Eg/pBBQJHKH0dahpNo?=
- =?us-ascii?Q?1G/PavKZSFkPFsu6G3Qkqq2fL4n7v8e/PZm1INMQxUcv66qHUM/G7pXKjl98?=
- =?us-ascii?Q?3MAVRjKvC0tRjm/Ci7JPw1hBYrd7DFZ3YtyCiN8ZrIGSg3UbxeS6LHINDb59?=
- =?us-ascii?Q?EY3OFbXo++xz4VLlnI7axDqvXntedh1btAdZ0jxRk4F3DvtTeGICWAM6fFDr?=
- =?us-ascii?Q?GimRIeKoqkQG+roWNKVmu8UdT5+ZvqKTCop+RWbsKHCp/WKq3n7E8m1628bC?=
- =?us-ascii?Q?cWxC6VCeqw=3D=3D?=
+	=?us-ascii?Q?wEE+EU3V6F06Rlg9JBiz7mqtgSya2LTTd4VsRKanVkgVS7Ckb/QFY5J3ulIl?=
+ =?us-ascii?Q?PKRGVdm4lT5W1i9lU8Km4DWIxOYGiRXNGmpfjybgRDpRTZqrSTgjuNtEl0+2?=
+ =?us-ascii?Q?FSoD/pAUaiBCQMAaP/kBloVbd0dMbsIIEi11GAvJHHihBSgtqCItV2Z4hp/c?=
+ =?us-ascii?Q?uQUa6MIR0wmGX+lG4wFUpm5CCzjw8EYcHtP6GDGVyDiwxfsuSUMgKAEnic0z?=
+ =?us-ascii?Q?L9r+Ndwhx7ZwqfnFf0LBK9dcZQy7yc3wX4ETX08kBdbMlLVu0R8Of64yw4nd?=
+ =?us-ascii?Q?oSNqQ1lgpBKRk+TckjiX7t+gXphxtoLFF3w9J/hJeBZCAVc3o1udsyF9hdnj?=
+ =?us-ascii?Q?zk9HURAipvYzAypZ4+IBoVNM2pz2WgMe6rPimGJLQ/c+7Zb/QKVU2BNUSbBp?=
+ =?us-ascii?Q?6PVMx2Nxz3m8dLVmSYXjGpV2fzl1rOZ1oqu27ymQFukOLtdCnEMvcXJlE0W8?=
+ =?us-ascii?Q?jfGGWR+Ff3dadri0V3HWaKF30P3v422qpy7j+MUxKseoWKmTe3sb8JtOylhP?=
+ =?us-ascii?Q?bxvwDDt92/QncynTQ/STs031k6m3hvJmt6N/U49bHAsbOpXtP3II85Fyj+uv?=
+ =?us-ascii?Q?CJrktB4f4x2BnMVoZseQq5w5sCB7mqb1mzjPkbCCLW0XsY82SoqvbPXB19wq?=
+ =?us-ascii?Q?eP0racVjQdFmDvnV3X193H4pY6KGpFGaO/z3BqbCgKmKGt6tNlDI9vvfBvTw?=
+ =?us-ascii?Q?mjDwp1HY5xoqLM1Ingswkioib3s4OFQ038zotMASQSstN+lm0kbHDEeMfe08?=
+ =?us-ascii?Q?cgKazb2wVNBoYJJPP1d/TxiieReMX0YG0ZBLtkYQcpJRHczP8/lAfqXJ/TR7?=
+ =?us-ascii?Q?if/nHl8pdAapuSaFG6Yb2/BWU8Zuq/6MxBMumNKVIcxOCRM/npe4a3AqhX7U?=
+ =?us-ascii?Q?pjcIFs+Z3SjYclVY1XSv0lno2H0YupLM4GDF+uajeNABAfOiFprD+ZchsPbq?=
+ =?us-ascii?Q?qogv3yRcnes3F7OAfrOGK3qw+G4ZDUZ79cTbaBBE2NcZyEPPX5lPsoVfISc3?=
+ =?us-ascii?Q?SL7Wf2OKeFb50YUyQUzrlOnQZhIIE2TC1O1IlE52njDV32o2pN5QSN2GXbzc?=
+ =?us-ascii?Q?bGvkbf90f0m7kqB5ku02M0NTTnIqYzkJ0kCowgbagOtYXelrolW3a2oXGYlz?=
+ =?us-ascii?Q?56lHThblpY5JwCoSMTxTl6dxk6/85iZEuYydsToasNdtl3ufSJCX+lIpm5Xi?=
+ =?us-ascii?Q?NKvmLR2fz1WHCIwJWbXz24v7PTCPe7XPpkiInGq+/ZzldCPrMW5R0A5RmQD+?=
+ =?us-ascii?Q?6JhggxaFmPXz5MwdGbR22VFgho8S1c6FBJgnfkYz2pvfhRs1eB0s+BcvjqtZ?=
+ =?us-ascii?Q?xgVGmhJg3GtLrMBVuHm9Yo5kuZrg1r/DJ7paFiX9rADN6e0lXy7J1B4QF0oh?=
+ =?us-ascii?Q?uZ5EQZk2yDOQPFJ270t9vffwwrv2geXXFZmwGvX7/3koupgohLlhWIgKihpu?=
+ =?us-ascii?Q?tdooiT1jTBN9WGiVLzWi6BiitmGnFoJtf8VGZ/am+9qgKSB3fGIS+19AoCfo?=
+ =?us-ascii?Q?ZlzjTz/PADwVTR77gCDE8ytLG4PylV4NNq0IBN24fAwkBpKvdMOYGhWgLpxc?=
+ =?us-ascii?Q?EZTeRxc36WaP7Q0rQ3Ku0fjaUdAWx5REPiaUfRlmtSpFSzS82CAL3Ed4JCrP?=
+ =?us-ascii?Q?i2pKAfEFmPrLExbfjMrZVAcpWMVN0H7KBtlx/5I/Mr4op4cWgL9GNnvcSA8W?=
+ =?us-ascii?Q?RTmmx1uZ/+GOxesffGlzIq0Ht4CAnE/DgqL3G6wU5N6K56Kj0n1LLDCSGXxK?=
+ =?us-ascii?Q?AuyWAKK0+g=3D=3D?=
 X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 69263a0f-239f-4ad3-7c55-08de8b00e745
+X-MS-Exchange-CrossTenant-Network-Message-Id: f183b1db-926f-441a-3b4a-08de8b00eb98
 X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB8510.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Mar 2026 06:28:33.3294
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Mar 2026 06:28:40.4455
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: PAOr5zPaQbZOB05EbuUng1+pfzFSwU9bEq23/8MfZPqpE2PgAk+b9Hz5raKqp08BopE097fXtaXSr5WFWxk6mQ==
+X-MS-Exchange-CrossTenant-UserPrincipalName: VyYPafjiVp0089S6zEeoE28d3N3a0IKWFK1OydEoDGrXd2p6S22/nFmmWxQmYRc8tUF/sNg8kz1fyAwaXnHSlw==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR04MB8355
 
-For i.MX94 series, the NETC IP provides full 802.1Q Ethernet switch
-functionality, advanced QoS with 8 traffic classes, and a full range of
-TSN standards capabilities. The switch has 3 user ports and 1 CPU port,
-the CPU port is connected to an internal ENETC. Since the switch and the
-internal ENETC are fully integrated within the NETC IP, no back-to-back
-MAC connection is required. Instead, a light-weight "pseudo MAC" is used
-between the switch and the ENETC. This translates to lower power (less
-logic and memory) and lower delay (as there is no serialization delay
-across this link).
-
-This patch introduces the initial NETC switch driver. At this stage,
-only basic probe and remove functionality is supported. More features
-will be supported in the subsequent patches.
+Different versions of NETC switches have different numbers of ports and
+MAC capabilities, so add .phylink_get_caps() to struct netc_switch_info,
+so that each version of the NETC switch can implement its own callback
+to obtain MAC capabilities. In addition, related interfaces of struct
+phylink_mac_ops are added, such as .mac_config(), .mac_link_up(), and
+.mac_link_down().
 
 Signed-off-by: Wei Fang <wei.fang@nxp.com>
 ---
- MAINTAINERS                           |  11 +
- drivers/net/dsa/Kconfig               |   3 +
- drivers/net/dsa/Makefile              |   1 +
- drivers/net/dsa/netc/Kconfig          |  14 +
- drivers/net/dsa/netc/Makefile         |   3 +
- drivers/net/dsa/netc/netc_main.c      | 672 ++++++++++++++++++++++++++
- drivers/net/dsa/netc/netc_platform.c  |  49 ++
- drivers/net/dsa/netc/netc_switch.h    |  92 ++++
- drivers/net/dsa/netc/netc_switch_hw.h | 137 ++++++
- 9 files changed, 982 insertions(+)
- create mode 100644 drivers/net/dsa/netc/Kconfig
- create mode 100644 drivers/net/dsa/netc/Makefile
- create mode 100644 drivers/net/dsa/netc/netc_main.c
- create mode 100644 drivers/net/dsa/netc/netc_platform.c
- create mode 100644 drivers/net/dsa/netc/netc_switch.h
- create mode 100644 drivers/net/dsa/netc/netc_switch_hw.h
+ drivers/net/dsa/netc/netc_main.c      | 179 ++++++++++++++++++++++++++
+ drivers/net/dsa/netc/netc_platform.c  |  40 ++++++
+ drivers/net/dsa/netc/netc_switch.h    |   4 +
+ drivers/net/dsa/netc/netc_switch_hw.h |  21 +++
+ 4 files changed, 244 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index a09bf30a057d..fe744320b1e5 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -19083,6 +19083,17 @@ F:	Documentation/devicetree/bindings/clock/*imx*
- F:	drivers/clk/imx/
- F:	include/dt-bindings/clock/*imx*
- 
-+NXP NETC ETHERNET SWITCH DRIVER
-+M:	Wei Fang <wei.fang@nxp.com>
-+R:	Clark Wang <xiaoning.wang@nxp.com>
-+L:	imx@lists.linux.dev
-+L:	netdev@vger.kernel.org
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/net/dsa/nxp,netc-switch.yaml
-+F:	drivers/net/dsa/netc/
-+F:	include/linux/dsa/tag_netc.h
-+F:	net/dsa/tag_netc.c
-+
- NXP NETC TIMER PTP CLOCK DRIVER
- M:	Wei Fang <wei.fang@nxp.com>
- M:	Clark Wang <xiaoning.wang@nxp.com>
-diff --git a/drivers/net/dsa/Kconfig b/drivers/net/dsa/Kconfig
-index 39fb8ead16b5..e9c7a6874791 100644
---- a/drivers/net/dsa/Kconfig
-+++ b/drivers/net/dsa/Kconfig
-@@ -74,8 +74,11 @@ source "drivers/net/dsa/microchip/Kconfig"
- 
- source "drivers/net/dsa/mv88e6xxx/Kconfig"
- 
-+
- source "drivers/net/dsa/mxl862xx/Kconfig"
- 
-+source "drivers/net/dsa/netc/Kconfig"
-+
- source "drivers/net/dsa/ocelot/Kconfig"
- 
- source "drivers/net/dsa/qca/Kconfig"
-diff --git a/drivers/net/dsa/Makefile b/drivers/net/dsa/Makefile
-index f5a463b87ec2..d2975badffc0 100644
---- a/drivers/net/dsa/Makefile
-+++ b/drivers/net/dsa/Makefile
-@@ -21,6 +21,7 @@ obj-y				+= lantiq/
- obj-y				+= microchip/
- obj-y				+= mv88e6xxx/
- obj-y				+= mxl862xx/
-+obj-y				+= netc/
- obj-y				+= ocelot/
- obj-y				+= qca/
- obj-y				+= realtek/
-diff --git a/drivers/net/dsa/netc/Kconfig b/drivers/net/dsa/netc/Kconfig
-new file mode 100644
-index 000000000000..8824d30ed3ea
---- /dev/null
-+++ b/drivers/net/dsa/netc/Kconfig
-@@ -0,0 +1,14 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+config NET_DSA_NETC_SWITCH
-+	tristate "NXP NETC Ethernet switch support"
-+	depends on NET_DSA && PCI
-+	select NET_DSA_TAG_NETC
-+	select FSL_ENETC_MDIO
-+	select NXP_NTMP
-+	select NXP_NETC_LIB
-+	help
-+	  This driver supports the NXP NETC Ethernet switch, which is embedded
-+	  as a PCIe function of the NXP NETC IP. But note that this driver does
-+	  only support switch versions greater than or equal to NETC v4.3.
-+
-+	  If compiled as module (M), the module name is nxp-netc-switch.
-diff --git a/drivers/net/dsa/netc/Makefile b/drivers/net/dsa/netc/Makefile
-new file mode 100644
-index 000000000000..4a5767562574
---- /dev/null
-+++ b/drivers/net/dsa/netc/Makefile
-@@ -0,0 +1,3 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+obj-$(CONFIG_NET_DSA_NETC_SWITCH) += nxp-netc-switch.o
-+nxp-netc-switch-objs := netc_main.o netc_platform.o
 diff --git a/drivers/net/dsa/netc/netc_main.c b/drivers/net/dsa/netc/netc_main.c
-new file mode 100644
-index 000000000000..5828fd3e342e
---- /dev/null
+index 5828fd3e342e..f11f5d0f6a6d 100644
+--- a/drivers/net/dsa/netc/netc_main.c
 +++ b/drivers/net/dsa/netc/netc_main.c
-@@ -0,0 +1,672 @@
-+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
-+/*
-+ * NXP NETC switch driver
-+ * Copyright 2025-2026 NXP
-+ */
-+
-+#include <linux/clk.h>
-+#include <linux/etherdevice.h>
-+#include <linux/fsl/enetc_mdio.h>
-+#include <linux/if_vlan.h>
-+#include <linux/of_mdio.h>
-+
-+#include "netc_switch.h"
-+
-+static enum dsa_tag_protocol
-+netc_get_tag_protocol(struct dsa_switch *ds, int port,
-+		      enum dsa_tag_protocol mprot)
+@@ -569,10 +569,188 @@ static void netc_switch_get_ip_revision(struct netc_switch *priv)
+ 	priv->revision = val & IPBRR0_IP_REV;
+ }
+ 
++static void netc_phylink_get_caps(struct dsa_switch *ds, int port,
++				  struct phylink_config *config)
 +{
-+	return DSA_TAG_PROTO_NETC;
++	struct netc_switch *priv = ds->priv;
++
++	priv->info->phylink_get_caps(port, config);
 +}
 +
-+static void netc_port_rmw(struct netc_port *np, u32 reg,
-+			  u32 mask, u32 val)
++static void netc_port_set_mac_mode(struct netc_port *np,
++				   unsigned int mode,
++				   phy_interface_t phy_mode)
 +{
-+	u32 old, new;
++	u32 mask = PM_IF_MODE_IFMODE | PM_IF_MODE_REVMII;
++	u32 val = 0;
 +
-+	WARN_ON((mask | val) != mask);
++	switch (phy_mode) {
++	case PHY_INTERFACE_MODE_RGMII:
++	case PHY_INTERFACE_MODE_RGMII_ID:
++	case PHY_INTERFACE_MODE_RGMII_RXID:
++	case PHY_INTERFACE_MODE_RGMII_TXID:
++		val |= IFMODE_RGMII;
++		break;
++	case PHY_INTERFACE_MODE_RMII:
++		val |= IFMODE_RMII;
++		break;
++	case PHY_INTERFACE_MODE_REVMII:
++		val |= PM_IF_MODE_REVMII;
++		fallthrough;
++	case PHY_INTERFACE_MODE_MII:
++		val |= IFMODE_MII;
++		break;
++	case PHY_INTERFACE_MODE_SGMII:
++	case PHY_INTERFACE_MODE_2500BASEX:
++		val |= IFMODE_SGMII;
++		break;
++	default:
++		break;
++	}
 +
-+	old = netc_port_rd(np, reg);
-+	new = (old & ~mask) | val;
-+	if (new == old)
-+		return;
-+
-+	netc_port_wr(np, reg, new);
++	netc_mac_port_rmw(np, NETC_PM_IF_MODE(0), mask, val);
 +}
 +
-+static void netc_mac_port_wr(struct netc_port *np, u32 reg, u32 val)
++static void netc_mac_config(struct phylink_config *config, unsigned int mode,
++			    const struct phylink_link_state *state)
 +{
-+	if (is_netc_pseudo_port(np))
-+		return;
++	struct dsa_port *dp = dsa_phylink_to_port(config);
 +
-+	netc_port_wr(np, reg, val);
-+	if (np->caps.pmac)
-+		netc_port_wr(np, reg + NETC_PMAC_OFFSET, val);
++	netc_port_set_mac_mode(NETC_PORT(dp->ds, dp->index), mode,
++			       state->interface);
 +}
 +
-+static void netc_mac_port_rmw(struct netc_port *np, u32 reg,
-+			      u32 mask, u32 val)
++static void netc_port_set_speed(struct netc_port *np, int speed)
 +{
-+	u32 old, new;
-+
-+	if (is_netc_pseudo_port(np))
-+		return;
-+
-+	WARN_ON((mask | val) != mask);
-+
-+	old = netc_port_rd(np, reg);
-+	new = (old & ~mask) | val;
-+	if (new == old)
-+		return;
-+
-+	netc_port_wr(np, reg, new);
-+	if (np->caps.pmac)
-+		netc_port_wr(np, reg + NETC_PMAC_OFFSET, new);
++	netc_port_rmw(np, NETC_PCR, PCR_PSPEED, PSPEED_SET_VAL(speed));
 +}
 +
-+static void netc_port_get_capability(struct netc_port *np)
++static void netc_port_set_rgmii_mac(struct netc_port *np,
++				    int speed, int duplex)
++{
++	u32 mask, val;
++
++	mask = PM_IF_MODE_SSP | PM_IF_MODE_HD | PM_IF_MODE_M10;
++
++	switch (speed) {
++	default:
++	case SPEED_1000:
++		val = FIELD_PREP(PM_IF_MODE_SSP, SSP_1G);
++		break;
++	case SPEED_100:
++		val = FIELD_PREP(PM_IF_MODE_SSP, SSP_100M);
++		break;
++	case SPEED_10:
++		val = FIELD_PREP(PM_IF_MODE_SSP, SSP_10M);
++		break;
++	}
++
++	if (duplex != DUPLEX_FULL)
++		val |= PM_IF_MODE_HD;
++
++	netc_mac_port_rmw(np, NETC_PM_IF_MODE(0), mask, val);
++}
++
++static void netc_port_set_rmii_mii_mac(struct netc_port *np,
++				       int speed, int duplex)
++{
++	u32 mask, val = 0;
++
++	mask = PM_IF_MODE_SSP | PM_IF_MODE_HD | PM_IF_MODE_M10;
++
++	if (speed == SPEED_10)
++		val |= PM_IF_MODE_M10;
++
++	if (duplex != DUPLEX_FULL)
++		val |= PM_IF_MODE_HD;
++
++	netc_mac_port_rmw(np, NETC_PM_IF_MODE(0), mask, val);
++}
++
++static void netc_port_mac_rx_enable(struct netc_port *np)
++{
++	netc_port_rmw(np, NETC_POR, PCR_RXDIS, 0);
++	netc_mac_port_rmw(np, NETC_PM_CMD_CFG(0), PM_CMD_CFG_RX_EN,
++			  PM_CMD_CFG_RX_EN);
++}
++
++static void netc_port_wait_rx_empty(struct netc_port *np, int mac)
 +{
 +	u32 val;
 +
-+	val = netc_port_rd(np, NETC_PMCAPR);
-+	if (val & PMCAPR_HD)
-+		np->caps.half_duplex = true;
-+
-+	if (FIELD_GET(PMCAPR_FP, val) == FP_SUPPORT)
-+		np->caps.pmac = true;
-+
-+	val = netc_port_rd(np, NETC_PCAPR);
-+	if (val & PCAPR_LINK_TYPE)
-+		np->caps.pseudo_link = true;
++	if (read_poll_timeout(netc_port_rd, val, val & PM_IEVENT_RX_EMPTY,
++			      100, 10000, false, np, NETC_PM_IEVENT(mac)))
++		dev_warn(np->switch_priv->dev,
++			 "MAC %d of swp%d RX is not empty\n", mac,
++			 np->dp->index);
 +}
 +
-+static int netc_port_get_info_from_dt(struct netc_port *np,
-+				      struct device_node *node,
-+				      struct device *dev)
++static void netc_port_mac_rx_graceful_stop(struct netc_port *np)
 +{
-+	if (of_find_property(node, "clock-names", NULL)) {
-+		np->ref_clk = devm_get_clk_from_child(dev, node, "ref");
-+		if (IS_ERR(np->ref_clk)) {
-+			dev_err(dev, "Port %d cannot get reference clock\n",
-+				np->dp->index);
-+			return PTR_ERR(np->ref_clk);
-+		}
++	u32 val;
++
++	if (is_netc_pseudo_port(np))
++		goto check_rx_busy;
++
++	if (np->caps.pmac) {
++		netc_port_rmw(np, NETC_PM_CMD_CFG(1), PM_CMD_CFG_RX_EN, 0);
++		netc_port_wait_rx_empty(np, 1);
 +	}
 +
-+	return 0;
++	netc_port_rmw(np, NETC_PM_CMD_CFG(0), PM_CMD_CFG_RX_EN, 0);
++	netc_port_wait_rx_empty(np, 0);
++
++check_rx_busy:
++	if (read_poll_timeout(netc_port_rd, val, !(val & PSR_RX_BUSY),
++			      100, 10000, false, np, NETC_PSR))
++		dev_warn(np->switch_priv->dev, "swp%d RX is busy\n",
++			 np->dp->index);
++
++	netc_port_rmw(np, NETC_POR, PCR_RXDIS, PCR_RXDIS);
 +}
 +
-+static int netc_port_create_emdio_bus(struct netc_port *np,
-+				      struct device_node *node)
++static void netc_mac_link_up(struct phylink_config *config,
++			     struct phy_device *phy, unsigned int mode,
++			     phy_interface_t interface, int speed,
++			     int duplex, bool tx_pause, bool rx_pause)
 +{
-+	struct netc_switch *priv = np->switch_priv;
-+	struct enetc_mdio_priv *mdio_priv;
-+	struct device *dev = priv->dev;
-+	struct enetc_hw *hw;
-+	struct mii_bus *bus;
-+	int err;
-+
-+	hw = enetc_hw_alloc(dev, np->iobase);
-+	if (IS_ERR(hw))
-+		return dev_err_probe(dev, PTR_ERR(hw),
-+				     "Failed to allocate enetc_hw\n");
-+
-+	bus = devm_mdiobus_alloc_size(dev, sizeof(*mdio_priv));
-+	if (!bus)
-+		return -ENOMEM;
-+
-+	bus->name = "NXP NETC switch external MDIO Bus";
-+	bus->read = enetc_mdio_read_c22;
-+	bus->write = enetc_mdio_write_c22;
-+	bus->read_c45 = enetc_mdio_read_c45;
-+	bus->write_c45 = enetc_mdio_write_c45;
-+	bus->parent = dev;
-+	mdio_priv = bus->priv;
-+	mdio_priv->hw = hw;
-+	mdio_priv->mdio_base = NETC_EMDIO_BASE;
-+	snprintf(bus->id, MII_BUS_ID_SIZE, "%s-p%d-emdio",
-+		 dev_name(dev), np->dp->index);
-+
-+	err = devm_of_mdiobus_register(dev, bus, node);
-+	if (err)
-+		return dev_err_probe(dev, err,
-+				     "Cannot register EMDIO bus\n");
-+
-+	np->emdio = bus;
-+
-+	return 0;
-+}
-+
-+static int netc_port_create_mdio_bus(struct netc_port *np,
-+				     struct device_node *node)
-+{
-+	struct device_node *mdio_node;
-+	int err;
-+
-+	mdio_node = of_get_child_by_name(node, "mdio");
-+	if (mdio_node) {
-+		err = netc_port_create_emdio_bus(np, mdio_node);
-+		of_node_put(mdio_node);
-+		if (err)
-+			return err;
-+	}
-+
-+	return 0;
-+}
-+
-+static int netc_init_switch_id(struct netc_switch *priv)
-+{
-+	struct netc_switch_regs *regs = &priv->regs;
-+	struct dsa_switch *ds = priv->ds;
-+
-+	/* The value of 0 is reserved for the VEPA switch and cannot
-+	 * be used.
-+	 */
-+	if (ds->index > SWCR_SWID || !ds->index) {
-+		dev_err(priv->dev, "Switch index %d out of range\n",
-+			ds->index);
-+		return -ERANGE;
-+	}
-+
-+	netc_base_wr(regs, NETC_SWCR, ds->index);
-+
-+	return 0;
-+}
-+
-+static int netc_init_all_ports(struct netc_switch *priv)
-+{
-+	struct device *dev = priv->dev;
++	struct dsa_port *dp = dsa_phylink_to_port(config);
 +	struct netc_port *np;
-+	struct dsa_port *dp;
-+	int err;
 +
-+	priv->ports = devm_kcalloc(dev, priv->info->num_ports,
-+				   sizeof(struct netc_port *),
-+				   GFP_KERNEL);
-+	if (!priv->ports)
-+		return -ENOMEM;
++	np = NETC_PORT(dp->ds, dp->index);
++	netc_port_set_speed(np, speed);
 +
-+	/* Some DSA interfaces may set the port even it is disabled, such
-+	 * as .port_disable(), .port_stp_state_set() and so on. To avoid
-+	 * crash caused by accessing NULL port pointer, each port is
-+	 * allocated its own memory. Otherwise, we need to check whether
-+	 * the port pointer is NULL in these interfaces. The latter is
-+	 * difficult for us to cover.
-+	 */
-+	for (int i = 0; i < priv->info->num_ports; i++) {
-+		np = devm_kzalloc(dev, sizeof(*np), GFP_KERNEL);
-+		if (!np)
-+			return -ENOMEM;
++	if (phy_interface_mode_is_rgmii(interface))
++		netc_port_set_rgmii_mac(np, speed, duplex);
 +
-+		np->switch_priv = priv;
-+		np->iobase = priv->regs.port + PORT_IOBASE(i);
-+		netc_port_get_capability(np);
-+		priv->ports[i] = np;
-+	}
++	if (interface == PHY_INTERFACE_MODE_RMII ||
++	    interface == PHY_INTERFACE_MODE_REVMII ||
++	    interface == PHY_INTERFACE_MODE_MII)
++		netc_port_set_rmii_mii_mac(np, speed, duplex);
 +
-+	dsa_switch_for_each_available_port(dp, priv->ds) {
-+		np = priv->ports[dp->index];
-+		np->dp = dp;
-+		err = netc_port_get_info_from_dt(np, dp->dn, dev);
-+		if (err)
-+			return err;
-+
-+		if (dsa_port_is_user(dp)) {
-+			err = netc_port_create_mdio_bus(np, dp->dn);
-+			if (err) {
-+				dev_err(dev, "Failed to create MDIO bus\n");
-+				return err;
-+			}
-+		}
-+	}
-+
-+	return 0;
++	netc_port_mac_rx_enable(np);
 +}
 +
-+static void netc_init_ntmp_tbl_versions(struct netc_switch *priv)
++static void netc_mac_link_down(struct phylink_config *config,
++			       unsigned int mode,
++			       phy_interface_t interface)
 +{
-+	struct ntmp_user *ntmp = &priv->ntmp;
++	struct dsa_port *dp = dsa_phylink_to_port(config);
 +
-+	/* All tables default to version 0 */
-+	memset(&ntmp->tbl, 0, sizeof(ntmp->tbl));
++	netc_port_mac_rx_graceful_stop(NETC_PORT(dp->ds, dp->index));
 +}
 +
-+static int netc_init_all_cbdrs(struct netc_switch *priv)
-+{
-+	struct netc_switch_regs *regs = &priv->regs;
-+	struct ntmp_user *ntmp = &priv->ntmp;
-+	int i, err;
-+
-+	ntmp->cbdr_num = NETC_CBDR_NUM;
-+	ntmp->dev = priv->dev;
-+	ntmp->ring = devm_kcalloc(ntmp->dev, ntmp->cbdr_num,
-+				  sizeof(struct netc_cbdr),
-+				  GFP_KERNEL);
-+	if (!ntmp->ring)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < ntmp->cbdr_num; i++) {
-+		struct netc_cbdr *cbdr = &ntmp->ring[i];
-+		struct netc_cbdr_regs cbdr_regs;
-+
-+		cbdr_regs.pir = regs->base + NETC_CBDRPIR(i);
-+		cbdr_regs.cir = regs->base + NETC_CBDRCIR(i);
-+		cbdr_regs.mr = regs->base + NETC_CBDRMR(i);
-+		cbdr_regs.bar0 = regs->base + NETC_CBDRBAR0(i);
-+		cbdr_regs.bar1 = regs->base + NETC_CBDRBAR1(i);
-+		cbdr_regs.lenr = regs->base + NETC_CBDRLENR(i);
-+
-+		err = ntmp_init_cbdr(cbdr, ntmp->dev, &cbdr_regs);
-+		if (err)
-+			goto free_cbdrs;
-+	}
-+
-+	return 0;
-+
-+free_cbdrs:
-+	for (i--; i >= 0; i--)
-+		ntmp_free_cbdr(&ntmp->ring[i]);
-+
-+	return err;
-+}
-+
-+static void netc_remove_all_cbdrs(struct netc_switch *priv)
-+{
-+	struct ntmp_user *ntmp = &priv->ntmp;
-+
-+	for (int i = 0; i < NETC_CBDR_NUM; i++)
-+		ntmp_free_cbdr(&ntmp->ring[i]);
-+}
-+
-+static int netc_init_ntmp_user(struct netc_switch *priv)
-+{
-+	netc_init_ntmp_tbl_versions(priv);
-+
-+	return netc_init_all_cbdrs(priv);
-+}
-+
-+static void netc_free_ntmp_user(struct netc_switch *priv)
-+{
-+	netc_remove_all_cbdrs(priv);
-+}
-+
-+static void netc_switch_dos_default_config(struct netc_switch *priv)
-+{
-+	struct netc_switch_regs *regs = &priv->regs;
-+	u32 val;
-+
-+	val = DOSL2CR_SAMEADDR | DOSL2CR_MSAMCC;
-+	netc_base_wr(regs, NETC_DOSL2CR, val);
-+
-+	val = DOSL3CR_SAMEADDR | DOSL3CR_IPSAMCC;
-+	netc_base_wr(regs, NETC_DOSL3CR, val);
-+}
-+
-+static void netc_switch_vfht_default_config(struct netc_switch *priv)
-+{
-+	struct netc_switch_regs *regs = &priv->regs;
-+	u32 val;
-+
-+	val = netc_base_rd(regs, NETC_VFHTDECR2);
-+
-+	/* if no match is found in the VLAN Filter table, then VFHTDECR2[MLO]
-+	 * will take effect. VFHTDECR2[MLO] is set to "Software MAC learning
-+	 * secure" by default. Notice BPCR[MLO] will override VFHTDECR2[MLO]
-+	 * if its value is not zero.
-+	 */
-+	val = u32_replace_bits(val, MLO_SW_SEC, VFHTDECR2_MLO);
-+	val = u32_replace_bits(val, MFO_NO_MATCH_DISCARD, VFHTDECR2_MFO);
-+	netc_base_wr(regs, NETC_VFHTDECR2, val);
-+}
-+
-+static void netc_port_set_max_frame_size(struct netc_port *np,
-+					 u32 max_frame_size)
-+{
-+	netc_mac_port_wr(np, NETC_PM_MAXFRM(0),
-+			 PM_MAXFRAM & max_frame_size);
-+}
-+
-+static void netc_switch_fixed_config(struct netc_switch *priv)
-+{
-+	netc_switch_dos_default_config(priv);
-+	netc_switch_vfht_default_config(priv);
-+}
-+
-+static void netc_port_set_tc_max_sdu(struct netc_port *np,
-+				     int tc, u32 max_sdu)
-+{
-+	u32 val = max_sdu & PTCTMSDUR_MAXSDU;
-+
-+	val |= FIELD_PREP(PTCTMSDUR_SDU_TYPE, SDU_TYPE_MPDU);
-+	netc_port_wr(np, NETC_PTCTMSDUR(tc), val);
-+}
-+
-+static void netc_port_set_all_tc_msdu(struct netc_port *np)
-+{
-+	for (int tc = 0; tc < NETC_TC_NUM; tc++)
-+		netc_port_set_tc_max_sdu(np, tc, NETC_MAX_FRAME_LEN);
-+}
-+
-+static void netc_port_set_mlo(struct netc_port *np, enum netc_mlo mlo)
-+{
-+	netc_port_rmw(np, NETC_BPCR, BPCR_MLO, FIELD_PREP(BPCR_MLO, mlo));
-+}
-+
-+static void netc_port_fixed_config(struct netc_port *np)
-+{
-+	/* Default IPV and DR setting */
-+	netc_port_rmw(np, NETC_PQOSMR, PQOSMR_VS | PQOSMR_VE,
-+		      PQOSMR_VS | PQOSMR_VE);
-+
-+	/* Enable L2 and L3 DOS */
-+	netc_port_rmw(np, NETC_PCR, PCR_L2DOSE | PCR_L3DOSE,
-+		      PCR_L2DOSE | PCR_L3DOSE);
-+}
-+
-+static void netc_port_default_config(struct netc_port *np)
-+{
-+	netc_port_fixed_config(np);
-+
-+	/* Default VLAN unaware */
-+	netc_port_rmw(np, NETC_BPDVR, BPDVR_RXVAM, BPDVR_RXVAM);
-+
-+	if (dsa_port_is_cpu(np->dp))
-+		/* For CPU port, source port pruning is disabled and
-+		 * hardware MAC learning is enabled by default.
-+		 */
-+		netc_port_rmw(np, NETC_BPCR, BPCR_SRCPRND | BPCR_MLO,
-+			      BPCR_SRCPRND | FIELD_PREP(BPCR_MLO, MLO_HW));
-+	else
-+		netc_port_set_mlo(np, MLO_DISABLE);
-+
-+	netc_port_set_max_frame_size(np, NETC_MAX_FRAME_LEN);
-+	netc_port_set_all_tc_msdu(np);
-+	netc_mac_port_rmw(np, NETC_PM_CMD_CFG(0), PM_CMD_CFG_TX_EN,
-+			  PM_CMD_CFG_TX_EN);
-+	netc_port_rmw(np, NETC_POR, PCR_TXDIS, 0);
-+}
-+
-+static int netc_setup(struct dsa_switch *ds)
-+{
-+	struct netc_switch *priv = ds->priv;
-+	struct dsa_port *dp;
-+	int err;
-+
-+	err = netc_init_switch_id(priv);
-+	if (err)
-+		return err;
-+
-+	err = netc_init_all_ports(priv);
-+	if (err)
-+		return err;
-+
-+	err = netc_init_ntmp_user(priv);
-+	if (err)
-+		return err;
-+
-+	netc_switch_fixed_config(priv);
-+
-+	/* default setting for ports */
-+	dsa_switch_for_each_available_port(dp, ds)
-+		netc_port_default_config(priv->ports[dp->index]);
-+
-+	return 0;
-+}
-+
-+static void netc_teardown(struct dsa_switch *ds)
-+{
-+	struct netc_switch *priv = ds->priv;
-+
-+	netc_free_ntmp_user(priv);
-+}
-+
-+static struct device_node *netc_get_switch_ports(struct device_node *node)
-+{
-+	struct device_node *ports;
-+
-+	ports = of_get_child_by_name(node, "ports");
-+	if (!ports)
-+		ports = of_get_child_by_name(node, "ethernet-ports");
-+
-+	return ports;
-+}
-+
-+static bool netc_port_is_emdio_consumer(struct device_node *node)
-+{
-+	struct device_node *mdio_node;
-+
-+	/* If the port node has phy-handle property and it does
-+	 * not contain a mdio child node, then the port is the
-+	 * EMDIO consumer.
-+	 */
-+	mdio_node = of_get_child_by_name(node, "mdio");
-+	if (!mdio_node)
-+		return true;
-+
-+	of_node_put(mdio_node);
-+
-+	return false;
-+}
-+
-+/* Currently, phylink_of_phy_connect() is called by dsa_user_create(),
-+ * so if the switch uses the external MDIO controller (like the EMDIO
-+ * function) to manage the external PHYs. The MDIO bus may not be
-+ * created when phylink_of_phy_connect() is called, so it will return
-+ * an error and cause the switch driver to fail to probe.
-+ * This workaround can be removed when DSA phylink_of_phy_connect()
-+ * calls are moved from probe() to ndo_open().
-+ */
-+static int netc_switch_check_emdio_is_ready(struct device *dev)
-+{
-+	struct device_node *ports, *phy_node;
-+	struct phy_device *phydev;
-+	int err = 0;
-+
-+	ports = netc_get_switch_ports(dev->of_node);
-+	if (!ports)
-+		return 0;
-+
-+	for_each_available_child_of_node_scoped(ports, child) {
-+		/* If the node does not have phy-handle property, then
-+		 * the port does not connect to a PHY, so the port is
-+		 * not the EMDIO consumer.
-+		 */
-+		phy_node = of_parse_phandle(child, "phy-handle", 0);
-+		if (!phy_node)
-+			continue;
-+
-+		if (!netc_port_is_emdio_consumer(child)) {
-+			of_node_put(phy_node);
-+			continue;
-+		}
-+
-+		phydev = of_phy_find_device(phy_node);
-+		of_node_put(phy_node);
-+		if (!phydev) {
-+			err = -EPROBE_DEFER;
-+			goto out;
-+		}
-+
-+		put_device(&phydev->mdio.dev);
-+	}
-+
-+out:
-+	of_node_put(ports);
-+
-+	return err;
-+}
-+
-+static int netc_switch_pci_init(struct pci_dev *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct netc_switch_regs *regs;
-+	struct netc_switch *priv;
-+	int err;
-+
-+	pcie_flr(pdev);
-+	err = pci_enable_device_mem(pdev);
-+	if (err)
-+		return dev_err_probe(dev, err, "Failed to enable device\n");
-+
-+	/* The command BD rings and NTMP tables need DMA. No need to check
-+	 * the return value, because it never returns fail when the mask is
-+	 * DMA_BIT_MASK(64), see dma-api-howto.rst.
-+	 */
-+	dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64));
-+	err = pci_request_mem_regions(pdev, KBUILD_MODNAME);
-+	if (err) {
-+		dev_err(dev, "Failed to request memory regions, err: %pe\n",
-+			ERR_PTR(err));
-+		goto disable_pci_device;
-+	}
-+
-+	pci_set_master(pdev);
-+	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv) {
-+		err = -ENOMEM;
-+		goto release_mem_regions;
-+	}
-+
-+	priv->pdev = pdev;
-+	priv->dev = dev;
-+
-+	regs = &priv->regs;
-+	regs->base = pci_ioremap_bar(pdev, NETC_REGS_BAR);
-+	if (!regs->base) {
-+		err = -ENXIO;
-+		dev_err(dev, "pci_ioremap_bar() failed\n");
-+		goto release_mem_regions;
-+	}
-+
-+	regs->port = regs->base + NETC_REGS_PORT_BASE;
-+	regs->global = regs->base + NETC_REGS_GLOBAL_BASE;
-+	pci_set_drvdata(pdev, priv);
-+
-+	return 0;
-+
-+release_mem_regions:
-+	pci_release_mem_regions(pdev);
-+disable_pci_device:
-+	pci_disable_device(pdev);
-+
-+	return err;
-+}
-+
-+static void netc_switch_pci_destroy(struct pci_dev *pdev)
-+{
-+	struct netc_switch *priv = pci_get_drvdata(pdev);
-+
-+	iounmap(priv->regs.base);
-+	pci_release_mem_regions(pdev);
-+	pci_disable_device(pdev);
-+}
-+
-+static void netc_switch_get_ip_revision(struct netc_switch *priv)
-+{
-+	struct netc_switch_regs *regs = &priv->regs;
-+	u32 val = netc_glb_rd(regs, NETC_IPBRR0);
-+
-+	priv->revision = val & IPBRR0_IP_REV;
-+}
-+
-+static const struct dsa_switch_ops netc_switch_ops = {
-+	.get_tag_protocol		= netc_get_tag_protocol,
-+	.setup				= netc_setup,
-+	.teardown			= netc_teardown,
++static const struct phylink_mac_ops netc_phylink_mac_ops = {
++	.mac_config		= netc_mac_config,
++	.mac_link_up		= netc_mac_link_up,
++	.mac_link_down		= netc_mac_link_down,
 +};
 +
-+static int netc_switch_probe(struct pci_dev *pdev,
-+			     const struct pci_device_id *id)
-+{
-+	struct device_node *node = dev_of_node(&pdev->dev);
-+	struct device *dev = &pdev->dev;
-+	struct netc_switch *priv;
-+	struct dsa_switch *ds;
-+	int err;
-+
-+	if (!node)
-+		return dev_err_probe(dev, -ENODEV,
-+				     "No DT bindings, skipping\n");
-+
-+	err = netc_switch_check_emdio_is_ready(dev);
-+	if (err)
-+		return err;
-+
-+	err = netc_switch_pci_init(pdev);
-+	if (err)
-+		return err;
-+
-+	priv = pci_get_drvdata(pdev);
-+	netc_switch_get_ip_revision(priv);
-+
-+	err = netc_switch_platform_probe(priv);
-+	if (err)
-+		goto destroy_netc_switch;
-+
-+	ds = devm_kzalloc(dev, sizeof(*ds), GFP_KERNEL);
-+	if (!ds) {
-+		err = -ENOMEM;
-+		goto destroy_netc_switch;
-+	}
-+
-+	ds->dev = dev;
-+	ds->num_ports = priv->info->num_ports;
-+	ds->num_tx_queues = NETC_TC_NUM;
-+	ds->ops = &netc_switch_ops;
-+	ds->priv = priv;
-+
-+	priv->ds = ds;
-+
-+	err = dsa_register_switch(ds);
-+	if (err) {
-+		dev_err_probe(dev, err, "Failed to register DSA switch\n");
-+		goto destroy_netc_switch;
-+	}
-+
-+	return 0;
-+
-+destroy_netc_switch:
-+	netc_switch_pci_destroy(pdev);
-+
-+	return err;
-+}
-+
-+static void netc_switch_remove(struct pci_dev *pdev)
-+{
-+	struct netc_switch *priv = pci_get_drvdata(pdev);
-+
-+	if (!priv)
-+		return;
-+
-+	dsa_unregister_switch(priv->ds);
-+	netc_switch_pci_destroy(pdev);
-+}
-+
-+static void netc_switch_shutdown(struct pci_dev *pdev)
-+{
-+	struct netc_switch *priv = pci_get_drvdata(pdev);
-+
-+	if (!priv)
-+		return;
-+
-+	dsa_switch_shutdown(priv->ds);
-+	pci_set_drvdata(pdev, NULL);
-+}
-+
-+static const struct pci_device_id netc_switch_ids[] = {
-+	{ PCI_DEVICE(NETC_SWITCH_VENDOR_ID, NETC_SWITCH_DEVICE_ID) },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(pci, netc_switch_ids);
-+
-+static struct pci_driver netc_switch_driver = {
-+	.name		= KBUILD_MODNAME,
-+	.id_table	= netc_switch_ids,
-+	.probe		= netc_switch_probe,
-+	.remove		= netc_switch_remove,
-+	.shutdown	= netc_switch_shutdown,
-+};
-+module_pci_driver(netc_switch_driver);
-+
-+MODULE_DESCRIPTION("NXP NETC Switch driver");
-+MODULE_LICENSE("Dual BSD/GPL");
+ static const struct dsa_switch_ops netc_switch_ops = {
+ 	.get_tag_protocol		= netc_get_tag_protocol,
+ 	.setup				= netc_setup,
+ 	.teardown			= netc_teardown,
++	.phylink_get_caps		= netc_phylink_get_caps,
+ };
+ 
+ static int netc_switch_probe(struct pci_dev *pdev,
+@@ -613,6 +791,7 @@ static int netc_switch_probe(struct pci_dev *pdev,
+ 	ds->num_ports = priv->info->num_ports;
+ 	ds->num_tx_queues = NETC_TC_NUM;
+ 	ds->ops = &netc_switch_ops;
++	ds->phylink_mac_ops = &netc_phylink_mac_ops;
+ 	ds->priv = priv;
+ 
+ 	priv->ds = ds;
 diff --git a/drivers/net/dsa/netc/netc_platform.c b/drivers/net/dsa/netc/netc_platform.c
-new file mode 100644
-index 000000000000..abd599ea9c8d
---- /dev/null
+index abd599ea9c8d..8d3fb5151902 100644
+--- a/drivers/net/dsa/netc/netc_platform.c
 +++ b/drivers/net/dsa/netc/netc_platform.c
-@@ -0,0 +1,49 @@
-+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
-+/*
-+ * NXP NETC switch driver
-+ * Copyright 2025-2026 NXP
-+ */
-+
-+#include "netc_switch.h"
-+
-+struct netc_switch_platform {
-+	u16 revision;
-+	const struct netc_switch_info *info;
-+};
-+
-+static const struct netc_switch_info imx94_info = {
-+	.num_ports = 4,
-+};
-+
-+static const struct netc_switch_platform netc_platforms[] = {
-+	{ .revision = NETC_SWITCH_REV_4_3, .info = &imx94_info, },
-+	{ }
-+};
-+
-+static const struct netc_switch_info *
-+netc_switch_get_info(struct netc_switch *priv)
+@@ -11,8 +11,48 @@ struct netc_switch_platform {
+ 	const struct netc_switch_info *info;
+ };
+ 
++static void imx94_switch_phylink_get_caps(int port,
++					  struct phylink_config *config)
 +{
-+	int i;
++	config->mac_capabilities = MAC_ASYM_PAUSE | MAC_SYM_PAUSE |
++				   MAC_1000FD;
 +
-+	/* Matching based on IP revision */
-+	for (i = 0; i < ARRAY_SIZE(netc_platforms); i++) {
-+		if (priv->revision == netc_platforms[i].revision)
-+			return netc_platforms[i].info;
++	switch (port) {
++	case 0 ... 1:
++		__set_bit(PHY_INTERFACE_MODE_SGMII,
++			  config->supported_interfaces);
++		__set_bit(PHY_INTERFACE_MODE_1000BASEX,
++			  config->supported_interfaces);
++		__set_bit(PHY_INTERFACE_MODE_2500BASEX,
++			  config->supported_interfaces);
++		config->mac_capabilities |= MAC_2500FD;
++		fallthrough;
++	case 2:
++		config->mac_capabilities |= MAC_10 | MAC_100;
++		__set_bit(PHY_INTERFACE_MODE_MII,
++			  config->supported_interfaces);
++		__set_bit(PHY_INTERFACE_MODE_RMII,
++			  config->supported_interfaces);
++		if (port == 2)
++			__set_bit(PHY_INTERFACE_MODE_REVMII,
++				  config->supported_interfaces);
++
++		phy_interface_set_rgmii(config->supported_interfaces);
++		break;
++	case 3: /* CPU port */
++		__set_bit(PHY_INTERFACE_MODE_INTERNAL,
++			  config->supported_interfaces);
++		config->mac_capabilities |= MAC_10FD | MAC_100FD |
++					    MAC_2500FD;
++		break;
++	default:
++		break;
 +	}
-+
-+	return NULL;
 +}
 +
-+int netc_switch_platform_probe(struct netc_switch *priv)
-+{
-+	const struct netc_switch_info *info = netc_switch_get_info(priv);
-+
-+	if (!info) {
-+		dev_err(priv->dev, "Cannot find switch platform info\n");
-+		return -EINVAL;
-+	}
-+
-+	priv->info = info;
-+
-+	return 0;
-+}
+ static const struct netc_switch_info imx94_info = {
+ 	.num_ports = 4,
++	.phylink_get_caps = imx94_switch_phylink_get_caps,
+ };
+ 
+ static const struct netc_switch_platform netc_platforms[] = {
 diff --git a/drivers/net/dsa/netc/netc_switch.h b/drivers/net/dsa/netc/netc_switch.h
-new file mode 100644
-index 000000000000..dac19bfba02b
---- /dev/null
+index dac19bfba02b..eb65c36ecead 100644
+--- a/drivers/net/dsa/netc/netc_switch.h
 +++ b/drivers/net/dsa/netc/netc_switch.h
-@@ -0,0 +1,92 @@
-+/* SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause) */
-+/*
-+ * Copyright 2025-2026 NXP
-+ */
+@@ -34,6 +34,7 @@ struct netc_switch;
+ 
+ struct netc_switch_info {
+ 	u32 num_ports;
++	void (*phylink_get_caps)(int port, struct phylink_config *config);
+ };
+ 
+ struct netc_port_caps {
+@@ -70,6 +71,9 @@ struct netc_switch {
+ 	struct ntmp_user ntmp;
+ };
+ 
++#define NETC_PRIV(ds)			((struct netc_switch *)((ds)->priv))
++#define NETC_PORT(ds, port_id)		(NETC_PRIV(ds)->ports[(port_id)])
 +
-+#ifndef _NETC_SWITCH_H
-+#define _NETC_SWITCH_H
-+
-+#include <linux/dsa/tag_netc.h>
-+#include <linux/fsl/netc_global.h>
-+#include <linux/fsl/ntmp.h>
-+#include <linux/of_device.h>
-+#include <linux/of_net.h>
-+#include <linux/pci.h>
-+
-+#include "netc_switch_hw.h"
-+
-+#define NETC_REGS_BAR			0
-+#define NETC_MSIX_TBL_BAR		2
-+#define NETC_REGS_PORT_BASE		0x4000
-+/* register block size per port  */
-+#define NETC_REGS_PORT_SIZE		0x4000
-+#define PORT_IOBASE(p)			(NETC_REGS_PORT_SIZE * (p))
-+#define NETC_REGS_GLOBAL_BASE		0x70000
-+
-+#define NETC_SWITCH_REV_4_3		0x0403
-+
-+#define NETC_TC_NUM			8
-+#define NETC_CBDR_NUM			2
-+
-+#define NETC_MAX_FRAME_LEN		9600
-+
-+struct netc_switch;
-+
-+struct netc_switch_info {
-+	u32 num_ports;
-+};
-+
-+struct netc_port_caps {
-+	u32 half_duplex:1; /* indicates whether the port support half-duplex */
-+	u32 pmac:1;	  /* indicates whether the port has preemption MAC */
-+	u32 pseudo_link:1;
-+};
-+
-+struct netc_port {
-+	void __iomem *iobase;
-+	struct netc_switch *switch_priv;
-+	struct netc_port_caps caps;
-+	struct dsa_port *dp;
-+	struct clk *ref_clk; /* RGMII/RMII reference clock */
-+	struct mii_bus *emdio;
-+};
-+
-+struct netc_switch_regs {
-+	void __iomem *base;
-+	void __iomem *port;
-+	void __iomem *global;
-+};
-+
-+struct netc_switch {
-+	struct pci_dev *pdev;
-+	struct device *dev;
-+	struct dsa_switch *ds;
-+	u16 revision;
-+
-+	const struct netc_switch_info *info;
-+	struct netc_switch_regs regs;
-+	struct netc_port **ports;
-+
-+	struct ntmp_user ntmp;
-+};
-+
-+/* Write/Read Switch base registers */
-+#define netc_base_rd(r, o)		netc_read((r)->base + (o))
-+#define netc_base_wr(r, o, v)		netc_write((r)->base + (o), v)
-+
-+/* Write/Read registers of Switch Port (including pseudo MAC port) */
-+#define netc_port_rd(p, o)		netc_read((p)->iobase + (o))
-+#define netc_port_wr(p, o, v)		netc_write((p)->iobase + (o), v)
-+
-+/* Write/Read Switch global registers */
-+#define netc_glb_rd(r, o)		netc_read((r)->global + (o))
-+#define netc_glb_wr(r, o, v)		netc_write((r)->global + (o), v)
-+
-+static inline bool is_netc_pseudo_port(struct netc_port *np)
-+{
-+	return np->caps.pseudo_link;
-+}
-+
-+int netc_switch_platform_probe(struct netc_switch *priv);
-+
-+#endif
+ /* Write/Read Switch base registers */
+ #define netc_base_rd(r, o)		netc_read((r)->base + (o))
+ #define netc_base_wr(r, o, v)		netc_write((r)->base + (o), v)
 diff --git a/drivers/net/dsa/netc/netc_switch_hw.h b/drivers/net/dsa/netc/netc_switch_hw.h
-new file mode 100644
-index 000000000000..11cb124ce4bf
---- /dev/null
+index 11cb124ce4bf..881122004644 100644
+--- a/drivers/net/dsa/netc/netc_switch_hw.h
 +++ b/drivers/net/dsa/netc/netc_switch_hw.h
-@@ -0,0 +1,137 @@
-+/* SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause) */
-+/*
-+ * Copyright 2025-2026 NXP
-+ */
+@@ -71,6 +71,10 @@
+ #define  PCR_TXDIS			BIT(0)
+ #define  PCR_RXDIS			BIT(1)
+ 
++#define NETC_PSR			0x104
++#define  PSR_TX_BUSY			BIT(0)
++#define  PSR_RX_BUSY			BIT(1)
 +
-+#ifndef _NETC_SWITCH_HW_H
-+#define _NETC_SWITCH_HW_H
+ #define NETC_PTCTMSDUR(a)		(0x208 + (a) * 0x20)
+ #define  PTCTMSDUR_MAXSDU		GENMASK(15, 0)
+ #define  PTCTMSDUR_SDU_TYPE		GENMASK(17, 16)
+@@ -127,6 +131,23 @@ enum netc_mfo {
+ #define NETC_PM_MAXFRM(a)		(0x1014 + (a) * 0x400)
+ #define  PM_MAXFRAM			GENMASK(15, 0)
+ 
++#define NETC_PM_IEVENT(a)		(0x1040 + (a) * 0x400)
++#define  PM_IEVENT_RX_EMPTY		BIT(6)
 +
-+#include <linux/bitops.h>
++#define NETC_PM_IF_MODE(a)		(0x1300 + (a) * 0x400)
++#define  PM_IF_MODE_IFMODE		GENMASK(2, 0)
++#define   IFMODE_MII			1
++#define   IFMODE_RMII			3
++#define   IFMODE_RGMII			4
++#define   IFMODE_SGMII			5
++#define  PM_IF_MODE_REVMII		BIT(3)
++#define  PM_IF_MODE_M10			BIT(4)
++#define  PM_IF_MODE_HD			BIT(6)
++#define  PM_IF_MODE_SSP			GENMASK(14, 13)
++#define   SSP_100M			0
++#define   SSP_10M			1
++#define   SSP_1G			2
 +
-+#define NETC_SWITCH_VENDOR_ID		0x1131
-+#define NETC_SWITCH_DEVICE_ID		0xeef2
-+
-+/* Definition of Switch base registers */
-+#define NETC_CBDRMR(a)			(0x0800 + (a) * 0x30)
-+#define NETC_CBDRBAR0(a)		(0x0810 + (a) * 0x30)
-+#define NETC_CBDRBAR1(a)		(0x0814 + (a) * 0x30)
-+#define NETC_CBDRPIR(a)			(0x0818 + (a) * 0x30)
-+#define NETC_CBDRCIR(a)			(0x081c + (a) * 0x30)
-+#define NETC_CBDRLENR(a)		(0x0820 + (a) * 0x30)
-+
-+#define NETC_SWCR			0x1018
-+#define  SWCR_SWID			GENMASK(2, 0)
-+
-+#define NETC_DOSL2CR			0x1220
-+#define  DOSL2CR_SAMEADDR		BIT(0)
-+#define  DOSL2CR_MSAMCC			BIT(1)
-+
-+#define NETC_DOSL3CR			0x1224
-+#define  DOSL3CR_SAMEADDR		BIT(0)
-+#define  DOSL3CR_IPSAMCC		BIT(1)
-+
-+#define NETC_VFHTDECR1			0x2014
-+#define NETC_VFHTDECR2			0x2018
-+#define  VFHTDECR2_ET_PORT(a)		BIT((a))
-+#define  VFHTDECR2_MLO			GENMASK(26, 24)
-+#define  VFHTDECR2_MFO			GENMASK(28, 27)
-+
-+/* Definition of Switch port registers */
-+#define NETC_PCAPR			0x0000
-+#define  PCAPR_LINK_TYPE		BIT(4)
-+#define  PCAPR_NUM_TC			GENMASK(15, 12)
-+#define  PCAPR_NUM_Q			GENMASK(19, 16)
-+#define  PCAPR_NUM_CG			GENMASK(27, 24)
-+#define  PCAPR_TGS			BIT(28)
-+#define  PCAPR_CBS			BIT(29)
-+
-+#define NETC_PMCAPR			0x0004
-+#define  PMCAPR_HD			BIT(8)
-+#define  PMCAPR_FP			GENMASK(10, 9)
-+#define   FP_SUPPORT			2
-+
-+#define NETC_PCR			0x0010
-+#define  PCR_HDR_FMT			BIT(0)
-+#define  PCR_NS_TAG_PORT		BIT(3)
-+#define  PCR_L2DOSE			BIT(4)
-+#define  PCR_L3DOSE			BIT(5)
-+#define  PCR_TIMER_CS			BIT(8)
-+#define  PCR_PSPEED			GENMASK(29, 16)
-+#define   PSPEED_SET_VAL(s)		FIELD_PREP(PCR_PSPEED, ((s) / 10 - 1))
-+
-+#define NETC_PQOSMR			0x0054
-+#define  PQOSMR_VS			BIT(0)
-+#define  PQOSMR_VE			BIT(1)
-+#define  PQOSMR_DDR			GENMASK(3, 2)
-+#define  PQOSMR_DIPV			GENMASK(6, 4)
-+#define  PQOSMR_VQMP			GENMASK(19, 16)
-+#define  PQOSMR_QVMP			GENMASK(23, 20)
-+
-+#define NETC_POR			0x100
-+#define  PCR_TXDIS			BIT(0)
-+#define  PCR_RXDIS			BIT(1)
-+
-+#define NETC_PTCTMSDUR(a)		(0x208 + (a) * 0x20)
-+#define  PTCTMSDUR_MAXSDU		GENMASK(15, 0)
-+#define  PTCTMSDUR_SDU_TYPE		GENMASK(17, 16)
-+#define   SDU_TYPE_PPDU			0
-+#define   SDU_TYPE_MPDU			1
-+#define   SDU_TYPE_MSDU			2
-+
-+#define NETC_BPCR			0x500
-+#define  BPCR_DYN_LIMIT			GENMASK(15, 0)
-+#define  BPCR_MLO			GENMASK(22, 20)
-+#define  BPCR_UUCASTE			BIT(24)
-+#define  BPCR_UMCASTE			BIT(25)
-+#define  BPCR_MCASTE			BIT(26)
-+#define  BPCR_BCASTE			BIT(27)
-+#define  BPCR_STAMVD			BIT(28)
-+#define  BPCR_SRCPRND			BIT(29)
-+
-+/* MAC learning options, see BPCR[MLO], VFHTDECR2[MLO] and
-+ * VLAN Filter Table CFGE_DATA[MLO]
-+ */
-+enum netc_mlo {
-+	MLO_NOT_OVERRIDE = 0,
-+	MLO_DISABLE,
-+	MLO_HW,
-+	MLO_SW_SEC,
-+	MLO_SW_UNSEC,
-+	MLO_DISABLE_SMAC,
-+};
-+
-+/* MAC forwarding options, see VFHTDECR2[MFO] and VLAN
-+ * Filter Table CFGE_DATA[MFO]
-+ */
-+enum netc_mfo {
-+	MFO_NO_FDB_LOOKUP = 1,
-+	MFO_NO_MATCH_FLOOD,
-+	MFO_NO_MATCH_DISCARD,
-+};
-+
-+#define NETC_BPDVR			0x510
-+#define  BPDVR_VID			GENMASK(11, 0)
-+#define  BPDVR_DEI			BIT(12)
-+#define  BPDVR_PCP			GENMASK(15, 13)
-+#define  BPDVR_TPID			BIT(16)
-+#define  BPDVR_RXTAGA			GENMASK(23, 20)
-+#define  BPDVR_RXVAM			BIT(24)
-+#define  BPDVR_TXTAGA			GENMASK(26, 25)
-+
-+/* Definition of Switch ethernet MAC port registers */
-+#define NETC_PMAC_OFFSET		0x400
-+#define NETC_PM_CMD_CFG(a)		(0x1008 + (a) * 0x400)
-+#define  PM_CMD_CFG_TX_EN		BIT(0)
-+#define  PM_CMD_CFG_RX_EN		BIT(1)
-+
-+#define NETC_PM_MAXFRM(a)		(0x1014 + (a) * 0x400)
-+#define  PM_MAXFRAM			GENMASK(15, 0)
-+
-+#define NETC_PEMDIOCR			0x1c00
-+#define NETC_EMDIO_BASE			NETC_PEMDIOCR
-+
-+/* Definition of global registers (read only) */
-+#define NETC_IPBRR0			0x0bf8
-+#define  IPBRR0_IP_REV			GENMASK(15, 0)
-+
-+#endif
+ #define NETC_PEMDIOCR			0x1c00
+ #define NETC_EMDIO_BASE			NETC_PEMDIOCR
+ 
 -- 
 2.34.1
 
