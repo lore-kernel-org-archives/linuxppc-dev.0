@@ -1,82 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-18793-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18794-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 711C5109E54B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2026 05:57:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9EA7109E54B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2026 06:12:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fhChz0TfCz2xlM;
-	Thu, 26 Mar 2026 16:57:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774504626;
-	cv=pass; b=DqQsPpm61IGcEGUirEGFX+ltkeEARk0B/sOmOqg10qrjO4G3ld0MLbkSbBO+RanIhEcIzDLSnicMEeZk5bgju6JgYqVSTQzGvypkp6LzCydgs6E5jQKh3ogH9+KonfnxneasVmfxJ9DCo3I45FUdmDGpzyd6PV4NEVOMYquhTNTV4XpRzRFytoMe3ugX1bpzV01y7KCGSAWKVKBccZtEkn6Q4vHDgjglxSGK2MjUh9CpHYZaNiOaD4wrIeRr70QaclUh53b4aMiNEF5WAVrF2aTkBVVus23CBmn7z+yVO3fKulwloKilXWZbfl0PsovRBqw5uACNqBoVuGlQaYU+Ww==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774504626; c=relaxed/relaxed;
-	bh=s6rW0TV517vAvNS5s3RYdTceFSZ/Jz0VH7R8KKmSeaQ=;
-	h=From:To:Subject:Date:Message-ID:Content-Type:MIME-Version; b=Vcn+vcF60NV9EGTlWARUVZzGtezZ2qSSM6V79+kGv3xS6mD0NdQg1wYmiPwQkkjEdGoeErszhc8HxTVmg68MKXB0p0SUv7GmwX1l0C7KefhGlF6vJTHAQQMYvOrUuC7Ldb4uJLv5baNPmzAxlqB9NUphsG3vFBzJag4boiVkOCye+/G1vMpgeb9/OT8bI5N/TL3o25NpO6Vf3UHa55gj+qBnVIg+GuZnXUNQAFEKS73+ehd7RpQrUYYJB9CPz2Q3kEBCQaIQrB3wNmkTYgIQ/1ouXak3ALuKKMqkAiij2U7hJcDUr5hRPrSWM3q6Lfa5FOI560uNjRu57uqxP+OB5g==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=MRiHhlsT; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::1; helo=am0pr83cu005.outbound.protection.outlook.com; envelope-from=chancel.liu@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fhD2y2bnVz2xlM;
+	Thu, 26 Mar 2026 17:12:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774505562;
+	cv=none; b=EDBmpmSoFUJ3Eo7xCdDsNVucpD1Cd0NTE46siaIVlU9FYDwPQvudgdOOFhQ7ErKsI8QAGVo+pyGfLi9MebOAZoBXoPdtX7m6u9mrQP+d7PB9I31JNrc9Sxq/BIfNogYn9k2blHvsNhBa2R5n/Vu9bwQFb78LO0YNdnYONVfBv4l1yRSFh5mm2awBDtAa0W3c0IxTDRwOWjmDbdOBVIqLBlo/XUyrOJx7jKIyuGczXZ00DPwXEYSXiAFw3nKp3q3WqWVsWGeVyQy+xNdIhe6Urjxc31OYc0ha6Cp45cbso5Tx/NKn7tk3VOJJXMjn0pCp7n0afcTj1PRaV1oyvbG4Zw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1774505562; c=relaxed/relaxed;
+	bh=KeozJ0Yl4nEaPROBhBdaZoDtza9zntMECzpCTJXoTWk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=S9aDu4/tqsh5mnVJ0iJ0qXJ9jlXrw42OslCAfLtxDTFeoJXn2YTjhNRi5nD+mNfjH1KqpZP0G41546A//+LEmrEzOVdj8D5fvdgrvuo+fClVNJu3lBCg9yb+bth8z/+XhorKUYm0IPpBmfZCFAqXSUpg4J4iqn1P+COXNhiHGrk4DBwA7URyGfOl7xtolbAmVWChxWH84FE8AXdroTP4UcjkaCU8cguN55CNV2Gf4JCm8Rg62cc3YAHlMrB3YsEwg90TsumrK7RY+9P3Pzrh7wss8XWcAZR1sdtCbCr/2rVtGkdCDJDd1O2nGFg7O3/7QEmYCnVS0TgFMkr3XM+kbQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OzVITTsM; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=MRiHhlsT;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OzVITTsM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c201::1; helo=am0pr83cu005.outbound.protection.outlook.com; envelope-from=chancel.liu@nxp.com; receiver=lists.ozlabs.org)
-Received: from AM0PR83CU005.outbound.protection.outlook.com (mail-westeuropeazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhChx2Jnzz2xd6
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2026 16:57:04 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=nprFCOeF51hKmwPqldQyBJl2bbdvEMCG5LCiFaIi/HPP9H+YG1zsmlBGJjVTssxMJ9yJUtM2KQJlPz6uF3jbkreOsNYtfrP2VvAiHuVp5M2YEv+avnir+isLOEwBghRmFD7aIaVYuC/N79KpOFkzIuJ4NVfY73mgW7gNfwcbp0cQaEHH2ZHcfiLEevk/3YSFZcAPFbRraIsxpDIIS8f6CLXQ7QZqYaupZYFfZZfoPoZjAMhBFiqnDXC9bLN0/pLzqtC4a8xaE2gIotVlUEIKa4IWusVDlMjmNSRc97pZ3MHPfy4/FfQWZZKTBJZ5wJ2XIF3kBqdkDepdFjPVIOevJA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=s6rW0TV517vAvNS5s3RYdTceFSZ/Jz0VH7R8KKmSeaQ=;
- b=AFCjjtvUtlXXfadEcyDlVJdZMBUB7qvb8la19pGGPt1K05d+XUZrgD+b4tDuRfpBLpSOod03Qoh0IitRjyTfa0P6JtoYJDPpVTEGc66D3TQdd0GgK1IEhTSpWaiRy6GDIQo3SJSxnheXFGCtBuImXwOvqX94ZXHepLXbvkmpKtpjtp40cVNm5CBU0JlsacUXmiL7HLi3WV6u4vdTCRKQA7hk9D9+9cu9943SaY+6RfDzjWyBO/hLUsxKn8B3usyy+xRloBZPyfCIu/owxs48cGPY/ZaaV/kiMrd9GVYQtdX0Nel4Z5gCTigTKREWyxo3/j3LdxXx/JgF1OsGWhlnPw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=s6rW0TV517vAvNS5s3RYdTceFSZ/Jz0VH7R8KKmSeaQ=;
- b=MRiHhlsT4x7fThWjFZlt1HYQPyGscbad4fswO19sQSwrpjzPeBiEn3jSQBSymGWiccexncvDeHBDhbG3POTdhIP/tCnBRXmMdVkNE3k1o/uY7wI2ISyWsxqThyzhJTmkRla+oWBGnR+xn+A+xwU6hyIWxHOqb3IuZtmodrSis1xL6TbyV7+VC517y+yTPPpPYj5on94mZRWyaimM/89G/d1yjKLr+awm9QFJ+0HSjv3RX5fePFgTb3+S53UMthnWIKjTbK6UUW+QBOpguk+HFhrszfOw+SIQtXseLLA+veqScsKISvHIjLb2CH13TNHv7nMFvQ+MbQJk0an/hHb/yw==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Received: from AM9PR04MB8353.eurprd04.prod.outlook.com (2603:10a6:20b:3ef::22)
- by VI2PR04MB11195.eurprd04.prod.outlook.com (2603:10a6:800:291::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.20; Thu, 26 Mar
- 2026 05:56:36 +0000
-Received: from AM9PR04MB8353.eurprd04.prod.outlook.com
- ([fe80::46ae:f774:f04c:a1bc]) by AM9PR04MB8353.eurprd04.prod.outlook.com
- ([fe80::46ae:f774:f04c:a1bc%5]) with mapi id 15.20.9745.019; Thu, 26 Mar 2026
- 05:56:36 +0000
-From: Chancel Liu <chancel.liu@nxp.com>
-To: festevam@gmail.com,
-	nicoleotsuka@gmail.com,
-	lgirdwood@gmail.com,
-	broonie@kernel.org,
-	perex@perex.cz,
-	tiwai@suse.com,
-	Frank.Li@nxp.com,
-	s.hauer@pengutronix.de,
-	kernel@pengutronix.de,
-	linux-sound@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] ASoC: imx-rpmsg: Add DSD format support with dynamic DAI format switching
-Date: Thu, 26 Mar 2026 14:56:14 +0900
-Message-ID: <20260326055614.3614104-1-chancel.liu@nxp.com>
-X-Mailer: git-send-email 2.50.1
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: SL2P216CA0172.KORP216.PROD.OUTLOOK.COM
- (2603:1096:101:1b::18) To AM9PR04MB8353.eurprd04.prod.outlook.com
- (2603:10a6:20b:3ef::22)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhD2x1WV9z2xd6
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2026 17:12:40 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62Q3Chud669847;
+	Thu, 26 Mar 2026 06:12:00 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=KeozJ0
+	Yl4nEaPROBhBdaZoDtza9zntMECzpCTJXoTWk=; b=OzVITTsM0/u9BbOffqkS+r
+	5huYBRtoZcDsTShPCYoikLaIcnBo3EYqhgqunDneROmGADo85bUmTqKyT3c+TSXN
+	tRcOxORQiQhBFxKsFzaD1pqayidJGVNCl8Y6e2KKiukT6jGYorf6Y87VWU9Py6RB
+	jGy/35rIX+5xffbzvHshwfKMQdT2Kh0IQ3PaW+lPtzOXzLykTevVg+NGl7z7eYCQ
+	SaABQ3PCIoW0E8Z7simUn3Qi6cfgkHm0VrTX9T1sMqaeOJkrvu/IEiJ37ykOsuur
+	ldnLIbpTk7Hbqntzqt2pFjbVSfH1c7AKFmLR7GrpcG/JKacMTs8Wy7Hp2MRGbSoQ
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d1ktv2wqq-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 26 Mar 2026 06:12:00 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62Q1wAem026771;
+	Thu, 26 Mar 2026 06:11:59 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4d275m1n0n-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 26 Mar 2026 06:11:59 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62Q6BtKD49283394
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 26 Mar 2026 06:11:55 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1C72E20043;
+	Thu, 26 Mar 2026 06:11:55 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2D82820040;
+	Thu, 26 Mar 2026 06:11:51 +0000 (GMT)
+Received: from [9.123.5.233] (unknown [9.123.5.233])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 26 Mar 2026 06:11:50 +0000 (GMT)
+Message-ID: <2dc4d116-edea-4bef-b10a-e9a71c6e1594@linux.ibm.com>
+Date: Thu, 26 Mar 2026 11:41:50 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,137 +81,178 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: AM9PR04MB8353:EE_|VI2PR04MB11195:EE_
-X-MS-Office365-Filtering-Correlation-Id: 02fd1920-f75f-4e0b-180e-08de8afc70d3
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|52116014|7416014|376014|19092799006|1800799024|366016|38350700014|921020|56012099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	Dv6+bIyZO+PLtpUThtDtdLSsUSysoQNQC89C+gLRY17nakyD6eAArO4LGNGp/5Rsu3SswcJxlBEFjRwjz/F+HsUFQNhA6DsE0PeAIUPWK5S8lJf0tw658xKSIsXNTBqKIeqEHiYLP8LvQHFUI5FZ5h2u/kxHlw8VKQTO40DbG0oj1Qn7Tjqg9O2/F4Xa6arx1cgkvHdsOUX5wwdJA7fIyNAwAHXxlIXFJayto+DUNE9tHRWmQWSCYZxZmlGPDRP2N47Gcxuet4+YYYabaYrttRqFx63jQFR7brRaexQfNKlj6uaXgKc3oHH1dINLw2fm8hYKiA3OaDRtQLSLjuvi/zeTIGYchr2o4urNcPj/dp3GxKvIO+nDh7eM//V1UZzG7+myylfzLaP9oRiPDQErRBy5HgINbAOH4NWjake1mvSerWi01cANQZGA6aOCQzrdQyFwu1yWwuSJs1Gbq61nhhODxn7uoJlEQvseg9BmSXds6Eb9CKHEJgIhlIGH5gqAe9o66Jesv0hp/CdQcjG6SXQ7liMytxyGwvNAGesMquuiZLkMTVlHiuyzNaT8dzEBmyRL3Ihsh9EuPh59oSEnSb/RY02gYLMRWPSflzlRyoicELiRipnA8DfeQiNUOZ9WKHYlycOJXFWCMgujYWq+U3n6CkYrzYQlGZ/kGzHdzoHHmfnVZzomv2AqeglKdiGxBpYnOAIxHz4pZwPNY3Q8USjpY24uidxIdZICh3yWapQqbKgyyEwP5xncDsOFLpOTEx/33obSxuFOTfPRJ+Aj85bkfiBE58hzp9/IaH9Q7lvbMK4wr8Nukg2UViKLkUoM
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM9PR04MB8353.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(52116014)(7416014)(376014)(19092799006)(1800799024)(366016)(38350700014)(921020)(56012099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?tYXoXl85f7RcrLsZJGfuZwEZFYqccKIXxv/KumfzODa5rDMW/gZs67j74jG8?=
- =?us-ascii?Q?oFjGdn3EGoUl7yuAH/ecyI1qqrbQC5sDDXfMXgGcx1y2nUA3Wf0UQ/YxiTj7?=
- =?us-ascii?Q?fgHshDneZMXLCBChNAv/I69Grf8nZsLNud91axUwLi0DjwP9QvroyYRDCeWs?=
- =?us-ascii?Q?LAlELVTZKHcHfAAONcUPbW+Fks2lizTBQFqKf9dBly7TelhwVSLl3zz9dEJ+?=
- =?us-ascii?Q?QXIcW+RphM2Jakg9QsldUiKlTOC2qQBjYKExmLbPQ0c3HlVpSJ8Aqn79Mugd?=
- =?us-ascii?Q?Ms5shn+WMmmV7So4gRlgHNBmL8ctFLeadp8KB2PczCioXszCgjm9DoKXrmaZ?=
- =?us-ascii?Q?fJ4mGA5WejIQADTy854Xa34cil1/dUX1iZioKagXnbHLfcXasN9Ksy1RWfbX?=
- =?us-ascii?Q?gRi/IOkTmSBHSC/sAGVW1lpTZWAKLmx5ytcYAR0gBpDX6/jZ6Q4otvASlXDv?=
- =?us-ascii?Q?V4prd38eOCqNtaGsNgdUwtZNSNZ+24x1WQ/n8y7kiOFuPKz8viPONvLN08ZR?=
- =?us-ascii?Q?jWLaS/KqfwSkgjwS7EeLSdtpteMvns9qOU/qeWXQ5RJ7Ti/Jd52jIrewhTUF?=
- =?us-ascii?Q?Rz7amcJxmIe0O56iXAReAtlLjMbhT/eB5du0Y/kz4D8W0jNUy0fS7tzmgyfE?=
- =?us-ascii?Q?CUqRANZxInl3jLD4abIZMLAR/4OrTSvZGpJS6h4ItAexV13xo+lXdTGTJEBe?=
- =?us-ascii?Q?1W168AiI+euB3VP76Pzd1SfUFv5/gef1SzLpwn7WsrJLVsEZdcmsjtlDjbfj?=
- =?us-ascii?Q?PoVBrdxJPlotR7+jlCariIp77vr5wxVF7HwT/iVPoPsocZ29rWISpQE1Iqmg?=
- =?us-ascii?Q?q8TNpiVdAa9XSU9HI9r3GEOz51F+nK/BA5GhHoYkXlMhRumxGYHgfDIDLaSa?=
- =?us-ascii?Q?Ug+yl/NgLRLGDwiAAg9Js/Q2EOCkbY2v/FmV/BOeLWxEil75KVy1Frlzjpa5?=
- =?us-ascii?Q?W7tD+3XpAoRSXOVkTAyxrCXXZ0iQK5fGtAa6kSTbfMS0mK6G0jjffAVTGzzH?=
- =?us-ascii?Q?a/0rztlu3t4bQzymPnLVpAoX/bPXiAyqFHHS7R1carhx7fRbalngk4Vfx6aO?=
- =?us-ascii?Q?DjoVDeSkavZWYcuucI4a33xipgBsF9htMvpOFgNXRYQZHq2Av2ANvqVTj5ud?=
- =?us-ascii?Q?1bb1IK4huqUfLGFeeqto8Ja4YxKCZ6tkNglAa9lXFjlm3num2ILKrH8Liv6C?=
- =?us-ascii?Q?+Ax9Si2HtkhWH5+gyqmnYNOoyyx2yFwSwNL/voPpwE1BRqkQGp7maSZIOgnI?=
- =?us-ascii?Q?X6sRMMwETA3QcdNihUmBQKJLvkNk+GYV2ifdUlup0x1k/OHEx9IFm7J3qoD0?=
- =?us-ascii?Q?Vw/HbKBkDbfaOBkHmN5IMoAcnhU1fAiEH6/UBay9W9CQKktmrVwpzHb8lYK0?=
- =?us-ascii?Q?K8UBvIXpKdpECM0K25WW1RwQW4+GhK36HfQY3pYbcSCijbbgw3ioggdeABGX?=
- =?us-ascii?Q?FysBM62IarUTMC7P7ZwBzjnRvXM/XuQ8ElHX4MWSlcZjITC+g1UbrOx7T8ZD?=
- =?us-ascii?Q?AYRsnPaR5WKFKXahJFPTg2xkgAooI9CVdi5bj0tv6GOMaZpKTtlBhOtZ5+tC?=
- =?us-ascii?Q?Jt6ZRkt4WhDaV2ZeZFhvg0DhAh+4DHETd65Zraeof6Ncz0VqVWdrp+x40HjH?=
- =?us-ascii?Q?sjHP1UqzhyjtL2EeG12Fdd3ppBcvKz8kn6Ptspn8Tz6IaFqXm8peZCrXFP9j?=
- =?us-ascii?Q?djQkEukiyVMRi9CzHD8Li0Z1tVqQrpbpi+j9N3E+goey4kZr67pFEj624zPc?=
- =?us-ascii?Q?nB7XEi/nJQ=3D=3D?=
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 02fd1920-f75f-4e0b-180e-08de8afc70d3
-X-MS-Exchange-CrossTenant-AuthSource: AM9PR04MB8353.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Mar 2026 05:56:36.3447
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: M4AN2BQpT2vUZ+DELpHMfeqbm9rEvQQ9/1UIGHInvWEVkexcmlNvq7vAOPcl7P9yFbuDUA84J8TV+Sok0HBRdQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI2PR04MB11195
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 00/17] Paravirt CPUs and push task for less vCPU
+ preemption
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: peterz@infradead.org, mingo@redhat.com, vincent.guittot@linaro.org,
+        juri.lelli@redhat.com, tglx@linutronix.de, yury.norov@gmail.com,
+        maddy@linux.ibm.com, srikar@linux.ibm.com, gregkh@linuxfoundation.org,
+        pbonzini@redhat.com, seanjc@google.com, kprateek.nayak@amd.com,
+        vschneid@redhat.com, iii@linux.ibm.com, huschle@linux.ibm.com,
+        rostedt@goodmis.org, dietmar.eggemann@arm.com,
+        christophe.leroy@csgroup.eu, kernellwp@gmail.com
+References: <20251119124449.1149616-1-sshegde@linux.ibm.com>
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+Content-Language: en-US
+In-Reply-To: <20251119124449.1149616-1-sshegde@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: ExTMGBaEW7_hNXIHEvXDLOpM53XgsmUs
+X-Authority-Analysis: v=2.4 cv=aMr9aL9m c=1 sm=1 tr=0 ts=69c4ce30 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8 a=-R1cmi0paiBohlNiqWMA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzI2MDA0MiBTYWx0ZWRfX6Y1flZ15GMG4
+ lScUZzpEKAXUmuxudSWKkn7wM8g9/yk3b3GweYOW1jb4LplqGznjawEE1IVhTrr2Upj5hxMY2Py
+ w8fsEIAUw5gvI/wykiVty12iW9XEQMUtttelkazaKyE2itFNUuUcuHcjrqX3XRCFtpNEiwQ4bvL
+ UXc56/Jw/+Wa+Z16cRUIxrqp2HzqMWHZMoH/bJyAJYyHQfR8F7sGJAJox3KsKttT7gv0VEnrkl+
+ Rq88QWm6ToX8fwNwhIX5Q2Vw0qh5lkBuRnUgycMw7Id8B/teFwMUJ6+TjU54vg8+NyITwFsw32m
+ nNBUx7BuZJeCAyqrmPRQrjtfoBclMLoVCPTrAmp4yCxPu+xlR3JIpUPWCtmoXpHmXFk1J5grw1a
+ ZGm89EvufdsTA8xAWmUeLBBHIfUa1JLE28g6Xrai6y4bQXhlhl7JhFLG/jKJhyTvQnknOIrMBQ3
+ pJiCws7jItH/ZTuBl+w==
+X-Proofpoint-GUID: aY_ea5AMmaj1IrGWZQAg078R_XoK0Jcr
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-03-26_02,2026-03-24_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 lowpriorityscore=0 adultscore=0 impostorscore=0 malwarescore=0
+ suspectscore=0 phishscore=0 priorityscore=1501 bulkscore=0 clxscore=1015
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603260042
 
-Add hw_params callback to dynamically switch DAI format between I2S
-and PDM based on audio stream format. When DSD formats are detected,
-the DAI format is switched to PDM mode.
 
-Signed-off-by: Chancel Liu <chancel.liu@nxp.com>
----
- sound/soc/fsl/imx-rpmsg.c | 48 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 48 insertions(+)
 
-diff --git a/sound/soc/fsl/imx-rpmsg.c b/sound/soc/fsl/imx-rpmsg.c
-index 76a8e68c1b62..40e0043cfe15 100644
---- a/sound/soc/fsl/imx-rpmsg.c
-+++ b/sound/soc/fsl/imx-rpmsg.c
-@@ -30,6 +30,53 @@ static const struct snd_soc_dapm_widget imx_rpmsg_dapm_widgets[] = {
- 	SND_SOC_DAPM_MIC("Main MIC", NULL),
- };
- 
-+static int imx_rpmsg_hw_params(struct snd_pcm_substream *substream,
-+			       struct snd_pcm_hw_params *params)
-+{
-+	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-+	struct snd_soc_dai *codec_dai = snd_soc_rtd_to_codec(rtd, 0);
-+	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
-+	snd_pcm_format_t format = params_format(params);
-+	struct device *dev = rtd->card->dev;
-+	unsigned int fmt = rtd->dai_link->dai_fmt;
-+	bool format_is_dsd = false;
-+	int ret;
-+
-+	switch (format) {
-+	case SNDRV_PCM_FORMAT_DSD_U8:
-+	case SNDRV_PCM_FORMAT_DSD_U16_LE:
-+	case SNDRV_PCM_FORMAT_DSD_U16_BE:
-+	case SNDRV_PCM_FORMAT_DSD_U32_LE:
-+	case SNDRV_PCM_FORMAT_DSD_U32_BE:
-+		format_is_dsd = true;
-+		break;
-+	default:
-+		format_is_dsd = false;
-+		break;
-+	}
-+
-+	if (format_is_dsd)
-+		fmt = (rtd->dai_link->dai_fmt & ~SND_SOC_DAIFMT_FORMAT_MASK) |
-+		       SND_SOC_DAIFMT_PDM;
-+
-+	ret = snd_soc_dai_set_fmt(cpu_dai, fmt);
-+	if (ret && ret != -ENOTSUPP) {
-+		dev_err(dev, "failed to set cpu dai fmt: %d\n", ret);
-+		return ret;
-+	}
-+	ret = snd_soc_dai_set_fmt(codec_dai, fmt);
-+	if (ret && ret != -ENOTSUPP) {
-+		dev_err(dev, "failed to set codec dai fmt: %d\n", ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct snd_soc_ops imx_rpmsg_ops = {
-+	.hw_params = imx_rpmsg_hw_params,
-+};
-+
- static int imx_rpmsg_late_probe(struct snd_soc_card *card)
- {
- 	struct imx_rpmsg *data = snd_soc_card_get_drvdata(card);
-@@ -135,6 +182,7 @@ static int imx_rpmsg_probe(struct platform_device *pdev)
- 	data->dai.dai_fmt = SND_SOC_DAIFMT_I2S |
- 			    SND_SOC_DAIFMT_NB_NF |
- 			    SND_SOC_DAIFMT_CBC_CFC;
-+	data->dai.ops = &imx_rpmsg_ops;
- 
- 	/*
- 	 * i.MX rpmsg sound cards work on codec slave mode. MCLK will be
--- 
-2.50.1
+On 11/19/25 6:14 PM, Shrikanth Hegde wrote:
+> Detailed problem statement and some of the implementation choices were
+> discussed earlier[1].
+> 
+> [1]: https://lore.kernel.org/all/20250910174210.1969750-1-sshegde@linux.ibm.com/
+> 
+> This is likely the version which would be used for LPC2025 discussion on
+> this topic. Feel free to provide your suggestion and hoping for a solution
+> that works for different architectures and it's use cases.
+> 
+> All the existing alternatives such as cpu hotplug, creating isolated
+> partitions etc break the user affinity. Since number of CPUs to use change
+> depending on the steal time, it is not driven by User. Hence it would be
+> wrong to break the affinity. This series allows if the task is pinned
+> only paravirt CPUs, it will continue running there.
+> 
+> Changes compared v3[1]:
+> 
+> - Introduced computation of steal time in powerpc code.
+> - Derive number of CPUs to use and mark the remaining as paravirt based
+>    on steal values.
+> - Provide debugfs knobs to alter how steal time values being used.
+> - Removed static key check for paravirt CPUs (Yury)
+> - Removed preempt_disable/enable while calling stopper (Prateek)
+> - Made select_idle_sibling and friends aware of paravirt CPUs.
+> - Removed 3 unused schedstat fields and introduced 2 related to paravirt
+>    handling.
+> - Handled nohz_full case by enabling tick on it when there is CFS/RT on
+>    it.
+> - Updated helper patch to override arch behaviour for easier debugging
+>    during development.
+> - Kept
+> 
+> Changes compared to v4[2]:
+> - Last two patches were sent out separate instead of being with series.
+>    That created confusion. Those two patches are debug patches one can
+>    make use to check functionality across acrhitectures. Sorry about
+>    that.
+> - Use DEVICE_ATTR_RW instead (greg)
+> - Made it as PATCH since arch specific handling completes the
+>    functionality.
+> 
+> [2]: https://lore.kernel.org/all/20251119062100.1112520-1-sshegde@linux.ibm.com/
+> 
+> TODO:
+> 
+> - Get performance numbers on PowerPC, x86 and S390. Hopefully by next
+>    week. Didn't want to hold the series till then.
+> 
+> - The CPUs to mark as paravirt is very simple and doesn't work when
+>    vCPUs aren't spread out uniformly across NUMA nodes. Ideal would be splice
+>    the numbers based on how many CPUs each NUMA node has. It is quite
+>    tricky to do specially since cpumask can be on stack too. Given
+>    NR_CPUS can be 8192 and nr_possible_nodes 32. Haven't got my head into
+>    solving it yet. Maybe there is easier way.
+> 
+> - DLPAR Add/Remove needs to call init of EC/VP cores (powerpc specific)
+> 
+> - Userspace tools awareness such as irqbalance.
+> 
+> - Delve into design of hint from Hyeprvisor(HW Hint). i.e Host informs
+>    guest which/how many CPUs it has to use at this moment. This interface
+>    should work across archs with each arch doing its specific handling.
+> 
+> - Determine the default values for steal time related knobs
+>    empirically and document them.
+> 
+> - Need to check safety against CPU hotplug specially in process_steal.
+> 
+> 
+> Applies cleanly on tip/master:
+> commit c2ef745151b21d4dcc4b29a1eabf1096f5ba544b
+> 
+> 
+> Thanks to srikar for providing the initial code around powerpc steal
+> time handling code. Thanks to all who went through and provided reviews.
+> 
+> PS: I haven't found a better name. Please suggest if you have any.
+> 
 
+Sorry for the long delay in coming with next steps. Largely it was due to me
+not have worked on it, partially due to lack of system being available.
+
+I have been wondering how to proceed for next version. Your comments are highly
+appreciated.
+
+- One of the idea vincent's suggested was to use CPU Capacity.
+   I made poc[1] around it and it works, But it doesn't seems to efficient
+   for me. The reason being,
+   - in sched_balance_rq it would be better to not to spread load into a
+     CPU marked as paravirt as sched_tick would trying the same thing, specially
+     for active_balance.
+   - Would need a notion of which CPUs are marked as not be used. Computing them
+     in sched_balance_rq is going to be costly.
+   - So, if we are going to need a cpumask which maintains that state. If have that cpumask
+     already, CPU CAPACITY need not be changed. There will be separation between the two.
+     So that they won't fight with each other IMO. Feel free to correct me.
+
+- I have been thinking, the steal time is generic property across archs. why have the
+   arch specific handling, when it could be in generic code. I know CPU numbers could be
+   tricky, but how about having steal time handling governers. Default governer would take
+   out last set of cores. (I still need to figure out splicing numa across NUMA nodes)
+   i.e in sched_tick, we periodically call a schedule_work to handle the steal time, if steal time
+   is greater than configurable threshold step up/down approach can be taken. (same as current
+   powerpc logic)
+
+- Regarding the cpuset way, it would still need sched domain rebuilds, on large systems
+   i think it is still expensive to do. Though steal time changes are not that frequent,
+   it would be better if the infra is lightweight. Also, different cgroup version are there,
+   I don't know how to fit into all those cases.
+
+- I went through the cover-letter of "Semantics-aware vCPU scheduling for oversubscribed KVM",
+   - My take is this would help reduce the context of lock holder preemption as it aims to
+     reduce the steal time by stacking the tasks on lesser set of CPUs. Once the lock holder runs,
+     it would disable preemption and run to completion.
+
+- Debug some of the cases discussed at LPC. schbench regression was gone after
+   modifying it. Hackbench had in some cases regressions. Setting up the systems to do.
+   Let me see if i can re-create that in powerpc
+
+- I still need to figure out irq related stuff. How to force or migrate irq from
+   CPU's marked as paravirt. irqbalance is one thing, but how to do so when irqbalance
+   is not running.
+
+- How about the name as "usable" CPUs. ??
+
+
+[1]: https://lore.kernel.org/all/b8d6d83c-00d8-4b66-8470-62cc528e1d6b@linux.ibm.com/
+[2]: https://lore.kernel.org/all/20251219035334.39790-1-kernellwp@gmail.com/
 
