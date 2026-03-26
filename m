@@ -1,91 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-18839-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18840-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFDAD10AB82A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2026 22:17:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3AADA10AB82E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2026 23:14:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fhdRv73Wkz2yY0;
-	Fri, 27 Mar 2026 09:17:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774563435;
-	cv=none; b=YqhIRu2ZoWFDiC+P7oQPGOukXiuUoyJ57dztAZdII1ZTFc2PxRDiB+OhR4WZrvpf5wXZZT3D0meSASdRCVSGh9nvhjwbVTWJ/N5SYZJhos7wX10cwZh+fxJEDDtuGWE4v9Abk1FtmKaa9Y25sLQyySentwER/mfnb9SwQhdsi4PTdci8U0OfMzRWQ+G/y1DMK8zdtu0oKWPKNZJApaDzMZsKFrvreJG1SJ6Ue256kFZrzq5vj5A73srH6OKZLNiJF0II2aXtURCGvVRXoVQfOuStBLuVDZzBReAQYHLQQDHZKmsZMRCy1xrmYOyjWzPCVTtK/o67QbcIn0fd6amaKw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fhfjV4v0fz2yY0;
+	Fri, 27 Mar 2026 10:14:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774566846;
+	cv=none; b=U++DYASIzN6Cpj/3fkH2tB9YSgQBb+zwOBYgjQG1nuDbn1ZRIypLpmpohlFsr2meQeQB+IMPVZEYbF9L6IaWfiGK0WP+Zlc9Bg2ZMtR54DEAUo2MH1ZBd1TljMS2pUB7/zF0lfqB9RIWKf4OKXoSpECZT1ANjNYXgHdv1p8c96EkJpDiQn6Q/scOgl4ZGfTdXRbqu9CHZ2Ra9brOE/Hi1YJQVLDUsLell7IS1PKpRLTHJX8j2+u/Tjma6HZmvZePAvpOsS6mOeYpNXUJ6VEMjN09aGHVFNyWkcmGZCVyd66IPUgXQ2iFlOf0VVJyobLRBm+GH6ewqzPOVK1vg//38w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774563435; c=relaxed/relaxed;
-	bh=glFjKxjAo1VGzHup/HsXziAyDLKn89fs6Fyq68wQjAU=;
+	t=1774566846; c=relaxed/relaxed;
+	bh=+SeDlASa9cDmF7G4HWfYATDTUPMhqXhnVSHdkPLdhgs=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=czf4GR+A09JSNZ9ENzUKtEFPjcIxRsGFkbedojuR7CWXMOwjGp0pg4wFAjflS7hCE1X9iibpKiOf+9TyN7HWXKo/pZbmVIEdTo4VF9nNmI1EI5zE+Me0I5U323W2T2HDtw11UXR6/FbOCP75g6uZ39ec2nHm2idoVZ//ukVbP5aiNBGzL1NrsYcp4NI0IjosNu422SHsqrmVq8cTtKRBPKhQtxqiSIZ0qgcn4M+cbJgdCqG6UBsOWgRXRSeUnGPi5mfuszrKlDkH5hJrn3TiXQRQyFqQYtTXpHPZPlnfUip9vUVuZzSncXB3VhKQev7Srt6/5Yr2fpojOOFyp7guzA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=U3Ik8hLX; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=ebGHUGmON9wlpazUW2Sf16SJ0sZYI3gT6oEVw5mN4qJR0oxypZD9d9CfNpRfbPb8BsF2TAaBBDCvGfWfYK4XLzq7s9XsjmAUGLfS79bguwTwrotNWO3+iZ4pcUQxo5UcaNGV7CrBQ+/8cqAmir7G67eLQkkGruJRQNDnGf3C3K+g3ws/yt4af9S+pxugPBUPV0IqWE5svWMgUsGWuPPVsRRyzT/i5kKOP7tQV/firAg4NYwcS/A9EsVqLs22g22o3mVO4+fPp4Wx/FPKsx6EUNCDz9SmDWkfyplY+BZYhVeXTw+eTuxEO415+v33XgibHDnJlcLSDJlM3L3TM+vyXg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NNBLxSpT; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=namhyung@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=U3Ik8hLX;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NNBLxSpT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=namhyung@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhdRt3Wc4z2yLG
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2026 09:17:13 +1100 (AEDT)
-Received: by mail-pj1-x102b.google.com with SMTP id 98e67ed59e1d1-35c0e7b751aso1450756a91.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2026 15:17:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1774563431; x=1775168231; darn=lists.ozlabs.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=glFjKxjAo1VGzHup/HsXziAyDLKn89fs6Fyq68wQjAU=;
-        b=U3Ik8hLXqtEaqZK9OG9dUsz6IKV2Xdt/QXdh4EA/XBghCkV3s1erUbtXuvOGdTIRl7
-         w6wBTlORV/beAQ8Cs5a94Z7RwQkiNzAP3oWBl/9g4L4YIz2M75sNV66bR6Le1nFDwVNJ
-         GZavmC78QyvYoniRrLrGgR/4klo2GO98d9sp8TzkNC3PLQVFiXn29cfzfCHU78aZ2w9t
-         8r4n7Cc6nBElm/XEUpUUxRb0Og8fje5EqPFQs4hQE91gqX76ejaUkIQF2VEYbETsHJKZ
-         1QQjCTdvIShSP7AeKyk8hoZAPbmtgq5qbmIOuJETlsjHLKNyUtEm1xtEEFgK+z4TeJ6B
-         UWFA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774563431; x=1775168231;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=glFjKxjAo1VGzHup/HsXziAyDLKn89fs6Fyq68wQjAU=;
-        b=JNA2s9Dgo3A/Tggf8LrhjfNG10UjhhqHIvBASfbXLURHsl8TLoo+tVJXmS1GBcmA2V
-         3mxJyPnIwusBhe5mAOT54pkrAEg4T+40xeaREv3+WRq7shLuPbSvSZp4oaSQT59Kumc8
-         NMueA9pULyBP+8GkMmyM8WLU439KD8JWkamp47NytfuCGj/vRUCj0pSA1hJ4JVT0dLvU
-         qa9VLE9ED/Qm2sL6HkgEwiP6/WE1kevzp7QPpdSUD3ga9vrQc0hkzKh4kis1GZDB9qq8
-         cfHexOo6sHlDGm+v1Z6J+E9SC4RIjHOd+KS0OBvFyf+ceWc/vWF9s8dvmcfTnM3i+Bmw
-         HTyg==
-X-Forwarded-Encrypted: i=1; AJvYcCU36TzsCp8k2t19Fah0FoSRO2MFUQ+JFnkHWgm7Ece/dcGldb5SREnhoI+HQaJfkj377oJyxJgKIZPvYiE=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyXkyQVbhrsAZFuiVsHuP5sjsK3K+ZBCFdDqh6E01cMqC8QBkYI
-	VWTgAvjLgvXp1gOgTd2v1W6fAoIJgx+WmwPZXPFz47PTFdDYCdCQ32bS
-X-Gm-Gg: ATEYQzyjxLnMxYzhiC3zK7ZWUzLQBxwmQ7W/BIlEDycrLxd5oX4Td5fyPNi8Tut7u7v
-	clp/Kuf+yWU6YthKl+k963wxFTPi/AyI+ZugL9ocYCyRFj2UfNYMAs4syReha8YQv/9jzYeT9cO
-	0BvKpuSujpW4v6hqDD8lUrDWibeGBHMVUE4BmcTQdv/GCaEH4i/S0FkaKw6SPjsdEyttL3NEl/D
-	ZhEBpMfk74FYny+3CWCzUp3v8VhbHffQLLoj75DDe/SPXho6NXlihkFn2TrhKh6+6EEMSznKv1y
-	o9mherOzH8sbvHcRON/HACGHCIvT6siNym/54F0KE3YhHto4WxZat+Kk8zXi3y8mVSoERAcbofX
-	sTGC/XuMIPHmnIUAnpy4pr60Ot8Zd1RvqmA/hUMVx9rgBZA7MrL/NANJacDwAUnQIcjwGUQOYxW
-	m3h5IfqZxwcN4pIQFsWeis5DP3JNr9+2iO1B8AkP/rphJG3Ip791ouPLNAiS2Nrl0cKXzQfQ==
-X-Received: by 2002:a17:90b:5383:b0:35b:e4d5:dc6f with SMTP id 98e67ed59e1d1-35c2fff1691mr193223a91.10.1774563430637;
-        Thu, 26 Mar 2026 15:17:10 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.160.14])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35c2d8d47c6sm199900a91.1.2026.03.26.15.17.00
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 26 Mar 2026 15:17:09 -0700 (PDT)
-Date: Fri, 27 Mar 2026 03:46:58 +0530
-From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>, ojeda@kernel.org, 
-	aliceryhl@google.com
-Cc: linkmauve@linkmauve.fr, ojeda@kernel.org, boqun.feng@gmail.com, 
-	gary@garyguo.net, bjorn3_gh@protonmail.com, lossin@kernel.org, 
-	a.hindborg@kernel.org, aliceryhl@google.com, tmgross@umich.edu, dakr@kernel.org, 
-	corbet@lwn.net, mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, 
-	peterz@infradead.org, jpoimboe@kernel.org, jbaron@akamai.com, rostedt@goodmis.org, 
-	ardb@kernel.org, rust-for-linux@vger.kernel.org, linux-doc@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V6 0/3] Rust support for powerpc
-Message-ID: <acWugN2jUVK0e314@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <20260210090023.2587534-1-mkchauras@gmail.com>
- <51269463-8538-4149-a3f3-156a5c4d49b4@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhfjT4JX7z2xSG
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2026 10:14:05 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 01F0060054;
+	Thu, 26 Mar 2026 23:14:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 114F7C116C6;
+	Thu, 26 Mar 2026 23:14:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774566841;
+	bh=u4RJ9O9+gfXzZdgVUzGMPLSaeyo9wy6XkYU3+iZapro=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=NNBLxSpT8m0Y225KbDt7EmVCPTEJwk2vNx3zJHGXsbiR+NmUXZTrtwzcuxSNoB1Pw
+	 M89Pj6iIuSYR69cZ0n3Lk1lPbj+UH/ZHc91/BhZRVcyBbjV1E4de/ciEWpQNpOGyMF
+	 jTUsmOtr+10btwiudAeOjdRWNGx5sr8KzH/1Jp+tw9EhgUrMx0urtd+c1hJpPLMurx
+	 UqsNISL/4aMr5tx02hePlxltfXaASI0ShUBw1Dj58I4KYTkV6dHraA7RNTmFBhcSO7
+	 t1/aXIzRHcYC8gn13U3DbiO+X7JAIWkEi6qcM3RydJ90aOJXTERcs2hICJFIotMb9h
+	 hdeintXqns3Tg==
+Date: Thu, 26 Mar 2026 16:13:59 -0700
+From: Namhyung Kim <namhyung@kernel.org>
+To: Athira Rajeev <atrajeev@linux.ibm.com>
+Cc: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
+	vmolnaro@redhat.com, mpetlan@redhat.com, tmricht@linux.ibm.com,
+	maddy@linux.ibm.com, irogers@google.com,
+	linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	hbathini@linux.vnet.ibm.com, Tejas.Manhas1@ibm.com,
+	Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com
+Subject: Re: [PATCH V2] tools/perf/tests: Update test_adding_kernel.sh to
+ handle proper debuginfo check
+Message-ID: <acW9tz0KZWgaJjTV@google.com>
+References: <20260323122424.88068-1-atrajeev@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,214 +70,144 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <51269463-8538-4149-a3f3-156a5c4d49b4@linux.ibm.com>
+In-Reply-To: <20260323122424.88068-1-atrajeev@linux.ibm.com>
 
-On Wed, Mar 25, 2026 at 01:59:55PM +0530, Madhavan Srinivasan wrote:
+On Mon, Mar 23, 2026 at 05:54:24PM +0530, Athira Rajeev wrote:
+> Perf test perftool-testsuite_probe fails as below:
 > 
-> On 2/10/26 2:30 PM, Mukesh Kumar Chaurasiya (IBM) wrote:
-> > Enable experimental rust support for ppc64le and ppc32be. The patch for
-> > ppc32 has been provided by Link Mauve[1] and ppc64le support[2] has been
-> > merged over it. ppc32 needs some toolchain fixes mentioned in the patch
-> > `rust: Add PowerPC support` and the discussion for that is done here[1].
-> > 
-> > This has been tested on powernv9 hardware and power10 pseries qemu. I
-> > I request Link to test the ppc32 part as i don't have a hardware to test
-> > it out.
-> > 
-> > [1] https://lore.kernel.org/all/20260204030507.8203-1-linkmauve@linkmauve.fr
-> > [2] https://lore.kernel.org/all/20260204042417.83903-1-mkchauras@gmail.com
+>  Regexp not found: "\s*probe:inode_permission(?:_\d+)?\s+\(on inode_permission(?:[:\+][0-9A-Fa-f]+)?@.+\)"
+>  -- [ FAIL ] -- perf_probe :: test_adding_kernel :: listing added probe :: perf probe -l (output regexp parsing)
+>  -- [ PASS ] -- perf_probe :: test_adding_kernel :: removing multiple probes
+>  Regexp not found: "probe:vfs_mknod"
+>  Regexp not found: "probe:vfs_create"
+>  Regexp not found: "probe:vfs_rmdir"
+>  Regexp not found: "probe:vfs_link"
+>  Regexp not found: "probe:vfs_write"
+>  -- [ FAIL ] -- perf_probe :: test_adding_kernel :: wildcard adding support (command exitcode + output regexp parsing)
+>  Regexp not found: "somenonexistingrandomstuffwhichisalsoprettylongorevenlongertoexceed64"
+>  Regexp not found: "in this function|at this address"
+>  -- [ FAIL ] -- perf_probe :: test_adding_kernel :: non-existing variable (output regexp parsing)
+>  ## [ FAIL ] ## perf_probe :: test_adding_kernel SUMMARY :: 3 failures found
 > 
-> Could see these build issues with the Rust patchset in the compilation of
-> powerpc-next-test
-> This happens when compilation happens only with few threads
+> Further analysing, the failed testcase is for "test_adding_kernel".
+> If the kernel debuginfo is missing, perf probe fails as below:
 > 
-> # rustc --version
-> rustc 1.94.0 (4a4ef493e 2026-03-02)
+> perf probe -nf --max-probes=512 -a 'vfs_* $params'
+> Failed to find the path for the kernel: No such file or directory
+>   Error: Failed to add events.
 > 
-> ....
->   EXPORTS rust/exports_core_generated.h
->   BINDGEN rust/bindings/bindings_generated.rs
->   BINDGEN rust/bindings/bindings_helpers_generated.rs
->   CC      rust/helpers/helpers.o
->   EXPORTS rust/exports_helpers_generated.h
->   RUSTC L rust/compiler_builtins.o
->   RUSTC L rust/ffi.o
->   RUSTC PL rust/libproc_macro2.rlib
-> error[E0464]: multiple candidates for `rmeta` dependency `core` found
->  --> rust/proc-macro2/marker.rs:4:5
->   |
-> 4 | use core::marker::PhantomData;
->   |     ^^^^
->   |
->   = note: candidate #1: /root/.rustup/toolchains/nightly-powerpc64le-unknown-linux-gnu/lib/rustlib/powerpc64le-unknown-linux-gnu/lib/libcore-951759db375eea0c.rmeta
->   = note: candidate #2: ./rust/libcore.rmeta
+> skip_if_no_debuginfo has check to handle whether debuginfo is present
+> and the testcase checks for debuginfo since this :
+> commit 90d32e92011e ("tools/perf: Handle perftool-testsuite_probe
+> testcases fail when kernel debuginfo is not present")
 > 
-> error[E0119]: conflicting implementations of trait `PartialEq` for type
-> `fallback::Ident`
->    --> rust/proc-macro2/fallback.rs:875:1
->     |
-> 869 |   impl PartialEq for Ident {
->     |   ------------------------ first implementation here
-> ...
-> 875 | / impl<T> PartialEq<T> for Ident
-> 876 | | where
-> 877 | |     T: ?Sized + AsRef<str>,
->     | |___________________________^ conflicting implementation for
-> `fallback::Ident`
+> Recently a change got added in "tests/shell/lib/probe_vfs_getname.sh"
+> via this another fix:
+> commit 92b664dcefab ("perf test probe_vfs_getname: Skip if no suitable
+> line detected")
+> Since this commit, first add_probe_vfs_getname is used to prevent false
+> failures. And based on return code of add_probe_vfs_getname, skip_if_no_debuginfo
+> is used to skip testcase if debuginfo is present. And this modified other
+> testcases to call add_probe_vfs_getname first and invoke
+> skip_if_no_debuginfo based on return value.
 > 
-> error[E0277]: `LexError` doesn't implement `std::fmt::Display`
->    --> rust/proc-macro2/lib.rs:347:16
->     |
-> 347 | impl Error for LexError {}
->     |                ^^^^^^^^ unsatisfied trait bound
->     |
-> help: the trait `std::fmt::Display` is not implemented for `LexError`
->    --> rust/proc-macro2/lib.rs:204:1
->     |
-> 204 | pub struct LexError {
->     | ^^^^^^^^^^^^^^^^^^^
-> note: required by a bound in `std::error::Error`
->    --> /root/.rustup/toolchains/nightly-powerpc64le-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/error.rs:59:26
->     |
->  59 | pub trait Error: Debug + Display {
->     |                          ^^^^^^^ required by this bound in `Error`
+> The tests in test_adding_kernel.sh which depends on presence of
+> debuginfo are:
+> 1. probe add for inode_permission
+> 2. probe max-probes option using 'vfs_* $params'
+> 3. non-existing variable probing
 > 
-> error[E0277]: `LexError` doesn't implement `Debug`
->    --> rust/proc-macro2/lib.rs:347:16
->     |
-> 347 | impl Error for LexError {}
->     |                ^^^^^^^^ unsatisfied trait bound
->     |
-> help: the trait `Debug` is not implemented for `LexError`
->    --> rust/proc-macro2/lib.rs:204:1
->     |
-> 204 | pub struct LexError {
->     | ^^^^^^^^^^^^^^^^^^^
->     = note: add `#[derive(Debug)]` to `LexError` or manually `impl Debug for
-> LexError`
-> note: required by a bound in `std::error::Error`
->    --> /root/.rustup/toolchains/nightly-powerpc64le-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/error.rs:59:18
->     |
->  59 | pub trait Error: Debug + Display {
->     |                  ^^^^^ required by this bound in `Error`
+> For these tests, probe check for specific line is not required.
+> So call skip_if_no_debuginfo with argument to say if line check is
+> needed. This is to convey to skip_if_no_debuginfo() function
+> that test only needs to check for debuginfo, and not specifically
+> line number. Update skip_if_no_debuginfo to use simple "perf probe"
+> check if test only needs to check for debuginfo. And for other
+> tests which rely on line number, use add_probe_vfs_getname()
 > 
-> error: aborting due to 4 previous errors
+> With the change, verified that only three which required debuginfo only
+> is skipped and others ran successfully. Also tested with debuginfo
+> to make sure tests are not skipped.
 > 
-> ......
-> But when parallelized with more threads (-j 128) compilation passes with out
-> any error
-> There is some ordering of libcore is messing up I guess (I could be wrong)
-> (I have removed the warning of unstable features messages here for cleaner
-> output)
+> Reported-by: Tejas Manhas <Tejas.Manhas1@ibm.com>
+> Reviewed-by: Ian Rogers <irogers@google.com>
+> Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
+> ---
+> Changelog:
+> - First version used "perf probe -v -L getname_flags" for debuginfo
+>   check. This will not catch fail string "Debuginfo-analysis is not
+> supported" which is used in cases when perf is built without dwarf.
+>  So use "perf probe -vn add inode_permission" to capture cases when
+>  tools built with NO_LIBDWARF=1. This will capture debuginfo missing as
+> well as tool built without dwarf case.
 > 
-> ....
->   VDSO64SYM include/generated/vdso64-offsets.h
->   RUSTC L rust/core.o
->   BINDGEN rust/bindings/bindings_generated.rs
->   BINDGEN rust/bindings/bindings_helpers_generated.rs
->   CC      rust/helpers/helpers.o
->   RUSTC PL rust/libproc_macro2.rlib
->   BINDGEN rust/uapi/uapi_generated.rs
->   RSCPP     rust/kernel/generated_arch_static_branch_asm.rs
->   RSCPP     rust/kernel/generated_arch_warn_asm.rs
->   RSCPP     rust/kernel/generated_arch_reachable_asm.rs
-> clang diag: ./arch/powerpc/include/uapi/asm/ioctl.h:5:9: warning:
-> '_IOC_SIZEBITS' macro redefined [-Wmacro-redefined]
-> clang diag: ./arch/powerpc/include/uapi/asm/ioctl.h:6:9: warning:
-> '_IOC_DIRBITS' macro redefined [-Wmacro-redefined]
-> clang diag: ./arch/powerpc/include/uapi/asm/ioctl.h:8:9: warning:
-> '_IOC_NONE' macro redefined [-Wmacro-redefined]
-> clang diag: ./arch/powerpc/include/uapi/asm/ioctl.h:10:9: warning:
-> '_IOC_WRITE' macro redefined [-Wmacro-redefined]
->   EXPORTS rust/exports_helpers_generated.h
->   RUSTC PL rust/libquote.rlib
->   RUSTC PL rust/libsyn.rlib
->   RUSTC P rust/libpin_init_internal.so
->   RUSTC P rust/libmacros.so
->   EXPORTS rust/exports_core_generated.h
->   RUSTC L rust/compiler_builtins.o
->   RUSTC L rust/ffi.o
->   RUSTC L rust/pin_init.o
->   RUSTC L rust/build_error.o
->   RUSTC L rust/bindings.o
->   RUSTC L rust/uapi.o
->   EXPORTS rust/exports_bindings_generated.h
->   RUSTC L rust/kernel.o
->   EXPORTS rust/exports_kernel_generated.h
->   LDS     scripts/module.lds
->   HOSTCC  usr/gen_init_cpio
->   CC      init/main.o
-> ....
+>  .../tests/shell/base_probe/test_adding_kernel.sh  | 15 ++++++++++++++-
+>  tools/perf/tests/shell/lib/probe_vfs_getname.sh   | 13 ++++++++++++-
+>  2 files changed, 26 insertions(+), 2 deletions(-)
 > 
-> Also I see some errors when compiling modules. I am looking at these and any
-> help is welcome.
-> I will pull out Rust patches for now from powerpc-linux next-test branch and
-> once this is
-> restored I will add these patches back to branch for the merge.
-> 
-> Maddy
-> 
-Aah this happens because core.o is compiled before libproc_macro2.rlib
-starts compiling. Once the core.o is compiled it generates the
-libcore.rmeta, leading to conflict in two libcore.rmeta available.
+> diff --git a/tools/perf/tests/shell/base_probe/test_adding_kernel.sh b/tools/perf/tests/shell/base_probe/test_adding_kernel.sh
+> index 555a825d55f2..f3db125c8669 100755
+> --- a/tools/perf/tests/shell/base_probe/test_adding_kernel.sh
+> +++ b/tools/perf/tests/shell/base_probe/test_adding_kernel.sh
+> @@ -23,10 +23,23 @@ TEST_RESULT=0
+>  . "$DIR_PATH/../lib/probe_vfs_getname.sh"
+>  
+>  TEST_PROBE=${TEST_PROBE:-"inode_permission"}
+> +PROBE_NO_LINE_CHECK=1
 
-I can think of 2 solutions here for this,
+I'm not sure I follow but shouldn't it depend on the return value of
+`perf check feature -q dwarf`?
 
-1. We can make the libproc_macro2.rlib libquote.rlib libsyn.rlib compile
-befor the core.o is compiled OR
-2. We can force these to use the toolchain core's metadata and not look
-into the kernel's rust directory.
+Thanks,
+Namhyung
 
-I am still not able to figure out why this is not happening for x86.
-
-What should we do in this case?
-
-Regards,
-Mukesh
-
-> > Changelog:
-> > V5 -> V6:
-> > - Added a missing Tested by from Venkat which got missed since V3
-> > - Support is marked as Maintained instead of experimental
-> > V5: https://lore.kernel.org/all/20260210053756.2088302-1-mkchauras@gmail.com
-> > 
-> > V4 -> V5:
-> > - Removed a nested ifdef from PPC64 for Little endian toolchain
-> > V4: https://lore.kernel.org/all/20260209105456.1551677-1-mkchauras@gmail.com
-> > 
-> > V3 -> V4:
-> > - Co-developed-by header added in patch 1
-> > V3: https://lore.kernel.org/all/20260205180429.3280657-1-mkchauras@gmail.com
-> > 
-> > V2 -> V3:
-> > - Splited HAVE_RUST in 2 lines
-> > - BINDGEN_TARGET_powerpc initialized before assigning the same to
-> >    BINDGEN_TARGET
-> > V2: https://lore.kernel.org/all/20260204210125.613350-1-mkchauras@gmail.com
-> > 
-> > V1 -> V2:
-> > - jump label fix for rust has been moved to a separate patch
-> > - PPC32 support has been taken
-> > - rust support has been marked experimental
-> > - target.json dependency has been removed
-> > - HAVE_RUST now depends on CPU_LITTLE_ENDIAN for PPC64
-> > 
-> > 
-> > Link Mauve (1):
-> >    rust: Add PowerPC support
-> > 
-> > Mukesh Kumar Chaurasiya (IBM) (2):
-> >    powerpc/jump_label: adjust inline asm to be consistent
-> >    powerpc: Enable Rust for ppc64le
-> > 
-> >   Documentation/rust/arch-support.rst   |  1 +
-> >   arch/powerpc/Kconfig                  |  2 ++
-> >   arch/powerpc/Makefile                 |  7 +++++++
-> >   arch/powerpc/include/asm/jump_label.h | 23 +++++++++++++----------
-> >   rust/Makefile                         | 10 +++++++++-
-> >   5 files changed, 32 insertions(+), 11 deletions(-)
-> > 
+>  
+>  # set NO_DEBUGINFO to skip testcase if debuginfo is not present
+>  # skip_if_no_debuginfo returns 2 if debuginfo is not present
+> -skip_if_no_debuginfo
+> +#
+> +# The perf probe checks which depends on presence of debuginfo and
+> +# used in this testcase are:
+> +# 1. probe add for inode_permission
+> +# 2. probe max-probes option using 'vfs_* $params'
+> +# 3. non-existing variable probing
+> +#
+> +# For these tests, probe check for specific line is not
+> +# required ( add_probe_vfs_getname does that ). So call
+> +# skip_if_no_debuginfo with argument as 1. This is to convey
+> +# that test only needs to check for debuginfo, and not specifically
+> +# line number
+> +skip_if_no_debuginfo $PROBE_NO_LINE_CHECK
+>  if [ $? -eq 2 ]; then
+>  	NO_DEBUGINFO=1
+>  fi
+> diff --git a/tools/perf/tests/shell/lib/probe_vfs_getname.sh b/tools/perf/tests/shell/lib/probe_vfs_getname.sh
+> index 88cd0e26d5f6..8ae2ea2bc8a2 100644
+> --- a/tools/perf/tests/shell/lib/probe_vfs_getname.sh
+> +++ b/tools/perf/tests/shell/lib/probe_vfs_getname.sh
+> @@ -39,7 +39,18 @@ add_probe_vfs_getname() {
+>  }
+>  
+>  skip_if_no_debuginfo() {
+> -	add_probe_vfs_getname -v 2>&1 | grep -E -q "^(Failed to find the path for the kernel|Debuginfo-analysis is not supported)|(file has no debug information)" && return 2
+> +	no_line_check=$1
+> +	debug_str="^(Failed to find the path for the kernel|Debuginfo-analysis is not supported)|(file has no debug information)"
+> +
+> +	# search for debug_str using simple perf probe if the
+> +	# test only needs to check for debuginfo, and not specifically
+> +	# line number.
+> +	if [ $no_line_check -eq 1 ]; then
+> +		perf probe -vn add inode_permission 2>&1 | grep -E -q "$debug_str" && return 2
+> +	else
+> +		add_probe_vfs_getname -v 2>&1 | grep -E -q "$debug_str" && return 2
+> +	fi
+> +
+>  	return 1
+>  }
+>  
+> -- 
+> 2.47.3
+> 
 
