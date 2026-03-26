@@ -1,54 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-18789-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18790-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ACD05109C059
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Mar 2026 20:00:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC4AC109E543
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Mar 2026 04:00:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fgySr1msVz2yYJ;
-	Thu, 26 Mar 2026 07:00:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=37.157.195.192
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774468844;
-	cv=none; b=h43MijiDe+mwGS4S3rNruVUQ936vbEsBK0Q+uagA1F1YliV3IOwNGFte9IiAutFDvnWVqyLnP1EP3EUgf0gTinUFPEHL6F57zLtGM9y8mNUV/l2UE8eaBNv8kOimIteu6QOnje63Mk3rG3tgVSQpT7OY7aTAr6FhfizomLboPSIycLpe9aB19JdruvmuUGuJ2sg53CDte54ngvj53useBTt6N0YxA6usvFwe+MqW2Tr4AuFMKqIFphJ6PMrjVR8r4EU0LCEn3bWX6l7XlHuHqhmMXTlZKnTy7Zs+ReiPtjgvRkP3rdezPdGDN33PSciwgBke0VCy5pnbu7aGCy++LA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fh96y1h2Hz2xlM;
+	Thu, 26 Mar 2026 15:00:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774497658;
+	cv=none; b=Ehx7iCh4MFlaJTvFY6evEQeOhJbNlz/KdLmCLoJqpPuvfKtOS3E6h6toNn236tReoXKlWtyXn0VfYePgzLPAFqP07yZcxsAkbNErg2XKWpAJ8rSGMpkQmF9Fwvn4CQZRh3paZETz0D0YYvN6KuX1h78JbshIKkjLtQPB0oGdiC2tkvczLBOP1DL8doRVX5rHp3Vh+v35oc3bqPRsVKVdv6iBpI6Ep6CL0LNihiY2pC1Wb6hYUQHpfNvgKmB5Wdr935KyiqOxYi0qLtoG3xdHRVHnn5+J/sYysCZvSVu4Q+jJyzkJnzrr21/qIgs538mEW58Jcfa4gGZYzcN971AlkQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774468844; c=relaxed/relaxed;
-	bh=yFQsydCIOr74lS0wiVlCraWXMEEN0D0iIRy2COVKBVc=;
+	t=1774497658; c=relaxed/relaxed;
+	bh=qniXyQQp8BhF/swyXeMAfDNlEpa6S16iQqUUNsxIcDE=;
 	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=THWlnGNo39AIqYd4GWjUSNJwyBiIrDvIpF39MMEXPedhXgPhH+DDG06vvGhux1+Z9b2AL5eBtoiL1SEsXO7UVuPBxtxUwQ693HO3D6LzQcMiFUnmhEUJJR7z72mME1V0qjenm4Lfm9LR73g826oiyizggugDt58LMsO711lb0KrXHUmgeSCD+iJGdEaLr2r3AbM3UskPGVonCMO1w5Y6ulyS+SsG+qiGi+7TonYAKuEEvvPxUbfKvtTB5y//FL3bc1yv9DNUKgkGWwFbP3IqPJe+ussoEEHKwhTLjqoxsf5gJLpKDllViPZ/GS8fGqe951mztRE269Vlvquy8opdIA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=danny.cz; spf=pass (client-ip=37.157.195.192; helo=redcrew.org; envelope-from=dan@danny.cz; receiver=lists.ozlabs.org) smtp.mailfrom=danny.cz
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=danny.cz
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=danny.cz (client-ip=37.157.195.192; helo=redcrew.org; envelope-from=dan@danny.cz; receiver=lists.ozlabs.org)
-Received: from redcrew.org (redcrew.org [37.157.195.192])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	 Mime-Version:Content-Type; b=K3By3qKAj9ab/v3Yw4+u6xBj3qcjJX7VTs+1qEvuLkVEL6IyzxR5ZgPBKM3n7aZNh/Q+W5RVrkmakNu/s3SYnDFfMsmH320GpqNdoRK0M0d8BJhX6zYGb9AIDaB1kaauAp6+3kEZIfxg3osKprZH+vgb+NQHqLwg58hy1o/lgoRWqINrqcWuGTfFWMzk3kmAUkRYjckcnCthM7JEDkEiCMnNy5/H8nN9v0tqSrPSYOeyBVQchxQ0Lt062BP1x3n4DcYZKRCThH5GOPBEDmIBAAUf/wEI/RzmiTiqzI8vj1xNONA/2TXapBNdKUr2HlzsYt9cHQP7qwBd16XVKoX+LQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=h2qifna9; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=h2qifna9;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fgySq0mT9z2yY0
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2026 07:00:41 +1100 (AEDT)
-Received: from server.danny.cz (85-71-161-19.rce.o2.cz [85.71.161.19])
-	by redcrew.org (Postfix) with ESMTP id 595E7D4;
-	Wed, 25 Mar 2026 21:00:37 +0100 (CET)
-DKIM-Filter: OpenDKIM Filter v2.11.0 redcrew.org 595E7D4
-Received: from talos.danny.cz (talos [IPv6:2001:470:5c11:160:47df:83f6:718e:218])
-	by server.danny.cz (Postfix) with SMTP id 2FA9F17A006;
-	Wed, 25 Mar 2026 21:00:37 +0100 (CET)
-Date: Wed, 25 Mar 2026 21:00:37 +0100
-From: Dan =?UTF-8?B?SG9yw6Fr?= <dan@danny.cz>
-To: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-Cc: Gaurav Batra <gbatra@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- amd-gfx@lists.freedesktop.org, Donet Tom <donettom@linux.ibm.com>
-Subject: Re: amdgpu driver fails to initialize on ppc64le in 7.0-rc1 and
- newer
-Message-Id: <20260325210037.1e5de5f6f99851088ceaf15a@danny.cz>
-In-Reply-To: <341nolfr.ritesh.list@gmail.com>
-References: <20260313142351.609bc4c3efe1184f64ca5f44@danny.cz>
-	<1phlu3bs.ritesh.list@gmail.com>
-	<20260315105021.667e52d4a99b154ef1e6aa34@danny.cz>
-	<da93575e-92ad-4a7b-83df-1cb956bd2bc2@linux.ibm.com>
-	<5x6knm5q.ritesh.list@gmail.com>
-	<2d5fd6ec-003f-4d24-aa2e-06ba94d6cba4@linux.ibm.com>
-	<341nolfr.ritesh.list@gmail.com>
-X-Mailer: Sylpheed 3.7.0 (GTK+ 2.24.33; powerpc64le-redhat-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fh96x0yHCz2xcB
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2026 15:00:56 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 5CC7760053;
+	Thu, 26 Mar 2026 04:00:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EADB9C19424;
+	Thu, 26 Mar 2026 04:00:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
+	s=korg; t=1774497652;
+	bh=a9nj8mR0F2lI5537jnvwaS2ZWg+dPzAdFfkxncY9zlI=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=h2qifna9aaXJnfak9+pSw26tlqsP2LAwzpD3dGgF05NQHoCHdNDKGEZMoI/Wk5xcR
+	 KnLZv/LqxdRIns2Nlqb3FxRXxGoEPhC72JtyPQx0VyGaV3MLE4ojcsuotrtL3JM21n
+	 PkhEdBR8W4hregCpzSCNr/8OKlRFhBrzKXyzsukU=
+Date: Wed, 25 Mar 2026 21:00:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jinjie Ruan <ruanjinjie@huawei.com>
+Cc: <corbet@lwn.net>, <skhan@linuxfoundation.org>,
+ <catalin.marinas@arm.com>, <will@kernel.org>, <chenhuacai@kernel.org>,
+ <kernel@xen0n.name>, <maddy@linux.ibm.com>, <mpe@ellerman.id.au>,
+ <npiggin@gmail.com>, <chleroy@kernel.org>, <pjw@kernel.org>,
+ <palmer@dabbelt.com>, <aou@eecs.berkeley.edu>, <alex@ghiti.fr>,
+ <tglx@kernel.org>, <mingo@redhat.com>, <bp@alien8.de>,
+ <dave.hansen@linux.intel.com>, <hpa@zytor.com>, <robh@kernel.org>,
+ <saravanak@kernel.org>, <bhe@redhat.com>, <vgoyal@redhat.com>,
+ <dyoung@redhat.com>, <rdunlap@infradead.org>, <peterz@infradead.org>,
+ <pawan.kumar.gupta@linux.intel.com>, <feng.tang@linux.alibaba.com>,
+ <dapeng1.mi@linux.intel.com>, <kees@kernel.org>, <elver@google.com>,
+ <paulmck@kernel.org>, <lirongqing@baidu.com>, <rppt@kernel.org>,
+ <ardb@kernel.org>, <leitao@debian.org>, <osandov@fb.com>,
+ <cfsworks@gmail.com>, <tangyouling@kylinos.cn>,
+ <sourabhjain@linux.ibm.com>, <ritesh.list@gmail.com>,
+ <eajames@linux.ibm.com>, <songshuaishuai@tinylab.org>,
+ <kevin.brodsky@arm.com>, <samuel.holland@sifive.com>,
+ <vishal.moola@gmail.com>, <junhui.liu@pigmoral.tech>, <coxu@redhat.com>,
+ <liaoyuanhong@vivo.com>, <jbohac@suse.cz>, <fuqiang.wang@easystack.cn>,
+ <guoren@kernel.org>, <chenjiahao16@huawei.com>, <hbathini@linux.ibm.com>,
+ <james.morse@arm.com>, <takahiro.akashi@linaro.org>,
+ <lizhengyu3@huawei.com>, <x86@kernel.org>, <linux-doc@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-riscv@lists.infradead.org>, <devicetree@vger.kernel.org>,
+ <kexec@lists.infradead.org>
+Subject: Re: [PATCH v10 0/8] arm64/riscv: Add support for crashkernel CMA
+ reservation
+Message-Id: <20260325210049.28cca592a001e745954b3241@linux-foundation.org>
+In-Reply-To: <20260325025904.2811960-1-ruanjinjie@huawei.com>
+References: <20260325025904.2811960-1-ruanjinjie@huawei.com>
+X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,52 +92,40 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 
-On Wed, 25 Mar 2026 23:12:16 +0530
-Ritesh Harjani (IBM) <ritesh.list@gmail.com> wrote:
+On Wed, 25 Mar 2026 10:58:56 +0800 Jinjie Ruan <ruanjinjie@huawei.com> wrote:
 
-> Gaurav Batra <gbatra@linux.ibm.com> writes:
+> The crash memory allocation, and the exclude of crashk_res, crashk_low_res
+> and crashk_cma memory are almost identical across different architectures,
+> This patch set handle them in crash core in a general way, which eliminate
+> a lot of duplication code.
 > 
-> > Hello Ritesh
-> >
-> > I think, what you are proposing to add dev->bus_dma_limit in the check 
-> > might work. In the case of PowerNV, this is not set, but 
-> > dev->dma_ops_bypass is set. So, for PowerNV, it will fall back to how it 
-> > was before.
-> >
-> > Also, since these both are set in LPAR mode, the current patch as-is 
-> > will work.
-> >
-> > Dan, can you please try Ritesh proposed fix on your PowerNV box? I am 
-> > not able to lay my hands on a PowerNV box yet.
-> >
-> 
-> It would be this diff then. Note, I have only compile tested it.
-> 
-> diff --git a/arch/powerpc/kernel/dma-iommu.c b/arch/powerpc/kernel/dma-iommu.c
-> index 73e10bd4d56d..8b4de508d2eb 100644
-> --- a/arch/powerpc/kernel/dma-iommu.c
-> +++ b/arch/powerpc/kernel/dma-iommu.c
-> @@ -67,7 +67,7 @@ bool arch_dma_unmap_sg_direct(struct device *dev, struct scatterlist *sg,
->  }
->  bool arch_dma_alloc_direct(struct device *dev)
->  {
-> -       if (dev->dma_ops_bypass)
-> +       if (dev->dma_ops_bypass && dev->bus_dma_limit)
->                 return true;
-> 
->         return false;
-> @@ -75,7 +75,7 @@ bool arch_dma_alloc_direct(struct device *dev)
-> 
->  bool arch_dma_free_direct(struct device *dev, dma_addr_t dma_handle)
->  {
-> -       if (!dev->dma_ops_bypass)
-> +       if (!dev->dma_ops_bypass || !dev->bus_dma_limit)
->                 return false;
-> 
->         return is_direct_handle(dev, dma_handle);
+> And add support for crashkernel CMA reservation for arm64 and riscv.
 
-yup, I will give it a try in the morning and report back
+So who is patchmonkey for this.
 
+>  .../admin-guide/kernel-parameters.txt         |  16 +--
+>  arch/arm64/kernel/machine_kexec_file.c        |  39 ++-----
+>  arch/arm64/mm/init.c                          |   5 +-
+>  arch/loongarch/kernel/machine_kexec_file.c    |  39 ++-----
+>  arch/powerpc/include/asm/kexec_ranges.h       |   1 -
+>  arch/powerpc/kexec/crash.c                    |   7 +-
+>  arch/powerpc/kexec/ranges.c                   | 101 +----------------
+>  arch/riscv/kernel/machine_kexec_file.c        |  38 ++-----
+>  arch/riscv/mm/init.c                          |   5 +-
+>  arch/x86/kernel/crash.c                       |  89 ++-------------
+>  drivers/of/fdt.c                              |   9 +-
+>  drivers/of/kexec.c                            |   9 ++
+>  include/linux/crash_core.h                    |   9 ++
+>  kernel/crash_core.c                           | 105 +++++++++++++++++-
 
-		Dan
+Me, I guess, with as many arch acks as I can gather, please.
+
+I'm seriously trying to slow things down now, but I guess I can make an
+exception for non-MM material.
+
+AI review asks a few questions:
+	https://sashiko.dev/#/patchset/20260325025904.2811960-1-ruanjinjie@huawei.com
+
+Can you please check these?  And I'm interested in learning how many of
+these are valid.  Thanks.
 
