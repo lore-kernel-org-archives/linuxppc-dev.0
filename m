@@ -1,51 +1,46 @@
-Return-Path: <linuxppc-dev+bounces-18925-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18926-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3791410ED67A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2026 13:28:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A09F10AB83D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2026 14:35:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fj1g44t8yz2xmX;
-	Sat, 28 Mar 2026 00:28:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774618096;
-	cv=none; b=mHMOR5jk5oDX4PaI5RBYqH1BUe1Ykze0N1DNM06Mz0OvSKvErh2cW0FAHALkgNwSHrArkfw2bnmNzSb5Q5yPRLLThRNL81/3BphWkBRjuRiusf/PYLx684SHI/Wd/8KhxrSB1rd37T1Azg0auPPqYDvYxRxTuXryflZ7/h5RngdxwD77nKrOZsAGolGEdpicVjpuZMnza9jLxblfL3jCl+5sn3ps+Cwdvai+N+y7qdNU8s2hdTNXQ2N8rbarEmzQqq2rqru65XwdYueQM2U4DThozTzvidmRaOAJrB0yZH9qNgHpHq8qrzol2B0m6n86h46hFWZEd/WbUEwA7H8stw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fj3855sBWz2xmX;
+	Sat, 28 Mar 2026 01:35:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.183
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774622101;
+	cv=none; b=OjJUkjoCW/bEjm+uRlHDbHCLqFGEeWQcOqnTqUuH1u6VlkoZpRAClzG65oOFeoD1v2It5cLuQqesSEsebkVWuefC3BKAXCjdqU7HRVIntBvAneYCfHNKDkgyCxU8EgQfZjnCpA7wCXsoN/ItM4CXFN/v7MO7daSO9oBgJBuHQgx/JvK4PqEojzD0S0H1dTqfGyUvTyggv5bhK0+PcSJ4kErgjVo/qJKDUd203JmfjizJjbzZNNiEUVZiwkg8bbi94V2tZxtd1v+Z2s1izwb68ShTOeJ1bJAVJRuzWjU63wP68OoMYA4Kl2sGPxe7z0C4WLGH85umcTLwqQQ+Oy7lvg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774618096; c=relaxed/relaxed;
-	bh=9E2RIt8Jwl2ayOiSZdyQkptXGhUYEZZl1BldzCpWPog=;
+	t=1774622101; c=relaxed/relaxed;
+	bh=7RxlcroHX4swUzq/nWnXXiWfGa7xs/XFyF8fRtVw6wg=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=LuHjKqBlnlGyMctuRQrvVFlx+LLbSO7+4lraN0GFNcLxvWm8Tq7VCCu7uwd2TkzGk6Sig+DDSoY9UgxdpYE6D/gHdFcs0icE6CL3MNYLhbO3o95rH6T68caR0eQamZMbwXr2hHcaQlWCAVDJP7FIJtqQFUvHpHvnUK4zSDh5N0J/TMPhH7KvHXEw5iPbhSdH1burS70p8RSZT2Ojvwc0+1JcWDUFIsR7KK0ExfGQOM11o56XuCJnxAxR9SQYh22oe6hA/9fIonreYJk3DbtZdEcedd36FDRVn1rRuTq6thU8ShmC/1CnVmiKPrn+/mKtPRARaE2Pj+9thMCLRnOKEw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tgrKpze0; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 In-Reply-To:Content-Type; b=mpic5Oj/ob7nw3ztygZSaqiY3Ge6SrSqq4CHYCurkcjEck2QeCK46z28lc+EjHgM6m0s2O/v0WNVw6CYLMmxWpt6HbTLBylnZ3rtZaWPMz43SGX9PG+o+BNbmyZtfgwz09iDKuto/eDFXTZC9eLgukiTpwkMDRMWI/yAsSA5/sN+VpP4aCDVeMsk6emghN0iRZIwfLmEoUImIMS+ZldpPMYHX7lQe48mdzCJh1Q0UXrHJVngTkGlZeE1Qfyj7Kh1MHIfJvjm7hPXxbfzFFq6gkaLlKQrq1W8OFODjseepvcx3aH4UwNBHeQMMME7y7Xt2EyDxbQ9OM9CsZNXMOCTqg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Ht24yVC3; dkim-atps=neutral; spf=pass (client-ip=91.218.175.183; helo=out-183.mta0.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tgrKpze0;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Ht24yVC3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.183; helo=out-183.mta0.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-183.mta0.migadu.com (out-183.mta0.migadu.com [91.218.175.183])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fj1g33M9Sz2xQr
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2026 00:28:15 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 3ED7E60132;
-	Fri, 27 Mar 2026 13:28:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5FE8BC2BCB1;
-	Fri, 27 Mar 2026 13:28:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774618091;
-	bh=r/tUcr+DkmKRuSoOmSbqzMlOOVTDeN+O6HtHU+Chplw=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=tgrKpze0AXBEQbD7udKzYR1/j6AEhWlQrKBma1DiYfButx4464/hyCJcpP+ANo9Ap
-	 by/AS0qYxcLqBUSypREH+SHXOKATURaX0us8v4dfKQqXxPoButyOG+KhsuWNRvIeUu
-	 OT9CiE1BJhUnl6+SEPyLb7rKdCHDRBxPXMjA0DrJamezzubk415mrPedbFHfjZqGzC
-	 WAikLjxtn6QB+XzNf1gAfc3zcEHDvFYphLENXO0NWxG/whC/a3SsCFy4iU7xdizwV+
-	 Fd9Nkb17vBj+XSEUZMAIgu5KYakuf0xy9AC3zv8wEWxsEuZC8T/dDcIgvobE8Ac+JG
-	 PHIaX9JpLlSeA==
-Message-ID: <2266e9af-ce5b-401a-8364-0fe2fc3d68a6@kernel.org>
-Date: Fri, 27 Mar 2026 14:28:06 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fj3824rkXz2xR4
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2026 01:34:57 +1100 (AEDT)
+Message-ID: <9dcad942-8888-4b92-b445-c409ae490c03@linux.dev>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1774622076;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=7RxlcroHX4swUzq/nWnXXiWfGa7xs/XFyF8fRtVw6wg=;
+	b=Ht24yVC3pLp17e8idwEujSVYefmRd6nSPN9pv4Cv7PW9LbdCMNzEdxjN8/unn1G3jmzmPe
+	140Zma49FWsDPlOi7joCdMgPDozMtDs0cQuuXPsZTyFMt3YLzHsn36Pm+6mwYgL0ZwjzWy
+	NwGgmA4DHXFn2T8DW+pI1XvaMSBfw3s=
+Date: Fri, 27 Mar 2026 10:34:30 -0400
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,82 +54,163 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 0/6] change young flag check functions to return bool
-To: Baolin Wang <baolin.wang@linux.alibaba.com>, akpm@linux-foundation.org
-Cc: ljs@kernel.org, Liam.Howlett@oracle.com, vbabka@kernel.org,
- rppt@kernel.org, surenb@google.com, mhocko@suse.com,
- linux-arm-kernel@lists.infradead.org, x86@kernel.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- kvm@vger.kernel.org, open <linux-mm@kvack.org>, linux-kernel@vger.kernel.org
-References: <cover.1774075004.git.baolin.wang@linux.alibaba.com>
-From: "David Hildenbrand (Arm)" <david@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=david@kernel.org; keydata=
- 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
- qIws/H2t
-In-Reply-To: <cover.1774075004.git.baolin.wang@linux.alibaba.com>
+Subject: Re: [v3 00/24] mm: thp: lazy PTE page table allocation at PMD split
+ time
+Content-Language: en-GB
+To: "David Hildenbrand (Arm)" <david@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Lorenzo Stoakes <ljs@kernel.org>,
+ willy@infradead.org, linux-mm@kvack.org
+Cc: fvdl@google.com, hannes@cmpxchg.org, riel@surriel.com,
+ shakeel.butt@linux.dev, kas@kernel.org, baohua@kernel.org, dev.jain@arm.com,
+ baolin.wang@linux.alibaba.com, npache@redhat.com, Liam.Howlett@oracle.com,
+ ryan.roberts@arm.com, Vlastimil Babka <vbabka@kernel.org>,
+ lance.yang@linux.dev, linux-kernel@vger.kernel.org, kernel-team@meta.com,
+ maddy@linux.ibm.com, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ hca@linux.ibm.com, gor@linux.ibm.com, agordeev@linux.ibm.com,
+ borntraeger@linux.ibm.com, svens@linux.ibm.com, linux-s390@vger.kernel.org
+References: <20260327021403.214713-1-usama.arif@linux.dev>
+ <48d7c810-d219-4346-9e8b-d70243445a91@kernel.org>
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Usama Arif <usama.arif@linux.dev>
+In-Reply-To: <48d7c810-d219-4346-9e8b-d70243445a91@kernel.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-On 3/21/26 07:42, Baolin Wang wrote:
-> This is a cleanup patchset to change all young flag check functions to
-> return bool, as discussed with David in the previous thread[1]. Since
-> callers only care about whether the young flag was set, returning bool
-> makes the intention clearer. No functional changes intended.
+
+
+On 27/03/2026 11:51, David Hildenbrand (Arm) wrote:
+> On 3/27/26 03:08, Usama Arif wrote:
+>> When the kernel creates a PMD-level THP mapping for anonymous pages, it
+>> pre-allocates a PTE page table via pgtable_trans_huge_deposit(). This
+>> page table sits unused in a deposit list for the lifetime of the THP
+>> mapping, only to be withdrawn when the PMD is split or zapped. Every
+>> anonymous THP therefore wastes 4KB of memory unconditionally. On large
+>> servers where hundreds of gigabytes of memory are mapped as THPs, this
+>> adds up: roughly 200MB wasted per 100GB of THP memory. This memory
+>> could otherwise satisfy other allocations, including the very PTE page
+>> table allocations needed when splits eventually occur.
+>>
+>> This series removes the pre-deposit and allocates the PTE page table
+>> lazily — only when a PMD split actually happens. Since a large number
+>> of THPs are never split (they are zapped wholesale when processes exit or
+>> munmap the full range), the allocation is avoided entirely in the common
+>> case.
+>>
+>> The pre-deposit pattern exists because split_huge_pmd was designed as an
+>> operation that must never fail: if the kernel decides to split, it needs
+>> a PTE page table, so one is deposited in advance. But "must never fail"
+>> is an unnecessarily strong requirement. A PMD split is typically triggered
+>> by a partial operation on a sub-PMD range — partial munmap, partial
+>> mprotect, COW on a pinned folio, GUP with FOLL_SPLIT_PMD, and similar.
+>> All of these operations already have well-defined error handling for
+>> allocation failures (e.g., -ENOMEM, VM_FAULT_OOM). Allowing split to
+>> fail and propagating the error through these existing paths is the natural
+>> thing to do. Furthermore, if the system cannot satisfy a single order-0
+>> allocation for a page table, it is under extreme memory pressure and
+>> failing the operation is the correct response.
+>>
+>> Designing functions like split_huge_pmd as operations that cannot fail
+>> has a subtle but real cost to code quality. It forces a pre-allocation
+>> pattern - every THP creation path must deposit a page table, and every
+>> split or zap path must withdraw one, creating a hidden coupling between
+>> widely separated code paths.
+>>
+>> This also serves as a code cleanup. On every architecture except powerpc
+>> with hash MMU, the deposit/withdraw machinery becomes dead code. The
+>> series removes the generic implementations in pgtable-generic.c and the
+>> s390/sparc overrides, replacing them with no-op stubs guarded by
+>> arch_needs_pgtable_deposit(), which evaluates to false at compile time
+>> on all non-powerpc architectures.
+>>
+>> The series is structured as follows:
+>>
+>> Patches 1-2:    Infrastructure — make split functions return int and
+>>                 propagate errors from vma_adjust_trans_huge() through
+>>                 __split_vma, vma_shrink, and commit_merge.
+>>
+>> Patches 3-15:   Handle split failure at every call site — copy_huge_pmd,
+>>                 do_huge_pmd_wp_page, zap_pmd_range, wp_huge_pmd,
+>>                 change_pmd_range (mprotect), follow_pmd_mask (GUP),
+>>                 walk_pmd_range (pagewalk), move_page_tables (mremap),
+>>                 move_pages (userfaultfd), device migration,
+>>                 pagemap_scan_thp_entry (proc), powerpc subpage_prot,
+>>                 and dax_iomap_pmd_fault (DAX). The code will become
+>>                 effective in Patch 17 when split functions start
+>>                 returning -ENOMEM.
+>>
+>> Patch 16:       Add __must_check to __split_huge_pmd(), split_huge_pmd()
+>>                 and split_huge_pmd_address() so the compiler warns on
+>>                 unchecked return values.
+>>
+>> Patch 17:       The actual change — allocate PTE page tables lazily at
+>>                 split time instead of pre-depositing at THP creation.
+>>                 This is when split functions will actually start returning
+>>                 -ENOMEM.
+>>
+>> Patch 18:       Remove the now-dead deposit/withdraw code on
+>>                 non-powerpc architectures.
+>>
+>> Patch 19:       Add THP_SPLIT_PMD_FAILED vmstat counter for monitoring
+>>                 split failures.
+>>
+>> Patches 20-24:  Selftests covering partial munmap, mprotect, mlock,
+>>                 mremap, and MADV_DONTNEED on THPs to exercise the
+>>                 split paths.
+>>
+>> The error handling patches are placed before the lazy allocation patch so
+>> that every call site is already prepared to handle split failures before
+>> the failure mode is introduced. This makes each patch independently safe
+>> to apply and bisect through.
+>>
+>> The patches were tested with CONFIG_DEBUG_ATOMIC_SLEEP and CONFIG_DEBUG_VM
+>> enabled. The test results are below:
+>>
+>> TAP version 13
+>> 1..5
+>> # Starting 5 tests from 1 test cases.
+>> #  RUN           thp_pmd_split.partial_munmap ...
+>> # thp_pmd_split_test.c:60:partial_munmap:thp_split_pmd: 0 -> 1
+>> # thp_pmd_split_test.c:62:partial_munmap:thp_split_pmd_failed: 0 -> 0
+>> #            OK  thp_pmd_split.partial_munmap
+>> ok 1 thp_pmd_split.partial_munmap
+>> #  RUN           thp_pmd_split.partial_mprotect ...
+>> # thp_pmd_split_test.c:60:partial_mprotect:thp_split_pmd: 1 -> 2
+>> # thp_pmd_split_test.c:62:partial_mprotect:thp_split_pmd_failed: 0 -> 0
+>> #            OK  thp_pmd_split.partial_mprotect
+>> ok 2 thp_pmd_split.partial_mprotect
+>> #  RUN           thp_pmd_split.partial_mlock ...
+>> # thp_pmd_split_test.c:60:partial_mlock:thp_split_pmd: 2 -> 3
+>> # thp_pmd_split_test.c:62:partial_mlock:thp_split_pmd_failed: 0 -> 0
+>> #            OK  thp_pmd_split.partial_mlock
+>> ok 3 thp_pmd_split.partial_mlock
+>> #  RUN           thp_pmd_split.partial_mremap ...
+>> # thp_pmd_split_test.c:60:partial_mremap:thp_split_pmd: 3 -> 4
+>> # thp_pmd_split_test.c:62:partial_mremap:thp_split_pmd_failed: 0 -> 0
+>> #            OK  thp_pmd_split.partial_mremap
+>> ok 4 thp_pmd_split.partial_mremap
+>> #  RUN           thp_pmd_split.partial_madv_dontneed ...
+>> # thp_pmd_split_test.c:60:partial_madv_dontneed:thp_split_pmd: 4 -> 5
+>> # thp_pmd_split_test.c:62:partial_madv_dontneed:thp_split_pmd_failed: 0 -> 0
+>> #            OK  thp_pmd_split.partial_madv_dontneed
+>> ok 5 thp_pmd_split.partial_madv_dontneed
+>> # PASSED: 5 / 5 tests passed.
+>> # Totals: pass:5 fail:0 xfail:0 xpass:0 skip:0 error:0
+>>
+>> The patches are based off of mm-unstable as of 25 Mar
+>> git hash: d6f51e38433489eb22cb65d1bf72ac7993c5bdec
+>>
+>> RFC v2 -> v3: https://lore.kernel.org/all/de0dc7ec-7a8d-4b1a-a419-1d97d2e4d510@linux.dev/
 > 
-> Ran mm selftests on Arm64 and x86 machines, and no issues were found.
+> Note that we usually go from RFC to v1.
 
-Thanks!
+ack.
 
-For the whole series:
+> 
+> I'll put this series on my review backlog, but it will take some time
+> until I get to it (it won't make the next release either way :) ).
+> 
 
-Acked-by: David Hildenbrand (Arm) <david@kernel.org>
+No worries and Thanks!
 
--- 
-Cheers,
-
-David
 
