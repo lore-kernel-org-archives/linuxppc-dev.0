@@ -1,46 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-18921-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18922-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1783910ED64F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2026 10:06:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 608EA10ED64F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2026 10:07:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fhxBn51tXz2yjp;
-	Fri, 27 Mar 2026 21:06:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=83.223.95.204
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774606017;
-	cv=none; b=k6+qQMBjyd4S/i/JYghbDsClKgqEEEgGsJOUXWdkO14qQw3UgnYlgH5/SIhIzdDLPHiRYyYholflzMzh7BcGvEcIx+HOx7YM6beyTS4hgaz5dJUPsjD4AznYtpJ15AcDLaBCg9VpC+YcioK6zC2YrgwsKVp0oHcx8uXrlW/etmsAbZjk1wjfcx0tpSEDPNS1a7YL3BEThvjJDgPQ3DWb6wGARmm8CPM7LUYRLKeuXvdH2BAQ1bWpdSWQmFreP4pM1fUpkIcqmU5X0vWgwI5hORHIHt3bGDpa2SUHadAWNXkFhRL0YQsPG2ydyL1ViwrOxUTfnoCl4RG2hG8uNMsi7w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fhxBr4sj4z2yrS;
+	Fri, 27 Mar 2026 21:07:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=180.181.231.80
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774606020;
+	cv=none; b=YqybjRQxCIDo1hXJ3sx8ADT94N1oA0M7ealK6O8NNW3vlRgZHRyUEqezTDFyMk/T1OMHfC+wTqgfa3s8i1sj+Uv8YanabywEep6rYxszdbckD5RQdwkuxXUcWddaKEVs3PT+stXkTxvLe99c1OthQM6zi4nBVcFScHXJsB7AtcpSHNIpTODtnnt0WscSmrpGB6XjwhpsgqSALdD06Zwc/LJSQ1l7VTHUQooWwycSn2xb0ojAsp5J6YeCFB9H5ykS94NBRDgp6R+V3nIHLPaVKsnTuuqi7E8k6Yu21axaHaLedr/di/H/X6irxfLRmCZk8A06vB/o4w+B4ZfxUD22Dg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774606017; c=relaxed/relaxed;
-	bh=AmXjMga8xYMmoEJQoej3DEiSR5iIJ7Y35Lu6qiFw1sQ=;
-	h=Message-Id:From:Date:Subject:To:Cc; b=CLmNo/rjUiT+ATe29reGuMGorKMgs7Yxkbp5Jmm5maYqfh2blzd7VLjFRdIc3W7bvzVthzQuTaVi0XItVCAuhK8zI6d/l2sXZm8gvPigOcpt6TyOKpI/ehpWBiMoOQm2LHVZiZMi44hhMyPV/S6Bt94GsCCmzUqTPmM+QjIR5yPYhcvrDb2GDtsU7kua7T7h9ahIjfb3uXlsv7gCRhlcAQ5eV28tkiknKH9+RJjbWc7OpL6xQw3pKdV3HfdNetKrnhjJdTiU54TWas7ssnKyO+8SxgaYCHBCnlBsDIQdE2YR0yhi8K5xuntI52bkRyGuxuvD5KqGA2ujxE+yo4B5WA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=83.223.95.204; helo=mailout1.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org) smtp.mailfrom=wunner.de
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wunner.de (client-ip=83.223.95.204; helo=mailout1.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 606 seconds by postgrey-1.37 at boromir; Fri, 27 Mar 2026 21:06:56 AEDT
-Received: from mailout1.hostsharing.net (mailout1.hostsharing.net [83.223.95.204])
+	t=1774606020; c=relaxed/relaxed;
+	bh=lOW6hBhzRdBbEJxmwfJeE8L+H5z0momZPOfQVcGg08I=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=WkyW/tShidZE6DzO9oH7vWB3sz+MXDERjdxheFhB7jpm6KL/zg3v7vRihPbXfyYpbtCM+ZmJ3LpnJea6fy77GgtgLU4I8y2SPbVSSnG7GqmMbF7e742cFbMblZQvb6fvzMOY7W8gW2DkNaeE4CxC8WIdHZw9HVcnq7l6F+O9yWFIbxfWqAmwvKVkEx6dGX7Hfijrt5P3PU2qiiFFkmHeXChsOTWX+FD3SYZkyJwVUBg1WnRHPRUSXp02SyyuPtLWVdfqaC1Ne7o81xItylgRH8rdSgffRBuHK7nk7juBN7kYNhhzUkVGEPXllQDUXKG+8SYWvrNfxqJWIfTysep7qA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=gondor.apana.org.au; dkim=pass (2048-bit key; unprotected) header.d=gondor.apana.org.au header.i=@gondor.apana.org.au header.a=rsa-sha256 header.s=h01 header.b=fCwsOXor; dkim-atps=neutral; spf=pass (client-ip=180.181.231.80; helo=abb.hmeau.com; envelope-from=herbert@gondor.apana.org.au; receiver=lists.ozlabs.org) smtp.mailfrom=gondor.apana.org.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=gondor.apana.org.au
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gondor.apana.org.au header.i=@gondor.apana.org.au header.a=rsa-sha256 header.s=h01 header.b=fCwsOXor;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gondor.apana.org.au (client-ip=180.181.231.80; helo=abb.hmeau.com; envelope-from=herbert@gondor.apana.org.au; receiver=lists.ozlabs.org)
+Received: from abb.hmeau.com (abb.hmeau.com [180.181.231.80])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhxBm41pqz2yjm
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2026 21:06:56 +1100 (AEDT)
-Received: from h08.hostsharing.net (h08.hostsharing.net [83.223.95.28])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature ECDSA (secp384r1) server-digest SHA384
-	 client-signature ECDSA (secp384r1) client-digest SHA384)
-	(Client CN "*.hostsharing.net", Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
-	by mailout1.hostsharing.net (Postfix) with ESMTPS id 6C77538B4;
-	Fri, 27 Mar 2026 10:56:42 +0100 (CET)
-Received: by h08.hostsharing.net (Postfix, from userid 100393)
-	id 65B2D6024CB9; Fri, 27 Mar 2026 10:56:42 +0100 (CET)
-Message-Id: <734338c2e8b669db5a5a3b45d34131b55ffebfca.1774605029.git.lukas@wunner.de>
-From: Lukas Wunner <lukas@wunner.de>
-Date: Fri, 27 Mar 2026 10:56:43 +0100
-Subject: [PATCH] PCI/AER: Stop ruling out unbound devices as error source
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: linux-pci@vger.kernel.org, "Mahesh J Salgaonkar" <mahesh@linux.ibm.com>, Oliver OHalloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org, Stefan Roese <sr@denx.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhxBq5tKgz2yjm
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2026 21:06:59 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=gondor.apana.org.au; s=h01; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:cc:to:subject:message-id:date:
+	from:content-type:reply-to; bh=lOW6hBhzRdBbEJxmwfJeE8L+H5z0momZPOfQVcGg08I=; 
+	b=fCwsOXorstWIWwmDXDlY7q3VI9hWP0uLLCP2mJH61FAWwmJocqU8uCt/P77Ntn9Bswc/Rzwp2N8
+	5rp3f/4HWk54mhGNO+cuqxd+bw6ieYrTr9pExoRmGjw5fwP/ONplWtWtlfKQZjk+Cp3vFuwUPMJR2
+	1WmETXAdGMihYhDXQ4etl8F3A7D6bV10rkhPIxbZkSgb3dgF4FWR9rtA4q3TRqk1nTmzZ5ktDZVER
+	MQx03liEuDQJKY9mPBWHRXAhrtbNgLDCc9dpA8q/dGgDG1/cwCPTlsUOtEwmqnGUO6bUvwRBj6ygf
+	0Nds4UhPoAzkgMGUf3d80TwkVVycA7e7g0uA==;
+Received: from loth.rohan.me.apana.org.au ([192.168.167.2])
+	by formenos.hmeau.com with smtp (Exim 4.96 #2 (Debian))
+	id 1w63g7-001bmd-12;
+	Fri, 27 Mar 2026 18:06:51 +0800
+Received: by loth.rohan.me.apana.org.au (sSMTP sendmail emulation); Fri, 27 Mar 2026 19:06:50 +0900
+Date: Fri, 27 Mar 2026 19:06:50 +0900
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: "Gustavo A. R. Silva" <gustavoars@kernel.org>
+Cc: Haren Myneni <haren@us.ibm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"David S. Miller" <davem@davemloft.net>,
+	linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org
+Subject: Re: [PATCH] crypto: nx - Fix packed layout in struct
+ nx842_crypto_header
+Message-ID: <acZWugqQs1PBgojz@gondor.apana.org.au>
+References: <abnmUvHzhgS9xA-m@kspp>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,50 +70,64 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <abnmUvHzhgS9xA-m@kspp>
 
-When searching for the error source, the AER driver rules out devices
-whose enable_cnt is zero.  This was introduced in 2009 by commit
-28eb27cf0839 ("PCI AER: support invalid error source IDs") without
-providing a rationale.
+On Tue, Mar 17, 2026 at 05:40:02PM -0600, Gustavo A. R. Silva wrote:
+> struct nx842_crypto_header is declared with the __packed attribute,
+> however	the fields grouped with struct_group_tagged() were not packed.
+> This caused the grouped header portion of the structure to lose the
+> packed layout guarantees of the containing structure.
+> 
+> Fix this by replacing struct_group_tagged() with __struct_group(...,
+> ..., __packed, ...) so the grouped fields are packed, and the original
+> layout is preserved, restoring the intended packed layout of the
+> structure.
+> 
+> Before changes:
+> struct nx842_crypto_header {
+> 	union {
+> 		struct {
+> 			__be16     magic;                /*     0     2 */
+> 			__be16     ignore;               /*     2     2 */
+> 			u8         groups;               /*     4     1 */
+> 		};                                       /*     0     6 */
+> 		struct nx842_crypto_header_hdr hdr;      /*     0     6 */
+> 	};                                               /*     0     6 */
+> 	struct nx842_crypto_header_group group[];        /*     6     0 */
+> 
+> 	/* size: 6, cachelines: 1, members: 2 */
+> 	/* last cacheline: 6 bytes */
+> } __attribute__((__packed__));
+> 
+> After changes:
+> struct nx842_crypto_header {
+> 	union {
+> 		struct {
+> 			__be16     magic;                /*     0     2 */
+> 			__be16     ignore;               /*     2     2 */
+> 			u8         groups;               /*     4     1 */
+> 		} __attribute__((__packed__));           /*     0     5 */
+> 		struct nx842_crypto_header_hdr hdr;      /*     0     5 */
+> 	};                                               /*     0     5 */
+> 	struct nx842_crypto_header_group group[];        /*     5     0 */
+> 
+> 	/* size: 5, cachelines: 1, members: 2 */
+> 	/* last cacheline: 5 bytes */
+> } __attribute__((__packed__));
+> 
+> Fixes: 1e6b251ce175 ("crypto: nx - Avoid -Wflex-array-member-not-at-end warning")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+> ---
+>  drivers/crypto/nx/nx-842.h | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-Drivers typically call pci_enable_device() on probe, hence the enable_cnt
-check essentially filters out unbound devices.  At the time of the commit,
-drivers had to opt in to AER by calling pci_enable_pcie_error_reporting()
-and so any AER-enabled device could be assumed to be bound to a driver.
-The check thus made sense because it allowed skipping config space
-accesses to devices which were known not to be the error source.
-
-But since 2022, AER is universally enabled on all devices when they are
-enumerated, cf. commit f26e58bf6f54 ("PCI/AER: Enable error reporting when
-AER is native").
-
-Errors may very well be reported by unbound devices, e.g. due to link
-instability.  By ruling them out as error source, errors reported by them
-are neither logged nor cleared.  When they do get bound and another error
-occurs, the earlier error is reported together with the new error, which
-may confuse users.  Stop doing so.
-
-Fixes: f26e58bf6f54 ("PCI/AER: Enable error reporting when AER is native")
-Signed-off-by: Lukas Wunner <lukas@wunner.de>
-Cc: stable@vger.kernel.org # v6.0+
----
- drivers/pci/pcie/aer.c | 2 --
- 1 file changed, 2 deletions(-)
-
-diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-index 4299c55..384d026 100644
---- a/drivers/pci/pcie/aer.c
-+++ b/drivers/pci/pcie/aer.c
-@@ -1039,8 +1039,6 @@ static bool is_error_source(struct pci_dev *dev, struct aer_err_info *e_info)
- 	 *      3) There are multiple errors and prior ID comparing fails;
- 	 * We check AER status registers to find possible reporter.
- 	 */
--	if (atomic_read(&dev->enable_cnt) == 0)
--		return false;
- 
- 	/* Check if AER is enabled */
- 	pcie_capability_read_word(dev, PCI_EXP_DEVCTL, &reg16);
+Patch applied.  Thanks.
 -- 
-2.51.0
-
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
 
