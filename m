@@ -1,45 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-18858-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18859-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B8C7610A1E63
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2026 02:16:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D121310AB83C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2026 02:16:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fhklR6HZkz2yqF;
-	Fri, 27 Mar 2026 13:16:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::ae"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774577763;
-	cv=none; b=F1tL2K9WThpiuqB+ctW31W9X/Remv1jYM8hK9wvjZCubYOoNO3SL4YKh7tzbvik/ryn9pcRiyOw/yCyBRZ4in8myj4G8SNZEemWdUj1fnmSqeP92S5BCcoPZNq9SbAhrvANpI6uBLUFrU8Xytpz69HFHph9bn29Gx42wXZeMrJLTrunrBrbA5W8PCzs37L56ne3bnZ1RApyHWMtr+UXkGasZpf08120bzDW2DiRhvCmBBCgGIGXbeUhLU1cpbEqvjX8rv/KKfQAGCNDHwZwMikGN2/5kcgOUw+IqAgZNz66lun4zxxdFSi8THMkTz4+PZO2ZZt6sSFgqARb1K0F7oQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fhklX5KpNz2yqT;
+	Fri, 27 Mar 2026 13:16:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::b2"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774577768;
+	cv=none; b=Ai8TYjCjGlU2Z3yFo8/93Oi1ntHX3lk3vB81G5OGAbWtmFvUT52ut9OOefD9EBaikzwLQkNrbxTo9l8m7bv2VtDVPHq3/1eG3ctDsZIaKGO/sFTENsu6Omw9gMGoSED07Zn8ufY5i1ie9DKNVzNvdwltTOXmCtGNElYPmZnASlHFv69t+pDP+QMGgpLi5Sd19vlJ4qOEk6qHdy4u0Sw8aGV4KF6rJNvpzoSKEveahGibzgJWZ+1hg1V0fFzCIvBcYTTO0elYOU0ZCsswyVqXpC4JRqJXXojMgeRj7zGA465YBcQc8DwbSIGfYtxKvno15cIdhWOGMlqCGf1daBQ5uA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774577763; c=relaxed/relaxed;
-	bh=8tx/Qjve1iVx/sjsNymGDpKKmMZv1TUyDs/EfcYY5GE=;
+	t=1774577768; c=relaxed/relaxed;
+	bh=Y5PgiQrcwbn9XAgL4cRYPHYRVIr8zaspEnc9S8fZNtw=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=R74Lq4UfkN3uh4yRBTZmuWQsUCWWclvti25DWucA1F4DX4FaZYDCnWgQ0sp8CMW0CWIyoUMFQJ+ZCDjmFCWc55IO5HvdGN+eJQJmM7VfSNH04hfUvMo/17Kt0zND2Mk6p3rtYv7nBW8MMexrOsNxWw+6uat+5IpJdtt7Rv3X3BRf1pxAwl/Z9X7BeHQ75v6/gzPla0TWFXLZvVw3ZPwmAh4NMIRNXpR0Z6akvScT5VqNwd2k+875EwkHRO5QaNNvApblyMoO5ur12jtcTlCpcRoElg1XzaZNYKh+wxvmpa88ChCwvRZcOmMEVYy7DCbzIrnSafiSRCszmE9Lo9cAFA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Hnot0p5K; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::ae; helo=out-174.mta0.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+	 MIME-Version; b=bjlrV0spKD74t1f2IfmnqtE4W5viQBRxw2P8dLxUES4Ji+YjlIvJLJmyOuImqInALUuDUmNi3Hck610vV7Ox1KgWhvMmMU5cORp0o0KRnrYNi+NVX65ihzp5LbqNXdSwR9tOhfHS5RskDziT03ZY81RwF13lCI4wKEmagscbQAGGVAWhdaDtW9+O8WJjig8UYk61eX2dNHQXFewzZPYuC/H9BVH93zsCcnzjIdyY2I45zZnW4c3k9YalWZX1zgiw59EwjZBIBvbzy189wUKQTpgzcXGmBwyv+IEIzG6d+9Q1qHFkLHA6fdpS7kvBZ8OOW7EcnTREIk8uIAbem9obYQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=PBqsuNks; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::b2; helo=out-178.mta0.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Hnot0p5K;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=PBqsuNks;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::ae; helo=out-174.mta0.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-174.mta0.migadu.com (out-174.mta0.migadu.com [IPv6:2001:41d0:1004:224b::ae])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::b2; helo=out-178.mta0.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-178.mta0.migadu.com (out-178.mta0.migadu.com [IPv6:2001:41d0:1004:224b::b2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhklR0pTZz2xmX
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2026 13:16:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhklX0PgBz2xmX
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2026 13:16:07 +1100 (AEDT)
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1774577743;
+	t=1774577748;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=8tx/Qjve1iVx/sjsNymGDpKKmMZv1TUyDs/EfcYY5GE=;
-	b=Hnot0p5K89CAv1AQSFPCVNypjXRfAocNMIZyWJnznY4gpq+GWy2CVy+0V7yyIEu0F+HuLG
-	VCDbIV/SqybnVZSHtV9JQkcdTWMzMp9IQ8Hs+qWemVt0yevh5Dk4OIgO/2Wqfo3fp+W2Sb
-	aJvabR1V9LfLrBzcx+XgaoHKYXMXuJs=
+	bh=Y5PgiQrcwbn9XAgL4cRYPHYRVIr8zaspEnc9S8fZNtw=;
+	b=PBqsuNksqiYxLcyifzHiiquL6Zzzi+Q6QhZKvMqsl6Ywk8e+CwDNj9TY+ZBrYzU5TX4YZX
+	tN7zZsn84kggt2lWPGZqKW8iUu8t1aNBnigvnGagmSkB+xzT/lcMTAqVdArQiFTX42gjln
+	p/GMbq4RVKzlqVsGNHcXNmutrl2WTFQ=
 From: Usama Arif <usama.arif@linux.dev>
 To: Andrew Morton <akpm@linux-foundation.org>,
 	david@kernel.org,
@@ -71,9 +71,9 @@ Cc: fvdl@google.com,
 	svens@linux.ibm.com,
 	linux-s390@vger.kernel.org,
 	Usama Arif <usama.arif@linux.dev>
-Subject: [v3 15/24] fs/dax: handle split_huge_pmd failure in dax_iomap_pmd_fault
-Date: Thu, 26 Mar 2026 19:08:57 -0700
-Message-ID: <20260327021403.214713-16-usama.arif@linux.dev>
+Subject: [v3 16/24] mm: huge_mm: Make sure all split_huge_pmd calls are checked
+Date: Thu, 26 Mar 2026 19:08:58 -0700
+Message-ID: <20260327021403.214713-17-usama.arif@linux.dev>
 In-Reply-To: <20260327021403.214713-1-usama.arif@linux.dev>
 References: <20260327021403.214713-1-usama.arif@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -92,44 +92,49 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Migadu-Flow: FLOW_OUT
 
-dax_iomap_pmd_fault() splits a huge PMD when the PMD fault falls back
-to PTE-level handling. The split is necessary so that the subsequent
-PTE fault does not misinterpret the huge PMD entry as a page table
-pointer.
-
-In practice this cannot fail today: DAX VMAs are always file-backed,
-and __split_huge_pmd() only allocates a PTE page table (the operation
-that can return -ENOMEM) for anonymous VMAs. For file-backed VMAs the
-split path simply zaps the PMD and returns 0.
-
-Use WARN_ON_ONCE to document this invariant and check the return value
-for __must_check compliance introduced in the next patch.
+Mark __split_huge_pmd(), split_huge_pmd() and split_huge_pmd_address()
+with __must_check so the compiler warns if any caller ignores the return
+value. Not checking return value and operating on the basis that the pmd
+is split could result in a kernel bug. The possibility of an order-0
+allocation failing for page table allocation is very low, but it should
+be handled correctly.
 
 Signed-off-by: Usama Arif <usama.arif@linux.dev>
 ---
- fs/dax.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ include/linux/huge_mm.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/fs/dax.c b/fs/dax.c
-index a5237169b4679..ed1859e8a916f 100644
---- a/fs/dax.c
-+++ b/fs/dax.c
-@@ -2039,7 +2039,14 @@ static vm_fault_t dax_iomap_pmd_fault(struct vm_fault *vmf, unsigned long *pfnp,
- 	dax_unlock_entry(&xas, entry);
- fallback:
- 	if (ret == VM_FAULT_FALLBACK) {
--		split_huge_pmd(vmf->vma, vmf->pmd, vmf->address);
-+		/*
-+		 * split_huge_pmd() cannot fail for file-backed (DAX) VMAs
-+		 * since splitting only zaps the PMD without allocating a
-+		 * PTE page table.
-+		 */
-+		if (WARN_ON_ONCE(split_huge_pmd(vmf->vma, vmf->pmd,
-+						vmf->address)))
-+			ret = VM_FAULT_OOM;
- 		count_vm_event(THP_FAULT_FALLBACK);
- 	}
- out:
+diff --git a/include/linux/huge_mm.h b/include/linux/huge_mm.h
+index 224965fce4e66..c4d0badc4ce27 100644
+--- a/include/linux/huge_mm.h
++++ b/include/linux/huge_mm.h
+@@ -418,7 +418,7 @@ static inline int split_huge_page(struct page *page)
+ extern struct list_lru deferred_split_lru;
+ void deferred_split_folio(struct folio *folio, bool partially_mapped);
+ 
+-int __split_huge_pmd(struct vm_area_struct *vma, pmd_t *pmd,
++int __must_check __split_huge_pmd(struct vm_area_struct *vma, pmd_t *pmd,
+ 		unsigned long address, bool freeze);
+ 
+ /**
+@@ -447,7 +447,7 @@ static inline bool pmd_is_huge(pmd_t pmd)
+ 	return false;
+ }
+ 
+-static inline int split_huge_pmd(struct vm_area_struct *vma,
++static inline int __must_check split_huge_pmd(struct vm_area_struct *vma,
+ 					     pmd_t *pmd, unsigned long address)
+ {
+ 	if (pmd_is_huge(*pmd))
+@@ -455,7 +455,7 @@ static inline int split_huge_pmd(struct vm_area_struct *vma,
+ 	return 0;
+ }
+ 
+-int split_huge_pmd_address(struct vm_area_struct *vma, unsigned long address,
++int __must_check split_huge_pmd_address(struct vm_area_struct *vma, unsigned long address,
+ 		bool freeze);
+ 
+ void __split_huge_pud(struct vm_area_struct *vma, pud_t *pud,
 -- 
 2.52.0
 
