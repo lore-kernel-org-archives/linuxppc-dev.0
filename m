@@ -1,66 +1,65 @@
-Return-Path: <linuxppc-dev+bounces-18919-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18920-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C2C610BA45E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2026 09:25:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5096C10ED640
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2026 10:06:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fhwH14Qq9z2ydq;
-	Fri, 27 Mar 2026 20:25:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774603533;
-	cv=none; b=Oh4OynOtAakQk3m7hqBXbfEAVX9Az6brTlM8u1kV4aGqnd1Nf8GrCv2aGRB58DEwmP2qvlTfFvwMq0MqBbUHwno50ulZrCIYUmUFWk1gWvq6SgW0ZrZ/JIEERaupk3ygZJfrv563N47SAa7tm1koowzlj8NtiS/hpI5Qxe9p/QaTzjHmU9ZZZjgAuQFtEN/xHkBWynAneDIbtl2ZCFpMD8u3rsUaGQ6TatXA3WJ4m22bzVo2q+DwlHfJn9OTKH63Ke3KI2Y55HjznQunVbLtw12CEk0fU9T+YKLTyeQiJghQuFUX659tQN7mPDyOfL2PLN1O+e8j8td3TGhKxU4iDw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fhxBb6Dkkz2yjp;
+	Fri, 27 Mar 2026 21:06:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=180.181.231.80
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774606007;
+	cv=none; b=d7B1jJcTK7wXz1U52dS8BsR8R3eQ7W2RWsWPrTHLxsmp21t2ea40uXsxkh8xb0GsP/fEqhe0rIaUPq7B+qsjsJtFAcP5YmExa9PePoAg01VhCuLGmjm2HXUHgNFyLOMKHlk6ZF+9hWRiZNDtxfD6br8kGLe7rFagwKsraEpP/2pNcLHxU5INc8jXt56c/xO+P10W6XBhLRDHT7up8h4eBZQQnTmac+2BAS+k/2lgB1J1BPkWB0ndBWZ5tdAXvf8awjOv+DbR9OvNVuyMk8jBOye3xqOL1tmcRGD0ft45VywOG89Vsehe+AEB0lfDOj6QdBlEbWAgj2poMrdb9t1/Jw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774603533; c=relaxed/relaxed;
-	bh=q1ism79nJfn/cEtGypwqofF2VKU2iXSfP9bNn9U8VUM=;
+	t=1774606007; c=relaxed/relaxed;
+	bh=4QzfYaLe/rXOHs+mVzfwGVshXWnq3+lcNx4XDowLmVY=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=H/KgKl1Qew+2rcpe6+RSh+N8RzGwdqW/rmfUkOMqT748ipyeqk3vXX2mm65PKgS720K3F1JQ6dGKoECRKiKyJO70F7Ry6XhCOZ6uQBCngbCftFE5sPNQ5pOkw4uFXoIB7drr4nHkapAF5wPhG3ZP4ninDH36ds7f/o4p4v/RqLhJWpg33dbuZzD7xlQAJEdaF+eYumCtUWdn1MzhUCjD6H+YHqgl1Znal1UHF10I7CPie6jEabUOBBuV3XZcYtSS2oWMLnChJsQsUYpsTGR5CAV4t1vNN9XHVJjV6VnmjueQMEFuD/oNAIe4CcOLuEmrvPHEH5rapKkWgDFtp/QFUQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WmaF744H; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=FODdHlbn8EaeSKbuoPaUf0sZSK8o5gjxzUwaMWeALp8MdTvPznrHM7vMGx9ZGs92F0kOe+I6XAwCLB7wOP5XCJrP2SMwCWkCYiP6yH+NeIYn7ZZslpdCof1sMsqeWpra+I6etwARF6OgynP/JLGA2TbXbhYKcoGIcxINj+QRNvJhf2hOa+ZI3xSQ9Mj2Fi7vblZuHkt+oO3S/BBtHXVUoUQ1Yypbpj3bJv9Ud7WJ/FwuprWBaLYR3eqC3wwr8TgKTgLflNksz2xGqcYEDdVyz5TNj5Fw+Dpwc2hpnmaYz6O0MoRB5B6g6trzhbR1PoOFHt/MckYVkCJit1TTH4zPTQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=gondor.apana.org.au; dkim=pass (2048-bit key; unprotected) header.d=gondor.apana.org.au header.i=@gondor.apana.org.au header.a=rsa-sha256 header.s=h01 header.b=a0ZUXc74; dkim-atps=neutral; spf=pass (client-ip=180.181.231.80; helo=abb.hmeau.com; envelope-from=herbert@gondor.apana.org.au; receiver=lists.ozlabs.org) smtp.mailfrom=gondor.apana.org.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=gondor.apana.org.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WmaF744H;
+	dkim=pass (2048-bit key; unprotected) header.d=gondor.apana.org.au header.i=@gondor.apana.org.au header.a=rsa-sha256 header.s=h01 header.b=a0ZUXc74;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gondor.apana.org.au (client-ip=180.181.231.80; helo=abb.hmeau.com; envelope-from=herbert@gondor.apana.org.au; receiver=lists.ozlabs.org)
+Received: from abb.hmeau.com (abb.hmeau.com [180.181.231.80])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhwH05MVpz2yVt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2026 20:25:32 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 7B9F96133B;
-	Fri, 27 Mar 2026 09:25:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3A7BEC19423;
-	Fri, 27 Mar 2026 09:25:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774603530;
-	bh=q1ism79nJfn/cEtGypwqofF2VKU2iXSfP9bNn9U8VUM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=WmaF744HVRFoUZuE9WelikX7CssORJvCcgjqvHAlHItCZonH1f5u3pjVqPu2pmNwp
-	 0sOJELio9ATZHzGY1mVGObw+Tj+ohu4ZlzfgUHHShjnGHOR4dUZH1xacEXI3dnxcCp
-	 EPLuQMpDGTQFJ6BT1KDFfyUJZB6B2Qsux4f40zQaPLLMtx14hJ4SV9M9QHDzNZ1Hmg
-	 qS/wTO148ZrNsrmGjIVpE0dqOE0Hznelj+tzTWUKV8e/iMqwYv814Ef3aQMBHHZ8F+
-	 WqEr18L/sAwg5B4z4KKGy9OErz7dmEjltoJtuBoYAp8fZcOBM+JhLzwbWduY4hEBwv
-	 PVr5K0M6Wu7Wg==
-Date: Fri, 27 Mar 2026 09:25:21 +0000
-From: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
-To: "David Hildenbrand (Arm)" <david@kernel.org>
-Cc: Usama Arif <usama.arif@linux.dev>, 
-	Andrew Morton <akpm@linux-foundation.org>, willy@infradead.org, linux-mm@kvack.org, fvdl@google.com, 
-	hannes@cmpxchg.org, riel@surriel.com, shakeel.butt@linux.dev, kas@kernel.org, 
-	baohua@kernel.org, dev.jain@arm.com, baolin.wang@linux.alibaba.com, 
-	npache@redhat.com, Liam.Howlett@oracle.com, ryan.roberts@arm.com, 
-	Vlastimil Babka <vbabka@kernel.org>, lance.yang@linux.dev, linux-kernel@vger.kernel.org, 
-	kernel-team@meta.com, maddy@linux.ibm.com, mpe@ellerman.id.au, 
-	linuxppc-dev@lists.ozlabs.org, hca@linux.ibm.com, gor@linux.ibm.com, agordeev@linux.ibm.com, 
-	borntraeger@linux.ibm.com, svens@linux.ibm.com, linux-s390@vger.kernel.org
-Subject: Re: [v3 00/24] mm: thp: lazy PTE page table allocation at PMD split
- time
-Message-ID: <cf36f821-8285-4b9f-b1fd-e080292f4204@lucifer.local>
-References: <20260327021403.214713-1-usama.arif@linux.dev>
- <48d7c810-d219-4346-9e8b-d70243445a91@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhxBY3jQ1z2yjm
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2026 21:06:44 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=gondor.apana.org.au; s=h01; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:cc:to:subject:message-id:date:
+	from:content-type:reply-to; bh=4QzfYaLe/rXOHs+mVzfwGVshXWnq3+lcNx4XDowLmVY=; 
+	b=a0ZUXc74/1e6kzIhdvVuxxUMrsvKdlw6sre0AwUe7RMDlU42cTHobkKWmwFjMIdZKdhFySCK5Lu
+	6O5QBrh13CvDfIe7CkDax5OA884h//hU10X0UtlyRgn8eBd6NImAonJOna5naVY8Yhlp1CXAHfVyk
+	HM/rGBhpk0en4bUjSfuu4Zz4p0VbnAEInBJ2LltuPJ0bSICwDTSjL3DBYqQ1FiXOAtwlI/buXtZB/
+	12UEe59s3U668P1RMc8BsWYl749mNTmW23d2ZpwW/WazmaXMrB8+klHwTAjAF45yacdIrSBSiZKVC
+	aBaQ6lvpR5K7BbUv1uHCBcMGWOSEGo/2BKvg==;
+Received: from loth.rohan.me.apana.org.au ([192.168.167.2])
+	by formenos.hmeau.com with smtp (Exim 4.96 #2 (Debian))
+	id 1w63fn-001bmP-2t;
+	Fri, 27 Mar 2026 18:06:31 +0800
+Received: by loth.rohan.me.apana.org.au (sSMTP sendmail emulation); Fri, 27 Mar 2026 19:06:30 +0900
+Date: Fri, 27 Mar 2026 19:06:30 +0900
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Thorsten Blum <thorsten.blum@linux.dev>
+Cc: Haren Myneni <haren@us.ibm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"David S. Miller" <davem@davemloft.net>,
+	Kees Cook <kees@kernel.org>,
+	"Gustavo A. R. Silva" <gustavoars@kernel.org>,
+	linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org
+Subject: Re: [PATCH] crypto: nx - annotate struct nx842_crypto_header with
+ __counted_by
+Message-ID: <acZWps0gefzjyktn@gondor.apana.org.au>
+References: <20260317201804.1393389-3-thorsten.blum@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,45 +75,21 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48d7c810-d219-4346-9e8b-d70243445a91@kernel.org>
+In-Reply-To: <20260317201804.1393389-3-thorsten.blum@linux.dev>
 
-On Fri, Mar 27, 2026 at 09:51:31AM +0100, David Hildenbrand (Arm) wrote:
-> >
-> > RFC v2 -> v3: https://lore.kernel.org/all/de0dc7ec-7a8d-4b1a-a419-1d97d2e4d510@linux.dev/
->
-> Note that we usually go from RFC to v1.
->
-> I'll put this series on my review backlog, but it will take some time
-> until I get to it (it won't make the next release either way :) ).
+On Tue, Mar 17, 2026 at 09:18:06PM +0100, Thorsten Blum wrote:
+> Add the __counted_by() compiler attribute to the flexible array member
+> 'group' to improve access bounds-checking via CONFIG_UBSAN_BOUNDS and
+> CONFIG_FORTIFY_SOURCE.
+> 
+> Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
+> ---
+>  drivers/crypto/nx/nx-842.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Yeah, please update to v1 from RFC because I'm looking at this and wondering
-where v1, v2 was and why I didn't see them...
-
-Generally I'd also advise un-RFC'ing a biiiig series IDEALLY be done early in a
-merge window :)
-
-We've pretty much shut the door to new series this cycle, but being so late in
-the window at -rc5 would mean no way for this one anyway.
-
-But in general it's going to be a rebase pain this, and I'd rather not see it
-land in mm-unstable at this point, because that's supposed to be 'what's in the
-next release' and it's stuff like this that leads to 'I am not sure what
-mm-unstable represents any more' being a thing.
-
-I think in an ideal world we'd ONLY see this in mm-new.
-
-I wonder if we need some process for un-RFC'ing really, where somebody kinda
-asks rather than it being a vibes thing as it is now (or a 'people don't reply
-to my RFC' which yes I'm guilty of :)
-
-Anyway this is more general points and not about you Usama, because - hey - all
-this stuff is pretty unclear generally.
-
->
-> --
-> Cheers,
->
-> David
-
-Cheers, Lorenzo
+Patch applied.  Thanks.
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
 
