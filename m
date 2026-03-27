@@ -1,45 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-18847-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18848-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D81A10AB83C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2026 02:15:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92CBE10A62D1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2026 02:15:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fhkk70bVyz2yrg;
-	Fri, 27 Mar 2026 13:14:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.180
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774577695;
-	cv=none; b=jmRXhDG67jMzLpym0WzXihWIKPtA6g5iRplY5twc+ZiefiINmLJ+GGUF7/ebVCdLE8us7+fIh7XiqeIoatKqAQAFRP6bLsc4pG+xzl8mQpGWMiqgk0UKQappBkdNVPcEPdCnGKSxbwjRLSgT/oTYjKwZhGkLYfr6MdWI0bbbCNw1A+JmDe1G85axnljFFtY+9w32BlplbX+h41InDcc70upOtui7SFbxu3Sxo/V9H7kRx/Syy8HQ0rleshSmCVuTZ482BhZF5+l5SDGklSWtvYXfv59gS8w/MMy72XiQIT+AzKxuONGOHkPmIsC7Y68WM9EyOvRbNPIJC9SscaSj9Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fhkkH1JSsz2yT0;
+	Fri, 27 Mar 2026 13:15:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.186
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774577703;
+	cv=none; b=Wogb0kmwq2LhzcVfOp36rJRairvTucdsX+NZkbphIS2YuPCkFXats/+S5B9qWenjUATAFu7lkNUHLBE/KQEwPSEXVo+2iWTIWRXVssFcUjbRPzqZAPqaCasMRqTVh+ocJoSOewHRziVgo0kqn5wjt6N7x+qbsasfgACbflnvdoalRJlSZfKnsmrobDm+A+B/j/FgPABAyqRphVAa23ZWyVLTcytCz3jahfzlHTTUaJZhcbGWPeIjzDsVBFFBSyRgvQIEL+uDOdOwhtykj8vtsER30P7KVhqWa/u6OrSZ65VoSrcCPOP2ylyY1Hagdc864jafrRXYrnF8JQ5R7xgpug==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774577695; c=relaxed/relaxed;
-	bh=AsidUyaFSU2OL+6pIevfNbim9vED85JJGBowf2ctQP8=;
+	t=1774577703; c=relaxed/relaxed;
+	bh=sLE/jttxUNtNWJGXfdbfQ0fLOQxN3ImdDTn6kFnTkPI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=a3Dlybh7LWIaf5AaPHAXjrePNxlUHN3GR6nnBHmLp6CaMyTndPy5th2oCSs7MypN3pewzriKyzAlrBs70tUEhHkSrueEQYAqSCZTrAztrwz1mc6s92zupZZHpQj7C2qQx0oYh9kOVwTbmpV+S6blpdwOTm03SZEpmuS/4wxTMJGtpD+QqUKv0eImqBciFXj9/fk3+f00Ox1RqtnaSQZPfR16OBz1oumR+vGxh5z6Vpf+YXnR+0rvjLovtQ4XnrDb2ZZselizhjoTrcyIgJIcM/p9BmB4rGWOrdbLRfuAVrxAEPqNEJlyVFtP953p5G86V32ZeSN4vTKuC3xTshOSiQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=KJYNK18n; dkim-atps=neutral; spf=pass (client-ip=91.218.175.180; helo=out-180.mta0.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+	 MIME-Version; b=dDRwPS/PlW1eVi0wv6wmj8yi3V7nAcBUxb9M+Sk+KEa4cbqGFkXrhDNMxSX/DqcXKc6SUApiCaiFAXkUKHjNz7UqDvZ1VwW7tc1zd5VIGGJyeJr0j8FQkG3jQsvOdZQeDkoxEX8oUDVonMIMhWh99McuesdJf7BEQREfpSaqRctqfHX9pgjav0zvtS+csbnbRvhyUfcdkCkBfDtdwBoXzCy9qlM03T3P+Fr52QKfV+B0OpdMwjf1pzkPgvw3Yf5SoIh2+blhcqpxCSoruhxmb3Jyt78SDhmMvh+k5CuvGltxs7HZ0tQD8Wt/740B51TtfF7e2b/JHJP1EGF9vWpoOg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=HOqb9c3q; dkim-atps=neutral; spf=pass (client-ip=95.215.58.186; helo=out-186.mta1.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=KJYNK18n;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=HOqb9c3q;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.180; helo=out-180.mta0.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-180.mta0.migadu.com (out-180.mta0.migadu.com [91.218.175.180])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.186; helo=out-186.mta1.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-186.mta1.migadu.com (out-186.mta1.migadu.com [95.215.58.186])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhkk62gYbz2xR4
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2026 13:14:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhkkG27ytz2xR4
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2026 13:15:02 +1100 (AEDT)
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1774577674;
+	t=1774577683;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=AsidUyaFSU2OL+6pIevfNbim9vED85JJGBowf2ctQP8=;
-	b=KJYNK18nvflazGbUsGQzniopI3KPVpz1LShSWjjSbT+hxFnh/0tpkw+tfNe3j+MVojye1j
-	wdQPu4/bxNWWVoy1HF/DFPdbf1u5jrpcQiHNSPWDNk1zHFhU0vPcRAGI2daPSXBje5u6Yr
-	R2eLlqWUdaQ4fQFe4gaiAaU+oQXNXZY=
+	bh=sLE/jttxUNtNWJGXfdbfQ0fLOQxN3ImdDTn6kFnTkPI=;
+	b=HOqb9c3qtURSYEfsDks7zbx2QDtDTH9l8hI6RIZbNZVZjMBH564Y3pW5ZPIcsI8NKoiThq
+	EoKp0vqkwqrK6t8HL7D5u0ey61UVlkvaX3oR+haZEDWM9M+SC4Ti9llRE18ryT8ip3fCx4
+	H6PgMQ7rNNkpgtUJP6NJzF9wyR2yris=
 From: Usama Arif <usama.arif@linux.dev>
 To: Andrew Morton <akpm@linux-foundation.org>,
 	david@kernel.org,
@@ -71,9 +71,9 @@ Cc: fvdl@google.com,
 	svens@linux.ibm.com,
 	linux-s390@vger.kernel.org,
 	Usama Arif <usama.arif@linux.dev>
-Subject: [v3 04/24] mm: thp: handle split failure in do_huge_pmd_wp_page()
-Date: Thu, 26 Mar 2026 19:08:46 -0700
-Message-ID: <20260327021403.214713-5-usama.arif@linux.dev>
+Subject: [v3 05/24] mm: thp: handle split failure in zap_pmd_range()
+Date: Thu, 26 Mar 2026 19:08:47 -0700
+Message-ID: <20260327021403.214713-6-usama.arif@linux.dev>
 In-Reply-To: <20260327021403.214713-1-usama.arif@linux.dev>
 References: <20260327021403.214713-1-usama.arif@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -89,45 +89,64 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-Migadu-Flow: FLOW_OUT
 
-do_huge_pmd_wp_page() splits the PMD when a COW of the entire huge page
-fails (e.g., can't allocate a new folio or the folio is pinned).  It then
-returns VM_FAULT_FALLBACK so the fault can be retried at PTE granularity.
+zap_pmd_range() splits a huge PMD when the zap range doesn't cover the
+full PMD (partial unmap).  If the split fails, the PMD stays huge.
+Falling through to zap_pte_range() would dereference the huge PMD entry
+as a PTE page table pointer.
 
-If the split fails, the PMD is still huge.  Returning VM_FAULT_FALLBACK
-would re-enter the PTE fault path, which expects a PTE page table at the
-PMD entry — not a huge PMD.
+Skip the range covered by the PMD on split failure instead.
 
-Return VM_FAULT_OOM on split failure, which signals the fault handler to
-invoke the OOM killer or return -ENOMEM to userspace.
+The skip is safe across all call paths into zap_pmd_range():
+
+- exit_mmap() and OOM reaper: the zap range covers entire VMAs, so
+  every PMD is fully covered (next - addr == HPAGE_PMD_SIZE).  The
+  zap_huge_pmd() branch handles these without splitting.  The split
+  failure path is unreachable.
+
+- munmap / mmap overlay: vma_adjust_trans_huge() (called from
+  __split_vma) splits any PMD straddling the VMA boundary before the
+  VMA is split.  If that PMD split fails, __split_vma() returns
+  -ENOMEM and the munmap is aborted before reaching zap_pmd_range().
+  The split failure path is unreachable.
+
+- MADV_DONTNEED: advisory hint, the kernel is allowed to ignore it.
+  The pages remain valid and accessible.  A subsequent access returns
+  existing data without faulting.
 
 Signed-off-by: Usama Arif <usama.arif@linux.dev>
 ---
- mm/huge_memory.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ mm/memory.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index 8ad43897bdf80..9f4be707c8cb0 100644
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@ -2137,7 +2137,13 @@ vm_fault_t do_huge_pmd_wp_page(struct vm_fault *vmf)
- 	folio_unlock(folio);
- 	spin_unlock(vmf->ptl);
- fallback:
--	__split_huge_pmd(vma, vmf->pmd, vmf->address, false);
-+	/*
-+	 * Split failure means the PMD is still huge; returning
-+	 * VM_FAULT_FALLBACK would re-enter the PTE path with a
-+	 * huge PMD, causing incorrect behavior.
-+	 */
-+	if (__split_huge_pmd(vma, vmf->pmd, vmf->address, false))
-+		return VM_FAULT_OOM;
- 	return VM_FAULT_FALLBACK;
- }
- 
+diff --git a/mm/memory.c b/mm/memory.c
+index e44469f9cf659..caf97c48cb166 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -1985,9 +1985,18 @@ static inline unsigned long zap_pmd_range(struct mmu_gather *tlb,
+ 	do {
+ 		next = pmd_addr_end(addr, end);
+ 		if (pmd_is_huge(*pmd)) {
+-			if (next - addr != HPAGE_PMD_SIZE)
+-				__split_huge_pmd(vma, pmd, addr, false);
+-			else if (zap_huge_pmd(tlb, vma, pmd, addr)) {
++			if (next - addr != HPAGE_PMD_SIZE) {
++				/*
++				 * If split fails, the PMD stays huge.
++				 * Skip the range to avoid falling through
++				 * to zap_pte_range, which would treat the
++				 * huge PMD entry as a page table pointer.
++				 */
++				if (__split_huge_pmd(vma, pmd, addr, false)) {
++					addr = next;
++					continue;
++				}
++			} else if (zap_huge_pmd(tlb, vma, pmd, addr)) {
+ 				addr = next;
+ 				continue;
+ 			}
 -- 
 2.52.0
 
