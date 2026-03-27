@@ -1,67 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-18941-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18942-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B581110F2865
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2026 20:55:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59C0410F2865
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2026 20:55:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fjCZl1wlkz2yjV;
-	Sat, 28 Mar 2026 07:55:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::124a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774644911;
-	cv=none; b=GVQFNeptc9OMPox3vRX5ZYNRp3tDapEsO2YVijiikmoUO216VJ6MEgJSEQYSM/cLzKFStCie3ZK6GgNRv+XowPf56vAEReX6XIhc9emStqt48Eg3V8fA5yLTJhi3j+BAH4ryp5mRgIxHrHBXivMfF+IIvU4gdtaAd3UdA5T+L4nfKnI7qyPvJxMZJs9UGabcBqbAnUq+NUsAlHFm9AGFUF/IJReMfmzJbgGs7LAVtWM+8/zeaBEtF3aoBur6EdtRZ74n0C8Kfhn18p2n7KnDYVCs4FNUZSouVTw5jEOEPxcL6jdUkXMhMdTHueEJDapqmbj1/3vCq6TjuDzx6Tz9Pw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fjCZn1v0Wz2yqt;
+	Sat, 28 Mar 2026 07:55:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::134a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774644913;
+	cv=none; b=P1uS8xrghRl5bsfEM/6/D9nXLycZ2dGNas87gB/Xzssc37il6gK8v6QR9YjFx+AClreMaXjhSsyCipLQ+Lh1lFRdsmIOSSmRtOqNjYVeZjB+nLz+ru+VFt+0ntNlL6ETqHe/mDK0cJf/pftaEYLT835nua1uoKkjRv8T7pMPz5zi8KZOWmQHlEril9ZGsRfj81wO/G6diQzL4w91p4JiZwny/14rCQuHdmt5IUs1XFd4O915kSzT30e6RCl/Qn2Q71lxmuuwfq2wZIMbGsGPoOkwAIBYjPGCQrK2OAfuJbTAApfyHRdBK/hxiq1KvYKGcGKQf65+BNKj0EX3XwQHQg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774644911; c=relaxed/relaxed;
-	bh=f0m3laKqVZc6BVbp9FlOKUOANtvuTeySm/ZmFaYOMpk=;
+	t=1774644913; c=relaxed/relaxed;
+	bh=6skjtd7OxVmiwFu5TmEIQZKDuU+5vel5eIP7VGPQHkg=;
 	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=AuaHIm5/DSBA6zxUkHU/5wKRbNuJzSnXGdDO2CHYGw0p6a984q8+NjxLUvuTqSvnpTt/ew5Lgjkr2AEUKswtCnpL5n5InYoySSCVYKaezJjWcvb2xX4f9msmEXEk8ccKxc1HvqGhmSiux831BWbbqnNhp2gCOKeD33lbUas7istEx3rEy9hmDNNWl0n9DLvlZv22++EOmu0XWHYqfcRce7Zes1SBpAhKHJqQUe9iQ7CE9xstJLtJNwEKZNU6Y9Yiwmm+3+jftKJoDuz34ZatXA9KiIXxC2cMQDeM3TY9CwgtlZ2GojM7B5+Zjq+ONWxnjbHJwINel5Ma+ytKrF90Fw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=M2DSWmqj; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::124a; helo=mail-dl1-x124a.google.com; envelope-from=3ro7gaqykdpktvsfochpphmf.dpnmjovyqqd-efwmjtut.p0mbct.psh@flex--surenb.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--surenb.bounces.google.com
+	 To:Cc:Content-Type; b=McTk6z6GPvGiqEbqCISSZRtpa2t+VO8ppXBB4F5uJ1BGqWqR3Z4pObu+wTSnOaYy/KaW0OUhnCjP85a7pKZ1fIW1cgWE9yH00PxyAYZCDx3AWii9wyvgc+t7iNEbqEbsIDk8MLJCo8o9I0Sn6ompy6HQuPMtyfPnGC+GEcR70oZT4cHerq0EpGdxuSUHzSiu53RHEHVa1s2EwwWnIBpL/bx8+gaBMHpM3RZZDF0jJxW47RQ0uh+72vojrgTIFMYfLTl8VEDLnOFzFjIVnvO1V+igfHBGKB26hoi28O5lQqZapELC9ieX7xd7ex9D0FDqWjCw8oJjXrgK/JCwJz9BGQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=mBYUENlI; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::134a; helo=mail-dy1-x134a.google.com; envelope-from=3ru7gaqykdpsvxuhqejrrjoh.frpolqx0ssf-ghyolvwv.r2odev.ruj@flex--surenb.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--surenb.bounces.google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=M2DSWmqj;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=mBYUENlI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--surenb.bounces.google.com (client-ip=2607:f8b0:4864:20::124a; helo=mail-dl1-x124a.google.com; envelope-from=3ro7gaqykdpktvsfochpphmf.dpnmjovyqqd-efwmjtut.p0mbct.psh@flex--surenb.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-x124a.google.com (mail-dl1-x124a.google.com [IPv6:2607:f8b0:4864:20::124a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--surenb.bounces.google.com (client-ip=2607:f8b0:4864:20::134a; helo=mail-dy1-x134a.google.com; envelope-from=3ru7gaqykdpsvxuhqejrrjoh.frpolqx0ssf-ghyolvwv.r2odev.ruj@flex--surenb.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x134a.google.com (mail-dy1-x134a.google.com [IPv6:2607:f8b0:4864:20::134a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fjCZk3wY5z2yqt
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2026 07:55:10 +1100 (AEDT)
-Received: by mail-dl1-x124a.google.com with SMTP id a92af1059eb24-1273dfdaf5dso1689825c88.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2026 13:55:10 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fjCZm2H9rz2ysZ
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2026 07:55:12 +1100 (AEDT)
+Received: by mail-dy1-x134a.google.com with SMTP id 5a478bee46e88-2c16233ee11so2440010eec.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2026 13:55:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1774644908; x=1775249708; darn=lists.ozlabs.org;
+        d=google.com; s=20251104; t=1774644911; x=1775249711; darn=lists.ozlabs.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=f0m3laKqVZc6BVbp9FlOKUOANtvuTeySm/ZmFaYOMpk=;
-        b=M2DSWmqj9ebI/r2UAVHds9PC536DiFjKnV/imZ3/9PKzOZ9q6E4jNYdDgjw48pVGG+
-         bFW1qm9Q4PIeOrsdIvm1UNZbBAY6sEO9qCKmSCjj59dLhCPjNSVYBe1ICsR5X3nYTmd5
-         rgM20U8pijqmR3aQOA0eROGQP/XPxjjQV5yiDW1qybBAR1ow+eOB9I9MPVyQhKvmqMyc
-         /IJ1eS9RXis1LpGzGh7sV9QnnMotW/kiOsQXKSShLfcbuve3dLz7t2qzVeVjhY1khnAM
-         BTbsjapFZFGD4uBUxW9U+BDYodLL6nRXVYJWTW8b5cwpd0OnYOVHlC7hdEyfngND4uw2
-         IH0Q==
+        bh=6skjtd7OxVmiwFu5TmEIQZKDuU+5vel5eIP7VGPQHkg=;
+        b=mBYUENlIRvA0k77k+aXF2GBTgX9BE+WCkqm4kOgwkKjGeClIZR1J1+hQk7SdgF3hXX
+         VpFFHwoc01wq4grLycgKn+vBK+UH2LchUzbjlz27JY09JuP41NtfYVdF41J1sK714wEw
+         FlkYXtuaLsiKwY5va0qkvdKuPohtiEIabwszZ2WOQAodC1CJnhO/YPXftt/thudHisjA
+         ZPRJAP9JHPMHgYsljty6uwSMMy4stk8g4IgTijmA/b+kC/ugMHXvc/y/lCglaTSEtJP4
+         WZVv9VfsA3ryvlAjcMHdnWkgpPr8b0i/xBEMNUoM8QlNrNWQ8Px+7gSG1XuiWYPOMxVf
+         qMTw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774644908; x=1775249708;
+        d=1e100.net; s=20251104; t=1774644911; x=1775249711;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=f0m3laKqVZc6BVbp9FlOKUOANtvuTeySm/ZmFaYOMpk=;
-        b=fI10+dZzaoJKvb87Fq1LL7cP2AHONF/2eqbUiF/Ii6BrABs3nSDbrYlneW7RWbg3wH
-         zHAZ/pqB1B7SlUOCy+UnC1id9XjUoIR0b8h+j1b9qn79LnOPwmYXxXaXuZpP3LRzh8JD
-         muaUZEnbi+XNblXK17A6J3pxN7g2fLxSEGUWV3CJTatHUnVZ+2kr5O4G/IYSkopIK2zh
-         r0MtyhnUfEF78w5MoE3lTw7o/x9P0ipZRvJVXerev4ZR79GEo+lWRmOAlQsBRHV/YgfL
-         Zp3aKCS+8yc7Fv340QC3spdxzQlZnEG+xTimiPtBDCyRkzJ44gh7ev9lvLQ0/J+b6teP
-         ujng==
-X-Forwarded-Encrypted: i=1; AJvYcCWsGWiPeAjFTMA7LxPRgHs4LRCIEceIPZDWGBQTGl5qRl0uhOSW8wYxDGGpEDBR1TdO8ehPhO2XfS/IGtA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzIDK6ik7tVVBf4XBd/6Ly61JTeMTvIPwnIzvU5soBD6R7yP4pW
-	/apOgQbFFcbfEhEF/qUg+Bjfa3Wr7Q4T7/cbySvCnowknuY6rd5nhHFElsQd9Iwp3KEcI4yi9be
-	gChecfA==
-X-Received: from dyz2.prod.google.com ([2002:a05:693c:4082:b0:2c1:2155:75eb])
- (user=surenb job=prod-delivery.src-stubby-dispatcher) by 2002:a05:7022:6981:b0:12a:80f2:89a4
- with SMTP id a92af1059eb24-12aabb97edamr3324672c88.10.1774644908020; Fri, 27
- Mar 2026 13:55:08 -0700 (PDT)
-Date: Fri, 27 Mar 2026 13:54:54 -0700
+        bh=6skjtd7OxVmiwFu5TmEIQZKDuU+5vel5eIP7VGPQHkg=;
+        b=smUKOwDKxqdFYEsueVBQH6nnPU6hsl+0xqD9xAKeimT5RA/dBVMLItiivvonYN2sfv
+         b1S1diJvkXK2huKLDQcDOY2A4Ktd/8Zcij/ZB/irBjsU2G1IIGozvO7xI7vns8DHiUnw
+         HN+1KVDO5EYay6iQxrTR1gyAJRYJTK6zHnZTRIibP54zPu3cvTqPxpNZwx26aKxu+lxs
+         p9NTJzG9X+d0etugpDcyfKh5zHd4N2oS+81QLAEqvQq2XrM0W7hWvEMcwaS17ps+Oc6z
+         6JX6P4Kbcg7xvQumAo/E4WVk10t5ItS4toFBUTrSFLaTi75v7q877OaetASXawpUW6VU
+         s/7g==
+X-Forwarded-Encrypted: i=1; AJvYcCVt8rz8hYB/9/ZWz9oENpcxaY3tAaXSPOVlR37DWwv9iPoPLLgTEg9ZLQJBB56+FiF8MKf2Gx+LlSvFujQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzYlg3uZ/eURr0xidW6+OynnQoItjoORC5v4FYCK55hKmOoUBoq
+	c/B/HALp2sBnGnebFqzi2s07uhD84zc5qPaG0DREQ8Jua/XYWKKczcwpRRdfcRuA9jd/IoKGMDR
+	C+bUNrQ==
+X-Received: from dybrq15.prod.google.com ([2002:a05:7301:468f:b0:2c3:adf7:d755])
+ (user=surenb job=prod-delivery.src-stubby-dispatcher) by 2002:a05:7300:5b89:b0:2c1:1dea:c443
+ with SMTP id 5a478bee46e88-2c185e460a2mr2052736eec.19.1774644910254; Fri, 27
+ Mar 2026 13:55:10 -0700 (PDT)
+Date: Fri, 27 Mar 2026 13:54:55 -0700
 In-Reply-To: <20260327205457.604224-1-surenb@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -78,8 +78,8 @@ Precedence: list
 Mime-Version: 1.0
 References: <20260327205457.604224-1-surenb@google.com>
 X-Mailer: git-send-email 2.53.0.1018.g2bb0e51243-goog
-Message-ID: <20260327205457.604224-4-surenb@google.com>
-Subject: [PATCH v6 3/6] mm/khugepaged: use vma_start_write_killable() in collapse_huge_page()
+Message-ID: <20260327205457.604224-5-surenb@google.com>
+Subject: [PATCH v6 4/6] mm/vma: use vma_start_write_killable() in vma operations
 From: Suren Baghdasaryan <surenb@google.com>
 To: akpm@linux-foundation.org
 Cc: willy@infradead.org, david@kernel.org, ziy@nvidia.com, 
@@ -99,31 +99,411 @@ Content-Type: text/plain; charset="UTF-8"
 
 Replace vma_start_write() with vma_start_write_killable(), improving
 reaction time to the kill signal.
-Replace vma_start_write() in collapse_huge_page().
+Replace vma_start_write() calls when we operate on VMAs.
+
+To propagate errors from vma_merge_existing_range() and vma_expand()
+we fake an ENOMEM error when we fail due to a pending fatal signal.
+This is a temporary workaround. Fixing this requires some refactoring
+and will be done separately in the future.
+
+In a number of places we now lock VMA earlier than before to avoid
+doing work and undoing it later if a fatal signal is pending. This
+is safe because the moves are happening within sections where we
+already hold the mmap_write_lock, so the moves do not change the
+locking order relative to other kernel locks.
 
 Suggested-by: Matthew Wilcox <willy@infradead.org>
 Signed-off-by: Suren Baghdasaryan <surenb@google.com>
-Reviewed-by: Lorenzo Stoakes (Oracle) <ljs@kernel.org>
 ---
- mm/khugepaged.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ mm/vma.c      | 146 ++++++++++++++++++++++++++++++++++++++------------
+ mm/vma_exec.c |   6 ++-
+ 2 files changed, 117 insertions(+), 35 deletions(-)
 
-diff --git a/mm/khugepaged.c b/mm/khugepaged.c
-index d06d84219e1b..a1825a4dec8b 100644
---- a/mm/khugepaged.c
-+++ b/mm/khugepaged.c
-@@ -1166,7 +1166,10 @@ static enum scan_result collapse_huge_page(struct mm_struct *mm, unsigned long a
- 	if (result != SCAN_SUCCEED)
- 		goto out_up_write;
- 	/* check if the pmd is still valid */
+diff --git a/mm/vma.c b/mm/vma.c
+index ba78ab1f397a..cc382217f730 100644
+--- a/mm/vma.c
++++ b/mm/vma.c
+@@ -524,6 +524,21 @@ __split_vma(struct vma_iterator *vmi, struct vm_area_struct *vma,
+ 		new->vm_pgoff += ((addr - vma->vm_start) >> PAGE_SHIFT);
+ 	}
+ 
++	/*
++	 * Lock VMAs before cloning to avoid extra work if fatal signal
++	 * is pending.
++	 */
++	err = vma_start_write_killable(vma);
++	if (err)
++		goto out_free_vma;
++	/*
++	 * Locking a new detached VMA will always succeed but it's just a
++	 * detail of the current implementation, so handle it all the same.
++	 */
++	err = vma_start_write_killable(new);
++	if (err)
++		goto out_free_vma;
++
+ 	err = -ENOMEM;
+ 	vma_iter_config(vmi, new->vm_start, new->vm_end);
+ 	if (vma_iter_prealloc(vmi, new))
+@@ -543,9 +558,6 @@ __split_vma(struct vma_iterator *vmi, struct vm_area_struct *vma,
+ 	if (new->vm_ops && new->vm_ops->open)
+ 		new->vm_ops->open(new);
+ 
 -	vma_start_write(vma);
-+	if (vma_start_write_killable(vma)) {
-+		result = SCAN_FAIL;
-+		goto out_up_write;
+-	vma_start_write(new);
+-
+ 	init_vma_prep(&vp, vma);
+ 	vp.insert = new;
+ 	vma_prepare(&vp);
+@@ -900,12 +912,22 @@ static __must_check struct vm_area_struct *vma_merge_existing_range(
+ 	}
+ 
+ 	/* No matter what happens, we will be adjusting middle. */
+-	vma_start_write(middle);
++	err = vma_start_write_killable(middle);
++	if (err) {
++		/* Ensure error propagates. */
++		vmg->give_up_on_oom = false;
++		goto abort;
 +	}
- 	result = check_pmd_still_valid(mm, address, pmd);
- 	if (result != SCAN_SUCCEED)
- 		goto out_up_write;
+ 
+ 	if (merge_right) {
+ 		vma_flags_t next_sticky;
+ 
+-		vma_start_write(next);
++		err = vma_start_write_killable(next);
++		if (err) {
++			/* Ensure error propagates. */
++			vmg->give_up_on_oom = false;
++			goto abort;
++		}
+ 		vmg->target = next;
+ 		next_sticky = vma_flags_and_mask(&next->flags, VMA_STICKY_FLAGS);
+ 		vma_flags_set_mask(&sticky_flags, next_sticky);
+@@ -914,7 +936,12 @@ static __must_check struct vm_area_struct *vma_merge_existing_range(
+ 	if (merge_left) {
+ 		vma_flags_t prev_sticky;
+ 
+-		vma_start_write(prev);
++		err = vma_start_write_killable(prev);
++		if (err) {
++			/* Ensure error propagates. */
++			vmg->give_up_on_oom = false;
++			goto abort;
++		}
+ 		vmg->target = prev;
+ 
+ 		prev_sticky = vma_flags_and_mask(&prev->flags, VMA_STICKY_FLAGS);
+@@ -1170,10 +1197,18 @@ int vma_expand(struct vma_merge_struct *vmg)
+ 	vma_flags_t sticky_flags =
+ 		vma_flags_and_mask(&vmg->vma_flags, VMA_STICKY_FLAGS);
+ 	vma_flags_t target_sticky;
+-	int err = 0;
++	int err;
+ 
+ 	mmap_assert_write_locked(vmg->mm);
+-	vma_start_write(target);
++	err = vma_start_write_killable(target);
++	if (err) {
++		/*
++		 * Override VMA_MERGE_NOMERGE to prevent callers from
++		 * falling back to a new VMA allocation.
++		 */
++		vmg->state = VMA_MERGE_ERROR_NOMEM;
++		return err;
++	}
+ 
+ 	target_sticky = vma_flags_and_mask(&target->flags, VMA_STICKY_FLAGS);
+ 
+@@ -1201,6 +1236,19 @@ int vma_expand(struct vma_merge_struct *vmg)
+ 	 * we don't need to account for vmg->give_up_on_mm here.
+ 	 */
+ 	if (remove_next) {
++		/*
++		 * Lock the VMA early to avoid extra work if fatal signal
++		 * is pending.
++		 */
++		err = vma_start_write_killable(next);
++		if (err) {
++			/*
++			 * Override VMA_MERGE_NOMERGE to prevent callers from
++			 * falling back to a new VMA allocation.
++			 */
++			vmg->state = VMA_MERGE_ERROR_NOMEM;
++			return err;
++		}
+ 		err = dup_anon_vma(target, next, &anon_dup);
+ 		if (err)
+ 			return err;
+@@ -1214,7 +1262,6 @@ int vma_expand(struct vma_merge_struct *vmg)
+ 	if (remove_next) {
+ 		vma_flags_t next_sticky;
+ 
+-		vma_start_write(next);
+ 		vmg->__remove_next = true;
+ 
+ 		next_sticky = vma_flags_and_mask(&next->flags, VMA_STICKY_FLAGS);
+@@ -1252,9 +1299,14 @@ int vma_shrink(struct vma_iterator *vmi, struct vm_area_struct *vma,
+ 	       unsigned long start, unsigned long end, pgoff_t pgoff)
+ {
+ 	struct vma_prepare vp;
++	int err;
+ 
+ 	WARN_ON((vma->vm_start != start) && (vma->vm_end != end));
+ 
++	err = vma_start_write_killable(vma);
++	if (err)
++		return err;
++
+ 	if (vma->vm_start < start)
+ 		vma_iter_config(vmi, vma->vm_start, start);
+ 	else
+@@ -1263,8 +1315,6 @@ int vma_shrink(struct vma_iterator *vmi, struct vm_area_struct *vma,
+ 	if (vma_iter_prealloc(vmi, NULL))
+ 		return -ENOMEM;
+ 
+-	vma_start_write(vma);
+-
+ 	init_vma_prep(&vp, vma);
+ 	vma_prepare(&vp);
+ 	vma_adjust_trans_huge(vma, start, end, NULL);
+@@ -1453,7 +1503,9 @@ static int vms_gather_munmap_vmas(struct vma_munmap_struct *vms,
+ 			if (error)
+ 				goto end_split_failed;
+ 		}
+-		vma_start_write(next);
++		error = vma_start_write_killable(next);
++		if (error)
++			goto munmap_gather_failed;
+ 		mas_set(mas_detach, vms->vma_count++);
+ 		error = mas_store_gfp(mas_detach, next, GFP_KERNEL);
+ 		if (error)
+@@ -1848,12 +1900,16 @@ static void vma_link_file(struct vm_area_struct *vma, bool hold_rmap_lock)
+ static int vma_link(struct mm_struct *mm, struct vm_area_struct *vma)
+ {
+ 	VMA_ITERATOR(vmi, mm, 0);
++	int err;
++
++	err = vma_start_write_killable(vma);
++	if (err)
++		return err;
+ 
+ 	vma_iter_config(&vmi, vma->vm_start, vma->vm_end);
+ 	if (vma_iter_prealloc(&vmi, vma))
+ 		return -ENOMEM;
+ 
+-	vma_start_write(vma);
+ 	vma_iter_store_new(&vmi, vma);
+ 	vma_link_file(vma, /* hold_rmap_lock= */false);
+ 	mm->map_count++;
+@@ -2239,9 +2295,8 @@ int mm_take_all_locks(struct mm_struct *mm)
+ 	 * is reached.
+ 	 */
+ 	for_each_vma(vmi, vma) {
+-		if (signal_pending(current))
++		if (signal_pending(current) || vma_start_write_killable(vma))
+ 			goto out_unlock;
+-		vma_start_write(vma);
+ 	}
+ 
+ 	vma_iter_init(&vmi, mm, 0);
+@@ -2540,8 +2595,8 @@ static int __mmap_new_vma(struct mmap_state *map, struct vm_area_struct **vmap,
+ 	struct mmap_action *action)
+ {
+ 	struct vma_iterator *vmi = map->vmi;
+-	int error = 0;
+ 	struct vm_area_struct *vma;
++	int error;
+ 
+ 	/*
+ 	 * Determine the object being mapped and call the appropriate
+@@ -2552,6 +2607,14 @@ static int __mmap_new_vma(struct mmap_state *map, struct vm_area_struct **vmap,
+ 	if (!vma)
+ 		return -ENOMEM;
+ 
++	/*
++	 * Lock the VMA early to avoid extra work if fatal signal
++	 * is pending.
++	 */
++	error = vma_start_write_killable(vma);
++	if (error)
++		goto free_vma;
++
+ 	vma_iter_config(vmi, map->addr, map->end);
+ 	vma_set_range(vma, map->addr, map->end, map->pgoff);
+ 	vma->flags = map->vma_flags;
+@@ -2582,8 +2645,6 @@ static int __mmap_new_vma(struct mmap_state *map, struct vm_area_struct **vmap,
+ 	WARN_ON_ONCE(!arch_validate_flags(map->vm_flags));
+ #endif
+ 
+-	/* Lock the VMA since it is modified after insertion into VMA tree */
+-	vma_start_write(vma);
+ 	vma_iter_store_new(vmi, vma);
+ 	map->mm->map_count++;
+ 	vma_link_file(vma, action->hide_from_rmap_until_complete);
+@@ -2878,6 +2939,7 @@ int do_brk_flags(struct vma_iterator *vmi, struct vm_area_struct *vma,
+ 		 unsigned long addr, unsigned long len, vma_flags_t vma_flags)
+ {
+ 	struct mm_struct *mm = current->mm;
++	int err;
+ 
+ 	/*
+ 	 * Check against address space limits by the changed size
+@@ -2910,24 +2972,33 @@ int do_brk_flags(struct vma_iterator *vmi, struct vm_area_struct *vma,
+ 
+ 		if (vma_merge_new_range(&vmg))
+ 			goto out;
+-		else if (vmg_nomem(&vmg))
++		if (vmg_nomem(&vmg)) {
++			err = -ENOMEM;
+ 			goto unacct_fail;
++		}
+ 	}
+ 
+ 	if (vma)
+ 		vma_iter_next_range(vmi);
+ 	/* create a vma struct for an anonymous mapping */
+ 	vma = vm_area_alloc(mm);
+-	if (!vma)
++	if (!vma) {
++		err = -ENOMEM;
+ 		goto unacct_fail;
++	}
+ 
+ 	vma_set_anonymous(vma);
+ 	vma_set_range(vma, addr, addr + len, addr >> PAGE_SHIFT);
+ 	vma->flags = vma_flags;
+ 	vma->vm_page_prot = vm_get_page_prot(vma_flags_to_legacy(vma_flags));
+-	vma_start_write(vma);
+-	if (vma_iter_store_gfp(vmi, vma, GFP_KERNEL))
++	if (vma_start_write_killable(vma)) {
++		err = -EINTR;
++		goto vma_lock_fail;
++	}
++	if (vma_iter_store_gfp(vmi, vma, GFP_KERNEL)) {
++		err = -ENOMEM;
+ 		goto mas_store_fail;
++	}
+ 
+ 	mm->map_count++;
+ 	validate_mm(mm);
+@@ -2942,10 +3013,11 @@ int do_brk_flags(struct vma_iterator *vmi, struct vm_area_struct *vma,
+ 	return 0;
+ 
+ mas_store_fail:
++vma_lock_fail:
+ 	vm_area_free(vma);
+ unacct_fail:
+ 	vm_unacct_memory(len >> PAGE_SHIFT);
+-	return -ENOMEM;
++	return err;
+ }
+ 
+ /**
+@@ -3112,8 +3184,8 @@ int expand_upwards(struct vm_area_struct *vma, unsigned long address)
+ 	struct mm_struct *mm = vma->vm_mm;
+ 	struct vm_area_struct *next;
+ 	unsigned long gap_addr;
+-	int error = 0;
+ 	VMA_ITERATOR(vmi, mm, vma->vm_start);
++	int error;
+ 
+ 	if (!vma_test(vma, VMA_GROWSUP_BIT))
+ 		return -EFAULT;
+@@ -3149,12 +3221,14 @@ int expand_upwards(struct vm_area_struct *vma, unsigned long address)
+ 
+ 	/* We must make sure the anon_vma is allocated. */
+ 	if (unlikely(anon_vma_prepare(vma))) {
+-		vma_iter_free(&vmi);
+-		return -ENOMEM;
++		error = -ENOMEM;
++		goto vma_prep_fail;
+ 	}
+ 
+ 	/* Lock the VMA before expanding to prevent concurrent page faults */
+-	vma_start_write(vma);
++	error = vma_start_write_killable(vma);
++	if (error)
++		goto vma_lock_fail;
+ 	/* We update the anon VMA tree. */
+ 	anon_vma_lock_write(vma->anon_vma);
+ 
+@@ -3183,8 +3257,10 @@ int expand_upwards(struct vm_area_struct *vma, unsigned long address)
+ 		}
+ 	}
+ 	anon_vma_unlock_write(vma->anon_vma);
+-	vma_iter_free(&vmi);
+ 	validate_mm(mm);
++vma_lock_fail:
++vma_prep_fail:
++	vma_iter_free(&vmi);
+ 	return error;
+ }
+ #endif /* CONFIG_STACK_GROWSUP */
+@@ -3197,8 +3273,8 @@ int expand_downwards(struct vm_area_struct *vma, unsigned long address)
+ {
+ 	struct mm_struct *mm = vma->vm_mm;
+ 	struct vm_area_struct *prev;
+-	int error = 0;
+ 	VMA_ITERATOR(vmi, mm, vma->vm_start);
++	int error;
+ 
+ 	if (!vma_test(vma, VMA_GROWSDOWN_BIT))
+ 		return -EFAULT;
+@@ -3228,12 +3304,14 @@ int expand_downwards(struct vm_area_struct *vma, unsigned long address)
+ 
+ 	/* We must make sure the anon_vma is allocated. */
+ 	if (unlikely(anon_vma_prepare(vma))) {
+-		vma_iter_free(&vmi);
+-		return -ENOMEM;
++		error = -ENOMEM;
++		goto vma_prep_fail;
+ 	}
+ 
+ 	/* Lock the VMA before expanding to prevent concurrent page faults */
+-	vma_start_write(vma);
++	error = vma_start_write_killable(vma);
++	if (error)
++		goto vma_lock_fail;
+ 	/* We update the anon VMA tree. */
+ 	anon_vma_lock_write(vma->anon_vma);
+ 
+@@ -3263,8 +3341,10 @@ int expand_downwards(struct vm_area_struct *vma, unsigned long address)
+ 		}
+ 	}
+ 	anon_vma_unlock_write(vma->anon_vma);
+-	vma_iter_free(&vmi);
+ 	validate_mm(mm);
++vma_lock_fail:
++vma_prep_fail:
++	vma_iter_free(&vmi);
+ 	return error;
+ }
+ 
+diff --git a/mm/vma_exec.c b/mm/vma_exec.c
+index 5cee8b7efa0f..8ddcc791d828 100644
+--- a/mm/vma_exec.c
++++ b/mm/vma_exec.c
+@@ -41,6 +41,7 @@ int relocate_vma_down(struct vm_area_struct *vma, unsigned long shift)
+ 	struct vm_area_struct *next;
+ 	struct mmu_gather tlb;
+ 	PAGETABLE_MOVE(pmc, vma, vma, old_start, new_start, length);
++	int err;
+ 
+ 	BUG_ON(new_start > new_end);
+ 
+@@ -56,8 +57,9 @@ int relocate_vma_down(struct vm_area_struct *vma, unsigned long shift)
+ 	 * cover the whole range: [new_start, old_end)
+ 	 */
+ 	vmg.target = vma;
+-	if (vma_expand(&vmg))
+-		return -ENOMEM;
++	err = vma_expand(&vmg);
++	if (err)
++		return err;
+ 
+ 	/*
+ 	 * move the page tables downwards, on failure we rely on
 -- 
 2.53.0.1018.g2bb0e51243-goog
 
