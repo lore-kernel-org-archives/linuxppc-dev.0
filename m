@@ -1,67 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-18928-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18929-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A096A10F284B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2026 16:47:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14A8410F2859
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2026 17:03:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fj65F6T3nz2xmX;
-	Sat, 28 Mar 2026 03:47:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774630065;
-	cv=none; b=LT40NrR+2PfwH2W5O1v/Sm1MhUa1wVM0SjihAShne8sjCcRRw1YTArQ4CGMgm5qbbsD/6KRdOnA0QK4LO46Itc0vUQm5FrQtLTq5SObU/n1cnjDkVr3HdcIuqxqIL62Ur20LItAO5D0ghNfnHqhUmo9RDOL2nx8vXwg0kUkQe5FOEdBqT264nuabLO3/QW5S9kCELotDaFZIcb+szhDFpiQ10KEgDyQ1Jhb4ulwRs52Bzy9K0nLNGphtdsEu4euP2ZDNJBQfCJuv6aCgz/q7UAZ4Nr1vyHGphNzeDhErP79WR1VhJ8sO7G+exu8r69EYCWH8g/b/ZTjsK+Vweb8iog==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fj6RP52vmz2xmX;
+	Sat, 28 Mar 2026 04:03:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774631009;
+	cv=none; b=YbeJlLwpEGbqsIIWoOCzqItIZgafZlYn5z09ohYG7mwXknNCr2nUzVrrMKuVJ/M7F3w851L9mKc0WCX2VyEBSd+py+kzc0nkGaVLJmLlY53mj5PRbEMaMl/7LhLc5ZzG6u6k+LWLHlnNwnpKLHi/+qTSZZRoz8g1w2IhHtq7uOPJtNO8mucca47jECKkQc8lkjdXiA/AUq77FIWjhkTAsSYIsZR3WLjtaq5FIm4chATr35VNA7X8+Cg0Bfs+jcgEztuPocVWfccAOLN70o4NSed1wjHwGUDHI8g+jLhbkM4I8hhbijgeVnc1ObB9r243m2gC2Sd82XtcVMjujwykoQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774630065; c=relaxed/relaxed;
-	bh=A2GOXUcfCtO+hU/aS7MG7CRDyabivV54yc7GX1ZTR4Y=;
-	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=P5oIi6hAdAiz4vKYfHB86bnZLKb4QBEJkcgiFSgcRco16e/rHvEhSFHetR/oSf8N7yn5CpsXihVyrQck88N5tVBQ2UC7C1M30hQlwAqNLJ8/NWUfQVLG8zYBqRmE6ZG7YNnf58BoLUJjphfTlHhYbQjv0c+vBvHbPiQ9OnU4EUysFH5PAEM38H9faGFbgJmwQMlWWFWk8JAZoYxZYcv+bLW7M1i4R35+2XTWczLkPtkbvZ8Giv8btbhXT6cw1uV69shAHLddOneX/AXjLoncFNmootP6QEAUQILdpKATn4iNvaszl94jnkHypnEWHlm6uvpta3Ob8qdkFJHcZJAlOw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=n03tXMcp; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
+	t=1774631009; c=relaxed/relaxed;
+	bh=jlgvlIx2lZLy/yw0VsiYcAtefj+7HLiDE86xWPu3bn0=;
+	h=Date:From:To:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=HCkV6UOP+NCQRNphTCir6pbK5bezjyEqVE7P/k/wuuV6+wImTiQIq+XIQTlYqskn3UhXfS+3nSj5g1kyTBl+715FbXPHl6XN+Ui6+TykDQQaxEus8t15eWwSBu9HBm883RYhEHkj9whRu/D70OdrUzMqBlrD8SNgElrgvVpZkdvZOeiYIw2sqt4Q4ScFpUIbVRsaG7Lf2Dmjgvq0s/CHlxtWpr7Wilw6mqF8WqAHKffqL1bYZ3DLMdqYVNs/lwNFvl3w6I6I90qKn5ALfUIm2NVMgAZrJ/Np0cfrcKzbtM2AHpfd+hAmOcPuFXrCRp7vRuVXkMcUOyQV5spR48C8oQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=oq9Nujey; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=n03tXMcp;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=oq9Nujey;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fj65D6bBRz2xR4
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2026 03:47:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fj6RN5svdz2xR4
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2026 04:03:27 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 4F94943C26;
-	Fri, 27 Mar 2026 16:47:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EB0CEC19423;
-	Fri, 27 Mar 2026 16:47:38 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id C912360127;
+	Fri, 27 Mar 2026 17:03:24 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4F22BC19423;
+	Fri, 27 Mar 2026 17:03:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
-	s=korg; t=1774630060;
-	bh=zCHu6vdwFKPQuNA2ItrsbdYzJ6DJHAS5OipAXB0fjEs=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=n03tXMcpjjYNt0Hx9YQwbPGwEDXWZKfUKohUo5ohPUHbPx+f8qh+KDZeTzpBbg3/7
-	 LokGmm0Pw75YvFbCHRFosn/8qYVSWw0qa92DFLMAQG6xmDRvM6NK+zWmACR7qoWvYF
-	 QyWcblJX4j+wv1GSRREER4cGbV/YrZaU//IBoy1I=
-Date: Fri, 27 Mar 2026 09:47:38 -0700
+	s=korg; t=1774631004;
+	bh=jlgvlIx2lZLy/yw0VsiYcAtefj+7HLiDE86xWPu3bn0=;
+	h=Date:From:To:Subject:In-Reply-To:References:From;
+	b=oq9Nujeyhp7Zx6NT/DmAKRTTx7w3723Jfsgcrx2JTII8ccXAVeunav2gzmNtcCWt4
+	 g+b2onmd9YBtHJ7AgnnAAq/NWR4pHj2kIgRzkSL3306j4h3HOUuTBYP0MQBBSLDCLr
+	 YLaYJ9G1El1MIqjFKuWcT5xV6/7jTsovIMJ3/INw=
+Date: Fri, 27 Mar 2026 10:03:22 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Suren Baghdasaryan <surenb@google.com>
-Cc: willy@infradead.org, david@kernel.org, ziy@nvidia.com,
- matthew.brost@intel.com, joshua.hahnjy@gmail.com, rakie.kim@sk.com,
- byungchul@sk.com, gourry@gourry.net, ying.huang@linux.alibaba.com,
- apopple@nvidia.com, lorenzo.stoakes@oracle.com,
- baolin.wang@linux.alibaba.com, Liam.Howlett@oracle.com, npache@redhat.com,
- ryan.roberts@arm.com, dev.jain@arm.com, baohua@kernel.org,
- lance.yang@linux.dev, vbabka@suse.cz, jannh@google.com, rppt@kernel.org,
- mhocko@suse.com, pfalcato@suse.de, kees@kernel.org, maddy@linux.ibm.com,
- npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org,
- borntraeger@linux.ibm.com, frankja@linux.ibm.com, imbrenda@linux.ibm.com,
- hca@linux.ibm.com, gor@linux.ibm.com, agordeev@linux.ibm.com,
- svens@linux.ibm.com, gerald.schaefer@linux.ibm.com, linux-mm@kvack.org,
+To: Suren Baghdasaryan <surenb@google.com>, willy@infradead.org,
+ david@kernel.org, ziy@nvidia.com, matthew.brost@intel.com,
+ joshua.hahnjy@gmail.com, rakie.kim@sk.com, byungchul@sk.com,
+ gourry@gourry.net, ying.huang@linux.alibaba.com, apopple@nvidia.com,
+ lorenzo.stoakes@oracle.com, baolin.wang@linux.alibaba.com,
+ Liam.Howlett@oracle.com, npache@redhat.com, ryan.roberts@arm.com,
+ dev.jain@arm.com, baohua@kernel.org, lance.yang@linux.dev, vbabka@suse.cz,
+ jannh@google.com, rppt@kernel.org, mhocko@suse.com, pfalcato@suse.de,
+ kees@kernel.org, maddy@linux.ibm.com, npiggin@gmail.com,
+ mpe@ellerman.id.au, chleroy@kernel.org, borntraeger@linux.ibm.com,
+ frankja@linux.ibm.com, imbrenda@linux.ibm.com, hca@linux.ibm.com,
+ gor@linux.ibm.com, agordeev@linux.ibm.com, svens@linux.ibm.com,
+ gerald.schaefer@linux.ibm.com, linux-mm@kvack.org,
  linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
 Subject: Re: [PATCH v5 0/6] Use killable vma write locking in most places
-Message-Id: <20260327094738.7150efc3b0619e6ccf095c23@linux-foundation.org>
-In-Reply-To: <20260326080836.695207-1-surenb@google.com>
+Message-Id: <20260327100322.b539f1a9f3662a0a4c080cce@linux-foundation.org>
+In-Reply-To: <20260327094738.7150efc3b0619e6ccf095c23@linux-foundation.org>
 References: <20260326080836.695207-1-surenb@google.com>
+	<20260327094738.7150efc3b0619e6ccf095c23@linux-foundation.org>
 X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -79,37 +80,9 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 
-On Thu, 26 Mar 2026 01:08:30 -0700 Suren Baghdasaryan <surenb@google.com> wrote:
+On Fri, 27 Mar 2026 09:47:38 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> Now that we have vma_start_write_killable() we can replace most of the
-> vma_start_write() calls with it, improving reaction time to the kill
-> signal.
-> 
-> There are several places which are left untouched by this patchset:
-> 
-> 1. free_pgtables() because function should free page tables even if a
-> fatal signal is pending.
-> 
-> 2. userfaultd code, where some paths calling vma_start_write() can
-> handle EINTR and some can't without a deeper code refactoring.
-> 
-> 3. mpol_rebind_mm() which is used by cpusset controller for migrations
-> and operates on a remote mm. Incomplete operations here would result
-> in an inconsistent cgroup state.
-> 
-> 4. vm_flags_{set|mod|clear} require refactoring that involves moving
-> vma_start_write() out of these functions and replacing it with
-> vma_assert_write_locked(), then callers of these functions should
-> lock the vma themselves using vma_start_write_killable() whenever
-> possible.
+> Three of your patches lack review tags so now it's 65!
 
-Thanks, I added this to mm-new.
-
-It doesn't appear to fix anything and it has no
-appreciable&measured performance benefits, so I just broke my own rule.
-
-Weasel words: Lorenzo would like it in 7.0, unreviewed patches in
-mm-unstable&mm-new are down to 62 and I'm a sucker for nice patchsets.
-
-Three of your patches lack review tags so now it's 65!
+Three is now zero, thanks Lorenzo.
 
