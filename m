@@ -1,74 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-18930-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18931-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7CE610F2860
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2026 17:12:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2406D10F285E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2026 17:32:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fj6dw1cyZz2xmX;
-	Sat, 28 Mar 2026 04:12:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774631556;
-	cv=none; b=YU48JJ3D5IMHfu106MEZi7E6CsyEqXJ3XW5KwX64yHGYVjeJSQ6MytEXV1xpd+mUUZC7oRFuqHffdIGDEvhAyn8Ymr2hRI9TQ583Q/nos3eDyESXm03ZWZCsAO6BTqJEBLuod4JX3kaPptCqvxfQMGrdAwFFbUPgQi3hLj9BgzZPx1rehEqCjnvzsf2Eln9zLkJ2ni7HG+qiTT8c6LDcn+o+b1bEpLcJDJhS3ofeZYZSgldK+tcSPw8wLnWCqrHT+JUEpEK/e0QZNzXf9pC5CQ4N2WexnKgU/kt6A8BES5dI9VIhPInxTZw3mlApiIC9nJpeEzWYfl/5rG3RefKsRw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774631556; c=relaxed/relaxed;
-	bh=g+743C1c9bGbfvP4cQljiRojozWZ33IbKUWDmbpgGVs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=R2/pQoE4RcrLEg+r/ui4tpGTPiNTjSBoYYx1C8Rv7sgbDuB3UFyYxEBO0ar2/eFelrEWQC8du2xoQkxexoh3V2jHIlK7A5GlgcAk3BQ0/CDGL+Rll16YiF33sswecqwLKkptq6Q28oq9zRNaLfsIpYjufhPmewVErnc6Ny7nPWL7JXmBfBV2mrAwhqFwW3xHtXmZyEV3JGcnIYCqI89wQO1b+q1wbx3lucuN5DBu10Iz18ZZknDwKL4IOqWZGGiRKzyq2zELvNTPFu5vp9RWmRgNtoQueMZxEG2ahswZThLOf92zLFWvtduZTraUYGx9rSiPrKo1ED7qsZ4d7J+n1A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CBBUkAdN; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fj75934Lfz2xmX;
+	Sat, 28 Mar 2026 04:32:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::82c" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774632765;
+	cv=pass; b=V823qsCeObScmDM+lZa4bFyowbHR1fH9/iGxf5avv708zDRM6EiYpo0pKhnmhpK4AOqcNsDhYGzrvORRU88tTQ5LcyD66B0j5sPlS4u9EpecyZBk7uV7oeXoTXdq1FXacsoCmavpNr5cno8+Xa8LzbCyt8Nme/0eyfgAao+7iUGoKWuHigrQO5+b02EFxKFgQb2Od6nhX764wCysWtr0/JsOMfIAv2/0GhaUzsomcwcG5Ec8WqY766zXxAhSN6M6QqBLfPSyZ/MOhR6/Tn05fqLfz+zAyigPQPbgcyEa+8B9jjk08ScWsWNRdNfelO79pc426yEfFTkDv3R0IpBHCA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1774632765; c=relaxed/relaxed;
+	bh=xn4jfIlqJ8j0SglUOPqzBzIxBo2F6zmgVlZu4AmYgAs=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Wrun/yU+Jeo5GV2ERXb2NI74ez7GoAjaogXbjKVa+Xas8x+MX53fNbhy6WU71kTpGzr2bldeDNCLrICgQ+UPcJrRCjTUnJxBrfNCWWTygkvuOW5p2GRMuB2kXKDmGhDeJOOWSfTklct0ENuQ+VUxcwaWzbfZfj6z8hQkM8tIJad+0YkEqL7Tz30MGvrv3a4BFf1CIfFb0xoLZEaFn2fOJbx9SEKmQVmweM8kSuDfmQLqznwTx0PSMNa4RCkwXCrCOK3p35D0D1gGkzN4yvx9ewtmks3bBTtlhN19VOKfd8MWgnoXz0taBvekqYZlzuNgDFKNLXNcEop39pcM7YBusQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=ian/eaa0; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::82c; helo=mail-qt1-x82c.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CBBUkAdN;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=ian/eaa0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::82c; helo=mail-qt1-x82c.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org)
+Received: from mail-qt1-x82c.google.com (mail-qt1-x82c.google.com [IPv6:2607:f8b0:4864:20::82c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fj6dt48GHz2xR4
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2026 04:12:34 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id E1D7760127;
-	Fri, 27 Mar 2026 17:12:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0883CC19423;
-	Fri, 27 Mar 2026 17:12:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774631551;
-	bh=MvMFqhnsZZr06SdVmhQQ8yFBO4J0YHjtEFCesOzEOVg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=CBBUkAdNPfmmIltuHE6pZ6GpwC9m1K+SXX9SsGPrXIW3gJCsavgLlBBFhllhQ8YOV
-	 tt4v86XDdlFoZfXDWWeQB/kZRnJsC72/2SzZfO03eHu3zwjOw/NRJZJdfe7tPOsj/H
-	 xZPsKYg2lEOyHQVDuzvBc3T+oW5ge/Ms1dc/coAeYjdDtxnlJCj3sgd0nOmr6HhLlb
-	 ryVmy9CH86EKbBkS5gNJ82lQSGvFhRoc7XumwqORtvLuF6ft5AuU9wHZOeQVY8tmIJ
-	 ikfw0WPIJMlejTpAQz8wOen8RRrBNWQTRHTEyw9/Q1dMm1o4NegwxmZRKfaj1AEbCW
-	 zcL0eU61oIoEA==
-Date: Fri, 27 Mar 2026 20:12:14 +0300
-From: Mike Rapoport <rppt@kernel.org>
-To: Bert Karwatzki <spasswolf@web.de>
-Cc: linux-kernel@vger.kernel.org, Liam.Howlett@oracle.com,
-	akpm@linux-foundation.org, andreas@gaisler.com, ardb@kernel.org,
-	bp@alien8.de, brauner@kernel.org, catalin.marinas@arm.com,
-	chleroy@kernel.org, dave.hansen@linux.intel.com,
-	davem@davemloft.net, david@kernel.org, devicetree@vger.kernel.org,
-	dvyukov@google.com, elver@google.com, glider@google.com,
-	hannes@cmpxchg.org, hpa@zytor.com, ilias.apalodimas@linaro.org,
-	iommu@lists.linux.dev, jack@suse.cz, jackmanb@google.com,
-	kasan-dev@googlegroups.com, linux-arm-kernel@lists.infradead.org,
-	linux-efi@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-	linux-mm@kvack.org, linux-trace-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, lorenzo.stoakes@oracle.com,
-	m.szyprowski@samsung.com, maddy@linux.ibm.com, mhiramat@kernel.org,
-	mhocko@suse.com, mingo@redhat.com, mpe@ellerman.id.au,
-	npiggin@gmail.com, robh@kernel.org, robin.murphy@arm.com,
-	saravanak@kernel.org, sparclinux@vger.kernel.org, surenb@google.com,
-	tglx@kernel.org, vbabka@kernel.org, viro@zeniv.linux.org.uk,
-	will@kernel.org, x86@kernel.org, ziy@nvidia.com
-Subject: Re: Warning from free_reserved_area() in next-20260325+
-Message-ID: <aca6blFFWskxAcAr@kernel.org>
-References: <20260323074836.3653702-10-rppt@kernel.org>
- <20260327140109.7561-1-spasswolf@web.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fj7573vz2z2xR4
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2026 04:32:43 +1100 (AEDT)
+Received: by mail-qt1-x82c.google.com with SMTP id d75a77b69052e-509069a7a7fso41061cf.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2026 10:32:43 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1774632760; cv=none;
+        d=google.com; s=arc-20240605;
+        b=QFlR5VSYKS/RbwBofLHllTSWpbutX/6e8YhOdIC3pgH8WB/cryvNiVU0tcX0fZi/dE
+         FpAPtrSIfnjyroSjzaAUtJxYCcnfO4iSTahRiQxsg6pnTM2beXqf59Nr9ZL4mvff80wT
+         FwrBGC+LWLNH0uvbdvb/dHLlIDChJN8vWUholTR8HYev7oAFP0bxSy3cS7m3pnfasWcB
+         v2GOty8qhgBIzd8SashZiFhj7M3jzJ5zl12/jf+cSj2Yviv0ADfW9CV5Re8CmK2/V+0C
+         PBXtbgIwMr+3XsvlJXfZ9L0t2meqZpXZ0tpFB+PbpEA2CqlKz8gLS+jXif9ImW6xH7YC
+         nntw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=xn4jfIlqJ8j0SglUOPqzBzIxBo2F6zmgVlZu4AmYgAs=;
+        fh=70jzXtM/5u8/wv5tmjArLtnhSPSQHVUmstLYJp3exHk=;
+        b=D8ECXaUzSy+rr2JZZMe3752vy9Q2So1fFJCa7yz+S+emkwZj2ul/VHJWWYxwNtG7p/
+         MSiqV183w0OvBXI73s9MAnqH9T9NbAwE7hXRLIuVuZxuRyzrvXsOezvYwBoE0wB9YLzD
+         79rCnr1EHC+FDcH8BY305AsuiZTTcG6oVQflAwo+O5kbcDa+PfzN/J6Vst0R4VMFsVyx
+         cAAbiK6IyLmy6zrDYUJttNQH2ATF3q6rKnb65MCHCkUd2Yt3qVXfDnIHDpzFDW/zNcXF
+         nD8TJl5xTolxwGUyLMIkL+PRn7C+ok9PhK4YpxjQ2VNEAUUyYkhVX6C/qBdLt+IGaG73
+         zXUA==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1774632760; x=1775237560; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=xn4jfIlqJ8j0SglUOPqzBzIxBo2F6zmgVlZu4AmYgAs=;
+        b=ian/eaa0f10E5wR+ig4k6aBLHrFJc9BVnsKP5IKVsCwCUMSNhWeXckOHTWvU4G3aU6
+         quPN+PqXbLtX01SHJ/e2YhDFLuiH98wL2DzcjUaqwr35gJrz4wTIWBda4Stx+q4sNTth
+         WKbu09+L6PiW10npST10Q+0ME91/jC7ZMVNSvi7yZwar1sUKPxr3R6YiJRjqu65JKiA5
+         nWhraqhJppg0p0C7UugzxoCqc8464kppFgCjn5j5jxaB9bekiMXsYeTRgCad5iLvTc73
+         7HpWERFcGea0OuOHPfLAx1Zv7vXMZhEuiFcTIjG6oxY9hvFnNU5CW7ni30XyAh4ur7Os
+         BIZQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774632760; x=1775237560;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=xn4jfIlqJ8j0SglUOPqzBzIxBo2F6zmgVlZu4AmYgAs=;
+        b=sPTPE6WJ0GYmk9s85yHOqYWzwPXQLnVama8l71/tyXPyerhxiuOUJGyQl2Dd4rL+iK
+         oiMafHNAXnl/8hMpV43XDJRL9VvLBaVVFsXIJNCE8HZyPhb11XnLjmFZKc1avvXWRFUP
+         zT21Q7A9dAEpdfdkUf077WBG8KhoecfHAKtI6NEtqX+pbXWT/d5fVls0QwvHr5O+R4Hi
+         scQMDNkMDX/JX4TnPBE20CfvU9ANm75SqvrTPeAxBGfajWX3cxpx1bNoeLG7ZHd0Q95Z
+         +jbCch6KHwtro1f9oUYjZylapugZGQrl0tl+wsNLhcK4FE+k6RSl9X8FKx8a6Ug6RDwE
+         69sA==
+X-Forwarded-Encrypted: i=1; AJvYcCXHX9v+sYHd3bFuxIoXYtbg37Vei1yMbPX7bM0sSiQhMM2G5ndoU/Qop3wUBd2RjMk6tkaomoOSm22OWZY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzDnN2p0XbF6CS2J0CnQXB8cAgEXJVppe5vaim7YFmsRTVtr2Ha
+	VFYvdJarvK+WpYiZ02Vp4YqhQhlcbKGsyl2tE3c6pRBULyBBcB78FDI9w13nS0RB1hOrvbu5Ipg
+	8hBZNCSllye+YtnQbPu+V9cfeUhn46tuIY8U+rIPU
+X-Gm-Gg: ATEYQzz+s4xLPAiXgN5vz0b9UZYbpMloA8fY6wGhtAxAtl9eDulvwNTDvx64i5WZnUQ
+	a0sC8e7vdT/MU8phtSy+8OdQ9U1kdMd5Hvk3voUmGwfPfcr5BcJpreZB+MkJi08uNb9CjtQR4Ai
+	IkyYDreoa1r9QLywWcocwTXrYsQZVu4a+K4Keb/rpzcFUsGwv1keLdr8hZ5qiuiLQQ02tn+jmi7
+	LtPUTclgMr9R9mN2h24YGzdCvKnMiIc+A3ai0NjEJkajUeRj7jVG3n7Z+KkTTkb2txTrd5D6lw2
+	voRs9Nd90kJTB2886AhVAHIMfDLaEqKkpJpc
+X-Received: by 2002:a05:622a:8c05:b0:503:4bc:c925 with SMTP id
+ d75a77b69052e-50bb292f320mr200991cf.13.1774632758893; Fri, 27 Mar 2026
+ 10:32:38 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,95 +101,46 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260327140109.7561-1-spasswolf@web.de>
+References: <20260326080836.695207-1-surenb@google.com> <20260327094738.7150efc3b0619e6ccf095c23@linux-foundation.org>
+ <20260327100322.b539f1a9f3662a0a4c080cce@linux-foundation.org>
+In-Reply-To: <20260327100322.b539f1a9f3662a0a4c080cce@linux-foundation.org>
+From: Suren Baghdasaryan <surenb@google.com>
+Date: Fri, 27 Mar 2026 10:32:27 -0700
+X-Gm-Features: AQROBzCNRgKBqW9q5PX49UYqB837bDipJe3mVx90Rrm9LZ-wrkWrRewJtwtbwBQ
+Message-ID: <CAJuCfpFxZsnZqqfoKXX=JEBrBaqZHNAgBE0VHbTc=GhQzP7X=g@mail.gmail.com>
+Subject: Re: [PATCH v5 0/6] Use killable vma write locking in most places
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: willy@infradead.org, david@kernel.org, ziy@nvidia.com, 
+	matthew.brost@intel.com, joshua.hahnjy@gmail.com, rakie.kim@sk.com, 
+	byungchul@sk.com, gourry@gourry.net, ying.huang@linux.alibaba.com, 
+	apopple@nvidia.com, lorenzo.stoakes@oracle.com, baolin.wang@linux.alibaba.com, 
+	Liam.Howlett@oracle.com, npache@redhat.com, ryan.roberts@arm.com, 
+	dev.jain@arm.com, baohua@kernel.org, lance.yang@linux.dev, vbabka@suse.cz, 
+	jannh@google.com, rppt@kernel.org, mhocko@suse.com, pfalcato@suse.de, 
+	kees@kernel.org, maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au, 
+	chleroy@kernel.org, borntraeger@linux.ibm.com, frankja@linux.ibm.com, 
+	imbrenda@linux.ibm.com, hca@linux.ibm.com, gor@linux.ibm.com, 
+	agordeev@linux.ibm.com, svens@linux.ibm.com, gerald.schaefer@linux.ibm.com, 
+	linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Bert,
+On Fri, Mar 27, 2026 at 10:03=E2=80=AFAM Andrew Morton
+<akpm@linux-foundation.org> wrote:
+>
+> On Fri, 27 Mar 2026 09:47:38 -0700 Andrew Morton <akpm@linux-foundation.o=
+rg> wrote:
+>
+> > Three of your patches lack review tags so now it's 65!
+>
+> Three is now zero, thanks Lorenzo.
 
-On Fri, Mar 27, 2026 at 03:01:08PM +0100, Bert Karwatzki wrote:
-> Starting with linux next-20260325 I see the following warning early in the
-> boot process of a machine running debian stable (trixie) (except for the kernel):
-
-Thanks for the report!
-
-> [    0.027118] [      T0] ------------[ cut here ]------------
-> [    0.027118] [      T0] Cannot free reserved memory because of deferred initialization of the memory map
-> [    0.027119] [      T0] WARNING: mm/memblock.c:904 at __free_reserved_area+0xa9/0xc0, CPU#0: swapper/0/0
-> [    0.027122] [      T0] Modules linked in:
-> [    0.027123] [      T0] CPU: 0 UID: 0 PID: 0 Comm: swapper/0 Not tainted 7.0.0-rc5-next-20260326-master #385 PREEMPT_RT 
-> [    0.027125] [      T0] Hardware name: ASUS System Product Name/ROG STRIX B850-F GAMING WIFI, BIOS 1627 02/05/2026
-> [    0.027125] [      T0] RIP: 0010:__free_reserved_area+0xa9/0xc0
-> [    0.027126] [      T0] Code: 48 89 df 48 89 ee e8 06 fe ff ff 48 89 c3 48 39 e8 72 a0 5b 4c 89 e8 5d 41 5c 41 5d 41 5e c3 cc cc cc cc 48 8d 3d 97 c2 c6 00 <67> 48 0f b9 3a 45 31 ed eb df 66 66 2e 0f 1f 84 00 00 00 00 00 66
-> [    0.027127] [      T0] RSP: 0000:ffffffff9b203e98 EFLAGS: 00010202
-> [    0.027128] [      T0] RAX: 0000000e91c00001 RBX: ffffffff9b100c0f RCX: 0000000080000001
-> [    0.027128] [      T0] RDX: 00000000000000cc RSI: 0000000e2d42d000 RDI: ffffffff9b32ef60
-> [    0.027128] [      T0] RBP: ffff9eeafdd6fbc0 R08: 0000000000000000 R09: 0000000000000001
-> [    0.027129] [      T0] R10: 0000000000001000 R11: 8000000000000163 R12: 000000000000006f
-> [    0.027129] [      T0] R13: 0000000000000000 R14: 0000000000000045 R15: 000000005c8a1000
-> [    0.027129] [      T0] FS:  0000000000000000(0000) GS:ffff9eeb21c05000(0000) knlGS:0000000000000000
-> [    0.027130] [      T0] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> [    0.027130] [      T0] CR2: ffff9ee8ad801000 CR3: 0000000e2ce1e000 CR4: 0000000000f50ef0
-> [    0.027131] [      T0] PKRU: 55555554
-> [    0.027131] [      T0] Call Trace:
-> [    0.027132] [      T0]  <TASK>
-> [    0.027132] [      T0]  free_reserved_area+0x89/0xd0
-> [    0.027133] [      T0]  alternative_instructions+0xee/0x110
-> [    0.027136] [      T0]  arch_cpu_finalize_init+0x10f/0x160
-> [    0.027138] [      T0]  start_kernel+0x686/0x710
-> [    0.027140] [      T0]  x86_64_start_reservations+0x24/0x30
-> [    0.027141] [      T0]  x86_64_start_kernel+0xd4/0xe0
-> [    0.027142] [      T0]  common_startup_64+0x13e/0x141
-> [    0.027143] [      T0]  </TASK>
-> [    0.027144] [      T0] ---[ end trace 0000000000000000 ]---
-
-Does this patch fix it for you?
-
-diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
-index e87da25d1236..62936a3bde19 100644
---- a/arch/x86/kernel/alternative.c
-+++ b/arch/x86/kernel/alternative.c
-@@ -2448,19 +2448,31 @@ void __init alternative_instructions(void)
- 					    __smp_locks, __smp_locks_end,
- 					    _text, _etext);
- 	}
-+#endif
- 
-+	restart_nmi();
-+	alternatives_patched = 1;
-+
-+	alt_reloc_selftest();
-+}
-+
-+#ifdef CONFIG_SMP
-+/*
-+ * With CONFIG_DEFERRED_STRUCT_PAGE_INIT enabled we can free_init_pages() only
-+ * after the deferred initialization of the memory map is complete.
-+ */
-+static int __init free_smp_locks(void)
-+{
- 	if (!uniproc_patched || num_possible_cpus() == 1) {
- 		free_init_pages("SMP alternatives",
- 				(unsigned long)__smp_locks,
- 				(unsigned long)__smp_locks_end);
- 	}
--#endif
- 
--	restart_nmi();
--	alternatives_patched = 1;
--
--	alt_reloc_selftest();
-+	return 0;
- }
-+arch_initcall(free_smp_locks);
-+#endif
- 
- /**
-  * text_poke_early - Update instructions on a live kernel at boot time
- 
-> Bert Karwatzki
-
--- 
-Sincerely yours,
-Mike.
+I just finished fixups for issues Sashiko flagged. They are pretty
+small but important. Testing them right now and running Sashiko
+locally. Once done I'll post v6 and will ask Lorenzo to re-review
+those specific changes. Sorry Lorenzo, I'll point out the specific
+changes I had to make and will try to make it easy for you.
+Thanks,
+Suren.
 
