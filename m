@@ -1,70 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-18914-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18915-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28B7F10BA432
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2026 07:18:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D92D410BA431
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2026 07:19:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fhsSF0XRnz2yr0;
-	Fri, 27 Mar 2026 18:18:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774595901;
-	cv=none; b=KLKEqO5Vw/walXRX869SeC0PL70uq4ZH1sxa+fJdeMPnCP/gtrccL9TMT+J17JwJYI7W3ClYEWMH7/RtXfeA+ZD3djZXZSYq3sCSAyE8HEjGDPDx37VtOZivOBjA4iIG5zqYZXjDhO+yztPHKGcEDua5yGZtoZsmwBEXAu0B4kAN5RCk5ADhmMBtCMjPbryv0QxYzfFsK5cM3AAviESumwi/c3jreRQGIkiFJxClq5+7yjfJGyxiq5zIFrR5m1UlRJJf9iU1qqfQlX3Gk7bsDmk8kC9J+CeJcYbJzQUZ4AB1vfnWIhLCmBlqLRLXSqKAzOL/BniusSY/wyZ2B1BQ7w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fhsSK6mQDz3bgx;
+	Fri, 27 Mar 2026 18:18:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774595905;
+	cv=none; b=asaXYZzoOgCGu20aQqVJ9LkMXIBsWKTyQyZbk0qb9VP6ZiKZFelWT/0pfnmVChekxcuGJljuqR7d3/f++RLnQp6MoIYwf7r25h5UeTA0Zh5tOI+AnA0WTzT/hK/5uH6M4YUv5s+VV0zjpkp7JmQLdSieMA/q2U/JDRgLyOou0JA5N6U6Z+U5rEtjBLV3Nab9dURELHHtx5sXkymI4qcK9pmqNQLuim3TzRlcnvFmzPQ6eD3UcTVgG2hnbfpVxsAVENKNy3RZRpwa2wq1wdbudOUivSddE2QtpXmEBS3WEpBY2UOVwySdKBzF85bOPghGSLFW0xC39y8uyXOIdr1wXA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774595901; c=relaxed/relaxed;
-	bh=GJ3WnIZnYp7/93bz2uXrV1uWdvqmlu0SCudoqGbLeGc=;
+	t=1774595905; c=relaxed/relaxed;
+	bh=tW/GuYujOO0/v8oUPeC7pky7jQo4u6+VMRwG135GnDo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=jYWyGwzrad4iLbc5xtCikymGNjlK35tCEDL8m6iZ6wpUNBcSvc+Ax2cG0rTwaJUSSkjb9tEs+AODlplulXCubmL3cy4mewMISWzOkII7Ur9XkGdw2lzbEYmfeRt4XcBl4vjEqoZGJJwkTKmzilgkMeMQaKNpq0lmDsyb7N+arLzacO9LNxx5j8mwaSrd/qqMq+smA3O87yjRlPEmnWSm72RmchldOB6AWm0tckqO/O46QxvaO8bhV4t+6lkAnfG43y9IU27HVfw5hWTEGYYsJj3pZute2IfaAqR/FMgY26Lqiblo/mD3AmHy8qiSCZ+RDCCf0RQCop98GXjAhitaWg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qli0IKIY; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version:Content-Type; b=TyF/yXT0FT2D69whPR4GKj0F+6FJf0Ump2525cAwVzvQwoeOV7LjmXiYIdbMtQ5PCcDgW4lqnpyzFAySWOdyXvfLJHm8pD+Igk/s5EUgZwUpHblzW51HA59hxXO3uPv0JRNDXAirXvOAPwVBta1psBA4EQO3wenZKK116afpenKtyQ2dPTJw0CUdlimxV6Hi6M/z3yq8jlllnRhZMn6KHVorEcBxxRibH1tzjjvfuVdCnvRM/M4CtkqL3TAxPm6kg1XDXe6ZnqS2iFvLrLnaFh3iJ8XpGNyOB0/lSZuYDe+GvLBfZ4Vpsoqi5WPkd3gvA8XP8pb5nvmw6D7E7CGe/Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=f+hd0QrZ; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qli0IKIY;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=f+hd0QrZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhsSD23XYz2xLt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2026 18:18:20 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62QIe7fP2646739;
-	Fri, 27 Mar 2026 07:18:07 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhsSK21CSz2ygK
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2026 18:18:25 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62R2n0Hd3658690;
+	Fri, 27 Mar 2026 07:18:11 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=GJ3WnIZnYp7/93bz2
-	uXrV1uWdvqmlu0SCudoqGbLeGc=; b=qli0IKIYDwTRmYljX4QoapFFBZYe7v9u8
-	JXFWSBCnJa3Ms+SmWXkPqc+7EKEllmYQEBCT1J/7ZuFjQD//6KhJc+GHT9WihuZy
-	sbXesRrEC7+VmIqNlu005ec3jYYbUu+aN1IBukt/uemNfTv3lReBnU0PIfLcyYTQ
-	ka1mvgJ2iMyPsxPs3y1Z9f4V4hPU2VXIoDxeUF4MAat2f0naR35BHROxL5tg2Fkq
-	zUvokZRBwgRncTU7TAL9WjY7pTBpQESTHKQJPkk9Di+1aCcgXJ/bZOscOfKkL6tU
-	PyFQ6ASlzOKgNteaDeVyCSTLKTaaJlwDJWXxLoVhK2xNKYXl7HTQw==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d1ky0fsa3-1
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=tW/GuY
+	ujOO0/v8oUPeC7pky7jQo4u6+VMRwG135GnDo=; b=f+hd0QrZeVIivoYu1gdOAn
+	ntWfUSB/PZAF92qbDTOw8RdjO/m9Hm5wU68ZAwgsYxSXAjIAaE84FxTd+9K0w0tN
+	V1cmte8a/bgdDMnxMOiD3L1pBIXZev4127BmXMCKwLcauQ2Q2z52dsWHjz/KYQE8
+	2ASzX0CLMRcyC1z7ZRhGaLZ+P4JfJevBlJ6/Xzu5WUFS9eXv8oaST2TIcDrQuVk6
+	FffgznXmCaHXd6JVtFwxQzJtoHu/VJAlHPUJT3BIuGevse5c7JFwQvXcmaIdBOnp
+	OJOyTtysekC445fZBSD/lbqSM/9pLmUTGXJpNnS7TAuHUhL33VqRDlzta9sjRJLA
+	==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d1kty8xcw-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 27 Mar 2026 07:18:06 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62R6Vxs8012213;
-	Fri, 27 Mar 2026 07:18:05 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4d27vkeada-1
+	Fri, 27 Mar 2026 07:18:10 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62R6lvRM004375;
+	Fri, 27 Mar 2026 07:18:09 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4d28c2e8rp-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 27 Mar 2026 07:18:05 +0000
+	Fri, 27 Mar 2026 07:18:09 +0000
 Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62R7I1uY51577146
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62R7I5BJ42729776
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 27 Mar 2026 07:18:02 GMT
+	Fri, 27 Mar 2026 07:18:05 GMT
 Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D991620040;
-	Fri, 27 Mar 2026 07:18:01 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id C58E820043;
+	Fri, 27 Mar 2026 07:18:05 +0000 (GMT)
 Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3696D2004B;
-	Fri, 27 Mar 2026 07:17:58 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 4DFF22004B;
+	Fri, 27 Mar 2026 07:18:02 +0000 (GMT)
 Received: from li-3f69264c-2ce6-11b2-a85c-c3f414d24014.ibm.com.com (unknown [9.124.208.5])
 	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 27 Mar 2026 07:17:57 +0000 (GMT)
+	Fri, 27 Mar 2026 07:18:02 +0000 (GMT)
 From: Sayali Patil <sayalip@linux.ibm.com>
 To: Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
         linux-mm@kvack.org, linux-kernel@vger.kernel.org,
@@ -75,11 +76,10 @@ Cc: David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>,
         Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
         Dev Jain <dev.jain@arm.com>, Liam.Howlett@oracle.com,
         linuxppc-dev@lists.ozlabs.org, Sayali Patil <sayalip@linux.ibm.com>,
-        Miaohe Lin <linmiaohe@huawei.com>,
         Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: [PATCH v3 12/13] selftests/mm: move hwpoison setup into run_test() and silence modprobe output for memory-failure category
-Date: Fri, 27 Mar 2026 12:46:06 +0530
-Message-ID: <a157c2f91d8fa94b14dff44ce5c0dfcce1f8328e.1774591179.git.sayalip@linux.ibm.com>
+Subject: [PATCH v3 13/13] selftests/cgroup: extend test_hugetlb_memcg.c to support all huge page sizes
+Date: Fri, 27 Mar 2026 12:46:07 +0530
+Message-ID: <41fc5be38d4205b5a4aee8499631cf60a9026163.1774591179.git.sayalip@linux.ibm.com>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <cover.1774591179.git.sayalip@linux.ibm.com>
 References: <cover.1774591179.git.sayalip@linux.ibm.com>
@@ -96,148 +96,225 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzI3MDA1MyBTYWx0ZWRfXxgzcIl45FDQR
- Ye9s6RoLv2Ss5WFiMd0DDouIwu1MEHTjMJtqvtszlboh/AVf8uDOZESH4FdvyofTsqBP93B8UiC
- Aozm1KVJWmLAkXv/HvznLto0dyZu2cbnBO/Gz9xI8q/DNHmG3gRe1HD/DU0ob5HooJaT3gRk3yS
- /fkpWULGl8mF8pIj2X23eqAgkMsFW1e7ammPeZfXphdzZUz4L6vcj9wqIbeBO9YictV9DMHkWlk
- L8/Nj5kp/0BPFIBLY8Tt48OoP6MF4MaJ61IlNlEFYrcK+aVXoa2wtDr2e62m+9QQJBGDdOFm+q8
- Q8//ip/kTwfK0r5SrOkgNylNP7F1m9MxWOKtNc3Hk2ITyH6WyvsbJmKLW4wTjeOTWjWfVx4nlJw
- 72iB/PBTABEfidnukRDQ6YDF4e2X9lh7C6NaJyU8tP+VnFwPOQ2AUOCJDlYWnWKrpjzZYTkeuWm
- EFBkYCggokx+Wk0Lo2w==
-X-Authority-Analysis: v=2.4 cv=JK42csKb c=1 sm=1 tr=0 ts=69c62f2e cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=Ikd4Dj_1AAAA:8 a=i0EeH86SAAAA:8 a=VnNF1IyMAAAA:8
- a=QWbft6qDQSdZu_5rdncA:9
-X-Proofpoint-ORIG-GUID: 0c6pInW84zX2FrRSnmRd63okpmylBB9x
-X-Proofpoint-GUID: kIFBbHl4zhazTotkjVkZkSpT-f77vifU
+X-Authority-Analysis: v=2.4 cv=IqITsb/g c=1 sm=1 tr=0 ts=69c62f33 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8
+ a=sc5eBBQPW9lzBnlyZiYA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzI3MDA1MyBTYWx0ZWRfX7R3ord31TZ8m
+ 3AWPD1DeP37V769ZTm5A+vKyEW7h7mKzvq8P3zZ2q6pIDdy0CbejiuqEItg8+1b8dPUj2vvhFDN
+ j9bqOsAKfMNOeEoEIMJ56UnYMFyIoai+9HjMTa+2HyfV90GAK39TmBi2EpSRZ8jIa8RPqMRfkhA
+ cu30lJlJmSM/jytJcW/A+jknpYX0WRymDBdQobNY42f3kW/T1NuYtKRvgQrpfvNrDiS5EdRt4V7
+ Z1Nye6mHR2SjfWFR2wBaFh8tsZlYRWtkxXeiU56gTnvNEUTEAEQF6W3+RJv9iyXf/RWy3suAy3O
+ JYopgvAKUcZRRDXATZyPjQJCccZdYTVeuczszcZoh2D8sPmEqouc84pZVHivJa4Ki4Usnx9Qlh7
+ Tmdmsg9bt0H4DcqiucdVzSUaGAK/ZaTjCUKi4qrE1Yio3495q7k2NIjelbgIViQuhkJYuqqfQzR
+ vVpGZzs5CFGTOFp0Msw==
+X-Proofpoint-GUID: VJ_xrzwcuXC-vroi3TFYp2X8yZdEDM4A
+X-Proofpoint-ORIG-GUID: b946YoOhPzDH-DYXEfvGjeWxDd728GXO
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-03-26_04,2026-03-26_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 clxscore=1015 priorityscore=1501 malwarescore=0 adultscore=0
- spamscore=0 suspectscore=0 phishscore=0 lowpriorityscore=0 bulkscore=0
+ malwarescore=0 clxscore=1015 spamscore=0 impostorscore=0 suspectscore=0
+ phishscore=0 bulkscore=0 adultscore=0 priorityscore=1501 lowpriorityscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603270053
 
-run_vmtests.sh contains special handling to ensure the hwpoison_inject
-module is available for the memory-failure tests. This logic was
-implemented outside of run_test(), making the setup category-specific
-but managed globally.
+The hugetlb memcg selftest was previously skipped when the configured
+huge page size was not 2MB, preventing the test from running on systems
+using other default huge page sizes.
 
-Move the hwpoison_inject handling into run_test() and restrict it
-to the memory-failure category so that:
-1. the module is checked and loaded only when memory-failure tests run,
-2. the test is skipped if the module or the debugfs interface
-(/sys/kernel/debug/hwpoison/) is not available.
-3. the module is unloaded after the test if it was loaded by the script.
+Detect the system's configured huge page size at runtime and use it for
+the allocation instead of assuming a fixed 2MB size. This allows the
+test to run on configurations using non-2MB huge pages and avoids
+unnecessary skips.
 
-This localizes category-specific setup and makes the test flow
-consistent with other per-category preparations.
-
-While updating this logic, fix the module availability check.
-The script previously used:
-
-	modprobe -R hwpoison_inject
-
-The -R option prints the resolved module name to stdout, causing every
-run to print:
-
-	hwpoison_inject
-
-in the test output, even when no action is required, introducing
-unnecessary noise.
-
-Replace this with:
-
-	modprobe -n hwpoison_inject
-
-which verifies that the module is loadable without producing output,
-keeping the selftest logs clean and consistent.
-
-Fixes: ff4ef2fbd101 ("selftests/mm: add memory failure anonymous page test")
-Acked-by: Zi Yan <ziy@nvidia.com>
-Acked-by: Miaohe Lin <linmiaohe@huawei.com>
+Fixes: c0dddb7aa5f8 ("selftests: add a selftest to verify hugetlb usage in memcg")
 Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
 Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
 ---
- tools/testing/selftests/mm/run_vmtests.sh | 46 ++++++++++++++---------
- 1 file changed, 28 insertions(+), 18 deletions(-)
+ .../selftests/cgroup/test_hugetlb_memcg.c     | 66 ++++++++++++++-----
+ 1 file changed, 48 insertions(+), 18 deletions(-)
 
-diff --git a/tools/testing/selftests/mm/run_vmtests.sh b/tools/testing/selftests/mm/run_vmtests.sh
-index eecec0b6eb13..606558cc3b09 100755
---- a/tools/testing/selftests/mm/run_vmtests.sh
-+++ b/tools/testing/selftests/mm/run_vmtests.sh
-@@ -250,6 +250,27 @@ run_test() {
- 			fi
- 		fi
+diff --git a/tools/testing/selftests/cgroup/test_hugetlb_memcg.c b/tools/testing/selftests/cgroup/test_hugetlb_memcg.c
+index f451aa449be6..a449dbec16a8 100644
+--- a/tools/testing/selftests/cgroup/test_hugetlb_memcg.c
++++ b/tools/testing/selftests/cgroup/test_hugetlb_memcg.c
+@@ -12,10 +12,15 @@
  
-+		# Ensure hwpoison_inject is available for memory-failure tests
-+		if [ "${CATEGORY}" = "memory-failure" ]; then
-+			# Try to load hwpoison_inject if not present.
-+			HWPOISON_DIR=/sys/kernel/debug/hwpoison/
-+			if [ ! -d "$HWPOISON_DIR" ]; then
-+				if ! modprobe -n hwpoison_inject > /dev/null 2>&1; then
-+					echo "Module hwpoison_inject not found, skipping..." \
-+						| tap_prefix
-+					skip=1
-+				else
-+					modprobe hwpoison_inject > /dev/null 2>&1
-+					LOADED_MOD=1
-+				fi
-+			fi
-+
-+			if [ ! -d "$HWPOISON_DIR" ]; then
-+				echo "hwpoison debugfs interface not present" | tap_prefix
-+				skip=1
-+			fi
-+		fi
-+
- 		local test=$(pretty_name "$*")
- 		local title="running $*"
- 		local sep=$(echo -n "$title" | tr "[:graph:][:space:]" -)
-@@ -261,6 +282,12 @@ run_test() {
- 		else
- 			local ret=$ksft_skip
- 		fi
-+
-+		# Unload hwpoison_inject if we loaded it
-+		if [ -n "${LOADED_MOD}" ]; then
-+			modprobe -r hwpoison_inject > /dev/null 2>&1
-+		fi
-+
- 		count_total=$(( count_total + 1 ))
- 		if [ $ret -eq 0 ]; then
- 			count_pass=$(( count_pass + 1 ))
-@@ -540,24 +567,7 @@ CATEGORY="page_frag" run_test ./test_page_frag.sh nonaligned
+ #define ADDR ((void *)(0x0UL))
+ #define FLAGS (MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB)
+-/* mapping 8 MBs == 4 hugepages */
+-#define LENGTH (8UL*1024*1024)
+ #define PROTECTION (PROT_READ | PROT_WRITE)
  
- CATEGORY="rmap" run_test ./rmap
++/*
++ * This value matches the kernel's MEMCG_CHARGE_BATCH definition:
++ * see include/linux/memcontrol.h. If the kernel value changes, this
++ * test constant must be updated accordingly to stay consistent.
++ */
++#define MEMCG_CHARGE_BATCH 64U
++
+ /* borrowed from mm/hmm-tests.c */
+ static long get_hugepage_size(void)
+ {
+@@ -84,11 +89,11 @@ static unsigned int check_first(char *addr)
+ 	return *(unsigned int *)addr;
+ }
  
--# Try to load hwpoison_inject if not present.
--HWPOISON_DIR=/sys/kernel/debug/hwpoison/
--if [ ! -d "$HWPOISON_DIR" ]; then
--	if ! modprobe -q -R hwpoison_inject; then
--		echo "Module hwpoison_inject not found, skipping..."
--	else
--		modprobe hwpoison_inject > /dev/null 2>&1
--		LOADED_MOD=1
--	fi
--fi
--
--if [ -d "$HWPOISON_DIR" ]; then
--	CATEGORY="memory-failure" run_test ./memory-failure
--fi
--
--if [ -n "${LOADED_MOD}" ]; then
--	modprobe -r hwpoison_inject > /dev/null 2>&1
--fi
-+CATEGORY="memory-failure" run_test ./memory-failure
+-static void write_data(char *addr)
++static void write_data(char *addr, size_t length)
+ {
+ 	unsigned long i;
  
- if [ "${HAVE_HUGEPAGES}" = 1 ]; then
- 	echo "$orig_nr_hugepgs" > /proc/sys/vm/nr_hugepages
+-	for (i = 0; i < LENGTH; i++)
++	for (i = 0; i < length; i++)
+ 		*(addr + i) = (char)i;
+ }
+ 
+@@ -96,26 +101,31 @@ static int hugetlb_test_program(const char *cgroup, void *arg)
+ {
+ 	char *test_group = (char *)arg;
+ 	void *addr;
++	long hpage_size = get_hugepage_size() * 1024;
+ 	long old_current, expected_current, current;
+ 	int ret = EXIT_FAILURE;
++	size_t length = 4 * hpage_size;
++	int pagesize, nr_pages;
++
++	pagesize = getpagesize();
+ 
+ 	old_current = cg_read_long(test_group, "memory.current");
+ 	set_nr_hugepages(20);
+ 	current = cg_read_long(test_group, "memory.current");
+-	if (current - old_current >= MB(2)) {
++	if (current - old_current >= hpage_size) {
+ 		ksft_print_msg(
+ 			"setting nr_hugepages should not increase hugepage usage.\n");
+ 		ksft_print_msg("before: %ld, after: %ld\n", old_current, current);
+ 		return EXIT_FAILURE;
+ 	}
+ 
+-	addr = mmap(ADDR, LENGTH, PROTECTION, FLAGS, 0, 0);
++	addr = mmap(ADDR, length, PROTECTION, FLAGS, 0, 0);
+ 	if (addr == MAP_FAILED) {
+ 		ksft_print_msg("fail to mmap.\n");
+ 		return EXIT_FAILURE;
+ 	}
+ 	current = cg_read_long(test_group, "memory.current");
+-	if (current - old_current >= MB(2)) {
++	if (current - old_current >= hpage_size) {
+ 		ksft_print_msg("mmap should not increase hugepage usage.\n");
+ 		ksft_print_msg("before: %ld, after: %ld\n", old_current, current);
+ 		goto out_failed_munmap;
+@@ -124,10 +134,24 @@ static int hugetlb_test_program(const char *cgroup, void *arg)
+ 
+ 	/* read the first page */
+ 	check_first(addr);
+-	expected_current = old_current + MB(2);
++	nr_pages = hpage_size / pagesize;
++	expected_current = old_current + hpage_size;
+ 	current = cg_read_long(test_group, "memory.current");
+-	if (!values_close(expected_current, current, 5)) {
+-		ksft_print_msg("memory usage should increase by around 2MB.\n");
++	if (nr_pages < MEMCG_CHARGE_BATCH && current == old_current) {
++		/*
++		 * Memory cgroup charging uses per-CPU stocks and batched updates to the
++		 *  memcg usage counters. For hugetlb allocations, the number of pages
++		 *  that memcg charges is expressed in base pages (nr_pages), not
++		 *  in hugepage units. When the charge for an allocation is smaller than
++		 *  the internal batching threshold  (nr_pages <  MEMCG_CHARGE_BATCH),
++		 *  it may be fully satisfied from the CPU’s local stock. In such
++		 *  cases memory.current does not necessarily
++		 *  increase.
++		 *  Therefore, Treat a zero delta as valid behaviour here.
++		 */
++		ksft_print_msg("no visible memcg charge, allocation consumed from local stock.\n");
++	} else if (!values_close(expected_current, current, 5)) {
++		ksft_print_msg("memory usage should increase by ~1 huge page.\n");
+ 		ksft_print_msg(
+ 			"expected memory: %ld, actual memory: %ld\n",
+ 			expected_current, current);
+@@ -135,11 +159,11 @@ static int hugetlb_test_program(const char *cgroup, void *arg)
+ 	}
+ 
+ 	/* write to the whole range */
+-	write_data(addr);
++	write_data(addr, length);
+ 	current = cg_read_long(test_group, "memory.current");
+-	expected_current = old_current + MB(8);
++	expected_current = old_current + length;
+ 	if (!values_close(expected_current, current, 5)) {
+-		ksft_print_msg("memory usage should increase by around 8MB.\n");
++		ksft_print_msg("memory usage should increase by around 4 huge pages.\n");
+ 		ksft_print_msg(
+ 			"expected memory: %ld, actual memory: %ld\n",
+ 			expected_current, current);
+@@ -147,7 +171,7 @@ static int hugetlb_test_program(const char *cgroup, void *arg)
+ 	}
+ 
+ 	/* unmap the whole range */
+-	munmap(addr, LENGTH);
++	munmap(addr, length);
+ 	current = cg_read_long(test_group, "memory.current");
+ 	expected_current = old_current;
+ 	if (!values_close(expected_current, current, 5)) {
+@@ -162,13 +186,15 @@ static int hugetlb_test_program(const char *cgroup, void *arg)
+ 	return ret;
+ 
+ out_failed_munmap:
+-	munmap(addr, LENGTH);
++	munmap(addr, length);
+ 	return ret;
+ }
+ 
+ static int test_hugetlb_memcg(char *root)
+ {
+ 	int ret = KSFT_FAIL;
++	int num_pages = 20;
++	long hpage_size = get_hugepage_size();
+ 	char *test_group;
+ 
+ 	test_group = cg_name(root, "hugetlb_memcg_test");
+@@ -177,7 +203,7 @@ static int test_hugetlb_memcg(char *root)
+ 		goto out;
+ 	}
+ 
+-	if (cg_write(test_group, "memory.max", "100M")) {
++	if (cg_write_numeric(test_group, "memory.max", num_pages * hpage_size * 1024)) {
+ 		ksft_print_msg("fail to set cgroup memory limit.\n");
+ 		goto out;
+ 	}
+@@ -200,6 +226,7 @@ int main(int argc, char **argv)
+ {
+ 	char root[PATH_MAX];
+ 	int ret = EXIT_SUCCESS, has_memory_hugetlb_acc;
++	long val;
+ 
+ 	has_memory_hugetlb_acc = proc_mount_contains("memory_hugetlb_accounting");
+ 	if (has_memory_hugetlb_acc < 0)
+@@ -208,12 +235,15 @@ int main(int argc, char **argv)
+ 		ksft_exit_skip("memory hugetlb accounting is disabled\n");
+ 
+ 	/* Unit is kB! */
+-	if (get_hugepage_size() != 2048) {
+-		ksft_print_msg("test_hugetlb_memcg requires 2MB hugepages\n");
++	val = get_hugepage_size();
++	if (val < 0) {
++		ksft_print_msg("Failed to read hugepage size\n");
+ 		ksft_test_result_skip("test_hugetlb_memcg\n");
+ 		return ret;
+ 	}
+ 
++	ksft_print_msg("Hugepage size: %ld kB\n", val);
++
+ 	if (cg_find_unified_root(root, sizeof(root), NULL))
+ 		ksft_exit_skip("cgroup v2 isn't mounted\n");
+ 
 -- 
 2.52.0
 
