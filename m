@@ -1,88 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-18915-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18916-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D92D410BA431
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2026 07:19:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F93110BA43D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2026 08:25:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fhsSK6mQDz3bgx;
-	Fri, 27 Mar 2026 18:18:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774595905;
-	cv=none; b=asaXYZzoOgCGu20aQqVJ9LkMXIBsWKTyQyZbk0qb9VP6ZiKZFelWT/0pfnmVChekxcuGJljuqR7d3/f++RLnQp6MoIYwf7r25h5UeTA0Zh5tOI+AnA0WTzT/hK/5uH6M4YUv5s+VV0zjpkp7JmQLdSieMA/q2U/JDRgLyOou0JA5N6U6Z+U5rEtjBLV3Nab9dURELHHtx5sXkymI4qcK9pmqNQLuim3TzRlcnvFmzPQ6eD3UcTVgG2hnbfpVxsAVENKNy3RZRpwa2wq1wdbudOUivSddE2QtpXmEBS3WEpBY2UOVwySdKBzF85bOPghGSLFW0xC39y8uyXOIdr1wXA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fhty54qjGz2yrD;
+	Fri, 27 Mar 2026 19:25:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774599949;
+	cv=none; b=ZzKlfdWZb+OVavt9ovKVOfKtn61ZbaxpDe7nWriyP1yBuJUh8PtPResslPPQ2dkDPIB+hMirWx5HVKo01kRZsOjZR5l5fiLhS0Tn7KTNq60wXwJKXNIMT2Zb490MRnEYBdlCaVgbRRmwB0rB87iQZD/OsjMzCInrt4F3UiZONwkON+eyAom0kzvFJaHW+Od+ec86GlwfRXrkVp/gSRGCRbhYj1ECList4yt4O7EAM5KT24iL0KWjWCIyeYlwQfL5HbbW1gwhmrYaduooRwM7Nv5yh090olTocR2Yei6kd0hw/zet1L7dhTPtWe3NZrvK+/WbOY3KEB0M0EeUPvpl4A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774595905; c=relaxed/relaxed;
-	bh=tW/GuYujOO0/v8oUPeC7pky7jQo4u6+VMRwG135GnDo=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=TyF/yXT0FT2D69whPR4GKj0F+6FJf0Ump2525cAwVzvQwoeOV7LjmXiYIdbMtQ5PCcDgW4lqnpyzFAySWOdyXvfLJHm8pD+Igk/s5EUgZwUpHblzW51HA59hxXO3uPv0JRNDXAirXvOAPwVBta1psBA4EQO3wenZKK116afpenKtyQ2dPTJw0CUdlimxV6Hi6M/z3yq8jlllnRhZMn6KHVorEcBxxRibH1tzjjvfuVdCnvRM/M4CtkqL3TAxPm6kg1XDXe6ZnqS2iFvLrLnaFh3iJ8XpGNyOB0/lSZuYDe+GvLBfZ4Vpsoqi5WPkd3gvA8XP8pb5nvmw6D7E7CGe/Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=f+hd0QrZ; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1774599949; c=relaxed/relaxed;
+	bh=qGOrNjEazvrzVhLMp+K3yNYEg55RN3GLZqMpakgepoM=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=Wx/7mPsexM0bzAznhbVFb2WLFOcnr0RGhCV5E5lhho1on4TpwOTg+Sx+fjFiv2kxi68R+rRkAYX/ggL/V1a04+exQbaALvY/yXYfaAxB4awfiFj+4IBPGx1DrsMv72TZpELokpYjUfoDwuy/E5QE2xyzWrXz+EMBeFsu1fk4kwHpRWefKdvOVHelssY2YTfVqrBvBWCUdjUZPPphfJwhX4nlrBafTJUze7hYupY0BniqWlU+wDu0sWS/kmFRpV/m5BEhouDCmPKzE9pH/z9TRIvpz6s5G3Z9dePGMETVSEHqsd/x5MrmqT+Or0f7xGuitl859IF2nQMAQjzc5Tyk5w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=njQORTNY; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ardb@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=f+hd0QrZ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=njQORTNY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ardb@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhsSK21CSz2ygK
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2026 18:18:25 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62R2n0Hd3658690;
-	Fri, 27 Mar 2026 07:18:11 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=tW/GuY
-	ujOO0/v8oUPeC7pky7jQo4u6+VMRwG135GnDo=; b=f+hd0QrZeVIivoYu1gdOAn
-	ntWfUSB/PZAF92qbDTOw8RdjO/m9Hm5wU68ZAwgsYxSXAjIAaE84FxTd+9K0w0tN
-	V1cmte8a/bgdDMnxMOiD3L1pBIXZev4127BmXMCKwLcauQ2Q2z52dsWHjz/KYQE8
-	2ASzX0CLMRcyC1z7ZRhGaLZ+P4JfJevBlJ6/Xzu5WUFS9eXv8oaST2TIcDrQuVk6
-	FffgznXmCaHXd6JVtFwxQzJtoHu/VJAlHPUJT3BIuGevse5c7JFwQvXcmaIdBOnp
-	OJOyTtysekC445fZBSD/lbqSM/9pLmUTGXJpNnS7TAuHUhL33VqRDlzta9sjRJLA
-	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d1kty8xcw-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 27 Mar 2026 07:18:10 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62R6lvRM004375;
-	Fri, 27 Mar 2026 07:18:09 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4d28c2e8rp-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 27 Mar 2026 07:18:09 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62R7I5BJ42729776
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 27 Mar 2026 07:18:05 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C58E820043;
-	Fri, 27 Mar 2026 07:18:05 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4DFF22004B;
-	Fri, 27 Mar 2026 07:18:02 +0000 (GMT)
-Received: from li-3f69264c-2ce6-11b2-a85c-c3f414d24014.ibm.com.com (unknown [9.124.208.5])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 27 Mar 2026 07:18:02 +0000 (GMT)
-From: Sayali Patil <sayalip@linux.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
-        linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-        linux-kselftest@vger.kernel.org,
-        Ritesh Harjani <ritesh.list@gmail.com>
-Cc: David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>,
-        Michal Hocko <mhocko@kernel.org>, Oscar Salvador <osalvador@suse.de>,
-        Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-        Dev Jain <dev.jain@arm.com>, Liam.Howlett@oracle.com,
-        linuxppc-dev@lists.ozlabs.org, Sayali Patil <sayalip@linux.ibm.com>,
-        Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: [PATCH v3 13/13] selftests/cgroup: extend test_hugetlb_memcg.c to support all huge page sizes
-Date: Fri, 27 Mar 2026 12:46:07 +0530
-Message-ID: <41fc5be38d4205b5a4aee8499631cf60a9026163.1774591179.git.sayalip@linux.ibm.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <cover.1774591179.git.sayalip@linux.ibm.com>
-References: <cover.1774591179.git.sayalip@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhty4463cz2yr9
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2026 19:25:48 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 1517C6133C;
+	Fri, 27 Mar 2026 08:25:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8F944C4AF0D;
+	Fri, 27 Mar 2026 08:25:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774599945;
+	bh=oGcTlThlcrf/a6X6Pba0yaQBbOhK2gU5HD6vMRqLYbw=;
+	h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
+	b=njQORTNYseBfNIOCfwhdeA9ppWJ7maUSfI1m29FCLMsOAc3VLwzoUH5yF8yKr6mea
+	 bx+1V7DTQAZd4ojLaeGJ0Cf3haex4YnlcYGkJc6gqWpYVE6NyhljsbVP0BA8rn4ocl
+	 th3E+L/MxnnFaA65UP+0OZlA+Vah5cD2+QCQtpMoLgNIFhCA8eqtKOZpCOxJlAkmXg
+	 mk+TUk0Rtz4vIo7JSvIUgAmQeWqKyPfMFemVWMOZXJJwErSg1qzGGRRVp3lXzBSaJ8
+	 C68setmayjda5hFti2rXgLBBjXsEJfs82WxkzWojyXlsFObrjk5392Uz/bQO/irUHV
+	 e65UQpbwEdk/A==
+Received: from phl-compute-01.internal (phl-compute-01.internal [10.202.2.41])
+	by mailfauth.phl.internal (Postfix) with ESMTP id 6F5B9F4006E;
+	Fri, 27 Mar 2026 04:25:43 -0400 (EDT)
+Received: from phl-imap-02 ([10.202.2.81])
+  by phl-compute-01.internal (MEProxy); Fri, 27 Mar 2026 04:25:43 -0400
+X-ME-Sender: <xms:Bz_GaeV3zNaSpHJHySYxTNOI14Bf1EmJgTqGji8Tx6XrdR-ly4fPVA>
+    <xme:Bz_GaVaecSFZVaUx_LS_q-dDchW3x2ph_U-FNZZvjkVa-2Cbgvi2qQJJQEWm1pEen
+    o2Nmsvazvbril7mJ2bFLAHoL0kR_6ydzStl4XH8vMJ4O7DQEb3zgw>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefgedrtddtgdefvdelkedtucetufdoteggodetrf
+    dotffvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfurfetoffkrfgpnffqhgenuceu
+    rghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujf
+    gurhepofggfffhvfevkfgjfhfutgfgsehtjeertdertddtnecuhfhrohhmpedftehrugcu
+    uehivghshhgvuhhvvghlfdcuoegrrhgusgeskhgvrhhnvghlrdhorhhgqeenucggtffrrg
+    htthgvrhhnpedvueehiedtvedtleekuddutefgffdtleetfeetveejveejieehfefhjeei
+    jeefudenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpe
+    grrhguodhmvghsmhhtphgruhhthhhpvghrshhonhgrlhhithihqdduieejtdehtddtjeel
+    qdeffedvudeigeduhedqrghruggspeepkhgvrhhnvghlrdhorhhgseifohhrkhhofhgrrh
+    gurdgtohhmpdhnsggprhgtphhtthhopeehtddpmhhouggvpehsmhhtphhouhhtpdhrtghp
+    thhtohepsghpsegrlhhivghnkedruggvpdhrtghpthhtoheptggrthgrlhhinhdrmhgrrh
+    hinhgrshesrghrmhdrtghomhdprhgtphhtthhopehlihhnuhigsegrrhhmlhhinhhugidr
+    ohhrghdruhhkpdhrtghpthhtoheprghrnhgusegrrhhnuggsrdguvgdprhgtphhtthhope
+    grnhhtohhnrdhivhgrnhhovhestggrmhgsrhhiughgvghgrhgvhihsrdgtohhmpdhrtghp
+    thhtohepphgrlhhmvghrsegurggssggvlhhtrdgtohhmpdhrtghpthhtohepuggrvhgvmh
+    esuggrvhgvmhhlohhfthdrnhgvthdprhgtphhtthhopegrohhusegvvggtshdrsggvrhhk
+    vghlvgihrdgvughupdhrtghpthhtohepmhhpvgesvghllhgvrhhmrghnrdhiugdrrghu
+X-ME-Proxy: <xmx:Bz_GadcJkX20GupXEUp-1Bp1i56g4LWcqwmuAAUTXMfU5fJkgo7Tdw>
+    <xmx:Bz_Gae4Ua-AeB83mS_pFrGVbAUqLQoAnmgxrDbHOol1S2B-duVR5XQ>
+    <xmx:Bz_GaRnLH2iPqmlmio84hLTWA0CS_wnMOI2-h11M3d92fo7SmGfrqA>
+    <xmx:Bz_GaUbPhoo7c5hIYcd0gM0CfIgT0rg3SwoJSuxv9v4EumISMkIDVQ>
+    <xmx:Bz_GafNBX4aAxc6vxqjfi2htd4zy-WLnaQnlHHZvUG3bWFOqd9K8W1h7>
+Feedback-ID: ice86485a:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id 3B247700065; Fri, 27 Mar 2026 04:25:43 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,226 +91,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=IqITsb/g c=1 sm=1 tr=0 ts=69c62f33 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8
- a=sc5eBBQPW9lzBnlyZiYA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzI3MDA1MyBTYWx0ZWRfX7R3ord31TZ8m
- 3AWPD1DeP37V769ZTm5A+vKyEW7h7mKzvq8P3zZ2q6pIDdy0CbejiuqEItg8+1b8dPUj2vvhFDN
- j9bqOsAKfMNOeEoEIMJ56UnYMFyIoai+9HjMTa+2HyfV90GAK39TmBi2EpSRZ8jIa8RPqMRfkhA
- cu30lJlJmSM/jytJcW/A+jknpYX0WRymDBdQobNY42f3kW/T1NuYtKRvgQrpfvNrDiS5EdRt4V7
- Z1Nye6mHR2SjfWFR2wBaFh8tsZlYRWtkxXeiU56gTnvNEUTEAEQF6W3+RJv9iyXf/RWy3suAy3O
- JYopgvAKUcZRRDXATZyPjQJCccZdYTVeuczszcZoh2D8sPmEqouc84pZVHivJa4Ki4Usnx9Qlh7
- Tmdmsg9bt0H4DcqiucdVzSUaGAK/ZaTjCUKi4qrE1Yio3495q7k2NIjelbgIViQuhkJYuqqfQzR
- vVpGZzs5CFGTOFp0Msw==
-X-Proofpoint-GUID: VJ_xrzwcuXC-vroi3TFYp2X8yZdEDM4A
-X-Proofpoint-ORIG-GUID: b946YoOhPzDH-DYXEfvGjeWxDd728GXO
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-26_04,2026-03-26_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 clxscore=1015 spamscore=0 impostorscore=0 suspectscore=0
- phishscore=0 bulkscore=0 adultscore=0 priorityscore=1501 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603270053
+X-ThreadId: ALG_cRBuf6HF
+Date: Fri, 27 Mar 2026 09:25:22 +0100
+From: "Ard Biesheuvel" <ardb@kernel.org>
+To: "Christoph Hellwig" <hch@lst.de>,
+ "Andrew Morton" <akpm@linux-foundation.org>
+Cc: "Richard Henderson" <richard.henderson@linaro.org>,
+ "Matt Turner" <mattst88@gmail.com>,
+ "Magnus Lindholm" <linmag7@gmail.com>,
+ "Russell King" <linux@armlinux.org.uk>,
+ "Catalin Marinas" <catalin.marinas@arm.com>,
+ "Will Deacon" <will@kernel.org>, "Huacai Chen" <chenhuacai@kernel.org>,
+ "WANG Xuerui" <kernel@xen0n.name>,
+ "Madhavan Srinivasan" <maddy@linux.ibm.com>,
+ "Michael Ellerman" <mpe@ellerman.id.au>,
+ "Nicholas Piggin" <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ "Paul Walmsley" <pjw@kernel.org>, "Palmer Dabbelt" <palmer@dabbelt.com>,
+ "Albert Ou" <aou@eecs.berkeley.edu>, "Alexandre Ghiti" <alex@ghiti.fr>,
+ "Heiko Carstens" <hca@linux.ibm.com>,
+ "Vasily Gorbik" <gor@linux.ibm.com>,
+ "Alexander Gordeev" <agordeev@linux.ibm.com>,
+ "Christian Borntraeger" <borntraeger@linux.ibm.com>,
+ "Sven Schnelle" <svens@linux.ibm.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ "Andreas Larsson" <andreas@gaisler.com>,
+ "Richard Weinberger" <richard@nod.at>,
+ "Anton Ivanov" <anton.ivanov@cambridgegreys.com>,
+ "Johannes Berg" <johannes@sipsolutions.net>,
+ "Thomas Gleixner" <tglx@kernel.org>, "Ingo Molnar" <mingo@redhat.com>,
+ "Borislav Petkov" <bp@alien8.de>,
+ "Dave Hansen" <dave.hansen@linux.intel.com>, x86@kernel.org,
+ "H . Peter Anvin" <hpa@zytor.com>,
+ "Herbert Xu" <herbert@gondor.apana.org.au>,
+ "Dan Williams" <dan.j.williams@intel.com>, "Chris Mason" <clm@fb.com>,
+ "David Sterba" <dsterba@suse.com>, "Arnd Bergmann" <arnd@arndb.de>,
+ "Song Liu" <song@kernel.org>, "Yu Kuai" <yukuai@fnnas.com>,
+ "Li Nan" <linan122@huawei.com>, "Theodore Ts'o" <tytso@mit.edu>,
+ "Jason A . Donenfeld" <Jason@zx2c4.com>, linux-alpha@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
+ linux-crypto@vger.kernel.org, linux-btrfs@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-raid@vger.kernel.org
+Message-Id: <e7979928-b33a-4132-b08b-d95b91b14295@app.fastmail.com>
+In-Reply-To: <20260327061704.3707577-4-hch@lst.de>
+References: <20260327061704.3707577-1-hch@lst.de>
+ <20260327061704.3707577-4-hch@lst.de>
+Subject: Re: [PATCH 03/28] arm64/xor: fix conflicting attributes for xor_block_template
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-The hugetlb memcg selftest was previously skipped when the configured
-huge page size was not 2MB, preventing the test from running on systems
-using other default huge page sizes.
 
-Detect the system's configured huge page size at runtime and use it for
-the allocation instead of assuming a fixed 2MB size. This allows the
-test to run on configurations using non-2MB huge pages and avoids
-unnecessary skips.
+On Fri, 27 Mar 2026, at 07:16, Christoph Hellwig wrote:
+> Commit 2c54b423cf85 ("arm64/xor: use EOR3 instructions when available")
+> changes the definition to __ro_after_init instead of const, but failed to
+> update the external declaration in xor.h.  This was not found because
+> xor-neon.c doesn't include <asm/xor.h>, and can't easily do that due to
+> current architecture of the XOR code.
+>
 
-Fixes: c0dddb7aa5f8 ("selftests: add a selftest to verify hugetlb usage in memcg")
-Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
----
- .../selftests/cgroup/test_hugetlb_memcg.c     | 66 ++++++++++++++-----
- 1 file changed, 48 insertions(+), 18 deletions(-)
+Even if it did, it wouldn't matter - __ro_after_init has no effect on declarations, only on definitions - it only controls the placement of the object in the .data..ro_after_init section (and declarations don't generate any code)
 
-diff --git a/tools/testing/selftests/cgroup/test_hugetlb_memcg.c b/tools/testing/selftests/cgroup/test_hugetlb_memcg.c
-index f451aa449be6..a449dbec16a8 100644
---- a/tools/testing/selftests/cgroup/test_hugetlb_memcg.c
-+++ b/tools/testing/selftests/cgroup/test_hugetlb_memcg.c
-@@ -12,10 +12,15 @@
- 
- #define ADDR ((void *)(0x0UL))
- #define FLAGS (MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB)
--/* mapping 8 MBs == 4 hugepages */
--#define LENGTH (8UL*1024*1024)
- #define PROTECTION (PROT_READ | PROT_WRITE)
- 
-+/*
-+ * This value matches the kernel's MEMCG_CHARGE_BATCH definition:
-+ * see include/linux/memcontrol.h. If the kernel value changes, this
-+ * test constant must be updated accordingly to stay consistent.
-+ */
-+#define MEMCG_CHARGE_BATCH 64U
-+
- /* borrowed from mm/hmm-tests.c */
- static long get_hugepage_size(void)
- {
-@@ -84,11 +89,11 @@ static unsigned int check_first(char *addr)
- 	return *(unsigned int *)addr;
- }
- 
--static void write_data(char *addr)
-+static void write_data(char *addr, size_t length)
- {
- 	unsigned long i;
- 
--	for (i = 0; i < LENGTH; i++)
-+	for (i = 0; i < length; i++)
- 		*(addr + i) = (char)i;
- }
- 
-@@ -96,26 +101,31 @@ static int hugetlb_test_program(const char *cgroup, void *arg)
- {
- 	char *test_group = (char *)arg;
- 	void *addr;
-+	long hpage_size = get_hugepage_size() * 1024;
- 	long old_current, expected_current, current;
- 	int ret = EXIT_FAILURE;
-+	size_t length = 4 * hpage_size;
-+	int pagesize, nr_pages;
-+
-+	pagesize = getpagesize();
- 
- 	old_current = cg_read_long(test_group, "memory.current");
- 	set_nr_hugepages(20);
- 	current = cg_read_long(test_group, "memory.current");
--	if (current - old_current >= MB(2)) {
-+	if (current - old_current >= hpage_size) {
- 		ksft_print_msg(
- 			"setting nr_hugepages should not increase hugepage usage.\n");
- 		ksft_print_msg("before: %ld, after: %ld\n", old_current, current);
- 		return EXIT_FAILURE;
- 	}
- 
--	addr = mmap(ADDR, LENGTH, PROTECTION, FLAGS, 0, 0);
-+	addr = mmap(ADDR, length, PROTECTION, FLAGS, 0, 0);
- 	if (addr == MAP_FAILED) {
- 		ksft_print_msg("fail to mmap.\n");
- 		return EXIT_FAILURE;
- 	}
- 	current = cg_read_long(test_group, "memory.current");
--	if (current - old_current >= MB(2)) {
-+	if (current - old_current >= hpage_size) {
- 		ksft_print_msg("mmap should not increase hugepage usage.\n");
- 		ksft_print_msg("before: %ld, after: %ld\n", old_current, current);
- 		goto out_failed_munmap;
-@@ -124,10 +134,24 @@ static int hugetlb_test_program(const char *cgroup, void *arg)
- 
- 	/* read the first page */
- 	check_first(addr);
--	expected_current = old_current + MB(2);
-+	nr_pages = hpage_size / pagesize;
-+	expected_current = old_current + hpage_size;
- 	current = cg_read_long(test_group, "memory.current");
--	if (!values_close(expected_current, current, 5)) {
--		ksft_print_msg("memory usage should increase by around 2MB.\n");
-+	if (nr_pages < MEMCG_CHARGE_BATCH && current == old_current) {
-+		/*
-+		 * Memory cgroup charging uses per-CPU stocks and batched updates to the
-+		 *  memcg usage counters. For hugetlb allocations, the number of pages
-+		 *  that memcg charges is expressed in base pages (nr_pages), not
-+		 *  in hugepage units. When the charge for an allocation is smaller than
-+		 *  the internal batching threshold  (nr_pages <  MEMCG_CHARGE_BATCH),
-+		 *  it may be fully satisfied from the CPU’s local stock. In such
-+		 *  cases memory.current does not necessarily
-+		 *  increase.
-+		 *  Therefore, Treat a zero delta as valid behaviour here.
-+		 */
-+		ksft_print_msg("no visible memcg charge, allocation consumed from local stock.\n");
-+	} else if (!values_close(expected_current, current, 5)) {
-+		ksft_print_msg("memory usage should increase by ~1 huge page.\n");
- 		ksft_print_msg(
- 			"expected memory: %ld, actual memory: %ld\n",
- 			expected_current, current);
-@@ -135,11 +159,11 @@ static int hugetlb_test_program(const char *cgroup, void *arg)
- 	}
- 
- 	/* write to the whole range */
--	write_data(addr);
-+	write_data(addr, length);
- 	current = cg_read_long(test_group, "memory.current");
--	expected_current = old_current + MB(8);
-+	expected_current = old_current + length;
- 	if (!values_close(expected_current, current, 5)) {
--		ksft_print_msg("memory usage should increase by around 8MB.\n");
-+		ksft_print_msg("memory usage should increase by around 4 huge pages.\n");
- 		ksft_print_msg(
- 			"expected memory: %ld, actual memory: %ld\n",
- 			expected_current, current);
-@@ -147,7 +171,7 @@ static int hugetlb_test_program(const char *cgroup, void *arg)
- 	}
- 
- 	/* unmap the whole range */
--	munmap(addr, LENGTH);
-+	munmap(addr, length);
- 	current = cg_read_long(test_group, "memory.current");
- 	expected_current = old_current;
- 	if (!values_close(expected_current, current, 5)) {
-@@ -162,13 +186,15 @@ static int hugetlb_test_program(const char *cgroup, void *arg)
- 	return ret;
- 
- out_failed_munmap:
--	munmap(addr, LENGTH);
-+	munmap(addr, length);
- 	return ret;
- }
- 
- static int test_hugetlb_memcg(char *root)
- {
- 	int ret = KSFT_FAIL;
-+	int num_pages = 20;
-+	long hpage_size = get_hugepage_size();
- 	char *test_group;
- 
- 	test_group = cg_name(root, "hugetlb_memcg_test");
-@@ -177,7 +203,7 @@ static int test_hugetlb_memcg(char *root)
- 		goto out;
- 	}
- 
--	if (cg_write(test_group, "memory.max", "100M")) {
-+	if (cg_write_numeric(test_group, "memory.max", num_pages * hpage_size * 1024)) {
- 		ksft_print_msg("fail to set cgroup memory limit.\n");
- 		goto out;
- 	}
-@@ -200,6 +226,7 @@ int main(int argc, char **argv)
- {
- 	char root[PATH_MAX];
- 	int ret = EXIT_SUCCESS, has_memory_hugetlb_acc;
-+	long val;
- 
- 	has_memory_hugetlb_acc = proc_mount_contains("memory_hugetlb_accounting");
- 	if (has_memory_hugetlb_acc < 0)
-@@ -208,12 +235,15 @@ int main(int argc, char **argv)
- 		ksft_exit_skip("memory hugetlb accounting is disabled\n");
- 
- 	/* Unit is kB! */
--	if (get_hugepage_size() != 2048) {
--		ksft_print_msg("test_hugetlb_memcg requires 2MB hugepages\n");
-+	val = get_hugepage_size();
-+	if (val < 0) {
-+		ksft_print_msg("Failed to read hugepage size\n");
- 		ksft_test_result_skip("test_hugetlb_memcg\n");
- 		return ret;
- 	}
- 
-+	ksft_print_msg("Hugepage size: %ld kB\n", val);
-+
- 	if (cg_find_unified_root(root, sizeof(root), NULL))
- 		ksft_exit_skip("cgroup v2 isn't mounted\n");
- 
--- 
-2.52.0
-
+> Fixes: 2c54b423cf85 ("arm64/xor: use EOR3 instructions when available")
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>  arch/arm64/include/asm/xor.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
 
