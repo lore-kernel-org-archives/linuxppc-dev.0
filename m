@@ -1,87 +1,112 @@
-Return-Path: <linuxppc-dev+bounces-18869-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18870-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E05510BA42E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2026 05:50:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A0FF10BA431
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2026 06:18:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fhqW244vKz2xmX;
-	Fri, 27 Mar 2026 16:50:38 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774590638;
-	cv=none; b=C4X1AagL0GzKWBNoa6bnvimBNPc8z02GhAglaE+X2OYOqMQTNrtzx42aIc+y7mlCMGD+13xVEJW7G8tP9/MSRcuV8Arfc1/deo9I5mHkjsLHrXYlMzpqFGLTDo2wzEBIBqLAwe7JfOkahnUhRtKManNJYMw9tl3K1BrBQbVQjgIKLmzDQyNraJIPm3ecffHA6yiEmYlDwrwMk02N4syj9+7+1NlS7hbTjo2t8deeymtc2dprD1f2qkQ5Tv22amDHltzjBFmLi2L2ZiJHzaorwFd3iJmsU4fUGmLOUy/KL9et+5TCAyhOdqm/047CY0HEwYCmNfiKYqZkO5NbnHRr4Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fhr6m22Pwz2yVt;
+	Fri, 27 Mar 2026 17:18:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::133"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774592288;
+	cv=none; b=PS/LsmXb7teq3xxO0j5YLFxSK2kBCTSBrwFE6c/Ec7TZiHY/uiViIeQ6514xydzyE6PWsYK3uPN8iwiN1PEPlN99L4f47pQFMZaLLlPgjDbvbxHBNl0edJeWV6+R2r10GmCJdyRKbx94yDOAqV5vk9Jnk60yf/PzbZfZ8ldPz+St+W1Uf9h6yNIsTPJJVo4XQfF5y3iM8Yf3Nye+ftbjE7kbjKDdy027ZW8TjviaBRjeDTPa3wt5W27ldanjJbzsY1Un1V2kZilSkhxu4RUVnx0zvwfVaIAo8XccvBvOmk7ArnTNF11X0PF+aQk64YjYpfaHWVd4BIqiW9KytcV1vQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774590638; c=relaxed/relaxed;
-	bh=dlWPsRZ5eg4ebr0CP6MSk8XH8PhzWTV6BknR665dbRI=;
-	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=a0OGuAJUxaBdpPaZMz40ceLSZRpdLLzMzI2i3s1rTTk0eLSVWinUIX9H0S3WFW+tBYQbsGhhGAkoimM9X77RfT/inO7oa2KbhtOz5v/N2+i//e16jPa5sYfUYuVmVapJu/goM05nU6syMklkW5/FS1AiHfEFNTWqED3Bkvzm7Tbm0ZzR/yJ8jMZOUEMylSK+r0gqFS8T7sNx8DOduQhljvYXpdzfSL/NmwqhSUnl22D7eSBa8fNGkch4/g4bk5i6VB6L1OEEfY54vt0DQcF69B2Og21Y8KSIUsaRIks1PWqE5CvRcWHuWenxy6utSWXILo4Kxl3/mkBUk03nt4zpzw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=Z1oPSHRy; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	t=1774592288; c=relaxed/relaxed;
+	bh=/2j39ho5HZfwE3eOGk3paFEvb/lh5G+wpe3o3TJUYA0=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=RJH481fdaBazydeNc0xjTNRT2VPesHAok1ajn5DvHLGw6Vlbe2NVHF+4oB+UDMXn5yqweLxgxDIpxvbjBuKbL/noHS8FxYtvnafc+ltkgcUpmvbqa5jnXow6Il38YiupZGXyxrltMHYQfZNw0iOvkVzPtFHJmHsrLWh4yCCRLFWGGG/hLb5AXiuC9FngPtGYP/BU7yCWQP6jVZMzaoHMO+otiNSC72KNhNALUwwQjXtCiY5JgGzw8j+rnY/7q04mJJlduHFF2UgenOID5R3+hqRySUcOlpPdoLCCVP/1QSQljpI3MzctvwkDZ1jCJGStDPHlPKFCjWQmI08ops9CHQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=lst.de; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=Dm8ySlYB; dkim-atps=neutral; spf=none (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+7b1de7ca9b09bfe890a7+8251+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=bombadil.srs.infradead.org
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=Z1oPSHRy;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=Dm8ySlYB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+7b1de7ca9b09bfe890a7+8251+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org)
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhqW15DBxz2xQr
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2026 16:50:36 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id B84FC60134;
-	Fri, 27 Mar 2026 05:50:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id ACF49C2BCB1;
-	Fri, 27 Mar 2026 05:50:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
-	s=korg; t=1774590633;
-	bh=dlWPsRZ5eg4ebr0CP6MSk8XH8PhzWTV6BknR665dbRI=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=Z1oPSHRysMy+6wXBJFXG9mFzlDuQc+AG+9J9n6b3eqNtsV8pZVMQ81vG2zjJgE3r9
-	 Vwk8DGJTLM5wMJYNlTCMV3P4HxBM5Fzh2kN4K4FctjtR5IEakY8OgdYhQKEYI2Hecn
-	 asywffkE1Ac9oHnjQ0d+0ALgtZqNzZ21R6Hlrgko=
-Date: Thu, 26 Mar 2026 22:50:31 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
-Cc: David Hildenbrand <david@kernel.org>, "Liam R . Howlett"
- <Liam.Howlett@oracle.com>, Vlastimil Babka <vbabka@kernel.org>, Jann Horn
- <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, Mike Rapoport
- <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Kees Cook
- <kees@kernel.org>, linux-mm@kvack.org, linux-kernel@vger.kernel.org, Vineet
- Gupta <vgupta@kernel.org>, Russell King <linux@armlinux.org.uk>, Catalin
- Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Brian
- Cain <bcain@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui
- <kernel@xen0n.name>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Dinh
- Nguyen <dinguyen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <chleroy@kernel.org>, Paul Walmsley <pjw@kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Alexandre Ghiti <alex@ghiti.fr>, Heiko Carstens <hca@linux.ibm.com>, Vasily
- Gorbik <gor@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle
- <svens@linux.ibm.com>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar
- <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen
- <dave.hansen@linux.intel.com>, x86@kernel.org, "H . Peter Anvin"
- <hpa@zytor.com>, Richard Weinberger <richard@nod.at>, Anton Ivanov
- <anton.ivanov@cambridgegreys.com>, Johannes Berg
- <johannes@sipsolutions.net>, Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, Xu Xin
- <xu.xin16@zte.com.cn>, Chengming Zhou <chengming.zhou@linux.dev>, Michal
- Hocko <mhocko@suse.com>, Paul Moore <paul@paul-moore.com>, Stephen Smalley
- <stephen.smalley.work@gmail.com>, Ondrej Mosnacek <omosnace@redhat.com>,
- linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev,
- linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- linux-um@lists.infradead.org, linux-fsdevel@vger.kernel.org,
- selinux@vger.kernel.org
-Subject: Re: [PATCH v4 00/25] mm/vma: convert vm_flags_t to vma_flags_t in
- vma code
-Message-Id: <20260326225031.87e04d2c652923bc10aef0ee@linux-foundation.org>
-In-Reply-To: <cover.1774034900.git.ljs@kernel.org>
-References: <cover.1774034900.git.ljs@kernel.org>
-X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhr6g3bLvz2xmX
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2026 17:18:00 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender
+	:Reply-To:Content-Type:Content-ID:Content-Description;
+	bh=/2j39ho5HZfwE3eOGk3paFEvb/lh5G+wpe3o3TJUYA0=; b=Dm8ySlYB19geB6N1wp4cse2BnE
+	JN2T8m+Zw90dMyCB90leObMyg3f4eKCLoYf44HQSKs1iFsfQyNNlAyXTmC2YyC9cg+WVNAhvviD6y
+	cyy4GwLB3/FH0loAebaI/l5+33lUAr833HyJEsycRuACwnjRw7sr6ZGJORwCbYpE9ukblH6jNRFYr
+	PIcgis0ScZqfjsoRawazIw0xyrtdJF0UqnFjUlJCPOpkKy++zmpNABgi1etUgdX0e6yBRfyYJIMiN
+	k0orD2TF6mVpcpXxUpVqKytJV7w1K10rawQKtxOmAa/9DVRbS95hfYSWAMKA4zwJHjX3yP5ZviO/F
+	hWwaa7Hw==;
+Received: from 2a02-8389-2341-5b80-d601-7564-c2e0-491c.cable.dynamic.v6.surfer.at ([2a02:8389:2341:5b80:d601:7564:c2e0:491c] helo=localhost)
+	by bombadil.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1w60Vd-00000006kai-3ezG;
+	Fri, 27 Mar 2026 06:17:30 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Richard Henderson <richard.henderson@linaro.org>,
+	Matt Turner <mattst88@gmail.com>,
+	Magnus Lindholm <linmag7@gmail.com>,
+	Russell King <linux@armlinux.org.uk>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>,
+	Ard Biesheuvel <ardb@kernel.org>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	WANG Xuerui <kernel@xen0n.name>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Paul Walmsley <pjw@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Alexandre Ghiti <alex@ghiti.fr>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Richard Weinberger <richard@nod.at>,
+	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Chris Mason <clm@fb.com>,
+	David Sterba <dsterba@suse.com>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Song Liu <song@kernel.org>,
+	Yu Kuai <yukuai@fnnas.com>,
+	Li Nan <linan122@huawei.com>,
+	"Theodore Ts'o" <tytso@mit.edu>,
+	"Jason A. Donenfeld" <Jason@zx2c4.com>,
+	linux-alpha@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	loongarch@lists.linux.dev,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org,
+	sparclinux@vger.kernel.org,
+	linux-um@lists.infradead.org,
+	linux-crypto@vger.kernel.org,
+	linux-btrfs@vger.kernel.org,
+	linux-arch@vger.kernel.org,
+	linux-raid@vger.kernel.org
+Subject: [PATCH 01/28] xor: assert that xor_blocks is not call from interrupt context
+Date: Fri, 27 Mar 2026 07:16:33 +0100
+Message-ID: <20260327061704.3707577-2-hch@lst.de>
+X-Mailer: git-send-email 2.47.3
+In-Reply-To: <20260327061704.3707577-1-hch@lst.de>
+References: <20260327061704.3707577-1-hch@lst.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,17 +119,35 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 
-On Fri, 20 Mar 2026 19:38:17 +0000 "Lorenzo Stoakes (Oracle)" <ljs@kernel.org> wrote:
+Most of the optimized xor_blocks versions require FPU/vector registers,
+which generally are not supported in interrupt context.
 
-> This series converts a lot of the existing use of the legacy vm_flags_t
-> data type to the new vma_flags_t type which replaces it.
+Both callers already are in user context, so enforce this at the highest
+level.
 
-Series has nine unreviewed patches.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ crypto/xor.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Again, I plan to upstream this as-is - lots of Lorenzopatches remain
-unreviewed and I'm OK with that.
+diff --git a/crypto/xor.c b/crypto/xor.c
+index f39621a57bb3..df530ddc9f06 100644
+--- a/crypto/xor.c
++++ b/crypto/xor.c
+@@ -28,6 +28,8 @@ xor_blocks(unsigned int src_count, unsigned int bytes, void *dest, void **srcs)
+ {
+ 	unsigned long *p1, *p2, *p3, *p4;
+ 
++	WARN_ON_ONCE(!in_task() || irqs_disabled() || softirq_count());
++
+ 	p1 = (unsigned long *) srcs[0];
+ 	if (src_count == 1) {
+ 		active_template->do_2(bytes, dest, p1);
+-- 
+2.47.3
+
 
