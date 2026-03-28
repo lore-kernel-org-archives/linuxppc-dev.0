@@ -1,50 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-18951-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18952-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E95B10BA424
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Mar 2026 07:41:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3233710BA424
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Mar 2026 07:41:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fjTwR6yL2z2yjV;
-	Sat, 28 Mar 2026 18:41:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.223
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774683687;
-	cv=none; b=P3ziA4/kjxT6xr9aOZL4K2gn2hqfQ3Oz9CpaTCg/8bM5jQODfdf9ecOU0C14lOFG6MMcr+9RbuDHh6XyNkKt0Gyeu9OXfi67KuPpFNV9Rj8FLX88poEt9gue5Q6LRgWLW7aVfdGOzthOhVN/ShRHUeVtFO4f++USy0NopTMHBPrx39QePFXumP6xBhAv/9PJmGtqiK/yMp2DEh+O354DFP1qsj2i0bcIGIif0Zwb3ZenuTWReENoyPFoJc/cKVnif6BsM3TBnKRIYD8CgdmjZ3NG/GwDjXbFBRgPRIdYXuwmR86dNkp3lN6FCXRmVBpKQSA/ofz6INMBovamK1vPkQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fjTwT4Mdnz2yr8;
+	Sat, 28 Mar 2026 18:41:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.222
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774683689;
+	cv=none; b=Y5oGqnRNUzVqDpw3lDfM25sTKGX8Zv5R23J5/6hdGiLwKW0zjpKfeGM6E1w9J3JN8J3kDPFGxky8JcJa2al7q70SbQA3+ITAJIHPiCXuVKKbIVVFT+195UjGO0HFEfycaylWDxdT7sSTnmxBRxsbv1oxXv9lCaA1yZsEAoSZjVrsN+qKqjQLdu1H/VncuiYbB4cK3LD6+vqL4Wwx3d/MKwPaW2GB5FtQ1iY7UKDTciuxv/T7PAQNzlj5a9FvRiZBF2x9IvKymQdgYf3I6iKCDqsvpkYhUrNsYbCgYF0VEzHMEhvKxYxJbZDSSITezEC5FEtbtzpasDMKWda253gkFQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774683687; c=relaxed/relaxed;
-	bh=ipRmD0/2OdKsTaPJkmq5XYbzQlr05HqxdeagwMOmVUI=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ogQUmGHfbBqBgdKoeopvsagwdWQQDQVhxEAOQeN/1SHxv0hTCC5JJBpr/AFEE6OzNMlewytsXelsTqOLJ3NTmvnw3aFMA2/r8ZRyAciGJez31g1ZRH0gdcxmomyNhipSDivSIkg5eHpRjSdfohmj+hHhj7HfVqTJyOONbffS5tgnjLfMEMyRmcIFybiSr6XNRduCisLJwUU99TdYPqDgwf1r+WdtcEmjMycn9akpu3vQvGIF8MW3tObwYEPInmfHce0EAaTRmn8c2PEUAZP4HZP7EYf4C7eq5g8z1+HLEAEbSB3QYEnLKkIBBn1SavinxOlgXFiTNvh2pBHNzHvTZw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=uvotX97y; dkim-atps=neutral; spf=pass (client-ip=113.46.200.223; helo=canpmsgout08.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+	t=1774683689; c=relaxed/relaxed;
+	bh=7Ej/nGP6D4OZlN2NP0wOiKbhFa+CLfU7f01IuTLoNYc=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=VlfsPUl4X09AhW07y5gi1nVyhTD5xTuNa7+tNKeY4ansRTYgjOi8OUD91HdtNIS1X5bSPi8WqlDS8k25z9YbmW6koy5u1QdfrEqrhfXVlbVFVw9skQBxdsuy7aKXu622IXPrkWDcAOhxvc9Z+ZdsQfYwkgSRJSxxX42BLWJJlRBUBsJdJ7YVz6762TYK4v2/lwmpJ2HwnupQbjQ1friiJ6MKe7+Bp1gsYGK80AVmHsdqKMF4s7vgo9GjCIE9H5FIqVgdA3t1eugvht/8bh2pSn0PoF18ghbJCBlaXJmQPowOyMV3KYu3x44Sr1jtln+Miwt9CX1RqF21VQVNjBq+iA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=PCikQ7pI; dkim-atps=neutral; spf=pass (client-ip=113.46.200.222; helo=canpmsgout07.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=uvotX97y;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=PCikQ7pI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.223; helo=canpmsgout08.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout08.his.huawei.com (canpmsgout08.his.huawei.com [113.46.200.223])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.222; helo=canpmsgout07.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout07.his.huawei.com (canpmsgout07.his.huawei.com [113.46.200.222])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fjTwN2HbGz2yfK
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2026 18:41:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fjTwS50b1z2ypm
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2026 18:41:28 +1100 (AEDT)
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=ipRmD0/2OdKsTaPJkmq5XYbzQlr05HqxdeagwMOmVUI=;
-	b=uvotX97yDNtH1amJpIj2s4O197fY2nMqoozQvJt0womhY4365jCUitbUFDPvBhpuA8STynNi/
-	ZU7ilNRpKFmtww5v2wwSEX29aCu+HIF3+GAuZ/Llme4Gqgl8ZAUxTkZxDkHCNv0fWU90Gupbsjx
-	MVXXqh9Hj2VDeQ9DmNh3DMw=
-Received: from mail.maildlp.com (unknown [172.19.163.127])
-	by canpmsgout08.his.huawei.com (SkyGuard) with ESMTPS id 4fjTn767Z5zmV79;
-	Sat, 28 Mar 2026 15:35:07 +0800 (CST)
+	bh=7Ej/nGP6D4OZlN2NP0wOiKbhFa+CLfU7f01IuTLoNYc=;
+	b=PCikQ7pIzeaKrzAs1XH/O8ZmZYPB9pV0fBIUYs2VLOstWE8QiBMRuVM3CIvEXipATIGW3TQ8X
+	gcrx6UYl2RFLLYRjDgwBg3lAQFmP1VJZr1v/vi26ia8fHvOPtkTiccABS/ORh8k+igGZUfzsNYX
+	1sRHQpEli+zR1tX+CITCvDo=
+Received: from mail.maildlp.com (unknown [172.19.163.214])
+	by canpmsgout07.his.huawei.com (SkyGuard) with ESMTPS id 4fjTnL4BJGzLlsZ;
+	Sat, 28 Mar 2026 15:35:18 +0800 (CST)
 Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id 9CAE440363;
-	Sat, 28 Mar 2026 15:41:16 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 1B7C44056C;
+	Sat, 28 Mar 2026 15:41:25 +0800 (CST)
 Received: from huawei.com (10.90.53.73) by dggpemf500011.china.huawei.com
  (7.185.36.131) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Sat, 28 Mar
- 2026 15:41:13 +0800
+ 2026 15:41:22 +0800
 From: Jinjie Ruan <ruanjinjie@huawei.com>
 To: <corbet@lwn.net>, <skhan@linuxfoundation.org>, <catalin.marinas@arm.com>,
 	<will@kernel.org>, <chenhuacai@kernel.org>, <kernel@xen0n.name>,
@@ -72,10 +73,12 @@ To: <corbet@lwn.net>, <skhan@linuxfoundation.org>, <catalin.marinas@arm.com>,
 	<linuxppc-dev@lists.ozlabs.org>, <linux-riscv@lists.infradead.org>,
 	<devicetree@vger.kernel.org>, <kexec@lists.infradead.org>
 CC: <ruanjinjie@huawei.com>
-Subject: [PATCH v11 00/11] arm64/riscv: Add support for crashkernel CMA reservation
-Date: Sat, 28 Mar 2026 15:40:02 +0800
-Message-ID: <20260328074013.3589544-1-ruanjinjie@huawei.com>
+Subject: [PATCH v11 03/11] x86/kexec: Fix potential buffer overflow in prepare_elf_headers()
+Date: Sat, 28 Mar 2026 15:40:05 +0800
+Message-ID: <20260328074013.3589544-4-ruanjinjie@huawei.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260328074013.3589544-1-ruanjinjie@huawei.com>
+References: <20260328074013.3589544-1-ruanjinjie@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,111 +92,51 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-Originating-IP: [10.90.53.73]
 X-ClientProxiedBy: kwepems100001.china.huawei.com (7.221.188.238) To
  dggpemf500011.china.huawei.com (7.185.36.131)
 
-The crash memory allocation, and the exclude of crashk_res, crashk_low_res
-and crashk_cma memory are almost identical across different architectures,
-This patch set handle them in crash core in a general way, which eliminate
-a lot of duplication code.
+There is a race condition between the kexec_load() system call
+(crash kernel loading path) and memory hotplug operations that can lead
+to buffer overflow and potential kernel crash.
 
-And add support for crashkernel CMA reservation for arm64 and riscv.
+During prepare_elf_headers(), the following steps occur:
+1. get_nr_ram_ranges_callback() queries current System RAM memory ranges
+2. Allocates buffer based on queried count
+3. prepare_elf64_ram_headers_callback() populates ranges from memblock
 
-Rebased on v7.0-rc1.
+If memory hotplug occurs between step 1 and step 3, the number of ranges
+can increase, causing out-of-bounds write when populating cmem->ranges[].
 
-Basic second kernel boot test were performed on QEMU platforms for x86,
-ARM64, and RISC-V architectures with the following parameters:
+This happens because kexec_load() uses kexec_trylock (atomic_t) while
+memory hotplug uses device_hotplug_lock (mutex), so they don't serialize
+with each other.
 
->-------"cma=256M crashkernel=256M crashkernel=64M,cma"
+Just add bounds checking in prepare_elf64_ram_headers_callback() to
+prevent out-of-bounds (OOB) access,
 
-Changes in v11:
-- Avoid silently drop crash memory if the crash kernel is built without
-  CONFIG_CMA.
-- Remove unnecessary "cmem->nr_ranges = 0" for arch_crash_populate_cmem()
-  as we use kvzalloc().
-- Provide a separate patch for each architecture to fix the existing
-  buffer overflow issue.
-- Add Acked-bys for arm64.
+Fixes: 8d5f894a3108 ("x86: kexec_file: lift CRASH_MAX_RANGES limit on crash_mem buffer")
+Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
+---
+ arch/x86/kernel/crash.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Changes in v10:
-- Fix crashk_low_res not excluded bug in the existing
-  RISC-V code.
-- Fix an existing memory leak issue in the existing PowerPC code.
-- Fix the ordering issue of adding CMA ranges to
-  "linux,usable-memory-range".
-- Fix an existing concurrency issue. A Concurrent memory hotplug may occur
-  between reading memblock and attempting to fill cmem during kexec_load()
-  for almost all existing architectures.
-- Link to v9: https://lore.kernel.org/all/20260323072745.2481719-1-ruanjinjie@huawei.com/
-
-Changes in v9:
-- Collect Reviewed-by and Acked-by, and prepare for Sashiko AI review.
-- Link to v8: https://lore.kernel.org/all/20260302035315.3892241-1-ruanjinjie@huawei.com/
-
-Changes in v8:
-- Fix the build issues reported by kernel test robot and Sourabh.
-- Link to v7: https://lore.kernel.org/all/20260226130437.1867658-1-ruanjinjie@huawei.com/
-
-Changes in v7:
-- Correct the inclusion of CMA-reserved ranges for kdump kernel in of/kexec
-  for arm64 and riscv.
-- Add Acked-by.
-- Link to v6: https://lore.kernel.org/all/20260224085342.387996-1-ruanjinjie@huawei.com/
-
-Changes in v6:
-- Update the crash core exclude code as Mike suggested.
-- Rebased on v7.0-rc1.
-- Add acked-by.
-- Link to v5: https://lore.kernel.org/all/20260212101001.343158-1-ruanjinjie@huawei.com/
-
-Changes in v5:
-- Fix the kernel test robot build warnings.
-- Sort crash memory ranges before preparing elfcorehdr for powerpc
-- Link to v4: https://lore.kernel.org/all/20260209095931.2813152-1-ruanjinjie@huawei.com/
-
-Changes in v4:
-- Move the size calculation (and the realloc if needed) into the
-  generic crash.
-- Link to v3: https://lore.kernel.org/all/20260204093728.1447527-1-ruanjinjie@huawei.com/
-
-Jinjie Ruan (10):
-  riscv: kexec_file: Fix crashk_low_res not exclude bug
-  powerpc/crash: Fix possible memory leak in update_crash_elfcorehdr()
-  x86/kexec: Fix potential buffer overflow in prepare_elf_headers()
-  arm64: kexec_file: Fix potential buffer overflow in
-    prepare_elf_headers()
-  riscv: kexec_file: Fix potential buffer overflow in
-    prepare_elf_headers()
-  LoongArch: kexec: Fix potential buffer overflow in
-    prepare_elf_headers()
-  crash: Exclude crash kernel memory in crash core
-  crash: Use crash_exclude_core_ranges() on powerpc
-  arm64: kexec: Add support for crashkernel CMA reservation
-  riscv: kexec: Add support for crashkernel CMA reservation
-
-Sourabh Jain (1):
-  powerpc/crash: sort crash memory ranges before preparing elfcorehdr
-
- .../admin-guide/kernel-parameters.txt         |  16 +--
- arch/arm64/kernel/machine_kexec_file.c        |  43 +++-----
- arch/arm64/mm/init.c                          |   5 +-
- arch/loongarch/kernel/machine_kexec_file.c    |  43 +++-----
- arch/powerpc/include/asm/kexec_ranges.h       |   1 -
- arch/powerpc/kexec/crash.c                    |   7 +-
- arch/powerpc/kexec/ranges.c                   | 101 +-----------------
- arch/riscv/kernel/machine_kexec_file.c        |  42 +++-----
- arch/riscv/mm/init.c                          |   5 +-
- arch/x86/kernel/crash.c                       |  92 +++-------------
- drivers/of/fdt.c                              |   9 +-
- drivers/of/kexec.c                            |   9 ++
- include/linux/crash_core.h                    |   9 ++
- include/linux/crash_reserve.h                 |   4 +-
- kernel/crash_core.c                           |  89 ++++++++++++++-
- 15 files changed, 194 insertions(+), 281 deletions(-)
-
+diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
+index 335fd2ee9766..7fa6d45ebe3f 100644
+--- a/arch/x86/kernel/crash.c
++++ b/arch/x86/kernel/crash.c
+@@ -225,6 +225,9 @@ static int prepare_elf64_ram_headers_callback(struct resource *res, void *arg)
+ {
+ 	struct crash_mem *cmem = arg;
+ 
++	if (cmem->nr_ranges >= cmem->max_nr_ranges)
++		return -ENOMEM;
++
+ 	cmem->ranges[cmem->nr_ranges].start = res->start;
+ 	cmem->ranges[cmem->nr_ranges].end = res->end;
+ 	cmem->nr_ranges++;
 -- 
 2.34.1
 
