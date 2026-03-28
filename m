@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-18961-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18962-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95AB110F3DCE
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Mar 2026 12:09:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67A6410F3DE2
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Mar 2026 12:10:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fjbsz09PJz2yfK;
-	Sat, 28 Mar 2026 23:09:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774699782;
-	cv=none; b=NObwMk18PY7fT+4rBKNtjhmsSv5hEx7psxZyYJGSqiWQ4+T4eF/kzK920zgn52fUMV59kG6shYQ7U4HKbsw20r17neyBThKkJ52eGvvB9bs/P2QwIVZkGaUdCw5FuLgXcvMHNkDFCRKT3btOiwN4HdotTlKZtl/KKq0hfeLxo6gxtQE2bHcDeB88NebcqcXs8nVQosLgI/7TXpSLfeuAJzfyyLFAFrBmtMR/6bGpuU9jdQkK45pw/wSsC3bKFPixMm336Za9SiKlnB/MSxg55JptL5QFR4rFik8QJq7jDgpM2sX12SoD4rd6dv0ofNKvcwiGoXF94abbpsrhOAj4dQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fjbv70V1Tz2yfK;
+	Sat, 28 Mar 2026 23:10:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774699843;
+	cv=none; b=bwEqn8TmK/PZRInk0KafDjrEj7R+6gDTiPuBx/lHh5LkmT8FjeO+cFOY+z6P14orC4dP3RrAqxTDWcYnJIcTE39wZbH3TxTJA1AUhaxLL4hTgqcMfsEkz2i3vnTsRbUzYjBgRmPfn/+amoPIv/PhI23zQdiZWqC79AXQjcgMbTAeSlX7Pezo5/nE+ZZdyPkJzFVzd5O4S+2PoIXF2B7VYjxfNXwBJoYlvfXpkn1nZC1sUnkH7NGBMKA/q0AUcnf+EvsEWnOSEE5mr5nangleEbdyczOgahsbBBsX2hU/CEhr3vwcdxNtOSiM8Uy18T+gl3uAfPkU671K6fcg//p3Yg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774699782; c=relaxed/relaxed;
-	bh=/gB2i70YY7tA8bB0dumzedAxykUOjDm3U5xR1oNIAtA=;
+	t=1774699843; c=relaxed/relaxed;
+	bh=yOTv8yveft0wjUfc7GYjesXl6P8SwNDlwaPGgO2+5Kc=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Lxaxyp60iyjU8ThnQv8ICBrn4WtSKwjHUyI0rcxAkZMe874m2QcRroe/E2CFao1Kr0nicIQsuFa3Y9JWgWOfLxq9F+54i1QsGkVhlYiJGdhQ9TTiSjGUQ7eRiPI+ojQJjAS0ZsPRE8uw6QCrZCX+13da/Ek2VWOzr6Jd3FojdguwQdD3zAftHmpvgL4DZEwjwzarJy4RV0szvtvRTR1PMQ/NX2nHQf2CbfJYduDZcsszo3EcBjYoxlFIQzLdwUx1Cn+oiSKw00aX+d4nFWRNmVGtX8S7jO4HeLXFPO1LnAqKvlTZMs/b0H3Q8ft5de/E8A21AhRi1ueemuD3DjUCAQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=k/r4m/ue; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=N/0nDTbbvLXDX9rzwaVcCQcROY0gYXaiSJz4tuZj3UkLrmfUcTVicMgTXevoR/SIoRxdnc6Edyv1JpIWcBexR7hGlhxxorUgPeJq7aRxQplIYGeUhyzgVwFuBjK5VL93fWV4fITIIeWr3e2/SnaWZbbLrLesxEKft0YoDD+fKl6tO4TS9ynLCaWMWODXAP5rWpQWarb466E4f0yrhvPHus5T80xQgWPev1T9EcdIkkbAtUBM+axkPNgb2HB7dqjUF5JpND/aPtgr+oq278Pxo8jwfFuBqT5gHShlqGti33Vi/ZvaU7ZY7cUi6Zx6oJ5bur3dmrVljyEPNgqbyVicLQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LQI2u2FJ; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=k/r4m/ue;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LQI2u2FJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fjbsx5v4kz2xN8
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2026 23:09:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fjbv61qjWz2xN8
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2026 23:10:42 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 3F3F360008;
-	Sat, 28 Mar 2026 12:09:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 100CAC4CEF7;
-	Sat, 28 Mar 2026 12:09:34 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 52B8543FD2;
+	Sat, 28 Mar 2026 12:10:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 24AC2C4CEF7;
+	Sat, 28 Mar 2026 12:10:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774699777;
-	bh=aj2WoZSD4Ghz0WN0CvxQLhesl3mrrJl9JZMEkXD6iJs=;
+	s=k20201202; t=1774699839;
+	bh=NTFcZ7aSZIsyP3qPdyEPoyvUbM7dBDc1cogifZf44fs=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=k/r4m/ueX4BHo3KpJu/EnzGu9hUWVECJ9zT43JbN/vOCG9z6Gnjl/MCj9KDym5wY7
-	 neYO7SvL/1stOEBVXgVmmwlml7aAlX2WSW/IAPRNjXJPUFxhfnwk5xCehkqjQf7RDS
-	 K1vNH4lR04IJWfDU+t/Betv8YLU8kJ4jUAQrTVP6vEZmNvQr1NHeH+vG6x99PokfiG
-	 1P/ZhIc23nYpHyF33u6y5nhbBXp/hDkea3hwiGNz4EtbkgdjJOXtmm7ZgiNrmc7HuO
-	 XWEtUeMRudf3FCXBvPIWjBPud2IEgBzp7fV6VgRWxoGkVbS8wy3w1q5ACAfXM9RS+Q
-	 8HWkcVP97AgeQ==
-Message-ID: <7d1b7aa6-aaa8-4116-abc2-382511823a9c@kernel.org>
-Date: Sat, 28 Mar 2026 13:09:32 +0100
+	b=LQI2u2FJrZdfURKcCR9tStL7U7j9JDQoiHCmq72vccMs+ZUBhp+9/TKvL161WNaYt
+	 HB6Cn/KW4bpF4LE8szU/Ttp0n1iAeBjvFxI338mQ+OH5v7/aZmAQ9mRmTZhzpLHT8Q
+	 2ij/qw3sRiilAWVo3GAkTfwxr5AaAfiGpMiRoVeACXWF2FpqJdBr1mqCSFspFTpRGG
+	 IWAWGn1ScwG3hTcEoF9XWrUzsMNbRCB9m36GDK5FSVbYng9NVfLXXuJIcV7JatH039
+	 EqdHKj9j/+OVngUAIX3Bg6ahCKh6k16Ub4DhdqyNRlVlqKadrI7x9Bvws94pvNi0EJ
+	 U/HidD7p2Gw6Q==
+Message-ID: <4c5e9bad-82f0-4714-99c2-8ccd79a45043@kernel.org>
+Date: Sat, 28 Mar 2026 13:10:25 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,59 +60,73 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] soc: fsl: qe: panic on ioremap() failure in qe_reset()
-To: Wang Jun <1742789905@qq.com>, Qiang Zhao <qiang.zhao@nxp.com>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org, gszhai@bjtu.edu.cn, 25125332@bjtu.edu.cn,
- 25125283@bjtu.edu.cn, 23120469@bjtu.edu.cn, stable@vger.kernel.org
-References: <780c1ba3-6639-478e-896f-e35ec059b58c@kernel.org>
- <tencent_FED49CF5331CC0C7910618883332A08E2606@qq.com>
+Subject: Re: [PATCH 02/12] bus: fsl-mc: use generic driver_override
+ infrastructure
+To: Ioana Ciornei <ioana.ciornei@nxp.com>, Danilo Krummrich <dakr@kernel.org>
+Cc: Russell King <linux@armlinux.org.uk>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Nipun Gupta <nipun.gupta@amd.com>,
+ Nikhil Agarwal <nikhil.agarwal@amd.com>, "K. Y. Srinivasan"
+ <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>,
+ Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
+ Long Li <longli@microsoft.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Armin Wolf <W_Armin@gmx.de>, Bjorn Andersson <andersson@kernel.org>,
+ Mathieu Poirier <mathieu.poirier@linaro.org>,
+ Vineeth Vijayan <vneethv@linux.ibm.com>,
+ Peter Oberparleiter <oberpar@linux.ibm.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>,
+ Harald Freudenberger <freude@linux.ibm.com>,
+ Holger Dengler <dengler@linux.ibm.com>, Mark Brown <broonie@kernel.org>,
+ "Michael S. Tsirkin" <mst@redhat.com>, Jason Wang <jasowang@redhat.com>,
+ Xuan Zhuo <xuanzhuo@linux.alibaba.com>, =?UTF-8?Q?Eugenio_P=C4=82=C2=A9rez?=
+ <eperezma@redhat.com>, Alex Williamson <alex@shazbot.org>,
+ Juergen Gross <jgross@suse.com>, Stefano Stabellini
+ <sstabellini@kernel.org>,
+ Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
+ linux-kernel@vger.kernel.org, driver-core@lists.linux.dev,
+ linuxppc-dev@lists.ozlabs.org, linux-hyperv@vger.kernel.org,
+ linux-pci@vger.kernel.org, platform-driver-x86@vger.kernel.org,
+ linux-arm-msm@vger.kernel.org, linux-remoteproc@vger.kernel.org,
+ linux-s390@vger.kernel.org, linux-spi@vger.kernel.org,
+ virtualization@lists.linux.dev, kvm@vger.kernel.org,
+ xen-devel@lists.xenproject.org, linux-arm-kernel@lists.infradead.org,
+ Gui-Dong Han <hanguidong02@gmail.com>
+References: <20260324005919.2408620-1-dakr@kernel.org>
+ <20260324005919.2408620-3-dakr@kernel.org>
+ <cvcetxkxjq2tz6n2vsofhyzove3qdi2e4r6rq6yxou3joejk2h@rmt5ygav7ssu>
 Content-Language: fr-FR
 From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <tencent_FED49CF5331CC0C7910618883332A08E2606@qq.com>
+In-Reply-To: <cvcetxkxjq2tz6n2vsofhyzove3qdi2e4r6rq6yxou3joejk2h@rmt5ygav7ssu>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 
 
-Le 27/03/2026 à 01:12, Wang Jun a écrit :
-> [Vous ne recevez pas souvent de courriers de 1742789905@qq.com. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
+Le 25/03/2026 à 13:01, Ioana Ciornei a écrit :
+> On Tue, Mar 24, 2026 at 01:59:06AM +0100, Danilo Krummrich wrote:
+>> When a driver is probed through __driver_attach(), the bus' match()
+>> callback is called without the device lock held, thus accessing the
+>> driver_override field without a lock, which can cause a UAF.
+>>
+>> Fix this by using the driver-core driver_override infrastructure taking
+>> care of proper locking internally.
+>>
+>> Note that calling match() from __driver_attach() without the device lock
+>> held is intentional. [1]
+>>
+>> Link: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Fdriver-core%2FDGRGTIRHA62X.3RY09D9SOK77P%40kernel.org%2F&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4b9262ddecdd4ce29f9808de8a66485e%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639100369055903282%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=%2BRfjlUkq7oWV%2F0v2S2B%2BEuxCY%2FLRQv6qHiEWiupd6kc%3D&reserved=0 [1]
+>> Reported-by: Gui-Dong Han <hanguidong02@gmail.com>
+>> Closes: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fbugzilla.kernel.org%2Fshow_bug.cgi%3Fid%3D220789&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4b9262ddecdd4ce29f9808de8a66485e%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639100369055936232%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=XL1K1ICiygOZnlvDUbQFe192KnLsBQms0HFNGCuyz%2Fw%3D&reserved=0
+>> Fixes: 1f86a00c1159 ("bus/fsl-mc: add support for 'driver_override' in the mc-bus")
+>> Signed-off-by: Danilo Krummrich <dakr@kernel.org>
 > 
-> When ioremap() fails in qe_reset(), the global pointer qe_immr remains
-> NULL, leading to a subsequent NULL pointer dereference when the pointer
-> is accessed. Since this happens early in the boot process, a failure to
-> map a few bytes of I/O memory indicates a fatal error from which the
-> system cannot recover.
-> 
-> Follow the same pattern as qe_sdma_init() and panic immediately when
-> ioremap() fails. This avoids a silent NULL pointer dereference later
-> and makes the error explicit.
-> 
-> Fixes: 986585385131 ("[POWERPC] Add QUICC Engine (QE) infrastructure")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Wang Jun <1742789905@qq.com>
-> ---
->   drivers/soc/fsl/qe/qe.c | 6 +++++-
->   1 file changed, 5 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/soc/fsl/qe/qe.c b/drivers/soc/fsl/qe/qe.c
-> index 70b6eddb867b..9f6223043ee3 100644
-> --- a/drivers/soc/fsl/qe/qe.c
-> +++ b/drivers/soc/fsl/qe/qe.c
-> @@ -86,8 +86,12 @@ static phys_addr_t get_qe_base(void)
-> 
->   void qe_reset(void)
->   {
-> -       if (qe_immr == NULL)
-> +       if (qe_immr == NULL) {
->                  qe_immr = ioremap(get_qe_base(), QE_IMMAP_SIZE);
-> +               if (qe_immr == NULL) {
-> +                       panic("QE:ioremap failed!");
-> +               }
-> +       }
-> 
->          qe_snums_init();
+> Tested-by: Ioana Ciornei <ioana.ciornei@nxp.com>
+> Signed-off-by: Ioana Ciornei <ioana.ciornei@nxp.com>
 > 
 
-Applied, thanks.
+
+Applied, thanks
 
