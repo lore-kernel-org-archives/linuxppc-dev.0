@@ -1,78 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-18948-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18949-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C42E310F2876
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Mar 2026 23:14:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D19710BA424
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Mar 2026 07:41:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fjGg13X6Sz2yfs;
-	Sat, 28 Mar 2026 10:14:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.227.15.3
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774641364;
-	cv=none; b=T8d2Xntdvdfe7V/14JTIidltxtYyfzhKqczuIA5V+DXbxnq65icijxovpUhdy8DtZVvY85B3yJ8eoqwym/zEJlma/VkxfviQQbpwy4pcLFQuUS3mfsHyrcNUrjuJn1YaVM0XEXY6kSNaHyNN86kldWZa+y7Y9MidBhxc8qPZPXyq7/KS7gxdBiWNvHk19GEbc+D1Z9LLwhe2YkUWLigNBaUqx0mIz1TK2Ds8N5F/ZBUmezRyZzMijVfSC7Dafi+uiCyCEpkOOYu8Q3kjlMg53xhZRkGAFFqmEKND+rIo6QKBCu76YND7tfPANSZvhcRVA3K6tTxrWZHxQAqvCq1QwA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fjTwR1BBVz2ygm;
+	Sat, 28 Mar 2026 18:41:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.224
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774683687;
+	cv=none; b=oQ+cP3xKyEQ7I6UWiGMwjReG5MSXkZowN/U2ngsSa38OD/9tEX4I5+PevQOkKOgCCP9HOEi5iwX8dYaqPexzkOnOlxgsKYqV8v+T65dg234If1fSlIKfT1H9IIxInodLpa2cj9VwC3OMiQ2ppS0saF815zWjp+Vkj866jcHhfieM4PUjuNXZmTB1AfHLNcteFt0yAcxMwAYW59uQCCyZ/wmfFT8ThBWxYLk/hRimxRRYDbeNQquZDA72dHqyMIO97czYdtXvfha6jsRaYQoAP/zfhu35zZRdJB1jiHxxYcZjxNur8Is8vPf8Lu/dnFVAIdBxb2Us3fPCqB5G/TgHSQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774641364; c=relaxed/relaxed;
-	bh=OZeyCQLimffNyqz4tqPnVuhzcRPTWz8dHxxAUXYVV/I=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=PSol9h0F22B7tcXrSLZFRNQ8Ht6gtmwAVYlGjQiOT11Mfpf7rXjW/uqnVZyISZeTlgoFtQ8UPK3QFdOWNwVQg/Ziqscsc4FTxOD2UgwZTcoPunCMvKK8ucD8Oy4wpjHW2NLX7C+kNdX/P6VFoo2THsOcQhJAs1DnOP2VbnyB3Da8SJMSt43kuoy85lwNBgHPyvexySyfw+5e2eKt/6dIDYRfNMkx3D+BDiDHQ4d536c+6jTj1BeXZbBsn/frceFVNYob2+dsdKMOqikeYG7TBrk2Z8M+I9gChTT68iX9wYAeQXEvUebmMOW87i+UF7awgjJa3jHvG5/gzvrGVXORDw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; dkim=pass (2048-bit key; secure) header.d=web.de header.i=spasswolf@web.de header.a=rsa-sha256 header.s=s29768273 header.b=DDBRKOoq; dkim-atps=neutral; spf=pass (client-ip=212.227.15.3; helo=mout.web.de; envelope-from=spasswolf@web.de; receiver=lists.ozlabs.org) smtp.mailfrom=web.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
+	t=1774683687; c=relaxed/relaxed;
+	bh=tvBPTiBQiSVQB4JmznNFGob+aTrtlvXTsOGosNdIf00=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=aUxSxkYd9eJLtW83TXDaKtW5cqEn2hNMSAHmSHX+NaLqJFB9NZXEXyS8+KUFoWsHVbDk4sbFqJfW5ZNBat+bspRKKBicp3dJ/QhcOoiQ6xC+eol79dWRfP9NO+hV09ySf15Z3Sn6ewM+6Z7SFMlBWcosxRb6zfAd6TTsfN6oJnxTR5VxajTqrRJmx/M2PjkMnbYxfZwAvItoZ/cUMMmu3VSI1YZfzN1M5ejatCkmNGR5h9zS8gtd7LxPUWFcfPvh11T9LixeHFkBV/ZpV+l9oTUC72CfcfMymlx6F4qqMEpiICIKNeG4xF5jQwAUTF3+X4ZncGphrqu1dreaIRRA6A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=J/GjpK9y; dkim-atps=neutral; spf=pass (client-ip=113.46.200.224; helo=canpmsgout09.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=web.de header.i=spasswolf@web.de header.a=rsa-sha256 header.s=s29768273 header.b=DDBRKOoq;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=J/GjpK9y;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=web.de (client-ip=212.227.15.3; helo=mout.web.de; envelope-from=spasswolf@web.de; receiver=lists.ozlabs.org)
-Received: from mout.web.de (mout.web.de [212.227.15.3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.224; helo=canpmsgout09.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout09.his.huawei.com (canpmsgout09.his.huawei.com [113.46.200.224])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fjBGV05x1z2xR4
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2026 06:56:00 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
-	s=s29768273; t=1774641273; x=1775246073; i=spasswolf@web.de;
-	bh=OZeyCQLimffNyqz4tqPnVuhzcRPTWz8dHxxAUXYVV/I=;
-	h=X-UI-Sender-Class:Message-ID:Subject:From:To:Cc:Date:In-Reply-To:
-	 References:Content-Type:MIME-Version:Content-Transfer-Encoding:cc:
-	 content-transfer-encoding:content-type:date:from:message-id:
-	 mime-version:reply-to:subject:to;
-	b=DDBRKOoqMQVw8IzkPODN2L9JYQ4/fsEcSTm2Hljl3f4esEEFr9GlV+cIHE2wHhNw
-	 anQIgpzH0RK0UxyI7MwXoPEL6xSThpEnBvB8W4BJUT3zYytk4KcoarblY7eFb0wcX
-	 lR0pdC3DSO2YN9JT8tHJxsF+MlbIBmvnL9RA7rjHsZ5ACh1Xx77l41Pmy7nMQ5lQa
-	 bW4oltn8TXmcnk7MCrUDfyidZuyP5eD0ZGKMCorfjT3WmHXri8M0syYILO6qQk6Kg
-	 eDW8zEIHpxfG39PqZbOsMp8QfI0WYZ47tzRCFXGmQkFHnPKJmjUzM3soXeUmeKTf1
-	 Al5f09rq6g7pq8q5WQ==
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from client.hidden.invalid by smtp.web.de (mrweb006
- [213.165.67.108]) with ESMTPSA (Nemesis) id 1Mvsln-1vDqKE2JAV-0134vi; Fri, 27
- Mar 2026 20:54:33 +0100
-Message-ID: <59508c77abe7605636cde616c8c3b3291c6acf54.camel@web.de>
-Subject: Re: Warning from free_reserved_area() in next-20260325+
-From: Bert Karwatzki <spasswolf@web.de>
-To: Mike Rapoport <rppt@kernel.org>
-Cc: linux-kernel@vger.kernel.org, spasswolf@web.de, Liam.Howlett@oracle.com,
- 	akpm@linux-foundation.org, andreas@gaisler.com, ardb@kernel.org,
- bp@alien8.de, 	brauner@kernel.org, catalin.marinas@arm.com,
- chleroy@kernel.org, 	dave.hansen@linux.intel.com, davem@davemloft.net,
- david@kernel.org, 	devicetree@vger.kernel.org, dvyukov@google.com,
- elver@google.com, 	glider@google.com, hannes@cmpxchg.org, hpa@zytor.com,
- ilias.apalodimas@linaro.org, 	iommu@lists.linux.dev, jack@suse.cz,
- jackmanb@google.com, 	kasan-dev@googlegroups.com,
- linux-arm-kernel@lists.infradead.org, 	linux-efi@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, 
-	linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	lorenzo.stoakes@oracle.com, m.szyprowski@samsung.com, maddy@linux.ibm.com, 
-	mhiramat@kernel.org, mhocko@suse.com, mingo@redhat.com, mpe@ellerman.id.au,
- 	npiggin@gmail.com, robh@kernel.org, robin.murphy@arm.com,
- saravanak@kernel.org, 	sparclinux@vger.kernel.org, surenb@google.com,
- tglx@kernel.org, vbabka@kernel.org, 	viro@zeniv.linux.org.uk,
- will@kernel.org, x86@kernel.org, ziy@nvidia.com
-Date: Fri, 27 Mar 2026 20:54:24 +0100
-In-Reply-To: <aca6blFFWskxAcAr@kernel.org>
-References: <20260323074836.3653702-10-rppt@kernel.org>
-	 <20260327140109.7561-1-spasswolf@web.de> <aca6blFFWskxAcAr@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.56.2-0+deb13u1 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fjTwN218Xz2xN8
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2026 18:41:23 +1100 (AEDT)
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=tvBPTiBQiSVQB4JmznNFGob+aTrtlvXTsOGosNdIf00=;
+	b=J/GjpK9yAWy6Awlz1NtxuUYfv2pCFEoTNos+ytoBRK/86XW1rcK5Ziji7au52RErm2KxB1res
+	IO0UAx9viRQcZnqUez71/SMOhQuDSGe50A2dfd/FiSj299I8nr2eIZpcnc5X7Axk2lt5XtQE88f
+	IJWIWFX2PJn31WXjy7PIEQw=
+Received: from mail.maildlp.com (unknown [172.19.163.200])
+	by canpmsgout09.his.huawei.com (SkyGuard) with ESMTPS id 4fjTnD6Z19z1cyPH;
+	Sat, 28 Mar 2026 15:35:12 +0800 (CST)
+Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
+	by mail.maildlp.com (Postfix) with ESMTPS id 6F2724055B;
+	Sat, 28 Mar 2026 15:41:19 +0800 (CST)
+Received: from huawei.com (10.90.53.73) by dggpemf500011.china.huawei.com
+ (7.185.36.131) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Sat, 28 Mar
+ 2026 15:41:16 +0800
+From: Jinjie Ruan <ruanjinjie@huawei.com>
+To: <corbet@lwn.net>, <skhan@linuxfoundation.org>, <catalin.marinas@arm.com>,
+	<will@kernel.org>, <chenhuacai@kernel.org>, <kernel@xen0n.name>,
+	<maddy@linux.ibm.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
+	<chleroy@kernel.org>, <pjw@kernel.org>, <palmer@dabbelt.com>,
+	<aou@eecs.berkeley.edu>, <alex@ghiti.fr>, <tglx@kernel.org>,
+	<mingo@redhat.com>, <bp@alien8.de>, <dave.hansen@linux.intel.com>,
+	<hpa@zytor.com>, <robh@kernel.org>, <saravanak@kernel.org>,
+	<akpm@linux-foundation.org>, <bhe@redhat.com>, <vgoyal@redhat.com>,
+	<dyoung@redhat.com>, <rdunlap@infradead.org>, <peterz@infradead.org>,
+	<feng.tang@linux.alibaba.com>, <pawan.kumar.gupta@linux.intel.com>,
+	<dapeng1.mi@linux.intel.com>, <kees@kernel.org>, <elver@google.com>,
+	<paulmck@kernel.org>, <lirongqing@baidu.com>, <rppt@kernel.org>,
+	<leitao@debian.org>, <ardb@kernel.org>, <cfsworks@gmail.com>,
+	<osandov@fb.com>, <jbohac@suse.cz>, <tangyouling@kylinos.cn>,
+	<sourabhjain@linux.ibm.com>, <ritesh.list@gmail.com>,
+	<eajames@linux.ibm.com>, <songshuaishuai@tinylab.org>,
+	<kevin.brodsky@arm.com>, <vishal.moola@gmail.com>,
+	<junhui.liu@pigmoral.tech>, <coxu@redhat.com>, <fuqiang.wang@easystack.cn>,
+	<liaoyuanhong@vivo.com>, <guoren@kernel.org>, <chenjiahao16@huawei.com>,
+	<hbathini@linux.ibm.com>, <takahiro.akashi@linaro.org>,
+	<james.morse@arm.com>, <lizhengyu3@huawei.com>, <x86@kernel.org>,
+	<linux-doc@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, <loongarch@lists.linux.dev>,
+	<linuxppc-dev@lists.ozlabs.org>, <linux-riscv@lists.infradead.org>,
+	<devicetree@vger.kernel.org>, <kexec@lists.infradead.org>
+CC: <ruanjinjie@huawei.com>
+Subject: [PATCH v11 01/11] riscv: kexec_file: Fix crashk_low_res not exclude bug
+Date: Sat, 28 Mar 2026 15:40:03 +0800
+Message-ID: <20260328074013.3589544-2-ruanjinjie@huawei.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260328074013.3589544-1-ruanjinjie@huawei.com>
+References: <20260328074013.3589544-1-ruanjinjie@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,194 +92,60 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:8yi1QDgpo8UcEnEmdsCrBeIx3476PkZJGVS51Y7ouWzkEFb+7Vb
- iI7H6IplAo1reWJ7m5n87dsOo5WacneML6j1pMJ7rnDwG6x5PC0OEThQVkULLu2jhFoqTwT
- shRnhwwnWC2Y/HQvI3/neDcQfX5Kv+AIV6b80koxpdj7xBv2BCp0VvI1GgwNSQXSp+aLx3d
- 90SEC80yF2L5+2em4BT7A==
-UI-OutboundReport: notjunk:1;M01:P0:SULYSfaxDo4=;hgo2YyqOeqVK8mnAmq+9xwfLp8d
- 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
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.90.53.73]
+X-ClientProxiedBy: kwepems100001.china.huawei.com (7.221.188.238) To
+ dggpemf500011.china.huawei.com (7.185.36.131)
 
-Am Freitag, dem 27.03.2026 um 20:12 +0300 schrieb Mike Rapoport:
-> Hi Bert,
->=20
-> On Fri, Mar 27, 2026 at 03:01:08PM +0100, Bert Karwatzki wrote:
-> > Starting with linux next-20260325 I see the following warning early in=
- the
-> > boot process of a machine running debian stable (trixie) (except for t=
-he kernel):
->=20
-> Thanks for the report!
->=20
-> > [    0.027118] [      T0] ------------[ cut here ]------------
-> > [    0.027118] [      T0] Cannot free reserved memory because of defer=
-red initialization of the memory map
-> > [    0.027119] [      T0] WARNING: mm/memblock.c:904 at __free_reserve=
-d_area+0xa9/0xc0, CPU#0: swapper/0/0
-> > [    0.027122] [      T0] Modules linked in:
-> > [    0.027123] [      T0] CPU: 0 UID: 0 PID: 0 Comm: swapper/0 Not tai=
-nted 7.0.0-rc5-next-20260326-master #385 PREEMPT_RT=20
-> > [    0.027125] [      T0] Hardware name: ASUS System Product Name/ROG =
-STRIX B850-F GAMING WIFI, BIOS 1627 02/05/2026
-> > [    0.027125] [      T0] RIP: 0010:__free_reserved_area+0xa9/0xc0
-> > [    0.027126] [      T0] Code: 48 89 df 48 89 ee e8 06 fe ff ff 48 89=
- c3 48 39 e8 72 a0 5b 4c 89 e8 5d 41 5c 41 5d 41 5e c3 cc cc cc cc 48 8d 3=
-d 97 c2 c6 00 <67> 48 0f b9 3a 45 31 ed eb df 66 66 2e 0f 1f 84 00 00 00 0=
-0 00 66
-> > [    0.027127] [      T0] RSP: 0000:ffffffff9b203e98 EFLAGS: 00010202
-> > [    0.027128] [      T0] RAX: 0000000e91c00001 RBX: ffffffff9b100c0f =
-RCX: 0000000080000001
-> > [    0.027128] [      T0] RDX: 00000000000000cc RSI: 0000000e2d42d000 =
-RDI: ffffffff9b32ef60
-> > [    0.027128] [      T0] RBP: ffff9eeafdd6fbc0 R08: 0000000000000000 =
-R09: 0000000000000001
-> > [    0.027129] [      T0] R10: 0000000000001000 R11: 8000000000000163 =
-R12: 000000000000006f
-> > [    0.027129] [      T0] R13: 0000000000000000 R14: 0000000000000045 =
-R15: 000000005c8a1000
-> > [    0.027129] [      T0] FS:  0000000000000000(0000) GS:ffff9eeb21c05=
-000(0000) knlGS:0000000000000000
-> > [    0.027130] [      T0] CS:  0010 DS: 0000 ES: 0000 CR0: 00000000800=
-50033
-> > [    0.027130] [      T0] CR2: ffff9ee8ad801000 CR3: 0000000e2ce1e000 =
-CR4: 0000000000f50ef0
-> > [    0.027131] [      T0] PKRU: 55555554
-> > [    0.027131] [      T0] Call Trace:
-> > [    0.027132] [      T0]  <TASK>
-> > [    0.027132] [      T0]  free_reserved_area+0x89/0xd0
-> > [    0.027133] [      T0]  alternative_instructions+0xee/0x110
-> > [    0.027136] [      T0]  arch_cpu_finalize_init+0x10f/0x160
-> > [    0.027138] [      T0]  start_kernel+0x686/0x710
-> > [    0.027140] [      T0]  x86_64_start_reservations+0x24/0x30
-> > [    0.027141] [      T0]  x86_64_start_kernel+0xd4/0xe0
-> > [    0.027142] [      T0]  common_startup_64+0x13e/0x141
-> > [    0.027143] [      T0]  </TASK>
-> > [    0.027144] [      T0] ---[ end trace 0000000000000000 ]---
->=20
-> Does this patch fix it for you?
->=20
-> diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative=
-.c
-> index e87da25d1236..62936a3bde19 100644
-> --- a/arch/x86/kernel/alternative.c
-> +++ b/arch/x86/kernel/alternative.c
-> @@ -2448,19 +2448,31 @@ void __init alternative_instructions(void)
->  					    __smp_locks, __smp_locks_end,
->  					    _text, _etext);
->  	}
-> +#endif
-> =20
-> +	restart_nmi();
-> +	alternatives_patched =3D 1;
-> +
-> +	alt_reloc_selftest();
-> +}
-> +
-> +#ifdef CONFIG_SMP
-> +/*
-> + * With CONFIG_DEFERRED_STRUCT_PAGE_INIT enabled we can free_init_pages=
-() only
-> + * after the deferred initialization of the memory map is complete.
-> + */
-> +static int __init free_smp_locks(void)
-> +{
->  	if (!uniproc_patched || num_possible_cpus() =3D=3D 1) {
->  		free_init_pages("SMP alternatives",
->  				(unsigned long)__smp_locks,
->  				(unsigned long)__smp_locks_end);
->  	}
-> -#endif
-> =20
-> -	restart_nmi();
-> -	alternatives_patched =3D 1;
-> -
-> -	alt_reloc_selftest();
-> +	return 0;
->  }
-> +arch_initcall(free_smp_locks);
-> +#endif
-> =20
->  /**
->   * text_poke_early - Update instructions on a live kernel at boot time
-> =20
-> > Bert Karwatzki
+As done in commit 944a45abfabc ("arm64: kdump: Reimplement crashkernel=X")
+and commit 4831be702b95 ("arm64/kexec: Fix missing extra range for
+crashkres_low.") for arm64, while implementing crashkernel=X,[high,low],
+riscv should have excluded the "crashk_low_res" reserved ranges from
+the crash kernel memory to prevent them from being exported through
+/proc/vmcore, and the exclusion would need an extra crash_mem range.
 
-Yes, your patch fixes the issue in next-20260326.
+Cc: Guo Ren <guoren@kernel.org>
+Cc: Baoquan He <bhe@redhat.com>
+Fixes: 5882e5acf18d ("riscv: kdump: Implement crashkernel=X,[high,low]")
+Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
+---
+ arch/riscv/kernel/machine_kexec_file.c | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
 
-Tested-By: Bert Karwatzki <spasswolf@web.de>
+diff --git a/arch/riscv/kernel/machine_kexec_file.c b/arch/riscv/kernel/machine_kexec_file.c
+index 54e2d9552e93..3f7766057cac 100644
+--- a/arch/riscv/kernel/machine_kexec_file.c
++++ b/arch/riscv/kernel/machine_kexec_file.c
+@@ -61,7 +61,7 @@ static int prepare_elf_headers(void **addr, unsigned long *sz)
+ 	unsigned int nr_ranges;
+ 	int ret;
+ 
+-	nr_ranges = 1; /* For exclusion of crashkernel region */
++	nr_ranges = 2; /* For exclusion of crashkernel region */
+ 	walk_system_ram_res(0, -1, &nr_ranges, get_nr_ram_ranges_callback);
+ 
+ 	cmem = kmalloc_flex(*cmem, ranges, nr_ranges);
+@@ -76,8 +76,16 @@ static int prepare_elf_headers(void **addr, unsigned long *sz)
+ 
+ 	/* Exclude crashkernel region */
+ 	ret = crash_exclude_mem_range(cmem, crashk_res.start, crashk_res.end);
+-	if (!ret)
+-		ret = crash_prepare_elf64_headers(cmem, true, addr, sz);
++	if (ret)
++		goto out;
++
++	if (crashk_low_res.end) {
++		ret = crash_exclude_mem_range(cmem, crashk_low_res.start, crashk_low_res.end);
++		if (ret)
++			goto out;
++	}
++
++	ret = crash_prepare_elf64_headers(cmem, true, addr, sz);
+ 
+ out:
+ 	kfree(cmem);
+-- 
+2.34.1
 
-Bert Karwatzki
 
