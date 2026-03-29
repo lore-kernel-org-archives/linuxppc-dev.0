@@ -1,76 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-18965-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18966-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8DDB710D1481
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Mar 2026 20:44:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7943310D1487
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2026 01:56:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fjqJJ1QzKz2ySc;
-	Sun, 29 Mar 2026 07:44:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c107::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774730688;
-	cv=pass; b=D4kKbMEA0qDDFngyCGw2foKCXZjNUX4hUb1v/BmV5oYomWujDMnp+lDIEBVkJawCg/je8lB6E1aAgs7uQkOeA3/lZsxBTPFANrmtGKHFivH3F94mVh/s+lmWKfcOYvlbQQ0Qs3fn3/iXkbusCCfryG90bRk8t0JES6rr0ocFmKySIrDYmyhlOhfY0qXRVD60dEOjv92971Vq/dMWNpRfYwZQ/gD6jcaBjKKAbXh8Bq9y6ancR3Fj9cX/kbWnDo0XmaqYap6WwEELtQWPmpfOHAHgIsb0twzuZEDDdeebqiOypEhJXHnT0CYMts1uHGOBgl7dBRGwMGXE350KWuLDUA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774730688; c=relaxed/relaxed;
-	bh=1PgXl2dHnrO3L5XL4Z1eyZnBc5OxEW7kpseNB1h7h+0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=j1ioWaV7ZNKFraWNUrrqktKVY7zVGLo4kjT4ViebtExczGSeIEhSNKzDdnD/OaVbfFa3dH17DMS6TEuAYQNtDY8mxT+0Dio4Suw/giMCWOuzwah/j7h0slKfrzkOND06G6WqLjLc6n4iOFnINkxHl/vlKmEpmqc9wV+UeDbru2CEGUTdJoC6aGPVkG8H8bJ83bel7sNr/WWVEIsma7NwZoJGbVljx84AFhm1W4MRWbjAs4pSGuRTuZUEVdu2hXLs7Kfbs2T0xdb3GK9BC141Hhlaq5BlKBUdT6LyQfuDvqf9ZIzg/zmwRjtri7RYqOlKnbW6TuEg5sLcVHpN3PNkeg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=HrBEvwvS; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c107::3; helo=ph0pr06cu001.outbound.protection.outlook.com; envelope-from=ynorov@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fjyCQ5sDrz2ygd;
+	Sun, 29 Mar 2026 12:56:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774749362;
+	cv=none; b=muw8xfI98HAdmmjiAtgyY5e4wuBifk7ubYy5MsHt/rbqy8tktJ2fe+7hDS01pq9a6mRoBc545rwjdjB5anPdCMOQRi1Ahq4GL5iNadRcUSza1we8NmYSuuYiRHfd41Zv2groeffTaOK2lCdoK6qWLbkH+Ms36Nwfs1nUlcgecyxNpUjH8IbV0/YczvKhW0u5p/jixtVx4GzVNzM93fLCoLFIUrGnpZjSvHeQGcqbGcvBbnxQSt5se7o+uFQYvT7nhnLo9f+VlT2M/bYU2Zg+3H8Rmbn3VrFjeC18TXys7q2sW7prp88M4bRJK0D2fBrMMFRWq7q6kOcophsYVYkUJw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1774749362; c=relaxed/relaxed;
+	bh=E+PbjK/EVYjdCqDf2xBTTVtaGqcPI4gr+f1syl3pPEg=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=CgzFdv0YNXfA/Ldn9v29LnuPUmTNjr1GzB2cwzjJIcynB73hUz11Acxk7p1BSzKAmWTWAc5R9mr2ZLWfgMIe82FULgxbx/+pebWviuR581n7MBselyTU5m3D/FrFHrvN7L05IqIvGKMXFbJBD6Cm5mBgCtvmBKuDsdiKFdMWduzU658TJ1smygEbvcsOqnN03q1eHYA7lp+DcM8ytziiwevFt5AIYmdTkuhPNK3rhuIhjYJQLSjGX+DjjxLFnlLn3FXDCE4dYuhuNnuR680MtKZV2nozPcv6Ujputdta9aeOXI0552RZoJVHhpezTmzWsuMk9h3xgskn/KbMgvT/jw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=IO7dXDcN; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62b; helo=mail-pl1-x62b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=HrBEvwvS;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=IO7dXDcN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c107::3; helo=ph0pr06cu001.outbound.protection.outlook.com; envelope-from=ynorov@nvidia.com; receiver=lists.ozlabs.org)
-Received: from PH0PR06CU001.outbound.protection.outlook.com (mail-westus3azlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c107::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62b; helo=mail-pl1-x62b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fjqJH1bd6z2ySY
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Mar 2026 07:44:46 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=yi9HvG54xNyjdLGmUmdE1xwDtNVpkJj4gDWYZQb2Pk+Ozn1vyfbF5fV77ERjDzBXmQt7/Mg0zRClGjLddank8EQrO2KOSWFxVXOnvLfaEIZ24TVM33H3bKLB7onl/qxloPfqW8LCsAQrRLu1W6N03HSpFLnPF19jegYAJLYKj/90ylLiMSPLl80W3PKAvPYzbv7KuNpVCGBhQFErt7SVhoWPpiVoNNn4xUd5LGyQSq2HdVnDAOkFdo9o5opdIoMxR8ujCVM/o7wruw2QCop7Nh/4lgzPfEwP5SGMZYQDbvTVduD1zn/pPenAp/8hQF41e6OnwElmA9Wwk8Spyl0zIg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=1PgXl2dHnrO3L5XL4Z1eyZnBc5OxEW7kpseNB1h7h+0=;
- b=cya/PnroaGpy0zeAWglbdWNtRRxZ2i5d2LlgjatUD3iETR/LOzv/EI2SsXg/vTrk2kNRAShtgzwH7uzjz3OIWpb86doQkVrizGib9vaFtFM7mDop2QfXjQE6lyeR5EK6r45IDuhXH+iLiHAUlztNjIMjDB1L4vTqOSNZoWnjc4GSlcltJni4EhmNBIforWhVX99pn7KoovPTz1c+v2ErsqklZY+AM7TXfoF0FZXE3K4Y7nIUvFxr+qvICx46VbwFXV+FQ71OUvBKG8BjIt4rkJY8pQ+Nt+4TRbD2/GmFGymI4B97ETF1JYedryvdgFKCdLnPhs+I5k48Cm3KUS2RMw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=1PgXl2dHnrO3L5XL4Z1eyZnBc5OxEW7kpseNB1h7h+0=;
- b=HrBEvwvSJGItS/cw0VfAHiPRcQLCdDgyflNgrgNLWQkConzf+OoDVTLYONcncadHyAqQqtVU43eYrM6BpJ/J4R7U7hxUE4CLHn+/Vayi7V2IUiJ8pyJWIkTyipnK9THsq0xLnwKzqPirSZYFuTmEUIjjfjw6dsBnoOWJtaJEmaqVG4/2qJp4uki1h88k6HJpipJVvjtkvJNsPg9zuNYqg0CKMQULU97qqBBXMgypk+iibCeLg15/uQWCKSkv/Yd6CFe2JFbCsUg+Fji1jS+FZTvniKq33+jL0eqp69WXc9BH7DjkbvyVH9PJEWhhFm8PuTJuv6r8isaDN7miMORV6w==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from CY8PR12MB7171.namprd12.prod.outlook.com (2603:10b6:930:5c::20)
- by LV2PR12MB5943.namprd12.prod.outlook.com (2603:10b6:408:170::8) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.11; Sat, 28 Mar
- 2026 20:44:23 +0000
-Received: from CY8PR12MB7171.namprd12.prod.outlook.com
- ([fe80::4487:395f:3abf:ad9]) by CY8PR12MB7171.namprd12.prod.outlook.com
- ([fe80::4487:395f:3abf:ad9%4]) with mapi id 15.20.9769.011; Sat, 28 Mar 2026
- 20:44:23 +0000
-Date: Sat, 28 Mar 2026 16:44:21 -0400
-From: Yury Norov <ynorov@nvidia.com>
-To: Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
-	yury.norov@gmail.com, linux@rasmusvillemoes.dk,
-	linux-kernel@vger.kernel.org, chleroy@kernel.org
-Subject: Re: [PATCH 1/2] powerpc: Use cpumask_next_wrap instead
-Message-ID: <acg9pa74Go58lq0O@yury>
-References: <20260327063129.127302-1-sshegde@linux.ibm.com>
- <20260327063129.127302-2-sshegde@linux.ibm.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260327063129.127302-2-sshegde@linux.ibm.com>
-X-ClientProxiedBy: CH0PR03CA0196.namprd03.prod.outlook.com
- (2603:10b6:610:e4::21) To CY8PR12MB7171.namprd12.prod.outlook.com
- (2603:10b6:930:5c::20)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fjyCP5977z2xMY
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Mar 2026 12:56:00 +1100 (AEDT)
+Received: by mail-pl1-x62b.google.com with SMTP id d9443c01a7336-2ad21f437eeso22241845ad.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2026 18:56:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1774749358; x=1775354158; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=E+PbjK/EVYjdCqDf2xBTTVtaGqcPI4gr+f1syl3pPEg=;
+        b=IO7dXDcNVyQ7lP6dPe4p2o6gWczeSkBDObpvHOzzXEEG2016ec0Kpna+wS0KC91pZw
+         1wQap1jVh1deR4BwRj4G5NAReaTB+qrQKeoYo+pRDVIeSkdmFj8O03+F1oNbR5s22Liw
+         5JLdNIpgejBVaEeJGPhSXxQZoqqApAJyrqdDoDYE6ewzhtKNnhRJfr4QVhjZKbPWXqDs
+         rpdHbDDofwGQjLEnEOTrsp1vMK9dT/ZJwI6t2JblMLZJuKznQWOESoVfyeuE5B/E/w9A
+         WmNDrB9tFOG25JEmIE93+x6crrzQfha6VGxQh9hgEJe75AmcSfZqVQ0lHuJLSVO/69Yu
+         A3hA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774749358; x=1775354158;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=E+PbjK/EVYjdCqDf2xBTTVtaGqcPI4gr+f1syl3pPEg=;
+        b=NnmOMy5fP8dU8BS6/48NZeIYQ8i8u1hBiyGDksnKTRPPks+haELEts1Mq82JGDQdI/
+         3JuOzdfb9ujEZj1meeU2aPuUUwXwuyA8zkp4g+Z3vEK7CpG4X1C/wKYKBIhbSE9ZlzVu
+         imcxLWZHR599CXiCAvwZLOufaVAHepO6Lzh0AT8XTkFhInV/TLHs70NLpm6BuenwbdkB
+         jwBRKNzGERrOA6CktIL+fmX2w/FaPfn9Mvuc/h00QfNqnDD2/rSB/QDzWHK7WJYNWWv/
+         MhE0khEq9KfH+8BkMvRY7B/EuSLpESsgyVZMpV06e5kItMA2EqgGILKbxYRjQyAnW05w
+         Ebdg==
+X-Forwarded-Encrypted: i=1; AJvYcCUEYmXYvMmxgZnHkYhqU4690jpjaF6QXLgdbWS/FOo/0w9vTRRz/HxIG5/CZMWn7at8kENeRbPYfE5cF90=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxgznVUH3+M2DwDgktYS7KVvuk6x9gxdveuGwwkJgj1pY6pl1pP
+	77PqSGz1unpdRwf6nPFDdGsg58bQKsP38ry3AUYfZ4ioBr4sGaK3+XRt
+X-Gm-Gg: ATEYQzylO61Ob3hsasxCCBgDkQD1LlT4gvYVYEfHx0K2lkIVnhKfiCrRtkQQs92yl9p
+	WcqlXquNhVTujyRvi/lRZMQsJ5EPMjHMqFdu8m+C0rmQcbqhMneUHweXbClyhTH1GpumojEqMT8
+	zU2QO8pP8Fx1LZm8HqEuGmxI3geZFOxZSoZ404PthqbQNBvA3zbTQUDnWsU9HrvQnDTZ04IDrWX
+	EWZ/woIG3GqvHOW57It0JYHmTeBB9e3Z/tLwf8n8+3/4BxWyCLjuTOcsJndV9aOHilUt2/RHhX0
+	gw9TBd17hrECjgTFJaLeYsJSHWhyL0c1oW0mDtWuz/WsK9fNUYC4YmzADtx1dGVLMmLd9vKwm4a
+	olPIHIMUs5KGvq3/nmu4R1sjH/r5pcd9GPMqFqaEBnuci3EwQKBg4ZCgwi1l0yQGyAbPnVaJatN
+	pd7K7CBT4c02PGJi0+mXL4e8eg0hhGXffh
+X-Received: by 2002:a17:902:e94c:b0:2b0:5a4c:726f with SMTP id d9443c01a7336-2b0c48e9a76mr104852485ad.15.1774749358019;
+        Sat, 28 Mar 2026 18:55:58 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b24265aa9fsm34928185ad.20.2026.03.28.18.55.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 28 Mar 2026 18:55:57 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Sourabh Jain <sourabhjain@linux.ibm.com>, Aditya Gupta <adityag@linux.ibm.com>, Daniel Axtens <dja@axtens.net>, Hari Bathini <hbathini@linux.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Shivang Upadhyay <shivangu@linux.ibm.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Aboorva Devarajan <aboorvad@linux.ibm.com>
+Subject: Re: [PATCH 2/2] powerpc/kexec: Disable KASAN for VMX helpers used in MMU-off path
+In-Reply-To: <20260321053121.614022-2-sourabhjain@linux.ibm.com>
+Date: Sun, 29 Mar 2026 06:48:45 +0530
+Message-ID: <wlyvmo0a.ritesh.list@gmail.com>
+References: <20260321053121.614022-1-sourabhjain@linux.ibm.com> <20260321053121.614022-2-sourabhjain@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -83,136 +88,112 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CY8PR12MB7171:EE_|LV2PR12MB5943:EE_
-X-MS-Office365-Filtering-Correlation-Id: 10ef7c3e-86f1-49ae-5a6b-08de8d0acafd
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|376014|10070799003|56012099003|18002099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	NMFW91vrm5pyYK94oHn3T68dlyowjls0imYeO/ChYKPY4MhaXHUNuV7KvRgE1TxzHUrEBpQFLj/LbpmZFQleS4UaV86tErro9lQ/EeksZgl8BRgTNuq0Dd6tfCLYx3BExMcf56SrPhxJqs8U6UG/ArtdIKf7X42LpIFIEeWrNxF0QRlCxur2MTQTWZznz+iog4kf6wISqnhi05PPQJEvFA0ZgL6ezY1Vs53jslpQ5mnjkMCdf7OeMXyh0+ezpAia8Ps6JR8F0DxCOXAyCKwMs7ZJe2tJFIkmIIAxcy/gn2C94dgl3SqGb2NupAkpDlzymneeeOFfEZ6rT4s/1y+flAcyHwtuZrETOJGPvrSzfG62U346c8ZpgOrb6RELPIaI1YGNKFei1G7fPOt1ZeQ/dCLBv52h66LN82PqeZ8ZRgq9oZLZv7kEoErsmoVoaSs8cpFd+IaLsy2Yuv64sABionLbYbmuAN+AMBDZAHxjYDn0b0rjmNuMHobmsaxQSuHwtGEEoPcemKDCDhOvswQfCh10vsEsRCgEd/+nWhxXvYFRcc0mTxRBXmrd//SKnsbZlCy7YuXOwj9qAEvgdKQ83ormRFb6CTPktHYvNtpaPhmNWccu6xLeRfYN5mem8EHB+nk3AtjEXaGvst1poqfo2MPEbMOmmoBEF/Nsu83yHBmG/CP37TY8OL/OhrgbqMKkUGF7fsXT6jQz4XS4ZHPu+qDB0UmWT4hqiqwCEEQbg/g=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CY8PR12MB7171.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(10070799003)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?bvC/67mfdj8+4aqahVOJckMDrUrViDls1ryseDk5hWTyrVZKUcaaOFMN/QJG?=
- =?us-ascii?Q?mHdBaogFom6s57stlOngQJPB/jJOWhbTbXNGQSdVPhX4pmeBGKhApQj4WUWh?=
- =?us-ascii?Q?6qdiMSnUIVWBFsOfIwWraJiWPKF2/6p5Jwm7+yT3gQawrDFw6mB+Xuu/KS1D?=
- =?us-ascii?Q?6R3orONg5VEcr3+29C56dwRmAa09RTVPUR0AwcF3RBGQj0m2QfW/oGvKjPR0?=
- =?us-ascii?Q?PGvZU3x0nH99ZK4s3ea3zeAEnoCi/e+VrBVQIhaEK5D+41DFxx5SDuzugVA8?=
- =?us-ascii?Q?Yh74zODgfdDppWFzjW7L6+SeJK+kO5fmXNaySgI0C7EmANJAlUSdUFG+R8VA?=
- =?us-ascii?Q?RMIoJOKRorwamdf+kSsaFwsjTNNFcdp6BkqImuBZ+x7JRc1ioWz+s/hADBXG?=
- =?us-ascii?Q?/eXFU632ojj92hcnrUYmummx0LB5CerSBbpiR2JvGgUPeRmBDakPkxsPfsY0?=
- =?us-ascii?Q?g/6X0N/4Kma7ZwZzLallqd7VD3BIMOTuRcvNNHqzed9vN2ZpXHZFZBa1GI8i?=
- =?us-ascii?Q?ymm34Ki9ZYvFQffbQlpyVdZtnAalN+XwpTB36UyzDLfPOeH2OrY76dGtXbd1?=
- =?us-ascii?Q?0/eDfLSSOaKCNDE3cyNa3ekVCl7GN8jrAFnAgQBDoIgmjxSW8X9lXHetNMl6?=
- =?us-ascii?Q?EY085N0y+bethRL7YITAtpHzUlbE0hoofTFaqvzJwE2dIx14QfW4CwadSVB5?=
- =?us-ascii?Q?UxmXl4V6/FCs7J026xhN4tVm5vOm41M0PYpDKT4vLiwyNl5c33s+gXlBjs8v?=
- =?us-ascii?Q?/UwtOVHj5UhbexznaqvKEBVpET9gfsmREEtyS+gQmKWK3JcSzFg3CeH40WaS?=
- =?us-ascii?Q?IdXGqWIL82eli38P+C4OUSgACojyLUEGN8X7nCwL7tSU6nFtJe6LH6bdvo1P?=
- =?us-ascii?Q?3srOUfrZMRUmV4y73OHTskKvc8u4yKd9ab7yciqR7JJk5ZLv9YaCtYdVCqMf?=
- =?us-ascii?Q?w1NMQ6yxW88jEmGKNfMwtsH2WzOEGFheOnVF7Ox3pkF0afpN+bfeH+gtpxai?=
- =?us-ascii?Q?AxLtq7OS8zsixp6J/BJQBQNAWUtPtome6qc8sHhpLUMzR6Nk+/AowY3H7B0/?=
- =?us-ascii?Q?zyh4KmbmUsmPNIl/Z+V2Pjj1PDwkLQ0DIElzA9BPrp+XMNPWttciVW7FcHJh?=
- =?us-ascii?Q?v2oaMdPtOl9yZeNDolJlDuEmgP0l1LYgU8Y9sFU+HN4+IgjxSo5Np5ANJoQk?=
- =?us-ascii?Q?Ocusd3hiBlKBECxhfvDuUOOhV5ASvv2+W6XJs0N1lrgvs90lDtbZ9Q9nzeg+?=
- =?us-ascii?Q?Uo0JR1VnppBSIUxHeJrwvzWy13pCWCohG1BCKciqqX+5KC/vVfvS7m+oSQVn?=
- =?us-ascii?Q?+dixXKMzJZyWkmg9ZVWtCHInJvK97R/i7p2zXeoCmmcW0N8I1nnQ799GaEc/?=
- =?us-ascii?Q?vzI6huo5Zd/M82vZPMKEYH+uaGsvZHHX99SqYp0sV0WnA74GHvZcnoLyYMoA?=
- =?us-ascii?Q?tjvLR+TQwBMiGR7lCsRZZSttU310C80okvVZ6JrMguamBH6B5KAy3qQTRQsk?=
- =?us-ascii?Q?b66m+Clx14CZQljfJL+EsoCpI+EYWzvpI0RE5xzqvU+/z4A1PrNl5y5AgeYh?=
- =?us-ascii?Q?YnRclCqtJNQJiBPROOpWyJ0YaNJ/TA67Y2FeMmtYBeTfIXFojD7ONvOYFn8Y?=
- =?us-ascii?Q?ib2FSn7vghKtN+ZcuEP4A40DD8nzNu6iEqogkx9q8XKQB8nISCkqffCYLPZ2?=
- =?us-ascii?Q?psuKfpPu7lei8SnUPG63nFxot1f0G/5BvNZZY3UrSoV3F1IcJpqcIqFs30aL?=
- =?us-ascii?Q?r2hqTDMpqOoBuV6X8lEcorDjOloaqXdxF8UX4UjucDYpHsBLXY+2?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 10ef7c3e-86f1-49ae-5a6b-08de8d0acafd
-X-MS-Exchange-CrossTenant-AuthSource: CY8PR12MB7171.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Mar 2026 20:44:22.9824
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: QMDeolQ4hCV2eLeNQsVdzr/CKDWI4RLH3k4C/KbZazRmmVMykEfdj5RsQWY2WCs/uuTew9QJCWkZDCwBjB3Xjg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV2PR12MB5943
 
-On Fri, Mar 27, 2026 at 12:01:28PM +0530, Shrikanth Hegde wrote:
-> cpu = cpumask_next(cpu, mask)
-> if (cpu >= nr_cpu_ids)
->     cpu = cpumask_first(mask)
-> 
-> Above block is identical to:
-> cpu = cpumask_next_wrap(cpu, mask)
-> 
-> Replace it, No change in functionality or performance.
-> Slightly simpler code.
-> 
-> Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+Sourabh Jain <sourabhjain@linux.ibm.com> writes:
+
+> The kexec sequence invokes enter_vmx_ops() and exit_vmx_ops() with the
+> MMU disabled. In this context, code must not rely on normal virtual
+> address translations or trigger page faults.
+> With KASAN enabled, these functions get instrumented and may access
+> shadow memory using regular address translation. When executed with
+> the MMU off, this can lead to page faults (bad_page_fault) from which
+> the kernel cannot recover in the kexec path, resulting in a hang.
+
+Right, so with mmu off, kernel can't access KASAN shadow memory.
+
+So, let me trace down the path a bit... you skipped an important detail
+i.e. preempt_count() is always inline, and we play a few tricks in kexec
+path to tell enter_vmx_ops() that we are in HARDIRQ mode.
+
+default_machine_kexec(image)
+    current_thread_info()->preempt_count = HARDIRQ_OFFSET
+
+    kexec_sequence(..., copy_with_mmu_off = 1)
+        if (copy_with_mmu_off) bl real_mode
+
+        bl kexec_copy_flush(image)
+            memcpy(ranges, image->segment, ...)
+
+            copy_segments()
+                copy_page(dest, addr)
+
+                    bl enter_vmx_ops()
+                        if (in_interrupt() == true) return 0 // preempt_count == HARDIRQ_OFFSET
+                    beq .Lnonvmx_copy
+
+>
+> Mark enter_vmx_ops() and exit_vmx_ops() with __no_sanitize_address to
+> avoid KASAN instrumentation and ensure kexec boots fine with KASAN
+> enabled.
+>
+
+IIUC, preempt_count() is always inline, and since you are disabling kasan
+instrumentation on enter_vmx_ops(), hence it just works for this reason.  
+But you missed adding that detail here.
+
+enter_vmx_ops()
+    if (in_interrupt()) // return 0
+           preempt_count() & ... | HARDIRQ_OFFSET   // preempt_count() is this is __always_inline 
+
+static __always_inline int preempt_count(void)
+{
+	return READ_ONCE(current_thread_info()->preempt_count);
+}
+
+> Cc: Aditya Gupta <adityag@linux.ibm.com>
+> Cc: Daniel Axtens <dja@axtens.net>
+> Cc: Hari Bathini <hbathini@linux.ibm.com>
+> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+> Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+> Cc: Shivang Upadhyay <shivangu@linux.ibm.com>
+> Cc: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+> Reported-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
+> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
 > ---
->  arch/powerpc/kernel/irq.c             | 5 +----
->  arch/powerpc/mm/book3s64/hash_utils.c | 4 +---
->  arch/powerpc/sysdev/xive/common.c     | 5 +----
->  3 files changed, 3 insertions(+), 11 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-> index a0e8b998c9b5..f69de08ad347 100644
-> --- a/arch/powerpc/kernel/irq.c
-> +++ b/arch/powerpc/kernel/irq.c
-> @@ -370,10 +370,7 @@ int irq_choose_cpu(const struct cpumask *mask)
->  do_round_robin:
->  		raw_spin_lock_irqsave(&irq_rover_lock, flags);
->  
-> -		irq_rover = cpumask_next(irq_rover, cpu_online_mask);
-> -		if (irq_rover >= nr_cpu_ids)
-> -			irq_rover = cpumask_first(cpu_online_mask);
-> -
-> +		irq_rover = cpumask_next_wrap(irq_rover, cpu_online_mask);
->  		cpuid = irq_rover;
->  
->  		raw_spin_unlock_irqrestore(&irq_rover_lock, flags);
-> diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
-> index 9dc5889d6ecb..e4fcf929cb33 100644
-> --- a/arch/powerpc/mm/book3s64/hash_utils.c
-> +++ b/arch/powerpc/mm/book3s64/hash_utils.c
-> @@ -1299,9 +1299,7 @@ static void stress_hpt_timer_fn(struct timer_list *timer)
->  	if (!firmware_has_feature(FW_FEATURE_LPAR))
->  		tlbiel_all();
->  
-> -	next_cpu = cpumask_next(raw_smp_processor_id(), cpu_online_mask);
-> -	if (next_cpu >= nr_cpu_ids)
-> -		next_cpu = cpumask_first(cpu_online_mask);
-> +	next_cpu = cpumask_next_wrap(raw_smp_processor_id(), cpu_online_mask);
->  	stress_hpt_timer.expires = jiffies + msecs_to_jiffies(10);
->  	add_timer_on(&stress_hpt_timer, next_cpu);
+>  arch/powerpc/lib/vmx-helper.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/lib/vmx-helper.c b/arch/powerpc/lib/vmx-helper.c
+> index 554b248002b4..c01b2d856650 100644
+> --- a/arch/powerpc/lib/vmx-helper.c
+> +++ b/arch/powerpc/lib/vmx-helper.c
+> @@ -52,7 +52,7 @@ int exit_vmx_usercopy(void)
 >  }
-> diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
-> index e1a4f8a97393..b6446abe29a6 100644
-> --- a/arch/powerpc/sysdev/xive/common.c
-> +++ b/arch/powerpc/sysdev/xive/common.c
-> @@ -577,10 +577,7 @@ static int xive_find_target_in_mask(const struct cpumask *mask,
->  		 */
->  		if (cpu_online(cpu) && xive_try_pick_target(cpu))
->  			return cpu;
-> -		cpu = cpumask_next(cpu, mask);
-> -		/* Wrap around */
-> -		if (cpu >= nr_cpu_ids)
-> -			cpu = cpumask_first(mask);
-> +		cpu = cpumask_next_wrap(cpu, mask);
-
-Again, for all except this:
-
-Reviewed-by: Yury Norov <yury.norov@gmail.com>
-
-
-Can you move my series for xive_find_target_in_mask() together with
-your patches?
-
->  	} while (cpu != first);
+>  EXPORT_SYMBOL(exit_vmx_usercopy);
 >  
->  	return -1;
+> -int enter_vmx_ops(void)
+
+In that case, should we should add a comment here saying:
+
+/*
+ * Can be called from kexec copy_page() path with MMU off. The kexec
+ * code sets preempt_count to HARDIRQ_OFFSET so we return early here.
+ * Since in_interrupt() is always inline, __no_sanitize_address on this
+ * function is sufficient to avoid KASAN shadow memory accesses in real
+ * mode.
+ */
+> +int __no_sanitize_address enter_vmx_ops(void)
+>  {
+>  	if (in_interrupt())
+>  		return 0;
+> @@ -69,7 +69,7 @@ int enter_vmx_ops(void)
+>   * passed a pointer to the destination which we return as required by a
+>   * memcpy implementation.
+>   */
+> -void *exit_vmx_ops(void *dest)
+> +void __no_sanitize_address *exit_vmx_ops(void *dest)
+
+I am assuming since we never enter into VMX in kexec path, so kexec path
+must not be calling exit_vmx_ops anyways? So do we need __no_sanitize_address here?
+
+-ritesh
+
+
+>  {
+>  	disable_kernel_altivec();
+>  	preempt_enable();
 > -- 
-> 2.47.3
+> 2.52.0
 
