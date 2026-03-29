@@ -1,64 +1,65 @@
-Return-Path: <linuxppc-dev+bounces-18981-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18982-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 308DFF3D601
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2026 18:29:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A265F3D60E
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2026 18:34:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fkNFH60zdz2ySS;
-	Mon, 30 Mar 2026 05:29:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c205::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774808947;
-	cv=pass; b=KVuai/r3MM22JQ/VyRPDxEblnhtd5P20v1ENEuC3k6SNfE3RTt3wiOxyHmxQEhDsSBsl8496oGZLG58AasolIrZNOVPBg1+HvuF17b7LHOmJW7WEBZqwqZBqPjvW3nLWoREp4HiqL4JG7SoD7NVu6o2LKcAy1ELGo5f6Z2alvHPjlPrOiEdcClr1XW7zxx9xQViXsRL/asiTBYDO5Z3PIqRaoQVSMRKdqu/6fiRXUZOWlT2DxFIVqDhecfIiNdrmNAS+DfRzbtMv7d30C1EjiVjhi8S4scrawpRlVMlB8K7Ei4ecsBd+1PWg6BVFTj8zg3zwoOGv8ZHfioBjeMATfA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fkNM3511gz2ySS;
+	Mon, 30 Mar 2026 05:34:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c205::1" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774809247;
+	cv=pass; b=LO42UCHy5l5EgJDlu+MwO1JETPwwOEugevvSTuQnwndR2nMvH/0n6L0kvX4yjr2xkyuTaf6FVd2+zE3BCtIehgTeOI6PmRlkm/3WAmXFazG5DVgnyZqenWqxahbyIEAfCbf9mHSDqt8V4Qb3PSYZxVvzIIMZn88E3EM0Nj+cZ8/5fvAsg6cuVjOJJhTzQdPrzjYfApqPV04sEPLar63j5tusKyNMC/Gfae9Y8wACKWLRg7zdgtGhET4/R4nAjYMPpSp9OKjJjTJdfC/LbbxLceHCmeM1QjYg0A1ngEVNZ/rD5pyfu4H/FinncV5CSvR52LuHTxvQeM9p6wHJLrteKA==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774808947; c=relaxed/relaxed;
-	bh=sM+iDUglU77V80PvGxntWZhoy/RvWeEHg2/oQubsnjc=;
-	h=Content-Type:Date:Message-Id:To:Subject:From:References:
-	 In-Reply-To:MIME-Version; b=d52GbIqKWagqToFhxVU9TtuXucf2gCLItXZHWGizSSVzQaRVwixpYi3Kg4AYpW2ocKu/PNo+xIFWBUkD4EZGLvWMcd8ckrPkONdayx3+lpR403nCP52oby0bvIT11xURcR/eZiKIi5kcyvHZK1qv+MdD+6HNosmn/tC+Cew/36bid0N3McfTkKTTgHabfFOoxWcC0vNGE1/r6vQofgi7uKJX6RAEqwtlGvWl2dZOiJ3gainutGD8s648TEQenqBGUPqitnt4aSADZGFkVDDa/6LTPA2QtJ0rsgpF+9mr3TAvL2L9MW70rcX5rxX51KAOBB8qd/s6WGdVpN8frrKjqQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=garyguo.net; dkim=pass (1024-bit key; unprotected) header.d=garyguo.net header.i=@garyguo.net header.a=rsa-sha256 header.s=selector1 header.b=tRVVyeDn; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c205::3; helo=lo2p265cu024.outbound.protection.outlook.com; envelope-from=gary@garyguo.net; receiver=lists.ozlabs.org) smtp.mailfrom=garyguo.net
+	t=1774809247; c=relaxed/relaxed;
+	bh=8bUczaAtbLt6hLSCkFfopoQ7kUAr35XpK90jIfz5pQg=;
+	h=Content-Type:Date:Message-Id:From:To:Cc:Subject:References:
+	 In-Reply-To:MIME-Version; b=TLTHLi+QX/B55FRbUDVzBoCGbe3Cf7v9WbD9RhXwEcNqdk82bM+Sr3W863ULmd0QW9VxcAYkfHbNFmpGWxSVtw38LBDizbMIo48I3Kw2nEtKopkjXWbAP0FwlFQ2ZIzSQg/BER/QaPvSRgHp1LbK/bJ68U0I3c88fpdYQcpAMgoCVLBIlOexEPhN56n7Zb1N7RRN1hr5rCZs1mOfQ5mz0LH6tQI/NIqq7dyFlXJJHRLUpP1zBwWyTym1yty9VmAdH9Nk2HDDXDsWuRD0J2XpOCZxmpbCnZivyzOhIXbMaclsHFuTlPYTDnkcTVJG++w66ZFwFZKOw9olEUs/CeZOGA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=garyguo.net; dkim=pass (1024-bit key; unprotected) header.d=garyguo.net header.i=@garyguo.net header.a=rsa-sha256 header.s=selector1 header.b=FnLNAmvP; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c205::1; helo=lo3p265cu004.outbound.protection.outlook.com; envelope-from=gary@garyguo.net; receiver=lists.ozlabs.org) smtp.mailfrom=garyguo.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=garyguo.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=garyguo.net header.i=@garyguo.net header.a=rsa-sha256 header.s=selector1 header.b=tRVVyeDn;
+	dkim=pass (1024-bit key; unprotected) header.d=garyguo.net header.i=@garyguo.net header.a=rsa-sha256 header.s=selector1 header.b=FnLNAmvP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=garyguo.net (client-ip=2a01:111:f403:c205::3; helo=lo2p265cu024.outbound.protection.outlook.com; envelope-from=gary@garyguo.net; receiver=lists.ozlabs.org)
-Received: from LO2P265CU024.outbound.protection.outlook.com (mail-uksouthazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c205::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=garyguo.net (client-ip=2a01:111:f403:c205::1; helo=lo3p265cu004.outbound.protection.outlook.com; envelope-from=gary@garyguo.net; receiver=lists.ozlabs.org)
+Received: from LO3P265CU004.outbound.protection.outlook.com (mail-uksouthazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c205::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fkNFG71Wkz2xQr
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2026 05:29:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fkNM25nDVz2xQr
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2026 05:34:06 +1100 (AEDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=pRX13uZaHmloIZbYcN1rRoNmy/raiOxjPJ+d+pFgWRvB9EkgwqYik/YXra43Ysc+c6lJYUlas0+NxTmntgODVeb6toh7xV6TGvyicvE/CKtV5lPxcbMk9Au0HxNqGZP21/3k/yIZ0Hdta8gtijwDilrgF6pH3EjroCXfa6MqpkMq3NkXWQhrHil1gvdBF5/b27Lpy0fI1F34kUxEmjU6tmCWF/vTlqM5PJTo6xbbv15yqp0rWA322m9+p/Q/IR/tUJn7DLdiI3CMWd4dJsihGiAtkURwQgthCG0C6fCrLF+zmMA6AUcf+y4nPm6bq8G/h6K4p+gvqn1BLfhRVmweZQ==
+ b=cVsqFD++Y6hNOOK57fXq+zIQ4x5p/ga4UphRQdelqnZCtRe2hg8KaYDfeK4KGwh2Zah480JLRNijPpCWDRMOPaCYabNs4kmfRUnPZ/K5/18v7QyyrOanUZT0uvzHmCjfDwZRTPbWe6t5f6UxN6WW9Gys3RkNCTyfxTGZmWISuc2daRI5pX++pzpYGqFV9woL+61iyxUFx4Fh9A7HsSonvnMGY2HiF8chBWo0B3/YTJn86L+9tnp3noYCMC8eIbXt6Cd21AinejeGnCPQhD44xsr7Fa4ewMdkD0uKKyNYEAB/nt8UKAqHu2DDIpfYd3iI7TckPqJs8uYe1hcy077qRQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=sM+iDUglU77V80PvGxntWZhoy/RvWeEHg2/oQubsnjc=;
- b=lelxk3enLKu8c4yI0rDetrntv/arf50Fd2ZngbOytmQegASZP98gslXCSRf7IQKJISIEaJNj3CNUrJ7rEerswEvxZTiSrwHwhd4Ho5Uyr9vQBLVD8YVYRXYotIGt1ZffNyAMRSUdbBT2am7lGVS+LWVZu9lkJXG9KnfRJEDAAyETIar7Xy7cO2y4wfOs9zxIR6hDPEozQWKVV6nG3n6RP+aUJT36Qs4Mkf0Cswoe6mTVxXlMA9kzPdmYCyo46K6BKzowjYcQbxjjUDM+x9vELFVEYsCJctdtpqWOJlRTvs4hjbkUUEKeHrhN1WD5ENCRFo+43HUWV4spJgJDydKA2w==
+ bh=8bUczaAtbLt6hLSCkFfopoQ7kUAr35XpK90jIfz5pQg=;
+ b=exNYi3/OCqRL+eUHcr5lk84pJEChPgjct/PTcX8AI2R8/butlO5thHuaJRfq8o+6UKZq3vaoAlwsQIglsXCPdpahrelIIiQexmz0lK28ZowK9SnnjQZcs7lNMTh3hM8unA/vdVQcj/D4KqZWtEAJSX6XqzjaIXXgpeYIRjbd61SraqC7/QyPPsDsFldIFIAPs7wDjIN1+bI8Zl3J0CeFzoioDCY/n9NMP4/pznsNY1tshaIHFoK0Fm+Ru2zAzRYfnuO/32/yXsnfnSwBSkMilTusnoYwkYBW+AgvQqIPWh0dHCBolWVpsjQOioUNFYc1V8bTSDdzWqOeGYjKtCIBIw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=garyguo.net; dmarc=pass action=none header.from=garyguo.net;
  dkim=pass header.d=garyguo.net; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=garyguo.net;
  s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=sM+iDUglU77V80PvGxntWZhoy/RvWeEHg2/oQubsnjc=;
- b=tRVVyeDnzR8AGfCQB+8rj0lhlSbnGS7EIhIBii5TGKhEPC3Muhl46u0TE0A8m4Wnje81D0N3BFZr868KGurzL1TGgc5EIRKjeSCBL2tAJCpL+HzA+B2E8KkLAPmTYjCtSTLIuBmiKIkdk5Aq635YWDjQLxxJ0Cg9/K5z9Hk0nvo=
+ bh=8bUczaAtbLt6hLSCkFfopoQ7kUAr35XpK90jIfz5pQg=;
+ b=FnLNAmvPujVZ4nJ35494t9SemfwYZ27VqWJg2B2j5sW2jzLwqakq0iZrgsMzebncaoLQFbhZM9BWiRKucaR3ykh4H4ZrVMMkNm6oChPMiqhf9UjQGjblDtXPcz+2qAtrnp1Ef+EiHlflbg6cwCczjfq6ZxfL30Lnbk4XXPuyQmo=
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=garyguo.net;
 Received: from LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:488::16)
- by LOBP265MB8493.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:46c::20) with
+ by LO8P265MB7635.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:3a7::20) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.28; Sun, 29 Mar
- 2026 18:28:44 +0000
+ 2026 18:33:44 +0000
 Received: from LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
  ([fe80::1c3:ceba:21b4:9986]) by LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
  ([fe80::1c3:ceba:21b4:9986%4]) with mapi id 15.20.9745.027; Sun, 29 Mar 2026
- 18:28:44 +0000
+ 18:33:43 +0000
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset=UTF-8
-Date: Sun, 29 Mar 2026 19:28:43 +0100
-Message-Id: <DHFH97P32UX9.3N2AR59ZFXV4P@garyguo.net>
+Date: Sun, 29 Mar 2026 19:33:43 +0100
+Message-Id: <DHFHD1CAMGX5.28WBF05Y56EEM@garyguo.net>
+From: "Gary Guo" <gary@garyguo.net>
 To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
  <maddy@linux.ibm.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
  <chleroy@kernel.org>, <peterz@infradead.org>, <jpoimboe@kernel.org>,
@@ -68,15 +69,15 @@ To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
  <a.hindborg@kernel.org>, <tmgross@umich.edu>, <dakr@kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
  <rust-for-linux@vger.kernel.org>
-Subject: Re: [PATCH V7 2/4] powerpc/jump_label: adjust inline asm to be
- consistent
-From: "Gary Guo" <gary@garyguo.net>
+Cc: "Link Mauve" <linkmauve@linkmauve.fr>, "Venkat Rao Bagalkote"
+ <venkat88@linux.ibm.com>
+Subject: Re: [PATCH V7 4/4] powerpc: Enable Rust for ppc64le
 X-Mailer: aerc 0.21.0
 References: <20260329160254.2592207-1-mkchauras@gmail.com>
- <20260329160254.2592207-3-mkchauras@gmail.com>
-In-Reply-To: <20260329160254.2592207-3-mkchauras@gmail.com>
-X-ClientProxiedBy: LO2P265CA0473.GBRP265.PROD.OUTLOOK.COM
- (2603:10a6:600:a2::29) To LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
+ <20260329160254.2592207-5-mkchauras@gmail.com>
+In-Reply-To: <20260329160254.2592207-5-mkchauras@gmail.com>
+X-ClientProxiedBy: LO4P265CA0177.GBRP265.PROD.OUTLOOK.COM
+ (2603:10a6:600:312::20) To LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
  (2603:10a6:600:488::16)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -92,85 +93,202 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: LOVP265MB8871:EE_|LOBP265MB8493:EE_
-X-MS-Office365-Filtering-Correlation-Id: c2d65aa2-1433-449e-9cee-08de8dc10279
+X-MS-TrafficTypeDiagnostic: LOVP265MB8871:EE_|LO8P265MB7635:EE_
+X-MS-Office365-Filtering-Correlation-Id: 65980465-a809-435f-9b7c-08de8dc1b505
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|10070799003|7416014|376014|366016|56012099003|22082099003|18002099003|921020;
+	BCL:0;ARA:13230040|10070799003|366016|7416014|376014|1800799024|56012099003|18002099003|22082099003|921020;
 X-Microsoft-Antispam-Message-Info:
-	zy4DUjfUHbvgXW7fzz4aWuX8AYWLJIAe7zgBB2yp7nKMYcGYHmkkzcBTEHxvzzJpSm3jpkST7nin9PYRL4k2Dy5UOqnbRTB5rWdgY9A9VlHQYIIorw2WOf9gr00tSUpwSNqBcGN3mKxj07ZJ0rbfwBJ9qQ7Eoa3Y6VRQJjnBo8Iw7JLQydUZYEOFjhuaqDm4nlmqCfzCK9AESTlKoFQPZWaAkJbiT9wKKiKbitRODycnwjw/ADBw9dK6KYj1j7K4KZGwLx0TirjTj6uV1RRpprhXgLR8IXq8ydiJkN7On0TQW0dbDjFyFopMjePy6AkSOqrud97a3eI5b7u4odr28ZqP3JuFFVPpsgwL+hhfkui7h1wlAibJrW41ceoPjtzjX8/KnB0vBg7guu13J9wrBrB4iYSQCYey7YraRprqADl/VF3dCirgfymeNXc7F4jXI7hVboKNAE1iSlDnYJHNInb4I4JKBx88dEv4kRnUtO6AKFhwFDoef/sPBslhA5Hw0N8/wNZDwMJuqL/RfJJLhON9jsKQJSNabR1XNPPArNQMnWTaTh67WZ0F7qiqxFIEHVn2trNG7BL4Cus5Yv0xMRnaQzmypMFP8WTc4Mf9AQQmoJLaUmWPdVOWaBTwNgxFp0B4HzDyWUyytkaZYaP8FwLfyqJO/Kr8JUJuGWr7xydj+6nCW0Kfhm2OKm3AScHAB6CnQWi4wiB/Dqn7p5q6mjBlJx4nI6fSeKrxO6rmkDiPklAvrXfpa2GXKFHIV+SIvt6ilvXfQmPHjhIxHFSGVw==
+	YKScI3u2Rb4eWlP3jKHie8sCPrzsM3CMlA/YZJw03CGibLqUtrdTwguszlqfd1oqwju0iGaR0o9c6gHlBbBH/EcuXyjN6kBVEh2w1/4plBwPHkb5VO5GtCJFVqKnG/Iax7pxjKKGtfJoMfRIj8wk5z3eXs44DhpN+zFC1CkHQ3UoY4T4NRf++Tw5e6Ya0FsGSG/ggiSY5r0FJ+TvZG8Lefj7JkmKDAARkLShmWCoBLEJf0i+YFqifl6Nkg/lBNsJlI2yQpieRhiGFaOvFTdw4kzQSxTLaB5RDMsNv0ota2M5EaTa1vTEqhfv+7G5sZ448dKGGwF57R7T+ffmkrfdlj+G6/R0yKrVeUEkaDTq496+M+WwXCaUHUjTH5NRjAXGAENf7hm+8zixzEunZEPDeQ6WNJcMM9zEjI/+8BLOkYjaL+BuqFQeWs4tPpp4Y3xo8RhUHbZ8Itkw6v1BKQOV2R3Sxz4eWHSC/FrB3Pq/3vK/3PzhFOOpORv5ksDi9gcgNR8VaCWDPnfpxIwZenQUoP305+Aslab8w23LDXq4riEcUBOnGQbIbuesQGhxI6a8kwIhduAqLke+bVWcVX/LZkleKsZQagtzL42mYMUjWZ5W/Y+oysWDwA+i3UnFprEw/4vVes43n2wR6wr8H/ZsZ+Ix75/swn5+Hb73eE5+DO8iazh1xRoG9l2QokB7ujRMyTnxVUYFusyqipswAfWnOXDfjmbXw9VZbHxxjLUXYY42ntdmAum0RIjX0akyDtkVTLrK0Mq/ueD1hMbcSRrTvw==
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(10070799003)(7416014)(376014)(366016)(56012099003)(22082099003)(18002099003)(921020);DIR:OUT;SFP:1102;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(10070799003)(366016)(7416014)(376014)(1800799024)(56012099003)(18002099003)(22082099003)(921020);DIR:OUT;SFP:1102;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?ak05UFQ3T1AvRVR2WWVjNzhDTk90amZrWnBoejcwQzhGV21PMUE2U0xZbis4?=
- =?utf-8?B?aUNTdWVuSlFoS3FHQk1paFg1SEJrb0VWN3JsdTE5OHhLWDVXN1VTVjVDM005?=
- =?utf-8?B?OGdCMFhCY1pTWlp6cmVmNzB0d2pwcHAwSnBEc2tFYzJ3akZLcnkrS0tRakZw?=
- =?utf-8?B?NDhkakFPTHJNa3Nmd084ZGZZeUlYT3o2NkJQN2VXK09XS0xDaVZMQXlxUXJY?=
- =?utf-8?B?dWZJRkg4eWNJRHlDMVg0aG9FQmJodDFnQ0F1R1kzdWNwUzFjU3l1cG1vdWN2?=
- =?utf-8?B?aWo4UDIvaWFWSUxkK3hibi9VeHpYTC9CUVVIcXBSZEUwT3hyTk5YajdUQzJz?=
- =?utf-8?B?dUVDakFFV1FhMkh3VS9QNGhJWnJjR3U0K3J4bWxUMitEM0RaOXYrNVpLMlNz?=
- =?utf-8?B?S3ZFQmtTamdCQXVBaVRWSGJQSXhkRjRNaytKcXZ6cVVJc2Yvd01nN3VPTks5?=
- =?utf-8?B?ekg3UDZUWGNKWCt0NTZzT2F3eGVYVWN2a3FBNXB0eGhXallVbm9Fd1k0TlhN?=
- =?utf-8?B?Vjhmb0owSFRmaURKMjErdkxhdXdRN3M3R3Nxem5VbitkLzdXcWpNZ3hKVkxo?=
- =?utf-8?B?QWx6N3ZIQ25uY05LT0xGdEVRYzZGQ2RqTXhXMHhpSnJadFNRelBjeUtSMVJy?=
- =?utf-8?B?MHdnQ3VSZVM4YThySFo1WkE4WjYvek5IRUNqbEdtSmFLTUQweHhtZHVUK1o2?=
- =?utf-8?B?SDRydEdlMGwxRXdmM0tPcnJtVmM2T3dlTWtKRGVVS1V3cjJTSUpBYmRjUFBm?=
- =?utf-8?B?TWVBUXk4RkdZNWNiVlEzeE82OG5rZ05QdlJ2dXB1ZWJBYzdDSUU4aEg2YmhB?=
- =?utf-8?B?aDAvME1pWmwxRlVrbTFqR1NPa2I0bS9SUDhUS0dLL1NtbEVyZUdzTExtTStq?=
- =?utf-8?B?dHJxVm9kS0p2YWxrSXdBNVQvU0Y5QzQ1WlM1NUNzcTN6dTNkdjdzdmp3aVdl?=
- =?utf-8?B?SEIzeExaNGtzeURUY0l6YWUzQms0UWFPTFRDVHpYNXFVcmFrbkx2QzRzMGd1?=
- =?utf-8?B?THlra0hiZFFVbmtRb0YyUFhjaWF1R3k3QkdlR0Z0VmdGemRrSEk1ZnNwUnVC?=
- =?utf-8?B?QTkyN3I2R01UZC9nZExkSXd1eHFjN01NNnNSam5ha2xCc0FQY3c5ZDNLQVBm?=
- =?utf-8?B?RHVicHZqLzUwRFFwR3k3NjZvKzBkSnVvZ0ViejZaRkNmZ1oxR0JlWGY4QlNu?=
- =?utf-8?B?cTJpUkU2czdHbkJoT2o0cVZHR3pDVk92YTlZSzNCOEdLeHlMZEJuTmF4MXFR?=
- =?utf-8?B?dnhWR2pTT2xZVzZkbnI2bHl5Ty9adFU1dVhmUGpUOUtKNE9rNU9SSlNheEJn?=
- =?utf-8?B?U1ppNXQ3N3o5UGIrWTJXYzZPKyt4VUhLb2VLbmZxcHpneEw4bmExdFpWejVN?=
- =?utf-8?B?WE1TYktzUjFoNGdLaW1PVldQS3BwVFRMVHoreDJaYmRrTmt5Q3k1d3hBVU9q?=
- =?utf-8?B?eGtid08wTlZIQWsrN2xJQms2NVZyMmhGcHVFYll0TWpEbGVNN1FEQmVZTnhT?=
- =?utf-8?B?bFBEYU1QUEMrMWxENWdNOVVXMy9ZQ0dDUTZCd3NoeWpEb2FWM1JlNlA2K1ho?=
- =?utf-8?B?KzFhaW83NzRNOFJjcmRJQXl5Q3hnTW9McDB3L05vanVUNG1WWVJHTWgzaGdP?=
- =?utf-8?B?L0J6dUc0LzZsallpUkZJeU9YMDQzRmNIVjdsS2oxbmg2RDdHM2Z0My9CT2FU?=
- =?utf-8?B?TU9CZjNBc2Y2ek5uN2lobkxpaDRxMFFjYTd0WFUwSGxjZVRtbHBWNnlBbXV3?=
- =?utf-8?B?b01wVzU3bHZQbFZJdERBVHhmWENMQjVNL1RBSDI5UHhETmQrblZINy9XK0hi?=
- =?utf-8?B?MitSL1E4NS9CejBqRWxYUUNEKzJHZWVCdmgzT0Q0K0xYMkVlY0xiZHZyMXpX?=
- =?utf-8?B?NjZWOS9icGZPc3gwVXFGT28yQnprR2hHQnpyclRnVGI3QndEY3BROU11ak4z?=
- =?utf-8?B?bkZCWSsvMVlGTkhyRXZETEJwUTgwbFpYYzlmaEltcTJQVjlCVHczV29TTE1Q?=
- =?utf-8?B?a203K1JKbHFuRTh1OEsxWVNUbFRlWDQ0b1d4N2dwMnc4Wno3bnZFaFNsNUgy?=
- =?utf-8?B?dWdPRi9CT3A1bW4ycDcxbkh5ZEM0ZWFLdXRlMmNwMHNoWHVFb1lGOTFIVTlz?=
- =?utf-8?B?TmwwSEpycE5uMXJPZGNyUmdkSCtDN0NMUUl1UjR6TnF2aFc4YWVkRGlHNHBk?=
- =?utf-8?B?VlVteUFhU082Sk5lb0ZzVzBMZkdPY2wwSEM5RSt4ZC9jRDhja2FmOW1FVXN0?=
- =?utf-8?B?UDVBYW8zRUhqVnNDcGN1dlZ5MnYzYm9FeHFBdE83V1p4V3piWUV2Mzdsd3Z5?=
- =?utf-8?B?Z1hIZUdBc0dNYms1cG0vVURYeG1ieDBzZC9lWW8wR3RJZTdibkRkdz09?=
+	=?utf-8?B?UnNpNUtaUXJiL1RaVVp6bXRyWkVSeDZ2MFdCY1R3Z0N0VFA3SnBuc1M1WTNH?=
+ =?utf-8?B?WDVoQnJGWVdDNyszNU5JNlJLMXExM1hkanNXWEdGbEpUWXRNY0lkc0RkazNJ?=
+ =?utf-8?B?Vk44TUdDcU1lSjFvTHQwdWNackZwWUgyeFpqc3BIUnV3K0ZlK3Y3akx4czg3?=
+ =?utf-8?B?a3VFNkF6c1Z6cEdWU2NwdHZWbFUrWHRjT0xWVFlHWCtaMytnU3BBa1BneEZE?=
+ =?utf-8?B?MGZtT2UyQUd3bjlxV0ZVMTF1TWdoOWlZTXRlT01meU1BdTdxT2doU1hIVFZE?=
+ =?utf-8?B?aFZiSUZ6Vk16eU1ETFFRVXlndWNoRDArU2t0aHBlNFRQdWlURFJXNXFWN0tt?=
+ =?utf-8?B?U3RIL1BidDN1Y0t1S1pvb3lrV0FibWRiWWZKQ1hJb0d5RHQ3QlkvRkdiTmtq?=
+ =?utf-8?B?Zi8vbkZ3dTNCT2lmRzZwRGE2bDNTWjJNci85aHZnVEcwbkV0QVlXUDNlUmNM?=
+ =?utf-8?B?Vjh6Mmlwd081WVEyVHR4RUMwTXg5QUFqVkJMeHJUNERNUTlWRy9GQ1FwYXhz?=
+ =?utf-8?B?L2o5cnJqdFY0NkZLa2pYamh5QWNNYjU5QWpOTGlqeFBsYXQwazh4dysxQlhS?=
+ =?utf-8?B?dm05K21SK0Ztc1RmMzFzaXJXS1V3Q1RGK2g3a1ZwUk1ZMko3czVFcTA1UDJ0?=
+ =?utf-8?B?aG1VWm5GWXZjemJnZDA0RitJbGNxdmN1dHhXbGZpckUxOWtTL1hkeHBuSFRk?=
+ =?utf-8?B?T0VJeVk2dlJaZkFWdElYZXFoUjJSbnlZYnNjOWlCTWZIeklaN0VWUmczUTZG?=
+ =?utf-8?B?ZGN3SnFSRy85cTlTOTU3YXZDTDgwdWR6MThnTlRNTnFnRHorQno2Z0t0bE8r?=
+ =?utf-8?B?Q2NPY21oUnVrS1dLa1p3SjZZU0x5ZmhTbzBFbUVzSStFVjBFS0htZzZ0aG9H?=
+ =?utf-8?B?bEFobi9tNVBzTmFnK1h2SGo3bFhPbThlMm45S3JWazZFdXRLOENETFBuL2t6?=
+ =?utf-8?B?SGJ5ZjJRK3o5MU50Y2J5SEsxY1VXdzZNM0Z0Q0FLRXB5d1htUG15WjJtSjR1?=
+ =?utf-8?B?ZzYvbHg2akxoNUZoT0xhUEJDREF3S2Y5T3ozWElyQU95MkFZWUxOVUxOc2tU?=
+ =?utf-8?B?aWZiR0pkTVJEVFpEc0V3eEEwMXVVR25jUkd3dHQ1UDZvZG0va1hWOVVVSEh4?=
+ =?utf-8?B?U2U2MUdpUGFsYytGeFhDVytrcGxzYi9Md3NwYWxHWUl0WTZPNFNrNjc0cy9P?=
+ =?utf-8?B?THVCb2tOWUVUQVRWWGxpd2xBcG5mOGxnOGNmVVhoN0pUNTB4TmxJZlZseGQ4?=
+ =?utf-8?B?V1VqY3R2dWRubE1ORDlHTlpYMFQrVVJkWDRFeVZVdkgyOE1ZR0JySmRyVzlv?=
+ =?utf-8?B?VURwd0U4SEtpbDdCbnNLMENUNGt4a1h0NjVwWDdNSCtiOTVibVpjQkNWNXll?=
+ =?utf-8?B?elU2Nml3NWdjTFBjazNKaGlBWitmTnpNRUp2TnM2UjRwcUthcFo5MVdGT0hq?=
+ =?utf-8?B?Z1NqUjltK3NEMDRNNk0waFFZMU05OWYySEN5bnFkeWhrZ3RTRkdmdm9KMkFs?=
+ =?utf-8?B?cys3d2thbERUaXFsdzlXYnYwcE42dCs0dkJjUWRGNzYzT3JwZVZNVlMxdXc1?=
+ =?utf-8?B?WURpNWRxdHd4RW1YekR6bkJGblVmUEZXeUcxZUYwUEUvSnBVZ1Y2L1NFOGdN?=
+ =?utf-8?B?WUc0SWljblU5K0FvMHBZWmo4RDBUVEw5WHc0aTk1SFgwUStQVWg2R3NIeE9V?=
+ =?utf-8?B?TkVINTVEakg4UE51N05nbTBXWWoyRnJHY29KUkIxT2ZpWEpoRzUxTkVDaFBQ?=
+ =?utf-8?B?RHltUFB5eTc4cWs5UzBsZG5kck1aVW5HSDJnR1gwbEtHdUI0aXRPaHdaeGgz?=
+ =?utf-8?B?MGJ1bVF0aGlWUHZ5VDNnYlVWY0ZOMHkyeHBDTUprSlVvL0toN1lDYUk3Z2dD?=
+ =?utf-8?B?WEYzV3dLVklWRVEzSFVyS2FLVTliUmIvV3Y2ckIvL3ZjRUlTUDZSbEpxQWJV?=
+ =?utf-8?B?U2ZUay9jV0xzYll5NHhpakFoYjZOOHdzUXBFblljY245QlY5eXdudjkxOEkw?=
+ =?utf-8?B?SDhWRWJCWlJNS2pZTlUxOC9NaVNJZVNhN3Q3ZDhEamgrUjVqcVlSaTU2MHB0?=
+ =?utf-8?B?RWNNVXFqb2dtbEVpaEtsbkExRWVQLzQwY0phMTNtYW5YVy82c0ZKdHkxRmZq?=
+ =?utf-8?B?T2xUdGo2eVE3SURJL2d6ZU0vRnduaEwrRFFjNzR1ZEZwSTlzWFVXcGJCZldk?=
+ =?utf-8?B?NVlaU2VQZWZjVmNIeURsTTZ3OEpUajRTd0tOc3UvY1VTaS9qSHhHQWp6ZHFy?=
+ =?utf-8?B?NDNnSFlWZVhwczJzNzF0dnNldnNhU2xXaXpVOUlmZ0c5QmxTb29INzE0L00w?=
+ =?utf-8?B?RnVRUk5DYW1FRzNURUtlbmtraFBDUFBsamtkSCtsemxiekVobjdoZz09?=
 X-OriginatorOrg: garyguo.net
-X-MS-Exchange-CrossTenant-Network-Message-Id: c2d65aa2-1433-449e-9cee-08de8dc10279
+X-MS-Exchange-CrossTenant-Network-Message-Id: 65980465-a809-435f-9b7c-08de8dc1b505
 X-MS-Exchange-CrossTenant-AuthSource: LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Mar 2026 18:28:44.3520
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Mar 2026 18:33:43.9112
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: bbc898ad-b10f-4e10-8552-d9377b823d45
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: A1H1giRElmsR2AKGM4cdoxN7vlciHt6wYuewt77TqqGaCqYCDMLpB3VmbQyylBpkRf1GxbGU1iifS36153264g==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: LOBP265MB8493
+X-MS-Exchange-CrossTenant-UserPrincipalName: Zftg9GWuoeRwSo2y6TS7nHlXfsGChOPdzsiDSWBZg5UQepl0Lc0cWoNFSHyKExlgUk4iCIbegz+wYyIc3yEtbg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LO8P265MB7635
 
 On Sun Mar 29, 2026 at 5:02 PM BST, Mukesh Kumar Chaurasiya (IBM) wrote:
-> Added support for a new macro ARCH_STATIC_BRANCH_ASM in powerpc
-> to avoid duplication of inline asm between C and Rust. This is
-> inline with commit aecaf181651c '("jump_label: adjust inline asm to be co=
-nsistent")'
->=20
-> Co-developed-by: Madhavan Srinivasan <maddy@linux.ibm.com>
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
-> Reviewed-by: Alice Ryhl <aliceryhl@google.com>
+> Enabling rust support for ppc64le only.
+
+This line looks inaccurate now given previous commit just enabled it for PP=
+C32
+too.
+
+>
+> Tested on powernv9:
+>
+> $ uname -rm
+> 6.19.0-rc8+ ppc64le
+>
+> $ sudo modprobe rust_minimal
+> [  632.890850] rust_minimal: Rust minimal sample (init)
+> [  632.890881] rust_minimal: Am I built-in? false
+> [  632.890898] rust_minimal: test_parameter: 1
+>
+> $ sudo rmmod rust_minimal
+> [  648.272832] rust_minimal: My numbers are [72, 108, 200]
+> [  648.272873] rust_minimal: Rust minimal sample (exit)
+>
+> $ sudo modprobe rust_print
+> [  843.410391] rust_print: Rust printing macros sample (init)
+> [  843.410424] rust_print: Emergency message (level 0) without args
+> [  843.410451] rust_print: Alert message (level 1) without args
+> [  843.410477] rust_print: Critical message (level 2) without args
+> [  843.410503] rust_print: Error message (level 3) without args
+> [  843.410530] rust_print: Warning message (level 4) without args
+> [  843.410557] rust_print: Notice message (level 5) without args
+> [  843.410594] rust_print: Info message (level 6) without args
+> [  843.410617] rust_print: A line that is continued without args
+> [  843.410646] rust_print: Emergency message (level 0) with args
+> [  843.410675] rust_print: Alert message (level 1) with args
+> [  843.410691] rust_print: Critical message (level 2) with args
+> [  843.410727] rust_print: Error message (level 3) with args
+> [  843.410761] rust_print: Warning message (level 4) with args
+> [  843.410796] rust_print: Notice message (level 5) with args
+> [  843.410821] rust_print: Info message (level 6) with args
+> [  843.410854] rust_print: A line that is continued with args
+> [  843.410892] rust_print: 1
+> [  843.410895] rust_print: "hello, world"
+> [  843.410924] rust_print: [samples/rust/rust_print_main.rs:35:5] c =3D "=
+hello, world"
+> [  843.410977] rust_print: Arc<dyn Display> says 42
+> [  843.410979] rust_print: Arc<dyn Display> says hello, world
+>
+> $ sudo rmmod rust_print
+> [  843.411003] rust_print: "hello, world"
+> [  888.499935] rust_print: Rust printing macros sample (exit)
+>
+> Reviewed-by: Link Mauve <linkmauve@linkmauve.fr>
+> Tested-by: Link Mauve <linkmauve@linkmauve.fr>
 > Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+> Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
 > Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-
-Reviewed-by: Gary Guo <gary@garyguo.net>
-
 > ---
->  arch/powerpc/include/asm/jump_label.h | 23 +++++++++++++----------
->  1 file changed, 13 insertions(+), 10 deletions(-)
+>  arch/powerpc/Kconfig  | 1 +
+>  arch/powerpc/Makefile | 7 ++++++-
+>  rust/Makefile         | 6 ++++++
+>  3 files changed, 13 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 1246b3add8ff..a5f50434daf3 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -285,6 +285,7 @@ config PPC
+>  	select HAVE_RELIABLE_STACKTRACE
+>  	select HAVE_RSEQ
+>  	select HAVE_RUST			if PPC32
+> +	select HAVE_RUST			if PPC64 && CPU_LITTLE_ENDIAN
+>  	select HAVE_SAMPLE_FTRACE_DIRECT	if HAVE_DYNAMIC_FTRACE_WITH_DIRECT_CAL=
+LS
+>  	select HAVE_SAMPLE_FTRACE_DIRECT_MULTI	if HAVE_DYNAMIC_FTRACE_WITH_DIRE=
+CT_CALLS
+>  	select HAVE_SETUP_PER_CPU_AREA		if PPC64
+> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+> index 589613eaa5dc..9385db478c59 100644
+> --- a/arch/powerpc/Makefile
+> +++ b/arch/powerpc/Makefile
+> @@ -61,7 +61,12 @@ else
+>  KBUILD_LDFLAGS_MODULE +=3D $(objtree)/arch/powerpc/lib/crtsavres.o
+>  endif
+> =20
+> -KBUILD_RUSTFLAGS 	+=3D --target=3Dpowerpc-unknown-linux-gnu
+> +ifdef CONFIG_PPC64
+> +KBUILD_RUSTFLAGS	+=3D --target=3Dpowerpc64le-unknown-linux-gnu
+
+It looks like all it takes to enable PPC BE is to have
+
+#ifdef CONFIG_CPU_LITTLE_ENDIAN
+KBUILD_RUSTFLAGS	+=3D --target=3Dpowerpc64le-unknown-linux-gnu
+#else
+KBUILD_RUSTFLAGS	+=3D --target=3Dpowerpc64-unknown-linux-gnu
+#endif
+
+(and similarly add bindgen target)?
+
+I think it might worth having PPC32/PPC64/PPC64LE all enabled in a single
+commit, and then you can just claim Rust is enabled for PPC and have an
+unconditional
+
+    select HAVE_RUST
+
+Thoughts?
+
+Best,
+Gary
+
+> +KBUILD_RUSTFLAGS	+=3D -Ctarget-feature=3D-mma,-vsx,-hard-float,-altivec
+> +else
+> +KBUILD_RUSTFLAGS	+=3D --target=3Dpowerpc-unknown-linux-gnu
+> +endif
+> =20
+>  ifdef CONFIG_CPU_LITTLE_ENDIAN
+>  KBUILD_CPPFLAGS	+=3D -mlittle-endian
+> diff --git a/rust/Makefile b/rust/Makefile
+> index 7ea7570e3f17..7fe4cbbd176e 100644
+> --- a/rust/Makefile
+> +++ b/rust/Makefile
+> @@ -410,7 +410,13 @@ BINDGEN_TARGET_x86	:=3D x86_64-linux-gnu
+>  BINDGEN_TARGET_arm64	:=3D aarch64-linux-gnu
+>  BINDGEN_TARGET_arm	:=3D arm-linux-gnueabi
+>  BINDGEN_TARGET_loongarch	:=3D loongarch64-linux-gnusf
+> +
+> +ifdef CONFIG_PPC64
+> +BINDGEN_TARGET_powerpc	:=3D powerpc64le-linux-gnu
+> +else
+>  BINDGEN_TARGET_powerpc	:=3D powerpc-linux-gnu
+> +endif
+> +
+>  BINDGEN_TARGET_um	:=3D $(BINDGEN_TARGET_$(SUBARCH))
+>  BINDGEN_TARGET		:=3D $(BINDGEN_TARGET_$(SRCARCH))
+> =20
 
 
