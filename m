@@ -1,84 +1,46 @@
-Return-Path: <linuxppc-dev+bounces-18967-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18968-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71D7A10D1491
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2026 02:01:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0655010D1495
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2026 03:22:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fjyKy3vJJz2ygd;
-	Sun, 29 Mar 2026 13:01:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1032"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774749702;
-	cv=none; b=hwwGM0zLvz6TW+AAse6jCNVznvKFzn2axXVh4kDmTXruEM+LNyT+jmJLfIAkrknQw7xrI9QWJLrh2B+1lVzSNBixQIMOWsnOMBrPIV7RRTDfu86c0ZKn9eco+Ciiu83rydj7DQJI0eRnzonGlW6iQv6uP5/f1fVT9+Nt6MzaqkdFxtNdOvswBkCS7c5HBTn14RD2m5kq+yleZHuCYayTwIb1v3PDb90UI2gIMpa9fjAV14xIHiKofh4Vl8u/ohwBhJS7JKBm4gHouYYvv32fQzZkFznskq6tAdoqWtC1bM2P2Ynamtru8mjgsAMI4s+WgeHcW+R0bLGDrjJQDOAAjg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fk06x4jW8z2ygh;
+	Sun, 29 Mar 2026 14:22:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.21
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774754181;
+	cv=none; b=J23tCUjmhhaehYVfcgZlX2IeScmQ1JC1RGkXhU0KPNpeoJHRShY5k670O3Ynm+bYl3qqb3wvbID8FM28r9WQRKDyBHBZbn/h5TyH5UvrLSX1ctjdhxnyhChOvbd8T5xZ6BuyTsdpP98+FeD0HITfauTv9WhactFzYRUlCdBhojzCTY25G6YH9gSDpNCXxrkag/dQDqLGlb11QfR8MzhvcjOUbaiFjvsQ/6vc1eu54q6A44MDyvY9FDsHTuF5rQ5dd6U71qIDU2JZcmlWK8EfQ8OoD60dV6UShAYa6Wz5oWGWTMCgDqibHE4vnRG9ehNub574FYtSHjQV9eiSpfhc4w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774749702; c=relaxed/relaxed;
-	bh=L3BYXhp3fJO5t5tNaVFHJqKD7jmMm6du60VZ3sORTCo=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
-	 MIME-version:Content-type; b=ImyfIthwRCQGvpAYzmbYipX/A/DbiSxMh5OP2yDIkEgFHdD8PQJIUhtxBm5vmmnfka+wawhh+7mfRIba0WajwzLs1hCY8ezm6R2RIPTfhh5y3h83FA0szl+lYJd6zUHZff2UGUmxLJS2YgnolnYlhHoIaljoEhC+brffYAzhVj2+yGOyIRLd+ltGAJ2tCOqc3ha2XZdNBk/4h8QJazZP5wOJPLZgsJBh1hvOR8KiQn3M6a9kbDBug/WYyqiweQoSaLRvU5xnTUqkoAw0XuFgZ4hZTFOlJWbm/q7rKQoCifHQIpbjM9u1/mcyiypGmZcaJRP3tRyf3b+2Z/2NULxptg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=IlYcOoCh; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=IlYcOoCh;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
+	t=1774754181; c=relaxed/relaxed;
+	bh=AREMtQmtnVYaAKQXTfzm/2glMLc5k8refDYVvosexCQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=DsiU9TNRDJUIH4x47xq+UOEnFMb5IDjkIp7hcL9H8dxgPjGSi6ld87yYLrfun/zCSlcCZX3wot1ppqNxMtbdPjXXFkU/CyQGeoDh4mY9JdUyZE+hi6mFoMw7VqkfFgn06QmHCokXHrBtE5Mmv4jh6eEh3CH5uhL8ulDKC+IzEjVCrBlxlu1eYxxxa2sveYGljL4kn5S/wEOBUUFweq6Vkk0itsP6luzfnJecRsK0whmX57J0FBSeOUPGszSqXujFk9jmIp2/gA11NEDFSFa1qn7c4QkpN4Efai+Jmnf5JOHXEHW5tCennO6n+KgRqYgLkXXpCZMhrOYaLbo/HOkkwg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass (client-ip=159.226.251.21; helo=cstnet.cn; envelope-from=pengpeng@iscas.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=iscas.ac.cn
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iscas.ac.cn (client-ip=159.226.251.21; helo=cstnet.cn; envelope-from=pengpeng@iscas.ac.cn; receiver=lists.ozlabs.org)
+X-Greylist: delayed 386 seconds by postgrey-1.37 at boromir; Sun, 29 Mar 2026 14:16:20 AEDT
+Received: from cstnet.cn (smtp21.cstnet.cn [159.226.251.21])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fjyKx34lzz2xMY
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Mar 2026 13:01:40 +1100 (AEDT)
-Received: by mail-pj1-x1032.google.com with SMTP id 98e67ed59e1d1-35691a231a7so2014681a91.3
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2026 19:01:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1774749698; x=1775354498; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:message-id:date
-         :in-reply-to:subject:cc:to:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=L3BYXhp3fJO5t5tNaVFHJqKD7jmMm6du60VZ3sORTCo=;
-        b=IlYcOoCh+Ftrctu8gdWKke0yx8LV4sxz3CYItIcmBzK20aiPCnTIL2REhOp+nruKXO
-         UH2gKGCM8Nyw3VJG0SoZyI1cZOMocuXja7R//Un7NW4naYTkjfzv1i2QP3gGYgjBGITc
-         IwwFzA2cF2UgPeiWzNDguNEQapv9/7xsWbqFpMgfb5k24HoWTpmGrjhn/ASKjyNahjhH
-         yDBm7EpR8lHV+l+39sa1Eck36PCbSHHZIFgrqhtnt9R36hwgkY6vpxRsWCIKO8jv7skK
-         wXzRK6q9fptqzhn9/vWyHj7bpGFbS83IQrgbZhZv0nH0b1ioPVXfC6BI0ol/QxvpEw59
-         7Zxg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774749698; x=1775354498;
-        h=content-transfer-encoding:mime-version:references:message-id:date
-         :in-reply-to:subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=L3BYXhp3fJO5t5tNaVFHJqKD7jmMm6du60VZ3sORTCo=;
-        b=FhNWsC6dz6VXBfSrAyha9iO6pPOXhh0R5vQiGuiBp10zd45DBvWIOhV94FYcnsTVGR
-         WwX0peLI/bmtf7GlbqOLOvecqqzt5gy9ZCE3YYeIClHOO9nyMR8lJIRSBmCEEaBlVnxX
-         0fk4pdO1RM4+01wr+GHApMM0UCXvpWV0Tew5lKXgH3mQFfKuD0nEwN8BMHT1wJcprCj4
-         pf3eVaJLfXTZTvciOiXXcMCakoy8E3z6bzTcCMbYf95rPsyKkEkKPcL696YTGdDVkWtG
-         Di0ZsDjoDsrxeppI/s87uZLSrCIAFQiw3EuO8YZGLfHPlH/pCHDkpI7EDz3wUg4jaQ6O
-         B5gg==
-X-Forwarded-Encrypted: i=1; AJvYcCU63EEDzMwyMqFJfruKrdn/y4ob5eyE0eF37OOkNykumWtOiqUmJraRQzxQZOuzI7r4o6hStWfRJ7reUDY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yy1Wf6ElAlw6Igu0csdkk7TmJFnSxYaxOqNFRqx0fKAheIiDpAV
-	Itb+WVDmwCks7XffMRZhGtrJkyQn2Q2EirlsPatsA7GyLEx33yjCDBzy
-X-Gm-Gg: ATEYQzwkRkyoWfm9Pf2hoHz2dHpOABiyVekxcPaHu/DR3BzV5xy3dZKSz9a7VArmgmU
-	dsjQqrr3B+Kc2m4xgwJfeiFH6Rt/ylIu16eIac8aStL8dTC/QnZN/XOZcyRXN2UlD0yV/pmsy0K
-	7xnUKoEN4XdkUN2OyXb2LNKD6QfPeYXM2Jc5qLl0hletUhrFm0pcC6tS1ThT2Al4K7boVX1Yh8A
-	AVYxzJW2Bc+btchGpwq1baUex7a/jnMqB1pvX83+97127/YmmnB0RHCCmBv9GQcMlITrxPWkzhY
-	ABWmtnR9ygdY0rwgm2hgIDic2W0u+350b6KUxVgKWFZgtYz8piY0e6n/Z/FX0ux++BOYf1ngBkH
-	TyWNTIQGKHJNesjQDzBPh4nOQUVjf5Z3uqVWmwIEEDAVP9ook2+lOqpPKYhxvRwLu9MV1LYUBJU
-	Z4XuTN1rQG9dtBPKh7HZp3hY0s4CtLoKhG
-X-Received: by 2002:a17:90b:46:b0:35d:9c43:57fe with SMTP id 98e67ed59e1d1-35d9c435b02mr1931772a91.13.1774749698386;
-        Sat, 28 Mar 2026 19:01:38 -0700 (PDT)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35da312de9bsm168185a91.14.2026.03.28.19.01.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 28 Mar 2026 19:01:37 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Sourabh Jain <sourabhjain@linux.ibm.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Aboorva Devarajan <aboorvad@linux.ibm.com>, Aditya Gupta <adityag@linux.ibm.com>, Daniel Axtens <dja@axtens.net>, Hari Bathini <hbathini@linux.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Shivang Upadhyay <shivangu@linux.ibm.com>
-Subject: Re: [PATCH 1/2] powerpc/kdump: fix KASAN sanitization flag for core_$(BITS).o
-In-Reply-To: <20260321053121.614022-1-sourabhjain@linux.ibm.com>
-Date: Sun, 29 Mar 2026 07:26:55 +0530
-Message-ID: <tstzmm8o.ritesh.list@gmail.com>
-References: <20260321053121.614022-1-sourabhjain@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fk0041vNcz2xVT
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Mar 2026 14:16:19 +1100 (AEDT)
+Received: from localhost.localdomain (unknown [111.196.245.197])
+	by APP-01 (Coremail) with SMTP id qwCowAAHsGv2l8hpdOd8Cw--.37861S2;
+	Sun, 29 Mar 2026 11:09:43 +0800 (CST)
+From: Pengpeng Hou <pengpeng@iscas.ac.cn>
+To: maddy@linux.ibm.com,
+	mpe@ellerman.id.au
+Cc: npiggin@gmail.com,
+	chleroy@kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	pengpeng@iscas.ac.cn
+Subject: [PATCH] powerpc/pseries/lparcfg: bound shared processor attribute parsing
+Date: Sun, 29 Mar 2026 11:09:42 +0800
+Message-ID: <20260329030942.26639-1-pengpeng@iscas.ac.cn>
+X-Mailer: git-send-email 2.50.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,39 +53,53 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
+MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:qwCowAAHsGv2l8hpdOd8Cw--.37861S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7XF15JFy8WF4xWryDuF15Arb_yoW8Jr17p3
+	Z8KF47Kr4kGa4FkasrJF17XF4j93Z0vF4UWw40yasxAa43Xrn0vFsagr1Fvr4xJr1fGw4r
+	Z3sIgwn5Wr9rZ3JanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUkC14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26r4j6ryUM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
+	6F4UM28EF7xvwVC2z280aVAFwI0_Cr1j6rxdM28EF7xvwVC2z280aVCY1x0267AKxVWxJr
+	0_GcWle2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E
+	2Ix0cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJV
+	W8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lc7CjxVAaw2AFwI0_
+	JF0_Jw1l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67
+	AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r126r1DMIIY
+	rxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14
+	v26r1j6r4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8
+	JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCTnIWIevJa73UjIFyTuYvjfUYCJmUU
+	UUU
+X-Originating-IP: [111.196.245.197]
+X-CM-SenderInfo: pshqw1xhqjqxpvfd2hldfou0/
 
-Sourabh Jain <sourabhjain@linux.ibm.com> writes:
+parse_system_parameter_string() copies the shared processor attribute sysparm into a fixed local work buffer one byte at a time, but it never checks whether the next byte still fits. A long token without an early comma or NUL can therefore run past SPLPAR_MAXLENGTH.
 
-> KASAN instrumentation is intended to be disabled for the kexec core
-> code, but the existing Makefile entry misses the object suffix. As a
-> result, the flag is not applied correctly to core_$(BITS).o.
->
-> So when KASAN is enabled, kexec_copy_flush and copy_segments in
-> kexec/core_64.c are instrumented, which can result in accesses to
-> shadow memory via normal address translation paths. Since these run
-> with the MMU disabled, such accesses may trigger page faults
-> (bad_page_fault) that cannot be handled in the kdump path, ultimately
-> causing a hang and preventing the kdump kernel from booting. The same
-> is true for kexec as well, since the same functions are used there.
->
-> Update the entry to include the “.o” suffix so that KASAN
-> instrumentation is properly disabled for this object file.
->
-> Fixes: 2ab2d5794f14 ("powerpc/kasan: Disable address sanitization in kexec paths")
-> Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-> Closes: https://lore.kernel.org/all/1dee8891-8bcc-46b4-93f3-fc3a774abd5b@linux.ibm.com/
+Stop parsing once the local token buffer is full instead of writing past the fixed destination.
 
-Nice catch. Indeed seems to be missed in the Fixes patch.
+Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
+---
+ arch/powerpc/platforms/pseries/lparcfg.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-I think you might want to Cc: stable too, so that it is auto backported
-to previous stable kernel releases too. The Fixes patch was added in
-v5.19 kernel, maybe we weren't testing KASAN + Kdump, but it's worth
-backporting to all stable kernel releases, IMO.
-
-LGTM, please feel free to add:
-Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+diff --git a/arch/powerpc/platforms/pseries/lparcfg.c b/arch/powerpc/platforms/pseries/lparcfg.c
+index 8821c378bfff..1bf2312f3e04 100644
+--- a/arch/powerpc/platforms/pseries/lparcfg.c
++++ b/arch/powerpc/platforms/pseries/lparcfg.c
+@@ -418,6 +418,10 @@ static void parse_system_parameter_string(struct seq_file *m)
+ 		w_idx = 0;
+ 		idx = 0;
+ 		while ((*local_buffer) && (idx < splpar_strlen)) {
++			if (w_idx >= SPLPAR_MAXLENGTH - 1) {
++				pr_warn_once("lparcfg: shared processor attribute token is too long\n");
++				break;
++			}
+ 			workbuffer[w_idx++] = local_buffer[idx++];
+ 			if ((local_buffer[idx] == ',')
+ 			    || (local_buffer[idx] == '\0')) {
+-- 
+2.50.1 (Apple Git-155)
 
 
