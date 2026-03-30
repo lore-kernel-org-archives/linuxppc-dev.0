@@ -1,55 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-18995-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18996-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79BF8FF494D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2026 06:42:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 113B3FF494B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2026 06:49:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fkhWL11cmz2xpt;
-	Mon, 30 Mar 2026 17:42:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:67c:2050:0:465::102"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774852841;
-	cv=none; b=AzhjzGYhGLoECthMeZ0duHxBBykBxo8E6AhzQbSsUBiEKSt1WncgGEeZ0cOG6KkEDykvgM3BDfsHRVqIbzttXpkyAO1K6ap3xQ9niKIEor8Z8f0mnQkyoOfnA1yk8YcJBziUWJ51egj3PtQX+tDsJhEl7V9idL5phvpfMY86G/QLYozlgOiuFTVuyktROU39Z4arl6hrtqHByjjbk2WdYYF/466R7uUCiFntNEZO/Gn/K/0i+ifEbX/+G0iPs+RsVGMgkaQ/xhQm6i2uSo65jydH/vhl5k9J22i3mtRsIQoB/408nXudl3b+mNW6cebtTk6nT8IxAFOfkf6cMC6R2w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fkhh25RGxz2xpt;
+	Mon, 30 Mar 2026 17:49:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1035"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774853394;
+	cv=none; b=kWCHa/Uqo6atRPDtU1DiZggkwCh/qGW2HQBsmY+o3AyvenNlEqDLB5yVO0bdVsmagTaipS31BQXqSbbKYv7VO7sN0C8USZmr2lFgX5vaf7crnV5PzzAiGhLukWP6/V9Q3ZwkCH8MfX7jLkZkhghPJ1hPLqmJEqkxcCObh0LNmnEebAdgVcjFFOKbQwxgxvmNjW3w8m9xBhoaDy8jHPXjymNU1/e7b+4x5by40rSWpA5pZJhO3fada7iPXbpWeWi3bx45YHLIFUYGBRqMAlkq5tbyxD/jIGtn0Gnidk5sbvo9e+Qpd6spPBZ416M0CEwC3YfJ2oFkUIRvYjfclvvyKw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774852841; c=relaxed/relaxed;
-	bh=D2ECkB4mOSlmWvMXRknxyN+wK1aHs3Stn2HSImKd9F8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=WNqNEwcoecTB4CuBPacHGgyb3ajmsEdK9oYqJVtO+e/lTbN1I3DDVrvlidRzsaXpKnD8ModpdhS2rmLDoTbQvijhGy4PZ5wpKnk/G6LzIyyyRDugHJGzNkoZJ/Uc+tjChEYpf0st/uKvCqY2uGKvnX8rQNYUnUZwjNwnMkPoqdPg6gHZtUcDbIHLb9RpOmbafCPMGcon4ylAdCZe9jhPVCZ/ttKeaz6ISpdwgVREjcJoAlnGZNXGP/Ru6o6blFHpEH8zyDP9O46SgiBgqda+D30N7tCrh5b1Ee3Owvp+91po43FyroyRz/NvQWvxETwZni6L0r2iyetkfODUow/v2A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org; dkim=pass (2048-bit key; secure) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=lCsFoY2/; dkim-atps=neutral; spf=pass (client-ip=2001:67c:2050:0:465::102; helo=mout-p-102.mailbox.org; envelope-from=stefan.roese@mailbox.org; receiver=lists.ozlabs.org) smtp.mailfrom=mailbox.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=mailbox.org
+	t=1774853394; c=relaxed/relaxed;
+	bh=tulUJSN7MABRwEgvUtQdM4fFuvpVGNODzZ+gwA9Y1b8=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=BWiSbmVF4pr82jOYaJ22pn4Kb8Lf4yLXy+l/fcHov2lc/b0tQHzoyuw/NzgYKV9ssYhiXKGwKgSvl09BCzSC/XjvfoY78B/RZYuagmLSrKW6y070bGxAVDNYPVb27XZL7Vo3sxVycjK1BQ3x5McIm4/E+sLShjwUvueKDmRT6g69Qb4aq9upUNwonx8nMGdSdGpAtOnDQtwUJjFNjiTLb959DxlvSYDvctVrU1CPmkb7ZyDFKT5grrMVaASql4B9X7DzV2+6ZQmRlT5To8GLwwzv1U1rAVxXe7+2Nk0t3v3QiU3n7K9qY2zjQzmvlIYirC0WnF6bkZ3Ml2pB2uuouw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=YrUWR0k0; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1035; helo=mail-pj1-x1035.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=mailbox.org header.i=@mailbox.org header.a=rsa-sha256 header.s=mail20150812 header.b=lCsFoY2/;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=YrUWR0k0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=mailbox.org (client-ip=2001:67c:2050:0:465::102; helo=mout-p-102.mailbox.org; envelope-from=stefan.roese@mailbox.org; receiver=lists.ozlabs.org)
-X-Greylist: delayed 483 seconds by postgrey-1.37 at boromir; Mon, 30 Mar 2026 17:40:39 AEDT
-Received: from mout-p-102.mailbox.org (mout-p-102.mailbox.org [IPv6:2001:67c:2050:0:465::102])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1035; helo=mail-pj1-x1035.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1035.google.com (mail-pj1-x1035.google.com [IPv6:2607:f8b0:4864:20::1035])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fkhTM2kH7z2xT6
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2026 17:40:37 +1100 (AEDT)
-Received: from smtp202.mailbox.org (smtp202.mailbox.org [10.196.197.202])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mout-p-102.mailbox.org (Postfix) with ESMTPS id 4fkhHz2S4Yz9twV;
-	Mon, 30 Mar 2026 08:32:31 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mailbox.org; s=mail20150812;
-	t=1774852351;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=D2ECkB4mOSlmWvMXRknxyN+wK1aHs3Stn2HSImKd9F8=;
-	b=lCsFoY2/dNW6hlSHuK7yrDdFgJBAKkCBvgX74WSUhyc+5kgVUWl7kBqUbI5TvPHeouHGeT
-	XLBkKF9ngRc+6pC0IobwsLhrm2BT7C0JvRzgCFFVvMKDp7aGqOtOxaz3U9NPRtcO4XwLi+
-	2ScXEKq9Y2xs99qt+UQBcmpThi3H++Q003MlIkgv0hrIBr5uNwcRa/y2pGGjP90Mk2QpRg
-	vml7y3sR91XtyTvUUZuBF/sjhKxtKUB9x4p49JxuXhWFJTZP3GdHxwkFHeVbblSuKT5pJW
-	nUP6gGP4v8MnjCTgtbQjqjEPgTN6bX277z9/n+CXPTUde1kS6/mlA1oUYzR4OA==
-Message-ID: <e2b13d94-3f0c-4c2f-87b9-209f1ac04f23@mailbox.org>
-Date: Mon, 30 Mar 2026 08:32:28 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fkhh15mPMz2xT6
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2026 17:49:53 +1100 (AEDT)
+Received: by mail-pj1-x1035.google.com with SMTP id 98e67ed59e1d1-35d932cc948so1070534a91.2
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Mar 2026 23:49:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1774853391; x=1775458191; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=tulUJSN7MABRwEgvUtQdM4fFuvpVGNODzZ+gwA9Y1b8=;
+        b=YrUWR0k0Pzoqk9j/Gs3wnI30mtbsqHVeyDuCyuLErWxwHptaGPyoKzaIP/i0J+T0wS
+         nX0RhkxLtoU6VZJeWRx/ESihPNkZo7zu8e2Wb9t5FW0Jq9TpgUuWUn1NvOjzlLvR9UFm
+         tcz5WtT/kf7b+K/SV5+fmJfMlNI0W7bN380wMTdfHvvJV82Iu1UUI3l293lDWcOCmbJG
+         +7mmB71C6pIL+MHS8yLyrgAQwZ7za1p0TcvlAmzzp8PoUr9/A2YcjLeTdq2U94Rj2luR
+         9bSkgKIIRDjSn9vGL5szH4AxRNQiWC/klUx/GInUJ0oUTD41kCrLHFP73/GWnZ3sRBf4
+         pSag==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774853391; x=1775458191;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=tulUJSN7MABRwEgvUtQdM4fFuvpVGNODzZ+gwA9Y1b8=;
+        b=SzB5/m08t8LgIBIKjm9IFyuf4vwuu9AYJSrvZxzZHAAfvVwo2BfadsCHTEy9d8LcnG
+         tCoL7DqBSs326TP2yg/vLNSqfO6SElv1oY0toHJpa8e7M7Hle1jcKos8NtFYYUI7goZ1
+         xBshz37TN2ZeXRAvtvhp3pQ4DCSVW+/pCjD9syJYe2CD3ZyF/FwehkFpV34AXX1UqwTh
+         IE5O8YknC4w0TZD+vcQjr+WqZ72Qnf3vin/kdhMiSqmDeJUX1yqHUZRFAGRGUBqimzjn
+         HwirohPWAfzDoy6ris7J6kr1I7XdyhvWp3ALUMoVts4YQ7qJsJrVqMtlk0Gnd0BSwBDn
+         M6Bw==
+X-Forwarded-Encrypted: i=1; AJvYcCVKGXwGejaq7A6d3Xxi49ghBwuYQSvnn8Vw6gW5dLxZ6PaezInO+VSbXINAedvb9CboCKVCoGHvTgniFls=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YypKMHgztXKk9flGYXN7a4WeWNH4tb8AseC60FR7CBF6qMGsA3t
+	Y4zT/fsNE6uzR1JnFZwjzQ/ObRyl1cv6wO3Df5evw/jX8gLtI/m8AT0F
+X-Gm-Gg: ATEYQzy8niG+icWkQIWsnclgx9d96LQ+G6lA3W+2Jv4yr9j18+cISn3jEZjI9ijgYxw
+	r4KvQ9Y0GNT9iZeobBeaIV1yS4lFwDKpdl6FxkUIegbRuoAoVIlAgXzNRoDK9BGMTM81wFjOYEH
+	UAMAJ6zjLNstXBcrodGfzrwTQPuHJizoSLe71K/01ebbVDIkCiTHaa5G9aRsW2an197Mz8gpoEz
+	Pl/MZpvSyutvBBzPMF3NsLy2JxpKScXkjn+QZu7XXccNsbeOuJGlV8ayt51II73l8YmZD+EWWgL
+	R71+Pj050iAI3v1bn7uCj0y2s+qL6BV/BL1EaPxXPCF12xcoVKbu9Tl1x2ddS6zFCpw/JpkSgcG
+	2TfeNndL7MzXnGJcCo/LKmCyLkc+R9ikYxoIIXWwYdhEBom2k7t6KKKxyKBNjgZ8EUB+HlPnOsp
+	0a7CjQykGN+GEP3CZWl05Fpw==
+X-Received: by 2002:a17:90b:35cc:b0:35c:29ba:bf92 with SMTP id 98e67ed59e1d1-35c2ffa8af9mr10929498a91.5.1774853390700;
+        Sun, 29 Mar 2026 23:49:50 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35c22d8c500sm11522842a91.10.2026.03.29.23.49.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 29 Mar 2026 23:49:50 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>, linux-kernel@vger.kernel.org
+Cc: linux-kbuild@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, arnd@arndb.de, chleroy@kernel.org, Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Subject: Re: [PATCH v3] char: nvram: Remove unused nvram_mutex to fix -Wunused-variable warning
+In-Reply-To: <20260330062201.2581-1-venkat88@linux.ibm.com>
+Date: Mon, 30 Mar 2026 12:12:28 +0530
+Message-ID: <se9hn7hn.ritesh.list@gmail.com>
+References: <20260330062201.2581-1-venkat88@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,64 +88,52 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Subject: Re: [PATCH] PCI/AER: Stop ruling out unbound devices as error source
-To: Lukas Wunner <lukas@wunner.de>, Bjorn Helgaas <helgaas@kernel.org>
-Cc: linux-pci@vger.kernel.org, Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
- Oliver OHalloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <734338c2e8b669db5a5a3b45d34131b55ffebfca.1774605029.git.lukas@wunner.de>
-Content-Language: en-US
-From: Stefan Roese <stefan.roese@mailbox.org>
-In-Reply-To: <734338c2e8b669db5a5a3b45d34131b55ffebfca.1774605029.git.lukas@wunner.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-MBO-RS-ID: 0d1365e5608b1ab5bd3
-X-MBO-RS-META: kz7zti7iux89zom9i7139ty3r94syf3m
 
-On 3/27/26 10:56, Lukas Wunner wrote:
-> When searching for the error source, the AER driver rules out devices
-> whose enable_cnt is zero.  This was introduced in 2009 by commit
-> 28eb27cf0839 ("PCI AER: support invalid error source IDs") without
-> providing a rationale.
-> 
-> Drivers typically call pci_enable_device() on probe, hence the enable_cnt
-> check essentially filters out unbound devices.  At the time of the commit,
-> drivers had to opt in to AER by calling pci_enable_pcie_error_reporting()
-> and so any AER-enabled device could be assumed to be bound to a driver.
-> The check thus made sense because it allowed skipping config space
-> accesses to devices which were known not to be the error source.
-> 
-> But since 2022, AER is universally enabled on all devices when they are
-> enumerated, cf. commit f26e58bf6f54 ("PCI/AER: Enable error reporting when
-> AER is native").
-> 
-> Errors may very well be reported by unbound devices, e.g. due to link
-> instability.  By ruling them out as error source, errors reported by them
-> are neither logged nor cleared.  When they do get bound and another error
-> occurs, the earlier error is reported together with the new error, which
-> may confuse users.  Stop doing so.
-> 
-> Fixes: f26e58bf6f54 ("PCI/AER: Enable error reporting when AER is native")
-> Signed-off-by: Lukas Wunner <lukas@wunner.de>
-> Cc: stable@vger.kernel.org # v6.0+
+Venkat Rao Bagalkote <venkat88@linux.ibm.com> writes:
+
+> drivers/char/nvram.c defines a static mutex 'nvram_mutex' which is never
+> used. This results in a compiler warning on linux-next builds:
+>
+>   warning: 'nvram_mutex' defined but not used [-Wunused-variable]
+>
+> Remove the unused definition to avoid the warning.
+>
+
+That is not the only reason for removing the nvram_mutex. I think we
+discussed in detail, why we think this can be removed here [1].
+We should add those details in commit msg too. 
+
+> Suggested-by: Arnd Bergmann <arnd@arndb.de>
+> Suggested-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+> Signed-off-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
 > ---
->   drivers/pci/pcie/aer.c | 2 --
->   1 file changed, 2 deletions(-)
-> 
-> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-> index 4299c55..384d026 100644
-> --- a/drivers/pci/pcie/aer.c
-> +++ b/drivers/pci/pcie/aer.c
-> @@ -1039,8 +1039,6 @@ static bool is_error_source(struct pci_dev *dev, struct aer_err_info *e_info)
->   	 *      3) There are multiple errors and prior ID comparing fails;
->   	 * We check AER status registers to find possible reporter.
->   	 */
-> -	if (atomic_read(&dev->enable_cnt) == 0)
-> -		return false;
+> v3:
+>  - Removed global nvram_mutex entirely
 
-Reviewed-by: Stefan Roese <stefan.roese@mailbox.org>
+We only removed the mutex definition and not the usage right. This does
+not look correct. Maybe you can check sashiko review comments for
+details -
 
-Thanks,
-Stefan
+https://sashiko.dev/#/patchset/20260330062201.2581-1-venkat88%40linux.ibm.com
 
+-ritesh
+
+>
+>  drivers/char/nvram.c | 1 -
+>  1 file changed, 1 deletion(-)
+>
+> diff --git a/drivers/char/nvram.c b/drivers/char/nvram.c
+> index 9eff426a9286..9ab2744cd375 100644
+> --- a/drivers/char/nvram.c
+> +++ b/drivers/char/nvram.c
+> @@ -53,7 +53,6 @@
+>  #include <asm/nvram.h>
+>  #endif
+>  
+> -static DEFINE_MUTEX(nvram_mutex);
+>  static DEFINE_SPINLOCK(nvram_state_lock);
+>  static int nvram_open_cnt;	/* #times opened */
+>  static int nvram_open_mode;	/* special open modes */
+> -- 
+> 2.45.2
 
