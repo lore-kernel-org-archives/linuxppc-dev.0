@@ -1,51 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-19001-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19002-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52FB6FF4932
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2026 09:00:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F017DFB3CE5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2026 09:16:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fklbF0FBCz2xpt;
-	Mon, 30 Mar 2026 20:00:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774861256;
-	cv=none; b=ZAaNkvWlmoL6pnRyEFT0ghX3H6Knw1p1vD4pWThsrueanb7mrsUugc9KPdnND0GTpoWhZUyO485QsJwkDzStMMjb9ClXDTVTfMwzBJ+w+SF6DZplvc0dPGPj3JHP9WuYPYNIvRbQ+G/M21zOpmbSPXvfbKLE4WqkmWoP1HmzQgYcEW9O0z4zLM1F+C01KFRL7fOFUsMu6oPTP67Z6MnMe49+dcuxwlyFpSY1cvMoUQkjAnJOJH3Hb9nU7LE1XL3y5flRzw4t86sHbozHaFYU9RIAXrm9zz9Fy0a7p8nMkDQuoQAArDBSrKwf5dx9lj5chflFShHUZ1O9XfV1KJsXAA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fklwm4Bw2z2xpt;
+	Mon, 30 Mar 2026 20:16:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41b8:202:deb::311:108"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774862168;
+	cv=none; b=WQov/Ouw5BXqhR/Gk1ef5wyKBAOgNoG8v5O6ort44z/wNFWHF9d+qb3pUFQjYz10YqSD+gm8pY/rsIwc50FWyBFRjpYZ3sTO9FHLWVwcchZgWSJw/5SAZk2ZM+QzPHKsMd/Aj0KzVY9SvJ83ioee7JOixAeVHXnGtQqbDmVIaw8yPXB24sa3L82tPKdVTt91ZvQgq9bfaJplVwx/psdfR8eHNY15bWA8w5KDjjsUhWdNfMMlUsfpJifhuTmkUsKkH8zdzG7UJR4z5Uw+K0AwqjaoMrFlra1GVDP6+agn/kgCbECe1vMjWCFN6izwFmBPSP2zKZ17ppdi4HjpIvEqLQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774861256; c=relaxed/relaxed;
-	bh=tNRac5Q0bdyEoztagZPdambBGiK73kwsfN5Tdvc35C8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UiPgAfomn9RccDMMAo7PF1VB79aMQN33XcXlfeRJ7TqetKk654TNMj3J1VXBl1DIe89l4HpGLtizL34CTRmz6EGB/gHPUbo2MCuszEUwQmM91CM6xVbokimWJv1QVul0MwoPvd3lxrwv/hC5o9cb5RTz2PAc4y4rT+XoVNAQ95m9N7ApAcae2EfFnWj0l4y7F4KarFZZB1yQr01Ht9ijXcpyKgrRR+zcANI9NxegPOHXtB4v65ss2NB4oVZHutPp9Eo8AmYPV1M1g0DMNc+7SjVjFI0OvTVHDuanYI3kVl0NMngv3Whm8zS0TTswkAhTmArkr4xPQmANXpif8AudYg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WyVV6yho; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1774862168; c=relaxed/relaxed;
+	bh=WO1vn6Tln5KFquM2TJaKxzbEqp7cPSRmlLOOnQm4DBk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=USa1lHxac9Q5OfEze4jJRDtn/tJJQSxY3w9V3ZlOjX9JxOejlF0yXN65W4VdGSj6noZZMNj8yBBUGPaGDZFu0BPUwlYamjlBetbxGvbPXyg4RxPS7AkmxDuvHlxOYyOhD+kdEpBF3criUmu6FYCrdC2NMp2sLH5i1ifHIx+pRs9N6cZ/qEBi5wX0Md4EoAztP4NiRPv+XiCg6CcBNBwi7GGSGLJMriGt/BnOECooYocjDwMTqwBV9Jfbit4COB0yvfqVDc7QPsfyZeuKSL3pcPryQMYQOMEi2wDyeSd45EfKAhLZM/V+XT9i09vB40w1CsDRgrdv3m+34JO9yVlIiw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org; dkim=pass (2048-bit key; secure) header.d=debian.org header.i=@debian.org header.a=rsa-sha256 header.s=smtpauto.stravinsky header.b=IjoUdYg7; dkim-atps=neutral; spf=none (client-ip=2001:41b8:202:deb::311:108; helo=stravinsky.debian.org; envelope-from=leitao@debian.org; receiver=lists.ozlabs.org) smtp.mailfrom=debian.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WyVV6yho;
+	dkim=pass (2048-bit key; secure) header.d=debian.org header.i=@debian.org header.a=rsa-sha256 header.s=smtpauto.stravinsky header.b=IjoUdYg7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=debian.org (client-ip=2001:41b8:202:deb::311:108; helo=stravinsky.debian.org; envelope-from=leitao@debian.org; receiver=lists.ozlabs.org)
+Received: from stravinsky.debian.org (stravinsky.debian.org [IPv6:2001:41b8:202:deb::311:108])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fklb766vYz2xT6
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2026 20:00:51 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 42169600AC;
-	Mon, 30 Mar 2026 09:00:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 29BC8C4CEF7;
-	Mon, 30 Mar 2026 09:00:38 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774861247;
-	bh=kryiSL0c5gWoP5Xn33RlQGuB1fDy2r29C8AZwGGNizM=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=WyVV6yhoGLHl2DGlMtLNk2PLvv1LoFNZHT4upzyLknoqI3XroAjHB9I1ha+vU4mPX
-	 jqLByu7cdkfcSBvwjAbgeSA7t1FnsQjdZlrHnf9SNnPEyV8aXCVfzuhI/9ayog85j2
-	 ZCfecMUhBhB9NayIQbTF+29vTra1H0L8yHpOy9Fwzj1WruGul10WlXsrznGUH8EUO4
-	 yAVoSQA1pK/w43OyYruiDlv+uPCsaxYtmh6p3C7asR9EeKI1wjuzkpsIcL4izJJluW
-	 H7vlwohlhoQLLz7U0ZJ9f5WNsHXklzmi3Z/jx+6T/BWbr7v0B1OnwuC2GYBfZcweMT
-	 Fa1JpYbf/eG2w==
-Message-ID: <b1c93301-c12a-46a6-ba92-53e8f9a28022@kernel.org>
-Date: Mon, 30 Mar 2026 11:00:37 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fklwd3Whnz2xT6
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2026 20:16:01 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=debian.org;
+	s=smtpauto.stravinsky; h=X-Debian-User:In-Reply-To:Content-Transfer-Encoding:
+	Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
+	Reply-To:Content-ID:Content-Description;
+	bh=WO1vn6Tln5KFquM2TJaKxzbEqp7cPSRmlLOOnQm4DBk=; b=IjoUdYg7H5HjzhmD9Ya8KzCZED
+	MOdt/f/iybG0j7ZLGmiC7aJOgf9EGEZ5AT6v30A7lr8C+eX+qUGhl5lLwhUy7Ag2vW87+rI4cKgR0
+	IreKmv/ogatlCLSyoDgJQL/Bm0oZPTC3Ph6N6bEB8K2FbqIE9a2RJzwF5rC3QyiVtqaFsRExlbFnq
+	w6kBr9fPUeAdfZ2RsOnmOj6jLS7FgdEY+TwNyaPu3c4DAiLI7ICVb5EP/dox4qH2GHtCEzV9jz6MU
+	LmEcDrV31BMlEKYMm8KfrbhCwKfgUBdd6N399NiMCtz+aDHCvorriy5EW4hCaA9xT6qUKgk0TT0qt
+	Qm7u5jxA==;
+Received: from authenticated user
+	by stravinsky.debian.org with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
+	(Exim 4.96)
+	(envelope-from <leitao@debian.org>)
+	id 1w78hH-001L8R-10;
+	Mon, 30 Mar 2026 09:14:10 +0000
+Date: Mon, 30 Mar 2026 02:13:57 -0700
+From: Breno Leitao <leitao@debian.org>
+To: Jinjie Ruan <ruanjinjie@huawei.com>
+Cc: corbet@lwn.net, skhan@linuxfoundation.org, catalin.marinas@arm.com, 
+	will@kernel.org, chenhuacai@kernel.org, kernel@xen0n.name, maddy@linux.ibm.com, 
+	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, pjw@kernel.org, 
+	palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr, tglx@kernel.org, 
+	mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com, hpa@zytor.com, 
+	robh@kernel.org, saravanak@kernel.org, akpm@linux-foundation.org, bhe@redhat.com, 
+	vgoyal@redhat.com, dyoung@redhat.com, rdunlap@infradead.org, peterz@infradead.org, 
+	feng.tang@linux.alibaba.com, pawan.kumar.gupta@linux.intel.com, dapeng1.mi@linux.intel.com, 
+	kees@kernel.org, elver@google.com, paulmck@kernel.org, lirongqing@baidu.com, 
+	rppt@kernel.org, ardb@kernel.org, cfsworks@gmail.com, osandov@fb.com, 
+	jbohac@suse.cz, tangyouling@kylinos.cn, sourabhjain@linux.ibm.com, 
+	ritesh.list@gmail.com, eajames@linux.ibm.com, songshuaishuai@tinylab.org, 
+	kevin.brodsky@arm.com, vishal.moola@gmail.com, junhui.liu@pigmoral.tech, 
+	coxu@redhat.com, fuqiang.wang@easystack.cn, liaoyuanhong@vivo.com, 
+	guoren@kernel.org, chenjiahao16@huawei.com, hbathini@linux.ibm.com, 
+	takahiro.akashi@linaro.org, james.morse@arm.com, lizhengyu3@huawei.com, x86@kernel.org, 
+	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
+	linux-riscv@lists.infradead.org, devicetree@vger.kernel.org, kexec@lists.infradead.org
+Subject: Re: [PATCH v11 10/11] arm64: kexec: Add support for crashkernel CMA
+ reservation
+Message-ID: <aco-v4BuRSiZx7yy@gmail.com>
+References: <20260328074013.3589544-1-ruanjinjie@huawei.com>
+ <20260328074013.3589544-11-ruanjinjie@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,59 +85,47 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 4/9] mm: move free_reserved_area() to mm/memblock.c
-To: Mike Rapoport <rppt@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Alexander Potapenko <glider@google.com>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Andreas Larsson <andreas@gaisler.com>, Ard Biesheuvel <ardb@kernel.org>,
- Borislav Petkov <bp@alien8.de>, Brendan Jackman <jackmanb@google.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Christian Brauner <brauner@kernel.org>, "David S. Miller"
- <davem@davemloft.net>, Dave Hansen <dave.hansen@linux.intel.com>,
- David Hildenbrand <david@kernel.org>, Dmitry Vyukov <dvyukov@google.com>,
- Ilias Apalodimas <ilias.apalodimas@linaro.org>,
- Ingo Molnar <mingo@redhat.com>, Jan Kara <jack@suse.cz>,
- Johannes Weiner <hannes@cmpxchg.org>,
- "Liam R. Howlett" <Liam.Howlett@oracle.com>,
- Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>, Marco Elver <elver@google.com>,
- Marek Szyprowski <m.szyprowski@samsung.com>,
- Masami Hiramatsu <mhiramat@kernel.org>, Michael Ellerman
- <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>,
- Nicholas Piggin <npiggin@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Rob Herring <robh@kernel.org>, Robin Murphy <robin.murphy@arm.com>,
- Saravana Kannan <saravanak@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>, Thomas Gleixner <tglx@kernel.org>,
- Will Deacon <will@kernel.org>, Zi Yan <ziy@nvidia.com>,
- devicetree@vger.kernel.org, iommu@lists.linux.dev,
- kasan-dev@googlegroups.com, linux-arm-kernel@lists.infradead.org,
- linux-efi@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- sparclinux@vger.kernel.org, x86@kernel.org
-References: <20260323074836.3653702-1-rppt@kernel.org>
- <20260323074836.3653702-5-rppt@kernel.org>
-From: "Vlastimil Babka (SUSE)" <vbabka@kernel.org>
-Content-Language: en-US
-In-Reply-To: <20260323074836.3653702-5-rppt@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260328074013.3589544-11-ruanjinjie@huawei.com>
+X-Debian-User: leitao
 
-On 3/23/26 08:48, Mike Rapoport wrote:
-> From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
+On Sat, Mar 28, 2026 at 03:40:12PM +0800, Jinjie Ruan wrote:
+> Commit 35c18f2933c5 ("Add a new optional ",cma" suffix to the
+> crashkernel= command line option") and commit ab475510e042 ("kdump:
+> implement reserve_crashkernel_cma") added CMA support for kdump
+> crashkernel reservation.
 > 
-> free_reserved_area() is related to memblock as it frees reserved memory
-> back to the buddy allocator, similar to what memblock_free_late() does.
+> Crash kernel memory reservation wastes production resources if too
+> large, risks kdump failure if too small, and faces allocation difficulties
+> on fragmented systems due to contiguous block constraints. The new
+> CMA-based crashkernel reservation scheme splits the "large fixed
+> reservation" into a "small fixed region + large CMA dynamic region": the
+> CMA memory is available to userspace during normal operation to avoid
+> waste, and is reclaimed for kdump upon crash—saving memory while
+> improving reliability.
 > 
-> Move free_reserved_area() to mm/memblock.c to prepare for further
-> consolidation of the functions that free reserved memory.
+> So extend crashkernel CMA reservation support to arm64. The following
+> changes are made to enable CMA reservation:
 > 
-> No functional changes.
+> - Parse and obtain the CMA reservation size along with other crashkernel
+>   parameters.
+> - Call reserve_crashkernel_cma() to allocate the CMA region for kdump.
+> - Include the CMA-reserved ranges for kdump kernel to use.
+> - Exclude the CMA-reserved ranges from the crash kernel memory to
+>   prevent them from being exported through /proc/vmcore, which is already
+>   done in the crash core.
 > 
-> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> Update kernel-parameters.txt to document CMA support for crashkernel on
+> arm64 architecture.
+> 
+> Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+> Acked-by: Rob Herring (Arm) <robh@kernel.org>
+> Acked-by: Baoquan He <bhe@redhat.com>
+> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> Acked-by: Ard Biesheuvel <ardb@kernel.org>
+> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
 
-Acked-by: Vlastimil Babka (SUSE) <vbabka@kernel.org>
-
+Tested-by: Breno Leitao <leitao@debian.org>
 
