@@ -1,86 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-18985-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18986-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63B39FF4925
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Mar 2026 22:51:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1D30FF4935
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2026 03:47:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fkV473b62z2xSb;
-	Mon, 30 Mar 2026 09:51:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774824695;
-	cv=none; b=ghd2e9S3gOAELLBVrGFbVPscEI/ozBi8rZ+kObp+AvkDa1h47eRb8OXOgUtMHF0FwP3yqb5k9sGyzyGKmYbWi1f8tHQFYfKUIv53yVdgywPFkybCNsXNz7VnsS/B0zH9dahuBaDnff6fk+i7BJZDwSCznNa6lkFWf3X+W2q9WlDvyZecGxWTwgEF0df5JLMnKPLaeiNnpcTT1BYms8aVt2YR/I6YPl70Wptex2xeTHIkoIEeDNmdCDsF4rJjZXLtOi8xgddSkByeYJ+E6Xt0P4tQknE7eJpj0eDtsb9DUoEtjUKRlco2nap2oEpbi0IKu53Ry1/xBibHSvyEqbNFoA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fkcdx2Fgbz2xly;
+	Mon, 30 Mar 2026 14:47:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774842469;
+	cv=none; b=Bt+d9BgmS0ioFEJJYEhZXrnPS5XbB2MSP2I/m2XnHkBEuaiQgy+1TpDrC60ordg9TuuiOw3IpVBlTTHV1yAj4NcUSNTafeXXvRSiuHdAqIjh5LxdAR5+vnWNzzR1YHh8s4cNmTPpFHMXsVbxvYbSLsdx4JQiU2X8JGdMeYGC/or0iuayqJmy5gylsNcCoFv4gSggDDatgpYbQMFXobvC455s57maLm3/L6GIHBFIda+xKx7GEuSFaJCCW4cYpqo8GTVC/sa+ANhB3XJzApieEXUE5Kb/vY2fdzlot4kWzrpfoWtuid3wyAgvL9aXc5T3ppdd252JYAHGIsA0qNSD7A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774824695; c=relaxed/relaxed;
-	bh=u0SXbeRpiZs7ig3ieosiJc6q5c26LwyyLnuthhbzsuQ=;
-	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=SMQ17OyB8Jyb9Rnd0RFJiYVi1QWhkGtUUUx3Y08R3zqcYKpjS5r+TFV69gtpRqsE0KWjf3/JmnHBeCXRB/lL7xFp0L8r+LAVjPG9CNzreifP9kJPQsAv+W5D24Lb/mv4HKJcifevs0LDwklK2hdyh+9rSUgQC6wNhcJpQLftn6Yt9k/ojoRgTHncz3+6s6v4AnjcX6dOtDlkhp37w8xr9qxfZMrCBozOB/HlW8ETgoKWBvulo6s8gqHKM3m+3D1hnpKgZcDX5qhTyb1uek97IPU80wpwGRQQ7uDYWOpiQHh+LxLELLoEQrglKQ6ETXc+4p9x00cRpYsSqMklu/hFKg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=JBtLNNMx; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	t=1774842469; c=relaxed/relaxed;
+	bh=nbn+1wU01z27PHPiB6pyjlcWzi6QRevgboBAEreZK0g=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Ip+HNlOoicuKix5fSnROO0bv2pdFiePNJ8rQzMa1G7AsXd8wPh/HdINwPQ1xbtdHCEDXMieb6M2w/CMUKQ+ODCxXMyVw0PFhsC9babIzh5o885pOxM+odacT90Bq0i4dEdVkRSEyEozTEvnQ/NIi3sXzVtlD9x2Q+3gmFg7VIcu4AuOiV8R+OApyv0YsWf/HzEbVquV2KuXnHI6sozN1nAAaiCKSuHVG4lnecdYJPIrpxkC0K5j5Psxw+lkDZHwhVOLh4wP4Pof32C4+f2coz50aJn5f1fYuIMmO+cDi6woxMmR410M8lByIpBprm1Df76rX/vJeiwBEo+bb9p9rbg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lQBOuBoR; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=guoren@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=JBtLNNMx;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lQBOuBoR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=guoren@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fkV4516lLz2xNT
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2026 09:51:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fkcdw1f43z2xlK
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2026 14:47:48 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id EA67860054;
-	Sun, 29 Mar 2026 22:51:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EB6B6C116C6;
-	Sun, 29 Mar 2026 22:51:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
-	s=korg; t=1774824688;
-	bh=xC03r/4dJ8Us44QpgIA9Ngu2zy8kWGCxh9mj0ZxoTHs=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=JBtLNNMxkC+Qck2+BGDNaaVFR64izaAKQJSJUR3TFGlVL+zj0esYpoV9thVBYizo5
-	 2LdTKTg4q97XSRSKSMqWeByHX3v4Kwd3ip5W8A7e9SWOk90u7h9T0PIyI9/hHuozRw
-	 xIxWNYXda49DMygxwfzePxOY5aQGe8Krgc64/5fY=
-Date: Sun, 29 Mar 2026 15:51:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Eric Biggers <ebiggers@kernel.org>
-Cc: Christoph Hellwig <hch@lst.de>, Richard Henderson
- <richard.henderson@linaro.org>, Matt Turner <mattst88@gmail.com>, Magnus
- Lindholm <linmag7@gmail.com>, Russell King <linux@armlinux.org.uk>, Catalin
- Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Ard
- Biesheuvel <ardb@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, WANG
- Xuerui <kernel@xen0n.name>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Paul Walmsley
- <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou
- <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, Heiko Carstens
- <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, Alexander Gordeev
- <agordeev@linux.ibm.com>, Christian Borntraeger
- <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>,
- "David S. Miller" <davem@davemloft.net>, Andreas Larsson
- <andreas@gaisler.com>, Richard Weinberger <richard@nod.at>, Anton Ivanov
- <anton.ivanov@cambridgegreys.com>, Johannes Berg
- <johannes@sipsolutions.net>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar
- <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen
- <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin"
- <hpa@zytor.com>, Herbert Xu <herbert@gondor.apana.org.au>, Dan Williams
- <dan.j.williams@intel.com>, Chris Mason <clm@fb.com>, David Sterba
- <dsterba@suse.com>, Arnd Bergmann <arnd@arndb.de>, Song Liu
- <song@kernel.org>, Yu Kuai <yukuai@fnnas.com>, Li Nan
- <linan122@huawei.com>, Theodore Ts'o <tytso@mit.edu>, "Jason A. Donenfeld"
- <Jason@zx2c4.com>, linux-alpha@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
- linux-crypto@vger.kernel.org, linux-btrfs@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: cleanup the RAID5 XOR library v4
-Message-Id: <20260329155126.a01a5729b7d8376712182851@linux-foundation.org>
-In-Reply-To: <20260329213119.GA2106@quark>
-References: <20260327061704.3707577-1-hch@lst.de>
-	<20260329213119.GA2106@quark>
-X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	by tor.source.kernel.org (Postfix) with ESMTP id D0683600CB
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2026 03:47:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8599CC2BCB0
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2026 03:47:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774842464;
+	bh=nbn+1wU01z27PHPiB6pyjlcWzi6QRevgboBAEreZK0g=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=lQBOuBoRajs1Rp5qdpTkcCuCCgbFubDXnSDK9+Q6dfuk+iRhjCzGkg4ebduPJGlyc
+	 SOT0tpjC9PrELqtPWWYbFbhuRi4I8kLPrRs0sUefIgZ7YHofjY8HtyWZFYsMrsFMAH
+	 kQI0czG3NeBj2y3fJEfwE2DrJgkKfIItnSaSmgvbTV4nEQGXTB9XZ1tY2d8dICxgp2
+	 KixiSeGJQoFjl3BlEYS8un4BJjbJPaIAbR/tqw3rlAs0kvHsYrXHQz/vyghs3txjH1
+	 HGFJ+X1yGjvC7BxqC0zRc+Qj9gu9QVML3ewI46rY6UXu4vh+nxdIsw0rKEJT249NOz
+	 eKB5jX4VEAfkQ==
+Received: by mail-wm1-f48.google.com with SMTP id 5b1f17b1804b1-486fe36cfabso24250935e9.1
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Mar 2026 20:47:44 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCVGVd89TUk9/4OIThnAC4rRn2bKrM+FWDUSkYfub9A456ZHMRIKqCKpx5UxH2ml8bCuuYaxfbJVi7h2lq8=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yz4g3OuKxmS4EdKdk0LzhWsbXr1ADJGfb+LYFx2Ik6LFfieyQ3R
+	lCKwkzG49ZVSdWqfnnLpyQX/+FDMTgLdXUMWga+a+wZx+D0rUnK97B/upC8w5hK6Qj4ZgsXUSVG
+	ahFbqcPkAwo2qfp+WmzI+P8+H8BLnsfo=
+X-Received: by 2002:a05:6000:1a8e:b0:43b:45c6:7ad with SMTP id
+ ffacd0b85a97d-43b97a90decmr23305904f8f.29.1774842462488; Sun, 29 Mar 2026
+ 20:47:42 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,67 +65,59 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+References: <20260328074013.3589544-1-ruanjinjie@huawei.com> <20260328074013.3589544-6-ruanjinjie@huawei.com>
+In-Reply-To: <20260328074013.3589544-6-ruanjinjie@huawei.com>
+From: Guo Ren <guoren@kernel.org>
+Date: Mon, 30 Mar 2026 11:47:30 +0800
+X-Gmail-Original-Message-ID: <CAJF2gTQu0ekP6Emz=F3uEhPsyqNvH_PwwJU5yOADbR9poQ4noQ@mail.gmail.com>
+X-Gm-Features: AQROBzBPJeJ2Q-LIGCNdFWKdGbP9VQWOujey1zE68GwImpeUgj1lBD6fgh2uH4Y
+Message-ID: <CAJF2gTQu0ekP6Emz=F3uEhPsyqNvH_PwwJU5yOADbR9poQ4noQ@mail.gmail.com>
+Subject: Re: [PATCH v11 05/11] riscv: kexec_file: Fix potential buffer
+ overflow in prepare_elf_headers()
+To: Jinjie Ruan <ruanjinjie@huawei.com>
+Cc: corbet@lwn.net, skhan@linuxfoundation.org, catalin.marinas@arm.com, 
+	will@kernel.org, chenhuacai@kernel.org, kernel@xen0n.name, 
+	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, pjw@kernel.org, palmer@dabbelt.com, aou@eecs.berkeley.edu, 
+	alex@ghiti.fr, tglx@kernel.org, mingo@redhat.com, bp@alien8.de, 
+	dave.hansen@linux.intel.com, hpa@zytor.com, robh@kernel.org, 
+	saravanak@kernel.org, akpm@linux-foundation.org, bhe@redhat.com, 
+	vgoyal@redhat.com, dyoung@redhat.com, rdunlap@infradead.org, 
+	peterz@infradead.org, feng.tang@linux.alibaba.com, 
+	pawan.kumar.gupta@linux.intel.com, dapeng1.mi@linux.intel.com, 
+	kees@kernel.org, elver@google.com, paulmck@kernel.org, lirongqing@baidu.com, 
+	rppt@kernel.org, leitao@debian.org, ardb@kernel.org, cfsworks@gmail.com, 
+	osandov@fb.com, jbohac@suse.cz, tangyouling@kylinos.cn, 
+	sourabhjain@linux.ibm.com, ritesh.list@gmail.com, eajames@linux.ibm.com, 
+	songshuaishuai@tinylab.org, kevin.brodsky@arm.com, vishal.moola@gmail.com, 
+	junhui.liu@pigmoral.tech, coxu@redhat.com, fuqiang.wang@easystack.cn, 
+	liaoyuanhong@vivo.com, chenjiahao16@huawei.com, hbathini@linux.ibm.com, 
+	takahiro.akashi@linaro.org, james.morse@arm.com, lizhengyu3@huawei.com, 
+	x86@kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev, 
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, 
+	devicetree@vger.kernel.org, kexec@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Sun, 29 Mar 2026 14:31:19 -0700 Eric Biggers <ebiggers@kernel.org> wrote:
+On Sat, Mar 28, 2026 at 3:41=E2=80=AFPM Jinjie Ruan <ruanjinjie@huawei.com>=
+ wrote:
+>
+> There is a race condition between the kexec_load() system call
+> (crash kernel loading path) and memory hotplug operations that can lead
+> to buffer overflow and potential kernel crash.
+riscv left no margin for hotplug in prepare_elf_headers(). Actually,
+this check has been in crash_exclude_mem_range(); this patch makes it
+happen earlier.
 
-> On Fri, Mar 27, 2026 at 07:16:32AM +0100, Christoph Hellwig wrote:
-> > Hi all,
-> > 
-> > the XOR library used for the RAID5 parity is a bit of a mess right now.
-> > The main file sits in crypto/ despite not being cryptography and not
-> > using the crypto API, with the generic implementations sitting in
-> > include/asm-generic and the arch implementations sitting in an asm/
-> > header in theory.  The latter doesn't work for many cases, so
-> > architectures often build the code directly into the core kernel, or
-> > create another module for the architecture code.
-> > 
-> > Changes this to a single module in lib/ that also contains the
-> > architecture optimizations, similar to the library work Eric Biggers
-> > has done for the CRC and crypto libraries later.  After that it changes
-> > to better calling conventions that allow for smarter architecture
-> > implementations (although none is contained here yet), and uses
-> > static_call to avoid indirection function call overhead.
-> > 
-> > A git tree is also available here:
-> > 
-> >     git://git.infradead.org/users/hch/misc.git xor-improvements
-> > 
-> > Gitweb:
-> > 
-> >     https://git.infradead.org/?p=users/hch/misc.git;a=shortlog;h=refs/heads/xor-improvements
-> > 
-> > Changes since v3:
-> >  - switch away from lockdep_assert_preemption_enabled() again
-> >  - fix a @ reference in a kerneldoc comment.
-> >  - build the arm4regs implementation also without kernel-mode neon
-> >    support
-> >  - fix a pre-existing issue about mismatched attributes on arm64's
-> >    xor_block_inner_neon
-> >  - reject 0-sized xor request and adjust the kunit test case to not
-> >    generate them
-> 
-> Reviewed-by: Eric Biggers <ebiggers@kernel.org>
+Although this patch has no real effect for riscv for the current. I
+still give an acked-by, because it's a proper check step in this
+callback.
 
-Great, thanks, added to all changelogs.
+Reviewed-by: Guo Ren <guoren@kernel.org>
 
-> But yes, as Andrew mentioned there are two "xor: add a better public
-> API" patches.  They should be folded together.
-
-I folded them.
-
-I'm a bit wobbly about upstreaming all this for 7.1-rc1.  It hits on a
-lot of stuff and I don't think we've heard a lot from the affected
-maintainers.
-
-otoh, we're unlikely to learn much from an additional nine weeks in
-linux-next so at some point one has to forge ahead and rely on seven
-weeks of -rc to address any remaining niggles.  And I'm confident that
-Christoph will support his work well.
-
-But still, hearing some reassuring words about this would be
-appreciated ;)
-
+--=20
+Best Regards
+ Guo Ren
 
