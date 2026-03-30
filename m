@@ -1,58 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-19021-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19022-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0333210D14A2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2026 11:44:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6FD6210D14B0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2026 13:23:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fkqD04kKjz2xpt;
-	Mon, 30 Mar 2026 22:44:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774871072;
-	cv=none; b=jsSosEFJDuFqpbb2GUlnz1yHJ4hEt/1q8jZPz45Xy6k3wgeM2zuWPSZv45XEc9kewxO79dQac0dPDa8Jg8yVNb8GGz68Ioj/5bZ/6/RMxhaQVymykC9vEmfabUHdS0EnLTD2uYOcg2ANzH2uDa9eIuEleiLg064r5IDfplJLFANTXQ+1aTOWU9VdreZmAqFg8BFa9DugRsQs/6LaQHNi5M9JD8aVxmRP/rbSZzw/GFAhTd371oI7gcXgTnH6/WEjQxHnd5U2YfkxxlOdVWSTL/XFqv0LQuTbqvKnWdGtJeolW1iiVzsiF8wH6bJWppCT3kwH/vr/jipmrgtTMAlqlQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fksQY0L4bz2xpt;
+	Tue, 31 Mar 2026 00:23:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774877028;
+	cv=none; b=EpE9dsZc1ZRy2AU5DvPBt9XfKNWT+l5YNPRbsaMfnM8cZyTPZU1gIRJeBjlqZ3+LSItN+CAVozGwYMQADG2jdDb/lBLOOXe7bY2aBwrW8NqG3ShwD3xysB/BN/UoYv1VQmsLr7aUNQ8nfB8dEG4sc/LCck8GEy2xJv2FpraMNFC1Gz37GJ5r2va5+4llmTutJSovd1N14NgOZdrgvoUDHvZUmNboao4fW2tH9mugEBYpYmViz4yUxl2HYbZvpCnuk8tx4vVjVNsal7jmRLjnSVOab4H9bpmfmQFEr+4XF1jcr1nHwbvKZPLhwVvGIFgSsM2+61nlTEVsJcG/lXlZpw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774871072; c=relaxed/relaxed;
-	bh=gvAh52M6pis730l5q8D5EHWXWp5qXG4bsCWjlx9wIeo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=YpiHcADPQH9wZ0CkrbXNbwXiwgcb7I/gMJabgz2nRbGGitcLwhxX2i7JfZkNOc3iMa4j2VHOUBAfcrkYvp310VSMHOqAvKFhWy76Elhp9CfjyY/GEC8XYkHRATsAyW/qsznUvAGhWpLRIb4VYJALd39F95CAMEn6f2VoYUh8lvp7B6vY/g01GV/JLFycs2zN1kdurIcCRq0C5O7mmH9CWg+4vC1pl5dLVwZecq8Z8EX/dCI4R+LBVaw7eiEv3CuicEPrZzzIq56DrMPfS1FE7v9swsPTphTQT00ECXgCgL4FcwDp5GBQNePf8onSrQvTaio/e+qcRGRh8F1192x0PQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uRgEIC0O; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1774877028; c=relaxed/relaxed;
+	bh=8GtZo1PcgDHpjn8Gqllfk6QKq7GFuasaPSEZ4MJrTa8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=dEfvnhqns3czUqrHZ8sTZDN31zT2pROew4nW3Os4aBBQODTkIUlAc+s/hHv/JQY4pcXkVrjBfeoA2jUHnfNHzuuYa1WgM0q0J0qDasO+7JrLFRuTLzSaWP+0F6ydakbFr2zuIk/AL8ytjLV0nK8M4SvaRVTU5t4SyBSyi2JQdrtRJKXImaDSdrVZplic7KIMghR2OCffN9EHNrJQ/HuCgnR60ZOuwCavHbIJl5cb+6yZjNq5wYgr1Nia85CSBZuQSXieVCql3wsj95gqSTx+Xu4EKL2Z1U+g0YKo9y9usB+QdNTp3gHM20T2UqGOyFXpxtDDdaZsbJxVhSMVuO47Rw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MR2vrXID; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uRgEIC0O;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MR2vrXID;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fkqCz4n0Hz2xT6
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2026 22:44:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fksQX1GHbz2xT6
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2026 00:23:48 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 46791443BC
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2026 11:44:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2A6E6C2BCB9
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2026 11:44:29 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id E61C86011F;
+	Mon, 30 Mar 2026 13:23:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 725C6C4CEF7;
+	Mon, 30 Mar 2026 13:23:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774871069;
-	bh=f4YOF8vt92eNl1mKdqZyMCWyNb3+OoCLLo4tIp4YmMQ=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=uRgEIC0OHFTjGnjqpcUzudj5PK0ySwoo0ihbOdzRQr39HpLRTD/b2F2IvmnAy0QMB
-	 rMpU3c4qVSq+9B8Y3duAzRNQuULKIQZbB39tqIkx8h89z4P2sZ9eMWiMJ30V3z502w
-	 NIF2J7pbUI3fUK3BirFOwUYBzMAggmASC/7WvxLSBKqvpOvo7SunL3gq+bnDoEJUBY
-	 /UdVOODG1a06dfavlzYSUXk3tAmWgl7T6tulCQxgzbVEbmMNzTjDANd7cfZfR1sR8j
-	 74NgXYv75Qk/gs3G1Y+cluMsPz+Bgmuy8fyQZZ4dv58tGBG5rim27ZzZxmmF48FCKY
-	 N6cZh6RtZJ6jQ==
-Received: by mail-ed1-f52.google.com with SMTP id 4fb4d7f45d1cf-66c1d3fecb2so140054a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2026 04:44:29 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCWSBnh1OHF/Sn2dvr2YWm4RKrxgrT7xLfmhSmJmlsssdVUFATw/j3n6QFcr3PKmrR6YB89mTP6oHZMSi04=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxxaxjNEj38Z4MZ7/ZT4xqmHeGMPyjq8qeNBxgQhyfg6CcUH/by
-	equZvqe0Q42vRlNwmouSfKCZOzHOnAyg4pzq1UdUkn8mo3Hj3aT7EtIwQK2PAvIotuY/MEQ6bab
-	Imis+AraTpXiTPjFCOvRZHeoHt7hpJA==
-X-Received: by 2002:a05:6402:448d:b0:66b:82e6:5355 with SMTP id
- 4fb4d7f45d1cf-66b82e65456mr3962353a12.19.1774871067648; Mon, 30 Mar 2026
- 04:44:27 -0700 (PDT)
+	s=k20201202; t=1774877025;
+	bh=X1+YBhc/ZSUl9M7/HqQfBOi/B766QZ/5KReMpWzPq5g=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=MR2vrXIDzjGj6xwXFk1oY54tzC7aa9qaYVEVYseVortnRvD03zDWkHOU7pmUAu1iw
+	 m1+r0sOqlIpRZ07+Q/wYzH/xU3+QUJNB/kJ8uNP2iq+MLgGD4s5+KSy38W8dGWQF40
+	 inTgz4HP/CadRQ6ZxTCtd4cWH218eXY/oojqMBYmlvLCgztYcDPnsdH7iHsBd/lYZX
+	 iu2s112tidE5DG0koJHRsQn4DQ5+O1HCva2As2nuUhu2utNBt3sLxi99exoUUtnR3Z
+	 hy3oRSQaJeQjtsVyXS7ORszN/NR3OIT4ViUhlBjIctkCEbREM5j5+pwgGRax4VyMDg
+	 kQPMZalbvpKKQ==
+Date: Mon, 30 Mar 2026 14:23:40 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Shengjiu Wang <shengjiu.wang@nxp.com>
+Cc: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com,
+	nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz,
+	tiwai@suse.com, linux-sound@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 11/11] ASoC: fsl_easrc: Change the type for iec958
+ channel status controls
+Message-ID: <be591d2b-9429-43de-8d5b-357a503607d0@sirena.org.uk>
+References: <20260330112555.3637002-1-shengjiu.wang@nxp.com>
+ <20260330112555.3637002-12-shengjiu.wang@nxp.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,72 +69,60 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260225060347.718905-1-coxu@redhat.com> <20260225060347.718905-4-coxu@redhat.com>
-In-Reply-To: <20260225060347.718905-4-coxu@redhat.com>
-From: Rob Herring <robh@kernel.org>
-Date: Mon, 30 Mar 2026 06:44:15 -0500
-X-Gmail-Original-Message-ID: <CAL_Jsq+0w2hGN=Loy=ucHbZcdnn+ty3x9qS4WVX0Vj+g19tfpg@mail.gmail.com>
-X-Gm-Features: AQROBzBPVOVlPWkIprh4svfiWPChabJG3_HPxZ8omC63yiiiHstiwFYKcyHWrdY
-Message-ID: <CAL_Jsq+0w2hGN=Loy=ucHbZcdnn+ty3x9qS4WVX0Vj+g19tfpg@mail.gmail.com>
-Subject: Re: [PATCH v5 3/3] arm64,ppc64le/kdump: pass dm-crypt keys to kdump kernel
-To: Coiby Xu <coxu@redhat.com>
-Cc: kexec@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
-	linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, 
-	Arnaud Lefebvre <arnaud.lefebvre@clever-cloud.com>, Baoquan he <bhe@redhat.com>, 
-	Dave Young <dyoung@redhat.com>, Kairui Song <ryncsn@gmail.com>, Pingfan Liu <kernelfans@gmail.com>, 
-	Andrew Morton <akpm@linux-foundation.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
-	Thomas Staudt <tstaudt@de.ibm.com>, Sourabh Jain <sourabhjain@linux.ibm.com>, 
-	Will Deacon <will@kernel.org>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	Saravana Kannan <saravanak@kernel.org>, open list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="/8vzq1AnR7+A91Mx"
+Content-Disposition: inline
+In-Reply-To: <20260330112555.3637002-12-shengjiu.wang@nxp.com>
+X-Cookie: HUGH BEAUMONT died in 1982!!
+
+
+--/8vzq1AnR7+A91Mx
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Feb 25, 2026 at 12:04=E2=80=AFAM Coiby Xu <coxu@redhat.com> wrote:
->
-> CONFIG_CRASH_DM_CRYPT has been introduced to support LUKS-encrypted
-> device dump target by addressing two challenges [1],
->  - Kdump kernel may not be able to decrypt the LUKS partition. For some
->    machines, a system administrator may not have a chance to enter the
->    password to decrypt the device in kdump initramfs after the 1st kernel
->    crashes
->
->  - LUKS2 by default use the memory-hard Argon2 key derivation function
->    which is quite memory-consuming compared to the limited memory reserve=
-d
->    for kdump.
->
-> To also enable this feature for ARM64 and PowerPC, the missing piece is
-> to let the kdump kernel know where to find the dm-crypt keys which are
-> randomly stored in memory reserved for kdump. Introduce a new device
-> tree property dmcryptkeys [2] as similar to elfcorehdr to pass the
-> memory address of the stored info of dm-crypt keys to the kdump kernel.
-> Since this property is only needed by the kdump kernel, it won't be
-> exposed to user space.
->
-> [1] https://lore.kernel.org/all/20250502011246.99238-1-coxu@redhat.com/
-> [2] https://github.com/devicetree-org/dt-schema/pull/181
->
-> Cc: Arnaud Lefebvre <arnaud.lefebvre@clever-cloud.com>
-> Cc: Baoquan he <bhe@redhat.com>
-> Cc: Dave Young <dyoung@redhat.com>
-> Cc: Kairui Song <ryncsn@gmail.com>
-> Cc: Pingfan Liu <kernelfans@gmail.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Krzysztof Kozlowski <krzk@kernel.org>
-> Cc: Rob Herring <robh@kernel.org>
-> Cc: Thomas Staudt <tstaudt@de.ibm.com>
-> Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
-> Cc: Will Deacon <will@kernel.org>
-> Cc: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-> Signed-off-by: Coiby Xu <coxu@redhat.com>
-> ---
->  arch/arm64/kernel/machine_kexec_file.c |  4 ++++
->  arch/powerpc/kexec/elf_64.c            |  4 ++++
->  drivers/of/fdt.c                       | 21 +++++++++++++++++++++
->  drivers/of/kexec.c                     | 19 +++++++++++++++++++
->  4 files changed, 48 insertions(+)
+On Mon, Mar 30, 2026 at 07:25:55PM +0800, Shengjiu Wang wrote:
+> Use the type SNDRV_CTL_ELEM_TYPE_IEC958 for iec958 channel status
+> controls, the original type will cause mixer-test to iterate all 32bit
+> values, which costs a lot of time. And using IEC958 type can reduce the
+> control numbers.
 
-Acked-by: Rob Herring (Arm) <robh@kernel.org>
+> Also enable pm runtime before updating registers to make the regmap cache
+> data align with the value in hardware.
+
+> @@ -100,22 +130,52 @@ static int fsl_easrc_set_reg(struct snd_kcontrol *k=
+control,
+
+> -	ret =3D regmap_update_bits_check(easrc->regmap, mc->regbase,
+> -				       GENMASK(31, 0), regval, &changed);
+> -	if (ret !=3D 0)
+> +	ret =3D pm_runtime_resume_and_get(component->dev);
+> +	if (ret)
+>  		return ret;
+> =20
+> -	return changed;
+> +	ret =3D regmap_update_bits(easrc->regmap, REG_EASRC_CS0(mc->regbase),
+> +				 GENMASK(31, 0), regval[0]);
+> +	if (ret !=3D 0)
+> +		goto err;
+
+This drops all the checking for changed values that we used to do so we
+won't generate notifications to userspace.
+
+--/8vzq1AnR7+A91Mx
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmnKeVsACgkQJNaLcl1U
+h9AQpQf/Wwg0d6wy7+tbE0cV56MY0BWOsiAJfNAdGi5hQfMf9SE+Vj31fy/26gup
+/KfPd3I+TVmNUhdvQu21rMFsu1zzN9TapmOn6HcWVmFX90sqjE8WnoOVO9v+MKwt
+awK6l4vuVU9ZaQkowma/RECz1RHN/4q1c2f7oRmigkxN360nqjJsOrj6b5AW1j30
+fNiofpWfFFTjYdOa6ArtWMQEJhQqptnCa2EgXzZDQStWH4D5CuKgLzG38CTOywCl
+siM70hegXV44VYSo+DaGvXhhxFjV6pjtA6MvMGh1G23OzWf0EXc+03MOG5QVF0ej
+AocKsmJgOl7HxvhLz4BEx4/quWT4Tw==
+=5BGx
+-----END PGP SIGNATURE-----
+
+--/8vzq1AnR7+A91Mx--
 
