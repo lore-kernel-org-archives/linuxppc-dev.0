@@ -1,81 +1,139 @@
-Return-Path: <linuxppc-dev+bounces-19029-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19030-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D25C81061B1A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2026 19:21:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7221F1061B1E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2026 20:11:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fl1Lq3zVKz2yhX;
-	Tue, 31 Mar 2026 06:21:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774898467;
-	cv=none; b=lMNSLTZCAEtoXGCIMhAb22qC4buKKqPk/WYHrxYdtSVkJ94b5dGx4P/UMcw2zweKAUFYvKJcL3SBn9SFBv+tSp60heXS8n7vSZhJWbXnyF4u9ib0eGp4+Ai8WwzpDPSfwF/SsSisDEQMCC4OKJX6TMBxOpBuQNokKVQZU58Iiq5VEaShFcB649nJ9b5KTt6L+INMWdXcUW+xileLbnlb97+F7OqJOHIwnThz+Vi7j/cjZnXumsPBYbmaKnU38WmNYTKBVdz+y/FsmPu/0qAA5+gaXFhEodcqMlTRtypF6CfgBuUykx5kYqMa5T04znzM8fyVdyAzmEVUVNYSMeAkHg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fl2SX5ZW9z2xSb;
+	Tue, 31 Mar 2026 07:11:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.141
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774901468;
+	cv=none; b=BWTxj7CRUL6MnMdCCvS4W2Nx54rSOhiMY0peyeHou43sU/ZEeM/ohPuZa09W2kRhUnTU4Rt9TKoZkPfnnDRHm4rZC82ETTZjWDc1Qdgb9zz7sGzJBvolnkD5+cyfAIXqvI4oXEHz9YfSKwTvg/43Ua49+ZT7xIme8RbgcRtr4lVxzRECcMJ/3iubAdqs+txkfxNpUvbtUaHOMC4r/jgTw6TeHfYYNgCtOlvbK44Bm1UzaC54xzFMa1aoe7R2PyujKbhD3jhqtOKEwoqO1ZO2QYf1eVaMd6a3XYrtCe8YSKYgrFiEzg0T3ZU7OW+H9QDJZSRNUPQbFdAr04dqVJI3rg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774898467; c=relaxed/relaxed;
-	bh=LaHGbyy3a+PyoQzYh9/3THjoLQiOMnnzugao2tSRl8E=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=cjULeqb7gVey6DwzG7ZgVADvppzYucM4wYdyZm72yTwxJN1jrTklJlqMyAGhFv6UZufvp1RLAcsPhIx5/rcl48ezx2ckpBH3tW42ubAopirEdtPCrJKDsZTC3lEqIK+b024PZSf/EskQBnHmfqnFGZOeedmSKyO1BnEwmnkyXss4eZANeLqCxB0h5lgpvXTa+WYQD46OIxx/BkRPA74+lfYOGXTROzGT/xioa1jpLLTysDfkJdnRx5vx579bXKJcl8Q74LdBQAe5s/t36GFdIzsWXUIMJ2O6yc8b5F+udOpI/h972GaOdDKMcMvCSEAWxTes2GLV8cdsKF5MSUNj4w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dWXEiPVt; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1774901468; c=relaxed/relaxed;
+	bh=l6vFZymkQIpCjGyZZ0waTIjtR5dYu9l/RauB0EHs2cg=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=Dsj5mCf9WBEyequywowIzxWGWyWsgP3lMwmKP7iq+vH+kd64tNZAYn89jWjcLmBHimc9vEz0SOzJJu9Mm8xXP2aa2dVKMoF72rbO+znOxyIKZqGPZya1JNh7Bl3Knxp0sWMpDiCYJVOYiJ0uPoDIEG15HVi0L6ITAvx+YjJfCr2E3R2kbt4iplVCZM2dHrOQaY/GYonmrgqzHVmsVqFkKjwszBy2UeoEcnTtdsMqdV9Q5lMQ8RveD55uLFUdJXrCojGLzylxszjkLOHMJOQojvpPp0gFsHKr/eum+yAio8r0faOldWwpdLLrylZAfbjfhpEFy4d+iGwQRqBKiikhoQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=shazbot.org; dkim=pass (2048-bit key; unprotected) header.d=shazbot.org header.i=@shazbot.org header.a=rsa-sha256 header.s=fm1 header.b=p3Q7z9HD; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=CAP30Hzc; dkim-atps=neutral; spf=pass (client-ip=103.168.172.141; helo=flow-a6-smtp.messagingengine.com; envelope-from=alex@shazbot.org; receiver=lists.ozlabs.org) smtp.mailfrom=shazbot.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=shazbot.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dWXEiPVt;
+	dkim=pass (2048-bit key; unprotected) header.d=shazbot.org header.i=@shazbot.org header.a=rsa-sha256 header.s=fm1 header.b=p3Q7z9HD;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=CAP30Hzc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=shazbot.org (client-ip=103.168.172.141; helo=flow-a6-smtp.messagingengine.com; envelope-from=alex@shazbot.org; receiver=lists.ozlabs.org)
+Received: from flow-a6-smtp.messagingengine.com (flow-a6-smtp.messagingengine.com [103.168.172.141])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fl1Lp4mWSz2yhY
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2026 06:21:06 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62UAUtG33068935;
-	Mon, 30 Mar 2026 19:20:51 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=LaHGbyy3a+PyoQzYh
-	9/3THjoLQiOMnnzugao2tSRl8E=; b=dWXEiPVtEM0wCU8F+2hu4bTQcEbUn+jCB
-	p6w0VBrz/xTKtcJjBQnZThscbtsOnE2nQIAivFoeZbTW3NJuI99PYOyomcc2fyfT
-	efqpdvjwewOn4512E/KTj7yzcELcW/GGGl+IeStFV8dzwJZkpaI3NvqEU4yAVagG
-	7K9ZMOwKBldWxYISznGJqFRtBSWQ2Fr9WosYCOcCzagHexb7k6QKYfN3E32yw3ys
-	4fCRyIoyd3t2iYNP1mZAflqQWyrZQbBYr080T7JDOBT3+Du1cBkG8PRE8Bz+ZKSC
-	uFZ05d/cRARJfxxbo49Y57PvGMKngRWr6vJ3QYT4sb1P29ygICRSA==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d65dc80uk-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 30 Mar 2026 19:20:51 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62UJ56sl005980;
-	Mon, 30 Mar 2026 19:20:50 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4d6spxx8ky-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 30 Mar 2026 19:20:50 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62UJKkBR52953574
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 30 Mar 2026 19:20:46 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A72F62004D;
-	Mon, 30 Mar 2026 19:20:46 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 24E8920043;
-	Mon, 30 Mar 2026 19:20:45 +0000 (GMT)
-Received: from ltcrain4-lp15.ltc.tadn.ibm.com (unknown [9.5.7.39])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 30 Mar 2026 19:20:44 +0000 (GMT)
-From: adubey@linux.ibm.com
-To: linuxppc-dev@lists.ozlabs.org
-Cc: hbathini@linux.ibm.com, bpf@vger.kernel.org, maddy@linux.ibm.com,
-        ast@kernel.org, andrii@kernel.org, daniel@iogearbox.net,
-        Abhishek Dubey <adubey@linux.ibm.com>
-Subject: [PATCH v5 2/2] selftests/bpf: Enable private stack tests for powerpc64
-Date: Mon, 30 Mar 2026 19:20:34 -0400
-Message-ID: <20260330232034.44776-2-adubey@linux.ibm.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260330232034.44776-1-adubey@linux.ibm.com>
-References: <20260330232034.44776-1-adubey@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fl2SP5x7bz2xGY
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2026 07:10:59 +1100 (AEDT)
+Received: from phl-compute-01.internal (phl-compute-01.internal [10.202.2.41])
+	by mailflow.phl.internal (Postfix) with ESMTP id 32B1F1380404;
+	Mon, 30 Mar 2026 16:10:56 -0400 (EDT)
+Received: from phl-frontend-04 ([10.202.2.163])
+  by phl-compute-01.internal (MEProxy); Mon, 30 Mar 2026 16:10:56 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=shazbot.org; h=
+	cc:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm1; t=1774901456;
+	 x=1774908656; bh=l6vFZymkQIpCjGyZZ0waTIjtR5dYu9l/RauB0EHs2cg=; b=
+	p3Q7z9HDaMO9l49KzGyd6QCozBDRkYMrNAMT016WX/fHIPodDvJbWxfN7o7Rq7vD
+	ssq4dL3KEVXFE49rB8recUd5fVpSerRill0EPB9eG2k4c2akGO+Qp/G8D31RmPbX
+	7TlkrNox2UjWyTlfcttMC7E71kdY+trnef5Hm61drgcfUPakTcCNL6kKwNKjRSBV
+	U1uiNaG+fKZAZmTv0+H0872Gvi06OSqLLzx0vsDX2qjVrQBFMlsZacR2mbGsDkc/
+	gT6xVnpGv8MRHmzJBZo58FBd6w5IU+6ogcmojJLtPY3KydD8fWurT3VIXthGtQVM
+	kQSao6bXLTSzYllu1/tldQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1774901456; x=
+	1774908656; bh=l6vFZymkQIpCjGyZZ0waTIjtR5dYu9l/RauB0EHs2cg=; b=C
+	AP30HzcjqUcGAYtq0Vy0npz+WQZ0xoM+V3KrqPMrmRQ5BSmU53GGUiyx5E4wI6yA
+	FyTr5/p4paazsu/Iipz8yYZU+1phMDKI7hagtD986FHeu0o1F4zYmBZsEakuW92m
+	weI9ASAX8aFEL8Rs0Uec3ctb/HnJ1MgKC92d8MBdvS6OH7G3ewGRc0+tfGddZ4Gk
+	WxhrjWBcLoGs93zMy/odTXwHEJHh5W5FS+Et9LrpEfOcBRgJ0bBAStrIpl6DkWE0
+	Q7ETKFm9iu5onjWSvKFXn0ELTMMUBd/OPVAOOtwXaNWNshQ6cuB1Amc/2nwRZfpT
+	eHg87urYI5Ec6Lkq0sXvA==
+X-ME-Sender: <xms:z9jKafG3C1ppH9T_m6ALHXE4Xg8LRK7hBmf8rBxsDTwjV0YmtGN7zQ>
+    <xme:z9jKafRfVIq8DMXZsvpeUjwD446zuGALRlY6oTA_zptsdyXkE-2d-NbNcA082cKf0
+    ss8FY21mgRpxHw-PTPA5PC2K5vCU9145ou0r7AQwqll0ampOmU>
+X-ME-Received: <xmr:z9jKaX5EMTRV_NaboCc_h79atFYxCsQIiTsRvvS3id2SmTFWS4FBTgmuiO8>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefgedrtddtgdeffeelledtucetufdoteggodetrf
+    dotffvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfurfetoffkrfgpnffqhgenuceu
+    rghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujf
+    gurhepfffhvfevuffkjghfofggtgfgsehtjeertdertddvnecuhfhrohhmpeetlhgvgicu
+    hghilhhlihgrmhhsohhnuceorghlvgigsehshhgriigsohhtrdhorhhgqeenucggtffrrg
+    htthgvrhhnpeekheejieetffefueeiteejtdejffdvleelvdeuvdffvdefteeghfevkeeu
+    vdefvdenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecuvehluhhsthgvrhfuihiivg
+    eptdenucfrrghrrghmpehmrghilhhfrhhomheprghlvgigsehshhgriigsohhtrdhorhhg
+    pdhnsggprhgtphhtthhopeehuddpmhhouggvpehsmhhtphhouhhtpdhrtghpthhtohepug
+    grkhhrsehkvghrnhgvlhdrohhrghdprhgtphhtthhopehjghhgseiiihgvphgvrdgtrgdp
+    rhgtphhtthhopehlihhnuhigsegrrhhmlhhinhhugidrohhrghdruhhkpdhrtghpthhtoh
+    epghhrvghgkhhhsehlihhnuhigfhhouhhnuggrthhiohhnrdhorhhgpdhrtghpthhtohep
+    rhgrfhgrvghlsehkvghrnhgvlhdrohhrghdprhgtphhtthhopehiohgrnhgrrdgtihhorh
+    hnvghisehngihprdgtohhmpdhrtghpthhtohepnhhiphhunhdrghhuphhtrgesrghmugdr
+    tghomhdprhgtphhtthhopehnihhkhhhilhdrrghgrghrfigrlhesrghmugdrtghomhdprh
+    gtphhtthhopehkhihssehmihgtrhhoshhofhhtrdgtohhm
+X-ME-Proxy: <xmx:z9jKaXPahdSu6NAxzDLCWHFq0SjTPnbaOV6q1JEVDN1n0TGZgvSOLg>
+    <xmx:z9jKaYs_pZi1AKnrgY4kd6IlWW19DwfnZAklgCAjMJf5o-edI-wG2g>
+    <xmx:z9jKaebkSHmk2-FfV3M99S1E_Kbm3scLKfLmyO_zzcLIBxoGL3vJxQ>
+    <xmx:z9jKacg_NAD9M03CgHB8mak7EEebVzjqapJHxaBa4zGAHu1ISFIb7w>
+    <xmx:0NjKafrBqSu7i3ficH69WDNrAzczvh4pW1jhPhZmK7WHcIBXnovlo-fr>
+Feedback-ID: i03f14258:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
+ 30 Mar 2026 16:10:52 -0400 (EDT)
+Date: Mon, 30 Mar 2026 14:10:50 -0600
+From: Alex Williamson <alex@shazbot.org>
+To: "Danilo Krummrich" <dakr@kernel.org>
+Cc: "Jason Gunthorpe" <jgg@ziepe.ca>, "Russell King" <linux@armlinux.org.uk>,
+ "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ "Ioana Ciornei" <ioana.ciornei@nxp.com>,
+ "Nipun Gupta" <nipun.gupta@amd.com>,
+ "Nikhil Agarwal" <nikhil.agarwal@amd.com>,
+ "K. Y. Srinivasan" <kys@microsoft.com>,
+ "Haiyang Zhang" <haiyangz@microsoft.com>, "Wei Liu" <wei.liu@kernel.org>,
+ "Dexuan Cui" <decui@microsoft.com>, "Long Li" <longli@microsoft.com>,
+ "Bjorn Helgaas" <bhelgaas@google.com>, "Armin Wolf" <W_Armin@gmx.de>,
+ "Bjorn Andersson" <andersson@kernel.org>,
+ "Mathieu Poirier" <mathieu.poirier@linaro.org>,
+ "Vineeth Vijayan" <vneethv@linux.ibm.com>,
+ "Peter Oberparleiter" <oberpar@linux.ibm.com>,
+ "Heiko Carstens" <hca@linux.ibm.com>,
+ "Vasily Gorbik" <gor@linux.ibm.com>,
+ "Alexander Gordeev" <agordeev@linux.ibm.com>,
+ "Christian Borntraeger" <borntraeger@linux.ibm.com>,
+ "Sven Schnelle" <svens@linux.ibm.com>,
+ "Harald Freudenberger" <freude@linux.ibm.com>,
+ "Holger Dengler" <dengler@linux.ibm.com>,
+ "Mark Brown" <broonie@kernel.org>, "Michael S. Tsirkin" <mst@redhat.com>,
+ "Jason Wang" <jasowang@redhat.com>,
+ "Xuan Zhuo" <xuanzhuo@linux.alibaba.com>,
+ Eugenio =?UTF-8?B?UMOpcmV6?= <eperezma@redhat.com>,
+ "Juergen Gross" <jgross@suse.com>,
+ "Stefano Stabellini" <sstabellini@kernel.org>,
+ "Oleksandr Tyshchenko" <oleksandr_tyshchenko@epam.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ <linux-kernel@vger.kernel.org>, <driver-core@lists.linux.dev>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-hyperv@vger.kernel.org>,
+ <linux-pci@vger.kernel.org>, <platform-driver-x86@vger.kernel.org>,
+ <linux-arm-msm@vger.kernel.org>, <linux-remoteproc@vger.kernel.org>,
+ <linux-s390@vger.kernel.org>, <linux-spi@vger.kernel.org>,
+ <virtualization@lists.linux.dev>, <kvm@vger.kernel.org>,
+ <xen-devel@lists.xenproject.org>, <linux-arm-kernel@lists.infradead.org>,
+ "Gui-Dong Han" <hanguidong02@gmail.com>, alex@shazbot.org
+Subject: Re: [PATCH 05/12] PCI: use generic driver_override infrastructure
+Message-ID: <20260330141050.2cb47bd9@shazbot.org>
+In-Reply-To: <DHGATG6LJOM1.2AI7BYQ2O4DFU@kernel.org>
+References: <20260324005919.2408620-1-dakr@kernel.org>
+	<20260324005919.2408620-6-dakr@kernel.org>
+	<DHGATG6LJOM1.2AI7BYQ2O4DFU@kernel.org>
+X-Mailer: Claws Mail 4.3.1 (GTK 3.24.51; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,192 +147,74 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=RsjI7SmK c=1 sm=1 tr=0 ts=69cacd13 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=WRW5XrRV495NP23rXD4A:9
-X-Proofpoint-GUID: 4nFR3oUsB9ZqUDrwQQ2vqpwj1_ku6JFI
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzMwMDE2MSBTYWx0ZWRfX0XMmEGyK6CXu
- +PJViSH3DlvfdDTa7lXLYT6El2juIBKcrrlz0B8gex8e3VDfDorpf0DLT80qUBf/XsYX2T9KN60
- 4gLMv2OxVDgOHhxyg4bMcRI9vI4p49rqiLHdi8zmIdGBQfFnhU1N6QYW4GoLc4CJLkVSGtFk/os
- wWmLib/QgeVlyP5c8ds3Lp+P7PjeNf/igsLV0/tfNo4WgQeI0jyi51ZhYLOAsYaM8dRpLwtqIiY
- TtSraozKxF48l/ojSvCCzWb7ztDzOMLVsK8sB1svQYCp1mnLA9fT4IP68UVT1E1dc1+VQJtGzLm
- UNC/FXRDV02geLhKVZZjWQ5B2OOQdXuCM9Wmn4iFXfDt0Qm6gqh/Ia35Mwg97651dRaLoeh+/99
- pu6TtwUaDFKChC288gkMkOcWiBpHtX5SVGifgtMbzx8MVRtACSeszIecpnu6W5W7mL+5eV5VGrE
- XUeBpsVrIpbqNVf6S+A==
-X-Proofpoint-ORIG-GUID: 4nFR3oUsB9ZqUDrwQQ2vqpwj1_ku6JFI
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-30_01,2026-03-28_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 bulkscore=0 priorityscore=1501 lowpriorityscore=0
- suspectscore=0 malwarescore=0 spamscore=0 clxscore=1015 phishscore=0
- adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
- definitions=main-2603300161
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-From: Abhishek Dubey <adubey@linux.ibm.com>
+On Mon, 30 Mar 2026 19:38:41 +0200
+"Danilo Krummrich" <dakr@kernel.org> wrote:
 
-With support of private stack, relevant tests must pass
-on powerpc64.
+> (Cc: Jason)
+> 
+> On Tue Mar 24, 2026 at 1:59 AM CET, Danilo Krummrich wrote:
+> > diff --git a/drivers/vfio/pci/vfio_pci_core.c b/drivers/vfio/pci/vfio_pci_core.c
+> > index d43745fe4c84..460852f79f29 100644
+> > --- a/drivers/vfio/pci/vfio_pci_core.c
+> > +++ b/drivers/vfio/pci/vfio_pci_core.c
+> > @@ -1987,9 +1987,8 @@ static int vfio_pci_bus_notifier(struct notifier_block *nb,
+> >  	    pdev->is_virtfn && physfn == vdev->pdev) {
+> >  		pci_info(vdev->pdev, "Captured SR-IOV VF %s driver_override\n",
+> >  			 pci_name(pdev));
+> > -		pdev->driver_override = kasprintf(GFP_KERNEL, "%s",
+> > -						  vdev->vdev.ops->name);
+> > -		WARN_ON(!pdev->driver_override);
+> > +		WARN_ON(device_set_driver_override(&pdev->dev,
+> > +						   vdev->vdev.ops->name));  
+> 
+> Technically, this is a change in behavior. If vdev->vdev.ops->name is NULL, it
+> will trigger the WARN_ON(), whereas before it would have just written "(null)"
+> into driver_override.
 
-#./test_progs -t struct_ops_private_stack
-#434/1   struct_ops_private_stack/private_stack:OK
-#434/2   struct_ops_private_stack/private_stack_fail:OK
-#434/3   struct_ops_private_stack/private_stack_recur:OK
-#434     struct_ops_private_stack:OK
-Summary: 1/3 PASSED, 0 SKIPPED, 0 FAILED
+It's worse than that.  Looking at the implementation in [1], we have:
 
-v4->v5:
-  Rebase over latest branch
-v3->v4:
-  No change
-v2->v3:
-  Enable testcase using __powerpc64__ instead of __TARGET_ARCH_powerpc,
-  to prevent it getting invoked on powerpc32
-v1->v2:
-  No change
-
-[v4]: https://lore.kernel.org/bpf/20260226031324.17352-1-adubey@linux.ibm.com
-[v3]: https://lore.kernel.org/bpf/20260226005440.9570-1-adubey@linux.ibm.com
-[v2]: https://lore.kernel.org/bpf/20260225153950.15331-1-adubey@linux.ibm.com
-[v1]: https://lore.kernel.org/bpf/20260216152234.36632-1-adubey@linux.ibm.com
-
-Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
----
- .../bpf/prog_tests/struct_ops_private_stack.c | 29 +++++++++----------
- .../bpf/progs/struct_ops_private_stack.c      |  6 ----
- .../bpf/progs/struct_ops_private_stack_fail.c |  6 ----
- .../progs/struct_ops_private_stack_recur.c    |  6 ----
- 4 files changed, 13 insertions(+), 34 deletions(-)
-
-diff --git a/tools/testing/selftests/bpf/prog_tests/struct_ops_private_stack.c b/tools/testing/selftests/bpf/prog_tests/struct_ops_private_stack.c
-index d42123a0fb16..4c4421045dd0 100644
---- a/tools/testing/selftests/bpf/prog_tests/struct_ops_private_stack.c
-+++ b/tools/testing/selftests/bpf/prog_tests/struct_ops_private_stack.c
-@@ -5,6 +5,7 @@
- #include "struct_ops_private_stack_fail.skel.h"
- #include "struct_ops_private_stack_recur.skel.h"
- 
-+#if defined(__x86_64__) || defined(__aarch64__) || defined(__powerpc64__)
- static void test_private_stack(void)
- {
- 	struct struct_ops_private_stack *skel;
-@@ -15,11 +16,6 @@ static void test_private_stack(void)
- 	if (!ASSERT_OK_PTR(skel, "struct_ops_private_stack__open"))
- 		return;
- 
--	if (skel->data->skip) {
--		test__skip();
--		goto cleanup;
--	}
--
- 	err = struct_ops_private_stack__load(skel);
- 	if (!ASSERT_OK(err, "struct_ops_private_stack__load"))
- 		goto cleanup;
-@@ -48,11 +44,6 @@ static void test_private_stack_fail(void)
- 	if (!ASSERT_OK_PTR(skel, "struct_ops_private_stack_fail__open"))
- 		return;
- 
--	if (skel->data->skip) {
--		test__skip();
--		goto cleanup;
--	}
--
- 	err = struct_ops_private_stack_fail__load(skel);
- 	ASSERT_ERR(err, "struct_ops_private_stack_fail__load");
- 
-@@ -70,11 +61,6 @@ static void test_private_stack_recur(void)
- 	if (!ASSERT_OK_PTR(skel, "struct_ops_private_stack_recur__open"))
- 		return;
- 
--	if (skel->data->skip) {
--		test__skip();
--		goto cleanup;
--	}
--
- 	err = struct_ops_private_stack_recur__load(skel);
- 	if (!ASSERT_OK(err, "struct_ops_private_stack_recur__load"))
- 		goto cleanup;
-@@ -93,7 +79,7 @@ static void test_private_stack_recur(void)
- 	struct_ops_private_stack_recur__destroy(skel);
- }
- 
--void test_struct_ops_private_stack(void)
-+static void __test_struct_ops_private_stack(void)
- {
- 	if (test__start_subtest("private_stack"))
- 		test_private_stack();
-@@ -102,3 +88,14 @@ void test_struct_ops_private_stack(void)
- 	if (test__start_subtest("private_stack_recur"))
- 		test_private_stack_recur();
- }
-+#else
-+static void __test_struct_ops_private_stack(void)
++static inline int device_set_driver_override(struct device *dev, const char *s)
 +{
-+	test__skip();
++	return __device_set_driver_override(dev, s, strlen(s));
 +}
-+#endif
-+
-+void test_struct_ops_private_stack(void)
-+{
-+	__test_struct_ops_private_stack();
-+}
-diff --git a/tools/testing/selftests/bpf/progs/struct_ops_private_stack.c b/tools/testing/selftests/bpf/progs/struct_ops_private_stack.c
-index dbe646013811..3cd0c1a55cbd 100644
---- a/tools/testing/selftests/bpf/progs/struct_ops_private_stack.c
-+++ b/tools/testing/selftests/bpf/progs/struct_ops_private_stack.c
-@@ -7,12 +7,6 @@
+
+So if name is NULL, we oops in strlen() before we even hit the -EINVAL
+and WARN_ON().
+
+I don't believe we have any vfio-pci variant drivers where the name is
+NULL, but kasprintf() handling NULL as "(null)" was a consideration in
+this design, that even if there is no name the device is sequestered
+with a driver_override that won't match an actual driver.
+
+> I assume that vfio_pci_core drivers are expected to set the name in struct
+> vfio_device_ops in the first place and this code (silently) relies on this
+> invariant?
+
+We do expect that, but it was previously safe either way to make sure
+VFs are only bound to the same ops driver or barring that, at least
+don't perform a standard driver match.  The last thing we want to
+happen automatically is for a user owned PF to create SR-IOV VFs that
+automatically bind to native kernel drivers.
  
- char _license[] SEC("license") = "GPL";
- 
--#if defined(__TARGET_ARCH_x86) || defined(__TARGET_ARCH_arm64)
--bool skip __attribute((__section__(".data"))) = false;
--#else
--bool skip = true;
--#endif
--
- void bpf_testmod_ops3_call_test_2(void) __ksym;
- 
- int val_i, val_j;
-diff --git a/tools/testing/selftests/bpf/progs/struct_ops_private_stack_fail.c b/tools/testing/selftests/bpf/progs/struct_ops_private_stack_fail.c
-index 3d89ad7cbe2a..1442728f5604 100644
---- a/tools/testing/selftests/bpf/progs/struct_ops_private_stack_fail.c
-+++ b/tools/testing/selftests/bpf/progs/struct_ops_private_stack_fail.c
-@@ -7,12 +7,6 @@
- 
- char _license[] SEC("license") = "GPL";
- 
--#if defined(__TARGET_ARCH_x86) || defined(__TARGET_ARCH_arm64)
--bool skip __attribute((__section__(".data"))) = false;
--#else
--bool skip = true;
--#endif
--
- void bpf_testmod_ops3_call_test_2(void) __ksym;
- 
- int val_i, val_j;
-diff --git a/tools/testing/selftests/bpf/progs/struct_ops_private_stack_recur.c b/tools/testing/selftests/bpf/progs/struct_ops_private_stack_recur.c
-index b1f6d7e5a8e5..faaa0f8d65a4 100644
---- a/tools/testing/selftests/bpf/progs/struct_ops_private_stack_recur.c
-+++ b/tools/testing/selftests/bpf/progs/struct_ops_private_stack_recur.c
-@@ -7,12 +7,6 @@
- 
- char _license[] SEC("license") = "GPL";
- 
--#if defined(__TARGET_ARCH_x86) || defined(__TARGET_ARCH_arm64)
--bool skip __attribute((__section__(".data"))) = false;
--#else
--bool skip = true;
--#endif
--
- void bpf_testmod_ops3_call_test_1(void) __ksym;
- 
- int val_i, val_j;
--- 
-2.52.0
+> Alex, Jason: Should we keep this hunk above as is and check for a proper name in
+> struct vfio_device_ops in vfio_pci_core_register_device() with a subsequent
+> patch?
+
+Given the oops, my preference would be to roll it in here.  This change
+is what makes it a requirement that name cannot be NULL, where this was
+safely handled with kasprintf().  Thanks,
+
+Alex
+
+
+[1] https://lore.kernel.org/all/20260302002729.19438-2-dakr@kernel.org/
+
+> 
+> >  	} else if (action == BUS_NOTIFY_BOUND_DRIVER &&
+> >  		   pdev->is_virtfn && physfn == vdev->pdev) {
+> >  		struct pci_driver *drv = pci_dev_driver(pdev);  
 
 
