@@ -1,58 +1,98 @@
-Return-Path: <linuxppc-dev+bounces-18987-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-18988-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D723FF493A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2026 03:49:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E5F8FF4939
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2026 04:08:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fkchJ55clz2xly;
-	Mon, 30 Mar 2026 14:49:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fkd5y5Lh3z2xC3;
+	Mon, 30 Mar 2026 15:08:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774842592;
-	cv=none; b=B6RwMOIg5lMxDrtzT+y2hDbR3PPoI2YWl/I67bPp8OwPDRxF8AWJVoMTkPW+6JdxGlgmCs6oK/gVbbv1hFLO9npgvIgh6UnqeJ7vhFBNqHwJnt7Jpinj7E7jzhT8w9kZSfkRnfuRUnmlNrJC2d6iYp8m8d4OphPKfsiaknpJ2INPZDzr3fFmB7ZC9E2qVAI+a/T+VIzMEqTlCvAepki/1kt7RasNs9pISWXsYGSHeegDQ7t91zjudAL0JZ3OGJ75HfOXB3AVYqVFom015G9VQMS7EhakQakFZr8EsaDZRT4nmu1hZL/2Cy5mTX7HZr+xA9VvbknJ8c1c1KvjGF3XaQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774843718;
+	cv=none; b=f+FcqKlnoRCStyc6pC7FcgVMTiIgunz0t1JvQQAbMF8pztbcvz63tX2SbMacJHCTuUBO4THSR/EHHOFug/izY3RoE5j1LC0AMlhXTQQaHfRb2fy0t4NvCHk0Rjzig0d5c2Pke+J1wjohlsdHWadhJpbXHK2dU6OF/L3EMY/rHV3zj5hHAXHBzR1QpTtO4/B4TRnjUJCXpkBYjoooFdcruy2MvxMlnBY/M+l614voWBVHRLt3HOBwClvuCXiT2faarlRk563K6EJY+d+JkBi9kijt4cFJIqC6cet78lAxYSTdL9RlqeFnKMAOiOl4iyUTHnBPdUklgsxyDiLAuX3NrA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774842592; c=relaxed/relaxed;
-	bh=W7U7BTXS8iu2ikkIeTXCYXN1EZ8TvQ225S/V4SWCkaY=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=e0ULOJ/ltHYVeb0wcMzZy1ovKscaZe5n208zI6eBgExK2l2bwuWVmKjUvewNAw7Vl0qRwj/DaYQaFX3n+rTH573JqVqWBnRpXB6TzU2lBSWoNVrF0ZFIi0PFPj/n11m+GuEcX/+E4d5uExtkE1SYFNxUWRE92rWYiAqoEEndfJ0sLXpm6pKyUH06pqFKuowI1d+CfVRjyHxXSeJ49C9YCi3Dr6F/dI+PYuP7mn6Ub14Imbr6kuTom44s+WVZvzY8WZ1CQVee1LLYm3xRQoXYs1Kd/GGAUkJZSirnc9g1G3/exJ2Cmp3ZSXgSDWspOKBGcKE1q4gAFy8lEAF1vzhrmg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eoZ8B/st; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=guoren@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1774843718; c=relaxed/relaxed;
+	bh=wamVM0zYr8WZHFMloqOz+25gc/vBvTSbereH3lC8cH8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=dBqL6dNRCnLcVICD6EssbPLGP42Y652k2xUglqg6+3hUwGfScE1/3s2lKMccGLv/RRK6wIyHocUu8+JxHE+JLp2fgh+syoAPKnuSrKRd+1CrmhTMeANsLYoBcEhFxKlSlc/kzkPCQ+mws4dli8G+OK+GPjidhxhUMmTUVAPLpxQTdNt6WLVTvWyWOVJG+Oeakkgr8QO87U0Nvm/Eyc7Jpn8hto7EHCyyonm0QpxlHx7tpaGst6+GmSQLUOqrxDKu5dossSM5pwTJ2Gtoy6Y1Q399Q/9zi4U1aC8shm7YfG+JiXVBtvmr5ClcAAEobL7CIMra7dZWXt56C2XHaUncWg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rk5v/EL7; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eoZ8B/st;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rk5v/EL7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=guoren@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fkchH5kCNz2xlK
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2026 14:49:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fkd5x5hM8z2x9W
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2026 15:08:37 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 681AD44587
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2026 03:49:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4AECEC2BCF7
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2026 03:49:49 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 80C04419B5;
+	Mon, 30 Mar 2026 04:08:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BFE31C2BCB0;
+	Mon, 30 Mar 2026 04:08:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774842589;
-	bh=obCDFOyxCbjX0f8M408do6wNaHwmsZQneN83knIeC68=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=eoZ8B/stmhNenV55/GZwaY1J2F6+Mdl80yqD9NRcEWBOsoYl+9c7bLnMbhuDm8UCy
-	 /HdFRjzUQbmAk/UyPSD+aNwyk+7+AXRsactruboxv4TBhmx7ZVUw3PnXCFXHbt/2Tv
-	 8gPyg7oqfxDRPwPwOxonENTYb7rY2pfqtB3H6lN+8wTRbtHFo5byuP+ppf4WRnAd5Y
-	 XciAnSMYuc3D6bWIB/pXvfsgHa26rnCnF4gtv6axbQIdyVpVlSoEdBsZ3ZtXIwQJfW
-	 magEl9/ciAmyJ46LOqRQucXon3Rz5vlKU6TS+JdRCMl0FTU+kXQTbAQM34dEaStji4
-	 KbhEz4mM9Fraw==
-Received: by mail-wr1-f48.google.com with SMTP id ffacd0b85a97d-43cfd1f9fd1so336440f8f.3
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Mar 2026 20:49:49 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCUXtXgFvU8JEmRMUXFmZiN/wsI6nMn/0WCNEZo/4q6s3pxg4OHnKnuLuo4I7bzYHpcAYGTpdTkXFs1ufZY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwtXE5CT7hHgdvpT27iB4DX4sM2y5IR5L9PX/XF2cmkOboPtYcc
-	fyKVsCvxkTk510NSW3kBZz8XT3D1pAfbETY5U+Mj5/g7PTBfFME986wnkgXpeBZYWSXc1ASIkPD
-	Nfb7EhIFdvBzIBz3ZLWH+laKziQpHNks=
-X-Received: by 2002:a05:6000:250f:b0:43c:f4df:923c with SMTP id
- ffacd0b85a97d-43cf4dfaca4mr10913170f8f.49.1774842587366; Sun, 29 Mar 2026
- 20:49:47 -0700 (PDT)
+	s=k20201202; t=1774843715;
+	bh=+A5NQMhCBBRKzoUSudLKLJZAfA7+8FwRJRitDmnyubY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=rk5v/EL75EZ+hbfqEshAQz2QQe+iuSZNg84JSHBgQeHC7MQpiAlomNcv0214mZuA/
+	 gbjlTaVuay4FRB4MdNSX8Dc51tayHV0e0emc/xX42elGiN+vJjajX0Mj+DjRgCotku
+	 NJi0Cx4TsK5vFwnV0mTb3dWliU8/DvykqoMFl4Ne60JHqqLvWC6hKlA59DG+0Ub0mK
+	 i/RlQXksnWCqxo0T2LZaEiVWOLa6KPURQ9Z4xB+WBPWlEQnWDb+1w70onILoyinJz8
+	 gZZx9gSRcK/J1hwQTRHyR8albh/f2o81y7CxFJD3rwa1khO6zG0Hxaks+qBoOStyxZ
+	 Du8I3EdOFGAig==
+Date: Sun, 29 Mar 2026 21:07:24 -0700
+From: Eric Biggers <ebiggers@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@lst.de>,
+	Richard Henderson <richard.henderson@linaro.org>,
+	Matt Turner <mattst88@gmail.com>,
+	Magnus Lindholm <linmag7@gmail.com>,
+	Russell King <linux@armlinux.org.uk>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>, Ard Biesheuvel <ardb@kernel.org>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	WANG Xuerui <kernel@xen0n.name>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Richard Weinberger <richard@nod.at>,
+	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	Dan Williams <dan.j.williams@intel.com>, Chris Mason <clm@fb.com>,
+	David Sterba <dsterba@suse.com>, Arnd Bergmann <arnd@arndb.de>,
+	Song Liu <song@kernel.org>, Yu Kuai <yukuai@fnnas.com>,
+	Li Nan <linan122@huawei.com>, Theodore Ts'o <tytso@mit.edu>,
+	"Jason A. Donenfeld" <Jason@zx2c4.com>, linux-alpha@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+	sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
+	linux-crypto@vger.kernel.org, linux-btrfs@vger.kernel.org,
+	linux-arch@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: cleanup the RAID5 XOR library v4
+Message-ID: <20260330040724.GA647721@sol>
+References: <20260327061704.3707577-1-hch@lst.de>
+ <20260329213119.GA2106@quark>
+ <20260329155126.a01a5729b7d8376712182851@linux-foundation.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,109 +106,63 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260328074013.3589544-1-ruanjinjie@huawei.com> <20260328074013.3589544-2-ruanjinjie@huawei.com>
-In-Reply-To: <20260328074013.3589544-2-ruanjinjie@huawei.com>
-From: Guo Ren <guoren@kernel.org>
-Date: Mon, 30 Mar 2026 11:49:33 +0800
-X-Gmail-Original-Message-ID: <CAJF2gTRN=RpgzQsQ7QDbwjDmyQZP9anQZ+CaK2r-Mrz9dQbohQ@mail.gmail.com>
-X-Gm-Features: AQROBzDiH9EGqvtsmkvuTI8F_a_MxhnUfiDn46oBgBr7JyKcMW8nH_9Y5zS6MkE
-Message-ID: <CAJF2gTRN=RpgzQsQ7QDbwjDmyQZP9anQZ+CaK2r-Mrz9dQbohQ@mail.gmail.com>
-Subject: Re: [PATCH v11 01/11] riscv: kexec_file: Fix crashk_low_res not
- exclude bug
-To: Jinjie Ruan <ruanjinjie@huawei.com>
-Cc: corbet@lwn.net, skhan@linuxfoundation.org, catalin.marinas@arm.com, 
-	will@kernel.org, chenhuacai@kernel.org, kernel@xen0n.name, 
-	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	chleroy@kernel.org, pjw@kernel.org, palmer@dabbelt.com, aou@eecs.berkeley.edu, 
-	alex@ghiti.fr, tglx@kernel.org, mingo@redhat.com, bp@alien8.de, 
-	dave.hansen@linux.intel.com, hpa@zytor.com, robh@kernel.org, 
-	saravanak@kernel.org, akpm@linux-foundation.org, bhe@redhat.com, 
-	vgoyal@redhat.com, dyoung@redhat.com, rdunlap@infradead.org, 
-	peterz@infradead.org, feng.tang@linux.alibaba.com, 
-	pawan.kumar.gupta@linux.intel.com, dapeng1.mi@linux.intel.com, 
-	kees@kernel.org, elver@google.com, paulmck@kernel.org, lirongqing@baidu.com, 
-	rppt@kernel.org, leitao@debian.org, ardb@kernel.org, cfsworks@gmail.com, 
-	osandov@fb.com, jbohac@suse.cz, tangyouling@kylinos.cn, 
-	sourabhjain@linux.ibm.com, ritesh.list@gmail.com, eajames@linux.ibm.com, 
-	songshuaishuai@tinylab.org, kevin.brodsky@arm.com, vishal.moola@gmail.com, 
-	junhui.liu@pigmoral.tech, coxu@redhat.com, fuqiang.wang@easystack.cn, 
-	liaoyuanhong@vivo.com, chenjiahao16@huawei.com, hbathini@linux.ibm.com, 
-	takahiro.akashi@linaro.org, james.morse@arm.com, lizhengyu3@huawei.com, 
-	x86@kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev, 
-	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, 
-	devicetree@vger.kernel.org, kexec@lists.infradead.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260329155126.a01a5729b7d8376712182851@linux-foundation.org>
 
-On Sat, Mar 28, 2026 at 3:41=E2=80=AFPM Jinjie Ruan <ruanjinjie@huawei.com>=
- wrote:
->
-> As done in commit 944a45abfabc ("arm64: kdump: Reimplement crashkernel=3D=
-X")
-> and commit 4831be702b95 ("arm64/kexec: Fix missing extra range for
-> crashkres_low.") for arm64, while implementing crashkernel=3DX,[high,low]=
-,
-> riscv should have excluded the "crashk_low_res" reserved ranges from
-> the crash kernel memory to prevent them from being exported through
-> /proc/vmcore, and the exclusion would need an extra crash_mem range.
->
-> Cc: Guo Ren <guoren@kernel.org>
-> Cc: Baoquan He <bhe@redhat.com>
-> Fixes: 5882e5acf18d ("riscv: kdump: Implement crashkernel=3DX,[high,low]"=
-)
-> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
-> ---
->  arch/riscv/kernel/machine_kexec_file.c | 14 +++++++++++---
->  1 file changed, 11 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/riscv/kernel/machine_kexec_file.c b/arch/riscv/kernel/m=
-achine_kexec_file.c
-> index 54e2d9552e93..3f7766057cac 100644
-> --- a/arch/riscv/kernel/machine_kexec_file.c
-> +++ b/arch/riscv/kernel/machine_kexec_file.c
-> @@ -61,7 +61,7 @@ static int prepare_elf_headers(void **addr, unsigned lo=
-ng *sz)
->         unsigned int nr_ranges;
->         int ret;
->
-> -       nr_ranges =3D 1; /* For exclusion of crashkernel region */
-> +       nr_ranges =3D 2; /* For exclusion of crashkernel region */
->         walk_system_ram_res(0, -1, &nr_ranges, get_nr_ram_ranges_callback=
-);
->
->         cmem =3D kmalloc_flex(*cmem, ranges, nr_ranges);
-> @@ -76,8 +76,16 @@ static int prepare_elf_headers(void **addr, unsigned l=
-ong *sz)
->
->         /* Exclude crashkernel region */
->         ret =3D crash_exclude_mem_range(cmem, crashk_res.start, crashk_re=
-s.end);
-> -       if (!ret)
-> -               ret =3D crash_prepare_elf64_headers(cmem, true, addr, sz)=
-;
-> +       if (ret)
-> +               goto out;
-> +
-> +       if (crashk_low_res.end) {
-> +               ret =3D crash_exclude_mem_range(cmem, crashk_low_res.star=
-t, crashk_low_res.end);
-Exclude crashk_low_res is reasonable, but have you tested this?
+On Sun, Mar 29, 2026 at 03:51:26PM -0700, Andrew Morton wrote:
+> > 
+> > Reviewed-by: Eric Biggers <ebiggers@kernel.org>
+> 
+> Great, thanks, added to all changelogs.
+> 
+> > But yes, as Andrew mentioned there are two "xor: add a better public
+> > API" patches.  They should be folded together.
+> 
+> I folded them.
+> 
+> I'm a bit wobbly about upstreaming all this for 7.1-rc1.  It hits on a
+> lot of stuff and I don't think we've heard a lot from the affected
+> maintainers.
+> 
+> otoh, we're unlikely to learn much from an additional nine weeks in
+> linux-next so at some point one has to forge ahead and rely on seven
+> weeks of -rc to address any remaining niggles.  And I'm confident that
+> Christoph will support his work well.
+> 
+> But still, hearing some reassuring words about this would be
+> appreciated ;)
 
-> +               if (ret)
-> +                       goto out;
-> +       }
-> +
-> +       ret =3D crash_prepare_elf64_headers(cmem, true, addr, sz);
->
->  out:
->         kfree(cmem);
-> --
-> 2.34.1
->
+The architecture-optimized crypto and CRC code has been the same way.
+I've been working on it across architectures, and most of the arch
+maintainers don't pay much attention to it.
 
+I've seen engagement from a few of them, for example s390.  But as a
+general rule it's a separate group of people working on this code.
 
---=20
-Best Regards
- Guo Ren
+I think seeing the same for lib/raid/ is expected.  So while the arch
+maintainers are always welcome to chime in, I don't think we need to
+wait for all of them, as then we'd be waiting forever.
+
+Re testing, I've been running the crypto, CRC, and now the XOR KUnit
+tests in QEMU for 8 architectures (arm, arm64, mips, powerpc, riscv,
+s390, sparc, and x86), and over 40 variants within those (e.g. varying
+CONFIG_64BIT, CONFIG_CPU_BIG_ENDIAN, and QEMU's "-cpu" flag).  They are
+all passing, including the XOR test that Christoph added in this series.
+
+(So I guess feel free to add:
+
+    Tested-by: Eric Biggers <ebiggers@kernel.org>
+
+to all the patches in this series as well.)
+
+That still doesn't cover all the arch-optimized code, due to me missing
+various combinations or QEMU not supporting them.  But it's something.
+
+I'm also hoping that with the move to standard KUnit tests, we'll get a
+larger group of people, including projects like KernelCI, that simply
+run *all* the kernel's KUnit tests on whatever platforms they care
+about.  That approach is more scalable.
+
+- Eric
 
