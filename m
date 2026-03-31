@@ -1,73 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-19057-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19058-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80994FF60ED
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2026 08:47:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10E8BFF60FA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2026 09:35:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4flMDr6bfJz2ybQ;
-	Tue, 31 Mar 2026 19:47:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774946828;
-	cv=none; b=ihpluBaToYgVeiZygdeM6Ojx/V4f3Gpw4RHGyUq2OJE46Z3kwy+cSpyMJxXwZb26fOhtE8eRoF9SH0UP5j8/qgYjR/e/bv1pcf41hYcj3RGa3YEhkBcDAjWMigZm6YUNTLmQ5MIQrvbkikqLrEjyXxePE1l2pfswGrlyep62bwdAGf0Px0bgyAniwGi5QMQbPnbicwrcfK5KrvyBVy0hRMxd5Dj4/9ptVEFr4gpEpWMfy9SjFXKmYtni1NO1tTjLaE8uHsQgjfzMtwyZImRaxLiXNo23EIbAx5O9GAIZYzuaUz0fQCPpnrv3ajZ/cW/RI/vhjJhE48f+WiShPDsSiw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4flNK4473qz2ybQ;
+	Tue, 31 Mar 2026 20:35:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774949752;
+	cv=none; b=GkizzEGrcJVZax0p1raD20hGTGzSfBbLyWiQQkI3jtl2b+/E3AeL+yhh0nBwx9j/tzmZvYAeB56q4RlsD3Nv7Bt+xHgLFEKsSfXKXheBhfU5eeNt5oUswdZ6VtKy3LiMbOzCow4wql7X6DE32R5ezvA1As/KZTMYzqYGE2t/M7+FiojgXegau3/wiBs11DDNpmP+f5AcC8N38MMNNDNHdinGU8gBSbjOs9pg1tpvSgepzqBZYBW+1qEgPqE/guyMYPk4icWJ2YPChSh+9VZiO1A5GvSwSIOJkxMSK2BzWjQ0PyOBa7Q+rdtwOTqFhJvTYIoAauWYmdwrA0rEfL1YWA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774946828; c=relaxed/relaxed;
-	bh=obEuIzQqbn6GkwWr4hGc00g5eh9d9NZKowE8CH0TjBM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=HmYfSLdg4p0cTBU+uyC5cQeggN5Ymu7TqSCnmYHuNgVYiLk0r214PSJgtZXgiToeyjSXP1KRXvWon7CzV1KhO6YMJR5/QJUunK/vjid8bMxrc23kwmC0LSuU0bh2wtPuzzbyQjtYHpY69SNYJCWfyxjTUoqrMB30dzuxL1hDzwQB5MTYP/S41LOxHJ42GBo5bS6dswnRsE1tBKwZedZI2tSFKcZ/S8djjcqO8KfLUL+VNd3b7aVZCE2Nub4Ta1vWGyYlkkySvU/cjDnu6tC3Dvl+eYQRFq4P2EcREUHGDEEcU3jNOSJ0WPku8sbdfOaBrihNtP3SY0omuQzVRBD7Kw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CPErm2nB; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1774949752; c=relaxed/relaxed;
+	bh=swBl0Gu893SUlkDwITReUp1j5Y9GGDd7uI65QIu/fCk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=IiqKUbBceHLnQzL60V13VYuaa5IU/IEYZ1oKMMDnUIX+AWzqBS4pL5TbbiLZ2DRsMTpw46Z4oiXZ5ck5I3AkdCQhKTBYAfHSlbu8b017huFuNRs+ZQG01ETKKSTxnQ1qersRImMhfidxh3iNOL0ck8DCtNoZfuIFmMSfypVNoyTsx+2Lak1R1wtFYCQmAMxKJ/19jGdg55o5I2JyQhWoNaLZmfHLKrTC00TpNl05PLaEwokAHbTV//ZYoyGgBKXtuaS+nM3DyzRhkMQwpWxv/17U8cxqbXFb4WmwJhovkVqjOyBbfcpbx6Cr7V8Lh0ZcWbxEDHESO6YkZC/UG1SziA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Mfqe69hd; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CPErm2nB;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Mfqe69hd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4flMDr0xJ6z2xnZ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2026 19:47:07 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62UG8Lrd446369;
-	Tue, 31 Mar 2026 08:47:05 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
-	content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=obEuIz
-	Qqbn6GkwWr4hGc00g5eh9d9NZKowE8CH0TjBM=; b=CPErm2nBpo58HfeIVsUZ30
-	4s2t64nQ1y/O/j1ncTfTJIcgKY/fij6xa/pcR4utZ+L31JdrqWWqav4Co6C42Xh+
-	PP9mRsHt51BzJWUleQJZZLIxaEG2TZoGYjplar2OUQeNTAGxgsgUhqsxsr+UJYph
-	F0XTewEHJYeJTjK/pjo8fecniXzPqiVxybqZeq+PC9M4ffwaR1nqJ5vyMarebsHC
-	R4tFrLpSX/CQJzUXQHFFMcfXDJBtbU0trhQNkS1bs/tdh3z/zvkp1XJ/jn8y2c2f
-	r74TDE4C9411AJvONyDEMcd4SMyVuKKk6XWeHLFeNDViKZHdEJ+gXL81kx/I+4vw
-	==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d66ms1w3v-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 31 Mar 2026 08:47:05 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62V7JrSU013936;
-	Tue, 31 Mar 2026 08:47:04 GMT
-Received: from smtprelay04.wdc07v.mail.ibm.com ([172.16.1.71])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4d6ttkg5pf-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 31 Mar 2026 08:47:04 +0000
-Received: from smtpav05.wdc07v.mail.ibm.com (smtpav05.wdc07v.mail.ibm.com [10.39.53.232])
-	by smtprelay04.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62V8l4ru29164274
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 31 Mar 2026 08:47:04 GMT
-Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1B89A5813F;
-	Tue, 31 Mar 2026 08:47:04 +0000 (GMT)
-Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3A5675813E;
-	Tue, 31 Mar 2026 08:47:02 +0000 (GMT)
-Received: from [9.43.68.136] (unknown [9.43.68.136])
-	by smtpav05.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 31 Mar 2026 08:47:01 +0000 (GMT)
-Message-ID: <011c7f14-89cc-40ab-8a1c-6892e2b347b0@linux.ibm.com>
-Date: Tue, 31 Mar 2026 14:17:00 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4flNK34NVbz2xnZ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2026 20:35:51 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 34F75440CC;
+	Tue, 31 Mar 2026 09:35:49 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7708EC19423;
+	Tue, 31 Mar 2026 09:35:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774949749;
+	bh=QjbGnsBbsYu8AXy/HwbuH+528+5xrd5qo/0bIOJymqs=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Mfqe69hdpWppLKx9XJfxUeg28uOg70RVdflcA7ip7g8dxBdzR1M+a5VlfPHE78yyd
+	 mMsnQbvo2r3TfLNWrq0ztp9IPpB1HY6O/065w898RgLOfHlkk0lQO3C3P3rnPGRaSQ
+	 6cD0dEQZaVz+8Ak0SrRBkDC0IRBi6GSzTIoK8eq7m314BQZyX7TM0D2ZwEUdPiRQ3I
+	 nW/hDj9S/R3fWNCwZGexGRAtbCTAZ3UuvVKibfX01Qy9vmGi9Yqv8a47uQtJXnbzEl
+	 Xe4sRLN/vLHsydEOWhWnOp8YgtUeeMiiX0l/UbcWcvGMgYhnLYoRKD36jHfhVo83PH
+	 82BWtU8EfN5eg==
+Date: Tue, 31 Mar 2026 10:35:47 +0100
+From: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
+To: Suren Baghdasaryan <surenb@google.com>
+Cc: akpm@linux-foundation.org, willy@infradead.org, david@kernel.org, 
+	ziy@nvidia.com, matthew.brost@intel.com, joshua.hahnjy@gmail.com, 
+	rakie.kim@sk.com, byungchul@sk.com, gourry@gourry.net, 
+	ying.huang@linux.alibaba.com, apopple@nvidia.com, baolin.wang@linux.alibaba.com, 
+	Liam.Howlett@oracle.com, npache@redhat.com, ryan.roberts@arm.com, dev.jain@arm.com, 
+	baohua@kernel.org, lance.yang@linux.dev, vbabka@suse.cz, jannh@google.com, 
+	rppt@kernel.org, mhocko@suse.com, pfalcato@suse.de, kees@kernel.org, 
+	maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org, 
+	borntraeger@linux.ibm.com, frankja@linux.ibm.com, imbrenda@linux.ibm.com, hca@linux.ibm.com, 
+	gor@linux.ibm.com, agordeev@linux.ibm.com, svens@linux.ibm.com, 
+	gerald.schaefer@linux.ibm.com, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, 
+	kvm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Subject: Re: [PATCH v6 2/6] mm: use vma_start_write_killable() in mm syscalls
+Message-ID: <5d90d998-9b8d-435c-b684-260600311797@lucifer.local>
+References: <20260327205457.604224-1-surenb@google.com>
+ <20260327205457.604224-3-surenb@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,64 +76,346 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] mailmap: Add entry for Andrew Donnellan
-To: Andrew Donnellan <andrew+kernel@donnellan.id.au>,
-        Andrew Donnellan <ajd@linux.ibm.com>, linux-kernel@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org
-References: <20251208-mailmap-v1-1-524d5b9d175b@linux.ibm.com>
- <319bcdb0-1a26-48af-8a6b-3392facb6b62@donnellan.id.au>
-Content-Language: en-US
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-In-Reply-To: <319bcdb0-1a26-48af-8a6b-3392facb6b62@donnellan.id.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=J6enLQnS c=1 sm=1 tr=0 ts=69cb8a09 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8
- a=Q3gNrNfZ4n4HIx3YXgAA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzMxMDA3OCBTYWx0ZWRfXy3fU891hHpNy
- 3L3M3XXQmuMu0xYxfoLYlHy0D54FokSLPISEPnLaery7q2GLDSMscsktwstT8Wqgbhs8nyw//hM
- v1SGERCsIzFjlG6N/4bm1yZ7ZuOZxh1wM5cYDpctCn8u6zKqroBMRYD1qkVJpjKbrgIY06QMHwf
- muXMZqLqsYU2bv836qLltBO8pX3U5AekjqOUP3H2BQCvKI5DFgW/9ETNnuEKrIiC3erVRRHd4cY
- 1sGCPvPG9ogQb3YFYea+ZpzRp46rw8/BOIaWaiDagCcEt8p38dPBmmpCyeKyaviHnX4SHyQ92zf
- hGEV46W/c+eFZ30Mbzbcm7S8FuPWQvA1NgQseAPZRkX2T/bSdWP4vKRv6EFnOoLWy7fBNttUJZk
- yaN1PkoTrKd/GJ/pmF0SA8BYoux+QETfQ/p6KS5Zt2ia8kfu+dIYEm0YKzYw0rB+ggL7hAdguKc
- HQCHdbPwNMufHkSCfww==
-X-Proofpoint-GUID: Cf8qgG_hiPfPYh5X91EypeCijjQ8audV
-X-Proofpoint-ORIG-GUID: Cf8qgG_hiPfPYh5X91EypeCijjQ8audV
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-31_02,2026-03-28_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 clxscore=1011 adultscore=0 priorityscore=1501 bulkscore=0
- phishscore=0 malwarescore=0 lowpriorityscore=0 spamscore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603310078
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260327205457.604224-3-surenb@google.com>
 
-
-On 3/31/26 2:08 PM, Andrew Donnellan wrote:
-> On 12/8/25 16:13, Andrew Donnellan wrote:
->> I'm leaving IBM in January 2026. Add mailmap aliases to switch to 
->> using my
->> personal email for now.
->>
->> (I will send a patch to update MAINTAINERS soon, hopefully after I 
->> can get
->> someone to replace me.)
->>
->> Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
+On Fri, Mar 27, 2026 at 01:54:53PM -0700, Suren Baghdasaryan wrote:
+> Replace vma_start_write() with vma_start_write_killable() in syscalls,
+> improving reaction time to the kill signal.
 >
-> Maddy, could this be merged via powerpc? 
+> In a number of places we now lock VMA earlier than before to avoid
+> doing work and undoing it later if a fatal signal is pending. This
+> is safe because the moves are happening within sections where we
+> already hold the mmap_write_lock, so the moves do not change the
+> locking order relative to other kernel locks.
+>
+> Suggested-by: Matthew Wilcox <willy@infradead.org>
+> Signed-off-by: Suren Baghdasaryan <surenb@google.com>
 
-yep will do.
+I think Sashiko (presumably) has regressed this series :/
 
-Thanks
-Maddy
+> ---
+>  mm/madvise.c   | 13 ++++++++++---
+>  mm/memory.c    |  2 ++
+>  mm/mempolicy.c | 11 +++++++++--
+>  mm/mlock.c     | 30 ++++++++++++++++++++++++------
+>  mm/mprotect.c  | 25 +++++++++++++++++--------
+>  mm/mremap.c    |  8 +++++---
+>  mm/mseal.c     | 24 +++++++++++++++++++-----
+>  7 files changed, 86 insertions(+), 27 deletions(-)
+>
+> diff --git a/mm/madvise.c b/mm/madvise.c
+> index 69708e953cf5..f2c7b0512cdf 100644
+> --- a/mm/madvise.c
+> +++ b/mm/madvise.c
+> @@ -172,10 +172,17 @@ static int madvise_update_vma(vm_flags_t new_flags,
+>  	if (IS_ERR(vma))
+>  		return PTR_ERR(vma);
+>
+> -	madv_behavior->vma = vma;
+> +	/*
+> +	 * If a new vma was created during vma_modify_XXX, the resulting
+> +	 * vma is already locked. Skip re-locking new vma in this case.
+> +	 */
 
+well you're not re-locking, in vma_start_write_killable() we have:
 
-> Thanks,
-> Andrew
+	if (__is_vma_write_locked(vma))
+		return 0;
+
+So I'm not sure this is really worth the effort? Was this a sashiko 'find'?
+
+And is 're-locking' the right thing to say here? Probably nitty but that to me
+implies you're locking again when in fact you're just calling the function only
+to check seq nums uselessly and have a nop.
+
+But it's not like we're on a hotpath here where we're sweating every little
+thing, we're already taking the mmap write lock and doing heavy operations
+etc. so not sure we care all that much.
+
+OTOH, it's hardly like this is a bad thing so don't want to hold up series.
+
+> +	if (vma == madv_behavior->vma) {
+> +		if (vma_start_write_killable(vma))
+> +			return -EINTR;
+> +	} else {
+> +		madv_behavior->vma = vma;
+> +	}
+
+This is kind of ugly.
+
+Can't we just do:
+
+	const struct vm_area_struct *old_vma = madv_behavior->vma;
+	struct vm_area_struct *vma = old_vma;
+
+...
+	madv_behavior->vma = vma;
+	/* If the VMA didn't change, it isn't locked yet. */
+	if (vma == old_vma && vma_start_write_killable(vma))
+		return -EINTR;
+
+Instead? That is, assuming we really need to care about this at all.
+
+But I think I don't like this change at all?
+
+>
+> -	/* vm_flags is protected by the mmap_lock held in write mode. */
+> -	vma_start_write(vma);
+>  	vma->flags = new_vma_flags;
+>  	if (set_new_anon_name)
+>  		return replace_anon_vma_name(vma, anon_name);
+> diff --git a/mm/memory.c b/mm/memory.c
+> index e44469f9cf65..9f99ec634831 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -366,6 +366,8 @@ void free_pgd_range(struct mmu_gather *tlb,
+>   * page tables that should be removed.  This can differ from the vma mappings on
+>   * some archs that may have mappings that need to be removed outside the vmas.
+>   * Note that the prev->vm_end and next->vm_start are often used.
+> + * We don't use vma_start_write_killable() because page tables should be freed
+> + * even if the task is being killed.
+>   *
+>   * The vma_end differs from the pg_end when a dup_mmap() failed and the tree has
+>   * unrelated data to the mm_struct being torn down.
+> diff --git a/mm/mempolicy.c b/mm/mempolicy.c
+> index fd08771e2057..c38a90487531 100644
+> --- a/mm/mempolicy.c
+> +++ b/mm/mempolicy.c
+> @@ -1784,7 +1784,8 @@ SYSCALL_DEFINE4(set_mempolicy_home_node, unsigned long, start, unsigned long, le
+>  		return -EINVAL;
+>  	if (end == start)
+>  		return 0;
+> -	mmap_write_lock(mm);
+> +	if (mmap_write_lock_killable(mm))
+> +		return -EINTR;
+>  	prev = vma_prev(&vmi);
+>  	for_each_vma_range(vmi, vma, end) {
+>  		/*
+> @@ -1801,13 +1802,19 @@ SYSCALL_DEFINE4(set_mempolicy_home_node, unsigned long, start, unsigned long, le
+>  			err = -EOPNOTSUPP;
+>  			break;
+>  		}
+> +		/*
+> +		 * Lock the VMA early to avoid extra work if fatal signal
+> +		 * is pending.
+> +		 */
+> +		err = vma_start_write_killable(vma);
+> +		if (err)
+> +			break;
+>  		new = mpol_dup(old);
+>  		if (IS_ERR(new)) {
+>  			err = PTR_ERR(new);
+>  			break;
+>  		}
+>
+> -		vma_start_write(vma);
+>  		new->home_node = home_node;
+>  		err = mbind_range(&vmi, vma, &prev, start, end, new);
+>  		mpol_put(new);
+> diff --git a/mm/mlock.c b/mm/mlock.c
+> index 8c227fefa2df..2ed454db7cf7 100644
+> --- a/mm/mlock.c
+> +++ b/mm/mlock.c
+> @@ -419,8 +419,10 @@ static int mlock_pte_range(pmd_t *pmd, unsigned long addr,
+>   *
+>   * Called for mlock(), mlock2() and mlockall(), to set @vma VM_LOCKED;
+>   * called for munlock() and munlockall(), to clear VM_LOCKED from @vma.
+> + *
+> + * Return: 0 on success, -EINTR if fatal signal is pending.
+>   */
+> -static void mlock_vma_pages_range(struct vm_area_struct *vma,
+> +static int mlock_vma_pages_range(struct vm_area_struct *vma,
+>  	unsigned long start, unsigned long end,
+>  	vma_flags_t *new_vma_flags)
+>  {
+> @@ -442,7 +444,9 @@ static void mlock_vma_pages_range(struct vm_area_struct *vma,
+>  	 */
+>  	if (vma_flags_test(new_vma_flags, VMA_LOCKED_BIT))
+>  		vma_flags_set(new_vma_flags, VMA_IO_BIT);
+> -	vma_start_write(vma);
+> +	if (vma_start_write_killable(vma))
+> +		return -EINTR;
+> +
+>  	vma_flags_reset_once(vma, new_vma_flags);
+>
+>  	lru_add_drain();
+> @@ -453,6 +457,7 @@ static void mlock_vma_pages_range(struct vm_area_struct *vma,
+>  		vma_flags_clear(new_vma_flags, VMA_IO_BIT);
+>  		vma_flags_reset_once(vma, new_vma_flags);
+>  	}
+> +	return 0;
+>  }
+>
+>  /*
+> @@ -506,11 +511,15 @@ static int mlock_fixup(struct vma_iterator *vmi, struct vm_area_struct *vma,
+>  	 */
+>  	if (vma_flags_test(&new_vma_flags, VMA_LOCKED_BIT) &&
+>  	    vma_flags_test(&old_vma_flags, VMA_LOCKED_BIT)) {
+> +		ret = vma_start_write_killable(vma);
+> +		if (ret)
+> +			goto out; /* mm->locked_vm is fine as nr_pages == 0 */
+>  		/* No work to do, and mlocking twice would be wrong */
+> -		vma_start_write(vma);
+>  		vma->flags = new_vma_flags;
+>  	} else {
+> -		mlock_vma_pages_range(vma, start, end, &new_vma_flags);
+> +		ret = mlock_vma_pages_range(vma, start, end, &new_vma_flags);
+> +		if (ret)
+> +			mm->locked_vm -= nr_pages;
+>  	}
+>  out:
+>  	*prev = vma;
+> @@ -739,9 +748,18 @@ static int apply_mlockall_flags(int flags)
+>
+>  		error = mlock_fixup(&vmi, vma, &prev, vma->vm_start, vma->vm_end,
+>  				    newflags);
+> -		/* Ignore errors, but prev needs fixing up. */
+> -		if (error)
+> +		if (error) {
+> +			/*
+> +			 * If we failed due to a pending fatal signal, return
+> +			 * now. If we locked the vma before signal arrived, it
+> +			 * will be unlocked when we drop mmap_write_lock.
+> +			 */
+> +			if (fatal_signal_pending(current))
+> +				return -EINTR;
+> +
+> +			/* Ignore errors, but prev needs fixing up. */
+>  			prev = vma;
+> +		}
+>  		cond_resched();
+>  	}
+>  out:
+> diff --git a/mm/mprotect.c b/mm/mprotect.c
+> index 110d47a36d4b..d6227877465f 100644
+> --- a/mm/mprotect.c
+> +++ b/mm/mprotect.c
+> @@ -700,6 +700,7 @@ mprotect_fixup(struct vma_iterator *vmi, struct mmu_gather *tlb,
+>  	const vma_flags_t old_vma_flags = READ_ONCE(vma->flags);
+>  	vma_flags_t new_vma_flags = legacy_to_vma_flags(newflags);
+>  	long nrpages = (end - start) >> PAGE_SHIFT;
+> +	struct vm_area_struct *new_vma;
+>  	unsigned int mm_cp_flags = 0;
+>  	unsigned long charged = 0;
+>  	int error;
+> @@ -756,19 +757,27 @@ mprotect_fixup(struct vma_iterator *vmi, struct mmu_gather *tlb,
+>  		vma_flags_clear(&new_vma_flags, VMA_ACCOUNT_BIT);
+>  	}
+>
+> -	vma = vma_modify_flags(vmi, *pprev, vma, start, end, &new_vma_flags);
+> -	if (IS_ERR(vma)) {
+> -		error = PTR_ERR(vma);
+> +	new_vma = vma_modify_flags(vmi, *pprev, vma, start, end,
+> +				   &new_vma_flags);
+> +	if (IS_ERR(new_vma)) {
+> +		error = PTR_ERR(new_vma);
+>  		goto fail;
+>  	}
+>
+> -	*pprev = vma;
+> -
+>  	/*
+> -	 * vm_flags and vm_page_prot are protected by the mmap_lock
+> -	 * held in write mode.
+> +	 * If a new vma was created during vma_modify_flags, the resulting
+> +	 * vma is already locked. Skip re-locking new vma in this case.
+>  	 */
+> -	vma_start_write(vma);
+> +	if (new_vma == vma) {
+> +		error = vma_start_write_killable(vma);
+> +		if (error)
+> +			goto fail;
+> +	} else {
+> +		vma = new_vma;
+> +	}
+
+I mean again this is hideous and I don't know why we're bothering? This just
+introduces even more open-coded VMA lock specific stuff everywhere.
+
+And the comment is just not correct, we're not re-locking anything if it's
+already locked...
+
+> +
+> +	*pprev = vma;
+> +
+>  	vma_flags_reset_once(vma, &new_vma_flags);
+>  	if (vma_wants_manual_pte_write_upgrade(vma))
+>  		mm_cp_flags |= MM_CP_TRY_CHANGE_WRITABLE;
+> diff --git a/mm/mremap.c b/mm/mremap.c
+> index e9c8b1d05832..0860102bddab 100644
+> --- a/mm/mremap.c
+> +++ b/mm/mremap.c
+> @@ -1348,6 +1348,11 @@ static unsigned long move_vma(struct vma_remap_struct *vrm)
+>  	if (err)
+>  		return err;
+>
+> +	/* We don't want racing faults. */
+> +	err = vma_start_write_killable(vrm->vma);
+> +	if (err)
+> +		return err;
+> +
+>  	/*
+>  	 * If accounted, determine the number of bytes the operation will
+>  	 * charge.
+> @@ -1355,9 +1360,6 @@ static unsigned long move_vma(struct vma_remap_struct *vrm)
+>  	if (!vrm_calc_charge(vrm))
+>  		return -ENOMEM;
+>
+> -	/* We don't want racing faults. */
+> -	vma_start_write(vrm->vma);
+> -
+>  	/* Perform copy step. */
+>  	err = copy_vma_and_data(vrm, &new_vma);
+>  	/*
+> diff --git a/mm/mseal.c b/mm/mseal.c
+> index 603df53ad267..1ea19fd3d384 100644
+> --- a/mm/mseal.c
+> +++ b/mm/mseal.c
+> @@ -70,14 +70,28 @@ static int mseal_apply(struct mm_struct *mm,
+>
+>  		if (!vma_test(vma, VMA_SEALED_BIT)) {
+>  			vma_flags_t vma_flags = vma->flags;
+> +			struct vm_area_struct *new_vma;
+>
+>  			vma_flags_set(&vma_flags, VMA_SEALED_BIT);
+>
+> -			vma = vma_modify_flags(&vmi, prev, vma, curr_start,
+> -					       curr_end, &vma_flags);
+> -			if (IS_ERR(vma))
+> -				return PTR_ERR(vma);
+> -			vma_start_write(vma);
+> +			new_vma = vma_modify_flags(&vmi, prev, vma, curr_start,
+> +						   curr_end, &vma_flags);
+> +			if (IS_ERR(new_vma))
+> +				return PTR_ERR(new_vma);
+> +
+> +			/*
+> +			 * If a new vma was created during vma_modify_flags,
+> +			 * the resulting vma is already locked.
+> +			 * Skip re-locking new vma in this case.
+> +			 */
+> +			if (new_vma == vma) {
+> +				int err = vma_start_write_killable(vma);
+> +				if (err)
+> +					return err;
+> +			} else {
+> +				vma = new_vma;
+> +			}
+> +
+
+I mean this is the exact same open-coded block all over this patch, and again I
+don't see the point...
+
+The VMA locking is tricky enough that I don't think doing this is a good idea,
+especially on the basis of 'avoid looking at sequence numbers under mmap write
+lock' or something.
+
+>  			vma_set_flags(vma, VMA_SEALED_BIT);
+>  		}
+>
+> --
+> 2.53.0.1018.g2bb0e51243-goog
+>
 
