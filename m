@@ -1,83 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-19052-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19053-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1665FF60CF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2026 07:13:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2A0DFF60D9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2026 08:06:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4flK8Q2shFz2ybR;
-	Tue, 31 Mar 2026 18:13:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774941190;
-	cv=none; b=XquoztdbQAdBEzvigBM//TIJKDAapSWSltAoSr6ZmIPrW1YJwTv755EXbsDoZ6RKn0i1TUO2yscNv/QRdLTrS2kdASNx/i+8YApMdtzXU6TDs5KV5v4OyO4TClOfvsE1h6coS8zMO7OhJM+cErT8OaN8xR11lljWopRZtvntUBt/Mmdmu+oTR/UWuxQT06fA31VZ1wh6G7XerCo7qB8M86kMlo8B3ePyhL6yAUkhhkHeNAmWDRsCHI4l93H5bH4hUA862SkMNiyMTiEnzCs1DYBfzbsszTLr2aatFs+adMW9vKSF2bNH+wU6KpfDA2MmGOYox5BoWeflIDMSB55Rtg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4flLLH3ggxz2xnZ;
+	Tue, 31 Mar 2026 19:06:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774944407;
+	cv=none; b=fhPcCyYeDOWSqw/JSD/UapRx7ibCOaRQGTpFqlgfurCwX2gdxCdB482+b5wD885crDXlDHMu3WjJwoDwcjO+WnW1A3Y1EOPeBjopCyf5okfQCLLHw2fU8VDGRkdyGM8jwVeD90XACIV9mdbk6z8S+S79hp+5c4DFXxSO5qGBdq7BY4/vBln3N2gh6Tk7sSGvh6EfhRSD4iqT0VKbWflm/77foxTvYbv2SJzR/0MKLN3jrESefSbCV0SnpDQSfd9zHYVgvrM4pTghDsiR3juQjmv+9UPXmKEhnuU90Z6NkpHo5I2MDCZM/vVaFBBnDbSPPymdO/Q2Y5a4ihA9YaNChA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774941190; c=relaxed/relaxed;
-	bh=luFavRrVLyuYw5Pp7Hq4J37Yw0Jet8kP6askoheBw5k=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 In-Reply-To:Content-Type:Content-Disposition; b=nzDuea/lv+pW9x1CifOBKjzBkYqljpkESvnCHvGAT7mYaA45G/iEo32Y8+9bL6R5u7v6l/u6GeKcqdXK3jN6VHdyWT7wnYIFiiRhZpINzrUr9nWZ8wmeeXxp7fINHCYp1CwqatxwL+6ywsp01f4+zWKMRvkYDDJzs+Tp+xDQ4eMHlC+jOfvba+N/oN97G/kb1B5k/2p/elLOGBjZhSZqDV0XL67Njxpp0vVC0Cnsm8+ONqWiUVwxCfWReL7gpQLYLvlLT8Ng0ZNlq/486ODDrtzEzWIpB0Hl6yoDrfuiVdQ6pOcSEFLnR/HbeKo2yOjxbLnxtiMbdycIjBY0nJJBSA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=HiLMb1uY; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=HiLMb1uY; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1774944407; c=relaxed/relaxed;
+	bh=Tw/cKtFdiLF09y34hph3UamFXBgy8d+h+o3fkHZct0g=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:To:From:
+	 References:In-Reply-To; b=coSxpmetntKQZYugTG32DW1+4l1AAPmbVvFI4p0pluOEy4MQGvwIKhPr+P5VN1bAoAksDqSf2llfMAfzdBjm1kq8XVrL84jnNpmh8BiGIfh3/9xK8McXC3SqAEKzoY8w8TPPsHW3akHMcvCQLKzZKZkgAyNHQ8VhE6gnOnyzb5pNLoQoQ2FRdrvyqbjWzMQbgsJ1Oq3L0wUeGPaDgWYJ1jYVx+lCLkL43+Kp5yQLjo99zJj0aWHg1Gz1t3Qzs01RWRi3Oto/LZWEcLzAAKjqe6FJeMqQsz+ADQkGnt7310GFE5xyw9lpfV2d4zHc/ztvLm9eokPGtvK0LLkLpxhEpg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AWIlCHwQ; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=HiLMb1uY;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=HiLMb1uY;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AWIlCHwQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4flK8P42CNz2ybQ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2026 18:13:09 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1774941186;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=luFavRrVLyuYw5Pp7Hq4J37Yw0Jet8kP6askoheBw5k=;
-	b=HiLMb1uYqMUQ5trgMTxFarHM61DnE7M5nCEKIzCqndsM8/TPS/pX2Y/5b+q/jtulPXD9VP
-	LNJZtidQYTOwXP3uvWI6HDBceZRE6PLk7n6dbT5ENDEHv9bQriY4nMCeLDRpCa+sq1lBj1
-	lRa89sA2Q/gzOmPYHfmf9pD0St+4mR4=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1774941186;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=luFavRrVLyuYw5Pp7Hq4J37Yw0Jet8kP6askoheBw5k=;
-	b=HiLMb1uYqMUQ5trgMTxFarHM61DnE7M5nCEKIzCqndsM8/TPS/pX2Y/5b+q/jtulPXD9VP
-	LNJZtidQYTOwXP3uvWI6HDBceZRE6PLk7n6dbT5ENDEHv9bQriY4nMCeLDRpCa+sq1lBj1
-	lRa89sA2Q/gzOmPYHfmf9pD0St+4mR4=
-Received: from mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-176-d6vwkgkuNLO4Lk1HCZw_4w-1; Tue,
- 31 Mar 2026 03:13:02 -0400
-X-MC-Unique: d6vwkgkuNLO4Lk1HCZw_4w-1
-X-Mimecast-MFC-AGG-ID: d6vwkgkuNLO4Lk1HCZw_4w_1774941180
-Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.12])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 256BC180061A;
-	Tue, 31 Mar 2026 07:13:00 +0000 (UTC)
-Received: from localhost (unknown [10.72.112.177])
-	by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 843321955F42;
-	Tue, 31 Mar 2026 07:12:58 +0000 (UTC)
-Date: Tue, 31 Mar 2026 15:12:54 +0800
-From: Baoquan He <bhe@redhat.com>
-To: Coiby Xu <coxu@redhat.com>
-Cc: kexec@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org,
-	kernel test robot <lkp@intel.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Vivek Goyal <vgoyal@redhat.com>, Dave Young <dyoung@redhat.com>,
-	open list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v5 2/3] crash: Align the declaration of
- crash_load_dm_crypt_keys with CONFIG_CRASH_DM_CRYPT
-Message-ID: <actz9u1rBnvtuBUm@fedora>
-References: <20260225060347.718905-1-coxu@redhat.com>
- <20260225060347.718905-3-coxu@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4flLLG4CDWz2xSb
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2026 19:06:46 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id E36C860133;
+	Tue, 31 Mar 2026 08:06:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9364DC2BCB1;
+	Tue, 31 Mar 2026 08:06:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774944403;
+	bh=7ZnFUcGBpSYxCeawHwcWvE73wN8LYb8XSX/aZ34llBU=;
+	h=Date:Subject:Cc:To:From:References:In-Reply-To:From;
+	b=AWIlCHwQfZsUuHzOmGZpVGY5YC2rf+d68CeBHq+msonYwp7U2eqLrZxes/cDwOhzj
+	 cxpHUVzGLXyiRtTuiesiUTZk1jZ4TcDex7KFW8cftoKdzZUi7rr5OJwggbIXG1Qkjk
+	 y+1kJYFjlXJgwRMxjX5gpnBgZX2SWzf28LHVl+Lqu+vuVqVDfsqOYyI0fBSLNK4oiz
+	 5o/ZjxvWe1HfMi03Q77GYttGBzv0VRF/kGrPedoVKNJAcdTkHpW3bIz1sDtXTCy1mo
+	 2Z3qOFa/hlvy8JEPivh5B8wp9J/5+CgONWe9R6Y+M3smVnPJrUWUnRppA4rHbFzvHS
+	 mmm1NDCdVo7ag==
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,66 +56,141 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-In-Reply-To: <20260225060347.718905-3-coxu@redhat.com>
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
-X-Mimecast-MFC-PROC-ID: XPS60MN0hJdgqmHV6NJqt9z0iTUTrQI_B4p6ODqlRiw_1774941180
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 31 Mar 2026 10:06:32 +0200
+Message-Id: <DHGT9XCG8Y96.3IB1EI6FF1ZDZ@kernel.org>
+Subject: Re: [PATCH 05/12] PCI: use generic driver_override infrastructure
+Cc: "Jason Gunthorpe" <jgg@ziepe.ca>, "Russell King"
+ <linux@armlinux.org.uk>, "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, "Ioana Ciornei"
+ <ioana.ciornei@nxp.com>, "Nipun Gupta" <nipun.gupta@amd.com>, "Nikhil
+ Agarwal" <nikhil.agarwal@amd.com>, "K. Y. Srinivasan" <kys@microsoft.com>,
+ "Haiyang Zhang" <haiyangz@microsoft.com>, "Wei Liu" <wei.liu@kernel.org>,
+ "Dexuan Cui" <decui@microsoft.com>, "Long Li" <longli@microsoft.com>,
+ "Bjorn Helgaas" <bhelgaas@google.com>, "Armin Wolf" <W_Armin@gmx.de>,
+ "Bjorn Andersson" <andersson@kernel.org>, "Mathieu Poirier"
+ <mathieu.poirier@linaro.org>, "Vineeth Vijayan" <vneethv@linux.ibm.com>,
+ "Peter Oberparleiter" <oberpar@linux.ibm.com>, "Heiko Carstens"
+ <hca@linux.ibm.com>, "Vasily Gorbik" <gor@linux.ibm.com>, "Alexander
+ Gordeev" <agordeev@linux.ibm.com>, "Christian Borntraeger"
+ <borntraeger@linux.ibm.com>, "Sven Schnelle" <svens@linux.ibm.com>, "Harald
+ Freudenberger" <freude@linux.ibm.com>, "Holger Dengler"
+ <dengler@linux.ibm.com>, "Mark Brown" <broonie@kernel.org>, "Michael S.
+ Tsirkin" <mst@redhat.com>, "Jason Wang" <jasowang@redhat.com>, "Xuan Zhuo"
+ <xuanzhuo@linux.alibaba.com>, =?utf-8?q?Eugenio_P=C3=A9rez?=
+ <eperezma@redhat.com>, "Juergen Gross" <jgross@suse.com>, "Stefano
+ Stabellini" <sstabellini@kernel.org>, "Oleksandr Tyshchenko"
+ <oleksandr_tyshchenko@epam.com>, "Christophe Leroy (CS GROUP)"
+ <chleroy@kernel.org>, <linux-kernel@vger.kernel.org>,
+ <driver-core@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-hyperv@vger.kernel.org>, <linux-pci@vger.kernel.org>,
+ <platform-driver-x86@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
+ <linux-remoteproc@vger.kernel.org>, <linux-s390@vger.kernel.org>,
+ <linux-spi@vger.kernel.org>, <virtualization@lists.linux.dev>,
+ <kvm@vger.kernel.org>, <xen-devel@lists.xenproject.org>,
+ <linux-arm-kernel@lists.infradead.org>, "Gui-Dong Han"
+ <hanguidong02@gmail.com>
+To: "Alex Williamson" <alex@shazbot.org>
+From: "Danilo Krummrich" <dakr@kernel.org>
+References: <20260324005919.2408620-1-dakr@kernel.org>
+ <20260324005919.2408620-6-dakr@kernel.org>
+ <DHGATG6LJOM1.2AI7BYQ2O4DFU@kernel.org>
+ <20260330141050.2cb47bd9@shazbot.org>
+In-Reply-To: <20260330141050.2cb47bd9@shazbot.org>
 
-On 02/25/26 at 02:03pm, Coiby Xu wrote:
-> This will prevent a compiling failure when CONFIG_CRASH_DUMP is enabled
-> but CONFIG_CRASH_DM_CRYPT is disabled,
-> 
->        arch/powerpc/kexec/elf_64.c: In function 'elf64_load':
->     >> arch/powerpc/kexec/elf_64.c:82:23: error: implicit declaration of function 'crash_load_dm_crypt_keys' [-Werror=implicit-function-declaration]
->           82 |                 ret = crash_load_dm_crypt_keys(image);
->              |                       ^~~~~~~~~~~~~~~~~~~~~~~~
->        cc1: some warnings being treated as errors
-> 
-> Reported-by: kernel test robot <lkp@intel.com>
-> Closes: https://lore.kernel.org/oe-kbuild-all/202602120648.RgQALnnI-lkp@intel.com/
-> Signed-off-by: Coiby Xu <coxu@redhat.com>
-> ---
->  include/linux/crash_core.h | 14 +++++++-------
->  1 file changed, 7 insertions(+), 7 deletions(-)
+On Mon Mar 30, 2026 at 10:10 PM CEST, Alex Williamson wrote:
+> On Mon, 30 Mar 2026 19:38:41 +0200
+> "Danilo Krummrich" <dakr@kernel.org> wrote:
+>
+>> (Cc: Jason)
+>>=20
+>> On Tue Mar 24, 2026 at 1:59 AM CET, Danilo Krummrich wrote:
+>> > diff --git a/drivers/vfio/pci/vfio_pci_core.c b/drivers/vfio/pci/vfio_=
+pci_core.c
+>> > index d43745fe4c84..460852f79f29 100644
+>> > --- a/drivers/vfio/pci/vfio_pci_core.c
+>> > +++ b/drivers/vfio/pci/vfio_pci_core.c
+>> > @@ -1987,9 +1987,8 @@ static int vfio_pci_bus_notifier(struct notifier=
+_block *nb,
+>> >  	    pdev->is_virtfn && physfn =3D=3D vdev->pdev) {
+>> >  		pci_info(vdev->pdev, "Captured SR-IOV VF %s driver_override\n",
+>> >  			 pci_name(pdev));
+>> > -		pdev->driver_override =3D kasprintf(GFP_KERNEL, "%s",
+>> > -						  vdev->vdev.ops->name);
+>> > -		WARN_ON(!pdev->driver_override);
+>> > +		WARN_ON(device_set_driver_override(&pdev->dev,
+>> > +						   vdev->vdev.ops->name)); =20
+>>=20
+>> Technically, this is a change in behavior. If vdev->vdev.ops->name is NU=
+LL, it
+>> will trigger the WARN_ON(), whereas before it would have just written "(=
+null)"
+>> into driver_override.
+>
+> It's worse than that.  Looking at the implementation in [1], we have:
+>
+> +static inline int device_set_driver_override(struct device *dev, const c=
+har *s)
+> +{
+> +	return __device_set_driver_override(dev, s, strlen(s));
+> +}
+>
+> So if name is NULL, we oops in strlen() before we even hit the -EINVAL
+> and WARN_ON().
 
-Acked-by: Baoquan He <bhe@redhat.com>
+This was changed in v2 [2] and the actual code in-tree is
 
-> 
-> diff --git a/include/linux/crash_core.h b/include/linux/crash_core.h
-> index d35726d6a415..c1dee3f971a9 100644
-> --- a/include/linux/crash_core.h
-> +++ b/include/linux/crash_core.h
-> @@ -34,13 +34,6 @@ static inline void arch_kexec_protect_crashkres(void) { }
->  static inline void arch_kexec_unprotect_crashkres(void) { }
->  #endif
->  
-> -#ifdef CONFIG_CRASH_DM_CRYPT
-> -int crash_load_dm_crypt_keys(struct kimage *image);
-> -ssize_t dm_crypt_keys_read(char *buf, size_t count, u64 *ppos);
-> -#else
-> -static inline int crash_load_dm_crypt_keys(struct kimage *image) {return 0; }
-> -#endif
-> -
->  #ifndef arch_crash_handle_hotplug_event
->  static inline void arch_crash_handle_hotplug_event(struct kimage *image, void *arg) { }
->  #endif
-> @@ -96,4 +89,11 @@ static inline void crash_save_cpu(struct pt_regs *regs, int cpu) {};
->  static inline int kimage_crash_copy_vmcoreinfo(struct kimage *image) { return 0; };
->  #endif /* CONFIG_CRASH_DUMP*/
->  
-> +#ifdef CONFIG_CRASH_DM_CRYPT
-> +int crash_load_dm_crypt_keys(struct kimage *image);
-> +ssize_t dm_crypt_keys_read(char *buf, size_t count, u64 *ppos);
-> +#else
-> +static inline int crash_load_dm_crypt_keys(struct kimage *image) {return 0; }
-> +#endif
-> +
->  #endif /* LINUX_CRASH_CORE_H */
-> -- 
-> 2.53.0
-> 
+	static inline int device_set_driver_override(struct device *dev, const cha=
+r *s)
+	{
+		return __device_set_driver_override(dev, s, s ? strlen(s) : 0);
+	}
 
+so it does indeed return -EINVAL for a NULL pointer.
+
+> I don't believe we have any vfio-pci variant drivers where the name is
+> NULL, but kasprintf() handling NULL as "(null)" was a consideration in
+> this design, that even if there is no name the device is sequestered
+> with a driver_override that won't match an actual driver.
+>
+>> I assume that vfio_pci_core drivers are expected to set the name in stru=
+ct
+>> vfio_device_ops in the first place and this code (silently) relies on th=
+is
+>> invariant?
+>
+> We do expect that, but it was previously safe either way to make sure
+> VFs are only bound to the same ops driver or barring that, at least
+> don't perform a standard driver match.  The last thing we want to
+> happen automatically is for a user owned PF to create SR-IOV VFs that
+> automatically bind to native kernel drivers.
+> =20
+>> Alex, Jason: Should we keep this hunk above as is and check for a proper=
+ name in
+>> struct vfio_device_ops in vfio_pci_core_register_device() with a subsequ=
+ent
+>> patch?
+>
+> Given the oops, my preference would be to roll it in here.  This change
+> is what makes it a requirement that name cannot be NULL, where this was
+> safely handled with kasprintf().
+
+Again, no oops here. :)
+
+I still think it makes more sense to fail early in
+vfio_pci_core_register_device(), rather than silently accept "(null)" in
+driver_override. It also doesn't seem unreasonable with only the WARN_ON(),=
+ but
+I can also just add vdev->vdev.ops->name ?: "(null)".
+
+Please let me know what you prefer.
+
+- Danilo
+
+> [1] https://lore.kernel.org/all/20260302002729.19438-2-dakr@kernel.org/
+
+[2] https://lore.kernel.org/driver-core/20260303115720.48783-1-dakr@kernel.=
+org/
 
