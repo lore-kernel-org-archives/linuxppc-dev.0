@@ -1,80 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-19113-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19114-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 770C510F9303
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2026 20:54:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7460B10F9300
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2026 21:14:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4flgMj0ry3z2yjs;
-	Wed, 01 Apr 2026 07:54:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::122a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774990449;
-	cv=none; b=bK6wnaIhDO1441Nlll7ozk3vmm+KST4UonCP2U/7gowHOX1CaRjNdG+cfsxM6R6GOgrXZ3FA46WBC4Ol0eYlrIKHYWYwRpgF4bqswmeZOwLlLqUFwLtVdGQygeCxOI/Hfwk3hy17G0P3Ab6FGESgTQFVnfn0TuV6VPlXB/sgIyAM4ETkcvlisW5vaKLwDcCQVwNNBwPKicpzbnnpZ81NCrwvNcLCOMB3cWq2miU2UBNP0KbJtcSaVTBKxwukq9/ibMohpWnn9P8Ctgvay9tbAdC7OjH8d05Po8/2TBMEaTSuTDciCbf2Z19SYLdNLGN4QNI2ky3a4iEcnHScQ40TYw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4flgq60s3Nz2xQr;
+	Wed, 01 Apr 2026 08:14:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774991666;
+	cv=none; b=hUS7M9dQEf0yZh1cCoW0nTWjHY5hkvBz6F37JvOyiROjnRBfqj8WUIZrkqTiUi8FG02WwEBERhtRLww3RcF9OtX7ujyj1CuwY5syWsOlGyPp2AfzkFUPXYUzf48JldbgHT2R8RF5U/EzxhufgPkatdqgnJdA1rKzl/ZlM+QE3mvgtSUq5jrS39TgluTqREDzfBWR/EHd1oPn0d4jPECINKBwMfGyRin034gHenXnG1hv6G55IQLVt2N4nGZGSy4s3+cNbMLlniyIQp2mjJ6vhbdNv6pv384mlhal5MLCi8uAPS9H0CjS5eytT2szmBuz4GJmfVfgGqVM93WT69y98g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774990449; c=relaxed/relaxed;
-	bh=ZspNX5rs+mbfHqezyzp4ll5OJtm1yyo5L/3asPtSr14=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=RTy4Ge6gbkU6oDVR7Uiqia8ohaEUhgemg8sZu0IFt57Mcsb8r4kKaYsxwSgP31uLCUwLWiVOLgsAO1w/638dD5m34rOMjp90FKd8UAjG39WsrL11sn7TeYpqnHDKeiqJZEc7mpRWVY1mbrKZNwZ/0fpSeLGYanqmLxm16+yOgFV+mv1HJ0JEHRPYF3NYuyeQFwY7GDjqvmi+i0XaedeJDy+9vC/8S/ivC/JZ+FeQpoDw/1T3eL9ZwaVzd4avFq9qEEUy14YVieLuwWA1F4DBYjTsqNO10+aaUco9ro0exhYYZ/FROzk/QGil+ZXEJBQeW9SFzJniT/O9e5xou/F4hg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ddShxiHr; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122a; helo=mail-dl1-x122a.google.com; envelope-from=cassiogabrielcontato@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1774991666; c=relaxed/relaxed;
+	bh=BP58qPqPxGlCUhciznkv7Din9R33uAXsesYeu9BIBzw=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=KSvipElV/nJa0csWvXAy3LKO/tlOgBiLQfqjxQGOAQcY+i5DApB/GGfPdH0Vu3gZ3kQUph/0Rg2FIAaEZM/Y5r+WkiU13apy7iNJf3bIKE/TVe+LycEXLiaQjShlVhGAtGa8i1MDCKtGr99eYRlcQXq4+VaLlzE6/Q7FnSJP0TCQGL9hP0dny3o41BiVURflw6FlUan02ZcVOTACnlwBqdVsrwPPpIXf2uDBsNcLErASit1l8vjNWJxi3eLVRoe1ukmdDIr1494/1c0R8wiA4Y+bbG1gU2fjRS4JP+kPJkUsOW8h8FlRlTmXT1VaubRSINHNHMBRZT8tJj2tqeCnhg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=dTM1ZEC0; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132b; helo=mail-dy1-x132b.google.com; envelope-from=cassiogabrielcontato@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ddShxiHr;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=dTM1ZEC0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::122a; helo=mail-dl1-x122a.google.com; envelope-from=cassiogabrielcontato@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-x122a.google.com (mail-dl1-x122a.google.com [IPv6:2607:f8b0:4864:20::122a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132b; helo=mail-dy1-x132b.google.com; envelope-from=cassiogabrielcontato@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x132b.google.com (mail-dy1-x132b.google.com [IPv6:2607:f8b0:4864:20::132b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4flgMg3t1Yz2yjp
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 07:54:06 +1100 (AEDT)
-Received: by mail-dl1-x122a.google.com with SMTP id a92af1059eb24-1271195d2a7so514388c88.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2026 13:54:06 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4flgq50P62z2xLt
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 08:14:24 +1100 (AEDT)
+Received: by mail-dy1-x132b.google.com with SMTP id 5a478bee46e88-2c6f5574d3cso197939eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2026 14:14:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1774990444; x=1775595244; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:content-language:from
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=ZspNX5rs+mbfHqezyzp4ll5OJtm1yyo5L/3asPtSr14=;
-        b=ddShxiHrt6aYjVthLqF7vCfJEzvg/tcDXJCsTprvW20dCKBWWLHfKMWY2QwRStFDcq
-         DiaFpiv57rgFFUSxA1HHAxVX8936UAUCCXYcQAAg8kFUjYYpZXiERyTharjdCcBKDLO0
-         PQtkRZkpVSu0eMxTvLw/NkZ/bC/ItLmx7IGgUJl95cyC2vS/3tj9JljSnEMQDstal1PN
-         A0zIZK64OqeaVff35Gn3FnkwVm8Bb2u8FWuQ6tul4egCZ3fqXsEGB2DoXkT+CIF+L/ol
-         52Bikf1YH473p60gkjMl8BouqkztarBYn90KpLYKaHzqvPR/j2GU4JTFYhZP+uD+uRPl
-         uDxg==
+        d=gmail.com; s=20251104; t=1774991661; x=1775596461; darn=lists.ozlabs.org;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=BP58qPqPxGlCUhciznkv7Din9R33uAXsesYeu9BIBzw=;
+        b=dTM1ZEC0GUeFbeD6DWEL8ptd6Hc+tQA7FNY/uP5vcB7K0jIT4GmAFTdo2nx3WcVA3o
+         AEwnKXUITNH2/tj2OZFfFL0g2j04m3h7pTt+e3G/rxcZcvC99zItzm61Kp+1MiPB5OQx
+         fIXGRsbH355qAncqE65JVC4jsW1r24+mv7HcLLpfapv9oI726RliyWz3WKFWJCPqceHw
+         e9PslsqPeEQ39naWxkqGSqzcL7Xg456aPXHHKWfGOk1ZIJUNGOt7j098io3D8qR7tGEH
+         aAnae3kBgpwxwl3UPVkc1u0PVe06Vk8LVrdX5EfSUAufD1sy17aP/pilOkIkQsgzHOeP
+         vkrw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774990444; x=1775595244;
-        h=content-transfer-encoding:in-reply-to:content-language:from
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=ZspNX5rs+mbfHqezyzp4ll5OJtm1yyo5L/3asPtSr14=;
-        b=RzTUEbnL9GB6sV6hemRXW5h7toOkkTrIVuGoP/VrFz0ka1IjATI4ahMXFzbAchsyY4
-         ABGGoiVpuDpsXPqYAtUo1sYub5bSld8TUrU5RgVcn7UAva6NSbpzg8jr8wJcse8HIn/j
-         xLJGOxZcQv87JfJx4eP/aJtpZDGhz6+rFsZwbH5QpCENWw0m3MnjOqe9KeF+imGZ1WOq
-         FaaS43S/yCYvc0QlumgcqJg0p6g37pHSGOHqZWYwSUOmL3yKasN/18MjgPpONVq9Su1e
-         2KS49z5xXwHmYodNOfH8Rfw8srNBLbtk5r2IulaPRV7QrGgqnI/+N7PI+6hKQ/U/kVXY
-         FS2w==
-X-Forwarded-Encrypted: i=1; AJvYcCV/n6rmNpXTRR5ZOwrYdJuvn62FNzgFGwlyaUTJPuP83yF3LO4/i9XdsdQB1ebmhYfSzbDMD5b18fYDsEg=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwqZBow+7P9as+TZXd05q2AljB+WtjOqq05dLE5mddPhpnYdyz9
-	YQL+DSlwu+/4p6j1vcWEcnoLzWxGBzt8GcqMtj0hDh+lTJ/OjHWikFs7
-X-Gm-Gg: ATEYQzzbJjkX2xw7cvv/RfRY4azw39tFMIxJUzHXjwd3WhQXEJ3X2P8AxMVLHcziLGT
-	9oeCpSkJWZVik8XpxuemG1Z1EcLpi3Ot9eIkw4EDCrwJ7MI0UePcFkv/Kej59aWw5HQ8JZD/ZHS
-	Jsn2BmQKHtcEC3EBer1632bcEteXCzV6d9YyJJ9S2LJdcNOCZyrr11w6tfKRRW8O072KMuzU+zJ
-	NxPQ/CuWQxOrrI9JqK2Xdl7KLaFMFgT5ATgZ2I4+r4HKQQyi0/3ylEDosScKjJwv50g3gWeoQV0
-	H/8grkY/8ZcqCt7T4DybIqzn/DoTsCCkpfLB0Cb+2F9eBpxS5hx1XmswNiI5P0N7qFpAILjAWDv
-	wpsFjMuGrPJ0vWx68pWWb5YCoP6j+S4KipPY5puJC6mOIww5a/Q793vyf/90M8Su6b/x94uf5BS
-	LpmbplnOtiyjkp0AUwBRukR+e+s6EHjJkpdhCn6Q6cCfqHPvnAzmWGn2IsBnSdGFdmUE88tn5Kg
-	nA=
-X-Received: by 2002:a05:7300:fb8e:b0:2c7:11f2:d072 with SMTP id 5a478bee46e88-2c9323b8c8cmr558693eec.16.1774990443987;
-        Tue, 31 Mar 2026 13:54:03 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1774991661; x=1775596461;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=BP58qPqPxGlCUhciznkv7Din9R33uAXsesYeu9BIBzw=;
+        b=YJYiIbyabRjInQQol3Sjf+qCe31LBbVPT6CWt0wm9lht6urivmEdXee2EyLn4S0WlU
+         bN4Xh7zDe45qAO42isCcnpeNfS36LZsKT0x7dET+VHr59aqTnoWq84FbZ8MJjeHJjExu
+         qaUCQFaCkcIxTWYfALcOXSy0pPpsb2e5/nd20BaZYVl0X33HraPchjtzfYQiVupSaSAO
+         4BpWNqBXe2bbUiLvfXg/UmkM5jm5O23BBiiHeQPoEcUQ2TqldNQhnKALxhGiHHWTEJ6E
+         bguPgW3W4bQVOdrENB9DzHWIerNGNkkU03vQgqKNrYuB+5jSUOk7DSQ48+CmivRSPkLS
+         2G8A==
+X-Gm-Message-State: AOJu0YwwhclQQy7I1ADoxTMbEW9a9kGT9u6GVHJnBhLu/TEPQTJH6i2E
+	+NTC3Gfujhoq7/vwIx84LGdr3oPceUjSGnVlgivMvpadAy7KJgI2QLGm
+X-Gm-Gg: ATEYQzyqrvurdMxLhCQMv8eus+CE+HBogqsXYw57hVVCHYIOm1ziC488qIXSW2FcVbh
+	h6pkR3UcVnLVaLgqPlq/NNvAZ/qtXCKIBPYj+SpcECUqhz9IL5EDE0+bO2qB1VQq5jfC0HPVCre
+	hhpnOje712caYgVl2EUb5M/GbKGHFSY2Eqax1uNAHTXZO/bvCzZcaqTTgIupYg6Y7M/uswTyc/C
+	cj2c/IdACZhq1nKYDC4C+dESV147HKQU8Z5akboibWm+O8IB/Ar6zzC+7aCrL8fr5SmsrWBwLQA
+	/WJQoSPFuXdFwAJz/ZWkEdVn+ffEqz8dmfUsHe+sYr4Aoxnq23G0luw7XEbigf1HlOcXE0Uzqum
+	Ig7Z/dkM76J1V+fTEt12rv676WmWJZ0OCuXh5sT+MMmuAhhqcYjAx1pu/z51UYVUBCQamrJJCPU
+	MEQbm6+yAjhBnRFjL6wwJFrs387yqwkcANK84JfKtygdfNuoS+Xlrdvi/2Xmv7czNa0W5QZ8cqh
+	XU=
+X-Received: by 2002:a05:7022:f10e:b0:12a:8122:24a9 with SMTP id a92af1059eb24-12bde008650mr2430073c88.22.1774991661386;
+        Tue, 31 Mar 2026 14:14:21 -0700 (PDT)
 Received: from [192.168.1.8] (177-4-161-218.user3p.v-tal.net.br. [177.4.161.218])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2c3c41c1513sm11457738eec.8.2026.03.31.13.54.01
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 31 Mar 2026 13:54:03 -0700 (PDT)
-Message-ID: <c1aac723-8a60-4b37-9c8b-74b2ea4daebb@gmail.com>
-Date: Tue, 31 Mar 2026 17:53:59 -0300
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-12ab97cb08csm17870444c88.3.2026.03.31.14.14.18
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 31 Mar 2026 14:14:21 -0700 (PDT)
+From: =?utf-8?q?C=C3=A1ssio_Gabriel?= <cassiogabrielcontato@gmail.com>
+Date: Tue, 31 Mar 2026 18:14:04 -0300
+Subject: [PATCH v2] ALSA: aoa: i2sbus: clear stale prepared state
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,87 +85,198 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] ALSA: aoa: i2sbus: clear stale prepared state
-To: Takashi Iwai <tiwai@suse.com>, Jaroslav Kysela <perex@perex.cz>,
- Johannes Berg <johannes@sipsolutions.net>
-Cc: oe-kbuild-all@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
- linux-sound@vger.kernel.org, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org, kernel test robot <lkp@intel.com>
-References: <20260330-aoa-i2sbus-clear-stale-active-v1-1-47a6c0a3ac9e@gmail.com>
- <202604010125.AvkWBYKI-lkp@intel.com>
-From: =?UTF-8?Q?C=C3=A1ssio_Gabriel_Monteiro_Pires?=
- <cassiogabrielcontato@gmail.com>
-Content-Language: en-US
-In-Reply-To: <202604010125.AvkWBYKI-lkp@intel.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
+Message-Id: <20260331-aoa-i2sbus-clear-stale-active-v2-1-3764ae2889a1@gmail.com>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/4WOyw6CMBBFf4V07ZjSEgiu/A/DYhgGGcPDtKXRE
+ P5dQPcuT3Jzzl2UZyfs1SVZlOMoXqZxA3NKFHU43hmk2VgZbXJtTQk4IYjx9eyBekYHPmDPgBQ
+ kMmSNrQudE2lu1eZ4Om7ldfhv1Zf9XD+Ywi7dF534MLn3cSCm++7XsvpPK6aQQlZgThotUsnX+
+ 4DSn2kaVLWu6webS2Hb3AAAAA==
+X-Change-ID: 20260329-aoa-i2sbus-clear-stale-active-4d3b706cc0ef
+To: Takashi Iwai <tiwai@suse.com>, Jaroslav Kysela <perex@perex.cz>, 
+ Johannes Berg <johannes@sipsolutions.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-sound@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, kernel test robot <lkp@intel.com>, 
+ stable@vger.kernel.org, 
+ =?utf-8?q?C=C3=A1ssio_Gabriel?= <cassiogabrielcontato@gmail.com>
+X-Mailer: b4 0.15.1
+X-Developer-Signature: v=1; a=openpgp-sha256; l=6526;
+ i=cassiogabrielcontato@gmail.com; h=from:subject:message-id;
+ bh=cEbTkyoIGc+4FGvanw1ToTAF9VBzhvD48F9X5JgbIgU=;
+ b=owGbwMvMwCV2IdZeKur/u2bG02pJDJlnLFU7quq+64lsub+v5Efv3SXNjJbfvlywyZl1w2XvT
+ qPskm7djlIWBjEuBlkxRZbVSYss93Q9uFoft8IDZg4rE8gQBi5OAZhI5FVGhqeX3GLnHpsxTfYF
+ c0DFpQjOiFxGueJDc5Yc9N2/X1lqkz4jw1QTy3O+6T8r5e1eHJyyobzJ/OCXjV+KzIraWB/bL7o
+ uygoA
+X-Developer-Key: i=cassiogabrielcontato@gmail.com; a=openpgp;
+ fpr=AB62A239BC8AE0D57F5EA848D05D3F1A5AFFEE83
 
-On 3/31/26 14:10, kernel test robot wrote:
-> Hi Cássio,
-> 
-> kernel test robot noticed the following build errors:
-> 
-> [auto build test ERROR on 46a6512f4a74dd7b18d9a455669c226843fc49ce]
-> 
-> url:    https://github.com/intel-lab-lkp/linux/commits/C-ssio-Gabriel/ALSA-aoa-i2sbus-clear-stale-prepared-state/20260331-113724
-> base:   46a6512f4a74dd7b18d9a455669c226843fc49ce
-> patch link:    https://lore.kernel.org/r/20260330-aoa-i2sbus-clear-stale-active-v1-1-47a6c0a3ac9e%40gmail.com
-> patch subject: [PATCH] ALSA: aoa: i2sbus: clear stale prepared state
-> config: powerpc-allmodconfig (https://download.01.org/0day-ci/archive/20260401/202604010125.AvkWBYKI-lkp@intel.com/config)
-> compiler: powerpc64-linux-gcc (GCC) 15.2.0
-> reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260401/202604010125.AvkWBYKI-lkp@intel.com/reproduce)
-> 
-> If you fix the issue in a separate patch/commit (i.e. not just a new version of
-> the same patch/commit), kindly add following tags
-> | Reported-by: kernel test robot <lkp@intel.com>
-> | Closes: https://lore.kernel.org/oe-kbuild-all/202604010125.AvkWBYKI-lkp@intel.com/
-> 
-> All errors (new ones prefixed by >>):
-> 
->>> sound/aoa/soundbus/i2sbus/pcm.c:760:25: error: initialization of 'int (*)(struct snd_pcm_substream *, struct snd_pcm_hw_params *)' from incompatible pointer type 'int (*)(struct snd_pcm_substream *)' [-Wincompatible-pointer-types]
->      760 |         .hw_params =    i2sbus_playback_hw_params,
->          |                         ^~~~~~~~~~~~~~~~~~~~~~~~~
->    sound/aoa/soundbus/i2sbus/pcm.c:760:25: note: (near initialization for 'i2sbus_playback_ops.hw_params')
->    sound/aoa/soundbus/i2sbus/pcm.c:313:12: note: 'i2sbus_playback_hw_params' declared here
->      313 | static int i2sbus_playback_hw_params(struct snd_pcm_substream *substream)
->          |            ^~~~~~~~~~~~~~~~~~~~~~~~~
->    sound/aoa/soundbus/i2sbus/pcm.c:829:25: error: initialization of 'int (*)(struct snd_pcm_substream *, struct snd_pcm_hw_params *)' from incompatible pointer type 'int (*)(struct snd_pcm_substream *)' [-Wincompatible-pointer-types]
->      829 |         .hw_params =    i2sbus_record_hw_params,
->          |                         ^~~~~~~~~~~~~~~~~~~~~~~
->    sound/aoa/soundbus/i2sbus/pcm.c:829:25: note: (near initialization for 'i2sbus_record_ops.hw_params')
->    sound/aoa/soundbus/i2sbus/pcm.c:323:12: note: 'i2sbus_record_hw_params' declared here
->      323 | static int i2sbus_record_hw_params(struct snd_pcm_substream *substream)
->          |            ^~~~~~~~~~~~~~~~~~~~~~~
-> 
-> 
-> vim +760 sound/aoa/soundbus/i2sbus/pcm.c
-> 
->    756	
->    757	static const struct snd_pcm_ops i2sbus_playback_ops = {
->    758		.open =		i2sbus_playback_open,
->    759		.close =	i2sbus_playback_close,
->  > 760		.hw_params =	i2sbus_playback_hw_params,
->    761		.hw_free =	i2sbus_playback_hw_free,
->    762		.prepare =	i2sbus_playback_prepare,
->    763		.trigger =	i2sbus_playback_trigger,
->    764		.pointer =	i2sbus_playback_pointer,
->    765	};
->    766	
-> 
-Oops my bad!
+The i2sbus PCM code uses pi->active to constrain the sibling stream to
+an already prepared duplex format and rate in i2sbus_pcm_open().
 
-I had added i2sbus_playback_hw_params(), i2sbus_record_hw_params(),
-and the helper they use without the struct snd_pcm_hw_params *params argument
-expected by struct snd_pcm_ops.hw_params, which caused the compilation error.
+That state is set from i2sbus_pcm_prepare(), but the current code only
+clears it on close. As a result, the sibling stream can inherit stale
+constraints after the prepared state has been torn down.
 
-After fixing the callback signatures to match the ALSA API, the file
-builds cleanly.
+Clear pi->active when hw_params() or hw_free() tears down the prepared
+state, and set it again only after prepare succeeds.
 
-I will send a v2 patch with the proposed fixes.
+Replace the stale FIXME in the duplex constraint comment with a description
+of the current driver behavior: i2sbus still programs a single shared
+transport configuration for both directions, so mixed formats are not
+supported in duplex mode.
 
--- 
-Thanks,
-Cássio
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202604010125.AvkWBYKI-lkp@intel.com/
+Fixes: f3d9478b2ce4 ("[ALSA] snd-aoa: add snd-aoa")
+Cc: stable@vger.kernel.org
+Signed-off-by: Cássio Gabriel <cassiogabrielcontato@gmail.com>
+---
+Changes in v2:
+- Drop the extra clear of pi->active at the beginning of i2sbus_pcm_prepare()
+- Keep the state reset in hw_params() and hw_free() only.
+- Fix the newly added .hw_params callbacks to use the proper ALSA prototype
+  with struct snd_pcm_hw_params *params, addressing the kernel test robot
+  build failure.
+- Update the changelog to match the reduced scope of the fix.
+- Link to v1: https://patch.msgid.link/20260330-aoa-i2sbus-clear-stale-active-v1-1-47a6c0a3ac9e@gmail.com
+---
+ sound/aoa/soundbus/i2sbus/pcm.c | 55 ++++++++++++++++++++++++++++++++---------
+ 1 file changed, 44 insertions(+), 11 deletions(-)
+
+diff --git a/sound/aoa/soundbus/i2sbus/pcm.c b/sound/aoa/soundbus/i2sbus/pcm.c
+index 97c807e67d56..63004ece94f9 100644
+--- a/sound/aoa/soundbus/i2sbus/pcm.c
++++ b/sound/aoa/soundbus/i2sbus/pcm.c
+@@ -165,17 +165,16 @@ static int i2sbus_pcm_open(struct i2sbus_dev *i2sdev, int in)
+ 	 * currently in use (if any). */
+ 	hw->rate_min = 5512;
+ 	hw->rate_max = 192000;
+-	/* if the other stream is active, then we can only
+-	 * support what it is currently using.
+-	 * FIXME: I lied. This comment is wrong. We can support
+-	 * anything that works with the same serial format, ie.
+-	 * when recording 24 bit sound we can well play 16 bit
+-	 * sound at the same time iff using the same transfer mode.
++	/* If the other stream is already prepared, keep this stream
++	 * on the same duplex format and rate.
++	 *
++	 * i2sbus_pcm_prepare() still programs one shared transport
++	 * configuration for both directions, so mixed duplex formats
++	 * are not supported here.
+ 	 */
+ 	if (other->active) {
+-		/* FIXME: is this guaranteed by the alsa api? */
+ 		hw->formats &= pcm_format_to_bits(i2sdev->format);
+-		/* see above, restrict rates to the one we already have */
++		/* Restrict rates to the one already in use. */
+ 		hw->rate_min = i2sdev->rate;
+ 		hw->rate_max = i2sdev->rate;
+ 	}
+@@ -283,6 +282,23 @@ void i2sbus_wait_for_stop_both(struct i2sbus_dev *i2sdev)
+ }
+ #endif
+ 
++static void i2sbus_pcm_clear_active(struct i2sbus_dev *i2sdev, int in)
++{
++	struct pcm_info *pi;
++
++	guard(mutex)(&i2sdev->lock);
++
++	get_pcm_info(i2sdev, in, &pi, NULL);
++	pi->active = 0;
++}
++
++static inline int i2sbus_hw_params(struct snd_pcm_substream *substream,
++				   struct snd_pcm_hw_params *params, int in)
++{
++	i2sbus_pcm_clear_active(snd_pcm_substream_chip(substream), in);
++	return 0;
++}
++
+ static inline int i2sbus_hw_free(struct snd_pcm_substream *substream, int in)
+ {
+ 	struct i2sbus_dev *i2sdev = snd_pcm_substream_chip(substream);
+@@ -291,14 +307,27 @@ static inline int i2sbus_hw_free(struct snd_pcm_substream *substream, int in)
+ 	get_pcm_info(i2sdev, in, &pi, NULL);
+ 	if (pi->dbdma_ring.stopping)
+ 		i2sbus_wait_for_stop(i2sdev, pi);
++	i2sbus_pcm_clear_active(i2sdev, in);
+ 	return 0;
+ }
+ 
++static int i2sbus_playback_hw_params(struct snd_pcm_substream *substream,
++				     struct snd_pcm_hw_params *params)
++{
++	return i2sbus_hw_params(substream, params, 0);
++}
++
+ static int i2sbus_playback_hw_free(struct snd_pcm_substream *substream)
+ {
+ 	return i2sbus_hw_free(substream, 0);
+ }
+ 
++static int i2sbus_record_hw_params(struct snd_pcm_substream *substream,
++				   struct snd_pcm_hw_params *params)
++{
++	return i2sbus_hw_params(substream, params, 1);
++}
++
+ static int i2sbus_record_hw_free(struct snd_pcm_substream *substream)
+ {
+ 	return i2sbus_hw_free(substream, 1);
+@@ -335,7 +364,6 @@ static int i2sbus_pcm_prepare(struct i2sbus_dev *i2sdev, int in)
+ 		return -EINVAL;
+ 
+ 	runtime = pi->substream->runtime;
+-	pi->active = 1;
+ 	if (other->active &&
+ 	    ((i2sdev->format != runtime->format)
+ 	     || (i2sdev->rate != runtime->rate)))
+@@ -444,9 +472,11 @@ static int i2sbus_pcm_prepare(struct i2sbus_dev *i2sdev, int in)
+ 
+ 	/* early exit if already programmed correctly */
+ 	/* not locking these is fine since we touch them only in this function */
+-	if (in_le32(&i2sdev->intfregs->serial_format) == sfr
+-	 && in_le32(&i2sdev->intfregs->data_word_sizes) == dws)
++	if (in_le32(&i2sdev->intfregs->serial_format) == sfr &&
++	    in_le32(&i2sdev->intfregs->data_word_sizes) == dws) {
++		pi->active = 1;
+ 		return 0;
++	}
+ 
+ 	/* let's notify the codecs about clocks going away.
+ 	 * For now we only do mastering on the i2s cell... */
+@@ -484,6 +514,7 @@ static int i2sbus_pcm_prepare(struct i2sbus_dev *i2sdev, int in)
+ 		if (cii->codec->switch_clock)
+ 			cii->codec->switch_clock(cii, CLOCK_SWITCH_SLAVE);
+ 
++	pi->active = 1;
+ 	return 0;
+ }
+ 
+@@ -728,6 +759,7 @@ static snd_pcm_uframes_t i2sbus_playback_pointer(struct snd_pcm_substream
+ static const struct snd_pcm_ops i2sbus_playback_ops = {
+ 	.open =		i2sbus_playback_open,
+ 	.close =	i2sbus_playback_close,
++	.hw_params =	i2sbus_playback_hw_params,
+ 	.hw_free =	i2sbus_playback_hw_free,
+ 	.prepare =	i2sbus_playback_prepare,
+ 	.trigger =	i2sbus_playback_trigger,
+@@ -796,6 +828,7 @@ static snd_pcm_uframes_t i2sbus_record_pointer(struct snd_pcm_substream
+ static const struct snd_pcm_ops i2sbus_record_ops = {
+ 	.open =		i2sbus_record_open,
+ 	.close =	i2sbus_record_close,
++	.hw_params =	i2sbus_record_hw_params,
+ 	.hw_free =	i2sbus_record_hw_free,
+ 	.prepare =	i2sbus_record_prepare,
+ 	.trigger =	i2sbus_record_trigger,
+
+---
+base-commit: 5a8ba15bcbf0cd70cc89d1e1a3d4037b2ab5ccdd
+change-id: 20260329-aoa-i2sbus-clear-stale-active-4d3b706cc0ef
+
+Best regards,
+--  
+Cássio Gabriel <cassiogabrielcontato@gmail.com>
 
 
