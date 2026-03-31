@@ -1,93 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-19096-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19097-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51246109B46F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2026 13:50:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E88BF109B46D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2026 14:00:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4flTyh6cXgz2ybR;
-	Wed, 01 Apr 2026 00:50:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::52f" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774965020;
-	cv=pass; b=XUJuBCanUsbdPmHVr6jY2eIJ/G5I4q0QEi2NdNb0XFa/+b0ikYSfphAJoi41GdAUNydWiKk2WqFqFSCCsHxLFQzZuSfb1hzSMf1K9RYbg9uH1gSO5KNAbv6s8Rgd9cxTY6RUr4Wk7Y1j8xsyU8lNqVUbtrC3mMXXRBb8ljv4CUEUYD7l2u8riYBTMpquqxDAnu6FXWf2QO8UxXAVmezgrmEJtcwViD+kGgNUmoBkmFMI22rRJ7a1UbcJMTEBJf8ha95N1QNqVQIeb+dgy7Bg/WO7yeIKE5oE5hGqCJUcL4oZvl0eJSoefR+h2oUvgae+n3GE5xuFwSxUIoYONtvP6g==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774965020; c=relaxed/relaxed;
-	bh=y1qBqYHapfEK0lfRyQ72RjBAD9wjLPlTowcxM0WvHL8=;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4flVB440RVz2ybR;
+	Wed, 01 Apr 2026 01:00:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774965612;
+	cv=none; b=oUxfi/HyQzlaZxHtgMr8vE2Oj2ph6On4FFD4LM/RZ0PPo5qZuOwrJ9V0PwSt7OmM1mVaQqxQn/ruOQXcGUxioYmgoK5+zYXX82k3gPloiCL3W6/i1BW2auMUwuejCf7psEV2EdTbcB6NrcEiqmDjm8EOwPowsWTRvbEFmmJL4Olwc2T2JXps+tK0vTexae4lqc1tWISNg3pttEr8MaXYwNXirJH5opbC8LQoviEaVXxPro/lqbwN2LLK3ZgMki7t9HaRUCa0NpfGa2sBxzVQ0db9KRSyCTs+6VqZkEVdQI4mnvyUls1Y/dAYJZBcWzY7bxA5ocdjrqy6W2D72bRIFw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1774965612; c=relaxed/relaxed;
+	bh=wsQZ5Yhb2xoDUq/o5DpGA6YU2cTKtYzQZSP3slZjjmc=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Ght06vyB9tvNtWWJipHerxFgrxor73DK+4jsOcKp/DG68hwObJOK8jv7UCYmvkZtGVySrO6j5DDnRX6UAeCH8rZjynmyKrXEfa2q/Yrjj6S8lnwuEZrIRECqxOHwZx6xspE0VO3a1dcrqFc9TCRQbzYHD2RI0M12xRqJZN2zZQaxH5eXoo6fiuzkELpKgWhpWbFZryyRf1oLxMOn5kJTpTWgTsO//GrkTImIifBGgtOfa5pmIv0t/a0KDPff8DiCz72Y+1UZzQhguageijHJhVO1i7+Fk+MlQdz3lCwWUI+oP32siU6KiV2pqX0ogbnxcdtr4Jh9m+kEpF8d+4yPgw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=eiFxPVKf; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52f; helo=mail-pg1-x52f.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	 To:Cc:Content-Type; b=QkA4NG45kc+Q7iWo0fwkxFQ+kXWu86DJlVCXG2PFcBWqkrc6au7KcyaFi2jdXu/hheU7YHsUHougWNDA+0EvKew9PVJRyJ/lEijjcf3MsAkkBijyRJG9PDdmSICLPKMvCzox09z7WTqOzs4hd+lSjjRKTTASP5FvfzOOMtJl6bfpDIdHOiz9TGC3H/fiWvxE8omvl3n0GFsELJ28tok3cmSwUAdfKHaUObZV/ozDegb13OgfO0gm3s+1MIrH5SQXCGpNLfdlS0GVIdtnLxRQRfYvm7vrVSMh/M8g5Y2sGu6hvkauh+1oxXUBiUqr1inSgoNdN3Mg/0+P7Ou0knu7DQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QQ0PH/CG; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rafael@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=eiFxPVKf;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QQ0PH/CG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52f; helo=mail-pg1-x52f.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x52f.google.com (mail-pg1-x52f.google.com [IPv6:2607:f8b0:4864:20::52f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rafael@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4flTyg5CK0z2ybQ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 00:50:18 +1100 (AEDT)
-Received: by mail-pg1-x52f.google.com with SMTP id 41be03b00d2f7-c70ea5e9e9dso2401361a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2026 06:50:18 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1774965016; cv=none;
-        d=google.com; s=arc-20240605;
-        b=dQRMoO8zW46MgXG8CPmalTsHsk5qLLdD8opulaZsycyPcv6t7dnr8ob5PVaf37x56v
-         TBkXiqXsDJz7ZAY4Hto+Cps84vVr71lB88tbKZaYCJAgQxZkr4NPRDkTubwwp9oaBn3h
-         ZTN1CDubz9YSRcjJru6he/tpTbLdRYSbi5gpdXm4k0md7YtjWHjX1C04QFGbMnYDXbMZ
-         98fMAX7Yi3Fa/37d7/TFQdnSGcrMVJ4ClpvzOGBWlnPms1OarlAVY4h9cMX89bM8vQKT
-         eD8kVRx0F+TgBoUADYHMxYajW53RpyTcMXRZDLhTFQolGX3qEpW41bAWM+5IYBlcxlLh
-         IF6A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=y1qBqYHapfEK0lfRyQ72RjBAD9wjLPlTowcxM0WvHL8=;
-        fh=4W2xmpKulK/wltDi2eIhsnPAsezC5ElOd5cELYpeoLY=;
-        b=M2CP0WWV4KEEMFdgETb6LHmAYdVW91Tn1Gomr68DcTFQZYqfUru3zolVUc/GDY88nb
-         2ed9MOTr/aW1e3TUJTqDRZmlXBv2E5cjHLYtlGjr+sBxEilskxB4TJrXgNYQIg3qJ9Y8
-         IFJjEvUwjF1ppo/+tSjNuNR5UY86k7iJiBjOn8LasWbK+gSe1YZfjNYZIa+aeTDW+tvd
-         e1tphblfkdGEk/572c8FgsfeaIIpcBs8ls0NlCKBhraD+mAO8LZGvmm1BfM8CZJV7kfW
-         RGPL1oNeKt40rHiYjdw4yZCTzicGreePS+DXjtZ1k9pWEiq4P121V5V+j+iXfMGWc4pE
-         pgvw==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1774965016; x=1775569816; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=y1qBqYHapfEK0lfRyQ72RjBAD9wjLPlTowcxM0WvHL8=;
-        b=eiFxPVKfAI9uBvbhcfGdaVr7Hj1hRp7hat850nI/xsVzhkikgXA2PVbZGPTYbMqGEq
-         Z14xVgsKVc959DsVlpWP+BMusXe/Cd01joJCV2ElF3pk0iFPYaBdymoQhWRvFdQBhx/P
-         slb44RM4PYd3wvRqXP9bbHQZU8akpNuz0c5nyG1T0qFzLIhrtZMEoCtBxqpVfd+1xq5o
-         l7BmLEKFxn4MiSk97VFb6Byw7NljeC1ihD/ufBtUIFjbGdyLnDZNso+FrLvCXMbhStaN
-         UMivJ0iFkolR9wgO8ACP9ZN53ksof69Uene3dP8Zb28sh6FB53b3F3y8fqws8vB02e/N
-         eQ6Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774965016; x=1775569816;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=y1qBqYHapfEK0lfRyQ72RjBAD9wjLPlTowcxM0WvHL8=;
-        b=mz4hTXuY2qPo8b4DPqlluWLwKnKcsfcps0n490V/BZ6k3vRdEgrCGbBt2Thdilw+CU
-         M7NozKwk/7LvtJpODny3XAECzOAHoZs4PivpX8T0dMvzu/n238ZgjJ5XkH22luWKdxSz
-         Xx6gPIR6I+SUwYjE4yfQZpapAeseef9h40CKWCdoDJiIsXXjS6dlNppv35aLWwpGcCLn
-         MyHeuBt0onJmyNgrIfFTao3KGF1qwYH2usYR3NVqvyV+HoOqgJC+zb5FN21ldS3H2qJ1
-         Fd80WlbtdjGAlZrSsl2XdvUfUUKKIN9zlrFTGbhhdrObb0HWknkKEOKP6HFfa7cAoPjf
-         ILEQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUbTEZX5d8SYBIaVLMhy6GTsxGkqIGSXCDHdrUwx6QdPjulGqYA3oV2oFmMWGLGxJDh7Gv7qHVHywg2uHs=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YygRdRipysIRuQF8/HIo+tsSOhMaqdAvu0U1faNxz6hnvLxx88k
-	R6mcmDp72lNV3Uqj/psoO2A0dXP20seGPKuWyrc1QD06HgjJZeqbS7Rv3iv7bhkb1qcTtgLVMky
-	q4N89tLGXnyZ4UFUf4vRrNl5DQ7iTQ1g=
-X-Gm-Gg: ATEYQzxU4KzKRZmikn6EKXgmT1XpqUYYhIM2jilYHNhlk11LHKPL0U5M1cpDxIQHc3e
-	qGWUmGUkDf/8B4pdGgs/H8rQ5iREwRPnPTZ5tFb4vo3EHXkIQ88a9a8Xr+R4EL/usHzkMuywRVR
-	RCmzDEOAExdDcz0v1t+02/MdG4c+N9t6JL04qSTOn06eR+CDmaLsmH8EEB1/vn7P1UqBSrpSIK4
-	yPi+pJoxzoT8Bi4TQHaHkEIx6fA/GgMC0J+5/08ggiDgt6DUStBs77OpJGAknN3sAkpyh/Bc9Ff
-	SvSnHTcn
-X-Received: by 2002:a17:902:e78e:b0:2b0:61f8:9f01 with SMTP id
- d9443c01a7336-2b0cdd21fd8mr185405015ad.44.1774965016332; Tue, 31 Mar 2026
- 06:50:16 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4flVB343cnz2ybQ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 01:00:11 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id EED296132F
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2026 14:00:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A0106C2BCB5
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2026 14:00:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774965608;
+	bh=v8oGte1nICQf3lPzs/IH7HujDZ08x8KnEuuH3pyLmXU=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=QQ0PH/CG0dWacUziG4TNgGC3pZnU4geMh3an4vCBQT4so9mzz6OnOMW6HjZW/5pIR
+	 VIK02bsYHgPtDxWO9hiZ9oCZSIuVJlHMYylbdgza8MaXjEsUWbiOFWmbL/CNJ6WWyz
+	 3hW/J+jSuPKcoyoH+oyoWOnh+u8WKdnuncyzsEN2BvRxr4xNAfrFyqobe1/JDevGVK
+	 bGFEB7jWDn4ZL5G6MaL2BQINbPAK6Bu5YyIG31K/V0uXmhgT+gNqvIKxR8r64uutlF
+	 HForGfWlPhfy1Gi0mRpoCxwcciky2Hccat3M2CRIPCkulov95gD8wvMSRfxSrttxlk
+	 3ML0Cls2uYXcQ==
+Received: by mail-oi1-f178.google.com with SMTP id 5614622812f47-466f00535cfso3548401b6e.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2026 07:00:08 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCVgxIh/pzA1B2vf/e7cy/LXRsrQVT1Z50Tfi3MvRoUAq7KogkG0VupdtfiWOMoZ03aTraKIVIomJQn3wsQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yzaw9o/i1S5p+UQKZxjWwhqjKCMpgnHAkNXvif4ZmrcmeSlNwaQ
+	708t5A/W11qvXIQ4ABJqXVf3+hxKCOkhTo/cV6RFdv/KsOEolwHRuToQmH7or8PyuF7jtA5/Kuo
+	nu28VpV/VqhxcwvKZRzxAR6/dtRi6JoM=
+X-Received: by 2002:a05:6808:1493:b0:467:f3d4:fc4e with SMTP id
+ 5614622812f47-46a8a596197mr7405781b6e.33.1774965607378; Tue, 31 Mar 2026
+ 07:00:07 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,46 +66,108 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260330112555.3637002-1-shengjiu.wang@nxp.com>
- <20260330112555.3637002-12-shengjiu.wang@nxp.com> <be591d2b-9429-43de-8d5b-357a503607d0@sirena.org.uk>
- <CAA+D8AOsCg9ZO0f974Ds3Vev8uSVj52mano=vG+Rvrw7dJ8faQ@mail.gmail.com> <317fc80e-ec80-477d-80f6-53c395de4b4a@sirena.org.uk>
-In-Reply-To: <317fc80e-ec80-477d-80f6-53c395de4b4a@sirena.org.uk>
-From: Shengjiu Wang <shengjiu.wang@gmail.com>
-Date: Tue, 31 Mar 2026 21:50:03 +0800
-X-Gm-Features: AQROBzC6RhnjxCnVfj7ajFlij0eI6AQdxlZTct8_WFqmkpRLOUfhHdGV-721L0w
-Message-ID: <CAA+D8AMaOEpuwuBjO1jYuDQuLSXsC3e6CAS1Rrz5G6Z6hFXtmg@mail.gmail.com>
-Subject: Re: [PATCH 11/11] ASoC: fsl_easrc: Change the type for iec958 channel
- status controls
-To: Mark Brown <broonie@kernel.org>
-Cc: Shengjiu Wang <shengjiu.wang@nxp.com>, Xiubo.Lee@gmail.com, festevam@gmail.com, 
-	nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, 
-	linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org
+References: <20260331131622.30505-1-frederic@kernel.org> <20260331131622.30505-2-frederic@kernel.org>
+In-Reply-To: <20260331131622.30505-2-frederic@kernel.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Tue, 31 Mar 2026 15:59:56 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0gK3WdPhVuY-SJNJ4WK87kL3w9Q8KGBtt5RuE1AUoxdLQ@mail.gmail.com>
+X-Gm-Features: AQROBzC01cSpFeB8dQHSq2PjzTVT0MM4PbeCSZP1pxl-fD4ctuT__P9I9dxaSrc
+Message-ID: <CAJZ5v0gK3WdPhVuY-SJNJ4WK87kL3w9Q8KGBtt5RuE1AUoxdLQ@mail.gmail.com>
+Subject: Re: [PATCH 01/14] sched/idle: Handle offlining first in idle loop
+To: Frederic Weisbecker <frederic@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Alexander Gordeev <agordeev@linux.ibm.com>, Anna-Maria Behnsen <anna-maria@linutronix.de>, 
+	Ben Segall <bsegall@google.com>, Boqun Feng <boqun.feng@gmail.com>, 
+	Christian Borntraeger <borntraeger@linux.ibm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, 
+	Heiko Carstens <hca@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>, 
+	Jan Kiszka <jan.kiszka@siemens.com>, Joel Fernandes <joelagnelf@nvidia.com>, 
+	Juri Lelli <juri.lelli@redhat.com>, Kieran Bingham <kbingham@kernel.org>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Mel Gorman <mgorman@suse.de>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Neeraj Upadhyay <neeraj.upadhyay@kernel.org>, 
+	Nicholas Piggin <npiggin@gmail.com>, "Paul E . McKenney" <paulmck@kernel.org>, 
+	Peter Zijlstra <peterz@infradead.org>, Shrikanth Hegde <sshegde@linux.ibm.com>, 
+	Steven Rostedt <rostedt@goodmis.org>, Sven Schnelle <svens@linux.ibm.com>, 
+	Thomas Gleixner <tglx@linutronix.de>, Uladzislau Rezki <urezki@gmail.com>, 
+	Valentin Schneider <vschneid@redhat.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+	Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
+	Xin Zhao <jackzxcui1989@163.com>, linux-pm@vger.kernel.org, 
+	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Mar 31, 2026 at 9:19=E2=80=AFPM Mark Brown <broonie@kernel.org> wro=
-te:
+On Tue, Mar 31, 2026 at 3:16=E2=80=AFPM Frederic Weisbecker <frederic@kerne=
+l.org> wrote:
 >
-> On Tue, Mar 31, 2026 at 09:58:22AM +0800, Shengjiu Wang wrote:
-> > On Mon, Mar 30, 2026 at 9:23=E2=80=AFPM Mark Brown <broonie@kernel.org>=
- wrote:
+> Offline handling happens from within the inner idle loop,
+> after the beginning of dyntick cputime accounting, nohz idle
+> load balancing and TIF_NEED_RESCHED polling.
 >
-> > > This drops all the checking for changed values that we used to do so =
-we
-> > > won't generate notifications to userspace.
+> This is not necessary and even buggy because:
 >
-> > Yes,  as the type is changed to IEC958, the notification is not
-> > acquired by the mixer-test.
+> * There is no dyntick handling to do. And calling tick_nohz_idle_enter()
+>   messes up with the struct tick_sched reset that was performed on
+>   tick_sched_timer_dying().
 >
-> > Do we still need to add the notification?
+> * There is no nohz idle balancing to do.
 >
-> Yes, it should be there for all controls - it's just that mixer-test
-> doesn't have support for the IEC958 controls wired up so it's mostly
-> skipping them.  Someone should add that!  :P
+> * Polling on TIF_RESCHED is irrelevant at this stage, there are no more
+>   tasks allowed to run.
+>
+> * No need to check if need_resched() before offline handling since
+>   stop_machine is done and all per-cpu kthread should be done with
+>   their job.
+>
+> Therefore move the offline handling at the beginning of the idle loop.
+> This will also ease the idle cputime unification later by not elapsing
+> idle time while offline through the call to:
+>
+>         tick_nohz_idle_enter() -> tick_nohz_start_idle()
+>
+> Signed-off-by: Frederic Weisbecker <frederic@kernel.org>
+> Reviewed-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+> Tested-by: Shrikanth Hegde <sshegde@linux.ibm.com>
 
-Thanks.  I will add the notification back in the next version.
+No issues found, so
 
-Best regards
-Shengjiu Wang
+Reviewed-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
+
+> ---
+>  kernel/sched/idle.c | 13 ++++++++-----
+>  1 file changed, 8 insertions(+), 5 deletions(-)
+>
+> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+> index 3681b6ad9276..521a076d8845 100644
+> --- a/kernel/sched/idle.c
+> +++ b/kernel/sched/idle.c
+> @@ -260,6 +260,14 @@ static void do_idle(void)
+>  {
+>         int cpu =3D smp_processor_id();
+>
+> +       if (cpu_is_offline(cpu)) {
+> +               local_irq_disable();
+> +               /* All per-CPU kernel threads should be done by now. */
+> +               WARN_ON_ONCE(need_resched());
+> +               cpuhp_report_idle_dead();
+> +               arch_cpu_idle_dead();
+> +       }
+> +
+>         /*
+>          * Check if we need to update blocked load
+>          */
+> @@ -311,11 +319,6 @@ static void do_idle(void)
+>                  */
+>                 local_irq_disable();
+>
+> -               if (cpu_is_offline(cpu)) {
+> -                       cpuhp_report_idle_dead();
+> -                       arch_cpu_idle_dead();
+> -               }
+> -
+>                 arch_cpu_idle_enter();
+>                 rcu_nocb_flush_deferred_wakeup();
+>
+> --
+> 2.53.0
+>
 
