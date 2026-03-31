@@ -1,102 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-19100-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19101-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 714DE109B481
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2026 15:03:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2C13109B489
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2026 15:06:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4flWZd1Nfvz2yZ6;
-	Wed, 01 Apr 2026 02:03:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.9
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774969385;
-	cv=none; b=Nag1lId6fDjQkn4TIjGM2PuFOMAFJALdj6BY8Xa4+d7K7r5+lLTZPTgv2dExKt7tICHG6D+ce/KXTZhlXccXE4w+slOJeGgapz+Zw0QYE10cFpGY7GXV/psN0/gQsN62cdBK4w1bl2FOem/6BQkCx8AaztVFnsG/bPj81bPP68FfHfX6wjU8VbS25X9rz+PHt+SnCO9Iarmd8c7RMaatEAHwVqFZLnWm45zAxdJMg0lBv1IlfenWk0JWLH7irDa3f1RyQAwawrPM0KNwMJTKJYPKfWe52vMs2vIo0xs7CAM0CrExiZ/nWot4mHOLQXj8v3ENz8nuSnnbk+ROexmJVQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774969385; c=relaxed/relaxed;
-	bh=qq2vYBKP32F0qKKChIwJ/1t2rgt5oWS9aJocMdEsX8I=;
-	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=JlWIMEaa/Vc2lN0p6LKlwBWGt9OWgPeXVNUjmW8hYybYxQYfz+SO/YYwyU9CHAI9NgeHPI17cfZTYYx1rcurCu7kLrdO6jyC2VpVe8WghgFjiznI8sVUkhBCP5TCQHqtM9goLW3yWArhnvmHuABvTTy0cRaBrk2TilZaJYnUYayIQugQ2Ve7/TRFmf1Rsykk7UWURy6ctE092nVB4pzOwU/y8d/VEYVaArj/CUfqATTbDPLDJPl9fWp4tPRQuUtTABwf+vTLBLksWRHnA4i0yz9Nv96vd4af/nZkj096kRYU1qisNTPF/8Y/N0MKsieWElNbWzKAChhS3wvfmlixtQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=SRKkxiJa; dkim-atps=neutral; spf=pass (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4flWfN220Fz2yZ6;
+	Wed, 01 Apr 2026 02:06:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::832" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774969580;
+	cv=pass; b=WMmbhrnkiDhuFyIcS1817kTwm92L6D8gBYfCXwTOUEb93760oNTpOorlDHUSwnlnaIXYVcRIPnqejhiGuatI/6i1XbcccB9+9+Q2xY8QEQDR/hHbw+EjgHiRENwwaOu2kxz71tEGoFRkfg7lIrzmeaDy0s3Q012qTBVZsiMLEILqVlDBDDWeErnWICfrmqAQpl2GHvgo+uG5aoJWIYOs1F++QdsGlyOXfGr+DVX+paOH+7jlJAMofT/p6istPaw81p/IwqA4q8LK+6mXwviRhf0hBSM43jcsdHOgnKHLMzfJ2XUrq490QGlZrRBLvsg7MPQeNFvMbHbXb3CRzXGu9g==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1774969580; c=relaxed/relaxed;
+	bh=BPhLUWPeq7nYkrn0qmrS6IUP8HvQfT6M1S21IWIT2p4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=IvLtGu5iszDEtibHPat1tmPbJvsl0uXZToLBdMNHBRfenXPicgVfzpNhW3OYhJCRz/GCi1BmedJPSJwG2ZlvBir5WGFVK4UnnQFhFIJsth0ZOACOLlsKNa2E/gXWfY43GSVJv4vXqegBasS3ntqQpsju3AhwSqrCF/LnEFk8fjb0tqDutfNtTjcYkEyQny5lWFB7zbbhHs9/qBDqUVeSghd+2b+Us9x/fWbr+kDh2X3LGZ/OCsOHmCocA+PVE9pD/qaoA6sMqyj3t/JQ8cI+MWdrsPDre+J7TVhTYtoTMOo4jit1rHWMeerU0tsKOtGBwuQs/2zEV+nZRMhL7Hshzw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=MBbApLVY; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::832; helo=mail-qt1-x832.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=SRKkxiJa;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=MBbApLVY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::832; helo=mail-qt1-x832.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org)
+Received: from mail-qt1-x832.google.com (mail-qt1-x832.google.com [IPv6:2607:f8b0:4864:20::832])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4flWZZ2XS8z2ySj
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 02:03:00 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1774969382; x=1806505382;
-  h=from:date:to:cc:subject:in-reply-to:message-id:
-   references:mime-version;
-  bh=lKc0nR0+3UMuWZyWz6l9MjXgdkdLagd8O+NJe9KaxV4=;
-  b=SRKkxiJaAWauakhC6tthzObw/vO/bx1kEgZVQtjpgBMwjZ97rhDtCf0Y
-   FDfAcQQgXAiUkqCX5oK5hkVntIvbbVjFHgYCOKkcw2mpp9iJZouJaXgeF
-   Z57L0hxGSY1i/VBANmWIVAdEZrida8R4qOcLPc4urj5iZFQ+UHHTEy26/
-   e0lkfTCI7jDW8I/dJ/FxUfzaEcGwhEuCOL7wbh8GqP8UWfnrndsnPACRZ
-   xccwxhraSRAI17Z5HAmFFtI4YeqcvO6osq6x5l+areIPr0A0p21Pbovu8
-   T2uOtV83WlI52dtXHZQki/ZcNR8EApceSoGNxjo7XfNelXeZZKBxOVASo
-   g==;
-X-CSE-ConnectionGUID: hiu+Jhf7SoqO5xnNDxFWNQ==
-X-CSE-MsgGUID: buIYwrxTRy6bA2pTJKLRYA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11745"; a="86682259"
-X-IronPort-AV: E=Sophos;i="6.23,152,1770624000"; 
-   d="scan'208";a="86682259"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
-  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Mar 2026 08:02:53 -0700
-X-CSE-ConnectionGUID: JHiKH3CWRemnPBHhcWS24A==
-X-CSE-MsgGUID: Gcx1iYgWQJaJHg3SKbkrBg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,152,1770624000"; 
-   d="scan'208";a="221527611"
-Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.6])
-  by fmviesa006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Mar 2026 08:02:37 -0700
-From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Date: Tue, 31 Mar 2026 18:02:33 +0300 (EEST)
-To: Danilo Krummrich <dakr@kernel.org>
-cc: Russell King <linux@armlinux.org.uk>, 
-    Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-    "Rafael J. Wysocki" <rafael@kernel.org>, 
-    Ioana Ciornei <ioana.ciornei@nxp.com>, Nipun Gupta <nipun.gupta@amd.com>, 
-    Nikhil Agarwal <nikhil.agarwal@amd.com>, 
-    "K. Y. Srinivasan" <kys@microsoft.com>, 
-    Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>, 
-    Dexuan Cui <decui@microsoft.com>, Long Li <longli@microsoft.com>, 
-    Bjorn Helgaas <bhelgaas@google.com>, Armin Wolf <W_Armin@gmx.de>, 
-    Bjorn Andersson <andersson@kernel.org>, 
-    Mathieu Poirier <mathieu.poirier@linaro.org>, 
-    Vineeth Vijayan <vneethv@linux.ibm.com>, 
-    Peter Oberparleiter <oberpar@linux.ibm.com>, 
-    Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
-    Alexander Gordeev <agordeev@linux.ibm.com>, 
-    Christian Borntraeger <borntraeger@linux.ibm.com>, 
-    Sven Schnelle <svens@linux.ibm.com>, 
-    Harald Freudenberger <freude@linux.ibm.com>, 
-    Holger Dengler <dengler@linux.ibm.com>, Mark Brown <broonie@kernel.org>, 
-    "Michael S. Tsirkin" <mst@redhat.com>, Jason Wang <jasowang@redhat.com>, 
-    Xuan Zhuo <xuanzhuo@linux.alibaba.com>, 
-    =?ISO-8859-15?Q?Eugenio_P=E9rez?= <eperezma@redhat.com>, 
-    Alex Williamson <alex@shazbot.org>, Juergen Gross <jgross@suse.com>, 
-    Stefano Stabellini <sstabellini@kernel.org>, 
-    Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, 
-    "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-    LKML <linux-kernel@vger.kernel.org>, driver-core@lists.linux.dev, 
-    linuxppc-dev@lists.ozlabs.org, linux-hyperv@vger.kernel.org, 
-    linux-pci@vger.kernel.org, platform-driver-x86@vger.kernel.org, 
-    linux-arm-msm@vger.kernel.org, linux-remoteproc@vger.kernel.org, 
-    linux-s390@vger.kernel.org, linux-spi@vger.kernel.org, 
-    virtualization@lists.linux.dev, kvm@vger.kernel.org, 
-    xen-devel@lists.xenproject.org, linux-arm-kernel@lists.infradead.org, 
-    Gui-Dong Han <hanguidong02@gmail.com>
-Subject: Re: [PATCH 06/12] platform/wmi: use generic driver_override
- infrastructure
-In-Reply-To: <20260324005919.2408620-7-dakr@kernel.org>
-Message-ID: <f15629e4-ef8f-b1b6-0158-064f40f111da@linux.intel.com>
-References: <20260324005919.2408620-1-dakr@kernel.org> <20260324005919.2408620-7-dakr@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4flWfM2jlwz2ySj
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 02:06:19 +1100 (AEDT)
+Received: by mail-qt1-x832.google.com with SMTP id d75a77b69052e-509062d829dso563221cf.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2026 08:06:19 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1774969577; cv=none;
+        d=google.com; s=arc-20240605;
+        b=RXracfSAVXN6RQ4qvIB6JS3IbxdrcC+9GVvee6tDTuX8F6dWxENUyLlkcEVCxX7hIO
+         bytsZdsnWqzP02Z7bfQXPq0Z7co4AJnCDm1mJcPdvmgECz+3VipENPILXCN2t6XjN0gC
+         iSKmLl2HMKiR0U/XSY3I0bpY65IgZn6S7ZL+OGEjpbDllOtPJzArzauz3YAWka0Knufw
+         XgEwRyqV6chG2XtxmiFyXtftE3VNepmCSAlTTnxR5nqalK+iodICCym9S7VTUnoHsZBV
+         cgopQCm9efmHufZtFho4XmXepuXfXC1fOYBmGVucX2SKLp+NEj4az3zmyxymdJfBYx1V
+         yjDQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=BPhLUWPeq7nYkrn0qmrS6IUP8HvQfT6M1S21IWIT2p4=;
+        fh=7LhOdyz58CqPZrSMt1YTv71gfTQWVuwp8D9kPX0FNtE=;
+        b=HIx8t+iczXNfl6eIS8fIHLj/beOMF3jQMig6lES8r7pJ/Opy+JD1xi4JHrSZ13IqyQ
+         dtJHuVjRHxhSaZDtDDdCg9eNK18zoTkw01tN130D3jIkdqy9EcvJvA2wIMoGYFdL04bf
+         ytTlYCHOFTeiJ8zf4jKliHH7P4F71vukTnUsGgqdO3ofkZrG+qiw05UA2wQ+OEFirN+a
+         y78yDDh6frUZpwSg4X1Q0DRFzZdNs9sQx73wZyL/15sG54HDAuALk5gStqDCbuYplzmF
+         uC4BlM2oBj2CJ27ggFGQ6etGV5LimvhZ+J6FmhusEA2IAZqBeetXkB3VXLwtqa3LHi9i
+         c7cg==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20251104; t=1774969577; x=1775574377; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=BPhLUWPeq7nYkrn0qmrS6IUP8HvQfT6M1S21IWIT2p4=;
+        b=MBbApLVY8lvoW2qt2QFwnlGdmrxMyS2SxNnI3opJD9YQX55jz0V9OOsRChdayeIpVI
+         J17fuTvwo7nrGMEr+1skrYklHN2AmxC6RXiAK1eIyM/2teJJlK696nOUHBkDKJizRCVL
+         Dcf4toXQDq9lnsDQ72lRjMNv2k/UWcoq4pluOUm66u1LqouL5qnMetZdfweS42jQnwj5
+         03LOfwubhm5j6C3a1hKSfF2mi8CSTo/3RPukpC0TgNim0UDzpm88caTz2Fg1gtssK7A+
+         1GqDy2HkMfz9FYmBtU/DNfycMGe+0QdCOYjTfmswBRRLAlcf6tYmbQPoSS3Z296cqCcO
+         d1bQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774969577; x=1775574377;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=BPhLUWPeq7nYkrn0qmrS6IUP8HvQfT6M1S21IWIT2p4=;
+        b=TWT9ypEmX83jWyE5xaXstOvkC1BgDtBHxO32aIhKUw4FgTPmDP/66Tio8888rG8VQv
+         k64HBOSCwIzszJe2TfLTJTNCBHrbR8sM+asuiAqLZvP2VynMkQ5LE9bI/HCJc1YdEXrD
+         eh8EaxtitT+6HTkyeiqntdC68svx6U2N54a21KapoR/3isnngtY04LESzy4xpKgokQU2
+         rMvxa4qdbo50l8BrEjHubqBETrDCfbXFVvh/KIcvS+n/kyVfFiQ11fckZYbHxDhQ82J9
+         CNQ4ennOkwxhbXfHWF6V86DrKUQQAbxQhcyWf1nCYeuD5cPeg/xhqslCvFaijzHDDLIT
+         SIsQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVW7uAMYK6N8x3D3m8pMCmqZr/diLypvdcmRdqS7KBHKDfaSjKNcibpdcH/VZJXrb3szLfOQdzjaPxaFCQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzV9ME6ejgoqD07swluKO3SQtCIp7/zztHfbSZW6W5+ktDA6ErF
+	qjXIdAoHm/KNm1+JzdPPdkpZ4r/d8eVog+CoEmzHRgLIu3cgdaLmdxre3pHoORYK/nC5WcNjJKy
+	HD+zKkjXjSZYCNYwE9H5IccH/nWGvxLxL883yDAdB
+X-Gm-Gg: ATEYQzw+RtL/mMborxuSGpKA0eHdO/z6nhM+oMWWTQiNQxjAhXsLQ1ai/MqQ84Cwdjn
+	5+eNC78x1w9zGNWtK7KH7/qjRGNIkSasGGNSzJVFgo/YFPWEM4lhaC0C6f+/tbOUeg0PsL9BeSw
+	gICeNvXOWLATOkpN1mvFnvR8meuumPD4TBl5vai8YJDTvXAgJLBSUsiUNpCL206GSPc8GHxfv3c
+	OIwD7VRFprNOxMPZ7Adt5KfzvMSSw9w3Kl9uIV8KJESMY+vDYksHSNNOfPoRS8eeFSs/Cw7QnaO
+	ghATZTCuA+AZvCS08ZH1hvMb01pd5Xx6TiTrkQ==
+X-Received: by 2002:ac8:7f50:0:b0:509:cd7:aa18 with SMTP id
+ d75a77b69052e-50d2d5df51cmr17993481cf.10.1774969575456; Tue, 31 Mar 2026
+ 08:06:15 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -110,134 +101,328 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <20260327205457.604224-1-surenb@google.com> <20260327161226.17e680fec33117d67dc8b5f9@linux-foundation.org>
+ <f128b795-5577-40f9-8dae-936be4253642@lucifer.local>
+In-Reply-To: <f128b795-5577-40f9-8dae-936be4253642@lucifer.local>
+From: Suren Baghdasaryan <surenb@google.com>
+Date: Tue, 31 Mar 2026 08:06:04 -0700
+X-Gm-Features: AQROBzCkq9zWX_INOKKq7FRhsytABhuHOSOXWR8lJTFtOb6OteMYhMzewaRwAII
+Message-ID: <CAJuCfpHmUop-UzxM9QN7OiAnXUzj461+9ErgtXrtve_bR0_NjA@mail.gmail.com>
+Subject: Re: [PATCH v6 0/6] Use killable vma write locking in most places
+To: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, willy@infradead.org, david@kernel.org, 
+	ziy@nvidia.com, matthew.brost@intel.com, joshua.hahnjy@gmail.com, 
+	rakie.kim@sk.com, byungchul@sk.com, gourry@gourry.net, 
+	ying.huang@linux.alibaba.com, apopple@nvidia.com, 
+	baolin.wang@linux.alibaba.com, Liam.Howlett@oracle.com, npache@redhat.com, 
+	ryan.roberts@arm.com, dev.jain@arm.com, baohua@kernel.org, 
+	lance.yang@linux.dev, vbabka@suse.cz, jannh@google.com, rppt@kernel.org, 
+	mhocko@suse.com, pfalcato@suse.de, kees@kernel.org, maddy@linux.ibm.com, 
+	npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org, 
+	borntraeger@linux.ibm.com, frankja@linux.ibm.com, imbrenda@linux.ibm.com, 
+	hca@linux.ibm.com, gor@linux.ibm.com, agordeev@linux.ibm.com, 
+	svens@linux.ibm.com, gerald.schaefer@linux.ibm.com, linux-mm@kvack.org, 
+	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, 24 Mar 2026, Danilo Krummrich wrote:
+On Tue, Mar 31, 2026 at 2:51=E2=80=AFAM Lorenzo Stoakes (Oracle) <ljs@kerne=
+l.org> wrote:
+>
+> On Fri, Mar 27, 2026 at 04:12:26PM -0700, Andrew Morton wrote:
+> > On Fri, 27 Mar 2026 13:54:51 -0700 Suren Baghdasaryan <surenb@google.co=
+m> wrote:
+> >
+> > > Now that we have vma_start_write_killable() we can replace most of th=
+e
+> > > vma_start_write() calls with it, improving reaction time to the kill
+> > > signal.
+> > >
+> > > There are several places which are left untouched by this patchset:
+> > >
+> > > 1. free_pgtables() because function should free page tables even if a
+> > > fatal signal is pending.
+> > >
+> > > 2. userfaultd code, where some paths calling vma_start_write() can
+> > > handle EINTR and some can't without a deeper code refactoring.
+> > >
+> > > 3. mpol_rebind_mm() which is used by cpusset controller for migration=
+s
+> > > and operates on a remote mm. Incomplete operations here would result
+> > > in an inconsistent cgroup state.
+> > >
+> > > 4. vm_flags_{set|mod|clear} require refactoring that involves moving
+> > > vma_start_write() out of these functions and replacing it with
+> > > vma_assert_write_locked(), then callers of these functions should
+> > > lock the vma themselves using vma_start_write_killable() whenever
+> > > possible.
+> >
+> > Updated, thanks.
+>
+> Andrew - sorry I think we need to yank this and defer to next cycle,
+> there's too many functional changes here.
+>
+> (There was not really any way for me to predict this would happen ahead o=
+f
+> time, unfortunately.)
 
-> When a driver is probed through __driver_attach(), the bus' match()
-> callback is called without the device lock held, thus accessing the
-> driver_override field without a lock, which can cause a UAF.
-> 
-> Fix this by using the driver-core driver_override infrastructure taking
-> care of proper locking internally.
-> 
-> Note that calling match() from __driver_attach() without the device lock
-> held is intentional. [1]
-> 
-> Link: https://lore.kernel.org/driver-core/DGRGTIRHA62X.3RY09D9SOK77P@kernel.org/ [1]
-> Reported-by: Gui-Dong Han <hanguidong02@gmail.com>
-> Closes: https://bugzilla.kernel.org/show_bug.cgi?id=220789
-> Fixes: 12046f8c77e0 ("platform/x86: wmi: Add driver_override support")
-> Signed-off-by: Danilo Krummrich <dakr@kernel.org>
-> ---
->  drivers/platform/wmi/core.c | 36 +++++-------------------------------
->  include/linux/wmi.h         |  4 ----
->  2 files changed, 5 insertions(+), 35 deletions(-)
-> 
-> diff --git a/drivers/platform/wmi/core.c b/drivers/platform/wmi/core.c
-> index b8e6b9a421c6..750e3619724e 100644
-> --- a/drivers/platform/wmi/core.c
-> +++ b/drivers/platform/wmi/core.c
-> @@ -842,39 +842,11 @@ static ssize_t expensive_show(struct device *dev,
->  }
->  static DEVICE_ATTR_RO(expensive);
->  
-> -static ssize_t driver_override_show(struct device *dev, struct device_attribute *attr,
-> -				    char *buf)
-> -{
-> -	struct wmi_device *wdev = to_wmi_device(dev);
-> -	ssize_t ret;
-> -
-> -	device_lock(dev);
-> -	ret = sysfs_emit(buf, "%s\n", wdev->driver_override);
-> -	device_unlock(dev);
-> -
-> -	return ret;
-> -}
-> -
-> -static ssize_t driver_override_store(struct device *dev, struct device_attribute *attr,
-> -				     const char *buf, size_t count)
-> -{
-> -	struct wmi_device *wdev = to_wmi_device(dev);
-> -	int ret;
-> -
-> -	ret = driver_set_override(dev, &wdev->driver_override, buf, count);
-> -	if (ret < 0)
-> -		return ret;
-> -
-> -	return count;
-> -}
-> -static DEVICE_ATTR_RW(driver_override);
-> -
->  static struct attribute *wmi_attrs[] = {
->  	&dev_attr_modalias.attr,
->  	&dev_attr_guid.attr,
->  	&dev_attr_instance_count.attr,
->  	&dev_attr_expensive.attr,
-> -	&dev_attr_driver_override.attr,
->  	NULL
->  };
->  ATTRIBUTE_GROUPS(wmi);
-> @@ -943,7 +915,6 @@ static void wmi_dev_release(struct device *dev)
->  {
->  	struct wmi_block *wblock = dev_to_wblock(dev);
->  
-> -	kfree(wblock->dev.driver_override);
->  	kfree(wblock);
->  }
->  
-> @@ -952,10 +923,12 @@ static int wmi_dev_match(struct device *dev, const struct device_driver *driver)
->  	const struct wmi_driver *wmi_driver = to_wmi_driver(driver);
->  	struct wmi_block *wblock = dev_to_wblock(dev);
->  	const struct wmi_device_id *id = wmi_driver->id_table;
-> +	int ret;
->  
->  	/* When driver_override is set, only bind to the matching driver */
-> -	if (wblock->dev.driver_override)
-> -		return !strcmp(wblock->dev.driver_override, driver->name);
-> +	ret = device_match_driver_override(dev, driver);
-> +	if (ret >= 0)
-> +		return ret;
->  
->  	if (id == NULL)
->  		return 0;
-> @@ -1076,6 +1049,7 @@ static struct class wmi_bus_class = {
->  static const struct bus_type wmi_bus_type = {
->  	.name = "wmi",
->  	.dev_groups = wmi_groups,
-> +	.driver_override = true,
->  	.match = wmi_dev_match,
->  	.uevent = wmi_dev_uevent,
->  	.probe = wmi_dev_probe,
-> diff --git a/include/linux/wmi.h b/include/linux/wmi.h
-> index 75cb0c7cfe57..14fb644e1701 100644
-> --- a/include/linux/wmi.h
-> +++ b/include/linux/wmi.h
-> @@ -18,16 +18,12 @@
->   * struct wmi_device - WMI device structure
->   * @dev: Device associated with this WMI device
->   * @setable: True for devices implementing the Set Control Method
-> - * @driver_override: Driver name to force a match; do not set directly,
-> - *		     because core frees it; use driver_set_override() to
-> - *		     set or clear it.
->   *
->   * This represents WMI devices discovered by the WMI driver core.
->   */
->  struct wmi_device {
->  	struct device dev;
->  	bool setable;
-> -	const char *driver_override;
->  };
->  
->  /**
-> 
+Ok, no objections from me. I'll post v6 removing the part Lorenzo
+objects to and you can pick it up whenever you deem appropriate.
 
-Hi,
+>
+> >
+> > > Changes since v5 [1]:
+> > > - Added Reviewed-by for unchanged patches, per Lorenzo Stoakes
+> > >
+> > > Patch#2:
+> > > - Fixed locked_vm counter if mlock_vma_pages_range() fails in
+> > > mlock_fixup(), per Sashiko
+> > > - Avoid VMA re-locking in madvise_update_vma(), mprotect_fixup() and
+> > > mseal_apply() when vma_modify_XXX creates a new VMA as it will alread=
+y be
+> > > locked. This prevents the possibility of incomplete operation if sign=
+al
+> > > happens after a successful vma_modify_XXX modified the vma tree,
+> > > per Sashiko
+>
+> Prevents the possibility of an incomplete operation? But
+> vma_write_lock_killable() checks to see if you're _already_ write locked
+> and would make the operation a no-op? So how is this even a delta?
+>
+> It's a brave new world, arguing with sashiko via a submitter... :)
 
-I tried applying this to platform-drivers tree but it failed to compile so 
-I ended up dropping the changed.
+Yeah, this is not really a problem but I thought I would change it up
+to make it apparent that the extra vma_write_lock_killable() is not
+even called.
 
--- 
- i.
-
+>
+> > > - Removed obsolete comment in madvise_update_vma() and mprotect_fixup=
+()
+> > >
+> > > Patch#4:
+> > > - Added clarifying comment for vma_start_write_killable() when lockin=
+g a
+> > > detached VMA
+> > > - Override VMA_MERGE_NOMERGE in vma_expand() to prevent callers from
+> > > falling back to a new VMA allocation, per Sashiko
+> > > - Added a note in the changelog about temporary workaround of using
+> > > ENOMEM to propagate the error in vma_merge_existing_range() and
+> > > vma_expand()
+> > >
+> > > Patch#5:
+> > > - Added fatal_signal_pending() check in do_mbind() to detect
+> > > queue_pages_range() failures due to a pendig fatal signal, per Sashik=
+o
+> >
+> > Changes since v5:
+> >
+> >
+> >  mm/madvise.c   |   15 ++++++++++-----
+> >  mm/mempolicy.c |    9 ++++++++-
+> >  mm/mlock.c     |    2 ++
+> >  mm/mprotect.c  |   26 ++++++++++++++++----------
+> >  mm/mseal.c     |   27 +++++++++++++++++++--------
+> >  mm/vma.c       |   20 ++++++++++++++++++--
+> >  6 files changed, 73 insertions(+), 26 deletions(-)
+> >
+> > --- a/mm/madvise.c~b
+> > +++ a/mm/madvise.c
+> > @@ -172,11 +172,16 @@ static int madvise_update_vma(vm_flags_t
+> >       if (IS_ERR(vma))
+> >               return PTR_ERR(vma);
+> >
+> > -     madv_behavior->vma =3D vma;
+> > -
+> > -     /* vm_flags is protected by the mmap_lock held in write mode. */
+> > -     if (vma_start_write_killable(vma))
+> > -             return -EINTR;
+> > +     /*
+> > +      * If a new vma was created during vma_modify_XXX, the resulting
+> > +      * vma is already locked. Skip re-locking new vma in this case.
+> > +      */
+> > +     if (vma =3D=3D madv_behavior->vma) {
+> > +             if (vma_start_write_killable(vma))
+> > +                     return -EINTR;
+> > +     } else {
+> > +             madv_behavior->vma =3D vma;
+> > +     }
+> >
+> >       vma->flags =3D new_vma_flags;
+> >       if (set_new_anon_name)
+> > --- a/mm/mempolicy.c~b
+> > +++ a/mm/mempolicy.c
+> > @@ -1546,7 +1546,14 @@ static long do_mbind(unsigned long start
+> >                       flags | MPOL_MF_INVERT | MPOL_MF_WRLOCK, &pagelis=
+t);
+> >
+> >       if (nr_failed < 0) {
+> > -             err =3D nr_failed;
+> > +             /*
+> > +              * queue_pages_range() might override the original error =
+with -EFAULT.
+> > +              * Confirm that fatal signals are still treated correctly=
+.
+> > +              */
+> > +             if (fatal_signal_pending(current))
+> > +                     err =3D -EINTR;
+> > +             else
+> > +                     err =3D nr_failed;
+> >               nr_failed =3D 0;
+> >       } else {
+> >               vma_iter_init(&vmi, mm, start);
+> > --- a/mm/mlock.c~b
+> > +++ a/mm/mlock.c
+> > @@ -518,6 +518,8 @@ static int mlock_fixup(struct vma_iterat
+> >               vma->flags =3D new_vma_flags;
+> >       } else {
+> >               ret =3D mlock_vma_pages_range(vma, start, end, &new_vma_f=
+lags);
+> > +             if (ret)
+> > +                     mm->locked_vm -=3D nr_pages;
+> >       }
+> >  out:
+> >       *prev =3D vma;
+> > --- a/mm/mprotect.c~b
+> > +++ a/mm/mprotect.c
+> > @@ -716,6 +716,7 @@ mprotect_fixup(struct vma_iterator *vmi,
+> >       const vma_flags_t old_vma_flags =3D READ_ONCE(vma->flags);
+> >       vma_flags_t new_vma_flags =3D legacy_to_vma_flags(newflags);
+> >       long nrpages =3D (end - start) >> PAGE_SHIFT;
+> > +     struct vm_area_struct *new_vma;
+> >       unsigned int mm_cp_flags =3D 0;
+> >       unsigned long charged =3D 0;
+> >       int error;
+> > @@ -772,21 +773,26 @@ mprotect_fixup(struct vma_iterator *vmi,
+> >               vma_flags_clear(&new_vma_flags, VMA_ACCOUNT_BIT);
+> >       }
+> >
+> > -     vma =3D vma_modify_flags(vmi, *pprev, vma, start, end, &new_vma_f=
+lags);
+> > -     if (IS_ERR(vma)) {
+> > -             error =3D PTR_ERR(vma);
+> > +     new_vma =3D vma_modify_flags(vmi, *pprev, vma, start, end,
+> > +                                &new_vma_flags);
+> > +     if (IS_ERR(new_vma)) {
+> > +             error =3D PTR_ERR(new_vma);
+> >               goto fail;
+> >       }
+> >
+> > -     *pprev =3D vma;
+> > -
+> >       /*
+> > -      * vm_flags and vm_page_prot are protected by the mmap_lock
+> > -      * held in write mode.
+> > +      * If a new vma was created during vma_modify_flags, the resultin=
+g
+> > +      * vma is already locked. Skip re-locking new vma in this case.
+> >        */
+> > -     error =3D vma_start_write_killable(vma);
+> > -     if (error)
+> > -             goto fail;
+> > +     if (new_vma =3D=3D vma) {
+> > +             error =3D vma_start_write_killable(vma);
+> > +             if (error)
+> > +                     goto fail;
+> > +     } else {
+> > +             vma =3D new_vma;
+> > +     }
+> > +
+> > +     *pprev =3D vma;
+> >
+> >       vma_flags_reset_once(vma, &new_vma_flags);
+> >       if (vma_wants_manual_pte_write_upgrade(vma))
+> > --- a/mm/mseal.c~b
+> > +++ a/mm/mseal.c
+> > @@ -70,17 +70,28 @@ static int mseal_apply(struct mm_struct
+> >
+> >               if (!vma_test(vma, VMA_SEALED_BIT)) {
+> >                       vma_flags_t vma_flags =3D vma->flags;
+> > -                     int err;
+> > +                     struct vm_area_struct *new_vma;
+> >
+> >                       vma_flags_set(&vma_flags, VMA_SEALED_BIT);
+> >
+> > -                     vma =3D vma_modify_flags(&vmi, prev, vma, curr_st=
+art,
+> > -                                            curr_end, &vma_flags);
+> > -                     if (IS_ERR(vma))
+> > -                             return PTR_ERR(vma);
+> > -                     err =3D vma_start_write_killable(vma);
+> > -                     if (err)
+> > -                             return err;
+> > +                     new_vma =3D vma_modify_flags(&vmi, prev, vma, cur=
+r_start,
+> > +                                                curr_end, &vma_flags);
+> > +                     if (IS_ERR(new_vma))
+> > +                             return PTR_ERR(new_vma);
+> > +
+> > +                     /*
+> > +                      * If a new vma was created during vma_modify_fla=
+gs,
+> > +                      * the resulting vma is already locked.
+> > +                      * Skip re-locking new vma in this case.
+> > +                      */
+> > +                     if (new_vma =3D=3D vma) {
+> > +                             int err =3D vma_start_write_killable(vma)=
+;
+> > +                             if (err)
+> > +                                     return err;
+> > +                     } else {
+> > +                             vma =3D new_vma;
+> > +                     }
+> > +
+> >                       vma_set_flags(vma, VMA_SEALED_BIT);
+> >               }
+> >
+> > --- a/mm/vma.c~b
+> > +++ a/mm/vma.c
+> > @@ -531,6 +531,10 @@ __split_vma(struct vma_iterator *vmi, st
+> >       err =3D vma_start_write_killable(vma);
+> >       if (err)
+> >               goto out_free_vma;
+> > +     /*
+> > +      * Locking a new detached VMA will always succeed but it's just a
+> > +      * detail of the current implementation, so handle it all the sam=
+e.
+> > +      */
+> >       err =3D vma_start_write_killable(new);
+> >       if (err)
+> >               goto out_free_vma;
+> > @@ -1197,8 +1201,14 @@ int vma_expand(struct vma_merge_struct *
+> >
+> >       mmap_assert_write_locked(vmg->mm);
+> >       err =3D vma_start_write_killable(target);
+> > -     if (err)
+> > +     if (err) {
+> > +             /*
+> > +              * Override VMA_MERGE_NOMERGE to prevent callers from
+> > +              * falling back to a new VMA allocation.
+> > +              */
+> > +             vmg->state =3D VMA_MERGE_ERROR_NOMEM;
+> >               return err;
+> > +     }
+> >
+> >       target_sticky =3D vma_flags_and_mask(&target->flags, VMA_STICKY_F=
+LAGS);
+> >
+> > @@ -1231,8 +1241,14 @@ int vma_expand(struct vma_merge_struct *
+> >                * is pending.
+> >                */
+> >               err =3D vma_start_write_killable(next);
+> > -             if (err)
+> > +             if (err) {
+> > +                     /*
+> > +                      * Override VMA_MERGE_NOMERGE to prevent callers =
+from
+> > +                      * falling back to a new VMA allocation.
+> > +                      */
+> > +                     vmg->state =3D VMA_MERGE_ERROR_NOMEM;
+> >                       return err;
+> > +             }
+> >               err =3D dup_anon_vma(target, next, &anon_dup);
+> >               if (err)
+> >                       return err;
+> > _
+> >
 
