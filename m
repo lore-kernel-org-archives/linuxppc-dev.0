@@ -1,99 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-19049-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19050-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B1EBFF60CE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2026 06:44:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB120FF60D2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2026 06:56:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4flJWP6C5Jz2ybQ;
-	Tue, 31 Mar 2026 17:44:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774939473;
-	cv=none; b=YqEi9QO+b1pqaW2EaJMEQ7F0Bg0Jc8cLoO95C4YztP37LuKAa6yN3FfHVmhf7wW9fKa1HJSk9FgXvg+78mvlCt1dhuaW0c0jFf/kEtOJAyuslx5iPO+89Mkz0lc+EaIV+aNsNiX81Pz8Kk7SXhec3psJa13OLPNMaKEKuxY3hmEiAfVGtt9/LcTutlnT+6UmoHH6lM1a2e77ZDxuAMa0i3jCx4RHZfbVVt8zTJ3IM4QDK9Hv6L10XOBs+eRFx0mM5FKHXbpvL76e3mWzvfvMAuLsmoVP7l6XDqRQjfDNp0NDuKw5O9TpsU9Y9AVGJtn9On+qX5KAf15Snjm+JrdGVg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4flJnV3vNGz2ybQ;
+	Tue, 31 Mar 2026 17:56:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774940206;
+	cv=none; b=TWkLrQBA6weYYY11jPF06+pY1tP5EmqJlBfEJ5ojdlzzlMDjIuuB7/hJ0WinfIte99+hsOFbjR7ijE/7iUkNvaZVRYd8Pxzk3we38W9+uOIETUH0tqklpTgugrXChLNR44MEkCCOCsaKJAQ3GB3zDIvBggPOSfaob/LV7iiuQjsA7ROE83ygzbFN5C+xDRuhHk6vMJpxDDoUODwRG20DabSjbSK+EThmyh3PQ8HX+YqZnklc356Usns2nAFGQ+4Vl6xZ3ilXjCQeprqUjOwj3mZ516qIV5B//6P26TfGFfSihGVcSFIcU4c0M+dAybLoMNcjLebs0CwRfBcuuFlraw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774939473; c=relaxed/relaxed;
-	bh=Y9GCtCDBGo/k/bo5qV4PyHSzEj49q9Yb8t4+rZ80jmc=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=RX2eXTWVtghwaDL7Yeq6/zRAHfULPRDjzLzVXWd0sHQgwtnKfvPPB8GEfsbyad+Bl++2N5uzNGuTBbTFLbJ9k/fjhh2a+pSJXfAuxR9qt1DKq3f1BGMdwPQlE5TN7SJQp/ekO54V+sWOPRSKvgUemfnG/sijQgV8JnQ9O9ajDGMfaDXWYZ/TdLKU1tTVibc7ElbGCRG+nOfIY2v1LLFb870e/PZxVR/wP5xKQkmtimb5SbV3RgAgcXeQistlAjpDIxrT/udmzmZX6gP5VSOgIkYgtWXBoe1pSxxw3WpNcttmaHFe4tEfdRgyrE0oChMkrh8yS4a6ZvnnAdJcphKjXA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rKkkZrqd; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1774940206; c=relaxed/relaxed;
+	bh=bMARb4Wo6N+Nz/kfJTBpuZduLwAIFH7ubhs0TRfs7wE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=KZFPbDAUV6cNHkKUOxCC/vUxF3pLwVST/xElm/iSZG3DuUAbGGh/Ejb84pB/XmDt/ljuepBNxxkEegOnSfwr9guMVD/CXdHGi2JV/ANckDeS3gx7AXgIm6rKQhpKdcP48nUO/UyGVudaK7J9m9U3sNfCdcT/KmqMvlOtX5ImdMeX6V3EqiQQd6cEAyGDZuhmIUBkt1drSiqpGJyFvwvzjWx2YFze1Wx7fOlPvRWVXi755hPTmbwtQUqocg36S4cMkJTBaFi4fPJNXfqi/GrqNlCQTTeh37QcZgciubx5wqED3AcMDGnsEVf3jjK6JBCPHnVDybbjtDAPFXo31JoPLA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lIG4GRU5; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=namhyung@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rKkkZrqd;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lIG4GRU5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=namhyung@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4flJWN4nDKz2xSb
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2026 17:44:32 +1100 (AEDT)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62UEAUuD039609;
-	Tue, 31 Mar 2026 06:44:20 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=Y9GCtC
-	DBGo/k/bo5qV4PyHSzEj49q9Yb8t4+rZ80jmc=; b=rKkkZrqdjA+65Ry7blQUfJ
-	YTm9tAT2X6FWHMFx7xsPn2N1si+Hc9BGdPpwptj1IKT3TgLdYuXAvpXWpo3Xckuu
-	29Jy52FoDcoLYeCK9WbN+QBQTJkqmXBpnqfKRtgeIJWMgPcL/IWAsQAXRtc9Rvig
-	VB2RE6hj3P+uutqUaftJoZo08FB1GQm7HAVimUrv0xJ/VwLSuv/YhShsEM1LlFgu
-	jazjBK22CJL913yelPJtEbKNyy5wfYl5U6OeQjDLGU4cqUIJB4EUUMX+CRa7M7N/
-	aRx+N/hx3f/5nSmWF/6cK+TulOjYjbXCFNkuHXDYdKTE/nQDNlaUNlqNRWa7fmmA
-	==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d64dghqxu-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 31 Mar 2026 06:44:19 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 62V1RHum013987;
-	Tue, 31 Mar 2026 06:44:19 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4d6ttkftdd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 31 Mar 2026 06:44:19 +0000
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 62V6iEPt53019016
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 31 Mar 2026 06:44:14 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9167F2004B;
-	Tue, 31 Mar 2026 06:44:14 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2DE2520049;
-	Tue, 31 Mar 2026 06:44:12 +0000 (GMT)
-Received: from shivang.upadyay (unknown [9.123.12.247])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 31 Mar 2026 06:44:11 +0000 (GMT)
-Message-ID: <53d80173ef5015601a4e9faa14c24ab60815ecf0.camel@linux.ibm.com>
-Subject: Re: [PATCH v2] pseries/kexec: skip resetting CPUs added by firmware
- but not started by the kernel
-From: Shivang Upadhyay <shivangu@linux.ibm.com>
-To: Srikar Dronamraju <srikar@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        Madhavan
- Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin	 <npiggin@gmail.com>,
-        Christophe Leroy
- <christophe.leroy@csgroup.eu>,
-        Shrikanth Hegde <sshegde@linux.ibm.com>,
-        "Nysal Jan K.A." <nysal@linux.ibm.com>,
-        Vishal Chourasia	
- <vishalc@linux.ibm.com>,
-        Ritesh Harjani <ritesh.list@gmail.com>,
-        Sourabh
- Jain	 <sourabhjain@linux.ibm.com>,
-        Anushree Mathur	
- <anushree.mathur@linux.vnet.ibm.com>
-Date: Tue, 31 Mar 2026 12:14:00 +0530
-In-Reply-To: <actOtLSoqSMgmEQh@linux.ibm.com>
-References: <20260330062206.170437-1-shivangu@linux.ibm.com>
-	 <actOtLSoqSMgmEQh@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2 (3.56.2-2.fc42) 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4flJnT3nBSz2xSb
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2026 17:56:45 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 9D34F600CB;
+	Tue, 31 Mar 2026 06:56:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B85EAC19423;
+	Tue, 31 Mar 2026 06:56:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774940202;
+	bh=D7MxuOi8KI6bZqP+w1RUt5iGTAhET4LGj8dP1dYXWIg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=lIG4GRU5hJash20KUYnVmszeohqcAcMHyctn7TVJoBboA+Z78K4a58PFizQsVUwaH
+	 U7cSC9yTCRmcRv76JvWDfIlQzfV9yY+xLfbRepNIFlxmxGNpAemvGd5rRSXfVqLNiZ
+	 ePa4U1QsgYTUfCtdvzXqPZ4UpLeD8eDrfJp821rpU5i6SixoxCSn1Qiy7kDmp5XIvD
+	 eMZ+Tau2ayAQC2jWbl3aNZ54X6wNyQolLvWeehXeP6uB97IDzXOsCrXpQjOLQkpB9m
+	 bV3iAqbujbmpOeQ11Uo/5BE+ugNAJxTEPc1b3B/aYOoLTFD1K0+yrQCENsw+XiWJ0n
+	 z19Slwk/GzL0Q==
+Date: Mon, 30 Mar 2026 23:56:40 -0700
+From: Namhyung Kim <namhyung@kernel.org>
+To: Athira Rajeev <atrajeev@linux.ibm.com>
+Cc: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
+	vmolnaro@redhat.com, mpetlan@redhat.com, tmricht@linux.ibm.com,
+	maddy@linux.ibm.com, irogers@google.com,
+	linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	hbathini@linux.vnet.ibm.com, Tejas.Manhas1@ibm.com,
+	Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com
+Subject: Re: [PATCH V2] tools/perf/tests: Update test_adding_kernel.sh to
+ handle proper debuginfo check
+Message-ID: <actwKNAzk6PnoBDX@google.com>
+References: <20260323122424.88068-1-atrajeev@linux.ibm.com>
+ <acW9tz0KZWgaJjTV@google.com>
+ <3E20DA19-2C2A-45EC-A2AA-7C05CE89C4FE@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -107,228 +72,205 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMzMxMDA1OCBTYWx0ZWRfX37gBA0hJU7KL
- FQKaX2D6I5cf8SuAcszKZPcQNEGIm6k8bQiqWwrJAHUeubv1iH0AGT+i3zlt9b0fBfm4L3vtH0x
- RZkU462Z5ZB4hPUhQnO40xJt5tM9uYbHN5bmttRKNlcMjA2qE4gLgnY3GlvooDRYQ0pADlxL6kU
- XWUGnnAjmqN5YRBphtFhVrJPjCMbBaZ8dTi7BYwfRSTerS8EbWz1vAtwpiPas4BaEoGR+WAGTZ4
- L4DvT7DT5G2Nue8jNOUxYKVGmNPyBalNpy1XWZSlFtz7zRoIIZT5dQLtZ0s9aL5+FdMqLZ/5iUc
- XU5Rx+QqPNrENWkMpLsyvb8TrgIZfRj1O1usax4xyKHl+xl+o+NpGiQ6eZ376fXoCe3zV+v1jb+
- nsdFu7Pg9mY4XkYoaqayF+yCOD02wiFiXwIqGRbIihbkfxKQNpPMNBn8CrHA66x+vrItjVLnqe2
- S0Xy8N8N2nm+HMafyxg==
-X-Authority-Analysis: v=2.4 cv=QKZlhwLL c=1 sm=1 tr=0 ts=69cb6d44 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=Yq5XynenixoA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8 a=1UX6Do5GAAAA:8 a=OQYtAnS5VtIFOpmrliEA:9
- a=QEXdDO2ut3YA:10 a=Et2XPkok5AAZYJIKzHr1:22
-X-Proofpoint-GUID: AerLmqN0Ju-3jo14nG1jf08aB8zV4bJL
-X-Proofpoint-ORIG-GUID: NbtGEpMH0ET33Q8PEpd-Ctr03L8KNEKq
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-03-31_01,2026-03-28_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0 phishscore=0 adultscore=0 impostorscore=0 clxscore=1015
- spamscore=0 bulkscore=0 priorityscore=1501 suspectscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2603310058
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <3E20DA19-2C2A-45EC-A2AA-7C05CE89C4FE@linux.ibm.com>
 
-Hi Srikar,
+On Fri, Mar 27, 2026 at 11:26:48PM +0530, Athira Rajeev wrote:
+> 
+> 
+> > On 27 Mar 2026, at 4:43 AM, Namhyung Kim <namhyung@kernel.org> wrote:
+> > 
+> > On Mon, Mar 23, 2026 at 05:54:24PM +0530, Athira Rajeev wrote:
+> >> Perf test perftool-testsuite_probe fails as below:
+> >> 
+> >> Regexp not found: "\s*probe:inode_permission(?:_\d+)?\s+\(on inode_permission(?:[:\+][0-9A-Fa-f]+)?@.+\)"
+> >> -- [ FAIL ] -- perf_probe :: test_adding_kernel :: listing added probe :: perf probe -l (output regexp parsing)
+> >> -- [ PASS ] -- perf_probe :: test_adding_kernel :: removing multiple probes
+> >> Regexp not found: "probe:vfs_mknod"
+> >> Regexp not found: "probe:vfs_create"
+> >> Regexp not found: "probe:vfs_rmdir"
+> >> Regexp not found: "probe:vfs_link"
+> >> Regexp not found: "probe:vfs_write"
+> >> -- [ FAIL ] -- perf_probe :: test_adding_kernel :: wildcard adding support (command exitcode + output regexp parsing)
+> >> Regexp not found: "somenonexistingrandomstuffwhichisalsoprettylongorevenlongertoexceed64"
+> >> Regexp not found: "in this function|at this address"
+> >> -- [ FAIL ] -- perf_probe :: test_adding_kernel :: non-existing variable (output regexp parsing)
+> >> ## [ FAIL ] ## perf_probe :: test_adding_kernel SUMMARY :: 3 failures found
+> >> 
+> >> Further analysing, the failed testcase is for "test_adding_kernel".
+> >> If the kernel debuginfo is missing, perf probe fails as below:
+> >> 
+> >> perf probe -nf --max-probes=512 -a 'vfs_* $params'
+> >> Failed to find the path for the kernel: No such file or directory
+> >>  Error: Failed to add events.
+> >> 
+> >> skip_if_no_debuginfo has check to handle whether debuginfo is present
+> >> and the testcase checks for debuginfo since this :
+> >> commit 90d32e92011e ("tools/perf: Handle perftool-testsuite_probe
+> >> testcases fail when kernel debuginfo is not present")
+> >> 
+> >> Recently a change got added in "tests/shell/lib/probe_vfs_getname.sh"
+> >> via this another fix:
+> >> commit 92b664dcefab ("perf test probe_vfs_getname: Skip if no suitable
+> >> line detected")
+> >> Since this commit, first add_probe_vfs_getname is used to prevent false
+> >> failures. And based on return code of add_probe_vfs_getname, skip_if_no_debuginfo
+> >> is used to skip testcase if debuginfo is present. And this modified other
+> >> testcases to call add_probe_vfs_getname first and invoke
+> >> skip_if_no_debuginfo based on return value.
+> >> 
+> >> The tests in test_adding_kernel.sh which depends on presence of
+> >> debuginfo are:
+> >> 1. probe add for inode_permission
+> >> 2. probe max-probes option using 'vfs_* $params'
+> >> 3. non-existing variable probing
+> >> 
+> >> For these tests, probe check for specific line is not required.
+> >> So call skip_if_no_debuginfo with argument to say if line check is
+> >> needed. This is to convey to skip_if_no_debuginfo() function
+> >> that test only needs to check for debuginfo, and not specifically
+> >> line number. Update skip_if_no_debuginfo to use simple "perf probe"
+> >> check if test only needs to check for debuginfo. And for other
+> >> tests which rely on line number, use add_probe_vfs_getname()
+> >> 
+> >> With the change, verified that only three which required debuginfo only
+> >> is skipped and others ran successfully. Also tested with debuginfo
+> >> to make sure tests are not skipped.
+> >> 
+> >> Reported-by: Tejas Manhas <Tejas.Manhas1@ibm.com>
+> >> Reviewed-by: Ian Rogers <irogers@google.com>
+> >> Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
+> >> ---
+> >> Changelog:
+> >> - First version used "perf probe -v -L getname_flags" for debuginfo
+> >>  check. This will not catch fail string "Debuginfo-analysis is not
+> >> supported" which is used in cases when perf is built without dwarf.
+> >> So use "perf probe -vn add inode_permission" to capture cases when
+> >> tools built with NO_LIBDWARF=1. This will capture debuginfo missing as
+> >> well as tool built without dwarf case.
+> >> 
+> >> .../tests/shell/base_probe/test_adding_kernel.sh  | 15 ++++++++++++++-
+> >> tools/perf/tests/shell/lib/probe_vfs_getname.sh   | 13 ++++++++++++-
+> >> 2 files changed, 26 insertions(+), 2 deletions(-)
+> >> 
+> >> diff --git a/tools/perf/tests/shell/base_probe/test_adding_kernel.sh b/tools/perf/tests/shell/base_probe/test_adding_kernel.sh
+> >> index 555a825d55f2..f3db125c8669 100755
+> >> --- a/tools/perf/tests/shell/base_probe/test_adding_kernel.sh
+> >> +++ b/tools/perf/tests/shell/base_probe/test_adding_kernel.sh
+> >> @@ -23,10 +23,23 @@ TEST_RESULT=0
+> >> . "$DIR_PATH/../lib/probe_vfs_getname.sh"
+> >> 
+> >> TEST_PROBE=${TEST_PROBE:-"inode_permission"}
+> >> +PROBE_NO_LINE_CHECK=1
+> > 
+> > I'm not sure I follow but shouldn't it depend on the return value of
+> > `perf check feature -q dwarf`?
+> > 
+> > Thanks,
+> > Namhyung
+> 
+> Hi Namhyung
+> 
+> Thanks for checking the patch.
+> 
+> Yes, "perf check feature -q dwarf” checks if perf is compiled with dwarf support.
+> But for “test_adding_kernel” , we need to check if kernel debuginfo is missing.
+> The check this path is trying to, also includes “debuginfo”
+> 
+> In environment without debuginfo: perftool-testsuite_probe fails as below:
+> 
+> Regexp not found: "\s*probe:inode_permission(?:_\d+)?\s+\(on inode_permission(?:[:\+][0-9A-Fa-f]+)?@.+\)"
+> -- [ FAIL ] -- perf_probe :: test_adding_kernel :: listing added probe :: perf probe -l (output regexp parsing)
+> -- [ PASS ] -- perf_probe :: test_adding_kernel :: removing multiple probes
+> Regexp not found: "probe:vfs_mknod"
+> Regexp not found: "probe:vfs_create"
+> Regexp not found: "probe:vfs_rmdir"
+> Regexp not found: "probe:vfs_link"
+> Regexp not found: "probe:vfs_write"
+> -- [ FAIL ] -- perf_probe :: test_adding_kernel :: wildcard adding support (command exitcode + output regexp parsing)
+> Regexp not found: "somenonexistingrandomstuffwhichisalsoprettylongorevenlongertoexceed64"
+> Regexp not found: "in this function|at this address"
+> -- [ FAIL ] -- perf_probe :: test_adding_kernel :: non-existing variable (output regexp parsing)
+> ## [ FAIL ] ## perf_probe :: test_adding_kernel SUMMARY :: 3 failures found
+> 
+> We have “skip_if_no_debuginfo” check in tools/perf/tests/shell/lib/probe_vfs_getname.sh and
+> “test_adding_kernel” calls this to find out presence of debuginfo. 
+> 
+> Recently a change got added via commit 92b664dcefab ("perf test probe_vfs_getname: Skip if no suitable
+> line detected”) where we return if specific line is not found using perf probe. And hence debuginfo check is not
+> happening.
+> 
+> 
+> The tests in test_adding_kernel.sh which depends on presence of
+> debuginfo are:
+> 1. probe add for inode_permission
+> 2. probe max-probes option using 'vfs_* $params'
+> 3. non-existing variable probing
+> 
+> For these tests, probe check for specific line is not required. So this patch updates
+> skip_if_no_debuginfo to use an argument that communicates whether line check is needed.
+> If only debuginfo/dwarf check is required, use simple "perf probe”. And for other
+> tests which rely on line number, fallback to default add_probe_vfs_getname().
+ 
+Ok, thanks for the explanation.  But I'm afraid you didn't change other
+callsites to pass 0 explicitly.
 
-Thanks for reviewing.
+> > 
+> >> 
+> >> # set NO_DEBUGINFO to skip testcase if debuginfo is not present
+> >> # skip_if_no_debuginfo returns 2 if debuginfo is not present
+> >> -skip_if_no_debuginfo
+> >> +#
+> >> +# The perf probe checks which depends on presence of debuginfo and
+> >> +# used in this testcase are:
+> >> +# 1. probe add for inode_permission
+> >> +# 2. probe max-probes option using 'vfs_* $params'
+> >> +# 3. non-existing variable probing
+> >> +#
+> >> +# For these tests, probe check for specific line is not
+> >> +# required ( add_probe_vfs_getname does that ). So call
+> >> +# skip_if_no_debuginfo with argument as 1. This is to convey
+> >> +# that test only needs to check for debuginfo, and not specifically
+> >> +# line number
+> >> +skip_if_no_debuginfo $PROBE_NO_LINE_CHECK
+> >> if [ $? -eq 2 ]; then
+> >> NO_DEBUGINFO=1
+> >> fi
+> >> diff --git a/tools/perf/tests/shell/lib/probe_vfs_getname.sh b/tools/perf/tests/shell/lib/probe_vfs_getname.sh
+> >> index 88cd0e26d5f6..8ae2ea2bc8a2 100644
+> >> --- a/tools/perf/tests/shell/lib/probe_vfs_getname.sh
+> >> +++ b/tools/perf/tests/shell/lib/probe_vfs_getname.sh
+> >> @@ -39,7 +39,18 @@ add_probe_vfs_getname() {
+> >> }
+> >> 
+> >> skip_if_no_debuginfo() {
+> >> - add_probe_vfs_getname -v 2>&1 | grep -E -q "^(Failed to find the path for the kernel|Debuginfo-analysis is not supported)|(file has no debug information)" && return 2
+> >> + no_line_check=$1
+> >> + debug_str="^(Failed to find the path for the kernel|Debuginfo-analysis is not supported)|(file has no debug information)"
+> >> +
+> >> + # search for debug_str using simple perf probe if the
+> >> + # test only needs to check for debuginfo, and not specifically
+> >> + # line number.
+> >> + if [ $no_line_check -eq 1 ]; then
+> >> + perf probe -vn add inode_permission 2>&1 | grep -E -q "$debug_str" && return 2
 
-On Tue, 2026-03-31 at 10:03 +0530, Srikar Dronamraju wrote:
-> * Shivang Upadhyay <shivangu@linux.ibm.com> [2026-03-30 11:52:06]:
->=20
-> > During DLPAR operations, the newly added CPUs start in halted mode.
-> > The kernel then takes some time to initialize those CPUs internally
-> > and
-> > start them using the "start-cpu" RTAS call. However, if a kexec
-> > crash
-> > occurs in this window (before the new CPU has been initialized),
-> > the kexec NMI will try to reset all other CPUs from the crashing
-> > CPU.
-> > This leads to firmware starting the uninitialized CPUs as well.
->=20
-> What would happen if an non kexec crash nmi was delivered when we did
-> a
-> DLPAR operation and before the CPUs are initialized?
+Sashiko found that it should be '--add' or '-a'.
 
-As per my understanding, similar hang like situation should happen
-there also. But I think this case would be highly unlikely. Crash's
-case is little special, because this is called for offline cpus also.
-
->=20
-> >=20
-> > This can cause the kdump kernel to hang during bring-up.
-> >=20
-> > Sample Log:
-> > =C2=A0 [175993.028231][ T1502] NIP [00007fffb953f394] 0x7fffb953f394
-> > =C2=A0 [175993.028314][ T1502] LR [00007fffb953f394] 0x7fffb953f394
-> > =C2=A0 [175993.028390][ T1502] --- interrupt: 3000
-> > =C2=A0 [=C2=A0=C2=A0=C2=A0 5.519483][=C2=A0=C2=A0=C2=A0 T1] Processor 0=
- is stuck.
-> > =C2=A0 [=C2=A0=C2=A0 11.089481][=C2=A0=C2=A0=C2=A0 T1] Processor 1 is s=
-tuck.
-> >=20
-> > To fix this, only issue the system-reset hcall to CPUs that have
-> > actually been started by the kernel.
-> >=20
-> > Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-> > Cc: Michael Ellerman <mpe@ellerman.id.au>
-> > Cc: Nicholas Piggin <npiggin@gmail.com>
-> > Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-> > Cc: Srikar Dronamraju <srikar@linux.ibm.com>
-> > Cc: Shrikanth Hegde <sshegde@linux.ibm.com>
-> > Cc: Nysal Jan K.A. <nysal@linux.ibm.com>
-> > Cc: Vishal Chourasia <vishalc@linux.ibm.com>
-> > Cc: Ritesh Harjani <ritesh.list@gmail.com>
-> > Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
-> > Reported-by: Anushree Mathur <anushree.mathur@linux.vnet.ibm.com>
-> > Signed-off-by: Shivang Upadhyay <shivangu@linux.ibm.com>
-> > ---
-> > Changelog:
-> >=20
-> > V2:
-> > =C2=A0 * added set_crash_nmi_ipi to saperate crash's case from other
-> > nmi_ipi
-> > =C2=A0=C2=A0=C2=A0 users
-> >=20
-> > V1:
-> > =C2=A0 *
-> > https://lore.kernel.org/all/20251205142825.44698-1-shivangu@linux.ibm.c=
-om/
-> > ---
-> > =C2=A0arch/powerpc/include/asm/smp.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0 |=C2=A0 1 +
-> > =C2=A0arch/powerpc/kernel/smp.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0 1 +
-> > =C2=A0arch/powerpc/platforms/pseries/smp.c | 29
-> > +++++++++++++++++++++++++++-
-> > =C2=A03 files changed, 30 insertions(+), 1 deletion(-)
-> >=20
-> > diff --git a/arch/powerpc/include/asm/smp.h
-> > b/arch/powerpc/include/asm/smp.h
-> > index e41b9ea42122..cb74201f5674 100644
-> > --- a/arch/powerpc/include/asm/smp.h
-> > +++ b/arch/powerpc/include/asm/smp.h
-> > @@ -47,6 +47,7 @@ struct smp_ops_t {
-> > =C2=A0	void=C2=A0 (*cause_ipi)(int cpu);
-> > =C2=A0#endif
-> > =C2=A0	int=C2=A0=C2=A0 (*cause_nmi_ipi)(int cpu);
-> > +	void=C2=A0 (*set_crash_nmi_ipi)(void);
-> > =C2=A0	void=C2=A0 (*probe)(void);
-> > =C2=A0	int=C2=A0=C2=A0 (*kick_cpu)(int nr);
-> > =C2=A0	int=C2=A0=C2=A0 (*prepare_cpu)(int nr);
-> > diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> > index 3467f86fd78f..3390ee8adf79 100644
-> > --- a/arch/powerpc/kernel/smp.c
-> > +++ b/arch/powerpc/kernel/smp.c
-> > @@ -594,6 +594,7 @@ void crash_send_ipi(void
-> > (*crash_ipi_callback)(struct pt_regs *))
-> > =C2=A0{
-> > =C2=A0	int cpu;
-> > =C2=A0
-> > +	smp_ops->set_crash_nmi_ipi();
->=20
-> Shouldn't we be checking got smp_ops->set_crash_nmi_ipi being non-
-> NULL
-> before calling. Dont we expect set_crash_nmi_ipi() to be NULL in
-> PowerNV
-> after this patch? Or what would happen if set_crash_nmi_ipi() was
-> called in
-> PowerNV code?
->=20
-
-Yeah, that should be a Bug, Ill fix this in new patch. Thanks for
-catching this.
-
-
-> > =C2=A0	smp_send_nmi_ipi(NMI_IPI_ALL_OTHERS, crash_ipi_callback,
-> > 1000000);
-> > =C2=A0	if (kdump_in_progress() && crash_wake_offline) {
-> > =C2=A0		for_each_present_cpu(cpu) {
-> > diff --git a/arch/powerpc/platforms/pseries/smp.c
-> > b/arch/powerpc/platforms/pseries/smp.c
-> > index db99725e752b..c6c2baacca9a 100644
-> > --- a/arch/powerpc/platforms/pseries/smp.c
-> > +++ b/arch/powerpc/platforms/pseries/smp.c
-> > @@ -51,6 +51,9 @@
-> > =C2=A0 */
-> > =C2=A0static cpumask_var_t of_spin_mask;
-> > =C2=A0
-> > +
->=20
-> Nit: Are we adding an unnecessary newline?
-
-Ack.
-
->=20
-> > +static int crash_nmi_ipi;
-> > +
-> > =C2=A0/* Query where a cpu is now.=C2=A0 Return codes #defined in
-> > plpar_wrappers.h */
-> > =C2=A0int smp_query_cpu_stopped(unsigned int pcpu)
-> > =C2=A0{
-> > @@ -171,12 +174,35 @@ static void dbell_or_ic_cause_ipi(int cpu)
-> > =C2=A0	ic_cause_ipi(cpu);
-> > =C2=A0}
-> > =C2=A0
-> > +static void pseries_set_crash_nmi_ipi(void)
-> > +{
-> > +	crash_nmi_ipi =3D 1;
-> > +}
-> > +
-> > =C2=A0static int pseries_cause_nmi_ipi(int cpu)
-> > =C2=A0{
-> > =C2=A0	int hwcpu;
-> > +	int k, curcpu;
-> > =C2=A0
-> > +	curcpu =3D smp_processor_id();
-> > =C2=A0	if (cpu =3D=3D NMI_IPI_ALL_OTHERS) {
-> > -		hwcpu =3D H_SIGNAL_SYS_RESET_ALL_OTHERS;
-> > +		if (crash_nmi_ipi) {
-> > +			for_each_present_cpu(k) {
-> > +				if (k !=3D curcpu) {
-> > +					hwcpu =3D
-> > get_hard_smp_processor_id(k);
-> > +
-> > +					/* it is possible that cpu
-> > is present,
-> > +					 * but not started yet.
-> > +					 */
-> > +
-> > +					if (paca_ptrs[hwcpu]-
-> > >cpu_start =3D=3D 1) {
-> > +						plpar_signal_sys_r
-> > eset(hwcpu);
-> > +					}
-> > +				}
-> > +			}
-> > +			return 1;
-> > +		} else
-> > +			hwcpu =3D H_SIGNAL_SYS_RESET_ALL_OTHERS;
-> > =C2=A0	} else {
-> > =C2=A0		if (cpu < 0) {
-> > =C2=A0			WARN_ONCE(true, "incorrect cpu parameter
-> > %d", cpu);
-> > @@ -243,6 +269,7 @@ static struct smp_ops_t pseries_smp_ops =3D {
-> > =C2=A0	.message_pass	=3D NULL,	/* Use
-> > smp_muxed_ipi_message_pass */
-> > =C2=A0	.cause_ipi	=3D NULL,	/* Filled at runtime by
-> > pSeries_smp_probe() */
-> > =C2=A0	.cause_nmi_ipi	=3D pseries_cause_nmi_ipi,
-> > +	.set_crash_nmi_ipi =3D pseries_set_crash_nmi_ipi,
-> > =C2=A0	.probe		=3D pSeries_smp_probe,
-> > =C2=A0	.prepare_cpu	=3D pseries_smp_prepare_cpu,
-> > =C2=A0	.kick_cpu	=3D smp_pSeries_kick_cpu,
-> > --=20
-> > 2.53.0
-> >=20
+Thanks,
+Namhyung
 
 
-Thanks
-
-~Shivang.
+> >> + else
+> >> + add_probe_vfs_getname -v 2>&1 | grep -E -q "$debug_str" && return 2
+> >> + fi
+> >> +
+> >> return 1
+> >> }
+> >> 
+> >> -- 
+> >> 2.47.3
+> 
+> 
 
