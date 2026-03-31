@@ -1,76 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-19108-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19109-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7C3BFF60F4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2026 17:11:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A085210F92E9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2026 18:29:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4flZQj1pctz2yfK;
-	Wed, 01 Apr 2026 04:11:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.7
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774977085;
-	cv=none; b=DLhDkqk6ktgsOpFMpCuPI3hYSvd2uUEr1hNXWZ7p/u8F/EWe1fFBb39ySHJs/JnCEU0/vuE4+1C+C1wPRBqTsUkgep4MhiqkuXPx6u8rzfipGQ6WF2Y81h8lvkYBsid7OQaIEwhhzYEganyhfXxBaltlj5kO6YBGgizQMCbTFzWpSQwtZnfvCS7XfvKhBykFQjMSQ/U8hyrRYpxdWxxqgPaK+fQSUx3Iyql0xFFU+ycGiqAvQKwcZHYmGvgggsngn3oeDLBwvHXv+vMMCvAhK++QSRECn1dFJuyek/yxwMcKwUd3zmRhV7L/uANPQ9uDiblerVGCIWqwQHazv9SRSA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4flc8m00k4z2yTH;
+	Wed, 01 Apr 2026 05:29:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774981767;
+	cv=none; b=nr/aYtRVyi+72nV8zY3TYcsEnWBaUb5HHcNBsJcYQUI2nwuGdFqAk8RANZwPH2Z0ckHAE1kpQ2L5wC+Av+7moYKxosQ9WbHztejWI0ishI4MUUvdoNgn/9s/D5goOnR4QOAtljlid5Ar83ar+lgiTv4vOeVvML9kOZkouSuuBi2jA7GninFEGYG6tmWRUCp4HSKSz85tIjbqPRVC652EMUqFayFPQzsm8XehII/DKjk88QKi3vwPd4NeMfEI/IrED31zxM/LH4J3DfqrX+KJilE1bg/742yMqeK3SYx5fhUA45pVEtjbX7u/mN5H9VgIXjLvec8K49ck5gRr7boK/A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774977085; c=relaxed/relaxed;
-	bh=0A8UGKXCc3BslSs2TBStu2TiOGNDGUwYpsF6jg4eoM0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=VCWUrfslic5vE+oFwYwG09NTACHO9PtsevCh8iZqiWFt/RbiezD8RXSPeQki12KGMeNIj7s7lq8v6yzmP7/CQIuMisSUTBEYUvE/zqMzWB7csXHBgGN4y+YOBGro2HNhuVY9xSxkVOhR3QGt+4uO4T9solfy3BdKbhMrv4XL/h3pxOthgDd8qAX29Iielt9C/Mz+YvWVgEO3dvveBI08HWgi0hmQwfyXB5Pf6TzKCVNuAdqYNVh64O/i0P4n7M883nWxWupthzEcLyJ1dMeVZdCaIEHGMONHo2cFXdKTLimgP62d7FeiHFPh9uxfVa92QPmfGcIunkxvHeADAYgSnA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=NRotyBw/; dkim-atps=neutral; spf=pass (client-ip=192.198.163.7; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1774981767; c=relaxed/relaxed;
+	bh=J00T2JxMYTG/x/x140fHqGBOqhKZUYg0rDSqmFS8gLs=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=H/507iNIpSH/jxy5v05eUwyt5jaPR9EvCSKpOaLslPLyFh08K8E0y16/Pc/INRRDr2zFoO7ZtMEi4o55DyNvVwxFDz6VFSzdeonYuNwNCivLfYOi1O2GXsAYB+0ky50vjRfglSUVJw8UJJeKMcq3Xf3mGbtvJ7c4U8lkYBRJg/cRbM7YHsPo09PchO67fhS5TwzxpIctv/5AsAbB3FfxW3ip190QpYvVKC12dZjIRvqsFjwVJJ3Dx1zDSz6G12SzQhrNMbBTNFCRb+xdS4LmZmHyTDelMBI5pAMnFA+modV/TO33FE4Et7Xc6eSzNiWNWvhMvBB6hRhQ8yXO+k2Gcw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=psWL4NZu; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=NRotyBw/;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=psWL4NZu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.7; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4flZQf74rtz2ydn
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 04:11:21 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1774977083; x=1806513083;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=GtvqYs/cKyskZarliVyoZyk6Lrz0zh2hjMq/BgJEN6A=;
-  b=NRotyBw/HTiyJDX9rLuaTvI+3U/DfWs9ktrZYE2yEmdNAmcE1DFubaaq
-   GQDsnSFVGwFQkJy2WJESf9v2rdrPjTyTvaYcAvcafRfZ6/MKFO3jziRkP
-   u09s0KmPvfZUOP47U80qEsUDq/AapQ9KlOqCnlAdFRerTCzsAv/t3m7iK
-   PBOnHcSiezlPhEoNpuGRikXKrCudJipw24Tfh8mU5Rp5lQi1eXFtmYorP
-   4zoTXmpF0BG3olipIOcuoXSltC8ph+Z4MKVhWJnumbGkHF4mTP3aaNni3
-   4iOMfvflfKTyzx06JJMeEJz2EuBB9Fg630XbD9Th8GJ82yPlrA09swUOp
-   Q==;
-X-CSE-ConnectionGUID: BqkD1u84SAqjvV9YpKLRbg==
-X-CSE-MsgGUID: 7C0Lkc3GQL2kyL9h8SaQ3g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11745"; a="101452501"
-X-IronPort-AV: E=Sophos;i="6.23,152,1770624000"; 
-   d="scan'208";a="101452501"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
-  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Mar 2026 10:11:18 -0700
-X-CSE-ConnectionGUID: r2xYqhAfS3+du50J680yKw==
-X-CSE-MsgGUID: gPOK64SeQbOM5PtqQpcDlg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,152,1770624000"; 
-   d="scan'208";a="221563716"
-Received: from lkp-server01.sh.intel.com (HELO 283bf2e1b94a) ([10.239.97.150])
-  by fmviesa006.fm.intel.com with ESMTP; 31 Mar 2026 10:11:16 -0700
-Received: from kbuild by 283bf2e1b94a with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1w7ccT-000000003bB-2W3u;
-	Tue, 31 Mar 2026 17:11:13 +0000
-Date: Wed, 1 Apr 2026 01:10:55 +0800
-From: kernel test robot <lkp@intel.com>
-To: =?iso-8859-1?Q?C=E1ssio?= Gabriel <cassiogabrielcontato@gmail.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	Takashi Iwai <tiwai@suse.com>, Jaroslav Kysela <perex@perex.cz>
-Cc: oe-kbuild-all@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
-	linux-sound@vger.kernel.org, linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org,
-	=?iso-8859-1?Q?C=E1ssio?= Gabriel <cassiogabrielcontato@gmail.com>
-Subject: Re: [PATCH] ALSA: aoa: i2sbus: clear stale prepared state
-Message-ID: <202604010125.AvkWBYKI-lkp@intel.com>
-References: <20260330-aoa-i2sbus-clear-stale-active-v1-1-47a6c0a3ac9e@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4flc8l0nWdz2yL8
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 05:29:26 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 7F0A940A54;
+	Tue, 31 Mar 2026 18:29:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0CF9FC19423;
+	Tue, 31 Mar 2026 18:29:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
+	s=korg; t=1774981763;
+	bh=F+p+n3x+VzyufNJY9nXy/ifCuLJFzInK3nA+2woKvxI=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=psWL4NZu9ag0FPb5FMERi89uk3vAYSdwJ6Jr11ixC6/8u6RxEisHJvG4oMZ0ss1wa
+	 h0dqxH5s2StJz2k2ac1CKvcdQ53N1oEowBsSLP/n5D8dDYwwFkfqAo6gZliPYRZnJi
+	 fs/N0xEVjUD6NdlZrzBZLQz+El5FY7Bxd/dn0oVM=
+Date: Tue, 31 Mar 2026 11:29:21 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Suren Baghdasaryan <surenb@google.com>
+Cc: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>, willy@infradead.org,
+ david@kernel.org, ziy@nvidia.com, matthew.brost@intel.com,
+ joshua.hahnjy@gmail.com, rakie.kim@sk.com, byungchul@sk.com,
+ gourry@gourry.net, ying.huang@linux.alibaba.com, apopple@nvidia.com,
+ baolin.wang@linux.alibaba.com, Liam.Howlett@oracle.com, npache@redhat.com,
+ ryan.roberts@arm.com, dev.jain@arm.com, baohua@kernel.org,
+ lance.yang@linux.dev, vbabka@suse.cz, jannh@google.com, rppt@kernel.org,
+ mhocko@suse.com, pfalcato@suse.de, kees@kernel.org, maddy@linux.ibm.com,
+ npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org,
+ borntraeger@linux.ibm.com, frankja@linux.ibm.com, imbrenda@linux.ibm.com,
+ hca@linux.ibm.com, gor@linux.ibm.com, agordeev@linux.ibm.com,
+ svens@linux.ibm.com, gerald.schaefer@linux.ibm.com, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Subject: Re: [PATCH v6 2/6] mm: use vma_start_write_killable() in mm
+ syscalls
+Message-Id: <20260331112921.854d4f6cc793dba0972ee9f1@linux-foundation.org>
+In-Reply-To: <CAJuCfpE5w8r_6Ss=5ZPrEb1RQOTG6HyY8Pivac=iiyqFRZvD4g@mail.gmail.com>
+References: <20260327205457.604224-1-surenb@google.com>
+	<20260327205457.604224-3-surenb@google.com>
+	<5d90d998-9b8d-435c-b684-260600311797@lucifer.local>
+	<CAJuCfpE5w8r_6Ss=5ZPrEb1RQOTG6HyY8Pivac=iiyqFRZvD4g@mail.gmail.com>
+X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -83,64 +79,22 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260330-aoa-i2sbus-clear-stale-active-v1-1-47a6c0a3ac9e@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Hi Cássio,
+On Tue, 31 Mar 2026 08:01:11 -0700 Suren Baghdasaryan <surenb@google.com> wrote:
 
-kernel test robot noticed the following build errors:
+> > Instead? That is, assuming we really need to care about this at all.
+> >
+> > But I think I don't like this change at all?
+> 
+> Yeah, this was the part I wasn't sure if it's worth adding. With your
+> vote confirming my scepticism I'll go ahead and remove the parts I
+> added to avoid extra vma_start_write_killable() call (3 instances in
+> all) and will post v7.
 
-[auto build test ERROR on 46a6512f4a74dd7b18d9a455669c226843fc49ce]
+Thanks.  I'll remove v6 from mm.git and shall await Lorenzo's advice on
+v7.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/C-ssio-Gabriel/ALSA-aoa-i2sbus-clear-stale-prepared-state/20260331-113724
-base:   46a6512f4a74dd7b18d9a455669c226843fc49ce
-patch link:    https://lore.kernel.org/r/20260330-aoa-i2sbus-clear-stale-active-v1-1-47a6c0a3ac9e%40gmail.com
-patch subject: [PATCH] ALSA: aoa: i2sbus: clear stale prepared state
-config: powerpc-allmodconfig (https://download.01.org/0day-ci/archive/20260401/202604010125.AvkWBYKI-lkp@intel.com/config)
-compiler: powerpc64-linux-gcc (GCC) 15.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260401/202604010125.AvkWBYKI-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202604010125.AvkWBYKI-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
->> sound/aoa/soundbus/i2sbus/pcm.c:760:25: error: initialization of 'int (*)(struct snd_pcm_substream *, struct snd_pcm_hw_params *)' from incompatible pointer type 'int (*)(struct snd_pcm_substream *)' [-Wincompatible-pointer-types]
-     760 |         .hw_params =    i2sbus_playback_hw_params,
-         |                         ^~~~~~~~~~~~~~~~~~~~~~~~~
-   sound/aoa/soundbus/i2sbus/pcm.c:760:25: note: (near initialization for 'i2sbus_playback_ops.hw_params')
-   sound/aoa/soundbus/i2sbus/pcm.c:313:12: note: 'i2sbus_playback_hw_params' declared here
-     313 | static int i2sbus_playback_hw_params(struct snd_pcm_substream *substream)
-         |            ^~~~~~~~~~~~~~~~~~~~~~~~~
-   sound/aoa/soundbus/i2sbus/pcm.c:829:25: error: initialization of 'int (*)(struct snd_pcm_substream *, struct snd_pcm_hw_params *)' from incompatible pointer type 'int (*)(struct snd_pcm_substream *)' [-Wincompatible-pointer-types]
-     829 |         .hw_params =    i2sbus_record_hw_params,
-         |                         ^~~~~~~~~~~~~~~~~~~~~~~
-   sound/aoa/soundbus/i2sbus/pcm.c:829:25: note: (near initialization for 'i2sbus_record_ops.hw_params')
-   sound/aoa/soundbus/i2sbus/pcm.c:323:12: note: 'i2sbus_record_hw_params' declared here
-     323 | static int i2sbus_record_hw_params(struct snd_pcm_substream *substream)
-         |            ^~~~~~~~~~~~~~~~~~~~~~~
-
-
-vim +760 sound/aoa/soundbus/i2sbus/pcm.c
-
-   756	
-   757	static const struct snd_pcm_ops i2sbus_playback_ops = {
-   758		.open =		i2sbus_playback_open,
-   759		.close =	i2sbus_playback_close,
- > 760		.hw_params =	i2sbus_playback_hw_params,
-   761		.hw_free =	i2sbus_playback_hw_free,
-   762		.prepare =	i2sbus_playback_prepare,
-   763		.trigger =	i2sbus_playback_trigger,
-   764		.pointer =	i2sbus_playback_pointer,
-   765	};
-   766	
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
 
