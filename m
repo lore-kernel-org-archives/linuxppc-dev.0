@@ -1,59 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-19076-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19077-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A88F71061B32
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2026 11:30:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D73D1061B32
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2026 11:30:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4flQs10Z74z2yft;
-	Tue, 31 Mar 2026 22:30:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774956612;
-	cv=pass; b=BIrZkVHYm670M1MeZdahRQoSPJodKFJZAOMd8F9Z/HdLO/LKtaS8uqt+7iU2R4PkxSr64QPrwfQGsFrnzg5OgY08NDpCPwjCeVOLvW5SwqdYJV+IVwaqdqo7NXj3o4BeQs7xmPMYoLyIC/rJkWAHbrvmiTLSwHY2LZ+OOfXuRz3l01Qno3mo5il5vchSAbm4kOP9biX8lyaUfRSjWuW/1QCi0PHPCK5jF6baQolqtE66nGIjSJSlwsIfQNYrXBRQMAwWTqBxL+FczBN31Gt6pcVT1oJ2mxBlszLeg892i38swMJpFutO0fyKMMsmIatUzDoagEO27Z0EH+ApN8h9bA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4flQs95ZlFz2yl2;
+	Tue, 31 Mar 2026 22:30:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c207::3" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774956621;
+	cv=pass; b=ciG1MetHOvkjMlGHWbiO3P9devz5S9aKjZcm2lBATHPA6pALTia9j1UfNZXRghYeebZqhFjF3YLcS/fHWGtPjy+2EvbClas0KvFt7yKsL50ZgJG6rKVonnahLBS4B2FwzH2yQrhjLrmDIDzjS60xyjStKm/pxNSmFNG8tYfUaIA1h7edMOwplmNZMVS2pcYOqT1U5S7jL4XGYulSQh4XK3s8jyg1wvlt0TGGJr95x+jdzNA4Yu93hPYqiQFsQPUsz6inVr9GfOOvwz4c7EOQakJCUxedLMpxvIqzUcZ2F2OVaEpB55s9nRumXvc4U+A85xtHrxHovrRQnev5Bi5U+A==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774956612; c=relaxed/relaxed;
-	bh=HkMF1aoHeOeVrDs0DDXBJ6pqtj3IjxmrFndsEhCO494=;
+	t=1774956621; c=relaxed/relaxed;
+	bh=xmHvBUmVU20yc5EpzfL97T4Jip0rZQBOGpCZeBwrrfo=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=R48cjZWGcB5Mwg70Rxq93u6ynel79jkkFEQVSwlMr/Mw7OF9XwcGFuvwxOTS48oUQfBCkyDFBOsuiKuGMZULh2MsRgQVPBfs8iT7IW7dUrkr1mdTKaUZdm+7KysmTMNHF4UrKqcIc9z40CiO1f9xMD7yZAanMeK/RXMH4gY94T/gTfV086JvWsByBF7fRd1sm4Cfx/9DMOwnjDGOoUFs1Kq8hVbvqunBmQXpRB8R+RdYph114PKS4d4s9hxQt+X9tTYJjpUHzz+GZT6q/yfBVNRU51ZKVTmsm72VbZmZi3g7BigF0N/dx0Ey7RXi8aobyHa8msEzePef5/SdtaYWmA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=HRckaSu7; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+	 Content-Type:MIME-Version; b=LWH3HTbKUhn5m4cvDhd+GewcxpJ7pvuWHfeI5G7n+6xrBJxbbSLmhQjJgoa6hr59Xrrlb9OMJQjjXfiElK3D0VP4LN+heFjWt80VfsEZPBAHifwKH/53kSjdP6kHHTLdRATpddwLaGXsUUl7Nkbu2yLlRu2QCpa48Djz6zGuHl3qpC04rOwIBgC/D1rDgEVEIbiTOTNQsaRzbIGrdtQqkkZZV+ubQm/+I5p+f4XeVZQriv44oHb3qNPl2GOmdlPjaw3rPrahtMUvSDgKIDBlcuQ1uxtjh1RT/MXv3GDXtMEnjXGgwuzUFnbxuB/Evf4DCKtbqYDJlmMdW6yDoohQpg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=bp9z3mvy; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c207::3; helo=mrwpr03cu001.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=HRckaSu7;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=bp9z3mvy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
-Received: from AS8PR04CU009.outbound.protection.outlook.com (mail-westeuropeazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::3])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c207::3; helo=mrwpr03cu001.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
+Received: from MRWPR03CU001.outbound.protection.outlook.com (mail-francesouthazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c207::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4flQrz0W45z2yhZ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2026 22:30:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4flQs83Ptqz2ydn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2026 22:30:20 +1100 (AEDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=ZvadaCcdUAL/8TyH+jRxB7KS5n/WAyVESkpkLzkScCew7pSccJWcFx8og9lrXuN0cknylM0o7YUixO1LEw3GeX5E0dQdyFmgU6sCVU87pBRXqaXA91kfnXkd0rlgF+Oc4ql9ohLoVVEN0qvRm/Pm0yH8Ph6UqNlxh03OurN3m2wtmOUJGk3ydEaC3efDci6gtsaF62PCJr+eRCel4tqot0HQurjiob1QUo3RuOUe+Rm9rmnTnKVwrjtRFnej/e+/vWa5E7HuysQNOjh/S9fzvmKkN7jyZ/vALYFQUrjNecfy/Gile9YjwGzd8MYRzAHpDfBq6DaJhe981ZCtgZfynw==
+ b=i/FZNa8lgU1YRcDl2VtToij/SwxfqGiiFqvod27aZ5M/YomfyqO7ZV6+HOd1ZXtue3+3xIY90qq29cfI3rah936JKsqnyYafRZC0nXsw5n21CxJSOWub0JtVw5/lsOFwSwe+YZSrcWrOZImJ7dKC6o0MYkjy2io4gcfC79ta1eIE6hFbrpMDP0MtOQIyoFJH4os+iOBHXSmIQlvo/P9ee/f8iysAQ7PnX7IqrF0OEkegJVRUYgc39t5e9NsH1qGlVnMGxasT69Krg6G1VuSd98hLcQfSI72iZa7HKfkGHb6lt07A6xip76he40dMG6KwzQJbyukT/V+kEwcmwM3seg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=HkMF1aoHeOeVrDs0DDXBJ6pqtj3IjxmrFndsEhCO494=;
- b=HPO4qRUoUIJxmCzzE37tZESaE5EaSHHMrm+EFoBeNxcUHLHnBhUL4i7CyER+dN2QOEQ77xbgmD+UCFque7xA4VJCaR47RUdQKkxRVURMUDkrRTo8QFGhIU690UP/3Z2BisP3fgIgjHdXeZVQJk/WAaCDH0ZZkj+gxHhEbkhhfF18iZro1hnrnsjyGb9Dk1VZ+9N6Lor3bFmdOkGsex7gu3RLKv1CWmAfRO9CCZR0DC6Ici0AcsS5IxOsQVFJjVqvBlmeixzIWCynxtxEWgx4WpWcVfqqUj9Y71DvlUw4kPEHi0axhV9j/2ndxPY4Ta3SbCsfZWldtG0AZEA5P8m+xw==
+ bh=xmHvBUmVU20yc5EpzfL97T4Jip0rZQBOGpCZeBwrrfo=;
+ b=ZMXU8jD4lRGR7eik3wcYLnpywJdSzX0Xtw6DfKjXUvZRXZxC1PV7DEYFH3Bvr94zmcrCg8weoF7GidQkGn6Huqumx+jz3DbY521RaZXZ4bS+qy6RA+B+I/Wai0W1GBvFNdrfjykOxBNCkVisML8l1KwvVpLo216yBEUeM9i/PJE4tjH+1tKzCepYeOthSIvIk0P7GrVUV+XnrBmPKf7nDvY/KLkDzxgKIBAwIrYz8UqsFT8e9zS84e7bNGotn3uopRs8x9hMRBDrPRP2l6XJwJwIPQ7ZI04BdZWbgCQ2bWwtqo2aEcOs7Ul5u6abQWMcFW5ZgHn/ki0wsBFIqYmowA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
  header.d=nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=HkMF1aoHeOeVrDs0DDXBJ6pqtj3IjxmrFndsEhCO494=;
- b=HRckaSu7i53Hvoo3oWLDhuSUOpBMXOcFQAvtmZo2FkBXQeEI3+2l59SY8qxChU1l+o9CBBUWKg6UVJkkhw37YMTmvAvL2Dkrt7e9P/kRUPkDPmwLF91KmW8F9EIHj7KMNJT/5H5vR7I7WzfaGC1qL4PoEmbk8zexlmXb9klN6JWWmlPVEn/VpfwUa2NN806c+6QVitFGSeKSy8/He130DPjFMZ2HonZ5VMW+6FS1GRXsqLC06WH8xnJTShTOSGvPfEQ+epYsgHl8MGzBh8zzuBF7AbPCF4rKvOEGogO0lmL7ChsFhcroOtxnZEPAeCM1RN67aGQ6l8wXvwXhK3Rhsg==
+ bh=xmHvBUmVU20yc5EpzfL97T4Jip0rZQBOGpCZeBwrrfo=;
+ b=bp9z3mvyj4CDCPx/xSglIwZM5AYqZJAN1e/jGWSbDWXcVlVwrSyqyJ1RYl8FjqoQJPnbDxPd/WRv9lgzr5K0Q8adRecP8J5XJ7tiz9n7kJ8Koe3xQ7IoPQ5zDy/+E92+43sYArvFtPEWZWEY+ueqBAVBImyvg8S+IoZZ5hjHW8Wc2V7niaM8Ae7bk8POGMPi+z3KuvSE9SMcwCV0KBOI1wtYQQJGmUVYrA16EVcIXH1WWALtkNEdlFHsi4jOsam0Sm6dcXXJRnP6c1Fk7RKtR9Dc+OwFjeLRiohV7Bay+2hWn8ZvkV8ifddovHq5Z9KNgRJDGjPD2pJ0TOqNnaf5LQ==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nxp.com;
 Received: from AM8PR04MB7284.eurprd04.prod.outlook.com (2603:10a6:20b:1dc::8)
- by PA1PR04MB11406.eurprd04.prod.outlook.com (2603:10a6:102:4f1::22) with
+ by DU4PR04MB12064.eurprd04.prod.outlook.com (2603:10a6:10:63f::18) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.15; Tue, 31 Mar
- 2026 11:29:50 +0000
+ 2026 11:29:57 +0000
 Received: from AM8PR04MB7284.eurprd04.prod.outlook.com
  ([fe80::9cd6:51bd:82b:98dc]) by AM8PR04MB7284.eurprd04.prod.outlook.com
  ([fe80::9cd6:51bd:82b:98dc%5]) with mapi id 15.20.9745.027; Tue, 31 Mar 2026
- 11:29:50 +0000
+ 11:29:57 +0000
 From: Wei Fang <wei.fang@nxp.com>
 To: claudiu.manoil@nxp.com,
 	vladimir.oltean@nxp.com,
@@ -78,9 +78,9 @@ Cc: netdev@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org,
 	imx@lists.linux.dev
-Subject: [PATCH v4 net-next 11/14] net: dsa: netc: add phylink MAC operations
-Date: Tue, 31 Mar 2026 19:30:22 +0800
-Message-Id: <20260331113025.1566878-12-wei.fang@nxp.com>
+Subject: [PATCH v4 net-next 12/14] net: dsa: netc: add more basic functions support
+Date: Tue, 31 Mar 2026 19:30:23 +0800
+Message-Id: <20260331113025.1566878-13-wei.fang@nxp.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20260331113025.1566878-1-wei.fang@nxp.com>
 References: <20260331113025.1566878-1-wei.fang@nxp.com>
@@ -103,391 +103,789 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: AM8PR04MB7284:EE_|PA1PR04MB11406:EE_
-X-MS-Office365-Filtering-Correlation-Id: 664baac4-f29d-4bcc-58d7-08de8f18d219
+X-MS-TrafficTypeDiagnostic: AM8PR04MB7284:EE_|DU4PR04MB12064:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1f2725fc-3d1d-43e2-6f7f-08de8f18d647
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|19092799006|376014|52116014|366016|7416014|1800799024|18002099003|56012099003|22082099003|38350700014|921020;
+	BCL:0;ARA:13230040|19092799006|366016|1800799024|376014|7416014|52116014|38350700014|921020|56012099003|22082099003|18002099003;
 X-Microsoft-Antispam-Message-Info:
-	Vb4PCUII1bL7zk2V6mZmC9Z5QjJIgMmUruO986FFrAQo03XPZ8E3qIasJcxuBis8dQo6FsZ99yXDKTLtw8EXWMIIIwJUnzeu4HUCd5+CvqY27ducvvkWGrhmFP1QoXS6rFzXFI732mS47JSYspZGGTXk3TS8w6oCWj6WWebjxpV4K3GTx3tWSoAnDd13bMNVkGV7SZYucsD/14BXHyciwevVNKU+p2jz/kjHjnNyXtoyJL4Xhzt9hU/nYJugZdAD9Pi+nWd4n5S3dJY2LHhwLextaMDkLIAB46twB443tx5Pyf+J/8lSItMPtzIGATM//vjr+1YgiF5tYOqFQyEnU8kDAZC4aHxnP/Wy6UMyxSXct5iX8Fh5oAn0DY6a65MSGsI5P0WAAYUcb+u9fznjncNVNDO9yI89qJeKnUDNpndSz0POivDwcX6SLOn7SWsk/m1Y8Jrx3MC8hR+PuuCCQyT9uDVFbzLyKmSWOBcmRbZ9Ab3DjRNjivr4IFBHTfzMKRbCToVnrVQ9fIrVxhTO2gnDfFdDS8UZzjR34yyuaPKVykz8SI971r59Hv5FcxnmNeGQLqKRKcFpgd4qFAZRedjiEL0fnLOIruGLOQ9C+KD7jzC/93IT9/lW+JoRjtum7NoSb68dbzFz5itRQ3AGC49ahx8vVIhOK9+Q+HU0Yqqd3J+ufvjZWUhainPTh3qNy0GzNHNbWa15un3WoZnDEFCu/8BJ1cPe/V7pIO1pk5c3Tedkp8rokPFiZeL0Lbt7G09d6U0v0qtOIz6eK4v12Cak3507jCszP6xK1hwek2S7z5+qWrSaO5/xxKOIXBkn
+	jG8l6ekWSfDlmAsfD9xEMDNIEM1w0uWf7UXSuYPjc88Ax88J2xOEwUE0RRPX/4YJAhLG9k5Ju0tNTthqnkNqLUI8XmW3jdVzisJUK6lWNjlxSt23at5DmM3hWZ2/6TQHkuFNvTUKOcdBYGT1qWKlBMWiraiPpGBuE6qUQ62B2xEX22oxF+Sgw6hBo6Xb8wg6w+qpIK6Pt+PMdRrQqyt6jV4SnctARxGIumFoFYJ10rIzPBrmM7Hcm2LH+oYe5S+zvcGnw5+Q3icUyy71qXQIm+8fn6xhMvd1Bct1xCLTc9ohnErkpbTBvoemX3CNdJ+glypru8BvDW51VOKWwe/8r3OUl/bWcRR/tqmPH5QNvyRtFsQG9mDgQjRbcDaDV1Jl1CVPw2c7btm3cXeEaFE7Q/KgSwilRYryscIzSNs+GWd74ux/cstKyeEP+/scWUCRTRrFP1AvpjPsmDTw/JjgbPxqHIbyfkWbXJVaAYj23DBZ0RH2KYIcA02NMD/R+Y3Yp+o8a8eLjjZSGA219nauAPL8z35WnaJeO5Um94OPk36XdUHwM5deTlo4mfZrYhPh66HR8JtkGLBnok9oFK33mLNy/veMKof1rE4BEywEUB8J75yNcKCAu/wmFvJGrSLOZ5LxSam6Onusf81RgDjEFOYTPMKCkZDAbWQ2tmBdNGwS4nk74bqKurt24DWoos02spQnVSz5O3wB9uEOthDcUAnNwFjU7yl9OkRPoYjXVKk5gnCmiezQnh7hC4n/a0owoKEmN5pf3UkLWe02VFgEaF5M0bFFiO25CPGaCDgOdYbgi/bsNCUTFXYuk7cccX2M
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM8PR04MB7284.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(376014)(52116014)(366016)(7416014)(1800799024)(18002099003)(56012099003)(22082099003)(38350700014)(921020);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM8PR04MB7284.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(366016)(1800799024)(376014)(7416014)(52116014)(38350700014)(921020)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?5OcTXfYKjRjstLsT76ZhXOKWYUrQl1NmNnD/tYsryRU7tSWGu921Gr9RJUaK?=
- =?us-ascii?Q?PUH4RJx0wA43O5KZRk6amNSfVlWjzW/+u2TpC9Z+ILUaO1hBvoyDSy/c7DNQ?=
- =?us-ascii?Q?BFYbTEmo1303M6wjoVtDsTw+uJBijNBseJwzPyUVEXFBrV4e0Wz3SuUqTrbu?=
- =?us-ascii?Q?gdifo7ho7YdI89heI7gE5h/013L9VeJAa+0KIdt8SLArpex50q6aKHtQwhSW?=
- =?us-ascii?Q?n2cqff9XFacYLhff/93e/v1PTYoYasyWgQc2CJuImlCf3hPi/1LlbwVNcUPW?=
- =?us-ascii?Q?0Ss3ulJnkQG8H4LCW9LJpEpdrreJLmEg3EL+3GZaobbnnhYDmAI0pEcNXXnX?=
- =?us-ascii?Q?t1Itc0CH19NSfhwtM+diJcSL3gClBJeHVACGYmHYzmHuoww5z2A+Vj+tvUmW?=
- =?us-ascii?Q?nJnlm4ft+gtNMwKtj70RoQXEVTNL3c+rDd/IkVAb1pKfCGZNb6kEs/1ZnOKE?=
- =?us-ascii?Q?NmlppmM8buVCGtrn3SWRjH9LdR7co2Hx1TjCMNxxsRqhikTPAl9fXzMV2GTW?=
- =?us-ascii?Q?8/XnIpj2bk4vzPBltLzJSCu8esFhe5bo57UPR0Dq+qlP5zQYuJYWWL+ThOXS?=
- =?us-ascii?Q?JYLLUXskfTEaxg6bvXaQwtmHHgHzdq2F28rtyThzsvDvTAA8TRugNWHTCQM2?=
- =?us-ascii?Q?CAYjJOkSF6MBYFDKHWKe4PrZouRITKhnfqC01MDJS+CX1L8Uq679d4Ld1Suz?=
- =?us-ascii?Q?JVAoA4H6qA7ToW/5eccWYU+Y7Oiq2grASNyC8wRm7MnzKQ8rXjqr4E0aLiIT?=
- =?us-ascii?Q?H1OVXD4xYPT6jn37c0VGYc9tNhIjTtFVKEtBI9BuBrE4XfI3LskU0tT1h9fk?=
- =?us-ascii?Q?OOwBOragAdJPXgslyYdgUdAWWPl/43YJ4CYuro/76tmCJ8O76NFPJeJyAIhl?=
- =?us-ascii?Q?zWtbBq3VXaVFYq6tia6exaQ45lrrQYJZlatyJANPuF3gPq38iqn6bbFqGwZC?=
- =?us-ascii?Q?EFeLGns2IN+U/wSIAlMXrwFiqz7KxsBqA1PgCuc9ZWNLxbB9fEe7p2RTRyx+?=
- =?us-ascii?Q?iz9pNPTlqoLhKtGEH113bb2rq0d807xmarViViCIiphAahLuvzsidzlicRDV?=
- =?us-ascii?Q?ZnvBsVx7UZ3Mdy2EHUMu3HVIiyNULFmxhosD6ZMGg/95VOqHn+9uK4tG+t5L?=
- =?us-ascii?Q?dAojSDuxFWTLahMbVYaHtICbbpRyj3Ce9Qj2Ex0Xr86VrRzAVIEQf6LXkdbM?=
- =?us-ascii?Q?jupaNQz4N20s8kMhQY6X5gT8w2LPGDPxeyU7tDvxEPd8MEyp2VaiVzsOFRKq?=
- =?us-ascii?Q?AVnHcGcB9SmbK8gx1IgAF/nAEmEok+4CzFQmtHYXABqaNIdaG4sCvLyGikEl?=
- =?us-ascii?Q?+ojC9zSco6EaikoFwy8OE3JF1vWjkP9te2TzbHCWlZE84bV3AwVrGBhbnrLE?=
- =?us-ascii?Q?SatHT7MKlBUdU+Ax7Xwj5KAlsfuaGUkxhAGERrEc3DAMwdqQn4glZ5YF2agz?=
- =?us-ascii?Q?bCQ4UxKM0c7OjyHOSUFqLto6Xwr2SFigTbYMY20HDAC20N2f0Rt0RhOCj93v?=
- =?us-ascii?Q?7ragqfgNEl5cRkUqmfOcJd536uv91DT3zWrUWBPSST3BwFYwJdC2rU0YEl39?=
- =?us-ascii?Q?P1pFKgRZuk1lt2NnI5vKQdNRQfdm/tKGYrPZOlASaCE9Q0mjj5Oe0ZCGE9lx?=
- =?us-ascii?Q?o6ZS0ivMIkp2fclG6cEJiXRMu6TG4uVxcQWGauTxIvxnOaP7p/nT6oUe4ZSw?=
- =?us-ascii?Q?7N3pduD7QkFyG9UD6/MLvAx2p+UX/syxOanCOdfFuQhXJCWJ3xXge/uxfdYV?=
- =?us-ascii?Q?L7F4nTgttg=3D=3D?=
+	=?us-ascii?Q?72uy+q0W1rtUmFrAITFzczEGKTMJeewXijE1fPVBUC1Ch8jnpu6WH/EwEmF8?=
+ =?us-ascii?Q?XPkzIzd6aVCTD15TIBDp8u2iboProphhY8/N1r3VNSZBrqL/hTvDa3Gs1/la?=
+ =?us-ascii?Q?Uia4/a5W8Q/qVk6ktSIP6QVZibgVrpgiiosIFT4o9H8YRt/s9DEW8u+LQxpB?=
+ =?us-ascii?Q?etFAylpV9SHbl6PYBTA6QNSqSbkdxU+yqY54yoaybKT2rNBJ0OWAgtADfYhy?=
+ =?us-ascii?Q?Th6/56lQ1m9bNmmbH5O9bx2dNRXEVkVMe/evDwIXYgYVWtQPT3bpNXrUbC7u?=
+ =?us-ascii?Q?b4m91aAgE4g9EdQmMbEZaO6yKJvllAScp/yEYWM9P0iqRtvnPf/jCQsj3sn7?=
+ =?us-ascii?Q?gH1CShgpM9B7i4BMKfxHVJRwu9yUf9E1bx3VbScBvJBPyEz3K1R7I/3UzexZ?=
+ =?us-ascii?Q?a9au5c03EVVaxFcMX/2TSSfKfHzrAxoUgSN3wQeX3zKQuAKkwX1ZyOMT51N9?=
+ =?us-ascii?Q?CfegcEtEseUNiIhUFWaHfnJLcd1xmMe925bcicsemPCgDBZKUVuPzjXPzbCS?=
+ =?us-ascii?Q?YFZ3I9SSQ8DkTFlRcYez5fOagC8eIGUAUgRo1Xhusi717NWEyhM11dIZG8vw?=
+ =?us-ascii?Q?iSN88TyobXyXakoxHa5jj8zQO4Rzz6w8YDpF3UEAFqO0fX9nRcP0Ub9ns+6d?=
+ =?us-ascii?Q?cNojbdkPBTmAnVdgE90DB1m755FIsEEX86HceIJGkeaveFFqfN3u4VyKj1lb?=
+ =?us-ascii?Q?+IQRAMkV95DProIweeUnq66C2UWDTg+8TKczGx5y7AReOIhIgKiQ0anuCokA?=
+ =?us-ascii?Q?L0s+rNJuY4DEdELJPQnpXJx4IUWJQpnDiDmvTNchBwnaNmWVnrdV3j05Z9xD?=
+ =?us-ascii?Q?AkAsoLLyxPC3/gPqb6aMLou6QIFB7lhR5SRFEU1qHuyMO4HCxz+QoMh3gMdl?=
+ =?us-ascii?Q?aDnLGeDIKkjzG4mOSHnX4L35GRIwECSFZzqox5GCuP1BObj1XIkoV8Zm2k2+?=
+ =?us-ascii?Q?PQhJU1zxG92qwMJVlMksCpdLVLBAjgC7cSKaFR/eHmz212c58nhBagVgwZGg?=
+ =?us-ascii?Q?FLI4cdrJBo0Op2UQxvToDe84qXciXkTg9S3fcQy6vHPUMqa82+YnxuBYf4pG?=
+ =?us-ascii?Q?+s8LHDGo16Cs2k/uBLrccEpfy/rALdiIGTViTOVT8dBLGtV4xB+iaVwpQQzp?=
+ =?us-ascii?Q?x8pJeSrQSy7FT03+ilJK5RZaqRFXKG+cCyXoCEmRXjyaMcrqKL4pTVbnFQkS?=
+ =?us-ascii?Q?hV+OX7Hf+AABYGzAEeG8JQg/dLjJd8SoMpaxieqKRxgpqowG+0jYt9rhdmR2?=
+ =?us-ascii?Q?k6kaWcqvZ4r56fRyxKDWTf374KcgVitqo7KCMjfGTtNA0n/h0638nNusWGLz?=
+ =?us-ascii?Q?ebmLBYj/T52NZfLpxx53giqHVfhdfGChAIBvKKiFrjQW+15nEq1KwgpRJvg+?=
+ =?us-ascii?Q?qZgTz3kROolatgw7JKzMcJBX3KkYsYge6P/lY5IuA5X/KQ6SQMRGT5Ep6jv/?=
+ =?us-ascii?Q?zp1CtyM5XVOI5nIaQ8ECBnMAdCOiECOdQm+rUufIQ9MBwTuKOmDM1TdE/VKc?=
+ =?us-ascii?Q?tF3wO9hf9CROOspfWtDH0K+l5LuImu/LzuuANaFqJuJrZTx0RCBBmPMIEwev?=
+ =?us-ascii?Q?aJm5+lBuEsMjdtg0A9crMv0GVJbAugTtYdMaPD3zGwGAEQ5kvJthJFJzqO8X?=
+ =?us-ascii?Q?bUiFY82cmYL8QMBtvl5uRAaeI29S9UsrHShJMuy7XFw9BDnBxyLhe+0GQnO7?=
+ =?us-ascii?Q?BjxYTv10F8Iw11zT7dWl0YHB7ssPm9wzgW9xJxlReZ0i56LmYbFu+xgvuYUC?=
+ =?us-ascii?Q?aoTIwMcD5g=3D=3D?=
 X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 664baac4-f29d-4bcc-58d7-08de8f18d219
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1f2725fc-3d1d-43e2-6f7f-08de8f18d647
 X-MS-Exchange-CrossTenant-AuthSource: AM8PR04MB7284.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 31 Mar 2026 11:29:50.1018
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 31 Mar 2026 11:29:57.2796
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: BWFDGOVpmVS+BYpVdQnNeNssSpv/seaGF+iAUEMDklYp3DA2e5g1Vjw74M+dDSCoc2I4sf6eeO4fAJ44D6PDbA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA1PR04MB11406
+X-MS-Exchange-CrossTenant-UserPrincipalName: zPrWAvft1mjYRxajfANWm2Y3dz152AaUZ+v6a/UcwrZGY8AzIQoNUU5ts5qgWxo5HPpX/yd+tfUsiyQ74P2D+A==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU4PR04MB12064
 
-Different versions of NETC switches have different numbers of ports and
-MAC capabilities, so add .phylink_get_caps() to struct netc_switch_info,
-so that each version of the NETC switch can implement its own callback
-to obtain MAC capabilities. In addition, related interfaces of struct
-phylink_mac_ops are added, such as .mac_config(), .mac_link_up(), and
-.mac_link_down().
+This patch expands the NETC switch driver with several foundational
+features, including FDB and MDB management, STP state handling, MTU
+configuration, port setup/teardown, and host flooding support.
+
+At this stage, the driver operates only in standalone port mode. Each
+port uses VLAN 0 as its PVID, meaning ingress frames are internally
+assigned VID 0 regardless of whether they arrive tagged or untagged.
+Note that this does not inject a VLAN 0 header into the frame, the VID
+is used purely for subsequent VLAN processing within the switch.
 
 Signed-off-by: Wei Fang <wei.fang@nxp.com>
 ---
- drivers/net/dsa/netc/netc_main.c      | 179 ++++++++++++++++++++++++++
- drivers/net/dsa/netc/netc_platform.c  |  41 ++++++
- drivers/net/dsa/netc/netc_switch.h    |   4 +
- drivers/net/dsa/netc/netc_switch_hw.h |  21 +++
- 4 files changed, 245 insertions(+)
+ drivers/net/dsa/netc/netc_main.c      | 540 ++++++++++++++++++++++++++
+ drivers/net/dsa/netc/netc_switch.h    |  33 ++
+ drivers/net/dsa/netc/netc_switch_hw.h |  11 +
+ 3 files changed, 584 insertions(+)
 
 diff --git a/drivers/net/dsa/netc/netc_main.c b/drivers/net/dsa/netc/netc_main.c
-index 5828fd3e342e..f11f5d0f6a6d 100644
+index f11f5d0f6a6d..3609d83ac363 100644
 --- a/drivers/net/dsa/netc/netc_main.c
 +++ b/drivers/net/dsa/netc/netc_main.c
-@@ -569,10 +569,188 @@ static void netc_switch_get_ip_revision(struct netc_switch *priv)
+@@ -7,11 +7,36 @@
+ #include <linux/clk.h>
+ #include <linux/etherdevice.h>
+ #include <linux/fsl/enetc_mdio.h>
++#include <linux/if_bridge.h>
+ #include <linux/if_vlan.h>
+ #include <linux/of_mdio.h>
+ 
+ #include "netc_switch.h"
+ 
++static struct netc_fdb_entry *
++netc_lookup_fdb_entry(struct netc_switch *priv,
++		      const unsigned char *addr,
++		      u16 vid)
++{
++	struct netc_fdb_entry *entry;
++
++	hlist_for_each_entry(entry, &priv->fdb_list, node)
++		if (ether_addr_equal(entry->keye.mac_addr, addr) &&
++		    le16_to_cpu(entry->keye.fid) == vid)
++			return entry;
++
++	return NULL;
++}
++
++static void netc_destroy_fdb_list(struct netc_switch *priv)
++{
++	struct netc_fdb_entry *entry;
++	struct hlist_node *tmp;
++
++	hlist_for_each_entry_safe(entry, tmp, &priv->fdb_list, node)
++		netc_del_fdb_entry(entry);
++}
++
+ static enum dsa_tag_protocol
+ netc_get_tag_protocol(struct dsa_switch *ds, int port,
+ 		      enum dsa_tag_protocol mprot)
+@@ -386,6 +411,212 @@ static void netc_port_default_config(struct netc_port *np)
+ 	netc_port_rmw(np, NETC_POR, PCR_TXDIS, 0);
+ }
+ 
++static u32 netc_available_port_bitmap(struct netc_switch *priv)
++{
++	struct dsa_port *dp;
++	u32 bitmap = 0;
++
++	dsa_switch_for_each_available_port(dp, priv->ds)
++		bitmap |= BIT(dp->index);
++
++	return bitmap;
++}
++
++static int netc_add_standalone_vlan_entry(struct netc_switch *priv)
++{
++	u32 bitmap_stg = VFT_STG_ID(0) | netc_available_port_bitmap(priv);
++	struct vft_cfge_data *cfge;
++	u16 cfg;
++	int err;
++
++	cfge = kzalloc_obj(*cfge);
++	if (!cfge)
++		return -ENOMEM;
++
++	cfge->bitmap_stg = cpu_to_le32(bitmap_stg);
++	cfge->et_eid = cpu_to_le32(NTMP_NULL_ENTRY_ID);
++	cfge->fid = cpu_to_le16(NETC_STANDALONE_PVID);
++
++	/* For standalone ports, MAC learning needs to be disabled, so frames
++	 * from other user ports will not be forwarded to the standalone ports,
++	 * because there are no FDB entries on the standalone ports. Also, the
++	 * frames received by the standalone ports cannot be flooded to other
++	 * ports, so MAC forwarding option needs to be set to
++	 * MFO_NO_MATCH_DISCARD, so the frames will discarded rather than
++	 * flooding to other ports.
++	 */
++	cfg = FIELD_PREP(VFT_MLO, MLO_DISABLE) |
++	      FIELD_PREP(VFT_MFO, MFO_NO_MATCH_DISCARD);
++	cfge->cfg = cpu_to_le16(cfg);
++
++	err = ntmp_vft_add_entry(&priv->ntmp, NETC_STANDALONE_PVID, cfge);
++	if (err)
++		dev_err(priv->dev,
++			"Failed to add standalone VLAN entry\n");
++
++	kfree(cfge);
++
++	return err;
++}
++
++static int netc_port_add_fdb_entry(struct netc_port *np,
++				   const unsigned char *addr, u16 vid)
++{
++	struct netc_switch *priv = np->switch_priv;
++	struct netc_fdb_entry *entry;
++	struct fdbt_keye_data *keye;
++	struct fdbt_cfge_data *cfge;
++	int port = np->dp->index;
++	u32 cfg = 0;
++	int err;
++
++	entry = kzalloc_obj(*entry);
++	if (!entry)
++		return -ENOMEM;
++
++	keye = &entry->keye;
++	cfge = &entry->cfge;
++	ether_addr_copy(keye->mac_addr, addr);
++	keye->fid = cpu_to_le16(vid);
++
++	cfge->port_bitmap = cpu_to_le32(BIT(port));
++	cfge->cfg = cpu_to_le32(cfg);
++	cfge->et_eid = cpu_to_le32(NTMP_NULL_ENTRY_ID);
++
++	err = ntmp_fdbt_add_entry(&priv->ntmp, &entry->entry_id, keye, cfge);
++	if (err) {
++		kfree(entry);
++
++		return err;
++	}
++
++	netc_add_fdb_entry(priv, entry);
++
++	return 0;
++}
++
++static int netc_port_set_fdb_entry(struct netc_port *np,
++				   const unsigned char *addr, u16 vid)
++{
++	struct netc_switch *priv = np->switch_priv;
++	struct netc_fdb_entry *entry;
++	int port = np->dp->index;
++	u32 port_bitmap;
++	int err = 0;
++
++	mutex_lock(&priv->fdbt_lock);
++
++	entry = netc_lookup_fdb_entry(priv, addr, vid);
++	if (!entry) {
++		err = netc_port_add_fdb_entry(np, addr, vid);
++		if (err)
++			dev_err(priv->dev,
++				"Failed to add FDB entry on port %d\n",
++				port);
++
++		goto unlock_fdbt;
++	}
++
++	port_bitmap = le32_to_cpu(entry->cfge.port_bitmap);
++	/* If the entry already exists on the port, return 0 directly */
++	if (unlikely(port_bitmap & BIT(port)))
++		goto unlock_fdbt;
++
++	/* If the entry already exists, but not on this port, we need to
++	 * update the port bitmap. In general, it should only be valid
++	 * for multicast or broadcast address.
++	 */
++	port_bitmap ^= BIT(port);
++	entry->cfge.port_bitmap = cpu_to_le32(port_bitmap);
++	err = ntmp_fdbt_update_entry(&priv->ntmp, entry->entry_id,
++				     &entry->cfge);
++	if (err) {
++		port_bitmap ^= BIT(port);
++		entry->cfge.port_bitmap = cpu_to_le32(port_bitmap);
++		dev_err(priv->dev, "Failed to set FDB entry on port %d\n",
++			port);
++	}
++
++unlock_fdbt:
++	mutex_unlock(&priv->fdbt_lock);
++
++	return err;
++}
++
++static int netc_port_del_fdb_entry(struct netc_port *np,
++				   const unsigned char *addr, u16 vid)
++{
++	struct netc_switch *priv = np->switch_priv;
++	struct ntmp_user *ntmp = &priv->ntmp;
++	struct netc_fdb_entry *entry;
++	int port = np->dp->index;
++	u32 port_bitmap;
++	int err = 0;
++
++	mutex_lock(&priv->fdbt_lock);
++
++	entry = netc_lookup_fdb_entry(priv, addr, vid);
++	if (unlikely(!entry))
++		goto unlock_fdbt;
++
++	port_bitmap = le32_to_cpu(entry->cfge.port_bitmap);
++	if (unlikely(!(port_bitmap & BIT(port))))
++		goto unlock_fdbt;
++
++	if (port_bitmap != BIT(port)) {
++		/* If the entry also exists on other ports, we need to
++		 * update the entry in the FDB table.
++		 */
++		port_bitmap ^= BIT(port);
++		entry->cfge.port_bitmap = cpu_to_le32(port_bitmap);
++		err = ntmp_fdbt_update_entry(ntmp, entry->entry_id,
++					     &entry->cfge);
++		if (err) {
++			port_bitmap ^= BIT(port);
++			entry->cfge.port_bitmap = cpu_to_le32(port_bitmap);
++			goto unlock_fdbt;
++		}
++	} else {
++		/* If the entry only exists on this port, just delete
++		 * it from the FDB table.
++		 */
++		err = ntmp_fdbt_delete_entry(ntmp, entry->entry_id);
++		if (err)
++			goto unlock_fdbt;
++
++		netc_del_fdb_entry(entry);
++	}
++
++unlock_fdbt:
++	mutex_unlock(&priv->fdbt_lock);
++
++	return err;
++}
++
++static int netc_add_standalone_fdb_bcast_entry(struct netc_switch *priv)
++{
++	const u8 bcast[ETH_ALEN] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
++	struct dsa_port *dp, *cpu_dp = NULL;
++
++	dsa_switch_for_each_cpu_port(dp, priv->ds) {
++		cpu_dp = dp;
++		break;
++	}
++
++	if (!cpu_dp)
++		return -ENODEV;
++
++	/* If the user port acts as a standalone port, then its PVID is 0,
++	 * MLO is set to "disable MAC learning" and MFO is set to "discard
++	 * frames if no matching entry found in FDB table". Therefore, we
++	 * need to add a broadcast FDB entry on the CPU port so that the
++	 * broadcast frames received on the user port can be forwarded to
++	 * the CPU port.
++	 */
++	return netc_port_set_fdb_entry(NETC_PORT(priv->ds, cpu_dp->index),
++				       bcast, NETC_STANDALONE_PVID);
++}
++
+ static int netc_setup(struct dsa_switch *ds)
+ {
+ 	struct netc_switch *priv = ds->priv;
+@@ -404,19 +635,61 @@ static int netc_setup(struct dsa_switch *ds)
+ 	if (err)
+ 		return err;
+ 
++	INIT_HLIST_HEAD(&priv->fdb_list);
++	mutex_init(&priv->fdbt_lock);
++
+ 	netc_switch_fixed_config(priv);
+ 
+ 	/* default setting for ports */
+ 	dsa_switch_for_each_available_port(dp, ds)
+ 		netc_port_default_config(priv->ports[dp->index]);
+ 
++	err = netc_add_standalone_vlan_entry(priv);
++	if (err)
++		goto free_lock_and_ntmp_user;
++
++	err = netc_add_standalone_fdb_bcast_entry(priv);
++	if (err)
++		goto free_lock_and_ntmp_user;
++
+ 	return 0;
++
++free_lock_and_ntmp_user:
++	mutex_destroy(&priv->fdbt_lock);
++	netc_free_ntmp_user(priv);
++
++	return err;
++}
++
++static void netc_destroy_all_lists(struct netc_switch *priv)
++{
++	netc_destroy_fdb_list(priv);
++	mutex_destroy(&priv->fdbt_lock);
++}
++
++static void netc_free_host_flood_rules(struct netc_switch *priv)
++{
++	struct dsa_port *dp;
++
++	dsa_switch_for_each_user_port(dp, priv->ds) {
++		struct netc_port *np = priv->ports[dp->index];
++
++		/* No need to clear the hardware IPFT entry. Because PCIe
++		 * FLR will be performed when the switch is re-registered,
++		 * it will reset hardware state. So only need to free the
++		 * memory to avoid memory leak.
++		 */
++		kfree(np->host_flood);
++		np->host_flood = NULL;
++	}
+ }
+ 
+ static void netc_teardown(struct dsa_switch *ds)
+ {
+ 	struct netc_switch *priv = ds->priv;
+ 
++	netc_destroy_all_lists(priv);
++	netc_free_host_flood_rules(priv);
+ 	netc_free_ntmp_user(priv);
+ }
+ 
+@@ -569,6 +842,261 @@ static void netc_switch_get_ip_revision(struct netc_switch *priv)
  	priv->revision = val & IPBRR0_IP_REV;
  }
  
-+static void netc_phylink_get_caps(struct dsa_switch *ds, int port,
-+				  struct phylink_config *config)
++static int netc_port_enable(struct dsa_switch *ds, int port,
++			    struct phy_device *phy)
++{
++	struct netc_port *np = NETC_PORT(ds, port);
++	int err;
++
++	if (np->enable)
++		return 0;
++
++	err = clk_prepare_enable(np->ref_clk);
++	if (err) {
++		dev_err(ds->dev,
++			"Failed to enable enet_ref_clk of port %d\n", port);
++		return err;
++	}
++
++	np->enable = true;
++
++	return 0;
++}
++
++static void netc_port_disable(struct dsa_switch *ds, int port)
++{
++	struct netc_port *np = NETC_PORT(ds, port);
++
++	/* When .port_disable() is called, .port_enable() may not have been
++	 * called. In this case, both the prepare_count and enable_count of
++	 * clock are 0. Calling clk_disable_unprepare() at this time will
++	 * cause warnings.
++	 */
++	if (!np->enable)
++		return;
++
++	clk_disable_unprepare(np->ref_clk);
++	np->enable = false;
++}
++
++static void netc_port_stp_state_set(struct dsa_switch *ds,
++				    int port, u8 state)
++{
++	struct netc_port *np = NETC_PORT(ds, port);
++	u32 val;
++
++	switch (state) {
++	case BR_STATE_DISABLED:
++	case BR_STATE_LISTENING:
++	case BR_STATE_BLOCKING:
++		val = NETC_STG_STATE_DISABLED;
++		break;
++	case BR_STATE_LEARNING:
++		val = NETC_STG_STATE_LEARNING;
++		break;
++	case BR_STATE_FORWARDING:
++		val = NETC_STG_STATE_FORWARDING;
++		break;
++	default:
++		return;
++	}
++
++	netc_port_wr(np, NETC_BPSTGSR, val);
++}
++
++static int netc_port_change_mtu(struct dsa_switch *ds,
++				int port, int mtu)
++{
++	u32 max_frame_size = mtu + VLAN_ETH_HLEN + ETH_FCS_LEN;
++	struct netc_port *np = NETC_PORT(ds, port);
++
++	if (dsa_is_cpu_port(ds, port))
++		max_frame_size += NETC_TAG_MAX_LEN;
++
++	netc_port_set_max_frame_size(np, max_frame_size);
++
++	return 0;
++}
++
++static int netc_port_max_mtu(struct dsa_switch *ds, int port)
++{
++	return NETC_MAX_FRAME_LEN - VLAN_ETH_HLEN - ETH_FCS_LEN;
++}
++
++static int netc_port_fdb_add(struct dsa_switch *ds, int port,
++			     const unsigned char *addr, u16 vid,
++			     struct dsa_db db)
++{
++	struct netc_port *np = NETC_PORT(ds, port);
++
++	/* Currently, we only support standalone port mode, so all VLANs
++	 * should be converted to NETC_STANDALONE_PVID.
++	 */
++	return netc_port_set_fdb_entry(np, addr, NETC_STANDALONE_PVID);
++}
++
++static int netc_port_fdb_del(struct dsa_switch *ds, int port,
++			     const unsigned char *addr, u16 vid,
++			     struct dsa_db db)
++{
++	struct netc_port *np = NETC_PORT(ds, port);
++
++	return netc_port_del_fdb_entry(np, addr, NETC_STANDALONE_PVID);
++}
++
++static int netc_port_fdb_dump(struct dsa_switch *ds, int port,
++			      dsa_fdb_dump_cb_t *cb, void *data)
 +{
 +	struct netc_switch *priv = ds->priv;
++	u32 resume_eid = NTMP_NULL_ENTRY_ID;
++	struct fdbt_entry_data *entry;
++	struct fdbt_keye_data *keye;
++	struct fdbt_cfge_data *cfge;
++	bool is_static;
++	u32 cfg;
++	int err;
++	u16 vid;
 +
-+	priv->info->phylink_get_caps(port, config);
++	entry = kmalloc_obj(*entry);
++	if (!entry)
++		return -ENOMEM;
++
++	keye = &entry->keye;
++	cfge = &entry->cfge;
++	mutex_lock(&priv->fdbt_lock);
++
++	do {
++		memset(entry, 0, sizeof(*entry));
++		err = ntmp_fdbt_search_port_entry(&priv->ntmp, port,
++						  &resume_eid, entry);
++		if (err || entry->entry_id == NTMP_NULL_ENTRY_ID)
++			break;
++
++		cfg = le32_to_cpu(cfge->cfg);
++		is_static = (cfg & FDBT_DYNAMIC) ? false : true;
++		vid = le16_to_cpu(keye->fid);
++
++		err = cb(keye->mac_addr, vid, is_static, data);
++		if (err)
++			break;
++	} while (resume_eid != NTMP_NULL_ENTRY_ID);
++
++	mutex_unlock(&priv->fdbt_lock);
++	kfree(entry);
++
++	return err;
 +}
 +
-+static void netc_port_set_mac_mode(struct netc_port *np,
-+				   unsigned int mode,
-+				   phy_interface_t phy_mode)
++static int netc_port_mdb_add(struct dsa_switch *ds, int port,
++			     const struct switchdev_obj_port_mdb *mdb,
++			     struct dsa_db db)
 +{
-+	u32 mask = PM_IF_MODE_IFMODE | PM_IF_MODE_REVMII;
-+	u32 val = 0;
++	return netc_port_fdb_add(ds, port, mdb->addr, mdb->vid, db);
++}
 +
-+	switch (phy_mode) {
-+	case PHY_INTERFACE_MODE_RGMII:
-+	case PHY_INTERFACE_MODE_RGMII_ID:
-+	case PHY_INTERFACE_MODE_RGMII_RXID:
-+	case PHY_INTERFACE_MODE_RGMII_TXID:
-+		val |= IFMODE_RGMII;
-+		break;
-+	case PHY_INTERFACE_MODE_RMII:
-+		val |= IFMODE_RMII;
-+		break;
-+	case PHY_INTERFACE_MODE_REVMII:
-+		val |= PM_IF_MODE_REVMII;
-+		fallthrough;
-+	case PHY_INTERFACE_MODE_MII:
-+		val |= IFMODE_MII;
-+		break;
-+	case PHY_INTERFACE_MODE_SGMII:
-+	case PHY_INTERFACE_MODE_2500BASEX:
-+		val |= IFMODE_SGMII;
-+		break;
-+	default:
-+		break;
++static int netc_port_mdb_del(struct dsa_switch *ds, int port,
++			     const struct switchdev_obj_port_mdb *mdb,
++			     struct dsa_db db)
++{
++	return netc_port_fdb_del(ds, port, mdb->addr, mdb->vid, db);
++}
++
++static int netc_port_add_host_flood_rule(struct netc_port *np,
++					 bool uc, bool mc)
++{
++	const u8 dmac_mask[ETH_ALEN] = {0x1, 0, 0, 0, 0, 0};
++	struct netc_switch *priv = np->switch_priv;
++	struct ipft_entry_data *host_flood;
++	struct ipft_keye_data *keye;
++	struct ipft_cfge_data *cfge;
++	u16 src_port;
++	u32 cfg;
++	int err;
++
++	if (!uc && !mc)
++		return 0;
++
++	host_flood = kzalloc_obj(*host_flood);
++	if (!host_flood)
++		return -ENOMEM;
++
++	keye = &host_flood->keye;
++	cfge = &host_flood->cfge;
++
++	src_port = FIELD_PREP(IPFT_SRC_PORT, np->dp->index);
++	src_port |= IPFT_SRC_PORT_MASK;
++	keye->src_port = cpu_to_le16(src_port);
++
++	/* If either only unicast or only multicast need to be flooded
++	 * to the host, we always set the mask that tests the first MAC
++	 * DA octet. The value should be 0 for the first bit (if unicast
++	 * has to be flooded) or 1 (if multicast). If both unicast and
++	 * multicast have to be flooded, we leave the key mask empty, so
++	 * it matches everything.
++	 */
++	if (uc && !mc)
++		ether_addr_copy(keye->dmac_mask, dmac_mask);
++
++	if (!uc && mc) {
++		ether_addr_copy(keye->dmac, dmac_mask);
++		ether_addr_copy(keye->dmac_mask, dmac_mask);
 +	}
 +
-+	netc_mac_port_rmw(np, NETC_PM_IF_MODE(0), mask, val);
-+}
++	cfg = FIELD_PREP(IPFT_FLTFA, IPFT_FLTFA_REDIRECT);
++	cfg |= FIELD_PREP(IPFT_HR, NETC_HR_HOST_FLOOD);
++	cfge->cfg = cpu_to_le32(cfg);
 +
-+static void netc_mac_config(struct phylink_config *config, unsigned int mode,
-+			    const struct phylink_link_state *state)
-+{
-+	struct dsa_port *dp = dsa_phylink_to_port(config);
-+
-+	netc_port_set_mac_mode(NETC_PORT(dp->ds, dp->index), mode,
-+			       state->interface);
-+}
-+
-+static void netc_port_set_speed(struct netc_port *np, int speed)
-+{
-+	netc_port_rmw(np, NETC_PCR, PCR_PSPEED, PSPEED_SET_VAL(speed));
-+}
-+
-+static void netc_port_set_rgmii_mac(struct netc_port *np,
-+				    int speed, int duplex)
-+{
-+	u32 mask, val;
-+
-+	mask = PM_IF_MODE_SSP | PM_IF_MODE_HD | PM_IF_MODE_M10;
-+
-+	switch (speed) {
-+	default:
-+	case SPEED_1000:
-+		val = FIELD_PREP(PM_IF_MODE_SSP, SSP_1G);
-+		break;
-+	case SPEED_100:
-+		val = FIELD_PREP(PM_IF_MODE_SSP, SSP_100M);
-+		break;
-+	case SPEED_10:
-+		val = FIELD_PREP(PM_IF_MODE_SSP, SSP_10M);
-+		break;
++	err = ntmp_ipft_add_entry(&priv->ntmp, host_flood);
++	if (err) {
++		kfree(host_flood);
++		return err;
 +	}
 +
-+	if (duplex != DUPLEX_FULL)
-+		val |= PM_IF_MODE_HD;
++	np->uc = uc;
++	np->mc = mc;
++	np->host_flood = host_flood;
++	/* Enable ingress port filter table lookup */
++	netc_port_wr(np, NETC_PIPFCR, PIPFCR_EN);
 +
-+	netc_mac_port_rmw(np, NETC_PM_IF_MODE(0), mask, val);
++	return 0;
 +}
 +
-+static void netc_port_set_rmii_mii_mac(struct netc_port *np,
-+				       int speed, int duplex)
++static void netc_port_remove_host_flood(struct netc_port *np)
 +{
-+	u32 mask, val = 0;
++	struct netc_switch *priv = np->switch_priv;
 +
-+	mask = PM_IF_MODE_SSP | PM_IF_MODE_HD | PM_IF_MODE_M10;
++	if (!np->host_flood)
++		return;
 +
-+	if (speed == SPEED_10)
-+		val |= PM_IF_MODE_M10;
-+
-+	if (duplex != DUPLEX_FULL)
-+		val |= PM_IF_MODE_HD;
-+
-+	netc_mac_port_rmw(np, NETC_PM_IF_MODE(0), mask, val);
++	ntmp_ipft_delete_entry(&priv->ntmp, np->host_flood->entry_id);
++	kfree(np->host_flood);
++	np->host_flood = NULL;
++	np->uc = false;
++	np->mc = false;
++	/* Disable ingress port filter table lookup */
++	netc_port_wr(np, NETC_PIPFCR, 0);
 +}
 +
-+static void netc_port_mac_rx_enable(struct netc_port *np)
++static void netc_port_set_host_flood(struct dsa_switch *ds, int port,
++				     bool uc, bool mc)
 +{
-+	netc_port_rmw(np, NETC_POR, PCR_RXDIS, 0);
-+	netc_mac_port_rmw(np, NETC_PM_CMD_CFG(0), PM_CMD_CFG_RX_EN,
-+			  PM_CMD_CFG_RX_EN);
++	struct netc_port *np = NETC_PORT(ds, port);
++
++	if (np->uc == uc && np->mc == mc)
++		return;
++
++	/* IPFT does not support in-place updates to the KEYE element,
++	 * so we need to delete the old IPFT entry and then add a new
++	 * one.
++	 */
++	if (np->host_flood)
++		netc_port_remove_host_flood(np);
++
++	if (netc_port_add_host_flood_rule(np, uc, mc))
++		dev_err(ds->dev, "Failed to add host flood rule on port %d\n",
++			port);
 +}
 +
-+static void netc_port_wait_rx_empty(struct netc_port *np, int mac)
-+{
-+	u32 val;
-+
-+	if (read_poll_timeout(netc_port_rd, val, val & PM_IEVENT_RX_EMPTY,
-+			      100, 10000, false, np, NETC_PM_IEVENT(mac)))
-+		dev_warn(np->switch_priv->dev,
-+			 "MAC %d of swp%d RX is not empty\n", mac,
-+			 np->dp->index);
-+}
-+
-+static void netc_port_mac_rx_graceful_stop(struct netc_port *np)
-+{
-+	u32 val;
-+
-+	if (is_netc_pseudo_port(np))
-+		goto check_rx_busy;
-+
-+	if (np->caps.pmac) {
-+		netc_port_rmw(np, NETC_PM_CMD_CFG(1), PM_CMD_CFG_RX_EN, 0);
-+		netc_port_wait_rx_empty(np, 1);
-+	}
-+
-+	netc_port_rmw(np, NETC_PM_CMD_CFG(0), PM_CMD_CFG_RX_EN, 0);
-+	netc_port_wait_rx_empty(np, 0);
-+
-+check_rx_busy:
-+	if (read_poll_timeout(netc_port_rd, val, !(val & PSR_RX_BUSY),
-+			      100, 10000, false, np, NETC_PSR))
-+		dev_warn(np->switch_priv->dev, "swp%d RX is busy\n",
-+			 np->dp->index);
-+
-+	netc_port_rmw(np, NETC_POR, PCR_RXDIS, PCR_RXDIS);
-+}
-+
-+static void netc_mac_link_up(struct phylink_config *config,
-+			     struct phy_device *phy, unsigned int mode,
-+			     phy_interface_t interface, int speed,
-+			     int duplex, bool tx_pause, bool rx_pause)
-+{
-+	struct dsa_port *dp = dsa_phylink_to_port(config);
-+	struct netc_port *np;
-+
-+	np = NETC_PORT(dp->ds, dp->index);
-+	netc_port_set_speed(np, speed);
-+
-+	if (phy_interface_mode_is_rgmii(interface))
-+		netc_port_set_rgmii_mac(np, speed, duplex);
-+
-+	if (interface == PHY_INTERFACE_MODE_RMII ||
-+	    interface == PHY_INTERFACE_MODE_REVMII ||
-+	    interface == PHY_INTERFACE_MODE_MII)
-+		netc_port_set_rmii_mii_mac(np, speed, duplex);
-+
-+	netc_port_mac_rx_enable(np);
-+}
-+
-+static void netc_mac_link_down(struct phylink_config *config,
-+			       unsigned int mode,
-+			       phy_interface_t interface)
-+{
-+	struct dsa_port *dp = dsa_phylink_to_port(config);
-+
-+	netc_port_mac_rx_graceful_stop(NETC_PORT(dp->ds, dp->index));
-+}
-+
-+static const struct phylink_mac_ops netc_phylink_mac_ops = {
-+	.mac_config		= netc_mac_config,
-+	.mac_link_up		= netc_mac_link_up,
-+	.mac_link_down		= netc_mac_link_down,
-+};
-+
- static const struct dsa_switch_ops netc_switch_ops = {
- 	.get_tag_protocol		= netc_get_tag_protocol,
+ static void netc_phylink_get_caps(struct dsa_switch *ds, int port,
+ 				  struct phylink_config *config)
+ {
+@@ -751,6 +1279,17 @@ static const struct dsa_switch_ops netc_switch_ops = {
  	.setup				= netc_setup,
  	.teardown			= netc_teardown,
-+	.phylink_get_caps		= netc_phylink_get_caps,
+ 	.phylink_get_caps		= netc_phylink_get_caps,
++	.port_enable			= netc_port_enable,
++	.port_disable			= netc_port_disable,
++	.port_stp_state_set		= netc_port_stp_state_set,
++	.port_change_mtu		= netc_port_change_mtu,
++	.port_max_mtu			= netc_port_max_mtu,
++	.port_fdb_add			= netc_port_fdb_add,
++	.port_fdb_del			= netc_port_fdb_del,
++	.port_fdb_dump			= netc_port_fdb_dump,
++	.port_mdb_add			= netc_port_mdb_add,
++	.port_mdb_del			= netc_port_mdb_del,
++	.port_set_host_flood		= netc_port_set_host_flood,
  };
  
  static int netc_switch_probe(struct pci_dev *pdev,
-@@ -613,6 +791,7 @@ static int netc_switch_probe(struct pci_dev *pdev,
- 	ds->num_ports = priv->info->num_ports;
+@@ -792,6 +1331,7 @@ static int netc_switch_probe(struct pci_dev *pdev,
  	ds->num_tx_queues = NETC_TC_NUM;
  	ds->ops = &netc_switch_ops;
-+	ds->phylink_mac_ops = &netc_phylink_mac_ops;
+ 	ds->phylink_mac_ops = &netc_phylink_mac_ops;
++	ds->fdb_isolation = true;
  	ds->priv = priv;
  
  	priv->ds = ds;
-diff --git a/drivers/net/dsa/netc/netc_platform.c b/drivers/net/dsa/netc/netc_platform.c
-index abd599ea9c8d..8271c27d1dfc 100644
---- a/drivers/net/dsa/netc/netc_platform.c
-+++ b/drivers/net/dsa/netc/netc_platform.c
-@@ -11,8 +11,49 @@ struct netc_switch_platform {
- 	const struct netc_switch_info *info;
- };
- 
-+static void imx94_switch_phylink_get_caps(int port,
-+					  struct phylink_config *config)
-+{
-+	config->mac_capabilities = MAC_ASYM_PAUSE | MAC_SYM_PAUSE |
-+				   MAC_1000FD;
-+
-+	switch (port) {
-+	case 0 ... 1:
-+		__set_bit(PHY_INTERFACE_MODE_SGMII,
-+			  config->supported_interfaces);
-+		__set_bit(PHY_INTERFACE_MODE_1000BASEX,
-+			  config->supported_interfaces);
-+		__set_bit(PHY_INTERFACE_MODE_2500BASEX,
-+			  config->supported_interfaces);
-+		config->mac_capabilities |= MAC_2500FD;
-+		fallthrough;
-+	case 2:
-+		config->mac_capabilities |= MAC_10 | MAC_100;
-+		__set_bit(PHY_INTERFACE_MODE_MII,
-+			  config->supported_interfaces);
-+		__set_bit(PHY_INTERFACE_MODE_RMII,
-+			  config->supported_interfaces);
-+		/* Port 0 and 1 do not support REVMII */
-+		if (port == 2)
-+			__set_bit(PHY_INTERFACE_MODE_REVMII,
-+				  config->supported_interfaces);
-+
-+		phy_interface_set_rgmii(config->supported_interfaces);
-+		break;
-+	case 3: /* CPU port */
-+		__set_bit(PHY_INTERFACE_MODE_INTERNAL,
-+			  config->supported_interfaces);
-+		config->mac_capabilities |= MAC_10FD | MAC_100FD |
-+					    MAC_2500FD;
-+		break;
-+	default:
-+		break;
-+	}
-+}
-+
- static const struct netc_switch_info imx94_info = {
- 	.num_ports = 4,
-+	.phylink_get_caps = imx94_switch_phylink_get_caps,
- };
- 
- static const struct netc_switch_platform netc_platforms[] = {
 diff --git a/drivers/net/dsa/netc/netc_switch.h b/drivers/net/dsa/netc/netc_switch.h
-index dac19bfba02b..eb65c36ecead 100644
+index eb65c36ecead..4b229a71578e 100644
 --- a/drivers/net/dsa/netc/netc_switch.h
 +++ b/drivers/net/dsa/netc/netc_switch.h
-@@ -34,6 +34,7 @@ struct netc_switch;
+@@ -30,6 +30,8 @@
+ 
+ #define NETC_MAX_FRAME_LEN		9600
+ 
++#define NETC_STANDALONE_PVID		0
++
+ struct netc_switch;
  
  struct netc_switch_info {
- 	u32 num_ports;
-+	void (*phylink_get_caps)(int port, struct phylink_config *config);
+@@ -43,6 +45,11 @@ struct netc_port_caps {
+ 	u32 pseudo_link:1;
  };
  
- struct netc_port_caps {
-@@ -70,6 +71,9 @@ struct netc_switch {
- 	struct ntmp_user ntmp;
- };
- 
-+#define NETC_PRIV(ds)			((struct netc_switch *)((ds)->priv))
-+#define NETC_PORT(ds, port_id)		(NETC_PRIV(ds)->ports[(port_id)])
++enum netc_host_reason {
++	/* Software defined host reasons */
++	NETC_HR_HOST_FLOOD = 8,
++};
 +
- /* Write/Read Switch base registers */
- #define netc_base_rd(r, o)		netc_read((r)->base + (o))
- #define netc_base_wr(r, o, v)		netc_write((r)->base + (o), v)
+ struct netc_port {
+ 	void __iomem *iobase;
+ 	struct netc_switch *switch_priv;
+@@ -50,6 +57,11 @@ struct netc_port {
+ 	struct dsa_port *dp;
+ 	struct clk *ref_clk; /* RGMII/RMII reference clock */
+ 	struct mii_bus *emdio;
++
++	u16 enable:1;
++	u16 uc:1;
++	u16 mc:1;
++	struct ipft_entry_data *host_flood;
+ };
+ 
+ struct netc_switch_regs {
+@@ -58,6 +70,13 @@ struct netc_switch_regs {
+ 	void __iomem *global;
+ };
+ 
++struct netc_fdb_entry {
++	u32 entry_id;
++	struct fdbt_cfge_data cfge;
++	struct fdbt_keye_data keye;
++	struct hlist_node node;
++};
++
+ struct netc_switch {
+ 	struct pci_dev *pdev;
+ 	struct device *dev;
+@@ -69,6 +88,8 @@ struct netc_switch {
+ 	struct netc_port **ports;
+ 
+ 	struct ntmp_user ntmp;
++	struct hlist_head fdb_list;
++	struct mutex fdbt_lock; /* FDB table lock */
+ };
+ 
+ #define NETC_PRIV(ds)			((struct netc_switch *)((ds)->priv))
+@@ -91,6 +112,18 @@ static inline bool is_netc_pseudo_port(struct netc_port *np)
+ 	return np->caps.pseudo_link;
+ }
+ 
++static inline void netc_add_fdb_entry(struct netc_switch *priv,
++				      struct netc_fdb_entry *entry)
++{
++	hlist_add_head(&entry->node, &priv->fdb_list);
++}
++
++static inline void netc_del_fdb_entry(struct netc_fdb_entry *entry)
++{
++	hlist_del(&entry->node);
++	kfree(entry);
++}
++
+ int netc_switch_platform_probe(struct netc_switch *priv);
+ 
+ #endif
 diff --git a/drivers/net/dsa/netc/netc_switch_hw.h b/drivers/net/dsa/netc/netc_switch_hw.h
-index 11cb124ce4bf..881122004644 100644
+index 881122004644..c6a0c0a8ff8a 100644
 --- a/drivers/net/dsa/netc/netc_switch_hw.h
 +++ b/drivers/net/dsa/netc/netc_switch_hw.h
-@@ -71,6 +71,10 @@
+@@ -67,6 +67,9 @@
+ #define  PQOSMR_VQMP			GENMASK(19, 16)
+ #define  PQOSMR_QVMP			GENMASK(23, 20)
+ 
++#define NETC_PIPFCR			0x0084
++#define  PIPFCR_EN			BIT(0)
++
+ #define NETC_POR			0x100
  #define  PCR_TXDIS			BIT(0)
  #define  PCR_RXDIS			BIT(1)
+@@ -122,6 +125,14 @@ enum netc_mfo {
+ #define  BPDVR_RXVAM			BIT(24)
+ #define  BPDVR_TXTAGA			GENMASK(26, 25)
  
-+#define NETC_PSR			0x104
-+#define  PSR_TX_BUSY			BIT(0)
-+#define  PSR_RX_BUSY			BIT(1)
++#define NETC_BPSTGSR			0x520
 +
- #define NETC_PTCTMSDUR(a)		(0x208 + (a) * 0x20)
- #define  PTCTMSDUR_MAXSDU		GENMASK(15, 0)
- #define  PTCTMSDUR_SDU_TYPE		GENMASK(17, 16)
-@@ -127,6 +131,23 @@ enum netc_mfo {
- #define NETC_PM_MAXFRM(a)		(0x1014 + (a) * 0x400)
- #define  PM_MAXFRAM			GENMASK(15, 0)
- 
-+#define NETC_PM_IEVENT(a)		(0x1040 + (a) * 0x400)
-+#define  PM_IEVENT_RX_EMPTY		BIT(6)
++enum netc_stg_stage {
++	NETC_STG_STATE_DISABLED = 0,
++	NETC_STG_STATE_LEARNING,
++	NETC_STG_STATE_FORWARDING,
++};
 +
-+#define NETC_PM_IF_MODE(a)		(0x1300 + (a) * 0x400)
-+#define  PM_IF_MODE_IFMODE		GENMASK(2, 0)
-+#define   IFMODE_MII			1
-+#define   IFMODE_RMII			3
-+#define   IFMODE_RGMII			4
-+#define   IFMODE_SGMII			5
-+#define  PM_IF_MODE_REVMII		BIT(3)
-+#define  PM_IF_MODE_M10			BIT(4)
-+#define  PM_IF_MODE_HD			BIT(6)
-+#define  PM_IF_MODE_SSP			GENMASK(14, 13)
-+#define   SSP_100M			0
-+#define   SSP_10M			1
-+#define   SSP_1G			2
-+
- #define NETC_PEMDIOCR			0x1c00
- #define NETC_EMDIO_BASE			NETC_PEMDIOCR
- 
+ /* Definition of Switch ethernet MAC port registers */
+ #define NETC_PMAC_OFFSET		0x400
+ #define NETC_PM_CMD_CFG(a)		(0x1008 + (a) * 0x400)
 -- 
 2.34.1
 
