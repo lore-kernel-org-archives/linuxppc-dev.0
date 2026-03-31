@@ -1,77 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-19036-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19037-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DF4A1061B18
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Mar 2026 22:27:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 476171061B2B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2026 01:23:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fl5VJ1HjKz2yhP;
-	Tue, 31 Mar 2026 09:27:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::122a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774909672;
-	cv=none; b=W/DBA3smH/8oTly0SKy5JDDWck4rEuAz+0xZ0KMFoEHJdYvBRN3toVsS7EBJIc9+dD1Ffc64ozFKsi5i+1Y9cCNuEdO9J+Cpo4BHum+9XzE0JletGKMK9ONc8kYru6VGC1MlOVOPR2JB6SKHJnoythnP8aKXW+PclXOduT7WidV/JBylfw7iy3eD+p0p7qv0XQRaScbkH3K2UzyzCj6qIvGQMI6ROvQc5bt5g/kcPnp8GRinXqxEjOzujijowDeGwGlZSfJvpfWLuMw/n7wY8aG9ZrOgfqG8pvWvCjJu0OFYvJWHxOW7+j8cTLf0ej6C9wPQ4ZPuF0n87EURGOknPg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fl9Nk4KXVz2ybQ;
+	Tue, 31 Mar 2026 12:23:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.9
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774920198;
+	cv=none; b=WQOtofUnwOTVD83rhMhTC4V6+anGTdrlLqQhQMyVkbCyIQjbeQHfny17slxeuNkOTOoTNcrLjQkc0U/nY5l+3IeXwxzbWbYI4nc1uRmfkhK+FQ9eVwkMAeAnc36DsadTTkvw7mflDlNUtlzIjcWkMPABT/NiqOqHtK4Il0IP6oGuYBP0impLmADZP5jfVJCDywlIMW9ENH3NNRxsHWgIbflAne4LXchQPFreA7bzci/XXgcfiTqf9HR4x6JdxYTlKhLS0vm10YDBoHGm6ccqyTo2PfS24bEWr0JTQ/xmpTJfOWCET5hI4XkUtfRWShMo5gAnIDGFD7QfSlYMmvTLFQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774909672; c=relaxed/relaxed;
-	bh=lzyAsYuDiypzhr0nJOs3r8SDJ+17St3td4xXEfgjRxY=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=l8yT4TlP/eGMXZWiUUCo1nNTIpfLbvJzIjLOPpahT6dxdCbVWnhrdYIg2RO32DXocOLRjVgCrckPH3Ti35vX6w1mrLwJ0HVlOdUFpZ4AWf9di+htQfi6agEN6sHy+rxrbxwV+hR7vYXw0Bij5ip71spQ2ik42sDDefY7P8za/Tgk7tbZ4z85TyKlu1hPJ3rTCwl3I9mIW0M3xs5IXEiJwQOfOasVK9szuHTYYLNF1TNVh1SAL/IWnrzJahEya4ChAbdy1WH5e9lkAFfEeZyezoxAN/sL+D2602UpFXELuI+rP4c6/fgHH3gzO5qk46C1PgVKpqv0uE9rZc6f2zB4Sw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=IfoBHXy8; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122a; helo=mail-dl1-x122a.google.com; envelope-from=cassiogabrielcontato@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1774920198; c=relaxed/relaxed;
+	bh=E96AYkRH/n68KPXGVvFFHspZzx/z2CLuR/aRnKEDcII=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=SnKl3flX9FoXemzYXbt7JSlPLWOlNPOqMua9Ft3pI7uKpF1AGSin4HzX4K/8v5enf4NPvs5VTFdYo15b6ImMnf8ygzUsBK1WCoCCmCpckyNXm6oFWqhvPoOcNk9H3Et3c76CcimOH1+IxpRmiRWIbP4NmO+VTWbhE0CyREwSm8GQsoerf797vXXpGRwT6n47cVtTt5I6xAqFYTIgf2nv58QC10lTPdgto1hBXIolTErutTR4dAS8TagZteEQ+BCTlzO3vgPwJPC3+l7QjaBeKgrjmz06LnHKZXdLeymj8y5OIXSLDzbPUoUpk+xJldL4CR1JZlfLxSZFwnQtfsxIeA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=JAcegemu; dkim-atps=neutral; spf=pass (client-ip=198.175.65.9; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=IfoBHXy8;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=JAcegemu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::122a; helo=mail-dl1-x122a.google.com; envelope-from=cassiogabrielcontato@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-x122a.google.com (mail-dl1-x122a.google.com [IPv6:2607:f8b0:4864:20::122a])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.9; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fl5VG4fkMz2xGF
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2026 09:27:49 +1100 (AEDT)
-Received: by mail-dl1-x122a.google.com with SMTP id a92af1059eb24-126ea4e9694so1281557c88.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2026 15:27:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1774909667; x=1775514467; darn=lists.ozlabs.org;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=lzyAsYuDiypzhr0nJOs3r8SDJ+17St3td4xXEfgjRxY=;
-        b=IfoBHXy8EvdmSSaztHdKpH+Y5l2wC7VWnsnrkGLtacAv/26TXfVyDxIbdxclJFFviq
-         18bG9l0QOc35Ah2215YMaZzPKkHUDdR0kTQg8rivnlz6uhfRKgi1W2uVI+DvOrjeGb88
-         NEhja/31RjW2GrM02o/SLGaTc08/eDLa5KPF4KZ59g9Uel1fo3FaGUy50xo6PiyZ0myG
-         kSoCbkVHwXlqZ4WU2cmlDM8/U8tkUG7sjvIvCn8/mUpwyKqkymZD2uonsmNWuhK0pdkD
-         jsFlbuUyhQDc2kte8vKzVY7Qw1SmgIJ9ctZisjJG3oLLHhoEfqGlObggeK1vnT//xiJE
-         q+IQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774909667; x=1775514467;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=lzyAsYuDiypzhr0nJOs3r8SDJ+17St3td4xXEfgjRxY=;
-        b=XgefiucHUVNpSqk41PZhnFEbkr7DYMDMT9bDDBd53tcYg+ZiMWOF5vS8q2rPB20h27
-         2c39QJ0t49u2wwqAfdho9jxTUORPuTeJBsWc3RJrTNzC8A8Ntqy0TMV0mCyXAfObVaec
-         3JSykAaSa2apcQuy/tkkB8k+CQlUYsaOY9tTPjimDwDJW27GTZr/O4GH5RAczq9NUIA6
-         G2qzMpyBfhpNmLLlqbVuojP2RZBtjrsWZ1x55Vv1BSU+pnxapjj273Gi5AGO0MFAegc+
-         Ny2RNWCwILQE9yYqRHtj2hc4luUqAmsYp+sAfxK2Jy6FLzZL6/3nVzsprQDCvHOmEgLs
-         R7eQ==
-X-Gm-Message-State: AOJu0YyaX+iehGYv9NWpMEP4Gi88tWh0oI0wehpGwqwcPSWJUNl+6EhU
-	iO29XdmSy8AdoLzm4axv5atRVh02cmqT3yC92sb52dRfdlfeLO1gnyj3
-X-Gm-Gg: ATEYQzy58x1TPT6iuvvm1TenWwc/yL44ez35xqCI9bjb0MkubqzvEjcybVAUu1O/Usx
-	sRwplmytvNsVW1/kEUPfpOvqMpO0opJ/EdCcxAdQXbV2vyvK4wOTQ7G/wFLEJJ85cGiMZHI0h3L
-	MGA3qEycrwrJGb7tcBg+v8KZcyKdcNRfgnr2LZxQgd8AcRlbBRta36k3kN5NOPK4w4G+AMHMN+b
-	t8kkplXNk2zMknwfJ+tl4L3suHY2QL1l0Wh986OQg3YUVL+il/duGZtznhSyWR1PxmEGd7oseEB
-	e1ALO1LSAvV6G+EbeS0nOGRTuZkQgR8/qGnNb9USMBgDIDoIqjAYfsF+Z5iWAxIQWPaKsV0Gxdx
-	N58ZnJgnMQwXHSnr2bEu0DlusqsQ/ohdozJLVsD1pjMhYXh4q5kW44c6GVnAxkHewiKdDyCPqPH
-	RQb2ve9cOLAO2abGWeGGRapE6ozNZtFUncLp/Br1kW0IXCGQ4RGZ+4VHOD5YYE5VqWjKHYwVtzg
-	B5RtxQdAf1UFHQ=
-X-Received: by 2002:a05:7022:b98:b0:127:33e0:ea33 with SMTP id a92af1059eb24-12ab28e4da2mr8360408c88.22.1774909666880;
-        Mon, 30 Mar 2026 15:27:46 -0700 (PDT)
-Received: from [192.168.1.18] (177-4-161-254.user3p.v-tal.net.br. [177.4.161.254])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-12ac09e3872sm10025298c88.13.2026.03.30.15.27.44
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 30 Mar 2026 15:27:46 -0700 (PDT)
-From: =?utf-8?q?C=C3=A1ssio_Gabriel?= <cassiogabrielcontato@gmail.com>
-Date: Mon, 30 Mar 2026 19:27:28 -0300
-Subject: [PATCH] ALSA: aoa: i2sbus: clear stale prepared state
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fl9Ng5Rbkz2yZ6
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2026 12:23:13 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1774920196; x=1806456196;
+  h=date:from:to:cc:subject:message-id;
+  bh=1vcVF/PJdFCoYwxtdz8tPlgw7h1m7MeQargDKNmwYhE=;
+  b=JAcegemu7tyyAz+x1f9DRflw0xxl39/GoUn1GjOqyuQnYXLd2EeU3bqn
+   dGQsm14RCXvR2I+h1xnrIKp9BMSrFzBd35YppVk3NmrVlGYJo16MlrbEQ
+   SFtJn3OxGApB2FAWomIy5ouuoP7i52bLlQ4Q2uVSgeOLOdj8mbtY1DYxP
+   pAtIGSDNbKhp2rIT7aZ7MII6OJxXI9Lj0cepsZvqpkx4lfWN+K7hOfpQZ
+   D/1pA79ZULTzOzi0RV/TuNGOjJmlQ1uYC9fAQmr1aoRcB0em3ighYZy65
+   /Q1ZCjsgg/c0PF+yboBjVWMrrUBBmIkKeRd0i3nAFYufI7RsncjQR8XMP
+   w==;
+X-CSE-ConnectionGUID: yQvktx5BTEOW676vj0hGVQ==
+X-CSE-MsgGUID: 7lkcm2/rT7urMmvcYrLCmA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11744"; a="98533470"
+X-IronPort-AV: E=Sophos;i="6.23,150,1770624000"; 
+   d="scan'208";a="98533470"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Mar 2026 18:23:11 -0700
+X-CSE-ConnectionGUID: DMV3HEgHRiesZR1csdGpXg==
+X-CSE-MsgGUID: XeNSdR6YS6mPCcA0nJQeeg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,150,1770624000"; 
+   d="scan'208";a="231017904"
+Received: from lkp-server01.sh.intel.com (HELO 283bf2e1b94a) ([10.239.97.150])
+  by fmviesa005.fm.intel.com with ESMTP; 30 Mar 2026 18:23:09 -0700
+Received: from kbuild by 283bf2e1b94a with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1w7Nox-000000001yD-0t73;
+	Tue, 31 Mar 2026 01:23:07 +0000
+Date: Tue, 31 Mar 2026 09:22:45 +0800
+From: kernel test robot <lkp@intel.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [powerpc:next-test] BUILD SUCCESS
+ bb8a6943a9901648afbf401b7555af63cad07190
+Message-ID: <202603310936.XAjaiHjP-lkp@intel.com>
+User-Agent: s-nail v14.9.25
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -84,186 +77,243 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20260330-aoa-i2sbus-clear-stale-active-v1-1-47a6c0a3ac9e@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMwQqCQBAG4FeROTewrWHUq0SH2fG3JkRjR0UQ3
- 72tjt/l28iRDU7XaqOMxdzGoeB4qEifMjzA1hZTDLEJdbywjMIWPc3O2kMy+yQ9WHSyBXxq63Q
- OjWpAR+V4Z3S2/v7b/W+f0ws6fVPa9w/IFGDhgQAAAA==
-X-Change-ID: 20260329-aoa-i2sbus-clear-stale-active-4d3b706cc0ef
-To: Johannes Berg <johannes@sipsolutions.net>, 
- Takashi Iwai <tiwai@suse.com>, Jaroslav Kysela <perex@perex.cz>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-sound@vger.kernel.org, 
- linux-kernel@vger.kernel.org, stable@vger.kernel.org, 
- =?utf-8?q?C=C3=A1ssio_Gabriel?= <cassiogabrielcontato@gmail.com>
-X-Mailer: b4 0.15.1
-X-Developer-Signature: v=1; a=openpgp-sha256; l=5868;
- i=cassiogabrielcontato@gmail.com; h=from:subject:message-id;
- bh=b41s+FN6uiztHgjfDAeztxkSjquTUWhRy3iOENgs/Tg=;
- b=owGbwMvMwCV2IdZeKur/u2bG02pJDJmnftzW7coz2LdKSCMkoOHoyiO9dRvY1pz01FLj4lq+/
- Lb5kRbmjlIWBjEuBlkxRZbVSYss93Q9uFoft8IDZg4rE8gQBi5OAZhIegXDX/kpFfZ6GZadE9fv
- 8FNZzT3n9Orsnx3/pK4eVmTpqVHbmcjIsNhoe9XiF2ffhTXUZn0Uf+J2ynvS9r3/y6sauGxuS0z
- W4gQA
-X-Developer-Key: i=cassiogabrielcontato@gmail.com; a=openpgp;
- fpr=AB62A239BC8AE0D57F5EA848D05D3F1A5AFFEE83
 
-The i2sbus PCM code uses pi->active to constrain the sibling stream to
-an already prepared duplex format and rate in i2sbus_pcm_open().
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
+branch HEAD: bb8a6943a9901648afbf401b7555af63cad07190  powerpc: pci-ioda: Optimize pnv_ioda_pick_m64_pe()
 
-That state is set from i2sbus_pcm_prepare(), but the current code only
-clears it on close. As a result, the sibling stream can inherit stale
-constraints after the prepared state has been torn down, or after a new
-prepare attempt fails before completing.
+elapsed time: 763m
 
-Clear pi->active when hw_params() or hw_free() drops the prepared state,
-clear it before starting a new prepare attempt, and set it again only
-after prepare succeeds.
+configs tested: 222
+configs skipped: 3
 
-Replace the stale FIXME in the duplex constraint comment with
-a description of the current driver behavior: i2sbus still programs a
-single shared transport configuration for both directions, so mixed
-formats are not supported in duplex mode.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Fixes: f3d9478b2ce4 ("[ALSA] snd-aoa: add snd-aoa")
-Cc: stable@vger.kernel.org
-Signed-off-by: Cássio Gabriel <cassiogabrielcontato@gmail.com>
----
- sound/aoa/soundbus/i2sbus/pcm.c | 53 ++++++++++++++++++++++++++++++++---------
- 1 file changed, 42 insertions(+), 11 deletions(-)
+tested configs:
+alpha                             allnoconfig    gcc-15.2.0
+alpha                            allyesconfig    gcc-15.2.0
+alpha                               defconfig    gcc-15.2.0
+arc                              allmodconfig    clang-16
+arc                              allmodconfig    gcc-15.2.0
+arc                               allnoconfig    gcc-15.2.0
+arc                              allyesconfig    clang-23
+arc                              allyesconfig    gcc-15.2.0
+arc                                 defconfig    gcc-15.2.0
+arc                   randconfig-001-20260331    clang-23
+arc                   randconfig-002-20260331    clang-23
+arc                        vdk_hs38_defconfig    gcc-15.2.0
+arm                               allnoconfig    clang-23
+arm                               allnoconfig    gcc-15.2.0
+arm                              allyesconfig    clang-16
+arm                              allyesconfig    gcc-15.2.0
+arm                        clps711x_defconfig    clang-23
+arm                                 defconfig    gcc-15.2.0
+arm                          pxa910_defconfig    gcc-15.2.0
+arm                   randconfig-001-20260331    clang-23
+arm                   randconfig-002-20260331    clang-23
+arm                   randconfig-003-20260331    clang-23
+arm                   randconfig-004-20260331    clang-23
+arm64                            allmodconfig    clang-23
+arm64                             allnoconfig    gcc-15.2.0
+arm64                               defconfig    gcc-15.2.0
+arm64                 randconfig-001-20260331    clang-18
+arm64                 randconfig-002-20260331    clang-18
+arm64                 randconfig-003-20260331    clang-18
+arm64                 randconfig-004-20260331    clang-18
+csky                             allmodconfig    gcc-15.2.0
+csky                              allnoconfig    gcc-15.2.0
+csky                                defconfig    gcc-15.2.0
+csky                  randconfig-001-20260331    clang-18
+csky                  randconfig-002-20260331    clang-18
+hexagon                          allmodconfig    clang-17
+hexagon                          allmodconfig    gcc-15.2.0
+hexagon                           allnoconfig    clang-23
+hexagon                           allnoconfig    gcc-15.2.0
+hexagon                             defconfig    gcc-15.2.0
+hexagon               randconfig-001-20260331    gcc-11.5.0
+hexagon               randconfig-002-20260331    gcc-11.5.0
+i386                             allmodconfig    clang-20
+i386                             allmodconfig    gcc-14
+i386                              allnoconfig    gcc-14
+i386                              allnoconfig    gcc-15.2.0
+i386                             allyesconfig    clang-20
+i386                             allyesconfig    gcc-14
+i386        buildonly-randconfig-001-20260331    clang-20
+i386        buildonly-randconfig-002-20260331    clang-20
+i386        buildonly-randconfig-003-20260331    clang-20
+i386        buildonly-randconfig-004-20260331    clang-20
+i386        buildonly-randconfig-005-20260331    clang-20
+i386        buildonly-randconfig-006-20260331    clang-20
+i386                                defconfig    gcc-15.2.0
+i386                  randconfig-001-20260331    gcc-14
+i386                  randconfig-002-20260331    gcc-14
+i386                  randconfig-003-20260331    clang-20
+i386                  randconfig-003-20260331    gcc-14
+i386                  randconfig-004-20260331    gcc-14
+i386                  randconfig-005-20260331    gcc-14
+i386                  randconfig-006-20260331    gcc-14
+i386                  randconfig-007-20260331    gcc-14
+i386                  randconfig-011-20260331    clang-20
+i386                  randconfig-012-20260331    clang-20
+i386                  randconfig-012-20260331    gcc-14
+i386                  randconfig-013-20260331    clang-20
+i386                  randconfig-013-20260331    gcc-14
+i386                  randconfig-014-20260331    clang-20
+i386                  randconfig-015-20260331    clang-20
+i386                  randconfig-016-20260331    clang-20
+i386                  randconfig-017-20260331    clang-20
+i386                  randconfig-017-20260331    gcc-14
+loongarch                        allmodconfig    clang-19
+loongarch                        allmodconfig    clang-23
+loongarch                         allnoconfig    clang-23
+loongarch                         allnoconfig    gcc-15.2.0
+loongarch                           defconfig    clang-19
+loongarch             randconfig-001-20260331    gcc-11.5.0
+loongarch             randconfig-002-20260331    gcc-11.5.0
+m68k                             allmodconfig    gcc-15.2.0
+m68k                              allnoconfig    gcc-15.2.0
+m68k                             allyesconfig    clang-16
+m68k                             allyesconfig    gcc-15.2.0
+m68k                                defconfig    clang-19
+m68k                                defconfig    gcc-15.2.0
+microblaze                        allnoconfig    gcc-15.2.0
+microblaze                       allyesconfig    gcc-15.2.0
+microblaze                          defconfig    clang-19
+microblaze                          defconfig    gcc-15.2.0
+mips                             allmodconfig    gcc-15.2.0
+mips                              allnoconfig    gcc-15.2.0
+mips                             allyesconfig    gcc-15.2.0
+nios2                            allmodconfig    clang-23
+nios2                            allmodconfig    gcc-11.5.0
+nios2                             allnoconfig    clang-23
+nios2                             allnoconfig    gcc-11.5.0
+nios2                               defconfig    clang-19
+nios2                               defconfig    gcc-11.5.0
+nios2                 randconfig-001-20260331    gcc-11.5.0
+nios2                 randconfig-002-20260331    gcc-11.5.0
+openrisc                         allmodconfig    clang-23
+openrisc                         allmodconfig    gcc-15.2.0
+openrisc                          allnoconfig    clang-23
+openrisc                          allnoconfig    gcc-15.2.0
+openrisc                            defconfig    gcc-15.2.0
+parisc                           allmodconfig    gcc-15.2.0
+parisc                            allnoconfig    clang-23
+parisc                            allnoconfig    gcc-15.2.0
+parisc                           allyesconfig    clang-19
+parisc                           allyesconfig    gcc-15.2.0
+parisc                              defconfig    gcc-15.2.0
+parisc                randconfig-001-20260331    clang-23
+parisc                randconfig-002-20260331    clang-23
+parisc64                            defconfig    clang-19
+parisc64                            defconfig    gcc-15.2.0
+powerpc                          allmodconfig    gcc-15.2.0
+powerpc                           allnoconfig    clang-23
+powerpc                           allnoconfig    gcc-15.2.0
+powerpc               randconfig-001-20260331    clang-23
+powerpc               randconfig-002-20260331    clang-23
+powerpc64             randconfig-001-20260331    clang-23
+powerpc64             randconfig-002-20260331    clang-23
+riscv                            allmodconfig    clang-23
+riscv                             allnoconfig    clang-23
+riscv                             allnoconfig    gcc-15.2.0
+riscv                            allyesconfig    clang-16
+riscv                               defconfig    clang-23
+riscv                               defconfig    gcc-15.2.0
+riscv                 randconfig-001-20260331    gcc-15.2.0
+riscv                 randconfig-002-20260330    clang-19
+riscv                 randconfig-002-20260331    gcc-15.2.0
+s390                             allmodconfig    clang-18
+s390                             allmodconfig    clang-19
+s390                              allnoconfig    clang-23
+s390                             allyesconfig    gcc-15.2.0
+s390                                defconfig    clang-23
+s390                                defconfig    gcc-15.2.0
+s390                  randconfig-001-20260330    gcc-15.2.0
+s390                  randconfig-001-20260331    gcc-15.2.0
+s390                  randconfig-002-20260330    clang-20
+s390                  randconfig-002-20260331    gcc-15.2.0
+sh                               allmodconfig    gcc-15.2.0
+sh                                allnoconfig    clang-23
+sh                                allnoconfig    gcc-15.2.0
+sh                               allyesconfig    clang-19
+sh                               allyesconfig    gcc-15.2.0
+sh                                  defconfig    gcc-14
+sh                                  defconfig    gcc-15.2.0
+sh                    randconfig-001-20260330    gcc-15.2.0
+sh                    randconfig-001-20260331    gcc-15.2.0
+sh                    randconfig-002-20260330    gcc-15.2.0
+sh                    randconfig-002-20260331    gcc-15.2.0
+sparc                             allnoconfig    clang-23
+sparc                             allnoconfig    gcc-15.2.0
+sparc                               defconfig    gcc-15.2.0
+sparc                 randconfig-001-20260331    gcc-15.2.0
+sparc                 randconfig-002-20260331    gcc-15.2.0
+sparc64                          allmodconfig    clang-23
+sparc64                             defconfig    clang-20
+sparc64                             defconfig    gcc-14
+sparc64               randconfig-001-20260331    gcc-15.2.0
+sparc64               randconfig-002-20260331    gcc-15.2.0
+um                               allmodconfig    clang-19
+um                                allnoconfig    clang-23
+um                               allyesconfig    gcc-14
+um                               allyesconfig    gcc-15.2.0
+um                                  defconfig    clang-23
+um                                  defconfig    gcc-14
+um                             i386_defconfig    gcc-14
+um                    randconfig-001-20260331    gcc-15.2.0
+um                    randconfig-002-20260331    gcc-15.2.0
+um                           x86_64_defconfig    clang-23
+um                           x86_64_defconfig    gcc-14
+x86_64                           allmodconfig    clang-20
+x86_64                            allnoconfig    clang-20
+x86_64                            allnoconfig    clang-23
+x86_64                           allyesconfig    clang-20
+x86_64      buildonly-randconfig-001-20260331    clang-20
+x86_64      buildonly-randconfig-002-20260331    clang-20
+x86_64      buildonly-randconfig-003-20260331    clang-20
+x86_64      buildonly-randconfig-004-20260331    clang-20
+x86_64      buildonly-randconfig-005-20260331    clang-20
+x86_64      buildonly-randconfig-006-20260331    clang-20
+x86_64                              defconfig    gcc-14
+x86_64                                  kexec    clang-20
+x86_64                randconfig-001-20260331    gcc-14
+x86_64                randconfig-002-20260331    gcc-14
+x86_64                randconfig-003-20260331    gcc-14
+x86_64                randconfig-004-20260331    gcc-14
+x86_64                randconfig-005-20260331    gcc-14
+x86_64                randconfig-006-20260331    gcc-14
+x86_64                randconfig-011-20260331    clang-20
+x86_64                randconfig-012-20260331    clang-20
+x86_64                randconfig-012-20260331    gcc-14
+x86_64                randconfig-013-20260331    clang-20
+x86_64                randconfig-014-20260331    clang-20
+x86_64                randconfig-014-20260331    gcc-14
+x86_64                randconfig-015-20260331    clang-20
+x86_64                randconfig-015-20260331    gcc-14
+x86_64                randconfig-016-20260331    clang-20
+x86_64                randconfig-071-20260331    clang-20
+x86_64                randconfig-072-20260331    clang-20
+x86_64                randconfig-073-20260331    clang-20
+x86_64                randconfig-074-20260331    clang-20
+x86_64                randconfig-074-20260331    gcc-14
+x86_64                randconfig-075-20260331    clang-20
+x86_64                randconfig-075-20260331    gcc-14
+x86_64                randconfig-076-20260331    clang-20
+x86_64                               rhel-9.4    clang-20
+x86_64                           rhel-9.4-bpf    gcc-14
+x86_64                          rhel-9.4-func    clang-20
+x86_64                    rhel-9.4-kselftests    clang-20
+x86_64                         rhel-9.4-kunit    gcc-14
+x86_64                           rhel-9.4-ltp    gcc-14
+x86_64                          rhel-9.4-rust    clang-20
+xtensa                            allnoconfig    clang-23
+xtensa                            allnoconfig    gcc-15.2.0
+xtensa                           allyesconfig    clang-23
+xtensa                           allyesconfig    gcc-15.2.0
+xtensa                randconfig-001-20260331    gcc-15.2.0
+xtensa                randconfig-002-20260331    gcc-15.2.0
 
-diff --git a/sound/aoa/soundbus/i2sbus/pcm.c b/sound/aoa/soundbus/i2sbus/pcm.c
-index 97c807e67d56..47a89da43cff 100644
---- a/sound/aoa/soundbus/i2sbus/pcm.c
-+++ b/sound/aoa/soundbus/i2sbus/pcm.c
-@@ -165,17 +165,16 @@ static int i2sbus_pcm_open(struct i2sbus_dev *i2sdev, int in)
- 	 * currently in use (if any). */
- 	hw->rate_min = 5512;
- 	hw->rate_max = 192000;
--	/* if the other stream is active, then we can only
--	 * support what it is currently using.
--	 * FIXME: I lied. This comment is wrong. We can support
--	 * anything that works with the same serial format, ie.
--	 * when recording 24 bit sound we can well play 16 bit
--	 * sound at the same time iff using the same transfer mode.
-+	/* If the other stream is already prepared, keep this stream
-+	 * on the same duplex format and rate.
-+	 *
-+	 * i2sbus_pcm_prepare() still programs one shared transport
-+	 * configuration for both directions, so mixed duplex formats
-+	 * are not supported here.
- 	 */
- 	if (other->active) {
--		/* FIXME: is this guaranteed by the alsa api? */
- 		hw->formats &= pcm_format_to_bits(i2sdev->format);
--		/* see above, restrict rates to the one we already have */
-+		/* Restrict rates to the one already in use. */
- 		hw->rate_min = i2sdev->rate;
- 		hw->rate_max = i2sdev->rate;
- 	}
-@@ -283,6 +282,22 @@ void i2sbus_wait_for_stop_both(struct i2sbus_dev *i2sdev)
- }
- #endif
- 
-+static void i2sbus_pcm_clear_active(struct i2sbus_dev *i2sdev, int in)
-+{
-+	struct pcm_info *pi;
-+
-+	guard(mutex)(&i2sdev->lock);
-+
-+	get_pcm_info(i2sdev, in, &pi, NULL);
-+	pi->active = 0;
-+}
-+
-+static inline int i2sbus_hw_params(struct snd_pcm_substream *substream, int in)
-+{
-+	i2sbus_pcm_clear_active(snd_pcm_substream_chip(substream), in);
-+	return 0;
-+}
-+
- static inline int i2sbus_hw_free(struct snd_pcm_substream *substream, int in)
- {
- 	struct i2sbus_dev *i2sdev = snd_pcm_substream_chip(substream);
-@@ -291,14 +306,25 @@ static inline int i2sbus_hw_free(struct snd_pcm_substream *substream, int in)
- 	get_pcm_info(i2sdev, in, &pi, NULL);
- 	if (pi->dbdma_ring.stopping)
- 		i2sbus_wait_for_stop(i2sdev, pi);
-+	i2sbus_pcm_clear_active(i2sdev, in);
- 	return 0;
- }
- 
-+static int i2sbus_playback_hw_params(struct snd_pcm_substream *substream)
-+{
-+	return i2sbus_hw_params(substream, 0);
-+}
-+
- static int i2sbus_playback_hw_free(struct snd_pcm_substream *substream)
- {
- 	return i2sbus_hw_free(substream, 0);
- }
- 
-+static int i2sbus_record_hw_params(struct snd_pcm_substream *substream)
-+{
-+	return i2sbus_hw_params(substream, 1);
-+}
-+
- static int i2sbus_record_hw_free(struct snd_pcm_substream *substream)
- {
- 	return i2sbus_hw_free(substream, 1);
-@@ -335,7 +361,7 @@ static int i2sbus_pcm_prepare(struct i2sbus_dev *i2sdev, int in)
- 		return -EINVAL;
- 
- 	runtime = pi->substream->runtime;
--	pi->active = 1;
-+	pi->active = 0;
- 	if (other->active &&
- 	    ((i2sdev->format != runtime->format)
- 	     || (i2sdev->rate != runtime->rate)))
-@@ -444,9 +470,11 @@ static int i2sbus_pcm_prepare(struct i2sbus_dev *i2sdev, int in)
- 
- 	/* early exit if already programmed correctly */
- 	/* not locking these is fine since we touch them only in this function */
--	if (in_le32(&i2sdev->intfregs->serial_format) == sfr
--	 && in_le32(&i2sdev->intfregs->data_word_sizes) == dws)
-+	if (in_le32(&i2sdev->intfregs->serial_format) == sfr &&
-+	    in_le32(&i2sdev->intfregs->data_word_sizes) == dws) {
-+		pi->active = 1;
- 		return 0;
-+	}
- 
- 	/* let's notify the codecs about clocks going away.
- 	 * For now we only do mastering on the i2s cell... */
-@@ -484,6 +512,7 @@ static int i2sbus_pcm_prepare(struct i2sbus_dev *i2sdev, int in)
- 		if (cii->codec->switch_clock)
- 			cii->codec->switch_clock(cii, CLOCK_SWITCH_SLAVE);
- 
-+	pi->active = 1;
- 	return 0;
- }
- 
-@@ -728,6 +757,7 @@ static snd_pcm_uframes_t i2sbus_playback_pointer(struct snd_pcm_substream
- static const struct snd_pcm_ops i2sbus_playback_ops = {
- 	.open =		i2sbus_playback_open,
- 	.close =	i2sbus_playback_close,
-+	.hw_params =	i2sbus_playback_hw_params,
- 	.hw_free =	i2sbus_playback_hw_free,
- 	.prepare =	i2sbus_playback_prepare,
- 	.trigger =	i2sbus_playback_trigger,
-@@ -796,6 +826,7 @@ static snd_pcm_uframes_t i2sbus_record_pointer(struct snd_pcm_substream
- static const struct snd_pcm_ops i2sbus_record_ops = {
- 	.open =		i2sbus_record_open,
- 	.close =	i2sbus_record_close,
-+	.hw_params =	i2sbus_record_hw_params,
- 	.hw_free =	i2sbus_record_hw_free,
- 	.prepare =	i2sbus_record_prepare,
- 	.trigger =	i2sbus_record_trigger,
-
----
-base-commit: 46a6512f4a74dd7b18d9a455669c226843fc49ce
-change-id: 20260329-aoa-i2sbus-clear-stale-active-4d3b706cc0ef
-
-Best regards,
---  
-Cássio Gabriel <cassiogabrielcontato@gmail.com>
-
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
