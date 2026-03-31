@@ -1,93 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-19112-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19113-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F14010F92FA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2026 20:15:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 770C510F9303
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Mar 2026 20:54:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4flfVj38fzz2yjw;
-	Wed, 01 Apr 2026 07:15:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::831" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774988109;
-	cv=pass; b=gTIVMDpCL87N1hHBunP7sgBAD5lNdpTuee94HPMEBrKwmb3z+6ZlosJgKeakgjSrdJqVNvNRrsBk1NrjcDJfdUMOM0GgyHw0ioNw4MP05wn5Yxfx/chRa5oWdHBE0QYwMokRY134JqA6CGohFlKjmcNzuT3hz9B5jCJHR7x/GFwuGlN7fkkYfFRl9veti05Av3zkho7rCDHI8T3GsVCn2dJefqHNArX4Bh3d5l7IhcYKld+5NM/mGkqUdLWxkCboXVfesz1y88lfgmReDp4CqtlKgG+ilVs2ZJ/1iEijVXpZcGCreMeZxNwAx4QdKCdEaa/IFT1DOZhKuvHkrFzsTQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774988109; c=relaxed/relaxed;
-	bh=RwVpGG9S8p/uX+u7seQVpxC4moFh4X8htIhQDky5uWk=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=kjSfKJYwkiMOyRkW0GUf/aqy+b5VOHrqmx6+X15GkyeeZjivQwVodOApMfBHGUHXNz9Gy/flQ5DoP6g9WcYn6ITEuYpfNhKcucTwR39HuiIl73m3G4Gf1BOJ8JupKe7Nh5FqkBHnetnffz1kjwXZD5P7arRZ+gHGW37ehQc16YunH6IqYKptjdh+yCyA5ggM2ZBoOqvUqYq+pBlHkSKtjFPTtkwGBPPNWOX/OQo0678mSsZefU9jPJoxTBnbAujNanUPcnmC1mekm6o3OyzzZzuoM5j6ENrjdQqCtEvLJj4LG0jI4GHYz7SVaWz2q3ajOzxY5P5Q+E8vWjkxZoJDRg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=I8Crn2zy; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::831; helo=mail-qt1-x831.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4flgMj0ry3z2yjs;
+	Wed, 01 Apr 2026 07:54:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::122a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774990449;
+	cv=none; b=bK6wnaIhDO1441Nlll7ozk3vmm+KST4UonCP2U/7gowHOX1CaRjNdG+cfsxM6R6GOgrXZ3FA46WBC4Ol0eYlrIKHYWYwRpgF4bqswmeZOwLlLqUFwLtVdGQygeCxOI/Hfwk3hy17G0P3Ab6FGESgTQFVnfn0TuV6VPlXB/sgIyAM4ETkcvlisW5vaKLwDcCQVwNNBwPKicpzbnnpZ81NCrwvNcLCOMB3cWq2miU2UBNP0KbJtcSaVTBKxwukq9/ibMohpWnn9P8Ctgvay9tbAdC7OjH8d05Po8/2TBMEaTSuTDciCbf2Z19SYLdNLGN4QNI2ky3a4iEcnHScQ40TYw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1774990449; c=relaxed/relaxed;
+	bh=ZspNX5rs+mbfHqezyzp4ll5OJtm1yyo5L/3asPtSr14=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=RTy4Ge6gbkU6oDVR7Uiqia8ohaEUhgemg8sZu0IFt57Mcsb8r4kKaYsxwSgP31uLCUwLWiVOLgsAO1w/638dD5m34rOMjp90FKd8UAjG39WsrL11sn7TeYpqnHDKeiqJZEc7mpRWVY1mbrKZNwZ/0fpSeLGYanqmLxm16+yOgFV+mv1HJ0JEHRPYF3NYuyeQFwY7GDjqvmi+i0XaedeJDy+9vC/8S/ivC/JZ+FeQpoDw/1T3eL9ZwaVzd4avFq9qEEUy14YVieLuwWA1F4DBYjTsqNO10+aaUco9ro0exhYYZ/FROzk/QGil+ZXEJBQeW9SFzJniT/O9e5xou/F4hg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ddShxiHr; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122a; helo=mail-dl1-x122a.google.com; envelope-from=cassiogabrielcontato@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=I8Crn2zy;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ddShxiHr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::831; helo=mail-qt1-x831.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x831.google.com (mail-qt1-x831.google.com [IPv6:2607:f8b0:4864:20::831])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::122a; helo=mail-dl1-x122a.google.com; envelope-from=cassiogabrielcontato@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dl1-x122a.google.com (mail-dl1-x122a.google.com [IPv6:2607:f8b0:4864:20::122a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4flfVg5jHpz2yVL
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 07:15:07 +1100 (AEDT)
-Received: by mail-qt1-x831.google.com with SMTP id d75a77b69052e-509062d829dso755681cf.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2026 13:15:07 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1774988104; cv=none;
-        d=google.com; s=arc-20240605;
-        b=gLLy8uCVERrQT5GzgirbLPQtEHTCuGrhB9VWuFFgxwWc0xJYEALeohARHI5hcNr18L
-         Fv7x8cMPNcDzAa6DCYl0q3jPJUxMi2g8TOZqnjrFPEPioSRgESPrjPU3O0TKngvIvd7A
-         NZJLBuOltoriMNGz7zTPRbbLBwE0H9HkgdCbFGPZOlg5ZGOCfO1Zoe2DYhAHqAI73aEd
-         mWffG2awgI/jKOzQJKwDrgDcx84Sl9Wuf6jOt/eIDv33pRyL6ztlyn+ySj46SG9/0Voi
-         15CmGcFmTC99oFMY5/k47TBZuemuirusSdWUIogItsVUU5rHElMDhN5wVU1mLU8nlYAQ
-         dQJA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=RwVpGG9S8p/uX+u7seQVpxC4moFh4X8htIhQDky5uWk=;
-        fh=7Gh5lk/yQIJTQu3XeMEHmco0NM4iaS8oRUt9SBh2dYU=;
-        b=aaxjHaczpJZBjj25NaWTzP3jMC1q600YESztXz1EHZREjSyz3DpboUff8OJzOfndHq
-         iOTXD1BZllOaL0cmlcniBXL1wPsUbNynkTkRt+uitdTV6ye+J3pEGutbV/C+jetXAZ67
-         xQyjYGAUkXLURQ6G9VURJC5jlOX8PTKRpjN6+LRiazeX3kvTR5dSl/9s6iU0o+qclB0v
-         AIKEIndaMQErM8EnMS7diLGFXWiieuSvNvtyrFAzaofITutFAJc/w74XQRvwinUYF0s9
-         bHo3iwqJ6/edfe69oWLlv1TbP1FhOfgkXahGMwhC8KUFN1nAhB+6JxoyGXLeOfw3oFkJ
-         XeFg==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4flgMg3t1Yz2yjp
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 07:54:06 +1100 (AEDT)
+Received: by mail-dl1-x122a.google.com with SMTP id a92af1059eb24-1271195d2a7so514388c88.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2026 13:54:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1774988104; x=1775592904; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=RwVpGG9S8p/uX+u7seQVpxC4moFh4X8htIhQDky5uWk=;
-        b=I8Crn2zy5SGQsqTyHOFXskcZuL3HbkcEc2Tw900qzAcbQ9D0pe2I13DTrUxwL8J9+2
-         k0T1x4U9P0uc0psZkZEBphvxg1EHbtc7bhKtyngWqSI0FSf5tWhrcGJpaw2VBA+aQwAE
-         ACxCPfYcTYPIG9+bKXmO6+8tebvTeNwlGE4qcrPnemeM/Hidd5o+yAzVPurdPCDOqR+0
-         nTzUqeahR5N0V8TirkatocoMl5L10HMVns6sEQDrNZ+OQ5aPpipI8FrfPCOlj5l6IkLT
-         +8ZBa+PJnvavItahFf0+28o7ZymHWzHW2X5duHW61n6B86OHy7mcdDKj1ijbDaTmJ12D
-         rYcw==
+        d=gmail.com; s=20251104; t=1774990444; x=1775595244; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:content-language:from
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=ZspNX5rs+mbfHqezyzp4ll5OJtm1yyo5L/3asPtSr14=;
+        b=ddShxiHrt6aYjVthLqF7vCfJEzvg/tcDXJCsTprvW20dCKBWWLHfKMWY2QwRStFDcq
+         DiaFpiv57rgFFUSxA1HHAxVX8936UAUCCXYcQAAg8kFUjYYpZXiERyTharjdCcBKDLO0
+         PQtkRZkpVSu0eMxTvLw/NkZ/bC/ItLmx7IGgUJl95cyC2vS/3tj9JljSnEMQDstal1PN
+         A0zIZK64OqeaVff35Gn3FnkwVm8Bb2u8FWuQ6tul4egCZ3fqXsEGB2DoXkT+CIF+L/ol
+         52Bikf1YH473p60gkjMl8BouqkztarBYn90KpLYKaHzqvPR/j2GU4JTFYhZP+uD+uRPl
+         uDxg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774988104; x=1775592904;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=RwVpGG9S8p/uX+u7seQVpxC4moFh4X8htIhQDky5uWk=;
-        b=QwtVKVUlOBXPlfIAW1Vfv96u7dyd1rxze3NHBvpQv4dwvnJ0PIj/U7zZxjv8cPx/wg
-         45f6MdXl8F27cz7IjXJCdApq9pi/g7kS+jVkUzllCTZnPJdemC4XpuDy7uDnN6XDYqIX
-         n6BPWEgAfQCjVVm5tBMptW86ezBzvRAJthUVTxbLR4/QkaYEBTADuW8PB5S9DiwUddYm
-         vqZHUKx37uCOvWiVWv0del3z5rFm5CGkexCHMpEQVKSwzW/JVEEsuPJYH3P/nP3V17n5
-         uRN+u0DyqQI19IWF9hB+lLa+87lmY2N4yMP8C0YWAL/d0WrDfZTp4DGVdhhwU9fLcZDY
-         QqyQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUgIl2ozQX+oIlY9XXbw/JA+1Bmz6KM1F8+DWgitb+hjEbz9oZyzCvCacaAOdDUQkFGsc1skeIL3wTuZRk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx4n2NI13uJMrLQGLzMMFVU8cWcvBOVrrweD84Bb++zapcj4nUU
-	Izp3sdXozC8j6noKDgQC10G+IWYyLQkzUlzgtu6oa9Etg/6R2S/jx3zZ2AKkyZpfFXpy8aOfUml
-	CuXTmJ8NNqf9kFrgvSnpq0dOiF1eeoq2AaXBVg1UA
-X-Gm-Gg: ATEYQzwg6hL61B3PHYyq0IJ53WE2FJMGnp760Kdm/07ZeHPBvZL/YmHV8c0FOh7lDmR
-	d7LtN6e1Qprmla/iFnSSo5HT+u0QqM0QZ8DEROHJh1fkLfssBLYCYDuSJiemFXG1xguEsN7TSX5
-	n/Rws869N6LYD3px09zrqPwhX7uKfxuGZZ30GOOnzFz09t3hJn3cM5fu3l43XtVrEm57L9C+oo8
-	zvsKWSb0h9KbSPVJixpTuPH4/wh/Ue4aoguko41lvSJ8pa2U7Gg/STEjoqWWL6OWn2yF8jre8T/
-	g/D1mGCZ9lI4bFzlxdr6wyQ4sO52eWlMij2H/Q==
-X-Received: by 2002:a05:622a:a987:10b0:507:35b2:6b9 with SMTP id
- d75a77b69052e-50d3b7cb8ecmr5105641cf.7.1774988103375; Tue, 31 Mar 2026
- 13:15:03 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1774990444; x=1775595244;
+        h=content-transfer-encoding:in-reply-to:content-language:from
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=ZspNX5rs+mbfHqezyzp4ll5OJtm1yyo5L/3asPtSr14=;
+        b=RzTUEbnL9GB6sV6hemRXW5h7toOkkTrIVuGoP/VrFz0ka1IjATI4ahMXFzbAchsyY4
+         ABGGoiVpuDpsXPqYAtUo1sYub5bSld8TUrU5RgVcn7UAva6NSbpzg8jr8wJcse8HIn/j
+         xLJGOxZcQv87JfJx4eP/aJtpZDGhz6+rFsZwbH5QpCENWw0m3MnjOqe9KeF+imGZ1WOq
+         FaaS43S/yCYvc0QlumgcqJg0p6g37pHSGOHqZWYwSUOmL3yKasN/18MjgPpONVq9Su1e
+         2KS49z5xXwHmYodNOfH8Rfw8srNBLbtk5r2IulaPRV7QrGgqnI/+N7PI+6hKQ/U/kVXY
+         FS2w==
+X-Forwarded-Encrypted: i=1; AJvYcCV/n6rmNpXTRR5ZOwrYdJuvn62FNzgFGwlyaUTJPuP83yF3LO4/i9XdsdQB1ebmhYfSzbDMD5b18fYDsEg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwqZBow+7P9as+TZXd05q2AljB+WtjOqq05dLE5mddPhpnYdyz9
+	YQL+DSlwu+/4p6j1vcWEcnoLzWxGBzt8GcqMtj0hDh+lTJ/OjHWikFs7
+X-Gm-Gg: ATEYQzzbJjkX2xw7cvv/RfRY4azw39tFMIxJUzHXjwd3WhQXEJ3X2P8AxMVLHcziLGT
+	9oeCpSkJWZVik8XpxuemG1Z1EcLpi3Ot9eIkw4EDCrwJ7MI0UePcFkv/Kej59aWw5HQ8JZD/ZHS
+	Jsn2BmQKHtcEC3EBer1632bcEteXCzV6d9YyJJ9S2LJdcNOCZyrr11w6tfKRRW8O072KMuzU+zJ
+	NxPQ/CuWQxOrrI9JqK2Xdl7KLaFMFgT5ATgZ2I4+r4HKQQyi0/3ylEDosScKjJwv50g3gWeoQV0
+	H/8grkY/8ZcqCt7T4DybIqzn/DoTsCCkpfLB0Cb+2F9eBpxS5hx1XmswNiI5P0N7qFpAILjAWDv
+	wpsFjMuGrPJ0vWx68pWWb5YCoP6j+S4KipPY5puJC6mOIww5a/Q793vyf/90M8Su6b/x94uf5BS
+	LpmbplnOtiyjkp0AUwBRukR+e+s6EHjJkpdhCn6Q6cCfqHPvnAzmWGn2IsBnSdGFdmUE88tn5Kg
+	nA=
+X-Received: by 2002:a05:7300:fb8e:b0:2c7:11f2:d072 with SMTP id 5a478bee46e88-2c9323b8c8cmr558693eec.16.1774990443987;
+        Tue, 31 Mar 2026 13:54:03 -0700 (PDT)
+Received: from [192.168.1.8] (177-4-161-218.user3p.v-tal.net.br. [177.4.161.218])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2c3c41c1513sm11457738eec.8.2026.03.31.13.54.01
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 31 Mar 2026 13:54:03 -0700 (PDT)
+Message-ID: <c1aac723-8a60-4b37-9c8b-74b2ea4daebb@gmail.com>
+Date: Tue, 31 Mar 2026 17:53:59 -0300
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,61 +88,87 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260327205457.604224-1-surenb@google.com> <20260327205457.604224-3-surenb@google.com>
- <5d90d998-9b8d-435c-b684-260600311797@lucifer.local> <CAJuCfpE5w8r_6Ss=5ZPrEb1RQOTG6HyY8Pivac=iiyqFRZvD4g@mail.gmail.com>
- <20260331112921.854d4f6cc793dba0972ee9f1@linux-foundation.org> <cf6975a6-336a-401b-b122-b9597b5710b7@lucifer.local>
-In-Reply-To: <cf6975a6-336a-401b-b122-b9597b5710b7@lucifer.local>
-From: Suren Baghdasaryan <surenb@google.com>
-Date: Tue, 31 Mar 2026 13:14:51 -0700
-X-Gm-Features: AQROBzB2U3UmDFrQdi2wX1twdn7twB7j7RYY85tO9ykEBOm_M_3vRiUWXjbFQEo
-Message-ID: <CAJuCfpH2eomYbZ0DzKpkae5DKVF69aRsfXx3HzMfPc6cTT5fTg@mail.gmail.com>
-Subject: Re: [PATCH v6 2/6] mm: use vma_start_write_killable() in mm syscalls
-To: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, willy@infradead.org, david@kernel.org, 
-	ziy@nvidia.com, matthew.brost@intel.com, joshua.hahnjy@gmail.com, 
-	rakie.kim@sk.com, byungchul@sk.com, gourry@gourry.net, 
-	ying.huang@linux.alibaba.com, apopple@nvidia.com, 
-	baolin.wang@linux.alibaba.com, Liam.Howlett@oracle.com, npache@redhat.com, 
-	ryan.roberts@arm.com, dev.jain@arm.com, baohua@kernel.org, 
-	lance.yang@linux.dev, vbabka@suse.cz, jannh@google.com, rppt@kernel.org, 
-	mhocko@suse.com, pfalcato@suse.de, kees@kernel.org, maddy@linux.ibm.com, 
-	npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org, 
-	borntraeger@linux.ibm.com, frankja@linux.ibm.com, imbrenda@linux.ibm.com, 
-	hca@linux.ibm.com, gor@linux.ibm.com, agordeev@linux.ibm.com, 
-	svens@linux.ibm.com, gerald.schaefer@linux.ibm.com, linux-mm@kvack.org, 
-	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] ALSA: aoa: i2sbus: clear stale prepared state
+To: Takashi Iwai <tiwai@suse.com>, Jaroslav Kysela <perex@perex.cz>,
+ Johannes Berg <johannes@sipsolutions.net>
+Cc: oe-kbuild-all@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+ linux-sound@vger.kernel.org, linux-kernel@vger.kernel.org,
+ stable@vger.kernel.org, kernel test robot <lkp@intel.com>
+References: <20260330-aoa-i2sbus-clear-stale-active-v1-1-47a6c0a3ac9e@gmail.com>
+ <202604010125.AvkWBYKI-lkp@intel.com>
+From: =?UTF-8?Q?C=C3=A1ssio_Gabriel_Monteiro_Pires?=
+ <cassiogabrielcontato@gmail.com>
+Content-Language: en-US
+In-Reply-To: <202604010125.AvkWBYKI-lkp@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Tue, Mar 31, 2026 at 11:47=E2=80=AFAM Lorenzo Stoakes (Oracle)
-<ljs@kernel.org> wrote:
->
-> On Tue, Mar 31, 2026 at 11:29:21AM -0700, Andrew Morton wrote:
-> > On Tue, 31 Mar 2026 08:01:11 -0700 Suren Baghdasaryan <surenb@google.co=
-m> wrote:
-> >
-> > > > Instead? That is, assuming we really need to care about this at all=
-.
-> > > >
-> > > > But I think I don't like this change at all?
-> > >
-> > > Yeah, this was the part I wasn't sure if it's worth adding. With your
-> > > vote confirming my scepticism I'll go ahead and remove the parts I
-> > > added to avoid extra vma_start_write_killable() call (3 instances in
-> > > all) and will post v7.
-> >
-> > Thanks.  I'll remove v6 from mm.git and shall await Lorenzo's advice on
-> > v7.
-> >
->
-> Ack, if we just drop the problematic bits we might still be fine for 7.1 =
-:)
+On 3/31/26 14:10, kernel test robot wrote:
+> Hi Cássio,
+> 
+> kernel test robot noticed the following build errors:
+> 
+> [auto build test ERROR on 46a6512f4a74dd7b18d9a455669c226843fc49ce]
+> 
+> url:    https://github.com/intel-lab-lkp/linux/commits/C-ssio-Gabriel/ALSA-aoa-i2sbus-clear-stale-prepared-state/20260331-113724
+> base:   46a6512f4a74dd7b18d9a455669c226843fc49ce
+> patch link:    https://lore.kernel.org/r/20260330-aoa-i2sbus-clear-stale-active-v1-1-47a6c0a3ac9e%40gmail.com
+> patch subject: [PATCH] ALSA: aoa: i2sbus: clear stale prepared state
+> config: powerpc-allmodconfig (https://download.01.org/0day-ci/archive/20260401/202604010125.AvkWBYKI-lkp@intel.com/config)
+> compiler: powerpc64-linux-gcc (GCC) 15.2.0
+> reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260401/202604010125.AvkWBYKI-lkp@intel.com/reproduce)
+> 
+> If you fix the issue in a separate patch/commit (i.e. not just a new version of
+> the same patch/commit), kindly add following tags
+> | Reported-by: kernel test robot <lkp@intel.com>
+> | Closes: https://lore.kernel.org/oe-kbuild-all/202604010125.AvkWBYKI-lkp@intel.com/
+> 
+> All errors (new ones prefixed by >>):
+> 
+>>> sound/aoa/soundbus/i2sbus/pcm.c:760:25: error: initialization of 'int (*)(struct snd_pcm_substream *, struct snd_pcm_hw_params *)' from incompatible pointer type 'int (*)(struct snd_pcm_substream *)' [-Wincompatible-pointer-types]
+>      760 |         .hw_params =    i2sbus_playback_hw_params,
+>          |                         ^~~~~~~~~~~~~~~~~~~~~~~~~
+>    sound/aoa/soundbus/i2sbus/pcm.c:760:25: note: (near initialization for 'i2sbus_playback_ops.hw_params')
+>    sound/aoa/soundbus/i2sbus/pcm.c:313:12: note: 'i2sbus_playback_hw_params' declared here
+>      313 | static int i2sbus_playback_hw_params(struct snd_pcm_substream *substream)
+>          |            ^~~~~~~~~~~~~~~~~~~~~~~~~
+>    sound/aoa/soundbus/i2sbus/pcm.c:829:25: error: initialization of 'int (*)(struct snd_pcm_substream *, struct snd_pcm_hw_params *)' from incompatible pointer type 'int (*)(struct snd_pcm_substream *)' [-Wincompatible-pointer-types]
+>      829 |         .hw_params =    i2sbus_record_hw_params,
+>          |                         ^~~~~~~~~~~~~~~~~~~~~~~
+>    sound/aoa/soundbus/i2sbus/pcm.c:829:25: note: (near initialization for 'i2sbus_record_ops.hw_params')
+>    sound/aoa/soundbus/i2sbus/pcm.c:323:12: note: 'i2sbus_record_hw_params' declared here
+>      323 | static int i2sbus_record_hw_params(struct snd_pcm_substream *substream)
+>          |            ^~~~~~~~~~~~~~~~~~~~~~~
+> 
+> 
+> vim +760 sound/aoa/soundbus/i2sbus/pcm.c
+> 
+>    756	
+>    757	static const struct snd_pcm_ops i2sbus_playback_ops = {
+>    758		.open =		i2sbus_playback_open,
+>    759		.close =	i2sbus_playback_close,
+>  > 760		.hw_params =	i2sbus_playback_hw_params,
+>    761		.hw_free =	i2sbus_playback_hw_free,
+>    762		.prepare =	i2sbus_playback_prepare,
+>    763		.trigger =	i2sbus_playback_trigger,
+>    764		.pointer =	i2sbus_playback_pointer,
+>    765	};
+>    766	
+> 
+Oops my bad!
 
-Let's get your cleanup first and then see where we are. I also hate
-the way I have to report a fake error code, so with that cleanup the
-patchset should be much nicer.
+I had added i2sbus_playback_hw_params(), i2sbus_record_hw_params(),
+and the helper they use without the struct snd_pcm_hw_params *params argument
+expected by struct snd_pcm_ops.hw_params, which caused the compilation error.
 
->
-> Cheers, Lorenzo
+After fixing the callback signatures to match the ALSA API, the file
+builds cleanly.
+
+I will send a v2 patch with the proposed fixes.
+
+-- 
+Thanks,
+Cássio
+
 
