@@ -1,95 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-19125-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19126-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7BB9D35157
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2026 08:30:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F44FD3515E
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2026 08:55:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4flyqH0j9Fz2ySY;
-	Wed, 01 Apr 2026 19:30:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775032235;
-	cv=none; b=FWgzkCq4ZKUQ8rJ/1HsX+cf6AUy9ugYhbteRpgkaTPljLz341JM+FORbSmkDt4CMcVVHEaJWWHUTREntls8wLvoR7ntpPQHxw/GGWc73VkiRlpmwYa+O0QPRfT/LipPAbEwdhzrLhFO9H1hvYcfsv8e7Vd4DesWkQWKdD9Q3awcIlfqxFvbAXi3whWLKvTPTvzGkDUKLFwgmwopDiP12A5zOkJhPfRqWNSwqE5gXIGYfYeY7C/T2GLwzJt8xyXLL0V/MF3dGdUIJIDdOrwCkRlaa9QHDDei87WJkgk5UJGb+w67/DIE0Gt11mV6Y/GF2qNVvusdD6qruvFa3i26E0g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4flzN64LQQz2ygY;
+	Wed, 01 Apr 2026 19:55:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.217.51
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775033734;
+	cv=none; b=VgoYfFW6DL4lXos4tTfCEmH8t9THVmXKkqE9HKP4lmae4OhIlhNiQtWKEP1NvMkmrwRJ/RSo4lqZTdYYNmw4XBRj516dfm5d2XYpZdpCul5VAF80QlBSaqM+aKg5T0ybk6tFzQ/uD68b2AXT9OEyb9+ot5l3clDp8kW1qOtryy9nmt1ZFUhlD1plW+0ZUNkIbG1toBMYmihxx94/cvNmoBzHjFDJp/K6cS2s/L0rKy7LlgQWRmqTaPN2s8r9o1UxNM4y+91GV6QAXonLQZEg30wxAeTawM+RuzlADvcRIpxrJzKBkqC+cPI6VEl2uIXAd0s74kxMvC28v4op6sNMYQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775032235; c=relaxed/relaxed;
-	bh=8CnmapT0V8m+IRQyLVEPql2MsIMw0+8dAbXhsqMlKGg=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=i5ENzioAFUYo/8B6EIuuSwV8hti2a+RJHZii4ezQzaBomuS9I/s/kjCMqYIXpfWE9LNcINhzD3YA/+JLhhmMGSDJ4eXVG5PBWjJ2AmP7pQ6C1G/d6K4MnBeoy8zypYUp5vknRp6DjlKOgC3fW/irl1b0lpyYzaWP/Qi1UU2VHQQSWnHnJ10EwzU8iepBfZrH3A9wF1h+X3BJyGFTok1gSarWDXjimDA05pNKYC6Iv5flpTHYTAqBk0MrxgDwXmyTfNzYuMO3rhdVxfqHetG1KXn5ZL6rScU4nkibPlHdEprKKHeVGsteKjZjBEKk1bPGSaylPv3LFGGUbP8QkRioMQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=FCFXTxnw; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=ni27gQBz; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=dPJYVOJR; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=y9vtFWX1; dkim-atps=neutral; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=FCFXTxnw;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=ni27gQBz;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=dPJYVOJR;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=y9vtFWX1;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	t=1775033734; c=relaxed/relaxed;
+	bh=JovjSUZC1lNxdv0gpf2LIekR3ONpuaO8xMZDQYnx+qs=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=gzo/uf2zEQP04KLQyZeX5KyneV+GC8Gg6eT7U5CS4sb8SVHu7bofg/ig8MHShW+LHM3Cwdu+XC85JznlBwx1pyCCxSF63K+LoJksFfEGTYE4+0bH1NYFSMggnzUVqlzaJUQ+HpbgHhuJlvWF7jN+8PqZ3CUDhsWki2Xvvxxq1QJ2Q2Z7ngGqyM3nvmNvGd0QbLD6E1cq4Z6rHOKJvhxIbqBfw7IhE6/O7qkBNUPdFtVkzNR2PHg7zPAZXq6RiirQMaontY3+Yn8MBGLJX+W9eREBv7JNUWDN2SbiY6+GiXTocZjRE17DeCzKWmmgiLC2tlbzIjVJKLrwZiQfYBDFGw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.217.51; helo=mail-vs1-f51.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.217.51; helo=mail-vs1-f51.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-vs1-f51.google.com (mail-vs1-f51.google.com [209.85.217.51])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4flyqG0dgtz2xpk
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 19:30:34 +1100 (AEDT)
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id EAC045BD5E;
-	Wed,  1 Apr 2026 08:30:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1775032227; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=8CnmapT0V8m+IRQyLVEPql2MsIMw0+8dAbXhsqMlKGg=;
-	b=FCFXTxnwcs7KVAer+Im7ZNmgaWlMlwSbSqhZ2nbIaTiOSfZH4xQDB3pQnyXWHKR1SLHqee
-	h7CNSz5zPU6fLac1lIrU51T3LJbg7+XzjHMhDrG5gH70DGZhkvRDkTMBb8EedTqDlkf0SB
-	eMVHOVD7mvBzIMT1zh8Sa1napm09fdc=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1775032227;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=8CnmapT0V8m+IRQyLVEPql2MsIMw0+8dAbXhsqMlKGg=;
-	b=ni27gQBzjHebaov+w2Yzua09qHaqHDFtJssJLvORnmojZh6xFfS8YMvOEuhki0dv3QjQPO
-	yTLLr44PjFP+BNAg==
-Authentication-Results: smtp-out2.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1775032226; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=8CnmapT0V8m+IRQyLVEPql2MsIMw0+8dAbXhsqMlKGg=;
-	b=dPJYVOJRH5nOmy/fJMmSRAJvFU/RjB9p1fWHuwG0n884SpQftpfcFkoRJdi98d17chIuHg
-	VLXlFB3DHPIts3N+qtYfFuFpAXlPkTKaRAnMRabF2+ZlphdETAoDGmEpgUZjYeEOKA3QQi
-	GnJPGomyDVL+tMHUokEDiqzjffA+JbQ=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1775032226;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=8CnmapT0V8m+IRQyLVEPql2MsIMw0+8dAbXhsqMlKGg=;
-	b=y9vtFWX1pf1T5ArrkXwSwNTKUuAEYX8T+gEsE15QqQVq2hF7TCRQ10iaAE2+OEihwd7fUP
-	HXJOfUvHCeFoO0Dg==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id ABE764A0B0;
-	Wed,  1 Apr 2026 08:30:26 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id DAh/KKLXzGkkCQAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Wed, 01 Apr 2026 08:30:26 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	arnd@arndb.de
-Cc: linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH] arch/powerpc: Drop CONFIG_FIRMWARE_EDID from defconfig files
-Date: Wed,  1 Apr 2026 10:30:03 +0200
-Message-ID: <20260401083023.214426-1-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.53.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4flzN50L6Tz2ySY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 19:55:31 +1100 (AEDT)
+Received: by mail-vs1-f51.google.com with SMTP id ada2fe7eead31-60579b9c0ccso94173137.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 01:55:31 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775033729; x=1775638529;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=JovjSUZC1lNxdv0gpf2LIekR3ONpuaO8xMZDQYnx+qs=;
+        b=KN9ezlLYHIVnhEAJFKfO3PgtCK9HNzqpTylFh8ETNyeTgK2TJ+FBjlrp9h8+EcpL7C
+         +g9Y+xL+tAGOeEtmWxfv7BEDUQrPRR1MgcoCW0KF73RGZvnnWArskaQ49D5Tvr4niEV+
+         T2ozDmign71OmF6x7J3GhoLsKRVPvx9eiNZnM1ofF/9XP6uUQK0j4K2g04iJuXeWE0m7
+         KnJsiUv4/L+MW6pTV5hnFuF3Lll0sFWJcdPTBGclL9ZUGoW5n17hBUNcJfwt2sevpPeu
+         JaFdarY3MHopOT4zo89Xm71ioW3xkUElvVkEn9MN1sIf0fmm6z2rp+3P1uuRH6k7cJDu
+         gF/Q==
+X-Forwarded-Encrypted: i=1; AJvYcCUaOkyjg/GI4YFEYaX/Bn7kP74Nf9C79uey+XeoLJnbn/hLxzMsU6EX5Aaje00CrxtwOrxoWBlKoBq/Myw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyTF2N3skDCtng3GnMlkHVvoR8ONy1P7mVLLutPvF7vyAH9rZT6
+	qSycEbLi0SBByoQB4jXeMYikJrLkEf5Vg61O0pl9Ve8AGTpBpiRMp1RXFeCg+9aO
+X-Gm-Gg: ATEYQzyIuFteU7IDnzB5eHDAee90MUhbjVggbpOJx9DsFBKnlqss35Tmx1bMFxDoimT
+	ZyG1dLCKFkAw/wmtiNU+YF1C5brA9EQ3GfZKhUv9+dxz9rQVMDjbGQ35D4Syx2Ljnr13iJKALI8
+	/upt/ECWzZ1EUx3p/nwhXo/kj2xbS7W3ai9kWUHoh+O4hSzV9gHi5xCAOiDw+cSFF32kaR2T2gd
+	lVFbbRhgadizn2NdTtiMdbIc8Sc5KHpPd6+ECpCb5CkJPoOuUkfcDMyjqSVcG5fJm5amqa7RPy9
+	TZsJVh82jTTpCbLsOp2IECgWqsCSlIhQ5cfZ8thnoXzOtsCROvDEo6iHo7MVcgR1vEQv9SJCXg8
+	HkICfzQoKCSbbaxNurE+ospqxe6gcsM4A0GZKb36sYQB2BmoeigWQeGh9FaALfEf/mb3MrXgDFi
+	qngaDgtVqoL6CfFJJ2KTVRb7mPfw14Z5Oem+hf217RQpLvxD6oXTeR71teV74eQqia6FPnQVY=
+X-Received: by 2002:a05:6102:598b:b0:602:80fa:ee9a with SMTP id ada2fe7eead31-60567a90092mr1110821137.0.1775033728665;
+        Wed, 01 Apr 2026 01:55:28 -0700 (PDT)
+Received: from mail-ua1-f50.google.com (mail-ua1-f50.google.com. [209.85.222.50])
+        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-605129b95e2sm16171603137.2.2026.04.01.01.55.28
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 01 Apr 2026 01:55:28 -0700 (PDT)
+Received: by mail-ua1-f50.google.com with SMTP id a1e0cc1a2514c-953a8eed138so2222301241.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 01:55:28 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCX1YYB++++61d/aoyndhMfWmYWr1+gGF0oVqv3j4U6RXPjKB6YHAijXQCkn8kG/gIbrxbyZoeOwtGVscdo=@lists.ozlabs.org
+X-Received: by 2002:a05:6102:14a5:b0:5ff:d434:b507 with SMTP id
+ ada2fe7eead31-6056811633cmr1013502137.17.1775033728220; Wed, 01 Apr 2026
+ 01:55:28 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,142 +76,54 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-2.80 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	MID_CONTAINS_FROM(1.00)[];
-	R_MISSING_CHARSET(0.50)[];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	ARC_NA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	FROM_HAS_DN(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:email,imap1.dmz-prg2.suse.org:helo];
-	FROM_EQ_ENVFROM(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[8];
-	RCVD_COUNT_TWO(0.00)[2];
-	FREEMAIL_TO(0.00)[linux.ibm.com,ellerman.id.au,gmail.com,kernel.org,arndb.de];
-	RCVD_TLS_ALL(0.00)[];
-	TO_DN_SOME(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com]
+References: <20260401083242.214492-1-tzimmermann@suse.de>
+In-Reply-To: <20260401083242.214492-1-tzimmermann@suse.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 1 Apr 2026 10:55:17 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdX5B6LpZ5ffaOc0Et0PK+G=_c8yD5K8JynRwu5T8rHfsw@mail.gmail.com>
+X-Gm-Features: AQROBzAaKXfPphxAx92Ddhxtbq8urMrWt59bUWKyg2D17bALeZWDk-W7fhNxXrk
+Message-ID: <CAMuHMdX5B6LpZ5ffaOc0Et0PK+G=_c8yD5K8JynRwu5T8rHfsw@mail.gmail.com>
+Subject: Re: [PATCH] arch/sh: Drop CONFIG_FIRMWARE_EDID from defconfig files
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: ysato@users.sourceforge.jp, dalias@libc.org, glaubitz@physik.fu-berlin.de, 
+	arnd@arndb.de, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, 
+	Linux ARM <linux-arm-kernel@lists.infradead.org>, 
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-mips@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-CONFIG_FIRMWARE_EDID=y depends on X86 or EFI_GENERIC_STUB. Neither is
-true here, so drop the lines from the defconfig files.
+Hi Thomas,
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- arch/powerpc/configs/amigaone_defconfig | 1 -
- arch/powerpc/configs/chrp32_defconfig   | 1 -
- arch/powerpc/configs/g5_defconfig       | 1 -
- arch/powerpc/configs/pasemi_defconfig   | 1 -
- arch/powerpc/configs/powernv_defconfig  | 1 -
- arch/powerpc/configs/ppc64_defconfig    | 1 -
- arch/powerpc/configs/ppc64e_defconfig   | 1 -
- arch/powerpc/configs/skiroot_defconfig  | 1 -
- 8 files changed, 8 deletions(-)
+CC arm/mips/ppc, as you sent similar patches for these arches.
 
-diff --git a/arch/powerpc/configs/amigaone_defconfig b/arch/powerpc/configs/amigaone_defconfig
-index 69ef3dc31c4b..7a515390646b 100644
---- a/arch/powerpc/configs/amigaone_defconfig
-+++ b/arch/powerpc/configs/amigaone_defconfig
-@@ -76,7 +76,6 @@ CONFIG_SERIAL_8250_CONSOLE=y
- # CONFIG_HW_RANDOM is not set
- # CONFIG_HWMON is not set
- CONFIG_FB=y
--CONFIG_FIRMWARE_EDID=y
- CONFIG_FB_TILEBLITTING=y
- CONFIG_FB_RADEON=y
- CONFIG_FB_3DFX=y
-diff --git a/arch/powerpc/configs/chrp32_defconfig b/arch/powerpc/configs/chrp32_defconfig
-index b799c95480ae..66eae5b7e16c 100644
---- a/arch/powerpc/configs/chrp32_defconfig
-+++ b/arch/powerpc/configs/chrp32_defconfig
-@@ -76,7 +76,6 @@ CONFIG_SERIAL_8250_CONSOLE=y
- CONFIG_NVRAM=y
- # CONFIG_HWMON is not set
- CONFIG_FB=y
--CONFIG_FIRMWARE_EDID=y
- CONFIG_FB_OF=y
- CONFIG_FB_MATROX=y
- CONFIG_FB_MATROX_MILLENIUM=y
-diff --git a/arch/powerpc/configs/g5_defconfig b/arch/powerpc/configs/g5_defconfig
-index 428f17b45513..ed051fbc7b69 100644
---- a/arch/powerpc/configs/g5_defconfig
-+++ b/arch/powerpc/configs/g5_defconfig
-@@ -123,7 +123,6 @@ CONFIG_I2C_CHARDEV=y
- CONFIG_AGP=m
- CONFIG_AGP_UNINORTH=m
- CONFIG_FB=y
--CONFIG_FIRMWARE_EDID=y
- CONFIG_FB_TILEBLITTING=y
- CONFIG_FB_OF=y
- CONFIG_FB_NVIDIA=y
-diff --git a/arch/powerpc/configs/pasemi_defconfig b/arch/powerpc/configs/pasemi_defconfig
-index 8bbf51b38480..89bcbeb05067 100644
---- a/arch/powerpc/configs/pasemi_defconfig
-+++ b/arch/powerpc/configs/pasemi_defconfig
-@@ -98,7 +98,6 @@ CONFIG_SENSORS_LM85=y
- CONFIG_SENSORS_LM90=y
- CONFIG_DRM=y
- CONFIG_DRM_RADEON=y
--CONFIG_FIRMWARE_EDID=y
- CONFIG_FB_TILEBLITTING=y
- CONFIG_FB_VGA16=y
- CONFIG_FB_NVIDIA=y
-diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
-index 9ac746cfb4be..fea71d647375 100644
---- a/arch/powerpc/configs/powernv_defconfig
-+++ b/arch/powerpc/configs/powernv_defconfig
-@@ -198,7 +198,6 @@ CONFIG_I2C_CHARDEV=y
- # CONFIG_PTP_1588_CLOCK is not set
- CONFIG_DRM=y
- CONFIG_DRM_AST=y
--CONFIG_FIRMWARE_EDID=y
- CONFIG_FB_OF=y
- CONFIG_FB_MATROX=m
- CONFIG_FB_MATROX_MILLENIUM=y
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index 2b0720f2753b..2b358c242123 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -251,7 +251,6 @@ CONFIG_I2C_CHARDEV=y
- CONFIG_I2C_AMD8111=y
- CONFIG_I2C_PASEMI=y
- CONFIG_FB=y
--CONFIG_FIRMWARE_EDID=y
- CONFIG_FB_OF=y
- CONFIG_FB_MATROX=y
- CONFIG_FB_MATROX_MILLENIUM=y
-diff --git a/arch/powerpc/configs/ppc64e_defconfig b/arch/powerpc/configs/ppc64e_defconfig
-index 90247b2a0ab0..80606a5e6475 100644
---- a/arch/powerpc/configs/ppc64e_defconfig
-+++ b/arch/powerpc/configs/ppc64e_defconfig
-@@ -120,7 +120,6 @@ CONFIG_SERIAL_8250_CONSOLE=y
- CONFIG_I2C_CHARDEV=y
- CONFIG_I2C_AMD8111=y
- CONFIG_FB=y
--CONFIG_FIRMWARE_EDID=y
- CONFIG_FB_OF=y
- CONFIG_FB_MATROX=y
- CONFIG_FB_MATROX_MILLENIUM=y
-diff --git a/arch/powerpc/configs/skiroot_defconfig b/arch/powerpc/configs/skiroot_defconfig
-index 86c74146824a..879e57629af7 100644
---- a/arch/powerpc/configs/skiroot_defconfig
-+++ b/arch/powerpc/configs/skiroot_defconfig
-@@ -216,7 +216,6 @@ CONFIG_SENSORS_IBMPOWERNV=m
- CONFIG_DRM=m
- CONFIG_DRM_AST=m
- CONFIG_FB=y
--CONFIG_FIRMWARE_EDID=y
- # CONFIG_VGA_CONSOLE is not set
- CONFIG_FRAMEBUFFER_CONSOLE=y
- CONFIG_LOGO=y
+On Wed, 1 Apr 2026 at 10:40, Thomas Zimmermann <tzimmermann@suse.de> wrote:
+> CONFIG_FIRMWARE_EDID=y depends on X86 or EFI_GENERIC_STUB. Neither is
+> true here, so drop the lines from the defconfig files.
+>
+> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+
+Thanks for your patch!
+
+Upon first look, your changes match the (current) dependencies
+of FIRMWARE_EDID.  The dependency on X86 was added in commit
+7e35fc7ab433683f ("video: Make CONFIG_FIRMWARE_EDID generally
+available") in v6.17-rc1.
+However, CONFIG_FIRMWARE_EDID also protects fb_firmware_edid(),
+which seems to extract the EDID from the PCI ROM, and is thus not
+x86-specific?  That function is only ever called by three fbdev drivers
+(i810, nv, savagefb), though.
+
+I assume none of these work on SuperH, so
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
-2.53.0
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
 
