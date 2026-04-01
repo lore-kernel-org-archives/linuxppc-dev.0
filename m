@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-19151-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19152-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83699D2ED0A
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2026 14:06:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49400107637E
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2026 14:07:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fm6H51dbfz2yhY;
-	Thu, 02 Apr 2026 01:06:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775052401;
-	cv=none; b=amzSwhrclfjukLbpr1xxP9AY3xiJELd382yN7xtFqJ6Jw0K//XdZ7UKcDxuW3Oqzcu2p8YKjw3DgLF0hXJTB58obJLh/7OHKo99M5Ve8vGpPc9gLKys5vLFlyAbqvMRNZC2gBPnVCe7O/H2XRymj0FiTFNJgllVNo24IwGp5+tRhvR6EABbT5rOgKL1VusANG4GGrSjZ9Ppb+G2yJ9yyTudnuROxPs1ffQe8k44FC3sIXWOQM2Tf9XwPRCn1XRO6/YHFzLo6kThm8sd9VW8PRnYYRqvghjZwxiIALgVmUJWeNNakPkkfybEVe7H7ZCyTcBuVVOjdCVMZIguCsnrhZQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fm6Hc07CCz2yhZ;
+	Thu, 02 Apr 2026 01:07:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775052427;
+	cv=none; b=HGD+B5jjADhSfQyVm5ERwGDBdtClI8BthdVphsipHi6CvWqbnbWS5K0/VKlOyUlZ8MMmd2J+4b31Mh22vy/Rjg4G+7wKgJJGsxyjZ2ftT/XL+uYpIfBIRSpSyiBHNX4jBDhkqA3wh6DiBVofHMSxIbANYmaODVBWy9jvqMKKAZFA0qVTbZe2oWoIcYWyeWhoaaiVoGUpLghAPIW5UQ8R6mhN7jgZ8qSEvrc1hy2y+tJ5ZImnCfYRfL5x7pNH9lq3r8Q0k8N01LoR0EOPlrR45boU/Xtz0FyQmieFynnqA+dJ7CwZlEgJXl+4R9rc+Apb0KoALQYnWrCV42D3OfcGmw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775052401; c=relaxed/relaxed;
-	bh=G3/rH5uo+g8sJkjRkUiHeu5NNZhWP1osqYPs+dik3iU=;
+	t=1775052427; c=relaxed/relaxed;
+	bh=7Kx55uf0D7Gc53sbqvgS2TKfdci9DeXpth9CJGILJ5k=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Fkr5FrMfpL/ccZM4ZUuNyZgvDPOazvMhsigpzH8pvA2MVnoGZ3CJ9xV2IefEE1xCYG71eeC548OftmlOUN2WUjv619V+RQ+PUJeUOdQuH7I/c7NSsgEvmann6tMEfjTGzgLLvByKeAvBxJ9CB+eOG1X0UfoyrpN8sDlydPoTU9ZR9Ym+H/EGuR2IOInDiIjWc+9FypVSHEKD3fvNeJVtXgmgCte9zqNzs7FLXOZO/HL7MPV32ELRqRIxY4vy3cgcqpR4DWFoHLy4fdVYtfAl2YLERCWjxSwgON3TLtSpiInZlLznIwt9QUuJkAYigv9yN9E7WVw2rZeO3U/ymCr4Ng==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Rfcqm4bj; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=AbskVixEQ0xouuPENUarJBmS9ecGMxZRUfsA+0m23W2b94hd52d7KtcVm69aou9KYi7jRWQaKbfWhQDrVWsNXhCHiuDwUgFbOUDSj/52fUvcZibh/2OOwoTlxDtzEXICxrJTd3D33VUeDE7GQMlr+1lnmB/vC4zAWmhyg0fFFuhLnlRAKijHBcxrd2G+sxZCjzw0AA2+/Q569O6vMhwMMqemp3QAsCjmW2uGHxeD4u7kYNoB8QyLbcq8x14zO8abByR9/p4D9Y+/KTseTWYf2X10vlOLjkM+zEo5FoLJ2OVrQ0kkzUCD8CJ/trvGBLDftk/4WYmOWIDt3yHXAitTiw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=U61ulmMY; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Rfcqm4bj;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=U61ulmMY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fm6Gy1PCRz2xd6
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2026 01:06:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fm6HT16Yjz2xd6
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2026 01:07:01 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 17396600C4;
-	Wed,  1 Apr 2026 14:06:32 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 55BEFC4CEF7;
-	Wed,  1 Apr 2026 14:06:28 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id ED3BE405D5;
+	Wed,  1 Apr 2026 14:06:58 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D5E5FC4CEF7;
+	Wed,  1 Apr 2026 14:06:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775052391;
-	bh=cxVnBzqdjqFWTZAgsZ5um3GJjilJSoMxDnvtKIE779o=;
+	s=k20201202; t=1775052418;
+	bh=GCQU01a5ZNsuOCEJYuG5sSvpFncIhytdteUSQSLtuig=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=Rfcqm4bj/SYJzxPuxmgocTdUVdfpmEg/yKOuHcPtzZVp2bMAq8xAF5bgIXDyM2MHm
-	 7KBDBReICSpNTUhShYwpQWkVaoZJAVBKMsQe4MwT88U6rXFBygwZUu1iCVG2/tOVPe
-	 jPA54OIonFN9Q+YD06EL+0yejAZC8e7BzbHMQb6HEookQ799RrNNgJOesXHEzMG2qI
-	 RUTkU+e3CQMJABxd9HoKhURbhVLlyBY4P7m742XTuPI+E3Vr6/1RAzOEomVvf1KiMr
-	 HIwpalNO03k+QDegeJsYIm9l9SdaopRMNM1Ry1J8iF9v+MO7PTIutWe5orWFpeFkIL
-	 3+TAiAhoeGJDw==
-Message-ID: <30ab15c5-56c3-4855-914f-74ece8ac5ec5@kernel.org>
-Date: Wed, 1 Apr 2026 16:06:26 +0200
+	b=U61ulmMYXO/Yxw0dI+GfTeGBv3vu/sR2an67Crxc3iRUCR8cQLH+y1P0zuQot2jbJ
+	 71RWDV9K+xygQo5j2djepYA2QGko7NLMwLUaCOiBzpbJKOdz9tcaZdq75lQO1/BRqo
+	 tsuVxCIwA748CsNNZZPWkZqi/Zxs88VP5BABlslc+UpF5wbqSDH4adQNPfNPgUyqCi
+	 2dUVJH8d4shCVNmVeGYRDOYtAQudo+Z5b4EBMzedTMoTphcqByUw7S/O1JUpMAbG19
+	 OpsW9K4XJBhdosrhTJCKhB6bA15+agZ/07fGKRvbkVDAFqux4pahx7Uk7MXV8/J0Hm
+	 N2x+Lo1QPCj4A==
+Message-ID: <fcead016-04a2-46f7-b667-c8feeaec9a13@kernel.org>
+Date: Wed, 1 Apr 2026 16:06:52 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,8 +60,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 02/13] selftests/mm: fix hugetlb pathname construction
- in charge_reserved_hugetlb.sh
+Subject: Re: [PATCH v3 03/13] selftests/mm: fix hugetlb pathname construction
+ in hugetlb_reparenting_test.sh
 To: Sayali Patil <sayalip@linux.ibm.com>,
  Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
  linux-mm@kvack.org, linux-kernel@vger.kernel.org,
@@ -72,7 +72,7 @@ Cc: Zi Yan <ziy@nvidia.com>, Michal Hocko <mhocko@kernel.org>,
  Liam.Howlett@oracle.com, linuxppc-dev@lists.ozlabs.org,
  Venkat Rao Bagalkote <venkat88@linux.ibm.com>
 References: <cover.1774591179.git.sayalip@linux.ibm.com>
- <705e68507c9a0d20de835d53dd332eeda7dee772.1774591179.git.sayalip@linux.ibm.com>
+ <05459b5038595a3a673507e707402839cdcc2955.1774591179.git.sayalip@linux.ibm.com>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -119,30 +119,28 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <705e68507c9a0d20de835d53dd332eeda7dee772.1774591179.git.sayalip@linux.ibm.com>
+In-Reply-To: <05459b5038595a3a673507e707402839cdcc2955.1774591179.git.sayalip@linux.ibm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 3/27/26 08:15, Sayali Patil wrote:
-> The charge_reserved_hugetlb.sh script assumes hugetlb cgroup memory
-> interface file names use the "<size>MB" format
-> (e.g. hugetlb.1024MB.current).
-> This assumption breaks on systems with larger huge pages such as 1GB,
-> where the kernel exposes normalized units:
->     hugetlb.1GB.current
->     hugetlb.1GB.max
->     hugetlb.1GB.rsvd.max
->     ...
+> The hugetlb_reparenting_test.sh script constructs hugetlb cgroup
+> memory interface file names based on the configured huge page size. The
+> script formats the size only in MB units, which causes mismatches on
+> systems using larger huge pages where the kernel exposes normalized
+> units (e.g. "1GB" instead of "1024MB").
 > 
-> As a result, the script attempts to access files like
-> hugetlb.1024MB.current, which do not exist when the kernel reports the
-> size in GB.
+> As a result, the test fails to locate the corresponding cgroup files
+> when 1GB huge pages are configured.
 > 
-> Normalize the huge page size and construct the pathname using the
-> appropriate unit (MB or GB), matching the hugetlb controller naming.
+> Update the script to detect the huge page size and select the
+> appropriate unit (MB or GB) so that the constructed paths match the
+> kernel's hugetlb controller naming.
 > 
-> Fixes: 209376ed2a84 ("selftests/vm: make charge_reserved_hugetlb.sh work with existing cgroup setting")
-> Fixes: 29750f71a9b4 ("hugetlb_cgroup: add hugetlb_cgroup reservation tests")
+> Also print an explicit "Fail" message when a test failure occurs to
+> improve result visibility.
+> 
+> Fixes: e487a5d513cb ("selftest/mm: make hugetlb_reparenting_test tolerant to async reparenting")
 > Reviewed-by: Zi Yan <ziy@nvidia.com>
 > Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
 > Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
