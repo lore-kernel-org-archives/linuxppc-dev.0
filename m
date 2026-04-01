@@ -1,74 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-19172-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19173-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 273A210F6FBF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2026 16:20:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B383B10F6FDC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2026 17:15:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fm9FN5rNTz2yhY;
-	Thu, 02 Apr 2026 03:20:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775060424;
-	cv=none; b=LuFkTCQLS6blucapDz2VCEvxeteHv+sefsTZm1zJLe8Lq+LSvUI7O3ysvejA6CGbK5SlGEokpxld9tgLwSWXNrm8Cdp5A8cn3OIneTRZSiR5LDAInfpZnpGrg52ui5FSpUHyrO5mYUQ+7J8eV8MhTjmE8uH/AiaUBeB+Q/nW0cLcQHk1fRk4ZRVvyHnRRN7pbLurDyXn/j6uv0f5ks+P83VCF22yGC/m2ZkflBHZBIv+UoT1csrDNCWOXDfGb5t38qqvjxvkva8l8HjtiWVTJq68R6DWl16HHksDqsT6R13sZn1hjko6Ffu2XwdP2PqUTFlyWHZrjUa+J9WFmcpJIQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fmBTT0HRBz2yjV;
+	Thu, 02 Apr 2026 04:15:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.121.94.186
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775063756;
+	cv=none; b=Lo8hZRPiK5Y0UjEoznskj0m1q0Yk6eHWccN5drF0TvCZsz9aYakRkl63NHMawDz1OEUJMAutCP/2PcdoPNgSVK9YmybBrBKiKf9VuXaviI4OBc5Q1roc8iWtKa8+Ri6z/qd5I+2nVOLAnfDFVgsfBiJ1/MCGqyujdCfzsoYIYMKDwWqGNjfRFqG6O9egGKIQAvEHhoFJbhhD3wHTrhmbTcG1Ibrew3sQYr26JCg/wnIT6xlyCc9mB0KXXqvCf5+wZw40sPA4xicJ6q51Y2Xc7DxIfaK93a5fXrjd6enKb2snpuDm8b60K7qcW8x5MLFnHQR9Lajv3H/+Pzxg+UNYVA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775060424; c=relaxed/relaxed;
-	bh=rwcseRkZvSpJaBHvc4m1vR1SSI585GgXp6GEMFc3uMI=;
-	h=Content-Type:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To; b=BTADKzt/qGVL11g1Yp1/e/mqBirsIctCUh09EbtWf9h6w28/68lJ0A0R5XO8iuov3RmeJd5s3Mrsve0VGmA1UinB3S3Z19rEfJBr0BfmbJTTNWLlURygOjDv+3NqTKtcfZawB+Umt5QLhwl43XUxYhvosrhxP8JaKHPbBL8YNB4ouRlpO4fLT082imH357SW4Um56VgoioP7TYntt8pwpElHhDM9p0zLImowuJo120FLwsC+uIYOf5g1MRGK3fIqk8qDy3Ci502h5G1996/vDg5Htuu2zIOFdSVaD6hTLUYoPEJbP3FsSGZeLFruY2fX3BIjl/v6RU6SmFz7R71XIg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rMNwA2eg; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1775063756; c=relaxed/relaxed;
+	bh=n9US1j1IVCS91e5Cl5sIb3Rl2HF6TolH+vsF4IESVi8=;
+	h=Date:From:To:Cc:Message-ID:In-Reply-To:References:Subject:
+	 MIME-Version:Content-Type; b=KX+tAUZmw+he8JyHfATUJYCFIMs+7tf7aB1lSUFN862zditlOThybqYU7tIto4aMej3jItdXQNfh0KHDeZwbBR4hPi4K3clu+FnM1S/JyGV7CBCEq02tPKpwtKoxhUdSWwdYTu4Pjh+9aK9Vc/0WwROPgjRuXJs4hAEHpPDHuoxzJX7yyf3Lgzd57vVeKQTvJq2OBX5Mp2yx276iUDB2Fs2yGtdq2Dou9fnmc3WfAayCAMW0u2VcXS0EPwzJ8mB8BNMmBY80a5Lqg5HuCUbzCKYw+tRgYxoX952j6LLCBbUFZPt8eUxM3fKY6K5MhgoZeSld0OZBiMSx1Amfp0j7eg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xs4all.nl; dkim=pass (2048-bit key; secure) header.d=xs4all.nl header.i=@xs4all.nl header.a=rsa-sha256 header.s=xs4all01 header.b=XylVLZKM; dkim-atps=neutral; spf=pass (client-ip=195.121.94.186; helo=ewsoutbound.kpnmail.nl; envelope-from=jkoolstra@xs4all.nl; receiver=lists.ozlabs.org) smtp.mailfrom=xs4all.nl
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xs4all.nl
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rMNwA2eg;
+	dkim=pass (2048-bit key; secure) header.d=xs4all.nl header.i=@xs4all.nl header.a=rsa-sha256 header.s=xs4all01 header.b=XylVLZKM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=xs4all.nl (client-ip=195.121.94.186; helo=ewsoutbound.kpnmail.nl; envelope-from=jkoolstra@xs4all.nl; receiver=lists.ozlabs.org)
+Received: from ewsoutbound.kpnmail.nl (ewsoutbound.kpnmail.nl [195.121.94.186])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fm9FM5MWkz2yVM
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2026 03:20:23 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 631CXfQo169440;
-	Wed, 1 Apr 2026 16:20:11 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=rwcseRkZvSpJaBHvc4m1vR1SSI585G
-	gXp6GEMFc3uMI=; b=rMNwA2egnvxMa1g8omsIRfJxfHQkKHgPykpFUz8P0vgwes
-	2/hgUbx1z025YXRSmepQAfKvb86YVNRZNTgbdkzad3Gt8n1wRx8w8P2BYaVTYDY/
-	idcV6JTfPwJt8sUM82DgSaQLYJg7z6ry6/GcKDcmaUxX3uwmoYjSX1dJanEs0WZ+
-	4n4MuJaSrNg6JhfT6HwEXOWFEFRevrST1WjqzSRNLRcSt5yg3T5GEbzdg2w/AS3e
-	guKUttFNSDXGSpOG2iC7Ew+yDWNF0eWt0epXlpyALKGriltDiwHXmk4iYhseDua3
-	jCvf4t7YenOaz/dMwS6TnNlvtJQqM0xkmSeJoXOg==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d66q391tc-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 01 Apr 2026 16:20:11 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 631Coo8T008751;
-	Wed, 1 Apr 2026 16:20:10 GMT
-Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4d6v11p5d3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 01 Apr 2026 16:20:10 +0000
-Received: from smtpav04.wdc07v.mail.ibm.com (smtpav04.wdc07v.mail.ibm.com [10.39.53.231])
-	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 631GK9wd24838838
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 1 Apr 2026 16:20:09 GMT
-Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5428F58050;
-	Wed,  1 Apr 2026 16:20:09 +0000 (GMT)
-Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CB72558056;
-	Wed,  1 Apr 2026 16:20:03 +0000 (GMT)
-Received: from [9.39.18.42] (unknown [9.39.18.42])
-	by smtpav04.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  1 Apr 2026 16:20:03 +0000 (GMT)
-Content-Type: multipart/alternative;
- boundary="------------EQ30VdHhb33YDv00OO9Y9p4A"
-Message-ID: <0dab0668-3b26-4de4-9732-e175f71fab7f@linux.ibm.com>
-Date: Wed, 1 Apr 2026 21:50:02 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fmBTP5XYhz2yj3
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2026 04:15:51 +1100 (AEDT)
+X-KPN-MessageId: 366165f0-2dee-11f1-89dd-00505699b430
+Received: from mta.kpnmail.nl (unknown [10.31.161.189])
+	by ewsoutbound.so.kpn.org (Halon) with ESMTPS
+	id 366165f0-2dee-11f1-89dd-00505699b430;
+	Wed, 01 Apr 2026 19:14:16 +0200 (CEST)
+Received: from mtaoutbound.kpnmail.nl (unknown [10.128.135.189])
+	by mta.kpnmail.nl (Halon) with ESMTP
+	id 365f816b-2dee-11f1-b5d0-0050569981f5;
+	Wed, 01 Apr 2026 19:14:16 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=xs4all.nl; s=xs4all01;
+	h=content-type:mime-version:subject:message-id:to:from:date;
+	bh=n9US1j1IVCS91e5Cl5sIb3Rl2HF6TolH+vsF4IESVi8=;
+	b=XylVLZKMIPnLfWB2TQL/3KZFqNmoB8DxK1kZkBquxMh1gVmu8pPg0RoOq7nuc2L9k5V7zIwI85T9b
+	 yG4O5NtzFu78xbNiJ88FDj5d77cXLjzVeEb3ZJmXQpb2n4B85GqkOsHWmgAsxeK2jH6n1rMdIFdm/X
+	 idarjagbgWDkezbQ4WUW7Hlx9na+LGVuY4tPurZUqzbyuAe0Z9eJgQTqpcjH6nXfO7ieRpYiZlZEjw
+	 wgoO4tKKU0av9EofhxXOeuXzPTrqctUoLSM+djdgnpvOENX1vj2Gt/F18XbKmj32JK2/M/pg5uitIR
+	 pVfKms0Ea/+YCFlS1t9BncHD385V5Kg==
+X-KPN-MID: 33|AIPn+MI72JeaeDkiPm/RP48qArZ3z1MY4GnBmfAp1JtN5dwVmsrRzoY0WZo+z5j
+ yWNPtvknkYXBq6MZphO9Pl6YYcsjKT/7WdTNstd3+UFY=
+X-CMASSUN: 33|nynSNPkNZAQIr0GpcmfjY1RjB+vhQ7WInhGboLItIIImqVWytKfRF4ka1TFJF83
+ cJyFbJuYZ+9HXlDj26QR5Zw==
+X-KPN-VerifiedSender: Yes
+Received: from cpxoxapps-mh04 (cpxoxapps-mh04.personalcloud.so.kpn.org [10.128.135.210])
+	by mtaoutbound.kpnmail.nl (Halon) with ESMTPSA
+	id 3653098c-2dee-11f1-94b1-00505699eff2;
+	Wed, 01 Apr 2026 19:14:16 +0200 (CEST)
+Date: Wed, 1 Apr 2026 19:14:16 +0200 (CEST)
+From: Jori Koolstra <jkoolstra@xs4all.nl>
+To: Haren Myneni <haren@linux.ibm.com>, Greg KH <gregkh@linuxfoundation.org>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Srikar Dronamraju <srikar@linux.ibm.com>,
+	Jonathan Greental <yonatan02greental@gmail.com>,
+	Kees Cook <kees@kernel.org>, Shrikanth Hegde <sshegde@linux.ibm.com>,
+	"open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
+Message-ID: <1967941740.854847.1775063656203@kpc.webmail.kpnmail.nl>
+In-Reply-To: <b0a99a20f5f56ad8291d91b209d8ad5f7515bb23.camel@linux.ibm.com>
+References: <20260308214634.1215051-1-jkoolstra@xs4all.nl>
+ <2026030924-penniless-hermit-ffc0@gregkh>
+ <1304966204.915283.1773053337271@kpc.webmail.kpnmail.nl>
+ <2026031154-labored-frivolous-154b@gregkh>
+ <b0a99a20f5f56ad8291d91b209d8ad5f7515bb23.camel@linux.ibm.com>
+Subject: Re: [PATCH v2] powerpc: vas-api: constify dynamic struct class in
+ coproc api register
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,347 +90,117 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 05/13] selftests/mm: size tmpfs according to PMD page
- size in split_huge_page_test
-To: Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
-        linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-        linux-kselftest@vger.kernel.org,
-        Ritesh Harjani <ritesh.list@gmail.com>
-Cc: David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>,
-        Michal Hocko <mhocko@kernel.org>, Oscar Salvador <osalvador@suse.de>,
-        Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-        Dev Jain <dev.jain@arm.com>, Liam.Howlett@oracle.com,
-        linuxppc-dev@lists.ozlabs.org,
-        Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-References: <cover.1774591179.git.sayalip@linux.ibm.com>
- <2fd965ce641d32a759984943a427fde47d7c3b13.1774591179.git.sayalip@linux.ibm.com>
-Content-Language: en-IN
-From: Sayali Patil <sayalip@linux.ibm.com>
-In-Reply-To: <2fd965ce641d32a759984943a427fde47d7c3b13.1774591179.git.sayalip@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: JQpxQovDFN9rx__MD5rBpPgLteUK8VHE
-X-Authority-Analysis: v=2.4 cv=frzRpV4f c=1 sm=1 tr=0 ts=69cd45bb cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=U7nrCbtTmkRpXpFmAIza:22 a=r77TgQKjGQsHNAKrUKIA:9 a=Ikd4Dj_1AAAA:8
- a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=9xpQgMCZT6CDAktlhO4A:9 a=QEXdDO2ut3YA:10
- a=oNkvB1tdlSU9MeNmM38A:9 a=376m0CbwF7od3y55:21 a=frz4AuCg-hUA:10
- a=_W_S_7VecoQA:10 a=lqcHg5cX4UMA:10 a=3ZKOabzyN94A:10
-X-Proofpoint-ORIG-GUID: sQt1gMsI0qe_Tdtfpkj_U1j8UMfg3AXd
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDAxMDE1MiBTYWx0ZWRfX/DqgAJyPRr2a
- 9TOuARmgHB3+e+hbJ2hfZcin4dNysJOW+pLKZDDcloDad6SEjFqVagxmWWDizNWPrY38h1npu5a
- yQCp52XGi2TNCnXY7RWIDOiO68pP/LzrqupsqXFbjgZzlRERM+9oGlP5GjC37IaO7YrH1Az4gAe
- oL3v20znF2xGcyvumfUvTJdEnYUx9bQY+us966wK/t2oREi9KIXRtDI7MLi2f54JAGQoKw2n6Yo
- AKO3bZKapAIOFSKOf0b4xPOw3e3Z0+oWZaIQuCgkBW1prRX1Gw0JT4S/PVufv2iUF8L6WB/ogrB
- aL76dVSBiU206G1iKlKiHDcClCR/9cS7Xjk3iZdlTA8fgcEcZqPP1WxpfucphON2FE3o+dFEb2A
- lS0nKxZdBaZ3Xs8rt5za3lxhSW9LtfsBo72xQd2EKz4ucA9/53KJmudfYeI8tmrQajfzP1CwleH
- EAn1REeIK+ra0aizFpQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-01_04,2026-04-01_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 spamscore=0 priorityscore=1501 malwarescore=0 clxscore=1015
- lowpriorityscore=0 bulkscore=0 adultscore=0 suspectscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2604010152
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Priority: 3
+Importance: Normal
+X-Originating-IP: 178.227.141.37
 
-This is a multi-part message in MIME format.
---------------EQ30VdHhb33YDv00OO9Y9p4A
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi Haren,
 
+> Op 12-03-2026 00:27 CET schreef Haren Myneni <haren@linux.ibm.com>:
+>=20
+> =20
+> On Wed, 2026-03-11 at 09:23 +0100, Greg KH wrote:
+> > On Mon, Mar 09, 2026 at 11:48:57AM +0100, Jori Koolstra wrote:
+> > > My bad, the earlier email went out to soon.
+> > >=20
+> > > > Op 09-03-2026 07:01 CET schreef Greg KH
+> > > > <gregkh@linuxfoundation.org>:
+> > > > > =C2=A0arch/powerpc/platforms/book3s/vas-api.c | 34
+> > > > > +++++++++++++++++++------
+> > > > > =C2=A01 file changed, 26 insertions(+), 8 deletions(-)
+> > > > >=20
+> > > > > diff --git a/arch/powerpc/platforms/book3s/vas-api.c
+> > > > > b/arch/powerpc/platforms/book3s/vas-api.c
+> > > > > index ea4ffa63f043..e377981fd533 100644
+> > > > > --- a/arch/powerpc/platforms/book3s/vas-api.c
+> > > > > +++ b/arch/powerpc/platforms/book3s/vas-api.c
+> > > > > @@ -45,7 +45,7 @@ static struct coproc_dev {
+> > > > > =C2=A0=09struct device *device;
+> > > > > =C2=A0=09char *name;
+> > > > > =C2=A0=09dev_t devt;
+> > > > > -=09struct class *class;
+> > > > > +=09const struct class *class;
+> > > > > =C2=A0=09enum vas_cop_type cop_type;
+> > > > > =C2=A0=09const struct vas_user_win_ops *vops;
+> > > > > =C2=A0} coproc_device;
+> > > > > @@ -599,6 +599,21 @@ static struct file_operations coproc_fops
+> > > > > =3D {
+> > > > > =C2=A0=09.unlocked_ioctl =3D coproc_ioctl,
+> > > > > =C2=A0};
+> > > > > =C2=A0
+> > > > > +static const struct class nx_gzip_class =3D {
+> > > > > +=09.name=09=09=3D "nx-gzip",
+> > > > > +=09.devnode=09=3D coproc_devnode
+> > > > > +};
+> > > > > +
+> > > > > +static const struct class* cop_to_class(enum vas_cop_type cop)
+> > > > > +{
+> > > > > +=09switch (cop) {
+> > > > > +=09case VAS_COP_TYPE_GZIP:=09=09return
+> > > > > &nx_gzip_class;
+> > > > > +=09default:
+> > > > > +=09=09pr_err("No device class defined for cop type
+> > > > > %d\n", cop);
+> > > > > +=09=09return NULL;
+> > > > > +=09}
+> > > > > +}
+> > > > > +
+> > > > > =C2=A0/*
+> > > > > =C2=A0 * Supporting only nx-gzip coprocessor type now, but this A=
+PI
+> > > > > code
+> > > > > =C2=A0 * extended to other coprocessor types later.
+> > > > > @@ -609,6 +624,10 @@ int vas_register_coproc_api(struct module
+> > > > > *mod, enum vas_cop_type cop_type,
+> > > > > =C2=A0{
+> > > > > =C2=A0=09int rc =3D -EINVAL;
+> > > > > =C2=A0=09dev_t devno;
+> > > > > +=09const struct class* class =3D cop_to_class(cop_type);
+> > > > > +
+> > > > > +=09if (!class)
+> > > > > +=09=09return rc;
+> > > >=20
+> > > > How can this happen?
+> > > >=20
+> > > > This feels odd, are different types of devices being registered
+> > > > here?=C2=A0 I
+> > > > don't see where VAS_COP_TYPE_GZIP was being tested in the
+> > > > original code,
+> > > > why add this additional logic?
+> > > >=20
+> > >=20
+> > > My line of thought is this:
+> > >=20
+> > > There is a function vas_register_coproc_api() that does some kind
+> > > of registering
+> > > for different coprocessor types. It has the following comment
+> > > above:
+> > >=20
+> > > /*
+> > > =C2=A0* Supporting only nx-gzip coprocessor type now, but this API co=
+de
+> > > =C2=A0* extended to other coprocessor types later.
+> > > =C2=A0*/
+> >=20
+> > I guess "later" never happened :(
+>=20
+> Yes, VAS is virtual accelerator switchboard which can support multiple
+> accelerator types. Hence added vas_register_api* interface for
+> different accelerators.=C2=A0But no plans to add other accelerators on
+> powerpc right now. So can we use only VAS_COP_TYPE_GZIP class and can
+> visit later.=20
+>=20
 
-On 27/03/26 12:45, Sayali Patil wrote:
-> The split_file_backed_thp() test mounts a tmpfs with a fixed size of
-> "4m". This works on systems with smaller PMD page sizes,
-> but fails on configurations where the PMD huge page size is
-> larger (e.g. 16MB).
->
-> On such systems, the fixed 4MB tmpfs is insufficient to allocate even
-> a single PMD-sized THP, causing the test to fail.
->
-> Fix this by sizing the tmpfs dynamically based on the runtime
-> pmd_pagesize, allocating space for two PMD-sized pages.
->
-> Before patch:
->    running ./split_huge_page_test /tmp/xfs_dir_YTrI5E
->    --------------------------------------------------
->    TAP version 13
->    1..55
->    ok 1 Split zero filled huge pages successful
->    ok 2 Split huge pages to order 0 successful
->    ok 3 Split huge pages to order 2 successful
->    ok 4 Split huge pages to order 3 successful
->    ok 5 Split huge pages to order 4 successful
->    ok 6 Split huge pages to order 5 successful
->    ok 7 Split huge pages to order 6 successful
->    ok 8 Split huge pages to order 7 successful
->    ok 9 Split PTE-mapped huge pages successful
->     Please enable pr_debug in split_huge_pages_in_file() for more info.
->     Failed to write data to testing file: Success (0)
->    Bail out! Error occurred
->     Planned tests != run tests (55 != 9)
->     Totals: pass:9 fail:0 xfail:0 xpass:0 skip:0 error:0
->   [FAIL]
->
-> After patch:
->    --------------------------------------------------
->    running ./split_huge_page_test /tmp/xfs_dir_bMvj6o
->    --------------------------------------------------
->    TAP version 13
->    1..55
->    ok 1 Split zero filled huge pages successful
->    ok 2 Split huge pages to order 0 successful
->    ok 3 Split huge pages to order 2 successful
->    ok 4 Split huge pages to order 3 successful
->    ok 5 Split huge pages to order 4 successful
->    ok 6 Split huge pages to order 5 successful
->    ok 7 Split huge pages to order 6 successful
->    ok 8 Split huge pages to order 7 successful
->    ok 9 Split PTE-mapped huge pages successful
->     Please enable pr_debug in split_huge_pages_in_file() for more info.
->     Please check dmesg for more information
->    ok 10 File-backed THP split to order 0 test done
->     Please enable pr_debug in split_huge_pages_in_file() for more info.
->     Please check dmesg for more information
->    ok 11 File-backed THP split to order 1 test done
->     Please enable pr_debug in split_huge_pages_in_file() for more info.
->     Please check dmesg for more information
->    ok 12 File-backed THP split to order 2 test done
-> ...
->    ok 55 Split PMD-mapped pagecache folio to order 7 at
->      in-folio offset 128 passed
->     Totals: pass:55 fail:0 xfail:0 xpass:0 skip:0 error:0
->     [PASS]
-> ok 1 split_huge_page_test /tmp/xfs_dir_bMvj6o
->
-> Fixes: fbe37501b252 ("mm: huge_memory: debugfs for file-backed THP split")
-> Reviewed-by: Zi Yan<ziy@nvidia.com>
-> Reviewed-by: David Hildenbrand (Arm)<david@kernel.org>
-> Tested-by: Venkat Rao Bagalkote<venkat88@linux.ibm.com>
-> Signed-off-by: Sayali Patil<sayalip@linux.ibm.com>
-> ---
->   tools/testing/selftests/mm/split_huge_page_test.c | 5 ++++-
->   1 file changed, 4 insertions(+), 1 deletion(-)
->
-> diff --git a/tools/testing/selftests/mm/split_huge_page_test.c b/tools/testing/selftests/mm/split_huge_page_test.c
-> index e0167111bdd1..57e8a1c9647a 100644
-> --- a/tools/testing/selftests/mm/split_huge_page_test.c
-> +++ b/tools/testing/selftests/mm/split_huge_page_test.c
-> @@ -484,6 +484,8 @@ static void split_file_backed_thp(int order)
->   	char tmpfs_template[] = "/tmp/thp_split_XXXXXX";
->   	const char *tmpfs_loc = mkdtemp(tmpfs_template);
->   	char testfile[INPUT_MAX];
-> +	unsigned long size = 2 * pmd_pagesize;
-> +	char opts[64];
->   	ssize_t num_written, num_read;
->   	char *file_buf1, *file_buf2;
->   	uint64_t pgoff_start = 0, pgoff_end = 1024;
-> @@ -503,7 +505,8 @@ static void split_file_backed_thp(int order)
->   		file_buf1[i] = (char)i;
->   	memset(file_buf2, 0, pmd_pagesize);
->   
-> -	status = mount("tmpfs", tmpfs_loc, "tmpfs", 0, "huge=always,size=4m");
-> +	snprintf(opts, sizeof(opts), "huge=always,size=%lu", size);
-> +	status = mount("tmpfs", tmpfs_loc, "tmpfs", 0, opts);
->   
->   	if (status)
->   		ksft_exit_fail_msg("Unable to create a tmpfs for testing\n");
-AI review question:
-> Are file_buf1 and file_buf2 being leaked here?
-> While reviewing the patch's changes to support larger PMD sizes, I noticed
-> that earlier in this function file_buf1 and file_buf2 are dynamically
-> allocated using pmd_pagesize:
->      file_buf1 = (char *)malloc(pmd_pagesize);
->      file_buf2 = (char *)malloc(pmd_pagesize);
-> Looking at the end of the function, the success path returns without freeing
-> either buffer:
->      ksft_print_msg("Please check dmesg for more information\n");
->      ksft_test_result_pass("File-backed THP split to order %d test done\n", order);
->      return;
-> Since this function is called in a loop for each split order, could this
-> cause a significant memory leak? On architectures with large PMD sizes
-> (like arm64 with 64KB base pages, where the PMD size is 512MB), leaking
-> these buffers repeatedly could exhaust system memory and trigger the OOM
-> killer during the test run.
->
-Yes, both file_buf1 and file_buf2 are leaked on the success path and
-some failure paths.
-Since this function is invoked in a loop for each split order, the leak 
-accumulates over time.
-On systems with large PMD sizes, this can potentially trigger OOM during 
-the test run.
+Are you OK with the way
 
-This was likely not noticeable earlier with smaller PMD sizes, but 
-becomes significant
-with larger configurations.
-This appears to be a pre-existing issue and not introduced by my patch.
-I will prepare a separate fix to free both buffers on all exit paths to
-prevent this memory leak.
+   static const struct class* cop_to_class(enum vas_cop_type cop)
+
+is used to connect the vas_cop_type to the proper device class? Or would yo=
+u
+prefer a different solution?
 
 Thanks,
-Sayali
---------------EQ30VdHhb33YDv00OO9Y9p4A
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  </head>
-  <body>
-    <p><br>
-    </p>
-    <div class="moz-cite-prefix">On 27/03/26 12:45, Sayali Patil wrote:<br>
-    </div>
-    <blockquote type="cite"
-cite="mid:2fd965ce641d32a759984943a427fde47d7c3b13.1774591179.git.sayalip@linux.ibm.com">
-      <pre wrap="" class="moz-quote-pre">The split_file_backed_thp() test mounts a tmpfs with a fixed size of
-"4m". This works on systems with smaller PMD page sizes,
-but fails on configurations where the PMD huge page size is
-larger (e.g. 16MB).
-
-On such systems, the fixed 4MB tmpfs is insufficient to allocate even
-a single PMD-sized THP, causing the test to fail.
-
-Fix this by sizing the tmpfs dynamically based on the runtime
-pmd_pagesize, allocating space for two PMD-sized pages.
-
-Before patch:
-  running ./split_huge_page_test /tmp/xfs_dir_YTrI5E
-  --------------------------------------------------
-  TAP version 13
-  1..55
-  ok 1 Split zero filled huge pages successful
-  ok 2 Split huge pages to order 0 successful
-  ok 3 Split huge pages to order 2 successful
-  ok 4 Split huge pages to order 3 successful
-  ok 5 Split huge pages to order 4 successful
-  ok 6 Split huge pages to order 5 successful
-  ok 7 Split huge pages to order 6 successful
-  ok 8 Split huge pages to order 7 successful
-  ok 9 Split PTE-mapped huge pages successful
-   Please enable pr_debug in split_huge_pages_in_file() for more info.
-   Failed to write data to testing file: Success (0)
-  Bail out! Error occurred
-   Planned tests != run tests (55 != 9)
-   Totals: pass:9 fail:0 xfail:0 xpass:0 skip:0 error:0
- [FAIL]
-
-After patch:
-  --------------------------------------------------
-  running ./split_huge_page_test /tmp/xfs_dir_bMvj6o
-  --------------------------------------------------
-  TAP version 13
-  1..55
-  ok 1 Split zero filled huge pages successful
-  ok 2 Split huge pages to order 0 successful
-  ok 3 Split huge pages to order 2 successful
-  ok 4 Split huge pages to order 3 successful
-  ok 5 Split huge pages to order 4 successful
-  ok 6 Split huge pages to order 5 successful
-  ok 7 Split huge pages to order 6 successful
-  ok 8 Split huge pages to order 7 successful
-  ok 9 Split PTE-mapped huge pages successful
-   Please enable pr_debug in split_huge_pages_in_file() for more info.
-   Please check dmesg for more information
-  ok 10 File-backed THP split to order 0 test done
-   Please enable pr_debug in split_huge_pages_in_file() for more info.
-   Please check dmesg for more information
-  ok 11 File-backed THP split to order 1 test done
-   Please enable pr_debug in split_huge_pages_in_file() for more info.
-   Please check dmesg for more information
-  ok 12 File-backed THP split to order 2 test done
-...
-  ok 55 Split PMD-mapped pagecache folio to order 7 at
-    in-folio offset 128 passed
-   Totals: pass:55 fail:0 xfail:0 xpass:0 skip:0 error:0
-   [PASS]
-ok 1 split_huge_page_test /tmp/xfs_dir_bMvj6o
-
-Fixes: fbe37501b252 ("mm: huge_memory: debugfs for file-backed THP split")
-Reviewed-by: Zi Yan <a class="moz-txt-link-rfc2396E" href="mailto:ziy@nvidia.com">&lt;ziy@nvidia.com&gt;</a>
-Reviewed-by: David Hildenbrand (Arm) <a class="moz-txt-link-rfc2396E" href="mailto:david@kernel.org">&lt;david@kernel.org&gt;</a>
-Tested-by: Venkat Rao Bagalkote <a class="moz-txt-link-rfc2396E" href="mailto:venkat88@linux.ibm.com">&lt;venkat88@linux.ibm.com&gt;</a>
-Signed-off-by: Sayali Patil <a class="moz-txt-link-rfc2396E" href="mailto:sayalip@linux.ibm.com">&lt;sayalip@linux.ibm.com&gt;</a>
----
- tools/testing/selftests/mm/split_huge_page_test.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/tools/testing/selftests/mm/split_huge_page_test.c b/tools/testing/selftests/mm/split_huge_page_test.c
-index e0167111bdd1..57e8a1c9647a 100644
---- a/tools/testing/selftests/mm/split_huge_page_test.c
-+++ b/tools/testing/selftests/mm/split_huge_page_test.c
-@@ -484,6 +484,8 @@ static void split_file_backed_thp(int order)
- 	char tmpfs_template[] = "/tmp/thp_split_XXXXXX";
- 	const char *tmpfs_loc = mkdtemp(tmpfs_template);
- 	char testfile[INPUT_MAX];
-+	unsigned long size = 2 * pmd_pagesize;
-+	char opts[64];
- 	ssize_t num_written, num_read;
- 	char *file_buf1, *file_buf2;
- 	uint64_t pgoff_start = 0, pgoff_end = 1024;
-@@ -503,7 +505,8 @@ static void split_file_backed_thp(int order)
- 		file_buf1[i] = (char)i;
- 	memset(file_buf2, 0, pmd_pagesize);
- 
--	status = mount("tmpfs", tmpfs_loc, "tmpfs", 0, "huge=always,size=4m");
-+	snprintf(opts, sizeof(opts), "huge=always,size=%lu", size);
-+	status = mount("tmpfs", tmpfs_loc, "tmpfs", 0, opts);
- 
- 	if (status)
- 		ksft_exit_fail_msg("Unable to create a tmpfs for testing\n");</pre>
-    </blockquote>
-    <font face="monospace">AI review question:</font>
-    <blockquote type="cite"
-cite="mid:2fd965ce641d32a759984943a427fde47d7c3b13.1774591179.git.sayalip@linux.ibm.com">
-      <pre wrap="" class="moz-quote-pre">Are file_buf1 and file_buf2 being leaked here?
-While reviewing the patch's changes to support larger PMD sizes, I noticed
-that earlier in this function file_buf1 and file_buf2 are dynamically
-allocated using pmd_pagesize:
-    file_buf1 = (char *)malloc(pmd_pagesize);
-    file_buf2 = (char *)malloc(pmd_pagesize);
-Looking at the end of the function, the success path returns without freeing
-either buffer:
-    ksft_print_msg("Please check dmesg for more information\n");
-    ksft_test_result_pass("File-backed THP split to order %d test done\n", order);
-    return;
-Since this function is called in a loop for each split order, could this
-cause a significant memory leak? On architectures with large PMD sizes
-(like arm64 with 64KB base pages, where the PMD size is 512MB), leaking
-these buffers repeatedly could exhaust system memory and trigger the OOM
-killer during the test run.
-</pre>
-      <br>
-    </blockquote>
-    <font face="monospace">Yes, both file_buf1 and file_buf2 are leaked
-      on the success path and </font><br>
-    <font face="monospace">some failure paths.</font><font
-      face="monospace"> </font><br>
-    <font face="monospace">Since this function is invoked in a loop for
-      each split order, the leak accumulates over time. </font><br>
-    <font face="monospace">On systems with large PMD sizes, this can
-      potentially trigger OOM during the test run.</font><br>
-    <br>
-    <font face="monospace">This was likely not noticeable earlier with
-      smaller PMD sizes, but becomes significant </font><br>
-    <font face="monospace">with larger configurations.</font><br>
-    <font face="monospace">This appears to be a pre-existing issue and
-      not introduced by my patch.</font><br>
-    <font face="monospace">
-      I will prepare a separate fix to free both buffers on all exit
-      paths to</font><br>
-    <font face="monospace">prevent this memory leak.</font><br>
-    <br>
-    <font face="monospace">Thanks,<br>
-      Sayali</font><br>
-    <style type="text/css">p { margin-bottom: 0.1in; line-height: 115%; background: transparent }a:link { color: #000080; text-decoration: underline }</style>
-  </body>
-</html>
-
---------------EQ30VdHhb33YDv00OO9Y9p4A--
-
+Jori.
 
