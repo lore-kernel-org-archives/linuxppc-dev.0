@@ -1,68 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-19126-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19127-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F44FD3515E
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2026 08:55:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C54C8D35160
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2026 09:08:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4flzN64LQQz2ygY;
-	Wed, 01 Apr 2026 19:55:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.217.51
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775033734;
-	cv=none; b=VgoYfFW6DL4lXos4tTfCEmH8t9THVmXKkqE9HKP4lmae4OhIlhNiQtWKEP1NvMkmrwRJ/RSo4lqZTdYYNmw4XBRj516dfm5d2XYpZdpCul5VAF80QlBSaqM+aKg5T0ybk6tFzQ/uD68b2AXT9OEyb9+ot5l3clDp8kW1qOtryy9nmt1ZFUhlD1plW+0ZUNkIbG1toBMYmihxx94/cvNmoBzHjFDJp/K6cS2s/L0rKy7LlgQWRmqTaPN2s8r9o1UxNM4y+91GV6QAXonLQZEg30wxAeTawM+RuzlADvcRIpxrJzKBkqC+cPI6VEl2uIXAd0s74kxMvC28v4op6sNMYQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4flzfT31gHz2ygY;
+	Wed, 01 Apr 2026 20:08:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:2"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775034481;
+	cv=none; b=YbuD1tdKGgdJv9+NOC3coficVAC55SMBVAS612dGAgnvf0zGVvDq/Hu9zy0qYR7o0yB0UR1S0hrRHzEpa2ls8s0zNCDilmn+4HRKO956S2iRcnjqMjrr8blIINpk20y7vL69anoDH7NqXYI5fE+wXiGXtw0RUgJodf37jINI5JbZxMLGla7Zo56bIFgFWQKY1S/1bxCZaLULpwFE8n96kQ3+8hit3SVsOlD8QyV8VeBQpEsK6TdvEv3ZB7KDP7uZCdnU1HuIxvXHczhEYWtmHN5abRgM8Ewl7jz8D37vpJ17L1AlNMlrx+mRGRzC1+tcV7s2MBWUvgPojV/InXh1Xg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775033734; c=relaxed/relaxed;
-	bh=JovjSUZC1lNxdv0gpf2LIekR3ONpuaO8xMZDQYnx+qs=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=gzo/uf2zEQP04KLQyZeX5KyneV+GC8Gg6eT7U5CS4sb8SVHu7bofg/ig8MHShW+LHM3Cwdu+XC85JznlBwx1pyCCxSF63K+LoJksFfEGTYE4+0bH1NYFSMggnzUVqlzaJUQ+HpbgHhuJlvWF7jN+8PqZ3CUDhsWki2Xvvxxq1QJ2Q2Z7ngGqyM3nvmNvGd0QbLD6E1cq4Z6rHOKJvhxIbqBfw7IhE6/O7qkBNUPdFtVkzNR2PHg7zPAZXq6RiirQMaontY3+Yn8MBGLJX+W9eREBv7JNUWDN2SbiY6+GiXTocZjRE17DeCzKWmmgiLC2tlbzIjVJKLrwZiQfYBDFGw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.217.51; helo=mail-vs1-f51.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.217.51; helo=mail-vs1-f51.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-vs1-f51.google.com (mail-vs1-f51.google.com [209.85.217.51])
+	t=1775034481; c=relaxed/relaxed;
+	bh=sbQafpbHS8QlsoJuzus20KUSokVPO3m/Lk8X75FkK60=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=KeJiSyv9fAXta22TNBA8HDxjy5zJtB/Ba+qWNkqRy4t+90xtO7Q/CCfxksSzJwIAjUsvRddv4i76R+IwGoopVKX++epgKk116hyN7lpnBeKiSHkAXCyQzYM60iM6EAPfUBYEQ74ovYeBiXGV16GnRmeHzbA0QNbo8DkdEKKLnV2sIov33kIASsUtJu++fTssu7cUuv4d/jcEqKcT+xKrKGH3IUOXkyImxVY7Do+mahVDgLodfaeblKphLOblGjZYe2qtJxZdOVhB2Y6o6pLOzj/1xpxQlJ/nVgf9ZOE30UrAxHegwtjtKQ59TVWv2UOL5trZ0M9TH854mPPgOmlCXg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 2250 seconds by postgrey-1.37 at boromir; Wed, 01 Apr 2026 20:08:00 AEDT
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4flzN50L6Tz2ySY
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 19:55:31 +1100 (AEDT)
-Received: by mail-vs1-f51.google.com with SMTP id ada2fe7eead31-60579b9c0ccso94173137.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 01:55:31 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775033729; x=1775638529;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=JovjSUZC1lNxdv0gpf2LIekR3ONpuaO8xMZDQYnx+qs=;
-        b=KN9ezlLYHIVnhEAJFKfO3PgtCK9HNzqpTylFh8ETNyeTgK2TJ+FBjlrp9h8+EcpL7C
-         +g9Y+xL+tAGOeEtmWxfv7BEDUQrPRR1MgcoCW0KF73RGZvnnWArskaQ49D5Tvr4niEV+
-         T2ozDmign71OmF6x7J3GhoLsKRVPvx9eiNZnM1ofF/9XP6uUQK0j4K2g04iJuXeWE0m7
-         KnJsiUv4/L+MW6pTV5hnFuF3Lll0sFWJcdPTBGclL9ZUGoW5n17hBUNcJfwt2sevpPeu
-         JaFdarY3MHopOT4zo89Xm71ioW3xkUElvVkEn9MN1sIf0fmm6z2rp+3P1uuRH6k7cJDu
-         gF/Q==
-X-Forwarded-Encrypted: i=1; AJvYcCUaOkyjg/GI4YFEYaX/Bn7kP74Nf9C79uey+XeoLJnbn/hLxzMsU6EX5Aaje00CrxtwOrxoWBlKoBq/Myw=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyTF2N3skDCtng3GnMlkHVvoR8ONy1P7mVLLutPvF7vyAH9rZT6
-	qSycEbLi0SBByoQB4jXeMYikJrLkEf5Vg61O0pl9Ve8AGTpBpiRMp1RXFeCg+9aO
-X-Gm-Gg: ATEYQzyIuFteU7IDnzB5eHDAee90MUhbjVggbpOJx9DsFBKnlqss35Tmx1bMFxDoimT
-	ZyG1dLCKFkAw/wmtiNU+YF1C5brA9EQ3GfZKhUv9+dxz9rQVMDjbGQ35D4Syx2Ljnr13iJKALI8
-	/upt/ECWzZ1EUx3p/nwhXo/kj2xbS7W3ai9kWUHoh+O4hSzV9gHi5xCAOiDw+cSFF32kaR2T2gd
-	lVFbbRhgadizn2NdTtiMdbIc8Sc5KHpPd6+ECpCb5CkJPoOuUkfcDMyjqSVcG5fJm5amqa7RPy9
-	TZsJVh82jTTpCbLsOp2IECgWqsCSlIhQ5cfZ8thnoXzOtsCROvDEo6iHo7MVcgR1vEQv9SJCXg8
-	HkICfzQoKCSbbaxNurE+ospqxe6gcsM4A0GZKb36sYQB2BmoeigWQeGh9FaALfEf/mb3MrXgDFi
-	qngaDgtVqoL6CfFJJ2KTVRb7mPfw14Z5Oem+hf217RQpLvxD6oXTeR71teV74eQqia6FPnQVY=
-X-Received: by 2002:a05:6102:598b:b0:602:80fa:ee9a with SMTP id ada2fe7eead31-60567a90092mr1110821137.0.1775033728665;
-        Wed, 01 Apr 2026 01:55:28 -0700 (PDT)
-Received: from mail-ua1-f50.google.com (mail-ua1-f50.google.com. [209.85.222.50])
-        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-605129b95e2sm16171603137.2.2026.04.01.01.55.28
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 01 Apr 2026 01:55:28 -0700 (PDT)
-Received: by mail-ua1-f50.google.com with SMTP id a1e0cc1a2514c-953a8eed138so2222301241.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 01:55:28 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCX1YYB++++61d/aoyndhMfWmYWr1+gGF0oVqv3j4U6RXPjKB6YHAijXQCkn8kG/gIbrxbyZoeOwtGVscdo=@lists.ozlabs.org
-X-Received: by 2002:a05:6102:14a5:b0:5ff:d434:b507 with SMTP id
- ada2fe7eead31-6056811633cmr1013502137.17.1775033728220; Wed, 01 Apr 2026
- 01:55:28 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4flzfS1bRtz2ySY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 20:07:59 +1100 (AEDT)
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id E9B195BD44;
+	Wed,  1 Apr 2026 09:07:56 +0000 (UTC)
+Authentication-Results: smtp-out2.suse.de;
+	none
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 976D04A0B0;
+	Wed,  1 Apr 2026 09:07:56 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id NhNPI2zgzGm1LwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 01 Apr 2026 09:07:56 +0000
+Message-ID: <786390ea-e42c-4d9f-be55-09093cf09918@suse.de>
+Date: Wed, 1 Apr 2026 11:07:56 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,54 +60,115 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260401083242.214492-1-tzimmermann@suse.de>
-In-Reply-To: <20260401083242.214492-1-tzimmermann@suse.de>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 1 Apr 2026 10:55:17 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdX5B6LpZ5ffaOc0Et0PK+G=_c8yD5K8JynRwu5T8rHfsw@mail.gmail.com>
-X-Gm-Features: AQROBzAaKXfPphxAx92Ddhxtbq8urMrWt59bUWKyg2D17bALeZWDk-W7fhNxXrk
-Message-ID: <CAMuHMdX5B6LpZ5ffaOc0Et0PK+G=_c8yD5K8JynRwu5T8rHfsw@mail.gmail.com>
+User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH] arch/sh: Drop CONFIG_FIRMWARE_EDID from defconfig files
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: ysato@users.sourceforge.jp, dalias@libc.org, glaubitz@physik.fu-berlin.de, 
-	arnd@arndb.de, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, 
-	Linux ARM <linux-arm-kernel@lists.infradead.org>, 
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-mips@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: ysato@users.sourceforge.jp, dalias@libc.org,
+ glaubitz@physik.fu-berlin.de, arnd@arndb.de, linux-sh@vger.kernel.org,
+ linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-mips@vger.kernel.org
+References: <20260401083242.214492-1-tzimmermann@suse.de>
+ <CAMuHMdX5B6LpZ5ffaOc0Et0PK+G=_c8yD5K8JynRwu5T8rHfsw@mail.gmail.com>
+Content-Language: en-US
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <CAMuHMdX5B6LpZ5ffaOc0Et0PK+G=_c8yD5K8JynRwu5T8rHfsw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
+X-Rspamd-Queue-Id: E9B195BD44
+X-Rspamd-Pre-Result: action=no action;
+	module=replies;
+	Message is reply to one we originated
+X-Rspamd-Action: no action
+X-Spamd-Result: default: False [-4.00 / 50.00];
+	REPLY(-4.00)[]
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
 
-Hi Thomas,
+Hi Geert
 
-CC arm/mips/ppc, as you sent similar patches for these arches.
-
-On Wed, 1 Apr 2026 at 10:40, Thomas Zimmermann <tzimmermann@suse.de> wrote:
-> CONFIG_FIRMWARE_EDID=y depends on X86 or EFI_GENERIC_STUB. Neither is
-> true here, so drop the lines from the defconfig files.
+Am 01.04.26 um 10:55 schrieb Geert Uytterhoeven:
+> Hi Thomas,
 >
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> CC arm/mips/ppc, as you sent similar patches for these arches.
+>
+> On Wed, 1 Apr 2026 at 10:40, Thomas Zimmermann <tzimmermann@suse.de> wrote:
+>> CONFIG_FIRMWARE_EDID=y depends on X86 or EFI_GENERIC_STUB. Neither is
+>> true here, so drop the lines from the defconfig files.
+>>
+>> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Thanks for your patch!
+>
+> Upon first look, your changes match the (current) dependencies
+> of FIRMWARE_EDID.  The dependency on X86 was added in commit
+> 7e35fc7ab433683f ("video: Make CONFIG_FIRMWARE_EDID generally
+> available") in v6.17-rc1.
+> However, CONFIG_FIRMWARE_EDID also protects fb_firmware_edid(),
+> which seems to extract the EDID from the PCI ROM, and is thus not
 
-Thanks for your patch!
+The PCI code in the function tests whether the BIOS ROM has been 
+shadowed into system memory. That's a common way of testing if the PCI 
+device is the primary graphics card. The provided EDID is only for the 
+primary device.
 
-Upon first look, your changes match the (current) dependencies
-of FIRMWARE_EDID.  The dependency on X86 was added in commit
-7e35fc7ab433683f ("video: Make CONFIG_FIRMWARE_EDID generally
-available") in v6.17-rc1.
-However, CONFIG_FIRMWARE_EDID also protects fb_firmware_edid(),
-which seems to extract the EDID from the PCI ROM, and is thus not
-x86-specific?  That function is only ever called by three fbdev drivers
-(i810, nv, savagefb), though.
+The test shouldn't actually be there any more. We now have 
+video_is_primary_device() for this.
 
-I assume none of these work on SuperH, so
-Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> x86-specific?  That function is only ever called by three fbdev drivers
+> (i810, nv, savagefb), though.
 
-Gr{oetje,eeting}s,
+I know. But IDK why it hasn't been more prominently featured in fbdev.  
+Nowadays, we use the firmware EDID with DRM's generic drivers on any 
+hardware.
 
-                        Geert
+>
+> I assume none of these work on SuperH, so
+> Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+
+Thanks
+
+Best regards
+Thomas
+
+>
+> Gr{oetje,eeting}s,
+>
+>                          Geert
+>
 
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
+GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+
 
