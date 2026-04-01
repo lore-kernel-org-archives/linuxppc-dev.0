@@ -1,59 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-19138-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19139-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F095D35164
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2026 09:42:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93D17D35163
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2026 09:42:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fm0PV06W7z2yhZ;
-	Wed, 01 Apr 2026 20:41:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fm0PW0j4Tz30N8;
+	Wed, 01 Apr 2026 20:41:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c207::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775036509;
-	cv=pass; b=AZP+9QuCnh9ZZd9P3MldLa6obKG+5RM9PAfGXm8VnS/9EY97gxLULP4m2On1ge93UISIqZhoB+j+GFXaWAaCMilNlnCzJpM8ur+j2p+r9Sg/gD5OLPRn1pVIFayi8llO4Vps3uLltzOFmO0S1zFr2vjPdtGCSNXPyKunh6yJL3Ik9AW6X8I9TuOyrnOwYRn8N2FpWhqMhWAUf60s4ARyMDV3i3PmUFyJyLrIJAywDhsFNS/ZjHaDJMPUWB7ZJQDLUZC3CGDhWTH/cnfDSlsevtMP2IJSPjH6F6dRobUQen8icDg7zZxRUO9QQQgHehoJd3BHKSn5sSzncPAZIB95Jw==
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775036511;
+	cv=pass; b=evDNXw2zUk3ogzpHcyJKRPFrNLVEMHbP5bBsD1LHCeM1CQ+DU9tCqiJWwfb4Q5c7W9mGh8RLNuXnoSzYng9O1cousn4XGoGn2L7W9zZwLbEtUlzEz1HE09pNOVIlLmKwR50YbPQy5JacNZ9eXrFxTU1j2XbqljEXrigTkUUgHdqjLfDbKq2zEosSDsoMtTNYGgcd8I0tJGjwMmOF4OeouHCaBat7JOv9dX+1NixzB/ra0uI4/7R1FCyYkXMRQbabrzq8AVnS+ieJIl32WqADJ/nWJCZBEcSMAu3qzLLDb7KFdDa34eiMyMXT3ORpj2EutLfU3P6yOgUouOGBnrgVOQ==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775036509; c=relaxed/relaxed;
-	bh=1W8Z6I5k4qC1og9LoTkBGolQOg+dtplXEcqMJbQxjaw=;
+	t=1775036511; c=relaxed/relaxed;
+	bh=lcy5UmZqh/o0ySld2VRlYssBwZ+fCg5A6+bAmvQGrUI=;
 	h=From:To:Subject:Date:Message-Id:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=V8yqKNoP41I1k0saJ7NFk+n4zQDTHw0XB+sxWq2b1tllgblt56gErR2QHNRyod9lopanwKWWeLU8REmxZspueEQH2tm8nd/I1YJCS6HBZ6foNmH5BU2lO+MLZ+QupxGANNoHpEHPYVH+5d7QZjnDEtPrFcyyHBhrFGvQzFhoIlrVllVmqrtyEJ2UwXyOm03JlB0qlFW2x6/w04iiXsVlV2wP4ccD2oR5K7PsAc7CxftvmTYshczsf/tjOOa2C45sfgJ5fxFIakMdoEakr4doL+VXmuuF7eQg0axaROBbz6rMKAwUNa7evSUPST4DmYmQpxbqFLtvutnw4iSjotkLcQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=Nf/aUkCJ; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c207::3; helo=mrwpr03cu001.outbound.protection.outlook.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+	 Content-Type:MIME-Version; b=AnNLivFI4nHUiHhBm8S8hDvKeXje2DFniWX2hQoA8+DI8TKVlpX/B7iRFdUtAFavPApP3dMRlvA8kQ2gjtZgm55mV7spW7gF06Ug+Jx26fRJr/hPC+52ZQ+lal9PHnoFnMPYcvBdkJmpuSsB4soPMRLGLIxcARWSzBlaNOx7W0lzZabr4E9n+wNsohk8utewvvSiFRLfiKBG9oUL1ANoRMuVJLZuOwuDvmparyoF7o9/eZBuQw+39eHX3Rr3bvOe3+XX10eOLuqtHSw/nrnWMSr6mZS1cI2qPYQnZR98CzfvBi2oDw5traLrCnzdWF2HdU39vKr/1zahZr3UrCc5AA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=XVipNUdY; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c207::3; helo=mrwpr03cu001.outbound.protection.outlook.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=Nf/aUkCJ;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=XVipNUdY;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c207::3; helo=mrwpr03cu001.outbound.protection.outlook.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
 Received: from MRWPR03CU001.outbound.protection.outlook.com (mail-francesouthazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c207::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fm0PS5RCDz309y
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 20:41:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fm0PV2H4mz30HQ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 20:41:50 +1100 (AEDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=nH4aaLX4ZoPPWOfMzy8rl507RHf8gt0zMHaSaMgmgu2H7M8cuu3CHnKkK0ZzKYMfYT7Y54pByxl7rgUEThDYGfw1ngTTP9sW8kz+u8Ook/FDNjcwoDFdzqCamd1dtFpAMsSMteTG+Y02gD129WMg3HbToPeEQSt2lzo2DbIviUqRGqaSZdPf4j9jEJnT/GSbrzoJiNGWu38xsFOqz7ML8VLJuS37RlCRd47aFZylfAKae8thuAIXV3lMriDqZ6gxGwDmTx5CBmY/cIyhO9OhuYftdR7L7LItYNOreQyVf5OTKxV32MQg+uYXujIrlyqmvSyjNL5BK1/Umw8Ox9h6HQ==
+ b=SDsR9vkt0e/45AR3+ZQJt+LxAek1zPX2qeB0mjhVFbB1uECCZx4eZoIGWaeaJgG9GDOrTK1RuydkeBRP3/8NpiuGEMAAyTuwyeiSXyyX7CB+OHAt27qIKOShXE345NIto5xiXHvv1YkUmEp+xR7nj4vhsXWiwF7PkGI70MnOXqS6tcvTI0RZavxg42hJHuVHgUsqyaTXvyKfdvdeKuma8/nnOCb6Xps05dfCBiQ8gjFvPueYvEnV2cwktHYrSekQglxpGfszX7n4aI5teS+pgUcxALhri9Yyyfvmk5chDxR2wgFUAbLCRrpfKgDWceLTGYC3txNJOVPhAXtl1F1nFg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=1W8Z6I5k4qC1og9LoTkBGolQOg+dtplXEcqMJbQxjaw=;
- b=NDq9Ul9/yBkh+LyQCn8J1ib09WGDXNzuawSWRoduxrJI9FMDZTm/9Smk0tnBuat3fg/2UwRA8dD1CS54oMYTsjS3kcRk2S/slwx5SIlu9ji+rhJc13E7c/d/XHdHCzjLaScUaSaLKH3+RnkL++l2Yh9uBbTdv3nH8YEFQ4WY+qT1S70stjqCHFJQPzSW4jlutR3mJaowMPlb3Db61Vnwg1X5ymlShXYzH/FDN330yxLWDosB6b2wuispgYg+vONvQzbnCCLYii6RTamXzLhJVS/dwiL1ZbwicrVCygJrzAhSJ5DA5tX8Jkf8MkeC60SywfJB4IHuzQHznZ2nKfCUzA==
+ bh=lcy5UmZqh/o0ySld2VRlYssBwZ+fCg5A6+bAmvQGrUI=;
+ b=A1xsVv7aawVfW59jTXhyX9n1pUf/+JUCmabz+U2zJZSr6WARvKnxdVj9GfYzgz1NoTrkKvOcQMOvPqRASglpH0GLzeX/dqk47ey714YoSh4QnQPI4Jae6eaVOQtwYMgHeWiNVxgtInXzAngIOJYlMCjdxK9sVloKGBpaYqVSkpKtax1XyeGqR2okyxzW9pfXoIUXrrIgcvdbNGoZDthSINLbTkplAg32gN3gmsib6azyCscX4X/MglI6pJwUgZUa0ghrgHfmFJwURJwIX6PUQDpOCbEvQUB+G+OZGORHETT4mE+VJ2rvT3wj3TfeX4vL5p5qj3tLN9jv20KFuf6T3g==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
  header.d=nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=1W8Z6I5k4qC1og9LoTkBGolQOg+dtplXEcqMJbQxjaw=;
- b=Nf/aUkCJK2Bw/n4Wst2RfRapMh050n5gYUw+DLwz5Gm8VITUuSEd1eIgX5D6rqXeHBToSWBrqK5q7eN/ykGSXZcy5vx54VwbBr4604OOlmyVl7YiNCHC87T7vKyhAg/0pilOqp3iheoGtuGBJiKlqdCsCOo7h6jZnNilrCRE0YVj180kXgqCCj6bu7nisqBfWmGaRYPYQp1KTAZPw3Fqvxy+wOx2C95thAKcfHwAlK3I5SlxbKPJKcM0fh6N26ZBuSUHfCm0qHKQleSIxJMcfU1j5RhbV5LFOVgI33YIj0oK1t+vQ89kmX0L9T1Ji0ElgZoabpoy3VoE9PAsn7/l5A==
+ bh=lcy5UmZqh/o0ySld2VRlYssBwZ+fCg5A6+bAmvQGrUI=;
+ b=XVipNUdYnmSn1UvJFOQ2m94PMNgxFlsaO1ROslYW+PqfcKgVsR8v1e9/Rip7xOpsrBriL3ivD1X8EihB7AhPoIo3ja+vmfumyiq+OyPlgpl7ztTccb/PuK1eoeU+U6oS8sWQGmM2tpccA/iHlK3a8ecjd6u9QhCUU4+NkzUrqHu8hZ5tqLiawsdKBaxWVKiZZ1JHUkq6RLeqUgJ5Nrxgst2lQbObiyxnjxs1T/uh2tALcuMopwhPDwr2q+y0Ikvm68qVQzePOOmHzYYGUnAryYn6Q1olelaHcQ4yhg0e7YWtGjlicR6QkPmusc5zzKoQovLJ8btu8TWe+5XUsGzEIQ==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nxp.com;
 Received: from AM0PR04MB7044.eurprd04.prod.outlook.com (2603:10a6:208:191::20)
  by AMDPR04MB11607.eurprd04.prod.outlook.com (2603:10a6:20b:71e::10) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.17; Wed, 1 Apr
- 2026 09:41:42 +0000
+ 2026 09:41:46 +0000
 Received: from AM0PR04MB7044.eurprd04.prod.outlook.com
  ([fe80::bab2:d15c:fcf8:ef2b]) by AM0PR04MB7044.eurprd04.prod.outlook.com
  ([fe80::bab2:d15c:fcf8:ef2b%4]) with mapi id 15.20.9769.016; Wed, 1 Apr 2026
- 09:41:42 +0000
+ 09:41:46 +0000
 From: Shengjiu Wang <shengjiu.wang@nxp.com>
 To: shengjiu.wang@gmail.com,
 	Xiubo.Lee@gmail.com,
@@ -66,9 +66,9 @@ To: shengjiu.wang@gmail.com,
 	linux-sound@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v2 10/11] ASoC: fsl_easrc: Fix value type in fsl_easrc_iec958_get_bits()
-Date: Wed,  1 Apr 2026 17:42:25 +0800
-Message-Id: <20260401094226.2900532-11-shengjiu.wang@nxp.com>
+Subject: [PATCH v2 11/11] ASoC: fsl_easrc: Change the type for iec958 channel status controls
+Date: Wed,  1 Apr 2026 17:42:26 +0800
+Message-Id: <20260401094226.2900532-12-shengjiu.wang@nxp.com>
 X-Mailer: git-send-email 2.37.1
 In-Reply-To: <20260401094226.2900532-1-shengjiu.wang@nxp.com>
 References: <20260401094226.2900532-1-shengjiu.wang@nxp.com>
@@ -92,81 +92,233 @@ Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: AM0PR04MB7044:EE_|AMDPR04MB11607:EE_
-X-MS-Office365-Filtering-Correlation-Id: 6961ea43-751e-47e5-f015-08de8fd2e189
+X-MS-Office365-Filtering-Correlation-Id: c4201a8d-6710-4c06-7743-08de8fd2e3d6
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
 	BCL:0;ARA:13230040|366016|1800799024|52116014|19092799006|7416014|376014|38350700014|921020|56012099003|22082099003|18002099003;
 X-Microsoft-Antispam-Message-Info:
-	11LHnqmNLnwO53z9Q+pj0Gk73gXJa/Nk9HnHsAr2mjr6p+pd6197eIGg7oUIEvqX0jG7Gpd9Lm/K5GoqmPrwBBL7t3wyioXYH8nCrPocHUtQ3hDUg0aoJt2fJoCiDo7fEUVcsat+xn1a6w8rUwlIu1AC/AD0yCadYOCkwwJ8c81gTnARToiJeuh95i6OQaDoEOYwTQKF11kyIjCpxgYhCHhtGxdsgmvB7CTB180FIEvDYaa4lKw8xH8t/ZFtH2kWfru3D1IVhz6TbG/tyhlWJbqqiZoDS5VjYLcbdVgDKvIeoLE4xEfHa4d0axsLFL4xOjD7pK7FAysxUtRXQmvssdI1y6tfAjR4VD/1fj2cS5CFW4Zo06KE25v3e2XiVPTXOJUpN6N81shVTZfnLnFraUsYdB+vBUcNnlDalKs3CurldeqUl5eDPM+ZtEuFgkkMnF9ufQhomeXwUbuq6cuWlL5dfhzcvvDbN95wB/keU8kyrDGJGO4jozkehABlahSVferZkXGAbKZY6QPJ47FSQtmd1kwLxs1jlYcZc3vRJzcrHv4sNmpz1YAwvxo7dFGkv/wAR5o3mQpo69IwI437Y7yd/oD7zQQnXUCECCKgKCirgI9JB1Lfcsx4fIOTfYlPQBhnGE7uOKxBreqNdm9mJ7AY8BziZrf08NWFtn0+zttPxxyTi1x6F3kxDFG+vvPG6zfXbPimclHFODHslIHygZaLLxDEt0iDxBt+n//PenNih+E0yLvIjnssza6+xTmO85PFNCvr2kEOij+ra/L+qDSGOV0jIcgovnTz43H9WEvj7rhD2njAVtA/Qg/vsXmI
+	pi68TQ4Hi17gfnqYV9ElSAE+VliIa0EN39RJeGd57icFzBG4iCqr1jsN8aYaqmrVjhJVK6Zq6ceZS96vEJgjOb2JW/qFeoWpBueS4Fwhyq1GbTp0STotKVMECO2onbiN9uuiOfV0+7tigv/lubcrUm16e8mIDQJo9nW3ATWyXz6BDSKotrP1fOE3dwggxAolUtav+qaeqV/GnqcbTP9oyXiYnLgtpBHNg34C0hCO/e7gIYNOEzDZ8qur6aJ+XR7N6eL2rt4SL2LZ8+QgGOcewTtz2q1tyfvYqE6bITjDQ+3wd30DLcJF2S/ed9BThp8v4hbungO8gFqwrGDrWYLCuPAf6rvSKZS6LV4rFdzJsGtPVu+DlBz/gSY9slxQEP6MEKXS9HXTmewXOfRCA5I7x0lEBecd6hNu1D7e+hC2Xw0T49hP8HZXJeldemR0MPsVtd2D5irX02KViDCDuw7FCXqNK45j2fcAqQUIQS9SvT+SZgm8XtWHL8g3QiMRijo2LuDbUVXrM/sg6ugrwnwlSQ/BMgE1dYegadydKabHzdTAMGa78oWs47I2ls/NxGhOPZSW4buw/qQeZpUvgY4kvoymuV9/Ij0g8y9INIkyzldhUnGtkbtnXD3qCjOBEtxb9fpuJUgo6kXhFwLKgHpawrQPuXC7PVjIAoEHqD5MrMVnITdNK1c/xgtRPzoI8tGB+u+qHb5zPk7IcZrrqDAdks5rUHuSHzmb0n9HKw+3N4XPqWmBxwl6QxXgkIpTVM7LPDy/qBRQomV0x9PcV0a7yGkMxTSMJL2LujGR2yXRicRpbvWD9+TqSEWBI9gxE46l
 X-Forefront-Antispam-Report:
 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR04MB7044.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(52116014)(19092799006)(7416014)(376014)(38350700014)(921020)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?WnLoOt7HMnAOMkd3D1c2N929LcNvhgBIvs7mTLmayqYjOTPvxdGvbwR8tFtS?=
- =?us-ascii?Q?Rm/SjVBi4ciYxTgH6WS7L9PDIlAaUXRUlK8ZlgIeo+4uVryc4YbBsp/eyfqa?=
- =?us-ascii?Q?rnr/ewai9tBEunI8PwaKv/NyiGkpsCzRoDlYUDp/zPO4H5I1ECLTnuk04GuS?=
- =?us-ascii?Q?CBWy1r2TfWPIj0wxWHeXLzC8TmXFre6mBPknwUNZtPAIbGmvOm+83/VtqoPp?=
- =?us-ascii?Q?feNdueDkhH4svg+m5jnQ/4y6/QZSl8R+3ukSD3LcTqSEYrrWhT6SxxQRIala?=
- =?us-ascii?Q?vLS4IgGDDu3Z2Pzg/XBs+V+q+G67+NCLbF87mpwUh6wlhPbiQGfFpG7nSlJn?=
- =?us-ascii?Q?/YAUqpM5xqbihJ/c+XZt4olZI7ggf6/7irMeqwg9ZkiDt39Pllq7I0J+gkTN?=
- =?us-ascii?Q?1ZFTM8Cd3ZrzYQxnZEL3Om1s/3+/mB6oMzQHuPVcJlzKLR/RFM0eOw0c74FM?=
- =?us-ascii?Q?aCdFqCQ+gRbMNCglL7e32wHBtRqaaQdB0p5NBiJP1ZGgw7dhjB4/XzQD2j8/?=
- =?us-ascii?Q?qaZnGHTgipyQJCBW21Wre66Gs+BJOswRnBRW7ujJFj4b2ORp3kuteaIV+W5K?=
- =?us-ascii?Q?8xiQD9kHbYbD1ziIiLjmvb4Rt3xr03w+E799viUur7LDKwj3hlr0OJkVxkDQ?=
- =?us-ascii?Q?lXSRhsWwlNGT7UrC3R5T8lsEhAbZV0wKNHdPWDRN1baLn3q9smN3UYwOj+Dl?=
- =?us-ascii?Q?KPz1xZGCaoQOse9b2pzALGxl30rE0VXmDH2giwvCq7jahR8+KgtpNUTp+aLa?=
- =?us-ascii?Q?EUds8skvf8U+YJfWqL6rTGFtxUfYWjD2jWaJaW8lCvh80Q4YqLmZXAIajSmI?=
- =?us-ascii?Q?9sMALPxOFSnFte9OLtXRct26lhFHvadpToMqBV06E0OxULYeGQDvpaiBR2UE?=
- =?us-ascii?Q?wADWrh2BwVevasKuinv8IzScCqERyze0RXcS8b+RZNeF10241cx+Bj11EAaP?=
- =?us-ascii?Q?S3LxOxf7lWE/0/Q52IV57a0WYSin7mZ4Qcw8XPbmcbFbD6fXvwmNRBEsCZYG?=
- =?us-ascii?Q?ZE6PVuGGMR0tEyMp7b0xZ/YBslja944kBReZtz1398jm0HB8J9j1z75CB1Yx?=
- =?us-ascii?Q?PpbeNiknBgOmmhzT5VzbFD/ebokkM0atdeq3HKXkzzpDFI0m5E4ny/NmYbek?=
- =?us-ascii?Q?4f12psQYbi06SeVWOAsk1hSL3jOK+evNE5EZqjMkQetrd6NNvN8Zd67yHELy?=
- =?us-ascii?Q?ZygVarvJ0RkEi69IHmUR6zmSq26QQHmajN7/sy3T+Hhoy1Vd7CWmRadZq6Qk?=
- =?us-ascii?Q?9AGqvrkHvvt9+oG748ZyJPgCyGp7zESBQ9Emnc4e1f1eFnFRKi6qJUt6H+BR?=
- =?us-ascii?Q?WTw2F1YxTpnbWIBo8W64UU2IaHGvGYoyZbEXCIXOAMP5Vg1tQ40FbjozkYU9?=
- =?us-ascii?Q?sXolUX24Txvyuv9GoWmUauA1lqeMoBSQTyTSx/hAOd2S4qNK2o32daKSwYiW?=
- =?us-ascii?Q?3qZOcvdrXjGVnRGci2ZuCz7GnA9ep44FQ+DGtJYaRxIQNZ7oA6Pr2D4tYbfc?=
- =?us-ascii?Q?JI8yeR+BhlFfOaDE/hXE1t6PO2aFfZesdlp3VG4+F+neB/WBf/pXHHoxdi94?=
- =?us-ascii?Q?C7LbsJChkRMlRTVWjwSd7eoS7dtFyV2EKpx1QIeZVEpKl/lJajFqzDsng5Da?=
- =?us-ascii?Q?3pPY91UvxrsrHcqVb+I0tQMngUzGeSlOLxw7JbI3zHwGGoUaR+tVOK7Mq7kW?=
- =?us-ascii?Q?EMLGBW4V2ZloAOBvseCSco26OwGiBluFYjIGx+SZ1Fwf5q6HJOuv/ws/BsI/?=
- =?us-ascii?Q?nkV42SBFMw=3D=3D?=
+	=?us-ascii?Q?vXJGfKBDxkbB1INgDshPvVx2hTL3nfebkUR6vfxl+1cVYkT+k9ov/moWDuZ/?=
+ =?us-ascii?Q?xfip2Gecpdq/5qlT4hPWZDQYL1uENZdEM4ooRXbaVoQKn3vrz6+suJzkhsCE?=
+ =?us-ascii?Q?OTFEsd5iif8hAWB6yoVvIDff8u9l6oF6wrz2iW9IbTsxllGTnQ+CjKq6U//K?=
+ =?us-ascii?Q?Gpf8tWoZ6WiwHL1qmfd5ti7QIhClO5mL6x4NYaE1OQH/c8dR777R+f/gaiv8?=
+ =?us-ascii?Q?c2oerUFzPACxV8byBq84gfC/YNDqpAOXNkQtwVZIg2BWhpoTgG/IbvLAm+af?=
+ =?us-ascii?Q?33K8WSqcbfuCIlnCab2RXK3iO5PRvETW4JFvMwO4UBDFdpPEgmwNHAaI7IfG?=
+ =?us-ascii?Q?HhtnXVdERsGiREMx3u8lC7T/rYtvObxUZ+BMeYKcZBhvLEsWdQakbDjgvQIP?=
+ =?us-ascii?Q?sPWZtgCdHDp0OvjQyNL8Bz6DMHGm7SHZvdrT8Ut7azz5TeZ3lBdUaFKS0qgo?=
+ =?us-ascii?Q?M5jcmmydTW1CG29w17SrJJsT4+P5QpDrXlihqStTPKJ9br73dO6mQnUkuzLO?=
+ =?us-ascii?Q?v0J+ygQFVQjpVAjq9S2mQs/oBvB88FsO53JO9+VquEsj4cx4Vwcya5QBT6Id?=
+ =?us-ascii?Q?nny/6wMF2u8eli+Snur5GS2iKqiiz+V2r9ELc26qFBE1mjmOZzeOgL5Df8aM?=
+ =?us-ascii?Q?I3YFmOR4lsGreLxnsoEPIFs1iMSgRhmQ2cLxUtDPII5xDR0x7krmluQ5B9t5?=
+ =?us-ascii?Q?d9GZUsniPnnzqtUHBlTnfEA6C1jVz/0+2HB5x+om2Hzctiq4cSxiANgCV9Al?=
+ =?us-ascii?Q?U6TgwMb2eu/mw/uZR6GB7tmndacB8KedgJ2fTFe8wONkYptWeiLGpddf904f?=
+ =?us-ascii?Q?CLOcwMqGDvCMugEo0dNi4dIt3HcMtj4DMhh7vthe+/0T9uGr98Rb4RJynop/?=
+ =?us-ascii?Q?06/N7Uihx36DwAGRw+b6/y3v1+IoSgid0Cbl17ExMeQC2m6XKUkW0mg/vs74?=
+ =?us-ascii?Q?kV1cSaJvl7g6NS6+Ze64HQqXreh2nJHvDObOBdXkdr0cePdXBxPlS3ml5sEF?=
+ =?us-ascii?Q?Gi61hRFdmn+bXpq9msMhqSJuFyX+xoqtV17PH74Mcz+rnphzDdO8IiYmHY7D?=
+ =?us-ascii?Q?IFzXzSlIEWT7xpFlvOHSHVhDw9zRLNf1gHWRz9YPfRGoZbOiUMuEnkkeK0by?=
+ =?us-ascii?Q?SSZa3DLChcNncxMbNDccY0WN2r9Oh1DS4bETsh37oqelAL3T4YVV6BzNET1Y?=
+ =?us-ascii?Q?EcbApDYi5hYRKyupuL7wmW0hF9v/g3u68moz4MGOA3WCs75/7QAOoulVRpF8?=
+ =?us-ascii?Q?eUlfr5iOLwpuCkPT2wghV8Iu/CKvHdB5ow7l8ineNGCb+0E8hrCrFeryhzqT?=
+ =?us-ascii?Q?BSeNjov8HKSEwBE9gaBoNZEn5SbpqWWdLgM1Ds8nZBZClA/ygJ3HgzeqxnII?=
+ =?us-ascii?Q?aY7P875uiXNBwOCJAv11xXlcyOgrGwOxhoXRIR2cuLaI8ditmdiJtigc6Q54?=
+ =?us-ascii?Q?orGrC35rK9W4hwQv5VNacMwet4NAHurWkP+tptVqiHpREQ3gDgbfhDGeqx5C?=
+ =?us-ascii?Q?oZGghMGDuAsyJBFKvEq58pDERyRSbzdkYceGjtE4iYxmamvZN18F+/jFpbgv?=
+ =?us-ascii?Q?1vtoajbcYhUR+/UEHjd0aL1lBAsNUs4hedUjjrzHqry4m0yb6Rxdp5LXcO55?=
+ =?us-ascii?Q?nK5rS5pz9FiSHNEeVKHKNL+S0a1jndeuvu0n6Advq35MYMC5s5qDUQVYZbVP?=
+ =?us-ascii?Q?xSNGNdbA941aS48dag3LwAfPcMIx7vsNVBMsVD102AVFVGXKOSZixtBIJYa2?=
+ =?us-ascii?Q?bewgudfBZw=3D=3D?=
 X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6961ea43-751e-47e5-f015-08de8fd2e189
+X-MS-Exchange-CrossTenant-Network-Message-Id: c4201a8d-6710-4c06-7743-08de8fd2e3d6
 X-MS-Exchange-CrossTenant-AuthSource: AM0PR04MB7044.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Apr 2026 09:41:42.5950
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Apr 2026 09:41:46.2431
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: HMw6kmyCrKl9A6Ed4MqlLKn8zzzZGD6wz6jHsiBvf7fwyvEqZVGr0dZI7YAh+0GiGXHjjabfxYT2nlsi15ejVw==
+X-MS-Exchange-CrossTenant-UserPrincipalName: pHYSYdkeGDmZvjFlmZcyX+XGI+eKl0Psw+7vm6+lVwboDpt2uL1hX82wQ921jAcX8Pin1/yMZsDarpy9xR5UsQ==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: AMDPR04MB11607
 
-The value type of controls "Context 0 IEC958 Bits Per Sample" should be
-integer, not enumerated, the issue is found by the mixer-test.
+Use the type SNDRV_CTL_ELEM_TYPE_IEC958 for iec958 channel status
+controls, the original type will cause mixer-test to iterate all 32bit
+values, which costs a lot of time. And using IEC958 type can reduce the
+control numbers.
+
+Also enable pm runtime before updating registers to make the regmap cache
+data align with the value in hardware.
 
 Fixes: 955ac624058f ("ASoC: fsl_easrc: Add EASRC ASoC CPU DAI drivers")
 Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 ---
- sound/soc/fsl/fsl_easrc.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ sound/soc/fsl/fsl_easrc.c | 118 +++++++++++++++++++++++++++-----------
+ 1 file changed, 84 insertions(+), 34 deletions(-)
 
 diff --git a/sound/soc/fsl/fsl_easrc.c b/sound/soc/fsl/fsl_easrc.c
-index f48e43a0edcf..3086cb758beb 100644
+index 3086cb758beb..114a6c0b6b73 100644
 --- a/sound/soc/fsl/fsl_easrc.c
 +++ b/sound/soc/fsl/fsl_easrc.c
-@@ -73,7 +73,7 @@ static int fsl_easrc_iec958_get_bits(struct snd_kcontrol *kcontrol,
+@@ -78,17 +78,47 @@ static int fsl_easrc_iec958_get_bits(struct snd_kcontrol *kcontrol,
+ 	return 0;
+ }
+ 
++static int fsl_easrc_iec958_info(struct snd_kcontrol *kcontrol,
++				 struct snd_ctl_elem_info *uinfo)
++{
++	uinfo->type = SNDRV_CTL_ELEM_TYPE_IEC958;
++	uinfo->count = 1;
++	return 0;
++}
++
+ static int fsl_easrc_get_reg(struct snd_kcontrol *kcontrol,
+ 			     struct snd_ctl_elem_value *ucontrol)
+ {
+ 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
  	struct soc_mreg_control *mc =
  		(struct soc_mreg_control *)kcontrol->private_value;
+-	unsigned int regval;
++	struct fsl_asrc *easrc = snd_soc_component_get_drvdata(component);
++	unsigned int *regval = (unsigned int *)ucontrol->value.iec958.status;
++	int ret;
++
++	ret = regmap_read(easrc->regmap, REG_EASRC_CS0(mc->regbase), &regval[0]);
++	if (ret)
++		return ret;
++
++	ret = regmap_read(easrc->regmap, REG_EASRC_CS1(mc->regbase), &regval[1]);
++	if (ret)
++		return ret;
++
++	ret = regmap_read(easrc->regmap, REG_EASRC_CS2(mc->regbase), &regval[2]);
++	if (ret)
++		return ret;
  
--	ucontrol->value.enumerated.item[0] = easrc_priv->bps_iec958[mc->regbase];
-+	ucontrol->value.integer.value[0] = easrc_priv->bps_iec958[mc->regbase];
+-	regval = snd_soc_component_read(component, mc->regbase);
++	ret = regmap_read(easrc->regmap, REG_EASRC_CS3(mc->regbase), &regval[3]);
++	if (ret)
++		return ret;
++
++	ret = regmap_read(easrc->regmap, REG_EASRC_CS4(mc->regbase), &regval[4]);
++	if (ret)
++		return ret;
+ 
+-	ucontrol->value.integer.value[0] = regval;
++	ret = regmap_read(easrc->regmap, REG_EASRC_CS5(mc->regbase), &regval[5]);
++	if (ret)
++		return ret;
  
  	return 0;
  }
+@@ -100,22 +130,62 @@ static int fsl_easrc_set_reg(struct snd_kcontrol *kcontrol,
+ 	struct soc_mreg_control *mc =
+ 		(struct soc_mreg_control *)kcontrol->private_value;
+ 	struct fsl_asrc *easrc = snd_soc_component_get_drvdata(component);
+-	unsigned int regval = ucontrol->value.integer.value[0];
+-	bool changed;
++	unsigned int *regval = (unsigned int *)ucontrol->value.iec958.status;
++	bool changed, changed_all = false;
+ 	int ret;
+ 
+-	ret = regmap_update_bits_check(easrc->regmap, mc->regbase,
+-				       GENMASK(31, 0), regval, &changed);
+-	if (ret != 0)
++	ret = pm_runtime_resume_and_get(component->dev);
++	if (ret)
+ 		return ret;
+ 
+-	return changed;
++	ret = regmap_update_bits_check(easrc->regmap, REG_EASRC_CS0(mc->regbase),
++				       GENMASK(31, 0), regval[0], &changed);
++	if (ret != 0)
++		goto err;
++	changed_all |= changed;
++
++	ret = regmap_update_bits_check(easrc->regmap, REG_EASRC_CS1(mc->regbase),
++				       GENMASK(31, 0), regval[1], &changed);
++	if (ret != 0)
++		goto err;
++	changed_all |= changed;
++
++	ret = regmap_update_bits_check(easrc->regmap, REG_EASRC_CS2(mc->regbase),
++				       GENMASK(31, 0), regval[2], &changed);
++	if (ret != 0)
++		goto err;
++	changed_all |= changed;
++
++	ret = regmap_update_bits_check(easrc->regmap, REG_EASRC_CS3(mc->regbase),
++				       GENMASK(31, 0), regval[3], &changed);
++	if (ret != 0)
++		goto err;
++	changed_all |= changed;
++
++	ret = regmap_update_bits_check(easrc->regmap, REG_EASRC_CS4(mc->regbase),
++				       GENMASK(31, 0), regval[4], &changed);
++	if (ret != 0)
++		goto err;
++	changed_all |= changed;
++
++	ret = regmap_update_bits_check(easrc->regmap, REG_EASRC_CS5(mc->regbase),
++				       GENMASK(31, 0), regval[5], &changed);
++	if (ret != 0)
++		goto err;
++	changed_all |= changed;
++err:
++	pm_runtime_put_autosuspend(component->dev);
++
++	if (ret != 0)
++		return ret;
++	else
++		return changed_all;
+ }
+ 
+ #define SOC_SINGLE_REG_RW(xname, xreg) \
+ {	.iface = SNDRV_CTL_ELEM_IFACE_PCM, .name = (xname), \
+ 	.access = SNDRV_CTL_ELEM_ACCESS_READWRITE, \
+-	.info = snd_soc_info_xr_sx, .get = fsl_easrc_get_reg, \
++	.info = fsl_easrc_iec958_info, .get = fsl_easrc_get_reg, \
+ 	.put = fsl_easrc_set_reg, \
+ 	.private_value = (unsigned long)&(struct soc_mreg_control) \
+ 		{ .regbase = xreg, .regcount = 1, .nbits = 32, \
+@@ -146,30 +216,10 @@ static const struct snd_kcontrol_new fsl_easrc_snd_controls[] = {
+ 	SOC_SINGLE_VAL_RW("Context 2 IEC958 Bits Per Sample", 2),
+ 	SOC_SINGLE_VAL_RW("Context 3 IEC958 Bits Per Sample", 3),
+ 
+-	SOC_SINGLE_REG_RW("Context 0 IEC958 CS0", REG_EASRC_CS0(0)),
+-	SOC_SINGLE_REG_RW("Context 1 IEC958 CS0", REG_EASRC_CS0(1)),
+-	SOC_SINGLE_REG_RW("Context 2 IEC958 CS0", REG_EASRC_CS0(2)),
+-	SOC_SINGLE_REG_RW("Context 3 IEC958 CS0", REG_EASRC_CS0(3)),
+-	SOC_SINGLE_REG_RW("Context 0 IEC958 CS1", REG_EASRC_CS1(0)),
+-	SOC_SINGLE_REG_RW("Context 1 IEC958 CS1", REG_EASRC_CS1(1)),
+-	SOC_SINGLE_REG_RW("Context 2 IEC958 CS1", REG_EASRC_CS1(2)),
+-	SOC_SINGLE_REG_RW("Context 3 IEC958 CS1", REG_EASRC_CS1(3)),
+-	SOC_SINGLE_REG_RW("Context 0 IEC958 CS2", REG_EASRC_CS2(0)),
+-	SOC_SINGLE_REG_RW("Context 1 IEC958 CS2", REG_EASRC_CS2(1)),
+-	SOC_SINGLE_REG_RW("Context 2 IEC958 CS2", REG_EASRC_CS2(2)),
+-	SOC_SINGLE_REG_RW("Context 3 IEC958 CS2", REG_EASRC_CS2(3)),
+-	SOC_SINGLE_REG_RW("Context 0 IEC958 CS3", REG_EASRC_CS3(0)),
+-	SOC_SINGLE_REG_RW("Context 1 IEC958 CS3", REG_EASRC_CS3(1)),
+-	SOC_SINGLE_REG_RW("Context 2 IEC958 CS3", REG_EASRC_CS3(2)),
+-	SOC_SINGLE_REG_RW("Context 3 IEC958 CS3", REG_EASRC_CS3(3)),
+-	SOC_SINGLE_REG_RW("Context 0 IEC958 CS4", REG_EASRC_CS4(0)),
+-	SOC_SINGLE_REG_RW("Context 1 IEC958 CS4", REG_EASRC_CS4(1)),
+-	SOC_SINGLE_REG_RW("Context 2 IEC958 CS4", REG_EASRC_CS4(2)),
+-	SOC_SINGLE_REG_RW("Context 3 IEC958 CS4", REG_EASRC_CS4(3)),
+-	SOC_SINGLE_REG_RW("Context 0 IEC958 CS5", REG_EASRC_CS5(0)),
+-	SOC_SINGLE_REG_RW("Context 1 IEC958 CS5", REG_EASRC_CS5(1)),
+-	SOC_SINGLE_REG_RW("Context 2 IEC958 CS5", REG_EASRC_CS5(2)),
+-	SOC_SINGLE_REG_RW("Context 3 IEC958 CS5", REG_EASRC_CS5(3)),
++	SOC_SINGLE_REG_RW("Context 0 IEC958 CS", 0),
++	SOC_SINGLE_REG_RW("Context 1 IEC958 CS", 1),
++	SOC_SINGLE_REG_RW("Context 2 IEC958 CS", 2),
++	SOC_SINGLE_REG_RW("Context 3 IEC958 CS", 3),
+ };
+ 
+ /*
 -- 
 2.34.1
 
