@@ -1,82 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-19173-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19174-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B383B10F6FDC
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2026 17:15:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B18581076387
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2026 17:34:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fmBTT0HRBz2yjV;
-	Thu, 02 Apr 2026 04:15:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.121.94.186
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775063756;
-	cv=none; b=Lo8hZRPiK5Y0UjEoznskj0m1q0Yk6eHWccN5drF0TvCZsz9aYakRkl63NHMawDz1OEUJMAutCP/2PcdoPNgSVK9YmybBrBKiKf9VuXaviI4OBc5Q1roc8iWtKa8+Ri6z/qd5I+2nVOLAnfDFVgsfBiJ1/MCGqyujdCfzsoYIYMKDwWqGNjfRFqG6O9egGKIQAvEHhoFJbhhD3wHTrhmbTcG1Ibrew3sQYr26JCg/wnIT6xlyCc9mB0KXXqvCf5+wZw40sPA4xicJ6q51Y2Xc7DxIfaK93a5fXrjd6enKb2snpuDm8b60K7qcW8x5MLFnHQR9Lajv3H/+Pzxg+UNYVA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fmBtG5446z2yjV;
+	Thu, 02 Apr 2026 04:33:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775064838;
+	cv=none; b=XitISBM/odiouAhPFCsbzYHTn6Jur7H0RZ7wa1qIyHvriuapgSXQgfJCpyLs0TPlIhu7gkcEyl3Qgdj1z+MvrtGKZhu4jLkWICNNPGWQhDNpIbKAItxPVTQhOLDcakMGoY6EoBDYA1NNe92UerJfOKEeiydc3RU7+YX82tiIzU3M2w4bBkVdFlk2oMy4AT+LuMaOA2FYnVPrab5lr3nicz9qhQMKmEw8FVXMzfNHqk87b+Ws1H6GFSi39lnRi7+tFEOT3v2WhIHwW0Nomk+qGkt+uyLwqBDn6BlidFatCVOgTLzh0ngeGfLFFZE06Twj9ASx4EBjZM4ucxY6ZzBzaw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775063756; c=relaxed/relaxed;
-	bh=n9US1j1IVCS91e5Cl5sIb3Rl2HF6TolH+vsF4IESVi8=;
-	h=Date:From:To:Cc:Message-ID:In-Reply-To:References:Subject:
-	 MIME-Version:Content-Type; b=KX+tAUZmw+he8JyHfATUJYCFIMs+7tf7aB1lSUFN862zditlOThybqYU7tIto4aMej3jItdXQNfh0KHDeZwbBR4hPi4K3clu+FnM1S/JyGV7CBCEq02tPKpwtKoxhUdSWwdYTu4Pjh+9aK9Vc/0WwROPgjRuXJs4hAEHpPDHuoxzJX7yyf3Lgzd57vVeKQTvJq2OBX5Mp2yx276iUDB2Fs2yGtdq2Dou9fnmc3WfAayCAMW0u2VcXS0EPwzJ8mB8BNMmBY80a5Lqg5HuCUbzCKYw+tRgYxoX952j6LLCBbUFZPt8eUxM3fKY6K5MhgoZeSld0OZBiMSx1Amfp0j7eg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xs4all.nl; dkim=pass (2048-bit key; secure) header.d=xs4all.nl header.i=@xs4all.nl header.a=rsa-sha256 header.s=xs4all01 header.b=XylVLZKM; dkim-atps=neutral; spf=pass (client-ip=195.121.94.186; helo=ewsoutbound.kpnmail.nl; envelope-from=jkoolstra@xs4all.nl; receiver=lists.ozlabs.org) smtp.mailfrom=xs4all.nl
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xs4all.nl
+	t=1775064838; c=relaxed/relaxed;
+	bh=rSqaC2HS6F3jm0Ha+Zxiv2wIM9/dauwd7UVnyK3ZjbE=;
+	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
+	 In-Reply-To:Content-Type; b=O7PVnajiBxUpnWWANT6OGrYOF8aEH+SHCx479X5HEtAzgE/7zHqNbMgzFRhjM3Vuf6HBM89f29/a76IUECQYFj+aNeZ3bRb/MBBgJq73dN/zNFgIG8WFqMWQHgtrPuTTXjpSBJ0ChmA3EjdUIbd17bL4PVRluXqYYMD3oqPoy5HQwND+gtsSotb12v5PXnww7UCX9DWS9irFdFm09FQhyDlOiaPlYENWJhDUkI45ucZJlmFsjkT/U8qTYpAVSDT5aewMgHcQEIHMlIT4KPhcAmMleGRQ12sNcywC8kIKVr143UI80x5GKgivgKEUrXqMfoBxVdkpYiR4oxbgjvaKrg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=o1DVKJC0; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=xs4all.nl header.i=@xs4all.nl header.a=rsa-sha256 header.s=xs4all01 header.b=XylVLZKM;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=o1DVKJC0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=xs4all.nl (client-ip=195.121.94.186; helo=ewsoutbound.kpnmail.nl; envelope-from=jkoolstra@xs4all.nl; receiver=lists.ozlabs.org)
-Received: from ewsoutbound.kpnmail.nl (ewsoutbound.kpnmail.nl [195.121.94.186])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fmBTP5XYhz2yj3
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2026 04:15:51 +1100 (AEDT)
-X-KPN-MessageId: 366165f0-2dee-11f1-89dd-00505699b430
-Received: from mta.kpnmail.nl (unknown [10.31.161.189])
-	by ewsoutbound.so.kpn.org (Halon) with ESMTPS
-	id 366165f0-2dee-11f1-89dd-00505699b430;
-	Wed, 01 Apr 2026 19:14:16 +0200 (CEST)
-Received: from mtaoutbound.kpnmail.nl (unknown [10.128.135.189])
-	by mta.kpnmail.nl (Halon) with ESMTP
-	id 365f816b-2dee-11f1-b5d0-0050569981f5;
-	Wed, 01 Apr 2026 19:14:16 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=xs4all.nl; s=xs4all01;
-	h=content-type:mime-version:subject:message-id:to:from:date;
-	bh=n9US1j1IVCS91e5Cl5sIb3Rl2HF6TolH+vsF4IESVi8=;
-	b=XylVLZKMIPnLfWB2TQL/3KZFqNmoB8DxK1kZkBquxMh1gVmu8pPg0RoOq7nuc2L9k5V7zIwI85T9b
-	 yG4O5NtzFu78xbNiJ88FDj5d77cXLjzVeEb3ZJmXQpb2n4B85GqkOsHWmgAsxeK2jH6n1rMdIFdm/X
-	 idarjagbgWDkezbQ4WUW7Hlx9na+LGVuY4tPurZUqzbyuAe0Z9eJgQTqpcjH6nXfO7ieRpYiZlZEjw
-	 wgoO4tKKU0av9EofhxXOeuXzPTrqctUoLSM+djdgnpvOENX1vj2Gt/F18XbKmj32JK2/M/pg5uitIR
-	 pVfKms0Ea/+YCFlS1t9BncHD385V5Kg==
-X-KPN-MID: 33|AIPn+MI72JeaeDkiPm/RP48qArZ3z1MY4GnBmfAp1JtN5dwVmsrRzoY0WZo+z5j
- yWNPtvknkYXBq6MZphO9Pl6YYcsjKT/7WdTNstd3+UFY=
-X-CMASSUN: 33|nynSNPkNZAQIr0GpcmfjY1RjB+vhQ7WInhGboLItIIImqVWytKfRF4ka1TFJF83
- cJyFbJuYZ+9HXlDj26QR5Zw==
-X-KPN-VerifiedSender: Yes
-Received: from cpxoxapps-mh04 (cpxoxapps-mh04.personalcloud.so.kpn.org [10.128.135.210])
-	by mtaoutbound.kpnmail.nl (Halon) with ESMTPSA
-	id 3653098c-2dee-11f1-94b1-00505699eff2;
-	Wed, 01 Apr 2026 19:14:16 +0200 (CEST)
-Date: Wed, 1 Apr 2026 19:14:16 +0200 (CEST)
-From: Jori Koolstra <jkoolstra@xs4all.nl>
-To: Haren Myneni <haren@linux.ibm.com>, Greg KH <gregkh@linuxfoundation.org>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Srikar Dronamraju <srikar@linux.ibm.com>,
-	Jonathan Greental <yonatan02greental@gmail.com>,
-	Kees Cook <kees@kernel.org>, Shrikanth Hegde <sshegde@linux.ibm.com>,
-	"open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
-Message-ID: <1967941740.854847.1775063656203@kpc.webmail.kpnmail.nl>
-In-Reply-To: <b0a99a20f5f56ad8291d91b209d8ad5f7515bb23.camel@linux.ibm.com>
-References: <20260308214634.1215051-1-jkoolstra@xs4all.nl>
- <2026030924-penniless-hermit-ffc0@gregkh>
- <1304966204.915283.1773053337271@kpc.webmail.kpnmail.nl>
- <2026031154-labored-frivolous-154b@gregkh>
- <b0a99a20f5f56ad8291d91b209d8ad5f7515bb23.camel@linux.ibm.com>
-Subject: Re: [PATCH v2] powerpc: vas-api: constify dynamic struct class in
- coproc api register
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fmBtF0986z2yj3
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2026 04:33:56 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 631AVPX0505649;
+	Wed, 1 Apr 2026 17:33:45 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=rSqaC2
+	HS6F3jm0Ha+Zxiv2wIM9/dauwd7UVnyK3ZjbE=; b=o1DVKJC04XxVqWAtIzvm4Q
+	LvBKhissxWZgbfjOMM41uOIN40Vbf7jf8rD5RxfPQpQ8rxnwmMJCTWMrjuTec8f4
+	O+LXOFaX5MtNt9OwkYdW8m5/6Tlsy7A6TacUJeiTkHJtHOmepgg79JpyRxZTRkq7
+	22pxvXhguFyk2/LGs0FlKOYyGjBQAG75lFktzcBkT0rVrvhXrU/5NgrEGB9s+np1
+	YtSPbsKbjeZaQHj3bQ1K5izuMlXdtOlQP6iru4ZV7/lJbr2hksjo5YyawNOt3rud
+	Ux2zjYfchNL/r75AR4k3CvwZBrqhXbNZ/YjQ8/6tx+1qqoA3TibcvbJ+gjo8d+hA
+	==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d66g21fg6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 01 Apr 2026 17:33:44 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 631FYUVo022165;
+	Wed, 1 Apr 2026 17:33:43 GMT
+Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4d6tan6pjp-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 01 Apr 2026 17:33:43 +0000
+Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
+	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 631HXhgG26673892
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 1 Apr 2026 17:33:43 GMT
+Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1C00458052;
+	Wed,  1 Apr 2026 17:33:43 +0000 (GMT)
+Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 36C5558056;
+	Wed,  1 Apr 2026 17:33:38 +0000 (GMT)
+Received: from [9.39.18.42] (unknown [9.39.18.42])
+	by smtpav04.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  1 Apr 2026 17:33:37 +0000 (GMT)
+Message-ID: <f8934e88-5b88-456d-affd-e29e2f78b6cf@linux.ibm.com>
+Date: Wed, 1 Apr 2026 23:03:31 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,117 +81,113 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Priority: 3
-Importance: Normal
-X-Originating-IP: 178.227.141.37
+User-Agent: Mozilla Thunderbird
+From: Sayali Patil <sayalip@linux.ibm.com>
+Subject: Re: [PATCH v3 11/13] selftests/mm: fix double increment in linked
+ list cleanup in compaction_test
+To: "David Hildenbrand (Arm)" <david@kernel.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Shuah Khan <shuah@kernel.org>, linux-mm@kvack.org,
+        linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org,
+        Ritesh Harjani <ritesh.list@gmail.com>
+Cc: Zi Yan <ziy@nvidia.com>, Michal Hocko <mhocko@kernel.org>,
+        Oscar Salvador <osalvador@suse.de>,
+        Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+        Dev Jain <dev.jain@arm.com>, Liam.Howlett@oracle.com,
+        linuxppc-dev@lists.ozlabs.org,
+        Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+References: <cover.1774591179.git.sayalip@linux.ibm.com>
+ <4c47a2ebbc41f90c7a0cb3f8b34106b2b64296f6.1774591179.git.sayalip@linux.ibm.com>
+ <b6d211e1-233e-4079-a8b9-6682e12077ba@linux.ibm.com>
+ <5684cab6-d5a6-4de9-9545-f8cae775d825@kernel.org>
+Content-Language: en-IN
+In-Reply-To: <5684cab6-d5a6-4de9-9545-f8cae775d825@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=Fdo6BZ+6 c=1 sm=1 tr=0 ts=69cd56f9 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=Ikd4Dj_1AAAA:8
+ a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=T6nULJMaX99D9d00DIAA:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: Bxer0GwKb5xpt3tAX3oiBerSsEtjsxnZ
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDAxMDE2MiBTYWx0ZWRfXzEISyrtqStlA
+ hNkcbo7yzW2GQIQlG/T++H5n5nbP9R4jBNPLST6vVhS0DrgKsrqn9FT6HkVY/ip1FchAa3/SLMl
+ KtPoBJcHbTL157FOIpjzDMq0ytao+4spNvl9bCbLTdzKwtVyL4VgqLI2+WScV1BTmtyMjS9L6Vj
+ kwe44k4cuZ4BTzzlv2FQdD9ytLMhoDWFzrc5nqQyHpXhEEN2Gyih5VhWoe26aHMR36iVWy6dsVQ
+ zZiWJpH/ckXojBJZwOoLcpOYp2QLtRj3IYONhTkJ+8olYpEUpFpFaO85uHSBxLD9MDiRtPze2oP
+ uR9WdL9QrlU+cSU0/fLvpR5MDQpt1kl9Puyp10hbaLabexZqJYewwFd4GzE9Hlj4Z0QdAONKp9k
+ FZOHRpiRtOXRbJZ7TZtr3cxKjuDHfHv2/mJD3kY3SJTbAtJxbPEpBj67f66RlDs6/2VUSQ+P/CB
+ V4OX2hHq/vbPwVps/jg==
+X-Proofpoint-GUID: aqf5EXqq0VS2xdQNbf1Bhqhvgccm-WRq
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-01_04,2026-04-01_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 clxscore=1015 bulkscore=0 suspectscore=0 priorityscore=1501
+ adultscore=0 malwarescore=0 phishscore=0 spamscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2604010162
 
-Hi Haren,
 
-> Op 12-03-2026 00:27 CET schreef Haren Myneni <haren@linux.ibm.com>:
->=20
-> =20
-> On Wed, 2026-03-11 at 09:23 +0100, Greg KH wrote:
-> > On Mon, Mar 09, 2026 at 11:48:57AM +0100, Jori Koolstra wrote:
-> > > My bad, the earlier email went out to soon.
-> > >=20
-> > > > Op 09-03-2026 07:01 CET schreef Greg KH
-> > > > <gregkh@linuxfoundation.org>:
-> > > > > =C2=A0arch/powerpc/platforms/book3s/vas-api.c | 34
-> > > > > +++++++++++++++++++------
-> > > > > =C2=A01 file changed, 26 insertions(+), 8 deletions(-)
-> > > > >=20
-> > > > > diff --git a/arch/powerpc/platforms/book3s/vas-api.c
-> > > > > b/arch/powerpc/platforms/book3s/vas-api.c
-> > > > > index ea4ffa63f043..e377981fd533 100644
-> > > > > --- a/arch/powerpc/platforms/book3s/vas-api.c
-> > > > > +++ b/arch/powerpc/platforms/book3s/vas-api.c
-> > > > > @@ -45,7 +45,7 @@ static struct coproc_dev {
-> > > > > =C2=A0=09struct device *device;
-> > > > > =C2=A0=09char *name;
-> > > > > =C2=A0=09dev_t devt;
-> > > > > -=09struct class *class;
-> > > > > +=09const struct class *class;
-> > > > > =C2=A0=09enum vas_cop_type cop_type;
-> > > > > =C2=A0=09const struct vas_user_win_ops *vops;
-> > > > > =C2=A0} coproc_device;
-> > > > > @@ -599,6 +599,21 @@ static struct file_operations coproc_fops
-> > > > > =3D {
-> > > > > =C2=A0=09.unlocked_ioctl =3D coproc_ioctl,
-> > > > > =C2=A0};
-> > > > > =C2=A0
-> > > > > +static const struct class nx_gzip_class =3D {
-> > > > > +=09.name=09=09=3D "nx-gzip",
-> > > > > +=09.devnode=09=3D coproc_devnode
-> > > > > +};
-> > > > > +
-> > > > > +static const struct class* cop_to_class(enum vas_cop_type cop)
-> > > > > +{
-> > > > > +=09switch (cop) {
-> > > > > +=09case VAS_COP_TYPE_GZIP:=09=09return
-> > > > > &nx_gzip_class;
-> > > > > +=09default:
-> > > > > +=09=09pr_err("No device class defined for cop type
-> > > > > %d\n", cop);
-> > > > > +=09=09return NULL;
-> > > > > +=09}
-> > > > > +}
-> > > > > +
-> > > > > =C2=A0/*
-> > > > > =C2=A0 * Supporting only nx-gzip coprocessor type now, but this A=
-PI
-> > > > > code
-> > > > > =C2=A0 * extended to other coprocessor types later.
-> > > > > @@ -609,6 +624,10 @@ int vas_register_coproc_api(struct module
-> > > > > *mod, enum vas_cop_type cop_type,
-> > > > > =C2=A0{
-> > > > > =C2=A0=09int rc =3D -EINVAL;
-> > > > > =C2=A0=09dev_t devno;
-> > > > > +=09const struct class* class =3D cop_to_class(cop_type);
-> > > > > +
-> > > > > +=09if (!class)
-> > > > > +=09=09return rc;
-> > > >=20
-> > > > How can this happen?
-> > > >=20
-> > > > This feels odd, are different types of devices being registered
-> > > > here?=C2=A0 I
-> > > > don't see where VAS_COP_TYPE_GZIP was being tested in the
-> > > > original code,
-> > > > why add this additional logic?
-> > > >=20
-> > >=20
-> > > My line of thought is this:
-> > >=20
-> > > There is a function vas_register_coproc_api() that does some kind
-> > > of registering
-> > > for different coprocessor types. It has the following comment
-> > > above:
-> > >=20
-> > > /*
-> > > =C2=A0* Supporting only nx-gzip coprocessor type now, but this API co=
-de
-> > > =C2=A0* extended to other coprocessor types later.
-> > > =C2=A0*/
-> >=20
-> > I guess "later" never happened :(
->=20
-> Yes, VAS is virtual accelerator switchboard which can support multiple
-> accelerator types. Hence added vas_register_api* interface for
-> different accelerators.=C2=A0But no plans to add other accelerators on
-> powerpc right now. So can we use only VAS_COP_TYPE_GZIP class and can
-> visit later.=20
->=20
 
-Are you OK with the way
-
-   static const struct class* cop_to_class(enum vas_cop_type cop)
-
-is used to connect the vas_cop_type to the proper device class? Or would yo=
-u
-prefer a different solution?
-
-Thanks,
-Jori.
+On 01/04/26 20:09, David Hildenbrand (Arm) wrote:
+> On 4/1/26 16:32, Sayali Patil wrote:
+>>
+>> On 27/03/26 12:46, Sayali Patil wrote:
+>>> The cleanup loop of allocated memory currently uses:
+>>>
+>>>       for (entry = list; entry != NULL; entry = entry->next) {
+>>>           munmap(entry->map, MAP_SIZE);
+>>>           if (!entry->next)
+>>>               break;
+>>>           entry = entry->next;
+>>>       }
+>>>
+>>> The inner entry = entry->next causes the loop to skip every
+>>> other node, resulting in only half of the mapped regions being
+>>> unmapped.
+>>>
+>>> Remove the redundant increment to ensure every entry is visited
+>>> and unmapped during cleanup.
+>>>
+>>> Fixes: bd67d5c15cc1 ("Test compaction of mlocked memory")
+>>> Reviewed-by: Zi Yan <ziy@nvidia.com>
+>>> Acked-by: David Hildenbrand (Arm) <david@kernel.org>
+>>> Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+>>> Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
+>>> ---
+>>>    tools/testing/selftests/mm/compaction_test.c | 3 ---
+>>>    1 file changed, 3 deletions(-)
+>>>
+>>> diff --git a/tools/testing/selftests/mm/compaction_test.c b/tools/
+>>> testing/selftests/mm/compaction_test.c
+>>> index 30209c40b697..f73930706bd0 100644
+>>> --- a/tools/testing/selftests/mm/compaction_test.c
+>>> +++ b/tools/testing/selftests/mm/compaction_test.c
+>>> @@ -263,9 +263,6 @@ int main(int argc, char **argv)
+>>>          for (entry = list; entry != NULL; entry = entry->next) {
+>>>            munmap(entry->map, MAP_SIZE);
+>>> -        if (!entry->next)
+>>> -            break;
+>>> -        entry = entry->next;
+>>>        }
+>>>          if (check_compaction(mem_free, hugepage_size,
+>>
+>> Sorry, this change is not valid.
+>>
+>> The goal of this test is to verify the kernel’s ability to compact
+>> unevictable (MAP_LOCKED) pages. The loop is intentionally written to
+>> unmap every other chunk, thereby creating fragmentation with locked pages
+>> before check_compaction() is invoked.
+>>
+>> With the proposed change (removing the double increment), the loop ends up
+>> unmapping all allocated locked pages instead of leaving a fragmented
+>> pattern. This results in memory being effectively unfragmented.
+> 
+> Ahhh, we should really make that clearer in a comment. I missed it myself :(
+> 
+yes, let me add a comment to clarify this and send it in v4.
 
