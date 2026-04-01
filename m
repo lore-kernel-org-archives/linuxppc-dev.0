@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-19154-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19155-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8E3F107637F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2026 14:11:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CE82107637F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2026 14:18:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fm6NB43Kjz2yhY;
-	Thu, 02 Apr 2026 01:11:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fm6Y71v3Dz2yhG;
+	Thu, 02 Apr 2026 01:18:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775052666;
-	cv=none; b=O6LEpXmkz8J++0lwAJwV8NixsSarlOE5z1kxjums4iMK3MXD+bViI/ORbV5OzJfMAAcKIUIGb31+pgoaTOPzGqWQmre4RQRQs6Y6ke4FkJ42clYBP1kUBnBE9yuRarf5+HJEZq42VqmI7bs+134nDYEHVnIC/ZlkKfdiX+pFTEvQIg/LKXZZ1aNgG4gIZvsT9iGdolAIWJU/PIjPkeNcF1U7dj3KXuDRDazUYRESd0FgyfPFQ950hYA2gsNBDfTvvwaDrj/NXMKjAlZHDBoiT4DkhllHJgGbB2azDxGfgIWRpWDq11IpiBVKyqV0dcTxCAFQh1XYq8rAdi02NhNdew==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775053131;
+	cv=none; b=Ito/Q4wVrPsFSAeopHDi9VtnTdGxy9fM4Y4BpIxtGRuBjgzLXassu8eJVF6CUJtaD8t0GqDqdOI9xvKbJ+pAcmQDG7xKh6Fl0oCIP3AjWEmbY7/Y+25d39Jy7WFg1/s3kVktLtxmBGb63T6B+92TSBdCgcOarGxdCh1MSTWDf2wWO2HQV3Vw2jJbzNDwi5qyCo5f+3Hc+D/wtZKC0ZdXChTMns1Ge91sbRgzHGG/+qs/frYVa/vP3Ms9PLvQwhdp5MUtNA1PXgkd4/GBWBQgA6W5V2V3ZW9bL3ZE8slqIlOwhHmXSPVW6YnLy4C9c9zdGCGD/jM0VKNglwPsKpDu6g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775052666; c=relaxed/relaxed;
-	bh=ihs7ql9+V7i2jsV+Fz+TOoJH9NgFzocVSWGjd1tnnG8=;
+	t=1775053131; c=relaxed/relaxed;
+	bh=kN3IUsatcuTycLS8YiFqTvSt4ZBMelQXdU6lCmPb1Qo=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=MRw1B+un5TVWnzx/LEz6/gfkixYRiZnp2aG4sm+PUNqwofI7HqxXAepXmkuR89DVEkKh2VFb9aM8mGZD0F0PR9UMqk6e8+dkLIwXCHafemXZscoqr45DbP+kNtYKHURktSXVKCX56tbZPAftneXnaletwlmR8yC/l0XDaWPW/igHI3GI9y6w/+fQi5KfmJlBX54SCtz4eeS7w6Lojh8QVftF+h25SAV6mJrJRmarx0u0EVTDvuqnhyGa7OOLaUgJNl72WPD6t+3AWSgfFEGfhpPdlQj6wd6PQHW6LDPvS1rskrZY/JWMG4pSiMhMv9++G+b3d7emvB5THO0cikiXmg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EVtkVC0K; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=mOWgNE7dOt8PSfRjUC8CIpyw6EHwfIWKLzWRpWLQX/46F8l4c6D+jfpVpBP5rA+Ovvqb5N3dFf7yBI5O2FONxLdyJ4G86a4Z6pXqb8X0TZJIyyceRwTvRwO+XU9/X6AyTqiqgb3lgiaUi4kWr0iazhAIJq1I7u5InY2wyKn+XeXh5KxC7zWcxewihk/jiOPdpOGEvBzpdhzF30QbMk/4tRbRdRTs1dlGhc9PLPvzVjpIDAlt2QgHymqcMDJfRJE6XhRbjGNoepm/avj+EQN9GMxytmHONEu2eTFAHvp8XnmZX+SWa0jOTBYmBjJ6J5RhSDwUXJXUKiW5JLwOEe+A0A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=s/xN6fs2; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EVtkVC0K;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=s/xN6fs2;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fm6N340dVz2xd6
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2026 01:10:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fm6Y625hgz2xHX
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2026 01:18:50 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id B91324089F;
-	Wed,  1 Apr 2026 14:10:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AA854C19421;
-	Wed,  1 Apr 2026 14:10:53 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 9123740AAC;
+	Wed,  1 Apr 2026 14:18:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 04748C4CEF7;
+	Wed,  1 Apr 2026 14:18:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775052657;
-	bh=y9AZ3kPGoHublxbM40WNj5WyT0fJ5pu6ZSBg2xxPUXM=;
+	s=k20201202; t=1775053128;
+	bh=0FnBo7fPus+XeVOBCwP6OdIjz61MR23nw7pfxfUTbkc=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=EVtkVC0K0I6FJox73TKW/Bx7q/dEY4tNpkzJoZqc9VoM5MX9GOTFVnOQ9eqLz7fTt
-	 xHfpZyN+DdIdzs6aSCnUdS1E1rzPqX9K0cGIS2P/lcAtjkq/xMbunYz4Wt8JJwHoAK
-	 Pq9g8E9qiPs5uVsSD6ZO1tsAcA39t6bDwU69m5irmlIpXRpIXKk1z+OcMIybSlMQdy
-	 s9QC1w3DFHiUJ0kgQbcJwM/7C6S6H4fVS0ehb8yhaACrRMOK7AQo5m4DksLS1tjxGD
-	 2M4hyTLZUbmibYBR4DjVRPy/3ENNUFj0yHk5v+FJL+XF9SSCdboUk5MuMJp4Y1fen2
-	 zDQyJktu+qzLw==
-Message-ID: <4e859cfa-db79-4676-9509-81a2140db3f3@kernel.org>
-Date: Wed, 1 Apr 2026 16:10:51 +0200
+	b=s/xN6fs2yJMIi75Af4VCjehiyxEZsmoJQ/dqS8ELwDvfWNqLK0Oh0nrpjTi/dZTvg
+	 W8EbAq6AKWzEmQx9cBsNJ8X4u+2yVhTwe6VkTA2ZFqutURn2GpBUzcqk+SICdx+jbO
+	 WzkE7Aik2pUZUPoFyvIfYTZ1kescvgsDWF6Zo9I3Ks5YaRrg2/BVJp1QmVCOBoF0EE
+	 uh55q+/Z/0ouMbPzsc8Qtly3J7sqlD8G7luwMJ2GgUMcYPM+cdB34N/15q5S6LLOID
+	 rhtEKxlGOwrR1YwkBYjEe5LOkEGGxq/pa6O+dLRpe1dEiqPCFuVu4G0nrlQaEI1cor
+	 YezufykKlly+Q==
+Message-ID: <142f8c68-43c7-4a6a-bd2c-1c5ebda09b27@kernel.org>
+Date: Wed, 1 Apr 2026 16:18:43 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,8 +60,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 06/13] selftest/mm: adjust hugepage-mremap test size
- for large huge pages
+Subject: Re: [PATCH v3 07/13] selftest/mm: register existing mapping with
+ userfaultfd in hugepage-mremap
 To: Sayali Patil <sayalip@linux.ibm.com>,
  Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
  linux-mm@kvack.org, linux-kernel@vger.kernel.org,
@@ -72,7 +72,7 @@ Cc: Zi Yan <ziy@nvidia.com>, Michal Hocko <mhocko@kernel.org>,
  Liam.Howlett@oracle.com, linuxppc-dev@lists.ozlabs.org,
  Venkat Rao Bagalkote <venkat88@linux.ibm.com>
 References: <cover.1774591179.git.sayalip@linux.ibm.com>
- <fd252496169a91c80e339910978f21c3f4aac9f7.1774591179.git.sayalip@linux.ibm.com>
+ <b3a1760e4583340e767d4045b90784ee41c8773e.1774591179.git.sayalip@linux.ibm.com>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -119,108 +119,116 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <fd252496169a91c80e339910978f21c3f4aac9f7.1774591179.git.sayalip@linux.ibm.com>
+In-Reply-To: <b3a1760e4583340e767d4045b90784ee41c8773e.1774591179.git.sayalip@linux.ibm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 3/27/26 08:16, Sayali Patil wrote:
-> The hugepage-mremap selftest uses a default size of 10MB, which is
-> sufficient for small huge page sizes. However, when the huge page size
-> is large (e.g. 1GB), 10MB is smaller than a single huge page.
-> As a result, the test does not trigger PMD sharing and the
-> corresponding unshare path in mremap(), causing the
-> test to fail (mremap succeeds where a failure is expected).
+> Previously, register_region_with_uffd() created a new anonymous
+> mapping and overwrote the address supplied by the caller before
+> registering the range with userfaultfd.
 > 
-> Update run_vmtest.sh to use twice the huge page size when the huge page
-> size exceeds 10MB, while retaining the 10MB default for smaller huge
-> pages. This ensures the test exercises the intended PMD sharing and
-> unsharing paths for larger huge page sizes.
+> As a result, userfaultfd was applied to an unrelated anonymous mapping
+> instead of the hugetlb region used by the test.
 > 
-> Before patch:
->  running ./hugepage-mremap
->  ------------------------------
->  TAP version 13
->  1..1
->   Map haddr: Returned address is 0x7eaa40000000
->   Map daddr: Returned address is 0x7daa40000000
->   Map vaddr: Returned address is 0x7faa40000000
->   Address returned by mmap() = 0x7fffaa600000
->   Mremap: Returned address is 0x7faa40000000
->   First hex is 0
->   First hex is 3020100
->  Bail out! mremap: Expected failure, but call succeeded
->  Planned tests != run tests (1 != 0)
->  Totals: pass:0 fail:0 xfail:0 xpass:0 skip:0 error:0
->  [FAIL]
->  not ok 1 hugepage-mremap # exit=1
+> Remove the extra mmap() and register the caller-provided address range
+> directly using UFFDIO_REGISTER_MODE_MISSING, so that faults are
+> generated for the hugetlb mapping used by the test.
+> 
+> This ensures userfaultfd operates on the actual hugetlb test region and
+> validates the expected fault handling.
 > 
 > Before patch:
 >  running ./hugepage-mremap
->  ------------------------------
+>  -------------------------
 >  TAP version 13
 >  1..1
 >   Map haddr: Returned address is 0x7eaa40000000
 >   Map daddr: Returned address is 0x7daa40000000
 >   Map vaddr: Returned address is 0x7faa40000000
->   Address returned by mmap() = 0x7fffaa600000
+>   Address returned by mmap() = 0x7fff9d000000
 >   Mremap: Returned address is 0x7faa40000000
 >   First hex is 0
 >   First hex is 3020100
->  Bail out! mremap: Expected failure, but call succeeded
->  Planned tests != run tests (1 != 0)
->  Totals: pass:0 fail:0 xfail:0 xpass:0 skip:0 error:0
->  [FAIL]
->  not ok 1 hugepage-mremap # exit=1
-> 
-
-Why are there two "Before patch" in here?
-
-> After patch:
->  running ./hugepage-mremap 2048
->  ------------------------------
->  TAP version 13
->  1..1
->   Map haddr: Returned address is 0x7eaa40000000
->   Map daddr: Returned address is 0x7daa40000000
->   Map vaddr: Returned address is 0x7faa40000000
->   Address returned by mmap() = 0x7fff13000000
->   Mremap: Returned address is 0x7faa40000000
->   First hex is 0
->   First hex is 3020100
->   ok 1 Read same data
+>  ok 1 Read same data
 >  Totals: pass:1 fail:0 xfail:0 xpass:0 skip:0 error:0
 >  [PASS]
->  ok 1 hugepage-mremap 2048
+>  ok 1 hugepage-mremap
 > 
-> Fixes: f77a286de48c ("mm, hugepages: make memory size variable in hugepage-mremap selftest")
-> Acked-by: Zi Yan <ziy@nvidia.com>
+> After patch:
+>  running ./hugepage-mremap
+>  -------------------------
+>  TAP version 13
+>  1..1
+>   Map haddr: Returned address is 0x7eaa40000000
+>   Map daddr: Returned address is 0x7daa40000000
+>   Map vaddr: Returned address is 0x7faa40000000
+>   Registered memory at address 0x7eaa40000000 with userfaultfd
+>   Mremap: Returned address is 0x7faa40000000
+>   First hex is 0
+>   First hex is 3020100
+>  ok 1 Read same data
+>  Totals: pass:1 fail:0 xfail:0 xpass:0 skip:0 error:0
+>  [PASS]
+>  ok 1 hugepage-mremap
+
+Okay, so we tested mremap() of something that is not even hugetlb.
+
+> 
+> Fixes: 12b613206474 ("mm, hugepages: add hugetlb vma mremap() test")
 > Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
 > Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
 > ---
->  tools/testing/selftests/mm/run_vmtests.sh | 13 ++++++++++++-
->  1 file changed, 12 insertions(+), 1 deletion(-)
+>  tools/testing/selftests/mm/hugepage-mremap.c | 21 +++++---------------
+>  1 file changed, 5 insertions(+), 16 deletions(-)
 > 
-> diff --git a/tools/testing/selftests/mm/run_vmtests.sh b/tools/testing/selftests/mm/run_vmtests.sh
-> index afdcfd0d7cef..eecec0b6eb13 100755
-> --- a/tools/testing/selftests/mm/run_vmtests.sh
-> +++ b/tools/testing/selftests/mm/run_vmtests.sh
-> @@ -293,7 +293,18 @@ echo "$shmmax" > /proc/sys/kernel/shmmax
->  echo "$shmall" > /proc/sys/kernel/shmall
+> diff --git a/tools/testing/selftests/mm/hugepage-mremap.c b/tools/testing/selftests/mm/hugepage-mremap.c
+> index b8f7d92e5a35..e611249080d6 100644
+> --- a/tools/testing/selftests/mm/hugepage-mremap.c
+> +++ b/tools/testing/selftests/mm/hugepage-mremap.c
+> @@ -85,25 +85,14 @@ static void register_region_with_uffd(char *addr, size_t len)
+>  	if (ioctl(uffd, UFFDIO_API, &uffdio_api) == -1)
+>  		ksft_exit_fail_msg("ioctl-UFFDIO_API: %s\n", strerror(errno));
 >  
->  CATEGORY="hugetlb" run_test ./map_hugetlb
-> -CATEGORY="hugetlb" run_test ./hugepage-mremap
+> -	/* Create a private anonymous mapping. The memory will be
+> -	 * demand-zero paged--that is, not yet allocated. When we
+> -	 * actually touch the memory, it will be allocated via
+> -	 * the userfaultfd.
+> -	 */
+> -
+> -	addr = mmap(NULL, len, PROT_READ | PROT_WRITE,
+> -		    MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+> -	if (addr == MAP_FAILED)
+> -		ksft_exit_fail_msg("mmap: %s\n", strerror(errno));
+> -
+> -	ksft_print_msg("Address returned by mmap() = %p\n", addr);
+> -
+> -	/* Register the memory range of the mapping we just created for
+> -	 * handling by the userfaultfd object. In mode, we request to track
+> -	 * missing pages (i.e., pages that have not yet been faulted in).
+> +	/* Register the passed memory range for handling by the userfaultfd object.
+
+
+/*
+ * ...
+
+While at it.
+
+> +	 * In mode, we request to track missing pages
+> +	 * (i.e., pages that have not yet been faulted in).
+>  	 */
+>  	if (uffd_register(uffd, addr, len, true, false, false))
+>  		ksft_exit_fail_msg("ioctl-UFFDIO_REGISTER: %s\n", strerror(errno));
 > +
-> +# If the huge page size is larger than 10MB, increase the test memory size
-> +# to twice the huge page size (in MB) to ensure the test exercises PMD sharing
-> +# and the unshare path in hugepage-mremap. Otherwise, run the test with
-> +# the default 10MB memory size.
+> +	ksft_print_msg("Registered memory at address %p with userfaultfd\n", addr);
+>  }
+>  
+>  int main(int argc, char *argv[])
 
-PMD sharing requires, on x86, a 1 GiB area with 2 MiB hugetlb folios.
+Yes, that code is extremely weird. I wonder if this was some
+copy-and-paste from other uffd test code.
 
-How does doubling sort that out?
-
-Also, why the magic value 10mb?
-
+Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 
 -- 
 Cheers,
