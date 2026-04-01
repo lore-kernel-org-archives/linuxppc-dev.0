@@ -1,21 +1,21 @@
-Return-Path: <linuxppc-dev+bounces-19169-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19170-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40ED810F6FD9
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2026 16:03:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6DEFE10F6FDC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2026 16:03:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fm8sv1vWrz2yql;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fm8sv2yjWz2yqt;
 	Thu, 02 Apr 2026 03:03:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.21
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775059411;
-	cv=none; b=cC8dw+gtryW6Casuow2V4M4Ysso+SfCOVINZB8fgPfjzjAlgaIzDCjO72u4CUX560ir2lFrQ8mmRzNabP/II3Lv14G6aoAtkNcirIi4+1AXC7SDFfSwa05drbwbdWHZe/2Z4hVnnkwVbOE91KPir/2ZbQWC5FYu3Z1fUy6yL1Z8BhyKhS4IAJv4zFNkbnPozZQX0PjCdbuuJ3E8J3Mc97vdMubWXamXNGVaSExWBxSUiPb+M2/EviH6PHT5GmXOVtCdqc4u2m5+TOw+LBbITNzl3RGQhnXuByXHHMkR8ZXC1e+kPol2C419yYh0iqZ4GTyuojugPSaLgqtlZnwveWg==
+	cv=none; b=JekgH+HziJX4KSNsdKtPG5KgbCpQvDTQDpbNohxQOryaMp8y9LhT5AOwH6TLOpwbzYFmGYoAv+ysp9Mojoeb6yCP4AfjlxwIcd9gEF4H0uUK1PMF7cLnuDXuzMSlB6sqiq7XZ+ZtPU0kmjG39xP02QtR7TBDq/P0g64GN9Ry3K/4DP9L92Ikd2ElDzZLn6CB81wt9uu+ix4eKsEi+dR3kp7uU1gQEAfFEOgbuRIs/toKg7/q2UIK2nGQ78XXRbEaHVW2ksfwRX7mWId0T9Ctsmgb4DYQ+fPbFueUvoaGwOxRgNJfzOZswEsbkT9qFb/1+5XqMEoN//uZ5hMGWX+2qA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1775059411; c=relaxed/relaxed;
-	bh=1r3vmCb4YDlzZ/bs34e1+PQ/MoUtk7gLij0kPF4SA3s=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=BamMe/i5ijHFohyjl6nDFKrWchFg+x7cxiYZAU5FavMHovlfsI+XKwXhYOErZ8TQ78OIE+3BivYcSJY+d0GiuwaRHXangBGW8yIOsj9vDsri5SYrAWxptYl5ftRVZBHRMP59pQfYrN/GEeA9niR+SUl9qHOOJiXZT0mRXFMiu+343tV969aTIEeFbAzua60BKvVmgth9kn321+L37Iu4EntxIbUbwqRT0qmKgYsHRhX+mG/xL1ES3FXMLhQ3K0gQa/6R59NC2eiFCDKz+2QBk8UU/CEAcVJ+nxoWuSaY7lbAATAGY2diItI7lcE0ELXYqrFj4v9P74ivAICyIaNwgg==
+	bh=QFOjcEuVMKWwzzmomEsQpzbhWwcfdPe+mE1pNR0nVZo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=mIfgpv2TXZaUFc0i0Nl0Xu0TGcjyo+ZUQHLJl2vx+mIT9Alu8FYj/vOvq8KbWT7bgGrTAYKwx+DbB9+AezFgzxgpxOiD3I24FCHaLlTmoVk603VvWdm3ECJe1SqNcfgo42/9Pv3V+6ei4csKiosjDyIAqP7VVLHJoO8QVVKJHuljOkG7zM3/uZq2DDwK4Sfxavyuyjx1SQuVw2gRFGsDf2ug0uNOzQUz55IYdcoUPKloOk7hrII9wTTUD74/47XmCcwljEqR+mmPPghR+JCALsiAqd44Zz/tV6mRLShgotv/XzLA7H4aJFrGy6eS83K9cSv/jL9pp4JUWmvMcVM7Cw==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass (client-ip=159.226.251.21; helo=cstnet.cn; envelope-from=pengpeng@iscas.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=iscas.ac.cn
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iscas.ac.cn (client-ip=159.226.251.21; helo=cstnet.cn; envelope-from=pengpeng@iscas.ac.cn; receiver=lists.ozlabs.org)
@@ -23,25 +23,23 @@ Received: from cstnet.cn (smtp21.cstnet.cn [159.226.251.21])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fm8sp6dgMz2yj3
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fm8sp6P44z2xd6
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2026 03:03:23 +1100 (AEDT)
 Received: from localhost.localdomain (unknown [111.196.245.197])
-	by APP-01 (Coremail) with SMTP id qwCowAB3HmrEQc1p2BThCw--.34405S2;
-	Thu, 02 Apr 2026 00:03:16 +0800 (CST)
+	by APP-01 (Coremail) with SMTP id qwCowAC3XWnAQc1pYxThCw--.21090S2;
+	Thu, 02 Apr 2026 00:03:13 +0800 (CST)
 From: Pengpeng Hou <pengpeng@iscas.ac.cn>
 To: maddy@linux.ibm.com
 Cc: mpe@ellerman.id.au,
 	npiggin@gmail.com,
 	chleroy@kernel.org,
-	kees@kernel.org,
-	srikar@linux.ibm.com,
-	nathanl@linux.ibm.com,
+	geoff@infradead.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org,
 	pengpeng@iscas.ac.cn
-Subject: [PATCH] powerpc/pseries/lparcfg: size the scratch buffer to the system parameter payload
-Date: Thu,  2 Apr 2026 00:03:16 +0800
-Message-ID: <20260401160316.88551-1-pengpeng@iscas.ac.cn>
+Subject: [PATCH] powerpc/boot: avoid overflowing the bootwrapper printf buffer with bootargs
+Date: Thu,  2 Apr 2026 00:03:12 +0800
+Message-ID: <20260401160312.88459-1-pengpeng@iscas.ac.cn>
 X-Mailer: git-send-email 2.50.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -57,95 +55,103 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:qwCowAB3HmrEQc1p2BThCw--.34405S2
-X-Coremail-Antispam: 1UD129KBjvJXoW7Ww18CrWUGFy7ur13WF1fCrg_yoW5JryxpF
-	sYkr47KF4kGas0yFy7KF15Xr45W3Z09F1UWw48tas7Aa4aqrnIqF17Kr1Fvr48Gr1ft3Wr
-	Zr9Ikw1rWFyDAr7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUU9Y14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+X-CM-TRANSID:qwCowAC3XWnAQc1pYxThCw--.21090S2
+X-Coremail-Antispam: 1UD129KBjvJXoWxJw18JFyktF1ruw4UWr4DJwb_yoW5Wry3pw
+	4qkFnxJanYk3W5Ja42vFs8uryrZwn7J3srC3yDW3yDZFnxXrZ2qan5Za45t34UJFyrAF10
+	vFsIkFyxKF9xCw7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUkm14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
 	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26r4j6ryUM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26F4j
-	6r4UJwA2z4x0Y4vEx4A2jsIE14v26r1j6r4UM28EF7xvwVC2z280aVCY1x0267AKxVW8JV
-	W8Jr1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E
-	2Ix0cI8IcVAFwI0_JF0_Jw1lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJV
-	W8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lFIxGxcIEc7CjxVA2
-	Y2ka0xkIwI1lc7CjxVAaw2AFwI0_Jw0_GFyl42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x
-	0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2
-	zVAF1VAY17CE14v26r1q6r43MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_JFI_Gr
-	1lIxAIcVC0I7IYx2IY6xkF7I0E14v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWU
-	CwCI42IY6I8E87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r4j6r4UJbIYCT
-	nIWIevJa73UjIFyTuYvjfUoq2MUUUUU
+	1l84ACjcxK6xIIjxv20xvE14v26r1I6r4UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
+	6F4UM28EF7xvwVC2z280aVAFwI0_Jr0_Gr1l84ACjcxK6I8E87Iv6xkF7I0E14v26r1j6r
+	4UM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xII
+	jxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVWUJVW8JwAm72CE4IkC6x0Yz7v_Jr0_Gr
+	1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7MxkF7I0En4kS14v26r12
+	6r1DMxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI
+	0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWUtVW8ZwCIc40Y
+	0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxV
+	WUJVW8JwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1l
+	IxAIcVC2z280aVCY1x0267AKxVWUJVW8JbIYCTnIWIevJa73UjIFyTuYvjfUYCJmUUUUU
 X-Originating-IP: [111.196.245.197]
 X-CM-SenderInfo: pshqw1xhqjqxpvfd2hldfou0/
 
-parse_system_parameter_string() reads the shared processor LPAR
-attributes into a firmware buffer that can hold up to 4000 bytes, but it
-still tokenizes that payload through a fixed 1026-byte scratch buffer. A
-single long key-value fragment can therefore overrun the local parser
-buffer before the next comma delimiter is seen.
+The bootwrapper printf path formats strings through a fixed 1024-byte
+scratch buffer in arch/powerpc/boot/stdio.c.
 
-Allocate the scratch buffer to the current payload size so tokenization
-stays within bounds.
+Both prep_cmdline() in main.c and ps3.c print the full bootargs string
+with a %s conversion even though the command line buffer itself is 2048
+bytes. A long firmware-provided or built-in command line can therefore
+overrun the bootwrapper printf staging buffer while the kernel is still
+starting.
 
-Fixes: fff9846be00c ("powerpc/pseries/lparcfg: convert to papr_sysparm API")
+Print the command line through console_ops.write() in bounded chunks
+instead of passing it to printf() as a single %s argument.
+
 Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
 ---
- arch/powerpc/platforms/pseries/lparcfg.c | 23 +++++++++++++----------
- 1 file changed, 13 insertions(+), 10 deletions(-)
+ arch/powerpc/boot/main.c | 12 +++++++++++-
+ arch/powerpc/boot/ps3.c  | 12 +++++++++++-
+ 2 files changed, 22 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/lparcfg.c b/arch/powerpc/platforms/pseries/lparcfg.c
-index 8821c378bfff..c09f474c241e 100644
---- a/arch/powerpc/platforms/pseries/lparcfg.c
-+++ b/arch/powerpc/platforms/pseries/lparcfg.c
-@@ -385,8 +385,6 @@ static void read_lpar_name(struct seq_file *m)
- 		read_dt_lpar_name(m);
+diff --git a/arch/powerpc/boot/main.c b/arch/powerpc/boot/main.c
+index 2c0e2a1cab01..d02f77ad4df7 100644
+--- a/arch/powerpc/boot/main.c
++++ b/arch/powerpc/boot/main.c
+@@ -193,6 +193,16 @@ static inline void prep_esm_blob(struct addr_range vmlinux, void *chosen) { }
+ static char cmdline[BOOT_COMMAND_LINE_SIZE]
+ 	__attribute__((__section__("__builtin_cmdline")));
+ 
++static void print_cmdline(const char *prefix, const char *suffix)
++{
++	size_t len = strnlen(cmdline, BOOT_COMMAND_LINE_SIZE - 1);
++
++	printf("%s", prefix);
++	if (console_ops.write && len)
++		console_ops.write(cmdline, len);
++	printf("%s", suffix);
++}
++
+ static void prep_cmdline(void *chosen)
+ {
+ 	unsigned int getline_timeout = 5000;
+@@ -207,7 +217,7 @@ static void prep_cmdline(void *chosen)
+ 	if (cmdline[0] == '\0')
+ 		getprop(chosen, "bootargs", cmdline, BOOT_COMMAND_LINE_SIZE-1);
+ 
+-	printf("\n\rLinux/PowerPC load: %s", cmdline);
++	print_cmdline("\n\rLinux/PowerPC load: ", "");
+ 
+ 	/* If possible, edit the command line */
+ 	if (console_ops.edit_cmdline && getline_timeout)
+diff --git a/arch/powerpc/boot/ps3.c b/arch/powerpc/boot/ps3.c
+index 89ff46b8b225..2f17b99c713c 100644
+--- a/arch/powerpc/boot/ps3.c
++++ b/arch/powerpc/boot/ps3.c
+@@ -31,6 +31,16 @@ BSS_STACK(4096);
+ static char cmdline[BOOT_COMMAND_LINE_SIZE]
+ 	__attribute__((__section__("__builtin_cmdline")));
+ 
++static void print_cmdline(const char *prefix, const char *suffix)
++{
++	size_t len = strnlen(cmdline, BOOT_COMMAND_LINE_SIZE - 1);
++
++	printf("%s", prefix);
++	if (console_ops.write && len)
++		console_ops.write(cmdline, len);
++	printf("%s", suffix);
++}
++
+ static void prep_cmdline(void *chosen)
+ {
+ 	if (cmdline[0] == '\0')
+@@ -38,7 +48,7 @@ static void prep_cmdline(void *chosen)
+ 	else
+ 		setprop_str(chosen, "bootargs", cmdline);
+ 
+-	printf("cmdline: '%s'\n", cmdline);
++	print_cmdline("cmdline: '", "'\n");
  }
  
--#define SPLPAR_MAXLENGTH 1026*(sizeof(char))
--
- /*
-  * parse_system_parameter_string()
-  * Retrieve the potential_processors, max_entitled_capacity and friends
-@@ -407,27 +405,32 @@ static void parse_system_parameter_string(struct seq_file *m)
- 		const char *local_buffer;
- 		int splpar_strlen;
- 		int idx, w_idx;
--		char *workbuffer = kzalloc(SPLPAR_MAXLENGTH, GFP_KERNEL);
--
--		if (!workbuffer)
--			goto out_free;
-+		size_t workbuf_size;
-+		char *workbuffer;
- 
- 		splpar_strlen = be16_to_cpu(buf->len);
- 		local_buffer = buf->val;
-+		workbuf_size = splpar_strlen + 1;
-+
-+		workbuffer = kzalloc(workbuf_size, GFP_KERNEL);
-+		if (!workbuffer)
-+			goto out_free;
- 
- 		w_idx = 0;
- 		idx = 0;
--		while ((*local_buffer) && (idx < splpar_strlen)) {
-+		while ((idx < splpar_strlen) && local_buffer[idx]) {
- 			workbuffer[w_idx++] = local_buffer[idx++];
--			if ((local_buffer[idx] == ',')
-+			if (idx >= splpar_strlen ||
-+			    (local_buffer[idx] == ',')
- 			    || (local_buffer[idx] == '\0')) {
- 				workbuffer[w_idx] = '\0';
- 				if (w_idx) {
- 					/* avoid the empty string */
- 					seq_printf(m, "%s\n", workbuffer);
- 				}
--				memset(workbuffer, 0, SPLPAR_MAXLENGTH);
--				idx++;	/* skip the comma */
-+				memset(workbuffer, 0, workbuf_size);
-+				if (idx < splpar_strlen)
-+					idx++;	/* skip the comma */
- 				w_idx = 0;
- 			} else if (local_buffer[idx] == '=') {
- 				/* code here to replace workbuffer contents
+ static void ps3_console_write(const char *buf, int len)
 -- 
 2.50.1 (Apple Git-155)
 
