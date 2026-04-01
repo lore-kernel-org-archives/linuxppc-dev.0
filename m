@@ -1,83 +1,107 @@
-Return-Path: <linuxppc-dev+bounces-19123-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19124-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D269D1076377
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2026 06:32:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C3A30D3514F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2026 07:59:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4flwCV1r90z2yjx;
-	Wed, 01 Apr 2026 17:32:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775025174;
-	cv=none; b=EzvgqcPob7v5ffsbDdM5N6naOiP21Nc0/tkSFtWXDwWOEuDavaeA4BB/yslCwHF7JkJ3wISBuOUZ4gv4pdXDRvJjIQbOkuaI+eNu0OFEHP/dF9KEdJbX+TPAFO0OjS8osZzqKvkU5/eB8pkgtJRIpoTM+w++WR5i8BHGOL3k2iQCrIlLCrzBNr1PR3mPeaE68rcXnxV22Hgi4MXonqBSnigL3frIxcbUXqm6Vu+YzeifuUaRKDKD2hUT6LE7JwLEpYpY9y4L+JN0z72ZitmgCf/vrwr7DebnkVjMVYhFNTbc/Xm4RsVq9GJBC1vIjV7MHycrddNqbdf1y46EVU0+4w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fly7y2pwRz2ySY;
+	Wed, 01 Apr 2026 18:59:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:2"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775030398;
+	cv=none; b=TFR/ESikxdh0v9HqG4m5Xr613gFqWm+jJ7zpUCmMz9u6G/0in4qQ1K7se2eEicTFHtBk3pEJ5jJgRoURszy7CT37yWtA/g3DS35eqEtJtxUUBBo8WklkxVBekR3bXB40OYTHpNMfAIaRho4Qu0pUMLwK7D7ZMl4sNWHFIVYI57TuDMcvJ4Fd5JzfAmavboFvEiC/T2GJvh/jQHB1qhe4PYVpQn0REtcInLpdI32q4eWZq34A/Au1GgMaAhDnI9joOeyPshbOfD13mMD2ZgabT/NHrvaN04LW/d45K9hwp1nTrOJ1uC+KUbF15UJ8JsZRomNUH4Y9/Z7rtWH3ERsVPw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775025174; c=relaxed/relaxed;
-	bh=SkjwiZunDWK5fwEX6amj6vO5RCISy1VVsllzfElLcGQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=htjltyhBlAgAnLHc+QqGLUOaK7Hi6ZWtOwJZsFTcdrra/zIWg7TqJiZG4mtdYg1mVXyfNRWw5S7kyc4WN3XiDtgSTFKH2v0mcQipq6rJOUW3kI2BTEfuJHeRtXypaIlmRMQXpmx6yzL3Fq6MOCBBNghT9tEZcs01Icc1jhbJr5O1A7NMg2Y0hWllwn2QyyCYF4lPV8Lq189jPCDDigfu8Rpyy9px3sgryTvsYqiJBeqEGWFTVzuFkG4v9FXJY4g7zuNZ2rdHjbzPFTdoTnAOT+2NSP6lYZMGZL5fPRil0bV2T4Itga1YA1ssykV1paSBVc1O4ICiMWq5uO+K7U66GA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Fm00lhsn; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1775030398; c=relaxed/relaxed;
+	bh=EeAH21jFBw8UgE8ezbtsg9g4YlG44GxjnxeKCmI5y/M=;
+	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=E3hgnFYvKOqij5Zr/sRF9OBgEH8/l8M9BvQ2h1JN/EEM8xDB/KMe5KoGE8ppNBwnXzdaDdBeYcQS7kYER+wf4xr93OIs8ybwc3mTs8ObS0R3lRDQH1jQYozDq32j0jEMlkcTalP3nbUdem6HlFU6yq4GQ2LUblXoFPtbIV2o5LfItjaU6oNkhLWIZbOiJtf1zygNz6gp9eY0sORsgRdVagnuW3mUo7xWOT1xA2ryNi2s4+LkeYAzi/bh3vkUfUDFiE+5nFQLsApdqImnE/Ih26gjYMzejrSewUxQyYaD3On+3NPwvTaKrFiGLVaelvEbu6jA9zWnGdw/BxCQv7x3QQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=d5SGREbl; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=C/3cCp21; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=CnRd6gcU; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=E0mbtmoc; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Fm00lhsn;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=d5SGREbl;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=C/3cCp21;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=CnRd6gcU;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=E0mbtmoc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4flwCT3WZ0z2xb3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 17:32:53 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62VHoBrb3518860;
-	Wed, 1 Apr 2026 06:32:38 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=SkjwiZunDWK5fwEX6
-	amj6vO5RCISy1VVsllzfElLcGQ=; b=Fm00lhsnaKrFpnWP3aAZEIzZmydJUGqQo
-	bOILdhiSjUKa9yBrQLnDNntj4n61OBAiZSnApE6TNVsi3ybaHaKG3OAU9sr+Xtmo
-	eTaTBIkfPsGig775KQuyNJYwgA0mClwcS6e4LN0MrmU8h4cbWM7CeIwIzCTzTQlR
-	gjEgEsUc+8YZCMYH5cJytd+3ko+OUJjcctHxkZX48eM3cHcqHFweR4JvBX3U3Zed
-	lxEEc0aNW2JxtepXxSZWC2yArGU25/SCNZDR8XAfGvgzPSySfF0i70c6M6u2mj6e
-	m+6Rc26fP/flVUeLxplwwvRwqySWAq7S6dpP3iSCAxaN+U+Ctvq1g==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d66q36taw-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 01 Apr 2026 06:32:37 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 6311krEN013898;
-	Wed, 1 Apr 2026 06:32:36 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4d6ttkmaa6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 01 Apr 2026 06:32:36 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6316WWCb48038272
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 1 Apr 2026 06:32:32 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 47B7320040;
-	Wed,  1 Apr 2026 06:32:32 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4E13220043;
-	Wed,  1 Apr 2026 06:32:30 +0000 (GMT)
-Received: from ltcrain4-lp15.ltc.tadn.ibm.com (unknown [9.5.7.39])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  1 Apr 2026 06:32:30 +0000 (GMT)
-From: adubey@linux.ibm.com
-To: linuxppc-dev@lists.ozlabs.org
-Cc: hbathini@linux.ibm.com, bpf@vger.kernel.org, maddy@linux.ibm.com,
-        ast@kernel.org, andrii@kernel.org, daniel@iogearbox.net,
-        shuah@kernel.org, linux-kselftest@vger.kernel.org,
-        Abhishek Dubey <adubey@linux.ibm.com>,
-        Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: [PATCH v7 2/2] selftests/bpf: Enable private stack tests for powerpc64
-Date: Wed,  1 Apr 2026 06:32:15 -0400
-Message-ID: <20260401103215.104438-2-adubey@linux.ibm.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260401103215.104438-1-adubey@linux.ibm.com>
-References: <20260401103215.104438-1-adubey@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fly7w1XMTz2xpk
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 18:59:55 +1100 (AEDT)
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id DF0925BECC;
+	Wed,  1 Apr 2026 07:59:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1775030388; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=EeAH21jFBw8UgE8ezbtsg9g4YlG44GxjnxeKCmI5y/M=;
+	b=d5SGREblrM9jo5nq8LPuygMHClMYV7RIJK2FsptzMn+0MaSTcqDIOTYwjo9dLCe1hoWwFf
+	rPfWtWWzx5rCzd2Q0LC38AKk8IdkxgCA8c+fl2NOooBkpUvJ7/4Fziz4ihLozqc8lkeq9B
+	BgQo/qBmOGy8tyKAc8AoqQEOECS469Q=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1775030388;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=EeAH21jFBw8UgE8ezbtsg9g4YlG44GxjnxeKCmI5y/M=;
+	b=C/3cCp21eb6w17K9EALSdceuEAXf9XP7aY597dahcFYrSbWjYh6HSpZcLG9kyNzyF+5YsS
+	w2e8rTuYO/Ju06Dg==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1775030387; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=EeAH21jFBw8UgE8ezbtsg9g4YlG44GxjnxeKCmI5y/M=;
+	b=CnRd6gcU+h+uToebmOkVGhBZOYRHe1Z3rNa1mO/Vx8o0nQ7iphYD5JKFk9qDgZ2KrIeAEG
+	p9Rt4vgY78T51A7kcq6LW84NLvH0iQNXt0Hx3MnR1NuM6Ti5ESJZ3MytkmXmQr5t7paCxO
+	kof+E2rk8esg/GBcyLGfL+C2tlf1AjM=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1775030387;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=EeAH21jFBw8UgE8ezbtsg9g4YlG44GxjnxeKCmI5y/M=;
+	b=E0mbtmocF88ax3fWzvyOmzTUS/xT7bwkq0jMXu0fJzhqTxVLlvQObqdjjYRCgT9Qi0DeSY
+	OTIcL8Q2N2io1DAA==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id A0CCD4A0B0;
+	Wed,  1 Apr 2026 07:59:47 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id dLMLJnPQzGm8ZwAAD6G6ig
+	(envelope-from <tiwai@suse.de>); Wed, 01 Apr 2026 07:59:47 +0000
+Date: Wed, 01 Apr 2026 09:59:47 +0200
+Message-ID: <87tstvqff0.wl-tiwai@suse.de>
+From: Takashi Iwai <tiwai@suse.de>
+To: =?ISO-8859-1?Q?C=E1ssio?= Gabriel <cassiogabrielcontato@gmail.com>
+Cc: Takashi Iwai <tiwai@suse.com>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-sound@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	kernel test robot <lkp@intel.com>,
+	stable@vger.kernel.org
+Subject: Re: [PATCH v2] ALSA: aoa: i2sbus: clear stale prepared state
+In-Reply-To: <20260331-aoa-i2sbus-clear-stale-active-v2-1-3764ae2889a1@gmail.com>
+References: <20260331-aoa-i2sbus-clear-stale-active-v2-1-3764ae2889a1@gmail.com>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) Emacs/30.2 Mule/6.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,205 +114,57 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
+MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: b2lB-LmZi9c9hpyq2hg9RwL800Yi28Mp
-X-Authority-Analysis: v=2.4 cv=frzRpV4f c=1 sm=1 tr=0 ts=69ccbc05 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=Qsp4X0VqqGRFJZHKWwsA:9
-X-Proofpoint-ORIG-GUID: b2lB-LmZi9c9hpyq2hg9RwL800Yi28Mp
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDAxMDA1MyBTYWx0ZWRfX/uroTxCJThA5
- 5SPrz3z2sFmiF0CMTLFj3pjRTZltC+9nBCUicqF/5Kos/MHv/YY81fvu+kM2QFsIZSu1HRXZ4Oa
- syyuTJW7xEiUX5mYlM90jkicmdDNh6aw84O8yfvIU1RIShDG6XFi9M3MtKd2ILL3Esanx4HMXYK
- 52u8om3K1xsmNUIyRZYwGGqxHRVQm4SugBObN4KkaHgtoczN3ZKps9DZfMRFv654SoXND8KyM0f
- pcirUFq1PYo5aF20GISWuX50DSPfnOj/QNbULvNhf94Ox+IPz9Vsi7U1sfqaKVLlg0E2+TfSGdL
- e1OBOyVnfSTSGpXY3y14sDjKq6nEYhi/TZPhr5nv6tDIPtmLjrmC1GN5/WrdX9m2LWi1O8JGmME
- SshEiirV8HpI/hRNtJeTwvg8Fbrl9Pn4dSMY2cr5KTyJ0WH48SMKJ5F7tGVWJkpG43g1o2qbyXy
- BHAj7zJ4WX449qggvEA==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-01_02,2026-03-31_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 spamscore=0 priorityscore=1501 malwarescore=0 clxscore=1011
- lowpriorityscore=0 bulkscore=0 adultscore=0 suspectscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2604010053
+X-Spamd-Result: default: False [-3.30 / 50.00];
+	BAYES_HAM(-3.00)[99.99%];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	FREEMAIL_TO(0.00)[gmail.com];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	ARC_NA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	RCPT_COUNT_SEVEN(0.00)[9];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	RCVD_TLS_ALL(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[intel.com:email,suse.de:mid]
 
-From: Abhishek Dubey <adubey@linux.ibm.com>
+On Tue, 31 Mar 2026 23:14:04 +0200,
+Cássio Gabriel wrote:
+> 
+> The i2sbus PCM code uses pi->active to constrain the sibling stream to
+> an already prepared duplex format and rate in i2sbus_pcm_open().
+> 
+> That state is set from i2sbus_pcm_prepare(), but the current code only
+> clears it on close. As a result, the sibling stream can inherit stale
+> constraints after the prepared state has been torn down.
+> 
+> Clear pi->active when hw_params() or hw_free() tears down the prepared
+> state, and set it again only after prepare succeeds.
+> 
+> Replace the stale FIXME in the duplex constraint comment with a description
+> of the current driver behavior: i2sbus still programs a single shared
+> transport configuration for both directions, so mixed formats are not
+> supported in duplex mode.
+> 
+> Reported-by: kernel test robot <lkp@intel.com>
+> Closes: https://lore.kernel.org/oe-kbuild-all/202604010125.AvkWBYKI-lkp@intel.com/
+> Fixes: f3d9478b2ce4 ("[ALSA] snd-aoa: add snd-aoa")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Cássio Gabriel <cassiogabrielcontato@gmail.com>
 
-With support of private stack, relevant tests must pass
-on powerpc64.
+Applied to for-next branch now.  Thanks.
 
-#./test_progs -t struct_ops_private_stack
-#434/1   struct_ops_private_stack/private_stack:OK
-#434/2   struct_ops_private_stack/private_stack_fail:OK
-#434/3   struct_ops_private_stack/private_stack_recur:OK
-#434     struct_ops_private_stack:OK
-Summary: 1/3 PASSED, 0 SKIPPED, 0 FAILED
 
-Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
-Reviewed-by: Hari Bathini <hbathini@linux.ibm.com>
-Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
----
-
-v6->v7:
-  Pickup tags
-v5->v6:
-  Remove unused label
-v4->v5:
-  Rebase over latest branch
-v3->v4:
-  No change
-v2->v3:
-  Enable testcase using __powerpc64__ instead of __TARGET_ARCH_powerpc,
-  to prevent it getting invoked on powerpc32
-v1->v2:
-  No change
-
-[v6]: https://lore.kernel.org/bpf/20260331080309.173612-1-adubey@linux.ibm.com
-[v5]: https://lore.kernel.org/bpf/20260330232034.44776-1-adubey@linux.ibm.com
-[v4]: https://lore.kernel.org/bpf/20260226031324.17352-1-adubey@linux.ibm.com
-[v3]: https://lore.kernel.org/bpf/20260226005440.9570-1-adubey@linux.ibm.com
-[v2]: https://lore.kernel.org/bpf/20260225153950.15331-1-adubey@linux.ibm.com
-[v1]: https://lore.kernel.org/bpf/20260216152234.36632-1-adubey@linux.ibm.com
-
- .../bpf/prog_tests/struct_ops_private_stack.c | 30 ++++++++-----------
- .../bpf/progs/struct_ops_private_stack.c      |  6 ----
- .../bpf/progs/struct_ops_private_stack_fail.c |  6 ----
- .../progs/struct_ops_private_stack_recur.c    |  6 ----
- 4 files changed, 13 insertions(+), 35 deletions(-)
-
-diff --git a/tools/testing/selftests/bpf/prog_tests/struct_ops_private_stack.c b/tools/testing/selftests/bpf/prog_tests/struct_ops_private_stack.c
-index d42123a0fb16..98db9bafa44b 100644
---- a/tools/testing/selftests/bpf/prog_tests/struct_ops_private_stack.c
-+++ b/tools/testing/selftests/bpf/prog_tests/struct_ops_private_stack.c
-@@ -5,6 +5,7 @@
- #include "struct_ops_private_stack_fail.skel.h"
- #include "struct_ops_private_stack_recur.skel.h"
- 
-+#if defined(__x86_64__) || defined(__aarch64__) || defined(__powerpc64__)
- static void test_private_stack(void)
- {
- 	struct struct_ops_private_stack *skel;
-@@ -15,11 +16,6 @@ static void test_private_stack(void)
- 	if (!ASSERT_OK_PTR(skel, "struct_ops_private_stack__open"))
- 		return;
- 
--	if (skel->data->skip) {
--		test__skip();
--		goto cleanup;
--	}
--
- 	err = struct_ops_private_stack__load(skel);
- 	if (!ASSERT_OK(err, "struct_ops_private_stack__load"))
- 		goto cleanup;
-@@ -48,15 +44,9 @@ static void test_private_stack_fail(void)
- 	if (!ASSERT_OK_PTR(skel, "struct_ops_private_stack_fail__open"))
- 		return;
- 
--	if (skel->data->skip) {
--		test__skip();
--		goto cleanup;
--	}
--
- 	err = struct_ops_private_stack_fail__load(skel);
- 	ASSERT_ERR(err, "struct_ops_private_stack_fail__load");
- 
--cleanup:
- 	struct_ops_private_stack_fail__destroy(skel);
- }
- 
-@@ -70,11 +60,6 @@ static void test_private_stack_recur(void)
- 	if (!ASSERT_OK_PTR(skel, "struct_ops_private_stack_recur__open"))
- 		return;
- 
--	if (skel->data->skip) {
--		test__skip();
--		goto cleanup;
--	}
--
- 	err = struct_ops_private_stack_recur__load(skel);
- 	if (!ASSERT_OK(err, "struct_ops_private_stack_recur__load"))
- 		goto cleanup;
-@@ -93,7 +78,7 @@ static void test_private_stack_recur(void)
- 	struct_ops_private_stack_recur__destroy(skel);
- }
- 
--void test_struct_ops_private_stack(void)
-+static void __test_struct_ops_private_stack(void)
- {
- 	if (test__start_subtest("private_stack"))
- 		test_private_stack();
-@@ -102,3 +87,14 @@ void test_struct_ops_private_stack(void)
- 	if (test__start_subtest("private_stack_recur"))
- 		test_private_stack_recur();
- }
-+#else
-+static void __test_struct_ops_private_stack(void)
-+{
-+	test__skip();
-+}
-+#endif
-+
-+void test_struct_ops_private_stack(void)
-+{
-+	__test_struct_ops_private_stack();
-+}
-diff --git a/tools/testing/selftests/bpf/progs/struct_ops_private_stack.c b/tools/testing/selftests/bpf/progs/struct_ops_private_stack.c
-index dbe646013811..3cd0c1a55cbd 100644
---- a/tools/testing/selftests/bpf/progs/struct_ops_private_stack.c
-+++ b/tools/testing/selftests/bpf/progs/struct_ops_private_stack.c
-@@ -7,12 +7,6 @@
- 
- char _license[] SEC("license") = "GPL";
- 
--#if defined(__TARGET_ARCH_x86) || defined(__TARGET_ARCH_arm64)
--bool skip __attribute((__section__(".data"))) = false;
--#else
--bool skip = true;
--#endif
--
- void bpf_testmod_ops3_call_test_2(void) __ksym;
- 
- int val_i, val_j;
-diff --git a/tools/testing/selftests/bpf/progs/struct_ops_private_stack_fail.c b/tools/testing/selftests/bpf/progs/struct_ops_private_stack_fail.c
-index 3d89ad7cbe2a..1442728f5604 100644
---- a/tools/testing/selftests/bpf/progs/struct_ops_private_stack_fail.c
-+++ b/tools/testing/selftests/bpf/progs/struct_ops_private_stack_fail.c
-@@ -7,12 +7,6 @@
- 
- char _license[] SEC("license") = "GPL";
- 
--#if defined(__TARGET_ARCH_x86) || defined(__TARGET_ARCH_arm64)
--bool skip __attribute((__section__(".data"))) = false;
--#else
--bool skip = true;
--#endif
--
- void bpf_testmod_ops3_call_test_2(void) __ksym;
- 
- int val_i, val_j;
-diff --git a/tools/testing/selftests/bpf/progs/struct_ops_private_stack_recur.c b/tools/testing/selftests/bpf/progs/struct_ops_private_stack_recur.c
-index b1f6d7e5a8e5..faaa0f8d65a4 100644
---- a/tools/testing/selftests/bpf/progs/struct_ops_private_stack_recur.c
-+++ b/tools/testing/selftests/bpf/progs/struct_ops_private_stack_recur.c
-@@ -7,12 +7,6 @@
- 
- char _license[] SEC("license") = "GPL";
- 
--#if defined(__TARGET_ARCH_x86) || defined(__TARGET_ARCH_arm64)
--bool skip __attribute((__section__(".data"))) = false;
--#else
--bool skip = true;
--#endif
--
- void bpf_testmod_ops3_call_test_1(void) __ksym;
- 
- int val_i, val_j;
--- 
-2.52.0
-
+Takashi
 
