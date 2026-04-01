@@ -1,82 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-19139-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19140-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93D17D35163
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2026 09:42:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 693F9D35170
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Apr 2026 10:11:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fm0PW0j4Tz30N8;
-	Wed, 01 Apr 2026 20:41:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c207::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775036511;
-	cv=pass; b=evDNXw2zUk3ogzpHcyJKRPFrNLVEMHbP5bBsD1LHCeM1CQ+DU9tCqiJWwfb4Q5c7W9mGh8RLNuXnoSzYng9O1cousn4XGoGn2L7W9zZwLbEtUlzEz1HE09pNOVIlLmKwR50YbPQy5JacNZ9eXrFxTU1j2XbqljEXrigTkUUgHdqjLfDbKq2zEosSDsoMtTNYGgcd8I0tJGjwMmOF4OeouHCaBat7JOv9dX+1NixzB/ra0uI4/7R1FCyYkXMRQbabrzq8AVnS+ieJIl32WqADJ/nWJCZBEcSMAu3qzLLDb7KFdDa34eiMyMXT3ORpj2EutLfU3P6yOgUouOGBnrgVOQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775036511; c=relaxed/relaxed;
-	bh=lcy5UmZqh/o0ySld2VRlYssBwZ+fCg5A6+bAmvQGrUI=;
-	h=From:To:Subject:Date:Message-Id:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=AnNLivFI4nHUiHhBm8S8hDvKeXje2DFniWX2hQoA8+DI8TKVlpX/B7iRFdUtAFavPApP3dMRlvA8kQ2gjtZgm55mV7spW7gF06Ug+Jx26fRJr/hPC+52ZQ+lal9PHnoFnMPYcvBdkJmpuSsB4soPMRLGLIxcARWSzBlaNOx7W0lzZabr4E9n+wNsohk8utewvvSiFRLfiKBG9oUL1ANoRMuVJLZuOwuDvmparyoF7o9/eZBuQw+39eHX3Rr3bvOe3+XX10eOLuqtHSw/nrnWMSr6mZS1cI2qPYQnZR98CzfvBi2oDw5traLrCnzdWF2HdU39vKr/1zahZr3UrCc5AA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=XVipNUdY; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c207::3; helo=mrwpr03cu001.outbound.protection.outlook.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fm14409Y8z2ygY;
+	Wed, 01 Apr 2026 21:11:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775038307;
+	cv=none; b=KuoAh7QuCxv4UnsEzEyKS+gKXM8dZK7FE//33d1ZvCXGlww/ga03ZmIP5bxiRDOc9+Hfo3IuM+o+nQNroX72NTEhBbMsFyaYGHZOwkFqcGX8SHXMtaiAahychbKMSGPXTeRhwbdW6g7fIU2ACpGXQWQJwXDEsJGrNmKUukr3XFg6mwm9PXgz+xzQGRBnozduHc0rKfqlmBdCEUA/AIK4+jxAiY2BU85Fn1pHVWuF1lHWN2yakL9kgFXdWmN2Hi795ELpbS4wkEhKGI3AQGF1+RKxjBU09H7MUpmE1GCEjoT55yWk3vqpn50n8pvbB3yYGzxycVu7LKiMziytl3OqUA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1775038307; c=relaxed/relaxed;
+	bh=3mUbcxbKwm7xaMSKR/4qBN3+wZHiqAb74ixt34rZCpY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=HFpglNxYyGJlspB9axq1P5sib+5JEeTsVrdqTzW9bgKdlisXLRuIK/v7k5V70c0xMleHxbJ85ttJLJm2S6Dmc/SkfrxaPa/SlbWkAjXR2XigSLNj15bjZkMzre5xFEBE0MzBMyfHuiqL0am+kMiM/e4KqVmQGB/Hf19gxxNbYlQWtiSYIblngc2di+Uc56doELqqvelj20bX6DyhwkJ13wDdDRvGzNjyWt3X+uPNkvSyU3LBb/BGBtadBeTBy8obangBjnxEplKgjcUD0ADhz9TnLDhEnvcqwtGoA6x5oC+nKJcXinBJQDSjTXjLXNd6kj14JlD9vbECzNI1saTj6A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mnLkOP4v; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=XVipNUdY;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mnLkOP4v;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c207::3; helo=mrwpr03cu001.outbound.protection.outlook.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
-Received: from MRWPR03CU001.outbound.protection.outlook.com (mail-francesouthazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c207::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fm0PV2H4mz30HQ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 20:41:50 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=SDsR9vkt0e/45AR3+ZQJt+LxAek1zPX2qeB0mjhVFbB1uECCZx4eZoIGWaeaJgG9GDOrTK1RuydkeBRP3/8NpiuGEMAAyTuwyeiSXyyX7CB+OHAt27qIKOShXE345NIto5xiXHvv1YkUmEp+xR7nj4vhsXWiwF7PkGI70MnOXqS6tcvTI0RZavxg42hJHuVHgUsqyaTXvyKfdvdeKuma8/nnOCb6Xps05dfCBiQ8gjFvPueYvEnV2cwktHYrSekQglxpGfszX7n4aI5teS+pgUcxALhri9Yyyfvmk5chDxR2wgFUAbLCRrpfKgDWceLTGYC3txNJOVPhAXtl1F1nFg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=lcy5UmZqh/o0ySld2VRlYssBwZ+fCg5A6+bAmvQGrUI=;
- b=A1xsVv7aawVfW59jTXhyX9n1pUf/+JUCmabz+U2zJZSr6WARvKnxdVj9GfYzgz1NoTrkKvOcQMOvPqRASglpH0GLzeX/dqk47ey714YoSh4QnQPI4Jae6eaVOQtwYMgHeWiNVxgtInXzAngIOJYlMCjdxK9sVloKGBpaYqVSkpKtax1XyeGqR2okyxzW9pfXoIUXrrIgcvdbNGoZDthSINLbTkplAg32gN3gmsib6azyCscX4X/MglI6pJwUgZUa0ghrgHfmFJwURJwIX6PUQDpOCbEvQUB+G+OZGORHETT4mE+VJ2rvT3wj3TfeX4vL5p5qj3tLN9jv20KFuf6T3g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=lcy5UmZqh/o0ySld2VRlYssBwZ+fCg5A6+bAmvQGrUI=;
- b=XVipNUdYnmSn1UvJFOQ2m94PMNgxFlsaO1ROslYW+PqfcKgVsR8v1e9/Rip7xOpsrBriL3ivD1X8EihB7AhPoIo3ja+vmfumyiq+OyPlgpl7ztTccb/PuK1eoeU+U6oS8sWQGmM2tpccA/iHlK3a8ecjd6u9QhCUU4+NkzUrqHu8hZ5tqLiawsdKBaxWVKiZZ1JHUkq6RLeqUgJ5Nrxgst2lQbObiyxnjxs1T/uh2tALcuMopwhPDwr2q+y0Ikvm68qVQzePOOmHzYYGUnAryYn6Q1olelaHcQ4yhg0e7YWtGjlicR6QkPmusc5zzKoQovLJ8btu8TWe+5XUsGzEIQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Received: from AM0PR04MB7044.eurprd04.prod.outlook.com (2603:10a6:208:191::20)
- by AMDPR04MB11607.eurprd04.prod.outlook.com (2603:10a6:20b:71e::10) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.17; Wed, 1 Apr
- 2026 09:41:46 +0000
-Received: from AM0PR04MB7044.eurprd04.prod.outlook.com
- ([fe80::bab2:d15c:fcf8:ef2b]) by AM0PR04MB7044.eurprd04.prod.outlook.com
- ([fe80::bab2:d15c:fcf8:ef2b%4]) with mapi id 15.20.9769.016; Wed, 1 Apr 2026
- 09:41:46 +0000
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: shengjiu.wang@gmail.com,
-	Xiubo.Lee@gmail.com,
-	festevam@gmail.com,
-	nicoleotsuka@gmail.com,
-	lgirdwood@gmail.com,
-	broonie@kernel.org,
-	perex@perex.cz,
-	tiwai@suse.com,
-	linux-sound@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v2 11/11] ASoC: fsl_easrc: Change the type for iec958 channel status controls
-Date: Wed,  1 Apr 2026 17:42:26 +0800
-Message-Id: <20260401094226.2900532-12-shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.37.1
-In-Reply-To: <20260401094226.2900532-1-shengjiu.wang@nxp.com>
-References: <20260401094226.2900532-1-shengjiu.wang@nxp.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: SI2PR02CA0029.apcprd02.prod.outlook.com
- (2603:1096:4:195::6) To AM0PR04MB7044.eurprd04.prod.outlook.com
- (2603:10a6:208:191::20)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fm1423z9Zz2xpk
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 21:11:45 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 62VIV9Js201661;
+	Wed, 1 Apr 2026 10:11:29 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=3mUbcxbKwm7xaMSKR/4qBN3+wZHiqAb74ixt34rZC
+	pY=; b=mnLkOP4vD7nndw6VtV+l4PBrfu4VT747tNdPt/bs3T7hdCwDAIUzzuqkq
+	tB1x76w/8dtc54jILHK04tgz8Y1rS2iu931SObDhwvcRmAg+c5hwTvYddFhXvi+o
+	g6Ql17N1f6nONsfwnKECGW8GbZwPjOhKI0ABlIwA7wxOrNnkyii5NUFknjmu+lVX
+	Uc8JykD6e4Yfm8Xz7y6lru2mPi8H0N8RBfvKLmD4pPRYdBCiP/NxFOpRG5VBm0+f
+	mjkeA3WqT4tsesG3LgL3ipcSeDdlnDDd10s4R3ckhd3fJXtfnHFH5xFb64TVUtMR
+	8SzYJCinkeywYAEm0FceixUuVqQcA==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d65dcew7w-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 01 Apr 2026 10:11:29 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 6317Qwlq014339;
+	Wed, 1 Apr 2026 10:11:28 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4d6ttkmyrh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 01 Apr 2026 10:11:28 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 631ABODQ49152472
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 1 Apr 2026 10:11:24 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2EF1D2004B;
+	Wed,  1 Apr 2026 10:11:24 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 264162004D;
+	Wed,  1 Apr 2026 10:11:22 +0000 (GMT)
+Received: from ltcrain4-lp15.ltc.tadn.ibm.com (unknown [9.5.7.39])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  1 Apr 2026 10:11:21 +0000 (GMT)
+From: adubey@linux.ibm.com
+To: linuxppc-dev@lists.ozlabs.org
+Cc: hbathini@linux.ibm.com, bpf@vger.kernel.org, maddy@linux.ibm.com,
+        ast@kernel.org, andrii@kernel.org, daniel@iogearbox.net,
+        shuah@kernel.org, linux-kselftest@vger.kernel.org,
+        Abhishek Dubey <adubey@linux.ibm.com>,
+        Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Subject: [PATCH v3 1/2] powerpc64/bpf: Implement fsession support
+Date: Wed,  1 Apr 2026 10:10:42 -0400
+Message-ID: <20260401141043.41513-1-adubey@linux.ibm.com>
+X-Mailer: git-send-email 2.52.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,236 +88,264 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: AM0PR04MB7044:EE_|AMDPR04MB11607:EE_
-X-MS-Office365-Filtering-Correlation-Id: c4201a8d-6710-4c06-7743-08de8fd2e3d6
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|52116014|19092799006|7416014|376014|38350700014|921020|56012099003|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	pi68TQ4Hi17gfnqYV9ElSAE+VliIa0EN39RJeGd57icFzBG4iCqr1jsN8aYaqmrVjhJVK6Zq6ceZS96vEJgjOb2JW/qFeoWpBueS4Fwhyq1GbTp0STotKVMECO2onbiN9uuiOfV0+7tigv/lubcrUm16e8mIDQJo9nW3ATWyXz6BDSKotrP1fOE3dwggxAolUtav+qaeqV/GnqcbTP9oyXiYnLgtpBHNg34C0hCO/e7gIYNOEzDZ8qur6aJ+XR7N6eL2rt4SL2LZ8+QgGOcewTtz2q1tyfvYqE6bITjDQ+3wd30DLcJF2S/ed9BThp8v4hbungO8gFqwrGDrWYLCuPAf6rvSKZS6LV4rFdzJsGtPVu+DlBz/gSY9slxQEP6MEKXS9HXTmewXOfRCA5I7x0lEBecd6hNu1D7e+hC2Xw0T49hP8HZXJeldemR0MPsVtd2D5irX02KViDCDuw7FCXqNK45j2fcAqQUIQS9SvT+SZgm8XtWHL8g3QiMRijo2LuDbUVXrM/sg6ugrwnwlSQ/BMgE1dYegadydKabHzdTAMGa78oWs47I2ls/NxGhOPZSW4buw/qQeZpUvgY4kvoymuV9/Ij0g8y9INIkyzldhUnGtkbtnXD3qCjOBEtxb9fpuJUgo6kXhFwLKgHpawrQPuXC7PVjIAoEHqD5MrMVnITdNK1c/xgtRPzoI8tGB+u+qHb5zPk7IcZrrqDAdks5rUHuSHzmb0n9HKw+3N4XPqWmBxwl6QxXgkIpTVM7LPDy/qBRQomV0x9PcV0a7yGkMxTSMJL2LujGR2yXRicRpbvWD9+TqSEWBI9gxE46l
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR04MB7044.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(52116014)(19092799006)(7416014)(376014)(38350700014)(921020)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?vXJGfKBDxkbB1INgDshPvVx2hTL3nfebkUR6vfxl+1cVYkT+k9ov/moWDuZ/?=
- =?us-ascii?Q?xfip2Gecpdq/5qlT4hPWZDQYL1uENZdEM4ooRXbaVoQKn3vrz6+suJzkhsCE?=
- =?us-ascii?Q?OTFEsd5iif8hAWB6yoVvIDff8u9l6oF6wrz2iW9IbTsxllGTnQ+CjKq6U//K?=
- =?us-ascii?Q?Gpf8tWoZ6WiwHL1qmfd5ti7QIhClO5mL6x4NYaE1OQH/c8dR777R+f/gaiv8?=
- =?us-ascii?Q?c2oerUFzPACxV8byBq84gfC/YNDqpAOXNkQtwVZIg2BWhpoTgG/IbvLAm+af?=
- =?us-ascii?Q?33K8WSqcbfuCIlnCab2RXK3iO5PRvETW4JFvMwO4UBDFdpPEgmwNHAaI7IfG?=
- =?us-ascii?Q?HhtnXVdERsGiREMx3u8lC7T/rYtvObxUZ+BMeYKcZBhvLEsWdQakbDjgvQIP?=
- =?us-ascii?Q?sPWZtgCdHDp0OvjQyNL8Bz6DMHGm7SHZvdrT8Ut7azz5TeZ3lBdUaFKS0qgo?=
- =?us-ascii?Q?M5jcmmydTW1CG29w17SrJJsT4+P5QpDrXlihqStTPKJ9br73dO6mQnUkuzLO?=
- =?us-ascii?Q?v0J+ygQFVQjpVAjq9S2mQs/oBvB88FsO53JO9+VquEsj4cx4Vwcya5QBT6Id?=
- =?us-ascii?Q?nny/6wMF2u8eli+Snur5GS2iKqiiz+V2r9ELc26qFBE1mjmOZzeOgL5Df8aM?=
- =?us-ascii?Q?I3YFmOR4lsGreLxnsoEPIFs1iMSgRhmQ2cLxUtDPII5xDR0x7krmluQ5B9t5?=
- =?us-ascii?Q?d9GZUsniPnnzqtUHBlTnfEA6C1jVz/0+2HB5x+om2Hzctiq4cSxiANgCV9Al?=
- =?us-ascii?Q?U6TgwMb2eu/mw/uZR6GB7tmndacB8KedgJ2fTFe8wONkYptWeiLGpddf904f?=
- =?us-ascii?Q?CLOcwMqGDvCMugEo0dNi4dIt3HcMtj4DMhh7vthe+/0T9uGr98Rb4RJynop/?=
- =?us-ascii?Q?06/N7Uihx36DwAGRw+b6/y3v1+IoSgid0Cbl17ExMeQC2m6XKUkW0mg/vs74?=
- =?us-ascii?Q?kV1cSaJvl7g6NS6+Ze64HQqXreh2nJHvDObOBdXkdr0cePdXBxPlS3ml5sEF?=
- =?us-ascii?Q?Gi61hRFdmn+bXpq9msMhqSJuFyX+xoqtV17PH74Mcz+rnphzDdO8IiYmHY7D?=
- =?us-ascii?Q?IFzXzSlIEWT7xpFlvOHSHVhDw9zRLNf1gHWRz9YPfRGoZbOiUMuEnkkeK0by?=
- =?us-ascii?Q?SSZa3DLChcNncxMbNDccY0WN2r9Oh1DS4bETsh37oqelAL3T4YVV6BzNET1Y?=
- =?us-ascii?Q?EcbApDYi5hYRKyupuL7wmW0hF9v/g3u68moz4MGOA3WCs75/7QAOoulVRpF8?=
- =?us-ascii?Q?eUlfr5iOLwpuCkPT2wghV8Iu/CKvHdB5ow7l8ineNGCb+0E8hrCrFeryhzqT?=
- =?us-ascii?Q?BSeNjov8HKSEwBE9gaBoNZEn5SbpqWWdLgM1Ds8nZBZClA/ygJ3HgzeqxnII?=
- =?us-ascii?Q?aY7P875uiXNBwOCJAv11xXlcyOgrGwOxhoXRIR2cuLaI8ditmdiJtigc6Q54?=
- =?us-ascii?Q?orGrC35rK9W4hwQv5VNacMwet4NAHurWkP+tptVqiHpREQ3gDgbfhDGeqx5C?=
- =?us-ascii?Q?oZGghMGDuAsyJBFKvEq58pDERyRSbzdkYceGjtE4iYxmamvZN18F+/jFpbgv?=
- =?us-ascii?Q?1vtoajbcYhUR+/UEHjd0aL1lBAsNUs4hedUjjrzHqry4m0yb6Rxdp5LXcO55?=
- =?us-ascii?Q?nK5rS5pz9FiSHNEeVKHKNL+S0a1jndeuvu0n6Advq35MYMC5s5qDUQVYZbVP?=
- =?us-ascii?Q?xSNGNdbA941aS48dag3LwAfPcMIx7vsNVBMsVD102AVFVGXKOSZixtBIJYa2?=
- =?us-ascii?Q?bewgudfBZw=3D=3D?=
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: c4201a8d-6710-4c06-7743-08de8fd2e3d6
-X-MS-Exchange-CrossTenant-AuthSource: AM0PR04MB7044.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Apr 2026 09:41:46.2431
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: pHYSYdkeGDmZvjFlmZcyX+XGI+eKl0Psw+7vm6+lVwboDpt2uL1hX82wQ921jAcX8Pin1/yMZsDarpy9xR5UsQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AMDPR04MB11607
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Authority-Analysis: v=2.4 cv=RsjI7SmK c=1 sm=1 tr=0 ts=69ccef51 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=p8F4Ghc8BiBnGImhoNcA:9
+X-Proofpoint-GUID: 1SAEDdbf5vHIk4kktIS0UPI61OTR8Bj4
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDAxMDA4OSBTYWx0ZWRfXyyRbNbQ8O/9d
+ wMGZtWZQzwAy6odR4ylaKrplDbmlPeY8xMJd9isszxtDJ2srY7d5s2yBOJqf/6cIU51AcowCgsh
+ UL0bh5eElLZAWUNQNigUi26Oz5111qckwXTplGzWIoUseX2SJyWUbFV1bJA6h5MwCuLCBd3FgsA
+ ff5wxfeweq9jOTrBWJULdC+OEjdz0jhDVpaIv7YVxvWwdqWy9tbXZTY6gbJNo/gt7+di3yAWlZb
+ DLa5Eo1tu41weN0fjtPTCPymk0wme7l46DSENhBc4GPY9C6+Mk6KacgDA3vpvFxAODlrlJroqzG
+ Jj03rfd/dU5n1/6XcialGyjasVTLx3lucpvhdSJfymRzTSpUs7itbeaUIn8UFJLwtrrVVPguEYr
+ Ht63BXLDl7rmbYX/4ZR80uPzE8eokSGjPJu7Ug0SKEcEdwEVEF92p/YNnWxjvWvCbfxvf0x+rtS
+ une/hykPhvKZcJ9SxkQ==
+X-Proofpoint-ORIG-GUID: 1SAEDdbf5vHIk4kktIS0UPI61OTR8Bj4
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-01_03,2026-04-01_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 bulkscore=0 priorityscore=1501 lowpriorityscore=0
+ suspectscore=0 malwarescore=0 spamscore=0 clxscore=1015 phishscore=0
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
+ definitions=main-2604010089
 
-Use the type SNDRV_CTL_ELEM_TYPE_IEC958 for iec958 channel status
-controls, the original type will cause mixer-test to iterate all 32bit
-values, which costs a lot of time. And using IEC958 type can reduce the
-control numbers.
+From: Abhishek Dubey <adubey@linux.ibm.com>
 
-Also enable pm runtime before updating registers to make the regmap cache
-data align with the value in hardware.
+Implement JIT support for fsession in powerpc64 trampoline.
+The trampoline stack now accommodate session cookies and
+function metadata in place of function argument. fentry/fexit
+programs consume corresponding function metadata. This mirrors
+existing x86 behavior and enable session cookies on powerpc64.
 
-Fixes: 955ac624058f ("ASoC: fsl_easrc: Add EASRC ASoC CPU DAI drivers")
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+# ./test_progs -t fsession
+#135/1   fsession_test/fsession_test:OK
+#135/2   fsession_test/fsession_reattach:OK
+#135/3   fsession_test/fsession_cookie:OK
+#135     fsession_test:OK
+Summary: 1/3 PASSED, 0 SKIPPED, 0 FAILED
+
+Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
+Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
 ---
- sound/soc/fsl/fsl_easrc.c | 118 +++++++++++++++++++++++++++-----------
- 1 file changed, 84 insertions(+), 34 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_easrc.c b/sound/soc/fsl/fsl_easrc.c
-index 3086cb758beb..114a6c0b6b73 100644
---- a/sound/soc/fsl/fsl_easrc.c
-+++ b/sound/soc/fsl/fsl_easrc.c
-@@ -78,17 +78,47 @@ static int fsl_easrc_iec958_get_bits(struct snd_kcontrol *kcontrol,
- 	return 0;
+This patch is rebased over https://lore.kernel.org/bpf/20260401103215.104438-1-adubey@linux.ibm.com
+
+v2->v3:
+  Rebased over latest changes
+  Collected Tested-by tag
+v1->v2:
+  No change since v1
+
+[v2]: https://lore.kernel.org/bpf/20260226041217.18059-1-adubey@linux.ibm.com
+[v1]: https://lore.kernel.org/bpf/20260216155310.38457-1-adubey@linux.ibm.com
+
+ arch/powerpc/net/bpf_jit.h        |  4 +-
+ arch/powerpc/net/bpf_jit_comp.c   | 69 ++++++++++++++++++++++++++-----
+ arch/powerpc/net/bpf_jit_comp64.c | 25 +++++++++++
+ 3 files changed, 87 insertions(+), 11 deletions(-)
+
+diff --git a/arch/powerpc/net/bpf_jit.h b/arch/powerpc/net/bpf_jit.h
+index a232f3fb73be..f32de8704d4d 100644
+--- a/arch/powerpc/net/bpf_jit.h
++++ b/arch/powerpc/net/bpf_jit.h
+@@ -218,7 +218,9 @@ void bpf_jit_build_epilogue(u32 *image, struct codegen_context *ctx);
+ void bpf_jit_build_fentry_stubs(u32 *image, struct codegen_context *ctx);
+ void bpf_jit_realloc_regs(struct codegen_context *ctx);
+ int bpf_jit_emit_exit_insn(u32 *image, struct codegen_context *ctx, int tmp_reg, long exit_addr);
+-
++void prepare_for_fsession_fentry(u32 *image, struct codegen_context *ctx, int cookie_cnt,
++								int cookie_off, int retval_off);
++void store_func_meta(u32 *image, struct codegen_context *ctx, u64 func_meta, int func_meta_off);
+ int bpf_add_extable_entry(struct bpf_prog *fp, u32 *image, u32 *fimage, int pass,
+ 			  struct codegen_context *ctx, int insn_idx,
+ 			  int jmp_off, int dst_reg, u32 code);
+diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+index 2018260f56c6..16d15ff3145a 100644
+--- a/arch/powerpc/net/bpf_jit_comp.c
++++ b/arch/powerpc/net/bpf_jit_comp.c
+@@ -540,6 +540,11 @@ bool bpf_jit_supports_private_stack(void)
+ 	return IS_ENABLED(CONFIG_PPC64);
  }
  
-+static int fsl_easrc_iec958_info(struct snd_kcontrol *kcontrol,
-+				 struct snd_ctl_elem_info *uinfo)
++bool bpf_jit_supports_fsession(void)
 +{
-+	uinfo->type = SNDRV_CTL_ELEM_TYPE_IEC958;
-+	uinfo->count = 1;
-+	return 0;
++	return IS_ENABLED(CONFIG_PPC64);
 +}
 +
- static int fsl_easrc_get_reg(struct snd_kcontrol *kcontrol,
- 			     struct snd_ctl_elem_value *ucontrol)
+ bool bpf_jit_supports_arena(void)
  {
- 	struct snd_soc_component *component = snd_kcontrol_chip(kcontrol);
- 	struct soc_mreg_control *mc =
- 		(struct soc_mreg_control *)kcontrol->private_value;
--	unsigned int regval;
-+	struct fsl_asrc *easrc = snd_soc_component_get_drvdata(component);
-+	unsigned int *regval = (unsigned int *)ucontrol->value.iec958.status;
-+	int ret;
-+
-+	ret = regmap_read(easrc->regmap, REG_EASRC_CS0(mc->regbase), &regval[0]);
-+	if (ret)
-+		return ret;
-+
-+	ret = regmap_read(easrc->regmap, REG_EASRC_CS1(mc->regbase), &regval[1]);
-+	if (ret)
-+		return ret;
-+
-+	ret = regmap_read(easrc->regmap, REG_EASRC_CS2(mc->regbase), &regval[2]);
-+	if (ret)
-+		return ret;
+ 	return IS_ENABLED(CONFIG_PPC64);
+@@ -812,12 +817,16 @@ static int __arch_prepare_bpf_trampoline(struct bpf_tramp_image *im, void *rw_im
+ 					 struct bpf_tramp_links *tlinks,
+ 					 void *func_addr)
+ {
+-	int regs_off, nregs_off, ip_off, run_ctx_off, retval_off, nvr_off, alt_lr_off, r4_off = 0;
++	int regs_off, func_meta_off, ip_off, run_ctx_off, retval_off;
++	int nvr_off, alt_lr_off, r4_off = 0;
+ 	struct bpf_tramp_links *fmod_ret = &tlinks[BPF_TRAMP_MODIFY_RETURN];
+ 	struct bpf_tramp_links *fentry = &tlinks[BPF_TRAMP_FENTRY];
+ 	struct bpf_tramp_links *fexit = &tlinks[BPF_TRAMP_FEXIT];
+ 	int i, ret, nr_regs, retaddr_off, bpf_frame_size = 0;
+ 	struct codegen_context codegen_ctx, *ctx;
++	int cookie_off, cookie_cnt, cookie_ctx_off;
++	int fsession_cnt = bpf_fsession_cnt(tlinks);
++	u64 func_meta;
+ 	u32 *image = (u32 *)rw_image;
+ 	ppc_inst_t branch_insn;
+ 	u32 *branches = NULL;
+@@ -853,9 +862,11 @@ static int __arch_prepare_bpf_trampoline(struct bpf_tramp_image *im, void *rw_im
+ 	 *                              [ reg argN          ]
+ 	 *                              [ ...               ]
+ 	 *       regs_off               [ reg_arg1          ] prog_ctx
+-	 *       nregs_off              [ args count        ] ((u64 *)prog_ctx)[-1]
++	 *       func_meta_off          [ args count        ] ((u64 *)prog_ctx)[-1]
+ 	 *       ip_off                 [ traced function   ] ((u64 *)prog_ctx)[-2]
++	 *                              [ stack cookieN     ]
+ 	 *                              [ ...               ]
++	 *       cookie_off             [ stack cookie1     ]
+ 	 *       run_ctx_off            [ bpf_tramp_run_ctx ]
+ 	 *                              [ reg argN          ]
+ 	 *                              [ ...               ]
+@@ -887,16 +898,21 @@ static int __arch_prepare_bpf_trampoline(struct bpf_tramp_image *im, void *rw_im
+ 	run_ctx_off = bpf_frame_size;
+ 	bpf_frame_size += round_up(sizeof(struct bpf_tramp_run_ctx), SZL);
  
--	regval = snd_soc_component_read(component, mc->regbase);
-+	ret = regmap_read(easrc->regmap, REG_EASRC_CS3(mc->regbase), &regval[3]);
-+	if (ret)
-+		return ret;
++	/* room for session cookies */
++	cookie_off = bpf_frame_size;
++	cookie_cnt = bpf_fsession_cookie_cnt(tlinks);
++	bpf_frame_size += cookie_cnt * 8;
 +
-+	ret = regmap_read(easrc->regmap, REG_EASRC_CS4(mc->regbase), &regval[4]);
-+	if (ret)
-+		return ret;
+ 	/* Room for IP address argument */
+ 	ip_off = bpf_frame_size;
+ 	if (flags & BPF_TRAMP_F_IP_ARG)
+ 		bpf_frame_size += SZL;
  
--	ucontrol->value.integer.value[0] = regval;
-+	ret = regmap_read(easrc->regmap, REG_EASRC_CS5(mc->regbase), &regval[5]);
-+	if (ret)
-+		return ret;
+-	/* Room for args count */
+-	nregs_off = bpf_frame_size;
++	/* Room for function metadata, arg regs count */
++	func_meta_off = bpf_frame_size;
+ 	bpf_frame_size += SZL;
  
- 	return 0;
+-	/* Room for args */
++	/* Room for arg regs */
+ 	regs_off = bpf_frame_size;
+ 	bpf_frame_size += nr_regs * SZL;
+ 
+@@ -995,9 +1011,9 @@ static int __arch_prepare_bpf_trampoline(struct bpf_tramp_image *im, void *rw_im
+ 		EMIT(PPC_RAW_STL(_R3, _R1, retaddr_off));
+ 	}
+ 
+-	/* Save function arg count -- see bpf_get_func_arg_cnt() */
+-	EMIT(PPC_RAW_LI(_R3, nr_regs));
+-	EMIT(PPC_RAW_STL(_R3, _R1, nregs_off));
++	/* Save function arg regs count -- see bpf_get_func_arg_cnt() */
++	func_meta = nr_regs;
++	store_func_meta(image, ctx, func_meta, func_meta_off);
+ 
+ 	/* Save nv regs */
+ 	EMIT(PPC_RAW_STL(_R25, _R1, nvr_off));
+@@ -1011,10 +1027,28 @@ static int __arch_prepare_bpf_trampoline(struct bpf_tramp_image *im, void *rw_im
+ 			return ret;
+ 	}
+ 
+-	for (i = 0; i < fentry->nr_links; i++)
++	if (fsession_cnt) {
++		/*
++		 * Clear all the session cookies' values
++		 * Clear the return value to make sure fentry always get 0
++		 */
++		prepare_for_fsession_fentry(image, ctx, cookie_cnt, cookie_off, retval_off);
++	}
++
++	cookie_ctx_off = (regs_off - cookie_off) / 8;
++
++	for (i = 0; i < fentry->nr_links; i++) {
++		if (bpf_prog_calls_session_cookie(fentry->links[i])) {
++			u64 meta = func_meta | (cookie_ctx_off << BPF_TRAMP_COOKIE_INDEX_SHIFT);
++
++			store_func_meta(image, ctx, meta, func_meta_off);
++			cookie_ctx_off--;
++		}
++
+ 		if (invoke_bpf_prog(image, ro_image, ctx, fentry->links[i], regs_off, retval_off,
+ 				    run_ctx_off, flags & BPF_TRAMP_F_RET_FENTRY_RET))
+ 			return -EINVAL;
++	}
+ 
+ 	if (fmod_ret->nr_links) {
+ 		branches = kcalloc(fmod_ret->nr_links, sizeof(u32), GFP_KERNEL);
+@@ -1076,12 +1110,27 @@ static int __arch_prepare_bpf_trampoline(struct bpf_tramp_image *im, void *rw_im
+ 		image[branches[i]] = ppc_inst_val(branch_insn);
+ 	}
+ 
+-	for (i = 0; i < fexit->nr_links; i++)
++	/* set the "is_return" flag for fsession */
++	func_meta |= (1ULL << BPF_TRAMP_IS_RETURN_SHIFT);
++	if (fsession_cnt)
++		store_func_meta(image, ctx, func_meta, func_meta_off);
++
++	cookie_ctx_off = (regs_off - cookie_off) / 8;
++
++	for (i = 0; i < fexit->nr_links; i++) {
++		if (bpf_prog_calls_session_cookie(fexit->links[i])) {
++			u64 meta = func_meta | (cookie_ctx_off << BPF_TRAMP_COOKIE_INDEX_SHIFT);
++
++			store_func_meta(image, ctx, meta, func_meta_off);
++			cookie_ctx_off--;
++		}
++
+ 		if (invoke_bpf_prog(image, ro_image, ctx, fexit->links[i], regs_off, retval_off,
+ 				    run_ctx_off, false)) {
+ 			ret = -EINVAL;
+ 			goto cleanup;
+ 		}
++	}
+ 
+ 	if (flags & BPF_TRAMP_F_CALL_ORIG) {
+ 		if (ro_image) /* image is NULL for dummy pass */
+diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+index 6670d8c69ade..d9038c468af6 100644
+--- a/arch/powerpc/net/bpf_jit_comp64.c
++++ b/arch/powerpc/net/bpf_jit_comp64.c
+@@ -179,6 +179,31 @@ static int bpf_jit_stack_offsetof(struct codegen_context *ctx, int reg)
+ 	BUG();
  }
-@@ -100,22 +130,62 @@ static int fsl_easrc_set_reg(struct snd_kcontrol *kcontrol,
- 	struct soc_mreg_control *mc =
- 		(struct soc_mreg_control *)kcontrol->private_value;
- 	struct fsl_asrc *easrc = snd_soc_component_get_drvdata(component);
--	unsigned int regval = ucontrol->value.integer.value[0];
--	bool changed;
-+	unsigned int *regval = (unsigned int *)ucontrol->value.iec958.status;
-+	bool changed, changed_all = false;
- 	int ret;
  
--	ret = regmap_update_bits_check(easrc->regmap, mc->regbase,
--				       GENMASK(31, 0), regval, &changed);
--	if (ret != 0)
-+	ret = pm_runtime_resume_and_get(component->dev);
-+	if (ret)
- 		return ret;
- 
--	return changed;
-+	ret = regmap_update_bits_check(easrc->regmap, REG_EASRC_CS0(mc->regbase),
-+				       GENMASK(31, 0), regval[0], &changed);
-+	if (ret != 0)
-+		goto err;
-+	changed_all |= changed;
++void prepare_for_fsession_fentry(u32 *image, struct codegen_context *ctx, int cookie_cnt,
++				int cookie_off, int retval_off)
++{
++	EMIT(PPC_RAW_LI(bpf_to_ppc(TMP_REG_1), 0));
 +
-+	ret = regmap_update_bits_check(easrc->regmap, REG_EASRC_CS1(mc->regbase),
-+				       GENMASK(31, 0), regval[1], &changed);
-+	if (ret != 0)
-+		goto err;
-+	changed_all |= changed;
++	for (int i = 0; i < cookie_cnt; i++)
++		EMIT(PPC_RAW_STD(bpf_to_ppc(TMP_REG_1), _R1, cookie_off + 8 * i));
++	EMIT(PPC_RAW_STD(bpf_to_ppc(TMP_REG_1), _R1, retval_off));
++}
 +
-+	ret = regmap_update_bits_check(easrc->regmap, REG_EASRC_CS2(mc->regbase),
-+				       GENMASK(31, 0), regval[2], &changed);
-+	if (ret != 0)
-+		goto err;
-+	changed_all |= changed;
++void store_func_meta(u32 *image, struct codegen_context *ctx,
++					u64 func_meta, int func_meta_off)
++{
++	/*
++	 * Store func_meta to stack at [R1 + func_meta_off] = func_meta
++	 *
++	 * func_meta :
++	 *	bit[63]: is_return flag
++	 *	byte[1]: cookie offset from ctx
++	 *	byte[0]: args count
++	 */
++	PPC_LI64(bpf_to_ppc(TMP_REG_1), func_meta);
++	EMIT(PPC_RAW_STD(bpf_to_ppc(TMP_REG_1), _R1, func_meta_off));
++}
 +
-+	ret = regmap_update_bits_check(easrc->regmap, REG_EASRC_CS3(mc->regbase),
-+				       GENMASK(31, 0), regval[3], &changed);
-+	if (ret != 0)
-+		goto err;
-+	changed_all |= changed;
-+
-+	ret = regmap_update_bits_check(easrc->regmap, REG_EASRC_CS4(mc->regbase),
-+				       GENMASK(31, 0), regval[4], &changed);
-+	if (ret != 0)
-+		goto err;
-+	changed_all |= changed;
-+
-+	ret = regmap_update_bits_check(easrc->regmap, REG_EASRC_CS5(mc->regbase),
-+				       GENMASK(31, 0), regval[5], &changed);
-+	if (ret != 0)
-+		goto err;
-+	changed_all |= changed;
-+err:
-+	pm_runtime_put_autosuspend(component->dev);
-+
-+	if (ret != 0)
-+		return ret;
-+	else
-+		return changed_all;
+ void bpf_jit_realloc_regs(struct codegen_context *ctx)
+ {
  }
- 
- #define SOC_SINGLE_REG_RW(xname, xreg) \
- {	.iface = SNDRV_CTL_ELEM_IFACE_PCM, .name = (xname), \
- 	.access = SNDRV_CTL_ELEM_ACCESS_READWRITE, \
--	.info = snd_soc_info_xr_sx, .get = fsl_easrc_get_reg, \
-+	.info = fsl_easrc_iec958_info, .get = fsl_easrc_get_reg, \
- 	.put = fsl_easrc_set_reg, \
- 	.private_value = (unsigned long)&(struct soc_mreg_control) \
- 		{ .regbase = xreg, .regcount = 1, .nbits = 32, \
-@@ -146,30 +216,10 @@ static const struct snd_kcontrol_new fsl_easrc_snd_controls[] = {
- 	SOC_SINGLE_VAL_RW("Context 2 IEC958 Bits Per Sample", 2),
- 	SOC_SINGLE_VAL_RW("Context 3 IEC958 Bits Per Sample", 3),
- 
--	SOC_SINGLE_REG_RW("Context 0 IEC958 CS0", REG_EASRC_CS0(0)),
--	SOC_SINGLE_REG_RW("Context 1 IEC958 CS0", REG_EASRC_CS0(1)),
--	SOC_SINGLE_REG_RW("Context 2 IEC958 CS0", REG_EASRC_CS0(2)),
--	SOC_SINGLE_REG_RW("Context 3 IEC958 CS0", REG_EASRC_CS0(3)),
--	SOC_SINGLE_REG_RW("Context 0 IEC958 CS1", REG_EASRC_CS1(0)),
--	SOC_SINGLE_REG_RW("Context 1 IEC958 CS1", REG_EASRC_CS1(1)),
--	SOC_SINGLE_REG_RW("Context 2 IEC958 CS1", REG_EASRC_CS1(2)),
--	SOC_SINGLE_REG_RW("Context 3 IEC958 CS1", REG_EASRC_CS1(3)),
--	SOC_SINGLE_REG_RW("Context 0 IEC958 CS2", REG_EASRC_CS2(0)),
--	SOC_SINGLE_REG_RW("Context 1 IEC958 CS2", REG_EASRC_CS2(1)),
--	SOC_SINGLE_REG_RW("Context 2 IEC958 CS2", REG_EASRC_CS2(2)),
--	SOC_SINGLE_REG_RW("Context 3 IEC958 CS2", REG_EASRC_CS2(3)),
--	SOC_SINGLE_REG_RW("Context 0 IEC958 CS3", REG_EASRC_CS3(0)),
--	SOC_SINGLE_REG_RW("Context 1 IEC958 CS3", REG_EASRC_CS3(1)),
--	SOC_SINGLE_REG_RW("Context 2 IEC958 CS3", REG_EASRC_CS3(2)),
--	SOC_SINGLE_REG_RW("Context 3 IEC958 CS3", REG_EASRC_CS3(3)),
--	SOC_SINGLE_REG_RW("Context 0 IEC958 CS4", REG_EASRC_CS4(0)),
--	SOC_SINGLE_REG_RW("Context 1 IEC958 CS4", REG_EASRC_CS4(1)),
--	SOC_SINGLE_REG_RW("Context 2 IEC958 CS4", REG_EASRC_CS4(2)),
--	SOC_SINGLE_REG_RW("Context 3 IEC958 CS4", REG_EASRC_CS4(3)),
--	SOC_SINGLE_REG_RW("Context 0 IEC958 CS5", REG_EASRC_CS5(0)),
--	SOC_SINGLE_REG_RW("Context 1 IEC958 CS5", REG_EASRC_CS5(1)),
--	SOC_SINGLE_REG_RW("Context 2 IEC958 CS5", REG_EASRC_CS5(2)),
--	SOC_SINGLE_REG_RW("Context 3 IEC958 CS5", REG_EASRC_CS5(3)),
-+	SOC_SINGLE_REG_RW("Context 0 IEC958 CS", 0),
-+	SOC_SINGLE_REG_RW("Context 1 IEC958 CS", 1),
-+	SOC_SINGLE_REG_RW("Context 2 IEC958 CS", 2),
-+	SOC_SINGLE_REG_RW("Context 3 IEC958 CS", 3),
- };
- 
- /*
 -- 
-2.34.1
+2.52.0
 
 
