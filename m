@@ -1,70 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-19187-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19188-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E8BECC6B00
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2026 06:56:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 576F2CC6B00
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2026 06:56:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fmXh764ddz2ySk;
-	Thu, 02 Apr 2026 17:56:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.12
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775112983;
-	cv=none; b=cUwzwBYI72BfXIrb/GeN29QjnW0yge0z1nAMOWmh6c+y9Tp+GnzYRUnHw4Xlu+RBjpGaGlb4/FLx/7vy6/NaBUnDjHozGfQwSELmc9IR/xNsAbF+auiAwBCDPnmeEwC4UHhdN/TVJgJHR+wh8fT7xdC1CYIdLXeRk4gyiRCt6GsbSomXSOjevdwt912j8lb5+jF2NSja8X9YsjHh9f1dr919BhoJrCHbCY+YDUGn9z1fyjffy5VO+M/9/XhLA9Pp36w0S/AH/nr8s/ywCSfyZQR/2OJFGs8LKR/HD9kXR0GukCYCcnq6XdANotScRNNWHt2oZhYAEdIOVmqpnFjOeg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fmXhW0LPDz2ySk;
+	Thu, 02 Apr 2026 17:56:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775113003;
+	cv=none; b=lHTBmFC9uhAGBnpTXkmZFPBYcfslY0/QnuQzYLyrYCScpZdDa1GChn9NlbNvbGCKbWepUoJ5N8IO6Fj9enRtUxFCIISiXCHFe+DKH3Qv/6wcFH0wQvoWn4Rh2t6ssoxtxjnJ+ectlxfGRf99dfv0G8HZeg7wZu24dVaAxet8ljeZvoVDg/Gfve7sn10OOWAtl/XdQ1mu7OtboOIB/p9gCC/Uopdq76DHcchF5ETdza93rlZs4br68gYh2a0O3raKQ5T/Z/kL3cf0+bf7/vOvyDdSyLvV4MscyK7MI+7FrkbQAIXGBLnYAR/KxMTDuRBGe8LDtBiwOV5AGV10AX8YbQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775112983; c=relaxed/relaxed;
-	bh=cU4Lw2/Q5iTV2t0poXv6wqs6R+ejJmwebCXy21QPuzY=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=EfV3+Js7+GrYCrZDbxj01ZvX2X1gKIH3l3cbR9ypzP4TGX6sTPQ5mG//URAePNPBljeu1Cfp4lic3n+DsK/i7qy0ScuBDSOnIMjTKBdAdsVxQPewjVZa4p1LJzlk+32i0te+k32I22MBGImCjjA54Zbmpcynu+nDyA1DhaGY2ags5CA51tL/WXjSjcXiOhv+G7+l8wrOH3WHFpaKBC8MKROL/oT1aJkGHxpox22pDY2RvYXjuFcN6L9xUYnKPK619aAqpp+vG49f+AQtjNUsp8ge40HE48buRCxbr58yl9rX7iCdPAKFah+Mg9dtg2VPND6k6lMavWFqUWjxNvxY0A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=EnzHVM1o; dkim-atps=neutral; spf=pass (client-ip=192.198.163.12; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1775113003; c=relaxed/relaxed;
+	bh=FlpdYf1WLDHAMV/rn1y6xYHlGkLnTRJ4f+O5zsHNUww=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=Hft0ImdGtBViEPKGf9Bw9npGl3hxu8/+6uHbgbRehjmGIUL+S+VhKN6b1lkdMAUmg2pFFtpzD8MgmksUxPszcvFvJ3KtdSGhKbfBWvclaX9+M9wWY6oXqxJKn1i0TM6NUkxzHvxRBk9wpXcxBUZ2NcdMizkD5l/ovZ/7SaqoaajSKF+tj7pTLQwBcv+Uw8m86VFOAERvjipMkFLuIm1oCI6fSozPZiNJ7bE6YD2hA6ruPx4xJmjmtrz4GJ/PYSjzp9Ppf7dVzxsck/lVOmDpRPmN/myR9iIYd8E+XlR2VuDbGIFVHY56KsltXVW+bq9u9qmOn4tHTcxfqy5UScGurw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=UxMz6fL7; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62e; helo=mail-pl1-x62e.google.com; envelope-from=liuhangbin@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=EnzHVM1o;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=UxMz6fL7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.12; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62e; helo=mail-pl1-x62e.google.com; envelope-from=liuhangbin@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62e.google.com (mail-pl1-x62e.google.com [IPv6:2607:f8b0:4864:20::62e])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fmXh45FrBz2xln
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2026 17:56:18 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1775112981; x=1806648981;
-  h=date:from:to:cc:subject:message-id;
-  bh=8cgO3rJzPUUNLxb8rpRU1Bh9iurRMBEoJ7Cl+3Df94g=;
-  b=EnzHVM1oqjt6Xr+4hgNit3NZldsmAQT9/6qyVm7P6XiYuzoQQ5YbzFND
-   hWrfeno8Fa+KGO7JYS/EXAVdwiSR/2cZ0fPe4RLZX3edh1fZml3kewtnG
-   a/j+SKwxoxk+7YE3wzgPQ53M5j6OVqZoIq9eGgTge4asGJdBi665/cWnF
-   /ty0a8svkBcPQifq11b+pUpiVXFyojPWAPrX+4xO4O9r6vSAStm3Kd4cr
-   NDEi38PEU9LTht9zx4zarQq4/78oLg/g8GGQWc1oiEek1mvsFzUobS/Zh
-   8TRdA6eQWEOMR7htptkDm4ZClx6OoiF3Doyzzvg9SifPniMKwKCmzqQkF
-   A==;
-X-CSE-ConnectionGUID: XxhpAZmSQMi8L7TO0FOrNg==
-X-CSE-MsgGUID: lDHKnYDHSl6pMc6mkKsSwQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11746"; a="80053901"
-X-IronPort-AV: E=Sophos;i="6.23,155,1770624000"; 
-   d="scan'208";a="80053901"
-Received: from fmviesa001.fm.intel.com ([10.60.135.141])
-  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Apr 2026 23:56:14 -0700
-X-CSE-ConnectionGUID: 3m4GOxn2R2OgIF29901v7w==
-X-CSE-MsgGUID: Jaw3CMiwRzupxHU9j2K5VQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,155,1770624000"; 
-   d="scan'208";a="250106048"
-Received: from lkp-server02.sh.intel.com (HELO cedfeeed6c12) ([10.239.97.151])
-  by fmviesa001.fm.intel.com with ESMTP; 01 Apr 2026 23:56:13 -0700
-Received: from kbuild by cedfeeed6c12 with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1w8ByG-000000000L3-0cxT;
-	Thu, 02 Apr 2026 06:56:06 +0000
-Date: Thu, 02 Apr 2026 12:39:15 +0800
-From: kernel test robot <lkp@intel.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [powerpc:next-test] BUILD SUCCESS
- bd77a34e9a619ee92c03cbb227ca86d814aa6601
-Message-ID: <202604021209.HXGQioXv-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fmXhV0B4Wz2xln
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2026 17:56:41 +1100 (AEDT)
+Received: by mail-pl1-x62e.google.com with SMTP id d9443c01a7336-2a7a9b8ed69so4580455ad.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2026 23:56:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1775112999; x=1775717799; darn=lists.ozlabs.org;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=FlpdYf1WLDHAMV/rn1y6xYHlGkLnTRJ4f+O5zsHNUww=;
+        b=UxMz6fL7j3IwA1D5jgsLb3GdWwUovmivxVvdwdwBdHZYUc7SBY1Y6OB1x1MWdU9qrH
+         cmoVGGklUDQ2CC6gkxVCLAI84+bgxrsVgb3A35IDpDDWlIzQE6484ZRpLhEm0iKf+tKr
+         WB+6H/PdH7Q8RWZFexvn5Vjx8lAJdf4yNE1W4MCVln/vu+I/LyckZiIW6QK+eDQI0kuU
+         w4VjHB5Q01JU5VO6eppdJ2vOB/pOPdCMmW1h/j7a/YV5qDSWYbiDjlKhuHqiXGbtbxD/
+         hptwzdEoYH8UYHDn0J375bhXU0+sezi8aNgQ1VPVMno2+kZMJs/uDZVOENGfut7zVmm0
+         Genw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775112999; x=1775717799;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=FlpdYf1WLDHAMV/rn1y6xYHlGkLnTRJ4f+O5zsHNUww=;
+        b=Kgzg5ogQl8OJCfo1Pk2tzNV60sJnVVAm9NsiHtEtyDuhOjF6cLnyUebIGIH4DPoqlC
+         gjnGnrmRw/Q4mkl5e1CPGMO5vsmwpZXSolJN16yhnEiGNr5OFPJWS2C166FMbXLf4rJf
+         0aP7mxUA0wtPVGJNd74m0qoz8Kgf0a3CTFZaG3rGFJo8L2/OMqrgw0ZAO+seuQufSS36
+         j+7cdAFviKYfBha+8wvIRgnRqGfDbXzTDY9sDQZZk27bYOFsn+6PrdjIJIJbRP5PbcOx
+         NXeBMjzSTyneZWLL5sArY0sl//eUYczSxWnQ7FiTjsgvC6M+7casHKL0tZor0j9dcM2D
+         7QIQ==
+X-Forwarded-Encrypted: i=1; AJvYcCW7b56e6hQ/dtIlYmXLgTwKvB19AK8I+tsHFRqGHhoDj4SWCgkNbhq91t41cSTkFOILNUkOX3b1OL0fLM4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yy1dT5ATcsgQIQRsxA2sNx/reyhEir0UFDCuywXr4YdbfK/JbNx
+	MrjbykhsaVSYjNCPqyadMiG3U3ySsRPjaXR439Ribm68AmU3+K9+G9ZZ
+X-Gm-Gg: AeBDiesaccigFLyKv3u7l0DFuTaMhmaj6iqWKfHj/VwvUWW9Q9akwYij02G0N2B0JFn
+	PYd4EBNwtvyAkMPB6M8pXKGGPp6MrrR+9bDRQZUIxQ2Dz0JXLKRQcjliwl0DjiSqWoMf7E4IRTr
+	D0AMcSPQ9l8cALTpcoVirrZJ31H19YQLjywW0Pgafh7EOR7JAmGn/fCwUmpnjIb3pknmRf+MAq4
+	EHvK886i3+ROXq/g9F5XKq52W+EykGq+Ni/c7g9ilwlN8H4KPib0YTFPK4EbAadhl8gkOwjKSAa
+	3iLl13pWk70F8hvqOiSE4XRVahgGbj/fp1W8Ty9miBi2hKLH6ab+RclWEjqkGtKMTUNM8YlouWU
+	kpNVzTbprnuxu+r3K22NU6ot/z2JUZU482+HamPWKiuvebVAN5aZ1+J2Uea2GK4bpMInzd64o3J
+	3lOEubr2g+r1BxcYesUJfTbXmRxv/Y6+Rmgu8rRpIzcbWhmPbKKV/Fzq0TR9SKQ0Yc9b4=
+X-Received: by 2002:a17:903:90b:b0:2b2:470d:6d18 with SMTP id d9443c01a7336-2b269adfea5mr73898055ad.8.1775112999356;
+        Wed, 01 Apr 2026 23:56:39 -0700 (PDT)
+Received: from 1.0.0.127.in-addr.arpa ([240e:34c:5765:500:7999:76d9:8e52:f837])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b2749a1e9csm19647945ad.55.2026.04.01.23.56.08
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 01 Apr 2026 23:56:38 -0700 (PDT)
+From: Hangbin Liu <liuhangbin@gmail.com>
+Date: Thu, 02 Apr 2026 14:56:01 +0800
+Subject: [PATCH] cmpxchg: allow const-qualified old value in cmpxchg()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,174 +84,292 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260402-cmpxchg-v1-1-4561e2c05d2c@gmail.com>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
+ vPSU3UzU4B8JSMDIzMDEwMj3eTcgorkjHRdo7QUYwPzNBOTRBNDJaDqgqLUtMwKsEnRsbW1AGI
+ cTBRZAAAA
+X-Change-ID: 20260402-cmpxchg-2fd307f44a41
+To: Richard Henderson <richard.henderson@linaro.org>, 
+ Matt Turner <mattst88@gmail.com>, Magnus Lindholm <linmag7@gmail.com>, 
+ Vineet Gupta <vgupta@kernel.org>, Brian Cain <bcain@kernel.org>, 
+ "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
+ Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+ Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
+ Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>, 
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
+ John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
+ "David S. Miller" <davem@davemloft.net>, 
+ Andreas Larsson <andreas@gaisler.com>, Thomas Gleixner <tglx@kernel.org>, 
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+ "H. Peter Anvin" <hpa@zytor.com>, Chris Zankel <chris@zankel.net>, 
+ Max Filippov <jcmvbkbc@gmail.com>
+Cc: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ linux-snps-arc@lists.infradead.org, linux-hexagon@vger.kernel.org, 
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+ linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org, 
+ sparclinux@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>, 
+ Hangbin Liu <liuhangbin@gmail.com>
+X-Mailer: b4 0.14.3
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
-branch HEAD: bd77a34e9a619ee92c03cbb227ca86d814aa6601  powerpc: pci-ioda: Optimize pnv_ioda_pick_m64_pe()
+The old value passed to cmpxchg() is semantically read-only: it is
+only loaded into a register as a comparand and is never written back.
+However, the macro currently assigns it implicitly to a local variable
+of type __typeof__(*(ptr)), which triggers -Werror=discarded-qualifiers
+when old is a const-qualified pointer and ptr points to a non-const type.
 
-elapsed time: 1472m
+To avoid this, let's add an explicit cast to __typeof__(*(ptr)) for the
+old local variable in the cmpxchg macros. This explicit cast suppresses
+the -Wdiscarded-qualifiers diagnostic.
 
-configs tested: 153
-configs skipped: 4
+The new value is intentionally left without a cast: new will be stored
+into *ptr, so silently accepting a const-qualified new would allow
+callers to store a pointer-to-const into a non-const location without
+any compiler warning.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Suggested-by: Jakub Kicinski <kuba@kernel.org>
+Signed-off-by: Hangbin Liu <liuhangbin@gmail.com>
+---
+This is my first time posting a patch with multi-architecture specific
+changes, so I'm not sure which target repository I should use. Please
+correct me if I made any mistakes.
+---
+ arch/alpha/include/asm/cmpxchg.h     | 4 ++--
+ arch/arc/include/asm/cmpxchg.h       | 4 ++--
+ arch/hexagon/include/asm/cmpxchg.h   | 2 +-
+ arch/parisc/include/asm/cmpxchg.h    | 2 +-
+ arch/powerpc/include/asm/cmpxchg.h   | 8 ++++----
+ arch/riscv/include/asm/cmpxchg.h     | 4 ++--
+ arch/sh/include/asm/cmpxchg.h        | 2 +-
+ arch/sparc/include/asm/cmpxchg_32.h  | 2 +-
+ arch/sparc/include/asm/cmpxchg_64.h  | 2 +-
+ arch/x86/include/asm/cmpxchg.h       | 2 +-
+ arch/xtensa/include/asm/cmpxchg.h    | 2 +-
+ tools/arch/x86/include/asm/cmpxchg.h | 2 +-
+ 12 files changed, 18 insertions(+), 18 deletions(-)
 
-tested configs:
-alpha                             allnoconfig    gcc-15.2.0
-alpha                            allyesconfig    gcc-15.2.0
-alpha                               defconfig    gcc-15.2.0
-arc                              allmodconfig    gcc-15.2.0
-arc                               allnoconfig    gcc-15.2.0
-arc                              allyesconfig    gcc-15.2.0
-arc                                 defconfig    gcc-15.2.0
-arc                   randconfig-001-20260402    gcc-13.4.0
-arc                   randconfig-002-20260402    gcc-8.5.0
-arm                               allnoconfig    clang-23
-arm                              allyesconfig    gcc-15.2.0
-arm                         bcm2835_defconfig    clang-23
-arm                                 defconfig    clang-23
-arm                   randconfig-001-20260402    clang-23
-arm                   randconfig-002-20260402    gcc-11.5.0
-arm                   randconfig-003-20260402    gcc-13.4.0
-arm                   randconfig-004-20260402    gcc-14.3.0
-arm64                            allmodconfig    clang-19
-arm64                             allnoconfig    gcc-15.2.0
-arm64                               defconfig    gcc-15.2.0
-arm64                 randconfig-001-20260401    clang-18
-arm64                 randconfig-002-20260401    gcc-8.5.0
-arm64                 randconfig-003-20260401    gcc-8.5.0
-arm64                 randconfig-004-20260401    gcc-11.5.0
-csky                             allmodconfig    gcc-15.2.0
-csky                              allnoconfig    gcc-15.2.0
-csky                                defconfig    gcc-15.2.0
-csky                  randconfig-001-20260401    gcc-13.4.0
-csky                  randconfig-002-20260401    gcc-15.2.0
-hexagon                          allmodconfig    clang-17
-hexagon                           allnoconfig    clang-23
-hexagon                             defconfig    clang-23
-hexagon               randconfig-001-20260401    clang-23
-hexagon               randconfig-002-20260401    clang-17
-i386                              allnoconfig    gcc-14
-i386                             allyesconfig    gcc-14
-i386        buildonly-randconfig-001-20260402    clang-20
-i386        buildonly-randconfig-002-20260402    gcc-13
-i386        buildonly-randconfig-003-20260402    gcc-14
-i386        buildonly-randconfig-004-20260402    clang-20
-i386        buildonly-randconfig-005-20260402    gcc-13
-i386        buildonly-randconfig-006-20260402    gcc-14
-i386                                defconfig    clang-20
-i386                  randconfig-001-20260402    clang-20
-i386                  randconfig-002-20260402    clang-20
-i386                  randconfig-003-20260402    gcc-13
-i386                  randconfig-004-20260402    clang-20
-i386                  randconfig-005-20260402    clang-20
-i386                  randconfig-006-20260402    clang-20
-i386                  randconfig-007-20260402    clang-20
-i386                  randconfig-011-20260401    clang-20
-i386                  randconfig-012-20260401    clang-20
-i386                  randconfig-013-20260401    clang-20
-i386                  randconfig-014-20260401    clang-20
-i386                  randconfig-015-20260401    clang-20
-i386                  randconfig-016-20260401    gcc-14
-i386                  randconfig-017-20260401    gcc-14
-loongarch                        allmodconfig    clang-19
-loongarch                         allnoconfig    clang-23
-loongarch                           defconfig    clang-19
-loongarch             randconfig-001-20260401    gcc-15.2.0
-loongarch             randconfig-002-20260401    clang-23
-m68k                             allmodconfig    gcc-15.2.0
-m68k                              allnoconfig    gcc-15.2.0
-m68k                             allyesconfig    gcc-15.2.0
-m68k                                defconfig    gcc-15.2.0
-microblaze                        allnoconfig    gcc-15.2.0
-microblaze                       allyesconfig    gcc-15.2.0
-microblaze                          defconfig    gcc-15.2.0
-mips                             allmodconfig    gcc-15.2.0
-mips                              allnoconfig    gcc-15.2.0
-mips                             allyesconfig    gcc-15.2.0
-nios2                            allmodconfig    gcc-11.5.0
-nios2                             allnoconfig    gcc-11.5.0
-nios2                               defconfig    gcc-11.5.0
-nios2                 randconfig-001-20260401    gcc-8.5.0
-nios2                 randconfig-002-20260401    gcc-9.5.0
-openrisc                         allmodconfig    gcc-15.2.0
-openrisc                          allnoconfig    gcc-15.2.0
-openrisc                            defconfig    gcc-15.2.0
-parisc                           allmodconfig    gcc-15.2.0
-parisc                            allnoconfig    gcc-15.2.0
-parisc                           allyesconfig    gcc-15.2.0
-parisc                              defconfig    gcc-15.2.0
-parisc                randconfig-001-20260401    gcc-8.5.0
-parisc                randconfig-002-20260401    gcc-8.5.0
-parisc64                            defconfig    gcc-15.2.0
-powerpc                          allmodconfig    gcc-15.2.0
-powerpc                           allnoconfig    gcc-15.2.0
-powerpc               randconfig-001-20260401    gcc-8.5.0
-powerpc               randconfig-002-20260401    clang-18
-powerpc64             randconfig-001-20260401    gcc-14.3.0
-powerpc64             randconfig-002-20260401    gcc-8.5.0
-riscv                            allmodconfig    clang-23
-riscv                             allnoconfig    gcc-15.2.0
-riscv                            allyesconfig    clang-16
-riscv                               defconfig    clang-23
-riscv                 randconfig-001-20260402    clang-17
-riscv                 randconfig-002-20260402    clang-23
-s390                             allmodconfig    clang-18
-s390                              allnoconfig    clang-23
-s390                             allyesconfig    gcc-15.2.0
-s390                                defconfig    clang-23
-s390                  randconfig-001-20260402    clang-23
-s390                  randconfig-002-20260402    gcc-8.5.0
-sh                               allmodconfig    gcc-15.2.0
-sh                                allnoconfig    gcc-15.2.0
-sh                               allyesconfig    gcc-15.2.0
-sh                                  defconfig    gcc-15.2.0
-sh                    randconfig-001-20260402    gcc-11.5.0
-sh                    randconfig-002-20260402    gcc-13.4.0
-sparc                             allnoconfig    gcc-15.2.0
-sparc                               defconfig    gcc-15.2.0
-sparc                 randconfig-001-20260402    gcc-8.5.0
-sparc                 randconfig-002-20260402    gcc-12.5.0
-sparc64                          allmodconfig    clang-23
-sparc64                             defconfig    clang-20
-sparc64               randconfig-001-20260402    gcc-10.5.0
-sparc64               randconfig-002-20260402    gcc-13.4.0
-um                               allmodconfig    clang-19
-um                                allnoconfig    clang-23
-um                               allyesconfig    gcc-14
-um                                  defconfig    clang-23
-um                             i386_defconfig    gcc-14
-um                    randconfig-001-20260402    gcc-14
-um                    randconfig-002-20260402    gcc-14
-um                           x86_64_defconfig    clang-23
-x86_64                           allmodconfig    clang-20
-x86_64                            allnoconfig    clang-20
-x86_64                           allyesconfig    clang-20
-x86_64                              defconfig    gcc-14
-x86_64                randconfig-001-20260402    clang-20
-x86_64                randconfig-002-20260402    clang-20
-x86_64                randconfig-003-20260402    gcc-14
-x86_64                randconfig-004-20260402    gcc-14
-x86_64                randconfig-005-20260402    clang-20
-x86_64                randconfig-006-20260402    gcc-14
-x86_64                randconfig-011-20260402    clang-20
-x86_64                randconfig-012-20260402    clang-20
-x86_64                randconfig-013-20260402    clang-20
-x86_64                randconfig-014-20260402    gcc-14
-x86_64                randconfig-015-20260402    clang-20
-x86_64                randconfig-016-20260402    gcc-14
-x86_64                randconfig-071-20260402    clang-20
-x86_64                randconfig-072-20260402    clang-20
-x86_64                randconfig-073-20260402    clang-20
-x86_64                randconfig-074-20260402    clang-20
-x86_64                randconfig-075-20260402    gcc-14
-x86_64                randconfig-076-20260402    clang-20
-x86_64                          rhel-9.4-rust    clang-20
-xtensa                            allnoconfig    gcc-15.2.0
-xtensa                randconfig-001-20260402    gcc-12.5.0
-xtensa                randconfig-002-20260402    gcc-15.2.0
+diff --git a/arch/alpha/include/asm/cmpxchg.h b/arch/alpha/include/asm/cmpxchg.h
+index ae1b96479d0c..b4b8dac759c4 100644
+--- a/arch/alpha/include/asm/cmpxchg.h
++++ b/arch/alpha/include/asm/cmpxchg.h
+@@ -234,7 +234,7 @@ ____cmpxchg(volatile void *ptr, unsigned long old, unsigned long new,
+ 
+ #define arch_cmpxchg_local(ptr, o, n)					\
+ ({									\
+-	__typeof__(*(ptr)) _o_ = (o);					\
++	__typeof__(*(ptr)) _o_ = (__typeof__(*(ptr)))(o);		\
+ 	__typeof__(*(ptr)) _n_ = (n);					\
+ 	(__typeof__(*(ptr))) ____cmpxchg((ptr), (unsigned long)_o_,	\
+ 					  (unsigned long)_n_,		\
+@@ -265,7 +265,7 @@ ____cmpxchg(volatile void *ptr, unsigned long old, unsigned long new,
+ #define arch_cmpxchg(ptr, o, n)						\
+ ({									\
+ 	__typeof__(*(ptr)) __ret;					\
+-	__typeof__(*(ptr)) _o_ = (o);					\
++	__typeof__(*(ptr)) _o_ = (__typeof__(*(ptr)))(o);		\
+ 	__typeof__(*(ptr)) _n_ = (n);					\
+ 	smp_mb();							\
+ 	__ret = (__typeof__(*(ptr))) ____cmpxchg((ptr),			\
+diff --git a/arch/arc/include/asm/cmpxchg.h b/arch/arc/include/asm/cmpxchg.h
+index 76f43db0890f..9637e2cdb5b1 100644
+--- a/arch/arc/include/asm/cmpxchg.h
++++ b/arch/arc/include/asm/cmpxchg.h
+@@ -42,7 +42,7 @@
+ #define arch_cmpxchg_relaxed(ptr, old, new)				\
+ ({									\
+ 	__typeof__(ptr) _p_ = (ptr);					\
+-	__typeof__(*(ptr)) _o_ = (old);					\
++	__typeof__(*(ptr)) _o_ = (__typeof__(*(ptr)))(old);			\
+ 	__typeof__(*(ptr)) _n_ = (new);					\
+ 	__typeof__(*(ptr)) _prev_;					\
+ 									\
+@@ -64,7 +64,7 @@
+ #define arch_cmpxchg(ptr, old, new)				        \
+ ({									\
+ 	volatile __typeof__(ptr) _p_ = (ptr);				\
+-	__typeof__(*(ptr)) _o_ = (old);					\
++	__typeof__(*(ptr)) _o_ = (__typeof__(*(ptr)))(old);			\
+ 	__typeof__(*(ptr)) _n_ = (new);					\
+ 	__typeof__(*(ptr)) _prev_;					\
+ 	unsigned long __flags;						\
+diff --git a/arch/hexagon/include/asm/cmpxchg.h b/arch/hexagon/include/asm/cmpxchg.h
+index 9c58fb81f7fd..7e117964cb6b 100644
+--- a/arch/hexagon/include/asm/cmpxchg.h
++++ b/arch/hexagon/include/asm/cmpxchg.h
+@@ -54,7 +54,7 @@ __arch_xchg(unsigned long x, volatile void *ptr, int size)
+ #define arch_cmpxchg(ptr, old, new)				\
+ ({								\
+ 	__typeof__(ptr) __ptr = (ptr);				\
+-	__typeof__(*(ptr)) __old = (old);			\
++	__typeof__(*(ptr)) __old = (__typeof__(*(ptr)))(old);	\
+ 	__typeof__(*(ptr)) __new = (new);			\
+ 	__typeof__(*(ptr)) __oldval = (__typeof__(*(ptr))) 0;	\
+ 								\
+diff --git a/arch/parisc/include/asm/cmpxchg.h b/arch/parisc/include/asm/cmpxchg.h
+index bf0a0f1189eb..2a87942227f8 100644
+--- a/arch/parisc/include/asm/cmpxchg.h
++++ b/arch/parisc/include/asm/cmpxchg.h
+@@ -78,7 +78,7 @@ __cmpxchg(volatile void *ptr, unsigned long old, unsigned long new_, int size)
+ 
+ #define arch_cmpxchg(ptr, o, n)						 \
+ ({									 \
+-	__typeof__(*(ptr)) _o_ = (o);					 \
++	__typeof__(*(ptr)) _o_ = (__typeof__(*(ptr)))(o);		 \
+ 	__typeof__(*(ptr)) _n_ = (n);					 \
+ 	(__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)_o_,	 \
+ 				    (unsigned long)_n_, sizeof(*(ptr))); \
+diff --git a/arch/powerpc/include/asm/cmpxchg.h b/arch/powerpc/include/asm/cmpxchg.h
+index dbb50c06f0bf..36d113b13623 100644
+--- a/arch/powerpc/include/asm/cmpxchg.h
++++ b/arch/powerpc/include/asm/cmpxchg.h
+@@ -698,7 +698,7 @@ __cmpxchg_acquire(void *ptr, unsigned long old, unsigned long new,
+ }
+ #define arch_cmpxchg(ptr, o, n)						 \
+   ({									 \
+-     __typeof__(*(ptr)) _o_ = (o);					 \
++     __typeof__(*(ptr)) _o_ = (__typeof__(*(ptr)))(o);			 \
+      __typeof__(*(ptr)) _n_ = (n);					 \
+      (__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)_o_,		 \
+ 				    (unsigned long)_n_, sizeof(*(ptr))); \
+@@ -707,7 +707,7 @@ __cmpxchg_acquire(void *ptr, unsigned long old, unsigned long new,
+ 
+ #define arch_cmpxchg_local(ptr, o, n)					 \
+   ({									 \
+-     __typeof__(*(ptr)) _o_ = (o);					 \
++     __typeof__(*(ptr)) _o_ = (__typeof__(*(ptr)))(o);			 \
+      __typeof__(*(ptr)) _n_ = (n);					 \
+      (__typeof__(*(ptr))) __cmpxchg_local((ptr), (unsigned long)_o_,	 \
+ 				    (unsigned long)_n_, sizeof(*(ptr))); \
+@@ -715,7 +715,7 @@ __cmpxchg_acquire(void *ptr, unsigned long old, unsigned long new,
+ 
+ #define arch_cmpxchg_relaxed(ptr, o, n)					\
+ ({									\
+-	__typeof__(*(ptr)) _o_ = (o);					\
++	__typeof__(*(ptr)) _o_ = (__typeof__(*(ptr)))(o);		\
+ 	__typeof__(*(ptr)) _n_ = (n);					\
+ 	(__typeof__(*(ptr))) __cmpxchg_relaxed((ptr),			\
+ 			(unsigned long)_o_, (unsigned long)_n_,		\
+@@ -724,7 +724,7 @@ __cmpxchg_acquire(void *ptr, unsigned long old, unsigned long new,
+ 
+ #define arch_cmpxchg_acquire(ptr, o, n)					\
+ ({									\
+-	__typeof__(*(ptr)) _o_ = (o);					\
++	__typeof__(*(ptr)) _o_ = (__typeof__(*(ptr)))(o);		\
+ 	__typeof__(*(ptr)) _n_ = (n);					\
+ 	(__typeof__(*(ptr))) __cmpxchg_acquire((ptr),			\
+ 			(unsigned long)_o_, (unsigned long)_n_,		\
+diff --git a/arch/riscv/include/asm/cmpxchg.h b/arch/riscv/include/asm/cmpxchg.h
+index 8712cf9c69dc..3026a9ff43c4 100644
+--- a/arch/riscv/include/asm/cmpxchg.h
++++ b/arch/riscv/include/asm/cmpxchg.h
+@@ -215,7 +215,7 @@
+ 		      cas_prepend, cas_append)				\
+ ({									\
+ 	__typeof__(ptr) __ptr = (ptr);					\
+-	__typeof__(*(__ptr)) __old = (old);				\
++	__typeof__(*(__ptr)) __old = (__typeof__(*(__ptr)))(old);	\
+ 	__typeof__(*(__ptr)) __new = (new);				\
+ 	__typeof__(*(__ptr)) __ret;					\
+ 									\
+@@ -331,7 +331,7 @@ union __u128_halves {
+ 
+ #define __arch_cmpxchg128(p, o, n, cas_sfx)					\
+ ({										\
+-	__typeof__(*(p)) __o = (o);                                             \
++	__typeof__(*(p)) __o = (__typeof__(*(p)))(o);                           \
+ 	union __u128_halves __hn = { .full = (n) };				\
+ 	union __u128_halves __ho = { .full = (__o) };				\
+ 	register unsigned long t1 asm ("t1") = __hn.low;			\
+diff --git a/arch/sh/include/asm/cmpxchg.h b/arch/sh/include/asm/cmpxchg.h
+index 1e5dc5ccf7bf..7fb9214d246f 100644
+--- a/arch/sh/include/asm/cmpxchg.h
++++ b/arch/sh/include/asm/cmpxchg.h
+@@ -68,7 +68,7 @@ static inline unsigned long __cmpxchg(volatile void * ptr, unsigned long old,
+ 
+ #define arch_cmpxchg(ptr,o,n)						 \
+   ({									 \
+-     __typeof__(*(ptr)) _o_ = (o);					 \
++     __typeof__(*(ptr)) _o_ = (__typeof__(*(ptr)))(o);			 \
+      __typeof__(*(ptr)) _n_ = (n);					 \
+      (__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)_o_,		 \
+ 				    (unsigned long)_n_, sizeof(*(ptr))); \
+diff --git a/arch/sparc/include/asm/cmpxchg_32.h b/arch/sparc/include/asm/cmpxchg_32.h
+index 8c1a3ca34eeb..f733bd5b5d3b 100644
+--- a/arch/sparc/include/asm/cmpxchg_32.h
++++ b/arch/sparc/include/asm/cmpxchg_32.h
+@@ -55,7 +55,7 @@ __cmpxchg(volatile void *ptr, unsigned long old, unsigned long new_, int size)
+ 
+ #define arch_cmpxchg(ptr, o, n)						\
+ ({									\
+-	__typeof__(*(ptr)) _o_ = (o);					\
++	__typeof__(*(ptr)) _o_ = (__typeof__(*(ptr)))(o);		\
+ 	__typeof__(*(ptr)) _n_ = (n);					\
+ 	(__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)_o_,	\
+ 			(unsigned long)_n_, sizeof(*(ptr)));		\
+diff --git a/arch/sparc/include/asm/cmpxchg_64.h b/arch/sparc/include/asm/cmpxchg_64.h
+index 3de25262c411..4a9ccf80487a 100644
+--- a/arch/sparc/include/asm/cmpxchg_64.h
++++ b/arch/sparc/include/asm/cmpxchg_64.h
+@@ -170,7 +170,7 @@ __cmpxchg(volatile void *ptr, unsigned long old, unsigned long new, int size)
+ 
+ #define arch_cmpxchg(ptr,o,n)						 \
+   ({									 \
+-     __typeof__(*(ptr)) _o_ = (o);					 \
++     __typeof__(*(ptr)) _o_ = (__typeof__(*(ptr)))(o);			 \
+      __typeof__(*(ptr)) _n_ = (n);					 \
+      (__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)_o_,		 \
+ 				    (unsigned long)_n_, sizeof(*(ptr))); \
+diff --git a/arch/x86/include/asm/cmpxchg.h b/arch/x86/include/asm/cmpxchg.h
+index a88b06f1c35e..a7984842c58a 100644
+--- a/arch/x86/include/asm/cmpxchg.h
++++ b/arch/x86/include/asm/cmpxchg.h
+@@ -85,7 +85,7 @@ extern void __add_wrong_size(void)
+ #define __raw_cmpxchg(ptr, old, new, size, lock)			\
+ ({									\
+ 	__typeof__(*(ptr)) __ret;					\
+-	__typeof__(*(ptr)) __old = (old);				\
++	__typeof__(*(ptr)) __old = (__typeof__(*(ptr)))(old);		\
+ 	__typeof__(*(ptr)) __new = (new);				\
+ 	switch (size) {							\
+ 	case __X86_CASE_B:						\
+diff --git a/arch/xtensa/include/asm/cmpxchg.h b/arch/xtensa/include/asm/cmpxchg.h
+index b6db4838b175..0f68eddb6d2d 100644
+--- a/arch/xtensa/include/asm/cmpxchg.h
++++ b/arch/xtensa/include/asm/cmpxchg.h
+@@ -83,7 +83,7 @@ __cmpxchg(volatile void *ptr, unsigned long old, unsigned long new, int size)
+ }
+ 
+ #define arch_cmpxchg(ptr,o,n)						      \
+-	({ __typeof__(*(ptr)) _o_ = (o);				      \
++	({ __typeof__(*(ptr)) _o_ = (__typeof__(*(ptr)))(o);		      \
+ 	   __typeof__(*(ptr)) _n_ = (n);				      \
+ 	   (__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)_o_,	      \
+ 	   			        (unsigned long)_n_, sizeof (*(ptr))); \
+diff --git a/tools/arch/x86/include/asm/cmpxchg.h b/tools/arch/x86/include/asm/cmpxchg.h
+index 0ed9ca2766ad..b71938db9422 100644
+--- a/tools/arch/x86/include/asm/cmpxchg.h
++++ b/tools/arch/x86/include/asm/cmpxchg.h
+@@ -35,7 +35,7 @@ extern void __cmpxchg_wrong_size(void)
+ #define __raw_cmpxchg(ptr, old, new, size, lock)			\
+ ({									\
+ 	__typeof__(*(ptr)) __ret;					\
+-	__typeof__(*(ptr)) __old = (old);				\
++	__typeof__(*(ptr)) __old = (__typeof__(*(ptr)))(old);		\
+ 	__typeof__(*(ptr)) __new = (new);				\
+ 	switch (size) {							\
+ 	case __X86_CASE_B:						\
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+---
+base-commit: 48b3cd69265f346f64b93064723492da46206e9b
+change-id: 20260402-cmpxchg-2fd307f44a41
+
+Best regards,
+-- 
+Hangbin Liu <liuhangbin@gmail.com>
+
 
