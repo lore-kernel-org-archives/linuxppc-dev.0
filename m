@@ -1,73 +1,97 @@
-Return-Path: <linuxppc-dev+bounces-19218-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19219-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92105D39420
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2026 13:19:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5031ED39422
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2026 13:38:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fmjBF0BNKz2xls;
-	Fri, 03 Apr 2026 00:19:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775135972;
-	cv=none; b=dgRlLQggtM5Z3tIWtdEPx0s/vCftKgIZLf3wGb7flIS/7QnURbMJyEWdF0QuuybcAkyKzBvmWY7g2SIb9Y4Bj0/EPeFzeMrMPK69bE/B+qkkLDCMGSkIYjM6/otH9/Is2ML5Gj9DA40hKLCZZYE+kf//T+EXSEUOKfXZS2g0K6uZIFQZKYisuTGyEqlw7p4iQ5YzR31XYSr4SZ/WfazNCFcVlJvCvf+bpZvAp2ZLOVUw4jiTEJfX0W43z4Xl2JEJ00LUuR21vdIEjos1u0QAQLBMV4sVDL2n/qdYTbVDYMeXWtWx94ansSf7uLz8fj6JOE9r0I31urLQiPWFUDTQqw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fmjbd5Vjrz2xls;
+	Fri, 03 Apr 2026 00:38:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f9:3051:3f93::2"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775137085;
+	cv=none; b=S8nDkhElqnH8lsZXYdnyj4VWr7BSbZHnKZBsuX/dh36NcUHXT1i7RlCAl87GXgjrlTB5+pR9B6tuCGm3tPm9HQ/AeY0Z6NuZ7HUZV6Z4tdwX9IsIQtOf4K3WPDLUxPWxSPJTMy13EqRcZuYm3JJSkawgFPQnK6VxoHk/pm73zFeSeTQ1o2qOntr5cFS2hL8f9qucV0P3pMOvAMi1sddKkX8RCp/g6MsZZb8AB4KY9eGUJrlVyutUeB2Xl2YxBBpHjF4O06eLpqQmtyRyNfkp37FE29ckov3+ihw1RRKIjCHFmMQSV9Gn0ow7LdnPX+r3nQR9GcZ9baIDJHY1Ip+amA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775135972; c=relaxed/relaxed;
-	bh=U8snQy/eQ1CtSl7sjsyKzVMyGOlyG6mxJvBfsXBezEg=;
+	t=1775137085; c=relaxed/relaxed;
+	bh=JXSTWyXJ+TnyRw0WBxA8l+YYXyO0fVka0N6NTBeoq8Q=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Ma8q8oz8S1XbuyhVDdQdefveYo/+gXuU/gJENdFjpN8/tvBYVAShSUmgaMS2h1+rDMydljciYyn5rxgDt4qfxqPz8PEk9Dbmimgb6LbPTdM03CSaKHLUPAkAB/RwRjq5YT8pud9byvv85juc9UgdIrtLaEaUq95teg+92AYohIRzHwsSWYEm4bxsOdLgEOJAHU9J3TBoxk+xyy+pShDmUFy+syrEN/xmjZsqGQJJtKSk4tfWpXuep6H+tkVJ5Q23bYtgzwEwabrKdXsVj40SzjfXXjBJwQ/kea8hTmV6ZlGf5+XdxP5lLxUFiDeLpeD5EmQQK/i/xM+Bu3V88qBgoA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WzJ7fOKs; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=PQe2FOuLcuxBmjRmKe5ZthHyO/MnBbkoCaNSGmCDqYHrWnMK+nJiaPILzxen0xUuPdtudsIzMZqVWvcIY9EkPXre3sGdXeEIuxPo0HGqEelrQGAE+FdhE2d1p+flkauZ7jQrjPeWr+OXRLnLg6jOxIVjPNhu6tqh14aMhrJGK1R4o2+llIb0d6hWC9E+UgOFJA+nB+70ZmoCUfOppZWP9ndWoa7MEs4BNM5pLNGF210osbingrs0L6WkP66Gz1+yFfyPYF732WnWYJnTZkO9ylFoF2PZLAEki19jaowdD0Jfrb/PXkgAYiltlFvO1MfZ2+IRv9RODGf1thfBn2CG3g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=alien8.de; dkim=pass (4096-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=alien8 header.b=bCQgimxv; dkim-atps=neutral; spf=pass (client-ip=2a01:4f9:3051:3f93::2; helo=mail.alien8.de; envelope-from=bp@alien8.de; receiver=lists.ozlabs.org) smtp.mailfrom=alien8.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=alien8.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WzJ7fOKs;
+	dkim=pass (4096-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=alien8 header.b=bCQgimxv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=alien8.de (client-ip=2a01:4f9:3051:3f93::2; helo=mail.alien8.de; envelope-from=bp@alien8.de; receiver=lists.ozlabs.org)
+Received: from mail.alien8.de (mail.alien8.de [IPv6:2a01:4f9:3051:3f93::2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fmjBD2Wymz2xln
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2026 00:19:32 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id E1B0A42DB8;
-	Thu,  2 Apr 2026 13:19:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 31ED0C19424;
-	Thu,  2 Apr 2026 13:19:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775135969;
-	bh=CP9YsJiyp8+E0fCnXGymsdmnpD+1bZ07yNUfO87lEas=;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fmjbc3n0kz2xc8
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2026 00:38:03 +1100 (AEDT)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTP id AFFAA40E0176;
+	Thu,  2 Apr 2026 13:37:59 +0000 (UTC)
+X-Virus-Scanned: Debian amavisd-new at mail.alien8.de
+Authentication-Results: mail.alien8.de (amavisd-new); dkim=pass (4096-bit key)
+	header.d=alien8.de
+Received: from mail.alien8.de ([127.0.0.1])
+	by localhost (mail.alien8.de [127.0.0.1]) (amavisd-new, port 10026)
+	with ESMTP id oTdXorvwZNA8; Thu,  2 Apr 2026 13:37:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=alien8;
+	t=1775137075; bh=JXSTWyXJ+TnyRw0WBxA8l+YYXyO0fVka0N6NTBeoq8Q=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=WzJ7fOKsWMjrIYw4RJoa1MJ8JdkSBETKO0e3SOHFOipeBkQaHxlJaKax1lNPJAeQM
-	 AyQHmkOhxZVOkl6d2nMduakMhWSuDlo9qEM9+GrE4ZxxIEUxLicD6UisMn9EKqxiP9
-	 WB8vE2SXYzvePC/wKF6aqhfFUmK0Obdf/6vaD8rj8DGtV6r1S5Z8KNB+wXA9V6Ey3k
-	 hoT4E+QVrLAPlVw39NhFwHRy2vT/WfASIQgOWFBVDasGHTeogMRrCF7a7HzWLX036o
-	 A+9JEDdDNYvUUqHINUb/XMGlk1O4ax+VM1V28f+QpJ9iKqzfmWmQ+8TDG62A4a7/Vn
-	 53EDKad3CxxLQ==
-Date: Thu, 2 Apr 2026 14:19:18 +0100
-From: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
-To: Suren Baghdasaryan <surenb@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, willy@infradead.org, 
-	david@kernel.org, ziy@nvidia.com, matthew.brost@intel.com, joshua.hahnjy@gmail.com, 
-	rakie.kim@sk.com, byungchul@sk.com, gourry@gourry.net, 
-	ying.huang@linux.alibaba.com, apopple@nvidia.com, baolin.wang@linux.alibaba.com, 
-	Liam.Howlett@oracle.com, npache@redhat.com, ryan.roberts@arm.com, dev.jain@arm.com, 
-	baohua@kernel.org, lance.yang@linux.dev, vbabka@suse.cz, jannh@google.com, 
-	rppt@kernel.org, mhocko@suse.com, pfalcato@suse.de, kees@kernel.org, 
-	maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au, chleroy@kernel.org, 
-	borntraeger@linux.ibm.com, frankja@linux.ibm.com, imbrenda@linux.ibm.com, hca@linux.ibm.com, 
-	gor@linux.ibm.com, agordeev@linux.ibm.com, svens@linux.ibm.com, 
-	gerald.schaefer@linux.ibm.com, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, 
-	kvm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Subject: Re: [PATCH v6 2/6] mm: use vma_start_write_killable() in mm syscalls
-Message-ID: <495a4331-6575-4eb5-91a5-245ab0ad3637@lucifer.local>
-References: <20260327205457.604224-1-surenb@google.com>
- <20260327205457.604224-3-surenb@google.com>
- <5d90d998-9b8d-435c-b684-260600311797@lucifer.local>
- <CAJuCfpE5w8r_6Ss=5ZPrEb1RQOTG6HyY8Pivac=iiyqFRZvD4g@mail.gmail.com>
- <20260331112921.854d4f6cc793dba0972ee9f1@linux-foundation.org>
- <cf6975a6-336a-401b-b122-b9597b5710b7@lucifer.local>
- <CAJuCfpH2eomYbZ0DzKpkae5DKVF69aRsfXx3HzMfPc6cTT5fTg@mail.gmail.com>
+	b=bCQgimxvGmerirQlClnnYZmqi+uWMoqL95VwwSjtIF+Vf5UgtTcb7MS8LHreRfpek
+	 GoKJE6bZ4mED1jv5T74akOqGqj6cVX0+gMq4JPJ5IXhW1g4caBQiG82F44yKCaUpHB
+	 JKWGY6mrqIRGR7O4FfRKFTim4d0LlcNUNCcKJP5mrqJnhW7Zn6VsSiEjgSCPhKlRdY
+	 Vz5bw9JgpcSP6iZZbF2pLqppz547O8r9pCTuwtdspA8PUUwCXcWPbXdcKb8H+KtEnA
+	 vYV5UH9kk2R5DT86KkZXWL5/mET7B7l3QZkYztBFJ7a0PvDzmo/YIDl+Eg84lF8N0f
+	 cXFNcJJV2IRYckfYEkZhkVrhIiorIFlejmBkiW959HnGweu56QSzj2gTTWdAAaJrrS
+	 sh9Pp0D8Htj2up7P8oufGTYxoz9qRnLmpXA57NNz0RGrJXhZpOkLL3aR1nA9urPhxQ
+	 tbt47maHxAeQaYmg6AyhXHj67cdIJvhQE/sb9BqBhp83IhtTGVjXBGdkhdgPdJ185q
+	 K69pAch9YdpEB836VpaYWFh+Ip6YTtKtLGaP4i3L7l4LcOjBagTb6CrVT7jaRTwuHJ
+	 Al4nQrXZYlR6lYI26Sosm0aZwIokhEkI8od4RIJbjj59kdoSLsB5B75aVXY5ViEq95
+	 e1RjUlJ3M2nuatbtPJRqSTio=
+Received: from zn.tnic (p5de8e020.dip0.t-ipconnect.de [93.232.224.32])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature ECDSA (P-256) server-digest SHA256)
+	(No client certificate requested)
+	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with UTF8SMTPSA id 59DDE40E0031;
+	Thu,  2 Apr 2026 13:36:50 +0000 (UTC)
+Date: Thu, 2 Apr 2026 15:36:44 +0200
+From: Borislav Petkov <bp@alien8.de>
+To: Jinjie Ruan <ruanjinjie@huawei.com>
+Cc: corbet@lwn.net, skhan@linuxfoundation.org, catalin.marinas@arm.com,
+	will@kernel.org, chenhuacai@kernel.org, kernel@xen0n.name,
+	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+	chleroy@kernel.org, pjw@kernel.org, palmer@dabbelt.com,
+	aou@eecs.berkeley.edu, alex@ghiti.fr, tglx@kernel.org,
+	mingo@redhat.com, dave.hansen@linux.intel.com, hpa@zytor.com,
+	robh@kernel.org, saravanak@kernel.org, akpm@linux-foundation.org,
+	bhe@redhat.com, vgoyal@redhat.com, dyoung@redhat.com,
+	rdunlap@infradead.org, peterz@infradead.org,
+	pawan.kumar.gupta@linux.intel.com, feng.tang@linux.alibaba.com,
+	dapeng1.mi@linux.intel.com, kees@kernel.org, elver@google.com,
+	paulmck@kernel.org, lirongqing@baidu.com, rppt@kernel.org,
+	leitao@debian.org, ardb@kernel.org, jbohac@suse.cz,
+	cfsworks@gmail.com, tangyouling@kylinos.cn,
+	sourabhjain@linux.ibm.com, ritesh.list@gmail.com,
+	hbathini@linux.ibm.com, eajames@linux.ibm.com, guoren@kernel.org,
+	songshuaishuai@tinylab.org, kevin.brodsky@arm.com,
+	vishal.moola@gmail.com, junhui.liu@pigmoral.tech, coxu@redhat.com,
+	fuqiang.wang@easystack.cn, liaoyuanhong@vivo.com,
+	takahiro.akashi@linaro.org, james.morse@arm.com,
+	lizhengyu3@huawei.com, x86@kernel.org, linux-doc@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org, devicetree@vger.kernel.org,
+	kexec@lists.infradead.org
+Subject: Re: [PATCH v12 00/15] arm64/riscv: Add support for crashkernel CMA
+ reservation
+Message-ID: <20260402133644.GBac5w7OYl9MwvVxY_@fat_crate.local>
+References: <20260402072701.628293-1-ruanjinjie@huawei.com>
+ <20260402113137.GAac5Tmc5b7SL98KdY@fat_crate.local>
+ <c6eb858c-5275-6fdc-b6e9-bd6d4b169e05@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -83,39 +107,20 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAJuCfpH2eomYbZ0DzKpkae5DKVF69aRsfXx3HzMfPc6cTT5fTg@mail.gmail.com>
+In-Reply-To: <c6eb858c-5275-6fdc-b6e9-bd6d4b169e05@huawei.com>
 
-On Tue, Mar 31, 2026 at 01:14:51PM -0700, Suren Baghdasaryan wrote:
-> On Tue, Mar 31, 2026 at 11:47 AM Lorenzo Stoakes (Oracle)
-> <ljs@kernel.org> wrote:
-> >
-> > On Tue, Mar 31, 2026 at 11:29:21AM -0700, Andrew Morton wrote:
-> > > On Tue, 31 Mar 2026 08:01:11 -0700 Suren Baghdasaryan <surenb@google.com> wrote:
-> > >
-> > > > > Instead? That is, assuming we really need to care about this at all.
-> > > > >
-> > > > > But I think I don't like this change at all?
-> > > >
-> > > > Yeah, this was the part I wasn't sure if it's worth adding. With your
-> > > > vote confirming my scepticism I'll go ahead and remove the parts I
-> > > > added to avoid extra vma_start_write_killable() call (3 instances in
-> > > > all) and will post v7.
-> > >
-> > > Thanks.  I'll remove v6 from mm.git and shall await Lorenzo's advice on
-> > > v7.
-> > >
-> >
-> > Ack, if we just drop the problematic bits we might still be fine for 7.1 :)
->
-> Let's get your cleanup first and then see where we are. I also hate
-> the way I have to report a fake error code, so with that cleanup the
-> patchset should be much nicer.
+On Thu, Apr 02, 2026 at 07:47:53PM +0800, Jinjie Ruan wrote:
+> Thank you for the reminder and for your patience. I apologize for the
+> frequent updates; I am becoming more familiar with the community's
+> workflow.
 
-Ack, yeah it's horrid, + _my fault_ :)
+Yap, and you can use that time while waiting to learn about it:
 
-I can put something together now perhaps that can potentially be queued up for
-7.2 at 7.1-rc1.
+Documentation/process/
 
-Cheers, Lorenzo
+-- 
+Regards/Gruss,
+    Boris.
+
+https://people.kernel.org/tglx/notes-about-netiquette
 
