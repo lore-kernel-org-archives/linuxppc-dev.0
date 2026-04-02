@@ -1,90 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-19223-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19224-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B345D3943C
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2026 15:31:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5184D6AAE7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2026 15:46:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fmm6W6Jzlz2xls;
-	Fri, 03 Apr 2026 02:31:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c104::" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775143891;
-	cv=pass; b=oqidGOKtUgW/1MuTPkMlYCyEMcYYPF/UiwSIyl9RQY47wmc/cvWhxHYDcRu5EioD182fN9gFMnSGnc1YqXrYfPZ0GZU17pokv++yrciNW/vblxVLAxfLZBb7ZXZRJ4E8erZWBzwSjfoAFctldq4MM69oHiCdFL8F9qSkv5UYjHaMshD9LJ5P25Vw+lTSEe1lOmPg2Uo2e0900Cw5Y/39UcPXTM1tXuhg47TNK1C6PBiSQP2CbNfwiimZiKqSlP+r8xk7U8A7yXbu5E1j5nsKZFsyfnU6vQVUPgQBnemxzWu/mTb+M4TRpfM+LJx0QHheRZrPdz4EoATIc4jTWnu1rQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775143891; c=relaxed/relaxed;
-	bh=XFIBhl/W+3X2hmUP29L9om18ibuz/CQtCYXvhcvOAOE=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=mGrVvrXTno0+/2h7g4OeIWCqZtyN1VwubjSedNF8IXtiNHmbw/YNBtmRDFzVXHLKjzVqRxNQb1mNxekB4H3oElUSmC9L6nm9ZV9lmopLkRnlDUtjJ5m66MLzmTqTcztrbtHKUD4I2iEJF2NzgYPpKXd64MlCl5jFq7RK7uS9+hcNw/cUIZXcII5YPsFkZEX7im2pjrENRuxvuDxn/jJmMM7cEW1n1vsTl0dIP35gi/+YBK8mSzObEYVUG1YXiMkn9/iUhj6qtiNOQ/HEZtVljEwbP3Ej6pMBLWCM7w9kNV1nsNB64Q9zMy5nd5s4Krl2WFcZz5dFcoa6x4dzLywUTA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=efficios.com; dkim=pass (2048-bit key; unprotected) header.d=efficios.com header.i=@efficios.com header.a=rsa-sha256 header.s=selector1 header.b=qLusmDXl; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c104::; helo=yqzpr01cu011.outbound.protection.outlook.com; envelope-from=mathieu.desnoyers@efficios.com; receiver=lists.ozlabs.org) smtp.mailfrom=efficios.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=efficios.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fmmRl0hk8z2xls;
+	Fri, 03 Apr 2026 02:46:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775144786;
+	cv=none; b=LD8z7tzTnqH082nBnYxli+RKnorPnEYvqnSRA2to4BRhnSO2rKlSMtZHiBztTZA8AioI2v022xlGuPwmH1Fng+JCJ+tvTDBrjmLumThryBS3Z+Kep5se4qAMysYuIZL8nsDYW9hKAwKgcKHV5Av1DNXMJfdwi2v49KtjPf2jTNZYG5TdrGh9QFm/DfxY6ocw0qAxTXM6Rkm/7Xv+SKfCT6o2/RIHR4yMfizt8nNsUbvQpvNeTWUtgkcWBmXZXjZqXUPibj72anbhAIfsyjicgcdRMDdxBKxjkBHRMmm6lL4zE6enuEu9VZq/dHh1Kd491GHkzgw4sskfaO346jTa6A==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1775144786; c=relaxed/relaxed;
+	bh=csUms11w8sD4yrK8bQgpBN2NcH1O2zwmQoS2J7SG/tI=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=aRyaQhH3ZgUrgimx6fTsO1UYOTTy9I4CMmiW3eIqYVvNwYpN3BpuiVPuAilqyszACDS7+ErIG2YXLjSV8XNx26mEQshACrf/9TkDDIjhtPjAzTaUnkHpiFdhIuEfg2HTbZOcSPI77fYqFRXCnkYlM3vjdkH2FKHb46nMEka2nj1ADW5Rr1CrVnDMNTYXNb+pUz2+6HyNjqxbIVqO/XN2nB5AYmYRnE5t+lMQtiATqSMP/dS12YwX5adyA29Sl+QuV3ReSqnuaFIfjL5XgMn+CWtJPyOsUT1V5IYGcwkIcn34dEdwUq/sOp9iwLlYGMu9Nte5c5hGOX0weKJ0AMR5Pg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NXQej2T7; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=efficios.com header.i=@efficios.com header.a=rsa-sha256 header.s=selector1 header.b=qLusmDXl;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NXQej2T7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=efficios.com (client-ip=2a01:111:f403:c104::; helo=yqzpr01cu011.outbound.protection.outlook.com; envelope-from=mathieu.desnoyers@efficios.com; receiver=lists.ozlabs.org)
-Received: from YQZPR01CU011.outbound.protection.outlook.com (mail-canadaeastazlp170100000.outbound.protection.outlook.com [IPv6:2a01:111:f403:c104::])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fmm6S4FMqz2xc8
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2026 02:31:28 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=AphU9fpqlykzhU6KiT5peN8reRjINZNhctnDX6bSCSVxb6CmwqFiJqIaEHfwWJWCsTK4s/tIEIAOXZ8bxzydFSO4dmdPskh1G6niFGnuNZttQn9T/7TQhEuKHdwyb8ZqsSBRFTiTkUqG/Jhmpinpzno7kRBe3Fjir76Wfj60K7Hg5WgR1ROqvnLmHkU+mLSZP+utOKA8YAuUTXaYrTBaO7m4GWHqm/fCPXSSlcnLJbZARlhcTAB26zg47EPJvsBJe1fL5eqfQWyXfN9F1ls+Uch4f1Uft7zYsJ1cvpIYDKfvrk8KckyDCVX4W0Cq3XlZaexFsJGVWHELn1WM1sfoPg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=XFIBhl/W+3X2hmUP29L9om18ibuz/CQtCYXvhcvOAOE=;
- b=ogF0G83fgjZiAEU0XXma19cylz9WRg17klKUgGU12qwQdVv9pFb9WAEsdIRYXZIuqQeirHEFIUyQX+CjL7xfTN7kUeZkmE8BNt/F1jQRfQgwXRsAK+xKg2s9c/kj8rRyzbaQMkjNXXktQLqLLPVrSAx4g51pJh0T06yYeFVHOikyfnVi1viHc7r0gI8WxsD7G7E9KS0PMsji+8feJd6DPpvPkuoSH0LakiwwbK8r268jhClKoj2kHese8fAHqR+89YU0Wg2hghMTnxOaTrTcQrCXJaNTEOrMKtDtJzr2nXGjzCtmED/8zJRY6g5+lz66atR9bEy8gxJEkKBkdLzndA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=efficios.com; dmarc=pass action=none header.from=efficios.com;
- dkim=pass header.d=efficios.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=efficios.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=XFIBhl/W+3X2hmUP29L9om18ibuz/CQtCYXvhcvOAOE=;
- b=qLusmDXl+47LxbZk/p1JLPt5yBzxomW3VO8CNxOKSOPbvERittJIln/w8z0qoAykxQg2UQAt8b+xRIb9VzDdy1g8gypo94cFGWyV6GltgdJLt1XwoVqcXujvmE7UqeuCFcb0eqtx89Ht6i5HAnUThTZb7GjWOAUpcxDfZGqHvuBDZEtMYD4cXSg1l8JEMG8vqIK6RFRYmKxpCIMOigQsZW0vTUfU33cjJz86hdog8ojEGXCWUYq/B3pCyM32WfBY+ub/qfl641G0F7uQ+u0HeerK/Kj7IyO6gv2WT68z2YzC9DN8pfv2HQIDoHtSexXJhvBJ0PQo489O0CuHb623rw==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=efficios.com;
-Received: from YT2PR01MB9175.CANPRD01.PROD.OUTLOOK.COM (2603:10b6:b01:be::5)
- by YT1PPF14C895038.CANPRD01.PROD.OUTLOOK.COM (2603:10b6:b08::509) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.18; Thu, 2 Apr
- 2026 15:30:55 +0000
-Received: from YT2PR01MB9175.CANPRD01.PROD.OUTLOOK.COM
- ([fe80::6004:a862:d45d:90c1]) by YT2PR01MB9175.CANPRD01.PROD.OUTLOOK.COM
- ([fe80::6004:a862:d45d:90c1%3]) with mapi id 15.20.9769.017; Thu, 2 Apr 2026
- 15:30:55 +0000
-Message-ID: <6a5f2139-0ff8-40b3-88f9-98d2ea020d6f@efficios.com>
-Date: Thu, 2 Apr 2026 11:30:53 -0400
-User-Agent: Mozilla Thunderbird
-Subject: Re: NULL pointer dereference when booting ppc64_guest_defconfig in
- QEMU on -next
-To: Andrew Morton <akpm@linux-foundation.org>,
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Cc: "Harry Yoo (Oracle)" <harry@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Harry Yoo <harry.yoo@oracle.com>, Nathan Chancellor <nathan@kernel.org>,
- =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
- Michal Clapinski <mclapinski@google.com>, Thomas Gleixner <tglx@kernel.org>,
- Steven Rostedt <rostedt@goodmis.org>, Masami Hiramatsu
- <mhiramat@kernel.org>, linux-mm@kvack.org,
- linux-trace-kernel@vger.kernel.org, linux-kernel@vger.kernel.org,
- Srikar Dronamraju <srikar@linux.ibm.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>
-References: <20260319233745.GA769346@ax162> <abzKcGiRSR_E8lLN@hyeyoo>
- <7780a471-9d99-40a7-ade7-0c4594ac36c7@efficios.com> <ab1J9ODkX5iChu-C@hyeyoo>
- <7458d8fd-5922-4e0b-9cd5-91880282aaa3@efficios.com>
- <7a8faee8-0eb5-4e58-a6d5-ef711791e3f4@efficios.com>
- <h5qax9x2.ritesh.list@gmail.com>
- <20260320192153.759d6fec57f04fb653a0dac7@linux-foundation.org>
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-Content-Language: en-US
-In-Reply-To: <20260320192153.759d6fec57f04fb653a0dac7@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: YQZPR01CA0175.CANPRD01.PROD.OUTLOOK.COM
- (2603:10b6:c01:8b::21) To YT2PR01MB9175.CANPRD01.PROD.OUTLOOK.COM
- (2603:10b6:b01:be::5)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fmmRj4HwCz2xc8
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2026 02:46:24 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 632EVRq2330917;
+	Thu, 2 Apr 2026 15:46:19 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=csUms1
+	1w8sD4yrK8bQgpBN2NcH1O2zwmQoS2J7SG/tI=; b=NXQej2T7cFXN0bx3k4Cet5
+	iHcuFWOupXTcg0Tb+5x/txMcI3MqKavNTWxI1Ndr29GcQe62cIQlIGeeQIBAVw1y
+	Lc3Rh4SNh7Bc9i6SIQfl1CyKpDhGuYZS2/C8Dt6aRrnKEmCH/KEr2H/q2OlUJ7OV
+	5uuVpgItDI0icbur9r0BEJVrMa1afjxXrLH5adxruJoAnVw9hxCWhpyjQ1j80s+G
+	+o+kqApQqzoUxXuLFGw4xI96YWRRrsYgQnMGpSP8Sh1vcRQy+BWQSSLhJZRsy7mM
+	0efrMSnji3lI/p0XFzdEv5Wq773FX2zRjpTMj01VlJ4ZOiIxvX8VrOxz89fTdvwg
+	==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d64dgvq3s-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 02 Apr 2026 15:46:18 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 632D0oNp008689;
+	Thu, 2 Apr 2026 15:46:17 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4d6v11tcw2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 02 Apr 2026 15:46:17 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 632FkDN649742308
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 2 Apr 2026 15:46:13 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0EA1B2004F;
+	Thu,  2 Apr 2026 15:46:13 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5DBEA2004D;
+	Thu,  2 Apr 2026 15:46:08 +0000 (GMT)
+Received: from smtpclient.apple (unknown [9.39.17.92])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Thu,  2 Apr 2026 15:46:08 +0000 (GMT)
+Content-Type: text/plain;
+	charset=utf-8
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,94 +80,178 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: YT2PR01MB9175:EE_|YT1PPF14C895038:EE_
-X-MS-Office365-Filtering-Correlation-Id: cfd7a477-03a1-486f-d334-08de90ccd4db
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|376014|7416014|1800799024|366016|18002099003|56012099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	iHKxDqzNMd5Fg+mHLiDfMYBcgcfhbQ6R30Db28n291PjCX0TPGg2C1OuXcpN7S1o0UhzK+Pt1FhjKmMnD5sYKoFH4zo+oHifVVdgiaVRAg8YttOlPDoODWv7izK9v6jP11p0t+hLyJiP4MIfZth6AsJtiks1YtvDns4HLpj8Eq645y3IDfBObwitNEPluwBaqCbWFQ9EnHy2anqJtKrcYUwBd+yyB5jxI8k9hUDGV33zqvyrnwUTdEZT6rnyrp8QQ16ngi6K6GV4BcVXKqDbdyMEmbm8iHStY0Q1g1Daam6kG0MoEap/fN1XLesRh4oe9n10AfqrHCyw+ogk6iiSstSWOHjDU3WTzLkiwB0l/erQDqrShngG4zQOlPkyyPR2k0c70d4wLsfWQigJkmBJih1f6K7eKOBvfj7d9hqLjhhX9OzSm0ZS0eQ2qRce79oVQTOJz2ioEf5dIMFCqHKE8wIohCXrt4FxgdJN2PXh4KlQlbJ4h6YhcERnnCd1wf4zqBYX8PCuBCZzQss61EBiLv3U6HbqEFWfU9ESSfPtohuxeHx3Kj6WIdLAAsFujwLpxh0VEfWC/5/FzZxXjO8mnV+1MFwRvRKlh/lDsDwBySZFtgBQPSduMPFpdlp8BOlEV/M75QzDYPIAB3Vq0TJsEhuc2Pgim4d/P5RqGgr2Cl+rXZKcyFU8x8Ac+s8JHJlL
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:YT2PR01MB9175.CANPRD01.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(366016)(18002099003)(56012099003)(22082099003);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?VTBwYkNOL2lyOVF5RHpLMUlhYklueTEyZUxTRHpUNndSUndFUE9WRWhObDEv?=
- =?utf-8?B?dlBncjNRVXZHUDBnSVJEOVZhYVFEV3MzcnF3TDY5TjU3bGdUK3RHSHRCNGVY?=
- =?utf-8?B?Q0N0dHBYVGhBT2xaZFF4KzdYTVVzNkM3OTRpb0grN1d1bVNOWnhJWHBvOS9y?=
- =?utf-8?B?d29CWmliUEd1T0Y1ZDdHY2RxUkRIYVl4RGpzcUlqb2syTW51WHl6WEZkVnlj?=
- =?utf-8?B?Rk04TGtyMVJyYzc5Y2NPRytuTi9LcnhjK1ZnUFpCUkJvYzlvWCtsMEZJeXo3?=
- =?utf-8?B?bEZXZG9XMVEwdEZaWmRZOTYyWjdhbDFkYmEybnF5cU11WllNdnJRSWtWTXJi?=
- =?utf-8?B?anhWWUppVmdhdEFsYmlsTktSbUhuYXQ1Rjk0amtDNlpOazdqU3A3Y2JpSG9Q?=
- =?utf-8?B?ZFRnUjlKVkxOdHlueURQWnpBM3pMSTRYUVh6ZkUvRnhIL3JwT3ltU2dLOCsw?=
- =?utf-8?B?NE9jaGV6WnhsNSsxM054ZmNoRjhPekltSWhzOTRTalhrRHpRMjM3Sy9Ua2JT?=
- =?utf-8?B?V0ViS09qSC80VE04R1JYVUdPeDFDWURPUC9jcU10VTQxYk5mcmVUUHNDVTJx?=
- =?utf-8?B?ckxGRnRPejJVa0VDK1ZaazVlQldxVHY4dDdWNDZTR0h0YnAwVktRZTg1YVFK?=
- =?utf-8?B?K2dXOHZnOHg4dDRnNTZ6MkErOFJpQ3FFdXdyZitsQzZJajJtaUtCY0VNUFdl?=
- =?utf-8?B?MXlDRHI2czUrSWM0Y1o0b09teVFBUWdpQm12VkprTGt4a0FNN1VZVG1NNWJJ?=
- =?utf-8?B?MEE2Nm1VRkh0YzQ0UU5ITVZaNnFQMkJHdzFhSUNkZWliWEg4OFV0dVQvUGhX?=
- =?utf-8?B?QWVTWEJJclVKa0liQ0dkWEF5VkVJRnVCTDJzQWQrbFRRL293S3JueXFTZTM2?=
- =?utf-8?B?S0EvTkNIUnRPRFJ6WUl3R0FzOGZ1bWlXYmlOV0EvektTSUFERi9CVXpHd1di?=
- =?utf-8?B?TnAvZEIrOHhBMjFyZVJTSkh0QVNIdXFHK0pLR3pQWTJtbHh5cXdHenVMVEd2?=
- =?utf-8?B?V0hjTk9BcHhwa1dTd2FRMlZRMlRHTjdCTU9seEFocngxajlVVFkxZVJnaGVh?=
- =?utf-8?B?dzNCR3RWMmdIT2lpYXN6K3JBeWhQUWt0SXJrVmllTFFwQTlmRHZrdDJIZ09Z?=
- =?utf-8?B?cVYrblhLNnVTSUViRDNhVzZJRy94K1RuUThoelBhSHA4QW1rNC9nUHRoS0t3?=
- =?utf-8?B?S1ZiZk1YMlBPR3NVYWxxTVNuNnVBMlRPbDRGVERDS2h2UXhBRFNlZGgyNUpC?=
- =?utf-8?B?Uk5aQU1yazhwTS9vMGlxR1NYQW83a09xTHpHcmREY1hScGw1NHlSUUtwdSt0?=
- =?utf-8?B?NG9kNG5wMXRVaGI0c3BTcDdlSkpXbnRyTm91MmxqWEg2N05EZUJqTTk2N2do?=
- =?utf-8?B?MnVEdkNycWVrSkVDcU5XMXdlWU9PUHI2bXE0VUZKdDlyVjZ5UGt1NXBPK1Bv?=
- =?utf-8?B?M0JWRW1RUVUvaXF4WFBIalNTM3lNbE01VHl1VlRvUHRGVE1DY0VYTGRONHhu?=
- =?utf-8?B?Q0t0aXNaVDhxRjBsVUpET1J4dlg0Ti9PUmY0MkE3OVpRZnVBckZvMW9RNWF3?=
- =?utf-8?B?TE9OaHRMQXdLS2tDWklmL1VROTZWVkRGNHB0a09ubFpxd0gveGFpRDFzc2M3?=
- =?utf-8?B?dGNyVEdaOXN0a010RWFYM0RYVDR2WW5TV3dieGN4TkcwWnhZdXBHek51WTdi?=
- =?utf-8?B?UUswRUdKWUduVit3WUF3dHRuNGcxdnpYbklsTWdoL0t1RnpYWVdpOEJrVk96?=
- =?utf-8?B?QmNOTEZSaWwvYnZUN3BUSWZtOG5MQ2lLYStHNzhqNDZaQVJ0ZUgvcGNOeU5U?=
- =?utf-8?B?UmMraTF2czN6NHZBQXJYaTZXNmJXbVFtVVBIcjZ0aDZ1UUFJYllFKzFDMmc2?=
- =?utf-8?B?K3NPQ1NRYzF4Q0pDTGcyaERpR2tqKzFOdkhwdU84cHJEdTFnemJBTGc1a2NQ?=
- =?utf-8?B?aEp1S3crNXFHYVNabyt4MFRlSWV3L1hjMDNFZzVmS21RaERDVFp0cXA0N3Nh?=
- =?utf-8?B?M0tDNlMzK2dMMjkyQW1ibnlqSnZpZlVEZSsyWXpzUkppSHRNYUl6YnJ5TVp3?=
- =?utf-8?B?V2FXcXU0NEFKZnpzczlFWFFhLzNEa3d3a3ZodmNsa1ZWQ040TEJjMHhFSWp6?=
- =?utf-8?B?VXVKOVVWR2RFMW1ObTBOQVgwQ2dLS1VFNlp3cXlNbjl5bXdjN0xIb2I3am9m?=
- =?utf-8?B?RGZoZlA3NXE3cWdQWnY5amVraTJHbHMrdG82UmdPRWM4V3ZnNmtFc0NDNnNR?=
- =?utf-8?B?QzlycDdHcmh0V2FBbUVCNXdEdGttNWR5VzFOZDF2ZW1kYmhGdUQzQktiOUxS?=
- =?utf-8?B?b3BQZWU3SEU5Rlc1ZTNzYnU5Ni9sc2ROWHRPWTk5SHRwbWkveDZ3TG1aeHJD?=
- =?utf-8?Q?jrmY1/M7V3aOBuf+oAnr86llynFYnf2Lf2Hta?=
-X-OriginatorOrg: efficios.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: cfd7a477-03a1-486f-d334-08de90ccd4db
-X-MS-Exchange-CrossTenant-AuthSource: YT2PR01MB9175.CANPRD01.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Apr 2026 15:30:55.3802
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4f278736-4ab6-415c-957e-1f55336bd31e
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: T6DS4KFhhF/3Yiq4e/FsGWy7FFwpSb9fHX4vrVDFUFk56NZXG516Db/aG1gNmTyJAX18f0CJl3Rv5aDd2xOAamuttyz/1Yi89AI1CC0c0F0=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: YT1PPF14C895038
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.300.41.1.7\))
+Subject: Re: [PATCH] tools/perf/test: Check for perf stat return code in perf
+ all PMU test
+From: Athira Rajeev <atrajeev@linux.ibm.com>
+In-Reply-To: <CAP-5=fX6993MzAEgB7JeVEU5GcVk3PxhkEjMX3G4EZgxPBaBqg@mail.gmail.com>
+Date: Thu, 2 Apr 2026 21:15:54 +0530
+Cc: Venkat <venkat88@linux.ibm.com>, Thomas Falcon <thomas.falcon@intel.com>,
+        acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
+        vmolnaro@redhat.com, mpetlan@redhat.com, tmricht@linux.ibm.com,
+        maddy@linux.ibm.com, linux-perf-users@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, hbathini@linux.vnet.ibm.com,
+        Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <A33EEA7D-DB03-4FA9-A0A8-D10115FEF423@linux.ibm.com>
+References: <20260315105751.86835-1-atrajeev@linux.ibm.com>
+ <7B7E5C6C-D15A-4B79-925B-B5F3EDD84774@linux.ibm.com>
+ <CAP-5=fWxDouXfCV3Xzk5JdouidUOaNqHBfZaf_c9JoEA8Ft-7g@mail.gmail.com>
+ <ac2uvTXI1iknXwyV@google.com>
+ <CAP-5=fX6993MzAEgB7JeVEU5GcVk3PxhkEjMX3G4EZgxPBaBqg@mail.gmail.com>
+To: Ian Rogers <irogers@google.com>, Namhyung Kim <namhyung@kernel.org>
+X-Mailer: Apple Mail (2.3864.300.41.1.7)
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDAyMDEzOCBTYWx0ZWRfX0/oM6SGp1s8u
+ IFKpwXJJu5HYy55U4H2OydF6kJSc6ZrbcOHRvHIi/g0EW+sM2hxtrfPQalBldLdLSI+TiLFBcte
+ WWdTw1DkDlJ8+45/ITrtN2++RaziZvUtrptEnxBxmVJK2wiMMYUF4erfEvY++VJUtGkzLHtjiDM
+ AFbdJHtwxPTkzkdpc8DQM9uVr1JUjVooHJ4utHnT8iBRXZ0EcuE5zbId0l1IMMfA/PSYkOXo3KS
+ aMjs6YVmGvpgzy9U4Ec8iIRLwpC2FpLSQfdQVLRoB4X6UAscqltpP/fKCzCK4m1+Rnr6mpF9uWA
+ B16wbaoRGrl35HvnYfLt+10N3RcgXHCpnrRDSIxVQIoZmeqUfU5iDCy9ognizAxDW2FFZBbOUso
+ QspfdLKQR69MfBixNKyqkSDkYRnhEbF4uQGlGGHpNWlWm9usEEx57YLN/VcupwS8079V9aCa408
+ +NQk894THyCuavdznAg==
+X-Authority-Analysis: v=2.4 cv=QKZlhwLL c=1 sm=1 tr=0 ts=69ce8f4a cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=1XWaLZrsAAAA:8
+ a=VwQbUJbxAAAA:8 a=5P6_zFFMFuBFcQzlmxgA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: ELZTcBwiiz92CdProDJUwfuPWyYx91Gr
+X-Proofpoint-ORIG-GUID: NBYhbLeaYpwzozA_h9oOJXCh9G9ez-Aj
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-02_02,2026-04-02_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 phishscore=0 adultscore=0 impostorscore=0 clxscore=1011
+ spamscore=0 bulkscore=0 priorityscore=1501 suspectscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2604020138
 
-On 2026-03-20 22:21, Andrew Morton wrote:
-> On Sat, 21 Mar 2026 06:42:41 +0530 Ritesh Harjani (IBM) <ritesh.list@gmail.com> wrote:
-> 
->> Looks like this is causing regressions in linux-next with warnings
->> similar to what Harry also pointed out. Do we have any solution for
->> this, or are we planning to hold on to this patch[1] and maybe even
->> remove it temporarily from linux-next, until this is fixed?
-> 
-> Yes, I'll disable this patchset.
 
-Hi Andrew,
 
-I have prepared fixes for this issue. On which branch should I rebase
-them ? Do you still have the HPCC series in your branch or should I
-send it anew ?
+> On 2 Apr 2026, at 5:27=E2=80=AFAM, Ian Rogers <irogers@google.com> =
+wrote:
+>=20
+> On Wed, Apr 1, 2026 at 4:48=E2=80=AFPM Namhyung Kim =
+<namhyung@kernel.org> wrote:
+>>=20
+>> On Wed, Apr 01, 2026 at 01:40:47PM -0700, Ian Rogers wrote:
+>>> This looks like a latent Intel cpu_atom PMU bug. Thomas, wdyt?
+>>=20
+>> Are you ok with the change itself then?
+>>=20
+>> I'm not sure what's the expectation when the test runs with a regular
+>> user.  I assume the intention of this change is running as root..
+>=20
+> So the test is failing as root on Intel, and the log output is
+> extensive. I'd prefer not to have the log output, so we may need to
+> work past some known broken items. Otherwise, the change looks okay,
+> but there are inconsistencies: `grep -q "<not supported>"` is used in
+> the existing code, while `grep -q "not supported"` is used here.
+>=20
+> Thanks,
+> Ian
+>=20
+>> Thanks,
+>> Namhyung
+>>=20
 
-Thanks,
+Hi Namhyung, Ian
 
-Mathieu
+Thanks for trying the change and responding.
 
--- 
-Mathieu Desnoyers
-EfficiOS Inc.
-https://www.efficios.com
+Sorry, I missed the comment from Sashiko. Next time I will check =
+explicitly for Sashiko comments too.
+
+The intention of this patch has two things:
+
+1) It was resulting in =E2=80=9Cfalse pass=E2=80=9D earlier if the test =
+fallback to last check where we run with longer workload. Because error
+  message contains the event name =E2=80=9C$p=E2=80=9D and hence matches =
+the =E2=80=9Cgrep=E2=80=9D check.=20
+
+Example:
+
+   # ./perf stat -e hv_24x7/CPM_ADJUNCT_PCYC/ ./perf bench internals =
+synthesize
+    event syntax error: 'hv_24x7/CPM_ADJUNCT_PCYC/'
+                     \___ Bad event or PMU
+
+    Unable to find PMU or event on a PMU of =E2=80=98hv_24x7'
+    Run 'perf list' for a list of valid events
+
+    Usage: perf stat [<options>] [<command>]
+
+        -e, --event <event>   event selector. use 'perf list' to list =
+available events
+  # echo $?
+     129
+
+
+Here the test checks for :
+  <<>>
+   output=3D$(perf stat -e "$p" perf bench internals synthesize 2>&1)
+   if echo "$output" | grep -q "$p=E2=80=9D
+  <<>>
+
+Since the error message contains the event name, it matches grep check =
+and declares test as pass.
+
+ To catch this, patch adds a check for =E2=80=9Creturn code=E2=80=9D=20
+
++  # checked through possible access limitations and permissions.
++  # At this step, non-zero return code from "perf stat" needs to
++  # reported as fail for the user to investigate
++  if [ $stat_result -ne 0 ]
++  then
++    echo "perf stat failed with non-zero return code"
++    err=3D1
++    continue
++  fi
+
+2) If events are supported in system wide monitoring.=20
+
+Namhyung is right here that for regular user it will result in fail . I =
+will take care of having check around that.
+The reason for using =E2=80=9Cnot supported=E2=80=9D text here is:
+
+Example: There is an event in powerpc "vpa_dtl/dtl_all/=E2=80=9C which =
+when run on per thread monitoring:
+
+ # ./perf stat  -e vpa_dtl/dtl_all/ true
+    Error: =20
+    No supported events found.
+    Unsupported event (vpa_dtl/dtl_all/H) in per-thread mode, enable =
+system wide with '-a=E2=80=99.
+
+Next running with system wide monitoring:
+
+  # ./perf stat -a -e vpa_dtl/dtl_all/ true
+     Error:
+     No supported events found.
+     The sys_perf_event_open() syscall failed for event =
+(vpa_dtl/dtl_all/H): Operation not supported
+     "dmesg | grep -i perf" may provide additional information.
+
+This is because this event is supported for only =E2=80=9Csampling=E2=80=9D=
+ system wide and not counting.=20
+So patch attempts to use =E2=80=9C-a=E2=80=9D, if still it fails, we =
+look for =E2=80=9Cnot supported=E2=80=9D in logs
+
+Namhyung, Ian,
+
+If the addition of =E2=80=9C-a=E2=80=9D can cause regression ( like =
+intel one if its not suppose to be run system wide ),=20
+how about adding a case like this:
+- Look for "enable system wide with '-a=E2=80=99 =E2=80=9C in the error =
+logs
+	- If logs matches this message and if user is root, attempt with =
+-a next.
+       - With =E2=80=9C-a=E2=80=9D, If the logs has "Operation not =
+supported=E2=80=9D , test can continue to next event.
+
+Thanks
+Athira
+
+
 
