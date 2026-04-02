@@ -1,68 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-19210-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19211-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E411BCC6B33
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2026 09:05:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A066D3940D
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2026 10:48:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fmbYF3tl3z2ySk;
-	Thu, 02 Apr 2026 20:05:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775120737;
-	cv=none; b=RGLyEWa2CjYN+3cmH2J6WgO7YuBVq7K/PAmFewp/tTYZ39hfcd2Gt3ny1SnDJvL2Ejw4XJIR+0vQN71tRmBRUYYKQ1JjQpIUODCXFX7sQwvEnw91tr/jgE6JEA35odpEjAhvOMbxUmeAoQ+TjFka+x72bCmJiWz1s1N1hXuGJ4/JFPBpwa7dBhRayAZ3ZGJyFySowxIXKzOLs13+CFJ2ZleS2GZL8iQYh6oguuJlN4ctxHUhflPUbKx2oPFNc/r9BxBn3KxgNaEy54vXm4pk0hMVKPe67i3SjmeZ952RSXxuFHbNj9RgyPGon2J/jW8sA2rgBcfB76pPPlVIzf4iYw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fmdqS3j0bz2xln;
+	Thu, 02 Apr 2026 21:48:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1:d65d:64ff:fe57:4e05"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775126884;
+	cv=none; b=fYfUji5VT84oDofwqJAmsaWJg+dalkozq0V/qi8UMNSqLHEZI2UMcXV1JsE8NJnNfQHx4fGn/3KoUEVUxObcoDVcYZfn4E9ayAlNQH6i8SbJgFHOjPWUgxuJntNHAdBhYqmI+wIKnXgqWkdWCP56UB7Z4C+QpubUSMGdKM4YBxgwiEacPTDaVpAVIw1f4uRA44ogq6bGvEakMXXrXPjlMSTJJf0NmDQLTcy56tjJ5vb3RYXHL8LeEm2dkUsOhop+xg6DOtclY3YMRqoQn8R+y6ggA65CdDWRiYynYjxeN+scDe54YP0OF26WRty9t/RWoIP5+glDvJHneh4ZKcIxMg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775120737; c=relaxed/relaxed;
-	bh=yfHUvvgXQutH0PejSYAx1kYrHzNDD4c4DofRBzeLTh8=;
+	t=1775126884; c=relaxed/relaxed;
+	bh=WuSnxkIyTO13mUz+vZ1/ml/c/eqQ5D0dK9NUy7xy4Pw=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=cxvLDfKZ/GXsOmEu2633SNwdJdSjcmEnCBO/knbmkO3YnnU8UAc6POpUtATpijU9F4HTkaU45KQQM8rjuQEIAY5hIR0sJGlt5+iWmCiB6kwzx72zZ3rAP4nWhrKoU5UfwBSuq5SP+r4+U4tlkuYQBgYQOro3gezGklwaeqOnuVi7ngcRhpliNu0jCvPOP2SNkY9z0e8euG8FkPY4mGSDJ22ARW2L3qzP7bw4oVdXQFACyyn5cSQypj/cU7wKM0Q7C5QWMTIwjSZ1qJeC83iKggD63DCijXi5NugKbgh+EULJcmVR9hUA0dUTW2BIhbrdxX4b89zPmXNnVafjbo3c8A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=efM43sZ2; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=JXmY/yByIwCxAGOAuozvvqBT4cq91/kBiRezkkQSX1WyCUfbD5VupEhp0Cc0Kq0y9zucyebDgE/OrNHL+IohvVu1WrrZhiZe2cRjdrY84S4qd5M6QFISKVsWpLjDz5QSrVIYbv1QuGdlwRwxFNQ+WCtBkOiaI/GNqtLf4EcgG6S7PN6pZXiWI6IdgepgQzQAXFzp1QZRimuRLSbXcmztR2wXLxqPeXGmooxuE+xpIuhMIaImMog2P2t3ozfQkviYnCb3grp02rKDxzp4hYLuzP/sb8zxWE/rNhWgQme1+6dcesfJ2mjG3SUWpjCXTBrCNnGMRVzi9f4G6Bs7Q2BVjQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=fWHvfBdk; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=efM43sZ2;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=fWHvfBdk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fmbYD4Hx5z2xls
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2026 20:05:36 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id A35EA61862;
-	Thu,  2 Apr 2026 09:05:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D24E7C19423;
-	Thu,  2 Apr 2026 09:05:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775120733;
-	bh=yfHUvvgXQutH0PejSYAx1kYrHzNDD4c4DofRBzeLTh8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=efM43sZ2A/ZfqyTCE6QyXcUhTSqKNHMGoc0DNLI6pUPvzYoAPSciVsLz8B77AduZp
-	 w+XxRaaVCxnlnepcfCZi93QgTadPznyIAojrLQDjc0NEs094/tdyiDFHLPVIluVQLN
-	 dipx3TePpmSg2cPvw4jD+xaSFkoCNdM3v17oS7thDGheJQdmQohtZGWj51KOJ2wD/6
-	 TnyzywN1U9/A1hrwLZqWF4gymmrNJb78av1IMn1MO+0ayyq6AaX/MnvziDjvFty/b8
-	 N0oBHp4YsZYN9qenBb1q0IlcfJUAdtCvlC5pzag7GOrwMpa029pRCbadCwq0cnIC11
-	 25jESRIAdN9bg==
-Date: Thu, 2 Apr 2026 10:05:27 +0100
-From: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>
-To: "David Hildenbrand (Arm)" <david@kernel.org>
-Cc: Sayali Patil <sayalip@linux.ibm.com>, 
-	Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>, linux-mm@kvack.org, 
-	linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org, 
-	Ritesh Harjani <ritesh.list@gmail.com>, Zi Yan <ziy@nvidia.com>, Michal Hocko <mhocko@kernel.org>, 
-	Oscar Salvador <osalvador@suse.de>, Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, 
-	Dev Jain <dev.jain@arm.com>, Liam.Howlett@oracle.com, linuxppc-dev@lists.ozlabs.org, 
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: Re: [PATCH v3 08/13] selftests/mm: ensure destination is
- hugetlb-backed in hugepage-mremap
-Message-ID: <0a1befae-1037-4bbe-b976-352ef4607d2a@lucifer.local>
-References: <cover.1774591179.git.sayalip@linux.ibm.com>
- <3b6ffba238a4b59de891acf896fa25d7d3193228.1774591179.git.sayalip@linux.ibm.com>
- <ee15d52f-45df-415b-b0d9-3d267d147e5c@kernel.org>
- <b590a17c-13ed-45f4-9f51-ac662d00e7bf@lucifer.local>
- <066a146b-7dbb-408e-bbc0-542bdcdd6681@linux.ibm.com>
- <86889304-c450-491c-8c06-48ca9c973531@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fmdqL0J28z2xQD
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2026 21:47:53 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=WuSnxkIyTO13mUz+vZ1/ml/c/eqQ5D0dK9NUy7xy4Pw=; b=fWHvfBdkYBp1lDE/7yjJLeJyG4
+	TDG024jO+otVJtwiymsQjjwAfzXysI0Ne/Hap+hOUQ6HF3At22XcXejbtpYlWZVb7GLO9iSy8lBz/
+	xXoiPgVJTNjnS6NdQ+JrLTq5kguJS2cahxS6gs3sXaw3b07PcCyOKgqMNnJYuSMZkSWQ1zbwrH1lL
+	oQvCfWFVfYg2y5n87Si+3p5rgef7vqX5HJwvSTsRp8czWpsWUtQti6XMSrgnlzRPw7jmDhnI0sbSY
+	FLNqQFUUhtoZK6LgqB9dMKy1Plr2pBXtNoo1Rj1bEdri+YGju2kRuh4KtAyO/E8p9i0u4EW5ey6u+
+	j2zCRXxw==;
+Received: from 2001-1c00-8d85-4b00-266e-96ff-fe07-7dcc.cable.dynamic.v6.ziggo.nl ([2001:1c00:8d85:4b00:266e:96ff:fe07:7dcc] helo=noisy.programming.kicks-ass.net)
+	by desiato.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1w8FaH-00000002G2g-3cX8;
+	Thu, 02 Apr 2026 10:47:34 +0000
+Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
+	id 53C6A30301D; Thu, 02 Apr 2026 12:47:33 +0200 (CEST)
+Date: Thu, 2 Apr 2026 12:47:33 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Hangbin Liu <liuhangbin@gmail.com>
+Cc: Richard Henderson <richard.henderson@linaro.org>,
+	Matt Turner <mattst88@gmail.com>,
+	Magnus Lindholm <linmag7@gmail.com>,
+	Vineet Gupta <vgupta@kernel.org>, Brian Cain <bcain@kernel.org>,
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+	Helge Deller <deller@gmx.de>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Rich Felker <dalias@libc.org>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	"David S. Miller" <davem@davemloft.net>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>, Chris Zankel <chris@zankel.net>,
+	Max Filippov <jcmvbkbc@gmail.com>, linux-alpha@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+	linux-hexagon@vger.kernel.org, linux-parisc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+	Jakub Kicinski <kuba@kernel.org>
+Subject: Re: [PATCH] cmpxchg: allow const-qualified old value in cmpxchg()
+Message-ID: <20260402104733.GZ3738786@noisy.programming.kicks-ass.net>
+References: <20260402-cmpxchg-v1-1-4561e2c05d2c@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,96 +91,30 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <86889304-c450-491c-8c06-48ca9c973531@kernel.org>
+In-Reply-To: <20260402-cmpxchg-v1-1-4561e2c05d2c@gmail.com>
 
-On Thu, Apr 02, 2026 at 09:33:29AM +0200, David Hildenbrand (Arm) wrote:
-> On 4/1/26 22:39, Sayali Patil wrote:
-> >
-> >
-> > On 01/04/26 20:10, Lorenzo Stoakes (Oracle) wrote:
-> >> On Wed, Apr 01, 2026 at 04:21:55PM +0200, David Hildenbrand (Arm) wrote:
-> >>
-> >> OK so digging in:
-> >>
-> >> mremap -> ... -> vrm_set_new_addr() -> get_unmapped_area() -> ... (in
-> >> ppc arch
-> >> code) -> slice_get_unmapped_area():
-> >>
-> >> unsigned long slice_get_unmapped_area(unsigned long addr, unsigned
-> >> long len,
-> >>                       unsigned long flags, unsigned int psize,
-> >>                       int topdown)
-> >> {
-> >>     ...
-> >>     /* bunch of checks */
-> >>
-> >>     /* If we have MAP_FIXED and failed the above steps, then error out */
-> >>     if (fixed)
-> >>         return -EBUSY;
-> >>
-> >>     ...
-> >> }
-> >>
-> >> Is presumably where we hit the issue.
-> >>
-> >>>
-> >>> That is weird. An mremap(MREMAP_FIXED) is really just an munmap() +
-> >>> move.
-> >>
-> >> Yeah the weird bit I guess is that we _still_ invoke
-> >> get_unmapped_area() but
-> >> with MAP_FIXED set to indicate that we want the specific address, so it's
-> >> subject to the above checks.
-> >>
-> >>>
-> >>> Are we sure this is not some actual problem in the hugetlb
-> >>> implementation?
-> >>
-> >> It seems the 'slices' check sees if the _target address_ has an
-> >> equivalent page
-> >> size, presumably hugetlb-mandated, and fails if they're not
-> >> equivalent, so this
-> >> change is just accounting for that.
-> >>
-> > Yes, this change accounts for that by ensuring the destination is
-> > created with MAP_HUGETLB so it has the same page size as the source.
->
-> Okay, weird, so it's the right thing to do to cover all odd arch behavior.
->
-> >>
-> >>>
-> >>>
-> >>> But then the test suddenly requires more hugetlb pages, no? I don't see
-> >>> a good reason for the MAP_POPULATE, really. It will be discarded
-> >>> either way.
-> >>
-> >> Yeah I'm not sure about the MAP_POPULATE being all that important here.
-> >>
-> > As far as I understand, without MAP_POPULATE, memory accesses would
-> > trigger userfaults, and since the test is single-threaded and has no
-> > background handler for the uffd, it would deadlock. MAP_POPULATE ensures
-> > the test runs correctly by prefaulting all pages, but please let me know
-> > if I’m mistaken.
->
-> So you are saying the test would deadlock if you are not adding
-> MAP_POPULATE? If so, please double check if that is actually the case.
->
-> And if it's actually the case, please carefully document that in the
-> patch description, and probably as a comment above the MAP_POPULATE usage.
+On Thu, Apr 02, 2026 at 02:56:01PM +0800, Hangbin Liu wrote:
+> The old value passed to cmpxchg() is semantically read-only: it is
+> only loaded into a register as a comparand and is never written back.
+> However, the macro currently assigns it implicitly to a local variable
+> of type __typeof__(*(ptr)), which triggers -Werror=discarded-qualifiers
+> when old is a const-qualified pointer and ptr points to a non-const type.
+> 
+> To avoid this, let's add an explicit cast to __typeof__(*(ptr)) for the
+> old local variable in the cmpxchg macros. This explicit cast suppresses
+> the -Wdiscarded-qualifiers diagnostic.
+> 
+> The new value is intentionally left without a cast: new will be stored
+> into *ptr, so silently accepting a const-qualified new would allow
+> callers to store a pointer-to-const into a non-const location without
+> any compiler warning.
+> 
+> Suggested-by: Jakub Kicinski <kuba@kernel.org>
+> Signed-off-by: Hangbin Liu <liuhangbin@gmail.com>
+> ---
 
-Do keep in mind MAP_POPULATE is not _guaranteed_ to work :)
-
-For guaranteed populate you need madvise(..., MADV_POPULATE_[READ/WRITE]) or to
-directly fault in.
-
->
-> --
-> Cheers,
->
-> David
-
-Cheers, Lorenzo
+Where is this a problem? I've never seen this. Also, new code should
+probably use try_cmpxchg() anyway.
 
