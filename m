@@ -1,73 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-19189-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19190-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 629C7CC6B00
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2026 07:00:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E134ACC6B03
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2026 07:21:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fmXmL6dpBz2ySk;
-	Thu, 02 Apr 2026 18:00:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775113202;
-	cv=none; b=Wfvb40BZ7ELOBkF90BU+dydxvckqAPFHx0mrhGrd7eoKPZOqhyzVbPvJVKQqcqrTpARPY/07hJWB4QqomduR1T/A8DdtIzWcA3nPqkMQqTc6HIq+iu6B5i3MJdWPQtnrLc08lunvnZro/iazBEAG2/2nuKn7ANs4rX9zTv7ltlKYgdf7gviKqMmS3tkishIIw5eDgNDBglBy/nXqTQlF1Gbgw/SZfKEiOUSfyBbPr0Rjz4enqQGQYGl/GZjfIFIdQWf0EBvJhzMwVNqxm4oQgrHBpBvpjs9vxgrjchxt4sD/nAFXF6L3JyiSa5e89Cqw2po2e5Ky1QIVx3PByjdv3w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fmYDt4FClz2ySk;
+	Thu, 02 Apr 2026 18:21:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775114478;
+	cv=none; b=laIWh1Wsc6bDfK/4alCKILGnw2GRoe83hJ8zmCOAzCPiktHA/6DunVgRtusyxKUGh1fjZ/14zTpGzAcYpqmUTx82XKqc54mcFQ3rdIjOZaL6ksPQNyPGrQKhEsrmHUF8DZmOykNdV2jk/VFmRa5Tm7UWWyc+hEqhtmMG2bngLObg1/N/gynBp0rSM6hgTkQGGs7o+u7xMzCGICB+WWyWG7Vq2TZhrZIt0Mw+rOmuv3pJQiFWPwHEFU+vQ6WQmztF8F/egoib2SI4WwF4h6qtlSzwUNiw/1fkFrnF96QGMqWRvWDT9mpw9287SpRV9VwwFlvAsw2SITJshpY/sMkRDA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775113202; c=relaxed/relaxed;
-	bh=g9lHFdT/4a2Nmji3esrNHN41u6kgv2wWacp4OAjXPmQ=;
+	t=1775114478; c=relaxed/relaxed;
+	bh=SM62b691tWzqzlWo+QGAPYJFbUmDMiobgucC8KUf2RI=;
 	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=KGrJCwTNsyLpLavo1bZnJPHAMugc7DXieiUhLzegykFG7QjREyy1BK0LaaLBMkAo1iGGCwjlYhoVG4hL8pqjSkKxuOKhIVhQB7CiZz6KXGgDXnSBqpEhuKBjzNVfs0dl9EZxgUtFKQhGgQa/K8LDsKLn+RS9Kjaa5izuC2KzyQt4fjIAZ/U9eAAH+RXsAIbITAnNibp+VOh79KBaZJFwAVD5ArCcTKNQPKde6uCIh5IUG/cKFxrouM5WdNwqpXXqvPDYgYlk9rJUToMHV6eYiJn7YYzyB6WsF0FCY0yIrN8A9LLHCVEqFSEJnrI4WPS74eCIgkgncSOvvEHKyomp0w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LpmVkUw+; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 In-Reply-To:Content-Type; b=aG+uWBC4sC/SiOG/wLhBwDQPOuoesnayKCeWUrGDMTqmXjlOeEjkzB+nJ0NQTv8x7jtTnREJ0x4SIn6nxmK51PZQR97wq1Ide5/IiYmpfuz5nBQBwWIdKYskslWgP+fdHbmUK9gM8ZX9ftgX38NGz0d/q+GNdATaugDvHJV8lvC9OOyx80JDg2jorqIjE8dlHVMYako1hzOQjMdUXj6GoMEfkhfnMwosFJT9+fFGB0An6v28C1oSoclcUU7jh2S923GsO6vVlSODmR1J1HnJelly2XmvL5X+nhs9Qk6otDcJtHFIMSLESw1oig+QgV55190HgNqXq9Z9/2qSF3BY3A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gC4Gh9S4; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LpmVkUw+;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gC4Gh9S4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fmXmK3B8Dz2xln
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2026 18:00:00 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 631KTqkw3487166;
-	Thu, 2 Apr 2026 06:59:50 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fmYDs4x05z2xln
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2026 18:21:17 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 631KZK7f3948870;
+	Thu, 2 Apr 2026 07:16:02 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=g9lHFd
-	T/4a2Nmji3esrNHN41u6kgv2wWacp4OAjXPmQ=; b=LpmVkUw+GhRwIyfiN7Izek
-	8wcTZXuAfu5PlbBsqFG7RRdJfxSm83zrC6d7J//FrsBxLcxasUZagbh9RPnnBzkn
-	DQ3mqcr2kR32mad9zvoUdLK4fjDT0eeYq9+JCMMs4kE17+yCw6xTZqMwr0DfcfQM
-	sRM1NWs3oGVLC8IC+eEOHf4p7IHhQ/k5RfwACm8RCRxXQ+NZZxRUoZrDTEm4NU6e
-	p5NXMnXiijvuE/1D/KyogTDoAiZLD0dVTEaWc+2SpHTga7ryBFdJKPdNqKik3IJB
-	Pm4N8kGx4W9+YCLDvyCHxixG0B+adliKHuua5PXrDbyhid9F9zLL5u4+0NadL5/w
+	:message-id:mime-version:references:subject:to; s=pp1; bh=SM62b6
+	91tWzqzlWo+QGAPYJFbUmDMiobgucC8KUf2RI=; b=gC4Gh9S4hwLGa0PWizvlfC
+	aZiH1NCsW2nMiXhNDr4TYiosBDHxybbwo4QSHIdPZ6RAV9/yv4qNgRAub2OuQqdP
+	fQAxz8mX5pQ2olu7zRmbkffB0sdvnwlvITDYzbGZMJetUBzBCvEshWyfN/jMHXoc
+	suMm9R47auB3ZI94OjM6okke3Q3PxyE21zZdJebHBXcT+8YCLQft367cz5z+iM4B
+	aSm7vWhkIHp3AA2z0myZ6K6ooKedm/Xr8KB9pg1p35Toa7Nu9C7gEHU/ifZfGbn4
+	wFKb9XBDHLcKN+KMRO4dH2p+6HwPjp9VslviaS0chYks8uGbLDOg+qtbO8x38u0w
 	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d66g23qhc-1
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d65dcjvpd-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 02 Apr 2026 06:59:49 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 6326YFlV022291;
-	Thu, 2 Apr 2026 06:59:48 GMT
-Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4d6tan90ah-1
+	Thu, 02 Apr 2026 07:16:02 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 6326xB6A030995;
+	Thu, 2 Apr 2026 07:16:01 GMT
+Received: from smtprelay04.dal12v.mail.ibm.com ([172.16.1.6])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4d6uhk0w42-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 02 Apr 2026 06:59:48 +0000
+	Thu, 02 Apr 2026 07:16:01 +0000
 Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
-	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6326xlVD32572062
+	by smtprelay04.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6327G0gZ32637458
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 2 Apr 2026 06:59:47 GMT
+	Thu, 2 Apr 2026 07:16:00 GMT
 Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9FC185805A;
-	Thu,  2 Apr 2026 06:59:47 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id CE63E58060;
+	Thu,  2 Apr 2026 07:16:00 +0000 (GMT)
 Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 42DD95803F;
-	Thu,  2 Apr 2026 06:59:42 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id E930858056;
+	Thu,  2 Apr 2026 07:15:55 +0000 (GMT)
 Received: from [9.124.211.187] (unknown [9.124.211.187])
 	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  2 Apr 2026 06:59:41 +0000 (GMT)
-Message-ID: <c563e9ad-2e87-4d91-ab0e-f2afa77387cc@linux.ibm.com>
-Date: Thu, 2 Apr 2026 12:29:40 +0530
+	Thu,  2 Apr 2026 07:15:55 +0000 (GMT)
+Message-ID: <71424f5e-2d42-4b82-b5d6-4b507c73af9c@linux.ibm.com>
+Date: Thu, 2 Apr 2026 12:45:54 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -83,8 +83,8 @@ Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 From: Sayali Patil <sayalip@linux.ibm.com>
-Subject: Re: [PATCH v3 09/13] selftests/mm: skip uffd-wp-mremap if UFFD
- write-protect is unsupported
+Subject: Re: [PATCH v3 12/13] selftests/mm: move hwpoison setup into
+ run_test() and silence modprobe output for memory-failure category
 To: Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
         linux-mm@kvack.org, linux-kernel@vger.kernel.org,
         linux-kselftest@vger.kernel.org,
@@ -93,169 +93,224 @@ Cc: David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>,
         Michal Hocko <mhocko@kernel.org>, Oscar Salvador <osalvador@suse.de>,
         Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
         Dev Jain <dev.jain@arm.com>, Liam.Howlett@oracle.com,
-        linuxppc-dev@lists.ozlabs.org
+        linuxppc-dev@lists.ozlabs.org, Miaohe Lin <linmiaohe@huawei.com>,
+        Venkat Rao Bagalkote <venkat88@linux.ibm.com>
 References: <cover.1774591179.git.sayalip@linux.ibm.com>
- <5bc0fe27cdd316ef6f776bf9b52b6c0de4bef54f.1774591179.git.sayalip@linux.ibm.com>
+ <a157c2f91d8fa94b14dff44ce5c0dfcce1f8328e.1774591179.git.sayalip@linux.ibm.com>
 Content-Language: en-IN
-In-Reply-To: <5bc0fe27cdd316ef6f776bf9b52b6c0de4bef54f.1774591179.git.sayalip@linux.ibm.com>
+In-Reply-To: <a157c2f91d8fa94b14dff44ce5c0dfcce1f8328e.1774591179.git.sayalip@linux.ibm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=Fdo6BZ+6 c=1 sm=1 tr=0 ts=69ce13e6 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+X-Authority-Analysis: v=2.4 cv=RsjI7SmK c=1 sm=1 tr=0 ts=69ce17b2 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
  a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=Ikd4Dj_1AAAA:8
- a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=X_KCTOUB8Lo47miopUAA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: _PKXl_TFP9s8I2DLHw3-X6DosxfFph5V
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDAyMDA1OSBTYWx0ZWRfXzClFUfw9yQ1K
- mS1M24R0Wl1zjNTReKRTJXi2ZL5bYLTAsQSMc5GAR3FHWkenF84klAAgrMAEPzc80g28QfQskxE
- kWC3BytAk24o48Hzfg8mGnWx8PCFm2RyXBGsh9ozkhvQsg4Ha2kKNCYgrx8db8GOKHMzhGica6t
- TQY+K0IZuKUVLC+MrvYDVxct3tUxWaI4/guWSCvRORoePZmhgCmftrNhzNVlJ8OX2CisyQ+ZlKQ
- JkbLT3kxj/3lOB0KqshddGiDUdntaa0FpABnMDDd1QZyoynVQyBSbbhQaebUWosirEeL1YI6jGq
- 6yUKt9b0q0MEWN0pQhSfNUjManVAsgf0hTro1BtJGBuAGo14DegAmZt9mCNJkm7VMx2YEAZ+ECZ
- snVINASbaK3rX3JD6i09xD7z3AsFx2nvH91B/V0vwOujEJJqzWKNKsvIvk8XLG+otjTEJiR+4s7
- v/bq1Jma+BkcXbz+2Pw==
-X-Proofpoint-GUID: sJCAzj54eSGJ2M_geFmpHo6yBe2LRsGe
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=Ikd4Dj_1AAAA:8
+ a=i0EeH86SAAAA:8 a=VnNF1IyMAAAA:8 a=BLP2e4f4YfAStYiMnDwA:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: SpgGA6LxnPZonV-h0J_pZMbTi0owmqRN
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDAyMDA1OSBTYWx0ZWRfXzYZLu5HkxuzA
+ 9qO2Q9Yn3X8cossavIunDmLaqJpvESeOc5J4QC3TeRcj5hdMaPhFSJifafL+VysGT44/2ZWpWJV
+ so5esM+oJcnkGwBCi7zvqzDW4kR/QR9UWB6YgcnoMyhSbJoFf0avIvaM438f+mPUtzPrTbE08CD
+ ApMZmfbQb0u8B49qIgHlk3seK0aYJo1ZWjtsSlxJOR94+d9ifbs4yPk2fL1UwU02ceI6n94bV+S
+ 3rdM3kKSzdVFI3Yy+CjWmyx9db4bFPHFE3ROmo6trtmclWpNTk/RkQLbb8QzRDPCALjM3S4ldSh
+ k24jfpc5NKU359vWZmuQ7ndUe9a4wrpr3IgPQ+pU0R0z8/6cZoNn5aH3suE5Yu5jdKYRvCI4oEK
+ bdZU4CptyoUpaHYYH6PoGyMnjNw1eSfD+m+w15sB5V0Hp60BoIqDT28AOHkNwTimrS72VggnyOt
+ w23kRxTQ3vAg45KCiJQ==
+X-Proofpoint-ORIG-GUID: EU480Jai16Dy4ctV4rvv5ArdL-8ArJHw
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-04-02_01,2026-04-01_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 clxscore=1015 bulkscore=0 suspectscore=0 priorityscore=1501
- adultscore=0 malwarescore=0 phishscore=0 spamscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2604020059
+ impostorscore=0 bulkscore=0 priorityscore=1501 lowpriorityscore=0
+ suspectscore=0 malwarescore=0 spamscore=0 clxscore=1015 phishscore=0
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
+ definitions=main-2604020059
 
 
 
 On 27/03/26 12:46, Sayali Patil wrote:
-> The uffd-wp-mremap test requires the UFFD_FEATURE_PAGEFAULT_FLAG_WP
-> capability. On systems where userfaultfd write-protect is
-> not supported, uffd_register() fails and the test reports failures.
+> run_vmtests.sh contains special handling to ensure the hwpoison_inject
+> module is available for the memory-failure tests. This logic was
+> implemented outside of run_test(), making the setup category-specific
+> but managed globally.
 > 
-> Check for the required feature at startup and skip the test when the
-> UFFD_FEATURE_PAGEFAULT_FLAG_WP capability is not present,
-> preventing false failures on unsupported configurations.
+> Move the hwpoison_inject handling into run_test() and restrict it
+> to the memory-failure category so that:
+> 1. the module is checked and loaded only when memory-failure tests run,
+> 2. the test is skipped if the module or the debugfs interface
+> (/sys/kernel/debug/hwpoison/) is not available.
+> 3. the module is unloaded after the test if it was loaded by the script.
 > 
-> Before patch:
->   running ./uffd-wp-mremap
->   ------------------------
->    [INFO] detected THP size: 256 KiB
->    [INFO] detected THP size: 512 KiB
->    [INFO] detected THP size: 1024 KiB
->    [INFO] detected THP size: 2048 KiB
->    [INFO] detected hugetlb page size: 2048 KiB
->    [INFO] detected hugetlb page size: 1048576 KiB
->   1..24
->    [RUN] test_one_folio(size=65536, private=false, swapout=false,
->    hugetlb=false)
->   not ok 1 uffd_register() failed
->    [RUN] test_one_folio(size=65536, private=true, swapout=false,
->    hugetlb=false)
->   not ok 2 uffd_register() failed
->    [RUN] test_one_folio(size=65536, private=false, swapout=true,
->    hugetlb=false)
->   not ok 3 uffd_register() failed
->    [RUN] test_one_folio(size=65536, private=true, swapout=true,
->    hugetlb=false)
->   not ok 4 uffd_register() failed
->    [RUN] test_one_folio(size=262144, private=false, swapout=false,
->    hugetlb=false)
->   not ok 5 uffd_register() failed
->    [RUN] test_one_folio(size=524288, private=false, swapout=false,
->    hugetlb=false)
->   not ok 6 uffd_register() failed
->   .
->   .
->   .
->   Bail out! 24 out of 24 tests failed
->    Totals: pass:0 fail:24 xfail:0 xpass:0 skip:0 error:0
->   [FAIL]
-> not ok 1 uffd-wp-mremap # exit=1
+> This localizes category-specific setup and makes the test flow
+> consistent with other per-category preparations.
 > 
-> After patch:
->   running ./uffd-wp-mremap
->   ------------------------
->   1..0 # SKIP uffd-wp feature not supported
->   [SKIP]
-> ok 1 uffd-wp-mremap # SKIP
+> While updating this logic, fix the module availability check.
+> The script previously used:
 > 
+> 	modprobe -R hwpoison_inject
+> 
+> The -R option prints the resolved module name to stdout, causing every
+> run to print:
+> 
+> 	hwpoison_inject
+> 
+> in the test output, even when no action is required, introducing
+> unnecessary noise.
+> 
+> Replace this with:
+> 
+> 	modprobe -n hwpoison_inject
+> 
+> which verifies that the module is loadable without producing output,
+> keeping the selftest logs clean and consistent.
+> 
+> Fixes: ff4ef2fbd101 ("selftests/mm: add memory failure anonymous page test")
 > Acked-by: Zi Yan <ziy@nvidia.com>
-> Acked-by: David Hildenbrand (Arm) <david@kernel.org>
+> Acked-by: Miaohe Lin <linmiaohe@huawei.com>
+> Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
 > Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
 > ---
->   tools/testing/selftests/mm/uffd-wp-mremap.c | 13 +++++++++++++
->   1 file changed, 13 insertions(+)
+>   tools/testing/selftests/mm/run_vmtests.sh | 46 ++++++++++++++---------
+>   1 file changed, 28 insertions(+), 18 deletions(-)
 > 
-> diff --git a/tools/testing/selftests/mm/uffd-wp-mremap.c b/tools/testing/selftests/mm/uffd-wp-mremap.c
-> index 17186d4a4147..6edbd09f0ca6 100644
-> --- a/tools/testing/selftests/mm/uffd-wp-mremap.c
-> +++ b/tools/testing/selftests/mm/uffd-wp-mremap.c
-> @@ -19,6 +19,17 @@ static size_t thpsizes[20];
->   static int nr_hugetlbsizes;
->   static size_t hugetlbsizes[10];
+> diff --git a/tools/testing/selftests/mm/run_vmtests.sh b/tools/testing/selftests/mm/run_vmtests.sh
+> index eecec0b6eb13..606558cc3b09 100755
+> --- a/tools/testing/selftests/mm/run_vmtests.sh
+> +++ b/tools/testing/selftests/mm/run_vmtests.sh
+> @@ -250,6 +250,27 @@ run_test() {
+>   			fi
+>   		fi
 >   
-> +static void check_uffd_wp_feature_supported(void)
-> +{
-> +	uint64_t features;
+> +		# Ensure hwpoison_inject is available for memory-failure tests
+> +		if [ "${CATEGORY}" = "memory-failure" ]; then
+> +			# Try to load hwpoison_inject if not present.
+> +			HWPOISON_DIR=/sys/kernel/debug/hwpoison/
+> +			if [ ! -d "$HWPOISON_DIR" ]; then
+> +				if ! modprobe -n hwpoison_inject > /dev/null 2>&1; then
+> +					echo "Module hwpoison_inject not found, skipping..." \
+> +						| tap_prefix
+> +					skip=1
+> +				else
+> +					modprobe hwpoison_inject > /dev/null 2>&1
+> +					LOADED_MOD=1
+> +				fi
+> +			fi
 > +
-> +	if (uffd_get_features(&features) && errno == ENOENT)
-> +		ksft_exit_skip("failed to get available features (%d)\n", errno);
+> +			if [ ! -d "$HWPOISON_DIR" ]; then
+> +				echo "hwpoison debugfs interface not present" | tap_prefix
+> +				skip=1
+> +			fi
+> +		fi
 > +
-> +	if (!(features & UFFD_FEATURE_PAGEFAULT_FLAG_WP))
-> +		ksft_exit_skip("uffd-wp feature not supported\n");
-> +}
+>   		local test=$(pretty_name "$*")
+>   		local title="running $*"
+>   		local sep=$(echo -n "$title" | tr "[:graph:][:space:]" -)
+> @@ -261,6 +282,12 @@ run_test() {
+>   		else
+>   			local ret=$ksft_skip
+>   		fi
 > +
->   static int detect_thp_sizes(size_t sizes[], int max)
->   {
->   	int count = 0;
-> @@ -336,6 +347,8 @@ int main(int argc, char **argv)
->   	struct thp_settings settings;
->   	int i, j, plan = 0;
+> +		# Unload hwpoison_inject if we loaded it
+> +		if [ -n "${LOADED_MOD}" ]; then
+> +			modprobe -r hwpoison_inject > /dev/null 2>&1
+> +		fi
+> +
+>   		count_total=$(( count_total + 1 ))
+>   		if [ $ret -eq 0 ]; then
+>   			count_pass=$(( count_pass + 1 ))
+> @@ -540,24 +567,7 @@ CATEGORY="page_frag" run_test ./test_page_frag.sh nonaligned
 >   
-> +	check_uffd_wp_feature_supported();
-> +
->   	pagesize = getpagesize();
->   	nr_thpsizes = detect_thp_sizes(thpsizes, ARRAY_SIZE(thpsizes));
->   	nr_hugetlbsizes = detect_hugetlb_page_sizes(hugetlbsizes,
+>   CATEGORY="rmap" run_test ./rmap
+>   
+> -# Try to load hwpoison_inject if not present.
+> -HWPOISON_DIR=/sys/kernel/debug/hwpoison/
+> -if [ ! -d "$HWPOISON_DIR" ]; then
+> -	if ! modprobe -q -R hwpoison_inject; then
+> -		echo "Module hwpoison_inject not found, skipping..."
+> -	else
+> -		modprobe hwpoison_inject > /dev/null 2>&1
+> -		LOADED_MOD=1
+> -	fi
+> -fi
+> -
+> -if [ -d "$HWPOISON_DIR" ]; then
+> -	CATEGORY="memory-failure" run_test ./memory-failure
+> -fi
+> -
+> -if [ -n "${LOADED_MOD}" ]; then
+> -	modprobe -r hwpoison_inject > /dev/null 2>&1
+> -fi
+> +CATEGORY="memory-failure" run_test ./memory-failure
+>   
+>   if [ "${HAVE_HUGEPAGES}" = 1 ]; then
+>   	echo "$orig_nr_hugepgs" > /proc/sys/vm/nr_hugepages
 
 AI review question:
+> > diff --git a/tools/testing/selftests/mm/run_vmtests.sh
+> > b/tools/testing/selftests/mm/run_vmtests.sh
+> > --- a/tools/testing/selftests/mm/run_vmtests.sh
+> > +++ b/tools/testing/selftests/mm/run_vmtests.sh
+> > @@ -250,6 +250,27 @@ run_test() {
+> >  			fi
+> >  		fi
+> >
+> > +		# Ensure hwpoison_inject is available for memory-failure tests
+> > +		if [ "${CATEGORY}" = "memory-failure" ]; then
+> > +			# Try to load hwpoison_inject if not present.
+> > +			HWPOISON_DIR=/sys/kernel/debug/hwpoison/
+> > +			if [ ! -d "$HWPOISON_DIR" ]; then
+> > +				if ! modprobe -n hwpoison_inject > /dev/null 2>&1; then
+> > +					echo "Module hwpoison_inject not found, skipping..." \
+> > +						| tap_prefix
+> > +					skip=1
+> Does moving this skip logic inside run_test() mask previous test failures?
+> The run_vmtests.sh script sets exitcode=$ksft_skip when a test skips.
+> Previously, if the module was missing, the script bypassed calling run_test()
+> for memory-failure entirely, which preserved any previous 
+> failure exit code.
+> With this patch, run_test() executes, skips internally, and sets the
+> exitcode to 4. Since memory-failure is the final test, could this
+> change the test
+> suite's final exit code from 1 to 4 on systems without the module?
 
-> commit 22914640356d1eaf4e0a8a8b13ad71911d12db50
-> Author: Sayali Patil <sayalip@linux.ibm.com>
-> selftests/mm: skip uffd-wp-mremap if UFFD write-protect is unsupported
-> This commit adds a check at startup to verify if the userfaultfd
-> write-protect capability is present. It skips the test instead of reporting> false failures on unsupported configurations.
-> > diff --git a/tools/testing/selftests/mm/uffd-wp-mremap.c b/tools/testing/selftests/mm/uffd-wp-mremap.c> > index 17186d4a4147..6edbd09f0ca6 100644
-> > --- a/tools/testing/selftests/mm/uffd-wp-mremap.c
-> > +++ b/tools/testing/selftests/mm/uffd-wp-mremap.c
-> > @@ -19,6 +19,17 @@ static size_t thpsizes[20];
-> > static int nr_hugetlbsizes;
-> > static size_t hugetlbsizes[10];
->
-> > +static void check_uffd_wp_feature_supported(void)
-> > +{
-> > +	uint64_t features;
+
+This was pre-existing behavior, however, the concern is valid. Failures 
+should take precedence over skips. Let me address this in v4.
+
+
+> > +				else
+> > +					modprobe hwpoison_inject > /dev/null 2>&1
+> > +					LOADED_MOD=1
+> Should LOADED_MOD be declared as a local variable here?
+> Since it lacks a local declaration, it persists in the script's global
+> environment. If any tests are appended after memory-failure in the future,
+> or if LOADED_MOD is already set in the user's environment, this could cause
+> modprobe -r hwpoison_inject to execute redundantly after those tests.
+
+
+Yes, good point. Let me address this in v4 by making it a local variable.
+
+
+> > +				fi
+> > +			fi
 > > +
-> > +	if (uffd_get_features(&features) && errno == ENOENT)
-> > +		ksft_exit_skip("failed to get available features (%d)\n", errno);
-> If uffd_get_features() fails but errno is something other than ENOENT (for> example, EPERM when unprivileged userfaultfd is disabled), this check will
-> evaluate to false and execution will continue.> > +
-> > +	if (!(features & UFFD_FEATURE_PAGEFAULT_FLAG_WP))
-> Could this evaluate uninitialized stack memory?
-> If uffd_get_features() fails and is bypassed by the previous check, the
-> features variable will remain uninitialized. This might cause the test to
-> falsely pass or fail depending on whatever data happens to be on the stack.> Should we initialize features to zero or exit on all uffd_get_features()
-> failures instead?
-> > +		ksft_exit_skip("uffd-wp feature not supported\n");
-> > +}
+> > +			if [ ! -d "$HWPOISON_DIR" ]; then
+> > +				echo "hwpoison debugfs interface not present" | tap_prefix
+> > +				skip=1
+> > +			fi
+> Will this print a redundant skip message when the module is not found?
+> If modprobe -n fails earlier, the directory will still be absent, causing
+> this second block to evaluate to true. This prints hwpoison debugfs 
+> interface
+> not present right after Module hwpoison_inject not found, skipping...,
+> which might contradict the goal of keeping the selftest logs clean.
 
-Yes,If uffd_get_features() fails with an error other than ENOENT, the 
-features variable would remain uninitialized, which could lead to 
-undefined behavior in the subsequent check.
 
-I will fix this in the next patch version.
+Agreed, this can lead to redundant output. I’ll update it in v4 to avoid 
+the duplicate skip message.
 
-Thanks,
-Sayali
+
 
