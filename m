@@ -1,59 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-19227-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19228-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F733D6AAFD
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2026 19:15:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 157C4D6AAFF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2026 19:26:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fms5M5qdYz2xls;
-	Fri, 03 Apr 2026 06:15:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775157351;
-	cv=none; b=LWeC2YomKzHvjpWBwYLCsAoKHw8aSDYTdoimel117pJacFQYlIrLk0yejFgoZyzj8b/tUeiEGKCpaNvT+jVa/z/qbswKsu1AqlUlVPYYnR2UKZDbeEcUUDJubWuWzhTLkZ29/ius58jouESoVdP5KtILFJNf1FrTemg6sSqrc3N5nWjnw5ZDITkgGi7TsSLsKNI95ExLX/sSvOq6yjAGXsjkmpIpj7tSQX9ciTDa3inwfu/tlI5XdURMtFJMb82dPVIUhdB8b79D4Z7ef3alXjWNg6f60iNDbR7TWwDDgDOEdpe+QKhF7KkbmiLu+s3QHjHZowQPX3Jn/mCqp1hWiQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fmsKb40HLz2xls;
+	Fri, 03 Apr 2026 06:26:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775157987;
+	cv=none; b=kiFngu921lrb40+j/sMdhEgPkUxbJ6uUMKOwSCF9A2rt2jAwRqwP9ZuOiC8iwXG2BddBGdEQ+axj/N2aaL9VP+bidRcELtEdvRX7ZlLNDH8eTQPUFHNLk5Kk/zZplqeuWAHiCRnRH/QmKrKiWkcA/nvSEjfDJin2wPvOgDBs3VJFeBmDogxbg5UkO0A35s/kL0XQwUSNms3qLJt7KIcpWz3820pPpOUCSfZoV5U3GMJUWd+FVkEo9vSsCX0TCoI8CI9RGveL6KMrwzIaV+mrAlNu+7HBZxqlq3nBqwXauMp5ZOKsdz9TgY3lpa9alFsslED9Ac2liHCoLriUqnQ0jg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775157351; c=relaxed/relaxed;
-	bh=NbDoSkWyuf2UtwcfBcDHfIppf+MUUewMnqR4Eac2Hcs=;
-	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=SLP5AKwiIMdaZtqZrEGX35Gvqd6WLjriOpsMmKWLJM19dE4GMAFpiqAdB1cta4Aq4evu2AjA8BSBg0x6HdtDivgRZkL3XDw5k5K6io6T5BsGe6LL0+BkNPOfBBvgJ3VEOSAJhNjlspoV+jLnCnGihB0KOfamGvX51XPPtpGjIugmM4bNnYeN0lkr821LhgpJfnHIXoMvl9UE49cQEKhYM7/5mdZSO9cVXKpj/ZMeUBV1tfv9iTft9vuWCcMuClAP6tjfTQ5uOaMO9s0ve1EBuAkHN8oRMuQduKoJVxIK2jLnxbGEIVJBLqdxuE7otvxAMFZCi9eI2tpVpO+FPcvGWw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=raXHMfkD; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1775157987; c=relaxed/relaxed;
+	bh=3PqOUhzsRPx9D5vtzblp2P9mFGliWuzJGA+r6wok8jk=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=XB6xSzUH5h4QnmKfvFVFKF0inzIYILpOGEkw9i8rgLnen9KIzm1Nocq5V4x1dRrtmh35boXhKheerE4QFM+vfhP6eW848KDrFsGTpQpTnB/660g/ZMU2AAU+yD89ATLiLU4OZzFJB2Yihf5gxnmLQB7KbQCRJDjqTji5bYUt0y6wIi5K3/V8KTvBW9N7wyR+ULw4CV3vaxIxE7mcOpuuQivCDFj0GhFgwMogqmCZqyrVlFKulYPhR/IRzeYLIRlglblmytvaYqaZIYBrfAjjGPz7ulP6pyBQJnIrOERsgSBmgdTXprjXKZ8vuhSmZyrRGC3i0oueh+H+hTrfmduuxA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=VJmlyU2f; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=raXHMfkD;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=VJmlyU2f;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fms5L47bNz2xTh
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2026 06:15:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fmsKY747nz2xTh
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2026 06:26:25 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 5610843F3A;
-	Thu,  2 Apr 2026 19:15:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 44CBCC2BC9E;
-	Thu,  2 Apr 2026 19:15:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775157348;
-	bh=P/Vd0gmXyAvoE9rHTTGEhmfJxecRbM3PHJNDjDDNFjI=;
-	h=From:To:In-Reply-To:References:Subject:Date:From;
-	b=raXHMfkDHpKLPDaf1PF9WFIjvxuxDZsll4bhja6AFArdt8zzd0TUWgYBVgzbr6LMU
-	 JM3YvvbhqcdhE4b9ABFLXZq8xCnAO7e21ByjY+qvBHE4enwvV6l/aBUb/aNMHMiJEh
-	 WU3Xlr6k23bVHsRsAHsju5JEeaZXyRdWcle2hNfs0UczWJCuk1Ekeky7jnhtWsChjF
-	 4eIPmQy5I60tOBlUH8cUZ19vrZ87jYuEXxLprm6pYIdyBtaCstckDNy3yj8baBT36M
-	 AsWbuckP1lll25B1vSx+yy5WibDmWhFKKdLCva4si1q+9Hk/rCFns1/FjCvkGlKBmE
-	 Af1feqNlQJ3Ug==
-From: Mark Brown <broonie@kernel.org>
-To: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com, 
- nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, 
- linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- linux-kernel@vger.kernel.org, Shengjiu Wang <shengjiu.wang@nxp.com>
-In-Reply-To: <20260401094226.2900532-1-shengjiu.wang@nxp.com>
-References: <20260401094226.2900532-1-shengjiu.wang@nxp.com>
-Subject: Re: [PATCH v2 00/11] ASoC: fsl: fix mixer-test failures
-Message-Id: <177506428638.145704.927918795289166991.b4-ty@b4>
-Date: Wed, 01 Apr 2026 18:24:46 +0100
+	by sea.source.kernel.org (Postfix) with ESMTP id D5C2244478;
+	Thu,  2 Apr 2026 19:26:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 40095C116C6;
+	Thu,  2 Apr 2026 19:26:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
+	s=korg; t=1775157982;
+	bh=XLkaYuwC8TJumKWLKI6Vqdpwwz2SiUWTGMJT6mO3V9k=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=VJmlyU2fMvJ0khCoy1tyTA7o/BVvGJ9czzpOxX4I4bqpdJtlryV5k/ynLUFFpZkha
+	 gMc07NJW1hL7Bub2F4I1a4k1Qz3ZGwd6bBlsuD1SSsPJYsSDtyw7f7Z/oxcgdcppbR
+	 aUabFPTvkOy2z4MQNc/SpSztOnFwEL6XHe61Nkrk=
+Date: Thu, 2 Apr 2026 12:26:21 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Cc: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, "Harry Yoo (Oracle)"
+ <harry@kernel.org>, linuxppc-dev@lists.ozlabs.org, Harry Yoo
+ <harry.yoo@oracle.com>, Nathan Chancellor <nathan@kernel.org>, Thomas
+ =?ISO-8859-1?Q?Wei=DFschuh?= <thomas.weissschuh@linutronix.de>, Michal
+ Clapinski <mclapinski@google.com>, Thomas Gleixner <tglx@kernel.org>,
+ Steven Rostedt <rostedt@goodmis.org>, Masami Hiramatsu
+ <mhiramat@kernel.org>, linux-mm@kvack.org,
+ linux-trace-kernel@vger.kernel.org, linux-kernel@vger.kernel.org, Srikar
+ Dronamraju <srikar@linux.ibm.com>, Madhavan Srinivasan
+ <maddy@linux.ibm.com>
+Subject: Re: NULL pointer dereference when booting ppc64_guest_defconfig in
+ QEMU on -next
+Message-Id: <20260402122621.566be08b7d16ba082371b5a4@linux-foundation.org>
+In-Reply-To: <6a5f2139-0ff8-40b3-88f9-98d2ea020d6f@efficios.com>
+References: <20260319233745.GA769346@ax162>
+	<abzKcGiRSR_E8lLN@hyeyoo>
+	<7780a471-9d99-40a7-ade7-0c4594ac36c7@efficios.com>
+	<ab1J9ODkX5iChu-C@hyeyoo>
+	<7458d8fd-5922-4e0b-9cd5-91880282aaa3@efficios.com>
+	<7a8faee8-0eb5-4e58-a6d5-ef711791e3f4@efficios.com>
+	<h5qax9x2.ritesh.list@gmail.com>
+	<20260320192153.759d6fec57f04fb653a0dac7@linux-foundation.org>
+	<6a5f2139-0ff8-40b3-88f9-98d2ea020d6f@efficios.com>
+X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,79 +80,31 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.16-dev-efa4b
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2648; i=broonie@kernel.org;
- h=from:subject:message-id; bh=P/Vd0gmXyAvoE9rHTTGEhmfJxecRbM3PHJNDjDDNFjI=;
- b=owEBbQGS/pANAwAKASTWi3JdVIfQAcsmYgBpzsBhv2ShjYA5Aa+ZfiBVEwOP3siXTbB2YSbyV
- 1vjnFbUH6OJATMEAAEKAB0WIQSt5miqZ1cYtZ/in+ok1otyXVSH0AUCac7AYQAKCRAk1otyXVSH
- 0JMJB/0cQz8bfmIZlTYmjvAVfiQcotiZ56KcGDJY0CRaA6X/tw+rzOdJ377N6tNXVtKGRSP7Hm5
- 4Z7rgRLkCNeBcvS/nu5UP258qCAUR/fBxTlC8ZIQ+w5GOwx5TAN2r0A17b4ZK+0MmTmbOOW80hm
- yqNif/LoMEzNu9gziYkvS4zMuV3PwD1EqrOFC3JEoCozPklbK3o+hEi5GZOkzU9oAA85/g7bJ+Y
- zdj0u6Yhtt7K81zLZbdD4a4Bq1H82ps1mFYwzZp0SbkiMSDf7Nvq3mqCpmjykFixeFjj1oB0mta
- JIesTxfWFE0J8qyzM9PNkye/D2Ny+rjZ7R9w1eQM4BoQNolp
-X-Developer-Key: i=broonie@kernel.org; a=openpgp;
- fpr=3F2568AAC26998F9E813A1C5C3F436CA30F5D8EB
 
-On Wed, 01 Apr 2026 17:42:15 +0800, Shengjiu Wang wrote:
-> ASoC: fsl: fix mixer-test failures
+On Thu, 2 Apr 2026 11:30:53 -0400 Mathieu Desnoyers <mathieu.desnoyers@efficios.com> wrote:
+
+> On 2026-03-20 22:21, Andrew Morton wrote:
+> > On Sat, 21 Mar 2026 06:42:41 +0530 Ritesh Harjani (IBM) <ritesh.list@gmail.com> wrote:
+> > 
+> >> Looks like this is causing regressions in linux-next with warnings
+> >> similar to what Harry also pointed out. Do we have any solution for
+> >> this, or are we planning to hold on to this patch[1] and maybe even
+> >> remove it temporarily from linux-next, until this is fixed?
+> > 
+> > Yes, I'll disable this patchset.
 > 
-> Fix mixer-test failures. Mostly the issues are that event is not
-> generated in put operation.
+> Hi Andrew,
 > 
-> changes in v2:
-> - add back event notification in patch 11/11
-> 
-> [...]
+> I have prepared fixes for this issue. On which branch should I rebase
+> them ? Do you still have the HPCC series in your branch or should I
+> send it anew ?
 
-Applied to
+Cool thanks.
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-7.1
-
-Thanks!
-
-[01/11] ASoC: fsl_micfil: Add access property for "VAD Detected"
-        https://git.kernel.org/broonie/sound/c/c7661bfc7422
-[02/11] ASoC: fsl_micfil: Fix event generation in hwvad_put_enable()
-        https://git.kernel.org/broonie/sound/c/59b9061824f2
-[03/11] ASoC: fsl_micfil: Fix event generation in hwvad_put_init_mode()
-        https://git.kernel.org/broonie/sound/c/7e2262099069
-[04/11] ASoC: fsl_micfil: Fix event generation in micfil_range_set()
-        https://git.kernel.org/broonie/sound/c/fc4daaddb276
-[05/11] ASoC: fsl_micfil: Fix event generation in micfil_put_dc_remover_state()
-        https://git.kernel.org/broonie/sound/c/7d2bd35100de
-[06/11] ASoC: fsl_micfil: Fix event generation in micfil_quality_set()
-        https://git.kernel.org/broonie/sound/c/e5785093b1b4
-[07/11] ASoC: fsl_xcvr: Fix event generation in fsl_xcvr_arc_mode_put()
-        https://git.kernel.org/broonie/sound/c/1b61c8103c93
-[08/11] ASoC: fsl_xcvr: Fix event generation in fsl_xcvr_mode_put()
-        https://git.kernel.org/broonie/sound/c/64a496ba9763
-[09/11] ASoC: fsl_easrc: Check the variable range in fsl_easrc_iec958_put_bits()
-        https://git.kernel.org/broonie/sound/c/00541b86fb57
-[10/11] ASoC: fsl_easrc: Fix value type in fsl_easrc_iec958_get_bits()
-        https://git.kernel.org/broonie/sound/c/aa21fe4a8145
-[11/11] ASoC: fsl_easrc: Change the type for iec958 channel status controls
-        https://git.kernel.org/broonie/sound/c/47f28a5bd154
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
+It's best to do a full resend after -rc1 please, presumably against
+mainline.  Show reviewers the latest version, refresh memories, etc.
 
 
