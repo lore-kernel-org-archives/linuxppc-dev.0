@@ -1,70 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-19229-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19230-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68B48D6AAFE
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2026 19:40:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 831D5D6AB00
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2026 19:45:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fmsfF67H7z2xls;
-	Fri, 03 Apr 2026 06:40:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.20
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775158853;
-	cv=none; b=SqyUrMHmzMzH3H72p/sXXDTA+69WVCq9ySTsxOnID91QHv+HE8J+7KhjZO6DpzXe9Wir7+mPs/0GSaxA6fz//GhgtGNpZX2psbLVAJ2tIti22M/shzEIL1DobHrbWIrMaj64ujxDFTF0KV5wnZgIkWoq9DPvkSr/RoLsiyzNpjgIaRvRSMDpBiS+YoZ8Vi5x1X3mdC69rL7V2s2GXWMS0XojYqJXc/rAMYfrbYrmYWKrZXqwEk/3088PgW96wzJxL2yr45crk/1qe6d2A9JD7mmXUpBfvf90PPXN0ywDrpCaF+2UDqykohhR5ytNQLxZ9cvFD3qOXQ0Jb2h3koSb6g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fmsl10xx2z2xls;
+	Fri, 03 Apr 2026 06:45:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775159101;
+	cv=none; b=Vp35bmZEMTlO4e7Nf0DZSY4u77smZWTqpItgxpfAaw5m4Z3/HMYR3YKGGJywm+PaBZoqYC1pQOj+2ygkEP9aneufNDJx0NbYniIs4pbZrtejzi9wJ8Ydx/klLZuX2gZbCTXwfIgUB91c/T4MfroPeiwObiTAjUHNfZTFzryrMezQsQGI5GtR57tYGpCJZMUGtMJu3vQQepqFUw9ygvF1b+7I0lf2d3HhaZ24IwQgWQSWXk1HLetDdAQfDEZ/6lf5YvQYo1kCIgItvI6nAC3qpYj8RPi+w43ZRidIr5Sjws4GQlblQGoam8Q3y2C4UMrAfMYx/fqex5syX4SA2UIKBQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775158853; c=relaxed/relaxed;
-	bh=KS4S9kc/FU21u9E+yXN73X7A8UrqMOTWwcVhtNC0AVs=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=DZ/raD67t4l+hvact1xYu0r5KyQ8SqT/frcfxCT6s3nb7hhXbJwhzOb/XThgLjz0ib6tUPy1f+uotKNv9MnxNOcX5iC6CRDRxd7aZ06vC2X5l8Z+WyQifIzQSnezWEl4mKzoFP1CArhneg0RofkRORdURshI9cTpl7BSQ7vwdYC+xh9E279BJnj/M5GJf9API23YvFtuXWR4jBX0V07fS45NolOuqE5dDDOgx7bHT1fvCY2Z3KJ6vPTrWAoNXdlwTUAiDuR8Ahf3tJhWSSGzurTa+l7UiAu6wD2gjU7jeifWE3z+2HgEoxAH2acUQPk22lfNmYpYTuSGeXO3AzzQMw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=GVokGxBM; dkim-atps=neutral; spf=pass (client-ip=198.175.65.20; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1775159101; c=relaxed/relaxed;
+	bh=jAsotj6i9DlEmJ5B+H/MIg+Y/FLviM3qLCetebP7HzA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Gjhb1dr81wLowMdYU3XBvZVo27m4iwpEinM6zCMF8FSC2gMr0lCM1RgrcyJ6BYTJSdBuecGmu2DXxGh+g3H93q2f+cUXsxMlje6hGMCq+y1eHaVOShWKVdbFhDjGTDTaSi2U7MNcyZEycIJZPA3fPqodUunHOq3jEonUZ79Y1Q2qJcNy3kP0rUDAVZ+gB2sFRtX7Ses8SwRQmtMgp2LBUWxA0rRx4y7HRSXCGUsl9L6j9ps1WayDHAkBJj1je9K30Cd0qn3NiMMsbqVfp4QBmACKQ67cU3rHkfUH7WvZ9JpEZR5znsPdYdVAY/ouAGVXw5WGxnfIqoN/nj6AXnFgng==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lMeYB6cW; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=GVokGxBM;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lMeYB6cW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.20; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fmsfB6Q54z2xTh
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2026 06:40:48 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1775158852; x=1806694852;
-  h=date:from:to:cc:subject:message-id;
-  bh=W4YcQ3+q9g2WU6TgP0LdlHYvyig4DKViKEYJhjwHCDw=;
-  b=GVokGxBMHlv+yo6MQ8SpehOEzrj1su/rUJ+z81p2F59Z5X+j/+c+NJBg
-   6ohDmeUo2F0X3OzMkWh7821rCcUQRoAKS2gkPr7e323hz/bEJF5BOCMBy
-   SFJuIB6mH2Td/aX0xSEUfgcTPyhI2nfEu11xhWnc/ycXBg0moEo5J4pQA
-   KvJztyoLS4z486mTSJf5UDDKcnKrQW98TmuxpDzT4MYREOtrj8TeM81qV
-   NC/xhuWZ50CEO9VJ9DH8ZFq/Ije63bhfLjiRGaWl5Xt1Yc+eKyDs+wCXX
-   opxdaz4PqHJVkJ6bFVP4oXkunc/D5lkrLJ16jo7ttopQstbFjqEuWVNP8
-   A==;
-X-CSE-ConnectionGUID: W/NZPsQ1T9STwI8hG8aw/Q==
-X-CSE-MsgGUID: q+8ZflTJQ0u+C8dDuna2Xg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11747"; a="75946060"
-X-IronPort-AV: E=Sophos;i="6.23,156,1770624000"; 
-   d="scan'208";a="75946060"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
-  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Apr 2026 12:40:45 -0700
-X-CSE-ConnectionGUID: N5ysZ7GVSmesJVGXepv26A==
-X-CSE-MsgGUID: ggI7tPEURCe4n+AyBcZybQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,156,1770624000"; 
-   d="scan'208";a="257542651"
-Received: from lkp-server01.sh.intel.com (HELO 064ad336901d) ([10.239.97.150])
-  by orviesa002.jf.intel.com with ESMTP; 02 Apr 2026 12:40:43 -0700
-Received: from kbuild by 064ad336901d with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1w8NuC-000000000Mf-1wBm;
-	Thu, 02 Apr 2026 19:40:40 +0000
-Date: Fri, 03 Apr 2026 03:39:47 +0800
-From: kernel test robot <lkp@intel.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [powerpc:fixes-test] BUILD SUCCESS
- 328335a79487ec38d6b0e1aa807785b0f75e594d
-Message-ID: <202604030338.LyaSdb91-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fmsl010bfz2xTh
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2026 06:44:59 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 632Crna94101669;
+	Thu, 2 Apr 2026 19:44:21 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=jAsotj
+	6i9DlEmJ5B+H/MIg+Y/FLviM3qLCetebP7HzA=; b=lMeYB6cWzyhaFi4/LhmDWP
+	bRm8V7t5XaWP5vda+vLD4Ply1xPUOwcwphmnAarfDHuf6em0L56HeEr+7edNo8ua
+	kpuxjyp7NmKK/GHfTrEeoFKi0BpMHaYe36ruHBR+mEx2xzENOFQzfP71th3DG4sQ
+	Q4MjFV7rnh7T6tnkKIS+t2+z+FyWMGjYdphzrmt3o6PqoOuu5yJVit709aQoHt4/
+	vbViVXpuJxajaR/gXE+pRKjBejYK4hY0kjqCtJstLvcZkmxKk4eMCvpl+ESqW44Y
+	1zZBrEShhEIEv9f/gwnJCFRUu9v5XM+JCuE72T6LVn7VN9Xr/kC6dkomSVr7bA/Q
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d66q3eah7-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 02 Apr 2026 19:44:20 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 632Ftsxj013987;
+	Thu, 2 Apr 2026 19:44:19 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4d6ttkucvn-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 02 Apr 2026 19:44:19 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 632JiFl651118480
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 2 Apr 2026 19:44:15 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id ED7CB20043;
+	Thu,  2 Apr 2026 19:44:14 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 74B9120040;
+	Thu,  2 Apr 2026 19:44:10 +0000 (GMT)
+Received: from [9.39.19.166] (unknown [9.39.19.166])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu,  2 Apr 2026 19:44:10 +0000 (GMT)
+Message-ID: <3a26c38b-b408-46f4-93d8-0a829e04fb02@linux.ibm.com>
+Date: Fri, 3 Apr 2026 01:14:09 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,211 +80,283 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2] powerpc64/bpf: Add powerpc64 JIT support for timed
+ may_goto
+To: Saket Kumar Bhaskar <skb99@linux.ibm.com>, linux-kernel@vger.kernel.org,
+        bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: sachinpb@linux.ibm.com, venkat88@linux.ibm.com, andrii@kernel.org,
+        eddyz87@gmail.com, ast@kernel.org, daniel@iogearbox.net,
+        martin.lau@linux.dev, song@kernel.org, yonghong.song@linux.dev,
+        john.fastabend@gmail.com, kpsingh@kernel.org, sdf@fomichev.me,
+        haoluo@google.com, jolsa@kernel.org, chleroy@kernel.org,
+        maddy@linux.ibm.com, mpe@ellerman.id.au, adubey@linux.ibm.com
+References: <20260402161026.289827-1-skb99@linux.ibm.com>
+Content-Language: en-US
+From: Hari Bathini <hbathini@linux.ibm.com>
+In-Reply-To: <20260402161026.289827-1-skb99@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: W2_SXwwNJymNvLBKZ7DeCqwkIoAlexmE
+X-Authority-Analysis: v=2.4 cv=frzRpV4f c=1 sm=1 tr=0 ts=69cec714 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=sjD7eUQVPW1qbSBmM3gA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: 8TOzFD48rdEP0f6pDkt23awRtLgiN7Hg
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDAyMDE3MyBTYWx0ZWRfX3ENea5jLjLyH
+ 6qy4B4Pyqs3MP9TpN1D/RrG/fpWTu72tIxMJyS4bZzeP6SqsyMXmXGhgtR7epP9f41ArdBMXRbf
+ hujG4SSXmWfH9O02qypKiKANYic5jn93lKZ0MKQV0dn/xEDTCsTxcpS+tAmRmEWdttV7BIY4Akr
+ 9rRqKl+rJrZIhKNjj84dASMNgQ9ZVG6IRXhlxafKSFxdWkW2/rQa/p3pV72l43ac4J90W2BHebH
+ PxjqnOgmse3uzT2lhSa8ZTGP6I+OjHOhXeQ3Rig7hlPNHrF2GySzknqLJ1SpJn8XKo1qniQD05R
+ 2J4iPGREiWEyDPJxoc/gmrYDWbiQvsq3ld5X31h42tpVLu/9NklbhlbbJLR9G5YbOngijvcND37
+ USmzxkK3HbjvaIgVL9LwSVbwY8B1CO8JjwF7bFrwxmLWW1o2mk5niE40IMKtYn3Xxl4TFnK2WVT
+ X9QPFR8XfEm4sHr7D4g==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-02_03,2026-04-02_05,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 spamscore=0 priorityscore=1501 malwarescore=0 clxscore=1015
+ lowpriorityscore=0 bulkscore=0 adultscore=0 suspectscore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2604020173
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
-branch HEAD: 328335a79487ec38d6b0e1aa807785b0f75e594d  powerpc/powernv/iommu: iommu incorrectly bypass DMA APIs
 
-elapsed time: 744m
 
-configs tested: 190
-configs skipped: 328
+On 02/04/26 9:40 pm, Saket Kumar Bhaskar wrote:
+> When verifier sees a timed may_goto instruction, it emits a call to
+> arch_bpf_timed_may_goto() with a stack offset in BPF_REG_AX
+> (powerpc64 R12) and expects the refreshed count value to be returned
+> in the same register. The verifier doesn't save or restore any registers
+> before emitting this call.
+> 
+> arch_bpf_timed_may_goto() should act as a trampoline to call
+> bpf_check_timed_may_goto() with powerpc64 ELF ABI calling convention.
+> 
+> To support this custom calling convention, implement
+> arch_bpf_timed_may_goto() in assembly and make sure BPF caller saved
+> registers are preserved, then call bpf_check_timed_may_goto with
+> the powerpc64 ABI calling convention where first argument and return
+> value both are in R3. Finally, move the result back into BPF_REG_AX(R12)
+> before returning.
+> 
+> Also, introduce bpf_jit_emit_func_call() that computes the offset from
+> kernel_toc_addr(), validates that the target and emits the ADDIS/ADDI
+> sequence to load the function address before performing the indirect
+> branch via MTCTR/BCTRL. The existing code in bpf_jit_emit_func_call_rel()
+> is refactored to use this function.
+> 
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Looks good to me.
 
-tested configs:
-alpha                             allnoconfig    gcc-15.2.0
-alpha                            allyesconfig    gcc-15.2.0
-alpha                               defconfig    gcc-15.2.0
-arc                              allmodconfig    clang-16
-arc                               allnoconfig    gcc-15.2.0
-arc                              allyesconfig    clang-23
-arc                                 defconfig    gcc-15.2.0
-arc                   randconfig-001-20260402    gcc-11.5.0
-arc                   randconfig-002-20260402    gcc-11.5.0
-arm                               allnoconfig    gcc-15.2.0
-arm                              allyesconfig    clang-16
-arm                                 defconfig    gcc-15.2.0
-arm                         orion5x_defconfig    clang-23
-arm                   randconfig-001-20260402    gcc-11.5.0
-arm                   randconfig-002-20260402    gcc-11.5.0
-arm                   randconfig-003-20260402    gcc-11.5.0
-arm                   randconfig-004-20260402    gcc-11.5.0
-arm                       spear13xx_defconfig    gcc-15.2.0
-arm64                            allmodconfig    clang-23
-arm64                             allnoconfig    gcc-15.2.0
-arm64                               defconfig    gcc-15.2.0
-arm64                 randconfig-001-20260402    gcc-15.2.0
-arm64                 randconfig-002-20260402    gcc-15.2.0
-arm64                 randconfig-003-20260402    gcc-15.2.0
-arm64                 randconfig-004-20260402    gcc-15.2.0
-csky                             allmodconfig    gcc-15.2.0
-csky                              allnoconfig    gcc-15.2.0
-csky                                defconfig    gcc-15.2.0
-csky                  randconfig-001-20260402    gcc-15.2.0
-csky                  randconfig-002-20260402    gcc-15.2.0
-hexagon                          allmodconfig    gcc-15.2.0
-hexagon                           allnoconfig    gcc-15.2.0
-hexagon                             defconfig    gcc-15.2.0
-hexagon               randconfig-001-20260402    clang-18
-hexagon               randconfig-001-20260403    clang-23
-hexagon               randconfig-002-20260402    clang-18
-hexagon               randconfig-002-20260403    clang-23
-i386                             allmodconfig    clang-20
-i386                              allnoconfig    gcc-15.2.0
-i386                             allyesconfig    clang-20
-i386        buildonly-randconfig-001-20260402    clang-20
-i386        buildonly-randconfig-001-20260403    gcc-14
-i386        buildonly-randconfig-002-20260402    clang-20
-i386        buildonly-randconfig-002-20260403    gcc-14
-i386        buildonly-randconfig-003-20260402    clang-20
-i386        buildonly-randconfig-003-20260403    gcc-14
-i386        buildonly-randconfig-004-20260402    clang-20
-i386        buildonly-randconfig-004-20260403    gcc-14
-i386        buildonly-randconfig-005-20260402    clang-20
-i386        buildonly-randconfig-005-20260403    gcc-14
-i386        buildonly-randconfig-006-20260402    clang-20
-i386        buildonly-randconfig-006-20260403    gcc-14
-i386                                defconfig    gcc-15.2.0
-i386                  randconfig-001-20260402    clang-20
-i386                  randconfig-002-20260402    clang-20
-i386                  randconfig-003-20260402    clang-20
-i386                  randconfig-004-20260402    clang-20
-i386                  randconfig-005-20260402    clang-20
-i386                  randconfig-006-20260402    clang-20
-i386                  randconfig-007-20260402    clang-20
-i386                  randconfig-011-20260402    clang-20
-i386                  randconfig-012-20260402    clang-20
-i386                  randconfig-013-20260402    clang-20
-i386                  randconfig-014-20260402    clang-20
-i386                  randconfig-015-20260402    clang-20
-i386                  randconfig-016-20260402    clang-20
-i386                  randconfig-017-20260402    clang-20
-loongarch                        allmodconfig    clang-23
-loongarch                         allnoconfig    gcc-15.2.0
-loongarch                           defconfig    clang-19
-loongarch             randconfig-001-20260402    clang-18
-loongarch             randconfig-001-20260403    clang-23
-loongarch             randconfig-002-20260402    clang-18
-loongarch             randconfig-002-20260403    clang-23
-m68k                             allmodconfig    gcc-15.2.0
-m68k                              allnoconfig    gcc-15.2.0
-m68k                             allyesconfig    clang-16
-m68k                                defconfig    clang-19
-microblaze                        allnoconfig    gcc-15.2.0
-microblaze                       allyesconfig    gcc-15.2.0
-microblaze                          defconfig    clang-19
-mips                             allmodconfig    gcc-15.2.0
-mips                              allnoconfig    gcc-15.2.0
-mips                             allyesconfig    gcc-15.2.0
-nios2                            allmodconfig    clang-23
-nios2                             allnoconfig    clang-23
-nios2                             allnoconfig    gcc-11.5.0
-nios2                               defconfig    clang-19
-nios2                 randconfig-001-20260402    clang-18
-nios2                 randconfig-001-20260403    clang-23
-nios2                 randconfig-002-20260402    clang-18
-nios2                 randconfig-002-20260403    clang-23
-openrisc                         allmodconfig    clang-23
-openrisc                          allnoconfig    clang-23
-openrisc                          allnoconfig    gcc-15.2.0
-openrisc                            defconfig    gcc-15.2.0
-parisc                           allmodconfig    gcc-15.2.0
-parisc                            allnoconfig    clang-23
-parisc                            allnoconfig    gcc-15.2.0
-parisc                           allyesconfig    clang-19
-parisc                              defconfig    gcc-15.2.0
-parisc                randconfig-001-20260402    clang-20
-parisc                randconfig-002-20260402    clang-20
-parisc64                            defconfig    clang-19
-powerpc                          allmodconfig    gcc-15.2.0
-powerpc                           allnoconfig    clang-23
-powerpc                           allnoconfig    gcc-15.2.0
-powerpc               randconfig-001-20260402    clang-20
-powerpc               randconfig-002-20260402    clang-20
-powerpc64             randconfig-001-20260402    clang-20
-powerpc64             randconfig-002-20260402    clang-20
-riscv                            allmodconfig    clang-23
-riscv                             allnoconfig    clang-23
-riscv                             allnoconfig    gcc-15.2.0
-riscv                            allyesconfig    clang-16
-riscv                               defconfig    gcc-15.2.0
-riscv                 randconfig-001-20260402    clang-23
-riscv                 randconfig-002-20260402    clang-23
-s390                             allmodconfig    clang-19
-s390                              allnoconfig    clang-23
-s390                             allyesconfig    gcc-15.2.0
-s390                                defconfig    gcc-15.2.0
-s390                  randconfig-001-20260402    clang-23
-s390                  randconfig-002-20260402    clang-23
-sh                               allmodconfig    gcc-15.2.0
-sh                                allnoconfig    clang-23
-sh                                allnoconfig    gcc-15.2.0
-sh                               allyesconfig    clang-19
-sh                                  defconfig    gcc-14
-sh                    randconfig-001-20260402    clang-23
-sh                    randconfig-002-20260402    clang-23
-sparc                             allnoconfig    clang-23
-sparc                             allnoconfig    gcc-15.2.0
-sparc                               defconfig    gcc-15.2.0
-sparc                 randconfig-001-20260402    gcc-14
-sparc                 randconfig-002-20260402    gcc-14
-sparc64                          allmodconfig    clang-23
-sparc64                             defconfig    gcc-14
-sparc64               randconfig-001-20260402    gcc-14
-sparc64               randconfig-002-20260402    gcc-14
-um                               allmodconfig    clang-19
-um                                allnoconfig    clang-23
-um                               allyesconfig    gcc-15.2.0
-um                                  defconfig    gcc-14
-um                             i386_defconfig    gcc-14
-um                    randconfig-001-20260402    gcc-14
-um                    randconfig-002-20260402    gcc-14
-um                           x86_64_defconfig    gcc-14
-x86_64                           allmodconfig    clang-20
-x86_64                            allnoconfig    clang-20
-x86_64                            allnoconfig    clang-23
-x86_64                           allyesconfig    clang-20
-x86_64      buildonly-randconfig-001-20260402    clang-20
-x86_64      buildonly-randconfig-002-20260402    clang-20
-x86_64      buildonly-randconfig-003-20260402    clang-20
-x86_64      buildonly-randconfig-004-20260402    clang-20
-x86_64      buildonly-randconfig-005-20260402    clang-20
-x86_64      buildonly-randconfig-006-20260402    clang-20
-x86_64                              defconfig    gcc-14
-x86_64                                  kexec    clang-20
-x86_64                randconfig-001-20260402    gcc-14
-x86_64                randconfig-002-20260402    gcc-14
-x86_64                randconfig-003-20260402    gcc-14
-x86_64                randconfig-004-20260402    gcc-14
-x86_64                randconfig-005-20260402    gcc-14
-x86_64                randconfig-006-20260402    gcc-14
-x86_64                randconfig-011-20260402    clang-20
-x86_64                randconfig-012-20260402    clang-20
-x86_64                randconfig-013-20260402    clang-20
-x86_64                randconfig-014-20260402    clang-20
-x86_64                randconfig-015-20260402    clang-20
-x86_64                randconfig-016-20260402    clang-20
-x86_64                randconfig-071-20260402    clang-20
-x86_64                randconfig-072-20260402    clang-20
-x86_64                randconfig-073-20260402    clang-20
-x86_64                randconfig-074-20260402    clang-20
-x86_64                randconfig-075-20260402    clang-20
-x86_64                randconfig-076-20260402    clang-20
-x86_64                               rhel-9.4    clang-20
-x86_64                           rhel-9.4-bpf    gcc-14
-x86_64                          rhel-9.4-func    clang-20
-x86_64                    rhel-9.4-kselftests    clang-20
-x86_64                         rhel-9.4-kunit    gcc-14
-x86_64                           rhel-9.4-ltp    gcc-14
-x86_64                          rhel-9.4-rust    clang-20
-xtensa                            allnoconfig    clang-23
-xtensa                            allnoconfig    gcc-15.2.0
-xtensa                           allyesconfig    clang-23
-xtensa                randconfig-001-20260402    gcc-14
-xtensa                randconfig-002-20260402    gcc-14
+Acked-by: Hari Bathini <hbathini@linux.ibm.com>
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+> Signed-off-by: Saket Kumar Bhaskar <skb99@linux.ibm.com>
+> ---
+> This patch has been rebased on top of these 3 patches on powerpc-next in
+> the following sequence:
+> 1. https://lore.kernel.org/bpf/20260401103215.104438-1-adubey@linux.ibm.com/
+> 2. https://lore.kernel.org/bpf/20260401141043.41513-1-adubey@linux.ibm.com/
+> 3. https://lore.kernel.org/bpf/20260401152133.42544-1-adubey@linux.ibm.com/
+> 
+> Changes since v1:
+> - Compile bpf_timed_may_goto.o conditionally for PPC64. (Hari)
+> - Moved reladdr at the beginning of the function. (Hari)
+> - Added error check for bpf_jit_emit_func_call() in
+>    bpf_jit_build_body(). (Hari)
+> - Save registers after 32 bytes as MIN_FRAME_SIZE is 32 bytes for
+>    powerpc ABIv2. (Hari)
+> ---
+>   arch/powerpc/net/Makefile             |  4 ++
+>   arch/powerpc/net/bpf_jit_comp.c       |  5 +++
+>   arch/powerpc/net/bpf_jit_comp64.c     | 62 ++++++++++++++++++++++-----
+>   arch/powerpc/net/bpf_timed_may_goto.S | 57 ++++++++++++++++++++++++
+>   4 files changed, 117 insertions(+), 11 deletions(-)
+>   create mode 100644 arch/powerpc/net/bpf_timed_may_goto.S
+> 
+> diff --git a/arch/powerpc/net/Makefile b/arch/powerpc/net/Makefile
+> index 8e60af32e51e..87395d7e2672 100644
+> --- a/arch/powerpc/net/Makefile
+> +++ b/arch/powerpc/net/Makefile
+> @@ -3,3 +3,7 @@
+>   # Arch-specific network modules
+>   #
+>   obj-$(CONFIG_BPF_JIT) += bpf_jit_comp.o bpf_jit_comp$(BITS).o
+> +
+> +ifdef CONFIG_PPC64
+> ++obj-$(CONFIG_BPF_JIT) += bpf_timed_may_goto.o
+> +endif
+> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+> index 50103b3794fb..9b2b456b0765 100644
+> --- a/arch/powerpc/net/bpf_jit_comp.c
+> +++ b/arch/powerpc/net/bpf_jit_comp.c
+> @@ -537,6 +537,11 @@ bool bpf_jit_supports_subprog_tailcalls(void)
+>   	return IS_ENABLED(CONFIG_PPC64);
+>   }
+>   
+> +bool bpf_jit_supports_timed_may_goto(void)
+> +{
+> +	return IS_ENABLED(CONFIG_PPC64);
+> +}
+> +
+>   bool bpf_jit_supports_kfunc_call(void)
+>   {
+>   	return IS_ENABLED(CONFIG_PPC64);
+> diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+> index db364d9083e7..dab106cae22b 100644
+> --- a/arch/powerpc/net/bpf_jit_comp64.c
+> +++ b/arch/powerpc/net/bpf_jit_comp64.c
+> @@ -451,10 +451,28 @@ void arch_bpf_stack_walk(bool (*consume_fn)(void *, u64, u64, u64), void *cookie
+>   	}
+>   }
+>   
+> +static int bpf_jit_emit_func_call(u32 *image, struct codegen_context *ctx, u64 func_addr, int reg)
+> +{
+> +	long reladdr = func_addr - kernel_toc_addr();
+> +
+> +	if (reladdr > 0x7FFFFFFF || reladdr < -(0x80000000L)) {
+> +		pr_err("eBPF: address of %ps out of range of kernel_toc.\n", (void *)func_addr);
+> +		return -ERANGE;
+> +	}
+> +
+> +	EMIT(PPC_RAW_ADDIS(reg, _R2, PPC_HA(reladdr)));
+> +	EMIT(PPC_RAW_ADDI(reg, reg, PPC_LO(reladdr)));
+> +	EMIT(PPC_RAW_MTCTR(reg));
+> +	EMIT(PPC_RAW_BCTRL());
+> +
+> +	return 0;
+> +}
+> +
+>   int bpf_jit_emit_func_call_rel(u32 *image, u32 *fimage, struct codegen_context *ctx, u64 func)
+>   {
+>   	unsigned long func_addr = func ? ppc_function_entry((void *)func) : 0;
+> -	long reladdr;
+> +	long __maybe_unused reladdr;
+> +	int ret;
+>   
+>   	/* bpf to bpf call, func is not known in the initial pass. Emit 5 nops as a placeholder */
+>   	if (!func) {
+> @@ -507,16 +525,9 @@ int bpf_jit_emit_func_call_rel(u32 *image, u32 *fimage, struct codegen_context *
+>   	EMIT(PPC_RAW_BCTRL());
+>   #else
+>   	if (core_kernel_text(func_addr)) {
+> -		reladdr = func_addr - kernel_toc_addr();
+> -		if (reladdr > 0x7FFFFFFF || reladdr < -(0x80000000L)) {
+> -			pr_err("eBPF: address of %ps out of range of kernel_toc.\n", (void *)func);
+> -			return -ERANGE;
+> -		}
+> -
+> -		EMIT(PPC_RAW_ADDIS(_R12, _R2, PPC_HA(reladdr)));
+> -		EMIT(PPC_RAW_ADDI(_R12, _R12, PPC_LO(reladdr)));
+> -		EMIT(PPC_RAW_MTCTR(_R12));
+> -		EMIT(PPC_RAW_BCTRL());
+> +		ret = bpf_jit_emit_func_call(image, ctx, func_addr, _R12);
+> +		if (ret)
+> +			return ret;
+>   	} else {
+>   		if (IS_ENABLED(CONFIG_PPC64_ELF_ABI_V1)) {
+>   			/* func points to the function descriptor */
+> @@ -1755,6 +1766,35 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
+>   			if (ret < 0)
+>   				return ret;
+>   
+> +			/*
+> +			 * Call to arch_bpf_timed_may_goto() is emitted by the
+> +			 * verifier and called with custom calling convention with
+> +			 * first argument and return value in BPF_REG_AX (_R12).
+> +			 *
+> +			 * The generic helper or bpf function call emission path
+> +			 * may use the same scratch register as BPF_REG_AX to
+> +			 * materialize the target address. This would clobber AX
+> +			 * and break timed may_goto semantics.
+> +			 *
+> +			 * Emit a minimal indirect call sequence here using a temp
+> +			 * register and skip the normal post-call return-value move.
+> +			 */
+> +
+> +			if (func_addr == (u64)arch_bpf_timed_may_goto) {
+> +				ret = 0;
+> +				if (!IS_ENABLED(CONFIG_PPC_KERNEL_PCREL))
+> +					ret = bpf_jit_emit_func_call(image, ctx, func_addr,
+> +								     tmp1_reg);
+> +
+> +				if (ret || IS_ENABLED(CONFIG_PPC_KERNEL_PCREL)) {
+> +					PPC_LI_ADDR(tmp1_reg, func_addr);
+> +					EMIT(PPC_RAW_MTCTR(tmp1_reg));
+> +					EMIT(PPC_RAW_BCTRL());
+> +				}
+> +
+> +				break;
+> +			}
+> +
+>   			/* Take care of powerpc ABI requirements before kfunc call */
+>   			if (insn[i].src_reg == BPF_PSEUDO_KFUNC_CALL) {
+>   				if (prepare_for_kfunc_call(fp, image, ctx, &insn[i]))
+> diff --git a/arch/powerpc/net/bpf_timed_may_goto.S b/arch/powerpc/net/bpf_timed_may_goto.S
+> new file mode 100644
+> index 000000000000..6fd8b1c9f4ac
+> --- /dev/null
+> +++ b/arch/powerpc/net/bpf_timed_may_goto.S
+> @@ -0,0 +1,57 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +/* Copyright (c) 2025 IBM Corporation, Saket Kumar Bhaskar <skb99@linux.ibm.com> */
+> +
+> +#include <linux/linkage.h>
+> +#include <asm/ppc_asm.h>
+> +
+> +/*
+> + * arch_bpf_timed_may_goto() trampoline for powerpc64
+> + *
+> + * Custom BPF convention (verifier/JIT):
+> + *	- input:  stack offset in BPF_REG_AX (r12)
+> + *	- output: updated count in BPF_REG_AX (r12)
+> + *
+> + * Call bpf_check_timed_may_goto(ptr) with normal powerpc64 ABI:
+> + * 	- r3 = ptr, return in r3
+> + *
+> + * Preserve BPF regs R0-R5 (mapping: r8, r3-r7).
+> + */
+> +
+> +SYM_FUNC_START(arch_bpf_timed_may_goto)
+> +	/* Prologue: save LR, allocate frame */
+> +	mflr    r0
+> +	std     r0, 16(r1)
+> +	stdu    r1, -112(r1)
+> +
+> +	/* Save BPF registers R0 - R5 (r8, r3-r7) */
+> +	std     r3, 32(r1)
+> +	std     r4, 40(r1)
+> +	std     r5, 48(r1)
+> +	std     r6, 56(r1)
+> +	std     r7, 64(r1)
+> +	std     r8, 72(r1)
+> +
+> +	/*
+> +	 * r3 = BPF_REG_FP + BPF_REG_AX
+> +	 * BPF_REG_FP is r31; BPF_REG_AX is r12 (stack offset in bytes).
+> +	 */
+> +	add     r3, r31, r12
+> +	bl      bpf_check_timed_may_goto
+> +
+> +	/* Put return value back into AX */
+> +	mr      r12, r3
+> +
+> +	/* Restore BPF registers R0 - R5 (r8, r3-r7) */
+> +	ld      r3, 32(r1)
+> +	ld      r4, 40(r1)
+> +	ld      r5, 48(r1)
+> +	ld      r6, 56(r1)
+> +	ld      r7, 64(r1)
+> +	ld      r8, 72(r1)
+> +
+> +	/* Epilogue: pop frame, restore LR, return */
+> +	addi    r1, r1, 112
+> +	ld      r0, 16(r1)
+> +	mtlr    r0
+> +	blr
+> +SYM_FUNC_END(arch_bpf_timed_may_goto)
+
 
