@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-19238-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19239-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC3E3D6AB16
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2026 21:51:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BAA38D6AB10
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2026 21:52:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fmwXV35byz2xSX;
-	Fri, 03 Apr 2026 08:51:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775166666;
-	cv=none; b=Orxpqu/Ig70aLr+jdj7F6bOSN03acEBpr4FqPknDKUQct8XOGOPDwKYgZ1td+KPc+HcWOMkD/i14HD14FOhl+b7r+ONNm5momGXoq0ijy4ugYfNDheuFRaM7xt8yOwa1Sl8flvV1muHvu5KLap3OB5Uf/WyjdYxOUShHjyM9n9bKSbER7+HK4VKcUCN4gtTzYEbhw+i6k59fiHurh9U4vvmjAvP4VY94QMIPEbruZcY5jkoxyrgFK1W1luYFL4k6AeddC2fNgbBhm/+IaE+TJEUY/0Evo3suDw+ct6wZwiKWXQDYsv90RYKx34FRhpPByVMjDoQZqH4gHLPq84zJVw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fmwZ02HDGz2xSX;
+	Fri, 03 Apr 2026 08:52:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775166744;
+	cv=none; b=MS5QeddZcbjsIPm81EeGgTdxNuKqgml7oW3CdGGYJxmcF724+mMjFif1Egn1roSRjAsmXMtDUXjI9vZj48Fj/JNSWE5v2XmGEl/1i9KeCtV8qhkpgvWhQVa5NViOtUXWFKMZ+e0H52fYNACnFwlTyH+fPT0XnDPoX4EulwR77Ryv9PKD2aBHFzEt54ONng0nVd/dMu3GlxnSiz5IteCxg3sx3t9pQdooVHnIYuvZnNWz93TfCNkk5Qyuq9W6zz1GGbgl+ORr4mMsqMsDYZFPuEyk56E1K9kxluGAk8MMzydmfF7W4kLQUcF4ebVGpBY7YIJdg1JPR75ZzueEpTkOwA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775166666; c=relaxed/relaxed;
-	bh=tTFw5Jtg7uZ8zWwAcI3IYYHcQiQxS0VORKzkvmn3+m0=;
+	t=1775166744; c=relaxed/relaxed;
+	bh=tJtGw28NxXcSFSYy/qSELfIvyZDRA8Db9+dPmWZ1kyE=;
 	h=Date:From:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=SWGyf3OHkeaFnQ4lZOndq9KA2/I+934zC343o/+Izt/05JVu6cl3C9bIJybgh1dmpDcBpWvY8xku+7j3Ah1uZe1/jIgBbLxgRhQTNhb4M/+27+AmJ0MmyKODvWnjhjWQo0qsi9bcjY2JFbB6K48oS1lERsPwAmm74qziFxPplp8ZQsZUvKnsdP5DvI0CQPj4x1W8yH5RjzTegd2/bmtm+khvVIq00UzQuiKBILz7iHX9GJ9Vws4pr3NZ4mtDms79tgVjFIR+zPxaGPkC2HtC/jxNe+BSeLSmE5i62sulW9QkF3WhIEW1bDpSzQXtLNUtThlE3huJvV9T1Ct0boovJA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uh7N/3FR; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=pjw@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=cWWolAfU9XBpZJ/cGREuw9UNyD3PuVJFQyJSKqSMTmzHEzSFqPJCzZD6G9D30URTqgMzu/ks7TcGgru/420hnlZAQ3eMwODhU/O+KyUebw37izu4NMDA3jKIz4hnss0BF61FyHb1KWhCZ6ZtlWIxBcgy9oNoZNMyOFKglSxqvyj9Sd9Wv7rvM/6eeUdzGDhIaGbWStD1Sz+zfsMCSN0axWZwhpFXmJxUp48HZs4syrk0eLwMEmUDarWRC22zoi8kIIjru5iZ8/ifgmGsWH8pto188oqkjnmEIMc02QBKA6OyHt55oeHjr+wd/4qdELYNvEaQdzPYDo5+qmcf6BDkdw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PTB78iuK; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=pjw@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uh7N/3FR;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PTB78iuK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=pjw@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=pjw@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fmwXT01WPz2xS3;
-	Fri, 03 Apr 2026 08:51:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fmwYz3pHsz2xS3;
+	Fri, 03 Apr 2026 08:52:23 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 0B02160121;
-	Thu,  2 Apr 2026 21:51:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 81CFAC116C6;
-	Thu,  2 Apr 2026 21:50:55 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id D587C43B7D;
+	Thu,  2 Apr 2026 21:52:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9A9D9C116C6;
+	Thu,  2 Apr 2026 21:52:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775166660;
-	bh=+iWo8G+lGLAR0AEWKadkwlt32LjzfIOHKPITuBCakWs=;
+	s=k20201202; t=1775166740;
+	bh=v9zJEeNVmz7NcsMkpOPkdYk7q2EoPoCfcmjxBRbg/Gw=;
 	h=Date:From:To:cc:Subject:In-Reply-To:References:From;
-	b=uh7N/3FRUjqua+aPCo/hGr/AdrmusEl1H/a3Cy2K3ax/7zWAaowq7QLQao9luVbWo
-	 hhp+ELOy56vNZgWo/30UXJ+R+KNwAUX+g9t5upzBm19UO38qCmclRomH9W9JilFn3g
-	 1M3od6tckFksVcXsO4otmEq7oBs2ncVax1WS/48Gk7Y/jRGn5aI6Ty0S32Qrtb3v+N
-	 FCfqxPCfuHXXK+tb8kOeAkmUobWREiK7V0IqzM0OnWy9oCVbOYxajs4XGYlWHY2x7t
-	 AkBA5ON0TiTxqW6AtiPnUW+DWm5PHRBPUIiBBcwzXpeViYkdJ68cXcODxvoTFEl/DM
-	 YZIYLd1IONOQA==
-Date: Thu, 2 Apr 2026 15:50:54 -0600 (MDT)
+	b=PTB78iuKGtB1jnCLkrdAAEbFdUBu6bIVdFt5Wka6j9T73o4DOPCGZwiNrnq4PiEr6
+	 mBFN0TFFR6noe6wbi63LOXrgXpdD106UW3pCqKSxrNzj8GxdtV8MQyp2Vy1SAsdp3d
+	 M6xKXlZbCh0YABGR2JZ5uus7RZzPqgGZDTd9cRTDxhbH89DrUCD35i7ucql2BdpP2E
+	 7ULjB46nbQkz0boFssqZvNz1786uWfD+aGTkjAGmooYiXv+ruQ7/oxb1SnuN7wMHKS
+	 dZy72w3QSkA4WUNCLllLtT+k1bSnFq6cedLa+/KrtjYL9V2SlHZOhBUsWcX1NjRLrv
+	 DcESm7m/FmPPA==
+Date: Thu, 2 Apr 2026 15:52:15 -0600 (MDT)
 From: Paul Walmsley <pjw@kernel.org>
 To: "Vincent Mailhol (Arm)" <mailhol@kernel.org>
 cc: Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nsc@kernel.org>, 
@@ -115,11 +115,11 @@ cc: Nathan Chancellor <nathan@kernel.org>, Nicolas Schier <nsc@kernel.org>,
     linux-samsung-soc@vger.kernel.org, imx@lists.linux.dev, 
     linux-renesas-soc@vger.kernel.org, linux-parisc@vger.kernel.org, 
     openbmc@lists.ozlabs.org
-Subject: Re: [PATCH 2/9] configs: remove orphan dependencies of
- NETFILTER_XTABLES_LEGACY
-In-Reply-To: <20260317-arm_defconf_cleanup-v1-2-8eecb7fdd24d@kernel.org>
-Message-ID: <576cec38-a5e4-5391-2a57-b164e84a813f@kernel.org>
-References: <20260317-arm_defconf_cleanup-v1-0-8eecb7fdd24d@kernel.org> <20260317-arm_defconf_cleanup-v1-2-8eecb7fdd24d@kernel.org>
+Subject: Re: [PATCH 3/9] configs: remove obsolete assignments to
+ CONFIG_NFS_V4_1
+In-Reply-To: <20260317-arm_defconf_cleanup-v1-3-8eecb7fdd24d@kernel.org>
+Message-ID: <2a5bb9cf-3f0c-6069-6412-cd4c5c4e8b78@kernel.org>
+References: <20260317-arm_defconf_cleanup-v1-0-8eecb7fdd24d@kernel.org> <20260317-arm_defconf_cleanup-v1-3-8eecb7fdd24d@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -137,44 +137,22 @@ Content-Type: text/plain; charset=US-ASCII
 
 On Tue, 17 Mar 2026, Vincent Mailhol (Arm) wrote:
 
-> Since its introduction in commit 9fce66583f06 ("netfilter: Exclude
-> LEGACY TABLES on PREEMPT_RT."), the configurations below all depend,
-> either directly or indirectly, on CONFIG_NETFILTER_XTABLES_LEGACY:
+> CONFIG_NFS_V4_1 was revomed in commit 7537db24806f ("NFS: Merge
+> CONFIG_NFS_V4_1 with CONFIG_NFS_V4"). However, some defconfigs are
+> still referring the old configuration.
 > 
->   - CONFIG_NETFILTER_XT_TARGET_CHECKSUM
->   - CONFIG_IP_NF_FILTER
->   - CONFIG_IP_NF_TARGET_REJECT
->   - CONFIG_IP_NF_NAT
->   - CONFIG_IP_NF_TARGET_MASQUERADE
->   - CONFIG_IP_NF_MANGLE
->   - CONFIG_IP6_NF_FILTER
->   - CONFIG_IP6_NF_TARGET_REJECT
->   - CONFIG_IP6_NF_MANGLE
->   - CONFIG_IP6_NF_NAT
->   - CONFIG_IP6_NF_TARGET_MASQUERADE
-> 
-> This new dependency caused many symbols to become orphaned, meaning
-> their dependencies are no longer satisfied and Kconfig drops them from
-> the final configuration.
-> 
-> Note that CONFIG_NFT_COMPAT is another parent dependency, so the
-> above-listed symbols would not become orphaned as long as NFT_COMPAT
-> is present.
-> 
-> Considering that these are legacy options and that nobody complained
-> in recent kernel releases when these options were already missing, it
-> is safe to assume they can be removed.
-> 
-> Suppress all these configuration symbols in all the defconfig files
-> that have neither CONFIG_NETFILTER_XTABLES_LEGACY nor
-> CONFIG_NFT_COMPAT set.
+> Clean-up all the leftover references to CONFIG_NFS_V4_1.
 > 
 > FYI, the suppressions were done using:
 > 
->   git grep -z -L -E '^CONFIG_(NETFILTER_XTABLES_LEGACY|NFT_COMPAT)=(y|m)$' -- 'arch/*/configs/*defconfig' |\
->     xargs -0 sed -i -E '/^CONFIG_(NETFILTER_XT_TARGET_CHECKSUM|IP_NF_FILTER|IP_NF_TARGET_REJECT|IP_NF_NAT|IP_NF_TARGET_MASQUERADE|IP_NF_MANGLE|IP6_NF_FILTER|IP6_NF_TARGET_REJECT|IP6_NF_MANGLE|IP6_NF_NAT|IP6_NF_TARGET_MASQUERADE)=(y|m)$/d'
+>   git grep -z -l '^CONFIG_NFS_V4=' -- 'arch/*/configs/*defconfig' |\
+>     xargs -0 sed -i -E '/^CONFIG_NFS_V4_1=/d'
 > 
-> Fixes: 9fce66583f06 ("netfilter: Exclude LEGACY TABLES on PREEMPT_RT.")
+> CONFIG_NFS_V4_1_IMPLEMENTATION_ID_DOMAIN and CONFIG_NFS_V4_1_MIGRATION
+> were not in scope of the renaming and still use V4_1 in their name, so
+> keep those two untouched.
+> 
+> Fixes: 7537db24806f ("NFS: Merge CONFIG_NFS_V4_1 with CONFIG_NFS_V4")
 > Signed-off-by: Vincent Mailhol (Arm) <mailhol@kernel.org>
 
 Acked-by: Paul Walmsley <pjw@kernel.org> # arch/riscv
