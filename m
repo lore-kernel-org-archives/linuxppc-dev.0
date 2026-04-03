@@ -1,62 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-19271-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19272-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C66AD6AAFC
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2026 12:26:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ADF73E85367
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2026 13:51:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fnHyS4khhz2ygT;
-	Fri, 03 Apr 2026 23:26:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.19
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775201800;
-	cv=none; b=CmtYhS3/UGdgbdmN8cwgbipSa66wzMAKd7Fbh653+nFAMnMduZ0xnmdGccu2AMt8LihQxB/9bOufHFXYNFOxWUflCwBlzlmVlrCriNJ8f8OaQmItuvpA3qWXIk6EJH9XHE2Vxjme2NHvxdWzG7P9HoLj1ptIfEm2Qw+jteaI6flMR6n+4uACTt/crzO6DF/nW2IrZ5BnYcI3JomFOjvxlMM5oAwyMAa0HhEe5zlGZTzH2xFkrRzTJ8LjquEVbcRMm6Vsg6txf5Kh+WxDl3ncK9KPI00Xbq9DLSWTEAOf0ujQzK1S3gsFFWfhCY42zhnUVO1sMFWzPaD70GWoyfBZVA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775201800; c=relaxed/relaxed;
-	bh=p7Y9L4OJMuhbRMFw7kwUwGX6q7lzuCeO9xRBw9z8HZ0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Xh7MnLlXtzWsHDMZBf+tQCaKe1rPob2YepPFEuHDMBcndKNCkBC1ywR2pTt6S2GX+/TdG6e62xvmJFbcSEHOoYtHAsOXPB/sg4mkG1ylZWJINKiCakMz9gdLZIhPsck8qiXTIb5VMkXq3Z9euE8fgQpSx0a/KaCcrb6ccRY08m3Y/Q4XA6JIW4HDkpeCCILn+l5RZRbMEC7rMxqqIEb4D7ftUSte4QcAmaeOm/XDnYi0s4HYJUltBVnj/c4owWBeeJnildNfwDrMbWvV36I3EH1xZ8nlKG4Lwu6EwYW0yCKBGo9dhBnT0DFfX5U1FjddhQ0zEyM3WGt+zMbaPJ7GmA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=SzQGSXUE; dkim-atps=neutral; spf=pass (client-ip=192.198.163.19; helo=mgamail.intel.com; envelope-from=dapeng1.mi@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fnKrC2kWnz2ygH;
+	Sat, 04 Apr 2026 00:51:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c205::5" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775224267;
+	cv=pass; b=mAC+GRIw2Me5cYgFr/LQ17Xsu52uRutGDW6DeATGLGLX7IeqCmgCsQHzNgUfRR78R7YCBrvE3uzBPfmv/ypZ0ZnWsdnG1+Rn/5bMQb5iuyow3FabyDcjR2yg/rPGqhhF30wZ+Msu47x4lalRrcBzShDz7sYm8y3FiCYJsYHad36Rr6KbOCwnGKKUpnAqWe2U00SiPZ+m1lLEQMzBKK01lkuO9eblCaDAzAUiq1rfmecueTzet1PwAaFfXxpAkwMuvcsZVauvXd8YhvqqawdkeQWMwXjXM97AtLGBS/0SmHIlCN2QrDmVS8YKvwVf8ZuqnBcpgZcebOLrZIRan2csyA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1775224267; c=relaxed/relaxed;
+	bh=b+85aZHT3Q/aT1j3ih8ZA8LqUq/NZIvlhXip4s7bXHk=;
+	h=Content-Type:Date:Message-Id:Cc:Subject:From:To:References:
+	 In-Reply-To:MIME-Version; b=iaTSeSVAZIlQWsZf6JtQ8Oz2IgVTNsywhxPHnrG7LOm3EnePT7f7ONI70pHTn7CAKjhPcCp6GpCLsCnxNFcR3qkJDJquncRU6QT63d98KgqQIu8jxDN3koJjf76Zcq2pLUerrpftmm3ekYA9My4fPyGzBHI1A94VUM9GfaSfz3kj55OEYsTveaWiKiHzTtctF5YPs3xLlj4hlX/6xbQ445Zi/KNLiO81uo3Zjqpmb2HAUs9BeZfr+qlMiPG14L+YnpI4O/vc4O3Opj4ZI3gQ30J2HKfXc9rmh/F7u/BXIkGP4HEit6OrZ9nej96b0Km1GgFyHRLWL56O3aFvK4Xsyg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=garyguo.net; dkim=pass (1024-bit key; unprotected) header.d=garyguo.net header.i=@garyguo.net header.a=rsa-sha256 header.s=selector1 header.b=BaEdaPFs; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c205::5; helo=lo0p265cu003.outbound.protection.outlook.com; envelope-from=gary@garyguo.net; receiver=lists.ozlabs.org) smtp.mailfrom=garyguo.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=garyguo.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=SzQGSXUE;
+	dkim=pass (1024-bit key; unprotected) header.d=garyguo.net header.i=@garyguo.net header.a=rsa-sha256 header.s=selector1 header.b=BaEdaPFs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.19; helo=mgamail.intel.com; envelope-from=dapeng1.mi@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=garyguo.net (client-ip=2a01:111:f403:c205::5; helo=lo0p265cu003.outbound.protection.outlook.com; envelope-from=gary@garyguo.net; receiver=lists.ozlabs.org)
+Received: from LO0P265CU003.outbound.protection.outlook.com (mail-uksouthazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c205::5])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fn9X52FKgz2xln
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2026 18:36:34 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1775201797; x=1806737797;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=p7Y9L4OJMuhbRMFw7kwUwGX6q7lzuCeO9xRBw9z8HZ0=;
-  b=SzQGSXUEcPsgXfq5fmSgw9V1BGYSpKCgin99wWw9mmvDXenBiOmJ4Gj7
-   hBqfZe18AoUP4QHUwcW6+9js+DLGms8XoBaeduwnxhOI368NUNHZGsS0m
-   WIXieGU/ioCpMqm0TbX3agnKlX5aGhoTEkO+MJvIkFW/ClvUomIl5afGo
-   Vzz6KimhKQll/gEgIh2D8LEupd14oYjxWODlpE7fGKZs7Q78GgEafbz7/
-   zogp80I6iiR2XCYvBHLVMSEMQfEqY+1YWPr62nmptcjR8iHCysmd1rVPi
-   J8KvX0jVZGfWBXyJrqPc30feNTGM9pSMuU/S9jjlaM/tX7YEaptBVPk8V
-   w==;
-X-CSE-ConnectionGUID: A0oxM9zgQXKxiSOwq85Qig==
-X-CSE-MsgGUID: 2IRmeDB3RKOLbGlkOd5TAg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11747"; a="75308282"
-X-IronPort-AV: E=Sophos;i="6.23,157,1770624000"; 
-   d="scan'208";a="75308282"
-Received: from fmviesa008.fm.intel.com ([10.60.135.148])
-  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Apr 2026 00:36:28 -0700
-X-CSE-ConnectionGUID: wue1cdC4R7qnuG/OQKbPzQ==
-X-CSE-MsgGUID: kDxDuZQ4QYW3K8SqCYnEIQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,157,1770624000"; 
-   d="scan'208";a="224359789"
-Received: from dapengmi-mobl1.ccr.corp.intel.com (HELO [10.124.241.147]) ([10.124.241.147])
-  by fmviesa008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Apr 2026 00:36:23 -0700
-Message-ID: <cf702c86-7dea-44af-8dd2-0c27e19da1b5@linux.intel.com>
-Date: Fri, 3 Apr 2026 15:36:20 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fnKr76tXRz2xN8
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Apr 2026 00:51:02 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=For7Mu5J4qT5DrlolwEREOQ0fsjaxOYlIU9DRbVCcM045EOcy8Wh56lZbCl5xwIglmNAoPtJofAGdRqfAk2Ih8w+2zLAq0IWKnF0+BvH949hZpH8MA1cw8JJUMkUINRb2c+6ft7Ur/m98LK+ug1fiAZy+Y/Njq/kaZpSKbQp1kRn5LspzHrXnh77ZuB/whj3sTMQ3RrRYt+FYY/POCCSBYQq2IyyqX97ZnnzFk6AIpMj1oNVDbVFkpkhU/QuO6yYpaXhUKqBE+QwXNN6tR+bW/KiBEomkVKVO+8rm2aVmnZPyqfk5ky9fepQ4aepYF9M19jjmqgli6tXV2bOW29eqw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=b+85aZHT3Q/aT1j3ih8ZA8LqUq/NZIvlhXip4s7bXHk=;
+ b=ciJpynuen8omBeerwJ3L2VZLn2YSKfbul8ih4EVEwP+vwq+katwJqXp2R+VUOszh0TwnGWQKHP5QVn6wwexdTRjfkKQDuNg2BSto9h/ANKPikB8NT4l8G+yyitAgPfq9CrvkmVEsdjOvvJQd9QFty+M9GiTeYhltOSZUJyKbWI7ayOM2uVapxQFostyo6qm/7nJuGuXe9lYpEYR2h2ja0tpAH13lHW1LJkBEVQjoAFVYlIkJPWz56KmbekP0Xl1OWcIztQHNu6RqjJxfVn8MusnNXsyNb5niWcOLNImvcBKvkideXzBkT/2k56SMXm4PbwlxFGj1cLDSsH5DDtdaoA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=garyguo.net; dmarc=pass action=none header.from=garyguo.net;
+ dkim=pass header.d=garyguo.net; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=garyguo.net;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=b+85aZHT3Q/aT1j3ih8ZA8LqUq/NZIvlhXip4s7bXHk=;
+ b=BaEdaPFsG+uw0468r7Ji3hDJIhJY+dNWlmCvZAuIp4XnmrlICCTTRsFSW8MHrCftWIME+4+vGdapHfTvLibWHcXuhKi4LO/SZEHcQpfwupuVeQPCvMgrMgP8FrqWe6rVx7OAvlHynnmsp9yISu43PnIZOM7e4ixyJnBc6u373Gk=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=garyguo.net;
+Received: from LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:488::16)
+ by LO3P265MB2169.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:105::9) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.20; Fri, 3 Apr
+ 2026 13:50:33 +0000
+Received: from LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
+ ([fe80::1c3:ceba:21b4:9986]) by LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
+ ([fe80::1c3:ceba:21b4:9986%4]) with mapi id 15.20.9769.016; Fri, 3 Apr 2026
+ 13:50:33 +0000
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 03 Apr 2026 14:50:32 +0100
+Message-Id: <DHJKGY0F52GL.14FQPOWWO0F77@garyguo.net>
+Cc: <netdev@vger.kernel.org>, <edumazet@google.com>, <pabeni@redhat.com>,
+ <andrew+netdev@lunn.ch>, <horms@kernel.org>, <jes@trained-monkey.org>,
+ <chenhuacai@kernel.org>, <kernel@xen0n.name>, <tsbogend@alpha.franken.de>,
+ <James.Bottomley@HansenPartnership.com>, <deller@gmx.de>,
+ <maddy@linux.ibm.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
+ <chleroy@kernel.org>, <hca@linux.ibm.com>, <gor@linux.ibm.com>,
+ <agordeev@linux.ibm.com>, <borntraeger@linux.ibm.com>,
+ <svens@linux.ibm.com>, <bhelgaas@google.com>, <dakr@kernel.org>,
+ <kwilczynski@kernel.org>, <ojeda@kernel.org>, <boqun@kernel.org>,
+ <gary@garyguo.net>, <bjorn3_gh@protonmail.com>, <lossin@kernel.org>,
+ <a.hindborg@kernel.org>, <aliceryhl@google.com>, <tmgross@umich.edu>,
+ <ebiggers@google.com>, <ardb@kernel.org>, <tiwai@suse.de>, <tytso@mit.edu>,
+ <enelsonmoore@gmail.com>, <martin.petersen@oracle.com>,
+ <jirislaby@kernel.org>, <gregkh@linuxfoundation.org>,
+ <geert@linux-m68k.org>, <herbert@gondor.apana.org.au>,
+ <vineethr@linux.ibm.com>, <lirongqing@baidu.com>, <kshk@linux.ibm.com>,
+ <vadim.fedorenko@linux.dev>, <dong100@mucse.com>,
+ <wangruikang@iscas.ac.cn>, <hkallweit1@gmail.com>, <kees@kernel.org>,
+ <loongarch@lists.linux.dev>, <linux-mips@vger.kernel.org>,
+ <linux-parisc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-s390@vger.kernel.org>, <linux-pci@vger.kernel.org>,
+ <rust-for-linux@vger.kernel.org>
+Subject: Re: [PATCH net-next] eth: remove the driver for acenic / tigon1&2
+From: "Gary Guo" <gary@garyguo.net>
+To: "Jakub Kicinski" <kuba@kernel.org>, <davem@davemloft.net>
+X-Mailer: aerc 0.21.0
+References: <20260402183029.1236713-1-kuba@kernel.org>
+In-Reply-To: <20260402183029.1236713-1-kuba@kernel.org>
+X-ClientProxiedBy: LO4P123CA0621.GBRP123.PROD.OUTLOOK.COM
+ (2603:10a6:600:294::21) To LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
+ (2603:10a6:600:488::16)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,269 +103,216 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] tools/perf/test: Check for perf stat return code in perf
- all PMU test
-To: "Falcon, Thomas" <thomas.falcon@intel.com>,
- "atrajeev@linux.ibm.com" <atrajeev@linux.ibm.com>,
- "venkat88@linux.ibm.com" <venkat88@linux.ibm.com>,
- "Rogers, Ian" <irogers@google.com>
-Cc: "Kleen, Andi" <andi.kleen@intel.com>,
- "Shivani.Nittor@ibm.com" <Shivani.Nittor@ibm.com>,
- "tmricht@linux.ibm.com" <tmricht@linux.ibm.com>,
- "hbathini@linux.vnet.ibm.com" <hbathini@linux.vnet.ibm.com>,
- "mpetlan@redhat.com" <mpetlan@redhat.com>,
- "Tanushree.Shah@ibm.com" <Tanushree.Shah@ibm.com>,
- "Hunter, Adrian" <adrian.hunter@intel.com>,
- "linux-perf-users@vger.kernel.org" <linux-perf-users@vger.kernel.org>,
- "maddy@linux.ibm.com" <maddy@linux.ibm.com>, "Chen, Zide"
- <zide.chen@intel.com>, "vmolnaro@redhat.com" <vmolnaro@redhat.com>,
- "Tejas.Manhas1@ibm.com" <Tejas.Manhas1@ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "acme@kernel.org" <acme@kernel.org>, "jolsa@kernel.org" <jolsa@kernel.org>,
- "Mi, Dapeng1" <dapeng1.mi@intel.com>,
- "namhyung@kernel.org" <namhyung@kernel.org>
-References: <20260315105751.86835-1-atrajeev@linux.ibm.com>
- <7B7E5C6C-D15A-4B79-925B-B5F3EDD84774@linux.ibm.com>
- <CAP-5=fWxDouXfCV3Xzk5JdouidUOaNqHBfZaf_c9JoEA8Ft-7g@mail.gmail.com>
- <ec33d914a3eb3f8cc1a0ad16bf877ff7284072c9.camel@intel.com>
-Content-Language: en-US
-From: "Mi, Dapeng" <dapeng1.mi@linux.intel.com>
-In-Reply-To: <ec33d914a3eb3f8cc1a0ad16bf877ff7284072c9.camel@intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: LOVP265MB8871:EE_|LO3P265MB2169:EE_
+X-MS-Office365-Filtering-Correlation-Id: a403a136-a0ab-4411-1c28-08de9187fa24
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|1800799024|10070799003|7416014|376014|56012099003|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	WJEsDgxR/9xWNh1HFrejYaoiIoC+Qx0DZzyFr/kdZXc5xbuveigxyERg0B2PA1e73p4DZi0gXjP1xGYV5r2OGoEJ9LlHwoD7szLZ+bpF7c0vjwAajIg09VBlGTR1oQSZwLbDLc+l5DoYDG2d717su1gzvyZn7kC3pJ4+8CQyg+KTQBaIR4z/n2UI9V2UdUJOCvc7WnvIwH+WGb443WXnBC01Rvv3s0WPJ2BW0sK3Uii2ZJh4YjrOaz2jhUGf14LuSTCU9C/UqX0Jt8yZ97qvTqxmxT6fK6OlyGH+dfuEiXej+K5e0DsPJvhAaJivluCOB/cTHaRI8Id0tvps3Z/KmVl3YcS9tdgP9z+7cF9iTt+n15qbtcdullKYdHzmm04owK17JVgZNPRxMbsJ0YvDgzaRtTYtj6+dAzd2tfZ6l91bQ9ZF9hA7Bj1t8EJjhZyvxY2khHA3CRuVoqK5sZu9vwi2XgW36/d9zaVDMDroJiZuvMaA3gDoycsTDvvGvqQg1YntNnh625bqz8cROL6+BIq6pqWoxsoWH72/q8WNvvdFLIvfxqrOdZnFHRN3QN1EHplvTtc8Ho/Dq9mgTnaKM+ct6PoBr21ohjpRAvPk6w7Vm782rZQJrtRx7CfctSoZEr40DNerr4Jlct+J0IEJgWd4VTfXVvjfWQRUBbw5PBm/ha2Tjgtci2N7yukd6lW78KlhUQ1AaCkpuqz/9M6zlYQGikzL7/djiSDRJVzHE+M=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(10070799003)(7416014)(376014)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?Qjd3VjdJUzBoTFB0SjhGeXhIUmJVSml4NCtraHBwdGNYV0M3WG0wOGR4R2xF?=
+ =?utf-8?B?MkViZGE5dVhYdVRWL2tJemU1NzZQZjFZSUFPUzN6T2g5SEoxWUJJYnlWN2dY?=
+ =?utf-8?B?S0dhb0hjTjh5a29BL3l4Y3Q2b0dGemFYbldmVTBQWVBXd1ZvT2RjbG44ZG5v?=
+ =?utf-8?B?UkJ3blRycEQ5Z3Nwc2tCazM5NHM0M1ZOTDFmN0R4UmVhL3A0ay81clVPdEox?=
+ =?utf-8?B?RE1wQXFBZ0FuZmI0RFpNd3lTVVNST1ZPU2tPQXZqZVNFMitaN3R1UkRSWm14?=
+ =?utf-8?B?cU1kVzNDUksxQklRZUdTb1JMUE1KTUZvL0dyaExGVW5wY0pnZXVhNGhJTlY1?=
+ =?utf-8?B?SExHYnY0WE0yVEowLzNrSitZOU5qUU1sNFVlaHNabFB1cVE5SEtaK2ZVdkVF?=
+ =?utf-8?B?WUJadEJwL0hPVDlOelNqT2tFNE5Qa1FJZkZQb096M0JhRmRaSktZWjFTZnpJ?=
+ =?utf-8?B?dUNEcitZQkNJZmMxWGFNWGdKUWpSQTRWNW1ycC85Tkg1RkM4cUpTSDNMWWll?=
+ =?utf-8?B?TzNtUWFISENybEpjNUVvNEEwQnpSKzZCL3VUbXNsMmJ5WkEzRVgybFFVbUNh?=
+ =?utf-8?B?cVRDT3JaQU9STjZLTGNMVlJMQ3gyWEJpWnlVVU01M3pEbHBvQVdGUnRHc25S?=
+ =?utf-8?B?N0dLUXF5SUprK2g4RjZVNURnd2pKT3BQMHBFWHo4bTV5dXBzdk5SdmZ5c2ZQ?=
+ =?utf-8?B?Z1MwYml4d3VFcWkrL25vdGd5aEJIZkVmelJNM0tlczg3czZ2NGNEdlo0YWdW?=
+ =?utf-8?B?WVZub0J6TDV3VmxESDVWRkZuMHpXNS8ydkc3OWNZZGlGK2E4TjkySFhKU3h2?=
+ =?utf-8?B?MkN5WFFkcU5FNjN6R2hkL1BUVU9oa28wRmpFN1hpZjBlb2JLd3lVdmZCZ2Zu?=
+ =?utf-8?B?ZFJPakFGalBTWjltWGtHREhhS0YrNEFsTlcweWJFODdqcXl5dXlRRzc3c0cy?=
+ =?utf-8?B?dmJLaHlJZzJTQmVCSHRodE9mWVlFOWQ5eU1OOHBWdFM2ZEdoMFNXQnZiZmlE?=
+ =?utf-8?B?N2JCN1JKTWhoUmphV2tJbFZiaDBzaUNHbHgyZGppdHdSdTlmSDVYRGhJbHdW?=
+ =?utf-8?B?aWRlUlZZbmtrNFB5N2NyVlNNOW5MMWZGUDIxajRBVHNzY29XeGVUTWJjRENS?=
+ =?utf-8?B?OW9QLzc4NThySGc1TTFmNG1waUV3c1h3cVI3Q1U4RUlXanJoMHVsTWVIaFFB?=
+ =?utf-8?B?NmpwV0NkSlMvMlBrMktMTlFPeGI2Q0I2R1EwQ2p0eU00OWZOdFBmSzlFNmRn?=
+ =?utf-8?B?NUpvSkc5am9YUi9kNnVSRldzRldsanpTb2FuRDh3TlM5OHVoRGJOSjBwdWJI?=
+ =?utf-8?B?QjBhZk9OQTNiVTVkZjJJWW0zVUhYbitLTi9LbTUyanpsMnZEdnVkNmlLQUtY?=
+ =?utf-8?B?bHJvUmVwTVM2RHh2NmZzYnBxNFNsNWM1WWlXWUFvWWZuODM5eGJza29KbmFS?=
+ =?utf-8?B?TldvLzBVQlFPeXBCeGFwL3NXMm84d0o1OTZIU3U5d3Z3S2srZWRqZkNaU2FH?=
+ =?utf-8?B?angrK0NUTUxCWGcvZlFJbmdrazFmbGhFWG1waDZOTi94Z1VRV2c5cU1Bc2pU?=
+ =?utf-8?B?NDlQTm5ZczMzUUpxT3BCUlFrdkVzV0JXaEtmR1JTcDM3SDdUNWx2blVKZnRL?=
+ =?utf-8?B?SXZxWDVMc2w1S2s1bzJxTnB1UjUwL1k1UFhLd0JPOTE5bXZveStoRWQvbFJM?=
+ =?utf-8?B?eTRBalJHQkx1S1liNzZra09Pd1FOQkVCbHlxdkd4N3RZZzErNnljS3lZYk5Y?=
+ =?utf-8?B?dTRsc3d5b3ZCcXdJNHVYdFpkS003VUY1eldwcFhIUmsxYkNXaWNpRm9HaEVI?=
+ =?utf-8?B?UlVaQTN0WG43cXRic3IyRjlieUlNSSsrRnZSWm9SUWpCS0FXamNvWEhQUmdW?=
+ =?utf-8?B?dEsyYkZkT1RKSzE4MDUrLythUnJpSWU0RUFrSTF4MjQwdkt5ci9lbjZQNEgy?=
+ =?utf-8?B?UkM0R0JZQ1ppbHNQVW5tRkVDWndsa2xGeXZHS3c5Yk54ai9RTUNRazVZaHg2?=
+ =?utf-8?B?OXp3ZTN5dFR2WGk5NWg3Mmg2VjMrSVF3UFFyd3k4eDdhU29hNVF0Q2RnOXk4?=
+ =?utf-8?B?dTFiR0ZmQnJkZzRnQ252ZjA3V0VwdWg3c3l3TjVPd0JGY3FCSzZCQ0p0ZGhD?=
+ =?utf-8?B?aWRJTmt4Y01abUovaTU2WUtYUDZ6M1o4MlBnV21WZU80QlpSNDFERFFadkVO?=
+ =?utf-8?B?WlJ4S0VjNkN5QWxUSHhyRVEzbEZPcTQ5VzJkVnV6THY2RHNteE11YjRHNTAr?=
+ =?utf-8?B?SXFtYWhRUUVzZGg2ZFh6ek15aFZLSzk3NS9EZkoyZGZRRmJNZ2VjTGtVTTd2?=
+ =?utf-8?B?Nyt6RU5LYkJoREVuN3hvNTN3Z3pMWDlDOE42ZG52WjJYRkNmNVJUdz09?=
+X-OriginatorOrg: garyguo.net
+X-MS-Exchange-CrossTenant-Network-Message-Id: a403a136-a0ab-4411-1c28-08de9187fa24
+X-MS-Exchange-CrossTenant-AuthSource: LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Apr 2026 13:50:33.7339
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: bbc898ad-b10f-4e10-8552-d9377b823d45
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 4lys3wC0wRiT08h7J/HhggPTBCPA/6j5xitxdtoNyW5doFIQ8AW6NrklewKMekg0KHPiunkBvube/Dc/lNzXzg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LO3P265MB2169
 
-
-On 4/3/2026 1:32 AM, Falcon, Thomas wrote:
-> On Wed, 2026-04-01 at 13:40 -0700, Ian Rogers wrote:
->> On Mon, Mar 23, 2026 at 3:40 AM Venkat <venkat88@linux.ibm.com>
->> wrote:
->>>
->>>
->>>> On 15 Mar 2026, at 4:27 PM, Athira Rajeev
->>>> <atrajeev@linux.ibm.com> wrote:
->>>>
->>>> Currently in "perf all PMU test", for "perf stat -e <event>
->>>> true",
->>>> below checks are done:
->>>> - if return code is zero, look for "not supported" to decide pass
->>>>  scenario
->>>> - check for "not supported" to ignore the event
->>>> - looks for "No permission to enable" to skip the event.
->>>> - If output has "Bad event name", fail the test.
->>>> - Use "Access to performance monitoring and observability
->>>> operations is
->>>>  limited." to ignore fail due to access limitations
->>>>
->>>> If we failed to see event and it is supported, retries with
->>>> longer
->>>> workload "perf bench internals synthesize".
->>>> - Here if output has <event>, the test is a pass.
->>>>
->>>> Snippet of code check:
->>>>  ```
->>>>  output=$(perf stat -e "$p" perf bench internals synthesize 2>&1)
->>>>  if echo "$output" | grep -q "$p"
->>>>  ```
->>>> - if output doesn't have event printed in logs, considers it
->>>> fail.
->>>>
->>>> But this results in false pass for events in some cases.
->>>> Example, if perf stat fails as below:
->>>>
->>>> # ./perf stat -e pmu/event/  true
->>>> event syntax error: 'pmu/event/'
->>>>                     \___ Bad event or PMU
->>>>
->>>> Unable to find PMU or event on a PMU of 'pmu'
->>>> Run 'perf list' for a list of valid events
->>>>
->>>>  Usage: perf stat [<options>] [<command>]
->>>>
->>>>    -e, --event <event>   event selector. use 'perf list' to list
->>>> available events
->>>> # echo $?
->>>> 129
->>>>
->>>> Since this has non-zero return code and doesn't have the
->>>> fail strings being checked in the test, it will enter check using
->>>> longer workload. and since the output fail log has event, it
->>>> declares test as "supported".
->>>>
->>>> Since all the fail strings can't be added in the check, update
->>>> the testcase to check return code before proceeding to longer
->>>> workload run.
->>>>
->>>> Another missing scenario is when system wide monitoring is
->>>> supported
->>>> example:
->>>> # ./perf stat -e pmu/event/ true
->>>> Error:
->>>> No supported events found.
->>>>  Unsupported event (pmu/event/H) in per-thread mode, enable
->>>> system wide with '-a'.
->>>>
->>>> Update testcase to check with "perf stat -a -e $p" as well
->>>>
->>>> Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
->>>> ---
->>> Tested this patch.
->>>
->>>
->>> With this patch:
->>>
->>> Testing hv_24x7/CPM_ADJUNCT_INST/ -- perf stat failed with non-zero
->>> return code
->>> Testing hv_24x7/CPM_ADJUNCT_PCYC/ -- perf stat failed with non-zero
->>> return code
->>>
->>>
->>>
->>> Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
->> Testing on an Intel Alderlake the test is now failing:
->> ```
->> ...
->> Testing offcore_requests_outstanding.l3_miss_demand_data_rd --
->> supported
->> Testing ocr.full_streaming_wr.any_response -- perf stat failed with
->> non-zero return code
->> Testing ocr.partial_streaming_wr.any_response -- perf stat failed
->> with
->> non-zero return code
->> Testing ocr.streaming_wr.any_response -- supported
->> ...
->> ```
->>
->> Running `perf stat` manually reveals an issue with the event:
->> ```
->> $ sudo perf stat -vv -e ocr.full_streaming_wr.any_response -a sleep
->> 1
->> Using CPUID GenuineIntel-6-B7-1
->> Attempt to add: cpu_atom/ocr.full_streaming_wr.any_response/
->> ..after resolving event:
->> cpu_atom/event=0xb7,period=0x186a3,umask=0x1,offcore_rsp=0x8000000100
->> 00/
->> ocr.full_streaming_wr.any_response ->
->> cpu_atom/ocr.full_streaming_wr.any_response/
->> Control descriptor is not initialized
->> ------------------------------------------------------------
->> perf_event_attr:
->>  type                             10 (cpu_atom)
->>  size                             144
->> ------------------------------------------------------------
->> perf_event_attr:
->>  type                             0 (PERF_TYPE_HARDWARE)
->>  config                           0xa00000000
->> (cpu_atom/PERF_COUNT_HW_CPU_CYCLES/)
->>  disabled                         1
->> ------------------------------------------------------------
->> sys_perf_event_open: pid 0  cpu -1  group_fd -1  flags 0x8 = 3
->> ------------------------------------------------------------
->> perf_event_attr:
->>  type                             0 (PERF_TYPE_HARDWARE)
->>  config                           0x400000000
->> (cpu_core/PERF_COUNT_HW_CPU_CYCLES/)
->>  disabled                         1
->> ------------------------------------------------------------
->> sys_perf_event_open: pid 0  cpu -1  group_fd -1  flags 0x8 = 3
->>  config                           0x1b7
->> (ocr.demand_data_rd.l3_hit.snoop_hit_no_fwd)
->>  sample_type                      IDENTIFIER
->>  read_format                     
->> TOTAL_TIME_ENABLED|TOTAL_TIME_RUNNING
->>  disabled                         1
->>  inherit                          1
->>  { bp_addr, config1 }             0x800000010000
->> ------------------------------------------------------------
->> sys_perf_event_open: pid -1  cpu 16  group_fd -1  flags 0x8
->> sys_perf_event_open failed, error -22
->> switching off deferred callchain support
->> Warning:
->> ocr.full_streaming_wr.any_response event is not supported by the
->> kernel.
->> The sys_perf_event_open() syscall failed for event
->> (ocr.full_streaming_wr.any_response): Invalid argument
->> "dmesg | grep -i perf" may provide additional information.
->>
->> Error:
->> No supported events found.
->> The sys_perf_event_open() syscall failed for event
->> (ocr.full_streaming_wr.any_response): Invalid argument
->> "dmesg | grep -i perf" may provide additional information.
->> ```
->>
->> This looks like a latent Intel cpu_atom PMU bug. Thomas, wdyt?
-
-Hmm, it looks the error is caused by the invalid bitmask of OFFCORE_RSP_x
-MSRs. Currently the valid bitmask of OFFCORE_RSP_x MSR is set to
-0x3fffffffff in intel_grt_extra_regs[], while the msr value is set
-0x800000010000 for the ocr.full_streaming_wr.any_response event. The bit 47
-is recognized an invalid bit and then abort the event creation.
-
-Base on the description "Table 21-56. MSR_OFFCORE_RSPx Request Type
-Definition" in SDM, bit 47 should be a valid bit now. Suppose bit 47 should
-not be a valid bit when adding the ADL PMU support, but it's updated and
-becomes valid later.
-
-Along with the constant updates of perf event lists
-(https://github.com/intel/perfmon), we have noticed there are mismatches
-more or less between the driver hardcoded events and perfmon event list.
-Currently we are summarizing the mismatches. Once these mismatches are
-finalized. we would submit a patchset to fix these mismatches.
-
-Thanks.
-
-> +Dapeng, Zide, Andi
+On Thu Apr 2, 2026 at 7:30 PM BST, Jakub Kicinski wrote:
+> The entire git history for this driver looks like tree-wide
+> and automated cleanups. There's even more coming now with
+> AI, so let's try to delete it instead.
 >
-> Thanks,
-> Tom
+> Signed-off-by: Jakub Kicinski <kuba@kernel.org>
+> ---
+> CC: jes@trained-monkey.org
+> CC: chenhuacai@kernel.org
+> CC: kernel@xen0n.name
+> CC: tsbogend@alpha.franken.de
+> CC: James.Bottomley@HansenPartnership.com
+> CC: deller@gmx.de
+> CC: maddy@linux.ibm.com
+> CC: mpe@ellerman.id.au
+> CC: npiggin@gmail.com
+> CC: chleroy@kernel.org
+> CC: hca@linux.ibm.com
+> CC: gor@linux.ibm.com
+> CC: agordeev@linux.ibm.com
+> CC: borntraeger@linux.ibm.com
+> CC: svens@linux.ibm.com
+> CC: bhelgaas@google.com
+> CC: dakr@kernel.org
+> CC: kwilczynski@kernel.org
+> CC: ojeda@kernel.org
+> CC: boqun@kernel.org
+> CC: gary@garyguo.net
+> CC: bjorn3_gh@protonmail.com
+> CC: lossin@kernel.org
+> CC: a.hindborg@kernel.org
+> CC: aliceryhl@google.com
+> CC: tmgross@umich.edu
+> CC: ebiggers@google.com
+> CC: ardb@kernel.org
+> CC: tiwai@suse.de
+> CC: tytso@mit.edu
+> CC: enelsonmoore@gmail.com
+> CC: martin.petersen@oracle.com
+> CC: jirislaby@kernel.org
+> CC: gregkh@linuxfoundation.org
+> CC: geert@linux-m68k.org
+> CC: herbert@gondor.apana.org.au
+> CC: vineethr@linux.ibm.com
+> CC: lirongqing@baidu.com
+> CC: kshk@linux.ibm.com
+> CC: vadim.fedorenko@linux.dev
+> CC: dong100@mucse.com
+> CC: wangruikang@iscas.ac.cn
+> CC: hkallweit1@gmail.com
+> CC: kees@kernel.org
+> CC: loongarch@lists.linux.dev
+> CC: linux-mips@vger.kernel.org
+> CC: linux-parisc@vger.kernel.org
+> CC: linuxppc-dev@lists.ozlabs.org
+> CC: linux-s390@vger.kernel.org
+> CC: linux-pci@vger.kernel.org
+> CC: rust-for-linux@vger.kernel.org
+> ---
+>  MAINTAINERS                                 |    6 -
+>  drivers/net/ethernet/Kconfig                |    1 -
+>  drivers/net/ethernet/alteon/Kconfig         |   47 -
+>  drivers/net/ethernet/Makefile               |    1 -
+>  drivers/net/ethernet/alteon/Makefile        |    6 -
+>  drivers/net/ethernet/alteon/acenic.h        |  791 -----
+>  include/linux/pci_ids.h                     |    2 -
+>  drivers/net/ethernet/alteon/acenic.c        | 3178 -------------------
+>  arch/loongarch/configs/loongson32_defconfig |    1 -
+>  arch/loongarch/configs/loongson64_defconfig |    1 -
+>  arch/mips/configs/cavium_octeon_defconfig   |    1 -
+>  arch/mips/configs/loongson2k_defconfig      |    1 -
+>  arch/mips/configs/loongson3_defconfig       |    1 -
+>  arch/mips/configs/malta_qemu_32r6_defconfig |    1 -
+>  arch/mips/configs/maltaaprp_defconfig       |    1 -
+>  arch/mips/configs/maltasmvp_defconfig       |    1 -
+>  arch/mips/configs/maltasmvp_eva_defconfig   |    1 -
+>  arch/mips/configs/maltaup_defconfig         |    1 -
+>  arch/mips/configs/mtx1_defconfig            |    1 -
+>  arch/parisc/configs/generic-32bit_defconfig |    1 -
+>  arch/parisc/configs/generic-64bit_defconfig |    1 -
+>  arch/powerpc/configs/44x/akebono_defconfig  |    1 -
+>  arch/powerpc/configs/g5_defconfig           |    2 -
+>  arch/powerpc/configs/powernv_defconfig      |    2 -
+>  arch/powerpc/configs/ppc64_defconfig        |    2 -
+>  arch/powerpc/configs/ppc64e_defconfig       |    2 -
+>  arch/powerpc/configs/ppc6xx_defconfig       |    1 -
+>  arch/powerpc/configs/skiroot_defconfig      |    2 -
+>  arch/s390/configs/debug_defconfig           |    1 -
+>  arch/s390/configs/defconfig                 |    1 -
+>  rust/kernel/pci/id.rs                       |    1 -
+>  31 files changed, 4060 deletions(-)
+>  delete mode 100644 drivers/net/ethernet/alteon/Kconfig
+>  delete mode 100644 drivers/net/ethernet/alteon/Makefile
+>  delete mode 100644 drivers/net/ethernet/alteon/acenic.h
+>  delete mode 100644 drivers/net/ethernet/alteon/acenic.c
 >
->> Thanks,
->> Ian
->>
->>> Regards,
->>> Venkat.
->>>
->>>
->>>
->>>> tools/perf/tests/shell/stat_all_pmu.sh | 20 ++++++++++++++++++++
->>>> 1 file changed, 20 insertions(+)
->>>>
->>>> diff --git a/tools/perf/tests/shell/stat_all_pmu.sh
->>>> b/tools/perf/tests/shell/stat_all_pmu.sh
->>>> index 9c466c0efa85..6c4d59cbfa5f 100755
->>>> --- a/tools/perf/tests/shell/stat_all_pmu.sh
->>>> +++ b/tools/perf/tests/shell/stat_all_pmu.sh
->>>> @@ -53,6 +53,26 @@ do
->>>>     continue
->>>>   fi
->>>>
->>>> +  # check with system wide if it is supported.
->>>> +  output=$(perf stat -a -e "$p" true 2>&1)
->>>> +  stat_result=$?
->>>> +  if echo "$output" | grep -q "not supported"
->>>> +  then
->>>> +    # Event not supported, so ignore.
->>>> +    echo "not supported"
->>>> +    continue
->>>> +  fi
->>>> +
->>>> +  # checked through possible access limitations and permissions.
->>>> +  # At this step, non-zero return code from "perf stat" needs to
->>>> +  # reported as fail for the user to investigate
->>>> +  if [ $stat_result -ne 0 ]
->>>> +  then
->>>> +    echo "perf stat failed with non-zero return code"
->>>> +    err=1
->>>> +    continue
->>>> +  fi
->>>> +
->>>>   # We failed to see the event and it is supported. Possibly the
->>>> workload was
->>>>   # too small so retry with something longer.
->>>>   output=$(perf stat -e "$p" perf bench internals synthesize
->>>> 2>&1)
->>>> --
->>>> 2.47.3
->>>>
+> [...]
+>
+> diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+> index 406abf629be2..8608361fac95 100644
+> --- a/include/linux/pci_ids.h
+> +++ b/include/linux/pci_ids.h
+> @@ -1809,8 +1809,6 @@
+>  /* formerly Platform Tech */
+>  #define PCI_DEVICE_ID_ESS_ESS0100	0x0100
+> =20
+> -#define PCI_VENDOR_ID_ALTEON		0x12ae
+> -
+>  #define PCI_SUBVENDOR_ID_CONNECT_TECH			0x12c4
+>  #define PCI_SUBDEVICE_ID_CONNECT_TECH_BH8_232		0x0001
+>  #define PCI_SUBDEVICE_ID_CONNECT_TECH_BH4_232		0x0002
+>
+> [...]
+>
+> diff --git a/rust/kernel/pci/id.rs b/rust/kernel/pci/id.rs
+> index 50005d176561..dc2035a4c175 100644
+> --- a/rust/kernel/pci/id.rs
+> +++ b/rust/kernel/pci/id.rs
+> @@ -428,7 +428,6 @@ fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Res=
+ult {
+>      TRANSMETA                =3D bindings::PCI_VENDOR_ID_TRANSMETA,     =
+           // 0x1279
+>      ROCKWELL                 =3D bindings::PCI_VENDOR_ID_ROCKWELL,      =
+           // 0x127A
+>      ITE                      =3D bindings::PCI_VENDOR_ID_ITE,           =
+           // 0x1283
+> -    ALTEON                   =3D bindings::PCI_VENDOR_ID_ALTEON,        =
+           // 0x12ae
+>      NVIDIA_SGS               =3D bindings::PCI_VENDOR_ID_NVIDIA_SGS,    =
+           // 0x12d2
+>      PERICOM                  =3D bindings::PCI_VENDOR_ID_PERICOM,       =
+           // 0x12D8
+>      AUREAL                   =3D bindings::PCI_VENDOR_ID_AUREAL,        =
+           // 0x12eb
+
+Does the PCI ID needs to be removed? There was a similar change that I reca=
+lled
+and the discussion eventually leads to ID not being removed.
+https://lore.kernel.org/all/20260123033233.16906-1-enelsonmoore@gmail.com/
+
+That said, if the decision is to remove the IDs, then the Rust change is ok=
+ay to
+me
+
+Acked-by: Gary Guo <gary@garyguo.net> # Rust
+
+Best,
+Gary
 
