@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-19255-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19256-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6FDCFD6AB1A
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2026 01:18:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 987B7D6AAFA
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2026 01:18:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fn16z53Fjz2yh4;
-	Fri, 03 Apr 2026 12:17:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775179067;
-	cv=none; b=RCOLfc3ds3fWYi67qQiSIRNOQ08xNi/2SrrcFSrdhyae+tM7vwTdNWRkFn6vx1FDHBTijYlwgB3G5Yrr7hynGCn5ngxJ1fP/8gQh9DA5qFZuhoM0SwU11n2RKOi8pO3x80Hg18mPW9Crs/ytvYRADkUJBxfaXyAiAix2W/NtoIHbrmnDHFkbSNu9sEmPocyu9x164e0GrAqJcagRglbyO/RZIKbVUXbYi6HJCaw+GWwUg/WEIBWCenkkpWcO8BNmPnKdRaaslKCU2fKw0C0SeDDtVDdKq6DasWmdGq0ec9imoj8R9Nq7Jrzsm0bDP7PDo1JMECvgZDecThnRRjUISA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fn1720nH8z2yhZ;
+	Fri, 03 Apr 2026 12:17:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775179070;
+	cv=none; b=P502C4LRF1s85ts98KOaI6cz/+P5/+6EWWv1mW6pPDS1qiAjxc36ZwgIN2KQYLT8WWqZcF6EfX1aCcw86ab1rVjmBZE1oC3rvQw59BqfSqcPLR8qIql11Scm4MhYHz6k0ZDjHatro1wtmbtUCDV+jYGi/jRcrKDpS4oHYcYRI3KC9Gyd1dens34CAw1BpsctObPvInhcnq7/pO3koVdE42dWwyTOt8HlBXRSRxGjWiNvZ87/YlabgAM5hJzZJckeohaEeeQf2QWCFoAKkPpZfvRLfoyQu1+Ano6NY+OmT4MC6FJyS2Xf9AjX4AfacCgEDU5bgWlIXtVVkPdwvgQ8uA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775179067; c=relaxed/relaxed;
-	bh=FWpNEhKxuIUUIH6PFW11SdLLFiwsrOODK1OJRBlsTrY=;
+	t=1775179070; c=relaxed/relaxed;
+	bh=LHN35TomyIfPRPkIHCYjF92GnIolLjpfIctUwiX3YtU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=aN3pk94oknRN5Q7hbWmIhbsNeu/min5OG761FMkgVjhe3PRwgGmLnICXw21KbjoJ8hu5z4MrliOEB7IcBAi5yYEtAxdus0sqF5rYh7Ch/OTgvttzX/fyfTyC+tbNslnJJuhjFL1BVwPTBozszRvdU2W7T6m/kNzY1RgtwBvPakfZUJNjVCkgzITpqVORwUzVfk3B576Dwo9wm8/OI1twIC/jIw2NqmB7F37t+f0oexWWCjYRXPCv2xR0RS34HvYmpGFoXQlQ2Sd7MqlElhun6ai14yNjEmc10iOvHhu5jUuMd23/XbmsAaGNasGW9MZu/to/keXfDEDbvsK+7f87gw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lFimNamV; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=lgd89TEbSq+cDgsf+oB3R02B5UZdbNp/mKbq92tNl4ypupVBZ+DzJXAMXjoSc6f9kxUo6rgKccM+cwoFMrQlhVJXULW0vGdShjaGm/aWSvAsY6TvTIPLI0ipbJ/EkqcN+iwNgDKrdiFbAHvggyQSddiflHseGdRuVIKrETO65Py6a3kUBcEaIz+N0wDDoeGI1EDyrMSFzecr83fL4Ji2e1tAvo0rtxLfLp+WDK76l3DmcbnvfbBLNesBSRlKxO0VHAwnQKheMHs9JWK0RRTaJJnNSSqAi1WQi2S2+69uV9WCRFSz7FKhxPpQvGpDOmnO0XFoatubMmD8XiIITEKCNA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NBRbUbgk; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lFimNamV;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NBRbUbgk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fn16y708Pz2yhV
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2026 12:17:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fn1712Vncz2yhV
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2026 12:17:49 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 69F254177B;
-	Fri,  3 Apr 2026 01:17:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5AECCC116C6;
-	Fri,  3 Apr 2026 01:17:44 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id CCCBE44017;
+	Fri,  3 Apr 2026 01:17:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BF7FAC2BCB0;
+	Fri,  3 Apr 2026 01:17:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775179065;
-	bh=ZWTKc9p3eG4j6Nv/uMVUET78oJCOwONglyv3+fN8tCM=;
+	s=k20201202; t=1775179067;
+	bh=Rg13dO41JuHb3wyGXv+CMSlZCAw+nSPFyVhUygIx8Ks=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=lFimNamVMzqxmN0xN9klnqc6kbFPNAItX3nfPjExbgcJMsZCOs4yH6lbuykfM+lwn
-	 q0w8ig+DYX1TSuT7HxIsUS5qYZaN3wbuYqJs0dAfWcu647ZAVHWL488Q3vqzOWcRjq
-	 hAdC2QhMd1qXd97OtQZlXY86KxecxUyIFHDuB4N1J/Lo3MVTtkQEtO2NOgZH6AMha0
-	 hdah7NG5ewcpBKpyO50DdBr0gH1n7KhfkyLn1tAvy/HUWj01GgAYCUt70P/acfxnQ/
-	 uv5DXZkcQfCxhq+zdblLVD8KLP1hCzIQRdWwJXEB8AxFJn4CMPQ8dNhwM146Exyn0v
-	 8lCP0+KFM4XSQ==
+	b=NBRbUbgk+bgMpenm2PErPtlkiQ/rZme/dpiQyoIhg3+DqVf0+OSNzpbAxKMpXCC3p
+	 ZrxFUhlyAI22ZzXD8J8+n1t8F6Yq8ePqyxvLAqCn9ZangWFa4SWSiaBnPZqDyT/xJr
+	 NhiwEFrprH+XoPogoimKWIoo1LmRXzS/fu8x/bwhO5F99a7XKsYWsyf+CIbF5wa8sF
+	 Hylqd+NfeB0bEMnAmxTXmOlAvWbAWyoKvR4XA4Y2CoO3CrY8Ym38vHHYzVVw0nyJ8N
+	 0GVmzGLC5p458zzb7GGrHVUANijvaFvFuXjUqqTqgZmlIFsk0u+lUUveqv+OMXpRuT
+	 3Ji4GDB7LngOg==
 From: Jakub Kicinski <kuba@kernel.org>
 To: wei.fang@nxp.com
 Cc: Jakub Kicinski <kuba@kernel.org>,
@@ -69,12 +69,12 @@ Cc: Jakub Kicinski <kuba@kernel.org>,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org,
 	imx@lists.linux.dev
-Subject: Re: [PATCH v4 net-next 12/14] net: dsa: netc: add more basic functions support
-Date: Thu,  2 Apr 2026 18:17:43 -0700
-Message-ID: <20260403011743.1795726-1-kuba@kernel.org>
+Subject: Re: [PATCH v4 net-next 13/14] net: dsa: netc: initialize buffer bool table and implement flow-control
+Date: Thu,  2 Apr 2026 18:17:45 -0700
+Message-ID: <20260403011745.1795759-1-kuba@kernel.org>
 X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260331113025.1566878-13-wei.fang@nxp.com>
-References: <20260331113025.1566878-13-wei.fang@nxp.com>
+In-Reply-To: <20260331113025.1566878-14-wei.fang@nxp.com>
+References: <20260331113025.1566878-14-wei.fang@nxp.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,151 +93,75 @@ Content-Transfer-Encoding: 8bit
 This is an AI-generated review of your patch. The human sending this
 email has considered the AI review valid, or at least plausible.
 ---
-net: dsa: netc: add more basic functions support
+net: dsa: netc: initialize buffer bool table and implement flow-control
 
-This patch expands the NETC switch driver with several foundational
-features, including FDB and MDB management, STP state handling, MTU
-configuration, port setup/teardown, and host flooding support.
-
-At this stage, the driver operates only in standalone port mode. Each
-port uses VLAN 0 as its PVID, meaning ingress frames are internally
-assigned VID 0 regardless of whether they arrive tagged or untagged.
-Note that this does not inject a VLAN 0 header into the frame, the VID
-is used purely for subsequent VLAN processing within the switch.
+This commit adds buffer pool initialization and flow control support for the
+NXP netc switch. It maps frame priorities to specific buffer pools and
+configures transmission pause thresholds.
 
 > diff --git a/drivers/net/dsa/netc/netc_main.c b/drivers/net/dsa/netc/netc_main.c
+> index 3609d83ac363..688dceb486c2 100644
 > --- a/drivers/net/dsa/netc/netc_main.c
 > +++ b/drivers/net/dsa/netc/netc_main.c
-
 [ ... ]
-
-> +static int netc_add_standalone_vlan_entry(struct netc_switch *priv)
-> +{
-> +	u32 bitmap_stg = VFT_STG_ID(0) | netc_available_port_bitmap(priv);
-
-Does putting all standalone ports into a single shared VLAN 0 break the DSA
-isolation requirements?
-
-If a user manually adds a static FDB entry to a standalone port, it is
-programmed into VLAN 0. Because all standalone ports reside in this VLAN, a
-frame arriving on one standalone port with a matching destination MAC might
-be hardware-switched directly to another standalone port, bypassing the CPU.
-
-[ ... ]
-
-> +static int netc_port_set_fdb_entry(struct netc_port *np,
-> +				   const unsigned char *addr, u16 vid)
-> +{
-
-[ ... ]
-
-> +	/* If the entry already exists, but not on this port, we need to
-> +	 * update the port bitmap. In general, it should only be valid
-> +	 * for multicast or broadcast address.
+> @@ -386,6 +388,15 @@ static void netc_port_fixed_config(struct netc_port *np)
+>  	/* Enable L2 and L3 DOS */
+>  	netc_port_rmw(np, NETC_PCR, PCR_L2DOSE | PCR_L3DOSE,
+>  		      PCR_L2DOSE | PCR_L3DOSE);
+> +
+> +	/* Set the quanta value of TX PAUSE frame */
+> +	netc_mac_port_wr(np, NETC_PM_PAUSE_QUANTA(0), pqnt);
+> +
+> +	/* When a quanta timer counts down and reaches this value,
+> +	 * the MAC sends a refresh PAUSE frame with the programmed
+> +	 * full quanta value if a pause condition still exists.
 > +	 */
-> +	port_bitmap ^= BIT(port);
-> +	entry->cfge.port_bitmap = cpu_to_le32(port_bitmap);
+> +	netc_mac_port_wr(np, NETC_PM_PAUSE_TRHESH(0), qth);
 
-Can this XOR operation cause multi-port floods during unicast MAC migrations?
-
-When a unicast MAC address moves to a new port, the bridging layer issues an
-ADD for the new port. The XOR operation leaves the old port bit set alongside
-the new port bit. Does the driver need to differentiate between unicast and
-multicast addresses and explicitly overwrite the bitmap for unicast entries?
+This isn't a bug, but there's a typo in the macro name (TRHESH instead of
+THRESH).
 
 [ ... ]
-
-> +static int netc_port_del_fdb_entry(struct netc_port *np,
-> +				   const unsigned char *addr, u16 vid)
+> +static u32 netc_get_buffer_pool_num(struct netc_switch *priv)
 > +{
-> +	struct netc_switch *priv = np->switch_priv;
-> +	struct ntmp_user *ntmp = &priv->ntmp;
-> +	struct netc_fdb_entry *entry;
-> +	int port = np->dp->index;
-> +	u32 port_bitmap;
-> +	int err = 0;
-> +
-> +	mutex_lock(&priv->fdbt_lock);
-> +
-> +	entry = netc_lookup_fdb_entry(priv, addr, vid);
-> +	if (unlikely(!entry))
-> +		goto unlock_fdbt;
-
-Will this prevent dynamically learned FDB entries from being deleted?
-
-Since the CPU port is configured with MLO_HW, the switch hardware dynamically
-learns MAC addresses, but they are not added to the software priv->fdb_list.
-If a user attempts to delete a dynamic entry, the software lookup will fail
-here and return 0 (success), leaving the stale dynamically learned entry
-active in hardware.
-
-[ ... ]
-
-> +static int netc_port_change_mtu(struct dsa_switch *ds,
-> +				int port, int mtu)
-> +{
-> +	u32 max_frame_size = mtu + VLAN_ETH_HLEN + ETH_FCS_LEN;
-> +	struct netc_port *np = NETC_PORT(ds, port);
-> +
-> +	if (dsa_is_cpu_port(ds, port))
-> +		max_frame_size += NETC_TAG_MAX_LEN;
-
-Does this double-count the DSA tag overhead for the CPU port?
-
-The DSA core computes the CPU port's MTU by adding the tagger overhead before
-calling the switch's .port_change_mtu() function. If the maximum MTU of 9582
-bytes is requested, the CPU port receives an MTU of 9596. Adding
-NETC_TAG_MAX_LEN again here results in 9628 bytes, which exceeds the
-hardware limit of 9600 (NETC_MAX_FRAME_LEN) and might lead to truncation.
-
-[ ... ]
-
-> +static int netc_port_fdb_add(struct dsa_switch *ds, int port,
-> +			     const unsigned char *addr, u16 vid,
-> +			     struct dsa_db db)
-> +{
-> +	struct netc_port *np = NETC_PORT(ds, port);
-> +
-> +	/* Currently, we only support standalone port mode, so all VLANs
-> +	 * should be converted to NETC_STANDALONE_PVID.
+> +	/* The BPCAPR register is a read only register, the hardware
+> +	 * guarantees that the BPCAPR_NUM_BP field will not be 0.
 > +	 */
-> +	return netc_port_set_fdb_entry(np, addr, NETC_STANDALONE_PVID);
+> +	return netc_base_rd(&priv->regs, NETC_BPCAPR) & BPCAPR_NUM_BP;
 > +}
+[ ... ]
+> +static void netc_ipv_to_buffer_pool_mapping(struct netc_switch *priv)
+> +{
+> +	int bp_per_port = priv->num_bp / priv->info->num_ports;
+> +	int q = NETC_IPV_NUM / bp_per_port;
+> +	int r = NETC_IPV_NUM % bp_per_port;
 
-Is it safe to silently override user-requested VLAN IDs to VLAN 0?
+If the hardware register read in netc_get_buffer_pool_num() returns a value
+smaller than priv->info->num_ports (for instance, during a bus error or
+reset state), bp_per_port will evaluate to 0.
 
-If a user explicitly attempts to configure a MAC address for a specific VLAN,
-the hardware is programmed for VLAN 0 and returns success. Should this
-instead check if the requested vid is not 0 and not NETC_STANDALONE_PVID,
-and return -EOPNOTSUPP to inform the networking stack?
+Can this lead to a division by zero panic here?
+
+Should priv->num_bp be validated against the number of ports before
+performing this calculation to ensure the driver fails gracefully if the
+hardware returns an unexpected value?
 
 [ ... ]
-
-> +static void netc_port_set_host_flood(struct dsa_switch *ds, int port,
-> +				     bool uc, bool mc)
-> +{
-> +	struct netc_port *np = NETC_PORT(ds, port);
+> diff --git a/drivers/net/dsa/netc/netc_switch_hw.h b/drivers/net/dsa/netc/netc_switch_hw.h
+> index c6a0c0a8ff8a..1e1c0d279a21 100644
+> --- a/drivers/net/dsa/netc/netc_switch_hw.h
+> +++ b/drivers/net/dsa/netc/netc_switch_hw.h
+[ ... ]
+> @@ -145,6 +152,12 @@ enum netc_stg_stage {
+>  #define NETC_PM_IEVENT(a)		(0x1040 + (a) * 0x400)
+>  #define  PM_IEVENT_RX_EMPTY		BIT(6)
+>  
+> +#define NETC_PM_PAUSE_QUANTA(a)		(0x1054 + (a) * 0x400)
+> +#define  PAUSE_QUANTA_PQNT		GENMASK(15, 0)
 > +
-> +	if (np->uc == uc && np->mc == mc)
-> +		return;
-> +
-> +	/* IPFT does not support in-place updates to the KEYE element,
-> +	 * so we need to delete the old IPFT entry and then add a new
-> +	 * one.
-> +	 */
-> +	if (np->host_flood)
-> +		netc_port_remove_host_flood(np);
-> +
-> +	if (netc_port_add_host_flood_rule(np, uc, mc))
-> +		dev_err(ds->dev, "Failed to add host flood rule on port %d\n",
-> +			port);
-> +}
+> +#define NETC_PM_PAUSE_TRHESH(a)		(0x1064 + (a) * 0x400)
+> +#define  PAUSE_TRHESH_QTH		GENMASK(15, 0)
 
-Could this permanently lose the host flood configuration if the new rule
-addition fails?
-
-If the call to netc_port_add_host_flood_rule() fails (for example, due to
--ENOMEM), the function logs an error and returns, leaving the port entirely
-without a host flood rule. Should the driver revert to the previous
-configuration on failure to avoid blackholing traffic meant for the CPU?
+This isn't a bug, but there's a typo in the macro names here as well
+(TRHESH instead of THRESH).
 
