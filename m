@@ -1,73 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-19284-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19285-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27BEFE85388
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2026 17:41:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21D1CE85388
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2026 17:41:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fnQyL27tDz2yjp;
-	Sat, 04 Apr 2026 04:41:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fnQyQ5gzwz2ynh;
+	Sat, 04 Apr 2026 04:41:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775238106;
-	cv=none; b=UYwMus3rOO9ygLU18iEyDOtGF7FMA1SFryq8k1DkP3c8tQM8rVWOeckkbYJmMzjAesUDmWHpKt+nupEKDBJhMWUSuQyRGoglzPs09WhwSVW2xMgWaOgCP3nRjB16sR00RQJf4x99aDsEbHYtEd/BWbpJO1AjqxYaN+x3Qnz3OtrFlUTF1fn170K7kTQS5UeHwm+BYU7VMLKct9sLiU4FDxWKzRuMRH1i2N2N9lvC1ceLr5FnyPOO1n8B6dTbYNwtWGo6b79D2VB0oozreEfCYvKOHCgDYSV4IA7c4C9mTuaMrZTpNx5hiO74vDwWrdV2tDhHInJ89cicFVn8WZULzg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775238110;
+	cv=none; b=PqciN+vlKIk7m9pN4AaSV966KgmS5lO/2hoMgikzdGcLk89Uh2PrPdlRR+V/zW5E06rsHhaf2ExY/03DNDvXV/yBJfniYTcGVwPu1S6rXW3ZG/E/LSWve+hLe/vK1O4MBd1hTo9Q/rUUQs7dYWx3hR0gjPkyoJ+MepWAH8Eia02K6RZkFPnbRHwHj+TFVl/9DhRSZf0lSCqS8q18EMHGrc92p/0NlCCQp90p56Syl8ivOJWg80mCzPB1zTZSBK3CGakcBNRssjQlOQZig62nbIF5YnGFDDtf34CCIrcJwPcAS63EAU8sQCl82IPFFlkPeoiyJcziNxdfa4eFw+apZA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775238106; c=relaxed/relaxed;
-	bh=SN7zsG2ScCpIacyjlZ3u4/94eWE+weu3dkGlkVIEV/g=;
+	t=1775238110; c=relaxed/relaxed;
+	bh=XkxScTQSBH039AIlOz7s4kDxGFGT8EvumFs+M+Lv59s=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PJPZJGXFo45TYM4as4KswxMcaVDgJMzisDKjfzBvq1nyNewFRzlakQvSOcFaV3z/so/DKcX6CaCDC+dMxLMISupPOCGecj6no5pL4EPUW2U3aTCBAQGIYgseIBE46UpVzY4rbul9fMgzP/TUCF2qjmSAXvYD0aCezyfWdJXCn+uE0v/0usilRrVu/f2bLXcajXKoq6hdkyD7C/F1Xv1o8UJDyUVCw4fIcCfN69kciphCasLHyvinF8jtWx9kTR8nhtJ9Cf9mtgIFqrfzT8t7XaCukQ6DynHBjzd/jUWiRaObT7sYGhZt4wwLL06E9o9gp9G7mjfVWWcPlHIKboL+FA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=smzJ/XWD; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 In-Reply-To:Content-Type; b=mT2PKnQ5k545rCL90o6LZkxDTLKtsy6Xk2B7PxwrY/TYHJ7lM2ArjtPGGoLbFA9ed0EljKgkpx6pVscxSWdJUMrhHz+AC/hNlPewlqfgoa7dnAH54OQMwLOMDlwxwvlvGB1T8qFf5AuImZQtMywJJoQ84QxOdq/VC1gwgnrb+4F4cpG/MPqJXib3KeXyoBH+dhjE9YiMb+t66Rm7uZ0bkSuKPSddJ2DL9x7Fk6i1AmDmwYEm7oBZeYsO6j7USUT4j3fYOGGsRWMyLhCWeaRNZEzUvHr8NxooPAnCkkOuzQV3RSIIqbOWh/Byksy2UHaORbqVZguf/O07CeKLSpoI1A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=d7GbwScI; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=smzJ/XWD;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=d7GbwScI;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fnQyK1QYVz2yjn
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Apr 2026 04:41:44 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6333pq0C337199;
-	Fri, 3 Apr 2026 17:41:34 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fnQyQ0CFvz2yjn
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Apr 2026 04:41:49 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6339bDlG270868;
+	Fri, 3 Apr 2026 17:41:40 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=SN7zsG
-	2ScCpIacyjlZ3u4/94eWE+weu3dkGlkVIEV/g=; b=smzJ/XWDfOUPHCGidISTNV
-	L/C1g26RBv4tDqNMI4T/VSCxRtQlFje3/ylo+L1szf1Yzzy1+NdTQOKzCwO3ZBDt
-	PLvUui3RkE0C0mtzjMOaKgT1iJsP9zsR+oWe8gd/+p1fZ1xxvhOQKDMZJWLryOsT
-	5WZ3eUNZ/cdrIklkn1h51w3UsPD7cisxYBW+VyPNvjOTZTv+2fjcEXZr/ahGyz+1
-	fNusO7slpM6NM2qrUjRYvSMT3zquXdZVuCIsx5ITtkqa66aW77hb/eXkdJThb+aS
-	Jv4JZEwTCthlGtb3oJbW8lHPoULgsIojfQJVwKJUSmUZIYhnptOgjzZox5H4KzMg
+	:message-id:mime-version:references:subject:to; s=pp1; bh=XkxScT
+	QSBH039AIlOz7s4kDxGFGT8EvumFs+M+Lv59s=; b=d7GbwScI33XM97muP/sQQH
+	5qqHFFGrHElotpalSLY9r/kORDfjrKTAaGWQWQN61zeW4go4wVSm3smFVNCJRScF
+	EXKlVXxSJdfTlImO7aL7mI29hocZXihwf9s4f87O5enYVX6sbmQlLQoheziW9x8G
+	1wCeq+HGxYc8ypqI1QhHnOuaOKrowRZsWvZJTJobIS3Dx303xncRxCXawO2qMrbG
+	E0YwWoiXnmBzPokeWLL0832nchHvrPrbAYZTOLi+2pRT+KgChexqQzb4sIsLtY7v
+	leB/FEl21at9my174AY2kFtKfCTegWcLElHhxQL7C8P3pLCKcxoCp0UKgefsnVaA
 	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d66msgk56-1
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d65dcrmyf-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 03 Apr 2026 17:41:33 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 633DZWjL022165;
-	Fri, 3 Apr 2026 17:41:33 GMT
-Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4d6tanewhe-1
+	Fri, 03 Apr 2026 17:41:39 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 633D3UWp005947;
+	Fri, 3 Apr 2026 17:41:38 GMT
+Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4d6spyf0tq-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 03 Apr 2026 17:41:33 +0000
+	Fri, 03 Apr 2026 17:41:38 +0000
 Received: from smtpav02.wdc07v.mail.ibm.com (smtpav02.wdc07v.mail.ibm.com [10.39.53.229])
-	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 633HfWmK51052844
+	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 633Hfcu319268314
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 3 Apr 2026 17:41:32 GMT
+	Fri, 3 Apr 2026 17:41:38 GMT
 Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2BEE35805C;
+	by IMSVA (Postfix) with ESMTP id 55B115805B;
+	Fri,  3 Apr 2026 17:41:38 +0000 (GMT)
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C286058058;
 	Fri,  3 Apr 2026 17:41:32 +0000 (GMT)
-Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C2BF658058;
-	Fri,  3 Apr 2026 17:41:26 +0000 (GMT)
 Received: from [9.124.211.212] (unknown [9.124.211.212])
 	by smtpav02.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Fri,  3 Apr 2026 17:41:26 +0000 (GMT)
-Message-ID: <f0905481-3ed3-49e6-a25d-4b58dca7493c@linux.ibm.com>
-Date: Fri, 3 Apr 2026 23:11:25 +0530
+	Fri,  3 Apr 2026 17:41:32 +0000 (GMT)
+Message-ID: <d48fe27a-75e6-4431-8a0a-427e79adc84e@linux.ibm.com>
+Date: Fri, 3 Apr 2026 23:11:26 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,152 +82,185 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 08/13] selftests/mm: ensure destination is
- hugetlb-backed in hugepage-mremap
-To: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>,
-        "David Hildenbrand (Arm)" <david@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
-        linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-        linux-kselftest@vger.kernel.org,
-        Ritesh Harjani <ritesh.list@gmail.com>, Zi Yan <ziy@nvidia.com>,
-        Michal Hocko <mhocko@kernel.org>, Oscar Salvador <osalvador@suse.de>,
+Subject: Re: [PATCH v3 07/13] selftest/mm: register existing mapping with
+ userfaultfd in hugepage-mremap
+To: "David Hildenbrand (Arm)" <david@kernel.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Shuah Khan <shuah@kernel.org>, linux-mm@kvack.org,
+        linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org,
+        Ritesh Harjani <ritesh.list@gmail.com>
+Cc: Zi Yan <ziy@nvidia.com>, Michal Hocko <mhocko@kernel.org>,
+        Oscar Salvador <osalvador@suse.de>,
         Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
         Dev Jain <dev.jain@arm.com>, Liam.Howlett@oracle.com,
         linuxppc-dev@lists.ozlabs.org,
         Venkat Rao Bagalkote <venkat88@linux.ibm.com>
 References: <cover.1774591179.git.sayalip@linux.ibm.com>
- <3b6ffba238a4b59de891acf896fa25d7d3193228.1774591179.git.sayalip@linux.ibm.com>
- <ee15d52f-45df-415b-b0d9-3d267d147e5c@kernel.org>
- <b590a17c-13ed-45f4-9f51-ac662d00e7bf@lucifer.local>
- <066a146b-7dbb-408e-bbc0-542bdcdd6681@linux.ibm.com>
- <86889304-c450-491c-8c06-48ca9c973531@kernel.org>
- <0a1befae-1037-4bbe-b976-352ef4607d2a@lucifer.local>
+ <b3a1760e4583340e767d4045b90784ee41c8773e.1774591179.git.sayalip@linux.ibm.com>
+ <142f8c68-43c7-4a6a-bd2c-1c5ebda09b27@kernel.org>
+ <7b6652f3-c994-4ef4-87a4-5473cd1254b7@linux.ibm.com>
+ <a1527067-0d49-48dd-85c5-06b628471424@kernel.org>
 Content-Language: en-IN
 From: Sayali Patil <sayalip@linux.ibm.com>
-In-Reply-To: <0a1befae-1037-4bbe-b976-352ef4607d2a@lucifer.local>
+In-Reply-To: <a1527067-0d49-48dd-85c5-06b628471424@kernel.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=J6enLQnS c=1 sm=1 tr=0 ts=69cffbce cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+X-Authority-Analysis: v=2.4 cv=RsjI7SmK c=1 sm=1 tr=0 ts=69cffbd3 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
  a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=qm_7xFvvd-ZT-DRSKOsA:9
- a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDAzMDE1NCBTYWx0ZWRfX1VHUKzgO50IW
- zvSScUYH15e61j8Mv/U00EaX/WTpP05OR2CYzs8NKhgM+GO3Uj4KwE3TvlPw8diHp36rvvTanHG
- xijcOQaNkXR5wwTpnHo5g67lJpmeAH9pFMr9wiZYtIPt23DZWKyoLkJaDEeV+YOV3QvFG2/tTj0
- sow/eEbTFcu0VNa2ROV5kbculLiViT+036AuUWiJGCVydzCnIBg9s7K2t5CqI2oGNFq+DepgpAL
- Lcq5KGksob+yDhcHt+gH5EmlGwdNPEtOfB7aMKM9uwwXkT0fiYns2qEsOIvchQO+gV1gaVVtOwF
- /VMGxdkl9p7wFtwz7uEpoMuiJw+dNlPF6lg6bdBXl+x7WuDZ9d1CtFXTKpE3C/+eALxp5ZRN58Q
- SyNxLVRhdmsFdHBcARWdh/mxIdNyLQyFfH6fku+nFyGj4HCbrF9NpbNsVrPvfpFvv7X30GSZeUw
- 0uIPfLIS+p/RPJ+DgwA==
-X-Proofpoint-GUID: NkR5wdTsKaLFNCkn1t8m49sbou6P4J0W
-X-Proofpoint-ORIG-GUID: FiviqhHb2Gp9AyqAPb-0lbZGviYveWRG
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8
+ a=VwQbUJbxAAAA:8 a=mgfXflzu82Chz1Ycc7MA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: jyrK17GrSu3fk7v3w_MYtr3q3dtVP1Ud
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDAzMDE1NCBTYWx0ZWRfX4L05kWTBg2oF
+ YCgJXnPDx3h+vpsD7qvf5j1A+2q6dUnNBGWMNaXgqqs9CY5ZsN5T7L+JAOJBd9aD1cw1TmZjJBs
+ XKiT7LbCE+aZmA+6SQYi2rQxt99/2RTZiTKCl8gjBoJ9Wpnhc0AUIpTfsouYHHz4e/XIC9Xujxo
+ AUkpfgTZZGUVwrmvMC5owzLNCAG+XXyUB2K6tt7xgMuSpWHH1kBxrAPJbobpmcToLBhwjipmoPK
+ 3ulaeFeF07Bo6TJLt72eYsoAQQ33w3k69nYMQDXKDU/GW7C81y1rgad4xhh6x8kdMApGULU/Hut
+ S2CF2ZTT3CA1G5e2CVpjzw4pD5fOSOPISBHOZpGmSfPFIZzYcoUpVDcXBmPrJmJksplf5ZdZtYv
+ VDJGfHiI3HyC2tM19GoI05tx6cP1U4yu4YYUBbt14wh8n91JfIdrdspAZAuomdF/3jL7Y3rsQvd
+ 2lv0DDtooZyQrrYyRTw==
+X-Proofpoint-ORIG-GUID: t7yKBDzj05PTTN_bQv44gKStj1pyEK9R
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-04-03_05,2026-04-03_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 clxscore=1015 adultscore=0 priorityscore=1501 bulkscore=0
- phishscore=0 malwarescore=0 lowpriorityscore=0 spamscore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2604030154
+ impostorscore=0 bulkscore=0 priorityscore=1501 lowpriorityscore=0
+ suspectscore=0 malwarescore=0 spamscore=0 clxscore=1015 phishscore=0
+ adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
+ definitions=main-2604030154
 
 
 
-On 02/04/26 14:35, Lorenzo Stoakes (Oracle) wrote:
-> On Thu, Apr 02, 2026 at 09:33:29AM +0200, David Hildenbrand (Arm) wrote:
->> On 4/1/26 22:39, Sayali Patil wrote:
+On 02/04/26 13:01, David Hildenbrand (Arm) wrote:
+> On 4/1/26 16:43, Sayali Patil wrote:
+>>
+>> On 01/04/26 19:48, David Hildenbrand (Arm) wrote:
+>>> On 3/27/26 08:16, Sayali Patil wrote:
+>>>> Previously, register_region_with_uffd() created a new anonymous
+>>>> mapping and overwrote the address supplied by the caller before
+>>>> registering the range with userfaultfd.
+>>>>
+>>>> As a result, userfaultfd was applied to an unrelated anonymous mapping
+>>>> instead of the hugetlb region used by the test.
+>>>>
+>>>> Remove the extra mmap() and register the caller-provided address range
+>>>> directly using UFFDIO_REGISTER_MODE_MISSING, so that faults are
+>>>> generated for the hugetlb mapping used by the test.
+>>>>
+>>>> This ensures userfaultfd operates on the actual hugetlb test region and
+>>>> validates the expected fault handling.
+>>>>
+>>>> Before patch:
+>>>>   running ./hugepage-mremap
+>>>>   -------------------------
+>>>>   TAP version 13
+>>>>   1..1
+>>>>    Map haddr: Returned address is 0x7eaa40000000
+>>>>    Map daddr: Returned address is 0x7daa40000000
+>>>>    Map vaddr: Returned address is 0x7faa40000000
+>>>>    Address returned by mmap() = 0x7fff9d000000
+>>>>    Mremap: Returned address is 0x7faa40000000
+>>>>    First hex is 0
+>>>>    First hex is 3020100
+>>>>   ok 1 Read same data
+>>>>   Totals: pass:1 fail:0 xfail:0 xpass:0 skip:0 error:0
+>>>>   [PASS]
+>>>>   ok 1 hugepage-mremap
+>>>>
+>>>> After patch:
+>>>>   running ./hugepage-mremap
+>>>>   -------------------------
+>>>>   TAP version 13
+>>>>   1..1
+>>>>    Map haddr: Returned address is 0x7eaa40000000
+>>>>    Map daddr: Returned address is 0x7daa40000000
+>>>>    Map vaddr: Returned address is 0x7faa40000000
+>>>>    Registered memory at address 0x7eaa40000000 with userfaultfd
+>>>>    Mremap: Returned address is 0x7faa40000000
+>>>>    First hex is 0
+>>>>    First hex is 3020100
+>>>>   ok 1 Read same data
+>>>>   Totals: pass:1 fail:0 xfail:0 xpass:0 skip:0 error:0
+>>>>   [PASS]
+>>>>   ok 1 hugepage-mremap
+>>> Okay, so we tested mremap() of something that is not even hugetlb.
+>>>
+>>>> Fixes: 12b613206474 ("mm, hugepages: add hugetlb vma mremap() test")
+>>>> Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+>>>> Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
+>>>> ---
+>>>>   tools/testing/selftests/mm/hugepage-mremap.c | 21 +++++---------------
+>>>>   1 file changed, 5 insertions(+), 16 deletions(-)
+>>>>
+>>>> diff --git a/tools/testing/selftests/mm/hugepage-mremap.c b/tools/testing/selftests/mm/hugepage-mremap.c
+>>>> index b8f7d92e5a35..e611249080d6 100644
+>>>> --- a/tools/testing/selftests/mm/hugepage-mremap.c
+>>>> +++ b/tools/testing/selftests/mm/hugepage-mremap.c
+>>>> @@ -85,25 +85,14 @@ static void register_region_with_uffd(char *addr, size_t len)
+>>>>   	if (ioctl(uffd, UFFDIO_API, &uffdio_api) == -1)
+>>>>   		ksft_exit_fail_msg("ioctl-UFFDIO_API: %s\n", strerror(errno));
+>>>>   
+>>>> -	/* Create a private anonymous mapping. The memory will be
+>>>> -	 * demand-zero paged--that is, not yet allocated. When we
+>>>> -	 * actually touch the memory, it will be allocated via
+>>>> -	 * the userfaultfd.
+>>>> -	 */
+>>>> -
+>>>> -	addr = mmap(NULL, len, PROT_READ | PROT_WRITE,
+>>>> -		    MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+>>>> -	if (addr == MAP_FAILED)
+>>>> -		ksft_exit_fail_msg("mmap: %s\n", strerror(errno));
+>>>> -
+>>>> -	ksft_print_msg("Address returned by mmap() = %p\n", addr);
+>>>> -
+>>>> -	/* Register the memory range of the mapping we just created for
+>>>> -	 * handling by the userfaultfd object. In mode, we request to track
+>>>> -	 * missing pages (i.e., pages that have not yet been faulted in).
+>>>> +	/* Register the passed memory range for handling by the userfaultfd object.
+>>> /*
+>>>   * ...
+>>>
+>>> While at it.
+>>>
+>>>> +	 * In mode, we request to track missing pages
+>>>> +	 * (i.e., pages that have not yet been faulted in).
+>>>>   	 */
+>>>>   	if (uffd_register(uffd, addr, len, true, false, false))
+>>>>   		ksft_exit_fail_msg("ioctl-UFFDIO_REGISTER: %s\n", strerror(errno));
+>>>> +
+>>>> +	ksft_print_msg("Registered memory at address %p with userfaultfd\n", addr);
+>>>>   }
+>>>>   
+>>>>   int main(int argc, char *argv[])
+>>> Yes, that code is extremely weird. I wonder if this was some
+>>> copy-and-paste from other uffd test code.
+>>>
+>>> Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 >>>
 >>>
->>> On 01/04/26 20:10, Lorenzo Stoakes (Oracle) wrote:
->>>> On Wed, Apr 01, 2026 at 04:21:55PM +0200, David Hildenbrand (Arm) wrote:
->>>>
->>>> OK so digging in:
->>>>
->>>> mremap -> ... -> vrm_set_new_addr() -> get_unmapped_area() -> ... (in
->>>> ppc arch
->>>> code) -> slice_get_unmapped_area():
->>>>
->>>> unsigned long slice_get_unmapped_area(unsigned long addr, unsigned
->>>> long len,
->>>>                        unsigned long flags, unsigned int psize,
->>>>                        int topdown)
->>>> {
->>>>      ...
->>>>      /* bunch of checks */
->>>>
->>>>      /* If we have MAP_FIXED and failed the above steps, then error out */
->>>>      if (fixed)
->>>>          return -EBUSY;
->>>>
->>>>      ...
->>>> }
->>>>
->>>> Is presumably where we hit the issue.
->>>>
->>>>>
->>>>> That is weird. An mremap(MREMAP_FIXED) is really just an munmap() +
->>>>> move.
->>>>
->>>> Yeah the weird bit I guess is that we _still_ invoke
->>>> get_unmapped_area() but
->>>> with MAP_FIXED set to indicate that we want the specific address, so it's
->>>> subject to the above checks.
->>>>
->>>>>
->>>>> Are we sure this is not some actual problem in the hugetlb
->>>>> implementation?
->>>>
->>>> It seems the 'slices' check sees if the _target address_ has an
->>>> equivalent page
->>>> size, presumably hugetlb-mandated, and fails if they're not
->>>> equivalent, so this
->>>> change is just accounting for that.
->>>>
->>> Yes, this change accounts for that by ensuring the destination is
->>> created with MAP_HUGETLB so it has the same page size as the source.
+>> Hi David,
 >>
->> Okay, weird, so it's the right thing to do to cover all odd arch behavior.
+>> Yes, the test operates on hugetlb mappings created with
+>> |MAP_HUGETLB | MAP_POPULATE|and sets up userfaultfd. Consequently,
+>> registering it with |UFFDIO_REGISTER_MODE_MISSING| does not result in
+>> any userfaults.
 >>
->>>>
->>>>>
->>>>>
->>>>> But then the test suddenly requires more hugetlb pages, no? I don't see
->>>>> a good reason for the MAP_POPULATE, really. It will be discarded
->>>>> either way.
->>>>
->>>> Yeah I'm not sure about the MAP_POPULATE being all that important here.
->>>>
->>> As far as I understand, without MAP_POPULATE, memory accesses would
->>> trigger userfaults, and since the test is single-threaded and has no
->>> background handler for the uffd, it would deadlock. MAP_POPULATE ensures
->>> the test runs correctly by prefaulting all pages, but please let me know
->>> if I’m mistaken.
+>> Originally, the helper function created a separate anonymous mapping and
+>> registered it with userfaultfd instead of the address supplied by the
+>> caller. However, the test operates on hugetlb mappings, and the registered
+>> anonymous mapping is never used in the |mremap()| path being exercised.
 >>
->> So you are saying the test would deadlock if you are not adding
->> MAP_POPULATE? If so, please double check if that is actually the case.
->>
->> And if it's actually the case, please carefully document that in the
->> patch description, and probably as a comment above the MAP_POPULATE usage.
+>> Would it be better to remove userfaultfd registration entirely from this
+>> test, since that path is not actually being tested?
 > 
-> Do keep in mind MAP_POPULATE is not _guaranteed_ to work :)
+> If it's tested with your change now (which I think that's what
+> happenes), this is fine.
 > 
-> For guaranteed populate you need madvise(..., MADV_POPULATE_[READ/WRITE]) or to
-> directly fault in.
+> It was just very weird before, because it tested something fairly unrelated.
 > 
->>
->> --
->> Cheers,
->>
->> David
-> 
-> Cheers, Lorenzo
-> 
-Thanks David and Lorenzo for the input.
-I tested without MAP_POPULATE and the test works fine without it.
-I will remove it in the next version.
-
-Thanks,
-Sayali
+Thanks for the review. Yes, tested with this change and it behaves as 
+expected now.
 
