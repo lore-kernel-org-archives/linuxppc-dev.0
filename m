@@ -1,73 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-19285-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19286-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21D1CE85388
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2026 17:41:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2D09E8538E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2026 19:01:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fnQyQ5gzwz2ynh;
-	Sat, 04 Apr 2026 04:41:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775238110;
-	cv=none; b=PqciN+vlKIk7m9pN4AaSV966KgmS5lO/2hoMgikzdGcLk89Uh2PrPdlRR+V/zW5E06rsHhaf2ExY/03DNDvXV/yBJfniYTcGVwPu1S6rXW3ZG/E/LSWve+hLe/vK1O4MBd1hTo9Q/rUUQs7dYWx3hR0gjPkyoJ+MepWAH8Eia02K6RZkFPnbRHwHj+TFVl/9DhRSZf0lSCqS8q18EMHGrc92p/0NlCCQp90p56Syl8ivOJWg80mCzPB1zTZSBK3CGakcBNRssjQlOQZig62nbIF5YnGFDDtf34CCIrcJwPcAS63EAU8sQCl82IPFFlkPeoiyJcziNxdfa4eFw+apZA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fnSkk63gDz2yQj;
+	Sat, 04 Apr 2026 06:01:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775242910;
+	cv=none; b=ZeHYetK7bQUfOZApLQ7wkHThfQejRNdU3f7RtALyIqjQYMZBIJyiNreCkGwi2Lttgs3fm4QtN/sP3O3OchHGVvSveW1jScPGR5NaTXaFkpVMEJoH+q5yxJOKM+4NHYXqgno5Dbml+3QWetqyoLtWeBh1DnS+AQq9BSxnnl3PyXlds+w8m090GUNyt+DgMg7hsjlCqrdon7qR6QP6Z6BUk6rSXUtqC4YqHk5hztT/cKEIOeCtinfIQWkWTFwHCgb0Enot2itmXw3Lhj+dT1/B13pgBCF6y8rrHaOC17Sw52H6mJmYzurzliG6QhxF/l/GHYqHVHx/O4mmKzcNQBCFUA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775238110; c=relaxed/relaxed;
-	bh=XkxScTQSBH039AIlOz7s4kDxGFGT8EvumFs+M+Lv59s=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=mT2PKnQ5k545rCL90o6LZkxDTLKtsy6Xk2B7PxwrY/TYHJ7lM2ArjtPGGoLbFA9ed0EljKgkpx6pVscxSWdJUMrhHz+AC/hNlPewlqfgoa7dnAH54OQMwLOMDlwxwvlvGB1T8qFf5AuImZQtMywJJoQ84QxOdq/VC1gwgnrb+4F4cpG/MPqJXib3KeXyoBH+dhjE9YiMb+t66Rm7uZ0bkSuKPSddJ2DL9x7Fk6i1AmDmwYEm7oBZeYsO6j7USUT4j3fYOGGsRWMyLhCWeaRNZEzUvHr8NxooPAnCkkOuzQV3RSIIqbOWh/Byksy2UHaORbqVZguf/O07CeKLSpoI1A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=d7GbwScI; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1775242910; c=relaxed/relaxed;
+	bh=k0vrgXZq08zHnhqmmfYlO+hu8mNgR9cSbF3OUh9/3GM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=NIIheGGODceG4DSWZHF9XwVsA392Fo5OmqQzW+OXkXmb+pnTmrGmxAZHnQUb+EJQbrKwCPuNw92y6GGWTTSyPa29ggy+tOplbGycWjIUVD/3cl4Rl3W4BmsCqKTSfmqljI08xzEOprBGojtETvsp3yZGf/FUrKqrodqUVhj5nHch+wOEoTMoc2FFZBMem53Z1ovNYjXgAXx6nxrXZzSHEpqx+2JEUayLsfERnD0aF3zcmgtGDgZB0s7aIrwhtBDH2xqPwyoPRHNIHfX7AmcyBwRhd0qjlrWIydCf6ZF+nAX3M3umJgAZrl6s0qbOqY90lcLM7gLPGoHJ8wlgiXBi9w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bdLYR8IC; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=d7GbwScI;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bdLYR8IC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fnQyQ0CFvz2yjn
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Apr 2026 04:41:49 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6339bDlG270868;
-	Fri, 3 Apr 2026 17:41:40 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fnSkj28rnz2xSF
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Apr 2026 06:01:48 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6333qUv5361401;
+	Fri, 3 Apr 2026 19:01:38 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=XkxScT
-	QSBH039AIlOz7s4kDxGFGT8EvumFs+M+Lv59s=; b=d7GbwScI33XM97muP/sQQH
-	5qqHFFGrHElotpalSLY9r/kORDfjrKTAaGWQWQN61zeW4go4wVSm3smFVNCJRScF
-	EXKlVXxSJdfTlImO7aL7mI29hocZXihwf9s4f87O5enYVX6sbmQlLQoheziW9x8G
-	1wCeq+HGxYc8ypqI1QhHnOuaOKrowRZsWvZJTJobIS3Dx303xncRxCXawO2qMrbG
-	E0YwWoiXnmBzPokeWLL0832nchHvrPrbAYZTOLi+2pRT+KgChexqQzb4sIsLtY7v
-	leB/FEl21at9my174AY2kFtKfCTegWcLElHhxQL7C8P3pLCKcxoCp0UKgefsnVaA
-	==
+	:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=pp1; bh=k0vrgXZq08zHnhqmmfYlO+hu8mNg
+	R9cSbF3OUh9/3GM=; b=bdLYR8IC44VhXdQyXs+EmMhL3TWOCYuTu4RJoNw5T+8C
+	3f1zdNDcik8KWiuUPyGw/RGhbBie8YKF2NReO/deZULs5olZwU/kg/LtmR2ZEa9H
+	DamZ4gfwA9nqfQZkGdswvIcL9KG2ROd+1jV2slspN++j1AP8xFLsIG/KdgatMgm5
+	6KC36/SxIGSsCyWafqdEWkt0RzmtKjsxizcr7uA5Z9v9Iz8KdL75wmDGeLcZlmtP
+	4r/ama8CxbF+i9T2JhbNJ0OLbSdXEMkf/+5BxhLTuGUU3zf+Jkl14cLAr6+z2Kxj
+	2IDbcsCNnE+JgTpbagzJV1+/WklpQ8vPpkycuy9GIw==
 Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d65dcrmyf-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d66q3hwn1-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 03 Apr 2026 17:41:39 +0000 (GMT)
+	Fri, 03 Apr 2026 19:01:38 +0000 (GMT)
 Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 633D3UWp005947;
-	Fri, 3 Apr 2026 17:41:38 GMT
-Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4d6spyf0tq-1
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 633Iu8XJ005757;
+	Fri, 3 Apr 2026 19:01:37 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4d6spyf93h-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 03 Apr 2026 17:41:38 +0000
-Received: from smtpav02.wdc07v.mail.ibm.com (smtpav02.wdc07v.mail.ibm.com [10.39.53.229])
-	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 633Hfcu319268314
+	Fri, 03 Apr 2026 19:01:36 +0000
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 633J1Xvb45023634
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 3 Apr 2026 17:41:38 GMT
-Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 55B115805B;
-	Fri,  3 Apr 2026 17:41:38 +0000 (GMT)
-Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C286058058;
-	Fri,  3 Apr 2026 17:41:32 +0000 (GMT)
-Received: from [9.124.211.212] (unknown [9.124.211.212])
-	by smtpav02.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Fri,  3 Apr 2026 17:41:32 +0000 (GMT)
-Message-ID: <d48fe27a-75e6-4431-8a0a-427e79adc84e@linux.ibm.com>
-Date: Fri, 3 Apr 2026 23:11:26 +0530
+	Fri, 3 Apr 2026 19:01:33 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id EE9752004D;
+	Fri,  3 Apr 2026 19:01:32 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6548020040;
+	Fri,  3 Apr 2026 19:01:28 +0000 (GMT)
+Received: from li-4f5ba44c-27d4-11b2-a85c-a08f5b49eada.ibm.com.domain.name (unknown [9.39.18.186])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri,  3 Apr 2026 19:01:28 +0000 (GMT)
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Sourabh Jain <sourabhjain@linux.ibm.com>,
+        Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+        Aboorva Devarajan <aboorvad@linux.ibm.com>,
+        Aditya Gupta <adityag@linux.ibm.com>, Daniel Axtens <dja@axtens.net>,
+        Hari Bathini <hbathini@linux.ibm.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Shivang Upadhyay <shivangu@linux.ibm.com>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Mahesh Salgaonkar <mahesh@linux.ibm.com>
+Subject: [PATCH v2 1/2] powerpc/kdump: fix KASAN sanitization flag for core_$(BITS).o
+Date: Sat,  4 Apr 2026 00:31:15 +0530
+Message-ID: <20260403190123.1383198-1-sourabhjain@linux.ibm.com>
+X-Mailer: git-send-email 2.52.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,186 +93,88 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 07/13] selftest/mm: register existing mapping with
- userfaultfd in hugepage-mremap
-To: "David Hildenbrand (Arm)" <david@kernel.org>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Shuah Khan <shuah@kernel.org>, linux-mm@kvack.org,
-        linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org,
-        Ritesh Harjani <ritesh.list@gmail.com>
-Cc: Zi Yan <ziy@nvidia.com>, Michal Hocko <mhocko@kernel.org>,
-        Oscar Salvador <osalvador@suse.de>,
-        Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-        Dev Jain <dev.jain@arm.com>, Liam.Howlett@oracle.com,
-        linuxppc-dev@lists.ozlabs.org,
-        Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-References: <cover.1774591179.git.sayalip@linux.ibm.com>
- <b3a1760e4583340e767d4045b90784ee41c8773e.1774591179.git.sayalip@linux.ibm.com>
- <142f8c68-43c7-4a6a-bd2c-1c5ebda09b27@kernel.org>
- <7b6652f3-c994-4ef4-87a4-5473cd1254b7@linux.ibm.com>
- <a1527067-0d49-48dd-85c5-06b628471424@kernel.org>
-Content-Language: en-IN
-From: Sayali Patil <sayalip@linux.ibm.com>
-In-Reply-To: <a1527067-0d49-48dd-85c5-06b628471424@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=y
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=RsjI7SmK c=1 sm=1 tr=0 ts=69cffbd3 cx=c_pps
+X-Proofpoint-GUID: 0B1LHM57XAH5E_ADuzGcKQ6IBHfNj_UG
+X-Authority-Analysis: v=2.4 cv=frzRpV4f c=1 sm=1 tr=0 ts=69d00e92 cx=c_pps
  a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8
- a=VwQbUJbxAAAA:8 a=mgfXflzu82Chz1Ycc7MA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: jyrK17GrSu3fk7v3w_MYtr3q3dtVP1Ud
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDAzMDE1NCBTYWx0ZWRfX4L05kWTBg2oF
- YCgJXnPDx3h+vpsD7qvf5j1A+2q6dUnNBGWMNaXgqqs9CY5ZsN5T7L+JAOJBd9aD1cw1TmZjJBs
- XKiT7LbCE+aZmA+6SQYi2rQxt99/2RTZiTKCl8gjBoJ9Wpnhc0AUIpTfsouYHHz4e/XIC9Xujxo
- AUkpfgTZZGUVwrmvMC5owzLNCAG+XXyUB2K6tt7xgMuSpWHH1kBxrAPJbobpmcToLBhwjipmoPK
- 3ulaeFeF07Bo6TJLt72eYsoAQQ33w3k69nYMQDXKDU/GW7C81y1rgad4xhh6x8kdMApGULU/Hut
- S2CF2ZTT3CA1G5e2CVpjzw4pD5fOSOPISBHOZpGmSfPFIZzYcoUpVDcXBmPrJmJksplf5ZdZtYv
- VDJGfHiI3HyC2tM19GoI05tx6cP1U4yu4YYUBbt14wh8n91JfIdrdspAZAuomdF/3jL7Y3rsQvd
- 2lv0DDtooZyQrrYyRTw==
-X-Proofpoint-ORIG-GUID: t7yKBDzj05PTTN_bQv44gKStj1pyEK9R
+ a=qf4gfuq51q0A:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=JuTF4qcAAAAA:8 a=pGLkceISAAAA:8 a=Rbr8bO_GjACkDpKrMaMA:9
+ a=3ZKOabzyN94A:10 a=k40Crp0UdiQA:10 a=WlT8qwTXB_Kj6um4hl3b:22
+X-Proofpoint-ORIG-GUID: O308Vted1d_-6EbRme_gnJ7YOVgFe1it
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDAzMDE2OCBTYWx0ZWRfX3ViMQ8moW1zV
+ UeMvG+X00ksq4OyZBy5zAL8m5wd1Yt1Ul6Rv/A6bhF2qUw2/4IxEhMFv01VCaOEnWp3oTzb0KFm
+ OHR4S/rOlXihOSi/Am+Hq3lZ50C8skqlGar5PGC862ExJ+JfwIXru6kgKbRv0c9RUUVon62Lo8B
+ sTbVpxFbiJ4v3DTvKpxJLWYqnXJfBmd4YQOJgpP+4l5gm1ypevycbxRT8WcUvvkGyXnc05SmqX2
+ LN+GBTewHW6ypSdzskPtRT5StQzbimXBYKxo9/eME5GNGYy/tM9YrAZuW/NPRUZizFdraPtKt76
+ e7f80Js8PW5NtHEYbc3AbUCc8mEPwg1H5n332yY4cKDgazcdffI/zqtia18pcQJtBX/piEnmndX
+ y9JNsOk4cMs/31fn8LhOGBpzM8g0Ag4G7cH8cJCv4XqD0/n6Fsk3wgozRucF0cYZoSXyHa5+hx2
+ Ep2obOwcV0Xq6gco3Og==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-04-03_05,2026-04-03_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 bulkscore=0 priorityscore=1501 lowpriorityscore=0
- suspectscore=0 malwarescore=0 spamscore=0 clxscore=1015 phishscore=0
- adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
- definitions=main-2604030154
+ impostorscore=0 spamscore=0 priorityscore=1501 malwarescore=0 clxscore=1015
+ lowpriorityscore=0 bulkscore=0 adultscore=0 suspectscore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2604030168
 
+KASAN instrumentation is intended to be disabled for the kexec core
+code, but the existing Makefile entry misses the object suffix. As a
+result, the flag is not applied correctly to core_$(BITS).o.
 
+So when KASAN is enabled, kexec_copy_flush and copy_segments in
+kexec/core_64.c are instrumented, which can result in accesses to
+shadow memory via normal address translation paths. Since these run
+with the MMU disabled, such accesses may trigger page faults
+(bad_page_fault) that cannot be handled in the kdump path, ultimately
+causing a hang and preventing the kdump kernel from booting. The same
+is true for kexec as well, since the same functions are used there.
 
-On 02/04/26 13:01, David Hildenbrand (Arm) wrote:
-> On 4/1/26 16:43, Sayali Patil wrote:
->>
->> On 01/04/26 19:48, David Hildenbrand (Arm) wrote:
->>> On 3/27/26 08:16, Sayali Patil wrote:
->>>> Previously, register_region_with_uffd() created a new anonymous
->>>> mapping and overwrote the address supplied by the caller before
->>>> registering the range with userfaultfd.
->>>>
->>>> As a result, userfaultfd was applied to an unrelated anonymous mapping
->>>> instead of the hugetlb region used by the test.
->>>>
->>>> Remove the extra mmap() and register the caller-provided address range
->>>> directly using UFFDIO_REGISTER_MODE_MISSING, so that faults are
->>>> generated for the hugetlb mapping used by the test.
->>>>
->>>> This ensures userfaultfd operates on the actual hugetlb test region and
->>>> validates the expected fault handling.
->>>>
->>>> Before patch:
->>>>   running ./hugepage-mremap
->>>>   -------------------------
->>>>   TAP version 13
->>>>   1..1
->>>>    Map haddr: Returned address is 0x7eaa40000000
->>>>    Map daddr: Returned address is 0x7daa40000000
->>>>    Map vaddr: Returned address is 0x7faa40000000
->>>>    Address returned by mmap() = 0x7fff9d000000
->>>>    Mremap: Returned address is 0x7faa40000000
->>>>    First hex is 0
->>>>    First hex is 3020100
->>>>   ok 1 Read same data
->>>>   Totals: pass:1 fail:0 xfail:0 xpass:0 skip:0 error:0
->>>>   [PASS]
->>>>   ok 1 hugepage-mremap
->>>>
->>>> After patch:
->>>>   running ./hugepage-mremap
->>>>   -------------------------
->>>>   TAP version 13
->>>>   1..1
->>>>    Map haddr: Returned address is 0x7eaa40000000
->>>>    Map daddr: Returned address is 0x7daa40000000
->>>>    Map vaddr: Returned address is 0x7faa40000000
->>>>    Registered memory at address 0x7eaa40000000 with userfaultfd
->>>>    Mremap: Returned address is 0x7faa40000000
->>>>    First hex is 0
->>>>    First hex is 3020100
->>>>   ok 1 Read same data
->>>>   Totals: pass:1 fail:0 xfail:0 xpass:0 skip:0 error:0
->>>>   [PASS]
->>>>   ok 1 hugepage-mremap
->>> Okay, so we tested mremap() of something that is not even hugetlb.
->>>
->>>> Fixes: 12b613206474 ("mm, hugepages: add hugetlb vma mremap() test")
->>>> Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
->>>> Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
->>>> ---
->>>>   tools/testing/selftests/mm/hugepage-mremap.c | 21 +++++---------------
->>>>   1 file changed, 5 insertions(+), 16 deletions(-)
->>>>
->>>> diff --git a/tools/testing/selftests/mm/hugepage-mremap.c b/tools/testing/selftests/mm/hugepage-mremap.c
->>>> index b8f7d92e5a35..e611249080d6 100644
->>>> --- a/tools/testing/selftests/mm/hugepage-mremap.c
->>>> +++ b/tools/testing/selftests/mm/hugepage-mremap.c
->>>> @@ -85,25 +85,14 @@ static void register_region_with_uffd(char *addr, size_t len)
->>>>   	if (ioctl(uffd, UFFDIO_API, &uffdio_api) == -1)
->>>>   		ksft_exit_fail_msg("ioctl-UFFDIO_API: %s\n", strerror(errno));
->>>>   
->>>> -	/* Create a private anonymous mapping. The memory will be
->>>> -	 * demand-zero paged--that is, not yet allocated. When we
->>>> -	 * actually touch the memory, it will be allocated via
->>>> -	 * the userfaultfd.
->>>> -	 */
->>>> -
->>>> -	addr = mmap(NULL, len, PROT_READ | PROT_WRITE,
->>>> -		    MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
->>>> -	if (addr == MAP_FAILED)
->>>> -		ksft_exit_fail_msg("mmap: %s\n", strerror(errno));
->>>> -
->>>> -	ksft_print_msg("Address returned by mmap() = %p\n", addr);
->>>> -
->>>> -	/* Register the memory range of the mapping we just created for
->>>> -	 * handling by the userfaultfd object. In mode, we request to track
->>>> -	 * missing pages (i.e., pages that have not yet been faulted in).
->>>> +	/* Register the passed memory range for handling by the userfaultfd object.
->>> /*
->>>   * ...
->>>
->>> While at it.
->>>
->>>> +	 * In mode, we request to track missing pages
->>>> +	 * (i.e., pages that have not yet been faulted in).
->>>>   	 */
->>>>   	if (uffd_register(uffd, addr, len, true, false, false))
->>>>   		ksft_exit_fail_msg("ioctl-UFFDIO_REGISTER: %s\n", strerror(errno));
->>>> +
->>>> +	ksft_print_msg("Registered memory at address %p with userfaultfd\n", addr);
->>>>   }
->>>>   
->>>>   int main(int argc, char *argv[])
->>> Yes, that code is extremely weird. I wonder if this was some
->>> copy-and-paste from other uffd test code.
->>>
->>> Acked-by: David Hildenbrand (Arm) <david@kernel.org>
->>>
->>>
->> Hi David,
->>
->> Yes, the test operates on hugetlb mappings created with
->> |MAP_HUGETLB | MAP_POPULATE|and sets up userfaultfd. Consequently,
->> registering it with |UFFDIO_REGISTER_MODE_MISSING| does not result in
->> any userfaults.
->>
->> Originally, the helper function created a separate anonymous mapping and
->> registered it with userfaultfd instead of the address supplied by the
->> caller. However, the test operates on hugetlb mappings, and the registered
->> anonymous mapping is never used in the |mremap()| path being exercised.
->>
->> Would it be better to remove userfaultfd registration entirely from this
->> test, since that path is not actually being tested?
-> 
-> If it's tested with your change now (which I think that's what
-> happenes), this is fine.
-> 
-> It was just very weird before, because it tested something fairly unrelated.
-> 
-Thanks for the review. Yes, tested with this change and it behaves as 
-expected now.
+Update the entry to include the “.o” suffix so that KASAN
+instrumentation is properly disabled for this object file.
+
+Fixes: 2ab2d5794f14 ("powerpc/kasan: Disable address sanitization in kexec paths")
+Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Closes: https://lore.kernel.org/all/1dee8891-8bcc-46b4-93f3-fc3a774abd5b@linux.ibm.com/
+Cc: Aboorva Devarajan <aboorvad@linux.ibm.com>
+Cc: Aditya Gupta <adityag@linux.ibm.com>
+Cc: Daniel Axtens <dja@axtens.net>
+Cc: Hari Bathini <hbathini@linux.ibm.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Shivang Upadhyay <shivangu@linux.ibm.com>
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Acked-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+---
+Changelog:
+
+v2:
+- Add Reviewed-by, Acked-by and Tested-by tags
+- No functional changes
+ 
+ v1:
+ https://lore.kernel.org/all/20260321053121.614022-1-sourabhjain@linux.ibm.com/
+---
+ arch/powerpc/kexec/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kexec/Makefile b/arch/powerpc/kexec/Makefile
+index 470eb0453e17..ec7a0eed75dc 100644
+--- a/arch/powerpc/kexec/Makefile
++++ b/arch/powerpc/kexec/Makefile
+@@ -16,4 +16,4 @@ GCOV_PROFILE_core_$(BITS).o := n
+ KCOV_INSTRUMENT_core_$(BITS).o := n
+ UBSAN_SANITIZE_core_$(BITS).o := n
+ KASAN_SANITIZE_core.o := n
+-KASAN_SANITIZE_core_$(BITS) := n
++KASAN_SANITIZE_core_$(BITS).o := n
+-- 
+2.52.0
+
 
