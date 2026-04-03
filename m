@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-19251-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19252-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2AFACD6AAFA
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2026 01:17:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A41ED6AAFA
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2026 01:18:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fn16p3Y8kz2ymg;
-	Fri, 03 Apr 2026 12:17:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fn16r38sFz2yv1;
+	Fri, 03 Apr 2026 12:17:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775179058;
-	cv=none; b=F2rGAsYGWnDSopiLcCokiVR1j64VIOgU9vBDdEE36tAIPKQxxpgHbGg5CB5oQHAJXYqIoRmE9O5Y1mmXlIdppuZR1EDnzIn8Jw9mJKDxngLbxNOTtyxBgJvjh79KLoTJvrIp0Ms2bcTO00NP4dEUPz91zGw8m6JSv/lKvUvvB21dSs01uLx7eRe4WOSCC3zoY7r4tC2ixrE03IHOlUVxpOPNhq5XG0kMkXKlnpZqz7KSWkYt5uefMhHIf+4JD/Xw1VbienH3TSH+7hnRWFG2gqeV/ux+aQKP/2N4dJFpAk4Ra41eDvx6Y4POMOrbBffC8qhAQqoB0FhfYCXcfhz1Tg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775179060;
+	cv=none; b=RVFZSrtM64aYiAJXSnAedtEgLBuOA+T1Mc23DmFkwx90x3nIAevYpSP6+pZdbJxykCwin+PmEb96BkWG0vkxlStuaFb8VJHwv35y5oSwDuPLuur0XRZKuUtuTWdAj6swOqvO1lzfliwec/1rEWucbAa7YZqdae+j2rpCnYtUvcgdw1uQuqlofYSFxJc1t7zLDLnG9QI8QXMmm5VFQ/N+PNT9WdJxA48XKgwwiPwusfzKjyv8mMTkqgfsElTled3RJwTd/qbrxevfHkA5x7jXdZ+OKKAhG7cFtigHECMESehoS9+9FI4trlE6AhyXCtEVqxvbksvT5wqOQzH51u1w1g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775179058; c=relaxed/relaxed;
-	bh=7a1fZxaKoE5xyb/5xzVXDFRHMaJo2Lgn50wTA87sjTQ=;
+	t=1775179060; c=relaxed/relaxed;
+	bh=H18sWm5P1ofuMNfKYGONKMvaLqkli/O/1ZdyJduFCEM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=oULxpjSc4FiFgOFOgMKy9DZPSxolr7Deggc1GUO+cjrV4auOAxWMf6vpvPiEZ6NxNChHAQoc8ypQ2sW3Z9PgrgKSqkGohMFW24xtH2EOuKXSmJdzoEaoQAoRI1D7hWox0a//vXAOEPCXCvS8U+J3b5XuTKzrJpNZcBd//iLKSHMsNnwfA3YnyTntiMHGdPDl2U8Lf09fZO8w1aAklPV9yP7xNXfibdBpmgpPUwdHSP/jep4LXowsz0f2cjfixVG4vv2DBbHAwTIej1rmLOxqhleUXJ+UvewFe8XN/1hwCsVmBn2QkAvms6p0lZzA+y7ZsERYivwhuTaocCbVBcAYUw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=d5kzfYmJ; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=D30UWh4jGCjnPTaMPir3cOIx9CVV/TIKvMyCj3R2QsdgvCHim2RZVmAqgxDyogpuf8MjtuMq8cS/fxG883RADLsEYHJgwB0bAqqPytaRw0Qs3F8X5qOfStY6XnzbldTs54hGiCgbjnBDP1sRWN+wJZz4fbkW6jCRrUpoO8qDDGStKb6cGxUfjG5pvfBr/R3ddU+VmYLCCKqqfz8NUEOhbjSDsVjuD1SGecQuYTCbYELinkuROktp4bQHwSEG72wfh5RbbhFp5kL2ZgYVbH4RtZ0LoroB0B/QiKBBVVIeFswTtsHjtQFj9jas/ItNcVQJRL3GqWnVfJ4+jMrBgGI26g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EpOM3hIz; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=d5kzfYmJ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EpOM3hIz;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fn16n5GNvz2yrS
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2026 12:17:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fn16q5SVnz2yrS
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2026 12:17:39 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 376A340B83;
-	Fri,  3 Apr 2026 01:17:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EC915C116C6;
-	Fri,  3 Apr 2026 01:17:34 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 39D8342DC2;
+	Fri,  3 Apr 2026 01:17:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0CB46C2BCB1;
+	Fri,  3 Apr 2026 01:17:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775179056;
-	bh=Cge0Op8XIjIL/FzyaMsXywj9bmxHOydn7s7dSUzb2ks=;
+	s=k20201202; t=1775179058;
+	bh=kf7UcGQnEKNIFCT4+nJ9PJ/iFdOs9gmUphhDLwEs43I=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=d5kzfYmJPKBNdvO3nSJvsyoJ+PIyPCXGESJxAhYTppge05ohd0x0Wt2nOzWHT8HpD
-	 G/sNU1YrW1igNY4qpp3/oDubDsCWQ5VlEJNCuQ6EDkf7VCDmVu/HWtLZuf+RZ8DqMz
-	 pG3xZBdt9MPpY6CLzz/SXzaiiBW+u8IRILNPbOS54Zsc4DbVFfCW+MXe7T6oX1EoDl
-	 4cMjrv26Aj4zKWKrj6rLudiYP+3gDzLA4GmnKMNL4Fi2V4EYRDpM2shV3fyvtaR/yX
-	 VS1PRrC+gvrDGDFpS2SzA+EGwM1HEgW0Q5vA/St5Hxd4xKwe7jNAbklo1alVpWM6wC
-	 SfLNbxj5oarTw==
+	b=EpOM3hIzOgHfn6BQXuMgZDbLHnn+GT4ShSxODfekzqn5lthwCbFfoafksregEhLy4
+	 cCeTkVP8+P2uUqAlLBtV0nQ4ibPJZhB+4gbXEorFRyBI1jKWj7XzfsbPd+Pj9IeuAM
+	 sf4dcNEpyFJQ6mYLe+2XAEV3+b1oBeByK0k/DKWPJexgN0GhJmF7JXi7EOc9TvO5ql
+	 dfaDKDEZ8c5TDEzZQiqZAVhN1YZbqhogFhp/vbRRIvZBk23bZBJYv6cQEwGldeFhH4
+	 1j+y31+Kf55F59Vv2VrNs5IDW01YKEAmS3uVQd59pQhiWiazc1QsboJ6QNFljy9F7R
+	 uTy2lZeSSyX4A==
 From: Jakub Kicinski <kuba@kernel.org>
 To: wei.fang@nxp.com
 Cc: Jakub Kicinski <kuba@kernel.org>,
@@ -69,12 +69,12 @@ Cc: Jakub Kicinski <kuba@kernel.org>,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org,
 	imx@lists.linux.dev
-Subject: Re: [PATCH v4 net-next 07/14] net: enetc: add support for "Add" and "Delete" operations to IPFT
-Date: Thu,  2 Apr 2026 18:17:34 -0700
-Message-ID: <20260403011734.1795551-1-kuba@kernel.org>
+Subject: Re: [PATCH v4 net-next 09/14] net: dsa: add NETC switch tag support
+Date: Thu,  2 Apr 2026 18:17:36 -0700
+Message-ID: <20260403011736.1795610-1-kuba@kernel.org>
 X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260331113025.1566878-8-wei.fang@nxp.com>
-References: <20260331113025.1566878-8-wei.fang@nxp.com>
+In-Reply-To: <20260331113025.1566878-10-wei.fang@nxp.com>
+References: <20260331113025.1566878-10-wei.fang@nxp.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,112 +93,87 @@ Content-Transfer-Encoding: 8bit
 This is an AI-generated review of your patch. The human sending this
 email has considered the AI review valid, or at least plausible.
 ---
-net: enetc: add support for "Add" and "Delete" operations to IPFT
+net: dsa: add NETC switch tag support
 
-This commit adds support for the "Add" and "Delete" operations to the
-ingress port filter table (IPFT). These interfaces will be used by both
-the ENETC driver and the NETC switch driver.
+Adds support for the proprietary NXP NETC switch tag used in NXP NETC
+switches version 4.3 or later. The tag has 3 types (Forward, To_Port,
+To_Host) and supports a varying length between 6 and 14 bytes.
 
-> diff --git a/drivers/net/ethernet/freescale/enetc/ntmp.c b/drivers/net/ethernet/freescale/enetc/ntmp.c
-> index 3c59b355c142..960d5be8ec42 100644
-> --- a/drivers/net/ethernet/freescale/enetc/ntmp.c
-> +++ b/drivers/net/ethernet/freescale/enetc/ntmp.c
-
+> diff --git a/net/dsa/tag_netc.c b/net/dsa/tag_netc.c
+> new file mode 100644
+> index 000000000000..addd41f7f1b6
+> --- /dev/null
+> +++ b/net/dsa/tag_netc.c
 [ ... ]
-
-> @@ -468,6 +471,79 @@ int ntmp_rsst_query_entry(struct ntmp_user *user, u32 *table, int count)
->  }
->  EXPORT_SYMBOL_GPL(ntmp_rsst_query_entry);
->  
-> +/**
-> + * ntmp_ipft_add_entry - add an entry into the ingress port filter table
-> + * @user: target ntmp_user struct
-> + * @entry: the entry data, entry->cfge (configuration element data) and
-> + * entry->keye (key element data) are used as input. Since the entry ID
-> + * is assigned by the hardware, so entry->entry_id is a returned value
-> + * for the driver to use, the driver can update/delete/query the entry
-> + * based on the entry_id.
-> + *
-> + * Return: 0 on success, otherwise a negative error code
-> + */
-> +int ntmp_ipft_add_entry(struct ntmp_user *user,
-> +			struct ipft_entry_data *entry)
+> +static void *netc_fill_common_tp_tag(struct sk_buff *skb,
+> +				     struct net_device *ndev,
+> +				     u8 subtype, int tag_len)
 > +{
-[ ... ]
-> +	err = ntmp_alloc_data_mem(&data, (void **)&req);
-> +	if (err)
-> +		return err;
+> +	struct dsa_port *dp = dsa_user_to_port(ndev);
+> +	u16 queue = skb_get_queue_mapping(skb);
+> +	u8 ipv = netdev_txq_to_tc(ndev, queue);
+
+What happens here if the interface doesn't have traffic classes configured?
+
+By default, netdev_txq_to_tc() returns -1. Because ipv is an unsigned 8-bit
+integer, this casts to 255.
+
+When this is later passed to FIELD_PREP(NETC_TAG_IPV, ipv) in
+netc_fill_common_tag(), the macro blindly masks the variable, silently
+forcing the IPV field to 7 (the maximum priority) for all default,
+unconfigured traffic. Valid TC values greater than 7 would also be silently
+truncated.
+
+Does this code bypass the intended QoS mechanisms?
+
+> +	void *tag;
 > +
-> +	ntmp_fill_crd(&req->crd, user->tbl.ipft_ver, NTMP_QA_ENTRY_ID,
-> +		      NTMP_GEN_UA_CFGEU | NTMP_GEN_UA_STSEU);
-> +	req->ak.keye = entry->keye;
-> +	req->cfge = entry->cfge;
-
-The request sets NTMP_GEN_UA_STSEU to indicate statistics data is present,
-but struct ipft_req_ua does not appear to contain a match_count or STSE data
-field before cfge.
-
-Since the hardware expects STSE data before CFGE data (as seen in
-struct ipft_resp_query), will this cause the hardware to misinterpret the
-first 8 bytes of cfge as the match_count, and then read the actual filter
-configuration from out-of-bounds or uninitialized memory?
-
-> diff --git a/drivers/net/ethernet/freescale/enetc/ntmp_private.h b/drivers/net/ethernet/freescale/enetc/ntmp_private.h
-> index 7d50af7745c7..6d519d59a433 100644
-> --- a/drivers/net/ethernet/freescale/enetc/ntmp_private.h
-> +++ b/drivers/net/ethernet/freescale/enetc/ntmp_private.h
-
-[ ... ]
-
-> +/* Ingress Port Filter Table Request Data Buffer Format of Update and
-> + * Add actions
-> + */
-> +struct ipft_req_ua {
-> +	struct ntmp_cmn_req_data crd;
-> +	union ipft_access_key ak;
-> +	struct ipft_cfge_data cfge;
-> +};
-
-Does this struct need an STSE data field before cfge to match the request
-header flags?
-
-> diff --git a/include/linux/fsl/ntmp.h b/include/linux/fsl/ntmp.h
-> index a54945dcdc61..efda35e5e22c 100644
-> --- a/include/linux/fsl/ntmp.h
-> +++ b/include/linux/fsl/ntmp.h
-
-[ ... ]
-
-> @@ -66,6 +68,94 @@ struct maft_entry_data {
->  	struct maft_cfge_data cfge;
->  };
->  
-> +struct ipft_pld_byte {
-> +	u8 data;
-> +	u8 mask;
-> +};
+> +	skb_push(skb, tag_len);
+> +	dsa_alloc_etype_header(skb, tag_len);
 > +
-> +struct ipft_keye_data {
-> +	__le16 precedence;
-> +	__le16 resv0[3];
-> +	__le16 frm_attr_flags;
-> +#define IPFT_FAF_OVLAN		BIT(2)
-> +#define IPFT_FAF_IVLAN		BIT(3)
-> +#define IPFT_FAF_IP_HDR		BIT(7)
-> +#define IPFT_FAF_IP_VER6	BIT(8)
-> +#define IPFT_FAF_L4_CODE	GENMASK(11, 10)
-> +#define  IPFT_FAF_TCP_HDR	1
-> +#define  IPFT_FAF_UDP_HDR	2
-> +#define  IPFT_FAF_SCTP_HDR	3
-> +#define IPFT_FAF_WOL_MAGIC	BIT(12)
-> +	__le16 frm_attr_flags_mask;
-> +	__le16 dscp;
-> +#define IPFT_DSCP		GENMASK(5, 0)
-> +#define IPFT_DSCP_MASK		GENMASK(11, 0)
+> +	tag = dsa_etype_header_pos_tx(skb);
+> +	memset(tag + NETC_TAG_CMN_LEN, 0, tag_len - NETC_TAG_CMN_LEN);
+> +	netc_fill_common_tag(tag, NETC_TAG_TO_PORT, subtype,
+> +			     dp->ds->index, dp->index, ipv);
 
-Does IPFT_DSCP_MASK completely overlap with IPFT_DSCP?
+Will this break communication for standard single-switch setups?
 
-If it is defined as GENMASK(11, 0) instead of GENMASK(11, 6), using
-FIELD_PREP with this mask will not shift the value into the upper bits,
-which might overwrite the actual DSCP value in bits 0-5.
+The driver passes dp->ds->index as the hardware switch ID here, which
+defaults to 0 for the first switch in a DSA tree. However, on the receive
+path, frames stamped with switch ID 0 are rejected.
+
+If the physical switch hardware uses an ID greater than 0, frames will fail
+the lookup in dsa_conduit_find_user() on receive because the software index
+is 0.
+
+> +
+> +	return tag;
+> +}
+[ ... ]
+> +static struct sk_buff *netc_rcv(struct sk_buff *skb,
+> +				struct net_device *ndev)
+> +{
+> +	struct netc_tag_cmn *tag_cmn;
+> +	int tag_len, sw_id, port;
+[ ... ]
+> +	if (tag_cmn->qos & NETC_TAG_QV)
+> +		skb->priority = FIELD_GET(NETC_TAG_IPV, tag_cmn->qos);
+> +
+> +	sw_id = NETC_TAG_SWITCH & tag_cmn->switch_port;
+
+This isn't a bug, but is there a reason to use a raw bitwise AND for sw_id
+instead of using FIELD_GET(NETC_TAG_SWITCH, ...) to match how the port
+field is extracted just below this?
+
+> +	/* ENETC VEPA switch ID (0) is not supported yet */
+> +	if (!sw_id) {
+> +		dev_warn_ratelimited(&ndev->dev,
+> +				     "VEPA switch ID is not supported yet\n");
+> +
+> +		return NULL;
+> +	}
+> +
+> +	port = FIELD_GET(NETC_TAG_PORT, tag_cmn->switch_port);
+> +	skb->dev = dsa_conduit_find_user(ndev, sw_id, port);
+[ ... ]
 
