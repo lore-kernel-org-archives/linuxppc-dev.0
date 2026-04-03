@@ -1,113 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-19268-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19269-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 907B0E7E366
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2026 10:18:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16516E7E36D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2026 10:51:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fnF755fvRz2xN8;
-	Fri, 03 Apr 2026 21:18:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip=198.175.65.19
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775211521;
-	cv=fail; b=VCk5kUwSybJA7bDh/yVkLdQb6mecgcUzMAoYv1febjU8VcKc+01W1PEC31JAMjKYYLDOegUaDLZRiHzwdlZSJeuWTXysfRVYZq90lLc373YouLZ0Zqw+K9DetDoIaJvvMLQuGRhUqENDrGgXRBL75bXd2eqmk8gEr93PN9mzrj/pEb/HcZxFhPszrc3hZ946gzTXyK8364JDYieJKa5+8sjE01IxnOUsV839IaQwtHIjrjV39e6YDdBy9LgGZB5j1HB/XwQl1PcHv30LJbZJ1pSRHjqKXCpCBHo27clN8aTruVy0OEjwwVmUjUFvokW971UI85pysQ0aVGKpOrKEPg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775211521; c=relaxed/relaxed;
-	bh=XExWi4pOWGBbFeKE1cbrWgwBqFQC5brhDUaEI16h5I4=;
-	h=Date:From:To:CC:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=oghy7vbJS/Q7MffKPd4Bvl9tLeFYVIlB4ynL4gHxgo5V2NKLC41PPQoCOmm51EdTsLw87vERWwxxtxOOOtaydKLfc7l/nQwJhQ3gFODlodGwk/KL5JVOrUxNummWX9qPRaJb2I5Up319pqGwByPdpoMtX4IyZcB5aJ5vxO/HRTnolX6pPJGQq6sl8DpGy+cNsW0MfKBXuAF61Pb/VzXyfvXVkp3uh28JEZltYkJRxNkNbKYAfeQmkqry8KjDTPxO9gES71+zbGlk1QUMOL1A988Nmu1JOVhhlPdvWxi8IraR75sxczj9u0BNIB6Q9rk7EBveKZa464A8odhCTaKeVQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=P0X5oWMb; dkim-atps=neutral; spf=pass (client-ip=198.175.65.19; helo=mgamail.intel.com; envelope-from=peter.fang@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fnFrY14pbz2yVP;
+	Fri, 03 Apr 2026 21:51:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775213469;
+	cv=none; b=e3v+pahqfibpm1sLh6NwOTL+b4q5MnuaG3iHSllfjVR+GU9vRG0JE3e90ryErSqMKZYv4GeXKwxbddfCgufh1upmNu6ZAYOURCSq2b+sgM75g5+7suN10U1ymVuI+mCMqoQKyvLRQofpiItbN+coorMwuQ+K/m2KwwboEK1/MHOJlBTrSgYCqrAIZ7/1FNTJzDIDgRk52oX2fVmbLhZXAdWv6XdLLiQNQYk1Q//aRIFgKpuVFsaZbtI0AMWwSMRRnVdwRnmtLC8UjgzIA7Vy6tjjLZ37QxXBmPQ8inKNUM8vb9bmoxQ9Pz4cdNzLF24+fc9Pfsg7yuEM9BhbRqI4kw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1775213469; c=relaxed/relaxed;
+	bh=kw5KkpHJW7EBDT4iyXFCEB8CBORp4NCo7ugTycbydsI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=AS9auAtkhULnqZxL7Seh4XozaXwf4eEel1ogahivL279a6d9zVJPtMwujG9F7ve6N+BNL/dO8aVKJ9IZTkBWlMT5Mn6ULvOTEy3uUlLYgm6zLI7mOp9RUDmsZXckm7M/yNtQ7DPjEKLkfGLpGFLnkkbnFqQyGSTa6o/o2HGZj4Yu5ur5mXu/b4wKVgRf3pDHZlHEWmIz8HM7uXdHqogjNDNBtWoEIEdK3rruwoV6TX+3XHSpziG/0sNU/BKMrpX9RvGbKvOOanrBOfM4HAS4gzSxIf4HQidIe+9rAJd2nlWSxU3fIWeXUy/H/7HRfD/U2yKwX1jJpyhM2GEkLlc5jw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aWxRFIPN; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=P0X5oWMb;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aWxRFIPN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.19; helo=mgamail.intel.com; envelope-from=peter.fang@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fnF723ng3z2xLt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2026 21:18:35 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1775211519; x=1806747519;
-  h=date:from:to:cc:subject:message-id:references:
-   in-reply-to:mime-version;
-  bh=/bix4SwH+cVDBOv8T6wQFx2kY0jjpoCzzIbNi/8GEZ8=;
-  b=P0X5oWMbn2plGJ15jxwT/SHQTomUFGP2qhtBnyEppvBJKEb8CZR1P8DJ
-   /5OEJe/dflmCkNLyJMCXxzdlc/c8QqxUOXpzC8dMHLR3yrdufffZSc2aw
-   YfAXn1Gd2kDmNfYkgZ9wDhNYIsMKBwRGq558H/a3gQiv6lvVnfOLEPl5Z
-   ZXgz5pBBIJu57rK4+MMaQzZum1+kljozvj06h6ZWhFkQjj41p4hYbqXwR
-   LMrzNag6PKP5gpB/9/u9+Npj8z3cs7HhdZ6NVrbKgCtZSTEWhHpmJlCa+
-   oDk+qKnSflhgalgbgS59dxmcQ44aqISLnK37zLhjev24wULv3YPV7RJHv
-   w==;
-X-CSE-ConnectionGUID: NsyC7kG5QDeuZTPVBrwWIg==
-X-CSE-MsgGUID: 578f7BnlS9eOv0cTuujTyQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11747"; a="76162426"
-X-IronPort-AV: E=Sophos;i="6.23,157,1770624000"; 
-   d="scan'208";a="76162426"
-Received: from orviesa004.jf.intel.com ([10.64.159.144])
-  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Apr 2026 03:18:33 -0700
-X-CSE-ConnectionGUID: +3ukwKtnTyijl2PbkuhRXg==
-X-CSE-MsgGUID: 6PUGrCL8QjWyVEoFlu+lyA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,157,1770624000"; 
-   d="scan'208";a="231619249"
-Received: from fmsmsx903.amr.corp.intel.com ([10.18.126.92])
-  by orviesa004.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Apr 2026 03:18:32 -0700
-Received: from FMSMSX903.amr.corp.intel.com (10.18.126.92) by
- fmsmsx903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37; Fri, 3 Apr 2026 03:18:31 -0700
-Received: from fmsedg902.ED.cps.intel.com (10.1.192.144) by
- FMSMSX903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37 via Frontend Transport; Fri, 3 Apr 2026 03:18:31 -0700
-Received: from BYAPR05CU005.outbound.protection.outlook.com (52.101.85.37) by
- edgegateway.intel.com (192.55.55.82) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37; Fri, 3 Apr 2026 03:18:30 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=N9Kdr+/eD9oFCb4tAn54ZQ9Q4FfuPIPngT6pKnkoY0bG0eC/a4fui6pEPKrp+HpGsN+8zCHEP48HhCepdkOijf4e+RzbuF2eQyFOfEHY3NWo/ajMAiL2m/ctvXkjiplUMZJ0gQV9+fmaoWQIRrdzCEpvW0cU1uDekk2PEWO8o0FYUKB9AuoBCiXTq1qbinCOsWl5qdgwXyZE+t44gCxHrqYeF2/BxKJ4a4r2SMPls5PsBvluBTObpV3H0sO071HMiKdVTcfU4Y+aUzSeILrqBQA+vzyxDwR3Ec6KMRpeV1QsYWu7cRlPXGGukAOJ7wYzjZvbdNIe3iHCZILkK1R4WA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=XExWi4pOWGBbFeKE1cbrWgwBqFQC5brhDUaEI16h5I4=;
- b=B8JYl6T+ARpQpJEBXUB1z91NeI/oe+wPNZPyp0iAPfAk5rwIjSQCtNuXQnlOVKE8DXq9DeW7xeDmX8h571j/5erTJkxbAqq/KjXIe4EfyRwLzmtB2M34QtrxYJDezIxW6bB5jT625W11AAxyHJx03HEqY5fGBhMPnwqIAGn5JKFc1vM3HEQdgqPw/pVEoKX6SSNrgh2pm2y0f3nNCk3oWeii1qcbR4TxZH42a38DAoA4in/z/mz22Nc6obIY6ufnsCcVXRky1eC6xWC0q7QkTd3mSibfIrsavy17zOY3bYeHvf6/WQUpUJjRGNNH0S881cFoKI6XvPN6iOz8hHmbUw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Received: from SJ0PR11MB5645.namprd11.prod.outlook.com (2603:10b6:a03:3b9::19)
- by CO1PR11MB4916.namprd11.prod.outlook.com (2603:10b6:303:9c::5) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.21; Fri, 3 Apr
- 2026 10:18:28 +0000
-Received: from SJ0PR11MB5645.namprd11.prod.outlook.com
- ([fe80::fb19:f933:8bb3:b42e]) by SJ0PR11MB5645.namprd11.prod.outlook.com
- ([fe80::fb19:f933:8bb3:b42e%4]) with mapi id 15.20.9769.018; Fri, 3 Apr 2026
- 10:18:27 +0000
-Date: Fri, 3 Apr 2026 03:18:23 -0700
-From: "Fang, Peter" <peter.fang@intel.com>
-To: Sean Christopherson <seanjc@google.com>
-CC: Yosry Ahmed <yosry@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin
-	<npiggin@gmail.com>, <kvm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
-	<linux-kernel@vger.kernel.org>, KarimAllah Ahmed <karahmed@amazon.de>,
-	"Konrad Rzeszutek Wilk" <konrad.wilk@oracle.com>
-Subject: Re: [PATCH] KVM: Fix kvm_vcpu_map[_readonly]() function prototypes
-Message-ID: <ac+T78h8hA1iwoqh@pedri>
-References: <20260325092001.613025-1-peter.fang@intel.com>
- <acsvbxIdtlQzUw4q@google.com>
- <acxjMsx/UixNa2R/@pedri>
- <ac8BOGXIPMnJ7kIg@google.com>
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <ac8BOGXIPMnJ7kIg@google.com>
-X-ClientProxiedBy: SJ0PR03CA0357.namprd03.prod.outlook.com
- (2603:10b6:a03:39c::32) To SJ0PR11MB5645.namprd11.prod.outlook.com
- (2603:10b6:a03:3b9::19)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fnFrS0vyBz2xln
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2026 21:51:03 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 632LdVQM3113759;
+	Fri, 3 Apr 2026 10:50:31 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=kw5KkpHJW7EBDT4iyXFCEB8CBORp4NCo7ugTycbyd
+	sI=; b=aWxRFIPNlpqPLGCiB4MAiyfpvXY4LbNVTg0vHuWGyBoksN9+NTtLe5rbn
+	qsVka2gvwgaYflypAeVkZ6cnAmadtI9B1GrxF59hnrsu4wuZ9P6Ckee7+j+YRdYp
+	9R7br3LF1zEsrRnxLPygB8Vn6c5WEL9cP5xBEVpiqhCrQ7bbnIHOm+QdhFNC2IwY
+	D02QTK2AROYqOpqNIz3imgUAQfGMx3ZMoZxxWTvCdq8ar+GFozfmnTns2Hh3RLDn
+	9u92Qsjda/toulQ/vgr63nHsqOXhlqcOsnCoyJiQv7Yd1DPaQc0Z2j82VYX4RleG
+	Kb14Lf1HRGVlViPkcRuDQmvcASNzg==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d66np0fx3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 03 Apr 2026 10:50:30 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 6337PCDJ006362;
+	Fri, 3 Apr 2026 10:50:29 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4d6spydv7q-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 03 Apr 2026 10:50:29 +0000
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 633AoPc728639852
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 3 Apr 2026 10:50:25 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E672920043;
+	Fri,  3 Apr 2026 10:50:24 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id EC63220040;
+	Fri,  3 Apr 2026 10:50:17 +0000 (GMT)
+Received: from li-1cb9f04c-2ae1-11b2-a85c-a8a0a83790a8.ibm.com.com (unknown [9.124.211.69])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri,  3 Apr 2026 10:50:17 +0000 (GMT)
+From: Saket Kumar Bhaskar <skb99@linux.ibm.com>
+To: linux-kernel@vger.kernel.org, bpf@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org
+Cc: hbathini@linux.ibm.com, sachinpb@linux.ibm.com, venkat88@linux.ibm.com,
+        andrii@kernel.org, eddyz87@gmail.com, ast@kernel.org,
+        daniel@iogearbox.net, martin.lau@linux.dev, song@kernel.org,
+        yonghong.song@linux.dev, john.fastabend@gmail.com, kpsingh@kernel.org,
+        sdf@fomichev.me, haoluo@google.com, jolsa@kernel.org,
+        chleroy@kernel.org, maddy@linux.ibm.com, mpe@ellerman.id.au
+Subject: [PATCH v3] powerpc64/bpf: Add powerpc64 JIT support for timed may_goto
+Date: Fri,  3 Apr 2026 16:20:16 +0530
+Message-ID: <20260403105016.74775-1-skb99@linux.ibm.com>
+X-Mailer: git-send-email 2.52.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -121,88 +90,269 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SJ0PR11MB5645:EE_|CO1PR11MB4916:EE_
-X-MS-Office365-Filtering-Correlation-Id: 19b3464a-cc84-4d77-99d3-08de916a58c6
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|7416014|376014|366016|56012099003|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info: eihmQWhQ6LMkoxmWkbTr4RtqAIP3Nm6Ykn3U311KtwYXroQIvg6YHlxRblRsFQj27ZZCD20KMJR9rnv1qSzciQKOY5IAaZlerrtM6Kr4TgLGb9QM+GySvBD+Lm0CMb/+WxdjzIwFEGF8pDvs06ig4hJYx7cKB5ptmsBaWsHliiGFr+eTe58WiYNQxSmxvljEsJTkm2y1owVCIeDbmJG8VJFc8etzpt0Trt+rBKtn9Wr17mkXWvqxomd7YWLqxDchnkHBMukI/UCudNOYXWF5ntIKy+lKgpY8q1FPul6j+WaCTRy3Rt0+S5t0SQi5PMArxNSXR/mCxC1eDcxaXYsIfusoZWCYinfrsWpZGRl9oFL/W8WjYA5bd7a1S7aQhDpUcww4Lp2Xw026p0fWby0MG4EdX5lmAV09p7xvOEjQdgpnojnYWb5tMR3qeafjVeJ3O4SgAyL28OZiWHFEDEnxG8K8iGPe26f8X2EwXCHUD67GN3PY2MT7kLtu6t1TXRy+KMS1qqt1gKaYCiOUp0EYU4NXrJV8LN2NDg6sNKsbAFG+U94FKzZ+SRYQtFJwFeAbz4CEkoPUUbz9I4XvT/Qh+PzqJYI2BukwOnrcq/NaZY1BmGe2JHh+zo/7SQP68MYi9OtXRrFBXQMLWA68JbQZ04YomCA5uGRJsJfVKo3zFfzZUkBYfp43DrdD8/8BG6TOBXNv5rywX7vYD67vcfBd0YFhAAG6sU2bKQv5b3s1x8Q=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ0PR11MB5645.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(7416014)(376014)(366016)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?l53uTvCFWuet+RenT0RzLs9CL/sJJDtD4k/xOUfa2NUTaVx6WRT8Vbl74bIv?=
- =?us-ascii?Q?NBRtzm4bvVznRjuMnUde/7P4LusDu/e/htKz8pm/cZekYhH1dMGVnfc4nTjY?=
- =?us-ascii?Q?jhzCBRu0ceZCBLhismX9bf/UGhjsO0YpxS1aDgt8lP6Pvdm8uIe09cUB1Iwd?=
- =?us-ascii?Q?eC5OF7cEQC9fcMyGqP0rL4B3eBI3dmhKNTxVQBKKUNswjlY0k+ITyBSFLW1y?=
- =?us-ascii?Q?6ETEBmCznNo4BC0vaJqSLBsi3BiPG3EJMRRdUmih4X1XaMAXwOMwfVlVQg+S?=
- =?us-ascii?Q?BoY9gjqjwWm3shzttle6BNkrW33o4H/H0ftrrYIhFUtbRg2pprLklLKjEYDU?=
- =?us-ascii?Q?y9qMjEsvTSIGS7cD0dZm8/q4/LRdzFu4iCrND3XLeT9OgDmMgvRlQOHOCbKI?=
- =?us-ascii?Q?Tqz1VSwjLZBYucQEoZjwGWO/4zHXHqAOD9ISfTLOzS0qHistopVO8vObsD1I?=
- =?us-ascii?Q?YpLtjM+NMpguRkC5wf5/T8Z3J/mPLZ5vkVr7u9kahXIRJ+7CXqhknCaxvB7I?=
- =?us-ascii?Q?EmoVfWskCBccjhD/TcWAf6kPvT0ZHf4t7vuEAsz2MH3UXBzTQukJzTsePlri?=
- =?us-ascii?Q?KGcSNYHphtf6gQz+dt3h9pWjHgzT+ULBvAFEIOwYjrLhtw0P0DOJuqyzA0gf?=
- =?us-ascii?Q?evA3u1GTcH53NtrqCqr1k53MiaeTfAWyzNSX1TZfXKlqHOwGsrH11uoeZlhY?=
- =?us-ascii?Q?JBYhMNDQasx4cYTWwbhx4KrYDFFOtR4oVDYpVC/HIeEKca85y8/2sDFYLllh?=
- =?us-ascii?Q?5Pm50jC6U4+5CLJrw87EwRO2x66guw+FiSoFQBwMhYrgun/+ppPhz3WS35ag?=
- =?us-ascii?Q?fwUwYZr+DEs5IflpO9WGeb1o1zuD8CdMErddvNrW0KyutaMOQFRlKqrw5eoK?=
- =?us-ascii?Q?80/QwMrWHz+y3V7VX3D4+93Y7ASAPEUp/uWVaK4eN30YT4IgtF1UoWG9yBpc?=
- =?us-ascii?Q?ytoOLQMxiKz2U4qvVy+uz6gjI1CoheHhtZZN4k0cz+jvh3fUPz+DOYHg+wBY?=
- =?us-ascii?Q?aMgvq7Vh42yFqxe0FXmF7KylaqUNXVWMtT79hgwMA7hB8lolzC6+xAnh68vF?=
- =?us-ascii?Q?I3BAl5qsUVF/P+Y5Ba50baSQB+wkmKI2RXSsfcPEjfc3Z5J76ha6bJNAd05c?=
- =?us-ascii?Q?WTf7RgsY7mb5VypddYzMCfnBhujSOQSXrY5RLXAuhtTpkPNdXcFGHKqzNA7N?=
- =?us-ascii?Q?k4vx/jzEbtpZ07QeheazA6BchwrdLXhgNWm4Cv7TMgUZIdabHN3CzpyVsVPu?=
- =?us-ascii?Q?pcVTTQT/bUU4bAs65aJ7CLdYvAquxaJD4/l1fuCIpVkP9RxIdbTIquqFdYQS?=
- =?us-ascii?Q?43TeHks8usj6aFXeE6AQW3Sr8wNPUGNxjKDkzY3Z8/iVXARwRqF7r4X/czW0?=
- =?us-ascii?Q?gGpFXFCG7ybh0Izjt1Utf8994uZUAXZpT3nwI1d7F5xE/U9Azi0wmmSnMKvr?=
- =?us-ascii?Q?R/xvjDSagLb28Gmqef1EiHnXxsKuKI4wfJJqZAqhDDycyg4DrIP2pZTKo+lF?=
- =?us-ascii?Q?sq/+jprWkHWCkjJUJ1e7gPT2q1GW0miT0m7Q94/s89lO+ZAlAt/EdUJYNCVH?=
- =?us-ascii?Q?65DVafqLHLBgEyYc4BmOUTmMXdmXhwacBeGVWZuBVWzuVSuAVbHLO179ZA9j?=
- =?us-ascii?Q?sSWa0dHeTH2ZqjY1WeGbCrPQn9EaxvfkTozfMmjzuJ3RHm8KQqoT62ia0R3R?=
- =?us-ascii?Q?XGSN3BFKvWm/1tKn+tCuBPtauHdgYN8Ba7dBaC9HcmoFXq+JIxJkUcnbIoCK?=
- =?us-ascii?Q?IzQeTj5DHw=3D=3D?=
-X-Exchange-RoutingPolicyChecked: A/QZRgZdufznLWGHpXVvyRfjTtC9BoihWvWJ+dCX5hiBo/rh3wNmtZUoUvi7wlglQGVkym44CE/X9bf6wo8yyuc0T6y4C5E06M2lJC2hKbKj/bCAEk/6/gl1JZ24I/C3fb9uVAAhReXvw9UKRFnauCllZnqv/OWyf20cDnU+HpA9vVNyHcxPCnsiG9tZcIyar+DDGZDqUeh7plKuWWNSMIr6479l+2vRiOb/4D+AbTsQld3a6KojbhK9OJ21VDtb1U3g/YZgVpcaJletMsZZaZfdaCqEnMGEGiB/KhChfsjvFyb4HqA7wF39vbWXUMEPSS3pCMP0k61bNgIVQU+0Ww==
-X-MS-Exchange-CrossTenant-Network-Message-Id: 19b3464a-cc84-4d77-99d3-08de916a58c6
-X-MS-Exchange-CrossTenant-AuthSource: SJ0PR11MB5645.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Apr 2026 10:18:27.9157
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: CIWvlHcSShE7s22fJbiM4qZKjSFbAupqourbmTQz8u7+TLV3YmzDBl7HItbRsKBXtlXXvAT5Qu1TnBBK/sdecA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CO1PR11MB4916
-X-OriginatorOrg: intel.com
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: J3Zly3RBPdwmKKlYt10reykXdbkKlP3X
+X-Authority-Analysis: v=2.4 cv=KslAGGWN c=1 sm=1 tr=0 ts=69cf9b77 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=85F7jkDEoLXYxFLucjsA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDAzMDA5NiBTYWx0ZWRfX7VjELNrf0oDv
+ v/cKNZ9WrVX6jukDHACNOrPrp9qv45Yr+GW5PuFSbkcrdJoiQRs5Hieu/NBxZHmFmzWfwT1/Gwm
+ D0XFe9lurZ38TvNM8cTqZejPQbLrYIDIPSwbiAPkR8oOKYHHHfDFswR1kZaMAi9nHbMccPem/md
+ 4xJXFCR/KGiPsqmfRJg5x+dNf7KURet/33OkUSFyoVbVhCb4J+cYiL2MdwdHJyAF1qYs+Xrv31E
+ CJ5gm2uxNcIcTe9LqLZzvF2sEcraMlYj+y56s8cK1bazxM1VxpTbmOoe3KTVcrBPPU2Bs2NOgF/
+ r1hcRouC7M7SN4MWleIs0r0Ni2/dzHFDSNnZ+YnuFbQYWku3BIeLg/+5R+yEFthcSrpzxnogrcR
+ 6EhOoDyNNLxtu599JPu1dkUyez/0H/qtV/IWh2Pc1O5l5JOXsnv3sMwiqVTWbZcD/rKVqT0u+w9
+ Rjw7yRYZwCSIi8GCfsA==
+X-Proofpoint-ORIG-GUID: 1KJJwWyqMYNqZbhOASHivmyWzk2dI9yd
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-03_03,2026-04-03_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 lowpriorityscore=0 priorityscore=1501 suspectscore=0
+ phishscore=0 adultscore=0 bulkscore=0 impostorscore=0 clxscore=1015
+ spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
+ definitions=main-2604030096
 
-On Thu, Apr 02, 2026 at 04:52:24PM -0700, Sean Christopherson wrote:
-> On Tue, Mar 31, 2026, Peter Fang wrote:
-> > On Tue, Mar 31, 2026 at 02:22:47AM +0000, Yosry Ahmed wrote:
-> > > 
-> > > Most callers are converting a GPA to a GFN, I wonder if we should make
-> 
-> Not most, all.  The two outliers just do "gpa >> PAGE_SHIFT" instead of
-> using gpa_to_gfn().
-> 
-> > > the function take in a GPA instead? But then we'll need to the GPA not
-> > > being aligned to a page boundary (either do gpa_to_gfn() in
-> > > __kvm_vcpu_map() or fail if it's not aligned).
-> 
-> Just do gpa_to_pfn().  If someone gets confused, we can add a comment explaining
-> that kvm_vcpu_map() maps the entire page containing the gpa, but that should really
-> go without saying...
-> 
-> > Thanks for the feedback!
-> > 
-> > Mapping guest memory into the host feels more like a GFN-based operation
-> > to me. struct kvm_host_map is also designed around GFNs/PFNs so I think
-> > using gfn_t in the function prototypes seems more natural. The caller
-> > can handle the offset-in-page cases without creating a lot of complexity
-> > in the APIs. But I'm happy to rework this if there's a desire to make
-> > them more GPA-friendly.
-> 
-> I vote to rework the APIs (after first fixing the prototypes) to take a GPA.
-> I agree that mapping a page at a given gfn is conceptually more natural, but
-> as Yosry points out, requiring literally every caller to convert to a gfn doesn't
-> make a whole lot of sense from a code maintenance perspective.
+When verifier sees a timed may_goto instruction, it emits a call to
+arch_bpf_timed_may_goto() with a stack offset in BPF_REG_AX
+(powerpc64 R12) and expects the refreshed count value to be returned
+in the same register. The verifier doesn't save or restore any registers
+before emitting this call.
 
-Thanks! I'll prepare a v2 series to clean up the call sites as well.
+arch_bpf_timed_may_goto() should act as a trampoline to call
+bpf_check_timed_may_goto() with powerpc64 ELF ABI calling convention.
+
+To support this custom calling convention, implement
+arch_bpf_timed_may_goto() in assembly and make sure BPF caller saved
+registers are preserved, then call bpf_check_timed_may_goto with
+the powerpc64 ABI calling convention where first argument and return
+value both are in R3. Finally, move the result back into BPF_REG_AX(R12)
+before returning.
+
+Also, introduce bpf_jit_emit_func_call() that computes the offset from
+kernel_toc_addr(), validates that the target and emits the ADDIS/ADDI
+sequence to load the function address before performing the indirect
+branch via MTCTR/BCTRL. The existing code in bpf_jit_emit_func_call_rel()
+is refactored to use this function.
+
+Acked-by: Hari Bathini <hbathini@linux.ibm.com>
+Signed-off-by: Saket Kumar Bhaskar <skb99@linux.ibm.com>
+---
+This patch has been rebased on top of these 3 patches on powerpc-next in
+the following sequence:
+1. https://lore.kernel.org/bpf/20260401103215.104438-1-adubey@linux.ibm.com/
+2. https://lore.kernel.org/bpf/20260401141043.41513-1-adubey@linux.ibm.com/
+3. https://lore.kernel.org/bpf/20260401152133.42544-1-adubey@linux.ibm.com/
+
+Changes since v1:
+- Compile bpf_timed_may_goto.o conditionally for PPC64. (Hari)
+- Moved reladdr at the beginning of the function. (Hari)
+- Added error check for bpf_jit_emit_func_call() in
+  bpf_jit_build_body(). (Hari)
+- Save registers after 32 bytes as MIN_FRAME_SIZE is 32 bytes for
+  powerpc ABIv2. (Hari)
+
+v1: https://lore.kernel.org/bpf/20260402054249.28801-1-skb99@linux.ibm.com/ 
+
+Changes since v2:
+- Removed spurious + that slipped into the patch.
+
+v2: https://lore.kernel.org/bpf/20260402161026.289827-1-skb99@linux.ibm.com/
+---
+ arch/powerpc/net/Makefile             |  4 ++
+ arch/powerpc/net/bpf_jit_comp.c       |  5 +++
+ arch/powerpc/net/bpf_jit_comp64.c     | 62 ++++++++++++++++++++++-----
+ arch/powerpc/net/bpf_timed_may_goto.S | 57 ++++++++++++++++++++++++
+ 4 files changed, 117 insertions(+), 11 deletions(-)
+ create mode 100644 arch/powerpc/net/bpf_timed_may_goto.S
+
+diff --git a/arch/powerpc/net/Makefile b/arch/powerpc/net/Makefile
+index 8e60af32e51e..7f9339bacef1 100644
+--- a/arch/powerpc/net/Makefile
++++ b/arch/powerpc/net/Makefile
+@@ -3,3 +3,7 @@
+ # Arch-specific network modules
+ #
+ obj-$(CONFIG_BPF_JIT) += bpf_jit_comp.o bpf_jit_comp$(BITS).o
++
++ifdef CONFIG_PPC64
++obj-$(CONFIG_BPF_JIT) += bpf_timed_may_goto.o
++endif
+diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+index 50103b3794fb..9b2b456b0765 100644
+--- a/arch/powerpc/net/bpf_jit_comp.c
++++ b/arch/powerpc/net/bpf_jit_comp.c
+@@ -537,6 +537,11 @@ bool bpf_jit_supports_subprog_tailcalls(void)
+ 	return IS_ENABLED(CONFIG_PPC64);
+ }
+ 
++bool bpf_jit_supports_timed_may_goto(void)
++{
++	return IS_ENABLED(CONFIG_PPC64);
++}
++
+ bool bpf_jit_supports_kfunc_call(void)
+ {
+ 	return IS_ENABLED(CONFIG_PPC64);
+diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+index db364d9083e7..dab106cae22b 100644
+--- a/arch/powerpc/net/bpf_jit_comp64.c
++++ b/arch/powerpc/net/bpf_jit_comp64.c
+@@ -451,10 +451,28 @@ void arch_bpf_stack_walk(bool (*consume_fn)(void *, u64, u64, u64), void *cookie
+ 	}
+ }
+ 
++static int bpf_jit_emit_func_call(u32 *image, struct codegen_context *ctx, u64 func_addr, int reg)
++{
++	long reladdr = func_addr - kernel_toc_addr();
++
++	if (reladdr > 0x7FFFFFFF || reladdr < -(0x80000000L)) {
++		pr_err("eBPF: address of %ps out of range of kernel_toc.\n", (void *)func_addr);
++		return -ERANGE;
++	}
++
++	EMIT(PPC_RAW_ADDIS(reg, _R2, PPC_HA(reladdr)));
++	EMIT(PPC_RAW_ADDI(reg, reg, PPC_LO(reladdr)));
++	EMIT(PPC_RAW_MTCTR(reg));
++	EMIT(PPC_RAW_BCTRL());
++
++	return 0;
++}
++
+ int bpf_jit_emit_func_call_rel(u32 *image, u32 *fimage, struct codegen_context *ctx, u64 func)
+ {
+ 	unsigned long func_addr = func ? ppc_function_entry((void *)func) : 0;
+-	long reladdr;
++	long __maybe_unused reladdr;
++	int ret;
+ 
+ 	/* bpf to bpf call, func is not known in the initial pass. Emit 5 nops as a placeholder */
+ 	if (!func) {
+@@ -507,16 +525,9 @@ int bpf_jit_emit_func_call_rel(u32 *image, u32 *fimage, struct codegen_context *
+ 	EMIT(PPC_RAW_BCTRL());
+ #else
+ 	if (core_kernel_text(func_addr)) {
+-		reladdr = func_addr - kernel_toc_addr();
+-		if (reladdr > 0x7FFFFFFF || reladdr < -(0x80000000L)) {
+-			pr_err("eBPF: address of %ps out of range of kernel_toc.\n", (void *)func);
+-			return -ERANGE;
+-		}
+-
+-		EMIT(PPC_RAW_ADDIS(_R12, _R2, PPC_HA(reladdr)));
+-		EMIT(PPC_RAW_ADDI(_R12, _R12, PPC_LO(reladdr)));
+-		EMIT(PPC_RAW_MTCTR(_R12));
+-		EMIT(PPC_RAW_BCTRL());
++		ret = bpf_jit_emit_func_call(image, ctx, func_addr, _R12);
++		if (ret)
++			return ret;
+ 	} else {
+ 		if (IS_ENABLED(CONFIG_PPC64_ELF_ABI_V1)) {
+ 			/* func points to the function descriptor */
+@@ -1755,6 +1766,35 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
+ 			if (ret < 0)
+ 				return ret;
+ 
++			/*
++			 * Call to arch_bpf_timed_may_goto() is emitted by the
++			 * verifier and called with custom calling convention with
++			 * first argument and return value in BPF_REG_AX (_R12).
++			 *
++			 * The generic helper or bpf function call emission path
++			 * may use the same scratch register as BPF_REG_AX to
++			 * materialize the target address. This would clobber AX
++			 * and break timed may_goto semantics.
++			 *
++			 * Emit a minimal indirect call sequence here using a temp
++			 * register and skip the normal post-call return-value move.
++			 */
++
++			if (func_addr == (u64)arch_bpf_timed_may_goto) {
++				ret = 0;
++				if (!IS_ENABLED(CONFIG_PPC_KERNEL_PCREL))
++					ret = bpf_jit_emit_func_call(image, ctx, func_addr,
++								     tmp1_reg);
++
++				if (ret || IS_ENABLED(CONFIG_PPC_KERNEL_PCREL)) {
++					PPC_LI_ADDR(tmp1_reg, func_addr);
++					EMIT(PPC_RAW_MTCTR(tmp1_reg));
++					EMIT(PPC_RAW_BCTRL());
++				}
++
++				break;
++			}
++
+ 			/* Take care of powerpc ABI requirements before kfunc call */
+ 			if (insn[i].src_reg == BPF_PSEUDO_KFUNC_CALL) {
+ 				if (prepare_for_kfunc_call(fp, image, ctx, &insn[i]))
+diff --git a/arch/powerpc/net/bpf_timed_may_goto.S b/arch/powerpc/net/bpf_timed_may_goto.S
+new file mode 100644
+index 000000000000..6fd8b1c9f4ac
+--- /dev/null
++++ b/arch/powerpc/net/bpf_timed_may_goto.S
+@@ -0,0 +1,57 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (c) 2025 IBM Corporation, Saket Kumar Bhaskar <skb99@linux.ibm.com> */
++
++#include <linux/linkage.h>
++#include <asm/ppc_asm.h>
++
++/*
++ * arch_bpf_timed_may_goto() trampoline for powerpc64
++ *
++ * Custom BPF convention (verifier/JIT):
++ *	- input:  stack offset in BPF_REG_AX (r12)
++ *	- output: updated count in BPF_REG_AX (r12)
++ *
++ * Call bpf_check_timed_may_goto(ptr) with normal powerpc64 ABI:
++ * 	- r3 = ptr, return in r3
++ *
++ * Preserve BPF regs R0-R5 (mapping: r8, r3-r7).
++ */
++
++SYM_FUNC_START(arch_bpf_timed_may_goto)
++	/* Prologue: save LR, allocate frame */
++	mflr    r0
++	std     r0, 16(r1)
++	stdu    r1, -112(r1)
++
++	/* Save BPF registers R0 - R5 (r8, r3-r7) */
++	std     r3, 32(r1)
++	std     r4, 40(r1)
++	std     r5, 48(r1)
++	std     r6, 56(r1)
++	std     r7, 64(r1)
++	std     r8, 72(r1)
++
++	/*
++	 * r3 = BPF_REG_FP + BPF_REG_AX
++	 * BPF_REG_FP is r31; BPF_REG_AX is r12 (stack offset in bytes).
++	 */
++	add     r3, r31, r12
++	bl      bpf_check_timed_may_goto
++
++	/* Put return value back into AX */
++	mr      r12, r3
++
++	/* Restore BPF registers R0 - R5 (r8, r3-r7) */
++	ld      r3, 32(r1)
++	ld      r4, 40(r1)
++	ld      r5, 48(r1)
++	ld      r6, 56(r1)
++	ld      r7, 64(r1)
++	ld      r8, 72(r1)
++
++	/* Epilogue: pop frame, restore LR, return */
++	addi    r1, r1, 112
++	ld      r0, 16(r1)
++	mtlr    r0
++	blr
++SYM_FUNC_END(arch_bpf_timed_may_goto)
+-- 
+2.52.0
+
 
