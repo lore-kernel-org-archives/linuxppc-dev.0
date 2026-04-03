@@ -1,69 +1,101 @@
-Return-Path: <linuxppc-dev+bounces-19261-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19262-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3EA1FD730A2
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2026 06:31:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBAFFD730BD
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2026 08:11:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fn84r38RKz2yVP;
-	Fri, 03 Apr 2026 17:31:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775197884;
-	cv=none; b=hrll4aONl3CXWLrplLmtt6Q9HdD8JyK0ULhwc0KQwVK6imOh9h/B3GbBEdtjrgJLRH0BkBeBhqVONqCB3UhadTujRSKOEv9ynQU3rJoDIt0aHXZp2zlHKo0ihFGmktwX094n9lOkX0o3u9Nr28J+Y3lvaH4jrTKzwRLcE1UxqNgoJAXKyuhRhG70vR5kfhItPFIeBvZfz9GsGCh2ENtHOLMmGVelmqs3Pcm4sk6vNwa355cRZKvaBC++KF3RX3yHXOIndlMbRT7TuXl9E4AEwnHYsjbO7fFHKY6OhU+HUVU8gBFE1D/XEK4v/aNJSWtpZFO3EkZqHHlKdllXO8wMuQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fnBJ31TXkz2yVP;
+	Fri, 03 Apr 2026 19:11:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775203875;
+	cv=none; b=MZ+bYFL5d9fQGd0BsoXMaIUrp+hbsQ6jJmvrXkq/Ux9T2oIhfzQIPFCmn99ymjcArOBc+UsS9OsvJ9RSK/5LMkms8GjEacmSvkLCMPpf0X8Xwj7VjzR94PeLiNmTjCvpX3smp4VPm3RRZFooSwwx07GYGBKyvENpeLQScSb49e3VsSSZFOfkZ1uI+U0l2MeEs8i3w0EWFcF8nezeroDB7IiYjMo8ntCAMc2O9epgQwjn7vmodxLgCNhM2Zap2P/HXqznU81wUcZn9nJyqDfvx8ig3lW9K+411PbO4FiW36l6Ifuu9qB1CQNI6MXPbXNgO5O/v5+8BieSgy/x/x8v4g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775197884; c=relaxed/relaxed;
-	bh=Z+XyFWPQDMhQFEfGTh5lxYJKkJRaIVp5bBIXM3gL4/Q=;
-	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=DiXAJpe2p/7d48fF4LOlk88qfQ3eSOetOyXrX1JuWpC5z+ZolBGvq62winAiwPzTDLQbz2gfCJa5CNcyZpgPhK8zY9gT7pC3s+r8lRQnIj5Y/10lR+yQu7LDm3RIzKYbbbdxvl6Nnea47+uKlUzlApkKH26oUSnR+8QkgTxsdU9f2C/aQNGgSiVW91yEL5EasjVK0/43KZ2h30w0CsUqSmZg7dXykNC5Q5kKgPpapOleXLMdrGLhbwY1vKCxIFtDoNTu59plq6vOTdiXRkyDCBeLg/wR/rTy7pgOJ1iDU31CLwSpacnpiRPfhzEFyq5kN2zDan5EDgeoeIQOQrOZrw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=wNbZTh+h; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	t=1775203875; c=relaxed/relaxed;
+	bh=pKTj+fuw+V2CSJJ06hFpU6rHWXveJU/kjg5LgshKBS4=;
+	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=LstxEKFzEaKZZtUvN+hnEQJkk6Oo84GzbR2jBFFurhjpYFolxGHSN/Aby72NSrABtetbHGaUejJwcOov15bWvl/Cpqf4Tt24kW921hhvThkrdGCDL8gezhcLxXgKJt1CinxSCuEMZ0UfWKlV2Z9ezvr+WKpjhZBhYYIHOnck9wMXTXSDIpZQjp2enGLlymTuEqeSfBLjD2uXfPwK5qF0Mzc6KJjug07By/X6UQJE4qpr0IAob/hykaijvwXYGrBKREjtiSoUQeXdv9sARY6mISHyLOifjrzvZniQA+kOf0wzDNWcNH/+gyMKXGU6cS3POXVfCZ6BxcT70UnzZeGOyg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=ZjapW8jF; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=lpDrm4gB; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=ZjapW8jF; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=lpDrm4gB; dkim-atps=neutral; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=wNbZTh+h;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=ZjapW8jF;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=lpDrm4gB;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=ZjapW8jF;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=lpDrm4gB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fn84q3SdKz2xm3
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2026 17:31:22 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 26B5B43F2F;
-	Fri,  3 Apr 2026 06:31:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 55355C4CEF7;
-	Fri,  3 Apr 2026 06:31:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
-	s=korg; t=1775197880;
-	bh=z5smXNJSDIZs7k9QwbEBHb9yac6jAucmud+T/8hzBOA=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=wNbZTh+hRi8x6NmTtJ9Tt4BdER0gAGV8bnI1wlICJAzLhthK02O3Ak1qqpppmO6w9
-	 ItAmoOlKwr1JFtSe+6AIaOuNsgXneiQAudP0xVDh/lwc/285dhdd9UmXc38A2RPQOU
-	 8DQuoRvBiRsIHfOUw0fy82VH7uKPithrZYXkG7pc=
-Date: Thu, 2 Apr 2026 23:31:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Sourabh Jain <sourabhjain@linux.ibm.com>
-Cc: Coiby Xu <coxu@redhat.com>, kexec@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- devicetree@vger.kernel.org, Arnaud Lefebvre
- <arnaud.lefebvre@clever-cloud.com>, Baoquan he <bhe@redhat.com>, Dave Young
- <dyoung@redhat.com>, Kairui Song <ryncsn@gmail.com>, Pingfan Liu
- <kernelfans@gmail.com>, Krzysztof Kozlowski <krzk@kernel.org>, Rob Herring
- <robh@kernel.org>, Thomas Staudt <tstaudt@de.ibm.com>, Will Deacon
- <will@kernel.org>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Madhavan Srinivasan
- <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas
- Piggin <npiggin@gmail.com>, Saravana Kannan <saravanak@kernel.org>, open
- list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v5 3/3] arm64,ppc64le/kdump: pass dm-crypt keys to kdump
- kernel
-Message-Id: <20260402233118.08ea88a6836bd10f01031cce@linux-foundation.org>
-In-Reply-To: <51761fcf-955f-45e2-97a5-2b49d8e79d04@linux.ibm.com>
-References: <20260225060347.718905-1-coxu@redhat.com>
-	<20260225060347.718905-4-coxu@redhat.com>
-	<51761fcf-955f-45e2-97a5-2b49d8e79d04@linux.ibm.com>
-X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fnBJ14PPXz2xln
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2026 19:11:13 +1100 (AEDT)
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id B207F5BD57;
+	Fri,  3 Apr 2026 08:11:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1775203869; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=pKTj+fuw+V2CSJJ06hFpU6rHWXveJU/kjg5LgshKBS4=;
+	b=ZjapW8jFn+ffPxdody7EeAXjP3qFwL1hz3EpGCSf8VEImvuXSLJsUnhALORGFLXWTzEwmF
+	qg6Uwvk7ByjPNIjFjrgJgT0j6coewIKlBOLSxJnJZ8+NwuzKEXxJ/m5gQIg4Pp5VAAcTHU
+	zT+bP8PmtCGVRlHd2z3jZsQr1qNhkW4=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1775203869;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=pKTj+fuw+V2CSJJ06hFpU6rHWXveJU/kjg5LgshKBS4=;
+	b=lpDrm4gBQZVjSNqzwJ8u02Vc+sPyplzJwIgcIsNR5a//N8Hk/7iBMZZwlv2HzXUvd5XCrm
+	E0Td6ppUMBEf4cCw==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1775203869; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=pKTj+fuw+V2CSJJ06hFpU6rHWXveJU/kjg5LgshKBS4=;
+	b=ZjapW8jFn+ffPxdody7EeAXjP3qFwL1hz3EpGCSf8VEImvuXSLJsUnhALORGFLXWTzEwmF
+	qg6Uwvk7ByjPNIjFjrgJgT0j6coewIKlBOLSxJnJZ8+NwuzKEXxJ/m5gQIg4Pp5VAAcTHU
+	zT+bP8PmtCGVRlHd2z3jZsQr1qNhkW4=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1775203869;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=pKTj+fuw+V2CSJJ06hFpU6rHWXveJU/kjg5LgshKBS4=;
+	b=lpDrm4gBQZVjSNqzwJ8u02Vc+sPyplzJwIgcIsNR5a//N8Hk/7iBMZZwlv2HzXUvd5XCrm
+	E0Td6ppUMBEf4cCw==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 7C5A14A0A6;
+	Fri,  3 Apr 2026 08:11:09 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id L7wEHR12z2mfbQAAD6G6ig
+	(envelope-from <tiwai@suse.de>); Fri, 03 Apr 2026 08:11:09 +0000
+Date: Fri, 03 Apr 2026 10:11:09 +0200
+Message-ID: <87bjg0ihuq.wl-tiwai@suse.de>
+From: Takashi Iwai <tiwai@suse.de>
+To: wangdich9700@163.com
+Cc: johannes@sipsolutions.net,
+	perex@perex.cz,
+	tiwai@suse.com,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-sound@vger.kernel.org,
+	wangdicheng <wangdicheng@kylinos.cn>
+Subject: Re: [PATCH v2 1/2] ALSA: aoa/onyx: Fix OF node leak on probe failure
+In-Reply-To: <20260403014736.33014-1-wangdich9700@163.com>
+References: <20260403014736.33014-1-wangdich9700@163.com>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) Emacs/30.2 Mule/6.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,47 +108,43 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
+Content-Type: text/plain; charset=US-ASCII
+X-Spamd-Result: default: False [-3.30 / 50.00];
+	BAYES_HAM(-3.00)[99.99%];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-0.999];
+	MIME_GOOD(-0.10)[text/plain];
+	ARC_NA(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	MIME_TRACE(0.00)[0:+];
+	FREEMAIL_TO(0.00)[163.com];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FREEMAIL_ENVRCPT(0.00)[163.com];
+	RCVD_TLS_ALL(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	TO_DN_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCPT_COUNT_SEVEN(0.00)[7];
+	RCVD_COUNT_TWO(0.00)[2];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,imap1.dmz-prg2.suse.org:helo,kylinos.cn:email]
 
-On Thu, 2 Apr 2026 16:24:14 +0530 Sourabh Jain <sourabhjain@linux.ibm.com> =
-wrote:
+On Fri, 03 Apr 2026 03:47:36 +0200,
+wangdich9700@163.com wrote:
+> 
+> From: wangdicheng <wangdicheng@kylinos.cn>
+> 
+> Add missing of_node_put() in the error path.
+> 
+> Signed-off-by: wangdicheng <wangdicheng@kylinos.cn>
 
-> But while reading crash_load_dm_crypt_keys() I noticed a possibility of a
-> double free at the address pointed by `keys_header`:
->=20
-> In crash_load_dm_crypt_keys()/crash_dump_dm_crypt.c
->  =A0 =A0 snip...
->=20
->  =A0 =A0 kbuf.buffer =3D keys_header;
->=20
->  =A0 =A0 snip....
->=20
->  =A0 =A0 r =3D kexec_add_buffer(&kbuf);
->  =A0 =A0 if (r) {
->  =A0 =A0 =A0 =A0 pr_err("Failed to call kexec_add_buffer, ret=3D%d\n", r);
->  =A0 =A0 =A0 =A0 kvfree((void *)kbuf.buffer); =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0 =A0 =A0 <---=20
-> First Free
->  =A0 =A0 =A0 =A0 return r;
->  =A0 =A0 }
->=20
-> Since `keys_header` is not reset, the next call to=A0build_keys_header()
-> will cause a double free at `keys_header`.
->=20
-> static int build_keys_header(void)
-> {
->=20
->  =A0 =A0 snip...
->=20
->  =A0 =A0 if (keys_header !=3D NULL)
->  =A0 =A0 =A0 =A0 kvfree(keys_header);
->=20
->  =A0 =A0 snip...
-> }
->=20
-> What do you think?
+Applied to for-next branch now.
 
-It looks that way to me.
+
+thanks,
+
+Takashi
 
