@@ -1,77 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-19289-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19290-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A02DAE8538E
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2026 19:57:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25C41E85368
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2026 19:59:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fnTyR0qQTz2yjn;
-	Sat, 04 Apr 2026 06:57:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775246223;
-	cv=none; b=B5Z6MI5ZiPhcMZf2p22U9CL5+ChRsJeyXRKJsnHEDaHpj7WUigajiwEd1Bn2fGZbKJ/phCIxhdf9uDmE2zfy1u07I9GWzys9y8opKXQECDRlfGx1AQgJGCHMxiBDtVT2VZD10OPOtMEaS1eZ4VgomUnw/6BRAOw1RIVEjAc+lKtg9H7aRtPK/V3D8mxfwLmmteg2B12cpwvyGcxgKcFMy2onnTuq5hJsv7r12J0j5Jru8IcI3tEIo/DOHeL6stmjLR5+fO5SbrU4uq8JE++br/CIXKTwbGWcVeB5NhPoA56CjVUbkuFPJwR6vkr2dZ1a9S2IVexQD2VLPA+XHg0Osg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fnV1h5wNnz2yjn;
+	Sat, 04 Apr 2026 06:59:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775246392;
+	cv=none; b=PjdTkzDEhpEW2ccpTiS4PS7gIBlFVDb8fAIV36qvnGdtspfyHvZUR53FxaklFu0trt8TUBV8HbIlAem300DMX4sa2b3giwHEWaq0J9hmwXGvl+MgTOhKLmGAhL+XULl4M0BlxdplpfDSOQ91L+iSd0FkhrxZ+J3xOfay8pFHXL95rD6kIN/lSAxfNpLCAoTMARiusNcQilmln8ZuMhbe6v2Of86A9A5G7CBOyvB40b1rcKbz7lDx3LyQRZQuCS/1OPH5gwEQWpwRPxyDuIQ9VDFodZ9PvcPZFC1Vq32u1eOKR9/ba0rtQyeaZBBO6BXkatmL7coNNI/Ks2LiUTBAmg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775246223; c=relaxed/relaxed;
-	bh=/5NZHFojAQBC+UTFH3gNk9HZPposBvabp2pP/FucyxE=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=VpF2DdNUQ7li6ZsGQpJ1QrQwOW4xNgrtd9hZCfBNdUjVmEfQXpe0RiLudD+apwR37jFY/tTFkomYOaHADEF9uDhepUWybezmao7KfTzAy1fVRXn/0wJbh6D/mACFjHb7+PwuImjfwBz0nsyG2sejHhgzi+symMPKbhGLQKEZ1L/0GvGbmOKNgAmkZVTYJslyAYuENmtfaB19uqTNdjUG7NZYhI45lcsiTP8QIEE08shNkGDwG5FsddL9qCNLZ3c/ox8cq88sXxoC/wg5Ox38Gr80KjQe79jX4P4S1iVrsEtYwHrzztN01FzCGAaQXQnE7ThIDZuCoerPth/p5VUMVg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Q72QCnJt; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1775246392; c=relaxed/relaxed;
+	bh=OVNyj2Jj76qFM+tO9FJUNvpvUkWT58xHyWuu5jTOYlw=;
+	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
+	 In-Reply-To:Content-Type; b=gmdYavIA7LfLAbvHk7LgA3Y0Ijk73HnrmqFKSkHlHht6SRJzJoM0IJ+HCL/yoXrljpHG+BNVfF9ADC0ppaLxO5DAQf6FDk93w1ShUkk1B7cAQYN3AyMXUeP5YFNqJYM3HiIXca4xs8i1lxeOaepfxLMrjLMSkQC5r1Af26/n/Lnj3ShOkTQIQfx2Elm9fC1NAjZhHIcS7MPJxtw4TKDX8rphapxDniRqn1nPkGrjuIXpebwSIPXfsoOYglsCAcEVh5d13RwfCTfALTCYDbBnMelXLss7so2niNbod+AoIAe0jqW2LwB/+K1exbshrGSFBGHLBlzzjVFdMBAzCtRi3Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=S5hKRqq5; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Q72QCnJt;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=S5hKRqq5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fnTyQ1Hx6z2yQj
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Apr 2026 06:57:02 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id C5C5660008;
-	Fri,  3 Apr 2026 19:56:58 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 44607C19424;
-	Fri,  3 Apr 2026 19:56:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775246218;
-	bh=i/moDq0DGqe89rhWcnbMfpd1fOs4JQ4tDR5Rad9XOKs=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:From;
-	b=Q72QCnJtolrdfAl0t++TuTiC3koOuaEji+ymU3jHbtTupWzOWgx5WN5Lvu1MtXSSb
-	 Ie8MNVEuYsSN36so1VJfqCVexa6J7Sf38JcGC+sMePAhc3zkXf+1dPjtVakGk1eYAX
-	 I6DGKKg36VNsfeXCTDL6J4S5ACrui9iGS9YGQg1cAqYk/BQakA99RoDpQ/QHCPWwVZ
-	 lZdM3dNrIL1xr09McGG/bJM/cIa5AQl8vN4JyNMEfmX01ilaZ4zNyNCu6rI8EIi48c
-	 lSRZ3MZ1LMbY9yT25BafikuhDlIvA1DbyYoY7pAyQW6549UTysLsVRe3bEUW/ImAWU
-	 MgAQL3FzVSy0Q==
-Date: Fri, 3 Apr 2026 14:56:57 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Jakub Kicinski <kuba@kernel.org>
-Cc: Gary Guo <gary@garyguo.net>, davem@davemloft.net,
-	netdev@vger.kernel.org, edumazet@google.com, pabeni@redhat.com,
-	andrew+netdev@lunn.ch, horms@kernel.org, jes@trained-monkey.org,
-	chenhuacai@kernel.org, kernel@xen0n.name, tsbogend@alpha.franken.de,
-	James.Bottomley@hansenpartnership.com, deller@gmx.de,
-	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-	chleroy@kernel.org, hca@linux.ibm.com, gor@linux.ibm.com,
-	agordeev@linux.ibm.com, borntraeger@linux.ibm.com,
-	svens@linux.ibm.com, bhelgaas@google.com, dakr@kernel.org,
-	kwilczynski@kernel.org, ojeda@kernel.org, boqun@kernel.org,
-	bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org,
-	aliceryhl@google.com, tmgross@umich.edu, ebiggers@google.com,
-	ardb@kernel.org, tiwai@suse.de, tytso@mit.edu,
-	enelsonmoore@gmail.com, martin.petersen@oracle.com,
-	jirislaby@kernel.org, gregkh@linuxfoundation.org,
-	geert@linux-m68k.org, herbert@gondor.apana.org.au,
-	vineethr@linux.ibm.com, lirongqing@baidu.com, kshk@linux.ibm.com,
-	vadim.fedorenko@linux.dev, dong100@mucse.com,
-	wangruikang@iscas.ac.cn, hkallweit1@gmail.com, kees@kernel.org,
-	loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
-	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org, linux-pci@vger.kernel.org,
-	rust-for-linux@vger.kernel.org
-Subject: Re: [PATCH net-next] eth: remove the driver for acenic / tigon1&2
-Message-ID: <20260403195657.GA351015@bhelgaas>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fnV1g4sLqz2yQj
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Apr 2026 06:59:51 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6339lP8L3728728;
+	Fri, 3 Apr 2026 19:59:40 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=OVNyj2
+	Jj76qFM+tO9FJUNvpvUkWT58xHyWuu5jTOYlw=; b=S5hKRqq5XMw7x1MN4VawRp
+	Z55hyQHiaeEd8V7+mrdovCPVhK9AZLZgR7QxeDWpD0p9NhZ9NtFZVXJwJC1XLn85
+	g/1sTH/g4/s17WerFAGL4lMvCu825UEMJWMHv1Irzy5BgzXsODyp3yFtPESlCJwB
+	DvV+ceNOPSSUNjm5hciaunOuZTmii3DZHEPf73p/tp0G9QfuPhwOkz88H+RDSePY
+	YVjUv54OWF2x2qCzx782dU2WRzUaBsVrk689a5dgQSe0b/YeeVm0lHTtNXfuZwXb
+	dEzuVpStxl6qiIgqT2E/weiG8crA+Wa7BE0ttwBLaKkueYfALJHl6Lv7JdbAcROQ
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d64dh14pj-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 03 Apr 2026 19:59:39 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 633F5C2N031552;
+	Fri, 3 Apr 2026 19:59:38 GMT
+Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4d6uhk75t3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 03 Apr 2026 19:59:38 +0000
+Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
+	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 633JxbMV7864898
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 3 Apr 2026 19:59:38 GMT
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C21FC58061;
+	Fri,  3 Apr 2026 19:59:37 +0000 (GMT)
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E69795803F;
+	Fri,  3 Apr 2026 19:59:32 +0000 (GMT)
+Received: from [9.124.211.212] (unknown [9.124.211.212])
+	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Fri,  3 Apr 2026 19:59:32 +0000 (GMT)
+Message-ID: <e8286f08-abcb-4b77-952d-228ee1dbd705@linux.ibm.com>
+Date: Sat, 4 Apr 2026 01:29:31 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,39 +81,76 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260403123329.42bed564@kernel.org>
+User-Agent: Mozilla Thunderbird
+From: Sayali Patil <sayalip@linux.ibm.com>
+Subject: Re: [PATCH v3 04/13] selftest/mm: fix cgroup task placement and drop
+ memory.current checks in hugetlb_reparenting_test.sh
+To: "David Hildenbrand (Arm)" <david@kernel.org>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Shuah Khan <shuah@kernel.org>, linux-mm@kvack.org,
+        linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org,
+        Ritesh Harjani <ritesh.list@gmail.com>
+Cc: Zi Yan <ziy@nvidia.com>, Michal Hocko <mhocko@kernel.org>,
+        Oscar Salvador <osalvador@suse.de>,
+        Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+        Dev Jain <dev.jain@arm.com>, Liam.Howlett@oracle.com,
+        linuxppc-dev@lists.ozlabs.org
+References: <cover.1774591179.git.sayalip@linux.ibm.com>
+ <1ac1cac332a692e8d2dd70922bb09c0582340143.1774591179.git.sayalip@linux.ibm.com>
+ <7dadb91c-745d-4fde-8a2b-c141b26823a7@kernel.org>
+Content-Language: en-IN
+In-Reply-To: <7dadb91c-745d-4fde-8a2b-c141b26823a7@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDAzMDE3NyBTYWx0ZWRfX5MBkzgzA1UV4
+ qMVrVKeKymhEVQTmw7N8t1ma4JJlMHknnQcknGuiI8QNTP39xAtr9A0tNvfRo15S5zH7H2stqNy
+ r3Dwdf6EQX2DTLHQhu0hTIqKm7pk+AkeSdjJwtv9EepAoU4vtZjlpEvIeD9KHdCnSHOv7ibbdg2
+ ZLc2v54DrDuTH2Pe2vc/SBT5B255nBzZiyIQl8iWjCljzRQcDp+/Fy+8iN5vkQeoTXrPut8A/BR
+ JoxyaGKtj00jjFdZSxVEewYEl1fKY00vyZ/v8RmpFLlDppopnSt/sefB4vv27F+5fGv5+0+PwiG
+ IS/SzkrlkqfuNTgQZ7dE71a/uHUO+DhBBORwmxtD36/6J+IsnaCoNwTjKujO+eQdaAR10VtXE6m
+ S3ygT76rodWUjE4aDxJQmCarHPGkZ4LwLrEQzEkWGkYSb284S1oyiWIVXpb7/bm0MBq1Aqu7309
+ NIt1GrODPAYIZGzEW3g==
+X-Authority-Analysis: v=2.4 cv=QKZlhwLL c=1 sm=1 tr=0 ts=69d01c2c cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=3LRxwzKv8Tv0BEPaKXkA:9
+ a=QEXdDO2ut3YA:10 a=zZCYzV9kfG8A:10
+X-Proofpoint-GUID: KVFWCwqj010Fi5fKpLtM7gvpgDBcnRQY
+X-Proofpoint-ORIG-GUID: BSE_BQcmlXWY7GF8pNScHrx-nM-SzM15
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-03_06,2026-04-03_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 phishscore=0 adultscore=0 impostorscore=0 clxscore=1015
+ spamscore=0 bulkscore=0 priorityscore=1501 suspectscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2604030177
 
-On Fri, Apr 03, 2026 at 12:33:29PM -0700, Jakub Kicinski wrote:
-> On Fri, 3 Apr 2026 10:40:10 -0500 Bjorn Helgaas wrote:
-> > > > -#define PCI_VENDOR_ID_ALTEON		0x12ae
-> > > > -
-> > > >  #define PCI_SUBVENDOR_ID_CONNECT_TECH			0x12c4
-> > > >  #define PCI_SUBDEVICE_ID_CONNECT_TECH_BH8_232		0x0001
-> > > >  #define PCI_SUBDEVICE_ID_CONNECT_TECH_BH4_232		0x0002  
-> > 
-> > > Does the PCI ID needs to be removed? There was a similar change that
-> > > I recalled and the discussion eventually leads to ID not being
-> > > removed.
-> > > https://lore.kernel.org/all/20260123033233.16906-1-enelsonmoore@gmail.com/  
-> > 
-> > I don't think there is value in removing the PCI_VENDOR_ID_ALTEON
-> > definition.
+
+
+On 01/04/26 19:38, David Hildenbrand (Arm) wrote:
+> On 3/27/26 08:15, Sayali Patil wrote:
+>> Launch write_to_hugetlbfs as a separate process and move only its PID
+>> into the target cgroup before waiting for completion. This avoids moving
+>> the test shell itself, prevents unintended charging to the shell, and
+>> ensures hugetlb and memcg accounting is attributed only to the intended
+>> workload.
+>>
+>> Add a short delay before the hugetlb allocation to avoid a race where
+>> memory may be charged before the task migration takes effect, which
+>> can lead to incorrect accounting and intermittent test failures.
 > 
-> Do you want me to respin the patch? "there is no value" is probably fair
-> but also there's no value in keeping it so LMK if you want a respin..
+> Isn't there still a chance for a race, for example, when running in a VM?
+> 
+Yes, there is still a small race window in the current approach.
 
-I think there is a little value in keeping it.  Removing
-PCI_VENDOR_ID_ALTEON:
+I am looking into making this more reliable with a deterministic 
+synchronization mechanism to avoid such timing dependencies.
 
-  - makes future backports slightly harder, e.g., we remove
-    PCI_VENDOR_ID_ALTEON, then add a new definition like Vendor ID
-    0x12af, then backport the new definition, and the backport doesn't
-    apply cleanly because the context doesn't match.
+I will send a v4 with this improvement.
 
-  - means we wouldn't notice a future addition of another name for
-    Vendor ID 0x12ae, either by mistake or via acquisition of Alteon.
-    We want to know about either one so we can avoid collisions with
-    Device IDs used by Alteon.
+Thanks,
+Sayali
 
