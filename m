@@ -1,76 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-19231-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19232-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE7FAD6AB05
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2026 20:04:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DBF51D6AB10
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Apr 2026 20:40:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fmt9d4P2gz2xls;
-	Fri, 03 Apr 2026 07:04:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.20
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775160277;
-	cv=none; b=Du2cha4HW70ov+bEfs9HpHCWlU7cFh2tZBOm/eikwW413A4V9ODFKUH3G2iKBvqStQ1VMR8dIw93sppSbUHLsOpDUEQp/YJrxB1p13LEh6517knSzEWoYUG/CNjmZWc1c+qNMs887YcVQDsF+wMJ3xG9mUWypwFTZOcqiXqk0gmJUYCfrRZkZNh9Hq6QmrH/f4EVNwER3IttY3sj71VjthBNS3Yc+zQwBniYABySzke3uXNgbLUgpQIezbgEm8T/F103FVThiyQdav64xQnPnT3DmJmz359eA6bxg5+tkCNQHUGSkEH7ACfu3cpoDHxTMutra59LxL/MQI2kjCl4aA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fmtyV1VYCz2xls;
+	Fri, 03 Apr 2026 07:40:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775162402;
+	cv=none; b=eweSsYcJ+yahau2irtDphFS4nR80N77+wwNfygFQOYUZBbwmCUu0iFtsu0riWHHmuWfXOIbGDlAn/IyRDX5U2DCp8nq9O7VageYfcmc3dE1D/3pE6wzFlvVmbY3wwH6fcrLej0HUlOq1nEI24GjiX43hh3iaXymJJMoWPMS+OiwFsZoWaL03LK00mn1+Oj3PjC6Xa4x7RaP+AL+6rLkMgdscHZtjTNPbepdQ/jK5WQct3uPNnDHShc6kT5+YOxV7IZHxXTMPwZ9+edXPSPNVgnhOoM+hJwky7lO2jFElVGScKcixChMllC7SeZ/zIF8zUfcXezyC6PVsDPMrAvCcsA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775160277; c=relaxed/relaxed;
-	bh=0Z8HAfdrffOtq8FHTPZ7CACCD2n0tzmamvz3yN06hhM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=OxiIeyF2Sv6l8DfqztjS2aZZCcSDoWmWd8oTSeajvaAikbnHSIH7+XOgnmgmPx1TJoJ2il7AAql96YR1BJxMgOHMVCJz2hQaGcZDZ7nQ/KxXLUa+lNzwAju+x+AQsbpj81sVuNcrlybaH0KAFiT6wAJM4ZAHiiGWLeweV3Rh8jlplEO0X7zwFBEgTTtQPzP/UnBHG0yEdiOmHLPev5cQwoogajaVkPZTiIk9FDJVgJOzxhNxOV57P+Af3jkh9zHLDMVuzzZx+WzLxSQ/5izECevpKkACjgji5h4BUZL71mjtEnZQmdLc4QyYbtF2Kr3h6fNKVVajpt0clwxH3PUALQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=MSCaWTHu; dkim-atps=neutral; spf=pass (client-ip=198.175.65.20; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1775162402; c=relaxed/relaxed;
+	bh=kZCeFcCIi0X17MCEWkI15QCWUEMcn5r3CWz0xmNaEvM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Z8txMLuLXpGcXx0X+gF82x3uyisfW+YLr3h8hk5kh4HRyMBggLyVv0fuyrgAycI2LNCSt2jv8vMCPlhaj8X0HMsqlm6dUYjc4gTZzlns0OtB2/6p90nSvG58a1kAAgFEqedoePnMj6lUfg41ZlZVFs5uSWfDGJzQbxvzRzpUVQ2XcozxmhtilQnCnMzAONjHbAjbR46v8HESK+zgmqPBrGQM0pmmrg112IwMzibNpJ1YNUBayLrpGKoWQEup2UmyU4GT0Vf/yQEKFxp/SouFsG5UDHmIj+KhGZtVDGRgs7y4tmPUGVaxdxsPgOVlNH3PxARc2ikf7T4E18e8ezhkDQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=K4Wwvqzg; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=MSCaWTHu;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=K4Wwvqzg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.20; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fmt9Y5t59z2xTh
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2026 07:04:31 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1775160274; x=1806696274;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=4qv2zdPZEgT5oC3SiH+LBfJp4zAyy2TSrWtsJir3Quk=;
-  b=MSCaWTHu316NHATwThFNChHOOAQ9s1cpNW4z7+iS/u9ez/Lz5AlxaP4o
-   28oKP1ptMJVabtfl01A3UfEs0D/DGTQxxNmn9nw8zaRZC7xHVfgkYkMzY
-   kYvvTBIPOtLU0M8WsTJnAKtLguHcMANiu4ZOPshyOEAYa/yu4Vtnxgqwm
-   eYbnfgS2EXZgQxIjfWovFnnLQhpu0s+il7TiOc/1msC4T/ZuWIv1t2x+e
-   ZiOFlgg75y3ASZP/u7ZVLxHLEi8kDPl1KPuYPN0UavhwJikl6yZTZ3PFW
-   ZdvCVKzcTddlMm0LXzZF25tPMfvzUYro/k3VBkPDsGUdiLahvwfP0lQ/C
-   w==;
-X-CSE-ConnectionGUID: hGYCxNVwTQKDYkkI9tLjqQ==
-X-CSE-MsgGUID: AQtOj13bTu6kQAX32BakNA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11747"; a="75947956"
-X-IronPort-AV: E=Sophos;i="6.23,156,1770624000"; 
-   d="scan'208";a="75947956"
-Received: from orviesa003.jf.intel.com ([10.64.159.143])
-  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Apr 2026 13:04:27 -0700
-X-CSE-ConnectionGUID: 9eC3JQUSTwuyBMZyfVDRig==
-X-CSE-MsgGUID: 5SWOeqtHSpa8wjMW5l0r5A==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,156,1770624000"; 
-   d="scan'208";a="231108937"
-Received: from igk-lkp-server01.igk.intel.com (HELO 9958d990ccf2) ([10.211.93.152])
-  by orviesa003.jf.intel.com with ESMTP; 02 Apr 2026 13:04:25 -0700
-Received: from kbuild by 9958d990ccf2 with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1w8OH8-0000000098H-2Lhf;
-	Thu, 02 Apr 2026 20:04:22 +0000
-Date: Thu, 2 Apr 2026 22:04:11 +0200
-From: kernel test robot <lkp@intel.com>
-To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-	linux-kernel@vger.kernel.org
-Cc: oe-kbuild-all@lists.linux.dev, linux-kbuild@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com,
-	ritesh.list@gmail.com, arnd@arndb.de, chleroy@kernel.org,
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: Re: [PATCH v3] char: nvram: Remove unused nvram_mutex to fix
- -Wunused-variable warning
-Message-ID: <202604022248.LErLuuXd-lkp@intel.com>
-References: <20260330062201.2581-1-venkat88@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fmtyS2Ljfz2xc8
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2026 07:39:59 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 632DF5eJ4120021;
+	Thu, 2 Apr 2026 20:39:57 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=kZCeFcCIi0X17MCEWkI15QCWUEMcn5r3CWz0xmNaE
+	vM=; b=K4WwvqzgylvQ2j6VEXjVOMljtjBFgrdn8iZIv8LOjTcaIaaswnIY9S6/G
+	cKCa0Y71+k/ITZoW+LnUQq4FiAF8/Q0zWoPI3QWw7qj6UA3VwkmS2Htog+4IUGC4
+	60jGk9dOqpePKMd0ud1LpL0jhGUrnK6jg3YeI/jyBwoD0jaX1YgU7WA+W4mXxrd9
+	sL0dnAl68YzienNVgWNoQbW2fYnkld+ZyGwuNxxDvFOilNahlq9+EjRi25pM+n6G
+	fELBNs8CTsOnvIwY7X6WWyyAQ7pNiS5VXCV3eTc6Z3OqHGirsufQDlomjIdg8ubv
+	TjkP2CB4kFX7aaRIRcKAPjtdGxsuQ==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4d66nnxgxh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 02 Apr 2026 20:39:56 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 632Gh9Wu030990;
+	Thu, 2 Apr 2026 20:39:55 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4d6uhk3fpj-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 02 Apr 2026 20:39:55 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 632KdqGs29557088
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 2 Apr 2026 20:39:52 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E06AB20043;
+	Thu,  2 Apr 2026 20:39:51 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D8F6120040;
+	Thu,  2 Apr 2026 20:39:49 +0000 (GMT)
+Received: from ltcrain4-lp15.ltc.tadn.ibm.com (unknown [9.5.7.39])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu,  2 Apr 2026 20:39:49 +0000 (GMT)
+From: adubey@linux.ibm.com
+To: linuxppc-dev@lists.ozlabs.org
+Cc: hbathini@linux.ibm.com, bpf@vger.kernel.org, maddy@linux.ibm.com,
+        ast@kernel.org, andrii@kernel.org, daniel@iogearbox.net,
+        shuah@kernel.org, linux-kselftest@vger.kernel.org,
+        stable@vger.kernel.org, Abhishek Dubey <adubey@linux.ibm.com>
+Subject: [PATCH v2 0/5] powerpc/bpf: Add support for verifier selftest
+Date: Thu,  2 Apr 2026 20:40:06 -0400
+Message-ID: <20260403004011.44417-1-adubey@linux.ibm.com>
+X-Mailer: git-send-email 2.52.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -84,117 +87,176 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260330062201.2581-1-venkat88@linux.ibm.com>
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: rHaXkN2ewF9hrlZWCQcyC5ObKmET-t4P
+X-Authority-Analysis: v=2.4 cv=KslAGGWN c=1 sm=1 tr=0 ts=69ced41c cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=UrLCjDVe54a93DmA31EA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDAyMDE4MSBTYWx0ZWRfX44zvfjXFj584
+ qpSrX54YOLMd8sieXdpI1LMW2twq+gkYTNjZfdZ2NYIEEvpAhs8aBQ5Vn6l7l2SnqgVnG/dDObK
+ KRZKI3bVy0VrbjivBwEV8OZzZU+XSvpVY6VbVuQJBw+vXPuRcVcchuzyF/o4HlqY3WFmLArdyyQ
+ 6b5b62V5oURryXwfFUh+zG6fGPi7D6HFUYN5ndxi86gJhe0cFiYZO4Y6ZJKfaOkRNZ5laZKu6ad
+ NaMcuzIUIOIZBPilvQjMyLO+GXld5EMPTD29Rzd0k7TIGWLjh1iEknPbm1y/ahcxotLyyUhXOZK
+ gjwExpawcIEp9bH9YRqb6/gVI0IqD+5VB50OLXOSP2B9//ioJrlclpTcI4SbcZRos+pwrcceUpQ
+ Nl87tr+YABwOod001pdD9FZSwhsgToFfTSJjiin+kkZHz14sTyQtIixAsbTUy47Yj6f9g3c9G92
+ 2wGuC+q6JNQgEN/Wb9A==
+X-Proofpoint-ORIG-GUID: rHaXkN2ewF9hrlZWCQcyC5ObKmET-t4P
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-02_03,2026-04-02_05,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 lowpriorityscore=0 priorityscore=1501 suspectscore=0
+ phishscore=0 adultscore=0 bulkscore=0 impostorscore=0 clxscore=1015
+ spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
+ definitions=main-2604020181
 
-Hi Venkat,
+From: Abhishek Dubey <adubey@linux.ibm.com>
 
-kernel test robot noticed the following build errors:
+The verifier selftest validates JITed instructions by matching expected
+disassembly output. The first two patches fix issues in powerpc instruction
+disassembly that were causing test flow failures. The fix is common for 
+64-bit & 32-bit powerpc. Add support for the powerpc-specific "__powerpc64"
+architecture tag in the third patch, enabling proper test filtering in
+verifier test files. Introduce verifier testcases for tailcalls on powerpc64
+in the final patch.
 
-[auto build test ERROR on char-misc/char-misc-testing]
-[also build test ERROR on char-misc/char-misc-next char-misc/char-misc-linus linus/master v7.0-rc6 next-20260402]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+Issue Details:
+--------------
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Venkat-Rao-Bagalkote/char-nvram-Remove-unused-nvram_mutex-to-fix-Wunused-variable-warning/20260330-234134
-base:   char-misc/char-misc-testing
-patch link:    https://lore.kernel.org/r/20260330062201.2581-1-venkat88%40linux.ibm.com
-patch subject: [PATCH v3] char: nvram: Remove unused nvram_mutex to fix -Wunused-variable warning
-config: x86_64-rhel-9.4 (https://download.01.org/0day-ci/archive/20260402/202604022248.LErLuuXd-lkp@intel.com/config)
-compiler: gcc-14 (Debian 14.2.0-19) 14.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260402/202604022248.LErLuuXd-lkp@intel.com/reproduce)
+    The Long branch stub in the trampoline implementation[1] provides
+    flexibility to handles short as well as long branch distance to
+    actual trampoline. Whereas, the 8 bytes long dummy_tramp_addr field
+    sitting before long branch stub leads to failure when enabling
+    verifier based seltest for ppc64.
+    
+    The verifier selftests require disassembing the final jited image
+    to get native instructions. Later the disassembled instruction
+    sequence is matched against sequence of instructions provided in
+    test-file under __jited() wrapper. The final jited image contains
+    Out-of-line stub and Long branch stub as part of epilogue jitting
+    for a bpf program. The 8 bytes space for dummy_tramp is sandwiched
+    between both above mentioned stubs. These 8 bytes contain memory
+    address of dummy trampoline during trampoline invocation which don't
+    correspond to any powerpc instructions. So, disassembly fails
+    resulting in failure of verifier selftests.
+    
+    The following code snippet shows the problem with current arrangement
+    made for dummy_tramp_addr.
+    
+    /* Out-of-line stub */
+    mflr    r0  
+    [b|bl]  tramp
+    mtlr    r0 //only with OOL 
+    b       bpf_func + 4 
+    /* Long branch stub */
+    .long   <dummy_tramp_addr>  <---Invalid bytes sequence, disassembly fails
+    mflr    r11 
+    bcl     20,31,$+4
+    mflr    r12 
+    ld      r12, -8-SZL(r12)
+    mtctr   r12 
+    mtlr    r11 //retain ftrace ABI 
+    bctr
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202604022248.LErLuuXd-lkp@intel.com/
+    Consider test program binary of size 112 bytes:
+    0:  00000060 10004de8 00002039 f8ff21f9 81ff21f8 7000e1fb 3000e13b
+    28: 3000e13b 2a006038 f8ff7ff8 00000039 7000e1eb 80002138 7843037d
+    56: 2000804e a602087c 00000060 a603087c bcffff4b c0341d00 000000c0
+    84: a602687d 05009f42 a602887d f0ff8ce9 a603897d a603687d 2004804e
 
-All errors (new ones prefixed by >>):
+    Disassembly output of above binary for ppc64le:
+    pc:0     left:112    00 00 00 60  :  nop
+    pc:4     left:108    10 00 4d e8  :  ld 2, 16(13)
+    pc:8     left:104    00 00 20 39  :  li 9, 0
+    pc:12    left:100    f8 ff 21 f9  :  std 9, -8(1)
+    pc:16    left:96     81 ff 21 f8  :  stdu 1, -128(1)
+    pc:20    left:92     70 00 e1 fb  :  std 31, 112(1)
+    pc:24    left:88     30 00 e1 3b  :  addi 31, 1, 48
+    pc:28    left:84     30 00 e1 3b  :  addi 31, 1, 48
+    pc:32    left:80     2a 00 60 38  :  li 3, 42
+    pc:36    left:76     f8 ff 7f f8  :  std 3, -8(31)
+    pc:40    left:72     00 00 00 39  :  li 8, 0
+    pc:44    left:68     70 00 e1 eb  :  ld 31, 112(1)
+    pc:48    left:64     80 00 21 38  :  addi 1, 1, 128
+    pc:52    left:60     78 43 03 7d  :  mr    3, 8
+    pc:56    left:56     20 00 80 4e  :  blr
+    pc:60    left:52     a6 02 08 7c  :  mflr 0
+    pc:64    left:48     00 00 00 60  :  nop
+    pc:68    left:44     a6 03 08 7c  :  mtlr 0
+    pc:72    left:40     bc ff ff 4b  :  b .-68
+    pc:76    left:36     c0 34 1d 00  :
+    ...
 
-   drivers/char/nvram.c: In function 'nvram_misc_ioctl':
->> drivers/char/nvram.c:327:37: error: 'nvram_mutex' undeclared (first use in this function)
-     327 |                         mutex_lock(&nvram_mutex);
-         |                                     ^~~~~~~~~~~
-   drivers/char/nvram.c:327:37: note: each undeclared identifier is reported only once for each function it appears in
+    Failure log:
+    Can't disasm instruction at offset 76: c0 34 1d 00 00 00 00 c0 a6 02 68 7d 05 00 9f 42
+    --------------------------------------
 
+    Observation:
+    Can't disasm instruction at offset 76 as this address has
+    ".long <dummy_tramp_addr>" (0xc0341d00000000c0)
+    But valid instructions follow at offset 84 onwards.
 
-vim +/nvram_mutex +327 drivers/char/nvram.c
+    Move the long branch address space to the bottom of the long
+    branch stub. This allows uninterrupted disassembly until the
+    last 8 bytes. Exclude these last bytes from the overall
+    program length to prevent failure in assembly generation.
 
-^1da177e4c3f41 Linus Torvalds      2005-04-16  278  
-cb8d8006d43f22 Finn Thain          2019-01-15  279  static long nvram_misc_ioctl(struct file *file, unsigned int cmd,
-55929332c92e5d Arnd Bergmann       2010-04-27  280  			     unsigned long arg)
-^1da177e4c3f41 Linus Torvalds      2005-04-16  281  {
-2d58636e0af724 Finn Thain          2019-01-15  282  	long ret = -ENOTTY;
-^1da177e4c3f41 Linus Torvalds      2005-04-16  283  
-^1da177e4c3f41 Linus Torvalds      2005-04-16  284  	switch (cmd) {
-95ac14b8a32817 Finn Thain          2019-01-15  285  #ifdef CONFIG_PPC
-95ac14b8a32817 Finn Thain          2019-01-15  286  	case OBSOLETE_PMAC_NVRAM_GET_OFFSET:
-95ac14b8a32817 Finn Thain          2019-01-15  287  		pr_warn("nvram: Using obsolete PMAC_NVRAM_GET_OFFSET ioctl\n");
-df561f6688fef7 Gustavo A. R. Silva 2020-08-23  288  		fallthrough;
-95ac14b8a32817 Finn Thain          2019-01-15  289  	case IOC_NVRAM_GET_OFFSET:
-95ac14b8a32817 Finn Thain          2019-01-15  290  		ret = -EINVAL;
-95ac14b8a32817 Finn Thain          2019-01-15  291  #ifdef CONFIG_PPC_PMAC
-95ac14b8a32817 Finn Thain          2019-01-15  292  		if (machine_is(powermac)) {
-95ac14b8a32817 Finn Thain          2019-01-15  293  			int part, offset;
-95ac14b8a32817 Finn Thain          2019-01-15  294  
-95ac14b8a32817 Finn Thain          2019-01-15  295  			if (copy_from_user(&part, (void __user *)arg,
-95ac14b8a32817 Finn Thain          2019-01-15  296  					   sizeof(part)) != 0)
-95ac14b8a32817 Finn Thain          2019-01-15  297  				return -EFAULT;
-95ac14b8a32817 Finn Thain          2019-01-15  298  			if (part < pmac_nvram_OF || part > pmac_nvram_NR)
-95ac14b8a32817 Finn Thain          2019-01-15  299  				return -EINVAL;
-95ac14b8a32817 Finn Thain          2019-01-15  300  			offset = pmac_get_partition(part);
-20e07af71f34d9 Finn Thain          2019-01-15  301  			if (offset < 0)
-20e07af71f34d9 Finn Thain          2019-01-15  302  				return -EINVAL;
-95ac14b8a32817 Finn Thain          2019-01-15  303  			if (copy_to_user((void __user *)arg,
-95ac14b8a32817 Finn Thain          2019-01-15  304  					 &offset, sizeof(offset)) != 0)
-95ac14b8a32817 Finn Thain          2019-01-15  305  				return -EFAULT;
-95ac14b8a32817 Finn Thain          2019-01-15  306  			ret = 0;
-95ac14b8a32817 Finn Thain          2019-01-15  307  		}
-95ac14b8a32817 Finn Thain          2019-01-15  308  #endif
-95ac14b8a32817 Finn Thain          2019-01-15  309  		break;
-20e07af71f34d9 Finn Thain          2019-01-15  310  #ifdef CONFIG_PPC32
-95ac14b8a32817 Finn Thain          2019-01-15  311  	case IOC_NVRAM_SYNC:
-95ac14b8a32817 Finn Thain          2019-01-15  312  		if (ppc_md.nvram_sync != NULL) {
-95ac14b8a32817 Finn Thain          2019-01-15  313  			mutex_lock(&nvram_mutex);
-95ac14b8a32817 Finn Thain          2019-01-15  314  			ppc_md.nvram_sync();
-95ac14b8a32817 Finn Thain          2019-01-15  315  			mutex_unlock(&nvram_mutex);
-95ac14b8a32817 Finn Thain          2019-01-15  316  		}
-95ac14b8a32817 Finn Thain          2019-01-15  317  		ret = 0;
-95ac14b8a32817 Finn Thain          2019-01-15  318  		break;
-20e07af71f34d9 Finn Thain          2019-01-15  319  #endif
-95ac14b8a32817 Finn Thain          2019-01-15  320  #elif defined(CONFIG_X86) || defined(CONFIG_M68K)
-^1da177e4c3f41 Linus Torvalds      2005-04-16  321  	case NVRAM_INIT:
-^1da177e4c3f41 Linus Torvalds      2005-04-16  322  		/* initialize NVRAM contents and checksum */
-^1da177e4c3f41 Linus Torvalds      2005-04-16  323  		if (!capable(CAP_SYS_ADMIN))
-^1da177e4c3f41 Linus Torvalds      2005-04-16  324  			return -EACCES;
-^1da177e4c3f41 Linus Torvalds      2005-04-16  325  
-2d58636e0af724 Finn Thain          2019-01-15  326  		if (arch_nvram_ops.initialize != NULL) {
-613655fa39ff69 Arnd Bergmann       2010-06-02 @327  			mutex_lock(&nvram_mutex);
-2d58636e0af724 Finn Thain          2019-01-15  328  			ret = arch_nvram_ops.initialize();
-613655fa39ff69 Arnd Bergmann       2010-06-02  329  			mutex_unlock(&nvram_mutex);
-2d58636e0af724 Finn Thain          2019-01-15  330  		}
-2d58636e0af724 Finn Thain          2019-01-15  331  		break;
-^1da177e4c3f41 Linus Torvalds      2005-04-16  332  	case NVRAM_SETCKS:
-^1da177e4c3f41 Linus Torvalds      2005-04-16  333  		/* just set checksum, contents unchanged (maybe useful after
-^1da177e4c3f41 Linus Torvalds      2005-04-16  334  		 * checksum garbaged somehow...) */
-^1da177e4c3f41 Linus Torvalds      2005-04-16  335  		if (!capable(CAP_SYS_ADMIN))
-^1da177e4c3f41 Linus Torvalds      2005-04-16  336  			return -EACCES;
-^1da177e4c3f41 Linus Torvalds      2005-04-16  337  
-2d58636e0af724 Finn Thain          2019-01-15  338  		if (arch_nvram_ops.set_checksum != NULL) {
-613655fa39ff69 Arnd Bergmann       2010-06-02  339  			mutex_lock(&nvram_mutex);
-2d58636e0af724 Finn Thain          2019-01-15  340  			ret = arch_nvram_ops.set_checksum();
-613655fa39ff69 Arnd Bergmann       2010-06-02  341  			mutex_unlock(&nvram_mutex);
-^1da177e4c3f41 Linus Torvalds      2005-04-16  342  		}
-2d58636e0af724 Finn Thain          2019-01-15  343  		break;
-95ac14b8a32817 Finn Thain          2019-01-15  344  #endif /* CONFIG_X86 || CONFIG_M68K */
-2d58636e0af724 Finn Thain          2019-01-15  345  	}
-2d58636e0af724 Finn Thain          2019-01-15  346  	return ret;
-^1da177e4c3f41 Linus Torvalds      2005-04-16  347  }
-^1da177e4c3f41 Linus Torvalds      2005-04-16  348  
+    Following is disassembler output for same test program with moved down
+    dummy_tramp_addr field:
+    .....
+    .....
+    pc:68    left:44     a6 03 08 7c  :  mtlr 0
+    pc:72    left:40     bc ff ff 4b  :  b .-68
+    pc:76    left:36     a6 02 68 7d  :  mflr 11
+    pc:80    left:32     05 00 9f 42  :  bcl 20, 31, .+4
+    pc:84    left:28     a6 02 88 7d  :  mflr 12
+    pc:88    left:24     14 00 8c e9  :  ld 12, 20(12)
+    pc:92    left:20     a6 03 89 7d  :  mtctr 12
+    pc:96    left:16     a6 03 68 7d  :  mtlr 11
+    pc:100   left:12     20 04 80 4e  :  bctr
+    pc:104   left:8      c0 34 1d 00  :
+
+    Failure log:
+    Can't disasm instruction at offset 104: c0 34 1d 00 00 00 00 c0
+    ---------------------------------------
+    Disassembly logic can truncate at 104, ignoring last 8 bytes.
+
+    Update the dummy_tramp_addr field offset calculation from the end
+    of the program to reflect its new location, for bpf_arch_text_poke()
+    to update the actual trampoline's address in this field.
+
+    [1] https://lore.kernel.org/all/20241030070850.1361304-18-hbathini@linux.ibm.com
+
+v1->v2:
+  Added fix-patch to correct memory alignment in-place
+  Moved the optional alignmnet NOP before OOL stub
+
+[v1]: https://lore.kernel.org/bpf/20260225013627.22098-1-adubey@linux.ibm.com
+
+The patch series is rebased on top of following patch in powerpc-next:
+https://lore.kernel.org/bpf/20260402161026.289827-1-skb99@linux.ibm.com
+
+Abhishek Dubey (5):
+  powerpc/bpf: fix alignment of long branch trampoline address
+  powerpc/bpf: Move out dummy_tramp_addr after Long branch stub
+  selftest/bpf: Fixing powerpc JIT disassembly failure
+  selftest/bpf: Enable verifier selftest for powerpc64
+  selftest/bpf: Add tailcall verifier selftest for powerpc64
+
+ arch/powerpc/net/bpf_jit.h                    |  4 +-
+ arch/powerpc/net/bpf_jit_comp.c               | 65 +++++++++++++----
+ arch/powerpc/net/bpf_jit_comp64.c             |  4 +-
+ .../selftests/bpf/jit_disasm_helpers.c        | 13 +++-
+ tools/testing/selftests/bpf/progs/bpf_misc.h  |  1 +
+ .../bpf/progs/verifier_tailcall_jit.c         | 69 +++++++++++++++++++
+ tools/testing/selftests/bpf/test_loader.c     |  5 ++
+ 7 files changed, 142 insertions(+), 19 deletions(-)
 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.52.0
+
 
