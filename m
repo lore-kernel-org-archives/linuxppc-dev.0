@@ -1,95 +1,107 @@
-Return-Path: <linuxppc-dev+bounces-19272-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19273-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ADF73E85367
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2026 13:51:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2EC17E85367
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Apr 2026 14:53:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fnKrC2kWnz2ygH;
-	Sat, 04 Apr 2026 00:51:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c205::5" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775224267;
-	cv=pass; b=mAC+GRIw2Me5cYgFr/LQ17Xsu52uRutGDW6DeATGLGLX7IeqCmgCsQHzNgUfRR78R7YCBrvE3uzBPfmv/ypZ0ZnWsdnG1+Rn/5bMQb5iuyow3FabyDcjR2yg/rPGqhhF30wZ+Msu47x4lalRrcBzShDz7sYm8y3FiCYJsYHad36Rr6KbOCwnGKKUpnAqWe2U00SiPZ+m1lLEQMzBKK01lkuO9eblCaDAzAUiq1rfmecueTzet1PwAaFfXxpAkwMuvcsZVauvXd8YhvqqawdkeQWMwXjXM97AtLGBS/0SmHIlCN2QrDmVS8YKvwVf8ZuqnBcpgZcebOLrZIRan2csyA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775224267; c=relaxed/relaxed;
-	bh=b+85aZHT3Q/aT1j3ih8ZA8LqUq/NZIvlhXip4s7bXHk=;
-	h=Content-Type:Date:Message-Id:Cc:Subject:From:To:References:
-	 In-Reply-To:MIME-Version; b=iaTSeSVAZIlQWsZf6JtQ8Oz2IgVTNsywhxPHnrG7LOm3EnePT7f7ONI70pHTn7CAKjhPcCp6GpCLsCnxNFcR3qkJDJquncRU6QT63d98KgqQIu8jxDN3koJjf76Zcq2pLUerrpftmm3ekYA9My4fPyGzBHI1A94VUM9GfaSfz3kj55OEYsTveaWiKiHzTtctF5YPs3xLlj4hlX/6xbQ445Zi/KNLiO81uo3Zjqpmb2HAUs9BeZfr+qlMiPG14L+YnpI4O/vc4O3Opj4ZI3gQ30J2HKfXc9rmh/F7u/BXIkGP4HEit6OrZ9nej96b0Km1GgFyHRLWL56O3aFvK4Xsyg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=garyguo.net; dkim=pass (1024-bit key; unprotected) header.d=garyguo.net header.i=@garyguo.net header.a=rsa-sha256 header.s=selector1 header.b=BaEdaPFs; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c205::5; helo=lo0p265cu003.outbound.protection.outlook.com; envelope-from=gary@garyguo.net; receiver=lists.ozlabs.org) smtp.mailfrom=garyguo.net
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=garyguo.net
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fnMD83lnRz2yjV;
+	Sat, 04 Apr 2026 01:53:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::432"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775228008;
+	cv=none; b=N4zzjb3w3eH2gp/ZW6IEWdgbjxI0wZArKzbPVQz+tbQTaJaTIkj0Lh+7NiZNm2hiBs1s84kqkJ/n2JvSqjs+tk7hpuNGsGmIczYcvBOOn25XQ2psB/ndmMat+S7+M7YxobwuPJu8YY/V8RIZ50IOe88pmcetB5OscpmfSWpnZZgqJWV6NBbgqfZP3PezDCv9PCSZYhDR07U7Gy2TF0xThrtFW6bupXlFD0HcdQSADAX1K0mc6K46459aRUgbp2I5ncJEF+yR8Q0HGA/4UEebas3kRBPzEgjVNAr6IS5NYoPFWmvNhlZa2fXoxGA8obcbGAJWWFMNJszMLEe6LpDM7Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1775228008; c=relaxed/relaxed;
+	bh=Y741cUw5/skL529bebHe+2MR3Atn8T2EhTb8n3/Lxrg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=RXH6wHOO30ObHEYaTfLK3qFOp9hZxMJn0SWZmrE8m4QaRB2qOBfKZRiycSFgfa8x/M2/Y8xZih64f8iUmU3u1GTCDsgtnnxibm4xhiC9K1iTVqaNH/G6bCXc1uzvY0oC2+E7+V/hjGVY63jXvb1mN4StkiyVgNsP0UTUZnZYRO8JkS2tQ0iA3uBTdAOsvJe7diupFTBBVL81LHYxfWLrEuC6bVwaFXAOYmYhpk3Mgbcmak3RfaEfdNd5jpwwX9G/3zBkqQXbe5sH8wHWACQTiOv1J4LlBdWJRDfX9xLO3jYb6o9QsLEngX091ooPG0otCO43rqy0Qp3Vkcv0RbncgA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=N4O2mVvX; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::432; helo=mail-pf1-x432.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=garyguo.net header.i=@garyguo.net header.a=rsa-sha256 header.s=selector1 header.b=BaEdaPFs;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=N4O2mVvX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=garyguo.net (client-ip=2a01:111:f403:c205::5; helo=lo0p265cu003.outbound.protection.outlook.com; envelope-from=gary@garyguo.net; receiver=lists.ozlabs.org)
-Received: from LO0P265CU003.outbound.protection.outlook.com (mail-uksouthazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c205::5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::432; helo=mail-pf1-x432.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com [IPv6:2607:f8b0:4864:20::432])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fnKr76tXRz2xN8
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Apr 2026 00:51:02 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=For7Mu5J4qT5DrlolwEREOQ0fsjaxOYlIU9DRbVCcM045EOcy8Wh56lZbCl5xwIglmNAoPtJofAGdRqfAk2Ih8w+2zLAq0IWKnF0+BvH949hZpH8MA1cw8JJUMkUINRb2c+6ft7Ur/m98LK+ug1fiAZy+Y/Njq/kaZpSKbQp1kRn5LspzHrXnh77ZuB/whj3sTMQ3RrRYt+FYY/POCCSBYQq2IyyqX97ZnnzFk6AIpMj1oNVDbVFkpkhU/QuO6yYpaXhUKqBE+QwXNN6tR+bW/KiBEomkVKVO+8rm2aVmnZPyqfk5ky9fepQ4aepYF9M19jjmqgli6tXV2bOW29eqw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=b+85aZHT3Q/aT1j3ih8ZA8LqUq/NZIvlhXip4s7bXHk=;
- b=ciJpynuen8omBeerwJ3L2VZLn2YSKfbul8ih4EVEwP+vwq+katwJqXp2R+VUOszh0TwnGWQKHP5QVn6wwexdTRjfkKQDuNg2BSto9h/ANKPikB8NT4l8G+yyitAgPfq9CrvkmVEsdjOvvJQd9QFty+M9GiTeYhltOSZUJyKbWI7ayOM2uVapxQFostyo6qm/7nJuGuXe9lYpEYR2h2ja0tpAH13lHW1LJkBEVQjoAFVYlIkJPWz56KmbekP0Xl1OWcIztQHNu6RqjJxfVn8MusnNXsyNb5niWcOLNImvcBKvkideXzBkT/2k56SMXm4PbwlxFGj1cLDSsH5DDtdaoA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=garyguo.net; dmarc=pass action=none header.from=garyguo.net;
- dkim=pass header.d=garyguo.net; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=garyguo.net;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=b+85aZHT3Q/aT1j3ih8ZA8LqUq/NZIvlhXip4s7bXHk=;
- b=BaEdaPFsG+uw0468r7Ji3hDJIhJY+dNWlmCvZAuIp4XnmrlICCTTRsFSW8MHrCftWIME+4+vGdapHfTvLibWHcXuhKi4LO/SZEHcQpfwupuVeQPCvMgrMgP8FrqWe6rVx7OAvlHynnmsp9yISu43PnIZOM7e4ixyJnBc6u373Gk=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=garyguo.net;
-Received: from LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:488::16)
- by LO3P265MB2169.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:105::9) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.20; Fri, 3 Apr
- 2026 13:50:33 +0000
-Received: from LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
- ([fe80::1c3:ceba:21b4:9986]) by LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
- ([fe80::1c3:ceba:21b4:9986%4]) with mapi id 15.20.9769.016; Fri, 3 Apr 2026
- 13:50:33 +0000
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 03 Apr 2026 14:50:32 +0100
-Message-Id: <DHJKGY0F52GL.14FQPOWWO0F77@garyguo.net>
-Cc: <netdev@vger.kernel.org>, <edumazet@google.com>, <pabeni@redhat.com>,
- <andrew+netdev@lunn.ch>, <horms@kernel.org>, <jes@trained-monkey.org>,
- <chenhuacai@kernel.org>, <kernel@xen0n.name>, <tsbogend@alpha.franken.de>,
- <James.Bottomley@HansenPartnership.com>, <deller@gmx.de>,
- <maddy@linux.ibm.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
- <chleroy@kernel.org>, <hca@linux.ibm.com>, <gor@linux.ibm.com>,
- <agordeev@linux.ibm.com>, <borntraeger@linux.ibm.com>,
- <svens@linux.ibm.com>, <bhelgaas@google.com>, <dakr@kernel.org>,
- <kwilczynski@kernel.org>, <ojeda@kernel.org>, <boqun@kernel.org>,
- <gary@garyguo.net>, <bjorn3_gh@protonmail.com>, <lossin@kernel.org>,
- <a.hindborg@kernel.org>, <aliceryhl@google.com>, <tmgross@umich.edu>,
- <ebiggers@google.com>, <ardb@kernel.org>, <tiwai@suse.de>, <tytso@mit.edu>,
- <enelsonmoore@gmail.com>, <martin.petersen@oracle.com>,
- <jirislaby@kernel.org>, <gregkh@linuxfoundation.org>,
- <geert@linux-m68k.org>, <herbert@gondor.apana.org.au>,
- <vineethr@linux.ibm.com>, <lirongqing@baidu.com>, <kshk@linux.ibm.com>,
- <vadim.fedorenko@linux.dev>, <dong100@mucse.com>,
- <wangruikang@iscas.ac.cn>, <hkallweit1@gmail.com>, <kees@kernel.org>,
- <loongarch@lists.linux.dev>, <linux-mips@vger.kernel.org>,
- <linux-parisc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-s390@vger.kernel.org>, <linux-pci@vger.kernel.org>,
- <rust-for-linux@vger.kernel.org>
-Subject: Re: [PATCH net-next] eth: remove the driver for acenic / tigon1&2
-From: "Gary Guo" <gary@garyguo.net>
-To: "Jakub Kicinski" <kuba@kernel.org>, <davem@davemloft.net>
-X-Mailer: aerc 0.21.0
-References: <20260402183029.1236713-1-kuba@kernel.org>
-In-Reply-To: <20260402183029.1236713-1-kuba@kernel.org>
-X-ClientProxiedBy: LO4P123CA0621.GBRP123.PROD.OUTLOOK.COM
- (2603:10a6:600:294::21) To LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
- (2603:10a6:600:488::16)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fnMD71J5rz2yWK
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Apr 2026 01:53:25 +1100 (AEDT)
+Received: by mail-pf1-x432.google.com with SMTP id d2e1a72fcca58-82cd98be655so1356232b3a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2026 07:53:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1775228003; x=1775832803; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=Y741cUw5/skL529bebHe+2MR3Atn8T2EhTb8n3/Lxrg=;
+        b=N4O2mVvXS21ET12ze7diMYy7o9aPfjJE33ZfSKmu+3wR0utxoJPR2lx/cVxf5UL1Rh
+         sAGjjP0dxllt4YrKRw5Sb4tSTpyDl67EW8W4Nyw2khILJI/mk6j4021YnHtmsaTm8l8C
+         NcTWDJ4yxj/FCjjlT12OYTXFjmukQokOD80NO7kz/+AXNtF4/kLlm+pf4l8St61tDp/f
+         vAgqEnRPlXPNlDmNtgff+SAV9LgGtumAqO4Riez/Uldqbb7mf+VVle5XM/JtUbwrQoCv
+         AJD4mFkYkMUy7CsJwRbcnFPC9YqFBUll1S0SFh2hSO/y4V0GTCFda34mclRY27HCSMrB
+         sMWQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775228003; x=1775832803;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Y741cUw5/skL529bebHe+2MR3Atn8T2EhTb8n3/Lxrg=;
+        b=aL9JuIuXZM+vTtvdnYOKiyIFjK58daTDQjgkZDDg1A2P7dO7Zd3o51skcRF3MqXe/4
+         JmrDN4a4xaedR6KloxrL03vvv+oOx3l7DHplSZjLpm31H36faMAypIRETMEkN+t2emD0
+         EFYyQLC3iViri0b8RSc3MlCg+T7l61PtmhSN9Cg42FicxlxpzPs3MLN07cYbzAQpXADV
+         6fT3qBOBFW1DSexDsi1rRbHmqIjJiM4yHYYzFJ7OxeFPGG7snAsw8Vl49ZNDYV3a7PxC
+         DdBNpPYkOz7iZLauL//w+AMpAsQ0TlM8EduCzC6yiNwDsAOSJLEuxN4x7VSFPWUFHUw+
+         lM+g==
+X-Forwarded-Encrypted: i=1; AJvYcCWyI7CUWJyEBCXblhrKaPX2i+LNT1KaAKz5AbcN2zeOhF0mayf2TvqKDxLACOsOU1w5oFE+WHt9kdNhG1A=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yw2vJQ2QVmJMYLq2GGzpdaqJCMQyqELWf/w6pvGSsy9dbgZ9RzK
+	982WKyPeIoURhZKTufBYCQDbM/eV6hI+xKIihdMsoX+ktCKgkF++rsw4
+X-Gm-Gg: AeBDiesTZ8KNSlLsTqdq52SI3azhk0VSauDHLWz4nIjbMSt2Z6IGFNMBCuTU3AhzFHe
+	DdQQG+qPQ1dFj7wxlGww/KdJ28VmrH58G72TYGIw33rj+sNimorObl3tSUb7fcHHrXNBMFyvrfv
+	sbtfR1iSsC1TH7WdFCBVJ1TbL+10Q+GnR0RaQXhFM6dt78sax4hQ6XXKZAc8oMrImGVjLIXIpLR
+	b95U3JX24RAmZKMq8FvcndPyojISWCDezfYMz0o0NlTU7ghp0fGX39louGLH5SyCXvcLCpY2jL0
+	nNmm/111kkuiBNeFMrNIpJD0i+DtnTICeK5Ef8PB/3catU2XjkX0+W76Wm+Pdleiq32x4ITbdqA
+	p2y8Euba2dgk755M7V9ZCCCakXeFyVpE81QwgA1fdZ2swBtipMudOr1LgIVeds5wrKD7ZfAG9fo
+	2qVloaPpwbocALC/xk7iJVBdFD86LIJIFwJOBFVxyc0sDxF7H3Lbb7tojFPQ06w5eAAyGkcekql
+	U8=
+X-Received: by 2002:a05:6a00:2e12:b0:82c:9223:cc95 with SMTP id d2e1a72fcca58-82d0da4e79fmr3167167b3a.1.1775228003145;
+        Fri, 03 Apr 2026 07:53:23 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com.com ([106.51.160.44])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82cf9ca4efesm6301682b3a.61.2026.04.03.07.53.14
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 03 Apr 2026 07:53:22 -0700 (PDT)
+From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+To: maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	chleroy@kernel.org,
+	peterz@infradead.org,
+	jpoimboe@kernel.org,
+	jbaron@akamai.com,
+	aliceryhl@google.com,
+	rostedt@goodmis.org,
+	ardb@kernel.org,
+	ojeda@kernel.org,
+	boqun@kernel.org,
+	gary@garyguo.net,
+	bjorn3_gh@protonmail.com,
+	lossin@kernel.org,
+	a.hindborg@kernel.org,
+	tmgross@umich.edu,
+	dakr@kernel.org,
+	nathan@kernel.org,
+	nick.desaulniers+lkml@gmail.com,
+	morbo@google.com,
+	justinstitt@google.com,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	rust-for-linux@vger.kernel.org,
+	llvm@lists.linux.dev
+Cc: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+Subject: [PATCH V8 0/4] Rust support for powerpc
+Date: Fri,  3 Apr 2026 20:23:04 +0530
+Message-ID: <20260403145308.1042622-1-mkchauras@gmail.com>
+X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,216 +115,81 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: LOVP265MB8871:EE_|LO3P265MB2169:EE_
-X-MS-Office365-Filtering-Correlation-Id: a403a136-a0ab-4411-1c28-08de9187fa24
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|10070799003|7416014|376014|56012099003|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	WJEsDgxR/9xWNh1HFrejYaoiIoC+Qx0DZzyFr/kdZXc5xbuveigxyERg0B2PA1e73p4DZi0gXjP1xGYV5r2OGoEJ9LlHwoD7szLZ+bpF7c0vjwAajIg09VBlGTR1oQSZwLbDLc+l5DoYDG2d717su1gzvyZn7kC3pJ4+8CQyg+KTQBaIR4z/n2UI9V2UdUJOCvc7WnvIwH+WGb443WXnBC01Rvv3s0WPJ2BW0sK3Uii2ZJh4YjrOaz2jhUGf14LuSTCU9C/UqX0Jt8yZ97qvTqxmxT6fK6OlyGH+dfuEiXej+K5e0DsPJvhAaJivluCOB/cTHaRI8Id0tvps3Z/KmVl3YcS9tdgP9z+7cF9iTt+n15qbtcdullKYdHzmm04owK17JVgZNPRxMbsJ0YvDgzaRtTYtj6+dAzd2tfZ6l91bQ9ZF9hA7Bj1t8EJjhZyvxY2khHA3CRuVoqK5sZu9vwi2XgW36/d9zaVDMDroJiZuvMaA3gDoycsTDvvGvqQg1YntNnh625bqz8cROL6+BIq6pqWoxsoWH72/q8WNvvdFLIvfxqrOdZnFHRN3QN1EHplvTtc8Ho/Dq9mgTnaKM+ct6PoBr21ohjpRAvPk6w7Vm782rZQJrtRx7CfctSoZEr40DNerr4Jlct+J0IEJgWd4VTfXVvjfWQRUBbw5PBm/ha2Tjgtci2N7yukd6lW78KlhUQ1AaCkpuqz/9M6zlYQGikzL7/djiSDRJVzHE+M=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(10070799003)(7416014)(376014)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?Qjd3VjdJUzBoTFB0SjhGeXhIUmJVSml4NCtraHBwdGNYV0M3WG0wOGR4R2xF?=
- =?utf-8?B?MkViZGE5dVhYdVRWL2tJemU1NzZQZjFZSUFPUzN6T2g5SEoxWUJJYnlWN2dY?=
- =?utf-8?B?S0dhb0hjTjh5a29BL3l4Y3Q2b0dGemFYbldmVTBQWVBXd1ZvT2RjbG44ZG5v?=
- =?utf-8?B?UkJ3blRycEQ5Z3Nwc2tCazM5NHM0M1ZOTDFmN0R4UmVhL3A0ay81clVPdEox?=
- =?utf-8?B?RE1wQXFBZ0FuZmI0RFpNd3lTVVNST1ZPU2tPQXZqZVNFMitaN3R1UkRSWm14?=
- =?utf-8?B?cU1kVzNDUksxQklRZUdTb1JMUE1KTUZvL0dyaExGVW5wY0pnZXVhNGhJTlY1?=
- =?utf-8?B?SExHYnY0WE0yVEowLzNrSitZOU5qUU1sNFVlaHNabFB1cVE5SEtaK2ZVdkVF?=
- =?utf-8?B?WUJadEJwL0hPVDlOelNqT2tFNE5Qa1FJZkZQb096M0JhRmRaSktZWjFTZnpJ?=
- =?utf-8?B?dUNEcitZQkNJZmMxWGFNWGdKUWpSQTRWNW1ycC85Tkg1RkM4cUpTSDNMWWll?=
- =?utf-8?B?TzNtUWFISENybEpjNUVvNEEwQnpSKzZCL3VUbXNsMmJ5WkEzRVgybFFVbUNh?=
- =?utf-8?B?cVRDT3JaQU9STjZLTGNMVlJMQ3gyWEJpWnlVVU01M3pEbHBvQVdGUnRHc25S?=
- =?utf-8?B?N0dLUXF5SUprK2g4RjZVNURnd2pKT3BQMHBFWHo4bTV5dXBzdk5SdmZ5c2ZQ?=
- =?utf-8?B?Z1MwYml4d3VFcWkrL25vdGd5aEJIZkVmelJNM0tlczg3czZ2NGNEdlo0YWdW?=
- =?utf-8?B?WVZub0J6TDV3VmxESDVWRkZuMHpXNS8ydkc3OWNZZGlGK2E4TjkySFhKU3h2?=
- =?utf-8?B?MkN5WFFkcU5FNjN6R2hkL1BUVU9oa28wRmpFN1hpZjBlb2JLd3lVdmZCZ2Zu?=
- =?utf-8?B?ZFJPakFGalBTWjltWGtHREhhS0YrNEFsTlcweWJFODdqcXl5dXlRRzc3c0cy?=
- =?utf-8?B?dmJLaHlJZzJTQmVCSHRodE9mWVlFOWQ5eU1OOHBWdFM2ZEdoMFNXQnZiZmlE?=
- =?utf-8?B?N2JCN1JKTWhoUmphV2tJbFZiaDBzaUNHbHgyZGppdHdSdTlmSDVYRGhJbHdW?=
- =?utf-8?B?aWRlUlZZbmtrNFB5N2NyVlNNOW5MMWZGUDIxajRBVHNzY29XeGVUTWJjRENS?=
- =?utf-8?B?OW9QLzc4NThySGc1TTFmNG1waUV3c1h3cVI3Q1U4RUlXanJoMHVsTWVIaFFB?=
- =?utf-8?B?NmpwV0NkSlMvMlBrMktMTlFPeGI2Q0I2R1EwQ2p0eU00OWZOdFBmSzlFNmRn?=
- =?utf-8?B?NUpvSkc5am9YUi9kNnVSRldzRldsanpTb2FuRDh3TlM5OHVoRGJOSjBwdWJI?=
- =?utf-8?B?QjBhZk9OQTNiVTVkZjJJWW0zVUhYbitLTi9LbTUyanpsMnZEdnVkNmlLQUtY?=
- =?utf-8?B?bHJvUmVwTVM2RHh2NmZzYnBxNFNsNWM1WWlXWUFvWWZuODM5eGJza29KbmFS?=
- =?utf-8?B?TldvLzBVQlFPeXBCeGFwL3NXMm84d0o1OTZIU3U5d3Z3S2srZWRqZkNaU2FH?=
- =?utf-8?B?angrK0NUTUxCWGcvZlFJbmdrazFmbGhFWG1waDZOTi94Z1VRV2c5cU1Bc2pU?=
- =?utf-8?B?NDlQTm5ZczMzUUpxT3BCUlFrdkVzV0JXaEtmR1JTcDM3SDdUNWx2blVKZnRL?=
- =?utf-8?B?SXZxWDVMc2w1S2s1bzJxTnB1UjUwL1k1UFhLd0JPOTE5bXZveStoRWQvbFJM?=
- =?utf-8?B?eTRBalJHQkx1S1liNzZra09Pd1FOQkVCbHlxdkd4N3RZZzErNnljS3lZYk5Y?=
- =?utf-8?B?dTRsc3d5b3ZCcXdJNHVYdFpkS003VUY1eldwcFhIUmsxYkNXaWNpRm9HaEVI?=
- =?utf-8?B?UlVaQTN0WG43cXRic3IyRjlieUlNSSsrRnZSWm9SUWpCS0FXamNvWEhQUmdW?=
- =?utf-8?B?dEsyYkZkT1RKSzE4MDUrLythUnJpSWU0RUFrSTF4MjQwdkt5ci9lbjZQNEgy?=
- =?utf-8?B?UkM0R0JZQ1ppbHNQVW5tRkVDWndsa2xGeXZHS3c5Yk54ai9RTUNRazVZaHg2?=
- =?utf-8?B?OXp3ZTN5dFR2WGk5NWg3Mmg2VjMrSVF3UFFyd3k4eDdhU29hNVF0Q2RnOXk4?=
- =?utf-8?B?dTFiR0ZmQnJkZzRnQ252ZjA3V0VwdWg3c3l3TjVPd0JGY3FCSzZCQ0p0ZGhD?=
- =?utf-8?B?aWRJTmt4Y01abUovaTU2WUtYUDZ6M1o4MlBnV21WZU80QlpSNDFERFFadkVO?=
- =?utf-8?B?WlJ4S0VjNkN5QWxUSHhyRVEzbEZPcTQ5VzJkVnV6THY2RHNteE11YjRHNTAr?=
- =?utf-8?B?SXFtYWhRUUVzZGg2ZFh6ek15aFZLSzk3NS9EZkoyZGZRRmJNZ2VjTGtVTTd2?=
- =?utf-8?B?Nyt6RU5LYkJoREVuN3hvNTN3Z3pMWDlDOE42ZG52WjJYRkNmNVJUdz09?=
-X-OriginatorOrg: garyguo.net
-X-MS-Exchange-CrossTenant-Network-Message-Id: a403a136-a0ab-4411-1c28-08de9187fa24
-X-MS-Exchange-CrossTenant-AuthSource: LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Apr 2026 13:50:33.7339
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: bbc898ad-b10f-4e10-8552-d9377b823d45
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 4lys3wC0wRiT08h7J/HhggPTBCPA/6j5xitxdtoNyW5doFIQ8AW6NrklewKMekg0KHPiunkBvube/Dc/lNzXzg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: LO3P265MB2169
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Thu Apr 2, 2026 at 7:30 PM BST, Jakub Kicinski wrote:
-> The entire git history for this driver looks like tree-wide
-> and automated cleanups. There's even more coming now with
-> AI, so let's try to delete it instead.
->
-> Signed-off-by: Jakub Kicinski <kuba@kernel.org>
-> ---
-> CC: jes@trained-monkey.org
-> CC: chenhuacai@kernel.org
-> CC: kernel@xen0n.name
-> CC: tsbogend@alpha.franken.de
-> CC: James.Bottomley@HansenPartnership.com
-> CC: deller@gmx.de
-> CC: maddy@linux.ibm.com
-> CC: mpe@ellerman.id.au
-> CC: npiggin@gmail.com
-> CC: chleroy@kernel.org
-> CC: hca@linux.ibm.com
-> CC: gor@linux.ibm.com
-> CC: agordeev@linux.ibm.com
-> CC: borntraeger@linux.ibm.com
-> CC: svens@linux.ibm.com
-> CC: bhelgaas@google.com
-> CC: dakr@kernel.org
-> CC: kwilczynski@kernel.org
-> CC: ojeda@kernel.org
-> CC: boqun@kernel.org
-> CC: gary@garyguo.net
-> CC: bjorn3_gh@protonmail.com
-> CC: lossin@kernel.org
-> CC: a.hindborg@kernel.org
-> CC: aliceryhl@google.com
-> CC: tmgross@umich.edu
-> CC: ebiggers@google.com
-> CC: ardb@kernel.org
-> CC: tiwai@suse.de
-> CC: tytso@mit.edu
-> CC: enelsonmoore@gmail.com
-> CC: martin.petersen@oracle.com
-> CC: jirislaby@kernel.org
-> CC: gregkh@linuxfoundation.org
-> CC: geert@linux-m68k.org
-> CC: herbert@gondor.apana.org.au
-> CC: vineethr@linux.ibm.com
-> CC: lirongqing@baidu.com
-> CC: kshk@linux.ibm.com
-> CC: vadim.fedorenko@linux.dev
-> CC: dong100@mucse.com
-> CC: wangruikang@iscas.ac.cn
-> CC: hkallweit1@gmail.com
-> CC: kees@kernel.org
-> CC: loongarch@lists.linux.dev
-> CC: linux-mips@vger.kernel.org
-> CC: linux-parisc@vger.kernel.org
-> CC: linuxppc-dev@lists.ozlabs.org
-> CC: linux-s390@vger.kernel.org
-> CC: linux-pci@vger.kernel.org
-> CC: rust-for-linux@vger.kernel.org
-> ---
->  MAINTAINERS                                 |    6 -
->  drivers/net/ethernet/Kconfig                |    1 -
->  drivers/net/ethernet/alteon/Kconfig         |   47 -
->  drivers/net/ethernet/Makefile               |    1 -
->  drivers/net/ethernet/alteon/Makefile        |    6 -
->  drivers/net/ethernet/alteon/acenic.h        |  791 -----
->  include/linux/pci_ids.h                     |    2 -
->  drivers/net/ethernet/alteon/acenic.c        | 3178 -------------------
->  arch/loongarch/configs/loongson32_defconfig |    1 -
->  arch/loongarch/configs/loongson64_defconfig |    1 -
->  arch/mips/configs/cavium_octeon_defconfig   |    1 -
->  arch/mips/configs/loongson2k_defconfig      |    1 -
->  arch/mips/configs/loongson3_defconfig       |    1 -
->  arch/mips/configs/malta_qemu_32r6_defconfig |    1 -
->  arch/mips/configs/maltaaprp_defconfig       |    1 -
->  arch/mips/configs/maltasmvp_defconfig       |    1 -
->  arch/mips/configs/maltasmvp_eva_defconfig   |    1 -
->  arch/mips/configs/maltaup_defconfig         |    1 -
->  arch/mips/configs/mtx1_defconfig            |    1 -
->  arch/parisc/configs/generic-32bit_defconfig |    1 -
->  arch/parisc/configs/generic-64bit_defconfig |    1 -
->  arch/powerpc/configs/44x/akebono_defconfig  |    1 -
->  arch/powerpc/configs/g5_defconfig           |    2 -
->  arch/powerpc/configs/powernv_defconfig      |    2 -
->  arch/powerpc/configs/ppc64_defconfig        |    2 -
->  arch/powerpc/configs/ppc64e_defconfig       |    2 -
->  arch/powerpc/configs/ppc6xx_defconfig       |    1 -
->  arch/powerpc/configs/skiroot_defconfig      |    2 -
->  arch/s390/configs/debug_defconfig           |    1 -
->  arch/s390/configs/defconfig                 |    1 -
->  rust/kernel/pci/id.rs                       |    1 -
->  31 files changed, 4060 deletions(-)
->  delete mode 100644 drivers/net/ethernet/alteon/Kconfig
->  delete mode 100644 drivers/net/ethernet/alteon/Makefile
->  delete mode 100644 drivers/net/ethernet/alteon/acenic.h
->  delete mode 100644 drivers/net/ethernet/alteon/acenic.c
->
-> [...]
->
-> diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-> index 406abf629be2..8608361fac95 100644
-> --- a/include/linux/pci_ids.h
-> +++ b/include/linux/pci_ids.h
-> @@ -1809,8 +1809,6 @@
->  /* formerly Platform Tech */
->  #define PCI_DEVICE_ID_ESS_ESS0100	0x0100
-> =20
-> -#define PCI_VENDOR_ID_ALTEON		0x12ae
-> -
->  #define PCI_SUBVENDOR_ID_CONNECT_TECH			0x12c4
->  #define PCI_SUBDEVICE_ID_CONNECT_TECH_BH8_232		0x0001
->  #define PCI_SUBDEVICE_ID_CONNECT_TECH_BH4_232		0x0002
->
-> [...]
->
-> diff --git a/rust/kernel/pci/id.rs b/rust/kernel/pci/id.rs
-> index 50005d176561..dc2035a4c175 100644
-> --- a/rust/kernel/pci/id.rs
-> +++ b/rust/kernel/pci/id.rs
-> @@ -428,7 +428,6 @@ fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Res=
-ult {
->      TRANSMETA                =3D bindings::PCI_VENDOR_ID_TRANSMETA,     =
-           // 0x1279
->      ROCKWELL                 =3D bindings::PCI_VENDOR_ID_ROCKWELL,      =
-           // 0x127A
->      ITE                      =3D bindings::PCI_VENDOR_ID_ITE,           =
-           // 0x1283
-> -    ALTEON                   =3D bindings::PCI_VENDOR_ID_ALTEON,        =
-           // 0x12ae
->      NVIDIA_SGS               =3D bindings::PCI_VENDOR_ID_NVIDIA_SGS,    =
-           // 0x12d2
->      PERICOM                  =3D bindings::PCI_VENDOR_ID_PERICOM,       =
-           // 0x12D8
->      AUREAL                   =3D bindings::PCI_VENDOR_ID_AUREAL,        =
-           // 0x12eb
+Enable experimental rust support for ppc64le and ppc32be. The patch for
+ppc32 has been provided by Link Mauve[1] and ppc64le support[2] has been
+merged over it. ppc32 needs some toolchain fixes mentioned in the patch
+`rust: Add PowerPC support` and the discussion for that is done here[1].
 
-Does the PCI ID needs to be removed? There was a similar change that I reca=
-lled
-and the discussion eventually leads to ID not being removed.
-https://lore.kernel.org/all/20260123033233.16906-1-enelsonmoore@gmail.com/
+This has been tested on
+- powernv9 hardware
+- pseries P11 hardware
+- pseries(9, 10) qemu
+- powernv(9, 10) qemu
+- rustdoc on x86 and powerpc64le
+- rusttest on x86 and powerpc64le
 
-That said, if the decision is to remove the IDs, then the Rust change is ok=
-ay to
-me
+We are actively working with our LLVM team to get the target for ppc,
+ppc64 and ppc64le in the rust compiler.
 
-Acked-by: Gary Guo <gary@garyguo.net> # Rust
 
-Best,
-Gary
+[1] https://lore.kernel.org/all/20260204030507.8203-1-linkmauve@linkmauve.fr
+[2] https://lore.kernel.org/all/20260204042417.83903-1-mkchauras@gmail.com
+
+Changelog:
+V7 -> V8:
+- rust/Makefile updated to separate host libraries from target
+V7: https://lore.kernel.org/all/20260329160254.2592207-1-mkchauras@gmail.com/
+
+Changelog:
+V6 -> V7:
+- Documentation removed as powerpc is still under development
+- Added a fix for race condition in rust/Makefile
+V6: https://lore.kernel.org/all/20260210090023.2587534-1-mkchauras@gmail.com
+
+V5 -> V6:
+- Added a missing Tested by from Venkat which got missed since V3
+- Support is marked as Maintained instead of experimental
+V5: https://lore.kernel.org/all/20260210053756.2088302-1-mkchauras@gmail.com
+
+V4 -> V5:
+- Removed a nested ifdef from PPC64 for Little endian toolchain
+V4: https://lore.kernel.org/all/20260209105456.1551677-1-mkchauras@gmail.com
+
+V3 -> V4:
+- Co-developed-by header added in patch 1
+V3: https://lore.kernel.org/all/20260205180429.3280657-1-mkchauras@gmail.com
+
+V2 -> V3:
+- Splited HAVE_RUST in 2 lines
+- BINDGEN_TARGET_powerpc initialized before assigning the same to
+  BINDGEN_TARGET
+V2: https://lore.kernel.org/all/20260204210125.613350-1-mkchauras@gmail.com
+
+V1 -> V2:
+- jump label fix for rust has been moved to a separate patch
+- PPC32 support has been taken
+- rust support has been marked experimental
+- target.json dependency has been removed
+- HAVE_RUST now depends on CPU_LITTLE_ENDIAN for PPC64
+
+Link Mauve (1):
+  rust: Add PowerPC support
+
+Mukesh Kumar Chaurasiya (IBM) (3):
+  rust: Fix "multiple candidates for rmeta dependency core" error
+  powerpc/jump_label: adjust inline asm to be consistent
+  powerpc: Enable Rust for ppc64le
+
+ arch/powerpc/Kconfig                  |  2 +
+ arch/powerpc/Makefile                 |  7 +++
+ arch/powerpc/include/asm/jump_label.h | 23 +++++----
+ rust/Makefile                         | 73 ++++++++++++++++++---------
+ 4 files changed, 71 insertions(+), 34 deletions(-)
+
+-- 
+2.53.0
+
 
