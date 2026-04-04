@@ -1,94 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-19324-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19325-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D40CFE63FF8
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2026 20:28:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9E7AE63FFB
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2026 21:04:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fp6ch4dTCz2xYw;
-	Sun, 05 Apr 2026 06:28:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::1334" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775334532;
-	cv=pass; b=cVhNXk1rAZTgwgUHC1FB/Lz57RCeGoNwdHp0IoihwKYFyCfFK27ygnRLM/k5W1D+OwSkiTcIPJdJ4LxyZxDdEJlE7ZM7+KvUubCXUVj0rarA4b8oRUSwrQH47WLXBTVQiczMYAWudSbjb3grxVW1VsJtrEiYeDm8hzdZqy4htjMD9l/DEY+b6nNyxlup0UabIn4qACznqAXdn3/+JNnxmZmm1tSq9byPf6ZSICNVkhnn6qN/mVooikUhOr3s4lBaL/m7zFd0kMPxJ/9q1ytbVcYWIgcp38i1pEhEIFkyfo5FBZN8rTaP5D6cEu0eT+tcBabA9MhuYBUpg69tSGlxxw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fp7Pj21j3z2ykf;
+	Sun, 05 Apr 2026 07:04:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::132a" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775336665;
+	cv=pass; b=NDRQO1tfRbkxYroFhoo6/GbFP6SlQnSqFp0kJs1KmiMH85A74VyCY6bL00HK2AHWj5O0RSls40ArcEyyW9R2/64v/fndK1hH/6RnhdpV7/XaWnVYGRsgeX5KfSPX9MQLanHSNyWMzi75Dnvv2WVR2uL4uk7vuLQFsiwc7hSjuHSVJyc3IV77mARHcLduBDaumCENYbn9jBBaR3rjHhRLwaBHnrDZqZ3FLhizaloPUdYk0sRE5UT6ulI5zN/yWkgfvnrxxo+dGT5HVW78IkPj6WTF4S/TGS+c0pzw9aBiYqVQhw9ZpOv9fm80uXA+rUH33isAuj1qy1iEunKCBd8GQQ==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775334532; c=relaxed/relaxed;
-	bh=fuYkWQmMSCPcosnkt/+bxaLXK1ECUYr+DyPSImbwjCw=;
+	t=1775336665; c=relaxed/relaxed;
+	bh=cYhFiwqA+wDjtVVMvyF4BuvxXVvpM8t3h/p4jRxczq8=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=U6rFU77bTKHnUii3R9KX2SlTWQQTv3mukwkH+CnLbpx5kRS3aDfN40ITN5/wm1MvkefpuMfx3Ni3CqwBOvIlqvOHyPukzKYG/7huYOdutm+emcUT678cVe+xy8RciGg49a5HBbqezaIJBPS9dJT+hRFMkYFqS9M/GszDaNMYV0c/EKW2n59LCLiA6qXVw2MJ4Tv/CYIyzO8WZjiiTCg6XEdFUPEgtWOXuKS1grtfXeeVZ3NdJ1ckzrlKk1M9jq0Xrp87fjmUgfBUh5shqe/dSDbKYHKAoV2Q7qpNCLyFX7woPDbHYQLreK47OMZ4AeIbJJkyEdPNeKaOxf2oOk3YsA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=j+ktAkOK; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1334; helo=mail-dy1-x1334.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 To:Cc:Content-Type; b=fODMkJNTR5DTsH9kR0xXnY6XbG8N4dByVsVEHqhzQ7m75pRUM7IINkhW2j5KpIIq1bvTo1WahvF1bi4w2KR1GEWNkfUqMrvbEJ0drMGuLu+7e4Ae6gP6Lw2WPr2NgxjFtEl/dViYYfQtitG0ghLqZ05SX7DV5zLfGKIz0Pmw65qSdWzpqyDD3Wrp2wGMaUeAPZ67Pc/vq56poqjnYpHshKPblagLz8WFY96nTVt1jfyJI9aCO1daUSpFSw+4shcQY9nQYw/S+UfHorjGZ5/PJE7sQkhX4omlJAn/j6PbVsLP6SPwEQzqJdszBbD9GgPqXBrB7XpHP1L7EXP2vVGilA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=lRFT2Xi+; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132a; helo=mail-dy1-x132a.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=j+ktAkOK;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=lRFT2Xi+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1334; helo=mail-dy1-x1334.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x1334.google.com (mail-dy1-x1334.google.com [IPv6:2607:f8b0:4864:20::1334])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132a; helo=mail-dy1-x132a.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x132a.google.com (mail-dy1-x132a.google.com [IPv6:2607:f8b0:4864:20::132a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fp6cf4px0z2xQD
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Apr 2026 06:28:49 +1000 (AEST)
-Received: by mail-dy1-x1334.google.com with SMTP id 5a478bee46e88-2cb19ddda43so223649eec.3
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Apr 2026 13:28:49 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1775334527; cv=none;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fp7Ph10ltz2yjx
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Apr 2026 07:04:23 +1000 (AEST)
+Received: by mail-dy1-x132a.google.com with SMTP id 5a478bee46e88-2cdf546f956so25055eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Apr 2026 14:04:22 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1775336660; cv=none;
         d=google.com; s=arc-20240605;
-        b=cqEMzLzN1KcJnGWXI6cK9px8jG0qA4moRllH0HHnFD84a7cd5JkoHeK1svMueKiipI
-         pAGo5rVvaAYfUZKblVExMCu8IkM8R+DcBReN/0pIc8O7SIbB5xNPIQ0+onpM4CpqneCR
-         +BShw9yd63hkYsNI2MhZs3OS53i52vY1LBJ1WBmFluNXZrNhzKzfQxdb+DkdBCxvTHZL
-         muedoVxpO5/M7/+xg8Nqs3TaJ3xQ78QgNeTgeRhNF4q53uk3z7gGWcRI9yi7nxR+xigJ
-         tVjIgkH8SU7QFatPNgBfcnkVZ73y4Z+WC3DZKWSkyrjCAZkAlsGa/jHLqtD6KCZtSWzk
-         0E2A==
+        b=RVpR0iwA8Fr147IwM2l5OFevVQsy+p6mlYNT2TefqbjnIK9yOiIxJRuCj2Adi1HfC+
+         H8OKvsvX9W0g1kk3W296W/S4hSwlm30gDsYVxoe2ipLPtFqRZUHFT+J1pnP3VCZyFvW1
+         SWKaiq5ONmm5Vq7sFwOTqrjXtMdPEjPb+j2GBZ59AiJMmL6LnrfjFTlkSACMq8i/g5Y/
+         DuSTfysobOA5p1Qh51ixNbYm5aE6FCTSpYq6ZAskFiFb8sojZEQbC4kfis2twwnLyWC/
+         lGrY4fy23H1Spf0WPne6Ijgi4z1N7UtrFP6u4ZakrGh499zu/sT5kQxbvDfngKtAortn
+         Olwg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=fuYkWQmMSCPcosnkt/+bxaLXK1ECUYr+DyPSImbwjCw=;
-        fh=Mxs+sJtaDPuAM2glOD/G/U4CkYvO6nNw3raN7YC0cvc=;
-        b=YlHZnhYXW0ZLzEHBdP1RNpINQ/U0Z25536Fh/1yxWGE0Qi9QVNbV1QhlVj4APe0Q4S
-         UfU2WEvf6NkWQvWXoPb9yX51NR+dkeKkXm6ypT4prrfuES627LDqsjI8Rj8ChTnC+eqa
-         7dmzGQgvuZ6a7mZaxQn91tUx833Bk3ceH/rZTnYA3kNjDffbOGlMOgzNx8z6lW3vdVMY
-         BSZ8YO/TXlFZimbbl3fjs2q4ntls5vOKKzAzVWM3tcbdYyDJTibQj9qkx6Q2JxWHoIqz
-         g5ObRvbj1sZ/u33fPrW6Q105r4VCdhAIQ8lxIub1ywSESh1u5Yhdbq10DY5qWWZ1QFNS
-         T6/g==;
+        bh=cYhFiwqA+wDjtVVMvyF4BuvxXVvpM8t3h/p4jRxczq8=;
+        fh=3h+Ghpi7Pz54gqmk/ZbyBlPGoeFbWaExgzlWi7zI/g0=;
+        b=bZK7jE7FTDkYPa8t2FdHp4fBU19yEsHu/mEXvQ1vBKbfABAR2qK33OC3tOzUV2cJAY
+         KncB390rP2UehnwIHEt/mFm6gz6oIKA7+eaOkn4OH8NxO8XlfTUnm3+QFid3gn5/WGi2
+         khB2x7I9OtF9EqAsXVcV6J9MlmHSg/MsVlhRZimDCGfmD4ydo5+tlyregubfkKlNYVW8
+         y20mZS9/Jk+4CHhUQvqu+k4DZ8i/GTIyqLBab2gImLS+6The9zSLqDUbDXNlAGSMab5t
+         1SCN8iHd3uZfse7A3ATlMSLSHrZ6Rlf4pqHUOgLdlHW5/4u9VgKQBqRozAeH8j+u0Dtp
+         UvaQ==;
         darn=lists.ozlabs.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1775334527; x=1775939327; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1775336660; x=1775941460; darn=lists.ozlabs.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=fuYkWQmMSCPcosnkt/+bxaLXK1ECUYr+DyPSImbwjCw=;
-        b=j+ktAkOKUkkZZ4T/pJT1p2FBKmwDZ55o2hQYQZqRA/0aWlGY7RST/nfe534N3cZpNv
-         RkFi1HLvpiUbsIy37MrhHy0rr8JiYn3K7EAFhI5DjOZDXyQf797yKCfbdEXoMzhisYli
-         TDnFpNKKHJXJK2326XQkAc7bMOS12qfaX0wDh7WaocJ6PPV6GsgaO3dOneiX7o28Cyuh
-         t/MMK9DO8WCQOetr+sgZksBSQKBX4MdAjSJYbRFkA0czVP7iBJCXmv9ulfiiIczO4zlA
-         vOa+SVT2acxkirXeUjOR5RSxC0LADq+loZLjHR1IFS9gieumz6eDGuCYBTd4tpvRex1b
-         2Rtg==
+        bh=cYhFiwqA+wDjtVVMvyF4BuvxXVvpM8t3h/p4jRxczq8=;
+        b=lRFT2Xi+GOjpQcOJnrjO4kKKLQmv23K8Th5pm4mryMjSjgrYp8nexQ4snhbobpnWHR
+         lhb7E7Eno7EuGRLwPYqLHsv9Nv1357Ifccv+u9pAKfskXwbbxHhSR61u6Qi/x4Ox1iK+
+         Axi1OxyoZxm2P46oBUJmSdinz/3hXbxdxe5pgmg7Upq2789anKHYeMG29yvb0m+qadI2
+         smR7HDHCoWm8NnfKoIUxvd1LfBFM7rVt2WfTZ+AG2S8febX/WZBOHgbwPzAfysMg/CAm
+         52tfPy8yxR6ThKJnMr4Hi2FfDpHMNXNxMd39EoHIFGYXW4MZe5DSBqVI/uW/i7QBVvwV
+         NzhA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775334527; x=1775939327;
+        d=1e100.net; s=20251104; t=1775336660; x=1775941460;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=fuYkWQmMSCPcosnkt/+bxaLXK1ECUYr+DyPSImbwjCw=;
-        b=ijjPFzi0e0YIPOQ/JV7efD7YaQCAsXV+q4xzMnwyzITpFX9a7YCZovZ2DmthyNQ0Oa
-         cbITnBZKiOmBGji29zPXEnyT3kl64+gQAEmoKb31F9EgJlFKyh5ssh/OUtIDRd181kS9
-         kxHxoLJwB0l1FuOKb4HFugKjNiIgn9bF3j/fIZfOwbWwJ9/WvGS6oh6Bil0FMEhxwunZ
-         KF2kXxo1DtynIAXqAkKyHCa8CMeiuy+1o4wnWDc5d12uhHXjvddRCDBeO9AxWmO92Zq2
-         MaujmjATNWdKBhUCo3o0kdf2HhH3R94DefhOACJEHrzTfWuw/ygKO0SSceLDd+L4vETv
-         R/JQ==
-X-Forwarded-Encrypted: i=1; AJvYcCU0dTk/+VFiHXqh7y+ojhB6CIM32A7rXE5BQ37/rDbZ0P5lGp6pH1P8XlXwSz6AfvqIIWw5GNApaDIWMHU=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzoQciRiKriSx6MpBnSJYP/VeqCTal6UjGwi9th5rOMbK8u+fFv
-	M6Wt728OoS/L/ROh+v63KJSwe4aQlc/OpE9f0YDTcFfZ9E9FAszF5+jPjwFA0ZCXRox93LlPcIS
-	HJI+el7qIAabKoyL2L3QYLJSL0v4+ts0=
-X-Gm-Gg: AeBDies4wMfzukLFv1o51xOkCDjT9RCcSSUAxhrWNVP6EPjsrhJRIeKil7XELcvaB+N
-	UyPxsWwg39y5h/Jljaze4NezeJ1rbLnX21x7/IlPiQPM66CYSb2irYCzGsGYaSzlAhs/za4rINr
-	OqlqmQfx9aIwFwGySMjQvNldMi42mRSW/akZ0fJNEISSKZIaj6h5JLZmhJeHNcWE3+stfu80CUV
-	CX+crPRnbVGXFKPSHq54RJwEaaAqN6qTCkXfbZ6ddIRsqDhMhYnXPjnEvUOZWykrW9klIggqokj
-	IkP+soGYL0kBA0nbKFjXYf0K1whikmjklBvb7hlL5ahe2k91d813r5Kbu81y1ZD9uJDkMS/lNtC
-	ffjdBZjt4Tew7zuRRV08gt5TWaFdrFNDjmg==
-X-Received: by 2002:a05:7301:129a:b0:2c1:7ca:cec2 with SMTP id
- 5a478bee46e88-2cbfce5068dmr1382909eec.8.1775334526875; Sat, 04 Apr 2026
- 13:28:46 -0700 (PDT)
+        bh=cYhFiwqA+wDjtVVMvyF4BuvxXVvpM8t3h/p4jRxczq8=;
+        b=B1YI1nr5z03pdjTRIkFVnHpFRAD7odIyPHj6xSnFLuFyjcHGQyN+kQZiR3gK/qzz1s
+         OZo3ZpE2NoSg/JvdSjNJEajiaGQLq7aRUC9Gq/YngpujxqxAmPzcDFyjF4Cm4a4KbZ7m
+         B7DNwsfwtRHCRwQ11/wckKQH31xzk+Pxn00R6Kgf2Hfl5CPpgT+n7AQ2HVwjBHEfl2+P
+         rGg3OSCGG+16OTCUQ9DN/2qKqERRVNQorARlFYfFdX5Ra6/ycqDEBUa7sFCDX6ADY/Sg
+         vORS6LpWRfUh1JO/0OMeYQdKZBeNP+yGlOnZndIoCETpoHU4duMRx/i3armuj51tNDy4
+         GjHw==
+X-Forwarded-Encrypted: i=1; AJvYcCXOewoSr+g43jcT42RwLFg2wBOVmNyyu8PsZHZy4ja4ZCV8NGibZsOaqNB4K3Tx+jTOOpciJVgG8OY1t2Y=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yy7jIsn7dGTSRLSi/sQ9T/bq66BmLHZwaG7Dy81eeAmW2gv1+LX
+	IgcdIvalqTn3WUcQWdl26jkhutqdbp/BY7+XES67BDNcjkPBpxgm89tTZ7bW6k1+ULZWgvi0xOA
+	VajKkfUkliii3ZxVcdVS0O9sCLCSzv+s=
+X-Gm-Gg: AeBDietQ/6Twv5B8k8lRephfchnj5jp+J5cTWVFgll312FpxIQSwzkRpynUPC107D+p
+	NHG05Cz8VNBcxNUzDrmikQboSMP/b3XXQ/rILTUYbfgXNqlAbBYS9qYdWIVZLKOxP2U45pzEXhH
+	3OyCg40/scskEvTgA0EqxaTjuD170UvDE1I1rLVRA3YUZx9GNYrPcNRMVvr/0fz4IrfiJAli0MN
+	Rapx2j8vObyZUDjQ8PqjgKOsE005Y9i8yzrqwfEPGRY/vp9hY2Yr0ndgSZfMoa1YKc31gM1SuBz
+	gRJzJrXwxfUIrjwysTm5hbSa1b4u7DdxJgQdxRcBH6MHgcdcE2yT96LpFRK+Cbh4aA891TrtNhH
+	tz3ZuhsyAEwTZxR5TmMX3SMn2kKILqHkyNw==
+X-Received: by 2002:a05:7300:8623:b0:2c7:8e1c:956b with SMTP id
+ 5a478bee46e88-2cbfc16eba8mr1628403eec.4.1775336660175; Sat, 04 Apr 2026
+ 14:04:20 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,20 +102,19 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260403145308.1042622-1-mkchauras@gmail.com> <20260403145308.1042622-2-mkchauras@gmail.com>
- <DHJM52JEY7D3.MGKXTZB319ZL@garyguo.net> <adCHe9rU_azp8svx@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-In-Reply-To: <adCHe9rU_azp8svx@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <20260404121610.1956528-1-mkchauras@gmail.com> <20260404121610.1956528-2-mkchauras@gmail.com>
+In-Reply-To: <20260404121610.1956528-2-mkchauras@gmail.com>
 From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Date: Sat, 4 Apr 2026 22:28:34 +0200
-X-Gm-Features: AQROBzCykZ4QROsJXifMoD7BMVI05gD2ToHAxvSrZBE2nSQXFDkyMtGKnsPYJAc
-Message-ID: <CANiq72=chqViRu08TxDBA9k3fpL6vAVzvBnTrkfY7jM=FD1afA@mail.gmail.com>
-Subject: Re: [PATCH V8 1/4] rust: Fix "multiple candidates for rmeta
+Date: Sat, 4 Apr 2026 23:04:08 +0200
+X-Gm-Features: AQROBzCMgLHa7cowntiZYSKVuRyKGh1fP2Cda-tJiBMZoAlSB8e92ElsqLSq1yE
+Message-ID: <CANiq72k1KN68wG_dh0GcTyfiXUyrVUErJ5D8AOaV6z6=sX4BAg@mail.gmail.com>
+Subject: Re: [PATCH V9 1/4] rust: Fix "multiple candidates for rmeta
  dependency core" error
-To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-Cc: Gary Guo <gary@garyguo.net>, maddy@linux.ibm.com, mpe@ellerman.id.au, 
-	npiggin@gmail.com, chleroy@kernel.org, peterz@infradead.org, 
-	jpoimboe@kernel.org, jbaron@akamai.com, aliceryhl@google.com, 
-	rostedt@goodmis.org, ardb@kernel.org, ojeda@kernel.org, boqun@kernel.org, 
+To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, peterz@infradead.org, jpoimboe@kernel.org, 
+	jbaron@akamai.com, aliceryhl@google.com, rostedt@goodmis.org, ardb@kernel.org, 
+	ojeda@kernel.org, boqun@kernel.org, gary@garyguo.net, 
 	bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org, 
 	tmgross@umich.edu, dakr@kernel.org, nathan@kernel.org, 
 	nick.desaulniers+lkml@gmail.com, morbo@google.com, justinstitt@google.com, 
@@ -124,14 +123,76 @@ Cc: Gary Guo <gary@garyguo.net>, maddy@linux.ibm.com, mpe@ellerman.id.au,
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, Apr 4, 2026 at 5:39=E2=80=AFAM Mukesh Kumar Chaurasiya
+On Sat, Apr 4, 2026 at 2:16=E2=80=AFPM Mukesh Kumar Chaurasiya (IBM)
 <mkchauras@gmail.com> wrote:
 >
-> Yeah makes sense. Will send out new revision.
+> When building Rust code with LLVM=3D1 with -j1, rustc was encountering
+> an error:
+> "multiple candidates for `rmeta` dependency `core` found", with two
+> candidates:
+> 1. The host's standard library from the rustup toolchain
+> 2. The kernel's custom libcore.rmeta in the rust/ directory
 
-In addition to what Gary said, I am not sure if you will need to use
-`abspath` anymore in the new one, but in any case, if you do, please
-clarify if/why it wouldn't work without an absolute one.
+Please clarify in what conditions this happens, e.g. when building
+natively in an architecture like powerpc for which the target (...)
+
+Otherwise, it sounds like this is something that would be happening to
+essentially everyone just by building with `-j1`, which is not the
+case.
+
+Also, since you may need to reword a bit, please take the chance to
+use the present tense to describe the current state, and then the
+imperative for what is changed. (The past is usually used for
+something that already changed in the past, not for something that
+still happens before the patch is applied -- I hope that makes sense).
+
+> - Update rustdoc-pin_init to use explicit --extern paths for proc macros
+>   as pin-init also needs alloc crate from -L$(objtree)/rust. So the proc
+>   macros needs an absolute path
+
+As Gary mentioned, this list may be too exhaustive, i.e. one needs to
+see it in the diff anyway. Usually what we do is try to summarize, and
+most importantly, explain the "why".
+
+Also, it doesn't seem like the list covers every change anyway if that
+was the intention, e.g. the removal of `--out-dir`.
+
+> -rustdoc-quote: private rustc_target_flags =3D $(quote-flags)
+> +rustdoc-quote: private rustc_target_flags =3D $(quote-flags) \
+> +    --extern proc_macro2
+
+Hmm... why is this needed? The variable already carries the flag, no?
+
+> -               --out-dir $(objtree)/$(obj) -L$(objtree)/$(obj) \
+
+This looks like an important removal that is not explained/mentioned elsewh=
+ere.
+
+Also, is there a reason why we cannot keep the `-L` here instead of
+adding it in every proc macro library?
+
+> +    --extern pin_init_internal=3D$(abspath $(objtree)/$(obj)/$(libpin_in=
+it_internal_name)) \
+> +    --extern macros=3D$(abspath $(objtree)/$(obj)/$(libmacros_name)) \
+> +    $(call cfgs-to-flags,$(pin_init-cfgs)) \
+
+Hmm... This special handling isn't great, and the fact that it means
+hardcoding/duplicating `pin_init-flags`.
+
+Should we move the proc macros too?
+
+> -               --crate-type proc-macro -L$(objtree)/$(obj) \
+> +               --crate-type proc-macro \
+> +               -L$(objtree)/$(obj)/host \
+
+Spurious newline added?
+
+> -               @$(objtree)/include/generated/rustc_cfg $<
+> +               @$(objtree)/include/generated/rustc_cfg \
+> +               $(rustc_target_flags) \
+> +               $<
+
+Why is the variable moved here?
 
 Thanks!
 
