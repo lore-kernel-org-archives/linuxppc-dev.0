@@ -1,84 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-19299-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19300-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD125E88D72
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2026 01:00:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A13E3E88D72
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2026 01:04:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fnch52stvz2yqW;
-	Sat, 04 Apr 2026 12:00:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::633"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775264405;
-	cv=none; b=TAy9enG4XZ8PrTnK9EP5CJGSZq391nMYhdQhwtXN8dcVJSbq2IH0JpYMhgGZPvJZJtAk8AeAAOrDqJxRt5FLWh7rp9ZvHApyAHOGqRKlBErvGafWaRmIShvn8Ri+An/e8MbCQTY7dX0rxgLtNk9Ln31FTcIGyk9uihsTekU9JSo3KCelG2BuqniORE+2VQ4KOp6VXsjqhyfoJz9vUimNxXwZ+rfyFeV/lwRYHA3qsW2FD6RX13U8v0r5hVo+aG9BeN9J94N0HCRBff/ZeNKjX7qv7IEE9mkpoP7YvAKUu64Ew8Burq22aSThqPX23IDGqiCLLq9Z6AASHoUnecOV3Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fncn32LP8z2xYw;
+	Sat, 04 Apr 2026 12:04:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775264663;
+	cv=none; b=DC8SwuaXh288se1yq8xzJjADoMdL4PJgr7m1wbO+gAzl6kIjLYnRI4+kS6NF6Cqvosm3IjL92YFyTQVWuyc+p8CAvK0DVnAnrbBPvZljZbvigEtZJH1ZCWRnvnv+W7OqxiBqD7Ju1PYEC31B02No8D6tF4ImKlJZhsj9Xh3s7SZABKhFSiIMkN+K/Z+uwywPxpjyxGVRVWZedQY0Zbq6Tg14D9+f8mr0tZKEry5RhQUCtDFZnvK7tCYv7mt4LP6iWRQtcat0EiOOH0Y6ExZOxIcZAWg17EIxGa6O2SXEr7Nx7+MYX/U0cRGjQh7z4iRiQnwjQZcfP/xnCw47MaGz6A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775264405; c=relaxed/relaxed;
-	bh=Jx9VRA+YvXOG2ZpAp8I5XEFcEAu07TeiFK4l7PTiyc4=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
-	 MIME-version:Content-type; b=bI64vM703xw/qlGYZea4Ot74naFad/tBJzFYjX89bS36wjRa3J2STVQ5hQneTeuwLsuENYDTmW4ebZRBAsmi+z2ux+OVN1Q8/4o5gAEAjf1oTF+zyhbBgVWeHggBp5/pp3qFSbHkzw9wg2H3ZQ00nq1bHLntQ2JqFTl+pvBZMisEyw8S+v3SYFSwSXAzjLcT4w3Sc4eGQvXIpkA/34O26A13/kT6pm3UwKAwLhWSKJ6cJu6UCRHGo6vmxrE9+hFcTRX9QfwOTySMNZR1VYbFg55613B1f3eYCtqn6BtmlQzBxv4aTH+KoeSe0SwJmZjClecSfm7JPoYgvYwclTzIsQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=B+0Dwtfg; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1775264663; c=relaxed/relaxed;
+	bh=edNGcFx1CXG5zY263vAjylqpwkQzI0eE+O2C6Le7MCw=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=jAIihlNO6pV6EzSANzq0STNkXMTRFz33qVVfAGcvsNzVRzVtqUCbeuWeCMWiEMDCd+IM5knsjdCSjNKbK1S4akZy3FK13+yptR++vP3jzUJapk4+S38XqFb0xQGFrsQs+nktMwjh1StIZhh0UZtTDCDZmDcAgTccbz+QDa/9Gj/iMt57OJe4kCuRzDh2UmX3g0Z1TaachBAJ8KTpUUVSne8jk0HBAMgTNMn9O/Z1CJ4xobykl3onUYd9d2ywAff9KATq4Qsf/mJ3i3Nqik9bHMeheMQn3XAQuKQrI6O+tI73CYSGGJIj5/BDCfPrjfoRveLY2rB2A6cbvRM/Kd2G3A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=UJI5fEzF; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42f; helo=mail-pf1-x42f.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=B+0Dwtfg;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=UJI5fEzF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42f; helo=mail-pf1-x42f.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42f.google.com (mail-pf1-x42f.google.com [IPv6:2607:f8b0:4864:20::42f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fnch36KSGz2yl2
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Apr 2026 12:00:03 +1100 (AEDT)
-Received: by mail-pl1-x633.google.com with SMTP id d9443c01a7336-2ab39b111b9so10023575ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2026 18:00:03 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fncn21shNz2xQr
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Apr 2026 12:04:22 +1100 (AEDT)
+Received: by mail-pf1-x42f.google.com with SMTP id d2e1a72fcca58-82748257f5fso2082698b3a.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2026 18:04:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1775264400; x=1775869200; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:message-id:date
-         :in-reply-to:subject:cc:to:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Jx9VRA+YvXOG2ZpAp8I5XEFcEAu07TeiFK4l7PTiyc4=;
-        b=B+0DwtfgaBRPx6aUdfVrZSalYoFB6uKNDWd9r7KIF6DaANMsoKe7fGzfngdEfrd2rl
-         PeOIXfnudGLQS+6bzIhkoROg0osYV2Uquvhqbw3Wee94IXpNMxwpLPoamnkyOzGv5B1f
-         eXXpVHvc2J4gQuaN/GrvDOPjTVU+5mjqBudIWLhqsLHV762n38dEDGzg6aC6X8wG5exZ
-         ZADiTRpjFnbyV3mkgMPQdd47N0a68HbUWB+FlXWxvOjOm6dKOhwZap3qPKUuJv8qLkq7
-         mfiV9KVl2uK64KdzjQ+eSE+HIWB9eLJbR6bkDlUxEQoeV/4lMwLOGkdDeTrnioPzRsic
-         TbCA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775264400; x=1775869200;
-        h=content-transfer-encoding:mime-version:references:message-id:date
-         :in-reply-to:subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to
+        d=gmail.com; s=20251104; t=1775264660; x=1775869460; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=Jx9VRA+YvXOG2ZpAp8I5XEFcEAu07TeiFK4l7PTiyc4=;
-        b=LmX0UvrK/LHCIZoh3Hj3fRz9LEkzRAvxayDhonaOlpWMtrOuMMPXK2fnJenJdP1VcF
-         PvrrLkizlctMgRNnZlYdWX3OTN+ZQEQDRhzNIap7r6RcTnrWyfH99i/0eGMh2zVztjzE
-         vOiuPDz2EaaFcg9j0zwgUFyj2t/q0yqF2npA0uq1WBF9Hp7MLn1A6ZjfrGY/0qRyz9BJ
-         NwplFX2/yhJtCz0nrKwOrAAPJWyLhC+nys68wa7XSwmUZUsRfhMZFedZ2bZjyezBf/F+
-         XvMMHfkO0/YrzfcdG7KcQYTrlvwgHELKL4MeJapVPxtNwHg6p7DAh0QmPOHruTWKB6+D
-         J7Pw==
-X-Forwarded-Encrypted: i=1; AJvYcCUFIK2nHRBu+vyXCtPooVOtkapEqiU1xuuqwX2B0F7i6uPCS2fUEcGanOHk6OD2dxwlxJoU+LqODgq7Co0=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx3CnRwV30grO4Zt8t3Y/GbuH3x10bNHT2UuIViG2ye8CsseCcH
-	lzItRWoL1984GccqB5UfIyuGmWtIfIrbg70rUNZ+yxa2B5TTwMDZ3pjy
-X-Gm-Gg: AeBDiev3dGkL+JESi+7cFZ21eq11aDx9FVCZgxSYFrJ9XySuGoGBVzplXRpc2PQqGZT
-	GXjZSWWdOHeURIXAZlF+ZUW3SfFHGLkuSNbHpy+6Pel06WS3+tj6Ed0RzH+UBi3s3/ggKE6lyZI
-	+Gsfq6QJL2sjFbAyak/UzfzJoDxtVhc/M/2MfRm/Ne+Gku3ji7lFeyXo4KDttGSpEIXpKolbhCv
-	ViadGNnTTjQNUvq2ycOgyye7tbsqdmMkX7yrNnJBi/3bx68eN8Po/vRcie51BzjeVKMiXV0RA3+
-	ppdfi6ON/TiA79/iUZz0a0i8UtF6r//D61bW4HzLsS7ys9IRjM77FArP3it0/YvsFNBBhR5Tyst
-	UrMFjBsntR5eUht8R69mrEZRfzUYdO5sph00wkThGKQ9J50YVgw8IiofFi1HUhxLGe/qPVVkooh
-	hk4sBve/eJ/uZyZCp3FMDDGTeKkch+efl+
-X-Received: by 2002:a17:902:ea08:b0:2b0:68d1:2537 with SMTP id d9443c01a7336-2b2817c69a1mr49454885ad.42.1775264400166;
-        Fri, 03 Apr 2026 18:00:00 -0700 (PDT)
+        bh=edNGcFx1CXG5zY263vAjylqpwkQzI0eE+O2C6Le7MCw=;
+        b=UJI5fEzFJo9igbOboDKFEBCRnytS3CzrBW/rXCWUk28e25OO4CL6jHVf9N5lHZmXrW
+         obri7dybXjrNUG9vyahSVXAcvDzFkZW39YldVJHukdd5Jy79wWeB88247tF3E6p3vrxy
+         uxKi3XMJsiFIWj5MnFkelyk3MW9qdCpEDcmrAFyILTS5CrvVfnKIFFYkyaSXD7FcnN7i
+         LTlIXPDIvkXZlUT1wApxDlfbZUCl4lurwBtwKiLlXw005HhqgGyd60+QIr23mib45Jm5
+         Objz1b7GTnYfvaMskUvTqzZ6hoWdIDnoEki9+la3ryp0Z9/hxzXzn6H3GDxFJmvMMt8x
+         IzuA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775264660; x=1775869460;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=edNGcFx1CXG5zY263vAjylqpwkQzI0eE+O2C6Le7MCw=;
+        b=lYZ7/BB+LZg5czKjhXif1jYusswCS2Smo75bfnPsLog4AZ7ORSRFS5w8yKOVp4eYRt
+         asIN9IeGSxwweoUibtYbJlAqPXjoVp6OAtFdaEzv8NlZEVSEJbQp0y2fEFyB2SO+SQ5/
+         +kHoODnGrB92g6tC7oqo3uZfBXfSaoapIHjzqc0lPB4PygxisSQqtC1R6l/UBDWISCEn
+         mWh1ZS6NmE4tq2EYRJC6JumDAkC+/PaJnOdagzvOjhYXbkdAqiR17OEMQBN94WuP/mb0
+         eDJVPqaI+YQNImRltKQXoNPMsGoXC+B8xefqfGG08/iWGgwntzPb7YlCDHbHH3N1OaGh
+         Lc3A==
+X-Forwarded-Encrypted: i=1; AJvYcCVyBwsJcPX4q95Ijsl3mEV2MyXZL/IMcJLTzuK7RuS5nBof02oxr/ZiPzx4Ny8Dd2jNBLN5MpbbkbNC96c=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yyd5wiasUVbNFu9IKu8fWR3K0+FRRCxgELxUFQps6FGsD1SjrFx
+	GDXet6cQZYnJ2XfRvCAz/aXYSoPQVAtaHdfx0Jc+CH6Y1ecJ10GWrFX8
+X-Gm-Gg: AeBDietAJMzRThUBx3ux6ywmDP2+RnrEvjvp40Tg20Am+zGRbqCl+4+FI/YzkK03hZZ
+	USsiZHkIjhvtXy00oZ1CgG8st/S1IiUE0matC5ParNyWDEh/IzhWElON8MMUaI8D2nakdVdFTRv
+	Mogkt0/VOmjy4AnvR5yDtvYehJm3gWk3LogurVQSHmzZgbG70qAM+X6fyfOv4W2IEghaU0kf4/o
+	kkjWRAohMjpJzZQwVPBUMMuVmk+EuKf97objMCXJHfWwzOGbQlcRPhlT0optoEB/vsbKtPhX8yJ
+	piQ5X3fk7Rl8FcAyaOhqbSh5e8Ck23KbtkzN2xdQonowjsjPpl877wxUJuRBVPncWd4A3SBLTsf
+	J0aey1enmDn/R20DKDorhggjFDPDX41Gn+L4K873/4xtvZEHL/jv1snDAu0g4CGvxshanYpdCMl
+	HCboEy3safrDYaRUfTMEN3Pg==
+X-Received: by 2002:a05:6a00:198b:b0:81f:5acb:55fc with SMTP id d2e1a72fcca58-82d0db5d24emr3887653b3a.10.1775264659884;
+        Fri, 03 Apr 2026 18:04:19 -0700 (PDT)
 Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b2749a3af9sm64656365ad.63.2026.04.03.17.59.55
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82cf9b261absm8279923b3a.7.2026.04.03.18.04.15
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 03 Apr 2026 17:59:59 -0700 (PDT)
+        Fri, 03 Apr 2026 18:04:19 -0700 (PDT)
 From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 To: Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Sourabh Jain <sourabhjain@linux.ibm.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Aboorva Devarajan <aboorvad@linux.ibm.com>, Aditya Gupta <adityag@linux.ibm.com>, Daniel Axtens <dja@axtens.net>, Hari Bathini <hbathini@linux.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Shivang Upadhyay <shivangu@linux.ibm.com>, Mahesh Salgaonkar <mahesh@linux.ibm.com>
-Subject: Re: [PATCH v2 1/2] powerpc/kdump: fix KASAN sanitization flag for core_$(BITS).o
-In-Reply-To: <20260403190123.1383198-1-sourabhjain@linux.ibm.com>
-Date: Sat, 04 Apr 2026 06:27:55 +0530
-Message-ID: <eckvmtik.ritesh.list@gmail.com>
-References: <20260403190123.1383198-1-sourabhjain@linux.ibm.com>
+Cc: Sourabh Jain <sourabhjain@linux.ibm.com>, Aditya Gupta <adityag@linux.ibm.com>, Daniel Axtens <dja@axtens.net>, Hari Bathini <hbathini@linux.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Shivang Upadhyay <shivangu@linux.ibm.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Aboorva Devarajan <aboorvad@linux.ibm.com>
+Subject: Re: [PATCH v2 2/2] powerpc/vmx: avoid KASAN instrumentation in enter_vmx_ops() for kexec
+In-Reply-To: <20260403190123.1383198-2-sourabhjain@linux.ibm.com>
+Date: Sat, 04 Apr 2026 06:31:04 +0530
+Message-ID: <cy0fmtdb.ritesh.list@gmail.com>
+References: <20260403190123.1383198-1-sourabhjain@linux.ibm.com> <20260403190123.1383198-2-sourabhjain@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,68 +88,89 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
 
 Sourabh Jain <sourabhjain@linux.ibm.com> writes:
 
-> KASAN instrumentation is intended to be disabled for the kexec core
-> code, but the existing Makefile entry misses the object suffix. As a
-> result, the flag is not applied correctly to core_$(BITS).o.
+> The kexec sequence invokes enter_vmx_ops() via copy_page() with the MMU
+> disabled. In this context, code must not rely on normal virtual address
+> translations or trigger page faults.
 >
-> So when KASAN is enabled, kexec_copy_flush and copy_segments in
-> kexec/core_64.c are instrumented, which can result in accesses to
-> shadow memory via normal address translation paths. Since these run
-> with the MMU disabled, such accesses may trigger page faults
-> (bad_page_fault) that cannot be handled in the kdump path, ultimately
-> causing a hang and preventing the kdump kernel from booting. The same
-> is true for kexec as well, since the same functions are used there.
+> With KASAN enabled, functions get instrumented and may access shadow
+> memory using regular address translation. When executed with the MMU
+> off, this can lead to page faults (bad_page_fault) from which the
+> kernel cannot recover in the kexec path, resulting in a hang.
 >
-> Update the entry to include the “.o” suffix so that KASAN
-> instrumentation is properly disabled for this object file.
+> The kexec path sets preempt_count to HARDIRQ_OFFSET before entering
+> the MMU-off copy sequence.
 >
-> Fixes: 2ab2d5794f14 ("powerpc/kasan: Disable address sanitization in kexec paths")
-> Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-> Closes: https://lore.kernel.org/all/1dee8891-8bcc-46b4-93f3-fc3a774abd5b@linux.ibm.com/
-> Cc: Aboorva Devarajan <aboorvad@linux.ibm.com>
+> current_thread_info()->preempt_count = HARDIRQ_OFFSET
+>   kexec_sequence(..., copy_with_mmu_off = 1)
+>     -> kexec_copy_flush(image)
+>          copy_segments()
+>            -> copy_page(dest, addr)
+> 	         bl enter_vmx_ops()
+>                    if (in_interrupt())
+>                      return 0
+> 	         beq .Lnonvmx_copy
+>
+> Since kexec sets preempt_count to HARDIRQ_OFFSET, in_interrupt()
+> evaluates to true and enter_vmx_ops() returns early.
+>
+> As in_interrupt() (and preempt_count()) are always inlined, mark
+> enter_vmx_ops() with __no_sanitize_address to avoid KASAN
+> instrumentation and shadow memory access with MMU disabled, helping
+> kexec boot fine with KASAN enabled.
+>
+
+Nice! LGTM. Please feel free to add:
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+
 > Cc: Aditya Gupta <adityag@linux.ibm.com>
 > Cc: Daniel Axtens <dja@axtens.net>
 > Cc: Hari Bathini <hbathini@linux.ibm.com>
 > Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+> Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
 > Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 > Cc: Shivang Upadhyay <shivangu@linux.ibm.com>
-
-I guess you missed adding:
-Cc: stable@vger.kernel.org
-
-> Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-> Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-> Acked-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+> Cc: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+> Reported-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
 > Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
 > ---
 > Changelog:
 >
 > v2:
-> - Add Reviewed-by, Acked-by and Tested-by tags
-> - No functional changes
->  
->  v1:
->  https://lore.kernel.org/all/20260321053121.614022-1-sourabhjain@linux.ibm.com/
-> ---
->  arch/powerpc/kexec/Makefile | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> - Remove __no_sanitize_address from exit_vmx_ops
+> - Add a comment explaining that marking only enter_vmx_ops
+>   with __no_sanitize_address is sufficient for kexec to
+>   function properly with KASAN enabled
 >
-> diff --git a/arch/powerpc/kexec/Makefile b/arch/powerpc/kexec/Makefile
-> index 470eb0453e17..ec7a0eed75dc 100644
-> --- a/arch/powerpc/kexec/Makefile
-> +++ b/arch/powerpc/kexec/Makefile
-> @@ -16,4 +16,4 @@ GCOV_PROFILE_core_$(BITS).o := n
->  KCOV_INSTRUMENT_core_$(BITS).o := n
->  UBSAN_SANITIZE_core_$(BITS).o := n
->  KASAN_SANITIZE_core.o := n
-> -KASAN_SANITIZE_core_$(BITS) := n
-> +KASAN_SANITIZE_core_$(BITS).o := n
+> v1:
+> https://lore.kernel.org/all/20260321053121.614022-1-sourabhjain@linux.ibm.com/
+> ---
+>  arch/powerpc/lib/vmx-helper.c | 9 ++++++++-
+>  1 file changed, 8 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/lib/vmx-helper.c b/arch/powerpc/lib/vmx-helper.c
+> index 554b248002b4..57e897b60db8 100644
+> --- a/arch/powerpc/lib/vmx-helper.c
+> +++ b/arch/powerpc/lib/vmx-helper.c
+> @@ -52,7 +52,14 @@ int exit_vmx_usercopy(void)
+>  }
+>  EXPORT_SYMBOL(exit_vmx_usercopy);
+>  
+> -int enter_vmx_ops(void)
+> +/*
+> + * Can be called from kexec copy_page() path with MMU off. The kexec
+> + * code sets preempt_count to HARDIRQ_OFFSET so we return early here.
+> + * Since in_interrupt() is always inline, __no_sanitize_address on this
+> + * function is sufficient to avoid KASAN shadow memory accesses in real
+> + * mode.
+> + */
+> +int __no_sanitize_address enter_vmx_ops(void)
+>  {
+>  	if (in_interrupt())
+>  		return 0;
 > -- 
 > 2.52.0
 
