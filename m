@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-19318-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19319-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49E39E63FE0
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2026 16:56:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 002F4E63FE5
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2026 16:59:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fp1vj4rDPz2yVL;
-	Sun, 05 Apr 2026 02:56:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775321793;
-	cv=none; b=mhQnTx5cjsXKIy/6ehy0zWUeXHnEqS4gfs7jyW7Y7LSHrTbrOG4iEfWp06SSznOuG5+wtkyvEcHfVGLEABk2Q02Ya95zW3/kEz+17DJ/dP9Hjw3QRkGR/HN6dIn8hkDJpDTMC/0Psf+W3jg0ZlZSO9WCiT2BwUr8dl9u9YRnS4Gan3lGmBvk0l5a/381U16hGFDnak3wQflrPTRlLsv0d94Bo5cefZFFMm6Lblw5n5iYpkMWiD6m5+IltggLCzq3yp4BaaTP69iZR3haNLcNlfxi/JXcfhlZzx7wlgYaoFTUBbUzfNLpYf9v1PME5NAeXJFRA4q1Cj0IucTToI99pQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fp1yn4RZ8z2yk6;
+	Sun, 05 Apr 2026 02:59:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775321953;
+	cv=none; b=JM9LtyMTNAlkjL9TpAVUWHRYPxlyTKs9Ujw5ckZKVAHra81Kfn9Y4rri5GP76ekVP/1bDqPLvfdTzNOw3xIoVD1NJOywtt+F5eOEJZS1dmwG70RGCQi/yU8iUXBRyjkWv/NNGeYoQr3xiWmIteAxWuphv9nXLjr7R2H/xpU5OayhaI9eERGPY+hTO1nDVmgRujC07qDRvZCTXVs2lMKLk3PzwZVh5b0eYD7YC0/QNmY7GGWH044PeP8a4dFjnMCXjJnD+Q6lQgg2kNiliyk/24znaVUwca9SzxH2bCLUY4vk76rgvB9PeN+etjaBs/kGa5JY6JgRBEW0ZcPB8hyiUQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775321793; c=relaxed/relaxed;
-	bh=ST2pb+/gQk3IV14UpJzT4A8hj7OcdgJQlHupwD1g5y0=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=KZ/RtfwGd3WQw42d64NV+KeG+SvGVs8pO0gQ4dnleMOVq2FKWLBy/WJISKlzjuAcBHnW/7BlPd8s181pnjg+duPxnIFTu1Y2Kx3u88KgW2k4he6UfAkvAjDpN0Wued4q0LvhYN2uhERr5x8EEwHxeYkj5NWCTM1T+4vAMsTCvY7WUAsRTKnnHM/BsPqQYg7NDHQvPFKIYyKlVBD8/kqQJeeZi0djZZLjIPqAP4F2QN4sjMdYZ6qPSO6A0uRC7fBFsI2x2Z7cHCz2JbEeMoqVZBXOSClfGsmq9ykL98uyJ/QRgqXbAl7XhEiZ8eUdcQ7NoDd0l6oqfiWEbHPpxzs15A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Pvkgz2VY; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1775321953; c=relaxed/relaxed;
+	bh=ImHUbCmanc0Ar6XtjjzggRp554WxKEvvo2Sre5Dw0wA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=EuTY8jqB3UxclhTnJaR/PRuVTulDKHe79OGwbm7Zc37qigTA8NR861x6Wkipb9eAITH9b4U/rJZ+KW6X6wjN1vqyGG0o8KZKxtWD5b2TrwOIvcGbCkPzntngM7FqIm60XGOO2KiZzRVdZeUwST/Qbf6XHi3ilpZxJOZCMOzNJp/gaeFjs1KzT8LpKo4lZusQUgwq7v8kwXw6ueDN0vEdQspxdBgjpBfrRBqzePmp24J2kGKR/ewPDVfT8w09AEA4LYW2rh0dyo3DzEIvsie9QpcZdrawNJje84t9KPTUVXn+XitdNUH1N/qnahVNFSa82fHUGiFbZZ0/qat7H6AwQA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pzHa0ltJ; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Pvkgz2VY;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pzHa0ltJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fp1vh2TZLz2yC9
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Apr 2026 02:56:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fp1ym4lXnz2yjx
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Apr 2026 02:59:12 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id C91694059C;
-	Sat,  4 Apr 2026 16:56:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A189EC19421;
-	Sat,  4 Apr 2026 16:56:09 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 0732D40212;
+	Sat,  4 Apr 2026 16:59:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6DDF2C19421;
+	Sat,  4 Apr 2026 16:58:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775321784;
-	bh=z0EKK9uCRclvxyjrhd1+SN0RRq/OFfBzrXy9eOqqb1Y=;
-	h=Date:Subject:From:To:Cc:References:In-Reply-To:From;
-	b=Pvkgz2VYtss1MeKDd1hCnXOqFhZSJT7sCBgib4Ld40MuoHbsbTzaQtqEQlHI315/z
-	 sSsTrUhsdTJPdFsI6MsazCxIagVra3Yz7Nj6ieza8kV78SqaqqkR1jw4ERelqbogu8
-	 P2C5HKTLPE156wtoOmaEhBjNWmWs1/5XjIm7Pn+IztUEvzTxOWgE4ijDSgxwxt7sHW
-	 /z+by/VjXh6iXK4C6vfLmsq7Ld8muhOBjOIJmJuiMgdiDbMtkSfkPxjp0+PDXt64DF
-	 SAsEhipno3UJ1XHvp0XZyChIymjhWJhckqoZh6Dfi1SExI1b8SJikdcJieSIN27yIj
-	 n1QGwKpOYjS/A==
-Message-ID: <faa68f96-5b10-45d0-a5dc-fac4350a7dd7@kernel.org>
-Date: Sat, 4 Apr 2026 18:56:08 +0200
+	s=k20201202; t=1775321949;
+	bh=2nmDBifOoextQmoTG695I77JtU4IfJ6hHi18F/uovOA=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=pzHa0ltJ7P/3nc4QK7/bV808HOZOGXaMyVekR/DB1WE+018orzHWLwztSYy1/aXtb
+	 SzI8tsEInej9eoHjBzyIJaVGBr9u74dLFfrXcTThineYb99ODPDwsaOS5PNoPpADEf
+	 RKWNJ7Ic0kSfp5FmUOXVQ6PFQBKcfI9b1bar1hvVu+oDjNbThyquuuXTFP/2f4hh2r
+	 sNZXBYXoEYlp3D9Lzsjn9fgXUhLg5zak6jG42FprWSVJLQdnerHFANSStlrij56Tl/
+	 nq4W3Agf2uSQ+xhFuLGyUpc0A63CtjXoWAelZzEtiaPysfp3k4jpj5PHDxaigPyBx2
+	 FsekL+yzYor6g==
+Message-ID: <76355cb5-0b5d-4a29-9702-8d020a79f4c0@kernel.org>
+Date: Sat, 4 Apr 2026 18:58:53 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,13 +60,12 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 02/12] bus: fsl-mc: use generic driver_override
- infrastructure
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-To: Ioana Ciornei <ioana.ciornei@nxp.com>, Danilo Krummrich <dakr@kernel.org>
-Cc: Russell King <linux@armlinux.org.uk>,
+Subject: Re: (subset) [PATCH 00/12] treewide: Convert buses to use generic
+ driver_override
+To: Danilo Krummrich <dakr@kernel.org>, Russell King <linux@armlinux.org.uk>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Nipun Gupta <nipun.gupta@amd.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Ioana Ciornei <ioana.ciornei@nxp.com>, Nipun Gupta <nipun.gupta@amd.com>,
  Nikhil Agarwal <nikhil.agarwal@amd.com>, "K. Y. Srinivasan"
  <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>,
  Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
@@ -82,93 +81,59 @@ Cc: Russell King <linux@armlinux.org.uk>,
  Harald Freudenberger <freude@linux.ibm.com>,
  Holger Dengler <dengler@linux.ibm.com>, Mark Brown <broonie@kernel.org>,
  "Michael S. Tsirkin" <mst@redhat.com>, Jason Wang <jasowang@redhat.com>,
- Xuan Zhuo <xuanzhuo@linux.alibaba.com>, =?UTF-8?Q?Eugenio_P=C4=82=C2=A9rez?=
+ Xuan Zhuo <xuanzhuo@linux.alibaba.com>, =?UTF-8?Q?Eugenio_P=C3=A9rez?=
  <eperezma@redhat.com>, Alex Williamson <alex@shazbot.org>,
  Juergen Gross <jgross@suse.com>, Stefano Stabellini
  <sstabellini@kernel.org>,
  Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
- linux-kernel@vger.kernel.org, driver-core@lists.linux.dev,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: linux-kernel@vger.kernel.org, driver-core@lists.linux.dev,
  linuxppc-dev@lists.ozlabs.org, linux-hyperv@vger.kernel.org,
  linux-pci@vger.kernel.org, platform-driver-x86@vger.kernel.org,
  linux-arm-msm@vger.kernel.org, linux-remoteproc@vger.kernel.org,
  linux-s390@vger.kernel.org, linux-spi@vger.kernel.org,
  virtualization@lists.linux.dev, kvm@vger.kernel.org,
- xen-devel@lists.xenproject.org, linux-arm-kernel@lists.infradead.org,
- Gui-Dong Han <hanguidong02@gmail.com>
+ xen-devel@lists.xenproject.org, linux-arm-kernel@lists.infradead.org
 References: <20260324005919.2408620-1-dakr@kernel.org>
- <20260324005919.2408620-3-dakr@kernel.org>
- <cvcetxkxjq2tz6n2vsofhyzove3qdi2e4r6rq6yxou3joejk2h@rmt5ygav7ssu>
- <4c5e9bad-82f0-4714-99c2-8ccd79a45043@kernel.org>
+ <DHKGQN6D0ANO.2QYY3JTM5435O@kernel.org>
 Content-Language: fr-FR
-In-Reply-To: <4c5e9bad-82f0-4714-99c2-8ccd79a45043@kernel.org>
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <DHKGQN6D0ANO.2QYY3JTM5435O@kernel.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 
 
-Le 28/03/2026 à 13:10, Christophe Leroy (CS GROUP) a écrit :
+Le 04/04/2026 à 17:07, Danilo Krummrich a écrit :
+> On Tue Mar 24, 2026 at 1:59 AM CET, Danilo Krummrich wrote:
+>> Danilo Krummrich (12):
+>>    PCI: use generic driver_override infrastructure
+>>    platform/wmi: use generic driver_override infrastructure
+>>    vdpa: use generic driver_override infrastructure
+>>    s390/cio: use generic driver_override infrastructure
+>>    s390/ap: use generic driver_override infrastructure
 > 
+> Applied to driver-core-testing, thanks!
 > 
-> Le 25/03/2026 à 13:01, Ioana Ciornei a écrit :
->> On Tue, Mar 24, 2026 at 01:59:06AM +0100, Danilo Krummrich wrote:
->>> When a driver is probed through __driver_attach(), the bus' match()
->>> callback is called without the device lock held, thus accessing the
->>> driver_override field without a lock, which can cause a UAF.
->>>
->>> Fix this by using the driver-core driver_override infrastructure taking
->>> care of proper locking internally.
->>>
->>> Note that calling match() from __driver_attach() without the device lock
->>> held is intentional. [1]
->>>
->>> Link: https://eur01.safelinks.protection.outlook.com/? 
->>> url=https%3A%2F%2Flore.kernel.org%2Fdriver- 
->>> core%2FDGRGTIRHA62X.3RY09D9SOK77P%40kernel.org%2F&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4b9262ddecdd4ce29f9808de8a66485e%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639100369055903282%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=%2BRfjlUkq7oWV%2F0v2S2B%2BEuxCY%2FLRQv6qHiEWiupd6kc%3D&reserved=0 [1]
->>> Reported-by: Gui-Dong Han <hanguidong02@gmail.com>
->>> Closes: https://eur01.safelinks.protection.outlook.com/? 
->>> url=https%3A%2F%2Fbugzilla.kernel.org%2Fshow_bug.cgi%3Fid%3D220789&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C4b9262ddecdd4ce29f9808de8a66485e%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639100369055936232%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=XL1K1ICiygOZnlvDUbQFe192KnLsBQms0HFNGCuyz%2Fw%3D&reserved=0
->>> Fixes: 1f86a00c1159 ("bus/fsl-mc: add support for 'driver_override' 
->>> in the mc-bus")
->>> Signed-off-by: Danilo Krummrich <dakr@kernel.org>
->>
->> Tested-by: Ioana Ciornei <ioana.ciornei@nxp.com>
->> Signed-off-by: Ioana Ciornei <ioana.ciornei@nxp.com>
->>
+>>    amba: use generic driver_override infrastructure
+>>    cdx: use generic driver_override infrastructure
+>>    hv: vmbus: use generic driver_override infrastructure
+>>    rpmsg: use generic driver_override infrastructure
 > 
+> I have not picked these up, as they have not received ACKs from the
+> corresponding subsystem maintainers so far.
 > 
-> Applied, thanks
+>>    bus: fsl-mc: use generic driver_override infrastructure
 
-Have to drop it for now, build fails:
+I droped it from soc_fsl tree, some dependency must be missing.
 
-   CALL    scripts/checksyscalls.sh
-   CC      drivers/bus/fsl-mc/fsl-mc-bus.o
-drivers/bus/fsl-mc/fsl-mc-bus.c: In function 'fsl_mc_bus_match':
-drivers/bus/fsl-mc/fsl-mc-bus.c:92:15: error: implicit declaration of 
-function 'device_match_driver_override' 
-[-Werror=implicit-function-declaration]
-    92 |         ret = device_match_driver_override(dev, drv);
-       |               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-drivers/bus/fsl-mc/fsl-mc-bus.c: At top level:
-drivers/bus/fsl-mc/fsl-mc-bus.c:321:10: error: 'const struct bus_type' 
-has no member named 'driver_override'
-   321 |         .driver_override = true,
-       |          ^~~~~~~~~~~~~~~
-drivers/bus/fsl-mc/fsl-mc-bus.c:321:28: warning: initialization of 
-'const char *' from 'int' makes pointer from integer without a cast 
-[-Wint-conversion]
-   321 |         .driver_override = true,
-       |                            ^~~~
-drivers/bus/fsl-mc/fsl-mc-bus.c:321:28: note: (near initialization for 
-'fsl_mc_bus_type.dev_name')
-cc1: some warnings being treated as errors
-make[5]: *** [scripts/Makefile.build:289: 
-drivers/bus/fsl-mc/fsl-mc-bus.o] Error 1
-make[4]: *** [scripts/Makefile.build:546: drivers/bus/fsl-mc] Error 2
-make[3]: *** [scripts/Makefile.build:546: drivers/bus] Error 2
-make[2]: *** [scripts/Makefile.build:546: drivers] Error 2
-make[1]: *** [/home/chleroy/linux-powerpc/Makefile:2101: .] Error 2
-make: *** [Makefile:248: __sub-make] Error 2
+Feal free to take it if you can, it is acked-by Ioana.
 
-Christophe
+>>    spi: use generic driver_override infrastructure
+> 
+> These have already been picked up via the respective subsystem trees -- thanks!
+> 
+> Thanks,
+> Danilo
 
 
