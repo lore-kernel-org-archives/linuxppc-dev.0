@@ -1,49 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-19323-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19324-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E617E63FEA
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2026 19:20:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D40CFE63FF8
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2026 20:28:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fp55m3kSRz2yC9;
-	Sun, 05 Apr 2026 05:20:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775330428;
-	cv=none; b=T6JUTdgz9CE9KOhn7aT1EdSS7s5o8/6M7673YVzy73vMwAPkRhQCePgAtXFc5LX2GhH6eKzJEvNhuY4+kTwqkGnhoN3Jigm6Nl3y+zRTJe0qSD3ViTStOsRuUrXNEJMDd473CvzlhS4AEhG+jkh+LgPDa6sjQaoxO6+4V0bglzCvkIb7hZBqvkquS3ziwYzrulV8gPmp6S2d2muzqmq1+jIrVlCv8hns1/Fe1eDnFhbOUk3QK/d8gZwteGC+t1hhzgMaxvK4ORDjbl8XVcFD0PFw3tK7Ohn/09aE+ErvjU4Sy2hgUSzG5fHmfesxOohSX4KOc8kZupy37LqxQb3mNw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775330428; c=relaxed/relaxed;
-	bh=Gm9FGkRc1QRpNSImSwgwSEPvOU2SLgI61ARuYW5LgUM=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:To:From:
-	 References:In-Reply-To; b=EZqoSu3iawPvO6y8adqzcQoBkTkuvV3tEgrvlC5n6qdvyLjdJGBXbMSidWxl53uGAIgAfou6IVlAeY+c4v38QDolMnuSjgPtZ+pQaIOLvu0MG27TZY6w7pTYVJ1salF5iugydud4Os01Q4oRs5hgliuRlpRYVeoeyscvqOXVky98ehtymLtWRzF7D0DwGD0p+/ROU1DPfxXDfJsschcAbjkuHJl7uI8OexAzdBVHM61i7GdGCGDmPlS1afOht39kkPNsdzfzdbP5BjWBGNJ4kWJXrBLzo1Ne14bHG9MktkZBwD14zO3KpxiV2TlS9PkzL7FasudgDlYVk3/RP0K8cw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jmGUx9ea; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fp6ch4dTCz2xYw;
+	Sun, 05 Apr 2026 06:28:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::1334" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775334532;
+	cv=pass; b=cVhNXk1rAZTgwgUHC1FB/Lz57RCeGoNwdHp0IoihwKYFyCfFK27ygnRLM/k5W1D+OwSkiTcIPJdJ4LxyZxDdEJlE7ZM7+KvUubCXUVj0rarA4b8oRUSwrQH47WLXBTVQiczMYAWudSbjb3grxVW1VsJtrEiYeDm8hzdZqy4htjMD9l/DEY+b6nNyxlup0UabIn4qACznqAXdn3/+JNnxmZmm1tSq9byPf6ZSICNVkhnn6qN/mVooikUhOr3s4lBaL/m7zFd0kMPxJ/9q1ytbVcYWIgcp38i1pEhEIFkyfo5FBZN8rTaP5D6cEu0eT+tcBabA9MhuYBUpg69tSGlxxw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1775334532; c=relaxed/relaxed;
+	bh=fuYkWQmMSCPcosnkt/+bxaLXK1ECUYr+DyPSImbwjCw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=U6rFU77bTKHnUii3R9KX2SlTWQQTv3mukwkH+CnLbpx5kRS3aDfN40ITN5/wm1MvkefpuMfx3Ni3CqwBOvIlqvOHyPukzKYG/7huYOdutm+emcUT678cVe+xy8RciGg49a5HBbqezaIJBPS9dJT+hRFMkYFqS9M/GszDaNMYV0c/EKW2n59LCLiA6qXVw2MJ4Tv/CYIyzO8WZjiiTCg6XEdFUPEgtWOXuKS1grtfXeeVZ3NdJ1ckzrlKk1M9jq0Xrp87fjmUgfBUh5shqe/dSDbKYHKAoV2Q7qpNCLyFX7woPDbHYQLreK47OMZ4AeIbJJkyEdPNeKaOxf2oOk3YsA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=j+ktAkOK; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1334; helo=mail-dy1-x1334.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jmGUx9ea;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=j+ktAkOK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1334; helo=mail-dy1-x1334.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x1334.google.com (mail-dy1-x1334.google.com [IPv6:2607:f8b0:4864:20::1334])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fp55l0lZDz2xpt
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Apr 2026 05:20:26 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 1359541720;
-	Sat,  4 Apr 2026 19:20:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 00214C19421;
-	Sat,  4 Apr 2026 19:20:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775330423;
-	bh=Gm9FGkRc1QRpNSImSwgwSEPvOU2SLgI61ARuYW5LgUM=;
-	h=Date:Subject:Cc:To:From:References:In-Reply-To:From;
-	b=jmGUx9ea8KKZGI+yk4InrpqyltSpIFXbxzumeqJLrPMsCCsI1AmriWu84nJMybHDm
-	 YQX3Ac/MMmi2g9ubzYQwGTmoLjoD5HvqXXGENZ7sZF+bdgDoJQgXEb5+YyoFBlZFth
-	 rIDl6Or9j72Pxfg8gbRbLoxXUMFAACLFbQ4DfxU/vKJfbDZ88r7qcAUikXvNARJnPR
-	 UKzC1aGXBRx4bgxjkQ5ETAqx1gHtveCsTmzJzi7+wf9pVTh4t9trQOG4pictre3Zqy
-	 coxYtZTwXCoUTOSXcrTxyqOyBWyu2eDrD5N4/86+0enySLlkVbuU3KeCQL6A1XpL4u
-	 dWWtgOZ4j3TJA==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fp6cf4px0z2xQD
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Apr 2026 06:28:49 +1000 (AEST)
+Received: by mail-dy1-x1334.google.com with SMTP id 5a478bee46e88-2cb19ddda43so223649eec.3
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Apr 2026 13:28:49 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1775334527; cv=none;
+        d=google.com; s=arc-20240605;
+        b=cqEMzLzN1KcJnGWXI6cK9px8jG0qA4moRllH0HHnFD84a7cd5JkoHeK1svMueKiipI
+         pAGo5rVvaAYfUZKblVExMCu8IkM8R+DcBReN/0pIc8O7SIbB5xNPIQ0+onpM4CpqneCR
+         +BShw9yd63hkYsNI2MhZs3OS53i52vY1LBJ1WBmFluNXZrNhzKzfQxdb+DkdBCxvTHZL
+         muedoVxpO5/M7/+xg8Nqs3TaJ3xQ78QgNeTgeRhNF4q53uk3z7gGWcRI9yi7nxR+xigJ
+         tVjIgkH8SU7QFatPNgBfcnkVZ73y4Z+WC3DZKWSkyrjCAZkAlsGa/jHLqtD6KCZtSWzk
+         0E2A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=fuYkWQmMSCPcosnkt/+bxaLXK1ECUYr+DyPSImbwjCw=;
+        fh=Mxs+sJtaDPuAM2glOD/G/U4CkYvO6nNw3raN7YC0cvc=;
+        b=YlHZnhYXW0ZLzEHBdP1RNpINQ/U0Z25536Fh/1yxWGE0Qi9QVNbV1QhlVj4APe0Q4S
+         UfU2WEvf6NkWQvWXoPb9yX51NR+dkeKkXm6ypT4prrfuES627LDqsjI8Rj8ChTnC+eqa
+         7dmzGQgvuZ6a7mZaxQn91tUx833Bk3ceH/rZTnYA3kNjDffbOGlMOgzNx8z6lW3vdVMY
+         BSZ8YO/TXlFZimbbl3fjs2q4ntls5vOKKzAzVWM3tcbdYyDJTibQj9qkx6Q2JxWHoIqz
+         g5ObRvbj1sZ/u33fPrW6Q105r4VCdhAIQ8lxIub1ywSESh1u5Yhdbq10DY5qWWZ1QFNS
+         T6/g==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1775334527; x=1775939327; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=fuYkWQmMSCPcosnkt/+bxaLXK1ECUYr+DyPSImbwjCw=;
+        b=j+ktAkOKUkkZZ4T/pJT1p2FBKmwDZ55o2hQYQZqRA/0aWlGY7RST/nfe534N3cZpNv
+         RkFi1HLvpiUbsIy37MrhHy0rr8JiYn3K7EAFhI5DjOZDXyQf797yKCfbdEXoMzhisYli
+         TDnFpNKKHJXJK2326XQkAc7bMOS12qfaX0wDh7WaocJ6PPV6GsgaO3dOneiX7o28Cyuh
+         t/MMK9DO8WCQOetr+sgZksBSQKBX4MdAjSJYbRFkA0czVP7iBJCXmv9ulfiiIczO4zlA
+         vOa+SVT2acxkirXeUjOR5RSxC0LADq+loZLjHR1IFS9gieumz6eDGuCYBTd4tpvRex1b
+         2Rtg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775334527; x=1775939327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=fuYkWQmMSCPcosnkt/+bxaLXK1ECUYr+DyPSImbwjCw=;
+        b=ijjPFzi0e0YIPOQ/JV7efD7YaQCAsXV+q4xzMnwyzITpFX9a7YCZovZ2DmthyNQ0Oa
+         cbITnBZKiOmBGji29zPXEnyT3kl64+gQAEmoKb31F9EgJlFKyh5ssh/OUtIDRd181kS9
+         kxHxoLJwB0l1FuOKb4HFugKjNiIgn9bF3j/fIZfOwbWwJ9/WvGS6oh6Bil0FMEhxwunZ
+         KF2kXxo1DtynIAXqAkKyHCa8CMeiuy+1o4wnWDc5d12uhHXjvddRCDBeO9AxWmO92Zq2
+         MaujmjATNWdKBhUCo3o0kdf2HhH3R94DefhOACJEHrzTfWuw/ygKO0SSceLDd+L4vETv
+         R/JQ==
+X-Forwarded-Encrypted: i=1; AJvYcCU0dTk/+VFiHXqh7y+ojhB6CIM32A7rXE5BQ37/rDbZ0P5lGp6pH1P8XlXwSz6AfvqIIWw5GNApaDIWMHU=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzoQciRiKriSx6MpBnSJYP/VeqCTal6UjGwi9th5rOMbK8u+fFv
+	M6Wt728OoS/L/ROh+v63KJSwe4aQlc/OpE9f0YDTcFfZ9E9FAszF5+jPjwFA0ZCXRox93LlPcIS
+	HJI+el7qIAabKoyL2L3QYLJSL0v4+ts0=
+X-Gm-Gg: AeBDies4wMfzukLFv1o51xOkCDjT9RCcSSUAxhrWNVP6EPjsrhJRIeKil7XELcvaB+N
+	UyPxsWwg39y5h/Jljaze4NezeJ1rbLnX21x7/IlPiQPM66CYSb2irYCzGsGYaSzlAhs/za4rINr
+	OqlqmQfx9aIwFwGySMjQvNldMi42mRSW/akZ0fJNEISSKZIaj6h5JLZmhJeHNcWE3+stfu80CUV
+	CX+crPRnbVGXFKPSHq54RJwEaaAqN6qTCkXfbZ6ddIRsqDhMhYnXPjnEvUOZWykrW9klIggqokj
+	IkP+soGYL0kBA0nbKFjXYf0K1whikmjklBvb7hlL5ahe2k91d813r5Kbu81y1ZD9uJDkMS/lNtC
+	ffjdBZjt4Tew7zuRRV08gt5TWaFdrFNDjmg==
+X-Received: by 2002:a05:7301:129a:b0:2c1:7ca:cec2 with SMTP id
+ 5a478bee46e88-2cbfce5068dmr1382909eec.8.1775334526875; Sat, 04 Apr 2026
+ 13:28:46 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,51 +101,40 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
+MIME-Version: 1.0
+References: <20260403145308.1042622-1-mkchauras@gmail.com> <20260403145308.1042622-2-mkchauras@gmail.com>
+ <DHJM52JEY7D3.MGKXTZB319ZL@garyguo.net> <adCHe9rU_azp8svx@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+In-Reply-To: <adCHe9rU_azp8svx@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Sat, 4 Apr 2026 22:28:34 +0200
+X-Gm-Features: AQROBzCykZ4QROsJXifMoD7BMVI05gD2ToHAxvSrZBE2nSQXFDkyMtGKnsPYJAc
+Message-ID: <CANiq72=chqViRu08TxDBA9k3fpL6vAVzvBnTrkfY7jM=FD1afA@mail.gmail.com>
+Subject: Re: [PATCH V8 1/4] rust: Fix "multiple candidates for rmeta
+ dependency core" error
+To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+Cc: Gary Guo <gary@garyguo.net>, maddy@linux.ibm.com, mpe@ellerman.id.au, 
+	npiggin@gmail.com, chleroy@kernel.org, peterz@infradead.org, 
+	jpoimboe@kernel.org, jbaron@akamai.com, aliceryhl@google.com, 
+	rostedt@goodmis.org, ardb@kernel.org, ojeda@kernel.org, boqun@kernel.org, 
+	bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org, 
+	tmgross@umich.edu, dakr@kernel.org, nathan@kernel.org, 
+	nick.desaulniers+lkml@gmail.com, morbo@google.com, justinstitt@google.com, 
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+	rust-for-linux@vger.kernel.org, llvm@lists.linux.dev
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Sat, 04 Apr 2026 21:20:13 +0200
-Message-Id: <DHKM3WP2ZJYE.84WX6IAGUH5@kernel.org>
-Subject: Re: (subset) [PATCH 00/12] treewide: Convert buses to use generic
- driver_override
-Cc: "Russell King" <linux@armlinux.org.uk>, "Greg Kroah-Hartman"
- <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
- "Ioana Ciornei" <ioana.ciornei@nxp.com>, "Nipun Gupta"
- <nipun.gupta@amd.com>, "Nikhil Agarwal" <nikhil.agarwal@amd.com>, "K. Y.
- Srinivasan" <kys@microsoft.com>, "Haiyang Zhang" <haiyangz@microsoft.com>,
- "Wei Liu" <wei.liu@kernel.org>, "Dexuan Cui" <decui@microsoft.com>, "Long
- Li" <longli@microsoft.com>, "Bjorn Helgaas" <bhelgaas@google.com>, "Armin
- Wolf" <W_Armin@gmx.de>, "Bjorn Andersson" <andersson@kernel.org>, "Mathieu
- Poirier" <mathieu.poirier@linaro.org>, "Vineeth Vijayan"
- <vneethv@linux.ibm.com>, "Peter Oberparleiter" <oberpar@linux.ibm.com>,
- "Heiko Carstens" <hca@linux.ibm.com>, "Vasily Gorbik" <gor@linux.ibm.com>,
- "Alexander Gordeev" <agordeev@linux.ibm.com>, "Christian Borntraeger"
- <borntraeger@linux.ibm.com>, "Sven Schnelle" <svens@linux.ibm.com>, "Harald
- Freudenberger" <freude@linux.ibm.com>, "Holger Dengler"
- <dengler@linux.ibm.com>, "Mark Brown" <broonie@kernel.org>, "Michael S.
- Tsirkin" <mst@redhat.com>, "Jason Wang" <jasowang@redhat.com>, "Xuan Zhuo"
- <xuanzhuo@linux.alibaba.com>, =?utf-8?q?Eugenio_P=C3=A9rez?=
- <eperezma@redhat.com>, "Alex Williamson" <alex@shazbot.org>, "Juergen
- Gross" <jgross@suse.com>, "Stefano Stabellini" <sstabellini@kernel.org>,
- "Oleksandr Tyshchenko" <oleksandr_tyshchenko@epam.com>,
- <linux-kernel@vger.kernel.org>, <driver-core@lists.linux.dev>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-hyperv@vger.kernel.org>,
- <linux-pci@vger.kernel.org>, <platform-driver-x86@vger.kernel.org>,
- <linux-arm-msm@vger.kernel.org>, <linux-remoteproc@vger.kernel.org>,
- <linux-s390@vger.kernel.org>, <linux-spi@vger.kernel.org>,
- <virtualization@lists.linux.dev>, <kvm@vger.kernel.org>,
- <xen-devel@lists.xenproject.org>, <linux-arm-kernel@lists.infradead.org>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-From: "Danilo Krummrich" <dakr@kernel.org>
-References: <20260324005919.2408620-1-dakr@kernel.org>
- <DHKGQN6D0ANO.2QYY3JTM5435O@kernel.org>
- <76355cb5-0b5d-4a29-9702-8d020a79f4c0@kernel.org>
- <DHKJ7VWI1CHO.3ETHUGQVPFFDE@kernel.org>
- <a8c85884-e2ba-4a3a-a660-9715f0de2704@kernel.org>
-In-Reply-To: <a8c85884-e2ba-4a3a-a660-9715f0de2704@kernel.org>
 
-On Sat Apr 4, 2026 at 7:09 PM CEST, Christophe Leroy (CS GROUP) wrote:
-> Yes please pick it up as my tree is based on rc1.
+On Sat, Apr 4, 2026 at 5:39=E2=80=AFAM Mukesh Kumar Chaurasiya
+<mkchauras@gmail.com> wrote:
+>
+> Yeah makes sense. Will send out new revision.
 
-Applied the patch to driver-core-testing, thanks!
+In addition to what Gary said, I am not sure if you will need to use
+`abspath` anymore in the new one, but in any case, if you do, please
+clarify if/why it wouldn't work without an absolute one.
+
+Thanks!
+
+Cheers,
+Miguel
 
