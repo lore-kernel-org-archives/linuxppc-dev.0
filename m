@@ -1,92 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-19304-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19305-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71DB8E88D7B
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2026 03:39:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3649AE88D79
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2026 03:53:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fnhD20Mtbz2yL8;
-	Sat, 04 Apr 2026 14:39:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775273969;
-	cv=none; b=NluCndiqVhTSi41o6X4SgkBFazhDPYz1qcBWknOhEfWmKwOYrWtO6FVVaiKwFKN18zOTlWYZqSjboZ50rjTuLG6W0q7Ufm5nkT0LcGsaXC6z54SOngrQAgt8pwY0XJ5QXNYUtzry3sy7kNU4HVSo9H264X85bBCFU4EOhRT/PB1WSpV5FedFnWzBI9sDfUzkW/PxkxIiA3RGIfd5LmvXUGmG6qMG9JGasF+3xIJUeqXgh2gqnkrG3B0JnoyfUj/wX+C8HcGLNoMwS1znfmMY2RoDYZ7PLP0kDL7GZjitS5O0b7L+sGIWXhTA7eOhPl5FjpZbRPfra37qiNg8ieuJZw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fnhX76Dmcz2yL8;
+	Sat, 04 Apr 2026 14:53:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775274807;
+	cv=none; b=CjhX5lOVnGeDS+nE/+UyFvBUxYTUFCzd7Tieb52PDHdHTwchzB3bUl2pZo4tS2oxbLpgDt5AXCTFnPtO+ypPPzMxjM/BzGMo7NsW9DtDeQo03Wut8mWBNv1q11T9O38P3SOUuTSUA1hYTa1SSvKNlD6tf6qrw68LRrUhSWyjRpVGeO8hrmWh6gYdweC6XTqXBJUmW9g5hV0SDd8wufEP0n73E7UymGRpgs/ykg3kjrzYkguZiJpOQREuXvA5Nv/VANz/x5GjqiTfGlKDT1QnfBCO1byuaj1F3mxnHFKEVZKeV9XfPouO6koK7pkz2FTj30DfzbKrvBMdjxF6rfdCUQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775273969; c=relaxed/relaxed;
-	bh=p/mS68jPp5o6fDVjVxwaQqVlnV+4rvaGWH9gRtfYcJE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ebIcj7uBeCEnJXeZJIdzvCjNnl2e5KrAZpWb74P4jQ5BP0nDL84FdGh1nvwUpcDTBatv8KsD6GefVr1K8++55X3jc+5Foy98a8KpcxuGBi7RS7RjoyGuKuzYNc68xvyTZGwxN0+KhEXtNZGDJx5Y9OTU4arSThJv5OU3zlM2i4MeYg8nn6tcsmVjYEx+e3xxAgyG/AhDiqqI6tMJDEdFuDHJwM1pq3Hyy9cVXazbDNKC4YT0pm/rXH6SQ+EakOmFsvE+2HJW/0Nb3V/uwR/vpUfbco4wkMC0nM95pBsZfksIco7/2/+9mX94Z6Ta5HHiybOqzWG/rouZLc1ccJ9rhA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=VyUeWqu5; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1775274807; c=relaxed/relaxed;
+	bh=f47cv8eJ2vAWPqWOjgcHGI9ehOdzsd6V72e/yqDS4mg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=nJYcwEtfoNTppc67qYp6HwBaMVsGSNRkCVJYwCy6kODuUyi7GtJqLt1AIy3CSpkssfywYj4wovynF7O1mgIBkaQ68Ij5lQcXVPz+RQMHVySnIDTRbFWOMFg60TcyNMtJpBuAjvQFqbqUrYRHPKraXTPrlQ0G6MDVRDgP+2NSUK72/sKLcQ20yNdaBqlpAHHMXHqEZNZKzK0voPvr/EagsXCkcMIIBwv3dXdoNZO0BOrhZbp+FkFN0pTQOxDejpERYa0Jj19I0Mmfr3BEgk9Df9G0zd8YX5gltBCWuj1FsvMvEMqn1+YkLxHsTnEjBdH9I6/LdvwwZkKrLn+5pf31Cg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jo6PsDjY; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sbhat@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=VyUeWqu5;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jo6PsDjY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sbhat@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fnhD05Y3hz2xQr
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Apr 2026 14:39:27 +1100 (AEDT)
-Received: by mail-pl1-x62c.google.com with SMTP id d9443c01a7336-2b2429f98d0so15442965ad.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2026 20:39:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1775273965; x=1775878765; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=p/mS68jPp5o6fDVjVxwaQqVlnV+4rvaGWH9gRtfYcJE=;
-        b=VyUeWqu5RzbL2CY4APQ/stFWJCvVTaRRvLuMaNp0GVd5dipiKNrwiy3BT50tlia1Ji
-         lkjk35QINau+t4BQALdjRISPuLT0iJFn/884k2W23qopndG0uE8NxTr/E+qCNMco3h/V
-         N8aLtKcif1Fwq61Kh1rh+NQ+TxJbe1uaNbSpw8mXN0P5OQNXvEHOmpthg2a8sMSSE8t4
-         gVUOxd3PTH/p+pUdFoxJYC1ufX4XmQ3KSQAesacGxb2bb+SBLfET3JqMLp/GBhzWLZlp
-         vZI8qyW3J78SbqSDPsJjZHy1KfJVeveNevS3jEVWpgDgCC+2Y/u7N3M6zE7+lvyK/8YC
-         nokg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775273965; x=1775878765;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=p/mS68jPp5o6fDVjVxwaQqVlnV+4rvaGWH9gRtfYcJE=;
-        b=C5SufYo8I8IFae6+S8tDx08MVDEFArrY/mzxF5FzyeX16Go9NrnziV2L3PA29H245q
-         MR1JB5piOUDUQL39GdQRpnzpBEN4uT6xnY57NCL9eKFInoqKo3/xkiPddlz2eoloHzUZ
-         bLIPlawVlLfk5QU3BMp4sj0pIfYNzuDf6dz8TG2VvkapN6DfEY6BGUBvwWHxwiVqyZik
-         CpudyFE8Sncjwe/tI21EhdQdFGvoMkYVkw7cBherGoRBeW93vCqiBF9WmMBkTL6vi58N
-         s46ff+sg4AxJRXT/+TqR+ekliP+QpsEM9GSMKsmo9eAunLNAGJEuAYSAnmZ4ClpodQtr
-         imwA==
-X-Forwarded-Encrypted: i=1; AJvYcCUbUXnC8NuZV3xckebT043QfHtfWUPeVNqmR0xgn0q6gOWE16jKwHVFcMox25YDKbJ2NlZaTMfFNZaungQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx1XO1agPsWvLZER9J4mOFE35TCvO56iu0ng4R1qiujx048yJQo
-	R85ukl0zCV14wHZhwwI6LoHxJ7tEQLZ2ypfVg4XXSI51DfD2xADFxvAV
-X-Gm-Gg: AeBDievdpIyk1YvoeTpDKpKAVVtxvYftOywk7dEH114JB66taMr3peqhQIOT73maCr1
-	2+3Ugq77960WRyeydm+9Gc3hxyB7fnJ53QyvVZzh7zAoSTN+JH7vFC5osxHskyrJTeVJygGFGvk
-	iGhJO4T4Q6DQqzde6EfdiBBMC2dISDSOwtvU/IyxK7PKzsvcncIV0lHcOqIfLVOoUlzwby/nUbe
-	W/5G3/Mi/6rdDHFvGCjf2oJJNoAAwqQqS1XmN0nC+Pb+R07s4C95J2LjoDVSr+jwD8LZj+Dim5o
-	2QOUMaM1hvszjuU4ExDvP2HHn3LsXy6/+afqOkQV/WCQzV3bCkSmID8iE9uT+W89ubg6ISOFeAd
-	Ur2P/bfq02h+fzq56qP3H1NGjEtkTSz50XUM8/xiCYgYJGN6H02zVZmYVCCEdJZ/GEG/YRyAV6E
-	5hZ+RMVTtc9B2gTShc608fNczXfS/DSRU1zWKLBjYD8tUmOTCHZ+ewo/pMbKQvcOJpmQzvLQ==
-X-Received: by 2002:a17:902:f603:b0:2b0:9a61:9e9 with SMTP id d9443c01a7336-2b281769197mr58132275ad.32.1775273965093;
-        Fri, 03 Apr 2026 20:39:25 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.160.44])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b27478945asm96269225ad.28.2026.04.03.20.39.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 03 Apr 2026 20:39:24 -0700 (PDT)
-Date: Sat, 4 Apr 2026 09:09:13 +0530
-From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: Gary Guo <gary@garyguo.net>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	chleroy@kernel.org, peterz@infradead.org, jpoimboe@kernel.org, jbaron@akamai.com, 
-	aliceryhl@google.com, rostedt@goodmis.org, ardb@kernel.org, ojeda@kernel.org, 
-	boqun@kernel.org, bjorn3_gh@protonmail.com, lossin@kernel.org, 
-	a.hindborg@kernel.org, tmgross@umich.edu, dakr@kernel.org, nathan@kernel.org, 
-	nick.desaulniers+lkml@gmail.com, morbo@google.com, justinstitt@google.com, 
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org, 
-	llvm@lists.linux.dev
-Subject: Re: [PATCH V8 1/4] rust: Fix "multiple candidates for rmeta
- dependency core" error
-Message-ID: <adCHe9rU_azp8svx@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <20260403145308.1042622-1-mkchauras@gmail.com>
- <20260403145308.1042622-2-mkchauras@gmail.com>
- <DHJM52JEY7D3.MGKXTZB319ZL@garyguo.net>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fnhX615FTz2xQr
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Apr 2026 14:53:25 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6342xNPm3075880;
+	Sat, 4 Apr 2026 03:53:19 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=f47cv8
+	eJ2vAWPqWOjgcHGI9ehOdzsd6V72e/yqDS4mg=; b=jo6PsDjYNbtdaZdg4aifzb
+	z72EhHbDVgQIeBehVxCg0Bqlgw/DxG4f1myFBuvwXwq8MdOod5Th0V9raRR6JQXq
+	D13OSrp8avsDdSxiz4V8TarOTamqbiexu++2JZNu5VVPrnnkFnaER9DWGXKYt+av
+	CLqt5jmrL76yJqg0jRKcwXutEvJ3fF0Afjl0SzJj67qkwwlSXVvG6r4wmWemEWHL
+	yqxJKncImHm6pXNFYjAbGu5bxYQqpdbJwMiHNE2UmnyRxvzioUEXwiYNYqMmDft2
+	1cCZ4CLMY66VFQ28oqNfqK6RHhUsE/5W+khSK+BPENdNF8K3Kfn3JgIg6cPWIBKA
+	==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4datap03e6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 04 Apr 2026 03:53:18 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 6342VaND008732;
+	Sat, 4 Apr 2026 03:53:17 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4d6v1205am-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 04 Apr 2026 03:53:17 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6343rDc815204696
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sat, 4 Apr 2026 03:53:13 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E8C2A20040;
+	Sat,  4 Apr 2026 03:53:10 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id ED4A420043;
+	Sat,  4 Apr 2026 03:53:08 +0000 (GMT)
+Received: from [9.124.211.17] (unknown [9.124.211.17])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Sat,  4 Apr 2026 03:53:08 +0000 (GMT)
+Message-ID: <1bfca7b8-58f6-4670-b0ac-f448ae22bd43@linux.ibm.com>
+Date: Sat, 4 Apr 2026 09:23:07 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,224 +81,216 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <DHJM52JEY7D3.MGKXTZB319ZL@garyguo.net>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc/powernv/iommu: iommu incorrectly bypass DMA APIs
+To: Gaurav Batra <gbatra@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: maddy@linux.ibm.com, iommu@lists.linux.dev, linux-kernel@vger.kernel.org,
+        =?UTF-8?Q?Dan_Hor=C3=A1k?= <dan@danny.cz>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Timothy Pearson <tpearson@raptorengineering.com>,
+        vaibhav@linux.ibm.com, balbirs@nvidia.com
+References: <20260331223022.47488-1-gbatra@linux.ibm.com>
+ <o6k3mqwc.ritesh.list@gmail.com>
+Content-Language: en-US
+From: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+In-Reply-To: <o6k3mqwc.ritesh.list@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=Bp+QAIX5 c=1 sm=1 tr=0 ts=69d08b2e cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=e5mUnYsNAAAA:8
+ a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8 a=Ikd4Dj_1AAAA:8
+ a=40Wu3GLdS-AkG9vhGqcA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=Vxmtnl_E_bksehYqCbjh:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDA0MDAyOSBTYWx0ZWRfX0waeVr8e4dU8
+ m7D3oWcUFndjhT/cvsSpCy0/KDC3wzc/13MQYtI4LCxVxXSxTs4BC63EZt2SCwbPJ0MBmd3S+Ve
+ OdH+g2n5va2UnWuodtlI1gSMRtF+ahduHsMTBEKfLnOriGI8pSyVg6qqodkoHsh6Soj2d7A1pQp
+ 7OhegQnBFjzu9OOjl4MTiMH+emCgRoUzZuocd2nqRsqEqoAfZWbYh9wYE6nQI/FZflLwH7doWAX
+ FvvGy5V5LWE571BUVXO0d+mywhCTWS1seozlMtjVVvSsa1AGyGlOJuzeWPG0r3JRXwbY4rzsh6i
+ +x/pzx/y1Am1dHoKWqEr1bHeTwH+BNCUxS1XAunQk1lUClBeAfbLfIh9n5ojOreWwDJfsoCeKZ+
+ Dan1hsGoZS79HPZ1sgOAok5ECPPnRv/9H3mmdHgCPKCXErR2RI9xCxjZzp2OBoAgN5VQmawsPr/
+ eh78V3C94YJlQgSnzgg==
+X-Proofpoint-GUID: pt4PlvLC926CnHID0gLGLaN7mtF31glh
+X-Proofpoint-ORIG-GUID: if1hMCpsJxuJgRKshqsHYKn0KAqrZYIB
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-03_07,2026-04-03_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 malwarescore=0 suspectscore=0 adultscore=0 impostorscore=0
+ spamscore=0 priorityscore=1501 lowpriorityscore=0 bulkscore=0 clxscore=1011
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2604040029
 
-On Fri, Apr 03, 2026 at 04:09:04PM +0100, Gary Guo wrote:
-> On Fri Apr 3, 2026 at 3:53 PM BST, Mukesh Kumar Chaurasiya (IBM) wrote:
-> > When building Rust code with LLVM=1 with -j1, rustc was encountering
-> > an error:
-> > "multiple candidates for `rmeta` dependency `core` found", with two
-> > candidates:
-> > 1. The host's standard library from the rustup toolchain
-> > 2. The kernel's custom libcore.rmeta in the rust/ directory
-> >
-> > This occurred because the build system was using `-L$(objtree)/rust`
-> > for host library builds (proc_macro2, quote, syn), which caused rustc
-> > to search the rust/ directory. During this search, rustc would find
-> > both the kernel's custom libcore.rmeta and gain access to the host's
-> > standard library, creating a conflict.
-> >
-> > The solution is to separate host libraries into a dedicated rust/host/
-> > subdirectory and use `-L$(objtree)/rust/host` for host builds instead
-> > of `-L$(objtree)/rust`. This ensures that:
-> >
-> > 1. Host library builds (proc_macro2, quote, syn) only search rust/host/
-> >    and never encounter the kernel's libcore.rmeta
-> > 2. Proc macro builds use `-L$(objtree)/rust/host` to find their
-> >    dependencies
-> > 3. Test builds use `-L$(objtree)/rust/test` for their dependencies
-> > 4. Target builds continue to use `-L$(objtree)/rust` as before
-> >
-> > Special handling is added for rustdoc-pin_init, which is a host build
-> > (to access the alloc crate) but depends on proc macros from the main
-> > rust/ directory. It uses explicit `--extern` paths with absolute paths
-> > to reference the proc macros without adding `-L$(objtree)/rust`, which
-> > would reintroduce the conflict.
-> >
-> > The rust/host/ directory is added to clean-files to ensure it's removed
-> > during `make clean`.
-> >
-> > Changes:
-> > - Add clean-files := host/ to clean the generated directory
-> > - Change host library targets from lib*.rlib to host/lib*.rlib
-> > - Update cmd_rustc_procmacrolibrary to create host/ directory
-> > - Update cmd_rustc_procmacro to use -L$(objtree)/rust/host
-> > - Update cmd_rustdoc to use -L$(objtree)/rust/host for host builds
-> > - Update cmd_rustc_test_library to use -L$(objtree)/rust/test
-> > - Update rustdoc-pin_init to use explicit --extern paths for proc macros
-> 
-> This should go after the tags and ---, so it's not part of the commit message.
-> 
-Hey Gary,
+On 4/1/26 6:35 AM, Ritesh Harjani (IBM) wrote:
+> ++CC few people who would be interested in this fix.
+>
+> Gaurav Batra <gbatra@linux.ibm.com> writes:
+>
+>> In a PowerNV environment, for devices that supports DMA mask less than
+>> 64 bit but larger than 32 bits, iommu is incorrectly bypassing DMA
+>> APIs while allocating and mapping buffers for DMA operations.
+>>
+>> Devices are failing with ENOMEN during probe with the following messages
+>>
+>> amdgpu 0000:01:00.0: [drm] Detected VRAM RAM=4096M, BAR=4096M
+>> amdgpu 0000:01:00.0: [drm] RAM width 128bits GDDR5
+>> amdgpu 0000:01:00.0: iommu: 64-bit OK but direct DMA is limited by 0
+>> amdgpu 0000:01:00.0: dma_iommu_get_required_mask: returning bypass mask 0xfffffffffffffff
+>> amdgpu 0000:01:00.0:  4096M of VRAM memory ready
+>> amdgpu 0000:01:00.0:  32570M of GTT memory ready.
+>> amdgpu 0000:01:00.0: (-12) failed to allocate kernel bo
+>> amdgpu 0000:01:00.0: [drm] Debug VRAM access will use slowpath MM access
+>> amdgpu 0000:01:00.0: [drm] GART: num cpu pages 4096, num gpu pages 65536
+>> amdgpu 0000:01:00.0: [drm] PCIE GART of 256M enabled (table at 0x000000F4FFF80000).
+>> amdgpu 0000:01:00.0: (-12) failed to allocate kernel bo
+>> amdgpu 0000:01:00.0: (-12) create WB bo failed
+>> amdgpu 0000:01:00.0: amdgpu_device_wb_init failed -12
+>> amdgpu 0000:01:00.0: amdgpu_device_ip_init failed
+>> amdgpu 0000:01:00.0: Fatal error during GPU init
+>> amdgpu 0000:01:00.0: finishing device.
+>> amdgpu 0000:01:00.0: probe with driver amdgpu failed with error -12
+>> amdgpu 0000:01:00.0:  ttm finalized
+>>
+>> Fixes: 1471c517cf7d ("powerpc/iommu: bypass DMA APIs for coherent allocations for pre-mapped memory")
+>> Reported-by: Dan Horák <dan@danny.cz>
+>> Closes: https://gitlab.freedesktop.org/drm/amd/-/work_items/5039
+> We could even add the lore link so that in future people can find the
+> discussion.
+> Closes: https://lore.kernel.org/linuxppc-dev/20260313142351.609bc4c3efe1184f64ca5f44@danny.cz/
+>
+>> Tested-by: Dan Horak <dan@danny.cz>
+>> Signed-off-by: Ritesh Harjani <ritesh.list@gmail.com>
+> Feel free to change this to the following, I mainly only suggested the fix :)
+>
+> Suggested-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+>
+>
+>> Signed-off-by: Gaurav Batra <gbatra@linux.ibm.com>
+>> ---
+> Generally this info...
+>> I am working on testing the patch in an LPAR with AMDGPU. I will update the
+>> results soon.
+> ... goes below the three dashes in here ^^^
+> This is the same place where people also update the patch change log.
+>
+> But sure, thanks for updating. As for this patch, it looks good to me.
+> So, feel free to add:
+>
+> Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+>
+>
+>>   arch/powerpc/kernel/dma-iommu.c | 4 ++--
+>>   1 file changed, 2 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/arch/powerpc/kernel/dma-iommu.c b/arch/powerpc/kernel/dma-iommu.c
+>> index 73e10bd4d56d..8b4de508d2eb 100644
+>> --- a/arch/powerpc/kernel/dma-iommu.c
+>> +++ b/arch/powerpc/kernel/dma-iommu.c
+>> @@ -67,7 +67,7 @@ bool arch_dma_unmap_sg_direct(struct device *dev, struct scatterlist *sg,
+>>   }
+>>   bool arch_dma_alloc_direct(struct device *dev)
+>>   {
+>> -	if (dev->dma_ops_bypass)
+>> +	if (dev->dma_ops_bypass && dev->bus_dma_limit)
+>>   		return true;
+>>   
+>>   	return false;
+>> @@ -75,7 +75,7 @@ bool arch_dma_alloc_direct(struct device *dev)
+>>   
+>>   bool arch_dma_free_direct(struct device *dev, dma_addr_t dma_handle)
+>>   {
+>> -	if (!dev->dma_ops_bypass)
+>> +	if (!dev->dma_ops_bypass || !dev->bus_dma_limit)
+>>   		return false;
 
-I was intending that to be a part of commit message. May be specifying
-that as changes is confusing. I'll put it there as a summary.
-> >
-> > Link: https://github.com/Rust-for-Linux/linux/issues/105
-> > Link: https://github.com/linuxppc/issues/issues/451
-> > Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-> > ---
-> >  rust/Makefile | 63 ++++++++++++++++++++++++++++++++-------------------
-> >  1 file changed, 40 insertions(+), 23 deletions(-)
-> >
-> > diff --git a/rust/Makefile b/rust/Makefile
-> > index 9801af2e1e02..762bddc868e4 100644
-> > --- a/rust/Makefile
-> > +++ b/rust/Makefile
-> > @@ -3,6 +3,9 @@
-> >  # Where to place rustdoc generated documentation
-> >  rustdoc_output := $(objtree)/Documentation/output/rust/rustdoc
-> >  
-> > +# Clean generated host directory
-> > +clean-files := host/
-> > +
-> >  obj-$(CONFIG_RUST) += core.o compiler_builtins.o ffi.o
-> >  always-$(CONFIG_RUST) += exports_core_generated.h
-> >  
-> > @@ -27,7 +30,7 @@ endif
-> >  
-> >  obj-$(CONFIG_RUST) += exports.o
-> >  
-> > -always-$(CONFIG_RUST) += libproc_macro2.rlib libquote.rlib libsyn.rlib
-> > +always-$(CONFIG_RUST) += host/libproc_macro2.rlib host/libquote.rlib host/libsyn.rlib
-> >  
-> >  always-$(CONFIG_RUST_KERNEL_DOCTESTS) += doctests_kernel_generated.rs
-> >  always-$(CONFIG_RUST_KERNEL_DOCTESTS) += doctests_kernel_generated_kunit.c
-> > @@ -150,7 +153,7 @@ quiet_cmd_rustdoc = RUSTDOC $(if $(rustdoc_host),H, ) $<
-> >  	OBJTREE=$(abspath $(objtree)) \
-> >  	$(RUSTDOC) $(filter-out $(skip_flags) --remap-path-prefix=% --remap-path-scope=%, \
-> >  			$(if $(rustdoc_host),$(rust_common_flags),$(rust_flags))) \
-> > -		$(rustc_target_flags) -L$(objtree)/$(obj) \
-> > +		$(rustc_target_flags) -L$(objtree)/$(obj)$(if $(rustdoc_host),/host) \
-> >  		-Zunstable-options --generate-link-to-definition \
-> >  		--output $(rustdoc_output) \
-> >  		--crate-name $(subst rustdoc-,,$@) \
-> > @@ -193,13 +196,16 @@ rustdoc-proc_macro2: $(src)/proc-macro2/lib.rs rustdoc-clean FORCE
-> >  	+$(call if_changed,rustdoc)
-> >  
-> >  rustdoc-quote: private rustdoc_host = yes
-> > -rustdoc-quote: private rustc_target_flags = $(quote-flags)
-> > +rustdoc-quote: private rustc_target_flags = $(quote-flags) \
-> > +    --extern proc_macro2=$(abspath $(objtree)/$(obj)/host/libproc_macro2.rlib)
-> 
-> Why not just add `-L$(objtree)/$(obj)/host`? If we go with the host directory
-> approach we shouldn't need to explicitly specify the path?
-> 
-> Best,
-> Gary
-> 
-Yeah makes sense. Will send out new revision.
 
-Regards,
-Mukesh
-> >  rustdoc-quote: private skip_flags = $(quote-skip_flags)
-> >  rustdoc-quote: $(src)/quote/lib.rs rustdoc-clean rustdoc-proc_macro2 FORCE
-> >  	+$(call if_changed,rustdoc)
-> >  
-> >  rustdoc-syn: private rustdoc_host = yes
-> > -rustdoc-syn: private rustc_target_flags = $(syn-flags)
-> > +rustdoc-syn: private rustc_target_flags = $(syn-flags) \
-> > +    --extern proc_macro2=$(abspath $(objtree)/$(obj)/host/libproc_macro2.rlib) \
-> > +    --extern quote=$(abspath $(objtree)/$(obj)/host/libquote.rlib)
-> >  rustdoc-syn: $(src)/syn/lib.rs rustdoc-clean rustdoc-quote FORCE
-> >  	+$(call if_changed,rustdoc)
-> >  
-> > @@ -236,7 +242,10 @@ rustdoc-pin_init_internal: $(src)/pin-init/internal/src/lib.rs \
-> >  	+$(call if_changed,rustdoc)
-> >  
-> >  rustdoc-pin_init: private rustdoc_host = yes
-> > -rustdoc-pin_init: private rustc_target_flags = $(pin_init-flags) \
-> > +rustdoc-pin_init: private rustc_target_flags = \
-> > +    --extern pin_init_internal=$(abspath $(objtree)/$(obj)/$(libpin_init_internal_name)) \
-> > +    --extern macros=$(abspath $(objtree)/$(obj)/$(libmacros_name)) \
-> > +    $(call cfgs-to-flags,$(pin_init-cfgs)) \
-> >      --extern alloc --cfg feature=\"alloc\"
-> >  rustdoc-pin_init: $(src)/pin-init/src/lib.rs rustdoc-pin_init_internal \
-> >      rustdoc-macros FORCE
-> > @@ -369,7 +378,9 @@ rusttest: rusttest-macros
-> >  
-> >  rusttest-macros: private rustc_target_flags = --extern proc_macro \
-> >      --extern macros --extern kernel --extern pin_init \
-> > -    --extern proc_macro2 --extern quote --extern syn
-> > +    --extern proc_macro2=$(abspath $(objtree)/$(obj)/test/libproc_macro2.rlib) \
-> > +    --extern quote=$(abspath $(objtree)/$(obj)/test/libquote.rlib) \
-> > +    --extern syn=$(abspath $(objtree)/$(obj)/test/libsyn.rlib)
-> >  rusttest-macros: private rustdoc_test_target_flags = --crate-type proc-macro
-> >  rusttest-macros: $(src)/macros/lib.rs \
-> >      rusttestlib-macros rusttestlib-kernel rusttestlib-pin_init FORCE
-> > @@ -525,48 +536,54 @@ $(obj)/exports_kernel_generated.h: $(obj)/kernel.o FORCE
-> >  
-> >  quiet_cmd_rustc_procmacrolibrary = $(RUSTC_OR_CLIPPY_QUIET) PL $@
-> >        cmd_rustc_procmacrolibrary = \
-> > +	mkdir -p $(dir $@); \
-> >  	$(if $(skip_clippy),$(RUSTC),$(RUSTC_OR_CLIPPY)) \
-> >  		$(filter-out $(skip_flags),$(rust_common_flags) $(rustc_target_flags)) \
-> >  		--emit=dep-info=$(depfile) --emit=link=$@ --crate-type rlib -O \
-> > -		--out-dir $(objtree)/$(obj) -L$(objtree)/$(obj) \
-> >  		--crate-name $(patsubst lib%.rlib,%,$(notdir $@)) $<
-> >  
-> > -$(obj)/libproc_macro2.rlib: private skip_clippy = 1
-> > -$(obj)/libproc_macro2.rlib: private rustc_target_flags = $(proc_macro2-flags)
-> > -$(obj)/libproc_macro2.rlib: $(src)/proc-macro2/lib.rs FORCE
-> > +$(obj)/host/libproc_macro2.rlib: private skip_clippy = 1
-> > +$(obj)/host/libproc_macro2.rlib: private rustc_target_flags = $(proc_macro2-flags)
-> > +$(obj)/host/libproc_macro2.rlib: $(src)/proc-macro2/lib.rs FORCE
-> >  	+$(call if_changed_dep,rustc_procmacrolibrary)
-> >  
-> > -$(obj)/libquote.rlib: private skip_clippy = 1
-> > -$(obj)/libquote.rlib: private skip_flags = $(quote-skip_flags)
-> > -$(obj)/libquote.rlib: private rustc_target_flags = $(quote-flags)
-> > -$(obj)/libquote.rlib: $(src)/quote/lib.rs $(obj)/libproc_macro2.rlib FORCE
-> > +$(obj)/host/libquote.rlib: private skip_clippy = 1
-> > +$(obj)/host/libquote.rlib: private skip_flags = $(quote-skip_flags)
-> > +$(obj)/host/libquote.rlib: private rustc_target_flags = $(quote-flags) \
-> > +	--extern proc_macro2=$(abspath $(objtree)/$(obj)/host/libproc_macro2.rlib)
-> > +$(obj)/host/libquote.rlib: $(src)/quote/lib.rs $(obj)/host/libproc_macro2.rlib FORCE
-> >  	+$(call if_changed_dep,rustc_procmacrolibrary)
-> >  
-> > -$(obj)/libsyn.rlib: private skip_clippy = 1
-> > -$(obj)/libsyn.rlib: private rustc_target_flags = $(syn-flags)
-> > -$(obj)/libsyn.rlib: $(src)/syn/lib.rs $(obj)/libquote.rlib FORCE
-> > +$(obj)/host/libsyn.rlib: private skip_clippy = 1
-> > +$(obj)/host/libsyn.rlib: private rustc_target_flags = $(syn-flags) \
-> > +	--extern proc_macro2=$(abspath $(objtree)/$(obj)/host/libproc_macro2.rlib) \
-> > +	--extern quote=$(abspath $(objtree)/$(obj)/host/libquote.rlib)
-> > +$(obj)/host/libsyn.rlib: $(src)/syn/lib.rs $(obj)/host/libquote.rlib FORCE
-> >  	+$(call if_changed_dep,rustc_procmacrolibrary)
-> >  
-> >  quiet_cmd_rustc_procmacro = $(RUSTC_OR_CLIPPY_QUIET) P $@
-> >        cmd_rustc_procmacro = \
-> > -	$(RUSTC_OR_CLIPPY) $(rust_common_flags) $(rustc_target_flags) \
-> > +	$(RUSTC_OR_CLIPPY) $(rust_common_flags) \
-> >  		-Clinker-flavor=gcc -Clinker=$(HOSTCC) \
-> >  		-Clink-args='$(call escsq,$(KBUILD_PROCMACROLDFLAGS))' \
-> >  		--emit=dep-info=$(depfile) --emit=link=$@ --extern proc_macro \
-> > -		--crate-type proc-macro -L$(objtree)/$(obj) \
-> > +		--crate-type proc-macro \
-> > +		-L$(objtree)/$(obj)/host \
-> >  		--crate-name $(patsubst lib%.$(libmacros_extension),%,$(notdir $@)) \
-> > -		@$(objtree)/include/generated/rustc_cfg $<
-> > +		@$(objtree)/include/generated/rustc_cfg \
-> > +		$(rustc_target_flags) \
-> > +		$<
-> >  
-> >  # Procedural macros can only be used with the `rustc` that compiled it.
-> >  $(obj)/$(libmacros_name): private rustc_target_flags = \
-> >      --extern proc_macro2 --extern quote --extern syn
-> > -$(obj)/$(libmacros_name): $(src)/macros/lib.rs $(obj)/libproc_macro2.rlib \
-> > -    $(obj)/libquote.rlib $(obj)/libsyn.rlib FORCE
-> > +$(obj)/$(libmacros_name): $(src)/macros/lib.rs $(obj)/host/libproc_macro2.rlib \
-> > +    $(obj)/host/libquote.rlib $(obj)/host/libsyn.rlib FORCE
-> >  	+$(call if_changed_dep,rustc_procmacro)
-> >  
-> >  $(obj)/$(libpin_init_internal_name): private rustc_target_flags = $(pin_init_internal-flags)
-> >  $(obj)/$(libpin_init_internal_name): $(src)/pin-init/internal/src/lib.rs \
-> > -    $(obj)/libproc_macro2.rlib $(obj)/libquote.rlib $(obj)/libsyn.rlib FORCE
-> > +    $(obj)/host/libproc_macro2.rlib $(obj)/host/libquote.rlib $(obj)/host/libsyn.rlib FORCE
-> >  	+$(call if_changed_dep,rustc_procmacro)
-> >  
-> >  # `rustc` requires `-Zunstable-options` to use custom target specifications
-> 
+While this works, looking more on why the 1471c517cf7dae needed 
+arch_dma_[alloc|free]_direct()
+
+functions was because dev->bus_dma_limit being not updated when the new 
+memory pages were
+
+getting added in add_pages() case leading to the can_map_direct() checks 
+failing later when needed.
+
+Looks like these functions were modeled after 
+arch_dma_[map|unmap]_phys_direct() which were
+
+introduced for handing a similar need.
+
+
+Do we get iommu_mem_notifier() call for action MEM_GOING_ONLINE in 
+device memory being
+
+made online case? If yes, we can just update the bus_dma_limit for each 
+device in the iommu
+
+group to include the new max_pfn. This makes it sound wrong as the pages 
+though configured
+
+as system memory, are still  device private and the memory notifiers are 
+for the real memory
+
+hotplug/unplug cases.
+
+
+In the commit 7170130e4c below, Balibir does point this out to be a 
+problem and prevents updating
+
+max_pfn for device private memory. He has mentioned it to be considered 
+for PPC too.
+
+The dma_addressing_limited() of x86 is same as PPC can_map_direct() and 
+we know why
+
+arch_dma_[alloc|free]_direct() would not be needed anymore.
+
+
+commit 7170130e4c72ce0caa0cb42a1627c635cc262821
+Author: Balbir Singh <balbirs@nvidia.com>
+Date:   Tue Apr 1 11:07:52 2025 +1100
+
+     x86/mm/init: Handle the special case of device private pages in 
+add_pages(), to not increase max_pfn and trigger 
+dma_addressing_limited() bounce buffers
+
+So, I think we need to bring the changes from 7170130e4c72ce0c into PPC.
+
+
+With that, the original hunk setting the bypass unconditionally in 
+1471c517cf7dae can be
+
+changed like below, and remove the redundant 
+arch_dma_[alloc|free]_direct() functions.
+
+
+diff --git a/arch/powerpc/kernel/dma-iommu.c 
+b/arch/powerpc/kernel/dma-iommu.c
+index aa3689d61917..120800b962cf 100644
+--- a/arch/powerpc/kernel/dma-iommu.c
++++ b/arch/powerpc/kernel/dma-iommu.c
+@@ -150,7 +150,7 @@ int dma_iommu_dma_supported(struct device *dev, u64 
+mask)
+                  * 1:1 mapping but it is somehow limited.
+                  * ibm,pmemory is one example.
+                  */
+-               dev->dma_ops_bypass = dev->bus_dma_limit == 0;
++               dev->dma_ops_bypass = (dev->bus_dma_limit == 0) || 
+(min_not_zero(mask, dev->bus_dma_limit) >= 
+dma_direct_get_required_mask(dev));
+                 if (!dev->dma_ops_bypass)
+                         dev_warn(dev,
+                                  "iommu: 64-bit OK but direct DMA is 
+limited by %llx\n",
+
+Suggested-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+
+
+Thanks,
+
+Shivaprasad
+
 
