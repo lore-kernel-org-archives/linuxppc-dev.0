@@ -1,73 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-19302-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19303-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D97A8E88D78
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2026 03:20:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCDCBE88D79
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2026 03:22:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fngpF0F88z2yL8;
-	Sat, 04 Apr 2026 14:20:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775272836;
-	cv=none; b=a6zKL/LfW/owFVGdE6W9x/A+tq/fYpilVA/vLQwj3qiuP7vImXvmn4UFSFu1Lcay2+86CJEC86Lbumjl9499dkJE580uUnUEV1+JaZiHOJqBn9lA2V2PrJBLN9Qy7IC9gFkTptX6S6bW3ldKVxAg3yl8oLlyrB+YcAkxQPUmrQmv43qzrxW3mtKWT34MjnqagPW3FWJHrSGDBnG2zOAk8UifRMMuAnNkwpWu8Nypdov3TTBVdr/r9fnNoG71Cj6Mwt8Tm7oOKtkXixonZERkVCXKiHTWHcYtuV74tqhem/NORVqV0b28XNcaF2bGWxcSXztSWpJB+5B3nc1Q0u09MQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fngr329B9z2yL8;
+	Sat, 04 Apr 2026 14:22:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775272931;
+	cv=none; b=evYUhoj3W1wFkigdNSyRPVOUy/PPkSZZnyY9X58w58WbNTumsiTu8OytofRFkL+MhBDpUKG5oXR2HYe4Klytwd0DgKIaI5fE13v3UBiybtXEMF86y4SPkddLJ+IXLoneXx4LCc63eiLPOQOnbNUi9YB2n1qiroXGCRCnEa2Uv4ejcFtFZXSuE0XP/F/uJGaA1uLPwLjhVNjTF3KD20VsVjJAPPAt7eyx1+zaW5DxtDPIxtsKn1g8pS5cWqXhrCYl9LHSF/o+IYp40XQN4kiUFHEXNr4ejhoc1qLappbuk6NOkc7AWmH2cB0Y5312zrfWZmA5fDTdJ6Uh76FvblH2rg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775272836; c=relaxed/relaxed;
-	bh=f7+GFnuDISnAHiV3ZDmGpGZpYewsSRG08Mtv2Z+Rx6I=;
+	t=1775272931; c=relaxed/relaxed;
+	bh=yfQoA6KbryDg4fIMgiq1/OMsv57x+4IJDIVcB77NifA=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=bWfoGWw5aYk5a5Z1ASgLKS8iUZjig4LMtnM6ImMtKzItx3IU//USApvk5RxoaaD+W+D/H09AMLBNxHgPJH8cqdtH3GRbfAvbfi+CxiTnOfmRpct2xWtoSuwJZt0u7KOvIc1usKUC+cW/ticZhOU/7OvTSksq/F1ZzS7Fwd5UeRf8f+KHLpFoSgfK9zCD7/+2pWNNXTSixwm5CAGZC308GzTsRKiWZfEKkwJYAC8jKqYS3CV90eTPhAHGK53ZiAnh1VKtaF3hXovPNtJMRZNql9sI5d2UkiPUZDTI2b26hoUo8sJ51QcQOtF9lmakHgQ+Sc+/IoNKmBq5YNGuAT8XEQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=thGTo2yv; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 In-Reply-To:Content-Type; b=WPAx1m2mSW6h+YhKpNfR0fZZ2xtf4WJCEbrZAEWxLBlbUKrxTqbNisuL5hTG1ERYBUbYiTsuI6PtXDrvwkhgtT2774eD/RXbiF9beMgZ0Hivr8x6Yc4kaVVMNr7Cj+QyQWEsHvnxpws3w7yNGwZ63hsX99/sbnXcMI5pwfVFRSLxYApsF7c2miaBtxSgXzYPSIrWxPPfPYjPVCGxZZzk2itl2hBxjqnmoofRMabAjJSQFbv+30pG67Ya8X8sIzDsnPbx7Nz653yyzY75gBYT+aDzBy5BBdl3bad7jHoyGFqxymYCXfdp7cm7zXxkVsCTK9fz5vLD2zJljg1Djhzhcw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TSHOZf84; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=thGTo2yv;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TSHOZf84;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fngpC5h8Nz2xQr
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Apr 2026 14:20:35 +1100 (AEDT)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6341HNtw2895882;
-	Sat, 4 Apr 2026 03:20:24 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fngr24B49z2xQr
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Apr 2026 14:22:10 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63431WSS3067657;
+	Sat, 4 Apr 2026 03:22:02 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=f7+GFn
-	uDISnAHiV3ZDmGpGZpYewsSRG08Mtv2Z+Rx6I=; b=thGTo2yvIRkQqJQvsI08aZ
-	CLyIxYuk6kiK4xrNgdvJZ82h38X+Sd1bQQqpvBtF76+NaI7/qw6vvpXhqbJix5Oj
-	aq7566zBTwDqsf75iNpLoOiX2g2OsZNwRNdVf/oj/epDNynJvAHk1mAK1wUi1CqF
-	BOrUecoP1rny2BICnzgdFChhrxAWRapvkdbPsGkr/+GAqeZ4OqqsaHy568YauqRZ
-	1xUBblfJfomXTH13yZ+12YA4CgrN79uX9elDYUhHT/RSMJyNvjRbacS5NJBz2HGQ
-	Gu76G29igPm/5ScLqlb2x21ZP5Ikk/SxuLK58YY8loxNzt9+GNeFpBXdUpbRETPg
+	:message-id:mime-version:references:subject:to; s=pp1; bh=yfQoA6
+	KbryDg4fIMgiq1/OMsv57x+4IJDIVcB77NifA=; b=TSHOZf84tl9+U324fsMVVp
+	Rc7urZBsIhN/0653phycwrexZBP+bTGUxG4taGSg3s/NK3F3YBoz0xWQFQxrV5nI
+	PFn0JEUPs5UcktlJWJNMYO4pejPvknDnwzL7/wCSjHmwZjfvNPRYcfeK3ji53GVD
+	3/Mul8h+DFhUZBG8O3iR8RjP6Rp9Dlh9fUVk/6wSCftj/TvC3XAoO2f1lt6rXDbR
+	MdErihVZjltlqy5di3HphXpldXl+GAZieQJS6iNddbG9mpVQDUCjtqCzgdhAIkDR
+	bjE6EwiEfPIeLvYQ92fwUzdKMjHuWXmUwEyIi8kog8QXP6pHcNamgzVAJD3o4JkQ
 	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dar2g88yd-1
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4datc2g1a1-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 04 Apr 2026 03:20:24 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 6341vTpa030952;
-	Sat, 4 Apr 2026 03:20:23 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4d6uhk8679-1
+	Sat, 04 Apr 2026 03:22:01 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 6340eNBa005973;
+	Sat, 4 Apr 2026 03:22:00 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4d6spygdhw-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 04 Apr 2026 03:20:23 +0000
+	Sat, 04 Apr 2026 03:22:00 +0000
 Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6343KJuY39715122
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6343Lube53805386
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 4 Apr 2026 03:20:19 GMT
+	Sat, 4 Apr 2026 03:21:56 GMT
 Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E68B820040;
-	Sat,  4 Apr 2026 03:20:18 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 1E1C620043;
+	Sat,  4 Apr 2026 03:21:56 +0000 (GMT)
 Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6F3F52004E;
-	Sat,  4 Apr 2026 03:20:15 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id CC87420040;
+	Sat,  4 Apr 2026 03:21:52 +0000 (GMT)
 Received: from [9.39.18.186] (unknown [9.39.18.186])
 	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sat,  4 Apr 2026 03:20:15 +0000 (GMT)
-Message-ID: <20edd82e-62ce-480c-a075-c604df6a3a27@linux.ibm.com>
-Date: Sat, 4 Apr 2026 08:50:13 +0530
+	Sat,  4 Apr 2026 03:21:52 +0000 (GMT)
+Message-ID: <9551d2b5-1821-4aaf-a5d2-2be56f98f45c@linux.ibm.com>
+Date: Sat, 4 Apr 2026 08:51:51 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,88 +82,94 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/2] powerpc/kdump: fix KASAN sanitization flag for
- core_$(BITS).o
+Subject: Re: [PATCH v2 2/2] powerpc/vmx: avoid KASAN instrumentation in
+ enter_vmx_ops() for kexec
 To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
         linuxppc-dev@lists.ozlabs.org
-Cc: Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-        Aboorva Devarajan <aboorvad@linux.ibm.com>,
-        Aditya Gupta <adityag@linux.ibm.com>, Daniel Axtens <dja@axtens.net>,
+Cc: Aditya Gupta <adityag@linux.ibm.com>, Daniel Axtens <dja@axtens.net>,
         Hari Bathini <hbathini@linux.ibm.com>,
         Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Mahesh Salgaonkar <mahesh@linux.ibm.com>,
         Michael Ellerman <mpe@ellerman.id.au>,
         Shivang Upadhyay <shivangu@linux.ibm.com>,
-        Mahesh Salgaonkar <mahesh@linux.ibm.com>
+        Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+        Aboorva Devarajan <aboorvad@linux.ibm.com>
 References: <20260403190123.1383198-1-sourabhjain@linux.ibm.com>
- <eckvmtik.ritesh.list@gmail.com>
+ <20260403190123.1383198-2-sourabhjain@linux.ibm.com>
+ <cy0fmtdb.ritesh.list@gmail.com>
 Content-Language: en-US
 From: Sourabh Jain <sourabhjain@linux.ibm.com>
-In-Reply-To: <eckvmtik.ritesh.list@gmail.com>
+In-Reply-To: <cy0fmtdb.ritesh.list@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: IgY2I70tV32jQ0cHrhviuSPgJY1I8TPV
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDA0MDAyNiBTYWx0ZWRfXzvd5JUwR2+eZ
- gig2Pvk5GnWIHaZr2MiH5vzyvAPBVBpNCDQeXh1gz3Jh7RZnJakJE4HPDiB0NjJmJszTocEwGVZ
- TosEZ51LKglTV1y3uGAuZa6VshUwgfodRiShjQ6M0giakjzXsZKijQPcKqZCIb5XGgeVwNsETgR
- i2XzLFQmxbQWjr82M7Chplh4GPUp4CkiI1WEyqkSGMb88+jTlnqGOSj/0BK+y94G4bzKBxVMnBl
- Hr2x3qiwQleG+R4pzanxXhXItEanigfrm80zIZL9idpClVsufkiPNbMUStC8F7UA198hMtt8IT4
- gtHjCHEDi04ZGDpZHOwmI/M4e5zSeqeRyDqkSVRx1Mz29EuDKkn7xRv9cn8jx2F5tJ9FvssaTIS
- zUhbjqCKgw16x7ebOVg0FHHL82Qx6ULHSedw8aF/DCDqgXAiGykNZcqh68Txl2EdbDzxMJMAhC2
- wYRDT1fsygtHGP7ZQ4A==
-X-Authority-Analysis: v=2.4 cv=b+u/I9Gx c=1 sm=1 tr=0 ts=69d08378 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDA0MDAyNiBTYWx0ZWRfX/W5/QUfZuU0a
+ A35G5+VYnQJc1UshTekKN8lk8AJRFn04946+oNXp174/elNY19pVWmFoZETAg5izqTQG5H67x1S
+ Z7olVdFqYhxOTgIGuoqQcCB0IXjznJQLhXGQn/AiNe8HM+RGpx7hVpJTefIcXPkKmrOfQqysQqZ
+ EK3epSIcZ76IffTyIyxWOZmATxwOXt2QGbJiLFaZA5ZtUg0QMGjNGw9BqSO+d8wrlM5EnCmk/oA
+ 6R3B6cRMrtDzriBzTfnlAWf4195Jl1Tis8eg6PrzzBeovtbgyuQ7QoLrcfIa7q4KmgRPT73JvWY
+ mVjGGzvLRcqa4B524nv7q3eBvmLYtLHUGObCVQRPOlwoD+KoC0H7Lo7FTp1TT7SNQA8AxDs6Bgm
+ dj3Piza4WmtdHpzFXne30J0i3C5yWdejb2b/qtcJcut+v7s1gMDujeZtry+8+lKIMQdlneYorKS
+ 2Kl88k48wvuL/UdE+5w==
+X-Proofpoint-GUID: -EhTmvLWDnG5IF-IWVFiMyQoTvUfWvDu
+X-Proofpoint-ORIG-GUID: azhPCGsONs67eW3VwqD9nGQD_EMYrCWS
+X-Authority-Analysis: v=2.4 cv=HJvO14tv c=1 sm=1 tr=0 ts=69d083d9 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
  a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=JuTF4qcAAAAA:8 a=ZS8Cze6H77hOx2eYTWQA:9 a=3ZKOabzyN94A:10
- a=QEXdDO2ut3YA:10 a=WlT8qwTXB_Kj6um4hl3b:22
-X-Proofpoint-ORIG-GUID: TIMKH0XKirol0adekwxQ2EoVDYNsk1xy
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8
+ a=pGLkceISAAAA:8 a=ZSKijxZ-s5Cc9RuwcvIA:9 a=QEXdDO2ut3YA:10
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-04-03_07,2026-04-03_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 phishscore=0 bulkscore=0 adultscore=0 lowpriorityscore=0
- impostorscore=0 malwarescore=0 spamscore=0 priorityscore=1501 clxscore=1015
+ impostorscore=0 suspectscore=0 clxscore=1015 lowpriorityscore=0 adultscore=0
+ malwarescore=0 spamscore=0 phishscore=0 priorityscore=1501 bulkscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2604040026
 
 
 
-On 04/04/26 06:27, Ritesh Harjani (IBM) wrote:
+On 04/04/26 06:31, Ritesh Harjani (IBM) wrote:
 > Sourabh Jain <sourabhjain@linux.ibm.com> writes:
 >
->> KASAN instrumentation is intended to be disabled for the kexec core
->> code, but the existing Makefile entry misses the object suffix. As a
->> result, the flag is not applied correctly to core_$(BITS).o.
+>> The kexec sequence invokes enter_vmx_ops() via copy_page() with the MMU
+>> disabled. In this context, code must not rely on normal virtual address
+>> translations or trigger page faults.
 >>
->> So when KASAN is enabled, kexec_copy_flush and copy_segments in
->> kexec/core_64.c are instrumented, which can result in accesses to
->> shadow memory via normal address translation paths. Since these run
->> with the MMU disabled, such accesses may trigger page faults
->> (bad_page_fault) that cannot be handled in the kdump path, ultimately
->> causing a hang and preventing the kdump kernel from booting. The same
->> is true for kexec as well, since the same functions are used there.
+>> With KASAN enabled, functions get instrumented and may access shadow
+>> memory using regular address translation. When executed with the MMU
+>> off, this can lead to page faults (bad_page_fault) from which the
+>> kernel cannot recover in the kexec path, resulting in a hang.
 >>
->> Update the entry to include the “.o” suffix so that KASAN
->> instrumentation is properly disabled for this object file.
+>> The kexec path sets preempt_count to HARDIRQ_OFFSET before entering
+>> the MMU-off copy sequence.
 >>
->> Fixes: 2ab2d5794f14 ("powerpc/kasan: Disable address sanitization in kexec paths")
->> Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
->> Closes: https://lore.kernel.org/all/1dee8891-8bcc-46b4-93f3-fc3a774abd5b@linux.ibm.com/
->> Cc: Aboorva Devarajan <aboorvad@linux.ibm.com>
->> Cc: Aditya Gupta <adityag@linux.ibm.com>
->> Cc: Daniel Axtens <dja@axtens.net>
->> Cc: Hari Bathini <hbathini@linux.ibm.com>
->> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
->> Cc: Michael Ellerman <mpe@ellerman.id.au>
->> Cc: Shivang Upadhyay <shivangu@linux.ibm.com>
-> I guess you missed adding:
-> Cc: stable@vger.kernel.org
+>> current_thread_info()->preempt_count = HARDIRQ_OFFSET
+>>    kexec_sequence(..., copy_with_mmu_off = 1)
+>>      -> kexec_copy_flush(image)
+>>           copy_segments()
+>>             -> copy_page(dest, addr)
+>> 	         bl enter_vmx_ops()
+>>                     if (in_interrupt())
+>>                       return 0
+>> 	         beq .Lnonvmx_copy
+>>
+>> Since kexec sets preempt_count to HARDIRQ_OFFSET, in_interrupt()
+>> evaluates to true and enter_vmx_ops() returns early.
+>>
+>> As in_interrupt() (and preempt_count()) are always inlined, mark
+>> enter_vmx_ops() with __no_sanitize_address to avoid KASAN
+>> instrumentation and shadow memory access with MMU disabled, helping
+>> kexec boot fine with KASAN enabled.
+>>
+> Nice! LGTM. Please feel free to add:
+> Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 
-You’re right, I missed it.
-I’ll include it in the next revision.
+Thanks, Ritesh!
 
-Thanks,
-Sourabh Jain
+Will add your Reviewed-by tag in the next version.
+
+- Sourabh Jain
+
 
