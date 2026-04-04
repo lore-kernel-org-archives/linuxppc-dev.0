@@ -1,113 +1,99 @@
-Return-Path: <linuxppc-dev+bounces-19313-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19314-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19090E88D80
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2026 12:17:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 393C1E88D9B
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Apr 2026 13:33:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fnvjJ3LSvz2ynC;
-	Sat, 04 Apr 2026 23:17:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1036"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775305028;
-	cv=none; b=S2MuzJwPICIqyCpgbxESTn217zrMSL6xCIFJu57bD1+iaiIygVPySGV5YKzDMtkt8KwZKNMA7ugEBef9bEyPwdRJEVMRqfdKWbt84LyE9zA01V9dqWiGQkL4RbAIcexQiTIuYUDYsd6jRZ2azlb+et3Kv9kThFJU0myMnEIUD6ELA5/AqvMIFaxv+M+CTWJVsrGbmuIEwEVF4XSQ9oDKnML8s76/bP3xvmWvovkXPugvm25LxYPFkk9Z8+54mHEIwQJTc/YmxnnWL6T4TVqTtuEyTNDJ6pW5HtSK259tFCty20lP74SCa9ZzUXw2mC+ngLVrYdN0kjI3is+K5suwgw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fnxPD4RqGz2yVL;
+	Sun, 05 Apr 2026 00:33:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1334"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775294405;
+	cv=none; b=Aa0TQ2fU9erjsdjUotnmBZV8EjvowofmrMaISm66WacboEIn0BAdwqKwMaUIvkRwLWsBK0YcRVZY+Cq1T5iw2EXU9UzFYsrzp18PY66C1jWnC6nzZcar89tXpW2r4upWEoMRGBYfgQMpz1wLeYo4dbdU+NooK2hiLNtMlPU3EK8k0RJWwan52b9sorz0uSsYxFPohsUPkOAQwARAf20HgglaHNHO5G+SQk0ewJ0M9ru0FA+In6oEwa3z9F+yOIeEMv87B53LK8AbFZCALTEyFtJk3sLkDr8pJyxvpffh6N7tYEaKx7te4wY/HMm4UpJAkrR6J+2D8RA3ClFFMTGdcA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775305028; c=relaxed/relaxed;
-	bh=PlujDU3RFaKkdVl6Jrm/784UPIvYVhHJ3sm/SZ244fs=;
+	t=1775294405; c=relaxed/relaxed;
+	bh=m4D9KIHfQ19G+ih5n0VIDlQHW6gYQM9spmrNFkW8GpA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=F7zhWejn8rrS24/wdintyAe64x3AlHkKexqS/QiNh1tx6dFVtP5I8hld6Tm+yW6looqHPJCwrB9e+rUa2AcEG4IgqOdXUXTkog3vPVqvMiWqOWjon7r8tThJMbHZgQxM0ZY0usAIynxAka95WBWH2JzwMUdZYJsqPG6bxmPJHhNTx1kIOekjUkzIsCHIH9o2CqopS0u9G6lKNJIIDniORYAhbKky1RZ5Nx6IWBmzk5tYq4E8x4ewrR1deEOY2u9qVgw6MIXI3fdZT87d3EuoQ/6C7ZLhg7ENu7p5VpeP523FKZEcysdwCZypJXcJfIn6mg3PttdqDpgsDg48/vnrAw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=EL2cWirU; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1036; helo=mail-pj1-x1036.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version:Content-Type; b=KkNHduO/nMc4sL1+3FXYqDx2WZZVVdfWSOJHjE1AS2B9NTGm5nWK9r+949ULx4nUbuQlquqHjfr5atJCeX8yRrwQX3vbOiJFXs4E17T4LZwsdzyV/jterVckY41DnETgCGQr4StYibd89v7kaurPIHkwWseDnnxzT6/mEo4e0kVkLwXon/pAD1p/g3YaKSx5Fz1W06z1kdE/Acv54csvcIE6ULCXI3ng1074J7n6v3WYR/eduGKX73f5OxpSYsS6BVpVB9gIuWjShuMp6Z9SBoF64hmjshYIYjr9fDJHWbKetfrV5yJfpZIZorPOu50wLZV1Fr8xGkTFFJOI/ljgzg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=YV2188ow; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1334; helo=mail-dy1-x1334.google.com; envelope-from=lianux.mm@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=EL2cWirU;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=YV2188ow;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1036; helo=mail-pj1-x1036.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com [IPv6:2607:f8b0:4864:20::1036])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1334; helo=mail-dy1-x1334.google.com; envelope-from=lianux.mm@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x1334.google.com (mail-dy1-x1334.google.com [IPv6:2607:f8b0:4864:20::1334])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fnvjH56FNz2ygd
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Apr 2026 23:17:07 +1100 (AEDT)
-Received: by mail-pj1-x1036.google.com with SMTP id 98e67ed59e1d1-35d9c7bf9a1so2308667a91.3
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Apr 2026 05:17:07 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fnqn00Kwjz2yC9
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Apr 2026 20:20:03 +1100 (AEDT)
+Received: by mail-dy1-x1334.google.com with SMTP id 5a478bee46e88-2ba9c484e5eso2290344eec.1
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Apr 2026 02:20:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1775305026; x=1775909826; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1775294401; x=1775899201; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=PlujDU3RFaKkdVl6Jrm/784UPIvYVhHJ3sm/SZ244fs=;
-        b=EL2cWirUTYJPowayAaeI53fhRu5u+zLvfwh/+x6PgeDPn8zQEXDz+HBJw1kNUdotp4
-         KQ4pPnjKE9hIoqwdb5HliscWHj4vpmyK79OtmOA8/KrVDDlUIZPOPZrd9cMzKbE1vACY
-         SX9CjlArNKTq50PPEKu6NumqkfK3JzouY2Bf96vA5Sz82eSuI3/tuytZyyOhdkFzmKe2
-         emMBZBpODBWk71GtwbnLJzDjSP6cQ9DgNUwmfK88huaMfP+dMyFqnKnRn9mOgEC6IhHo
-         SNYiNLSXTY6X9n91Amcf++BnwUdO8Fnj8OsNLWL0kj+ATLjpuoghYSNdaMvq96wRI5+T
-         m3xQ==
+        bh=m4D9KIHfQ19G+ih5n0VIDlQHW6gYQM9spmrNFkW8GpA=;
+        b=YV2188owzZSlzUO0juFWhwwwsZlHDQqvKDu1LYpefR2wILMiZplb8sKw1Lou1uv1EN
+         EmZqDJXfYujO7lAPTTJc8Jjy2fiatvJxa2J9GREkWtxzAHfDyMvtePKURO6HRSqfTyY5
+         67z2fQoDDJ6EDrj2Okytizkk52BVe6FooZSYxnSoIfNjiHdLhyApfw7wHoVsl4avfDMK
+         IzI20bY8ITmUl4CNc6dYpbfwLONrgbRgZOlSdnvd6SxYeS7EPYrjKTzzy/leLoD6j+g3
+         54d4veseNrE2ozCtINj7RCCjZyIuBDWQEtSDff0f7gM8s9fO8uKi0ARO6ayl2AJTdYAE
+         kdpQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775305026; x=1775909826;
+        d=1e100.net; s=20251104; t=1775294401; x=1775899201;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=PlujDU3RFaKkdVl6Jrm/784UPIvYVhHJ3sm/SZ244fs=;
-        b=cd1Z6Cc+HQCncLGXzkOQwVuqAtOb/NCSN7SRDsebwWZlle3GVER1tnQ+KJOAe4p40m
-         RayrlhEARJWRDoYXbvLV2T1uAxiYjmELdJ20L+b3i4src8xS31HWYurpC9su17ADJ1E1
-         e7Wovfn479b5CdwgIlrauEYfyge9xPNJkUB29ymALHzwJsXhX7Mo3N/u8pbReCvNLq9G
-         7KOxqJDSB84BnLy40JwbTGQ6MgwSrgiGLVKyjIDTMweCeTqTkSPbcK5bAIuFeRh88rXy
-         GYMPCm+Ediqv++xgZA7Md7pKQ3YXQBEfCHY22IGWlWRTPR9lLfuYPyIlefSUtf/IRPqB
-         OEQw==
-X-Forwarded-Encrypted: i=1; AJvYcCVj/gzztpf+GPThYztGNFyVl1EFJ7KHkV5dOCuiX62JYZRveymoBG1uXFY9nuwNs4M3xHi5RZHa0qux+f8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwDfxx4oBExek6ZR5kktQ+qF4fFoQ/E4U7q+DFxJIPgPAXIuEc/
-	iGrHbR14mwNIU5tCoZvWF6br4AKe+8BUo/BmUqaaVQHx9nHxDaM6gKF0
-X-Gm-Gg: AeBDievA6K9EdBsJT/cnwVI0URg86oJLZMFGXyCDIORwBmzYsQKkHv1KVFA6ExjO15E
-	htx8fqUPXUdxW0c06iOtdgzLXf3v9Lj8oYeYFNf1vd889Y5BnvPm90CDiooXQs+mWlyIKnvggbf
-	U1ScyJWF0Luo4MfeYtn6Qqdgi7khc830FjxySNHQiAfiaRFMi+5WJspgauCTejYkIoSAUjWn0rG
-	gWjNc1bfcg+waeDGcy8/nrffsOzq5d89Y7+rjkB5nVVRHUwxjPDuw1Qx6RE1Z+U9lH66HMzWaej
-	/GYrH7rQlCo+GnL31wNw+Wh7CKk0hvdILWWJkiS3AyLexxU6WpBY2SWrj3AeY6eVZWFfrtDWRKH
-	UOro6VCU+HiNHimruKVnboHFO+v1G8N4v+0isHPutIBU3fq2HGsx4ctGiimzJBG9c0w/B+XwL7t
-	CYfsS6fI5o5l49QThLGeEYOVFEcvAN4ISnFFwiHezzV8B3s3po6rWr2oQk1PqIzKzdAflAMSzyo
-	f4=
-X-Received: by 2002:a17:90b:4fc4:b0:359:f22:8879 with SMTP id 98e67ed59e1d1-35de691c094mr5252459a91.22.1775305025722;
-        Sat, 04 Apr 2026 05:17:05 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com.com ([106.51.160.44])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35de500c42fsm2702745a91.0.2026.04.04.05.16.56
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 04 Apr 2026 05:17:05 -0700 (PDT)
-From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
-To: maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	peterz@infradead.org,
-	jpoimboe@kernel.org,
-	jbaron@akamai.com,
-	aliceryhl@google.com,
-	rostedt@goodmis.org,
-	ardb@kernel.org,
-	ojeda@kernel.org,
-	boqun@kernel.org,
-	gary@garyguo.net,
-	bjorn3_gh@protonmail.com,
-	lossin@kernel.org,
-	a.hindborg@kernel.org,
-	tmgross@umich.edu,
-	dakr@kernel.org,
-	nathan@kernel.org,
-	nick.desaulniers+lkml@gmail.com,
-	morbo@google.com,
-	justinstitt@google.com,
-	linuxppc-dev@lists.ozlabs.org,
+        bh=m4D9KIHfQ19G+ih5n0VIDlQHW6gYQM9spmrNFkW8GpA=;
+        b=dDl1nnyRXkIyVS+gXxEadLEP6TxUKOc4TtiGVaeV+QspFHvR5gRVJLca/XLt88Jw1U
+         hABDy63smP0SzdXBBcE9LzIfMF1Ht5/NyhOxvZVbs9PuWweDniAhBcVuGhfuafuLUyJU
+         glpPocLCVWb1QLEKvwvmX1c/jnYfedKKSZDNb9hoUPNCI3+h9UPgWkWIzlw7AFEkrJ/h
+         uUtGHB0FtzgaZ1neV+bTjbpf93gTfvh4AgmlnwPX820fz2h7w1EOn+N58tHr48y8Ui6d
+         Q0Nr5brydzVHF6ETGWyONK7nSP95fXwO0B+q4hlf4O0PAQ26UPtyR504KEe+zTJFcR4O
+         VvyQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUg1EVFdefLxKUA2gi/qoX+oqGthSgo7Im9Izzo7SHAAU3bjFiGhzk1wJe9X9pSNSm2h/L6YnFAYn5f8PQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxKATTj3lf0XUN1RKSjwMhXwxDOll+MbjyVrJw7G4jVyiSSZTen
+	aRu6AKilbPvqzgnHaMNgxhOd5LoM0gcVTnNuZElIKr88uDZNo4ZJXsyK
+X-Gm-Gg: AeBDievwsi2Lutay5TJP+ZZGooe45838AFVmS2bXhhkGfsyBL+1TUE+qznvsp9wnlvY
+	hGMHNi9bQXUHcs+UlCYlyGci4SZHLCwrf4nTc1LgawbMOeUNHQI6h4nPhjPWFT0FPzz4asMDqLS
+	vfhR3LFuyonPuyieilDE0WgPJYJ0WmKWiAqOheMTKazZ+S1TKz7GR6i4DAc+fHjmQiLjZwmKtd1
+	S+JBgdHb97/m/tfF9ivGZYGSOCIpxpzbWcSFnvoLo/6Y2n2JqM3Q62u33hcuRU5wo1uX2nr6ZfA
+	Sx8xflE1hcTSGlliMIHK8aXSs5CSsFkCh/Gnm8+bsdcaRv65CAb3OjRt9rJWBTYI5Bjrr8spwT1
+	ye9F1gok94UrQURw7rFiTO6BMJwVFBkjDsFo3ljW8DRHuFMZqjaHEObxYkv51VgdZJN0zvhiVnZ
+	mYv8troE87rHlu91RGKp2hgtI=
+X-Received: by 2002:a05:7300:a287:b0:2c1:74ad:2cd7 with SMTP id 5a478bee46e88-2cbfbf760c4mr2791873eec.27.1775294400761;
+        Sat, 04 Apr 2026 02:20:00 -0700 (PDT)
+Received: from localhost.localdomain ([2607:f130:0:11a::31])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2ca78df3b84sm7176920eec.5.2026.04.04.02.19.55
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Sat, 04 Apr 2026 02:20:00 -0700 (PDT)
+From: wang lian <lianux.mm@gmail.com>
+To: 21cnbao@gmail.com
+Cc: akpm@linux-foundation.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-fsdevel@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	rust-for-linux@vger.kernel.org,
-	llvm@lists.linux.dev
-Cc: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
-	Link Mauve <linkmauve@linkmauve.fr>,
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: [PATCH V9 4/4] powerpc: Enable Rust for ppc64le
-Date: Sat,  4 Apr 2026 17:46:10 +0530
-Message-ID: <20260404121610.1956528-5-mkchauras@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260404121610.1956528-1-mkchauras@gmail.com>
-References: <20260404121610.1956528-1-mkchauras@gmail.com>
+	linux-mm@kvack.org,
+	linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	loongarch@lists.linux.dev,
+	surenb@google.com,
+	willy@infradead.org,
+	wang lian <lianux.mm@gmail.com>,
+	Wang Lian <wanglian@kylinos.cn>,
+	Kunwu Chan <chentao@kylinos.cn>,
+	Kunwu Chan <kunwu.chan@gmail.com>
+Subject: Re: [RFC PATCH 0/2] mm: continue using per-VMA lock when retrying page faults after I/O
+Date: Sat,  4 Apr 2026 17:19:32 +0800
+Message-ID: <20260404091936.51961-1-lianux.mm@gmail.com>
+X-Mailer: git-send-email 2.50.1
+In-Reply-To: <CAGsJ_4wnwAet4svDrxT4sTdp24sweAU-2VyYn3iNPOoaKdXxPw@mail.gmail.com>
+References: <CAGsJ_4wnwAet4svDrxT4sTdp24sweAU-2VyYn3iNPOoaKdXxPw@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -121,108 +107,178 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=y
 Content-Transfer-Encoding: 8bit
 
-Enabling rust support for ppc64le.
+Hi Barry,
 
-Tested on pseries Power11:
-╰─❯ dmesg | grep rust
-[    0.225728] Initialise system trusted keyrings
-[    0.270961] rust_minimal: Rust minimal sample (init)
-[    0.270968] rust_minimal: Am I built-in? true
-[    0.270974] rust_minimal: test_parameter: 1
-[    0.270983] rust_misc_device: Initialising Rust Misc Device Sample
-[    0.271012] rust_print: Rust printing macros sample (init)
-[    0.271019] rust_print: Emergency message (level 0) without args
-[    0.271023] rust_print: Alert message (level 1) without args
-[    0.271026] rust_print: Critical message (level 2) without args
-[    0.271030] rust_print: Error message (level 3) without args
-[    0.271033] rust_print: Warning message (level 4) without args
-[    0.271037] rust_print: Notice message (level 5) without args
-[    0.271040] rust_print: Info message (level 6) without args
-[    0.271043] rust_print: A line that is continued without args
-[    0.271054] rust_print: Emergency message (level 0) with args
-[    0.271064] rust_print: Alert message (level 1) with args
-[    0.271072] rust_print: Critical message (level 2) with args
-[    0.271077] rust_print: Error message (level 3) with args
-[    0.271083] rust_print: Warning message (level 4) with args
-[    0.271091] rust_print: Notice message (level 5) with args
-[    0.271097] rust_print: Info message (level 6) with args
-[    0.271102] rust_print: A line that is continued with args
-[    0.271110] rust_print: 1
-[    0.271113] rust_print: "hello, world"
-[    0.271121] rust_print: [samples/rust/rust_print_main.rs:35:5] c = "hello, world"
-[    0.271129] rust_print: Arc<dyn Display> says 42
-[    0.271130] rust_print: Arc<dyn Display> says hello, world
-[    0.271136] rust_print: "hello, world"
-[    0.271198] usbcore: registered new interface driver rust_driver_usb
-[    0.271207] rust_faux_driver: Initialising Rust Faux Device Sample
-[    0.271227] faux_driver rust-faux-sample-device: Hello from faux device!
-[    0.271297] rust_configfs: Rust configfs sample (init)
+> If either you or Matthew have a reproducer for this issue, I’d be
+> happy to try it out.
 
-Reviewed-by: Link Mauve <linkmauve@linkmauve.fr>
-Tested-by: Link Mauve <linkmauve@linkmauve.fr>
-Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Link: https://github.com/Rust-for-Linux/linux/issues/105
-Link: https://github.com/linuxppc/issues/issues/451
-Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
----
- arch/powerpc/Kconfig  | 1 +
- arch/powerpc/Makefile | 7 ++++++-
- rust/Makefile         | 6 ++++++
- 3 files changed, 13 insertions(+), 1 deletion(-)
+Kunwu and I evaluated this series ("mm: continue using per-VMA lock when
+retrying page faults after I/O") under a stress scenario specifically
+designed to expose the retry behavior in filemap_fault(). This models
+the exact situation described by Matthew Wilcox [1], where retries after
+I/O fail to make forward progress under memory pressure.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 1246b3add8ff..a5f50434daf3 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -285,6 +285,7 @@ config PPC
- 	select HAVE_RELIABLE_STACKTRACE
- 	select HAVE_RSEQ
- 	select HAVE_RUST			if PPC32
-+	select HAVE_RUST			if PPC64 && CPU_LITTLE_ENDIAN
- 	select HAVE_SAMPLE_FTRACE_DIRECT	if HAVE_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
- 	select HAVE_SAMPLE_FTRACE_DIRECT_MULTI	if HAVE_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
- 	select HAVE_SETUP_PER_CPU_AREA		if PPC64
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 589613eaa5dc..9385db478c59 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -61,7 +61,12 @@ else
- KBUILD_LDFLAGS_MODULE += $(objtree)/arch/powerpc/lib/crtsavres.o
- endif
- 
--KBUILD_RUSTFLAGS 	+= --target=powerpc-unknown-linux-gnu
-+ifdef CONFIG_PPC64
-+KBUILD_RUSTFLAGS	+= --target=powerpc64le-unknown-linux-gnu
-+KBUILD_RUSTFLAGS	+= -Ctarget-feature=-mma,-vsx,-hard-float,-altivec
-+else
-+KBUILD_RUSTFLAGS	+= --target=powerpc-unknown-linux-gnu
-+endif
- 
- ifdef CONFIG_CPU_LITTLE_ENDIAN
- KBUILD_CPPFLAGS	+= -mlittle-endian
-diff --git a/rust/Makefile b/rust/Makefile
-index 04d8a849c6e4..92c1f6fe69e9 100644
---- a/rust/Makefile
-+++ b/rust/Makefile
-@@ -418,7 +418,13 @@ BINDGEN_TARGET_x86	:= x86_64-linux-gnu
- BINDGEN_TARGET_arm64	:= aarch64-linux-gnu
- BINDGEN_TARGET_arm	:= arm-linux-gnueabi
- BINDGEN_TARGET_loongarch	:= loongarch64-linux-gnusf
-+
-+ifdef CONFIG_PPC64
-+BINDGEN_TARGET_powerpc	:= powerpc64le-linux-gnu
-+else
- BINDGEN_TARGET_powerpc	:= powerpc-linux-gnu
-+endif
-+
- BINDGEN_TARGET_um	:= $(BINDGEN_TARGET_$(SUBARCH))
- BINDGEN_TARGET		:= $(BINDGEN_TARGET_$(SRCARCH))
- 
--- 
-2.53.0
+The scenario targets the critical window between I/O completion and
+mmap_lock reacquisition. This workload deliberately includes frequent
+mmap/munmap operations to simulate a highly contended mmap_lock
+environment alongside severe memory pressure (1GB memcg limit). Under
+this pressure, folios instantiated by the I/O can be aggressively
+reclaimed before the delayed task can re-acquire the lock and install
+the PTE, forcing retries to repeat the entire work.
 
+To make this behavior reproducible, we constructed a stress setup that
+intentionally extends this interval:
+* 256-core x86 system
+* 1GB memory cgroup
+* 500 threads continuously faulting on a 16MB file
+
+The core reproducer and the execution command are provided below:
+
+#define _GNU_SOURCE 
+#include <errno.h> 
+#include <fcntl.h> 
+#include <pthread.h> 
+#include <stdatomic.h> 
+#include <stdint.h> 
+#include <stdio.h> 
+#include <stdlib.h> 
+#include <string.h> 
+#include <sys/mman.h> 
+#include <unistd.h> 
+#include <time.h> 
+
+#define THREADS 500 
+#define FILE_SIZE (16 * 1024 * 1024) /* 16MB */ 
+
+static _Atomic int g_stop = 0; 
+#define RUN_SECONDS 600 
+
+struct worker_arg { 
+        long id; 
+        uint64_t *counts; 
+}; 
+
+void *worker(void *arg) 
+{ 
+        struct worker_arg *wa = (struct worker_arg *)arg; 
+        long id = wa->id; 
+        char path[64]; 
+        uint64_t local_rounds = 0; 
+
+        snprintf(path, sizeof(path), "./test_file_%d_%ld.dat", 
+                 getpid(), id); 
+        int fd = open(path, O_RDWR | O_CREAT | O_TRUNC, 0666); 
+        if (fd < 0) return NULL; 
+        if (ftruncate(fd, FILE_SIZE) < 0) { 
+                close(fd); return NULL; 
+        } 
+
+        while (!atomic_load_explicit(&g_stop, memory_order_relaxed)) { 
+                char *f_map = mmap(NULL, FILE_SIZE, PROT_READ, 
+                                   MAP_SHARED, fd, 0); 
+                if (f_map != MAP_FAILED) { 
+                        /* Pure page cache thrashing */ 
+                        for (int i = 0; i < FILE_SIZE; i += 4096) { 
+                                volatile unsigned char c = 
+                                        (unsigned char)f_map[i]; 
+                                (void)c; 
+                        } 
+                        munmap(f_map, FILE_SIZE); 
+                        local_rounds++; 
+                } 
+        } 
+        wa->counts[id] = local_rounds; 
+        close(fd); 
+        unlink(path); 
+        return NULL; 
+} 
+
+int main(void) 
+{ 
+        printf("Pure File Thrashing Started. PID: %d\n", getpid()); 
+        pthread_t t[THREADS]; 
+        uint64_t local_counts[THREADS]; 
+        memset(local_counts, 0, sizeof(local_counts)); 
+        struct worker_arg args[THREADS]; 
+
+        for (long i = 0; i < THREADS; i++) { 
+                args[i].id = i; 
+                args[i].counts = local_counts; 
+                pthread_create(&t[i], NULL, worker, &args[i]); 
+        } 
+
+        sleep(RUN_SECONDS); 
+        atomic_store_explicit(&g_stop, 1, memory_order_relaxed); 
+
+        for (int i = 0; i < THREADS; i++) pthread_join(t[i], NULL); 
+
+        uint64_t total = 0; 
+        for (int i = 0; i < THREADS; i++) total += local_counts[i]; 
+
+        printf("Total rounds     : %llu\n", (unsigned long long)total); 
+        printf("Throughput       : %.2f rounds/sec\n", 
+               (double)total / RUN_SECONDS); 
+        return 0; 
+}
+
+Command line used for the test:
+systemd-run --scope -p MemoryHigh=1G -p MemoryMax=1.2G -p MemorySwapMax=0 \
+--unit=mmap-thrash-$$ ./mmap_lock & \
+TEST_PID=$!
+
+We also added temporary counters in page fault retries [2]:
+- RETRY_IO_MISS   : folio not present after I/O completion
+- RETRY_MMAP_DROP : retry fallback due to waiting for I/O
+
+We report representative runs from our 600-second test iterations 
+(kernel v7.0-rc3):
+
+| Case                | Total Rounds | Throughput | Miss/Drop(%) | RETRY_MMAP_DROP | RETRY_IO_MISS |
+| ------------------- | ------------ | ---------- | ------------ | --------------- | ------------- |
+| Baseline (Run 1)    | 22,711       | 37.85 /s   | 45.04        | 970,078         | 436,956       |
+| Baseline (Run 2)    | 23,530       | 39.22 /s   | 44.96        | 972,043         | 437,077       |
+| With Series (Run A) | 54,428       | 90.71 /s   | 1.69         | 1,204,124       | 20,398        |
+| With Series (Run B) | 35,949       | 59.91 /s   | 0.03         | 327,023         | 99            |
+
+
+Notes:
+1. Throughput Improvement: During the 600-second testing window, overall 
+   workload throughput can more than double (e.g., Run A jumped from ~38 
+   to 90.71 rounds/sec).
+2. Elimination of Race Condition: Without the patch, ~45% of retries 
+   were invalid because newly fetched folios were evicted during the 
+   mmap_lock reacquisition delay. With the per-VMA retry path, the 
+   invalidation ratio plummeted to near zero (0.03% - 1.69%).
+3. Counter Scaling and Variance: In Run A, because the I/O wait 
+   bottleneck is eliminated, the threads advance much faster. Thus, the 
+   absolute number of mmap_lock drops naturally scales up with the 
+   increased throughput. In Run B, the primary bottleneck shifts to the 
+   mmap write-lock contention (lock convoying), causing throughput and 
+   total drops to fluctuate. Crucially, the Miss/Drop ratio remains near 
+   zero regardless of this variance.
+
+Without this series, almost half of the retries fail to observe
+completed I/O results, causing severe CPU and I/O waste. With the
+finer-grained VMA lock, the faulting threads bypass the heavily
+contended mmap_lock entirely during retries, completing the fault
+almost instantly.
+
+This scenario perfectly aligns with the exact concern raised, and these
+results show that the patch not only successfully eliminates the retry
+inefficiency but also tangibly boosts macro-level system throughput.
+
+[1] https://lore.kernel.org/linux-mm/aSip2mWX13sqPW_l@casper.infradead.org/
+[2] https://github.com/lianux-mm/ioretry_test/
+
+Tested-by: Wang Lian <wanglian@kylinos.cn>
+Tested-by: Kunwu Chan <chentao@kylinos.cn>
+Reviewed-by: Wang Lian <lianux.mm@gmail.com>
+Reviewed-by: Kunwu Chan <kunwu.chan@gmail.com>
+
+--
+Best Regards,
+wang lian
 
