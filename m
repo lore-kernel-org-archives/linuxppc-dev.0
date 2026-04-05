@@ -1,76 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-19368-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19369-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA5C2F3D5E0
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Apr 2026 12:57:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6735EEB577
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Apr 2026 12:57:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fpXYT3YpYz2ynh;
-	Sun, 05 Apr 2026 22:57:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775393853;
-	cv=none; b=Up5CE7uQDAcqp8tJLQc/xZ/v3nPay2Dt5Sy5IaXhG8oUDdL2jWiFPs6WvuoKu9mrMAuVxIw/ri1bVWqDFEK50sp0rzrRoQZHgyjXA3mt2EQole+/FiHIU06nWiLJWnUVnBFHZ1Hazu1uVf/3X4JNCV4ENZMw29Wr/uKdYgVT7il7kNLKedRpQhE3s7sMaIZAKT1xQx/ytpmIkhNIyMyo1UMVS04Tg0Z6K2A+pkT8hHnYo5MUkuTHKI2IvBg3AqsvfLEsAX1J40e1f46T4O+L92y0OM6z4QM7RQuNKtGtTPOg4UDnA7lMxkeRBufePzTw8WZOYC3KpYaxmqEX1aHJ7w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fpXYj55czz2yvy;
+	Sun, 05 Apr 2026 22:57:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775393865;
+	cv=none; b=YkvRwV97AR4yTn9Zo1JcK1nvuXlKR32XkW/q0LmyrPNleFftC1RMAluMFM65YGJWqUAfgGKeQD+w91mqRBoJFFfobuqrRouBdyGEVzy4C+9+81O9bhdPeJjCu1aMf93Zm9fjA4NeK9141anF2/FVoY9n6mXupTLZwrNAwKl85a6snQN6uGN+lY/lC63Hm5+BbglIqkdkXm3mF4iitP+zxJOnTYY+CO+jDFEWLjLyalXdj8vfTVD3FaDc4CCF1s82t70S9sRosj9Pqtf31o7PmYpZE5GGn1f3XZCEzQEbJGn3hGFB/TF73j6dndUY7+wIYPhUUfiFFkVIZeDGtMdnEw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775393853; c=relaxed/relaxed;
-	bh=yEhjAbTiZVKX8bAZfBAftf7xoJQ7IQs8AgKwKN6i98g=;
+	t=1775393865; c=relaxed/relaxed;
+	bh=FJ+KumqAX13hYqdLVZVTFF+dZIRX9xi7vByMiu7tcmo=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=VBkHQC+39/vT9uJlxMbbIFdNhZ2+5MM7XjkMhHY7uqEd6eMGPkirPX9qNcZ2LUOHj66o3+mk4etH9KhvRVUOdf2FnrtOPpAxthCoGvgW3kyVZkvpwBYleNqgT4qS2xOQzKYqqor5dGq5Oqm14kZmivgP5hJcFH5EpJKBe03oK03FUt6BcLonIaN8LnubxqWx+wd7XqegJv+ODfLYnPEmHCl4S6BKI/czzp0Ce8VkEWmzW40bLioTQlqWCklqELit9j0E82IXlYHwYyaUoDsOS7nREcPJsMh1DKgWZ2+d71UUIhpiud/uZcTLLci834+jTo0HiIJ9rsQyw8iOcemVmA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=Rwhj73zI; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+	 MIME-Version; b=DZuUE8T7dOGjIgyLotAXKQQ9ES55IDOoXWJO1SpG33f4UvTTA1w702Y78aU2b9osqzCPc/AHN9qeBdcDJExGG2T+Z3F9K1FFncvhR2PjeXLuZpsO7mZoETpFB3LL0pqF3xMrbd/pDg24Z4IfKILua1PzVswcmUuDiVOZlPkct1dvKmJbnhlvJ44NYc+T9P9C8bCymkKlUoSUqf1Bf5/VtZvWCGvcRn8/J1FmXpYToxF9o9+X8TQ8ArE5SfOMvH4I+YrN0x7dH61vsKpMMxBBDbnGcu6Wr69WdhEeXgtiVhovAavFC3JeuFS7e8QLivPCG3iBjRptQTnRL7bWw3+OBQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=cYQICsLT; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102c; helo=mail-pj1-x102c.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=Rwhj73zI;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=cYQICsLT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::102c; helo=mail-pj1-x102c.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com [IPv6:2607:f8b0:4864:20::102c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fpXYS4fTQz2yng
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Apr 2026 22:57:32 +1000 (AEST)
-Received: by mail-pj1-x102b.google.com with SMTP id 98e67ed59e1d1-3567e2b4159so2009659a91.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Apr 2026 05:57:32 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fpXYj0cXkz2ynn
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Apr 2026 22:57:44 +1000 (AEST)
+Received: by mail-pj1-x102c.google.com with SMTP id 98e67ed59e1d1-35c1a131946so2405387a91.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Apr 2026 05:57:44 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1775393851; x=1775998651; darn=lists.ozlabs.org;
+        d=bytedance.com; s=google; t=1775393863; x=1775998663; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=yEhjAbTiZVKX8bAZfBAftf7xoJQ7IQs8AgKwKN6i98g=;
-        b=Rwhj73zIBColMgko++1vsQMTafL9QwxR0u6UYOhNMsj2NgffLk/ReMSOn3uum56r92
-         e8SyVDIK8PypecQZpKlLflYXyfAoA21BqKWhIusWxADqB4s4simstcXcvFOmqXi8DZW8
-         AqkUDHx3O7AI9W1T5IngAyCF1ixGBVpDuqSpWlya3gyc/rXiVtGt+9Xmkj7U5xCo5HKC
-         f9zYlujKLon2LpjqTy6cqVoxIbnXNvMi+ea8/uHtmnORKB5KBAy1BfTG6o4BkxcG+w42
-         ybBuSb6Ll9lqIpZQgfMekD3oKhk7yqfFd/LUM2K61zGYXtTinXeY/2RpqP14w6YF1oX3
-         1xSg==
+        bh=FJ+KumqAX13hYqdLVZVTFF+dZIRX9xi7vByMiu7tcmo=;
+        b=cYQICsLTw5HeTwN3tGCeFTQjbfN6j1hCN6cqOOATFhZHWgQWre2Z2ru6ODZkmeay2E
+         nYODiFRKylsn7E/Z98m4Mq/UKf3FTTO2mA8o8/J9n2Y2PvVH0+IDIU9wHCl6u7swgqcs
+         ilDWVwG98tdU6wDF1Z/72ZYuHtESvx82UAtzTqx74lwlfFohRd88jv3jRFICaxzUmN0q
+         mVY0qqNhKTGXApd2jpeJ2xxreczKw/uaMNdgwbgnKWsWw03H8rM6YisLs9dpIBUUa1fL
+         +QGPOwAioFC3lmUVOpdq2Ui/25U03TtDQMyN/4kIJI3/6AI0hFxg3MzVYub9ef5ccReT
+         aBOA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775393851; x=1775998651;
+        d=1e100.net; s=20251104; t=1775393863; x=1775998663;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=yEhjAbTiZVKX8bAZfBAftf7xoJQ7IQs8AgKwKN6i98g=;
-        b=inJDIHAO7CBM//316gEI3QFHy5Avwq+pOmkRCtKzfaMfyEE8A1nDlungVuJYsXoMlr
-         YCOxH3VHF+BRK1m7yUJ3ImEYjs6k2cvmJPHggNkyJ8mN/J+xi6ptf5GhnIr8lB7OZuBv
-         68oG7GyWgoMvINLg+VIIorQGjYorNm6JSHfcyZKF26+oLoqOSVGu8/b90UWYYuQILMWw
-         m4iK9dAVv7sOxz3SZNKsfwwkOCgB9jvyzlHMxgp8ZHinaCzZ5AXJ0SkoXx4gLEGfG/gW
-         JkvwCeZoQweh3InQelXpEnE0gl0DvDzLMeiL0KtmlKK5e24ZAZKvUasim+zmp7CTOY4s
-         TWXg==
-X-Forwarded-Encrypted: i=1; AJvYcCW8iD/BQ06I9sxkdgppWVSmMxXsGLNJzyUxPxboqmkERraFAyo87BPvaDlfP+3xrTxAwZn+ufAhILUn84o=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzA5p9bdEwLwR5MQB7VuzuWtwkJ9TY/BSgUHAJVLIONH7W4pzbk
-	DgwkTrDH0WPW7wo8SY9tb+VuUORkD3yNkD3TpGKCfqT33SlTinuyoh/d4/4+4UShX4c=
-X-Gm-Gg: AeBDietHFClQPuadr5hkcbg4W9KvTZTEXAgRPetjNYR7v87RYQm1uFytHicdcP3jfjr
-	jXuH5dZJtxgMWQEgvjpUBHqrXK8snZYd28Mu+2Pr0De5ryYi7tFrKonrZR+17lX0nZ9BMTuPXCu
-	n14tww4O4fg1sfDzqnOUMFZ0QCHzRh4mzcImGD4r/R9S8Kh50UXl+RugkOHO5SGDaQxdc9okI8G
-	orMt7WKCa0GtTkDIsn7qRXNk8ufjOftbosd+4cbzikWpNrSduTO8Z/d9OYxuQJq8SxCChAdi/2e
-	d70VRW3vEU9YStdgCKRf21VqqgKjX4y1euOlxqargir4Emm64yicNs/qkkTMxDmFG57vlPHzYvB
-	LP006FcaiOAAWkkx5fTJVtSI+eyBI2QbEPEAd5cmKLdIiERiQIwE8POtqJ/yymInTrcptEBlXQC
-	7Oj6oMsW5Jgd/noBW+sELpfZ1zSWqAWQIL0qvwxDAq0cc=
-X-Received: by 2002:a17:90b:2b4b:b0:34c:fe7e:84fe with SMTP id 98e67ed59e1d1-35de69aec1bmr9125066a91.28.1775393850723;
-        Sun, 05 Apr 2026 05:57:30 -0700 (PDT)
+        bh=FJ+KumqAX13hYqdLVZVTFF+dZIRX9xi7vByMiu7tcmo=;
+        b=CUnH+TY0Ly4rE2UfJABQS8SCyTr68iPYgq0BNGuw9/VVsQ46N0R1BKH7XmKsXLrMH0
+         4EHyn7O1Q3CPVRziuy1YPXMCVaWWhiItS+gSNRnAW6QrQp2VjW9udVhL7vzc9Z/yw/VE
+         t3Qc7u/LEF3saAH6pvs76WfF6kch2iZ7jDrmo7Ag+AHWp9SKRoXUco5J5l12WDLtUZ9D
+         H+NtPKDBe0cmFzGvl95RHztKRKmLwLfeLXVNCFAdB7+AP4LOozqWyfoAXEjrl0/vsV9x
+         wyoAF6xYTdgkai1xm6ZM1KkQkSqSdZvP92qmP/zPcRUFypOjpywObmYdfylxrwUwjZYU
+         /+bQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWvNZhcPutIasjqTMc0PF2OulDPaAYPz1BAzaTDs4WLT/9tjSuqmkqQCkYe3QdGI7ABOmeRIPbZUC26GfE=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Ywv2tDDbypCLg3Eg2CE7isGAq6Rp30mgF5tkMaMX9zyo1uKZ/l9
+	tQUkPyPeHNrc3mRDTKuQXgSZ1XaDfwGheORJ54r1cTviDSDuZDaj43EFI9olTXF3Wx0=
+X-Gm-Gg: AeBDiev8nHWMUgwk7HbMcKwkyh571WtW59klyOqHAmttCcI8swMYZElVxVSLVqn6nlC
+	kMPYVEOSXonHu5VEoZRVANXSC3MHH8gJMGDZOKYM782fYZ6GsddQ6C8rws6rNBwlPoFbL0k8L42
+	ry0VlURkgBB8BuI8tCiILIlkoFVDXzjxY2ruaack4MoNFrDrPb4vbRqf2cluW3JFpm+HQITPRnL
+	Bh7YFZ1orj7Ce+kT6irgSVhmae1uuOjcrAnfLZrRaxdqlwKBrwx0v/DrvgaX2e671+ygECFr2ug
+	IDIIwoi1DqIZHpO6nrhApOZ3PEUY+fIURM0eBW7/ZbKp1RSBI3oy7rw7k1HiVOfzPHXvM3Bm3QT
+	dxBHpv1cnNBOJqVxFWuU+AOFfNwqbQY1fRhOkdkZRde++1N1mEMPdusP2dhf6v7rOeNsYkJJaWe
+	d3DBu26PIS1aJwjYrnlTQ7619HPFEEu9U5g2Mza2Kd8kg=
+X-Received: by 2002:a17:90b:3f50:b0:356:21e9:73ff with SMTP id 98e67ed59e1d1-35de5c3d5b5mr6803962a91.11.1775393862969;
+        Sun, 05 Apr 2026 05:57:42 -0700 (PDT)
 Received: from n232-176-004.byted.org ([36.110.163.97])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35de66b4808sm3748505a91.2.2026.04.05.05.57.24
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35de66b4808sm3748505a91.2.2026.04.05.05.57.31
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 05 Apr 2026 05:57:30 -0700 (PDT)
+        Sun, 05 Apr 2026 05:57:42 -0700 (PDT)
 From: Muchun Song <songmuchun@bytedance.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
 	David Hildenbrand <david@kernel.org>,
@@ -92,9 +92,9 @@ Cc: Lorenzo Stoakes <ljs@kernel.org>,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org,
 	Muchun Song <songmuchun@bytedance.com>
-Subject: [PATCH 38/49] mm/sparse-vmemmap: remap the shared tail pages as read-only
-Date: Sun,  5 Apr 2026 20:52:29 +0800
-Message-Id: <20260405125240.2558577-39-songmuchun@bytedance.com>
+Subject: [PATCH 39/49] mm/sparse-vmemmap: remove unused ptpfn argument
+Date: Sun,  5 Apr 2026 20:52:30 +0800
+Message-Id: <20260405125240.2558577-40-songmuchun@bytedance.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20260405125240.2558577-1-songmuchun@bytedance.com>
 References: <20260405125240.2558577-1-songmuchun@bytedance.com>
@@ -113,44 +113,76 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-HugeTLB enforces Read-Only mappings for HVO to prevent illegal
-write operations, whereas DAX currently does not, which introduces
-potential security risks.
-
-Now that we are unifying the HVO logic for HugeTLB and DAX, we can
-remap the shared tail pages as read-only directly in
-vmemmap_pte_populate(). This ensures that both HugeTLB and DAX
-benefit from the read-only protection of vmemmap tail pages right
-from the point of mapping establishment.
+The ptpfn argument is unused as it is assigned unconditionally before
+being used in vmemmap_pte_populate(). Let's remove it.
 
 Signed-off-by: Muchun Song <songmuchun@bytedance.com>
 ---
- mm/sparse-vmemmap.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ mm/sparse-vmemmap.c | 16 ++++++----------
+ 1 file changed, 6 insertions(+), 10 deletions(-)
 
 diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
-index fd7b0e1e5aba..c70275717054 100644
+index c70275717054..36e5bcb5ba9b 100644
 --- a/mm/sparse-vmemmap.c
 +++ b/mm/sparse-vmemmap.c
-@@ -176,14 +176,17 @@ static pte_t * __meminit vmemmap_pte_populate(pmd_t *pmd, unsigned long addr, in
+@@ -149,8 +149,7 @@ static inline struct zone *section_to_zone(const struct mem_section *ms, int nid
+ }
+ 
+ static pte_t * __meminit vmemmap_pte_populate(pmd_t *pmd, unsigned long addr, int node,
+-					      struct vmem_altmap *altmap,
+-					      unsigned long ptpfn)
++					      struct vmem_altmap *altmap)
+ {
+ 	pte_t entry, *pte = pte_offset_kernel(pmd, addr);
+ 
+@@ -175,17 +174,15 @@ static pte_t * __meminit vmemmap_pte_populate(pmd_t *pmd, unsigned long addr, in
+ 		 */
  		if (slab_is_available())
  			get_page(page);
- 		ptpfn = page_to_pfn(page);
-+
-+		/* Remap shared tail page read-only to catch illegal writes. */
-+		entry = pfn_pte(ptpfn, PAGE_KERNEL_RO);
+-		ptpfn = page_to_pfn(page);
+ 
+ 		/* Remap shared tail page read-only to catch illegal writes. */
+-		entry = pfn_pte(ptpfn, PAGE_KERNEL_RO);
++		entry = pfn_pte(page_to_pfn(page), PAGE_KERNEL_RO);
  	} else {
  		void *p = vmemmap_alloc_block_buf(PAGE_SIZE, node, altmap);
  
  		if (!p)
  			return NULL;
- 		ptpfn = PHYS_PFN(__pa(p));
-+		entry = pfn_pte(ptpfn, PAGE_KERNEL);
+-		ptpfn = PHYS_PFN(__pa(p));
+-		entry = pfn_pte(ptpfn, PAGE_KERNEL);
++		entry = pfn_pte(PHYS_PFN(__pa(p)), PAGE_KERNEL);
  	}
--	entry = pfn_pte(ptpfn, PAGE_KERNEL);
  	set_pte_at(&init_mm, addr, pte, entry);
  
- 	return pte;
+@@ -255,8 +252,7 @@ static pgd_t * __meminit vmemmap_pgd_populate(unsigned long addr, int node)
+ }
+ 
+ static pte_t * __meminit vmemmap_populate_address(unsigned long addr, int node,
+-					      struct vmem_altmap *altmap,
+-					      unsigned long ptpfn)
++						  struct vmem_altmap *altmap)
+ {
+ 	pgd_t *pgd;
+ 	p4d_t *p4d;
+@@ -276,7 +272,7 @@ static pte_t * __meminit vmemmap_populate_address(unsigned long addr, int node,
+ 	pmd = vmemmap_pmd_populate(pud, addr, node);
+ 	if (!pmd)
+ 		return NULL;
+-	pte = vmemmap_pte_populate(pmd, addr, node, altmap, ptpfn);
++	pte = vmemmap_pte_populate(pmd, addr, node, altmap);
+ 	if (!pte)
+ 		return NULL;
+ 	vmemmap_verify(pte, node, addr, addr + PAGE_SIZE);
+@@ -292,7 +288,7 @@ int __meminit vmemmap_populate_basepages(unsigned long start, unsigned long end,
+ 	pte_t *pte;
+ 
+ 	for (; addr < end; addr += PAGE_SIZE) {
+-		pte = vmemmap_populate_address(addr, node, altmap, -1);
++		pte = vmemmap_populate_address(addr, node, altmap);
+ 		if (!pte)
+ 			return -ENOMEM;
+ 	}
 -- 
 2.20.1
 
