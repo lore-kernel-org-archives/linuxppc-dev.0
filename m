@@ -1,70 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-19380-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19381-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AEC23F3D5E2
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Apr 2026 13:35:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8974E9D824
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Apr 2026 22:23:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fpYNq0g3Rz2ybQ;
-	Sun, 05 Apr 2026 23:35:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775396107;
-	cv=none; b=f9HL7oCC8W2We+rJinqslAh4kPzk3RpWttbZAjSzudoqap68vwPFa47KyLnhVDDoWlfBC1r+ShnmAD+dyqt1/AkodqZDBn29wpN/CshZIxKQuU5OfIV5KlppeBY+8agbeUmz8NyWTKT+6M5ritFL+EF/B0cdC7Tr1eP1/emyb9ONLEKQwrhIxN8pNWv4IPsZpIaacfAgiGC8j7Zx3ubQVYaiUgf1eWsswx4/GwlgmS2CEgotjUmz0FXxcYH6FatR4HGPC2WA5JvrFkU1fOSClwrjkS+nqN1gdf+Q0ZGNYLQhKk0EC97U9SxIgVuW+lravxvzYc7gbA1JOibRUoRHAw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fpn6k1dBfz2xPL;
+	Mon, 06 Apr 2026 08:23:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::436"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775405763;
+	cv=none; b=ZKiIEvcFtDLa/cc8E83bK+mb7tGwU13Er5X8ldEKTkUBsg8wvVB1Jt+M9sJ/0fTes+4hov++yW1cTP9UENJXNaGnAFjiZCp6XCrMobhNOJB2Y1W0vFo93XiNiqdb+gqZZisaMColb7MARvn9tKgyMTelQOLtAF2VDceuA706gbO3P5nfmsDmbNFM/bsM+wjE+gDgTbLQeVXnee0XbB/sPseR7MMTF3jK2x5crgBVmLnK8XNbz5werB4fhhiehOLxaS8kGEk5rLfyIXe1ww/5ad4A4dx79cPpfz3JyeQVcaV3P2zsLCRszLvPBOl6b7pTh3rgdF6AnDNi9Rdme5iowA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775396107; c=relaxed/relaxed;
-	bh=OZnLqiy0PDzfsPBn4zElMS+mzPT4ewPLQH6Ie9yANQk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=CAwF3nVRS4Fp2wSMXfRqxzDX3DxMc/oKu8TPc5Uh+zxIZawpVPHIHkbusiKoIZl/+xlPPdFgRwb5DSvF0OSe8Tpabr/XC4Ao2IeuVSvaAg/D1nJswfDf5jaRKcrQU+rkGcXmHVLhM7sBe2LSEW7fdhtMZMLObZo4Fz4Etimm8+wxJCDun0q9159k9/EuhjCHUeXWD0DDnIYnwPKA7eLxYQUfk7j9WOsicpDN0EJHOWX+7wTGiuCHDYw7FHMvbjOf/gwbAVr56ETJhow9vXB4NSvJkMvTumaRey7Em6Mx38Lqe8LIEusnfhKNREzVLCKejMG597y8l4N4BW1usl7t2w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JsuR22bB; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1775405763; c=relaxed/relaxed;
+	bh=JDo7wOf9Rd6NNXxatwieaMtmaaIFmU/41KBybrHKVJs=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=fOlQb+MMOxFks3z+FIXCxXaMhcrJ366RpA1nZI0gG7zrROu7rnusySXeMiyGPg+ErwFA11vIti4KuqBhgcI3fiJxnN41wOHMPmznXddfXoGMCyZq3ppKbRLDF9sNdNA6cHAj1xanke6fhanXFp+5TPu7j3C6+mPNBjvTo7Y2kjHiKV/4amEj8J6o/HQ6Zp+tI8Pl8c1XFyUiaw1Wiq3D4R70m1v8LwQE0yxGQRwzh9Ft0JOc4WPA4tIv57FgWA5l00JGzH2bnfH6qg9ls29jLS6DeU/8Exu9z1FmxdYZ2RRBwl0JwJ1lWYgW8p5vMAfgI7E4qE01MByW2l/C4d5ldw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=E69CbVxR; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::436; helo=mail-wr1-x436.google.com; envelope-from=julianbraha@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JsuR22bB;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=E69CbVxR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::436; helo=mail-wr1-x436.google.com; envelope-from=julianbraha@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fpYNn6hv0z2xSG
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Apr 2026 23:35:05 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id B24FF6001A;
-	Sun,  5 Apr 2026 13:35:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 01887C116C6;
-	Sun,  5 Apr 2026 13:34:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775396102;
-	bh=WWuKH7V5NGGgAcGyGGVsYW3h6302QQpGr0/S5xsirPA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=JsuR22bBOjH3ft1M/WUeMEYQAF6hTu5hn2tzOUD3fMIgLiO98o1NHa9qvmyC0jTqW
-	 sbe+mCcRvf+TA5onjzDvEDuf50nLBngm414f0zKX+a8LOQt0ODkU1gsw3Ocz0QRZ7h
-	 7w3BsUG3WcylXg33DrqbyD0s94LPdvyCHXIsNddWSFPDM8WQqOKwwZBqpd6yI/1pVo
-	 d4Trlon650nrHqNIoA+M9we70iiCUab6u+0TayT8VqdgXNAs33scs5kHK5as06c2CL
-	 eJPPYetGQNp+OsrDK9Q3fQj5DZ7OK2esPexzi1MFaTcenmV438ealYjg5I5AWH9h5M
-	 7cOqG8pKzar4Q==
-Date: Sun, 5 Apr 2026 16:34:53 +0300
-From: Mike Rapoport <rppt@kernel.org>
-To: Muchun Song <songmuchun@bytedance.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	David Hildenbrand <david@kernel.org>,
-	Muchun Song <muchun.song@linux.dev>,
-	Oscar Salvador <osalvador@suse.de>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Lorenzo Stoakes <ljs@kernel.org>,
-	"Liam R . Howlett" <Liam.Howlett@oracle.com>,
-	Vlastimil Babka <vbabka@kernel.org>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Michal Hocko <mhocko@suse.com>, Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>, aneesh.kumar@linux.ibm.com,
-	joao.m.martins@oracle.com, linux-mm@kvack.org,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/49] mm: Generalize vmemmap optimization for DAX and
- HugeTLB
-Message-ID: <adJk_W5dA5YRcxOA@kernel.org>
-References: <20260405125240.2558577-1-songmuchun@bytedance.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fpcyT6JHtz2xLt
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Apr 2026 02:16:00 +1000 (AEST)
+Received: by mail-wr1-x436.google.com with SMTP id ffacd0b85a97d-43cfa33a983so1989194f8f.1
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Apr 2026 09:16:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1775405752; x=1776010552; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:sender:from:to:cc:subject:date:message-id:reply-to;
+        bh=JDo7wOf9Rd6NNXxatwieaMtmaaIFmU/41KBybrHKVJs=;
+        b=E69CbVxR2h2inc2P10kH148g5sGGY/1hr7AFjOlfULNibKSRJgsVdWOYYtfvMR1/yn
+         6o8c9oZU5tk/5Upg91cUjHeu63optRZcqRah4gXiPBKUuZ+SJTXb6/1tT+riu0qEfqP2
+         IdDzx0YDglb2Brp9wJH1fMbTONVYIQy2eirnLisIcZi3m+bk/4E7jXOZ80pn0pwMLLoe
+         kN7oWIT3mBBOIOqDE49Sqrl1QeUxx4PY/E94H8ZO6kGqTR/QUi93v7SfJXmzpAqW1rDq
+         yksNVDhVnRixKZw7SqC0Aybhn0y/cF30AIPYLIHp1rBYM21pqghPuyOhYzax2xUH4ujd
+         RQ+g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775405752; x=1776010552;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:sender:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=JDo7wOf9Rd6NNXxatwieaMtmaaIFmU/41KBybrHKVJs=;
+        b=K1EI5oQbhSq/dyEMwXHw8oFBcYxZdJq0IKCbNupNooh2aKI4Ut+Vhfm0b7TJKJncth
+         b/JNCmF46txfVsBd1gcHaVcVifBfAIdj6zJtbNUyWkbt0FBEzM0gsVPj7l7jTI4MiNgO
+         o8LT/GbjgbE4kYcFwNn0pLCptsXXR5luSqjzPi7J3u7zr59q7hB2F++VuiiENmyK9Pcg
+         +rYDcNysqeCJWfu3DXBbHNMOIrL/hU5MeG57kWknfOH/MTE3Y2kIReJcx6J70CyAfruB
+         zkDuf9PzU+GyjYGfCMehdkl0/HHeVnKLcnmdzHhbStyE9Vz/h7CmpnxiagpPIPqDRuW/
+         Pn6Q==
+X-Gm-Message-State: AOJu0YwdsgQXygZQVVz+seV9+2RYuprsa2HC7bXab+QkWZNcuA0WXGbQ
+	soIKTUJIBGjurr/qgkHze8LAKL3rbWUrE8o9EW2vg27Nm10IN8Rd3CIQ5T0vJCHAh6o=
+X-Gm-Gg: AeBDievjfx2QSQcFWPuOlTucxoGXmZXAHg24P3RM8FDhcY08zjWLfMWQJpzNz0AO9PO
+	hchTqnY5VARtafuYIC/Urz8WueVUxov4JGkCXCMsXxMyYhzMOPHQsGQxYzTDpLuL8ht26YlGq7x
+	RqTLhKHZJSIU8Vii/ZB8nNo+3YJR7SNN5oGJsBsiAxnquZktgc1d2D6y1hydOJyLBEouKZA/ZjM
+	FJdFEU72GScgLaQeP+a0zm876fmj7wAMRWpoNy7L65w4ehCrNS3xJzLaCOnJ3+BxIS7vtj5akEb
+	Ez7+ESrUTtLXcXo1EVEOkiSr0S/zazHoGUr6NpkT0C6hYRBm6VmQFjNYXxVgB2fu7Eurv+xP5WE
+	ik+cDUMGinvCHiM7Ok/xv6Rh+rTj6+euGj8OUe5FneclqcuBQIoB3J3GyWj63crJli00a54oZs0
+	ZcFHLPd9kZKAJoUERg5eV2QRx9pgYHXOTKCyDgCe7XMRZ/EHFfX33dYYs=
+X-Received: by 2002:a05:6000:2c0a:b0:43d:1c39:26fd with SMTP id ffacd0b85a97d-43d29305b12mr14362355f8f.43.1775405752340;
+        Sun, 05 Apr 2026 09:15:52 -0700 (PDT)
+Received: from nixos-office (195-23-151-163.net.novis.pt. [195.23.151.163])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43d214f2b63sm28787819f8f.28.2026.04.05.09.15.51
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 05 Apr 2026 09:15:51 -0700 (PDT)
+Sender: Julian Braha <julian.braha@gmail.com>
+From: Julian Braha <julianbraha@gmail.com>
+To: maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	chleroy@kernel.org,
+	jniethe5@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	Julian Braha <julianbraha@gmail.com>
+Subject: [PATCH] powerpc: fix dead default for GUEST_STATE_BUFFER_TEST
+Date: Sun,  5 Apr 2026 17:15:45 +0100
+Message-ID: <20260405161545.161006-1-julianbraha@gmail.com>
+X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,58 +95,45 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260405125240.2558577-1-songmuchun@bytedance.com>
+Content-Transfer-Encoding: 8bit
 
-Hi Muchun,
+The GUEST_STATE_BUFFER_TEST config option should default
+to KUNIT_ALL_TESTS so that if all tests are enabled then
+it is included, but currently the 'default KUNIT_ALL_TESTS'
+statement is shadowed by 'def_tristate n',
+meaning that this second default statement is currently dead code.
 
-On Sun, Apr 05, 2026 at 08:51:51PM +0800, Muchun Song wrote:
-> Overview:
-> This patch series generalizes the HugeTLB Vmemmap Optimization (HVO)
-> into a generic vmemmap optimization framework that can be used by both
-> HugeTLB and DAX.
-> 
-> Background:
-> Currently, the vmemmap optimization feature is highly coupled with
-> HugeTLB. However, DAX also has similar requirements for optimizing vmemmap
-> pages to save memory. The current implementation has separate vmemmap
-> optimization paths for HugeTLB and DAX, leading to duplicated logic,
-> complex initialization sequences, and architecture-specific flags.
-> 
-> Implementation:
-> This series breaks down the optimization into a generic framework:
-> - Patch 1-6: Fix bugs related to sparse vmemmap initialization and DAX.
-> - Patch 7-13: Refactor the existing sparse vmemmap initialization.
-> - Patch 14-26: Decouple the vmemmap optimization from HugeTLB and
->   introduce generic optimization macros and functions.
-> - Patch 27-39: Switch HugeTLB and DAX to use the generic framework.
-> - Patch 40-49: Clean up the old HVO-specific code and simplify it.
-> 
-> Benifit:
-> - When CONFIG_DEFERRED_STRUCT_PAGE_INIT is disabled, all struct pages
->   utilizing HVO (HugeTLB Vmemmap Optimization) skip initialization in
->   memmap_init, significantly accelerating boot times.
-> - All architectures supporting HVO benefit from the optimizations 
->   provided by SPARSEMEM_VMEMMAP_PREINIT without requiring 
->   architecture-specific adaptations.
-> - Device DAX struct page savings are further improved, saving an 
->   additional 4KB of struct page memory for every 2MB huge page.
-> - Vmemmap tail pages used for Device DAX shared mappings are changed 
->   from read-write to read-only, enhancing system security.
-> - HugeTLB and Device DAX now share a unified vmemmap optimization 
->   framework, reducing long-term maintenance overhead.
+It looks to me like the commit
+6ccbbc33f06a ("KVM: PPC: Add helper library for Guest State Buffers")
+intended to set the default to KUNIT_ALL_TESTS, but mistakenly
+missed the def_tristate.
 
-This looks very interesting ...
+This dead code was found by kconfirm, a static analysis tool for Kconfig.
+
+Fixes: 6ccbbc33f06a ("KVM: PPC: Add helper library for Guest State Buffers")
+Signed-off-by: Julian Braha <julianbraha@gmail.com>
+---
+ arch/powerpc/Kconfig.debug | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index f15e5920080b..e8718bc13eeb 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -83,11 +83,10 @@ config MSI_BITMAP_SELFTEST
+ 	depends on DEBUG_KERNEL
  
->  32 files changed, 513 insertions(+), 1197 deletions(-)
-
-... and nicely cleaning up things.
-
-This series is high on my TODO list, but most likely I won't have time for
-proper review until after -rc1.
-
+ config GUEST_STATE_BUFFER_TEST
+-	def_tristate n
++	def_tristate KUNIT_ALL_TESTS
+ 	prompt "Enable Guest State Buffer unit tests"
+ 	depends on KUNIT
+ 	depends on KVM_BOOK3S_HV_POSSIBLE
+-	default KUNIT_ALL_TESTS
+ 	help
+ 	  The Guest State Buffer is a data format specified in the PAPR.
+ 	  It is by hcalls to communicate the state of L2 guests between
 -- 
-Sincerely yours,
-Mike.
+2.53.0
+
 
