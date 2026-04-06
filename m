@@ -1,113 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-19412-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19413-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 970FDFB5160
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2026 20:20:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8944FB5175
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2026 22:49:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fqLKv1mbnz2ySS;
-	Tue, 07 Apr 2026 06:20:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip=192.198.163.16
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775506819;
-	cv=fail; b=funDYcAwHX4zPnftOavPQOmIdvc/C4nOaiXfr3z2sg0fdqyJHv9a2p7um5rFb9Nl2fKSwR/UQ33SjyzZ8tsBF2s3ErDkwr0tqUc1ONUVa2SkJc5alldvpJocXHOq3SILdFW7OAU+K40t9mY5XJh9wfvHsqV9ARlixFfFMwfoCbLMl3HtjLFPNI5RXDfBrXqTOere+BXNzT6yG/vEspS0hsEvRMdrMcAUsav9rS6srSlVYHU7xItffw/ESeYijcRet4EM9peBYPBYRWagMdEwC3yTaRhzzx68/UHF0OqjNqKIGaylmbDbTGq5S6mamjycAKf4dUQDQKbOVCtxG9DpUw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775506819; c=relaxed/relaxed;
-	bh=e25O4RYSK+WOHOn4Z0QUh6mTjmiiy5rx3TbgQeYDekI=;
-	h=Date:From:To:CC:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=cB/q2FkcmoQvXzIZTmL5DMj/RvylpVKgNrt8DVyC6Y48H6tLCHUaJgNpRQLon2J+cj4AhNm1AypimrlPdXbI0a5hcLOI04PfgievlasyivwPzuJWweyxR9Ts95L/8KjzitH7w2O5R8m2+qaWiWTcgyqCzvJDQW0c6nrNVvl40XdCEeLAXdNksDVcz7P9/q93X5jn4k1noBmfacAF8C3gF+Pwkf8PjIQyf7AimE5JVUnstISKhUNlvK0u2YSU/McFk86UAOjljH8p8cAIZYogsrhsEMgFn9EuZtVLpMOX4UGb5Rd8GLY4RPkQUXIcEjuCYNeHAmcI7xzXYRbHDBUOTA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=gfDXQCmf; dkim-atps=neutral; spf=pass (client-ip=192.198.163.16; helo=mgamail.intel.com; envelope-from=peter.fang@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fqPfS0450z2xlk;
+	Tue, 07 Apr 2026 08:49:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775515791;
+	cv=none; b=HCm3tkdzbyarpTYo1M87IuIm01M2abI3SV6yR9o8YTM3uS0xIikVPhbryngzXVrUPALEJRp75BF95rzSD8jKt6ar761zJcqtT4vaWpHxInJf/0GWxtyfPszsZcfKu5BZW9yURFpoYtJs4qL7fk7fyxGz9jBmqNw1XVnvCBZf03nyXdkONH5v4S8ustiSNhOW7f25ekMKsE5YAuvIeFys3LLQeT0GR9c3+hUKkaQkMvx2d92Veojb0rS7Y3g9ZpYA5YiQVwJr6IEvhBchJ1uP0S73Q3xJqAQO5lqwLUQMKenOhQHxGIA5ytVtVtwEN7lyYMYOALbtVfc+OdAO895aCg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1775515791; c=relaxed/relaxed;
+	bh=3Bg7Onw9EvRy5vZT1TxP1I8kshlczv8OpDAPEzkrylo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=H0PCUwC+4zJ4/WWfwsOiw4gFhJyya4lp+pF619kgVGSHosAI/xU0MwT4bLRJnJVVZxX+YRpNJBm26wmgq+z375ABpPMnVfrzYP5E+SA0Yca2XOm/a9LNHqRj1zamrUuKf72wDXkD4h2G4qa1Y53E8qi+KTfaXAXFtblt2BddMSqIzWHHjE/C/3pqQmH2nN1g+EpgqeBoR3nQSUt8wpzY2CvboGRG7U9rkhmbdLOMx/lZ9cF44OnMEzgr7F3lFyplttOV3aJ/qigs8gAqHtaXnhZEIXUzTDfO2O98wjQ4klDsQvm6T9ICIUAhpYkD7qqSZSv/HvwffQT2Gt2GsiIJHw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TO0rZ7i/; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gbatra@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=gfDXQCmf;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TO0rZ7i/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.16; helo=mgamail.intel.com; envelope-from=peter.fang@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gbatra@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fqLKr2JXPz2xHX
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Apr 2026 06:20:13 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1775506816; x=1807042816;
-  h=date:from:to:cc:subject:message-id:references:
-   in-reply-to:mime-version;
-  bh=DaBKoX0A6ChXWngUKZAMTjagLvI9ygGsOEgQLt85QeQ=;
-  b=gfDXQCmfxvZax2yH4t8Ubsbv0Ed3nWqVL37rMqkAKh8G370o+erlzgx0
-   FNZm/EBIvru7GHZ5o8Z1l8NwD8KSUK9bO3vlTpb0Ait0Ps18W/NofALJG
-   CNDrYi6TCi7MD+I2RqLRSUzq/l/A+3UEVbJF8GmD/kTnaJ1nYRx9Vo/JR
-   akFFLf+ZjUz80xIpKuc+jmbN3r1w+ByPM+3aPZzrPkIK6o2ozzhC9cIso
-   wiAdwpa4R1KkwNySLXM5v7Is1r4gu3qMgmbZcVlauj9rfEMiVyfLoLfxN
-   roq3unN+zW29ZFSBO5/zaO9e7Mfk3RbhW5h4QvH/xaG4HaqPDo6JZdBL+
-   Q==;
-X-CSE-ConnectionGUID: 7yofA63nS3u9oxVa94KHgQ==
-X-CSE-MsgGUID: TWLW0Fx6RPWsqcDaCN3UEg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11751"; a="64008531"
-X-IronPort-AV: E=Sophos;i="6.23,164,1770624000"; 
-   d="scan'208";a="64008531"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
-  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Apr 2026 13:20:09 -0700
-X-CSE-ConnectionGUID: gttl/qqATXOCEWHcc0nbbw==
-X-CSE-MsgGUID: q7xHUgWITNecNuDAC7WBeg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,164,1770624000"; 
-   d="scan'208";a="251095280"
-Received: from fmsmsx903.amr.corp.intel.com ([10.18.126.92])
-  by fmviesa002.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Apr 2026 13:20:09 -0700
-Received: from FMSMSX901.amr.corp.intel.com (10.18.126.90) by
- fmsmsx903.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37; Mon, 6 Apr 2026 13:20:08 -0700
-Received: from fmsedg901.ED.cps.intel.com (10.1.192.143) by
- FMSMSX901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37 via Frontend Transport; Mon, 6 Apr 2026 13:20:08 -0700
-Received: from DM5PR21CU001.outbound.protection.outlook.com (52.101.62.26) by
- edgegateway.intel.com (192.55.55.81) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37; Mon, 6 Apr 2026 13:20:07 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=SHz26GyoR2bXpm5YlrgDbCS2McDm/JArzwgG7u1EM/zVdHtrabaYss6qtwXAExDi26Utu9PeNWm7Yqf/RElQUV3IeeoVh7YJgYTlZIaE43nd1RwO0/FtvbW807/9As8KEAFJe1In4tmxnGBVFO7d7wlUtaPMHMfSnd7/c+FGyrcTlxrOKvuoh+zJCXuxIyLInROI8GlU6iyVKt0XBJ3CphjKXpcCTZeo+U1mB4Voku+Hdc6cktlfZYXHnBVB1ordp6TV2AtAKjmqlePJvQgTTmnXX53+2ziuSBUZTroSvomF8Mz9AgpnXSNqmOEsRzAq1ivvZhfWL3w5a9e7rk8tFQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=e25O4RYSK+WOHOn4Z0QUh6mTjmiiy5rx3TbgQeYDekI=;
- b=OzrWZmkV7njePuVLHbLsGUoz3Ipr7uR7IfzX5/FvZ0QTPrBAYvPOhhTgUFr3i+8nfSo2IoDK8My/2iCFDKJowV2NBGY4i30Ub6YFOhNjY5S9IyaLcceTWg+ijyXsdgTIcx1rjJQqqPa2m//5wXFXevheGv0C83Xgg8m7ryf4lVh3MYycQWYJ7Oxgh7lYB24k7PEGINMBHn2jn4QkvbtxzlPjcIF++Wo9HxIpOvKd0VhImmLUVucnYqCf0rIq6/NIz7FujaFfakNcV+WN7P4wRw9ms75PDAc1w7qWtS48H3Nnes7zh9fjG1WzdGQQkQmartGnKtfOIPzG7gXwc3xEsw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Received: from SJ0PR11MB5645.namprd11.prod.outlook.com (2603:10b6:a03:3b9::19)
- by PH0PR11MB4936.namprd11.prod.outlook.com (2603:10b6:510:42::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.19; Mon, 6 Apr
- 2026 20:20:04 +0000
-Received: from SJ0PR11MB5645.namprd11.prod.outlook.com
- ([fe80::fb19:f933:8bb3:b42e]) by SJ0PR11MB5645.namprd11.prod.outlook.com
- ([fe80::fb19:f933:8bb3:b42e%4]) with mapi id 15.20.9769.018; Mon, 6 Apr 2026
- 20:20:04 +0000
-Date: Mon, 6 Apr 2026 13:19:58 -0700
-From: Peter Fang <peter.fang@intel.com>
-To: Ritesh Harjani <ritesh.list@gmail.com>
-CC: Yosry Ahmed <yosry@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>, "Sean
- Christopherson" <seanjc@google.com>, Madhavan Srinivasan
-	<maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
-	<kvm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
-	<linux-kernel@vger.kernel.org>, KarimAllah Ahmed <karahmed@amazon.de>,
-	"Konrad Rzeszutek Wilk" <konrad.wilk@oracle.com>
-Subject: Re: [PATCH] KVM: Fix kvm_vcpu_map[_readonly]() function prototypes
-Message-ID: <adQVblwkGi1oDYya@pedri>
-References: <20260325092001.613025-1-peter.fang@intel.com>
- <acsvbxIdtlQzUw4q@google.com>
- <7bqnm5he.ritesh.list@gmail.com>
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <7bqnm5he.ritesh.list@gmail.com>
-X-ClientProxiedBy: BY5PR03CA0015.namprd03.prod.outlook.com
- (2603:10b6:a03:1e0::25) To SJ0PR11MB5645.namprd11.prod.outlook.com
- (2603:10b6:a03:3b9::19)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fqPfQ5GRWz2xSF
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Apr 2026 08:49:50 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 636LmOlo2302449;
+	Mon, 6 Apr 2026 22:49:43 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=3Bg7On
+	w9EvRy5vZT1TxP1I8kshlczv8OpDAPEzkrylo=; b=TO0rZ7i/0Yip7PBAsIfpbw
+	q4pMOJvFNoUS9Ev7iBIToDfPLOCiRT/ryi+WZ877yaAr0sflfnNiYf83qcpMUF79
+	YcNrhtf7XpJber09rx0/FfiXZH6NY9ZEKXZsw0nMmhnqNMWrDpV47EpdBXauqNQH
+	8UgGU+dd1WCeIKpf1i0HOo4ruLKU6wkBRAkgQFiVKYXYOG8x8s0Bmnohe5XH+Tn7
+	wEWt4Xb9jDb7HjoB6mc1U5rm1drwmlDw5tz2LjECuNTO9QubnSoVb66ca+Aq0iPb
+	hjyi4dzRsdTzdl//MUswjfzBSLS12QetTPDgAbffzkQvVPoNNKYMwJq+Zmxg+5Og
+	==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dcn2f850x-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 06 Apr 2026 22:49:43 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 636L92WS026707;
+	Mon, 6 Apr 2026 22:49:42 GMT
+Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dcmg7r7dr-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 06 Apr 2026 22:49:42 +0000
+Received: from smtpav05.wdc07v.mail.ibm.com (smtpav05.wdc07v.mail.ibm.com [10.39.53.232])
+	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 636MneSr52822304
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 6 Apr 2026 22:49:40 GMT
+Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 92FEA58059;
+	Mon,  6 Apr 2026 22:49:40 +0000 (GMT)
+Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1198658043;
+	Mon,  6 Apr 2026 22:49:40 +0000 (GMT)
+Received: from [9.61.252.193] (unknown [9.61.252.193])
+	by smtpav05.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Mon,  6 Apr 2026 22:49:39 +0000 (GMT)
+Message-ID: <906e3e02-ede2-4925-88a2-4bec6e32b121@linux.ibm.com>
+Date: Mon, 6 Apr 2026 17:49:39 -0500
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -121,100 +81,239 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SJ0PR11MB5645:EE_|PH0PR11MB4936:EE_
-X-MS-Office365-Filtering-Correlation-Id: 43ad211b-54ce-4269-c320-08de9419e1fd
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|376014|7416014|1800799024|22082099003|18002099003|56012099003;
-X-Microsoft-Antispam-Message-Info: t6B+AY61KVn8pavlZmeaNNjuIVCR0THR+qFFfrTKUtlmiZ2YxRYSPf+Gfk4qA6uNMxfdg4vk1+ZJ6j+A8Avoz3U/6z42TzrqKwuprM6Omj3rqtCwdKiUIktATrOexpDmBGHQg8BG993zJOr269CBtfaifZU8CoOjzNLtr9xuxNDqLZGI4lRplw3PA8BvChKhMly4bn9DiOtTJHsIRVJV/dGKoq3FWHhleyzC7tPLYcfUKYT4pnM+EHus5RhyC9+tkoVe6mJxOD5N+aazpMiEZcUlCfBdZnBfqdQ+tSQ+0+xHGl3roqE+KbjBP/Gkj/K+70Z2TxtXap0j6oPZJwSEaCIF97isjt+wsSNczyUkdgJc0LH3q54SACBLWjBiB1fRFJSQRua4zSDUlO4BWkRJpB9f/mDYzCFfwN4X3oJ3CQQG0wj6avx+FCGzLM7iKNSFVmZ3vlx3DIph8Wg8HCRg4GtFccqZJ18VjC+PW6W3SeEbItGO8JU1XSaH58VFaBoDQI601Y2KvHxNJsSMtHMRDUg0ce6hoTkJQTvvwrQ6U0RKrQhQNZ7YTO4+WMBmMNO0lpzKzIbWiFVxujn9w+lgglUGeETVjil1CrvNMb5FceSt48f6P89HBUnxWeNqsoSVfgBNEDv+snUhw2LCRM9mQnrxs7qw8+4Gw1MAC/wpIa8HkFhQpQMpAjacd+Tg3kvB8nyPXC6egh1Ogv5uJ7+1pRRrVpn81kBxaZM6+w8KxsY=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ0PR11MB5645.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(7416014)(1800799024)(22082099003)(18002099003)(56012099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?R2HjANjlPpfBDaZvlJxaStMcRHYBJgRgSKiIOOtsdiLQZdBUmoqNPJbWQzOf?=
- =?us-ascii?Q?BtjkIE8yB7fNeyZJ3v2UoohfaE55auh9FbnQV1aPhc/6xEfaRmxrbU/uljMC?=
- =?us-ascii?Q?qXIGPjh7qgImHqG8RFFGnTzXFDcOHznU+u29x7uET+PTh8KGT/lnlHVnuRNB?=
- =?us-ascii?Q?tPlGAwURbdLRCki43qzbEh3X2UXHVmcRbEOVXNhWC3QSxfnrmo9SkDhWfxjH?=
- =?us-ascii?Q?yP3bRuBigCY8rT9Vavxbg3K+ylgj+kInktSlMZ96U3O3O75baV7l7s6NB5Ns?=
- =?us-ascii?Q?V8/S8+iAy1cvtkoNxb7pVzC41LgV0fZb2QN9R6cGoit3Z2kTI4DqZrxtPuYh?=
- =?us-ascii?Q?eUq+aGaLQRMIZyLdNmPMopLpHOvGRB2R68jUUrn/S9dNCzZHj1rMck2X2sxj?=
- =?us-ascii?Q?4tEUIiSMqGbsxmE+h/evvWHYCbvctbL7yc7HZNz/ZTkDVGnTRJXGFFzAPZxf?=
- =?us-ascii?Q?W842A1dY5+WVyam46UKnObtOWztdFDDi9SfUO9QZjeYbzOqebXxuOSILLaHj?=
- =?us-ascii?Q?6yhQXbE9rgi14UBP13tBDHcRjfSwFasCfp5f0XKGvzss+Px3KIH5A5kL8N79?=
- =?us-ascii?Q?7nu4MIPokNCItIypC7GkiLQVPJkBXKN2Wp8TCtMbqh+wAPVSRJdjFwfA8R26?=
- =?us-ascii?Q?g4n6U135mdIgz3FIEbq5BoHXeT4y79IW0JXHDcSjurMlaJahbZBc9T+FIKZk?=
- =?us-ascii?Q?jFLV3Qrt7l7o0FHTcbwgUfEaIhww3xvP5d4z2GKIyPNHnVHPx/FpAhWwODkg?=
- =?us-ascii?Q?2JAkwr/l/K4ZRwgbBQRQmuH+Fj1PReDX7rkhHn/i4v+ar5ghxVHopNhLHyDm?=
- =?us-ascii?Q?Tg0H4mcQMe37z4apl9y/w6tvbW5vKHKu1rsujxw4wWj0d4R2nNSZhnZT67FX?=
- =?us-ascii?Q?BhV51INmeOLdJytuZC3j9vlJ1OEfJldBMfe4Ldw/dfrjpQqlPfrNBBBOoczj?=
- =?us-ascii?Q?ClVs+wuvSqtg9v64UR0Cvapaq7moASwBRYa+ArZVt8niPMOSQZXXx/yfUbKR?=
- =?us-ascii?Q?kxAT/N1Sb7ESeVBoxltgHso81172Vm5qJQlFmMdqEB3rVmQ9KgTgs+PSYMur?=
- =?us-ascii?Q?kJ2HwDY2+GC53j9TZiUFk1P8v786ECjs6fGoiElkvAeBGBA7//alrPaQGAmF?=
- =?us-ascii?Q?mxnbRn4b3AtvVXuRWvFOt1ZqnMScDOuJ9xPPxQaoSueaFIU14Sv7mQuskmJu?=
- =?us-ascii?Q?TijVT//vCKAK2v6l7J/WKnDTvhDLl71YtQ/eDE/IqJ5vNvCCQVe3m4yX7LSm?=
- =?us-ascii?Q?KbbI44BWLVZog0aT1VwST8Qtb6IJ/eL5kDFyZO+Xfd2rpN/fach2x6MUQHfi?=
- =?us-ascii?Q?HK2DXk77NOtj7blwnPWqTN0A0a16Yw60a/YA3D+o2gGk1ZI7YptPWju5uqjy?=
- =?us-ascii?Q?57dRdYKmiL+V0LPZtkL6yOwpICjsAXk27K7BKKnq5rk+g8T/TdvRi3L+/9EC?=
- =?us-ascii?Q?IVhADK83dgDFHWM8pehd+lXmFvDVDZAMveb19ZTmoOyaGW8P6GbE/42/wMeb?=
- =?us-ascii?Q?d4Ppovnl+8R6vOvagChKdizwrODs2bmTAeqSo71wKMAjIFpqpYelg7JLJ6a/?=
- =?us-ascii?Q?uEen+ZwHX9pGMOS4CISBiQUSJYn68HVdxcOTvUfB2RCzRFHC8N/afhXhP0VP?=
- =?us-ascii?Q?UO2OjxV2UeQVSOc0aD3g9GggxW6GjRm0FVnZnTqOztcvuPHOF0+W3ehaPI44?=
- =?us-ascii?Q?j45adKTir4ZWSw5hypBBtDON2whMzjIgxBVdVmIfGwtoprWBJ/IZNlvQEevg?=
- =?us-ascii?Q?R5RazO3H7Q=3D=3D?=
-X-Exchange-RoutingPolicyChecked: uEdYh+JJQhMTUc4gTNMim5vf/PsqtAnGGJRAS067vaidcrvhQtRGXD4YE9MhC1Z9wv4b5WdagM69vHd/c5isQ2t6pO5IOxdWruMuAOPYYaXD82wv9LOdqDKhDbEpYoeiKpRIzTeR/UO109skARgemI0bSVK0hm9w03hPmpnKglisVRyVpRosLREPthEqKDXssXhQEeG9rWAU3g3no0rVdtYTIbx+f4Q498l7ofQFZmpKC4c/gp+9KdknkO5Cc3YF6WP/Tq8D6D+2kPbPNRWc6TYEWUhDddrkP5xSh9b7AhW9bWaxsKvDMVsRpgeXZNm6gZKEuUnRUe9oSzs2sVPBiw==
-X-MS-Exchange-CrossTenant-Network-Message-Id: 43ad211b-54ce-4269-c320-08de9419e1fd
-X-MS-Exchange-CrossTenant-AuthSource: SJ0PR11MB5645.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 06 Apr 2026 20:20:03.5330
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: yzIs7NExgu0jKujnMPmoRq/I6CRJGv2lhFR0+Qib+nzK/2AdK5D1iRnvwfDvShYdTsMyZWLZGblyP2P2Q8nA6Q==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR11MB4936
-X-OriginatorOrg: intel.com
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc/powernv/iommu: iommu incorrectly bypass DMA APIs
+To: Shivaprasad G Bhat <sbhat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: maddy@linux.ibm.com, iommu@lists.linux.dev, linux-kernel@vger.kernel.org,
+        =?UTF-8?Q?Dan_Hor=C3=A1k?= <dan@danny.cz>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Timothy Pearson <tpearson@raptorengineering.com>,
+        vaibhav@linux.ibm.com, balbirs@nvidia.com
+References: <20260331223022.47488-1-gbatra@linux.ibm.com>
+ <o6k3mqwc.ritesh.list@gmail.com>
+ <1bfca7b8-58f6-4670-b0ac-f448ae22bd43@linux.ibm.com>
+Content-Language: en-US
+From: Gaurav Batra <gbatra@linux.ibm.com>
+In-Reply-To: <1bfca7b8-58f6-4670-b0ac-f448ae22bd43@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDA2MDIyNCBTYWx0ZWRfX1hBK1bpC9rqS
+ LwOi6HkRgD5bfuM+HPs3gGaVd0qJeoXvFSkAh9KlJQYpLcl6a/BMuk1mFV1fZfUqwkLZVQMF6XY
+ 8ikTsulIdrLzS6fnH/9jsH6afD3AyIdVSH3hiEPC88b4w1E+1wd1hsHrrc3yC0eqCH3kkPLdIUe
+ PgtHodN574m5tu4Z7l4248+hbIO5ttPvIaq0eBbGL1YtB8Er1sSL1oJKi7RI+L7G+Gp79j1rNtK
+ p+cQKkDdPmCTuGVfxaUrPY6sC9qjJ6rJIKjRSY6OC76/6FLjb9NuV6wY+ES3jN5dwxorgQQARfq
+ IUQ0RdnikoYpP4neTRRdL2B8Gv7QUjGhvbdyAT4WuZr8uk6Oh5EJgEgODU0L8IO40RA/lu5Lsx3
+ 97FkoIsTGiSkqv3mdOFY2IuFomGVjexaB7evnYBMWLa5rTuYzYS1wu+NPauT58CFUQghXIE0FEr
+ wR8pzQ94+MQI6SUUjqQ==
+X-Authority-Analysis: v=2.4 cv=FsY1OWrq c=1 sm=1 tr=0 ts=69d43887 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=e5mUnYsNAAAA:8
+ a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8 a=Ikd4Dj_1AAAA:8
+ a=-Ml1yhC-RHR9OOvdJO4A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=Vxmtnl_E_bksehYqCbjh:22
+X-Proofpoint-ORIG-GUID: -3BKensk9qEXi6Kk21rIQpYvJyqzLgjA
+X-Proofpoint-GUID: F9hVb_9gMa547D17ZoRMM8h55aPCPXr5
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-06_05,2026-04-03_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 priorityscore=1501 impostorscore=0 spamscore=0 phishscore=0
+ lowpriorityscore=0 clxscore=1011 adultscore=0 malwarescore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604010000 definitions=main-2604060224
 
-On Sat, Apr 04, 2026 at 03:07:01PM +0530, Ritesh Harjani wrote:
-> Yosry Ahmed <yosry@kernel.org> writes:
-> 
-> > On Wed, Mar 25, 2026 at 02:15:11AM -0700, Peter Fang wrote:
-> >> kvm_vcpu_map() and kvm_vcpu_map_readonly() should take a gfn instead of
-> >> a gpa. This appears to be a result of the original kvm_vcpu_map() being
-> >> declared with the wrong function prototype in kvm_host.h, even though
-> >> it was correct in the actual implementation in kvm_main.c.
-> >> 
-> >> No actual harm has been done yet as all of the call sites are correctly
-> >> passing in a gfn. Plus, both gfn_t and gpa_t are typedef'd to u64 so
-> >> this change shouldn't have any functional impact.
-> >> 
-> >> Compile-tested on x86 and ppc, which are the current users of these
-> >> interfaces.
-> 
-> Mostly a mechanical change. I had looked at ppc call site and looks ok
-> to me.
 
-Thanks for reviewing the ppc part! v2 with the suggested changes will be
-posted soon.
+On 4/3/26 10:53 PM, Shivaprasad G Bhat wrote:
+> On 4/1/26 6:35 AM, Ritesh Harjani (IBM) wrote:
+>> ++CC few people who would be interested in this fix.
+>>
+>> Gaurav Batra <gbatra@linux.ibm.com> writes:
+>>
+>>> In a PowerNV environment, for devices that supports DMA mask less than
+>>> 64 bit but larger than 32 bits, iommu is incorrectly bypassing DMA
+>>> APIs while allocating and mapping buffers for DMA operations.
+>>>
+>>> Devices are failing with ENOMEN during probe with the following 
+>>> messages
+>>>
+>>> amdgpu 0000:01:00.0: [drm] Detected VRAM RAM=4096M, BAR=4096M
+>>> amdgpu 0000:01:00.0: [drm] RAM width 128bits GDDR5
+>>> amdgpu 0000:01:00.0: iommu: 64-bit OK but direct DMA is limited by 0
+>>> amdgpu 0000:01:00.0: dma_iommu_get_required_mask: returning bypass 
+>>> mask 0xfffffffffffffff
+>>> amdgpu 0000:01:00.0:  4096M of VRAM memory ready
+>>> amdgpu 0000:01:00.0:  32570M of GTT memory ready.
+>>> amdgpu 0000:01:00.0: (-12) failed to allocate kernel bo
+>>> amdgpu 0000:01:00.0: [drm] Debug VRAM access will use slowpath MM 
+>>> access
+>>> amdgpu 0000:01:00.0: [drm] GART: num cpu pages 4096, num gpu pages 
+>>> 65536
+>>> amdgpu 0000:01:00.0: [drm] PCIE GART of 256M enabled (table at 
+>>> 0x000000F4FFF80000).
+>>> amdgpu 0000:01:00.0: (-12) failed to allocate kernel bo
+>>> amdgpu 0000:01:00.0: (-12) create WB bo failed
+>>> amdgpu 0000:01:00.0: amdgpu_device_wb_init failed -12
+>>> amdgpu 0000:01:00.0: amdgpu_device_ip_init failed
+>>> amdgpu 0000:01:00.0: Fatal error during GPU init
+>>> amdgpu 0000:01:00.0: finishing device.
+>>> amdgpu 0000:01:00.0: probe with driver amdgpu failed with error -12
+>>> amdgpu 0000:01:00.0:  ttm finalized
+>>>
+>>> Fixes: 1471c517cf7d ("powerpc/iommu: bypass DMA APIs for coherent 
+>>> allocations for pre-mapped memory")
+>>> Reported-by: Dan Horák <dan@danny.cz>
+>>> Closes: https://gitlab.freedesktop.org/drm/amd/-/work_items/5039
+>> We could even add the lore link so that in future people can find the
+>> discussion.
+>> Closes: 
+>> https://lore.kernel.org/linuxppc-dev/20260313142351.609bc4c3efe1184f64ca5f44@danny.cz/
+>>
+>>> Tested-by: Dan Horak <dan@danny.cz>
+>>> Signed-off-by: Ritesh Harjani <ritesh.list@gmail.com>
+>> Feel free to change this to the following, I mainly only suggested 
+>> the fix :)
+>>
+>> Suggested-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+>>
+>>
+>>> Signed-off-by: Gaurav Batra <gbatra@linux.ibm.com>
+>>> ---
+>> Generally this info...
+>>> I am working on testing the patch in an LPAR with AMDGPU. I will 
+>>> update the
+>>> results soon.
+>> ... goes below the three dashes in here ^^^
+>> This is the same place where people also update the patch change log.
+>>
+>> But sure, thanks for updating. As for this patch, it looks good to me.
+>> So, feel free to add:
+>>
+>> Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+>>
+>>
+>>>   arch/powerpc/kernel/dma-iommu.c | 4 ++--
+>>>   1 file changed, 2 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/kernel/dma-iommu.c 
+>>> b/arch/powerpc/kernel/dma-iommu.c
+>>> index 73e10bd4d56d..8b4de508d2eb 100644
+>>> --- a/arch/powerpc/kernel/dma-iommu.c
+>>> +++ b/arch/powerpc/kernel/dma-iommu.c
+>>> @@ -67,7 +67,7 @@ bool arch_dma_unmap_sg_direct(struct device *dev, 
+>>> struct scatterlist *sg,
+>>>   }
+>>>   bool arch_dma_alloc_direct(struct device *dev)
+>>>   {
+>>> -    if (dev->dma_ops_bypass)
+>>> +    if (dev->dma_ops_bypass && dev->bus_dma_limit)
+>>>           return true;
+>>>         return false;
+>>> @@ -75,7 +75,7 @@ bool arch_dma_alloc_direct(struct device *dev)
+>>>     bool arch_dma_free_direct(struct device *dev, dma_addr_t 
+>>> dma_handle)
+>>>   {
+>>> -    if (!dev->dma_ops_bypass)
+>>> +    if (!dev->dma_ops_bypass || !dev->bus_dma_limit)
+>>>           return false;
+>
+>
+> While this works, looking more on why the 1471c517cf7dae needed 
+> arch_dma_[alloc|free]_direct()
+>
+> functions was because dev->bus_dma_limit being not updated when the 
+> new memory pages were
+>
+> getting added in add_pages() case leading to the can_map_direct() 
+> checks failing later when needed.
+>
+> Looks like these functions were modeled after 
+> arch_dma_[map|unmap]_phys_direct() which were
+>
+> introduced for handing a similar need.
+>
+>
+> Do we get iommu_mem_notifier() call for action MEM_GOING_ONLINE in 
+> device memory being
+>
+> made online case? If yes, we can just update the bus_dma_limit for 
+> each device in the iommu
+>
+> group to include the new max_pfn. This makes it sound wrong as the 
+> pages though configured
+>
+> as system memory, are still  device private and the memory notifiers 
+> are for the real memory
+>
+> hotplug/unplug cases.
+>
+>
+> In the commit 7170130e4c below, Balibir does point this out to be a 
+> problem and prevents updating
+>
+> max_pfn for device private memory. He has mentioned it to be 
+> considered for PPC too.
+>
+> The dma_addressing_limited() of x86 is same as PPC can_map_direct() 
+> and we know why
+>
+> arch_dma_[alloc|free]_direct() would not be needed anymore.
 
-> 
-> >> 
-> >> Fixes: e45adf665a53 ("KVM: Introduce a new guest mapping API")
-> >> Cc: KarimAllah Ahmed <karahmed@amazon.de>
-> >> Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-> >> Signed-off-by: Peter Fang <peter.fang@intel.com>
-> >
-> > Most callers are converting a GPA to a GFN, I wonder if we should make
-> > the function take in a GPA instead? But then we'll need to the GPA not
-> > being aligned to a page boundary (either do gpa_to_gfn() in
-> > __kvm_vcpu_map() or fail if it's not aligned).
-> >
-> > Not sure if that's a net improvement, mostly thinking out loud here.
-> 
-> The suggestion from Yosry and Sean sounds good too. Instead of every
-> caller of kvm_vcpu_map() doing gpa_to_gfn(), we may as well make
-> kvm_vcpu_map() accept gpa_t instead and do the gpa_to_gfn() inside
-> kvm_vcpu_map() in the call to __kvm_vcpu_map(vcpu, gpa_to_gfn(gpa),...),
-> or within __kvm_vcpu_map() which is fine too, however, the former is a
-> better approach, IMO.
-> 
-> -ritesh
+When pmemory is converted to "system-ram" it moves "max_pfn" as well. 
+The command is "daxctl reconfigure-device --mode=system-ram dax0.0 
+--force". This needs to be considered as well.
+
+
+Thanks,
+
+Gaurav
+
+>
+>
+> commit 7170130e4c72ce0caa0cb42a1627c635cc262821
+> Author: Balbir Singh <balbirs@nvidia.com>
+> Date:   Tue Apr 1 11:07:52 2025 +1100
+>
+>     x86/mm/init: Handle the special case of device private pages in 
+> add_pages(), to not increase max_pfn and trigger 
+> dma_addressing_limited() bounce buffers
+>
+> So, I think we need to bring the changes from 7170130e4c72ce0c into PPC.
+>
+>
+> With that, the original hunk setting the bypass unconditionally in 
+> 1471c517cf7dae can be
+>
+> changed like below, and remove the redundant 
+> arch_dma_[alloc|free]_direct() functions.
+>
+>
+> diff --git a/arch/powerpc/kernel/dma-iommu.c 
+> b/arch/powerpc/kernel/dma-iommu.c
+> index aa3689d61917..120800b962cf 100644
+> --- a/arch/powerpc/kernel/dma-iommu.c
+> +++ b/arch/powerpc/kernel/dma-iommu.c
+> @@ -150,7 +150,7 @@ int dma_iommu_dma_supported(struct device *dev, 
+> u64 mask)
+>                  * 1:1 mapping but it is somehow limited.
+>                  * ibm,pmemory is one example.
+>                  */
+> -               dev->dma_ops_bypass = dev->bus_dma_limit == 0;
+> +               dev->dma_ops_bypass = (dev->bus_dma_limit == 0) || 
+> (min_not_zero(mask, dev->bus_dma_limit) >= 
+> dma_direct_get_required_mask(dev));
+>                 if (!dev->dma_ops_bypass)
+>                         dev_warn(dev,
+>                                  "iommu: 64-bit OK but direct DMA is 
+> limited by %llx\n",
+>
+> Suggested-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+>
+>
+> Thanks,
+>
+> Shivaprasad
+>
 
