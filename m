@@ -1,93 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-19387-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19388-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86927EF4EA4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2026 09:08:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4BF20EF4ECA
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2026 09:20:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fq3Qc0Jwqz2yfS;
-	Mon, 06 Apr 2026 19:08:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775466503;
-	cv=none; b=dJt1lIL3Slhu0VnXHMdHotZvMKf1ufl1DGOrD5diz6apUC4DwLgqeAI/lZYewVp5UpbI/XHtCXb5u014JWiDteJFZ2eonXosqiG82y0XrQXJxtJUwBw3FJjP7WiHh3sPBTggMKUG40IjBGo6J/af40sCKEdnflMMp2WFPwI1qY0VG7ITura2ieyAXeRxW5pI3I+MKsf/5NQrOx74QByLNUtN9fGmZeSp7pK3f59/sHKgX0zbMJKqbU6Eh9sbhNL+djECHQw3CN3HUVaBp6DXIa3fmo8J0jzPtq4K+5xVxTFjF3SXPRUqBjL07t49UfSjyCcceDAMOilzIKnvrkO3/g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fq3hc5b7Mz2yfS;
+	Mon, 06 Apr 2026 19:20:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775467232;
+	cv=none; b=Z7te6DcUZ7oDiRjESKpLftV3YY5NJ7obaFhm6kxzQFCK4YSRt4H5PshVvQkfEcTlCFvnSf4FNVW3fPt/lKKErhXP5vEVFE5MD69tPu7Ew5Ul3NgYBzHUh7HZmotyJ+bPhj//SR1kHdrL6Y9Ix29AlAhbt4iWEdjIWt5MxhcaJPnb3g8eMXmXti9+mIv67E74m1ix+4dH877ryH58Ozj0Ybh/xqJZjt0xiIh1kVQz16Rqbc7dH+AWk19hOyqnh02hm45CiVcK4DfcI4ic2jWjQrw7MmrbDl8uFdX3YMsNBWlkXM9e3//ZBKLPSC3OZGBLPuqN7yfrkWIOxq3+Ofe3ng==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775466503; c=relaxed/relaxed;
-	bh=2DC9+ivYheyMqrfOIx67QW7cPRjoGiCh9Shramalnog=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=HA6mR4CCf5kkXoilJLsvT58i7f/FJlG5QasyjPfzjCx2G/hdpCwWVUA5+73RIBOc1Ah7COkf5fg5E+umks9uZhWuDaybdmODMNFxXdw4xay7pEFrcC5YRZKRN40gHA6UAS26qQuybhgCBnvATWSDJbsUIzWQPOR707OjaSNyczFt7yUnq+Dilq/IHDdE3WmhwryCsofpoFRMWylHXJ6K/eD20fc8waiCFIeGq17THzv3IFSJUN19nkMCSukRxj3K9VvHQiKgPj8tbWNKK6vfjR/Fbz/DMZKa/2Ag5y9HJcx0tOFBtBhMJ4z6mut3i1xKFQD0A8CdvYcetD6snJ3rWg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ZlMd4qb4; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1775467232; c=relaxed/relaxed;
+	bh=BE2EUKU/McYWqo37ghWd6Kx9zwh5R4g+dFW5eL2I394=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=OH5JperDHo7aNnpbKh1tEWgphmjnhvD2FgjE2tBiaBqHcmRnG6rh+X/lUb2fe4jl7WO9thVupwfdhWLZMD3DEYmRWc7AOCj2sYJsMagvyNPcuG6Kw7S3RLAOHryQ7sWtpxFJ1vkQMJIl80BVKZzyL34W1MWb5cjTqJUEllb8CfsHX4D8VRbLMKRQKdwfVt7naC+/WYjvuy8LCb5EcfBm91ca7Aa40/yeU7BxQtqjtOHYU9/NxX3B01+ulbD1gCKsoYkUXPaUPDbZHnTseeFOPPCe7M3+EcMAcF0rknh0hRK4sgm0K9fZYYMdWLXklE37JedKsxban2kflBL305J/ig==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gjg7yGsB; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ZlMd4qb4;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gjg7yGsB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com [IPv6:2607:f8b0:4864:20::42e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fq3QZ3zkbz2ySV
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Apr 2026 19:08:21 +1000 (AEST)
-Received: by mail-pf1-x42e.google.com with SMTP id d2e1a72fcca58-82ce09b4197so1507226b3a.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Apr 2026 02:08:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1775466498; x=1776071298; darn=lists.ozlabs.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=2DC9+ivYheyMqrfOIx67QW7cPRjoGiCh9Shramalnog=;
-        b=ZlMd4qb4cg0SHZffMvp0TjgmowHgYdOXXQHRx9SoZxve/n2+/TKB+RLfkvbs/7n5g8
-         mDIkjcw4LgVE7HwZxbdh7nDGxukbD1qmIa2SD5VBAKs4Fooysc3wGkBE8ALOo8ylZPK7
-         anqRtNTxjvHaKvdgV4hD9bWheFlnd3mGnZyw7i6n7d3z9zM4mez5wY3VTL74IjqLhZiG
-         O+VzmvCyBDiSjyTZKsTKTJK9QE+mMtKwRIN7yS1JtI14OXyzO+4iRn18t2kqO/ZFzZzC
-         eM8xCdFDuxApJr1zUeRJTXpVkmtSRncVuBqsgn3Yy/ExVqcujQuuM2aS5ClQCxweinIk
-         6vEA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775466498; x=1776071298;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=2DC9+ivYheyMqrfOIx67QW7cPRjoGiCh9Shramalnog=;
-        b=hQXQ5W89VdY7Ul5pgQKSauE4I/UsFKxlIDXPkwwYxVxRM/rMpdshCl/Q0mQYsQVtgv
-         TWgg+8tLdsyxV/S1o4mdDN2lQQUBQwljTjEuKWGkv770vUXuNkETxKVhdZEAZVXTugQw
-         2dNFr0YaKlYzI8eQeV8QHRNr29aCJs933oklpOs0rMpeLzG7jl8IF1T3Iibs0XbHPmEy
-         2MBHBsc4Ipe5MiDhIpOosj7uKC1Vlct0xKU1KTF+Ntdp7I5zvM80m13500QHqnR+Cp2Y
-         yFavx3rIoYlBrfyhZRHPGjN9OI6oiqLVWgdhgRfO6XzQVAyrDYVs6IW2/t0gCVRU0RZ8
-         OL3w==
-X-Forwarded-Encrypted: i=1; AJvYcCX1NWpbuWwZ5vuFpLD1/65YYxr62mqovrDm/+oclRRJQBAZIebexScu9048FkdNZGV1FSd9BGzQZOEn7PI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yxpl72NA5NriWNQgLnY1HMrOQXp/vZGUuPhSQ7PJhVm1xzlv/Il
-	J0QQF1Y6Ea6RF2nTCVD1wwRgcCcMSKBBMSGguP5jYZysfmy3r8qUIvXe
-X-Gm-Gg: AeBDietb/4Vdi4lnp5gRi0xea4/cphMsF+RJcgRWPODmdyCxOhbE/APxuySmEAwONoA
-	Mn6wvzFEDjfI0+UXcePHEukzPFLioR2CSqMLBYUFe6ql+7cOBMX2k7t17d4JGjLR6N7bvfpcJ2+
-	W1Ch2EB5F2Yzuycqa72Dvpts3k5w4wKRksFVectmITtitgWMEltyuGwRs4R/zkcKxfrKC3bscDM
-	kh4vtt4CRcogqf/zsInawvEusaqrn3KZcI6LXaYzU1d0v6L4SKq1axgAMGH4HpDDcn1o4YUu0tf
-	M1fAYIGXK/dlfzcI/gZ9aLgxQhq6S2vnsEo6yb1CmZGqfRU/VdZhYmI2Cr6BB8M2Sq2DrnAhT2R
-	pg8DWerQWEexDGjiA1Wna/dGiguwoooOGrDezZAmIEs/9hlrxsLaKD5FmO9CbInqIMgwu46Lf/6
-	dUI+2txXdUx3Z9/VDQwutCRIqYEfZiKz34CUFtLVwEXJo0rgUac0Q8Kiz0rvicYwSdl5c=
-X-Received: by 2002:a05:6a00:4649:b0:82c:ddbb:7db3 with SMTP id d2e1a72fcca58-82d0da8bc37mr11678758b3a.25.1775466498220;
-        Mon, 06 Apr 2026 02:08:18 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([129.41.58.4])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82cf9cf065asm12787649b3a.8.2026.04.06.02.08.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 06 Apr 2026 02:08:17 -0700 (PDT)
-Date: Mon, 6 Apr 2026 14:38:06 +0530
-From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	chleroy@kernel.org, peterz@infradead.org, jpoimboe@kernel.org, jbaron@akamai.com, 
-	aliceryhl@google.com, rostedt@goodmis.org, ardb@kernel.org, ojeda@kernel.org, 
-	boqun@kernel.org, gary@garyguo.net, bjorn3_gh@protonmail.com, lossin@kernel.org, 
-	a.hindborg@kernel.org, tmgross@umich.edu, dakr@kernel.org, nathan@kernel.org, 
-	nick.desaulniers+lkml@gmail.com, morbo@google.com, justinstitt@google.com, 
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org, 
-	llvm@lists.linux.dev
-Subject: Re: [PATCH V9 1/4] rust: Fix "multiple candidates for rmeta
- dependency core" error
-Message-ID: <adNuUxsGl_Tm4Nd7@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <20260404121610.1956528-1-mkchauras@gmail.com>
- <20260404121610.1956528-2-mkchauras@gmail.com>
- <CANiq72k1KN68wG_dh0GcTyfiXUyrVUErJ5D8AOaV6z6=sX4BAg@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fq3hb5X6bz2ySV
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Apr 2026 19:20:31 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 635NsWYM3879301;
+	Mon, 6 Apr 2026 09:20:00 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=BE2EUKU/McYWqo37g
+	hWd6Kx9zwh5R4g+dFW5eL2I394=; b=gjg7yGsBRkoF7CHo65fX+pLrIWM+OOSgy
+	zqlDQhYqlezV2pGIRoepQHzM43iQWNXysqWSXzK6l4JEHdeeq7QshpAiN3DUkigh
+	DNhXnSuBfsJICk58vGs5LswJEmg6KjSOGiSSw9zUYOR6zIrd6Yb1XGhF6PTnBCv/
+	8VLR3BBne7RDQp9jIz1B8MX2OuIn8fTVUQcvaE5jJmZLlQcIVQULBei69Uc0odHZ
+	VmBtiR6S/lJngJz909fbkUTg01cDfqzNyckGO6fkezmBVdAJy/VYURxgSn2i70ma
+	NMMkoO86qIy5Sj//A2XrXX8ZGkDFG565A8nYZ7/OsKvuCfVqVZdxg==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dat9rdems-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 06 Apr 2026 09:19:59 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 63646psp018571;
+	Mon, 6 Apr 2026 09:19:58 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dbcysv7b0-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 06 Apr 2026 09:19:58 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6369JsKr42729738
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 6 Apr 2026 09:19:54 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 447AA20043;
+	Mon,  6 Apr 2026 09:19:54 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7762B20040;
+	Mon,  6 Apr 2026 09:19:50 +0000 (GMT)
+Received: from li-3f69264c-2ce6-11b2-a85c-c3f414d24014.bl1-in.ibm.com (unknown [9.123.3.209])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon,  6 Apr 2026 09:19:50 +0000 (GMT)
+From: Sayali Patil <sayalip@linux.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
+        linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+        linux-kselftest@vger.kernel.org,
+        Ritesh Harjani <ritesh.list@gmail.com>
+Cc: David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>,
+        Michal Hocko <mhocko@kernel.org>, Oscar Salvador <osalvador@suse.de>,
+        Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+        Dev Jain <dev.jain@arm.com>, Liam.Howlett@oracle.com,
+        linuxppc-dev@lists.ozlabs.org, Miaohe Lin <linmiaohe@huawei.com>,
+        Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+        Sayali Patil <sayalip@linux.ibm.com>
+Subject: [PATCH v4 03/15] selftests/mm: restore default nr_hugepages value via EXIT trap in hugetlb_reparenting_test.sh
+Date: Mon,  6 Apr 2026 14:49:22 +0530
+Message-ID: <e148e4232d4b802795751a7766fcce8884c6e3c7.1775466329.git.sayalip@linux.ibm.com>
+X-Mailer: git-send-email 2.52.0
+In-Reply-To: <cover.1775466329.git.sayalip@linux.ibm.com>
+References: <cover.1775466329.git.sayalip@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,104 +96,77 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CANiq72k1KN68wG_dh0GcTyfiXUyrVUErJ5D8AOaV6z6=sX4BAg@mail.gmail.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: W7LetLeRBK4_w-4UpW93fUvAyuxjOU07
+X-Proofpoint-ORIG-GUID: G6LyCCgjL_tmGz3AUnWmYTvfJ_jmTIYE
+X-Authority-Analysis: v=2.4 cv=bLYb4f+Z c=1 sm=1 tr=0 ts=69d37abf cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=dU9eaedoi-733nYHt2kA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDA2MDA5MCBTYWx0ZWRfX41v18ENz44Zy
+ r2Qcb5Z0AFbmVskgq/xuF2WLv8FzVjzo/Dvz6OSGz4RHEbYvZdgZPmIfnGSaOUi38C7/0ib0bsl
+ bXwYTHdAaBxhwM9aOXnAEMKo//dOnm8AkVYynRa2Dg1vYFHa9ttw0IHprVYEvHkHex/3oJpm+la
+ 1/GcOS3fCt/DExCJlCPxKAJb1lVi6UL6vdQN6MBvlvy1zmhQ15gHTg52tgmDfvLgEUp8plCADgG
+ 212iGeaOWIyKSpCPTuN/F3m/76OyCYv7GDcPlvqv67tv7CRAVQsaJei9eK0ytLkJnr7ee5XYkw4
+ KSqW2XyUdRSvSle6yTziS+/rfJ7TP8XwNuQ1+8EK9vkEXxdWHHjg3RwkqnaQWHIBk05IL16jRVF
+ 5SgWdUf1fpGsBM7pR5eoBM6l46QslyoTiS2cegLSEI3dusjc/C/U6nehmmX2V0QzIfYk92aOJbX
+ TLSkaT3fxMiJO4JLiSQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-06_02,2026-04-03_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 adultscore=0 suspectscore=0 phishscore=0 bulkscore=0
+ spamscore=0 priorityscore=1501 lowpriorityscore=0 malwarescore=0
+ impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2603050001
+ definitions=main-2604060090
 
-On Sat, Apr 04, 2026 at 11:04:08PM +0200, Miguel Ojeda wrote:
-> On Sat, Apr 4, 2026 at 2:16 PM Mukesh Kumar Chaurasiya (IBM)
-> <mkchauras@gmail.com> wrote:
-> >
-> > When building Rust code with LLVM=1 with -j1, rustc was encountering
-> > an error:
-> > "multiple candidates for `rmeta` dependency `core` found", with two
-> > candidates:
-> > 1. The host's standard library from the rustup toolchain
-> > 2. The kernel's custom libcore.rmeta in the rust/ directory
-> 
-> Please clarify in what conditions this happens, e.g. when building
-> natively in an architecture like powerpc for which the target (...)
-> 
-> Otherwise, it sounds like this is something that would be happening to
-> essentially everyone just by building with `-j1`, which is not the
-> case.
-> 
-> Also, since you may need to reword a bit, please take the chance to
-> use the present tense to describe the current state, and then the
-> imperative for what is changed. (The past is usually used for
-> something that already changed in the past, not for something that
-> still happens before the patch is applied -- I hope that makes sense).
-> 
-Yeah this makes sense. Will reword the whole thing and send out a new
-revision.
+The test modifies nr_hugepages during execution and restores it from
+cleanup() and again reconfigure it setup, which is invoked multiple
+times across test flow. This can lead to repeated
+allocation/freeing of hugepages.
 
-> > - Update rustdoc-pin_init to use explicit --extern paths for proc macros
-> >   as pin-init also needs alloc crate from -L$(objtree)/rust. So the proc
-> >   macros needs an absolute path
-> 
-> As Gary mentioned, this list may be too exhaustive, i.e. one needs to
-> see it in the diff anyway. Usually what we do is try to summarize, and
-> most importantly, explain the "why".
-> 
-> Also, it doesn't seem like the list covers every change anyway if that
-> was the intention, e.g. the removal of `--out-dir`.
->
-Ohk, will rewrite this part also.
+With set -e, failures in cleanup (e.g., rmdir/umount) can also
+cause early exit before restoring the original value at the end.
 
-> > -rustdoc-quote: private rustc_target_flags = $(quote-flags)
-> > +rustdoc-quote: private rustc_target_flags = $(quote-flags) \
-> > +    --extern proc_macro2
-> 
-> Hmm... why is this needed? The variable already carries the flag, no?
-> 
-Oh yeah. Will fix this.
-> > -               --out-dir $(objtree)/$(obj) -L$(objtree)/$(obj) \
-> 
-> This looks like an important removal that is not explained/mentioned elsewhere.
-> 
-Ohk, will explain this in commit message.
+Move restoration to a single EXIT trap so the original value is
+restored reliably on all exit paths while avoiding repeated churn.
 
-> Also, is there a reason why we cannot keep the `-L` here instead of
-> adding it in every proc macro library?
-> 
-Will move the `-L` here instead of each lib.
-> > +    --extern pin_init_internal=$(abspath $(objtree)/$(obj)/$(libpin_init_internal_name)) \
-> > +    --extern macros=$(abspath $(objtree)/$(obj)/$(libmacros_name)) \
-> > +    $(call cfgs-to-flags,$(pin_init-cfgs)) \
-> 
-> Hmm... This special handling isn't great, and the fact that it means
-> hardcoding/duplicating `pin_init-flags`.
-> 
-> Should we move the proc macros too?
-> 
-Let me find a cleaner way to do this. Will do something about this in
-next revision.
+Fixes: 585a9145886a ("selftests/mm: restore default nr_hugepages value during cleanup in hugetlb_reparenting_test.sh")
+Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
+---
+ tools/testing/selftests/mm/hugetlb_reparenting_test.sh | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-> > -               --crate-type proc-macro -L$(objtree)/$(obj) \
-> > +               --crate-type proc-macro \
-> > +               -L$(objtree)/$(obj)/host \
-> 
-> Spurious newline added?
-> 
-Will remove this.
+diff --git a/tools/testing/selftests/mm/hugetlb_reparenting_test.sh b/tools/testing/selftests/mm/hugetlb_reparenting_test.sh
+index 0dd31892ff67..7ddb370e1572 100755
+--- a/tools/testing/selftests/mm/hugetlb_reparenting_test.sh
++++ b/tools/testing/selftests/mm/hugetlb_reparenting_test.sh
+@@ -12,6 +12,8 @@ if [[ $(id -u) -ne 0 ]]; then
+ fi
+ 
+ nr_hugepgs=$(cat /proc/sys/vm/nr_hugepages)
++trap 'echo "$nr_hugepgs" > /proc/sys/vm/nr_hugepages' EXIT
++
+ usage_file=usage_in_bytes
+ 
+ if [[ "$1" == "-cgroup-v2" ]]; then
+@@ -56,7 +58,6 @@ function cleanup() {
+   rmdir "$CGROUP_ROOT"/a/b 2>/dev/null
+   rmdir "$CGROUP_ROOT"/a 2>/dev/null
+   rmdir "$CGROUP_ROOT"/test1 2>/dev/null
+-  echo $nr_hugepgs >/proc/sys/vm/nr_hugepages
+   set -e
+ }
+ 
+@@ -240,4 +241,3 @@ if [[ $do_umount ]]; then
+   rm -rf $CGROUP_ROOT
+ fi
+ 
+-echo "$nr_hugepgs" > /proc/sys/vm/nr_hugepages
+-- 
+2.52.0
 
-> > -               @$(objtree)/include/generated/rustc_cfg $<
-> > +               @$(objtree)/include/generated/rustc_cfg \
-> > +               $(rustc_target_flags) \
-> > +               $<
-> 
-> Why is the variable moved here?
-> 
-Will fix this too.
-
-> Thanks!
-> 
-> Cheers,
-> Miguel
-
-Thanks for the detailed review.
-
-Regards,
-Mukesh
 
