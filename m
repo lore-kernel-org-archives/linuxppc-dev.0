@@ -1,70 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-19389-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19390-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB09EEF4EC9
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2026 09:20:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8374EF4EC9
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2026 09:20:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fq3hh4h7vz2yl2;
-	Mon, 06 Apr 2026 19:20:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fq3hp0zfwz2yfl;
+	Mon, 06 Apr 2026 19:20:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775467236;
-	cv=none; b=Ut36RCQUUNjD0+9ovZ2HvB2oj5s1RtvRuJvYTF4xNkitrrE4FfcgNh8t4ZpIMvU9tY80QPsehXl34NLAgyC5Df63JytvZLMTfZU8Vj/9YyMHeLfJu6hvN2pqYe2KxtyuY7zrVb0K/86fi6JaJr98olldD0/yEyKeBEQE2Ad2bS6MXQ3J8GEUUjZvragwtwSTE3N/lSFh78oGva1LtpJJFiiEdGDed+0cdGRZIt/KSuay4jjPgYk84lv30J2jykJaTfGH97zDKGDlActG/0DU6nXHGyL5ryHa4kEILdILiQ5Uy2AzFrI4W/bZJCp9+b0c+sq36oA2F7A1FhgE0AWt9Q==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775467242;
+	cv=none; b=OZWc+AGeGOk8k8lVUcTty6wNhKEt1VantEAMLwJT04r22FTSL+v3rufDw/6twH1qkUTOYB49/BuI1i2OSHjp2eDLF6RAIXoNdAeW3wAmuifNDBEux2sqRmtDxAi1uEdxlOzhfoNVqtVqlnd8XwvSrxfvGiH6fSDvEm3Gr+Xj6SvTqG0osYIlFYcya5NhkDIk6lu/A6bdsgXOLM4Zt39WKkjcmVwMByx0MnEQgIZ3l+q2hUuSHpQX0b1l0aC6iWEGr0aSKzxNKiuqdZCGUKuKXnGdtRtAh5nlS6qzkpGndLVxwPI58RfUdcLRfYM0EWZ066KYuBKK8CsC9vNDG+BJrw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775467236; c=relaxed/relaxed;
-	bh=KF0duKJ7kidshxIeQZb5EcnjWw7TF8XQDpz9/tTREjA=;
+	t=1775467242; c=relaxed/relaxed;
+	bh=Nw9ZkZ2qtFm5sEpfNZ2VZDGfra/1UI4dbSFUj9UhCgY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=B6iUaSVXDM/m5LpZKqsLQ0CtRs82SFYvSqvdtNv7jF5gMyXUMeXFiqnNAo4MSDtdeaZ1RfTAu72XbmnhStLblR73vvucYmtqVwU13JK5jAPHsMZaXgIL+KNOmH9uVfWaVO/voJYsS+A1gRbcSjrqsFGSoSvcaf8t2KdlL7m8z3ehcbSXjSTVuWCW/dn3K2ILSNTFmCTt9IvuuhRf6+jvw8d2EtIPS7K13BBH5JMIguTxilbQYWpqKWeKrxXMgmOJlj5TeD26+EPHkf7B1lGwF7+myEEi8qZgFX31JOmRIML6ZQpdKMQJkf2wazdKxKL8SxmPS7lW811GjWzVAMJnTA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pgl+hWjC; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=ZKbnMUh7HgyUmhrC4zTaj5GYM7ghAE8pQJioPKzRofQCj+YKNlzoBgM8CTGT5x5cgV//zLP1mn7gTqo2Ssx2px2cwEEQ4JQ/4sFqlkm5xl0JKYF9NZb8AAEsGMtmzp/yClSKEtkun/kSHy43PVr2damV4T4oXFM9neQe72h/F6vUr4D0k2ctaIQZNs7ksNShrcxQKflT8alErUyWqiEy/OxRfV5It+1uBee0qRBo7W20+K9eNFXLCJcvq3QnTUzKhOFf2ZB+w1AqSmkgedIiO8sH89VilTntOvj8v/VR6pTYkR128AHxvPgmYCp7YYxVIToI703nTOUVC21NHemF9w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=A+KaU/rW; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pgl+hWjC;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=A+KaU/rW;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fq3hg6XKnz2ySV
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Apr 2026 19:20:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fq3hn35WQz2ySV
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Apr 2026 19:20:41 +1000 (AEST)
 Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 635GjJNf3103384;
-	Mon, 6 Apr 2026 09:20:11 GMT
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6362uv93052743;
+	Mon, 6 Apr 2026 09:20:18 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=KF0duKJ7kidshxIeQ
-	Zb5EcnjWw7TF8XQDpz9/tTREjA=; b=pgl+hWjCPThXudeYR9tfUEanv4t9VABx5
-	K7L49v0Ijr3/Y6B0+yXUOweqkNUX7yawJMbiWNyYlbTXrAxcEX6DdwXILOvfch31
-	/MO+suSCBFVTAwpdZMEIuz//u7OhUYsOqBxWFBfBRCrvYRzJN/3nVlbuDFb5FpSg
-	Thdesf4Jt45KsHvI1CjQbYga76s6wupvEBcUJ7kAr8muqfEFVOvf5XmvN6okydQP
-	1FEbvzOoisB7STlX5pfxOilLkeH5arOz8JbaZ70huH+djqHyz11/57zUM1EXbWf+
-	44bnWS5EMXfpGHJDprklB0xaAKYfvMbmvJkYwiMeJ3AiSgEb+pmEg==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4datap5vpp-1
+	:mime-version:references:subject:to; s=pp1; bh=Nw9ZkZ2qtFm5sEpfN
+	Z2VZDGfra/1UI4dbSFUj9UhCgY=; b=A+KaU/rWjoLfdC8ACThoftGnORpTPLVja
+	pHYFrxRX5bHxIvIbuUKx9LnMHtySTAv/6EuE4weo2+ZfSYkWW1KiFxSdgqdQzjGE
+	iuNucuotCttsCZXCcRODfUwguf5m1kdgFXOg/VzgYZpU9CcDSBsNksUG1W2EN9rh
+	fz5VbeIjOo8wWj+1VgefvKOpax63zfCO/RydZD1zX6T2kJAEhtBCTNyJnXyk3f7J
+	NU+dMHbxx9dBYbtU0EaKE/Ul8z2TH/BB9aF6wihLh6+irx8ZHUuLw6m0hdTVRqD1
+	oIWS2yd2JDAFga0x1u3bQUKNey6paO0E8Qw6mLvmtD1DOg0TK+YvA==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4datap5vq2-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 06 Apr 2026 09:20:10 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 6365wtoS020570;
-	Mon, 6 Apr 2026 09:20:09 GMT
+	Mon, 06 Apr 2026 09:20:17 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 63671mJO006367;
+	Mon, 6 Apr 2026 09:20:16 GMT
 Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dbdync2w2-1
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dbfp1kv2u-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 06 Apr 2026 09:20:09 +0000
+	Mon, 06 Apr 2026 09:20:16 +0000
 Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6369K5ZW58130846
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6369KDi454264174
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 6 Apr 2026 09:20:05 GMT
+	Mon, 6 Apr 2026 09:20:13 GMT
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7B6B72004B;
-	Mon,  6 Apr 2026 09:20:05 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id E0BB720043;
+	Mon,  6 Apr 2026 09:20:12 +0000 (GMT)
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 27CE320040;
-	Mon,  6 Apr 2026 09:20:02 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 7E36C20040;
+	Mon,  6 Apr 2026 09:20:09 +0000 (GMT)
 Received: from li-3f69264c-2ce6-11b2-a85c-c3f414d24014.bl1-in.ibm.com (unknown [9.123.3.209])
 	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  6 Apr 2026 09:20:01 +0000 (GMT)
+	Mon,  6 Apr 2026 09:20:09 +0000 (GMT)
 From: Sayali Patil <sayalip@linux.ibm.com>
 To: Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
         linux-mm@kvack.org, linux-kernel@vger.kernel.org,
@@ -77,9 +77,9 @@ Cc: David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>,
         linuxppc-dev@lists.ozlabs.org, Miaohe Lin <linmiaohe@huawei.com>,
         Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
         Sayali Patil <sayalip@linux.ibm.com>
-Subject: [PATCH v4 06/15] selftests/mm: size tmpfs according to PMD page size in split_huge_page_test
-Date: Mon,  6 Apr 2026 14:49:25 +0530
-Message-ID: <ac04b3ee7d733798b4d79c840f4ce4e94118680c.1775466329.git.sayalip@linux.ibm.com>
+Subject: [PATCH v4 08/15] selftest/mm: align memory size to huge page size in hugepage-mremap test
+Date: Mon,  6 Apr 2026 14:49:27 +0530
+Message-ID: <6aecfff81bd3e288e66af238f50f35eac0bd4ee7.1775466330.git.sayalip@linux.ibm.com>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <cover.1775466329.git.sayalip@linux.ibm.com>
 References: <cover.1775466329.git.sayalip@linux.ibm.com>
@@ -99,21 +99,20 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=Bp+QAIX5 c=1 sm=1 tr=0 ts=69d37acb cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+X-Authority-Analysis: v=2.4 cv=Bp+QAIX5 c=1 sm=1 tr=0 ts=69d37ad2 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
  a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=uAbxVGIbfxUO_5tXvNgY:22 a=Ikd4Dj_1AAAA:8 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=2DqBuDyFdJ_AORcY0zkA:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDA2MDA5MCBTYWx0ZWRfX2nir+uOPUP7V
- eZy2CrCAuQTPd0ZX4DHbX9TeMZGTzN19LAkyMfPR65NLBAUX3M4lZxj8QnNFSQnBavANHHy0sR6
- rA2GOJj0UwXfz8KTYpcCAap76u19I6lfy9D0I/p18ffEB1VD6ZRJVoB0jo6EyGB80Gz/4QcwzW+
- hZO+VcU0itWGVa+KCdx/sTjdnPkFHtjeg5/VNhIbVqNHe+SGNno8L+m8Ikr1PmLjkoZuagqR/sO
- whfNL4oSEZV1DmH6pjn9DIhIhqUc+RALTDoAff1kQwx3WfD2jOyJkMR3kvOPPC3HF5SYk+aYTM0
- F2VoA3YJISHLdoaEY06QPw08Enu1t5cTAT7kZBH0jzvKe4+V8dMySsk000zOS9V10BadD4dJOPS
- GiKxdOniY1hnrayo/gQ8lp2dJPVyGw9S4K+QN5qJgsXKhSca9kj4KaXUWqqryhrH7ZNz+Sf+913
- RTEn368WkY5OgjBNHsw==
-X-Proofpoint-GUID: CX7u1yjqQVtEQ4iW6KqbqUiUpJyD0NDv
-X-Proofpoint-ORIG-GUID: 7FUqPZYTnCHDzchU8xb7T7f_019zCoNA
+ a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8 a=7t5IiW4R7ddU3FUDOzEA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDA2MDA5MCBTYWx0ZWRfX93HuP0OgvJW/
+ c3p7A5qwju1Z5Im4P47rbK2t2YTssBP286ygxm9qeuUI+rw+Wg/JxWQyCwYtNgbvFRUvKGnRYEJ
+ fGGaGvppjaeuRof9RdXJowRqDHKWVhMPnJtGoTK14zTZkH7Nud/didk5UuXpXN0Pqfj6IXtmsZ6
+ /Vx+7kHPAfMjhFiYxA2LemJfRkOYoNneWuUVBcHpmattn61DxmGyO2py55DIpvJ7xiYcPlJ89lf
+ VrJtGjpLkcVaT9KgPhmRDAbzmg55R43zX24nlJ/+T8EWiL8MFxwNI2h7OqWxvWqFqEs16RZyXIT
+ dIKqfokn1HYZS0xsCOjQL6nTbGgOC/kZglOANHOAgnbgStT5bADF4bZBv3CpZSG4Gr3pxNbzhbC
+ rdoAH08Trc9ZiTbXQ4R+iWLJaa4tgXId5O3i0nM1S8pFkvvA/jSVJlMI+A9AMSgg1DZbZo6ZDN1
+ kTi4Jvtk83segJsY0hA==
+X-Proofpoint-GUID: YE8RH6-T8ap1Ln54ZpQjoOMHN1rEKJNh
+X-Proofpoint-ORIG-GUID: eqEvO35RqkYaRN0wbx7743G22Ks-VQsN
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-04-06_02,2026-04-03_01,2025-10-01_01
@@ -123,100 +122,92 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2604060090
 
-The split_file_backed_thp() test mounts a tmpfs with a fixed size of
-"4m". This works on systems with smaller PMD page sizes,
-but fails on configurations where the PMD huge page size is
-larger (e.g. 16MB).
+The hugepage-mremap selftest uses a default mapping size of 10MB
+when no argument is provided. This size is not guaranteed to be
+aligned to the system hugepage size, which can cause munmap() to fail
+and mremap() to succeed where a failure is expected.
 
-On such systems, the fixed 4MB tmpfs is insufficient to allocate even
-a single PMD-sized THP, causing the test to fail.
-
-Fix this by sizing the tmpfs dynamically based on the runtime
-pmd_pagesize, allocating space for two PMD-sized pages.
+Align the mapping length to the runtime hugepage size using
+default_huge_page_size() to ensure the mapping is properly
+aligned. Also handle the case where
+default_huge_page_size() returns 0 by skipping the test.
 
 Before patch:
-  running ./split_huge_page_test /tmp/xfs_dir_YTrI5E
-  --------------------------------------------------
+  running ./hugepage-mremap
+  ------------------------------
   TAP version 13
-  1..55
-  ok 1 Split zero filled huge pages successful
-  ok 2 Split huge pages to order 0 successful
-  ok 3 Split huge pages to order 2 successful
-  ok 4 Split huge pages to order 3 successful
-  ok 5 Split huge pages to order 4 successful
-  ok 6 Split huge pages to order 5 successful
-  ok 7 Split huge pages to order 6 successful
-  ok 8 Split huge pages to order 7 successful
-  ok 9 Split PTE-mapped huge pages successful
-   Please enable pr_debug in split_huge_pages_in_file() for more info.
-   Failed to write data to testing file: Success (0)
-  Bail out! Error occurred
-   Planned tests != run tests (55 != 9)
-   Totals: pass:9 fail:0 xfail:0 xpass:0 skip:0 error:0
- [FAIL]
+  1..1
+  Map haddr: Returned address is 0x7eaa40000000
+  Map daddr: Returned address is 0x7daa40000000
+  Map vaddr: Returned address is 0x7faa40000000
+  Address returned by mmap() = 0x7fffaa600000
+  Mremap: Returned address is 0x7faa40000000
+  First hex is 0
+  First hex is 3020100
+  Bail out! mremap: Expected failure, but call succeeded
+  Planned tests != run tests (1 != 0)
+  Totals: pass:0 fail:0 xfail:0 xpass:0 skip:0 error:0
+  [FAIL]
+not ok 1 hugepage-mremap # exit=1
 
 After patch:
-  running ./split_huge_page_test /tmp/xfs_dir_bMvj6o
-  --------------------------------------------------
+  running ./hugepage-mremap
+  -------------------------
   TAP version 13
-  1..55
-  ok 1 Split zero filled huge pages successful
-  ok 2 Split huge pages to order 0 successful
-  ok 3 Split huge pages to order 2 successful
-  ok 4 Split huge pages to order 3 successful
-  ok 5 Split huge pages to order 4 successful
-  ok 6 Split huge pages to order 5 successful
-  ok 7 Split huge pages to order 6 successful
-  ok 8 Split huge pages to order 7 successful
-  ok 9 Split PTE-mapped huge pages successful
-   Please enable pr_debug in split_huge_pages_in_file() for more info.
-   Please check dmesg for more information
-  ok 10 File-backed THP split to order 0 test done
-   Please enable pr_debug in split_huge_pages_in_file() for more info.
-   Please check dmesg for more information
-  ok 11 File-backed THP split to order 1 test done
-   Please enable pr_debug in split_huge_pages_in_file() for more info.
-   Please check dmesg for more information
-  ok 12 File-backed THP split to order 2 test done
-...
-  ok 55 Split PMD-mapped pagecache folio to order 7 at
-    in-folio offset 128 passed
-   Totals: pass:55 fail:0 xfail:0 xpass:0 skip:0 error:0
-   [PASS]
-ok 1 split_huge_page_test /tmp/xfs_dir_bMvj6o
+  1..1
+  Map haddr: Returned address is 0x7eaa40000000
+  Map daddr: Returned address is 0x7daa40000000
+  Map vaddr: Returned address is 0x7faa40000000
+  Address returned by mmap() = 0x7fff13000000
+  Mremap: Returned address is 0x7faa40000000
+  First hex is 0
+  First hex is 3020100
+  ok 1 Read same data
+  Totals: pass:1 fail:0 xfail:0 xpass:0 skip:0 error:0
+  [PASS]
+ok 1 hugepage-mremap
 
-Fixes: fbe37501b252 ("mm: huge_memory: debugfs for file-backed THP split")
-Reviewed-by: Zi Yan <ziy@nvidia.com>
-Reviewed-by: David Hildenbrand (Arm) <david@kernel.org>
-Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Fixes: f77a286de48c ("mm, hugepages: make memory size variable in hugepage-mremap selftest")
 Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
 ---
- tools/testing/selftests/mm/split_huge_page_test.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ tools/testing/selftests/mm/hugepage-mremap.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/tools/testing/selftests/mm/split_huge_page_test.c b/tools/testing/selftests/mm/split_huge_page_test.c
-index e0167111bdd1..57e8a1c9647a 100644
---- a/tools/testing/selftests/mm/split_huge_page_test.c
-+++ b/tools/testing/selftests/mm/split_huge_page_test.c
-@@ -484,6 +484,8 @@ static void split_file_backed_thp(int order)
- 	char tmpfs_template[] = "/tmp/thp_split_XXXXXX";
- 	const char *tmpfs_loc = mkdtemp(tmpfs_template);
- 	char testfile[INPUT_MAX];
-+	unsigned long size = 2 * pmd_pagesize;
-+	char opts[64];
- 	ssize_t num_written, num_read;
- 	char *file_buf1, *file_buf2;
- 	uint64_t pgoff_start = 0, pgoff_end = 1024;
-@@ -503,7 +505,8 @@ static void split_file_backed_thp(int order)
- 		file_buf1[i] = (char)i;
- 	memset(file_buf2, 0, pmd_pagesize);
+diff --git a/tools/testing/selftests/mm/hugepage-mremap.c b/tools/testing/selftests/mm/hugepage-mremap.c
+index b8f7d92e5a35..f66e4d806477 100644
+--- a/tools/testing/selftests/mm/hugepage-mremap.c
++++ b/tools/testing/selftests/mm/hugepage-mremap.c
+@@ -32,6 +32,7 @@
  
--	status = mount("tmpfs", tmpfs_loc, "tmpfs", 0, "huge=always,size=4m");
-+	snprintf(opts, sizeof(opts), "huge=always,size=%lu", size);
-+	status = mount("tmpfs", tmpfs_loc, "tmpfs", 0, opts);
+ #define PROTECTION (PROT_READ | PROT_WRITE | PROT_EXEC)
+ #define FLAGS (MAP_SHARED | MAP_ANONYMOUS)
++#define ALIGN(x, a) (((x) + ((a) - 1)) & ~((a) - 1))
  
- 	if (status)
- 		ksft_exit_fail_msg("Unable to create a tmpfs for testing\n");
+ static void check_bytes(char *addr)
+ {
+@@ -110,6 +111,7 @@ int main(int argc, char *argv[])
+ {
+ 	size_t length = 0;
+ 	int ret = 0, fd;
++	size_t hpage_size;
+ 
+ 	ksft_print_header();
+ 	ksft_set_plan(1);
+@@ -126,6 +128,14 @@ int main(int argc, char *argv[])
+ 		length = DEFAULT_LENGTH_MB;
+ 
+ 	length = MB_TO_BYTES(length);
++
++	hpage_size = default_huge_page_size();
++	if (!hpage_size)
++		ksft_exit_skip("Unable to determine huge page size\n");
++
++	/* Ensure length is hugepage aligned */
++	length = ALIGN(length, hpage_size);
++
+ 	fd = memfd_create(argv[0], MFD_HUGETLB);
+ 	if (fd < 0)
+ 		ksft_exit_fail_msg("Open failed: %s\n", strerror(errno));
 -- 
 2.52.0
 
