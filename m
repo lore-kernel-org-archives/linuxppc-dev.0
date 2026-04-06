@@ -1,73 +1,163 @@
-Return-Path: <linuxppc-dev+bounces-19413-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19414-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8944FB5175
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2026 22:49:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A1E1FB5173
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2026 23:25:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fqPfS0450z2xlk;
-	Tue, 07 Apr 2026 08:49:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775515791;
-	cv=none; b=HCm3tkdzbyarpTYo1M87IuIm01M2abI3SV6yR9o8YTM3uS0xIikVPhbryngzXVrUPALEJRp75BF95rzSD8jKt6ar761zJcqtT4vaWpHxInJf/0GWxtyfPszsZcfKu5BZW9yURFpoYtJs4qL7fk7fyxGz9jBmqNw1XVnvCBZf03nyXdkONH5v4S8ustiSNhOW7f25ekMKsE5YAuvIeFys3LLQeT0GR9c3+hUKkaQkMvx2d92Veojb0rS7Y3g9ZpYA5YiQVwJr6IEvhBchJ1uP0S73Q3xJqAQO5lqwLUQMKenOhQHxGIA5ytVtVtwEN7lyYMYOALbtVfc+OdAO895aCg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fqQRX6mdSz2xNT;
+	Tue, 07 Apr 2026 09:25:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1331"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775517928;
+	cv=none; b=TS44JN8eOuujM6vNtzlOSmP92QBOPfiAZt6+jrzMFtlQfnE+xziDkAqqUtYHVLlsHLvMnfLKyx6mEmnXxBo8r5lZ9pPMBzHV0cqeiWsj1bBNzqPCEGl+OMfQtPl2aq9FYYip+EhKSnKW7KjO1/pgXArAHLedmzYy6FBqjiA/O871w86widqamUwhqfWjtCNQtmlXGnFSx/HEgTDCGmmQjKFagwbjFuUmqU+5xX8OEcytSxcWSo2KrhgiG63eKbGpBfFb9yVSyg0gTP5cTobN8D2EFh35jOBY9eFrTQWRBOiyN51pmtgcPlnI87wREVTRRYEmKq/yD9Ho9yWOCsEqNw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775515791; c=relaxed/relaxed;
-	bh=3Bg7Onw9EvRy5vZT1TxP1I8kshlczv8OpDAPEzkrylo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=H0PCUwC+4zJ4/WWfwsOiw4gFhJyya4lp+pF619kgVGSHosAI/xU0MwT4bLRJnJVVZxX+YRpNJBm26wmgq+z375ABpPMnVfrzYP5E+SA0Yca2XOm/a9LNHqRj1zamrUuKf72wDXkD4h2G4qa1Y53E8qi+KTfaXAXFtblt2BddMSqIzWHHjE/C/3pqQmH2nN1g+EpgqeBoR3nQSUt8wpzY2CvboGRG7U9rkhmbdLOMx/lZ9cF44OnMEzgr7F3lFyplttOV3aJ/qigs8gAqHtaXnhZEIXUzTDfO2O98wjQ4klDsQvm6T9ICIUAhpYkD7qqSZSv/HvwffQT2Gt2GsiIJHw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TO0rZ7i/; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gbatra@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1775517928; c=relaxed/relaxed;
+	bh=e+LsTmUaKDUP6TtbtpmsofePBR8TWMvjJHv9+/xi4nY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=TjOwBC4SQ2xwUJAEj2+10rD+CII5C/6ZgaOUnS1b/LE8MEKXvm+pcg4pTeKdDAAmFS2V6PbBpIht1F/NqtFOzzVCVSspTmB2NduDoiCdYE2PYAbJ1m8EC2mfod+FxHcpIwUIyM1Lad6gF4APHDsaOcpYEVd4kzWIkCz/zIsNeBvgDf7HDo4rpBZkV63kkb0iJ0zfnb3jp8UDx6M5i2DsIqR31hQulwRCOLyjfUoyfdHCWzqDOJ9nTBG7vsDclAI4nawgpr99c2TXQiwTFb1A+JhPTtAkNvDb1usQl/2M6CY0kzZFMMBhM7VbUetwO6M1mJGH7pYIE2zPf2v9UQwczA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org; dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=J51YEBaC; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1331; helo=mail-dy1-x1331.google.com; envelope-from=dianders@chromium.org; receiver=lists.ozlabs.org) smtp.mailfrom=chromium.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TO0rZ7i/;
+	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=J51YEBaC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gbatra@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::1331; helo=mail-dy1-x1331.google.com; envelope-from=dianders@chromium.org; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x1331.google.com (mail-dy1-x1331.google.com [IPv6:2607:f8b0:4864:20::1331])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fqPfQ5GRWz2xSF
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Apr 2026 08:49:50 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 636LmOlo2302449;
-	Mon, 6 Apr 2026 22:49:43 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=3Bg7On
-	w9EvRy5vZT1TxP1I8kshlczv8OpDAPEzkrylo=; b=TO0rZ7i/0Yip7PBAsIfpbw
-	q4pMOJvFNoUS9Ev7iBIToDfPLOCiRT/ryi+WZ877yaAr0sflfnNiYf83qcpMUF79
-	YcNrhtf7XpJber09rx0/FfiXZH6NY9ZEKXZsw0nMmhnqNMWrDpV47EpdBXauqNQH
-	8UgGU+dd1WCeIKpf1i0HOo4ruLKU6wkBRAkgQFiVKYXYOG8x8s0Bmnohe5XH+Tn7
-	wEWt4Xb9jDb7HjoB6mc1U5rm1drwmlDw5tz2LjECuNTO9QubnSoVb66ca+Aq0iPb
-	hjyi4dzRsdTzdl//MUswjfzBSLS12QetTPDgAbffzkQvVPoNNKYMwJq+Zmxg+5Og
-	==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dcn2f850x-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 06 Apr 2026 22:49:43 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 636L92WS026707;
-	Mon, 6 Apr 2026 22:49:42 GMT
-Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dcmg7r7dr-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 06 Apr 2026 22:49:42 +0000
-Received: from smtpav05.wdc07v.mail.ibm.com (smtpav05.wdc07v.mail.ibm.com [10.39.53.232])
-	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 636MneSr52822304
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 6 Apr 2026 22:49:40 GMT
-Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 92FEA58059;
-	Mon,  6 Apr 2026 22:49:40 +0000 (GMT)
-Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1198658043;
-	Mon,  6 Apr 2026 22:49:40 +0000 (GMT)
-Received: from [9.61.252.193] (unknown [9.61.252.193])
-	by smtpav05.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  6 Apr 2026 22:49:39 +0000 (GMT)
-Message-ID: <906e3e02-ede2-4925-88a2-4bec6e32b121@linux.ibm.com>
-Date: Mon, 6 Apr 2026 17:49:39 -0500
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fqQRW0Lp3z2yfs
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Apr 2026 09:25:26 +1000 (AEST)
+Received: by mail-dy1-x1331.google.com with SMTP id 5a478bee46e88-2ce102afb0aso2630017eec.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Apr 2026 16:25:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1775517923; x=1776122723; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=e+LsTmUaKDUP6TtbtpmsofePBR8TWMvjJHv9+/xi4nY=;
+        b=J51YEBaCA+bUN38q3XXwMl21y97zWG5ODUEZhkKNQusDnDyZ323wmziB9eBSPBPGih
+         LxsA74yXTRkqXHiCe8NunyctS9PeCoXYWchGeDgpjRbkcgnodIiEqXg8AJUhIHyzNIa8
+         yQtstMnnwR9jfHpMMUj2qHwroIcCbgmBeXY6I=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775517923; x=1776122723;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=e+LsTmUaKDUP6TtbtpmsofePBR8TWMvjJHv9+/xi4nY=;
+        b=jWnwHUYkjTxAp/vJ40EM2uhD/t4BVlbWOmK1GQU/el+/M9hWQ4YWeeN9Rd84qFmyN6
+         D6Uxe4YP5JXKjAHhOpwvfHqDg/eYA6lK83PyqFuZDIrGnBpUFyBiwPKSOF+yWUVPQpDu
+         1OjHZ85W4R039qWN/ANLPzAcfSbyCoDsLae/FtSJ7j12VyW9WIyvzD7XY9gtf/lje4is
+         UThM0wD/K2UIZEqRDgNwJcGrQj+TpJ1fQzMlI8fPK2vTOcsKyEuKvMkia35bNepSIlg4
+         4pTaQMFzUzXjEjGK5xdgG2JUNI2wasMkDYxLD2i2rAoK7plwjxbjRaInxtrO17sK/mKn
+         iDxw==
+X-Forwarded-Encrypted: i=1; AJvYcCWYI1v4/8OZeavSEE/37KSRiKvWIUD1airuGap2ieVs0KAERrEL6WcA/8fdRqLyD8+9ewYla11mhPyHvqg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxwzJaPJwNLtdi1D700waWL5ztHODNc0zLtInqiYd8/YG5q8JSx
+	q37WufNM+EQzVRJDaz7iEjtZWSWNrdKmbYgrzIXH35uA34a52+f7IjMWxBz/g/XWgQ==
+X-Gm-Gg: AeBDiesYO1Uajt175btCgC7VC0EphUTHVkSUU2PVZ7vsqM4l7kISCf3T5ONsx6ohotK
+	INiahD2QLghJItURwCkkzgPJF4viNUO0OnVf7fHUz/Up7hzEJ6oAuYVJme5I5fy85pEwklblHD6
+	98POnLjkpTPPg7HgtCY2j9F/vnU6M1xtD0OKl9mzDhf8W/YK1hWXtF3NDLHDkPawL5a3XbF88bo
+	sBYuWh0Yj4IF+Z02EFRTGIh+tnZNzMMLiq8NzfSoTIBNY0z079bpkG5bQTdIlzZziE8+wWPOexj
+	vFl3iea3lgZNhPHdMKAtL/PMVJVgf3ipjYazAb4r/JFcrJ7AWqmTUrxROgPvErOG/hdYZKK2Uv+
+	av/0/LGB8tB4C+GWSSZBfxNAlUu8ZJNZDj0yEYDyQkK2e/Pwk1MOwiPr9dVKfR96jGfcaZ2JHt0
+	IGPXgT2qQyfIHt0WfU9sBCPigHPeE3D0yPNeenffoj4/Bpw0pJUs8m+VqCrvoNwv7nUY/hyltJb
+	vO0tGyk+oD92qC4cPy+
+X-Received: by 2002:a05:7300:818c:b0:2c7:3a7:c7b1 with SMTP id 5a478bee46e88-2cbf9503916mr7679632eec.1.1775517923360;
+        Mon, 06 Apr 2026 16:25:23 -0700 (PDT)
+Received: from dianders.sjc.corp.google.com ([2a00:79e0:2e7c:8:c071:3b78:5a5:824a])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2ca760b0518sm14730975eec.0.2026.04.06.16.25.18
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 06 Apr 2026 16:25:22 -0700 (PDT)
+From: Douglas Anderson <dianders@chromium.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Alan Stern <stern@rowland.harvard.edu>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+	Johan Hovold <johan@kernel.org>,
+	Eric Dumazet <edumazet@google.com>,
+	Leon Romanovsky <leon@kernel.org>,
+	Christoph Hellwig <hch@lst.de>,
+	Robin Murphy <robin.murphy@arm.com>,
+	maz@kernel.org,
+	Alexander Lobakin <aleksander.lobakin@intel.com>,
+	Saravana Kannan <saravanak@kernel.org>,
+	Douglas Anderson <dianders@chromium.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Frank.Li@kernel.org,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	alex@ghiti.fr,
+	alexander.stein@ew.tq-group.com,
+	andre.przywara@arm.com,
+	andrew@codeconstruct.com.au,
+	andrew@lunn.ch,
+	andriy.shevchenko@linux.intel.com,
+	aou@eecs.berkeley.edu,
+	ardb@kernel.org,
+	astewart@tektelic.com,
+	bhelgaas@google.com,
+	brgl@kernel.org,
+	broonie@kernel.org,
+	catalin.marinas@arm.com,
+	chleroy@kernel.org,
+	davem@davemloft.net,
+	david@kernel.org,
+	devicetree@vger.kernel.org,
+	dmaengine@vger.kernel.org,
+	driver-core@lists.linux.dev,
+	gbatra@linux.ibm.com,
+	gregory.clement@bootlin.com,
+	hkallweit1@gmail.com,
+	iommu@lists.linux.dev,
+	jirislaby@kernel.org,
+	joel@jms.id.au,
+	joro@8bytes.org,
+	kees@kernel.org,
+	kevin.brodsky@arm.com,
+	kuba@kernel.org,
+	lenb@kernel.org,
+	lgirdwood@gmail.com,
+	linux-acpi@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-cxl@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-mips@vger.kernel.org,
+	linux-mm@kvack.org,
+	linux-pci@vger.kernel.org,
+	linux-riscv@lists.infradead.org,
+	linux-serial@vger.kernel.org,
+	linux-snps-arc@lists.infradead.org,
+	linux-usb@vger.kernel.org,
+	linux@armlinux.org.uk,
+	linuxppc-dev@lists.ozlabs.org,
+	m.szyprowski@samsung.com,
+	maddy@linux.ibm.com,
+	mani@kernel.org,
+	miko.lenczewski@arm.com,
+	mpe@ellerman.id.au,
+	netdev@vger.kernel.org,
+	npiggin@gmail.com,
+	osalvador@suse.de,
+	oupton@kernel.org,
+	pabeni@redhat.com,
+	palmer@dabbelt.com,
+	peter.ujfalusi@gmail.com,
+	peterz@infradead.org,
+	pjw@kernel.org,
+	robh@kernel.org,
+	sebastian.hesselbarth@gmail.com,
+	tglx@kernel.org,
+	tsbogend@alpha.franken.de,
+	vgupta@kernel.org,
+	vkoul@kernel.org,
+	will@kernel.org,
+	willy@infradead.org,
+	yangyicong@hisilicon.com,
+	yeoreum.yun@arm.com
+Subject: [PATCH v5 0/9] driver core: Fix some race conditions
+Date: Mon,  6 Apr 2026 16:22:53 -0700
+Message-ID: <20260406232444.3117516-1-dianders@chromium.org>
+X-Mailer: git-send-email 2.53.0.1213.gd9a14994de-goog
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,239 +171,143 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/powernv/iommu: iommu incorrectly bypass DMA APIs
-To: Shivaprasad G Bhat <sbhat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: maddy@linux.ibm.com, iommu@lists.linux.dev, linux-kernel@vger.kernel.org,
-        =?UTF-8?Q?Dan_Hor=C3=A1k?= <dan@danny.cz>,
-        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-        Timothy Pearson <tpearson@raptorengineering.com>,
-        vaibhav@linux.ibm.com, balbirs@nvidia.com
-References: <20260331223022.47488-1-gbatra@linux.ibm.com>
- <o6k3mqwc.ritesh.list@gmail.com>
- <1bfca7b8-58f6-4670-b0ac-f448ae22bd43@linux.ibm.com>
-Content-Language: en-US
-From: Gaurav Batra <gbatra@linux.ibm.com>
-In-Reply-To: <1bfca7b8-58f6-4670-b0ac-f448ae22bd43@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDA2MDIyNCBTYWx0ZWRfX1hBK1bpC9rqS
- LwOi6HkRgD5bfuM+HPs3gGaVd0qJeoXvFSkAh9KlJQYpLcl6a/BMuk1mFV1fZfUqwkLZVQMF6XY
- 8ikTsulIdrLzS6fnH/9jsH6afD3AyIdVSH3hiEPC88b4w1E+1wd1hsHrrc3yC0eqCH3kkPLdIUe
- PgtHodN574m5tu4Z7l4248+hbIO5ttPvIaq0eBbGL1YtB8Er1sSL1oJKi7RI+L7G+Gp79j1rNtK
- p+cQKkDdPmCTuGVfxaUrPY6sC9qjJ6rJIKjRSY6OC76/6FLjb9NuV6wY+ES3jN5dwxorgQQARfq
- IUQ0RdnikoYpP4neTRRdL2B8Gv7QUjGhvbdyAT4WuZr8uk6Oh5EJgEgODU0L8IO40RA/lu5Lsx3
- 97FkoIsTGiSkqv3mdOFY2IuFomGVjexaB7evnYBMWLa5rTuYzYS1wu+NPauT58CFUQghXIE0FEr
- wR8pzQ94+MQI6SUUjqQ==
-X-Authority-Analysis: v=2.4 cv=FsY1OWrq c=1 sm=1 tr=0 ts=69d43887 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=e5mUnYsNAAAA:8
- a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8 a=Ikd4Dj_1AAAA:8
- a=-Ml1yhC-RHR9OOvdJO4A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
- a=Vxmtnl_E_bksehYqCbjh:22
-X-Proofpoint-ORIG-GUID: -3BKensk9qEXi6Kk21rIQpYvJyqzLgjA
-X-Proofpoint-GUID: F9hVb_9gMa547D17ZoRMM8h55aPCPXr5
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-06_05,2026-04-03_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 priorityscore=1501 impostorscore=0 spamscore=0 phishscore=0
- lowpriorityscore=0 clxscore=1011 adultscore=0 malwarescore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604010000 definitions=main-2604060224
 
+The main goal of this series is to fix the observed bug talked about
+in the first patch ("driver core: Don't let a device probe until it's
+ready"). That patch fixes a problem that has been observed in the real
+world and could land even if the rest of the patches are found
+unacceptable or need to be spun.
 
-On 4/3/26 10:53 PM, Shivaprasad G Bhat wrote:
-> On 4/1/26 6:35 AM, Ritesh Harjani (IBM) wrote:
->> ++CC few people who would be interested in this fix.
->>
->> Gaurav Batra <gbatra@linux.ibm.com> writes:
->>
->>> In a PowerNV environment, for devices that supports DMA mask less than
->>> 64 bit but larger than 32 bits, iommu is incorrectly bypassing DMA
->>> APIs while allocating and mapping buffers for DMA operations.
->>>
->>> Devices are failing with ENOMEN during probe with the following 
->>> messages
->>>
->>> amdgpu 0000:01:00.0: [drm] Detected VRAM RAM=4096M, BAR=4096M
->>> amdgpu 0000:01:00.0: [drm] RAM width 128bits GDDR5
->>> amdgpu 0000:01:00.0: iommu: 64-bit OK but direct DMA is limited by 0
->>> amdgpu 0000:01:00.0: dma_iommu_get_required_mask: returning bypass 
->>> mask 0xfffffffffffffff
->>> amdgpu 0000:01:00.0:  4096M of VRAM memory ready
->>> amdgpu 0000:01:00.0:  32570M of GTT memory ready.
->>> amdgpu 0000:01:00.0: (-12) failed to allocate kernel bo
->>> amdgpu 0000:01:00.0: [drm] Debug VRAM access will use slowpath MM 
->>> access
->>> amdgpu 0000:01:00.0: [drm] GART: num cpu pages 4096, num gpu pages 
->>> 65536
->>> amdgpu 0000:01:00.0: [drm] PCIE GART of 256M enabled (table at 
->>> 0x000000F4FFF80000).
->>> amdgpu 0000:01:00.0: (-12) failed to allocate kernel bo
->>> amdgpu 0000:01:00.0: (-12) create WB bo failed
->>> amdgpu 0000:01:00.0: amdgpu_device_wb_init failed -12
->>> amdgpu 0000:01:00.0: amdgpu_device_ip_init failed
->>> amdgpu 0000:01:00.0: Fatal error during GPU init
->>> amdgpu 0000:01:00.0: finishing device.
->>> amdgpu 0000:01:00.0: probe with driver amdgpu failed with error -12
->>> amdgpu 0000:01:00.0:  ttm finalized
->>>
->>> Fixes: 1471c517cf7d ("powerpc/iommu: bypass DMA APIs for coherent 
->>> allocations for pre-mapped memory")
->>> Reported-by: Dan Horák <dan@danny.cz>
->>> Closes: https://gitlab.freedesktop.org/drm/amd/-/work_items/5039
->> We could even add the lore link so that in future people can find the
->> discussion.
->> Closes: 
->> https://lore.kernel.org/linuxppc-dev/20260313142351.609bc4c3efe1184f64ca5f44@danny.cz/
->>
->>> Tested-by: Dan Horak <dan@danny.cz>
->>> Signed-off-by: Ritesh Harjani <ritesh.list@gmail.com>
->> Feel free to change this to the following, I mainly only suggested 
->> the fix :)
->>
->> Suggested-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
->>
->>
->>> Signed-off-by: Gaurav Batra <gbatra@linux.ibm.com>
->>> ---
->> Generally this info...
->>> I am working on testing the patch in an LPAR with AMDGPU. I will 
->>> update the
->>> results soon.
->> ... goes below the three dashes in here ^^^
->> This is the same place where people also update the patch change log.
->>
->> But sure, thanks for updating. As for this patch, it looks good to me.
->> So, feel free to add:
->>
->> Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
->>
->>
->>>   arch/powerpc/kernel/dma-iommu.c | 4 ++--
->>>   1 file changed, 2 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/arch/powerpc/kernel/dma-iommu.c 
->>> b/arch/powerpc/kernel/dma-iommu.c
->>> index 73e10bd4d56d..8b4de508d2eb 100644
->>> --- a/arch/powerpc/kernel/dma-iommu.c
->>> +++ b/arch/powerpc/kernel/dma-iommu.c
->>> @@ -67,7 +67,7 @@ bool arch_dma_unmap_sg_direct(struct device *dev, 
->>> struct scatterlist *sg,
->>>   }
->>>   bool arch_dma_alloc_direct(struct device *dev)
->>>   {
->>> -    if (dev->dma_ops_bypass)
->>> +    if (dev->dma_ops_bypass && dev->bus_dma_limit)
->>>           return true;
->>>         return false;
->>> @@ -75,7 +75,7 @@ bool arch_dma_alloc_direct(struct device *dev)
->>>     bool arch_dma_free_direct(struct device *dev, dma_addr_t 
->>> dma_handle)
->>>   {
->>> -    if (!dev->dma_ops_bypass)
->>> +    if (!dev->dma_ops_bypass || !dev->bus_dma_limit)
->>>           return false;
->
->
-> While this works, looking more on why the 1471c517cf7dae needed 
-> arch_dma_[alloc|free]_direct()
->
-> functions was because dev->bus_dma_limit being not updated when the 
-> new memory pages were
->
-> getting added in add_pages() case leading to the can_map_direct() 
-> checks failing later when needed.
->
-> Looks like these functions were modeled after 
-> arch_dma_[map|unmap]_phys_direct() which were
->
-> introduced for handing a similar need.
->
->
-> Do we get iommu_mem_notifier() call for action MEM_GOING_ONLINE in 
-> device memory being
->
-> made online case? If yes, we can just update the bus_dma_limit for 
-> each device in the iommu
->
-> group to include the new max_pfn. This makes it sound wrong as the 
-> pages though configured
->
-> as system memory, are still  device private and the memory notifiers 
-> are for the real memory
->
-> hotplug/unplug cases.
->
->
-> In the commit 7170130e4c below, Balibir does point this out to be a 
-> problem and prevents updating
->
-> max_pfn for device private memory. He has mentioned it to be 
-> considered for PPC too.
->
-> The dma_addressing_limited() of x86 is same as PPC can_map_direct() 
-> and we know why
->
-> arch_dma_[alloc|free]_direct() would not be needed anymore.
+That said, during patch review Danilo correctly pointed out that many
+of the bitfield accesses in "struct device" are unsafe. I added a
+bunch of patches in the series to address each one.
 
-When pmemory is converted to "system-ram" it moves "max_pfn" as well. 
-The command is "daxctl reconfigure-device --mode=system-ram dax0.0 
---force". This needs to be considered as well.
+Danilo said he's most worried about "can_match", so I put that one
+first. After that, I tried to transition bitfields to flags in reverse
+order to when the bitfield was added.
 
+Even if transitioning from bitfields to flags isn't truly needed for
+correctness, it seems silly (and wasteful of space in struct device)
+to have some in bitfields and some as flags. Thus I didn't spend time
+for each bitfield showing that it's truly needed for correctness.
 
-Thanks,
+Transition was done semi manually. Presumably someone skilled at
+coccinelle could do a better job, but I just used sed in a heavy-
+handed manner and then reviewed/fixed the results, undoing anything my
+script got wrong. My terrible/ugly script was:
 
-Gaurav
+var=can_match
+caps="${var^^}"
+for f in $(git grep -l "[>\.]${var}[^1-9_a-zA-Z\[]"); do
+  echo $f
+  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)->${var} = true/set_bit(DEV_FLAG_${caps}, \&\\1->flags)/" "$f"
+  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)\.${var} = true/dev_set_${caps}(\&\\1)/" "$f"
+  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)->${var} = false/clear_bit(DEV_FLAG_${caps}, \&\\1->flags)/" "$f"
+  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)\.${var} = false/dev_clear_${caps}(\&\\1)/" "$f"
+  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)->${var} = \([^;]*\)/assign_bit(DEV_FLAG_${caps}, \&\\1->flags, \\2)/" "$f"
+  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)\.${var} = \([^;]*\)/dev_assign_${caps}(\&\\1, \\2)/" "$f"
+  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)->${var}\([^1-9_a-zA-Z\[]\)/test_bit(DEV_FLAG_${caps}, \&\\1->flags)\\2/" "$f"
+  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)\.${var}\([^1-9_a-zA-Z\[]\)/dev_${caps}(\&\\1)\\2/" "$f"
+done
 
->
->
-> commit 7170130e4c72ce0caa0cb42a1627c635cc262821
-> Author: Balbir Singh <balbirs@nvidia.com>
-> Date:   Tue Apr 1 11:07:52 2025 +1100
->
->     x86/mm/init: Handle the special case of device private pages in 
-> add_pages(), to not increase max_pfn and trigger 
-> dma_addressing_limited() bounce buffers
->
-> So, I think we need to bring the changes from 7170130e4c72ce0c into PPC.
->
->
-> With that, the original hunk setting the bypass unconditionally in 
-> 1471c517cf7dae can be
->
-> changed like below, and remove the redundant 
-> arch_dma_[alloc|free]_direct() functions.
->
->
-> diff --git a/arch/powerpc/kernel/dma-iommu.c 
-> b/arch/powerpc/kernel/dma-iommu.c
-> index aa3689d61917..120800b962cf 100644
-> --- a/arch/powerpc/kernel/dma-iommu.c
-> +++ b/arch/powerpc/kernel/dma-iommu.c
-> @@ -150,7 +150,7 @@ int dma_iommu_dma_supported(struct device *dev, 
-> u64 mask)
->                  * 1:1 mapping but it is somehow limited.
->                  * ibm,pmemory is one example.
->                  */
-> -               dev->dma_ops_bypass = dev->bus_dma_limit == 0;
-> +               dev->dma_ops_bypass = (dev->bus_dma_limit == 0) || 
-> (min_not_zero(mask, dev->bus_dma_limit) >= 
-> dma_direct_get_required_mask(dev));
->                 if (!dev->dma_ops_bypass)
->                         dev_warn(dev,
->                                  "iommu: 64-bit OK but direct DMA is 
-> limited by %llx\n",
->
-> Suggested-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
->
->
-> Thanks,
->
-> Shivaprasad
->
+From v3 to v4, I transitioned to accessor functions with another ugly
+sed script. I had git format the old patches, then transformed them
+with:
+
+for f in *.patch; do
+  echo $f
+  sed -i~ -e "s/test_and_set_bit(DEV_FLAG_\([^,]*\), \&\(.*\)->flags)/dev_test_and_set_\\L\\1(\\2)/" "$f"
+  sed -i~ -e "s/test_and_set_bit(DEV_FLAG_\([^,]*\), \(.*\)\.flags)/dev_test_and_set_\\L\\1(\\2)/" "$f"
+  sed -i~ -e "s/test_bit(DEV_FLAG_\([^,]*\), \&\(.*\)->flags)/dev_\\L\\1(\\2)/" "$f"
+  sed -i~ -e "s/test_bit(DEV_FLAG_\([^,]*\), \(.*\)\.flags)/dev_\\L\\1(\\2)/" "$f"
+  sed -i~ -e "s/set_bit(DEV_FLAG_\([^,]*\), \&\(.*\)->flags)/dev_set_\\L\\1(\\2)/" "$f"
+  sed -i~ -e "s/set_bit(DEV_FLAG_\([^,]*\), \(.*\)\.flags)/dev_set_\\L\\1(\\2)/" "$f"
+  sed -i~ -e "s/clear_bit(DEV_FLAG_\([^,]*\), \&\(.*\)->flags)/dev_clear_\\L\\1(\\2)/" "$f"
+  sed -i~ -e "s/clear_bit(DEV_FLAG_\([^,]*\), \(.*\)\.flags)/dev_clear_\\L\\1(\\2)/" "$f"
+  sed -i~ -e "s/assign_bit(DEV_FLAG_\([^,]*\), \&\(.*\)->flags, \(.*\))/dev_assign_\\L\\1(\\2, \\3)/" "$f"
+  sed -i~ -e "s/assign_bit(DEV_FLAG_\([^,]*\), \(.*\)\.flags, \(.*\))/dev_assign_\\L\\1(\\2, \\3)/" "$f"
+done
+
+...and then did a few manual touchups for spacing.
+
+I only marked the first patch as a "Fix" since it is the only one
+fixing observed problems. Other patches could be considered fixes too
+if folks want.
+
+I tested the first patch in the series backported to kernel 6.6 on the
+Pixel phone that was experiencing the race. I added extra printouts to
+make sure that the problem was hitting / addressed. The rest of the
+patches are tested with allmodconfig with arm32, arm64, ppc, and
+x86. I boot tested on an arm64 Chromebook running mainline.
+
+Changes in v5:
+- ready_to_prove => ready_to_probe typo
+- device_lock() while calling dev_set_ready_to_probe()
+- Add comment before "can_match = true" from Danilo.
+- undef __create_dev_flag_accessors
+
+Changes in v4:
+- Use accessor functions for flags
+
+Changes in v3:
+- Use a new "flags" bitfield
+- Add missing \n in probe error message
+
+Changes in v2:
+- Instead of adjusting the ordering, use "ready_to_probe" flag
+
+Douglas Anderson (9):
+  driver core: Don't let a device probe until it's ready
+  driver core: Replace dev->can_match with dev_can_match()
+  driver core: Replace dev->dma_iommu with dev_dma_iommu()
+  driver core: Replace dev->dma_skip_sync with dev_dma_skip_sync()
+  driver core: Replace dev->dma_ops_bypass with dev_dma_ops_bypass()
+  driver core: Replace dev->state_synced with dev_state_synced()
+  driver core: Replace dev->dma_coherent with dev_dma_coherent()
+  driver core: Replace dev->of_node_reused with dev_of_node_reused()
+  driver core: Replace dev->offline + ->offline_disabled with accessors
+
+ arch/arc/mm/dma.c                             |   4 +-
+ arch/arm/mach-highbank/highbank.c             |   2 +-
+ arch/arm/mach-mvebu/coherency.c               |   2 +-
+ arch/arm/mm/dma-mapping-nommu.c               |   4 +-
+ arch/arm/mm/dma-mapping.c                     |  28 ++--
+ arch/arm64/kernel/cpufeature.c                |   2 +-
+ arch/arm64/mm/dma-mapping.c                   |   2 +-
+ arch/mips/mm/dma-noncoherent.c                |   2 +-
+ arch/powerpc/kernel/dma-iommu.c               |   8 +-
+ .../platforms/pseries/hotplug-memory.c        |   4 +-
+ arch/riscv/mm/dma-noncoherent.c               |   2 +-
+ drivers/acpi/scan.c                           |   2 +-
+ drivers/base/core.c                           |  55 +++++---
+ drivers/base/cpu.c                            |   4 +-
+ drivers/base/dd.c                             |  36 ++++--
+ drivers/base/memory.c                         |   2 +-
+ drivers/base/pinctrl.c                        |   2 +-
+ drivers/base/platform.c                       |   2 +-
+ drivers/dma/ti/k3-udma-glue.c                 |   6 +-
+ drivers/dma/ti/k3-udma.c                      |   6 +-
+ drivers/iommu/dma-iommu.c                     |   9 +-
+ drivers/iommu/iommu.c                         |   5 +-
+ drivers/net/pcs/pcs-xpcs-plat.c               |   2 +-
+ drivers/of/device.c                           |   6 +-
+ drivers/pci/of.c                              |   2 +-
+ drivers/pci/pwrctrl/core.c                    |   2 +-
+ drivers/regulator/bq257xx-regulator.c         |   2 +-
+ drivers/regulator/rk808-regulator.c           |   2 +-
+ drivers/tty/serial/serial_base_bus.c          |   2 +-
+ drivers/usb/gadget/udc/aspeed-vhub/dev.c      |   2 +-
+ include/linux/device.h                        | 122 ++++++++++++------
+ include/linux/dma-map-ops.h                   |   6 +-
+ include/linux/dma-mapping.h                   |   2 +-
+ include/linux/iommu-dma.h                     |   3 +-
+ kernel/cpu.c                                  |   4 +-
+ kernel/dma/mapping.c                          |  12 +-
+ mm/hmm.c                                      |   2 +-
+ 37 files changed, 218 insertions(+), 142 deletions(-)
+
+-- 
+2.53.0.1213.gd9a14994de-goog
+
 
