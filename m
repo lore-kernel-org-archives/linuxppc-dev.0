@@ -1,71 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-19397-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19398-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B12ECEF4EC2
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2026 09:21:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0ACAEF4EC9
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Apr 2026 09:21:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fq3j65W3xz2yjn;
-	Mon, 06 Apr 2026 19:20:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fq3jB0yTDz2yjp;
+	Mon, 06 Apr 2026 19:21:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775467258;
-	cv=none; b=SAMHoBE0yOjNU+heI4jI/ptHDTou3PQalOgPc12p2pPq+KX4WfZR+uwksLYBBJfmqC0sdRHD4zWOZNqfqqG9BOdn+uLja+4q9Py1RlDgKVDaRZ8cRjRe5ik3vBa5Y2an3BwpMPp262t5XDWLFvDOa7VIsEq0/R2OPRwKxvJpg85S4c/bxLrQ/GJRdtkNfgVMWlSPgqzvIoHj3TUpqemveGx21PLausIESQiTg81VFlVrCeXVcNTVYQnnB6Gl42SuUjbjxn8bfVIS5JDn0TBOXGQRbj/sKTPiCjZTBWh81peCCP0KiyN4gSw5g3+8vCx8Cj7TYfFN36iBR6GhRu4qjw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775467262;
+	cv=none; b=OgScSMJlTFzq7UpEQiWqKPhIcB8RAV2Ods7HG/voVaJJxxB8Ns7kAkwQwlISm5olL5XfHSM1tmcHE5SJq/thyXNIq9NCT5wO84vfI5R92/i+zMtQ0cwBf3XB4/oyB34My5/Uo1VJnrmtYDbuwnrGbkUJ5JHr6/bl/p8TXnyWY36njXQ/o80D8DNTzCU6APYMNHrQwgyih+WSOMkZjTvFIg6IF9wKgtNQl6j2KLMPt4uzldbdwtLZJ7LPNuZwxIaBgmllsjuNOkAdMUjTfySIJFx1zJh1SgFWzt0iYCFhbsQoSCXTg+3EdRHK5f1CSENCs9jFsYqqRhwrJELTEqddtA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775467258; c=relaxed/relaxed;
-	bh=hR9AvsESc0VB0jLe+QQG3Q1Tfmm/xPeUm+bAL5UGGaM=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=bIVI3oo9C3OGDMZCuv98aVccsbXoF9NEUmxtE1fJ7FQ36sMHqQIKOyHfTjt/fhoDRUPfQ0egW2YghETlCzd9Y3OaQgyYtBecj4Te8FS+sYq4TphOabtcyKV84aSrQ7ChXrGyVkiG+9XkFQnrM0rainNgo/TNs/Becg5uWQ+blfeMTGWs4YhvOLOFVAWo7vn+Qg9hfP/Mrg9k9tbxlgkVlorczIiw3AMsnoiJq+igpiREhPbwykz4FHImpsgjmzlE+URmTBh/dJ+D7oFzSU0ujEop4RzDTOMCS6da/s/xcbAxTrFmqys/VltCar1swI4nd6SbdykWkQj62AztV4nkog==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HCyNBrsG; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1775467262; c=relaxed/relaxed;
+	bh=OT+OQFCgRq+Kj1jonLnfSvCEwfsneE3cw0acLy20e6Y=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=AV948n/HAiAwbqejuJCy4lCdfGag9Pt1HQVpztOXB9Fp/mvdyEjS1xkvYLGEEneNbWpDQAeg/DO94Xs6WehdMfOlLg3vCl5Wv6STT9rdp2iRsnHzk/35lztMdzKeJdumWa1VKPhRnpaEi21aWhT63/Iq6XBZH2yJi7j2OVNEjS93f/tv1ZBuuOK126bdHLhjF/vtuhJvL143tfIsmDsnwJUFYUMd0nFCsuNo8n/1lVxnd69lEIL6EeOqdiCivnLp9shXHkPiEOv1IaSSpFUvvNjVjCU3ognbULLpQxlPsEFDeBoyTZ8JkT0wTa5JJm8g9+SK8tosH+aPUMDnfUVsVQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LDFARfW0; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HCyNBrsG;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LDFARfW0;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fq3j575Z5z2yhP
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Apr 2026 19:20:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fq3j930tqz2yhP
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Apr 2026 19:21:01 +1000 (AEST)
 Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 635GnGdO3110257;
-	Mon, 6 Apr 2026 09:20:45 GMT
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 635HRL7A3181379;
+	Mon, 6 Apr 2026 09:19:48 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=hR9Avs
-	ESc0VB0jLe+QQG3Q1Tfmm/xPeUm+bAL5UGGaM=; b=HCyNBrsGgoDyc9Z7Kd9xLT
-	ffrSA3KEavgwn0qfI6gwSvKJsuAdrOmLwp9ilyKiL4WC4vAsRdXr/zZTfICU1xEN
-	QzGbkrA9DW+Utvyq4FCoHc6BeBqyk+LCge8iFRaZLWO4WpJFiIylXepXJM53TSZI
-	0zaiRekDsuymj+DIxSyFqOYhGviW/KGKFsiBGA3YcsDpuibyiXs+GkLNYf1V7zZm
-	vTB9z3uHNQAhtc0hhigJQ6LD6/MmZnVLFxJGlXnMi5cnpeCcbSyZvD4cViuEpPJJ
-	E30BV8eufjiLvCEpIkBc+yORAC9W150PQYlgZI3+lGvI7ZaqQEt682byis6Uwygw
-	==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4datap5vrc-1
+	:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=pp1; bh=OT+OQFCgRq+Kj1jonLnfSvCEwfsn
+	eE3cw0acLy20e6Y=; b=LDFARfW0396bSv3hZUqUyTZWS04rwq41y52Xi+92KxFF
+	zMc8SdwWZv4t3a+Lpi/gpkv9TEk+EcZxgD+/kvsncXz31Fo0bx+BdAvZDwt8bUqB
+	s9MLeLNYSaf+VfmTM4iZGk+lvAApWCozJhUho+gMqNlFMeGBgZYiwjXNAMX8PekB
+	/eVb5/X6rbjka4IfNHA/IElhwuzYzKgVUCES8jqtF4mscDSXbllZMSq/chqncAEY
+	F1x1KEtw7OLmp6iZmcXyCUJylhEHCTnkCSFl8FK1HFmMe/CZvGOZAx99ixSKYEcM
+	Xr5BZSLsTFCbMhp2iKfPHR7MyIuSNntVMwQquUrEPA==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4datap5vnk-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 06 Apr 2026 09:20:44 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 6364i7Mf021117;
-	Mon, 6 Apr 2026 09:20:43 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dbdbyc5jd-1
+	Mon, 06 Apr 2026 09:19:47 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 6365ZcD3020501;
+	Mon, 6 Apr 2026 09:19:46 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dbdync2v3-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 06 Apr 2026 09:20:43 +0000
+	Mon, 06 Apr 2026 09:19:46 +0000
 Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6369Kd6a51446198
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6369Jgdb35717392
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 6 Apr 2026 09:20:39 GMT
+	Mon, 6 Apr 2026 09:19:42 GMT
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id EC7E920043;
-	Mon,  6 Apr 2026 09:20:38 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 1790820043;
+	Mon,  6 Apr 2026 09:19:42 +0000 (GMT)
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3A56520040;
-	Mon,  6 Apr 2026 09:20:35 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id A062620040;
+	Mon,  6 Apr 2026 09:19:38 +0000 (GMT)
 Received: from li-3f69264c-2ce6-11b2-a85c-c3f414d24014.bl1-in.ibm.com (unknown [9.123.3.209])
 	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  6 Apr 2026 09:20:34 +0000 (GMT)
+	Mon,  6 Apr 2026 09:19:38 +0000 (GMT)
 From: Sayali Patil <sayalip@linux.ibm.com>
 To: Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
         linux-mm@kvack.org, linux-kernel@vger.kernel.org,
@@ -78,12 +76,10 @@ Cc: David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>,
         linuxppc-dev@lists.ozlabs.org, Miaohe Lin <linmiaohe@huawei.com>,
         Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
         Sayali Patil <sayalip@linux.ibm.com>
-Subject: [PATCH v4 15/15] selftests/cgroup: extend test_hugetlb_memcg.c to support all huge page sizes
-Date: Mon,  6 Apr 2026 14:49:34 +0530
-Message-ID: <fcc9eb99566af8f37e63924a77dc633c5f200417.1775466330.git.sayalip@linux.ibm.com>
+Subject: [PATCH v4 00/15] selftests/mm: fix failures and robustness improvements
+Date: Mon,  6 Apr 2026 14:49:19 +0530
+Message-ID: <cover.1775466329.git.sayalip@linux.ibm.com>
 X-Mailer: git-send-email 2.52.0
-In-Reply-To: <cover.1775466329.git.sayalip@linux.ibm.com>
-References: <cover.1775466329.git.sayalip@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,21 +97,22 @@ Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=Bp+QAIX5 c=1 sm=1 tr=0 ts=69d37aec cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+X-Authority-Analysis: v=2.4 cv=Bp+QAIX5 c=1 sm=1 tr=0 ts=69d37ab4 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
  a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8
- a=4tZCw_sC0xjTHO7m73IA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDA2MDA5MCBTYWx0ZWRfX5n0Or/YQTGbD
- zXROJzFv7cLnirHO9BgQRuNEPQr+ZEVKCUhyxfdr3hxWBvM+7OLz8myBm2C7Z7B3zUT6MBslmAf
- AeBNQUtaXcQV+vBnj17KLPuQ2WDiEz0YZTpkZ6pKjYKxV5xz4oHmBU0fTFPOADbWuCEEazlLu7B
- biHajIZRQsJuqBbpt0h3v6UnI/zY2PYOi55yanRYBPyUDR8ToKc4HPmF25rIdQC1Ik+eNbssUV0
- Gl9+XMJsQx9wjZS/h+232McNGZ1gcI7clYMqH9Rav6y69rhHLMDuea2g7BdjVbwYjRa262KMrDa
- gOajp5FgX7CMdet1sEEaSs+XMJJlGDMd83IPNNBLdfZvnZLknWjpET6qdoQNK45+IAoSOAb3w+g
- uRsXNs6xF+EBOKbL+K5qBiYXSsiyp23/kFkQw7uovc7esvIWc82ndcaYzyKTr+t3I0o5G5AL7A0
- 8Kg8KQzjRVWmnmTBj2A==
-X-Proofpoint-GUID: UQqDuCzvxJXuNF9VCUai46TOluqGlLmY
-X-Proofpoint-ORIG-GUID: 70yvyT2i2bR0oABye0WkT-5h7pHBZuNW
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=2xlL1Z9U7jiVjyWPKcYA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=O8hF6Hzn-FEA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDA2MDA5MCBTYWx0ZWRfX/jT3q5ilpa6R
+ aEEHN/YCS8iqXs8PaeYs2AacTfE8kLrbWHvn2HVKMXYuXDsGNHC1S203Oqrhmv5yoBr8zFu1yjy
+ uj0ydsdIXafr9J532erS6OTOhxGVibodUczxZ7bTV7mam/CoQd8QIWl3nRvlPeTbw7ORlQX0Bbd
+ 2Kypj/SSXoa0NjpW9PnO5UmfPCiIzIkAfR3d2Enil/74TvTl09FGWbn0JHT4aNAQvyPCuPayV4Z
+ k9DBOFpdfpvzBC+Wx4KEXPgxnJajqgXRLu+wNisH3k6JHsb656K45pQna8SN7OORFUfcZ24G2T1
+ IBZrdtpBtytmrtc/cn7B+f5kswfHutwfks85DlEgndt7UR8+WpJtUPfq4oesYWE+XPrZf7GFyNb
+ fdthDApML3C0gFmH9CDo7zCPHNADe8qRQKcGjbH1uFmF2qrMyuDFy+pE1cY+UjwAgHnsTvf+3un
+ fYVe/H+/KFzyLbH/7/A==
+X-Proofpoint-GUID: nuLxCR4AYTgo-aewaKBiI37kGt8DfwD9
+X-Proofpoint-ORIG-GUID: rdqO_gI49MAxaHxdkg0qFKKrMoQcTweM
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-04-06_02,2026-04-03_01,2025-10-01_01
@@ -125,222 +122,146 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2603050001 definitions=main-2604060090
 
-The hugetlb memcg selftest was previously skipped when the configured
-huge page size was not 2MB, preventing the test from running on systems
-using other default huge page sizes.
+Hi all,
 
-Detect the system's configured huge page size at runtime and use it for
-the allocation instead of assuming a fixed 2MB size. This allows the
-test to run on configurations using non-2MB huge pages and avoids
-unnecessary skips.
+Powerpc systems with a 64K base page size exposed several issues while
+running mm selftests. Some tests assume specific hugetlb configurations,
+use incorrect interfaces, or fail instead of skipping when the required
+kernel features are not available.
 
-Fixes: c0dddb7aa5f8 ("selftests: add a selftest to verify hugetlb usage in memcg")
-Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
+This series fixes these issues and improves test robustness.
+
+Please review the patches and provide any feedback or suggestions for
+improvement.
+
+Thanks,
+Sayali
+
 ---
- .../selftests/cgroup/test_hugetlb_memcg.c     | 90 ++++++++++++++-----
- 1 file changed, 68 insertions(+), 22 deletions(-)
+v3->v4
 
-diff --git a/tools/testing/selftests/cgroup/test_hugetlb_memcg.c b/tools/testing/selftests/cgroup/test_hugetlb_memcg.c
-index f451aa449be6..e6157a784138 100644
---- a/tools/testing/selftests/cgroup/test_hugetlb_memcg.c
-+++ b/tools/testing/selftests/cgroup/test_hugetlb_memcg.c
-@@ -7,15 +7,21 @@
- #include <stdlib.h>
- #include <string.h>
- #include <fcntl.h>
-+#include <stdint.h>
- #include "kselftest.h"
- #include "cgroup_util.h"
- 
- #define ADDR ((void *)(0x0UL))
- #define FLAGS (MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB)
--/* mapping 8 MBs == 4 hugepages */
--#define LENGTH (8UL*1024*1024)
- #define PROTECTION (PROT_READ | PROT_WRITE)
- 
-+/*
-+ * This value matches the kernel's MEMCG_CHARGE_BATCH definition:
-+ * see include/linux/memcontrol.h. If the kernel value changes, this
-+ * test constant must be updated accordingly to stay consistent.
-+ */
-+#define MEMCG_CHARGE_BATCH 64U
-+
- /* borrowed from mm/hmm-tests.c */
- static long get_hugepage_size(void)
- {
-@@ -84,11 +90,11 @@ static unsigned int check_first(char *addr)
- 	return *(unsigned int *)addr;
- }
- 
--static void write_data(char *addr)
-+static void write_data(char *addr, size_t length)
- {
- 	unsigned long i;
- 
--	for (i = 0; i < LENGTH; i++)
-+	for (i = 0; i < length; i++)
- 		*(addr + i) = (char)i;
- }
- 
-@@ -96,26 +102,33 @@ static int hugetlb_test_program(const char *cgroup, void *arg)
- {
- 	char *test_group = (char *)arg;
- 	void *addr;
-+	long hpage_size, batch_bytes;
- 	long old_current, expected_current, current;
- 	int ret = EXIT_FAILURE;
-+	size_t length;
-+	int pagesize, nr_pages;
-+
-+	pagesize = getpagesize();
-+	hpage_size = get_hugepage_size() * 1024;
-+	length = 4 * hpage_size;
-+	batch_bytes = MEMCG_CHARGE_BATCH * pagesize;
- 
- 	old_current = cg_read_long(test_group, "memory.current");
- 	set_nr_hugepages(20);
- 	current = cg_read_long(test_group, "memory.current");
--	if (current - old_current >= MB(2)) {
-+	if (current - old_current >= hpage_size) {
- 		ksft_print_msg(
- 			"setting nr_hugepages should not increase hugepage usage.\n");
- 		ksft_print_msg("before: %ld, after: %ld\n", old_current, current);
- 		return EXIT_FAILURE;
- 	}
- 
--	addr = mmap(ADDR, LENGTH, PROTECTION, FLAGS, 0, 0);
--	if (addr == MAP_FAILED) {
--		ksft_print_msg("fail to mmap.\n");
--		return EXIT_FAILURE;
--	}
-+	addr = mmap(ADDR, length, PROTECTION, FLAGS, 0, 0);
-+	if (addr == MAP_FAILED)
-+		ksft_exit_skip("mmap failed, not enough memory.\n");
-+
- 	current = cg_read_long(test_group, "memory.current");
--	if (current - old_current >= MB(2)) {
-+	if (current - old_current >= hpage_size) {
- 		ksft_print_msg("mmap should not increase hugepage usage.\n");
- 		ksft_print_msg("before: %ld, after: %ld\n", old_current, current);
- 		goto out_failed_munmap;
-@@ -124,10 +137,34 @@ static int hugetlb_test_program(const char *cgroup, void *arg)
- 
- 	/* read the first page */
- 	check_first(addr);
--	expected_current = old_current + MB(2);
-+	nr_pages = hpage_size / pagesize;
-+	expected_current = old_current + hpage_size;
- 	current = cg_read_long(test_group, "memory.current");
--	if (!values_close(expected_current, current, 5)) {
--		ksft_print_msg("memory usage should increase by around 2MB.\n");
-+	if (nr_pages < MEMCG_CHARGE_BATCH &&
-+	    (current == old_current ||
-+	    values_close(old_current + batch_bytes, current, 5))) {
-+		/*
-+		 * Memory cgroup charging uses per-CPU stocks and batched updates to the
-+		 *  memcg usage counters. For hugetlb allocations, the number of pages
-+		 *  that memcg charges is expressed in base pages (nr_pages), not
-+		 *  in hugepage units. When the charge for an allocation is smaller than
-+		 *  the internal batching threshold  (nr_pages <  MEMCG_CHARGE_BATCH),
-+		 *  it may be fully satisfied from the CPU’s local stock. In such
-+		 *  cases memory.current does not necessarily increase.
-+		 *
-+		 *  If the local stock is insufficient, it may be refilled in batches
-+		 *  of MEMCG_CHARGE_BATCH base pages, causing memory.current to increase
-+		 *  by more than the allocation size.
-+		 *
-+		 * Therefore, Treat both a zero delta and a batched increase as a
-+		 * valid behaviour here.
-+		 */
-+		if (current == old_current)
-+			ksft_print_msg("allocation consumed from local stock.\n");
-+		else
-+			ksft_print_msg("memcg charge batched via stock refill.\n");
-+	} else if (!values_close(expected_current, current, 5)) {
-+		ksft_print_msg("memory usage should increase by ~1 huge page.\n");
- 		ksft_print_msg(
- 			"expected memory: %ld, actual memory: %ld\n",
- 			expected_current, current);
-@@ -135,11 +172,11 @@ static int hugetlb_test_program(const char *cgroup, void *arg)
- 	}
- 
- 	/* write to the whole range */
--	write_data(addr);
-+	write_data(addr, length);
- 	current = cg_read_long(test_group, "memory.current");
--	expected_current = old_current + MB(8);
-+	expected_current = old_current + length;
- 	if (!values_close(expected_current, current, 5)) {
--		ksft_print_msg("memory usage should increase by around 8MB.\n");
-+		ksft_print_msg("memory usage should increase by around 4 huge pages.\n");
- 		ksft_print_msg(
- 			"expected memory: %ld, actual memory: %ld\n",
- 			expected_current, current);
-@@ -147,7 +184,7 @@ static int hugetlb_test_program(const char *cgroup, void *arg)
- 	}
- 
- 	/* unmap the whole range */
--	munmap(addr, LENGTH);
-+	munmap(addr, length);
- 	current = cg_read_long(test_group, "memory.current");
- 	expected_current = old_current;
- 	if (!values_close(expected_current, current, 5)) {
-@@ -162,14 +199,17 @@ static int hugetlb_test_program(const char *cgroup, void *arg)
- 	return ret;
- 
- out_failed_munmap:
--	munmap(addr, LENGTH);
-+	munmap(addr, length);
- 	return ret;
- }
- 
- static int test_hugetlb_memcg(char *root)
- {
- 	int ret = KSFT_FAIL;
-+	int num_pages = 20;
-+	long hpage_size = get_hugepage_size();
- 	char *test_group;
-+	uint64_t limit;
- 
- 	test_group = cg_name(root, "hugetlb_memcg_test");
- 	if (!test_group || cg_create(test_group)) {
-@@ -177,7 +217,9 @@ static int test_hugetlb_memcg(char *root)
- 		goto out;
- 	}
- 
--	if (cg_write(test_group, "memory.max", "100M")) {
-+	limit = (uint64_t)num_pages * hpage_size * 1024ULL;
-+
-+	if (cg_write_numeric(test_group, "memory.max", limit)) {
- 		ksft_print_msg("fail to set cgroup memory limit.\n");
- 		goto out;
- 	}
-@@ -200,6 +242,7 @@ int main(int argc, char **argv)
- {
- 	char root[PATH_MAX];
- 	int ret = EXIT_SUCCESS, has_memory_hugetlb_acc;
-+	long val;
- 
- 	has_memory_hugetlb_acc = proc_mount_contains("memory_hugetlb_accounting");
- 	if (has_memory_hugetlb_acc < 0)
-@@ -208,12 +251,15 @@ int main(int argc, char **argv)
- 		ksft_exit_skip("memory hugetlb accounting is disabled\n");
- 
- 	/* Unit is kB! */
--	if (get_hugepage_size() != 2048) {
--		ksft_print_msg("test_hugetlb_memcg requires 2MB hugepages\n");
-+	val = get_hugepage_size();
-+	if (val < 0) {
-+		ksft_print_msg("Failed to read hugepage size\n");
- 		ksft_test_result_skip("test_hugetlb_memcg\n");
- 		return ret;
- 	}
- 
-+	ksft_print_msg("Hugepage size: %ld kB\n", val);
-+
- 	if (cg_find_unified_root(root, sizeof(root), NULL))
- 		ksft_exit_skip("cgroup v2 isn't mounted\n");
- 
+  - selftests/mm: restore default nr_hugepages value via EXIT
+    trap in charge_reserved_hugetlb.sh:
+    Updated to use an EXIT trap to restore the original nr_hugepages
+    once at script termination, ensuring reliable restoration on all
+    exit paths.
+
+  - selftest/mm: fix cgroup task placement and drop memory.current checks
+    in hugetlb_reparenting_test.sh:
+    Updated to use a deterministic synchronization method by migrating the
+    workload process within a wrapper subshell before calling exec() to 
+    ensure correct cgroup accounting.
+
+  - selftest/mm: align memory size to huge page size in hugepage-mremap
+    test:
+    Update test code directly to align memory allocations to the hugepage
+    size, rather than modifying run_vmtests.sh. This replaces the previous
+    commit “adjust hugepage-mremap test size for large huge pages” with
+    a cleaner, direct approach in the test itself.
+
+  - selftests/mm: ensure destination is hugetlb-backed in hugepage-mremap:
+    Updated to remove MAP_POPULATE flag for the mmap call as per review
+    comment.
+
+  - selftests/mm: skip uffd-wp-mremap if UFFD write-protect is unsupported:
+    Updated as per review comment to initialize features to zero and exit
+    on all uffd_get_features() failures, avoiding spurious test errors.
+
+  - selftests/mm: move hwpoison setup into run_test() and silence
+    modprobe output for memory-failure category:
+    Declared LOADED_MOD as local variable and avoided a redundant 
+    skip message when the module is not found.
+    Updated logic to set exitcode to ksft_skip only when no failure has
+    been recorded.
+
+  - selftests/cgroup: extend test_hugetlb_memcg.c to support all huge
+    page sizes:
+    Updated to skip on memory constraints instead of returning
+    EXIT_FAILURE.
+    Updated the logic to fully account for the scenario when the
+    per-CPU stock is empty and a refill charges MEMCG_CHARGE_BATCH. 
+    Updated to avoid overflow on 32-bit systems for memory.max value.
+
+  - Included "selftests/mm: restore default nr_hugepages value via
+    EXIT trap in hugetlb_reparenting_test.sh"
+
+  - Included "selftests/mm: free dynamically allocated PMD-sized
+    buffers in split_huge_page_test"
+
+  - Included "selftests/mm: clarify alternate unmapping in compaction_test"
+
+  - Dropped "selftests/mm: fix double increment in linked list cleanup in
+    compaction_test":
+    The behaviour is intentional.
+
+v3: https://lore.kernel.org/all/cover.1774591179.git.sayalip@linux.ibm.com/
+
+---
+v2->v3
+  - selftests/mm: skip uffd-wp-mremap if UFFD write-protect is unsupported:
+    Rename function to check_uffd_wp_feature_supported() as suggested in review.
+  - selftest/mm: fix cgroup task placement and drop memory.current checks
+    in hugetlb_reparenting_test.sh:
+    Drop memory.current validation from the hugetlb reparenting test.
+    Keep tolerance at 7MB (reverting earlier increase to 8MB in v1).
+  - Included "selftests/mm: allow PUD-level entries in compound testcase of hmm
+    tests" patch:
+    Extend the compound testcase checks to accept PUD-level mappings.
+  - Included "selftests/mm: replace hardcoded THP size with runtime PMD page size in
+    hmm tests" patch:
+    Use read_pmd_pagesize() instead of TWOMEG and cap maximum THPs in
+    benchmarks to avoid integer overflow.
+
+v2: https://lore.kernel.org/all/cover.1773305677.git.sayalip@linux.ibm.com/
+
+---
+v1->v2
+  - For "selftests/mm: ensure destination is hugetlb-backed in hugepage-mremap":
+    update FLAGS definition to MAP_HUGETLB | MAP_SHARED | MAP_POPULATE and
+    used it for mmap() calls as suggested during review.
+
+v1: https://lore.kernel.org/all/cover.1773134177.git.sayalip@linux.ibm.com/
+---
+
+Sayali Patil (15):
+  selftests/mm: restore default nr_hugepages value via EXIT trap in
+    charge_reserved_hugetlb.sh
+  selftests/mm: fix hugetlb pathname construction in
+    charge_reserved_hugetlb.sh
+  selftests/mm: restore default nr_hugepages value via EXIT trap in
+    hugetlb_reparenting_test.sh
+  selftests/mm: fix hugetlb pathname construction in
+    hugetlb_reparenting_test.sh
+  selftests/mm: fix cgroup task placement and drop memory.current checks
+    in hugetlb_reparenting_test.sh
+  selftests/mm: size tmpfs according to PMD page size in
+    split_huge_page_test
+  selftests/mm: free dynamically allocated PMD-sized buffers in
+    split_huge_page_test
+  selftest/mm: align memory size to huge page size in hugepage-mremap
+    test
+  selftest/mm: register existing mapping with userfaultfd in
+    hugepage-mremap
+  selftests/mm: ensure destination is hugetlb-backed in hugepage-mremap
+  selftests/mm: skip uffd-wp-mremap if UFFD write-protect is unsupported
+  selftests/mm: skip uffd-stress test when nr_pages_per_cpu is zero
+  selftests/mm: move hwpoison setup into run_test() and silence modprobe
+    output for memory-failure category
+  selftests/mm: clarify alternate unmapping in compaction_test
+  selftests/cgroup: extend test_hugetlb_memcg.c to support all huge page
+    sizes
+
+ .../selftests/cgroup/test_hugetlb_memcg.c     | 90 ++++++++++++++-----
+ .../selftests/mm/charge_reserved_hugetlb.sh   | 45 ++++++----
+ tools/testing/selftests/mm/compaction_test.c  |  3 +
+ tools/testing/selftests/mm/hugepage-mremap.c  | 42 ++++-----
+ .../selftests/mm/hugetlb_reparenting_test.sh  | 59 ++++++------
+ tools/testing/selftests/mm/run_vmtests.sh     | 52 +++++++----
+ .../selftests/mm/split_huge_page_test.c       | 27 ++++--
+ tools/testing/selftests/mm/uffd-stress.c      |  6 +-
+ tools/testing/selftests/mm/uffd-wp-mremap.c   | 13 +++
+ 9 files changed, 220 insertions(+), 117 deletions(-)
+
 -- 
 2.52.0
 
