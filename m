@@ -1,73 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-19429-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19430-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 135B0EDB7ED
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2026 10:26:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9010FEEF24
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2026 11:29:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fqj5h5CTTz2yZ3;
-	Tue, 07 Apr 2026 20:26:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775557560;
-	cv=none; b=k4cjzGAAeI8dqAp3hZ/QQdQ7wKUAnx1BYMivHybJ4YGQ1W73vmSgJpzw6QZilMjXgpL1RbkePzPi2lW8gQH287O7z1rZgElZjs2k5yRHVoaxlbibIMu4prFDZL8rlACwN1Kip7bfitvTQhNxXfPwAtVA5Fu6MFKsTVfFnJ6hX5mnFHDYI7KQefHqJWZSlJXoQsIRNAPw66gzhRjsPcKbPnvwH8PPQcP1ORZrCj5x5J5SeuMznfOc1/scqcj+jwzBFBBwd2EUPwhVfbOSTXSXSaHH7b3DOXvCi3cs9WKCzrMc2zP29Dh2YPD2t8wR5dI4j2mIdE7cDdd0LM5fV3arXA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fqkWT1cPgz2yZ3;
+	Tue, 07 Apr 2026 21:29:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775561397;
+	cv=none; b=BHv0XGtKQWXIoLv+XNpBFvZ0lux8x95MgdyW3NEzYWyy2TBNt4HXReNu0Hav3cTZew3DxedOXVEgenR+4rrTB0/J7MSpfpbOHXToVmRW/iMcY87qRaaHKlGhv0YcsvMm/R5BJlyKq/WwjGOLe5I7AtuR/G/Z3mDqoNZZ+GnQtVIelo34HVYliKOKP7aV/XfKpM59P0Bifh9KsVuiKK6hsmmT2E/UTFqzYZmS67byIAx5SyHmBiYYMOI0+LYBZm+NV2KLMkKt1jfZqCEWwuLVLf1XLaVgYRziKL9kweAREsZFRMH37Wu4Ilqr1aI8VsQyp22hdhEc4UZmGxumWTCEsg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775557560; c=relaxed/relaxed;
-	bh=bfupogbSrvICbNA4Xn2CBYXq7EonCBIRKJtB0E8oOa4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=BNh3Sxor0RRxI6rNYuNrxZnRj5A9L6z3ekKHhhjCa9b40prFDlXBK70sG0XBxPElvB/DvgnSnKKCd2k3P5VJ1Q/2mB7WAqU25zIhY+rgZZRF0xqsZgmN7AjG5BjjgPsjLYOsTN0F75km1ZNNBVP9vB8ZaW6zOEYkw9xUOl+kBuZ6ou17RRNvl13taPe4jIuttw0b9STt/+qMaNGYokA9pTMdOH1ZhwpjoW9o6TFJfARqYEAeXaeH6A0LnosK+R+wRLgBl3RRuPiob8v4xmhwgVbW1I5i/OkCPpMyMrx2OWnRz8h6g21cW5nXOl4jPO3UJOi40hYzoUca/Bcot7PwYg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=D5Ld5yEn; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=vishalc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1775561397; c=relaxed/relaxed;
+	bh=YPMzMSu2UcaUr3+SNKjnG4539dTdukUCZBYScBAzSWs=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=dLreIsRuLUtABJ/WbyaU4Ef0nCw/YbG0HAg7oYrmC/0nHzVWNT1XSp07avUtf5QZPdzn1+kXq63OU2JM1gaEJVZze9ihb2+yU6cNSmPfGMxqmXLfaTIEa11ngtfPiB6jO4CvSuuLybJyPVYtOU6cXETJUCwaORWeK/nQBPesnkEpjWaAAiuY4Myjphlto97o/AuuYdLhqpfa1PM6xh/gKQ3oNC2gSVsFOvcRYRgLbD4ZtTEMbAPgZp/kqLBhFmzHM+NIKNh7QNCO/KYgIa/XDUAYiSDEmVq8IsfTwJ8IxAi8vCHHl5HicGbJvj3jKRZgf0aJfBTrQQajnz32Dr8K3g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Cz0mzciM; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52e; helo=mail-pg1-x52e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=D5Ld5yEn;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Cz0mzciM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=vishalc@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52e; helo=mail-pg1-x52e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x52e.google.com (mail-pg1-x52e.google.com [IPv6:2607:f8b0:4864:20::52e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fqj5g5YHvz2ySk
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Apr 2026 20:25:59 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 636LlkNL2297413;
-	Tue, 7 Apr 2026 10:25:48 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=bfupog
-	bSrvICbNA4Xn2CBYXq7EonCBIRKJtB0E8oOa4=; b=D5Ld5yEn4xDbQAbCnJvArQ
-	trAJUFHqwr93aySkpGbOmwvULi1nQzOxmEz5yWXew7XGYBuetlP91eTSLo+1mU0b
-	/zA0qlB3e9tjuOpPJfmOuYotU5FD8XJejl1v6w61NUYGG7Eys0boj3HHs+923XS3
-	6OpwaTMygJOwnwkUtrbytSx2TpA/6elvrkA87/JtMhTEctC8uewYqmwckJsHckqX
-	FYlptLEy9Rtf83QqvjsKeY9+Sfokh5Q2JQRvC/6C4Khy8XnfaWQakhBxqL/CP3L+
-	I/a4hcASPqz7dklAq4l2w9omP2ww4OrG3Ot2tAadcyT1FC91XreczxaF+o1pMuWw
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dcn2ft67b-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 07 Apr 2026 10:25:47 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 63790uPe018961;
-	Tue, 7 Apr 2026 10:25:47 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dcme9a69y-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 07 Apr 2026 10:25:46 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 637APhnh27984302
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 7 Apr 2026 10:25:43 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 19D7920081;
-	Tue,  7 Apr 2026 10:25:43 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 383072007E;
-	Tue,  7 Apr 2026 10:25:40 +0000 (GMT)
-Received: from [9.123.2.84] (unknown [9.123.2.84])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  7 Apr 2026 10:25:39 +0000 (GMT)
-Message-ID: <0732de44-964c-4e0f-b4fd-dcc631ba70fa@linux.ibm.com>
-Date: Tue, 7 Apr 2026 15:55:39 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fqkWS140fz2ySS
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Apr 2026 21:29:55 +1000 (AEST)
+Received: by mail-pg1-x52e.google.com with SMTP id 41be03b00d2f7-c76b87931b8so3409765a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Apr 2026 04:29:55 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1775561392; x=1776166192; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=YPMzMSu2UcaUr3+SNKjnG4539dTdukUCZBYScBAzSWs=;
+        b=Cz0mzciMgDfUJbT90sji+BVobtIaXRGApWaDGlrOWJSq1Yr6SKJU6y+XEXWhrKFw4Q
+         JyWAf2oJPdkTuY1sWNYkXojKrpdaPnjETqW5p0lf3+rZVV5cYihZv0s0me15m/2OlXYs
+         tkHgK9WRO1H6TIKuf2UbgF2s+ojsmj6Vd6dfUGfZgzoYj1ezyU8B6zUN1ODSE22HnHdx
+         bALS004N9g2zcNxxu5j94kebjyeN+V6N3uRHzw4IX8jGmYTvDSN/3HxhsuT6jJL9OHwP
+         B+pSdmUSHMMfy/O7RhOLIC2QqHGQb4r3lgkHGYn6ehq+essuxQ352kxnruFpX6hgk776
+         wXfA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775561392; x=1776166192;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=YPMzMSu2UcaUr3+SNKjnG4539dTdukUCZBYScBAzSWs=;
+        b=fXLASht14GeymCGzMceLtvU2bf2eNuf+TgiMvEVOW6w0uFVLyFhZhrjLDfZaWsM8Px
+         TRhiOUtcMMvmryX2366/NPM2KLPx/Vzmwxy4pQ43f4gJC8oD+DMJVKkKerwYUxMTRoFE
+         +QBRP1EsvSGmBYdYkYRm8O866imgDbjNOQbvv/t2aTZ3zGBTi9etYMkbQTGY4UZoQuUZ
+         AFtEwwjtKifJZWMaRyW+tHTMOH8bTcOFfo6cn5w5s9H3vw+auj4fvRKkSQqVAYlR5EoP
+         2o/tkM/sgf0dbpqb7GgVspr6v0GR5tfDIJJw5Q5x3iqMxs2XLtv3OR32vDnJ61xeAP5E
+         PyWA==
+X-Forwarded-Encrypted: i=1; AJvYcCVCQ6eu6xgDoLOC24mhGBEhEKdZ6FtszNz88NIe5pZBR5NEtah4fpmOYrcYqqmc9hyNggVgzYkkumlFtwk=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwmKKq9yt9Oco4Hjv6NWM/TqABMma9jDY171F9Fr8zqmYBgboR6
+	WBGZz5yQuetQZDIOnXYNXmN+8lq6mFnquCw7E/jL+LAS3EDj6Jvf90eO
+X-Gm-Gg: AeBDietwjXU42jhGPYR6/Cy3jOh92D7qjiaMhrfihYyHnes8E1K1U1TU/ZF0ZQbBlp9
+	E7+iI5EI7AQDgHL8Q1PYxD7VabNhiQMvdVO4APgmhiTXKCBj+lEFIjmUSYAyGAvr71K659P/xZY
+	+e1fDxU6e54nWs9A47L3qlrvLeUcAYypkmrmv1ssE0wkmmjXSm0lCe56KgzcPQ5TvFFGgvzkOwN
+	yR/SBFIGbymuRgBfi1xkyBFnZmkdYVm6ZV1FW6bVK/MquxLIdSMCv16OQ3L2/BtCURR8zplV2IB
+	xyctTGcrXEjB5b9TFAvYEICr4Z1Grm0en4yWMyxT5bciZodT5VZPNebrvFK6JkSDtNc+4SXISKE
+	wFZsoKqJsJxZ2DQsLYOLUxDJBVoqJrd1ftrhfWS3xd5dYNvJ9lM02BeV3dlsjkbRz3EkAgQc48+
+	bBdGUQLm2QSPSD2x08DBOPzw==
+X-Received: by 2002:a05:6a20:7354:b0:39b:e321:784f with SMTP id adf61e73a8af0-39f2f05041dmr17711179637.40.1775561392149;
+        Tue, 07 Apr 2026 04:29:52 -0700 (PDT)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c76c657dfb7sm14891242a12.24.2026.04.07.04.29.49
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 07 Apr 2026 04:29:51 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Haren Myneni <haren@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: maddy@linux.ibm.com, brauner@kernel.org, hbabu@us.ibm.com, haren@linux.ibm.com
+Subject: Re: [PATCH] powerpc/pseries: Fix UAF reference for src_info after list_add
+In-Reply-To: <20260317040444.2785741-1-haren@linux.ibm.com>
+Date: Tue, 07 Apr 2026 15:48:04 +0530
+Message-ID: <v7e3krab.ritesh.list@gmail.com>
+References: <20260317040444.2785741-1-haren@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,142 +88,98 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] pseries/kexec: skip resetting CPUs added by firmware
- but not started by the kernel
-To: Shivang Upadhyay <shivangu@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Srikar Dronamraju <srikar@linux.ibm.com>,
-        Shrikanth Hegde <sshegde@linux.ibm.com>,
-        "Nysal Jan K.A."
- <nysal@linux.ibm.com>,
-        Ritesh Harjani <ritesh.list@gmail.com>,
-        Sourabh Jain <sourabhjain@linux.ibm.com>,
-        Anushree Mathur <anushree.mathur@linux.vnet.ibm.com>
-References: <20260330062206.170437-1-shivangu@linux.ibm.com>
- <da6f75a7-8a68-46a9-9897-1aef11d33829@linux.ibm.com>
- <3075019f74969b25e3ab7f6b3f51ee54ed455aaf.camel@linux.ibm.com>
-Content-Language: en-US, en-IN
-From: Vishal Chourasia <vishalc@linux.ibm.com>
-In-Reply-To: <3075019f74969b25e3ab7f6b3f51ee54ed455aaf.camel@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=KeridwYD c=1 sm=1 tr=0 ts=69d4dbac cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=pGLkceISAAAA:8
- a=pFwa8OfPkI_SxIOsDfEA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: e93R3A4-PaQEdUT4GO1bkncKkQNMvnig
-X-Proofpoint-GUID: tZo00FbT1O6yzT-ZHDsKizeVmOQvpLO_
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDA3MDA5NSBTYWx0ZWRfX2XlIBXRDjbHB
- kFFfAeMRmPh+EtYmQD+I+/PV+zKtqxjR/gUksewlBa6sbBLEVJuHc0BZi1e+p1MoHYXhjWucx//
- UMyYilQQUXBefGIo5HWqbZftSFgvwz1ZIt6XZ6IMNFDjBTw0G4heq7sHfAxFqCh909WCy+mRcDo
- xtWWqfI6Dv2KJUnvFeoSWqPBoN7ZJr5HLc+yC7WLsdgL/GjnwYwrmG1U7rivYEITbT7z+z4Xrhz
- +XeMQwrsCkJ2p7mVUbhNyXHXbgu5Keup0rCcAAPuOMDGVIauwE+hk2TDbx8rXF7STvfXUVXUrVH
- dJU/wINYWXzrjmIbxMffopjaCX2UObaRzZ37lqjJ4JsP36KH5GQVQnc1eddyaBQDfRTfnfIqDsz
- GJfbre8upbkvYyrIkEGv3ChU45ZfM3INKby7Hsbhw88QbamKFU7OvL+J8duhM06u94PbcLmWGXY
- e/kqDuyDOZpkaC9qDOg==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-07_02,2026-04-07_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 malwarescore=0 lowpriorityscore=0 adultscore=0 impostorscore=0
- clxscore=1015 phishscore=0 priorityscore=1501 spamscore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604010000 definitions=main-2604070095
 
-On 07/04/26 15:49, Shivang Upadhyay wrote:
-> Hi,
-> Thanks for your review.
->
-> On Mon, 2026-04-06 at 14:22 +0530, Vishal Chourasia wrote:
->> Hi Shivang,
->>
->> Thanks for working on this issue.
->> A few questions and concerns about the approach:
->>
->> 1. Was this issue only observed with QEMU-based virtualization, or
->> does
->> it also reproduce on PowerVM/phyp? The commit message and sample logs
->> don't clarify this. If this is QEMU-specific, I think we should fix
->> this
->> in QEMU rather than working around it in the kernel.
-> Currently this is only happening in Qemu (both tcg and kvm mode). But I
-> think this should be reproducible on phyp also. Ill confirm wheather it
-> is really the case or not.
->
->> 2. The approach taken here moves away from the PAPR interface. The
->> kernel currently uses H_SIGNAL_SYS_RESET_ALL_OTHERS, which is the
->> architecturally defined hcall for this purpose. Replacing it with a
->> per-CPU loop that checks internal kernel state (paca cpu_start)
->> breaks
->> the clean abstraction between guest and
->> QEMU's sPAPR implementation should behave the same way. The
->> hypervisor
-> Yeah it is a valid concern about ownership for this resets. Ill try to
-> see if this fix is possible in qemu itself.
->
->> (QEMU) should maintain a list of CPUs that have been
->> activated/online/started and given to the guest. When
->> H_SIGNAL_SYS_RESET_ALL_OTHERS is called, QEMU should only reset those
->> CPUs that the guest has actually started. Unless the guest makes the
->> RTAS start-cpu call for a CPU, QEMU should not include that CPU in
->> the
->> set of CPUs to be reset.
->>
->> I think discussing this would help determine the right fix location.
->>
->> Can you refer to the following commit in QEMU to see if help in this
->> case.
->>
->> commit fb802acdc8b162084e9e60d42aeba79097d14d2b
->> Author: Nicholas Piggin <npiggin@gmail.com>
->> Date:   Tue Mar 18 15:03:48 2025 +1000
->>
->>       ppc/spapr: Fix RTAS stopped state
->>
-> Thanks for this reference. cpu->quiesced state was introduced in this
-> patch, for modelling "RTAS stopped" state.
->
-> as per the commit message:
-> A KVM spapr guest boots with all secondary CPUs defined to be in the
-> RTAS stopped" state. In this state, the CPU is only responsive to the
-> start-cpu RTAS call.
->
-> So, we should be able to use this to check wheather cpu is started or
-> not. Only other concern here would be about phyp's implementation for
-> this.
+Haren Myneni <haren@linux.ibm.com> writes:
 
-Yes, something like this.
+> Getting the following kernel panic in papr_hvpipe_dev_create_handle()
+> when trying to add src_info to the list.
+>  Kernel attempted to write user page (0) - exploit attempt? (uid: 0)
+>  BUG: Kernel NULL pointer dereference on write at 0x00000000
+>  Faulting instruction address: 0xc0000000001b44a0
+>  Oops: Kernel access of bad area, sig: 11 [#1]
+>  ...
+>  Call Trace:
+>  papr_hvpipe_dev_ioctl+0x1f4/0x48c (unreliable)
+>  sys_ioctl+0x528/0x1064
+>  system_call_exception+0x128/0x360
+>  system_call_vectored_common+0x15c/0x2ec
+>
+> The current code adds src_info to the list after UAF for src_info.
+> So move the retain_and_null_ptr(src_info) after this list add.
+>
 
-diff --git a/hw/ppc/spapr_hcall.c b/hw/ppc/spapr_hcall.c
+Sorry for the delay in getting back on this.
 
-index 032805a8d0..8c51372cf8 100644
---- a/hw/ppc/spapr_hcall.c
-+++ b/hw/ppc/spapr_hcall.c
-@@ -1105,6 +1105,9 @@ static target_ulong h_signal_sys_reset(PowerPCCPU 
-*cpu,
-                      continue;
-                  }
-              }
-+
-+            if (c->env.quiesced) continue;
-+
-              run_on_cpu(cs, spapr_do_system_reset_on_cpu, RUN_ON_CPU_NULL);
-          }
-          return H_SUCCESS;
+> Fixes: 6d3789d347a7 ("papr-hvpipe: convert papr_hvpipe_dev_create_handle() to FD_PREPARE()")
+> Signed-off-by: Haren Myneni <haren@linux.ibm.com>
+> ---
+>  arch/powerpc/platforms/pseries/papr-hvpipe.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/platforms/pseries/papr-hvpipe.c b/arch/powerpc/platforms/pseries/papr-hvpipe.c
+> index 14ae480d060a..5121c87d1fad 100644
+> --- a/arch/powerpc/platforms/pseries/papr-hvpipe.c
+> +++ b/arch/powerpc/platforms/pseries/papr-hvpipe.c
+> @@ -509,7 +509,6 @@ static int papr_hvpipe_dev_create_handle(u32 srcID)
+>  	if (fdf.err)
+>  		return fdf.err;
+>  
+> -	retain_and_null_ptr(src_info);
+>  	spin_lock(&hvpipe_src_list_lock);
+>  	/*
+>  	 * If two processes are executing ioctl() for the same
+> @@ -522,6 +521,7 @@ static int papr_hvpipe_dev_create_handle(u32 srcID)
+>  	}
+>  	list_add(&src_info->list, &hvpipe_src_list);
+>  	spin_unlock(&hvpipe_src_list_lock);
+> +	retain_and_null_ptr(src_info);
+>  	return fd_publish(fdf);
+>  }
 
->
-> Thanks.
-> ~Shivang.
->
->
->
+Looking at the destructor routine...
+
+static inline void class_fd_prepare_destructor(const struct fd_prepare *fdf)
+{
+	if (unlikely(fdf->__fd >= 0))
+		put_unused_fd(fdf->__fd);
+	if (unlikely(!IS_ERR_OR_NULL(fdf->__file)))
+		fput(fdf->__file);
+}
+
+
+...I think this approach might still have issues. i.e. if we don't make
+src_info as null like how it was done before, then when we return an
+error from here, it can cause double free issue:
+
+	if (hvpipe_find_source(srcID)) {
+		spin_unlock(&hvpipe_src_list_lock);
+		return -EALREADY;
+	}
+
+Because, an auto cleanup / kfree(src_info) will get called.  And since
+the FD_PREPARE() step was done successfully, it will also call the
+file->f_op()->release() function on fput(). Now since we have not even
+added the src_info into the global list so this can cause list
+corruption as well.
+
+static int papr_hvpipe_handle_release(struct inode *inode,
+				struct file *file)
+...
+	src_info = file->private_data;
+	list_del(&src_info->list);
+...
+
+So looks like, this approach has list corruption + double free issue.
+Maybe you can even try to reproduce this when you call the IOCTL twice
+with the same srcID.
+
+
+@Haren,
+While looking at the papr-hvpipe code, I think I may have found couple
+of more issues. So, I am preparing a set of fixes for the same. I will
+need your help in the review and testing of those please, as I am not
+much familiar with this code :)
+
+-ritesh
+
 
