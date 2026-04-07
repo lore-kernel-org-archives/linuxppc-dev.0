@@ -1,83 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-19447-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19448-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38F6BFEEF52
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2026 14:57:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73401FF5104
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2026 15:31:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fqq6x5kyMz2yZ3;
-	Wed, 08 Apr 2026 00:57:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c112::7" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775573849;
-	cv=pass; b=XCrROwkK4/JWmU1/jiSWufn6f6DFthbXSpv/phES3bYu0jnklZ0b1G8l6gUUgqlTTtcDXOHnTpm2vu9GtJap8TRhizymh8wcQJTa0b8gNBl9Ow7ulUFkDWszVEUACR39PZHrlGUJwO4YL7JLcaQ7S1ILSoByAcIeK4/UifwHmUFIhXRngxI8bbhuoFteXA0yGvfScT4Kt/wVMQdbP2gZo/mkNyiajqOQHPQd86VT0zsGF5BRH89zOpEPaioPdKbfod0ljQPJS/CGGqVh9Ctl+mL682xpwmR6BVYW4w8n8GETI9Yymikh2G0SEqrHdbJhB+Z4znBNkQbJgMsNxb2VtQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775573849; c=relaxed/relaxed;
-	bh=aLggyNnb8GtZsSTTYRBJxz2keAwlT5MeVnYh0sGng4U=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=hDt/sAkKQtUxH02L2G5HgLrqeOqG6y4/b8Io6I6x+wLSrJumhF5cpyBqYjroK0wcxobXbmKEYYncN/V8qAC4/uNnIXEVujjCIGgSP1m78qJb3T7cWPTGApvs09oxAtp3v7MPJslpRKinFAW0RHuanVkCovyguz1P4doTUUauM1SMIFPLMGvMdXtlNAjgHCTI9aMN5LtEXfQUVQNF1AgOu6knWBbDGjv+9rc+NfJY+nSvIQaXCyVLmaRYyCf69Ij5zLJiXOKakKyJ0WM2Ehbbs3Gw7JMWKuZtxcKgFvp4f7/61G3XN72scUTlRBppUZVynb+eV1yB7XIxTClVd7Zqxg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=Mk8j/hWu; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c112::7; helo=cy3pr05cu001.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fqqsy716Kz2yZ3;
+	Wed, 08 Apr 2026 01:31:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775575878;
+	cv=none; b=Hw2y4yloD+kkMIvoch9vWyusZQgPiWudF9+zuWCsiF+FrWBCdgcLCHOoeKtunPsuutGUDZNVoeFIdrbE0n/D9v8Y8MS2lCBVJrclQtgRDeVgCfPIWbCLS2pRG/i0hVUzw9Uy1cvcJyie/WpoO0hiFXDBnsXDSldkBEH4UsctspNovwcvqv+ikBja6gHnubPH09i7vn/oM6oqjN8Y61yFs/fbc5/uMvSm84hwyAyvYOtE2dhOptGq3WHMDHGhZTT+Q4ot/YsIBSGA7pjpzUB36YjfWK+TZ/hoiyQ6GW3QwQ5vfF6q8sw+6xzIZy/f4zsQwX58dHUBxquhz4EsOsYRSQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1775575878; c=relaxed/relaxed;
+	bh=DKShMzUixgQl2xbM9z6mJi1AiZrr9z6eMZ04FMv8+5M=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=jr4EfQPVBYeyP9+QKA17hK/w3Gs0suNt6OuD4SJZ9NWaWgxaEsGuh25Cdz+XHln//WkCfFbkyOq1xUAXNefideO0lqdDAe2K3bVrz72mZUo9GgtzE1hnGExrZhesVKGfFxk+9bKB9cltnqUBMF+lWvSfGe1T4p5sm93/Yy1m0TWw+VNjP6UXcA8zVUGhUIcQa9Op9HkUu/qt44b0XBrrLdniZxdphpEoICllpaNsmcpknFPiKpehPJqQ0/Sjri2wOmci/8hXb01TBw3MWqQYGXNwM1yJBxSQkouVgfUsOiaXGmWDR4IFLkNE9QrMXarH0Dqbx+W6dcQvRqjPDAaLjA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XHLETSw9; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=Mk8j/hWu;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XHLETSw9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c112::7; helo=cy3pr05cu001.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org)
-Received: from CY3PR05CU001.outbound.protection.outlook.com (mail-westcentralusazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c112::7])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fqq6v54vTz2ySk
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2026 00:57:27 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=AwQOqSHM6X/HpPUT2jAjrsh4SgYcadoNg1IUxcAPqaympAFonkYUXVZfc9Imal7JDZO2cETyA8yVsp+tAex0LlPVFvhHueVFe9Qa2rmJeMxWAWt73FYGhP1NwLB/S6RvxNwfVEYy+CgsrvxsjBisoyMFHUV9HLx08tGFsqQSV3XqfcRyRO3XQgbR8N0o1RDQ6yOp4fxVUGs7D6WyMzgdW9+igYYf6kO12NhuYfGpzZjGvRIEcI3BJy8hOB+X/sC+H+jJBeTZLyipvU69qLpNXKPGMJJloIgcrIV76jwZb7To2JD6RKeKtIEIMP8xMqiogVJ6GemEsWRbefurM/4CMQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=aLggyNnb8GtZsSTTYRBJxz2keAwlT5MeVnYh0sGng4U=;
- b=sg7/F8xVIjJX5xIloeoNu+QDrUrvAmV9NR+CJUt1k2diLMs1qXd+kgCJFmwCRH0ta5iDuieJIBPG/Q9ilV6AfoghomcCJlGH7IMFEkE2hUQ9ut8yyEH/cE9W37TwoyVX7sOAqQsY3YebbSLOKP/WytA9KrOChhyZWgdmxZ4ZvO2R53q/yLa4go/wFdve1N4a/xDnyIFzfrs0DUnpJdNeveQHQtUmUfMmOOSo2Nue3x4s6oyw2TzXjzEMfeXpDR0LLCLbkxTTHEY1zEpL2Mqrf3KDhTwKm7Zf62+lbb0oqMF4Fc21Zok2ui/W2naFnqNDXEnrFJcx002hchYAW6YTyw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=aLggyNnb8GtZsSTTYRBJxz2keAwlT5MeVnYh0sGng4U=;
- b=Mk8j/hWuZs4g5uWNdmQxfKeOtkPfaaWK9fUvfONTZ0NizugYtZd1vkuh65kPAv0+SY0EpwaEjU1/SlV4httoUNG2vkS6CQl+GqpfSaLscpV2IgP8VhfLyDeyxZqn/i0Qlx0h1dmxuqikGIA/H14n8nUE26FW0hKb8zX5ZNo2vzcGTlgSC7Nk0CZ/5c9br3dwl11R1KRNZdl0tW/22F4VFnOAn3MVVf3kzsMacg77qbC4+IYsfPXVb4aqr3nOwozr/JSMD0wlVMQRcoV2EmRmtjgQLMU3w0ovFN1pbPxtqOG1CAP20STl38+SBDMQwoNUwRu/Rrd4vLI2ZYsiyiQvtQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from DS7PR12MB9473.namprd12.prod.outlook.com (2603:10b6:8:252::5) by
- DM6PR12MB4171.namprd12.prod.outlook.com (2603:10b6:5:21f::18) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9769.17; Tue, 7 Apr 2026 14:57:03 +0000
-Received: from DS7PR12MB9473.namprd12.prod.outlook.com
- ([fe80::f01d:73d2:2dda:c7b2]) by DS7PR12MB9473.namprd12.prod.outlook.com
- ([fe80::f01d:73d2:2dda:c7b2%4]) with mapi id 15.20.9769.014; Tue, 7 Apr 2026
- 14:57:03 +0000
-From: Zi Yan <ziy@nvidia.com>
-To: Sayali Patil <sayalip@linux.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
- linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linux-kselftest@vger.kernel.org, Ritesh Harjani <ritesh.list@gmail.com>,
- David Hildenbrand <david@kernel.org>, Michal Hocko <mhocko@kernel.org>,
- Oscar Salvador <osalvador@suse.de>,
- Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, Dev Jain <dev.jain@arm.com>,
- Liam.Howlett@oracle.com, linuxppc-dev@lists.ozlabs.org,
- Miaohe Lin <linmiaohe@huawei.com>,
- Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: Re: [PATCH v4 08/15] selftest/mm: align memory size to huge page size
- in hugepage-mremap test
-Date: Tue, 07 Apr 2026 10:57:00 -0400
-X-Mailer: MailMate (2.0r6290)
-Message-ID: <15910BAF-8D1D-4EAA-85A6-2E4CD3700513@nvidia.com>
-In-Reply-To: <6aecfff81bd3e288e66af238f50f35eac0bd4ee7.1775466330.git.sayalip@linux.ibm.com>
-References: <cover.1775466329.git.sayalip@linux.ibm.com>
- <6aecfff81bd3e288e66af238f50f35eac0bd4ee7.1775466330.git.sayalip@linux.ibm.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-X-ClientProxiedBy: BL1PR13CA0247.namprd13.prod.outlook.com
- (2603:10b6:208:2ba::12) To DS7PR12MB9473.namprd12.prod.outlook.com
- (2603:10b6:8:252::5)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fqqsx5Ws9z2ySC
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2026 01:31:16 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 637E3EsZ2302533;
+	Tue, 7 Apr 2026 15:31:01 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=DKShMz
+	UixgQl2xbM9z6mJi1AiZrr9z6eMZ04FMv8+5M=; b=XHLETSw9DGzb06IUoO7+O1
+	8gj7zSicsX63dA2hcEJNwRDPPlCmUP4pDmRdIKeTNE0wEgIgwrKt7eFqUlMa30Km
+	r73Q9AQK28bpj387RDEA6a78anPYiduIctw2a1y4l1cNUjuSvDWV0th5cTvvT0iL
+	83B4uQ5UEryufbvGj++Ix/9DbUBCfY4UJKootrabQ+ygKYraCja6g7CS8oUDLFqI
+	GydLMaKS22Nr1zIM2J4ui9j/7Gzvs2CX9zaw5jlQfFRVwQ4RMnhMI74pa+kzZMCf
+	ERILxz4VKGIHh3UmCkJpYV6ZjBG2+fzr0KhIf6AT2FOeclBonpzAFdC4kht28Amw
+	==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dcn2fbt15-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 07 Apr 2026 15:31:00 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 637Eapsf014356;
+	Tue, 7 Apr 2026 15:30:59 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dcmg4kr48-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 07 Apr 2026 15:30:59 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 637FUtcU62325066
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 7 Apr 2026 15:30:55 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id BC11320040;
+	Tue,  7 Apr 2026 15:30:55 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id BF0962004D;
+	Tue,  7 Apr 2026 15:30:52 +0000 (GMT)
+Received: from [9.123.14.142] (unknown [9.123.14.142])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue,  7 Apr 2026 15:30:52 +0000 (GMT)
+Message-ID: <99c837d3-7b70-425e-b1e3-e4e5361eca5c@linux.ibm.com>
+Date: Tue, 7 Apr 2026 21:00:51 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,160 +81,146 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS7PR12MB9473:EE_|DM6PR12MB4171:EE_
-X-MS-Office365-Filtering-Correlation-Id: e6f7263a-4baa-4a11-579c-08de94b5eda4
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|7416014|376014|1800799024|22082099003|18002099003|56012099003;
-X-Microsoft-Antispam-Message-Info:
-	QWlWtgXcOJeA/jnYz6QkbwXqagt7gsKxI/hvIUXvl/Aswox06T1pRVDYvwNut/gZ+/0Oh1k7yiciJsutoWXifddnj0gC0krDy8pcB9kyQOkMwGQeoe86cYBeoEVTUgXOIiqHuwapHgv+908dhBfsLZM+M29gJpnPpF4jOsG0nmVVdpPaZEQUEI609C/fZdZ8856hfCmhFWY2ZYpbZcw5eYI+joMO6Q1qQTkF5+rN/0WGsEPAe7R7jBsmmKIjMlLrcUX3rMcgbDNJ6FzT8GXbfXEUI/5rd4tPNygT0iKFnbTLnggX7uFRxQ603TMkgK2sRcTRIw1QjVAtSDVmTwh8D+39h8v+cedxYVJrZ4i/hQd/2ErHDJVGyMMI1BwYI+L6WZdL4xyCGeNuSG7aCnhRtwgnVB1bedvbZ9INZoHXCyU4WgUpSJCRlJiJ7RAYMJWvGY3udiKyB1okipJgWpjyWWMfcv8kRZHe6sv412gyKLKt1AavcZ6XtRhADEsOhLWqThpici2BjXL48rlax1CGMrOuSVZ8N8vQJOGeKx5nnS895sfxAo82Q09+MrDaeANcJoFIpwfG3AvQiiEPbkbg085xKpEi6sPMPqNxKHDYstEMoih0By/wYbzXXgFy9KFD6fhNB/+E82G/LrY5kMCof4P4rJb6YHONSUrvAe7CX5+dccmF827elr1KQn/KUS7X442l/T37aq1eGQ/7qPY44T1AFUwErc5UlBerarqi2nU=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS7PR12MB9473.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(7416014)(376014)(1800799024)(22082099003)(18002099003)(56012099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?U4qn2wJKyY2v9tt0LIpuAMdXdTB/xWmkeR16rMSTPaib2Q3+DrTu6cKTP1FZ?=
- =?us-ascii?Q?HrCjZEI6Uoi/knMKRLwfgo4xkf91Qnu/4ZGo66jmYTCWEmpZzpgJ+7fGbeyk?=
- =?us-ascii?Q?H5oFIRfW6V7KDHc+l0pQ1LtZCLcp4IkyQc9bVv4TqQ4wqrKia4m6my7/XtaY?=
- =?us-ascii?Q?n10NvBgTua30OiYZ5/ktfV0CGxu1rPiR4x7absuRHHqN7lMCHHCYmfp7Pmow?=
- =?us-ascii?Q?boXeoe1YzbCyd8sX9ZCWcqAQPeD+13Qvlgz55v64yIOmcjoeFhQW7DT6C7C0?=
- =?us-ascii?Q?f5PUsgSEXLen48nOjnnJz3CL1P5t8w1pfqaYV0ic+mFpMjB2tcTMwtxv1iVj?=
- =?us-ascii?Q?MJfc5VdXEkYHLRa13T2IQ9/LnOX4yzo4LVjrHeZVVfSfWSopPeUCRK3lKCaL?=
- =?us-ascii?Q?jBGiPCZRvbOjxl2pOyPiA9J3R9fdX5wIovwdvQbkmWO+bR1CUif1VlAc1JM3?=
- =?us-ascii?Q?ABSmHdIx+TeLQXWHbJhJjYPXY20ZpkqLX0COjv625hau2giPdO80+W707iZW?=
- =?us-ascii?Q?zhOrAz7w9WxtGcego6YehfXpLOVEVUv08PtO85NwvVvJgr7W+P49ByHbPrUr?=
- =?us-ascii?Q?wjOI0sJSdwg2/tA6g7KcBJFepEA6Y6h0LV44G7Y03T7MawWCJJmAWkUTqF5i?=
- =?us-ascii?Q?BQawTBYcPOBGa7X47zfBpzLUcGpzzds7piLUubv8zcGYJUZvQI41g4x3IJWu?=
- =?us-ascii?Q?7K65YGAuM+E5jRlXxrAfK9yVbm8O6GLFjaICv0Zv4yIvODJJj012QbA+eZn4?=
- =?us-ascii?Q?ym2Y8pvwlzqxpmKpbwTl2diZE3JzAcJ7DPYu2xyyoL/fjTi2ygShgqu5Keef?=
- =?us-ascii?Q?Q+8Bq0M4eqI3luGDus9hIX+Azzn4fgxK1fiE8i6b1XFu2FUlInqEjEaVs5iH?=
- =?us-ascii?Q?xSUQXvO9I/luZN3iGQZFUOlIA8FllemIDu6ADR4y7Kb4xQ3hnkCnF7tzZZB3?=
- =?us-ascii?Q?eMjnU1WcOipf0S0mvE6KFWSTDfDdseM17NlVTk04I3Ck5raGij6NwRLXJtA5?=
- =?us-ascii?Q?adrIND4EeExPNDxbqdHAvr8MIK3wugO8+2N0ed16y1CIn0p+6b3+n8HkcyVQ?=
- =?us-ascii?Q?EYNX1uZQ1mGCg04RTHJT5dG36J9XZw53V6qYsFoBikCsXnNP86hX9pYm6XF/?=
- =?us-ascii?Q?v0GFl5gYi/IGoz5GEDz84SWKvs8UeBpjJWdkdiSj/A8aWKyvEu34tHfMP0xX?=
- =?us-ascii?Q?saRkuoC+75W6MhkdRU+IixnSRj3AAP1BZbL8+2kNhWZ0VExpqMfX+bwUpOeU?=
- =?us-ascii?Q?Fey9ztCWUX8nDhR8Jw3PJvrQnFcwz5EaK8RJxAasUJW1IaFCCtIXxftyOvhm?=
- =?us-ascii?Q?KaocgwIzvZceeM75wjeJsBPXHuZ7MJ9L4S0XrhKVRVRR9e8EuMcoU9PzucNg?=
- =?us-ascii?Q?+wkxgNnxt0kTVv4hsytwj3Kv6bEQbxqKwgvP9JIBD52i0uQRK0US/IaiuOSl?=
- =?us-ascii?Q?3s8iIMbOo5HCghFKfDHrvZI8pwZnlLxisfE6FQ7MCyquQDb9imF8wGqXLl5I?=
- =?us-ascii?Q?k/zaKD3EzfTQ1voq1c3EAPgoDt70eDOlDkyjZYHJ5L91quHxaRnUIbxkF3BP?=
- =?us-ascii?Q?Epgdc1fVWAOw/5nSMnVVTW4DI3S0KNHv/HG9CCVG1M3trOt3GsH7eqefD99W?=
- =?us-ascii?Q?Sjgy0QY49t5FklBeqT1tYBugkVtOPPkJlGTwKr4ujoNO9eCvN7l7KFvOOj5C?=
- =?us-ascii?Q?cbvWCdHA19iPFQwdjT7XMsIQQhzMXd9MOSke4g1TJnK+MtxB?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: e6f7263a-4baa-4a11-579c-08de94b5eda4
-X-MS-Exchange-CrossTenant-AuthSource: DS7PR12MB9473.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Apr 2026 14:57:03.1223
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: G0II/X5BI3r1hh6hXGJ4s9ZeWeFomrjnT/RhDn8bbE+qRLT6CPN+raSFBwjsNfmL
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR12MB4171
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] ppc/fadump: invoke kmsg_dump in fadump panic path
+To: Shivang Upadhyay <shivangu@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        chleroy@kernel.org, kees@kernel.org, tony.luck@intel.com,
+        gpiccoli@igalia.com, ritesh.list@gmail.com, rppt@kernel.org,
+        Hari Bathini <hbathini@linux.ibm.com>,
+        Mahesh Salgaonkar <mahesh@linux.ibm.com>,
+        Shirisha G <shirisha@linux.ibm.com>
+References: <20260407054341.308710-1-shivangu@linux.ibm.com>
+Content-Language: en-US
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+In-Reply-To: <20260407054341.308710-1-shivangu@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDA3MDE0MCBTYWx0ZWRfX8cNrYR+8/kVa
+ nKeOZexSBGjPRIkSwHlbx2HBhDQVeHsG+9lf6+ZefIPYKV4u87hJGEuBdH+2otHENCm+jANP95M
+ +GUisM5yejA717IwWDLhAY1tt8SoOx6IZd52GsDFo5w9qqpWeRvulXLdh/PUNM6aQg2C/twc4hC
+ umuZSWo18K73p2WtdP/DlEwHldrkdcwyUvrbVrRCw3QkrzVR7EXQwZHq3RHyC5BLX8fStl4MRDL
+ 5WKUf2eKx3ieyF0Bgc/msbWvyLnoPKLjhFFy9SEnSHiiHZA8CSbmq0lI9P0GCqGsbv78TAxpiTx
+ YGhBND1qJWusKLc3L+r2Wt7iQGjZWGelNheTeKMfeUUg6Bt8Iymz25PZGz80AGoVAKyB3JnifUz
+ QAZiPxUYwYTZgIukldJ5962CZx7ZLgbab2O1qpmA6p7Nzuqht6Ac5Vl/5fX/iG4eUaG/bFcqj8n
+ dZ/UvgRqbkAt8hnDg8A==
+X-Authority-Analysis: v=2.4 cv=FsY1OWrq c=1 sm=1 tr=0 ts=69d52334 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=c92rfblmAAAA:8
+ a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8 a=PivQjEIRNmcMcH2j5rYA:9 a=QEXdDO2ut3YA:10
+ a=GvGzcOZaWPEFPQC_NcjD:22
+X-Proofpoint-ORIG-GUID: 7MGC2XpGu9oHODopHJiYfrqtoI_B7J89
+X-Proofpoint-GUID: ApRD9NDA92HH_pJiyMn_cXnqV8BH4wqJ
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-07_03,2026-04-07_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 priorityscore=1501 impostorscore=0 spamscore=0 phishscore=0
+ lowpriorityscore=0 clxscore=1011 adultscore=0 malwarescore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604010000 definitions=main-2604070140
 
-On 6 Apr 2026, at 5:19, Sayali Patil wrote:
+Hello Shivang,
 
-> The hugepage-mremap selftest uses a default mapping size of 10MB
-> when no argument is provided. This size is not guaranteed to be
-> aligned to the system hugepage size, which can cause munmap() to fail
-> and mremap() to succeed where a failure is expected.
+On 07/04/26 11:13, Shivang Upadhyay wrote:
+> fadump is registered in panic_notifier_list and gets triggered
+> before kmsg_dump_desc() in the panic path. As a result,
+> kmsg_dumpers (e.g. pstore) are not executed.
+
+Can you emphasize why it is important to call kmsg_dump_desc()?
+Because fadump captures the full memory dump anyway.
+
+
+> Invoke kmsg_dump_desc() from the fadump handler to ensure
+> kmsg_dumpers are called during panic.
+
+Can you please add some command output from before and after
+this patch series? It will make it easier to understand the impact of
+the changes introduced.
+
+
 >
-> Align the mapping length to the runtime hugepage size using
-> default_huge_page_size() to ensure the mapping is properly
-> aligned. Also handle the case where
-> default_huge_page_size() returns 0 by skipping the test.
->
-> Before patch:
->   running ./hugepage-mremap
->   ------------------------------
->   TAP version 13
->   1..1
->   Map haddr: Returned address is 0x7eaa40000000
->   Map daddr: Returned address is 0x7daa40000000
->   Map vaddr: Returned address is 0x7faa40000000
->   Address returned by mmap() =3D 0x7fffaa600000
->   Mremap: Returned address is 0x7faa40000000
->   First hex is 0
->   First hex is 3020100
->   Bail out! mremap: Expected failure, but call succeeded
->   Planned tests !=3D run tests (1 !=3D 0)
->   Totals: pass:0 fail:0 xfail:0 xpass:0 skip:0 error:0
->   [FAIL]
-> not ok 1 hugepage-mremap # exit=3D1
->
-> After patch:
->   running ./hugepage-mremap
->   -------------------------
->   TAP version 13
->   1..1
->   Map haddr: Returned address is 0x7eaa40000000
->   Map daddr: Returned address is 0x7daa40000000
->   Map vaddr: Returned address is 0x7faa40000000
->   Address returned by mmap() =3D 0x7fff13000000
->   Mremap: Returned address is 0x7faa40000000
->   First hex is 0
->   First hex is 3020100
->   ok 1 Read same data
->   Totals: pass:1 fail:0 xfail:0 xpass:0 skip:0 error:0
->   [PASS]
-> ok 1 hugepage-mremap
->
-> Fixes: f77a286de48c ("mm, hugepages: make memory size variable in hugep=
-age-mremap selftest")
-> Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
+> Cc: Hari Bathini <hbathini@linux.ibm.com>
+> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+> Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+> Reported-by: Shirisha G <shirisha@linux.ibm.com>
+> Suggested-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+> Signed-off-by: Shivang Upadhyay <shivangu@linux.ibm.com>
 > ---
->  tools/testing/selftests/mm/hugepage-mremap.c | 10 ++++++++++
->  1 file changed, 10 insertions(+)
+>   arch/powerpc/kernel/setup-common.c | 3 +++
+>   1 file changed, 3 insertions(+)
 >
-> diff --git a/tools/testing/selftests/mm/hugepage-mremap.c b/tools/testi=
-ng/selftests/mm/hugepage-mremap.c
-> index b8f7d92e5a35..f66e4d806477 100644
-> --- a/tools/testing/selftests/mm/hugepage-mremap.c
-> +++ b/tools/testing/selftests/mm/hugepage-mremap.c
-> @@ -32,6 +32,7 @@
->
->  #define PROTECTION (PROT_READ | PROT_WRITE | PROT_EXEC)
->  #define FLAGS (MAP_SHARED | MAP_ANONYMOUS)
-> +#define ALIGN(x, a) (((x) + ((a) - 1)) & ~((a) - 1))
->
->  static void check_bytes(char *addr)
->  {
-> @@ -110,6 +111,7 @@ int main(int argc, char *argv[])
->  {
->  	size_t length =3D 0;
->  	int ret =3D 0, fd;
-> +	size_t hpage_size;
->
->  	ksft_print_header();
->  	ksft_set_plan(1);
-> @@ -126,6 +128,14 @@ int main(int argc, char *argv[])
->  		length =3D DEFAULT_LENGTH_MB;
->
->  	length =3D MB_TO_BYTES(length);
+> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+> index b1761909c23f..c329b071643d 100644
+> --- a/arch/powerpc/kernel/setup-common.c
+> +++ b/arch/powerpc/kernel/setup-common.c
+> @@ -68,6 +68,7 @@
+>   #include <asm/kasan.h>
+>   #include <asm/mce.h>
+>   #include <asm/systemcfg.h>
+> +#include <linux/kmsg_dump.h>
+>   
+>   #include "setup.h"
+>   
+> @@ -748,6 +749,8 @@ static int ppc_panic_fadump_handler(struct notifier_block *this,
+>   	 * If firmware-assisted dump has been registered then trigger
+>   	 * its callback and let the firmware handles everything else.
+>   	 */
+> +	kmsg_dump_desc(KMSG_DUMP_PANIC, (char *)ptr);
+
+Can you move the kmsg_dump_desc() function before the comment?
+The comment was for crash_fadump() function.
+
+Yes, panic() passes the reason for the panic as a string via ptr. So it 
+is good
+to pass the same to the message dumpers.
+
+As sashiko suggested:
+https://sashiko.dev/#/patchset/20260407054341.308710-1-shivangu%40linux.ibm.com 
+
+
+I think we should call kmsg_dump_desc() only when fadump is registered, 
+to avoid calling
+it multiple times. If fadump is not registered, this can be called twice 
+in the panic path,
+first here and then again in the vpanic() function. Checkout 
+should_fadump_crash() function.
+
+The second point from Sashiko is about introducing something like 
+crash_kexec_post_notifiers
+to give users the option to call message dumpers on the vpanic path, or 
+on the other two
+paths as well (system reset and die) when fadump is configured.
+
+I think this is not really needed because there are already existing 
+crash paths hitting crash_fadump
+(system reset and die) on which kmsg_dump_desc() is called directly.
+
 > +
-> +	hpage_size =3D default_huge_page_size();
-> +	if (!hpage_size)
-> +		ksft_exit_skip("Unable to determine huge page size\n");
-> +
-> +	/* Ensure length is hugepage aligned */
-> +	length =3D ALIGN(length, hpage_size);
-> +
->  	fd =3D memfd_create(argv[0], MFD_HUGETLB);
->  	if (fd < 0)
->  		ksft_exit_fail_msg("Open failed: %s\n", strerror(errno));
-> -- =
+>   	crash_fadump(NULL, ptr);
+>
 
-> 2.52.0
+As of now, crash_fadump() (which initiates memory dump
+collection) is called through three different paths:
 
-LGTM. BTW, it seems that multiple files, pkey-helpers.h, migration.c,
-uffed-unit-test.c, hmm-tests.c, have their own ALIGN or ALIGN_UP.
-They can be moved to vm_utils.h, later if someone wants to do a cleanup.
+1. System Reset
+2. die/oops
+3. panic
 
-Reviewed-by: Zi Yan <ziy@nvidia.com>
+We call kmsg_dump() -> kmsg_dump_desc() to invoke all message
+dumpers on the system reset and die/oops paths. The only
+remaining path where kmsg_dump_desc() is not called is the
+panic path.
 
-Best Regards,
-Yan, Zi
+panic() -> vpanic() -> panic notifier call chain -> crash_fadump()
+
+I think it is good to fix this path as well. Thanks for the fix.
+
+- Sourabh Jain
 
