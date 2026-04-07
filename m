@@ -1,87 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-19450-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19451-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 809CBFF5130
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2026 18:21:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F57A105D98D
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2026 22:58:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fqvf21Strz2ydq;
-	Wed, 08 Apr 2026 04:21:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775586074;
-	cv=none; b=J6bb+Fo1qM7N+WrsUxGJGtIl2CAg4UsfUJe9nFFmRpyUhw7urwvFNgCvi5x62JnS9vdlv/BmHVi5GJcPElZZlv3yvPA4hmgug5cx2802K9WZHH8E5iyclvaVrlQkalXD2E6h20fag3UAffm5Kv9GK9cXUm13XW7NKIJC/g7jolmSnMLbj++jwSQMCm9ZgFsAqLzlMqC59zdPc87mLVfeiBoBnwmdL5VKZgjh1htMwiEukDlCayq9uvbBfrPmtOQgwPmZWJKBic7aaAMEUH/Jinp/C4ieBe9F6oN4WhsZBhn9Zn+WiG6bDfkosRowJOMsuC6yvb9GqJyZk4uqIn8vqw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fr1pN0wqMz2xb3;
+	Wed, 08 Apr 2026 08:58:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775602731;
+	cv=none; b=KceDmhLVn0LiutejVZA0Q43kOv754+Z+mUQBQezdjwg0b7rH0csahqWHRSAoijxRISkHRWcwKpYvDjtWyz4fIH1AJntx+KznHmBl2fj8LEsxdfbkEQPIaD+9z5RY2OalThjNKgCd7xRFQt1QJSulEfNYEZ/0p89CT2WbZcR9lEaQszWfK7eMgAATBwKLngRL4isuDtJMdDwuwrv2XHrlY7efAQL16ewIvgwpivVXrMCnkJXIkQWx+A3ZvD2gjlZBgS567V0hV4yYWi4n7r+Fiz0kw/kC3N/oVSnBt9y9ZPx3TU8lqWhVI5c5qSuzN8c3c6ZkGuJSZKte1RbqSzq92Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775586074; c=relaxed/relaxed;
-	bh=eNvs0HXImvo0INQNNcJRQbi1TogG903xwwNQgA1mZ9Y=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=XRqHGsFZq70TYRbIPaMYiKqPuPLFA5wpIKj6oI6455PHVGpX8S5YOw90gBCd4iYc1xqfzx3ALXuBXq9dlY+FSt1LCN0nbjsVhq9vHuBxCZTddxHgg3mJUrHxqxwSX9VRECbLtybS4nraCyEFgWYwd3UM55soZ0Sdxs6cv1PD1WzC+uRnoR1C5Np+Omf2NQFV4Q9iKYkNMWYSWqc+SQEm2JTUCUMey+JYiGREa7md3MrvizWZZNFQmOyXe/7tx8LkITXs/11THox6YDCDSO93e3shENH89een02G+wP1LVDgBWQmxWIQfn2mivKKHrqGfgDX8//4c6uwgleYs73K4WA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lFu2AvMQ; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1775602731; c=relaxed/relaxed;
+	bh=WMbYOgaDr/Kx+71TeWTaVBU+sUYdKg1v+oxDqlB4JDE=;
+	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:To:From:
+	 References:In-Reply-To; b=OZCNau/W+3jjmpAqljEqbE+oDYmThqrNuC/JNeNN1Oq8j0gwa9uJ7rz+Vf92bajt3P5FMdd6HvTmQXkkuLOlhGkyvxvcqF6pceQMAxpZyGHG+h5fPHzTGsXwQFUcZUzhvUY+TvY3zRULxySn5+x29Q0BpkUxETPWW4/d9vIEWcYqF9fxJX32Hu3g8DUFChrBJBU5HkQMA0Ba1w4TLEoQvanBVjC1RsOf0lUBv0/87MTKGHuV5mYWrT/BWwiNG6aTckntesd138Fiq3LPHVTXSiDh70EQgYB+nYM0sVso2jeC55wKFlzMb4IRIwpNcTsdVwE0fOgRc8brqsmCkLp16Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YxT4H0gM; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lFu2AvMQ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YxT4H0gM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fqvf11FMrz2ySC
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2026 04:21:12 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 637DXhZI2301594;
-	Tue, 7 Apr 2026 18:21:08 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=eNvs0H
-	XImvo0INQNNcJRQbi1TogG903xwwNQgA1mZ9Y=; b=lFu2AvMQ4/KuxTRKdViAii
-	DWgvTfxA5vBl08MtlRdTP6asaf8+vi5e/7z1ii0CVDUj2YLAewr6nk5MzSPje+Pe
-	FQifXSZbx9h4TBWcGk9blUCZK9UoiCmrlzHKaY2DGh0PEjuaiKvo5djiZ3eq2R/4
-	/xLPeY3Ae5udPAiUKaOypOWAMopkts9SgRfY8t1gMqHpXZuDs7MlhWGOvbweiy1x
-	34TuFETZXbYNKf/yuhhyHcbH/qtaG/aQtOVLWPT/kWiULw1GHZV1bYkCLlMRelTs
-	+5/4a2R5/qAzikiKWRrxfHbXFuv4uc/GIRGjBAHOUo360jrGM5yT1AoDAuQHemkQ
-	==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dcn2fchrn-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 07 Apr 2026 18:21:08 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 637EIdQt013821;
-	Tue, 7 Apr 2026 18:21:07 GMT
-Received: from smtprelay02.wdc07v.mail.ibm.com ([172.16.1.69])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dcmf44c6n-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 07 Apr 2026 18:21:07 +0000
-Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
-	by smtprelay02.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 637IL5Ui32244290
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 7 Apr 2026 18:21:05 GMT
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8E27558055;
-	Tue,  7 Apr 2026 18:21:05 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9859558065;
-	Tue,  7 Apr 2026 18:21:04 +0000 (GMT)
-Received: from li-4c4c4544-0038-3410-8038-c4c04f423534.ibm.com (unknown [9.61.150.36])
-	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  7 Apr 2026 18:21:04 +0000 (GMT)
-Message-ID: <b1482f1a1aad7b4a271a18836cde8b4e4511d039.camel@linux.ibm.com>
-Subject: Re: [RFC v1 0/6] pseries/papr-hvpipe: Fix and simplify papr-hvpipe
-From: Haren Myneni <haren@linux.ibm.com>
-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-        linuxppc-dev@lists.ozlabs.org
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Christophe Leroy
-	 <chleroy@kernel.org>,
-        Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-        Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org
-Date: Tue, 07 Apr 2026 11:21:04 -0700
-In-Reply-To: <cover.1775569027.git.ritesh.list@gmail.com>
-References: <cover.1775569027.git.ritesh.list@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2 (3.56.2-1.fc42) 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fr1pL5NCPz2xSB;
+	Wed, 08 Apr 2026 08:58:50 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 4480660128;
+	Tue,  7 Apr 2026 22:58:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 77C69C116C6;
+	Tue,  7 Apr 2026 22:58:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1775602726;
+	bh=ZxMhQkn/NMJTsfUq+eNI5wRqTDBwCQBg1cjTyGaGSzA=;
+	h=Date:Subject:Cc:To:From:References:In-Reply-To:From;
+	b=YxT4H0gMU1uiOeHwbtOxxGkfFWJBaCzthqg03Sftf8l9d186Y09INkfJ8VCpcsjUT
+	 Qfd/Qlw+XjxQGpsD/+wtJtFtyh3etr3/mtV9qhSmixByvSXfzBB7nBSEJNPsodmdHd
+	 n6aWnXLqcu6DDQCkFID7N0ab2dedIpF0ftmNXCcvehsYTzafVVvpTSGtJI0Yt78qAh
+	 7zcrBzbK4e2mGEgKbxfT4/RQOcj3aPhgKqv9IwN+ABisbMsvBq2hQAvVVGI9l26vIJ
+	 NOji8KIk0pikMh4DCWmZrmRQsTJnp7fjTB24k9B9hx+3b4Laf7gnEUw1IEsuOG28xo
+	 +wM+h43SmOleg==
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,76 +56,71 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDA3MDE2NSBTYWx0ZWRfX3nlPNvA6KZnm
- yXICYCfJLvvHJG/W6ZrazHvdgQy2D2+7yzITFjOWnts1AKc85DvzBtMQc8X7m/B0tvd/wXXrbc+
- 25sBu0fvPSW0oMXslMiYf3n/JGp+xRlCymktWZ+6Eo4OOcO/0+/WeW5F0RpUv0/ce2Mqu2qY0I1
- 9IOK+zsy55RSycuBwE75NSYaTblD7FLvv2AEVeGcxVp974gp0+rMJsgPE5WubJLVmuUMr6kiCz+
- gQM90M4N43bndQxNQ04CJyqX0ylFVRgIrM2uHhpNkgNTqZRS8DCmLG874e9/eoswj8Zp5cyb+7X
- xukljcxWqog0nNEg/489KedyZtZOhYbK53YHaHaN4+MEijtyDwvR+tbWXP5lcckIoer6FFxohsS
- 0jagRnUgrhoYaeouchHauqOY3dli8bDR9aRo24nDQZ47AUk/SY/jZtf6eZmsSW9lXHlY/L8/kwy
- /D3EE+MGLE4Bbu4VpOQ==
-X-Authority-Analysis: v=2.4 cv=FsY1OWrq c=1 sm=1 tr=0 ts=69d54b14 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=Fo4P1SXAy8xpn9AqH74A:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: ob_e8oio59vUEGKDosLsNycfxLyOZP6T
-X-Proofpoint-GUID: cZ-3oDN0vbxB39FzN4sgBXDYkyYD6xr2
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-07_04,2026-04-07_05,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 priorityscore=1501 impostorscore=0 spamscore=0 phishscore=0
- lowpriorityscore=0 clxscore=1015 adultscore=0 malwarescore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604010000 definitions=main-2604070165
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 08 Apr 2026 00:58:28 +0200
+Message-Id: <DHNAMNISZJ9O.3B58NWX64GBGE@kernel.org>
+Subject: Re: [PATCH v5 0/9] driver core: Fix some race conditions
+Cc: "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>, "Rafael J . Wysocki"
+ <rafael@kernel.org>, "Alan Stern" <stern@rowland.harvard.edu>, "Alexey
+ Kardashevskiy" <aik@ozlabs.ru>, "Johan Hovold" <johan@kernel.org>, "Eric
+ Dumazet" <edumazet@google.com>, "Leon Romanovsky" <leon@kernel.org>,
+ "Christoph Hellwig" <hch@lst.de>, <maz@kernel.org>, "Alexander Lobakin"
+ <aleksander.lobakin@intel.com>, "Saravana Kannan" <saravanak@kernel.org>,
+ "Andrew Morton" <akpm@linux-foundation.org>, <Frank.Li@kernel.org>, "Jason
+ Gunthorpe" <jgg@ziepe.ca>, <alex@ghiti.fr>,
+ <alexander.stein@ew.tq-group.com>, <andre.przywara@arm.com>,
+ <andrew@codeconstruct.com.au>, <andrew@lunn.ch>,
+ <andriy.shevchenko@linux.intel.com>, <aou@eecs.berkeley.edu>,
+ <ardb@kernel.org>, <astewart@tektelic.com>, <bhelgaas@google.com>,
+ <brgl@kernel.org>, <broonie@kernel.org>, <catalin.marinas@arm.com>,
+ <chleroy@kernel.org>, <davem@davemloft.net>, <david@kernel.org>,
+ <devicetree@vger.kernel.org>, <dmaengine@vger.kernel.org>,
+ <driver-core@lists.linux.dev>, <gbatra@linux.ibm.com>,
+ <gregory.clement@bootlin.com>, <hkallweit1@gmail.com>,
+ <iommu@lists.linux.dev>, <jirislaby@kernel.org>, <joel@jms.id.au>,
+ <joro@8bytes.org>, <kees@kernel.org>, <kevin.brodsky@arm.com>,
+ <kuba@kernel.org>, <lenb@kernel.org>, <lgirdwood@gmail.com>,
+ <linux-acpi@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-aspeed@lists.ozlabs.org>, <linux-cxl@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <linux-mips@vger.kernel.org>,
+ <linux-mm@kvack.org>, <linux-pci@vger.kernel.org>,
+ <linux-riscv@lists.infradead.org>, <linux-serial@vger.kernel.org>,
+ <linux-snps-arc@lists.infradead.org>, <linux-usb@vger.kernel.org>,
+ <linux@armlinux.org.uk>, <linuxppc-dev@lists.ozlabs.org>,
+ <maddy@linux.ibm.com>, <mani@kernel.org>, <miko.lenczewski@arm.com>,
+ <mpe@ellerman.id.au>, <netdev@vger.kernel.org>, <npiggin@gmail.com>,
+ <osalvador@suse.de>, <oupton@kernel.org>, <pabeni@redhat.com>,
+ <palmer@dabbelt.com>, <peter.ujfalusi@gmail.com>, <peterz@infradead.org>,
+ <pjw@kernel.org>, <robh@kernel.org>, <sebastian.hesselbarth@gmail.com>,
+ <tglx@kernel.org>, <tsbogend@alpha.franken.de>, <vgupta@kernel.org>,
+ <vkoul@kernel.org>, <will@kernel.org>, <willy@infradead.org>,
+ <yangyicong@hisilicon.com>, <yeoreum.yun@arm.com>
+To: "Douglas Anderson" <dianders@chromium.org>, <m.szyprowski@samsung.com>,
+ "Robin Murphy" <robin.murphy@arm.com>
+From: "Danilo Krummrich" <dakr@kernel.org>
+References: <20260406232444.3117516-1-dianders@chromium.org>
+In-Reply-To: <20260406232444.3117516-1-dianders@chromium.org>
 
-On Tue, 2026-04-07 at 20:01 +0530, Ritesh Harjani (IBM) wrote:
-> Haren reported a UAF / null ptr deref issue here [1]. While reviewing
-> that and
-> going over papr-hvpipe code, I found couple of more issues around the
-> usage of
-> copy_to_user() and few refactoring which simplifies the code.
->=20
-> This patch series is an attempt to that. Note that this is only
-> compile tested
-> on pseries for now.
->=20
-> Haren, I will kindly need your help in verifying this please. Let me
-> know if we
-> have a selftests or any other test framework for this, which I can
-> utilize too.
+On Tue Apr 7, 2026 at 1:22 AM CEST, Douglas Anderson wrote:
 
-Thanks for fixes and cleanup the code. The testing should be part of
-HMC/RCST framework. So we do not have selftests. I will work with HMC
-to verify these patches.=20
+Applied to driver-core-testing, thanks!
 
->=20
-> [1]:
-> https://lore.kernel.org/linuxppc-dev/20260317040444.2785741-1-haren@linux=
-.ibm.com/
->=20
->=20
-> Ritesh Harjani (IBM) (6):
-> =C2=A0 pseries/papr-hvpipe: Fix null ptr deref in
-> papr_hvpipe_dev_create_handle
-> =C2=A0 pseries/papr-hvpipe: Fix the usage of copy_to_user()
-> =C2=A0 pseries/papr-hvpipe: Simplify spin_unlock() usage in
-> papr_hvpipe_handle_release
-> =C2=A0 pseries/papr-hvpipe: Kill task_struct pointer from struct
-> hvpipe_source_info
-> =C2=A0 pseries/papr-hvpipe: Refactor and simplify hvpipe_rtas_recv_msg()
-> =C2=A0 pseries/papr-hvpipe: Simplify error handling in papr_hvpipe_init()
->=20
-> =C2=A0arch/powerpc/platforms/pseries/papr-hvpipe.c | 135 +++++++++-------=
--
-> --
-> =C2=A0arch/powerpc/platforms/pseries/papr-hvpipe.h |=C2=A0=C2=A0 1 -
-> =C2=A02 files changed, 66 insertions(+), 70 deletions(-)
->=20
-> --
-> 2.39.5
+> Douglas Anderson (9):
+>   driver core: Don't let a device probe until it's ready
+>   driver core: Replace dev->can_match with dev_can_match()
+>   driver core: Replace dev->dma_iommu with dev_dma_iommu()
+>   driver core: Replace dev->dma_skip_sync with dev_dma_skip_sync()
+>   driver core: Replace dev->dma_ops_bypass with dev_dma_ops_bypass()
+>   driver core: Replace dev->state_synced with dev_state_synced()
+>   driver core: Replace dev->dma_coherent with dev_dma_coherent()
+
+    [ Since all DEV_FLAG_DMA_COHERENT accessors are exposed unconditionally=
+,
+      also drop the CONFIG guards around dev_assign_dma_coherent() in
+      device_initialize() to ensure a correct default value. - Danilo ]
+
+>   driver core: Replace dev->of_node_reused with dev_of_node_reused()
+>   driver core: Replace dev->offline + ->offline_disabled with accessors
 
