@@ -1,90 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-19441-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19442-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 678A7FEEF51
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2026 14:32:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 373ADFEEF49
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2026 14:38:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fqpZ045FKz2yhv;
-	Wed, 08 Apr 2026 00:32:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::629"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775572344;
-	cv=none; b=GLeanSsQbGwPt03sGSVZBC18Ta1+WHXYCcVKRUEG1Lk1PgdxZ5hkhmZNPBuU9x5gJEvS7eelLOHC5xXQoKshQsIPUdHPsOvZ+j0mrNeQ1ht28SpAMY73pf5KV1YM0DrY5gvCEhqITn8jqjxIL0G3VsoZNgZI7NN0lFfz0Z7zCnv6Zd9Zl+3qbDiuMD5m53xxiNzQ71UibHz+BND+ntQpi3IdSQRPmCdfBu8A0REU09mf6L/K67kIvHKMNEQ3VB9idwH47H7tgv2031ow/vjNvUostZUvmTqLA2QN5jTgwYZpmoTwhoXHokOk6Jvqul2EzmA51DBQfb61oEcbaro9uw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775572344; c=relaxed/relaxed;
-	bh=PY3ak4gklrB7dT78Kl3RlnvUvqFrPFBtFQWCDk/TdtE=;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fqpjX6Gh2z2yZ3;
+	Wed, 08 Apr 2026 00:38:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c007::2" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775572736;
+	cv=pass; b=S+gecIdy+opRpYUAQLGoxShn0q4GlwzqTLV54wHGBRvw7QhViZJ8RkgnC8ROVFanxkqH3fCWR7MrS7I5xp1bOVVqEjuzdUpxUlbF5qVjY3Z7kbyhCU6FztRjq3cwsaqX+bE1ky7U+SEo7QyloCvVC5FPL5IwiUVmSgalWPX8LqOEwmflN8Uh0eDAFAoUj27eQcMsA7syvmj/fOjj3MNb/xdBPo9gfuDAKcpjWDdVt/kwowrl8lSfCVo9tR8mFlUkba+MO2TsBznbofYe3JiJDi5xTcdELaokBbIxodqM1T+xCpSQorG9eTgdBhfu0cE9KJJZhGZ3m9hh9Lm6/dUyBw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1775572736; c=relaxed/relaxed;
+	bh=MXtb8TmgIeZIhWzztiRTjlQ+qZS0IJ8tknx1GzcSouk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=i4ciLaYMPCO2c1LUlGMYL8VgB+Nfov/xZwzhxmr3ZF2woObdh1CTWoFxI9dDFGe95V2QEfm5LqZerUkiVqe0YvPtc6I81UIZ1XJQSpgNicsNOu9a21zg1/6NNXCpNQRiZ838qnXJQeKVHKQvdRyy4GOJDzulOo5VoTVjw10dGCTsf4Dy5A053MSyKzM7B3x77JE9bsdiCmXmS/e0Le25mpJ+PmXyyFeNJUFOngQ5CR+0P0hTqq9oYQWqYcOukRpRQvzEoNKE8+KIgIYiyevdHuEaJlMuh0bZPMZLxzOBrz+TQlp0HeBNe3KhuVSE3NB1ei7ZaTojFsyvJzNFgo5xdw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=lAjfUGxN; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::629; helo=mail-pl1-x629.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	 Content-Type:MIME-Version; b=YpsH2FJ+qVNPkqKsSS3F3GaZ27zdlFqBtnhch6FWAosnIIiYw/Atew0pK83vDIuLtTe3GBLlcQYFzKhYTEd3AXCToBxz7h8WjmdTQl1OkyAjbBQ95YkY8gRIUEgbafCDjtSR9LUDdDMbKAoG0uLNClfiLUzhwHnLbs5KcSQznbtgNN6RnMvnkOJWdn02Ce479xALqULx9eHvrSw3jkcwECZS5E/UVmLAsd0BGGBMNRHtmAuMgrFpVi8k8ikDTETH5x9WOIsIp8lSR4si0GH03MKIor+ILuspeNitCHnsUhISIAj9atICxeXIt90o4FHNPTyxKOacPFheDEGsI4hEJw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=q+mA41HE; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c007::2; helo=mw6pr02cu001.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=lAjfUGxN;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=q+mA41HE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::629; helo=mail-pl1-x629.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com [IPv6:2607:f8b0:4864:20::629])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c007::2; helo=mw6pr02cu001.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org)
+Received: from MW6PR02CU001.outbound.protection.outlook.com (mail-westus2azlp170120002.outbound.protection.outlook.com [IPv6:2a01:111:f403:c007::2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fqpYz6hntz2ySk
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2026 00:32:23 +1000 (AEST)
-Received: by mail-pl1-x629.google.com with SMTP id d9443c01a7336-2aaf43014d0so35899155ad.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Apr 2026 07:32:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1775572341; x=1776177141; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=PY3ak4gklrB7dT78Kl3RlnvUvqFrPFBtFQWCDk/TdtE=;
-        b=lAjfUGxNctIdomhNd8q/owhLMsF14WyV3YBY0oQPhHxYLYA6tTZIg3ijNs5jK5xMGJ
-         cyxPVRpiE6dOXuE1SxgOLtRyQBlw/co/cXr/1UuzxPG96ZDO/XaDI0iMgXesMJfmGHQ7
-         xL4Ta9lWvzOQye3RNxjvSvlZlLj3c4v1HNJMINzQ4hw6rhEgwPv4Ac1iae58TtHWX8g9
-         9oyfXUbqHFF/ZY8i+hn/ebZ6HpkMKI5wj5K8g+p3WouLGCSVDnvMYsN7ydDJYbXzHsnT
-         0bJDzGVfm2bcpKgIQCLn9GevlksBEngyTQ3zc+3vMeM1a76liH1X7QMOTxvON9zS3BEe
-         ykug==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775572341; x=1776177141;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=PY3ak4gklrB7dT78Kl3RlnvUvqFrPFBtFQWCDk/TdtE=;
-        b=c4ANdXCISs+ivqoRPU3J+0Y6c97Br73allC0/LkUqRHqkc7wIQMczQUVg26aX2fso8
-         H9hbPW+pSg05pOxVCSP5a6Qo7E4xL0qyTHRakkvLkFAHFyHChv2Q2t24r53NAnc4yadv
-         dvLIH0QcVvYwEpHW3WVktuJpA04HEMdLUOingBCYqGTTha1u5Ss/jT7yGfkonBt8wEYh
-         WYCWkZ8VAE32F5V0L9N76hrm1+u+sllrqm+6FWyWlO4H/0KKW4vRDexvm1LH/lzM0Eqz
-         pFnvzWmdpI4xOe1Okmq2jawyx5WWmDhHwYISvLqxfpcWrgeQUZynUo/Y5c++QqSRCKxr
-         wGwg==
-X-Gm-Message-State: AOJu0YxAQhDKShxHY0RzMPB7NX1jPo15zKISoqsqprDFMVjcX6GeCj2t
-	IPdmDJn/Q7VSrJ8vodwu4dp//+5IDEcuKROSnlhGSiyzbwk5t8F5Qrke9frc9w==
-X-Gm-Gg: AeBDievuIPqg4sFc8bYJX6T1Gqx77gGcBiikIBedCdZqYHnVXAyHaO8EOx3Nofc0Z8r
-	DhQwjYqnZU+fK4/vW+p0AlQJCo2yWJFtw3p0eLTzxYQ3kiGWwvZhpEqamj79tY7cjcFlvOWan8d
-	v9q/7R9cxDf0YOzkmyCdIXO6tcV/TkhRQJ6cABP6/edjlKatTFhVaUUe82ov28gSBsmTwrt3e9w
-	w6daG/oFBMXF8fktgRxdsKZFpWoevgowf+l1y3tEYQST2o97h6M4Ubvsx3cuYQs946iemmuqRNa
-	U9gPbZehmEOZxjTkrCqf8qYUS1RsGBmT2MJ691wvDFb/zmXvhFnm80WyoxXOT4N/HfAArFCq5zb
-	583cTKWUhNMPhHFPMtkVV51DgZ14dVs47kK3yS/5tBu+lj220krErB+0SGWqGN1TkjG3/H/I9Pm
-	n+GixgOkcNrU6naDKugYBhxNAVuvHkUy6xKxL+g39LkttSpCf9Z37SId0lMXiv
-X-Received: by 2002:a17:903:8c5:b0:2b2:4d36:7aa with SMTP id d9443c01a7336-2b281932d71mr188155645ad.35.1775572341300;
-        Tue, 07 Apr 2026 07:32:21 -0700 (PDT)
-Received: from Mac.localdomain.com ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b2749cbc58sm181201525ad.78.2026.04.07.07.32.17
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Tue, 07 Apr 2026 07:32:20 -0700 (PDT)
-From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org,
-	Haren Myneni <haren@linux.ibm.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	linux-kernel@vger.kernel.org,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [RFC v1 6/6] pseries/papr-hvpipe: Simplify error handling in papr_hvpipe_init()
-Date: Tue,  7 Apr 2026 20:01:40 +0530
-Message-ID: <15828cd5a57af373fa2e7025bdb7ef0d0a1143bb.1775569027.git.ritesh.list@gmail.com>
-X-Mailer: git-send-email 2.50.1
-In-Reply-To: <cover.1775569027.git.ritesh.list@gmail.com>
-References: <cover.1775569027.git.ritesh.list@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fqpjW2Ylmz2ySk
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2026 00:38:54 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=KLGEfKZ6H4MzZZMFVE+JtL89wpto7kWw9uYU8KVVB3CSI0Gr86tl3lOM0war4khmfdNjWrZvDq331WFWqjlodLpH++YXxalyPGmcN2ZrzhpXMpP8W1DduVXPi8RXPh8wUMD7FsPJNTq7XB9XcUAje/WJthKvS6T7lxQ8lXGWxOuydlPX/I4tD4magtOjoL95xhb5W8pzr2MRAOWG5JZb7QWXlhMKksv7HiMxghlAACADlL42BvGQIZF1uG8NTO64d3W7n/OcjTdXXSQNzoxDNL3O+l5iehm+YSQHyEP+sthGxxHxyDzWUnpWVvFTCWxNK6tKr53dEfnWlu12+xAu4A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=MXtb8TmgIeZIhWzztiRTjlQ+qZS0IJ8tknx1GzcSouk=;
+ b=OxEoblBmh9v+Wn6qYzHO/Q7cQAmdF2EAgzzWNGABN6/XL1iQXv0+LYrkNZC2zi/VngW5T4pDrCjo/fDD5U8fl2FpM+O0y3y6WjaYIP541sP2eMKBwDhnu1S09ur5U3uxsmlFSxJf0IFqJAqA2uzpMKENEr0J5OfROB5YbB0EHj0f/c8DCL4UkCjGHfzpAvO6zB0tb/N3t5d4GAFI3wh3x1AfB3nYvrCjFQQgv9luDNbzNedwFjKpcFgwANItVCboPp2jMVNYG9RQ0iTkCUFOeIUXXrikS53PWhfsRTYR+x6AP1CbDQPO0F2Eg+bFc/090e734ymLv4o4l+Q+OVcUvQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=MXtb8TmgIeZIhWzztiRTjlQ+qZS0IJ8tknx1GzcSouk=;
+ b=q+mA41HE1AswFjfMit4qEAqfJMlXS4spyCz8KZwQJFXG1SUkUIQFzsHEI2STek+nuhJObmjUyKktJTXQJMWl90WKHqfnpZe6nRYQ00WJoS0gx/npYvgjzKvs7iL3Ax09Sw7xgXN5omGRX2ujo1lEXVHlRET8HIeK8w431q68UMPOgs+98ygldzplsq1tjQDnGm5n9YJxLBQXntTGobUNaMmV5wTKM2TrhauRc3EIAQRmps97vtBvOaelGaEgWxMl6C2tfUoD+yboYIftoT0am1uczbS4pHK2RtJjHhth4EevCDX8sZ1Qi3/Etul2DWTNH7z7wQmob5A8vbsvBwwG1g==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from DS7PR12MB9473.namprd12.prod.outlook.com (2603:10b6:8:252::5) by
+ SN7PR12MB7299.namprd12.prod.outlook.com (2603:10b6:806:2af::15) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.20; Tue, 7 Apr
+ 2026 14:38:22 +0000
+Received: from DS7PR12MB9473.namprd12.prod.outlook.com
+ ([fe80::f01d:73d2:2dda:c7b2]) by DS7PR12MB9473.namprd12.prod.outlook.com
+ ([fe80::f01d:73d2:2dda:c7b2%4]) with mapi id 15.20.9769.014; Tue, 7 Apr 2026
+ 14:38:22 +0000
+From: Zi Yan <ziy@nvidia.com>
+To: Sayali Patil <sayalip@linux.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
+ linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linux-kselftest@vger.kernel.org, Ritesh Harjani <ritesh.list@gmail.com>,
+ David Hildenbrand <david@kernel.org>, Michal Hocko <mhocko@kernel.org>,
+ Oscar Salvador <osalvador@suse.de>,
+ Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, Dev Jain <dev.jain@arm.com>,
+ Liam.Howlett@oracle.com, linuxppc-dev@lists.ozlabs.org,
+ Miaohe Lin <linmiaohe@huawei.com>,
+ Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Subject: Re: [PATCH v4 01/15] selftests/mm: restore default nr_hugepages value
+ via EXIT trap in charge_reserved_hugetlb.sh
+Date: Tue, 07 Apr 2026 10:38:19 -0400
+X-Mailer: MailMate (2.0r6290)
+Message-ID: <EC8CD487-36EC-48FD-9F70-37E001F8A8AD@nvidia.com>
+In-Reply-To: <8beb895ae46c3e817e80cdd5386933cdcf8e233f.1775466329.git.sayalip@linux.ibm.com>
+References: <cover.1775466329.git.sayalip@linux.ibm.com>
+ <8beb895ae46c3e817e80cdd5386933cdcf8e233f.1775466329.git.sayalip@linux.ibm.com>
+Content-Type: text/plain
+X-ClientProxiedBy: BL1PR13CA0084.namprd13.prod.outlook.com
+ (2603:10b6:208:2b8::29) To DS7PR12MB9473.namprd12.prod.outlook.com
+ (2603:10b6:8:252::5)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,69 +91,84 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS7PR12MB9473:EE_|SN7PR12MB7299:EE_
+X-MS-Office365-Filtering-Correlation-Id: 8017968a-f553-4e57-51fd-08de94b351aa
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|1800799024|376014|7416014|56012099003|22082099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	i7cL1j0kSCHmby3G9+AhSGf1j8B106E4PDD1P96ZN7a5x7mJYVwfHqeO39+WsG3XX7WLgAGlBt5SGKqQF12zc4LdvW+aB9h02uIm1teVg5iGOeh3nalaVBpE4Gd998csrH9x0HHs4AvahACK26ltdZQfRQJEsVBg/a8NZQF4/uTQ4fBlH9nQuvYrKXwofaxzSDJ4qt3E8bU3TT4gKieUbDMBvGuTVE1mt6D++U1CSXkHD2BFFTA7d3IMGCoQUlIU+BFryzHofGGV3OcTxRtshybVzj+ClqbPx0t68qPmYR2i8qEihppuuVmjI9ENot8OyqNiQRUGVLl2cWnPpjIW5pm++g2ysSZs6SG4qTXaPzVVeT6bod8FNvTsBF8mjAN+Yj54mPq0rJMhmdwwlLgHydEdjUwLj+Bz8KR3hKSwNGWm2Nz0lsjmkr+KgEYcmeyaq9UnLlDN/WJrQvn/I/zfZQ/NmwCSdQOqJcGzvgcDJP9J+ECEIqIbOxRni101vctdhZ0CskuS9F1eD+mGZ2sU/QDjnGw03856vHVc1WPFS/Uji0qBsDuifwItw/XEW8PG08DOO0kfhS/OfVbCoRYYHD9eZ2zGHs6VKTRFXYBc8WTSb18BRCwxLvYPY72YwTt2RvzkqSZ5H9II7FAIYfU5W2W36nn8OLkhhU64qlxRqUbXMkTyyOMOp+3kEZrCeaxz+pIbFwlndC61siDU2MIMvYCXfnOqC1v6Qsa1wb+Qix8=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS7PR12MB9473.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(7416014)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?P1w3Qne7FKv8Z2ibgfV9CjTsbrMpbmMkwTDqJ47N5nNMk8y/JQNFL1V+j9NB?=
+ =?us-ascii?Q?6TyiC9JMIPb5NXDUevSJmbUeqT+mHeRVsiktywtOE/Zl6O8kOeV8I03J2YGJ?=
+ =?us-ascii?Q?gbkkICkpNRCbqkMRJKGY7CX2vNbzdAStxLzrMwT4bbQFieVLeu0weMF41l76?=
+ =?us-ascii?Q?q6j6ZM6UH40+x0uTixl3T7rQmC8Xaq5qL9fIMKkjtueDFrNEamlQkPT4/+Uy?=
+ =?us-ascii?Q?HEslFuef1tLuUEvWFX5K2QV1My4PuEnoIv7jyL3n9uzrRwz5Y3AmWyRZl370?=
+ =?us-ascii?Q?JcCqww2Xclp7rCu9UU7b4LqJwqlb7IDZKF6/xgx5KO1rVTB82waFJYS1VaNm?=
+ =?us-ascii?Q?TH+oQISQeGufgEkP3tG4IIN8cLqQxLJK6TRZiWaeqG9O01DcFjkLec0crdvL?=
+ =?us-ascii?Q?dKG+1HI3LmCmI3ejCrjCmHylWb0L/kNN2XUJSCuQVFes9A0sIqLPS3zpWwby?=
+ =?us-ascii?Q?lcD54oUHtoYdLxRh/00+eyQawiNw8MGupW+mDBwcfeYj3h5pqyGttSoZKhvu?=
+ =?us-ascii?Q?m1+SPo99Zl6+i13rAtJMxmmieqSbsA/QsAe9K8C8OakXUAMRbHgeZawViC6l?=
+ =?us-ascii?Q?IHpe5TSweVkAZ/KNxiDWRRXhdtsGFEe5pUGrHQfSNF5XPczZWNl9Smg9i/3K?=
+ =?us-ascii?Q?firGydAgEhi1dmEsqKCsJ4ZM6efy4cJVAaeRp7z+EYQsU/DgDlLw9iE6xQi6?=
+ =?us-ascii?Q?a2uVtlhAh2hCnDQMNW91YfexLSiH8/2bM5ZXvHlhWO0gywPROR9MAREMT/u9?=
+ =?us-ascii?Q?0wMM06slmn2UvB6t453AOENhtmhRFrtp+UW8oCCkArFnThZC37Y1GBkwIQft?=
+ =?us-ascii?Q?DWINkYdjCGZi5X+b2oFB3k/RfZVWVf+rPf9VwZWK5e+lSD+EuaHzbb3c6c4l?=
+ =?us-ascii?Q?QBAXmtseB9p9YKi4B6O071IG5kKNlzCgmoxhCr5TN4/fq9M/bs7savQVKmIl?=
+ =?us-ascii?Q?TnuUPKB5vyAjYwF4Nm54S9oV7Xd7yJnzTe8eRWAsrbbJTdVoUSGEA1vqaq2J?=
+ =?us-ascii?Q?XxWg2BohnVZmutvk9/PMqqch5p7SNnPf/mF125dPffycsRxagCyMyXK7zjfV?=
+ =?us-ascii?Q?Miyr12xqVR7WNTLqaWX+Cgj9jpFiEwVVkj+gM4B97fWsENqyFuF7ZEUslLFl?=
+ =?us-ascii?Q?5ihUKCzPgeTfScSBckWfu9XDb/Wp7bUctPZ+AfhgItHxXtMBkcx8poweENw3?=
+ =?us-ascii?Q?nkWIa6RBMCzyDg+Lgg0xSstncJGqcGMrUUvg6q/HI10TtBFe4bRygtS0DB9u?=
+ =?us-ascii?Q?Ek661wi2tPju3udJ+U3OGLijbGAz8LmcbJECsnauceQgIzreEp+eT71LVvcU?=
+ =?us-ascii?Q?aCs4R7MN0o00n4tCJiY5tNsJmjRfxGlemgPlyDiNRc0+0mLcoK6koU8Uitq6?=
+ =?us-ascii?Q?9u8uma0BQL0VU1jaVyiSg3nIasjutdtPv8YHikgXsF8bULLjoeWbNmoHaNEu?=
+ =?us-ascii?Q?RWrYDoFL9P6o2n5Ng7mgkmWqpDG7O3o3YQi1T6DRpV9OiMhm2Z7LsoNVco9h?=
+ =?us-ascii?Q?JOiFObvlUIE6SmgfpruUXU9iZNgrfgVSHR1ik55R4XOvNesCzqSill7u+ghy?=
+ =?us-ascii?Q?u6T5hlr0fdk1wVvWN21zYiJoAwgDvuwsxduhvYJWeqMgV+XHj8wad0BnydbH?=
+ =?us-ascii?Q?fJKag5dK4Iclv89rEgT49yddmFqZUoGP+cotWzTCdFcYKse2ZYZqNoGgTl0W?=
+ =?us-ascii?Q?te1Qmvp3FzT6dx0O7UkyFtVu61OvCYxgMeTEOzoCJC+bNNLT?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 8017968a-f553-4e57-51fd-08de94b351aa
+X-MS-Exchange-CrossTenant-AuthSource: DS7PR12MB9473.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Apr 2026 14:38:22.4539
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: kzT2UdpemdHtkK3I8/xA0AtNE/t21uhgRwxijdTwo1VytrxSqJRc5bswvvmVWTSN
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN7PR12MB7299
 
-Remove such 3 levels of nesting patterns to check success return values
-from function calls.
+On 6 Apr 2026, at 5:19, Sayali Patil wrote:
 
-ret = enable_hvpipe_IRQ()
-    if (!ret)
-	    ret = set_hvpipe_sys_param(1)
-	        if (!ret)
-		    ret = misc_register()
+> cleanup() resets nr_hugepages to 0 on every invocation, while the test
+> reconfigures it again in the next iteration. This leads to repeated
+> allocation and freeing of large numbers of hugepages, especially when
+> the original value is high.
+>
+> Additionally, with set -e, failures in earlier cleanup steps (e.g.,
+> rmdir or umount returning EBUSY while background activity is still
+> ongoing) can cause the script to exit before restoring the original
+> value, leaving the system in a modified state.
+>
+> Use an EXIT trap to restore the original nr_hugepages once at
+> script termination. This avoids unnecessary allocation churn and
+> ensures the original value is reliably restored on all exit paths.
+>
+> Fixes: 7d695b1c3695b ("selftests/mm: save and restore nr_hugepages value")
+> Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
+> ---
+>  tools/testing/selftests/mm/charge_reserved_hugetlb.sh | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+>
+Acked-by: Zi Yan <ziy@nvidia.com>
 
-Instead just bail out to "out*:" labels, in case of any error. This
-simplifies the init flow.
-
-Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
----
- arch/powerpc/platforms/pseries/papr-hvpipe.c | 26 +++++++++++---------
- 1 file changed, 15 insertions(+), 11 deletions(-)
-
-diff --git a/arch/powerpc/platforms/pseries/papr-hvpipe.c b/arch/powerpc/platforms/pseries/papr-hvpipe.c
-index f41f5c0a8418..03ec004a6701 100644
---- a/arch/powerpc/platforms/pseries/papr-hvpipe.c
-+++ b/arch/powerpc/platforms/pseries/papr-hvpipe.c
-@@ -768,23 +768,27 @@ static int __init papr_hvpipe_init(void)
- 	}
-
- 	ret = enable_hvpipe_IRQ();
--	if (!ret) {
--		ret = set_hvpipe_sys_param(1);
--		if (!ret)
--			ret = misc_register(&papr_hvpipe_dev);
--	}
-+	if (ret)
-+		goto out_wq;
-
--	if (!ret) {
--		pr_info("hvpipe feature is enabled\n");
--		hvpipe_feature = true;
--		return 0;
--	}
-+	ret = set_hvpipe_sys_param(1);
-+	if (ret)
-+		goto out_wq;
-
--	pr_err("hvpipe feature is not enabled %d\n", ret);
-+	ret = misc_register(&papr_hvpipe_dev);
-+	if (ret)
-+		goto out_wq;
-+
-+	pr_info("hvpipe feature is enabled\n");
-+	hvpipe_feature = true;
-+	return 0;
-+
-+out_wq:
- 	destroy_workqueue(papr_hvpipe_wq);
- out:
- 	kfree(papr_hvpipe_work);
- 	papr_hvpipe_work = NULL;
-+	pr_err("hvpipe feature is not enabled %d\n", ret);
- 	return ret;
- }
- machine_device_initcall(pseries, papr_hvpipe_init);
---
-2.39.5
-
+Best Regards,
+Yan, Zi
 
