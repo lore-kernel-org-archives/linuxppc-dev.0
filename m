@@ -1,57 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-19422-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19423-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0200AFB519B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2026 06:16:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB50DFB519C
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2026 06:23:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fqbYY2t6Nz2ygf;
-	Tue, 07 Apr 2026 16:16:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.21
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775542577;
-	cv=none; b=FptacJOPOPyp/zLGmFejXxevsRtIeYwtXZ9zfbeTgF3buG7cnb+czV3uLnRiJhlWeVnoR6/aITgSduXO6PZOY1ydrVsgbN6Zeu/CB+vsrfTlh3Rw3PMBIBcSkmj4OZxGI3kSdn4Tqtter9czKIzxCx+9s1ivvOTl3sUlXDKiGyIGweaGbafq+ocKqrFM3/Gq5/4j+26MqXJeikzP9eKwyoSgoHEBqjw9+Qp1zkfl5fRil3r3DRa++1GZIPWjTLMut+G0sWX9XUvpuuBpejM+vlkVDHkwCwZO4QyEhVXIuJRtVGAa2kOTyZMKdIcwPafuugtvJHW8EaI2FivHY05DLw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fqbk93lnyz2ygm;
+	Tue, 07 Apr 2026 16:23:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.98
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775543025;
+	cv=none; b=T+mCc/9XI/ygJfABU21+geW6Tvv33u/Yx4Q3qX6xOQN7L1pMTqRDy+QUulUP2RH0q3/6ABC9GOPG4AqmcsR+cmIUTQp+ArnThBsrMA1i4qpdfa+a/m8EE4qLwdvaMJBp9ic7/fNaGP81yY1TmHnoZyXWaUpP/Yv1b4SWf2Lu0wAKe1ubHs1DcF7zi4h06+lEdfmOSSKy7N91w/ER8Nmnyd2gid2Txrv7N+mo1BHptHIOc1KnfQLWvpqNzlONuiLR6zkr/ohCzaYbaaMQK+8pJNplNNcQ6pP0MgDbIllN+ij8S7J1Jk40l0+LZ25qzwpfqNQtMGigKMuk4lx+nJC4tA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775542577; c=relaxed/relaxed;
-	bh=pFPLcGNZKJ/mrhvjdUgm2uzxrDvr5GSOei+oUkfWNUE=;
-	h=From:Date:Message-ID:To:Cc:Subject; b=EAyhB5861X6CsjYqU6VRX/tQ5REmq6f5f4ThCLPurDPqulk7wBoVdih3/qdj6rAZjmWP4ZEjIOibRK+aZmQZUXSDVBAu965f3UuzeM29zc9sUuoiMJJyEZB3TORyT6+d8x5wCTyACaUW4lLuDLHIJkRVi8Kg4+RYouoXm6bcvdXE1y7ZGTPO1KuoUFg3AlOzN7UzLaZbOZM6IDwS0yjd5RMOdKbmoC3NWwrcFXi5WH6YYACuf8aPpD8kolYvNNo1mQ+PVJeHglF06/ZNe2Vsj0ho9XUONh8CffFY8xq6A9+niqWECi4ZTbzX1xPZuxK2SpoKYU7dAeyYKpKF++MRBQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass (client-ip=159.226.251.21; helo=cstnet.cn; envelope-from=pengpeng@iscas.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=iscas.ac.cn
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iscas.ac.cn (client-ip=159.226.251.21; helo=cstnet.cn; envelope-from=pengpeng@iscas.ac.cn; receiver=lists.ozlabs.org)
-Received: from cstnet.cn (smtp21.cstnet.cn [159.226.251.21])
+	t=1775543025; c=relaxed/relaxed;
+	bh=6CMtQUtwLNCZO96qDPJxNdbEJ+SZVWz86MVqoqQUYgg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=P9wcwqtmo/0C6xG1t0shQurkU/KaYmjWu3xym8aQsjXJn9Ka9UsrM6DcEraMyWFfF6grJGAgwQ9zGqGHlhipFKJ6AKYThVVsMAiD57mRSGt/LfwF2rIVf54YU1VbcX6YQdeF2Ebe4mhpYvVlPEEoZPmsQnz2i2AMF2KLFtaPsUDLOJ/uQ6sw5LsCAFDzw2RToRZ8o+Na9Kmh3KIa15q8tEKcW288ib8fhn6HnqY6SrZMIHpKxnxXGA2oozcAmOUqwQkNdyqiFSEfGeJlWbzidwIIZMYwK9uIewNSHqNz2joyowSCUfNidQVftGK2e69iQ2zD08W0eUUUBgcv34G4bw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=iwl7gR3D; dkim-atps=neutral; spf=pass (client-ip=115.124.30.98; helo=out30-98.freemail.mail.aliyun.com; envelope-from=baolin.wang@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=iwl7gR3D;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.98; helo=out30-98.freemail.mail.aliyun.com; envelope-from=baolin.wang@linux.alibaba.com; receiver=lists.ozlabs.org)
+Received: from out30-98.freemail.mail.aliyun.com (out30-98.freemail.mail.aliyun.com [115.124.30.98])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fqbYW6zwZz2yZc
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Apr 2026 16:16:14 +1000 (AEST)
-Received: from 0001-powerpc-pseries-energy.eml (unknown [111.196.245.197])
-	by APP-01 (Coremail) with SMTP id qwCowACnT2slodRpxuh7DA--.48957S2;
-	Tue, 07 Apr 2026 14:16:05 +0800 (CST)
-From: Pengpeng Hou <pengpeng@iscas.ac.cn>
-Date: Tue, 7 Apr 2026 14:09:10 +0800
-Message-ID: <20260407153003.3-powerpc-pseries-energy-pengpeng@iscas.ac.cn>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, pengpeng@iscas.ac.cn
-Subject: [PATCH] powerpc/pseries/energy: validate H_BEST_ENERGY list counts
-X-CM-TRANSID:qwCowACnT2slodRpxuh7DA--.48957S2
-X-Coremail-Antispam: 1UD129KBjvJXoW7AF1UKFyDuFWUCF1kuFWxWFg_yoW8Xr1UpF
-	Z8KFZrKF48Kryxt3yxtF1kGryUu34DKrW8X3y0ya43Awn8Xr1FqrnruryFqrs7GrW8Gwn3
-	ZFsFg3WvvFZxAaUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUkv14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26ryj6F1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26F4j
-	6r4UJwA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY1x0267AKxVW0oV
-	Cq3wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0
-	I7IYx2IY67AKxVWUXVWUAwAv7VC2z280aVAFwI0_Gr0_Cr1lOx8S6xCaFVCjc4AY6r1j6r
-	4UM4x0Y48IcVAKI48JM4x0x7Aq67IIx4CEVc8vx2IErcIFxwCY1x0262kKe7AKxVWUAVWU
-	twCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v26r
-	1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_JF0_Jw1lIxkGc2Ij
-	64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Gr
-	0_Cr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r4j6F4UMIIF
-	0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x0JUhtxDUUUUU=
-X-Originating-IP: [111.196.245.197]
-X-CM-SenderInfo: pshqw1xhqjqxpvfd2hldfou0/
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fqbk718wwz2ygf
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Apr 2026 16:23:41 +1000 (AEST)
+DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux.alibaba.com; s=default;
+	t=1775543016; h=Message-ID:Date:MIME-Version:Subject:To:From:Content-Type;
+	bh=6CMtQUtwLNCZO96qDPJxNdbEJ+SZVWz86MVqoqQUYgg=;
+	b=iwl7gR3DqDgFOfIIipw/0NMXTg1u8xj5AisKNghwR4sxGC9eKNZgPHTJN7VP0QGPjHUgHaxZDIAXLhk85/fsU0jvufuhKDQBlf8z7++muqh0AgtVyfCQ3BBLLsswhCxfBX8Y5yBprTRJJOSjcnLFKOQTW0pVrzmy5OaWJCnJW+U=
+X-Alimail-AntiSpam:AC=PASS;BC=-1|-1;BR=01201311R201e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam011083073210;MF=baolin.wang@linux.alibaba.com;NM=1;PH=DS;RN=18;SR=0;TI=SMTPD_---0X0albEE_1775543013;
+Received: from 30.74.144.138(mailfrom:baolin.wang@linux.alibaba.com fp:SMTPD_---0X0albEE_1775543013 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Tue, 07 Apr 2026 14:23:34 +0800
+Message-ID: <2a216ee2-aebb-42ba-b2aa-826488448bbe@linux.alibaba.com>
+Date: Tue, 7 Apr 2026 14:23:33 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,45 +52,57 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-
-get_best_energy_list() reads a one-page u32 array from H_BEST_ENERGY and
-trusts retbuf[0] as the number of entry pairs stored there. Counts above
-the number of pairs that fit in one page make the loop walk past the page
-through buf_page[2 * i + 1].
-
-Reject impossible entry counts before indexing the returned buffer.
-
-Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
----
- arch/powerpc/platforms/pseries/pseries_energy.c | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/arch/powerpc/platforms/pseries/pseries_energy.c b/arch/powerpc/platforms/pseries/pseries_energy.c
-index 2c661b798235..575216989539 100644
---- a/arch/powerpc/platforms/pseries/pseries_energy.c
-+++ b/arch/powerpc/platforms/pseries/pseries_energy.c
-@@ -184,6 +184,7 @@ static int drc_index_to_cpu(u32 drc_index)
- #define FLAGS_MODE1	0x004E200000080E01UL
- #define FLAGS_MODE2	0x004E200000080401UL
- #define FLAGS_ACTIVATE  0x100
-+#define BEST_ENERGY_LIST_MAX_ENTRIES	(PAGE_SIZE / (sizeof(u32) * 2))
- 
- static ssize_t get_best_energy_list(char *page, int activate)
- {
-@@ -208,6 +209,11 @@ static ssize_t get_best_energy_list(char *page, int activate)
- 		return -EINVAL;
- 	}
- 
-+	if (retbuf[0] > BEST_ENERGY_LIST_MAX_ENTRIES) {
-+		free_page((unsigned long)buf_page);
-+		return -EINVAL;
-+	}
-+
- 	cnt = retbuf[0];
- 	for (i = 0; i < cnt; i++) {
- 		cpu = drc_index_to_cpu(buf_page[2*i+1]);
--- 
-2.50.1 (Apple Git-155)
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 6/6] mm: change to return bool for the MMU notifier's
+ young flag check
+To: Sean Christopherson <seanjc@google.com>
+Cc: "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>, akpm@linux-foundation.org,
+ david@kernel.org, Liam.Howlett@oracle.com, vbabka@kernel.org,
+ rppt@kernel.org, surenb@google.com, mhocko@suse.com,
+ linux-arm-kernel@lists.infradead.org, x86@kernel.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ kvm@vger.kernel.org, open <linux-mm@kvack.org>, linux-kernel@vger.kernel.org
+References: <cover.1773890510.git.baolin.wang@linux.alibaba.com>
+ <545847c132da5d957cfc74ab19e849b16127aa8f.1773890510.git.baolin.wang@linux.alibaba.com>
+ <67c670e2-c98f-490b-bbb9-2960f8175b5a@lucifer.local>
+ <66e78b59-f96c-4277-b7d7-473b68ed413f@linux.alibaba.com>
+ <adBJTXeE6G2vQNKX@google.com>
+From: Baolin Wang <baolin.wang@linux.alibaba.com>
+In-Reply-To: <adBJTXeE6G2vQNKX@google.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
 
+
+On 4/4/26 7:12 AM, Sean Christopherson wrote:
+> On Fri, Mar 20, 2026, Baolin Wang wrote:
+>>>> -static __always_inline int kvm_age_hva_range(struct mmu_notifier *mn,
+>>>> -						unsigned long start,
+>>>> -						unsigned long end,
+>>>> -						gfn_handler_t handler,
+>>>> -						bool flush_on_ret)
+>>>> +static __always_inline bool kvm_age_hva_range(struct mmu_notifier *mn,
+>>>> +					      unsigned long start,
+>>>> +					      unsigned long end,
+>>>> +					      gfn_handler_t handler,
+>>>> +					      bool flush_on_ret)
+>>>
+>>> Can we please fix this terrrible indentation while we're here :)?
+>>>
+>>> static __always_inline bool kvm_age_hva_range(struct mmu_notifier *mn,
+>>> 		unsigned long start, unsigned long end, gfn_handler_t handler,
+>>> 		bool flush_on_ret)
+>>>
+>>> Would be nicer, thanks!
+> 
+> No, please keep this as-is.  KVM's preferred style is exactly this (and I personally
+> find mm's style much harder to parse).
+
+Um, Andrew has already queued v2[1] into the mm-stable branch. Do you 
+want me to send a follow-up patch to restore the original KVM coding style?
+
+[1] 
+https://lore.kernel.org/all/cover.1774075004.git.baolin.wang@linux.alibaba.com/T/#u
 
