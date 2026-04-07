@@ -1,75 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-19439-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19440-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A11AFEEF49
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2026 14:32:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9001BFEEF53
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2026 14:32:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fqpYr5DjFz2yhD;
-	Wed, 08 Apr 2026 00:32:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775572336;
-	cv=none; b=kyi65ExAykbEAkVr7mFGvCElh4SuDiSlNLZj3Oq2G7QC+8OdRSQnCXVCSWQ7w42mnw7C9Kt2y1g8eQ4OIyg6STdPMnwCO/QlXkqbGBZ/k4mnQqaRpjVdFIUHgjH72sFp2WyM6OZKElw8y8s4Uywa2e2sZrfPr9tP/B7Qw/RPkrX9BVoSBKYuu8ymYmpozLY4q0PRvRifBwYChHY31/LVfFz/OwPRZwB0t3mDbc8c4yMjAcCKMJeFB5YLWFhnNJHlkz6qCCjcGcQxuw+JDmyY4frXEO8jreHifNSKu8NDRckBRBnV4KzpJu/dALEiYzv4NSGSyAlwJIp12aXxcojlfQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fqpYw4hxfz2yhV;
+	Wed, 08 Apr 2026 00:32:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775572340;
+	cv=none; b=RNK90YFgwSJXUWeydk1eljAJmKdEkHPCeIH5ZQKXwag58i5wTYPdolWD44X3I4A8CxsqBxYiihosYdKd2ELOPFWtxRO5uoGQzpGJcqK78c6oCOw52n+o/lwMD7tnSsEJECLLX9Y3/6UyIZGRS67ujG6wGW9dbCTAK9LAcN2qlq4HRVCy55WbJtEtVaZcxsEtslrNWskgsuSn+foDzDJ7CZfLwmLiMiv7XbRJvk9wPob8MKer7vpaQ3JlZ6gDb20o69eKs02nwKJozUOhuKeXHZ/pjqzQnYlw7nIq1MqAnm3H/Wk2pAw6T2kxCLnygbLQ4id2R4F4kjwkIKUVI4pJDQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775572336; c=relaxed/relaxed;
-	bh=Pe/uIRrlspU3/PcFgSkVRxo4DJTV1t3LxD3GPeG8ybc=;
+	t=1775572340; c=relaxed/relaxed;
+	bh=WCaF3kLdCiAgYQ5/bk3SyXEWPD5dHMX+3j2VLCRYM2s=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Alt88xbvZvyhrr4IlKs8i8zD+GP52D9BOEFvA43FO9XERRdjEI24xpYedVeEa9i7LyYi3D1feedsLx31vMJgrcYAQk8GN+rYOfRTXMPoV31wAepIFTxyGe4p7lzw2NIfVO85viGKz6dhw2rWAudzE4BHned/JimmsyvKe+b7M8dNuk51EoyY3+ueptPS4EFF44SEk8kepKjpWJuKOO3+2FgVVzyLxf016iV2tP8Tke17tfJMyVvAiZE8z1usx9GrOAUYT6UzLdksnGnBTvQD0nA+ZtujBg2iXp2YnPskL/eZ6nVokTlvlRUJzNx4Rbj3HRZ2OAtolahfLBc0vpdTqQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=fdRxuSCU; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=TZY8xxrduA5gy0eKG4O9vtCbf+y9wsAYMWKaiia5YxDsOIEsADfT8rI5oPoNJm5mRmE7A9Xp5EpfLnqvS608k35moWeaHtiZOOlZef5wO8FHy7DcoZX5V7ANeLvh+FzGiWALuiJvMMzzjPH+SQVX7kRptIAwhp9ClVyBu7HqWU4mS5dvtH5/ujQybcx9l2GeBmeZjcLFz2n3UWV8xkALzuUTau1+/6FB4wofGw7hUk5NFXwHA9Tk40XDFaOnGleM2kk+zlg+CmeHpD9yEUQ6FZecIu+YFo5PXsEe+rFyS93NSCd+9yQPp6VdNQOjhY+vMdo+GRou6xjRgAU9N5dSIA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=R92qxu6R; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=fdRxuSCU;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=R92qxu6R;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com [IPv6:2607:f8b0:4864:20::62d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fqpYr0Xsrz2ySk
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2026 00:32:15 +1000 (AEST)
-Received: by mail-pl1-x62d.google.com with SMTP id d9443c01a7336-2b24fede2acso28354235ad.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Apr 2026 07:32:15 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fqpYv6V4Wz2ySk
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2026 00:32:19 +1000 (AEST)
+Received: by mail-pl1-x62c.google.com with SMTP id d9443c01a7336-2b0ba3bfe16so48296255ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Apr 2026 07:32:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1775572333; x=1776177133; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1775572337; x=1776177137; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=Pe/uIRrlspU3/PcFgSkVRxo4DJTV1t3LxD3GPeG8ybc=;
-        b=fdRxuSCU2tSzYyPyisYzQIJXFsFzB92F2yftnyEgafFNEOkM8dPDjAX6A3hSWWkush
-         kVX730Kt6/VVvIsYoWV1IHa1PGVuHV7ggNE+MMHIsgFkyfPF2hQVYDIdZx8KNG27iK2u
-         JoPwnYfcnLyC+5NDTZTmqpxSMW7eWJc/uYabF7TVxzlNW0MnV5Fx/+PriC7PXh6mp35m
-         lbgg8uuRrS+Eh+gx29x0w6nKhUOVJBG752qFc4yQbYcrZUSWobdL3QRB/MQoSC1gmpmA
-         0ASlUH8UhUv8UR2gYlEfCKbGdz6t9AjiSiMLsN/WbxjrJmGzedOpTpjeNPjnNnOZIQnl
-         lk0Q==
+        bh=WCaF3kLdCiAgYQ5/bk3SyXEWPD5dHMX+3j2VLCRYM2s=;
+        b=R92qxu6RNzFHXbH1PDziDl810F3RHSLQrPx7MbtOE450cc0Pnt2hYhw8zFG6NYPuRB
+         rNSUc4CIr2o/33UEavO19szxPYHA8BE4DDX+qxgf8SyXS4IN+eHPkYG1gV/Me3im0tSa
+         v+8YRJr5o7L5rGsIT9ImzwSEkY87urGY7IiqJJXwx7X2seraKuCnojlyUeSBHe9JfIfF
+         5YLkdx6dczxXZ1hYxhyUP5EsIO2Wxr9wi0f3MMdwAaUkNylTIM7vbp9LSmZ3S6ZTqSca
+         CvHxBl9TTEgBFZkDgRUQyYjmWShY/KiwGdFTkyoJcr0gN/qMMYvHgAQcz/LAWVgA+7vm
+         kJ3Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775572333; x=1776177133;
+        d=1e100.net; s=20251104; t=1775572337; x=1776177137;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=Pe/uIRrlspU3/PcFgSkVRxo4DJTV1t3LxD3GPeG8ybc=;
-        b=WJ2uMrn51fzRTn9nMTv/PUXUd4nbB9rohu8LGNfauAjJE0MvN4k0WGYzYOM6lofBbe
-         a5hh9u6LA36uXUeqieRRe8aQhnuk2XAK7CzL3PcZvknp8HAGw8RTXytla+Os+fTONFmg
-         i8pu4+HqyIJigm4H/cDB2rECzN6As2t+lK8dnQ7nE0vQNcTskdv8LwDpWtEGxWJwtbg3
-         4DofzPUA3C78V4jbLrw5SEfmE833JmH4jrkOMBtAvoC0XokpwIsWItBOULUi+uVQ9JZr
-         OJ9F8PQDECF32d/sGizxzLyz0Fikoqxr/sWXOBN++XQ+8kGFqXcaVZl7/wLOl4M9giio
-         LpZQ==
-X-Gm-Message-State: AOJu0YwRXacJiFUS9uyuowSpEuIoHSW7IhlgQKOgN8iPgqBoeEmKhH7f
-	C/6S/WyIgxbaAfGHrqYTPLNQb9CiFmLbXLKLVMY2C7/bBVf/+PeD5SpGwbVUWg==
-X-Gm-Gg: AeBDietkjbKafe+t6COoy6QhzV651KsNZXMsDtTRtevG5MO9/Wu5Dcm4GNwgM9C3HNr
-	XwpKtmtpH36s3CETcd7FFSqzYMFiBwBjf4itinWKnDBMBV10ReNIO8qkH1dBP3/EiYr69QBxZwt
-	KEC3DWPVBc1SRx8ApzWapLmL1rrKh41BU0ZX7LZ2Fv9D9WkPjO/MQUTBo35CLSqJdEUOoc65ATK
-	poEgGWnvx5Lxxux/MFa2/M7BJ//Tjlt7L9ItMLf+gARyqOgFnME+K/DjaikjfTOypXlskSEmilI
-	2f9tY5bS0bFKhsW/yKVlF6H/yyTQt5XV49S8NaGcdtwNRtWMzlp4K7/96bVaeCOCWm8TS/LIHU2
-	ucxh5QofT2YZYyfvi7rUFg1wi5hMGOVZeE9/BHHDMhKlb08P+gYy+FbMkkzPylAuVPTOn/Mgz0G
-	hFSXh/VHo9Upu3jvnaY6rX6aG0US2VZd9NC+C2HSvVkodepTp9ng==
-X-Received: by 2002:a17:903:3b84:b0:2b2:4ffc:a7c4 with SMTP id d9443c01a7336-2b2818b3addmr165803545ad.24.1775572333419;
-        Tue, 07 Apr 2026 07:32:13 -0700 (PDT)
+        bh=WCaF3kLdCiAgYQ5/bk3SyXEWPD5dHMX+3j2VLCRYM2s=;
+        b=gcjoaG9nkvfmWNgtW8Iwd1k/YTSO9w7ZiWej6sBwEgXNfrpLzq8DL1HlLUQLfXC1+X
+         SrM38gjctx/zZLQ807MNatZ74qLB1/R4KuztuEXXB7KtB4OsOE+Zg8Yp3HAEcWTdtYm2
+         6kr+m+gQrRxyanDGXbxWIGE8BdILrlae3BABwR2boa+vlbtFh+Hk/it4iatVof3xRGMo
+         9EG1egaRhN5a9PsinAqdXgTuCaASf8THpY9H5WSTs2sR9yVy3997BhPaw/YAqN8j31md
+         ONtWzyGo58pyTJS4o7/Iob1AdwkzUyofUYRj5Xtm1/kyMfPjhSTs4uHhZtaT7cLei65L
+         enEA==
+X-Gm-Message-State: AOJu0YwOc0XI8+8aOYduqqHE0KK6ZJNXTzWMepy65CA9HJHxNSJMSE1X
+	+bvGpXPjJ7Q2YLlI+PlikNS4QMtrrZE8iAJ1zQjhnenpLRv7HMYW3Ltj+YjwCA==
+X-Gm-Gg: AeBDievTiKpiVIxyiBqssZP/V549q6cXJ0oHr+v2Qx2RDqB8zHvE6cbgOvIFT4bFk1b
+	ef1EhRAH/vhpNE9SnrRCuqMvH4Dq8PDMPssBRNFXeiO8plNlfihgAyJCDYHtTBU7mjcOGyP0BpT
+	YZgxu1c9d6QfZC8w5PbYgGeCzPelqFggjC2XxDMOMh3TidJ29lo4QmB7DSw+OMg2MakSe9538/9
+	lu2fv2KX72KSoTNIs6UxEIU4qawYtsdPpYWdk8aInMGEp92MJUiMKdAhTuOBO50rTA8onF62N9j
+	VXsGNWvknUGJWBXtopluJDyn/mFIwNsa219h3Uu8W2+hg3WmSh+GQKkPSrsfg92DYmJCvYGY5Sj
+	Np9F+9POcY5IbgbkwwA4vAzELQP1jZstH931Wi1MUcwsZA4ECZFysrCmzUiJB8e3tK2yNujCm22
+	mKR2AoARx/bk2/+HJhLuo2q2z4NXB4Emn4az9xyAT3d5MMH3mkNu0WipMYatpd
+X-Received: by 2002:a17:903:1b0c:b0:2b0:6068:4c5f with SMTP id d9443c01a7336-2b277d966bdmr184775385ad.8.1775572337304;
+        Tue, 07 Apr 2026 07:32:17 -0700 (PDT)
 Received: from Mac.localdomain.com ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b2749cbc58sm181201525ad.78.2026.04.07.07.32.09
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b2749cbc58sm181201525ad.78.2026.04.07.07.32.13
         (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Tue, 07 Apr 2026 07:32:12 -0700 (PDT)
+        Tue, 07 Apr 2026 07:32:16 -0700 (PDT)
 From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org,
 	Haren Myneni <haren@linux.ibm.com>
@@ -79,9 +79,9 @@ Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	linux-kernel@vger.kernel.org,
 	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [RFC v1 4/6] pseries/papr-hvpipe: Kill task_struct pointer from struct hvpipe_source_info
-Date: Tue,  7 Apr 2026 20:01:38 +0530
-Message-ID: <108d32a56d9d4630ed2ba7d8ecce9679adf8671f.1775569027.git.ritesh.list@gmail.com>
+Subject: [RFC v1 5/6] pseries/papr-hvpipe: Refactor and simplify hvpipe_rtas_recv_msg()
+Date: Tue,  7 Apr 2026 20:01:39 +0530
+Message-ID: <51b10f1e82e5c9965902b34b082a4d2aa981ff8f.1775569027.git.ritesh.list@gmail.com>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <cover.1775569027.git.ritesh.list@gmail.com>
 References: <cover.1775569027.git.ritesh.list@gmail.com>
@@ -100,51 +100,83 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-We don't really use task_struct pointer for anything meaningful. So just
-kill it for now, and we can bring back later if we need this for any
-future debug purposes.
+Simplify hvpipe_rtas_recv_msg() by removing three levels of nesting...
+if (!ret)
+    if (buf)
+	if (size < bytes_written)
+... this refactoring of the funcion ensures bail out routines are
+handled early, to simplify the function logic.
 
 Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 ---
- arch/powerpc/platforms/pseries/papr-hvpipe.c | 5 ++---
- arch/powerpc/platforms/pseries/papr-hvpipe.h | 1 -
- 2 files changed, 2 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/pseries/papr-hvpipe.c | 52 ++++++++++----------
+ 1 file changed, 26 insertions(+), 26 deletions(-)
 
 diff --git a/arch/powerpc/platforms/pseries/papr-hvpipe.c b/arch/powerpc/platforms/pseries/papr-hvpipe.c
-index 57ec50e3e883..7242a14eb5ec 100644
+index 7242a14eb5ec..f41f5c0a8418 100644
 --- a/arch/powerpc/platforms/pseries/papr-hvpipe.c
 +++ b/arch/powerpc/platforms/pseries/papr-hvpipe.c
-@@ -487,7 +487,6 @@ static int papr_hvpipe_dev_create_handle(u32 srcID)
+@@ -190,34 +190,34 @@ static int hvpipe_rtas_recv_msg(char __user *buf, int size)
  		return -ENOMEM;
- 
- 	src_info->srcID = srcID;
--	src_info->tsk = current;
- 	init_waitqueue_head(&src_info->recv_wqh);
- 
- 	/*
-@@ -497,8 +496,8 @@ static int papr_hvpipe_dev_create_handle(u32 srcID)
- 	spin_lock(&hvpipe_src_list_lock);
- 	if(hvpipe_find_source(srcID)) {
- 		spin_unlock(&hvpipe_src_list_lock);
--		pr_err("pid(%d) could not get the source(%d)\n",
--				src_info->tsk->pid, srcID);
-+		pr_err("pid(%s:%d) could not get the source(%d)\n",
-+				current->comm, task_pid_nr(current), srcID);
- 		kfree(src_info);
- 		return -EALREADY;
  	}
-diff --git a/arch/powerpc/platforms/pseries/papr-hvpipe.h b/arch/powerpc/platforms/pseries/papr-hvpipe.h
-index c343f4230865..4bdf7bb2fc4d 100644
---- a/arch/powerpc/platforms/pseries/papr-hvpipe.h
-+++ b/arch/powerpc/platforms/pseries/papr-hvpipe.h
-@@ -21,7 +21,6 @@ struct hvpipe_source_info {
- 	u32 srcID;
- 	u32 hvpipe_status;
- 	wait_queue_head_t recv_wqh;	 /* wake up poll() waitq */
--	struct task_struct *tsk;
- };
  
- /*
+-	ret = rtas_ibm_receive_hvpipe_msg(work_area, &srcID,
+-					&bytes_written);
+-	if (!ret) {
+-		/*
+-		 * Recv HVPIPE RTAS is successful.
+-		 * When releasing FD or no one is waiting on the
+-		 * specific source, issue recv HVPIPE RTAS call
+-		 * so that pipe is not blocked - this func is called
+-		 * with NULL buf.
+-		 */
+-		if (buf) {
+-			if (size < bytes_written) {
+-				pr_err("Received the payload size = %d, but the buffer size = %d\n",
+-					bytes_written, size);
+-				bytes_written = size;
+-			}
+-			if (copy_to_user(buf,
+-					rtas_work_area_raw_buf(work_area),
+-					bytes_written))
+-				ret = -EFAULT;
+-			else
+-				ret = bytes_written;
+-		}
+-	} else {
+-		pr_err("ibm,receive-hvpipe-msg failed with %d\n",
+-				ret);
++	/*
++	 * Recv HVPIPE RTAS is successful.
++	 * When releasing FD or no one is waiting on the
++	 * specific source, issue recv HVPIPE RTAS call
++	 * so that pipe is not blocked - this func is called
++	 * with NULL buf.
++	 */
++	ret = rtas_ibm_receive_hvpipe_msg(work_area, &srcID, &bytes_written);
++	if (ret) {
++		pr_err("ibm,receive-hvpipe-msg failed with %d\n", ret);
++		goto out;
+ 	}
+ 
++	if (!buf)
++		goto out;
++
++	if (size < bytes_written) {
++		pr_err("Received the payload size = %d, but the buffer size = %d\n",
++				bytes_written, size);
++		bytes_written = size;
++	}
++
++	if (copy_to_user(buf, rtas_work_area_raw_buf(work_area), bytes_written))
++		ret = -EFAULT;
++	else
++		ret = bytes_written;
++
++out:
+ 	rtas_work_area_free(work_area);
+ 	return ret;
+ }
 -- 
 2.39.5
 
