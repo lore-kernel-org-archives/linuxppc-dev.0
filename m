@@ -1,88 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-19433-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19434-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC005FEEF31
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2026 12:44:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32530FEEF2E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Apr 2026 13:09:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fqm9851yxz2ySk;
-	Tue, 07 Apr 2026 22:44:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fqmkF5p5Wz2yZ3;
+	Tue, 07 Apr 2026 23:09:25 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775565852;
-	cv=none; b=kY1AMR7Fl3UxnZ3+v2YcVvmzsRRochvj33CZYroT4f8+Rjc4/l1GcJ3Gfyk7fbmAJgwHXWqNZh7DngRCv7UtZpD/NmbmYAVv507jqIHYm1sVUmYdx2XRpDEzvT4G1tShgyinWXFQqvyFJt1EQcu8PZCBOkgvcphM6425B1HWzH7gCu+jga9RhvIURdUR5fOt+/koXja6Qui3VA18gjjriBIqSn5xfyV7GZxfnzaUUJ7y+qM5GCBj0T+sGM94/+RZLND41h7zoAkY2zA34WjegSUHbbrT2/IWRUzgJEv58goblbY19+hUG71DctBQWIS4jsI9xWMM+MGWM36LYF/EKA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775567365;
+	cv=none; b=eGjUtN7RdEpevk5xiRp2VwznO5FZAGmnOJJVJ15GCAuheeqTTMeyr4/sYK546kCbCx+B+6RaNWgPod9LdsFOFkkxcwbM2tJJ6FLPs/oHZSbxrx0OQ8UAcpkKEMxrfC8yySIFo1jP7PKLfAWWqGwVtD2YnBIX1b7uvBhtDK+KPIrISBYOqmPZMIE78lDl5FShcS45u9LxX4UDvFmMqVxLygPA3bkEANB5kaqSJi3IcqvLT0zcf9RRcNi8QK+iaiGSCIMPtBWjPVwcwb/WfvenHJbPBk+Kq4N8yGqgh7wItxUTo21Urz1DsCdnX3e3cAiZti3+CYa0Jkwx1dtZJd8lZQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775565852; c=relaxed/relaxed;
-	bh=GIyIVK/ANuekaENEgT99syx3twewoAoza/eXIw8/UDM=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=BJbJkIAfjIVj2OlmJsXToyaoBs7vU+zXDcAPXyCQoHsV0NRsAcWsy5lgW/GBTTJ1BnLgQA3NL3N/t61rmMjXI8QmJaSiUrMPI6yVyblhIni2iYN/JzwucwASNikga9H99IR70VB45zN0WOvxRAqzw3XtlN89XDEFMEX71PX2W3ejVCfvG4RhBgW23/k78Rek9LRVkKvSiBsZmKfvf9APxZT8iOekdK9TfWq8OlwyhFSrNfQxrZ3TcYDGm9z/1CrjqdhE1ZHfPAeHcL8wUi793qO7xJkfpA06PDS+iDoNV8hLgC2x/jxybKrSppkRapnEDiRrSTgAWTt6aBsrqIdiQg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=S2slrH4A; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1775567365; c=relaxed/relaxed;
+	bh=FItEFcj0rTvSsv8dNr4j3B9MFFiOFkMEo1S6fzbKUeY=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=agA8qagEOrPbCaAvA/Kgnhav7888WfnDviHscZPcgOCi9CD1WyWvGvbrKxv+lVkMp+IXd5OuK5O7T4aJ2IsxttfciWzZdoEk1MBaIh5Y6XhFnId7tqAJj4+nNVPPaV0jSYv7B6iENdzZZf8TUD2ueyC5iRP+rTVxLZ73URUc2ku47EhM8/BPFhxObZV4Kcrj+WQlebz0WYCJ6DA8zpYQgGKa/gWIgMRwRZhgvHcTzpECY1albSeH67l3YixyRn2b9aqJjrUrTBa+lctZH7ky/BLb4cBWJ5+1R98MTcVM0KgyrwVSbnSErzyXfmYcOaD4jPbcAfj5N4GyDmVTMsrOIQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EtvohyZF; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=S2slrH4A;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EtvohyZF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fqm975ljkz2yl2
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Apr 2026 22:44:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fqmkD4Z8xz2ySS
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Apr 2026 23:09:23 +1000 (AEST)
 Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 636LmUbW2211703;
-	Tue, 7 Apr 2026 12:44:03 GMT
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 636LmvGM2212549;
+	Tue, 7 Apr 2026 13:09:07 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=GIyIVK/ANuekaENEg
-	T99syx3twewoAoza/eXIw8/UDM=; b=S2slrH4AJjqX7Ct1UgY2EZCKpU2mMMInS
-	TRdM+Gtlc1uir2liVNS37D2Lpu/gLEsqHwZcnARLiVm/DsIWPRHNJkbgLMpv8jmg
-	Hr5WYRtYR7/XBcnWgv4wmt0L01pBCRF09FEUT8zq7GJwfh/ikBBGvQ15Q/xFQYbY
-	c/28r0fxtNvV/bjJu+dZ1AOFsLYz3SPIyWbnVRGVeCFhx/Jsly9sJtcrGQ6MYMYm
-	NRZGE/0MM7It+948c6WL0JYhu6CwdqvWD8dWudBD9AgZL7c7J+MzT/Pjz7bJUHLI
-	SVw5zUX5v9VCSEW/S3lWhfvqFXBg+RxqSBGLy8IooeAkUSZdiyHiA==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dcn2hansc-1
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=FItEFc
+	j0rTvSsv8dNr4j3B9MFFiOFkMEo1S6fzbKUeY=; b=EtvohyZFpZqHp5LtqmW+jI
+	Rk2YZAqXZ3Ge2dylErZdACDpvwbMur3JhYiZTzozAdClEv8YWexLCXXUneBEWWPT
+	ItAzvwcrsfwbu2UeGjndO3S06hbixT49cT5L9UjxwWUH+Gs5MKADxDA69FdphI5S
+	tzik5zyq7v8Y3IaVwX/us/jvDdB1aGmVH6ogfZ/IdflSIylQ2rvG5ge5nqBkf8ia
+	DIftP86yageKmUAIeMtJL1UdntSkLdYkrMHLjeD5PGJN3bNRpL9ezDPaj5SK9/Cl
+	UeLvq9fpM4j//q/AKzMWGwHoneESYbtpeplJXMD/+A3k4wjf7TpQlrWoJds3N+FQ
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dcn2hasyt-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 07 Apr 2026 12:44:03 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 637BO8De014356;
-	Tue, 7 Apr 2026 12:44:02 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dcmg4k447-1
+	Tue, 07 Apr 2026 13:09:05 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 637BQMZM013902;
+	Tue, 7 Apr 2026 13:09:05 GMT
+Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dcmf438yr-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 07 Apr 2026 12:44:02 +0000
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 637Chwg242467676
+	Tue, 07 Apr 2026 13:09:05 +0000
+Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
+	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 637D94gv8323876
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 7 Apr 2026 12:43:58 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B320F20040;
-	Tue,  7 Apr 2026 12:43:58 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D33262004B;
-	Tue,  7 Apr 2026 12:43:55 +0000 (GMT)
-Received: from li-4f5ba44c-27d4-11b2-a85c-a08f5b49eada.bl1-in.ibm.com (unknown [9.123.14.142])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  7 Apr 2026 12:43:55 +0000 (GMT)
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Sourabh Jain <sourabhjain@linux.ibm.com>,
-        Aditya Gupta <adityag@linux.ibm.com>, Daniel Axtens <dja@axtens.net>,
-        Hari Bathini <hbathini@linux.ibm.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Mahesh Salgaonkar <mahesh@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Shivang Upadhyay <shivangu@linux.ibm.com>,
-        Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-        Aboorva Devarajan <aboorvad@linux.ibm.com>,
-        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [PATCH v3 2/2] powerpc/vmx: avoid KASAN instrumentation in enter_vmx_ops() for kexec
-Date: Tue,  7 Apr 2026 18:13:45 +0530
-Message-ID: <20260407124349.1698552-2-sourabhjain@linux.ibm.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260407124349.1698552-1-sourabhjain@linux.ibm.com>
-References: <20260407124349.1698552-1-sourabhjain@linux.ibm.com>
+	Tue, 7 Apr 2026 13:09:05 GMT
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CD64758055;
+	Tue,  7 Apr 2026 13:09:04 +0000 (GMT)
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 387D05804B;
+	Tue,  7 Apr 2026 13:08:59 +0000 (GMT)
+Received: from smtpclient.apple (unknown [9.61.247.154])
+	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTPS;
+	Tue,  7 Apr 2026 13:08:58 +0000 (GMT)
+Content-Type: text/plain;
+	charset=utf-8
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,102 +80,256 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.300.41.1.7\))
+Subject: Re: [PATCH v4 00/15] selftests/mm: fix failures and robustness
+ improvements
+From: Venkat <venkat88@linux.ibm.com>
+In-Reply-To: <cover.1775466329.git.sayalip@linux.ibm.com>
+Date: Tue, 7 Apr 2026 18:38:46 +0530
+Cc: Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
+        linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+        linux-kselftest@vger.kernel.org,
+        Ritesh Harjani <ritesh.list@gmail.com>,
+        David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>,
+        Michal Hocko <mhocko@kernel.org>, Oscar Salvador <osalvador@suse.de>,
+        Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+        Dev Jain <dev.jain@arm.com>, Liam.Howlett@oracle.com,
+        linuxppc-dev@lists.ozlabs.org, Miaohe Lin <linmiaohe@huawei.com>
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <2CAD5B1A-7FD2-4C5C-9279-A3131EF60D86@linux.ibm.com>
+References: <cover.1775466329.git.sayalip@linux.ibm.com>
+To: Sayali Patil <sayalip@linux.ibm.com>
+X-Mailer: Apple Mail (2.3864.300.41.1.7)
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDA3MDExNSBTYWx0ZWRfX3ibF8yWc06pP
- Bj5poZ4zko129cx9U0CZ8ryBDqjB8JYdKWjguYjpbs5+tUZoejqvryvv8uhYqXh5/c9lbjEoUn5
- Zx9myA3r3/eoSLM6+G353jZkXokea8UlmiyYQXGFNfCsyKIuA15rpbZo+vVWyf3bQWFVL3d4q3S
- VYG3NCypLVmI1DheTS3xoLbE6JJiK2MyAXRhkpagv5r3w4QDeqWtPzkLFeX7Ufxyumg3MWLLP01
- HcDFi9VZZ5RGKITevBddKdPJU/dOXc5zbuW3/G0PKeZvTRs+IDkdqwbQwv7F+nf7KPCFu2j2md4
- d7IRUgGvb2G0DO4+iPmgdqSSEwviXMspWH3GAACKj4EKRqJ5q0o6UE10VyYjx4MG2370J4aWt8l
- HtF1Rakkd2fHAPb9miqy3mRsU9tbsoPP2buOGKlpHoj/I6a8qf3kA0Nb3OIERnO+/ARB/ScaQwN
- j76a9W708lACMj7V7nw==
-X-Proofpoint-GUID: A0j2qXs_N88yAbdG8TDIUGDJXtAXg-JZ
-X-Authority-Analysis: v=2.4 cv=a/wAM0SF c=1 sm=1 tr=0 ts=69d4fc13 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8 a=JuTF4qcAAAAA:8 a=pGLkceISAAAA:8
- a=gEFjLL80loUrrBp6AGkA:9 a=WlT8qwTXB_Kj6um4hl3b:22
-X-Proofpoint-ORIG-GUID: jmIsnL-G9LM6NQjD79IiIxz-A02pvv7Q
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDA3MDEyMCBTYWx0ZWRfX1ak3vKXmOqHg
+ g2dbfUiNW5cdhKvh7bMuFP6rK7s65G7isGJ77Uvw+TDXQTVNTIY1t6I3iKoXdI6uCI8iiVNwhpA
+ KPJK9PRsu5BWtPLNQ1bWSS8zNe+PBZ7Db/P502/GRaRXn3wqzkWsffFv4Z51rDviyftnwRA6oI9
+ 5huuHs89lPYdaodJ1rOAUVgI2I2GaJDMB2I0sYWaHisj4bXxmEiAKkdTPG/p039zmITgwXJfAAf
+ uwgyzOePSxrwHByR/J7uYr7UturMTUR3pq6P4QWrV2WD9bOr1R6EO0rpp+6ZE9nvQkZEFK6FaMN
+ t3JN0BHhe5440zxKU+bmETvrd+bvkDW3RSikAH/spVd74t73RMNg1fK+31/6Gu/34tO9/9NSray
+ QRbJ2Yrsyvk3SnE9lBGLGjXyaZOIzN7lyQiPltUZIGYnRO3rd0vQFiHYw7uYEejhOwO6eAm3k2P
+ Noz1thdoH0niTjadW2Q==
+X-Proofpoint-GUID: 36-U94uf4L4vh9ztE91hE3oUw1FjIAGo
+X-Authority-Analysis: v=2.4 cv=a/wAM0SF c=1 sm=1 tr=0 ts=69d501f2 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=UB1gz0I0rgZDmcXxxXkA:9 a=QEXdDO2ut3YA:10 a=O8hF6Hzn-FEA:10
+X-Proofpoint-ORIG-GUID: CvfsEvoqX-LOpTSFK1gUxWWMwfWEeSSw
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-04-07_02,2026-04-07_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 clxscore=1015 spamscore=0 impostorscore=0 priorityscore=1501
+ bulkscore=0 clxscore=1011 spamscore=0 impostorscore=0 priorityscore=1501
  phishscore=0 lowpriorityscore=0 adultscore=0 malwarescore=0 suspectscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604010000 definitions=main-2604070115
+ reason=mlx scancount=1 engine=8.22.0-2604010000 definitions=main-2604070120
 
-The kexec sequence invokes enter_vmx_ops() via copy_page() with the MMU
-disabled. In this context, code must not rely on normal virtual address
-translations or trigger page faults.
 
-With KASAN enabled, functions get instrumented and may access shadow
-memory using regular address translation. When executed with the MMU
-off, this can lead to page faults (bad_page_fault) from which the
-kernel cannot recover in the kexec path, resulting in a hang.
+Hi Sayali,
 
-The kexec path sets preempt_count to HARDIRQ_OFFSET before entering
-the MMU-off copy sequence.
+I tested the full series, and overall it looks good. In particular, the
+series resolves the issue reported in v2 [1], and the other patches in
+the series behaved as expected during my testing.
 
-current_thread_info()->preempt_count = HARDIRQ_OFFSET
-  kexec_sequence(..., copy_with_mmu_off = 1)
-    -> kexec_copy_flush(image)
-         copy_segments()
-           -> copy_page(dest, addr)
-	         bl enter_vmx_ops()
-                   if (in_interrupt())
-                     return 0
-	         beq .Lnonvmx_copy
+[1]: =
+https://lore.kernel.org/all/cf815c21-138e-44c8-986d-d8496503ee32@linux.ibm=
+.com/
 
-Since kexec sets preempt_count to HARDIRQ_OFFSET, in_interrupt()
-evaluates to true and enter_vmx_ops() returns early.
+The only concern I observed is specific to patch 15/15. On systems using
+1GB huge pages, I noticed below failure.
 
-As in_interrupt() (and preempt_count()) are always inlined, mark
-enter_vmx_ops() with __no_sanitize_address to avoid KASAN
-instrumentation and shadow memory access with MMU disabled, helping
-kexec boot fine with KASAN enabled.
+  ./test_hugetlb_memcg
+  # Hugepage size: 1048576 kB
+  # memory usage should go back down.
+  # expected memory: 4194304
+  # actual memory:   8388608
+  not ok 1 test_hugetlb_memcg
 
-Cc: Aditya Gupta <adityag@linux.ibm.com>
-Cc: Daniel Axtens <dja@axtens.net>
-Cc: Hari Bathini <hbathini@linux.ibm.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Shivang Upadhyay <shivangu@linux.ibm.com>
-Cc: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Reported-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
-Reviewed-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
-Tested-by: Aboorva Devarajan <aboorvad@linux.ibm.com>
-Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
----
- arch/powerpc/lib/vmx-helper.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+Apart from this case, the rest of the series tested cleanly for me. =
+Based
+on that, it seems that dropping patch 15/15 independently makes sense.
 
-diff --git a/arch/powerpc/lib/vmx-helper.c b/arch/powerpc/lib/vmx-helper.c
-index 554b248002b4..57e897b60db8 100644
---- a/arch/powerpc/lib/vmx-helper.c
-+++ b/arch/powerpc/lib/vmx-helper.c
-@@ -52,7 +52,14 @@ int exit_vmx_usercopy(void)
- }
- EXPORT_SYMBOL(exit_vmx_usercopy);
- 
--int enter_vmx_ops(void)
-+/*
-+ * Can be called from kexec copy_page() path with MMU off. The kexec
-+ * code sets preempt_count to HARDIRQ_OFFSET so we return early here.
-+ * Since in_interrupt() is always inline, __no_sanitize_address on this
-+ * function is sufficient to avoid KASAN shadow memory accesses in real
-+ * mode.
-+ */
-+int __no_sanitize_address enter_vmx_ops(void)
- {
- 	if (in_interrupt())
- 		return 0;
--- 
-2.52.0
+Hence for the series,
+
+Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+
+Regards,
+Venkat
+
+> On 6 Apr 2026, at 2:49=E2=80=AFPM, Sayali Patil =
+<sayalip@linux.ibm.com> wrote:
+>=20
+> Hi all,
+>=20
+> Powerpc systems with a 64K base page size exposed several issues while
+> running mm selftests. Some tests assume specific hugetlb =
+configurations,
+> use incorrect interfaces, or fail instead of skipping when the =
+required
+> kernel features are not available.
+>=20
+> This series fixes these issues and improves test robustness.
+>=20
+> Please review the patches and provide any feedback or suggestions for
+> improvement.
+>=20
+> Thanks,
+> Sayali
+>=20
+> ---
+> v3->v4
+>=20
+>  - selftests/mm: restore default nr_hugepages value via EXIT
+>    trap in charge_reserved_hugetlb.sh:
+>    Updated to use an EXIT trap to restore the original nr_hugepages
+>    once at script termination, ensuring reliable restoration on all
+>    exit paths.
+>=20
+>  - selftest/mm: fix cgroup task placement and drop memory.current =
+checks
+>    in hugetlb_reparenting_test.sh:
+>    Updated to use a deterministic synchronization method by migrating =
+the
+>    workload process within a wrapper subshell before calling exec() to=20=
+
+>    ensure correct cgroup accounting.
+>=20
+>  - selftest/mm: align memory size to huge page size in hugepage-mremap
+>    test:
+>    Update test code directly to align memory allocations to the =
+hugepage
+>    size, rather than modifying run_vmtests.sh. This replaces the =
+previous
+>    commit =E2=80=9Cadjust hugepage-mremap test size for large huge =
+pages=E2=80=9D with
+>    a cleaner, direct approach in the test itself.
+>=20
+>  - selftests/mm: ensure destination is hugetlb-backed in =
+hugepage-mremap:
+>    Updated to remove MAP_POPULATE flag for the mmap call as per review
+>    comment.
+>=20
+>  - selftests/mm: skip uffd-wp-mremap if UFFD write-protect is =
+unsupported:
+>    Updated as per review comment to initialize features to zero and =
+exit
+>    on all uffd_get_features() failures, avoiding spurious test errors.
+>=20
+>  - selftests/mm: move hwpoison setup into run_test() and silence
+>    modprobe output for memory-failure category:
+>    Declared LOADED_MOD as local variable and avoided a redundant=20
+>    skip message when the module is not found.
+>    Updated logic to set exitcode to ksft_skip only when no failure has
+>    been recorded.
+>=20
+>  - selftests/cgroup: extend test_hugetlb_memcg.c to support all huge
+>    page sizes:
+>    Updated to skip on memory constraints instead of returning
+>    EXIT_FAILURE.
+>    Updated the logic to fully account for the scenario when the
+>    per-CPU stock is empty and a refill charges MEMCG_CHARGE_BATCH.=20
+>    Updated to avoid overflow on 32-bit systems for memory.max value.
+>=20
+>  - Included "selftests/mm: restore default nr_hugepages value via
+>    EXIT trap in hugetlb_reparenting_test.sh"
+>=20
+>  - Included "selftests/mm: free dynamically allocated PMD-sized
+>    buffers in split_huge_page_test"
+>=20
+>  - Included "selftests/mm: clarify alternate unmapping in =
+compaction_test"
+>=20
+>  - Dropped "selftests/mm: fix double increment in linked list cleanup =
+in
+>    compaction_test":
+>    The behaviour is intentional.
+>=20
+> v3: =
+https://lore.kernel.org/all/cover.1774591179.git.sayalip@linux.ibm.com/
+>=20
+> ---
+> v2->v3
+>  - selftests/mm: skip uffd-wp-mremap if UFFD write-protect is =
+unsupported:
+>    Rename function to check_uffd_wp_feature_supported() as suggested =
+in review.
+>  - selftest/mm: fix cgroup task placement and drop memory.current =
+checks
+>    in hugetlb_reparenting_test.sh:
+>    Drop memory.current validation from the hugetlb reparenting test.
+>    Keep tolerance at 7MB (reverting earlier increase to 8MB in v1).
+>  - Included "selftests/mm: allow PUD-level entries in compound =
+testcase of hmm
+>    tests" patch:
+>    Extend the compound testcase checks to accept PUD-level mappings.
+>  - Included "selftests/mm: replace hardcoded THP size with runtime PMD =
+page size in
+>    hmm tests" patch:
+>    Use read_pmd_pagesize() instead of TWOMEG and cap maximum THPs in
+>    benchmarks to avoid integer overflow.
+>=20
+> v2: =
+https://lore.kernel.org/all/cover.1773305677.git.sayalip@linux.ibm.com/
+>=20
+> ---
+> v1->v2
+>  - For "selftests/mm: ensure destination is hugetlb-backed in =
+hugepage-mremap":
+>    update FLAGS definition to MAP_HUGETLB | MAP_SHARED | MAP_POPULATE =
+and
+>    used it for mmap() calls as suggested during review.
+>=20
+> v1: =
+https://lore.kernel.org/all/cover.1773134177.git.sayalip@linux.ibm.com/
+> ---
+>=20
+> Sayali Patil (15):
+>  selftests/mm: restore default nr_hugepages value via EXIT trap in
+>    charge_reserved_hugetlb.sh
+>  selftests/mm: fix hugetlb pathname construction in
+>    charge_reserved_hugetlb.sh
+>  selftests/mm: restore default nr_hugepages value via EXIT trap in
+>    hugetlb_reparenting_test.sh
+>  selftests/mm: fix hugetlb pathname construction in
+>    hugetlb_reparenting_test.sh
+>  selftests/mm: fix cgroup task placement and drop memory.current =
+checks
+>    in hugetlb_reparenting_test.sh
+>  selftests/mm: size tmpfs according to PMD page size in
+>    split_huge_page_test
+>  selftests/mm: free dynamically allocated PMD-sized buffers in
+>    split_huge_page_test
+>  selftest/mm: align memory size to huge page size in hugepage-mremap
+>    test
+>  selftest/mm: register existing mapping with userfaultfd in
+>    hugepage-mremap
+>  selftests/mm: ensure destination is hugetlb-backed in hugepage-mremap
+>  selftests/mm: skip uffd-wp-mremap if UFFD write-protect is =
+unsupported
+>  selftests/mm: skip uffd-stress test when nr_pages_per_cpu is zero
+>  selftests/mm: move hwpoison setup into run_test() and silence =
+modprobe
+>    output for memory-failure category
+>  selftests/mm: clarify alternate unmapping in compaction_test
+>  selftests/cgroup: extend test_hugetlb_memcg.c to support all huge =
+page
+>    sizes
+>=20
+> .../selftests/cgroup/test_hugetlb_memcg.c     | 90 ++++++++++++++-----
+> .../selftests/mm/charge_reserved_hugetlb.sh   | 45 ++++++----
+> tools/testing/selftests/mm/compaction_test.c  |  3 +
+> tools/testing/selftests/mm/hugepage-mremap.c  | 42 ++++-----
+> .../selftests/mm/hugetlb_reparenting_test.sh  | 59 ++++++------
+> tools/testing/selftests/mm/run_vmtests.sh     | 52 +++++++----
+> .../selftests/mm/split_huge_page_test.c       | 27 ++++--
+> tools/testing/selftests/mm/uffd-stress.c      |  6 +-
+> tools/testing/selftests/mm/uffd-wp-mremap.c   | 13 +++
+> 9 files changed, 220 insertions(+), 117 deletions(-)
+>=20
+> --=20
+> 2.52.0
+>=20
 
 
