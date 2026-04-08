@@ -1,90 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-19506-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19507-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C605E1073CA3
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2026 12:03:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B814C1073CB6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2026 13:20:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4frMBj4fFPz2ynC;
-	Wed, 08 Apr 2026 22:02:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::436"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775649757;
-	cv=none; b=dTDwJ3biuYdb5BRLW6QcqeS4E2yfkPPnmGR7fjdmwlvxAZsClnRiOVh95lu/z6YhNgVoxIjrY8hHpqRQfWodLeFxhI4GI0EfE5Ooy8fOCt5giham42Var3Uwx+nNy40WJIc+0NE2046PmTejw8FnyoBZ6XtFFy32YqGBftPLjg/YeikYUjT0Y+L/EKzCl0V+ZQ26dgJIKKDCt31WZKYXwsOXI6/NIBr++gIOsAVxsDqXErkeFcwAdjLz3u9mUsJTOAKC56M+8TmtFweB5XqFe8rZLdCfh3DrP+Ll3VtSxV4sIIkRaBfbLBGH4RdQArtZPZD3OKgOs8P7K9JiVxfv0g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4frNw5069kz2yDk;
+	Wed, 08 Apr 2026 23:20:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=82.65.109.163
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775654404;
+	cv=none; b=cDmEi3lTusz1oGpCaw+IYU1nPk4ZchQSIBZRBDOIe2D1Ikvxe3c0WHXfup+asUzrAKllnCqlDA4yFIznzCkboPXrcBx9C8n3chUILNLFFEPvTC0fcjHYiJeO5mvgx37oDgZAqEa6PPEDMam1XgRETq1xmEgBXQiw7k9TukxK66LPVk71ILQJQAfs2DMVazP1XBDKV//1h5rsGAOppA8YBhTWbXJqSNx71sA7Qq3mBfnfjccHMapkPEKZKMgJ64E5wyNYZaOUonAVbJR69Ri9KVINwiSeGmVeBF847oJZKqsf87/V9qwrjff/VDVVPntlTr9BtAWtTYua5NfWv+v9qA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775649757; c=relaxed/relaxed;
-	bh=HxF/5xyzxh7moQ/DzCaZduABbVHgNK2NM9rE5Y5cP+w=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=mEbfegJvE4WWHWZ9Gm8659fAJbYIF3K0+Oyz0pMTQswe2eiXEM6H+90HVLEoJyUX/Mi0v6mnqE505o+XPrYPcY/K/nVuTLJgkz/8azYi31uOnOSsHbaJtf7qvENS3FkmNWOuf6XFlPL5htas2r8Pp4GxlSKeZzR1eIKXhH6Rm+xEJBKiP+N3TS6UtWGfUHygTNIF3ig348guK9FzqQic+P4Evh6AapsTxkrQBHIrwiuqDYRqBj7wXu76y3pvfYpWdiP0mSfyXFlcKva4is9pglGOC9kJ1iBRtuoDUe3oCz7z6ijua0TUxH955Z8w+7TEPlBuxlPyxwyD8XRpPKpljA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=KfiDg+te; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=KfiDg+te;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com [IPv6:2607:f8b0:4864:20::436])
+	t=1775654404; c=relaxed/relaxed;
+	bh=40U6NdL8Gx9NIYzlKcY/dNARqIXyqawjjSe8PecDZeI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=c5XXvb+BHEnmE+94svZISqUiT5MvdStqCOVsa4mnGNhtqXIZNptCqAGKuh9/VGnvL2IAPSqn/rKWjtFj88edI5ZIldIOQs+pW9yZ6Kvg6EXkiHTZ+Trz5GovXRGd8y/xGOCcqNTlgZ8MsmhwC437pXNZgO1amYGTrzuXZ3YAagu4/lWCaQKJ3cJtoCAf8k5J6W+ow/MnWUXHEoq8GVttblZ3NXNMdpIyKq2htphflLUSXnXgp/dYSI2n8DgHBBziVLyfCS6aVrsUhmjqju0pIyfwDryx1A3Flkf3Zy2+MuLUa00myDsRpr0knyVaDJvh9oYu7VZZg8j10VeihuhdOQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linkmauve.fr; spf=pass (client-ip=82.65.109.163; helo=luna.linkmauve.fr; envelope-from=linkmauve@linkmauve.fr; receiver=lists.ozlabs.org) smtp.mailfrom=linkmauve.fr
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linkmauve.fr
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linkmauve.fr (client-ip=82.65.109.163; helo=luna.linkmauve.fr; envelope-from=linkmauve@linkmauve.fr; receiver=lists.ozlabs.org)
+Received: from luna.linkmauve.fr (82-65-109-163.subs.proxad.net [82.65.109.163])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4frMBh6qP1z2yks
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2026 22:02:36 +1000 (AEST)
-Received: by mail-pf1-x436.google.com with SMTP id d2e1a72fcca58-82ce0a9b3f7so2614497b3a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2026 05:02:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1775649754; x=1776254554; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=HxF/5xyzxh7moQ/DzCaZduABbVHgNK2NM9rE5Y5cP+w=;
-        b=KfiDg+tesd6WxK95pRwbFLCorVmvKrr+btHt4550DB+G9A9nfquPO9/j2nbIn8TBvI
-         fF8kk8Tuagq4UqaaBh/BOruU8Glcyt3R6vI0InCuo/P70cw+G23C1XyUNyYikzcLwjAe
-         b7eIye+Xl98JxSzDfjQi/0TXTu8MV216gpmeGAFwD1FbEFZP9yR84RRHKNnld8cByVTE
-         kr3wtRPJ54/Z8oT67TlpQUvRX08gLADl+1jSsdcZffwRTh6VMEZWq/rM5W9W70/j8Aih
-         dZAC03U88iZ8HhXDiDyXpP+HNQxg2P5M9w0VBSgAw5ZVMz2w7Drm8kilRmmJaTaCF+EC
-         DNCA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775649754; x=1776254554;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=HxF/5xyzxh7moQ/DzCaZduABbVHgNK2NM9rE5Y5cP+w=;
-        b=ZUZ4Mu33kwSeF4oMYzt+Q3yC8LIJ0G7Xfplt3YckTRZZ3Pk3gn2d0nl0PwjWAfgVKq
-         ue0pFFkv2UUjwylTTw9aw+EoT+lRVoT0ZIrAWp5BbH7mMDOvaid0uT9fwwGUZbSp4nUy
-         qUUbVIYfJ1LHRM1Cpkx6k+JfWrgbUIyM33zD8z44liUCHP1MYwkxLteqKvdA6tRHXbuN
-         uuJXkt1zFNTaS6c+tMUUDpzZWlO8keuasCfoDo/qjRkXnncViSOfRrgzVCyIsd+aJMli
-         BIS7ZE0aKB6YUNB4XehxlDqEPm01BNZMEV0A8q5HZaTNQRiMRItPd4TPZgntcSZkYl7n
-         HifQ==
-X-Gm-Message-State: AOJu0YzH7ZGFLNGHLN7m26PsB6jXcJwUOc0R6s4asDagt6/Ze53kAp07
-	YJXF8HltgeFEXB3+b7Racqidc7v7tD3HTHLOU7EleE1hYs3Vcv8niemncd+Aug==
-X-Gm-Gg: AeBDiesPbtL6PCVMeym04kNtyMXDFC3RD0ua0mrzewVC9BMTmqhdKSr6GnhcsgfBVQ3
-	ujEpCKE1O8KEDdYx2PtOLufIz7v397nLhc9fvyKZcCj0tjzgP9dqoM9WDomLBWiRMrGmg5vfz7N
-	Q31/QpTZPM7MBHHq+GdO6kEye7s2KZpE9bEEcnYQqeD6MLOhOYk5OaB2MtzITbKHeNLw3/ogD+x
-	3m/6fpsoio/kCIvWKDdZnVfiADC6dkC+hak3ko1LPBIBl1HO9IGXTbmxdidlAAo9ik65RGY8hkh
-	IC8gTS4LuWgOw86gWukAUWmxTjEGFFlW0n1rsayxX05QcxPAya4/hg//LVKmKuNwKJfFVbDRSpX
-	3oYI76Znp+h+8QQcBQCDwRfwDEoPaZof1K1xOg5NoFY1AsGV819lERyLL5lazx90z5mfGMhkOlM
-	AVwQy6ocrPJ6mtfBDKsfWl5kd5pH2z2zr7g1SglShmZiDfxUvbACh/oMY=
-X-Received: by 2002:a05:6a00:3e12:b0:82c:7876:a03e with SMTP id d2e1a72fcca58-82d0da8f384mr20097042b3a.17.1775649754432;
-        Wed, 08 Apr 2026 05:02:34 -0700 (PDT)
-Received: from Mac.localdomain ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82cf9b3e169sm21209322b3a.18.2026.04.08.05.02.30
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Wed, 08 Apr 2026 05:02:33 -0700 (PDT)
-From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org,
-	Haren Myneni <haren@linux.ibm.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	linux-kernel@vger.kernel.org,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [RFC v2 10/10] pseries/papr-hvpipe: Fix error handling in case of init routine fails
-Date: Wed,  8 Apr 2026 17:31:40 +0530
-Message-ID: <3ff4de80fce72914eff23a169c974786858517e1.1775648406.git.ritesh.list@gmail.com>
-X-Mailer: git-send-email 2.50.1
-In-Reply-To: <cover.1775648406.git.ritesh.list@gmail.com>
-References: <cover.1775648406.git.ritesh.list@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4frNw26qK6z2yC9
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2026 23:20:02 +1000 (AEST)
+Received: by luna.linkmauve.fr (Postfix, from userid 1000)
+	id 8C46AF40664; Wed, 08 Apr 2026 15:19:57 +0200 (CEST)
+Date: Wed, 8 Apr 2026 15:19:57 +0200
+From: Link Mauve <linkmauve@linkmauve.fr>
+To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+Cc: Link Mauve <linkmauve@linkmauve.fr>, maddy@linux.ibm.com,
+	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
+	peterz@infradead.org, jpoimboe@kernel.org, jbaron@akamai.com,
+	aliceryhl@google.com, rostedt@goodmis.org, ardb@kernel.org,
+	ojeda@kernel.org, boqun@kernel.org, gary@garyguo.net,
+	bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org,
+	tmgross@umich.edu, dakr@kernel.org, nathan@kernel.org,
+	nick.desaulniers+lkml@gmail.com, morbo@google.com,
+	justinstitt@google.com, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org,
+	llvm@lists.linux.dev
+Subject: Re: [PATCH V10 0/4] Rust support for powerpc [RESEND]
+Message-ID: <adZV_VISz8DNraug@luna>
+References: <20260406200149.3727922-1-mkchauras@gmail.com>
+ <adYlLLfRgSyxus3n@luna>
+ <adZBWoVVoJefiTcM@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,51 +60,405 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <adZBWoVVoJefiTcM@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+Jabber-ID: linkmauve@linkmauve.fr
 
-We have already enabled interrupt sources and enabled hvpipe to received
-interrupts, if misc_register() fails, we will destroy the workqueue, but
-the HMC might send us a msg via hvpipe which will call, queue work on
-the workqueue which might be destroyed.
+On Wed, Apr 08, 2026 at 05:23:39PM +0530, Mukesh Kumar Chaurasiya wrote:
+> On Wed, Apr 08, 2026 at 11:51:40AM +0200, Link Mauve wrote:
+> > Hi,
+> >=20
+> > (This email is a resent, my IP address got flagged by spamhaus again
+> > because I=E2=80=99m on a residential range, hopefully this incident is
+> > resolved=E2=80=A6)
+> >=20
+> > On Tue, Apr 07, 2026 at 01:31:45AM +0530, Mukesh Kumar Chaurasiya (IBM)=
+ wrote:
+> > > Enable experimental rust support for ppc64le and ppc32be. The patch f=
+or
+> > > ppc32 has been provided by Link Mauve[1] and ppc64le support[2] has b=
+een
+> > > merged over it. ppc32 needs some toolchain fixes mentioned in the pat=
+ch
+> > > `rust: Add PowerPC support` and the discussion for that is done here[=
+1].
+> > >=20
+> > > This has been tested on
+> > > - powernv9 hardware
+> > > - pseries P11 hardware
+> > > - pseries(9, 10) qemu
+> > > - powernv(9, 10) qemu
+> > > - rustdoc on x86 and powerpc64le
+> > > - rusttest on x86 and powerpc64le
+> >=20
+> > I just tested your series for the Wii, so targeting powerpc (32, be),
+> > and got this error:
+> > ```
+> > error[E0463]: can't find crate for `pin_init_internal`
+> >    --> ../rust/pin-init/src/lib.rs:365:11
+> >     |
+> > 365 | pub use ::pin_init_internal::pin_data;
+> >     |           ^^^^^^^^^^^^^^^^^ can't find crate
+> >=20
+> > error: aborting due to 1 previous error
+> >=20
+> > For more information about this error, try `rustc --explain E0463`.
+> > ```
+> >=20
+> > I didn=E2=80=99t get this error in a previous version of your series, w=
+ould you
+> > want me to bisect them?
+> >=20
+> > Thanks for your continuous work on it anyway!
+> >=20
+>=20
+> Hey Link,
+>=20
+> Thanks for testing this.
+>=20
+> Can you give me the command generated via make with V=3D1
+> e.g. `make LLVM=3D1 V=3D1`
 
-So instead, let's reverse the order of enabling set_hvpipe_sys_param(1)
-and in case of an error let's remove the misc dev by calling
-misc_deregister().
+Here it is:
+```
+% make ARCH=3Dpowerpc CROSS_COMPILE=3Dpowerpc-linux-musl- O=3Dwii W=3D1 V=
+=3D1 -j1
+make  -C /home/linkmauve/dev/linux/wii \
+-f /home/linkmauve/dev/linux/Makefile
+make[1]: Entering directory '/home/linkmauve/dev/linux/wii'
+make --no-print-directory -C /home/linkmauve/dev/linux/wii \
+-f /home/linkmauve/dev/linux/Makefile
+ln -fsn .. source
+# GEN     Makefile
+  { echo "# Automatically generated by /home/linkmauve/dev/linux/Makefile: =
+don't edit"; echo "export KBUILD_OUTPUT =3D /home/linkmauve/dev/linux/wii";=
+ echo "include /home/linkmauve/dev/linux/Makefile"; } > Makefile
+test -e .gitignore || \
+{ echo "# this is build directory, ignore it"; echo "*"; } > .gitignore
+make -f ../scripts/Makefile.build obj=3Darch/powerpc/kernel/syscalls all
+make -f ../scripts/Makefile.build obj=3Dscripts/basic
+make -f ../scripts/Makefile.build obj=3Dscripts/dtc
+make -f ../scripts/Makefile.build obj=3Dscripts
+make -f ../scripts/Makefile.build obj=3Dscripts/gcc-plugins \
+need-builtin=3D \
+need-modorder=3D \
 
-Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
----
- arch/powerpc/platforms/pseries/papr-hvpipe.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+set -e; mkdir -p include/config/; trap "rm -f include/config/.tmp_kernel.re=
+lease" EXIT; { ../scripts/setlocalversion ..; } > include/config/.tmp_kerne=
+l.release; if [ ! -r include/config/kernel.release ] || ! cmp -s include/co=
+nfig/kernel.release include/config/.tmp_kernel.release; then : '  UPD     i=
+nclude/config/kernel.release'; mv -f include/config/.tmp_kernel.release inc=
+lude/config/kernel.release; fi
+make -f ../scripts/Makefile.asm-headers obj=3Darch/powerpc/include/generate=
+d/uapi/asm \
+generic=3Dinclude/uapi/asm-generic
+make -f ../scripts/Makefile.asm-headers obj=3Darch/powerpc/include/generate=
+d/asm \
+generic=3Dinclude/asm-generic
+set -e; mkdir -p include/generated/uapi/linux/; trap "rm -f include/generat=
+ed/uapi/linux/.tmp_version.h" EXIT; { 	if [ 0 -gt 255 ]; then echo \#define=
+ LINUX_VERSION_CODE 459007; else echo \#define LINUX_VERSION_CODE 458752; f=
+i; echo '#define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + ((c) > 2=
+55 ? 255 : (c)))'; echo \#define LINUX_VERSION_MAJOR 7; echo \#define LINUX=
+_VERSION_PATCHLEVEL 0; echo \#define LINUX_VERSION_SUBLEVEL 0; } > include/=
+generated/uapi/linux/.tmp_version.h; if [ ! -r include/generated/uapi/linux=
+/version.h ] || ! cmp -s include/generated/uapi/linux/version.h include/gen=
+erated/uapi/linux/.tmp_version.h; then : '  UPD     include/generated/uapi/=
+linux/version.h'; mv -f include/generated/uapi/linux/.tmp_version.h include=
+/generated/uapi/linux/version.h; fi
+set -e; mkdir -p include/generated/; trap "rm -f include/generated/.tmp_uts=
+release.h" EXIT; { 	if [ `echo -n "7.0.0-rc7-wii+" | wc -c ` -gt 64 ]; then=
+ echo '"7.0.0-rc7-wii+" exceeds 64 characters' >&2; exit 1; fi; echo \#defi=
+ne UTS_RELEASE \"7.0.0-rc7-wii+\"; } > include/generated/.tmp_utsrelease.h;=
+ if [ ! -r include/generated/utsrelease.h ] || ! cmp -s include/generated/u=
+tsrelease.h include/generated/.tmp_utsrelease.h; then : '  UPD     include/=
+generated/utsrelease.h'; mv -f include/generated/.tmp_utsrelease.h include/=
+generated/utsrelease.h; fi
+set -e; mkdir -p include/generated/; trap "rm -f include/generated/.tmp_com=
+pile.h" EXIT; { ../scripts/mkcompile_h "ppc" "powerpc-linux-musl-gcc (GCC) =
+14.2.1 20250405" "powerpc-linux-musl-ld"; } > include/generated/.tmp_compil=
+e.h; if [ ! -r include/generated/compile.h ] || ! cmp -s include/generated/=
+compile.h include/generated/.tmp_compile.h; then : '  UPD     include/gener=
+ated/compile.h'; mv -f include/generated/.tmp_compile.h include/generated/c=
+ompile.h; fi
+=2E./scripts/remove-stale-files
+make -f ../scripts/Makefile.build obj=3Dscripts/mod
+set -e; mkdir -p scripts/mod/; trap "rm -f scripts/mod/.tmp_devicetable-off=
+sets.h" EXIT; { 	 echo "#ifndef __DEVICETABLE_OFFSETS_H__"; echo "#define _=
+_DEVICETABLE_OFFSETS_H__"; echo "/*"; echo " * DO NOT MODIFY."; echo " *"; =
+echo " * This file was generated by Kbuild"; echo " */"; echo ""; sed -ne 	=
+'s:^[[:space:]]*\.ascii[[:space:]]*"\(.*\)".*:\1:; /^->/{s:->#\(.*\):/* \1 =
+*/:; s:^->\([^ ]*\) [\$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:; s:->::;=
+ p;}' < scripts/mod/devicetable-offsets.s; echo ""; echo "#endif"; } > scri=
+pts/mod/.tmp_devicetable-offsets.h; if [ ! -r scripts/mod/devicetable-offse=
+ts.h ] || ! cmp -s scripts/mod/devicetable-offsets.h scripts/mod/.tmp_devic=
+etable-offsets.h; then : '  UPD     scripts/mod/devicetable-offsets.h'; mv =
+-f scripts/mod/.tmp_devicetable-offsets.h scripts/mod/devicetable-offsets.h=
+; fi
+make -f ../scripts/Makefile.build obj=3D. prepare
+set -e; mkdir -p include/generated/; trap "rm -f include/generated/.tmp_tim=
+econst.h" EXIT; { echo 1000 | bc -q ../kernel/time/timeconst.bc; } > includ=
+e/generated/.tmp_timeconst.h; if [ ! -r include/generated/timeconst.h ] || =
+! cmp -s include/generated/timeconst.h include/generated/.tmp_timeconst.h; =
+then : '  UPD     include/generated/timeconst.h'; mv -f include/generated/.=
+tmp_timeconst.h include/generated/timeconst.h; fi
+set -e; mkdir -p include/generated/; trap "rm -f include/generated/.tmp_bou=
+nds.h" EXIT; { 	 echo "#ifndef __LINUX_BOUNDS_H__"; echo "#define __LINUX_B=
+OUNDS_H__"; echo "/*"; echo " * DO NOT MODIFY."; echo " *"; echo " * This f=
+ile was generated by Kbuild"; echo " */"; echo ""; sed -ne 	's:^[[:space:]]=
+*\.ascii[[:space:]]*"\(.*\)".*:\1:; /^->/{s:->#\(.*\):/* \1 */:; s:^->\([^ =
+]*\) [\$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:; s:->::; p;}' < kernel/=
+bounds.s; echo ""; echo "#endif"; } > include/generated/.tmp_bounds.h; if [=
+ ! -r include/generated/bounds.h ] || ! cmp -s include/generated/bounds.h i=
+nclude/generated/.tmp_bounds.h; then : '  UPD     include/generated/bounds.=
+h'; mv -f include/generated/.tmp_bounds.h include/generated/bounds.h; fi
+set -e; mkdir -p include/generated/; trap "rm -f include/generated/.tmp_asm=
+-offsets.h" EXIT; { 	 echo "#ifndef __ASM_OFFSETS_H__"; echo "#define __ASM=
+_OFFSETS_H__"; echo "/*"; echo " * DO NOT MODIFY."; echo " *"; echo " * Thi=
+s file was generated by Kbuild"; echo " */"; echo ""; sed -ne 	's:^[[:space=
+:]]*\.ascii[[:space:]]*"\(.*\)".*:\1:; /^->/{s:->#\(.*\):/* \1 */:; s:^->\(=
+[^ ]*\) [\$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:; s:->::; p;}' < arch=
+/powerpc/kernel/asm-offsets.s; echo ""; echo "#endif"; } > include/generate=
+d/.tmp_asm-offsets.h; if [ ! -r include/generated/asm-offsets.h ] || ! cmp =
+-s include/generated/asm-offsets.h include/generated/.tmp_asm-offsets.h; th=
+en : '  UPD     include/generated/asm-offsets.h'; mv -f include/generated/.=
+tmp_asm-offsets.h include/generated/asm-offsets.h; fi
+set -e; mkdir -p include/generated/; trap "rm -f include/generated/.tmp_rq-=
+offsets.h" EXIT; { 	 echo "#ifndef __RQ_OFFSETS_H__"; echo "#define __RQ_OF=
+FSETS_H__"; echo "/*"; echo " * DO NOT MODIFY."; echo " *"; echo " * This f=
+ile was generated by Kbuild"; echo " */"; echo ""; sed -ne 	's:^[[:space:]]=
+*\.ascii[[:space:]]*"\(.*\)".*:\1:; /^->/{s:->#\(.*\):/* \1 */:; s:^->\([^ =
+]*\) [\$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:; s:->::; p;}' < kernel/=
+sched/rq-offsets.s; echo ""; echo "#endif"; } > include/generated/.tmp_rq-o=
+ffsets.h; if [ ! -r include/generated/rq-offsets.h ] || ! cmp -s include/ge=
+nerated/rq-offsets.h include/generated/.tmp_rq-offsets.h; then : '  UPD    =
+ include/generated/rq-offsets.h'; mv -f include/generated/.tmp_rq-offsets.h=
+ include/generated/rq-offsets.h; fi
+# CALL    ../scripts/checksyscalls.sh
+  sh ../scripts/checksyscalls.sh powerpc-linux-musl-gcc -Wp,-MMD,./.missing=
+-syscalls.d -nostdinc -I../arch/powerpc/include -I./arch/powerpc/include/ge=
+nerated -I../include -I./include -I../arch/powerpc/include/uapi -I./arch/po=
+werpc/include/generated/uapi -I../include/uapi -I./include/generated/uapi -=
+include ../include/linux/compiler-version.h -include ../include/linux/kconf=
+ig.h -include ../include/linux/compiler_types.h -D__KERNEL__ -mbig-endian -=
+m32 -I ../arch/powerpc -fmacro-prefix-map=3D../=3D -Wundef -DKBUILD_EXTRA_W=
+ARN1 -std=3Dgnu11 -fshort-wchar -funsigned-char -fno-common -fno-PIE -fno-s=
+trict-aliasing -msoft-float -ffixed-r2 -mmultiple -mno-readonly-in-sdata -m=
+cpu=3Dpowerpc -mno-prefixed -mno-pcrel -mno-altivec -mno-vsx -mno-mma -fno-=
+asynchronous-unwind-tables -mno-string -mbig-endian -fno-delete-null-pointe=
+r-checks -Os -fno-allow-store-data-races -fno-stack-protector -fomit-frame-=
+pointer -ftrivial-auto-var-init=3Dzero -fno-stack-clash-protection -fmin-fu=
+nction-alignment=3D4 -fstrict-flex-arrays=3D3 -fms-extensions -fno-strict-o=
+verflow -fno-stack-check -fconserve-stack -fno-builtin-wcslen -Wall -Wextra=
+ -Wundef -Werror=3Dimplicit-function-declaration -Werror=3Dimplicit-int -We=
+rror=3Dreturn-type -Werror=3Dstrict-prototypes -Wno-format-security -Wno-tr=
+igraphs -Wno-frame-address -Wno-address-of-packed-member -Wmissing-declarat=
+ions -Wmissing-prototypes -Wframe-larger-than=3D1280 -Wno-main -Wno-type-li=
+mits -Wno-dangling-pointer -Wvla-larger-than=3D1 -Wno-pointer-sign -Wcast-f=
+unction-type -Wno-array-bounds -Wno-stringop-overflow -Wno-alloc-size-large=
+r-than -Wimplicit-fallthrough=3D5 -Werror=3Ddate-time -Werror=3Dincompatibl=
+e-pointer-types -Werror=3Ddesignated-init -Wenum-conversion -Wunused -Wmiss=
+ing-format-attribute -Wmissing-include-dirs -Wunused-const-variable -Wno-mi=
+ssing-field-initializers -Wno-shift-negative-value -Wno-maybe-uninitialized=
+ -Wno-sign-compare -Wno-unused-parameter -DGCC_PLUGINS -I../. -I.    -DKBUI=
+LD_MODFILE=3D'"./missing-syscalls"' -DKBUILD_BASENAME=3D'"missing_syscalls"=
+' -DKBUILD_MODNAME=3D'"missing_syscalls"' -D__KBUILD_MODNAME=3Dmissing_sysc=
+alls
+make -f ../scripts/Makefile.build obj=3Darch/powerpc/kernel/vdso include/ge=
+nerated/vdso32-offsets.h
+mkdir -p ./tools
+make O=3D/home/linkmauve/dev/linux/wii subdir=3Dtools -C ../tools/ objtool
+mkdir -p /home/linkmauve/dev/linux/wii/tools/objtool && make O=3D/home/link=
+mauve/dev/linux/wii subdir=3Dtools/objtool --no-print-directory -C objtool
+make -C /home/linkmauve/dev/linux/tools/build CFLAGS=3D LDFLAGS=3D /home/li=
+nkmauve/dev/linux/wii/tools/objtool/fixdep
+if [ ! -f /home/linkmauve/dev/linux/wii/tools/objtool/fixdep ]; then						\
+	make -f /home/linkmauve/dev/linux/tools/build/Makefile.build dir=3D. obj=
+=3Dfixdep HOSTCFLAGS=3D"-Wall -Wmissing-prototypes -Wstrict-prototypes -O2 =
+-fomit-frame-pointer -std=3Dgnu11   -I ../scripts/include";	\
+	rm -f /home/linkmauve/dev/linux/wii/tools/objtool/fixdep.o;						\
+fi
+make -f /home/linkmauve/dev/linux/tools/build/Makefile.build dir=3D. obj=3D=
+fixdep HOSTCFLAGS=3D"-Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fo=
+mit-frame-pointer -std=3Dgnu11   -I ../scripts/include"
+make -C /home/linkmauve/dev/linux/tools/lib/subcmd/ O=3D/home/linkmauve/dev=
+/linux/wii/tools/objtool/libsubcmd \
+	DESTDIR=3D/home/linkmauve/dev/linux/wii/tools/objtool/libsubcmd prefix=3D =
+subdir=3D \
+	CC=3D"gcc" LD=3D"ld" AR=3D"ar" EXTRA_CFLAGS=3D"-std=3Dgnu11 -fomit-frame-p=
+ointer -O2 -g -Werror -Wall -Wextra -Wmissing-prototypes -Wmissing-declarat=
+ions -Wwrite-strings -Wno-implicit-fallthrough -Wno-sign-compare -Wno-unuse=
+d-parameter -I/home/linkmauve/dev/linux/tools/include -I/home/linkmauve/dev=
+/linux/tools/include/uapi -I/home/linkmauve/dev/linux/tools/arch/x86/includ=
+e/uapi -I/home/linkmauve/dev/linux/tools/arch/powerpc/include -I/home/linkm=
+auve/dev/linux/tools/objtool/include -I/home/linkmauve/dev/linux/tools/objt=
+ool/arch/powerpc/include -I/home/linkmauve/dev/linux/wii/tools/objtool/libs=
+ubcmd/include   " \
+	/home/linkmauve/dev/linux/wii/tools/objtool/libsubcmd/libsubcmd.a install_=
+headers
+make -C /home/linkmauve/dev/linux/tools/build CFLAGS=3D LDFLAGS=3D /home/li=
+nkmauve/dev/linux/wii/tools/objtool/libsubcmd/fixdep
+if [ ! -f /home/linkmauve/dev/linux/wii/tools/objtool/libsubcmd/fixdep ]; t=
+hen						\
+	make -f /home/linkmauve/dev/linux/tools/build/Makefile.build dir=3D. obj=
+=3Dfixdep HOSTCFLAGS=3D"-Wall -Wmissing-prototypes -Wstrict-prototypes -O2 =
+-fomit-frame-pointer -std=3Dgnu11   -I ../scripts/include";	\
+	rm -f /home/linkmauve/dev/linux/wii/tools/objtool/libsubcmd/fixdep.o;					=
+	\
+fi
+make -f /home/linkmauve/dev/linux/tools/build/Makefile.build dir=3D. obj=3D=
+fixdep HOSTCFLAGS=3D"-Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fo=
+mit-frame-pointer -std=3Dgnu11   -I ../scripts/include"
+make[5]: 'install_headers' is up to date.
+sh ./sync-check.sh
+make -f /home/linkmauve/dev/linux/tools/build/Makefile.build dir=3D. obj=3D=
+objtool CC=3D"gcc" LD=3D"ld" AR=3D"ar" CFLAGS=3D"-std=3Dgnu11 -fomit-frame-=
+pointer -O2 -g -Werror -Wall -Wextra -Wmissing-prototypes -Wmissing-declara=
+tions -Wwrite-strings -Wno-implicit-fallthrough -Wno-sign-compare -Wno-unus=
+ed-parameter -I/home/linkmauve/dev/linux/tools/include -I/home/linkmauve/de=
+v/linux/tools/include/uapi -I/home/linkmauve/dev/linux/tools/arch/x86/inclu=
+de/uapi -I/home/linkmauve/dev/linux/tools/arch/powerpc/include -I/home/link=
+mauve/dev/linux/tools/objtool/include -I/home/linkmauve/dev/linux/tools/obj=
+tool/arch/powerpc/include -I/home/linkmauve/dev/linux/wii/tools/objtool/lib=
+subcmd/include   " \
+	LDFLAGS=3D"/home/linkmauve/dev/linux/wii/tools/objtool/libsubcmd/libsubcmd=
+=2Ea -lelf  "
+make -f /home/linkmauve/dev/linux/tools/build/Makefile.build dir=3D./arch/p=
+owerpc obj=3Dobjtool
+sh ../scripts/rust_is_available.sh
+make -f ../scripts/Makefile.build obj=3Drust
+# RUSTC L rust/pin_init.o
+  OBJTREE=3D/home/linkmauve/dev/linux/wii rustc --edition=3D2021 -Zbinary_d=
+ep_depinfo=3Dy -Astable_features -Aunused_features -Dnon_ascii_idents -Duns=
+afe_op_in_unsafe_fn -Wmissing_docs -Wrust_2018_idioms -Wunreachable_pub -Wc=
+lippy::all -Wclippy::as_ptr_cast_mut -Wclippy::as_underscore -Wclippy::cast=
+_lossless -Wclippy::ignored_unit_patterns -Wclippy::mut_mut -Wclippy::needl=
+ess_bitwise_bool -Aclippy::needless_lifetimes -Wclippy::no_mangle_with_rust=
+_abi -Wclippy::ptr_as_ptr -Wclippy::ptr_cast_constness -Wclippy::ref_as_ptr=
+ -Wclippy::undocumented_unsafe_blocks -Wclippy::unnecessary_safety_comment =
+-Wclippy::unnecessary_safety_doc -Wrustdoc::missing_crate_level_docs -Wrust=
+doc::unescaped_backticks -Cpanic=3Dabort -Cembed-bitcode=3Dn -Clto=3Dn -Cfo=
+rce-unwind-tables=3Dn -Ccodegen-units=3D1 -Csymbol-mangling-version=3Dv0 -C=
+relocation-model=3Dstatic -Zfunction-sections=3Dn -Wclippy::float_arithmeti=
+c --target=3Dpowerpc-unknown-linux-gnu -Copt-level=3Ds -Cdebug-assertions=
+=3Dn -Coverflow-checks=3Dy @./include/generated/rustc_cfg --extern pin_init=
+_internal --extern macros --cfg=3D'kernel' --emit=3Ddep-info=3Drust/.pin_in=
+it.o.d --emit=3Dobj=3Drust/pin_init.o --emit=3Dmetadata=3Drust/libpin_init.=
+rmeta --crate-type rlib -L./rust --crate-name pin_init ../rust/pin-init/src=
+/lib.rs --sysroot=3D/dev/null -Zunstable-options   ; ./tools/objtool/objtoo=
+l --static-call   rust/pin_init.o
+error[E0463]: can't find crate for `pin_init_internal`
+   --> ../rust/pin-init/src/lib.rs:365:11
+    |
+365 | pub use ::pin_init_internal::pin_data;
+    |           ^^^^^^^^^^^^^^^^^ can't find crate
 
-diff --git a/arch/powerpc/platforms/pseries/papr-hvpipe.c b/arch/powerpc/platforms/pseries/papr-hvpipe.c
-index c708869ca732..b6d0b36915c6 100644
---- a/arch/powerpc/platforms/pseries/papr-hvpipe.c
-+++ b/arch/powerpc/platforms/pseries/papr-hvpipe.c
-@@ -785,18 +785,20 @@ static int __init papr_hvpipe_init(void)
- 	if (ret)
- 		goto out_wq;
+error: aborting due to 1 previous error
 
--	ret = set_hvpipe_sys_param(1);
-+	ret = misc_register(&papr_hvpipe_dev);
- 	if (ret)
- 		goto out_wq;
+For more information about this error, try `rustc --explain E0463`.
+make[3]: *** [../rust/Makefile:681: rust/pin_init.o] Error 1
+make[2]: *** [/home/linkmauve/dev/linux/Makefile:1343: prepare] Error 2
+make[1]: *** [/home/linkmauve/dev/linux/Makefile:248: __sub-make] Error 2
+make[1]: Leaving directory '/home/linkmauve/dev/linux/wii'
+make: *** [Makefile:248: __sub-make] Error 2
+make ARCH=3Dpowerpc CROSS_COMPILE=3Dpowerpc-linux-musl- O=3Dwii W=3D1 V=3D1=
+ -j1  1.15s user 0.56s system 100% cpu 1.695 total
+```
 
--	ret = misc_register(&papr_hvpipe_dev);
-+	ret = set_hvpipe_sys_param(1);
- 	if (ret)
--		goto out_wq;
-+		goto out_misc;
-
- 	pr_info("hvpipe feature is enabled\n");
- 	hvpipe_feature = true;
- 	return 0;
-
-+out_misc:
-+	misc_deregister(&papr_hvpipe_dev);
- out_wq:
- 	destroy_workqueue(papr_hvpipe_wq);
- out:
+>=20
+> Regards,
+> Mukesh
+>=20
+> > >=20
+> > > We are actively working with our LLVM team to get the target for ppc,
+> > > ppc64 and ppc64le in the rust compiler.
+> > >=20
+> > >=20
+> > > [1] https://lore.kernel.org/all/20260204030507.8203-1-linkmauve@linkm=
+auve.fr
+> > > [2] https://lore.kernel.org/all/20260204042417.83903-1-mkchauras@gmai=
+l.com
+> > >=20
+> > > Changelog:
+> > > V9 -> V10:
+> > > - rust/Makefile updated with review comments from Miguel
+> > > - Patch 1/4 updated with commit message and subject
+> > > V9: https://lore.kernel.org/all/20260404121610.1956528-1-mkchauras@gm=
+ail.com/
+> > >=20
+> > > V8 -> V9:
+> > > - rust/Makefile updated with a directory instead of abspath
+> > > V8: https://lore.kernel.org/all/20260403145308.1042622-1-mkchauras@gm=
+ail.com/
+> > >=20
+> > > V7 -> V8:
+> > > - rust/Makefile updated to separate host libraries from target
+> > > V7: https://lore.kernel.org/all/20260329160254.2592207-1-mkchauras@gm=
+ail.com/
+> > >=20
+> > > Changelog:
+> > > V6 -> V7:
+> > > - Documentation removed as powerpc is still under development
+> > > - Added a fix for race condition in rust/Makefile
+> > > V6: https://lore.kernel.org/all/20260210090023.2587534-1-mkchauras@gm=
+ail.com
+> > >=20
+> > > V5 -> V6:
+> > > - Added a missing Tested by from Venkat which got missed since V3
+> > > - Support is marked as Maintained instead of experimental
+> > > V5: https://lore.kernel.org/all/20260210053756.2088302-1-mkchauras@gm=
+ail.com
+> > >=20
+> > > V4 -> V5:
+> > > - Removed a nested ifdef from PPC64 for Little endian toolchain
+> > > V4: https://lore.kernel.org/all/20260209105456.1551677-1-mkchauras@gm=
+ail.com
+> > >=20
+> > > V3 -> V4:
+> > > - Co-developed-by header added in patch 1
+> > > V3: https://lore.kernel.org/all/20260205180429.3280657-1-mkchauras@gm=
+ail.com
+> > >=20
+> > > V2 -> V3:
+> > > - Splited HAVE_RUST in 2 lines
+> > > - BINDGEN_TARGET_powerpc initialized before assigning the same to
+> > >   BINDGEN_TARGET
+> > > V2: https://lore.kernel.org/all/20260204210125.613350-1-mkchauras@gma=
+il.com
+> > >=20
+> > > V1 -> V2:
+> > > - jump label fix for rust has been moved to a separate patch
+> > > - PPC32 support has been taken
+> > > - rust support has been marked experimental
+> > > - target.json dependency has been removed
+> > > - HAVE_RUST now depends on CPU_LITTLE_ENDIAN for PPC64
+> > >=20
+> > > Link Mauve (1):
+> > >   rust: Add PowerPC support
+> > >=20
+> > > Mukesh Kumar Chaurasiya (IBM) (3):
+> > >   rust: Fix "multiple candidates for rmeta dependency core" error
+> > >   powerpc/jump_label: adjust inline asm to be consistent
+> > >   powerpc: Enable Rust for ppc64le
+> > >=20
+> > >  arch/powerpc/Kconfig                  |  2 +
+> > >  arch/powerpc/Makefile                 |  7 +++
+> > >  arch/powerpc/include/asm/jump_label.h | 23 ++++++----
+> > >  rust/Makefile                         | 66 ++++++++++++++++---------=
 --
-2.39.5
+> > >  4 files changed, 61 insertions(+), 37 deletions(-)
+> > >=20
+> > > --=20
+> > > 2.53.0
+> > >=20
+> > >=20
+> >=20
+> > --=20
+> > Link Mauve
+> >=20
 
+--=20
+Link Mauve
 
