@@ -1,82 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-19473-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19474-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3ACE6FD5F6F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2026 04:30:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FCE9FD5F6E
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2026 04:30:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fr97d56Bpz30Vw;
-	Wed, 08 Apr 2026 14:29:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fr97g72JHz2yjx;
+	Wed, 08 Apr 2026 14:29:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775622557;
-	cv=none; b=ON9lyeUW+HvHjfgYkr0js1VBiALkHM37kQcvzivYimHj1jCoNmWDQeivWkce293A3k0Am1raDuNx9tlazWoYnO9lvXFinCLf9vpyZQsAy4/d/uw25KR8UiRTt0o7S0E50Iacm5zfFpYnTY5d/PwyibRn2tasCF1W/Aamk1Z1wB8TV/4e/3TrkMzN5mMv72Cemf9O/tzRlc2S8et8zo88g0Dtt4yQuIbliIk+4x4lUjvttLSxtrJ7tHgOnLpe3S6etxyZldQSrwOY5CRVnjVAnMn2CjXNHV8aFu6yiVrES/lbDFlDCpthLdS/IyVabX4UKF/DgcGGD3EefceCYWW7Cw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775622559;
+	cv=none; b=ROZ6xrm5bXcEFcjvLwylH2qr/3oJQbRZ2l+IxzGwM7du/9X1J6C5PFN6bJ1LFqPOD+rdqDS1ajxHYtCXcO1V35xB4lHIUGIoafgwo5dmp+f3VdfOlg2hfLy9lAhkZ/2lHybZfMu5fb6nn0duIjcYZ1G46J7/ju8NuZJ8kkth8RpEjEuZAs50hRJv/fDle9GXamHt1bMNISnMtUCJRf7QjwLbtUYOdZmuWdP4uTfyAbGCFJV5kpfKivKUePhz/srPlZ5iwMssDNI9mH67A4sGy6pAXCFw+qRBJnsQGe89YZhdCY9apF4M8q9ryqYsfn8L/w05b0B3DDCiZ76Uxjqmfw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775622557; c=relaxed/relaxed;
-	bh=GrL7AklwYWAabTGz2yx8uEFByng55CRUTdSa4dNgh/g=;
+	t=1775622559; c=relaxed/relaxed;
+	bh=fbU3U9g+IPjQX/84R/EftEMLT3wDPQDbCdM5WWuF8w4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=gjO/MmtYbHTsQU8zwb/g+PJOyvD4fhU20mLBfZS9wlMwLnEySzD/C0kJBansvrTMuxFjT2GH4J8gFmnOQRr2ctIs/+ahOwkfreXTZSHsjtCwgr2Dpfozw8R/Ic0f6TpQHq29MbW0P8DGRZXXzFukXvhYcOFl9FRp40uf2OCGZPdKkGD6k6tjn9vm6wd+892JJS+ggI9fKJfqqAHglY4cThfRgDfqajVD/Th6pMkAFYbuPTOOW4Qhp0wEGLRzDgw5eyDYZEhIXCwyErpB/ArM+yqyiVa17T+biwX1cwTyysvh0uMqvwBwanzRILTyHQBW7Ks3QfF5I/9K+VmZvfXqxA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=goqIeBYn; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version:Content-Type; b=IHfU+zjeXPdttG6OVWXBGPCIa0o6txW9O3rL/OnPDKwxHOZjKMBTDnU19EKD6BQMnmkHUiNhCrKLHtIngXNo/P9fGd14QCPMfX0de4LyogLx/nty6Y3LFKwo/75c3ISQ6fJm1NVQXKTcZC7rtzkbHUnZMCra59E2kq0Z2VAov40VmfqXmtqm3H3it9X6z2f5+bAObHCzr05tMBycaVQk1YuspiyEYdYCeydvBuIHVMD327Q2g6r7abG4BCgLfP8Mk2jI7eo8m4ansK4LLr6g970QmROi2UgkUNVlqJDVJzXBVdKFuAH0gWse4tWBSila8v3jcSIuU9Zs0YEpSBfv5g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HH44Swm7; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=goqIeBYn;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HH44Swm7;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fr97d0Cx9z2xm5
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2026 14:29:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fr97g1xyJz2xm5
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2026 14:29:19 +1000 (AEST)
 Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 638461ZY2325933;
-	Wed, 8 Apr 2026 04:28:57 GMT
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 637Eno5j2329508;
+	Wed, 8 Apr 2026 04:29:12 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=GrL7Ak
-	lwYWAabTGz2yx8uEFByng55CRUTdSa4dNgh/g=; b=goqIeBYnxQfEwv8jrh5Cvf
-	X5+N1YNMu08Ps1fEpPk13rrpr9EOhxC6uadd/JNK3cTzjXJoINJ9xeV2AFIYX3hz
-	p68bf4a2zRCknrgvFyTf8jHihKsS6bRmfv+ecHWUIu+8FQbB9TgXp5S2PhviEdbV
-	I4w+7V18hPwd0Z15SmaV7oeta5QfDK+Lj14jkO3GUpCEClgTlCGfb4EMvYJJaANQ
-	yetfn30F+1aj+9XB4EsXPjy6VHieZo1vB3mYFWn+Q9T9ZYyJmM9CjBNP5sGoDdEC
-	f4VwsHZQf2MP8dDRiMMSSqv/YYaoH3O8yqA1esO9ptucE3YFkLIb6ADZWS+YQyAQ
+	:message-id:mime-version:references:subject:to; s=pp1; bh=fbU3U9
+	g+IPjQX/84R/EftEMLT3wDPQDbCdM5WWuF8w4=; b=HH44Swm7Ykd9Lg9Npx0R+b
+	WzZmJPNppRyGix4yqXbnHnl/NyIdYmSgtd26l/YdUNLkfJZOp4VoPo5IZ+mYTKnS
+	IPGILyML3qwONd7Krk2b7IM33m+lwzOyBu9DgmSZZTonR3B6R0jRPYNA5zgOoBcF
+	1VKPXmINwdLaRSW4tWzXIKMizMrLZJ52Oqh+4cRalPU+6tfFpW06MTFJl9DS4hkl
+	H/UqHzsOWuMd76f+OINgG6owENJ+tN60QA2cCCbPTnwEPi7NBDnJbzhyv4PvXHWc
+	/JqORlFLO8WLSxqpkMGLpIOcIy2x1BwqUkcESYsjf56ajXlCwqV8kctmggJSO5QA
 	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dcn2kdreb-1
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dcn2kdrer-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 08 Apr 2026 04:28:56 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 6380IjMM030030;
-	Wed, 8 Apr 2026 04:28:56 GMT
+	Wed, 08 Apr 2026 04:29:11 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 637NnE2P007917;
+	Wed, 8 Apr 2026 04:29:10 GMT
 Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dcme7dysg-1
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dcmg2dyyx-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 08 Apr 2026 04:28:56 +0000
+	Wed, 08 Apr 2026 04:29:10 +0000
 Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6384SsD041484630
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6384T8qv34079034
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 8 Apr 2026 04:28:54 GMT
+	Wed, 8 Apr 2026 04:29:08 GMT
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 10AAA20043;
-	Wed,  8 Apr 2026 04:28:54 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id A215B20043;
+	Wed,  8 Apr 2026 04:29:08 +0000 (GMT)
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D8A2B20040;
-	Wed,  8 Apr 2026 04:28:51 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 09F2320040;
+	Wed,  8 Apr 2026 04:29:07 +0000 (GMT)
 Received: from Linuxdev.bl1-in.ibm.com (unknown [9.123.3.0])
 	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  8 Apr 2026 04:28:51 +0000 (GMT)
+	Wed,  8 Apr 2026 04:29:06 +0000 (GMT)
 From: Madhavan Srinivasan <maddy@linux.ibm.com>
-To: agust@denx.de, mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
-        tglx@kernel.org, brgl@kernel.org, jirislaby@kernel.org,
-        Chen Ni <nichen@iscas.ac.cn>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc/52xx/mpc52xx_gpt: consolidate chained IRQ handler install/remove
-Date: Wed,  8 Apr 2026 09:58:50 +0530
-Message-ID: <177562236424.1381144.11818543807303664458.b4-ty@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Cc: Christophe Leroy <chleroy@kernel.org>, linux-mm@kvack.org,
+        kvm@vger.kernel.org, Alex Williamson <alex@shazbot.org>,
+        Peter Xu <peterx@redhat.com>
+Subject: Re: [PATCH v2 1/2] drivers/vfio_pci_core: Change PXD_ORDER check from switch case to if/else block
+Date: Wed,  8 Apr 2026 09:59:06 +0530
+Message-ID: <177562236414.1381144.5625779243354479459.b4-ty@linux.ibm.com>
 X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260119061232.889236-1-nichen@iscas.ac.cn>
-References: <20260119061232.889236-1-nichen@iscas.ac.cn>
+In-Reply-To: <b155e19993ee1f5584c72050192eb468b31c5029.1773058761.git.ritesh.list@gmail.com>
+References: <b155e19993ee1f5584c72050192eb468b31c5029.1773058761.git.ritesh.list@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,21 +95,21 @@ Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDA4MDAzNiBTYWx0ZWRfX8ViZA/Q9XaYt
- 22Ixn71nF2qWT3gCqmM58QE4DCKUvOu4vyEG1GwWL2rHyyr6FJ7PWB+BoeTk05cmNXxUreiawB5
- DqpmjeF+WmJLuIUH6jL83LuGHGmsuMzDD6sSk/pAYeQbhjCCZdSuaxj8sKTlRkwekqhJ+3v0UQT
- 9AQjLxG5Gp49g05ttSbieL8iCG0mkt59X7BuLSiv1ToIm57EHGIV4/E23k25TmjRyuoMpp72OfZ
- CU6MnxTiYZdANavNMd0QFHwf2EyC7yrFT9OrVKSvWL/bhe6qeRCiBx8+DPnQtsUxT13ZhjYwIBH
- Gi2X90/BEWsc5eoDNgJnBJlAncNTu0LT5hUWnnUVEHD2okYYSihwZ0+/kPk8SPLrEZPtLbXZ6R8
- EwSDF2NNEfh3oVQNNCkU1mzyl9H9dfCKU1hAj3kaOAPECMMpZkEUfJszu40CqZ3YxwWR2Kl4zyG
- 0jQJEy8wNuKHEkbGsuA==
-X-Proofpoint-ORIG-GUID: 9crW__DA8rL1WeUEvXSLy0f2xOAv28Li
-X-Authority-Analysis: v=2.4 cv=e9k2j6p/ c=1 sm=1 tr=0 ts=69d5d989 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDA4MDAzNiBTYWx0ZWRfXxHzVAfxPfHY6
+ EKqjgTI2MkqUEF04YC3L+FdtHaHfmYfrT9+WRNltZwCelmXviAjJV0qZI73MqNGcI672XNHsoaS
+ VbW3a1L0ijrR4aIT6h12p6L4lFy1XGaGzRl/NDTq0A2wwpU0zIL9cMzrsWxu5/qL2O6PqMrcH8r
+ ZqRP6gX9WlzX1vNSAB71LgTZIuL6FlUVBg8sPVGo1nRy7hj4d6Qa7rgrZQ78sFjrCWRSg5tvoCP
+ SXkwZGgvfZ7u5gYYsJgE5vEmarW42K3W2w3tE43s645h8fVaRkBLKEfW6yuE58fBGouYZqhCUiY
+ jM+fd7sYvq7s5jm9tcSJtexfvbOltrYSW0eA3WW05Al8d0WFwiBpCbMoRG/LdVxG1UfJpAmbGTW
+ 1puX9KVpYIUN7NUwHME80Ihkwhr0QIdIFhK5Shk7yIJaj5KBtBGUW5bKB9dYmZc7Q7b9UfCPjQ1
+ z8gbaq6BhqLQE85+vVg==
+X-Proofpoint-ORIG-GUID: 7LjTGaq9Zv79J28arr1hhQxynanjC-Cr
+X-Authority-Analysis: v=2.4 cv=e9k2j6p/ c=1 sm=1 tr=0 ts=69d5d997 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
  a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
  a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
- a=INnRM6tJwyZGxOc-LzAA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: 6pzj7p3xjNze1z-aMufrvE7ocsDBOek3
+ a=FPAXCejgittSz9clB9QA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: KQK6zNVxSIIYeGvpK0VHj7vdbHkJuYoH
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-04-08_02,2026-04-07_05,2025-10-01_01
@@ -118,21 +119,22 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2604010000 definitions=main-2604080036
 
-On Mon, 19 Jan 2026 14:12:32 +0800, Chen Ni wrote:
-> The driver currently sets the handler data and the chained handler in
-> two separate steps. This creates a theoretical race window where an
-> interrupt could fire after the handler is set but before the data is
-> assigned, leading to a NULL pointer dereference.
-> 
-> Replace the two calls with irq_set_chained_handler_and_data() to set
-> both the handler and its data atomically under the irq_desc->lock.
+On Mon, 09 Mar 2026 18:08:37 +0530, Ritesh Harjani (IBM) wrote:
+> Architectures like PowerPC uses runtime defined values for
+> PMD_ORDER/PUD_ORDER. This is because it can use either RADIX or HASH MMU
+> at runtime using kernel cmdline. So the pXd_index_size is not known at
+> compile time. Without this fix, when we add huge pfn support on powerpc
+> in the next patch, vfio_pci_core driver compilation can fail with the
+> following errors.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/52xx/mpc52xx_gpt: consolidate chained IRQ handler install/remove
-      https://git.kernel.org/powerpc/c/7593721cd7c1315557956d5241bbb65fb33115eb
+[1/2] drivers/vfio_pci_core: Change PXD_ORDER check from switch case to if/else block
+      https://git.kernel.org/powerpc/c/948b71aa81cd89b222942db6055e8d9c51c54e78
+[2/2] powerpc/64s: Add support for huge pfnmaps
+      https://git.kernel.org/powerpc/c/d1503aa9ab8057cb93367e0184528f61f7510845
 
 cheers
 
