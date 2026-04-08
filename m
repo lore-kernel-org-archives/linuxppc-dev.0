@@ -1,87 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-19489-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19490-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09638FD5F6A
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2026 08:59:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 486481073C85
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2026 09:45:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4frH7n4Kkgz2yDk;
-	Wed, 08 Apr 2026 18:59:49 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20f::7" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775638789;
-	cv=pass; b=Il9Fg1C1psVoAro9cHrMmzsrLmh/4S9HvHx/7MA5yj21f4Yv9GouO17AmY5qJd/kkTk4s1g750M63xvuTr2dAgpSjWo0Ji76HpmdgxNBmYksvvNWv9J3TJ7WHZJD7UB6AFsZ2fh4atj3biiN3UcnUprksahZVrOb/FUj/nC8u8dQsl6mZTVLj77FchBydRpuU8S9PTNPM3yXxtudlJhA2CvlxSTks8RttSTCwf6+WCldE4l00wJfjF2TiqcWCWUM09TObXuaXk2jeRew4tNizOY//JOrRfoP5Qm/jRKd2JbEj86MTItafFGYWiwYZhttdGucJqfA/HpN5GfFnQ9WyQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4frJ8G3yKqz2yDk;
+	Wed, 08 Apr 2026 19:45:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c207::3" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775641518;
+	cv=pass; b=m91dzLFw18O2hgJgaKJXiBq0gH58frSzFikYb/zR2bxEyvQXy+yQuHL/13vL3t98x68qsIdAsvcIP0rla1ZiI4mIuDM6DLWNIGR9bocf4bps4iD04nI92xhs9HTjHxa0u5K5kXrhRIZcZDHz84TMbcaAlvtIFRYTKB7MPY0TDIerApRCgHjXh06I97baVoFuR/eUW5k0v9y9yBMF8WO26TXl4pMSuVIAWWEON3V1UlRaKv1XjjDBYkzKhV9JGZM/hwMEsELe8Ytdv5G7BP9BYMAzmx5x/ZcmvCq+KrZ8AOPftskCHXgM7Ux1jfAgPe1BqKaGWBspFaMzPvML8KetoQ==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775638789; c=relaxed/relaxed;
-	bh=Ht+rPhWyMe3UW5A+lG+keRfUcxvrk24jWY22nD6V3is=;
+	t=1775641518; c=relaxed/relaxed;
+	bh=cqkMj/z9YLf1xcoPo8qRCjJAL0AYkEHiBoA0k21NQak=;
 	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=LLUXxBEqOX3yhjMBKjzNALkwt/+V8iAoMhlUrhgHV86pWE+5Pd4xiyEGjexQbXtODbFVmge1z4Xt3WsxVEKz4la6GpggN3eKj9wrZ3qXnayXIfR6CKbSbWB1XNT6Qw+oqyRK52Qqkn4+D8jDHl2ZVknmgdNQbhaELmW+nHe/ymCBAWvlFvvhuBK3R53+FbUz5AezBlaFFYrlUYSIQSddBT9Hyt14hYN8Rn5LwThi7aSSR06gWxhVPXNsDjXt18nN5dZfyhj2GcqegmiyK1VxtWQCANh5h5A0mKhq80mBAjFXuX/hpROZZMnucK84/9NUs3hsF2+lfXjcf7D3nHJzTw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=iHWH5hbc; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+	 Content-Type:MIME-Version; b=UHk2mDzrypgXRdKbvLIFOlSyfMvMeN/YOxGPXJZqqv1I3TCkmd0+7wB91mbbQhmptTZKPQd2qRwehzt4edZOyEWu9XdMf5AEV+ss12OFYNXMGXehRgTeRtNmWYzSy08mHftR4xNFKUxJXz8QfGdqzN48WLMZ5H0Z0BIGKGbBglySVBf0pnasPt6IlNM0aVlUtqE86gLmS2e6dLxi7u2BVRdaPD+pHVs2v9tvqcIOMEwBBDtVDR1R8Y5CTgloE013HStJX4WHjHnFTc35Yr0UZ3RwdEO0I9ybbrlbDsyb0oNwPX0JDoPb2N/2XhyhLIpO33XElasqeq3DyfW0FiWh8w==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=eSDclOdP; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c207::3; helo=mrwpr03cu001.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=iHWH5hbc;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=eSDclOdP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
-Received: from OSPPR02CU001.outbound.protection.outlook.com (mail-norwayeastazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20f::7])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c207::3; helo=mrwpr03cu001.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
+Received: from MRWPR03CU001.outbound.protection.outlook.com (mail-francesouthazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c207::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4frH7m1pFSz2xc8
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2026 18:59:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4frJ8D5WVfz2xc8
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2026 19:45:16 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=rj9zBnmRgM6nhiH5ODMoYG6hvkZr6985JiuCEue8odSbrdIQsiYZQuR+0sl9mJszbwXrmtaz9041+dkUG5XWMVqV0tnw5oUiWDY8fSOPidHjyN0JbGkWBcJf1PQjY3kUQEMWO29TyCicqll4ZN8I6eRQDkOOkIW3qldaZlywzgDxL/wVgBIsubtTY41pzDgwVKXdiRzJ2FT8BMtMq/PZHFuLKgZXQ7S7FtlfkRNXiAbla2nlZPGydQqSvEXT9POy7HdjX2m6cskgOPhV4kXYShXssa7LnumNY94Qv2WzlqbRgOmYnbBCgDmCBjfWyXlDQ7sHT7we9OUGVMC/l8IxTw==
+ b=gBQcLHCvFtUN6WCiqY47uOkIesC5eP//HmYDexCNSc6ofZjdvUifTcsD4wkpc1vaw5aVTE4ZDlDzmVHIPBpuLPo57hcOPRjMIaGOHKd+ZjOATetXr87iW34CvNpqGNq619/mKkj293dnhr47X0XWv4MF0C0xW0fAEZyFZkgLgD0Vxoc6hOajOvPNCkMau++9gLSyva/OYn7en6UQtH7KF79hIvQH8uPXn3kF+z44XxepGbLD3N9stM9mSo73XUY9tSCdQw4p69hpf7RkwKnUvu1tjbkXdiFQAltOWcYbiws64Y3tb1JRx0A3XRilQxBmaF+UFwm0o3gTzlLeVuouhQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Ht+rPhWyMe3UW5A+lG+keRfUcxvrk24jWY22nD6V3is=;
- b=QyQ8PrwnOLPFNgJCDuuq3TTJNrbfOJqVAU76MWUh5WaLUkj0M4J6lVVZmhh2f44lndUCaSrOLwOfoRS0g5R6D7NDYxb5H4WViZz2P+WXnVci1LLKc6QIsOM2x9QIIu8OxX9WuRXPrIslDbKSCijbbN/k8cQlQmJ1OULFMnJPWae7MQJlS68eZn0mYyaiftw+X7h8nkR7B/k2EUQkzA2QRmhAOO5aDKQeUBj0YD4yq9yxGqsAIGHLNMFFxne+q1erSFDU5oxrXJEj1BREk4vklj6Y1I7ewWTSAEFBaNq80zmVMSDnvPCjAiOpJHVQS60/SiAybzDNS6jl4+ngBgz5wA==
+ bh=cqkMj/z9YLf1xcoPo8qRCjJAL0AYkEHiBoA0k21NQak=;
+ b=Zk2a4LL4KGBUfYfPfiN7mfdu6ansT2aWGQbJoxSR38EVpj1a0Y7vb224Zwhk8gclJTJHrFSEzkudmMpsxR5ZzVYtoTasiSGHP0Az5kZe+IpiBGrYhLtYXXkL0OQ71TpmNes66kdKVNgV/dpRC7xi/K/2IJ1F3UM03dleuy33Ofad8NMSe15hWqxQrdmmruY8SvGQmygNkaTEp55DVZUZ0+ZMrVrDrKU/ul94baQqSDZbZT5P65Xecc2QbqL257qehEeurnciu83u4bq49BjicP7n5lOXhXYxtEP8wImgAuHYKXMpsACzTYc2+GrTon7QcJZdr1zz/OEOZIW5oIQVZQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
  header.d=nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Ht+rPhWyMe3UW5A+lG+keRfUcxvrk24jWY22nD6V3is=;
- b=iHWH5hbcOLH6hYwe/qMaTjB5KM40+MH1/+qLwrKTO1btAJygHXhlCyDapIKBdu4eOsw+PV6mVpCc0Dq7NCcfDPXj7HsDFmU6+TK6vz1HFByovx98N61bFzwRelF/TmkHIUwQ3s3WRGyY8OBFV0tHRQAErPaJHfLpbl/5IaDcyg91DbxgfTNBf9oNI815HM3NnadGPgjnqmGPdCfuTcBUR+iRdDKR2/Zznyd0XzXsNdbeKB3FplAvFBI/iIPr2NwMlbg0aCU58R4ivmRbp63kFXYAOKr2vbTHi7DdaIXf6IcyJ6aRDsHMykaEv14pAgY7uGlQTOoVyTd7TUK3qB1l7A==
+ bh=cqkMj/z9YLf1xcoPo8qRCjJAL0AYkEHiBoA0k21NQak=;
+ b=eSDclOdPWInOdvTuWF2UjUeEaoKP96fyWh1BBsi3QO+DV1pNKKLKQB8XAjSqHHEN8ieNmzpjhtjbtz/8qZ33y4sN0c8gzbnv5+jv3tO1N993C4Ml2sOZfk8WMyIhPf83WP6RMtiK6E+1pNf2e/HBy+IuP+Tpx2yqM0d+Rp5dCJ0xmBDTNvA9PCXiiFwwFbalW3QdGlObgs5nNUeeDWo9379/UHSv8IrcIu/yJXzxbp2IaQWJgXebSO+fOpgnwwbUcfm+C+9h5xVkgIgIKgWyuE/9ZoENHihvItbowgVPe7SwiEt5pk6YrPpE8C4ZmRV3cxIJVRdiFb6GCUHY/FKamg==
 Received: from AM8PR04MB7284.eurprd04.prod.outlook.com (2603:10a6:20b:1dc::8)
- by AM7PR04MB7157.eurprd04.prod.outlook.com (2603:10a6:20b:118::20) with
+ by VI0PR04MB10592.eurprd04.prod.outlook.com (2603:10a6:800:266::5) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.18; Wed, 8 Apr
- 2026 08:59:24 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.17; Wed, 8 Apr
+ 2026 09:44:44 +0000
 Received: from AM8PR04MB7284.eurprd04.prod.outlook.com
  ([fe80::9cd6:51bd:82b:98dc]) by AM8PR04MB7284.eurprd04.prod.outlook.com
  ([fe80::9cd6:51bd:82b:98dc%5]) with mapi id 15.20.9769.014; Wed, 8 Apr 2026
- 08:59:24 +0000
+ 09:44:44 +0000
 From: Wei Fang <wei.fang@nxp.com>
-To: Jakub Kicinski <kuba@kernel.org>, Vladimir Oltean
-	<vladimir.oltean@nxp.com>
-CC: Claudiu Manoil <claudiu.manoil@nxp.com>, Clark Wang
-	<xiaoning.wang@nxp.com>, "andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>,
-	"davem@davemloft.net" <davem@davemloft.net>, "edumazet@google.com"
-	<edumazet@google.com>, "pabeni@redhat.com" <pabeni@redhat.com>,
-	"robh@kernel.org" <robh@kernel.org>, "krzk+dt@kernel.org"
-	<krzk+dt@kernel.org>, "conor+dt@kernel.org" <conor+dt@kernel.org>,
-	"f.fainelli@gmail.com" <f.fainelli@gmail.com>, Frank Li <frank.li@nxp.com>,
-	"chleroy@kernel.org" <chleroy@kernel.org>, "horms@kernel.org"
-	<horms@kernel.org>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>,
-	"andrew@lunn.ch" <andrew@lunn.ch>, "netdev@vger.kernel.org"
-	<netdev@vger.kernel.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org"
-	<devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
-	<linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org"
+To: Jakub Kicinski <kuba@kernel.org>
+CC: Claudiu Manoil <claudiu.manoil@nxp.com>, Vladimir Oltean
+	<vladimir.oltean@nxp.com>, Clark Wang <xiaoning.wang@nxp.com>,
+	"andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>, "davem@davemloft.net"
+	<davem@davemloft.net>, "edumazet@google.com" <edumazet@google.com>,
+	"pabeni@redhat.com" <pabeni@redhat.com>, "robh@kernel.org" <robh@kernel.org>,
+	"krzk+dt@kernel.org" <krzk+dt@kernel.org>, "conor+dt@kernel.org"
+	<conor+dt@kernel.org>, "f.fainelli@gmail.com" <f.fainelli@gmail.com>, Frank
+ Li <frank.li@nxp.com>, "chleroy@kernel.org" <chleroy@kernel.org>,
+	"horms@kernel.org" <horms@kernel.org>, "linux@armlinux.org.uk"
+	<linux@armlinux.org.uk>, "andrew@lunn.ch" <andrew@lunn.ch>,
+	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"linux-arm-kernel@lists.infradead.org"
 	<linux-arm-kernel@lists.infradead.org>, "imx@lists.linux.dev"
 	<imx@lists.linux.dev>
-Subject: RE: [PATCH v4 net-next 10/14] net: dsa: netc: introduce NXP NETC
- switch driver for i.MX94
-Thread-Topic: [PATCH v4 net-next 10/14] net: dsa: netc: introduce NXP NETC
- switch driver for i.MX94
-Thread-Index: AQHcwQGr6p6cQRIC50ifKdNlYVQM5LXMjU4AgAhWcVA=
-Date: Wed, 8 Apr 2026 08:59:24 +0000
+Subject: RE: [PATCH v4 net-next 11/14] net: dsa: netc: add phylink MAC
+ operations
+Thread-Topic: [PATCH v4 net-next 11/14] net: dsa: netc: add phylink MAC
+ operations
+Thread-Index: AQHcwQGvQKsKh1G3FkuUy4SjctygFrXMjVAAgAhdnYA=
+Date: Wed, 8 Apr 2026 09:44:44 +0000
 Message-ID:
- <AM8PR04MB72840DBFC7F3FD578DFF6AF8885BA@AM8PR04MB7284.eurprd04.prod.outlook.com>
-References: <20260331113025.1566878-11-wei.fang@nxp.com>
- <20260403011738.1795644-1-kuba@kernel.org>
-In-Reply-To: <20260403011738.1795644-1-kuba@kernel.org>
+ <AM8PR04MB7284FECA252137F74F32EFFA885BA@AM8PR04MB7284.eurprd04.prod.outlook.com>
+References: <20260331113025.1566878-12-wei.fang@nxp.com>
+ <20260403011740.1795694-1-kuba@kernel.org>
+In-Reply-To: <20260403011740.1795694-1-kuba@kernel.org>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach:
@@ -89,47 +89,47 @@ X-MS-TNEF-Correlator:
 authentication-results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nxp.com;
 x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: AM8PR04MB7284:EE_|AM7PR04MB7157:EE_
-x-ms-office365-filtering-correlation-id: 5791bda8-1944-403c-b2a4-08de954d21c1
+x-ms-traffictypediagnostic: AM8PR04MB7284:EE_|VI0PR04MB10592:EE_
+x-ms-office365-filtering-correlation-id: c5c7be12-23e2-4413-8bee-08de95537719
 x-ms-exchange-senderadcheck: 1
 x-ms-exchange-antispam-relay: 0
 x-microsoft-antispam:
- BCL:0;ARA:13230040|366016|19092799006|376014|7416014|1800799024|56012099003|22082099003|18002099003|38070700021;
+ BCL:0;ARA:13230040|366016|19092799006|1800799024|376014|7416014|18002099003|38070700021|22082099003|56012099003;
 x-microsoft-antispam-message-info:
- H3lByri3K01dHqYAJkes3Nceqs4YTmqCDt3PjB2y74tGOIYMl1170Ri5JOh2pJFAsAFhKwDlVMTYuULXrRDYpAbVl1/w0LwPwmzZW0hJTyCbKAKefh4NjFsM9SINlpEksJy1HepZRtld0wTmJDZF0M+lK8yWMV3NlkPwGChJlFLzDtUGdCteEX34xs+qXYMSjiY6Ylqynb/XeA6WAaBMQVBkxaVkx2AEKYETXYQdQimKsrFK1y/ZYY3IiqQrhKS+KpVluOd7etcSP2wrNIM7ss9hozVa5V4ZFzPNbFiGsCmcV07+dARm7R03M3WJ5IN8GwpMQoYz6x1OnC8R41moCYp+apAnOoqc9t2rLhKd0FkUj6SCGbhQ+QoiMYcpqH8dpBzYCIbAWuktlbbhlaIGKRixYM1SxK+7eGcM863H/KCaXlN9BB/iQ1vJ08jnO017mHypwupGh/1tkLbVgcyPIdkP7wXJiCBR+cO8nj9GqcLqmmQ7zdUvE/MiFlmR7krleu2lUs02at2qyIpLkNzY8BOng9XJd646ruF7lQVsS2clu+OJKn5rFntFw/Fq3Cvp2MssRsia2cAqF+7p/x6hx65cD2Yo8lFhmbM097VPg3KLAunzMffMoLF7Kz2H0VCIm1FE9/KATslv0PAjwXZms/IibhVSzLR5HLcLV9kuetWKlPn8AR9QXKKmJNaetB4/SBG+Yyl77CvrNUczeJ3xxny44nV/YOE0ygDFoyLm3a4vzsYnxP/Q6IVvy0L9ZCxVhexuwoAigDrP6Voe51ZyMLu5IdnInDI5RXGWqRUBwpc=
+ OrkY3751x0BgL5hAYVjty9Cf1fNjsrig8gBJ9TiF/X7jayiG/BpmM6Y0XfXuuQuiJ18rriPxgBICjiLyWi52MvtwOfZhOnzqTi+tQPFecMUETpQZAmsFh76ho8a90GvlEkGY7aIXLIPDqCfNzNivoirZb0Hk7cR0QVSK0G6NFqo8nwPe4l86cLkFvu1lKlmidpjO8C56/QrIHs1YO4TX+EsQZCg9x6MleyZ8a8qiL0RBHaR36UJQuA/Ir0CHOv4gluKVg29HcXjjgW+Eg136zO9CUYfwlTKFMi0RsStVhZzOw1Yk1UQZJKkrdTtpDz3Z3fIr3TvVoE12B31cHHvO0PvIpcll9E+DrIL0AvoRavBEtn2E2NsneQo+gKNV/zJ4O7UhE/zQmX3SYhWblB4Oa9S8in//kOCZnv+MP+VLtY1EZwBHRWAmdrtN+ra/dm+fHGYWNB6/yHQnjGIQrbxgim9+U2CGi4k1H9YAUfG00/2zvJBegAJxnPy1+IPIAjdfHAX7/OJWNUhGwloAawsb38UOfj27Uk9hCT87pusau5nYewM5UnsAcq7TZkQpsksGZ5uYSGt7KxTiHU6crfcZSk49kKd/SEXacY+COydmg2Gox/8aGWXJJ3l8bDY3Ta6QKHY2OW3u7BkKMCCe+BB+U4dYEyLoKJoAfWysCY+5qLHXmMzUUEZXphZRP8xaCdmePEhfUX2UHGMAMB3GvKTGe+piqu2kqX7oGJsOrM7Hmo/GwKJCIBF3CZKhsOIoQxyhcCpX7PtfXkLFzq38eorVeUxL+m51KMxiNWrVVmWQn1I=
 x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM8PR04MB7284.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(19092799006)(376014)(7416014)(1800799024)(56012099003)(22082099003)(18002099003)(38070700021);DIR:OUT;SFP:1101;
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM8PR04MB7284.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(19092799006)(1800799024)(376014)(7416014)(18002099003)(38070700021)(22082099003)(56012099003);DIR:OUT;SFP:1101;
 x-ms-exchange-antispam-messagedata-chunkcount: 1
 x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?gVqnNiy8ekPLW97cOSz16ZHD8BjO5aLP8VB5V+1Obe5mNRKi7lIMHQpg5X7S?=
- =?us-ascii?Q?bpoturLjD26QB503g+AjxCMbsrzhf6PsuqO7Y7cLqEWN0jotIlKLCxANMg++?=
- =?us-ascii?Q?vdPzDhfZuRIxml4HTpIp89ARLR9phsnhQIj52zmjjHpKnP119uMCMwwAnMjp?=
- =?us-ascii?Q?SYHaLxJLH7tW9NtLxz/9jCgaKKcfTWC0j2LtHfZiBNwdw7rG6JyAvdLgToAW?=
- =?us-ascii?Q?rvVdd+mwTWCFOR8wqTvNYNl5QhBstBH0DBQ4ye6F7JoaPLpg3+0eHWk8i1lR?=
- =?us-ascii?Q?Id1oE5rMmZL4gbgdPe+jTlb1V+7eD8mb7UqJ/UPJ72Oeb0456E1uYHAnBROR?=
- =?us-ascii?Q?oaTvSZ3Nagq0Gi/LAbnAcAXjQc7Noo/h+RE948jahsVxTZZVMXVA5Yet/jR1?=
- =?us-ascii?Q?xSc86Ia/aYvQpTIsk/zALM+/RiP2QWElN+3w4OWEeLbVZ9aHhgofMOSZWP2K?=
- =?us-ascii?Q?7T6mRCf/Sr9usqpgc9yzuJVQDaTrOsVpKJZLGfprpMeiyj8e6YrkoW2aWEnl?=
- =?us-ascii?Q?Cm1hbJ/a43XsNH/TyGa7Rx5wbdkcdTp7QlWnxJRh9h3eGe53zikncrT38GeU?=
- =?us-ascii?Q?QgDLwwzchhqU/XKyGd0xfI5U3JoaF/goTketzP/2XrucEBTFW/7Xbbvt1PNS?=
- =?us-ascii?Q?wnIMVFUheS1TxCgnwNjfEJp/VNd3Kz4So+oDDd65JxxdgyMmW3z78IWHLB9a?=
- =?us-ascii?Q?Byf0lQoaX9EnUxzIohBONo+FK5ENdb5WQ7r32EM5Y//aOMMzgMkZmwLSkIjv?=
- =?us-ascii?Q?eQiNW81ulh6nHq1uLYOY6aTICNFsXkXjKTZ5wixpcKbRoPx+n0/5Mq6I/pau?=
- =?us-ascii?Q?q6DQ0AsxBaeGQH4Y+ZRLq3mTZqBNjHOs+xgs0Nbubqlj8n3zq0mVJshWSetN?=
- =?us-ascii?Q?XJG65DbR5yc9AEcDvucrxf4w9uZdSIs9Uf4mDSHbgUVlk9iKbk1lRMZpMEGL?=
- =?us-ascii?Q?CaamZYmq9OwbKAgCu/cU6KGcLgTmpGrirEtfTh5Vxov/s1ymE9BGLAMDoDYQ?=
- =?us-ascii?Q?niNDfj608jn+P4ODXNNwo/DrAfk0OdlkLBsaEZY9wovW3Vioj8igfWo1Mcrb?=
- =?us-ascii?Q?vivwe+HUHUcpmnSC8ULlcenaSkEh8YdEFu0yadJ3IXueHAeeeY/2rYJF59po?=
- =?us-ascii?Q?SuD1BUORF9PEAkAHaw+5ZMWojeiQjz+WgbRgT+ZwrGT9ZhXNqLC28egxMaMH?=
- =?us-ascii?Q?3jrIclUAHU0QRx+G8NNfINwJLYdhc3apPqzADVQY9Ft37LYe2Rk274+vkpQj?=
- =?us-ascii?Q?rQxVaRfZfuJ3RKWB4s0fHoxXE/BjjMxAyx1H3m7eMMNNKtxndwJOldbQzODi?=
- =?us-ascii?Q?rO1u4My2ZGApIW+Jh7YDWryLoAf1mI0xeJhDjJRiYh1zrzHOrDfmUnApZwTT?=
- =?us-ascii?Q?lVtqE2rV5JhHJe/7wSh0sbKSdNb0slAXH8fKaLxB6zuCdi9p5rVW3sbsdSDI?=
- =?us-ascii?Q?WHAyg0+1bi02UyvTVL2H8AebmHrTwpX13U6zxH2xzlpNj8r+g3mOI5vAD0A9?=
- =?us-ascii?Q?nN9BGuEVzkqjogpL7c66IeJVWILkSszs7voayg+OJnlDvZ6Mw9duT9DV07J/?=
- =?us-ascii?Q?A8/5N5fTXZzHqW6dT1DZGHkWrKRnT00lkVTJiMeyVJPZHzPFc0ULxSPhaDvT?=
- =?us-ascii?Q?R5/fZgBzyHwYGUKqChsOTiCTOyTMvUa0A23/XF5qNWOBWi2uSduGvu0srGG8?=
- =?us-ascii?Q?1GzdXa4FytF+YlVFbRyGgGxS57m1vl/oZ1HRH+qnsEvmL9DU?=
+ =?us-ascii?Q?1NwDr/0TM5CWrC8MTXqCTEBhbS/ysrYjibcyTIizswG9DlZJ/m3yfOO7/603?=
+ =?us-ascii?Q?uKHEaVn4znK3gJoByGz+zO39SQvV4A+QFaRQ2gMW7ycMHx+MqrDWNgR/8TYU?=
+ =?us-ascii?Q?Rjglsg7ueHa57z5FKrf/zjP3FHGqLt1dInmWjhfnvocMNevSRCV0ZZAhoahe?=
+ =?us-ascii?Q?a997+BJDFQqqaCWz6LqExbn1Hd7fiCTL2Rnlf13PZLpNnoOr6pdn2wnqfklJ?=
+ =?us-ascii?Q?lO590Vzr2X5EJHpezT/OuuK7PBjyg3XEvlUasjfOuHL1WhycrMnKW0TXkr9I?=
+ =?us-ascii?Q?xVrkdipqsIcyOcpKHBMH6X53f4SC+O4/zVAYBw7lxgwql9OhUcFoOsgwhX+s?=
+ =?us-ascii?Q?J2l/WyTs0eTy/wQ2UP1QaSqTMuq25cEiQ8G7HR/goBhsAu4XOtFEy0OLH07I?=
+ =?us-ascii?Q?SP7UrpS+rrV8lyG/uf6HgNpM/5fj3V1lncTGrcO39nJso8cijEgHo/ryPhGg?=
+ =?us-ascii?Q?OT0JSZ6jGLf2U6xOhkVTvHKkZulLuxbzH6oAdzGLwWTHwD+4hwnVQGh619AN?=
+ =?us-ascii?Q?xZp0Elg7jHEhI8cUEnfMYvIlFsc8EURNofLqZo2YCW9PNFlceTeHgPwRE7hx?=
+ =?us-ascii?Q?gxpW2HQGjpD3JvACUifjJjThr3XFrxb2YDBJB4onU1a+4vY2LdLAIPw4F69p?=
+ =?us-ascii?Q?zBSl/ZV5YdpA9GFUkKBlCIKNLGgyTTY/64TDV7lzZ3NQgGr4hOGY2v//jQeF?=
+ =?us-ascii?Q?o3iEHvpI8UqA6unD0Dh5qKj7ukzzp6SABq6o5/xDmp+GdzC+NfhMLApP9PUG?=
+ =?us-ascii?Q?crOvuVUZQkRkrNM65TTVG3WtBI6gFApqPSre9EOv9W4YlUlsw+cVmKF32igQ?=
+ =?us-ascii?Q?vjKIhdt9NnSIH+kkOTSA2VDj1c7vnJo/Fj6Yhcoss8bUxPWpZtSH+BPIrWNp?=
+ =?us-ascii?Q?bo1WluECA/qyOFmq6X6Q42zpMosBN4BufAdm8nxh7RnvtPzH66pdd5Z7DH33?=
+ =?us-ascii?Q?QQ+X1HzvwYnvdywzgce+gNHHVpZAiSN5HpoytfQE4UirG/eHkT15fBySh1Jl?=
+ =?us-ascii?Q?v7Ffb+/kJ3l7H/1P30adlMW05rkt+MufHj6xUihw5+phnlfMCzEC8BcVGeRt?=
+ =?us-ascii?Q?v28TRcZCuS663zUqhXhOc9ltEjw+4CfDNZLzj5lLk7aQqWyTbF49Z6Nt7zoU?=
+ =?us-ascii?Q?ivsGl0DkhGU2S3N+kkZAtJCXTTNrfqXvx0pp6td6kcjZUb7CCsvDKUQe1QJF?=
+ =?us-ascii?Q?jpPMM1bLCGKMxwADouPEgHDBtcFO4r8dwEy8Ls51LMGpGhMzW6cirzDoLFzr?=
+ =?us-ascii?Q?oAb9qEFt9edlm3QDZhvJyTPrA+xgfoPqwhibfoOtMtBU+97wIjezRrSCjGH1?=
+ =?us-ascii?Q?K5urx5Kb0rghst6BnEs/6qWYd0y9qfiGXLBf1hea0s1d7U7bZgz7HEXGg7yw?=
+ =?us-ascii?Q?YqvvUrDZ/GlGDxJKL0L8vks3zXtJotKsqvtvoK0G82SmyimjrBbXRP4m3/bl?=
+ =?us-ascii?Q?QTeajVQ1fhZ1BmGoSOIFQiGkBxq5S+SJTQgP1C8OyB/wwckydLhUs/jRbLC+?=
+ =?us-ascii?Q?MDB587Rmmdn1En2B+x4SU+ch7kDOU+swdEVktsjZtbbejrKk/revHtvH+nI9?=
+ =?us-ascii?Q?lrCBu3vL7nVDExHADPguaPvEXB+Gcnoy1/NVz5UWQDY090CdWxHt79sNM8WR?=
+ =?us-ascii?Q?GO888bPGfW9krLzPuW3MYEkmIXUpVSsHk6kycBJAv8I4ji5SZo+byejBiB7w?=
+ =?us-ascii?Q?7R6BtHtaS6upnszodg5nz8l4lLDJ/IYUBk1kPsHzFTMFvEAS?=
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -148,169 +148,141 @@ MIME-Version: 1.0
 X-OriginatorOrg: nxp.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
 X-MS-Exchange-CrossTenant-AuthSource: AM8PR04MB7284.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 5791bda8-1944-403c-b2a4-08de954d21c1
-X-MS-Exchange-CrossTenant-originalarrivaltime: 08 Apr 2026 08:59:24.3946
+X-MS-Exchange-CrossTenant-Network-Message-Id: c5c7be12-23e2-4413-8bee-08de95537719
+X-MS-Exchange-CrossTenant-originalarrivaltime: 08 Apr 2026 09:44:44.6101
  (UTC)
 X-MS-Exchange-CrossTenant-fromentityheader: Hosted
 X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: qyr/n6eqJphGwf+gh1rqMMdQhcf/yhx9r1wV2a2jtbKrmgD4Dx3maGjZKGDaTWyVh2aQhuTfZVf84i3uqRVRlQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM7PR04MB7157
+X-MS-Exchange-CrossTenant-userprincipalname: hccfQUgPuG9+rYeHm4bAGxMGYeXS9/IJGMG0gZad8vnk5GcAKc+wIET8UV/ozDK510IJCL96XWc6Nv3X1BHo0g==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI0PR04MB10592
 
-> > +static int netc_init_switch_id(struct netc_switch *priv)
+> > +static void netc_port_mac_rx_enable(struct netc_port *np)
 > > +{
-> > +	struct netc_switch_regs *regs =3D &priv->regs;
-> > +	struct dsa_switch *ds =3D priv->ds;
-> > +
-> > +	/* The value of 0 is reserved for the VEPA switch and cannot
-> > +	 * be used.
-> > +	 */
-> > +	if (ds->index > SWCR_SWID || !ds->index) {
-> > +		dev_err(priv->dev, "Switch index %d out of range\n",
-> > +			ds->index);
-> > +		return -ERANGE;
-> > +	}
->=20
-> Does this check cause the probe to fail unconditionally for standard
-> single-switch topologies?
->=20
-> The DSA core typically assigns ds->index =3D 0 by default for the first s=
-witch.
-> Because !ds->index evaluates to true for index 0, this setup function wil=
-l
-> always fail unless the dsa,member property is explicitly overridden in th=
-e
-> device tree.
-
-As I mentioned in another mail, we added the 'dsa,member' property to the
-netc switch DT-binding doc, specifying that the 'member' (switch index) val=
-ue
-cannot be 0. And 'dsa,member' is a required property for netc switch.
-
->=20
-> Could the driver translate the hardware ID internally, for example by wri=
-ting
-> ds->index + 1 to NETC_SWCR, rather than forcing this hardware-specific
-> restriction onto the software DSA index?
-
-The current approach is based on Vladimir's suggestion. I need to confirm w=
-ith
-Vladimir which approach is better.
-
-Hi Vladimir,
-
-What are your thoughts on this suggestion? Is this approach better?
-
->=20
-> [ ... ]
-> > +	for_each_available_child_of_node_scoped(ports, child) {
-> > +		/* If the node does not have phy-handle property, then
-> > +		 * the port does not connect to a PHY, so the port is
-> > +		 * not the EMDIO consumer.
-> > +		 */
-> > +		phy_node =3D of_parse_phandle(child, "phy-handle", 0);
-> > +		if (!phy_node)
-> > +			continue;
-> > +
-> > +		if (!netc_port_is_emdio_consumer(child)) {
-> > +			of_node_put(phy_node);
-> > +			continue;
-> > +		}
-> > +
-> > +		phydev =3D of_phy_find_device(phy_node);
-> > +		of_node_put(phy_node);
-> > +		if (!phydev) {
-> > +			err =3D -EPROBE_DEFER;
-> > +			goto out;
-> > +		}
->=20
-> Could this logic cause an infinite probe deferral loop for ports sharing =
-an
-> internal MDIO bus?
->=20
-> The netc_port_is_emdio_consumer() function assumes any port node without
-> an
-> mdio child is an EMDIO consumer waiting for an external controller. Howev=
-er,
-> if multiple sibling ports on the same switch share a single internal MDIO=
- bus
-> defined under one port, the other ports will lack an mdio child node.
->=20
-> This would cause those ports to be mistakenly treated as external EMDIO
-> consumers, calling of_phy_find_device(). Because the internal MDIO bus is=
- not
-> registered until later in netc_setup(), the PHY device cannot be found, a=
-nd
-> the driver returns -EPROBE_DEFER.
->=20
-> Since netc_setup() is never reached, the MDIO bus is never registered,
-> causing an infinite deferral loop. Could the driver more accurately ident=
-ify
-> whether the PHY belongs to its own switch before deferring?
-
-This case will not be true, from the hardware perspective, the switch ports
-do not support share a single internal MDIO bus defined under one port.
-The internal MDIO bus of a port can only access its own external PHY. So
-a switch port must either use EMDIO to access its PHY or its internal MDIO
-bus to access its PHY.
-
->=20
-> > +
-> > +		put_device(&phydev->mdio.dev);
-> > +	}
-> > +
-> > +out:
-> > +	of_node_put(ports);
-> > +
-> > +	return err;
-> > +}
-> > +
-> > +static int netc_switch_pci_init(struct pci_dev *pdev)
-> > +{
-> [ ... ]
-> > +	regs->base =3D pci_ioremap_bar(pdev, NETC_REGS_BAR);
-> > +	if (!regs->base) {
-> > +		err =3D -ENXIO;
-> > +		dev_err(dev, "pci_ioremap_bar() failed\n");
-> > +		goto release_mem_regions;
-> > +	}
-> [ ... ]
-> > +static void netc_switch_pci_destroy(struct pci_dev *pdev)
-> > +{
-> > +	struct netc_switch *priv =3D pci_get_drvdata(pdev);
-> > +
-> > +	iounmap(priv->regs.base);
-> > +	pci_release_mem_regions(pdev);
-> > +	pci_disable_device(pdev);
+> > +	netc_port_rmw(np, NETC_POR, PCR_RXDIS, 0);
+> > +	netc_mac_port_rmw(np, NETC_PM_CMD_CFG(0), PM_CMD_CFG_RX_EN,
+> > +			  PM_CMD_CFG_RX_EN);
 > > +}
 >=20
-> Does unmapping the memory here introduce a use-after-unmap issue when the
-> MDIO bus is unregistered?
->=20
-> The driver registers the MDIO bus using devm_of_mdiobus_register(), meani=
-ng
-> devres cleans it up asynchronously after the remove function returns or w=
-hen
-> probe fails.
->=20
-> However, in netc_switch_pci_destroy(), the driver explicitly unmaps the P=
-CI
-> I/O memory via iounmap(). Since netc_switch_pci_destroy() is called
-> synchronously inside the remove function and probe error paths, the memor=
-y is
-> unmapped before the MDIO bus is unregistered by devres.
->=20
-> When devres eventually unregisters the MDIO bus, it detaches PHY devices,
-> which often perform MDIO transactions during removal. Because the
-> underlying
-> memory priv->regs.base is already unmapped, these MDIO read/write callbac=
-ks
-> could trigger a synchronous external abort or kernel panic.
->=20
-> Would it be better to use pcim_iomap() to tie the memory mapping lifecycl=
-e to
-> devres, ensuring it outlives the MDIO bus?
+> Pseudo ports (like the CPU port) bypass PMAC register accesses during
+> graceful stop via is_netc_pseudo_port(). Should there be a similar check
+> here, and in netc_port_set_mac_mode(), to prevent accessing physical MAC
+> registers on pseudo ports?
 
-Great, I will pcim_iomap().
+netc_mac_port_rmw() has checked whether the port is pseudo MAC. See
+below.
+
+static void netc_mac_port_rmw(struct netc_port *np, u32 reg,
+			      u32 mask, u32 val)
+{
+	u32 old, new;
+
+	if (is_netc_pseudo_port(np))
+		return;
+
+	[...]
+}
+>=20
+> Additionally, when np->caps.pmac is true, netc_port_mac_rx_graceful_stop(=
+)
+> disables the preemption MAC via NETC_PM_CMD_CFG(1). Should this function
+> re-enable it when bringing the link back up?
+
+netc_mac_port_rmw() also set preemption MAC if the port supports preemtion.
+
+static void netc_mac_port_rmw(struct netc_port *np, u32 reg,
+			      u32 mask, u32 val)
+{
+	[...]
+	if (np->caps.pmac)
+		netc_port_wr(np, reg + NETC_PMAC_OFFSET, new);
+}
+
+>=20
+> > +static void netc_port_wait_rx_empty(struct netc_port *np, int mac)
+> > +{
+> > +	u32 val;
+> > +
+> > +	if (read_poll_timeout(netc_port_rd, val, val & PM_IEVENT_RX_EMPTY,
+> > +			      100, 10000, false, np, NETC_PM_IEVENT(mac)))
+> > +		dev_warn(np->switch_priv->dev,
+> > +			 "MAC %d of swp%d RX is not empty\n", mac,
+> > +			 np->dp->index);
+> > +}
+>=20
+> Is NETC_PM_IEVENT a sticky write-1-to-clear register? If the RX FIFO had
+> previously emptied during normal operation, could this bit already be set=
+,
+> causing read_poll_timeout() to return immediately without waiting?
+
+NETC_PM_IEVENT[RX_EMPTY] is a read only bit. It will be cleared
+if Rx FIFO not empty or Rx packet receive in process. And it will be
+set if Rx FIFO is empty and no Rx packet receive in process.
+
+>=20
+> > +static void netc_port_mac_rx_graceful_stop(struct netc_port *np)
+> > +{
+> > +	u32 val;
+> > +
+> > +	if (is_netc_pseudo_port(np))
+> > +		goto check_rx_busy;
+> > +
+> > +	if (np->caps.pmac) {
+> > +		netc_port_rmw(np, NETC_PM_CMD_CFG(1), PM_CMD_CFG_RX_EN,
+> 0);
+> > +		netc_port_wait_rx_empty(np, 1);
+> > +	}
+> > +
+> > +	netc_port_rmw(np, NETC_PM_CMD_CFG(0), PM_CMD_CFG_RX_EN, 0);
+> > +	netc_port_wait_rx_empty(np, 0);
+> > +
+> > +check_rx_busy:
+> > +	if (read_poll_timeout(netc_port_rd, val, !(val & PSR_RX_BUSY),
+> > +			      100, 10000, false, np, NETC_PSR))
+> > +		dev_warn(np->switch_priv->dev, "swp%d RX is busy\n",
+> > +			 np->dp->index);
+> > +
+> > +	netc_port_rmw(np, NETC_POR, PCR_RXDIS, PCR_RXDIS);
+> > +}
+>=20
+> For pseudo ports, the code jumps directly to check_rx_busy and polls for
+> PSR_RX_BUSY to clear. Since PCR_RXDIS is only set after the polling
+> completes, will the RX pipeline continue accepting traffic and cause this
+> poll to always timeout on an active link?
+
+For the pseudo ports, no need to check the PSR_RX_BUSY bit, only need
+to set PCR_RXDIS bit to discard RX packets. I will improve it.
+
+>=20
+> > +static void netc_mac_link_up(struct phylink_config *config,
+> > +			     struct phy_device *phy, unsigned int mode,
+> > +			     phy_interface_t interface, int speed,
+> > +			     int duplex, bool tx_pause, bool rx_pause)
+> > +{
+> > +	struct dsa_port *dp =3D dsa_phylink_to_port(config);
+> > +	struct netc_port *np;
+> > +
+> > +	np =3D NETC_PORT(dp->ds, dp->index);
+> > +	netc_port_set_speed(np, speed);
+> > +
+> > +	if (phy_interface_mode_is_rgmii(interface))
+> > +		netc_port_set_rgmii_mac(np, speed, duplex);
+> > +
+> > +	if (interface =3D=3D PHY_INTERFACE_MODE_RMII ||
+> > +	    interface =3D=3D PHY_INTERFACE_MODE_REVMII ||
+> > +	    interface =3D=3D PHY_INTERFACE_MODE_MII)
+> > +		netc_port_set_rmii_mii_mac(np, speed, duplex);
+> > +
+> > +	netc_port_mac_rx_enable(np);
+> > +}
+>=20
+> The callback imx94_switch_phylink_get_caps() advertises MAC_ASYM_PAUSE
+> and
+> MAC_SYM_PAUSE capabilities. Is it expected that tx_pause and rx_pause are
+> ignored here? If flow control is implemented in a subsequent patch, shoul=
+d
+> the advertisement be deferred until then?
+
+Okay, I will move the advertisement to the subsequent patch.
 
 
