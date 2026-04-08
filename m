@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-19491-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19492-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8B351073C99
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2026 11:05:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79EB01073C98
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2026 11:05:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4frKwD1dHjz2yDk;
-	Wed, 08 Apr 2026 21:05:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4frKwT5sw0z2ynf;
+	Wed, 08 Apr 2026 21:05:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=82.65.109.163
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775641600;
-	cv=none; b=LG/ImhrhBy9jjvLK7DeQO/VEHJLlfnyyYEcXIXql3+rE3G67eN6AIkd7XDwuazbBCcHGpF0aIwQWXJG6w7XPWai6LqCPMfFral6YlifiQYwH+NYhNh3xrs5TLbPXVxzuwy+ynLgtPYaLM5DVoNAF5RMgVG91WYRYXWe6Dl7i/1pOdocGwOkamMwm2VLbGbj4SO5KAOjMcS0vbRpUpRk+n8mgDK5WbQABfEEKJpMJUc9QxjjpGeu5YZi8XUTBaWcT1GJ6MD/pZ8YBe182pUqUs8re6sSh0hh42SOFCvtSOgU6n2j5jxLol+cHA6azkd4cpkA5WPNajE6Edv7EY1DGOg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775641905;
+	cv=none; b=cKhsyAjpG72/aDVkzOS49T8txhftjdEeM76BFM9AWdWbZZ/phCh7CPK5jm0hXFFfbF/zMj0hR76Vy0HUbag+iqnIl8oceCr653/VrtjFsgR4nZYpcZJkqeiOzF5kZqbZz3lqtz7kTLpnLUFZzZdFoMHoGFIrTmZjdpzT9QACu5YmXNmDjPhHEyz7ZVe77Lib8Ga2W6pA5aJmTCi3ecW/n6Y/K+9g7/PZbBW7+3KWlq65lVQK5DthbOdDbz+h/v8a2Xu0EAbGy77z2uFFC6J9g5BhFztfxNYiTCVhdwADwZBwS6hx0sbafndC44LwplnRm1Z8sB2K6WtZ2WAF/Ee2fA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775641600; c=relaxed/relaxed;
-	bh=i5vqdh7DfNLGq9EKYUjCp5kSgJqFG1qecb9QsnaryGY=;
+	t=1775641905; c=relaxed/relaxed;
+	bh=Hvse3DbDwQddZc+LIMEeQsyuNm30c430JGwGVkssxZA=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=V9xapwWOhdGVwyh+VzVGQyMhzq4NS87ZHnzpN3nS3AeevDEBmTwPPRJLbPIwqwBeD/JuQZgpz8Cucup+fh48ZX3xfLwMlW2yY6Th8ODg4SvvJa37T6Al8ihCdBNkWJGgBQj9bOtAgqTxBARKhfQOT7QyPVrLW96Wm5fjUsRHl7+Ox1h9Gwhc/6oiRkX9A4lOPxCzU3uJua7kBdBpFpxZqSt05RG0KOVvtkccwpQmN4hlDcZMyC5gIvjIVIHTA59DImgMxcA4LJ2ciOMw2YhFj2ignzKbpSMzRpZnyg/3gelSxlpXWsEqVsFO1KSL44Jvo1DGw61bN+9EtIlX8Vow2w==
+	 Content-Type:Content-Disposition:In-Reply-To; b=VYwn8jLQjzEnHQcjZI7phKNkfwq4MwF7vjoMPUxxMLR+UeOnhR5DxQMCxH4F/mZDssGum3/mzWkyW0VFdXlVCDo4LG4oEuyMftQ7E5om8Y8scaCTKYI0PuzbF1KUJFdNuOEgJQEMsb1ECYig0GOBZOnfL5ETsHQPSeDgDvBpcdbo0ckpdtcR+j9r4s3WqvjkogD2byNpzvYGmkAtHCVrTmGZ+BjrUq1jcKm94ZC94qpOB3KTaRlJq7edeth6sya4Z3G/P9qauv7tjMVB7Pf3mS4anTwdwQHib5F6ZnSgrbEG9evpc4/Zqknpyc/bhWlrjkWTSynwgGBY2178AbY7fQ==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linkmauve.fr; spf=pass (client-ip=82.65.109.163; helo=luna.linkmauve.fr; envelope-from=linkmauve@linkmauve.fr; receiver=lists.ozlabs.org) smtp.mailfrom=linkmauve.fr
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linkmauve.fr
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linkmauve.fr (client-ip=82.65.109.163; helo=luna.linkmauve.fr; envelope-from=linkmauve@linkmauve.fr; receiver=lists.ozlabs.org)
 Received: from luna.linkmauve.fr (82-65-109-163.subs.proxad.net [82.65.109.163])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4frJ9q4PWsz2xc8
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2026 19:46:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4frJHj2qpSz2xc8
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2026 19:51:45 +1000 (AEST)
 Received: by luna.linkmauve.fr (Postfix, from userid 1000)
-	id 7145FF40664; Wed, 08 Apr 2026 11:46:27 +0200 (CEST)
-Date: Wed, 8 Apr 2026 11:46:26 +0200
+	id 9D936F406D7; Wed, 08 Apr 2026 11:51:40 +0200 (CEST)
+Date: Wed, 8 Apr 2026 11:51:40 +0200
 From: Link Mauve <linkmauve@linkmauve.fr>
 To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
 Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
@@ -41,8 +41,8 @@ Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
 	morbo@google.com, justinstitt@google.com,
 	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
 	rust-for-linux@vger.kernel.org, llvm@lists.linux.dev
-Subject: Re: [PATCH V10 0/4] Rust support for powerpc
-Message-ID: <adYj8vxQL2NtHb7_@luna>
+Subject: Re: [PATCH V10 0/4] Rust support for powerpc [RESEND]
+Message-ID: <adYlLLfRgSyxus3n@luna>
 References: <20260406200149.3727922-1-mkchauras@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -64,6 +64,10 @@ In-Reply-To: <20260406200149.3727922-1-mkchauras@gmail.com>
 Jabber-ID: linkmauve@linkmauve.fr
 
 Hi,
+
+(This email is a resent, my IP address got flagged by spamhaus again
+because I’m on a residential range, hopefully this incident is
+resolved…)
 
 On Tue, Apr 07, 2026 at 01:31:45AM +0530, Mukesh Kumar Chaurasiya (IBM) wrote:
 > Enable experimental rust support for ppc64le and ppc32be. The patch for
