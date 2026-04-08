@@ -1,86 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-19515-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19516-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA0C610F994F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2026 15:41:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A87D10F995A
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2026 17:07:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4frS3L1SjZz2yDk;
-	Thu, 09 Apr 2026 01:41:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c105::5" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775662894;
-	cv=pass; b=YKe8leFT5S4CY4MA+LnrRQatJaMRxZHLnl3+CT8LIYD28nrHQsX5ocwuuZgmz3qeJPmKJXmJNrr0HnzRDTI8jFECTm0CIzk0CLJNjb3Fis3zToDpOEE29V5DlLs3f8kCquTqOLQ2rGWhXxC57Q/parR/gPKWdyFvQXDJXp/8ow9Zw+BZeky77Wx2iuz/vvWd7A8xCbiSFWtzvLIbxDZFTtVrj5VWNK7b9pd0Yx1jDLIlQAIZ+N5l1Bdnf3qMZwj+iXqj1wcVq4nSPoLmf8cDU52WmZ65O0x7xXyuhz/94ni74LUx6PLl4/DcLKIupRheLRbutJuiejyQWaXBqPxrBQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775662894; c=relaxed/relaxed;
-	bh=Y+xvlBHBcH7IM2+ZDj18/N62x/I7T5X6uhPVMzuDREs=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=JdOBo80kmX8XWDVg7ztzTQZz2zj2YzAQf5orQ0qaj+pP9IymyaS72cLCugJcdsrT4vsnF4LAmziNXqwN9bMo8pXOi+7w4zlbRWoicnmmFITsqydaiwYjp++ROMebwlQgfi6tHwbc5zxQzHe9LL0OdDjELOvgUKWo4wzoyaBNI88VrxwOTel8HLjETrwMDYaNvC2nr9pxjHbM1TAuy4b6ktEh0SwUY9yHpmwtvWk2AjV1H7h9t2m9cwS/mgUElT3sCnnxxf1w/BkJKTXVhQ5BXWnBVEZgEqMlQKQ4ROXiLEJVDg1uR2l1JXwe12eeDSlYTszOlrNQDPIGaUQYl06iyw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=uK9ED8VF; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c105::5; helo=ch5pr02cu005.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4frTyx2Yc8z2yjn;
+	Thu, 09 Apr 2026 03:07:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775668073;
+	cv=none; b=eLlBDs3i9uOy6DgQ+sXBeSK6DKXJk83aq+57YG/K30XhzmnCJ+iCWDk27mNQ0fxOJK8scrEz0xJefmb5mQuffXPiMAtj5gT+JboPG3xxwoDlJbp0QrZUbsFW07bBVkSbydJE2Ft/XH1EpQkPEiXLPMeB0pSHBDUmtWlGQfBu6bTUeMDSNIx+ATtVjDgPd+R0i56usmo+jZe5Oqeq/hPvotn30mXcxjyKqoNpDoDo2Mn0Onrsxe1mJxkERl/eMX7tnBQgMlGlS/H79sUSwe/i3iaOsLzMLIx+B8uPOvFEJl5UwUjf9m6gwrTIdissp3RCuOl+kaI/SJ/bxPpnQEs07w==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1775668073; c=relaxed/relaxed;
+	bh=w07MUTiTXNHHkVOBsl0MnjIHGs6edOD7xSxZz20i0Tg=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=OtysVxUkBAtxfGuUh0cba1R+g9sByHhxft0P0PsihTKbqqJbz/VZLhdcIw4//qbmRFVFqn8pbfF2BHiVRb5NUXu5rI5Y3FZsP3vgLKOGqoJPilwHaud2G/7DPuzf8+pbtSUMoqHAKQ5yCFNlI6qccMXryv95hHbTzCHBo3KZSSC/oyMgT+0BAu4QLl5SFBIfb03mpYxR/VISV2xsmTgy1Z5vxb0m4SPtH7ls1xDF3pjvwSYeEa2GSatdbqkVzhM24KSQ5i3d338rUje5Qwv/ZuAa0GYL2dXJID+gGUuYFpKmKqDP29Qxy/AkBArTZEHjPfotYdwAUuMxTW3WBSCssA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Kz5Gw/ZM; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+davemarq.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=uK9ED8VF;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Kz5Gw/ZM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c105::5; helo=ch5pr02cu005.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org)
-Received: from CH5PR02CU005.outbound.protection.outlook.com (mail-northcentralusazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c105::5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+davemarq.linux.ibm.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4frS3J5t8Lz2yC9
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Apr 2026 01:41:32 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=fuYjpxG7lLAnKtlClwowE6iGtNF4kRxZtRBp0cppjZ0G45+zAHJZ8ZFcYtu1ONHV0BiFOlYYYnbK9oCkiW472EAErEZjRX8MdEjKV24G97eZUqhXIDA9nuHm9Al5OroO/+iTt+8kgrU2ZOhlfwy4tQqJ9HTGwzWTIpSMtwTBlO9oOO48n2mPxiFNKi7Kdij8Xy4j9iSgugO1Mg2YqxvkIoIduqTteWwlJqxwmXInz4orNQA6gpmDyGY2a2vqcHJvltwjAVfYSGmR/rsWU1Ff62zsEibPt8UPS6q345BkG+JOYwvfWl+XCg22Qzz0uN73ySEbWehZ71KkgMSCdFX6iA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Y+xvlBHBcH7IM2+ZDj18/N62x/I7T5X6uhPVMzuDREs=;
- b=uZNYz1cn2gdtfvOEGYoorVG+TbZIXTXtgbiLHqXGdKQzv+xnGEfp3PM0q2VV4PZWPWJeS3QgNvYLV7iAQhnkSTbC0ySQ42yVTWTCQL82BR2bLRj7XgbyVlO/C3a073vLZlSCB0+xjCuAVB5wJw/3GxCHKhBmKW2OXb0QgzlDJ+gWJl7YtRbawgx65F4NJ3s1N8Ccl29UfgcwGeSArvxpQShp9XsbO5kC9bEFAvMJpNb6pTN1phevxDw3LBj4Hm3Xg3eu/IfYCs9sJUtxO8mi9PGu9GQ25kZR4CxIbXuuM+n+uwFwehh6Hhi+0NGwPAIlZ3nDejarNPRKIYdJByo8pQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Y+xvlBHBcH7IM2+ZDj18/N62x/I7T5X6uhPVMzuDREs=;
- b=uK9ED8VF09lwR3m0RQAyVjH2ajhslIwFuvFB0g2nhkIc02eyNT6tFO0rlAZBeZhuvfzSo1SlmfZreIRu2/FSKRO5F3bpAeQsO4dekx8SEjkJPL77uYbOfEndlbo3NEM2cJxPw4ePhJoIkRzXRdqpnceZyJaimX6T3dPaHZUau8S3AYvKRF1/QcRrzQKXoZFQ4sRG2izMToyv2gX+oeUro8dHZb6W3n/zpO2PyGidE5AvyegUi1SQ8FOKi5XZpb2ghLjj3lWjqB4GZX+41tvwZ6ZCQMvCq2IdK5G+QzsNABev0JHM52gxFdICSNXLQOh5rkJSAYkocRg0P74+yOwWsA==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from DS7PR12MB9473.namprd12.prod.outlook.com (2603:10b6:8:252::5) by
- DS5PPF4A654669B.namprd12.prod.outlook.com (2603:10b6:f:fc00::64b) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.41; Wed, 8 Apr
- 2026 15:41:03 +0000
-Received: from DS7PR12MB9473.namprd12.prod.outlook.com
- ([fe80::f01d:73d2:2dda:c7b2]) by DS7PR12MB9473.namprd12.prod.outlook.com
- ([fe80::f01d:73d2:2dda:c7b2%4]) with mapi id 15.20.9769.014; Wed, 8 Apr 2026
- 15:41:03 +0000
-From: Zi Yan <ziy@nvidia.com>
-To: Sayali Patil <sayalip@linux.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
- linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linux-kselftest@vger.kernel.org, Ritesh Harjani <ritesh.list@gmail.com>,
- David Hildenbrand <david@kernel.org>, Michal Hocko <mhocko@kernel.org>,
- Oscar Salvador <osalvador@suse.de>,
- Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, Dev Jain <dev.jain@arm.com>,
- Liam.Howlett@oracle.com, linuxppc-dev@lists.ozlabs.org,
- Miaohe Lin <linmiaohe@huawei.com>,
- Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: Re: [PATCH v4 13/15] selftests/mm: move hwpoison setup into
- run_test() and silence modprobe output for memory-failure category
-Date: Wed, 08 Apr 2026 11:40:59 -0400
-X-Mailer: MailMate (2.0r6290)
-Message-ID: <B686276F-89E5-4192-8973-3B787FC8AC86@nvidia.com>
-In-Reply-To: <5888f69f-c336-4151-a9ac-9b0b00f9c3bb@linux.ibm.com>
-References: <cover.1775466329.git.sayalip@linux.ibm.com>
- <8ef8640092004d143fe80e6fc32ea8d30a9080de.1775466330.git.sayalip@linux.ibm.com>
- <8B26C697-4D0C-4E1E-A14E-D517CC9DA05A@nvidia.com>
- <5888f69f-c336-4151-a9ac-9b0b00f9c3bb@linux.ibm.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-X-ClientProxiedBy: BL1PR13CA0316.namprd13.prod.outlook.com
- (2603:10b6:208:2c1::21) To DS7PR12MB9473.namprd12.prod.outlook.com
- (2603:10b6:8:252::5)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4frTyv6TCsz2yC9
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Apr 2026 03:07:51 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 954BF443FE;
+	Wed,  8 Apr 2026 17:07:49 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 79757C2BCB0;
+	Wed,  8 Apr 2026 17:07:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1775668069;
+	bh=ImWMoB/rnm1FclghGraQ/e8MyN35n7tNJtP8/fXzR9I=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=Kz5Gw/ZMqUqOM80f932tb7gcvTZkhU9a74kBB/StL/kcET/Px5UiDXntqZIpV4814
+	 PK5AN7fXmTB3EyJTHWRHf1izLabBRsXdJeX6LOqovr2LCWbqjzwlmoNQLaSzG2JY37
+	 vH8XN+4BeDMeQpOtYm1CN9krkzERvmVrnsxi/h9Rotnqx64VZlYTo/Uuje9iDZxT+H
+	 VUT4+gbv7VPXEiv3wqLTI1K4zX7Ol60FnpaxZBLNq0wPv7efemfEy+0HZlMxjS7Cv3
+	 toG1/tnY+yefCxTS4V7t8URCfN+d8aCYdv3aqph8eHH5jDT7rB6oUEbVkPqvJ7vwsL
+	 ZxF0usJT9t1xg==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FF2810F9962;
+	Wed,  8 Apr 2026 17:07:49 +0000 (UTC)
+From: Dave Marquardt via B4 Relay <devnull+davemarq.linux.ibm.com@kernel.org>
+Date: Wed, 08 Apr 2026 12:07:44 -0500
+Subject: [PATCH 3/5] ibmvfc: make ibmvfc login to fabric
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,158 +63,230 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS7PR12MB9473:EE_|DS5PPF4A654669B:EE_
-X-MS-Office365-Filtering-Correlation-Id: 2bffe843-2c4b-4cd5-112d-08de95853d0b
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|366016|376014|7416014|18002099003|56012099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	FEVB6z1kfUqnNQ9YWMiDj/YPlyiUQypazDmlUxqs8rVBvgGP5Zp1vzmJaez4KUCge2hHyHuPAmtn6mbeQSYcXG9j25GhO+x9NnKcd43SXMsOSHQHEAUL4KEykGm0CNSgHsXNtOuW2hMMH6IkzjQlNWAkocMSFOMUDVERoSC0TY10wegZ50rI5b0gYg0DLhLLLnMQByM15BaZYJC+rN29oZW1hDnPtNrJG3P500h610QTH4J4UUOLXN8vF6wiHbpVn4lNEzNi9BWgenaNjSGfpB6sqR4/9Yz/cawPatArYphlzBKq9lrpy1t7wZw9PSXUM6ZUo+6FGswWkINI+/u+hrezN80XUUurs6U6qxIHCprTBP7TBOMy+yuE9fBsSkBrE7tOuVH9JocHOmPGu0DuHHJYNksKNN20OEkZaV1vfJu18IPmfXztfldAVZf0JN7mFD5tfNUVT2JWw5hTBw4U2rthD2Plxzbk7VU4Q3YqzAL6dDbHSbZQ8kCaSrIUsox2Srnjv1pf4Z/VU2Ljtmo5XxA5LCSw1liKI1vfsCwv8xUlaqH8fn/sDx1yPeo52oPPGAyoteJUTl9wUsQyOtu/ON0E5Y0s3npLs/ubUF3C95B0/iZsDWSvbDmepizLkgFxQaZu4MyZP0AI/+qkkmmA2j6vmeRcPeIOcGCg6ynhFSe8/T9DC0pp1MN6+awGhCKXzcH/bZd6rsWforBclbs7MfKOWGC8l5zAiC2w1uUxkkk=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS7PR12MB9473.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(376014)(7416014)(18002099003)(56012099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?WDY3lvwlRZpvaNoJGrMBL5b9WUgsXHoViwBNkBTuDifeyoZCeRVw9xzII4u/?=
- =?us-ascii?Q?taLdWyKwGn98DKr/6vdz4ArwbN37dlUAeAmqFWb5Xf40PWoVY1MULgpGjU33?=
- =?us-ascii?Q?mDYRe/MraAsTtyz0Eaq9qKJ1hh+wwJ/BTGwY0f2lMqek2/2uN2Y2ugfXNLpQ?=
- =?us-ascii?Q?dN7Z2e2rUnYVseUOqhXryoDulOeU7VS+5UAMLuswq7Tmw+hJT2Me84fXTxVZ?=
- =?us-ascii?Q?imyKXrmVsdPM7+qhoKwUwt7G1jMPi87MVVNlGXpGxeWYfih7xbDqS03HsYIx?=
- =?us-ascii?Q?GUUKrVVM3ydYJo5sE9etvIlmtYusdwnDMJbH8ie+A5ZDYSiiJFdl8zY3noOv?=
- =?us-ascii?Q?YKkZkUZCTu4baBIjV9QtzvjdOTpsC12NJAPpNK7F6+teoKJrgjg+v4P7DFQe?=
- =?us-ascii?Q?Xgvb+w7xZY+f0WDjXa4g/kRJ2BnFT1CksiiBSleE85CA46j/6N3BEmfUz+h7?=
- =?us-ascii?Q?VVg60Ow2Q41UQQOSLHzY703fnnDOHqo2FYAaBO5vQjbZZTd0DFFCwC//lviJ?=
- =?us-ascii?Q?wWHiCZFuxYCR0VDu0Pma3zSUSwGtQIaB4stf3ddxECr8gSqsg8qucw+WcjiL?=
- =?us-ascii?Q?YopQaNRNSoW/yI55LoMvcVD3boNRKnH9W5oxcVhtm8v0BPlFzJi+Nb+67J3U?=
- =?us-ascii?Q?f6viVJBE69WXQS33W2TzI/7SFGISqKofE+9czQYp/P+zsFcuPB8TGhnQDk+m?=
- =?us-ascii?Q?v/aM20DRQKGyWXvwZqhfVBuBbrqrLj++NIfdEmmtX8dO4syivMcl28YmzRsW?=
- =?us-ascii?Q?1tnGmoNxpUk59eN7eXboSWSm1qQZ8VPz4O3lWRrLEkWMBTToxLLDIVHkHYcX?=
- =?us-ascii?Q?FbsWI5LjnIv6Gznxh8aVvOfsVIGV3/s4VISaHKKNUGr4xGYzUNxZ0lXSxD+3?=
- =?us-ascii?Q?r8XLQhRRBMKlng4JjVO+77SBngTEVzFupNSVDZYvu+kV9LewwLNR3ID6Vuoz?=
- =?us-ascii?Q?W6LH1OyUDbCesfpOyYcyRJe+snDi2uabbq3jWL2KnhFbVZXbNfJFBncpOFvf?=
- =?us-ascii?Q?FaX/AFIBri+LQGz1zNfaGehVIrIxkP0zdHV3ZYW9FZ/0W8j91R810Yqvial9?=
- =?us-ascii?Q?Q+GRxK67nNNRuH4bfvc6xYcyY/YSvPLxdMg21gSbJoczgcaDWejYJR+BkVl7?=
- =?us-ascii?Q?njn83X0KYrPdwRHwQFB8WhU+ZjccWWjA7c0WYOHbRIOC4Vu6USWid5Uam2aJ?=
- =?us-ascii?Q?G7REHNFbA8QjmPR6A6MvyL1CGOnpDGrVEFO3+G6rUETVoiIwDlkPLhmlRjmt?=
- =?us-ascii?Q?51yxJfIMlxcU1ny99hYRdDESZieEodrQRgUNsTb5z/580cFmwOLH7KabCN2L?=
- =?us-ascii?Q?nGIsZue3anatcqT5//kokY2wnfCmOMwPOLsuO47uw39EeSssPAgKKvVbhGHh?=
- =?us-ascii?Q?iNoivUOacSFKN/QwRNYRkJ55q+kaZX1qcNGdh7Etr+2hsYTy5Xsb8bAYLeZS?=
- =?us-ascii?Q?+Z1LP5wnPTfRKJK1NnrstjP/eGKWcX7z0YPV3dmIFtiMmd0jWnH9De1nFW/W?=
- =?us-ascii?Q?TpS8Aw/4qknUfKku+gdlZklt2YN7hayOiNJwRrbwtdWthjJ9+L3JSwp9TtyC?=
- =?us-ascii?Q?fto7ft+utrG71aGAtgRNrXrfELl4nH/LJbBHRtPUHSurqMEp4D9CPWkezxWH?=
- =?us-ascii?Q?8vCS/HYhKRejnxYRq6pJO0hGnp3w4TUd4+Xw1EH/020IpUkz6aLdNIoT9x/y?=
- =?us-ascii?Q?ObkRbRDp7dMYK5iBNcCD0CocCurVAxU3IMxjaqwkj8Fiaqv4?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2bffe843-2c4b-4cd5-112d-08de95853d0b
-X-MS-Exchange-CrossTenant-AuthSource: DS7PR12MB9473.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Apr 2026 15:41:02.2551
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 6tNbXd0VfJAwmb+9O0ztR2qqmYD5am9JD10XcYGTAU/1Y1XUithNV9YQwtbTthF/
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS5PPF4A654669B
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260408-ibmvfc-fpin-support-v1-3-52b06c464e03@linux.ibm.com>
+References: <20260408-ibmvfc-fpin-support-v1-0-52b06c464e03@linux.ibm.com>
+In-Reply-To: <20260408-ibmvfc-fpin-support-v1-0-52b06c464e03@linux.ibm.com>
+To: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
+ "Martin K. Petersen" <martin.petersen@oracle.com>, 
+ Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+ Tyrel Datwyler <tyreld@linux.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, 
+ linuxppc-dev@lists.ozlabs.org, Brian King <brking@linux.ibm.com>, 
+ Greg Joyce <gjoyce@linux.ibm.com>, Kyle Mahlkuch <kmahlkuc@linux.ibm.com>, 
+ Dave Marquardt <davemarq@linux.ibm.com>
+X-Mailer: b4 0.15.1
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1775668068; l=6364;
+ i=davemarq@linux.ibm.com; s=20260216; h=from:subject:message-id;
+ bh=Cbt/rfPik4XB8M92YhjaqQXiYCRxYwBJ6PtbbYpBhuo=;
+ b=PXjs5+PHKlzRHjXbLUSryG+lUh5EBrAAbuiDita0EbTjLRL/t6LJedUzoIHU9xDcXXxT1naLW
+ LWJZM0Iqw8qA+RDwk8neWFD38h7cMPjLzGzXIoNZtyBn8j6A0+EavPp
+X-Developer-Key: i=davemarq@linux.ibm.com; a=ed25519;
+ pk=vy0/nfobrje6EqZxuyw6a3ZstytG8WK2vf5Y3xtGrEg=
+X-Endpoint-Received: by B4 Relay for davemarq@linux.ibm.com/20260216 with
+ auth_id=689
+X-Original-From: Dave Marquardt <davemarq@linux.ibm.com>
+Reply-To: davemarq@linux.ibm.com
 
-On 8 Apr 2026, at 4:36, Sayali Patil wrote:
+From: Dave Marquardt <davemarq@linux.ibm.com>
 
-> On 07/04/26 20:21, Zi Yan wrote:
->> On 6 Apr 2026, at 5:19, Sayali Patil wrote:
->>
->>> run_vmtests.sh contains special handling to ensure the hwpoison_injec=
-t
->>> module is available for the memory-failure tests. This logic was
->>> implemented outside of run_test(), making the setup category-specific=
-
->>> but managed globally.
->>>
->>> Move the hwpoison_inject handling into run_test() and restrict it
->>> to the memory-failure category so that:
->>> 1. the module is checked and loaded only when memory-failure tests ru=
-n,
->>> 2. the test is skipped if the module or the debugfs interface
->>> (/sys/kernel/debug/hwpoison/) is not available.
->>> 3. the module is unloaded after the test if it was loaded by the scri=
-pt.
->>>
->>> This localizes category-specific setup and makes the test flow
->>> consistent with other per-category preparations.
->>>
->>> While updating this logic, fix the module availability check.
->>> The script previously used:
->>>
->>> 	modprobe -R hwpoison_inject
->>>
->>> The -R option prints the resolved module name to stdout, causing ever=
-y
->>> run to print:
->>>
->>> 	hwpoison_inject
->>>
->>> in the test output, even when no action is required, introducing
->>> unnecessary noise.
->>>
->>> Replace this with:
->>>
->>> 	modprobe -n hwpoison_inject
->>>
->>> which verifies that the module is loadable without producing output,
->>> keeping the selftest logs clean and consistent.
->>>
->>> Also, ensure that skipped tests do not override a previously recorded=
-
->>> failure. A skipped test currently sets exitcode to ksft_skip even if =
-a
->>> prior test has failed, which can mask failures in the final exit stat=
-us.
->>> Update the logic to only set exitcode to ksft_skip when no failure ha=
-s
->>> been recorded.
->>>
->>> Fixes: ff4ef2fbd101 ("selftests/mm: add memory failure anonymous page=
- test")
->>> Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
->>> ---
->>>   tools/testing/selftests/mm/run_vmtests.sh | 52 ++++++++++++++------=
+Make ibmvfc login to fabric when NPIV login returns SUPPORT_SCSI or
+SUPPORT_NVMEOF capabilities.
 ---
->>>   1 file changed, 33 insertions(+), 19 deletions(-)
->>>
->>> diff --git a/tools/testing/selftests/mm/run_vmtests.sh b/tools/testin=
-g/selftests/mm/run_vmtests.sh
->>> index afdcfd0d7cef..17c9bd910c47 100755
->>> --- a/tools/testing/selftests/mm/run_vmtests.sh
->>> +++ b/tools/testing/selftests/mm/run_vmtests.sh
->>> @@ -235,6 +235,7 @@ pretty_name() {
->>>   run_test() {
->>>   	if test_selected ${CATEGORY}; then
->>>   		local skip=3D0
->>> +		local LOADED_MOD=3D0
->>
->> Can you rename it to LOADED_MEMORY_FAILURE_MOD to clarify its use?
->> Since now LOADED_MOD is visible for the entire run_test().
->
-> Thanks for the review!
->
-> I kept it as LOADED_MOD and specified it as a local variable intentiona=
-lly. The idea was that, if any future tests are added that need to verify=
- whether the module was loaded, they can reuse the same variable. For tha=
-t reason, I did not make it specific to the memory failure test.
+ drivers/scsi/ibmvscsi/ibmvfc.c | 100 ++++++++++++++++++++++++++++++++++++++---
+ drivers/scsi/ibmvscsi/ibmvfc.h |  20 +++++++++
+ 2 files changed, 115 insertions(+), 5 deletions(-)
 
-You mean future tests that use hwpoison_inject module? Or any future test=
-s
-that load a module? For the former, you can use LOADED_HWPOISON_INJECT_MO=
-D;
-for the latter, I am not sure how a single LOADED_MOD would work for
-different modules and that probably would need new code for that case.
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+index 808301fa452d..803fc3caa14d 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+@@ -5205,6 +5205,89 @@ static void ibmvfc_discover_targets(struct ibmvfc_host *vhost)
+ 		ibmvfc_link_down(vhost, IBMVFC_LINK_DEAD);
+ }
+ 
++static void ibmvfc_fabric_login_done(struct ibmvfc_event *evt)
++{
++	struct ibmvfc_fabric_login *rsp = &evt->xfer_iu->fabric_login;
++	u32 mad_status = be16_to_cpu(rsp->common.status);
++	struct ibmvfc_host *vhost = evt->vhost;
++	int level = IBMVFC_DEFAULT_LOG_LEVEL;
++
++	ENTER;
++
++	switch (mad_status) {
++	case IBMVFC_MAD_SUCCESS:
++		vhost->logged_in = 1;
++		vhost->fabric_capabilities = rsp->capabilities;
++		fc_host_port_id(vhost->host) = be64_to_cpu(rsp->nport_id);
++		ibmvfc_free_event(evt);
++		break;
++
++	case IBMVFC_MAD_FAILED:
++		if (ibmvfc_retry_cmd(be16_to_cpu(rsp->status), be16_to_cpu(rsp->error)))
++			level += ibmvfc_retry_host_init(vhost);
++		else
++			ibmvfc_link_down(vhost, IBMVFC_LINK_DEAD);
++		ibmvfc_log(vhost, level, "Fabric Login failed: %s (%x:%x)\n",
++			   ibmvfc_get_cmd_error(be16_to_cpu(rsp->status), be16_to_cpu(rsp->error)),
++						be16_to_cpu(rsp->status), be16_to_cpu(rsp->error));
++		ibmvfc_free_event(evt);
++		LEAVE;
++		return;
++
++	case IBMVFC_MAD_CRQ_ERROR:
++		ibmvfc_retry_host_init(vhost);
++		fallthrough;
++
++	case IBMVFC_MAD_DRIVER_FAILED:
++		ibmvfc_free_event(evt);
++		LEAVE;
++		return;
++
++	default:
++		dev_err(vhost->dev, "Invalid fabric Login response: 0x%x\n", mad_status);
++		ibmvfc_link_down(vhost, IBMVFC_LINK_DEAD);
++		ibmvfc_free_event(evt);
++		LEAVE;
++		return;
++	}
++
++	ibmvfc_set_host_action(vhost, IBMVFC_HOST_ACTION_QUERY);
++	wake_up(&vhost->work_wait_q);
++
++	LEAVE;
++}
++
++static void ibmvfc_fabric_login(struct ibmvfc_host *vhost)
++{
++	struct ibmvfc_fabric_login *mad;
++	struct ibmvfc_event *evt = ibmvfc_get_reserved_event(&vhost->crq);
++	int level = IBMVFC_DEFAULT_LOG_LEVEL;
++
++	if (!evt) {
++		ibmvfc_log(vhost, level, "Fabric Login failed: no available events\n");
++		return;
++	}
++
++	ibmvfc_init_event(evt, ibmvfc_fabric_login_done, IBMVFC_MAD_FORMAT);
++	mad = &evt->iu.fabric_login;
++	memset(mad, 0, sizeof(*mad));
++	if (vhost->scsi_scrqs.protocol == IBMVFC_PROTO_SCSI)
++		mad->common.opcode = cpu_to_be32(IBMVFC_FABRIC_LOGIN);
++	else if (vhost->scsi_scrqs.protocol == IBMVFC_PROTO_NVME)
++		mad->common.opcode = cpu_to_be32(IBMVFC_NVMF_FABRIC_LOGIN);
++	else {
++		ibmvfc_log(vhost, level, "Fabric Login failed: unknown protocol\n");
++		return;
++	}
++	mad->common.version = cpu_to_be32(1);
++	mad->common.length = cpu_to_be16(sizeof(*mad));
++
++	ibmvfc_set_host_action(vhost, IBMVFC_HOST_ACTION_INIT_WAIT);
++
++	if (ibmvfc_send_event(evt, vhost, default_timeout))
++		ibmvfc_link_down(vhost, IBMVFC_LINK_DOWN);
++}
++
+ static void ibmvfc_channel_setup_done(struct ibmvfc_event *evt)
+ {
+ 	struct ibmvfc_host *vhost = evt->vhost;
+@@ -5251,8 +5334,12 @@ static void ibmvfc_channel_setup_done(struct ibmvfc_event *evt)
+ 		return;
+ 	}
+ 
+-	ibmvfc_set_host_action(vhost, IBMVFC_HOST_ACTION_QUERY);
+-	wake_up(&vhost->work_wait_q);
++	if (ibmvfc_check_caps(vhost, (IBMVFC_SUPPORT_SCSI | IBMVFC_SUPPORT_NVMEOF))) {
++		ibmvfc_fabric_login(vhost);
++	} else {
++		ibmvfc_set_host_action(vhost, IBMVFC_HOST_ACTION_QUERY);
++		wake_up(&vhost->work_wait_q);
++	}
+ }
+ 
+ static void ibmvfc_channel_setup(struct ibmvfc_host *vhost)
+@@ -5443,9 +5530,12 @@ static void ibmvfc_npiv_login_done(struct ibmvfc_event *evt)
+ 	vhost->host->can_queue = be32_to_cpu(rsp->max_cmds) - IBMVFC_NUM_INTERNAL_REQ;
+ 	vhost->host->max_sectors = npiv_max_sectors;
+ 
+-	if (ibmvfc_check_caps(vhost, IBMVFC_CAN_SUPPORT_CHANNELS) && vhost->do_enquiry) {
+-		ibmvfc_channel_enquiry(vhost);
+-	} else {
++	if (ibmvfc_check_caps(vhost, IBMVFC_CAN_SUPPORT_CHANNELS)) {
++		if (vhost->do_enquiry)
++			ibmvfc_channel_enquiry(vhost);
++	} else if (ibmvfc_check_caps(vhost, (IBMVFC_SUPPORT_SCSI | IBMVFC_SUPPORT_NVMEOF)))
++		ibmvfc_fabric_login(vhost);
++	else {
+ 		vhost->do_enquiry = 0;
+ 		ibmvfc_set_host_action(vhost, IBMVFC_HOST_ACTION_QUERY);
+ 		wake_up(&vhost->work_wait_q);
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.h b/drivers/scsi/ibmvscsi/ibmvfc.h
+index cd0917f70c6d..4f680c5d9558 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.h
++++ b/drivers/scsi/ibmvscsi/ibmvfc.h
+@@ -138,6 +138,8 @@ enum ibmvfc_mad_types {
+ 	IBMVFC_CHANNEL_ENQUIRY	= 0x1000,
+ 	IBMVFC_CHANNEL_SETUP	= 0x2000,
+ 	IBMVFC_CONNECTION_INFO	= 0x4000,
++	IBMVFC_FABRIC_LOGIN	= 0x8000,
++	IBMVFC_NVMF_FABRIC_LOGIN	= 0x8001,
+ };
+ 
+ struct ibmvfc_mad_common {
+@@ -227,6 +229,8 @@ struct ibmvfc_npiv_login_resp {
+ #define IBMVFC_MAD_VERSION_CAP		0x20
+ #define IBMVFC_HANDLE_VF_WWPN		0x40
+ #define IBMVFC_CAN_SUPPORT_CHANNELS	0x80
++#define IBMVFC_SUPPORT_NVMEOF		0x100
++#define IBMVFC_SUPPORT_SCSI		0x200
+ #define IBMVFC_SUPPORT_NOOP_CMD		0x1000
+ 	__be32 max_cmds;
+ 	__be32 scsi_id_sz;
+@@ -590,6 +594,19 @@ struct ibmvfc_connection_info {
+ 	__be64 reserved[16];
+ } __packed __aligned(8);
+ 
++struct ibmvfc_fabric_login {
++	struct ibmvfc_mad_common common;
++	__be64 flags;
++#define IBMVFC_STRIP_MERGE	0x1
++#define IBMVFC_LINK_COMMANDS	0x2
++	__be64 capabilities;
++	__be64 nport_id;
++	__be16 status;
++	__be16 error;
++	__be32 pad;
++	__be64 reserved[16];
++} __packed __aligned(8);
++
+ struct ibmvfc_trace_start_entry {
+ 	u32 xfer_len;
+ } __packed;
+@@ -709,6 +726,7 @@ union ibmvfc_iu {
+ 	struct ibmvfc_channel_enquiry channel_enquiry;
+ 	struct ibmvfc_channel_setup_mad channel_setup;
+ 	struct ibmvfc_connection_info connection_info;
++	struct ibmvfc_fabric_login fabric_login;
+ } __packed __aligned(8);
+ 
+ enum ibmvfc_target_action {
+@@ -921,6 +939,8 @@ struct ibmvfc_host {
+ 	struct work_struct rport_add_work_q;
+ 	wait_queue_head_t init_wait_q;
+ 	wait_queue_head_t work_wait_q;
++	__be64 fabric_capabilities;
++	unsigned int login_cap_index;
+ };
+ 
+ #define DBG_CMD(CMD) do { if (ibmvfc_debug) CMD; } while (0)
 
-My point is that since LOADED_MOD is now in the scope of run_test(), it i=
-s
-unclear which test uses it without reading the entire run_test(). Giving =
-a
-specific name improves readability.
+-- 
+2.53.0
 
 
-Best Regards,
-Yan, Zi
 
