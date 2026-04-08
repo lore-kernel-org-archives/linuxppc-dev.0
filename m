@@ -1,93 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-19514-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19515-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4D2010F994F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2026 15:30:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA0C610F994F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2026 15:41:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4frRp414ztz2yDk;
-	Thu, 09 Apr 2026 01:30:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::32f" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775662204;
-	cv=pass; b=i3Y3ySjUDfU5s1CYjvKvrLNAQtixUV7gaojanGiQwmr4wmFRkTLAbclIdgeMvcl18GONFSWk504pGK75tJIRIQbkTNb2RLW4ud9KlfH2Xj0y6HZw94G2Sre6riCrEZHB46V/jEM9JqJ/HpM1WTULSMLmyvgcjuiV7bqH0ab6KqYTbIsC5+aeOsy63xtNHB/A7nh7gDkgDvNXTD+QhQxag2xWjy2wyAXXdVNr5cqbBZImi3lpF3Y6qWjFW+226ztTxfv5K5QqNc6c0/7wMA5+eshIyaQAmGQ/7IcrGSwuX4zyjY0f62mvRtxwv7jCaQ8n6gDCKEBzGCd7fRL6hPXPxQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4frS3L1SjZz2yDk;
+	Thu, 09 Apr 2026 01:41:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c105::5" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775662894;
+	cv=pass; b=YKe8leFT5S4CY4MA+LnrRQatJaMRxZHLnl3+CT8LIYD28nrHQsX5ocwuuZgmz3qeJPmKJXmJNrr0HnzRDTI8jFECTm0CIzk0CLJNjb3Fis3zToDpOEE29V5DlLs3f8kCquTqOLQ2rGWhXxC57Q/parR/gPKWdyFvQXDJXp/8ow9Zw+BZeky77Wx2iuz/vvWd7A8xCbiSFWtzvLIbxDZFTtVrj5VWNK7b9pd0Yx1jDLIlQAIZ+N5l1Bdnf3qMZwj+iXqj1wcVq4nSPoLmf8cDU52WmZ65O0x7xXyuhz/94ni74LUx6PLl4/DcLKIupRheLRbutJuiejyQWaXBqPxrBQ==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775662204; c=relaxed/relaxed;
-	bh=sJHD6SMQiiS15OEauGdACHyjg3IeXbof2naajJssOZ4=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=YpEbMhMxPGQgXS7fcFrfUUUteyxp1lxrBa+TkEmWIEI7g/xgGcLs+G0rIvP8DeJaoejA7c1XwGcmCOyVYzqeRZjInJLMseRKbOR8ppYAWKQLCsGzgw5Pu8212BUyu2Duj0uN6cYBcfB/DSne4ELgBg4++NjSeBu64DbDIOIINmWFXHi4isNkLMxxWbF6zJVnlYA4HrHO0r44TGdolYVoytIOvYdIVul9QiOgWzon6+PwHiksv2dO3toA7H7Gwka8eAaD3Pa5SV4IAeM2rD16KilI4rFB75YQiqC0F1PE7PnPm1P58Ey1zcGezhP9Avk6dt5qxn2d9qkQd/7XnHKkhQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=jMXmCy2L; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32f; helo=mail-wm1-x32f.google.com; envelope-from=fvdl@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1775662894; c=relaxed/relaxed;
+	bh=Y+xvlBHBcH7IM2+ZDj18/N62x/I7T5X6uhPVMzuDREs=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=JdOBo80kmX8XWDVg7ztzTQZz2zj2YzAQf5orQ0qaj+pP9IymyaS72cLCugJcdsrT4vsnF4LAmziNXqwN9bMo8pXOi+7w4zlbRWoicnmmFITsqydaiwYjp++ROMebwlQgfi6tHwbc5zxQzHe9LL0OdDjELOvgUKWo4wzoyaBNI88VrxwOTel8HLjETrwMDYaNvC2nr9pxjHbM1TAuy4b6ktEh0SwUY9yHpmwtvWk2AjV1H7h9t2m9cwS/mgUElT3sCnnxxf1w/BkJKTXVhQ5BXWnBVEZgEqMlQKQ4ROXiLEJVDg1uR2l1JXwe12eeDSlYTszOlrNQDPIGaUQYl06iyw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=uK9ED8VF; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c105::5; helo=ch5pr02cu005.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=jMXmCy2L;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=uK9ED8VF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::32f; helo=mail-wm1-x32f.google.com; envelope-from=fvdl@google.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c105::5; helo=ch5pr02cu005.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org)
+Received: from CH5PR02CU005.outbound.protection.outlook.com (mail-northcentralusazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c105::5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4frRp15QvDz2yC9
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Apr 2026 01:30:01 +1000 (AEST)
-Received: by mail-wm1-x32f.google.com with SMTP id 5b1f17b1804b1-488879dcbc3so131185e9.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2026 08:30:01 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1775662198; cv=none;
-        d=google.com; s=arc-20240605;
-        b=KMhdIo9RKviWW92PbYQYLwcYvYtMIkBpCv1u9kPAWhR3aL+9tPytjsNbXisILjQ0uT
-         D7BU9bsDzt7Jzq9rvtTsTl5NfTqBS4Pd7ByTovg3XtCYcR78zzHwlekVF58wL5xb8JUS
-         lE3Ee8odyzppPnHK0+X71qaSJDFIL0ve+3astqCx1XXyo5ol9JxORl1nDtlTVPzGZeop
-         LhGjy9YOeMWkjm3OWXReFWc0HvzHq8iqtVOdrnhlT3w3cBehPbVDGvkCEfLVR58qj0Vs
-         aRXiO4emBnIxDzjshKneERJ+9+OttPyjza3SLY1phLm5j8cTMJFbxzBK4bUoeTAVwSLk
-         WLLg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=sJHD6SMQiiS15OEauGdACHyjg3IeXbof2naajJssOZ4=;
-        fh=LLq9s+HCSFJOgpc4/KkL4043oReRLTcZEfIlO3uTO6Q=;
-        b=T6EnwqU+LsRGS6UPEXJJc8M9dDRqUOeXRyek8ehpnPQEnHQoX/MhxX0tddgXbkxM4q
-         FnwTQNDbc/sSEOTDyVPGQNsRvLv5XsD1EhSaOXizGVaToHwoGoGChfOo0gtK3ksqdViZ
-         vhi+9fSgPDZq7obo/tW8ypAPOO2MCQPcSs8s8RiieZ3f9cyRyYW9oW/NXIm4a3reO7R9
-         R6vp5VIUt0Y2pDJTdiCqinoL5GX1GptGukhddlUyxX0BnD614/y9rytiUkJQJNXtY4fV
-         BUGvGBqvKaiKq0Ad8H++xZr5oF7oHvrnIkdLyXg23o6nZ+DuO2WRxrYpmTOOPm7pvKSN
-         Oc7g==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1775662198; x=1776266998; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=sJHD6SMQiiS15OEauGdACHyjg3IeXbof2naajJssOZ4=;
-        b=jMXmCy2LxH8VqYlFfMaMXzpPyUCpPaB5R1YELKfzaGbYfrXUzsKkaOMvTsAHLG9OSF
-         +6PnHnU/+gFEIKPDqS1BY03Lp4iG52VItbDXBb+xLOZHTWcybQpmnmZe0sW1lq41Ni6k
-         7pqco3EdPOr40NQrdq5dARFi1frisHf6hflF+OFeJHIEOSI4PSrYBBR6aDOCWqThl55p
-         8d1JY4JUgYQ40evV4+wEd4pHZOfmWyJ8ZDnD1sJbxBC//8RzNJdp4qhKxy0aO57RvUnH
-         Ts1iqguUnMnzOskgpqF4Jo8iDTy3rgFTNtekFnr22OwW58SZgNAENc2yOqREGh/pyPq1
-         JORA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775662198; x=1776266998;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=sJHD6SMQiiS15OEauGdACHyjg3IeXbof2naajJssOZ4=;
-        b=eOKkcUPS4sIkXFSYcfWrEjfyjkjpDAKJdop9YBm2htkuWRGaWJXUeCdJ/+tzvZIBil
-         oSd9NIaHB7JbegP69I7U4P0TIuwK4RwqSkPsralVADzCWYEKvJAA24gKFbUAUameoMpb
-         b8KooDTp4h5KOS4VkXiQn2bMdli25tLw7UuQvCrUcgD9HDue6dLfwkPTbPeo3xZioW0+
-         RaMNiw/IwaR9n3cUrmG0rVkQ19alsKZzfbt6Bp5SU9m+ZKXnCJ8nHqWXHuXCz1jxGo5q
-         QrCYaAkB8JwImQxzEAdLcAtewcroR4GwnBa5wSDBThkqzs6oIySGEDbzZt7INlV0Ica4
-         gZLA==
-X-Forwarded-Encrypted: i=1; AJvYcCVzDjBzipWY8Xe0MEi1S0nwl3Jj6i834Wd+lIATZGHfT/vYvVssjEQipUg8SXyDsBVr/gCRrbNMvdwnP4Q=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwWW89SiyxZKRf+trLtw0OPEKPnYsosZqFx+jewAQjYYgVUDyRp
-	MbMgJQ9RpTqkULsqaumznTebVyDZxT4bz0mv89FDeWQ0KMN25nAayQgQm0S4JJuDAvkty6OMCsZ
-	BHL+dOdLhf8OlhYSYcXmrjBCPLJaugG80vuoJTeRg
-X-Gm-Gg: AeBDievC5Uq5ORjtQfmPjoej0ZfV5OHNOhVb+SG08r3CFOLULDxaWtHwdd5DmPApcoz
-	dISGGbes00wVVp/UC+mmqJXzB2H+V5ET8n+LRIpAFhbM0xGzAGyJgz1MFmwwZbqgLkh6VY7BMlS
-	D8M5CrmzTTL28BlsnP6wu04RKJaORhUwu4x5a13AZlemEmdznK0aUy+7IKZRsIjJgF+Xr8+ETS5
-	VzczjgOH2ARjP/RGu0Y5M7ezcpTZzQX9Z8pApr+DAAYGZRsIVbPXwS+i5W515pmtgAmYWTfxhRH
-	tHM6k2c=
-X-Received: by 2002:a05:600c:4612:b0:485:2ab4:c1f9 with SMTP id
- 5b1f17b1804b1-488cbf2e5b1mr176595e9.4.1775662197639; Wed, 08 Apr 2026
- 08:29:57 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4frS3J5t8Lz2yC9
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Apr 2026 01:41:32 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=fuYjpxG7lLAnKtlClwowE6iGtNF4kRxZtRBp0cppjZ0G45+zAHJZ8ZFcYtu1ONHV0BiFOlYYYnbK9oCkiW472EAErEZjRX8MdEjKV24G97eZUqhXIDA9nuHm9Al5OroO/+iTt+8kgrU2ZOhlfwy4tQqJ9HTGwzWTIpSMtwTBlO9oOO48n2mPxiFNKi7Kdij8Xy4j9iSgugO1Mg2YqxvkIoIduqTteWwlJqxwmXInz4orNQA6gpmDyGY2a2vqcHJvltwjAVfYSGmR/rsWU1Ff62zsEibPt8UPS6q345BkG+JOYwvfWl+XCg22Qzz0uN73ySEbWehZ71KkgMSCdFX6iA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Y+xvlBHBcH7IM2+ZDj18/N62x/I7T5X6uhPVMzuDREs=;
+ b=uZNYz1cn2gdtfvOEGYoorVG+TbZIXTXtgbiLHqXGdKQzv+xnGEfp3PM0q2VV4PZWPWJeS3QgNvYLV7iAQhnkSTbC0ySQ42yVTWTCQL82BR2bLRj7XgbyVlO/C3a073vLZlSCB0+xjCuAVB5wJw/3GxCHKhBmKW2OXb0QgzlDJ+gWJl7YtRbawgx65F4NJ3s1N8Ccl29UfgcwGeSArvxpQShp9XsbO5kC9bEFAvMJpNb6pTN1phevxDw3LBj4Hm3Xg3eu/IfYCs9sJUtxO8mi9PGu9GQ25kZR4CxIbXuuM+n+uwFwehh6Hhi+0NGwPAIlZ3nDejarNPRKIYdJByo8pQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Y+xvlBHBcH7IM2+ZDj18/N62x/I7T5X6uhPVMzuDREs=;
+ b=uK9ED8VF09lwR3m0RQAyVjH2ajhslIwFuvFB0g2nhkIc02eyNT6tFO0rlAZBeZhuvfzSo1SlmfZreIRu2/FSKRO5F3bpAeQsO4dekx8SEjkJPL77uYbOfEndlbo3NEM2cJxPw4ePhJoIkRzXRdqpnceZyJaimX6T3dPaHZUau8S3AYvKRF1/QcRrzQKXoZFQ4sRG2izMToyv2gX+oeUro8dHZb6W3n/zpO2PyGidE5AvyegUi1SQ8FOKi5XZpb2ghLjj3lWjqB4GZX+41tvwZ6ZCQMvCq2IdK5G+QzsNABev0JHM52gxFdICSNXLQOh5rkJSAYkocRg0P74+yOwWsA==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from DS7PR12MB9473.namprd12.prod.outlook.com (2603:10b6:8:252::5) by
+ DS5PPF4A654669B.namprd12.prod.outlook.com (2603:10b6:f:fc00::64b) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9745.41; Wed, 8 Apr
+ 2026 15:41:03 +0000
+Received: from DS7PR12MB9473.namprd12.prod.outlook.com
+ ([fe80::f01d:73d2:2dda:c7b2]) by DS7PR12MB9473.namprd12.prod.outlook.com
+ ([fe80::f01d:73d2:2dda:c7b2%4]) with mapi id 15.20.9769.014; Wed, 8 Apr 2026
+ 15:41:03 +0000
+From: Zi Yan <ziy@nvidia.com>
+To: Sayali Patil <sayalip@linux.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
+ linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linux-kselftest@vger.kernel.org, Ritesh Harjani <ritesh.list@gmail.com>,
+ David Hildenbrand <david@kernel.org>, Michal Hocko <mhocko@kernel.org>,
+ Oscar Salvador <osalvador@suse.de>,
+ Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, Dev Jain <dev.jain@arm.com>,
+ Liam.Howlett@oracle.com, linuxppc-dev@lists.ozlabs.org,
+ Miaohe Lin <linmiaohe@huawei.com>,
+ Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Subject: Re: [PATCH v4 13/15] selftests/mm: move hwpoison setup into
+ run_test() and silence modprobe output for memory-failure category
+Date: Wed, 08 Apr 2026 11:40:59 -0400
+X-Mailer: MailMate (2.0r6290)
+Message-ID: <B686276F-89E5-4192-8973-3B787FC8AC86@nvidia.com>
+In-Reply-To: <5888f69f-c336-4151-a9ac-9b0b00f9c3bb@linux.ibm.com>
+References: <cover.1775466329.git.sayalip@linux.ibm.com>
+ <8ef8640092004d143fe80e6fc32ea8d30a9080de.1775466330.git.sayalip@linux.ibm.com>
+ <8B26C697-4D0C-4E1E-A14E-D517CC9DA05A@nvidia.com>
+ <5888f69f-c336-4151-a9ac-9b0b00f9c3bb@linux.ibm.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+X-ClientProxiedBy: BL1PR13CA0316.namprd13.prod.outlook.com
+ (2603:10b6:208:2c1::21) To DS7PR12MB9473.namprd12.prod.outlook.com
+ (2603:10b6:8:252::5)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,171 +94,158 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260405125240.2558577-1-songmuchun@bytedance.com>
-In-Reply-To: <20260405125240.2558577-1-songmuchun@bytedance.com>
-From: Frank van der Linden <fvdl@google.com>
-Date: Wed, 8 Apr 2026 08:29:45 -0700
-X-Gm-Features: AQROBzDIxpbHHhnqGHn8vjelH9Nu4WEufqUDV3KFtdzQowFVpT_ZJVEDEErX9Ks
-Message-ID: <CAPTztWYp7P=zALy_R7evjZPmQq_xMUOD8QR1wOmJHqcaENJ7cg@mail.gmail.com>
-Subject: Re: [PATCH 00/49] mm: Generalize vmemmap optimization for DAX and HugeTLB
-To: Muchun Song <songmuchun@bytedance.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, David Hildenbrand <david@kernel.org>, 
-	Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Lorenzo Stoakes <ljs@kernel.org>, "Liam R . Howlett" <Liam.Howlett@oracle.com>, 
-	Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
-	Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Nicholas Piggin <npiggin@gmail.com>, 
-	Christophe Leroy <chleroy@kernel.org>, aneesh.kumar@linux.ibm.com, joao.m.martins@oracle.com, 
-	linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS7PR12MB9473:EE_|DS5PPF4A654669B:EE_
+X-MS-Office365-Filtering-Correlation-Id: 2bffe843-2c4b-4cd5-112d-08de95853d0b
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|366016|376014|7416014|18002099003|56012099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	FEVB6z1kfUqnNQ9YWMiDj/YPlyiUQypazDmlUxqs8rVBvgGP5Zp1vzmJaez4KUCge2hHyHuPAmtn6mbeQSYcXG9j25GhO+x9NnKcd43SXMsOSHQHEAUL4KEykGm0CNSgHsXNtOuW2hMMH6IkzjQlNWAkocMSFOMUDVERoSC0TY10wegZ50rI5b0gYg0DLhLLLnMQByM15BaZYJC+rN29oZW1hDnPtNrJG3P500h610QTH4J4UUOLXN8vF6wiHbpVn4lNEzNi9BWgenaNjSGfpB6sqR4/9Yz/cawPatArYphlzBKq9lrpy1t7wZw9PSXUM6ZUo+6FGswWkINI+/u+hrezN80XUUurs6U6qxIHCprTBP7TBOMy+yuE9fBsSkBrE7tOuVH9JocHOmPGu0DuHHJYNksKNN20OEkZaV1vfJu18IPmfXztfldAVZf0JN7mFD5tfNUVT2JWw5hTBw4U2rthD2Plxzbk7VU4Q3YqzAL6dDbHSbZQ8kCaSrIUsox2Srnjv1pf4Z/VU2Ljtmo5XxA5LCSw1liKI1vfsCwv8xUlaqH8fn/sDx1yPeo52oPPGAyoteJUTl9wUsQyOtu/ON0E5Y0s3npLs/ubUF3C95B0/iZsDWSvbDmepizLkgFxQaZu4MyZP0AI/+qkkmmA2j6vmeRcPeIOcGCg6ynhFSe8/T9DC0pp1MN6+awGhCKXzcH/bZd6rsWforBclbs7MfKOWGC8l5zAiC2w1uUxkkk=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS7PR12MB9473.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(376014)(7416014)(18002099003)(56012099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?WDY3lvwlRZpvaNoJGrMBL5b9WUgsXHoViwBNkBTuDifeyoZCeRVw9xzII4u/?=
+ =?us-ascii?Q?taLdWyKwGn98DKr/6vdz4ArwbN37dlUAeAmqFWb5Xf40PWoVY1MULgpGjU33?=
+ =?us-ascii?Q?mDYRe/MraAsTtyz0Eaq9qKJ1hh+wwJ/BTGwY0f2lMqek2/2uN2Y2ugfXNLpQ?=
+ =?us-ascii?Q?dN7Z2e2rUnYVseUOqhXryoDulOeU7VS+5UAMLuswq7Tmw+hJT2Me84fXTxVZ?=
+ =?us-ascii?Q?imyKXrmVsdPM7+qhoKwUwt7G1jMPi87MVVNlGXpGxeWYfih7xbDqS03HsYIx?=
+ =?us-ascii?Q?GUUKrVVM3ydYJo5sE9etvIlmtYusdwnDMJbH8ie+A5ZDYSiiJFdl8zY3noOv?=
+ =?us-ascii?Q?YKkZkUZCTu4baBIjV9QtzvjdOTpsC12NJAPpNK7F6+teoKJrgjg+v4P7DFQe?=
+ =?us-ascii?Q?Xgvb+w7xZY+f0WDjXa4g/kRJ2BnFT1CksiiBSleE85CA46j/6N3BEmfUz+h7?=
+ =?us-ascii?Q?VVg60Ow2Q41UQQOSLHzY703fnnDOHqo2FYAaBO5vQjbZZTd0DFFCwC//lviJ?=
+ =?us-ascii?Q?wWHiCZFuxYCR0VDu0Pma3zSUSwGtQIaB4stf3ddxECr8gSqsg8qucw+WcjiL?=
+ =?us-ascii?Q?YopQaNRNSoW/yI55LoMvcVD3boNRKnH9W5oxcVhtm8v0BPlFzJi+Nb+67J3U?=
+ =?us-ascii?Q?f6viVJBE69WXQS33W2TzI/7SFGISqKofE+9czQYp/P+zsFcuPB8TGhnQDk+m?=
+ =?us-ascii?Q?v/aM20DRQKGyWXvwZqhfVBuBbrqrLj++NIfdEmmtX8dO4syivMcl28YmzRsW?=
+ =?us-ascii?Q?1tnGmoNxpUk59eN7eXboSWSm1qQZ8VPz4O3lWRrLEkWMBTToxLLDIVHkHYcX?=
+ =?us-ascii?Q?FbsWI5LjnIv6Gznxh8aVvOfsVIGV3/s4VISaHKKNUGr4xGYzUNxZ0lXSxD+3?=
+ =?us-ascii?Q?r8XLQhRRBMKlng4JjVO+77SBngTEVzFupNSVDZYvu+kV9LewwLNR3ID6Vuoz?=
+ =?us-ascii?Q?W6LH1OyUDbCesfpOyYcyRJe+snDi2uabbq3jWL2KnhFbVZXbNfJFBncpOFvf?=
+ =?us-ascii?Q?FaX/AFIBri+LQGz1zNfaGehVIrIxkP0zdHV3ZYW9FZ/0W8j91R810Yqvial9?=
+ =?us-ascii?Q?Q+GRxK67nNNRuH4bfvc6xYcyY/YSvPLxdMg21gSbJoczgcaDWejYJR+BkVl7?=
+ =?us-ascii?Q?njn83X0KYrPdwRHwQFB8WhU+ZjccWWjA7c0WYOHbRIOC4Vu6USWid5Uam2aJ?=
+ =?us-ascii?Q?G7REHNFbA8QjmPR6A6MvyL1CGOnpDGrVEFO3+G6rUETVoiIwDlkPLhmlRjmt?=
+ =?us-ascii?Q?51yxJfIMlxcU1ny99hYRdDESZieEodrQRgUNsTb5z/580cFmwOLH7KabCN2L?=
+ =?us-ascii?Q?nGIsZue3anatcqT5//kokY2wnfCmOMwPOLsuO47uw39EeSssPAgKKvVbhGHh?=
+ =?us-ascii?Q?iNoivUOacSFKN/QwRNYRkJ55q+kaZX1qcNGdh7Etr+2hsYTy5Xsb8bAYLeZS?=
+ =?us-ascii?Q?+Z1LP5wnPTfRKJK1NnrstjP/eGKWcX7z0YPV3dmIFtiMmd0jWnH9De1nFW/W?=
+ =?us-ascii?Q?TpS8Aw/4qknUfKku+gdlZklt2YN7hayOiNJwRrbwtdWthjJ9+L3JSwp9TtyC?=
+ =?us-ascii?Q?fto7ft+utrG71aGAtgRNrXrfELl4nH/LJbBHRtPUHSurqMEp4D9CPWkezxWH?=
+ =?us-ascii?Q?8vCS/HYhKRejnxYRq6pJO0hGnp3w4TUd4+Xw1EH/020IpUkz6aLdNIoT9x/y?=
+ =?us-ascii?Q?ObkRbRDp7dMYK5iBNcCD0CocCurVAxU3IMxjaqwkj8Fiaqv4?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2bffe843-2c4b-4cd5-112d-08de95853d0b
+X-MS-Exchange-CrossTenant-AuthSource: DS7PR12MB9473.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Apr 2026 15:41:02.2551
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 6tNbXd0VfJAwmb+9O0ztR2qqmYD5am9JD10XcYGTAU/1Y1XUithNV9YQwtbTthF/
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS5PPF4A654669B
 
-On Sun, Apr 5, 2026 at 5:53=E2=80=AFAM Muchun Song <songmuchun@bytedance.co=
-m> wrote:
->
-> Overview:
-> This patch series generalizes the HugeTLB Vmemmap Optimization (HVO)
-> into a generic vmemmap optimization framework that can be used by both
-> HugeTLB and DAX.
->
-> Background:
-> Currently, the vmemmap optimization feature is highly coupled with
-> HugeTLB. However, DAX also has similar requirements for optimizing vmemma=
-p
-> pages to save memory. The current implementation has separate vmemmap
-> optimization paths for HugeTLB and DAX, leading to duplicated logic,
-> complex initialization sequences, and architecture-specific flags.
->
-> Implementation:
-> This series breaks down the optimization into a generic framework:
-> - Patch 1-6: Fix bugs related to sparse vmemmap initialization and DAX.
-> - Patch 7-13: Refactor the existing sparse vmemmap initialization.
-> - Patch 14-26: Decouple the vmemmap optimization from HugeTLB and
->   introduce generic optimization macros and functions.
-> - Patch 27-39: Switch HugeTLB and DAX to use the generic framework.
-> - Patch 40-49: Clean up the old HVO-specific code and simplify it.
->
-> Benifit:
-> - When CONFIG_DEFERRED_STRUCT_PAGE_INIT is disabled, all struct pages
->   utilizing HVO (HugeTLB Vmemmap Optimization) skip initialization in
->   memmap_init, significantly accelerating boot times.
-> - All architectures supporting HVO benefit from the optimizations
->   provided by SPARSEMEM_VMEMMAP_PREINIT without requiring
->   architecture-specific adaptations.
-> - Device DAX struct page savings are further improved, saving an
->   additional 4KB of struct page memory for every 2MB huge page.
-> - Vmemmap tail pages used for Device DAX shared mappings are changed
->   from read-write to read-only, enhancing system security.
-> - HugeTLB and Device DAX now share a unified vmemmap optimization
->   framework, reducing long-term maintenance overhead.
->
-> Testing:
-> - Verification: Compiled and tested on x86 architecture.
->
->
-> Chengkaitao (1):
->   mm: Convert vmemmap_p?d_populate() to static functions
->
-> Muchun Song (48):
->   mm/sparse: fix vmemmap accounting imbalance on memory hotplug error
->   mm/sparse: add a @pgmap argument to memory deactivation paths
->   mm/sparse: fix vmemmap page accounting for HVOed DAX
->   mm/sparse: add a @pgmap parameter to arch vmemmap_populate()
->   mm/sparse: fix missing architecture-specific page table sync for HVO
->     DAX
->   mm/mm_init: fix uninitialized pageblock migratetype for ZONE_DEVICE
->     compound pages
->   mm/mm_init: use pageblock_migratetype_init_range() in
->     deferred_free_pages()
->   mm: panic on memory allocation failure in sparse_init_nid()
->   mm: move subsection_map_init() into sparse_init()
->   mm: defer sparse_init() until after zone initialization
->   mm: make set_pageblock_order() static
->   mm: integrate sparse_vmemmap_init_nid_late() into sparse_init_nid()
->   mm/cma: validate hugetlb CMA range by zone at reserve time
->   mm/hugetlb: free cross-zone bootmem gigantic pages after allocation
->   mm/hugetlb: initialize vmemmap optimization in early stage
->   mm: remove sparse_vmemmap_init_nid_late()
->   mm/mm_init: make __init_page_from_nid() static
->   mm/sparse-vmemmap: remove the VMEMMAP_POPULATE_PAGEREF flag
->   mm: rename vmemmap optimization macros to generic names
->   mm/sparse: drop power-of-2 size requirement for struct mem_section
->   mm/sparse: introduce compound page order to mem_section
->   mm/mm_init: skip initializing shared tail pages for compound pages
->   mm/sparse-vmemmap: initialize shared tail vmemmap page upon allocation
->   mm/sparse-vmemmap: support vmemmap-optimizable compound page
->     population
->   mm/hugetlb: use generic vmemmap optimization macros
->   mm: call memblocks_present() before HugeTLB initialization
->   mm/hugetlb: switch HugeTLB to use generic vmemmap optimization
->   mm: extract pfn_to_zone() helper
->   mm/sparse-vmemmap: remove unused SPARSEMEM_VMEMMAP_PREINIT feature
->   mm/hugetlb: remove HUGE_BOOTMEM_HVO flag and simplify pre-HVO logic
->   mm/sparse-vmemmap: consolidate shared tail page allocation
->   mm: introduce CONFIG_SPARSEMEM_VMEMMAP_OPTIMIZATION
->   mm/sparse-vmemmap: switch DAX to use generic vmemmap optimization
->   mm/sparse-vmemmap: introduce section zone to struct mem_section
->   powerpc/mm: use generic vmemmap_shared_tail_page() in compound vmemmap
->   mm/sparse-vmemmap: unify DAX and HugeTLB vmemmap optimization
->   mm/sparse-vmemmap: remap the shared tail pages as read-only
->   mm/sparse-vmemmap: remove unused ptpfn argument
->   mm/hugetlb_vmemmap: remove vmemmap_wrprotect_hvo() and related code
->   mm/sparse: simplify section_vmemmap_pages()
->   mm/sparse-vmemmap: introduce section_vmemmap_page_structs()
->   powerpc/mm: rely on generic vmemmap_can_optimize() to simplify code
->   mm/sparse-vmemmap: drop ARCH_WANT_OPTIMIZE_DAX_VMEMMAP and simplify
->     checks
->   mm/sparse-vmemmap: drop @pgmap parameter from vmemmap populate APIs
->   mm/sparse: replace pgmap with order and zone in sparse_add_section()
->   mm: redefine HVO as Hugepage Vmemmap Optimization
->   Documentation/mm: restructure vmemmap_dedup.rst to reflect generalized
->     HVO
->   mm: consolidate struct page power-of-2 size checks for HVO
->
->  .../admin-guide/kernel-parameters.txt         |   2 +-
->  Documentation/admin-guide/sysctl/vm.rst       |   2 +-
->  Documentation/mm/vmemmap_dedup.rst            | 218 ++--------
->  arch/powerpc/Kconfig                          |   1 -
->  arch/powerpc/include/asm/book3s/64/radix.h    |  12 -
->  arch/powerpc/mm/book3s64/radix_pgtable.c      | 114 +----
->  arch/powerpc/mm/init_64.c                     |   1 +
->  arch/riscv/Kconfig                            |   1 -
->  arch/x86/Kconfig                              |   2 -
->  fs/Kconfig                                    |   6 +-
->  include/linux/hugetlb.h                       |   7 +-
->  include/linux/memory_hotplug.h                |   2 +-
->  include/linux/mm.h                            |  50 +--
->  include/linux/mm_types.h                      |   2 +
->  include/linux/mm_types_task.h                 |   4 +
->  include/linux/mmzone.h                        | 143 ++++---
->  include/linux/page-flags.h                    |  31 +-
->  kernel/bounds.c                               |   2 +
->  mm/Kconfig                                    |  20 +-
->  mm/bootmem_info.c                             |   5 +-
->  mm/cma.c                                      |   3 +-
->  mm/hugetlb.c                                  | 143 +++----
->  mm/hugetlb_cma.c                              |   3 +-
->  mm/hugetlb_vmemmap.c                          | 237 +----------
->  mm/hugetlb_vmemmap.h                          |  35 +-
->  mm/internal.h                                 |  26 +-
->  mm/memory_hotplug.c                           |  15 +-
->  mm/mm_init.c                                  | 138 +++---
->  mm/sparse-vmemmap.c                           | 392 +++++-------------
->  mm/sparse.c                                   |  85 ++--
->  mm/util.c                                     |   2 +-
->  scripts/gdb/linux/mm.py                       |   6 +-
->  32 files changed, 513 insertions(+), 1197 deletions(-)
->
-> --
-> 2.20.1
+On 8 Apr 2026, at 4:36, Sayali Patil wrote:
 
-Thanks very much for doing this. This cleans up a lot of stuff. I did
-want to do some of this when I did the pre-HVO code, but I ended up
-not doing it to prevent perfect being the enemy of good.
+> On 07/04/26 20:21, Zi Yan wrote:
+>> On 6 Apr 2026, at 5:19, Sayali Patil wrote:
+>>
+>>> run_vmtests.sh contains special handling to ensure the hwpoison_injec=
+t
+>>> module is available for the memory-failure tests. This logic was
+>>> implemented outside of run_test(), making the setup category-specific=
 
-I haven't looked at all the individual patches yet, but overall this
-looks great to me.
+>>> but managed globally.
+>>>
+>>> Move the hwpoison_inject handling into run_test() and restrict it
+>>> to the memory-failure category so that:
+>>> 1. the module is checked and loaded only when memory-failure tests ru=
+n,
+>>> 2. the test is skipped if the module or the debugfs interface
+>>> (/sys/kernel/debug/hwpoison/) is not available.
+>>> 3. the module is unloaded after the test if it was loaded by the scri=
+pt.
+>>>
+>>> This localizes category-specific setup and makes the test flow
+>>> consistent with other per-category preparations.
+>>>
+>>> While updating this logic, fix the module availability check.
+>>> The script previously used:
+>>>
+>>> 	modprobe -R hwpoison_inject
+>>>
+>>> The -R option prints the resolved module name to stdout, causing ever=
+y
+>>> run to print:
+>>>
+>>> 	hwpoison_inject
+>>>
+>>> in the test output, even when no action is required, introducing
+>>> unnecessary noise.
+>>>
+>>> Replace this with:
+>>>
+>>> 	modprobe -n hwpoison_inject
+>>>
+>>> which verifies that the module is loadable without producing output,
+>>> keeping the selftest logs clean and consistent.
+>>>
+>>> Also, ensure that skipped tests do not override a previously recorded=
 
-- Frank
+>>> failure. A skipped test currently sets exitcode to ksft_skip even if =
+a
+>>> prior test has failed, which can mask failures in the final exit stat=
+us.
+>>> Update the logic to only set exitcode to ksft_skip when no failure ha=
+s
+>>> been recorded.
+>>>
+>>> Fixes: ff4ef2fbd101 ("selftests/mm: add memory failure anonymous page=
+ test")
+>>> Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
+>>> ---
+>>>   tools/testing/selftests/mm/run_vmtests.sh | 52 ++++++++++++++------=
+---
+>>>   1 file changed, 33 insertions(+), 19 deletions(-)
+>>>
+>>> diff --git a/tools/testing/selftests/mm/run_vmtests.sh b/tools/testin=
+g/selftests/mm/run_vmtests.sh
+>>> index afdcfd0d7cef..17c9bd910c47 100755
+>>> --- a/tools/testing/selftests/mm/run_vmtests.sh
+>>> +++ b/tools/testing/selftests/mm/run_vmtests.sh
+>>> @@ -235,6 +235,7 @@ pretty_name() {
+>>>   run_test() {
+>>>   	if test_selected ${CATEGORY}; then
+>>>   		local skip=3D0
+>>> +		local LOADED_MOD=3D0
+>>
+>> Can you rename it to LOADED_MEMORY_FAILURE_MOD to clarify its use?
+>> Since now LOADED_MOD is visible for the entire run_test().
+>
+> Thanks for the review!
+>
+> I kept it as LOADED_MOD and specified it as a local variable intentiona=
+lly. The idea was that, if any future tests are added that need to verify=
+ whether the module was loaded, they can reuse the same variable. For tha=
+t reason, I did not make it specific to the memory failure test.
+
+You mean future tests that use hwpoison_inject module? Or any future test=
+s
+that load a module? For the former, you can use LOADED_HWPOISON_INJECT_MO=
+D;
+for the latter, I am not sure how a single LOADED_MOD would work for
+different modules and that probably would need new code for that case.
+
+My point is that since LOADED_MOD is now in the scope of run_test(), it i=
+s
+unclear which test uses it without reading the entire run_test(). Giving =
+a
+specific name improves readability.
+
+
+Best Regards,
+Yan, Zi
 
