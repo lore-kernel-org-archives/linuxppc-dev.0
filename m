@@ -1,73 +1,137 @@
-Return-Path: <linuxppc-dev+bounces-19488-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19489-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50808FD5F98
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2026 08:36:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09638FD5F6A
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Apr 2026 08:59:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4frGdC6gbKz2yVP;
-	Wed, 08 Apr 2026 18:36:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775637407;
-	cv=none; b=J9UU/7iGGkDmIPxvfHrzdJC4BkKV961QHvOd8FS134Cx0iUNgAh2R6ffD+PB3RO9bDaRI3Jnk2hKZuJcRoceRExiHwilDBizePsxEc/YpzvXfX2JVYhEL6h36Uh95lAR2DnCNcYoMPeL50BFbZK1Igbb9FyxfpxyB2I2wPOxAVYGTg6/WTKZgTLkg+r0O2n6ij5bV8FD0g7/qf1B5Aa+pxhg35K+8Ve+91ed2qAuOquqvrAvl7lmAdWve8JNDnv/RLrs9bfYiR8EsAjlwltH+5Mmo5w6mn7RY/+GWl3VWP/umvqThjXph8+DwAa72MdX4l6MdKfuPV7k2PQIAO8ikA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775637407; c=relaxed/relaxed;
-	bh=Loaw8PpmykJdGoBeOuulDHAtP1xQoV6l9r+7fw4smo0=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=JvLnscwDZawGMfID/GKjvOl+A6/WmjLBDm8ICGSq67O3VJs2ekjIiPztuD4hXwHwB6RL1FFQRkyykRuThydeAz2FgNUnhtvzpM0YcA8irMLtMYtZ1JIl/cpm2UQFhD0hx2sWtEZIfxCAwkTXC2BKcai8vMQk1ZkAvcx3VhPl/2Rp/3PSC6znkzAv/9JrhrUqLfyntTjmhso6KaSLet2Veatc2VgtoqcJRWoM0YvRCWCOhVCI1MhMDpVD/G2/oak8D9jhVla0BGYvos2xGlilpN4cxJjVaTnUZH1DNAaHVVLQEZQP2G4vOhGUVyD1hNsT1UGSUU6UktgQuJ+hiW470g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eLQ5FHSQ; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4frH7n4Kkgz2yDk;
+	Wed, 08 Apr 2026 18:59:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20f::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775638789;
+	cv=pass; b=Il9Fg1C1psVoAro9cHrMmzsrLmh/4S9HvHx/7MA5yj21f4Yv9GouO17AmY5qJd/kkTk4s1g750M63xvuTr2dAgpSjWo0Ji76HpmdgxNBmYksvvNWv9J3TJ7WHZJD7UB6AFsZ2fh4atj3biiN3UcnUprksahZVrOb/FUj/nC8u8dQsl6mZTVLj77FchBydRpuU8S9PTNPM3yXxtudlJhA2CvlxSTks8RttSTCwf6+WCldE4l00wJfjF2TiqcWCWUM09TObXuaXk2jeRew4tNizOY//JOrRfoP5Qm/jRKd2JbEj86MTItafFGYWiwYZhttdGucJqfA/HpN5GfFnQ9WyQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1775638789; c=relaxed/relaxed;
+	bh=Ht+rPhWyMe3UW5A+lG+keRfUcxvrk24jWY22nD6V3is=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=LLUXxBEqOX3yhjMBKjzNALkwt/+V8iAoMhlUrhgHV86pWE+5Pd4xiyEGjexQbXtODbFVmge1z4Xt3WsxVEKz4la6GpggN3eKj9wrZ3qXnayXIfR6CKbSbWB1XNT6Qw+oqyRK52Qqkn4+D8jDHl2ZVknmgdNQbhaELmW+nHe/ymCBAWvlFvvhuBK3R53+FbUz5AezBlaFFYrlUYSIQSddBT9Hyt14hYN8Rn5LwThi7aSSR06gWxhVPXNsDjXt18nN5dZfyhj2GcqegmiyK1VxtWQCANh5h5A0mKhq80mBAjFXuX/hpROZZMnucK84/9NUs3hsF2+lfXjcf7D3nHJzTw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=iHWH5hbc; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eLQ5FHSQ;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=iHWH5hbc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
+Received: from OSPPR02CU001.outbound.protection.outlook.com (mail-norwayeastazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20f::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4frGd95q7vz2yC9
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2026 18:36:45 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6386HUIM2302913;
-	Wed, 8 Apr 2026 08:36:32 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=Loaw8P
-	pmykJdGoBeOuulDHAtP1xQoV6l9r+7fw4smo0=; b=eLQ5FHSQ3+llXRINXTMiBe
-	bwjAPlpSVdKsKItFWnus6pv4BdZudy0LbDWCTT8gEYvMb22lhBZo3OfzWe89SnuP
-	KMlAJfaN/lVHg/pZx4cS8d6o6tuCpiwNCxsoLVlz8//SoJ/Eko8u79etHyKC3VAr
-	qsf4CurZPXFCedwl6W5e/7LsgTlgjcXFJDjWTSRwXl7BgnviU/BwcjrO2GqAvnva
-	sPXUyYcM7uTrJt2PNHF1IU+fVuAXi5/di5xUT9M6msYaoXuEDRPWjFJNXhpKbL02
-	VUeYOgXkhwCRAZBdSRezMCg7CyU52iGDKk4KSRcVFPdYXgMGK+BDs6IlJRT3W5yw
-	==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dcn2ff19g-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 08 Apr 2026 08:36:31 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 63867pFK007892;
-	Wed, 8 Apr 2026 08:36:30 GMT
-Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dcmg2en52-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 08 Apr 2026 08:36:30 +0000
-Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
-	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6388aToh56558050
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 8 Apr 2026 08:36:29 GMT
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F187058056;
-	Wed,  8 Apr 2026 08:36:28 +0000 (GMT)
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9F05D5803F;
-	Wed,  8 Apr 2026 08:36:23 +0000 (GMT)
-Received: from [9.124.213.224] (unknown [9.124.213.224])
-	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  8 Apr 2026 08:36:23 +0000 (GMT)
-Message-ID: <5888f69f-c336-4151-a9ac-9b0b00f9c3bb@linux.ibm.com>
-Date: Wed, 8 Apr 2026 14:06:22 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4frH7m1pFSz2xc8
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2026 18:59:47 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=rj9zBnmRgM6nhiH5ODMoYG6hvkZr6985JiuCEue8odSbrdIQsiYZQuR+0sl9mJszbwXrmtaz9041+dkUG5XWMVqV0tnw5oUiWDY8fSOPidHjyN0JbGkWBcJf1PQjY3kUQEMWO29TyCicqll4ZN8I6eRQDkOOkIW3qldaZlywzgDxL/wVgBIsubtTY41pzDgwVKXdiRzJ2FT8BMtMq/PZHFuLKgZXQ7S7FtlfkRNXiAbla2nlZPGydQqSvEXT9POy7HdjX2m6cskgOPhV4kXYShXssa7LnumNY94Qv2WzlqbRgOmYnbBCgDmCBjfWyXlDQ7sHT7we9OUGVMC/l8IxTw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Ht+rPhWyMe3UW5A+lG+keRfUcxvrk24jWY22nD6V3is=;
+ b=QyQ8PrwnOLPFNgJCDuuq3TTJNrbfOJqVAU76MWUh5WaLUkj0M4J6lVVZmhh2f44lndUCaSrOLwOfoRS0g5R6D7NDYxb5H4WViZz2P+WXnVci1LLKc6QIsOM2x9QIIu8OxX9WuRXPrIslDbKSCijbbN/k8cQlQmJ1OULFMnJPWae7MQJlS68eZn0mYyaiftw+X7h8nkR7B/k2EUQkzA2QRmhAOO5aDKQeUBj0YD4yq9yxGqsAIGHLNMFFxne+q1erSFDU5oxrXJEj1BREk4vklj6Y1I7ewWTSAEFBaNq80zmVMSDnvPCjAiOpJHVQS60/SiAybzDNS6jl4+ngBgz5wA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Ht+rPhWyMe3UW5A+lG+keRfUcxvrk24jWY22nD6V3is=;
+ b=iHWH5hbcOLH6hYwe/qMaTjB5KM40+MH1/+qLwrKTO1btAJygHXhlCyDapIKBdu4eOsw+PV6mVpCc0Dq7NCcfDPXj7HsDFmU6+TK6vz1HFByovx98N61bFzwRelF/TmkHIUwQ3s3WRGyY8OBFV0tHRQAErPaJHfLpbl/5IaDcyg91DbxgfTNBf9oNI815HM3NnadGPgjnqmGPdCfuTcBUR+iRdDKR2/Zznyd0XzXsNdbeKB3FplAvFBI/iIPr2NwMlbg0aCU58R4ivmRbp63kFXYAOKr2vbTHi7DdaIXf6IcyJ6aRDsHMykaEv14pAgY7uGlQTOoVyTd7TUK3qB1l7A==
+Received: from AM8PR04MB7284.eurprd04.prod.outlook.com (2603:10a6:20b:1dc::8)
+ by AM7PR04MB7157.eurprd04.prod.outlook.com (2603:10a6:20b:118::20) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.18; Wed, 8 Apr
+ 2026 08:59:24 +0000
+Received: from AM8PR04MB7284.eurprd04.prod.outlook.com
+ ([fe80::9cd6:51bd:82b:98dc]) by AM8PR04MB7284.eurprd04.prod.outlook.com
+ ([fe80::9cd6:51bd:82b:98dc%5]) with mapi id 15.20.9769.014; Wed, 8 Apr 2026
+ 08:59:24 +0000
+From: Wei Fang <wei.fang@nxp.com>
+To: Jakub Kicinski <kuba@kernel.org>, Vladimir Oltean
+	<vladimir.oltean@nxp.com>
+CC: Claudiu Manoil <claudiu.manoil@nxp.com>, Clark Wang
+	<xiaoning.wang@nxp.com>, "andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>,
+	"davem@davemloft.net" <davem@davemloft.net>, "edumazet@google.com"
+	<edumazet@google.com>, "pabeni@redhat.com" <pabeni@redhat.com>,
+	"robh@kernel.org" <robh@kernel.org>, "krzk+dt@kernel.org"
+	<krzk+dt@kernel.org>, "conor+dt@kernel.org" <conor+dt@kernel.org>,
+	"f.fainelli@gmail.com" <f.fainelli@gmail.com>, Frank Li <frank.li@nxp.com>,
+	"chleroy@kernel.org" <chleroy@kernel.org>, "horms@kernel.org"
+	<horms@kernel.org>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>,
+	"andrew@lunn.ch" <andrew@lunn.ch>, "netdev@vger.kernel.org"
+	<netdev@vger.kernel.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org"
+	<devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+	<linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "imx@lists.linux.dev"
+	<imx@lists.linux.dev>
+Subject: RE: [PATCH v4 net-next 10/14] net: dsa: netc: introduce NXP NETC
+ switch driver for i.MX94
+Thread-Topic: [PATCH v4 net-next 10/14] net: dsa: netc: introduce NXP NETC
+ switch driver for i.MX94
+Thread-Index: AQHcwQGr6p6cQRIC50ifKdNlYVQM5LXMjU4AgAhWcVA=
+Date: Wed, 8 Apr 2026 08:59:24 +0000
+Message-ID:
+ <AM8PR04MB72840DBFC7F3FD578DFF6AF8885BA@AM8PR04MB7284.eurprd04.prod.outlook.com>
+References: <20260331113025.1566878-11-wei.fang@nxp.com>
+ <20260403011738.1795644-1-kuba@kernel.org>
+In-Reply-To: <20260403011738.1795644-1-kuba@kernel.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: AM8PR04MB7284:EE_|AM7PR04MB7157:EE_
+x-ms-office365-filtering-correlation-id: 5791bda8-1944-403c-b2a4-08de954d21c1
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|366016|19092799006|376014|7416014|1800799024|56012099003|22082099003|18002099003|38070700021;
+x-microsoft-antispam-message-info:
+ H3lByri3K01dHqYAJkes3Nceqs4YTmqCDt3PjB2y74tGOIYMl1170Ri5JOh2pJFAsAFhKwDlVMTYuULXrRDYpAbVl1/w0LwPwmzZW0hJTyCbKAKefh4NjFsM9SINlpEksJy1HepZRtld0wTmJDZF0M+lK8yWMV3NlkPwGChJlFLzDtUGdCteEX34xs+qXYMSjiY6Ylqynb/XeA6WAaBMQVBkxaVkx2AEKYETXYQdQimKsrFK1y/ZYY3IiqQrhKS+KpVluOd7etcSP2wrNIM7ss9hozVa5V4ZFzPNbFiGsCmcV07+dARm7R03M3WJ5IN8GwpMQoYz6x1OnC8R41moCYp+apAnOoqc9t2rLhKd0FkUj6SCGbhQ+QoiMYcpqH8dpBzYCIbAWuktlbbhlaIGKRixYM1SxK+7eGcM863H/KCaXlN9BB/iQ1vJ08jnO017mHypwupGh/1tkLbVgcyPIdkP7wXJiCBR+cO8nj9GqcLqmmQ7zdUvE/MiFlmR7krleu2lUs02at2qyIpLkNzY8BOng9XJd646ruF7lQVsS2clu+OJKn5rFntFw/Fq3Cvp2MssRsia2cAqF+7p/x6hx65cD2Yo8lFhmbM097VPg3KLAunzMffMoLF7Kz2H0VCIm1FE9/KATslv0PAjwXZms/IibhVSzLR5HLcLV9kuetWKlPn8AR9QXKKmJNaetB4/SBG+Yyl77CvrNUczeJ3xxny44nV/YOE0ygDFoyLm3a4vzsYnxP/Q6IVvy0L9ZCxVhexuwoAigDrP6Voe51ZyMLu5IdnInDI5RXGWqRUBwpc=
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM8PR04MB7284.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(19092799006)(376014)(7416014)(1800799024)(56012099003)(22082099003)(18002099003)(38070700021);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?us-ascii?Q?gVqnNiy8ekPLW97cOSz16ZHD8BjO5aLP8VB5V+1Obe5mNRKi7lIMHQpg5X7S?=
+ =?us-ascii?Q?bpoturLjD26QB503g+AjxCMbsrzhf6PsuqO7Y7cLqEWN0jotIlKLCxANMg++?=
+ =?us-ascii?Q?vdPzDhfZuRIxml4HTpIp89ARLR9phsnhQIj52zmjjHpKnP119uMCMwwAnMjp?=
+ =?us-ascii?Q?SYHaLxJLH7tW9NtLxz/9jCgaKKcfTWC0j2LtHfZiBNwdw7rG6JyAvdLgToAW?=
+ =?us-ascii?Q?rvVdd+mwTWCFOR8wqTvNYNl5QhBstBH0DBQ4ye6F7JoaPLpg3+0eHWk8i1lR?=
+ =?us-ascii?Q?Id1oE5rMmZL4gbgdPe+jTlb1V+7eD8mb7UqJ/UPJ72Oeb0456E1uYHAnBROR?=
+ =?us-ascii?Q?oaTvSZ3Nagq0Gi/LAbnAcAXjQc7Noo/h+RE948jahsVxTZZVMXVA5Yet/jR1?=
+ =?us-ascii?Q?xSc86Ia/aYvQpTIsk/zALM+/RiP2QWElN+3w4OWEeLbVZ9aHhgofMOSZWP2K?=
+ =?us-ascii?Q?7T6mRCf/Sr9usqpgc9yzuJVQDaTrOsVpKJZLGfprpMeiyj8e6YrkoW2aWEnl?=
+ =?us-ascii?Q?Cm1hbJ/a43XsNH/TyGa7Rx5wbdkcdTp7QlWnxJRh9h3eGe53zikncrT38GeU?=
+ =?us-ascii?Q?QgDLwwzchhqU/XKyGd0xfI5U3JoaF/goTketzP/2XrucEBTFW/7Xbbvt1PNS?=
+ =?us-ascii?Q?wnIMVFUheS1TxCgnwNjfEJp/VNd3Kz4So+oDDd65JxxdgyMmW3z78IWHLB9a?=
+ =?us-ascii?Q?Byf0lQoaX9EnUxzIohBONo+FK5ENdb5WQ7r32EM5Y//aOMMzgMkZmwLSkIjv?=
+ =?us-ascii?Q?eQiNW81ulh6nHq1uLYOY6aTICNFsXkXjKTZ5wixpcKbRoPx+n0/5Mq6I/pau?=
+ =?us-ascii?Q?q6DQ0AsxBaeGQH4Y+ZRLq3mTZqBNjHOs+xgs0Nbubqlj8n3zq0mVJshWSetN?=
+ =?us-ascii?Q?XJG65DbR5yc9AEcDvucrxf4w9uZdSIs9Uf4mDSHbgUVlk9iKbk1lRMZpMEGL?=
+ =?us-ascii?Q?CaamZYmq9OwbKAgCu/cU6KGcLgTmpGrirEtfTh5Vxov/s1ymE9BGLAMDoDYQ?=
+ =?us-ascii?Q?niNDfj608jn+P4ODXNNwo/DrAfk0OdlkLBsaEZY9wovW3Vioj8igfWo1Mcrb?=
+ =?us-ascii?Q?vivwe+HUHUcpmnSC8ULlcenaSkEh8YdEFu0yadJ3IXueHAeeeY/2rYJF59po?=
+ =?us-ascii?Q?SuD1BUORF9PEAkAHaw+5ZMWojeiQjz+WgbRgT+ZwrGT9ZhXNqLC28egxMaMH?=
+ =?us-ascii?Q?3jrIclUAHU0QRx+G8NNfINwJLYdhc3apPqzADVQY9Ft37LYe2Rk274+vkpQj?=
+ =?us-ascii?Q?rQxVaRfZfuJ3RKWB4s0fHoxXE/BjjMxAyx1H3m7eMMNNKtxndwJOldbQzODi?=
+ =?us-ascii?Q?rO1u4My2ZGApIW+Jh7YDWryLoAf1mI0xeJhDjJRiYh1zrzHOrDfmUnApZwTT?=
+ =?us-ascii?Q?lVtqE2rV5JhHJe/7wSh0sbKSdNb0slAXH8fKaLxB6zuCdi9p5rVW3sbsdSDI?=
+ =?us-ascii?Q?WHAyg0+1bi02UyvTVL2H8AebmHrTwpX13U6zxH2xzlpNj8r+g3mOI5vAD0A9?=
+ =?us-ascii?Q?nN9BGuEVzkqjogpL7c66IeJVWILkSszs7voayg+OJnlDvZ6Mw9duT9DV07J/?=
+ =?us-ascii?Q?A8/5N5fTXZzHqW6dT1DZGHkWrKRnT00lkVTJiMeyVJPZHzPFc0ULxSPhaDvT?=
+ =?us-ascii?Q?R5/fZgBzyHwYGUKqChsOTiCTOyTMvUa0A23/XF5qNWOBWi2uSduGvu0srGG8?=
+ =?us-ascii?Q?1GzdXa4FytF+YlVFbRyGgGxS57m1vl/oZ1HRH+qnsEvmL9DU?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,220 +145,172 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: Sayali Patil <sayalip@linux.ibm.com>
-Subject: Re: [PATCH v4 13/15] selftests/mm: move hwpoison setup into
- run_test() and silence modprobe output for memory-failure category
-To: Zi Yan <ziy@nvidia.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
-        linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-        linux-kselftest@vger.kernel.org,
-        Ritesh Harjani <ritesh.list@gmail.com>,
-        David Hildenbrand <david@kernel.org>, Michal Hocko <mhocko@kernel.org>,
-        Oscar Salvador <osalvador@suse.de>,
-        Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-        Dev Jain <dev.jain@arm.com>, Liam.Howlett@oracle.com,
-        linuxppc-dev@lists.ozlabs.org, Miaohe Lin <linmiaohe@huawei.com>,
-        Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-References: <cover.1775466329.git.sayalip@linux.ibm.com>
- <8ef8640092004d143fe80e6fc32ea8d30a9080de.1775466330.git.sayalip@linux.ibm.com>
- <8B26C697-4D0C-4E1E-A14E-D517CC9DA05A@nvidia.com>
-Content-Language: en-IN
-In-Reply-To: <8B26C697-4D0C-4E1E-A14E-D517CC9DA05A@nvidia.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDA4MDA3NCBTYWx0ZWRfXyMsFxjH5ZAEx
- QURUCqdCb6tU0N/lsaLNSWf4CEOXaX8rjiUOY2f9hY/TmFyeM71HOTuOsiDJLMe4Jlcf+FnL3WY
- RJ2ZF17PIJbmV0augrWBKXXMM4SBmk8AoBJiBZHxIFGNwriB2NjiKlaUdjRd7LCMTKXGQuBFkps
- QrV3/fQWJJAbNsSI8ZQ1rcL+cuTt2/7WDxKTqCrK8TSqxWAHF3/zhktufRjs8j9eGxn00YrEMrT
- d172/Y+aYGMmaHm90SDQR7y4YQjWMrYFCwk3QtXbAduAmOH20BjhbuPtq9c/3Bdd8zkXm9eGPt5
- lVfSy4Hpdm0eBU1EhhVx0SKDjDa6mAsSfUqBg2NQiWqzF8LwHDONvpsjhyVrJSxqVfC7zCKuFTl
- +ZHylFYG6N8BYtXWfkrKILdKK0mVxuHX9ZNyDfwI0qTX+Qk+Y/fFIMhEAiDXnhe9U4HkF4GEh1B
- dRVT82tQogAQrPzJMGA==
-X-Authority-Analysis: v=2.4 cv=FsY1OWrq c=1 sm=1 tr=0 ts=69d6138f cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8
- a=Ikd4Dj_1AAAA:8 a=39rta5gLTdMnewpgM9YA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: 0LbYInRYda5hNxNYcRJELdpDcjEyUcy7
-X-Proofpoint-GUID: 5A0vIPtpZv8knW7GWCJDMYoa_Kb2a2tu
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-08_03,2026-04-07_05,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 priorityscore=1501 impostorscore=0 spamscore=0 phishscore=0
- lowpriorityscore=0 clxscore=1015 adultscore=0 malwarescore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604010000 definitions=main-2604080074
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: AM8PR04MB7284.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 5791bda8-1944-403c-b2a4-08de954d21c1
+X-MS-Exchange-CrossTenant-originalarrivaltime: 08 Apr 2026 08:59:24.3946
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: qyr/n6eqJphGwf+gh1rqMMdQhcf/yhx9r1wV2a2jtbKrmgD4Dx3maGjZKGDaTWyVh2aQhuTfZVf84i3uqRVRlQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM7PR04MB7157
 
+> > +static int netc_init_switch_id(struct netc_switch *priv)
+> > +{
+> > +	struct netc_switch_regs *regs =3D &priv->regs;
+> > +	struct dsa_switch *ds =3D priv->ds;
+> > +
+> > +	/* The value of 0 is reserved for the VEPA switch and cannot
+> > +	 * be used.
+> > +	 */
+> > +	if (ds->index > SWCR_SWID || !ds->index) {
+> > +		dev_err(priv->dev, "Switch index %d out of range\n",
+> > +			ds->index);
+> > +		return -ERANGE;
+> > +	}
+>=20
+> Does this check cause the probe to fail unconditionally for standard
+> single-switch topologies?
+>=20
+> The DSA core typically assigns ds->index =3D 0 by default for the first s=
+witch.
+> Because !ds->index evaluates to true for index 0, this setup function wil=
+l
+> always fail unless the dsa,member property is explicitly overridden in th=
+e
+> device tree.
 
+As I mentioned in another mail, we added the 'dsa,member' property to the
+netc switch DT-binding doc, specifying that the 'member' (switch index) val=
+ue
+cannot be 0. And 'dsa,member' is a required property for netc switch.
 
-On 07/04/26 20:21, Zi Yan wrote:
-> On 6 Apr 2026, at 5:19, Sayali Patil wrote:
-> 
->> run_vmtests.sh contains special handling to ensure the hwpoison_inject
->> module is available for the memory-failure tests. This logic was
->> implemented outside of run_test(), making the setup category-specific
->> but managed globally.
->>
->> Move the hwpoison_inject handling into run_test() and restrict it
->> to the memory-failure category so that:
->> 1. the module is checked and loaded only when memory-failure tests run,
->> 2. the test is skipped if the module or the debugfs interface
->> (/sys/kernel/debug/hwpoison/) is not available.
->> 3. the module is unloaded after the test if it was loaded by the script.
->>
->> This localizes category-specific setup and makes the test flow
->> consistent with other per-category preparations.
->>
->> While updating this logic, fix the module availability check.
->> The script previously used:
->>
->> 	modprobe -R hwpoison_inject
->>
->> The -R option prints the resolved module name to stdout, causing every
->> run to print:
->>
->> 	hwpoison_inject
->>
->> in the test output, even when no action is required, introducing
->> unnecessary noise.
->>
->> Replace this with:
->>
->> 	modprobe -n hwpoison_inject
->>
->> which verifies that the module is loadable without producing output,
->> keeping the selftest logs clean and consistent.
->>
->> Also, ensure that skipped tests do not override a previously recorded
->> failure. A skipped test currently sets exitcode to ksft_skip even if a
->> prior test has failed, which can mask failures in the final exit status.
->> Update the logic to only set exitcode to ksft_skip when no failure has
->> been recorded.
->>
->> Fixes: ff4ef2fbd101 ("selftests/mm: add memory failure anonymous page test")
->> Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
->> ---
->>   tools/testing/selftests/mm/run_vmtests.sh | 52 ++++++++++++++---------
->>   1 file changed, 33 insertions(+), 19 deletions(-)
->>
->> diff --git a/tools/testing/selftests/mm/run_vmtests.sh b/tools/testing/selftests/mm/run_vmtests.sh
->> index afdcfd0d7cef..17c9bd910c47 100755
->> --- a/tools/testing/selftests/mm/run_vmtests.sh
->> +++ b/tools/testing/selftests/mm/run_vmtests.sh
->> @@ -235,6 +235,7 @@ pretty_name() {
->>   run_test() {
->>   	if test_selected ${CATEGORY}; then
->>   		local skip=0
->> +		local LOADED_MOD=0
-> 
-> Can you rename it to LOADED_MEMORY_FAILURE_MOD to clarify its use?
-> Since now LOADED_MOD is visible for the entire run_test().
+>=20
+> Could the driver translate the hardware ID internally, for example by wri=
+ting
+> ds->index + 1 to NETC_SWCR, rather than forcing this hardware-specific
+> restriction onto the software DSA index?
 
-Thanks for the review!
+The current approach is based on Vladimir's suggestion. I need to confirm w=
+ith
+Vladimir which approach is better.
 
-I kept it as LOADED_MOD and specified it as a local variable 
-intentionally. The idea was that, if any future tests are added that 
-need to verify whether the module was loaded, they can reuse the same 
-variable. For that reason, I did not make it specific to the memory 
-failure test.
+Hi Vladimir,
 
-Please let me know if you think otherwise.
+What are your thoughts on this suggestion? Is this approach better?
 
-Regards,
-Sayali
->>
->>   		# On memory constrainted systems some tests can fail to allocate hugepages.
->>   		# perform some cleanup before the test for a higher success rate.
->> @@ -250,6 +251,28 @@ run_test() {
->>   			fi
->>   		fi
->>
->> +		# Ensure hwpoison_inject is available for memory-failure tests
->> +		if [ "${CATEGORY}" = "memory-failure" ]; then
->> +			# Try to load hwpoison_inject if not present.
->> +			HWPOISON_DIR=/sys/kernel/debug/hwpoison/
->> +			if [ ! -d "$HWPOISON_DIR" ]; then
->> +				if ! modprobe -n hwpoison_inject > /dev/null 2>&1; then
->> +					echo "Module hwpoison_inject not found, skipping..." \
->> +						| tap_prefix
->> +					skip=1
->> +				else
->> +					modprobe hwpoison_inject > /dev/null 2>&1
->> +					LOADED_MOD=1
->> +					if [ ! -d "$HWPOISON_DIR" ]; then
->> +						echo "hwpoison debugfs interface not present" \
->> +							| tap_prefix
->> +						skip=1
->> +					fi
->> +				fi
->> +			fi
->> +
->> +		fi
->> +
->>   		local test=$(pretty_name "$*")
->>   		local title="running $*"
->>   		local sep=$(echo -n "$title" | tr "[:graph:][:space:]" -)
->> @@ -261,6 +284,12 @@ run_test() {
->>   		else
->>   			local ret=$ksft_skip
->>   		fi
->> +
->> +		# Unload hwpoison_inject if we loaded it
->> +		if [ -n "${LOADED_MOD}" ]; then
->> +			modprobe -r hwpoison_inject > /dev/null 2>&1
->> +		fi
->> +
->>   		count_total=$(( count_total + 1 ))
->>   		if [ $ret -eq 0 ]; then
->>   			count_pass=$(( count_pass + 1 ))
->> @@ -270,7 +299,9 @@ run_test() {
->>   			count_skip=$(( count_skip + 1 ))
->>   			echo "[SKIP]" | tap_prefix
->>   			echo "ok ${count_total} ${test} # SKIP" | tap_output
->> -			exitcode=$ksft_skip
->> +			if [ $exitcode -eq 0 ]; then
->> +				exitcode=$ksft_skip
->> +			fi
->>   		else
->>   			count_fail=$(( count_fail + 1 ))
->>   			echo "[FAIL]" | tap_prefix
->> @@ -529,24 +560,7 @@ CATEGORY="page_frag" run_test ./test_page_frag.sh nonaligned
->>
->>   CATEGORY="rmap" run_test ./rmap
->>
->> -# Try to load hwpoison_inject if not present.
->> -HWPOISON_DIR=/sys/kernel/debug/hwpoison/
->> -if [ ! -d "$HWPOISON_DIR" ]; then
->> -	if ! modprobe -q -R hwpoison_inject; then
->> -		echo "Module hwpoison_inject not found, skipping..."
->> -	else
->> -		modprobe hwpoison_inject > /dev/null 2>&1
->> -		LOADED_MOD=1
->> -	fi
->> -fi
->> -
->> -if [ -d "$HWPOISON_DIR" ]; then
->> -	CATEGORY="memory-failure" run_test ./memory-failure
->> -fi
->> -
->> -if [ -n "${LOADED_MOD}" ]; then
->> -	modprobe -r hwpoison_inject > /dev/null 2>&1
->> -fi
->> +CATEGORY="memory-failure" run_test ./memory-failure
->>
->>   if [ "${HAVE_HUGEPAGES}" = 1 ]; then
->>   	echo "$orig_nr_hugepgs" > /proc/sys/vm/nr_hugepages
->> -- 
-> 
-> Otherwise, LGTM.
-> 
-> Reviewed-by: Zi Yan <ziy@nvidia.com>
-> 
-> Best Regards,
-> Yan, Zi
+>=20
+> [ ... ]
+> > +	for_each_available_child_of_node_scoped(ports, child) {
+> > +		/* If the node does not have phy-handle property, then
+> > +		 * the port does not connect to a PHY, so the port is
+> > +		 * not the EMDIO consumer.
+> > +		 */
+> > +		phy_node =3D of_parse_phandle(child, "phy-handle", 0);
+> > +		if (!phy_node)
+> > +			continue;
+> > +
+> > +		if (!netc_port_is_emdio_consumer(child)) {
+> > +			of_node_put(phy_node);
+> > +			continue;
+> > +		}
+> > +
+> > +		phydev =3D of_phy_find_device(phy_node);
+> > +		of_node_put(phy_node);
+> > +		if (!phydev) {
+> > +			err =3D -EPROBE_DEFER;
+> > +			goto out;
+> > +		}
+>=20
+> Could this logic cause an infinite probe deferral loop for ports sharing =
+an
+> internal MDIO bus?
+>=20
+> The netc_port_is_emdio_consumer() function assumes any port node without
+> an
+> mdio child is an EMDIO consumer waiting for an external controller. Howev=
+er,
+> if multiple sibling ports on the same switch share a single internal MDIO=
+ bus
+> defined under one port, the other ports will lack an mdio child node.
+>=20
+> This would cause those ports to be mistakenly treated as external EMDIO
+> consumers, calling of_phy_find_device(). Because the internal MDIO bus is=
+ not
+> registered until later in netc_setup(), the PHY device cannot be found, a=
+nd
+> the driver returns -EPROBE_DEFER.
+>=20
+> Since netc_setup() is never reached, the MDIO bus is never registered,
+> causing an infinite deferral loop. Could the driver more accurately ident=
+ify
+> whether the PHY belongs to its own switch before deferring?
+
+This case will not be true, from the hardware perspective, the switch ports
+do not support share a single internal MDIO bus defined under one port.
+The internal MDIO bus of a port can only access its own external PHY. So
+a switch port must either use EMDIO to access its PHY or its internal MDIO
+bus to access its PHY.
+
+>=20
+> > +
+> > +		put_device(&phydev->mdio.dev);
+> > +	}
+> > +
+> > +out:
+> > +	of_node_put(ports);
+> > +
+> > +	return err;
+> > +}
+> > +
+> > +static int netc_switch_pci_init(struct pci_dev *pdev)
+> > +{
+> [ ... ]
+> > +	regs->base =3D pci_ioremap_bar(pdev, NETC_REGS_BAR);
+> > +	if (!regs->base) {
+> > +		err =3D -ENXIO;
+> > +		dev_err(dev, "pci_ioremap_bar() failed\n");
+> > +		goto release_mem_regions;
+> > +	}
+> [ ... ]
+> > +static void netc_switch_pci_destroy(struct pci_dev *pdev)
+> > +{
+> > +	struct netc_switch *priv =3D pci_get_drvdata(pdev);
+> > +
+> > +	iounmap(priv->regs.base);
+> > +	pci_release_mem_regions(pdev);
+> > +	pci_disable_device(pdev);
+> > +}
+>=20
+> Does unmapping the memory here introduce a use-after-unmap issue when the
+> MDIO bus is unregistered?
+>=20
+> The driver registers the MDIO bus using devm_of_mdiobus_register(), meani=
+ng
+> devres cleans it up asynchronously after the remove function returns or w=
+hen
+> probe fails.
+>=20
+> However, in netc_switch_pci_destroy(), the driver explicitly unmaps the P=
+CI
+> I/O memory via iounmap(). Since netc_switch_pci_destroy() is called
+> synchronously inside the remove function and probe error paths, the memor=
+y is
+> unmapped before the MDIO bus is unregistered by devres.
+>=20
+> When devres eventually unregisters the MDIO bus, it detaches PHY devices,
+> which often perform MDIO transactions during removal. Because the
+> underlying
+> memory priv->regs.base is already unmapped, these MDIO read/write callbac=
+ks
+> could trigger a synchronous external abort or kernel panic.
+>=20
+> Would it be better to use pcim_iomap() to tie the memory mapping lifecycl=
+e to
+> devres, ensuring it outlives the MDIO bus?
+
+Great, I will pcim_iomap().
 
 
