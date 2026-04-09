@@ -1,61 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-19527-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19528-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15262EA3C59
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Apr 2026 12:53:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3A79F364A1
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Apr 2026 16:49:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fs0GR5F3lz2ygf;
-	Thu, 09 Apr 2026 22:53:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775739183;
-	cv=none; b=WvgYOb3Bj29f/l6uR6dm0kYre/Z//Ym4CxNwCUkMMiRJiQwcklGtVPidX/RCZFsRMgH0rXjGAAvLWCDZnUY5yaMUXSFzc1WMS4xLpZs1uJCnyVru1sHUCoXOs30CphatF583uWC3NawpgVpqrBaBYAzs03sMErXFmi98sUYeemyIGedHIG95cAvn7YaKHl94M1lQlWD6h+2gbtmhRt/R228aaVzHcIHv2xdcJQHRUgAek+Y1C6/kpENqGxXc8Ts3wCCJ1FGmM9UQhc5hIk5mUCQT60zDBQ0msegjb5y2PLiexhkb6Sumaf+/0xPPeuSHr8CzmV/3AUArN5ZmGOcz9Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fs5WD2vKXz2yT0;
+	Fri, 10 Apr 2026 02:49:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775753368;
+	cv=none; b=dKuW7QzojdH4f3LmFHl2y8ZGG16TMpUkO720kVuK/2HhtfB+UhvGfFX+DhEC0t7KFJ1XIHmkULbT3kK1eAPVvVcgsZ1vDmy5nOUKlGdO0qLE/tvuEIGYfcvhGFkPxxB4XenRe7tvsPzXc3gIvsqwCK8m7I1B1RmeDOqwxRre7LAy/yf30qTLkcrDPYfVKW2vEWXjw3aCD6BnbzGPq5UiqF2cXCduZkYD2afJR9j8v2OfIAc9gneVuvbXjfP4uCTkyU5+zrMiPPBl5L0A74ppaNIEUSrb5zCsGFE8rW2361zHYmIGVGV0TNofOdBTVlZ8HvVpbKDUaXcrq0y2G3ZJbw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775739183; c=relaxed/relaxed;
-	bh=7PFz5XtfIRsLNoi9T+yTp0ln50ub+y81S0Yd92D0HNU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=cIDKy5f2xAC5rueqszetwLrh9GWhKePLtGImwBWbgEXZnN6ux9/qPg95CNb4z1Vy9YiiJlC8ewv5idnYXn4wCpHEK8+syw51GaGPAjwJBAeAT3f/bhapzSn1H4mCqvtrWb4EUO20C2nJsw2hmDUQTJpiweXHn3DDVZsUDkRGVv4OT+QOSRb9JMhNoE2IIDqY25a6r5hMaaQi1jOtMG4oITLeOHx1AoF59rnrXaXpLREBbLtUOqhCd4WrO86JMNDVoGdTAE/ZaDYMuCY3Wk6fFQPkB7/9/rbDYj7UCmKwkkyWAReGsv3uUNNK8gu8JLyHZTd9j3lW6mVpivX+6We5Ag==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LczClAb/; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1775753368; c=relaxed/relaxed;
+	bh=skeijJYAw0fiK+XGH88wl8oZ8yiStugPyY7G6KP4bYo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=M7msCoHSQnhwbL0GHTKNKwD3GdECi5g4QLh+yukcp3+P/AIH6EX1m81bn9aXI28F8CxP4YiN5sZLGpklcid5O5W0iHfArE6xsMu4tVzLq/ntGZIvD+YTtNHJ0oK/xrlWXEae+bxD8OyzHWTLgdXt2HHbQWoLfjxEmJcnmz5eTfsM6Yk5Vsm2d84te87X1oW1pSTp+F9I3tUfunG4+PPuV5BvmnwNT2u0GsuFFOo8x+XNtId4OqZGpNo4t70+JnBUFBQLK5GkyYPecUo2W5gO6Acsd7ulFTKl8p+xpcx9tEYG05nd5tmZ2J5JNo558Eu+ykXRqshu/ptKlk8H13Eu0A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PMFB/VR1; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LczClAb/;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PMFB/VR1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fs0GR0c6Sz2yfS
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Apr 2026 22:53:02 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id E4F4A43616;
-	Thu,  9 Apr 2026 12:53:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8FE98C4CEF7;
-	Thu,  9 Apr 2026 12:52:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775739180;
-	bh=rR3I96td5Fb7sMzKN7K6rnakhBmE145nsvZyacL0L2I=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=LczClAb/LRbUmKYYPH9OTWIJARoyFSqmlaXBmM1APMyoniy/Bqf7W9ZeeZarcuPyh
-	 iPgsO3rWwQLALEcc8UI8erCd0t49abxlHHlRfgEpeAA5qzEqh8m6QWa2fWxLHpfN94
-	 9moviaDptq5jChY8TsU2LAosDVo9LcuhFttd1fniQkEOj5xeGnTWHehHqwHvAc3USt
-	 TyPJRwjZ5tCzJCogcIgDo/qtEhYAU5S22hUo08OBe83FRj3gfkVk5jQ7Ngc/5i04/3
-	 GhUU3CK5XAtJzXJSkbExmQpkgfIGLoBAWToxRg8tHSwUjAHWnwP1uAiUIWSOGpHiiP
-	 BWfWpX8APIaig==
-Date: Thu, 9 Apr 2026 14:52:56 +0200
-From: Christian Brauner <brauner@kernel.org>
-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Haren Myneni <haren@linux.ibm.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Christophe Leroy <chleroy@kernel.org>, 
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, 
-	linux-kernel@vger.kernel.org
-Subject: Re: [RFC v1 1/6] pseries/papr-hvpipe: Fix null ptr deref in
- papr_hvpipe_dev_create_handle
-Message-ID: <20260409-viadukt-szenarien-4544001038fa@brauner>
-References: <cover.1775569027.git.ritesh.list@gmail.com>
- <5984bd91ad6d3541d08dc9f3c99e6de0214dbfcc.1775569027.git.ritesh.list@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fs5WC04Rzz2yS9
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 02:49:26 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 639AeONS2302396;
+	Thu, 9 Apr 2026 16:49:09 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=skeijJ
+	YAw0fiK+XGH88wl8oZ8yiStugPyY7G6KP4bYo=; b=PMFB/VR1NXWf8l0QKJrRcB
+	PHjR84wRDpsPwS1adRf/bF0JB+gkpC4Z4AXSJN+J5ZTSjlGI38MVL9tCj9OENoSR
+	bJI5EtM+A+3Bmvlu5yKGBoy2YRQgTGtNXu54wM/7581yDZE6EQWW7DoGvCqgZbBy
+	ZXDPbQuJX1KRD9BaD6ish3ZIg3KZpo6xHwaxWCK/B8ZJX23Zr9J+fSBZp+tb6L2S
+	gJ0OzwJhNi6mAF2iLhcTfMrnumMtQmwTbhU7lhltC6o1y2oDcVuip268j6xoIHAc
+	aeq8ynWzyyz9VJ5IySBSgMxzWG4hdQ0SRiBbXf0n99Grms+mCMdCtzm4ENevcnHA
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dcn2fp2ay-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 09 Apr 2026 16:49:08 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 639Cnqf7018946;
+	Thu, 9 Apr 2026 16:49:07 GMT
+Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dcme9mf5c-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 09 Apr 2026 16:49:07 +0000
+Received: from smtpav04.wdc07v.mail.ibm.com (smtpav04.wdc07v.mail.ibm.com [10.39.53.231])
+	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 639Gn7TF30605878
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 9 Apr 2026 16:49:07 GMT
+Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 45DB958052;
+	Thu,  9 Apr 2026 16:49:07 +0000 (GMT)
+Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E7C5B58050;
+	Thu,  9 Apr 2026 16:49:01 +0000 (GMT)
+Received: from [9.124.212.138] (unknown [9.124.212.138])
+	by smtpav04.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Thu,  9 Apr 2026 16:49:01 +0000 (GMT)
+Message-ID: <d90cd4aa-e0d9-43d2-926e-2154df924f97@linux.ibm.com>
+Date: Thu, 9 Apr 2026 22:18:39 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,39 +81,144 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <5984bd91ad6d3541d08dc9f3c99e6de0214dbfcc.1775569027.git.ritesh.list@gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 13/15] selftests/mm: move hwpoison setup into
+ run_test() and silence modprobe output for memory-failure category
+To: Zi Yan <ziy@nvidia.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
+        linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+        linux-kselftest@vger.kernel.org,
+        Ritesh Harjani <ritesh.list@gmail.com>,
+        David Hildenbrand <david@kernel.org>, Michal Hocko <mhocko@kernel.org>,
+        Oscar Salvador <osalvador@suse.de>,
+        Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+        Dev Jain <dev.jain@arm.com>, Liam.Howlett@oracle.com,
+        linuxppc-dev@lists.ozlabs.org, Miaohe Lin <linmiaohe@huawei.com>,
+        Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+References: <cover.1775466329.git.sayalip@linux.ibm.com>
+ <8ef8640092004d143fe80e6fc32ea8d30a9080de.1775466330.git.sayalip@linux.ibm.com>
+ <8B26C697-4D0C-4E1E-A14E-D517CC9DA05A@nvidia.com>
+ <5888f69f-c336-4151-a9ac-9b0b00f9c3bb@linux.ibm.com>
+ <B686276F-89E5-4192-8973-3B787FC8AC86@nvidia.com>
+Content-Language: en-IN
+From: Sayali Patil <sayalip@linux.ibm.com>
+In-Reply-To: <B686276F-89E5-4192-8973-3B787FC8AC86@nvidia.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDA5MDE1NCBTYWx0ZWRfXwvUI0Gwo1mcg
+ wa1oc4VivmfI6eqIsrx8m3q64N5D+QkE5qQAGXfOivbbn3ZQEqXfSmSlVy/K0Dps8xXoZaVMnCB
+ r5diJrPEAJbjIykV3ww3Eci0OcTESE3gTBHkmZAtxpF1wLrmCma1oB+WP6EDaOnI4oLY5Yfec59
+ kDQX1zfgi6bNccGxjRPs+kf5SglhOOehYCksJ7c1gPID6TvNffvYx+Ul+qHbSVvGrtRigilR3qr
+ piV9Bn1/LA/6Qvq/k99gi4NmG1Ak0U7LFnmHAZWVq/fFci4NHE3xtA8dOjqKA+EbSi6lTGmA6q2
+ g0y1+3k19oD+2rD4ovMYdGMm+IUYJe5kV66/kasDHEDStwCDNH4XpoGXa9MU4XGQvCH0GEFSTnY
+ qUlYgRvbvrZkuiTAaOX8TXhPSEOTDMp4+bHx+kgHvR3ExfQi7rvwMltrOwHHymce0EZe9ATuePU
+ tMWn/SL0eq3LJN0Ujqw==
+X-Authority-Analysis: v=2.4 cv=FsY1OWrq c=1 sm=1 tr=0 ts=69d7d885 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8
+ a=WTjc7Mk9pcOPGDH6nUsA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: xQKqax6dvX8APGiCVYRA2NgekkI8SNQd
+X-Proofpoint-GUID: ERlRxTJ0wNXRKaZ2H8ZfNUREZ1Be82IX
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-09_04,2026-04-09_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 priorityscore=1501 impostorscore=0 spamscore=0 phishscore=0
+ lowpriorityscore=0 clxscore=1015 adultscore=0 malwarescore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604010000 definitions=main-2604090154
 
-On Tue, Apr 07, 2026 at 08:01:35PM +0530, Ritesh Harjani (IBM) wrote:
-> Getting the following kernel panic in papr_hvpipe_dev_create_handle()
-> when trying to add src_info to the list.
->  Kernel attempted to write user page (0) - exploit attempt? (uid: 0)
->  BUG: Kernel NULL pointer dereference on write at 0x00000000
->  Faulting instruction address: 0xc0000000001b44a0
->  Oops: Kernel access of bad area, sig: 11 [#1]
->  ...
->  Call Trace:
->  papr_hvpipe_dev_ioctl+0x1f4/0x48c (unreliable)
->  sys_ioctl+0x528/0x1064
->  system_call_exception+0x128/0x360
->  system_call_vectored_common+0x15c/0x2ec
-> 
-> The error handling with FD_PREPARE's file cleanup and __free(kfree) auto
-> cleanup is getting too convoluted. This is mainly because we need to
-> ensure only 1 user get the srcID handle. To simplify this, we allocate
-> prepare the src_info in the beginning and add it to the global list
-> under a spinlock after checking that no duplicates exist.
-> 
-> This simplify the error handling where if the FD_ADD fails, we can
-> simply remove the src_info from the list.
-> 
-> Cc: Christian Brauner <brauner@kernel.org>
-> Fixes: 6d3789d347a7 ("papr-hvpipe: convert papr_hvpipe_dev_create_handle() to FD_PREPARE()")
-> Reported-by: Haren Myneni <haren@linux.ibm.com>
-> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-> ---
 
-Thanks for fixing this!
-Reviewed-by: Christian Brauner <brauner@kernel.org>
+
+On 08/04/26 21:10, Zi Yan wrote:
+> On 8 Apr 2026, at 4:36, Sayali Patil wrote:
+> 
+>> On 07/04/26 20:21, Zi Yan wrote:
+>>> On 6 Apr 2026, at 5:19, Sayali Patil wrote:
+>>>
+>>>> run_vmtests.sh contains special handling to ensure the hwpoison_inject
+>>>> module is available for the memory-failure tests. This logic was
+>>>> implemented outside of run_test(), making the setup category-specific
+>>>> but managed globally.
+>>>>
+>>>> Move the hwpoison_inject handling into run_test() and restrict it
+>>>> to the memory-failure category so that:
+>>>> 1. the module is checked and loaded only when memory-failure tests run,
+>>>> 2. the test is skipped if the module or the debugfs interface
+>>>> (/sys/kernel/debug/hwpoison/) is not available.
+>>>> 3. the module is unloaded after the test if it was loaded by the script.
+>>>>
+>>>> This localizes category-specific setup and makes the test flow
+>>>> consistent with other per-category preparations.
+>>>>
+>>>> While updating this logic, fix the module availability check.
+>>>> The script previously used:
+>>>>
+>>>> 	modprobe -R hwpoison_inject
+>>>>
+>>>> The -R option prints the resolved module name to stdout, causing every
+>>>> run to print:
+>>>>
+>>>> 	hwpoison_inject
+>>>>
+>>>> in the test output, even when no action is required, introducing
+>>>> unnecessary noise.
+>>>>
+>>>> Replace this with:
+>>>>
+>>>> 	modprobe -n hwpoison_inject
+>>>>
+>>>> which verifies that the module is loadable without producing output,
+>>>> keeping the selftest logs clean and consistent.
+>>>>
+>>>> Also, ensure that skipped tests do not override a previously recorded
+>>>> failure. A skipped test currently sets exitcode to ksft_skip even if a
+>>>> prior test has failed, which can mask failures in the final exit status.
+>>>> Update the logic to only set exitcode to ksft_skip when no failure has
+>>>> been recorded.
+>>>>
+>>>> Fixes: ff4ef2fbd101 ("selftests/mm: add memory failure anonymous page test")
+>>>> Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
+>>>> ---
+>>>>    tools/testing/selftests/mm/run_vmtests.sh | 52 ++++++++++++++---------
+>>>>    1 file changed, 33 insertions(+), 19 deletions(-)
+>>>>
+>>>> diff --git a/tools/testing/selftests/mm/run_vmtests.sh b/tools/testing/selftests/mm/run_vmtests.sh
+>>>> index afdcfd0d7cef..17c9bd910c47 100755
+>>>> --- a/tools/testing/selftests/mm/run_vmtests.sh
+>>>> +++ b/tools/testing/selftests/mm/run_vmtests.sh
+>>>> @@ -235,6 +235,7 @@ pretty_name() {
+>>>>    run_test() {
+>>>>    	if test_selected ${CATEGORY}; then
+>>>>    		local skip=0
+>>>> +		local LOADED_MOD=0
+>>>
+>>> Can you rename it to LOADED_MEMORY_FAILURE_MOD to clarify its use?
+>>> Since now LOADED_MOD is visible for the entire run_test().
+>>
+>> Thanks for the review!
+>>
+>> I kept it as LOADED_MOD and specified it as a local variable intentionally. The idea was that, if any future tests are added that need to verify whether the module was loaded, they can reuse the same variable. For that reason, I did not make it specific to the memory failure test.
+> 
+> You mean future tests that use hwpoison_inject module? Or any future tests
+> that load a module? For the former, you can use LOADED_HWPOISON_INJECT_MOD;
+> for the latter, I am not sure how a single LOADED_MOD would work for
+> different modules and that probably would need new code for that case.
+> 
+> My point is that since LOADED_MOD is now in the scope of run_test(), it is
+> unclear which test uses it without reading the entire run_test(). Giving a
+> specific name improves readability.
+> 
+> 
+> Best Regards,
+> Yan, Zi
+> 
+Sure, will rename LOADED_MOD to LOADED_HWPOISON_INJECT_MOD in the next 
+version.
+
+Thanks,
+Sayali
 
