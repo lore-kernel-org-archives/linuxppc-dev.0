@@ -1,96 +1,90 @@
-Return-Path: <linuxppc-dev+bounces-19524-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19525-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C3CD2E9DE62
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Apr 2026 08:07:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E13DBE9DE76
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Apr 2026 09:15:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4frsxK3NsYz2ygf;
-	Thu, 09 Apr 2026 18:07:49 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c202::7" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775722069;
-	cv=pass; b=QkJ1weopBv0Q5y1MlXATO/PgUx86UlwA2YUpWd/X6TWwTN9hPpxjc6uF/am8t/+0ZJ91roLfuPuvNEvFfXIIz5bUSSZ+gTthWxxazMLDGwqMejeM5CGpwqz0/S/oKdsJGtxtgZ54+Ekzl/DV3njX0BiYQSM44FNJprshS1t07FXApP8Y3o8IlV5XUJsJddswMYDCTVg9quHMx4fCX+Qrjr2To8nRRMQzjQLrMy243i+B0xjyVb0FUlSm/XDJNSuKZKOgdw2rNxPjamalJV1Z4WNdCVX3vopxhpSRk5eJHfra6BUCpiW36UjjjvL65kkLhLfcUHyaKMYVk2+aOc5uVg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775722069; c=relaxed/relaxed;
-	bh=qM/m6AwdwyIVhFOQUbXvoZabKUxpr7rQVsJRUNxy+y0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=e9NX24PrYiHDX/ShdX4yhXDaahbB5ktDXEy7TSovQ6Adtuq14V6NcOGtvhLtwC7tJ9KZzyV16cueQ3eXa0Gc2tJT9w/23AOr4GnlHNKdtk1bE1t67/I8kQlqjsf1YiT50oHIGFcE+ZPFzQmltJss7ix0YJpFykARvBtx8zh8fWxb+xsaOLfYDmeaYmKHHHe540MErk+dfu0DGHPQ1BeA690UGAN44HDH4C+3FSUv3K65jbWm68FqX1gsNgoAKgcRn0t3o1ioVn3igqbsMeFHtYy3gSk9iiFRxsfaMIjh5tGGVYTOtCMNSPbmYzdQy6HCRHil7fBEP1Zjl7mIlUf5JQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=WLc68t38; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c202::7; helo=gvxpr05cu001.outbound.protection.outlook.com; envelope-from=vladimir.oltean@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4frvQs2x2Sz2ygf;
+	Thu, 09 Apr 2026 19:15:01 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775726101;
+	cv=none; b=jbDnQUit6RVGiA8HPYuHhAGvRA0MRj+GsMpUGZfo2GRKbercNtz4vQ/8BelcHGpZu9J+Au2ZziaHTBu4IdUcP7zewjP3jImck+dOJjPqMtHn2QR75MF4dOkk2dOUTwJ1SMFrQ38+PvflQnv2tnQIUW733197thKFLACBEyUvXzK3dqAg1T/EMWR32IzVfRPyttM1tGyyKvySLXmwWSGfXA1MohWEMjKOpVUXbUp/+2mueLjJjUU2tU1P1aXYyROJPTOvuv9PlRZt2Mvgvy1XQnTLO6/LLqs3RX6YdrPyOp2lT8Gz2Fo09EqsyqS0Qh49+LpEqd2cu/Ttxcj1kSaesw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1775726101; c=relaxed/relaxed;
+	bh=qztn0r0ppqqfTSSHEE5GGMaEoUogSLVB8uoV0JfYYPA=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=egRHlSIaqfLKOSWF68UGIFihz0eMLLZD6eWliZjyVxO3SyMbnSQo/P2b1gEKa6VCYAOK+BJTyJYlMJoNFPVRGHlm0jePigbMU+cCGqoCTbgNZtIVtcrWNbOBIG4gN6yYjA0I6HU8Qjy5o/EdRx+9WBMiZ5SKp7vpl2PPvP7KUwzHzi+pDXUE3JSjhIf0GUrFN1vmMIXI2hJ60UluVa0G4QeYHEfcLUw2gZGD6F+o1B+MF6kzk3lGWaRr0VDCDFAF96LJF5WU/gVxNvumV0OMUVLP6r4nMBcGptQ/q9ffvhwEBNrIEzwsKcdirMnuAwsl2S3CVhiqdMbUdFHq47ySaA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CnUpwO8I; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=WLc68t38;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CnUpwO8I;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c202::7; helo=gvxpr05cu001.outbound.protection.outlook.com; envelope-from=vladimir.oltean@nxp.com; receiver=lists.ozlabs.org)
-Received: from GVXPR05CU001.outbound.protection.outlook.com (mail-swedencentralazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c202::7])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4frsxH4zhQz2ySc
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Apr 2026 18:07:47 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=c0qqScQjmGnBFCQ/4DTrD/Q7lD8U3xp5of6LZpBjpKNJNDkFz78QztAsCLLIIGHwhkx4pQNZuEdgPYtwbtTfPVg6L9nBfvSfQFzUdKYX6rCr27+ZSWIjRofO96j42MmSxNIjF64Q/5IruLgAfMe9vrDvapliksu5VngG/whjZYkkoMQyBS5CjK3+G3+9y6A5mIiVdwgRqNFNEg4Py0NTFeWx+Gt8Nb/l4/ZH4ui6qHwkBf+4eRQkEyKmiK99Whr8yh5QOg6XEEdCWlsnmWnOYPp0oNFuSoig/bou4TVPWrNDFBuNSqVGkF9a4TH8+4/vKVryVVpNcW3+fN4hb6yduA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=qM/m6AwdwyIVhFOQUbXvoZabKUxpr7rQVsJRUNxy+y0=;
- b=ihosazG6zqpq3ug88ve/Ql9nWdUG4G2sm3GFnab++GwwBeBhgf00A0TTtG2JUBZsIBzmhdukQ08ED3ekIsOCITAkZ9tjZ8o5SPoCT4Td1tiLfbJo4aDKzWyRFvvewIJ6rHAeiX+8BR1nKLy7M2uhsyYfLa5t+AJ0mq0sYVutc5ghjBrNxkOUJ7trOfQHadEs2Rr5YV/G31UBq1S3Or/vWuOcp5xxok//TvBDg5JcsRWmnbIXP5KZ3xlPCkmstYTC3uYuxtQVJRoXyDlCuJ0hVnAIrRb5hdXVPSRVu7sR9njxM+6HYIQiQP6Tqcn+3qUqRGKiZJcNqXtlkZRbfKr94w==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=qM/m6AwdwyIVhFOQUbXvoZabKUxpr7rQVsJRUNxy+y0=;
- b=WLc68t38Vhp/E1ld5dqmuoseYXX1JKanlBM9MpkffOI/WV2Fno0Pr1M3wwEU/Zr1Qruujw0dyy79+txWHrORyg0v/GWC/7Ied2vd1Jos4HkNGmloRI+vTjedgjEm2bypq7Rj8Co3T3KW5aIs4zVWxpnGmKN38P1MipC/LyxfVh4nmR9+dKfVrYj2RO4d+/BEwH9wQkY03ZGPgekMyFz9nB/OLWvOgdmeq7dnF0bz9dUwKPOEOjTwAS2py9ePdrsPbbEER3gIT5C+wy9ITglfDa1awaSjvahmLU8yYLusaOpKrPhgi9/gkMBtCfK/Fn1TJd6N7Z8t1iXQjWmjJvjuNw==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Received: from AM9PR04MB8585.eurprd04.prod.outlook.com (2603:10a6:20b:438::13)
- by VI2PR04MB10288.eurprd04.prod.outlook.com (2603:10a6:800:220::17) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.17; Thu, 9 Apr
- 2026 08:07:16 +0000
-Received: from AM9PR04MB8585.eurprd04.prod.outlook.com
- ([fe80::f010:fca8:7ef:62f4]) by AM9PR04MB8585.eurprd04.prod.outlook.com
- ([fe80::f010:fca8:7ef:62f4%4]) with mapi id 15.20.9769.017; Thu, 9 Apr 2026
- 08:07:15 +0000
-Date: Thu, 9 Apr 2026 11:07:11 +0300
-From: Vladimir Oltean <vladimir.oltean@nxp.com>
-To: Wei Fang <wei.fang@nxp.com>
-Cc: Jakub Kicinski <kuba@kernel.org>,
-	Claudiu Manoil <claudiu.manoil@nxp.com>,
-	Clark Wang <xiaoning.wang@nxp.com>,
-	"andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>,
-	"davem@davemloft.net" <davem@davemloft.net>,
-	"edumazet@google.com" <edumazet@google.com>,
-	"pabeni@redhat.com" <pabeni@redhat.com>,
-	"robh@kernel.org" <robh@kernel.org>,
-	"krzk+dt@kernel.org" <krzk+dt@kernel.org>,
-	"conor+dt@kernel.org" <conor+dt@kernel.org>,
-	"f.fainelli@gmail.com" <f.fainelli@gmail.com>,
-	Frank Li <frank.li@nxp.com>,
-	"chleroy@kernel.org" <chleroy@kernel.org>,
-	"horms@kernel.org" <horms@kernel.org>,
-	"linux@armlinux.org.uk" <linux@armlinux.org.uk>,
-	"andrew@lunn.ch" <andrew@lunn.ch>,
-	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
-	"imx@lists.linux.dev" <imx@lists.linux.dev>
-Subject: Re: [PATCH v4 net-next 10/14] net: dsa: netc: introduce NXP NETC
- switch driver for i.MX94
-Message-ID: <20260409080711.j4kmavt7utef2kil@skbuf>
-References: <20260331113025.1566878-11-wei.fang@nxp.com>
- <20260403011738.1795644-1-kuba@kernel.org>
- <AM8PR04MB72840DBFC7F3FD578DFF6AF8885BA@AM8PR04MB7284.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <AM8PR04MB72840DBFC7F3FD578DFF6AF8885BA@AM8PR04MB7284.eurprd04.prod.outlook.com>
-X-ClientProxiedBy: WA2P291CA0040.POLP291.PROD.OUTLOOK.COM
- (2603:10a6:1d0:1f::24) To AM9PR04MB8585.eurprd04.prod.outlook.com
- (2603:10a6:20b:438::13)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4frvQq2cBtz2xGF
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Apr 2026 19:14:58 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 638I5ijO2304658;
+	Thu, 9 Apr 2026 09:14:42 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=qztn0r
+	0ppqqfTSSHEE5GGMaEoUogSLVB8uoV0JfYYPA=; b=CnUpwO8IEPBif0oOYhiDN1
+	kKwTxbQ3z4oLHGiuTnwOp2S2R6mVh2byJUfia1iWfnG/I1rdnnFCu+JdjNLXNc9t
+	+S5H5DjTiUDYij6t7Huc60UPf2sHeuHKpWxyHvHsa2eOxtFlNqiEWMB2cHuGmdVb
+	msY5fi8u/B3AAeM4JVc3FEQXoJFv/GUfCCHbhBaCnfh/0NbJUT86kiIvHkNGsbGo
+	7KKa6QuSmT8HHvioRRPVkmHpW6oV89SD8HzIScZ2gmtTUq9eURPCSZhU8JqPZVOo
+	IxwBelbvY1jxtqR5bYpPSzqgf25M655SQNhWGfVEwnJourfTYDlyp8eZJxorNNYg
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dcn2g3cdc-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 09 Apr 2026 09:14:41 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 63983O6E013824;
+	Thu, 9 Apr 2026 09:14:41 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dcmf4ay52-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 09 Apr 2026 09:14:41 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6399Eau231457868
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 9 Apr 2026 09:14:36 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A44562004B;
+	Thu,  9 Apr 2026 09:14:36 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 01B7E20040;
+	Thu,  9 Apr 2026 09:14:34 +0000 (GMT)
+Received: from shivang.upadyay (unknown [9.123.12.247])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu,  9 Apr 2026 09:14:33 +0000 (GMT)
+Message-ID: <72dc5a95bfa2fbb24df65428a435547dece676fa.camel@linux.ibm.com>
+Subject: Re: [PATCH] ppc/fadump: invoke kmsg_dump in fadump panic path
+From: Shivang Upadhyay <shivangu@linux.ibm.com>
+To: Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        chleroy@kernel.org, kees@kernel.org, tony.luck@intel.com,
+        gpiccoli@igalia.com, ritesh.list@gmail.com, rppt@kernel.org,
+        Hari Bathini
+ <hbathini@linux.ibm.com>,
+        Mahesh Salgaonkar <mahesh@linux.ibm.com>,
+        Shirisha G <shirisha@linux.ibm.com>
+Date: Thu, 09 Apr 2026 14:44:33 +0530
+In-Reply-To: <99c837d3-7b70-425e-b1e3-e4e5361eca5c@linux.ibm.com>
+References: <20260407054341.308710-1-shivangu@linux.ibm.com>
+	 <99c837d3-7b70-425e-b1e3-e4e5361eca5c@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2 (3.56.2-2.fc42) 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,106 +98,167 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: AM9PR04MB8585:EE_|VI2PR04MB10288:EE_
-X-MS-Office365-Filtering-Correlation-Id: 44d29ac3-c40e-47bd-64b0-08de960f02ed
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|10070799003|366016|1800799024|19092799006|18002099003|56012099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	P4Y9azEzIgp0cSA25iHKurtbnqBTcZYM61C1Z6YiXtt+vcc6xOp6CkDSs4TKyxqfRiJCzFwgoMCiR5qmgrQi+GZ6lxOHk3GrwOfiB939iqxW99YddzVAQp9ohsvWajgNpfIPQpBgu+PAcHq/P+yksDTptDqzUausOwaBr5Qih3jN6SLL68VMDUeeff/dWKAPXXNto7od+p4DHYig0L2S/Ir6oeSCOQdt/hR8diF6CaLi3NexT47jFcOxitqSm1kXiw9qCCbHNeRnCzbOCUmFhl/l9yTtrsj24Hy+jQ+JnDK0BvRdMmwWGvIBK86vumOHAo8/tq4iZApmawdntcHdrNLC0brreNFvacz+0942gqEUNjj/oSDRPt68SFXcxl/kFUKUxLFq9cH74APCpJhycmbQFgSWvhR0uwrroXfg2m4ss8P7DW+HGs45EyRZ7AmYFwA7cW4YJ+SkJubwUMQpX3/1p/of6tn2x9LKNFIRRKBcSoU/G0jcONK1kWQ/P8nc5zG8J1P9PjnMh3prlRDsyI239NuZ2/QMJ+FiS5VskvOveeDiSv92E0NcubhQITjz0aCe+2X/C7oOTSk5BK91aWv5BJglxE3wkNljmmqXga5PF88fjqp7U3ADvxXymtveeZKvwvdjMwW0mJvk1GzWNVTwU3VxZbj/GdYFDN+p7E5GYk7xiHDVTv/IdtMkDmtYx7ZXlgZPiFjHNkrsSoseur5PCCc4VZiJYTfgQO8Ldw0=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM9PR04MB8585.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(10070799003)(366016)(1800799024)(19092799006)(18002099003)(56012099003)(22082099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?ipTUrx/RuadnRFQ22K3ej6zrK1dHL6fDTxReEQUCtENUneU/WdXYFQCSy5lg?=
- =?us-ascii?Q?VjUFhJCdkjCoAo8nPI9JpdtV4bPa3G6zXJb9N2wpNKzU58dRew1hrBS6PN6W?=
- =?us-ascii?Q?wuSESS0R2Wgd+PjYwMwQQRLn1QpVIPdwOpid+5rHm1pmt2/mOsNqZssHq3qB?=
- =?us-ascii?Q?nEp2rEnkSjbZaUSBtTz4f7EwFwERsMr1PP47l3bBJhCCIO7ksuLaICXrYXMs?=
- =?us-ascii?Q?vwqSrkFMNsDPPqLIeUvbpc3L6tOdNuoLeUGfSe8LktHyyqMW2M0n+CGpd4+e?=
- =?us-ascii?Q?nV7iqglNQ1FcpPynuyh+xIM9G0kaH7FP/Qql0G7vSFmW6hMJ+BaMJQHokoWE?=
- =?us-ascii?Q?08+QtkLxsxHbQmDP2f4FwzqZvTAS21lPXO8/2b2Y6xZ8Zjipc/dxsqraLcxU?=
- =?us-ascii?Q?y5mn0FCNbT4oIBTL5o7Vlz2guuRGKQOIeD5MrdAwX0RG0rtNQ8c9tK8r5/01?=
- =?us-ascii?Q?dBMC/vhR1TrB5lbaTv9EkpI2FhbrL3NMDFHVsg3kFoz7EdqGavGcxPNYHH9d?=
- =?us-ascii?Q?MAvN2zyfAEZqiBr1O8gQ7Fn/XYstT2j0ZPldKlJz7RW5zGWTWam6nALvpCLN?=
- =?us-ascii?Q?okzcWswOTaTJ19FLX9hAbUbwdg/EKqaJ5TVRP9uJ4xa2QlexrhaUQfqGEw57?=
- =?us-ascii?Q?h0JVAmxccCRp7OtcIwETfVBg8rys8vvpJrRY84Gq24qANVNT9QHIjR9ddHTa?=
- =?us-ascii?Q?3eDzhXEApMbicNoa2/IETW7WVhkB/WD4kwx75DoGnwuCrDn3fQiCsGOPwu1I?=
- =?us-ascii?Q?dQyF5FPmHvYRghG4oL24GylLIep5nGygx8ghCAh4Jvld439Mml7Ycq8nv8Gz?=
- =?us-ascii?Q?YolLxH9R6oYmgCkCG5XSuoTzGgUIo65SUA596ZTX6A+FelCz5O1FHitL2ase?=
- =?us-ascii?Q?nliUoxBEB6lNo76lHGxtcU7NaR8iVaZ7Rpb/7MbNiNZeYsn7Ze3D6pXKseyC?=
- =?us-ascii?Q?2R662Ds7n9zh68fEbbZRs+XpvfqZh85vRIpOTGkTk2+XUEMl45XujeWyc3d8?=
- =?us-ascii?Q?SKl8v0pk/Eyu3LtUjKyR4M15s48g1q8R4kYHF0mu8g0ani/j6DCrmRFzsMB8?=
- =?us-ascii?Q?vCRPMl6za1gRSMiuAp7/kwz6GvElwzTibI6OF+9vsXdP9Mnv6mVhNhTCekRt?=
- =?us-ascii?Q?rlr1em0/UXthsaqg9BPe18oLqogdSK+narhyP7s5l3lFUFYDxM+DfzrN0kJg?=
- =?us-ascii?Q?K1/tQoZPKPir/0Wvodxn8kTphHzSupZsYIXq1vMKy3SOsQ+HdS2n9v+OIR1u?=
- =?us-ascii?Q?dhtDpe8I+fnlZmE3txcEUGP0gdbaypOY1NI/AwuXfqOvvfSEOS1pHLNqiEVI?=
- =?us-ascii?Q?HdYV3GH5ZrcivnUJgy02Q9bTHIkuV3+nfcxOeZdtISUEVpu2OaWEgHweCsMg?=
- =?us-ascii?Q?uzg4NG6ddnh8vcNacKMcP7RBWPZ9Y8o+4Bhwrjl5nMGLcD3VY5LDb1QpvHvF?=
- =?us-ascii?Q?uziBnMESvFuIfmrKBoGNvSRxQ6JBAhN53ixQxS0qdv9Ui0Vb+njOZNwglEWP?=
- =?us-ascii?Q?MlrBtpORLj3ynGvb0vjH1cOW+Gg/jvI8ZL89vSoU2d4jB6CHLo9HKc0i3IJE?=
- =?us-ascii?Q?EhSlxvEgquc42HPFAIh90M591SMSou7geysvz7ZWZwmeze8XOjJ60JLoM/1i?=
- =?us-ascii?Q?b5BRY9cCQurkr7syAj8Su885+e+rNJH2JGuBgyIKxZmUN74fY+qqjR/SJtZH?=
- =?us-ascii?Q?eJceswGmG22tA5JomBqUrl8wALCRfLqo0Q1eb2iLK/qCSm8aJvFKfF2rvJIW?=
- =?us-ascii?Q?ymGXb+kB389HZkmYiyC9cPcc0kVBU1Jn2LUL4mhV6jdpJEaz+ycnvXuv1g0C?=
-X-MS-Exchange-AntiSpam-MessageData-1: tvBi4CkyNFc5kQ==
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 44d29ac3-c40e-47bd-64b0-08de960f02ed
-X-MS-Exchange-CrossTenant-AuthSource: AM9PR04MB8585.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Apr 2026 08:07:15.2692
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: m341qPkSwnkfn3BWMo8jXmdmAwWRCplUNejKDA4j0VGb8KXWPNQDDoJ7c92ivslT7oC9kmnca+7TQ44TzcLAeA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI2PR04MB10288
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=KeridwYD c=1 sm=1 tr=0 ts=69d76e02 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=c92rfblmAAAA:8
+ a=VnNF1IyMAAAA:8 a=P-IC7800AAAA:8 a=pGLkceISAAAA:8 a=WMI16Cjdq0lrhamvfOQA:9
+ a=QEXdDO2ut3YA:10 a=GvGzcOZaWPEFPQC_NcjD:22 a=d3PnA9EDa4IxuAV0gXij:22
+X-Proofpoint-ORIG-GUID: iP8FdnExCGRarXAQ-Wm1ZeOS_2T9oI3h
+X-Proofpoint-GUID: 97fRoAlpzxd3NPk3ShcGcV084K1lIZoK
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDA5MDA3NyBTYWx0ZWRfX9F92c8r4ccef
+ iOxut1g/Hq1NNn+BAD7d89JArOejkNL7PCvAIuqgZDG8aqiuPhQ0j2Sxztp89fZFiTK5VDaybi3
+ xJA1EBuv2C5zvX9s1fF8ixl7Yjovk4hO4xL51Qsc90hRP0AwzbLMJxOLuoZ9HusRAzDh1Qfr9Nd
+ OpdT26t4gebqf9AftADC/c0bhR7bWUJAhofW7/SKsUHhBc/bAfE4ANpbgNKRPcb1VnneYdS7+WP
+ 0rhEAMjBRVySOy2zj7tsmz8aFscr7rF8eRQNV/1mrU6NuTRHq8gWPRcWwhJrTIjhyL3Svdop5Mr
+ X7zKE0lPPGCwUj6vUT2+rfp00EElAWghf0DddEOisFTpZeMnRhgtj1aPaL9QWWrBIacUtO3TahP
+ 4A+CCPNh1mNIcWe8LZ2YhAlJlQn21G54aNVd3MFsNQ11u/3xQj/1tOJDOv+uNKKPlkFYNvA3/IU
+ ZwIvQA4mpylyrMQng8w==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-09_02,2026-04-08_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 malwarescore=0 lowpriorityscore=0 adultscore=0 impostorscore=0
+ clxscore=1015 phishscore=0 priorityscore=1501 spamscore=0 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604010000 definitions=main-2604090077
 
-On Wed, Apr 08, 2026 at 11:59:24AM +0300, Wei Fang wrote:
-> > > +static int netc_init_switch_id(struct netc_switch *priv)
-> > > +{
-> > > +	struct netc_switch_regs *regs = &priv->regs;
-> > > +	struct dsa_switch *ds = priv->ds;
-> > > +
-> > > +	/* The value of 0 is reserved for the VEPA switch and cannot
-> > > +	 * be used.
-> > > +	 */
-> > > +	if (ds->index > SWCR_SWID || !ds->index) {
-> > > +		dev_err(priv->dev, "Switch index %d out of range\n",
-> > > +			ds->index);
-> > > +		return -ERANGE;
-> > > +	}
-> > 
-> > Does this check cause the probe to fail unconditionally for standard
-> > single-switch topologies?
-> > 
-> > The DSA core typically assigns ds->index = 0 by default for the first switch.
-> > Because !ds->index evaluates to true for index 0, this setup function will
-> > always fail unless the dsa,member property is explicitly overridden in the
-> > device tree.
-> 
-> As I mentioned in another mail, we added the 'dsa,member' property to the
-> netc switch DT-binding doc, specifying that the 'member' (switch index) value
-> cannot be 0. And 'dsa,member' is a required property for netc switch.
-> 
-> > 
-> > Could the driver translate the hardware ID internally, for example by writing
-> > ds->index + 1 to NETC_SWCR, rather than forcing this hardware-specific
-> > restriction onto the software DSA index?
-> 
-> The current approach is based on Vladimir's suggestion. I need to confirm with
-> Vladimir which approach is better.
-> 
-> Hi Vladimir,
-> 
-> What are your thoughts on this suggestion? Is this approach better?
+Hi Sourabh,
 
-I maintain it is preferable/simpler the way you are doing it, with a 1:1 mapping.
-The LLM's concern would be more valid if the switch were discrete and every
-board DTS author would have to remember to place the dsa,member property.
-But the switch OF node will live in an SoC dtsi.
+On Tue, 2026-04-07 at 21:00 +0530, Sourabh Jain wrote:
+> Hello Shivang,
+>=20
+> On 07/04/26 11:13, Shivang Upadhyay wrote:
+> > fadump is registered in panic_notifier_list and gets triggered
+> > before kmsg_dump_desc() in the panic path. As a result,
+> > kmsg_dumpers (e.g. pstore) are not executed.
+>=20
+> Can you emphasize why it is important to call kmsg_dump_desc()?
+> Because fadump captures the full memory dump anyway.
+>=20
 
-Maybe you could put something along these lines in the commit message,
-hopefully the LLM will pick it up and stop complaining.
+Sure. So pstore kmsg_dump can be useful in the cases where we fail to
+reboot system with kdump/fadump. Because pstore kmsg dump is collected
+during the crashing kernel, it can be *only* information that we
+collect from that system.
+
+>=20
+> > Invoke kmsg_dump_desc() from the fadump handler to ensure
+> > kmsg_dumpers are called during panic.
+>=20
+> Can you please add some command output from before and after
+> this patch series? It will make it easier to understand the impact of
+> the changes=20
+
+To test for this case, we just made sure that pstore kmsg-dump file's
+time stamp was getting updated or not. Currently in fadump's crash path
+pstore isn't collecting any logs.
+
+>=20
+> >=20
+> > Cc: Hari Bathini <hbathini@linux.ibm.com>
+> > Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+> > Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+> > Cc: Michael Ellerman <mpe@ellerman.id.au>
+> > Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+> > Reported-by: Shirisha G <shirisha@linux.ibm.com>
+> > Suggested-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+> > Signed-off-by: Shivang Upadhyay <shivangu@linux.ibm.com>
+> > ---
+> > =C2=A0 arch/powerpc/kernel/setup-common.c | 3 +++
+> > =C2=A0 1 file changed, 3 insertions(+)
+> >=20
+> > diff --git a/arch/powerpc/kernel/setup-common.c
+> > b/arch/powerpc/kernel/setup-common.c
+> > index b1761909c23f..c329b071643d 100644
+> > --- a/arch/powerpc/kernel/setup-common.c
+> > +++ b/arch/powerpc/kernel/setup-common.c
+> > @@ -68,6 +68,7 @@
+> > =C2=A0 #include <asm/kasan.h>
+> > =C2=A0 #include <asm/mce.h>
+> > =C2=A0 #include <asm/systemcfg.h>
+> > +#include <linux/kmsg_dump.h>
+> > =C2=A0=20
+> > =C2=A0 #include "setup.h"
+> > =C2=A0=20
+> > @@ -748,6 +749,8 @@ static int ppc_panic_fadump_handler(struct
+> > notifier_block *this,
+> > =C2=A0=C2=A0	 * If firmware-assisted dump has been registered then
+> > trigger
+> > =C2=A0=C2=A0	 * its callback and let the firmware handles everything
+> > else.
+> > =C2=A0=C2=A0	 */
+> > +	kmsg_dump_desc(KMSG_DUMP_PANIC, (char *)ptr);
+>=20
+> Can you move the kmsg_dump_desc() function before the comment?
+> The comment was for crash_fadump() function.
+>=20
+Ack.
+> Yes, panic() passes the reason for the panic as a string via ptr. So
+> it=20
+> is good
+> to pass the same to the message dumpers.
+>=20
+> As sashiko suggested:
+> https://sashiko.dev/#/patchset/20260407054341.308710-1-shivangu%40linux.i=
+bm.com
+> =C2=A0
+>=20
+>=20
+> I think we should call kmsg_dump_desc() only when fadump is
+> registered,=20
+> to avoid calling
+> it multiple times. If fadump is not registered, this can be called
+> twice=20
+> in the panic path,
+> first here and then again in the vpanic() function. Checkout=20
+> should_fadump_crash() function.
+>=20
+
+Sure, ill find a new place to call this.
+
+> The second point from Sashiko is about introducing something like=20
+> crash_kexec_post_notifiers
+> to give users the option to call message dumpers on the vpanic path,
+> or=20
+> on the other two
+> paths as well (system reset and die) when fadump is configured.
+>=20
+> I think this is not really needed because there are already existing=20
+> crash paths hitting crash_fadump
+> (system reset and die) on which kmsg_dump_desc() is called directly.
+>=20
+> > +
+> > =C2=A0=C2=A0	crash_fadump(NULL, ptr);
+> >=20
+>=20
+> As of now, crash_fadump() (which initiates memory dump
+> collection) is called through three different paths:
+>=20
+> 1. System Reset
+> 2. die/oops
+> 3. panic
+>=20
+> We call kmsg_dump() -> kmsg_dump_desc() to invoke all message
+> dumpers on the system reset and die/oops paths. The only
+> remaining path where kmsg_dump_desc() is not called is the
+> panic path.
+>=20
+> panic() -> vpanic() -> panic notifier call chain -> crash_fadump()
+>=20
+
+Yeah, the other paths should be covered by this line in crash path here
+[1].
+
+> I think it is good to fix this path as well. Thanks for the fix.
+>=20
+> - Sourabh Jain
+
+
+Thanks,
+~Shivang.
+
+[1] http://elixir.bootlin.com/linux/v6.15.6/source/kernel/panic.c#L387
 
