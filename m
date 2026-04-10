@@ -1,56 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-19593-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19594-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45280F4484C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 12:21:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72035F44847
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 12:21:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fsbVM1HmMz2yZ6;
-	Fri, 10 Apr 2026 22:20:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775823627;
-	cv=none; b=gRShfVC81QdbG+ZN1Yeea5wF4Qn7waCPQxR5uLvLVUDwwZpCafOXwfAxW1KaAjpHW3R37o9zWgkbcHM9vKmLG+DO1mgSXW4uA163Dm1AcZsqQVySSi0GdFSih1f1VK3Mf+kT3j9uWM9YalJWWSKObPFLGjzZFqyXMB5VNCtXdGg0LQwrgVGllMV3EKyUl5ZDeyQizwnpG+hjHAdAXiwk15MoGb67dqN4h/07Q4UsYtVdo/0foYjDB3N2rjbU2CvkJZypyvIhMHAnbazuCTqStfHzahveaPGxfQQl1paTc8Xr43485P+p0qYzIZQQybcau3m0gWPn6tUkxMnhZG3mkA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fsbVS0QGPz2yr6;
+	Fri, 10 Apr 2026 22:20:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775823632;
+	cv=none; b=AlCZtYUubFzxYTV7Ha9++ktousl/Mf0vIjv9SDqiMuj3YuYH4Z5IJ0UUXfdBFXlDMuFd2hG742bztcQlKqYtcj3vBviVC5zLADH6L+Jdr5cZs6tXei9DFenyPtMEwJBQB08IjoIEjThOkiNNq0r/uD3xkgVach/6yVXZr7AK404qxedKA369qcci9Hyl01NStuYCYBoIzM4RPZ3rhlaTVtgL5Xdm/pHwEPhZT0REmHgPiMu9g1a/PF5sTjW+8eWGQLEuVQkljhG7S5Ux/Nk+YTPJ9q6IfVVtSvCUR5s/xQEjODDlGWipgjksbNJSMPMmXBBhM3B6qdFKRZCuVwUSJA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775823627; c=relaxed/relaxed;
-	bh=ckn3790Plbsh2S84qXvQH3wmGMizlSPUdQHepF2eyP4=;
+	t=1775823632; c=relaxed/relaxed;
+	bh=CLIogZKtxkoQJBct1ivrzjEJ9GwuhZlm0ijU/m5U3Ys=;
 	h=Date:Message-ID:From:To:Cc:Subject:References:MIME-Version:
-	 Content-Type; b=XjpIowMjlCouRiXDRTgwsp5n/iF9HzZY8IrkJEDZ/B51HiViWD63wUafWUuJ43Kh4prVcv5wawN7EbOvyYOemUFvYTFPB0C0gE9xmiMjtCFxBuMf93E29/PKA75jraE8ZgWjHBb+SvtPKu4IlQmDKyC6SxyZWpjLG2G5HNLDEr9QSxRBjmrZngIFqcPNfEpz9rWhHoeUIdUs28qNYsohv5RHkpL1xjFqBN/ZgG1DmRrgg+MTJ2K/pAhiEyGWr6o3bKV27E3BJVFL4itZUDT3ln3MAisEUTK0fl6lGdamBpx2z0uqxpJ7PeH95u9KpXDqj+3okqs69y6CjcenYCes+g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=c0dC5Jtr; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type; b=EhPHTgrnBhNmY4q2c/cy5+79QX6zS0chVu9O2lnxzrH7S+h0HEqa3O8twuTnhUwMXxEeiNfh8OE6vUv773Kb1StjysCcRaKkuYJG9MJFIbGOZxRc4cILGh9yOOz9cgz5xdp3+Nwfys/C4xu4H96JR+3OBbaeBkq7M9t9bq9yM+AvlB0UnW3L8ws9iOJ0AxGU532HXpXWXkZKGC7EX4YNnHi7b/HqtUmaxg8zY7x/yGhtPyGY/mrwMnqe9suhCRn5g2H76ChtudJB0C9qqeeAxLhsX7Tu09xtJbrYdybjtV2/11mJu+BrZpyDmKIy0yKl+j0n6Cq/ML5XVCI3UFdWHw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UacNbv5z; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=c0dC5Jtr;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UacNbv5z;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsbVL3X91z2xLt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 22:20:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsbVR1rXJz2xLt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 22:20:31 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id A040C438DE;
-	Fri, 10 Apr 2026 12:20:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8B8D1C2BCAF;
-	Fri, 10 Apr 2026 12:20:23 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id A1972441C0;
+	Fri, 10 Apr 2026 12:20:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B8258C2BCAF;
+	Fri, 10 Apr 2026 12:20:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775823624;
-	bh=oFanz67wDB6XocOAPDGw4dDZpTIkPCesLmisdDG6nxo=;
+	s=k20201202; t=1775823629;
+	bh=Xj914OB0ywB5KtjAdUFbVTIri4m7J0/9GAWloccpVyg=;
 	h=Date:From:To:Cc:Subject:References:From;
-	b=c0dC5JtrlZ2hDwVhQHVakSSF0GbYurUcyOeInN2NikRGB2GB116TXZbw4nZgMtYST
-	 +trrlORaNRGlhOHpfrC+lW1HFBRAEy8GyOUXKZu1wlydXKozlVO6l7tAEsojNrD9kY
-	 z8EDy3AU6BDmVg1em2KMGfc38GeNfIIV9PZdmIDh6XXPID1ZvpPfEKL37BFIXkriEy
-	 vg9bLTMeocXCte6TCzTTMg21Eh6HrXJDyZdGV1tmWvL/lAElJukNPv/QpJCLNXioOw
-	 AQtioNlgi2FcvW/yMQPolJ5GR/97GritVQBv4kElLuN4ah4YH0PTQC3eZtbzxU1vfd
-	 IORnVjKLVUNIw==
-Date: Fri, 10 Apr 2026 14:20:21 +0200
-Message-ID: <20260410120319.131582521@kernel.org>
+	b=UacNbv5zzA6AzbAlRM4n4U5NaKejyQd8mANj0iWZ5RQiRAJWixjyMgZjbiDhDTyzO
+	 ay62PPnTA47MG/rmdeWa/4KfjNAnW4xtTzJ34RAhThlg0KY8nNByGNrsu9zE469dPQ
+	 hWtTJvAZ4ZE2brA8ZCckIrkzYMvi5clv/chlzjJ3PYteh92RUSFzhMNQu3+ZTJTDCI
+	 kJ6mPTSZ1AZhD1XvkSSEOtM9nEZR/77fxCsYwUjbpiFSE3ESK6EP7pbE6Ao/WrdTRD
+	 AlaT3EdsheI/WmWdaf0zz7rbsJUIcktKioLIztC89PcrEqXmxk39mPCnXjzI5yFh8X
+	 xNx6W4PqnkQAQ==
+Date: Fri, 10 Apr 2026 14:20:26 +0200
+Message-ID: <20260410120319.197793115@kernel.org>
 User-Agent: quilt/0.68
 From: Thomas Gleixner <tglx@kernel.org>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Richard Henderson <richard.henderson@linaro.org>,
- linux-alpha@vger.kernel.org,
+Cc: Russell King <linux@armlinux.org.uk>,
+ linux-arm-kernel@lists.infradead.org,
  Arnd Bergmann <arnd@arndb.de>,
  x86@kernel.org,
  Lu Baolu <baolu.lu@linux.intel.com>,
@@ -76,8 +76,8 @@ Cc: Richard Henderson <richard.henderson@linaro.org>,
  Thomas Sailer <t.sailer@alumni.ethz.ch>,
  linux-hams@vger.kernel.org,
  "Jason A. Donenfeld" <Jason@zx2c4.com>,
- Russell King <linux@armlinux.org.uk>,
- linux-arm-kernel@lists.infradead.org,
+ Richard Henderson <richard.henderson@linaro.org>,
+ linux-alpha@vger.kernel.org,
  Catalin Marinas <catalin.marinas@arm.com>,
  Huacai Chen <chenhuacai@kernel.org>,
  loongarch@lists.linux.dev,
@@ -96,7 +96,7 @@ Cc: Richard Henderson <richard.henderson@linaro.org>,
  linux-s390@vger.kernel.org,
  "David S. Miller" <davem@davemloft.net>,
  sparclinux@vger.kernel.org
-Subject: [patch 23/38] alpha: Select ARCH_HAS_RANDOM_ENTROPY
+Subject: [patch 24/38] ARM: Select ARCH_HAS_RANDOM_ENTROPY
 References: <20260410120044.031381086@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -116,75 +116,82 @@ Content-Type: text/plain; charset=UTF-8
 The only remaining usage of get_cycles() is to provide
 random_get_entropy().
 
-Switch alpha over to the new scheme of selecting ARCH_HAS_RANDOM_ENTROPY
-and providing random_get_entropy() in asm/random.h.
+Switch ARM over to the new scheme of selecting ARCH_HAS_RANDOM_ENTROPY and
+providing random_get_entropy() in asm/random.h.
 
 Remove asm/timex.h as it has no functionality anymore.
 
 Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-Cc: Richard Henderson <richard.henderson@linaro.org>
-Cc: linux-alpha@vger.kernel.org
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: linux-arm-kernel@lists.infradead.org
 ---
- arch/alpha/Kconfig              |    1 +
- arch/alpha/include/asm/random.h |   14 ++++++++++++++
- arch/alpha/include/asm/timex.h  |   26 --------------------------
- 3 files changed, 15 insertions(+), 26 deletions(-)
+ arch/arm/Kconfig              |    1 +
+ arch/arm/include/asm/random.h |   14 ++++++++++++++
+ arch/arm/include/asm/timex.h  |   18 ------------------
+ arch/arm/lib/delay.c          |    4 ++--
+ 4 files changed, 17 insertions(+), 20 deletions(-)
 
---- a/arch/alpha/Kconfig
-+++ b/arch/alpha/Kconfig
-@@ -5,6 +5,7 @@ config ALPHA
- 	select ARCH_32BIT_USTAT_F_TINODE
- 	select ARCH_HAS_CURRENT_STACK_POINTER
- 	select ARCH_HAS_DMA_OPS if PCI
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -22,6 +22,7 @@ config ARM
+ 	select ARCH_HAS_MEMBARRIER_SYNC_CORE
+ 	select ARCH_HAS_NON_OVERLAPPING_ADDRESS_SPACE
+ 	select ARCH_HAS_PTE_SPECIAL if ARM_LPAE
 +	select ARCH_HAS_RANDOM_ENTROPY
- 	select ARCH_MIGHT_HAVE_PC_PARPORT
- 	select ARCH_MIGHT_HAVE_PC_SERIO
- 	select ARCH_MODULE_NEEDS_WEAK_PER_CPU if SMP
+ 	select ARCH_HAS_SETUP_DMA_OPS
+ 	select ARCH_HAS_SET_MEMORY
+ 	select ARCH_STACKWALK
 --- /dev/null
-+++ b/arch/alpha/include/asm/random.h
++++ b/arch/arm/include/asm/random.h
 @@ -0,0 +1,14 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _ASMALPHA_RANDOM_H
-+#define _ASMALPHA_RANDOM_H
++/* SPDX-License-Identifier: GPL-2.0-only */
++#ifndef _ASMARM_RANDOM_H
++#define _ASMARM_RANDOM_H
 +
-+/* Use the cycle counter for entropy. */
++bool delay_read_timer(unsigned long *t);
++
 +static inline unsigned long random_get_entropy(void)
 +{
-+	unsigned long ret;
++	unsigned long t;
 +
-+	__asm__ __volatile__ ("rpcc %0" : "=r"(ret));
-+	return ret;
++	return delay_read_timer(&t) ? t : random_get_entropy_fallback();
 +}
 +
 +#endif
---- a/arch/alpha/include/asm/timex.h
+--- a/arch/arm/include/asm/timex.h
 +++ /dev/null
-@@ -1,26 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 */
+@@ -1,18 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-only */
 -/*
-- * linux/include/asm-alpha/timex.h
+- *  arch/arm/include/asm/timex.h
 - *
-- * ALPHA architecture timex specifications
+- *  Copyright (C) 1997,1998 Russell King
+- *
+- *  Architecture Specific TIME specifications
 - */
--#ifndef _ASMALPHA_TIMEX_H
--#define _ASMALPHA_TIMEX_H
+-#ifndef _ASMARM_TIMEX_H
+-#define _ASMARM_TIMEX_H
 -
--/*
-- * Standard way to access the cycle counter.
-- * Currently only used on SMP for scheduling.
-- *
-- * Only the low 32 bits are available as a continuously counting entity. 
-- * But this only means we'll force a reschedule every 8 seconds or so,
-- * which isn't an evil thing.
-- */
--static inline cycles_t get_cycles (void)
--{
--	cycles_t ret;
--	__asm__ __volatile__ ("rpcc %0" : "=r"(ret));
--	return ret;
--}
--#define get_cycles get_cycles
+-// Temporary workaround
+-bool delay_read_timer(unsigned long *t);
+-
+-#define get_cycles()	({ cycles_t c; delay_read_timer(&c) ? 0 : c; })
+-#define random_get_entropy() (((unsigned long)get_cycles()) ?: random_get_entropy_fallback())
 -
 -#endif
+--- a/arch/arm/lib/delay.c
++++ b/arch/arm/lib/delay.c
+@@ -42,9 +42,9 @@ static inline u64 cyc_to_ns(u64 cyc, u32
+ 
+ static void __timer_delay(unsigned long cycles)
+ {
+-	cycles_t start = get_cycles();
++	cycles_t start = delay_timer->read_current_timer();
+ 
+-	while ((get_cycles() - start) < cycles)
++	while ((delay_timer->read_current_timer() - start) < cycles)
+ 		cpu_relax();
+ }
+ 
 
 
