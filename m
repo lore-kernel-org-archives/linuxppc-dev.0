@@ -1,81 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-19616-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19617-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06A3DF45A0C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 20:56:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E2A8F45A10
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Apr 2026 03:22:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fspxb40Phz2yjn;
-	Sat, 11 Apr 2026 06:56:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775854579;
-	cv=none; b=EBTsEFT1Tp5B1sfvACc3NA6xrsmrWOdRNDA8ihw3cPfW/yGcRfxKdcCiqaNFBxUEqKc9kzHA/R20X0bAXoE00uPG1maTAf0qFRniCMaWm+KFend2sUqqf4KRqXYuSfBOvGqzAn1RbNWXPYR1r/g9tRO+uBD6C6L/JDj9gBg8nBvytzvLr8si1gS4GiF0W1pFS3/58Zdu3YhkdopJdMYH37nHxN8VL1ouZKPo+aMKUjFTqd11ASG9ACezggrBM5QIvDj3ncdwdvVwTiuLmbZ7wtAlwJJykDFirbSWpvgv7hxV8uWItAy1ohh/JPjvkez2qFdTAjDT2kBCY1+xA8WjQA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775854579; c=relaxed/relaxed;
-	bh=C2X9IdtUnrT50yiykczKjUwFjhJemy6Dkqp8i9B0154=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=D4/9dg50j1yNI8gsWbWLR3r3QUhDAuWE+uaUnsWRzOBW61wOzx7mKrne3STZB+cdGJ4ybJHr18qCklWCsFHJpDDkHZcQiBg7lJWalKb0MIa6Bpiy09qB666qhezHBfwYgejCVtnt9qd+z6uSjSSrGqEWMzomid5Vh9vHXrwob5krJjHUjNlXvZXgMqvINxbYCiSdwoDQzV/vmwuRrjDSqGsuJ7RYMN5RtI60Ows8/TOdiWwaA9v/YFdIJ6vv0GHMdA39DyJWoJRzVkWVAjWc7vkgKeHSaqKvbWstjChFBOOY2c0ksW7sPIpR9ENEOXlxJ+yI8jwW//Ma8ZDdZV76+w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GQ142PFW; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fszVq61Q3z2yTK;
+	Sat, 11 Apr 2026 13:22:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::122a" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775835136;
+	cv=pass; b=mD7gjazMexWBiDJjFKf7Qf5upKvqVFSDU3MrxIpMdwtliFDq5Sm0wC4Zo4hnFrlch6rCw7R8X7XpXFWRZm7M8WvZZIOZhEs2p3Do+ue2qN5ah3ZdzgHubWgg5u0v04xnf8Y9bQyuoQOoXuI5zXLuiJjtCMdhM5VyziAbf34WJvyDrBYIL3LyW+/OZ6L/HyqRIk1/ywOHHmlRF13e9H1kl0W9sjqqE/uQnWUU1D4pUYclflwUaWPUiEoq58pY29uiBy6ysbmItegxmNHrCIhewLAf8fqc6wV4ObeiozMtQlVvwknjJhuytejODiyzgeVPmpp36Rzl0wxvV7uWbHfnqQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1775835136; c=relaxed/relaxed;
+	bh=OBQJPBhzAm5teFuL1it4zrQEsej5woZw67yMwyO4d8U=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Fm+LOhQuLHGtUKQ2C+/EwoqdMreIid9jFqOQx733UGPJ3Q12TWQRCU8/mxMJYbrWPrIgSYvZO+5uPsjQRicEbDKYiCsy0V8R6UBXZNQsaT23WqA/la6KnoCgisFOs4hIpO5n93vYlJOHUuQfqhCR4bTPBgi1ngz4ed+OAeJbmbMKcGTh1RILAhjPCmND5EDdWGHrnCQIWevihjzu0X5oC5yBdEMaOKtXaFcBckPg4/72p4BIWi1hU2qX0aUSEPqIBTJMFKa+qlmj2SjJ9KkyjbBkQPtADfur5AV1oZU84PkaocltzSCaI6vPQHM4yj68byr+LL8UvIaAeoUyXrIo4Q==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=0x0f.com; dkim=pass (1024-bit key; unprotected) header.d=0x0f.com header.i=@0x0f.com header.a=rsa-sha256 header.s=google header.b=LpaVQFFH; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122a; helo=mail-dl1-x122a.google.com; envelope-from=daniel@0x0f.com; receiver=lists.ozlabs.org) smtp.mailfrom=0x0f.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=0x0f.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GQ142PFW;
+	dkim=pass (1024-bit key; unprotected) header.d=0x0f.com header.i=@0x0f.com header.a=rsa-sha256 header.s=google header.b=LpaVQFFH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=0x0f.com (client-ip=2607:f8b0:4864:20::122a; helo=mail-dl1-x122a.google.com; envelope-from=daniel@0x0f.com; receiver=lists.ozlabs.org)
+Received: from mail-dl1-x122a.google.com (mail-dl1-x122a.google.com [IPv6:2607:f8b0:4864:20::122a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fspxZ5hjqz2yhV
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Apr 2026 06:56:18 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id EABB3403ED;
-	Fri, 10 Apr 2026 20:56:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E2163C19421;
-	Fri, 10 Apr 2026 20:56:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775854576;
-	bh=Pl/TPuj3MEjAUAkiR6iNGQuG7vTK4etd1CQHextbc1Q=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=GQ142PFWFm6CPGgxzIstxv+Opw0b8SXuQ9OyBP6RDGrB9wMYrgGJRlAIcXmjiMiJQ
-	 uvHLzYRX996/8mwPCxIT6HNprAxZjHfiZYVGdKL2zkx4tDdEJ1Qjhj23YsuYeVWZUk
-	 qB897HhG8G4RkSYw8g0MDIEY8t5mxlaTJQ0hQJRlVPLc72Bfpv47WYQcen6mmTC6UB
-	 IDYz08Lq5Ox+catFPgX2TnERo0NsyMmc6D+DEo5bfEi3Zb8CozxsaaIUnftUYBffz4
-	 eRJ2pErWPmB+XVojMvRq9gH2C+KSLENGTN6u78aH1Po3BWHW2gKcN/A+CamqsNtu9t
-	 mhyolj1ID3OUA==
-From: Thomas Gleixner <tglx@kernel.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, x86@kernel.org, Lu Baolu
- <baolu.lu@linux.intel.com>, iommu@lists.linux.dev, Michael Grzeschik
- <m.grzeschik@pengutronix.de>, netdev@vger.kernel.org,
- linux-wireless@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
- linux-crypto@vger.kernel.org, Vlastimil Babka <vbabka@kernel.org>,
- linux-mm@kvack.org, David Woodhouse <dwmw2@infradead.org>, Bernie Thompson
- <bernie@plugable.com>, linux-fbdev@vger.kernel.org, Theodore Tso
- <tytso@mit.edu>, linux-ext4@vger.kernel.org, Andrew Morton
- <akpm@linux-foundation.org>, Uladzislau Rezki <urezki@gmail.com>, Marco
- Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>,
- kasan-dev@googlegroups.com, Andrey Ryabinin <ryabinin.a.a@gmail.com>,
- Thomas Sailer <t.sailer@alumni.ethz.ch>, linux-hams@vger.kernel.org,
- "Jason A. Donenfeld" <Jason@zx2c4.com>, Richard Henderson
- <richard.henderson@linaro.org>, linux-alpha@vger.kernel.org, Russell King
- <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org, Catalin
- Marinas <catalin.marinas@arm.com>, Huacai Chen <chenhuacai@kernel.org>,
- loongarch@lists.linux.dev, Geert Uytterhoeven <geert@linux-m68k.org>,
- linux-m68k@lists.linux-m68k.org, Dinh Nguyen <dinguyen@kernel.org>, Jonas
- Bonn <jonas@southpole.se>, linux-openrisc@vger.kernel.org, Helge Deller
- <deller@gmx.de>, linux-parisc@vger.kernel.org, Michael Ellerman
- <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org, Paul Walmsley
- <pjw@kernel.org>, linux-riscv@lists.infradead.org, Heiko Carstens
- <hca@linux.ibm.com>, linux-s390@vger.kernel.org, "David S. Miller"
- <davem@davemloft.net>, sparclinux@vger.kernel.org
-Subject: [patch V1.1 11/38] misc: sgi-gru: Remove get_cycles() [ab]use
-In-Reply-To: <20260410120318.320727701@kernel.org>
-References: <20260410120044.031381086@kernel.org>
- <20260410120318.320727701@kernel.org>
-Date: Fri, 10 Apr 2026 22:56:11 +0200
-Message-ID: <87ik9yzg9g.ffs@tglx>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsglf12Cxz2yZ6
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Apr 2026 01:32:13 +1000 (AEST)
+Received: by mail-dl1-x122a.google.com with SMTP id a92af1059eb24-1271257ae53so9590767c88.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 08:32:12 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1775835131; cv=none;
+        d=google.com; s=arc-20240605;
+        b=CMLH5M36EaFvLkU78QvefAW8l0FbSdLz11NvB23SK0xJeO9c2HahKdQeo2xFXqm01o
+         efEshKzTEo1xRHDbU6RNPnAKF1Bvfi+Qw5DePKJAkJFO7+Ac2zOHTzUt9pfLcHXjQkEZ
+         LK3DlTL7xYqhCDmQDsaiBxHLRzZ8HWl+ZoB/K0/YeZk5+Ssl81sOlG7WXhSnHNEXbhPf
+         L7BdhSCD5m7M1aj8VOW690XHporgWvmlNSVmIxz6eWmkoRe04xhcR5cFGKDZSQzqx4v2
+         ITwbfx3RVDY28Qv4NOTJSpjfVGx1KvvBdrs9ZeUEoWK0+QuzR4Lhlgty5S+Q2nfN7A2P
+         957w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=OBQJPBhzAm5teFuL1it4zrQEsej5woZw67yMwyO4d8U=;
+        fh=Kn6rdufe/Onocd+hy6jkMB+MJU0EGT7ZAONwf26+Yxw=;
+        b=NNZk64WCz9XF6hCfbzXq0iwD4QLkfOAQK9zyzkfnBnidTMgYDTc37Eklg4EpQdHVGk
+         p7bWNqouKqSWS4a3A/qZ9XO0FrjDKTU/1iQUyG3EYEj2EZamIJMWtzPLSrnkTBZT6V9O
+         wRsBBUC2y/A7ctKXuc123R1GoLbt87K4y3uZL/V53wuQA+QmThF4JMV7eZY7vg0CMFGR
+         WbYFSsImvnchAN5Xic3RRFcYupJZAkeWRQmlQNaZ6Nl2Rhtx6o9vwRuJBmeYgKHpK4d5
+         UayW5tYXq9sPKNrOpCJBTEBTXW1V5z/uZUWtnIArSuaXBVrC640bzr9/NC6PijpvLSyn
+         ut1w==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=0x0f.com; s=google; t=1775835131; x=1776439931; darn=lists.ozlabs.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=OBQJPBhzAm5teFuL1it4zrQEsej5woZw67yMwyO4d8U=;
+        b=LpaVQFFHSDiR2dZ2EaphhEDE8BBOm9tUfxzDiJ/G+d+MCpSA30NHCy4XmE3q1vOUaL
+         +nOYrIVNcGh4V0bjL04lBaLKLhPMWHgNukBHpo5KQ4VrTt9sKU+8KhYmaWLEPZCT4MAB
+         UVjIKnEvJZW6qMA5i7Dvd5zj2wjAwUTOT+16U=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775835131; x=1776439931;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=OBQJPBhzAm5teFuL1it4zrQEsej5woZw67yMwyO4d8U=;
+        b=F87B8TOPrgW0563YmBsTMOPzXVCyWMhAhlhSKF612jeSe0o8u1fh/ww4UWYCFJjwuF
+         lUuFzT95rvCzNf/bcmH0WKPOXRxxhtig/8XG1QUq6ZpF9Yw5fN1jH2eYZd7uueKROmYw
+         e2eSA1P6TeXRzp2flPqVuOm1sYTUe+p6rwW4cqPVRNJm4BnM2Q3FvOOrmZFbCidnE8v0
+         IGbyiaodPzzrTBpe0C2FixqZmvlQjlIWpcjtpQ+LxETHDymDFlW9Na+UrVF39zqqHx4t
+         voDXLyo/YM1JEei0pfg+juzNDSRS/9zX/xzaRk8IYR8bNZrdQC4x2/G43glvuX3D89/2
+         rZ5Q==
+X-Forwarded-Encrypted: i=1; AJvYcCXaK16BwtfILXte43R1UY86Mvz9Bgpo1eUDgtXGIpHaj/v4cdX/HiOpjNsZKWVQosOMpOI0rptLeIzsdIw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyBr1YXTMYcDYhQljKZeCLLthhmOMqIM8mzyzjBjCSgMGJny5CY
+	i3doaFBEPesJOUh5BTQtMaSZpL+SOomh1u6AIQzALx3kshCKEiwTp/eJwiecIdMMXWJaa+kYQF4
+	nwX3YQJ7eDIJPA8vEyNK2fGRUS1ni4GyJ/Krwpqkzsw==
+X-Gm-Gg: AeBDiettlqilLuLRPU1MJXnZd+gkIj2sjXbC5oxvJgqCxVPVY19BWQYkf4yRkaxCn0g
+	q0Wqxk7deg5IPuP9G5TlLlr6qTPr33rRt00PwILN082Eaiq2vsApLyWYaSj+0GH0YQGx/4Pc0pf
+	/SEi9lH5okma17Y988cgbJ+MEy/E4bU6KgwtbNdO/FXZ30PvfQ6AjDUlPCcVmtXoJPQSSSOOVez
+	yoqXg4HifKTg7oY1zyUXsOnJ3jDb6KqB/Y/SBDwopr8yYuozuuqjXlHLJvcseuSiKl1rVnuIvfr
+	O+hO
+X-Received: by 2002:a05:7022:6097:b0:128:ccb7:7fa3 with SMTP id
+ a92af1059eb24-12c34f069f8mr2159203c88.34.1775835130696; Fri, 10 Apr 2026
+ 08:32:10 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,124 +97,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain
+References: <20260410120044.031381086@kernel.org> <20260410120319.397219631@kernel.org>
+In-Reply-To: <20260410120319.397219631@kernel.org>
+From: Daniel Palmer <daniel@0x0f.com>
+Date: Sat, 11 Apr 2026 00:31:59 +0900
+X-Gm-Features: AQROBzAnX-XEClLFV-qWYFUzCuq4P43sNZviESiWFI1yCPXm2VtVZ2QkaUGJoPY
+Message-ID: <CAFr9PXk7qK8-2JWrrfgXHoS9JWTRL+WobLjmAesyCE9VLL8ZyQ@mail.gmail.com>
+Subject: Re: [patch 27/38] m68k: Select ARCH_HAS_RANDOM_ENTROPY
+To: Thomas Gleixner <tglx@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, 
+	linux-m68k@lists.linux-m68k.org, Arnd Bergmann <arnd@arndb.de>, x86@kernel.org, 
+	Lu Baolu <baolu.lu@linux.intel.com>, iommu@lists.linux.dev, 
+	Michael Grzeschik <m.grzeschik@pengutronix.de>, netdev@vger.kernel.org, 
+	linux-wireless@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>, 
+	linux-crypto@vger.kernel.org, Vlastimil Babka <vbabka@kernel.org>, linux-mm@kvack.org, 
+	David Woodhouse <dwmw2@infradead.org>, Bernie Thompson <bernie@plugable.com>, linux-fbdev@vger.kernel.org, 
+	Theodore Tso <tytso@mit.edu>, linux-ext4@vger.kernel.org, 
+	Andrew Morton <akpm@linux-foundation.org>, Uladzislau Rezki <urezki@gmail.com>, 
+	Marco Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>, kasan-dev@googlegroups.com, 
+	Andrey Ryabinin <ryabinin.a.a@gmail.com>, Thomas Sailer <t.sailer@alumni.ethz.ch>, 
+	linux-hams@vger.kernel.org, "Jason A. Donenfeld" <Jason@zx2c4.com>, 
+	Richard Henderson <richard.henderson@linaro.org>, linux-alpha@vger.kernel.org, 
+	Russell King <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org, 
+	Catalin Marinas <catalin.marinas@arm.com>, Huacai Chen <chenhuacai@kernel.org>, 
+	loongarch@lists.linux.dev, Dinh Nguyen <dinguyen@kernel.org>, 
+	Jonas Bonn <jonas@southpole.se>, linux-openrisc@vger.kernel.org, 
+	Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org, 
+	Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org, 
+	Paul Walmsley <pjw@kernel.org>, linux-riscv@lists.infradead.org, 
+	Heiko Carstens <hca@linux.ibm.com>, linux-s390@vger.kernel.org, 
+	"David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-Calculating a timeout from get_cycles() is a historical leftover without
-any functional requirement.
+Hi
 
-Use ktime_get() instead.
+On Fri, 10 Apr 2026 at 21:39, Thomas Gleixner <tglx@kernel.org> wrote:
+>
+> The only remaining usage of get_cycles() is to provide
+> random_get_entropy().
+>
+> Switch m68k over to the new scheme of selecting ARCH_HAS_RANDOM_ENTROPY and
+> providing random_get_entropy() in asm/random.h.
 
-Signed-off-by: Thomas Gleixner <tglx@kernel.org>
----
-V2: Fix typo
----
- drivers/misc/sgi-gru/gruhandles.c   |   20 ++++++++------------
- drivers/misc/sgi-gru/grukservices.c |    3 ++-
- drivers/misc/sgi-gru/grutlbpurge.c  |    5 ++---
- 3 files changed, 12 insertions(+), 16 deletions(-)
+I have built and booted this on my Amiga 4000 and it apparently still
+works so FWIW:
 
---- a/drivers/misc/sgi-gru/gruhandles.c
-+++ b/drivers/misc/sgi-gru/gruhandles.c
-@@ -6,26 +6,22 @@
-  */
- 
- #include <linux/kernel.h>
-+#include <linux/timekeeping.h>
- #include "gru.h"
- #include "grulib.h"
- #include "grutables.h"
- 
--/* 10 sec */
- #include <linux/sync_core.h>
--#include <asm/tsc.h>
--#define GRU_OPERATION_TIMEOUT	((cycles_t) tsc_khz*10*1000)
--#define CLKS2NSEC(c)		((c) * 1000000 / tsc_khz)
-+
-+#define GRU_OPERATION_TIMEOUT_NSEC	(((ktime_t)10 * NSEC_PER_SEC))
- 
- /* Extract the status field from a kernel handle */
- #define GET_MSEG_HANDLE_STATUS(h)	(((*(unsigned long *)(h)) >> 16) & 3)
- 
- struct mcs_op_statistic mcs_op_statistics[mcsop_last];
- 
--static void update_mcs_stats(enum mcs_op op, unsigned long clks)
-+static void update_mcs_stats(enum mcs_op op, unsigned long nsec)
- {
--	unsigned long nsec;
--
--	nsec = CLKS2NSEC(clks);
- 	atomic_long_inc(&mcs_op_statistics[op].count);
- 	atomic_long_add(nsec, &mcs_op_statistics[op].total);
- 	if (mcs_op_statistics[op].max < nsec)
-@@ -58,21 +54,21 @@ static void report_instruction_timeout(v
- 
- static int wait_instruction_complete(void *h, enum mcs_op opc)
- {
-+	ktime_t start_time = ktime_get();
- 	int status;
--	unsigned long start_time = get_cycles();
- 
- 	while (1) {
- 		cpu_relax();
- 		status = GET_MSEG_HANDLE_STATUS(h);
- 		if (status != CCHSTATUS_ACTIVE)
- 			break;
--		if (GRU_OPERATION_TIMEOUT < (get_cycles() - start_time)) {
-+		if (GRU_OPERATION_TIMEOUT_NSEC < (ktime_get() - start_time)) {
- 			report_instruction_timeout(h);
--			start_time = get_cycles();
-+			start_time = ktime_get();
- 		}
- 	}
- 	if (gru_options & OPT_STATS)
--		update_mcs_stats(opc, get_cycles() - start_time);
-+		update_mcs_stats(opc, (unsigned long)(ktime_get() - start_time));
- 	return status;
- }
- 
---- a/drivers/misc/sgi-gru/grukservices.c
-+++ b/drivers/misc/sgi-gru/grukservices.c
-@@ -20,6 +20,7 @@
- #include <linux/uaccess.h>
- #include <linux/delay.h>
- #include <linux/export.h>
-+#include <linux/random.h>
- #include <asm/io_apic.h>
- #include "gru.h"
- #include "grulib.h"
-@@ -1106,7 +1107,7 @@ static int quicktest3(unsigned long arg)
- 	int ret = 0;
- 
- 	memset(buf2, 0, sizeof(buf2));
--	memset(buf1, get_cycles() & 255, sizeof(buf1));
-+	memset(buf1, get_random_u32() & 255, sizeof(buf1));
- 	gru_copy_gpa(uv_gpa(buf2), uv_gpa(buf1), BUFSIZE);
- 	if (memcmp(buf1, buf2, BUFSIZE)) {
- 		printk(KERN_DEBUG "GRU:%d quicktest3 error\n", smp_processor_id());
---- a/drivers/misc/sgi-gru/grutlbpurge.c
-+++ b/drivers/misc/sgi-gru/grutlbpurge.c
-@@ -22,13 +22,12 @@
- #include <linux/delay.h>
- #include <linux/timex.h>
- #include <linux/srcu.h>
-+#include <linux/random.h>
- #include <asm/processor.h>
- #include "gru.h"
- #include "grutables.h"
- #include <asm/uv/uv_hub.h>
- 
--#define gru_random()	get_cycles()
--
- /* ---------------------------------- TLB Invalidation functions --------
-  * get_tgh_handle
-  *
-@@ -49,7 +48,7 @@ static inline int get_off_blade_tgh(stru
- 	int n;
- 
- 	n = GRU_NUM_TGH - gru->gs_tgh_first_remote;
--	n = gru_random() % n;
-+	n = get_random_u32() % n;
- 	n += gru->gs_tgh_first_remote;
- 	return n;
- }
+Tested-by: Daniel Palmer <daniel@thingy.jp>
 
