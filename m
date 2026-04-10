@@ -1,83 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-19557-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19558-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1796F364DB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 11:04:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB33AF36BA1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 11:10:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fsYpp0wdpz2yZ6;
-	Fri, 10 Apr 2026 21:04:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.13
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775819074;
-	cv=none; b=eCif3ao9GX7sg9P4kmAg7v0MKCGCFMvYFZgNNiaF/QQHRap5Indly0MDbb/miqpabX4BI7bKwy9v366JjaBVyoEOc651YQCsMHP+QHXdfGwrUttwE/kAA8Su4ylR6O6X67kPE9hEDKJDnoA2vgnOhC0WaIg9vBzjivn2MYmBM5m39QtByKw9yIEIUc8gVNRJu3lNu2L6sC8e1lszEUfMCPS7I6QBCG1izu9lc05wceR5s3/CbEl4ZgQWI7yMLSwuyuncMKNQ30zaQsPJy369eLcsYVtknXeOe7I+BsMlW4ak6auFAKbWt25MDwkGmh1D6duBMGDb39Ik+tTumShjGA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fsYxG304Lz2yZ6;
+	Fri, 10 Apr 2026 21:10:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775819410;
+	cv=none; b=onWp+wdmcm2zoRAUp6ukF/hrY70xAVGxGUiHVHLEBYMKkuenQ9ImEJkMSc03OyjQa7Q6cxGnXNyavWoJgUehgHmBxED16OmzoaVHSYU7n2ScOzxceFcRumqTZzGK8Xze0FmLfAe11TGt0/4qFzVYAvkWM9PEq3hLy3ExeuxjmHrgnMLzk4GARH6PbYtUSR0PTy35qivwRQ6yshc1vWe1N383tc3wYJmxhXp+MA6+JxHs9z1KgQz145+fEWdOAtQCiPHPbs+3vwgir+zUBOHhTtyUpH2B99SVoHLX2o7gKGESXG8J4poXV3FVQ8FkW2JIWIm80M0QA16Ui2s2UpLBKA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775819074; c=relaxed/relaxed;
-	bh=0Ykeq5M8C7fHPxjiFFLiU9Ta+PpIQ8ybI3+n6Kdy408=;
-	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=ZQgyX1Xty4sr1VjhgAKeGzv4eAS+fiy/0xRYMI9+1T57BwFlBSc0iJL6A7rLzS59+2V0RCoT6HXIZEHIzO1neQtL4XmRyOSztyzsYVZgnO3hAeE5GTRm8riJX9pZGjvoc8zkbOu+NHiH5iKzmsZ612a7FR152uhQCrYVKfh2+YFs+3RhgEC0VYyqXgty/Wi+NG0RnzOaVwJbBGIzO/BfqrmQxKkDfxu86y5IZX7xsQ1zPZA+f9Z6GCOLivcmgTG8GOcmDgtE69TbQwgoX8ny3e6EN1nt4RXAf3TH/WnWk0gA/cheeug4/Xyb79H2FiqrwehTffnjwn58iBwpp8vacw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=n9xZFUFx; dkim-atps=neutral; spf=pass (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	t=1775819410; c=relaxed/relaxed;
+	bh=yJwq2JLveAbgpcDyiS3SaUa9fNcTfhoxXyNF1+OxAEI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=aub9VUBUTDB5Gy5n7BbCEu3MSnnt5kyhXwWiY4uDl0GwoWdEWVxA9lMC7iqg1RfKsW9K9z3m78Z4wRRAc0aFLqyGb32SL2bHJS4CmIy2Zkm5WEVX1ymGfwZJD7u8GeXPM6VWmm2vLSg4sxHI2FMov1h0Rt359lfpng4XohD1FNDsb/Ghic39EJSJMqsmxp6p9abLDGUSBvb1HGDVkdzvh6uAVzXaS2XDHO8ydeoliBfDphzqv2PP+wppScdecjsB0iAUrZm0sbOoBkc1eW1+XSRsJeoaup+hTz1VuDznt8dEtU7JGCJFx9H12MY5NGiWgQoasOTOK0fHXsxOtJPFag==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HfvGo9op; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=n9xZFUFx;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HfvGo9op;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsYpm3rPqz2xT6
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 21:04:31 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1775819074; x=1807355074;
-  h=from:date:to:cc:subject:in-reply-to:message-id:
-   references:mime-version;
-  bh=ie5mL37AI9/SoDKmjWEXYIZ3Y62rbPGSCw23WIYez+M=;
-  b=n9xZFUFxYrYlKZVy5L6YhLA8RVXEjuLGugMBYo3YiEEfyzjJFSFPIdNs
-   0/nwUy/fyVeVprtKn+RNTwj5uHu3E1KQj9T3VCCi7pr9jMfIbsdIUr3pc
-   83JWb9hZLVkdj2iveHID8OZl+/1cDIFI4j8pVtttmRFNT3tIpduci4P7z
-   uMp4iO2bAQbrvv/hDdSktK3Q9s6S+HON5kSycxeUYulnzcSZYrMMYw/Xu
-   dCcx9sEDn2euLZx9mmYi9nt7Hs1+3/6NDKBtO/Z5VaqNBXNQJlVjDuNK7
-   t0m0PoaUhO6zNd+IqwijJqVjilI6Q7Rp1Sugvm8EJ4deTvowcdcXQYFzK
-   g==;
-X-CSE-ConnectionGUID: Nfl7FehcQRG5vXoZEUkjVw==
-X-CSE-MsgGUID: qREuCkGzTlWzxeB2JwbVEw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11754"; a="87913349"
-X-IronPort-AV: E=Sophos;i="6.23,171,1770624000"; 
-   d="scan'208";a="87913349"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Apr 2026 04:04:29 -0700
-X-CSE-ConnectionGUID: AFN9uzRlTtyiLYJXbIC8Hg==
-X-CSE-MsgGUID: 1Qnc4FGjTdGVlIiX03QVWg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,171,1770624000"; 
-   d="scan'208";a="228059061"
-Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.118])
-  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Apr 2026 04:04:19 -0700
-From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Date: Fri, 10 Apr 2026 14:04:16 +0300 (EEST)
-To: =?ISO-8859-2?Q?Krzysztof_Wilczy=F1ski?= <kwilczynski@kernel.org>
-cc: Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <helgaas@kernel.org>, 
-    Manivannan Sadhasivam <mani@kernel.org>, 
-    Lorenzo Pieralisi <lpieralisi@kernel.org>, 
-    Magnus Lindholm <linmag7@gmail.com>, Matt Turner <mattst88@gmail.com>, 
-    Richard Henderson <richard.henderson@linaro.org>, 
-    Christophe Leroy <chleroy@kernel.org>, 
-    Madhavan Srinivasan <maddy@linux.ibm.com>, 
-    Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-    Dexuan Cui <decui@microsoft.com>, 
-    =?ISO-8859-2?Q?Krzysztof_Ha=B3asa?= <khalasa@piap.pl>, 
-    Lukas Wunner <lukas@wunner.de>, Oliver O'Halloran <oohall@gmail.com>, 
-    Saurabh Singh Sengar <ssengar@microsoft.com>, 
-    Shuan He <heshuan@bytedance.com>, 
-    Srivatsa Bhat <srivatsabhat@microsoft.com>, linux-pci@vger.kernel.org, 
-    linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsYxF1FT2z2xT6
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 21:10:09 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id D987460154;
+	Fri, 10 Apr 2026 11:10:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2F97AC19421;
+	Fri, 10 Apr 2026 11:10:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1775819405;
+	bh=J9CQoX7GTnEen2B2gzOk+uOsLwI3v0SjpCO+RqDM+0I=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=HfvGo9opSrGDxa/afsb88WuMvZhMT79PSWGaCkUCXr+PWuyTIlqzJku/vQIfjwWzL
+	 j2vA53DlizDMUF4zGV35/RZldLiqoGohXZq6jnSNOk01PxuBBZUCXkjRNlagG6ky4a
+	 MXb0vT3zawPDmi/1awFBO/99cerh8h1xZTxJfColV8aXphUT0XSSO0DLJkexxwh2ga
+	 ppeWV2HjA3itU5agbnn2tKpIsJPnDq3FnXy/j0/yEbBbFZes7bKtcmd5SIU0SXLjYM
+	 zOiNgiowSHB/nNlZglFxRlfwkT6zSGpE8Db96Qj+Mhs5V1Kpl2dpMBp08WZXhKF6/3
+	 Bvk2bfIBUQynQ==
+Date: Fri, 10 Apr 2026 20:10:03 +0900
+From: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>
+To: Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <helgaas@kernel.org>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Magnus Lindholm <linmag7@gmail.com>,
+	Matt Turner <mattst88@gmail.com>,
+	Richard Henderson <richard.henderson@linaro.org>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Dexuan Cui <decui@microsoft.com>,
+	Krzysztof =?utf-8?Q?Ha=C5=82asa?= <khalasa@piap.pl>,
+	Lukas Wunner <lukas@wunner.de>,
+	Oliver O'Halloran <oohall@gmail.com>,
+	Saurabh Singh Sengar <ssengar@microsoft.com>,
+	Shuan He <heshuan@bytedance.com>,
+	Srivatsa Bhat <srivatsabhat@microsoft.com>,
+	linux-pci@vger.kernel.org, linux-alpha@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
 Subject: Re: [PATCH 10/20] alpha/PCI: Add security_locked_down() check to
  pci_mmap_resource()
-In-Reply-To: <20260410055040.39233-11-kwilczynski@kernel.org>
-Message-ID: <93f81aa9-ce74-92bb-5227-d2ccb0a3e06c@linux.intel.com>
-References: <20260410055040.39233-1-kwilczynski@kernel.org> <20260410055040.39233-11-kwilczynski@kernel.org>
+Message-ID: <20260410111003.GA1750802@rocinante>
+References: <20260410055040.39233-1-kwilczynski@kernel.org>
+ <20260410055040.39233-11-kwilczynski@kernel.org>
+ <93f81aa9-ce74-92bb-5227-d2ccb0a3e06c@linux.intel.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,67 +85,30 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="8323328-1107943852-1775819056=:1195"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <93f81aa9-ce74-92bb-5227-d2ccb0a3e06c@linux.intel.com>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hello,
 
---8323328-1107943852-1775819056=:1195
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+> > Currently, Alpha's pci_mmap_resource() does not check
+> > security_locked_down(LOCKDOWN_PCI_ACCESS) before allowing
+> > userspace to mmap PCI BARs.
+> > 
+> > The generic version has had this check since commit eb627e17727e
+> > ("PCI: Lock down BAR access when the kernel is locked down") to
+> > prevent DMA attacks when the kernel is locked down.
+> > 
+> > Add the same check to Alpha's pci_mmap_resource().
+> > 
+> > Signed-off-by: Krzysztof Wilczyński <kwilczynski@kernel.org>
+> 
+> Maybe add Fixes: eb627e17727e ...
 
-On Fri, 10 Apr 2026, Krzysztof Wilczy=C5=84ski wrote:
+Good call, will do!
 
-> Currently, Alpha's pci_mmap_resource() does not check
-> security_locked_down(LOCKDOWN_PCI_ACCESS) before allowing
-> userspace to mmap PCI BARs.
->=20
-> The generic version has had this check since commit eb627e17727e
-> ("PCI: Lock down BAR access when the kernel is locked down") to
-> prevent DMA attacks when the kernel is locked down.
->=20
-> Add the same check to Alpha's pci_mmap_resource().
->=20
-> Signed-off-by: Krzysztof Wilczy=C5=84ski <kwilczynski@kernel.org>
+Thank you!
 
-Maybe add Fixes: eb627e17727e ...
-
-> ---
->  arch/alpha/kernel/pci-sysfs.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
->=20
-> diff --git a/arch/alpha/kernel/pci-sysfs.c b/arch/alpha/kernel/pci-sysfs.=
-c
-> index 3048758304b5..2324720c3e83 100644
-> --- a/arch/alpha/kernel/pci-sysfs.c
-> +++ b/arch/alpha/kernel/pci-sysfs.c
-> @@ -11,6 +11,7 @@
->   */
-> =20
->  #include <linux/sched.h>
-> +#include <linux/security.h>
->  #include <linux/stat.h>
->  #include <linux/slab.h>
->  #include <linux/pci.h>
-> @@ -71,7 +72,11 @@ static int pci_mmap_resource(struct kobject *kobj,
->  =09struct resource *res =3D attr->private;
->  =09enum pci_mmap_state mmap_type;
->  =09struct pci_bus_region bar;
-> -=09int i;
-> +=09int i, ret;
-> +
-> +=09ret =3D security_locked_down(LOCKDOWN_PCI_ACCESS);
-> +=09if (ret)
-> +=09=09return ret;
-> =20
->  =09for (i =3D 0; i < PCI_STD_NUM_BARS; i++)
->  =09=09if (res =3D=3D &pdev->resource[i])
->=20
-
-Reviewed-by: Ilpo J=C3=A4rvinen <ilpo.jarvinen@linux.intel.com>
-
---=20
- i.
-
---8323328-1107943852-1775819056=:1195--
+	Krzysztof
 
