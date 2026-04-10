@@ -1,56 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-19590-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19591-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 332A8F4484C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 12:21:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52409F44850
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 12:21:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fsbV41zBXz2yft;
-	Fri, 10 Apr 2026 22:20:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775823612;
-	cv=none; b=QuHHUXaiZoxxbIOS5gjeSQXlTJ+rUtNEi0ysPYvaSmJE09sUFEB9TVqOkPyvhZgkkbVqF51uM9qIfKzhwjW17zd9gwBv9SwKefZKEHghsZlXdGKdD5KkTuxkEEILmbf44Ywh6FgElWRUUnsWoPRGpSkZq6oYB8QAkslya9gZoR3cIl9Kcglj4rEXtcnNinwnyp16xj4nP6lgJfkcCePubWl7c5FF2pWlHum8+Dp7mgJOTECr680lYWaTJ6FSINmIYeuRIK/rqp9NJuv6ZCL3biTl0ps0Pmdyf/OBzfKQe8804FWv92Qvqzrxg403IXOa1ZekvRC1vF2XpeOdxeo/KQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fsbV94JhLz2yqs;
+	Fri, 10 Apr 2026 22:20:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775823617;
+	cv=none; b=TkiRAyzsbVD83PvQogSBLYzHUihUf0+8yZABF3gxjtQcJr3g6m7arL0omR9VLVqls1V2oGpwxdtfFvj7dZIMuCwDM/NLHDK1JB+dexLoErLrRcFHSpyTbcHqQ1kFwICOAdVX3a6K801ZbxweZAzIMeSBysyUn1Oh5x6knyNz15DfTFMxBwRTDzjRgJ1VF/zTaEwSzuAeNd4x1BTE2DWCNlc1Qpt2q+LEHDEgZ+N13OoP/NGVqOYTKjgyvlx2HD0MXd1kCshEApSfEXWmBw46RNK7+P+LVnmfYovpSwrxnAZ4TGj3+Y/Zka6bBW0YNhW3taydQapBMgV1NPqFxIj0WQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775823612; c=relaxed/relaxed;
-	bh=7Lj1aNml9xNTs4vJYi74RnqcLcp2m2BsrRjTAYhHjrw=;
+	t=1775823617; c=relaxed/relaxed;
+	bh=uc43GoCkDGKCftnS7MZ3OA0khnbsdPYb8yxntAbHoVw=;
 	h=Date:Message-ID:From:To:Cc:Subject:References:MIME-Version:
-	 Content-Type; b=aoAFPN+cu/3FHsOnBBEG5jdxXkYRJrE5QR2Q+Tfk+Nmwsg7y0V93D318VYsSOG1QVAUHfhcZPeBWtMb8tnxXTCSz3A2N2Tec18XzldXjpcMJt91iANvWIiTLfLQe2hoQcK1Pf84Y0FV1+vFObhd8By3LLYP0UQsZd18phOdPjFNeI0GbGq4jsHv+RADO5S+zzfO9zhoQbwVhSyUXpMbBxf20w/lo2ivVgX6KaFgKfEklDk7UViHajzHHjyCLOf/CZmgNPeOliGj0MkF5xxLQCpX1b6rX9FwGzY7FD1R/g1dmLX6PpG7HpYRYOw+RaPgArn+unbc/U7XdDaY4NAECgg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SEmycwX5; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type; b=WGimUiL6ZwPWLceGdkM8GrD1P35BybpTRhxu1lON2D5bDQwwMmKYXqZT4Hc3IPWKwwHnmTyEv4z9BHrNFXMWj64mK5P10DeecpFvD2FjEp5ovnwyMGzxccPZUrQoXz3cL3L/Pyt/li/qE0Bvn2NnRlC5ewXvad6IeELJtN614sW1JYVN6pCjl/81kc41hZx9JLAylo6w5YWdklff2o1xD+oIxt3F6ndj1uWBZPNjxlFQTU1kADPIY+U1N917Qvjq33ovXCjRlIQ/1Vfaku4Q7ZezlUbkuNsS/mL/Hlx91TAjfqpE/G1cTFAQ6goKHWdfPK8fnFehjoTVQjIT4IIr/A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=K9r3LlHr; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SEmycwX5;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=K9r3LlHr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsbV35jbWz2yZ6
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 22:20:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsbV85qpjz2yZ6
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 22:20:16 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id BC2056132F;
-	Fri, 10 Apr 2026 12:20:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 97CA3C19425;
-	Fri, 10 Apr 2026 12:20:08 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id EFCF56111B;
+	Fri, 10 Apr 2026 12:20:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8C840C2BCB0;
+	Fri, 10 Apr 2026 12:20:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775823609;
-	bh=UKj6WoZFsTQfNpLsa4hK9AJwWp/c6TyAgfAmmgBM2Aw=;
+	s=k20201202; t=1775823614;
+	bh=fBmKDE903B55aOazdk1fgTYrHTdJzb3m7rYXj49+TyY=;
 	h=Date:From:To:Cc:Subject:References:From;
-	b=SEmycwX5s0//+gtSPktg47GJS+8sJlwAPsv65Bq7Wv5tg7uQL3Gpghd9FaOczcWIN
-	 ZQaCuA/qh+jNH/riNYpmVLmwYhqyjM2JbqnNtt1yhbGBg3HT7iCiqP6g94wS0wTPIA
-	 99ougHo5Nu9h67SjSnTNqyHC+/lIAAGR6p7tHCAck6aAnXmlbTDue5R1sT+DZ/waOZ
-	 GXIvFpg3p1ueseORBf9eozHpgJ3jpkMWN+atB0UvtcxRk8vKXhCteFgdwrDai6rThh
-	 FHU0CtO/nkzQnAaFOlH62oLpy9zcH9gwc0II0cebCdnPQhGplJ3L9nz1drcdz9bKdB
-	 3Oc5+96qoKgtw==
-Date: Fri, 10 Apr 2026 14:20:06 +0200
-Message-ID: <20260410120318.929806643@kernel.org>
+	b=K9r3LlHrTcCOkcDztBL2sK/tQ+yi3dZzcdFnxujOK2CvaNmPXdlKrSDZTOaDJVW4S
+	 4mOX2OGTBKQ54SjOZcfKwdFhqUqz7KSUNqnVJajtIbXp/GGLFwlU7bEb8zVF3NgHwH
+	 1PaUWksbUVEp48mOHI3J4/UWYuvo5lLJzmYA1j3FTzptfyaQ68k1o579nPzwBiXUsC
+	 3DfIec/NNOEw9ut9tg7BENSlBdgvHCyF+4+WEDfTHmiMcBanB5cN+csJSB4d+fA+Ka
+	 C4Vf48Goy0kDdmbaemETnL+HfFRh1XMMUZS6QyYOK2+NJ2yf87fs8P9lxl4UXibsda
+	 2J390A/pMX1Ag==
+Date: Fri, 10 Apr 2026 14:20:11 +0200
+Message-ID: <20260410120318.997202495@kernel.org>
 User-Agent: quilt/0.68
 From: Thomas Gleixner <tglx@kernel.org>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>,
- kasan-dev@googlegroups.com,
+Cc: Thomas Sailer <t.sailer@alumni.ethz.ch>,
+ linux-hams@vger.kernel.org,
  Arnd Bergmann <arnd@arndb.de>,
  x86@kernel.org,
  Lu Baolu <baolu.lu@linux.intel.com>,
@@ -71,8 +71,8 @@ Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>,
  Uladzislau Rezki <urezki@gmail.com>,
  Marco Elver <elver@google.com>,
  Dmitry Vyukov <dvyukov@google.com>,
- Thomas Sailer <t.sailer@alumni.ethz.ch>,
- linux-hams@vger.kernel.org,
+ kasan-dev@googlegroups.com,
+ Andrey Ryabinin <ryabinin.a.a@gmail.com>,
  "Jason A. Donenfeld" <Jason@zx2c4.com>,
  Richard Henderson <richard.henderson@linaro.org>,
  linux-alpha@vger.kernel.org,
@@ -96,8 +96,7 @@ Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>,
  linux-s390@vger.kernel.org,
  "David S. Miller" <davem@davemloft.net>,
  sparclinux@vger.kernel.org
-Subject: [patch 20/38] kasan: sw_tags: Replace get_cycles() by
- random_get_entropy()
+Subject: [patch 21/38] hamradio: baycom_epp: Remove BAYCOM_DEBUG
 References: <20260410120044.031381086@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -114,32 +113,140 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 
-Seeding the random state with get_cycles() is functionally equivalent on
-the architectures which provide get_cycles(), but it does not make sense
-semantically.
+The whole code guarded by BAYCOM_DEBUG is only writing debug values into a
+datastructure, but there is no way to ever access them.
 
-Use random_get_entropy() instead, which is the proper interface.
+Remove the pointless ballast.
 
 This is part of a larger effort to remove get_cycles() usage from
 non-architecture code.
 
 Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
-Cc: kasan-dev@googlegroups.com
+Cc: Thomas Sailer <t.sailer@alumni.ethz.ch>
+Cc: linux-hams@vger.kernel.org
 ---
- mm/kasan/sw_tags.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/hamradio/baycom_epp.c |   51 --------------------------------------
+ 1 file changed, 51 deletions(-)
 
---- a/mm/kasan/sw_tags.c
-+++ b/mm/kasan/sw_tags.c
-@@ -41,7 +41,7 @@ void __init kasan_init_sw_tags(void)
- 	int cpu;
+--- a/drivers/net/hamradio/baycom_epp.c
++++ b/drivers/net/hamradio/baycom_epp.c
+@@ -44,7 +44,6 @@
  
- 	for_each_possible_cpu(cpu)
--		per_cpu(prng_state, cpu) = (u32)get_cycles();
-+		per_cpu(prng_state, cpu) = (u32)random_get_entropy();
+ /* --------------------------------------------------------------------- */
  
- 	kasan_init_tags();
- 	kasan_enable();
+-#define BAYCOM_DEBUG
+ #define BAYCOM_MAGIC 19730510
+ 
+ /* --------------------------------------------------------------------- */
+@@ -191,18 +190,6 @@ struct baycom_state {
+ 
+ 	unsigned int ptt_keyed;
+ 	struct sk_buff *skb;  /* next transmit packet  */
+-
+-#ifdef BAYCOM_DEBUG
+-	struct debug_vals {
+-		unsigned long last_jiffies;
+-		unsigned cur_intcnt;
+-		unsigned last_intcnt;
+-		int cur_pllcorr;
+-		int last_pllcorr;
+-		unsigned int mod_cycles;
+-		unsigned int demod_cycles;
+-	} debug_vals;
+-#endif /* BAYCOM_DEBUG */
+ };
+ 
+ /* --------------------------------------------------------------------- */
+@@ -259,26 +246,6 @@ static inline int calc_crc_ccitt(const u
+ 
+ #define tenms_to_flags(bc,tenms) ((tenms * bc->bitrate) / 800)
+ 
+-/* --------------------------------------------------------------------- */
+-
+-static inline void baycom_int_freq(struct baycom_state *bc)
+-{
+-#ifdef BAYCOM_DEBUG
+-	unsigned long cur_jiffies = jiffies;
+-	/*
+-	 * measure the interrupt frequency
+-	 */
+-	bc->debug_vals.cur_intcnt++;
+-	if (time_after_eq(cur_jiffies, bc->debug_vals.last_jiffies + HZ)) {
+-		bc->debug_vals.last_jiffies = cur_jiffies;
+-		bc->debug_vals.last_intcnt = bc->debug_vals.cur_intcnt;
+-		bc->debug_vals.cur_intcnt = 0;
+-		bc->debug_vals.last_pllcorr = bc->debug_vals.cur_pllcorr;
+-		bc->debug_vals.cur_pllcorr = 0;
+-	}
+-#endif /* BAYCOM_DEBUG */
+-}
+-
+ /* ---------------------------------------------------------------------- */
+ /*
+  *    eppconfig_path should be setable  via /proc/sys.
+@@ -621,13 +588,6 @@ static int receive(struct net_device *de
+ 	return ret;
+ }
+ 
+-/* --------------------------------------------------------------------- */
+-
+-#define GETTICK(x)						\
+-({								\
+-	x = (unsigned int)get_cycles();				\
+-})
+-
+ static void epp_bh(struct work_struct *work)
+ {
+ 	struct net_device *dev;
+@@ -635,21 +595,17 @@ static void epp_bh(struct work_struct *w
+ 	struct parport *pp;
+ 	unsigned char stat;
+ 	unsigned char tmp[2];
+-	unsigned int time1 = 0, time2 = 0, time3 = 0;
+ 	int cnt, cnt2;
+ 
+ 	bc = container_of(work, struct baycom_state, run_work.work);
+ 	dev = bc->dev;
+ 	if (!bc->work_running)
+ 		return;
+-	baycom_int_freq(bc);
+ 	pp = bc->pdev->port;
+ 	/* update status */
+ 	if (pp->ops->epp_read_addr(pp, &stat, 1, 0) != 1)
+ 		goto epptimeout;
+ 	bc->stat = stat;
+-	bc->debug_vals.last_pllcorr = stat;
+-	GETTICK(time1);
+ 	if (bc->modem == EPP_FPGAEXTSTATUS) {
+ 		/* get input count */
+ 		tmp[0] = EPP_TX_FIFO_ENABLE|EPP_RX_FIFO_ENABLE|EPP_MODEM_ENABLE|1;
+@@ -673,7 +629,6 @@ static void epp_bh(struct work_struct *w
+ 			goto epptimeout;
+ 		if (transmit(bc, cnt2, stat))
+ 			goto epptimeout;
+-		GETTICK(time2);
+ 		if (receive(dev, cnt))
+ 			goto epptimeout;
+ 		if (pp->ops->epp_read_addr(pp, &stat, 1, 0) != 1)
+@@ -700,7 +655,6 @@ static void epp_bh(struct work_struct *w
+ 		}
+ 		if (transmit(bc, cnt, stat))
+ 			goto epptimeout;
+-		GETTICK(time2);
+ 		/* do receiver */
+ 		while ((stat & (EPP_NRAEF|EPP_NRHF)) != EPP_NRHF) {
+ 			switch (stat & (EPP_NRAEF|EPP_NRHF)) {
+@@ -734,11 +688,6 @@ static void epp_bh(struct work_struct *w
+ 				goto epptimeout;
+ 		}
+ 	}
+-	GETTICK(time3);
+-#ifdef BAYCOM_DEBUG
+-	bc->debug_vals.mod_cycles = time2 - time1;
+-	bc->debug_vals.demod_cycles = time3 - time2;
+-#endif /* BAYCOM_DEBUG */
+ 	schedule_delayed_work(&bc->run_work, 1);
+ 	if (!bc->skb)
+ 		netif_wake_queue(dev);
 
 
