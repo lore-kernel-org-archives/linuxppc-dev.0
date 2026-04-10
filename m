@@ -1,75 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-19614-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19615-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39A2CF459FC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 18:18:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE1EAF45A0C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 20:55:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fslS16V0pz2yjn;
-	Sat, 11 Apr 2026 04:18:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775845137;
-	cv=none; b=HoM49qnmzgoZI5yBgL3kfFu9b0kcLzYfeqVK0avJN6O3imQVyxEHhdwhBf6GM+neA7jiNiNq6utfq/ECAfVXe5VW+8+lCanHkSy1OyHXcZnDEcLPZhe2RKg6FFuaF+IYmjXi+xa5JB5vqvh4eUTMwA3rfN/XR/7Ci3FK42EwZwM/PsfAnJH9K5vaNZIAAL1ANhjmMo/adeq0UkCYqiNy/DdVbaB7JQxF7JPx57XfpUnX77D4Tg31Tbj5S/mqu7451tjoxKYY53OD2xGO5fjIBqIHKot6MDPkf4hyMKHQTLVcoN9Zq39WJHYZrYUMi+bJ55tP59WIIbrO3rd8r1ZMLQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fspwk234Bz2yjn;
+	Sat, 11 Apr 2026 06:55:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775854534;
+	cv=none; b=McCEry9Z57zo73ltseJTzP/o7ANzfqFJcvTx7lQacin/eLjyoepyN7I/INGpjXsqaeYZgmZ5slthfso/UiXcUPhxSCFniH4w610pcP8zJoISw5BOD93yn7SwD3XGjMBWHuSKjTiVQoDnidlMCvOhM8jxP0MJ2AdEFGA+ZkvsLMgrLRsWZdBeaXA6wyREuKx+qvnfWl9BU7r8XzuG1rSf1R03UJ4xs+EIlwSSZZTn6cV8HC6eFSw1xzSm++dwMzvQGOxnP2gsAG+EnIZeqRY5lSvzAO0jN9hzrj077hf3qjhtUqq5Te5VgRyvOvP3J4ZBxIEInFKMKssZ5EyughmEkQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775845137; c=relaxed/relaxed;
-	bh=lVnQF8AiOqm++xByamoBjPn9RXkVjLqegbVaBrXmIQU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Wj5VTUiW+o3CZRxeGGS5ga2WyWvTNWEBUggNo5EOzSMsNEQ65g6qcsoi6fPCvRS/ABcJPo2FrE+iq0AB6fCPPSIlKHCI3Fb+19for+ZF/V5Ufr/htU5Cq28yFJ5i9J9r66t1DxTRouAWvAMrV+3YtMLBktexCIkxEOVnxFZiT8d0hFI/LiJV+EncbVFZ7aQ5GGc5MMzofDwqykAe8m6tLBEbnKZ6w0A7ESpNL42jjMVPlZ1T7Qt/C/iq1sWn6Ia9kcXWI5c/tSQMvdrDh+/icYzHUKq/7gvNE2DBgYk0eU81HKI20OyqRwfeLY3d31ujGnF9MqnOZt1Mo32ATEU65A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JaSFsMZP; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1775854534; c=relaxed/relaxed;
+	bh=EaKhODvxi/ucukRjiZOPM52dL9n0W3z89ySIPcNqMX0=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=glb+5UjQ2SdP/f5xpj8QRypoaYSZtKWHkyz02/yD91k++cyOpYcyNu720YdDgzJdODpqmsw7UNOMEOpilEj5+4W5wr8KgUX9bTrtJ9NofUp9FgZ/CORT+Wrq00n7HVns7oQTMP62qkvfPqzauA1snk+6wEsNUXW+yTSAUUzygJBEFXYpPpqhS4V4oeJyWF5UHDR+s4Gb4fO4hTRjcqNpJ1aqQvAMG2qFPwqN6rzcL4EXWSJqs3H8Kch7FCt6V+E6Sy84daHFZsc695T9e0MhRDrGvB748OITkSsvVTvs2VUj153YQcg6APyvNuDlqoql3R+pOs6XMlx9yYE1FlQvww==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uBb+aK4w; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JaSFsMZP;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uBb+aK4w;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fslS1104Tz2yhv
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Apr 2026 04:18:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fspwj0hSLz2yhV
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Apr 2026 06:55:32 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id E616960142;
-	Fri, 10 Apr 2026 18:18:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5B684C19421;
-	Fri, 10 Apr 2026 18:18:53 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 6479E4031C;
+	Fri, 10 Apr 2026 20:55:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 25D0DC19421;
+	Fri, 10 Apr 2026 20:55:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775845133;
-	bh=B/z6n4ykUpZ/HjNoDe8F4OtGtMpRbRRvw3eJfnpBZJs=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=JaSFsMZPOXPIakbkFhWLfjJ1YhKfMivp4DhIwdGS1qVrUWcvoQ9+G8jwAj9ljnd59
-	 7gGG4EZEDpSD5jDvCzs4kveqo6GybnDPF+fu8kaZP0J6FbUMAd2L9ki5XQCMmoZsGC
-	 KlO5VwkIHq/RpzPHVPT0tkEmmMUw801VkdNGtxI2rCoY4FVf6u0Rb5CeTjbJBv/LcG
-	 7chjR3v528PzWJzC0CwOoC8BGARCR0oKxm99m4RH3JC5sdqEu6dMptsS8m2F5Dagh2
-	 jhw7ZOmx2eozA2QXucHpY9Z05/t7MgcnQCTUO7PBBWbUbQBUI3Hu+wOV91la9NmYJ0
-	 ByD/C6hFLlc0w==
-Date: Sat, 11 Apr 2026 03:18:51 +0900
-From: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Bjorn Helgaas <helgaas@kernel.org>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>,
-	Magnus Lindholm <linmag7@gmail.com>,
-	Matt Turner <mattst88@gmail.com>,
-	Richard Henderson <richard.henderson@linaro.org>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Dexuan Cui <decui@microsoft.com>,
-	Krzysztof =?utf-8?Q?Ha=C5=82asa?= <khalasa@piap.pl>,
-	Lukas Wunner <lukas@wunner.de>,
-	Oliver O'Halloran <oohall@gmail.com>,
-	Saurabh Singh Sengar <ssengar@microsoft.com>,
-	Shuan He <heshuan@bytedance.com>,
-	Srivatsa Bhat <srivatsabhat@microsoft.com>,
-	Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
-	linux-pci@vger.kernel.org, linux-alpha@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 00/20] PCI: Convert all dynamic sysfs attributes to static
-Message-ID: <20260410181851.GA1951283@rocinante>
-References: <20260410055040.39233-1-kwilczynski@kernel.org>
+	s=k20201202; t=1775854529;
+	bh=NCLwUcavida6lTRmcWsaKb5HSspL1nWNySBxMvO4hO8=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=uBb+aK4w3/2u4kyVJBiptzM0/JeHVU+h0LyuAGmXhRBB/wmY8nVPEGLrH6PIUauly
+	 xZ5jhTx/pd4jDAH6N0E8699fbCvDPdRPvQ/1U9PBOdvPEbxrui2vDJcfwacrKBJbAt
+	 K2KgH8S8N6W61I5bQqua5TC/HTbe1JJBDb2jmaIXqh11mio1s1ulWsCUgh1TEd2HU0
+	 +ZMxNL6Px/beH32xwdxJ9u73C9h58Vy+EiUKACVtBOcR0D3eWoYoTnffZnDWdkv8Q1
+	 Jq57olSI26FETBnKfPSYv2rHfBfCG49DcVZq8FGFKIXdb41avCYxrEXRj1YRJAzkeo
+	 CA0Wg7vMsMitA==
+From: Thomas Gleixner <tglx@kernel.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, x86@kernel.org, Lu Baolu
+ <baolu.lu@linux.intel.com>, iommu@lists.linux.dev, Michael Grzeschik
+ <m.grzeschik@pengutronix.de>, netdev@vger.kernel.org,
+ linux-wireless@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
+ linux-crypto@vger.kernel.org, Vlastimil Babka <vbabka@kernel.org>,
+ linux-mm@kvack.org, David Woodhouse <dwmw2@infradead.org>, Bernie Thompson
+ <bernie@plugable.com>, linux-fbdev@vger.kernel.org, Theodore Tso
+ <tytso@mit.edu>, linux-ext4@vger.kernel.org, Andrew Morton
+ <akpm@linux-foundation.org>, Uladzislau Rezki <urezki@gmail.com>, Marco
+ Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>,
+ kasan-dev@googlegroups.com, Andrey Ryabinin <ryabinin.a.a@gmail.com>,
+ Thomas Sailer <t.sailer@alumni.ethz.ch>, linux-hams@vger.kernel.org,
+ "Jason A. Donenfeld" <Jason@zx2c4.com>, Richard Henderson
+ <richard.henderson@linaro.org>, linux-alpha@vger.kernel.org, Russell King
+ <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org, Catalin
+ Marinas <catalin.marinas@arm.com>, Huacai Chen <chenhuacai@kernel.org>,
+ loongarch@lists.linux.dev, Geert Uytterhoeven <geert@linux-m68k.org>,
+ linux-m68k@lists.linux-m68k.org, Dinh Nguyen <dinguyen@kernel.org>, Jonas
+ Bonn <jonas@southpole.se>, linux-openrisc@vger.kernel.org, Helge Deller
+ <deller@gmx.de>, linux-parisc@vger.kernel.org, Michael Ellerman
+ <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org, Paul Walmsley
+ <pjw@kernel.org>, linux-riscv@lists.infradead.org, Heiko Carstens
+ <hca@linux.ibm.com>, linux-s390@vger.kernel.org, "David S. Miller"
+ <davem@davemloft.net>, sparclinux@vger.kernel.org
+Subject: [patch V1.1 02/38] x86: Cleanup include recursion hell
+In-Reply-To: <20260410120317.709923681@kernel.org>
+References: <20260410120044.031381086@kernel.org>
+ <20260410120317.709923681@kernel.org>
+Date: Fri, 10 Apr 2026 22:55:25 +0200
+Message-ID: <87ldeuzgaq.ffs@tglx>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -83,36 +89,149 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260410055040.39233-1-kwilczynski@kernel.org>
+Content-Type: text/plain
 
-Hello,
+Including a random architecture specific header which requires global
+headers just to avoid including that header at the two usage sites is
+really beyond lazy and tasteless. Including global headers just to get the
+__percpu macro from linux/compiler_types.h falls into the same category.
 
-> This series converts every dynamically allocated PCI sysfs attribute to
-> a static const definition.  After the full series, pci_sysfs_init() and
-> sysfs_initialized are gone, and every sysfs file is created by the
-> driver model at device_add() time.
+Remove the linux/percpu.h and asm/cpumask.h includes from msr.h and smp.h
+and fix the resulting fallout by a simple forward struct declaration and by
+including the x86 specific asm/cpumask.h header where it is actually
+required.
 
-A note on testing:
+Signed-off-by: Thomas Gleixner <tglx@kernel.org>
+---
+V1.1: Fix PARAVIRT_XXL fallout....
+---
+ arch/x86/include/asm/cache.h             |    1 +
+ arch/x86/include/asm/msr.h               |    5 +++--
+ arch/x86/include/asm/paravirt.h          |    3 ++-
+ arch/x86/include/asm/pvclock.h           |    1 +
+ arch/x86/include/asm/smp.h               |    2 --
+ arch/x86/include/asm/vdso/gettimeofday.h |    5 ++---
+ arch/x86/kernel/cpu/mce/core.c           |    1 +
+ arch/x86/kernel/nmi.c                    |    1 +
+ arch/x86/kernel/smpboot.c                |    1 +
+ 9 files changed, 12 insertions(+), 8 deletions(-)
 
-  0-day bot (recent test runs; newer builds will arrive later):
-    - https://lore.kernel.org/linux-pci/202603170336.zSLrDvlj-lkp@intel.com/
-    - https://lore.kernel.org/linux-pci/202603122052.tMV5rzNq-lkp@intel.com/
-    - https://lore.kernel.org/linux-pci/202603081334.b91RGVS6-lkp@intel.com/
-    - https://lore.kernel.org/linux-pci/202603060207.pnGfKgGa-lkp@intel.com/
-
-  KernelCI (for the "for-kernelci" branch):
-    - https://dashboard.kernelci.org/tree/linux-pci/for-kernelci/
-
-  Sashiko's feedback:
-    - https://sashiko.dev/#/patchset/20260410055040.39233-1-kwilczynski%40kernel.org/
-
-I sadly do not own any Alpha or PowerPC hardware, so when I was testing
-these architectures while working on the series, it would be only under
-QEMU.
-
-Thank you!
-
-	Krzysztof
+--- a/arch/x86/include/asm/cache.h
++++ b/arch/x86/include/asm/cache.h
+@@ -2,6 +2,7 @@
+ #ifndef _ASM_X86_CACHE_H
+ #define _ASM_X86_CACHE_H
+ 
++#include <vdso/page.h>
+ #include <linux/linkage.h>
+ 
+ /* L1 cache line size */
+--- a/arch/x86/include/asm/msr.h
++++ b/arch/x86/include/asm/msr.h
+@@ -8,12 +8,11 @@
+ 
+ #include <asm/asm.h>
+ #include <asm/errno.h>
+-#include <asm/cpumask.h>
+ #include <uapi/asm/msr.h>
+ #include <asm/shared/msr.h>
+ 
++#include <linux/compiler_types.h>
+ #include <linux/types.h>
+-#include <linux/percpu.h>
+ 
+ struct msr_info {
+ 	u32			msr_no;
+@@ -256,6 +255,8 @@ int msr_set_bit(u32 msr, u8 bit);
+ int msr_clear_bit(u32 msr, u8 bit);
+ 
+ #ifdef CONFIG_SMP
++struct cpumask;
++
+ int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
+ int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
+ int rdmsrq_on_cpu(unsigned int cpu, u32 msr_no, u64 *q);
+--- a/arch/x86/include/asm/paravirt.h
++++ b/arch/x86/include/asm/paravirt.h
+@@ -16,9 +16,10 @@
+ 
+ #ifndef __ASSEMBLER__
+ #include <linux/types.h>
+-#include <linux/cpumask.h>
+ #include <asm/frame.h>
+ 
++struct cpumask;
++
+ /* The paravirtualized I/O functions */
+ static inline void slow_down_io(void)
+ {
+--- a/arch/x86/include/asm/pvclock.h
++++ b/arch/x86/include/asm/pvclock.h
+@@ -2,6 +2,7 @@
+ #ifndef _ASM_X86_PVCLOCK_H
+ #define _ASM_X86_PVCLOCK_H
+ 
++#include <asm/barrier.h>
+ #include <asm/clocksource.h>
+ #include <asm/pvclock-abi.h>
+ 
+--- a/arch/x86/include/asm/smp.h
++++ b/arch/x86/include/asm/smp.h
+@@ -5,8 +5,6 @@
+ #include <linux/cpumask.h>
+ #include <linux/thread_info.h>
+ 
+-#include <asm/cpumask.h>
+-
+ DECLARE_PER_CPU_CACHE_HOT(int, cpu_number);
+ 
+ DECLARE_PER_CPU_READ_MOSTLY(cpumask_var_t, cpu_sibling_map);
+--- a/arch/x86/include/asm/vdso/gettimeofday.h
++++ b/arch/x86/include/asm/vdso/gettimeofday.h
+@@ -11,13 +11,12 @@
+ #define __ASM_VDSO_GETTIMEOFDAY_H
+ 
+ #ifndef __ASSEMBLER__
+-
++#include <clocksource/hyperv_timer.h>
+ #include <uapi/linux/time.h>
++
+ #include <asm/vgtod.h>
+ #include <asm/unistd.h>
+-#include <asm/msr.h>
+ #include <asm/pvclock.h>
+-#include <clocksource/hyperv_timer.h>
+ #include <asm/vdso/sys_call.h>
+ 
+ #define VDSO_HAS_TIME 1
+--- a/arch/x86/kernel/cpu/mce/core.c
++++ b/arch/x86/kernel/cpu/mce/core.c
+@@ -48,6 +48,7 @@
+ #include <linux/vmcore_info.h>
+ 
+ #include <asm/fred.h>
++#include <asm/cpumask.h>
+ #include <asm/cpu_device_id.h>
+ #include <asm/processor.h>
+ #include <asm/traps.h>
+--- a/arch/x86/kernel/nmi.c
++++ b/arch/x86/kernel/nmi.c
+@@ -26,6 +26,7 @@
+ #include <linux/sched/clock.h>
+ #include <linux/kvm_types.h>
+ 
++#include <asm/cpumask.h>
+ #include <asm/cpu_entry_area.h>
+ #include <asm/traps.h>
+ #include <asm/mach_traps.h>
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -70,6 +70,7 @@
+ #include <asm/irq.h>
+ #include <asm/realmode.h>
+ #include <asm/cpu.h>
++#include <asm/cpumask.h>
+ #include <asm/numa.h>
+ #include <asm/tlbflush.h>
+ #include <asm/mtrr.h>
 
