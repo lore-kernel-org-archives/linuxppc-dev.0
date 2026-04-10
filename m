@@ -1,56 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-19595-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19596-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC0BBF4484C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 12:21:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A12BAF44847
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 12:21:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fsbVY0nk1z2yrK;
-	Fri, 10 Apr 2026 22:20:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775823637;
-	cv=none; b=E779qHQjHQJgJVyEqDfd+trUO2vHjpIHOs+81D/OcbMI2dHqseUHxcxFFu/I9Q7SJLaJ1m3Eax9N+qOPwYrp7BZmt//kSLJ+uiXYRyvtmL8CBTl6nAqq1cKLlEk1uHPU7p1d/ZlNMqOTLOHI72glinaFSD8BcjjUxO6WjShzIdg4cgY6L3iRX/tUkV5hh+wAQNX3r3k5E2yVrVvuCkIVL04Z3AjN5kEGdrBl/bYMWpKJ+lNXBfn5/i6va7GE/ECbzlpyZGwZjZISsMxb5wZ40Y86/AWjX0k79weqAANzewuTQqyOyQIm+yMo9H1xU4dF32+DjOHOh1qe2HNBFXGIJQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fsbVd59D4z2yrD;
+	Fri, 10 Apr 2026 22:20:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775823641;
+	cv=none; b=FfG40yfgBP0msRH6pacf5Y5epIkVG/szDJkJOJ0N30vcfoabhdTlFnV7PTr7kfqB57gT+WYepBRLVHrqsotjmqpcPCjXfcsqLXiQ58bDLpPmIMQ033577K1pg36wfVv4NVYklRa6ZmY5bXcNF5FwLKhqs7y22518jQjwb/Vd8x3zimsm3gRJKOSENDwTsVtmADDt4a7bSNZQIECDHaogPr5Ff6qpvfjMfVgYVe0cgU+nmLLlyzbRhtQr55cjNLFpNwOQYdVO2Zq3LDO0z2CcgAt8wSmsgx88TxQyKJo4sotPUsrjOIQfzwmwbc+kZmIjuHJCCg4uO7j5eU3GAgHXyw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775823637; c=relaxed/relaxed;
-	bh=T5BmJ1FF4HBJvfl1JxkNrWx4X3v6jSPy5n7OMhgiRsc=;
+	t=1775823641; c=relaxed/relaxed;
+	bh=cA5fsHKS5zMwzBxci+DP1Qed/9F1OdcNJnHEKWRTFD0=;
 	h=Date:Message-ID:From:To:Cc:Subject:References:MIME-Version:
-	 Content-Type; b=Jxyu9OMLG4mS0yaBAIcPOuz1W4d98LnoPJx4uZrPoNkSQLYxQ7ah9+7FVIk0c56JU2g9uAUOM1FJGDEImpQcq8smuUC9cMRzBEJh5DszS4pexr9hBkvQ/7qU2bc9CYsMlo6GW8YzxaC3/T1xQZjANzqoGziaVW5JWfTC50nxDdPQ4JbWxU47JwCvPwHJnBc09huv1YkSLfdzx8MRMYwiKVDZishb4qbKOLqpDE53TO4pssJIsl7BWPpXgxrBGu0bH0dm/Ir9+pDrKpUiM2k7aSwJ1Luu38a17QdkW0ZVxH3eV6PeHmfEfNlK08qjuVNHdQPN6yS0NtaNrvxZpdgpDw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UsSMuuI0; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type; b=KzDxQ5Mf3QiW6+q4STRVPWX2hjwk3TLd3UPTCZRH/K7qpKPWeqmAMC7oKKEDyOkR/6mlq8P37fW3EiNNHtitZAl43PBoNVEzjYeY7Rru7imc6Ip2MgpoKP7s+YKlzxK5We4HKt1tN/J+AJOasklErqpFjppJHH3cJpO/Pi8sNOvjgYkL3aSSuRcTFVITNFLZvmgjgaRb+cfkSfxsXm8oDF8jYScjuw3KA+e8/8uIs5z2nWK/uS2TxQhW48S32RhiUb05QMiOgTSb+Tiawx5YUPO2rCsYK4FgUVc0OD/wQWUIZ6AXvwIvy8YJ1U1yA8fpASrlnTyf1vqL+SJ1apBRTQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=q1INVKXp; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UsSMuuI0;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=q1INVKXp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsbVX1z3tz2yrD
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 22:20:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsbVc69KGz2yrQ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 22:20:40 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 6C7C26024D;
-	Fri, 10 Apr 2026 12:20:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 59123C2BC87;
-	Fri, 10 Apr 2026 12:20:33 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 1605941780;
+	Fri, 10 Apr 2026 12:20:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2B1D3C2BC9E;
+	Fri, 10 Apr 2026 12:20:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775823634;
-	bh=dDZlZkUBE8Yoz+Mf4b2btSZILqeS3wHEYjrON1rjw6U=;
+	s=k20201202; t=1775823639;
+	bh=xuHY9CZoFUC3Uh1usl17ZiiMpll/sjP+R8Uwlr/gPtE=;
 	h=Date:From:To:Cc:Subject:References:From;
-	b=UsSMuuI0fLabe+4dL8zTL2gq7n1Qam6gWMJ4FfKEoBXmYXreb34mK0jfpqexOCcjk
-	 URd+7aIYau5Paex32UCyAHBB1baazBC53HlWWmD8jGnelNjcRxfUYPATekVzRrqJDT
-	 SM4YYaTAd2jF6zuzF3s9v75IAyeOupGmOZUxJte/r7FKLtBw0S1j/Gfer+oeitcrs9
-	 GcWasj5F60hnX72mh29rwAv4UlAzszLEnt4a+71ByOcLxgUh/fQSei1PCaUTQnLPFS
-	 AyV/TWXRXX6WJrt/PID7Ovi55s49ArxiVCGwFwMjqqfxuev0KPjerElNRcERH69T8a
-	 bfdJGP+BHG9rw==
-Date: Fri, 10 Apr 2026 14:20:31 +0200
-Message-ID: <20260410120319.263143276@kernel.org>
+	b=q1INVKXpZHtktKQFtR7J0+4UmhxfrqTk44NJDJ9JcHhB06YLNiRtKSdKF4mgJVuJK
+	 SbcmSgsMKGBRlcg33rDyUOrFSOUDUDhFVtStbWiiXhg+24Wo0rvXGROWGoPGbTgWpY
+	 1QIfeqOqXuPtKqCTAnTH/4z6y5eKaf0+C4alVsAJYiVtcktTob8TzqOeasZ85w0p7X
+	 BtZas6qdu0vK0vHim0/6rol7iQm8En5aXNu+7ovbB+IOTj4HSKX+ow5cG7qCECZo1T
+	 4BmBLkbX+cyQgBzFeuQcBUbwDEtuOB2nQvII7+MypdiMTP4ticoX+aM+zON4QU+Q9r
+	 WXrWSNCF41x9w==
+Date: Fri, 10 Apr 2026 14:20:35 +0200
+Message-ID: <20260410120319.330598126@kernel.org>
 User-Agent: quilt/0.68
 From: Thomas Gleixner <tglx@kernel.org>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
- linux-arm-kernel@lists.infradead.org,
+Cc: Huacai Chen <chenhuacai@kernel.org>,
+ loongarch@lists.linux.dev,
  Arnd Bergmann <arnd@arndb.de>,
  x86@kernel.org,
  Lu Baolu <baolu.lu@linux.intel.com>,
@@ -79,8 +79,8 @@ Cc: Catalin Marinas <catalin.marinas@arm.com>,
  Richard Henderson <richard.henderson@linaro.org>,
  linux-alpha@vger.kernel.org,
  Russell King <linux@armlinux.org.uk>,
- Huacai Chen <chenhuacai@kernel.org>,
- loongarch@lists.linux.dev,
+ linux-arm-kernel@lists.infradead.org,
+ Catalin Marinas <catalin.marinas@arm.com>,
  Geert Uytterhoeven <geert@linux-m68k.org>,
  linux-m68k@lists.linux-m68k.org,
  Dinh Nguyen <dinguyen@kernel.org>,
@@ -96,7 +96,7 @@ Cc: Catalin Marinas <catalin.marinas@arm.com>,
  linux-s390@vger.kernel.org,
  "David S. Miller" <davem@davemloft.net>,
  sparclinux@vger.kernel.org
-Subject: [patch 25/38] arm64: Select ARCH_HAS_RANDOM_ENTROPY
+Subject: [patch 26/38] loongarch: Select ARCH_HAS_RANDOM_ENTROPY
 References: <20260410120044.031381086@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -113,193 +113,75 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 
-The only remaining usage of get_cycles() is to provide random_get_entropy().
+The only remaining non-architecture usage of get_cycles() is to provide
+random_get_entropy().
 
-Switch arm64 over to the new scheme of selecting ARCH_HAS_RANDOM_ENTROPY
+Switch loongarch over to the new scheme of selecting ARCH_HAS_RANDOM_ENTROPY
 and providing random_get_entropy() in asm/random.h.
 
-As a consequence this unearthed a nasty include dependecy hell where random
-code including rqspinlock.h relies on a magic include of asm/arch_timer.h.
-Including the headers in asm/random.h turned out to be impossible as well.
-
-The only solution for now is to uninline random_get_entropy().  Fix up all
-other dependencies on the content of asm/timex.h in those files which
-really depend on it.
-
-Remove asm/timex.h as it has no functionality anymore.
+Add 'asm/timex.h' includes to the relevant files, so the global include can
+be removed once all architectures are converted over.
 
 Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org
+Cc: Huacai Chen <chenhuacai@kernel.org>
+Cc: loongarch@lists.linux.dev
 ---
- arch/arm64/Kconfig                      |    1 +
- arch/arm64/include/asm/io.h             |    5 +++--
- arch/arm64/include/asm/random.h         |   11 +++++++++++
- arch/arm64/include/asm/rqspinlock.h     |    1 +
- arch/arm64/include/asm/timex.h          |   18 ------------------
- arch/arm64/kernel/time.c                |    6 ++++++
- arch/arm64/kernel/topology.c            |    1 +
- arch/arm64/kernel/traps.c               |    1 +
- arch/arm64/kvm/emulate-nested.c         |    1 +
- arch/arm64/kvm/hyp/include/hyp/switch.h |    1 +
- arch/arm64/lib/delay.c                  |    1 +
- drivers/irqchip/irq-apple-aic.c         |    1 +
- 12 files changed, 28 insertions(+), 20 deletions(-)
+ arch/loongarch/Kconfig              |    1 +
+ arch/loongarch/include/asm/random.h |   15 +++++++++++++++
+ arch/loongarch/kernel/syscall.c     |    1 +
+ arch/loongarch/lib/delay.c          |    2 +-
+ 4 files changed, 18 insertions(+), 1 deletion(-)
 
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -45,6 +45,7 @@ config ARM64
+--- a/arch/loongarch/Kconfig
++++ b/arch/loongarch/Kconfig
+@@ -26,6 +26,7 @@ config LOONGARCH
+ 	select ARCH_HAS_NON_OVERLAPPING_ADDRESS_SPACE
  	select ARCH_HAS_PREEMPT_LAZY
- 	select ARCH_HAS_PTDUMP
  	select ARCH_HAS_PTE_SPECIAL
 +	select ARCH_HAS_RANDOM_ENTROPY
- 	select ARCH_HAS_HW_PTE_YOUNG
- 	select ARCH_HAS_SETUP_DMA_OPS
+ 	select ARCH_HAS_SET_MEMORY
  	select ARCH_HAS_SET_DIRECT_MAP
---- a/arch/arm64/include/asm/io.h
-+++ b/arch/arm64/include/asm/io.h
-@@ -100,12 +100,13 @@ static __always_inline u64 __raw_readq(c
- ({									\
- 	unsigned long tmp;						\
- 									\
--	dma_rmb();								\
-+	dma_rmb();							\
- 									\
- 	/*								\
- 	 * Create a dummy control dependency from the IO read to any	\
- 	 * later instructions. This ensures that a subsequent call to	\
--	 * udelay() will be ordered due to the ISB in get_cycles().	\
-+	 * udelay() will be ordered due to the ISB in			\
-+	 * arm_timer_read_counter().					\
- 	 */								\
- 	asm volatile("eor	%0, %1, %1\n"				\
- 		     "cbnz	%0, ."					\
+ 	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
 --- /dev/null
-+++ b/arch/arm64/include/asm/random.h
-@@ -0,0 +1,11 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
++++ b/arch/loongarch/include/asm/random.h
+@@ -0,0 +1,15 @@
++/* SPDX-License-Identifier: GPL-2.0 */
 +/*
-+ * Copyright (C) 2012 ARM Ltd.
++ * Copyright (C) 2020-2022 Loongson Technology Corporation Limited
 + */
-+#ifndef __ASM_RANDOM_H
-+#define __ASM_RANDOM_H
++#ifndef _ASM_RANDOM_H
++#define _ASM_RANDOM_H
 +
-+/* Out of line to avoid recursive include hell */
-+unsigned long random_get_entropy(void);
++#include <asm/timex.h>
 +
-+#endif
---- a/arch/arm64/include/asm/rqspinlock.h
-+++ b/arch/arm64/include/asm/rqspinlock.h
-@@ -2,6 +2,7 @@
- #ifndef _ASM_RQSPINLOCK_H
- #define _ASM_RQSPINLOCK_H
- 
-+#include <asm/arch_timer.h>
- #include <asm/barrier.h>
- 
- /*
---- a/arch/arm64/include/asm/timex.h
-+++ /dev/null
-@@ -1,18 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-only */
--/*
-- * Copyright (C) 2012 ARM Ltd.
-- */
--#ifndef __ASM_TIMEX_H
--#define __ASM_TIMEX_H
--
--#include <asm/arch_timer.h>
--
--/*
-- * Use the current timer as a cycle counter since this is what we use for
-- * the delay loop.
-- */
--#define get_cycles()	arch_timer_read_counter()
--
--#include <asm-generic/timex.h>
--
--#endif
---- a/arch/arm64/kernel/time.c
-+++ b/arch/arm64/kernel/time.c
-@@ -29,6 +29,7 @@
- 
- #include <clocksource/arm_arch_timer.h>
- 
-+#include <asm/arch_timer.h>
- #include <asm/thread_info.h>
- #include <asm/paravirt.h>
- 
-@@ -52,6 +53,11 @@ unsigned long profile_pc(struct pt_regs
- }
- EXPORT_SYMBOL(profile_pc);
- 
-+static unsigned long random_get_entropy(void)
++static inline unsigned long random_get_entropy(void)
 +{
-+	return arch_timer_read_counter();
++	return get_cycles();
 +}
 +
- void __init time_init(void)
++#endif /*  _ASM_RANDOM_H */
+--- a/arch/loongarch/kernel/syscall.c
++++ b/arch/loongarch/kernel/syscall.c
+@@ -19,6 +19,7 @@
+ #include <asm/loongarch.h>
+ #include <asm/signal.h>
+ #include <asm/switch_to.h>
++#include <asm/timex.h>
+ #include <asm-generic/syscalls.h>
+ 
+ #undef __SYSCALL
+--- a/arch/loongarch/lib/delay.c
++++ b/arch/loongarch/lib/delay.c
+@@ -5,9 +5,9 @@
+ #include <linux/delay.h>
+ #include <linux/export.h>
+ #include <linux/smp.h>
+-#include <linux/timex.h>
+ 
+ #include <asm/processor.h>
++#include <asm/timex.h>
+ 
+ void __delay(unsigned long cycles)
  {
- 	u32 arch_timer_rate;
---- a/arch/arm64/kernel/topology.c
-+++ b/arch/arm64/kernel/topology.c
-@@ -21,6 +21,7 @@
- #include <linux/sched/isolation.h>
- #include <linux/xarray.h>
- 
-+#include <asm/arch_timer.h>
- #include <asm/cpu.h>
- #include <asm/cputype.h>
- #include <asm/topology.h>
---- a/arch/arm64/kernel/traps.c
-+++ b/arch/arm64/kernel/traps.c
-@@ -30,6 +30,7 @@
- #include <linux/ubsan.h>
- #include <linux/cfi.h>
- 
-+#include <asm/arch_timer.h>
- #include <asm/atomic.h>
- #include <asm/bug.h>
- #include <asm/cpufeature.h>
---- a/arch/arm64/kvm/emulate-nested.c
-+++ b/arch/arm64/kvm/emulate-nested.c
-@@ -7,6 +7,7 @@
- #include <linux/kvm.h>
- #include <linux/kvm_host.h>
- 
-+#include <asm/arch_timer.h>
- #include <asm/kvm_emulate.h>
- #include <asm/kvm_nested.h>
- 
---- a/arch/arm64/kvm/hyp/include/hyp/switch.h
-+++ b/arch/arm64/kvm/hyp/include/hyp/switch.h
-@@ -18,6 +18,7 @@
- 
- #include <kvm/arm_psci.h>
- 
-+#include <asm/arch_timer.h>
- #include <asm/barrier.h>
- #include <asm/cpufeature.h>
- #include <asm/extable.h>
---- a/arch/arm64/lib/delay.c
-+++ b/arch/arm64/lib/delay.c
-@@ -14,6 +14,7 @@
- #include <linux/timex.h>
- 
- #include <clocksource/arm_arch_timer.h>
-+#include <asm/arch_timer.h>
- 
- #define USECS_TO_CYCLES(time_usecs)			\
- 	xloops_to_cycles((time_usecs) * 0x10C7UL)
---- a/drivers/irqchip/irq-apple-aic.c
-+++ b/drivers/irqchip/irq-apple-aic.c
-@@ -55,6 +55,7 @@
- #include <linux/jump_label.h>
- #include <linux/limits.h>
- #include <linux/of_address.h>
-+#include <asm/arch_timer.h>
- #include <linux/slab.h>
- #include <asm/apple_m1_pmu.h>
- #include <asm/cputype.h>
 
 
