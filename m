@@ -1,62 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-19561-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19562-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A782DF44842
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 11:15:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66327F44842
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 11:19:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fsZ332r7wz2yZ6;
-	Fri, 10 Apr 2026 21:15:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.8
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775819711;
-	cv=none; b=c1Rdsmpt2uLijHsoF/h9nCGBQAbzwjHe821pOWKXvluOYOnOzyxzXniIbBieX1SEgLwlw/vTEoN3io0KCtAUshWC5I764yQw9jaocdALH1pWGwbb89y89zxCwdOHNvlK4X32tCnKFfxEUy8oTu7JEEr660anWD5k3tR0Mbzowa0iLatHdwyjqgJixHbvDG1kTIjXXkYhSf9XRHpjOyTnQBPHzoHNUPCHUlOpX44t+W4UYhbcN+OIYiwpkiPcUzj1w1cfNL6beLtSGF19Se0ST8YlhzqFPLofoYWCtmR8PonVygvBWM/rWl2sX/VffrEIkgChvqb2RwUh21nH4G08LA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fsZ8K0LKpz2yZ6;
+	Fri, 10 Apr 2026 21:19:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.19
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775819984;
+	cv=none; b=fQTKECbNNEgqtDPNIlImbY8KCY0NzO52xivB/l4l50DjOMtm9XdevcLyFlR0yLAlhuvWhetZy8EYkQN1CiHWB4bd5USzZ5OsnMK4AzCPKmaHeOTrjaySqgdWcrLMSjBK58PnbBPIAi0I0HG8HJc7rClhzFsug6iszqgTfMs/M8nANUiTeSnIqt676/W8Sr4VvMTX/PF7XPFen2JF4bYAElE77mH/Cv1+L9r5AMNTihqJDR9NyXejq9HPYkuc/PsrykylFsDoGczoOwu0Lyawr4XwZ5w4Ng7sJuYRRsSyJLw/obXKufeFDkYYFUC9Tu3jORfqG2UtsE1idq35ySxbmA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775819711; c=relaxed/relaxed;
-	bh=AjxalHPdeTS7oFuihHSHMPAnRhS7F2ULqIIUORCmR14=;
+	t=1775819984; c=relaxed/relaxed;
+	bh=67auzAubWDosQ38P7bTOD5Yhnbe4po39pXwfkc4RbPw=;
 	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=oAjsomSxxFZHHKId/QTyfDgkxlTMR1wjOUER8S9yy8cD8shwSRS/Jp4i5M4/IWXT+Rdirh2nMNb+lJU4ofLb98wTcmMYxkDbIcI6FYuF9dU+GNAS9KIi5ZHC/0XZdj2wBz7dVWrXJwXyv596DqY3dEBxjFYuV1cYTIUEK3YlUif+SIIrLe554gAPp0BVXGlEwyvfxILZXRahVnhAd7hX1vDNNDUtItvZAVP7Lz7KsHInDWVDSR69Ua12HbFjwfI2bN0+kDixf6nqkwsgUb5qX8nHDBQWa+sIBUj0iuva8rG+0BrjAuJulJnJ0lVFUVcE5iUDV10G/oXqKIlW7p5xaA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=CkN7lzyZ; dkim-atps=neutral; spf=pass (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+	 MIME-Version:Content-Type; b=QssTURRPXMkCprcAJDIQxO+xbHXmN6P3JZCYq0lQH2kgFXmmF/tUW7QU9ySBeadTsXaY0guwgu0koxUqelAGKBQuTyP4zn0UtHzvyCHOIASaMzFWQ7WcB6UDXIIqEb3o50wGh6GqxLktVsNmXSdhxvPR/tK/RYHn8UW2VYu5XWNRfzsPNhKmg7JAinevnHaTAn2IjZhfrZUcl6iJZKFaj5gzRULa2oDzGjNfZ/suqGJYKjI5F0bXw3Uj1luxBE9e7ZXARD5cC1basobY4psCeiEQvcG9HHro4AuJHBG/u84rINdJVJfYRMIjpgYBihvW4/BlBQC47nDyIHNKQmZTBg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=fCQv0xM6; dkim-atps=neutral; spf=pass (client-ip=198.175.65.19; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=CkN7lzyZ;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=fCQv0xM6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.19; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsZ321gjlz2xT6
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 21:15:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsZ8H2pPvz2xT6
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 21:19:42 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1775819711; x=1807355711;
+  t=1775819984; x=1807355984;
   h=from:date:to:cc:subject:in-reply-to:message-id:
-   references:mime-version;
-  bh=LQlh8I55FJSDZdIW0plgYRYVBRUjST2rjdHoYnP/X9g=;
-  b=CkN7lzyZsx0QDHnxQ11tZHiFE70jFZqtz5+JUFEBpybzNSNqRsLPuFcV
-   /8FZ0ExAdj+4xSWMSDbctdVFvkhdhmaf2T+lEjSFh734dxKh2+zQgHGbx
-   VTh6G8Cc6qwQm1N0RcDX6Mop0UFuZlSb5IBx72zD1yi4Kb80DL4cd5S+8
-   uq/L8LBd40vYWfhplZ8qVbngo17+0xPvx1YfleYkqcXSNa7CrDKmzS/Bj
-   Cp5ePC2APtIW/KuL5Bnz8ZHcRas1c14dPBrosossIxyKDgDAa1pWBRuYu
-   dppV9LRXAQqx7Y/vUQtKcY4+P5nl+ntAnTNjUnVTU44pYaSyp2CkKbVgg
+   references:mime-version:content-id;
+  bh=y2Ft9tQbJmBllEvwEPLEzQ//AalTGbNGlcFniNwTlWc=;
+  b=fCQv0xM6hh16yFMdXp9x4xNDLKgISIJwDXBtbPMTE+4jqVGxVcZuFDpU
+   uZO5vY7DTsSilHuLxKLTB1WHxjRoSIudzZ4Llr35ztr9XBMIHDXoPhUBE
+   /kG5lvlPZt09qfuTGEHrUBDxqtK9SXjiRrb4LAy3VO+mTdJmh8VtibdPr
+   zPeRQZ061j7Xlw11cTfYjkVTasGxpYK2oSHkMaF3YDJq1e/2qK2Z+aJt6
+   RWRx+Tc8vHAMPz+AvCNl8IkNhtqkU6NcAdZC1A3rNNjYgbqJ3IPpOV3A6
+   MajvZO0KtpZ9QQnNFoBsRyZK82/HC6pPqsXCjzkJdSFX6elvYLBNke61F
    g==;
-X-CSE-ConnectionGUID: BfLyQN1SQm2+wM3qh33UsQ==
-X-CSE-MsgGUID: eGgjDwDAQRqVVWjvGA6eyw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11754"; a="94415840"
+X-CSE-ConnectionGUID: vDQepudUQYusr3TSaw+Y9A==
+X-CSE-MsgGUID: eMCIOIjWTjumtC9QOXbzgA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11754"; a="76745204"
 X-IronPort-AV: E=Sophos;i="6.23,171,1770624000"; 
-   d="scan'208";a="94415840"
-Received: from orviesa001.jf.intel.com ([10.64.159.141])
-  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Apr 2026 04:15:07 -0700
-X-CSE-ConnectionGUID: XwV8+G46Tz+BFYBFlBtq8g==
-X-CSE-MsgGUID: z5AtohwQS8qN4xrUHCo/DA==
+   d="scan'208";a="76745204"
+Received: from fmviesa009.fm.intel.com ([10.60.135.149])
+  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Apr 2026 04:19:40 -0700
+X-CSE-ConnectionGUID: xvtL+CXXRjqr7ImdpYZiRw==
+X-CSE-MsgGUID: HohmFH4wSUuwW10pd0WNPQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.23,171,1770624000"; 
-   d="scan'208";a="267023344"
+   d="scan'208";a="222569712"
 Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.118])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Apr 2026 04:14:58 -0700
+  by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Apr 2026 04:19:30 -0700
 From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Date: Fri, 10 Apr 2026 14:14:55 +0300 (EEST)
+Date: Fri, 10 Apr 2026 14:19:27 +0300 (EEST)
 To: =?ISO-8859-2?Q?Krzysztof_Wilczy=F1ski?= <kwilczynski@kernel.org>
 cc: Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <helgaas@kernel.org>, 
     Manivannan Sadhasivam <mani@kernel.org>, 
@@ -73,10 +73,11 @@ cc: Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <helgaas@kernel.org>,
     Shuan He <heshuan@bytedance.com>, 
     Srivatsa Bhat <srivatsabhat@microsoft.com>, linux-pci@vger.kernel.org, 
     linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 13/20] alpha/PCI: Clean up __pci_mmap_fits()
-In-Reply-To: <20260410055040.39233-14-kwilczynski@kernel.org>
-Message-ID: <66eb23bf-1995-363f-78e6-f5a397a063a2@linux.intel.com>
-References: <20260410055040.39233-1-kwilczynski@kernel.org> <20260410055040.39233-14-kwilczynski@kernel.org>
+Subject: Re: [PATCH 14/20] alpha/PCI: Add static PCI resource attribute
+ macros
+In-Reply-To: <20260410055040.39233-15-kwilczynski@kernel.org>
+Message-ID: <2c5b50c7-b357-025d-e0de-1fce1fcddf20@linux.intel.com>
+References: <20260410055040.39233-1-kwilczynski@kernel.org> <20260410055040.39233-15-kwilczynski@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,77 +91,74 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="8323328-133140870-1775819695=:1195"
+Content-Type: multipart/mixed; BOUNDARY="8323328-866756695-1775819880=:1195"
+Content-ID: <2a2e8981-2c02-5e58-5eae-1f1106216ee6@linux.intel.com>
 
   This message is in MIME format.  The first part should be readable text,
   while the remaining parts are likely unreadable without MIME-aware tools.
 
---8323328-133140870-1775819695=:1195
-Content-Type: text/plain; charset=UTF-8
+--8323328-866756695-1775819880=:1195
+Content-Type: text/plain; CHARSET=ISO-8859-2
 Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-ID: <ff8eb51f-5b94-3fee-1a97-87bd0c1b2236@linux.intel.com>
 
-On Fri, 10 Apr 2026, Krzysztof Wilczy=C5=84ski wrote:
+On Fri, 10 Apr 2026, Krzysztof Wilczy=F1ski wrote:
 
-> Currently, __pci_mmap_fits() computes the BAR size using
-> pci_resource_len() - 1, which wraps to a large value when the
-> BAR length is zero, causing the bounds check to incorrectly
-> succeed.
+> Add macros for declaring static binary attributes for Alpha's PCI
+> resource files:
 >=20
-> Thus, add an early return for empty resources.
+>   - pci_dev_resource_attr(),        for dense/BWX systems (mmap dense)
+>   - pci_dev_resource_sparse_attr(), for sparse systems (mmap sparse)
+>   - pci_dev_resource_dense_attr(),  for dense companion files (mmap dense=
+)
 >=20
-> Also, remove the WARN() that fires when userspace attempts to
-> mmap beyond the BAR bounds.  The check still returns 0 to reject
-> the mapping, but the warning is excessive for normal operation.
+> Each macro creates a const bin_attribute with the BAR index stored in
+> the .private property and the appropriate .mmap callback.
 >=20
-> A similar warning was removed from the PCI core in the commit
-> 3b519e4ea618 ("PCI: fix size checks for mmap() on /proc/bus/pci files").
-
-This looks like entirely separate two changes to me which just happen=20
-within the same context.
-
-> Signed-off-by: Krzysztof Wilczy=C5=84ski <kwilczynski@kernel.org>
+> Signed-off-by: Krzysztof Wilczy=F1ski <kwilczynski@kernel.org>
 > ---
->  arch/alpha/kernel/pci-sysfs.c | 14 ++++++--------
->  1 file changed, 6 insertions(+), 8 deletions(-)
+>  arch/alpha/kernel/pci-sysfs.c | 20 ++++++++++++++++++++
+>  1 file changed, 20 insertions(+)
 >=20
 > diff --git a/arch/alpha/kernel/pci-sysfs.c b/arch/alpha/kernel/pci-sysfs.=
 c
-> index 7aac5e76dcd6..867199b988de 100644
+> index 867199b988de..0e016b597b06 100644
 > --- a/arch/alpha/kernel/pci-sysfs.c
 > +++ b/arch/alpha/kernel/pci-sysfs.c
-> @@ -37,20 +37,18 @@ static int hose_mmap_page_range(struct pci_controller=
- *hose,
->  static int __pci_mmap_fits(struct pci_dev *pdev, int num,
->  =09=09=09   struct vm_area_struct *vma, int sparse)
->  {
-> +=09resource_size_t len =3D pci_resource_len(pdev, num);
->  =09unsigned long nr, start, size;
->  =09int shift =3D sparse ? 5 : 0;
-> =20
-> +=09if (!len)
-> +=09=09return 0;
-> +
->  =09nr =3D vma_pages(vma);
->  =09start =3D vma->vm_pgoff;
-> -=09size =3D ((pci_resource_len(pdev, num) - 1) >> (PAGE_SHIFT - shift)) =
-+ 1;
-> +=09size =3D ((len - 1) >> (PAGE_SHIFT - shift)) + 1;
-> =20
-> -=09if (start < size && size - start >=3D nr)
-> -=09=09return 1;
-> -=09WARN(1, "process \"%s\" tried to map%s 0x%08lx-0x%08lx on %s BAR %d "
-> -=09=09"(size 0x%08lx)\n",
-> -=09=09current->comm, sparse ? " sparse" : "", start, start + nr,
-> -=09=09pci_name(pdev), num, size);
-> -=09return 0;
-> +=09return start < size && size - start >=3D nr;
+> @@ -104,6 +104,26 @@ static int pci_mmap_resource_dense(struct file *filp=
+, struct kobject *kobj,
+>  =09return pci_mmap_resource(kobj, attr, vma, 0);
 >  }
 > =20
+> +#define __pci_dev_resource_attr(_bar, _name, _suffix, _mmap)=09=09\
+> +static const struct bin_attribute=09=09=09=09=09\
+> +pci_dev_resource##_bar##_suffix##_attr =3D {=09=09=09=09\
+> +=09.attr =3D { .name =3D __stringify(_name), .mode =3D 0600 },=09=09\
+> +=09.private =3D (void *)(unsigned long)(_bar),=09=09=09\
+> +=09.mmap =3D (_mmap),=09=09=09=09=09=09\
+> +}
+> +
+> +#define pci_dev_resource_attr(_bar)=09=09=09=09=09\
+> +=09__pci_dev_resource_attr(_bar, resource##_bar,,=09=09=09\
+> +=09=09=09    pci_mmap_resource_dense)
+> +
+> +#define pci_dev_resource_sparse_attr(_bar)=09=09=09=09\
+> +=09__pci_dev_resource_attr(_bar, resource##_bar##_sparse, _sparse,=09\
+> +=09=09=09    pci_mmap_resource_sparse)
+> +
+> +#define pci_dev_resource_dense_attr(_bar)=09=09=09=09\
+> +=09__pci_dev_resource_attr(_bar, resource##_bar##_dense, _dense,=09\
+> +=09=09=09    pci_mmap_resource_dense)
+> +
 >  /**
+>   * pci_remove_resource_files - cleanup resource files
+>   * @pdev: pci_dev to cleanup
 >=20
+
+Wouldn't this belong together with the next patch, or is there some good=20
+reason why you added them separately?
 
 --=20
  i.
-
---8323328-133140870-1775819695=:1195--
+--8323328-866756695-1775819880=:1195--
 
