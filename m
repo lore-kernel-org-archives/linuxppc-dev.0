@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-19535-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19536-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 389C2E99046
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 07:13:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B669E99049
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 07:13:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fsShT6Qhmz2ypV;
-	Fri, 10 Apr 2026 17:13:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775800254;
-	cv=none; b=lxJVc/P5I4Qei0RkSqoWdASnNqSH3gRYEbqqTPkLifpno2rOj+IrqL2Rqp47/iZ1sB9i+ZC7bRWByutnegcU/1Va+nZ9jGhKjfNn/4HO/Li1BHA5f+Lr7scKq+9BijFTvtq3raFI698gQ33JaYUqmKQfv/nLNQK2GiYEjGVXvmtomvi9FoErmFIilzF0qqssxBLyeR4NBJ0j4OknEkgm+LJlCZnXQJlUaaOy+63vZ5jeBhhJSQEpjMi860iJyxr/+vcu+Ih/Ox6Ook9MXaQ5Hk1p9FxHQn3sr8bZYnDqLQw+jYGnab1mHte/B5GUtx+qeIsi2TMq397PqGc/4bweLg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fsShg5tScz2yhD;
+	Fri, 10 Apr 2026 17:13:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775800258;
+	cv=none; b=EnK4kH2cMyOcLbfnD+jTcjh2oiVYDAVk0ZapIpfQtfZW4MTgAGwTcMyMTk9HJIZoYJFwAEssf5Cr66liReH6BtJghUEU7pllM3Xr5PQj3y6ER4J7elzevstCXUzC6XyaQMvA+E5SUAeDa7Q/FzQZgK+XpP6kEx1i7XGs4PFQW281QolxSMgdYGUH9kmqsemBi4zvEOyyi/OqUKTkjU0gI01na7CgrsF/GZtUTFVApKeM5TyknhxiqJGE9YbE0cknpQIOfIGOPseRdxtH1MTIb+CrR+3KuJM2vBguTt0/WUBpO2dUa9Wzzoe6OvOgNsFUazn1RnsKCbJOgSY9xdEt/g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775800254; c=relaxed/relaxed;
-	bh=RlrOk1htmkLCudrvlN4P1j+ETttd8aInksHEcwHD94Y=;
+	t=1775800258; c=relaxed/relaxed;
+	bh=GLiuV8rayT6Be58B3pYbPEr4u1RA9Ql7++PPei8OIqU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=I3cvfisRnWGNvMa80RUN3MEx9Ixrqk2QPV6JDKT5px4Z1EIbqS+bcmRf5yJ7YOsEoKWQU2ynt/CK/QvylOiejzDIUDw3xHbBhVXxl58fmn0W2dtuG80tf1BnNyvKXgYcUflIOpev5ztYnYVYpILSQBmdYO+tHEdJ0ke1wIA43poAcZfbmTMzNmNrxyiziAkK7bRY6miApMvAXYFua6Khv8Am3byVFKZOShAGKYwE7DSXON66HEvqyPEXHK89HJ8vWaaYIfsEhCux/ZZqaKDykkvCKXZXL94dBR9UIpwGzYwwQyRy1gTNb/Y3dMmeSj0+RwMOnYqSIEMP/l6EsXxWeQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Mvd/ZBK4; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=grE19XRfOya/DZV08ARCYTkHUVuuA750CsaLYClncnoadFPZGtMfqNjtpUi4jEjAR/8UsBNYi3AFCNIusZMoeJqKF8SkkjTJ06OP3gZFXp4mYxqyIvYdEq9hAWGq7q2p+k4SzV+jaNP3jMHNvFi9I0WLiZAy8pGcJKIwIeeN2rGea0BUnPeLgBBCsiOjhal5kNn2fDSj7vqlIRBuya8ML7N8ikKjoAU1N64MOV568gLbhEgiJAMcI6x2jSMJnEgKRVIqwT9ex95hL+R9Z4z5StOKVFdz401GFumz/A9Vv3SNKN2kMKFWPiWbaiI9oDes0jvWtlRH/4kWoJyqxqBEIA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rXzq+qXX; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Mvd/ZBK4;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rXzq+qXX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsQrs5jGjz2yRl
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 15:50:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsQrx49q1z2yRl
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 15:50:57 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 1900941B41;
+	by tor.source.kernel.org (Postfix) with ESMTP id C0A8A60125;
+	Fri, 10 Apr 2026 05:50:55 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 50A5EC19421;
 	Fri, 10 Apr 2026 05:50:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C6BADC19421;
-	Fri, 10 Apr 2026 05:50:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775800252;
-	bh=O8kQ8QkL9LHeQ/3N8ubS2U25zz9aBbM59rexDGwqeT4=;
+	s=k20201202; t=1775800255;
+	bh=adotA/V+MQ7wgPmgyJRZLabHOEzjzDHEZuvNSiVnByw=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Mvd/ZBK4JZ3ugDIqD8qBy9RypOd44POFR5UdO2aVnaeCsYRDmuj7xaRUOqjsWJBTO
-	 GKZCmPgluWSMZJSXSHZ4ZG1A8/CV8NehkGas7ShsLMUzybBt07DN5tw5TnBIXHZgFK
-	 h8AZJqyveq2bqqPIp+fLbR9AeQp7vPrrPDGBWpq1SNDlC+IY42RcOaZSzMkw2RCcTq
-	 jYqAT8AyDaC6GOXMoBFzqgTvieBBR4e2C1xa/RWHZr0uIB24wUEeNkvj0NBy92uFCY
-	 JjiSIiKkJMIrqbd3jG8jW+xkOUfcSoEXbi+qCssvyWEZSXl94bNtD3cSubUswsl8jz
-	 aQyqTwfkdjkkQ==
+	b=rXzq+qXXGHKFdTEHH4V081hOqLkNfjy+xN3A5I8xX0aYNfICbiGwyuZ4M+EQxV/y8
+	 OVas0PkRjej2GjVa2TpozsrFLkYhADO2Z8BI5c2RQD0sS8lgX0nPAxSSs67Y6iYShi
+	 lvNfF4hO12cIERJz/rc/oWrrJbCoIAn68jxSdQvtmMTEw3QXQ+sE4UCgB12QfpXAoM
+	 dCptzylbzbnOLJUlrfaV/rJhjXggRsRzdxjmQwbmp8TFGemSxaNRFSU/akdoECuUJD
+	 KrIhwYEurakMPTHwHiNXwIAYdQhuwAcruK1YVIHeaP5RBsLznbYH+ivhACQkevt7ew
+	 KKmng7Ls70EVw==
 From: =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kwilczynski@kernel.org>
 To: Bjorn Helgaas <bhelgaas@google.com>
 Cc: Bjorn Helgaas <helgaas@kernel.org>,
@@ -67,9 +67,9 @@ Cc: Bjorn Helgaas <helgaas@kernel.org>,
 	linux-pci@vger.kernel.org,
 	linux-alpha@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 02/20] PCI/sysfs: Only allow supported resource types in I/O and MMIO helpers
-Date: Fri, 10 Apr 2026 05:50:22 +0000
-Message-ID: <20260410055040.39233-3-kwilczynski@kernel.org>
+Subject: [PATCH 03/20] PCI/sysfs: Use BAR length in pci_llseek_resource() when attr->size is zero
+Date: Fri, 10 Apr 2026 05:50:23 +0000
+Message-ID: <20260410055040.39233-4-kwilczynski@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260410055040.39233-1-kwilczynski@kernel.org>
 References: <20260410055040.39233-1-kwilczynski@kernel.org>
@@ -89,63 +89,57 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Currently, when the sysfs attributes for PCI resources are added
-dynamically, the resource access callbacks are only set when the
-underlying BAR type matches, using .read and .write for IORESOURCE_IO,
-and .mmap for IORESOURCE_MEM or IORESOURCE_IO with arch_can_pci_mmap_io()
-support.  As such, when the callback is not set, the operation inherently
-fails.
+Both legacy and resource attributes set .f_mapping = iomem_get_mapping,
+so the default generic_file_llseek() would consult iomem_inode for the
+file size, which knows nothing about the attribute.  That is why this
+custom llseek callback exists.
 
-After the conversion to static attributes, visibility callbacks will
-control which resource files appear for each BAR, but the callbacks
-themselves will always be set.
+Currently, the legacy and resource attributes have .size set at creation
+time, as such, using the attr->size is sufficient.  However, the upcoming
+static resource attributes will have .size == 0 set, since they are const,
+and the .bin_size callback will be used to provide the real size to kernfs
+instead.
 
-Thus, add a type check to pci_resource_io() and pci_mmap_resource()
-to return -EIO for an unsupported resource type.
+Thus, update pci_llseek_resource() to derive the file size from the
+BAR using pci_resource_len() instead of reading the attr->size directly.
 
-While at it, add parentheses around the bitwise flag test in
-pci_mmap_resource() to make the precedence explicit, and to
-match the preferred style.
+The custom pci_llseek_resource() helper has been added in commit
+24de09c16f97 ("PCI: Implement custom llseek for sysfs resource
+entries").
 
 Signed-off-by: Krzysztof Wilczyński <kwilczynski@kernel.org>
 ---
- drivers/pci/pci-sysfs.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+ drivers/pci/pci-sysfs.c | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
-index ad3c17f86c7f..008e0dd0de36 100644
+index 008e0dd0de36..ac4e7c516e78 100644
 --- a/drivers/pci/pci-sysfs.c
 +++ b/drivers/pci/pci-sysfs.c
-@@ -1115,13 +1115,17 @@ static int pci_mmap_resource(struct kobject *kobj, const struct bin_attribute *a
- 	if (ret)
- 		return ret;
- 
--	if (res->flags & IORESOURCE_MEM && iomem_is_exclusive(res->start))
-+	if (!(res->flags & IORESOURCE_MEM) &&
-+	    !((res->flags & IORESOURCE_IO) && arch_can_pci_mmap_io()))
-+		return -EIO;
+@@ -909,11 +909,21 @@ static const struct attribute_group pci_dev_config_attr_group = {
+  */
+ static __maybe_unused loff_t
+ pci_llseek_resource(struct file *filep,
+-		    struct kobject *kobj __always_unused,
++		    struct kobject *kobj,
+ 		    const struct bin_attribute *attr,
+ 		    loff_t offset, int whence)
+ {
+-	return fixed_size_llseek(filep, offset, whence, attr->size);
++	struct pci_dev *pdev;
++	int bar;
 +
-+	if ((res->flags & IORESOURCE_MEM) && iomem_is_exclusive(res->start))
- 		return -EINVAL;
- 
- 	if (!pci_mmap_fits(pdev, bar, vma, PCI_MMAP_SYSFS))
- 		return -EINVAL;
- 
--	mmap_type = res->flags & IORESOURCE_MEM ? pci_mmap_mem : pci_mmap_io;
-+	mmap_type = (res->flags & IORESOURCE_MEM) ? pci_mmap_mem : pci_mmap_io;
- 
- 	return pci_mmap_resource_range(pdev, bar, vma, mmap_type, write_combine);
++	if (attr->size)
++		return fixed_size_llseek(filep, offset, whence, attr->size);
++
++	pdev = to_pci_dev(kobj_to_dev(kobj));
++	bar = (unsigned long)attr->private;
++
++	return fixed_size_llseek(filep, offset, whence,
++				 pci_resource_len(pdev, bar));
  }
-@@ -1149,6 +1153,9 @@ static ssize_t pci_resource_io(struct file *filp, struct kobject *kobj,
- 	int bar = (unsigned long)attr->private;
- 	unsigned long port = off;
  
-+	if (!(pci_resource_flags(pdev, bar) & IORESOURCE_IO))
-+		return -EIO;
-+
- 	port += pci_resource_start(pdev, bar);
- 
- 	if (port > pci_resource_end(pdev, bar))
+ #ifdef HAVE_PCI_LEGACY
 -- 
 2.53.0
 
