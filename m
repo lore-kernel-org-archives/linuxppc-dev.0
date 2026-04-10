@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-19551-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19552-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CEAAE99049
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 07:15:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC722E99046
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 07:16:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fsSkx5XJWz2yjs;
-	Fri, 10 Apr 2026 17:15:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775800317;
-	cv=none; b=JjmR+FUG1do920Kvf9jP+9hcp4Bk2tjFFEXMX07Wqp6bZ+fbOALbPeU4TWvQhHxi8rHG8SmnhEreVzz2ChLGgkPH7iQY1AUe5D+X/rZ3Si6M2ssGnySkk2iF9L+Xp8kVkgfwOrwGwaQC1r6zrSgpsekrSNknfUmnvtgfBdFYv2EpcUz2h7gklsDbNPIeoVFW6Iix7zK56qgBEtNvVlPbcte9g4Z1a86Rtv1evAzjouR1o3/4ej0NXmMHluAAHFLDyOoNMrzvh6n5waGCEGqZXljeE5XYwjjMGti5KUl6kJOfaI2LWUFVMxvef3fKd4HYlv2sE4w8dTCRCy60zNaGAw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fsSl64kswz2yk6;
+	Fri, 10 Apr 2026 17:16:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775800320;
+	cv=none; b=lsMv24aTQbrUcIU309RTiHBi9m2GBNeH3uDsOnCrFngj9ZXMRdphatWsFDZ57biO/Ij3B6yICQadDDrEWbpRF6j0rNCKpYZr+lcN+QUV3EJOEMAI08P7dxcMtQJhQNrDL2DvBTw6iqpxU5PVJv7/ydLXr15clSC2TlODOYkhj4bS0CC/M8AT+8i7kXCHWKRw/TTyy3LdzjXIAhjIXPZTp5IUbYGdcA6YO1DkeT0ig1jS3Isq6Jg2IeMlUP0MP1GJqu6Y/P10xauADqxX0rkFsyxKoWZuasyd3cRV5Jis2IGn+kY7ZjhgycT5CpUnri+/ihM+zl10euXkmNksAkFVWg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775800317; c=relaxed/relaxed;
-	bh=lzj1y1zTD3pYZpmh+RvJjBiBMwazzNvsQEZ4rW4fR8g=;
+	t=1775800320; c=relaxed/relaxed;
+	bh=Vf9MEFyGKh14U92xsQRFvgF2M9A007f/HtMNMj53BKA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=VLfvYTuuO3hua+J7irm9ghh2/80NCdwLF5DXnnHnB9DqQobqRYDzhKXPR/nS89vw5ly/pFSgYrjx74eFYbuUIomh8bOE3c+7dL00Ai57RcM6NQRjVhEVGoSoRtLeyO0g6O8cVDO4FdQQYeWwvuOdH1ozVazM4/c0dDaZPq2ZBsm5q+GvPhWkWSS0Vf0f9yR/DASalacyS8lL2i7PFH+4nUmxyjAwWQc9JBLUzz6+1407H/A6B32UrfThuIV9YUu3LKDogx/hWTwezHuNOKQehhadhALZQbkln3Cb4x00EmAXAh2bA5KPnqNFlSZRWwJP+9pmyoCbErk1Px/lU0IjUw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=niYRvQtX; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=lKYQ5a+4/uUK1cK2j93CoEluFA6idHDGFobANfd3EdJSG6CvQOfu6QuEDIw/wgYYBwr7c8wkj4lnDIiGoBtOoRHtvsnMIjJ5Y005VypfTOWd/Qu39D+8Y3eG+T0oi1zk8EKWeYY/sHwfDiiGfpzIGAZS4ZIwGdtyQa5XvuAfHDV4AUo05GjK/6Rb5zhYWzW4XcwLWfspVmiSdZLa374/b0FLW5J4GpdaI15FgRCscOx3HuEg/Inbv/zr1WHllJ+TRlPC5TwmYjD6JuBJhYmOyFeqETC4I1xbZ+99zQ/VhNplABfVGGDPm9Jr64u5f2/Jlv64kXQzEyKZJyLQwH2mGQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JzEyOtxT; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=niYRvQtX;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JzEyOtxT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsQt515M5z2yRl
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 15:51:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsQt81d36z2yRl
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 15:52:00 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id F29796024D;
+	by sea.source.kernel.org (Postfix) with ESMTP id 82EDF42DD5;
+	Fri, 10 Apr 2026 05:51:58 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0DEB4C2BC9E;
 	Fri, 10 Apr 2026 05:51:54 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AB4B9C19421;
-	Fri, 10 Apr 2026 05:51:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775800314;
-	bh=c8yWJVikSRczDJ1vgnuLNmEe+rC+ASyKq5Y3ITSl6hM=;
+	s=k20201202; t=1775800318;
+	bh=/IpJWCBhMhJdU8pXWsPZ3Sw6vKiOKGEePNM6vsVCf/g=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=niYRvQtXpcoEMNXzL9bJrBYa41+zSx7GnRpB8Dw26uZaDu2v773jfaqwpY86ks8Ws
-	 oLV7bqo/x2UeD6yCa4dmkDFnjmigcc6do2GPk/A470xdMbXi/sMNdUeFsTC1X3ZjMx
-	 h+2N7DO5mNikOP9m4RFRYcM216acxqAYIrgXV8LZA0tmhSHmZ7vH7KnTJPq2TY+NBx
-	 5Oy/mJPpqeI8xyJLukhxCnt3P0K76SykkIHjjy1I9Ctl8x9/RqdyfsdqaHgGKy6WJx
-	 SbzBzPtR+YrECY9cMpmoaI6IDiGf8Reheybztl9rTDZvnhgKggQVtgHNtaarXyEMgM
-	 H5oO8Upfze92A==
+	b=JzEyOtxTrvkK74a9ZHKH5WHsmnqPAjQtqa4Tn7FqUsSZk8Xzh9w5EFLce4Kyck6lO
+	 JvvmD6vjPRt5Z+lB/CugxHSKswjo5yByl7DtICw3gQ0KUkZEzWSKsjiPuW/9q9CS6D
+	 5VwYAhr7+DEB5B11bqMAls6REMmBeI2Nue0rxag8crqWOolWWmXSj6PnstSrl+dPcN
+	 a+YTv68diVewwRdB2GN6iVNfwNSzlIbGswJ63e76g2H/0wW+1L0kLq3LQuGNaL5djH
+	 ZS9mrQ5WYWj05xkyv8fnQLHwRhwub1BdrTZTXCXhKcm6dKNP7hXLl4wzjIj+Jw0+Bo
+	 AggwhS3/CrnzA==
 From: =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kwilczynski@kernel.org>
 To: Bjorn Helgaas <bhelgaas@google.com>
 Cc: Bjorn Helgaas <helgaas@kernel.org>,
@@ -67,9 +67,9 @@ Cc: Bjorn Helgaas <helgaas@kernel.org>,
 	linux-pci@vger.kernel.org,
 	linux-alpha@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 19/20] PCI/sysfs: Convert legacy I/O and memory attributes to static definitions
-Date: Fri, 10 Apr 2026 05:50:39 +0000
-Message-ID: <20260410055040.39233-20-kwilczynski@kernel.org>
+Subject: [PATCH 20/20] PCI/sysfs: Remove pci_create_legacy_files() and pci_sysfs_init()
+Date: Fri, 10 Apr 2026 05:50:40 +0000
+Message-ID: <20260410055040.39233-21-kwilczynski@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260410055040.39233-1-kwilczynski@kernel.org>
 References: <20260410055040.39233-1-kwilczynski@kernel.org>
@@ -89,324 +89,145 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Currently, legacy_io and legacy_mem are dynamically allocated and
-created by pci_create_legacy_files(), with pci_adjust_legacy_attr()
-updating the attributes at runtime on Alpha to rename them and shift
-the size for sparse addressing.
+Currently, pci_create_legacy_files() and pci_remove_legacy_files() are
+no-op stubs.  With legacy attributes now handled by static groups
+registered via pcibus_groups[], no call site needs them.
 
-Convert to four static const attributes (legacy_io, legacy_io_sparse,
-legacy_mem, legacy_mem_sparse) with is_bin_visible() callbacks that
-use pci_legacy_has_sparse() to select the appropriate variant per bus.
-The sizes are compile-time constants and .size is set directly on
-each attribute.
+Remove both functions, their declarations, and the call sites in
+pci_register_host_bridge(), pci_alloc_child_bus(), and pci_remove_bus().
 
-Register the groups in pcibus_groups[] under a HAVE_PCI_LEGACY guard
-so the driver model handles creation and removal automatically.
+Remove the pci_sysfs_init() late_initcall and sysfs_initialized.  The
+late_initcall originally existed to create all the dynamic PCI sysfs
+files, but with both resource and legacy attributes now handled by
+static groups, it is no longer needed.
 
-Stub out pci_create_legacy_files() and pci_remove_legacy_files() as
-the dynamic creation is no longer needed.  Remove the __weak
-pci_adjust_legacy_attr(), Alpha's override, and its declaration from
-both Alpha and PowerPC asm/pci.h headers.
+Remove the legacy_io and legacy_mem fields from struct pci_bus which
+were used to track the dynamically allocated legacy attributes.
 
 Signed-off-by: Krzysztof Wilczyński <kwilczynski@kernel.org>
 ---
- arch/alpha/include/asm/pci.h   |   4 +-
- arch/alpha/kernel/pci-sysfs.c  |  24 ----
- arch/powerpc/include/asm/pci.h |   2 -
- drivers/pci/pci-sysfs.c        | 200 ++++++++++++++++++++-------------
- 4 files changed, 122 insertions(+), 108 deletions(-)
+ drivers/pci/pci-sysfs.c | 21 ---------------------
+ drivers/pci/pci.h       |  8 --------
+ drivers/pci/probe.c     |  6 ------
+ drivers/pci/remove.c    |  2 --
+ include/linux/pci.h     |  2 --
+ 5 files changed, 39 deletions(-)
 
-diff --git a/arch/alpha/include/asm/pci.h b/arch/alpha/include/asm/pci.h
-index ef19295f2e33..ad5d1391e1fa 100644
---- a/arch/alpha/include/asm/pci.h
-+++ b/arch/alpha/include/asm/pci.h
-@@ -84,8 +84,8 @@ extern int pci_legacy_write(struct pci_bus *bus, loff_t port, u32 val,
- extern int pci_mmap_legacy_page_range(struct pci_bus *bus,
- 				      struct vm_area_struct *vma,
- 				      enum pci_mmap_state mmap_state);
--extern void pci_adjust_legacy_attr(struct pci_bus *bus,
--				   enum pci_mmap_state mmap_type);
-+extern bool pci_legacy_has_sparse(struct pci_bus *bus,
-+				  enum pci_mmap_state type);
- #define HAVE_PCI_LEGACY	1
- 
- extern const struct attribute_group pci_dev_resource_attr_group;
-diff --git a/arch/alpha/kernel/pci-sysfs.c b/arch/alpha/kernel/pci-sysfs.c
-index 2031a3b6972c..2db91169bf5a 100644
---- a/arch/alpha/kernel/pci-sysfs.c
-+++ b/arch/alpha/kernel/pci-sysfs.c
-@@ -197,30 +197,6 @@ bool pci_legacy_has_sparse(struct pci_bus *bus, enum pci_mmap_state type)
- 	return has_sparse(hose, type);
- }
- 
--/**
-- * pci_adjust_legacy_attr - adjustment of legacy file attributes
-- * @bus: bus to create files under
-- * @mmap_type: I/O port or memory
-- *
-- * Adjust file name and size for sparse mappings.
-- */
--void pci_adjust_legacy_attr(struct pci_bus *bus, enum pci_mmap_state mmap_type)
--{
--	struct pci_controller *hose = bus->sysdata;
--
--	if (!has_sparse(hose, mmap_type))
--		return;
--
--	if (mmap_type == pci_mmap_mem) {
--		bus->legacy_mem->attr.name = "legacy_mem_sparse";
--		bus->legacy_mem->size <<= 5;
--	} else {
--		bus->legacy_io->attr.name = "legacy_io_sparse";
--		bus->legacy_io->size <<= 5;
--	}
--	return;
--}
--
- /* Legacy I/O bus read/write functions */
- int pci_legacy_read(struct pci_bus *bus, loff_t port, u32 *val, size_t size)
- {
-diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
-index 46a9c4491ed0..72f286e74786 100644
---- a/arch/powerpc/include/asm/pci.h
-+++ b/arch/powerpc/include/asm/pci.h
-@@ -82,8 +82,6 @@ extern int pci_legacy_write(struct pci_bus *bus, loff_t port, u32 val,
- extern int pci_mmap_legacy_page_range(struct pci_bus *bus,
- 				      struct vm_area_struct *vma,
- 				      enum pci_mmap_state mmap_state);
--extern void pci_adjust_legacy_attr(struct pci_bus *bus,
--				   enum pci_mmap_state mmap_type);
- #define HAVE_PCI_LEGACY	1
- 
- extern void pcibios_claim_one_bus(struct pci_bus *b);
 diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
-index fe079fb31dce..dc0bb0488317 100644
+index dc0bb0488317..3275698a5d5d 100644
 --- a/drivers/pci/pci-sysfs.c
 +++ b/drivers/pci/pci-sysfs.c
-@@ -702,11 +702,6 @@ static const struct attribute_group pcibus_group = {
- 	.attrs = pcibus_attrs,
+@@ -37,10 +37,6 @@
+ #define ARCH_PCI_DEV_GROUPS
+ #endif
+ 
+-#ifdef HAVE_PCI_LEGACY
+-static int sysfs_initialized;	/* = 0 */
+-#endif
+-
+ /* show configuration fields */
+ #define pci_config_attr(field, format_string)				\
+ static ssize_t								\
+@@ -1135,8 +1131,6 @@ static const struct attribute_group pci_legacy_mem_sparse_group = {
+ 	.is_bin_visible = pci_legacy_mem_sparse_is_visible,
  };
  
--const struct attribute_group *pcibus_groups[] = {
--	&pcibus_group,
--	NULL,
--};
--
- static ssize_t boot_vga_show(struct device *dev, struct device_attribute *attr,
- 			     char *buf)
- {
-@@ -1025,91 +1020,136 @@ bool __weak pci_legacy_has_sparse(struct pci_bus *bus,
- 	return false;
- }
- 
--/**
-- * pci_adjust_legacy_attr - adjustment of legacy file attributes
-- * @b: bus to create files under
-- * @mmap_type: I/O port or memory
-- *
-- * Stub implementation. Can be overridden by arch if necessary.
-- */
--void __weak pci_adjust_legacy_attr(struct pci_bus *b,
--				   enum pci_mmap_state mmap_type)
-+static inline umode_t __pci_legacy_is_visible(struct kobject *kobj,
-+					      const struct bin_attribute *a,
-+					      enum pci_mmap_state type,
-+					      bool sparse)
- {
-+	struct pci_bus *bus = to_pci_bus(kobj_to_dev(kobj));
-+
-+	if (pci_legacy_has_sparse(bus, type) != sparse)
-+		return 0;
-+
-+	return a->attr.mode;
- }
- 
--/**
-- * pci_create_legacy_files - create legacy I/O port and memory files
-- * @b: bus to create files under
-- *
-- * Some platforms allow access to legacy I/O port and ISA memory space on
-- * a per-bus basis.  This routine creates the files and ties them into
-- * their associated read, write and mmap files from pci-sysfs.c
-- *
-- * On error unwind, but don't propagate the error to the caller
-- * as it is ok to set up the PCI bus without these files.
-- */
--void pci_create_legacy_files(struct pci_bus *b)
-+static umode_t pci_legacy_io_is_visible(struct kobject *kobj,
-+					const struct bin_attribute *a, int n)
- {
--	int error;
--
--	if (!sysfs_initialized)
--		return;
--
--	b->legacy_io = kzalloc_objs(struct bin_attribute, 2, GFP_ATOMIC);
--	if (!b->legacy_io)
--		goto kzalloc_err;
--
--	sysfs_bin_attr_init(b->legacy_io);
--	b->legacy_io->attr.name = "legacy_io";
--	b->legacy_io->size = 0xffff;
--	b->legacy_io->attr.mode = 0600;
--	b->legacy_io->read = pci_read_legacy_io;
--	b->legacy_io->write = pci_write_legacy_io;
--	/* See pci_create_attr() for motivation */
--	b->legacy_io->llseek = pci_llseek_resource;
--	b->legacy_io->mmap = pci_mmap_legacy_io;
--	b->legacy_io->f_mapping = iomem_get_mapping;
--	pci_adjust_legacy_attr(b, pci_mmap_io);
--	error = device_create_bin_file(&b->dev, b->legacy_io);
--	if (error)
--		goto legacy_io_err;
--
--	/* Allocated above after the legacy_io struct */
--	b->legacy_mem = b->legacy_io + 1;
--	sysfs_bin_attr_init(b->legacy_mem);
--	b->legacy_mem->attr.name = "legacy_mem";
--	b->legacy_mem->size = 1024*1024;
--	b->legacy_mem->attr.mode = 0600;
--	b->legacy_mem->mmap = pci_mmap_legacy_mem;
--	/* See pci_create_attr() for motivation */
--	b->legacy_mem->llseek = pci_llseek_resource;
--	b->legacy_mem->f_mapping = iomem_get_mapping;
--	pci_adjust_legacy_attr(b, pci_mmap_mem);
--	error = device_create_bin_file(&b->dev, b->legacy_mem);
--	if (error)
--		goto legacy_mem_err;
--
--	return;
--
--legacy_mem_err:
--	device_remove_bin_file(&b->dev, b->legacy_io);
--legacy_io_err:
--	kfree(b->legacy_io);
--	b->legacy_io = NULL;
--kzalloc_err:
--	dev_warn(&b->dev, "could not create legacy I/O port and ISA memory resources in sysfs\n");
-+	return __pci_legacy_is_visible(kobj, a, pci_mmap_io, false);
- }
- 
--void pci_remove_legacy_files(struct pci_bus *b)
-+static umode_t pci_legacy_io_sparse_is_visible(struct kobject *kobj,
-+					       const struct bin_attribute *a,
-+					       int n)
- {
--	if (b->legacy_io) {
--		device_remove_bin_file(&b->dev, b->legacy_io);
--		device_remove_bin_file(&b->dev, b->legacy_mem);
--		kfree(b->legacy_io); /* both are allocated here */
--	}
-+	return __pci_legacy_is_visible(kobj, a, pci_mmap_io, true);
- }
-+
-+static umode_t pci_legacy_mem_is_visible(struct kobject *kobj,
-+					 const struct bin_attribute *a, int n)
-+{
-+	return __pci_legacy_is_visible(kobj, a, pci_mmap_mem, false);
-+}
-+
-+static umode_t pci_legacy_mem_sparse_is_visible(struct kobject *kobj,
-+						const struct bin_attribute *a,
-+						int n)
-+{
-+	return __pci_legacy_is_visible(kobj, a, pci_mmap_mem, true);
-+}
-+
-+static const struct bin_attribute pci_legacy_io_attr = {
-+	.attr = { .name = "legacy_io", .mode = 0600 },
-+	.size = 0xffff,
-+	.read = pci_read_legacy_io,
-+	.write = pci_write_legacy_io,
-+	.mmap = pci_mmap_legacy_io,
-+	.llseek = pci_llseek_resource,
-+	.f_mapping = iomem_get_mapping,
-+};
-+
-+static const struct bin_attribute pci_legacy_io_sparse_attr = {
-+	.attr = { .name = "legacy_io_sparse", .mode = 0600 },
-+	.size = 0xffff << 5,
-+	.read = pci_read_legacy_io,
-+	.write = pci_write_legacy_io,
-+	.mmap = pci_mmap_legacy_io,
-+	.llseek = pci_llseek_resource,
-+	.f_mapping = iomem_get_mapping,
-+};
-+
-+static const struct bin_attribute pci_legacy_mem_attr = {
-+	.attr = { .name = "legacy_mem", .mode = 0600 },
-+	.size = 0x100000,
-+	.mmap = pci_mmap_legacy_mem,
-+	.llseek = pci_llseek_resource,
-+	.f_mapping = iomem_get_mapping,
-+};
-+
-+static const struct bin_attribute pci_legacy_mem_sparse_attr = {
-+	.attr = { .name = "legacy_mem_sparse", .mode = 0600 },
-+	.size = 0x100000 << 5,
-+	.mmap = pci_mmap_legacy_mem,
-+	.llseek = pci_llseek_resource,
-+	.f_mapping = iomem_get_mapping,
-+};
-+
-+static const struct bin_attribute *const pci_legacy_io_attrs[] = {
-+	&pci_legacy_io_attr,
-+	NULL,
-+};
-+
-+static const struct bin_attribute *const pci_legacy_io_sparse_attrs[] = {
-+	&pci_legacy_io_sparse_attr,
-+	NULL,
-+};
-+
-+static const struct bin_attribute *const pci_legacy_mem_attrs[] = {
-+	&pci_legacy_mem_attr,
-+	NULL,
-+};
-+
-+static const struct bin_attribute *const pci_legacy_mem_sparse_attrs[] = {
-+	&pci_legacy_mem_sparse_attr,
-+	NULL,
-+};
-+
-+static const struct attribute_group pci_legacy_io_group = {
-+	.bin_attrs = pci_legacy_io_attrs,
-+	.is_bin_visible = pci_legacy_io_is_visible,
-+};
-+
-+static const struct attribute_group pci_legacy_io_sparse_group = {
-+	.bin_attrs = pci_legacy_io_sparse_attrs,
-+	.is_bin_visible = pci_legacy_io_sparse_is_visible,
-+};
-+
-+static const struct attribute_group pci_legacy_mem_group = {
-+	.bin_attrs = pci_legacy_mem_attrs,
-+	.is_bin_visible = pci_legacy_mem_is_visible,
-+};
-+
-+static const struct attribute_group pci_legacy_mem_sparse_group = {
-+	.bin_attrs = pci_legacy_mem_sparse_attrs,
-+	.is_bin_visible = pci_legacy_mem_sparse_is_visible,
-+};
-+
-+void pci_create_legacy_files(struct pci_bus *b) { }
-+void pci_remove_legacy_files(struct pci_bus *b) { }
+-void pci_create_legacy_files(struct pci_bus *b) { }
+-void pci_remove_legacy_files(struct pci_bus *b) { }
  #endif /* HAVE_PCI_LEGACY */
  
-+const struct attribute_group *pcibus_groups[] = {
-+	&pcibus_group,
-+#ifdef HAVE_PCI_LEGACY
-+	&pci_legacy_io_group,
-+	&pci_legacy_io_sparse_group,
-+	&pci_legacy_mem_group,
-+	&pci_legacy_mem_sparse_group,
-+#endif
-+	NULL,
-+};
-+
- #if defined(HAVE_PCI_MMAP) || defined(ARCH_GENERIC_PCI_MMAP_RESOURCE)
- /**
-  * pci_mmap_resource - map a PCI resource into user memory space
+ const struct attribute_group *pcibus_groups[] = {
+@@ -1809,21 +1803,6 @@ static const struct attribute_group pci_dev_resource_resize_attr_group = {
+ };
+ #endif
+ 
+-#ifdef HAVE_PCI_LEGACY
+-static int __init pci_sysfs_init(void)
+-{
+-	struct pci_bus *pbus = NULL;
+-
+-	sysfs_initialized = 1;
+-
+-	while ((pbus = pci_find_next_bus(pbus)))
+-		pci_create_legacy_files(pbus);
+-
+-	return 0;
+-}
+-late_initcall(pci_sysfs_init);
+-#endif
+-
+ static struct attribute *pci_dev_dev_attrs[] = {
+ 	&dev_attr_boot_vga.attr,
+ 	&dev_attr_serial_number.attr,
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index f52caf7e4d13..63f249d4833a 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -356,14 +356,6 @@ static inline int pci_proc_detach_bus(struct pci_bus *bus) { return 0; }
+ int pci_hp_add_bridge(struct pci_dev *dev);
+ bool pci_hp_spurious_link_change(struct pci_dev *pdev);
+ 
+-#if defined(CONFIG_SYSFS) && defined(HAVE_PCI_LEGACY)
+-void pci_create_legacy_files(struct pci_bus *bus);
+-void pci_remove_legacy_files(struct pci_bus *bus);
+-#else
+-static inline void pci_create_legacy_files(struct pci_bus *bus) { }
+-static inline void pci_remove_legacy_files(struct pci_bus *bus) { }
+-#endif
+-
+ /* Lock for read/write access to pci device and bus lists */
+ extern struct rw_semaphore pci_bus_sem;
+ extern struct mutex pci_slot_mutex;
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index bccc7a4bdd79..94c52bf3a65c 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -1068,9 +1068,6 @@ static int pci_register_host_bridge(struct pci_host_bridge *bridge)
+ 			dev_err(&bus->dev, "failed to add bus: %d\n", err);
+ 	}
+ 
+-	/* Create legacy_io and legacy_mem files for this bus */
+-	pci_create_legacy_files(bus);
+-
+ 	if (parent)
+ 		dev_info(parent, "PCI host bridge to bus %s\n", name);
+ 	else
+@@ -1276,9 +1273,6 @@ static struct pci_bus *pci_alloc_child_bus(struct pci_bus *parent,
+ 			dev_err(&child->dev, "failed to add bus: %d\n", ret);
+ 	}
+ 
+-	/* Create legacy_io and legacy_mem files for this bus */
+-	pci_create_legacy_files(child);
+-
+ 	return child;
+ }
+ 
+diff --git a/drivers/pci/remove.c b/drivers/pci/remove.c
+index 6e796dbc5b29..d8bffa21498a 100644
+--- a/drivers/pci/remove.c
++++ b/drivers/pci/remove.c
+@@ -65,8 +65,6 @@ void pci_remove_bus(struct pci_bus *bus)
+ 	list_del(&bus->node);
+ 	pci_bus_release_busn_res(bus);
+ 	up_write(&pci_bus_sem);
+-	pci_remove_legacy_files(bus);
+-
+ 	if (bus->ops->remove_bus)
+ 		bus->ops->remove_bus(bus);
+ 
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 5a418fbe5a5f..c0828b96eb66 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -723,8 +723,6 @@ struct pci_bus {
+ 	pci_bus_flags_t bus_flags;	/* Inherited by child buses */
+ 	struct device		*bridge;
+ 	struct device		dev;
+-	struct bin_attribute	*legacy_io;	/* Legacy I/O for this bus */
+-	struct bin_attribute	*legacy_mem;	/* Legacy mem */
+ 	unsigned int		is_added:1;
+ 	unsigned int		unsafe_warn:1;	/* warned about RW1C config write */
+ 	unsigned int		flit_mode:1;	/* Link in Flit mode */
 -- 
 2.53.0
 
