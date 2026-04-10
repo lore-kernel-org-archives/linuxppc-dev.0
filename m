@@ -1,70 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-19532-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19533-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A7F7F36BAC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 05:25:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94F38E99049
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 07:13:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fsQHG3GGQz2yZ6;
-	Fri, 10 Apr 2026 15:25:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.8
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775798714;
-	cv=none; b=CjLdzUY5KXLvLRBR5/yJYS7lHKyMYR/3bkzNyJaJrqvVZnljJoeeIBY7OBpgTFv7I18kybFoA8u34sYSbdsAqS0ZyNHoUapnnOFU4Hb3ysy2Ad6w+Y1fhgC6VeShyfU1b1dbVUiCZo8X2nOoimAH85hYtAVBImugt8gpJy1118vos/XmohlNnrzpu2pZLARzdKGlUUKIGIHKUBH/23PBOpT+su51/CngJuHUJJAtJvH23SPeA1jj7u/qMtimPM7fbxxoG1/666iQY50nfkhhRGN2xLBVJU/2O9vKIUrzREl3AZZLjln28zUT1stGAsPvHTjU/zGrL16MwSgMAc5BhA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fsSh60Rxrz2yZ6;
+	Fri, 10 Apr 2026 17:13:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775800249;
+	cv=none; b=dUJcaNOGBoCbWQkNAUy+D/ecjAHFljy67bLN37gnUIrzSgMru+FNrJHJNJsr/YS+/lONRqapE7BLCewbRyMheAf3E4mLFu+B4HdpuXMhbO7+IsBFRzhDeHwXIDkVWGfWq8f8SSgIoVxEaboktenqF0Jkg8VQvqxr7SdEFxqeniMoUYJ9Ugf8V2JFPk3gsecmq9hdhgUlTB8zIJ7NFsMeL/dB8VFe6MQo3TpzUZU5DtNzpc9T+zLNgmLxYiQwIx2KHGvoAE3t3wSBqFftAfisPrThiPv5Y2IaGvrzOq+nVVYfFEdIHTqVEaAZM9LC9qgFdjUAho7+MWd9w9fuDMCKvg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775798714; c=relaxed/relaxed;
-	bh=lFtRIkHaoHxs8h9lNT4DKaBuFF0Sf2L27CeUB3NhMo0=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=VDmyELQ2yJj7x9Va4cBwLen5iA0t2kKcvv9WGDeQVPr9/HMR8GhNWlIQ5jqEDEE6GRdUw0MuYJpMR8O8dM3uTeDQzv0Z3rncS+qGaXFpfexTcJGNXC/XnRywJuWjBGe1NQXC7375MFWNtZU3lFcT/+ldkpen0gwFA6M8X39hJ1bYSOvnAvgAi2rXCCVUfAZY+swPshN4w0xwZwON3FXBj26OaFo3XNvzkjMsPXF3P/rsxeeRhTPU3QHTigZaP377YQnhYNJrahlxIMYZnXKP3unv/P/xUJZ59KU6Wo1WBPCSg70wW+nHKB4fzhSzEoHO/f2NuQZDxhzQrCZtrUCIPQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=bcZ2Rq9b; dkim-atps=neutral; spf=pass (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1775800249; c=relaxed/relaxed;
+	bh=xli3ItSO7TpWj0s2BkwHIIPqfda3Fz4QEifSA6owFKM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=T5IsD+cct6EGPFERDX1AvS2qW1asLwJY/bwvNhpRDmhoYnU/1ENp5b/77i/z/TAQeI4n19aqwKKR3iFfCJd4UwGeBgvQFl1qu4mXrgt5FAhLSwguFBJ00Cht+V+hy1QkV0ngKXphkmFMaVwcpuBo99LrNwGF83I737y/HTpHZdYNJLnSHebeyF1VAjH4O3z7DJpO38KHoYmyeuh31eE+mMo0XiN9Mx3DAyZ0Nul40Gnqui4Vmc3nZxQ8zOxBOU1/gvdSEk9xuKCzW65d41SOV/FzlRYXLEpS2EbIFJx5GLEyuMRz1iKDxjpdN+LBnjmrDr2CN2tOhX78FcOiRo6rYw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TdZG2f9t; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=bcZ2Rq9b;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TdZG2f9t;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsQHC4F2Sz2yRl
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 15:25:09 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1775798712; x=1807334712;
-  h=date:from:to:cc:subject:message-id;
-  bh=fF07AI2h/0LwqidNDVR6YYu//sv161Ak9H7uzaK1dRE=;
-  b=bcZ2Rq9b3VAQTwsx8HSWBqa97bfAx4OllVpB2z6lRtRpBmn1DaxEYicx
-   F+6T4ltUYuhpwaL1t121Pz/xVIi+jnQiBVnwouu1lsdPMRFPwq+eLnpS9
-   vDNfWx4FMAxtB0Zsh8HGjTp2asflcppo8jVgQ5Ssycj8nQWHkcHH0AOJt
-   8TafkCkOSyBlfhNdSpaENAdxwgFv4BM5LOjIXGsmlauyRd02u9ZDccKUx
-   gLHKkKwEuuMJWUFkizME2MVmvpun0jr2Tfc+QUJx/2YrbQbT2N0jNR6fb
-   kg63UEc9CQ0uY90/1UH1ZvyrjEIV7FD10LbjIDYhggaqtigQbyFxD1Q/Y
-   A==;
-X-CSE-ConnectionGUID: hDt3qE8XQJeLdxMToEYwkg==
-X-CSE-MsgGUID: 0JC4kPJeTQ+LvEqr5PlmTA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11754"; a="94390187"
-X-IronPort-AV: E=Sophos;i="6.23,171,1770624000"; 
-   d="scan'208";a="94390187"
-Received: from fmviesa009.fm.intel.com ([10.60.135.149])
-  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Apr 2026 22:25:05 -0700
-X-CSE-ConnectionGUID: 88Z+Pc2iTJSzl9Z8Cvlshw==
-X-CSE-MsgGUID: ijt5w2xmRP2P8+XBJpCBcA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,171,1770624000"; 
-   d="scan'208";a="222491825"
-Received: from lkp-server01.sh.intel.com (HELO 6449335cace3) ([10.239.97.150])
-  by fmviesa009.fm.intel.com with ESMTP; 09 Apr 2026 22:25:04 -0700
-Received: from kbuild by 6449335cace3 with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wB4MX-000000003HD-10De;
-	Fri, 10 Apr 2026 05:25:01 +0000
-Date: Fri, 10 Apr 2026 13:24:46 +0800
-From: kernel test robot <lkp@intel.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [powerpc:next-test] BUILD SUCCESS
- e6ef4eb871ed884f5f480579b2e5f4fc9d2cb003
-Message-ID: <202604101340.1zsBA7Ep-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsQrm0PCRz2yRl
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 15:50:47 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 3CD3760142;
+	Fri, 10 Apr 2026 05:50:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B723BC19421;
+	Fri, 10 Apr 2026 05:50:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1775800244;
+	bh=heNFs70N3BP1J7/YAXV0i5l1cHEi6uhW1IDN/z9Cms0=;
+	h=From:To:Cc:Subject:Date:From;
+	b=TdZG2f9txWpdj7lY67wEZFVQXWBe+rLFAMovErKrjBn6+8wWffZgTOjB0EUSFV8bU
+	 xvP+MIZPndc6dlAsTGQVncui+vuuY8GzJUI/p7K1ZLLrXIhyObLCt8VjBHYI13lFj8
+	 seKMHcHg2hsuKm586Myz1bqU0SjwxlqGO6OXshoYBUa7n04PTJkoKo/BAXAFeVEhyB
+	 ojCBMdpG5+V/psVi7tdM+uv2iK8yoXCpoJQi1JkhhH09Z8iQB/HkmkeI7lfEJUau57
+	 wjD5UBH1KQgjs526NJql8iCUdJboPZw4qw3Q34UPLMm5sBIAjAGviCn1T4rBiS2rP1
+	 s1LT9RZ6z3+DA==
+From: =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kwilczynski@kernel.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Bjorn Helgaas <helgaas@kernel.org>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Magnus Lindholm <linmag7@gmail.com>,
+	Matt Turner <mattst88@gmail.com>,
+	Richard Henderson <richard.henderson@linaro.org>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Dexuan Cui <decui@microsoft.com>,
+	=?UTF-8?q?Krzysztof=20Ha=C5=82asa?= <khalasa@piap.pl>,
+	Lukas Wunner <lukas@wunner.de>,
+	"Oliver O'Halloran" <oohall@gmail.com>,
+	Saurabh Singh Sengar <ssengar@microsoft.com>,
+	Shuan He <heshuan@bytedance.com>,
+	Srivatsa Bhat <srivatsabhat@microsoft.com>,
+	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	linux-pci@vger.kernel.org,
+	linux-alpha@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 00/20] PCI: Convert all dynamic sysfs attributes to static
+Date: Fri, 10 Apr 2026 05:50:20 +0000
+Message-ID: <20260410055040.39233-1-kwilczynski@kernel.org>
+X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,181 +82,183 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
-branch HEAD: e6ef4eb871ed884f5f480579b2e5f4fc9d2cb003  powerpc32/bpf: fix loading fsession func metadata using PPC_LI32
+Hello,
 
-elapsed time: 2913m
+This series converts every dynamically allocated PCI sysfs attribute to
+a static const definition.  After the full series, pci_sysfs_init() and
+sysfs_initialized are gone, and every sysfs file is created by the
+driver model at device_add() time.
 
-configs tested: 160
-configs skipped: 16
+Currently, the PCI resource files (resourceN, resourceN_wc) and the
+legacy bus files (legacy_io, legacy_mem) are created dynamically
+from two unsynchronised paths:
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Path A: late_initcall
 
-tested configs:
-alpha                             allnoconfig    gcc-15.2.0
-alpha                            allyesconfig    gcc-15.2.0
-alpha                               defconfig    gcc-15.2.0
-arc                              allmodconfig    clang-16
-arc                               allnoconfig    gcc-15.2.0
-arc                              allyesconfig    clang-19
-arc                                 defconfig    gcc-15.2.0
-arc                   randconfig-001-20260408    clang-23
-arc                   randconfig-001-20260408    gcc-8.5.0
-arc                   randconfig-002-20260408    clang-23
-arc                   randconfig-002-20260408    gcc-8.5.0
-arm                               allnoconfig    gcc-15.2.0
-arm                              allyesconfig    clang-16
-arm                                 defconfig    gcc-15.2.0
-arm                         lpc18xx_defconfig    clang-23
-arm                   randconfig-001-20260408    clang-23
-arm                   randconfig-001-20260408    gcc-8.5.0
-arm                   randconfig-002-20260408    clang-23
-arm                   randconfig-003-20260408    clang-23
-arm                   randconfig-004-20260408    clang-23
-arm64                            allmodconfig    clang-19
-arm64                             allnoconfig    gcc-15.2.0
-arm64                               defconfig    gcc-15.2.0
-arm64                 randconfig-001-20260408    gcc-14.3.0
-arm64                 randconfig-002-20260408    gcc-14.3.0
-arm64                 randconfig-003-20260408    gcc-14.3.0
-arm64                 randconfig-004-20260408    gcc-14.3.0
-csky                             allmodconfig    gcc-15.2.0
-csky                              allnoconfig    gcc-15.2.0
-csky                                defconfig    gcc-15.2.0
-csky                  randconfig-001-20260408    gcc-14.3.0
-csky                  randconfig-002-20260408    gcc-14.3.0
-hexagon                          allmodconfig    gcc-15.2.0
-hexagon                           allnoconfig    gcc-15.2.0
-hexagon                             defconfig    gcc-15.2.0
-hexagon               randconfig-001-20260408    clang-23
-hexagon               randconfig-002-20260408    clang-23
-i386                             allmodconfig    clang-20
-i386                              allnoconfig    gcc-15.2.0
-i386                             allyesconfig    clang-20
-i386                                defconfig    gcc-15.2.0
-i386                  randconfig-001-20260408    clang-20
-i386                  randconfig-002-20260408    clang-20
-i386                  randconfig-003-20260408    clang-20
-i386                  randconfig-004-20260408    clang-20
-i386                  randconfig-005-20260408    clang-20
-i386                  randconfig-006-20260408    clang-20
-i386                  randconfig-007-20260408    clang-20
-i386                  randconfig-011-20260408    gcc-14
-i386                  randconfig-012-20260408    gcc-14
-i386                  randconfig-013-20260408    gcc-14
-i386                  randconfig-014-20260408    gcc-14
-i386                  randconfig-015-20260408    gcc-14
-i386                  randconfig-016-20260408    gcc-14
-i386                  randconfig-017-20260408    gcc-14
-loongarch                        allmodconfig    clang-19
-loongarch                         allnoconfig    gcc-15.2.0
-loongarch                           defconfig    clang-19
-loongarch             randconfig-002-20260408    clang-23
-m68k                             allmodconfig    gcc-15.2.0
-m68k                              allnoconfig    gcc-15.2.0
-m68k                             allyesconfig    clang-16
-m68k                                defconfig    clang-19
-microblaze                        allnoconfig    gcc-15.2.0
-microblaze                       allyesconfig    gcc-15.2.0
-microblaze                          defconfig    clang-19
-mips                             allmodconfig    gcc-15.2.0
-mips                              allnoconfig    gcc-15.2.0
-mips                             allyesconfig    gcc-15.2.0
-nios2                            allmodconfig    gcc-11.5.0
-nios2                             allnoconfig    clang-23
-nios2                               defconfig    clang-19
-nios2                 randconfig-001-20260408    clang-23
-nios2                 randconfig-002-20260408    clang-23
-openrisc                         allmodconfig    gcc-11.5.0
-openrisc                          allnoconfig    clang-23
-openrisc                            defconfig    gcc-15.2.0
-parisc                           allmodconfig    gcc-15.2.0
-parisc                            allnoconfig    clang-23
-parisc                           allyesconfig    clang-19
-parisc                              defconfig    gcc-15.2.0
-parisc                randconfig-001-20260408    gcc-8.5.0
-parisc                randconfig-002-20260408    gcc-8.5.0
-parisc64                            defconfig    clang-19
-powerpc                          allmodconfig    gcc-15.2.0
-powerpc                           allnoconfig    clang-23
-powerpc                   motionpro_defconfig    clang-23
-powerpc               randconfig-001-20260408    gcc-8.5.0
-powerpc               randconfig-002-20260408    gcc-8.5.0
-powerpc64             randconfig-001-20260408    gcc-8.5.0
-powerpc64             randconfig-002-20260408    gcc-8.5.0
-riscv                             allnoconfig    clang-23
-riscv                            allyesconfig    clang-16
-riscv                               defconfig    gcc-15.2.0
-riscv                 randconfig-001-20260408    gcc-15.2.0
-riscv                 randconfig-002-20260408    gcc-15.2.0
-s390                             allmodconfig    clang-19
-s390                              allnoconfig    clang-23
-s390                             allyesconfig    gcc-15.2.0
-s390                                defconfig    gcc-15.2.0
-sh                               allmodconfig    gcc-15.2.0
-sh                                allnoconfig    clang-23
-sh                               allyesconfig    clang-19
-sh                                  defconfig    gcc-14
-sh                    randconfig-001-20260408    gcc-15.2.0
-sh                    randconfig-002-20260408    gcc-15.2.0
-sparc                             allnoconfig    clang-23
-sparc                               defconfig    gcc-15.2.0
-sparc                 randconfig-001-20260408    gcc-14
-sparc                 randconfig-002-20260408    gcc-14
-sparc64                             defconfig    gcc-14
-sparc64               randconfig-001-20260408    gcc-14
-sparc64               randconfig-002-20260408    gcc-14
-um                               allmodconfig    clang-19
-um                                allnoconfig    clang-23
-um                               allyesconfig    gcc-15.2.0
-um                                  defconfig    gcc-14
-um                             i386_defconfig    gcc-14
-um                    randconfig-001-20260408    gcc-14
-um                    randconfig-002-20260408    gcc-14
-x86_64                           allmodconfig    clang-20
-x86_64                            allnoconfig    clang-23
-x86_64                           allyesconfig    clang-20
-x86_64      buildonly-randconfig-001-20260408    clang-20
-x86_64      buildonly-randconfig-002-20260408    clang-20
-x86_64      buildonly-randconfig-003-20260408    clang-20
-x86_64      buildonly-randconfig-004-20260408    clang-20
-x86_64      buildonly-randconfig-005-20260408    clang-20
-x86_64      buildonly-randconfig-006-20260408    clang-20
-x86_64                              defconfig    gcc-14
-x86_64                                  kexec    clang-20
-x86_64                randconfig-001-20260408    gcc-12
-x86_64                randconfig-002-20260408    gcc-12
-x86_64                randconfig-003-20260408    gcc-12
-x86_64                randconfig-004-20260408    gcc-12
-x86_64                randconfig-005-20260408    gcc-12
-x86_64                randconfig-006-20260408    gcc-12
-x86_64                randconfig-011-20260408    clang-20
-x86_64                randconfig-012-20260408    clang-20
-x86_64                randconfig-013-20260408    clang-20
-x86_64                randconfig-014-20260408    clang-20
-x86_64                randconfig-015-20260408    clang-20
-x86_64                randconfig-016-20260408    clang-20
-x86_64                randconfig-071-20260408    clang-20
-x86_64                randconfig-072-20260408    clang-20
-x86_64                randconfig-073-20260408    clang-20
-x86_64                randconfig-074-20260408    clang-20
-x86_64                randconfig-075-20260408    clang-20
-x86_64                randconfig-076-20260408    clang-20
-x86_64                               rhel-9.4    clang-20
-x86_64                           rhel-9.4-bpf    gcc-14
-x86_64                          rhel-9.4-func    clang-20
-x86_64                    rhel-9.4-kselftests    clang-20
-x86_64                         rhel-9.4-kunit    gcc-14
-x86_64                           rhel-9.4-ltp    gcc-14
-x86_64                          rhel-9.4-rust    clang-20
-xtensa                            allnoconfig    clang-23
-xtensa                           allyesconfig    gcc-11.5.0
-xtensa                randconfig-001-20260408    gcc-14
-xtensa                randconfig-002-20260408    gcc-14
+  pci_sysfs_init                        (late_initcall)
+    sysfs_initialized = 1
+    for_each_pci_dev
+      pci_create_sysfs_dev_files
+        sysfs_create_bin_file           (resourceN, resourceN_wc)
+    pci_find_next_bus
+      pci_create_legacy_files
+        sysfs_create_bin_file           (legacy_io, legacy_mem)
+
+Path B: device registration / hotplug
+
+  pci_bus_add_devices
+    pci_bus_add_device
+      pci_create_sysfs_dev_files
+        if (!sysfs_initialized) return  <- only guard
+        sysfs_create_bin_file           (resourceN, resourceN_wc)
+
+On most ACPI systems this does not race because PCI enumeration
+completes at subsys_initcall time, before pci_sysfs_init() runs:
+
+  subsys_initcall (level 4):
+    acpi_pci_root_add
+      pci_bus_add_device
+        pci_create_sysfs_dev_files
+          if (!sysfs_initialized)          <- not yet set
+            return -EACCES
+
+  late_initcall (level 7):
+    pci_sysfs_init
+      sysfs_initialized = 1
+      for_each_pci_dev
+        pci_create_sysfs_dev_files         <- creates the files, no race
+
+On Devicetree platforms the host controller is a platform driver that
+probes via the driver model, often on a workqueue, and overlaps with the
+late_initcall:
+
+  CPU 0 (late_initcall)                CPU 1 (driver probe)
+  ---------------------------          ----------------------------
+  pci_sysfs_init()
+    sysfs_initialized = 1
+    for_each_pci_dev(pdev)             pci_bus_add_device(pdev)
+      pci_create_sysfs_dev_files()       pci_create_sysfs_dev_files()
+        sysfs_create_bin_file()            sysfs_create_bin_file()
+                                             -> "duplicate filename"
+
+The same happens on ACPI when probing is asynchronous (hv_pci on
+Azure, RISC-V with ACPI).
+
+The duplicate causes sysfs_create_bin_file() to fail with -EEXIST.
+pci_create_resource_files() then calls pci_remove_resource_files() in
+its error unwind, tearing down files the other thread created and
+still references through pdev->res_attr[].  This has caused kernel
+panics on i.MX6 and boot failures on other platforms.
+
+Several different fixes have been proposed over the years: reordering
+the sysfs_initialized assignment, adding locks, checking
+pci_dev_is_added(), setting pdev->res_attr[] to NULL after kfree
+(which only prevents a double-free on the teardown path, not the
+error unwind removing the other thread's files).  None would address the
+root cause.
+
+This has been reported a few times:
+
+  - https://lore.kernel.org/linux-pci/20250702155112.40124-1-heshuan@bytedance.com/
+  - https://lore.kernel.org/linux-pci/b51519d6-ce45-4b6d-8135-c70169bd110e@h-partners.com/
+  - https://lore.kernel.org/linux-pci/1702093576-30405-1-git-send-email-ssengar@linux.microsoft.com/
+  - https://lore.kernel.org/linux-pci/SY0P300MB04687548090B73E40AF97D8897B82@SY0P300MB0468.AUSP300.PROD.OUTLOOK.COM/
+  - https://lore.kernel.org/linux-pci/20230105174736.GA1154719@bhelgaas/
+  - https://lore.kernel.org/linux-pci/m3eebg9puj.fsf@t19.piap.pl/
+  - https://lore.kernel.org/linux-pci/20200716110423.xtfyb3n6tn5ixedh@pali/
+  - https://lore.kernel.org/linux-pci/1366196798-15929-1-git-send-email-artem.savkov@gmail.com/
+  - https://bugzilla.kernel.org/show_bug.cgi?id=215515
+  - https://bugzilla.kernel.org/show_bug.cgi?id=216888
+
+With static attributes the driver model creates sysfs entries once per
+device at device_add() time, under the device lock, eliminating the
+late_initcall iteration and the race along with it.
+
+	Krzysztof
+
+---
+Changes in v3:
+  https://lore.kernel.org/linux-pci/20210910202623.2293708-1-kw@linux.com/
+
+  - Updated for modern kernel releases and expanded scope.  The
+    v2 only covered the generic resource files.  This version
+    also converts Alpha's sparse/dense resource files and the
+    legacy bus attributes, removing pci_sysfs_init() entirely.
+  - Split the single macro definition into three distinct ones
+    (per I/O, UC, and WC), to make sure that each carries only
+    the callbacks its resource type needs.
+  - Updated to use the new .bin_size callback, as the attributes
+    are const, to replace using a->size directly, which was not
+    ideal.  This required changes to pci_llseek_resource(), to
+    ensure that it would work for device and bus-level attributes.
+  - Updated the __resource_resize_store() to include CAP_SYS_ADMIN
+    capabilities check.
+  - Added the security_locked_down() check to Alpha's
+    pci_mmap_resource(), to align with other architectures.
+
+Changes in v2:
+  https://lore.kernel.org/linux-pci/20210825212255.878043-1-kw@linux.com/
+
+  - Refactored code so that the macros, helpers and internal
+    functions can be used to correctly leverage the read(),
+    write() and mmap() callbacks rather than to use the
+    .is_bin_visible() callback to set up sysfs objects
+    internals as this is not supported.
+  - Refactored some if-statements to check for a resource
+    flag first, and then call either arch_can_pci_mmap_io()
+    or arch_can_pci_mmap_wc(), plus store result of testing
+    for IORESOURCE_MEM and IORESOURCE_PREFETCH flags into
+    a boolean variable, as per Bjorn Helgaas' suggestion.
+  - Renamed pci_read_resource_io() and pci_write_resource_io()
+    callbacks so that these are not specifically tied to I/O
+    BARs read() and write() operations also as per Bjorn
+    Helgaas' suggestion.
+  - Updated style for code handling bitwise operations to
+    match the style that is preferred as per Bjorn Helgaas'
+    suggestion.
+  - Updated commit messages adding more details about the
+    implementation as requested by Bjorn Helgaas.
+
+Krzysztof Wilczyński (20):
+  PCI/sysfs: Use PCI resource accessor macros
+  PCI/sysfs: Only allow supported resource types in I/O and MMIO helpers
+  PCI/sysfs: Use BAR length in pci_llseek_resource() when attr->size is
+    zero
+  PCI/sysfs: Add CAP_SYS_ADMIN check to __resource_resize_store()
+  PCI/sysfs: Add static PCI resource attribute macros
+  PCI/sysfs: Convert PCI resource files to static attributes
+  PCI/sysfs: Convert __resource_resize_store() to use static attributes
+  PCI/sysfs: Add stubs for pci_{create,remove}_sysfs_dev_files()
+  PCI/sysfs: Limit pci_sysfs_init() late_initcall compile scope
+  alpha/PCI: Add security_locked_down() check to pci_mmap_resource()
+  alpha/PCI: Use BAR index in sysfs attr->private instead of resource
+    pointer
+  alpha/PCI: Use PCI resource accessor macros
+  alpha/PCI: Clean up __pci_mmap_fits()
+  alpha/PCI: Add static PCI resource attribute macros
+  alpha/PCI: Convert resource files to static attributes
+  PCI/sysfs: Remove pci_{create,remove}_sysfs_dev_files()
+  alpha/PCI: Compute legacy size in pci_mmap_legacy_page_range()
+  PCI/sysfs: Add __weak pci_legacy_has_sparse() helper
+  PCI/sysfs: Convert legacy I/O and memory attributes to static
+    definitions
+  PCI/sysfs: Remove pci_create_legacy_files() and pci_sysfs_init()
+
+ arch/alpha/include/asm/pci.h   |  13 +-
+ arch/alpha/kernel/pci-sysfs.c  | 369 +++++++++++----------
+ arch/powerpc/include/asm/pci.h |   2 -
+ drivers/pci/bus.c              |   1 -
+ drivers/pci/pci-sysfs.c        | 575 +++++++++++++++++++--------------
+ drivers/pci/pci.h              |  16 +-
+ drivers/pci/probe.c            |   6 -
+ drivers/pci/remove.c           |   3 -
+ include/linux/pci.h            |   9 -
+ 9 files changed, 545 insertions(+), 449 deletions(-)
 
 --
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.53.0
 
