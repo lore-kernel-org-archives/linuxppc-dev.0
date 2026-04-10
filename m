@@ -1,60 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-19579-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19580-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E935F4484C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 12:19:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8158CF44851
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 12:19:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fsbT15mmZz2yl2;
-	Fri, 10 Apr 2026 22:19:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775823557;
-	cv=none; b=XuEAjrN5KqJSLvU2EwlWFx+UqubpKxa2x/ZIx60m8TRO3nvo22kanLldMf2UR+lIWfY5h8eto3HCMx13Fi5Uh7ZqqPtt3XQaaZ+q0sk5TU8v8K2RqHIr1My0qfoKPPDNQa8AHqB8FrdI4Oa1lmf26Ln30wEnKL2G9vWZEItPPyx+CNNEFZNtY5wInjBMG2kMqHRNAb2lReYudAcfap4u4FpeGX8U2QAPogbHhuG73b8uI1pz/PjdK5fTHAqeptsWvjR25LYUP+cA8SSasAASriXtj5strhJe5uAGHsTRP8R8ElDg8KfWApvM7/V+7pumF+BmOY4gx64qPdL2alKxCA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fsbT61y8Kz2yjn;
+	Fri, 10 Apr 2026 22:19:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775823562;
+	cv=none; b=HnetdeTYdpRPRyrIvtgdS1GmlZS1T6PMR2oJGkjcDERTsgsIOucao/Dce1ha6SE4mCEb1BckLZO8nBasCk5q8aQH3JRAwH814mG3J0CkeiL7I821CX/ieey6aKnWrluCA6raI7JzxE/h3SLm1Br0rDZgs1ibtGgYmJEx8Qulf0DcxJqO9VfthB/htB1Im4bEtDUChHXAHaPsSZrE3v4oH9ma1g0LnPaZnvnVfyL2NZZFsTdyPE0KfOkpIhVKa767GvLPWJYYFaoDG/1bcVF3KLIWa+sxeXYp//ORTwVJro/iEg3ZnR+L9b//y0Xvqo6/3DP+Tcj1YShMniWMfpd6EQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775823557; c=relaxed/relaxed;
-	bh=P2IEyAEzLrLcDKf1D+hPXmSP/5CZZgHCZVdt+e9rGY8=;
+	t=1775823562; c=relaxed/relaxed;
+	bh=M9a5EG3CG8Udn3B7jIZCxrZ3k3coZbiW9xz1Wj8kXaE=;
 	h=Date:Message-ID:From:To:Cc:Subject:References:MIME-Version:
-	 Content-Type; b=Y+2gSwiRSU05+EwN0hF2woRzFd1L72pC0gSjbI78IIahmMVkSxGmTXLi0A21aNCVv8GeBcuOLbvai5T7YTKlp7Ih4bSVrGbbNHWrBG+CCDl9Hp2WSOtBoWo+bw14J0Il/TuH/aglRPNaygUHw9+GsKRy6hvlCj5knNyZ1mZuZZfMmz/pnMgMTUiOimmvbj4suwS8LfwL9mCfCF3yP+B8YsD4S4NC0Vqul0/j3k1f94cb5SjuThTlh3xqNoLXrC4JveJ8ON2irobGI2Ya6WXPVagj6A8WRpegfgU9cYG9ZjBHSbMhpAQFapJBL9VuidlDv0t/Y0IrBCFGhpPfmKpbAQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pacXAmHL; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type; b=RFXPb5UwC6aN5gVPgdaeNFGeC9y9dcwnCyMF7+yj2UWBohHRK/bb3F6XKorhBTWtWtPYPAUxBVo0wy788FgQWMEXNKHkjT31RJ1yJmV/TzOd8slgewmCcYWEAUCOk1qd+PARIgB6mi7ioagryaQVGgVnbTKWrA+KSJWbrpZ/iEVbquRiNLhlDyQS8AixnickwSIsYJ6mGudmlS2rTaHytpPhir04lth/VswAoFSRCjodbjGpgejqV2GOv5yZmo5T7AvAIR+Pobp0PR1BRFALYY0PvmUwzO/op2XvrNaK0qK/G+5Oi5YaNHINf/oIOmtKeqDXZYugIFK1G0S8Mf7c3A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VM13lKS0; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pacXAmHL;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VM13lKS0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsbT103lYz2yhD
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 22:19:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsbT53t9Dz2yhD
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 22:19:21 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 65ACF44037;
-	Fri, 10 Apr 2026 12:19:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8BE3EC2BC87;
-	Fri, 10 Apr 2026 12:19:14 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id E547D4047B;
+	Fri, 10 Apr 2026 12:19:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E38E7C2BC87;
+	Fri, 10 Apr 2026 12:19:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775823555;
-	bh=qtG4jYoFMBUH8Rv5LkkLsBrvbBwuDbTX1269QfkLCzw=;
+	s=k20201202; t=1775823559;
+	bh=p4ul6fecafqSjuz/HWiW1SqReHpNi3SQC1heaf7AtH8=;
 	h=Date:From:To:Cc:Subject:References:From;
-	b=pacXAmHLAMseTev4RAQUAZDfRzJFeJXjwMW3x14w8vUm7ybikBbtslQQu96s/8Sq0
-	 a3pcIexn/gzfbwI2qYLuXSTx/gSXbmVwhuUFKfTY31pSFVH71nhoebkIPAnwJfmArK
-	 tPmJiCD8oWRaoY6EByg0L3DGpV75oKKW/C5lmUUCoaSznEsjUHpS9yyQByZ5hUlH3x
-	 P8NYw39byMTR2ebfPveTfvTFbDgwqYFvegEj7/kJQbjlvVeppRrN8YtOduabfxNT6E
-	 Yw4oV6JDjGSLEpWghPJGJFmnCci2PXJh9wjpVWvhGUbODkplfUDbeuEJIVIN1zibiF
-	 mC2OEaJT1jHhg==
-Date: Fri, 10 Apr 2026 14:19:12 +0200
-Message-ID: <20260410120318.187521447@kernel.org>
+	b=VM13lKS0vi1Fampzs2SOJUSl5pFNtZPRrbRXrfYUkEg7syYn7CVko7c7egIdexCfj
+	 MaRLNlopnK85+N7I7i3OZHuHcMdHWNGNdlJV5bSYYI//COctIU1M1ukOOe7R86fGRN
+	 QQ/j+jjVi+CYY1R1j+UlDL84K4FAOhCbq1OrkH36o+f5XviRftg90dsfUTYhZvjNV5
+	 hk3/t6EuYClXGdWJA1CVm0r4gv7+Uuy+bWtd/uVuLx4/iO4+bV/Z+fKbXLcG7tmKkB
+	 b/7xC9trAvx6oz1zNsW6Ny9Eav33gyvB9AokHXFATxUfQATArxGnp5TkYcwejIeG8o
+	 hkZquPfDoH+3g==
+Date: Fri, 10 Apr 2026 14:19:16 +0200
+Message-ID: <20260410120318.253872322@kernel.org>
 User-Agent: quilt/0.68
 From: Thomas Gleixner <tglx@kernel.org>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: x86@kernel.org,
+Cc: Michael Grzeschik <m.grzeschik@pengutronix.de>,
+ netdev@vger.kernel.org,
+ Arnd Bergmann <arnd@arndb.de>,
+ x86@kernel.org,
  Lu Baolu <baolu.lu@linux.intel.com>,
  iommu@lists.linux.dev,
- Arnd Bergmann <arnd@arndb.de>,
- Michael Grzeschik <m.grzeschik@pengutronix.de>,
- netdev@vger.kernel.org,
  linux-wireless@vger.kernel.org,
  Herbert Xu <herbert@gondor.apana.org.au>,
  linux-crypto@vger.kernel.org,
@@ -96,7 +96,7 @@ Cc: x86@kernel.org,
  linux-s390@vger.kernel.org,
  "David S. Miller" <davem@davemloft.net>,
  sparclinux@vger.kernel.org
-Subject: [patch 09/38] iommu/vt-d: Use sched_clock() instead of get_cycles()
+Subject: [patch 10/38] arcnet: Remove function timing code
 References: <20260410120044.031381086@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -113,84 +113,144 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 
-Calculating the timeout from get_cycles() is a historical leftover without
-any functional requirement.
-
-Use ktime_get() instead.
+ARCNET is a museums piece and the function timing can be done with
+ftrace. Remove the cruft.
 
 Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-Cc: x86@kernel.org
-Cc: Lu Baolu <baolu.lu@linux.intel.com>
-Cc: iommu@lists.linux.dev
+Cc: Michael Grzeschik <m.grzeschik@pengutronix.de>
+Cc: netdev@vger.kernel.org
 ---
- arch/x86/include/asm/iommu.h |    3 ---
- drivers/iommu/intel/dmar.c   |    4 ++--
- drivers/iommu/intel/iommu.h  |    8 ++++++--
- 3 files changed, 8 insertions(+), 7 deletions(-)
+ drivers/net/arcnet/arc-rimi.c  |    4 ++--
+ drivers/net/arcnet/arcdevice.h |   20 +-------------------
+ drivers/net/arcnet/com20020.c  |    6 ++----
+ drivers/net/arcnet/com90io.c   |    6 ++----
+ drivers/net/arcnet/com90xx.c   |    4 ++--
+ 5 files changed, 9 insertions(+), 31 deletions(-)
 
---- a/arch/x86/include/asm/iommu.h
-+++ b/arch/x86/include/asm/iommu.h
-@@ -18,9 +18,6 @@ extern bool x86_swiotlb_enable;
- #define x86_swiotlb_enable false
- #endif
+--- a/drivers/net/arcnet/arc-rimi.c
++++ b/drivers/net/arcnet/arc-rimi.c
+@@ -291,7 +291,7 @@ static void arcrimi_copy_to_card(struct
+ 	struct arcnet_local *lp = netdev_priv(dev);
+ 	void __iomem *memaddr = lp->mem_start + 0x800 + bufnum * 512 + offset;
  
--/* 10 seconds */
--#define DMAR_OPERATION_TIMEOUT ((cycles_t) tsc_khz*10*1000)
+-	TIME(dev, "memcpy_toio", count, memcpy_toio(memaddr, buf, count));
++	memcpy_toio(memaddr, buf, count);
+ }
+ 
+ static void arcrimi_copy_from_card(struct net_device *dev, int bufnum,
+@@ -300,7 +300,7 @@ static void arcrimi_copy_from_card(struc
+ 	struct arcnet_local *lp = netdev_priv(dev);
+ 	void __iomem *memaddr = lp->mem_start + 0x800 + bufnum * 512 + offset;
+ 
+-	TIME(dev, "memcpy_fromio", count, memcpy_fromio(buf, memaddr, count));
++	memcpy_fromio(buf, memaddr, count);
+ }
+ 
+ static int node;
+--- a/drivers/net/arcnet/arcdevice.h
++++ b/drivers/net/arcnet/arcdevice.h
+@@ -11,7 +11,6 @@
+ #ifndef _LINUX_ARCDEVICE_H
+ #define _LINUX_ARCDEVICE_H
+ 
+-#include <asm/timex.h>
+ #include <linux/if_arcnet.h>
+ 
+ #ifdef __KERNEL__
+@@ -62,7 +61,7 @@
+ #define D_RX		512	/* show rx packets                        */
+ #define D_SKB		1024	/* show skb's                             */
+ #define D_SKB_SIZE	2048	/* show skb sizes			  */
+-#define D_TIMING	4096	/* show time needed to copy buffers to card */
++#define D_TIMING	4096	/* Not longer supported. Use tracing instead */
+ #define D_DEBUG         8192    /* Very detailed debug line for line */
+ 
+ #ifndef ARCNET_DEBUG_MAX
+@@ -95,23 +94,6 @@ do {									\
+ 		pr_cont(fmt, ##__VA_ARGS__);				\
+ } while (0)
+ 
+-/* see how long a function call takes to run, expressed in CPU cycles */
+-#define TIME(dev, name, bytes, call)					\
+-do {									\
+-	if (BUGLVL(D_TIMING)) {						\
+-		unsigned long _x, _y;					\
+-		_x = get_cycles();					\
+-		call;							\
+-		_y = get_cycles();					\
+-		arc_printk(D_TIMING, dev,				\
+-			   "%s: %d bytes in %lu cycles == %lu Kbytes/100Mcycle\n", \
+-			   name, bytes, _y - _x,			\
+-			   100000000 / 1024 * bytes / (_y - _x + 1));	\
+-	} else {							\
+-		call;							\
+-	}								\
+-} while (0)
 -
- static inline int __init
- arch_rmrr_sanity_check(struct acpi_dmar_reserved_memory *rmrr)
+ /*
+  * Time needed to reset the card - in ms (milliseconds).  This works on my
+  * SMC PC100.  I can't find a reference that tells me just how long I
+--- a/drivers/net/arcnet/com20020.c
++++ b/drivers/net/arcnet/com20020.c
+@@ -70,8 +70,7 @@ static void com20020_copy_from_card(stru
+ 	arcnet_outb(ofs & 0xff, ioaddr, COM20020_REG_W_ADDR_LO);
+ 
+ 	/* copy the data */
+-	TIME(dev, "insb", count,
+-	     arcnet_insb(ioaddr, COM20020_REG_RW_MEMDATA, buf, count));
++	arcnet_insb(ioaddr, COM20020_REG_RW_MEMDATA, buf, count);
+ }
+ 
+ static void com20020_copy_to_card(struct net_device *dev, int bufnum,
+@@ -84,8 +83,7 @@ static void com20020_copy_to_card(struct
+ 	arcnet_outb(ofs & 0xff, ioaddr, COM20020_REG_W_ADDR_LO);
+ 
+ 	/* copy the data */
+-	TIME(dev, "outsb", count,
+-	     arcnet_outsb(ioaddr, COM20020_REG_RW_MEMDATA, buf, count));
++	arcnet_outsb(ioaddr, COM20020_REG_RW_MEMDATA, buf, count);
+ }
+ 
+ /* Reset the card and check some basic stuff during the detection stage. */
+--- a/drivers/net/arcnet/com90io.c
++++ b/drivers/net/arcnet/com90io.c
+@@ -332,15 +332,13 @@ static void com90io_setmask(struct net_d
+ static void com90io_copy_to_card(struct net_device *dev, int bufnum,
+ 				 int offset, void *buf, int count)
  {
---- a/drivers/iommu/intel/dmar.c
-+++ b/drivers/iommu/intel/dmar.c
-@@ -1606,9 +1606,9 @@ void qi_flush_pasid_cache(struct intel_i
-  */
- void dmar_disable_qi(struct intel_iommu *iommu)
+-	TIME(dev, "put_whole_buffer", count,
+-	     put_whole_buffer(dev, bufnum * 512 + offset, count, buf));
++	put_whole_buffer(dev, bufnum * 512 + offset, count, buf);
+ }
+ 
+ static void com90io_copy_from_card(struct net_device *dev, int bufnum,
+ 				   int offset, void *buf, int count)
  {
-+	ktime_t start_time = ktime_get();
- 	unsigned long flags;
- 	u32 sts;
--	cycles_t start_time = get_cycles();
+-	TIME(dev, "get_whole_buffer", count,
+-	     get_whole_buffer(dev, bufnum * 512 + offset, count, buf));
++	get_whole_buffer(dev, bufnum * 512 + offset, count, buf);
+ }
  
- 	if (!ecap_qis(iommu->ecap))
- 		return;
-@@ -1624,7 +1624,7 @@ void dmar_disable_qi(struct intel_iommu
- 	 */
- 	while ((readl(iommu->reg + DMAR_IQT_REG) !=
- 		readl(iommu->reg + DMAR_IQH_REG)) &&
--		(DMAR_OPERATION_TIMEOUT > (get_cycles() - start_time)))
-+	       (DMAR_OPERATION_TIMEOUT > (ktime_get() - start_time)))
- 		cpu_relax();
+ static int io;			/* use the insmod io= irq= shmem= options */
+--- a/drivers/net/arcnet/com90xx.c
++++ b/drivers/net/arcnet/com90xx.c
+@@ -633,7 +633,7 @@ static void com90xx_copy_to_card(struct
+ 	struct arcnet_local *lp = netdev_priv(dev);
+ 	void __iomem *memaddr = lp->mem_start + bufnum * 512 + offset;
  
- 	iommu->gcmd &= ~DMA_GCMD_QIE;
---- a/drivers/iommu/intel/iommu.h
-+++ b/drivers/iommu/intel/iommu.h
-@@ -23,6 +23,7 @@
- #include <linux/xarray.h>
- #include <linux/perf_event.h>
- #include <linux/pci.h>
-+#include <linux/timekeeping.h>
- #include <linux/generic_pt/iommu.h>
+-	TIME(dev, "memcpy_toio", count, memcpy_toio(memaddr, buf, count));
++	memcpy_toio(memaddr, buf, count);
+ }
  
- #include <asm/iommu.h>
-@@ -360,14 +361,17 @@
- /* PERFINTRSTS_REG */
- #define DMA_PERFINTRSTS_PIS	((u32)1)
+ static void com90xx_copy_from_card(struct net_device *dev, int bufnum,
+@@ -642,7 +642,7 @@ static void com90xx_copy_from_card(struc
+ 	struct arcnet_local *lp = netdev_priv(dev);
+ 	void __iomem *memaddr = lp->mem_start + bufnum * 512 + offset;
  
-+#define DMAR_OPERATION_TIMEOUT  (((ktime_t)10) * NSEC_PER_SEC)
-+
- #define IOMMU_WAIT_OP(iommu, offset, op, cond, sts)			\
- do {									\
--	cycles_t start_time = get_cycles();				\
-+	ktime_t start_time = ktime_get();				\
-+									\
- 	while (1) {							\
- 		sts = op(iommu->reg + offset);				\
- 		if (cond)						\
- 			break;						\
--		if (DMAR_OPERATION_TIMEOUT < (get_cycles() - start_time))\
-+		if (DMAR_OPERATION_TIMEOUT < (ktime_get() - start_time))\
- 			panic("DMAR hardware is malfunctioning\n");	\
- 		cpu_relax();						\
- 	}								\
+-	TIME(dev, "memcpy_fromio", count, memcpy_fromio(buf, memaddr, count));
++	memcpy_fromio(buf, memaddr, count);
+ }
+ 
+ MODULE_DESCRIPTION("ARCnet COM90xx normal chipset driver");
 
 
