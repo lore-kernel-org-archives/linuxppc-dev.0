@@ -1,55 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-19577-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19578-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9746CF4484F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 12:19:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81C78F44850
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 12:19:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fsbSr72SMz2yjw;
-	Fri, 10 Apr 2026 22:19:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775823548;
-	cv=none; b=JozrA5jf+aM8mbLHgkvbuEGnlAmLMgVe5M2GUThy6GG+jgmEDvyowiq81hmH/YyWHsdpaCb320rzONvfdiRT1ctsjnq4NIMCY+5fVFbnk0pC6VhrkP5xXvkcN/X2sJAU9IHdpe1P4Ti+uwd5bbJNi4biaUwBTJJK0MaPOJ7eJ69uOE9IBYW0C20TbozhtPQnAGFyu0DH7dW5ZYefyNv/TrRkfGBlMUwO8glpFFrtvrjsPor69pdb5ShDXcUT23tsOqgNTTN6HFBBlgAXp/hrmXjQvYVLjl4LLj7MFe0RGMIBnLJm6prsqm9LRj33SXF8hLDb0Z+cJ/BDa9v+GbbPbw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fsbSx6mDCz2yk6;
+	Fri, 10 Apr 2026 22:19:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775823553;
+	cv=none; b=Xtub7PpmWmMvHrypwseV9y8YduA0f+y2V1eFk3EyrLMtj3iW981f6NIbpa59lBIqPVVIr/YaTeZk+T33I5hwmwls+OqDeuGgnkv9+Uq4uqYrCWKWE8tasnB59vKI0c9AOJQnXV3hKyQFmQInzaCZ2rnpb6nwQ8hYIkxMHfZ910+PsBWtzki/sTmljkLtRs1bgd88LCi+Xm8wMfruiHCHfbylDPredUtxMbAzaeXIsUmrsdM9uWoARy2IJl4Vh5718FcN8GYtdBnDWrVWL/So15Z2MgChnlL13JkXQk5vetkguzBvGaF6pLOI2N7x1hMDb5TwBRlbyFYbH7hxvLZS6w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775823548; c=relaxed/relaxed;
-	bh=SH5UDza4spQjzd3RSMUyPWLUXEHp2wuekQCGvQe/6zk=;
+	t=1775823553; c=relaxed/relaxed;
+	bh=hS8C4KqVeUlIUjtSj7w2Upw8HyApf1Pu0cIqAYxRChU=;
 	h=Date:Message-ID:From:To:Subject:References:MIME-Version:
-	 Content-Type:cc; b=c6YB4iI9N0myN8tfUVRdq8//Gt1IiYwUg+ZzngrlAj6Eab/LcPzj+bqRMLP0s7C4Dl/K2BjG5ce736IlJfL9fCesjXL0NHm+wA7tdZKchlWXVw2jdjUYfT1PzcvB05GmDRNomFcaxT6YtrZ9hertN9yyOnt26mZOT6HcAnxVAADa/Xtnk2r/Q/sAgsJbLdgSShfKGUnWe4zWfDQGu3Ms9LDbXWHE02gjWnyWWIbY/QS5j+TYubI3dFp4DgDqcZG9kaAle6qFidK6P1+BGashbgDE2hgiyI2JWGUXvywCbyb3joVhfFa9QCzku4uIDzoYDuyLNGvfpoEGINhtTdI5QQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RN1rF/li; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:cc; b=Sslm8qTZcd+X0K0d1jvbeakmPqkf32FzmGGl4uDXf+TOpYz9XqlzTcUd7OeXGaVpds0zhkqifhWF3W2hIBp0zh6JjHQObcBULI+m6rWw7PyCe4WL/ZkB3YdruB9u0tn2yxHTOC3OQKo+8MWmoovCw7sVzzFk23Te7UcD4QLdtPuT5uOPomdrKCOLChteikQKi8BizBtR81UBcnFVPkezhmQrdm958EgvfBaZqoAwInB1Gy7YZIgJpwDtigrGFZvHRpOhtywnBIYRzXWJqs5SxmVd1SfcS+lyMyNFJJdPyrXeB30rJaCUfm3H9zm1cxphMa+VP1b4P0gJN9QQ/ud0mg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YwhpP/sf; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RN1rF/li;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YwhpP/sf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsbSr1g7mz2yhD
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 22:19:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsbSx0JcJz2yhD
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 22:19:13 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 95C4F40B4D;
-	Fri, 10 Apr 2026 12:19:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6CDE4C2BCB3;
-	Fri, 10 Apr 2026 12:19:05 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 32D916024D;
+	Fri, 10 Apr 2026 12:19:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 455B0C2BC87;
+	Fri, 10 Apr 2026 12:19:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775823546;
-	bh=e1hr7RxQAtfkXxmpOByj9AnE8rprLs7FfW1VJuycE3U=;
+	s=k20201202; t=1775823550;
+	bh=bea3byi4f+lJwA9RE9L4RIIWG0LfPmc09XAUdHtlAlE=;
 	h=Date:From:To:Subject:References:cc:From;
-	b=RN1rF/lik/IDDm6vfArIXRWDzYeJ5FOTg7VZhjC87W8dEFx4XOLkGFYYWGhN5FSAp
-	 UgUW5oHG+RoyFDJ2Lb8wy9bLXZ629e0sIZHO26a4htp9GCeP67dTQge4t3eD4oDh93
-	 1M2FHKCxNFZC0Fzd0yadwA9xaercjxCXri8tQar5sfr/ENoprWWJO3/MtUJLqRehkg
-	 l/QzejVV1juchHtR/6u+RSlRsRj9VAJZETUAE3E4ZTRyX1FMMGjRx2pW1U9TsOYtOg
-	 Iiw1IsbQmNZnTrKZs9AZodQQ0gykTA14aWPgbU/9QJFDHI9V1VA1cDQRoqdiQlL5WN
-	 Y1nwRLUUSmSZw==
-Date: Fri, 10 Apr 2026 14:19:03 +0200
-Message-ID: <20260410120318.045532623@kernel.org>
+	b=YwhpP/sfl2uNAokHMGyDzPyXqsYG5Z3HHapkhzwVASiSkGSv1ImeSFBY018VYZGU6
+	 EPRk8H/tD4bE94DCGFfik82fydH/mvkzeKH2zcGHFzmiPQlK2yTJNXmBvp6CR6/aKP
+	 ZUXJ1ridIfNl+octSklnUsCiAFVq0bMAbDZHArZ2XlGiEpILEnKNdARJlXe1YoLGU7
+	 gTGiAjrmuKfAH7Stm5YSWpKnJ3J0WABG0fiD/+Dm/7aJCfY6aDBkC0dcXhqkELemEA
+	 OLCKD9b/UmnIij2UMaT5laELpK9/RUq1POEHXDOcdk6mujQiavRoj/L2U3OHpVV16q
+	 LiEll066ex31A==
+Date: Fri, 10 Apr 2026 14:19:08 +0200
+Message-ID: <20260410120318.121043259@kernel.org>
 User-Agent: quilt/0.68
 From: Thomas Gleixner <tglx@kernel.org>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch 07/38] treewide: Consolidate cycles_t
+Subject: [patch 08/38] x86/tsc: Use rdtsc() instead of get_cycles()
 References: <20260410120044.031381086@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -113,220 +113,60 @@ cc: Arnd Bergmann <arnd@arndb.de>,
  "David S. Miller" <davem@davemloft.net>,
  sparclinux@vger.kernel.org
 
-Most architectures define cycles_t as unsigned long execpt:
+This code knows that TSC is available so there is no point to use the TSC
+feature guarded get_cycles().
 
- - x86 requires it to be 64-bit independent of the 32-bit/64-bit build.
-
- - parisc and mips define it as unsigned int
-
-   parisc has no real reason to do so as there are only a few usage sites
-   which either expand it to a 64-bit value or utilize only the lower
-   32bits.
-
-   mips has no real requirement either.
-
-Move the typedef to types.h and provide a config switch to enforce the
-64-bit type for x86.
+No functional change.
 
 Signed-off-by: Thomas Gleixner <tglx@kernel.org>
 ---
- arch/Kconfig                       |    4 ++++
- arch/alpha/include/asm/timex.h     |    3 ---
- arch/arm/include/asm/timex.h       |    1 -
- arch/loongarch/include/asm/timex.h |    2 --
- arch/m68k/include/asm/timex.h      |    2 --
- arch/mips/include/asm/timex.h      |    2 --
- arch/nios2/include/asm/timex.h     |    2 --
- arch/parisc/include/asm/timex.h    |    2 --
- arch/powerpc/include/asm/timex.h   |    4 +---
- arch/riscv/include/asm/timex.h     |    2 --
- arch/s390/include/asm/timex.h      |    2 --
- arch/sparc/include/asm/timex_64.h  |    1 -
- arch/x86/Kconfig                   |    1 +
- arch/x86/include/asm/tsc.h         |    2 --
- include/asm-generic/timex.h        |    1 -
- include/linux/types.h              |    6 ++++++
- 16 files changed, 12 insertions(+), 25 deletions(-)
+ arch/x86/kernel/tsc.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -360,6 +360,10 @@ config ARCH_HAS_DMA_SET_UNCACHED
- config ARCH_HAS_DMA_CLEAR_UNCACHED
- 	bool
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -371,12 +371,12 @@ static u64 tsc_read_refs(u64 *p, int hpe
+ 	int i;
  
-+# cycles_t is always 64bit wide
-+config ARCH_HAS_CYCLES_T_64
-+	bool
-+
- config ARCH_HAS_CPU_FINALIZE_INIT
- 	bool
+ 	for (i = 0; i < MAX_RETRIES; i++) {
+-		t1 = get_cycles();
++		t1 = rdtsc();
+ 		if (hpet)
+ 			*p = hpet_readl(HPET_COUNTER) & 0xFFFFFFFF;
+ 		else
+ 			*p = acpi_pm_read_early();
+-		t2 = get_cycles();
++		t2 = rdtsc();
+ 		if ((t2 - t1) < thresh)
+ 			return t2;
+ 	}
+@@ -468,13 +468,13 @@ static unsigned long pit_calibrate_tsc(u
+ 	outb(latch & 0xff, 0x42);
+ 	outb(latch >> 8, 0x42);
  
---- a/arch/alpha/include/asm/timex.h
-+++ b/arch/alpha/include/asm/timex.h
-@@ -15,9 +15,6 @@
-  * But this only means we'll force a reschedule every 8 seconds or so,
-  * which isn't an evil thing.
-  */
--
--typedef unsigned int cycles_t;
--
- static inline cycles_t get_cycles (void)
- {
- 	cycles_t ret;
---- a/arch/arm/include/asm/timex.h
-+++ b/arch/arm/include/asm/timex.h
-@@ -9,7 +9,6 @@
- #ifndef _ASMARM_TIMEX_H
- #define _ASMARM_TIMEX_H
+-	tsc = t1 = t2 = get_cycles();
++	tsc = t1 = t2 = rdtsc();
  
--typedef unsigned long cycles_t;
- // Temporary workaround
- bool delay_read_timer(unsigned long *t);
+ 	pitcnt = 0;
+ 	tscmax = 0;
+ 	tscmin = ULONG_MAX;
+ 	while ((inb(0x61) & 0x20) == 0) {
+-		t2 = get_cycles();
++		t2 = rdtsc();
+ 		delta = t2 - tsc;
+ 		tsc = t2;
+ 		if ((unsigned long) delta < tscmin)
+@@ -553,9 +553,9 @@ static inline int pit_expect_msb(unsigne
+ 		if (!pit_verify_msb(val))
+ 			break;
+ 		prev_tsc = tsc;
+-		tsc = get_cycles();
++		tsc = rdtsc();
+ 	}
+-	*deltap = get_cycles() - prev_tsc;
++	*deltap = rdtsc() - prev_tsc;
+ 	*tscp = tsc;
  
---- a/arch/loongarch/include/asm/timex.h
-+++ b/arch/loongarch/include/asm/timex.h
-@@ -12,8 +12,6 @@
- #include <asm/cpu.h>
- #include <asm/cpu-features.h>
- 
--typedef unsigned long cycles_t;
--
- #define get_cycles get_cycles
- 
- static inline cycles_t get_cycles(void)
---- a/arch/m68k/include/asm/timex.h
-+++ b/arch/m68k/include/asm/timex.h
-@@ -7,8 +7,6 @@
- #ifndef _ASMm68K_TIMEX_H
- #define _ASMm68K_TIMEX_H
- 
--typedef unsigned long cycles_t;
--
- static inline cycles_t get_cycles(void)
- {
- 	return 0;
---- a/arch/mips/include/asm/timex.h
-+++ b/arch/mips/include/asm/timex.h
-@@ -29,8 +29,6 @@
-  * We know that all SMP capable CPUs have cycle counters.
-  */
- 
--typedef unsigned int cycles_t;
--
- /*
-  * On R4000/R4400 an erratum exists such that if the cycle counter is
-  * read in the exact moment that it is matching the compare register,
---- a/arch/nios2/include/asm/timex.h
-+++ b/arch/nios2/include/asm/timex.h
-@@ -5,8 +5,6 @@
- #ifndef _ASM_NIOS2_TIMEX_H
- #define _ASM_NIOS2_TIMEX_H
- 
--typedef unsigned long cycles_t;
--
- extern cycles_t get_cycles(void);
- #define get_cycles get_cycles
- 
---- a/arch/parisc/include/asm/timex.h
-+++ b/arch/parisc/include/asm/timex.h
-@@ -9,8 +9,6 @@
- 
- #include <asm/special_insns.h>
- 
--typedef unsigned long cycles_t;
--
- static inline cycles_t get_cycles(void)
- {
- 	return mfctl(16);
---- a/arch/powerpc/include/asm/timex.h
-+++ b/arch/powerpc/include/asm/timex.h
-@@ -11,9 +11,7 @@
- #include <asm/cputable.h>
- #include <asm/vdso/timebase.h>
- 
--typedef unsigned long cycles_t;
--
--static inline cycles_t get_cycles(void)
-+ostatic inline cycles_t get_cycles(void)
- {
- 	return mftb();
- }
---- a/arch/riscv/include/asm/timex.h
-+++ b/arch/riscv/include/asm/timex.h
-@@ -8,8 +8,6 @@
- 
- #include <asm/csr.h>
- 
--typedef unsigned long cycles_t;
--
- #ifdef CONFIG_RISCV_M_MODE
- 
- #include <asm/clint.h>
---- a/arch/s390/include/asm/timex.h
-+++ b/arch/s390/include/asm/timex.h
-@@ -177,8 +177,6 @@ static inline void local_tick_enable(uns
- 	set_clock_comparator(get_lowcore()->clock_comparator);
- }
- 
--typedef unsigned long cycles_t;
--
- static __always_inline unsigned long get_tod_clock(void)
- {
- 	union tod_clock clk;
---- a/arch/sparc/include/asm/timex_64.h
-+++ b/arch/sparc/include/asm/timex_64.h
-@@ -10,7 +10,6 @@
- #include <asm/timer.h>
- 
- /* Getting on the cycle counter on sparc64. */
--typedef unsigned long cycles_t;
- #define get_cycles()	tick_ops->get_tick()
- 
- #endif
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -79,6 +79,7 @@ config X86
- 	select ARCH_HAS_CPU_FINALIZE_INIT
- 	select ARCH_HAS_CPU_PASID		if IOMMU_SVA
- 	select ARCH_HAS_CURRENT_STACK_POINTER
-+	select ARCH_HAS_CYCLES_T_64
- 	select ARCH_HAS_DEBUG_VIRTUAL
- 	select ARCH_HAS_DEBUG_VM_PGTABLE	if !X86_PAE
- 	select ARCH_HAS_DELAY_TIMER
---- a/arch/x86/include/asm/tsc.h
-+++ b/arch/x86/include/asm/tsc.h
-@@ -67,8 +67,6 @@ static __always_inline u64 rdtsc_ordered
- /*
-  * Standard way to access the cycle counter.
-  */
--typedef unsigned long long cycles_t;
--
- extern unsigned int cpu_khz;
- extern unsigned int tsc_khz;
- 
---- a/include/asm-generic/timex.h
-+++ b/include/asm-generic/timex.h
-@@ -5,7 +5,6 @@
- /*
-  * If you have a cycle counter, return the value here.
-  */
--typedef unsigned long cycles_t;
- #ifndef get_cycles
- static inline cycles_t get_cycles(void)
- {
---- a/include/linux/types.h
-+++ b/include/linux/types.h
-@@ -270,5 +270,11 @@ struct rcuwait {
- 	struct task_struct __rcu *task;
- };
- 
-+#ifdef CONFIG_ARCH_HAS_CYCLES_T_64
-+typedef unsigned long long	cycles_t;
-+#else
-+typedef unsigned long		cycles_t;
-+#endif
-+
- #endif /*  __ASSEMBLY__ */
- #endif /* _LINUX_TYPES_H */
+ 	/*
 
 
