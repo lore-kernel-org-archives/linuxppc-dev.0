@@ -1,56 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-19596-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19597-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A12BAF44847
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 12:21:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B887F4484F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 12:21:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fsbVd59D4z2yrD;
-	Fri, 10 Apr 2026 22:20:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775823641;
-	cv=none; b=FfG40yfgBP0msRH6pacf5Y5epIkVG/szDJkJOJ0N30vcfoabhdTlFnV7PTr7kfqB57gT+WYepBRLVHrqsotjmqpcPCjXfcsqLXiQ58bDLpPmIMQ033577K1pg36wfVv4NVYklRa6ZmY5bXcNF5FwLKhqs7y22518jQjwb/Vd8x3zimsm3gRJKOSENDwTsVtmADDt4a7bSNZQIECDHaogPr5Ff6qpvfjMfVgYVe0cgU+nmLLlyzbRhtQr55cjNLFpNwOQYdVO2Zq3LDO0z2CcgAt8wSmsgx88TxQyKJo4sotPUsrjOIQfzwmwbc+kZmIjuHJCCg4uO7j5eU3GAgHXyw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fsbVk3hdGz2yrS;
+	Fri, 10 Apr 2026 22:20:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775823646;
+	cv=none; b=GGsIsK8LluOlirQGuQMB8uE2IU5AxnIjMY9IZxSS1vLj27OxgMxUlv14WSnAPU53kbr254wGIfSo36DudDn0hS9syZiB/n+6XZYuc9QIDdEGwHmYut1+gi6ztPtlK87mSf3jtq1pa5/FuxHtGe1jCupsHHM5m4tcq1MNhovMGvVaVV1nisOIPOtXZfgPuLrQ1JCqEx+ZQF93XQLMyr/10PdmkAibucZvEMSD0FT/pg3Xm+w7ceF06HplmeXnGg+BwTY9/Eiwq7Snw4tXTHVOQ2cVe/iqZopZVZXQ4xqhzi05AdwAN3f2T8J2xEXG+EjsW/47I1UjvbQ6bjAvRu7RLg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775823641; c=relaxed/relaxed;
-	bh=cA5fsHKS5zMwzBxci+DP1Qed/9F1OdcNJnHEKWRTFD0=;
+	t=1775823646; c=relaxed/relaxed;
+	bh=vKymtlo11yiDU4TLKycOojSP+rmgc8Jkf+2yejheXps=;
 	h=Date:Message-ID:From:To:Cc:Subject:References:MIME-Version:
-	 Content-Type; b=KzDxQ5Mf3QiW6+q4STRVPWX2hjwk3TLd3UPTCZRH/K7qpKPWeqmAMC7oKKEDyOkR/6mlq8P37fW3EiNNHtitZAl43PBoNVEzjYeY7Rru7imc6Ip2MgpoKP7s+YKlzxK5We4HKt1tN/J+AJOasklErqpFjppJHH3cJpO/Pi8sNOvjgYkL3aSSuRcTFVITNFLZvmgjgaRb+cfkSfxsXm8oDF8jYScjuw3KA+e8/8uIs5z2nWK/uS2TxQhW48S32RhiUb05QMiOgTSb+Tiawx5YUPO2rCsYK4FgUVc0OD/wQWUIZ6AXvwIvy8YJ1U1yA8fpASrlnTyf1vqL+SJ1apBRTQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=q1INVKXp; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type; b=X5S6iDzSk74GNOH28al64VvOIGJK3OucmyDh+qftzo7dAfvx7fUnMysh+gPaNhqvCIChn7MGZjOmBLXUnpAXHGYrPoH4oc2sR6O6rnNV2NfZUdb/AJi+igUumLqlsooJOsk7+kI7QXgl9cCy+ftEcxv63hLjL85QJyiPSgYvwDUAqYDrt+80zmUD6TwbRXPPYavKH53zek7t2w5ig8D8hZxFQIVhSbHxyIjhPEjW4Z87n7KUEvNrO+kyvSB4t58xPZ8q5/KBwi2G0jpoIvu/RO0bDvaTxGNCOconbhexNK92X9ve2ovsWJG0VW9NKAP6Zf2vh/GXoq+kLAp6hIXQdA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aKc8BIj0; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=q1INVKXp;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aKc8BIj0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsbVc69KGz2yrQ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 22:20:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsbVj55jvz2yrQ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 22:20:45 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 1605941780;
-	Fri, 10 Apr 2026 12:20:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2B1D3C2BC9E;
-	Fri, 10 Apr 2026 12:20:38 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id D2A206111B;
+	Fri, 10 Apr 2026 12:20:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C04A4C19425;
+	Fri, 10 Apr 2026 12:20:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775823639;
-	bh=xuHY9CZoFUC3Uh1usl17ZiiMpll/sjP+R8Uwlr/gPtE=;
+	s=k20201202; t=1775823643;
+	bh=ZI1DuZTKY+73ZiUZu5YDxjD9E28Vsj2HJPMLgb9lTAs=;
 	h=Date:From:To:Cc:Subject:References:From;
-	b=q1INVKXpZHtktKQFtR7J0+4UmhxfrqTk44NJDJ9JcHhB06YLNiRtKSdKF4mgJVuJK
-	 SbcmSgsMKGBRlcg33rDyUOrFSOUDUDhFVtStbWiiXhg+24Wo0rvXGROWGoPGbTgWpY
-	 1QIfeqOqXuPtKqCTAnTH/4z6y5eKaf0+C4alVsAJYiVtcktTob8TzqOeasZ85w0p7X
-	 BtZas6qdu0vK0vHim0/6rol7iQm8En5aXNu+7ovbB+IOTj4HSKX+ow5cG7qCECZo1T
-	 4BmBLkbX+cyQgBzFeuQcBUbwDEtuOB2nQvII7+MypdiMTP4ticoX+aM+zON4QU+Q9r
-	 WXrWSNCF41x9w==
-Date: Fri, 10 Apr 2026 14:20:35 +0200
-Message-ID: <20260410120319.330598126@kernel.org>
+	b=aKc8BIj04xl8fMPMfIdxvFnc9Be7sg+HcqnW4NP8XAVA8CoHWWZUH1TGoEDd3vKKD
+	 FNpRo6Iom4qBRwumLXapTj7hfgRDejsC7j6E+L/Vx4C85D2LE1/deOAcMcctONxvIo
+	 HMR5AMjZPk8wC2GcrGQEDXlt0rYZP0bNeTIqA2wyhnF5OK38Pv/q09G+oh4E6MeUyG
+	 /IRrdxDk2wKuJ9eIif/wOJjQhHy2AsumkYu8PWY0TnTc6wXQmoLW+lJrShxrt0E6Gb
+	 m+nyDRqFv+r0pZBlp7wkM/XjcKkMGym/WCszxlys26yMLXsGUqt11/GgfHwii1mXtv
+	 FSYiSRKkHgM1Q==
+Date: Fri, 10 Apr 2026 14:20:40 +0200
+Message-ID: <20260410120319.397219631@kernel.org>
 User-Agent: quilt/0.68
 From: Thomas Gleixner <tglx@kernel.org>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Huacai Chen <chenhuacai@kernel.org>,
- loongarch@lists.linux.dev,
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+ linux-m68k@lists.linux-m68k.org,
  Arnd Bergmann <arnd@arndb.de>,
  x86@kernel.org,
  Lu Baolu <baolu.lu@linux.intel.com>,
@@ -81,8 +81,8 @@ Cc: Huacai Chen <chenhuacai@kernel.org>,
  Russell King <linux@armlinux.org.uk>,
  linux-arm-kernel@lists.infradead.org,
  Catalin Marinas <catalin.marinas@arm.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- linux-m68k@lists.linux-m68k.org,
+ Huacai Chen <chenhuacai@kernel.org>,
+ loongarch@lists.linux.dev,
  Dinh Nguyen <dinguyen@kernel.org>,
  Jonas Bonn <jonas@southpole.se>,
  linux-openrisc@vger.kernel.org,
@@ -96,7 +96,7 @@ Cc: Huacai Chen <chenhuacai@kernel.org>,
  linux-s390@vger.kernel.org,
  "David S. Miller" <davem@davemloft.net>,
  sparclinux@vger.kernel.org
-Subject: [patch 26/38] loongarch: Select ARCH_HAS_RANDOM_ENTROPY
+Subject: [patch 27/38] m68k: Select ARCH_HAS_RANDOM_ENTROPY
 References: <20260410120044.031381086@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -113,75 +113,105 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 
-The only remaining non-architecture usage of get_cycles() is to provide
+The only remaining usage of get_cycles() is to provide
 random_get_entropy().
 
-Switch loongarch over to the new scheme of selecting ARCH_HAS_RANDOM_ENTROPY
-and providing random_get_entropy() in asm/random.h.
+Switch m68k over to the new scheme of selecting ARCH_HAS_RANDOM_ENTROPY and
+providing random_get_entropy() in asm/random.h.
 
-Add 'asm/timex.h' includes to the relevant files, so the global include can
-be removed once all architectures are converted over.
+Remove asm/timex.h as it has no functionality anymore.
 
 Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-Cc: Huacai Chen <chenhuacai@kernel.org>
-Cc: loongarch@lists.linux.dev
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-m68k@lists.linux-m68k.org
 ---
- arch/loongarch/Kconfig              |    1 +
- arch/loongarch/include/asm/random.h |   15 +++++++++++++++
- arch/loongarch/kernel/syscall.c     |    1 +
- arch/loongarch/lib/delay.c          |    2 +-
- 4 files changed, 18 insertions(+), 1 deletion(-)
+ arch/m68k/Kconfig              |    1 +
+ arch/m68k/amiga/config.c       |    1 +
+ arch/m68k/include/asm/random.h |   14 ++++++++++++++
+ arch/m68k/include/asm/timex.h  |   25 -------------------------
+ arch/m68k/kernel/time.c        |    2 +-
+ 5 files changed, 17 insertions(+), 26 deletions(-)
 
---- a/arch/loongarch/Kconfig
-+++ b/arch/loongarch/Kconfig
-@@ -26,6 +26,7 @@ config LOONGARCH
- 	select ARCH_HAS_NON_OVERLAPPING_ADDRESS_SPACE
- 	select ARCH_HAS_PREEMPT_LAZY
- 	select ARCH_HAS_PTE_SPECIAL
+--- a/arch/m68k/Kconfig
++++ b/arch/m68k/Kconfig
+@@ -8,6 +8,7 @@ config M68K
+ 	select ARCH_HAS_CPU_FINALIZE_INIT if MMU
+ 	select ARCH_HAS_CURRENT_STACK_POINTER
+ 	select ARCH_HAS_DMA_PREP_COHERENT if M68K_NONCOHERENT_DMA && !COLDFIRE
 +	select ARCH_HAS_RANDOM_ENTROPY
- 	select ARCH_HAS_SET_MEMORY
- 	select ARCH_HAS_SET_DIRECT_MAP
- 	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
+ 	select ARCH_HAS_SYNC_DMA_FOR_DEVICE if M68K_NONCOHERENT_DMA
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG if RMW_INSNS
+ 	select ARCH_MIGHT_HAVE_PC_PARPORT if ISA
+--- a/arch/m68k/amiga/config.c
++++ b/arch/m68k/amiga/config.c
+@@ -36,6 +36,7 @@
+ #include <asm/machdep.h>
+ #include <asm/io.h>
+ #include <asm/config.h>
++#include <asm/random.h>
+ 
+ #include "amiga.h"
+ 
 --- /dev/null
-+++ b/arch/loongarch/include/asm/random.h
-@@ -0,0 +1,15 @@
++++ b/arch/m68k/include/asm/random.h
+@@ -0,0 +1,14 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Copyright (C) 2020-2022 Loongson Technology Corporation Limited
-+ */
-+#ifndef _ASM_RANDOM_H
-+#define _ASM_RANDOM_H
++#ifndef _ASMm68K_RANDOM_H
++#define _ASMm68K_RANDOM_H
 +
-+#include <asm/timex.h>
++extern unsigned long (*mach_random_get_entropy)(void);
 +
 +static inline unsigned long random_get_entropy(void)
 +{
-+	return get_cycles();
++	if (mach_random_get_entropy)
++		return mach_random_get_entropy();
++	return random_get_entropy_fallback();
 +}
 +
-+#endif /*  _ASM_RANDOM_H */
---- a/arch/loongarch/kernel/syscall.c
-+++ b/arch/loongarch/kernel/syscall.c
-@@ -19,6 +19,7 @@
- #include <asm/loongarch.h>
- #include <asm/signal.h>
- #include <asm/switch_to.h>
-+#include <asm/timex.h>
- #include <asm-generic/syscalls.h>
++#endif
+--- a/arch/m68k/include/asm/timex.h
++++ /dev/null
+@@ -1,25 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-/*
+- * linux/include/asm-m68k/timex.h
+- *
+- * m68k architecture timex specifications
+- */
+-#ifndef _ASMm68K_TIMEX_H
+-#define _ASMm68K_TIMEX_H
+-
+-static inline cycles_t get_cycles(void)
+-{
+-	return 0;
+-}
+-
+-extern unsigned long (*mach_random_get_entropy)(void);
+-
+-static inline unsigned long random_get_entropy(void)
+-{
+-	if (mach_random_get_entropy)
+-		return mach_random_get_entropy();
+-	return random_get_entropy_fallback();
+-}
+-#define random_get_entropy	random_get_entropy
+-
+-#endif
+--- a/arch/m68k/kernel/time.c
++++ b/arch/m68k/kernel/time.c
+@@ -26,12 +26,12 @@
+ #include <asm/machdep.h>
+ #include <asm/io.h>
+ #include <asm/irq_regs.h>
++#include <asm/random.h>
  
- #undef __SYSCALL
---- a/arch/loongarch/lib/delay.c
-+++ b/arch/loongarch/lib/delay.c
-@@ -5,9 +5,9 @@
- #include <linux/delay.h>
- #include <linux/export.h>
- #include <linux/smp.h>
--#include <linux/timex.h>
+ #include <linux/time.h>
+ #include <linux/timex.h>
+ #include <linux/profile.h>
  
- #include <asm/processor.h>
-+#include <asm/timex.h>
+-
+ unsigned long (*mach_random_get_entropy)(void);
+ EXPORT_SYMBOL_GPL(mach_random_get_entropy);
  
- void __delay(unsigned long cycles)
- {
 
 
