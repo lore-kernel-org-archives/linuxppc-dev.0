@@ -1,56 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-19601-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19602-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4E53F4484C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 12:22:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8DE1F4484C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 12:22:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fsbW617ngz2yrm;
-	Fri, 10 Apr 2026 22:21:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fsbWB5XDrz3dhk;
+	Fri, 10 Apr 2026 22:21:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775823666;
-	cv=none; b=L/GaErfd4NUZzNIG+XQtSFuV6TSl+46roIwcU7H2M1EPQQzwWBtqTBkNTl6LpOa6gHaDJIk74CLVo+fiEL2DU5ixC30Iou3znD7W5nCo+ST3Epzm6NHH12Ut9zYYMZknn1/ERbw5L4vqeAnU1nVZ6cMCR5gnajSFN34rBHw1PlLrrd035CmyiRqrnlnJC7wswGnSd9hOD9iOiozqRQ7Y2WCkChm8A20LTpIBqEc9U8AKJrx0d3wDwK2EFjltX3oxL3SXIb/fI5zgNzSdJSoL0FRw0aNXeN54S1PamYe7+erEU9TXaLzWjHt0NUtdWOqnNGRAtUCvrlhD2hd5PypKaA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775823670;
+	cv=none; b=WOaKnS9rlnWu6HaivbTx65r9kpuk5izCkHRFfsXEAK1EcT+Je0nYLGz8besB5S5XN3ipt5GlOw46G4VnLj/sV6BVeucGDtaS2pgNMoPvR0dpjA0EoBX+NTwIY+Kbhd3ebmUBbAFj8DRHXCerg1Y8/UTqQv/m1vjZc0MqDFDrQcNaIVfxma9y5HpqIZTjMfGxNNtmpkPxxWMtHu99GjbQMupvSn4JTLIm7qlA1kF9wdxjlhe/+AYzvUD4nIal3Ppw4MBv60geqNIBvk9DR/a0a5l/c6xrfd8CzcBHT1Zej8cS+fQin+3C/h+FL4DCHXVPCo5D7iyrqBld0fHoWegLLQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775823666; c=relaxed/relaxed;
-	bh=knDLOL3Pglg0Ub7FLYkkPKBMBdISeZid22CAd3SOyJM=;
+	t=1775823670; c=relaxed/relaxed;
+	bh=ae8cfkGUIMIeVdEIq5b46ZHpiRc5HR7kNfrW28/CmkI=;
 	h=Date:Message-ID:From:To:Cc:Subject:References:MIME-Version:
-	 Content-Type; b=mYS+PoQrLlJyyJ9LiN68WPsLBHUYsRo/pLH4AwfZBOL2H6DuGXGhJwSr1ApzXMKN3OYEPmPHYf0QE3gKsXuUtagH8NyHPooxbjuZM0QycNlBN94gnT9p4nQB0D8H2VqjV/pURn6TvLrx0XkyXB8sC8OYxT61qT2/8CBVn9+6PhMR11sGzbnBuhzDooxuRZI5iifxtnuf4wo8yD4sl17uDM4k303jaedjXCEnzDRPLzbt68w3CTyWKBvW3eRpaLrbtV3GzsRaFSMC8WAuElO/MYJTqD9e41bzksaBMY1zNnZk2Lqa9YMLxRtfxEtNW4eNfUOh1U+KRRouaK0pv0AMbg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NMEawaGf; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type; b=bhSI0bnFZUL+ytLTtYknyAS9Q66ezBH6HNOCxA4UtQG+XzSDUkLQoBzGlP6uvOsRv7eorvrik5DiFvQvBZV/s3H5jp0eqtuCnVRaUMTJya+ZNFkWj7vMsP56QFfsmvTDZCb8ZU7TXEhh2MK7tA9sht7sCkTzDG/eJxVXC9Nte1kLJBfZMZzqlW4B6YTzy0rnqfoIpWAQXnoM0mo4sjQ+DC4GCnf7aB1qXyk8mk4plL81a1TrPSrjtJCEq9m/yaNFo4+fLncFDb+OG+WRw6cgBQeq0dKHKvto6FvxkVNCRE17ZfUbYsuqKkPb6pZzYgXuXJihUp7QVhk3GX/QYAxDag==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uoiHjWjo; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NMEawaGf;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uoiHjWjo;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsbW527Zxz2yhP
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 22:21:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsbWB02dcz2yhP
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 22:21:09 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 5035961333;
-	Fri, 10 Apr 2026 12:21:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 21923C2BCB2;
-	Fri, 10 Apr 2026 12:21:02 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 0E98D6091C;
+	Fri, 10 Apr 2026 12:21:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E7FAAC19421;
+	Fri, 10 Apr 2026 12:21:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775823663;
-	bh=arEz1VHg70GeH2cUr9Lpy43pf1nP5ZqGj9No6b3NvGc=;
+	s=k20201202; t=1775823667;
+	bh=ql5fkS0UEXw/nBMHEudu1ngsgqvxlZvUknLeTtAAGUU=;
 	h=Date:From:To:Cc:Subject:References:From;
-	b=NMEawaGfBmItTINOkOidvgB6jXoclDGf78qU2DQLeTlzGLrdEzTDk/muIR3isadas
-	 Eyy5g0FnRv8ECHD8WNjJd+poKDwf709MD2FUA4Zxpq4v2gA+LwpA8vel0ik9BGCmUL
-	 SRAcDP7ql7MsZ2nrhkZkSeh/8fnf2+XnKGt9MLspNLANeefspPmNjhAwKQtf/nBzwq
-	 +qFTCUz5zVqyJxqgiY8VftvHSe0PhwZa05l9UZAVCASdReHFxw2Di6MoEIbRm/DACH
-	 6EZjVdKmyCFY0ahPlTJF5Om8tUGbM3+RzMDvfnJ5JW0Kfa99RJyTmb3751RAHQJ2qn
-	 SLzORLtraR9aA==
-Date: Fri, 10 Apr 2026 14:21:00 +0200
-Message-ID: <20260410120319.658485572@kernel.org>
+	b=uoiHjWjoWcWN7Tw6xiUbL/Io/RlHzIChPqiGJJ7RtYjsrncirPNTd0U6jsMefBLBl
+	 PuEP8rIYZGWPrDUGiB7D/1OZBxXBypGlDQEoNlUgfhKncfE0Vht3vVd8dR09fIJYz6
+	 LaRap+OM72T7ij93UcDxrSAuxRJvyqDUwai7p79fd01gYNQNCFb6LttF4gur8fMl1Z
+	 TmanYlU2xNYAREOAaMNh8AIeZ2WEpNPx/37VkP03IexczKkHFgtDwEiwY8TvmgoUyG
+	 zdqSX2TqLhRdpCyZVVz2iZYLDeqcR5cB1pNHnjTlrpzblDMQ8i7KXktiKriMpSMGuM
+	 +dQ/qJxaC9obA==
+Date: Fri, 10 Apr 2026 14:21:04 +0200
+Message-ID: <20260410120319.723429844@kernel.org>
 User-Agent: quilt/0.68
 From: Thomas Gleixner <tglx@kernel.org>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Helge Deller <deller@gmx.de>,
- linux-parisc@vger.kernel.org,
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org,
  Arnd Bergmann <arnd@arndb.de>,
  x86@kernel.org,
  Lu Baolu <baolu.lu@linux.intel.com>,
@@ -88,15 +88,15 @@ Cc: Helge Deller <deller@gmx.de>,
  Dinh Nguyen <dinguyen@kernel.org>,
  Jonas Bonn <jonas@southpole.se>,
  linux-openrisc@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org,
+ Helge Deller <deller@gmx.de>,
+ linux-parisc@vger.kernel.org,
  Paul Walmsley <pjw@kernel.org>,
  linux-riscv@lists.infradead.org,
  Heiko Carstens <hca@linux.ibm.com>,
  linux-s390@vger.kernel.org,
  "David S. Miller" <davem@davemloft.net>,
  sparclinux@vger.kernel.org
-Subject: [patch 31/38] parisc: Select ARCH_HAS_RANDOM_ENTROPY
+Subject: [patch 32/38] powerpc/spufs: Use mftb() directly
 References: <20260410120044.031381086@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -113,89 +113,45 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 
-The only remaining non-architecture usage of get_cycles() is to provide
-random_get_entropy().
+There is no reason to indirect via get_cycles(), which is about to be
+removed.
 
-Switch parisc over to the new scheme of selecting ARCH_HAS_RANDOM_ENTROPY
-and providing random_get_entropy() in asm/random.h.
-
-Add 'asm/timex.h' includes to the relevant files, so the global include can
-be removed once all architectures are converted over.
+Use mftb() directly.
 
 Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-Cc: Helge Deller <deller@gmx.de>
-Cc: linux-parisc@vger.kernel.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
 ---
- arch/parisc/Kconfig              |    1 +
- arch/parisc/include/asm/random.h |   12 ++++++++++++
- arch/parisc/include/asm/timex.h  |    6 ------
- arch/parisc/kernel/processor.c   |    1 +
- arch/parisc/kernel/time.c        |    1 +
- 5 files changed, 15 insertions(+), 6 deletions(-)
+ arch/powerpc/platforms/cell/spufs/switch.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
---- a/arch/parisc/Kconfig
-+++ b/arch/parisc/Kconfig
-@@ -16,6 +16,7 @@ config PARISC
- 	select ARCH_HAS_STRICT_MODULE_RWX
- 	select ARCH_HAS_UBSAN
- 	select ARCH_HAS_PTE_SPECIAL
-+	select ARCH_HAS_RANDOM_ENTROPY
- 	select ARCH_NO_SG_CHAIN
- 	select ARCH_SPLIT_ARG64 if !64BIT
- 	select ARCH_SUPPORTS_HUGETLBFS if PA20
---- /dev/null
-+++ b/arch/parisc/include/asm/random.h
-@@ -0,0 +1,12 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _ASMPARISC_RANDOM_H
-+#define _ASMPARISC_RANDOM_H
-+
-+#include <asm/timex.h>
-+
-+static inline unsigned long random_get_entropy(void)
-+{
-+	return get_cycles();
-+}
-+
-+#endif
---- a/arch/parisc/include/asm/timex.h
-+++ b/arch/parisc/include/asm/timex.h
-@@ -1,9 +1,4 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/*
-- * linux/include/asm-parisc/timex.h
-- *
-- * PARISC architecture timex specifications
-- */
- #ifndef _ASMPARISC_TIMEX_H
- #define _ASMPARISC_TIMEX_H
+--- a/arch/powerpc/platforms/cell/spufs/switch.c
++++ b/arch/powerpc/platforms/cell/spufs/switch.c
+@@ -34,6 +34,7 @@
+ #include <asm/spu_priv1.h>
+ #include <asm/spu_csa.h>
+ #include <asm/mmu_context.h>
++#include <asm/time.h>
  
-@@ -13,6 +8,5 @@ static inline cycles_t get_cycles(void)
- {
- 	return mfctl(16);
+ #include "spufs.h"
+ 
+@@ -279,7 +280,7 @@ static inline void save_timebase(struct
+ 	 *    Read PPE Timebase High and Timebase low registers
+ 	 *    and save in CSA.  TBD.
+ 	 */
+-	csa->suspend_time = get_cycles();
++	csa->suspend_time = mftb();
  }
--#define get_cycles get_cycles
  
- #endif
---- a/arch/parisc/kernel/processor.c
-+++ b/arch/parisc/kernel/processor.c
-@@ -30,6 +30,7 @@
- #include <asm/pdcpat.h>
- #include <asm/irq.h>		/* for struct irq_region */
- #include <asm/parisc-device.h>
-+#include <asm/timex.h>
+ static inline void remove_other_spu_access(struct spu_state *csa,
+@@ -1261,7 +1262,7 @@ static inline void setup_decr(struct spu
+ 	 *     in LSCSA.
+ 	 */
+ 	if (csa->priv2.mfc_control_RW & MFC_CNTL_DECREMENTER_RUNNING) {
+-		cycles_t resume_time = get_cycles();
++		cycles_t resume_time = mftb();
+ 		cycles_t delta_time = resume_time - csa->suspend_time;
  
- struct system_cpuinfo_parisc boot_cpu_data __ro_after_init;
- EXPORT_SYMBOL(boot_cpu_data);
---- a/arch/parisc/kernel/time.c
-+++ b/arch/parisc/kernel/time.c
-@@ -17,6 +17,7 @@
- #include <linux/platform_device.h>
- #include <asm/processor.h>
- #include <asm/pdcpat.h>
-+#include <asm/timex.h>
- 
- static u64 cr16_clock_freq;
- static unsigned long clocktick;
+ 		csa->lscsa->decr_status.slot[0] = SPU_DECR_STATUS_RUNNING;
 
 
