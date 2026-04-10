@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-19543-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19544-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1CF3E99049
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 07:14:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C506E99049
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 07:15:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fsSjg2G4Kz2ypV;
-	Fri, 10 Apr 2026 17:14:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775800283;
-	cv=none; b=c/FAg5TkNLzuvFifnFHDPQ1q7DLzAaPYkh6o/3SIXwkF5TxfjwVGa6oyZFdEO59put9abaoo2tBllEoQRYaIs+uQ7L6+0gm/rpau76K9GTes4m12QT1AxnOiR5qjogoyQKAq51lnbHNanLcA1YNLHC/xGsCERnMH6LzSE0sZbBnCVK0pztiljcjiqLCliM0fu3sex/RyZRODeMR3NVJ28UbLbF7nWLKIP8zD2TXYa47td1BxgSYh2Zueft3xUkz9GoeZNwwzmLpHS/Q9qGNtkJ9CZfY5/Ha1kN4Vw558Nqubsf2fOnPwf6f/moPmiqKTgvjSpRxRnGG7jG+BiUu+lg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fsSjv6Df5z2yhv;
+	Fri, 10 Apr 2026 17:14:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775800290;
+	cv=none; b=KtzWHmmHKwdFBusJZtywnH9G/JAu3cYZmvuenlSLMkqkPRano99itanuAgChbm9cRn8wzQW/jbOkSo0am9AG43UR4aHJcvDDK52adp0cYZZEwB6sxi2DlxpMQDhjHjcqP5/U2jEEPazfb1CyntJYmn0tq1ChZro8N0sl8EqOS6iIrGLx4co0q5hSqux0geffiJ2B0P9yJ+zWP3jQTXlPfQuduYjwCoP2VexvZetQAIz5jFEZfhHmF1gMVKAXi1pKfg0NJpqsuAhkUQ/CqJmG6Cw/IF5gVNV71bB/wf1kwgSUbS0M2UiZCSI+oe+uBV6Wj6bLKaOKUZ/bqJrPJta2ZA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775800283; c=relaxed/relaxed;
-	bh=HlWUt6Kc1y/8AXosy6RuaUHIk6+kZCgimcEm5r9/R5s=;
+	t=1775800290; c=relaxed/relaxed;
+	bh=0Jr3sC47ZEtXeXqMveigYdMC50YGTd90hBXS/qc+IbM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=V97YXU02CUvVr1XHOQ5ri8dr/y6IV/918zMsYJGpXGx/ibK9yl7Oy5RvXw2xbhN/DG8jdftTtiQAJ41y40ARMv0iO7qwfug3Vp/cE82r6xt5GyiwyCDaiQIfWx+yPpEBGIlioKpsvXnmEaazo9hKpB0SkOGc8dsvItVGa9L2Oj/nLa1YGI3Gvxz2jQm+FGnPMccvHPJz1DQjmLWWfiGRHXI4EkrdEhlQo8sajNYBAOKUkSiG2a6zk44UPhUEwi6xWJauOHsyJ0n4+he8DkyRD75uTbUL06GDT/aXalS2vaQApymnrsXU3yMbFYFiKBoc+4N8wQmS0SQu39FD80SWMQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=liCvDkXg; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=cK7uZKFFXx3j+pgtjeROqizPvKFf9JyYNrdQisNTR4wzq/qQjGy4tAwUjDHfih9FTQBOrC1Bpi+kGryCoXt+ypRiHhXY6zTsBm1qQZzMSX+vJDI8KIG/M9HSI7o5j6rA0cpCw1DRARNz2osNc7d+6eIjrW652F26R9Fj2g2f4aQIoUcJYYjA69xniqkdgM1N6w5ySLiDRLN5BYIbmTphYuzwfUYK43Oat5CSqxHn/29o5t21VxZYA7WztS+i869jYZJnRbURBu9Etz+mkfjDW+b7TSYD9PEM8vYdkbjIWVv2ICUL8MsRRE5zfl6ZRfd1IZFDLUX9bRtPijOPLcJW5Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=J/gsQVTr; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=liCvDkXg;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=J/gsQVTr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsQsQ6VT4z2yRl
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 15:51:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsQsY4WsGz2yRl
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 15:51:29 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 15AF360145;
-	Fri, 10 Apr 2026 05:51:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8FD2EC19424;
-	Fri, 10 Apr 2026 05:51:17 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 21EFE43CA5;
+	Fri, 10 Apr 2026 05:51:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C6316C19421;
+	Fri, 10 Apr 2026 05:51:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775800280;
-	bh=RJIbkZ2vyHUaEoq5eiCMqBUxiew4KtMmfoufXoK9vfk=;
+	s=k20201202; t=1775800288;
+	bh=z4FOR4TwG8rLwyIwhKM+ZusYoPCsVz4loWx7w2LvdEc=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=liCvDkXgv7IA7HXmjFq8dJ0WMbYu6MZvNqB4kiD0BSaMgAPd/2c2zB2OX9kHJ0ATy
-	 W+PnIPy3kIG686pSrdTPCUcgVjtAkVa8Oh0JtY0Z+wMgZyuJGoUqxYFKX5yxKhvUeT
-	 XXpIHUgpXZsp08QWBXesvroou4mvzJgHjvboX9BSjAWUAko9ZP2LtK+gQCIlHo2G0x
-	 FTfMh+sPelY4HKAsauSsunCiWVGWmcmtN25ky16oOFQbBeldoblTxD5NQulR2WvUxy
-	 N0Jk8jQxi1XZldp8ovRL1OlUzUz6l6biiioMY4LkFVC0S2Dvy2Mu2w4fKRmbF+bwwz
-	 Zwoesx3LRDWMw==
+	b=J/gsQVTrhEK2zXeKolaZg3jed/dcuw60fYtzbyIzIfPS1vSkpNT99H3Y0r2KTKjAG
+	 R/5HH7Phn2ADasVdjYLigZjcZBBpiHpd+WMTA3hq6TWQ0VP5KTlb8g4YHbmwFa1qGH
+	 DAx6z3IpeLL5yZ7UKxX07lBULizAy/sTZVCIa/YaEyyeGmsDDbExqfZ58GoZpGEBoU
+	 oI4A+XugLEclYDmU++lB50ryGK4p/uvchj8nz8Jn75KJUuvxE9vdkB66O9JPdNohGb
+	 xOPGDHwUt7wfgJ7Ha/Zqh9Eg0tUIP3PUigsRopVP/H6+ek824PbrWLW7YMLDWxo1Er
+	 lqasQoGvadvxg==
 From: =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kwilczynski@kernel.org>
 To: Bjorn Helgaas <bhelgaas@google.com>
 Cc: Bjorn Helgaas <helgaas@kernel.org>,
@@ -67,9 +67,9 @@ Cc: Bjorn Helgaas <helgaas@kernel.org>,
 	linux-pci@vger.kernel.org,
 	linux-alpha@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 10/20] alpha/PCI: Add security_locked_down() check to pci_mmap_resource()
-Date: Fri, 10 Apr 2026 05:50:30 +0000
-Message-ID: <20260410055040.39233-11-kwilczynski@kernel.org>
+Subject: [PATCH 12/20] alpha/PCI: Use PCI resource accessor macros
+Date: Fri, 10 Apr 2026 05:50:32 +0000
+Message-ID: <20260410055040.39233-13-kwilczynski@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260410055040.39233-1-kwilczynski@kernel.org>
 References: <20260410055040.39233-1-kwilczynski@kernel.org>
@@ -89,46 +89,38 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Currently, Alpha's pci_mmap_resource() does not check
-security_locked_down(LOCKDOWN_PCI_ACCESS) before allowing
-userspace to mmap PCI BARs.
+Replace direct pdev->resource[] accesses with pci_resource_n(),
+and pdev->resource[].flags accesses with pci_resource_flags().
 
-The generic version has had this check since commit eb627e17727e
-("PCI: Lock down BAR access when the kernel is locked down") to
-prevent DMA attacks when the kernel is locked down.
-
-Add the same check to Alpha's pci_mmap_resource().
+No functional changes intended.
 
 Signed-off-by: Krzysztof Wilczyński <kwilczynski@kernel.org>
 ---
- arch/alpha/kernel/pci-sysfs.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ arch/alpha/kernel/pci-sysfs.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/arch/alpha/kernel/pci-sysfs.c b/arch/alpha/kernel/pci-sysfs.c
-index 3048758304b5..2324720c3e83 100644
+index c84867ce31f5..7aac5e76dcd6 100644
 --- a/arch/alpha/kernel/pci-sysfs.c
 +++ b/arch/alpha/kernel/pci-sysfs.c
-@@ -11,6 +11,7 @@
-  */
+@@ -141,7 +141,7 @@ static int sparse_mem_mmap_fits(struct pci_dev *pdev, int num)
+ 	long dense_offset;
+ 	unsigned long sparse_size;
  
- #include <linux/sched.h>
-+#include <linux/security.h>
- #include <linux/stat.h>
- #include <linux/slab.h>
- #include <linux/pci.h>
-@@ -71,7 +72,11 @@ static int pci_mmap_resource(struct kobject *kobj,
- 	struct resource *res = attr->private;
- 	enum pci_mmap_state mmap_type;
- 	struct pci_bus_region bar;
--	int i;
-+	int i, ret;
-+
-+	ret = security_locked_down(LOCKDOWN_PCI_ACCESS);
-+	if (ret)
-+		return ret;
+-	pcibios_resource_to_bus(pdev->bus, &bar, &pdev->resource[num]);
++	pcibios_resource_to_bus(pdev->bus, &bar, pci_resource_n(pdev, num));
  
- 	for (i = 0; i < PCI_STD_NUM_BARS; i++)
- 		if (res == &pdev->resource[i])
+ 	/* All core logic chips have 4G sparse address space, except
+ 	   CIA which has 16G (see xxx_SPARSE_MEM and xxx_DENSE_MEM
+@@ -181,7 +181,7 @@ static int pci_create_attr(struct pci_dev *pdev, int num)
+ 	suffix = "";	/* Assume bwx machine, normal resourceN files. */
+ 	nlen1 = 10;
+ 
+-	if (pdev->resource[num].flags & IORESOURCE_MEM) {
++	if (pci_resource_flags(pdev, num) & IORESOURCE_MEM) {
+ 		sparse_base = hose->sparse_mem_base;
+ 		dense_base = hose->dense_mem_base;
+ 		if (sparse_base && !sparse_mem_mmap_fits(pdev, num)) {
 -- 
 2.53.0
 
