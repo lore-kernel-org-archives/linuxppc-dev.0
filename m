@@ -1,56 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-19591-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19592-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52409F44850
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 12:21:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DACE0F4484F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 12:21:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fsbV94JhLz2yqs;
-	Fri, 10 Apr 2026 22:20:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775823617;
-	cv=none; b=TkiRAyzsbVD83PvQogSBLYzHUihUf0+8yZABF3gxjtQcJr3g6m7arL0omR9VLVqls1V2oGpwxdtfFvj7dZIMuCwDM/NLHDK1JB+dexLoErLrRcFHSpyTbcHqQ1kFwICOAdVX3a6K801ZbxweZAzIMeSBysyUn1Oh5x6knyNz15DfTFMxBwRTDzjRgJ1VF/zTaEwSzuAeNd4x1BTE2DWCNlc1Qpt2q+LEHDEgZ+N13OoP/NGVqOYTKjgyvlx2HD0MXd1kCshEApSfEXWmBw46RNK7+P+LVnmfYovpSwrxnAZ4TGj3+Y/Zka6bBW0YNhW3taydQapBMgV1NPqFxIj0WQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fsbVF6JhGz2yr0;
+	Fri, 10 Apr 2026 22:20:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775823621;
+	cv=none; b=kNPL+XKxSbAcQ0ONq7l7lamMLp8yfIskwHnDQzphj3tpBDB6PgeLHhHtbB7NoaH8t8xPkbEHEVBHTbBHcWMJTK/GeHXOw5sesCKwVDsdTnlPD2Bjg2YmZQ6RS6P1DzVEB5gKVNiQBIN3m3E4/XKPBRLvH8RmpP4nVPTXWHeZgbCJhlPNUOkjTQHdZ6HOp4PYL0T5D8xrNqQ29EEqKgmgp4HupsalhPbwdi9dsA2vGNp8YKfA1SSynTf6PSiT5BK6S47mwHUAWcF7Ki0t9R71u+XOvTDtxvB8IE56Ct44okbrluVMXL+lZ7O0pW+XMLuW4LI9kNxxzd4hB0Dgm7Cn3Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775823617; c=relaxed/relaxed;
-	bh=uc43GoCkDGKCftnS7MZ3OA0khnbsdPYb8yxntAbHoVw=;
+	t=1775823621; c=relaxed/relaxed;
+	bh=AqOQD77ovJbDZAalLb7LttNXWfQNwpbHnO0m4lNbaKQ=;
 	h=Date:Message-ID:From:To:Cc:Subject:References:MIME-Version:
-	 Content-Type; b=WGimUiL6ZwPWLceGdkM8GrD1P35BybpTRhxu1lON2D5bDQwwMmKYXqZT4Hc3IPWKwwHnmTyEv4z9BHrNFXMWj64mK5P10DeecpFvD2FjEp5ovnwyMGzxccPZUrQoXz3cL3L/Pyt/li/qE0Bvn2NnRlC5ewXvad6IeELJtN614sW1JYVN6pCjl/81kc41hZx9JLAylo6w5YWdklff2o1xD+oIxt3F6ndj1uWBZPNjxlFQTU1kADPIY+U1N917Qvjq33ovXCjRlIQ/1Vfaku4Q7ZezlUbkuNsS/mL/Hlx91TAjfqpE/G1cTFAQ6goKHWdfPK8fnFehjoTVQjIT4IIr/A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=K9r3LlHr; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type; b=dOfLIKodA3bPKVWRjlg+zg/PzukQCjxlt7nOl3Ika8Izb4hjlClhO45aQW/uK+DfwbWonoUDRakm16CucLmjnLBuDYBwqxrKeNBMqTr0y1VYXJyK57j+owsP1HPaWHLyZD2w4adoF+cU3rTc2WhIbUsayAMRJauPIe7XE0SFNiI8Jiyo8M2UO0OUXWwf9fk5QXKRDb39zKhiE/T2MBPWr+yoUaaYTnPY64VVKubPo5vWk11heL0NKbUuwvPWcZESP/DLuUv4gGV4lLxHCGoJChwSP+tfV/93SnwYyPAP9gmQoW7Vs2SaG6WdkgS02LEznfYaZ9gmn/LQmySv8tfgtw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=C7az2CYX; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=K9r3LlHr;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=C7az2CYX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=tglx@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsbV85qpjz2yZ6
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 22:20:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsbVF10qkz2yZ6
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 22:20:21 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id EFCF56111B;
-	Fri, 10 Apr 2026 12:20:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8C840C2BCB0;
-	Fri, 10 Apr 2026 12:20:13 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 806A043DD1;
+	Fri, 10 Apr 2026 12:20:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7E21BC19421;
+	Fri, 10 Apr 2026 12:20:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775823614;
-	bh=fBmKDE903B55aOazdk1fgTYrHTdJzb3m7rYXj49+TyY=;
+	s=k20201202; t=1775823619;
+	bh=qm3xQcBXEr96lL4hegVcj0UIOMtgXH0StGBPsgVLlKQ=;
 	h=Date:From:To:Cc:Subject:References:From;
-	b=K9r3LlHrTcCOkcDztBL2sK/tQ+yi3dZzcdFnxujOK2CvaNmPXdlKrSDZTOaDJVW4S
-	 4mOX2OGTBKQ54SjOZcfKwdFhqUqz7KSUNqnVJajtIbXp/GGLFwlU7bEb8zVF3NgHwH
-	 1PaUWksbUVEp48mOHI3J4/UWYuvo5lLJzmYA1j3FTzptfyaQ68k1o579nPzwBiXUsC
-	 3DfIec/NNOEw9ut9tg7BENSlBdgvHCyF+4+WEDfTHmiMcBanB5cN+csJSB4d+fA+Ka
-	 C4Vf48Goy0kDdmbaemETnL+HfFRh1XMMUZS6QyYOK2+NJ2yf87fs8P9lxl4UXibsda
-	 2J390A/pMX1Ag==
-Date: Fri, 10 Apr 2026 14:20:11 +0200
-Message-ID: <20260410120318.997202495@kernel.org>
+	b=C7az2CYXx68wjErxLRkuWTeHqh2CiNCWSqYoEW7CDASKgYcRJIgZbMFxC0wyGwYuo
+	 q2wWS5Il3rSZIvkXMrziJDymJeOKDwzCu+GiLTUQ15ObFw+7EBHLm3ubP5lL1H6hxr
+	 ReCtVW/VKZ0Y6HBv+Xxa78vZHjPEyhGg6WzSGQLG1W0Tyuqe7kgGZgc8KKs+JzIX6a
+	 qzTQ3qBxeH5MKjO5ANy/+fOcCKNQ7HWyamJ7hE6VNKzzJsl13+xyi236101/gCvlT5
+	 hn6GusmLxuTParC929bCg39takaaNPRV5A3bS+11CTndJSbqW1MjcdkxKmUqQfmLua
+	 lqUqNEa3EnLWw==
+Date: Fri, 10 Apr 2026 14:20:16 +0200
+Message-ID: <20260410120319.064561422@kernel.org>
 User-Agent: quilt/0.68
 From: Thomas Gleixner <tglx@kernel.org>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Thomas Sailer <t.sailer@alumni.ethz.ch>,
- linux-hams@vger.kernel.org,
+Cc: "Jason A. Donenfeld" <Jason@zx2c4.com>,
  Arnd Bergmann <arnd@arndb.de>,
  x86@kernel.org,
  Lu Baolu <baolu.lu@linux.intel.com>,
@@ -73,7 +72,8 @@ Cc: Thomas Sailer <t.sailer@alumni.ethz.ch>,
  Dmitry Vyukov <dvyukov@google.com>,
  kasan-dev@googlegroups.com,
  Andrey Ryabinin <ryabinin.a.a@gmail.com>,
- "Jason A. Donenfeld" <Jason@zx2c4.com>,
+ Thomas Sailer <t.sailer@alumni.ethz.ch>,
+ linux-hams@vger.kernel.org,
  Richard Henderson <richard.henderson@linaro.org>,
  linux-alpha@vger.kernel.org,
  Russell King <linux@armlinux.org.uk>,
@@ -96,7 +96,7 @@ Cc: Thomas Sailer <t.sailer@alumni.ethz.ch>,
  linux-s390@vger.kernel.org,
  "David S. Miller" <davem@davemloft.net>,
  sparclinux@vger.kernel.org
-Subject: [patch 21/38] hamradio: baycom_epp: Remove BAYCOM_DEBUG
+Subject: [patch 22/38] random: Provide CONFIG_ARCH_HAS_RANDOM_ENTROPY
 References: <20260410120044.031381086@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -113,140 +113,125 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 
-The whole code guarded by BAYCOM_DEBUG is only writing debug values into a
-datastructure, but there is no way to ever access them.
+Chasing down to what random_get_entropy() resolves is a 'spot the mouse'
+game through a maze of #ifdeffery. Also the placement in timex.h is
+non-obvious and has just been chosen because it provides conveniant access
+to the underlying get_cycles() #ifdeffery.
 
-Remove the pointless ballast.
+Provide a config switch which is selectable by the architecture and a
+temporary #ifdef guard in timex.h. Architectures which select the config
+switch must provide asm/random.h with the architecture specific
+implementation.
+
+Update all usage sites to include linux/random.h so that the gradual
+conversion does not cause build regressions.
 
 This is part of a larger effort to remove get_cycles() usage from
 non-architecture code.
 
 Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-Cc: Thomas Sailer <t.sailer@alumni.ethz.ch>
-Cc: linux-hams@vger.kernel.org
+Cc: "Jason A. Donenfeld" <Jason@zx2c4.com>
 ---
- drivers/net/hamradio/baycom_epp.c |   51 --------------------------------------
- 1 file changed, 51 deletions(-)
+ arch/Kconfig                     |    3 +++
+ arch/loongarch/kernel/relocate.c |    1 +
+ arch/mips/kernel/relocate.c      |    1 +
+ crypto/jitterentropy-kcapi.c     |    1 +
+ include/linux/random.h           |   15 +++++++++++++++
+ include/linux/timex.h            |    2 ++
+ kernel/kcsan/core.c              |    1 +
+ 7 files changed, 24 insertions(+)
 
---- a/drivers/net/hamradio/baycom_epp.c
-+++ b/drivers/net/hamradio/baycom_epp.c
-@@ -44,7 +44,6 @@
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -370,6 +370,9 @@ config ARCH_HAS_CPU_FINALIZE_INIT
+ config ARCH_HAS_DELAY_TIMER
+ 	bool
  
- /* --------------------------------------------------------------------- */
++config ARCH_HAS_RANDOM_ENTROPY
++	bool
++
+ # The architecture has a per-task state that includes the mm's PASID
+ config ARCH_HAS_CPU_PASID
+ 	bool
+--- a/arch/loongarch/kernel/relocate.c
++++ b/arch/loongarch/kernel/relocate.c
+@@ -9,6 +9,7 @@
+ #include <linux/kernel.h>
+ #include <linux/printk.h>
+ #include <linux/panic_notifier.h>
++#include <linux/random.h>
+ #include <linux/start_kernel.h>
+ #include <asm/bootinfo.h>
+ #include <asm/early_ioremap.h>
+--- a/arch/mips/kernel/relocate.c
++++ b/arch/mips/kernel/relocate.c
+@@ -19,6 +19,7 @@
+ #include <linux/libfdt.h>
+ #include <linux/of_fdt.h>
+ #include <linux/panic_notifier.h>
++#include <linux/random.h>
+ #include <linux/sched/task.h>
+ #include <linux/start_kernel.h>
+ #include <linux/string.h>
+--- a/crypto/jitterentropy-kcapi.c
++++ b/crypto/jitterentropy-kcapi.c
+@@ -42,6 +42,7 @@
+ #include <linux/fips.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
++#include <linux/random.h>
+ #include <linux/slab.h>
+ #include <linux/time.h>
+ #include <crypto/internal/rng.h>
+--- a/include/linux/random.h
++++ b/include/linux/random.h
+@@ -139,4 +139,19 @@ int random_online_cpu(unsigned int cpu);
+ extern const struct file_operations random_fops, urandom_fops;
+ #endif
  
--#define BAYCOM_DEBUG
- #define BAYCOM_MAGIC 19730510
++unsigned long random_get_entropy_fallback(void);
++
++/*
++ * random_get_entropy() is used by the /dev/random driver in order to extract
++ * entropy via the relative unpredictability of when an interrupt takes places
++ * versus a high speed, fine-grained timing source or cycle counter.  Since it
++ * will be occurred on every single interrupt, it must have a very low
++ * cost/overhead.
++ *
++ * If an architecture does not provide it, then use random_get_entropy_fallback().
++ */
++#ifdef CONFIG_ARCH_HAS_RANDOM_ENTROPY
++#include <asm/random.h>
++#endif
++
+ #endif /* _LINUX_RANDOM_H */
+--- a/include/linux/timex.h
++++ b/include/linux/timex.h
+@@ -66,6 +66,7 @@ unsigned long random_get_entropy_fallbac
  
- /* --------------------------------------------------------------------- */
-@@ -191,18 +190,6 @@ struct baycom_state {
+ #include <asm/timex.h>
  
- 	unsigned int ptt_keyed;
- 	struct sk_buff *skb;  /* next transmit packet  */
--
--#ifdef BAYCOM_DEBUG
--	struct debug_vals {
--		unsigned long last_jiffies;
--		unsigned cur_intcnt;
--		unsigned last_intcnt;
--		int cur_pllcorr;
--		int last_pllcorr;
--		unsigned int mod_cycles;
--		unsigned int demod_cycles;
--	} debug_vals;
--#endif /* BAYCOM_DEBUG */
- };
- 
- /* --------------------------------------------------------------------- */
-@@ -259,26 +246,6 @@ static inline int calc_crc_ccitt(const u
- 
- #define tenms_to_flags(bc,tenms) ((tenms * bc->bitrate) / 800)
- 
--/* --------------------------------------------------------------------- */
--
--static inline void baycom_int_freq(struct baycom_state *bc)
--{
--#ifdef BAYCOM_DEBUG
--	unsigned long cur_jiffies = jiffies;
--	/*
--	 * measure the interrupt frequency
--	 */
--	bc->debug_vals.cur_intcnt++;
--	if (time_after_eq(cur_jiffies, bc->debug_vals.last_jiffies + HZ)) {
--		bc->debug_vals.last_jiffies = cur_jiffies;
--		bc->debug_vals.last_intcnt = bc->debug_vals.cur_intcnt;
--		bc->debug_vals.cur_intcnt = 0;
--		bc->debug_vals.last_pllcorr = bc->debug_vals.cur_pllcorr;
--		bc->debug_vals.cur_pllcorr = 0;
--	}
--#endif /* BAYCOM_DEBUG */
--}
--
- /* ---------------------------------------------------------------------- */
++#ifndef CONFIG_ARCH_HAS_RANDOM_ENTROPY
+ #ifndef random_get_entropy
  /*
-  *    eppconfig_path should be setable  via /proc/sys.
-@@ -621,13 +588,6 @@ static int receive(struct net_device *de
- 	return ret;
- }
+  * The random_get_entropy() function is used by the /dev/random driver
+@@ -85,6 +86,7 @@ unsigned long random_get_entropy_fallbac
+ #define random_get_entropy()	random_get_entropy_fallback()
+ #endif
+ #endif
++#endif
  
--/* --------------------------------------------------------------------- */
--
--#define GETTICK(x)						\
--({								\
--	x = (unsigned int)get_cycles();				\
--})
--
- static void epp_bh(struct work_struct *work)
- {
- 	struct net_device *dev;
-@@ -635,21 +595,17 @@ static void epp_bh(struct work_struct *w
- 	struct parport *pp;
- 	unsigned char stat;
- 	unsigned char tmp[2];
--	unsigned int time1 = 0, time2 = 0, time3 = 0;
- 	int cnt, cnt2;
- 
- 	bc = container_of(work, struct baycom_state, run_work.work);
- 	dev = bc->dev;
- 	if (!bc->work_running)
- 		return;
--	baycom_int_freq(bc);
- 	pp = bc->pdev->port;
- 	/* update status */
- 	if (pp->ops->epp_read_addr(pp, &stat, 1, 0) != 1)
- 		goto epptimeout;
- 	bc->stat = stat;
--	bc->debug_vals.last_pllcorr = stat;
--	GETTICK(time1);
- 	if (bc->modem == EPP_FPGAEXTSTATUS) {
- 		/* get input count */
- 		tmp[0] = EPP_TX_FIFO_ENABLE|EPP_RX_FIFO_ENABLE|EPP_MODEM_ENABLE|1;
-@@ -673,7 +629,6 @@ static void epp_bh(struct work_struct *w
- 			goto epptimeout;
- 		if (transmit(bc, cnt2, stat))
- 			goto epptimeout;
--		GETTICK(time2);
- 		if (receive(dev, cnt))
- 			goto epptimeout;
- 		if (pp->ops->epp_read_addr(pp, &stat, 1, 0) != 1)
-@@ -700,7 +655,6 @@ static void epp_bh(struct work_struct *w
- 		}
- 		if (transmit(bc, cnt, stat))
- 			goto epptimeout;
--		GETTICK(time2);
- 		/* do receiver */
- 		while ((stat & (EPP_NRAEF|EPP_NRHF)) != EPP_NRHF) {
- 			switch (stat & (EPP_NRAEF|EPP_NRHF)) {
-@@ -734,11 +688,6 @@ static void epp_bh(struct work_struct *w
- 				goto epptimeout;
- 		}
- 	}
--	GETTICK(time3);
--#ifdef BAYCOM_DEBUG
--	bc->debug_vals.mod_cycles = time2 - time1;
--	bc->debug_vals.demod_cycles = time3 - time2;
--#endif /* BAYCOM_DEBUG */
- 	schedule_delayed_work(&bc->run_work, 1);
- 	if (!bc->skb)
- 		netif_wake_queue(dev);
+ /*
+  * SHIFT_PLL is used as a dampening factor to define how much we
+--- a/kernel/kcsan/core.c
++++ b/kernel/kcsan/core.c
+@@ -18,6 +18,7 @@
+ #include <linux/moduleparam.h>
+ #include <linux/percpu.h>
+ #include <linux/preempt.h>
++#include <linux/random.h>
+ #include <linux/sched.h>
+ #include <linux/string.h>
+ #include <linux/uaccess.h>
 
 
