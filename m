@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-19541-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19542-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7CFDE99049
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 07:14:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4FC13E99046
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Apr 2026 07:14:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fsSjP55yZz2ynf;
-	Fri, 10 Apr 2026 17:14:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775800276;
-	cv=none; b=JnK45PzUsvF8DoID46Zk8RvUY3fiI97BrbQrxrHiWPcf2S/WtKIEFPSe/OdminehF50iZdrkdzqNXmKaruPpz7JGgVNLgFDjEcPoHkVgWakXvLvS8S5qTEDr3AvZieuydan0xU9xu+giFJntVRgMg/wgQ2ms7PNieicpuhrrbGbzvhcuTF9nU3hHK15weNsooa9mrcuC3Q10NXzQ95gnYq2WWNt4ogY5zbGpg5WU1luRN5yVHlfCHaqw/eXCgyXZmacCHBOyYokOFR0AMVQgZnqnEMBSADaL3F/vqtAYdHW5aLfKBfsAhDe84/oYw6yFHS3/K4vAmgvainr9ca5gRg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fsSjY4MsMz2ynh;
+	Fri, 10 Apr 2026 17:14:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775800280;
+	cv=none; b=YDwl4nwMlOnkP36lS4w7VP224Qmdd0YSC2NqY2Y/m/YK6m2zNEpBqIKbLh8+VX2PZyrDKk1QvbaFIJc60n9Ge82seGDjEURjPr0ZNGJOnOnnMusUbkKwVglDLU1/vCpbSx4jLkNw/+SrMV29N4QU8XvkC9nKNJ7SR7D0KIE2lGAreJyw/9mxm2l5bFBeD2DB/SbaRA62fHzlmPDEgGui/QYNk9X1udQtc788WlCRzAzlaXUBi6x9iXXR/DkGG8M/X10tMh3qnZYkNSCthIz+t/9W4VywRMvYYEpaK23R18+ew2u9qD2ce0PU/ktVp6gWHHO75FNiaK2H0Jrl2O0zmA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775800276; c=relaxed/relaxed;
-	bh=mItEgTMcAZxYVmAbDBQ8+vIoD/HVCYQFX7X6snQPJ48=;
+	t=1775800280; c=relaxed/relaxed;
+	bh=QD+/cW6h0q9mGUMgMdUdQ8FCVWTEz9IOGPDR4jJN19Y=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=dr9LIQJI+DXlHU775qUM01by7c5hFtP3pwdbA6ld2cW5UcWReQTDLuoaBlC7G2NTB7HWx+EC47ZZS0PcSHNlKRYtaW8lxHLU6sIyWw64E9cNZLnAogE/6gP2urnYDgg1fdyOQJMsjXRBKtM72guNVYLNa+kFXZ3DLp47KriTtVoF5zmTUutvywubztBidqsCXc/Vao+FPXHtCrNOdtfTavGzh8oQOApkkE8hYgTXrhC036FW9l3WbOb5xibzjSbsBtgNZFcTLdM4sApTNwvqWUePNnz4dmHgXWD2rD4sCJ28/akDJuFqs8OS2tK/Zr5Fmry/7lx2e1KUAJTcbA0+4g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ceRd9YGA; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=DgSlDE+WU1LA34zQeZ93CqHm1nhU5vDNs5Qpx6riKY6Kf28Oxp5Py1TbMoTDgcvs5yQD9LGRhZr4a7tcApf5P36gnCjUPBdvDpqhZzMPNw1eYskiuPmU2cSBVt0a4aEgZhkua1WHTLBB4Pk8idOcZQBbPVgkq1QI7XjjO3UWeC4RD5A+iU9MA8l+hOBa7DPnYNEZItEAiDCcxc77254grFPpRQOHJAvV0ynheQH5sXcjv5KBVL36g20N/tkA2gS705cpyoZVU49jYNHWoDmDgILpmqQKe+H4l0m9ZHZK0900QbBieQDX4CfkataZXe8VgKQSn7G6b6DkAM/zW5OXDw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CVeUMnFB; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ceRd9YGA;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CVeUMnFB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsQsH5xbGz2yRl
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 15:51:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fsQsM4Km6z2yRl
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2026 15:51:19 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id F022060141;
+	by tor.source.kernel.org (Postfix) with ESMTP id 825D76014C;
+	Fri, 10 Apr 2026 05:51:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0B6F9C2BCAF;
 	Fri, 10 Apr 2026 05:51:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 756A3C2BC9E;
-	Fri, 10 Apr 2026 05:51:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775800273;
-	bh=XOJ3T7pI3/OxG4g9Rl+t5NTqEP9psqg4UFOrTulCQA0=;
+	s=k20201202; t=1775800277;
+	bh=3hptuhV9yvRK5QFViJmdIejaERCBcfDgF46k3rwUdzg=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=ceRd9YGA1ojtv46l8hviu49R6hBCpnUEnKBzDUtnRa7P7I1Y053W75UsNmHrAPW0L
-	 UPPmGvsC/U8noYEuOTFsUCSVpu9bl0tdtNTJte+1ulfgFFYwt4B14wLiBAOjczRoRB
-	 eUQqsgF6iyN8Q9WcLVKUrDkY8hPH4z/h9HeUezY0yLbT+F0KBvTdsh4j8VVeEk5Rey
-	 ns9h9D1kwckKneSc8RcAQ5V8XR7uvHvEjvBEX8h4++wmme5RTkJuxuKraKYZIE+Fr+
-	 iP+6j0BWUqg2hDF5P/c1YdVfTvT8EVmNsy6mQjWUWs36XHPDIcuqkeFvMDSBwJ4nSe
-	 t6Tvpd/s9TG0A==
+	b=CVeUMnFB92kckEyX6w4AOLTj43SKV6JPyWI+WtBUYmkpZDDOQKifdnGtDYcPQlEPl
+	 afN0P4N57mX3XV53stpV1j8HBs+zNnRRsrSDWkSZW2FeRnTy0lYBaKE78W/7GD6iXz
+	 to+Zhxoks60apXrm5tH+1kUihP78QNon1tQB4gDPxTrIUjv9To/eMvOTNpYH1sBOaN
+	 pzJm/EIB9e7iJ63Tjxx2RJtHBPsEChZ3vdZssI0RN4+ZdYCHcrh3rHGg2cXIUr5LMG
+	 gg/NUq3Cu6u2LyDUIPOP81q2j00XYpnfbEUrXfYgt54IOy+Znj7kTfry/QjxyPHBdO
+	 7iMU488IS78SQ==
 From: =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kwilczynski@kernel.org>
 To: Bjorn Helgaas <bhelgaas@google.com>
 Cc: Bjorn Helgaas <helgaas@kernel.org>,
@@ -67,9 +67,9 @@ Cc: Bjorn Helgaas <helgaas@kernel.org>,
 	linux-pci@vger.kernel.org,
 	linux-alpha@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 08/20] PCI/sysfs: Add stubs for pci_{create,remove}_sysfs_dev_files()
-Date: Fri, 10 Apr 2026 05:50:28 +0000
-Message-ID: <20260410055040.39233-9-kwilczynski@kernel.org>
+Subject: [PATCH 09/20] PCI/sysfs: Limit pci_sysfs_init() late_initcall compile scope
+Date: Fri, 10 Apr 2026 05:50:29 +0000
+Message-ID: <20260410055040.39233-10-kwilczynski@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260410055040.39233-1-kwilczynski@kernel.org>
 References: <20260410055040.39233-1-kwilczynski@kernel.org>
@@ -89,108 +89,64 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-On platforms with HAVE_PCI_MMAP or ARCH_GENERIC_PCI_MMAP_RESOURCE,
-resource files are now handled by static attribute groups registered
-via pci_dev_groups[].
+Currently, pci_sysfs_init() and sysfs_initialized compile
+unconditionally, even on platforms where static attribute
+groups handle all resource file creation.
 
-Thus, the pci_create_sysfs_dev_files() and pci_remove_sysfs_dev_files()
-can now be stubbed out, as the dynamic resource file creation is no
-longer needed.
+Thus, place them behind a new HAVE_PCI_SYSFS_INIT macro,
+especially as the late_initcall is only needed when:
 
-Also, simplify pci_sysfs_init() on these platforms to only iterate
-buses for legacy attributes creation, skipping the per-device loop.
+  - HAVE_PCI_LEGACY is set, to iterate buses and create legacy
+    I/O and memory files.
 
-Move the __weak stubs for pci_create_resource_files() and
-pci_remove_resource_files() into the #else branch since only platforms
-without HAVE_PCI_MMAP (such as Alpha architecture) still need them.
-Guard the res_attr[] and res_attr_wc[] fields in struct pci_dev the
-same way.
+  - Neither HAVE_PCI_MMAP nor ARCH_GENERIC_PCI_MMAP_RESOURCE is
+    set, to iterate devices and create resource files via the
+    __weak pci_create_resource_files() stub override (this is
+    how the Alpha architecture handles this currently).
+
+On most systems both conditions are false and the entire
+late_initcall compiles away.
 
 Signed-off-by: Krzysztof Wilczyński <kwilczynski@kernel.org>
 ---
- drivers/pci/pci-sysfs.c | 16 +++++++++++++---
- include/linux/pci.h     |  4 ++++
- 2 files changed, 17 insertions(+), 3 deletions(-)
+ drivers/pci/pci-sysfs.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
 diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
-index 1fabd0baeb56..e200514bbaed 100644
+index e200514bbaed..062921d5df9b 100644
 --- a/drivers/pci/pci-sysfs.c
 +++ b/drivers/pci/pci-sysfs.c
-@@ -1392,10 +1392,10 @@ static const struct attribute_group *pci_dev_resource_attr_groups[] = {
- 	&pci_dev_resource_wc_attr_group,
- 	NULL,
- };
--#endif
--
-+#else
- int __weak pci_create_resource_files(struct pci_dev *dev) { return 0; }
- void __weak pci_remove_resource_files(struct pci_dev *dev) { }
-+#endif
- 
- /**
-  * pci_write_rom - used to enable access to the PCI ROM display
-@@ -1764,6 +1764,10 @@ static const struct attribute_group pci_dev_resource_resize_attr_group = {
- };
+@@ -37,7 +37,14 @@
+ #define ARCH_PCI_DEV_GROUPS
  #endif
  
-+#if defined(HAVE_PCI_MMAP) || defined(ARCH_GENERIC_PCI_MMAP_RESOURCE)
-+int pci_create_sysfs_dev_files(struct pci_dev *pdev) { return 0; }
-+void pci_remove_sysfs_dev_files(struct pci_dev *pdev) { }
-+#else
- int __must_check pci_create_sysfs_dev_files(struct pci_dev *pdev)
- {
- 	if (!sysfs_initialized)
-@@ -1785,9 +1789,15 @@ void pci_remove_sysfs_dev_files(struct pci_dev *pdev)
- 
- 	pci_remove_resource_files(pdev);
- }
++#if defined(HAVE_PCI_LEGACY) || \
++	!defined(HAVE_PCI_MMAP) && !defined(ARCH_GENERIC_PCI_MMAP_RESOURCE)
++#define HAVE_PCI_SYSFS_INIT
++#endif
++
++#ifdef HAVE_PCI_SYSFS_INIT
+ static int sysfs_initialized;	/* = 0 */
 +#endif
  
+ /* show configuration fields */
+ #define pci_config_attr(field, format_string)				\
+@@ -1791,6 +1798,7 @@ void pci_remove_sysfs_dev_files(struct pci_dev *pdev)
+ }
+ #endif
+ 
++#ifdef HAVE_PCI_SYSFS_INIT
  static int __init pci_sysfs_init(void)
  {
-+#if defined(HAVE_PCI_MMAP) || defined(ARCH_GENERIC_PCI_MMAP_RESOURCE)
-+	struct pci_bus *pbus = NULL;
-+
-+	sysfs_initialized = 1;
-+#else
- 	struct pci_dev *pdev = NULL;
- 	struct pci_bus *pbus = NULL;
- 	int retval;
-@@ -1800,7 +1810,7 @@ static int __init pci_sysfs_init(void)
- 			return retval;
- 		}
- 	}
--
-+#endif
- 	while ((pbus = pci_find_next_bus(pbus)))
- 		pci_create_legacy_files(pbus);
- 
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index a7a104427b07..2940c80fd7c5 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -507,8 +507,10 @@ struct pci_dev {
- 	spinlock_t	pcie_cap_lock;		/* Protects RMW ops in capability accessors */
- 	u32		saved_config_space[16]; /* Config space saved at suspend time */
- 	struct hlist_head saved_cap_space;
-+#if !defined(HAVE_PCI_MMAP) && !defined(ARCH_GENERIC_PCI_MMAP_RESOURCE)
- 	struct bin_attribute *res_attr[DEVICE_COUNT_RESOURCE]; /* sysfs file for resources */
- 	struct bin_attribute *res_attr_wc[DEVICE_COUNT_RESOURCE]; /* sysfs file for WC mapping of resources */
+ #if defined(HAVE_PCI_MMAP) || defined(ARCH_GENERIC_PCI_MMAP_RESOURCE)
+@@ -1817,6 +1825,7 @@ static int __init pci_sysfs_init(void)
+ 	return 0;
+ }
+ late_initcall(pci_sysfs_init);
 +#endif
  
- #ifdef CONFIG_HOTPLUG_PCI_PCIE
- 	unsigned int	broken_cmd_compl:1;	/* No compl for some cmds */
-@@ -2501,8 +2503,10 @@ int pcibios_alloc_irq(struct pci_dev *dev);
- void pcibios_free_irq(struct pci_dev *dev);
- resource_size_t pcibios_default_alignment(void);
- 
-+#if !defined(HAVE_PCI_MMAP) && !defined(ARCH_GENERIC_PCI_MMAP_RESOURCE)
- extern int pci_create_resource_files(struct pci_dev *dev);
- extern void pci_remove_resource_files(struct pci_dev *dev);
-+#endif
- 
- #if defined(CONFIG_PCI_MMCONFIG) || defined(CONFIG_ACPI_MCFG)
- void __init pci_mmcfg_early_init(void);
+ static struct attribute *pci_dev_dev_attrs[] = {
+ 	&dev_attr_boot_vga.attr,
 -- 
 2.53.0
 
