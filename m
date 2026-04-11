@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-19635-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19636-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7BBE7F36BA7
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Apr 2026 08:03:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7EBA5F36BA5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Apr 2026 08:04:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ft5kc1hjtz2yqW;
-	Sat, 11 Apr 2026 18:02:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775894568;
-	cv=none; b=KSgUvZQ9hMOcoZ+gt/ca+AugZHVeBGA02ggAtGQZ1dmDE3FXrFfvU5ZYi5dqz7za4tCCjrFs1KF1dY6HXccJusKYrS0Cri9hFczwUS067oTmLsoJH3C3Wm9RJPvvjSKqr3+5K203nTBCGO7C/mNuonhRhDL6Q6pPDmafRKv+d0hss4oHTBPcSibpNB21FzxWlbuDGwAkBjN0gfisGNpnAY+llAbbTN/9GPEIusgtSfufr2/O0RLxxWLih86E+654vMYmg1G50L2rro2iwkXyd6l2FdxTWmzr30oBYMJlRq0U1j1JsoZ4CD7sNtXBq9dxREXUapXw7uR8HtYngaIV0w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ft5kg5HwYz2yqf;
+	Sat, 11 Apr 2026 18:02:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775894571;
+	cv=none; b=l+THTsjjYa5ktUx4VN50zxjDkfXjz46arVWmEFC0gO9pV+FJPXJHneaKQ+1cxk120NN5o3iixbb06W16S6qI4NQ20vj9FzaF2+rQZRxMevFlRjH5aoJEA11tjvUixDI0WprZONYZ5RtVSCa9Lv3g2hnk3nJ/PQBO8XIsfRIZsXMnvPDsZl0EfihYZAVC8GLBtocIGnr9gEM8gHgS2UTb3r1sx8EZY8DgpWXE+38isZuTSp8pi4kyiEQUVZdZ9Sck7q9TfW4z7cuwJbn6W6lnE/pEXGRUrPOrCwdKmL/Fus4nGZHc7DGA7r4BUq4cqZtoAF1fVYlzItUGRPGubYbVXQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775894568; c=relaxed/relaxed;
-	bh=8YtTg/qDgkJBRADbCkf7m+PYdeESpw1hTC/gkC4kPmo=;
+	t=1775894571; c=relaxed/relaxed;
+	bh=JX8NsnGAVfFGzoN+dGA8cN96oe7c7aHrIAXzH1z998Q=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=kzJQSrSaID9KP6ZtZ75+23hlJkPK/omiwIGcp64o/2FBPSo03WAL+zAWsTXTPc22mKuDqf61pR5Zg9VD0TIV/+Ebe1e1T03iV/IVskuEho2uu7g9hegqPXDjLUzQLofceXqo2J5g+cGZC/76rwxOyJBvUSEdqz2T85YzU1O6lCUuZy23RZ6XqhF0xRjEKh4QwYrLRBMVTfiT4g64kahVQLdZOw7Hdb7xKT1RcUUmnSE0UAWjxMn9e/c9UxIGRor7X82N96AHaYYTPr872k7Clc7BnMMJHl/Se4NqLbtM8ur/HaOokNYCbbN8c4PNbZQvJr9Ch0V+VXD8IyQCUnPUVw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=URmQWa3q; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=AHGG6Zt2Knzyxbr/2OOqrRG0VFd80bHtQO3BhEJfMO/U9/PARHrPuMxOeRzf9k+2IK+ZfeWuzAu7Hf1NJfC3MH7CleCzF3f2k9U23wlrRpnoG/P7zitxkmVlsAO//Hzt2J0XM4V/hEqLwgdzUc+qNIzlBRbbf3EqDUUqc7uLLHD6fRRIK2tr7VLQXHidrdmJQ/EOLICJTrvu0i8wVQhkAmP92GKRnzOrGMEzzJ9cPXUafJqMMSyiDnZ4/wqCkZNPSfVC1DmUPbvXFfYp9MFtasryj6jaE+4+4nmgnRfs19/m7Z5WKiFbepc0ULfVNpvk8g/MKW5K72NU/mIRLi6WTw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Kb0avEzV; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=URmQWa3q;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Kb0avEzV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ft5kb4rgLz2yk6
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Apr 2026 18:02:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ft5kg1LlKz2yk6
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Apr 2026 18:02:51 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 111464405F;
+	by sea.source.kernel.org (Postfix) with ESMTP id 96AD043AA6;
+	Sat, 11 Apr 2026 08:02:49 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 47332C4CEF7;
 	Sat, 11 Apr 2026 08:02:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B9153C2BC9E;
-	Sat, 11 Apr 2026 08:02:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775894565;
-	bh=DXESaPnzd7c3JQ2Cj6QdfGEnPi+ZFUUE0vNpiijc+CQ=;
+	s=k20201202; t=1775894569;
+	bh=Gr3+4m6Cj77hdjiMr0OAiQ4tavCjVjkmMUYZBycpZFE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=URmQWa3q2QkaBIhjekHwjkIQ6ygmAcCk5P7N+qFY0DtVxyE4GgfwvJ3JEPbkiTZo0
-	 OTIcElHxkmygEAmNHNZNqL58DBxmbgmSiRDcnnK9pATkqoFX11xo6/LTtY16Azxdck
-	 nPSw8oAsZf1/hN1NkW8rubQCLJH3CBftLKXXREIbbTKUVKN5BEOi94irqitjc/w6+d
-	 pRY5BdvzfBn/a8vSMcBxYI32ElWedqiNvwXzpJ8C7HHpOzIkl2ONIBwgq1Tzoex5y/
-	 3YyA+tPjvODPYccpayyfAriUwS/JE8X9pyCPNvMWzzI43+Mq4+tzaFzDNiUcCnyjw1
-	 xdZXqbiut/HmA==
+	b=Kb0avEzV9ox7btRhxNy1G7gzEzelfJWiEJ9F56x+rcuE1cqzexUGOjxzBJ4YOVg2c
+	 MpDB1ywE6aBdC0PvGpkhA6lNsLEfytObgJMyBVp/afL7mzo3c60vayh8ClyRk2s95U
+	 1uLu6aTssGggNBfzh/R5v6ljup5C+RagRnX7oYN+ImDGdO1n3qQKdzoB4TKzUfgDIc
+	 63u5K8Gy70/B8mdWiVdlwr9VUG3dcDm83owr0uX6Otkv403mb40rVZW2g88Dk78931
+	 9CKg9RTGXi9aLO22p1Ghzyooa6dXg6T1Dblff+34t7FWTOSLi3fUcPnolIL2DuNhbq
+	 +Vm5oTkT1rehQ==
 From: =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kwilczynski@kernel.org>
 To: Bjorn Helgaas <bhelgaas@google.com>
 Cc: Bjorn Helgaas <helgaas@kernel.org>,
@@ -67,9 +67,9 @@ Cc: Bjorn Helgaas <helgaas@kernel.org>,
 	linux-pci@vger.kernel.org,
 	linux-alpha@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 15/24] alpha/PCI: Fix __pci_mmap_fits() overflow for zero-length BARs
-Date: Sat, 11 Apr 2026 08:01:39 +0000
-Message-ID: <20260411080148.471335-16-kwilczynski@kernel.org>
+Subject: [PATCH v4 16/24] alpha/PCI: Remove WARN from __pci_mmap_fits()
+Date: Sat, 11 Apr 2026 08:01:40 +0000
+Message-ID: <20260411080148.471335-17-kwilczynski@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260411080148.471335-1-kwilczynski@kernel.org>
 References: <20260411080148.471335-1-kwilczynski@kernel.org>
@@ -89,41 +89,37 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Currently, __pci_mmap_fits() computes the BAR size using
-pci_resource_len() - 1, which wraps to a large value when the
-BAR length is zero, causing the bounds check to incorrectly
-succeed.
+Remove the WARN() that fires when userspace attempts to mmap beyond
+the BAR bounds.  The check still returns 0 to reject the mapping,
+but the warning is excessive for normal operation.
 
-Thus, add an early return for empty resources.
+A similar warning was removed from the PCI core in the commit
+3b519e4ea618 ("PCI: fix size checks for mmap() on /proc/bus/pci files").
 
-Fixes: 10a0ef39fbd1 ("PCI/alpha: pci sysfs resources")
 Signed-off-by: Krzysztof Wilczyński <kwilczynski@kernel.org>
 ---
- arch/alpha/kernel/pci-sysfs.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ arch/alpha/kernel/pci-sysfs.c | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
 
 diff --git a/arch/alpha/kernel/pci-sysfs.c b/arch/alpha/kernel/pci-sysfs.c
-index 6c011dab326d..2748000a7486 100644
+index 2748000a7486..c136603ddf2c 100644
 --- a/arch/alpha/kernel/pci-sysfs.c
 +++ b/arch/alpha/kernel/pci-sysfs.c
-@@ -37,12 +37,16 @@ static int hose_mmap_page_range(struct pci_controller *hose,
- static int __pci_mmap_fits(struct pci_dev *pdev, int num,
- 			   struct vm_area_struct *vma, int sparse)
- {
-+	resource_size_t len = pci_resource_len(pdev, num);
- 	unsigned long nr, start, size;
- 	int shift = sparse ? 5 : 0;
- 
-+	if (!len)
-+		return 0;
-+
- 	nr = vma_pages(vma);
+@@ -48,13 +48,7 @@ static int __pci_mmap_fits(struct pci_dev *pdev, int num,
  	start = vma->vm_pgoff;
--	size = ((pci_resource_len(pdev, num) - 1) >> (PAGE_SHIFT - shift)) + 1;
-+	size = ((len - 1) >> (PAGE_SHIFT - shift)) + 1;
+ 	size = ((len - 1) >> (PAGE_SHIFT - shift)) + 1;
  
- 	if (start < size && size - start >= nr)
- 		return 1;
+-	if (start < size && size - start >= nr)
+-		return 1;
+-	WARN(1, "process \"%s\" tried to map%s 0x%08lx-0x%08lx on %s BAR %d "
+-		"(size 0x%08lx)\n",
+-		current->comm, sparse ? " sparse" : "", start, start + nr,
+-		pci_name(pdev), num, size);
+-	return 0;
++	return start < size && size - start >= nr;
+ }
+ 
+ /**
 -- 
 2.53.0
 
