@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-19632-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19633-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23665F36BA7
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Apr 2026 08:03:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75E35F36BA7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Apr 2026 08:03:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ft5kQ3cSGz2yps;
-	Sat, 11 Apr 2026 18:02:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775894558;
-	cv=none; b=ktBeN8oKmVuZEph7Ccfm50e+q+P32aSIUfMnh7/stQ3hMxgMldLwWwTFYg6eaVTOEwUKzYjQfWFWsumF/QQ7ZKF3f1cQRwHCq88jUHmQkKkuWUA6O3kHcym85GnKs8ncAwCTxxKJVCFZ8s97N58m0GA0IycHOyuH03GcDpnU8pOJntPgX8le4IEIcpuO8/iRL53UGk59kjcwAdX7yV6WDf/i2d3MzLRY4jsunzsnXcUUaTsbuwNXGGvKd1D0FIxpJL/x9cdwZEKyjJVgh/vqi0+V9aOot+lWvRrli39fErOBu6RJIDcX2fHARUDk93Wzzsxw3Btu7k6LZuycEjKI/Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ft5kT0knCz2ypV;
+	Sat, 11 Apr 2026 18:02:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775894561;
+	cv=none; b=SRKCD6eF0wcktdSO1ZJRML1PK5Fgd8HfXHE1YEYF3AzHYN2YrgtDhngDW9Wj42xdx0Rc6VxFCaZIYPVZqFxn1mVNt4Wy36JOfE0GTAlk8VgKiSFv0k7BOcjQUEmq+yYDGzf/BdwNKRRgqrMy25PI0Pdzuw2kL7OWOoqVHzPwoAmzQFQ/sai7FsP/8ZM1n8v6wVrb6JnfwxuV6OsHryN8ljxKU02gyU83kj1hBzmrvyjgucyxqJXk8gnmuiUkAkBi/viDGjW/SKYopGeJmYlkBCL+6tGcekamVBk6Z63EV9Cekifv11V4XinHLaaTP8KHdjssnkx+ozznFhGUBKroUQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775894558; c=relaxed/relaxed;
-	bh=w6Pg1tzYCcjCxtB/I/WX6QybAmZXuv8mftDcIyAHmX0=;
+	t=1775894561; c=relaxed/relaxed;
+	bh=zpasHt6lAJJQkAX9J2ypwzN00VJUtTNKf/0eFKbr0DQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=LYZtaBP+5h0WKkYQ1UPyQUrncojypa2ETmC9J3Zs0GYMZayn7fnA7jTlvcpHe+MdCU8icvnjXBbD5sxp5EqVRf7usbIV7s58JWfL+ZgajxAM39otcjhLBL8Dupk8f2yhAxxNtnOdJykEl5oJBOkypjgwH3uf/1JhnIIoWXyFU/uTBAbtmgLGiIzcy4uyf/g9xYxb8XQj+FMTu10W/ZeyDkxbRX2vVpFBLd9xH4xTqQI9H1LRYdM0+m8XP7m+x41ZElBU68d7495LyUglItnK1LUvPVaewpGUobIVLD+BLgE4+tM3P12+STsxXFQ6uBstSL1w+qtvAc6ZPJaTun0PKA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=W6ti0xpR; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=KyVn9K8n5JEtXByFWCmfaeyLs2FzGHsFoc/27vVFhSBxQFTTeTV241vZsAWv5BVxPtnA21WE8QCWZRose4BlaX0iMuoZxtr+qm62FBpy9Q0aB1Kp2pNUjq6+oUcXR161HIP38aZaLuXE6XeH6jKKDnHfVzujooMCQhGpF5hEXYdVOHtOE3Y/Pw/9uCxMGbZulzaUb/bpAYM/ze0jsflBZaAAh9ZTJUTpe74eoch5AFE5pwkMLv1bYpZnj8JShNBjXn0WRbt77gvR5+Ztt3zUuq7JTV3YSeyBU2aDC6mjuhi3kAS98HDNt5HJNSYpZQP9iU+lTMSOThPXlNCYuUqxng==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=L6OIcRmo; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=W6ti0xpR;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=L6OIcRmo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ft5kP4MBpz2ypV
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Apr 2026 18:02:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ft5kS3qMyz2yk6
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Apr 2026 18:02:40 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 9053E600AE;
+	by sea.source.kernel.org (Postfix) with ESMTP id EAB64435D0;
+	Sat, 11 Apr 2026 08:02:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9E828C2BCB0;
 	Sat, 11 Apr 2026 08:02:35 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 38CA6C2BC9E;
-	Sat, 11 Apr 2026 08:02:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775894555;
-	bh=4+W1kd8ovvTGg2a+x1mXoEZZdmh6JcYJxVFeZ3Yu0xQ=;
+	s=k20201202; t=1775894558;
+	bh=Df1aBfnuunD1kkINpPJqSY9nS+M/yRuSpoem5jvpmGY=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=W6ti0xpRbuKzeGReO+1yu9MNEg0/ssxI8ndwhH89aUR2pZvrm+Hzf9jXo9RBl8m6+
-	 DVLnytiGA+zzwlFrJOOgpEJKodfue9xRonZTTv6wjBJrgNxuV5ssxeMgnhCqaN15W+
-	 JtXogcrOmdr1c5Wlg6WCl3C7rSwByygvuAtmxteZZXugIF6bK7rjCivXrrpF5siZ3k
-	 tXB0GagfGt/V6nfPBZI5LPVhaPycgvvii9kat0SZNLeUMDYb/u0d4OHlzOyuvVMwx3
-	 nXlVzMwqONChr8vyoMMmFwZnBP9NBaueMG197WrTyej0NOcxrRmKs0teomzvSlyTQ9
-	 l7gsh7dKK+qIg==
+	b=L6OIcRmokA9ihUuAHXOh6gSaDU7BSbARKEEI8Nj6N3HPK5UN3o4/RZoQbh6NiEzxR
+	 veDDOaUEW8sfmwuf9xuFlfKjMs/eInLOGBK+eadSEsh6IfZPCLhDq0PfypnTBlgDSi
+	 UqE/2qJDynL5FjpNwTrG1MeUHffg5tHZel3ThsX8axBJwpURwcNsgKgZSbjuD9rLJ1
+	 MjMMEXZduzVbvoM7sH3Th/zO/NAq6AA9dvsKeBb5q3CvdLakAi0Foozym6Glr5pDtN
+	 +UJAhy/sFruPglch/gIlRac9h8gb3h1tqGUWAGMmmLbBaKW1btnNyf5VMuwKVKFuEb
+	 LORCX/crRf4sA==
 From: =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kwilczynski@kernel.org>
 To: Bjorn Helgaas <bhelgaas@google.com>
 Cc: Bjorn Helgaas <helgaas@kernel.org>,
@@ -67,9 +67,9 @@ Cc: Bjorn Helgaas <helgaas@kernel.org>,
 	linux-pci@vger.kernel.org,
 	linux-alpha@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 12/24] alpha/PCI: Use BAR index in sysfs attr->private instead of resource pointer
-Date: Sat, 11 Apr 2026 08:01:36 +0000
-Message-ID: <20260411080148.471335-13-kwilczynski@kernel.org>
+Subject: [PATCH v4 13/24] alpha/PCI: Use PCI resource accessor macros
+Date: Sat, 11 Apr 2026 08:01:37 +0000
+Message-ID: <20260411080148.471335-14-kwilczynski@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260411080148.471335-1-kwilczynski@kernel.org>
 References: <20260411080148.471335-1-kwilczynski@kernel.org>
@@ -89,70 +89,39 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Currently, Alpha's pci_create_one_attr() stores a resource pointer in
-attr->private, and pci_mmap_resource() loops through all BARs to find
-the matching index.
+Replace direct pdev->resource[] accesses with pci_resource_n(),
+and pdev->resource[].flags accesses with pci_resource_flags().
 
-Thus, store the BAR index directly in attr->private and retrieve the
-resource via pci_resource_n().  This eliminates the loop and aligns
-with the convention used by the generic PCI sysfs code.
+No functional changes intended.
 
-While at it, add parentheses around the bitwise flag test in
-pci_mmap_resource() to make the precedence explicit, and to
-match the preferred style.
-
-The PCI core change was first added in the commit dca40b186b75 ("PCI:
-Use BAR index in sysfs attr->private instead of resource pointer").
-
+Reviewed-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
 Signed-off-by: Krzysztof Wilczyński <kwilczynski@kernel.org>
 ---
- arch/alpha/kernel/pci-sysfs.c | 17 ++++++-----------
- 1 file changed, 6 insertions(+), 11 deletions(-)
+ arch/alpha/kernel/pci-sysfs.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/arch/alpha/kernel/pci-sysfs.c b/arch/alpha/kernel/pci-sysfs.c
-index 2324720c3e83..c84867ce31f5 100644
+index c84867ce31f5..7aac5e76dcd6 100644
 --- a/arch/alpha/kernel/pci-sysfs.c
 +++ b/arch/alpha/kernel/pci-sysfs.c
-@@ -69,25 +69,20 @@ static int pci_mmap_resource(struct kobject *kobj,
- 			     struct vm_area_struct *vma, int sparse)
- {
- 	struct pci_dev *pdev = to_pci_dev(kobj_to_dev(kobj));
--	struct resource *res = attr->private;
-+	int barno = (unsigned long)attr->private;
-+	struct resource *res = pci_resource_n(pdev, barno);
- 	enum pci_mmap_state mmap_type;
- 	struct pci_bus_region bar;
--	int i, ret;
-+	int ret;
+@@ -141,7 +141,7 @@ static int sparse_mem_mmap_fits(struct pci_dev *pdev, int num)
+ 	long dense_offset;
+ 	unsigned long sparse_size;
  
- 	ret = security_locked_down(LOCKDOWN_PCI_ACCESS);
- 	if (ret)
- 		return ret;
+-	pcibios_resource_to_bus(pdev->bus, &bar, &pdev->resource[num]);
++	pcibios_resource_to_bus(pdev->bus, &bar, pci_resource_n(pdev, num));
  
--	for (i = 0; i < PCI_STD_NUM_BARS; i++)
--		if (res == &pdev->resource[i])
--			break;
--	if (i >= PCI_STD_NUM_BARS)
--		return -ENODEV;
--
--	if (res->flags & IORESOURCE_MEM && iomem_is_exclusive(res->start))
-+	if ((res->flags & IORESOURCE_MEM) && iomem_is_exclusive(res->start))
- 		return -EINVAL;
+ 	/* All core logic chips have 4G sparse address space, except
+ 	   CIA which has 16G (see xxx_SPARSE_MEM and xxx_DENSE_MEM
+@@ -181,7 +181,7 @@ static int pci_create_attr(struct pci_dev *pdev, int num)
+ 	suffix = "";	/* Assume bwx machine, normal resourceN files. */
+ 	nlen1 = 10;
  
--	if (!__pci_mmap_fits(pdev, i, vma, sparse))
-+	if (!__pci_mmap_fits(pdev, barno, vma, sparse))
- 		return -EINVAL;
- 
- 	pcibios_resource_to_bus(pdev->bus, &bar, res);
-@@ -170,7 +165,7 @@ static int pci_create_one_attr(struct pci_dev *pdev, int num, char *name,
- 	res_attr->attr.name = name;
- 	res_attr->attr.mode = S_IRUSR | S_IWUSR;
- 	res_attr->size = sparse ? size << 5 : size;
--	res_attr->private = &pdev->resource[num];
-+	res_attr->private = (void *)(unsigned long)num;
- 	return sysfs_create_bin_file(&pdev->dev.kobj, res_attr);
- }
- 
+-	if (pdev->resource[num].flags & IORESOURCE_MEM) {
++	if (pci_resource_flags(pdev, num) & IORESOURCE_MEM) {
+ 		sparse_base = hose->sparse_mem_base;
+ 		dense_base = hose->dense_mem_base;
+ 		if (sparse_base && !sparse_mem_mmap_fits(pdev, num)) {
 -- 
 2.53.0
 
