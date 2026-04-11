@@ -1,93 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-19646-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19647-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7C9BF3ED46
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Apr 2026 10:40:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 500E9F3ED4B
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Apr 2026 12:28:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ft9F005Knz2ypY;
-	Sat, 11 Apr 2026 20:40:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::632" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775904051;
-	cv=pass; b=aaPOJ9s2FurjbKe2Z4hKWVJyALyyDLpECD78QcgMHV6x6HHg5/VL3y7UUKnMA/run0lIpgWENQ8Z0T+SpJsa2ozLlLcNvHvLMjxQYTXpbm4djWOa2i4cHA1+cZ4C4/lgY1vfSy7W9yjStZNcR7Q5L0LuO78xPhZSztpcmEjaTAZqF6P9bamorOtq/4uM/aM15qbiZcJptr4DA08UHSGs7lDimOTPVuA3u+taMK5iUAdqhE74BQackqSgnq8iWKDHFFqVF2xtl+9en13AFgsZb/JYUVHdqeml+FQWZzsfR5BHkd+U48zopRQ+ZC3UlwAPe46Becl3kokYc7cgZCQYcQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775904051; c=relaxed/relaxed;
-	bh=CsqzNkDnXitYu6WtxNz/ljnO1ZLIoc3+9EuFkHTOA9o=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=D3rhRR1nV4YkZpZRajH4Navmkv3bv3tJ5X1SbMfXG3WXuDtL2RKKZBkGySBpouCCQjR0mXYhB2jy3MQrJhWEYfYjXeGXa/JEAqXBocpCLr8MUl3uFp2z0b8isXRAT0P0TLrI2MfaDNO5XNi4LnPyIVuTCRbANvq7t4B/I/R20/Q3/by6Gg9tIDExAutKnf8s3UsR9x78Qet8ztlljUC0IATvb4hHaZ7VPdceNMUXdt+ss9BPJK9S2l9m7S2ahidyaEtc1GTirEqASXh7oPdXkZbEuonRIrrAZ/kJGDanFiOJj4UVOzYKS/QAbs8qXFcq/saH+wO/vxfJbnIX1xo+tg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=j6I3QOdS; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::632; helo=mail-ej1-x632.google.com; envelope-from=linmag7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ftCcc1fnNz2ymg;
+	Sat, 11 Apr 2026 22:28:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775910105;
+	cv=none; b=SSJ08ccFP/1i8TAtnEXz6jzK3zD2XdDa9aA4GKnmmIDYO7ygSxUDElim4kNZ8xhOuV1z4L44Tg0um+VtYjs//s9uQDJOe6Lw1GIKC8z0PT3zhI8ehdGeYpSp8zzED0/fBVCiq4I3TP66ku/ivHbwpvKg+3loDnrkjdi2dHCyK+XZk1Hjlz6z96VBtNtrKM5RTYhuyUND09ku+jNgrk8nNxDcNVF12yAXThfsy9f9cDOVB8uIWG2saoCVZTkpC5TaC8uZCeZRODmZJubTGQpuGVliXqYI8EnhC6bZTikgwI9vMoNF1SepN00qVLl7+1WnFd+pv51VoWIop7FD1Jbv5A==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1775910105; c=relaxed/relaxed;
+	bh=iDhxS46WB9cNJon+ZSJd5o32lpx1Hn2DEDhx5qw0Ti8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=lB3FFTlAsE06CHh8tARvfn3qQkGtVMrsWAXi3yaY25TJ6XR5sRGQMbDVLWvdOujPrJP2CsahQUm75kgHmphmENwRwCcY6w2Q2dLdrog0mj3tB6RBC5Ju+Tv4SvwiLJ4WRURLs/lAshc3eBmVyInEiwLhoFQMexXdUgteJj/M5mhvqlxwyBd/dEnB8yfSj6aDFHMHIkJtvMrJnkGvv6gB8g28o07fOpHVL8aNjELKLr7ySn39TLUNHgXdy/8ScF16pXMKS8qkXMvI40Lg8Ku3WD+6uXS/jBVeoQDBdUN7K4Zxl4lXaxBEpRVQkUMHoDuwLoRG2AFySl9g8/8MIJWy1Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=imIozAd2; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=lgs201920130244@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=j6I3QOdS;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=imIozAd2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::632; helo=mail-ej1-x632.google.com; envelope-from=linmag7@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x632.google.com (mail-ej1-x632.google.com [IPv6:2a00:1450:4864:20::632])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=lgs201920130244@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com [IPv6:2607:f8b0:4864:20::62d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ft9Dy0Gz7z2ymg
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Apr 2026 20:40:49 +1000 (AEST)
-Received: by mail-ej1-x632.google.com with SMTP id a640c23a62f3a-b9c3e2cf3c0so446675266b.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Apr 2026 03:40:49 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1775904042; cv=none;
-        d=google.com; s=arc-20240605;
-        b=Hh7j/x7+CPZM7buqZt7JRlwdCkpC1ny80bGcohWR/BFc8N78SpZlPvOw8aGCXlgTN+
-         +iRzAhQ2HBkdPJ3BPFpggoRsuAafESLwHKgEY384RYiH407rz6pnxCYRGB6hBs33IdLh
-         Bjp7mfyAAWYFe1+AFRy6ZXDROvOzsxUVrgySFvmuJhcvyY3fnemAncOiGA9Wvkcx7/lZ
-         iIaHJtmP4tdQAJX3gw77ZZwJLIRNzxaLY8fl0jO2vqd+xWYNTglE1lMV9bxlQPOJpl//
-         GBw+9iirPtOUqgJivCQRYF1rFCQkbvg4cIIi5TOsfWCDtnyaYeV84CWnOTQnhfh/r/tI
-         kMEw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=CsqzNkDnXitYu6WtxNz/ljnO1ZLIoc3+9EuFkHTOA9o=;
-        fh=Cuo20izZM3siqo9YR7dYzPBLD9kH0iYKjzMsfo/5Iac=;
-        b=jW+5AoRGi3qC7hautC0bQ1Uz82+p8XKzz4rEZ5oTjUand/KwEv6WbRtii8g3R5Kj3C
-         WpCroc+0HGn4NQZQ/bVCTEMf5E5CMrbmp6W87HWlixwFray4v3XMe5R6zhQzuz0zxckn
-         fBxCiDie/+OyIJp34W2kCTMrRziiWwYVqCeE5U3cJvpEk6J3Z9yPQ2YDLSMOHy489U61
-         htzmFKW5ivBBE03/99YLu8GS/njGCTV1/7v3eGUVMAXUmtgSJ1qQo/JWTxQ2pU2xUou8
-         96qumKu18STSInwdz3j3qTG0b9uVSrJ+HCiDr+NaaWst2HIEIBHhI7bm6J++I3YhVWx4
-         XQ3A==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ftCTM3SZvz2yl2
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Apr 2026 22:21:42 +1000 (AEST)
+Received: by mail-pl1-x62d.google.com with SMTP id d9443c01a7336-2aae146b604so21046435ad.3
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Apr 2026 05:21:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1775904042; x=1776508842; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=CsqzNkDnXitYu6WtxNz/ljnO1ZLIoc3+9EuFkHTOA9o=;
-        b=j6I3QOdSLp6GhvV3B2bWyeCRvxH2+hhyVQYyzRgzrmJxt7OULtDDMil0izYiKTPNa0
-         tPCGJQDa8HqkeULySvB26XJa9475pRlS83Bmd/ov+fVfCAI0vpMfnzqMVWJbUWRoYySw
-         IWhwJpwZqdSDAuXqsyZYIxnkcYXYx0Sp8WytHx/A4sssXfgZLJr9D3bwSn12OFqNHtS2
-         7OLkJsgQ1h4hkEXI8io3GxWTFguYy58QtJeR5W3NYh4M8vIoutsf191tSJkh5ofq2OpM
-         OGcvuIAM+Hx1UTe3mvKiqYC97I+eDPwNm80hOASVV7I/1fCMyVShZLxv/0T2ckwa+JjJ
-         jsVg==
+        d=gmail.com; s=20251104; t=1775910095; x=1776514895; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=iDhxS46WB9cNJon+ZSJd5o32lpx1Hn2DEDhx5qw0Ti8=;
+        b=imIozAd2/djxSh4LCaNp3pmwcjWdoJSwJugtWxEXxOgbjcikHZnTFC0ZKQXiDtR2wV
+         wZohmSpxr6G8FLSDdwRyCrvPhkhZ+SBbFGMX0xQpc2fBgu3JxXFJJvpdNKKyrnD4VxAx
+         US5PD6PVoy0pZNLLpTkrlabks5E0XEbs1dV6Au7khM5mxZ8qpOC0MxzYeTcsA4qqZj67
+         H5UTxjLxNeayBXe7ztIljTa7bvhhGJoeZXbTYunP0n3oKgYrYAqRTYwLeWEuQPRCyy1p
+         LGsWJVSfWKcbfiC8/bjmzNEZU9OfwPlI/cuDuyXqBQuQdaCoLx0DUHzNjhKSnbgIcPLW
+         HQwQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775904042; x=1776508842;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=CsqzNkDnXitYu6WtxNz/ljnO1ZLIoc3+9EuFkHTOA9o=;
-        b=WONfAGeElWSgtE55qoD/I/XSbA40edqCeHawA/NJmOaghYDS0y2EDnS/GY6cwguMk9
-         V3G5yv5EwaCTDXnwYuuKuUr0bWRMpH1mlkRV4DFllgfCQmqF2e+JH6l1vRtAOb5thYOS
-         yDc8i+ZTPurEqqOW3xAEeCmhdiIuWSfOXYbFI/3+6CrY/xy1zgNUSgsBMsnH8Y/iNEFl
-         7ejVP77kHtqt3f3zH63xuwGdYUWrTIj0rNTaApmlDAezBorzHBDUh5xonRv8hCdu5zX5
-         NUnpx1VmGtWSNm2NUbG+QaW7VnWeh2E3yMvYVmai7BA4Jl/FRV4ZIbefApGHhiyvudUV
-         gdZw==
-X-Forwarded-Encrypted: i=1; AJvYcCU6tlGhfoGzZv0BuiUVia6/uH2C92MFTj8SSEDibAiBFfBdvv1KIZrfb5hX7W1IqRS+jBO66yAdO1ZHsmY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yy1wuvIaeCeHhWUmR69iXbxG31OpKmoS0eOcUOSUICBMuyRjPxi
-	PTrckrYgPqFzawI1bFj0OriV3rTAnwus7oUrfdgklNhN0d3kUcwXNskbAK7A/oMCeXG0r3lM6wq
-	1c+/+APR/poeQ6oxR7bwvN/Hp+SUrCdc=
-X-Gm-Gg: AeBDietmJzni37UPYHfPcsR8Z1JVWPHCheQurS9FowikO+ejWxWwaE2o+8+VN3d82qN
-	yiYMIU8Vi8SRPNXtgHzjLrTCqXV2hYN2IBoF9UAwCEMcq4kZ5RBUAcyDVUuhhF6C8uyAd2m9lXx
-	O4p4ZyWYhytXxeBA76LaNIPbob0imq/lBpajEnNpa/e5Xv6tWONIVWMLo29kHWjmbObUH2rjbEu
-	0BdJKL5pV6CRQauoahJXFmr7ADjkSiiw2nYrbHwWbT0fNTLbGbH3hocj5WZt1zxbWRc0MSajPhm
-	06EwcItdvxiuwwKdnxQzVX37vfUfJEfUvQHQVyMS8YuHULVAkw==
-X-Received: by 2002:a17:907:1b1b:b0:b9d:3c22:b2c8 with SMTP id
- a640c23a62f3a-b9d724f0c56mr414074566b.1.1775904041152; Sat, 11 Apr 2026
- 03:40:41 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1775910095; x=1776514895;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=iDhxS46WB9cNJon+ZSJd5o32lpx1Hn2DEDhx5qw0Ti8=;
+        b=B/N+xebtIkjDYVMc44JudgD0MkM4xniOc14zDHH2Egg3oS0vXKOgmfPj57E7ZDbk8q
+         BctIG2d5D8zV2rAMQ9mfKEd8GGtFqKqAcBTOSBo5Lx7TK+CWvKdVxfA72cB07D1XzsEM
+         iupxX9Lxb3z2Ll6mQ6C2+OPTs54h5PqrP9/Jm3uKcvHCae7iTtONQT0Nzu3sm2RUPk4P
+         DJ8KYsNmHevi1cgK7DRlXY0XNUE64x4I2Xs5ey8F2AzC7fTg7BCf0BppuAkv01T4nHKz
+         BcZCA5xGqwdi8ObW5TwmfvBxshSQsyLwQ90h8+MPTc+auOmQ4jV18wv3lQ5Q5O7kFcNo
+         i4NA==
+X-Forwarded-Encrypted: i=1; AJvYcCVwEtN/2MRs9qb+NV3pcU2VY13r7zwBCg9JakQBy4V6uivS9aa6gURp71oVf9oe9MU2gW0BFrLlRY8r9XY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzNxjXUhzRV9lrNg/FsIaKdz84pEr5n72ypTkZaCqfVB7THrB7e
+	8WxKEqzAPoOgfDfKduLdGZ4oRqkdnm9VYOO9DNUytnFnuHAJeHYKV7eQ
+X-Gm-Gg: AeBDiet673zZZ/2USi5yzLvpV7+xVUxaBOZWDyluoQtRhOHZtwTVMZY6t7S6bnC5X1j
+	bVbs3HqVbnvuSQxqyZJ6IDyEzY4aQ1qAxHDlYuvaCAm4johKliEuaZUgw5oLPy+n8Zvn4ARkUg2
+	p786GOKgcF28sa7qCUI0tIaRONNfFby2bP7Y7f/JpMbus/LuSEm/0jUKaOZeOtPtIOmSqtxhCTJ
+	1OJ1sdUXQaxSoDZXKOzl3X4yK5utm+us24D8OInc4DxCXMm4w4GVji4444vog+Ii4uy6oW/G0lL
+	Sm0TlQTweilPOYc4U0M+9xx4u7olw1UBjYHCHxmwaxglhQOd6hJ49ceLLvygvbpalTwEUJStRFI
+	v6phaNhSWlrbLvSuLHX616f9vo57SUMTJVgyBuoPgwqn/OCurRfUy5yon/Aog8CSE7xSe+x7dRw
+	e2nf6jFPd95E3sFZo=
+X-Received: by 2002:a17:903:3b51:b0:2b2:42da:25cb with SMTP id d9443c01a7336-2b2d59aaa97mr50470925ad.19.1775910095243;
+        Sat, 11 Apr 2026 05:21:35 -0700 (PDT)
+Received: from lgs.. ([199.182.234.55])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b2d4f0a393sm60736815ad.40.2026.04.11.05.21.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 11 Apr 2026 05:21:34 -0700 (PDT)
+From: Guangshuo Li <lgs201920130244@gmail.com>
+To: Ioana Ciornei <ioana.ciornei@nxp.com>,
+	"J. German Rivera" <German.Rivera@freescale.com>,
+	Stuart Yoder <stuart.yoder@freescale.com>,
+	Alexander Graf <agraf@suse.de>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Cc: Guangshuo Li <lgs201920130244@gmail.com>,
+	stable@vger.kernel.org
+Subject: [PATCH] bus: fsl-mc: Fix refcount leak in fsl_mc_device_add() error path
+Date: Sat, 11 Apr 2026 20:21:18 +0800
+Message-ID: <20260411122118.2196540-1-lgs201920130244@gmail.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,270 +96,47 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260411080148.471335-1-kwilczynski@kernel.org>
-In-Reply-To: <20260411080148.471335-1-kwilczynski@kernel.org>
-From: Magnus Lindholm <linmag7@gmail.com>
-Date: Sat, 11 Apr 2026 12:40:29 +0200
-X-Gm-Features: AQROBzBL0ISJ1oDzmS1WdKnfmR7mJ-8b5qly2wKGmSLW0OsznpAbrTTOYjF1FCI
-Message-ID: <CA+=Fv5Q1tZQwnanw99NbvzT-QenfYz7vUdY02_TuPqHX32ZAiA@mail.gmail.com>
-Subject: Re: [PATCH v4 00/24] PCI: Convert all dynamic sysfs attributes to static
-To: =?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kwilczynski@kernel.org>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <helgaas@kernel.org>, 
-	Manivannan Sadhasivam <mani@kernel.org>, Lorenzo Pieralisi <lpieralisi@kernel.org>, 
-	Matt Turner <mattst88@gmail.com>, Richard Henderson <richard.henderson@linaro.org>, 
-	Christophe Leroy <chleroy@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Dexuan Cui <decui@microsoft.com>, 
-	=?UTF-8?Q?Krzysztof_Ha=C5=82asa?= <khalasa@piap.pl>, 
-	Lukas Wunner <lukas@wunner.de>, "Oliver O'Halloran" <oohall@gmail.com>, 
-	Saurabh Singh Sengar <ssengar@microsoft.com>, Shuan He <heshuan@bytedance.com>, 
-	Srivatsa Bhat <srivatsabhat@microsoft.com>, 
-	=?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
-	linux-pci@vger.kernel.org, linux-alpha@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-On Sat, Apr 11, 2026 at 10:01=E2=80=AFAM Krzysztof Wilczy=C5=84ski
-<kwilczynski@kernel.org> wrote:
->
-> Hello,
->
-> This series converts every dynamically allocated PCI sysfs attribute to
-> a static const definition.  After the full series, pci_sysfs_init() and
-> sysfs_initialized are gone, and every sysfs file is created by the
-> driver model at device_add() time.
->
-> Currently, the PCI resource files (resourceN, resourceN_wc) and the
-> legacy bus files (legacy_io, legacy_mem) are created dynamically
-> from two unsynchronised paths:
->
-> Path A: late_initcall
->
->   pci_sysfs_init                        (late_initcall)
->     sysfs_initialized =3D 1
->     for_each_pci_dev
->       pci_create_sysfs_dev_files
->         sysfs_create_bin_file           (resourceN, resourceN_wc)
->     pci_find_next_bus
->       pci_create_legacy_files
->         sysfs_create_bin_file           (legacy_io, legacy_mem)
->
-> Path B: device registration / hotplug
->
->   pci_bus_add_devices
->     pci_bus_add_device
->       pci_create_sysfs_dev_files
->         if (!sysfs_initialized) return  <- only guard
->         sysfs_create_bin_file           (resourceN, resourceN_wc)
->
-> On most ACPI systems this does not race because PCI enumeration
-> completes at subsys_initcall time, before pci_sysfs_init() runs:
->
->   subsys_initcall (level 4):
->     acpi_pci_root_add
->       pci_bus_add_device
->         pci_create_sysfs_dev_files
->           if (!sysfs_initialized)          <- not yet set
->             return -EACCES
->
->   late_initcall (level 7):
->     pci_sysfs_init
->       sysfs_initialized =3D 1
->       for_each_pci_dev
->         pci_create_sysfs_dev_files         <- creates the files, no race
->
-> On Devicetree platforms the host controller is a platform driver that
-> probes via the driver model, often on a workqueue, and overlaps with the
-> late_initcall:
->
->   CPU 0 (late_initcall)                CPU 1 (driver probe)
->   ---------------------------          ----------------------------
->   pci_sysfs_init()
->     sysfs_initialized =3D 1
->     for_each_pci_dev(pdev)             pci_bus_add_device(pdev)
->       pci_create_sysfs_dev_files()       pci_create_sysfs_dev_files()
->         sysfs_create_bin_file()            sysfs_create_bin_file()
->                                              -> "duplicate filename"
->
-> The same happens on ACPI when probing is asynchronous (hv_pci on
-> Azure, RISC-V with ACPI).
->
-> The duplicate causes sysfs_create_bin_file() to fail with -EEXIST.
-> pci_create_resource_files() then calls pci_remove_resource_files() in
-> its error unwind, tearing down files the other thread created and
-> still references through pdev->res_attr[].  This has caused kernel
-> panics on i.MX6 and boot failures on other platforms.
->
-> Several different fixes have been proposed over the years: reordering
-> the sysfs_initialized assignment, adding locks, checking
-> pci_dev_is_added(), setting pdev->res_attr[] to NULL after kfree
-> (which only prevents a double-free on the teardown path, not the
-> error unwind removing the other thread's files).  None would address the
-> root cause.
->
-> This has been reported a few times:
->
->   - https://lore.kernel.org/linux-pci/20250702155112.40124-1-heshuan@byte=
-dance.com/
->   - https://lore.kernel.org/linux-pci/b51519d6-ce45-4b6d-8135-c70169bd110=
-e@h-partners.com/
->   - https://lore.kernel.org/linux-pci/1702093576-30405-1-git-send-email-s=
-sengar@linux.microsoft.com/
->   - https://lore.kernel.org/linux-pci/SY0P300MB04687548090B73E40AF97D8897=
-B82@SY0P300MB0468.AUSP300.PROD.OUTLOOK.COM/
->   - https://lore.kernel.org/linux-pci/20230105174736.GA1154719@bhelgaas/
->   - https://lore.kernel.org/linux-pci/m3eebg9puj.fsf@t19.piap.pl/
->   - https://lore.kernel.org/linux-pci/20200716110423.xtfyb3n6tn5ixedh@pal=
-i/
->   - https://lore.kernel.org/linux-pci/1366196798-15929-1-git-send-email-a=
-rtem.savkov@gmail.com/
->   - https://bugzilla.kernel.org/show_bug.cgi?id=3D215515
->   - https://bugzilla.kernel.org/show_bug.cgi?id=3D216888
->
-> With static attributes the driver model creates sysfs entries once per
-> device at device_add() time, under the device lock, eliminating the
-> late_initcall iteration and the race along with it.
->
->         Krzysztof
->
-> ---
-> Changes in v4:
->   https://lore.kernel.org/linux-pci/20260410055040.39233-1-kwilczynski@ke=
-rnel.org/
->
->    - Added new Reviewed-by tags.
->    - Added pci_resource_is_io() and pci_resource_is_mem() helpers
->      for resource type checks, replacing the open-coded bitwise
->      flag tests in pci_mmap_resource(), pci_resource_io(), and
->      Alpha's pci_mmap_resource(), as per Ilpo J=C3=A4rvinen's
->      suggestion.
->    - Split the __pci_mmap_fits() cleanup into two patches.  An
->      overflow fix for zero-length BARs, which now includes a
->      Fixes: tag referencing the original Alpha PCI sysfs commit,
->      and the WARN macro removal is a separate cleanup as per Ilpo
->      J=C3=A4rvinen's suggestion.
->    - Added a missing Fixes: tag to the Alpha lockdown check,
->      referencing the commit that added the check to the generic
->      path but missed Alpha's implementation.
->    - Added PCI_LEGACY_IO_SIZE and PCI_LEGACY_MEM_SIZE macros to
->      replace the raw literals used for legacy address space sizes.
->      These are used in both Alpha's pci_mmap_legacy_page_range()
->      and the static legacy attribute definitions, as per Ilpo
->      J=C3=A4rvinen's suggestion.
->    - Replaced sysfs_update_groups() in the BAR resize path with
->      sysfs_remove_groups() before the resize and sysfs_create_groups()
->      after, restoring the original teardown before BAR resize
->      ordering.  This was reported by Sashiko, see:
->      https://sashiko.dev/#/patchset/20260410055040.39233-1-kwilczynski%40=
-kernel.org?part=3D7
->    - Defined pci_dev_resource_attr_groups as a NULL macro when
->      HAVE_PCI_MMAP and ARCH_GENERIC_PCI_MMAP_RESOURCE are both
->      absent, so the resize path compiles unconditionally without
->      #ifdef guards in the function body.  This was reported by
->      Sashiko, see:
->      https://sashiko.dev/#/patchset/20260410055040.39233-1-kwilczynski%40=
-kernel.org?part=3D7
->    - Moved the pci_legacy_has_sparse() prototype into the patch
->      that introduces the function, alongside the existing
->      pci_adjust_legacy_attr() declaration, to fix a bisection
->      issue where Alpha would warn on -Wmissing-prototypes.
->      This was reported by Sashiko, see:
->      https://sashiko.dev/#/patchset/20260410055040.39233-1-kwilczynski%40=
-kernel.org?part=3D18
->
-> Changes in v3:
->   https://lore.kernel.org/linux-pci/20210910202623.2293708-1-kw@linux.com=
-/
->
->   - Updated for modern kernel releases and expanded scope.  The
->     v2 only covered the generic resource files.  This version
->     also converts Alpha's sparse/dense resource files and the
->     legacy bus attributes, removing pci_sysfs_init() entirely.
->   - Split the single macro definition into three distinct ones
->     (per I/O, UC, and WC), to make sure that each carries only
->     the callbacks its resource type needs.
->   - Updated to use the new .bin_size callback, as the attributes
->     are const, to replace using a->size directly, which was not
->     ideal.  This required changes to pci_llseek_resource(), to
->     ensure that it would work for device and bus-level attributes.
->   - Updated the __resource_resize_store() to include CAP_SYS_ADMIN
->     capabilities check.
->   - Added the security_locked_down() check to Alpha's
->     pci_mmap_resource(), to align with other architectures.
->
-> Changes in v2:
->   https://lore.kernel.org/linux-pci/20210825212255.878043-1-kw@linux.com/
->
->   - Refactored code so that the macros, helpers and internal
->     functions can be used to correctly leverage the read(),
->     write() and mmap() callbacks rather than to use the
->     .is_bin_visible() callback to set up sysfs objects
->     internals as this is not supported.
->   - Refactored some if-statements to check for a resource
->     flag first, and then call either arch_can_pci_mmap_io()
->     or arch_can_pci_mmap_wc(), plus store result of testing
->     for IORESOURCE_MEM and IORESOURCE_PREFETCH flags into
->     a boolean variable, as per Bjorn Helgaas' suggestion.
->   - Renamed pci_read_resource_io() and pci_write_resource_io()
->     callbacks so that these are not specifically tied to I/O
->     BARs read() and write() operations also as per Bjorn
->     Helgaas' suggestion.
->   - Updated style for code handling bitwise operations to
->     match the style that is preferred as per Bjorn Helgaas'
->     suggestion.
->   - Updated commit messages adding more details about the
->     implementation as requested by Bjorn Helgaas.
->
-> Krzysztof Wilczy=C5=84ski (24):
->   PCI/sysfs: Use PCI resource accessor macros
->   PCI: Add pci_resource_is_io() and pci_resource_is_mem() helpers
->   PCI/sysfs: Only allow supported resource types in I/O and MMIO helpers
->   PCI/sysfs: Use BAR length in pci_llseek_resource() when attr->size is
->     zero
->   PCI/sysfs: Add CAP_SYS_ADMIN check to __resource_resize_store()
->   PCI/sysfs: Add static PCI resource attribute macros
->   PCI/sysfs: Convert PCI resource files to static attributes
->   PCI/sysfs: Convert __resource_resize_store() to use static attributes
->   PCI/sysfs: Add stubs for pci_{create,remove}_sysfs_dev_files()
->   PCI/sysfs: Limit pci_sysfs_init() late_initcall compile scope
->   alpha/PCI: Add security_locked_down() check to pci_mmap_resource()
->   alpha/PCI: Use BAR index in sysfs attr->private instead of resource
->     pointer
->   alpha/PCI: Use PCI resource accessor macros
->   alpha/PCI: Clean up pci_mmap_resource()
->   alpha/PCI: Fix __pci_mmap_fits() overflow for zero-length BARs
->   alpha/PCI: Remove WARN from __pci_mmap_fits()
->   alpha/PCI: Add static PCI resource attribute macros
->   alpha/PCI: Convert resource files to static attributes
->   PCI/sysfs: Remove pci_{create,remove}_sysfs_dev_files()
->   PCI: Add macros for legacy I/O and memory address space sizes
->   alpha/PCI: Compute legacy size in pci_mmap_legacy_page_range()
->   PCI/sysfs: Add __weak pci_legacy_has_sparse() helper
->   PCI/sysfs: Convert legacy I/O and memory attributes to static
->     definitions
->   PCI/sysfs: Remove pci_create_legacy_files() and pci_sysfs_init()
->
->  arch/alpha/include/asm/pci.h   |  13 +-
->  arch/alpha/kernel/pci-sysfs.c  | 373 +++++++++++----------
->  arch/powerpc/include/asm/pci.h |   2 -
->  drivers/pci/bus.c              |   1 -
->  drivers/pci/pci-sysfs.c        | 575 +++++++++++++++++++--------------
->  drivers/pci/pci.h              |  16 +-
->  drivers/pci/probe.c            |   6 -
->  drivers/pci/remove.c           |   3 -
->  include/linux/pci.h            |  39 ++-
->  9 files changed, 578 insertions(+), 450 deletions(-)
->
+After device_initialize(), the lifetime of the embedded struct device
+is expected to be managed through the device core reference counting.
 
-Hi ,
+In fsl_mc_device_add(), all failures after device_initialize() jump to
+error_cleanup_dev, where mc_dev and its associated resources are freed
+directly instead of releasing the device reference with
+put_device(&mc_dev->dev). This bypasses the normal device lifetime
+rules and may leave the reference count of the embedded struct device
+unbalanced, resulting in a refcount leak and potentially leading to a
+use-after-free.
 
-Applied the series on an Alpha UP2000+, built and booted
-successfully. PCI enumeration and device initialization looked
-normal, I saw no relevant sysfs/PCI warnings in dmesg, and PCI
-sysfs resource files for tested devices looked sane.
+Fix this by using put_device(&mc_dev->dev) in the error path and let
+fsl_mc_device_release() handle the final cleanup.
 
-From the Alpha side, this looks good to me.
+Fixes: bbf9d17d9875 ("staging: fsl-mc: Freescale Management Complex (fsl-mc) bus driver")
+Cc: stable@vger.kernel.org
+Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
+---
+ drivers/bus/fsl-mc/fsl-mc-bus.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-Tested-by: Magnus Lindholm <linmag7@gmail.com>
-Acked-by: Magnus Lindholm <linmag7@gmail.com>
+diff --git a/drivers/bus/fsl-mc/fsl-mc-bus.c b/drivers/bus/fsl-mc/fsl-mc-bus.c
+index 25845c04e562..6d132144ce25 100644
+--- a/drivers/bus/fsl-mc/fsl-mc-bus.c
++++ b/drivers/bus/fsl-mc/fsl-mc-bus.c
+@@ -905,11 +905,7 @@ int fsl_mc_device_add(struct fsl_mc_obj_desc *obj_desc,
+ 	return 0;
+ 
+ error_cleanup_dev:
+-	kfree(mc_dev->regions);
+-	if (mc_bus)
+-		kfree(mc_bus);
+-	else
+-		kfree(mc_dev);
++	put_device(&mc_dev->dev);
+ 
+ 	return error;
+ }
+-- 
+2.43.0
+
 
