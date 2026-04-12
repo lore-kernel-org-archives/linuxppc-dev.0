@@ -1,83 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-19657-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19658-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F8ECE937E0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 12 Apr 2026 11:31:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0EDF1E937E1
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 12 Apr 2026 13:23:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ftpK71DGFz2ypW;
-	Sun, 12 Apr 2026 21:31:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775993499;
-	cv=none; b=ANbN+Z5FvCGpOClIa4ZanjYuV/Nc0e/0tfzQF5dQovS0NiignJ40Vp1UpXxe44Pve0BcnMjN+6bSiLwPd9QDqQiueDd7PPZSua7I17zNB9CkSgxEQgOhHVOxjPmaSKZo9KoDxC1Y5Vk6+1z0yVe4+ezKxuECEOvpIvsroYICPxNTS/j2NBvXmpVt/SDSo3Yze/QO38RS2DWjJle9wQ33KEzmMLV2ub0WZ88sGqh1ZRoiCxRBhIuiCqBuVQFWGY6bmw881BbvXQdyv4fh1JlydW3vyqaKb84u1KhamffbzaSBitOadO7N4ycxHUOquTNi9Hv5sw72phQZSJmdPnj24A==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775993499; c=relaxed/relaxed;
-	bh=XM5wDcj1k25RA0EBnRvrSb7gbfUdR4j3rsxxhwvBUiY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=m1uhSWzjVZ5cTl4nzNO5woUshdxQc1QlGamIglqEkCK0KWYQRwLohMcj6B14eNC0XsltR32wMSbpYrG0B8QGStlSmXBWzi1hnyS5TMWp/j/yZwYVJmkRExz7xkhlpsBhW5dRSYHkxWNkARuXVcu63xPMH/UINUybtEND0w0jpSFd5SwkH7fefz5E6tst58m6PGphdBV4nI2iAMhxrjB8Aw27W5YdYrDp5IyYQx1OTl2E/kU/YtnnK2LLPyzOn8eO+pPMYcsgpPe52y2sGzWiGmYSgzK4BnYj/Z6kfAxBevmnV8oXUbPT9+a2EeXafs8UWdpO8aVPq7sFah2TfS9zXQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Nnc0ThNe; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ftrnv027Cz2ypk;
+	Sun, 12 Apr 2026 23:23:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::635" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776000194;
+	cv=pass; b=CEnyGwk4SeeU4khGlCiYwN85d98hoLhydNFSTm7WEnrnYGgMo1WTcBWZd0o5BfZFoU7lRQ2W75HQ7u6b1NzLPeqB9AdGfgb28rGls1B6Le3/Ij2CL+NVFtxV6cK6rqzDogOZYfXZ2O3cnZNTwjA37aV0FrMSFWlO9UYJpQ65XRukPCADkl9POJ9GTCCfOqSDrtMNXhpL7axaTaDLGGJGpzd9rf4HZeW19KaYs6YeY7O9qFad4r8nlZNBAgr6MUiAD+bKUJW2cHLx2iVcoLiCLE+u4ts4cj+QrAhpEISOKVVBSDp/e0F8roKj7L4nK/Xzkq/TTLcOxkh3oMuOMj1e0w==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1776000194; c=relaxed/relaxed;
+	bh=gDdA9vu4Fz00bgurrj0mXlyC2hJ8rRfiuCUxuR8xwe8=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ISs2fsZJXYUMOLczB6Z14hGv3zF4qKniMXSjdk8ggSx0SYA+9EMNoKtl2KZJFXHye1EIZ/JlhWixkoB7HhzSwpit9+XG80eYVX6b4kAk9sOeCdrx3FYZlo9dqFOfLE6I+IYPlNTF/SSlIuodqqWnwD7mo6Zd1D5diEcK3WiqlGSBBe1s8MRZm3m2FM7IuG0bIOVguzWWSN7DHEPGjRcatPJU4TUOjQszZYPaD1cWH/uRQ4s0zuG5hFw0VwXyvWe7qVoqoeGJC3NK3Fu9UpTjWudqCazROC17olFXH0PJx0wgU4r1pVw1gk4F7CsBidPoqRelnycdot5d4SYrFwdaDw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=qgimthR2; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::635; helo=mail-ej1-x635.google.com; envelope-from=linmag7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Nnc0ThNe;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=qgimthR2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::635; helo=mail-ej1-x635.google.com; envelope-from=linmag7@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x635.google.com (mail-ej1-x635.google.com [IPv6:2a00:1450:4864:20::635])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ftpK54Tmwz2ynv
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Apr 2026 21:31:36 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63C8rTBJ1681100;
-	Sun, 12 Apr 2026 11:31:11 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=XM5wDcj1k25RA0EBnRvrSb7gbfUdR4j3rsxxhwvBU
-	iY=; b=Nnc0ThNetnszIhhPSu8p1+iSTIP//AXQ3eV1zjq1OffJVEKip3zzfRkn3
-	5yBSFUAULoLx5yJXqZo7jTNo/h6pnQcFJ1IvFj7HlwsOyVuxHk5SKRbQNiJ69dxk
-	Y0dBgZmgva/eJBU6e+HEK8BSwzyZVragiDxar06APC5Zt8XdGSWKVh7czue3sewP
-	YBgs+Pv8ajlrwpAR6DSF8uZWIpZnhxPjpKrj3lHBzieDJ5EwLdj42nTtOAETn1b/
-	s1eTvqDHphzXt+l4R01bHMD1vDqW1P9Hv0ScRj3mklGffAg/OsXPmIaOGuPtvjKr
-	iSM+DWE1VSoVjrIsS+cO4vodnUFiQ==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dfdxwuk74-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 12 Apr 2026 11:31:10 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 63C8oY6F004179;
-	Sun, 12 Apr 2026 11:31:10 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dg24k17nw-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 12 Apr 2026 11:31:09 +0000
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63CBV5bA19530112
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 12 Apr 2026 11:31:06 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CED062004D;
-	Sun, 12 Apr 2026 11:31:05 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E33B120040;
-	Sun, 12 Apr 2026 11:31:00 +0000 (GMT)
-Received: from shivang.com (unknown [9.39.24.219])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sun, 12 Apr 2026 11:31:00 +0000 (GMT)
-From: Shivang Upadhyay <shivangu@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        chleroy@kernel.org, kees@kernel.org, tony.luck@intel.com,
-        gpiccoli@igalia.com, ritesh.list@gmail.com, rppt@kernel.org,
-        Shivang Upadhyay <shivangu@linux.ibm.com>,
-        Hari Bathini <hbathini@linux.ibm.com>,
-        Mahesh Salgaonkar <mahesh@linux.ibm.com>,
-        Shirisha G <shirisha@linux.ibm.com>,
-        Sourabh Jain <sourabhjain@linux.ibm.com>
-Subject: [PATCH v2] ppc/fadump: invoke kmsg_dump in fadump panic path
-Date: Sun, 12 Apr 2026 17:00:57 +0530
-Message-ID: <20260412113057.46090-1-shivangu@linux.ibm.com>
-X-Mailer: git-send-email 2.53.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ftrnr66sTz2ypY
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Apr 2026 23:23:11 +1000 (AEST)
+Received: by mail-ej1-x635.google.com with SMTP id a640c23a62f3a-b97f9587e6eso465135666b.3
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Apr 2026 06:23:11 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1776000183; cv=none;
+        d=google.com; s=arc-20240605;
+        b=IRQMBpevFPWT0QsbU88BljojWmE+i6Q3eJRpynB8MyRjn/5pM26zfTgUgAFjrrH+NB
+         wwLykfXm86lAYNJ9QWghOLXGEjkwRI9aixVncYBiNktFStrCIY78/6dji63myhTFQpY9
+         uMUCvStg93K1o8lPjrfxjQTml3Hz4BAhB08jLLBz0ymLeZdP473yAiWKq5UKmQEZsoZm
+         HBGFHnxnmnwEPQsWRPskntH0ByCYPQmni7HR66ja6YOqhRLKMn5kXRHAx3qSK5f0RFzr
+         w92znnphLNLjvpZShhLTsrJia21t6P/dwx7FPVWL9gg5dljvMptkHmipehCWF6CNryD5
+         25BA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=gDdA9vu4Fz00bgurrj0mXlyC2hJ8rRfiuCUxuR8xwe8=;
+        fh=H95nPcwOtV8XNaHmb0hzXOAN3sW27UaIjDOfJLMvM8c=;
+        b=FmwCwCcSKxMCCedbnLk+g1bt9aluOGtNdIBD2x0drXZiHYnrIlraJltZTW1aNaDPFo
+         Q+TM7svXO93WvCrEtqHzAZWUuQ8Mt/GW+CqkFezjybTJPo26JDbm7AR4qjZN4moAoUub
+         ABzIp8mKe4uJM3SOU1pMfOg/H/brlKwMGsu7ZA+CkqVsyEdra9/xBqfLWwHZrIIvzP5E
+         uKV8Ww5AUUb2ORM8jvJSNGse3+a7XTsyLIecElc8BhutvA1cQSEa8S/WnA/pOBHGiDWC
+         /7h0Gr8ON+YnhXt/Bq+NZbuwiZp6S66Zwz0ZmIG62j1om5rsR/x5i1Zhyww9OOUAS+Fx
+         IvRg==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1776000183; x=1776604983; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=gDdA9vu4Fz00bgurrj0mXlyC2hJ8rRfiuCUxuR8xwe8=;
+        b=qgimthR2CpkHgbtjgRNJZfHPKFAA/0YMTWAxXTey6MfrP8+hcUWk9/WKnGe6fZEnpd
+         JJ8UtKq9PXb7zm22bytE/nooRT1v6XkF9j+hQwFfFV6WtrB1hoFS/1GaAa4nVhvuEIQD
+         kSt1WfTjwwNKBW/42NRRPOkOOUsZnMCrjIjBOn0hKhZWFxVc/qlw7TFRNM7K29Tw5bhJ
+         CaHCg0pHldok+Y9yJx6BenWQ7OhI66LFoaCWZjnAsQuLGdljtd6U87exg2FedzcAgZt2
+         U05CnYINH8/pndU/QHswyBmbXH30dpFICiIfEOytT4RSPBdMAXr11Sy1U5nyiKA90T5o
+         rnpA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1776000183; x=1776604983;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=gDdA9vu4Fz00bgurrj0mXlyC2hJ8rRfiuCUxuR8xwe8=;
+        b=tO3p2HpoWhB1AtjnFURprcf85KRPI9VoR5LZg6wfggRGOdWXQir+4Hmp10FG5Msuby
+         wmiFhNODqbrZ5xzFT1/4gV9e2fT048kIT0dbabr+oxadcpoiW91pRQekCcrs94mHGI1E
+         cEyoNoMv2EjG45v+iZ6SOATXEQ+2Lg8MJm0hA4ebhjAJs5XcYDMzNlEY4vbwITOd0VyK
+         BJgQYg+Y4TJvt8FC8MLE1HTGX7uDxEvOYtHAU6XjAU4JyyXwwBsbikNvQqDYI4GYo+2A
+         qaSX4xqkFTbCAqu9nsAGYLrHRfgh0CNxN0eqQ8esb7JJEV844ZKV6W8XrNnv8A51UCKf
+         PVsw==
+X-Forwarded-Encrypted: i=1; AJvYcCWYJqgVH/9U9OxryuT7A25NaCMsH/rgqrdvblm/ut4xEW2IEHjhrWIVpm6uRgpyBviuJ/5n84hs3Dg89DA=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwnXdVSHm6/4tCrJBn0JuDCO7rhhY7wlNMaUbr3R31szs9f3FuZ
+	qPHoItInxcgyFvFsYwUGbGqbko6xUDB/2FLi/y4UMjJyb4HZR0EVq1bBuZCTEbmIs8IzccOpEcb
+	5/k+QXtaYBZoBe08rAESKq268TnPOhw0=
+X-Gm-Gg: AeBDieuKmy3HlD9qk1g+O9qccp1aOVdHYaticI8iUWffc35uv7vh9t+S1vlp018R3/x
+	ljQMmLQzygXfd0xgLSrpcOr10W8vP7BVzY3h9RmqIMf/0+S/CTsBfiym0pmL2w3vlRMglMrZpLA
+	DLdGVAwbyJL+r2K3UphtbBtkteR6sRHs7hrB7xYyOVwe9DzpRPBlH0d3kOnUDQdVmjNOsxXh4TC
+	EwYXrG6XPK72tgFS0f/k5aupbHHexZ8lQ5Q2lFLVgBCY8e/BPo79YJ0owwySKrvfMLCabVUA1Jw
+	dzQOoue+w8Kt/jhLlV00wQUx5Lo0fliOsa6SQTHs
+X-Received: by 2002:a17:907:e113:b0:b9c:6ef1:ed18 with SMTP id
+ a640c23a62f3a-b9d727aa4fdmr352963766b.25.1776000183133; Sun, 12 Apr 2026
+ 06:23:03 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,100 +101,66 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDEyMDEwOSBTYWx0ZWRfX+A3DUCKDbbML
- oaLKSg7lJ5S4RkJxVUux6v25d5urZLDgr4dHmli2/BPP/VaSDcE3dj1hk+7Ix+L8ZtPJ0P6blYj
- 5XTE8s9VR50zaswgxXPND0IJnqq+2oPkLZjM3rLX5n4bGhGXBmXP92LPjkAWHgMQwhXX52Piwvk
- bZDJG9FAxLOLSf5QhKXGnKNA9VtjwiaTo3PsYopjwzmI0Xpre2le0lplOmOge1axRdT9s9K8VE1
- nwGwssp3V9UP2/ovjQ1VaRlz210jS/57QTRx6+xXz2JaRYw1OYPrKET9NDlWdJv3VM/4FSfRE1n
- yD7kGCSgpmJi0JCkoTTnbOglzREPDBxax9A6+mgg5f0fYQyKMcYk3oTIl1UAtuy2loqFSnY+SfF
- eUmi+oGlKfRxB5rmpVpE0Zmu1NABgfydoq6RZB/+o9G96olqgii1jk56wRp4Pwx1fRPv8Shg62z
- r/ZJhm3dO0FaaE16mJQ==
-X-Proofpoint-ORIG-GUID: JE8r2Vi0-32O3uLZhHk8y7ybrW57zYQR
-X-Authority-Analysis: v=2.4 cv=TId1jVla c=1 sm=1 tr=0 ts=69db827f cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8
- a=wpMxpv9DbCWzPGTgfgQA:9
-X-Proofpoint-GUID: wYDc3eL1nJlKq2cNdMIHGqURCzZqelb5
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-12_02,2026-04-09_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 malwarescore=0 spamscore=0 adultscore=0 phishscore=0
- suspectscore=0 priorityscore=1501 impostorscore=0 clxscore=1015
- lowpriorityscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604010000
- definitions=main-2604120109
+References: <20260410120044.031381086@kernel.org> <20260410120319.131582521@kernel.org>
+In-Reply-To: <20260410120319.131582521@kernel.org>
+From: Magnus Lindholm <linmag7@gmail.com>
+Date: Sun, 12 Apr 2026 15:22:51 +0200
+X-Gm-Features: AQROBzAeMsaeSVePCJ__tEd4f2rWAY6MixXzp_fii2b8vyUpLt4xjSbtYzENFaw
+Message-ID: <CA+=Fv5S68wZQapeaYTspOfsuGk=nBj60sx-ojHBSqrxV59Q+ZA@mail.gmail.com>
+Subject: Re: [patch 23/38] alpha: Select ARCH_HAS_RANDOM_ENTROPY
+To: Thomas Gleixner <tglx@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, 
+	Richard Henderson <richard.henderson@linaro.org>, linux-alpha@vger.kernel.org, 
+	Arnd Bergmann <arnd@arndb.de>, x86@kernel.org, Lu Baolu <baolu.lu@linux.intel.com>, 
+	iommu@lists.linux.dev, Michael Grzeschik <m.grzeschik@pengutronix.de>, netdev@vger.kernel.org, 
+	linux-wireless@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>, 
+	linux-crypto@vger.kernel.org, Vlastimil Babka <vbabka@kernel.org>, linux-mm@kvack.org, 
+	David Woodhouse <dwmw2@infradead.org>, Bernie Thompson <bernie@plugable.com>, linux-fbdev@vger.kernel.org, 
+	Theodore Tso <tytso@mit.edu>, linux-ext4@vger.kernel.org, 
+	Andrew Morton <akpm@linux-foundation.org>, Uladzislau Rezki <urezki@gmail.com>, 
+	Marco Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>, kasan-dev@googlegroups.com, 
+	Andrey Ryabinin <ryabinin.a.a@gmail.com>, Thomas Sailer <t.sailer@alumni.ethz.ch>, 
+	linux-hams@vger.kernel.org, "Jason A. Donenfeld" <Jason@zx2c4.com>, 
+	Russell King <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org, 
+	Catalin Marinas <catalin.marinas@arm.com>, Huacai Chen <chenhuacai@kernel.org>, 
+	loongarch@lists.linux.dev, Geert Uytterhoeven <geert@linux-m68k.org>, 
+	linux-m68k@lists.linux-m68k.org, Dinh Nguyen <dinguyen@kernel.org>, 
+	Jonas Bonn <jonas@southpole.se>, linux-openrisc@vger.kernel.org, 
+	Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org, 
+	Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org, 
+	Paul Walmsley <pjw@kernel.org>, linux-riscv@lists.infradead.org, 
+	Heiko Carstens <hca@linux.ibm.com>, linux-s390@vger.kernel.org, 
+	"David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-fadump is registered in panic_notifier_list and gets triggered before
-kmsg_dump_desc() in the panic path. As a result, kmsg_dumpers such as
-pstore are not executed during fadump crashes.
+On Fri, Apr 10, 2026 at 2:36=E2=80=AFPM Thomas Gleixner <tglx@kernel.org> w=
+rote:
+>
+> The only remaining usage of get_cycles() is to provide
+> random_get_entropy().
+>
+> Switch alpha over to the new scheme of selecting ARCH_HAS_RANDOM_ENTROPY
+> and providing random_get_entropy() in asm/random.h.
+>
+> Remove asm/timex.h as it has no functionality anymore.
+>
+> Signed-off-by: Thomas Gleixner <tglx@kernel.org>
+> Cc: Richard Henderson <richard.henderson@linaro.org>
+> Cc: linux-alpha@vger.kernel.org
+> ---
+>  arch/alpha/Kconfig              |    1 +
+>  arch/alpha/include/asm/random.h |   14 ++++++++++++++
+>  arch/alpha/include/asm/timex.h  |   26 --------------------------
+>  3 files changed, 15 insertions(+), 26 deletions(-)
 
-This is problematic because pstore provides a critical fallback mechanism
-for crash analysis. When fadump fails to successfully reboot the system
-or capture a dump, pstore logs may be the only available information from
-the crashed kernel. Without invoking kmsg_dump_desc() in the fadump path,
-we lose this valuable diagnostic data.
+Hi,
 
-Invoke kmsg_dump_desc() from the fadump panic handler, but only when
-fadump is actually registered (checked via should_fadump_crash()). This
-ensures kmsg_dumpers are called without duplicating the call that occurs
-later in panic() when fadump is not active.
+The Alpha side looks fine to me.
 
-The call is placed before crash_fadump() to ensure logs are captured
-before the system attempts to trigger the firmware-assisted dump.
+I've applied this patch on top of v7.0-rc7, built a kernel successfully,
+boot-tested it on an Alpha UP2000+ (SMP) without issues.
 
-Cc: Hari Bathini <hbathini@linux.ibm.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-Reported-by: Shirisha G <shirisha@linux.ibm.com>
-Suggested-by: Sourabh Jain <sourabhjain@linux.ibm.com>
-Signed-off-by: Shivang Upadhyay <shivangu@linux.ibm.com>
----
-Changelog:
-
-v2:
-  address comments from Sourabh, and sashikio-ai
-  added should_fadump_crash()
-
-v1:
-  https://lore.kernel.org/all/20260407054341.308710-1-shivangu@linux.ibm.com/
----
- arch/powerpc/kernel/setup-common.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
-
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index b1761909c23f..87afc8003a03 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -68,6 +68,7 @@
- #include <asm/kasan.h>
- #include <asm/mce.h>
- #include <asm/systemcfg.h>
-+#include <linux/kmsg_dump.h>
- 
- #include "setup.h"
- 
-@@ -744,6 +745,13 @@ static int ppc_panic_fadump_handler(struct notifier_block *this,
- 	 */
- 	hard_irq_disable();
- 
-+	/*
-+	 * Invoke kmsg_dump (e.g., pstore) before crash_fadump() as fadump
-+	 * runs before panic()'s kmsg_dump_desc() call.
-+	 */
-+	if (should_fadump_crash())
-+		kmsg_dump_desc(KMSG_DUMP_PANIC, (char *)ptr);
-+
- 	/*
- 	 * If firmware-assisted dump has been registered then trigger
- 	 * its callback and let the firmware handles everything else.
--- 
-2.53.0
-
+Acked-by: Magnus Lindholm <linmag7@gmail.com>
+Tested-by: Magnus Lindholm <linmag7@gmail.com>
 
