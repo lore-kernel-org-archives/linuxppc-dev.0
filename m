@@ -1,49 +1,90 @@
-Return-Path: <linuxppc-dev+bounces-19690-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19692-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C983F34C49
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 12:48:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16A9CF34C51
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 13:06:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fvRzZ58Qnz2ydn;
-	Mon, 13 Apr 2026 22:48:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::b1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776084522;
-	cv=none; b=UIrPLEoyJrCXaX2o4D0HMMLzFREuNN/bv1s9M1t/fgxacjykAi9Qm4eHUsBkVJkcxPjG7UWj6olPOR/u4U4HPmUCShzeFFBibpXtRIo38J1my0GqSdrDVpwtvWfH4k1QBi/uPtggQkqKTmWqikZ7/vv/FPrSEjn4PDjkgqY3rAfou92VOrKCl38qsVA3f27i54CiR9O3rwtfcUjRUw42m45EUW2HSU9I+9R9+RyLWO71HSptR5Zhpt4ix4UAWhFS5XYkn77/sZ/XBvP5k1Zyhr52sCYs9S6YJak05SNUTb4rOtIsWYIxERj12kU0QFexm9DAGFKdQGZvs9nT13UGlQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fvSNc4gQvz2ydn;
+	Mon, 13 Apr 2026 23:06:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776071227;
+	cv=none; b=dsH1zizuD/GcUlNUp23HlJQu85uqzuX3QONBoCMFzacF0LK/303jzGHMN4GLJLUBt2xb4YAzbOaOckR5xiVpG5uyjAPOFp190V9EmVckR/IjQ/SO8UFDHvmY6Rq3iv/iShW5hvzjIKPGSeYBgXedflU006XxSkVJVUwRFaMh0Wi86ECGCiSaEuRAs4ht1q4Jty9g8HzmEqN4t3R/OUdUbckCEabW+Wh3Scc3noDj15xDBvKWGsncL57SsMtG6BKyiLI4MfZdtCcPrQE6t/ZfnRrlN6Gz/citAEozfRMmmtvlccgZfBiAZViovO8KmBXc6tgcJ5iY8ubAe11sNkMg5w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776084522; c=relaxed/relaxed;
-	bh=zdfAjxhRsl2+AREvfePGH23u3lRiFYRNi2DHKhHln2k=;
-	h=Content-Type:From:Mime-Version:Subject:Date:Message-Id:References:
-	 Cc:In-Reply-To:To; b=OJJnquQS7I1RdD/nsKXySOGJNIWmfrmMAFTW0qKvs2Sw57WtQJOygccMAli/lEXHZy6TyHNygQffvpfa1acfd+eNIZg7V11Tw8Zh/vq1aWuT3CLaOY69JLd/kg1VJa8k1iPP7694w7/z14W1t37Lvhv0aCQFRIEGbsXwZBuHh6imjBq1/r6S8Wu5qf9LP1387Xc0oq2eW9Iv3fIFK9hQj7d+oQ/5bwkzXt8n5Gz7dL16w1CGX9UVjLM89T2rlrT/tdGTJRSdWB8S1EoOUd5XtjEXP2aW/R4d7pf4EY5tKTAxV3QCC3rzDdJNMYWhU9whO7FxZoA4l4aue9Xld9775g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=nE5VYNAw; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::b1; helo=out-177.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1776071227; c=relaxed/relaxed;
+	bh=xfV+dBU9VPBYhioDWJ+nyjtSrTDypvBAP7vxHXh2p4I=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=WaVW/m/2/eG3g+b74ORH0eamkSuszhTgVLMTarSR2x8I+etX4vXnXTIvOLMktwrVPYehdKw/sPeOlB9fwX6Lw0UXlHKrbQ4r196WxjE968w6SLLbQrUqF+G7JAeCzNIxVcHqq8KaYKudeALHL3LzK/1W0SwgF9ip3xL7M4y5WEXfR0RCY6Vek2bRnIMToU7fZMKYbVEcD+fKzt/0F6ujfYU7Xb1/5X8JVMjearNxJ1id+bOANn/lsDDARIwyFukppMsBfL+2A0xjqE8x3NVJBvHJl3l0bZYzUawgU2BU7GnbPWBOVjb1O6MWoCxb6YsGwE6cQKA17Vtj21z97UHW2w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=G3inY+8J; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=harry@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=nE5VYNAw;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=G3inY+8J;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::b1; helo=out-177.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
-X-Greylist: delayed 9592 seconds by postgrey-1.37 at boromir; Mon, 13 Apr 2026 22:48:39 AEST
-Received: from out-177.mta0.migadu.com (out-177.mta0.migadu.com [IPv6:2001:41d0:1004:224b::b1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=harry@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvRzW1bkyz2ySb
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2026 22:48:37 +1000 (AEST)
-Content-Type: text/plain; charset=utf-8
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1776084492;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=zdfAjxhRsl2+AREvfePGH23u3lRiFYRNi2DHKhHln2k=;
-	b=nE5VYNAwk/69hYOoOByq/8wh/JZBJg16bR2vH8D/XiuneHiHEafQ/FFFrao5O/GxJPSdv1
-	0/soNVIqBY9ziLV6FXp9cYu6u64On/Asc235Aazy8XEamU408vuxPmoSSxPdkhcsqXYf4+
-	9zBfORBJFl+gW2g0jIAnGHjOPH3i/mc=
-Content-Transfer-Encoding: quoted-printable
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Muchun Song <muchun.song@linux.dev>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvM3t4K5mz2yjV
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2026 19:07:06 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 21BFF43A69;
+	Mon, 13 Apr 2026 09:07:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 95C51C116C6;
+	Mon, 13 Apr 2026 09:07:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776071224;
+	bh=cS2/Y+fD/C6Fj1LtxcJRcP0gMiu198023wVz+PX5eN8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=G3inY+8JxkEibVwYUFszuCWlat+2WMkdb9cxQNukGQ5jOO4YosRVw/teIPjzkykJe
+	 VBaoK4GWe1nSvdZccXGItvVBbCBawDxBQYXoSn8ku3lctCl78nWa1bXrv8Cz5ii5WC
+	 gS594pXSn/PDkAlQW1x8pf1/M/IPGL/2AZ9s3tUP2y+EEht32F5HbttQfHidlVLFR9
+	 SB3RrQSSOyCGHY83n0fRRZdud5Xcyx9d8MmEOZogxSk4gxdYZjmVHZxvo/hzD3ige5
+	 KqFGmCdWJVKzfE5LlEz9DNkdZh7AXZJZD7MdmFDUG+6QJAH+W76oJ0Vl3ycqghmmEe
+	 IWEm9rwhj2q9g==
+Date: Mon, 13 Apr 2026 18:07:01 +0900
+From: "Harry Yoo (Oracle)" <harry@kernel.org>
+To: Thomas Gleixner <tglx@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+	Vlastimil Babka <vbabka@kernel.org>, linux-mm@kvack.org,
+	Arnd Bergmann <arnd@arndb.de>, x86@kernel.org,
+	Lu Baolu <baolu.lu@linux.intel.com>, iommu@lists.linux.dev,
+	Michael Grzeschik <m.grzeschik@pengutronix.de>,
+	netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	linux-crypto@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
+	Bernie Thompson <bernie@plugable.com>, linux-fbdev@vger.kernel.org,
+	Theodore Tso <tytso@mit.edu>, linux-ext4@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Uladzislau Rezki <urezki@gmail.com>, Marco Elver <elver@google.com>,
+	Dmitry Vyukov <dvyukov@google.com>, kasan-dev@googlegroups.com,
+	Andrey Ryabinin <ryabinin.a.a@gmail.com>,
+	Thomas Sailer <t.sailer@alumni.ethz.ch>, linux-hams@vger.kernel.org,
+	"Jason A. Donenfeld" <Jason@zx2c4.com>,
+	Richard Henderson <richard.henderson@linaro.org>,
+	linux-alpha@vger.kernel.org, Russell King <linux@armlinux.org.uk>,
+	linux-arm-kernel@lists.infradead.org,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	linux-m68k@lists.linux-m68k.org, Dinh Nguyen <dinguyen@kernel.org>,
+	Jonas Bonn <jonas@southpole.se>, linux-openrisc@vger.kernel.org,
+	Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	linuxppc-dev@lists.ozlabs.org, Paul Walmsley <pjw@kernel.org>,
+	linux-riscv@lists.infradead.org, Heiko Carstens <hca@linux.ibm.com>,
+	linux-s390@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+	sparclinux@vger.kernel.org, Hao Li <hao.li@linux.dev>,
+	Christoph Lameter <cl@gentwo.org>,
+	David Rientjes <rientjes@google.com>,
+	Roman Gushchin <roman.gushchin@linux.dev>,
+	Shengming Hu <hu.shengming@zte.com.cn>
+Subject: Re: [patch 14/38] slub: Use prandom instead of get_cycles()
+Message-ID: <adyyNeVTkXQlnh_2@hyeyoo>
+References: <20260410120044.031381086@kernel.org>
+ <20260410120318.525653921@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,156 +97,123 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0 (1.0)
-Subject: Re: [PATCH 01/49] mm/sparse: fix vmemmap accounting imbalance on memory hotplug error
-Date: Mon, 13 Apr 2026 20:47:45 +0800
-Message-Id: <8AEA6BCE-570F-4095-ADCF-9699BDE0DD64@linux.dev>
-References: <adzb5o9aWxFWphRK@kernel.org>
-Cc: Muchun Song <songmuchun@bytedance.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Hildenbrand <david@kernel.org>, Oscar Salvador <osalvador@suse.de>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Lorenzo Stoakes <ljs@kernel.org>, Liam R Howlett <Liam.Howlett@oracle.com>,
- Vlastimil Babka <vbabka@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
- Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>,
- aneesh.kumar@linux.ibm.com, joao.m.martins@oracle.com, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <adzb5o9aWxFWphRK@kernel.org>
-To: Mike Rapoport <rppt@kernel.org>
-X-Migadu-Flow: FLOW_OUT
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260410120318.525653921@kernel.org>
 
+[Resending after fixing broken email headers]
 
-Sent from my iPad
+On Fri, Apr 10, 2026 at 02:19:37PM +0200, Thomas Gleixner wrote:
+> The decision whether to scan remote nodes is based on a 'random' number
+> retrieved via get_cycles(). get_cycles() is about to be removed.
+> 
+> There is already prandom state in the code, so use that instead.
+> 
+> Signed-off-by: Thomas Gleixner <tglx@kernel.org>
+> Cc: Vlastimil Babka <vbabka@kernel.org>
+> Cc: linux-mm@kvack.org
+> ---
 
-> On Apr 13, 2026, at 20:05, Mike Rapoport <rppt@kernel.org> wrote:
->=20
-> =EF=BB=BFOn Mon, Apr 13, 2026 at 05:49:17PM +0800, Muchun Song wrote:
->>=20
->>=20
->>>> On Apr 13, 2026, at 17:35, Mike Rapoport <rppt@kernel.org> wrote:
->>>=20
->>> On Mon, Apr 13, 2026 at 12:19:50PM +0300, Mike Rapoport wrote:
->>>> On Sun, Apr 05, 2026 at 08:51:52PM +0800, Muchun Song wrote:
->>>>> In section_activate(), if populate_section_memmap() fails, the error
->>>>> handling path calls section_deactivate() to roll back the state. This
->>>>> approach introduces an accounting imbalance.
->>>>>=20
->>>>> Since the commit c3576889d87b ("mm: fix accounting of memmap pages"),
->>>>> memmap pages are accounted for only after populate_section_memmap()
->>>>> succeeds. However, section_deactivate() unconditionally decrements the=
+Acked-by: Harry Yoo (Oracle) <harry@kernel.org>
 
->>>>> vmemmap account. Consequently, a failure in populate_section_memmap()
->>>>> leads to a negative offset (underflow) in the system's vmemmap trackin=
-g.
->>>>>=20
->>>>> We can fix this by ensuring that the vmemmap accounting is incremented=
+Is this for this merge window?
 
->>>>> immediately before checking for the success of populate_section_memmap=
-().
->>>>> If populate_section_memmap() fails, the subsequent call to
->>>>> section_deactivate() will decrement the accounting, perfectly offsetti=
-ng
->>>>> the increment and maintaining balance.
->>>>>=20
->>>>> Fixes: c3576889d87b ("mm: fix accounting of memmap pages")
->>>>> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
->>>>> ---
->>>>> mm/sparse-vmemmap.c | 2 +-
->>>>> 1 file changed, 1 insertion(+), 1 deletion(-)
->>>>>=20
->>>>> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
->>>>> index 6eadb9d116e4..ee27d0c0efe2 100644
->>>>> --- a/mm/sparse-vmemmap.c
->>>>> +++ b/mm/sparse-vmemmap.c
->>>>> @@ -822,11 +822,11 @@ static struct page * __meminit section_activate(=
-int nid, unsigned long pfn,
->>>>> return pfn_to_page(pfn);
->>>>>=20
->>>>> memmap =3D populate_section_memmap(pfn, nr_pages, nid, altmap, pgmap);=
+This may conflict with upcoming changes on freelist shuffling [1]
+(not queued for slab/for-next yet though), but it should be easy to
+resolve.
 
->>>>> + memmap_pages_add(DIV_ROUND_UP(nr_pages * sizeof(struct page), PAGE_S=
-IZE));
->>>>=20
->>>> This logically belongs to success path in populate_section_memmap(). If=
- we
->>>> update the counter there, we won't need to temporarily increase it at a=
-ll.
->>>=20
->>> Not strictly related to this patchset, but it seems, we can have a singl=
-e
->>> memmap_boot_pages_add() in memmap_alloc() rather than to update the coun=
-ter
->>> in memmap_alloc() callers.
->>=20
->> It will indeed become simpler and is a good cleanup direction, but there
->> is a slight change in semantics: the page tables used for vmemmap page
->> mapping will also be counted in memmap_boot_pages_add(). This might not
->> be an issue (after all, the size of the page tables is very small compare=
-d
->> to struct pages, right?).
->>=20
->> Additionally, I still lean toward making no changes to this patch, becaus=
-e
->> this is a pure bugfix patch =E2=80=94 of course, it is meant to facilitat=
-e backporting
->> for those who need it. The cleanup would involve many more changes, so I
->> prefer to do that in a separate patch. What do you think?
->=20
-> For this patch and easy backporting I still think that cleaner to have the=
+[Cc'ing Shengming and SLAB ALLOCATOR folks]
+[1] https://lore.kernel.org/linux-mm/20260409204352095kKWVYKtZImN59ybO6iRNj@zte.com.cn
 
-> counter incremented in populate_section_memmap() rather immediately after
-> it.
+-- 
+Cheers,
+Harry / Hyeonggon
 
-Hi Mike,
-
-Alright, let=E2=80=99s revisit your solution. After we=E2=80=99ve moved the c=
-ounter into the=20
-populate_section_memmap(), we still need to increase the counter temporarily=
-
-(but in populate_section_memmap()) even if we fail to populate. That=E2=80=99=
-s
-because section_deactivate() reduces the counter without exception, isn=E2=80=
-=99t it?
-Just want to make sure we are on the same page on the meaning of =E2=80=9Cte=
-mporarily
-increase=E2=80=9D.  Maybe you do not mean =E2=80=9Ctemporarily=E2=80=9D in t=
-his case.
-
-Thanks,
-Muchun.
-
->=20
->> Thanks,
->> Muchun.
->>=20
->>>=20
->>>>> if (!memmap) {
->>>>> section_deactivate(pfn, nr_pages, altmap);
->>>>> return ERR_PTR(-ENOMEM);
->>>>> }
->>>>> - memmap_pages_add(DIV_ROUND_UP(nr_pages * sizeof(struct page), PAGE_S=
-IZE));
->>>>>=20
->>>>> return memmap;
->>>>> }
->>>>> --
->>>>> 2.20.1
->>>>>=20
->>>>=20
->>>> --
->>>> Sincerely yours,
->>>> Mike.
->>>=20
->>> --
->>> Sincerely yours,
->>> Mike.
->>=20
->>=20
->>=20
->=20
-> --
-> Sincerely yours,
-> Mike.
+>  mm/slub.c |   37 +++++++++++++++++++++++--------------
+>  1 file changed, 23 insertions(+), 14 deletions(-)
+> 
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> @@ -3302,6 +3302,25 @@ static inline struct slab *alloc_slab_pa
+>  	return slab;
+>  }
+>  
+> +#if defined(CONFIG_SLAB_FREELIST_RANDOM) || defined(CONFIG_NUMA)
+> +static DEFINE_PER_CPU(struct rnd_state, slab_rnd_state);
+> +
+> +static unsigned int slab_get_prandom_state(unsigned int limit)
+> +{
+> +	struct rnd_state *state;
+> +	unsigned int res;
+> +
+> +	/*
+> +	 * An interrupt or NMI handler might interrupt and change
+> +	 * the state in the middle, but that's safe.
+> +	 */
+> +	state = &get_cpu_var(slab_rnd_state);
+> +	res = prandom_u32_state(state) % limit;
+> +	put_cpu_var(slab_rnd_state);
+> +	return res;
+> +}
+> +#endif
+> +
+>  #ifdef CONFIG_SLAB_FREELIST_RANDOM
+>  /* Pre-initialize the random sequence cache */
+>  static int init_cache_random_seq(struct kmem_cache *s)
+> @@ -3365,8 +3384,6 @@ static void *next_freelist_entry(struct
+>  	return (char *)start + idx;
+>  }
+>  
+> -static DEFINE_PER_CPU(struct rnd_state, slab_rnd_state);
+> -
+>  /* Shuffle the single linked freelist based on a random pre-computed sequence */
+>  static bool shuffle_freelist(struct kmem_cache *s, struct slab *slab,
+>  			     bool allow_spin)
+> @@ -3383,15 +3400,7 @@ static bool shuffle_freelist(struct kmem
+>  	if (allow_spin) {
+>  		pos = get_random_u32_below(freelist_count);
+>  	} else {
+> -		struct rnd_state *state;
+> -
+> -		/*
+> -		 * An interrupt or NMI handler might interrupt and change
+> -		 * the state in the middle, but that's safe.
+> -		 */
+> -		state = &get_cpu_var(slab_rnd_state);
+> -		pos = prandom_u32_state(state) % freelist_count;
+> -		put_cpu_var(slab_rnd_state);
+> +		pos = slab_get_prandom_state(freelist_count);
+>  	}
+>  
+>  	page_limit = slab->objects * s->size;
+> @@ -3882,7 +3891,7 @@ static void *get_from_any_partial(struct
+>  	 * with available objects.
+>  	 */
+>  	if (!s->remote_node_defrag_ratio ||
+> -			get_cycles() % 1024 > s->remote_node_defrag_ratio)
+> +	    slab_get_prandom_state(1024) > s->remote_node_defrag_ratio)
+>  		return NULL;
+>  
+>  	do {
+> @@ -7102,7 +7111,7 @@ static unsigned int
+>  
+>  	/* see get_from_any_partial() for the defrag ratio description */
+>  	if (!s->remote_node_defrag_ratio ||
+> -			get_cycles() % 1024 > s->remote_node_defrag_ratio)
+> +	    slab_get_prandom_state(1024) > s->remote_node_defrag_ratio)
+>  		return 0;
+>  
+>  	do {
+> @@ -8421,7 +8430,7 @@ void __init kmem_cache_init_late(void)
+>  	flushwq = alloc_workqueue("slub_flushwq", WQ_MEM_RECLAIM | WQ_PERCPU,
+>  				  0);
+>  	WARN_ON(!flushwq);
+> -#ifdef CONFIG_SLAB_FREELIST_RANDOM
+> +#if defined(CONFIG_SLAB_FREELIST_RANDOM) || defined(CONFIG_NUMA)
+>  	prandom_init_once(&slab_rnd_state);
+>  #endif
+>  }
+> 
+> 
 
