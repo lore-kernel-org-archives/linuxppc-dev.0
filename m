@@ -1,90 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-19692-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19693-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16A9CF34C51
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 13:06:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 069EBF34C52
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 13:28:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fvSNc4gQvz2ydn;
-	Mon, 13 Apr 2026 23:06:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fvSsY4GQBz2ydn;
+	Mon, 13 Apr 2026 23:28:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776071227;
-	cv=none; b=dsH1zizuD/GcUlNUp23HlJQu85uqzuX3QONBoCMFzacF0LK/303jzGHMN4GLJLUBt2xb4YAzbOaOckR5xiVpG5uyjAPOFp190V9EmVckR/IjQ/SO8UFDHvmY6Rq3iv/iShW5hvzjIKPGSeYBgXedflU006XxSkVJVUwRFaMh0Wi86ECGCiSaEuRAs4ht1q4Jty9g8HzmEqN4t3R/OUdUbckCEabW+Wh3Scc3noDj15xDBvKWGsncL57SsMtG6BKyiLI4MfZdtCcPrQE6t/ZfnRrlN6Gz/citAEozfRMmmtvlccgZfBiAZViovO8KmBXc6tgcJ5iY8ubAe11sNkMg5w==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776086913;
+	cv=none; b=FRXO/pn4G0FBo6EnXRkKptiHPE2I30dFKrg1i6QHamzu8RJpHXyTwTygHBzkJ+ImDBBSx826wDIo/+BNZt0lLFEkfkjRdB9HeXoEx298B8NxFv2qUsYZyhDgqlvE0MlgYG/BjQ/JIHvs1BUBbOSdo7inrZxK4qL2qC0aAQwHeMGxcsPHpXkr5OCp0mssXnjlJRHTi78tB9DZoz+AU3AaMa4vywLMSNznviYpCAcRtVT3L8Q7s/OWf7ywhvAXJd/39RBCY5ROH0Nv+RErFi1ILerHu0z9H3AgYZP8yyI8Oksi2V0tEFqPF4jw+Adelvx3JKXEjkZqvNh7dVRNaYnP4w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776071227; c=relaxed/relaxed;
-	bh=xfV+dBU9VPBYhioDWJ+nyjtSrTDypvBAP7vxHXh2p4I=;
+	t=1776086913; c=relaxed/relaxed;
+	bh=MCOqS5Qt7DUErLD1sGM2NitPZa1Tc1bVbjZ/Obd/mdo=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=WaVW/m/2/eG3g+b74ORH0eamkSuszhTgVLMTarSR2x8I+etX4vXnXTIvOLMktwrVPYehdKw/sPeOlB9fwX6Lw0UXlHKrbQ4r196WxjE968w6SLLbQrUqF+G7JAeCzNIxVcHqq8KaYKudeALHL3LzK/1W0SwgF9ip3xL7M4y5WEXfR0RCY6Vek2bRnIMToU7fZMKYbVEcD+fKzt/0F6ujfYU7Xb1/5X8JVMjearNxJ1id+bOANn/lsDDARIwyFukppMsBfL+2A0xjqE8x3NVJBvHJl3l0bZYzUawgU2BU7GnbPWBOVjb1O6MWoCxb6YsGwE6cQKA17Vtj21z97UHW2w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=G3inY+8J; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=harry@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=BX5GDqGYgJHdatuKA0X6iL2MM15PunVRetQ9/E9zH8reYvnZc/bu78SfFBVb+yuaeyt3/1k3kyQV/fZMZlkqT0Y5jClPfUk07D+FhsrQw7t916UZfCpRY436vLdJTX0nGPYrZwTNJ2CM52+onJhO40Bc9ghzb0IzSDqrZdaUJsGSM7mqdQZilMhe0PB32bQascL32veTK8NOLARv4nNSfObown7q/eGAO8Aw9M18BcghQ8ux16U6l4S5CotEg1k3yJASL7wZQdQbEzWq6cBtFezvpGfuCKjWPApKxfFGO+rJuMHH1frlG3uK3vVO8hacus9R2dEZYfTOjF7AWWHq5g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mQZFa8uj; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=G3inY+8J;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mQZFa8uj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=harry@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvM3t4K5mz2yjV
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2026 19:07:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvSsX3gv0z2yS9
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2026 23:28:32 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 21BFF43A69;
-	Mon, 13 Apr 2026 09:07:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 95C51C116C6;
-	Mon, 13 Apr 2026 09:07:03 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 24FA5435E2;
+	Mon, 13 Apr 2026 13:28:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1FF49C2BCAF;
+	Mon, 13 Apr 2026 13:28:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776071224;
-	bh=cS2/Y+fD/C6Fj1LtxcJRcP0gMiu198023wVz+PX5eN8=;
+	s=k20201202; t=1776086910;
+	bh=7VByJTwrbtmSQuR7FvCes1Iak+N/IKd4uFjkgcO39ug=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=G3inY+8JxkEibVwYUFszuCWlat+2WMkdb9cxQNukGQ5jOO4YosRVw/teIPjzkykJe
-	 VBaoK4GWe1nSvdZccXGItvVBbCBawDxBQYXoSn8ku3lctCl78nWa1bXrv8Cz5ii5WC
-	 gS594pXSn/PDkAlQW1x8pf1/M/IPGL/2AZ9s3tUP2y+EEht32F5HbttQfHidlVLFR9
-	 SB3RrQSSOyCGHY83n0fRRZdud5Xcyx9d8MmEOZogxSk4gxdYZjmVHZxvo/hzD3ige5
-	 KqFGmCdWJVKzfE5LlEz9DNkdZh7AXZJZD7MdmFDUG+6QJAH+W76oJ0Vl3ycqghmmEe
-	 IWEm9rwhj2q9g==
-Date: Mon, 13 Apr 2026 18:07:01 +0900
-From: "Harry Yoo (Oracle)" <harry@kernel.org>
-To: Thomas Gleixner <tglx@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-	Vlastimil Babka <vbabka@kernel.org>, linux-mm@kvack.org,
-	Arnd Bergmann <arnd@arndb.de>, x86@kernel.org,
-	Lu Baolu <baolu.lu@linux.intel.com>, iommu@lists.linux.dev,
-	Michael Grzeschik <m.grzeschik@pengutronix.de>,
-	netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	linux-crypto@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
-	Bernie Thompson <bernie@plugable.com>, linux-fbdev@vger.kernel.org,
-	Theodore Tso <tytso@mit.edu>, linux-ext4@vger.kernel.org,
+	b=mQZFa8ujuVe81yE8vcLgLxhVVWJzt+swKGWZ2ofKQXeOaAczk3K7ksXwrVlaJ+hYw
+	 yVXg5XiKV2rDDSHGmZ1cHQ+6AGEE+yBrBY8Yi+AJDfc5p1i4llszFa2XXvV01sTTec
+	 G5SA0gcFv2AQ1usMg1UopmrqtMVJnc6aLQ9KCriHB4Wjq3rdjlaeimKxzpGP4Tcub0
+	 Hpe1GUFInfON7xos/qUF6Ek0JOQtQ+M2Mm8BtjbuE4GPPPko8pTQjSqAPoaHfBPtIj
+	 Zk8VEGEOVMkuyQZ4NDKGfZm/7c5eMmPrWTp1byTgwQsPAwlXcKcEJE+KRr1I5UgG+L
+	 OZ747izg6AIcw==
+Date: Mon, 13 Apr 2026 16:28:21 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: Muchun Song <muchun.song@linux.dev>
+Cc: Muchun Song <songmuchun@bytedance.com>,
 	Andrew Morton <akpm@linux-foundation.org>,
-	Uladzislau Rezki <urezki@gmail.com>, Marco Elver <elver@google.com>,
-	Dmitry Vyukov <dvyukov@google.com>, kasan-dev@googlegroups.com,
-	Andrey Ryabinin <ryabinin.a.a@gmail.com>,
-	Thomas Sailer <t.sailer@alumni.ethz.ch>, linux-hams@vger.kernel.org,
-	"Jason A. Donenfeld" <Jason@zx2c4.com>,
-	Richard Henderson <richard.henderson@linaro.org>,
-	linux-alpha@vger.kernel.org, Russell King <linux@armlinux.org.uk>,
-	linux-arm-kernel@lists.infradead.org,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	linux-m68k@lists.linux-m68k.org, Dinh Nguyen <dinguyen@kernel.org>,
-	Jonas Bonn <jonas@southpole.se>, linux-openrisc@vger.kernel.org,
-	Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org,
+	David Hildenbrand <david@kernel.org>,
+	Oscar Salvador <osalvador@suse.de>,
 	Michael Ellerman <mpe@ellerman.id.au>,
-	linuxppc-dev@lists.ozlabs.org, Paul Walmsley <pjw@kernel.org>,
-	linux-riscv@lists.infradead.org, Heiko Carstens <hca@linux.ibm.com>,
-	linux-s390@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-	sparclinux@vger.kernel.org, Hao Li <hao.li@linux.dev>,
-	Christoph Lameter <cl@gentwo.org>,
-	David Rientjes <rientjes@google.com>,
-	Roman Gushchin <roman.gushchin@linux.dev>,
-	Shengming Hu <hu.shengming@zte.com.cn>
-Subject: Re: [patch 14/38] slub: Use prandom instead of get_cycles()
-Message-ID: <adyyNeVTkXQlnh_2@hyeyoo>
-References: <20260410120044.031381086@kernel.org>
- <20260410120318.525653921@kernel.org>
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Lorenzo Stoakes <ljs@kernel.org>,
+	"Liam R . Howlett" <Liam.Howlett@oracle.com>,
+	Vlastimil Babka <vbabka@kernel.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>, Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>, aneesh.kumar@linux.ibm.com,
+	joao.m.martins@oracle.com, linux-mm@kvack.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 06/49] mm/mm_init: fix uninitialized pageblock
+ migratetype for ZONE_DEVICE compound pages
+Message-ID: <adzvdRPrK55TutT6@kernel.org>
+References: <20260405125240.2558577-1-songmuchun@bytedance.com>
+ <20260405125240.2558577-7-songmuchun@bytedance.com>
+ <ady4LBppz-na5lM5@kernel.org>
+ <5910791C-9893-4710-9002-76534DBFBFBD@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,122 +81,121 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260410120318.525653921@kernel.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <5910791C-9893-4710-9002-76534DBFBFBD@linux.dev>
 
-[Resending after fixing broken email headers]
-
-On Fri, Apr 10, 2026 at 02:19:37PM +0200, Thomas Gleixner wrote:
-> The decision whether to scan remote nodes is based on a 'random' number
-> retrieved via get_cycles(). get_cycles() is about to be removed.
+On Mon, Apr 13, 2026 at 06:07:44PM +0800, Muchun Song wrote:
 > 
-> There is already prandom state in the code, so use that instead.
 > 
-> Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-> Cc: Vlastimil Babka <vbabka@kernel.org>
-> Cc: linux-mm@kvack.org
-> ---
+> > On Apr 13, 2026, at 17:32, Mike Rapoport <rppt@kernel.org> wrote:
+> > 
+> > On Sun, Apr 05, 2026 at 08:51:57PM +0800, Muchun Song wrote:
+> >> Previously, memmap_init_zone_device() only initialized the migratetype
+> >> of the first pageblock of a compound page. If the compound page size
+> >> exceeds pageblock_nr_pages (e.g., 1GB hugepages with 2MB pageblocks),
+> >> subsequent pageblocks in the compound page would remain uninitialized.
+> >> 
+> >> This patch moves the migratetype initialization out of
+> >> __init_zone_device_page() and into a separate function
+> >> pageblock_migratetype_init_range(). This function iterates over the
+> >> entire PFN range of the memory, ensuring that all pageblocks are correctly
+> >> initialized.
+> >> 
+> >> Fixes: c4386bd8ee3a ("mm/memremap: add ZONE_DEVICE support for compound pages")
+> >> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+> >> ---
+> >> mm/mm_init.c | 41 ++++++++++++++++++++++++++---------------
+> >> 1 file changed, 26 insertions(+), 15 deletions(-)
+> >> 
+> >> diff --git a/mm/mm_init.c b/mm/mm_init.c
+> >> index 9a44e8458fed..4936ca78966c 100644
+> >> --- a/mm/mm_init.c
+> >> +++ b/mm/mm_init.c
+> >> @@ -674,6 +674,18 @@ static inline void fixup_hashdist(void)
+> >> static inline void fixup_hashdist(void) {}
+> >> #endif /* CONFIG_NUMA */
+> >> 
+> >> +static __meminit void pageblock_migratetype_init_range(unsigned long pfn,
+> >> +        unsigned long nr_pages,
+> >> +        int migratetype)
+> >> +{
+> >> + unsigned long end = pfn + nr_pages;
+> >> +
+> >> + for (pfn = pageblock_align(pfn); pfn < end; pfn += pageblock_nr_pages) {
+> >> + init_pageblock_migratetype(pfn_to_page(pfn), migratetype, false);
+> >> + cond_resched();
+> > 
+> > Do we need to call cond_resched() every iteration here?
+> 
+> Of course not.
+> 
+> > 
+> >> + }
+> >> +}
+> >> +
+> >> /*
+> >>  * Initialize a reserved page unconditionally, finding its zone first.
+> >>  */
+> >> @@ -1011,21 +1023,6 @@ static void __ref __init_zone_device_page(struct page *page, unsigned long pfn,
+> >> page_folio(page)->pgmap = pgmap;
+> >> page->zone_device_data = NULL;
+> >> 
+> >> - /*
+> >> -  * Mark the block movable so that blocks are reserved for
+> >> -  * movable at startup. This will force kernel allocations
+> >> -  * to reserve their blocks rather than leaking throughout
+> >> -  * the address space during boot when many long-lived
+> >> -  * kernel allocations are made.
+> >> -  *
+> >> -  * Please note that MEMINIT_HOTPLUG path doesn't clear memmap
+> >> -  * because this is done early in section_activate()
+> >> -  */
+> >> - if (pageblock_aligned(pfn)) {
+> >> - init_pageblock_migratetype(page, MIGRATE_MOVABLE, false);
+> >> - cond_resched();
+> >> - }
+> >> -
+> >> /*
+> >>  * ZONE_DEVICE pages other than MEMORY_TYPE_GENERIC are released
+> >>  * directly to the driver page allocator which will set the page count
+> >> @@ -1122,6 +1119,8 @@ void __ref memmap_init_zone_device(struct zone *zone,
+> >> 
+> >> __init_zone_device_page(page, pfn, zone_idx, nid, pgmap);
+> >> 
+> >> + cond_resched();
+> > 
+> > Originally we called cond_resched() once per pageblock, now it's called
+> > once per page plus for every pageblock in the tight loop that sets the
+> > migrate type. Isn't it too much?
+> 
+> There are indeed many more cond_resched() than before, but I don’t have a
+> concise way to write it, so I took the easy way out.
+> 
+> How about:
+> 
+> diff --git a/mm/mm_init.c b/mm/mm_init.c
+> index 2d680636b67a..d13a2577c4c3 100644
+> --- a/mm/mm_init.c
+> +++ b/mm/mm_init.c
+> @@ -683,7 +683,8 @@ static __meminit void pageblock_migratetype_init_range(unsigned long pfn,
+> 
+>         for (pfn = pageblock_align(pfn); pfn < end; pfn += pageblock_nr_pages) {
+>                 init_pageblock_migratetype(pfn_to_page(pfn), migratetype, isolate);
+> -               cond_resched();
+> +               if ((pfn & (pageblock_nr_pages * 512 - 1)) == 0)
+> +                       cond_resched();
 
-Acked-by: Harry Yoo (Oracle) <harry@kernel.org>
+TBH, I don't know if 512 is the right number :)
 
-Is this for this merge window?
+pageblock boundary was a convenient point to have cond_resched() along with
+setting the migrate type.
 
-This may conflict with upcoming changes on freelist shuffling [1]
-(not queued for slab/for-next yet though), but it should be easy to
-resolve.
-
-[Cc'ing Shengming and SLAB ALLOCATOR folks]
-[1] https://lore.kernel.org/linux-mm/20260409204352095kKWVYKtZImN59ybO6iRNj@zte.com.cn
+Here we might be able to squeeze more iterations between subsequent
+cond_resched() calls.
 
 -- 
-Cheers,
-Harry / Hyeonggon
-
->  mm/slub.c |   37 +++++++++++++++++++++++--------------
->  1 file changed, 23 insertions(+), 14 deletions(-)
-> 
-> --- a/mm/slub.c
-> +++ b/mm/slub.c
-> @@ -3302,6 +3302,25 @@ static inline struct slab *alloc_slab_pa
->  	return slab;
->  }
->  
-> +#if defined(CONFIG_SLAB_FREELIST_RANDOM) || defined(CONFIG_NUMA)
-> +static DEFINE_PER_CPU(struct rnd_state, slab_rnd_state);
-> +
-> +static unsigned int slab_get_prandom_state(unsigned int limit)
-> +{
-> +	struct rnd_state *state;
-> +	unsigned int res;
-> +
-> +	/*
-> +	 * An interrupt or NMI handler might interrupt and change
-> +	 * the state in the middle, but that's safe.
-> +	 */
-> +	state = &get_cpu_var(slab_rnd_state);
-> +	res = prandom_u32_state(state) % limit;
-> +	put_cpu_var(slab_rnd_state);
-> +	return res;
-> +}
-> +#endif
-> +
->  #ifdef CONFIG_SLAB_FREELIST_RANDOM
->  /* Pre-initialize the random sequence cache */
->  static int init_cache_random_seq(struct kmem_cache *s)
-> @@ -3365,8 +3384,6 @@ static void *next_freelist_entry(struct
->  	return (char *)start + idx;
->  }
->  
-> -static DEFINE_PER_CPU(struct rnd_state, slab_rnd_state);
-> -
->  /* Shuffle the single linked freelist based on a random pre-computed sequence */
->  static bool shuffle_freelist(struct kmem_cache *s, struct slab *slab,
->  			     bool allow_spin)
-> @@ -3383,15 +3400,7 @@ static bool shuffle_freelist(struct kmem
->  	if (allow_spin) {
->  		pos = get_random_u32_below(freelist_count);
->  	} else {
-> -		struct rnd_state *state;
-> -
-> -		/*
-> -		 * An interrupt or NMI handler might interrupt and change
-> -		 * the state in the middle, but that's safe.
-> -		 */
-> -		state = &get_cpu_var(slab_rnd_state);
-> -		pos = prandom_u32_state(state) % freelist_count;
-> -		put_cpu_var(slab_rnd_state);
-> +		pos = slab_get_prandom_state(freelist_count);
->  	}
->  
->  	page_limit = slab->objects * s->size;
-> @@ -3882,7 +3891,7 @@ static void *get_from_any_partial(struct
->  	 * with available objects.
->  	 */
->  	if (!s->remote_node_defrag_ratio ||
-> -			get_cycles() % 1024 > s->remote_node_defrag_ratio)
-> +	    slab_get_prandom_state(1024) > s->remote_node_defrag_ratio)
->  		return NULL;
->  
->  	do {
-> @@ -7102,7 +7111,7 @@ static unsigned int
->  
->  	/* see get_from_any_partial() for the defrag ratio description */
->  	if (!s->remote_node_defrag_ratio ||
-> -			get_cycles() % 1024 > s->remote_node_defrag_ratio)
-> +	    slab_get_prandom_state(1024) > s->remote_node_defrag_ratio)
->  		return 0;
->  
->  	do {
-> @@ -8421,7 +8430,7 @@ void __init kmem_cache_init_late(void)
->  	flushwq = alloc_workqueue("slub_flushwq", WQ_MEM_RECLAIM | WQ_PERCPU,
->  				  0);
->  	WARN_ON(!flushwq);
-> -#ifdef CONFIG_SLAB_FREELIST_RANDOM
-> +#if defined(CONFIG_SLAB_FREELIST_RANDOM) || defined(CONFIG_NUMA)
->  	prandom_init_once(&slab_rnd_state);
->  #endif
->  }
-> 
-> 
+Sincerely yours,
+Mike.
 
