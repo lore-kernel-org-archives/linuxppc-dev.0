@@ -1,90 +1,91 @@
-Return-Path: <linuxppc-dev+bounces-19708-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19709-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F0B8F34C64
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 15:51:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5292F34C63
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 16:00:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fvX2v4dgTz2yvB;
-	Tue, 14 Apr 2026 01:51:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fvXDh0PqQz2ywS;
+	Tue, 14 Apr 2026 02:00:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=202.12.124.146
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776095511;
-	cv=none; b=RR30zT1mtcabpbTsbOjFlPFamFaUcVKdXN7qHjP4tzXsHe9P5UXlpxL7ab2Z/uhZCCnj0ikYULuXADhD72tkSxP3QSTLUy56nDmQigE4YW0bnGWr9i5jLufGCZsPE1Ve4bTIsIAapinInf4UudP+Y6h8X3/LkGvdNM92xp3e0bpSC5I5021JrtvJ5a2dyn1YQT0A8JXNjmIj3okzxhgfudz/RFyw/dpV91gS5QzDSVuwH8DeJdLlChEsAXyfH4R/iGPt2MMWMBgOYb7qIi4TLtzME6CA/in43fFih0GowCjLnY98g7Kw0H3FCLXrcHwSgN7CgQfqklaRW4E0aqoIcA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776096019;
+	cv=none; b=FfI7HhR/deAlyVUR4BVs5ls/WahxldWq0oyFq+55wRXK1xxU5BpxJDOG/gBMe69jssN7C2rCrxCq90jplpnwPle9ibA0X+YGhQ6IO3LisMVoTHhXtbjyh9Yeeffm+klIadLicqDez3YFuCOWjsUY/+j3eoYKYEY+iGXnYyta0wO6xYj6/4sw48MFTbOJ8dl7tm4GcPCyJJKCzKbN/aw4A6t8dCl24ul8VLU0xSmzQZ8XDD9gWDd2gG0w838RBtCoNXql5tiSbJDKIHSUSe7kS32q3NED/HUuSzjRw2jPcLGZYxx7JkZ6NBT3q5YDDaCQUZvhMNS+VK+lkDMZLL5DyA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776095511; c=relaxed/relaxed;
-	bh=Mi1t5yTJ7BSsNOtqiw5PO/Gvmm+5EbskAhnRecllWew=;
+	t=1776096019; c=relaxed/relaxed;
+	bh=/iv/pcTfVSlpNC7zw/ioPJR8syUP7va6YCEpuLUEAwc=;
 	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=ZLOzYs/PZkfonJFi3xKG/CHvogBGhueiTT8NxO04Hz2RSO1SMJmQABHwwO1bIVGrpV/jp5408KHn0EJkrzH0Zb8TLh6V7yPogWvUTNBbhPaxYeaD+8o0HV0Zfxy1DkZCMnIP09YO1kUgDsL5WnftgiQF+8xesSRxrddpCjFgRTZRXRdmJOuUKg7BEoLY27Ych6swFrr/u3BJXepiayQ5CXCFmNHsC7lQyQ3E2MAK2ZhpfXO/UUDzCAHgOdHlRcRq31fT4ymrGA4nbNAFdMj8y6BRyCiKLIM1Wi9tKtsqKna6BW+P8UxR4M02KESM9xmDuj4ZHACHvHOgPmIXPgqGlw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=CTGl5Ana; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=fab+xdUH; dkim-atps=neutral; spf=pass (client-ip=202.12.124.146; helo=fout-b3-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
+	 Subject:Content-Type; b=hqDPoZg+NnafFPPE+8Vu6D2pm9d01DifkKbB5LD3q2cSEuVB3RHojKNovZvC8jp0PxCf85Bu5ls4SOoEBhwxbaIwCjGsBV48F6h9ZVsNL/hP7aKApijps73q3sZkrU6NWUIErkA6myjJAHYf6R+aLlVeRc7BdQ1L7X8pBk8++cJvyA1g0nKQaavPLLNqv60U82aDULPy8tRba/4HMT0VzKGDnQ//5bt99GITXK240bOVp5sPneV4DiVlu3P7UHgt+ovNZcfuh48FPfHhleEBWxsPyToMi7UyUzz+xtuxGLDirrsjiNmimJPg+hXD1omdeWVR1U1Qjn5qMn4dxf+Gtw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=kJA6OGRc; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=Jvg7F7L8; dkim-atps=neutral; spf=pass (client-ip=202.12.124.146; helo=fout-b3-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=CTGl5Ana;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=fab+xdUH;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=kJA6OGRc;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=Jvg7F7L8;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=202.12.124.146; helo=fout-b3-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
 Received: from fout-b3-smtp.messagingengine.com (fout-b3-smtp.messagingengine.com [202.12.124.146])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvX2r1B27z2xSN
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2026 01:51:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvXDf60RQz2yxN
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2026 02:00:18 +1000 (AEST)
 Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
-	by mailfout.stl.internal (Postfix) with ESMTP id 4D0651D00168;
-	Mon, 13 Apr 2026 11:51:44 -0400 (EDT)
+	by mailfout.stl.internal (Postfix) with ESMTP id C4D1C1D0022B;
+	Mon, 13 Apr 2026 12:00:15 -0400 (EDT)
 Received: from phl-imap-02 ([10.202.2.81])
-  by phl-compute-04.internal (MEProxy); Mon, 13 Apr 2026 11:51:44 -0400
+  by phl-compute-04.internal (MEProxy); Mon, 13 Apr 2026 12:00:16 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
 	:cc:content-transfer-encoding:content-type:content-type:date
 	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm1; t=1776095504;
-	 x=1776181904; bh=Mi1t5yTJ7BSsNOtqiw5PO/Gvmm+5EbskAhnRecllWew=; b=
-	CTGl5AnaNsPhlrIqsen0iiQcVJseNBgvfWI00At3ST102r0Uhf0o67h1a1g7B5Bz
-	Diaw8VbTx69vW1k3zsph6B8qeXBmCJOpgJ2htWQ+0zq/cE4hGRVGzD5zLwb2xlMD
-	Zo/nme0Oc723rGwFHVXn3XlRjK6wSQMr2EsIwgoH1J4LALRzGRi37R5pJkLee/51
-	yZHgByazW2Ws1zfvZCh5lQn/MoWqhmldujZOXNJpbi5WqiohFfKo1owkWsxPAVHv
-	TWxsOJ342FPPTNfeIyv0PDp/Oqq/MHdkLMclE6QEzwcFvZaM47fqqUxC9AVZQYD0
-	N12Y50C59YORmqUgUcsP8w==
+	:references:reply-to:subject:subject:to:to; s=fm1; t=1776096015;
+	 x=1776182415; bh=/iv/pcTfVSlpNC7zw/ioPJR8syUP7va6YCEpuLUEAwc=; b=
+	kJA6OGRcjNDnTIHp9/+o9ZSHh9U87mPaZgP1CwmmfY7MzwbD1aaqBmf4pqbx2oj9
+	CA9nc2uYHzCwWiDRhdD7xdmxeE5hww1zGg6XE0EIGZKdpY9fdY1dAybDwqY050jV
+	CHeGqwVoOWucCrUshb8+nbkMzeavCz5a+gZq8qC6yEIbnBuhu/YB9Q+asq66prQ6
+	6H0vsKgJAbjd3hUF0HU0r4s6qMlifDEIrqTtstf0PARc4QnZQHMFW6Q53s7S54LZ
+	Np1WO1WbzjIZCt6MNhqsmbUujAjnIeqkgIdGgAsk+Sux/e3t1j83u2O6e9FQft47
+	Hw17JZ5GfI7gL2eHhRxawA==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding
 	:content-type:content-type:date:date:feedback-id:feedback-id
 	:from:from:in-reply-to:in-reply-to:message-id:mime-version
 	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=1776095504; x=
-	1776181904; bh=Mi1t5yTJ7BSsNOtqiw5PO/Gvmm+5EbskAhnRecllWew=; b=f
-	ab+xdUHXtn8qe+soKJoxxEksK6YpF19w8XLcxmu5DAFsMgITWQn4LkAFiABHwrWc
-	pQivcpTbbE8r9BI0Mjq3gydIkwXhcv+U6Dx5ucgpfNYG1qLh/7LDIivvzRGYuGGy
-	CCjcZcWzoAi6GbpN8NqtZmTLMY9q8Ob39nZ4e4/eYeBPNYlsnKg9hHckB6xBc26T
-	yt7nXHtQhBo/jMj8fHVtIR+K33ZwK5CaeHDddcWKnCyUtJL1KJLZbcTnLv62omCb
-	TX1hqrcd42FdT8b02mGfGiEgdZEpR1kjY8anCrNPPNGpiXWkGCuYe0rTxz7CCshQ
-	ABhQDT1Ya0q9Ec8OBTeDg==
-X-ME-Sender: <xms:DxHdaaic1MhpoOffJVqS-EEnJQNlqt58euKvGJbtLtyigA0W87QS8g>
-    <xme:DxHdaV13tH0GYG0lwsRmwYifZELqjsrLMYJjSsC176p1K1EQx2cKt6Wod0lvoe2MW
-    SCZ86JptRD5IrE_TD5Vx_JIAe6QSBrUN4uXVe05uBW-osyRsrta-w>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefhedrtddtgdefkeeigecutefuodetggdotefrod
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=1776096015; x=
+	1776182415; bh=/iv/pcTfVSlpNC7zw/ioPJR8syUP7va6YCEpuLUEAwc=; b=J
+	vg7F7L8FyJXYdEnshDaciGCf9pIcFLCzR6Ene0aVah8RXDmBfwO4I/D3d9sZ5SRL
+	PJ5TX3D01Eh3m3eBBavB/Pb70oI+jTdcr8jTI5SXajknnjpj5aaxnapPdTk6i4xm
+	lAB2XOZMRDqDU1MTlTs/0hcb5iVewpXmtj20v73LEUw1qCm68NzWZtlIxHOuYpJr
+	5GvirjO2QGVhHrJ9h1Jmrv5wHA1TACl3EoY2djQvAlOKfDy5FVi05eEDciHnCi/P
+	dr9LcTzns3NdtlWMgS9B1MUkd7FYCsscuTLLgvfcasG3xlv/yfl1DMsLMwWNmVzv
+	6+zbP9hjfWjpb7I/mghRw==
+X-ME-Sender: <xms:DRPdaVfdpotbO1iYzJjWWlXaJS3HI_WoSltc4WepeMHyXE-PoL754Q>
+    <xme:DRPdaeA7q7qiKTkxoFUOnmfeCh4AEYt6wrZGhDTXArkCzVlA45_bCrL8inlNZW0v_
+    orrl3be3-etlzj-DOSMsUzgm2Y7rS_Wwulvzl5-ZSDUZdLUYfZO8A>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefhedrtddtgdefkeeihecutefuodetggdotefrod
     ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpuffrtefokffrpgfnqfghnecuuegr
     ihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjug
     hrpefoggffhffvvefkjghfufgtgfesthhqredtredtjeenucfhrhhomhepfdetrhhnugcu
     uegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrghtthgvrh
     hnpedvhfdvkeeuudevfffftefgvdevfedvleehvddvgeejvdefhedtgeegveehfeeljeen
     ucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpegrrhhnug
-    esrghrnhgusgdruggvpdhnsggprhgtphhtthhopeejpdhmohguvgepshhmthhpohhuthdp
-    rhgtphhtthhopehrihhtvghshhdrlhhishhtsehgmhgrihhlrdgtohhmpdhrtghpthhtoh
-    eptghhlhgvrhhohieskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepmhgrugguhieslhhi
-    nhhugidrihgsmhdrtghomhdprhgtphhtthhopehvvghnkhgrthekkeeslhhinhhugidrih
-    gsmhdrtghomhdprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohii
-    lhgrsghsrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgsuhhilhgusehvghgvrhdrkh
-    gvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdr
-    khgvrhhnvghlrdhorhhg
-X-ME-Proxy: <xmx:DxHdaTglPYtYdHMyXTUIuwsDeqflRHGCzizIlsKhDfslAUHTtr7UTA>
-    <xmx:DxHdacAm0fjplbrcVt6c2Uai-D01m_as4jOhJs7D95tD6JqscYxESg>
-    <xmx:DxHdaVRQoZXQ0Ge7PZJBP-ybE3S13bU-E7ttfrJD-trk27WYAfMQdg>
-    <xmx:DxHdaRWM_rvKnRgD6Ek60Sak1MxfKiBkX0D8Q83owc9Va65g7NqERA>
-    <xmx:EBHdaYzKVBAfRKqc43g40qw9CdCtayuAMM8mpgtktC1UNDguKt-phLDj>
+    esrghrnhgusgdruggvpdhnsggprhgtphhtthhopedvuddpmhhouggvpehsmhhtphhouhht
+    pdhrtghpthhtohepsghpsegrlhhivghnkedruggvpdhrtghpthhtohepthhssghoghgvnh
+    gusegrlhhphhgrrdhfrhgrnhhkvghnrdguvgdprhgtphhtthhopegtrghtrghlihhnrdhm
+    rghrihhnrghssegrrhhmrdgtohhmpdhrtghpthhtohepvhhinhgtvghniihordhfrhgrsh
+    gtihhnohesrghrmhdrtghomhdprhgtphhtthhopehlihhnuhigsegrrhhmlhhinhhugidr
+    ohhrghdruhhkpdhrtghpthhtohepmhhpvgesvghllhgvrhhmrghnrdhiugdrrghupdhrtg
+    hpthhtohepnhhpihhgghhinhesghhmrghilhdrtghomhdprhgtphhtthhopegthhhlvghr
+    ohihsehkvghrnhgvlhdrohhrghdprhgtphhtthhopehluhhtoheskhgvrhhnvghlrdhorh
+    hg
+X-ME-Proxy: <xmx:DRPdaf5fXMYwGOWBC0zanDfiF2IuNgZk_f2iUCfvYVFiausgWLXSbw>
+    <xmx:DRPdaQe6zPs0blaShvhgRAIWo-HOdiomZZkaBaFNhrGCYsRBTl9QAQ>
+    <xmx:DRPdaWcbvINdiaSI1XeAv8M2D9FanhzKGKlthu3sWagepmnnwbbCpA>
+    <xmx:DRPdaVEo-67EI4TFYpv1ZRy9W9liAZ64tRhZLtOBgqsKoT83ANCSpQ>
+    <xmx:DxPdaUet41BCzQhq9q0SSToBRAc2fnLXzjh2mVL22hpKsfvYU4qlR34c>
 Feedback-ID: i56a14606:Fastmail
 Received: by mailuser.phl.internal (Postfix, from userid 501)
-	id 9227D700065; Mon, 13 Apr 2026 11:51:43 -0400 (EDT)
+	id 6BE7270006D; Mon, 13 Apr 2026 12:00:13 -0400 (EDT)
 X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -99,71 +100,93 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-ThreadId: Ab6DPzpUApkg
-Date: Mon, 13 Apr 2026 17:51:22 +0200
+X-ThreadId: ARwL1vy566MZ
+Date: Mon, 13 Apr 2026 17:59:52 +0200
 From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Venkat Rao Bagalkote" <venkat88@linux.ibm.com>,
- "Madhavan Srinivasan" <maddy@linux.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- "Christophe Leroy" <chleroy@kernel.org>
-Message-Id: <929a3612-5d0f-4298-bb0f-b6cb0c215e85@app.fastmail.com>
-In-Reply-To: <E92E66BE-165B-4289-99B1-3F4E6B84CAAD@linux.ibm.com>
-References: <20260330103530.6873-1-venkat88@linux.ibm.com>
- <68e9ca6a-c53b-4f15-85b3-7ae9639f9528@linux.ibm.com>
- <6c00b695-9e84-4dd8-abbb-306fd67d6f97@linux.ibm.com>
- <E92E66BE-165B-4289-99B1-3F4E6B84CAAD@linux.ibm.com>
-Subject: Re: [PATCH v4] char/nvram: Remove redundant nvram_mutex
+To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "Andy Lutomirski" <luto@kernel.org>,
+ "Thomas Gleixner" <tglx@kernel.org>, "Ingo Molnar" <mingo@redhat.com>,
+ "Borislav Petkov" <bp@alien8.de>,
+ "Dave Hansen" <dave.hansen@linux.intel.com>, x86@kernel.org,
+ "Russell King" <linux@armlinux.org.uk>,
+ "Catalin Marinas" <catalin.marinas@arm.com>, "Will Deacon" <will@kernel.org>,
+ "Madhavan Srinivasan" <maddy@linux.ibm.com>,
+ "Michael Ellerman" <mpe@ellerman.id.au>,
+ "Nicholas Piggin" <npiggin@gmail.com>,
+ "Christophe Leroy" <chleroy@kernel.org>,
+ "Thomas Bogendoerfer" <tsbogend@alpha.franken.de>,
+ "Vincenzo Frascino" <vincenzo.frascino@arm.com>,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org
+Message-Id: <15925544-1ae5-406a-b9cc-af5935cc9f02@app.fastmail.com>
+In-Reply-To: 
+ <20260410091131-46b6354c-9d06-4e47-9345-ee224d8528f7@linutronix.de>
+References: <20260227-vdso-compat_32bit_time-v1-0-3f0286a7bac3@linutronix.de>
+ <20260227-vdso-compat_32bit_time-v1-1-3f0286a7bac3@linutronix.de>
+ <c29f5e70-bd17-4e1b-a005-5a3282e70075@app.fastmail.com>
+ <03cd1e21-a2f2-46a1-a674-cbaef9712016@app.fastmail.com>
+ <20260227103226-cc3bb32c-0107-4c09-b81a-ca33ea03ad5c@linutronix.de>
+ <49b7c9f9-198a-49f7-880b-6ae74d7bd985@zytor.com>
+ <2b1ac7b9-fcc8-4aa3-a0ad-eb37e4bce030@app.fastmail.com>
+ <20260410091131-46b6354c-9d06-4e47-9345-ee224d8528f7@linutronix.de>
+Subject: Re: [PATCH 1/7] x86/vdso: Respect COMPAT_32BIT_TIME
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Apr 7, 2026, at 11:02, Venkat wrote:
->> On 7 Apr 2026, at 12:11=E2=80=AFPM, Tellakula Yeswanth Krishna <yeswa=
-nth@linux.ibm.com> wrote:
+On Fri, Apr 10, 2026, at 09:24, Thomas Wei=C3=9Fschuh wrote:
+> On Tue, Mar 03, 2026 at 09:50:33PM +0100, Arnd Bergmann wrote:
+>> On Tue, Mar 3, 2026, at 19:11, H. Peter Anvin wrote:
+>> >
+>> > The time zone in the kernel has never worked anyway, as it would re=
+quire the
+>> > kernel to contain at least the forward portion of the zoneinfo/tzda=
+ta table in
+>> > order to actually work correctly. The only plausible use of it woul=
+d be for
+>> > local time-based filesystems like FAT, but I don't think we bother.
+>> >
+>> > A bigger question is whether or not we should omit these from the v=
+DSO
+>> > completely (potentially causing link failures) or replace them with=
+ stubs
+>> > returning -ENOSYS.
 >>=20
->> Tested-by: yeswanth <yeswanth@linux.ibm.com>
->>=20
->> On 02/04/26 9:33 pm, Tellakula Yeswanth Krishna wrote:
->>>=20
->>> On 30/03/26 4:05 pm, Venkat Rao Bagalkote wrote:
->>>> The global nvram_mutex in drivers/char/nvram.c is redundant and unu=
-sed,
->>>> and this triggers compiler warnings on some configurations.
->>>>=20
->>>> All platform-specific nvram operations already provide their own in=
-ternal
->>>> synchronization, meaning the wrapper-level mutex does not provide a=
-ny
->>>> additional safety.
->>>>=20
->>>> Remove the nvram_mutex definition along with all remaining lock/unl=
-ock
->>>> users across PPC32, x86, and m68k code paths, and rely entirely on =
-the
->>>> per-architecture nvram implementations for locking.
->>>>=20
->>>> Suggested-by: Arnd Bergmann <arnd@arndb.de>
->>>> Signed-off-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-
-Reviewed-by: Arnd Bergmann <arnd@arndb.de>
-
-> Thanks for the earlier review and suggestion on this change.
+>> I see no harm in keeping gettimeofday() in the vdso when
+>> COMPAT_32BIT_TIME is turned on, as existing code will call it
+>> no matter whether it's in the vdso or the syscall.
 >
-> I=E2=80=99m not entirely sure which tree would be the best home for th=
-is patch,=20
-> given that the change touches common NVRAM code used across multiple=20
-> architectures (PPC32, x86, and m68k).=20
->
-> If there are no further comments or objections from others, would you=20
-> be able to pick this up through your tree?
->
-> Please let me know if this should instead go via some other tree or ma=
-intainer.
+> We would still always keep them for 64-bit ABIs, right?
 
-Greg manages the char-misc.git tree, while I mainly do reviews. Please
-resend the patch once 7.1-rc1 is out, with Greg as the recipient,
-and keeping the rest of the Cc list.
+Yes, I think we can't easily change that now. It was probably
+a mistake to keep them in the generic syscall table after
+we dropped them for 32-bit non-time32 targets, so riscv64
+and loongarch should have not had these in the first place.
 
-       Arnd
+>> Equally, I see no point in having either version of
+>> gettimeofday() or settimeofday() when COMPAT_32BIT_TIME is
+>> disabled, as clearly anything calling it would pass incorrect
+>> data for times past 2038.
+>
+> Should we also drop the syscalls in these cases?
+> We will need to keep settimeofday() in some form to support the
+> timewarping call done by init.
+>
+> Recap/Proposal:
+>
+> * Keep the gettimeofday()/time() syscalls when they are y2038 safe or
+>   CONFIG_COMPAT_32BIT_TIME is set.
+> * The vDSO functions always mirror the systemcall availability.
+
+These sound good.
+
+> * Always provide settimeofday(). If CONFIG_COMPAT_32BIT_TIME is *not*
+>   set, reject passing any 'tv' argument where it may not be y2038 safe.
+
+This sounds wrong to me now: the case I'm worried about is a 32-bit
+system calling settimeofday() based on the value of an RTC or NTP.
+The idea of CONFIG_COMPAT_32BIT_TIME=3Dn is to catch this by causing
+an intentional ENOSYS error even for valid times, so it doesn't
+suddenly start breaking in 2038.
+
+     Arnd
 
