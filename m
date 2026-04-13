@@ -1,92 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-19719-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19720-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8AC42F531C9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 19:31:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20745F531CE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 21:37:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fvcwd6SKQz2yv4;
-	Tue, 14 Apr 2026 05:31:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.139
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776108705;
-	cv=none; b=IxPrR5amMjDM/ypXofKed053Illjsk3bjyDFlN5IsfIPpBylEdtPcykzpdd2W/3ujFpzUeJC7SZcmFem2t19HuFXOwb3LXYarkaEuNC2dmoYb9ccxy+DksBjSn+JXxc2YWUjukAs1kTacHM1hAQdhg9DgN8NyBV/k6OsK9p6+zJYImiPrrL8r6Dc8udSV89XaVkKSapijAQIlgjJ845kJmwvYnB1riLGW86z2aVNuUGj7WGOfKXiRYVD8U4eHugAzkCVEHJEQUcLyScdF252lGxNxA1U9vY2V4ngCG46XiAmTf8GDkz6creai8RhKG6mN5AVSoC9e7esW9p7qgPFGg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776108705; c=relaxed/relaxed;
-	bh=oF7+4SGRAImH9WMGSId2dJm+4RdrBt2YGrt25aFUZUA=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=eSE7F4wB3SJym0LuF8XWzXdfwu0ZTvpi0yZL41uZZEvEQNz3IvopeUGwYdUnKivp7dhpdJFSYUyeDHKAcuP4hGs4zi99T7Ff3fK09vk7/QJPiVa628POwaCmAHCUSVlZBuWwLPyvBDuO0+Z7oji9E9xQF7ZJD+OhGq/v5dkPdcPC11/quT9ApgVE99xrl7wD3wrAmYEqlM341547PTQOL8GgYgjr3GVP8A5dRAoVGGIEAGVryjitkA+6dAsDYeIjiBmqAO6SzvDGYJhymJjamVITPLaZBg10OIXOpq3RISSBjo+4v3VvhftJHuthLTvECmJgAOpdkyA3jNj8x7LBDw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=eBEb3+z4; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=fK2XbJ97; dkim-atps=neutral; spf=pass (client-ip=103.168.172.139; helo=flow-a4-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fvgk34G6vz30B7;
+	Tue, 14 Apr 2026 07:37:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::32e" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776116267;
+	cv=pass; b=Xy4QFLu/sIUO3bmPOFzFElpib1kGuoE4/5YMOg0Ja7PFfusJc8BHdigupcH6EuHE0lefqoz8q6peSCqFQH/Wkux2Z2yLEvpFAuO5VHihfUa2YfebwYG5fjhveO8d4KH/Qzwe7UW60iCGKDBh2dCa8qCF4/SB8ZeWaIBHrs7+h+SPD72q3FhB0XWr8UebT13VYbc4HpzrcIhriMXkMYgRtSGLj4FEOvEbzL02i3Y/r/XMmIqkNV2wL1SHBRHoGw13wHLwP622hA/8OuYYkDC2OEV19aX/2EHoa+MNqBD19aoAihDsrpq/7h7nQAuqazSrvm1UoCNwl9/VarPqy4Es3Q==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1776116267; c=relaxed/relaxed;
+	bh=wi7gLRpNhJNBp6N3dtmB/IxXr7jq+139i4egV+abNLI=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=CEYIp3Dzi5+sb2mfLesohc8U6LVSQi6HnxzbFN6qHdp81M343KGFxruAlXLde13bIpQfjHnA06+hLLhcmYWGlAvDKF7WKuWq6UB4EhaLUdrcNFsX21VRXLQrd+JnTzZfgyWnfC31MwWNHXuAQr0g/1YGN/ifaCfZc0iuaMDRpORGv4dTr57oh4PwrFnUhbdsf0SH0wngMv4DhdDq6CYx+rKuJy5wcI005m5ZIaXPXL4LV2/67dNb4RaqzbvVLwHGLtcb030n2UTUokjwA5hzrmCNCuZr5GltwLy0V/CpAkNP48iAy+9sjlXtPYuzXXgEIoAXLMt7AMcjy0i+r4Hi9A==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ofNCv5Hz; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32e; helo=mail-wm1-x32e.google.com; envelope-from=litaliano00.contact@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=eBEb3+z4;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=fK2XbJ97;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ofNCv5Hz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=103.168.172.139; helo=flow-a4-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
-Received: from flow-a4-smtp.messagingengine.com (flow-a4-smtp.messagingengine.com [103.168.172.139])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::32e; helo=mail-wm1-x32e.google.com; envelope-from=litaliano00.contact@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvcwZ0gF7z2yv3
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2026 05:31:41 +1000 (AEST)
-Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
-	by mailflow.phl.internal (Postfix) with ESMTP id 9BAA81380415;
-	Mon, 13 Apr 2026 15:31:38 -0400 (EDT)
-Received: from phl-imap-02 ([10.202.2.81])
-  by phl-compute-04.internal (MEProxy); Mon, 13 Apr 2026 15:31:38 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm1; t=1776108698;
-	 x=1776115898; bh=oF7+4SGRAImH9WMGSId2dJm+4RdrBt2YGrt25aFUZUA=; b=
-	eBEb3+z4uCJ5XpVJfmMDtd+Hz4pTmn4rIKoszU8vf+435LUmCEc3EJdi4K0/oVv8
-	C+yjXVYuraejFdA/rcQOSN6Zfi5pNlS43GslApllsudgHnK44npvkIwaUHWVTtuh
-	Dw/4I/j/UNeqyr1LQlKmH5vdXZciz/2GPqFtFHFDNoaInKEsvm7hwh9DYdVnGoah
-	lMAIbVhEjH95sryDmrUzci3AfaiCDHHYDZH3oXJ/R4+VlvsfKJPopXWx0JE7CxaE
-	ognvTjwa06PAMT31z/DBGKMGBcoGUsjb6Y3k+6cm618rMbyQ7yCpT6T6pE5XH3Hf
-	w2SGXNdq7Abx7TrcOF+CrA==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=1776108698; x=
-	1776115898; bh=oF7+4SGRAImH9WMGSId2dJm+4RdrBt2YGrt25aFUZUA=; b=f
-	K2XbJ97Y0jsbU1s6LswXOEcaT2AuIJQsZKTCiqB2bsDjsavXFxXjXN24HUjqmHPV
-	30lUfZzPVJ0GZrRSLZsyTrPlhAwj+oOp7rzHIcW4Q+ggBxcGWjNT+roTWJQkS80p
-	muhmPfZao8pyrAslQS6xE9YgbnnrpBmxpEViK0VuBn5kyHZfCSLFSApLiy8hZEkj
-	X3o7U4xt3roWjYEf/0QsKGiNqeP3myXk/e3+BEa4KYIE59wmYsrhudiDwV46CB5d
-	E8K4OFv0fHuOdK14nnUUxfff3rCPKj8vJw3X7p6M4i0BpN1E8RSwySIEaUf5sCqK
-	alHtK1Rc5jgsKIF8k3s0A==
-X-ME-Sender: <xms:l0TdaRMQ1ovC5UjXw9wB_riUJbJZBZQ47VcEC4ozPMlWVwTWyL-hPg>
-    <xme:l0Tdaey9qAPkMkkSsq5ZowyLiVSaVZg3Aabqq1QUbhdAX-Y8VC29U600TE9HTIGWj
-    W-h6ka_l-N0bKYGG_W-3bzXlHGY0ZcjcSbZR_zuoL-6Ds0X7Q55CQ>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefhedrtddtgdefledtkecutefuodetggdotefrod
-    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpuffrtefokffrpgfnqfghnecuuegr
-    ihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjug
-    hrpefoggffhffvvefkjghfufgtgfesthhqredtredtjeenucfhrhhomhepfdetrhhnugcu
-    uegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrghtthgvrh
-    hnpedvhfdvkeeuudevfffftefgvdevfedvleehvddvgeejvdefhedtgeegveehfeeljeen
-    ucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpegrrhhnug
-    esrghrnhgusgdruggvpdhnsggprhgtphhtthhopeegkedpmhhouggvpehsmhhtphhouhht
-    pdhrtghpthhtohepthdrshgrihhlvghrsegrlhhumhhnihdrvghthhiirdgthhdprhgtph
-    htthhopegtrghtrghlihhnrdhmrghrihhnrghssegrrhhmrdgtohhmpdhrtghpthhtohep
-    lhhinhhugiesrghrmhhlihhnuhigrdhorhhgrdhukhdprhgtphhtthhopegurghvvghmse
-    gurghvvghmlhhofhhtrdhnvghtpdhrtghpthhtohepmhhpvgesvghllhgvrhhmrghnrdhi
-    ugdrrghupdhrtghpthhtoheprhihrggsihhnihhnrdgrrdgrsehgmhgrihhlrdgtohhmpd
-    hrtghpthhtohepuhhrvgiikhhisehgmhgrihhlrdgtohhmpdhrtghpthhtohepuggvlhhl
-    vghrsehgmhigrdguvgdprhgtphhtthhopehhvghrsggvrhhtsehgohhnughorhdrrghprg
-    hnrgdrohhrghdrrghu
-X-ME-Proxy: <xmx:l0TdaTelOssYXt15-FK9p6saYLM_nmrvIO6c-_F3ZyF6_xfZywmCYA>
-    <xmx:l0TdaUxOkh6ozfKMIVT4v_qdW_i5Tss0CLMqkf2F01TBmahdCnZo_w>
-    <xmx:l0TdaUWn-LdWx2_7oUHRu6zzNshE3wCLw-aFKzbUUXN26D6Q-_6vLw>
-    <xmx:l0TdacTwYVtUWJnf_Fdh14nt-sYvlNq7AaQbOTvOw2Uu221fQyzEjQ>
-    <xmx:mkTdaTH5uGiAlbaAI17-uSN6CKxYeQsdeWCm3ruscf_j0l2LK_Chakad>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.phl.internal (Postfix, from userid 501)
-	id 04818700069; Mon, 13 Apr 2026 15:31:35 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvgk14kZwz2yv3
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2026 07:37:45 +1000 (AEST)
+Received: by mail-wm1-x32e.google.com with SMTP id 5b1f17b1804b1-488a29e6110so53528055e9.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2026 14:37:44 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1776116257; cv=none;
+        d=google.com; s=arc-20240605;
+        b=Lx0CSjCvvHtDpPU307fGLIihqVjvETIRJaqUd869G92IWXg0Kcbkg/9IAtTgp2qtK8
+         uR1g3fp0XsPTt3WKxtoCDBxVND/6mgaLhZiw/MvaCNdRw+Xlx6nDDlG0PUlPedoUlZxZ
+         uqcU1WmZtpn11OS9ViVwrdo+JirGHAYc86Jro16Lk6DQYuYfeataFk+dYEKVqFTrX16S
+         uqpoLQkxX1OzsoKsuRGg41xU9LlTWoPzoUh85XA9tgcP7ikjv5J/MkyJ2qeaECebth5L
+         f+qX8WZ8FQQJ0EXs4/7kW4g1Ml0DpzN1yVptPS1dLqeU+T322vSvbQx08jVqMCZ5Ghq8
+         dliQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=wi7gLRpNhJNBp6N3dtmB/IxXr7jq+139i4egV+abNLI=;
+        fh=c2jJAaPaO4RR1dOQPf3VLiRpVQjTmlazr2kvve+GCgs=;
+        b=HlBmpOZfANdwlzDAi3w4jelKeorKPGwYKioBHzS0hkX+p41zTc18WZocbYTXdkF6Zq
+         z1FDBGIIkZKD/yL3Z/1iUeartT8jZhHJaR2OCrp85iEC054AlEwKt0BkWb34fiq7fQWF
+         /f9UvNG7uiBs4W7m5BNCHZg7lItQrzbvU8pen+z5z9MEkM14ZC1kA/AcXyv3V+Jn5DRd
+         Mc+z6ihXK1jyxMZ74zCIGQs/OGUQpt5ERrkbmErmK7fKgWla4IadfIay4D0AHYXeKjCf
+         Wdag/CeCJvB4lP80fUmuwkroLB1I0q/rxqxsm8TQyXwbV7oV8nKr1NqxluYLah0u0yUo
+         jJ+Q==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1776116257; x=1776721057; darn=lists.ozlabs.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=wi7gLRpNhJNBp6N3dtmB/IxXr7jq+139i4egV+abNLI=;
+        b=ofNCv5Hzcaa0gutkfS9xIteCk7thoEogQFWJe6TnDUqtO6eOZksokM6HR34OBXP4MG
+         7ALJCmOp784Cje40/C1mAKzJnLW346cdMNiCVpcW/OQybusIuRNav+3o0f8Cb/mYKGtX
+         cYfrvWar/n5BDIdcHMOOFPkgcBVRtomsDWYta275M1IToBJbsv5C7NoZGKHfT2NA4ord
+         CjSIYcb5BvMcsaQLAJoZMaW0ChuC89xkQxSulF6u1zHvM8cnd5jMqIDZLhSirleeRDxj
+         9lZ6Q45iz9PZx2/ZxuFhfFOQXiWVCEMfkYEjUhRVFNwiyaa0Y/IkuvHQoOJRBYSt9gbG
+         x9tA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1776116257; x=1776721057;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=wi7gLRpNhJNBp6N3dtmB/IxXr7jq+139i4egV+abNLI=;
+        b=ffr6lwm1qn7dS8ZCHlHFzjwvmnqn4AxQAGbwdyLrG8T0QLfR+PEXgqfiQZ8Dr8+cFB
+         Uspn1X2hkhDxMnyLWXs08CEtHtsPAXrbylV4nff+b/VQ/oSI8aOaWLJCJz8xlgrMphVH
+         EGY/DW6TPb++tzy9ZvSQDGANcTOYbShrhsfl3R2UdSZ/QmjIklxF6ry34nN8SPR5Yv0q
+         M4QQJFmj5xUTEhLg3hfqr6PCUyedezGbugeht+2DlUyqtTWHdT5QZd1sS+SCT6kcv0kb
+         Z/irYo3wQiFBZOtSPeIrMzCW06wfXJGiZgN0dMLigrBTtKanbip5qru06KXlaYbWKgj5
+         H0Sw==
+X-Forwarded-Encrypted: i=1; AFNElJ9wRDl3uVfmffwN28C0WRrYYZDQVfcd2t3rWErixaXEUqPLxuFSAFN6lcRlMZNq1UrvMLKge4CO2017cJA=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yxdkx2xBcwOFHtHKjuLmchWu06gZAkvLt68Vy1sv33sqzEykC9O
+	qJxdD8NpTOSUpdP7PwIez6WGUH8szZ/GxJiEhXJypJJVui6kxbBQHyYJs7JUJVpb08wQzo6Uo3o
+	psHn5PXAn2ls/pcEYwsJ+ikdB1Tpue0E=
+X-Gm-Gg: AeBDieuBtDa8ljsLeUUh70NqlLxu62CGU7yF28rRP/A0wRJVf+lM/5/x9rSBVLmuHe1
+	a8WqOtj8C0ww15GMb+Iq8pH2vjSP5OITvfouDJpts3hvW1R2nv9QZJ0h7IZ9rKQdjGFGuPD0gDl
+	7EU9nekeMnJPP2JeYBvEbcn15rC5XNTUwBxQoyLbT41b6Zue+2s95a3DqjDvifcak7GWTgnREId
+	CfH9XjhmrJPX1Pfacm1rlonavm7xeTwt7CnRuxn3JYtdi5lzxvi/TiPo7t4LsPU/R9ywMraFv45
+	DH75nbo=
+X-Received: by 2002:a05:600c:35c7:b0:483:64b4:79da with SMTP id
+ 5b1f17b1804b1-488d68b27d6mr225330925e9.26.1776116256585; Mon, 13 Apr 2026
+ 14:37:36 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,82 +100,117 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-ThreadId: AMdy4yCH1GcR
-Date: Mon, 13 Apr 2026 21:30:11 +0200
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "David Woodhouse" <dwmw2@infradead.org>,
- "Thomas Gleixner" <tglx@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Cc: x86@kernel.org, "Baolu Lu" <baolu.lu@linux.intel.com>,
- iommu@lists.linux.dev, "Michael Grzeschik" <m.grzeschik@pengutronix.de>,
- Netdev <netdev@vger.kernel.org>, linux-wireless@vger.kernel.org,
- "Herbert Xu" <herbert@gondor.apana.org.au>, linux-crypto@vger.kernel.org,
- "Vlastimil Babka (SUSE)" <vbabka@kernel.org>, linux-mm@kvack.org,
- "Bernie Thompson" <bernie@plugable.com>, linux-fbdev@vger.kernel.org,
- "Theodore Ts'o" <tytso@mit.edu>, linux-ext4@vger.kernel.org,
- "Andrew Morton" <akpm@linux-foundation.org>,
- "Uladzislau Rezki (Sony)" <urezki@gmail.com>,
- "Marco Elver" <elver@google.com>, "Dmitry Vyukov" <dvyukov@google.com>,
- kasan-dev@googlegroups.com, "Andrey Ryabinin" <ryabinin.a.a@gmail.com>,
- "Thomas Sailer" <t.sailer@alumni.ethz.ch>, linux-hams@vger.kernel.org,
- "Jason A . Donenfeld" <Jason@zx2c4.com>,
- "Richard Henderson" <richard.henderson@linaro.org>,
- linux-alpha@vger.kernel.org, "Russell King" <linux@armlinux.org.uk>,
- linux-arm-kernel@lists.infradead.org,
- "Catalin Marinas" <catalin.marinas@arm.com>,
- "Huacai Chen" <chenhuacai@kernel.org>, loongarch@lists.linux.dev,
- "Geert Uytterhoeven" <geert@linux-m68k.org>,
- linux-m68k@lists.linux-m68k.org, "Dinh Nguyen" <dinguyen@kernel.org>,
- "Jonas Bonn" <jonas@southpole.se>,
- "linux-openrisc@vger.kernel.org" <linux-openrisc@vger.kernel.org>,
- "Helge Deller" <deller@gmx.de>, linux-parisc@vger.kernel.org,
- "Michael Ellerman" <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- "Paul Walmsley" <pjw@kernel.org>, linux-riscv@lists.infradead.org,
- "Heiko Carstens" <hca@linux.ibm.com>, linux-s390@vger.kernel.org,
- "David S . Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org
-Message-Id: <07df88e5-208d-4aac-9668-a3b0c65ae529@app.fastmail.com>
-In-Reply-To: <7a48b636cb3146f4f7134c6d4fe42070ac2edb43.camel@infradead.org>
-References: <20260410120044.031381086@kernel.org>
- <20260410120318.592237447@kernel.org>
- <7a48b636cb3146f4f7134c6d4fe42070ac2edb43.camel@infradead.org>
-Subject: Re: [patch 15/38] ptp: ptp_vmclock: Replace get_cycles() usage
-Content-Type: text/plain; charset=utf-8
+References: <20260406061542.22354-1-litaliano00.contact@gmail.com> <98adc953-322b-45fa-9128-cdbe831006e1@linux.ibm.com>
+In-Reply-To: <98adc953-322b-45fa-9128-cdbe831006e1@linux.ibm.com>
+From: litaliano00 <litaliano00.contact@gmail.com>
+Date: Mon, 13 Apr 2026 23:37:25 +0200
+X-Gm-Features: AQROBzA-2amtttPoqQMTICWR8n6VoaY5m-wKf_-qIJSFHiPLEmYWhd-AdLRgdrE
+Message-ID: <CAK-CEVPA-qi9CvPyurDarLT-OFtOQJDmFoe=+pE1bBBy5fuLOQ@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/fadump: Add timeout to RTAS busy-wait loops
+To: Sourabh Jain <sourabhjain@linux.ibm.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: multipart/alternative; boundary="0000000000008dbb90064f5e4a97"
+
+--0000000000008dbb90064f5e4a97
+Content-Type: text/plain; charset="UTF-8"
+
+On Mon, Apr 13, 2026, 15:50 Sourabh Jain <sourabhjain@linux.ibm.com> wrote:
+
+> > What is the rationale behind choosing a 60-second limit?
+
+
+> The 60-second value was chosen somewhat arbitrarily. Looking at
+
+rtas_busy_delay_time(), the maximum single delay returned is 100000ms
+
+(status 9905). In practice, legitimate busy delays are expected to be
+
+much shorter. I was following the spirit of rtas-rtc.c which uses a
+
+5-second limit for simpler operations; fadump is a heavier firmware
+
+operation, so I went higher. I am open to suggestions on a more
+
+principled value.
+
+
+> > Would it make sense to introduce a helper function to wrap the
+
+> rtas_call, along with handling the wait time and timeout?
+
+
+> Absolutely, I will introduce a helper in v2. The three sites are
+
+indeed identical except for the FADUMP_REGISTER/UNREGISTER/INVALIDATE
+
+argument and the struct pointer/size. I will factor out the common
+
+busy-wait loop into a static helper.
+
+
+> Will send v2 shortly from my new email adri.vero.dev@gmail.com
+
+
+> Adriano
+
+--0000000000008dbb90064f5e4a97
+Content-Type: text/html; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Apr 13, 2026, at 17:33, David Woodhouse wrote:
-> On Fri, 2026-04-10 at 14:19 +0200, Thomas Gleixner wrote:
->
-> ... depend on TSC_RELIABLE=C2=B9, since if the guest doesn't believe t=
-hat it
-> is, then the guest shouldn't be trying to use it as the basis for
-> precise timing.
->
-> =C2=B9 (Or... one of the other zoo of TSC flags for the gradually redu=
-cing
-> brokenness over the years...)
+<div dir=3D"auto"><div><div class=3D"gmail_quote gmail_quote_container"><di=
+v dir=3D"ltr" class=3D"gmail_attr">On Mon, Apr 13, 2026, 15:50 Sourabh Jain=
+ &lt;<a href=3D"mailto:sourabhjain@linux.ibm.com">sourabhjain@linux.ibm.com=
+</a>&gt; wrote:<br></div><blockquote class=3D"gmail_quote" style=3D"margin:=
+0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">&gt; What is the ra=
+tionale behind choosing a 60-second limit?
+</blockquote><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;b=
+order-left:1px #ccc solid;padding-left:1ex"><br></blockquote><blockquote cl=
+ass=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;p=
+adding-left:1ex">The 60-second value was chosen somewhat arbitrarily. Looki=
+ng at</blockquote><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .=
+8ex;border-left:1px #ccc solid;padding-left:1ex">rtas_busy_delay_time(), th=
+e maximum single delay returned is 100000ms</blockquote><blockquote class=
+=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padd=
+ing-left:1ex">(status 9905). In practice, legitimate busy delays are expect=
+ed to be</blockquote><blockquote class=3D"gmail_quote" style=3D"margin:0 0 =
+0 .8ex;border-left:1px #ccc solid;padding-left:1ex">much shorter. I was fol=
+lowing the spirit of rtas-rtc.c which uses a</blockquote><blockquote class=
+=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padd=
+ing-left:1ex">5-second limit for simpler operations; fadump is a heavier fi=
+rmware</blockquote><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 =
+.8ex;border-left:1px #ccc solid;padding-left:1ex">operation, so I went high=
+er. I am open to suggestions on a more</blockquote><blockquote class=3D"gma=
+il_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-lef=
+t:1ex">principled value.</blockquote><blockquote class=3D"gmail_quote" styl=
+e=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex"><br></b=
+lockquote><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;bord=
+er-left:1px #ccc solid;padding-left:1ex">&gt; Would it make sense to introd=
+uce a helper function to wrap the</blockquote><blockquote class=3D"gmail_qu=
+ote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex=
+">&gt; rtas_call, along with handling the wait time and timeout?</blockquot=
+e><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:=
+1px #ccc solid;padding-left:1ex"><br></blockquote><blockquote class=3D"gmai=
+l_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left=
+:1ex">Absolutely, I will introduce a helper in v2. The three sites are</blo=
+ckquote><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border=
+-left:1px #ccc solid;padding-left:1ex">indeed identical except for the FADU=
+MP_REGISTER/UNREGISTER/INVALIDATE</blockquote><blockquote class=3D"gmail_qu=
+ote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex=
+">argument and the struct pointer/size. I will factor out the common</block=
+quote><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-l=
+eft:1px #ccc solid;padding-left:1ex">busy-wait loop into a static helper.</=
+blockquote><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;bor=
+der-left:1px #ccc solid;padding-left:1ex"><br></blockquote><blockquote clas=
+s=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;pad=
+ding-left:1ex">Will send v2 shortly from my new email <a href=3D"mailto:adr=
+i.vero.dev@gmail.com">adri.vero.dev@gmail.com</a></blockquote><blockquote c=
+lass=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;=
+padding-left:1ex"><br></blockquote><blockquote class=3D"gmail_quote" style=
+=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">Adriano<=
+/blockquote></div></div><div dir=3D"auto"><br></div><div dir=3D"auto"></div=
+></div>
 
-It looks like this is sufficiently handled in the caller:
-
-static int vmclock_get_crosststamp(struct vmclock_state *st,
-                                   struct ptp_system_timestamp *sts,
-                                   struct system_counterval_t *system_co=
-unter,
-                                   struct timespec64 *tspec)
-{
-....
-#ifdef CONFIG_X86
-        /*
-         * We'd expect the hypervisor to know this and to report the clo=
-ck
-         * status as VMCLOCK_STATUS_UNRELIABLE. But be paranoid.
-         */
-        if (check_tsc_unstable())
-                return -EINVAL;
-#endif
-
-With 486 and ELAN out of the way, Winchip6 seems to be the only
-one without X86_FEATURE_TSC, so I think the next logical step would
-be to turn off Winchip6 as well and remove all X86_FEATURE_TSC
-and CONFIG_X86_TSC checks.
-
-      Arnd
+--0000000000008dbb90064f5e4a97--
 
