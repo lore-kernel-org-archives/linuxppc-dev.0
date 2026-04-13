@@ -1,105 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-19670-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19671-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D94DEBFD21
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 09:16:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B52DEBFD21
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 09:19:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fvMGF70hdz2yrZ;
-	Mon, 13 Apr 2026 19:16:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776071765;
-	cv=none; b=MFWm4xg50HljMElF7XqmioQwkjN7cyrC1Zea2dCQ2Tz3DtAzIOTNnLpcHpq/GxF5VRuW/Iq57FFbC/fi0Z6oUPUmy3BFTMtCUq9JIqelCXM2Ev/PSs8ZOUCnCN9H28w+7JEeJwi7G33jbHJw8Tzk77qYrnzFAnjzlfjCR8FAkg5m66H26Hu+gnN1UuqWo95IeF5t/AibUAOlw5psIyD9Wfx7I4DmVjYrlKvNIRBw/MCyzp+EUQlozoAiw0IxemxZLuLq9hpRTIpp+ASR3Xw7C0r1Y7mmszP+tl8SGJeOel1vea4bgThNgRe9g2ADQ+shPjlZqIItVA1/tFwrPB43PA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fvMLf0KMnz2yrZ;
+	Mon, 13 Apr 2026 19:19:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776071993;
+	cv=none; b=oRO97YUU8GGe6R+PE9MxYFWLPFavccgyfqw0vQt9NmTyiz6c81a89L7iNm1I+igXHV1VpyhvoCq5vRq6y2osampw0miO5Bt2bw8fJttDrHPWPcuvx8dVCpP7qvcHPDEueX3ir90qGCgpPQ1sjurWiCABAIpRHMRt5uKCojdccU50MllvHFFFrR58/Lt/WxgMfHvHN4OULU1KUxGkZ+V0MsT//2c4qveYkytujn8zV2/xy5+q10CTaYgvacWuZkwUryPH2DUtdkdnCX3J/1FXZJ1TJVCDgUngB72CX1BQ11EiV5iKq65MyeJ4mEhDbrJHEHsMejTBpb903+96Cwk3FA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776071765; c=relaxed/relaxed;
-	bh=3hYK9Ei+d9kVH0VV/CR68CUDnV5UVCrS18XI/2Q3GjY=;
+	t=1776071993; c=relaxed/relaxed;
+	bh=CKxSA0n9kVvCKpIgcv8zNS+kU9VEMRkmxLm1MYSpV4Q=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ipqJhxzFAw2+FuqPg643G4jn/y3a81Ik+dmpi+GkZXvDeUOAsYzfr2Ip4ZVlAt/sStPu4OqU0RCIY+IreBQ57ho0BCPbCacURC0mmnw9QLJHhq8yKxC9etTuuw5cGkwzfHM8XuW9Gg6fvuoFgwm3uCl+aamfmncdSLuV7mBu3xKeQXJBSYXJnYrXWPw/MwNsSwO+TCjwJPQYiCOrlBnUaf9xGZ4J+X40XnKs6146e9HBOEXvXD6CfqKYP78gr50PT2CaTbff4eC/I4TRDZvswBftP+0LDJTP873pdcHmTcbApPvjlOdOhqhSQCE6Y6CaA4YQRvMUoiaut1q6gOnnHQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oY+vEH1n; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ojaswin@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=TCnaT85yxmXOILIqbFEB1wOgD6T2L6pPTuiSHu8xoHGiyNWhERs0Eo04ZDx3mZ4Vpt40/ati4Xy7+f5R9uAg31HpKXChSa2xtxsr/YBTwNu8FFFsz67EeTRMYf5z5hxBjRPK692XXQWJAaOyeY90W1q/j8Di8KxJiwCtt7ENwfO03yl6fAGFB8+WR8X1sR6AqpZz3J8ciRDNBqOuCLLDMqDWlzUGGtgHGq088u41H2MePAf/Wk8uwdSWBumIqiyPIHTUxT4hScYNgYV6CYFOhG9LIyYpq0AmSdh/ReSyaAvOmQkLurkSXfv9Tl0ohcuyV33HIhnmk0Ux2r0UOWA4Fw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bNCjDuM+; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oY+vEH1n;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bNCjDuM+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ojaswin@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvMGF03Drz2yjV
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2026 19:16:04 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63CNQ6Rp3649347;
-	Mon, 13 Apr 2026 09:15:18 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=3hYK9Ei+d9kVH0VV/CR68CUDnV5UVC
-	rS18XI/2Q3GjY=; b=oY+vEH1nHYm21zR7dKdG+rMVbiAs+2M4pSYJYH25H3Q/WQ
-	S5pbibNxKHXRtCU5RA4BZpoAC/CsLV14kYSk9HD7BI83gpVLqIVXm+N3/UD3mtFb
-	VGL3bfwkoS+MFSXp/7ksAXz/d/43BdzYyNe+WU94qMB7+oTAY5jMdy/aC1rg5QU1
-	UhBzNrX2r1ZHEsamBr6j/bYRaaLxasa1WWuLDHkVDfa2K6RkMY6wizvw26f4v3Pw
-	kdUQa11kKa0O4lHqHX35TBGaxo9cfSk8h/UtwhMbDVaUgMt8SMltIpECwIrRGVKB
-	KeirN6PqfMTEor0kXcjWPcrhlHvR883P23ApPmxw==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dfdt3px1j-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 13 Apr 2026 09:15:17 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 63D80WMC015153;
-	Mon, 13 Apr 2026 09:15:16 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dg0mscku7-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 13 Apr 2026 09:15:16 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63D9FEC727328866
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 13 Apr 2026 09:15:14 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 70F6620043;
-	Mon, 13 Apr 2026 09:15:14 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B712A2004F;
-	Mon, 13 Apr 2026 09:15:04 +0000 (GMT)
-Received: from li-dc0c254c-257c-11b2-a85c-98b6c1322444.ibm.com (unknown [9.123.13.2])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Mon, 13 Apr 2026 09:15:04 +0000 (GMT)
-Date: Mon, 13 Apr 2026 14:45:02 +0530
-From: Ojaswin Mujoo <ojaswin@linux.ibm.com>
-To: Thomas Gleixner <tglx@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-        x86@kernel.org, Lu Baolu <baolu.lu@linux.intel.com>,
-        iommu@lists.linux.dev, Michael Grzeschik <m.grzeschik@pengutronix.de>,
-        netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-        Herbert Xu <herbert@gondor.apana.org.au>, linux-crypto@vger.kernel.org,
-        Vlastimil Babka <vbabka@kernel.org>, linux-mm@kvack.org,
-        David Woodhouse <dwmw2@infradead.org>,
-        Bernie Thompson <bernie@plugable.com>, linux-fbdev@vger.kernel.org,
-        Theodore Tso <tytso@mit.edu>, linux-ext4@vger.kernel.org,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Uladzislau Rezki <urezki@gmail.com>, Marco Elver <elver@google.com>,
-        Dmitry Vyukov <dvyukov@google.com>, kasan-dev@googlegroups.com,
-        Andrey Ryabinin <ryabinin.a.a@gmail.com>,
-        Thomas Sailer <t.sailer@alumni.ethz.ch>, linux-hams@vger.kernel.org,
-        "Jason A. Donenfeld" <Jason@zx2c4.com>,
-        Richard Henderson <richard.henderson@linaro.org>,
-        linux-alpha@vger.kernel.org, Russell King <linux@armlinux.org.uk>,
-        linux-arm-kernel@lists.infradead.org,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        linux-m68k@lists.linux-m68k.org, Dinh Nguyen <dinguyen@kernel.org>,
-        Jonas Bonn <jonas@southpole.se>, linux-openrisc@vger.kernel.org,
-        Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org,
-        Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
-        Paul Walmsley <pjw@kernel.org>, linux-riscv@lists.infradead.org,
-        Heiko Carstens <hca@linux.ibm.com>, linux-s390@vger.kernel.org,
-        "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org
-Subject: Re: [patch 07/38] treewide: Consolidate cycles_t
-Message-ID: <ady0Ft_tDrbGlu2o@li-dc0c254c-257c-11b2-a85c-98b6c1322444.ibm.com>
-References: <20260410120044.031381086@kernel.org>
- <20260410120318.045532623@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvMLc6lScz2yjV
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2026 19:19:52 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 47B2C60180;
+	Mon, 13 Apr 2026 09:19:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8A895C2BCAF;
+	Mon, 13 Apr 2026 09:19:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776071990;
+	bh=2kr+EhMgMQkHVA7iNdaf14YX9cd4ab4OO+SsmIGEbRU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=bNCjDuM+e/DnQ3gdIUmaMsSzHbtpAX1fNz8FDMsrhCBz/Zx234Yd2VLPGUFxItza8
+	 AGkMDnomVyAINuiid0nMJwgViqv6xnF0ti5KODcY4pyAGB0gvsbzVtAdAUc5GmMZbE
+	 4k1neV8aNrD6Lpn60QOG7yrpG4PiWQyK1Ti9YnbZoMEYnDCKAVSCXhsDBQqsR3+UWr
+	 pxPdV/KIztvfBFdZiRSYDKR4uD8+uS7NbfzM3NXA+lJTQGp1iZtA8VqoX2Of8xzSq1
+	 Mtx68qhJuw2Bg363XiG/wIQEmy4oZ5Zp99fI74eCFh4iiBcHG3vA+W8vlfZZ4hwfwX
+	 yQuDf3Qdn3Rwg==
+Date: Mon, 13 Apr 2026 12:19:41 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: Muchun Song <songmuchun@bytedance.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	David Hildenbrand <david@kernel.org>,
+	Muchun Song <muchun.song@linux.dev>,
+	Oscar Salvador <osalvador@suse.de>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Lorenzo Stoakes <ljs@kernel.org>,
+	"Liam R . Howlett" <Liam.Howlett@oracle.com>,
+	Vlastimil Babka <vbabka@kernel.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>, Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>, aneesh.kumar@linux.ibm.com,
+	joao.m.martins@oracle.com, linux-mm@kvack.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/49] mm/sparse: fix vmemmap accounting imbalance on
+ memory hotplug error
+Message-ID: <ady1LQMN1xhPGcuT@kernel.org>
+References: <20260405125240.2558577-1-songmuchun@bytedance.com>
+ <20260405125240.2558577-2-songmuchun@bytedance.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -115,90 +81,57 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260410120318.045532623@kernel.org>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: r6KN03kK1HZaoam71kVl5aHZm9BfgAQ4
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDEzMDA4NSBTYWx0ZWRfX+Gwbo0yddZP/
- ED3CWrVQNFFw/TECS1M9+tSS57FYBZnMmG79KmJVnAwBWc3o5BgyeadFZ9maSHI4Tv+/+VHQiXF
- uu6/EAbMsVnRYIXugjj6TyQBBqRyeSoPbLxIVX8tqr0goumkz0lPJ9Y4Y3a3ECfM9WbzUtOSm5u
- eNbyrRMw+nuwi0Afz/QuxwA0FuazktkFPrSziYKfNEV92tR6ksCbhLbdKwZfOQ6IaUNAK3mHh04
- Z9ZuJvFG4+5R/DIJQ8v5H1fE5bYExgqIL1hC1HoekBef4/UHL3Jav5jU5Ty8ib2gAESLlopFcCb
- VttV6mxWXomhvrcFDBgGSdweqIiLio3UyKWRaxfdCdf1K3UdP0nDdx3LiWp/XKSUCxaso/02xav
- PADy/jEsrag0vsgcCLG1/jcBcJ3bFL3cNcYlDCC6JXFySGCPKTcpDMOtfvLh9vv4Vg7VR02ItSs
- a0USozVz3do3GTBrHkA==
-X-Proofpoint-GUID: iwEVNX-0n_YmGG6iAARt9TRRoEhRuwqE
-X-Authority-Analysis: v=2.4 cv=WpEb99fv c=1 sm=1 tr=0 ts=69dcb426 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=kj9zAlcOel0A:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8
- a=9Pz4rRoAHiK5H5RfW9YA:9 a=CjuIK1q_8ugA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-13_02,2026-04-09_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 phishscore=0 bulkscore=0 adultscore=0 spamscore=0
- malwarescore=0 clxscore=1011 lowpriorityscore=0 suspectscore=0
- impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604010000
- definitions=main-2604130085
+In-Reply-To: <20260405125240.2558577-2-songmuchun@bytedance.com>
 
-On Fri, Apr 10, 2026 at 02:19:03PM +0200, Thomas Gleixner wrote:
-> Most architectures define cycles_t as unsigned long execpt:
+On Sun, Apr 05, 2026 at 08:51:52PM +0800, Muchun Song wrote:
+> In section_activate(), if populate_section_memmap() fails, the error
+> handling path calls section_deactivate() to roll back the state. This
+> approach introduces an accounting imbalance.
 > 
->  - x86 requires it to be 64-bit independent of the 32-bit/64-bit build.
+> Since the commit c3576889d87b ("mm: fix accounting of memmap pages"),
+> memmap pages are accounted for only after populate_section_memmap()
+> succeeds. However, section_deactivate() unconditionally decrements the
+> vmemmap account. Consequently, a failure in populate_section_memmap()
+> leads to a negative offset (underflow) in the system's vmemmap tracking.
 > 
->  - parisc and mips define it as unsigned int
+> We can fix this by ensuring that the vmemmap accounting is incremented
+> immediately before checking for the success of populate_section_memmap().
+> If populate_section_memmap() fails, the subsequent call to
+> section_deactivate() will decrement the accounting, perfectly offsetting
+> the increment and maintaining balance.
 > 
->    parisc has no real reason to do so as there are only a few usage sites
->    which either expand it to a 64-bit value or utilize only the lower
->    32bits.
-> 
->    mips has no real requirement either.
-> 
-> Move the typedef to types.h and provide a config switch to enforce the
-> 64-bit type for x86.
-> 
-> Signed-off-by: Thomas Gleixner <tglx@kernel.org>
+> Fixes: c3576889d87b ("mm: fix accounting of memmap pages")
+> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
 > ---
->  arch/Kconfig                       |    4 ++++
->  arch/alpha/include/asm/timex.h     |    3 ---
->  arch/arm/include/asm/timex.h       |    1 -
->  arch/loongarch/include/asm/timex.h |    2 --
->  arch/m68k/include/asm/timex.h      |    2 --
->  arch/mips/include/asm/timex.h      |    2 --
->  arch/nios2/include/asm/timex.h     |    2 --
->  arch/parisc/include/asm/timex.h    |    2 --
->  arch/powerpc/include/asm/timex.h   |    4 +---
->  arch/riscv/include/asm/timex.h     |    2 --
->  arch/s390/include/asm/timex.h      |    2 --
->  arch/sparc/include/asm/timex_64.h  |    1 -
->  arch/x86/Kconfig                   |    1 +
->  arch/x86/include/asm/tsc.h         |    2 --
->  include/asm-generic/timex.h        |    1 -
->  include/linux/types.h              |    6 ++++++
->  16 files changed, 12 insertions(+), 25 deletions(-)
+>  mm/sparse-vmemmap.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-<...>
-
-> --- a/arch/powerpc/include/asm/timex.h
-> +++ b/arch/powerpc/include/asm/timex.h
-> @@ -11,9 +11,7 @@
->  #include <asm/cputable.h>
->  #include <asm/vdso/timebase.h>
+> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
+> index 6eadb9d116e4..ee27d0c0efe2 100644
+> --- a/mm/sparse-vmemmap.c
+> +++ b/mm/sparse-vmemmap.c
+> @@ -822,11 +822,11 @@ static struct page * __meminit section_activate(int nid, unsigned long pfn,
+>  		return pfn_to_page(pfn);
 >  
-> -typedef unsigned long cycles_t;
-> -
-> -static inline cycles_t get_cycles(void)
-> +ostatic inline cycles_t get_cycles(void)
+>  	memmap = populate_section_memmap(pfn, nr_pages, nid, altmap, pgmap);
+> +	memmap_pages_add(DIV_ROUND_UP(nr_pages * sizeof(struct page), PAGE_SIZE));
 
-Hi Thomas, I'm in middle of testing this series on powerpc. In the meantime I
-noticed that there's probably a small typo here (althrough this is fixed
-later)
+This logically belongs to success path in populate_section_memmap(). If we
+update the counter there, we won't need to temporarily increase it at all.
 
-Regards,
-ojaswin
->  {
->  	return mftb();
+>  	if (!memmap) {
+>  		section_deactivate(pfn, nr_pages, altmap);
+>  		return ERR_PTR(-ENOMEM);
+>  	}
+> -	memmap_pages_add(DIV_ROUND_UP(nr_pages * sizeof(struct page), PAGE_SIZE));
+>  
+>  	return memmap;
 >  }
+> -- 
+> 2.20.1
+> 
+
+-- 
+Sincerely yours,
+Mike.
 
