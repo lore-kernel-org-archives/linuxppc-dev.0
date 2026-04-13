@@ -1,63 +1,48 @@
-Return-Path: <linuxppc-dev+bounces-19699-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19700-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 270B9F34C52
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 14:00:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31559F34C54
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 14:06:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fvTZ34jJVz2ydn;
-	Tue, 14 Apr 2026 00:00:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=58.251.27.85
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776085788;
-	cv=none; b=eWNkjL5DOJdvEEgqEI7iauYZslurhALTlclieufhNoztaC6vcfMf/a8HY0TMrUvyQmLSgtdVH9RN4Vrp+JD/nkGLz7GcNydIaKqsHIVOvcAsE7yz5KT2B4yE69KopdmohZUy8MCnLKq/JwXloPHhgNFT0a9PkZpVBM1Q73fVaWviBeRiIvpGeoP180RG7pjWtbIOQ9wQKSwtpxJMxu7IYf/CmXnxZ3PU9ZTJq+7WWMlnfh66yNAQ1Nq5evAKvFfo4RI1VsxFvtob3cDZsVM+LnNkxNTy9HLX1XXeJgbyHzIt0L3PXkkcx4w0PYDNQLdoPYQFSxnEjDQi2sqe7Sox1A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fvTjR3DYTz2ydn;
+	Tue, 14 Apr 2026 00:06:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.187
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776089195;
+	cv=none; b=aEDeNj0j/aCKIbbTIjw1Fn6LKBrpIkFk+Yd0eDJXTbKu69gZsmjWExzELF8OINyt0rj4P/Wqa/UXAew/dNp9IFgME5/3IGk20eUqjiFjAKhOhSQJ2vYmBnkwR4ie+QKeQUzrkaGOslL1rBFExtDcyLZPdodUPihfh+maFPPrUhypq4fSQ5oFigMeCM2b0g1HgL1lhGue873yL92kmGE+CV7Naudsqq5UtYJqwuSPkxKwQivc7TKBEB/XKsdb1I2+UL0760kD2kkiiFSW9LTRUgM+d6ov430K6dglwWNx/eK/An7MfWs5jI2SQbuz8a1tOiVe+Jlpq2Trt7OFxTT8gg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776085788; c=relaxed/relaxed;
-	bh=4Q6hbO5VXAAEYtqFBS/tjKRelFU1z4l+PdprfQ8isB4=;
-	h=Message-ID:In-Reply-To:References:Date:Mime-Version:From:To:Cc:
-	 Subject:Content-Type; b=FF6c+/RtbzAj7sDWh1MgMXR7J91vQgyzTHF+0V908TZMWu7TUikNCUAOGhHdcQ9wKAIBFLInBJRaf3Dc7YM3eGSZROxbYboq19nBpCFdX7rVlnw4FYrbXg+w/7lmcVAlrWbyAptmcERJuzkH6jGKhjGr0PCDNltspPLPolUypv6jVNoiuNs//VXSMRWIZx1PHDzOmp16s7dX9Kmg0AtlqNNnzSKotkQsYzahrm0SZTL3h3dRg22qQmcEssJs/XkkRSo9Hff0XF/FdCK9pJtWlAkjb+bqXkWtsJlJfEMi2vh91G+U68Z99aytBBpXkXuLypwrpVe4ddT1SJSG8FdZgA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zte.com.cn; spf=pass (client-ip=58.251.27.85; helo=mxct.zte.com.cn; envelope-from=hu.shengming@zte.com.cn; receiver=lists.ozlabs.org) smtp.mailfrom=zte.com.cn
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zte.com.cn
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zte.com.cn (client-ip=58.251.27.85; helo=mxct.zte.com.cn; envelope-from=hu.shengming@zte.com.cn; receiver=lists.ozlabs.org)
-X-Greylist: delayed 386 seconds by postgrey-1.37 at boromir; Mon, 13 Apr 2026 23:09:47 AEST
-Received: from mxct.zte.com.cn (mxct.zte.com.cn [58.251.27.85])
+	t=1776089195; c=relaxed/relaxed;
+	bh=LUfrQZBP/ZyxZwE2DiN7BB9ru8IXfCgKr+W6yEpjREU=;
+	h=Content-Type:From:Mime-Version:Subject:Date:Message-Id:References:
+	 Cc:In-Reply-To:To; b=h2ol4v8aTl2VoVqKh4uSl4SJZlsLsve1AwSSsQy3wA7k+q2pOCDoGYdA8oDcYvNmfZPVkBh6QF/yeyG2y2dX15SgO3vF2G9AD4CWHbcYA/l84QqlLCe6cM/A/Bpo0gUF3WnoD43pf0A3kcO+y5O0u6TVXGWf542INWnMKu/FjFVoojV5hcEPQcod6rhvhN1/JfjANO6dzmG3GfNdZkEDaWJ+HxZk7OwxFCJYmWOzkrYOZ8ZL5V5JQWD9/GOcc0VA8fKeYXx5qWQwcxLfFLzqsi93a8VqAnMXDq3bgdgORUYTHj3sktU/HSpeZbuo3xz+SSHnqjOIJWZyQyKxVTHnvQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=K0xst7Ry; dkim-atps=neutral; spf=pass (client-ip=95.215.58.187; helo=out-187.mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=K0xst7Ry;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.187; helo=out-187.mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-187.mta1.migadu.com (out-187.mta1.migadu.com [95.215.58.187])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvSRv3P9pz2yS9
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2026 23:09:46 +1000 (AEST)
-Received: from mxde.zte.com.cn (unknown [10.35.20.165])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mxct.zte.com.cn (FangMail) with ESMTPS id 4fvSJL6XM3z1DDv
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2026 21:03:14 +0800 (CST)
-Received: from mxhk.zte.com.cn (unknown [192.168.250.137])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mxde.zte.com.cn (FangMail) with ESMTPS id 4fvSJF25F6z5TCG0
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2026 21:03:09 +0800 (CST)
-Received: from mse-fl2.zte.com.cn (unknown [10.5.228.133])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mxhk.zte.com.cn (FangMail) with ESMTPS id 4fvSJ26Vzyz8Xs70;
-	Mon, 13 Apr 2026 21:02:58 +0800 (CST)
-Received: from xaxapp05.zte.com.cn ([10.99.98.109])
-	by mse-fl2.zte.com.cn with SMTP id 63DD2n3P010875;
-	Mon, 13 Apr 2026 21:02:49 +0800 (+08)
-	(envelope-from hu.shengming@zte.com.cn)
-Received: from mapi (xaxapp01[null])
-	by mapi (Zmail) with MAPI id mid32;
-	Mon, 13 Apr 2026 21:02:52 +0800 (CST)
-X-Zmail-TransId: 2af969dce97c49e-2c715
-X-Mailer: Zmail v1.0
-Message-ID: <20260413210252672ZfdcegJLJtyvlYdFAUBlr@zte.com.cn>
-In-Reply-To: <adyyNeVTkXQlnh_2@hyeyoo>
-References: 20260410120044.031381086@kernel.org,20260410120318.525653921@kernel.org,adyyNeVTkXQlnh_2@hyeyoo
-Date: Mon, 13 Apr 2026 21:02:52 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvTjQ011Vz2yS9
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2026 00:06:33 +1000 (AEST)
+Content-Type: text/plain; charset=utf-8
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1776089168;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=LUfrQZBP/ZyxZwE2DiN7BB9ru8IXfCgKr+W6yEpjREU=;
+	b=K0xst7RydEesK7u/I0oErZaYxbMcx5zzyAsnS8H6GKxD9Ov5nuyoHtuE9XB5fGt4bZHMD0
+	p2LcX5tCqoEK0KvpClSKLPtcK+QYnapEe/SKzlBMfyIDgptXBNEvufSuDbVkGcOjB3oEau
+	nqdpsWfAeywtCPt8EBRTdgheme5+qTI=
+Content-Transfer-Encoding: quoted-printable
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Muchun Song <muchun.song@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,170 +55,155 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-From: <hu.shengming@zte.com.cn>
-To: <harry@kernel.org>
-Cc: <tglx@kernel.org>, <linux-kernel@vger.kernel.org>, <vbabka@kernel.org>,
-        <linux-mm@kvack.org>, <arnd@arndb.de>, <x86@kernel.org>,
-        <baolu.lu@linux.intel.com>, <iommu@lists.linux.dev>,
-        <m.grzeschik@pengutronix.de>, <netdev@vger.kernel.org>,
-        <linux-wireless@vger.kernel.org>, <herbert@gondor.apana.org.au>,
-        <linux-crypto@vger.kernel.org>, <dwmw2@infradead.org>,
-        <bernie@plugable.com>, <linux-fbdev@vger.kernel.org>, <tytso@mit.edu>,
-        <linux-ext4@vger.kernel.org>, <akpm@linux-foundation.org>,
-        <urezki@gmail.com>, <elver@google.com>, <dvyukov@google.com>,
-        <kasan-dev@googlegroups.com>, <ryabinin.a.a@gmail.com>,
-        <t.sailer@alumni.ethz.ch>, <linux-hams@vger.kernel.org>,
-        <Jason@zx2c4.com>, <richard.henderson@linaro.org>,
-        <linux-alpha@vger.kernel.org>, <linux@armlinux.org.uk>,
-        <linux-arm-kernel@lists.infradead.org>, <catalin.marinas@arm.com>,
-        <chenhuacai@kernel.org>, <loongarch@lists.linux.dev>,
-        <geert@linux-m68k.org>, <linux-m68k@lists.linux-m68k.org>,
-        <dinguyen@kernel.org>, <jonas@southpole.se>,
-        <linux-openrisc@vger.kernel.org>, <deller@gmx.de>,
-        <linux-parisc@vger.kernel.org>, <mpe@ellerman.id.au>,
-        <linuxppc-dev@lists.ozlabs.org>, <pjw@kernel.org>,
-        <linux-riscv@lists.infradead.org>, <hca@linux.ibm.com>,
-        <linux-s390@vger.kernel.org>, <davem@davemloft.net>,
-        <sparclinux@vger.kernel.org>, <hao.li@linux.dev>, <cl@gentwo.org>,
-        <rientjes@google.com>, <roman.gushchin@linux.dev>
-Subject: =?UTF-8?B?UmU6IFtwYXRjaCAxNC8zOF0gc2x1YjogVXNlIHByYW5kb20gaW5zdGVhZCBvZiBnZXRfY3ljbGVzKCk=?=
-Content-Type: text/plain;
-	charset="UTF-8"
-X-MAIL:mse-fl2.zte.com.cn 63DD2n3P010875
-X-TLS: YES
-X-SPF-DOMAIN: zte.com.cn
-X-ENVELOPE-SENDER: hu.shengming@zte.com.cn
-X-SPF: None
-X-SOURCE-IP: 10.35.20.165 unknown Mon, 13 Apr 2026 21:03:15 +0800
-X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 69DCE991.000/4fvSJL6XM3z1DDv
+Mime-Version: 1.0 (1.0)
+Subject: Re: [PATCH 01/49] mm/sparse: fix vmemmap accounting imbalance on memory hotplug error
+Date: Mon, 13 Apr 2026 22:05:34 +0800
+Message-Id: <9642F4D9-8F1B-47A4-90BE-C72BB8DE9A11@linux.dev>
+References: <adzxNAa7RnUDrykW@kernel.org>
+Cc: Muchun Song <songmuchun@bytedance.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ David Hildenbrand <david@kernel.org>, Oscar Salvador <osalvador@suse.de>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Lorenzo Stoakes <ljs@kernel.org>, Liam R Howlett <Liam.Howlett@oracle.com>,
+ Vlastimil Babka <vbabka@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>,
+ aneesh.kumar@linux.ibm.com, joao.m.martins@oracle.com, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <adzxNAa7RnUDrykW@kernel.org>
+To: Mike Rapoport <rppt@kernel.org>
+X-Migadu-Flow: FLOW_OUT
 
-Harry wrote:
-> [Resending after fixing broken email headers]
-> 
-> On Fri, Apr 10, 2026 at 02:19:37PM +0200, Thomas Gleixner wrote:
-> > The decision whether to scan remote nodes is based on a 'random' number
-> > retrieved via get_cycles(). get_cycles() is about to be removed.
-> > 
-> > There is already prandom state in the code, so use that instead.
-> > 
-> > Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-> > Cc: Vlastimil Babka <vbabka@kernel.org>
-> > Cc: linux-mm@kvack.org
-> > ---
-> 
-> Acked-by: Harry Yoo (Oracle) <harry@kernel.org>
-> 
-> Is this for this merge window?
-> 
-> This may conflict with upcoming changes on freelist shuffling [1]
-> (not queued for slab/for-next yet though), but it should be easy to
-> resolve.
-> 
 
-Hi Harry,
 
-Would you like me to wait for this patch to land linux-next and then
-rebase and send v6 on top?
+> On Apr 13, 2026, at 21:36, Mike Rapoport <rppt@kernel.org> wrote:
+>=20
+> =EF=BB=BFHi Muchun,
 
-Thanks,
+Hi,
 
---
-With Best Regards,
-Shengming
+>=20
+> On Mon, Apr 13, 2026 at 08:47:45PM +0800, Muchun Song wrote:
+>>>> On Apr 13, 2026, at 20:05, Mike Rapoport <rppt@kernel.org> wrote:
+>>>>>>>>=20
+>>>>>>>> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
+>>>>>>>> index 6eadb9d116e4..ee27d0c0efe2 100644
+>>>>>>>> --- a/mm/sparse-vmemmap.c
+>>>>>>>> +++ b/mm/sparse-vmemmap.c
+>>>>>>>> @@ -822,11 +822,11 @@ static struct page * __meminit section_activa=
+te(int nid, unsigned long pfn,
+>>>>>>>> return pfn_to_page(pfn);
+>>>>>>>>=20
+>>>>>>>> memmap =3D populate_section_memmap(pfn, nr_pages, nid, altmap, pgma=
+p);
+>>>>>>>> + memmap_pages_add(DIV_ROUND_UP(nr_pages * sizeof(struct page), PAG=
+E_SIZE));
+>>>>>>>=20
+>>>>>>> This logically belongs to success path in populate_section_memmap().=
+ If we
+>>>>>>> update the counter there, we won't need to temporarily increase it a=
+t all.
+>>>>>>=20
+>>>>>> Not strictly related to this patchset, but it seems, we can have a si=
+ngle
+>>>>>> memmap_boot_pages_add() in memmap_alloc() rather than to update the c=
+ounter
+>>>>>> in memmap_alloc() callers.
+>>>>>=20
+>>>>> It will indeed become simpler and is a good cleanup direction, but the=
+re
+>>>>> is a slight change in semantics: the page tables used for vmemmap page=
 
-> [Cc'ing Shengming and SLAB ALLOCATOR folks]
-> [1] https://lore.kernel.org/linux-mm/20260409204352095kKWVYKtZImN59ybO6iRNj@zte.com.cn
-> 
-> -- 
-> Cheers,
-> Harry / Hyeonggon
-> 
-> >  mm/slub.c |   37 +++++++++++++++++++++++--------------
-> >  1 file changed, 23 insertions(+), 14 deletions(-)
-> > 
-> > --- a/mm/slub.c
-> > +++ b/mm/slub.c
-> > @@ -3302,6 +3302,25 @@ static inline struct slab *alloc_slab_pa
-> >      return slab;
-> >  }
-> >  
-> > +#if defined(CONFIG_SLAB_FREELIST_RANDOM) || defined(CONFIG_NUMA)
-> > +static DEFINE_PER_CPU(struct rnd_state, slab_rnd_state);
-> > +
-> > +static unsigned int slab_get_prandom_state(unsigned int limit)
-> > +{
-> > +    struct rnd_state *state;
-> > +    unsigned int res;
-> > +
-> > +    /*
-> > +     * An interrupt or NMI handler might interrupt and change
-> > +     * the state in the middle, but that's safe.
-> > +     */
-> > +    state = &get_cpu_var(slab_rnd_state);
-> > +    res = prandom_u32_state(state) % limit;
-> > +    put_cpu_var(slab_rnd_state);
-> > +    return res;
-> > +}
-> > +#endif
-> > +
-> >  #ifdef CONFIG_SLAB_FREELIST_RANDOM
-> >  /* Pre-initialize the random sequence cache */
-> >  static int init_cache_random_seq(struct kmem_cache *s)
-> > @@ -3365,8 +3384,6 @@ static void *next_freelist_entry(struct
-> >      return (char *)start + idx;
-> >  }
-> >  
-> > -static DEFINE_PER_CPU(struct rnd_state, slab_rnd_state);
-> > -
-> >  /* Shuffle the single linked freelist based on a random pre-computed sequence */
-> >  static bool shuffle_freelist(struct kmem_cache *s, struct slab *slab,
-> >                   bool allow_spin)
-> > @@ -3383,15 +3400,7 @@ static bool shuffle_freelist(struct kmem
-> >      if (allow_spin) {
-> >          pos = get_random_u32_below(freelist_count);
-> >      } else {
-> > -        struct rnd_state *state;
-> > -
-> > -        /*
-> > -         * An interrupt or NMI handler might interrupt and change
-> > -         * the state in the middle, but that's safe.
-> > -         */
-> > -        state = &get_cpu_var(slab_rnd_state);
-> > -        pos = prandom_u32_state(state) % freelist_count;
-> > -        put_cpu_var(slab_rnd_state);
-> > +        pos = slab_get_prandom_state(freelist_count);
-> >      }
-> >  
-> >      page_limit = slab->objects * s->size;
-> > @@ -3882,7 +3891,7 @@ static void *get_from_any_partial(struct
-> >       * with available objects.
-> >       */
-> >      if (!s->remote_node_defrag_ratio ||
-> > -            get_cycles() % 1024 > s->remote_node_defrag_ratio)
-> > +        slab_get_prandom_state(1024) > s->remote_node_defrag_ratio)
-> >          return NULL;
-> >  
-> >      do {
-> > @@ -7102,7 +7111,7 @@ static unsigned int
-> >  
-> >      /* see get_from_any_partial() for the defrag ratio description */
-> >      if (!s->remote_node_defrag_ratio ||
-> > -            get_cycles() % 1024 > s->remote_node_defrag_ratio)
-> > +        slab_get_prandom_state(1024) > s->remote_node_defrag_ratio)
-> >          return 0;
-> >  
-> >      do {
-> > @@ -8421,7 +8430,7 @@ void __init kmem_cache_init_late(void)
-> >      flushwq = alloc_workqueue("slub_flushwq", WQ_MEM_RECLAIM | WQ_PERCPU,
-> >                    0);
-> >      WARN_ON(!flushwq);
-> > -#ifdef CONFIG_SLAB_FREELIST_RANDOM
-> > +#if defined(CONFIG_SLAB_FREELIST_RANDOM) || defined(CONFIG_NUMA)
-> >      prandom_init_once(&slab_rnd_state);
-> >  #endif
-> >  }
-> > 
-> >
+>>>>> mapping will also be counted in memmap_boot_pages_add(). This might no=
+t
+>>>>> be an issue (after all, the size of the page tables is very small comp=
+ared
+>>>>> to struct pages, right?).
+>>>>>=20
+>>>>> Additionally, I still lean toward making no changes to this patch, bec=
+ause
+>>>>> this is a pure bugfix patch =E2=80=94 of course, it is meant to facili=
+tate backporting
+>>>>> for those who need it. The cleanup would involve many more changes, so=
+ I
+>>>>> prefer to do that in a separate patch. What do you think?
+>>>=20
+>>> For this patch and easy backporting I still think that cleaner to have t=
+he
+>>> counter incremented in populate_section_memmap() rather immediately afte=
+r
+>>> it.
+>>=20
+>> Hi Mike,
+>>=20
+>> Alright, let=E2=80=99s revisit your solution. After we=E2=80=99ve moved t=
+he counter into the
+>> populate_section_memmap(), we still need to increase the counter temporar=
+ily
+>> (but in populate_section_memmap()) even if we fail to populate. That=E2=80=
+=99s
+>> because section_deactivate() reduces the counter without exception, isn=E2=
+=80=99t it?
+>> Just want to make sure we are on the same page on the meaning of =E2=80=9C=
+temporarily
+>> increase=E2=80=9D.  Maybe you do not mean =E2=80=9Ctemporarily=E2=80=9D i=
+n this case.
+>=20
+> I suggest to increase the counter only if we succeeded to populate:
+>=20
+> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
+> index 6eadb9d116e4..247fd54f1003 100644
+> --- a/mm/sparse-vmemmap.c
+> +++ b/mm/sparse-vmemmap.c
+> @@ -656,7 +656,13 @@ static struct page * __meminit populate_section_memma=
+p(unsigned long pfn,
+>        unsigned long nr_pages, int nid, struct vmem_altmap *altmap,
+>        struct dev_pagemap *pgmap)
+> {
+> -    return __populate_section_memmap(pfn, nr_pages, nid, altmap, pgmap);
+> +    struct page *p =3D __populate_section_memmap(pfn, nr_pages, nid, altm=
+ap,
+> +                           pgmap);
+> +
+> +    if (p)
+> +        memmap_pages_add(DIV_ROUND_UP(nr_pages * sizeof(struct page), PAG=
+E_SIZE));
+
+We don=E2=80=99t increase the counter on failure, then
+
+> +
+> +    return p;
+> }
+>=20
+> static void depopulate_section_memmap(unsigned long pfn, unsigned long nr_=
+pages,
+> @@ -826,7 +832,6 @@ static struct page * __meminit section_activate(int ni=
+d, unsigned long pfn,
+>        section_deactivate(pfn, nr_pages, altmap);
+
+here section_deactivate() is called, which decrease the counter unconditiona=
+lly,
+the issue still exists. We didn't fix anything.
+
+Thanks.
+
+>        return ERR_PTR(-ENOMEM);
+>    }
+> -    memmap_pages_add(DIV_ROUND_UP(nr_pages * sizeof(struct page), PAGE_SI=
+ZE));
+>=20
+>    return memmap;
+> }
+>=20
+>=20
+> Then we'll better follow "all or nothing" principle and won't have
+> exceptional cases in section_deactivate().
+>=20
+>> Thanks,
+>> Muchun.
+>=20
+> --
+> Sincerely yours,
+> Mike.
 
