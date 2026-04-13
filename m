@@ -1,48 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-19698-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19699-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F9AFF34C49
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 13:57:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 270B9F34C52
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 14:00:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fvTWN6Tnlz2ydn;
-	Mon, 13 Apr 2026 23:57:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.183
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776088672;
-	cv=none; b=nI/uBTq1Eh0qSua9N6c4Iqc7xFcBvdu07KW/tYxilWmbN9o7yaS36MD5g5gUqOhynNsoy75upr98WaNMKwP/KPEDxDxV2nEDhlfNd+NdZKdCWqkZwnLhO884cWBZ5gctpXhHNCLXkGBVi/jxgl3JRzUprLf7I4jf3qDPiCDQLd2O8wcZWDxyU8mTHhpC5HZOu5ERHLWJvTO0fKU5ef6vBPuPZ4njVpapQy/FFH6rVUZASWe3nFgw+Zk/EKvT1UeUqYV1VGLnSn5frZMRTpe9gJxpHe+keQJz5pc5U2m1fZSlcGPn3kWePMFble638GXXmgo5OsCLRENs5NZlMwrogg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fvTZ34jJVz2ydn;
+	Tue, 14 Apr 2026 00:00:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=58.251.27.85
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776085788;
+	cv=none; b=eWNkjL5DOJdvEEgqEI7iauYZslurhALTlclieufhNoztaC6vcfMf/a8HY0TMrUvyQmLSgtdVH9RN4Vrp+JD/nkGLz7GcNydIaKqsHIVOvcAsE7yz5KT2B4yE69KopdmohZUy8MCnLKq/JwXloPHhgNFT0a9PkZpVBM1Q73fVaWviBeRiIvpGeoP180RG7pjWtbIOQ9wQKSwtpxJMxu7IYf/CmXnxZ3PU9ZTJq+7WWMlnfh66yNAQ1Nq5evAKvFfo4RI1VsxFvtob3cDZsVM+LnNkxNTy9HLX1XXeJgbyHzIt0L3PXkkcx4w0PYDNQLdoPYQFSxnEjDQi2sqe7Sox1A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776088672; c=relaxed/relaxed;
-	bh=WB6X/KB4lcgoxaXTVldx7yfC+K++jG31ztfaBdye/0o=;
-	h=Content-Type:From:Mime-Version:Subject:Date:Message-Id:References:
-	 Cc:In-Reply-To:To; b=VoyAb8v8MLVo4iNLjy0wBL1Dg3MLeLKe4NcuhRZ+7lSMh4Io2icSG2Ogb8BUEhQLNSpF3sYIZC/zrbzqraEf3zX+60Rq6l0pMAq49an+6IB8yp/K/8oBoYVdojAbZKyncqRLwjJVn39rEX9oT112EeaaHNNmEilebvKJ4aOwtfQ+I09X9s22EIEqEcsozh991+dZ+aHpRV0aPofwgMm5a7HjWO5ZiTnD7lXKk6ktMKdIdxTrohShZ7h99r6ivpwH/26+tyM7+lF+xaR7uG0VGoVuqYhJsDjNVjj0wyF8qJ62ee56GkNPnYuMxeGxD5vHDgsNqxNWbTCIrEs+UO4wBg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=DmYoUD9o; dkim-atps=neutral; spf=pass (client-ip=91.218.175.183; helo=out-183.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=DmYoUD9o;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.183; helo=out-183.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-183.mta0.migadu.com (out-183.mta0.migadu.com [91.218.175.183])
+	t=1776085788; c=relaxed/relaxed;
+	bh=4Q6hbO5VXAAEYtqFBS/tjKRelFU1z4l+PdprfQ8isB4=;
+	h=Message-ID:In-Reply-To:References:Date:Mime-Version:From:To:Cc:
+	 Subject:Content-Type; b=FF6c+/RtbzAj7sDWh1MgMXR7J91vQgyzTHF+0V908TZMWu7TUikNCUAOGhHdcQ9wKAIBFLInBJRaf3Dc7YM3eGSZROxbYboq19nBpCFdX7rVlnw4FYrbXg+w/7lmcVAlrWbyAptmcERJuzkH6jGKhjGr0PCDNltspPLPolUypv6jVNoiuNs//VXSMRWIZx1PHDzOmp16s7dX9Kmg0AtlqNNnzSKotkQsYzahrm0SZTL3h3dRg22qQmcEssJs/XkkRSo9Hff0XF/FdCK9pJtWlAkjb+bqXkWtsJlJfEMi2vh91G+U68Z99aytBBpXkXuLypwrpVe4ddT1SJSG8FdZgA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zte.com.cn; spf=pass (client-ip=58.251.27.85; helo=mxct.zte.com.cn; envelope-from=hu.shengming@zte.com.cn; receiver=lists.ozlabs.org) smtp.mailfrom=zte.com.cn
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zte.com.cn
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zte.com.cn (client-ip=58.251.27.85; helo=mxct.zte.com.cn; envelope-from=hu.shengming@zte.com.cn; receiver=lists.ozlabs.org)
+X-Greylist: delayed 386 seconds by postgrey-1.37 at boromir; Mon, 13 Apr 2026 23:09:47 AEST
+Received: from mxct.zte.com.cn (mxct.zte.com.cn [58.251.27.85])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvTWK742Hz2yS9
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2026 23:57:48 +1000 (AEST)
-Content-Type: text/plain; charset=utf-8
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1776088647;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=WB6X/KB4lcgoxaXTVldx7yfC+K++jG31ztfaBdye/0o=;
-	b=DmYoUD9oKqdfKivm9z9TwfbKLHD13LH/gu6nFBQGBPzDBoPrHIIJnqbsGdaBjyp/HzmHN5
-	mVQMvqextCEEWtEWK81D/y4Sja1/VSwcgDqDjhNY8hYIm10O6g8QQmcjc0z05CcPpQLLRS
-	8dTHIkivv52rRR/NBQD14jzk00a+lW0=
-Content-Transfer-Encoding: quoted-printable
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Muchun Song <muchun.song@linux.dev>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvSRv3P9pz2yS9
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2026 23:09:46 +1000 (AEST)
+Received: from mxde.zte.com.cn (unknown [10.35.20.165])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mxct.zte.com.cn (FangMail) with ESMTPS id 4fvSJL6XM3z1DDv
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2026 21:03:14 +0800 (CST)
+Received: from mxhk.zte.com.cn (unknown [192.168.250.137])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mxde.zte.com.cn (FangMail) with ESMTPS id 4fvSJF25F6z5TCG0
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2026 21:03:09 +0800 (CST)
+Received: from mse-fl2.zte.com.cn (unknown [10.5.228.133])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mxhk.zte.com.cn (FangMail) with ESMTPS id 4fvSJ26Vzyz8Xs70;
+	Mon, 13 Apr 2026 21:02:58 +0800 (CST)
+Received: from xaxapp05.zte.com.cn ([10.99.98.109])
+	by mse-fl2.zte.com.cn with SMTP id 63DD2n3P010875;
+	Mon, 13 Apr 2026 21:02:49 +0800 (+08)
+	(envelope-from hu.shengming@zte.com.cn)
+Received: from mapi (xaxapp01[null])
+	by mapi (Zmail) with MAPI id mid32;
+	Mon, 13 Apr 2026 21:02:52 +0800 (CST)
+X-Zmail-TransId: 2af969dce97c49e-2c715
+X-Mailer: Zmail v1.0
+Message-ID: <20260413210252672ZfdcegJLJtyvlYdFAUBlr@zte.com.cn>
+In-Reply-To: <adyyNeVTkXQlnh_2@hyeyoo>
+References: 20260410120044.031381086@kernel.org,20260410120318.525653921@kernel.org,adyyNeVTkXQlnh_2@hyeyoo
+Date: Mon, 13 Apr 2026 21:02:52 +0800 (CST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -55,167 +70,170 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0 (1.0)
-Subject: Re: [PATCH 06/49] mm/mm_init: fix uninitialized pageblock migratetype for ZONE_DEVICE compound pages
-Date: Mon, 13 Apr 2026 21:57:00 +0800
-Message-Id: <ADC5EFE8-454D-4B9D-8BB0-39FF671290F0@linux.dev>
-References: <adzvdRPrK55TutT6@kernel.org>
-Cc: Muchun Song <songmuchun@bytedance.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Hildenbrand <david@kernel.org>, Oscar Salvador <osalvador@suse.de>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Lorenzo Stoakes <ljs@kernel.org>, Liam R Howlett <Liam.Howlett@oracle.com>,
- Vlastimil Babka <vbabka@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
- Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>,
- aneesh.kumar@linux.ibm.com, joao.m.martins@oracle.com, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <adzvdRPrK55TutT6@kernel.org>
-To: Mike Rapoport <rppt@kernel.org>
-X-Migadu-Flow: FLOW_OUT
+Mime-Version: 1.0
+From: <hu.shengming@zte.com.cn>
+To: <harry@kernel.org>
+Cc: <tglx@kernel.org>, <linux-kernel@vger.kernel.org>, <vbabka@kernel.org>,
+        <linux-mm@kvack.org>, <arnd@arndb.de>, <x86@kernel.org>,
+        <baolu.lu@linux.intel.com>, <iommu@lists.linux.dev>,
+        <m.grzeschik@pengutronix.de>, <netdev@vger.kernel.org>,
+        <linux-wireless@vger.kernel.org>, <herbert@gondor.apana.org.au>,
+        <linux-crypto@vger.kernel.org>, <dwmw2@infradead.org>,
+        <bernie@plugable.com>, <linux-fbdev@vger.kernel.org>, <tytso@mit.edu>,
+        <linux-ext4@vger.kernel.org>, <akpm@linux-foundation.org>,
+        <urezki@gmail.com>, <elver@google.com>, <dvyukov@google.com>,
+        <kasan-dev@googlegroups.com>, <ryabinin.a.a@gmail.com>,
+        <t.sailer@alumni.ethz.ch>, <linux-hams@vger.kernel.org>,
+        <Jason@zx2c4.com>, <richard.henderson@linaro.org>,
+        <linux-alpha@vger.kernel.org>, <linux@armlinux.org.uk>,
+        <linux-arm-kernel@lists.infradead.org>, <catalin.marinas@arm.com>,
+        <chenhuacai@kernel.org>, <loongarch@lists.linux.dev>,
+        <geert@linux-m68k.org>, <linux-m68k@lists.linux-m68k.org>,
+        <dinguyen@kernel.org>, <jonas@southpole.se>,
+        <linux-openrisc@vger.kernel.org>, <deller@gmx.de>,
+        <linux-parisc@vger.kernel.org>, <mpe@ellerman.id.au>,
+        <linuxppc-dev@lists.ozlabs.org>, <pjw@kernel.org>,
+        <linux-riscv@lists.infradead.org>, <hca@linux.ibm.com>,
+        <linux-s390@vger.kernel.org>, <davem@davemloft.net>,
+        <sparclinux@vger.kernel.org>, <hao.li@linux.dev>, <cl@gentwo.org>,
+        <rientjes@google.com>, <roman.gushchin@linux.dev>
+Subject: =?UTF-8?B?UmU6IFtwYXRjaCAxNC8zOF0gc2x1YjogVXNlIHByYW5kb20gaW5zdGVhZCBvZiBnZXRfY3ljbGVzKCk=?=
+Content-Type: text/plain;
+	charset="UTF-8"
+X-MAIL:mse-fl2.zte.com.cn 63DD2n3P010875
+X-TLS: YES
+X-SPF-DOMAIN: zte.com.cn
+X-ENVELOPE-SENDER: hu.shengming@zte.com.cn
+X-SPF: None
+X-SOURCE-IP: 10.35.20.165 unknown Mon, 13 Apr 2026 21:03:15 +0800
+X-Fangmail-Anti-Spam-Filtered: true
+X-Fangmail-MID-QID: 69DCE991.000/4fvSJL6XM3z1DDv
 
+Harry wrote:
+> [Resending after fixing broken email headers]
+> 
+> On Fri, Apr 10, 2026 at 02:19:37PM +0200, Thomas Gleixner wrote:
+> > The decision whether to scan remote nodes is based on a 'random' number
+> > retrieved via get_cycles(). get_cycles() is about to be removed.
+> > 
+> > There is already prandom state in the code, so use that instead.
+> > 
+> > Signed-off-by: Thomas Gleixner <tglx@kernel.org>
+> > Cc: Vlastimil Babka <vbabka@kernel.org>
+> > Cc: linux-mm@kvack.org
+> > ---
+> 
+> Acked-by: Harry Yoo (Oracle) <harry@kernel.org>
+> 
+> Is this for this merge window?
+> 
+> This may conflict with upcoming changes on freelist shuffling [1]
+> (not queued for slab/for-next yet though), but it should be easy to
+> resolve.
+> 
 
+Hi Harry,
 
-> On Apr 13, 2026, at 21:28, Mike Rapoport <rppt@kernel.org> wrote:
->=20
-> =EF=BB=BFOn Mon, Apr 13, 2026 at 06:07:44PM +0800, Muchun Song wrote:
->>=20
->>=20
->>>> On Apr 13, 2026, at 17:32, Mike Rapoport <rppt@kernel.org> wrote:
->>>=20
->>> On Sun, Apr 05, 2026 at 08:51:57PM +0800, Muchun Song wrote:
->>>> Previously, memmap_init_zone_device() only initialized the migratetype
->>>> of the first pageblock of a compound page. If the compound page size
->>>> exceeds pageblock_nr_pages (e.g., 1GB hugepages with 2MB pageblocks),
->>>> subsequent pageblocks in the compound page would remain uninitialized.
->>>>=20
->>>> This patch moves the migratetype initialization out of
->>>> __init_zone_device_page() and into a separate function
->>>> pageblock_migratetype_init_range(). This function iterates over the
->>>> entire PFN range of the memory, ensuring that all pageblocks are correc=
-tly
->>>> initialized.
->>>>=20
->>>> Fixes: c4386bd8ee3a ("mm/memremap: add ZONE_DEVICE support for compound=
- pages")
->>>> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
->>>> ---
->>>> mm/mm_init.c | 41 ++++++++++++++++++++++++++---------------
->>>> 1 file changed, 26 insertions(+), 15 deletions(-)
->>>>=20
->>>> diff --git a/mm/mm_init.c b/mm/mm_init.c
->>>> index 9a44e8458fed..4936ca78966c 100644
->>>> --- a/mm/mm_init.c
->>>> +++ b/mm/mm_init.c
->>>> @@ -674,6 +674,18 @@ static inline void fixup_hashdist(void)
->>>> static inline void fixup_hashdist(void) {}
->>>> #endif /* CONFIG_NUMA */
->>>>=20
->>>> +static __meminit void pageblock_migratetype_init_range(unsigned long p=
-fn,
->>>> +        unsigned long nr_pages,
->>>> +        int migratetype)
->>>> +{
->>>> + unsigned long end =3D pfn + nr_pages;
->>>> +
->>>> + for (pfn =3D pageblock_align(pfn); pfn < end; pfn +=3D pageblock_nr_p=
-ages) {
->>>> + init_pageblock_migratetype(pfn_to_page(pfn), migratetype, false);
->>>> + cond_resched();
->>>=20
->>> Do we need to call cond_resched() every iteration here?
->>=20
->> Of course not.
->>=20
->>>=20
->>>> + }
->>>> +}
->>>> +
->>>> /*
->>>> * Initialize a reserved page unconditionally, finding its zone first.
->>>> */
->>>> @@ -1011,21 +1023,6 @@ static void __ref __init_zone_device_page(struct=
- page *page, unsigned long pfn,
->>>> page_folio(page)->pgmap =3D pgmap;
->>>> page->zone_device_data =3D NULL;
->>>>=20
->>>> - /*
->>>> -  * Mark the block movable so that blocks are reserved for
->>>> -  * movable at startup. This will force kernel allocations
->>>> -  * to reserve their blocks rather than leaking throughout
->>>> -  * the address space during boot when many long-lived
->>>> -  * kernel allocations are made.
->>>> -  *
->>>> -  * Please note that MEMINIT_HOTPLUG path doesn't clear memmap
->>>> -  * because this is done early in section_activate()
->>>> -  */
->>>> - if (pageblock_aligned(pfn)) {
->>>> - init_pageblock_migratetype(page, MIGRATE_MOVABLE, false);
->>>> - cond_resched();
->>>> - }
->>>> -
->>>> /*
->>>> * ZONE_DEVICE pages other than MEMORY_TYPE_GENERIC are released
->>>> * directly to the driver page allocator which will set the page count
->>>> @@ -1122,6 +1119,8 @@ void __ref memmap_init_zone_device(struct zone *z=
-one,
->>>>=20
->>>> __init_zone_device_page(page, pfn, zone_idx, nid, pgmap);
->>>>=20
->>>> + cond_resched();
->>>=20
->>> Originally we called cond_resched() once per pageblock, now it's called
->>> once per page plus for every pageblock in the tight loop that sets the
->>> migrate type. Isn't it too much?
->>=20
->> There are indeed many more cond_resched() than before, but I don=E2=80=99=
-t have a
->> concise way to write it, so I took the easy way out.
->>=20
->> How about:
->>=20
->> diff --git a/mm/mm_init.c b/mm/mm_init.c
->> index 2d680636b67a..d13a2577c4c3 100644
->> --- a/mm/mm_init.c
->> +++ b/mm/mm_init.c
->> @@ -683,7 +683,8 @@ static __meminit void pageblock_migratetype_init_rang=
-e(unsigned long pfn,
->>=20
->>        for (pfn =3D pageblock_align(pfn); pfn < end; pfn +=3D pageblock_n=
-r_pages) {
->>                init_pageblock_migratetype(pfn_to_page(pfn), migratetype, i=
-solate);
->> -               cond_resched();
->> +               if ((pfn & (pageblock_nr_pages * 512 - 1)) =3D=3D 0)
->> +                       cond_resched();
->=20
-> TBH, I don't know if 512 is the right number :)
+Would you like me to wait for this patch to land linux-next and then
+rebase and send v6 on top?
 
-I picked this number out of thin air. I=E2=80=99m not sure as well.
+Thanks,
 
->=20
-> pageblock boundary was a convenient point to have cond_resched() along wit=
-h
-> setting the migrate type.
->=20
-> Here we might be able to squeeze more iterations between subsequent
-> cond_resched() calls.
+--
+With Best Regards,
+Shengming
 
-Choosing an appropriate number is indeed difficult. We need to consider
-both unnecessary cond_resched() calls and scheduling latency, and the
-specific value also depends on the current CPU performance. At the very leas=
-t,
-I find it hard to choose a correct value. Since we all agree it should be la=
-rger
-than 512, why not just pick 1024? I can't think of a good evaluation criteri=
-on
-or selection method either.
-
-Thanks.
-
->=20
-> --
-> Sincerely yours,
-> Mike.
+> [Cc'ing Shengming and SLAB ALLOCATOR folks]
+> [1] https://lore.kernel.org/linux-mm/20260409204352095kKWVYKtZImN59ybO6iRNj@zte.com.cn
+> 
+> -- 
+> Cheers,
+> Harry / Hyeonggon
+> 
+> >  mm/slub.c |   37 +++++++++++++++++++++++--------------
+> >  1 file changed, 23 insertions(+), 14 deletions(-)
+> > 
+> > --- a/mm/slub.c
+> > +++ b/mm/slub.c
+> > @@ -3302,6 +3302,25 @@ static inline struct slab *alloc_slab_pa
+> >      return slab;
+> >  }
+> >  
+> > +#if defined(CONFIG_SLAB_FREELIST_RANDOM) || defined(CONFIG_NUMA)
+> > +static DEFINE_PER_CPU(struct rnd_state, slab_rnd_state);
+> > +
+> > +static unsigned int slab_get_prandom_state(unsigned int limit)
+> > +{
+> > +    struct rnd_state *state;
+> > +    unsigned int res;
+> > +
+> > +    /*
+> > +     * An interrupt or NMI handler might interrupt and change
+> > +     * the state in the middle, but that's safe.
+> > +     */
+> > +    state = &get_cpu_var(slab_rnd_state);
+> > +    res = prandom_u32_state(state) % limit;
+> > +    put_cpu_var(slab_rnd_state);
+> > +    return res;
+> > +}
+> > +#endif
+> > +
+> >  #ifdef CONFIG_SLAB_FREELIST_RANDOM
+> >  /* Pre-initialize the random sequence cache */
+> >  static int init_cache_random_seq(struct kmem_cache *s)
+> > @@ -3365,8 +3384,6 @@ static void *next_freelist_entry(struct
+> >      return (char *)start + idx;
+> >  }
+> >  
+> > -static DEFINE_PER_CPU(struct rnd_state, slab_rnd_state);
+> > -
+> >  /* Shuffle the single linked freelist based on a random pre-computed sequence */
+> >  static bool shuffle_freelist(struct kmem_cache *s, struct slab *slab,
+> >                   bool allow_spin)
+> > @@ -3383,15 +3400,7 @@ static bool shuffle_freelist(struct kmem
+> >      if (allow_spin) {
+> >          pos = get_random_u32_below(freelist_count);
+> >      } else {
+> > -        struct rnd_state *state;
+> > -
+> > -        /*
+> > -         * An interrupt or NMI handler might interrupt and change
+> > -         * the state in the middle, but that's safe.
+> > -         */
+> > -        state = &get_cpu_var(slab_rnd_state);
+> > -        pos = prandom_u32_state(state) % freelist_count;
+> > -        put_cpu_var(slab_rnd_state);
+> > +        pos = slab_get_prandom_state(freelist_count);
+> >      }
+> >  
+> >      page_limit = slab->objects * s->size;
+> > @@ -3882,7 +3891,7 @@ static void *get_from_any_partial(struct
+> >       * with available objects.
+> >       */
+> >      if (!s->remote_node_defrag_ratio ||
+> > -            get_cycles() % 1024 > s->remote_node_defrag_ratio)
+> > +        slab_get_prandom_state(1024) > s->remote_node_defrag_ratio)
+> >          return NULL;
+> >  
+> >      do {
+> > @@ -7102,7 +7111,7 @@ static unsigned int
+> >  
+> >      /* see get_from_any_partial() for the defrag ratio description */
+> >      if (!s->remote_node_defrag_ratio ||
+> > -            get_cycles() % 1024 > s->remote_node_defrag_ratio)
+> > +        slab_get_prandom_state(1024) > s->remote_node_defrag_ratio)
+> >          return 0;
+> >  
+> >      do {
+> > @@ -8421,7 +8430,7 @@ void __init kmem_cache_init_late(void)
+> >      flushwq = alloc_workqueue("slub_flushwq", WQ_MEM_RECLAIM | WQ_PERCPU,
+> >                    0);
+> >      WARN_ON(!flushwq);
+> > -#ifdef CONFIG_SLAB_FREELIST_RANDOM
+> > +#if defined(CONFIG_SLAB_FREELIST_RANDOM) || defined(CONFIG_NUMA)
+> >      prandom_init_once(&slab_rnd_state);
+> >  #endif
+> >  }
+> > 
+> >
 
