@@ -1,74 +1,74 @@
-Return-Path: <linuxppc-dev+bounces-19703-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19704-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C6DCF34C5C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 14:43:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8B92F34C5E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 14:45:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fvVXN5473z2yjV;
-	Tue, 14 Apr 2026 00:43:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fvVZH1scPz2yjV;
+	Tue, 14 Apr 2026 00:45:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=202.12.124.137
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776091428;
-	cv=none; b=XymMLMIuSM1HmS0kUW0e2Y5e4NlK5Ypm6YC6CeIAg7Nkk9oxp1wgRieZ6OMTGAMmFQVDTPlnCj9a6ybM1nW6QctVDefJOibszuzpWjOAgAS8hTSTYrghi1Ms7aeVU89DKt8TZUd206bRU1qdP6Ya4Bqxj/9c60k2e8vsywwUTvfpklq+9zfZq1Rl5vSBfwjLcxVtPYrxcR1euAq1xxUUbjgkWWyJjBiAX2I3UyuXPvYQKCXWRqDJC+rmTLap7ou9+NpnKtt1xRfxlqegytSzpFc6kXo29ntAeKF3WlLjVJM0ekvY2edtG77VHp/y+292D3xq7CSbnaRRU1TsQfIptg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776091527;
+	cv=none; b=cePzbatubbnRHBr/TNY3VJeYNhEW3hVrBXaEZAMfCV2D2qkL4r4/BtTnH4a8cNtMdFbRGpsn79YxGkvWppe0TbhOstCCZaxUYqnaCC2yTGp0wJrA/eOgJkW3cMRk7Kt/47NOP+YyjUZQ1sguvXlqAO0VPGzyFydC1wvY56JsphZIyQ91Ir53fMdZC0SpT+zJtSH5Eh2aJ6abm63JTJgk8xIvQWnQnvDqf0mzrxLyVLO2fJvj27IbBwxLsKn/z//SmrLY93Fwh+/9kcQZJ0YsCwL69nxv4iztEAO8E9mYl2YS9WRU73z4rRaVqjIeFuf50r8oQoggyHGoixT6QVF4JA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776091428; c=relaxed/relaxed;
-	bh=CPqrtdPK1fzOFd0Y9/MDHGVDApYeKMdzUWsDXpmbjTE=;
+	t=1776091527; c=relaxed/relaxed;
+	bh=I+t/kQciCWPYQ9TuTtwE8ePqtDE4emYgbGk8M0JrxkM=;
 	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=DaBgbMutRWcz20+Oz0b5SPGRj9kbjbz6HdnYZRLNbJtYEaNbo91wUAADlHHpjs/negSKhQy65lI+eXxmQHrJwV0PdkUuPwDaJ1tnE1ptZ5X2FCS4VUhmV0HYkHEVRrD0C6z/IH+TR/B0WFQmBbBRJgFpmPnkuPS9tarL0RHyHETxLVzRvqK4/R0tE/SvZXqGna2wYjCAZ5+bUdaI1Shsvtk/WZP6nBDNCUKmY1eF8NTNWeCMkMJbgLPvIPaRYNIVetUjREPBo5Wf/mT3hs4Ia6ELHdQZJ74L6TVbTnlt7mG4lFOLbKW2GP9HLuufFM3cuxOk4Mh1pzvG1GEdXrjYNg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=dThTVDJR; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=mKaUdPcE; dkim-atps=neutral; spf=pass (client-ip=202.12.124.137; helo=flow-b2-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
+	 Subject:Content-Type; b=Hs9l8+dvMuXyiI+jCNptnKkkBjaJ11POj8jwDEBY4qcQkaMpFh3VpHdZ4JaXksvv9HwiEZfEApAHisP01H6pqsKcvtRmlNN5l4EeR3Bd7/6ChkMU280wWWKJ1pFW+kwgDYWyWGb+xhpH2pULaPNkmvc7PNxrycnztXxIWvU9WV5uzsMhLq16JgcIv/9Jb1EcmgQtEWR9F3zavgem/XuiRMPugo7VvmsJ4xHtgiHaVOktlL5aoD+GtbFrMOR709b+KSRSdN/QgtREBfAo5BSgTGdUoZiUMvbC5Qd/fJVNRRH91/Q/w44/fDAF3lbzWV+UMdMGw4vATJquuF55NhQ4Nw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=VAzPN0Q8; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=qocQPWN5; dkim-atps=neutral; spf=pass (client-ip=202.12.124.137; helo=flow-b2-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=dThTVDJR;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=mKaUdPcE;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=VAzPN0Q8;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=qocQPWN5;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=202.12.124.137; helo=flow-b2-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
 Received: from flow-b2-smtp.messagingengine.com (flow-b2-smtp.messagingengine.com [202.12.124.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvVXJ5x3qz2yVP
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2026 00:43:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvVZG25dDz2yVP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2026 00:45:26 +1000 (AEST)
 Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
-	by mailflow.stl.internal (Postfix) with ESMTP id 580C613004A2;
-	Mon, 13 Apr 2026 10:43:39 -0400 (EDT)
+	by mailflow.stl.internal (Postfix) with ESMTP id 63FD713004A2;
+	Mon, 13 Apr 2026 10:45:23 -0400 (EDT)
 Received: from phl-imap-02 ([10.202.2.81])
-  by phl-compute-04.internal (MEProxy); Mon, 13 Apr 2026 10:43:41 -0400
+  by phl-compute-04.internal (MEProxy); Mon, 13 Apr 2026 10:45:24 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
 	:cc:content-transfer-encoding:content-type:content-type:date
 	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm1; t=1776091419;
-	 x=1776098619; bh=CPqrtdPK1fzOFd0Y9/MDHGVDApYeKMdzUWsDXpmbjTE=; b=
-	dThTVDJRrT61VUkRS+cdt7Y0Z5RRsLEBjlt5LbUT/Wkj3XuC1dVyKWZPgLth6rHI
-	xbXnXmRzoJxvLeN5K5KTS4bLI9JTPMUMZHJQi9mq2+Mm0O8HtxzN6gdwi5dKMGzS
-	o1z8qIdRudVgAnBmJYPys1vSE6iXXFJKhXBunGcqiXTQxSIZPwExbixipylrVyN9
-	4kf4i5YSOQ5TyiEguuaQMFY1bjfsEzY4T5yjV+i49k3OFs/Vmf2QAO7EvG9pkkWh
-	N8bT6ZPczJACaYt7v0DdNhd+Jcw1QSr4sfdnPLEq3qIenfqRfJd23mvz1BSPAcJy
-	t7jf+cR2gTZwsPDeAUjd8w==
+	:references:reply-to:subject:subject:to:to; s=fm1; t=1776091523;
+	 x=1776098723; bh=I+t/kQciCWPYQ9TuTtwE8ePqtDE4emYgbGk8M0JrxkM=; b=
+	VAzPN0Q8M06ZrISBiijyTlSN7zZjXii1iyjsU0Nd55Go1hDvnVgLbRCBducupWL/
+	I7xPJiEoPevkjLJ80mYbEW/a8BVGP+DZJqRCjUfrjm3tX4hey3YtL6Qx00JZuF8v
+	WjI3i2GDGrKOX6lfMDr3NkI8PTwxLuJCiP0sOV4NGpZgf3fzkLLYGy+I5Zeauesx
+	Pa7bVz5nZwM+gS/NQ9njvgK3O3s/OSp/mqYNiLR905iGGN0vAev7wD2BsAy/ZN5n
+	HSi20BHM/ZKZ23MgIDcWnPLPjukDeFEfSjoTKa2sxYcORDHf2CMGKzIaSruFiqz+
+	oZNoQZjdZwrcCPF2MdR51w==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding
 	:content-type:content-type:date:date:feedback-id:feedback-id
 	:from:from:in-reply-to:in-reply-to:message-id:mime-version
 	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=1776091419; x=
-	1776098619; bh=CPqrtdPK1fzOFd0Y9/MDHGVDApYeKMdzUWsDXpmbjTE=; b=m
-	KaUdPcERkC+zzfJk9o14B4ADxV7hBFIrlwDzvbBZEzHm0PKs68AEHjccunfdwCIR
-	xandwmc3ligmxNR3yrYrjDSRktpJmwg0D7TTzo3rAlmWy0gSHQXh1wFw4+NYGyVg
-	zDlM8PgR4QH15XnDMMXbSfnGvjJh/j4eK/GlCalmtgkTknPnFph+dfWco8cTlWse
-	WFEPDTU+OA38Yo/f8OVtqBAERl/dqEvgrfDqnngro8UiU3Du4URjogCH7u9C6eP/
-	RYqA02k02M2VwiJpdNWH8HG6r4KmynyPDoJYdxTNeNoiAqYyt88JcV7BBjOLulpB
-	DJUQhLG59C0zm2Z5pxrQg==
-X-ME-Sender: <xms:GAHdaVYGCaKUPjfNsUorzxAck0ngCpZdPLdqJKjZEoxtd6QEkfV5yg>
-    <xme:GAHdaXPKX2B9tilU84LfHthnj4XuzUMENgXV2EBsOOdx9XMImcZUEPIIzoIwFqvOh
-    pcGkwnRvUUR4OUGZGU3iYkbbpFp25Dx9wq8LoeuFKlAv-Ydx1YT>
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=1776091523; x=
+	1776098723; bh=I+t/kQciCWPYQ9TuTtwE8ePqtDE4emYgbGk8M0JrxkM=; b=q
+	ocQPWN5vz5eOrV7RW4YLt61EpInPDUzfRCh54wFp6y2Qkmlnv6ZW6xi1Aoq7RlzZ
+	r6AxqNsae7V2QoCSPbuAl0ssOCnVNF+Nwe1zzee6gqmSKirEjbwPzN/lznn6IgkI
+	jFNhpABUlOOZaUVrUhHeH/vSP+NehNFWpty8kiiS8k4XWDW1V04VNj0ojxWNDsG/
+	IfeL1IDdAfa9wVDrNQg30BEe1ROTtYd65N72SkxvxptAHs7jfN3985PGHUPTFvJI
+	wKmIau3hzR296XeSLQyJhwIMCCxcc2mnbgbKz8VUFGlqAJo5mE6KGja1OZI6dhmy
+	PrqiKmwzjhsEhLvP09Hgg==
+X-ME-Sender: <xms:ggHdaTXgJGelzz_lzrVxB1-qyO567-GVmNc01ydITgap5FTeQTDzsg>
+    <xme:ggHdaWbojY5ZlN23wxAxRcQ_6Dhj9KvjWf-KNsyKBcK8W8C_Dp62np5kJfJ8b515H
+    9E3UwX-YmVDxTygAoDQVAtNvx28yeQKuUCb0K1tX4I6jWCY1o3q>
 X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefhedrtddtgdefkeehtdcutefuodetggdotefrod
     ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpuffrtefokffrpgfnqfghnecuuegr
     ihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjug
     hrpefoggffhffvvefkjghfufgtgfesthejredtredttdenucfhrhhomhepfdetrhhnugcu
     uegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrghtthgvrh
     hnpefhtdfhvddtfeehudekteeggffghfejgeegteefgffgvedugeduveelvdekhfdvieen
-    ucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpegrrhhnug
+    ucevlhhushhtvghrufhiiigvpedunecurfgrrhgrmhepmhgrihhlfhhrohhmpegrrhhnug
     esrghrnhgusgdruggvpdhnsggprhgtphhtthhopeegkedpmhhouggvpehsmhhtphhouhht
     pdhrtghpthhtohepthdrshgrihhlvghrsegrlhhumhhnihdrvghthhiirdgthhdprhgtph
     htthhopegtrghtrghlihhnrdhmrghrihhnrghssegrrhhmrdgtohhmpdhrtghpthhtohep
@@ -78,14 +78,14 @@ X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefhedrtddtgdefkeehtdcutefuodetgg
     hrtghpthhtohepuhhrvgiikhhisehgmhgrihhlrdgtohhmpdhrtghpthhtohepuggvlhhl
     vghrsehgmhigrdguvgdprhgtphhtthhopehhvghrsggvrhhtsehgohhnughorhdrrghprg
     hnrgdrohhrghdrrghu
-X-ME-Proxy: <xmx:GAHdadx3OaLmpgnQ-qR09fFSyphBizIiykQxx2Qr5HCiMADvCUw5LA>
-    <xmx:GAHdabzajIhZOwZQz55Cqp-WmIPvMJl0Qeu3WJrRVrqO07JZC9K3bQ>
-    <xmx:GAHdaSIxPmEuEecG1TMTc2ieeRuLkqK7w1Mgwy5a1Wj0e-ew_hD6MQ>
-    <xmx:GAHdaVsDbvRI-p-Ezq237oUrDyOkdrmimmA3aH1JiaBrwsVneKVMbQ>
-    <xmx:GwHdaelj14NT6xOHjmTv_huVndzlY2JM81Rr0b3-wFbundNAWyZ-7jZM>
+X-ME-Proxy: <xmx:ggHdaWvF06daWzpSpjs739v0aJtN6iuik26sDQBaw3w5gAf8SR2C_A>
+    <xmx:ggHdaZ9awg7nUXhN5OpyKRMUZCbM9osYFN5RNP6GaSqeakIU3Racag>
+    <xmx:ggHdacmWL1YHAZe8ol6oPFOZFwQU0SOjOVhuke7wt-o0cNx1zs0O2w>
+    <xmx:ggHdaXZVfqhFVoJvGmfQg_vToEFHdnDFmb_H9i_ab2aUXdlRPO64dg>
+    <xmx:gwHdabAQPN9OqlO9_5-GhrI_SeY-FYfEJ9AFMKsVeX_HsRytcY0IapPu>
 Feedback-ID: i56a14606:Fastmail
 Received: by mailuser.phl.internal (Postfix, from userid 501)
-	id E9F8A700065; Mon, 13 Apr 2026 10:43:35 -0400 (EDT)
+	id 88869700065; Mon, 13 Apr 2026 10:45:22 -0400 (EDT)
 X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -100,12 +100,11 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-ThreadId: AaL_vZcj0OrJ
-Date: Mon, 13 Apr 2026 16:43:14 +0200
+X-ThreadId: APG-r6FMkt-Z
+Date: Mon, 13 Apr 2026 16:45:01 +0200
 From: "Arnd Bergmann" <arnd@arndb.de>
 To: "Thomas Gleixner" <tglx@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Cc: "Michael Ellerman" <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org, "Baolu Lu" <baolu.lu@linux.intel.com>,
+Cc: x86@kernel.org, "Baolu Lu" <baolu.lu@linux.intel.com>,
  iommu@lists.linux.dev, "Michael Grzeschik" <m.grzeschik@pengutronix.de>,
  Netdev <netdev@vger.kernel.org>, linux-wireless@vger.kernel.org,
  "Herbert Xu" <herbert@gondor.apana.org.au>, linux-crypto@vger.kernel.org,
@@ -129,26 +128,31 @@ Cc: "Michael Ellerman" <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
  "Jonas Bonn" <jonas@southpole.se>,
  "linux-openrisc@vger.kernel.org" <linux-openrisc@vger.kernel.org>,
  "Helge Deller" <deller@gmx.de>, linux-parisc@vger.kernel.org,
+ "Michael Ellerman" <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
  "Paul Walmsley" <pjw@kernel.org>, linux-riscv@lists.infradead.org,
  "Heiko Carstens" <hca@linux.ibm.com>, linux-s390@vger.kernel.org,
  "David S . Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org
-Message-Id: <3d7c3433-2325-4bb2-a8f6-ddd11c82f71d@app.fastmail.com>
-In-Reply-To: <20260410120319.723429844@kernel.org>
+Message-Id: <0166c8e1-b19a-44f8-aab6-f8f161c8542b@app.fastmail.com>
+In-Reply-To: <20260410120320.163559629@kernel.org>
 References: <20260410120044.031381086@kernel.org>
- <20260410120319.723429844@kernel.org>
-Subject: Re: [patch 32/38] powerpc/spufs: Use mftb() directly
+ <20260410120320.163559629@kernel.org>
+Subject: Re: [patch 38/38] treewide: Remove asm/timex.h includes from generic code
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
 On Fri, Apr 10, 2026, at 14:21, Thomas Gleixner wrote:
-> There is no reason to indirect via get_cycles(), which is about to be
-> removed.
+> asm/timex.h does not provide any functionality for non-architecture code
+> anymore.
 >
-> Use mftb() directly.
+> Remove the asm-generic fallback and all references in include and source
+> files along with the random_get_entropy() #ifdeffery in timex.h.
 >
 > Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: linuxppc-dev@lists.ozlabs.org
+> ---
+>  include/asm-generic/Kbuild  |    1 -
+>  include/asm-generic/timex.h |   15 ---------------
+>  include/linux/random.h      |    3 +++
+>  include/linux/timex.h       |   26 --------------------------
 
 Acked-by: Arnd Bergmann <arnd@arndb.de>
 
