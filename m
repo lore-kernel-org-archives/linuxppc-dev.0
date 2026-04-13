@@ -1,62 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-19686-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19687-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12DA4F34C45
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 11:53:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1EEAEF34C45
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 11:55:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fvQlS5q4hz2ydn;
-	Mon, 13 Apr 2026 21:53:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.19
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776081188;
-	cv=none; b=UIz6ZKMa2FbVRTndAbO2m6k2Dgf2eGBe87s40cErBEo7eT/4A/nNMysDedCJ4VdcfHM3tzz/nOWNWr6F/ZeLbDJQzxaW1HqcJLrdxmtxWGtEAe3V5AW7VoJ6adP1/IImPQqieSUt8E5w2G1rzKB+Gkl4kL4ByDxOYi3asTDUuqy9IKG+i5VkL49mvUkAali++ZMOX5F8Dyl0ua9D1C8erCRnDwMgP4feKBcL4pD1INB35Ezgcdy7SFKo4Zw8DZRjp7lLXgOCKIhun5Ecq3m2oY35NQJRAUs5JD7QiHIhuJ5KpjqcVDoRHY62nod+HrcFjUbnVBcsEvtFuTbvDw5OoA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fvQnq69kxz2ydn;
+	Mon, 13 Apr 2026 21:55:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.18
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776081311;
+	cv=none; b=RMoBWaaBiT9WE/lZ+XLP5Y8R+xHALVjYOmJ+Sf7xSfWcZWXRQ+DcZ8OL3gV+U7dK7wF2qFjwX6PTQEEJkXYzF6yDO8c2YJRszCO12JDzp19/iogTIRnp1VXc6IekAQe1wdlV5S0HlmK7k7KLtDwPDuMqTueoD1zMfqeYdWt8k4FoEsFRTV9wK4g4YVBRe9/R6/FGLgZ+ymkSF+LTVU27+l8MYNpov7nG0b7nIH21BD5SVQpUySCpos7HBlGqvjZmiBdYvA29AQp1ChDS1lDh3dinBTPiLzNcPNxROdequiGqDSuCkQld0mwtW2UwuVa4JMtEKg9aa5ksxpFnAxoXtQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776081188; c=relaxed/relaxed;
-	bh=Xp1/f8DE27Wv/yXP3ntPLcP3czKhbR8L0cQnmpze/Dc=;
+	t=1776081311; c=relaxed/relaxed;
+	bh=8A4EsbcgctBgp/jMKS8aEzwZfBFINXltZzMv/SLL/g4=;
 	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=amDjwatf+zu0dh1hoaIq90ZrC0Fub6L0otsgcF0VShVOBGWbxBdomkLY9BkyV11A3vz4DdS1zIkCBezwgpcIpzDyDcqGAhkcjeEqz6RRcLKjXa+reeles+KKIkWQXYGmaTU7q8dyuFpLfrPdOBisqW8p1VUd9blA2XRWFYc/9seyEh214FepvdvqtONlrCUILRJ3+USJV93wjElmaTh0W539Qo0nSGx1Bnc1wyaMVkywn4V8dEeXEBiFJa8p0tJ5z2L4RRw/F5HCt4OaUoj7SXy5y8LUm8FEjE+i6JuWJvAgD7qqVCdaWHZ1vC6opG+HFR0BCPZRkAqr3vNywjRf+Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=TS8TraSw; dkim-atps=neutral; spf=pass (client-ip=192.198.163.19; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+	 MIME-Version:Content-Type; b=d/dukMSNvuwdlu5/U/rPbPqu1tzilbBH7xNusA02+URN8xzY7m+JjAil8y4mWriBWE616W7LklRd+B4sIhQIustNuJJRwaDDpQElJ89y7Eckk/O/iAZisDdhunLpSrjks+/+oO3TrC/rIKwE3tM4/5vzVNLO2LGOTVpY2KIX2tulzkdYgacw4uhjdQtsxwkrKz90XeaW+JAnvOS5gBsWKwt6rMAYCI+AsX5Y9NN2MXoL5LAmpVB8ImvoyooYOhmKLHG1F/80VaGRxRYW+oLbEEZ3suClmr61AweiX//kLu4cDvbNHGZg1nGsLG/aqk2EApDg4gJHbL1YdRAdhpmYgg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=SzkAE+rr; dkim-atps=neutral; spf=pass (client-ip=198.175.65.18; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=TS8TraSw;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=SzkAE+rr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.19; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.18; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvQlR4MrYz2yS9
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2026 21:53:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvQnp1gJDz2yS9
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2026 21:55:09 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1776081188; x=1807617188;
+  t=1776081310; x=1807617310;
   h=from:date:to:cc:subject:in-reply-to:message-id:
    references:mime-version;
-  bh=dJVGufupuRzhM0xublRPUyKnOZZPoagICx16HUyrYow=;
-  b=TS8TraSwYeghi5TBYGUfwoVOvmFuBvgjUrjzyeSlbAEv25bEWd7ZPchz
-   tFjw7Udll5ffOZmTEBBK+gDNN4DNqFBY2t/qTbImvyzTZrDCFF6NBLjId
-   hphQimAk2ktrjf5tPAD30wMWPAz/Uo0RX+CB6CGXVc+n469TISegYXxG3
-   z0jzlFkMlraQt1DQ5gGshUiTXOboUwcyd2U8nA3nsPSXQ2GqogfvwgtCg
-   DG7TFOlSYYu5Ru7+a76mIwOXeT8e0+TdLkA0Y3RwMQpodVWElyYJ7O8+K
-   DamLbHLsvqSV6VI8ZVBldyZEG+QgViueqptRMFSIFMySW+0LDQk6s/5NQ
-   g==;
-X-CSE-ConnectionGUID: khFgoeAlRIqX5GCHkqx1mQ==
-X-CSE-MsgGUID: 3f8ALSS4T9W+dMIYGiq1Tw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11757"; a="76046437"
+  bh=m4D4xwrjWoPcKd39e9WIlNBkYbShl/QU18qRe1RJS34=;
+  b=SzkAE+rrY2MJiai2r4AEEJLk98wMmAsgAYxPxLpH0vW3tSQyq9lFMM8u
+   P+4oA/vdZ913sxyH2Jz3ZGuSH7Xa06dxrOt/GOWrN97xIVv3jq3OGI7f1
+   ZvwdTT/y64DsmsKWHj8POS+nT4m3zugZcdQzr5Fo5xOPV+zsx5pB095Gu
+   UdnIHWxkuO08F1uobzbmmEJ0nfgTFy3A9f4oGZG1byZyjWi2mFon56uol
+   bzj+gzSDbYJDB4RgEd98aZJKpBLSf7dy3lSNPbnq9beXXqLV/UKDM1A5b
+   wJuUnDZraf/sTVE9c25hn3MBYYRBIxBO0gbpYTeOmwDwhMhxlZchHxyT5
+   A==;
+X-CSE-ConnectionGUID: CYW6CHlGTaWD8ZYjyJnHiQ==
+X-CSE-MsgGUID: 2/YAci/gTVeBAb5kGLi0OQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11757"; a="77030133"
 X-IronPort-AV: E=Sophos;i="6.23,177,1770624000"; 
-   d="scan'208";a="76046437"
-Received: from fmviesa001.fm.intel.com ([10.60.135.141])
-  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Apr 2026 04:53:04 -0700
-X-CSE-ConnectionGUID: Qi86xDZ0TgiVjehP4JCm2w==
-X-CSE-MsgGUID: nvS2V3eiR/y1R3IE9KDruQ==
+   d="scan'208";a="77030133"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Apr 2026 04:55:05 -0700
+X-CSE-ConnectionGUID: lbiB9JauRxu0nvnsRhAtXQ==
+X-CSE-MsgGUID: 7eAaEOTEQUC6kP4Yz6kYCg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.23,177,1770624000"; 
-   d="scan'208";a="253165075"
+   d="scan'208";a="252959648"
 Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.63])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Apr 2026 04:52:54 -0700
+  by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Apr 2026 04:54:58 -0700
 From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Date: Mon, 13 Apr 2026 14:52:49 +0300 (EEST)
+Date: Mon, 13 Apr 2026 14:54:55 +0300 (EEST)
 To: =?ISO-8859-2?Q?Krzysztof_Wilczy=F1ski?= <kwilczynski@kernel.org>
 cc: Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <helgaas@kernel.org>, 
     Manivannan Sadhasivam <mani@kernel.org>, 
@@ -73,10 +73,10 @@ cc: Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <helgaas@kernel.org>,
     Shuan He <heshuan@bytedance.com>, 
     Srivatsa Bhat <srivatsabhat@microsoft.com>, linux-pci@vger.kernel.org, 
     linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v4 13/24] alpha/PCI: Use PCI resource accessor macros
-In-Reply-To: <20260411080148.471335-14-kwilczynski@kernel.org>
-Message-ID: <5c4f32d1-0648-31d1-d7c0-661ccec4f8bc@linux.intel.com>
-References: <20260411080148.471335-1-kwilczynski@kernel.org> <20260411080148.471335-14-kwilczynski@kernel.org>
+Subject: Re: [PATCH v4 14/24] alpha/PCI: Clean up pci_mmap_resource()
+In-Reply-To: <20260411080148.471335-15-kwilczynski@kernel.org>
+Message-ID: <b4088182-cc79-3ee6-4b0c-9fa8f12d5cdf@linux.intel.com>
+References: <20260411080148.471335-1-kwilczynski@kernel.org> <20260411080148.471335-15-kwilczynski@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,59 +90,68 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="8323328-1935294158-1776081169=:962"
+Content-Type: multipart/mixed; boundary="8323328-878657269-1776081295=:962"
 
   This message is in MIME format.  The first part should be readable text,
   while the remaining parts are likely unreadable without MIME-aware tools.
 
---8323328-1935294158-1776081169=:962
+--8323328-878657269-1776081295=:962
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 
 On Sat, 11 Apr 2026, Krzysztof Wilczy=C5=84ski wrote:
 
-> Replace direct pdev->resource[] accesses with pci_resource_n(),
-> and pdev->resource[].flags accesses with pci_resource_flags().
+> Replace open-coded res->flags type checks with new pci_resource_is_mem()
+> and pci_resource_start() helpers.  Move the pci_resource_n() call into
+> pcibios_resource_to_bus() and drop the local struct resource pointer.
 >=20
-> No functional changes intended.
->=20
-> Reviewed-by: Ilpo J=C3=A4rvinen <ilpo.jarvinen@linux.intel.com>
 > Signed-off-by: Krzysztof Wilczy=C5=84ski <kwilczynski@kernel.org>
 > ---
->  arch/alpha/kernel/pci-sysfs.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  arch/alpha/kernel/pci-sysfs.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 >=20
 > diff --git a/arch/alpha/kernel/pci-sysfs.c b/arch/alpha/kernel/pci-sysfs.=
 c
-> index c84867ce31f5..7aac5e76dcd6 100644
+> index 7aac5e76dcd6..6c011dab326d 100644
 > --- a/arch/alpha/kernel/pci-sysfs.c
 > +++ b/arch/alpha/kernel/pci-sysfs.c
-> @@ -141,7 +141,7 @@ static int sparse_mem_mmap_fits(struct pci_dev *pdev,=
- int num)
->  =09long dense_offset;
->  =09unsigned long sparse_size;
+> @@ -70,7 +70,6 @@ static int pci_mmap_resource(struct kobject *kobj,
+>  {
+>  =09struct pci_dev *pdev =3D to_pci_dev(kobj_to_dev(kobj));
+>  =09int barno =3D (unsigned long)attr->private;
+> -=09struct resource *res =3D pci_resource_n(pdev, barno);
+>  =09enum pci_mmap_state mmap_type;
+>  =09struct pci_bus_region bar;
+>  =09int ret;
+> @@ -79,15 +78,16 @@ static int pci_mmap_resource(struct kobject *kobj,
+>  =09if (ret)
+>  =09=09return ret;
 > =20
-> -=09pcibios_resource_to_bus(pdev->bus, &bar, &pdev->resource[num]);
-> +=09pcibios_resource_to_bus(pdev->bus, &bar, pci_resource_n(pdev, num));
+> -=09if ((res->flags & IORESOURCE_MEM) && iomem_is_exclusive(res->start))
+> +=09if (pci_resource_is_mem(pdev, barno) &&
+> +=09    iomem_is_exclusive(pci_resource_start(pdev, barno)))
+>  =09=09return -EINVAL;
 > =20
->  =09/* All core logic chips have 4G sparse address space, except
->  =09   CIA which has 16G (see xxx_SPARSE_MEM and xxx_DENSE_MEM
-> @@ -181,7 +181,7 @@ static int pci_create_attr(struct pci_dev *pdev, int =
-num)
->  =09suffix =3D "";=09/* Assume bwx machine, normal resourceN files. */
->  =09nlen1 =3D 10;
+>  =09if (!__pci_mmap_fits(pdev, barno, vma, sparse))
+>  =09=09return -EINVAL;
 > =20
-> -=09if (pdev->resource[num].flags & IORESOURCE_MEM) {
-> +=09if (pci_resource_flags(pdev, num) & IORESOURCE_MEM) {
-
-This could have used the new helper but since this code is going away=20
-anyway in a later patch it doesn't matter,
+> -=09pcibios_resource_to_bus(pdev->bus, &bar, res);
+> +=09pcibios_resource_to_bus(pdev->bus, &bar, pci_resource_n(pdev, barno))=
+;
+>  =09vma->vm_pgoff +=3D bar.start >> (PAGE_SHIFT - (sparse ? 5 : 0));
+> -=09mmap_type =3D res->flags & IORESOURCE_MEM ? pci_mmap_mem : pci_mmap_i=
+o;
+> +=09mmap_type =3D pci_resource_is_mem(pdev, barno) ? pci_mmap_mem : pci_m=
+map_io;
+> =20
+>  =09return hose_mmap_page_range(pdev->sysdata, vma, mmap_type, sparse);
+>  }
+>=20
 
 Reviewed-by: Ilpo J=C3=A4rvinen <ilpo.jarvinen@linux.intel.com>
-
 
 --=20
  i.
 
---8323328-1935294158-1776081169=:962--
+--8323328-878657269-1776081295=:962--
 
