@@ -1,73 +1,48 @@
-Return-Path: <linuxppc-dev+bounces-19697-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19698-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 521F0F34C4E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 13:50:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F9AFF34C49
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 13:57:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fvTM46R0xz2ydn;
-	Mon, 13 Apr 2026 23:50:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776088240;
-	cv=none; b=i4LJStY84rGis3IEe5ndIgF9SzGgpa1w03zkkQsYSlw48XGrGX+tAdw2F77/WRHdaobA8d6AaF4EfcLVfPD3IqCgk0phkkcDCaKLZHkzpDsbFmNIwI6OV2IvNh9D+w1gRdsZNqsHAQioHG2zZCmRKwxgprIm0eNtyuBgbO0iLdEfvQeMk9UWDBhGyNKI0+ZYfGs8pnRhLDGZY2ZH9LVjLt95tKEgVx6SelOK1+LKFzQOwGdPAJqU6NX0t7Er7+VHqHNVGHlA05gDr4lNbtI2Uot84drZj9aTJUAkhSE8/vqxIjeYkbnWn9lHXDXspyAYnqsrTYRnAsSn/k/zo/BW8g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fvTWN6Tnlz2ydn;
+	Mon, 13 Apr 2026 23:57:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.183
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776088672;
+	cv=none; b=nI/uBTq1Eh0qSua9N6c4Iqc7xFcBvdu07KW/tYxilWmbN9o7yaS36MD5g5gUqOhynNsoy75upr98WaNMKwP/KPEDxDxV2nEDhlfNd+NdZKdCWqkZwnLhO884cWBZ5gctpXhHNCLXkGBVi/jxgl3JRzUprLf7I4jf3qDPiCDQLd2O8wcZWDxyU8mTHhpC5HZOu5ERHLWJvTO0fKU5ef6vBPuPZ4njVpapQy/FFH6rVUZASWe3nFgw+Zk/EKvT1UeUqYV1VGLnSn5frZMRTpe9gJxpHe+keQJz5pc5U2m1fZSlcGPn3kWePMFble638GXXmgo5OsCLRENs5NZlMwrogg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776088240; c=relaxed/relaxed;
-	bh=+EZ8gw8rtWTyUUKs/HrQK6QCUmH2fnCQqiuyyO080JM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=bZVu3KsgiLTwypVoAEdXhzg1dBYs8hs3P88B+IYWBo52QYfgZ/dFEVjT0bz28cNqw5cmfghJ7wa/9+y3lI5gS86HvVQ+X2P1ZVRQBOHpf+2ssk24Nrz+1rItN3EH23gwrl3TQ0xQpq/roOYtxLhgzYF4uQ1x5GBuLG3rSlureaUl3jxqKjn2AXwm6L9GvcMsXBIEP59+0d2OF/tN+AVQKXu0Fwma/b45tE9clA4hhliNevor0kk9TCaaCzqcs7AOgrZD6zFU6fI9WSKWzVbAjb/ucdw7klrUOIAhsbO27iOqAov2j1mBQ/4h35KLAmwy8v3h2woNE9KijsEmi6elrQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=j1/oj4eS; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1776088672; c=relaxed/relaxed;
+	bh=WB6X/KB4lcgoxaXTVldx7yfC+K++jG31ztfaBdye/0o=;
+	h=Content-Type:From:Mime-Version:Subject:Date:Message-Id:References:
+	 Cc:In-Reply-To:To; b=VoyAb8v8MLVo4iNLjy0wBL1Dg3MLeLKe4NcuhRZ+7lSMh4Io2icSG2Ogb8BUEhQLNSpF3sYIZC/zrbzqraEf3zX+60Rq6l0pMAq49an+6IB8yp/K/8oBoYVdojAbZKyncqRLwjJVn39rEX9oT112EeaaHNNmEilebvKJ4aOwtfQ+I09X9s22EIEqEcsozh991+dZ+aHpRV0aPofwgMm5a7HjWO5ZiTnD7lXKk6ktMKdIdxTrohShZ7h99r6ivpwH/26+tyM7+lF+xaR7uG0VGoVuqYhJsDjNVjj0wyF8qJ62ee56GkNPnYuMxeGxD5vHDgsNqxNWbTCIrEs+UO4wBg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=DmYoUD9o; dkim-atps=neutral; spf=pass (client-ip=91.218.175.183; helo=out-183.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=j1/oj4eS;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=DmYoUD9o;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.183; helo=out-183.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-183.mta0.migadu.com (out-183.mta0.migadu.com [91.218.175.183])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvTM362mLz2yS9
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2026 23:50:38 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63D6dGeX1218977;
-	Mon, 13 Apr 2026 13:50:29 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=+EZ8gw
-	8rtWTyUUKs/HrQK6QCUmH2fnCQqiuyyO080JM=; b=j1/oj4eS0cwZmSvIzeYj14
-	NAvroDziKfO8OD14ID6y+10qbS5mjfhJS6P8BvGXxLvUI2V9ssqX//y8KAJf1bAE
-	EHtAomFILfPBJapkmt3UbGE4GMGAO+S3aJ03a/8L0DPgfDtNXyxzfCII4y8SnGtT
-	k5daiJBqzqi70VvBIUmoCAwlrxCgLF0wYYBk9lnNoyFd13i5mJ2EBeh5W9xuEiE/
-	zKU9jAOzH0tJaB6kWPUykkV9Yesx0SJb8LeSHaQPxk0OEVH0GY3uIFkK02/m0Ulh
-	lP43QJVsvZklGY5BnCMLa//L1G/RxuUm14IaI9UkgSirmdRj7EY8YD+co80WkI1w
-	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dfdyqqwt8-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 13 Apr 2026 13:50:28 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 63DA9pJT025841;
-	Mon, 13 Apr 2026 13:50:27 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dg3b1d4j4-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 13 Apr 2026 13:50:27 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63DDoPoH20578608
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 13 Apr 2026 13:50:26 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CFB8320040;
-	Mon, 13 Apr 2026 13:50:25 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1839E2004B;
-	Mon, 13 Apr 2026 13:50:24 +0000 (GMT)
-Received: from [9.39.26.130] (unknown [9.39.26.130])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 13 Apr 2026 13:50:23 +0000 (GMT)
-Message-ID: <98adc953-322b-45fa-9128-cdbe831006e1@linux.ibm.com>
-Date: Mon, 13 Apr 2026 19:20:22 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvTWK742Hz2yS9
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2026 23:57:48 +1000 (AEST)
+Content-Type: text/plain; charset=utf-8
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1776088647;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=WB6X/KB4lcgoxaXTVldx7yfC+K++jG31ztfaBdye/0o=;
+	b=DmYoUD9oKqdfKivm9z9TwfbKLHD13LH/gu6nFBQGBPzDBoPrHIIJnqbsGdaBjyp/HzmHN5
+	mVQMvqextCEEWtEWK81D/y4Sja1/VSwcgDqDjhNY8hYIm10O6g8QQmcjc0z05CcPpQLLRS
+	8dTHIkivv52rRR/NBQD14jzk00a+lW0=
+Content-Transfer-Encoding: quoted-printable
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Muchun Song <muchun.song@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,198 +55,167 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/fadump: Add timeout to RTAS busy-wait loops
-To: Adriano Vero <litaliano00.contact@gmail.com>, maddy@linux.ibm.com,
-        mpe@ellerman.id.au
-Cc: npiggin@gmail.com, chleroy@kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org
-References: <20260406061542.22354-1-litaliano00.contact@gmail.com>
-Content-Language: en-US
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-In-Reply-To: <20260406061542.22354-1-litaliano00.contact@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=ErTiaycA c=1 sm=1 tr=0 ts=69dcf4a4 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=pGLkceISAAAA:8
- a=hkdMDd2yh4g0e7eiTwAA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: hws__Er0x7uFV0QJyU8OpKINCy5HnT93
-X-Proofpoint-GUID: _3r5wMp-h4abPJobeBpjCJ8rp9G7CzxU
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDEzMDEzNiBTYWx0ZWRfX8QdJF8kEEDDu
- r71dMxW++telCV/xbSue6kpadKwkh/zNepO+Qv2packDY0gey8LnwxUELtV0+LhNbtpOd9F9HrU
- yji2mnhVEy9BJax01MHsLVlZQ8GVm5VZOub6sC49vJ2WCMnR37OMb2WkO8owxze9QARrGh4cuYs
- AbaqUtjJZjd9IWFfHAfORlQL39bm96cngLTZGmmVJxIPQ+y5lEFox9NcjPcflOhwSWudo6VQ1eN
- FjP0C1NATrIh2IyobbjQ/SKMigd4hV3aQHhFSuwGsDiwDuQ2qbD6Y2pNMuaRJym/rNfm0Ly+Edv
- NwpT/f5i/s/A+9AcRzAxh8DNRsDfH84yXim4GtD2x74XMTbNH+ZZpDn5M877IPbqV3pIU3zkvNk
- otsuiNrkk2KCZDFxClVBV3E8md72fdFKlokluUPLMYm8lqBliodNON6O8yNlpcmq+RKbwRoN4Rh
- sQOriIk+q8fW2tCt6Cg==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-13_03,2026-04-13_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 adultscore=0 suspectscore=0 bulkscore=0 clxscore=1015
- priorityscore=1501 lowpriorityscore=0 phishscore=0 spamscore=0
- impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604010000
- definitions=main-2604130136
-
-Hello Adriano
-
-On 06/04/26 11:45, Adriano Vero wrote:
-> The ibm,configure-kernel-dump RTAS call sites in
-> rtas_fadump_register(), rtas_fadump_unregister(), and
-> rtas_fadump_invalidate() polled indefinitely while firmware returned
-> a busy status. A misbehaving or hung firmware could stall these paths
-> forever, blocking fadump registration at boot or preventing clean
-> teardown.
-
-I agree that it is a good idea to avoid calling rtas_call for
-fadump operations indefinitely. However, so far I have not come
-across a case where the kernel gets stuck during fadump
-registration, unregistration, or invalidation due to phyp/RTAS
-continuously returning a wait time on an LPAR.
-
-That said, since fadump support has recently been extended to
-QEMU, this change might possibly prove useful in that environment.
-
->
-> Track the accumulated delay in a total_wait counter and bail out with
-> -ETIMEDOUT if it reaches RTAS_FADUMP_MAX_WAIT_MS (60 seconds)
-
-What is the rationale behind choosing a 60-second limit?
+Mime-Version: 1.0 (1.0)
+Subject: Re: [PATCH 06/49] mm/mm_init: fix uninitialized pageblock migratetype for ZONE_DEVICE compound pages
+Date: Mon, 13 Apr 2026 21:57:00 +0800
+Message-Id: <ADC5EFE8-454D-4B9D-8BB0-39FF671290F0@linux.dev>
+References: <adzvdRPrK55TutT6@kernel.org>
+Cc: Muchun Song <songmuchun@bytedance.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ David Hildenbrand <david@kernel.org>, Oscar Salvador <osalvador@suse.de>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Lorenzo Stoakes <ljs@kernel.org>, Liam R Howlett <Liam.Howlett@oracle.com>,
+ Vlastimil Babka <vbabka@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>,
+ aneesh.kumar@linux.ibm.com, joao.m.martins@oracle.com, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <adzvdRPrK55TutT6@kernel.org>
+To: Mike Rapoport <rppt@kernel.org>
+X-Migadu-Flow: FLOW_OUT
 
 
-> before
-> firmware signals completion. This follows the bounded busy-wait pattern
-> used in rtas-rtc.c.
->
-> Signed-off-by: Adriano Vero <litaliano00.contact@gmail.com>
-> ---
->   arch/powerpc/platforms/pseries/rtas-fadump.c | 37 ++++++++++++++------
->   arch/powerpc/platforms/pseries/rtas-fadump.h |  6 ++++
->   2 files changed, 33 insertions(+), 10 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/pseries/rtas-fadump.c b/arch/powerpc/platforms/pseries/rtas-fadump.c
-> index eceb32893..b165f165c 100644
-> --- a/arch/powerpc/platforms/pseries/rtas-fadump.c
-> +++ b/arch/powerpc/platforms/pseries/rtas-fadump.c
-> @@ -181,7 +181,7 @@ static u64 rtas_fadump_get_bootmem_min(void)
->   
->   static int rtas_fadump_register(struct fw_dump *fadump_conf)
->   {
-> -	unsigned int wait_time, fdm_size;
-> +	unsigned int wait_time, total_wait, fdm_size;
->   	int rc, err = -EIO;
->   
->   	/*
-> @@ -192,15 +192,20 @@ static int rtas_fadump_register(struct fw_dump *fadump_conf)
->   	fdm_size = sizeof(struct rtas_fadump_section_header);
->   	fdm_size += be16_to_cpu(fdm.header.dump_num_sections) * sizeof(struct rtas_fadump_section);
->   
-> -	/* TODO: Add upper time limit for the delay */
-> +	total_wait = 0;
->   	do {
->   		rc =  rtas_call(fadump_conf->ibm_configure_kernel_dump, 3, 1,
->   				NULL, FADUMP_REGISTER, &fdm, fdm_size);
->   
->   		wait_time = rtas_busy_delay_time(rc);
-> -		if (wait_time)
-> +		if (wait_time) {
-> +			if (total_wait >= RTAS_FADUMP_MAX_WAIT_MS) {
-> +				pr_err("Timed out waiting for firmware to register fadump\n");
-> +				return -ETIMEDOUT;
-> +			}
-> +			total_wait += wait_time;
->   			mdelay(wait_time);
-> -
-> +		}
->   	} while (wait_time);
->   
->   	switch (rc) {
-> @@ -234,18 +239,24 @@ static int rtas_fadump_register(struct fw_dump *fadump_conf)
->   
->   static int rtas_fadump_unregister(struct fw_dump *fadump_conf)
->   {
-> -	unsigned int wait_time;
-> +	unsigned int wait_time, total_wait;
->   	int rc;
->   
-> -	/* TODO: Add upper time limit for the delay */
-> +	total_wait = 0;
->   	do {
->   		rc =  rtas_call(fadump_conf->ibm_configure_kernel_dump, 3, 1,
->   				NULL, FADUMP_UNREGISTER, &fdm,
->   				sizeof(struct rtas_fadump_mem_struct));
->   
->   		wait_time = rtas_busy_delay_time(rc);
-> -		if (wait_time)
-> +		if (wait_time) {
-> +			if (total_wait >= RTAS_FADUMP_MAX_WAIT_MS) {
-> +				pr_err("Timed out waiting for firmware to unregister fadump\n");
-> +				return -ETIMEDOUT;
-> +			}
-> +			total_wait += wait_time;
->   			mdelay(wait_time);
-> +		}
->   	} while (wait_time);
->   
->   	if (rc) {
-> @@ -259,18 +270,24 @@ static int rtas_fadump_unregister(struct fw_dump *fadump_conf)
->   
->   static int rtas_fadump_invalidate(struct fw_dump *fadump_conf)
->   {
-> -	unsigned int wait_time;
-> +	unsigned int wait_time, total_wait;
->   	int rc;
->   
-> -	/* TODO: Add upper time limit for the delay */
-> +	total_wait = 0;
->   	do {
->   		rc =  rtas_call(fadump_conf->ibm_configure_kernel_dump, 3, 1,
->   				NULL, FADUMP_INVALIDATE, fdm_active,
->   				sizeof(struct rtas_fadump_mem_struct));
->   
->   		wait_time = rtas_busy_delay_time(rc);
-> -		if (wait_time)
-> +		if (wait_time) {
-> +			if (total_wait >= RTAS_FADUMP_MAX_WAIT_MS) {
-> +				pr_err("Timed out waiting for firmware to invalidate fadump\n");
-> +				return -ETIMEDOUT;
-> +			}
-> +			total_wait += wait_time;
->   			mdelay(wait_time);
-> +		}
->   	} while (wait_time);
 
-This do...while loop is almost identical in all three places.
-Would it make sense to introduce a helper function to wrap the
-rtas_call, along with handling the wait time and timeout?
+> On Apr 13, 2026, at 21:28, Mike Rapoport <rppt@kernel.org> wrote:
+>=20
+> =EF=BB=BFOn Mon, Apr 13, 2026 at 06:07:44PM +0800, Muchun Song wrote:
+>>=20
+>>=20
+>>>> On Apr 13, 2026, at 17:32, Mike Rapoport <rppt@kernel.org> wrote:
+>>>=20
+>>> On Sun, Apr 05, 2026 at 08:51:57PM +0800, Muchun Song wrote:
+>>>> Previously, memmap_init_zone_device() only initialized the migratetype
+>>>> of the first pageblock of a compound page. If the compound page size
+>>>> exceeds pageblock_nr_pages (e.g., 1GB hugepages with 2MB pageblocks),
+>>>> subsequent pageblocks in the compound page would remain uninitialized.
+>>>>=20
+>>>> This patch moves the migratetype initialization out of
+>>>> __init_zone_device_page() and into a separate function
+>>>> pageblock_migratetype_init_range(). This function iterates over the
+>>>> entire PFN range of the memory, ensuring that all pageblocks are correc=
+tly
+>>>> initialized.
+>>>>=20
+>>>> Fixes: c4386bd8ee3a ("mm/memremap: add ZONE_DEVICE support for compound=
+ pages")
+>>>> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+>>>> ---
+>>>> mm/mm_init.c | 41 ++++++++++++++++++++++++++---------------
+>>>> 1 file changed, 26 insertions(+), 15 deletions(-)
+>>>>=20
+>>>> diff --git a/mm/mm_init.c b/mm/mm_init.c
+>>>> index 9a44e8458fed..4936ca78966c 100644
+>>>> --- a/mm/mm_init.c
+>>>> +++ b/mm/mm_init.c
+>>>> @@ -674,6 +674,18 @@ static inline void fixup_hashdist(void)
+>>>> static inline void fixup_hashdist(void) {}
+>>>> #endif /* CONFIG_NUMA */
+>>>>=20
+>>>> +static __meminit void pageblock_migratetype_init_range(unsigned long p=
+fn,
+>>>> +        unsigned long nr_pages,
+>>>> +        int migratetype)
+>>>> +{
+>>>> + unsigned long end =3D pfn + nr_pages;
+>>>> +
+>>>> + for (pfn =3D pageblock_align(pfn); pfn < end; pfn +=3D pageblock_nr_p=
+ages) {
+>>>> + init_pageblock_migratetype(pfn_to_page(pfn), migratetype, false);
+>>>> + cond_resched();
+>>>=20
+>>> Do we need to call cond_resched() every iteration here?
+>>=20
+>> Of course not.
+>>=20
+>>>=20
+>>>> + }
+>>>> +}
+>>>> +
+>>>> /*
+>>>> * Initialize a reserved page unconditionally, finding its zone first.
+>>>> */
+>>>> @@ -1011,21 +1023,6 @@ static void __ref __init_zone_device_page(struct=
+ page *page, unsigned long pfn,
+>>>> page_folio(page)->pgmap =3D pgmap;
+>>>> page->zone_device_data =3D NULL;
+>>>>=20
+>>>> - /*
+>>>> -  * Mark the block movable so that blocks are reserved for
+>>>> -  * movable at startup. This will force kernel allocations
+>>>> -  * to reserve their blocks rather than leaking throughout
+>>>> -  * the address space during boot when many long-lived
+>>>> -  * kernel allocations are made.
+>>>> -  *
+>>>> -  * Please note that MEMINIT_HOTPLUG path doesn't clear memmap
+>>>> -  * because this is done early in section_activate()
+>>>> -  */
+>>>> - if (pageblock_aligned(pfn)) {
+>>>> - init_pageblock_migratetype(page, MIGRATE_MOVABLE, false);
+>>>> - cond_resched();
+>>>> - }
+>>>> -
+>>>> /*
+>>>> * ZONE_DEVICE pages other than MEMORY_TYPE_GENERIC are released
+>>>> * directly to the driver page allocator which will set the page count
+>>>> @@ -1122,6 +1119,8 @@ void __ref memmap_init_zone_device(struct zone *z=
+one,
+>>>>=20
+>>>> __init_zone_device_page(page, pfn, zone_idx, nid, pgmap);
+>>>>=20
+>>>> + cond_resched();
+>>>=20
+>>> Originally we called cond_resched() once per pageblock, now it's called
+>>> once per page plus for every pageblock in the tight loop that sets the
+>>> migrate type. Isn't it too much?
+>>=20
+>> There are indeed many more cond_resched() than before, but I don=E2=80=99=
+t have a
+>> concise way to write it, so I took the easy way out.
+>>=20
+>> How about:
+>>=20
+>> diff --git a/mm/mm_init.c b/mm/mm_init.c
+>> index 2d680636b67a..d13a2577c4c3 100644
+>> --- a/mm/mm_init.c
+>> +++ b/mm/mm_init.c
+>> @@ -683,7 +683,8 @@ static __meminit void pageblock_migratetype_init_rang=
+e(unsigned long pfn,
+>>=20
+>>        for (pfn =3D pageblock_align(pfn); pfn < end; pfn +=3D pageblock_n=
+r_pages) {
+>>                init_pageblock_migratetype(pfn_to_page(pfn), migratetype, i=
+solate);
+>> -               cond_resched();
+>> +               if ((pfn & (pageblock_nr_pages * 512 - 1)) =3D=3D 0)
+>> +                       cond_resched();
+>=20
+> TBH, I don't know if 512 is the right number :)
 
-- Sourabh Jain
+I picked this number out of thin air. I=E2=80=99m not sure as well.
 
->   	if (rc) {
-> diff --git a/arch/powerpc/platforms/pseries/rtas-fadump.h b/arch/powerpc/platforms/pseries/rtas-fadump.h
-> index c109abf6b..65fdab7b5 100644
-> --- a/arch/powerpc/platforms/pseries/rtas-fadump.h
-> +++ b/arch/powerpc/platforms/pseries/rtas-fadump.h
-> @@ -41,6 +41,12 @@
->   #define MAX_SECTIONS				10
->   #define RTAS_FADUMP_MAX_BOOT_MEM_REGS		7
->   
-> +/*
-> + * Maximum time to wait for firmware to respond to an
-> + * ibm,configure-kernel-dump RTAS call before giving up.
-> + */
-> +#define RTAS_FADUMP_MAX_WAIT_MS			60000U
-> +
->   /* Kernel Dump section info */
->   struct rtas_fadump_section {
->   	__be32	request_flag;
+>=20
+> pageblock boundary was a convenient point to have cond_resched() along wit=
+h
+> setting the migrate type.
+>=20
+> Here we might be able to squeeze more iterations between subsequent
+> cond_resched() calls.
 
+Choosing an appropriate number is indeed difficult. We need to consider
+both unnecessary cond_resched() calls and scheduling latency, and the
+specific value also depends on the current CPU performance. At the very leas=
+t,
+I find it hard to choose a correct value. Since we all agree it should be la=
+rger
+than 512, why not just pick 1024? I can't think of a good evaluation criteri=
+on
+or selection method either.
 
+Thanks.
+
+>=20
+> --
+> Sincerely yours,
+> Mike.
 
