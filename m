@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-19716-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19717-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32FA5F531C0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 18:41:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 915CCF531C0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 18:50:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fvbpd3jfgz2yty;
-	Tue, 14 Apr 2026 04:41:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fvc1W0h8wz2yv4;
+	Tue, 14 Apr 2026 04:50:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776105689;
-	cv=none; b=Qa3bqd1lBoHpJxbCx79a9bcuXGgB0FTjZJPMpJfT8dqFJPQs5MkqQMtwEKbiLMzy5xLMneG06KN3B30CosSBHdW+Wi4k7VlLOHTg0WGuHIhGwora9nbApDYB/lRph2MOO2fQwr/6mUp8zAPc2jgDCYTYYWrNXw8xmK6BMp7+tzxeZE6kjY+zHiWpqN37K9CVcWKghVpAcERbJn0poU2xeHQARPsO4TVn5Qx+tIxGiqGQZ8nRLzyA5w6S5alcgL3L4ESVWwAOXk+HZbtH9f+nfKRVJ8sDynRW6Xr30xm6CViAjkR7pr9ergkm4mZxDHr+5jg5CkYn7QhRu+K+oMT70w==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776106255;
+	cv=none; b=OI/7iSGScpHPHYwvlkGbRGICvHzKOSnKW4SyQ5S9dkYk0x+AGuJMfTmRyZlCT22iPg+LoVodeLO+nRHBdObSGGpY0v19jwYxWKDnqqpWg6GyLzQhNOpCfnCMYdLsHkKbq7Nlr8SQbfRfvDAgyBittOgSyf/QewcmQoxYVXgAaNrBoswHq5cjEV7SLAWyM9OBKz/nmZUBFbQHZ7Wom8tYfbtmAzJFRKakgRiTpsPbN1oNoM2ICJMZH5qkX8WfAfDSrXM/VjNZZHuostQeG8X2zlzflsk0QhieDbA0hIXlh5PVRdiel4oNgXEX/z9kuSOtBrH8oh6wz999cxvJgf8UQg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776105689; c=relaxed/relaxed;
-	bh=JiEX8vjXSz/sh85xNdxBgd8SRdc3RYTujnGNxoxRGJs=;
+	t=1776106255; c=relaxed/relaxed;
+	bh=XX/0ECX0ZPlZ6DfabBEjQOgZGq9iZAHocSDbl5LU160=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=hqcpODWOQn03PSCFIzpfVTE0b19h3jZr/3dRxI7vhktxyVS1AxkOBz9Hvc8ww1ek/Y+GfLu6uUCwFdHiMuRGyqmrWSP24LNd4T6Lxqpeezgyu1YD4chr15eiN1DewlP9fybrmWZZWmi/OQoz2a4/1E78uWijIn2e/F+1wtr1X3c2163BQ2/RVBd0y/wS+RFMhqmj9dETCYRjtcqLWrSfi6r58vHwlpJauDQjVZPlPdth2e7uaqDXqYzl38+G47DpSzwv4UzNg0YNRsvS00dgVV+MDlrI6fiZGCvDXyuPh6/a/HjVIjuyues+dpqNKT43V8FW8xGFz+1T0xlyUQVudA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RYUiTIEB; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=ZCkFn09Spi+ZNRkKWBB8STP55HI4DgULndEKiwogcckX9+gffA9eySdvkhAjzsWG7qetbco+nfWBrUVdvIHfMNJkJZNU7gGMgHCJfdjd7e9f8Ap4FgnWRfA3vEhGBlFUWgygG3pM4GSQYqUwR51A3+6kxjdZsfWhxat1gtjHx3YmHsZ9eBUZkXcUanbLxjS0CAC8UvVzcgl1WxsNZ/dSc4jpQkaf4LAsNuaHb5y3XQMob8RqH72lTasKugKpEVomvz4SvV/jmZGtjfxgIwjPz0OOoyp54hstQJBSxL8S9HLZrS0YemnazVC4rq+6uhcfMA6nhMSaLUzJcnKZEcV/VQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DvdJDQe3; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RYUiTIEB;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DvdJDQe3;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvbpc5Rhzz2ytx
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2026 04:41:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvc1V01VMz2yth
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2026 04:50:53 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 2B7A54017D;
-	Mon, 13 Apr 2026 18:41:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 52627C2BCAF;
-	Mon, 13 Apr 2026 18:41:20 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id E362B44279;
+	Mon, 13 Apr 2026 18:50:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 064A4C2BCAF;
+	Mon, 13 Apr 2026 18:50:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776105686;
-	bh=Ag34EiRSRProjSszPBmIGU7K92Xfr0e+QDVz287fZs8=;
+	s=k20201202; t=1776106251;
+	bh=rdLqMR/Xr3fQS5U0jYUhu1Lu8JZHxK3+UfMlHMMb9T0=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=RYUiTIEBiWUn3y/EkLaQ+B6or6WPDAJLf1CGVxYVwTegeS8M6EoDmczfXWKz0ZXOz
-	 0+9etjUpPxVxm6h1D6hH6ELi0BENK6eMTe+EfabF0ADKvKCW9kJIwUAjXqMsEv/K1m
-	 o589wnQnYobBXyMAFP4ggd9Xoa1oeu6Bm2Di8fpJQCKBQcvyZ/gKGIwtidfpEQA17O
-	 3zXGd2OlwjNvDVYdCbwlRlVWXcWTPStWTQnnpDld2QBNtqFDSk7x+JetUtJL/wwPVZ
-	 y3i5WrOphiKj9EZ/Ag3DqRTX/GyJaTBe+tkAp/xIQ//2KXChkz1ph2H3wZRDkubPFS
-	 1HIUjTKc95cwQ==
-Message-ID: <2b51659e-5527-4e15-a0a8-41f30f589d07@kernel.org>
-Date: Mon, 13 Apr 2026 20:41:16 +0200
+	b=DvdJDQe3oCG/gfgbw4UZP+je/1tx9raBCi0Fx3sjPOET7NPzV8JEnJSl0ggGBjtI1
+	 hBhIC6ExWdLs8tBHuLezEk1U12agU+VHQnpht/UuNiSCyU+8VXWnc13JwUGl5zgr2U
+	 VjTV//cyB1Zcj0WObb4Osc+PRC81TE0WL/CE6EQvvb6fXUNa87P9GQiqBno6ZQmUFh
+	 v/4GZWWXcklcBfhYTXXJwMRjgxAsdPh+UL8SeN9/4z4Aygv6OZo6dpRQ+xjCtfYG0Y
+	 N3id4XvdsiushhArjrX8jdh1VCpQHVTLtkDeiAFmcATQBevco3PsThfZtGvxpi5yOj
+	 GMABa9pVDUYVg==
+Message-ID: <42ba7f13-846f-4150-8195-32a775bb6812@kernel.org>
+Date: Mon, 13 Apr 2026 20:50:41 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,22 +60,21 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 03/49] mm/sparse: fix vmemmap page accounting for HVOed
- DAX
-To: Muchun Song <songmuchun@bytedance.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Lorenzo Stoakes <ljs@kernel.org>,
- "Liam R . Howlett" <Liam.Howlett@oracle.com>,
- Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
- Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>,
- aneesh.kumar@linux.ibm.com, joao.m.martins@oracle.com, linux-mm@kvack.org,
+Subject: Re: [PATCH 06/49] mm/mm_init: fix uninitialized pageblock migratetype
+ for ZONE_DEVICE compound pages
+To: Muchun Song <muchun.song@linux.dev>, Mike Rapoport <rppt@kernel.org>
+Cc: Muchun Song <songmuchun@bytedance.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Oscar Salvador
+ <osalvador@suse.de>, Michael Ellerman <mpe@ellerman.id.au>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>, Lorenzo Stoakes <ljs@kernel.org>,
+ Liam R Howlett <Liam.Howlett@oracle.com>, Vlastimil Babka
+ <vbabka@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
+ Michal Hocko <mhocko@suse.com>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <chleroy@kernel.org>, aneesh.kumar@linux.ibm.com,
+ joao.m.martins@oracle.com, linux-mm@kvack.org,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20260405125240.2558577-1-songmuchun@bytedance.com>
- <20260405125240.2558577-4-songmuchun@bytedance.com>
+References: <adzvdRPrK55TutT6@kernel.org>
+ <ADC5EFE8-454D-4B9D-8BB0-39FF671290F0@linux.dev>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -122,52 +121,58 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260405125240.2558577-4-songmuchun@bytedance.com>
+In-Reply-To: <ADC5EFE8-454D-4B9D-8BB0-39FF671290F0@linux.dev>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On 4/5/26 14:51, Muchun Song wrote:
-> When HVO is enabled for DAX, the vmemmap page accounting is wrong since
-> it only accounts for non-HVO case.
+On 4/13/26 15:57, Muchun Song wrote:
 > 
-> Fix the accounting by introducing section_vmemmap_pages() that returns
-> the exact number of vmemmap pages needed for the given pfn range.
 > 
-> Fixes: 15995a352474 ("mm: report per-page metadata information")
-> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
-> ---
->  mm/sparse-vmemmap.c | 30 ++++++++++++++++++++++++++----
->  1 file changed, 26 insertions(+), 4 deletions(-)
+>> On Apr 13, 2026, at 21:28, Mike Rapoport <rppt@kernel.org> wrote:
+>>
+>> ﻿On Mon, Apr 13, 2026 at 06:07:44PM +0800, Muchun Song wrote:
+>>>
+>>>
+>>>
+>>> Of course not.
+>>>
+>>>
+>>> There are indeed many more cond_resched() than before, but I don’t have a
+>>> concise way to write it, so I took the easy way out.
+>>>
+>>> How about:
+>>>
+>>> diff --git a/mm/mm_init.c b/mm/mm_init.c
+>>> index 2d680636b67a..d13a2577c4c3 100644
+>>> --- a/mm/mm_init.c
+>>> +++ b/mm/mm_init.c
+>>> @@ -683,7 +683,8 @@ static __meminit void pageblock_migratetype_init_range(unsigned long pfn,
+>>>
+>>>        for (pfn = pageblock_align(pfn); pfn < end; pfn += pageblock_nr_pages) {
+>>>                init_pageblock_migratetype(pfn_to_page(pfn), migratetype, isolate);
+>>> -               cond_resched();
+>>> +               if ((pfn & (pageblock_nr_pages * 512 - 1)) == 0)
+>>> +                       cond_resched();
+>>
+>> TBH, I don't know if 512 is the right number :)
 > 
-> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
-> index 7aa9a97498eb..0ef96b1afbcc 100644
-> --- a/mm/sparse-vmemmap.c
-> +++ b/mm/sparse-vmemmap.c
-> @@ -724,6 +724,27 @@ static int fill_subsection_map(unsigned long pfn, unsigned long nr_pages)
->  	return rc;
->  }
->  
-> +static int __meminit section_vmemmap_pages(unsigned long pfn, unsigned long nr_pages,
-> +					   struct vmem_altmap *altmap, struct dev_pagemap *pgmap)
-> +{
-> +	unsigned int order = pgmap ? pgmap->vmemmap_shift : 0;
-> +	unsigned long pages_per_compound = 1L << order;
-> +
-> +	VM_BUG_ON(!IS_ALIGNED(pfn | nr_pages, min(pages_per_compound, PAGES_PER_SECTION)));
-> +	VM_BUG_ON(pfn_to_section_nr(pfn) != pfn_to_section_nr(pfn + nr_pages - 1));
-> +
-> +	if (!vmemmap_can_optimize(altmap, pgmap))
-> +		return DIV_ROUND_UP(nr_pages * sizeof(struct page), PAGE_SIZE);
-> +
-> +	if (order < PFN_SECTION_SHIFT)
-> +		return VMEMMAP_RESERVE_NR * nr_pages / pages_per_compound;
-> +
-> +	if (IS_ALIGNED(pfn, pages_per_compound))
-> +		return VMEMMAP_RESERVE_NR;
+> I picked this number out of thin air. I’m not sure as well.
+> 
+>>
+>> pageblock boundary was a convenient point to have cond_resched() along with
+>> setting the migrate type.
+>>
+>> Here we might be able to squeeze more iterations between subsequent
+>> cond_resched() calls.
+> 
+> Choosing an appropriate number is indeed difficult. We need to consider
+> both unnecessary cond_resched() calls and scheduling latency, and the
+> specific value also depends on the current CPU performance. At the very least,
+> I find it hard to choose a correct value. Since we all agree it should be larger
+> than 512, why not just pick 1024? I can't think of a good evaluation criterion
+> or selection method either.
 
-This makes me wonder whether that is really the right place to update
-the counter. Can't we update the counter where we actually allocate/free
-the pages, so we don't have to re-calculate that?
+I think in some other code we just use section boundaries.
 
 -- 
 Cheers,
