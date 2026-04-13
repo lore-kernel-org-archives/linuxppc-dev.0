@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-19717-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19718-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 915CCF531C0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 18:50:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D7C1F531C4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 18:54:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fvc1W0h8wz2yv4;
-	Tue, 14 Apr 2026 04:50:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776106255;
-	cv=none; b=OI/7iSGScpHPHYwvlkGbRGICvHzKOSnKW4SyQ5S9dkYk0x+AGuJMfTmRyZlCT22iPg+LoVodeLO+nRHBdObSGGpY0v19jwYxWKDnqqpWg6GyLzQhNOpCfnCMYdLsHkKbq7Nlr8SQbfRfvDAgyBittOgSyf/QewcmQoxYVXgAaNrBoswHq5cjEV7SLAWyM9OBKz/nmZUBFbQHZ7Wom8tYfbtmAzJFRKakgRiTpsPbN1oNoM2ICJMZH5qkX8WfAfDSrXM/VjNZZHuostQeG8X2zlzflsk0QhieDbA0hIXlh5PVRdiel4oNgXEX/z9kuSOtBrH8oh6wz999cxvJgf8UQg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fvc5l6GQZz2yv4;
+	Tue, 14 Apr 2026 04:54:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776106475;
+	cv=none; b=jIChqz7EUOibH0OEfJXG2yuQPVC4+y9LDIJjqK70e/tIohlUtD+ttmPmWDOyvkRuEb6XX4v3xzL/Z2/y6VCpb2NVpZY4Zhh9x/nXZYwZzrDBaiv3CTPThIV3psshorQ8DvSdY/raqr9Fc1eOzbO5vIeD915R0MwiGpklK9vumQoKsuGbx0Hdd0E7p9xZtuMXPIMnkQvSWLr9Y4TKM/Ur8ZCOZk7qg3DGp1j9pmIy95NgrE8XeCCQFpM4Xzp7P7s64h7qc29x6W2FKc/Nt4QZHT20NUXfMlIaO6dCpDrVSNpdpM87tJRvXQG2f/XAEhZ3zcpeT1E3MhGuR5qpLKIUcg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776106255; c=relaxed/relaxed;
-	bh=XX/0ECX0ZPlZ6DfabBEjQOgZGq9iZAHocSDbl5LU160=;
+	t=1776106475; c=relaxed/relaxed;
+	bh=AVk5ADEd74aPQL4pfRXJB+KLfJewXL4p7iOkcl9BAII=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ZCkFn09Spi+ZNRkKWBB8STP55HI4DgULndEKiwogcckX9+gffA9eySdvkhAjzsWG7qetbco+nfWBrUVdvIHfMNJkJZNU7gGMgHCJfdjd7e9f8Ap4FgnWRfA3vEhGBlFUWgygG3pM4GSQYqUwR51A3+6kxjdZsfWhxat1gtjHx3YmHsZ9eBUZkXcUanbLxjS0CAC8UvVzcgl1WxsNZ/dSc4jpQkaf4LAsNuaHb5y3XQMob8RqH72lTasKugKpEVomvz4SvV/jmZGtjfxgIwjPz0OOoyp54hstQJBSxL8S9HLZrS0YemnazVC4rq+6uhcfMA6nhMSaLUzJcnKZEcV/VQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DvdJDQe3; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=Thxd9U4Yhr7ajJgL4LCrBwSnESs3nP5VYWH1Ufd0lQFh5td5iK4ogiytEeC5PRBzQVGmNj6vrEtn8dubAMMILArf2APnboMDghjQmWsArkLKnmyVwvMsQ3F2obx/o7+adbtegVgHDby7epAZNeNAVbTgmLr3i+cZln4J6k2shaSByvPt6QnvVGShoxTG/oDIqQQ0Z2fevN0mvC3H5Xf85Fzzozehid3boxyjbj/Dr2Tof/A58icAXa5YFU4JdOghg8xpX+h+JmWI/J649GqLi3A2Dsp507/r2S5hQufNqn2dWsh3Sg8rK7jA8VTaHK90VDwDffWDWacotQOa+VQwug==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bkvzGnUP; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DvdJDQe3;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bkvzGnUP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvc1V01VMz2yth
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2026 04:50:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvc5l04Mcz2yth
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2026 04:54:34 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id E362B44279;
-	Mon, 13 Apr 2026 18:50:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 064A4C2BCAF;
-	Mon, 13 Apr 2026 18:50:45 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id C4DA16183B;
+	Mon, 13 Apr 2026 18:54:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3060EC2BCAF;
+	Mon, 13 Apr 2026 18:54:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776106251;
-	bh=rdLqMR/Xr3fQS5U0jYUhu1Lu8JZHxK3+UfMlHMMb9T0=;
+	s=k20201202; t=1776106472;
+	bh=cjxZitnjPb4Jy1WAV60ZHvr8PJFLvJxr+yiMh2G9OpQ=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=DvdJDQe3oCG/gfgbw4UZP+je/1tx9raBCi0Fx3sjPOET7NPzV8JEnJSl0ggGBjtI1
-	 hBhIC6ExWdLs8tBHuLezEk1U12agU+VHQnpht/UuNiSCyU+8VXWnc13JwUGl5zgr2U
-	 VjTV//cyB1Zcj0WObb4Osc+PRC81TE0WL/CE6EQvvb6fXUNa87P9GQiqBno6ZQmUFh
-	 v/4GZWWXcklcBfhYTXXJwMRjgxAsdPh+UL8SeN9/4z4Aygv6OZo6dpRQ+xjCtfYG0Y
-	 N3id4XvdsiushhArjrX8jdh1VCpQHVTLtkDeiAFmcATQBevco3PsThfZtGvxpi5yOj
-	 GMABa9pVDUYVg==
-Message-ID: <42ba7f13-846f-4150-8195-32a775bb6812@kernel.org>
-Date: Mon, 13 Apr 2026 20:50:41 +0200
+	b=bkvzGnUPVHwddEiVTSj7OIwi/5Xi6mvV8RZ0xburxFKi6g4MGU0hSJXNNTFmgQU4R
+	 8Vmr4eTl5/70eRUeQ/PX5Eny0X70xWzqVk7ZTGTASCiUD1gfF1tnjD04FI/jobAd1A
+	 2wQZ/dErxGL3W212VtYOi9AbEVpKlZBe6r8H7GmGs+JwTPg5TCcnaaKvQlboanq8Ai
+	 UNMpJwK24W63xz8bFH/0cyOZLML1Ff9V4asquDshXZ83Os7mNYARZdm+NZwhg+z5He
+	 QFfggLllVa2PQ6ddSv3ZN7VWMaWDjMLC7JAlApW3bJWfup8CbZST/JOUsY+FujRHM3
+	 Bxc95neEkcLxQ==
+Message-ID: <08a82aa4-f556-4e0f-9e50-b9fe0a5fb4c1@kernel.org>
+Date: Mon, 13 Apr 2026 20:54:23 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,21 +60,22 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 06/49] mm/mm_init: fix uninitialized pageblock migratetype
- for ZONE_DEVICE compound pages
-To: Muchun Song <muchun.song@linux.dev>, Mike Rapoport <rppt@kernel.org>
-Cc: Muchun Song <songmuchun@bytedance.com>,
- Andrew Morton <akpm@linux-foundation.org>, Oscar Salvador
- <osalvador@suse.de>, Michael Ellerman <mpe@ellerman.id.au>,
- Madhavan Srinivasan <maddy@linux.ibm.com>, Lorenzo Stoakes <ljs@kernel.org>,
- Liam R Howlett <Liam.Howlett@oracle.com>, Vlastimil Babka
- <vbabka@kernel.org>, Suren Baghdasaryan <surenb@google.com>,
- Michal Hocko <mhocko@suse.com>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <chleroy@kernel.org>, aneesh.kumar@linux.ibm.com,
- joao.m.martins@oracle.com, linux-mm@kvack.org,
+Subject: Re: [PATCH 07/49] mm/mm_init: use pageblock_migratetype_init_range()
+ in deferred_free_pages()
+To: Muchun Song <songmuchun@bytedance.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Lorenzo Stoakes <ljs@kernel.org>,
+ "Liam R . Howlett" <Liam.Howlett@oracle.com>,
+ Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>,
+ aneesh.kumar@linux.ibm.com, joao.m.martins@oracle.com, linux-mm@kvack.org,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <adzvdRPrK55TutT6@kernel.org>
- <ADC5EFE8-454D-4B9D-8BB0-39FF671290F0@linux.dev>
+References: <20260405125240.2558577-1-songmuchun@bytedance.com>
+ <20260405125240.2558577-8-songmuchun@bytedance.com>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -121,58 +122,41 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <ADC5EFE8-454D-4B9D-8BB0-39FF671290F0@linux.dev>
+In-Reply-To: <20260405125240.2558577-8-songmuchun@bytedance.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
-On 4/13/26 15:57, Muchun Song wrote:
-> 
-> 
->> On Apr 13, 2026, at 21:28, Mike Rapoport <rppt@kernel.org> wrote:
->>
->> ﻿On Mon, Apr 13, 2026 at 06:07:44PM +0800, Muchun Song wrote:
->>>
->>>
->>>
->>> Of course not.
->>>
->>>
->>> There are indeed many more cond_resched() than before, but I don’t have a
->>> concise way to write it, so I took the easy way out.
->>>
->>> How about:
->>>
->>> diff --git a/mm/mm_init.c b/mm/mm_init.c
->>> index 2d680636b67a..d13a2577c4c3 100644
->>> --- a/mm/mm_init.c
->>> +++ b/mm/mm_init.c
->>> @@ -683,7 +683,8 @@ static __meminit void pageblock_migratetype_init_range(unsigned long pfn,
->>>
->>>        for (pfn = pageblock_align(pfn); pfn < end; pfn += pageblock_nr_pages) {
->>>                init_pageblock_migratetype(pfn_to_page(pfn), migratetype, isolate);
->>> -               cond_resched();
->>> +               if ((pfn & (pageblock_nr_pages * 512 - 1)) == 0)
->>> +                       cond_resched();
->>
->> TBH, I don't know if 512 is the right number :)
-> 
-> I picked this number out of thin air. I’m not sure as well.
-> 
->>
->> pageblock boundary was a convenient point to have cond_resched() along with
->> setting the migrate type.
->>
->> Here we might be able to squeeze more iterations between subsequent
->> cond_resched() calls.
-> 
-> Choosing an appropriate number is indeed difficult. We need to consider
-> both unnecessary cond_resched() calls and scheduling latency, and the
-> specific value also depends on the current CPU performance. At the very least,
-> I find it hard to choose a correct value. Since we all agree it should be larger
-> than 512, why not just pick 1024? I can't think of a good evaluation criterion
-> or selection method either.
+On 4/5/26 14:51, Muchun Song wrote:
+> Simplify deferred_free_pages by replacing the duplicate loops for
+> initializing pageblock migratetype with a call to
+> pageblock_migratetype_init_range to simplify the code.
 
-I think in some other code we just use section boundaries.
+"Simplify ... to simplify the code."
+
+Likely you can drop the last part.
+
+> 
+> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+> ---
+>  mm/mm_init.c | 13 ++++---------
+>  1 file changed, 4 insertions(+), 9 deletions(-)
+> 
+> diff --git a/mm/mm_init.c b/mm/mm_init.c
+> index 4936ca78966c..a92c5053f63d 100644
+> --- a/mm/mm_init.c
+> +++ b/mm/mm_init.c
+> @@ -1974,13 +1974,12 @@ static void __init deferred_free_pages(unsigned long pfn,
+>  	if (!nr_pages)
+>  		return;
+>  
+> +	pageblock_migratetype_init_range(pfn, nr_pages, MIGRATE_MOVABLE);
+
+
+pageblock_migratetype_init_range() will align the PFN up to the next
+pageblock.
+
+Are we sure the range we are getting called with is always aligned to
+pageblocks, such that we won't miss to initialize the first pageblock?
 
 -- 
 Cheers,
