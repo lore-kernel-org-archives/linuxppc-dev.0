@@ -1,48 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-19701-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19703-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A39BF34C59
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 14:26:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C6DCF34C5C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 14:43:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fvTxz1nygz2yjV;
-	Tue, 14 Apr 2026 00:17:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.181
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776089847;
-	cv=none; b=hdF/cwFyb+kU0s+ocqx55CUFIKal68p2I8J2ImSL6hAhXjjY42qWoarB+8iu4ZdfLcig9PwNI/m/SaGpYqexwa98DQUVj8BAKS2/01u9Gi2+tEvGHgbuUeCDPEvdtA1Pi4P4mRU9/qBHsnhVq1ZVW0WD8IOD5oI88Gemcvz/xTaF9BittoA/1NdNLrR3biGQRTXX7gxSzG3ab8JiuUUu3ccB50pYr701YeuZmejAFsBAHo3yO9km+t4u8oG2qIVK1y4+vqVJsx7+tQfXTE0tSYyKPh8PHS84t/og4GJPp4r49Ji7Ya/GxgNq6kf5bgrI/VdE3gnqk4bg5urtEeFKwA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fvVXN5473z2yjV;
+	Tue, 14 Apr 2026 00:43:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=202.12.124.137
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776091428;
+	cv=none; b=XymMLMIuSM1HmS0kUW0e2Y5e4NlK5Ypm6YC6CeIAg7Nkk9oxp1wgRieZ6OMTGAMmFQVDTPlnCj9a6ybM1nW6QctVDefJOibszuzpWjOAgAS8hTSTYrghi1Ms7aeVU89DKt8TZUd206bRU1qdP6Ya4Bqxj/9c60k2e8vsywwUTvfpklq+9zfZq1Rl5vSBfwjLcxVtPYrxcR1euAq1xxUUbjgkWWyJjBiAX2I3UyuXPvYQKCXWRqDJC+rmTLap7ou9+NpnKtt1xRfxlqegytSzpFc6kXo29ntAeKF3WlLjVJM0ekvY2edtG77VHp/y+292D3xq7CSbnaRRU1TsQfIptg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776089847; c=relaxed/relaxed;
-	bh=5Kzkhn3LFWO3+QSE/fQj/hH3qJPFehnDOa4OjhTu82w=;
-	h=Content-Type:From:Mime-Version:Subject:Date:Message-Id:References:
-	 Cc:In-Reply-To:To; b=Sx2Wt82fBVxYl18FJkE6KmIbyjvqEoWafi/BeA1rgq/FuuUoK2mPs2IZNwAvKk3giCpU+DpH0dp3ZpJqa0o+eXj4NRFIHBdUD0Fp2v2Ad9z+wwcojgp+bL3jedFuA+tVPM0ZVyXgyapJsGrbE4DqJ916CG1VUtTS/AUrVh41QAD0afnyDw8Rj3P+syIdArsA4h+tOmVrk4AUgFi8fxSh+sHTkeWn5Ec9VmGmTIB/mV0ZUKXTsbSsXjfUj1VhQ2PlwDRG+vP6Mp/oiz8KqYQsNfJEi+U8HiTwwP12wula4IHZK29hnvlzx8rbIj/3V1HxoFN7JCqjpxIT2lbj+8m0tA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Tat+hmEl; dkim-atps=neutral; spf=pass (client-ip=91.218.175.181; helo=out-181.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1776091428; c=relaxed/relaxed;
+	bh=CPqrtdPK1fzOFd0Y9/MDHGVDApYeKMdzUWsDXpmbjTE=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=DaBgbMutRWcz20+Oz0b5SPGRj9kbjbz6HdnYZRLNbJtYEaNbo91wUAADlHHpjs/negSKhQy65lI+eXxmQHrJwV0PdkUuPwDaJ1tnE1ptZ5X2FCS4VUhmV0HYkHEVRrD0C6z/IH+TR/B0WFQmBbBRJgFpmPnkuPS9tarL0RHyHETxLVzRvqK4/R0tE/SvZXqGna2wYjCAZ5+bUdaI1Shsvtk/WZP6nBDNCUKmY1eF8NTNWeCMkMJbgLPvIPaRYNIVetUjREPBo5Wf/mT3hs4Ia6ELHdQZJ74L6TVbTnlt7mG4lFOLbKW2GP9HLuufFM3cuxOk4Mh1pzvG1GEdXrjYNg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=dThTVDJR; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=mKaUdPcE; dkim-atps=neutral; spf=pass (client-ip=202.12.124.137; helo=flow-b2-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Tat+hmEl;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=dThTVDJR;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=mKaUdPcE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.181; helo=out-181.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-181.mta0.migadu.com (out-181.mta0.migadu.com [91.218.175.181])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=202.12.124.137; helo=flow-b2-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
+Received: from flow-b2-smtp.messagingengine.com (flow-b2-smtp.messagingengine.com [202.12.124.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvTxt21Jmz2yVP
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2026 00:17:16 +1000 (AEST)
-Content-Type: text/plain; charset=utf-8
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1776089811;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=5Kzkhn3LFWO3+QSE/fQj/hH3qJPFehnDOa4OjhTu82w=;
-	b=Tat+hmEl4LkYQIHCK1EKoRWrUNb7DtBDa9KMzVcByj1HdimbvKHuSURjjlcj/voNVEuEJu
-	17NRVMv2anbHCIs+VBh9J0mCkoI+wiTqWkYKSat0cu6ljmDFzRXwLJdVwBPFJUkJ1yTj83
-	hm/N7D4bqI1p4sipyGvCWKX/p/tPtMI=
-Content-Transfer-Encoding: quoted-printable
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Muchun Song <muchun.song@linux.dev>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvVXJ5x3qz2yVP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2026 00:43:44 +1000 (AEST)
+Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
+	by mailflow.stl.internal (Postfix) with ESMTP id 580C613004A2;
+	Mon, 13 Apr 2026 10:43:39 -0400 (EDT)
+Received: from phl-imap-02 ([10.202.2.81])
+  by phl-compute-04.internal (MEProxy); Mon, 13 Apr 2026 10:43:41 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm1; t=1776091419;
+	 x=1776098619; bh=CPqrtdPK1fzOFd0Y9/MDHGVDApYeKMdzUWsDXpmbjTE=; b=
+	dThTVDJRrT61VUkRS+cdt7Y0Z5RRsLEBjlt5LbUT/Wkj3XuC1dVyKWZPgLth6rHI
+	xbXnXmRzoJxvLeN5K5KTS4bLI9JTPMUMZHJQi9mq2+Mm0O8HtxzN6gdwi5dKMGzS
+	o1z8qIdRudVgAnBmJYPys1vSE6iXXFJKhXBunGcqiXTQxSIZPwExbixipylrVyN9
+	4kf4i5YSOQ5TyiEguuaQMFY1bjfsEzY4T5yjV+i49k3OFs/Vmf2QAO7EvG9pkkWh
+	N8bT6ZPczJACaYt7v0DdNhd+Jcw1QSr4sfdnPLEq3qIenfqRfJd23mvz1BSPAcJy
+	t7jf+cR2gTZwsPDeAUjd8w==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=1776091419; x=
+	1776098619; bh=CPqrtdPK1fzOFd0Y9/MDHGVDApYeKMdzUWsDXpmbjTE=; b=m
+	KaUdPcERkC+zzfJk9o14B4ADxV7hBFIrlwDzvbBZEzHm0PKs68AEHjccunfdwCIR
+	xandwmc3ligmxNR3yrYrjDSRktpJmwg0D7TTzo3rAlmWy0gSHQXh1wFw4+NYGyVg
+	zDlM8PgR4QH15XnDMMXbSfnGvjJh/j4eK/GlCalmtgkTknPnFph+dfWco8cTlWse
+	WFEPDTU+OA38Yo/f8OVtqBAERl/dqEvgrfDqnngro8UiU3Du4URjogCH7u9C6eP/
+	RYqA02k02M2VwiJpdNWH8HG6r4KmynyPDoJYdxTNeNoiAqYyt88JcV7BBjOLulpB
+	DJUQhLG59C0zm2Z5pxrQg==
+X-ME-Sender: <xms:GAHdaVYGCaKUPjfNsUorzxAck0ngCpZdPLdqJKjZEoxtd6QEkfV5yg>
+    <xme:GAHdaXPKX2B9tilU84LfHthnj4XuzUMENgXV2EBsOOdx9XMImcZUEPIIzoIwFqvOh
+    pcGkwnRvUUR4OUGZGU3iYkbbpFp25Dx9wq8LoeuFKlAv-Ydx1YT>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefhedrtddtgdefkeehtdcutefuodetggdotefrod
+    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpuffrtefokffrpgfnqfghnecuuegr
+    ihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjug
+    hrpefoggffhffvvefkjghfufgtgfesthejredtredttdenucfhrhhomhepfdetrhhnugcu
+    uegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrghtthgvrh
+    hnpefhtdfhvddtfeehudekteeggffghfejgeegteefgffgvedugeduveelvdekhfdvieen
+    ucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpegrrhhnug
+    esrghrnhgusgdruggvpdhnsggprhgtphhtthhopeegkedpmhhouggvpehsmhhtphhouhht
+    pdhrtghpthhtohepthdrshgrihhlvghrsegrlhhumhhnihdrvghthhiirdgthhdprhgtph
+    htthhopegtrghtrghlihhnrdhmrghrihhnrghssegrrhhmrdgtohhmpdhrtghpthhtohep
+    lhhinhhugiesrghrmhhlihhnuhigrdhorhhgrdhukhdprhgtphhtthhopegurghvvghmse
+    gurghvvghmlhhofhhtrdhnvghtpdhrtghpthhtohepmhhpvgesvghllhgvrhhmrghnrdhi
+    ugdrrghupdhrtghpthhtoheprhihrggsihhnihhnrdgrrdgrsehgmhgrihhlrdgtohhmpd
+    hrtghpthhtohepuhhrvgiikhhisehgmhgrihhlrdgtohhmpdhrtghpthhtohepuggvlhhl
+    vghrsehgmhigrdguvgdprhgtphhtthhopehhvghrsggvrhhtsehgohhnughorhdrrghprg
+    hnrgdrohhrghdrrghu
+X-ME-Proxy: <xmx:GAHdadx3OaLmpgnQ-qR09fFSyphBizIiykQxx2Qr5HCiMADvCUw5LA>
+    <xmx:GAHdabzajIhZOwZQz55Cqp-WmIPvMJl0Qeu3WJrRVrqO07JZC9K3bQ>
+    <xmx:GAHdaSIxPmEuEecG1TMTc2ieeRuLkqK7w1Mgwy5a1Wj0e-ew_hD6MQ>
+    <xmx:GAHdaVsDbvRI-p-Ezq237oUrDyOkdrmimmA3aH1JiaBrwsVneKVMbQ>
+    <xmx:GwHdaelj14NT6xOHjmTv_huVndzlY2JM81Rr0b3-wFbundNAWyZ-7jZM>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id E9F8A700065; Mon, 13 Apr 2026 10:43:35 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -55,169 +99,56 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0 (1.0)
-Subject: Re: [PATCH 01/49] mm/sparse: fix vmemmap accounting imbalance on memory hotplug error
-Date: Mon, 13 Apr 2026 22:16:20 +0800
-Message-Id: <48CF5603-D8E1-4C86-8554-E8BA03D195FB@linux.dev>
-References: <9642F4D9-8F1B-47A4-90BE-C72BB8DE9A11@linux.dev>
-Cc: Muchun Song <songmuchun@bytedance.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Hildenbrand <david@kernel.org>, Oscar Salvador <osalvador@suse.de>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Lorenzo Stoakes <ljs@kernel.org>, Liam R Howlett <Liam.Howlett@oracle.com>,
- Vlastimil Babka <vbabka@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
- Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>,
- aneesh.kumar@linux.ibm.com, joao.m.martins@oracle.com, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <9642F4D9-8F1B-47A4-90BE-C72BB8DE9A11@linux.dev>
-To: Mike Rapoport <rppt@kernel.org>
-X-Migadu-Flow: FLOW_OUT
+MIME-Version: 1.0
+X-ThreadId: AaL_vZcj0OrJ
+Date: Mon, 13 Apr 2026 16:43:14 +0200
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Thomas Gleixner" <tglx@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: "Michael Ellerman" <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org, "Baolu Lu" <baolu.lu@linux.intel.com>,
+ iommu@lists.linux.dev, "Michael Grzeschik" <m.grzeschik@pengutronix.de>,
+ Netdev <netdev@vger.kernel.org>, linux-wireless@vger.kernel.org,
+ "Herbert Xu" <herbert@gondor.apana.org.au>, linux-crypto@vger.kernel.org,
+ "Vlastimil Babka (SUSE)" <vbabka@kernel.org>, linux-mm@kvack.org,
+ "David Woodhouse" <dwmw2@infradead.org>,
+ "Bernie Thompson" <bernie@plugable.com>, linux-fbdev@vger.kernel.org,
+ "Theodore Ts'o" <tytso@mit.edu>, linux-ext4@vger.kernel.org,
+ "Andrew Morton" <akpm@linux-foundation.org>,
+ "Uladzislau Rezki (Sony)" <urezki@gmail.com>,
+ "Marco Elver" <elver@google.com>, "Dmitry Vyukov" <dvyukov@google.com>,
+ kasan-dev@googlegroups.com, "Andrey Ryabinin" <ryabinin.a.a@gmail.com>,
+ "Thomas Sailer" <t.sailer@alumni.ethz.ch>, linux-hams@vger.kernel.org,
+ "Jason A . Donenfeld" <Jason@zx2c4.com>,
+ "Richard Henderson" <richard.henderson@linaro.org>,
+ linux-alpha@vger.kernel.org, "Russell King" <linux@armlinux.org.uk>,
+ linux-arm-kernel@lists.infradead.org,
+ "Catalin Marinas" <catalin.marinas@arm.com>,
+ "Huacai Chen" <chenhuacai@kernel.org>, loongarch@lists.linux.dev,
+ "Geert Uytterhoeven" <geert@linux-m68k.org>,
+ linux-m68k@lists.linux-m68k.org, "Dinh Nguyen" <dinguyen@kernel.org>,
+ "Jonas Bonn" <jonas@southpole.se>,
+ "linux-openrisc@vger.kernel.org" <linux-openrisc@vger.kernel.org>,
+ "Helge Deller" <deller@gmx.de>, linux-parisc@vger.kernel.org,
+ "Paul Walmsley" <pjw@kernel.org>, linux-riscv@lists.infradead.org,
+ "Heiko Carstens" <hca@linux.ibm.com>, linux-s390@vger.kernel.org,
+ "David S . Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org
+Message-Id: <3d7c3433-2325-4bb2-a8f6-ddd11c82f71d@app.fastmail.com>
+In-Reply-To: <20260410120319.723429844@kernel.org>
+References: <20260410120044.031381086@kernel.org>
+ <20260410120319.723429844@kernel.org>
+Subject: Re: [patch 32/38] powerpc/spufs: Use mftb() directly
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
+On Fri, Apr 10, 2026, at 14:21, Thomas Gleixner wrote:
+> There is no reason to indirect via get_cycles(), which is about to be
+> removed.
+>
+> Use mftb() directly.
+>
+> Signed-off-by: Thomas Gleixner <tglx@kernel.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: linuxppc-dev@lists.ozlabs.org
 
-
-> On Apr 13, 2026, at 22:05, Muchun Song <muchun.song@linux.dev> wrote:
->=20
-> =EF=BB=BF
->=20
->> On Apr 13, 2026, at 21:36, Mike Rapoport <rppt@kernel.org> wrote:
->>=20
->> =EF=BB=BFHi Muchun,
->=20
-> Hi,
->=20
->>=20
->> On Mon, Apr 13, 2026 at 08:47:45PM +0800, Muchun Song wrote:
->>>>>> On Apr 13, 2026, at 20:05, Mike Rapoport <rppt@kernel.org> wrote:
->>>>>>>>>>=20
->>>>>>>>>> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
->>>>>>>>>> index 6eadb9d116e4..ee27d0c0efe2 100644
->>>>>>>>>> --- a/mm/sparse-vmemmap.c
->>>>>>>>>> +++ b/mm/sparse-vmemmap.c
->>>>>>>>>> @@ -822,11 +822,11 @@ static struct page * __meminit section_acti=
-vate(int nid, unsigned long pfn,
->>>>>>>>>> return pfn_to_page(pfn);
->>>>>>>>>>=20
->>>>>>>>>> memmap =3D populate_section_memmap(pfn, nr_pages, nid, altmap, pg=
-map);
->>>>>>>>>> + memmap_pages_add(DIV_ROUND_UP(nr_pages * sizeof(struct page), P=
-AGE_SIZE));
->>>>>>>>>=20
->>>>>>>>> This logically belongs to success path in populate_section_memmap(=
-). If we
->>>>>>>>> update the counter there, we won't need to temporarily increase it=
- at all.
->>>>>>>>=20
->>>>>>>> Not strictly related to this patchset, but it seems, we can have a s=
-ingle
->>>>>>>> memmap_boot_pages_add() in memmap_alloc() rather than to update the=
- counter
->>>>>>>> in memmap_alloc() callers.
->>>>>>>=20
->>>>>>> It will indeed become simpler and is a good cleanup direction, but t=
-here
->>>>>>> is a slight change in semantics: the page tables used for vmemmap pa=
-ge
->>>>>>> mapping will also be counted in memmap_boot_pages_add(). This might n=
-ot
->>>>>>> be an issue (after all, the size of the page tables is very small co=
-mpared
->>>>>>> to struct pages, right?).
->>>>>>>=20
->>>>>>> Additionally, I still lean toward making no changes to this patch, b=
-ecause
->>>>>>> this is a pure bugfix patch =E2=80=94 of course, it is meant to faci=
-litate backporting
->>>>>>> for those who need it. The cleanup would involve many more changes, s=
-o I
->>>>>>> prefer to do that in a separate patch. What do you think?
->>>>>=20
->>>>> For this patch and easy backporting I still think that cleaner to have=
- the
->>>>> counter incremented in populate_section_memmap() rather immediately af=
-ter
->>>>> it.
->>>=20
->>> Hi Mike,
->>>=20
->>> Alright, let=E2=80=99s revisit your solution. After we=E2=80=99ve moved t=
-he counter into the
->>> populate_section_memmap(), we still need to increase the counter tempora=
-rily
->>> (but in populate_section_memmap()) even if we fail to populate. That=E2=80=
-=99s
->>> because section_deactivate() reduces the counter without exception, isn=E2=
-=80=99t it?
->>> Just want to make sure we are on the same page on the meaning of =E2=80=9C=
-temporarily
->>> increase=E2=80=9D.  Maybe you do not mean =E2=80=9Ctemporarily=E2=80=9D i=
-n this case.
->>=20
->> I suggest to increase the counter only if we succeeded to populate:
->>=20
->> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
->> index 6eadb9d116e4..247fd54f1003 100644
->> --- a/mm/sparse-vmemmap.c
->> +++ b/mm/sparse-vmemmap.c
->> @@ -656,7 +656,13 @@ static struct page * __meminit populate_section_memm=
-ap(unsigned long pfn,
->>       unsigned long nr_pages, int nid, struct vmem_altmap *altmap,
->>       struct dev_pagemap *pgmap)
->> {
->> -    return __populate_section_memmap(pfn, nr_pages, nid, altmap, pgmap);=
-
->> +    struct page *p =3D __populate_section_memmap(pfn, nr_pages, nid, alt=
-map,
->> +                           pgmap);
->> +
->> +    if (p)
->> +        memmap_pages_add(DIV_ROUND_UP(nr_pages * sizeof(struct page), PA=
-GE_SIZE));
->=20
-> We don=E2=80=99t increase the counter on failure, then
->=20
->> +
->> +    return p;
->> }
->>=20
->> static void depopulate_section_memmap(unsigned long pfn, unsigned long nr=
-_pages,
->> @@ -826,7 +832,6 @@ static struct page * __meminit section_activate(int n=
-id, unsigned long pfn,
->>       section_deactivate(pfn, nr_pages, altmap);
->=20
-> here section_deactivate() is called, which decrease the counter unconditio=
-nally,
-> the issue still exists. We didn't fix anything.
->=20
-> Thanks.
->=20
->>       return ERR_PTR(-ENOMEM);
->>   }
->> -    memmap_pages_add(DIV_ROUND_UP(nr_pages * sizeof(struct page), PAGE_S=
-IZE));
->>=20
->>   return memmap;
->> }
->>=20
->>=20
->> Then we'll better follow "all or nothing" principle and won't have
->> exceptional cases in section_deactivate().
-
-To follow  "all or nothing" principle here, I think we should not call
-section_deactivate() to do the cleanup in section_activate().
-
-After all, if section_activate() didn't succeed, how can we use
-section_deactivate() to release the resources? What do you think?
-
-Thanks.
-
->>=20
->>> Thanks,
->>> Muchun.
->>=20
->> --
->> Sincerely yours,
->> Mike.
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 
