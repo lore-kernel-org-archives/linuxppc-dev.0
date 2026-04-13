@@ -1,51 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-19682-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19683-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ECBB2EBFD37
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 11:35:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18164F34C41
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 11:44:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fvQM33Ktgz2yhv;
-	Mon, 13 Apr 2026 21:35:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776080127;
-	cv=none; b=dWOR8CeaggWkYDxxNMy3AMl9Te06A6a7jyEF+PoCrE+8hd0ji/MA9Lw4+bjUfShHznPhxcLdqeCHkbRtyLGo2R7GGSwhBuikCoeFewSsmrcsYSdqyeqtQ7booDfiUemd5T+vXhNkXy6XcyNYMEIRvGcgE3JoVjl2Me1rJlCAPAj5aq/ZUrpi/maM7xREbdODFj6y4UQMz9SyDPmbUaWy3qaqiz8BZX0+sEaos3B3N4bXAliSH17W9lRsPPRDLdZuzRZhFW+z7cRzRYsPBH1QRqUE2w09dpsEztFiZzsjWC1VZSMTNJcxmqN/t4l2EILN3XevhFOn+16ZQ7djsPwTqQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fvQYx5Zhbz2yhv;
+	Mon, 13 Apr 2026 21:44:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.12
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776080693;
+	cv=none; b=gGMo5YwV6/zTFHQnVbawkDHvBK6/G8F75R4Bo+yBn+44qc3MygmMAFnmaNU4MEiKHmuHKZiL5tEqhDKbzLvQ5CRAKhlXjc0yzzsqzsa8vknnGU9fgLvDvaHrUBObCa0uCTKMHvaAifBiDXjyOYXHUsYbjghzNDLuI+Tb9ePntAczZi07TsbEAF2acb6YGOFnurcqYc+jdboD/rpserj0fI/matfLg9B25R85Oj1cVg2rf216sLjj2JnTNL+ao8ePxdu3OFFxYfNQQpqoo3sENrNKfNeDPLRIJ+KLdY8cuixH2MndZnwNSc9X2jqvJDF6vqBjd2dKQLpOtCsN1K1Tfg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776080127; c=relaxed/relaxed;
-	bh=2Lk//oxuN31geKgB90jytcWQfWsNUhB66hyUVf2MrmU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=K5h6OeQYLth0IGNTyMVVFdAeyW6i3uW75ZRz0J0sWHxwODwgYLXFrH4QLMzHJEIIbkS8P1Sc7PFEt0GDTFbBQeM67F61Ll9NN/HQcQ/k8H+jvW4AyQjjaCEvp3VcjQxuSwZaQkP0S2h7kDTtGtVljsnaUxm8ZMSnKSYPlbtP8k7wt7mG9K/J3GaZ448bcdmwhB1duMK+EXKF6sCcBU/c2koKa1z2lkTXoxogCVAZRaYvNybxSpIMVYut+/ELv54ARhJts3kN2s0iZn2f6JNIfJYiq1MojzrpCu8kqichYAi7SCwHC1lCx78iikvNa9Rwva14+AQLEyLAvrm6RgmHHw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ps0GEu+P; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1776080693; c=relaxed/relaxed;
+	bh=0OPnmwYBvXZosOFjXMJRrVIVarhnf2RU37zaKd9adfc=;
+	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 MIME-Version:Content-Type; b=hS6MIdeQ0PCTBKTzcVc0zRwuINimh87Obnlp+Y3G+boYP3/tAFrqY5F4IgPV7Xf0nWZ1t3L1bfLzOeVmkTrnvHvCItBbia2LiajXyTIPlAJkoI2BAfGJw4mM6U17yxrbm/rbatjZ5mh9jiJTVOaUSyhJIzM44E5kNIprXSYzwDw0IUWehIEPYU+DM2l+/tHdXR762FfEwzHNfrutAx1m5TdfcryU0B38qbUUsipRW+838XCTdrBN5wfi39zQ2p7zBGwUTfXrBLUDRzlLOgUCSdtx2YifIK1upFwyEkuqijixltuR/qJyt050lWPKQjYjlaxfqsngXbkYYonGFozuDw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=bOoVIJdq; dkim-atps=neutral; spf=pass (client-ip=192.198.163.12; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ps0GEu+P;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=bOoVIJdq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.12; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvQM24QW1z2yDk
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2026 21:35:26 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 98DC760172;
-	Mon, 13 Apr 2026 11:35:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CF431C116C6;
-	Mon, 13 Apr 2026 11:35:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776080124;
-	bh=7+wx9A5ChF2RGBChwepHvx3I0eIKpfHK5FSdsSGWHt8=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=Ps0GEu+PYm0ED+w7Hmkawn2VeRh9SYfgT4r6LxY0vRcm5BNc+9aNA9W3TtzrZ/nid
-	 g7b79ByhceHI/rPA3lCb2bnnGr2Z3ekvJYNoKEvC0QOA/NQneI8PqpmfNvUZ4sxmKJ
-	 F4h84zr2swIultje0WjXIwypXADX9PFgerQn4LxtIiS8W8TqhyMZUn19jq2WCwI5Sj
-	 FEgU+OZjWlxa3J+YuoTNU4qJdt27KqNJ+JpCcsmDTNsbvH7U0GTtNqFbOmhqP5jH0t
-	 Zlq1A3yma9IxP044+5c2l3WfVi2ZgYr531//knfFIh1/nGHUO1yc2bBttGWHEUF5cc
-	 Ge3rA83KWs4Yg==
-Message-ID: <29777eec-7032-41a1-867a-19b97b28c26c@kernel.org>
-Date: Mon, 13 Apr 2026 13:35:20 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvQYt0x35z2yDk
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2026 21:44:48 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1776080691; x=1807616691;
+  h=from:date:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=AFSD+d73vMww+hbY63uE4fAGE+VrR8hSSF0t67UtcMY=;
+  b=bOoVIJdqYkC1pefJe/IwhcPX/nTb1u1Vc+Wuoix66X6F4m8k8chfbbrC
+   NU5KkJPN+w3YBVonWtbGf6kIIsuRAi/ARx6hiV83H9gX7RM7x9tiNMDar
+   FwHvWwoFo6ertVEnmsc1i7b1fwaVvxNus1ZfBm1BMgn8YIJoaRWY3k3Ep
+   xUNIbxLlocbubpNCRMMqnxr/za1PRtRP2IGx7aHF5XcyIjgnimqqo4gE7
+   Rw8MuHxsOxHgFQABWb21HzD1IuafDXF9KLOMqQz3VMGkkaGMUEQQc52/r
+   UzGCQcG6N7cPFb8pF21JdiueMF6YEcAuqVd4kjTyRr0iywNLiN9BnRmK+
+   A==;
+X-CSE-ConnectionGUID: MLaJM7KdQFawDgIJe9VqUQ==
+X-CSE-MsgGUID: pZMucf0nQriT1XmFxq7Hbg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11757"; a="80894520"
+X-IronPort-AV: E=Sophos;i="6.23,177,1770624000"; 
+   d="scan'208";a="80894520"
+Received: from fmviesa010.fm.intel.com ([10.60.135.150])
+  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Apr 2026 04:44:45 -0700
+X-CSE-ConnectionGUID: hIZS6DwhSW2wkfAszU3ESQ==
+X-CSE-MsgGUID: 0jcsmTVPSeCQKJIJ8iTaGg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,177,1770624000"; 
+   d="scan'208";a="225482707"
+Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.63])
+  by fmviesa010-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Apr 2026 04:44:35 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Date: Mon, 13 Apr 2026 14:44:29 +0300 (EEST)
+To: =?ISO-8859-2?Q?Krzysztof_Wilczy=F1ski?= <kwilczynski@kernel.org>
+cc: Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <helgaas@kernel.org>, 
+    Manivannan Sadhasivam <mani@kernel.org>, 
+    Lorenzo Pieralisi <lpieralisi@kernel.org>, 
+    Magnus Lindholm <linmag7@gmail.com>, Matt Turner <mattst88@gmail.com>, 
+    Richard Henderson <richard.henderson@linaro.org>, 
+    Christophe Leroy <chleroy@kernel.org>, 
+    Madhavan Srinivasan <maddy@linux.ibm.com>, 
+    Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+    Dexuan Cui <decui@microsoft.com>, 
+    =?ISO-8859-2?Q?Krzysztof_Ha=B3asa?= <khalasa@piap.pl>, 
+    Lukas Wunner <lukas@wunner.de>, Oliver O'Halloran <oohall@gmail.com>, 
+    Saurabh Singh Sengar <ssengar@microsoft.com>, 
+    Shuan He <heshuan@bytedance.com>, 
+    Srivatsa Bhat <srivatsabhat@microsoft.com>, linux-pci@vger.kernel.org, 
+    linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v4 15/24] alpha/PCI: Fix __pci_mmap_fits() overflow for
+ zero-length BARs
+In-Reply-To: <20260411080148.471335-16-kwilczynski@kernel.org>
+Message-ID: <e6dfcdef-c5ba-7c23-73cc-cf2ffd084b4e@linux.intel.com>
+References: <20260411080148.471335-1-kwilczynski@kernel.org> <20260411080148.471335-16-kwilczynski@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,144 +91,61 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] arch/powerpc: Drop CONFIG_FIRMWARE_EDID from defconfig
- files
-To: Thomas Zimmermann <tzimmermann@suse.de>, maddy@linux.ibm.com,
- mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, arnd@arndb.de
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20260401083023.214426-1-tzimmermann@suse.de>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <20260401083023.214426-1-tzimmermann@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/mixed; boundary="8323328-1214616222-1776080669=:962"
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
+--8323328-1214616222-1776080669=:962
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-Le 01/04/2026 à 10:30, Thomas Zimmermann a écrit :
-> CONFIG_FIRMWARE_EDID=y depends on X86 or EFI_GENERIC_STUB. Neither is
-> true here, so drop the lines from the defconfig files.
+On Sat, 11 Apr 2026, Krzysztof Wilczy=C5=84ski wrote:
 
-Seems like dependency on X86 was added by commit 7e35fc7ab433 ("video: 
-Make CONFIG_FIRMWARE_EDID generally available")
-
-Before that commit it was dependent on CONFIG_FB which is available on 
-powerpc. Maybe it is worth explaining that in the commit message.
-
-
-Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-
-
-
-> 
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> Currently, __pci_mmap_fits() computes the BAR size using
+> pci_resource_len() - 1, which wraps to a large value when the
+> BAR length is zero, causing the bounds check to incorrectly
+> succeed.
+>=20
+> Thus, add an early return for empty resources.
+>=20
+> Fixes: 10a0ef39fbd1 ("PCI/alpha: pci sysfs resources")
+> Signed-off-by: Krzysztof Wilczy=C5=84ski <kwilczynski@kernel.org>
 > ---
->   arch/powerpc/configs/amigaone_defconfig | 1 -
->   arch/powerpc/configs/chrp32_defconfig   | 1 -
->   arch/powerpc/configs/g5_defconfig       | 1 -
->   arch/powerpc/configs/pasemi_defconfig   | 1 -
->   arch/powerpc/configs/powernv_defconfig  | 1 -
->   arch/powerpc/configs/ppc64_defconfig    | 1 -
->   arch/powerpc/configs/ppc64e_defconfig   | 1 -
->   arch/powerpc/configs/skiroot_defconfig  | 1 -
->   8 files changed, 8 deletions(-)
-> 
-> diff --git a/arch/powerpc/configs/amigaone_defconfig b/arch/powerpc/configs/amigaone_defconfig
-> index 69ef3dc31c4b..7a515390646b 100644
-> --- a/arch/powerpc/configs/amigaone_defconfig
-> +++ b/arch/powerpc/configs/amigaone_defconfig
-> @@ -76,7 +76,6 @@ CONFIG_SERIAL_8250_CONSOLE=y
->   # CONFIG_HW_RANDOM is not set
->   # CONFIG_HWMON is not set
->   CONFIG_FB=y
-> -CONFIG_FIRMWARE_EDID=y
->   CONFIG_FB_TILEBLITTING=y
->   CONFIG_FB_RADEON=y
->   CONFIG_FB_3DFX=y
-> diff --git a/arch/powerpc/configs/chrp32_defconfig b/arch/powerpc/configs/chrp32_defconfig
-> index b799c95480ae..66eae5b7e16c 100644
-> --- a/arch/powerpc/configs/chrp32_defconfig
-> +++ b/arch/powerpc/configs/chrp32_defconfig
-> @@ -76,7 +76,6 @@ CONFIG_SERIAL_8250_CONSOLE=y
->   CONFIG_NVRAM=y
->   # CONFIG_HWMON is not set
->   CONFIG_FB=y
-> -CONFIG_FIRMWARE_EDID=y
->   CONFIG_FB_OF=y
->   CONFIG_FB_MATROX=y
->   CONFIG_FB_MATROX_MILLENIUM=y
-> diff --git a/arch/powerpc/configs/g5_defconfig b/arch/powerpc/configs/g5_defconfig
-> index 428f17b45513..ed051fbc7b69 100644
-> --- a/arch/powerpc/configs/g5_defconfig
-> +++ b/arch/powerpc/configs/g5_defconfig
-> @@ -123,7 +123,6 @@ CONFIG_I2C_CHARDEV=y
->   CONFIG_AGP=m
->   CONFIG_AGP_UNINORTH=m
->   CONFIG_FB=y
-> -CONFIG_FIRMWARE_EDID=y
->   CONFIG_FB_TILEBLITTING=y
->   CONFIG_FB_OF=y
->   CONFIG_FB_NVIDIA=y
-> diff --git a/arch/powerpc/configs/pasemi_defconfig b/arch/powerpc/configs/pasemi_defconfig
-> index 8bbf51b38480..89bcbeb05067 100644
-> --- a/arch/powerpc/configs/pasemi_defconfig
-> +++ b/arch/powerpc/configs/pasemi_defconfig
-> @@ -98,7 +98,6 @@ CONFIG_SENSORS_LM85=y
->   CONFIG_SENSORS_LM90=y
->   CONFIG_DRM=y
->   CONFIG_DRM_RADEON=y
-> -CONFIG_FIRMWARE_EDID=y
->   CONFIG_FB_TILEBLITTING=y
->   CONFIG_FB_VGA16=y
->   CONFIG_FB_NVIDIA=y
-> diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
-> index 9ac746cfb4be..fea71d647375 100644
-> --- a/arch/powerpc/configs/powernv_defconfig
-> +++ b/arch/powerpc/configs/powernv_defconfig
-> @@ -198,7 +198,6 @@ CONFIG_I2C_CHARDEV=y
->   # CONFIG_PTP_1588_CLOCK is not set
->   CONFIG_DRM=y
->   CONFIG_DRM_AST=y
-> -CONFIG_FIRMWARE_EDID=y
->   CONFIG_FB_OF=y
->   CONFIG_FB_MATROX=m
->   CONFIG_FB_MATROX_MILLENIUM=y
-> diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-> index 2b0720f2753b..2b358c242123 100644
-> --- a/arch/powerpc/configs/ppc64_defconfig
-> +++ b/arch/powerpc/configs/ppc64_defconfig
-> @@ -251,7 +251,6 @@ CONFIG_I2C_CHARDEV=y
->   CONFIG_I2C_AMD8111=y
->   CONFIG_I2C_PASEMI=y
->   CONFIG_FB=y
-> -CONFIG_FIRMWARE_EDID=y
->   CONFIG_FB_OF=y
->   CONFIG_FB_MATROX=y
->   CONFIG_FB_MATROX_MILLENIUM=y
-> diff --git a/arch/powerpc/configs/ppc64e_defconfig b/arch/powerpc/configs/ppc64e_defconfig
-> index 90247b2a0ab0..80606a5e6475 100644
-> --- a/arch/powerpc/configs/ppc64e_defconfig
-> +++ b/arch/powerpc/configs/ppc64e_defconfig
-> @@ -120,7 +120,6 @@ CONFIG_SERIAL_8250_CONSOLE=y
->   CONFIG_I2C_CHARDEV=y
->   CONFIG_I2C_AMD8111=y
->   CONFIG_FB=y
-> -CONFIG_FIRMWARE_EDID=y
->   CONFIG_FB_OF=y
->   CONFIG_FB_MATROX=y
->   CONFIG_FB_MATROX_MILLENIUM=y
-> diff --git a/arch/powerpc/configs/skiroot_defconfig b/arch/powerpc/configs/skiroot_defconfig
-> index 86c74146824a..879e57629af7 100644
-> --- a/arch/powerpc/configs/skiroot_defconfig
-> +++ b/arch/powerpc/configs/skiroot_defconfig
-> @@ -216,7 +216,6 @@ CONFIG_SENSORS_IBMPOWERNV=m
->   CONFIG_DRM=m
->   CONFIG_DRM_AST=m
->   CONFIG_FB=y
-> -CONFIG_FIRMWARE_EDID=y
->   # CONFIG_VGA_CONSOLE is not set
->   CONFIG_FRAMEBUFFER_CONSOLE=y
->   CONFIG_LOGO=y
+>  arch/alpha/kernel/pci-sysfs.c | 6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/arch/alpha/kernel/pci-sysfs.c b/arch/alpha/kernel/pci-sysfs.=
+c
+> index 6c011dab326d..2748000a7486 100644
+> --- a/arch/alpha/kernel/pci-sysfs.c
+> +++ b/arch/alpha/kernel/pci-sysfs.c
+> @@ -37,12 +37,16 @@ static int hose_mmap_page_range(struct pci_controller=
+ *hose,
+>  static int __pci_mmap_fits(struct pci_dev *pdev, int num,
+>  =09=09=09   struct vm_area_struct *vma, int sparse)
+>  {
+> +=09resource_size_t len =3D pci_resource_len(pdev, num);
+>  =09unsigned long nr, start, size;
+>  =09int shift =3D sparse ? 5 : 0;
+> =20
+> +=09if (!len)
+> +=09=09return 0;
+> +
+>  =09nr =3D vma_pages(vma);
+>  =09start =3D vma->vm_pgoff;
+> -=09size =3D ((pci_resource_len(pdev, num) - 1) >> (PAGE_SHIFT - shift)) =
++ 1;
+> +=09size =3D ((len - 1) >> (PAGE_SHIFT - shift)) + 1;
+> =20
+>  =09if (start < size && size - start >=3D nr)
+>  =09=09return 1;
+>=20
 
+Reviewed-by: Ilpo J=C3=A4rvinen <ilpo.jarvinen@linux.intel.com>
+
+--=20
+ i.
+
+--8323328-1214616222-1776080669=:962--
 
