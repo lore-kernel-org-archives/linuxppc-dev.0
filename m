@@ -1,51 +1,105 @@
-Return-Path: <linuxppc-dev+bounces-19669-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19670-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3AF0CEBFD20
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 09:01:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D94DEBFD21
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 09:16:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fvLx51gqbz2yrZ;
-	Mon, 13 Apr 2026 19:01:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776070873;
-	cv=none; b=DodQN2fFoTfaPfoNVs89SuWS1V/clqZz9X/bdIjcFPjYUqglGU8+ffKGcnGarpfkibwv03fPYawXfJwuYPHe1W3nzJyD1H5HfM5EOsFhmUhCbho87u2ZG16vclxbkx4irHiEOG6hmH1pDNdAmYG14jfxHn5Bij7XDZItcgRvjJ4pUvuE0VktbaS4RFGNxTm+KO8ivaDTyPxuGXxio0t6J1rI68nLVZQ1MYC291QJJ0gftkbSKUJM+TA/XKDwDmDisxxI0scp1NEKQVHx4TMtRrciU7au09mfTyU06xfua9o7A4jtR5n2qkwGbVvyBu0ObtvSFOH7NeINfS4xeigx3Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fvMGF70hdz2yrZ;
+	Mon, 13 Apr 2026 19:16:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776071765;
+	cv=none; b=MFWm4xg50HljMElF7XqmioQwkjN7cyrC1Zea2dCQ2Tz3DtAzIOTNnLpcHpq/GxF5VRuW/Iq57FFbC/fi0Z6oUPUmy3BFTMtCUq9JIqelCXM2Ev/PSs8ZOUCnCN9H28w+7JEeJwi7G33jbHJw8Tzk77qYrnzFAnjzlfjCR8FAkg5m66H26Hu+gnN1UuqWo95IeF5t/AibUAOlw5psIyD9Wfx7I4DmVjYrlKvNIRBw/MCyzp+EUQlozoAiw0IxemxZLuLq9hpRTIpp+ASR3Xw7C0r1Y7mmszP+tl8SGJeOel1vea4bgThNgRe9g2ADQ+shPjlZqIItVA1/tFwrPB43PA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776070873; c=relaxed/relaxed;
-	bh=6tn1tr/EOCjX/U3xON55GSnIaEvRsYLTCTnfd5yyfW4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=EisdEnJMDV6E6SPijRIYbQ18bFpfXRGq6t/IxeiEwoFydgOXIv7zOLGLoq/GZ5NzHSAW2C/57aoFa9a3tb+W97fkQHyf3chrNGl4v0zxxNSvvqBWG1IIpPpl1k9lhV+o1v4ykeZwcGc3EJ7/kvyAWO6Fm3XUVkHwWXI/xj7upNPAtNBDYtZ/d6LGa8CDMnzCZY8EjFy4Y5NYczVJEfVDsX6EkVsJpvuoAfg0of35WcaJlBWizaY2jUTAIPB/kV/5JDdoUKO9LWZKrXrpMdY/5rz+b2S1CLpcZqDSuryIoCV2/zhPkxIo7OcfEU+0MHiPQv1t/OCvqI1eSfRj2kg3mg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bfyW73rE; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1776071765; c=relaxed/relaxed;
+	bh=3hYK9Ei+d9kVH0VV/CR68CUDnV5UVCrS18XI/2Q3GjY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ipqJhxzFAw2+FuqPg643G4jn/y3a81Ik+dmpi+GkZXvDeUOAsYzfr2Ip4ZVlAt/sStPu4OqU0RCIY+IreBQ57ho0BCPbCacURC0mmnw9QLJHhq8yKxC9etTuuw5cGkwzfHM8XuW9Gg6fvuoFgwm3uCl+aamfmncdSLuV7mBu3xKeQXJBSYXJnYrXWPw/MwNsSwO+TCjwJPQYiCOrlBnUaf9xGZ4J+X40XnKs6146e9HBOEXvXD6CfqKYP78gr50PT2CaTbff4eC/I4TRDZvswBftP+0LDJTP873pdcHmTcbApPvjlOdOhqhSQCE6Y6CaA4YQRvMUoiaut1q6gOnnHQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oY+vEH1n; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ojaswin@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bfyW73rE;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oY+vEH1n;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=vbabka@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ojaswin@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvLx40NKxz2yjV
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2026 19:01:11 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 3123160172;
-	Mon, 13 Apr 2026 09:01:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 57513C116C6;
-	Mon, 13 Apr 2026 09:00:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776070868;
-	bh=NmWTXdFZa2PXaXxihxiBwP6/fcqhMPMR8Odd5UUj3qI=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=bfyW73rEx6WunGZVvr1kdbuQhIZW0auQdr185ZFOdqezYfVI8EqIl4RV+jZMHErnf
-	 HHqywW91vp7CVLzZ8tl9LuEsJL2nKmijW0OQ98WRnNBsFsW1LYo4ZFpZLLA1RAeRqi
-	 fLF9xsDW37jcs+y2EAiBEgZnfjWYwDz/hvRsB2Ow2oVioAmoaeXLVkxbmWKx3ILDyy
-	 OFKArZB3La00uc7rhVgunFkOn3bZFgPE1fuUov3rdMuNp+wqIMsO2YWxMIl1vusQFL
-	 bBAU79v+8ddAl2Ytb2JX6K5ckn/0H32ur+wYUjKyGCCdFu1O+cEC54vJcUyB4ZJ+rF
-	 y0fFboG7dTA8g==
-Message-ID: <67c579d4-4e7e-4b3a-a2b9-7ba669664bdf@kernel.org>
-Date: Mon, 13 Apr 2026 11:00:57 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvMGF03Drz2yjV
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2026 19:16:04 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63CNQ6Rp3649347;
+	Mon, 13 Apr 2026 09:15:18 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=3hYK9Ei+d9kVH0VV/CR68CUDnV5UVC
+	rS18XI/2Q3GjY=; b=oY+vEH1nHYm21zR7dKdG+rMVbiAs+2M4pSYJYH25H3Q/WQ
+	S5pbibNxKHXRtCU5RA4BZpoAC/CsLV14kYSk9HD7BI83gpVLqIVXm+N3/UD3mtFb
+	VGL3bfwkoS+MFSXp/7ksAXz/d/43BdzYyNe+WU94qMB7+oTAY5jMdy/aC1rg5QU1
+	UhBzNrX2r1ZHEsamBr6j/bYRaaLxasa1WWuLDHkVDfa2K6RkMY6wizvw26f4v3Pw
+	kdUQa11kKa0O4lHqHX35TBGaxo9cfSk8h/UtwhMbDVaUgMt8SMltIpECwIrRGVKB
+	KeirN6PqfMTEor0kXcjWPcrhlHvR883P23ApPmxw==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dfdt3px1j-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 13 Apr 2026 09:15:17 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 63D80WMC015153;
+	Mon, 13 Apr 2026 09:15:16 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dg0mscku7-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 13 Apr 2026 09:15:16 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63D9FEC727328866
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 13 Apr 2026 09:15:14 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 70F6620043;
+	Mon, 13 Apr 2026 09:15:14 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B712A2004F;
+	Mon, 13 Apr 2026 09:15:04 +0000 (GMT)
+Received: from li-dc0c254c-257c-11b2-a85c-98b6c1322444.ibm.com (unknown [9.123.13.2])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Mon, 13 Apr 2026 09:15:04 +0000 (GMT)
+Date: Mon, 13 Apr 2026 14:45:02 +0530
+From: Ojaswin Mujoo <ojaswin@linux.ibm.com>
+To: Thomas Gleixner <tglx@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+        x86@kernel.org, Lu Baolu <baolu.lu@linux.intel.com>,
+        iommu@lists.linux.dev, Michael Grzeschik <m.grzeschik@pengutronix.de>,
+        netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+        Herbert Xu <herbert@gondor.apana.org.au>, linux-crypto@vger.kernel.org,
+        Vlastimil Babka <vbabka@kernel.org>, linux-mm@kvack.org,
+        David Woodhouse <dwmw2@infradead.org>,
+        Bernie Thompson <bernie@plugable.com>, linux-fbdev@vger.kernel.org,
+        Theodore Tso <tytso@mit.edu>, linux-ext4@vger.kernel.org,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Uladzislau Rezki <urezki@gmail.com>, Marco Elver <elver@google.com>,
+        Dmitry Vyukov <dvyukov@google.com>, kasan-dev@googlegroups.com,
+        Andrey Ryabinin <ryabinin.a.a@gmail.com>,
+        Thomas Sailer <t.sailer@alumni.ethz.ch>, linux-hams@vger.kernel.org,
+        "Jason A. Donenfeld" <Jason@zx2c4.com>,
+        Richard Henderson <richard.henderson@linaro.org>,
+        linux-alpha@vger.kernel.org, Russell King <linux@armlinux.org.uk>,
+        linux-arm-kernel@lists.infradead.org,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        linux-m68k@lists.linux-m68k.org, Dinh Nguyen <dinguyen@kernel.org>,
+        Jonas Bonn <jonas@southpole.se>, linux-openrisc@vger.kernel.org,
+        Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org,
+        Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+        Paul Walmsley <pjw@kernel.org>, linux-riscv@lists.infradead.org,
+        Heiko Carstens <hca@linux.ibm.com>, linux-s390@vger.kernel.org,
+        "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org
+Subject: Re: [patch 07/38] treewide: Consolidate cycles_t
+Message-ID: <ady0Ft_tDrbGlu2o@li-dc0c254c-257c-11b2-a85c-98b6c1322444.ibm.com>
+References: <20260410120044.031381086@kernel.org>
+ <20260410120318.045532623@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,56 +113,92 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [patch 14/38] slub: Use prandom instead of get_cycles()
-Content-Language: en-US
-To: Thomas Gleixner <tglx@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Cc: linux-mm@kvack.org, Arnd Bergmann <arnd@arndb.de>, x86@kernel.org,
- Lu Baolu <baolu.lu@linux.intel.com>, iommu@lists.linux.dev,
- Michael Grzeschik <m.grzeschik@pengutronix.de>, netdev@vger.kernel.org,
- linux-wireless@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
- linux-crypto@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
- Bernie Thompson <bernie@plugable.com>, linux-fbdev@vger.kernel.org,
- Theodore Tso <tytso@mit.edu>, linux-ext4@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Uladzislau Rezki <urezki@gmail.com>, Marco Elver <elver@google.com>,
- Dmitry Vyukov <dvyukov@google.com>, kasan-dev@googlegroups.com,
- Andrey Ryabinin <ryabinin.a.a@gmail.com>,
- Thomas Sailer <t.sailer@alumni.ethz.ch>, linux-hams@vger.kernel.org,
- "Jason A. Donenfeld" <Jason@zx2c4.com>,
- Richard Henderson <richard.henderson@linaro.org>,
- linux-alpha@vger.kernel.org, Russell King <linux@armlinux.org.uk>,
- linux-arm-kernel@lists.infradead.org,
- Catalin Marinas <catalin.marinas@arm.com>,
- Huacai Chen <chenhuacai@kernel.org>, loongarch@lists.linux.dev,
- Geert Uytterhoeven <geert@linux-m68k.org>, linux-m68k@lists.linux-m68k.org,
- Dinh Nguyen <dinguyen@kernel.org>, Jonas Bonn <jonas@southpole.se>,
- linux-openrisc@vger.kernel.org, Helge Deller <deller@gmx.de>,
- linux-parisc@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, Paul Walmsley <pjw@kernel.org>,
- linux-riscv@lists.infradead.org, Heiko Carstens <hca@linux.ibm.com>,
- linux-s390@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
- sparclinux@vger.kernel.org, "Harry Yoo (Oracle)" <harry@kernel.org>,
- Hao Li <hao.li@linux.dev>
-References: <20260410120044.031381086@kernel.org>
- <20260410120318.525653921@kernel.org>
-From: "Vlastimil Babka (SUSE)" <vbabka@kernel.org>
-In-Reply-To: <20260410120318.525653921@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260410120318.045532623@kernel.org>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: r6KN03kK1HZaoam71kVl5aHZm9BfgAQ4
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDEzMDA4NSBTYWx0ZWRfX+Gwbo0yddZP/
+ ED3CWrVQNFFw/TECS1M9+tSS57FYBZnMmG79KmJVnAwBWc3o5BgyeadFZ9maSHI4Tv+/+VHQiXF
+ uu6/EAbMsVnRYIXugjj6TyQBBqRyeSoPbLxIVX8tqr0goumkz0lPJ9Y4Y3a3ECfM9WbzUtOSm5u
+ eNbyrRMw+nuwi0Afz/QuxwA0FuazktkFPrSziYKfNEV92tR6ksCbhLbdKwZfOQ6IaUNAK3mHh04
+ Z9ZuJvFG4+5R/DIJQ8v5H1fE5bYExgqIL1hC1HoekBef4/UHL3Jav5jU5Ty8ib2gAESLlopFcCb
+ VttV6mxWXomhvrcFDBgGSdweqIiLio3UyKWRaxfdCdf1K3UdP0nDdx3LiWp/XKSUCxaso/02xav
+ PADy/jEsrag0vsgcCLG1/jcBcJ3bFL3cNcYlDCC6JXFySGCPKTcpDMOtfvLh9vv4Vg7VR02ItSs
+ a0USozVz3do3GTBrHkA==
+X-Proofpoint-GUID: iwEVNX-0n_YmGG6iAARt9TRRoEhRuwqE
+X-Authority-Analysis: v=2.4 cv=WpEb99fv c=1 sm=1 tr=0 ts=69dcb426 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=kj9zAlcOel0A:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8
+ a=9Pz4rRoAHiK5H5RfW9YA:9 a=CjuIK1q_8ugA:10
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-13_02,2026-04-09_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 phishscore=0 bulkscore=0 adultscore=0 spamscore=0
+ malwarescore=0 clxscore=1011 lowpriorityscore=0 suspectscore=0
+ impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604010000
+ definitions=main-2604130085
 
-On 4/10/26 14:19, Thomas Gleixner wrote:
-> The decision whether to scan remote nodes is based on a 'random' number
-> retrieved via get_cycles(). get_cycles() is about to be removed.
+On Fri, Apr 10, 2026 at 02:19:03PM +0200, Thomas Gleixner wrote:
+> Most architectures define cycles_t as unsigned long execpt:
 > 
-> There is already prandom state in the code, so use that instead.
+>  - x86 requires it to be 64-bit independent of the 32-bit/64-bit build.
+> 
+>  - parisc and mips define it as unsigned int
+> 
+>    parisc has no real reason to do so as there are only a few usage sites
+>    which either expand it to a 64-bit value or utilize only the lower
+>    32bits.
+> 
+>    mips has no real requirement either.
+> 
+> Move the typedef to types.h and provide a config switch to enforce the
+> 64-bit type for x86.
 > 
 > Signed-off-by: Thomas Gleixner <tglx@kernel.org>
-> Cc: Vlastimil Babka <vbabka@kernel.org>
-> Cc: linux-mm@kvack.org
+> ---
+>  arch/Kconfig                       |    4 ++++
+>  arch/alpha/include/asm/timex.h     |    3 ---
+>  arch/arm/include/asm/timex.h       |    1 -
+>  arch/loongarch/include/asm/timex.h |    2 --
+>  arch/m68k/include/asm/timex.h      |    2 --
+>  arch/mips/include/asm/timex.h      |    2 --
+>  arch/nios2/include/asm/timex.h     |    2 --
+>  arch/parisc/include/asm/timex.h    |    2 --
+>  arch/powerpc/include/asm/timex.h   |    4 +---
+>  arch/riscv/include/asm/timex.h     |    2 --
+>  arch/s390/include/asm/timex.h      |    2 --
+>  arch/sparc/include/asm/timex_64.h  |    1 -
+>  arch/x86/Kconfig                   |    1 +
+>  arch/x86/include/asm/tsc.h         |    2 --
+>  include/asm-generic/timex.h        |    1 -
+>  include/linux/types.h              |    6 ++++++
+>  16 files changed, 12 insertions(+), 25 deletions(-)
+> 
+<...>
 
-LGTM.
+> --- a/arch/powerpc/include/asm/timex.h
+> +++ b/arch/powerpc/include/asm/timex.h
+> @@ -11,9 +11,7 @@
+>  #include <asm/cputable.h>
+>  #include <asm/vdso/timebase.h>
+>  
+> -typedef unsigned long cycles_t;
+> -
+> -static inline cycles_t get_cycles(void)
+> +ostatic inline cycles_t get_cycles(void)
 
-Acked-by: Vlastimil Babka (SUSE) <vbabka@kernel.org>
+Hi Thomas, I'm in middle of testing this series on powerpc. In the meantime I
+noticed that there's probably a small typo here (althrough this is fixed
+later)
 
+Regards,
+ojaswin
+>  {
+>  	return mftb();
+>  }
 
