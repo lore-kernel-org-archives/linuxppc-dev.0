@@ -1,83 +1,74 @@
-Return-Path: <linuxppc-dev+bounces-19688-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19689-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC9AEF34C48
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 11:59:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2ECF1F34C49
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 12:05:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fvQtx2j4Xz2ydn;
-	Mon, 13 Apr 2026 21:59:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.13
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776081577;
-	cv=none; b=F521V4Mb/2VR0qJg+QrGlx/m7/gGWSML4VB+vIlbOHXFprAqrFqO9QiOkDuSpjzZ8jPda+Xkn80xcIiQrlgUzloIGiT1J86gzLxsg/U/SWtQu4psDiGKUyCgufOD45DUh0YyKPy7DDKnw+d5PQZn9j3v8JBzeWqpRF2/XPE/8uO8Sj6iCozFYz5gCVQL+xqsY2VrrfJHlTA+za9uBIWleG/wKw5m8cxSwGcNFG11reOibZ/28WTR1yRzuS/e9HgN32xobs8XWixp4lRRjRWkU6aVwz6mP4eSrvMQSV/rkNafFJ5rUhh2+GxPsQZ1emInJLhnZgs9G40VqQ3Qn1jafA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fvR1H5sLZz2ydn;
+	Mon, 13 Apr 2026 22:05:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776081907;
+	cv=none; b=VlpZ9jlr6y2rBTQ+UIkm/zlZBnJfLddIlZ7ZfvR9hBx5mYwthH+2bnHP5PQqjNii7A8MiDIBfo9QupTT71gWiKz3oyaOB9HHvQ++7EDjcbbfMuTb/CVsrvE3JK25FU0qwAnJ6dhcGPoW3UDTtAaIdnlAEREe8suOLSajpwebfSoh0VarvtaidMyg8VrD074MEMAqabhSAsf3taQqd/a8/DRvY1/hctJ/B9cirHOT+yHvfWnp7NL8hs4i6a5GDUG/y4IiUdYtdGwdGunKe2hL1eMmAChLQPEMk0MwSxG+s/D0efQNeKpAdcILDiWBBp5RGbyjaVo3S/6c65EzH6+ErQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776081577; c=relaxed/relaxed;
-	bh=eZh6Xvy/Tn/yRfPlB7qkYaqF5dmm/smdgSOuZYDpvY8=;
-	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=YfdmO4UX2PPP6S6J4f8HKNB1kaqkSBFuhsGiI9dwGdEhoOZjlHw6Ient3BS3QYk6tNt4cy6Hos13/Z3wzzfa+70D53G4LyESMdymsG0xhg9VUedSqkb+3PYTgUkN9eBypM9ITEZ/2nNvQNpssPxDWHXEw7GRXQKHbttcXn6pZlExxbTXe+gB8h7s6tMmEywneeEgh6ZFbmYehZxpCzRo5TljGSDt4vCONgBNclHmLeyJz4ut1opYVr0S5z99idmJ5S59wQvjt98MB0vS0Zv+mjFX9ZtBLf9otaDJGFsM89Lvtevsj8srtMMYJYq28j5Eh+N4TJK3WA63OOlHyKGACg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=T2Kx19Z1; dkim-atps=neutral; spf=pass (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	t=1776081907; c=relaxed/relaxed;
+	bh=NH2W+2csUqWt6/5/R4OcEjsSkmHjk2BuSHBIUQjDBks=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=UkUtvgBTC18d+CPhJzw8L9PUln5ZSYv5/SG+91q2hehVYIAnk1yGpvOrrtZ1dlAICbU2jw0HGfS/DaqkxaMM+WKvzUHMGaen8f1HeZmdG2f+YvsCogLCYapLAs+vq8OGp1RJovg/h8syl2tfwrUbmROA0x/lYhM+Av3Ie6kueI4d9taTUZtbk2t0SX/AsWmj3dQzzg79ivhbHfBbc5EyZGN3DzMe941bI2BNyYs1UUcJPi0ohnCEJSdcfgkBAQVqu9V4wBwDg1hZ+2bhANwqDZRgWemH/6TzsvHJk/yAh2cR9sk7jb/ATiRIblJ8iwAbfVs1oB63TJxLecrDuGzkDQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=at+QCcd8; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=T2Kx19Z1;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=at+QCcd8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvQtw0BtMz2ySb
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2026 21:59:35 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1776081577; x=1807617577;
-  h=from:date:to:cc:subject:in-reply-to:message-id:
-   references:mime-version:content-id;
-  bh=XjCiDo9y+OHrVQDJKUrYSIpvMP1U6UUn5n4372Stk5c=;
-  b=T2Kx19Z1UytYRyOyG4sYCFiKoapQjZZlsHMACWwMIPAudW1TdEoswSAu
-   q4YrTcTL9zX6ebOpcItUiveVtB9p6d08pQI7P2Ma1Twt60WHjkqo6lKYV
-   s9rCcukaGVvlRgZXtQNGO6oIFXEI/FfbBA3ll69Bgfpdx/1zZ1rRwo0r1
-   jWn5weFTT/75Xu76ZbyeTiwdFfMMSDsHoRW2lUkG+TLvgm6BIlDLxFQ3X
-   /gu1jHK6YM7eapLiUQ3ZokOrqgaqnMS09eERNO0gYxObSiss5RnYPpSez
-   Bfnoz3KTSLzdRcpyMCdy5w3njwfKeNme1lpQjUpLSsUSFXd4zSXshA1iC
-   w==;
-X-CSE-ConnectionGUID: tWmenPArRv6POfsamzyC9A==
-X-CSE-MsgGUID: FSBSsZxsRo6szXSvzCgTwQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11757"; a="88088839"
-X-IronPort-AV: E=Sophos;i="6.23,177,1770624000"; 
-   d="scan'208";a="88088839"
-Received: from fmviesa007.fm.intel.com ([10.60.135.147])
-  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Apr 2026 04:59:32 -0700
-X-CSE-ConnectionGUID: AWmqfKN+SAKDaoql7UTAbw==
-X-CSE-MsgGUID: 0dDCkOLFShWVnJktOyq7nQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,177,1770624000"; 
-   d="scan'208";a="226597919"
-Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.63])
-  by fmviesa007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Apr 2026 04:59:23 -0700
-From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Date: Mon, 13 Apr 2026 14:59:19 +0300 (EEST)
-To: =?ISO-8859-2?Q?Krzysztof_Wilczy=F1ski?= <kwilczynski@kernel.org>
-cc: Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <helgaas@kernel.org>, 
-    Manivannan Sadhasivam <mani@kernel.org>, 
-    Lorenzo Pieralisi <lpieralisi@kernel.org>, 
-    Magnus Lindholm <linmag7@gmail.com>, Matt Turner <mattst88@gmail.com>, 
-    Richard Henderson <richard.henderson@linaro.org>, 
-    Christophe Leroy <chleroy@kernel.org>, 
-    Madhavan Srinivasan <maddy@linux.ibm.com>, 
-    Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-    Dexuan Cui <decui@microsoft.com>, 
-    =?ISO-8859-2?Q?Krzysztof_Ha=B3asa?= <khalasa@piap.pl>, 
-    Lukas Wunner <lukas@wunner.de>, Oliver O'Halloran <oohall@gmail.com>, 
-    Saurabh Singh Sengar <ssengar@microsoft.com>, 
-    Shuan He <heshuan@bytedance.com>, 
-    Srivatsa Bhat <srivatsabhat@microsoft.com>, linux-pci@vger.kernel.org, 
-    linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v4 20/24] PCI: Add macros for legacy I/O and memory
- address space sizes
-In-Reply-To: <20260411080148.471335-21-kwilczynski@kernel.org>
-Message-ID: <a73af6f4-9f9a-cff8-e00e-042dcf934708@linux.intel.com>
-References: <20260411080148.471335-1-kwilczynski@kernel.org> <20260411080148.471335-21-kwilczynski@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvR1G6XzZz2ySb
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2026 22:05:06 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id EAF2060180;
+	Mon, 13 Apr 2026 12:05:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D0EFDC19421;
+	Mon, 13 Apr 2026 12:04:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776081903;
+	bh=cSo4sEdsNwlz/Iqs10U18EHsNdWWL3XI+9TPegcabV8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=at+QCcd8hldAMXHMewcQlTRTSnPiYtb+AMBMRvJ2S3KRydAkuWOSAT5L5UCYcSoX/
+	 ROa9bELImeOFvQzvTvpDpcl4kesvAFWZEWDTyLABjzRsnNsdUqSTmHo8oGoko42yP1
+	 ySfzT1F5fS+ieBGBLG+LF/vt9HIB747aetWSZlmf5ZsXJNo8GFsCT2SCUVjsNcF0+D
+	 Y6DQqlHoXOTwKiulifQcVyMaqFKxVh70yge0I5RxWAyvSyVsOM3ft5xcsQIebGm+6U
+	 4yi40VjDnwrKe0gqOTVZYA/w2Lw0t9gyBbQ8clbAsFDUDIHE47hCCod4Zw1isILUZB
+	 tqQdQ9IAZeV3Q==
+Date: Mon, 13 Apr 2026 15:04:54 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: Muchun Song <muchun.song@linux.dev>
+Cc: Muchun Song <songmuchun@bytedance.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Hildenbrand <david@kernel.org>,
+	Oscar Salvador <osalvador@suse.de>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Lorenzo Stoakes <ljs@kernel.org>,
+	"Liam R . Howlett" <Liam.Howlett@oracle.com>,
+	Vlastimil Babka <vbabka@kernel.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>, Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>, aneesh.kumar@linux.ibm.com,
+	joao.m.martins@oracle.com, linux-mm@kvack.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/49] mm/sparse: fix vmemmap accounting imbalance on
+ memory hotplug error
+Message-ID: <adzb5o9aWxFWphRK@kernel.org>
+References: <20260405125240.2558577-1-songmuchun@bytedance.com>
+ <20260405125240.2558577-2-songmuchun@bytedance.com>
+ <ady1LQMN1xhPGcuT@kernel.org>
+ <ady40BWw5WgQHf3z@kernel.org>
+ <35454ADD-C983-4577-997E-884266C56FB6@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,58 +82,100 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/mixed; BOUNDARY="8323328-972594317-1776081516=:962"
-Content-ID: <ad975c4c-2f7e-f46a-75e8-090fb701efc6@linux.intel.com>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <35454ADD-C983-4577-997E-884266C56FB6@linux.dev>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Mon, Apr 13, 2026 at 05:49:17PM +0800, Muchun Song wrote:
+> 
+> 
+> > On Apr 13, 2026, at 17:35, Mike Rapoport <rppt@kernel.org> wrote:
+> > 
+> > On Mon, Apr 13, 2026 at 12:19:50PM +0300, Mike Rapoport wrote:
+> >> On Sun, Apr 05, 2026 at 08:51:52PM +0800, Muchun Song wrote:
+> >>> In section_activate(), if populate_section_memmap() fails, the error
+> >>> handling path calls section_deactivate() to roll back the state. This
+> >>> approach introduces an accounting imbalance.
+> >>> 
+> >>> Since the commit c3576889d87b ("mm: fix accounting of memmap pages"),
+> >>> memmap pages are accounted for only after populate_section_memmap()
+> >>> succeeds. However, section_deactivate() unconditionally decrements the
+> >>> vmemmap account. Consequently, a failure in populate_section_memmap()
+> >>> leads to a negative offset (underflow) in the system's vmemmap tracking.
+> >>> 
+> >>> We can fix this by ensuring that the vmemmap accounting is incremented
+> >>> immediately before checking for the success of populate_section_memmap().
+> >>> If populate_section_memmap() fails, the subsequent call to
+> >>> section_deactivate() will decrement the accounting, perfectly offsetting
+> >>> the increment and maintaining balance.
+> >>> 
+> >>> Fixes: c3576889d87b ("mm: fix accounting of memmap pages")
+> >>> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+> >>> ---
+> >>> mm/sparse-vmemmap.c | 2 +-
+> >>> 1 file changed, 1 insertion(+), 1 deletion(-)
+> >>> 
+> >>> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
+> >>> index 6eadb9d116e4..ee27d0c0efe2 100644
+> >>> --- a/mm/sparse-vmemmap.c
+> >>> +++ b/mm/sparse-vmemmap.c
+> >>> @@ -822,11 +822,11 @@ static struct page * __meminit section_activate(int nid, unsigned long pfn,
+> >>> return pfn_to_page(pfn);
+> >>> 
+> >>> memmap = populate_section_memmap(pfn, nr_pages, nid, altmap, pgmap);
+> >>> + memmap_pages_add(DIV_ROUND_UP(nr_pages * sizeof(struct page), PAGE_SIZE));
+> >> 
+> >> This logically belongs to success path in populate_section_memmap(). If we
+> >> update the counter there, we won't need to temporarily increase it at all.
+> > 
+> > Not strictly related to this patchset, but it seems, we can have a single
+> > memmap_boot_pages_add() in memmap_alloc() rather than to update the counter
+> > in memmap_alloc() callers.
+> 
+> It will indeed become simpler and is a good cleanup direction, but there
+> is a slight change in semantics: the page tables used for vmemmap page
+> mapping will also be counted in memmap_boot_pages_add(). This might not
+> be an issue (after all, the size of the page tables is very small compared
+> to struct pages, right?).
+> 
+> Additionally, I still lean toward making no changes to this patch, because
+> this is a pure bugfix patch — of course, it is meant to facilitate backporting
+> for those who need it. The cleanup would involve many more changes, so I
+> prefer to do that in a separate patch. What do you think?
 
---8323328-972594317-1776081516=:962
-Content-Type: text/plain; CHARSET=ISO-8859-2
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Content-ID: <061d9599-649d-f8aa-2b31-8fe5344029e1@linux.intel.com>
+For this patch and easy backporting I still think that cleaner to have the
+counter incremented in populate_section_memmap() rather immediately after
+it.
+ 
+> Thanks,
+> Muchun.
+> 
+> > 
+> >>> if (!memmap) {
+> >>> section_deactivate(pfn, nr_pages, altmap);
+> >>> return ERR_PTR(-ENOMEM);
+> >>> }
+> >>> - memmap_pages_add(DIV_ROUND_UP(nr_pages * sizeof(struct page), PAGE_SIZE));
+> >>> 
+> >>> return memmap;
+> >>> }
+> >>> -- 
+> >>> 2.20.1
+> >>> 
+> >> 
+> >> -- 
+> >> Sincerely yours,
+> >> Mike.
+> > 
+> > -- 
+> > Sincerely yours,
+> > Mike.
+> 
+> 
+> 
 
-On Sat, 11 Apr 2026, Krzysztof Wilczy=F1ski wrote:
-
-> Add defines for the standard PCI legacy address space sizes,
-> replacing the raw literals used by the legacy sysfs attributes.
->=20
-> Suggested-by: Ilpo J=E4rvinen <ilpo.jarvinen@linux.intel.com>
-> Signed-off-by: Krzysztof Wilczy=F1ski <kwilczynski@kernel.org>
-> ---
->  include/linux/pci.h | 5 +++++
->  1 file changed, 5 insertions(+)
->=20
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index f6f55005f82d..6b630bac8c08 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -27,6 +27,7 @@
->  #include <linux/mod_devicetable.h>
-> =20
->  #include <linux/types.h>
-> +#include <linux/sizes.h>
->  #include <linux/init.h>
->  #include <linux/ioport.h>
->  #include <linux/list.h>
-> @@ -1167,6 +1168,10 @@ enum {
->  /* These external functions are only available when PCI support is enabl=
-ed */
->  #ifdef CONFIG_PCI
-> =20
-> +/* PCI legacy I/O port and memory address space sizes. */
-> +#define PCI_LEGACY_IO_SIZE=09(SZ_64K - 1)
-> +#define PCI_LEGACY_MEM_SIZE=09SZ_1M
-> +
->  extern unsigned int pci_flags;
-> =20
->  static inline void pci_set_flags(int flags) { pci_flags =3D flags; }
->=20
-
-Shouldn't this also convert the use in pci-sysfs.c (which you now mixed=20
-into the static attrs conversion patch)?
-
---=20
- i.
---8323328-972594317-1776081516=:962--
+-- 
+Sincerely yours,
+Mike.
 
