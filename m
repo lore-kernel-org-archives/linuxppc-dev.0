@@ -1,79 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-19710-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19711-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21A82F34C64
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 16:14:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34E15F34C63
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Apr 2026 16:35:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fvXXX4nCYz2yw7;
-	Tue, 14 Apr 2026 02:14:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776096844;
-	cv=none; b=oPxNKKjJHLoYF80dydrqMmF6WLufPkVBhGrfkdZkQj25FRiOLda14dCd/+xLCaFKPe0ILipYEb4bCAN6nKgJ0h4NcZS7Xwv+09zicwDhIVPiu3fRKQMO7zNcxwuY1b/qNBTcUQcal9Nk83lrSxKU/DMxg67eD25Lh8JnfaG8h2d8v6Goqd9XzjvgEJcn+S/o4GDkwlJc6nMIGnt1RmYbi5TsAlg+MLSS/l1Na8QStxBg3JnOuMulcSqTJ+h4W2tc2+VP1gHqzso8qP0S+5V4EF6+Zskj90jlt6ztYexJTJ5n+M/83XMuN9lbQxl2kLlyicWb3Zy59mPKPpUkVUSbNA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fvY1c5Ch0z2yvT;
+	Tue, 14 Apr 2026 02:35:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776098148;
+	cv=none; b=U1jArohQzsY0mzJazV41D952Ci+JBbH9mL6TtuJFMD3TwJsxa4Z2yj1PiP/EatC8xUQgRbe3Paiwd2h93pZVo40novYRX+w3Yb0lkOCcu5IVrhmND2DnF4LSg861UJ4J6yPcKJ4Ma3/UlY9Dc7C0HIpsNTEktURPFIigd6mLmPMRg/neYmZL0PpITpljuFBMiJvrUJc9yVb47VxPEBFpt4cVYeY4ckdgVK1LXnRj+BBrxjJotYytbgHOmOYWGaP0t82rqpV5azYcIesI1wsj3sK8EjFl7ifaPwKd1nCZbduLNjk/Lpr8IKR4veCUJxrZnw3hoL9Wp6fkacWc3AW4bw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776096844; c=relaxed/relaxed;
-	bh=QTxZjlPwQbG3YSd8NjMQF965BtCe0lPqly+S72Myshs=;
+	t=1776098148; c=relaxed/relaxed;
+	bh=7kag+k76MMII2rJ7lc0nPwSZz3w0zkW2ZuT/Qpx9Y1o=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=h4+Gm0I4t7kRJsvpkP9m4HU+z2YtH2ApJCLmO2D+Nx7QL77/WpyZ5znkdSo3TXWTwWlFYtf4a1nirIFT+gPUXwY8p77gWiD2H87GLculrxMsNq1IZG6LFM5t8b+N+S9EWb92eUq5jl9WplcxLp55Hbk+y53eULf2Kgy4h2CcIQQxlTVjPlbS8CM4gQ5W50KvP2p8qqNDqn6aj0mnQiYy40MUjhEZUGq4ssYRd7pmXTykVHPv8p24WaTe1NVXKyf+yoUUVgB+gy348wxl/0A5YH8RTdnYzx765fGgP6qN5+XViL9OM++jqmKv5U7EdQw4DGBsIqlzV4B84Du7yVjLiQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=tkXY4nmg; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=LoVkYl6M; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+	 Content-Type:Content-Disposition:In-Reply-To; b=NlStCQnpsZ5XQJAyMrPPAgmWl6cfAEfAqeWfnRT7lMgxYFnfNyKC8kfLG3mAnZeZ4PqdOPo+XMjO35BT5DvUjGC+qh4td4xKCCz4lz6EA3dUxKKWq3CIoZtfUvjOSpLhOenPPOoA4CNk3FQRbPw4gjZCnMasDgIi4uQNr9HTzJbIu2HLhEG2XjpqwhoQm3bh8pNEyq85DANu4ILGAF5eVlCxlOrrElm0CvSohpuQBMBa80bE/iOfNqxeZZjQZph259/brTvPkco45RmqTpstZynB29UaGywsdUvwCviFcDTbmcxDbqSIdo2FwWnr17eqyxKbN6Jrdw8Xw4XX2tymEw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Lk8ymw3M; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=tkXY4nmg;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=LoVkYl6M;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Lk8ymw3M;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvXXW1jklz2yvv
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2026 02:14:03 +1000 (AEST)
-Date: Mon, 13 Apr 2026 18:13:56 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1776096838;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=QTxZjlPwQbG3YSd8NjMQF965BtCe0lPqly+S72Myshs=;
-	b=tkXY4nmg+ufLH8pIEREGPRIN7lEqDgcVyS4rMzP1pwHp3yL9b7kXJNaCAOrhLb02cE7TGx
-	ggSSsIsYsGtFlAqRc8UG2XgBwu4Qk7X16r+d5lL2igIBjpcbMUvCVDWy7ZLItlTIXxZD2z
-	h84JvMJNCIi1kvdvkxIIavJgYl+u/z8BcToeOgc+aJOW6lKeBrGdb3kEMvdFXGg6XytgEk
-	rPMpXXME1ph1vQl4s9O5z+BEsC7htoA6IsUN921QvLHj7U4PfLX+8Y45VLFAq5AKYwtmoY
-	FG1tRrjVloQGmzZUNVRNkeyCEHHE5ks19vbY61zf1F/NW+xmp2dLuPlt0SZxoA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1776096838;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=QTxZjlPwQbG3YSd8NjMQF965BtCe0lPqly+S72Myshs=;
-	b=LoVkYl6MMLeNBjAM4BvQVhVn1NnaY+OSsVvNNOBvu1HsCV87BqTgHRgkWFHBm1kAvMqe5B
-	HVlxTATbwykTSSCg==
-From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>, 
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, 
-	Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, 
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Vincenzo Frascino <vincenzo.frascino@arm.com>, 
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org
-Subject: Re: [PATCH 1/7] x86/vdso: Respect COMPAT_32BIT_TIME
-Message-ID: <20260413180541-e13f374c-b990-4236-bc83-8fde948899df@linutronix.de>
-References: <20260227-vdso-compat_32bit_time-v1-0-3f0286a7bac3@linutronix.de>
- <20260227-vdso-compat_32bit_time-v1-1-3f0286a7bac3@linutronix.de>
- <c29f5e70-bd17-4e1b-a005-5a3282e70075@app.fastmail.com>
- <03cd1e21-a2f2-46a1-a674-cbaef9712016@app.fastmail.com>
- <20260227103226-cc3bb32c-0107-4c09-b81a-ca33ea03ad5c@linutronix.de>
- <49b7c9f9-198a-49f7-880b-6ae74d7bd985@zytor.com>
- <2b1ac7b9-fcc8-4aa3-a0ad-eb37e4bce030@app.fastmail.com>
- <20260410091131-46b6354c-9d06-4e47-9345-ee224d8528f7@linutronix.de>
- <15925544-1ae5-406a-b9cc-af5935cc9f02@app.fastmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvY1b3NVmz2yth
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2026 02:35:47 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 2DA4F40881;
+	Mon, 13 Apr 2026 16:35:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 49FBCC2BCB3;
+	Mon, 13 Apr 2026 16:35:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776098145;
+	bh=YZ23nMQ/ay3QztACjeZpwAsTDk5SE/Lr+pB3V6c9Mqw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Lk8ymw3MMZG/o+y7+yEs9+SRa2wM7p+rrtsT8WBnSf4v+gl6sXbHWOTbbi/XV3xC4
+	 Pn5g7XBWkIkq8K23OKBe16ohjIMDDnUIoslb4p0kQC3a9ulPP1tSHjaCLOf54uD2oZ
+	 G7ui53icbdw2iggotHL0Vy9VNgLSVMib1U3kiMTN0uW2+GElkpA8ikUiE8h0XLfNE9
+	 ImA9l7/Am6GKhLrhIsYsx1CFPePcxFQ9wp4T8PUnxtM3gUcwJQ6/+R6IdMPwZ4nbDA
+	 dZDI+53aOQhehcepUJNY3OiBRpz0ea9bCWS9K13MaCoeVgSKeZOTLYKnFz8Fy56/JW
+	 PoN5/0eOM46Gw==
+Date: Mon, 13 Apr 2026 22:05:28 +0530
+From: Manivannan Sadhasivam <mani@kernel.org>
+To: Brian Norris <briannorris@chromium.org>, 
+	Hongxing Zhu <hongxing.zhu@nxp.com>
+Cc: Hongxing Zhu <hongxing.zhu@nxp.com>, 
+	"manivannan.sadhasivam@oss.qualcomm.com" <manivannan.sadhasivam@oss.qualcomm.com>, Bjorn Helgaas <bhelgaas@google.com>, 
+	Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Oliver O'Halloran <oohall@gmail.com>, 
+	Will Deacon <will@kernel.org>, Lorenzo Pieralisi <lpieralisi@kernel.org>, 
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>, Rob Herring <robh@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
+	Philipp Zabel <p.zabel@pengutronix.de>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, 
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, 
+	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, 
+	"linux-rockchip@lists.infradead.org" <linux-rockchip@lists.infradead.org>, Niklas Cassel <cassel@kernel.org>, 
+	Wilfred Mallawa <wilfred.mallawa@wdc.com>, Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>, 
+	Lukas Wunner <lukas@wunner.de>, Wilson Ding <dingwei@marvell.com>, 
+	Miles Chen <minhuachen@google.com>
+Subject: Re: [PATCH v7 0/4] PCI: Add support for resetting the Root Ports in
+ a platform specific way
+Message-ID: <klzq2i2ne62hdri65gz7s5pxmvely277optr2lrkvdrrahl3ca@k3hdo6o4nkjz>
+References: <20260310-pci-port-reset-v7-0-9dd00ccc25ab@oss.qualcomm.com>
+ <AS8PR04MB883389FD2A016F9E02756B048C49A@AS8PR04MB8833.eurprd04.prod.outlook.com>
+ <adcHylFjFjhHT-tP@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,42 +79,139 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <15925544-1ae5-406a-b9cc-af5935cc9f02@app.fastmail.com>
+In-Reply-To: <adcHylFjFjhHT-tP@google.com>
 
-On Mon, Apr 13, 2026 at 05:59:52PM +0200, Arnd Bergmann wrote:
-> On Fri, Apr 10, 2026, at 09:24, Thomas Wei�schuh wrote:
+Hi Brian,
 
-(...)
-
-> > Recap/Proposal:
-
-(...)
-
-> > * Always provide settimeofday(). If CONFIG_COMPAT_32BIT_TIME is *not*
-> >   set, reject passing any 'tv' argument where it may not be y2038 safe.
+On Wed, Apr 08, 2026 at 06:58:34PM -0700, Brian Norris wrote:
+> Hi Richard and Mani,
 > 
-> This sounds wrong to me now: the case I'm worried about is a 32-bit
-> system calling settimeofday() based on the value of an RTC or NTP.
-> The idea of CONFIG_COMPAT_32BIT_TIME=n is to catch this by causing
-> an intentional ENOSYS error even for valid times, so it doesn't
-> suddenly start breaking in 2038.
+> For the record, I've been using a form of an earlier version of this
+> patchset in my environment for some time now, and I've run across
+> problems that *might* relate to what Richard is reporting, but I'm not
+> quite sure at the moment. Details below.
+> 
+> On Wed, Mar 25, 2026 at 07:06:49AM +0000, Hongxing Zhu wrote:
+> > Hi Mani:
+> > I've accidentally encountered a new issue based on the reset root port patch-set.
+> > After performing a few hot-reset operations, the PCIe link enters a continuous up/down cycling pattern.
+> > 
+> > I found that calling pci_reset_secondary_bus() first in pcibios_reset_secondary_bus() appears to resolve this issue.
+> > Have you experienced a similar problem?
+> > 
+> > "
+> > ...
+> > [  141.897701] imx6q-pcie 4c300000.pcie: PCIe(LNK_STS:0x00000700) link up detected
+> > [  142.086341] imx6q-pcie 4c300000.pcie: PCIe Gen.3 x1 link up
+> > [  142.092038] imx6q-pcie 4c300000.pcie: PCIe(LNK_STS:0x00000c00) link down detected
+> > ...
+> > "
+> > 
+> > Platform: i.MX95 EVK board plus local Root Ports reset supports based on the #1 and #2 patches of v7 patch-set.
+> > Notes of the logs:
+> > - One Gen3 NVME device is connected.
+> > - "./memtool 4c341058=0;./memtool 4c341058=1;" is used to toggle the LTSSM_EN bit to trigger the link down.
+> > - Toggle BIT6 of Bridge Control Register to trigger hot reset by "./memtool 4c30003c=004001ff; ./memtool 4c30003c=000001ff;"
+> > - The Root Port reset patches works correctly at first.
+> > However, after several hot-reset triggers, the link enters a repeated down/up cycling state.
+> > 
+> > Logs:
+> > [    3.553188] imx6q-pcie 4c300000.pcie: host bridge /soc/pcie@4c300000 ranges:
+> > [    3.560308] imx6q-pcie 4c300000.pcie:       IO 0x006ff00000..0x006fffffff -> 0x0000000000
+> > [    3.568525] imx6q-pcie 4c300000.pcie:      MEM 0x0910000000..0x091fffffff -> 0x0010000000
+> > [    3.577314] imx6q-pcie 4c300000.pcie: config reg[1] 0x60100000 == cpu 0x60100000
+> > [    3.796029] imx6q-pcie 4c300000.pcie: iATU: unroll T, 128 ob, 128 ib, align 4K, limit 1024G
+> > [    4.003746] imx6q-pcie 4c300000.pcie: PCIe Gen.3 x1 link up
+> > [    4.009553] imx6q-pcie 4c300000.pcie: PCI host bridge to bus 0000:00
+> > root@imx95evk:~#
+> > root@imx95evk:~#
+> > root@imx95evk:~# ./memtool 4c341058=0;./memtool 4c341058=1; Writing 32-bit value 0x0 to address 0x4C341058
+> > Writing 32-bit v
+> > [   87.265348] imx6q-pcie 4c300000.pcie: PCIe(LNK_STS:0x00000d01) link down detected
+> > alue 0x1 to adder
+> > [   87.273106] imx6q-pcie 4c300000.pcie: Stop root bus and handle link down
+> > ss 0x4C341058
+> > [   87.281264] pcieport 0000:00:00.0: Recovering Root Port due to Link Down
+> > [   87.289245] pci 0000:01:00.0: AER: can't recover (no error_detected callback)
+> > root@imx95evk:~# [   87.514216] imx6q-pcie 4c300000.pcie: PCIe(LNK_STS:0x00000700) link up detected
+> > [   87.702968] imx6q-pcie 4c300000.pcie: PCIe Gen.3 x1 link up
+> > [   87.834983] pcieport 0000:00:00.0: Root Port has been reset
+> > [   87.840714] pcieport 0000:00:00.0: AER: device recovery failed
+> > [   87.846592] imx6q-pcie 4c300000.pcie: Rescan bus after link up is detected
+> > [   87.855947] pcieport 0000:00:00.0: bridge configuration invalid ([bus 00-00]), reconfiguring
+> 
+> I've seen this same line ("bridge configuration invalid") before, and I
+> believe that's because the saved state (pci_save_state(); more about
+> this below) is invalid -- it contains 0 values in places where they
+> should be non-zero. So when those values are restored
+> (pci_restore_state()), we get confused.
+> 
+> I believe we've pinned down one reason this invalid state occurs -- it's
+> because of an automatic (mis)feature in the DesignWare PCIe hardware.
+> Specifically, it's because of what the controller does during a surprise
+> link-down error.
+> 
+> From the Designware docs:
+> 
+>   "[...] during normal operation, the link might fail and go down. After
+>   this link-down event, the controller requests the DWC_pcie_clkrst.v
+>   module to hot-reset the controller. There is no difference in the
+>   handling of a link-down reset or a hot reset; the controller asserts
+>   the link_req_rst_not output requesting the DWC_pcie_clkrst.v module to
+>   reset the controller."
+> 
+> In some of the adjacent documentation (and confirmed in local testing),
+> it suggests that this automatic reset will also reset various DBI (i.e.,
+> PCIe config space) registers. It also seems as if there's not really a
+> good way to completely stop this automatic reset -- the docs mention
+> some SW methods prevent the reset, but they all seem racy or incomplete.
+> 
+> Anyway, I think this implies that patch 1 is somewhat wrong [1]. It
+> includes some code like this:
+> 
+> 		pci_save_state(dev);
+> 		ret = host->reset_root_port(host, dev);
+> 		if (ret)
+> 			pci_err(dev, "Failed to reset Root Port: %d\n", ret);
+> 		else
+> 			/* Now restore it on success */
+> 			pci_restore_state(dev);
+> 
+> That first line (pci_save_state()) is prone to saving invalid state,
+> depending on whether the link-down event has finished flushing and
+> resetting the controller yet or not. The resulting impact is a bit hard
+> to judge, depending on what (mis)configuration you end up with.
+> 
 
-This is what I meant with "where it *may*" be not y2038 safe.
-Even if the value fits, the call would be rejected.
-My wording was crappy indeed, though.
+Thanks a lot for your investigation. I think your observation makes sense and
+could be the culprit in saving the corrupted state. Even on non-DWC controllers,
+there is no guarantee that the Root Port config registers state will be
+preserved after LDn (before Root Port reset).
 
-In code:
+> I also noticed commit a2f1e22390ac ("PCI/ERR: Ensure error
+> recoverability at all times") was merged recently. With that change, I
+> believe it is now safe to perform pci_restore_state() even without
+> pci_save_state() here.
+> 
+> So ... can we remove pci_save_state() from
+> pcibios_reset_secondary_bus()? Might that help?
 
-if (tv && !IS_ENABLED(CONFIG_COMPAT_32BIT_TIME) && sizeof(tv->tv_sec) < 8) {
-	pr_warn_once(...);
-	return -EINVAL;
-}
+I think so. I will also test it locally and report back soon.
 
-Or maybe drop the EINVAL but still emit a warning. That warning would be
-useful for gettimeofday(), too.
+> It sounds like my above
+> observations *may* match Richard's reports, but I'm not sure. And
+> anyway, the documented hardware behavior is racy, so it's hard to
+> propose a foolproof solution.
+> 
 
-Thomas
+@Richard: Can you confirm if removing 'pci_save_state(dev);' from
+pcibios_reset_secondary_bus() fixes your issue?
+
+- Mani
+
+-- 
+மணிவண்ணன் சதாசிவம்
 
