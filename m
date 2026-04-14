@@ -1,46 +1,46 @@
-Return-Path: <linuxppc-dev+bounces-19722-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19723-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29137F531E7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2026 02:34:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 932E1F531E3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2026 03:01:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fvpJP3zhYz2ypY;
-	Tue, 14 Apr 2026 12:34:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.179
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776134069;
-	cv=none; b=M5nq69wn8XLAk4T8rVT08b0CM5UZCTAzvffIKtQpL4b+HzFq5GNg53z6B8Xyp6+vSYD8Tka/+uL+4Wq7UVstrOG6NN/QCxNll8D0GSPdminsU+B7ib0WiH9Tsts8goC6Y4/4dVJi8w8s8K9UY2SreaRqxJK9taWotXpuPQmTRc0gbcWwV5I5c2mO3bMCE1U+Xnct522pUrifthrdBo+2zEaZO80Ta4D+hbOr1Co4r8v2Ett+5Exjzp7w6i0Q84dbUHI55WJ8LP+TZZdXwTN6RU+IgCOLc34fEtHcdr/axy8qynn+TuH+WwdtdS63z6rBAID+5+LvDigZCprHSg3YQQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fvpv90dZMz2yrD;
+	Tue, 14 Apr 2026 13:01:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::b7"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776135669;
+	cv=none; b=D0TreC1vNqwux7KsJJaQf/2UibROf6hmpOtgAKFDTJqSWDS2SPPBzT+e2sb6gxGcwvq+3gS+E4U86rQUlNSMeBZbfpLHBrSignVmifLADjFxDFyF+5X7ngNcrA9KijgWTCQv4vgViUHhe/OeIH8w9Q/v1wxRsz1rMYRczpQBbcaUnlZ5AUAwdzohT7jeCDU4UluaWaQ+smTMSeuT8ICIB1sQy8hr/zGn29du7I6fBVjaX2xm/AfZVQ3DgV6IPZtMEkpTjZ/1AjkTE4+ou7Y67qNgPVitTXeX/oKMT9Jz+nBybQoMXBewpSMmYDKNYJx4kI3mr/D9TerGRQu8U0MCPw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776134069; c=relaxed/relaxed;
-	bh=vw6s/HiBgFDsTXtMvscroT4fKbZCyCeW0iTze1OcKV8=;
+	t=1776135669; c=relaxed/relaxed;
+	bh=4PlymUBRhoew3U1NTZK8jxRqafzc24WW3+boeDt4A/A=;
 	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=nTKkSFFGw78P4rq7JGA5VmNlNaEKRKVTGQe3UQcz39DgAmvnDylZqTWeNDChgfL1gBhcZFhX0P14Tf8k9hOWCQGBh6009O2n0RN0CI3kXw33gth8qvMl94zRVUXKmV4M5lZMRDMgCc6bGxNPwtBwmLAP1luXS6ncLVSNaCsqjGxB2TKRClbJsUSusKeJqFJkNlmnyu71zscXBp0SqQAYdz45uOufoblOdAObDN4G4bBStIEIfj+YmsMxdND+wuhnOkpDqd4XyPb0Re3onFpvdIIHA6DlKhZ/GWHJqG3zAAXfznuw6+tZv8V311hwtV5qRbgDaRhgmCM94SbjjgCtnQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=YMSIsHOb; dkim-atps=neutral; spf=pass (client-ip=95.215.58.179; helo=out-179.mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+	 Message-Id:References:To; b=G0fCL2D9dbkmChygiexLL2MeeZ8KXuH8DeChJCI+GXkI7kKU5EdifOIkvLWjI2p5FCtPCBWZJlGDm7K4r+FHht5DF1+oAKlYIcZirvJKjVfvqkgwVF/ZMYISgj4SP/9+pkgopzgXA6NURbYLzaxKDdOqZqrwzTO/eLyNYvQKhXU0nVRHkRY2mQHZEdHLS2jAmNSI+5j7mnDnnX07JcdFWYqkwygV0YI+KRlMk8Q/TFqM+apRp9QA9bAAg39CEqfz9RiC+rvg1j8GQEObEeMWrIGau4dMMgZZgr1UR/psnd87YjuBfmqwLekQqE3SHsS7TL76dccICN5JJgxPxVhnNg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=iRwDPzSZ; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::b7; helo=out-183.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=YMSIsHOb;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=iRwDPzSZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.179; helo=out-179.mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-179.mta1.migadu.com (out-179.mta1.migadu.com [95.215.58.179])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::b7; helo=out-183.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-183.mta0.migadu.com (out-183.mta0.migadu.com [IPv6:2001:41d0:1004:224b::b7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvpJN5tp2z2yhD
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2026 12:34:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvpv61Gcqz2ypY
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2026 13:01:04 +1000 (AEST)
 Content-Type: text/plain;
 	charset=us-ascii
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1776134048;
+	t=1776135645;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=vw6s/HiBgFDsTXtMvscroT4fKbZCyCeW0iTze1OcKV8=;
-	b=YMSIsHObqjSgUKpGmW7VPicOKfXENbGzne3HXT8+8KeT1nH3cFGRtcU90fcbhRJ37dfUUd
-	DCkmYS6TlpRbNe3kRUHce9SLxBoEsRBGNMEcjUgoWQfhm//49hI7CoBuBLi+jMnwFj92jV
-	cGZXASiaDO0RoydpvGcPc8QexRtGP3Y=
+	bh=4PlymUBRhoew3U1NTZK8jxRqafzc24WW3+boeDt4A/A=;
+	b=iRwDPzSZORBKkVc+qfAjdg/8sbprXX/S91NOZEjG9sY6nLhmM/7OkcH+FVVdFyPabDclFz
+	MyQpXLhsvkEGbaqai+jaUp2+HVQNmnygABaq8U07zcHezNt3L9GnLd10HMAFhExFPzc9PE
+	rVlGd2hYbvT3N41tMq1mKLtf4kVK3BE=
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -54,12 +54,12 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.500.181\))
-Subject: Re: [PATCH 03/49] mm/sparse: fix vmemmap page accounting for HVOed
- DAX
+Subject: Re: [PATCH 07/49] mm/mm_init: use pageblock_migratetype_init_range()
+ in deferred_free_pages()
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 From: Muchun Song <muchun.song@linux.dev>
-In-Reply-To: <2b51659e-5527-4e15-a0a8-41f30f589d07@kernel.org>
-Date: Tue, 14 Apr 2026 10:33:18 +0800
+In-Reply-To: <08a82aa4-f556-4e0f-9e50-b9fe0a5fb4c1@kernel.org>
+Date: Tue, 14 Apr 2026 11:00:00 +0800
 Cc: Muchun Song <songmuchun@bytedance.com>,
  Andrew Morton <akpm@linux-foundation.org>,
  Oscar Salvador <osalvador@suse.de>,
@@ -79,80 +79,66 @@ Cc: Muchun Song <songmuchun@bytedance.com>,
  linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: quoted-printable
-Message-Id: <65E94431-F4A3-4C8B-B7B9-2ED3EF431DA7@linux.dev>
+Message-Id: <3FDA057D-EBFA-4016-8555-E046FA161984@linux.dev>
 References: <20260405125240.2558577-1-songmuchun@bytedance.com>
- <20260405125240.2558577-4-songmuchun@bytedance.com>
- <2b51659e-5527-4e15-a0a8-41f30f589d07@kernel.org>
+ <20260405125240.2558577-8-songmuchun@bytedance.com>
+ <08a82aa4-f556-4e0f-9e50-b9fe0a5fb4c1@kernel.org>
 To: "David Hildenbrand (Arm)" <david@kernel.org>
 X-Migadu-Flow: FLOW_OUT
 
 
 
-> On Apr 14, 2026, at 02:41, David Hildenbrand (Arm) <david@kernel.org> =
+> On Apr 14, 2026, at 02:54, David Hildenbrand (Arm) <david@kernel.org> =
 wrote:
 >=20
 > On 4/5/26 14:51, Muchun Song wrote:
->> When HVO is enabled for DAX, the vmemmap page accounting is wrong =
-since
->> it only accounts for non-HVO case.
+>> Simplify deferred_free_pages by replacing the duplicate loops for
+>> initializing pageblock migratetype with a call to
+>> pageblock_migratetype_init_range to simplify the code.
+>=20
+> "Simplify ... to simplify the code."
+>=20
+> Likely you can drop the last part.
+
+OK. I'll rewrite the message.
+
+>=20
 >>=20
->> Fix the accounting by introducing section_vmemmap_pages() that =
-returns
->> the exact number of vmemmap pages needed for the given pfn range.
->>=20
->> Fixes: 15995a352474 ("mm: report per-page metadata information")
 >> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
 >> ---
->> mm/sparse-vmemmap.c | 30 ++++++++++++++++++++++++++----
->> 1 file changed, 26 insertions(+), 4 deletions(-)
+>> mm/mm_init.c | 13 ++++---------
+>> 1 file changed, 4 insertions(+), 9 deletions(-)
 >>=20
->> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
->> index 7aa9a97498eb..0ef96b1afbcc 100644
->> --- a/mm/sparse-vmemmap.c
->> +++ b/mm/sparse-vmemmap.c
->> @@ -724,6 +724,27 @@ static int fill_subsection_map(unsigned long =
-pfn, unsigned long nr_pages)
->> return rc;
->> }
+>> diff --git a/mm/mm_init.c b/mm/mm_init.c
+>> index 4936ca78966c..a92c5053f63d 100644
+>> --- a/mm/mm_init.c
+>> +++ b/mm/mm_init.c
+>> @@ -1974,13 +1974,12 @@ static void __init =
+deferred_free_pages(unsigned long pfn,
+>> if (!nr_pages)
+>> return;
 >>=20
->> +static int __meminit section_vmemmap_pages(unsigned long pfn, =
-unsigned long nr_pages,
->> +    	struct vmem_altmap *altmap, struct dev_pagemap *pgmap)
->> +{
->> + 	unsigned int order =3D pgmap ? pgmap->vmemmap_shift : 0;
->> + 	unsigned long pages_per_compound =3D 1L << order;
->> +
->> + 	VM_BUG_ON(!IS_ALIGNED(pfn | nr_pages, min(pages_per_compound, =
-PAGES_PER_SECTION)));
->> + 	VM_BUG_ON(pfn_to_section_nr(pfn) !=3D pfn_to_section_nr(pfn + =
-nr_pages - 1));
->> +
->> + 	if (!vmemmap_can_optimize(altmap, pgmap))
->> + 		return DIV_ROUND_UP(nr_pages * sizeof(struct page), =
-PAGE_SIZE);
->> +
->> + 	if (order < PFN_SECTION_SHIFT)
->> + 		return VMEMMAP_RESERVE_NR * nr_pages / =
-pages_per_compound;
->> +
->> + 	if (IS_ALIGNED(pfn, pages_per_compound))
->> + 		return VMEMMAP_RESERVE_NR;
+>> + pageblock_migratetype_init_range(pfn, nr_pages, MIGRATE_MOVABLE);
 >=20
-> This makes me wonder whether that is really the right place to update
-> the counter. Can't we update the counter where we actually =
-allocate/free
-> the pages, so we don't have to re-calculate that?
+>=20
+> pageblock_migratetype_init_range() will align the PFN up to the next
+> pageblock.
 
-The vmemmap pages are allocated via vmemmap_populate(). Different
-architectures may implement their own versions of vmemmap_populate()
-(though this is relatively rare), leading to the accounting being
-scattered across various locations. As for vmemmap_free(), there is
-no generic implementation; since each architecture implements its
-own version, the accounting would be dispersed across different
-architectures, making the implementation appear quite complex.
+IIUC, pageblock_align(pfn) is to **round up** PFN to the next multiple =
+of
+pageblock_nr_pages.
+
+>=20
+> Are we sure the range we are getting called with is always aligned to
+> pageblocks, such that we won't miss to initialize the first pageblock?
+
+That means if pageblock_aligned(pfn) =3D=3D 1, then the result of
+pageblock_align(pfn) is the pfn itself.
+
+So there is no problem as you said.
 
 Thanks,
-Muhcun
+Muchun.
 
 >=20
 > --=20
