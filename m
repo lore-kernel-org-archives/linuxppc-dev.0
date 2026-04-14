@@ -1,70 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-19737-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19738-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94DC8ED7B84
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2026 08:23:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5719ED7B82
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2026 08:24:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fvy2y48Cvz30gY;
-	Tue, 14 Apr 2026 18:23:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776155002;
-	cv=none; b=Tbz0FwiMwyVXbhl5XUB6wb/+mqFA/tyZxn3s5VVw1gDhqZmjH4/cKVi/IYMCeTXXJkqFIDq+y1+3TAoIqwnGcFzzCEfNj17/nVPyK23lGhf/FBKNwnpz9q7HRSQfbA390t3ahbZ7wZgbUejztnEypW2YCK6K0bvi5E86uSG6LXEkbuOZrWCekVy4RKa0YJ5BhMuQe2IM9d+ADYvCTGeEF+k5aa2ueHmZY+Fv7qAyn6ZrGLutka/SBIMTdDmWIAikP23MBPBJTUVq7UoVBKCqrqnjPDAuiEpuEj9Z2xpGp7Jr0eZR0RgsC1tZSBt51hPftMgaXNhuYjPgb8ZYCY8lGw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fvy336mwWz2yvM;
+	Tue, 14 Apr 2026 18:23:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776155007;
+	cv=none; b=OwpM/nPGoEiXPqse0cVk7JMgBdLR5tV/HV/pJjg/hAWhpCTOBuH/a8eSkS1B7H7JWrPb4cxeM05to7pNyZ/XBdU77PaYzhpl96bHixbYUelMLByP3bZ9vMOqO4QQUoSL+kcVBWXGAqlvAguO9Rk9eo7JhowpDRZJ16FzDaZ+D4Oc+HK9PCPFHAiv1d9RLNfFq4SWJTJTIGdnhnYBcMyG1l8ebN1PEcU1Nb5aJbygavMiny40jSWHjGe4sGWS7OSVUjZXpARmQtq1KmAdxqPbDqHnoXGjP67nxkZhCbHZbvNZE2gap8bZi9chTVzB3m1fmBM5P1BfNWpVBo5cpjVH7w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776155002; c=relaxed/relaxed;
-	bh=G5jNpn3lA4nxxcFeRR2Yggf97NPpXqcmij/yD8SCbb8=;
+	t=1776155007; c=relaxed/relaxed;
+	bh=eEOC4G2ZWST9olhihUFWeAxxSaTnVqTcR+V7Cs8ArgY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=W2LUF2p08m95+XjufI/lGTNHCsBiG31zl/Pzz9k5e1NVKYVW+5W+0kcWF1ATbaEJm9jc24+1YadzI7N4XDsIGFsepMl0TwLQScCs8FC3x8uqQiK3RM+DUZPAlnt6kF8YKGB+a4v9Tc6pe9cLdtMvpzsVLRtTkQZMap7Y1kz2iLxO93/baaa5M/fdaZ/f5TRsDiysGspOR1uHnAx+/3RNIhhaX/7BbTCpEW0dz+oHx6pxTZn7SR6DZPYtTLhc1HdthNpuEqAHPPLGpLAV6+t47yFafej/2uuk8x61X9j+1coKD+g84oBMFjFgNeKrOrWoOOphHLwRm6WENYTJrrHNsg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=f9Gsu120; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=I0+nwMcpm+BAyXJ+QUwbvDgkNq48rks9qHw3r/nL8u0qMr4k9PxG18FVF8qD5TM8p/c+xNsm4rDy8Yt9rHFlCSUGfIaADEa6wYO67k8vefx+d9TyyDV2g4zj1aDbXYnyW4FmDNt6JyILEeO7P8OwPOkVV1sB7x6sJTCvITKXx7vn/Y8qlasqANPPKRodaK+MTsXX7u6vqu8Ih0SJoQQoGmUi6APQePtIBtCuNZMmb0hKG4iLWyCGUBo9Jz30PVpU/aCfT3B5iVI7BE7KWwdraSQeUvthUYGooqfix+a8vVTkJuvhfrc3caQ6wP0kyemIQsuboyq1BFqHTXqmNP+/Bw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=b531dP+B; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=f9Gsu120;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=b531dP+B;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvy2x6Bmlz30dt
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2026 18:23:21 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63DLI5JE1804464;
-	Tue, 14 Apr 2026 08:23:09 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvy331vtvz30dt
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2026 18:23:27 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63DLIX3E1842955;
+	Tue, 14 Apr 2026 08:23:14 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=G5jNpn3lA4nxxcFeR
-	R2Yggf97NPpXqcmij/yD8SCbb8=; b=f9Gsu120RA4G3PScADizqrDRLYNux2LTH
-	KU2aXemvHHmaD4/w+QX64yeoT2w37NyzjrAFiLw1qlVH7ZUo84S1V1wE48r6p+qr
-	a3CPzzHUm56J/WvL8RQg451RbWFXAox396awKxQi99yzC7Lf+yYX5BRGq5FCU/fx
-	50HXJM4Ue5vvElGncpu8e32Y0kr9Mu4YM/9hRDtFyYQkmOBob6CH3P2WNUqLGkH9
-	xLakfr9Ckm8uZUw6FqZ+neh8FZHDh3EZB94w47WNLIuCacLJQTXFPJ5x/B7MzDno
-	n55UhRvPL/hJmVhslCp7z174FfBEE9N4txJyNJ2h+d8MAEaXbp6YA==
+	:mime-version:references:subject:to; s=pp1; bh=eEOC4G2ZWST9olhih
+	UFWeAxxSaTnVqTcR+V7Cs8ArgY=; b=b531dP+BbYC7FZT4kGjec7OBgIhyK/v1z
+	455p0e/6o8oivRSuAhBWFRh4Lx1ded9ZQAiNqCGtSz80aJSbHFivQe3PKIKcO+oz
+	mY9xWBMZTDnNHhxFqJafaE74T+S5+AKr1ulYfGShrjmXUJH77zVM2onT6JjBLyza
+	leY7TeV4jdYGL53xwSeQ1m7EyCRKzPM1hBTaGBNY3UcMrVNjKc9lJYl0Y/9Re7hw
+	k3Vc+AAvqJURJxjMf412HWgs92p1JiWEyGnp433naXwdv4xDigYdTWsvTXtovTRp
+	0OjzKq0rBeCIMsA0m8HPz1BZYLS+vUcCvh4w3xsLyM7LHnZRsd1Fg==
 Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dh89k1phn-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dh89mhs8m-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 14 Apr 2026 08:23:08 +0000 (GMT)
+	Tue, 14 Apr 2026 08:23:13 +0000 (GMT)
 Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 63E3XB4R031854;
-	Tue, 14 Apr 2026 08:23:08 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dg10y8qvg-1
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 63E3XB4W031854;
+	Tue, 14 Apr 2026 08:23:12 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dg10y8qvu-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 14 Apr 2026 08:23:07 +0000
+	Tue, 14 Apr 2026 08:23:12 +0000
 Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63E8N46456099104
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63E8N8CL51904838
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 14 Apr 2026 08:23:04 GMT
+	Tue, 14 Apr 2026 08:23:08 GMT
 Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3A8B520040;
+	by IMSVA (Postfix) with ESMTP id 961C22004D;
+	Tue, 14 Apr 2026 08:23:08 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 991B62004B;
 	Tue, 14 Apr 2026 08:23:04 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3491920043;
-	Tue, 14 Apr 2026 08:23:00 +0000 (GMT)
 Received: from li-3f69264c-2ce6-11b2-a85c-c3f414d24014.ibm.com.com (unknown [9.39.26.223])
 	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 14 Apr 2026 08:22:59 +0000 (GMT)
+	Tue, 14 Apr 2026 08:23:04 +0000 (GMT)
 From: Sayali Patil <sayalip@linux.ibm.com>
 To: Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
         linux-mm@kvack.org, linux-kernel@vger.kernel.org,
@@ -77,9 +77,9 @@ Cc: David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>,
         linuxppc-dev@lists.ozlabs.org, Miaohe Lin <linmiaohe@huawei.com>,
         Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
         Sayali Patil <sayalip@linux.ibm.com>
-Subject: [PATCH v5 10/14] selftests/mm: ensure destination is hugetlb-backed in hugepage-mremap
-Date: Tue, 14 Apr 2026 13:52:04 +0530
-Message-ID: <a4c1dd0e2b83cc06ea84bd04e6a86ca6d51efb67.1776150071.git.sayalip@linux.ibm.com>
+Subject: [PATCH v5 11/14] selftests/mm: skip uffd-wp-mremap if UFFD write-protect is unsupported
+Date: Tue, 14 Apr 2026 13:52:05 +0530
+Message-ID: <80239ca37ad96216eb5d9768cf5373e7246626ff.1776150071.git.sayalip@linux.ibm.com>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <cover.1776150071.git.sayalip@linux.ibm.com>
 References: <cover.1776150071.git.sayalip@linux.ibm.com>
@@ -99,98 +99,118 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: bPe9bIAhS9SAlYQHEgyhU1p4k79fCvkr
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDE0MDA3NyBTYWx0ZWRfX+qNJGZcil+9a
- /XxnS0SMY2MuN9+v5DB7CW4/tDvLGRvUXUbntkasH5nsBwInoNscmpLAg/brPUSuieqYFba9TIt
- ObXs65NvS6SQoiG2s3PBxCfWwgflPed/FTTQvYfwI+liHWYWPpxlyrIcHhzUdHRV/HvPr+4SgIg
- IBtaGBab83QpXCSiYWNHR9B8Brdx0kWNGoJo45QOulB02CAd9Nl+q+9EUvC5845og3almBhMsNI
- pmNsEdtKyMb9geVQ04hTN4rG3lejOCbVWwzLtR43jMUIXTQ/50g2VYq6W8y2y6r2KgcFxl+oMz7
- gRY9jTcTxqFV4WeFNP4xTzdgeb6RrZJC7ZnyDg1rbgd36R+3zRfFc0qODXhUXlrr582NlCyPfGw
- kVulyubQkimTE4wcTuwtGM6uZeCEIyHR3DShHevD5+Np8e0B8NWvCqfsjwoeOcpD1uEadePfZmP
- en4xOvJYB9xkrfRY+AQ==
-X-Proofpoint-ORIG-GUID: ZBAQ1omQCUgXLDS5ZAbMLQS91NFm54W5
-X-Authority-Analysis: v=2.4 cv=W60IkxWk c=1 sm=1 tr=0 ts=69ddf96d cx=c_pps
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDE0MDA3NyBTYWx0ZWRfXykIEjqTVyWb/
+ JuISvs83R4ZYQpEtV9bPJD0itOU0ZbEVBY3nt1/+iTSqSgquvZ0zUlvXQWdeK13IUwtqRPXNVoy
+ /K4h9/FCIRxSGnRe7NearYryVik5UgN75t/OzHC8tGDqJ9HmHXSCdUwWHXS7PUni8hztDKzbaSc
+ r1fdkkj67r/IEeFIqZpTwjCctHFBvk/5Ef28ltgd6FJk37RRuuVOi4T2WxbNC2RuvSqM3uUXld0
+ 2Fpi/l4iHmTxFo59QWKGRPIU/eAwOoOSmoMrTEJEApVZF9L1Jz9UwpXE1X9eODoFjoJk1+QuTWK
+ G8VwvlCvS/+ek0k7sbGkwW82WxGy88O0eyh6YsMsNiX0bA691rud7QV7H3kS+gpnXdKbpBzv7rt
+ Rl0V7oRHZnCmDwZ1c5JBPbk+t8tBebMY7c0i6NTPCCGUhAjt/Ivbi9bK2HTk+BkJwxZFdIG2FIY
+ 2Ll3cCOc7rifTZTeP5w==
+X-Authority-Analysis: v=2.4 cv=eJ4jSnp1 c=1 sm=1 tr=0 ts=69ddf972 cx=c_pps
  a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
  a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=gVE5Qc0x_BWLnb-D2gsA:9
+ a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8 a=njH7lnjfnPuJvX8OOgMA:9
+X-Proofpoint-GUID: tPRFCHZz-H-acC40CY2MRNnhvmCE7ieD
+X-Proofpoint-ORIG-GUID: UPHYde5pk5iv0EE12nNRx23tffbIF7hg
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-04-14_02,2026-04-13_04,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 clxscore=1015 priorityscore=1501 spamscore=0 bulkscore=0
- adultscore=0 phishscore=0 lowpriorityscore=0 suspectscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604070000 definitions=main-2604140077
+ malwarescore=0 lowpriorityscore=0 adultscore=0 priorityscore=1501
+ clxscore=1015 bulkscore=0 suspectscore=0 spamscore=0 impostorscore=0
+ phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604070000
+ definitions=main-2604140077
 
-The hugepage-mremap selftest reserves the destination address using a
-anonymous base-page mapping before calling mremap() with MREMAP_FIXED,
-while the source region is hugetlb-backed.
+The uffd-wp-mremap test requires the UFFD_FEATURE_PAGEFAULT_FLAG_WP
+capability. On systems where userfaultfd write-protect is
+not supported, uffd_register() fails and the test reports failures.
 
-When remapping a hugetlb mapping into a base-page VMA may fail with:
+Check for the required feature at startup and skip the test when the
+UFFD_FEATURE_PAGEFAULT_FLAG_WP capability is not present,
+preventing false failures on unsupported configurations.
 
-    mremap: Device or resource busy
+Before patch:
+ running ./uffd-wp-mremap
+ ------------------------
+  [INFO] detected THP size: 256 KiB
+  [INFO] detected THP size: 512 KiB
+  [INFO] detected THP size: 1024 KiB
+  [INFO] detected THP size: 2048 KiB
+  [INFO] detected hugetlb page size: 2048 KiB
+  [INFO] detected hugetlb page size: 1048576 KiB
+ 1..24
+  [RUN] test_one_folio(size=65536, private=false, swapout=false,
+  hugetlb=false)
+ not ok 1 uffd_register() failed
+  [RUN] test_one_folio(size=65536, private=true, swapout=false,
+  hugetlb=false)
+ not ok 2 uffd_register() failed
+  [RUN] test_one_folio(size=65536, private=false, swapout=true,
+  hugetlb=false)
+ not ok 3 uffd_register() failed
+  [RUN] test_one_folio(size=65536, private=true, swapout=true,
+  hugetlb=false)
+ not ok 4 uffd_register() failed
+  [RUN] test_one_folio(size=262144, private=false, swapout=false,
+  hugetlb=false)
+ not ok 5 uffd_register() failed
+  [RUN] test_one_folio(size=524288, private=false, swapout=false,
+  hugetlb=false)
+ not ok 6 uffd_register() failed
+ .
+ .
+ .
+ Bail out! 24 out of 24 tests failed
+  Totals: pass:0 fail:24 xfail:0 xpass:0 skip:0 error:0
+ [FAIL]
+not ok 1 uffd-wp-mremap # exit=1
 
-This is observed on powerpc hash MMU systems where slice constraints
-and page size incompatibilities prevent the remap.
+After patch:
+ running ./uffd-wp-mremap
+ ------------------------
+ 1..0 # SKIP uffd-wp feature not supported
+ [SKIP]
+ok 1 uffd-wp-mremap # SKIP
 
-Ensure the destination region is created using MAP_HUGETLB so that both
-source and destination VMAs are hugetlb-backed and compatible.
-
-Update the FLAGS macro to include MAP_HUGETLB | MAP_SHARED
-so that both mappings are hugetlb-backed and compatible.
-Also use the macro for the mmap() calls to avoid repeating
-the flag combination.
-
-This ensures the test reliably exercises hugetlb mremap instead of
-failing due to VMA type mismatch.
-
-Fixes: 12b613206474 ("mm, hugepages: add hugetlb vma mremap() test")
 Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
 Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
 ---
- tools/testing/selftests/mm/hugepage-mremap.c | 11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
+ tools/testing/selftests/mm/uffd-wp-mremap.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-diff --git a/tools/testing/selftests/mm/hugepage-mremap.c b/tools/testing/selftests/mm/hugepage-mremap.c
-index 68c35d1d8a5f..a442d01908cc 100644
---- a/tools/testing/selftests/mm/hugepage-mremap.c
-+++ b/tools/testing/selftests/mm/hugepage-mremap.c
-@@ -31,7 +31,7 @@
- #define MB_TO_BYTES(x) (x * 1024 * 1024)
+diff --git a/tools/testing/selftests/mm/uffd-wp-mremap.c b/tools/testing/selftests/mm/uffd-wp-mremap.c
+index 17186d4a4147..8f288484d5f5 100644
+--- a/tools/testing/selftests/mm/uffd-wp-mremap.c
++++ b/tools/testing/selftests/mm/uffd-wp-mremap.c
+@@ -19,6 +19,17 @@ static size_t thpsizes[20];
+ static int nr_hugetlbsizes;
+ static size_t hugetlbsizes[10];
  
- #define PROTECTION (PROT_READ | PROT_WRITE | PROT_EXEC)
--#define FLAGS (MAP_SHARED | MAP_ANONYMOUS)
-+#define FLAGS (MAP_HUGETLB | MAP_SHARED)
- #define ALIGN(x, a) (((x) + ((a) - 1)) & ~((a) - 1))
++static void check_uffd_wp_feature_supported(void)
++{
++	uint64_t features = 0;
++
++	if (uffd_get_features(&features))
++		ksft_exit_skip("failed to get available features (%d)\n", errno);
++
++	if (!(features & UFFD_FEATURE_PAGEFAULT_FLAG_WP))
++		ksft_exit_skip("uffd-wp feature not supported\n");
++}
++
+ static int detect_thp_sizes(size_t sizes[], int max)
+ {
+ 	int count = 0;
+@@ -336,6 +347,8 @@ int main(int argc, char **argv)
+ 	struct thp_settings settings;
+ 	int i, j, plan = 0;
  
- static void check_bytes(char *addr)
-@@ -131,23 +131,20 @@ int main(int argc, char *argv[])
- 
- 	/* mmap to a PUD aligned address to hopefully trigger pmd sharing. */
- 	unsigned long suggested_addr = 0x7eaa40000000;
--	void *haddr = mmap((void *)suggested_addr, length, PROTECTION,
--			   MAP_HUGETLB | MAP_SHARED | MAP_POPULATE, fd, 0);
-+	void *haddr = mmap((void *)suggested_addr, length, PROTECTION, FLAGS, fd, 0);
- 	ksft_print_msg("Map haddr: Returned address is %p\n", haddr);
- 	if (haddr == MAP_FAILED)
- 		ksft_exit_fail_msg("mmap1: %s\n", strerror(errno));
- 
- 	/* mmap again to a dummy address to hopefully trigger pmd sharing. */
- 	suggested_addr = 0x7daa40000000;
--	void *daddr = mmap((void *)suggested_addr, length, PROTECTION,
--			   MAP_HUGETLB | MAP_SHARED | MAP_POPULATE, fd, 0);
-+	void *daddr = mmap((void *)suggested_addr, length, PROTECTION, FLAGS, fd, 0);
- 	ksft_print_msg("Map daddr: Returned address is %p\n", daddr);
- 	if (daddr == MAP_FAILED)
- 		ksft_exit_fail_msg("mmap3: %s\n", strerror(errno));
- 
- 	suggested_addr = 0x7faa40000000;
--	void *vaddr =
--		mmap((void *)suggested_addr, length, PROTECTION, FLAGS, -1, 0);
-+	void *vaddr = mmap((void *)suggested_addr, length, PROTECTION, FLAGS, fd, 0);
- 	ksft_print_msg("Map vaddr: Returned address is %p\n", vaddr);
- 	if (vaddr == MAP_FAILED)
- 		ksft_exit_fail_msg("mmap2: %s\n", strerror(errno));
++	check_uffd_wp_feature_supported();
++
+ 	pagesize = getpagesize();
+ 	nr_thpsizes = detect_thp_sizes(thpsizes, ARRAY_SIZE(thpsizes));
+ 	nr_hugetlbsizes = detect_hugetlb_page_sizes(hugetlbsizes,
 -- 
 2.52.0
 
