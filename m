@@ -1,80 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-19742-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19743-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20E0DED7B96
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2026 10:17:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 453DAED7B9B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2026 10:29:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fw0Z54GJbz2ySS;
-	Tue, 14 Apr 2026 20:17:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776161821;
-	cv=none; b=TFCH/52+5qkuZRcsSqqqowbUo3vN1epUjnhg6svHROYSOqsAVYXMoKzcbE+0bzgrclET+rXw6ssuLS+2Ha7c0cYz0pUybDSgp1QJGKBt2SLf9edAsX8k4YtPsyVmn1muzkuzxARTRtfd6uGHvgmmdJFElgUJ5tiKXBF+PQ57cS5hVCVlTwG8Tiud2KFmSIPmGKdvaxTvN5a9mJGrbh7YvU8iIMfUbcINPE319QRpauxBhOTQ8AeF84aKqYcSm9MU0CQjAEcGBGIal2ckCJoZLi6zBmGxXPfN5tefqnYLAeToFWIt8LTPQJKCNlQ76niOHyiczs0J+cZOEUWSWQQFMQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fw0rw5Jm8z2yVL;
+	Tue, 14 Apr 2026 20:29:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776162592;
+	cv=none; b=bXzzINYWM3W1Kqy6UxSmOL1ZcRVTYMO0s30B5H7x8AH4dhygueJZXpZUd7kwZyH0J0lUgQYf5rep+3doyWdPXKI6bsyDVChnXJaU/753XXbtrSOFvSbSiBn27roVT/lKbgfxjoPOXCZ4pAAAA04Xre6UbKh0ry50HHGVo97hjbQbOVa7p0Mc1kXS4tpYqFeXsK7HwWI9vC6CltXDkXh6lDeoedcEkpoA2PgZc4cfURJRN6A+IhyLBe8QrILyXE6cRp7RVWccezwN27U5eBSebjDyGY422L1IFWrJ09/VCwpkcmgGGOf/LZRUNRfFqFv1vm+XrD7pFrFVCmvKLq9AGA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776161821; c=relaxed/relaxed;
-	bh=BiErSfuvJerZIQ4L+JF5tzrkBbOhwbYuWVg9ZYwOn2Q=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=HhrwutXg5NKW4c47iZuhBQaASVEEcOMm79To4U1Rt6+Fi24XyKc48X/NRpIDNY3BrtA+p9Q+JctyY1v/WLIqegBD1vcYYFDepTqHWznTgwm8w3nAnLSF5CQA4juerRts/wmsXdIOdRGPWjIU4ScMLAwnkgZSv7zQ98338/hoKfGmixUuUR7glPetRmFix//s/xQ0fDI7sC1JxcUn/7nSeZOtKXvklkxvLdHkzFtGnEgHceK1jVlueE37xdRkHQgAj9jk2345nS1MLtoLCdqRLTUvMDu047iLPVNduj1goTa80RaijN8J88LZ1DZs41o1EKQMlqVr99HxyjmxfUfdLw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=OSiqxWwo; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=M7Iqvv7a; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+	t=1776162592; c=relaxed/relaxed;
+	bh=nRIbkosCjntd5w9JaB2x+EnTNGzBFNVO9qWoU4z4HDE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=CnFfcFmmKZJwAY9/ocYPKvAIv8uNvnIWIbzMm7ua1aonO6Dmb932cozL6fCKHOZq6OhpRbXlSxpaUvkpW6587+m8+C0hzX51rhR7YSEBaZuWxTTdrGhQHIlkhN/8FwBdaWjnvOZ1KcpuL3fDhIxcbOfgf2VTdLOUHU8RevfHfitCw+uo9ErT5PrNYG+GNryI49P9rMRgmXxVApMrzJKs52B/97eq/9qgoPDIQOTgj0jD6AzXpo+27o/ZzIfv6ZAo9TNK/gFXDFZCfuCd2LIDmvqdEFvLzM0UQPvgvmDQlbCdxSc67nK44EPVXDHTpI2lBxqg1Ffnsr6vahVCD+fzaA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=be3GsUxj; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=OSiqxWwo;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=M7Iqvv7a;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=be3GsUxj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fw0Z43sGRz2yFl
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2026 20:17:00 +1000 (AEST)
-Date: Tue, 14 Apr 2026 12:16:49 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1776161811;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=BiErSfuvJerZIQ4L+JF5tzrkBbOhwbYuWVg9ZYwOn2Q=;
-	b=OSiqxWwog8Eyo5f66GW9p/l3q7TUrwpoIhrfJTw1X9DwXVATfIR9taZHEoi2HlR1g93VOJ
-	eWDOYZFl9F7WspBEmNsFtXcOp7KlR84eLbwD94B1YXA/2DperGZ+c2FryF4Vkagz0HohfD
-	H4Iwp6tgQJHAeYDhYNpAFW8TOIJpoZDAl6g3jq+josSBCcV8cQmHyl2aYHQ3f+/agOFmuj
-	8cRkDhm+/y6dcV4xI2TF9VXKk37gtYgHC/6VtixvpKy4MVxbp+otsY11rquc2cydJJTitW
-	d5YHjEvCWtOUvedgzu4xwx1jPp2fPPB6TxTX1g80dUPcZ96+w3zRG2fwJZE+0g==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1776161811;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=BiErSfuvJerZIQ4L+JF5tzrkBbOhwbYuWVg9ZYwOn2Q=;
-	b=M7Iqvv7amB/lm/Bd9iU0BxSxraoC4Y4+3sMwzQ/SGLGAc2KrGilQkv7tAoHXQw2xoJuVJv
-	+oP09+VAFyvd00DQ==
-From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>, 
-	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, 
-	Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, 
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Vincenzo Frascino <vincenzo.frascino@arm.com>, 
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org
-Subject: Re: [PATCH 1/7] x86/vdso: Respect COMPAT_32BIT_TIME
-Message-ID: <20260414121405-29c9514e-590c-404e-a31d-905b1848afb4@linutronix.de>
-References: <20260227-vdso-compat_32bit_time-v1-1-3f0286a7bac3@linutronix.de>
- <c29f5e70-bd17-4e1b-a005-5a3282e70075@app.fastmail.com>
- <03cd1e21-a2f2-46a1-a674-cbaef9712016@app.fastmail.com>
- <20260227103226-cc3bb32c-0107-4c09-b81a-ca33ea03ad5c@linutronix.de>
- <49b7c9f9-198a-49f7-880b-6ae74d7bd985@zytor.com>
- <2b1ac7b9-fcc8-4aa3-a0ad-eb37e4bce030@app.fastmail.com>
- <20260410091131-46b6354c-9d06-4e47-9345-ee224d8528f7@linutronix.de>
- <15925544-1ae5-406a-b9cc-af5935cc9f02@app.fastmail.com>
- <20260413180541-e13f374c-b990-4236-bc83-8fde948899df@linutronix.de>
- <e9487ebe-3730-438a-9c23-e45f75986ecc@app.fastmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fw0rv5g7zz2ySS
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2026 20:29:51 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63DLIQhi1832924;
+	Tue, 14 Apr 2026 10:29:42 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=nRIbko
+	sCjntd5w9JaB2x+EnTNGzBFNVO9qWoU4z4HDE=; b=be3GsUxj+tekByNUvkcZ/w
+	XG7HAY0mT7RbhfVGffJbTk3nAjlSFvOdkhGv7zuyi1SInhov0xvbKKXydCioW52J
+	4eYE7U9p9f5eFRHrFN7RpBfxqaNuy8x5DVw/fDaHu3ahQroccGD6bygrlYnQMFhe
+	NLpO9/nMw6WrOcUxKr9veQHW1g2KhrVuRX06zFVnbkF+3U2tODctHqwXluMDZvVG
+	TnGXf1eVgdezx5yMjqyLZIIIrilRvzp+Ztte95hX/33TQRx9EeUxga0llPq/oTbi
+	wuaR6DOAGSDTZNm8bTanDhLdcMFP48FY0RkzX9i/DRo7GCkEBCrDNzjqdz4iT5FQ
+	==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dh89ra782-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 14 Apr 2026 10:29:41 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 63E9JPpJ031099;
+	Tue, 14 Apr 2026 10:29:40 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dg10y94jw-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 14 Apr 2026 10:29:40 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63EATc9H17891624
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 14 Apr 2026 10:29:38 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 083E520043;
+	Tue, 14 Apr 2026 10:29:38 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9B5262004B;
+	Tue, 14 Apr 2026 10:29:36 +0000 (GMT)
+Received: from [9.124.216.108] (unknown [9.124.216.108])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 14 Apr 2026 10:29:36 +0000 (GMT)
+Message-ID: <e0fec974-4bea-4a34-8b3b-2d9defca332a@linux.ibm.com>
+Date: Tue, 14 Apr 2026 15:59:35 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,35 +81,111 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <e9487ebe-3730-438a-9c23-e45f75986ecc@app.fastmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc/fadump: Add timeout to RTAS busy-wait loops
+To: litaliano00 <litaliano00.contact@gmail.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        chleroy@kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org
+References: <20260406061542.22354-1-litaliano00.contact@gmail.com>
+ <98adc953-322b-45fa-9128-cdbe831006e1@linux.ibm.com>
+ <CAK-CEVPA-qi9CvPyurDarLT-OFtOQJDmFoe=+pE1bBBy5fuLOQ@mail.gmail.com>
+Content-Language: en-US
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+In-Reply-To: <CAK-CEVPA-qi9CvPyurDarLT-OFtOQJDmFoe=+pE1bBBy5fuLOQ@mail.gmail.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDE0MDA5NiBTYWx0ZWRfX5Dff69lmdZYt
+ 3UQJsgG1r8NtLgwis59qIw+Txng5awEbg+qxG8BWuPNqnCdDQ+CbX2x2a/fVPdK0zqoPLmsfBN0
+ 3WmhwR/8XyG3nrhDofvdTusNhxEwW0s0jSAIGrtCNriA7fjykN0732f43zuWBr9zIr8OLzCYbCF
+ DnY7++7iOAFWUysngqrs58grcX01Q092bzvAeqR7C/S/ZOYoPUOYw0CgRSGEzuAlCUDXX0utw5U
+ StG/2o8j1bvsPS/TbLhRCIGxUSgjMit0Oq6cartyA7VpFM5IFJXMlvBBy+QRZ0GjC/At6a9ybNw
+ qy3nKDAEhfKYRJq4oE0KyfFmq+4Z3qqf2aTmDXHIdJ8ieR+ViX9q+icJBuamhujay+Wg+hmwQry
+ uSUctKCzkSNUxhQ751KNz7/h1SEsEOoA3L3JDruzXEWu9Ddp9tK3/SmISvOp2OrCvRagfQUaudE
+ xcgatzzvFbaipDZKmSg==
+X-Proofpoint-ORIG-GUID: rX0txqulZupOavtsUAUvfVYhcePFJ-Ll
+X-Proofpoint-GUID: kosgvy-PTX_qiU9hAVoHq0VnJ_-VxfEf
+X-Authority-Analysis: v=2.4 cv=fYidDUQF c=1 sm=1 tr=0 ts=69de1715 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=RpNjiQI2AAAA:8
+ a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8 a=26oqrSpA1joMOLRANYMA:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-14_02,2026-04-13_04,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 impostorscore=0 clxscore=1015 malwarescore=0 phishscore=0
+ bulkscore=0 priorityscore=1501 spamscore=0 suspectscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604070000 definitions=main-2604140096
 
-On Mon, Apr 13, 2026 at 06:57:57PM +0200, Arnd Bergmann wrote:
-> On Mon, Apr 13, 2026, at 18:13, Thomas Weißschuh wrote:
-
-(...)
-
-> > if (tv && !IS_ENABLED(CONFIG_COMPAT_32BIT_TIME) && sizeof(tv->tv_sec) < 8) {
-> > 	pr_warn_once(...);
-> > 	return -EINVAL;
-> > }
-> >
-> > Or maybe drop the EINVAL but still emit a warning. That warning would be
-> > useful for gettimeofday(), too.
-> 
-> We discussed this during the original y2038 work and decided
-> at the time to not have those warnings for syscalls. We could
-> bring that back, but I think I would want one level of abstraction
-> there and control this using a global Kconfig switch for all
-> syscalls as well as ioctl commands that could use such a check.
-
-I'd like to avoid another kconfig option. Linus doesn't sound too
-excited about those [0].
 
 
-Thomas
+On 14/04/26 03:07, litaliano00 wrote:
+> On Mon, Apr 13, 2026, 15:=E2=80=8A50 Sourabh Jain=20
+> <sourabhjain@=E2=80=8Alinux.=E2=80=8Aibm.=E2=80=8Acom> wrote: > What is t=
+he rationale behind=20
+> choosing a 60-second limit? The 60-second value was chosen somewhat=20
+> arbitrarily. Looking at rtas_busy_delay_time(), the maximum
+>=20
+> On Mon, Apr 13, 2026, 15:50 Sourabh Jain <sourabhjain@linux.ibm.com>=20
+> wrote:
+>
+>     > What is the rationale behind choosing a 60-second limit?=20
+>
+>
+>     The 60-second value was chosen somewhat arbitrarily. Looking at
+>
+>     rtas_busy_delay_time(), the maximum single delay returned is 100000ms
+>
+>     (status 9905). In practice, legitimate busy delays are expected to be
+>
+>     much shorter. I was following the spirit of rtas-rtc.c which uses a
+>
+>     5-second limit for simpler operations; fadump is a heavier firmware
+>
+>     operation, so I went higher. I am open to suggestions on a more
+>
+>     principled value.
+>
 
-[0] https://lore.kernel.org/lkml/CAHk-=whigg3hvOy7c1j1MXFy6o6CHp0g4Tc3Y-MAk+XDssHU0A@mail.gmail.com/
+
+phyp/RTAS is a black box to me, so it is hard to conclude
+what happens during fadump register/unregister/invalidate.
+However, based on QEMU's fadump implementation, all three
+operations do not seem very complex.
+
+That said, I am OK with a 60 sec timeout.
+
+I would also recommend adding pr_debug logs when the wait
+time is hit. It might help debug cases where the kernel
+reaches the 60 sec limit especially during boot.
+
+- Sourabh Jain
+
+>
+>     > Would it make sense to introduce a helper function to wrap the
+>
+>     > rtas_call, along with handling the wait time and timeout?
+>
+>
+>     Absolutely, I will introduce a helper in v2. The three sites are
+>
+>     indeed identical except for the FADUMP_REGISTER/UNREGISTER/INVALIDATE
+>
+>     argument and the struct pointer/size. I will factor out the common
+>
+>     busy-wait loop into a static helper.
+>
+>
+>     Will send v2 shortly from my new email adri.vero.dev@gmail.com
+>
+>
+>     Adriano
+>
+>
+
 
