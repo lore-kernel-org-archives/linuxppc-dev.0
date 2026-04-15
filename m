@@ -1,65 +1,112 @@
-Return-Path: <linuxppc-dev+bounces-19773-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19774-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 342C2F41986
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2026 11:47:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E52F2F4199A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2026 12:14:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fwfWl5vhFz2yvL;
-	Wed, 15 Apr 2026 21:47:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=188.68.63.102
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776237220;
-	cv=none; b=U0GgW4tpvDbWBzmpSSFUqtaD7a/YcN2csCznF9UYz4H5+/SG+1OsKr2sSvOP61WStm0KTt5vBEgo55i3BF/n/FTXTiGskdcjST+RjP9FC+m/QKB3GpUZ/5SPv7bBmCw+kZqtFpX1qlFBuIoGZVfJM8MOtV6AiauMaLBLm/oGiFIr4Z7ztLilecMOjI/t+3BpF18Y5NoR2Nd8X54N1JMThO7NM1ScsWOVlfSC1ltnAIiEQ8nXkNlkBna/ERffGLVZvOjbudRkbG0+U9IJdb2UZWFdvdZD5nQlkkSWU+sEyCIMLincuUDk1hYXI0VaIyAygyyedZXlAokyJM0PAOIaWA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776237220; c=relaxed/relaxed;
-	bh=jDTL+8sfEb7vDNVXNIhmyAI+hFhsia07/AFkCM6BNdY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=W6DyftTznOqjw9kvrJJ25eHU2hY1jB5sY1uh7hBROIW1cd4+BdjLUqjZUhyDgOzyIFJtXSeXQKcXxvwdJqD56Sa6YFVzAo/ES78UHG2ypK06CUPxukFXANUqrRPMp4SH6THy4h1mEfH+Ru45OMe2FtirhWzL7tNWGyV8OupPcCqZ2ng8pz1cZjm96mabdCRZVg/VlV8RJqBNqmxJT2fy3WMtYtrT+wrAZxdRqMhkta+OHiMWCMWUaQJUBUbIG8bUupdGKg/2OG5yVgbxsLhy0f99Xuu6oaeJN/ETV7PSOKUsV7sn2ybc7v6eccUZNO+bMFQtwULC0KPkGGpLqO5u+A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=leemhuis.info; dkim=pass (2048-bit key; unprotected) header.d=leemhuis.info header.i=@leemhuis.info header.a=rsa-sha256 header.s=key2 header.b=fPcp3u5s; dkim-atps=neutral; spf=pass (client-ip=188.68.63.102; helo=relay.yourmailgateway.de; envelope-from=linux@leemhuis.info; receiver=lists.ozlabs.org) smtp.mailfrom=leemhuis.info
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=leemhuis.info
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fwg7P3Txsz2yvh;
+	Wed, 15 Apr 2026 22:14:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=205.220.177.32 arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776255281;
+	cv=pass; b=krWdyDJe8hQov5oSpRaOqoaKxJ8eFU/irhmu4O8N1aA0P/f7zle7zz5x3wH5znP4sJ4WsA7TGwEMS/fdyAND4gBeKTnNZkz1eDIFZFtSnQ9JDO4UfVsqkZBz6w2jFB9jHJgE/OhuIfq/wh83+umtTSoaFPOxcVUiO2wbb3YsBDaa1uwH4ACBUchabYVZEsqYBiaQpwsKyoyIeqDfFkLPzozgE0kO/UYnUf0PQ9bhWdujYV3hMUt7zmGVCafw7lvVcPTA7kMmkNxHtkgcmM4HJrjOZD4gc7CwPKpqTUvyNf0HBghQ5ZSaEqGh2Qg4GI/pqIbPANzHfccf02X7T4k6MA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1776255281; c=relaxed/relaxed;
+	bh=Kg4YbcR8rSvpxJma9KbJQykrYHPC66eBtz3fWRXH6WU=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=doj4SV7dGAKg9buGRRavHo9i9Woeljk7Nljg1M5kUWJ2UbWQWNdu7NQPv/dVbLd5cEPSQu6VuoZN2U0ryPqjAxzy5Ef5RBM48PqqmfCI3U1HssXyg1WHPtha9fL3+fdff+zNwglr+rgogbr0TwjPb5NtplIoH3IoXwCXp7CiYujgg183XwheSuZPk6AoxvY2HQ54Utf1HM4ZaMBVU9zS1yUDYrBB3KIifzSVDOxxAGpeFAkZo097UmZFfb1loSYEb21lLi01Pu1XYTqHwVmLSoqz6r+lTp3j7HXhusc58/yWSO93eIPcumoJ8I34ZWloxvrDzoQmteqfGwJewnrOUQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2025-04-25 header.b=ACvCBR5D; dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=KHAAPvyl; dkim-atps=neutral; spf=pass (client-ip=205.220.177.32; helo=mx0b-00069f02.pphosted.com; envelope-from=joao.m.martins@oracle.com; receiver=lists.ozlabs.org) smtp.mailfrom=oracle.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=leemhuis.info header.i=@leemhuis.info header.a=rsa-sha256 header.s=key2 header.b=fPcp3u5s;
+	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2025-04-25 header.b=ACvCBR5D;
+	dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=KHAAPvyl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=leemhuis.info (client-ip=188.68.63.102; helo=relay.yourmailgateway.de; envelope-from=linux@leemhuis.info; receiver=lists.ozlabs.org)
-X-Greylist: delayed 452 seconds by postgrey-1.37 at boromir; Wed, 15 Apr 2026 17:13:36 AEST
-Received: from relay.yourmailgateway.de (relay.yourmailgateway.de [188.68.63.102])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oracle.com (client-ip=205.220.177.32; helo=mx0b-00069f02.pphosted.com; envelope-from=joao.m.martins@oracle.com; receiver=lists.ozlabs.org)
+Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fwXS05HHbz2yVP
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2026 17:13:36 +1000 (AEST)
-Received: from mors-relay-2502.netcup.net (localhost [127.0.0.1])
-	by mors-relay-2502.netcup.net (Postfix) with ESMTPS id 4fwXH94jv2z64WD;
-	Wed, 15 Apr 2026 09:05:57 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=leemhuis.info;
-	s=key2; t=1776236757;
-	bh=C5RXb3Sjd/HmzoErYe568YjOFdiqT6diMYrs4wtOWsE=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=fPcp3u5sljUrmjjFHVqupOHnqaWSbOvZvNImNfILmdPfrtBNJ0PplU5TcPnmJpabC
-	 AtIwCe8zRfkhOmjxfcsO8Q+KfLGUZJn98WZD9NC8hV/4n1wshrGStnbGgasRaDGQRv
-	 2xtGvrKZ2cFMhegwMZ2Tmr9brW4A5hjbtcOpZ9mDb1/Krf5EMtgmICxiY2ttfFkA4g
-	 J4tUWOq/VlpH7jjhsUSe3DhwycrZVcWHAwo7FYSXxC6LDr1Qbt0LSQeJVcOzED+t81
-	 ZtGoy856Au4I68H3IcZrYU8QvNOL8WtHbzsUw4fbAOo8JBCYX+NeJ3HPm+qblEDUeR
-	 tSxVRA+bSjL4Q==
-Received: from policy02-mors.netcup.net (unknown [46.38.225.35])
-	by mors-relay-2502.netcup.net (Postfix) with ESMTPS id 4fwXH93z16z4xNs;
-	Wed, 15 Apr 2026 09:05:57 +0200 (CEST)
-Received: from mxe9fb.netcup.net (unknown [10.243.12.53])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by policy02-mors.netcup.net (Postfix) with ESMTPS id 4fwXH70m00z8sbB;
-	Wed, 15 Apr 2026 09:05:55 +0200 (CEST)
-Received: from [IPV6:2a02:8108:8984:1d00:a0cf:1912:4be:477f] (unknown [IPv6:2a02:8108:8984:1d00:a0cf:1912:4be:477f])
-	by mxe9fb.netcup.net (Postfix) with ESMTPSA id 507E5635DB;
-	Wed, 15 Apr 2026 09:05:54 +0200 (CEST)
-Authentication-Results: mxe9fb;
-        spf=pass (sender IP is 2a02:8108:8984:1d00:a0cf:1912:4be:477f) smtp.mailfrom=linux@leemhuis.info smtp.helo=[IPV6:2a02:8108:8984:1d00:a0cf:1912:4be:477f]
-Received-SPF: pass (mxe9fb: connection is authenticated)
-Message-ID: <6616a20a-93d7-48e2-976a-d5587088f2fb@leemhuis.info>
-Date: Wed, 15 Apr 2026 09:05:52 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fwg7L51Wpz2yvY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2026 22:14:35 +1000 (AEST)
+Received: from pps.filterd (m0246630.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63F9BcYm888376;
+	Wed, 15 Apr 2026 12:13:56 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=
+	corp-2025-04-25; bh=Kg4YbcR8rSvpxJma9KbJQykrYHPC66eBtz3fWRXH6WU=; b=
+	ACvCBR5DJzwC6CVxtY+pzRSuofj4qh281fDIvIKeHpziD0MZtXpxffXNQ7Z/fMiF
+	kZGnzB9eJNhLWAOmy83DfM2WC4wvVHQIIxcuKMB12mRQSmoU01V6Sm5tivqiGd6r
+	Gmqrccd8PESbnOUHBWvCDRB9+E3hjpOAyawwCuyBN8tKTUimRM2H8tTFFFpT4Wly
+	6Z7S4g8gcpuEhzn6Z4ql+KMJkBtKnnYGWQzqcp1OHOj43+zOcdCQ8wIZFIshAuJE
+	SAwidRWkxsoi985uXRNiI8H1VwUCl/CC45Z3tGWVUIqhT8USRDGJuKhZhbpTzAS0
+	3iE9NJwUC8uzEs4MtlAOaw==
+Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4dh85jn31q-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 15 Apr 2026 12:13:56 +0000 (GMT)
+Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.7/8.18.1.7) with ESMTP id 63FC4Q4w033577;
+	Wed, 15 Apr 2026 12:13:55 GMT
+Received: from dm5pr21cu001.outbound.protection.outlook.com (mail-centralusazon11011012.outbound.protection.outlook.com [52.101.62.12])
+	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 4dh7np3e49-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 15 Apr 2026 12:13:55 +0000 (GMT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=q1qUNWxqCmotlXYjQdM8CsMelf4Z8PnvnSpOcwrIgUwZ6oSOubB2eWG/EuZtmfXPAyWdBypba+kF8cl0QLFuGMOPzH/QmhUV7szKVWzwQcOGM3/a7g8EuFIXl1zX/JDEeMzXWSGGZeEZwAgckNXAv7+8cNiFe8kegx9ToyVgTEKSAtN0g8T9bWnmz3dEZRgXWp0rr+LGFOy2CWA+x/+2qAtQVfhztYyY4Tz0p2DBcHr6GlYitCZmk34MyXr1Yrus1YoRirvlxSj9hCjFSfzEDUTCVpPN3zUzykSFv4AjxlERx3Bb6mOjSBmzqhGWjrahrLfogWP6hRsXXzGJvnq7Lw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Kg4YbcR8rSvpxJma9KbJQykrYHPC66eBtz3fWRXH6WU=;
+ b=YTrl+HdkFQCV/ND1fKslmmHhXj4VYMMMPVlCvsXk6/XhYu4DiOB5qV1hz2G0LL6AFOoHJiNPasNpC/TWzeptV54Kqo1/s5KE31G5VQRtkhHKNKRkbjwoiKwb9olteXwOMHemlx+f0uzaroTaK5H5DYbfKaK21+vHodpV9vyGj04O+wThlOogiQgQVXU/OiP8cxpaXdYblmtKuJAdsEaNJrUhrZKTioupHKzobRUkulYcfkMzZJ80gM4jpkr8PGpZ77zmbMO6n5Z4NaZx9xqIGZrGo2KoDSfRXMXck5cORCmztM/8ykN6UmTpO06OD0orx+g213LcgCLyPth/XthNHg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Kg4YbcR8rSvpxJma9KbJQykrYHPC66eBtz3fWRXH6WU=;
+ b=KHAAPvylYCOG39Jzq7wkpJsC1GFYXNuTs6SNtEuC8QUwQTTtN4uPWDm90isNQviyLkgIGhLEiazFGidlcM2iU8QNpDZ2vVXkOminmZQ67Gh4pyjzDDCJRGChH+O12oY77CXY9nqzwF1aJZqn6dLF3egUeA6LjRxqEp/JaM7LGoE=
+Received: from PH3PPFE6F9E2E1D.namprd10.prod.outlook.com
+ (2603:10b6:518:1::7d4) by SA2PR10MB4458.namprd10.prod.outlook.com
+ (2603:10b6:806:f8::24) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.48; Wed, 15 Apr
+ 2026 12:13:50 +0000
+Received: from PH3PPFE6F9E2E1D.namprd10.prod.outlook.com
+ ([fe80::c9cf:290a:5596:dc4a]) by PH3PPFE6F9E2E1D.namprd10.prod.outlook.com
+ ([fe80::c9cf:290a:5596:dc4a%7]) with mapi id 15.20.9769.043; Wed, 15 Apr 2026
+ 12:13:50 +0000
+Message-ID: <9ceede7b-45d3-4d15-b8ce-f0b04bbb18dd@oracle.com>
+Date: Wed, 15 Apr 2026 13:13:40 +0100
+Subject: Re: [PATCH v2 4/6] mm/sparse-vmemmap: Pass @pgmap argument to arch
+ vmemmap_populate()
+To: Muchun Song <songmuchun@bytedance.com>
+Cc: Lorenzo Stoakes <ljs@kernel.org>,
+        "Liam R . Howlett" <Liam.Howlett@oracle.com>,
+        Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>,
+        Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Christophe Leroy <chleroy@kernel.org>, aneesh.kumar@linux.ibm.com,
+        linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org, harry.yoo@oracle.com,
+        Andrew Morton <akpm@linux-foundation.org>,
+        David Hildenbrand <david@kernel.org>,
+        Muchun Song <muchun.song@linux.dev>,
+        Oscar Salvador <osalvador@suse.de>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>
+References: <20260415111412.1003526-1-songmuchun@bytedance.com>
+ <20260415111412.1003526-5-songmuchun@bytedance.com>
+Content-Language: en-US
+From: Joao Martins <joao.m.martins@oracle.com>
+In-Reply-To: <20260415111412.1003526-5-songmuchun@bytedance.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: FR3P281CA0008.DEUP281.PROD.OUTLOOK.COM
+ (2603:10a6:d10:1d::14) To PH3PPFE6F9E2E1D.namprd10.prod.outlook.com
+ (2603:10b6:518:1::7d4)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -73,187 +120,400 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1] Bluetooth: btintel_pcie:Support Product level reset.
-To: Chandrashekar Devegowda <chandrashekar.devegowda@intel.com>
-Cc: oe-kbuild-all@lists.linux.dev, kernel test robot <lkp@intel.com>,
- linux-bluetooth@vger.kernel.org, linux-pci@vger.kernel.org,
- bhelgaas@google.com, ravishankar.srivatsa@intel.com,
- chethan.tumkur.narayan@intel.com,
- Luiz Augusto von Dentz <luiz.von.dentz@intel.com>,
- Linux Next Mailing List <linux-next@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-References: <20260330063842.1121545-1-chandrashekar.devegowda@intel.com>
- <202603310744.5WIVh3e6-lkp@intel.com>
-From: Thorsten Leemhuis <linux@leemhuis.info>
-Content-Language: de-DE, en-US
-Autocrypt: addr=linux@leemhuis.info; keydata=
- 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 MEK4
-In-Reply-To: <202603310744.5WIVh3e6-lkp@intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-PPP-Message-ID: <177623675479.1883973.8741712713569291605@mxe9fb.netcup.net>
-X-NC-CID: UJ6oDEpB8fD9jJz/zflE157Zb1heHwfPa/Sgew6FSERkwi5gJP4=
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH3PPFE6F9E2E1D:EE_|SA2PR10MB4458:EE_
+X-MS-Office365-Filtering-Correlation-Id: 077a604e-635f-4771-726f-08de9ae873cc
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|7416014|366016|1800799024|56012099003|18002099003|22082099003;
+X-Microsoft-Antispam-Message-Info:
+	AJ45PBOqLLGTkFiUNrqTiD36jV6+fiS2y920mm7ZsXirS2prOcSL246a6KrmF2+aK2wTJx2OuvhCN8Ixq5HAsscviL2KWeLh1b3Fh4unmns+uQ4wRsaIfiOhH1RVOk6/8kumsiLH7vZYk98TXq0NukmEXNvTpDOGvWX7yZoddCoFbaJIY98Kx29FZaB+d+4TCs6QOj2vwTG3vVN2MMGQPf0r/jIvagokwSUPzj3L5AB6g2iS+Tb74wHApHAT/FM+XnE/xVHk07JFHvRT2553s0+omYnygK3+BqF0JMAzhDng2mHDuodDCBECSJ0/Ack6zrUF3ZyUe1oDVqOb17DF0HS3ksPWX0H8Gvy5TjGTdWU+YjXaDm5jeZBzw6Bj0MtToEtDo28IhnrvGfvt2HmJDzcHhE1B8zHOFgnQBNmJ5V7pgKu1TRmebjqmcPhzh6IAQXV3fdgMYqvknY1Jd+3JU94fPzfYb5A5aqoK+AM5cz78qa2lLbhpGpT5nce0eU0eBbhEmiyD+w82qiKcQbzyr9eBAUl6mEJdtWSh1eT65hUg/3DdYwjHedgOxekYldEzGEaFoP0CQIASjo3g9g6mm647w8P6f/RWZ2AjcQubzgGkqm2fbo6/TVqnHC4qYJeRF8oL25WGOtVjdHArm38Aj5BXLrmmqTh+YBddRo5I7uWKI83MNmQMV+5dhWvyRpmsr1pf/DrQy78MHSmymtvFV1PaLnRnZTru0hR4OtcXx84=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH3PPFE6F9E2E1D.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(366016)(1800799024)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?T1NWWmN2Z2h5TUV6MTh0aGZVQmxrcnFzTUdGL1IxOXJCNWhyYk5OWlQ3Vkow?=
+ =?utf-8?B?MENlSUE5U0dERFBocFV3N2d0d0ZVa2wvaXlTNG9CcXpRaWV4YzhTL010Z2xy?=
+ =?utf-8?B?Zm5ZejBEazliYjU2QURKT1daQjA2c3VuMzlKNFNwUnY2Vkx2V2VNRlpUMUlR?=
+ =?utf-8?B?NlRmdlZENFpOTzQxM25LVkJOMnlIRzQrUnBQejhibHl2SzQ2M0RMZTYxN3I3?=
+ =?utf-8?B?aHlqZXF3ZkY5anRNS3c0bGoxYzFXK0wxUVlEMWJjaHVEcnFiMDRmSTM5SXFQ?=
+ =?utf-8?B?LzBlYWNsUkVyaE96TDBBVnM2YnBQUWlCY1lEWWU1cXpRR2E1bjUvcFkzTmZB?=
+ =?utf-8?B?Znlxb1NMYkd4SmhUOVYwNWh3bE8xdDdDUGNrcWNkYlcwU1BYdERvZWVob2NT?=
+ =?utf-8?B?MUJYVkhFQXV0YWJJLytzaDdTL20zZTN2bHBxZklDZ0RLK3QxbnlTd2J4OVR6?=
+ =?utf-8?B?bXNraklVamFvcEVyakJETldMQy96Q0Q5cU9RMGxNZnVXejBocVkzcHo4b05T?=
+ =?utf-8?B?Sk43THJ0OEpwODkzRGRPaHgwQ09qRThBbkN4RDhQcE5BYmNoaTQ4Z3ZDVmVR?=
+ =?utf-8?B?SnJ2emJoNm1lYXd5YU5RZ254NCtoK3ZwZVdDU0ZIWnZxNkI5MTRVY0hienE5?=
+ =?utf-8?B?STlRb0VvRElocFV5b1JCVnhJNDhMd3JOTlp2K3lWWGtJa21QSExwcTBWRVJM?=
+ =?utf-8?B?WjltSXZOdTN0ckVxREFjMmNtN0luaWdXYWVXYUNERjIyUWZDTXh0VnRhMG9l?=
+ =?utf-8?B?TEtuZXVyVnlncDhDcFhaZ2U3ajRWeERxVW9DTFVuWWhxNDAyTWw2U0F3c08y?=
+ =?utf-8?B?c2plS2I4VFNMTDNKTmRQQ3podE9WQk1hWG14eXN6VDBhTWpHSnU3TSswOWVt?=
+ =?utf-8?B?RUhFNkFRNUxMeGowUjZWaUVDbEJuTDNSbUhuV1hWNDMweG0vM2dleHM0cXQ2?=
+ =?utf-8?B?QXZMbUJ2aEppWlo4Vjl2bHd3T0RtS0UxRXkrUERKaDgySUhYUWNXS29JeEU4?=
+ =?utf-8?B?dkdOK1ExY2ttN09XY0VMbEkyNG10Y3Boa2xvUHV2aVluM0hJaWZqUmFWOXgr?=
+ =?utf-8?B?RHY3Q2VZWmVSMy9CUU8xNWMyd1J1NXBSZFE3cE8xeDRiTVBHK1RqQVhUV2xE?=
+ =?utf-8?B?dHFSc3hPdWpJYzBvWE5hVXhLWm1UeURZVTlobTdUUjVxNEVHaFlicUVlRkZv?=
+ =?utf-8?B?QXl4dDh2MzZtOFRmZDF3QU1oS0VQMUpIN1RHdWtTTzlWbnM4bUlqRG9COVFO?=
+ =?utf-8?B?Rk52V3FqQ2Q1R3A4VjlqZStqdzQyV3V1SExUY25UbEh1dHl1UWZzQW1BN2pZ?=
+ =?utf-8?B?Mk9QckxPSElFVGtIWERBRXBXQmZZMGR0N1hkcnQzZXJpc3N6UHM0M1VlVVln?=
+ =?utf-8?B?ZHBBQ2ZkVGNXOXdla0hoK1lXQzBlWkRkWmY3MDNVVnVqY2E5cjFkV1Ivb003?=
+ =?utf-8?B?UFU3T2N4ZnpzQUljUXdxcDdkUnRIWVpZUmtvY2lBWE5HTWxXM0w3UkhTNzl1?=
+ =?utf-8?B?azVTanBNV2VjRXFhdjhIRnBqNE91STVYTThkOGUxVkx1TVFmdzJiU29PQzNK?=
+ =?utf-8?B?TnlFTFJLSXdlaDNrZGx2ZGladllKeW9Sa1d3UkppMEtmRjYwN3VIYlc0QmNt?=
+ =?utf-8?B?eVhaMXhvYTJsbDBldVJDVjVrK1VIczlkc2RkcFloeXI4R2xsN2licy8wbHJW?=
+ =?utf-8?B?VEg1ZklLZEQ0Sy9sT1NjNXRjbHJtZWhZZlJpcU5ISXloSk5NOXlxWEE2SmNP?=
+ =?utf-8?B?R1VLMTVOY2Z1RUpSNGF1Slg3cHgyMFdDQjlWaVdRd2NzOVR2M2VvZEwwUTVx?=
+ =?utf-8?B?OWlhdEJpaUNiKzFRbnFQOGE4THdvdEVwZTJDQVIrbEpmOTBGSmhtVExKNldj?=
+ =?utf-8?B?K2lXelB3R0E5TnBBOUxEU0daeDBycUhzOW90L1ljNjdhRVZRWktGTFF4dzRz?=
+ =?utf-8?B?czkrWXdtcVozemRoL2JNNEhOTmhoUXFNYUZsY1FTU2VVajdobCtPL1dyRW82?=
+ =?utf-8?B?d3lIblhtN3VoSU56MTgvbnIzcE15NUNSNDhoZW1pK2xNdWtxRnF2V2NoTWNk?=
+ =?utf-8?B?blIwL1psMCtlYVIremVTenF1UWRoSFlqWUxTTjFUY2doUm1zMzdoQmNiYXNH?=
+ =?utf-8?B?Qnl4QVU3MUpXeC9TUjRMc0o1MSt1eUFubTc4ajhpc1BaeHdTM1owbEhnVmpB?=
+ =?utf-8?B?MXhOUWFhc29kN3A5ZFNvVlo4M1ZzSFk5bDFlRXVHZTJJZUljTHBHa3hDaC9H?=
+ =?utf-8?B?MEZGZ2R5cEZWdEZhZG5WUTNXMjRNRzF4TGZLTlJSRjFoQTNCdGZ6WElRV2Rm?=
+ =?utf-8?B?SU5vMHBrd2tvUGt5eFVodUdWT2Y1ZERTaGRZNDh0VWhuNHFwbUUrRStjMERk?=
+ =?utf-8?Q?PkxQdQ60TpMQ65fI=3D?=
+X-Exchange-RoutingPolicyChecked:
+	u9drPR2kalIK5OtqeQPFxpUfGRNmDWeBnEzrx/7bBdAXE9sVJUYO9CxN512yMnVnGCIf/dkyAZVCQHyN+i+eXZQbWM2AebnhCgAvlb5xVoWoXiF9E8OYF44y+rnuFkKI4uEjggM3fOrrIcVLZR4BWDak9e4Ha2zjp1GcB95w/asmz0RVOtzO66T2mgbQZLH6AUugTAkHQgQBZemnrh7kMy+31B1VwFXuQ7qNu/hSSWyhsfPgMqV3WIjkYIhuG6+GqyhhMbFocWaqupMaqffR0t4Re4lH9hb1fttZT+y6nbh3YQF4yB/t9lKFpJ9Uy0HbsLsj0TPH16g76CxgGmFEOg==
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
+	8OuH3mE2e/qIp3rlIWSYIMfnpdLWe6gfwzBwy0LNxlm72EK5E81i6W+5UdTNc5G3R1RVF2D/fVSnliNKKxoMLkEgj+nlsIu1Ep5vjsmCjMkg+Wx0PjtfNC7tlD5VSMRta3JvuRCr6hKPveBRxI+E2pMADwJaUtHi1sHNBP9h7fsFIOr+Tt+pm1CAzyRQAXPF0Z09gBL2t/rlxBFISlLPSTavf5Ld2qGSXgZpHf0+kmCArTIo5oacvOX0/veobhxX4ssDXe6EdUj44p3H2AtJtvw5pFQLILeuiDQ1petVYZ7UP5AtwJKwYYgiDqSQFDaFJkvgJ81cAA5ZtsUgc/jDfxBdP59Z+ycr+efMAwRD/xHVWKhSmlpb3iTugnthcZDE9x5UonjYhGoCNVJyCzIF+1B7dhLvIkOBrOd8d9LaJszrcTUaIMyQMr2XcxLj7RScwDK+sAbh5N25IvcgCNlif6QeHQoCx88LOWEe7Cp2/EbraV20J8kQ7c6mHzCu0YtofvVaJ2tv8XV8EWjSkSV3rwOLtbhmzjAusp99vg/7QqL+7CMb1eGygg16+dFM4MpUKGIJfmKhuhHpcO7cRfDNzedEa8heLqQCYR+rY+ojxZI=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 077a604e-635f-4771-726f-08de9ae873cc
+X-MS-Exchange-CrossTenant-AuthSource: PH3PPFE6F9E2E1D.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Apr 2026 12:13:50.0427
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 4zW2UP6+mHvohWHWLHcMMWBntjAgP2MuT3DbY6sQzBawEBvJ6WUEOzuAFcMPFV5tkVIz/lyZf/LtUZSJNpXOvFPSyP2dfnd8+SxUARPiFKQ=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA2PR10MB4458
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-14_04,2026-04-13_04,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0
+ lowpriorityscore=0 phishscore=0 mlxlogscore=999 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=0 mlxscore=0 adultscore=0 classifier=spam
+ adjust=0 reason=mlx scancount=1 engine=8.19.0-2604070000
+ definitions=main-2604150112
+X-Proofpoint-ORIG-GUID: PuIXrKetPaRLGE27OwtwQG_FIgDGYoSa
+X-Proofpoint-GUID: PuIXrKetPaRLGE27OwtwQG_FIgDGYoSa
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDE1MDExMyBTYWx0ZWRfX748K80HLRHJz
+ M8ybRys8xhGuJSF7Cn/2QiuZnHW9D48gA8R2Sz/REGrNBhdYXDZCgjO2RlO+ONhfJeMPokbrj+r
+ AS95vO+TuQf0Kg2QLsSdw+Mps0bp3OyE0BPYSmAP8qglKjeY9KPXsf38opgNpz1awKVM7KrsnXs
+ M5TlBsR6OzkJgUXXT91qXf4IDl9Ch/7BUrbPgJbd41xCI6PMxF66JjpvZ1hYiS82hy75479VeWk
+ D2Ib2G2az19nuIlKjIA0Y7wIMvVfI/GcLpC02U04sKsDHoOI2UUFuPj4ieQ2B9SeIluCzsElYiD
+ T+UCFqSmYJGctZwqlx1J88SwfHiijJZR3NgpEBF+T3zNuII+ISQncgYGnyKkXOS2kkf4PUNjlmO
+ fPmHCuYYey2DcX7ybFAyjwT6cxbZrj9/J6NIqr9Msh7oOfRGjfLTGFDVirYe0Gi9DBpkB9zPjbi
+ gCcaFNTMViRGUn+awWTY1DU9YKEkIF6jQl1HuG4w=
+X-Authority-Analysis: v=2.4 cv=Co+PtH4D c=1 sm=1 tr=0 ts=69df8104 b=1 cx=c_pps
+ a=e1sVV491RgrpLwSTMOnk8w==:117 a=e1sVV491RgrpLwSTMOnk8w==:17
+ a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19 a=z/mQ4Ysz8XfWz/Q5cLBRGdckG28=:19
+ a=lCpzRmAYbLLaTzLvsPZ7Mbvzbb8=:19 a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10
+ a=A5OVakUREuEA:10 a=GoEa3M9JfhUA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=jiCTI4zE5U7BLdzWsZGv:22 a=x4eqshVgHu-cdnggieHk:22 a=VwQbUJbxAAAA:8
+ a=yPCof4ZbAAAA:8 a=968KyxNXAAAA:8 a=44hX-j3RfSQrQtt0eo4A:9 a=QEXdDO2ut3YA:10
+ cc=ntf awl=host:13825
 
-On 3/31/26 01:39, kernel test robot wrote:
-> Hi Chandrashekar,
+On 15/04/2026 12:14, Muchun Song wrote:
+> Add the struct dev_pagemap pointer as a parameter to the architecture
+> specific vmemmap_populate(), vmemmap_populate_hugepages() and
+> vmemmap_populate_basepages() functions.
 > 
-> kernel test robot noticed the following build errors:
+> Currently, the vmemmap optimization for DAX is handled mostly in an
+> architecture-agnostic way via vmemmap_populate_compound_pages().
+> However, this approach skips crucial architecture-specific initialization
+> steps. For example, the x86 path must call sync_global_pgds() after
+> populating the vmemmap, which is currently being bypassed.
+> 
 
-FWIW, a newer version of this patch hit -next yesterday and caused a
-similar build error for me, but only on ppc64le (on Fedora, using the
-rawhide config):
+Harry's series fixed in a different way (for x86):
 
-"""
-> drivers/bluetooth/btintel_pcie.c: In function ‘btintel_pcie_acpi_reset_method’:
-> drivers/bluetooth/btintel_pcie.c:2309:14: error: implicit declaration of function ‘acpi_has_method’; did you mean ‘acpi_has_watchdog’? [-Wimplicit-function-declaration]
->  2309 |         if (!acpi_has_method(handle, "_PRR")) {
->       |              ^~~~~~~~~~~~~~~
->       |              acpi_has_watchdog
-> make[4]: *** [scripts/Makefile.build:289: drivers/bluetooth/btintel_pcie.o] Error 1
-> make[4]: *** Waiting for unfinished jobs....
-> make[3]: *** [scripts/Makefile.build:548: drivers/bluetooth] Error 2
-> make[3]: *** Waiting for unfinished jobs....
-> make[2]: *** [scripts/Makefile.build:548: drivers] Error 2
-> make[1]: *** [/builddir/build/BUILD/kernel-7.1.0-build/kernel-next-20260414/linux-7.1.0-0.0.next.20260414.462.vanilla.fc45.ppc64le/Makefile:2147: .] Error 2
-> make: *** [Makefile:256: __sub-make] Error 2
-> + exit 1
-""""
+https://lore.kernel.org/linux-mm/20250818020206.4517-1-harry.yoo@oracle.com/#t
 
-Full log:
-https://download.copr.fedorainfracloud.org/results/@kernel-vanilla/next/fedora-rawhide-ppc64le/10323070-next-next-all/builder-live.log.gz
-
-Ciao, Thorsten
-
-
-> [auto build test ERROR on bluetooth-next/master]
-> [also build test ERROR on next-20260327]
-> [cannot apply to bluetooth/master linus/master v7.0-rc6]
-> [If your patch is applied to the wrong git tree, kindly drop us a note.
-> And when submitting patch, we suggest to use '--base' as documented in
-> https://git-scm.com/docs/git-format-patch#_base_tree_information]
+> To lay the groundwork for fixing the vmemmap optimization in the arch
+> level, we need to pass the @pgmap pointer down to the arch specific
+> vmemmap_populate() location. Plumb the @pgmap argument through the APIs
+> of vmemmap_populate(), vmemmap_populate_hugepages() and
+> vmemmap_populate_basepages().
 > 
-> url:    https://github.com/intel-lab-lkp/linux/commits/Chandrashekar-Devegowda/Bluetooth-btintel_pcie-Support-Product-level-reset/20260330-190125
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/bluetooth/bluetooth-next.git master
-> patch link:    https://lore.kernel.org/r/20260330063842.1121545-1-chandrashekar.devegowda%40intel.com
-> patch subject: [PATCH v1] Bluetooth: btintel_pcie:Support Product level reset.
-> config: alpha-allyesconfig (https://download.01.org/0day-ci/archive/20260331/202603310744.5WIVh3e6-lkp@intel.com/config)
-> compiler: alpha-linux-gcc (GCC) 15.2.0
-> reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260331/202603310744.5WIVh3e6-lkp@intel.com/reproduce)
+> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+> ---
+>  arch/arm64/mm/mmu.c                        |  6 +++---
+>  arch/loongarch/mm/init.c                   |  7 ++++---
+>  arch/powerpc/include/asm/book3s/64/radix.h |  3 ++-
+>  arch/powerpc/mm/book3s64/radix_pgtable.c   |  2 +-
+>  arch/powerpc/mm/init_64.c                  |  4 ++--
+>  arch/riscv/mm/init.c                       |  4 ++--
+>  arch/s390/mm/vmem.c                        |  2 +-
+>  arch/sparc/mm/init_64.c                    |  5 +++--
+>  arch/x86/mm/init_64.c                      |  8 ++++----
+>  include/linux/mm.h                         |  8 +++++---
+>  mm/hugetlb_vmemmap.c                       |  4 ++--
+>  mm/sparse-vmemmap.c                        | 10 ++++++----
+>  12 files changed, 35 insertions(+), 28 deletions(-)
 > 
-> If you fix the issue in a separate patch/commit (i.e. not just a new version of
-> the same patch/commit), kindly add following tags
-> | Reported-by: kernel test robot <lkp@intel.com>
-> | Closes: https://lore.kernel.org/oe-kbuild-all/202603310744.5WIVh3e6-lkp@intel.com/
-> 
-> All errors (new ones prefixed by >>):
-> 
->    drivers/bluetooth/btintel_pcie.c: In function 'btintel_pcie_acpi_reset_method':
->>> drivers/bluetooth/btintel_pcie.c:2307:14: error: implicit declaration of function 'acpi_has_method'; did you mean 'acpi_has_watchdog'? [-Wimplicit-function-declaration]
->     2307 |         if (!acpi_has_method(handle, "_PRR")) {
->          |              ^~~~~~~~~~~~~~~
->          |              acpi_has_watchdog
-> 
-> 
-> vim +2307 drivers/bluetooth/btintel_pcie.c
-> 
->   2280	
->   2281	static int btintel_pcie_acpi_reset_method(struct btintel_pcie_data *data)
->   2282	{
->   2283		union acpi_object *obj, argv4;
->   2284		acpi_handle handle;
->   2285		int ret;
->   2286		struct pldr_mode {
->   2287			u16	cmd_type;
->   2288			u16	cmd_payload;
->   2289		} __packed;
->   2290	
->   2291		/* set 1 for _PRR mode
->   2292		 * Product Reset (PLDR Abort flow)
->   2293		 */
->   2294		static const struct pldr_mode mode = {
->   2295			.cmd_type = 1,
->   2296			.cmd_payload = BTINTEL_PCIE_DSM_PLDR_MODE_EN_PROD_RESET |
->   2297				       BTINTEL_PCIE_DSM_PLDR_MODE_EN_WIFI_FLR,
->   2298		};
->   2299		struct hci_dev *hdev = data->hdev;
->   2300	
->   2301		handle = ACPI_HANDLE(GET_HCIDEV_DEV(data->hdev));
->   2302		if (!handle) {
->   2303			bt_dev_dbg(data->hdev, "No support for bluetooth device in ACPI firmware");
->   2304			return -EACCES;
->   2305		}
->   2306	
->> 2307		if (!acpi_has_method(handle, "_PRR")) {
->   2308			bt_dev_dbg(data->hdev, "No support for _PRR ACPI method, falling back to FLR");
->   2309			btintel_pcie_reset(data->hdev);
->   2310			return -ENODEV;
->   2311		}
->   2312	
->   2313		argv4.buffer.type = ACPI_TYPE_BUFFER;
->   2314		argv4.buffer.length = sizeof(mode);
->   2315		argv4.buffer.pointer = (void *)&mode;
->   2316	
->   2317		obj = acpi_evaluate_dsm(handle, &btintel_guid_dsm, 0,
->   2318					BTINTEL_PCIE_DSM_DYNAMIC_PLDR, &argv4);
->   2319		if (!obj) {
->   2320			bt_dev_err(data->hdev, "Failed to call dsm to set reset method");
->   2321			return -EIO;
->   2322		}
->   2323		ACPI_FREE(obj);
->   2324	
->   2325		pci_dev_lock(data->pdev);
->   2326		pci_save_state(data->pdev);
->   2327		ret = btintel_acpi_reset_method(hdev);
->   2328		if (ret)
->   2329			bt_dev_err(data->hdev, "ACPI _PRR reset failed (%d),PLDR incomplete",
->   2330				   ret);
->   2331		pci_restore_state(data->pdev);
->   2332		pci_dev_unlock(data->pdev);
->   2333		return ret;
->   2334	}
->   2335	
-> 
+> diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
+> index e5a42b7a0160..11227e104c48 100644
+> --- a/arch/arm64/mm/mmu.c
+> +++ b/arch/arm64/mm/mmu.c
+> @@ -1790,7 +1790,7 @@ int __meminit vmemmap_check_pmd(pmd_t *pmdp, int node,
+>  }
+>  
+>  int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
+> -		struct vmem_altmap *altmap)
+> +		struct vmem_altmap *altmap, struct dev_pagemap *pgmap)
+>  {
+>  	WARN_ON((start < VMEMMAP_START) || (end > VMEMMAP_END));
+>  	/* [start, end] should be within one section */
+> @@ -1798,9 +1798,9 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
+>  
+>  	if (!IS_ENABLED(CONFIG_ARM64_4K_PAGES) ||
+>  	    (end - start < PAGES_PER_SECTION * sizeof(struct page)))
+> -		return vmemmap_populate_basepages(start, end, node, altmap);
+> +		return vmemmap_populate_basepages(start, end, node, altmap, pgmap);
+>  	else
+> -		return vmemmap_populate_hugepages(start, end, node, altmap);
+> +		return vmemmap_populate_hugepages(start, end, node, altmap, pgmap);
+>  }
+>  
+>  #ifdef CONFIG_MEMORY_HOTPLUG
+> diff --git a/arch/loongarch/mm/init.c b/arch/loongarch/mm/init.c
+> index c9c57f08fa2c..d61c2e09caae 100644
+> --- a/arch/loongarch/mm/init.c
+> +++ b/arch/loongarch/mm/init.c
+> @@ -123,12 +123,13 @@ int __meminit vmemmap_check_pmd(pmd_t *pmd, int node,
+>  }
+>  
+>  int __meminit vmemmap_populate(unsigned long start, unsigned long end,
+> -			       int node, struct vmem_altmap *altmap)
+> +			       int node, struct vmem_altmap *altmap,
+> +			       struct dev_pagemap *pgmap)
+>  {
+>  #if CONFIG_PGTABLE_LEVELS == 2
+> -	return vmemmap_populate_basepages(start, end, node, NULL);
+> +	return vmemmap_populate_basepages(start, end, node, NULL, pgmap);
+>  #else
+> -	return vmemmap_populate_hugepages(start, end, node, NULL);
+> +	return vmemmap_populate_hugepages(start, end, node, NULL, pgmap);
+>  #endif
+>  }
+>  
+> diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
+> index da954e779744..bde07c6f900f 100644
+> --- a/arch/powerpc/include/asm/book3s/64/radix.h
+> +++ b/arch/powerpc/include/asm/book3s/64/radix.h
+> @@ -321,7 +321,8 @@ extern int __meminit radix__vmemmap_create_mapping(unsigned long start,
+>  					     unsigned long page_size,
+>  					     unsigned long phys);
+>  int __meminit radix__vmemmap_populate(unsigned long start, unsigned long end,
+> -				      int node, struct vmem_altmap *altmap);
+> +				      int node, struct vmem_altmap *altmap,
+> +				      struct dev_pagemap *pgmap);
+>  void __ref radix__vmemmap_free(unsigned long start, unsigned long end,
+>  			       struct vmem_altmap *altmap);
+>  extern void radix__vmemmap_remove_mapping(unsigned long start,
+> diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
+> index 10aced261cff..568500343e5f 100644
+> --- a/arch/powerpc/mm/book3s64/radix_pgtable.c
+> +++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
+> @@ -1112,7 +1112,7 @@ static inline pte_t *vmemmap_pte_alloc(pmd_t *pmdp, int node,
+>  
+>  
+>  int __meminit radix__vmemmap_populate(unsigned long start, unsigned long end, int node,
+> -				      struct vmem_altmap *altmap)
+> +				      struct vmem_altmap *altmap, struct dev_pagemap *pgmap)
+>  {
+>  	unsigned long addr;
+>  	unsigned long next;
+> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+> index b6f3ae03ca9e..8f4aa5b32186 100644
+> --- a/arch/powerpc/mm/init_64.c
+> +++ b/arch/powerpc/mm/init_64.c
+> @@ -275,12 +275,12 @@ static int __meminit __vmemmap_populate(unsigned long start, unsigned long end,
+>  }
+>  
+>  int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
+> -			       struct vmem_altmap *altmap)
+> +			       struct vmem_altmap *altmap, struct dev_pagemap *pgmap)
+>  {
+>  
+>  #ifdef CONFIG_PPC_BOOK3S_64
+>  	if (radix_enabled())
+> -		return radix__vmemmap_populate(start, end, node, altmap);
+> +		return radix__vmemmap_populate(start, end, node, altmap, pgmap);
+>  #endif
+>  
+>  	return __vmemmap_populate(start, end, node, altmap);
+> diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
+> index b0092fb842a3..a04ae9727cbe 100644
+> --- a/arch/riscv/mm/init.c
+> +++ b/arch/riscv/mm/init.c
+> @@ -1348,7 +1348,7 @@ int __meminit vmemmap_check_pmd(pmd_t *pmdp, int node,
+>  }
+>  
+>  int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
+> -			       struct vmem_altmap *altmap)
+> +			       struct vmem_altmap *altmap, struct dev_pagemap *pgmap)
+>  {
+>  	WARN_ON((start < VMEMMAP_START) || (end > VMEMMAP_END));
+>  
+> @@ -1358,7 +1358,7 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
+>  	 * memory hotplug, we are not able to update all the page tables with
+>  	 * the new PMDs.
+>  	 */
+> -	return vmemmap_populate_hugepages(start, end, node, altmap);
+> +	return vmemmap_populate_hugepages(start, end, node, altmap, pgmap);
+>  }
+>  #endif
+>  
+> diff --git a/arch/s390/mm/vmem.c b/arch/s390/mm/vmem.c
+> index eeadff45e0e1..a7bf8d3d5601 100644
+> --- a/arch/s390/mm/vmem.c
+> +++ b/arch/s390/mm/vmem.c
+> @@ -506,7 +506,7 @@ static void vmem_remove_range(unsigned long start, unsigned long size)
+>   * Add a backed mem_map array to the virtual mem_map array.
+>   */
+>  int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
+> -			       struct vmem_altmap *altmap)
+> +			       struct vmem_altmap *altmap, struct dev_pagemap *pgmap)
+>  {
+>  	int ret;
+>  
+> diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
+> index 367c269305e5..f870ca330f9e 100644
+> --- a/arch/sparc/mm/init_64.c
+> +++ b/arch/sparc/mm/init_64.c
+> @@ -2591,9 +2591,10 @@ int __meminit vmemmap_check_pmd(pmd_t *pmdp, int node,
+>  }
+>  
+>  int __meminit vmemmap_populate(unsigned long vstart, unsigned long vend,
+> -			       int node, struct vmem_altmap *altmap)
+> +			       int node, struct vmem_altmap *altmap,
+> +			       struct dev_pagemap *pgmap)
+>  {
+> -	return vmemmap_populate_hugepages(vstart, vend, node, NULL);
+> +	return vmemmap_populate_hugepages(vstart, vend, node, NULL, pgmap);
+>  }
+>  #endif /* CONFIG_SPARSEMEM_VMEMMAP */
+>  
+> diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+> index 77b889b71cf3..e18cc81a30b4 100644
+> --- a/arch/x86/mm/init_64.c
+> +++ b/arch/x86/mm/init_64.c
+> @@ -1557,7 +1557,7 @@ int __meminit vmemmap_check_pmd(pmd_t *pmd, int node,
+>  }
+>  
+>  int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
+> -		struct vmem_altmap *altmap)
+> +		struct vmem_altmap *altmap, struct dev_pagemap *pgmap)
+>  {
+>  	int err;
+>  
+> @@ -1565,15 +1565,15 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node,
+>  	VM_BUG_ON(!PAGE_ALIGNED(end));
+>  
+>  	if (end - start < PAGES_PER_SECTION * sizeof(struct page))
+> -		err = vmemmap_populate_basepages(start, end, node, NULL);
+> +		err = vmemmap_populate_basepages(start, end, node, NULL, pgmap);
+>  	else if (boot_cpu_has(X86_FEATURE_PSE))
+> -		err = vmemmap_populate_hugepages(start, end, node, altmap);
+> +		err = vmemmap_populate_hugepages(start, end, node, altmap, pgmap);
+>  	else if (altmap) {
+>  		pr_err_once("%s: no cpu support for altmap allocations\n",
+>  				__func__);
+>  		err = -ENOMEM;
+>  	} else
+> -		err = vmemmap_populate_basepages(start, end, node, NULL);
+> +		err = vmemmap_populate_basepages(start, end, node, NULL, pgmap);
+>  	if (!err)
+>  		sync_global_pgds(start, end - 1);
+>  	return err;
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 0b776907152e..bebc5f892f81 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -4877,11 +4877,13 @@ void vmemmap_set_pmd(pmd_t *pmd, void *p, int node,
+>  int vmemmap_check_pmd(pmd_t *pmd, int node,
+>  		      unsigned long addr, unsigned long next);
+>  int vmemmap_populate_basepages(unsigned long start, unsigned long end,
+> -			       int node, struct vmem_altmap *altmap);
+> +			       int node, struct vmem_altmap *altmap,
+> +			       struct dev_pagemap *pgmap);
+>  int vmemmap_populate_hugepages(unsigned long start, unsigned long end,
+> -			       int node, struct vmem_altmap *altmap);
+> +			       int node, struct vmem_altmap *altmap,
+> +			       struct dev_pagemap *pgmap);
+>  int vmemmap_populate(unsigned long start, unsigned long end, int node,
+> -		struct vmem_altmap *altmap);
+> +		struct vmem_altmap *altmap, struct dev_pagemap *pgmap);
+>  int vmemmap_populate_hvo(unsigned long start, unsigned long end,
+>  			 unsigned int order, struct zone *zone,
+>  			 unsigned long headsize);
+> diff --git a/mm/hugetlb_vmemmap.c b/mm/hugetlb_vmemmap.c
+> index 4a077d231d3a..50b7123f3bdd 100644
+> --- a/mm/hugetlb_vmemmap.c
+> +++ b/mm/hugetlb_vmemmap.c
+> @@ -829,7 +829,7 @@ void __init hugetlb_vmemmap_init_late(int nid)
+>  			 */
+>  			list_del(&m->list);
+>  
+> -			vmemmap_populate(start, end, nid, NULL);
+> +			vmemmap_populate(start, end, nid, NULL, NULL);
+>  			nr_mmap = end - start;
+>  			memmap_boot_pages_add(DIV_ROUND_UP(nr_mmap, PAGE_SIZE));
+>  
+> @@ -845,7 +845,7 @@ void __init hugetlb_vmemmap_init_late(int nid)
+>  		if (vmemmap_populate_hvo(start, end, huge_page_order(h), zone,
+>  					 HUGETLB_VMEMMAP_RESERVE_SIZE) < 0) {
+>  			/* Fallback if HVO population fails */
+> -			vmemmap_populate(start, end, nid, NULL);
+> +			vmemmap_populate(start, end, nid, NULL, NULL);
+>  			nr_mmap = end - start;
+>  		} else {
+>  			m->flags |= HUGE_BOOTMEM_ZONES_VALID;
+> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
+> index 05e3e2b94e32..f5245647afee 100644
+> --- a/mm/sparse-vmemmap.c
+> +++ b/mm/sparse-vmemmap.c
+> @@ -297,7 +297,8 @@ static int __meminit vmemmap_populate_range(unsigned long start,
+>  }
+>  
+>  int __meminit vmemmap_populate_basepages(unsigned long start, unsigned long end,
+> -					 int node, struct vmem_altmap *altmap)
+> +					 int node, struct vmem_altmap *altmap,
+> +					 struct dev_pagemap *pgmap)
+>  {
+>  	return vmemmap_populate_range(start, end, node, altmap, -1, 0);
+>  }
+> @@ -400,7 +401,8 @@ int __weak __meminit vmemmap_check_pmd(pmd_t *pmd, int node,
+>  }
+>  
+>  int __meminit vmemmap_populate_hugepages(unsigned long start, unsigned long end,
+> -					 int node, struct vmem_altmap *altmap)
+> +					 int node, struct vmem_altmap *altmap,
+> +					 struct dev_pagemap *pgmap)
+>  {
+>  	unsigned long addr;
+>  	unsigned long next;
+> @@ -445,7 +447,7 @@ int __meminit vmemmap_populate_hugepages(unsigned long start, unsigned long end,
+>  			}
+>  		} else if (vmemmap_check_pmd(pmd, node, addr, next))
+>  			continue;
+> -		if (vmemmap_populate_basepages(addr, next, node, altmap))
+> +		if (vmemmap_populate_basepages(addr, next, node, altmap, pgmap))
+>  			return -ENOMEM;
+>  	}
+>  	return 0;
+> @@ -559,7 +561,7 @@ struct page * __meminit __populate_section_memmap(unsigned long pfn,
+>  	if (vmemmap_can_optimize(altmap, pgmap))
+>  		r = vmemmap_populate_compound_pages(pfn, start, end, nid, pgmap);
+>  	else
+> -		r = vmemmap_populate(start, end, nid, altmap);
+> +		r = vmemmap_populate(start, end, nid, altmap, pgmap);
+>  
+>  	if (r < 0)
+>  		return NULL;
 
 
