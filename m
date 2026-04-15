@@ -1,85 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-19777-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19778-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46651F43830
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2026 14:46:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4FB17F4384E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2026 15:53:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fwkW14x92z2yvh;
-	Thu, 16 Apr 2026 00:46:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1031"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776264413;
-	cv=none; b=VKMqUFN8WIirHny/N11yTZFItEC6w6amAJ4iwhQQxpiluTiGrEqzwm0pBejfkiHasxof6JaefECIRgY1RMNJfYgXXKAYo84KqFs06Nrj+zZx42B1doJ6PTHAje9PhigoIWtgAsZI5vdP7I6tzlXcgMgcRJCG+TxsSQvDulMs2plt90h0lz+nro3mtX7CRbQg3j+lOKKSRP1Wu7HTNQjlQYLf0Ex0il3kiVNp7FtsJztQXt7qL/cNNZvjgD0LAQ+YRMnAaChvuEWv8bhrv+8Vmr8h0lavhHNx4L0Br0gIuUKvf+foct0qxgqCvkBREDXO3GDOAYZ+OW0kwyIcjWGNIw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fwm035CPzz2yvh;
+	Thu, 16 Apr 2026 01:53:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776268419;
+	cv=none; b=PuAILboV8Dy1nSux+dJHl2W5N+KLFn4P/2r3c0D56gQPpi5LnMtPqMvAtHeGu5Ckh1LqohjAT/gb18uKm4Q2QESxRFZSM3irzBIvJc1Bv4HnlZc6k2JjizHya7zJ4jjKqKv6QSQ7sZTsXS6lkvSD287XorXUuI3CO4ScAsHSHiqN+M6Ieg/uu9MAm1ySfwwUdrNWNm6dH3B670WNB8CDy6ljQ0NsYowWeWZ/QTOnpLyoSctbBDwuVToRXNO+VJYFNW/dPsGXSM28NEiVXggrhWsUvpFm8Nzf1EQivBtr8QhebIbmdBV1TZyCabpXgyF3n0MUn0SI0IA63QtE/16G0w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776264413; c=relaxed/relaxed;
-	bh=znxX/LCQa33kO599nbk2Q/Mw7o66DJJuY9IEDvMYWxM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=aMFLvFlZq2J5+uea5J+UaQv4RXJ7u0GjHVjVcEyJrdhYU/KnqxqJLwgM4HqdAwn/RovXyqVJLVcAPDU/GudVVEZZcciWs2U1g6zjg/Aw9MrguY6CVKGfo4SncpljOLiSMPCn18ar7l3bzgS7wkeutk0fj2un9s79VJ701mwGBoK5bhnhADLsrFtpwzWRX7rGmoUwsdrH6Ra5LXhKh1IZRqWVrETrHvX45LxJPY2FMhSP6OavFys8SAZF0xYQ6sJ0LCXmJXE2x/QaqIl/CtFPwsUVvglkjZbMSQtLCmQvrDVYxUVGZInnqoNcyjPzgFCtXajtVWtvbvVkGmFZKW7eAg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=coJGPwLc; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1031; helo=mail-pj1-x1031.google.com; envelope-from=lgs201920130244@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1776268419; c=relaxed/relaxed;
+	bh=2Eah7MTKP3MQv1T3pNJu3Q/x/mQvB0bQiXwPwwnBgAU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=H8LoaFdJLEYgjm5CQ4V7rntCAysbssFHYxcKVIKdb+ga5J3NQz4zzsWFCrjGr+yEx0q6tIwLVNXfj7OFtxC9gdDuo4O1nbwOp/2AIxbOKF5E+Uk1qZd8Bf8n4R1/uGBTO4KPgY8Ati0T+rcosDmWOt8KBoW6af6rnK4rW8qkMcaw1jxP4Uvp5ObFAZ1VCzlSnx3MkNlbk5JjgoJtgeZql4Zv6OClKXZTea9+F+dmMEkAwHsOFZdrNS74l0vA2x3M98h59WCnrvQkmSMErqv8oV/0/x4EI87X2jlS7qB3i4tzYGXvxoanz5WPFhCk6aVzSGY8uCkNyujK02I6WkWmQA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DlGLUOug; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=coJGPwLc;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DlGLUOug;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1031; helo=mail-pj1-x1031.google.com; envelope-from=lgs201920130244@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com [IPv6:2607:f8b0:4864:20::1031])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fwkW04KKmz2yvY
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2026 00:46:51 +1000 (AEST)
-Received: by mail-pj1-x1031.google.com with SMTP id 98e67ed59e1d1-35da8d037a5so3236360a91.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2026 07:46:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1776264409; x=1776869209; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=znxX/LCQa33kO599nbk2Q/Mw7o66DJJuY9IEDvMYWxM=;
-        b=coJGPwLccmt5Bbrt6AGjM3IE7+gvBJeNk0rgQNvFpbfbM8kDXexTAv/+gMUq+n90aH
-         fAiHE8aBrLzf2cDatJqBa8E/mdfEE0vz6/03hKJ9gUbaDELs3L+xluLBCDJ2LL1K/NTY
-         Xw0H1ofxeiBWpDSOWzNt7OQHY3bP5ZJJl+tbPM2ZYnTyMZaXV3BPJvBscSwc+CdMu8zh
-         xJHsghiZLxWo0pKZds7Zpx9uqb2aIMre1OljSn8V4ncyOSsR4y1+S6pQcwdlSYJTjsYC
-         Lu60Ctdq/WB6Sb7Vw7q9KvK2eDFqEo6DQQIHelLqKNchwI4tQqILd1BmwamXEgYE0n09
-         ZUeQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776264409; x=1776869209;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=znxX/LCQa33kO599nbk2Q/Mw7o66DJJuY9IEDvMYWxM=;
-        b=D5R8++0CLswJ6VsoRM1XHb41MEt6ayyIlNP9sCdYUsnVq9dfw4ouMZseyXyEHNNIrJ
-         THapsUDL79qXzymsKf+ZDG3CRLstZgqKMudnXp8yzbQSZl34WEnjcCnrVdR/ztmnKX1a
-         D6t6v8rmxMvJ90TvGMQxlJ8rRVzudiwsiDZtZWGeLffp2MPpXzFqJ0xrOoNu0Dtyc0oE
-         s/ZyI0sDu/EnaQJElLp5XkQQIZGHkFuSAIsV8JlOF/47THEn6xkMjBg/Jrar8I4vrwWt
-         iIvVB09mQm1Q6efoJ/NhyT9DGGS/qI16ZuLXswPxcFv/wWIchchPs30fJsfloQYQ+5Vh
-         PqJg==
-X-Forwarded-Encrypted: i=1; AFNElJ8Cbl3dstPx8c3Gc70dW9Z/kffVJYnblfTN8oEb8lAksH4Xl0cVWzr0p7JuxfiEqhNutLg6aSQkbPmyCzM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzMFQRX3fyx3ESfeT6X6C9Z6GVSlHGi5uF+TbtfxAukMoz6h6XN
-	0jQZYnqFJWyESEijxXJM+1Xs5rPyn+s6gyvqMi0OxCNqCTNTfZ0wMO3Y
-X-Gm-Gg: AeBDieumryKFcXy4tMoRYIeDmN+wEg4s0bszpSP35GWJ9/uL/iKVi8PoS5oBjsUS2Q0
-	ITNkTQR4/RL+Aa5CDnweXuCbSUeJxaR30z4XUSGUbg/0jrZROhHklQ6yb6QpY3kbPdoJfgIUYHy
-	Zso7bytzh2/OHRR3y1/mlZc8uJPnEB49+MlJre7PeELuaOX5PIS8DFN+OXu3/c8EqHQGRdKftf4
-	cGFLqrKVARtVdHMQ5wYbxR2LPESAav+lZc/J369krmXAQDWoFPTRHmrgvWJKvty+nxv4WETy7EA
-	ItZ4uOkX+/cDUUH728ZqkMz2vHqCSPAXHHxR9/B9nFcouAIKSrmoSyAnAuqv1cgB2zDRo+2WQoz
-	jy1IzeDJRz52iE0rg191mzEk667pFkfPhbezMQQ+a/pLOtTwRqHPoiHHlWvjF+8JsrImFUPNXa5
-	QiRQMBLqsevigsYqPQNvUrY/jJZNGecrxQ
-X-Received: by 2002:a17:90b:4a04:b0:35b:e550:e68a with SMTP id 98e67ed59e1d1-35e4254fb13mr21922246a91.3.1776264409084;
-        Wed, 15 Apr 2026 07:46:49 -0700 (PDT)
-Received: from lgs.. ([112.224.67.108])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35fd308cf98sm2310617a91.7.2026.04.15.07.46.44
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 15 Apr 2026 07:46:47 -0700 (PDT)
-From: Guangshuo Li <lgs201920130244@gmail.com>
-To: Guangshuo Li <lgs201920130244@gmail.com>,
-	Paul Mackerras <paulus@ozlabs.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Cc: stable@vger.kernel.org
-Subject: [PATCH] macintosh: windfarm_core: fix reference leak on failed device registration
-Date: Wed, 15 Apr 2026 22:46:35 +0800
-Message-ID: <20260415144635.3318697-1-lgs201920130244@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fwm023lrcz2yvG
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2026 01:53:38 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id EB0BB600AE;
+	Wed, 15 Apr 2026 15:53:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8A646C19424;
+	Wed, 15 Apr 2026 15:53:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776268415;
+	bh=pF5Ty1TKfbXQTKmLGalKXImAXtzwkULsJDc+vi4BCZU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=DlGLUOuga1MKiMMANQa+Xk/NacVG+N3rBbJfCtnyo19AEl1tE+4MksQOwjbEhbhPp
+	 jW7SzH/5Nyz1ZO+tC4wvPydch5UTMHICyGDxlOJm3ceDJeRhFvHkZ+8+LsUtLzoyhz
+	 32fmq9wPfWG550vpxwBSqtJPFwaqyFBz7UFdwAH7je4GAH6yNHCNBfXGpn+pPkFSwb
+	 bx8T3rxSf1V08O+tncqh6acRwlEE0HsKP0+zmeWypjdet9c+vb+WXyd9YyI4LRlEoe
+	 Zdr9LirARf4S4xVxQIGPC3feUCBDloz+XHbrlXpQK1a912jqlO4/aLE6DCRJa98/Lt
+	 DPukwP+gwpx0A==
+Date: Wed, 15 Apr 2026 18:53:25 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: Muchun Song <songmuchun@bytedance.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	David Hildenbrand <david@kernel.org>,
+	Muchun Song <muchun.song@linux.dev>,
+	Oscar Salvador <osalvador@suse.de>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Lorenzo Stoakes <ljs@kernel.org>,
+	"Liam R . Howlett" <Liam.Howlett@oracle.com>,
+	Vlastimil Babka <vbabka@kernel.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>, Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>, aneesh.kumar@linux.ibm.com,
+	joao.m.martins@oracle.com, linux-mm@kvack.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 1/6] mm/sparse-vmemmap: Fix vmemmap accounting
+ underflow
+Message-ID: <ad-0dcuaoC9LKDEF@kernel.org>
+References: <20260415111412.1003526-1-songmuchun@bytedance.com>
+ <20260415111412.1003526-2-songmuchun@bytedance.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,53 +79,107 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260415111412.1003526-2-songmuchun@bytedance.com>
 
-When platform_device_register() fails in windfarm_core_init(), the
-embedded struct device in wf_platform_device has already been
-initialized by device_initialize(), but the failure path does not drop
-the device reference for the current platform device:
+On Wed, Apr 15, 2026 at 07:14:07PM +0800, Muchun Song wrote:
+> In section_activate(), if populate_section_memmap() fails, the error
+> handling path calls section_deactivate() to roll back the state. This
+> causes a vmemmap accounting imbalance.
+> 
+> Since commit c3576889d87b ("mm: fix accounting of memmap pages"),
+> memmap pages are accounted for only after populate_section_memmap()
+> succeeds. However, the failure path unconditionally calls
+> section_deactivate(), which decreases the vmemmap count. Consequently,
+> a failure in populate_section_memmap() leads to an accounting underflow,
+> incorrectly reducing the system's tracked vmemmap usage.
+> 
+> Fix this more thoroughly by moving all accounting calls into the lower
+> level functions that actually perform the vmemmap allocation and freeing:
+> 
+>   - populate_section_memmap() accounts for newly allocated vmemmap pages
+>   - depopulate_section_memmap() unaccounts when vmemmap is freed
+>   - free_map_bootmem() handles early bootmem section accounting
+> 
+> This ensures proper accounting in all code paths, including error
+> handling and early section cases.
+> 
+> Fixes: c3576889d87b ("mm: fix accounting of memmap pages")
+> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
 
-  windfarm_core_init()
-    platform_device_register(&wf_platform_device)
-      device_initialize(&wf_platform_device.dev)
-      setup_pdev_dma_masks(&wf_platform_device)
-      return platform_device_add(&wf_platform_device)
+Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 
-This leads to a reference leak when platform_device_register() fails.
-Fix this by checking the return value and calling platform_device_put().
+> ---
+>  mm/sparse-vmemmap.c | 20 ++++++++++++--------
+>  1 file changed, 12 insertions(+), 8 deletions(-)
+> 
+> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
+> index 6eadb9d116e4..a7b11248b989 100644
+> --- a/mm/sparse-vmemmap.c
+> +++ b/mm/sparse-vmemmap.c
+> @@ -656,7 +656,12 @@ static struct page * __meminit populate_section_memmap(unsigned long pfn,
+>  		unsigned long nr_pages, int nid, struct vmem_altmap *altmap,
+>  		struct dev_pagemap *pgmap)
+>  {
+> -	return __populate_section_memmap(pfn, nr_pages, nid, altmap, pgmap);
+> +	struct page *page = __populate_section_memmap(pfn, nr_pages, nid, altmap,
+> +						      pgmap);
+> +
+> +	memmap_pages_add(DIV_ROUND_UP(nr_pages * sizeof(struct page), PAGE_SIZE));
+> +
+> +	return page;
+>  }
+>  
+>  static void depopulate_section_memmap(unsigned long pfn, unsigned long nr_pages,
+> @@ -665,13 +670,17 @@ static void depopulate_section_memmap(unsigned long pfn, unsigned long nr_pages,
+>  	unsigned long start = (unsigned long) pfn_to_page(pfn);
+>  	unsigned long end = start + nr_pages * sizeof(struct page);
+>  
+> +	memmap_pages_add(-1L * (DIV_ROUND_UP(nr_pages * sizeof(struct page), PAGE_SIZE)));
+>  	vmemmap_free(start, end, altmap);
+>  }
+> +
+>  static void free_map_bootmem(struct page *memmap)
+>  {
+>  	unsigned long start = (unsigned long)memmap;
+>  	unsigned long end = (unsigned long)(memmap + PAGES_PER_SECTION);
+>  
+> +	memmap_boot_pages_add(-1L * (DIV_ROUND_UP(PAGES_PER_SECTION * sizeof(struct page),
+> +						  PAGE_SIZE)));
+>  	vmemmap_free(start, end, NULL);
+>  }
+>  
+> @@ -774,14 +783,10 @@ static void section_deactivate(unsigned long pfn, unsigned long nr_pages,
+>  	 * The memmap of early sections is always fully populated. See
+>  	 * section_activate() and pfn_valid() .
+>  	 */
+> -	if (!section_is_early) {
+> -		memmap_pages_add(-1L * (DIV_ROUND_UP(nr_pages * sizeof(struct page), PAGE_SIZE)));
+> +	if (!section_is_early)
+>  		depopulate_section_memmap(pfn, nr_pages, altmap);
+> -	} else if (memmap) {
+> -		memmap_boot_pages_add(-1L * (DIV_ROUND_UP(nr_pages * sizeof(struct page),
+> -							  PAGE_SIZE)));
+> +	else if (memmap)
+>  		free_map_bootmem(memmap);
+> -	}
+>  
+>  	if (empty)
+>  		ms->section_mem_map = (unsigned long)NULL;
+> @@ -826,7 +831,6 @@ static struct page * __meminit section_activate(int nid, unsigned long pfn,
+>  		section_deactivate(pfn, nr_pages, altmap);
+>  		return ERR_PTR(-ENOMEM);
+>  	}
+> -	memmap_pages_add(DIV_ROUND_UP(nr_pages * sizeof(struct page), PAGE_SIZE));
+>  
+>  	return memmap;
+>  }
+> -- 
+> 2.20.1
+> 
 
-The issue was identified by a static analysis tool I developed and
-confirmed by manual review.
-
-Fixes: 75722d3992f57 ("[PATCH] ppc64: Thermal control for SMU based machines")
-Cc: stable@vger.kernel.org
-Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
----
- drivers/macintosh/windfarm_core.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/macintosh/windfarm_core.c b/drivers/macintosh/windfarm_core.c
-index 5307b1e34261..4003e72f3a57 100644
---- a/drivers/macintosh/windfarm_core.c
-+++ b/drivers/macintosh/windfarm_core.c
-@@ -436,9 +436,14 @@ EXPORT_SYMBOL_GPL(wf_clear_overtemp);
- 
- static int __init windfarm_core_init(void)
- {
-+	int err;
-+
- 	DBG("wf: core loaded\n");
- 
--	platform_device_register(&wf_platform_device);
-+	err = platform_device_register(&wf_platform_device);
-+	if (err)
-+		platform_device_put(&wf_platform_device);
-+
- 	return 0;
- }
- 
 -- 
-2.43.0
-
+Sincerely yours,
+Mike.
 
