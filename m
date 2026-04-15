@@ -1,76 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-19760-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19761-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E6B0F41984
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2026 09:39:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3EAFAF4198C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2026 10:04:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fwbgn6rTnz2yvY;
-	Wed, 15 Apr 2026 19:39:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20a::7" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776245941;
-	cv=pass; b=H9PcvcvELiico/miaWus0qxDCKdC04VIpk05jF/cMa8NAyFPsCp6e2bFpSCgzxZ29ZdeOViv0rWcJ0xAzDoWGyBjGHQ7f7yPwmuDyTrcLRdMaIxu+5cnR9DYaLBEfT9ZyNTKw6L7aR4bSOmke8u442mYVnGDmn3m+Yo85mFY7q5iG/kLzaBKVztDj8I3UULL2QGQSHovAVcLRocl/3YWIe5kUzqiq2yST4y08p5+lBZbhg3GvL5P/8sDP7PF9/E9JnN4ztqCPOM2PfcrDuoCCrn2JFXYteu//IXmUXNtEmf0IfyhcKFw216zKth1beKBRZmTGxu/LZVcR5wRSTMNgw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776245941; c=relaxed/relaxed;
-	bh=6IaXVMdfy1aeMdV068wD7+q2JUwFFXYx7S3bdpT8DhM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=IikUWR8an+gWbOg1Yx+a7GIQzsgVa3bf8PBlnNs0t2D1t8SvfRrh5cOH9SWiMUVMacvD46lFCYlI2x51GXrLF46bR8hSf57bPz/Wg25MaHJHT3r+9Obha1QJBicksZnRqa7ya9D7BphcMExP+or5C12NRgWPqAv3W2aJ7Me2LvTMw+tcU/AL1j0GX+cDXcFaeFvQEF5S9NXEIz6uMXq4rU6Yy2wOo6I17aJ6bgja3fdnRq0GQUH0Ve6UkeyrJK0OI6DXFCQNFgGwZinS5YU7BvUIPOhvo+/Y4T6ih9BERRP9aiphNVhV/dd0qBlMUvx8IpZwlOS/sbAglvHrIYd5mw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=iOdZEXsF; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c20a::7; helo=pa4pr04cu001.outbound.protection.outlook.com; envelope-from=ioana.ciornei@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fwcFV5MGLz2yvY;
+	Wed, 15 Apr 2026 20:04:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.218
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776247486;
+	cv=none; b=kbLeb96rBIGuOUPbLSwSDkGbPPkHuruzRSWco1Z0OkIbJPuo8SPPguj+fxn8tSUdNntcF3TDhfUyx4vPM+5SylqVPEdAVLVXlwrGPyvgI8sLLIwY0+Nt8Il/eimSBK9Wb2Xk51Qo7tG5posCOdNlh9BMdKoAsQF4wnGn58Bab7c6xkYu7kb9EfcQOQqihVUyrJxkmy4S7/FuGmRMV72vcdecUubwirAg/lx5MpyG38d7ofq7Ff2hr95V9iQIKv733pAsisNYO1jPK72gWlBsxYsdEQVzD+86KQ7r/1v/XudRBsyADtP+ozzSDA62sIuwl+FsUxUYTNlyDA0I/RRgPg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1776247486; c=relaxed/relaxed;
+	bh=ECSSlTyhJvtyzyV12bRiciUTZEMt5lG0F0BW5PZ9epA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=OZl8Co+gdWnIeV9SJXeOb6mUwqk9tXEOIymM6HizptRCaFPV6qGBbrDBvypSH3xIgfaLJz7MFNWu/iW+2KeR19b2B5J/O3UmNrUWntE96zllIAOjoAAQvXDtZfHfXh2d0di5PihMoOtJWqQ8DJ0+I3EJMXFaySTK4YFDDV5nsJ7szMQC72WVmM7xP5At0wa6TBmYfh3gSWJktBNsgQBNQfiOcssm+EOC0s5g7lkU1FxByCPxoyulNRtLKMwozLpPCA7tXzRb4m7VfV7f3jcKXORMi13E+r+mUymxcMtDgUECsL8h71a+vKZGMAlXySKbuZ3z/btzpD1XRUU+/v2iKg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=XwGRhLne; dkim-atps=neutral; spf=pass (client-ip=113.46.200.218; helo=canpmsgout03.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=iOdZEXsF;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=XwGRhLne;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c20a::7; helo=pa4pr04cu001.outbound.protection.outlook.com; envelope-from=ioana.ciornei@nxp.com; receiver=lists.ozlabs.org)
-Received: from PA4PR04CU001.outbound.protection.outlook.com (mail-francecentralazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20a::7])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.218; helo=canpmsgout03.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout03.his.huawei.com (canpmsgout03.his.huawei.com [113.46.200.218])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fwbgm2BVMz2yrM
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2026 19:38:59 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=oTVLmXZaGzntrwRYUA19xPmlMWhUP+HCHX9VmfuooX8UIZWxvIYg+RLuvOxZEN3VqdqA7mqOJEUOCzjOQ2gRj3LUMk+4DAgk5M6Nj+HWzcamixQw0h7Ngsny/xXwt88pCy9if8UOj+fQdzwjs1aVt+1fERMtWk2Z5is7U14kjoylWMxvWSwJ4sMvTv9RTlcA5XKJR9dMsRcnNZt50fiOVQ13VzkrD8ziffk2UKjHLPj4QwrUlk3Pio4ZoeCizbYoYXKFb2qmACzFYOd4sTicU7AbO3mVdqf0ObbYvnAO4aEQIfiE+3WP0hVjiYGiL1X5W9htU842vUOhDUrkIlFEgA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=6IaXVMdfy1aeMdV068wD7+q2JUwFFXYx7S3bdpT8DhM=;
- b=ByVjQyt0TcrtwGAmTeaFMqIvbe9y/WZoCXrRIXNCz2KfQCp8Fj0TCjY8O1nH9ldyXb+jekbz8bx6P+0jXsXcQ3K8GAgkTGozdFduEHaPup+7eaFdbhlSPamaUweg5hEt7ylviECY93i91v98IE+q0oxg7djKQ/WhZpotuJTIiLBGJBgFeVFFPPH+epVW3orMzOr0nCK5TPipFX1zOVRWtpJfH3y2F4JiWXEty40Cs/WF9f6cm3KjLc2lP6hiOi0DX8KW8IybthZ3vF30Gpawbqbue0+A/qmRALiQDP+9VYz+95MhxF6s1AojUQX2HfxkW6IVuBCxy/Yp59As42JMlQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=6IaXVMdfy1aeMdV068wD7+q2JUwFFXYx7S3bdpT8DhM=;
- b=iOdZEXsFe4xHl4XBmMy/aaZGQGIFJLLOtinvk79GhvUUgm2/3T3nOO++KMaCaYrxe8Ikeu6JJMn/0JaBuW+FYe1mVPwYqmYFFESQDpVJVRStHgo04eAvoP2iKOzAm/fuxrNpugTlPG5Rq0NVxfleyGutYMDqdJ/qKe35N6yWy1zdfJSwbJRtEWL1IlczK0PaPtfwDT19URjhvna2Xj15pW0Tk7hbIwDjoTuImIdV6wJ8L9FiHy1ow67xIGHv1sET7Waj3duykGd32SYr/h7e00J+AlsNaa4Hbn284oGBzVserB4R48hwMbDT41CuQ0eXU0bpZGHQxXI8FS4TMg6cTg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Received: from VI0PR04MB11503.eurprd04.prod.outlook.com
- (2603:10a6:800:2c7::16) by AM8PR04MB7300.eurprd04.prod.outlook.com
- (2603:10a6:20b:1c7::12) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.48; Wed, 15 Apr
- 2026 09:38:33 +0000
-Received: from VI0PR04MB11503.eurprd04.prod.outlook.com
- ([fe80::cbe9:4c03:71b6:359f]) by VI0PR04MB11503.eurprd04.prod.outlook.com
- ([fe80::cbe9:4c03:71b6:359f%6]) with mapi id 15.20.9769.046; Wed, 15 Apr 2026
- 09:38:32 +0000
-Date: Wed, 15 Apr 2026 12:38:28 +0300
-From: Ioana Ciornei <ioana.ciornei@nxp.com>
-To: Guangshuo Li <lgs201920130244@gmail.com>
-Cc: Stuart Yoder <stuart.yoder@freescale.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alexander Graf <agraf@suse.de>, 
-	"J. German Rivera" <German.Rivera@freescale.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
-	stable@vger.kernel.org
-Subject: Re: [PATCH v2] bus: fsl-mc: Fix refcount leak in fsl_mc_device_add()
- error path
-Message-ID: <4yzeebhaojygexo2ori5xpwyjpldag66vkoywnnrcs2ncjoght@bjiaqfz6koeo>
-References: <20260413134345.2855417-1-lgs201920130244@gmail.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260413134345.2855417-1-lgs201920130244@gmail.com>
-X-ClientProxiedBy: AS4P190CA0002.EURP190.PROD.OUTLOOK.COM
- (2603:10a6:20b:5de::11) To VI0PR04MB11503.eurprd04.prod.outlook.com
- (2603:10a6:800:2c7::16)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fwcFR6cGLz2yrM
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2026 20:04:41 +1000 (AEST)
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=ECSSlTyhJvtyzyV12bRiciUTZEMt5lG0F0BW5PZ9epA=;
+	b=XwGRhLne6TgIRHTpnVjff9jL3j2nEOUg/4fZqohVv7IVECo3hpMZzFAeQRSYPfQpZazp8xLIF
+	L4BvOv/i1ejypeY+N7Bw7ro/40TcmqZH93SdaTwdtLVozGchElPUhdWYant6q56kDs/Fs1058fD
+	SLf1DVLYrM2j/JVPi7gaTBc=
+Received: from mail.maildlp.com (unknown [172.19.162.140])
+	by canpmsgout03.his.huawei.com (SkyGuard) with ESMTPS id 4fwc651DVGzpSyb;
+	Wed, 15 Apr 2026 17:58:21 +0800 (CST)
+Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
+	by mail.maildlp.com (Postfix) with ESMTPS id AD24820104;
+	Wed, 15 Apr 2026 18:04:33 +0800 (CST)
+Received: from [10.67.109.254] (10.67.109.254) by
+ dggpemf500011.china.huawei.com (7.185.36.131) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.11; Wed, 15 Apr 2026 18:04:30 +0800
+Message-ID: <3e861ad2-a57d-45a5-94d0-0a8c4d58f7b6@huawei.com>
+Date: Wed, 15 Apr 2026 18:04:26 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -84,138 +61,150 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: VI0PR04MB11503:EE_|AM8PR04MB7300:EE_
-X-MS-Office365-Filtering-Correlation-Id: 6af04951-fac2-4540-d49e-08de9ad2c245
-X-LD-Processed: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635,ExtAddr
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
- BCL:0;ARA:13230040|376014|19092799006|1800799024|366016|18002099003|22082099003|56012099003;
-X-Microsoft-Antispam-Message-Info:
- gvA5mhk0OWpmVrTTXub1B6GxeeYW2YgW2w74FoKQfWyGmm8rRvtugSWwQQyWjINTebEBAmOuFdPCHrLXDfvmY4nt2NzdFpL0M2k0dIWVPq30IKG3IhkN0GuMTGy9Pmccl0RzelmkcUC16OpCwKohQWzvbOUI6e7Q1VhnQklxtcEto5s+bKXbqTnLfQE0g3da0dbO9DmTEqQwesdqxY3ImV4UaK543AzwCMGMbWOdSP52BySk71AHGbuLjxbd5oGicGvq/Bb5a8NqgMTCA8W9/sUNt8Lm988vG1vOq4J//LNHUl5WVB6lyv6IxKq5z1+JJUl+GWF4fAJnmrdTOWZ2Al7BY/oVr9+a5gYyQWggBd8i5NNA9jT8X0kBc/Bhkqh0m3z2ducoi5yq0ziTSDrGeNPgGM9A/zBAXEHt//44WlYAVnEA9atxV+cLt2Lq5vtMi7LsG/+/j92f+L0GXJdBDJB01AN2O+p0iwoJGPlvnO0Dry0stN0gquyH1vET+H31fCswVmA1JyvIkU/e+tBC+CpDld34DQPoI+UEalrIR/bezZ+cBNs+4h0BpR/2wttW1jHURqXyUX1RQPL8DM07IHXhyJIB6LHFdXYeonFYogXutK16K+xJnwGX4B8PF2JNq97P269GVxa5L6NrrwmKQDvJSR7SI5awfU8y+J03mVwbuWTS5h+DkudiAl48NOFiVkJz6ZvAqYQMuiTpJtN+D0AHGAVX9TfqzLiktQg1R0ycfyDe48c4kHQf3ofTCmNb
-X-Forefront-Antispam-Report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI0PR04MB11503.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(19092799006)(1800799024)(366016)(18002099003)(22082099003)(56012099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
- =?us-ascii?Q?5zddRclJLM+lrN3mkVMxfuztVXdn5XPbCE/b6rgCpRL405MGynAvgvqMChGN?=
- =?us-ascii?Q?s9DY5Tev+AOUecYkzbyBlctOY2pg79Px7+g4U9QlodvN4UUuiFs7JKQuk5Cq?=
- =?us-ascii?Q?aakeKH/bfGRfutmyr2ajpoa7zxgqdFoyPuPRHUjaf/ll9o3IpJ0yt4drZEX3?=
- =?us-ascii?Q?hYKuK4HcOOQheD8fL2mLFNHBExPgc0OglZlvST/etrQn/7k6XYTTMQh7gaYJ?=
- =?us-ascii?Q?moRS5LUnUdOrfGOM3j3qXYZIrTgjTaKtd/gGMGjuWfFdhY480j3uonHrAKW9?=
- =?us-ascii?Q?k+TnOuJfv2nIRQrT9FjJzcUhQtjqdrdW5U8Wq+j748DM6j1VcXWkc1ZZfDnP?=
- =?us-ascii?Q?ea0pYAz3x6Sb/gX0MtTv87vSpp+NPT7EvzJvRjlI4wOvmbN3ICxGmAcNCAxR?=
- =?us-ascii?Q?e3cQ1ybruYTN1VtBnjs84VCY+Q0aTcoAGoSBPKThCUp0fimX9pjg2lZwVqd1?=
- =?us-ascii?Q?+nVDi2C/BO3OEM1Ju7p7oXUBEY+Mik+SxY1m0nmoq7FkApZHkT74pyKSCXaU?=
- =?us-ascii?Q?yLHUzD2ZGVXGLgro6CXRBDRgZxbTip2TyTSpqrC9rrQOb8VMIOhjYIkWx0Uf?=
- =?us-ascii?Q?tEu7BvQNw+ytf3czwEkzxhlKDIjlktCHK9ifZdsfuChVXTodRAe7WtegRlF2?=
- =?us-ascii?Q?IYXUODEUMhlUH9bbIerm6I4wqETSWQBSNy0Bqe9IQZzMZyWa75HZwqW1tATv?=
- =?us-ascii?Q?P2yHpe/H1UHJEbooBigqPIMH3iwW58OSQSpnvLPxZEzqVE4xE2/LR5GOSnqM?=
- =?us-ascii?Q?E5QiEDeQeezZwrPYpxMgEpXguJ01cSDAL9xV7/znOFZ6u8VMLFGA6a9HaGU0?=
- =?us-ascii?Q?kLTSkPtSdyfQdh+eO1/ubSRiOc2US3y1vCFjPs5VWuLsZZlzthtHBBhMb5nW?=
- =?us-ascii?Q?7l0BAUNjCHflVLNXr9ADtp/zwtZalzMeRY70u5N/SJzgM0mDJQEJQO67nyKF?=
- =?us-ascii?Q?fZoLS94NDG1rHjrMitKKsCq7XQeDw3v+6EwpP19o6sa3KSeQg3Xaowz66lNJ?=
- =?us-ascii?Q?k367Z7zb/aMXF+n7KIvESG8hRKEg5QE5gyk5v8LCNkodVa6Gf3TeV3MsmtqI?=
- =?us-ascii?Q?bKhWyiNukcxGwclyrqpDnpDiKmpikc3orPrXQkKIYX7ARnk7yXCTnjqSrrcI?=
- =?us-ascii?Q?6/GwzKPsuXw8suoStVNEFt9Y9qokE/otp/Am43wh9ZJwfWoRCAwcUW0m6qpT?=
- =?us-ascii?Q?EtHMf/PUGvnDXC7B3BzAavndPdrjIU3Gw/+53aapk4EVY4GVLHn9jGzByabg?=
- =?us-ascii?Q?Z+CWTbqU9t1ScloAQbGphm9PtEAlNHmwMDsM4+nRbyPcqYLdSBfDYU1tcGAS?=
- =?us-ascii?Q?y8kgeYpYhiXZon/ZD8TmJ/xl4L5dqETypABPjbm8qc2Bbj9birvgMwwhCG5A?=
- =?us-ascii?Q?d6XBl9vzxlE9Nd3JXO2wzhPiI+EbP3mhBLpA3ICK4b3nBAELjC9GX4/N9z2i?=
- =?us-ascii?Q?hcHwsC1VEW3TVij1V5z4xhxOGeeo2uVlgM+Lmu/x4twCqle6zjL4A8o5NcIs?=
- =?us-ascii?Q?QV+vf1+elTICwL1cFvYp2CHjuSEFbeAZ/eleXFNBbR7ZOIr9aM2WDkDcOfcH?=
- =?us-ascii?Q?hdpbQBoU/o1c6Si9B7BrbbQOZLU19ZtAFgmGL4pa5QgnNEL+6zHQCu5nmUcA?=
- =?us-ascii?Q?NiQNvvNFB3mcq5XRSR+gDToovT6Y4Lcq94l5UxhKxXm5unxE3OgWIQQwx+r8?=
- =?us-ascii?Q?nG9NZBULxrW39h10zAJi6oCSETUJJfDhvWQPx7389i8fExgNINa94q4nSira?=
- =?us-ascii?Q?Eyr/xtjzpw=3D=3D?=
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6af04951-fac2-4540-d49e-08de9ad2c245
-X-MS-Exchange-CrossTenant-AuthSource: VI0PR04MB11503.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Apr 2026 09:38:32.8185
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: VSwKRaBcsZGNjfKis6DsW1MLu6KySOlp+/5/gPtD+Ds2p149XPvZjD7k0PM/cQCPF80EEmymFAGW415n48HzGQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM8PR04MB7300
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v12 00/15] arm64/riscv: Add support for crashkernel CMA
+ reservation
+To: <corbet@lwn.net>, <skhan@linuxfoundation.org>, <catalin.marinas@arm.com>,
+	<will@kernel.org>, <chenhuacai@kernel.org>, <kernel@xen0n.name>,
+	<maddy@linux.ibm.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
+	<chleroy@kernel.org>, <pjw@kernel.org>, <palmer@dabbelt.com>,
+	<aou@eecs.berkeley.edu>, <alex@ghiti.fr>, <tglx@kernel.org>,
+	<mingo@redhat.com>, <bp@alien8.de>, <dave.hansen@linux.intel.com>,
+	<hpa@zytor.com>, <robh@kernel.org>, <saravanak@kernel.org>,
+	<akpm@linux-foundation.org>, <bhe@redhat.com>, <vgoyal@redhat.com>,
+	<dyoung@redhat.com>, <rdunlap@infradead.org>, <peterz@infradead.org>,
+	<pawan.kumar.gupta@linux.intel.com>, <feng.tang@linux.alibaba.com>,
+	<dapeng1.mi@linux.intel.com>, <kees@kernel.org>, <elver@google.com>,
+	<paulmck@kernel.org>, <lirongqing@baidu.com>, <rppt@kernel.org>,
+	<leitao@debian.org>, <ardb@kernel.org>, <jbohac@suse.cz>,
+	<cfsworks@gmail.com>, <tangyouling@kylinos.cn>, <sourabhjain@linux.ibm.com>,
+	<ritesh.list@gmail.com>, <hbathini@linux.ibm.com>, <eajames@linux.ibm.com>,
+	<guoren@kernel.org>, <songshuaishuai@tinylab.org>, <kevin.brodsky@arm.com>,
+	<vishal.moola@gmail.com>, <junhui.liu@pigmoral.tech>, <coxu@redhat.com>,
+	<fuqiang.wang@easystack.cn>, <liaoyuanhong@vivo.com>,
+	<takahiro.akashi@linaro.org>, <james.morse@arm.com>, <lizhengyu3@huawei.com>,
+	<x86@kernel.org>, <linux-doc@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
+	<linux-riscv@lists.infradead.org>, <devicetree@vger.kernel.org>,
+	<kexec@lists.infradead.org>
+References: <20260402072701.628293-1-ruanjinjie@huawei.com>
+From: Jinjie Ruan <ruanjinjie@huawei.com>
+In-Reply-To: <20260402072701.628293-1-ruanjinjie@huawei.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.67.109.254]
+X-ClientProxiedBy: kwepems200001.china.huawei.com (7.221.188.67) To
+ dggpemf500011.china.huawei.com (7.185.36.131)
 
-On Mon, Apr 13, 2026 at 09:43:44PM +0800, Guangshuo Li wrote:
-> After device_initialize(), the lifetime of the embedded struct device
-> is expected to be managed through the device core reference counting.
+
+
+On 4/2/2026 3:26 PM, Jinjie Ruan wrote:
+> The crash memory allocation, and the exclude of crashk_res, crashk_low_res
+> and crashk_cma memory are almost identical across different architectures,
+> This patch set handle them in crash core in a general way, which eliminate
+> a lot of duplication code.
 > 
-> In fsl_mc_device_add(), all failures after device_initialize() jump to
-> error_cleanup_dev, where mc_dev and its associated resources are freed
-> directly instead of releasing the device reference with
-> put_device(&mc_dev->dev). This bypasses the normal device lifetime
-> rules and may leave the reference count of the embedded struct device
-> unbalanced, resulting in a refcount leak.
+> And add support for crashkernel CMA reservation for arm64 and riscv.
 > 
-> The issue was identified by a static analysis tool I developed and
-> confirmed by manual review.
+> Rebased on v7.0-rc1.
 > 
-> Fix this by using put_device(&mc_dev->dev) in the error path and let
-> fsl_mc_device_release() handle the final cleanup.
+> Basic second kernel boot test were performed on QEMU platforms for x86,
+> ARM64, and RISC-V architectures with the following parameters:
 > 
-> Fixes: bbf9d17d9875 ("staging: fsl-mc: Freescale Management Complex (fsl-mc) bus driver")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
-> ---
-> v2:
->   - note that the issue was identified by my static analysis tool
->   - and confirmed by manual review
+> 	"cma=256M crashkernel=256M crashkernel=64M,cma"
 > 
->  drivers/bus/fsl-mc/fsl-mc-bus.c | 6 +-----
->  1 file changed, 1 insertion(+), 5 deletions(-)
+> Changes in v12:
+> - Remove the unused "nr_mem_ranges" for x86.
+> - Add "Fix crashk_low_res not exclude bug" test log.
+> - Provide a separate patch for each architecture for using
+>   crash_prepare_headers(), which will make the review more convenient.
+> - Add Reviewed-by and Tested-by.
+> - Link to v11: https://lore.kernel.org/all/20260328074013.3589544-1-ruanjinjie@huawei.com/
 > 
-> diff --git a/drivers/bus/fsl-mc/fsl-mc-bus.c b/drivers/bus/fsl-mc/fsl-mc-bus.c
-> index 25845c04e562..6d132144ce25 100644
-> --- a/drivers/bus/fsl-mc/fsl-mc-bus.c
-> +++ b/drivers/bus/fsl-mc/fsl-mc-bus.c
-> @@ -905,11 +905,7 @@ int fsl_mc_device_add(struct fsl_mc_obj_desc *obj_desc,
->  	return 0;
->  
->  error_cleanup_dev:
-> -	kfree(mc_dev->regions);
-> -	if (mc_bus)
-> -		kfree(mc_bus);
-> -	else
-> -		kfree(mc_dev);
-> +	put_device(&mc_dev->dev);
->  
->  	return error;
->  }
-> -- 
-> 2.43.0
->
+> Changes in v11:
+> - Avoid silently drop crash memory if the crash kernel is built without
+>   CONFIG_CMA.
+> - Remove unnecessary "cmem->nr_ranges = 0" for arch_crash_populate_cmem()
+>   as we use kvzalloc().
+> - Provide a separate patch for each architecture to fix the existing
+>   buffer overflow issue.
 
-Wasn't this issue already fixed by the following commit?
+Are there any further review comments? Especially regarding the patch
+for fixing out-of-bounds access (suggested by the AI review), as well as
+the changes for LoongArch, x86 and riscv architectures.
 
- commit 52f527d0916bcdd7621a0c9e7e599b133294d495 (tag: soc_fsl-6.20-1)
- Author: Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>
- Date:   Sat Jan 24 18:20:54 2026 +0800
+> - Add Acked-bys for arm64.
+> 
+> Changes in v10:
+> - Fix crashk_low_res not excluded bug in the existing
+>   RISC-V code.
+> - Fix an existing memory leak issue in the existing PowerPC code.
+> - Fix the ordering issue of adding CMA ranges to
+>   "linux,usable-memory-range".
+> - Fix an existing concurrency issue. A Concurrent memory hotplug may occur
+>   between reading memblock and attempting to fill cmem during kexec_load()
+>   for almost all existing architectures.
+> - Link to v9: https://lore.kernel.org/all/20260323072745.2481719-1-ruanjinjie@huawei.com/
+> 
+> Changes in v9:
+> - Collect Reviewed-by and Acked-by, and prepare for Sashiko AI review.
+> - Link to v8: https://lore.kernel.org/all/20260302035315.3892241-1-ruanjinjie@huawei.com/
+> 
+> Changes in v8:
+> - Fix the build issues reported by kernel test robot and Sourabh.
+> - Link to v7: https://lore.kernel.org/all/20260226130437.1867658-1-ruanjinjie@huawei.com/
+> 
+> Changes in v7:
+> - Correct the inclusion of CMA-reserved ranges for kdump kernel in of/kexec
+>   for arm64 and riscv.
+> - Add Acked-by.
+> - Link to v6: https://lore.kernel.org/all/20260224085342.387996-1-ruanjinjie@huawei.com/
+> 
+> Changes in v6:
+> - Update the crash core exclude code as Mike suggested.
+> - Rebased on v7.0-rc1.
+> - Add acked-by.
+> - Link to v5: https://lore.kernel.org/all/20260212101001.343158-1-ruanjinjie@huawei.com/
+> 
+> Jinjie Ruan (14):
+>   riscv: kexec_file: Fix crashk_low_res not exclude bug
+>   powerpc/crash: Fix possible memory leak in update_crash_elfcorehdr()
+>   x86/kexec: Fix potential buffer overflow in prepare_elf_headers()
+>   arm64: kexec_file: Fix potential buffer overflow in
+>     prepare_elf_headers()
+>   riscv: kexec_file: Fix potential buffer overflow in
+>     prepare_elf_headers()
+>   LoongArch: kexec: Fix potential buffer overflow in
+>     prepare_elf_headers()
+>   crash: Add crash_prepare_headers() to exclude crash kernel memory
+>   arm64: kexec_file: Use crash_prepare_headers() helper to simplify code
+>   x86/kexec: Use crash_prepare_headers() helper to simplify code
+>   riscv: kexec_file: Use crash_prepare_headers() helper to simplify code
+>   LoongArch: kexec: Use crash_prepare_headers() helper to simplify code
+>   crash: Use crash_exclude_core_ranges() on powerpc
+>   arm64: kexec: Add support for crashkernel CMA reservation
+>   riscv: kexec: Add support for crashkernel CMA reservation
+> 
+> Sourabh Jain (1):
+>   powerpc/crash: sort crash memory ranges before preparing elfcorehdr
+> 
+>  .../admin-guide/kernel-parameters.txt         |  16 +--
+>  arch/arm64/kernel/machine_kexec_file.c        |  43 +++-----
+>  arch/arm64/mm/init.c                          |   5 +-
+>  arch/loongarch/kernel/machine_kexec_file.c    |  43 +++-----
+>  arch/powerpc/include/asm/kexec_ranges.h       |   1 -
+>  arch/powerpc/kexec/crash.c                    |   7 +-
+>  arch/powerpc/kexec/ranges.c                   | 101 +-----------------
+>  arch/riscv/kernel/machine_kexec_file.c        |  42 +++-----
+>  arch/riscv/mm/init.c                          |   5 +-
+>  arch/x86/kernel/crash.c                       |  92 +++-------------
+>  drivers/of/fdt.c                              |   9 +-
+>  drivers/of/kexec.c                            |   9 ++
+>  include/linux/crash_core.h                    |   9 ++
+>  include/linux/crash_reserve.h                 |   4 +-
+>  kernel/crash_core.c                           |  89 ++++++++++++++-
+>  15 files changed, 193 insertions(+), 282 deletions(-)
+> 
 
-     bus: fsl-mc: fix an error handling in fsl_mc_device_add()
-
-     In fsl_mc_device_add(), device_initialize() is called first.
-     put_device() should be called to drop the reference if error
-     occurs. And other resources would be released via put_device
-     -> fsl_mc_device_release. So remove redundant kfree() in
-     error handling path.
-
-     Fixes: bbf9d17d9875 ("staging: fsl-mc: Freescale Management Complex (fsl-mc) bus driver")
-     Cc: stable@vger.kernel.org
-     Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
-     Closes: https://lore.kernel.org/all/b767348e-d89c-416e-acea-1ebbff3bea20@stanley.mountain/
-     Signed-off-by: Su Hui <suhui@nfschina.com>
-     Suggested-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-     Signed-off-by: Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>
-     Reviewed-by: Ioana Ciornei <ioana.ciornei@nxp.com>
-     Link: https://lore.kernel.org/r/20260124102054.1613093-1-lihaoxiang@isrc.iscas.ac.cn
-     Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-
-
-What tree are you using?
-
-Ioana
 
