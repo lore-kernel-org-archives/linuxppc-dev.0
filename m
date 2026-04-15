@@ -1,67 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-19746-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19747-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35880F9D0E8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Apr 2026 16:47:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10C40F9D0FB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2026 00:16:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fw9D52bDYz2xSG;
-	Wed, 15 Apr 2026 02:47:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776185221;
-	cv=none; b=gAwcd8OSLnKqx4CDhrWuvrZgLJj9IhIC4iarv8UFjGzKNgbh05SZKLQMkq5BV9P6vdWWXuGBPDJA5FcvZl3xxPR21qncdloIrCj0HmkKId9RmpSbT5bgVPPpQNoZ3T7fW4ow7k4EdHcWnGlIzYH80FCmi7RARbJ/CkD0eg6P54jpCDenIuvGVx9LTMUdPy5GLdfRQPvHKxuLqPXgpwPsRNJ00IKDq3HpCP+FMQw31xpRmJcgoCPksN1OotxwPZG1MIaxNWm7vWJRywAPzcQC9ww2xzUWHbMQBItKo6wKIvvRWSpLpNb5NYWVINIz9Rj9uOCubmwOwlqcqHj970gLDQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fwMBH6zyPz2yrt;
+	Wed, 15 Apr 2026 10:16:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776212167;
+	cv=none; b=PoJmK7tovN/tZeguEVupzt1/b5Zw9e3tmrpLp8R+clyJXKMfJkndB2rTvMw+Vi83oyJjViFMJk9+rAlU6rXt+DMJdw2KSdHWArL3APhZwckV05csHA7Z5nZtQMnTp/7pcJm7bpmfGwpJYejvQOrL84gWWVw6tgpyKiWPaZM9ZSX5XSrGBd5A5LtSsQ2ZKtSbNsi5x9SmOJWS2AQaQGs7sdjzrBXnIUsTPVet0TRFhSnx+DRGLOouhKCI5FnIdNY+4UgAXJQikzl6VJVssiHAPKeGIwxY7fF8wuQ8JrrvXyNMz7eYOOHu366sMu3UjcjmA9ZutcBq0KPXQdv939ZhlQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776185221; c=relaxed/relaxed;
-	bh=0XpvUWJdPK3It3NjFxZMUgAiv9eSPEerzQWrcf7EaiA=;
-	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=CiX1LlWUj15qUNmLIfGsdCFWN45ipwoFs+BE/d3fmpRtKJxY4BV2md6z5F2Pz/2CDZco+UTnGuyFGQfpmuUHi/he9NKA0ZSq0vGfe+ffTzoWm26WTqq86dOSm/2A/DuJ0yKGa/pssSUF5n3a1iQB8FxErMNsu9mcR6i5mBYm/DzEx8UmukY47goSPsVK1ckEoHqg6JozPM1AI3sfs2sLuFlGGlUWsG/+hOkceq0oNq/wziz8E01jx4fU1NQI8SC4pGZ55Pj10ppZjSMT7MD+1Qu6INKi97nhwlb8CqVR3NSXm6lqawrcKfWml3pZZbkHYT89si70GB7yYvvbK0W25w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=M3XzHspl; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1776212167; c=relaxed/relaxed;
+	bh=3JfaEoJMI+xMRk7u1BtSPnoN+G8uVXvoFfsYfx94sUA=;
+	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=gAE90acHpDEegsCtXbjUz/z8TPDUdRZEz2gAETx7LM6kj3vBNbKkx8ckodY3Fgmr2Ll8Shtl1W9r3NVd8ysS2nhOjUomY1aM98doR4MFSW0Evw8f1PKOlxgv2CP788oQ4xMf2/9khI+fT/VfQJ0ehNgHAb2zgc2laFVDLbJ+P8xkzisHddWJjp8GZiZCPvoiFVQt8h8rjKlMWRhgJNe5Ft4Tb/lDLCVgPjzTYqAItEyaUy+vjF094zMxZh1N1cgWBBNfqC6HUYcsulqAN8uEOpQcRZKbdLdMmRk5MCy0BnHxOgRVpCDaJpd/ArzNVRQ7Ah80eDEYXBLb8c4O4fTYmg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=E428kDmH; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=M3XzHspl;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=E428kDmH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fw9D34KxRz2xS3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2026 02:46:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fwMBG6Ykvz2xl0
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2026 10:16:06 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 35F0743C4D;
-	Tue, 14 Apr 2026 16:46:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0B62CC19425;
-	Tue, 14 Apr 2026 16:46:57 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 0994560135;
+	Wed, 15 Apr 2026 00:16:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CA4DAC2BCB3;
+	Wed, 15 Apr 2026 00:16:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776185217;
-	bh=h5CUHLLZGJj1sqfzAOFN24P+lZAUpLgJCzAIP3pIVak=;
+	s=k20201202; t=1776212163;
+	bh=ZK/tZ9kCD4cyJL81lgf7UFcNq0EtKCDO3HK2E3Kr9OM=;
 	h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-	b=M3XzHspleh86r3vzAE6YUI8iX7fuNondhwJgpVrbrS0Op2mj2wIUHrH6fREXFKsIG
-	 pem7Y2vx+7Y7xwcrJ53ciAxItrD22RLU7qrf8Hp2j1xmoJc8hIvngurUvXyS+qkBub
-	 09nlGhcwM6sBuxJtfeY0yNha/v0y2nM1OpuMFM/Zr94Pf2tTnISy5Y3xt0Ci2EKXuG
-	 vKqkWXd08DrAsFfVL/8q1rNyTPsVxR/M6KO84zqoDqRYb4tOiaVJZBICeda8HWuSed
-	 ECCuMdETCSR6E3e0oPEVWgRNlqQU9u7DIt6JDR+Yv+2AaB+z66VFmF1bo5P7C02lT1
-	 Sx30d41kHGYgg==
+	b=E428kDmHFmx8TwWoHrw02RyerezSSlUfA3rGOwrT3iTrLtzwzchvKWi81B0+6JML/
+	 kuIWM1cQdJ9D3cDQWCSjBavrXG0poGHp5VhCBzMLELC58QJy0/5qHTK7FGy5ss1G4e
+	 TD+bd3C5iKNxN8f02y32YNsZYvUkiTmvgn6Ia6NC2enCDeqEDqj17HyXVTrEU4xXkt
+	 FO+2Jf+7TcMvl+9bY2aX0LtADP0ZGPeyL7CTZUNtAdjeA6rpv8SOqfBkX7R4h/9NNI
+	 70HXX4q9/uZVhMot/HfzG5MOnwR3Y45qhCOQUSOMvNZU5GTXPqX+8YvmzXmVZuWDOF
+	 3MayeNyAykYRw==
 Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id BA1313809A07;
-	Tue, 14 Apr 2026 16:46:28 +0000 (UTC)
-Subject: Re: [GIT PULL] Kbuild and Kconfig changes for v7.1
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 3FD443809A29;
+	Wed, 15 Apr 2026 00:15:35 +0000 (UTC)
+Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-7.1-1 tag
 From: pr-tracker-bot@kernel.org
-In-Reply-To: <adu-ZyIv47FnsVLI@levanger>
-References: <adu-ZyIv47FnsVLI@levanger>
-X-PR-Tracked-List-Id: <linux-s390.vger.kernel.org>
-X-PR-Tracked-Message-Id: <adu-ZyIv47FnsVLI@levanger>
-X-PR-Tracked-Remote: ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/kbuild/linux.git tags/kbuild-7.1-1
-X-PR-Tracked-Commit-Id: 404927758daac5ec4594071e033c1fa6ee9ca9b6
+In-Reply-To: <f027ade2-63e3-4d9f-8737-eaf295c8535a@linux.ibm.com>
+References: <f027ade2-63e3-4d9f-8737-eaf295c8535a@linux.ibm.com>
+X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
+X-PR-Tracked-Message-Id: <f027ade2-63e3-4d9f-8737-eaf295c8535a@linux.ibm.com>
+X-PR-Tracked-Remote: https://lore.kernel.org/linux-next/ac_R8cR5A-YtcRpi@sirena.org.uk/ and
+X-PR-Tracked-Commit-Id: b80777aef570ac561977d7210d04890f9df7e484
 X-PR-Merge-Tree: torvalds/linux.git
 X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 5d0d3623303775d750e122a2542d1a26c8573d38
-Message-Id: <177618518744.1376142.6209842916194520385.pr-tracker-bot@kernel.org>
-Date: Tue, 14 Apr 2026 16:46:27 +0000
-To: Nicolas Schier <nsc@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Alexander Coffin <alex@cyberialabs.net>, Ard Biesheuvel <ardb@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Bill Wendling <morbo@google.com>, David Howells <dhowells@redhat.com>, Dodji Seketeli <dodji@seketeli.org>, "H. Peter Anvin" <hpa@zytor.com>, Helge Deller <deller@gmx.de>, John Moon <john@jmoon.dev>, Jonathan Corbet <corbet@lwn.net>, Josh Poimboeuf <jpoimboe@kernel.org>, Justin Stitt <justinstitt@google.com>, Kees Cook <kees@kernel.org>, Masahiro Yamada <masahiroy@kernel.org>, Nathan Chancellor <nathan@kernel.org>, Nick Desaulniers <nick.desaulniers+lkml@gmail.com>, Shuah Khan <skhan@linuxfoundation.org>, Song Liu <song@kernel.org>, Thomas =?iso-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>, Yonghong Song <yonghong.song@linux.dev>, kernel-team@fb.com, linux-arm-kernel@lists.infradead.org, linux-efi@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org, linux-parisc@vger.kernel
- .org, linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, llvm@lists.linux.dev, loongarch@lists.linux.dev
+X-PR-Merge-Commit-Id: 3203a08c1266689c204fb8f10d6bb5186921fce2
+Message-Id: <177621213382.1531497.9208431498905554458.pr-tracker-bot@kernel.org>
+Date: Wed, 15 Apr 2026 00:15:33 +0000
+To: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, adubey@linux.ibm.com, ajd@linux.ibm.com, amachhiw@linux.ibm.com, chleroy@kernel.org, christophe.leroy@csgroup.eu, hbathini@linux.ibm.com, j.ne@posteo.net, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, naveen@kernel.org, nichen@iscas.ac.cn, nilay@linux.ibm.com, npiggin@gmail.com, rdunlap@infradead.org, ritesh.list@gmail.com, sourabhjain@linux.ibm.com, sshegde@linux.ibm.com, ynorov@nvidia.com, yury.norov@gmail.com
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,12 +74,12 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 
-The pull request you sent on Sun, 12 Apr 2026 17:46:47 +0200:
+The pull request you sent on Mon, 13 Apr 2026 19:50:25 +0530:
 
-> ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/kbuild/linux.git tags/kbuild-7.1-1
+> https://lore.kernel.org/linux-next/ac_R8cR5A-YtcRpi@sirena.org.uk/ and
 
 has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/5d0d3623303775d750e122a2542d1a26c8573d38
+https://git.kernel.org/torvalds/c/3203a08c1266689c204fb8f10d6bb5186921fce2
 
 Thank you!
 
