@@ -1,88 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-19748-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19749-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B024FA0C28
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2026 04:41:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 05F7CFA0C2D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Apr 2026 06:06:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fwT4c647xz2xc8;
-	Wed, 15 Apr 2026 14:41:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776228096;
-	cv=none; b=TKdImWKpDx1QjV7UZQe79zTnIfKQL0IL4ok+EFJUtyAsdIoDY2AsubCdgwP91KvlPoJ4/m1/iZj4nAhudNQatMNYmYBGQjQggKzv9z5kOxBnHPOpI/NpXtyZEkHIvqoxWv6E+rxQMnW3YOWjV3306gZdawLb6g+TQzPhhplGB0nXpPHWJwDsAk46pB3z/Z8CjJcFszLO6Ra9jPg95nVL4azS+pSsaIEJ2TXabWdbOTTr/HFfQu0g3fdjBy+CLXdg0HdXDb7xYacaSnw2l88LYFsR1MWL7l0XY0oxUxfcz+IBa8hxahy/9PpWifGbxuX0xCceiyT+vGy1hD/V96dlyg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776228096; c=relaxed/relaxed;
-	bh=SlXVWEDwM3MxJBKrS8GwnOlBHVkSM0XuaX2fOdWoAkQ=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:Mime-Version; b=DYYfl/GbqNZm0cCEoNyjAtzCI2RlEz01g106uZqCsHOdoRUbo8q8TryS6y6tJm8XpGM3GPL8KcPJzTqvYmo3r5ibA7A2RCsuVNhsw3NiMMc6YswszEQzVld0fVcPIwjrCFJW54wYc4nlDPiJDJyrGysVdsEe4QGRdIHVSqaxIk3qmIjlEiUQxeoIHRd58lWeHbUJEhHB1kWhdlaOt070YKnnawYpiT4qhFrtHFzmt/0zpVgoJXH+Rwri9NG+VbaZTPdCm2g+cX/tsye6SYW+AUHs6OP9PS29WZSKHCP58tWASKwg3JL3Q1oUYCVy9DTRqqd7NlrshLrmfY7M8l8iVg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Uli8ofuw; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shirisha@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fwVyt4CnQz2yVt;
+	Wed, 15 Apr 2026 16:06:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c207::3" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776233206;
+	cv=pass; b=MYZW8coONdF75EL8Ee8m5Jsgnmc/69U6+920aYyll7rUabIUkldeA5ol0P3chwCrouV5nV9m5X/TxqPngIT7TWDMYWBSS6nbirwhbQlO6StR42R+hcCHXwF6KcRNMI2clXPlGbR/A2LeFOar5f3IG15tJUcqloIbxPD0zB99xquNWgnNHgv/fqLsQNbrM5TmXX5S24U6kGlU7CAItfusvoiDyeJHgYWZcmp7/Q8RBlMqgC5kUYVBWgnDg/HPf9scbFPdXeZHlI+ejqJRralUqq4FUON0ZnUfnDR2KZj0JaJV96uNYRCU1XFc3Z25WLQvRu1GLdRE3+qJo10yyJGs8w==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1776233206; c=relaxed/relaxed;
+	bh=HTC9lJCcpuLOSzNBVUr0uqWnvlBZGJTmTziOZTPoCGU=;
+	h=From:To:Cc:Subject:Date:Message-Id:Content-Type:MIME-Version; b=NfK3xeDnLQm3y1w1iqPj+zj1nujSWWDkAaG4gETJt5W119Qkl6OP4Ih8aho9+yg0wW9kMFMiqvQdH4A9IdYHJxqtpGwWAFFP9FHYzexWAp/+CsRpLgl03h9WDQr8UZn6gJRJdDvWvq+olsApKommwFh/A1ZISDT2bd/YUvmpvmqRpeU8xZmgWK/roafm1Ku3FWcUsoctkWtTQsGeyCxQIbI1hpDqYlADkSN+MMu/0Nc4P20g0WzMDjRSKK8cd/2OQJCimWqYz6H48jr5pi3TMEJKho6bcFZfS4NPVQIPgfBpgNwJE0qTqYm00xymJZWofY3wSGHol6gXD32yF3tI/A==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=SzU+Lk/w; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c207::3; helo=mrwpr03cu001.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Uli8ofuw;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=SzU+Lk/w;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=shirisha@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c207::3; helo=mrwpr03cu001.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
+Received: from MRWPR03CU001.outbound.protection.outlook.com (mail-francesouthazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c207::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fwT4b3kjDz2xS3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2026 14:41:34 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63F3qqMx1860603;
-	Wed, 15 Apr 2026 04:41:15 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=SlXVWE
-	DwM3MxJBKrS8GwnOlBHVkSM0XuaX2fOdWoAkQ=; b=Uli8ofuwWMlU6UMu5+CFhp
-	KfyD68ePINV1IWdFybu5RIp+tMESUS3VuECoLy/FEkUEvCCwp8ZVI+cKxSRy9VgN
-	KlVyVoaB8ZOQeC/qzzllW+aCZ+ucM7ubvpWotDsFefGRvwqw9dkZhiw6LQMkRNBz
-	4dP3JiEM3wQxevD7FyB3X0/3Req/IpOUbvDaXzaHhRYb44AL4dIx0V11X0cJ1Wtx
-	W4uh8Am3mEQluF6DRXsQqSa1haoq1CyzcTRoTXd8l5ez6xbkz78GzFI6Iuve02sv
-	+Y1jSgfw54xw4OzML3CwOLgS2i6Dp0RmT0NowPbwWiSklgu2eWUH5M/NUfQ3dDWw
-	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dh89pdyvw-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 15 Apr 2026 04:41:14 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 63ENCxrD025809;
-	Wed, 15 Apr 2026 04:41:14 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dg3b1mepu-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 15 Apr 2026 04:41:14 +0000
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63F4fAqx28574186
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 15 Apr 2026 04:41:10 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 97BA320040;
-	Wed, 15 Apr 2026 04:41:10 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0CDB720043;
-	Wed, 15 Apr 2026 04:41:07 +0000 (GMT)
-Received: from li-d12addcc-2792-11b2-a85c-bd8df30615ab.ibm.com (unknown [9.43.92.110])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 15 Apr 2026 04:41:06 +0000 (GMT)
-Message-ID: <94c902b07348fc8f406590c923387a532db4b7c6.camel@linux.ibm.com>
-Subject: Re: [PATCH v2] ppc/fadump: invoke kmsg_dump in fadump panic path
-From: Shirisha ganta <shirisha@linux.ibm.com>
-To: Shivang Upadhyay <shivangu@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        chleroy@kernel.org, kees@kernel.org, tony.luck@intel.com,
-        gpiccoli@igalia.com, ritesh.list@gmail.com, rppt@kernel.org,
-        Hari Bathini
- <hbathini@linux.ibm.com>,
-        Mahesh Salgaonkar <mahesh@linux.ibm.com>,
-        Sourabh Jain <sourabhjain@linux.ibm.com>
-Date: Wed, 15 Apr 2026 10:11:05 +0530
-In-Reply-To: <20260412113057.46090-1-shivangu@linux.ibm.com>
-References: <20260412113057.46090-1-shivangu@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5 (3.28.5-26.el8_10) 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fwVys0jqtz2xS3
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2026 16:06:44 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=WUWOLNdrwQalDJc7+xBCOojbNs63ku5I+JMGONl4zWysiaFNhTqx0umhBCcQBm5LcjoX4LDyyrBFs5EUSoucU2m5kwKFSOGHvyQUJaBtOjmpLN0rYgRtACMJtvO6/BGkhriMh5/jveq45kb7QnA8mysoRufLJWYCKDKHTstT4y9hZKlKtaiAUZEoK3Qn7DzoYyhIBcbf/gxRrHcY2/Wl+N5qglF9IguJ4X1CsZmOmloUpkL+xe09+PB1YNQd1AOvm/JPq7N+Nf8KvRdfc21mOhiq8HuXqjMPNZQ9pQ5JQX1zZH8xx08AqxlgHXWFqbD5ZeUekfNeg2ueWouQrNh+tQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=HTC9lJCcpuLOSzNBVUr0uqWnvlBZGJTmTziOZTPoCGU=;
+ b=sWiEw3ONP0MKiEAxmBgLMtpdoomerbpKxy/yMONIbw6myWC9XTKpCdpni5cq2R55cVmKIp2MGX1Gdi64PIBpuyOkMl+4K4Ik8dF8v9Was9oQuWK8JHX557ZIYugPDLcQJp1I2YhjYXy5Yqpn2erJO7eu5Xzv9RPalNdmyUtAi52pdHEfEONFGvbOYWje7ih7SWsIRyhOOdzqIx2TbALEoGuym21m1nHeBQiinWI7DIjs0uEugu9lKfnotcILsE/nkimOTRKqP+GUiB2Dm36JdgK6vY99MJ1yT9V+RSZGviDwEHljh1Dd+wYGUMIC6MHpBEW8rIobhRnzUKjWue3agw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=HTC9lJCcpuLOSzNBVUr0uqWnvlBZGJTmTziOZTPoCGU=;
+ b=SzU+Lk/wxwVZzR0yS2sf8qjZnGzTEtVKWPQHs+wUSNs4iwHYpcv//STTO3mKAB5/fkownOU1VpoJmlEhFY19LibwokpB1dy+zJ6Pz+3vkGwZdOifopWNvyeK1Qe3VSYQ8qpEkoSbo1+E/dLHjfxgfp9S4SjxYmXOh9rgHLV1Bvt9THuIJCULb98dNZMOg0vizOxRR/NuhtR3tIF7GFDlRTmt1RgD9vgIccrUszl069beTksdnufJzi9UeCM1+cm8hZMCq5VEnnKtG9130/cU+muso6tL5DnsYltvb82gPZNNrf1HwcWdzwTGSan1LcTECWxbPSYSBl0jsxWM+iWqnQ==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from AM8PR04MB7284.eurprd04.prod.outlook.com (2603:10a6:20b:1dc::8)
+ by AS8PR04MB7701.eurprd04.prod.outlook.com (2603:10a6:20b:293::18) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.48; Wed, 15 Apr
+ 2026 06:06:15 +0000
+Received: from AM8PR04MB7284.eurprd04.prod.outlook.com
+ ([fe80::9cd6:51bd:82b:98dc]) by AM8PR04MB7284.eurprd04.prod.outlook.com
+ ([fe80::9cd6:51bd:82b:98dc%5]) with mapi id 15.20.9769.046; Wed, 15 Apr 2026
+ 06:06:15 +0000
+From: Wei Fang <wei.fang@nxp.com>
+To: claudiu.manoil@nxp.com,
+	vladimir.oltean@nxp.com,
+	xiaoning.wang@nxp.com,
+	andrew+netdev@lunn.ch,
+	davem@davemloft.net,
+	edumazet@google.com,
+	kuba@kernel.org,
+	pabeni@redhat.com,
+	chleroy@kernel.org
+Cc: netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	imx@lists.linux.dev,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org
+Subject: [PATCH v2 net 0/2] net: enetc: fix command BD ring issues
+Date: Wed, 15 Apr 2026 14:08:31 +0800
+Message-Id: <20260415060833.2303846-1-wei.fang@nxp.com>
+X-Mailer: git-send-email 2.34.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SG2PR06CA0243.apcprd06.prod.outlook.com
+ (2603:1096:4:ac::27) To AM8PR04MB7284.eurprd04.prod.outlook.com
+ (2603:10a6:20b:1dc::8)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,137 +89,93 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: 68ROyXmkRqmFLvjzxpK4EqU-2elquNs3
-X-Proofpoint-ORIG-GUID: _-vnYKujRhQ-vj7A0pf_FN45EzjgBhh7
-X-Authority-Analysis: v=2.4 cv=WbE8rUhX c=1 sm=1 tr=0 ts=69df16eb cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8 a=kTg7Ve40sHeub7HmClsA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDE1MDAzNyBTYWx0ZWRfX50sGbHGiW6Ua
- fHLTNb3kTBNQG3Pp+UM+YRTHILxgbpg1ps8hASaYGq2Ve2DAYK7LoZbqFJwW6pCkCrVhnyxeDcG
- G8TurZrUXz6C2/YSOF8Ab2Db9VEEjpZshvffi6SmDG+EF/cFygaZvw+FQUl9zIm+C2WW7bDSMSb
- 8ECxNbPRnqWKbWizZRDlmdGtagveIB4iN51WfMB98Pm1TKF4wIg0pt0CtdGK86M2H43TeFA/1co
- N17rcNCEpzNEC4G8kXDuAErXJfCcCdTt+Qtr5GpOI53qw2f4mt8yAQAy81goGw2czsoFAY5wSbq
- j1CtoZzX6Gsh90Wv4cmsiqDEGgNqQ4dPlxYINCacedSL8LnPc+WOg7TPpcnlsrSIHRE4E509/pt
- ZfqCPUWhq/hGyGzVXl41TeFP7PqDHCesIKiWxZ+n5jI9+2CLs9tpVOledQz69eaqA2rv05qBBia
- MXxfcC6J8uoauuXet3Q==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-14_04,2026-04-13_04,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 bulkscore=0 priorityscore=1501 spamscore=0 clxscore=1011
- phishscore=0 impostorscore=0 adultscore=0 malwarescore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604070000 definitions=main-2604150037
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AM8PR04MB7284:EE_|AS8PR04MB7701:EE_
+X-MS-Office365-Filtering-Correlation-Id: a5ac28d0-4c88-499d-bffe-08de9ab51a14
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|52116014|376014|19092799006|7416014|1800799024|366016|38350700014|56012099003|18002099003;
+X-Microsoft-Antispam-Message-Info:
+	QGTyigMAhfAhu92czqsz3TkoCnUXMgaSRjtq9V/ry42n28FBhKmRDKqJHGm+bqLYSqvtR/LXZhVKGdFlRTYmV1/5xnF+h4VNLSFyrY32/ov5qUDJPkqB8KXQ5xXG63Ey0haHTyUmUxL0yCMyijZ2DCS7OBkcuGJ/Z7HEBf1bHMHaCtbWpgmH0PNfSgtWSR2LrEFg/QMotz9izaSHLcPlbjtuRDp4cJ/PIlLir+xDypw9lB3XP/OAUOHLpLCFRrPP4Li3EDLJfrWgmawjlHiQx0QoIPqliIZv2LBC7W17InKA2M+53rop3NzXac4l68q33NxhME+5mq8T+Y5IT8cK/RH/A11txLeodnQuh3FUyCKlENODxD46DjLd0/xCQ4YnTgu1MwfQHsYUWysD8S9DCbvtCYBAvrnJ84Ax4ZSudJsZC9gPVqZMauQL1tbllEUl449nJWsCePBzrDo5ofujqjNLGHmbY7QYh5Nhute696kaI9cRPs8Od2znGyel6q9SYEPexcurDpRM7YhkAqDul9/ircy9ZdxfBnyneZEs/Dru4YpJlN/uNO203qPJIGuKT6Im0+aTH3X8oJdrMaTKp5dI4TVMNbxZBcI1sjTXsLdV0pW5oTRVhutwGdLg6gKEOqorwdk0gnYRTXsK8u+YdQJpd3Aqm6EjImusGyiudGDOAZNMozCf7f1C09R5kViifzKe8oqp7GqW+5B6+M/5FsDn8J4n9u6lniMk/jSApkDUpfZ4LSxIhUUjptr5yemANgXYuGXA9MxEOvlLA3By/i1tn7DF7b/E+SUf+AlexQY=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM8PR04MB7284.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(52116014)(376014)(19092799006)(7416014)(1800799024)(366016)(38350700014)(56012099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?8KLi/qA01vm0EtFdD93NwjjJl1qJprNbY9E5rqH0z1BTA/O9b536FErcR5PR?=
+ =?us-ascii?Q?mKfgimt9wn2+ErYgbJO7ItLIUnRfJV4OuU/FuVD49D7u7TzQ4JXPzLREUU1R?=
+ =?us-ascii?Q?HppIO0/t9RTi7hG1aATUoaD0CtZcrTFlsQ012dkHXY2NZ4dk6D8FQuklZde9?=
+ =?us-ascii?Q?NXITQZn5Le+xHTGXa/tpXS9yO32TE2g19BO0EWcd/wnvxUrDP+n3NRDZSbll?=
+ =?us-ascii?Q?0CgiLcrHXhdWeFPm6OapbCy7QqykiIT5gGymjAF6spd6PL4uflIrGo3l60JR?=
+ =?us-ascii?Q?MF4HL3FHDddFB0fBhKvd7Wn+QpT+QcJt283grb0yC/NGEliVOdDXdJM2uBDb?=
+ =?us-ascii?Q?GnB1ddzMsdmDlYB4GwVcgwJG9mJjWoZF1bQJFBBNK70FqAHVkNUB/LxXZozF?=
+ =?us-ascii?Q?yYDrltPluibCamBefcb40q1XgnL2EMAK7AxoFLPD/qAR/yoYccXzkwhoIThc?=
+ =?us-ascii?Q?rurJ6KsqPt2e9BFISvjDeQhJFF5cNnxVKVFZwXWc7IL2AL2x6ZuW3y2fYEHA?=
+ =?us-ascii?Q?h8uQy76hPGmey8JPBzV+PTltp1kskZj+SDr0ytl0mBmSWlHGAJnDOF2HaNtY?=
+ =?us-ascii?Q?G/1sgoHSrL4lH+P/53L2Ki9dkd2+9IRdAXyxYbYGoMnco/MJZ0xX0bC9aQO0?=
+ =?us-ascii?Q?nj0MWS4mHvt8sL0a3EZfH82zUpv0nxOV72IK24pd87M/P6x9Pmkd5lnZsI34?=
+ =?us-ascii?Q?mymHmnr970Jdooges04CQlMLgUXlEL1RJjGy6dBPQgugOREZhMDn7Zeh3ex9?=
+ =?us-ascii?Q?XJCXFLXLwUIzRRriVe5iGkjaVSca5XwgbdDr70gtH++jm6d2+CKJtC8oWbjr?=
+ =?us-ascii?Q?Q3cF1n7dWH6RTtgI7hNT+KID3XvIATNpGp//8nFGvkjfudE89XlOJ5Q6MCDC?=
+ =?us-ascii?Q?ksb3rT92ALSPdgzD8BGkJ6T4w7E4aj7+nvmj5V5Llqrp16s1x8ut61WSp8fw?=
+ =?us-ascii?Q?XLDzVdcfIa+sVs58+rn13L7KD+r+vQhIVXXM1fxPP48bgerXg9/0DvPYsKRD?=
+ =?us-ascii?Q?HNbuShxTF/T4ROyqQe1xlOgiWm/lsHa8iNUxk2hwblhXn7xp6KJd8+3mS67/?=
+ =?us-ascii?Q?FfnBUMPfLL7l+stpoRy3+FRoSdObrVLH+uvKax5FyT7ITrKoCtTPzqx+0cHD?=
+ =?us-ascii?Q?Y1Bwv9tX9YMbG28qCpVQeJUzDxCaN/eDQBTSelPgDpkvATqwgo0BdiQfjKNZ?=
+ =?us-ascii?Q?JCn/eWvrSzoltvfmyuVD1XuggPvat6ColCBfiHF7HBh/NgKyg0qOR9G0fqVf?=
+ =?us-ascii?Q?Ltaxq7BHOHuEIOg7daqWOxGum1equcbnhq+QxUE6YfzHQnrDdoFNhmnorVDN?=
+ =?us-ascii?Q?ZBsum0dfqDEiDz24gLRI727i+mf3AlB4q7gAL04KXD44P6E7iaydPsws/IG8?=
+ =?us-ascii?Q?Xw2EicD14mhSbiYV1fkPGHNoWgY0IA56PINKsTOjrKZ35LnjXpPQzMxFmFVC?=
+ =?us-ascii?Q?dTfK7MihfEhynTdrmFNnHkzHn3REC7N1EpnMNdEebc/vda4V9nP0cLm+1I2M?=
+ =?us-ascii?Q?nOWtltleWygB6rMkc/uJTO+SSEGBK4SiIjGDDbUiW2gEF5zJ2x5pwUZOT74O?=
+ =?us-ascii?Q?CazJEJVeuOmVXUT6LGEQAAqkDjqbg57rbHgPSSBVj33pgbspYn4CiUlQINTi?=
+ =?us-ascii?Q?Tn/fUd7ia/oc0Kehby/IcIAcHHtenQu08yFtwKnycU9sA27bLGt9rXsDden5?=
+ =?us-ascii?Q?hIZs2p2LI/4BMf+5uUZwOat7P2acpPXS1Vx5O4PzSHZBfnyO?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: a5ac28d0-4c88-499d-bffe-08de9ab51a14
+X-MS-Exchange-CrossTenant-AuthSource: AM8PR04MB7284.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Apr 2026 06:06:15.3009
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: s9zuiyu3N/aNHsa3LMMe0w8VMEkQu2RWapnklxGZzmqx0vApibL9Yr2dSVg5zeZEGLuVFafpplg5T7to01rZgg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR04MB7701
 
-On Sun, 2026-04-12 at 17:00 +0530, Shivang Upadhyay wrote:
-> fadump is registered in panic_notifier_list and gets triggered before
-> kmsg_dump_desc() in the panic path. As a result, kmsg_dumpers such as
-> pstore are not executed during fadump crashes.
-> 
-> This is problematic because pstore provides a critical fallback
-> mechanism
-> for crash analysis. When fadump fails to successfully reboot the
-> system
-> or capture a dump, pstore logs may be the only available information
-> from
-> the crashed kernel. Without invoking kmsg_dump_desc() in the fadump
-> path,
-> we lose this valuable diagnostic data.
-> 
-> Invoke kmsg_dump_desc() from the fadump panic handler, but only when
-> fadump is actually registered (checked via should_fadump_crash()).
-> This
-> ensures kmsg_dumpers are called without duplicating the call that
-> occurs
-> later in panic() when fadump is not active.
-> 
-> The call is placed before crash_fadump() to ensure logs are captured
-> before the system attempts to trigger the firmware-assisted dump.
-> 
-> Cc: Hari Bathini <hbathini@linux.ibm.com>
-> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-> Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-> Reported-by: Shirisha G <shirisha@linux.ibm.com>
-> Suggested-by: Sourabh Jain <sourabhjain@linux.ibm.com>
-> Signed-off-by: Shivang Upadhyay <shivangu@linux.ibm.com>
-> ---
+Currently, the implementation of command BD ring has two issues, one is
+that the driver may obtain wrong consumer index of the ring, because the
+driver does not mask out the SBE bit of the CIR value, so a wrong index
+will be obtained when a SBE error ouccrs. The other one is that the DMA
+buffer may be used after free. If netc_xmit_ntmp_cmd() times out and
+returns an error, the pending command is not explicitly aborted, while
+ntmp_free_data_mem() unconditionally frees the DMA buffer. If the buffer
+has already been reallocated elsewhere, this may lead to silent memory
+corruption. Because the hardware eventually processes the pending command
+and perform a DMA write of the response to the physical address of the
+freed buffer. So this patch set is to fix these two issues.
 
-Hi,
-Tested this patch and dmesg-nvram file under /sys/fs/pstore is
-getting updated with this patch after triggering dump with fadump
+---
+v2:
+1. Check the SBE bit in netc_xmit_ntmp_cmd().
+2. Fix DMA buffer leak issue when netc_xmit_ntmp_cmd returns -EBUSY.
+3. Check swcbd->buf in ntmp_free_data_mem().
+4. Move ring_lock ownership to the caller to ensure the response buffer
+cannot be reclaimed prematurely. So add the helpers ntmp_unlock_cbdr()
+and ntmp_select_and_lock_cbdr().
+---
 
-without this patch:
-# ls -ltrh
-total 0
--r--r--r--. 1 root root 6.5K Apr  2 06:22 dmesg-nvram-1
--r--r--r--. 1 root root 2.6K Apr 15 00:07 powerpc-common-nvram-6
--r--r--r--. 1 root root 2.1K Apr 15 00:07 rtas-nvram-1
--r--r--r--. 1 root root  688 Apr 15 00:07 powerpc-ofw-nvram-5
+Wei Fang (2):
+  net: enetc: correct the command BD ring consumer index
+  net: enetc: fix NTMP DMA use-after-free issue
 
-With this patch:
-# ls -ltrh
-total 0
--r--r--r--. 1 root root 6.4K Apr 15
-00:36 dmesg-nvram-1
--r--r--r--. 1 root root 2.6K Apr 15 00:37 powerpc-
-common-nvram-6
--r--r--r--. 1 root root 2.1K Apr 15 00:37 rtas-nvram-1
--r-
--r--r--. 1 root root  688 Apr 15 00:37 powerpc-ofw-nvram-5
+ drivers/net/ethernet/freescale/enetc/ntmp.c   | 217 +++++++++++-------
+ .../ethernet/freescale/enetc/ntmp_private.h   |  10 +-
+ include/linux/fsl/ntmp.h                      |   9 +-
+ 3 files changed, 141 insertions(+), 95 deletions(-)
 
-
-Please add
-below tag
-Tested-by: Shirisha G <shirisha@linux.ibm.com>
-> Changelog:
-> 
-> v2:
->   address comments from Sourabh, and sashikio-ai
->   added should_fadump_crash()
-> 
-> v1:
->   
-> https://lore.kernel.org/all/20260407054341.308710-1-shivangu@linux.ibm.com/
-> ---
->  arch/powerpc/kernel/setup-common.c | 8 ++++++++
->  1 file changed, 8 insertions(+)
-> 
-> diff --git a/arch/powerpc/kernel/setup-common.c
-> b/arch/powerpc/kernel/setup-common.c
-> index b1761909c23f..87afc8003a03 100644
-> --- a/arch/powerpc/kernel/setup-common.c
-> +++ b/arch/powerpc/kernel/setup-common.c
-> @@ -68,6 +68,7 @@
->  #include <asm/kasan.h>
->  #include <asm/mce.h>
->  #include <asm/systemcfg.h>
-> +#include <linux/kmsg_dump.h>
->  
->  #include "setup.h"
->  
-> @@ -744,6 +745,13 @@ static int ppc_panic_fadump_handler(struct
-> notifier_block *this,
->  	 */
->  	hard_irq_disable();
->  
-> +	/*
-> +	 * Invoke kmsg_dump (e.g., pstore) before crash_fadump() as
-> fadump
-> +	 * runs before panic()'s kmsg_dump_desc() call.
-> +	 */
-> +	if (should_fadump_crash())
-> +		kmsg_dump_desc(KMSG_DUMP_PANIC, (char *)ptr);
-> +
->  	/*
->  	 * If firmware-assisted dump has been registered then trigger
->  	 * its callback and let the firmware handles everything else.
+-- 
+2.34.1
 
 
