@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-19806-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19807-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7683AF8D761
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2026 18:03:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2084BF8D763
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2026 18:03:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fxQnq1YmSz3bkP;
-	Fri, 17 Apr 2026 04:02:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776362527;
-	cv=none; b=oVT+mdDCL0bPFyLAJTNaumBKXnCHlai5srsiIIMsmtePJWEIHQIOlfg+fypn4WzToOwxy40092hj1V1nItM1Q002od0dYoNAx0ISGySAJdq8bwV8dKLMZ3L+pg9ARfxfrFs5XBLu5JzoyqvuFGXE6jY57iSZNpOePIjplLvMEhPX+zDDLaXpJdnB7AorcHjGvE2vhZZ/w2BoUnCA/UT9SrB/nX5L+3S5eG0GTGvIH9qld17AI6j+/OngrOm38YEajKWQnTHrvqMP1y9ZudQfb4VtKMQE6lqG4TiB/J7wi+GjXAIJ5qdtr7KuIsH6sdTSWr2Vc8xH0mXkdGswyd1xdQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fxQnv63tCz3bjG;
+	Fri, 17 Apr 2026 04:02:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776362531;
+	cv=none; b=kvqeSpl5NHeRJE9M2xVPtieHSL6R8JWOSq6lYY+KmUEtyWgx6RjmgdP/aFBL+y3hj/WnRe+jZFsZLCawyg4+sGjm8U3J7HRZFKcTN2UYx/lxkvCPdn2g3zPIpv6VcRn5Trw9NXCTB35SqKKa2AV49fo8KWqRLD7641nb1XCVgYdkRE7/UCRrMPsprmCWSte4eInZmuxZPRYlvWJFT+aTxyLSTGQUDnj2bX0OW/xfkmA6j2Zei6MIqA2fn3jmuUoRECIs/kamWjuwY5XgkJiG+wVsNM3OHd8tnNEoNzF2sTAW+0mrMZWX9ffUDJST3CTjFGqBAfidCrji3yTHyWFl1A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776362527; c=relaxed/relaxed;
-	bh=50t5xej+gYj2UOKOdDIAO9NEv1MGtj2uiTi8WTI6wyQ=;
+	t=1776362531; c=relaxed/relaxed;
+	bh=msaN5W3C0+r76bz0n+r/6xIc2aDB10OrrUVJCgNu9Ug=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=lm804u3L039QQvqAVaIX5rfym84cxlZOWGWPFCJ3MqEf633rSHCl9cyvDk4Zrv14Ar89L8tnVTkGrdCdeY0QrvD/BZtgNGLHq92vRCt/dczPnjIJkBXNC+HUVHfGT68auAAA37Js/gikjAFoxbHsKjLKSFuqIz8QARAlYSCXGPHWSacaUNjoV04v+TNnloLmUS/eKOJAwFwWHMKiIZtz/EGIL9EzGal6UAQMhAjwsMqF9MZWAKASc8Eld/YfhxGjs2p2YntrxRIvMVyMXvu7blNRmSu0FVfZN5EI5aaFwNjwTcTfmUuGZosbbMt9tGMIrFkxJyozPNjS9HbZocSo5A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OAOaoPkz; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=Vka3vMbiLL99JtQEsPREFw9HaFzzYAJdmvu97xmONY7YRGkCBvkOzaKEksPDlTKEjfj+FKQKSPJRdXWJDtLq+XzCmDwLuKXe5MkNXiN0VkdrpxMiBjedUtYFEw47+u6tfxvnEMeOTodYZkhP+GUeHDIJW1HQdjGjk+Z5r0LUehskpP3yaOqw/w1sKweKUzZ906SlHoRsnu7IuGXnukOrsMp6kRjjuKUAGD5wUK2jsHjaJu8sZC8m4jKq+EUmZfZ5WVF9JPKmj9PNlSFGMz/ruUHb+oidMj6e8tmPqlh1wjtUgVjvFkxf8rCIoWfhWodlFCmSg8ryWq5+IbMZtAXvOw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dId8wEsY; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OAOaoPkz;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dId8wEsY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fxQnp466Yz3bjG
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2026 04:02:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fxQnt6sdCz2yYK
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2026 04:02:10 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id EFBB844463;
-	Thu, 16 Apr 2026 18:02:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A193DC2BCB7;
-	Thu, 16 Apr 2026 18:02:01 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id D6BF360127;
+	Thu, 16 Apr 2026 18:02:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 36BFFC2BCAF;
+	Thu, 16 Apr 2026 18:02:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776362524;
-	bh=hgdLCn3GR7rdEsn4XPXwIRAUu3lfUvkyKZP9W2tZ9DM=;
+	s=k20201202; t=1776362528;
+	bh=C7GpgMoA+xWLQy3B4vgURd+aoELSeRsRY0lcMXhxgq8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=OAOaoPkzMh/4vHIGkCH4nNcdBBPEEUjk8XIc6w4Y1mZFUaGJrRCQnXJXFW+BikZM3
-	 ps/CyoBlKt/2yjF2ApdaiQJX/xS3Kac5yH2d5G/6X7WUcVaZ7uut46gYlRiFluS8IO
-	 UL4UTYJXBCinNmcwWi8NF2bqsT5JvgQ/8bIgRW7Z6Y6kZ/J+8iYqT3+vJ/zE1V5/1U
-	 iMfMXasZx/VtIz1iLVPA1LJ7UIB9MrXiuDe/6lKUqkny5uea2rHW8pmZH697Cl/LDY
-	 T0GKcD4FFwaLOR5wpGse0X2JFYeOFZpiPsuqKQsxtORvFpNUSZ6CGXKtjMjlBpdP8y
-	 vYq9Ow+fvQ+/w==
+	b=dId8wEsYVSAfsFXbBlILYLGLa/L23gQCykY253jrHMtJ8gEavj86sOuE4SDtQw8dN
+	 u2981zNy4Q6K069PzR/9Zm8Xpylm59aDdZL8IVu6Vp4lNxzLLfkAZeiDF5VSHUooiQ
+	 N2woqRDQL4DhW3wdRIcFshDhl0OALsKFt3jHEGkVfPTUc7IzDddriGT2KusD9NugqW
+	 DSj4fDsCstcdrf+Mj3aXMJ5i4cXyBgT9fwMkkkC6GFOWUoVeqjWSngmHvkror09Z43
+	 rNV3QJjtJhIqEDC+B5ZqR23iCBvpQD+Zguk5FZaiviwq7H04dYsgKeDGO/n3B5I6+Z
+	 yARjOO7sdKqtw==
 From: =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kwilczynski@kernel.org>
 To: Bjorn Helgaas <bhelgaas@google.com>
 Cc: Bjorn Helgaas <helgaas@kernel.org>,
@@ -67,9 +67,9 @@ Cc: Bjorn Helgaas <helgaas@kernel.org>,
 	linux-pci@vger.kernel.org,
 	linux-alpha@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 15/23] alpha/PCI: Remove WARN from __pci_mmap_fits()
-Date: Thu, 16 Apr 2026 18:00:59 +0000
-Message-ID: <20260416180107.777065-16-kwilczynski@kernel.org>
+Subject: [PATCH v5 16/23] alpha/PCI: Add static PCI resource attribute macros
+Date: Thu, 16 Apr 2026 18:01:00 +0000
+Message-ID: <20260416180107.777065-17-kwilczynski@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260416180107.777065-1-kwilczynski@kernel.org>
 References: <20260416180107.777065-1-kwilczynski@kernel.org>
@@ -89,40 +89,54 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Remove the WARN() that fires when userspace attempts to mmap beyond
-the BAR bounds.  The check still returns 0 to reject the mapping,
-but the warning is excessive for normal operation.
+Add macros for declaring static binary attributes for Alpha's PCI
+resource files:
 
-A similar warning was removed from the PCI core in the commit
-3b519e4ea618 ("PCI: fix size checks for mmap() on /proc/bus/pci files").
+  - pci_dev_resource_attr(),        for dense/BWX systems (mmap dense)
+  - pci_dev_resource_sparse_attr(), for sparse systems (mmap sparse)
+  - pci_dev_resource_dense_attr(),  for dense companion files (mmap dense)
+
+Each macro creates a const bin_attribute with the BAR index stored in
+the .private property and the appropriate .mmap callback.
 
 Tested-by: Magnus Lindholm <linmag7@gmail.com>
-Reviewed-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
 Acked-by: Magnus Lindholm <linmag7@gmail.com>
 Signed-off-by: Krzysztof Wilczyński <kwilczynski@kernel.org>
 ---
- arch/alpha/kernel/pci-sysfs.c | 8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
+ arch/alpha/kernel/pci-sysfs.c | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
 diff --git a/arch/alpha/kernel/pci-sysfs.c b/arch/alpha/kernel/pci-sysfs.c
-index 8802f955256e..f2ee737c588c 100644
+index f2ee737c588c..3108c165b3d8 100644
 --- a/arch/alpha/kernel/pci-sysfs.c
 +++ b/arch/alpha/kernel/pci-sysfs.c
-@@ -48,13 +48,7 @@ static int __pci_mmap_fits(struct pci_dev *pdev, int num,
- 	start = vma->vm_pgoff;
- 	size = ((len - 1) >> (PAGE_SHIFT - shift)) + 1;
- 
--	if (start < size && size - start >= nr)
--		return 1;
--	WARN(1, "process \"%s\" tried to map%s 0x%08lx-0x%08lx on %s BAR %d "
--		"(size 0x%08lx)\n",
--		current->comm, sparse ? " sparse" : "", start, start + nr,
--		pci_name(pdev), num, size);
--	return 0;
-+	return start < size && size - start >= nr;
+@@ -104,6 +104,26 @@ static int pci_mmap_resource_dense(struct file *filp, struct kobject *kobj,
+ 	return pci_mmap_resource(kobj, attr, vma, 0);
  }
  
++#define __pci_dev_resource_attr(_bar, _name, _suffix, _mmap)		\
++static const struct bin_attribute					\
++pci_dev_resource##_bar##_suffix##_attr = {				\
++	.attr = { .name = __stringify(_name), .mode = 0600 },		\
++	.private = (void *)(unsigned long)(_bar),			\
++	.mmap = (_mmap),						\
++}
++
++#define pci_dev_resource_attr(_bar)					\
++	__pci_dev_resource_attr(_bar, resource##_bar,,			\
++			    pci_mmap_resource_dense)
++
++#define pci_dev_resource_sparse_attr(_bar)				\
++	__pci_dev_resource_attr(_bar, resource##_bar##_sparse, _sparse,	\
++			    pci_mmap_resource_sparse)
++
++#define pci_dev_resource_dense_attr(_bar)				\
++	__pci_dev_resource_attr(_bar, resource##_bar##_dense, _dense,	\
++			    pci_mmap_resource_dense)
++
  /**
+  * pci_remove_resource_files - cleanup resource files
+  * @pdev: pci_dev to cleanup
 -- 
 2.53.0
 
