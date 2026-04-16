@@ -1,69 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-19787-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19788-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E31C7F8A15D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2026 11:28:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9511F8A160
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2026 11:29:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fxG352f1rz2yYq;
-	Thu, 16 Apr 2026 21:28:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.222.174
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776338881;
-	cv=none; b=EK5I5MMzXzNeh5Ko4nHhG/gMovANKFlBy8eX9QY+YTQqJaFNkL+Qzed1m3/uFO5t0jWQozpqje4gMxWibPpqKWWKGzoTmOl/AIvi3KrKpzcpwesOeLAGGPPs67hc7raQfZlUFkKGbCWoPEO4XsgpIXTLgOeQZYdfB8KWamABHzEXoAnhFMnJjL3idQUDPW+7mO6aFVyzN/LsdW2j0U9xwv7EQvpPYTExb8Z1+ydjZtHHWPhk7vDJAcmzXyzhmmeSZD8bRCfMWdy5GjpqoR7CDCNHYMm9NJiKlJFeBt5566q2UHqPJJS0t0r+xBpxz2GYhoOmusW9gYYoWQ4Sv7bVCw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fxG4z2Zfkz2yvT;
+	Thu, 16 Apr 2026 21:29:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.160.170
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776338979;
+	cv=none; b=iyAuh0vTFs6/lNBooKV3FxMo3q3mFBloPysZuU8Yfzwf9dw73rW9Krad7vnFBqon7PSwk06OIY6MqF/g98DYQQsionoq3bGinV0FDTxkiQKQcApqaBITY5HDloa0vtYoX5wDmMxiOhx03bLDvo5Xy9W7HI5Paney/Vh8J6Vy3J91NhB9zUJcjXo73I9zwsCm2w/Sug1EDtjRlmYGSx1TZNq0dpEMBHUMPgKvIQqYQVUw99YIfcMovveq9iLD1IPEoqccTMCSNrweRiCTQkYEyb4l699rMYzjuZDmw9BgZMKoDgoxsz1EHSd3mPPlMI9i+hi/0fbgd7hSzTuzCUSBJg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776338881; c=relaxed/relaxed;
-	bh=I6jqlHRyBmHp78NPQbVn/INUSPCxYZ/sUXVIyq1nXfE=;
+	t=1776338979; c=relaxed/relaxed;
+	bh=0N28AiHhMQm9a3ncbvMl4jwXcNZbOrN6OiiJm2DjJOE=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=WahsJUX27i93a6qg0wWNAmURjn11fFGTEJbsdCSMF4QMz63xV6JYspv3xm9UAcMkafAGVzpljjHYEp7ZT28810oCCbLbilenjOqzl1+W7KNYx7+UzhDeqWoKd5Vj26fqrkW1ZPo1Ko7bUxHrevIMca4jUoEwmiAUI0x8jmjdk7IB+Aft0Wpkju0uK/bBjH/xLai41/BTsD7k8GD63yLXusdJAa4XZWN4tSBPVUEMkQUvdgvjnTzJ+P0u9PmvyhjjzQpd6vPHv1GJxZ5Eomm835iIE1BV7rzGhMqEnXlUiiJch+ZkVbvjtveBBXUzejo3He1sYkx7B7r61MGhd0+9hA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.222.174; helo=mail-qk1-f174.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 To:Cc:Content-Type; b=ITFjhHhKXnp7x2pZy9ecBF87zX85dgBPBa2hKao36DhVkKjxpnQT+gAuGYg9Q2aHqr5prdu8Pp1rRCb71hUWPBap2zsASU4pMztVELobmm4N+lT9WOL7Oi94J3/bx+5y7IRoyppfsjv/OmZv+akDfg5l3TTXod0Pt6PxeS5R794Lkw6r+SBur8krN/tOJIvosg9CLsDIIJecfQDGf9IPuxTBgBNMuZsiRNTp8SsIntXvaFWhMlC5jCA6J+lqS1VNbVVxeV5tbWHiUQxVaJYDCg8TGFCBAgUvQ2cCmJcpCNT0cEZ5j1hwhF+qt4JbevoBFN58BdQTDIIDwN78GywGaQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.160.170; helo=mail-qt1-f170.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.222.174; helo=mail-qk1-f174.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-qk1-f174.google.com (mail-qk1-f174.google.com [209.85.222.174])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.160.170; helo=mail-qt1-f170.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-qt1-f170.google.com (mail-qt1-f170.google.com [209.85.160.170])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fxG343H1Xz2yVt
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2026 21:27:59 +1000 (AEST)
-Received: by mail-qk1-f174.google.com with SMTP id af79cd13be357-8d68bcf50fdso900798785a.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2026 04:27:59 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fxG4y4FFkz2yv0
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2026 21:29:38 +1000 (AEST)
+Received: by mail-qt1-f170.google.com with SMTP id d75a77b69052e-50da9a7928cso64481581cf.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2026 04:29:38 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776338877; x=1776943677;
+        d=1e100.net; s=20251104; t=1776338976; x=1776943776;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=I6jqlHRyBmHp78NPQbVn/INUSPCxYZ/sUXVIyq1nXfE=;
-        b=Jp1MLliUfXvNPxqF2A/MXznKDVohqSa1MJpkufeno0mA2mC8vtxGzSQBabfZDPEM6B
-         j75IX9s/Sd3QPDbGl6hfLxwAq5OIIpRbuVXdC38FSKp83JKhe9bMifYR15AoFBOVJdCv
-         zml14PlmYL+QzQUJWWU9AhJotsMlPgVSckFS7oj9hJlcwXtWk2O7rkbxZ9Qr5GpY+bWI
-         OS14prR3o2Yx4pPN8GOjIVsVY29DqOubB814nTqBGDp+J+zk+qMxHiiZezY47q+12oGR
-         yLy+gziyw+mRd/Au4NzmNQJIawgXsLAU4Hd3BNRc+jK8IenYXO5Pid+g6yJUzaeLketO
-         EeOA==
-X-Forwarded-Encrypted: i=1; AFNElJ8k2D55/9Gkw6K8HXUI2OCgvx8e86B6gK/nFTSGB1u+q0+OjQ0pgfDiHbF19MWLQ+i8ZI9IWZG98+CUXwk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxyOFQQgxwyPQj4hRPeswYAl0yhWUfwniruatyJp0CkBmJeM3Vj
-	p37x4vHDpPrwV9YVUJIVXcCM3a0whVKyeuO1WxgKSJQbgSrs5W2h7u+dlVRBvV32
-X-Gm-Gg: AeBDieurMOB2QHK7bvXzIM6JocfsEBfZTK3oTkmNA3BfLP0tnz/0gydOmAjS1wG/X0P
-	BlKzbHoydFZDGvNEuHcXZSVvHky2CoqBegRb2023ja6sLfqCfUuvZBYBZig3bpXxLNAwP8KpY/I
-	eTyPnCkYN0+y8fbKPU0zG8nzwUFUj0bC87OZVCkRld9j0UBh6SFSQdHtFifu7p1v0vQj4dTjH46
-	zwqtHpzjkI/JHKWEJn9U5UtoB3ABB/Y8VRKQEsqWCNdYytlJa016sbC49ztKAJQ6Xm3ZW2X29Yu
-	xLVklyMVpsGmZkljb6pzVnAx+63rpTHKOSH8m7HcYJJV60smKx7umoOvX7ZO2bePUsrP74SW4af
-	ynQI5gYicPyFvv0LLdoZcWPFLaXORxlvpftShs8J5LtziBnELyoRdPMwbVojPRC0sEYXvCbpvx7
-	XPECsA2fwClww+yImhWbx4bfTRTVIrB/P36nyzrYPjS2MIXKPicUdCnH02LcccpMDFhlEilbJZU
-	cgMpv2iuc8pRQ==
-X-Received: by 2002:a05:620a:2953:b0:8cf:c1c2:904 with SMTP id af79cd13be357-8ddcd8ea018mr3561871685a.15.1776338877426;
-        Thu, 16 Apr 2026 04:27:57 -0700 (PDT)
-Received: from mail-qk1-f174.google.com (mail-qk1-f174.google.com. [209.85.222.174])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-8e4f2e00198sm331851285a.39.2026.04.16.04.27.57
+        bh=0N28AiHhMQm9a3ncbvMl4jwXcNZbOrN6OiiJm2DjJOE=;
+        b=SLwhbV/nD75AdZAAUblQHTzHpEeN/pq9lFYqk8pNyX2l+WrP4kngPBY3c2ttzQr7Oe
+         BJKGiOKodphS/LL7hk/k2rrwGXR126GfNQG73QxxZaKYzgVJ40bi9wt2YFwEtHTPXsfB
+         N7W+2p3rFDIRFhReYdafGGdTeoKmBNqsGwU94Sa9DIG3CRQoc7sRnp5sxDDO3N0GMZzM
+         EqgfdDGb3ZV8Dssu5nPJtxZtbzYo+0RMqxDRJCnMD7sd1XgXt1ZLVmGCpCGSC3lur5Tu
+         5QVloLOt6iYksdbvJdMRNhEFwPwQW088NYzGqJQ0b4wsD4JW9GGftWGtCXcE/LQ/yOpj
+         jB2g==
+X-Forwarded-Encrypted: i=1; AFNElJ9UlLj/ztF8gwN41igG1TwyMlPeohYCZJ4N+m6Ui9kQnbO1AmnhtAjVA0s8a2kMWExR5S7OpMRjLqlP9+4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwzlGKJ52b/6NfaSjbB/+tNYoTnMaFZ+lS22ZR4d5FovPyEm9UP
+	tNdjd915A6LVAUmRAHnUJFGFUqeCs3FZNOiuJxu0l9EdpB4wCSLRPdeDPWQkLpGi
+X-Gm-Gg: AeBDieuriRPY/1NsOj+/mTvDF3kDopgvflTmla3L6YrKmAJdR95GzKXntIqvsfDch64
+	YE3p+jncXPtP6c/V3RaYOwyAHpdbV9MizFRqbj+tzxCOD1exnmEGNvdIR68AQKQnQTiq6Zy90UV
+	dwn0GyOF974IIyoZ29NMSQPBojjwMJQY5w1G4aKobxfmO7jgbE0s5BBnX/ELQ1Bg8gVxD0hVCcK
+	yf43awkL97YlYSBV/1uqV0MStXytMWdt+tVw3lk3Wj683r6Eb5gMr6uPrJlhxTg3t3BfQdZtjTs
+	64DVmQyYeZnJ97Gxb0vNURmh2pP0Cq1Md3CtKL5pwN4YcqMhlODEhQW06PLF2hkFgrUD64v+Dil
+	Nhnt5c5BOiFu+v7WsW51E36xEBbITiwNf2RQyvVmOGxXnN0bFfw1Ti2SRpFwqCeBn6eQdix9SlG
+	oo9pDTybiy7GxbAgMAkYBDglhNaXobceNDP0cFveSHcXi59z7GnrsCJlnioCqTepQDTeanp6w=
+X-Received: by 2002:a05:622a:1818:b0:50d:afcc:983c with SMTP id d75a77b69052e-50dd5c4279fmr364787831cf.60.1776338975979;
+        Thu, 16 Apr 2026 04:29:35 -0700 (PDT)
+Received: from mail-qv1-f53.google.com (mail-qv1-f53.google.com. [209.85.219.53])
+        by smtp.gmail.com with ESMTPSA id d75a77b69052e-50e1ac0ca45sm40295591cf.0.2026.04.16.04.29.35
         for <linuxppc-dev@lists.ozlabs.org>
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 16 Apr 2026 04:27:57 -0700 (PDT)
-Received: by mail-qk1-f174.google.com with SMTP id af79cd13be357-8d428da4300so872498285a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2026 04:27:57 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ93PhO45jPVrhlLDdnYyk7au8LOAqiWR0H1WZVsOzkZyRUZnc1fKbYn0gqY3fgbItOiQoKJbvbovhPNtGw=@lists.ozlabs.org
-X-Received: by 2002:a05:6102:6044:b0:5ff:c64d:2283 with SMTP id
- ada2fe7eead31-60a0157295cmr11348128137.30.1776338547396; Thu, 16 Apr 2026
- 04:22:27 -0700 (PDT)
+        Thu, 16 Apr 2026 04:29:35 -0700 (PDT)
+Received: by mail-qv1-f53.google.com with SMTP id 6a1803df08f44-89fc4147f2eso94840466d6.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2026 04:29:35 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ+i6G8lNQ8yXqnb8byzcl+MSJvtyFlS+HNEgDUXZpMTKvyBOkTO7K39XI5PFaGe9zDgHr7A356MTPSyXSc=@lists.ozlabs.org
+X-Received: by 2002:a05:6102:3fa2:b0:608:1b6e:f4dc with SMTP id
+ ada2fe7eead31-609ff0c50e9mr11028119137.11.1776338540828; Thu, 16 Apr 2026
+ 04:22:20 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,18 +76,18 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260410120044.031381086@kernel.org> <20260410120319.397219631@kernel.org>
-In-Reply-To: <20260410120319.397219631@kernel.org>
+References: <20260410120044.031381086@kernel.org> <20260410120318.045532623@kernel.org>
+In-Reply-To: <20260410120318.045532623@kernel.org>
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 16 Apr 2026 13:22:16 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdVoo_6i9=2oQj-=yjW7nK8eL4og08bdYvk_EGj=_cQvQA@mail.gmail.com>
-X-Gm-Features: AQROBzCJ6rVnwwfhi99PI36wWXAFQ5DEgo1zw3RhVwYNSXoxkTYAcgIxt5Z0K1g
-Message-ID: <CAMuHMdVoo_6i9=2oQj-=yjW7nK8eL4og08bdYvk_EGj=_cQvQA@mail.gmail.com>
-Subject: Re: [patch 27/38] m68k: Select ARCH_HAS_RANDOM_ENTROPY
+Date: Thu, 16 Apr 2026 13:22:09 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdXtR7T62Wf+yDM=J0+96C64qRws=ffX_xXbfzfbS0Xz8g@mail.gmail.com>
+X-Gm-Features: AQROBzCyA8BqoTVnHFn7fWQMKVWyMF2wrQlYn44P8f0X0RsdCOwGnnxui8decDA
+Message-ID: <CAMuHMdXtR7T62Wf+yDM=J0+96C64qRws=ffX_xXbfzfbS0Xz8g@mail.gmail.com>
+Subject: Re: [patch 07/38] treewide: Consolidate cycles_t
 To: Thomas Gleixner <tglx@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-m68k@lists.linux-m68k.org, 
-	Arnd Bergmann <arnd@arndb.de>, x86@kernel.org, Lu Baolu <baolu.lu@linux.intel.com>, 
-	iommu@lists.linux.dev, Michael Grzeschik <m.grzeschik@pengutronix.de>, netdev@vger.kernel.org, 
+Cc: LKML <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, x86@kernel.org, 
+	Lu Baolu <baolu.lu@linux.intel.com>, iommu@lists.linux.dev, 
+	Michael Grzeschik <m.grzeschik@pengutronix.de>, netdev@vger.kernel.org, 
 	linux-wireless@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>, 
 	linux-crypto@vger.kernel.org, Vlastimil Babka <vbabka@kernel.org>, linux-mm@kvack.org, 
 	David Woodhouse <dwmw2@infradead.org>, Bernie Thompson <bernie@plugable.com>, linux-fbdev@vger.kernel.org, 
@@ -109,19 +108,27 @@ Cc: LKML <linux-kernel@vger.kernel.org>, linux-m68k@lists.linux-m68k.org,
 	"David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 
-On Fri, 10 Apr 2026 at 14:20, Thomas Gleixner <tglx@kernel.org> wrote:
-> The only remaining usage of get_cycles() is to provide
-> random_get_entropy().
+On Fri, 10 Apr 2026 at 14:19, Thomas Gleixner <tglx@kernel.org> wrote:
+> Most architectures define cycles_t as unsigned long execpt:
 >
-> Switch m68k over to the new scheme of selecting ARCH_HAS_RANDOM_ENTROPY and
-> providing random_get_entropy() in asm/random.h.
+>  - x86 requires it to be 64-bit independent of the 32-bit/64-bit build.
 >
-> Remove asm/timex.h as it has no functionality anymore.
+>  - parisc and mips define it as unsigned int
+>
+>    parisc has no real reason to do so as there are only a few usage sites
+>    which either expand it to a 64-bit value or utilize only the lower
+>    32bits.
+>
+>    mips has no real requirement either.
+>
+> Move the typedef to types.h and provide a config switch to enforce the
+> 64-bit type for x86.
 >
 > Signed-off-by: Thomas Gleixner <tglx@kernel.org>
 
-Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+>  arch/m68k/include/asm/timex.h      |    2 --
+
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org> # m68k
 
 Gr{oetje,eeting}s,
 
