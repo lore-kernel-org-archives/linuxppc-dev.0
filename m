@@ -1,81 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-19784-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19785-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8F2FF8A149
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2026 09:17:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 877CCF8A157
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2026 10:32:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fxC8n0LS9z2yhP;
-	Thu, 16 Apr 2026 19:17:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776331064;
-	cv=none; b=PlyTKmYCKyQhkiqf3ND5yelJ6iiwmpWdrZeBwLF9viWUOwgU8nSLFIkpR9aOPPZQdI771OuCJSjP7pcU5sXAxOgA1fTPL6eoTf6Y53801RLAEnaCBpgqSdDVtRHM20cFcqCiHuKDauLyExZlQavUdn+Xlw3NwlJCVM8iTiqz81yJ8zh+uVL4gyP6VSkrYvPhTPdhE2Ietdirh8l8dIwQzGu+OjT1P8U8djIXMK+hvRxqPqoEdBEFIYtjK2FYPyId5OU9E7tq48RaI6epOER6dpRr07bonskJXUuoHIrWY7pUlUvDijP18TPbGdjtTY5NzFz+tiWSB9To5vA7IWIE1w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fxDpS6tc4z2yYq;
+	Thu, 16 Apr 2026 20:32:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.160.50
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776335520;
+	cv=none; b=UqFq641f72AdfVEcI+dO4P7TtCg3O86cUvOC373YJcRHryPTSlGvVfc7SAhYayLbVaQDyn3rTvGZ06cnHsUG5SPGSkuq5YlLZp/aNem9qfqTecfPablJLIHWlsLhvdsw6M/qO6ZW4MtZ0x4LSPkpZ5mFCpowXGB9Hqzo7MaJEGs3ajrVe7b56NiaDq2CFUKo5LGz/gCjWSkwHIpitQCM9zgCUCAVtHBoaqvd29V9VoGcOl3x15oZrAsLYBWbLyG09SEq+lIYmDH4tEwOyhU2chc6p1UNAUIGMpag6og6EvW1rAzE3KGYC9Eh2+GHO3NwzltTxvzBtsRbgUL6XfHrMQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776331064; c=relaxed/relaxed;
-	bh=iiV5yqTbaPN6Xrrcd1k3uK+twUyapf5QAUCtATSoeNs=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=KGiCyCo0Gg0jKsRh2aDneJllNuxPlGV5L8V91bk9ffzV28oQRmsfem2Y6xqKHVbZIFKqQqxH6lHMqcnz/OL1grcDDm90KUrpeexRGUMmBuEcSOciiClCYYV5XlmajXOShZ5hOiA6QUpMDUd3Y93dvSJNQc4v1jgSk2Xi2di2SQA8TwvcRjjCeB5baxdKuL+m8EA3EouJM1svC9zLST7fWR7XuOaPH5JLw7Mor7TVg6iLbbbAV1pZQq7QkN6wUMefyPlNK1xozJ7U2GHlzx2rkCrhmFqHOtRGH08QjVZdZBhPZqCltj95N6CkG8YwYcjGkEJs2r5tOapdMrCNC9ju6g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iP5+PhAh; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tshah@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iP5+PhAh;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tshah@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	t=1776335520; c=relaxed/relaxed;
+	bh=z9HEDsaws+1AaPEcUyrGjtCss1Kv3jZQFAB8Oib7mmY=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=XSWpWBmrpmyKhyIFdUxG/k9OMw8nzXTqEfEXcmr7UiD1nLGu/UixMVgo8W+j8qmiwPM4dKUOET8TBmnCgKKTP45m9uM+JVtxcZ938M+TXFCjbwPuPjDW0zeHJC09Qwm5JsIVxPhWFEBm4QSFzHyUToDTf3gJFSTxlrluURgkLNALlcaO2USmV2PpLaG8zrap7UdOj2Db9EI+PGSGVEaPYvoE798MvCNaxQImSct/QLpjk5B6Bdg6W5ymSAkw7tFK6m3G48/bQ82HwqUZHxIm83fp4UL2C+VCq6LeM1/7QQs8gVme2AcGWErqAZQIXlVQeWrELcJfdDHmoJUubyzatQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.160.50; helo=mail-oa1-f50.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.160.50; helo=mail-oa1-f50.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-oa1-f50.google.com (mail-oa1-f50.google.com [209.85.160.50])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fxC8l2jYxz2yVt
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2026 19:17:42 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63G6dSHT1842719;
-	Thu, 16 Apr 2026 09:17:37 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=iiV5yqTbaPN6Xrrcd1k3uK+twUyapf5QAUCtATSoe
-	Ns=; b=iP5+PhAhiaOnhl+10GOJK8lqxlk9F+m37aTCgjQFcyNfTGhj/PZSUJZZ2
-	IPO731ab/A2gX93IkzQXFhyjPitv2C3pDA5o3bDhQnY5FlLT2Iqn0hDFNz8xAPhH
-	QTalre9/rbna93zXp1T/n77RzaM65jQZdgChvrgi1vgkS2ZBMjVqjtrU+RgxsSia
-	p2gYBfooeFznRR/Q/eN49SCiirbKVGCrfcYrP0411vizYKC4lsm5ZylxdO12rnO7
-	aMQzqMkn/9Kuwl0osl0Y8/RgFkQk/Ucg+8y+VoZl/Sga6mQci3mBzg1XmKrSgYad
-	mPXgWIlCBlZf5JBcURIMmiGh3eThQ==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dh89mvmd0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 16 Apr 2026 09:17:36 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 63G8RcRJ025837;
-	Thu, 16 Apr 2026 09:17:36 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dg2ujt129-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 16 Apr 2026 09:17:35 +0000
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63G9HWc155247318
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 16 Apr 2026 09:17:32 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0E5F32004B;
-	Thu, 16 Apr 2026 09:17:32 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 38D0520040;
-	Thu, 16 Apr 2026 09:17:28 +0000 (GMT)
-Received: from li-4c4c4544-0047-4210-804e-b5c04f423534.ibm.com.com (unknown [9.124.216.201])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 16 Apr 2026 09:17:28 +0000 (GMT)
-From: Tanushree Shah <tshah@linux.ibm.com>
-To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
-        vmolnaro@redhat.com, mpetlan@redhat.com, tmricht@linux.ibm.com,
-        maddy@linux.ibm.com, irogers@google.com, namhyung@kernel.org
-Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        atrajeev@linux.ibm.com, hbathini@linux.vnet.ibm.com,
-        Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com,
-        Tanushree Shah <tshah@linux.ibm.com>
-Subject: [PATCH v2] perf dso: Fix kallsyms DSO detection with fallback logic
-Date: Thu, 16 Apr 2026 14:46:58 +0530
-Message-ID: <20260416091657.578429-2-tshah@linux.ibm.com>
-X-Mailer: git-send-email 2.53.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fxDpR2Qkfz2xT6
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2026 20:31:58 +1000 (AEST)
+Received: by mail-oa1-f50.google.com with SMTP id 586e51a60fabf-409de4132b5so4996953fac.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2026 03:31:58 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1776335516; x=1776940316;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=z9HEDsaws+1AaPEcUyrGjtCss1Kv3jZQFAB8Oib7mmY=;
+        b=T9cWP7sJnO3Qhbdoh6BqDwrAqf10EDmC2fJzp94oX5CmYcYLoqzwpPb28l0mqAr1nx
+         4TxbCTM+9kkRR9Su6D5AXEyJdMnHeFzaJ+zLVo8mpkqs0WQSRm09SxVjW8bM2uZmukrR
+         0IjLtPoKi40eiyXKGAG+6o31b0FIrQ10SabnMj+bwpVI/yyb2N7cQYlof4kgrujIzG0n
+         hxc+K5PVZaEhlYkrQQgHy9mTetbfa2PzN7CD1bjl32w8y2d1344IQPZhsBV3DVF/lB/c
+         JglKqRXD6ofmqi2XWKeRsjzcM+l/Kid4+J7Opsq/jD0j52ZKSsQSebzkWtaZ/rzDlcGq
+         QTmA==
+X-Forwarded-Encrypted: i=1; AFNElJ9JUnLIR/JMlsTWZPe/34GnyrWPheLnSHjhUmDzbmUdsQN5b6C0ef+thH/GLfXBROqxriZoENKPkQNVoZQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yw8X6ubnTMMYWdfUFIJFRIgbAmBVxL6GZRx1i0esoah7weZvvZD
+	5do3W4YOT4e8BgKPDE5zymDnJdPuIgpdE639HLUEBSaW++IKjEkDGu6wPqE/YME2
+X-Gm-Gg: AeBDiestw7IL1W7kjjGOR3AUBLS3DulWJFeh/ZvfjKIW11OaT2zfo8jo7AfnxS4a15M
+	GLuLdt2Ctfg8Y1gSqPUufS8pADncQ3TMKq7aU+l15E5FbFcGJnWrWdSxQ2h4JhgPBUKjGBgOhL5
+	+jQ4XYnxd2Nwe9JwPCpu2VQ/2+VcKA3FfnHvG0hoFFSzxPcBHpjGXh9U7LKBVPpsu/JfA4UWfzp
+	/lg+/wx2zT8chMTh6LwVS5kBP28FSMHQRUIY/GjG1BHCuS2Bsq15EW6CETOsjqmfbDyu9fYLV+L
+	6cJjGUjhg3G3gI6Pccw5HWrUcqTe3+eYy4wR3XlihNq0mnZh8R9SI9QsLHPLG6wNqw0uczxDS0F
+	l/Yrq2T8znPSnye0zUJG4Y87y7RH609iPlXJlYxpvFciyL7XcPvULf6JiW6eJGuao52nnD+czbA
+	l3ztMTM8lIoutNJqK32TKj7pANHEoAfEAIc60Wj1VWZHG2xf8zUYTqTKktaX/8Zkf4mrd99Rjgw
+	5o=
+X-Received: by 2002:a05:6870:c6a4:b0:3e8:92a5:3287 with SMTP id 586e51a60fabf-423e0e5e75emr14807448fac.1.1776335515446;
+        Thu, 16 Apr 2026 03:31:55 -0700 (PDT)
+Received: from mail-oi1-f180.google.com (mail-oi1-f180.google.com. [209.85.167.180])
+        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-42689699dc8sm3577144fac.14.2026.04.16.03.31.55
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 16 Apr 2026 03:31:55 -0700 (PDT)
+Received: by mail-oi1-f180.google.com with SMTP id 5614622812f47-470145d7df5so4649655b6e.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2026 03:31:55 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ8rzparrEddUtZ+MR0fBs/v+UBNY7vZlBtPsVZgW5EDe74ppz6KyFDwa7zPBO5a6xeyriTvhmCUK8Ca9RE=@lists.ozlabs.org
+X-Received: by 2002:a05:6102:c48:b0:608:cd24:354c with SMTP id
+ ada2fe7eead31-609fe9b0d22mr11966750137.3.1776335071251; Thu, 16 Apr 2026
+ 03:24:31 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,101 +77,114 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDE2MDA4NyBTYWx0ZWRfX1DAW9Hwf7yvG
- SIFF9yrBiEMaUypcnR52JMZG8ap5aeB6HV0rOj1b8eneOURx9xLP3X11nh0ab2bEEWckG/u7sJ6
- cMTuCj1B1B52wh3Y75+QueerT5Ot0FB4IBFmVonTw5224cJeFe4Mg3A1d6WjTP9dGxaXq4Rayod
- HyF1tpWACbvYGMpyjC6KtO2bNjv36W3JzsuVXDYmEC918m5RvSsSPFsKG+l4IFrgTfsRwVRfy3g
- o1C30H4cE9Go1HqGEHbVHHym04Miuuu0aM9zydG6MuJ6JYlbrgOxju+D6bPar7VZ3RH/MRTMzsI
- i152WRkKKXQ/e5S991hCRLGCnfI2d90MkVlUYHSJw4mLfDg5nkX4YNpwshttUQQLzdffJ98kVda
- yEzJon31lFBCc3eCOOUR+O1gZd2BYm1xMrcmsSLya+DlnBU0nyF1fngxqW8x42FSkpDQW1Rq9pf
- TZo+PJEyGPneY90jg6g==
-X-Authority-Analysis: v=2.4 cv=eJ4jSnp1 c=1 sm=1 tr=0 ts=69e0a931 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=yWhZYjjtwySg7tuK4IQA:9
-X-Proofpoint-GUID: BJ_PeVf6LebR_Vj1Y3sDRvBw_obQjQ_v
-X-Proofpoint-ORIG-GUID: PTzdm8LB_4viEV5p2L_A9KqUZlXQpvka
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-16_02,2026-04-13_04,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 lowpriorityscore=0 adultscore=0 priorityscore=1501
- clxscore=1015 bulkscore=0 suspectscore=0 spamscore=0 impostorscore=0
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604070000
- definitions=main-2604160087
+References: <20260410120044.031381086@kernel.org> <20260410120318.794680738@kernel.org>
+In-Reply-To: <20260410120318.794680738@kernel.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 16 Apr 2026 12:24:18 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdVerN6Pz07CQH+hcvT=-ZD-r9VNrSrGzTQZBEsuecK_ig@mail.gmail.com>
+X-Gm-Features: AQROBzDRGGELVSySTko37h6zEj8YoV3p6pwZDCVQUlUW6sZbw_W5mbJzFIh35nQ
+Message-ID: <CAMuHMdVerN6Pz07CQH+hcvT=-ZD-r9VNrSrGzTQZBEsuecK_ig@mail.gmail.com>
+Subject: Re: [patch 18/38] lib/tests: Replace get_cycles() with ktime_get()
+To: Thomas Gleixner <tglx@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, 
+	Uladzislau Rezki <urezki@gmail.com>, linux-mm@kvack.org, Arnd Bergmann <arnd@arndb.de>, x86@kernel.org, 
+	Lu Baolu <baolu.lu@linux.intel.com>, iommu@lists.linux.dev, 
+	Michael Grzeschik <m.grzeschik@pengutronix.de>, netdev@vger.kernel.org, 
+	linux-wireless@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>, 
+	linux-crypto@vger.kernel.org, Vlastimil Babka <vbabka@kernel.org>, 
+	David Woodhouse <dwmw2@infradead.org>, Bernie Thompson <bernie@plugable.com>, linux-fbdev@vger.kernel.org, 
+	Theodore Tso <tytso@mit.edu>, linux-ext4@vger.kernel.org, Marco Elver <elver@google.com>, 
+	Dmitry Vyukov <dvyukov@google.com>, kasan-dev@googlegroups.com, 
+	Andrey Ryabinin <ryabinin.a.a@gmail.com>, Thomas Sailer <t.sailer@alumni.ethz.ch>, 
+	linux-hams@vger.kernel.org, "Jason A. Donenfeld" <Jason@zx2c4.com>, 
+	Richard Henderson <richard.henderson@linaro.org>, linux-alpha@vger.kernel.org, 
+	Russell King <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org, 
+	Catalin Marinas <catalin.marinas@arm.com>, Huacai Chen <chenhuacai@kernel.org>, 
+	loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org, 
+	Dinh Nguyen <dinguyen@kernel.org>, Jonas Bonn <jonas@southpole.se>, linux-openrisc@vger.kernel.org, 
+	Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org, 
+	Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org, 
+	Paul Walmsley <pjw@kernel.org>, linux-riscv@lists.infradead.org, 
+	Heiko Carstens <hca@linux.ibm.com>, linux-s390@vger.kernel.org, 
+	"David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-The current kallsyms detection in dso__is_kallsyms() uses the
-dso_binary_type enum which fixes the issue of kallsyms being cached in
-the build-id cache for out-of-tree modules.
+Hi Thomas,
 
-However, during build-id injection in perf record/inject, dso_binary_type
-has not been explicitly set yet,so dso__binary_type() returns
-DSO_BINARY_TYPE__NOT_FOUND instead of DSO_BINARY_TYPE__KALLSYMS for the
-kernel DSO. The current check then fails to identify it as kallsyms,
-causing build-id symlinks to not be created in ~/.debug/.build-id/ and
-perf archive to fail with "Cannot stat" errors.
+On Fri, 10 Apr 2026 at 14:20, Thomas Gleixner <tglx@kernel.org> wrote:
+> get_cycles() is the historical access to a fine grained time source, but it
+> is a suboptimal choice for two reasons:
+>
+>    - get_cycles() is not guaranteed to be supported and functional on all
+>      systems/platforms. If not supported or not functional it returns 0,
+>      which makes benchmarking moot.
+>
+>    - get_cycles() returns the raw counter value of whatever the
+>      architecture platform provides. The original x86 Time Stamp Counter
+>      (TSC) was despite its name tied to the actual CPU core frequency.
+>      That's not longer the case. So the counter value is only meaningful
+>      when the CPU operates at the same frequency as the TSC or the value is
+>      adjusted to the actual CPU frequency. Other architectures and
+>      platforms provide similar disjunct counters via get_cycles(), so the
+>      result is operations per BOGO-cycles, which is not really meaningful.
+>
+> Use ktime_get() instead which provides nanosecond timestamps with the
+> granularity of the underlying hardware counter, which is not different to
+> the variety of get_cycles() implementations.
+>
+> This provides at least understandable metrics, i.e. operations/nanoseconds,
+> and is available on all platforms. As with get_cycles() the result might
+> have to be put into relation with the CPU operating frequency, but that's
+> not any different.
+>
+> This is part of a larger effort to remove get_cycles() usage from
+> non-architecture code.
+>
+> Signed-off-by: Thomas Gleixner <tglx@kernel.org>
 
-Steps to reproduce the issue:
-1. rm -rf ~/.debug/.build-id
-2. perf record sleep 1
-3. perf archive
+Thanks for your patch!
 
-Fix by falling back to matching long_name against the known kallsyms
-strings explicitly when binary_type is not yet set
-(== DSO_BINARY_TYPE__NOT_FOUND).
+> --- a/lib/interval_tree_test.c
+> +++ b/lib/interval_tree_test.c
+> @@ -65,13 +65,13 @@ static void init(void)
+>  static int basic_check(void)
+>  {
+>         int i, j;
+> -       cycles_t time1, time2, time;
+> +       ktime_t time1, time2, time;
+>
+>         printk(KERN_ALERT "interval tree insert/remove");
+>
+>         init();
+>
+> -       time1 = get_cycles();
+> +       time1 = ktime_get();
+>
+>         for (i = 0; i < perf_loops; i++) {
+>                 for (j = 0; j < nnodes; j++)
+> @@ -80,11 +80,11 @@ static int basic_check(void)
+>                         interval_tree_remove(nodes + j, &root);
+>         }
+>
+> -       time2 = get_cycles();
+> +       time2 = ktime_get();
+>         time = time2 - time1;
+>
+>         time = div_u64(time, perf_loops);
+> -       printk(" -> %llu cycles\n", (unsigned long long)time);
+> +       printk(" -> %llu nsecs\n", (unsigned long long)time);
 
-Fixes: ebf0b332732d ("perf dso: fix dso__is_kallsyms() check")
-Signed-off-by: Tanushree Shah <tshah@linux.ibm.com>
----
-v1 -> v2: Rename DSO__NAME_GUEST_KALLSYMS to DSO__PREFIX_GUEST_KALLSYMS
-          to reflect that it is a prefix, not a full name.
+While cycles_t was unsigned long or long long, ktime_t is always s64,
+so "%lld", and the cast can be dropped (everywhere).
 
-v1: https://lore.kernel.org/all/20260410071225.708005-2-tshah@linux.ibm.com/
+Gr{oetje,eeting}s,
 
- tools/perf/util/dso.h | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+                        Geert
 
-diff --git a/tools/perf/util/dso.h b/tools/perf/util/dso.h
-index ede691e9a249..515ab6e95b0e 100644
---- a/tools/perf/util/dso.h
-+++ b/tools/perf/util/dso.h
-@@ -9,6 +9,7 @@
- #include <stdbool.h>
- #include <stdio.h>
- #include <linux/bitops.h>
-+#include <string.h>
- #include "build-id.h"
- #include "debuginfo.h"
- #include "mutex.h"
-@@ -20,6 +21,7 @@ struct perf_env;
- 
- #define DSO__NAME_KALLSYMS	"[kernel.kallsyms]"
- #define DSO__NAME_KCORE		"[kernel.kcore]"
-+#define DSO__PREFIX_GUEST_KALLSYMS	"[guest.kernel.kallsyms"
- 
- /**
-  * enum dso_binary_type - The kind of DSO generally associated with a memory
-@@ -915,6 +917,14 @@ static inline bool dso__is_kallsyms(const struct dso *dso)
- {
- 	enum dso_binary_type bt = dso__binary_type(dso);
- 
-+	if (bt == DSO_BINARY_TYPE__NOT_FOUND) {
-+		return RC_CHK_ACCESS(dso)->kernel &&
-+			((strncmp(RC_CHK_ACCESS(dso)->long_name, DSO__NAME_KALLSYMS,
-+				strlen(DSO__NAME_KALLSYMS)) == 0) ||
-+			(strncmp(RC_CHK_ACCESS(dso)->long_name, DSO__PREFIX_GUEST_KALLSYMS,
-+				strlen(DSO__PREFIX_GUEST_KALLSYMS)) == 0));
-+	}
-+
- 	return bt == DSO_BINARY_TYPE__KALLSYMS || bt == DSO_BINARY_TYPE__GUEST_KALLSYMS;
- }
- 
 -- 
-2.47.3
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
 
