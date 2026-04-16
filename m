@@ -1,46 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-19783-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19784-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62EFDF433D6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2026 02:07:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8F2FF8A149
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Apr 2026 09:17:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fx1c970s1z2yrm;
-	Thu, 16 Apr 2026 12:07:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.186
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776305241;
-	cv=none; b=CHkkin2hiMHaSPIuVVeBipouk5b/a+n7fK8WsqrZWvQvpjgt9siUvqyunzhLIRkR9JUVhb16fiWBIwy7UtM5ZGaYbdA4tJPXBeKQW7v91E/t+03lYSFl5eP7tF5ME/dwHvzYn1fBNpOHV34B8xzJatcIz6WqYb/dp/WnAYUO2lPkdXo9e5I5Ke+0MiCmf5N4cskIjW+SPHwU3n01EIvm1a0ZIJ5EOPgejTfyM0IGYk1F+EkyTPXqVx1j53iIBmxlbergspB2TimEIRaZ8z+woixVl3VPmD0R5QSPGmFbtfii3TrzhxJy/LXwvgAw/mTWhU5a+Eu93+X/okrS5hfYJg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fxC8n0LS9z2yhP;
+	Thu, 16 Apr 2026 19:17:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776331064;
+	cv=none; b=PlyTKmYCKyQhkiqf3ND5yelJ6iiwmpWdrZeBwLF9viWUOwgU8nSLFIkpR9aOPPZQdI771OuCJSjP7pcU5sXAxOgA1fTPL6eoTf6Y53801RLAEnaCBpgqSdDVtRHM20cFcqCiHuKDauLyExZlQavUdn+Xlw3NwlJCVM8iTiqz81yJ8zh+uVL4gyP6VSkrYvPhTPdhE2Ietdirh8l8dIwQzGu+OjT1P8U8djIXMK+hvRxqPqoEdBEFIYtjK2FYPyId5OU9E7tq48RaI6epOER6dpRr07bonskJXUuoHIrWY7pUlUvDijP18TPbGdjtTY5NzFz+tiWSB9To5vA7IWIE1w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776305241; c=relaxed/relaxed;
-	bh=TaDtlDhvpSN1DHQ/+o47EJco+lcgV052hZ9XtkHXQBM=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=iDMjAuEWOJPQVX7XKZaldOttgK2cFhgk4qVynb4lx24kqgQcaeU9mQHIu1UUuC2q/pgGFtzigkFg16JJu4Joce2FEgS0BLb0K3CBpDzJSUIz+JDcwFHPeGTgcbwigaIUT8GrfP8UMlGNt+bAoU/p0ooL3FBT8g44gWMjZ/qbQsEIx0c0AjL11S7OyEMDeQRjkMkhTT87psSInA3ulMng3WyTkznW2Tu06nknYyDW0nn5H1XwMDx0BgvTFb9eU3TLCHHwYwPUbpLhknCvlwDdR7WLo2P++mkhUyX9LbqQCoakUzBoeHthc64pn7JTxnWJ8tiQl2H+3FY9LkC3phQYWQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=J0zA0c7P; dkim-atps=neutral; spf=pass (client-ip=91.218.175.186; helo=out-186.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1776331064; c=relaxed/relaxed;
+	bh=iiV5yqTbaPN6Xrrcd1k3uK+twUyapf5QAUCtATSoeNs=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=KGiCyCo0Gg0jKsRh2aDneJllNuxPlGV5L8V91bk9ffzV28oQRmsfem2Y6xqKHVbZIFKqQqxH6lHMqcnz/OL1grcDDm90KUrpeexRGUMmBuEcSOciiClCYYV5XlmajXOShZ5hOiA6QUpMDUd3Y93dvSJNQc4v1jgSk2Xi2di2SQA8TwvcRjjCeB5baxdKuL+m8EA3EouJM1svC9zLST7fWR7XuOaPH5JLw7Mor7TVg6iLbbbAV1pZQq7QkN6wUMefyPlNK1xozJ7U2GHlzx2rkCrhmFqHOtRGH08QjVZdZBhPZqCltj95N6CkG8YwYcjGkEJs2r5tOapdMrCNC9ju6g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iP5+PhAh; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tshah@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=J0zA0c7P;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iP5+PhAh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.186; helo=out-186.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-186.mta0.migadu.com (out-186.mta0.migadu.com [91.218.175.186])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tshah@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fx1c34X36z2ynP
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2026 12:07:12 +1000 (AEST)
-Content-Type: text/plain;
-	charset=us-ascii
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1776305207;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=TaDtlDhvpSN1DHQ/+o47EJco+lcgV052hZ9XtkHXQBM=;
-	b=J0zA0c7PNrU1/2K6DsccDATXvjS/5EjTLM92uaQLPBY5Bs2V4BcyO2VeGwXmN8w1IQpL8E
-	uiKGZopweljMF01lnCABOKA5JDUkCf3P60EkZYOn4tKQ6HjXEmbJ+l9Aq0NcG3edWqIxxp
-	eVPIu6DatuMk04EV+TM9SasWJSra1zs=
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fxC8l2jYxz2yVt
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2026 19:17:42 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63G6dSHT1842719;
+	Thu, 16 Apr 2026 09:17:37 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=iiV5yqTbaPN6Xrrcd1k3uK+twUyapf5QAUCtATSoe
+	Ns=; b=iP5+PhAhiaOnhl+10GOJK8lqxlk9F+m37aTCgjQFcyNfTGhj/PZSUJZZ2
+	IPO731ab/A2gX93IkzQXFhyjPitv2C3pDA5o3bDhQnY5FlLT2Iqn0hDFNz8xAPhH
+	QTalre9/rbna93zXp1T/n77RzaM65jQZdgChvrgi1vgkS2ZBMjVqjtrU+RgxsSia
+	p2gYBfooeFznRR/Q/eN49SCiirbKVGCrfcYrP0411vizYKC4lsm5ZylxdO12rnO7
+	aMQzqMkn/9Kuwl0osl0Y8/RgFkQk/Ucg+8y+VoZl/Sga6mQci3mBzg1XmKrSgYad
+	mPXgWIlCBlZf5JBcURIMmiGh3eThQ==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dh89mvmd0-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 16 Apr 2026 09:17:36 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 63G8RcRJ025837;
+	Thu, 16 Apr 2026 09:17:36 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dg2ujt129-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 16 Apr 2026 09:17:35 +0000
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63G9HWc155247318
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 16 Apr 2026 09:17:32 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0E5F32004B;
+	Thu, 16 Apr 2026 09:17:32 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 38D0520040;
+	Thu, 16 Apr 2026 09:17:28 +0000 (GMT)
+Received: from li-4c4c4544-0047-4210-804e-b5c04f423534.ibm.com.com (unknown [9.124.216.201])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 16 Apr 2026 09:17:28 +0000 (GMT)
+From: Tanushree Shah <tshah@linux.ibm.com>
+To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
+        vmolnaro@redhat.com, mpetlan@redhat.com, tmricht@linux.ibm.com,
+        maddy@linux.ibm.com, irogers@google.com, namhyung@kernel.org
+Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        atrajeev@linux.ibm.com, hbathini@linux.vnet.ibm.com,
+        Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com,
+        Tanushree Shah <tshah@linux.ibm.com>
+Subject: [PATCH v2] perf dso: Fix kallsyms DSO detection with fallback logic
+Date: Thu, 16 Apr 2026 14:46:58 +0530
+Message-ID: <20260416091657.578429-2-tshah@linux.ibm.com>
+X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,170 +88,102 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.500.181\))
-Subject: Re: [PATCH v2 6/6] mm/mm_init: Fix pageblock migratetype for
- ZONE_DEVICE compound pages
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Muchun Song <muchun.song@linux.dev>
-In-Reply-To: <ad_EygHWDi19SS9y@kernel.org>
-Date: Thu, 16 Apr 2026 10:06:03 +0800
-Cc: Muchun Song <songmuchun@bytedance.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Hildenbrand <david@kernel.org>,
- Oscar Salvador <osalvador@suse.de>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Lorenzo Stoakes <ljs@kernel.org>,
- "Liam R . Howlett" <Liam.Howlett@oracle.com>,
- Vlastimil Babka <vbabka@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>,
- Michal Hocko <mhocko@suse.com>,
- Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <chleroy@kernel.org>,
- aneesh.kumar@linux.ibm.com,
- joao.m.martins@oracle.com,
- linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <86523791-2C69-4A43-BD32-3713840A6640@linux.dev>
-References: <20260415111412.1003526-1-songmuchun@bytedance.com>
- <20260415111412.1003526-7-songmuchun@bytedance.com>
- <ad_EygHWDi19SS9y@kernel.org>
-To: Mike Rapoport <rppt@kernel.org>
-X-Migadu-Flow: FLOW_OUT
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDE2MDA4NyBTYWx0ZWRfX1DAW9Hwf7yvG
+ SIFF9yrBiEMaUypcnR52JMZG8ap5aeB6HV0rOj1b8eneOURx9xLP3X11nh0ab2bEEWckG/u7sJ6
+ cMTuCj1B1B52wh3Y75+QueerT5Ot0FB4IBFmVonTw5224cJeFe4Mg3A1d6WjTP9dGxaXq4Rayod
+ HyF1tpWACbvYGMpyjC6KtO2bNjv36W3JzsuVXDYmEC918m5RvSsSPFsKG+l4IFrgTfsRwVRfy3g
+ o1C30H4cE9Go1HqGEHbVHHym04Miuuu0aM9zydG6MuJ6JYlbrgOxju+D6bPar7VZ3RH/MRTMzsI
+ i152WRkKKXQ/e5S991hCRLGCnfI2d90MkVlUYHSJw4mLfDg5nkX4YNpwshttUQQLzdffJ98kVda
+ yEzJon31lFBCc3eCOOUR+O1gZd2BYm1xMrcmsSLya+DlnBU0nyF1fngxqW8x42FSkpDQW1Rq9pf
+ TZo+PJEyGPneY90jg6g==
+X-Authority-Analysis: v=2.4 cv=eJ4jSnp1 c=1 sm=1 tr=0 ts=69e0a931 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=yWhZYjjtwySg7tuK4IQA:9
+X-Proofpoint-GUID: BJ_PeVf6LebR_Vj1Y3sDRvBw_obQjQ_v
+X-Proofpoint-ORIG-GUID: PTzdm8LB_4viEV5p2L_A9KqUZlXQpvka
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-16_02,2026-04-13_04,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 lowpriorityscore=0 adultscore=0 priorityscore=1501
+ clxscore=1015 bulkscore=0 suspectscore=0 spamscore=0 impostorscore=0
+ phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604070000
+ definitions=main-2604160087
 
+The current kallsyms detection in dso__is_kallsyms() uses the
+dso_binary_type enum which fixes the issue of kallsyms being cached in
+the build-id cache for out-of-tree modules.
 
+However, during build-id injection in perf record/inject, dso_binary_type
+has not been explicitly set yet,so dso__binary_type() returns
+DSO_BINARY_TYPE__NOT_FOUND instead of DSO_BINARY_TYPE__KALLSYMS for the
+kernel DSO. The current check then fails to identify it as kallsyms,
+causing build-id symlinks to not be created in ~/.debug/.build-id/ and
+perf archive to fail with "Cannot stat" errors.
 
-> On Apr 16, 2026, at 01:03, Mike Rapoport <rppt@kernel.org> wrote:
->=20
-> Hi Muchun,
->=20
-> On Wed, Apr 15, 2026 at 07:14:12PM +0800, Muchun Song wrote:
->> The memmap_init_zone_device() function only initializes the =
-migratetype
->> of the first pageblock of a compound page. If the compound page size
->> exceeds pageblock_nr_pages (e.g., 1GB hugepages with 2MB pageblocks),
->> subsequent pageblocks in the compound page remain uninitialized.
->>=20
->> Move the migratetype initialization out of __init_zone_device_page()
->> and into a separate pageblock_migratetype_init_range() function. This
->> iterates over the entire PFN range of the memory, ensuring that all
->> pageblocks are correctly initialized.
->>=20
->> Fixes: c4386bd8ee3a ("mm/memremap: add ZONE_DEVICE support for =
-compound pages")
->> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
->> ---
->> mm/mm_init.c | 42 +++++++++++++++++++++++++++---------------
->> 1 file changed, 27 insertions(+), 15 deletions(-)
->>=20
->> diff --git a/mm/mm_init.c b/mm/mm_init.c
->> index f9f8e1af921c..30528c4206c1 100644
->> --- a/mm/mm_init.c
->> +++ b/mm/mm_init.c
->> @@ -674,6 +674,19 @@ static inline void fixup_hashdist(void)
->> static inline void fixup_hashdist(void) {}
->> #endif /* CONFIG_NUMA */
->>=20
->> +static __meminit void pageblock_migratetype_init_range(unsigned long =
-pfn,
->> +        unsigned long nr_pages,
->> +        int migratetype)
->> +{
->> + 	unsigned long end =3D pfn + nr_pages;
->> +
->> + 	for (pfn =3D pageblock_align(pfn); pfn < end; pfn +=3D =
-pageblock_nr_pages) {
->> + 		init_pageblock_migratetype(pfn_to_page(pfn), =
-migratetype, false);
->> + 		if (IS_ALIGNED(pfn, PAGES_PER_SECTION))
->> + 			cond_resched();
->> + 	}
->> +}
->> +
->> /*
->>  * Initialize a reserved page unconditionally, finding its zone =
-first.
->>  */
->> @@ -1011,21 +1024,6 @@ static void __ref =
-__init_zone_device_page(struct page *page, unsigned long pfn,
->> page_folio(page)->pgmap =3D pgmap;
->> page->zone_device_data =3D NULL;
->>=20
->> - 	 /*
->> -  	 * Mark the block movable so that blocks are reserved for
->> -  	 * movable at startup. This will force kernel allocations
->> -  	 * to reserve their blocks rather than leaking throughout
->> - 	 * the address space during boot when many long-lived
->> -  	 * kernel allocations are made.
->> - 	 *
->> -  	 * Please note that MEMINIT_HOTPLUG path doesn't clear memmap
->> -  	 * because this is done early in section_activate()
->> -  	 */
->> - 	if (pageblock_aligned(pfn)) {
->> - 		init_pageblock_migratetype(page, MIGRATE_MOVABLE, =
-false);
->> - 		cond_resched();
->> - 	}
->> -
->> /*
->>  * ZONE_DEVICE pages other than MEMORY_TYPE_GENERIC are released
->>  * directly to the driver page allocator which will set the page =
-count
->> @@ -1122,6 +1120,8 @@ void __ref memmap_init_zone_device(struct zone =
-*zone,
->>=20
->> 	__init_zone_device_page(page, pfn, zone_idx, nid, pgmap);
->>=20
->> + 	cond_resched();
->> +
->=20
-> I don't think we want cond_resched() for every page here too, even =
-it's a
-> compound page :)
+Steps to reproduce the issue:
+1. rm -rf ~/.debug/.build-id
+2. perf record sleep 1
+3. perf archive
 
-I'll update it to every PAGES_PER_SECTION, does this make sense for you?
+Fix by falling back to matching long_name against the known kallsyms
+strings explicitly when binary_type is not yet set
+(== DSO_BINARY_TYPE__NOT_FOUND).
 
-Thanks,
-Muchun
+Fixes: ebf0b332732d ("perf dso: fix dso__is_kallsyms() check")
+Signed-off-by: Tanushree Shah <tshah@linux.ibm.com>
+---
+v1 -> v2: Rename DSO__NAME_GUEST_KALLSYMS to DSO__PREFIX_GUEST_KALLSYMS
+          to reflect that it is a prefix, not a full name.
 
->=20
-> Otherwise
->=20
-> Reviewed-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
->=20
->> if (pfns_per_compound =3D=3D 1)
->> continue;
->>=20
->> @@ -1129,6 +1129,18 @@ void __ref memmap_init_zone_device(struct zone =
-*zone,
->>      compound_nr_pages(altmap, pgmap));
->> }
->>=20
->> + /*
->> +  * Mark the block movable so that blocks are reserved for
->> +  * movable at startup. This will force kernel allocations
->> +  * to reserve their blocks rather than leaking throughout
->> +  * the address space during boot when many long-lived
->> +  * kernel allocations are made.
->> +  *
->> +  * Please note that MEMINIT_HOTPLUG path doesn't clear memmap
->> +  * because this is done early in section_activate()
->> +  */
->> + 	pageblock_migratetype_init_range(start_pfn, nr_pages, =
-MIGRATE_MOVABLE);
->> +
->> 	pr_debug("%s initialised %lu pages in %ums\n", __func__,
->> 	nr_pages, jiffies_to_msecs(jiffies - start));
->> }
->> --=20
->> 2.20.1
->>=20
->=20
-> --=20
-> Sincerely yours,
-> Mike.
+v1: https://lore.kernel.org/all/20260410071225.708005-2-tshah@linux.ibm.com/
 
+ tools/perf/util/dso.h | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/tools/perf/util/dso.h b/tools/perf/util/dso.h
+index ede691e9a249..515ab6e95b0e 100644
+--- a/tools/perf/util/dso.h
++++ b/tools/perf/util/dso.h
+@@ -9,6 +9,7 @@
+ #include <stdbool.h>
+ #include <stdio.h>
+ #include <linux/bitops.h>
++#include <string.h>
+ #include "build-id.h"
+ #include "debuginfo.h"
+ #include "mutex.h"
+@@ -20,6 +21,7 @@ struct perf_env;
+ 
+ #define DSO__NAME_KALLSYMS	"[kernel.kallsyms]"
+ #define DSO__NAME_KCORE		"[kernel.kcore]"
++#define DSO__PREFIX_GUEST_KALLSYMS	"[guest.kernel.kallsyms"
+ 
+ /**
+  * enum dso_binary_type - The kind of DSO generally associated with a memory
+@@ -915,6 +917,14 @@ static inline bool dso__is_kallsyms(const struct dso *dso)
+ {
+ 	enum dso_binary_type bt = dso__binary_type(dso);
+ 
++	if (bt == DSO_BINARY_TYPE__NOT_FOUND) {
++		return RC_CHK_ACCESS(dso)->kernel &&
++			((strncmp(RC_CHK_ACCESS(dso)->long_name, DSO__NAME_KALLSYMS,
++				strlen(DSO__NAME_KALLSYMS)) == 0) ||
++			(strncmp(RC_CHK_ACCESS(dso)->long_name, DSO__PREFIX_GUEST_KALLSYMS,
++				strlen(DSO__PREFIX_GUEST_KALLSYMS)) == 0));
++	}
++
+ 	return bt == DSO_BINARY_TYPE__KALLSYMS || bt == DSO_BINARY_TYPE__GUEST_KALLSYMS;
+ }
+ 
+-- 
+2.47.3
 
 
