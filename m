@@ -1,53 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-19819-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19820-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06C41F8E499
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2026 02:40:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1CE2AF8E4B7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2026 07:39:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fxfJQ37MRz2xpt;
-	Fri, 17 Apr 2026 12:40:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776393654;
-	cv=none; b=g50f5GAURDzQWw3XrE9xA7IUP7bO2QZqnS3ZviSQUwB4e+HsydwVMG1mMxILABhoMFyA59STJ6ZELLNxDZlIjHqKIMooCqwg5+8luTjl834hTW5V4MSk6qnqf3w7OVlsejpb2RKmLUiDHyViIfefvUWbSprDyoLyavntnj+RPre1gE1eC+6RnttL/5Rmi+0W0Irr88RZdwfkWP7PbMsd5lcBGHAjBi1/B8QL303JyyrpytIwL46b0j899ZWqKKParYAukU7sda1Tcpz/fPalLl0osAblbukPXVkXASUhloLEuFo3upbQgNd2hoyol2C/YynAi7/B6npqc+M6zB8dLw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fxmwp4312z2yh4;
+	Fri, 17 Apr 2026 17:39:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.25
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776411562;
+	cv=none; b=FcvXM895pcdyD+N60wL+/rhYBT60yhbwpYTnvcYZ+U42Al5B3wsB1SzHf8XlGddTE5zy1mcpPvUg2LhOYm5L6jxMZF1MFcDAVSGO+18EqSok3Dw8dhKCXgUeddZTk3IJwHjdJMYOe7ATd/66SrR7zt41IK0pbsOLRqhVEQG541oFQAYJOWf91Cl6Rf/P495nAj9EGdt1IaroUG68YYZQaVvABaoCOToBm+WqivhNDm5vQIy9Y6EZcf/iVc8hm6uVnlw6Z9e8EvskWqdzgVAOrLViiUwUYeGhxBvqw3kpI9RoyJAv++BWyq2L0U47ZzpoP7XOvNl4VY45L3dTgOB7QQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776393654; c=relaxed/relaxed;
-	bh=H+Jlkw2DzxGDVPjkTh09CfTkIC7dU4fvOK8TwWJLXqM=;
-	h=Content-Type:MIME-Version:Subject:From:Message-Id:Date:References:
-	 In-Reply-To:To:Cc; b=eY6aBOWl7opvCL1K7AMyCur6fUEQzV1hgH2S1nSvbH5H70cbJRX7e3A5rTjQIZbWzBbnu1h8mOLJ6B4vGFhtOk07r6OFvc9r6ZQEc04erfdNSmqxlgp/1QlKCQYMpXlDQlO2UEb7BtrrVSl8ifB+6DZxMinswC4lSeF3HN4KghTxzwoESvgwGzbRDpdvTi+VtdGmVvZtFfF5ER9LV5NC1jojqBiucQShlQua9eGWtKiekGZAGa2Dav0qtfSr8Wb7jwheVLnNAMKU1Nup77tg6FMVLfruuTPPECFHHir4q+4WSxUzpbOzG/WK51H74lifjjiumWQAaqCI6RMFDu/WmA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nziXgXAE; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nziXgXAE;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	t=1776411562; c=relaxed/relaxed;
+	bh=j0/gV7yocmu0fgy6XiEhkYdc+nmzFc1Knwg28nisQ+U=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=eitwZIWQ0Z4l4MbJnjTMB1kumM+gOjXinZRNcKtvhXb7Te14QU4I/KQbUGAXZijpndjnywk2cV+pNyG5Oj5MkjkiMGITyHUE3SLMIgemDPoz/PWehBP2vE3i4qKesTmEGq5eizlZevDPefi0Ia/wjBA6ayG2PRM5tIgbKWEk8xmPfltVaQeOutx/TZAjeXs6HkuD11WKJ7a3jNBbm7DhhFcjjJJSaAc54Dqq1Tdkt0whL3kd4dB5mKdKRNXJXL8plaBM/WYdgIOt7W2TekDOxjJfyTXijaS3Fe2ljOFdC2jhCjoTnP/UXgqNCFpakCBzM6x+n9Sn3g67wUUV+R8H+A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass (client-ip=159.226.251.25; helo=cstnet.cn; envelope-from=pengpeng@iscas.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=iscas.ac.cn
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iscas.ac.cn (client-ip=159.226.251.25; helo=cstnet.cn; envelope-from=pengpeng@iscas.ac.cn; receiver=lists.ozlabs.org)
+Received: from cstnet.cn (smtp25.cstnet.cn [159.226.251.25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fxfJP3864z2xlk
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2026 12:40:53 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id D5DD944599;
-	Fri, 17 Apr 2026 02:40:50 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B8597C2BCB3;
-	Fri, 17 Apr 2026 02:40:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776393650;
-	bh=RE8pXUNFnXrfp8k86oykmMdq+NuDocEHXqwp95teTlA=;
-	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
-	b=nziXgXAEDrvVDkLZpvE+XxCZTTZKH/M0cgCTyVUSO2ln2j+DlzcbyJsIwyuZpEsDG
-	 vcgOQCkJO2fjQFNwe5nJ1v/9IAxyVfVAfW4M9mu2CiDbNdVUDR4T+dZwoE/H70UgNG
-	 mYC7Zy6zrfRPTI0J+S65v+riyW9x20dQKieQc4KgHT2t1BUOjmfSG/ibHXyuciyc9+
-	 peqUsTXW95O8TlCI783Pmcvmgh6OHrgpE6u/kkCz/vpfAA7c5fOpxX07BCI/8d5/TF
-	 pLH1TcwabVr46cyJb2FzLu75ShiMqGTXUjgSdulYkca5q/GJwwuA1cWX6NvjxgoBUi
-	 hvPtDEWqVDNAA==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 02CE6380AA76;
-	Fri, 17 Apr 2026 02:40:20 +0000 (UTC)
-Content-Type: text/plain; charset="utf-8"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fxmwn3Q2bz2xpt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2026 17:39:19 +1000 (AEST)
+Received: from localhost.localdomain (unknown [111.196.245.116])
+	by APP-05 (Coremail) with SMTP id zQCowADHVQmd4+Fptf7XDQ--.39774S2;
+	Fri, 17 Apr 2026 15:39:09 +0800 (CST)
+From: Pengpeng Hou <pengpeng@iscas.ac.cn>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Sourabh Jain <sourabhjain@linux.ibm.com>,
+	Hari Bathini <hbathini@linux.ibm.com>,
+	Jiri Bohac <jbohac@suse.cz>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	Pengpeng Hou <pengpeng@iscas.ac.cn>,
+	stable@vger.kernel.org
+Subject: [PATCH] powerpc/fadump: reject empty bootargs_append writes
+Date: Fri, 17 Apr 2026 15:39:07 +0800
+Message-ID: <20260417073907.4985-1-pengpeng@iscas.ac.cn>
+X-Mailer: git-send-email 2.50.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,50 +59,57 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH v2 net 0/2] net: enetc: fix command BD ring issues
-From: patchwork-bot+netdevbpf@kernel.org
-Message-Id: 
- <177639361854.3490984.12957233652551599024.git-patchwork-notify@kernel.org>
-Date: Fri, 17 Apr 2026 02:40:18 +0000
-References: <20260415060833.2303846-1-wei.fang@nxp.com>
-In-Reply-To: <20260415060833.2303846-1-wei.fang@nxp.com>
-To: Wei Fang <wei.fang@nxp.com>
-Cc: claudiu.manoil@nxp.com, vladimir.oltean@nxp.com, xiaoning.wang@nxp.com,
- andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, chleroy@kernel.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org, imx@lists.linux.dev,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+X-CM-TRANSID:zQCowADHVQmd4+Fptf7XDQ--.39774S2
+X-Coremail-Antispam: 1UD129KBjvdXoW7Gry7GF4kCF15tFWrAFy7Wrg_yoWDuFX_Jw
+	nrXFZ3Grs0qa12vFn0yFWYvr1xKanrWFy0kw12v3y3AF4DZa17Zw4fAFn5ArnrJFWkArZ8
+	CFyIv3s7Z3W0gjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUIcSsGvfJTRUUUba8FF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2IYs7xG
+	6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
+	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Ar0_tr1l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr1j
+	6F4UJwA2z4x0Y4vEx4A2jsIE14v26rxl6s0DM28EF7xvwVC2z280aVCY1x0267AKxVW0oV
+	Cq3wAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0
+	I7IYx2IY67AKxVWUAVWUtwAv7VC2z280aVAFwI0_Gr0_Cr1lOx8S6xCaFVCjc4AY6r1j6r
+	4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IErcIFxwACI402YVCY1x02628v
+	n2kIc2xKxwCY1x0262kKe7AKxVWUtVW8ZwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7x
+	kEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E
+	67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUCVW8Jw
+	CI42IY6xIIjxv20xvEc7CjxVAFwI0_Cr0_Gr1UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWU
+	CwCI42IY6I8E87Iv67AKxVW8JVWxJwCI42IY6I8E87Iv6xkF7I0E14v26r4UJVWxJrUvcS
+	sGvfC2KfnxnUUI43ZEXa7VUbo5l5UUUUU==
+X-Originating-IP: [111.196.245.116]
+X-CM-SenderInfo: pshqw1xhqjqxpvfd2hldfou0/
 
-Hello:
+bootargs_append_store() indexes params[count - 1] when stripping a
+trailing newline from the sysfs write buffer.
 
-This series was applied to netdev/net.git (main)
-by Jakub Kicinski <kuba@kernel.org>:
+kernfs passes zero-length writes through to the store callback, so an
+empty write makes that newline check read before the start of params.
 
-On Wed, 15 Apr 2026 14:08:31 +0800 you wrote:
-> Currently, the implementation of command BD ring has two issues, one is
-> that the driver may obtain wrong consumer index of the ring, because the
-> driver does not mask out the SBE bit of the CIR value, so a wrong index
-> will be obtained when a SBE error ouccrs. The other one is that the DMA
-> buffer may be used after free. If netc_xmit_ntmp_cmd() times out and
-> returns an error, the pending command is not explicitly aborted, while
-> ntmp_free_data_mem() unconditionally frees the DMA buffer. If the buffer
-> has already been reallocated elsewhere, this may lead to silent memory
-> corruption. Because the hardware eventually processes the pending command
-> and perform a DMA write of the response to the physical address of the
-> freed buffer. So this patch set is to fix these two issues.
-> 
-> [...]
+Reject empty writes before looking at the last input byte.
 
-Here is the summary with links:
-  - [v2,net,1/2] net: enetc: correct the command BD ring consumer index
-    https://git.kernel.org/netdev/net/c/759a32900b6f
-  - [v2,net,2/2] net: enetc: fix NTMP DMA use-after-free issue
-    https://git.kernel.org/netdev/net/c/3cade698881e
+Fixes: 683eab94da75 ("powerpc/fadump: setup additional parameters for dump capture kernel")
+Cc: stable@vger.kernel.org
 
-You are awesome, thank you!
+Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
+---
+ arch/powerpc/kernel/fadump.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index 4ebc333dd786..03ab5565e420 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -1479,6 +1479,9 @@ static ssize_t bootargs_append_store(struct kobject *kobj,
+ 	if (!fw_dump.fadump_enabled || fw_dump.dump_active)
+ 		return -EPERM;
+ 
++	if (!count)
++		return -EINVAL;
++
+ 	if (count >= COMMAND_LINE_SIZE)
+ 		return -EINVAL;
+ 
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
-
+2.50.1 (Apple Git-155)
 
 
