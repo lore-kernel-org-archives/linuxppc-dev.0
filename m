@@ -1,21 +1,21 @@
-Return-Path: <linuxppc-dev+bounces-19822-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19823-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 181F1F8E4B8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2026 07:48:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E999AF8E4BB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2026 07:52:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fxn7S2xKdz2yh4;
-	Fri, 17 Apr 2026 17:48:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fxnCt4kFnz2yh4;
+	Fri, 17 Apr 2026 17:52:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.25
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776412116;
-	cv=none; b=e1n2zxUbMjwYug9PlzoSq8uvwmaub9DQ+3QYJC6+FfX4FBuMpn6MQIr0B597sjFFNgUMRL/945OI6ft627QbYomAt6yYRxTYDB4+IJhvoaKc5slXSL9EvbHHy6nJnHWwvuiT2ZEa1CjIo6jlFAvijVw1sa0Sd+7X88A8Gvbj8e4Qk5u7E8Arx0Im8E/0+C/ZL7RWRPvaXY2DpeGTPfrqHanK5JAPiTQBX4w0fvvDPhDSbQ7Yejo6RhdmojcfiJXurP4STzZPltMzWRbrRgmJhQjW+nEDET3B6I9lylwFt9bKzBScBFbaMnJjSOOTp1YULrP8Os9tHsG044zsSi/JBw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776412346;
+	cv=none; b=S6FPBb98LxTE5q/4cle6on4BnpjE2XeruGGNppunKonUmkc8SATQ533a8GGPqmcyuBwb7GOQQReYiXullY0czjE2Zd+v5nCyyWpfqn9OiPfqh981h85gzqvclzNt+UGHojJlmob/vJMD6lfDW7L/Zz/km8Gx2tPPc79D6d7JYhY1PNnZQHIXfpVmBUDep66DWUHCQYWWb2qWcNqVuoif6oBdUVaBHuxNntc0fF9biNlizvmrnM+4BDrjQdd8LALVbhqEhcV8XBo5wXKP+S3xvMuR7K79mMonOzUZYL3u5/4ivH2eFo8w+40kZNILbL7WInH79oG0Ek9GfELKR5mMmA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776412116; c=relaxed/relaxed;
-	bh=XDAThG0yRn/HWC1IcfrgXuB/3VOoHTEOJu87Gp3N/oM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=BC/s3q/5CD6T/sd6FfxKn27J3V9YXr2PlN9NPgUhgZubZFAxWGWIkyS6/Z7gXCexznSzTCMLB2GglgQvN7iMFroYYkSKukgSUUr4xFucToz73cn+mx53yFrdPcE9+lelOxwxsg8H1DlSoV3Ign5RJyA/Ct9RX09VQ9lVSj5C6u1jrtnOnYhv23+mi39hv0MMkRnhegkZtYSSrUv0gOgtJQN3MElGzDTZ7KtasgyALBUjK//8Z/dVZZLjl1bIl2k4Ve9X6hSWkt0Bz31T9nUOKfJXbH3Yum4bNqGdlEA43v5i9O7E1S9G/GRKn5QcF27kroZpScLKfDd8sSikWMiCIg==
+	t=1776412346; c=relaxed/relaxed;
+	bh=WS7YPZVmugcljsO7oz8p4pAwkAo3QzRxiyGqxUf02hw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=SWvB4nOnnF2mTrlwK2jKN1Y6+NrstnwmlM6pzNtTmF7CGmVlmszqyAV/N8jTWsOafhfbF9oYELBDMGB7NKyJdm6wQ/BkLfPRtpXZT8xHwgYjx/Rbx1fKchjdwU7o7BiK3GY/WgRieJoGQpXPeGvRWIQAoHW/4zjdirtKYaP2WzjXhXKI37UaYpjadoGWa7Trhw+zRRvKlnSHKX2SVFFGQiOZ3Zp++AvgV8WcCHFUpVcQcTlP6aac2uqnNjDW9loq4PAfE+aokgLTVFkjKQnW92I/YGHZxSc5IrC0u2nTj5duFPgdRxeQrVYe8/fQN/rE6vQcQBglbk/u+lA38wcajw==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass (client-ip=159.226.251.25; helo=cstnet.cn; envelope-from=pengpeng@iscas.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=iscas.ac.cn
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iscas.ac.cn (client-ip=159.226.251.25; helo=cstnet.cn; envelope-from=pengpeng@iscas.ac.cn; receiver=lists.ozlabs.org)
@@ -23,24 +23,24 @@ Received: from cstnet.cn (smtp25.cstnet.cn [159.226.251.25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fxn7R3kWFz2xpt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2026 17:48:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fxnCs4svKz2xpt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2026 17:52:25 +1000 (AEST)
 Received: from localhost.localdomain (unknown [111.196.245.116])
-	by APP-05 (Coremail) with SMTP id zQCowAC3RgrL5eFpAzHYDQ--.61365S2;
-	Fri, 17 Apr 2026 15:48:28 +0800 (CST)
+	by APP-05 (Coremail) with SMTP id zQCowAAHlwqm5uFp1EfYDQ--.22343S2;
+	Fri, 17 Apr 2026 15:52:07 +0800 (CST)
 From: Pengpeng Hou <pengpeng@iscas.ac.cn>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>,
+To: Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	"Oliver O'Halloran" <oohall@gmail.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
 	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Kees Cook <kees@kernel.org>,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org,
-	Pengpeng Hou <pengpeng@iscas.ac.cn>,
-	stable@vger.kernel.org
-Subject: [PATCH] powerpc/perf/hv-gpci: bound sysfs formatting with sysfs_emit_at()
-Date: Fri, 17 Apr 2026 15:48:25 +0800
-Message-ID: <20260417074825.22967-1-pengpeng@iscas.ac.cn>
+	Pengpeng Hou <pengpeng@iscas.ac.cn>
+Subject: [PATCH] powerpc/eeh: NUL-terminate debugfs command buffers before sscanf()
+Date: Fri, 17 Apr 2026 15:52:05 +0800
+Message-ID: <20260417075205.29738-1-pengpeng@iscas.ac.cn>
 X-Mailer: git-send-email 2.50.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -56,149 +56,99 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:zQCowAC3RgrL5eFpAzHYDQ--.61365S2
-X-Coremail-Antispam: 1UD129KBjvJXoWxAr13Wr15ury7Zry7ur17Jrb_yoWrJw43p3
-	WfKr4q9rs5Xw17CrWIkF1xZw15W397A347WrW2g393ArsxX3909FyUKFyY9ry8GFWrCa48
-	urZxKrs0krnrJFDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+X-CM-TRANSID:zQCowAAHlwqm5uFp1EfYDQ--.22343S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7uryxXw15tFWfGryfWry3urg_yoW5JrW7pF
+	n0kF13Jw4vqrs7tFnIvF45Zr40grs3Jry3K3y8G397Zr13ZrnF9FyUGFyYqrWkXr4xZF40
+	qrsxCFyqvrnrWw7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
 	9KBjDU0xBIdaVrnRJUUUkE14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
 	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
 	1l84ACjcxK6xIIjxv20xvE14v26ryj6F1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4U
 	JVWxJr1l84ACjcxK6I8E87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Gc
 	CE3s1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E
-	2Ix0cI8IcVAFwI0_Jw0_WrylYx0Ex4A2jsIE14v26r4j6F4UMcvjeVCFs4IE7xkEbVWUJV
+	2Ix0cI8IcVAFwI0_JF0_Jw1lYx0Ex4A2jsIE14v26r4j6F4UMcvjeVCFs4IE7xkEbVWUJV
 	W8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lc7CjxVAaw2AFwI0_
 	Jw0_GFyl42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67
 	AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r1q6r43MIIY
 	rxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_JFI_Gr1lIxAIcVC0I7IYx2IY6xkF7I0E14
 	v26F4j6r4UJwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Gr0_
-	Cr1lIxAIcVC2z280aVCY1x0267AKxVW8Jr0_Cr1UYxBIdaVFxhVjvjDU0xZFpf9x0JUDOz
-	3UUUUU=
+	Cr1lIxAIcVC2z280aVCY1x0267AKxVW8Jr0_Cr1UYxBIdaVFxhVjvjDU0xZFpf9x0JUgXo
+	cUUUUU=
 X-Originating-IP: [111.196.245.116]
 X-CM-SenderInfo: pshqw1xhqjqxpvfd2hldfou0/
 
-systeminfo_gpci_request() and
-affinity_domain_via_partition_result_parse() hex-encode hypervisor data
-into the single-page sysfs read buffer with sprintf(buf + *n, ...).
-Both helpers only check PAGE_SIZE after the formatting loops have already
-advanced past the end of the buffer.
+eeh_force_recover_write() and pnv_eeh_ei_write() copy raw userspace
+bytes into fixed stack buffers with simple_write_to_buffer() and then
+pass those buffers straight to sscanf().
 
-Switch these appends to sysfs_emit_at() and stop once the sysfs buffer is
-full.
+When userspace fills the buffer completely, the copied command is not
+NUL-terminated and sscanf() can read past the end of the stack buffer.
 
-Fixes: 71f1c39647d8 ("powerpc/hv_gpci: Add sysfs file inside hv_gpci device to show processor bus topology information")
-Fixes: a15e0d6a6929 ("powerpc/hv_gpci: Add sysfs file inside hv_gpci device to show affinity domain via partition information")
-Cc: stable@vger.kernel.org
+Reject oversized writes and reserve one byte for a terminating NUL before
+parsing the command string.
+
+Fixes: 954bd99435b8 ("powerpc/eeh: Add eeh_force_recover to debugfs")
+Fixes: 4cf174455899 ("powerpc/powernv: Drop PHB operation post_init()")
 
 Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
 ---
- arch/powerpc/perf/hv-gpci.c | 56 +++++++++++++++++++++++++++++++------
- 1 file changed, 47 insertions(+), 9 deletions(-)
+ arch/powerpc/kernel/eeh.c                    | 11 +++++++++--
+ arch/powerpc/platforms/powernv/eeh-powernv.c | 11 +++++++++--
+ 2 files changed, 18 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/perf/hv-gpci.c b/arch/powerpc/perf/hv-gpci.c
-index 5cac2cf3bd1e..325b80f01629 100644
---- a/arch/powerpc/perf/hv-gpci.c
-+++ b/arch/powerpc/perf/hv-gpci.c
-@@ -11,6 +11,7 @@
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index bb836f02101c..681701ffbf33 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -1729,11 +1729,18 @@ static ssize_t eeh_force_recover_write(struct file *filp,
+ 	uint32_t phbid, pe_no;
+ 	struct eeh_pe *pe;
+ 	char buf[20];
+-	int ret;
++	ssize_t ret;
++
++	if (*ppos != 0 || count >= sizeof(buf))
++		return -EINVAL;
  
- #include <linux/init.h>
- #include <linux/perf_event.h>
-+#include <linux/sysfs.h>
- #include <asm/firmware.h>
- #include <asm/hvcall.h>
- #include <asm/io.h>
-@@ -134,6 +135,7 @@ static unsigned long systeminfo_gpci_request(u32 req, u32 starting_index,
- 			size_t *n, struct hv_gpci_request_buffer *arg)
- {
- 	unsigned long ret;
-+	int len;
- 	size_t i, j;
+-	ret = simple_write_to_buffer(buf, sizeof(buf), ppos, user_buf, count);
++	ret = simple_write_to_buffer(buf, sizeof(buf) - 1, ppos, user_buf,
++				     count);
++	if (ret < 0)
++		return ret;
+ 	if (!ret)
+ 		return -EFAULT;
++	buf[ret] = '\0';
  
- 	arg->params.counter_request = cpu_to_be32(req);
-@@ -176,9 +178,17 @@ static unsigned long systeminfo_gpci_request(u32 req, u32 starting_index,
- 	for (i = 0; i < be16_to_cpu(arg->params.returned_values); i++) {
- 		j = i * be16_to_cpu(arg->params.cv_element_size);
+ 	/*
+ 	 * When PE is NULL the event is a "special" event. Rather than
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+index db3370d1673c..88a4acc11186 100644
+--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -71,15 +71,22 @@ static ssize_t pnv_eeh_ei_write(struct file *filp,
+ 	int pe_no, type, func;
+ 	unsigned long addr, mask;
+ 	char buf[50];
+-	int ret;
++	ssize_t ret;
  
--		for (; j < (i + 1) * be16_to_cpu(arg->params.cv_element_size); j++)
--			*n += sprintf(buf + *n,  "%02x", (u8)arg->bytes[j]);
--		*n += sprintf(buf + *n,  "\n");
-+		for (; j < (i + 1) * be16_to_cpu(arg->params.cv_element_size);
-+		     j++) {
-+			len = sysfs_emit_at(buf, *n, "%02x", (u8)arg->bytes[j]);
-+			if (!len)
-+				return -EFBIG;
-+			*n += len;
-+		}
-+		len = sysfs_emit_at(buf, *n, "\n");
-+		if (!len)
-+			return -EFBIG;
-+		*n += len;
- 	}
+ 	if (!eeh_ops || !eeh_ops->err_inject)
+ 		return -ENXIO;
  
- 	if (*n >= PAGE_SIZE) {
-@@ -465,6 +475,7 @@ static void affinity_domain_via_partition_result_parse(int returned_values,
- 			int element_size, char *buf, size_t *last_element,
- 			size_t *n, struct hv_gpci_request_buffer *arg)
- {
-+	int len;
- 	size_t i = 0, j = 0;
- 	size_t k, l, m;
- 	uint16_t total_affinity_domain_ele, size_of_each_affinity_domain_ele;
-@@ -483,22 +494,49 @@ static void affinity_domain_via_partition_result_parse(int returned_values,
- 	 */
- 	while (i < returned_values) {
- 		k = j;
--		for (; k < j + element_size; k++)
--			*n += sprintf(buf + *n,  "%02x", (u8)arg->bytes[k]);
--		*n += sprintf(buf + *n,  "\n");
-+		for (; k < j + element_size; k++) {
-+			len = sysfs_emit_at(buf, *n, "%02x", (u8)arg->bytes[k]);
-+			if (!len) {
-+				*n = PAGE_SIZE;
-+				return;
-+			}
-+			*n += len;
-+		}
-+		len = sysfs_emit_at(buf, *n, "\n");
-+		if (!len) {
-+			*n = PAGE_SIZE;
-+			return;
-+		}
-+		*n += len;
++	if (*ppos != 0 || count >= sizeof(buf))
++		return -EINVAL;
++
+ 	/* Copy over argument buffer */
+-	ret = simple_write_to_buffer(buf, sizeof(buf), ppos, user_buf, count);
++	ret = simple_write_to_buffer(buf, sizeof(buf) - 1, ppos, user_buf,
++				     count);
++	if (ret < 0)
++		return ret;
+ 	if (!ret)
+ 		return -EFAULT;
++	buf[ret] = '\0';
  
- 		total_affinity_domain_ele = (u8)arg->bytes[k - 2] << 8 | (u8)arg->bytes[k - 3];
- 		size_of_each_affinity_domain_ele = (u8)arg->bytes[k] << 8 | (u8)arg->bytes[k - 1];
- 
- 		for (l = 0; l < total_affinity_domain_ele; l++) {
- 			for (m = 0; m < size_of_each_affinity_domain_ele; m++) {
--				*n += sprintf(buf + *n,  "%02x", (u8)arg->bytes[k]);
-+				len = sysfs_emit_at(buf, *n, "%02x",
-+						    (u8)arg->bytes[k]);
-+				if (!len) {
-+					*n = PAGE_SIZE;
-+					return;
-+				}
-+				*n += len;
- 				k++;
- 			}
--			*n += sprintf(buf + *n,  "\n");
-+			len = sysfs_emit_at(buf, *n, "\n");
-+			if (!len) {
-+				*n = PAGE_SIZE;
-+				return;
-+			}
-+			*n += len;
- 		}
- 
--		*n += sprintf(buf + *n,  "\n");
-+		len = sysfs_emit_at(buf, *n, "\n");
-+		if (!len) {
-+			*n = PAGE_SIZE;
-+			return;
-+		}
-+		*n += len;
- 		i++;
- 		j = k;
- 	}
+ 	/* Retrieve parameters */
+ 	ret = sscanf(buf, "%x:%x:%x:%lx:%lx",
 -- 
 2.50.1 (Apple Git-155)
 
