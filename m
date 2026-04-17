@@ -1,21 +1,21 @@
-Return-Path: <linuxppc-dev+bounces-19821-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19822-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7FB2EF8E4B8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2026 07:45:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 181F1F8E4B8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2026 07:48:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fxn3c1DQnz2yh4;
-	Fri, 17 Apr 2026 17:45:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fxn7S2xKdz2yh4;
+	Fri, 17 Apr 2026 17:48:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.25
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776411916;
-	cv=none; b=Nohe16+BhtQgl1S+hpkeU57R2h0a0Kj0/feNzphH6+mxVYkSAMNmEe9aqF3uRJ/46VjyYjui/2k82KU/Dj4pnQQbLivwo2wcairREzMOuoIkLSgTnECHoZbowrPLQxNtsqOxQW9CCAGyukAXt/TSNAS/dLZp8vtCT07DHTfSGO+eg6myfmWwI7lJ1JBqOiTnSmo9/K8eznjceCbKJXJxfOA6kHdpJhQuKthom9juUIXby4mvO9UGvBrOKZZMFhq25h8kghEtzaJsRrOxo6FkjMLJmqHCeooTtq61nzaeoLP78ZDvWwseArGNdoV1/DhMlAyDBqLGSg/v6vFnhDLGxQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776412116;
+	cv=none; b=e1n2zxUbMjwYug9PlzoSq8uvwmaub9DQ+3QYJC6+FfX4FBuMpn6MQIr0B597sjFFNgUMRL/945OI6ft627QbYomAt6yYRxTYDB4+IJhvoaKc5slXSL9EvbHHy6nJnHWwvuiT2ZEa1CjIo6jlFAvijVw1sa0Sd+7X88A8Gvbj8e4Qk5u7E8Arx0Im8E/0+C/ZL7RWRPvaXY2DpeGTPfrqHanK5JAPiTQBX4w0fvvDPhDSbQ7Yejo6RhdmojcfiJXurP4STzZPltMzWRbrRgmJhQjW+nEDET3B6I9lylwFt9bKzBScBFbaMnJjSOOTp1YULrP8Os9tHsG044zsSi/JBw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776411916; c=relaxed/relaxed;
-	bh=WdORREwd/qrPPIN50XQT21c6ML3r9KasGOu3bolyemY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=befvmCc2hDGY+U9VWIfQpm3Yy/+RYuUbB2ZiKv/kp15eTo1w7w+Z9FeocAzqYHImL+pSMeK05hZJ7uM1h46fhuW56DYOIbY8/yxaIGwGQArgMx5aO3gKshe96ALDqlyrmW82njRleyWLFfM70H7xbQCWn9ElX8fNoX9GZMeTufUzUYaiyD4MRlXr6/y0thAWhOkYlrCkztIHxRm1xlpUKc/0tc4s/kxemd5lQZiwkAG3aCU85R5euEdNtfxiFZc/GSdCsZzgH6OWGcZbkt1RJIrLhkpXGQEAAPsnW1AN97YtN4HH7sKw+R4dSiz0i/SFmaSFdPjEX+TftVfe6oHH0A==
+	t=1776412116; c=relaxed/relaxed;
+	bh=XDAThG0yRn/HWC1IcfrgXuB/3VOoHTEOJu87Gp3N/oM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=BC/s3q/5CD6T/sd6FfxKn27J3V9YXr2PlN9NPgUhgZubZFAxWGWIkyS6/Z7gXCexznSzTCMLB2GglgQvN7iMFroYYkSKukgSUUr4xFucToz73cn+mx53yFrdPcE9+lelOxwxsg8H1DlSoV3Ign5RJyA/Ct9RX09VQ9lVSj5C6u1jrtnOnYhv23+mi39hv0MMkRnhegkZtYSSrUv0gOgtJQN3MElGzDTZ7KtasgyALBUjK//8Z/dVZZLjl1bIl2k4Ve9X6hSWkt0Bz31T9nUOKfJXbH3Yum4bNqGdlEA43v5i9O7E1S9G/GRKn5QcF27kroZpScLKfDd8sSikWMiCIg==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass (client-ip=159.226.251.25; helo=cstnet.cn; envelope-from=pengpeng@iscas.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=iscas.ac.cn
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iscas.ac.cn (client-ip=159.226.251.25; helo=cstnet.cn; envelope-from=pengpeng@iscas.ac.cn; receiver=lists.ozlabs.org)
@@ -23,11 +23,11 @@ Received: from cstnet.cn (smtp25.cstnet.cn [159.226.251.25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fxn3b0bRYz2xpt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2026 17:45:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fxn7R3kWFz2xpt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2026 17:48:35 +1000 (AEST)
 Received: from localhost.localdomain (unknown [111.196.245.116])
-	by APP-05 (Coremail) with SMTP id zQCowABn9gkD5eFpnx3YDQ--.24269S2;
-	Fri, 17 Apr 2026 15:45:07 +0800 (CST)
+	by APP-05 (Coremail) with SMTP id zQCowAC3RgrL5eFpAzHYDQ--.61365S2;
+	Fri, 17 Apr 2026 15:48:28 +0800 (CST)
 From: Pengpeng Hou <pengpeng@iscas.ac.cn>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>
@@ -38,9 +38,9 @@ Cc: Nicholas Piggin <npiggin@gmail.com>,
 	linux-kernel@vger.kernel.org,
 	Pengpeng Hou <pengpeng@iscas.ac.cn>,
 	stable@vger.kernel.org
-Subject: [PATCH] powerpc/powernv: allocate sensor group names to fit the OF node name
-Date: Fri, 17 Apr 2026 15:45:05 +0800
-Message-ID: <20260417074505.16178-1-pengpeng@iscas.ac.cn>
+Subject: [PATCH] powerpc/perf/hv-gpci: bound sysfs formatting with sysfs_emit_at()
+Date: Fri, 17 Apr 2026 15:48:25 +0800
+Message-ID: <20260417074825.22967-1-pengpeng@iscas.ac.cn>
 X-Mailer: git-send-email 2.50.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -56,10 +56,10 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:zQCowABn9gkD5eFpnx3YDQ--.24269S2
-X-Coremail-Antispam: 1UD129KBjvJXoW7Kry5Ar1rZrW3WF1rWFWfKrg_yoW8CF45pF
-	sYkFnI9a18ury8Ja98K34j9a1fKan5AFW2gr1UJ3sayFsxZr9FvF40yF1YyrZrJr4rGw1j
-	gF43Xw13CFnxGFUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+X-CM-TRANSID:zQCowAC3RgrL5eFpAzHYDQ--.61365S2
+X-Coremail-Antispam: 1UD129KBjvJXoWxAr13Wr15ury7Zry7ur17Jrb_yoWrJw43p3
+	WfKr4q9rs5Xw17CrWIkF1xZw15W397A347WrW2g393ArsxX3909FyUKFyY9ry8GFWrCa48
+	urZxKrs0krnrJFDanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
 	9KBjDU0xBIdaVrnRJUUUkE14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
 	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
 	1l84ACjcxK6xIIjxv20xvE14v26ryj6F1UM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4U
@@ -76,59 +76,128 @@ X-Coremail-Antispam: 1UD129KBjvJXoW7Kry5Ar1rZrW3WF1rWFWfKrg_yoW8CF45pF
 X-Originating-IP: [111.196.245.116]
 X-CM-SenderInfo: pshqw1xhqjqxpvfd2hldfou0/
 
-opal_sensor_groups_init() stores each sensor-group name in a fixed
-char[20] field and formats it with "%pOFn" or "%pOFn%d".
+systeminfo_gpci_request() and
+affinity_domain_via_partition_result_parse() hex-encode hypervisor data
+into the single-page sysfs read buffer with sprintf(buf + *n, ...).
+Both helpers only check PAGE_SIZE after the formatting loops have already
+advanced past the end of the buffer.
 
-The node name comes from firmware and is not bounded to fit in 20 bytes,
-so formatting the fully qualified group name can write past the end of
-the embedded buffer.
+Switch these appends to sysfs_emit_at() and stop once the sysfs buffer is
+full.
 
-Allocate the group name string to fit the formatted result instead of
-storing it in a fixed-size array.
-
-Fixes: bf9571550f52 ("powerpc/powernv: Add support to clear sensor groups data")
+Fixes: 71f1c39647d8 ("powerpc/hv_gpci: Add sysfs file inside hv_gpci device to show processor bus topology information")
+Fixes: a15e0d6a6929 ("powerpc/hv_gpci: Add sysfs file inside hv_gpci device to show affinity domain via partition information")
 Cc: stable@vger.kernel.org
 
 Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
 ---
- arch/powerpc/platforms/powernv/opal-sensor-groups.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ arch/powerpc/perf/hv-gpci.c | 56 +++++++++++++++++++++++++++++++------
+ 1 file changed, 47 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/opal-sensor-groups.c b/arch/powerpc/platforms/powernv/opal-sensor-groups.c
-index 87fd6d7769e9..f940c223f1b5 100644
---- a/arch/powerpc/platforms/powernv/opal-sensor-groups.c
-+++ b/arch/powerpc/platforms/powernv/opal-sensor-groups.c
-@@ -23,7 +23,7 @@ struct sg_attr {
- };
+diff --git a/arch/powerpc/perf/hv-gpci.c b/arch/powerpc/perf/hv-gpci.c
+index 5cac2cf3bd1e..325b80f01629 100644
+--- a/arch/powerpc/perf/hv-gpci.c
++++ b/arch/powerpc/perf/hv-gpci.c
+@@ -11,6 +11,7 @@
  
- static struct sensor_group {
--	char name[20];
-+	char *name;
- 	struct attribute_group sg;
- 	struct sg_attr *sgattrs;
- } *sgs;
-@@ -207,9 +207,12 @@ void __init opal_sensor_groups_init(void)
+ #include <linux/init.h>
+ #include <linux/perf_event.h>
++#include <linux/sysfs.h>
+ #include <asm/firmware.h>
+ #include <asm/hvcall.h>
+ #include <asm/io.h>
+@@ -134,6 +135,7 @@ static unsigned long systeminfo_gpci_request(u32 req, u32 starting_index,
+ 			size_t *n, struct hv_gpci_request_buffer *arg)
+ {
+ 	unsigned long ret;
++	int len;
+ 	size_t i, j;
+ 
+ 	arg->params.counter_request = cpu_to_be32(req);
+@@ -176,9 +178,17 @@ static unsigned long systeminfo_gpci_request(u32 req, u32 starting_index,
+ 	for (i = 0; i < be16_to_cpu(arg->params.returned_values); i++) {
+ 		j = i * be16_to_cpu(arg->params.cv_element_size);
+ 
+-		for (; j < (i + 1) * be16_to_cpu(arg->params.cv_element_size); j++)
+-			*n += sprintf(buf + *n,  "%02x", (u8)arg->bytes[j]);
+-		*n += sprintf(buf + *n,  "\n");
++		for (; j < (i + 1) * be16_to_cpu(arg->params.cv_element_size);
++		     j++) {
++			len = sysfs_emit_at(buf, *n, "%02x", (u8)arg->bytes[j]);
++			if (!len)
++				return -EFBIG;
++			*n += len;
++		}
++		len = sysfs_emit_at(buf, *n, "\n");
++		if (!len)
++			return -EFBIG;
++		*n += len;
+ 	}
+ 
+ 	if (*n >= PAGE_SIZE) {
+@@ -465,6 +475,7 @@ static void affinity_domain_via_partition_result_parse(int returned_values,
+ 			int element_size, char *buf, size_t *last_element,
+ 			size_t *n, struct hv_gpci_request_buffer *arg)
+ {
++	int len;
+ 	size_t i = 0, j = 0;
+ 	size_t k, l, m;
+ 	uint16_t total_affinity_domain_ele, size_of_each_affinity_domain_ele;
+@@ -483,22 +494,49 @@ static void affinity_domain_via_partition_result_parse(int returned_values,
+ 	 */
+ 	while (i < returned_values) {
+ 		k = j;
+-		for (; k < j + element_size; k++)
+-			*n += sprintf(buf + *n,  "%02x", (u8)arg->bytes[k]);
+-		*n += sprintf(buf + *n,  "\n");
++		for (; k < j + element_size; k++) {
++			len = sysfs_emit_at(buf, *n, "%02x", (u8)arg->bytes[k]);
++			if (!len) {
++				*n = PAGE_SIZE;
++				return;
++			}
++			*n += len;
++		}
++		len = sysfs_emit_at(buf, *n, "\n");
++		if (!len) {
++			*n = PAGE_SIZE;
++			return;
++		}
++		*n += len;
+ 
+ 		total_affinity_domain_ele = (u8)arg->bytes[k - 2] << 8 | (u8)arg->bytes[k - 3];
+ 		size_of_each_affinity_domain_ele = (u8)arg->bytes[k] << 8 | (u8)arg->bytes[k - 1];
+ 
+ 		for (l = 0; l < total_affinity_domain_ele; l++) {
+ 			for (m = 0; m < size_of_each_affinity_domain_ele; m++) {
+-				*n += sprintf(buf + *n,  "%02x", (u8)arg->bytes[k]);
++				len = sysfs_emit_at(buf, *n, "%02x",
++						    (u8)arg->bytes[k]);
++				if (!len) {
++					*n = PAGE_SIZE;
++					return;
++				}
++				*n += len;
+ 				k++;
+ 			}
+-			*n += sprintf(buf + *n,  "\n");
++			len = sysfs_emit_at(buf, *n, "\n");
++			if (!len) {
++				*n = PAGE_SIZE;
++				return;
++			}
++			*n += len;
  		}
  
- 		if (!of_property_read_u32(node, "ibm,chip-id", &chipid))
--			sprintf(sgs[i].name, "%pOFn%d", node, chipid);
-+			sgs[i].name = kasprintf(GFP_KERNEL, "%pOFn%d",
-+						node, chipid);
- 		else
--			sprintf(sgs[i].name, "%pOFn", node);
-+			sgs[i].name = kasprintf(GFP_KERNEL, "%pOFn", node);
-+		if (!sgs[i].name)
-+			goto out_sgs_sgattrs;
- 
- 		sgs[i].sg.name = sgs[i].name;
- 		if (add_attr_group(ops, len, &sgs[i], sgid)) {
-@@ -225,6 +228,7 @@ void __init opal_sensor_groups_init(void)
- 
- out_sgs_sgattrs:
- 	while (--i >= 0) {
-+		kfree(sgs[i].name);
- 		kfree(sgs[i].sgattrs);
- 		kfree(sgs[i].sg.attrs);
+-		*n += sprintf(buf + *n,  "\n");
++		len = sysfs_emit_at(buf, *n, "\n");
++		if (!len) {
++			*n = PAGE_SIZE;
++			return;
++		}
++		*n += len;
+ 		i++;
+ 		j = k;
  	}
 -- 
 2.50.1 (Apple Git-155)
