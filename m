@@ -1,60 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-19831-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19832-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D4C7F4368E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2026 11:04:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE9DCF43691
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Apr 2026 11:15:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fxsTd620Cz2xpt;
-	Fri, 17 Apr 2026 21:04:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c207::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776423877;
-	cv=pass; b=O30H3Kg0kNUmAFD/TaFgLPGOCdVMnQJgaoEnYA0DdQvGDNqJ9dJvKYbtH6WGbUL9NPQnG73dit6y/6wcrX1m3ZifhTR5cYjsavfoorc8nuJCwzLsfMchxt8wNf9Hnn/Nk6tK3mPf+0WgQBdCmbnSK4MPg8aQGttWnBB36HPMah32WMj8nqV/uUCdUWtoG0ObeB0W8+s4yZkQCkaggBQCoJaT022WRlbhLM2J0rfPs42SgCs2iRVpDlyawcUEfucIfEFcO3+0AiMfkpPzupoZEUlKDwFFi0E8B3/40/YCcoyKE7ZHYTro1mK4ftxD6tHcJynl1RbAYAg4w3LrQVXIwQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fxsk636lnz2xpt;
+	Fri, 17 Apr 2026 21:15:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20f::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776424526;
+	cv=pass; b=QIZKW0vAPY41KNbiA4ESxWzJ76ElQxOsRSWTPpMl6KShxi+xbZInU4V4SGaTbHHPo3pT/iy1zZbLXubMag5MWcQvKCr0KR4TVkLXc/3FPrgZRbI2OBRkOKx++tl14sRiIAbSfXZkoWyTUFEIA90hNhVPN16w02TPyVndQ6UCOxgBJD/GXdiax3+a9CUYjX/DXI5fFwIDlNI35AlAxas8+3ea8UHAZyptdyDK6ucMEP+fD4TqRhTAYWo6G5fjMRI+C2Me6Fy6k0H2o/vL41CS+jVcU4E2XpThw/d86CXEm4U1Fpjjk/Z4U67NiUXn89Xb+b2cfi3Qmtks3vrt5vkcMQ==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776423877; c=relaxed/relaxed;
-	bh=72hmBQUvpLc/UbycA1q7D42OYX5f5EfjgKhmTPW/TLQ=;
+	t=1776424526; c=relaxed/relaxed;
+	bh=bWSYppqKgEYdAyJwXpGbYhTyQJYumoPUvOhjcW/Y6is=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=UvnsGwk5J4XRWhpQ/cX5Qj/9iDgkS8riHT6pvIbEFvb9fpv17GxMbFPYzVVfI4QTUi7yVBkDVmbunVBiHKdHSGwQLs0qZxTltrv6Ij3YxLTJ9WpvLou1ShEnvyPGv4VByl1G6YKdAFwgNpduqVIPv2s5daFqTu5nUotbluOzLo6K4/EZeMaNWoSdu1o7dbmK4dJWA6SkljMXYY2Y7aLvc6MYXh8eWQmScWGEMD4/8aw2O5T96AHGA5qB6XpDKmi2QRcgUMCkzKRXekKRSSKpGjPv0corv3MVMTjP7Sa7NtrsClYT7UzQpqhLsgIQe0rT6l7zbAqRC7rNXCzz1+UIBg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=gH6w9Pql; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c207::3; helo=mrwpr03cu001.outbound.protection.outlook.com; envelope-from=frank.li@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+	 Content-Disposition:In-Reply-To:MIME-Version; b=DSHcMEpFzOLxOF/lSpuS2s/OLRcEc2K6WupuHsjGJeU850YE0amixBSfmTQ47sEklZBQy3Py7P2U0eggWeuC1n9dQsxVd0dEQNxO9jBn2xMiudxzlDzjZ1GUe+7q5WGmByWQvDpEet+ZiWeZ9K0lOQLP2oLERZw2HtV457PEE0b+nM+IbS/DIr+ow6OS2DJPGZGhkC04JSGnZ/iUyOaTxPR9o/y+Ed0N2mMWTBkIqd/aZSF63pC9U4ZPSPCrADGGcyeRPGoE4uIvYMdHbOPhzdcaiRyrM/Vp2yZUIY6VEeuMGbU7opBvU37bf83Hka7uxMqmZD/xgiZ5I1fq2UcBHw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=FbxmvzM3; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=frank.li@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=gH6w9Pql;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=FbxmvzM3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c207::3; helo=mrwpr03cu001.outbound.protection.outlook.com; envelope-from=frank.li@nxp.com; receiver=lists.ozlabs.org)
-Received: from MRWPR03CU001.outbound.protection.outlook.com (mail-francesouthazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c207::3])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=frank.li@nxp.com; receiver=lists.ozlabs.org)
+Received: from OSPPR02CU001.outbound.protection.outlook.com (mail-norwayeastazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20f::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fxsTb2qK7z2xfX
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2026 21:04:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fxsk52VTPz2xfX
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2026 21:15:25 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Tr5i9IlbKHlg3GY8ZG4ey+lfE8wxz2tzUitK2IBZFXSwHzUMUuSOS4uI1YBs0p1uSmQmrhYWr6PPita7xuMW19gFn4pzG2P97cUEwq8A3dh6XVkBEX1fm9r0H8P4Z1sXQJHThJ6ypJh+TMV05+rCy3pFYMdp9kq492v8pPtxMSIwqsxwTHLcy/Dr2DBfa6yI1jkbK764xGmxZCj+/4IZha+myiUIV1W6ht9BUuNq/tUB1eKkILKw8wO2Fl0LS8s3Lc+w0JQ7DRXkLLgF80QZyR0ik5T0FDhWMIj5hbqd6vIF29vf5N4WRl+On7FJJdB3UJbbw2d9uzRcP3jCoCm20g==
+ b=ZYwhnJ2J4c69CpmN47cVJ8bveAUXVh0bzOcGPWPTwDP0H3utv7bVtyXytSgT/7m6aJEPqXgA7LaQfXS9jqKpS4/gDJmmQ2UpPSpd9Ni7bhdjBnvDF+OtEQPLLo2dg/AnDhASRJi/rfT+tHuEjimn+9W4txjpysa8ckOYRdOgnLGRgvlO4aJRCWLWOj6amWsygf0gjArEu0T2fc3VRPw9u+vIM7GC5jS/BSLxeKCUNiWDGyKfTT3LZD9o1dlixmTMyC2LWb+LbBJtFhCu9jZUBJ9lfd4fpnrzLOUfu+ry3mt5ayyldmx0+ZNgmS7UqowNbmAqA2DR2NYopY3jBX/Bnw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=72hmBQUvpLc/UbycA1q7D42OYX5f5EfjgKhmTPW/TLQ=;
- b=nLhuEbgCaanPrcisdbHa7UIaXIXIZlsP8c6m7w4z/Xq9S3+J6gcPDr65VF7lpPmgboWRJhcAQHYfMDvAV9PO7NONRX7KzY+5+f6NpEIJvrPwb0Pfo4+XUVqLVit4HBcv4XyLx9/MAvkC5aWL3N5IbwIDA6sRWx+QOZ80WDksG3wXnXPIsXSAeeEMKBd0LJGlepHJ0ZZtO12EeFhMulTzcfYtO0OM3e2msATCwL3Mmea4j4I5qk7KhX1iZCC2lcGKbNED44Ln0VPjMGPtIGSJ6Y9kdD6yTVbocruxSXvodFwGQWiFP/d6W6jA4oAtefti3gwIxcTF9k+gUMCIu03y0A==
+ bh=bWSYppqKgEYdAyJwXpGbYhTyQJYumoPUvOhjcW/Y6is=;
+ b=cQN2IQXsJ1DDsWpSWWBZDuvd+p5EdzmBY29AMWCZB3PwGHNgFq/nI8rim29qaBrKfXhogupX/OUyV3t35tzrWx4oNQSwfQf4KKi0VL04Eweja5djXOse8H6pIz3Yy/OygNMjyXtyhR4EyISJOUufaSBspnkmu8xn3pgbneOE/dh8K7UPQ8ziAfOxQJQrnHGxq5qhHAOHBCg/oxz/B8p8zzKMajNG+BTLvZGCBCbCiuuSqhYQS1Zy0lOtFWVsMJIeS+3pGv8Cd3kr3eK4xto9DS3k6sNiREyH+l1zR2qChUrZYTt2ttDcu1SVrBkT5ffb7tgOixcS7SMId2CpfyH5vQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
  header.d=nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=72hmBQUvpLc/UbycA1q7D42OYX5f5EfjgKhmTPW/TLQ=;
- b=gH6w9Pql4r+qYsUtYpb8jLg9wqc1CLIM9VsB5ShKjsQuMx0Ht6g1UQfa9TDabwKFDkuObVNoFYON6bQDZgLXMJHw+IhwPQhA4kosgowX5a+xROK0LNGVROYHom2rMakDLmwLfltX9tNoGq2g0UswUd/CEVd2xIkA7vwgK9cTevM1Vn4uH/gzCXgvI7QuyzyY9KcaJgWg4qiD3Adr2ZJWNWWseIb2zfFaQbRvSoau/R5MF/jD+zvSe6zd1bI2h9s6SHxo0ybLgXgbGcMjYd61cOPWyCZGCWCt/ccnQvM9PaEGqgUTR49cqEC7WjyMf/RdWmiCaxBoBwSRAOT/7uoExA==
+ bh=bWSYppqKgEYdAyJwXpGbYhTyQJYumoPUvOhjcW/Y6is=;
+ b=FbxmvzM3waocfzihX3wKx6b0r/0EvQeQ/fqZAPmt/UQtgvi7vrrGklsEMzaY0MQeDLyWb+JkRCcHfnmZ/nRnfO/TtgNsuyXn+vNDIQhez+yGiaql88wRXXMgeBmKHocoXU7gOcqS1vR92K/mF3M1BquHbzSKwnqa7ie3kp6v3YBdn5SLJv9H17XuUUAOhO9kPdbZOcIZNqw+tli1YH6EKaZf27XcQxL17WANsuSAv6+VbUktPlpIAnsHvMYN4zi7DN/mSGNpvd0OEx2dWY2pSbi2AZYE2U/pHVrvwgpXCBZCYnUN+qlSUkN4yH7sb4HlOMItCbg7LFu38Z0Z03gSLA==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=nxp.com;
 Received: from PA4PR04MB9366.eurprd04.prod.outlook.com (2603:10a6:102:2a9::8)
- by AS8PR04MB8484.eurprd04.prod.outlook.com (2603:10a6:20b:34c::12) with
+ by DB9PR04MB11560.eurprd04.prod.outlook.com (2603:10a6:10:608::10) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9818.25; Fri, 17 Apr
- 2026 11:04:06 +0000
+ 2026 11:15:02 +0000
 Received: from PA4PR04MB9366.eurprd04.prod.outlook.com
  ([fe80::75e4:8143:ddbc:6588]) by PA4PR04MB9366.eurprd04.prod.outlook.com
  ([fe80::75e4:8143:ddbc:6588%6]) with mapi id 15.20.9818.023; Fri, 17 Apr 2026
- 11:04:06 +0000
-Date: Fri, 17 Apr 2026 07:03:59 -0400
+ 11:15:01 +0000
+Date: Fri, 17 Apr 2026 07:14:54 -0400
 From: Frank Li <Frank.li@nxp.com>
 To: Chancel Liu <chancel.liu@nxp.com>
 Cc: lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
@@ -65,16 +65,17 @@ Cc: lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
 	linux-sound@vger.kernel.org, linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org, imx@lists.linux.dev,
 	linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v2 1/3] ASoC: dapm: Fix widget lookup with prefixed names
- across DAPM contexts
-Message-ID: <aeITn0SXl-wqgAyA@lizhi-Precision-Tower-5810>
+Subject: Re: [PATCH v2 2/3] ASoC: soc-core: Add core support for ignoring
+ suspend on selected DAPM widgets
+Message-ID: <aeIWLvMWKv6OmX4h@lizhi-Precision-Tower-5810>
 References: <20260415081942.4183108-1-chancel.liu@nxp.com>
- <20260415081942.4183108-2-chancel.liu@nxp.com>
-Content-Type: text/plain; charset=us-ascii
+ <20260415081942.4183108-3-chancel.liu@nxp.com>
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260415081942.4183108-2-chancel.liu@nxp.com>
-X-ClientProxiedBy: SN7PR04CA0219.namprd04.prod.outlook.com
- (2603:10b6:806:127::14) To PA4PR04MB9366.eurprd04.prod.outlook.com
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260415081942.4183108-3-chancel.liu@nxp.com>
+X-ClientProxiedBy: SA9PR13CA0166.namprd13.prod.outlook.com
+ (2603:10b6:806:28::21) To PA4PR04MB9366.eurprd04.prod.outlook.com
  (2603:10a6:102:2a9::8)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -90,122 +91,105 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PA4PR04MB9366:EE_|AS8PR04MB8484:EE_
-X-MS-Office365-Filtering-Correlation-Id: 0ff3868b-4e8d-495f-8e1d-08de9c710adb
+X-MS-TrafficTypeDiagnostic: PA4PR04MB9366:EE_|DB9PR04MB11560:EE_
+X-MS-Office365-Filtering-Correlation-Id: 1cf4c698-f8e5-4fa9-fa39-08de9c7291b4
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|19092799006|7416014|376014|52116014|1800799024|38350700014|22082099003|18002099003|56012099003;
+	BCL:0;ARA:13230040|19092799006|366016|52116014|376014|7416014|1800799024|38350700014|56012099003|18002099003|22082099003;
 X-Microsoft-Antispam-Message-Info:
-	0ssAlu9w3CgRa99ztBuc7stTW4FqLCIN1eyGBYUa1lSvA+kV7AeIXSsIpFTVTeKhM+ktfsKblrnTff+dZ3E0p0noExLraVwYoO8fRBufheHmEkK9S8/CXz0fUDtz8wmd/+GgbGrRojt4bEw5p57qxMtq6weGeCeH9Nc1gAYn5BXDSOqz+yZzrKVFNvuLrbqMwT0BaAam6WgkZaWpOdiJtFjA0KVlHV7TQ1EyxrTjz0fYrokLZZzna9smYY04XXtqPH1zLXQGklWJofzEm/3/biaPAleGYn4Dd/Vw2ZF0tuKg5+fsZyyCN8CFLfPeK7Dn/3FUyUovDJkkKbo0kPA0DYF21vcsXzb/XMfIx5HojDmH+gXn6hzToZ4DGqrgYMym6yLLN5IQTMJ2wEQ0xU5zVq1XgvYALJyd3qZuPTpR9PqMpGmsNKAK4sjTLM9oXMVObVEECyUnHBt6J2CmOSr4zpSkrwYxSgqmC9u+Er/WVY4iGsetczbjh4xPo8ungA0C8ULoGweRbXKjJA6OAZ1ZuR1L4pj8PwSimn8g0v+f8owXmNFh3T996uRduxWr3qF8nZP/wo/pJKdFMXZKGTmBkV7ptwQDazIgxJD8GefyDPfsxWWXagvXTwwZcBj8N9uZyNue2b11/FfwGMW1QGTQ4QTIelixsQXbwSb8yNz1+gywR7BQc6D2fIHbtyzmFiMc0wFz3gC+wgbMQVa7p6QTo2D8qySo6SI6Qdz/5Y+NQgF/6LdXoHaA8sAgqxQ4n2k44CXYxvcgO5yPgKM6lQQX1/f4ElkC12x2Ez021CUaGB0=
+	wJ5dJj7Q5UzEkToBhR2Hy4S+BOuJyRJECIInB8lzihRSU8PJ3XRjEd4hpxZn4KDJ+3ZmI9Fgt1dZncKuKdWhDBX9225zG4owmjxTB2i0nfDizF1Ab6ykaGmx/i1IDw+1ffnMUg0qVZuY7KJA7b0NkdolC4MTDlqofPwTOt7FshAN31XOG9WSYIrLzusOm95gFEH2aBVLCtssVtFhUtR4whwkuiFBCMGIrAz03aajKTFyIhWGL0DvP9Jscm/6vVfJ4/YJTaR300wh/cxbp1X8AVAp9pgf6fStmLxTPVzGyVZHkj/qghnV34/ngocKbAZR+FBFjXxHY9dXYBDXJQUqli9sPmaYARp387JDCCpGkdEMGbqa4eQQP0Pyf5sTjjEtXg6iOSOr4Fvj0KGldyMQHzsSYWZCVH9ohjdifsZjLYw+a1qAXSS1Ly1qiV8LpwkWLUiLqpiFvzfxL4+aJKOtRzh5F1uw/duumXuqLLAr2uBnlok4amHYE6n07IM+TxICwsW0LRgvtdsLoIa0HW58NakqElFuHRLSs/WOwJQacWnl2ZndljlMSYUCmip2UtEqbkcrAQZKUUYkyhZ+FSutCssIIvuyrexSV2OhXAFv/rUZzHhju5QN5Nwh4tywLwk06NTxj/vWw054VJCRjBrwLdM+EPdqkrUUSSvIS8pmYQQDI+kGEKq58nSiXNztPEVr2LrZ1iEGfL+F8Pjs2eemG/8i+7xwjTMn4eFa2fkG7N2V3zW75zyCoR5iMTnMY1wEEzOFQcPNz9E+iJcnGCC7myrzYAnKGDUyx4Ol8atMTG0=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PA4PR04MB9366.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(19092799006)(7416014)(376014)(52116014)(1800799024)(38350700014)(22082099003)(18002099003)(56012099003);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PA4PR04MB9366.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(19092799006)(366016)(52116014)(376014)(7416014)(1800799024)(38350700014)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?Ti0d7fqaL2GqBbjfCpg1T2zpgKPbdbpIGZaJ0tKOLc872GdZkSyDylaa9yuB?=
- =?us-ascii?Q?LddE4i5uuYcO+u0xzImQg26xdm12OTGJ4l4U9fzKUpAZIwRI/7JYgTbIjDfQ?=
- =?us-ascii?Q?MgU+SX4RGhxWD29FnOo7GDjGp7TGUBwHTAStMIByPlP4hPYYJMjbsfHIXFzh?=
- =?us-ascii?Q?IXia+i80MBC6/LrQ6z7IajfYsg+teAuxyAOp90et+cR9iv8ELlcC9+BNZDbN?=
- =?us-ascii?Q?wds+pcjFwT/d+ZoZTWGK+ByIPAf0HS35EgWJJfZdC58ZP+fkMyg9B2mUM0m7?=
- =?us-ascii?Q?da2ELKRedL9CegJB50/FjTrsMNcutSwAomoLW776Op770jJ8epBZc/9/qNBJ?=
- =?us-ascii?Q?kafiVeqc9Wi/NLMbfDYmREq7tg+MxgAiYpZ8AVWUZ343/sryJ54lnpJNH3Kr?=
- =?us-ascii?Q?hnQKnM7+pMYBMAi2UuXJyx89QKNiGmOkl6XRyFUFDY4vxZV5bxlbsOkzmVsP?=
- =?us-ascii?Q?CI+KW5S1Tk8n8tpt60Bacbviq2uLoqOuaTagCYu0thR23cJN9Zc4ERngP1Ui?=
- =?us-ascii?Q?qLteN4q4sdtWQJDEfAtRAjZFgQ5GdpguLLxEU0WOin0OjF0F3kNHL86FLySH?=
- =?us-ascii?Q?cC7+loZ34Uj3h+x2HiXqGYpvKDpgyX9W3eGhr8d7oeAhNuddXpB01sEA9t7z?=
- =?us-ascii?Q?xVodl1ij9NXG2w2jU3+jn110vYVGuf0HMLKbP0UGxEagyoBdX/4hkE2HQ2aE?=
- =?us-ascii?Q?syXGx5P7hIdCC11L6zDxXF/hbrB7cn57XygMpeDMtVCDzYuM64XHIfhMAKzK?=
- =?us-ascii?Q?t2Gq2Z9sBOLTB8cdnQJ7U8Z5GZT2/z/wq+D0e+2eC4I9K8/8gmhaPnYym2Jp?=
- =?us-ascii?Q?p8laDDeek51Lyq0wXqMJhSASgr0h3J/4e7FIMfjp5T3hTi63Gvqy7qvO6k/C?=
- =?us-ascii?Q?2a5Yq8o6+iWdOVjhADAxrafVTMaDjTi2b2/fbkYUlJhH83AsVe4jsfbfAvMU?=
- =?us-ascii?Q?SH3DO2kILc0Gxd+dS2zY8syjJiRAGJTPCxHh1vfJ7DmXI4XIcWXtQlSOeSgB?=
- =?us-ascii?Q?bu2oJgsy4Ij8u9wubCQ2eInYppRhAi7iWNzhQ0dGQx9PJDS4nLJSpiIUQ2Qf?=
- =?us-ascii?Q?U30W0sparAfvcZfQMHdrQ0TAIeAcQS4xkHCHord+6mrsEWfNSmoigPYxX6/7?=
- =?us-ascii?Q?kwCSHeM24N72erJpHUzgv12/H5wDYsZuUECoRurH2JZ+JHIfK1u/S8TYox//?=
- =?us-ascii?Q?wpoh/SLPEYl0YcQRBLvFDmELd9xby5lYvs8OXsrTSRrC4ot3lvc2gHmMVN25?=
- =?us-ascii?Q?XJblMZEZYKzI2DI6MvClLHVR65YZzYpidqIqbUNx5j1VdWfWxz9meRij0nP5?=
- =?us-ascii?Q?7LfP83+QLnsFOaiV89U3M4Ei7X5OEhGgDkzR4l2wxHA+P6HusUJSsDXNLhuJ?=
- =?us-ascii?Q?h7VdkB0qP61IRKDYv5D2xhIZJzecV7ltxdAhTGKd3G8IBTJrm5spMRDXlTPT?=
- =?us-ascii?Q?qgtJ9obz/JKhVfs04QAVCvMHfTy2PPAuah0RfWlSp7Rw+DiFQX75oNw0zZRl?=
- =?us-ascii?Q?iJkzSH1Bj02t7XPJSL1ibf2RPFO0xxhfhbyaJNXXO3RBYn0sLzTF/x7+54B+?=
- =?us-ascii?Q?70KgiADRVQGbPVZ7uKYDXINxa1pdStcqcoT90SIyKy5mjzPU/lSZTBsvkM0z?=
- =?us-ascii?Q?71dIDKb2U/AncpKBdcv8MXShyM1kPpBs665L7hv5oP4qQBvgKdkVpvCJ5oG3?=
- =?us-ascii?Q?8QmMOBOUKf+kihKojDyiyl6AjtZFC5q7AtLfqjeWvRDvFGb/NUWDnaNBCoaF?=
- =?us-ascii?Q?9HC6M6K2QA=3D=3D?=
+	=?utf-8?B?T2tva2dDUUhpVWszY1p6VWo4WUx1UUxkaU16cFRYeERBNXpvWHR6a2JZQUdu?=
+ =?utf-8?B?TUdRSHVrN2hRTldvdHl0UmFwWWRGb280VFk4MDhqMG1rbDJLREtVbUhFVnMx?=
+ =?utf-8?B?OEVnUTVNbG02NTRiVEpYQnRGeVRIVUFJRCtST3ZOZFNZd3J6UXB0TFhoNGtY?=
+ =?utf-8?B?Uk4weS9SWnY2QTN2MTdXYjZQbTZiZWdKc1orUmp2YjZtdUFMcnhRY284ZHMx?=
+ =?utf-8?B?cVA2VzduYlJkOGxhYjBOdlhUdm4rR2txYVJSYzNSakpocnlZZGpPZ3YzTFc3?=
+ =?utf-8?B?aFFPbkNGVzExM3Q3YndnSlJNR24zejcyNDlsYWt2Y21LRTROSDQxcmRuVFZZ?=
+ =?utf-8?B?ZjdLUDc0SHhjb2tES0N6QzlwRXdxOWNHb0N1T3BpRWsyRlFHREZkUkN0MnhL?=
+ =?utf-8?B?bm1zNkdFL0VPRVgwWGl2Ykl1RFhnNUJJNmhyazlsc3hSbS9MVkZDblBNRkp2?=
+ =?utf-8?B?a0l3Tm95eWFRUk1RQlF5Qzg2UkowYWZFSm5hUmh0U25ZUzFiR1Z1RWV4S25j?=
+ =?utf-8?B?MDE1MFlUc3RsMlZtZmtQeGZrZTFVbnZ0VmFMd0ppemhFeHBYZUhlMGNzVEFv?=
+ =?utf-8?B?eHcwcW9hQVlhdE9zTFhhMnVoYk56bVEyaTNGckdtVlQ0OXlBYWNWSjdGZ0Zv?=
+ =?utf-8?B?VE5FT0MvTFRwTVVlczdrbVJTUFFqRXlyaXFTakoyc3NVUlRsODJhNGpKYWtp?=
+ =?utf-8?B?eGV5ZlV4dVJRT1h4dHRQVzZURzBqdVRqWFFLWGQwSkl0bzZQN0JqbzU2amNH?=
+ =?utf-8?B?UlBBbE1BbU4wNzJ6TDBtN0thMkVoQzZ1VTdVSEkzR0NNOTd0VlF6VjRCbGJ6?=
+ =?utf-8?B?ZnFSVzNJcnQxemVONllCY2t2OUtRMlM4ZGVXV0NrSWd2ZUlxV2NFK2RDUlpG?=
+ =?utf-8?B?ZU0xVkI5eVVXeUdIc1ZrQ253bW84REc3NjJueTgrMW5hU3RiL3cxMVRKMHNw?=
+ =?utf-8?B?WWxJR3lPUjd1SlpJR3hRaWEva2F0dUs2TmxpTWkvZU9yeFlSYTkrYzludmlJ?=
+ =?utf-8?B?NDlVeUc4bjMwZHFkbTFKVmpWVXZLaGlsdU5CNlNMOHJjK3J6b2NybnNUU29Z?=
+ =?utf-8?B?SlpiTU1sVllHWXdvK0ptRHdwQXpqMDA1bkRZSms0RGZnbkpES29jOTJaT2kz?=
+ =?utf-8?B?b05JVDhXWXRSdWJTRm1UbCtqSEIxZkRMUUNMWEFGaE1sRUZDcmxua2lDL29j?=
+ =?utf-8?B?T1F4NjJNRU84cFVyZ2lpR2NYb2YvejMyUWlkak0yMXZ2YjNGbWFEUkdnazdP?=
+ =?utf-8?B?eEM0aUc2OUZRRzRzYVgzVEhZVitYTkVuRDRPNDNWZ2c4TVV6S0p2YVZrbkhM?=
+ =?utf-8?B?QmlrRUw2TGorZVA4bnFxdGpqR296R1VKZ2FUUC95L1puS0RBMVBnQnZHa28z?=
+ =?utf-8?B?L0pVMUY5T0xCOFpkSWFwUFZKUGdXRDgrcVo5Y2Q0YUl5R3MyZmVkaHlUeDEy?=
+ =?utf-8?B?WkMwaUc4dG95UVlOQS9xN0FVZ0pOSmRlSVF5Z0xhZWRuakRhTFFrbU1kTEFJ?=
+ =?utf-8?B?NDBxeVcwbU8xZkF1Y3hxTmlDZTdxME54YTg4ZDNBazFWVzVNWG5HdW9Nam9m?=
+ =?utf-8?B?cldUdStmUW5qTjYvc3k3ZXBwNkd4d2JFdkhTMnUvbEtRMmxYT2JWdUxXSXNO?=
+ =?utf-8?B?QmNIN1VGc2hZa25TbW1DY3dHKzhSN254bUZlYlBsNnYzblZOVTR3QTZtaDZ6?=
+ =?utf-8?B?U0U4OHRUWStBVExHMkxkSVZPWHJHb2hWa2lTK2NaTENSRm4yZUZ3SWZxMVAy?=
+ =?utf-8?B?aUg1dWtWbkNSU1VZZHBqbkZXWTVkb2lNdHRoUkpKejRQTG11RTVJVDhjVkc3?=
+ =?utf-8?B?aHhUbUZ2bC90a0NDaWJXcFZkVzV3TXVDWTlmSFUwTHhQdjFlTWZvZW55dUVw?=
+ =?utf-8?B?U1dwUjlicHpkSXpjTUtIaG9pb0s4ZFFES2tNOU9QcWxtUUxxeW9mbFR0NG9K?=
+ =?utf-8?B?RFlXNk1zd1JNa3ZrVmtpd1R4dVNoTGVhdXBYaGdmakpUSkFEazZlaU9GMTEr?=
+ =?utf-8?B?MlJpMDZVTDhGSFhtNGcwQzhvWWkzV3d0RVJHNUphd2xVS0E4aU5yaFE0RWpY?=
+ =?utf-8?B?YWdKMElKblV5b2hTYXBCZCtzT01VbzBmcGt2S0VpejlrNGh3VTNMY3c1aFYw?=
+ =?utf-8?B?YlFiSWhoemRiVy82dFlld1p2ajBrVnNHMjF3dHlGM3J3WlJDdzc2eXNGV1dF?=
+ =?utf-8?B?Rk03NExZSEZjVXhKQ2hBU2tuQy9JNERtTC9nZ1pWYWVySS9GVG82a2lYQ2VW?=
+ =?utf-8?B?ZnFSbmtkUmlncG1UbjFyK09vMGppWmF2NU5FcHp3SzhXcjJFek9qVFdEQkI1?=
+ =?utf-8?B?NmFCU2NONk81bHMwWlR5MjUya252RGhJNWdhckNnakVGSnBlNnl3QT09?=
 X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 0ff3868b-4e8d-495f-8e1d-08de9c710adb
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1cf4c698-f8e5-4fa9-fa39-08de9c7291b4
 X-MS-Exchange-CrossTenant-AuthSource: PA4PR04MB9366.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Apr 2026 11:04:06.2975
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Apr 2026 11:15:01.9310
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: V6DUupttLbV4xsB8lS4+C+/1AbvW23io4ZeiVbVu226/i2ZFgK4jLRCRulgm3Xre2FTVITJ1ibaac+i01gamEw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR04MB8484
+X-MS-Exchange-CrossTenant-UserPrincipalName: 3sgoI2/OC6ej5Bx5hwewJ/UKwUxNbwdBNSShY2S7apXrAcp/NqLSgK24K5TkUsG0rWRMdXWpksxPh4Ew+V8UxQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB9PR04MB11560
 
-On Wed, Apr 15, 2026 at 05:19:40PM +0900, Chancel Liu wrote:
+On Wed, Apr 15, 2026 at 05:19:41PM +0900, Chancel Liu wrote:
+> Some audio systems require specific DAPM widgets to remain powered
+> during system suspend. Introduce a generic and reusable mechanism in
+> the ASoC core to mark selected DAPM widgets as ignore_suspend.
+>
+> The unified mechanism consists of two parts:
+> 1. Parse and store the name list of widgets to ignore suspend in
+> struct snd_soc_card
+>
+> The list of widgets can be provided either by the machine driver or
+> parsed from Device Tree. Different machines have different routing and
+> power requirements. Each machine can specify its own widgets to ignore
+> suspend through DT property. It enables flexible policy without hard
+> code. A new helper, snd_soc_of_parse_ignore_suspend_widgets() is added
+> for this purpose.
+>
+> 2. Apply ignore_suspend flags during snd_soc_bind_card()
+>
+> After all components have been probed and all DAPM widgets have been
+> registered, snd_soc_bind_card() performs a unified lookup of the
+> configured widget names across all DAPM contexts of the card and marks
+> the matching widgets with ignore_suspend = 1.
+>
+> Signed-off-by: Chancel Liu <chancel.liu@nxp.com>
+> ---
+...
+> @@ -3294,6 +3298,45 @@ int snd_soc_of_parse_aux_devs(struct snd_soc_card *card, const char *propname)
+>  }
+>  EXPORT_SYMBOL_GPL(snd_soc_of_parse_aux_devs);
+>
+> +int snd_soc_of_parse_ignore_suspend_widgets(struct snd_soc_card *card,
+> +					    const char *propname)
 
-subject suggest change to
-
-ASoC: dapm: Use snd_soc_dapm_widget_name_cmp() to fix widget lookup failures
+propname is fixed value "ignore-suspend-widgets"，needn't this agument.
+you funciton include "ignore_suspend_widgets", suppose only parse property.
+ignore_suspend_widgets
 
 Frank
-> Currently dapm_find_widget() manually constructs a prefixed widget name
-> based on the provided DAPM context and compares it using strcmp(). This
-> happens to work in most cases because callers usually know which DAPM
-> context the target widget belongs to and pass in the matching DAPM
-> context.
->
-> However, this assumption breaks when search_other_contexts is enabled.
-> In such cases, callers may intentionally pass a different DAPM context,
-> while searching for a widget that actually belongs to another DAPM
-> context.
->
-> For example, when searching for a "DAC" widget, the widget belongs to
-> the codec DAPM and be registered with a codec prefix, while the caller
-> passes card->dapm and intends to search across all DAPM contexts. The
-> current implementation incorrectly applies the caller card DAPM causing
-> the lookup to fail even though the widget exists on the card.
->
-> Use snd_soc_dapm_widget_name_cmp() instead, which compares widget names
-> using the widget's own DAPM context and prefix. It fixes widget lookup
-> failures when searching across different DAPM contexts on the card.
->
-> Fixes: ae4fc532244b ("ASoC: dapm: use component prefix when checking widget names")
-> Signed-off-by: Chancel Liu <chancel.liu@nxp.com>
-> Assisted-by: Cody:Claude-3.5-Sonnet
-> ---
->  sound/soc/soc-dapm.c | 13 +------------
->  1 file changed, 1 insertion(+), 12 deletions(-)
->
-> diff --git a/sound/soc/soc-dapm.c b/sound/soc/soc-dapm.c
-> index d6192204e613..c5b80d9ed64b 100644
-> --- a/sound/soc/soc-dapm.c
-> +++ b/sound/soc/soc-dapm.c
-> @@ -2906,20 +2906,9 @@ static struct snd_soc_dapm_widget *dapm_find_widget(
->  {
->  	struct snd_soc_dapm_widget *w;
->  	struct snd_soc_dapm_widget *fallback = NULL;
-> -	char prefixed_pin[80];
-> -	const char *pin_name;
-> -	const char *prefix = dapm_prefix(dapm);
-> -
-> -	if (prefix) {
-> -		snprintf(prefixed_pin, sizeof(prefixed_pin), "%s %s",
-> -			 prefix, pin);
-> -		pin_name = prefixed_pin;
-> -	} else {
-> -		pin_name = pin;
-> -	}
->
->  	for_each_card_widgets(dapm->card, w) {
-> -		if (!strcmp(w->name, pin_name)) {
-> +		if (!snd_soc_dapm_widget_name_cmp(w, pin)) {
->  			if (w->dapm == dapm)
->  				return w;
->  			else
-> --
-> 2.50.1
->
 
