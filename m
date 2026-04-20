@@ -1,67 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-19851-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19852-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BCD0F588C2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2026 13:24:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1203EF588C5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2026 13:25:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fzmRJ0Jr9z2ynn;
-	Mon, 20 Apr 2026 23:24:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776691451;
-	cv=none; b=Ltcp9visiShAPercUGl4hYxU+Qw/haMRSnuBiJNBqrXx+WnajdS+TtMd0Mh0CCQRbX5ZumDIbdRPXrsrizaDCTtQu1O9d28Rkp4RuW1y8Ee3IuSB5F78h7IDGxCrGQZZiZmC2UZIN58Jyq5069xf3Vsf5w29A3EgJvon4oZj5t3laJydvN5J04E3yz2ts4QrUe7L8qmFXDoEx108kjtljIpYOY+RkslFImeLVsF3WCz38ZWWhNT9H3yAAT1vTQFfb9h/eyjo3yZb/oUKb8fSP7LUtkgUwDA5eSbtlOpliGL9uSJyiMTfDZIzHKFWO7HqJqio6vPiWPbycYDSZzNVPA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fzmSL5PxVz2ynn;
+	Mon, 20 Apr 2026 23:25:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776691506;
+	cv=none; b=oPtEvaaUbJAwKEZAQm1+ZjsyNoYgk62v3iPVbTdFsiYIWzpR8ZlHjcdIh78raYlBipxtdUXhW5pxXhfRpWLesgOPc+0s6emhkGuNC/vN9FOLUQ0WmsjW1Vq4+swa9YsD/vYsFAau76VZ0CWw6U377uTMGaxeaIo8AtZaXAzi/zoWK1VPxFJudbEyWbnQPeeA/j9nbHOIQ459plaYdCQJuyQ6/Y8FYOkCV8u4ntFyYhWoA1qKTjJbpNHAPH5luvQYOiGxnRJfn3Nr1Z6mn3dNd8+SqW/iffI2Rb13BL/jLvqvTMbbBp+X/PmsbUXDlnKE0VKNCUB75joiwrRD+hncRA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776691451; c=relaxed/relaxed;
-	bh=zpt2dRUpCZRNtr6/yPgnNTizVdWo/CCUopKRyZuU95s=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=h+hsGWLCwEexEX9hLoXrweTadroDm/83YiCg3L7dlwZTwWO+L/PaOBHpzG9YM74owwVgnTWdBucgKDOvu1mek2TJux50APxkmmHXULZnzPPQnFypQOo81XlHjx/Pg/C7krH5TgpvUpQ/rECOGaA8b7YFwHHhbYEsIsoXmW7StBCM/PbDdxY49FvQOXR8nlWqDUR+b2jBdW95ewIOAc3waUxdZWX9YCSd/B0hx/smIo7Y20njLLVKmT0wt4fDig4+vBk9EdC1n8/ET6C3XkbBfJjwmgpmxWDxCbaqZS/yOzdM+AGgWZ0KUEuv14M1jyVklcyGD5dc3S9QWegs6LWTAg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pbeTDkC4; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1776691506; c=relaxed/relaxed;
+	bh=gr0oztocKaKLkdTKEsH8odatBVVrOkD1g/pdHlqb6Es=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=WUARofQ/RzZv35ufBZkeBjoQ4eVoAwPiTziYNM9p28jvlWnJRQjaiMlqG6m5EmUypbFMI7jgZ2Q8X2Fd0xCkzKVQlsSkrHQaevozOtDtOGqN3/C7KTpfJw9TLhnjrojDJmr7ibLq9y2m6brlh88hEaPgfDfY+9fF5v6MU/D96J9CCDaqTCz8EBweKij2UK8WnC8cfn+0iHSJQY72MovtMfcacsera/LmeDnxJaBjD454Z6u4E/DkFHlnZRSvX+dyWu9GtV/etfbgbuiIN7ywsOhNT9X7vrW2DBdP9HMISfoRHZEQ+nQu0Jswae0vGVlfrUjgL2rfPyFXTiSR6W+Kkg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=tGTto8wG; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52f; helo=mail-pg1-x52f.google.com; envelope-from=lgs201920130244@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pbeTDkC4;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=tGTto8wG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52f; helo=mail-pg1-x52f.google.com; envelope-from=lgs201920130244@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x52f.google.com (mail-pg1-x52f.google.com [IPv6:2607:f8b0:4864:20::52f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fzmRG6xkCz2xll
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2026 23:24:10 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id D7E3041845;
-	Mon, 20 Apr 2026 13:24:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 444E7C2BCB6;
-	Mon, 20 Apr 2026 13:24:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776691448;
-	bh=47thKNO+tFGrYMPIi6+M/QsBlK5HIGysFyuKn0jbBk0=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=pbeTDkC4quBuP6Cq1H9hPYDAF1TZEpzs0JD1X6J4/Hn8RRoP/RXxTSF7pALuvpEcM
-	 3BenFvNo8YBWG8Vni96VYWnnxuG6c2pO4zuvPOAqk5EigFFpzvKMkm6iAE8yVN5yxU
-	 s3dp0vG0sBTRXJwW7Xr+rYdCP5QriRVwBQHNCjcgAkJ9qtUjMn3Pg1SGEHStYV3qy/
-	 S2lJ9Gagyl6/fDjSoOPsi2xXh4xtv7HitVGPFYTZXXdyhCTBKHCXsKIUEA+FQ/2Acz
-	 lg8Keo3NVUjIc6v5neeJVMSb0A8XZyFtaX2C1UkJvwdXu4ywjQvIhgFGo8VEKDxrpE
-	 jllxwj8Ma8cxg==
-From: Sasha Levin <sashal@kernel.org>
-To: patches@lists.linux.dev,
-	stable@vger.kernel.org
-Cc: wangdicheng <wangdicheng@kylinos.cn>,
-	Takashi Iwai <tiwai@suse.de>,
-	Sasha Levin <sashal@kernel.org>,
-	johannes@sipsolutions.net,
-	perex@perex.cz,
-	tiwai@suse.com,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fzmSK1V1bz2xll
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2026 23:25:04 +1000 (AEST)
+Received: by mail-pg1-x52f.google.com with SMTP id 41be03b00d2f7-c741692db4cso776106a12.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2026 06:25:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1776691502; x=1777296302; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=gr0oztocKaKLkdTKEsH8odatBVVrOkD1g/pdHlqb6Es=;
+        b=tGTto8wGBFT9sMURMr1apQKv6VnQNI6ddAYD+VAZY1TZ0DFI2dAC9K0oG7BDyXD5wK
+         yvfRCtmbCWb2kqkdtIYmgKI5EOHy6y0WAKqsnrU1yRxPcy4IbC6kfM2SkdOtwujr3kCL
+         vI+JYmG3nHNHFpuqwi2W3N7JW4j1i2ieLjpqcky4MclCSezCzksgCG5CKCQ8eNkj3PzA
+         MQAlx5eAZ2lBgcYOikEMuNw+1gXbWWIJ0OVk6tXu0Tz575P3IwdwbggXDHHZUcAieCha
+         YbD/HhykTQopDziUToxm06+5/3PiwE4UJzad+P/2eVK/nIbrHf7+lWuAQSOAITs1/KFH
+         jSJQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1776691502; x=1777296302;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=gr0oztocKaKLkdTKEsH8odatBVVrOkD1g/pdHlqb6Es=;
+        b=nsGXOmaz1EyujL/BfjYRSWGbYOVcII85FkW4rfWuKd3AV1MBIb2nipUnD7/m5DTrOi
+         VZTvoG8HeFyberlQ/dOSGyDJIiHCd28KBOe25BIfzFie7Paukg8ywUK0AnxkdVtiRxMg
+         QMj6wGP3tAuYxsadPNlM0QrPKyQM0+Dis4Cx1nK3DcqeS4DttivGETNpJxilOl+c6rZ1
+         eC1hvMkesAClvY4PuV9yWEUD8VowOaZs0R0iualp7ATmPJSTv0Q4XsJ/U2c/7gfIMyIH
+         X38DmqNyjLl6qMKEWhWLr7F36yM1YNEE4UQFbzeh3yDvxlbsgs1ZMOR7Z7JaBdu6zSF8
+         WpCQ==
+X-Forwarded-Encrypted: i=1; AFNElJ/bYeR/FHO0G0QY/CAQTPYvuhTSSGD1Do3hZYExRAdsonI/SAkpMwPS1+v0K52R4vFQHJRSJitEYczTM+Q=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxGRqzttiH7en+3dV3tqBwINQ06eIi4PwQBWP60KIetdRSv88En
+	lYNLh+6Z/2yfpABKm8V2eeZxHndHAN4AsFum2xKuxtvWxnKVztgYNlnt
+X-Gm-Gg: AeBDieuBsxXJWbH4VQafAh1PiDE0FLO+QfsREA3gDYQe7Xfboqp/igczsjh8d05JYiv
+	ALre8eie4mcGKao1YzdhCzuHrPE3wcqmBH1xr9z8HRTL0l1Lb83NDjEnC1FFK0s6TUJ8Nl5aIyz
+	PuMSI3OeAq39RTIjzIbsc84inJ6kFpEtB3i+ncubZ0M3c1kVR7W/pshKOPPwupj794BLdgAMU58
+	b2RRaW2cyf+GJbTuJ844E6ecl6A4bExvunrJEt4UUI8BYOMjY1kGDtPUaS1UKjJSn1C4LzomvYO
+	d2J8SpwtmM9gsu5511qO3HqfdTbnFNFvfjuU6M9tzbd6VzqdKyscCndLDoDNqA1P57OBGLu8tkX
+	zXj8iV1M5LxjYzxA/Y9EkYI22CjvlxIX4bhsLNKwE7OYbhvlk66nviuQMPVPQDcD26mxfX46oHZ
+	Vka3wDSzBTdbQ9ErT/hgAPDJW1qpWKqgvPMxY=
+X-Received: by 2002:a05:6a20:3d06:b0:3a2:d5b8:bfa7 with SMTP id adf61e73a8af0-3a2d5b8c92fmr2099312637.1.1776691502065;
+        Mon, 20 Apr 2026 06:25:02 -0700 (PDT)
+Received: from lgs.. ([2408:8417:d50:4775:1153:f731:14e3:b103])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c7976f8fcbdsm7907037a12.6.2026.04.20.06.24.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 20 Apr 2026 06:25:01 -0700 (PDT)
+From: Guangshuo Li <lgs201920130244@gmail.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Mahesh Salgaonkar <mahesh@linux.ibm.com>,
+	Haren Myneni <haren@linux.ibm.com>,
+	Tyrel Datwyler <tyreld@linux.ibm.com>,
+	Christian Brauner <brauner@kernel.org>,
+	Kees Cook <kees@kernel.org>,
+	Guangshuo Li <lgs201920130244@gmail.com>,
 	linuxppc-dev@lists.ozlabs.org,
-	linux-sound@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 7.0-5.10] ALSA: aoa/tas: Fix OF node leak on probe failure
-Date: Mon, 20 Apr 2026 09:17:08 -0400
-Message-ID: <20260420132314.1023554-34-sashal@kernel.org>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260420132314.1023554-1-sashal@kernel.org>
-References: <20260420132314.1023554-1-sashal@kernel.org>
+Cc: stable@vger.kernel.org
+Subject: [PATCH v2] powerpc/pseries/papr-hvpipe: fix NULL dereference in handle creation
+Date: Mon, 20 Apr 2026 21:24:29 +0800
+Message-ID: <20260420132429.128075-1-lgs201920130244@gmail.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,354 +100,59 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-X-stable-base: Linux 7.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: wangdicheng <wangdicheng@kylinos.cn>
+papr_hvpipe_dev_create_handle() transfers ownership of src_info with
+retain_and_null_ptr(src_info) after anon_inode_getfile() succeeds.
+However, retain_and_null_ptr() clears src_info immediately, and the
+function then still dereferences src_info in the subsequent list_add().
 
-[ Upstream commit 1558905669e4da922fbaa7cf6507eb14779bffbd ]
+Store the transferred pointer in a separate variable and use that for
+the list insertion.
 
-Add missing of_node_put() in the error path.
+Manually identified during code review.
 
-Signed-off-by: wangdicheng <wangdicheng@kylinos.cn>
-Link: https://patch.msgid.link/20260402023604.54682-1-wangdich9700@163.com
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Fixes: 6d3789d347a7 ("papr-hvpipe: convert papr_hvpipe_dev_create_handle() to FD_PREPARE()")
+Cc: stable@vger.kernel.org
+Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
 ---
-
-LLM Generated explanations, may be completely bogus:
-
-Now I have all the information needed for a complete analysis.
-
----
-
-## PHASE 1: COMMIT MESSAGE FORENSICS
-
-### Step 1.1: Subject Line
-- **Subsystem**: `ALSA: aoa/tas` (ALSA Apple Onboard Audio, TAS codec)
-- **Action verb**: "Fix"
-- **Summary**: Fix OF (Open Firmware) node reference leak on probe
-  failure path
-
-### Step 1.2: Tags
-- **Signed-off-by**: wangdicheng <wangdicheng@kylinos.cn> (author)
-- **Link**:
-  `https://patch.msgid.link/20260402023604.54682-1-wangdich9700@163.com`
-- **Signed-off-by**: Takashi Iwai <tiwai@suse.de> (ALSA subsystem
-  maintainer)
-- No Fixes: tag, no Cc: stable, no Reported-by — all expected for
-  AUTOSEL candidates
-- Takashi Iwai as committer is a strong signal: he is the ALSA
-  maintainer
-
-### Step 1.3: Commit Body
-The message is very brief: "Add missing of_node_put() in the error
-path." This concisely describes a reference counting bug (missing put on
-error path).
-
-### Step 1.4: Hidden Bug Fix
-This is an explicit bug fix — no disguise. The commit directly states it
-fixes a missing `of_node_put()`.
-
-Record: [Reference counting bug fix — missing of_node_put on error path
-in probe function]
-
----
-
-## PHASE 2: DIFF ANALYSIS
-
-### Step 2.1: Inventory
-- **Files changed**: 1 (`sound/aoa/codecs/tas.c`)
-- **Lines added**: 1
-- **Lines removed**: 0
-- **Function modified**: `tas_i2c_probe()` — the `fail:` error path
-- **Scope**: Single-file, single-line, surgical fix
-
-### Step 2.2: Code Flow Change
-Before the fix, the `fail:` path in `tas_i2c_probe()`:
-
-```873:876:sound/aoa/codecs/tas.c
- fail:
-        mutex_destroy(&tas->mtx);
-        kfree(tas);
-        return -EINVAL;
-```
-
-After the fix, `of_node_put(tas->codec.node)` is added between
-`mutex_destroy` and `kfree`. The reference taken at line 864
-(`tas->codec.node = of_node_get(node)`) is now properly released.
-
-### Step 2.3: Bug Mechanism
-**Category**: Reference counting bug (OF node reference leak)
-- At line 864, `of_node_get(node)` increments the OF node's refcount and
-  stores the result in `tas->codec.node`
-- If `aoa_codec_register()` fails at line 866, execution jumps to
-  `fail:`
-- Without the fix, the `fail:` path calls `kfree(tas)` which frees the
-  struct holding the only pointer to the refcounted node — the refcount
-  is never decremented
-- The `tas_i2c_remove()` function at line 885 correctly calls
-  `of_node_put(tas->codec.node)`, confirming the expected pattern
-
-### Step 2.4: Fix Quality
-- **Obviously correct**: Yes — mirrors the cleanup pattern already in
-  `tas_i2c_remove()` (line 885)
-- **Minimal**: Yes — 1 line added
-- **Regression risk**: Essentially zero — only adds cleanup on an error
-  path
-- **Placement**: Correct — `of_node_put(tas->codec.node)` is placed
-  before `kfree(tas)` so the pointer is still valid
-
-Record: [1 file, +1 line, reference counting fix on error path,
-obviously correct, zero regression risk]
-
----
-
-## PHASE 3: GIT HISTORY INVESTIGATION
-
-### Step 3.1: Blame
-The buggy code (`of_node_get(node)` without matching put on error path)
-was introduced in commit `f3d9478b2ce468` by Johannes Berg on 2006-06-21
-("[ALSA] snd-aoa: add snd-aoa"). This is the initial commit for the
-entire snd-aoa subsystem, from the v2.6.18 era.
-
-Record: [Bug has been present since 2006 (v2.6.18). Present in ALL
-stable trees.]
-
-### Step 3.2: No Fixes: Tag
-No Fixes: tag present — expected for AUTOSEL candidates. However, the
-implicit fix target is `f3d9478b2ce468`.
-
-### Step 3.3: File History
-The file has had only minor maintenance changes (strscpy, guard()
-conversions, kzalloc_obj treewide changes). No related of_node_put fixes
-for this specific path.
-
-The related commit `222bce5eb88d1` ("ALSA: snd-aoa: add of_node_put() in
-error path") fixed a similar bug in `sound/aoa/core/gpio-feature.c` —
-different file, same subsystem, same bug class.
-
-### Step 3.4: Author
-The author (wangdicheng) has contributed several ALSA fixes. The patch
-was accepted by Takashi Iwai, the ALSA maintainer, giving it strong
-credibility.
-
-### Step 3.5: Dependencies
-None. The fix is a single `of_node_put()` call — it is completely
-standalone and applies cleanly.
-
-Record: [No dependencies. Standalone fix. Accepted by subsystem
-maintainer.]
-
----
-
-## PHASE 4: MAILING LIST
-
-### Step 4.1: Original Submission
-b4 dig could not find the original submission (the commit hash is from
-the autosel pipeline, not mainline). The Link: in the commit message
-points to
-`patch.msgid.link/20260402023604.54682-1-wangdich9700@163.com`. Lore was
-not accessible due to bot protection.
-
-### Step 4.2-4.5
-Could not access lore.kernel.org due to Anubis anti-scraping protection.
-However, the commit was accepted by the ALSA maintainer (Takashi Iwai),
-which means it passed his review.
-
-Record: [Lore inaccessible. Patch accepted by ALSA maintainer Takashi
-Iwai.]
-
----
-
-## PHASE 5: CODE SEMANTIC ANALYSIS
-
-### Step 5.1: Functions Modified
-Only `tas_i2c_probe()` — specifically its `fail:` error path.
-
-### Step 5.2: Callers
-`tas_i2c_probe` is the I2C probe callback registered in the `tas_driver`
-struct (line 904). It is called by the I2C subsystem when the device is
-enumerated. This is a standard device probe path.
-
-### Step 5.3-5.4: Call Chain
-The error path is reached when `aoa_codec_register()` fails. Looking at
-the function body (`sound/aoa/core/core.c` lines 57-69), it fails when
-`attach_codec_to_fabric()` returns an error. This is a plausible failure
-scenario during boot or module loading.
-
-### Step 5.5: Similar Patterns
-The sibling driver `onyx.c` has the **exact same bug** at lines 980-988:
-- `onyx->codec.node = of_node_get(node)` at line 980
-- The `fail:` label at line 987-989 calls `kfree(onyx)` without
-  `of_node_put(onyx->codec.node)`
-
-Record: [Same pattern bug exists in onyx.c. Probe function called by I2C
-subsystem during device enumeration.]
-
----
-
-## PHASE 6: STABLE TREE ANALYSIS
-
-### Step 6.1: Code Existence
-The buggy code was introduced in 2006 (`f3d9478b2ce468`). It exists in
-**every** stable tree (5.4.y, 5.10.y, 5.15.y, 6.1.y, 6.6.y, 6.12.y,
-etc.).
-
-### Step 6.2: Backport Complications
-The only concern is the `kzalloc_obj` conversion on line 848 (from Feb
-2026), which exists only in mainline 7.0. In older stable trees, this
-will be `kzalloc(sizeof(*tas), GFP_KERNEL)`. However, the fix (adding
-one line in the `fail:` path) is completely independent of the
-allocation call. The `fail:` label context (mutex_destroy + kfree) has
-been stable since 2006. The fix should apply cleanly or with trivial
-context adjustment.
-
-### Step 6.3: No related fixes in stable
-No previous fix for this specific bug exists in stable trees.
-
-Record: [Bug exists in all stable trees. Fix should apply cleanly with
-minor context fuzz.]
-
----
-
-## PHASE 7: SUBSYSTEM CONTEXT
-
-### Step 7.1: Subsystem
-- **Subsystem**: ALSA (sound), Apple Onboard Audio — codec driver for
-  TAS3004
-- **Criticality**: PERIPHERAL — only affects Apple PowerPC-based
-  machines with TAS3004 codec (PowerBooks, PowerMacs)
-
-### Step 7.2: Activity
-The file gets very infrequent changes (mostly treewide cleanups). This
-is a mature, stable subsystem with minimal churn.
-
-Record: [PERIPHERAL subsystem (Apple PowerPC audio). Mature code with
-low churn.]
-
----
-
-## PHASE 8: IMPACT AND RISK ASSESSMENT
-
-### Step 8.1: Affected Population
-Users with Apple PowerPC hardware using the TAS3004 audio codec. This is
-a niche population, but real users exist (retrocomputing, legacy
-systems).
-
-### Step 8.2: Trigger Conditions
-The bug triggers only when `aoa_codec_register()` fails during probe.
-This is an error path, so it's not common, but it represents a real leak
-each time it occurs (e.g., resource contention, misconfiguration).
-
-### Step 8.3: Failure Mode Severity
-- **OF node reference leak**: The node refcount is never decremented, so
-  the OF node structure is never freed.
-- Severity: **LOW-MEDIUM** — resource leak on error path, not a crash or
-  security issue, but a real correctness bug.
-
-### Step 8.4: Risk-Benefit Ratio
-- **Benefit**: Fixes a real reference counting bug that leaks memory on
-  probe failure.
-- **Risk**: Essentially zero — 1-line, obviously correct, mirrors
-  existing cleanup in the remove function.
-- **Ratio**: Very favorable — minimal risk, real correctness
-  improvement.
-
----
-
-## PHASE 9: FINAL SYNTHESIS
-
-### Step 9.1: Evidence Summary
-
-**FOR backporting**:
-- Fixes a real reference counting bug (missing `of_node_put()` on error
-  path)
-- 1-line fix, obviously correct, mirrors cleanup in `tas_i2c_remove()`
-- Bug has existed since 2006, present in all stable trees
-- Accepted by ALSA maintainer Takashi Iwai
-- Zero regression risk
-- Classic reference counting fix — standard stable material
-
-**AGAINST backporting**:
-- Only affects Apple PowerPC hardware with TAS3004 codec (niche)
-- Only triggers on probe failure (error path, not common)
-- Severity is LOW-MEDIUM (resource leak, not crash/security)
-
-### Step 9.2: Stable Rules Checklist
-1. Obviously correct and tested? **YES** — mirrors existing cleanup in
-   remove()
-2. Fixes a real bug? **YES** — OF node reference leak
-3. Important issue? **MODERATE** — resource leak, not critical
-4. Small and contained? **YES** — 1 line, 1 file
-5. No new features/APIs? **YES** — pure fix
-6. Can apply to stable? **YES** — standalone, no dependencies
-
-### Step 9.3: Exception Categories
-Not an exception category. Standard bug fix.
-
-### Step 9.4: Decision
-This is a small, obviously correct reference counting fix. While the
-impact is limited (niche hardware, error path only), the fix has
-essentially zero risk and addresses a real correctness bug. OF node
-reference leak fixes are routinely accepted in stable, and this follows
-a well-established pattern.
-
----
-
-## Verification
-
-- [Phase 1] Parsed subject: ALSA: aoa/tas subsystem, "Fix" verb, OF node
-  leak on probe failure
-- [Phase 1] Parsed tags: Signed-off-by from author and Takashi Iwai
-  (ALSA maintainer), Link to lore
-- [Phase 2] Diff analysis: 1 line added in `tas_i2c_probe()` fail path:
-  `of_node_put(tas->codec.node)` before `kfree(tas)`
-- [Phase 2] Verified `of_node_get(node)` at line 864 takes a reference
-  that is not released on error path
-- [Phase 2] Verified `tas_i2c_remove()` at line 885 calls
-  `of_node_put(tas->codec.node)` — confirming correct pattern
-- [Phase 3] git blame: buggy code introduced in f3d9478b2ce468
-  (2006-06-21, "[ALSA] snd-aoa: add snd-aoa")
-- [Phase 3] git log: only treewide cleanups on this file, no prior fix
-  for this specific bug
-- [Phase 3] Related commit 222bce5eb88d1 fixed same bug class in gpio-
-  feature.c (different file, same subsystem)
-- [Phase 4] b4 dig: could not match rebased commit hash; lore.kernel.org
-  blocked by Anubis
-- [Phase 5] Verified `onyx.c` at lines 980-988 has the same unfixed bug
-  pattern (systematic issue)
-- [Phase 5] Verified `aoa_codec_register()` in core.c can fail when
-  `attach_codec_to_fabric()` errors
-- [Phase 6] Bug exists since 2006 — present in all active stable trees
-- [Phase 6] Minor context difference in stable (kzalloc_obj vs kzalloc)
-  won't affect the fix line
-- [Phase 8] Failure mode: OF node reference leak on probe error path,
-  severity LOW-MEDIUM
-- UNVERIFIED: Could not access lore.kernel.org to check full review
-  discussion or stable nominations
-
-**YES**
-
- sound/aoa/codecs/tas.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/sound/aoa/codecs/tas.c b/sound/aoa/codecs/tas.c
-index 13da2b159ad0d..25214d3da65d1 100644
---- a/sound/aoa/codecs/tas.c
-+++ b/sound/aoa/codecs/tas.c
-@@ -872,6 +872,7 @@ static int tas_i2c_probe(struct i2c_client *client)
- 	return 0;
-  fail:
- 	mutex_destroy(&tas->mtx);
-+	of_node_put(tas->codec.node);
- 	kfree(tas);
- 	return -EINVAL;
+v2:
+  - Fix the Fixes tag to use the documented 12-character SHA-1 format
+
+ arch/powerpc/platforms/pseries/papr-hvpipe.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/papr-hvpipe.c b/arch/powerpc/platforms/pseries/papr-hvpipe.c
+index 14ae480d060a..497eb967611b 100644
+--- a/arch/powerpc/platforms/pseries/papr-hvpipe.c
++++ b/arch/powerpc/platforms/pseries/papr-hvpipe.c
+@@ -480,6 +480,7 @@ static const struct file_operations papr_hvpipe_handle_ops = {
+ static int papr_hvpipe_dev_create_handle(u32 srcID)
+ {
+ 	struct hvpipe_source_info *src_info __free(kfree) = NULL;
++	struct hvpipe_source_info *owned_src_info;
+ 
+ 	spin_lock(&hvpipe_src_list_lock);
+ 	/*
+@@ -509,7 +510,7 @@ static int papr_hvpipe_dev_create_handle(u32 srcID)
+ 	if (fdf.err)
+ 		return fdf.err;
+ 
+-	retain_and_null_ptr(src_info);
++	owned_src_info = retain_and_null_ptr(src_info);
+ 	spin_lock(&hvpipe_src_list_lock);
+ 	/*
+ 	 * If two processes are executing ioctl() for the same
+@@ -520,7 +521,7 @@ static int papr_hvpipe_dev_create_handle(u32 srcID)
+ 		spin_unlock(&hvpipe_src_list_lock);
+ 		return -EALREADY;
+ 	}
+-	list_add(&src_info->list, &hvpipe_src_list);
++	list_add(&owned_src_info->list, &hvpipe_src_list);
+ 	spin_unlock(&hvpipe_src_list_lock);
+ 	return fd_publish(fdf);
  }
 -- 
-2.53.0
+2.43.0
 
 
