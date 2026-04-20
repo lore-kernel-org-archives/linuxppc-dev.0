@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-19850-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19851-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 063F1F588C3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2026 13:17:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BCD0F588C2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2026 13:24:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fzmHX4zVmz2ynn;
-	Mon, 20 Apr 2026 23:17:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776691048;
-	cv=none; b=eNNNTFY8nqtX+OuA/nVZsYDt/rT+PBO/3NodOYAmbKavKx1vcybkZ6DYwho4Lu6yROiY9GEBamgfZ0dNaKU6OTGPnfn/dqvN3e5hqA4IEFY465aiz2aNa8GHvqP9gm6pdmtKszEKGmzXy41A9VFSmxKIiHrK2NHfaB9/4ofyVf0rV4FCEZs+l3CEJgiN5vh9V66UbWGndNGOwf9/3myGFFK1utVhakr59MLpJFfsF+qAfS4EFwedG/S08FCkt3Lzh04FS4DGuBtWSLduFbgBF0mwcPvq9dQLUTeAPX/fBDkpyDOvg/8WxXmYf+LyGCUP4ptGZ+w60jZHy8nH9YdvEw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fzmRJ0Jr9z2ynn;
+	Mon, 20 Apr 2026 23:24:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776691451;
+	cv=none; b=Ltcp9visiShAPercUGl4hYxU+Qw/haMRSnuBiJNBqrXx+WnajdS+TtMd0Mh0CCQRbX5ZumDIbdRPXrsrizaDCTtQu1O9d28Rkp4RuW1y8Ee3IuSB5F78h7IDGxCrGQZZiZmC2UZIN58Jyq5069xf3Vsf5w29A3EgJvon4oZj5t3laJydvN5J04E3yz2ts4QrUe7L8qmFXDoEx108kjtljIpYOY+RkslFImeLVsF3WCz38ZWWhNT9H3yAAT1vTQFfb9h/eyjo3yZb/oUKb8fSP7LUtkgUwDA5eSbtlOpliGL9uSJyiMTfDZIzHKFWO7HqJqio6vPiWPbycYDSZzNVPA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776691048; c=relaxed/relaxed;
-	bh=FxfGz21dsYtuPo1KwLwoBJYCHvl+OGYkoEFV9XDjdI8=;
+	t=1776691451; c=relaxed/relaxed;
+	bh=zpt2dRUpCZRNtr6/yPgnNTizVdWo/CCUopKRyZuU95s=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=aHedMt9XN8GwrRK8f99+2hkKk7LEuPVwjXWLubPSdcSwILhlnvv7xnS00qQcXt0L0QaSHvQ5d0HyTZ+GTveNn24L30ngWzWQokLcy4d9whHHW/Bn/nV5zfVpQKp9VTOluNw7egturkJbYefWi0jKIUFYLETD2PKZWHEXmxPhoqTsgqleR79kNzTGvlBkfWVfQWt1mjnM/AaWmnXaIURZDuDUoPRsi2klJXsFVIVqCrgcFI2USiWOQH7BR/Rb8sHZH0ruqX/2mzovwKq9nKCMcePSaFp2G2DT58Rg5ADhGlVkYA7I8ZL0UdQdzTBATNMR/YyEynqI59GUE3gxyNnlIg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Cw4J6MzC; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=h+hsGWLCwEexEX9hLoXrweTadroDm/83YiCg3L7dlwZTwWO+L/PaOBHpzG9YM74owwVgnTWdBucgKDOvu1mek2TJux50APxkmmHXULZnzPPQnFypQOo81XlHjx/Pg/C7krH5TgpvUpQ/rECOGaA8b7YFwHHhbYEsIsoXmW7StBCM/PbDdxY49FvQOXR8nlWqDUR+b2jBdW95ewIOAc3waUxdZWX9YCSd/B0hx/smIo7Y20njLLVKmT0wt4fDig4+vBk9EdC1n8/ET6C3XkbBfJjwmgpmxWDxCbaqZS/yOzdM+AGgWZ0KUEuv14M1jyVklcyGD5dc3S9QWegs6LWTAg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pbeTDkC4; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Cw4J6MzC;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pbeTDkC4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fzmHW1zxpz2xll
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2026 23:17:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fzmRG6xkCz2xll
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2026 23:24:10 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 1E65E60172;
-	Mon, 20 Apr 2026 13:17:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8CA21C19425;
-	Mon, 20 Apr 2026 13:17:23 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id D7E3041845;
+	Mon, 20 Apr 2026 13:24:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 444E7C2BCB6;
+	Mon, 20 Apr 2026 13:24:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776691044;
-	bh=ThxMyVbcwAzW0tqsHpizXd80AqabTKh2lu5uYmqS6bU=;
+	s=k20201202; t=1776691448;
+	bh=47thKNO+tFGrYMPIi6+M/QsBlK5HIGysFyuKn0jbBk0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Cw4J6MzCcaRN+URlTbXsevMjj9pk2ib47xRaneBLUa9vfhHt7FmD/TKleUsgZpYAq
-	 Hn0s2RppOKrTLPpKvkSwOI/Qwpnt4zHcTiUzG+pnYwH/QZr9LsVqulnrKF1OHYH7c3
-	 eeoOyPHCBizoG1JqiOGomOXAOEZlv6PDIgu+lGZ3diMBsnYKsu5RI0xLjhXdkP8ZaF
-	 FoK0UzmA3wZyRKyC3C+8ssvtOjWbi4CI0HKbxtquOx9QmvrYiFvrlwrNw98AbPiVx7
-	 Zc830HUT4AL9QkWwVK1LeYZt6mHmysU1Fb1uSwk1u2Z/bv7xDxD+UduTHLGw+jIgmr
-	 +/PHfR1ugANbg==
+	b=pbeTDkC4quBuP6Cq1H9hPYDAF1TZEpzs0JD1X6J4/Hn8RRoP/RXxTSF7pALuvpEcM
+	 3BenFvNo8YBWG8Vni96VYWnnxuG6c2pO4zuvPOAqk5EigFFpzvKMkm6iAE8yVN5yxU
+	 s3dp0vG0sBTRXJwW7Xr+rYdCP5QriRVwBQHNCjcgAkJ9qtUjMn3Pg1SGEHStYV3qy/
+	 S2lJ9Gagyl6/fDjSoOPsi2xXh4xtv7HitVGPFYTZXXdyhCTBKHCXsKIUEA+FQ/2Acz
+	 lg8Keo3NVUjIc6v5neeJVMSb0A8XZyFtaX2C1UkJvwdXu4ywjQvIhgFGo8VEKDxrpE
+	 jllxwj8Ma8cxg==
 From: Sasha Levin <sashal@kernel.org>
 To: patches@lists.linux.dev,
 	stable@vger.kernel.org
@@ -56,12 +56,12 @@ Cc: wangdicheng <wangdicheng@kylinos.cn>,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-sound@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 7.0-5.10] ALSA: aoa/onyx: Fix OF node leak on probe failure
-Date: Mon, 20 Apr 2026 09:08:47 -0400
-Message-ID: <20260420131539.986432-61-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 7.0-5.10] ALSA: aoa/tas: Fix OF node leak on probe failure
+Date: Mon, 20 Apr 2026 09:17:08 -0400
+Message-ID: <20260420132314.1023554-34-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260420131539.986432-1-sashal@kernel.org>
-References: <20260420131539.986432-1-sashal@kernel.org>
+In-Reply-To: <20260420132314.1023554-1-sashal@kernel.org>
+References: <20260420132314.1023554-1-sashal@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -83,315 +83,345 @@ Content-Transfer-Encoding: 8bit
 
 From: wangdicheng <wangdicheng@kylinos.cn>
 
-[ Upstream commit e5d5aef802a5f41283084f7d443ef4fd4b65d86d ]
+[ Upstream commit 1558905669e4da922fbaa7cf6507eb14779bffbd ]
 
 Add missing of_node_put() in the error path.
 
 Signed-off-by: wangdicheng <wangdicheng@kylinos.cn>
-Link: https://patch.msgid.link/20260403014736.33014-1-wangdich9700@163.com
+Link: https://patch.msgid.link/20260402023604.54682-1-wangdich9700@163.com
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
 
 LLM Generated explanations, may be completely bogus:
 
-Now I have all the information needed. Let me compile the full analysis.
+Now I have all the information needed for a complete analysis.
 
 ---
 
 ## PHASE 1: COMMIT MESSAGE FORENSICS
 
-### Step 1.1: Parse the Subject Line
-- **Subsystem**: ALSA: aoa/onyx (Apple Onboard Audio, onyx codec)
-- **Action verb**: "Fix" — direct bug fix
-- **Summary**: Fixes an OF (Open Firmware) device tree node reference
-  leak when the probe function fails
+### Step 1.1: Subject Line
+- **Subsystem**: `ALSA: aoa/tas` (ALSA Apple Onboard Audio, TAS codec)
+- **Action verb**: "Fix"
+- **Summary**: Fix OF (Open Firmware) node reference leak on probe
+  failure path
 
-### Step 1.2: Parse All Commit Message Tags
+### Step 1.2: Tags
 - **Signed-off-by**: wangdicheng <wangdicheng@kylinos.cn> (author)
 - **Link**:
-  https://patch.msgid.link/20260403014736.33014-1-wangdich9700@163.com
-  (patch discussion)
+  `https://patch.msgid.link/20260402023604.54682-1-wangdich9700@163.com`
 - **Signed-off-by**: Takashi Iwai <tiwai@suse.de> (ALSA subsystem
-  maintainer; this means it was reviewed/applied by the maintainer)
-- No Fixes: tag (expected — that's why we're reviewing)
-- No Cc: stable (expected — that's why we're reviewing)
-- No Reported-by (static analysis / code review finding)
+  maintainer)
+- No Fixes: tag, no Cc: stable, no Reported-by — all expected for
+  AUTOSEL candidates
+- Takashi Iwai as committer is a strong signal: he is the ALSA
+  maintainer
 
-### Step 1.3: Analyze the Commit Body Text
-The commit body is concise: "Add missing of_node_put() in the error
-path." This describes a classic OF node reference leak fix. When
-`of_node_get()` acquires a reference but the error path doesn't call
-`of_node_put()`, the node's reference count is leaked.
+### Step 1.3: Commit Body
+The message is very brief: "Add missing of_node_put() in the error
+path." This concisely describes a reference counting bug (missing put on
+error path).
 
-### Step 1.4: Detect Hidden Bug Fixes
-This is an explicit bug fix, not disguised. The subject says "Fix" and
-the body confirms a missing cleanup call.
+### Step 1.4: Hidden Bug Fix
+This is an explicit bug fix — no disguise. The commit directly states it
+fixes a missing `of_node_put()`.
+
+Record: [Reference counting bug fix — missing of_node_put on error path
+in probe function]
 
 ---
 
-## PHASE 2: DIFF ANALYSIS - LINE BY LINE
+## PHASE 2: DIFF ANALYSIS
 
-### Step 2.1: Inventory the Changes
-- **File**: `sound/aoa/codecs/onyx.c`
-- **Lines**: +3, -1 (net +2 lines)
-- **Function**: `onyx_i2c_probe()`
-- **Scope**: Single-file surgical fix to one error path
+### Step 2.1: Inventory
+- **Files changed**: 1 (`sound/aoa/codecs/tas.c`)
+- **Lines added**: 1
+- **Lines removed**: 0
+- **Function modified**: `tas_i2c_probe()` — the `fail:` error path
+- **Scope**: Single-file, single-line, surgical fix
 
-### Step 2.2: Understand the Code Flow Change
-The key flow in `onyx_i2c_probe()`:
+### Step 2.2: Code Flow Change
+Before the fix, the `fail:` path in `tas_i2c_probe()`:
 
-```978:990:sound/aoa/codecs/onyx.c
-        onyx->codec.init = onyx_init_codec;
-        onyx->codec.exit = onyx_exit_codec;
-        onyx->codec.node = of_node_get(node);  // acquires OF node
-reference
-
-        if (aoa_codec_register(&onyx->codec)) {
-                goto fail;  // BEFORE: leaks OF node reference
-        }
-        ...
+```873:876:sound/aoa/codecs/tas.c
  fail:
-        kfree(onyx);  // frees memory but doesn't release OF node ref
-        return -ENODEV;
+        mutex_destroy(&tas->mtx);
+        kfree(tas);
+        return -EINVAL;
 ```
 
-**After the fix**: `goto fail` becomes `goto fail_put`, which first
-calls `of_node_put(onyx->codec.node)` then falls through to `fail`.
+After the fix, `of_node_put(tas->codec.node)` is added between
+`mutex_destroy` and `kfree`. The reference taken at line 864
+(`tas->codec.node = of_node_get(node)`) is now properly released.
 
-### Step 2.3: Identify the Bug Mechanism
-Category: **Reference counting fix / resource leak**. `of_node_get()`
-increments the device tree node refcount. If `aoa_codec_register()`
-fails, the refcount is never decremented, leaking the OF node.
+### Step 2.3: Bug Mechanism
+**Category**: Reference counting bug (OF node reference leak)
+- At line 864, `of_node_get(node)` increments the OF node's refcount and
+  stores the result in `tas->codec.node`
+- If `aoa_codec_register()` fails at line 866, execution jumps to
+  `fail:`
+- Without the fix, the `fail:` path calls `kfree(tas)` which frees the
+  struct holding the only pointer to the refcounted node — the refcount
+  is never decremented
+- The `tas_i2c_remove()` function at line 885 correctly calls
+  `of_node_put(tas->codec.node)`, confirming the expected pattern
 
-### Step 2.4: Assess the Fix Quality
-- **Obviously correct**: Yes — `of_node_get()` at line 980 must be
-  balanced by `of_node_put()` on error. The remove path at line 997
-  already correctly calls `of_node_put()`.
-- **Minimal/surgical**: Yes — only 3 lines added, 1 changed.
-- **Regression risk**: Essentially zero. The new label only executes on
-  error paths and merely balances a reference count.
+### Step 2.4: Fix Quality
+- **Obviously correct**: Yes — mirrors the cleanup pattern already in
+  `tas_i2c_remove()` (line 885)
+- **Minimal**: Yes — 1 line added
+- **Regression risk**: Essentially zero — only adds cleanup on an error
+  path
+- **Placement**: Correct — `of_node_put(tas->codec.node)` is placed
+  before `kfree(tas)` so the pointer is still valid
+
+Record: [1 file, +1 line, reference counting fix on error path,
+obviously correct, zero regression risk]
 
 ---
 
 ## PHASE 3: GIT HISTORY INVESTIGATION
 
-### Step 3.1: Blame the Changed Lines
-The buggy code was introduced by commit `f3d9478b2ce468` ("[ALSA] snd-
-aoa: add snd-aoa") by Johannes Berg, dated **2006-06-21**. This is the
-original addition of the entire AOA subsystem. The bug has been present
-for ~20 years, meaning it exists in **every supported stable tree**.
+### Step 3.1: Blame
+The buggy code (`of_node_get(node)` without matching put on error path)
+was introduced in commit `f3d9478b2ce468` by Johannes Berg on 2006-06-21
+("[ALSA] snd-aoa: add snd-aoa"). This is the initial commit for the
+entire snd-aoa subsystem, from the v2.6.18 era.
 
-### Step 3.2: Follow the Fixes Tag
-No Fixes: tag present, but the implicit fix target is `f3d9478b2ce468`
-(2006). The same commit was referenced by the related fix
-`222bce5eb88d1` ("ALSA: snd-aoa: add of_node_put() in error path") which
-fixed a *similar* OF node leak in `sound/aoa/core/gpio-feature.c` but
-did NOT touch `onyx.c`.
+Record: [Bug has been present since 2006 (v2.6.18). Present in ALL
+stable trees.]
 
-### Step 3.3: Related Changes
-- `222bce5eb88d1` — Fixed same bug class in `gpio-feature.c` (2018),
-  never touched onyx.c
-- The sibling codec `tas.c` has the **exact same bug** at lines 864-875
-  (acquires `of_node_get(node)` but `goto fail` doesn't release it)
+### Step 3.2: No Fixes: Tag
+No Fixes: tag present — expected for AUTOSEL candidates. However, the
+implicit fix target is `f3d9478b2ce468`.
 
-### Step 3.4: Author's Other Commits
-wangdicheng appears to be contributing fixes across multiple subsystems
-(KylinOS developer). Takashi Iwai, who applied the patch, is the ALSA
-subsystem maintainer — adding significant confidence.
+### Step 3.3: File History
+The file has had only minor maintenance changes (strscpy, guard()
+conversions, kzalloc_obj treewide changes). No related of_node_put fixes
+for this specific path.
 
-### Step 3.5: Dependent/Prerequisite Commits
-None. The fix is fully standalone. The code structure (`fail` label,
-`kfree(onyx)`) has been unchanged since 2006.
+The related commit `222bce5eb88d1` ("ALSA: snd-aoa: add of_node_put() in
+error path") fixed a similar bug in `sound/aoa/core/gpio-feature.c` —
+different file, same subsystem, same bug class.
+
+### Step 3.4: Author
+The author (wangdicheng) has contributed several ALSA fixes. The patch
+was accepted by Takashi Iwai, the ALSA maintainer, giving it strong
+credibility.
+
+### Step 3.5: Dependencies
+None. The fix is a single `of_node_put()` call — it is completely
+standalone and applies cleanly.
+
+Record: [No dependencies. Standalone fix. Accepted by subsystem
+maintainer.]
 
 ---
 
-## PHASE 4: MAILING LIST AND EXTERNAL RESEARCH
+## PHASE 4: MAILING LIST
 
-### Step 4.1-4.5: Patch Discussion
-Lore.kernel.org is behind a proof-of-work challenge, and b4 dig couldn't
-match this commit by patch-id. However, the patch was applied by ALSA
-maintainer Takashi Iwai directly, which confirms it passed maintainer
-review. The Link tag provides the message-id for the submission.
+### Step 4.1: Original Submission
+b4 dig could not find the original submission (the commit hash is from
+the autosel pipeline, not mainline). The Link: in the commit message
+points to
+`patch.msgid.link/20260402023604.54682-1-wangdich9700@163.com`. Lore was
+not accessible due to bot protection.
+
+### Step 4.2-4.5
+Could not access lore.kernel.org due to Anubis anti-scraping protection.
+However, the commit was accepted by the ALSA maintainer (Takashi Iwai),
+which means it passed his review.
+
+Record: [Lore inaccessible. Patch accepted by ALSA maintainer Takashi
+Iwai.]
 
 ---
 
 ## PHASE 5: CODE SEMANTIC ANALYSIS
 
-### Step 5.1: Key Functions
-- `onyx_i2c_probe()` — the I2C driver probe function, called when the
-  device is matched
+### Step 5.1: Functions Modified
+Only `tas_i2c_probe()` — specifically its `fail:` error path.
 
 ### Step 5.2: Callers
-`onyx_i2c_probe()` is the `.probe` callback in `onyx_driver` (i2c_driver
-struct at line 1012). It is called by the I2C core during device
-enumeration/binding. This is a standard device probe path.
+`tas_i2c_probe` is the I2C probe callback registered in the `tas_driver`
+struct (line 904). It is called by the I2C subsystem when the device is
+enumerated. This is a standard device probe path.
 
-### Step 5.3-5.4: Reachability
-The probe function is called whenever the kernel attempts to bind the
-onyx I2C codec to its driver. On Apple Mac hardware with this audio
-codec, this happens during boot. If `aoa_codec_register()` fails (which
-can happen — e.g. if the fabric isn't registered yet), this leak
-triggers.
+### Step 5.3-5.4: Call Chain
+The error path is reached when `aoa_codec_register()` fails. Looking at
+the function body (`sound/aoa/core/core.c` lines 57-69), it fails when
+`attach_codec_to_fabric()` returns an error. This is a plausible failure
+scenario during boot or module loading.
 
 ### Step 5.5: Similar Patterns
-As verified, `sound/aoa/codecs/tas.c` has the **identical bug** (lines
-864-875): `of_node_get(node)` followed by `goto fail` that doesn't call
-`of_node_put()`.
+The sibling driver `onyx.c` has the **exact same bug** at lines 980-988:
+- `onyx->codec.node = of_node_get(node)` at line 980
+- The `fail:` label at line 987-989 calls `kfree(onyx)` without
+  `of_node_put(onyx->codec.node)`
+
+Record: [Same pattern bug exists in onyx.c. Probe function called by I2C
+subsystem during device enumeration.]
 
 ---
 
-## PHASE 6: CROSS-REFERENCING AND STABLE TREE ANALYSIS
+## PHASE 6: STABLE TREE ANALYSIS
 
-### Step 6.1: Buggy Code Existence in Stable Trees
-The buggy code exists in **all** stable trees. It was introduced in 2006
-(`f3d9478b2ce468`) and has never been fixed.
+### Step 6.1: Code Existence
+The buggy code was introduced in 2006 (`f3d9478b2ce468`). It exists in
+**every** stable tree (5.4.y, 5.10.y, 5.15.y, 6.1.y, 6.6.y, 6.12.y,
+etc.).
 
 ### Step 6.2: Backport Complications
-The file has had minor changes (guard() conversions, alloc_obj macros)
-but the probe function structure around the error path is essentially
-unchanged since 2006. The patch should apply **cleanly** to all stable
-trees, possibly with trivial context adjustments (e.g. `kzalloc_obj` vs
-`kzalloc`).
+The only concern is the `kzalloc_obj` conversion on line 848 (from Feb
+2026), which exists only in mainline 7.0. In older stable trees, this
+will be `kzalloc(sizeof(*tas), GFP_KERNEL)`. However, the fix (adding
+one line in the `fail:` path) is completely independent of the
+allocation call. The `fail:` label context (mutex_destroy + kfree) has
+been stable since 2006. The fix should apply cleanly or with trivial
+context adjustment.
 
-### Step 6.3: Related Fixes Already in Stable
-No. The related `222bce5eb88d1` fix was for `gpio-feature.c`, not
-`onyx.c`.
+### Step 6.3: No related fixes in stable
+No previous fix for this specific bug exists in stable trees.
+
+Record: [Bug exists in all stable trees. Fix should apply cleanly with
+minor context fuzz.]
 
 ---
 
-## PHASE 7: SUBSYSTEM AND MAINTAINER CONTEXT
+## PHASE 7: SUBSYSTEM CONTEXT
 
-### Step 7.1: Subsystem Criticality
-- **Subsystem**: ALSA / AOA (Apple Onboard Audio) — driver-specific
-- **Criticality**: PERIPHERAL — affects Apple PowerPC/Mac hardware with
-  onyx codecs
-- **Maintainer review**: Applied by Takashi Iwai (ALSA maintainer)
-  directly
+### Step 7.1: Subsystem
+- **Subsystem**: ALSA (sound), Apple Onboard Audio — codec driver for
+  TAS3004
+- **Criticality**: PERIPHERAL — only affects Apple PowerPC-based
+  machines with TAS3004 codec (PowerBooks, PowerMacs)
 
-### Step 7.2: Subsystem Activity
-Low activity (last substantive change was treewide refactoring). This is
-a mature, stable driver.
+### Step 7.2: Activity
+The file gets very infrequent changes (mostly treewide cleanups). This
+is a mature, stable subsystem with minimal churn.
+
+Record: [PERIPHERAL subsystem (Apple PowerPC audio). Mature code with
+low churn.]
 
 ---
 
 ## PHASE 8: IMPACT AND RISK ASSESSMENT
 
-### Step 8.1: Who Is Affected
-Users of Apple Mac hardware with the pcm3052 (onyx) audio codec. This is
-primarily older PowerPC-based Macs.
+### Step 8.1: Affected Population
+Users with Apple PowerPC hardware using the TAS3004 audio codec. This is
+a niche population, but real users exist (retrocomputing, legacy
+systems).
 
 ### Step 8.2: Trigger Conditions
-The leak triggers when `aoa_codec_register()` fails during probe. This
-can happen if the AOA fabric isn't registered, or if
-`attach_codec_to_fabric()` returns an error. While not extremely common,
-repeated probe failures (e.g. during deferred probing or error
-injection) would accumulate leaked OF nodes.
+The bug triggers only when `aoa_codec_register()` fails during probe.
+This is an error path, so it's not common, but it represents a real leak
+each time it occurs (e.g., resource contention, misconfiguration).
 
 ### Step 8.3: Failure Mode Severity
-- **Failure mode**: OF node reference count leak (resource leak)
-- **Severity**: LOW-MEDIUM — repeated leaks consume memory, and the
-  leaked OF node can never be freed, but this is a one-time probe path,
-  not a hot path
+- **OF node reference leak**: The node refcount is never decremented, so
+  the OF node structure is never freed.
+- Severity: **LOW-MEDIUM** — resource leak on error path, not a crash or
+  security issue, but a real correctness bug.
 
 ### Step 8.4: Risk-Benefit Ratio
-- **Benefit**: Fixes a real resource leak that has existed for 20 years.
-  Trivial to understand and verify.
-- **Risk**: Essentially zero — 3 lines added to an error path, one
-  `goto` target changed
-- **Ratio**: Very favorable — minimal risk for a correct bug fix
+- **Benefit**: Fixes a real reference counting bug that leaks memory on
+  probe failure.
+- **Risk**: Essentially zero — 1-line, obviously correct, mirrors
+  existing cleanup in the remove function.
+- **Ratio**: Very favorable — minimal risk, real correctness
+  improvement.
 
 ---
 
 ## PHASE 9: FINAL SYNTHESIS
 
-### Step 9.1: Evidence Compiled
+### Step 9.1: Evidence Summary
 
-**FOR backporting:**
-- Fixes a real bug: missing `of_node_put()` causing OF node reference
-  leak
-- Extremely small and surgical fix (3 lines added, 1 changed)
-- Obviously correct — verified by reading the code and comparing with
-  the remove path
-- Applied by ALSA subsystem maintainer (Takashi Iwai)
-- Bug exists in all stable trees (introduced in 2006)
+**FOR backporting**:
+- Fixes a real reference counting bug (missing `of_node_put()` on error
+  path)
+- 1-line fix, obviously correct, mirrors cleanup in `tas_i2c_remove()`
+- Bug has existed since 2006, present in all stable trees
+- Accepted by ALSA maintainer Takashi Iwai
 - Zero regression risk
-- Consistent with similar fixes applied to the same subsystem
-  (222bce5eb88d1)
+- Classic reference counting fix — standard stable material
 
-**AGAINST backporting:**
-- Low-severity bug (resource leak, not crash/security/corruption)
-- Affects niche hardware (Apple PowerPC Macs)
-- Only triggers on probe failure (not common under normal conditions)
+**AGAINST backporting**:
+- Only affects Apple PowerPC hardware with TAS3004 codec (niche)
+- Only triggers on probe failure (error path, not common)
+- Severity is LOW-MEDIUM (resource leak, not crash/security)
 
 ### Step 9.2: Stable Rules Checklist
-1. Obviously correct and tested? **YES** — trivial fix, applied by
-   maintainer
+1. Obviously correct and tested? **YES** — mirrors existing cleanup in
+   remove()
 2. Fixes a real bug? **YES** — OF node reference leak
-3. Important issue? **MEDIUM** — resource leak, not critical
-4. Small and contained? **YES** — 3 lines, single file, single function
-5. No new features or APIs? **YES** — pure fix
-6. Can apply to stable trees? **YES** — code unchanged since 2006
+3. Important issue? **MODERATE** — resource leak, not critical
+4. Small and contained? **YES** — 1 line, 1 file
+5. No new features/APIs? **YES** — pure fix
+6. Can apply to stable? **YES** — standalone, no dependencies
 
 ### Step 9.3: Exception Categories
-None applicable, but this is a standard reference counting bug fix — a
-very common category for stable backports.
+Not an exception category. Standard bug fix.
 
 ### Step 9.4: Decision
-This is a small, obvious, correct fix for a real reference counting bug.
-While the severity is low (resource leak on error path in niche
-hardware), the fix carries essentially zero regression risk and meets
-all stable kernel criteria.
+This is a small, obviously correct reference counting fix. While the
+impact is limited (niche hardware, error path only), the fix has
+essentially zero risk and addresses a real correctness bug. OF node
+reference leak fixes are routinely accepted in stable, and this follows
+a well-established pattern.
 
 ---
 
 ## Verification
 
-- [Phase 1] Parsed tags: Signed-off-by author + Takashi Iwai
-  (maintainer), Link tag present
-- [Phase 2] Diff analysis: 3 lines added to error path in
-  `onyx_i2c_probe()`, adds missing `of_node_put()` after `of_node_get()`
-  at line 980
-- [Phase 3] git blame: buggy code introduced in `f3d9478b2ce468`
-  (2006-06-21), present in all stable trees
-- [Phase 3] Related fix `222bce5eb88d1`: same bug class fixed in `gpio-
-  feature.c` but NOT in `onyx.c`
-- [Phase 3] Confirmed `tas.c` has identical unfixed bug at lines 864-875
-- [Phase 4] Lore blocked by anti-scraping; b4 dig failed to match. Patch
-  applied by ALSA maintainer confirms review
-- [Phase 5] `onyx_i2c_probe()` is standard I2C probe callback, called
-  during device binding
-- [Phase 5] `aoa_codec_register()` at `sound/aoa/core/core.c:57`
-  confirmed: can return error from `attach_codec_to_fabric()`
-- [Phase 6] Code structure unchanged since 2006; patch should apply
-  cleanly to all stable trees
-- [Phase 6] No related fix already in stable for this specific file
-- [Phase 8] Failure mode: OF node reference leak, severity LOW-MEDIUM;
-  risk of fix: essentially zero
+- [Phase 1] Parsed subject: ALSA: aoa/tas subsystem, "Fix" verb, OF node
+  leak on probe failure
+- [Phase 1] Parsed tags: Signed-off-by from author and Takashi Iwai
+  (ALSA maintainer), Link to lore
+- [Phase 2] Diff analysis: 1 line added in `tas_i2c_probe()` fail path:
+  `of_node_put(tas->codec.node)` before `kfree(tas)`
+- [Phase 2] Verified `of_node_get(node)` at line 864 takes a reference
+  that is not released on error path
+- [Phase 2] Verified `tas_i2c_remove()` at line 885 calls
+  `of_node_put(tas->codec.node)` — confirming correct pattern
+- [Phase 3] git blame: buggy code introduced in f3d9478b2ce468
+  (2006-06-21, "[ALSA] snd-aoa: add snd-aoa")
+- [Phase 3] git log: only treewide cleanups on this file, no prior fix
+  for this specific bug
+- [Phase 3] Related commit 222bce5eb88d1 fixed same bug class in gpio-
+  feature.c (different file, same subsystem)
+- [Phase 4] b4 dig: could not match rebased commit hash; lore.kernel.org
+  blocked by Anubis
+- [Phase 5] Verified `onyx.c` at lines 980-988 has the same unfixed bug
+  pattern (systematic issue)
+- [Phase 5] Verified `aoa_codec_register()` in core.c can fail when
+  `attach_codec_to_fabric()` errors
+- [Phase 6] Bug exists since 2006 — present in all active stable trees
+- [Phase 6] Minor context difference in stable (kzalloc_obj vs kzalloc)
+  won't affect the fix line
+- [Phase 8] Failure mode: OF node reference leak on probe error path,
+  severity LOW-MEDIUM
+- UNVERIFIED: Could not access lore.kernel.org to check full review
+  discussion or stable nominations
 
 **YES**
 
- sound/aoa/codecs/onyx.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ sound/aoa/codecs/tas.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/sound/aoa/codecs/onyx.c b/sound/aoa/codecs/onyx.c
-index 04961c456d2c5..da0eebf5dfbc2 100644
---- a/sound/aoa/codecs/onyx.c
-+++ b/sound/aoa/codecs/onyx.c
-@@ -980,10 +980,12 @@ static int onyx_i2c_probe(struct i2c_client *client)
- 	onyx->codec.node = of_node_get(node);
- 
- 	if (aoa_codec_register(&onyx->codec)) {
--		goto fail;
-+		goto fail_put;
- 	}
- 	printk(KERN_DEBUG PFX "created and attached onyx instance\n");
+diff --git a/sound/aoa/codecs/tas.c b/sound/aoa/codecs/tas.c
+index 13da2b159ad0d..25214d3da65d1 100644
+--- a/sound/aoa/codecs/tas.c
++++ b/sound/aoa/codecs/tas.c
+@@ -872,6 +872,7 @@ static int tas_i2c_probe(struct i2c_client *client)
  	return 0;
-+ fail_put:
-+	of_node_put(onyx->codec.node);
   fail:
- 	kfree(onyx);
- 	return -ENODEV;
+ 	mutex_destroy(&tas->mtx);
++	of_node_put(tas->codec.node);
+ 	kfree(tas);
+ 	return -EINVAL;
+ }
 -- 
 2.53.0
 
