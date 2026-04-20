@@ -1,62 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-19853-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19854-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35A91F588C3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2026 13:25:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DFC9F588C5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Apr 2026 13:29:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fzmTH6cT1z2ynn;
-	Mon, 20 Apr 2026 23:25:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776691555;
-	cv=none; b=YnDYRbTH9WjjFEwuKDwDZoWmoVc6EZdInwS5yDIBMfbmZYbWgwK1bm9N+8wDx+GvQ5HIQzjjktZ5Dni6Eam3kqkVzUGg2Ve/F6sZSY3z5KVJAHi7jsBrQnPfYgmRYjrxUqFjVPwcWpIKGYOYc9e6GIajJXA8cEANwuU69l9J/C661u/84eD3S/zLfxadmNwuOP3+lrQqfJAbjBaoeChOUJOlEKN8Wji4bk+yVurO76FlQlQuEWTM1k/q6UXlV2ylVG2qU6LcXR41vR+g32qLMMfNo0AOdYxAzPCNt0nTOJyDkfd823tDbRQGxc1YZDe/Ni8h/3bE9i2x+Ncw1KB/iA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fzmYH5Lpsz2ynn;
+	Mon, 20 Apr 2026 23:29:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776691763;
+	cv=none; b=M9AOFssh5JtBRec+w53WEQ8nHP8mEOuDryUhYcGHkYcGyhBl6abpyqisPqyUMQjIhCaL1M3D6qMYXffLQYEg5pyq7rJd1lV1sFphj+YuMlRWXBNJuQPAilK8isNZywIiDg6GO9BsHH0MWymbnHzIGjTKMa32qczr2wcG1/GlH66nX9VWyXkfKZZnryFqoX+td/q+FK0Qn9iMJa3DpemVpx4U0spyA5eR3U0Um1gTV5191ELlRbZO8Sqjpcgq0TlkpBtHEAMGTnZw3nI65cPCI/ezYwJBXGjoCq9r/4dFZJo+L3IcxlJaCpec/ea+1sFvVavmnpRxyj3ZHiJi5yKHpA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776691555; c=relaxed/relaxed;
-	bh=wtbGWexhUOAXUsW5Ev/ZlF5+HHODbWIXT86xXGASD4Y=;
+	t=1776691763; c=relaxed/relaxed;
+	bh=W1jkiJ2EJY3lXghi9odz7KvJHQrKpU7P0Qa8RExrYjo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=V4r0VcQ3ncwM7JB1B9vyeybNUX2wF64DtQykblfCE564Y179uO7VGDDbWiUsEEl8QJ3K5tPJJx0X5OmBAf0aR25QhR4WnUKWYHDR5wYOkzlFiMyAIahVEF+f6M17WNRsWi/vOI81wJDr2pW/hNr//MS3OLhPSJA5HFj/ub9SkBVgAwyCTP8mpWqiHpUJp9u+XZYCNi+ICFK8DhXPCV0E7dRe50btPJNFYQhfMdbE4yKLgaKXMV0QjTReNWeAqRCtlkDcyKd50l9agR06Ly3MFwoabh9XPrzT/H54YkLqtj5imy4/ew/yD9fKsGi1bz/S014NRIVOwdzWyp3cN3hreQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YEmIsrH/; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=DJ+dcVV3tpwe8Iuko9V8KHz82HJPOuKoP0MzldIKM5cTs08dI/kSgmvuXUqhFrKhD1X4mtSFTWTsjWMNpmajGXNTzHcXjjSyUQy1+kvAVEm40+HdaPBGbtzeX7hNTf1A4f1v/P2saeGa+pKMSDXEXbrbA4OR37aVxj4ojqNEJk9pJsUySSo8Z1VBbED/dmYNbRjzkLzwuw/rmGtFRvTtXBy89KeQ/kCCihwvxCPnyqZDmZWZIC0t2AM3Z9xNzOz0HlKZsPDzmZB49KCjaUHgODm9KHs5L9xqUQUz8qRbV8OCjm1nd8Le0OKF/7tyii4DxWaCa+vkK0kP9eG1IrLv/w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gNIuA3J5; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YEmIsrH/;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gNIuA3J5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fzmTH0sVJz2xll
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2026 23:25:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fzmYG32PGz2xll
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2026 23:29:22 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 69DA343A4B;
-	Mon, 20 Apr 2026 13:25:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AEF52C19425;
-	Mon, 20 Apr 2026 13:25:51 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id DC2626012B;
+	Mon, 20 Apr 2026 13:29:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A7565C2BCB7;
+	Mon, 20 Apr 2026 13:29:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776691553;
-	bh=QdN5eaOozdE57zvJQCptJpEJ1Y01sSXA/t3uhiyUcqM=;
+	s=k20201202; t=1776691759;
+	bh=fAIl7Oa60rYsXXpRjcp6tby5iEceDeFC2+fvbHkx/fM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=YEmIsrH/WmB/Fn/vM7lkqpqeWRinlzbK5dp2YlGRZbG1gdbc/Qa/O5Q4OuZOYrYZM
-	 kNfY8kiLZBR4WVlD12FWhiHylmXkSCgmqqtEObkETDsE4MeXFvYfA7L9MG5EEtpTFb
-	 p8/HZcAon0WasPJvFvK0aUxnV8UGZUA2agBadnQ4CZ6vnZN79jKHh3GFNjo3W1HsVn
-	 kzj2uEvsTNBdhkd9D9MOLFDmJXDQAdmhRjznxgojG1RAxOGC0Iovwbmq1f/HQ88t57
-	 oI2kCaeXL3erVLjUc+j3pFw5sYBBhVTutR0v529TldKfy0Tq/cYmx/AOSg1aE95MtB
-	 HB6h1Ba8wkMmA==
+	b=gNIuA3J5i7Bogg0cGQpEF3bopw0ALXTeIigMHK7mImUtJVtA6tIm2Z5X9D30iylAf
+	 xG6wedRGcbI9VchTrL5pz4y8zaGiun3GRDViMFK6QGCg82MEsOk9p8BWWAxMha7fU8
+	 zg7Sq26B+xgDantYRGBu5R+v9f5Yk88IgtoIIKvufWXRHDcZXT/GBlkOPEU9t8c/Y3
+	 ylxG0P4XsKdcUUne0dmp6IaXT/Y6KaGphVik0PX36NlgxpscwqophrmcT5J8snNgIK
+	 XUgmtPg7CIyY97S9BhfAoL4Dxm75P7mtInq6TpLlkCCPJENFWUMfgPXDQw1ZKDVK8Y
+	 7q+fu7IiMIWzw==
 From: Sasha Levin <sashal@kernel.org>
 To: patches@lists.linux.dev,
 	stable@vger.kernel.org
-Cc: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
+Cc: Sizhe Liu <liusizhe5@huawei.com>,
+	Bjorn Helgaas <bhelgaas@google.com>,
 	Sasha Levin <sashal@kernel.org>,
-	mpe@ellerman.id.au,
+	mahesh@linux.ibm.com,
 	linuxppc-dev@lists.ozlabs.org,
+	linux-pci@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 7.0-6.18] powerpc/64s: Fix _HPAGE_CHG_MASK to include _PAGE_SPECIAL bit
-Date: Mon, 20 Apr 2026 09:18:10 -0400
-Message-ID: <20260420132314.1023554-96-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 7.0-6.12] PCI/DPC: Hold pci_dev reference during error recovery
+Date: Mon, 20 Apr 2026 09:19:31 -0400
+Message-ID: <20260420132314.1023554-177-sashal@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260420132314.1023554-1-sashal@kernel.org>
 References: <20260420132314.1023554-1-sashal@kernel.org>
@@ -78,307 +78,294 @@ X-Patchwork-Hint: Ignore
 X-stable-base: Linux 7.0
 Content-Transfer-Encoding: 8bit
 
-From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+From: Sizhe Liu <liusizhe5@huawei.com>
 
-[ Upstream commit 68b1fa0ed5c84769e4e60d58f6a5af37e7273b51 ]
+[ Upstream commit a1ed752bc7cb77b740cee671567d9508ae74becd ]
 
-commit af38538801c6a ("mm/memory: factor out common code from vm_normal_page_*()"),
-added a VM_WARN_ON_ONCE for huge zero pfn.
+The AER and EDR error handling paths hold a reference on the pci_dev during
+recovery.  Hold a reference during the DPC recovery path as well.
 
-This can lead to the following call stack.
-
- ------------[ cut here ]------------
- WARNING: mm/memory.c:735 at vm_normal_page_pmd+0xf0/0x140, CPU#19: hmm-tests/3366
- NIP [c00000000078d0c0] vm_normal_page_pmd+0xf0/0x140
- LR [c00000000078d060] vm_normal_page_pmd+0x90/0x140
- Call Trace:
- [c00000016f56f850] [c00000000078d060] vm_normal_page_pmd+0x90/0x140 (unreliable)
- [c00000016f56f8a0] [c0000000008a9e30] change_huge_pmd+0x7c0/0x870
- [c00000016f56f930] [c0000000007b2bc4] change_protection+0x17a4/0x1e10
- [c00000016f56fba0] [c0000000007b3440] mprotect_fixup+0x210/0x4c0
- [c00000016f56fc30] [c0000000007b3c3c] do_mprotect_pkey+0x54c/0x780
- [c00000016f56fdb0] [c0000000007b3ed8] sys_mprotect+0x68/0x90
- [c00000016f56fdf0] [c00000000003ae40] system_call_exception+0x190/0x500
- [c00000016f56fe50] [c00000000000d05c] system_call_vectored_common+0x15c/0x2ec
-
-This happens when we call mprotect -> change_huge_pmd()
-mprotect()
-  change_pmd_range()
-    pmd_modify(oldpmd, newprot) 	# this clears _PAGE_SPECIAL for zero huge pmd
-	    pmdv = pmd_val(pmd);
-	    pmdv &= _HPAGE_CHG_MASK;	# -> gets cleared here
-	    return pmd_set_protbits(__pmd(pmdv), newprot);
-    can_change_pmd_writable(vma, vmf->address, pmd)
-      vm_normal_page_pmd(vma, addr, pmd)
-        __vm_normal_page()
-          VM_WARN_ON(is_zero_pfn(pfn) || is_huge_zero_pfn(pfn));  # this get hits as _PAGE_SPECIAL for zero huge pmd was cleared.
-
-It can be easily reproduced with the following testcase:
-	p = mmap(NULL, 2 * hpage_pmd_size, PROT_READ, MAP_PRIVATE |
-		 MAP_ANONYMOUS, -1, 0);
-	madvise((void *)p, 2 * hpage_pmd_size, MADV_HUGEPAGE);
-	aligned = (char*)(((unsigned long)p + hpage_pmd_size - 1) &
-				~(hpage_pmd_size - 1));
-	(void)(*(volatile char*)aligned);  // read fault, installs huge zero PMD
-	mprotect((void *)aligned, hpage_pmd_size, PROT_READ | PROT_WRITE);
-
-This patch adds _PAGE_SPECIAL to _HPAGE_CHG_MASK similar to
-_PAGE_CHG_MASK, as we don't want to clear this bit when calling
-pmd_modify() while changing protection bits.
-
-Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
-Link: https://patch.msgid.link/7416f5cdbcfeaad947860fcac488b483f1287172.1773078178.git.ritesh.list@gmail.com
+Signed-off-by: Sizhe Liu <liusizhe5@huawei.com>
+[bhelgaas: split to separate patch]
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+https://patch.msgid.link/20260214081130.1878424-1-liusizhe5@huawei.com
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
 
 LLM Generated explanations, may be completely bogus:
 
-Now I have a complete picture. Let me compile the full analysis.
+Now I have all the information needed. Let me write the complete
+analysis.
 
 ---
 
-## PHASE 1: COMMIT MESSAGE FORENSICS
+## Complete Analysis: PCI/DPC: Hold pci_dev reference during error
+recovery
+
+### PHASE 1: COMMIT MESSAGE FORENSICS
 
 **Step 1.1: Subject Line**
-- Subsystem: `powerpc/64s`
-- Action verb: "Fix" - explicitly a bug fix
-- Summary: Fix `_HPAGE_CHG_MASK` to include `_PAGE_SPECIAL` bit,
-  preventing it from being stripped during `pmd_modify()`
+- Subsystem: `PCI/DPC` (PCI Express Downstream Port Containment)
+- Action verb: "Hold" - implies adding a missing safety measure
+- Summary: Hold a pci_dev reference during error recovery to prevent
+  potential use-after-free
+- Record: [PCI/DPC] [Hold] [Add missing reference counting for pci_dev
+  during DPC recovery path]
 
 **Step 1.2: Tags**
-- No `Fixes:` tag (expected for this pipeline)
-- No `Cc: stable@vger.kernel.org` (expected)
-- `Signed-off-by: Ritesh Harjani (IBM)` - the author
-- `Tested-by: Venkat Rao Bagalkote` - independently tested
-- `Signed-off-by: Madhavan Srinivasan` - powerpc subsystem maintainer
-- `Link:` to patch.msgid.link with the original submission
+- `Signed-off-by: Sizhe Liu <liusizhe5@huawei.com>` - Original author
+- `[bhelgaas: split to separate patch]` - Bjorn Helgaas (PCI subsystem
+  maintainer) split this from a larger patch
+- `Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>` - Committed by
+  the PCI subsystem maintainer
+- `Link: https://patch.msgid.link/20260214081130.1878424-1-
+  liusizhe5@huawei.com` - Original submission
+
+No Fixes: tag, no Reported-by, no Cc: stable (expected for a candidate).
+
+Record: Signed by author and PCI maintainer. Split from a larger patch
+by Bjorn Helgaas. No Fixes: tag.
 
 **Step 1.3: Commit Body**
-The commit describes a concrete bug: when `mprotect()` is called on a
-mapping with a huge zero PMD, `pmd_modify()` strips `_PAGE_SPECIAL`
-because `_HPAGE_CHG_MASK` doesn't include it. This causes
-`vm_normal_page_pmd()` to hit a `VM_WARN_ON` for zero huge pfn. A
-complete call trace is provided, along with a simple reproducible
-testcase.
+The message states: "The AER and EDR error handling paths hold a
+reference on the pci_dev during recovery. Hold a reference during the
+DPC recovery path as well." This is a clear statement of a reference
+counting inconsistency between the three error recovery paths.
 
-**Step 1.4: Hidden Bug Fix?**
-Not hidden at all - this is an explicitly stated fix with "Fix" in the
-subject.
+Record: Bug = missing pci_dev reference during DPC error recovery.
+Symptom = potential use-after-free if device is freed during recovery.
+Root cause = reference counting inconsistency between DPC, AER, and EDR
+paths.
 
-## PHASE 2: DIFF ANALYSIS
+**Step 1.4: Hidden Bug Fix Detection**
+Yes - this is a reference counting bug fix. The word "Hold" implies
+adding a missing reference, aligning DPC with AER and EDR behavior. This
+fixes a potential use-after-free.
+
+### PHASE 2: DIFF ANALYSIS
 
 **Step 2.1: Inventory**
-- Single file changed: `arch/powerpc/include/asm/book3s/64/pgtable.h`
-- Net change: 2 lines changed (adding `_PAGE_SPECIAL |` to the mask,
-  reformatting)
-- Effectively a 1-token addition to a preprocessor bitmask
+- 1 file modified: `drivers/pci/pcie/dpc.c`
+- +2 lines added, 0 removed
+- Function modified: `dpc_handler()`
+- Classification: single-file surgical fix (2 lines)
 
 **Step 2.2: Code Flow Change**
-Before: `_HPAGE_CHG_MASK` does not include `_PAGE_SPECIAL`, so
-`pmd_modify()` clears this bit.
-After: `_HPAGE_CHG_MASK` includes `_PAGE_SPECIAL`, preserving it through
-`pmd_modify()`.
+Before: `dpc_handler()` uses `pdev` throughout `dpc_process_error()` and
+`pcie_do_recovery()` without holding a reference.
+After: `pci_dev_get(pdev)` before processing, `pci_dev_put(pdev)` after
+recovery completes. Ensures the `pci_dev` object lives through the
+entire recovery.
 
 **Step 2.3: Bug Mechanism**
-Logic/correctness fix. The `_PAGE_CHG_MASK` (for regular PTEs) already
-includes `_PAGE_SPECIAL` at line 123-125 of the same file. The
-`_HPAGE_CHG_MASK` (for huge PMDs) was missing it, creating an
-inconsistency where `pmd_modify()` strips `_PAGE_SPECIAL` while
-`pte_modify()` preserves it.
+Category: **Reference counting fix**
+- `pci_dev_get()` is ADDED (this fixes a potential use-after-free /
+  missing reference hold)
+- AER path: uses `pci_dev_get()` in `add_error_device()` at `aer.c:992`
+  and `pci_dev_put()` in `handle_error_source()` at `aer.c:1202`
+- AER APEI path: uses `pci_get_domain_bus_and_slot()` (returns with ref)
+  at `aer.c:1226` and `pci_dev_put()` at `aer.c:1253`
+- EDR path: uses `pci_dev_get()` in `acpi_dpc_port_get()` at
+  `edr.c:89,94` and `pci_dev_put()` at `edr.c:218`
+- DPC path: **no reference held** before this fix
 
 **Step 2.4: Fix Quality**
-- Obviously correct: makes the huge page mask match the regular page
-  mask
-- Minimal and surgical: single bit addition to a bitmask
-- Zero regression risk: preserving a bit that should always be preserved
-- Historical precedent: commit fbc78b07ba53 (2009) fixed the same issue
-  for `_PAGE_CHG_MASK`
+- Obviously correct: balanced get/put pair wrapping the usage
+- Minimal/surgical: exactly 2 lines
+- No regression risk: adding reference counting cannot cause deadlock or
+  data corruption
+- No red flags
 
-## PHASE 3: GIT HISTORY
+### PHASE 3: GIT HISTORY INVESTIGATION
 
 **Step 3.1: Blame**
-The `_HPAGE_CHG_MASK` definition was introduced by commit
-`2e8735198af039` (Aneesh Kumar K.V, 2016-04-29) when powerpc moved
-common PTE bits to `book3s/64/pgtable.h`. The `_PAGE_SPECIAL` was
-missing from `_HPAGE_CHG_MASK` from the very beginning while it was
-present in `_PAGE_CHG_MASK`. The bug has existed since 2016, meaning all
-active stable trees have this bug.
+The `dpc_handler()` function was authored by Kuppuswamy Sathyanarayanan
+in commit `aea47413e7ceec` (2020-03-23), present since v5.15. The core
+structure with `dpc_process_error()` + `pcie_do_recovery()` has been
+stable since then. The surprise removal check was added later by
+`2ae8fbbe1cd42` (2024, first in v6.12).
 
-**Step 3.2: Fixes Tag**
-No explicit `Fixes:` tag, but the buggy commit is `2e8735198af039` which
-exists in all active stable trees (v4.8+).
+**Step 3.2: Fixes Tag Context**
+The original v3 patch had `Fixes: a57f2bfb4a58` ("PCI/AER: Ratelimit
+correctable and non-fatal error logging") which was first in v6.16-rc1.
+However, the reference counting bug existed earlier - the DPC path has
+been missing the reference since `aea47413e7ceec` (2020, v5.15+). Bjorn
+split the reference counting part into its own patch.
 
-**Step 3.3: Related Changes**
-- Commit `548cb932051fb` ("x86/mm: Fix PAT bit missing from page
-  protection modify mask") - analogous fix on x86 for a similar issue
-  with `_PAGE_PAT` missing from the modify mask. This shows this is a
-  known class of bugs.
-- Commit `fbc78b07ba53` ("powerpc/mm: Fix _PAGE_CHG_MASK to protect
-  _PAGE_SPECIAL") from 2009 - exact same type of fix but for the regular
-  PTE mask.
+**Step 3.3: File History**
+Recent commits to `dpc.c` are mostly cleanup/improvement (FIELD_GET,
+defines, TLP log). No other reference counting fixes.
 
-**Step 3.4: Author**
-Ritesh Harjani is a regular powerpc contributor at IBM with many commits
-in this subsystem.
+**Step 3.4: Author Context**
+Sizhe Liu (Huawei) identified the issue. Bjorn Helgaas (PCI subsystem
+maintainer) reviewed, suggested the reference counting addition, and
+committed the fix.
 
 **Step 3.5: Dependencies**
-This commit is fully standalone. No prerequisites needed.
+This commit is fully standalone. It adds `pci_dev_get()`/`pci_dev_put()`
+around existing code. No new functions, no API changes, no dependencies.
 
-## PHASE 4: MAILING LIST
+### PHASE 4: MAILING LIST RESEARCH
 
-- b4 dig could not find the exact commit hash (it's not yet in the
-  mainline tree referenced by b4).
-- The `Link:` tag points to `patch.msgid.link/7416f5cdbcfeaad947860fcac4
-  88b483f1287172.1773078178.git.ritesh.list@gmail.com`
-- Lore was inaccessible due to anti-bot protection.
-- The commit was accepted by the powerpc maintainer Madhavan Srinivasan,
-  indicating proper review.
+The complete discussion was found. Key findings:
+1. Sizhe Liu submitted v1/v2/v3 of "PCI/AER: Fix missing AER logs in DPC
+   and EDR paths"
+2. On v2 review, **Bjorn Helgaas himself identified** the missing
+   reference: "I don't see a similar pci_dev_get() anywhere in the DPC
+   path ... holding that reference on the device is important."
+3. Sizhe Liu agreed and added it in v3
+4. Bjorn then split the v3 patch into two separate patches: the AER log
+   fix and this reference counting fix
+5. Shiju Jose reviewed v3 with minor formatting comments
+6. The patch was applied by Bjorn Helgaas
 
-## PHASE 5: CODE SEMANTIC ANALYSIS
+### PHASE 5: CODE SEMANTIC ANALYSIS
 
-**Step 5.1-5.4: Key Functions**
-- `pmd_modify()` in `arch/powerpc/mm/book3s64/pgtable.c:277` uses
-  `_HPAGE_CHG_MASK` to filter bits.
-- `pud_modify()` at line 286 also uses `_HPAGE_CHG_MASK`.
-- These are called from `change_huge_pmd()` in `mm/huge_memory.c:2625`
-  during `mprotect()`.
-- `change_huge_pmd()` then calls `can_change_pmd_writable()` which calls
-  `vm_normal_page_pmd()`.
-- `vm_normal_page_pmd()` calls `__vm_normal_page()` which has a
-  `VM_WARN_ON_ONCE` for zero pfns.
+**Callers of affected code:**
+- `dpc_handler()` is a threaded IRQ handler registered in `dpc_probe()`
+  via `devm_request_threaded_irq()`
+- Triggered by `dpc_irq()` (hardirq handler) returning `IRQ_WAKE_THREAD`
+- `pcie_do_recovery()` is a long-running function that walks the PCI
+  bus, calls driver error handlers, resets links, and waits for
+  secondary bus readiness
 
-The call chain is: `sys_mprotect()` -> `do_mprotect_pkey()` ->
-`mprotect_fixup()` -> `change_protection()` -> `change_pmd_range()` ->
-`change_huge_pmd()` -> `pmd_modify()` (loses `_PAGE_SPECIAL`) ->
-`can_change_pmd_writable()` -> `vm_normal_page_pmd()` -> `VM_WARN_ON`.
+**Call chain:** Hardware DPC trigger -> `dpc_irq()` -> `dpc_handler()`
+-> `dpc_process_error()` + `pcie_do_recovery()` -> `dpc_reset_link()` ->
+`pcie_wait_for_link()` + `pci_bridge_wait_for_secondary_bus()`
 
-This is reachable from any unprivileged userspace `mprotect()` call on a
-THP-backed mapping.
+The recovery process can take seconds (waiting for links, bus resets).
+During this time, the `pci_dev` must remain valid.
 
-## PHASE 6: STABLE TREE ANALYSIS
+### PHASE 6: STABLE TREE ANALYSIS
 
-**Step 6.1:** The buggy `_HPAGE_CHG_MASK` definition has been present
-since v4.8 (2016). All active stable trees contain this bug.
+The buggy code (`dpc_handler()` without reference) exists in all stable
+trees from v5.15 onwards. The function was introduced in
+`aea47413e7ceec` (v5.15). For trees older than v6.12, the surprise
+removal block won't be present, but the patch context for the
+`pci_dev_get`/`pci_dev_put` addition is around the `dpc_process_error()`
++ `pcie_do_recovery()` calls which are present in all trees. Minor
+conflicts may be needed for trees without the surprise removal check.
 
-**Step 6.2:** The fix will apply cleanly - the `_HPAGE_CHG_MASK`
-definition is stable and hasn't changed significantly (last modification
-by `d438d273417055` removed `_PAGE_DEVMAP`).
+### PHASE 7: SUBSYSTEM AND MAINTAINER CONTEXT
 
-**Step 6.3:** No related fix has been applied to stable for this issue.
+- Subsystem: PCI Express (drivers/pci/pcie/) - IMPORTANT subsystem
+  affecting all PCIe users
+- DPC is a standard PCIe feature for error containment
+- Maintainer: Bjorn Helgaas - he personally identified and committed
+  this fix
+- Criticality: IMPORTANT - affects all systems with PCIe DPC support
 
-## PHASE 7: SUBSYSTEM CONTEXT
+### PHASE 8: IMPACT AND RISK ASSESSMENT
 
-- Subsystem: `powerpc/64s` - architecture-specific memory management
-- Criticality: IMPORTANT - affects all powerpc book3s 64-bit systems
-  using THP
-- The code touches page table bit handling, a critical part of the
-  memory subsystem
+**Who is affected:** All systems with PCIe DPC support (most modern x86
+systems, some ARM)
 
-## PHASE 8: IMPACT AND RISK ASSESSMENT
+**Trigger conditions:** A DPC containment event (PCIe fatal error)
+concurrent with device removal. While the specific race may be hard to
+trigger, DPC events are not uncommon (hardware errors, NVMe removal
+under load).
 
-**Step 8.1:** Affects users of powerpc book3s 64-bit systems with THP
-enabled.
+**Failure mode:** Potential use-after-free - accessing freed `pci_dev`
+during recovery. Severity: **HIGH** (crash, potential security issue)
 
-**Step 8.2:** Triggered by `mprotect()` on a huge zero page mapping. The
-reproducer is simple: mmap + madvise(MADV_HUGEPAGE) + read fault +
-mprotect. Any unprivileged user can trigger it.
+**Benefit:** Fixes a reference counting correctness bug, aligns DPC with
+AER/EDR behavior, prevents potential UAF during error recovery.
 
-**Step 8.3:** Failure mode: Kernel warning (VM_WARN_ON), incorrect page
-treatment (zero page treated as normal page after mprotect). MEDIUM-HIGH
-severity - causes kernel splats and potentially incorrect memory
-management decisions.
+**Risk:** **Very low** - 2 lines, balanced get/put, obviously correct,
+no behavioral change.
 
-**Step 8.4:**
-- BENEFIT: HIGH - fixes a bug triggerable from userspace via common
-  operations, prevents kernel warnings and incorrect page handling
-- RISK: VERY LOW - single bit addition to a bitmask, obviously correct
-  by analogy with `_PAGE_CHG_MASK`
-- Ratio: Strongly favorable
-
-## PHASE 9: FINAL SYNTHESIS
+### PHASE 9: FINAL SYNTHESIS
 
 **Evidence FOR backporting:**
-- Fixes a real bug with concrete reproducer and call trace
-- Single-bit addition to a bitmask - trivially small and obviously
-  correct
-- Makes `_HPAGE_CHG_MASK` consistent with `_PAGE_CHG_MASK` (which
-  already has `_PAGE_SPECIAL`)
-- Historical precedent: same fix for regular PTEs (2009) and for x86
-  (2023)
-- Tested independently, accepted by subsystem maintainer
-- Bug exists in all stable trees since 2016
-- Zero regression risk
+1. Fixes a reference counting bug (missing `pci_dev_get` in DPC handler)
+2. Potential use-after-free during error recovery
+3. Only 2 lines added - minimal risk
+4. PCI subsystem maintainer (Bjorn Helgaas) personally identified the
+   issue and committed the fix
+5. Consistent with how AER and EDR paths already work
+6. `pcie_do_recovery()` is a long-running function making the window
+   non-trivial
+7. Buggy code present since v5.15
+8. Standalone fix with no dependencies
 
 **Evidence AGAINST backporting:**
-- The `VM_WARN_ON` that makes this most visible (from `af38538801c6a`)
-  is only in recent kernels (6.18+)
-- powerpc does not define `pmd_special()` (returns false generically),
-  so the full mechanism is subtle
+1. No concrete crash report or syzbot finding (theoretical)
+2. Race requires specific timing (DPC + hot-removal)
 
 **Stable Rules Checklist:**
-1. Obviously correct? **YES** - trivial consistency fix
-2. Fixes a real bug? **YES** - `_PAGE_SPECIAL` incorrectly stripped
-   during `pmd_modify()`
-3. Important issue? **YES** - kernel warning + incorrect page handling
-4. Small and contained? **YES** - 1 line in 1 file
-5. No new features? **YES**
-6. Applies cleanly? **YES**
+1. Obviously correct? **YES** - balanced get/put, trivially verifiable
+2. Fixes a real bug? **YES** - reference counting inconsistency,
+   potential UAF
+3. Important issue? **YES** - potential crash/UAF during error recovery
+4. Small and contained? **YES** - 2 lines in 1 file
+5. No new features/APIs? **YES** - pure bug fix
+6. Can apply to stable? **YES** - standalone, clean apply expected for
+   v7.0
 
-## Verification
+### Verification
 
-- [Phase 1] Parsed tags: Signed-off-by powerpc maintainer, Tested-by
-  from IBM tester
-- [Phase 2] Diff analysis: adding `_PAGE_SPECIAL` to `_HPAGE_CHG_MASK`
-  bitmask, 1 effective line
-- [Phase 3] git blame: buggy `_HPAGE_CHG_MASK` introduced in commit
-  2e8735198af039 (2016, v4.8+)
-- [Phase 3] git show 548cb932051fb: confirmed analogous x86 fix for
-  `_PAGE_PAT` missing from modify mask
-- [Phase 3] git show fbc78b07ba53: confirmed 2009 fix adding
-  `_PAGE_SPECIAL` to `_PAGE_CHG_MASK` (the PTE equivalent)
-- [Phase 3] git show 2e8735198af039: confirmed original code movement
-  commit, _HPAGE_CHG_MASK missing _PAGE_SPECIAL from the start
-- [Phase 4] b4 dig -c af38538801c6a: found the vm_normal_page
-  refactoring series (v1-v3 by David Hildenbrand)
-- [Phase 5] Traced call chain: mprotect -> change_huge_pmd -> pmd_modify
-  (strips bit) -> can_change_pmd_writable -> vm_normal_page_pmd ->
-  VM_WARN_ON
-- [Phase 5] Verified _HPAGE_CHG_MASK used in pmd_modify()
-  (pgtable.c:282) and pud_modify() (pgtable.c:291)
-- [Phase 5] Verified _PAGE_CHG_MASK already includes _PAGE_SPECIAL
-  (pgtable.h:123-125)
-- [Phase 6] Buggy code present since v4.8 (2016) - all active stable
-  trees affected
-- [Phase 6] File has had minimal changes to _HPAGE_CHG_MASK area - clean
-  apply expected
-- [Phase 7] Confirmed powerpc selects ARCH_HAS_PTE_SPECIAL but not
-  ARCH_SUPPORTS_HUGE_PFNMAP
-- [Phase 8] Reproducer is trivial userspace mmap+mprotect sequence
-- UNVERIFIED: Could not access lore.kernel.org discussion due to anti-
-  bot protection
+- [Phase 1] Parsed tags: Signed-off-by Sizhe Liu + Bjorn Helgaas, Link
+  to lore
+- [Phase 2] Diff analysis: +2 lines in `dpc_handler()`, adds
+  `pci_dev_get()`/`pci_dev_put()` around error recovery
+- [Phase 3] git blame: `dpc_handler()` introduced in commit
+  `aea47413e7ceec` (2020), present since v5.15
+- [Phase 3] git show a57f2bfb4a58: confirmed the ratelimit commit is in
+  v6.16-rc1, first in v7.0 tree
+- [Phase 4] Found full thread via yhbt.net mirror of lore: v1/v2/v3
+  progression, Bjorn requested ref counting in v2 review
+- [Phase 4] Bjorn Helgaas (PCI maintainer) explicitly said "holding that
+  reference on the device is important"
+- [Phase 4] Bjorn split original 3-file patch into separate patches,
+  this is the DPC ref-counting portion
+- [Phase 5] `pcie_do_recovery()` walks bus, resets links, waits for
+  secondary bus - long-running operation
+- [Phase 5] Verified AER (aer.c:992/1202), AER APEI (aer.c:1226/1253),
+  EDR (edr.c:89/218) all hold references
+- [Phase 5] Verified DPC path has NO reference holding in current 7.0
+  tree
+- [Phase 6] Buggy code exists since v5.15 (aea47413e7ceec present in
+  v5.15, v6.1, v6.6, v6.12, v7.0)
+- [Phase 6] Surprise removal block (2ae8fbbe1cd42) is in v6.12+ only, so
+  older trees may need context adjustment
+- [Phase 7] PCI/DPC is an important subsystem; fix committed by
+  subsystem maintainer
+- [Phase 8] Failure mode: potential UAF during DPC recovery, severity
+  HIGH
+- UNVERIFIED: Whether the `devm_request_threaded_irq` + `free_irq`
+  synchronization fully prevents the race (it synchronizes handler
+  completion but doesn't prevent refcount drops during handler
+  execution)
+
+The fix is a 2-line, obviously correct reference counting addition that
+aligns the DPC error recovery path with the AER and EDR paths. The PCI
+subsystem maintainer identified and committed it. The potential
+consequence of the missing reference is a use-after-free, and the fix
+carries essentially zero regression risk.
 
 **YES**
 
- arch/powerpc/include/asm/book3s/64/pgtable.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/pci/pcie/dpc.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 1a91762b455d9..e0b78fa36d160 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -107,8 +107,8 @@
-  * in here, on radix we expect them to be zero.
-  */
- #define _HPAGE_CHG_MASK (PTE_RPN_MASK | _PAGE_HPTEFLAGS | _PAGE_DIRTY | \
--			 _PAGE_ACCESSED | H_PAGE_THP_HUGE | _PAGE_PTE | \
--			 _PAGE_SOFT_DIRTY)
-+			 _PAGE_ACCESSED | H_PAGE_THP_HUGE | _PAGE_SPECIAL | \
-+			 _PAGE_PTE | _PAGE_SOFT_DIRTY)
- /*
-  * user access blocked by key
-  */
+diff --git a/drivers/pci/pcie/dpc.c b/drivers/pci/pcie/dpc.c
+index fc18349614d7c..f028bc795f197 100644
+--- a/drivers/pci/pcie/dpc.c
++++ b/drivers/pci/pcie/dpc.c
+@@ -372,11 +372,13 @@ static irqreturn_t dpc_handler(int irq, void *context)
+ 		return IRQ_HANDLED;
+ 	}
+ 
++	pci_dev_get(pdev);
+ 	dpc_process_error(pdev);
+ 
+ 	/* We configure DPC so it only triggers on ERR_FATAL */
+ 	pcie_do_recovery(pdev, pci_channel_io_frozen, dpc_reset_link);
+ 
++	pci_dev_put(pdev);
+ 	return IRQ_HANDLED;
+ }
+ 
 -- 
 2.53.0
 
