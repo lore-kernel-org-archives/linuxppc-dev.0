@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-19911-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19912-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9378F94CA7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2026 18:43:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48EA4F94CA8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2026 19:42:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g0WTd4ll9z30Wd;
-	Wed, 22 Apr 2026 04:43:49 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776797029;
-	cv=none; b=R+vMuMSD6sHmu3MvwFW2/tQ46PObQ2nChvKOseAhetHlcuzMHfvjgTN1EXOpSoY79xs3Tc8gGNFrb+uy7v6VE69x7yal2PfIRlE2ORifo8j8FXiRsrsZTASzrxxi1l8PskwAuMcILt/mWuUD2M5stQce1JGcyFuiZX8a2dDBPCcz9ixUpht8hrnELabDCfKth/lQ98HY4eHGWM/8ctThgkIgdR+TG7KI/paLuDmXb2Z2NqlZ9+wqjDvS4PTU3X0JxHZZxkM9T1pHM9OomfJZSip4hHfbg997qlySX7CPH5RdMv/XNEYQ/x/+rpTOCOJwj+79uGc1GpVWNrpEAvly4A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g0Xn951DJz30WX;
+	Wed, 22 Apr 2026 05:42:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776800541;
+	cv=none; b=B5WyXUOHYOZEZKaWt4Yqg8OczrqmTAS5DpIL9M660lhCctSp8KQEIDnm8J+TE7LuqtQ9esw8V50/IWxuNmBEhKh9dalZY0UCIn+hBkaXFYHCEV/lSHlxfGsH8YpoRCl0pybPOKymu8/d3Qo0XtWPGxH+oJeK0WYoZCO/12ymQaq0cpfGbqqH978V7FE7l/d+bdViqIosb+UuVYUjpzz8xbbagNVooMWmygsckS7KU1gDh7FPS85meCSz4UwVOcfd4khvDeRMEyypCjyKjgmlK7lVA+29vDwk1rH5iZSIm/NcP2PlMnNdIjhMbxlOcGSZRQI+/LaULVCMXAA8w9HpXA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776797029; c=relaxed/relaxed;
-	bh=dafv+LxlgIEBCjf0rt5o7BeB8mB5Swbf2MnqaAmIlBw=;
+	t=1776800541; c=relaxed/relaxed;
+	bh=JnGcUUKlrL/Lf9ZhzfvaHj0jBDYJxx3WhTbUzx9JodE=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=lzwW2LvVG+ChZwnfEHRzA+KqYeFyAM2p5t1Op+62PEfWSU3I4CF0TLRz6rXWE47ySTuXYMwD1eBekN3n02E/DynuCsImO9kXZKu0HQcECGCt7oUMx/s4TA7DekMX2kPyUdzv8HZYh5jufOITHFLhGrdEABw6ayH2ipFsW/1H0iXmz1eonY21Ha2GoMmzZR1CHx/KQs6FRrBnwZAjq1UMKri3TaED4XtNMqlBXjSarwbxtrLN5tJ50QkwM6vv1gDI/bxhnY8HuEubVlMdtoV9b9ywDIAEwi1lTcxCpgpFilLrrOvs0A3Y7YDjschYdqL46stF+q7LXaKEpCpdCW8lHw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fJitTr6I; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=YQBOYKCgCcs0f7gGVTBqj6wqrFUt+Q+skhr5D8XxiqzK5Vg4AyebFEdHJY820L2Lz+ouBYG7XNrOK6iQd7nKFIna8g8iVYvARQrYnNbESc2/fgLaKaexGJq6MLAe6W1s7UzDY6J/KSyf586pQUCm7pSbsmrTDf4oQsqUn5ZrW3Mdvu4m6nL1V7jXOuu9ScCJMFMfKCmcY6OEgVLzz6DKCOqPOp70/Uh3269V/U6zR3Us7Oo9pHJCUvb8bt28e4K2L1Eqo1k2A8szIpHFxkdbWe1uMdm8KFCCYDQBhCIGlwUcfM2CJb/XKP0kO6QLXX1BJTivxqDCDw66XZqPYjquTw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dU4ij2Q8; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fJitTr6I;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dU4ij2Q8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0WTd0570z30Wb
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 04:43:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0Xn83cmMz30WT
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 05:42:20 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 1C8AE60172;
-	Tue, 21 Apr 2026 18:43:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 69228C2BCB0;
-	Tue, 21 Apr 2026 18:43:45 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id E2B7C60126;
+	Tue, 21 Apr 2026 19:42:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 59753C2BCB0;
+	Tue, 21 Apr 2026 19:42:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776797025;
-	bh=BFCiiwYB2BfaBR4mT2g9t7Kw8VFChQxWQ4H/FZPW50M=;
+	s=k20201202; t=1776800537;
+	bh=xmNghYGrPS7aPnR9Fe2A0c3Av//2yBrrb9EMpzvM8+g=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=fJitTr6ITExrD8mrJxI4gAOrG22qGPHzGF3Q98prdiK9OcWdRTzFPi2Z4y355oNbp
-	 M2V6HDlHOM4FTXgdbd5mpp5ypWI7taXeUErXVwTYUGbZyAWwrK5mQi2YPoPMiSbHkD
-	 6HAzLufn/FlvD1QDS0rIeYUCA+MLi7lzgsdsFe8kMqF4D0zwy82Tz6fILBvxXa54eN
-	 WWmY1oXBcGAxIa4330SI+9lEKMadaxKm1CJd3wzwR80jgllgbMxEEyAd5vw5WwuIMq
-	 dpQ531CS5BsdnUWYzAZk/h+xHZbc5JAh5x/JWPr7CayOcQkhkFqy9fJ7YvOUo1q/nl
-	 5FTO+oqknr1Sg==
-Date: Wed, 22 Apr 2026 03:43:43 +0900
+	b=dU4ij2Q88BapDuHDIZ0EvWzRjerjWcRD2plESQJMgaZTUL0aIFNovwtrRqNKA3ugf
+	 eoIcmU1bOv50WdUsaaNP4RpkU+LKK5kEJTTe2DNvcgSdGt5SWkyd07v0xkVULrgtQh
+	 VneMWWQpMiFBgNFZuDu9d9Dm7Oge7EA7DIn9wZlJRv6q+LZrht9XX1tyreLccYsy8B
+	 NshzYTdRpvYB6ofg6JEC5w46QE+PSjjITJKp84oIb/g67ElZfH1SjbqUo9ONqNzB2F
+	 xgAKMogtdPQb6Pee/Xj7dZM+MRIkHtm74+T6YdA3KLJfs78MpSut4PvBzWMVsYvm3t
+	 uvIhwa1wrf2IA==
+Date: Wed, 22 Apr 2026 04:42:15 +0900
 From: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>
 To: Bjorn Helgaas <bhelgaas@google.com>
 Cc: Bjorn Helgaas <helgaas@kernel.org>,
@@ -67,10 +67,11 @@ Cc: Bjorn Helgaas <helgaas@kernel.org>,
 	Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
 	linux-pci@vger.kernel.org, linux-alpha@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v5 13/23] alpha/PCI: Use PCI resource accessor macros
-Message-ID: <20260421184343.GB1684602@rocinante>
+Subject: Re: [PATCH v5 07/23] PCI/sysfs: Convert PCI resource files to static
+ attributes
+Message-ID: <20260421194215.GC1684602@rocinante>
 References: <20260416180107.777065-1-kwilczynski@kernel.org>
- <20260416180107.777065-14-kwilczynski@kernel.org>
+ <20260416180107.777065-8-kwilczynski@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,20 +87,38 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260416180107.777065-14-kwilczynski@kernel.org>
+In-Reply-To: <20260416180107.777065-8-kwilczynski@kernel.org>
 
 Hello,
 
-> Replace direct pdev->resource[] accesses with pci_resource_n(),
-> and pdev->resource[].flags accesses with pci_resource_flags().
+> @@ -1685,14 +1700,14 @@ static ssize_t __resource_resize_store(struct device *dev, int n,
+>  	pci_write_config_word(pdev, PCI_COMMAND,
+>  			      cmd & ~PCI_COMMAND_MEMORY);
+>  
+> -	pci_remove_resource_files(pdev);
+> +	sysfs_remove_groups(&pdev->dev.kobj, pci_dev_resource_attr_groups);
+>  
+>  	ret = pci_resize_resource(pdev, n, size, 0);
+>  
+>  	pci_assign_unassigned_bus_resources(bus);
+>  
+> -	if (pci_create_resource_files(pdev))
+> -		pci_warn(pdev, "Failed to recreate resource files after BAR resizing\n");
+> +	if (sysfs_create_groups(&pdev->dev.kobj, pci_dev_resource_attr_groups))
+> +		pci_warn(pdev, "Failed to recreate resource groups after BAR resizing\n");
+>  
+>  	pci_write_config_word(pdev, PCI_COMMAND, cmd);
+>  pm_put:
 
-Will update the commit message when sending next version, as the
-pci_resource_flags() was replaced with the new helpers.
+Moving __resource_resize_store() and everything else related to resizable
+BAR resources behind the HAVE_PCI_MMAP and/or ARCH_GENERIC_PCI_MMAP_RESOURCE
+check, where either is required for resizable BAR support, would stop this
+from being included on architectures that offer no support for resizable
+BARs.
 
-> Also, replace open-coded res->flags type checks with new
-> pci_resource_is_mem() and pci_resource_start() helpers.
+Something for the next version.
 
-Thank you!
+Thank you,
 
 	Krzysztof
 
