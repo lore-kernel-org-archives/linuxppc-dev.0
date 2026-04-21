@@ -1,68 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-19915-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19916-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 135FAF94CB6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2026 23:19:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0CA5F94CB7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2026 23:29:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g0dbM1vfvz2yvV;
-	Wed, 22 Apr 2026 09:19:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::64a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776813551;
-	cv=none; b=CUWcnmCijgzh6TwpK3SbzU8axzspMraKLRjE29BnNZli8ZOd+E1EpVog53aruGM1Dtwvx7Fgtl3K5X1gZ5klFS0eUwBrlS+54gcIyaWjF7yYU7+FIVcp83CmYLfcADmNbIPmlGKwliPgIVQWRDHzZaV8n+RD7aAwuXaPGcs4JgKBmWQTHrBzexAB0tU44ui9VknFnq10f43s/JzwB6uSf6gaL7kU2dLJ6Y6Sc5kL6P1Rl28Y0qeFBH1GhGzED1Mk2pPe2xZxQNrNTMdi3iSaMQ9x4+0GCiTyTw/4D9UY39srp0zCK40TxIpW/bXOEKa+QWUnl8uLBJkD5WUMnjpsmQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g0dpp1Tt2z2xSG;
+	Wed, 22 Apr 2026 09:29:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::44a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776814146;
+	cv=none; b=RvtZqhcYhcSHG5JnID/C4xFZyKsVU+dL+6ulNPbZHrBZl+FVb8iF3tnn+FzZf0zP2ZK1rm8fJD8sA6P4N8BfsYTmI18J9XLtdOMQUZCKckVneQd7FSwGG3RCYa8TGvP49YV7eIPPCmd5tGUN1WFhCceEK2g+3nsqDrsr4U6G/O5cVMkBohGF7vlSCV8cIF2eAXglPpLzxIylI3YgDSR9b031+Qw3nlxj/6w4TatX0jSVz3k63kOGziura3CMrF4oqVefRgyPM4nWBCbEBqyaF1WG5nVaMRbHbfiySACxqXW8b/ZG0PVv141zrJv/EBDXnJ/9v3YsY0df0DtlWS/hEw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776813551; c=relaxed/relaxed;
-	bh=kzFNL3zJHiQW2Vbyq91237YpRLX6Z7YBrHD5R7EMXmY=;
+	t=1776814146; c=relaxed/relaxed;
+	bh=ZWZYxE3QD5cUq20TfuzmdK/ApbS+ouPpLPbbjRuSCrk=;
 	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=NX2Gc8SSw8/3ekPW5iJikzSXlSba8mixgQbO8/HLnEaFjPkso3FLTgsEy5Wlt9LWchD1ymW9+QaTF71EoxcFFN+Qx06qg493Aekg7VDMpZUJi/nAQbgw+cp3bDLhILYGpNAmOIlLEfKHlqtnHbT22XsxiYHSRCX6WJywNwKRrRCM+ldG6oZ+sSjDrhT5stMbO4v2wCTF0zP/t9FN7nNF/A9/cG9+2koaGNvpoPPzWvx7Qj7GDzLCH8YyntlEbanTnoLsfRcf2Sdrx9LLNQMMQTwL4Tz5GHaXgvJwEJa5Z97Xu8FVjh3+IGanmWURa0W2ZzgGV2Li7+hAURNWGwzcMg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=V76URM5o; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::64a; helo=mail-pl1-x64a.google.com; envelope-from=36qxoaqykdooeqmzvosaasxq.oayxuzgjbbo-pqhxuefe.alxmne.ads@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+	 To:Cc:Content-Type; b=dpqZn/KkT1+OJ/i9PpCUshGJcsmBSSFNmI6BTygo3mrGRmR+vaUjjReDBlGRm8zlI3nImbBXL8PHm7UMKOnfpCSuDAB/84byjlxLVz6Nb0LpnbZBYyiU8XAz+5JIcYgp4wIWIoJ7u0STIB2RXUYABcYPEQdLeKSBvxdF4dfk8xm4079RSm9jZJz1FONnhGjiH5m9YkQKW8n3Xhv4CEfuxFx2KT5yCdDRPHYp+90Y+ogU/OnR7LfrGh1wvhcmzSSNUx9IdSsE8Srf6zwsyCjWeYiE5LOpLLVS6x8JGaZtxj35vXcdLzbqXNhM8KqbcpcYqU4rKF4/Nqgu5ZOWNqr6zw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=FtWnd2wV; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::44a; helo=mail-pf1-x44a.google.com; envelope-from=3pgjoaqykdeuzlhuqjnvvnsl.jvtspu14wwj-kl2spz0z.v6shiz.vyn@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=V76URM5o;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=FtWnd2wV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::64a; helo=mail-pl1-x64a.google.com; envelope-from=36qxoaqykdooeqmzvosaasxq.oayxuzgjbbo-pqhxuefe.alxmne.ads@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x64a.google.com (mail-pl1-x64a.google.com [IPv6:2607:f8b0:4864:20::64a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::44a; helo=mail-pf1-x44a.google.com; envelope-from=3pgjoaqykdeuzlhuqjnvvnsl.jvtspu14wwj-kl2spz0z.v6shiz.vyn@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x44a.google.com (mail-pf1-x44a.google.com [IPv6:2607:f8b0:4864:20::44a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0dbK25cTz2xSG
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 09:19:08 +1000 (AEST)
-Received: by mail-pl1-x64a.google.com with SMTP id d9443c01a7336-2adef9d486bso43061825ad.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2026 16:19:08 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0dpn39K2z2xSB
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 09:29:04 +1000 (AEST)
+Received: by mail-pf1-x44a.google.com with SMTP id d2e1a72fcca58-82f5f48458eso2758600b3a.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2026 16:29:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1776813546; x=1777418346; darn=lists.ozlabs.org;
+        d=google.com; s=20251104; t=1776814142; x=1777418942; darn=lists.ozlabs.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=kzFNL3zJHiQW2Vbyq91237YpRLX6Z7YBrHD5R7EMXmY=;
-        b=V76URM5o1FmmFsaQNBvZ6Px3N60I7nNTPqNCxZj19FWoR2/tJucTs6QeygHvysVfYX
-         ktXzRfJrdN8urJV/nZ0eemI0Q+IlPslovcnk26DHLCyuJjuRH5MQ8W74VnuCzxSsrL5K
-         jk/YAwmUGAsBetly1GaM9u/LcKkwX3H9gkfDHt1RkhEAulh0ANki79puBGHC+V1SQay3
-         dtIgojJ/GTb4uW1f48vbP3lhN81QFnpjWr/8YNoSfbR/z+ycgFpSTCAIpjlaPKluKkdi
-         acSpkC/z6631ucDCEPX6jzpnJSd+GP+Ozj9HbNpWrFmjwaMd9+lWtDAIgTj1LjjRfWOD
-         BePw==
+        bh=ZWZYxE3QD5cUq20TfuzmdK/ApbS+ouPpLPbbjRuSCrk=;
+        b=FtWnd2wVwyFtWFVPmKnP0I7zRsNScJvIb6Qtec8DfGmnSiJ9PVh9gtIIwLUWpUIL9z
+         LtlEK3hs2bvc1cdBg3Y6GquAd0s8YBNvqr/jn3iyyWHHzegCsCujNK4yNWCeFgZ94uqD
+         4yHUmOIj3xN9ZJE2m9zHxnt+rMD2npXxBInG4HnItlyWQTinBaRTJe8UoYFdB/2zOdO8
+         99n+0+B/dzhhNBr/yrpu3Wuz0qpFpDiNRyBgy7eH0NDJqsTOhiByRH2f86ugivewtvhh
+         ZtmTuLa9BWHto5S0xyGVF7nN15I5r/8COlGTnbSDtIrhnwmxl1USRAUohJwMOYaS8fry
+         sScw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776813546; x=1777418346;
+        d=1e100.net; s=20251104; t=1776814142; x=1777418942;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=kzFNL3zJHiQW2Vbyq91237YpRLX6Z7YBrHD5R7EMXmY=;
-        b=Eu/9AYJjWIzApgEykP6m5I/taj5TW/KyGy7jzEbVWR8M1bi5hEdmYToP0Qqjn6xv06
-         xt9UiaPwETJRc0yzRWWemD5726Dh5VJqkJGTYwu+Fv0dhYR7CNqovIUrrhtWUdrNnF7R
-         VuWuvcHHMXY/CF1FAFW15yBeQUDXFBDl4AxEa/ankW3FyxPam9Fem6JplWmD9K04ylMm
-         cpNmZxs7udQFHSVWhSC5WddDrd3RN7ommo8sTXHoa6OlzddYIrn2WnDs/un5RAeZTnlN
-         jGsQAWfNqnRUaSdzmHOO419yb8zubAve1sCZTdQZ3kavouPDpXG7Ib/Gv6nBeI7MahCN
-         v7jA==
-X-Forwarded-Encrypted: i=1; AFNElJ8GOLDEGAYpKaJRZspKOmo9ZrVGqAv8zfZkWEZ8FZQX+pYn4JSyHraSuqIUd5GODFXDvmVeR1CCkFjLvtE=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzZf/xflmf3HUh4U8cKPTczCt54GPHU+NtzVStvmnMDZ6T9yv2H
-	5QrscGBm0ubSZGRgzNQ60tDCyboczt3oo8vRc1kIyoIMpU3y4YnDYCOwuxG+nyztE4wfAMXiYkR
-	AdqxkQw==
-X-Received: from plu17.prod.google.com ([2002:a17:903:3691:b0:2ae:39ef:fd8a])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:902:c9c4:b0:2b2:712c:61be
- with SMTP id d9443c01a7336-2b5f9ed0b48mr140812005ad.18.1776813545519; Tue, 21
- Apr 2026 16:19:05 -0700 (PDT)
-Date: Tue, 21 Apr 2026 16:19:03 -0700
-In-Reply-To: <aegDJssx-ZvbfggI@google.com>
+        bh=ZWZYxE3QD5cUq20TfuzmdK/ApbS+ouPpLPbbjRuSCrk=;
+        b=mbXp3DNmIG5IhsW5PeDge54J/dRWGWJ6UZSTsZIYCx8SRekIN2LgY+9IMIvHgu2Q3B
+         /BPpkd3dkr9+zDjTOqZLx1OfF6PewPXdjmm0h+nf5Mt4LFtjxbLaClovcDTzwweUA1qi
+         sBlui8AOTzJYbqQ4fxXbUDj/vGNEs2i4JvzUKiUa0xdhGQxjqsYwzwEVa4T3KgNTujo7
+         gAdAM5IY2Nh+/DLD26lyCDAminmfIwkw8PFdX/fDs95izh5UMzW1hybGS0+TENdy1a1p
+         Kb/c0HZCg924h6tRziMA5DbA5msVPRw7s1y3IA6wIbI+SNFdj/CItY3RqRTe1SITss+m
+         9w+Q==
+X-Forwarded-Encrypted: i=1; AFNElJ+Xb3ZYxwZ5RjixfrfRsSH4FtqSYDne61JAEGJMMo4/mN7F+RtIVDHx+u4XV4YtMdZUWAZsu918wuRRgrQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwK3J/joQR3T5zN61ovOUqQE8PHAJ4sp8ekM05xH1hcIBQaYxye
+	loRGRFbq3Ne70xGTkYvxopnJmQnq4JJ683uT6kWYZUZ30ZfEJkHrJiuzSJVir/lBSm92/wRPC8U
+	BzOTXCw==
+X-Received: from pfve12.prod.google.com ([2002:a05:6a00:1a8c:b0:82f:6a57:a9aa])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:2889:b0:82f:4d2e:5a9a
+ with SMTP id d2e1a72fcca58-82f8c8c5b8emr20478533b3a.29.1776814142280; Tue, 21
+ Apr 2026 16:29:02 -0700 (PDT)
+Date: Tue, 21 Apr 2026 16:29:00 -0700
+In-Reply-To: <aegF59gToidudIUC@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,8 +77,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 Mime-Version: 1.0
 References: <20260408001137.3290444-1-peter.fang@intel.com>
- <20260408001137.3290444-4-peter.fang@intel.com> <aegDJssx-ZvbfggI@google.com>
-Message-ID: <aegF59gToidudIUC@google.com>
+ <20260408001137.3290444-4-peter.fang@intel.com> <aegDJssx-ZvbfggI@google.com> <aegF59gToidudIUC@google.com>
+Message-ID: <aegIPGYPH-nxGsua@google.com>
 Subject: Re: [PATCH v2 3/3] KVM: Take gpa_t in kvm_vcpu_map[_readonly]()
 From: Sean Christopherson <seanjc@google.com>
 To: Yosry Ahmed <yosry@kernel.org>
@@ -91,34 +91,45 @@ Cc: Peter Fang <peter.fang@intel.com>, Paolo Bonzini <pbonzini@redhat.com>,
 	linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="us-ascii"
 
-On Tue, Apr 21, 2026, Yosry Ahmed wrote:
-> On Tue, Apr 07, 2026 at 05:11:30PM -0700, Peter Fang wrote:
-> > Move the conversion from a gpa_t to a gfn_t into kvm_vcpu_map() and
-> > kvm_vcpu_map_readonly() so that they take a gpa_t directly, reducing
-> > boilerplate at call sites.
+On Tue, Apr 21, 2026, Sean Christopherson wrote:
+> On Tue, Apr 21, 2026, Yosry Ahmed wrote:
+> > On Tue, Apr 07, 2026 at 05:11:30PM -0700, Peter Fang wrote:
+> > > Move the conversion from a gpa_t to a gfn_t into kvm_vcpu_map() and
+> > > kvm_vcpu_map_readonly() so that they take a gpa_t directly, reducing
+> > > boilerplate at call sites.
+> > > 
+> > > __kvm_vcpu_map() still takes a gfn_t because guest page mapping is
+> > > fundamentally GFN-based.
+> > > 
+> > > No functional change intended.
+> > > 
+> > > Compile-tested on x86 and ppc, which are the current users of these
+> > > interfaces.
+> > > 
+> > > Suggested-by: Yosry Ahmed <yosry@kernel.org>
+> > > Signed-off-by: Peter Fang <peter.fang@intel.com>
+> > > ---
 > > 
-> > __kvm_vcpu_map() still takes a gfn_t because guest page mapping is
-> > fundamentally GFN-based.
-> > 
-> > No functional change intended.
-> > 
-> > Compile-tested on x86 and ppc, which are the current users of these
-> > interfaces.
-> > 
-> > Suggested-by: Yosry Ahmed <yosry@kernel.org>
-> > Signed-off-by: Peter Fang <peter.fang@intel.com>
-> > ---
+> > I was going to suggest a WARN in kvm_vcpu_map() and
+> > kvm_vcpu_map_readonly() if the passed GPA is not page-aligned, but Sean
+> > usually hates my paranoid WARN suggestions.
 > 
-> I was going to suggest a WARN in kvm_vcpu_map() and
-> kvm_vcpu_map_readonly() if the passed GPA is not page-aligned, but Sean
-> usually hates my paranoid WARN suggestions.
+> Heh, for good reason.  Adding such a WARN would be triggered by this code:
+> 
+>                 if (!kvm_vcpu_map(vcpu, vmcs12->posted_intr_desc_addr, map)) {
+>                         vmx->nested.pi_desc =
+>                                 (struct pi_desc *)(((void *)map->hva) +
+>                                 offset_in_page(vmcs12->posted_intr_desc_addr));
+> 
+> The PI descriptor only needs to be 64-bit aligned, not page-aligned.
 
-Heh, for good reason.  Adding such a WARN would be triggered by this code:
+To elaborate a bit, I'm all for adding WARNs in flows where something bad is all
+but guaranteed to happen if an assumption is violated, or in APIs where there's
+a history of goofs and/or subtlety in how the API behaves.
 
-                if (!kvm_vcpu_map(vcpu, vmcs12->posted_intr_desc_addr, map)) {
-                        vmx->nested.pi_desc =
-                                (struct pi_desc *)(((void *)map->hva) +
-                                offset_in_page(vmcs12->posted_intr_desc_addr));
-
-The PI descriptor only needs to be 64-bit aligned, not page-aligned.
+What I'm against is adding WARNs because someone could write bad code in the
+future, or because KVM doesn't do XYZ at this time.  Such WARNs usualy just add
+noise, and can even be actively harmful.  E.g. in this case, ignoring the PID
+usage, a reader might look at the WARN and think it's _wrong_ to map a page in
+order to access a subset of the page, which is just not true.
 
