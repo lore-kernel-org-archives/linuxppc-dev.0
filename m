@@ -1,77 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-19883-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19884-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0896F8FA65
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2026 12:10:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90B1AF8FA6A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2026 12:10:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g0Llq3pfSz2yv6;
-	Tue, 21 Apr 2026 22:10:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::533"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776773431;
-	cv=none; b=J+IV0w0MpFBL6o3Gwu2AJ9VsDh9SsqZxoNl3tYOGNMllMqGGVNpA9L/mKNi5Mlxutquw+cO7NDETYids+WBNwCrryoqSI+2LLpxaj3XYL5CPK3zMQrzqf/50SXZZdwZmLz+HxN/XQa0HCjxVRRIuAISaMJaDpEOHQRywkNaEDVbeX182iZlhnhNp8MDKiM7t/otvvctohWC6RNCILQwzIGBriVtWG3zS/g67/71jbROXOP2pXiVXTtzeiMiy+t3ceuNnKhyXAGulUzHXcqFuHEdtkmythVkw/uRyop6jQC91Up/TFv5E496wd81gzP3yCi0lDntGq/HvnxCxvdRDlA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g0Llz6vHgz2yv9;
+	Tue, 21 Apr 2026 22:10:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776773439;
+	cv=none; b=oZCeK5S5pkmfAhkcR5nakczwnU3hVCrH3gX6adAm93VCaTBSDjPsfnBzM023aXw0486uJ/fPLASYJiuqLyYTliuiSceIu8RZ1cbqmKc9m62utu/RsCtT7XrpoiXwIHizB6roWq2VzTHxqfLvYDU8XHJ3beFiySiHc36nOiyoWwjWSzWz8LpLY/g6TvnpRjvVQWGoYuy44/9JyEPVuUGQ9pObhYvm1k8Pa0H8q80bU9ZkP2XjOw6Hu7auHSvz8J/L1fpspY2CY9oJGNdE6ZkQmAjljYyX0xpYPcBFioRauSGim2W1put73KQKPZophPZjBgK1z9HLQ6YhVLBRfRp7Cw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776773431; c=relaxed/relaxed;
-	bh=SIf376OZyXcpY0mdrIrP1nTWV/VE0v5g8114Fjjgl84=;
+	t=1776773439; c=relaxed/relaxed;
+	bh=3BeysMzI6zwGD6joEXhhGssagLKkCvhT6RVRv5CKQ4U=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=f6i+/lrxCcV2ppZOGMA8wcGbV0yXTG52B1XTDmLpav7hBljhBD7SkwOUHTPzlQ51ClIfZPf0pwTyveXayCo/odvMJLylKp2awLx/WEkh2o+mJl7xHjyY7jzlmbRSJQDP+caK0AfRRR68Ar92dh0nHC/DhiCKXs1LqCcYCqCNUNydHu8svCA5uTgfA/GdBp42WxZX1/0RHEBAawZkxxEi3Ez6Ia8QQjy+ugCiaqc5dZWn0sTI+2l4kmkSHtCHEahaqN7fdu/YjpZl32J+hjVbebdE7TzyN62m6/YuB+poL7SoRK0SPhVvGMXNR8d4Ube9hN3hyM0+iKGqQSjdnUoBIw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=aeUBb0hC; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::533; helo=mail-pg1-x533.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version:Content-Type; b=ofpipvBtU39zCdclvgZTdcw2QX6VlJzzOPTOdMhskzfR7ZSLsw5QFJoBXLblLHJyDMNi9CZQYTBzuXshO1oTdfMwfNB6rVGX2yu5CL6zI4oPyjbbaQzo7MjGe7YVM4q8U2KWsJDLKoXfgksLqcSCGnmEgDiK5ECrSEzvMJ1BETeZQuhzG1l2kt4vyPJnzn+L1nYjj4NuWE0mN8Ds0itNz87lvtEjmW91MjSZ8HxBErrS5FRkZ5K0wwY4RaJgiSRC0cSEDDSaB9BJ+93kEcdm9zUgNOnhbLsJYfd+nZJ+hmKxsqjaG+kxEWsmXCSDBpWgQ4fgDaFylsQUzTQ1F/OcSQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ia4rDgIV; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52c; helo=mail-pg1-x52c.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=aeUBb0hC;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ia4rDgIV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::533; helo=mail-pg1-x533.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x533.google.com (mail-pg1-x533.google.com [IPv6:2607:f8b0:4864:20::533])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52c; helo=mail-pg1-x52c.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x52c.google.com (mail-pg1-x52c.google.com [IPv6:2607:f8b0:4864:20::52c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0Llp6Bptz2ySW
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2026 22:10:30 +1000 (AEST)
-Received: by mail-pg1-x533.google.com with SMTP id 41be03b00d2f7-c741692db4cso1175833a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2026 05:10:30 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0Llz28VGz2ySW
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2026 22:10:39 +1000 (AEST)
+Received: by mail-pg1-x52c.google.com with SMTP id 41be03b00d2f7-c79467f124dso1495174a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2026 05:10:39 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1776773429; x=1777378229; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1776773437; x=1777378237; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=SIf376OZyXcpY0mdrIrP1nTWV/VE0v5g8114Fjjgl84=;
-        b=aeUBb0hCV1WfNvi/hSHER420gOxxiSMBw3szsqmc9iB9AMYq6hLqO1DtQfxqYy93Hm
-         0QU+DmOunbXDTUj3gc5cK/jng84S0mUNz9L0BTdx8sUCH3nDSms59LVKv/bfh4rSxq+T
-         4CHa9+M51eZO7LJagHtNoYl4z+l7ICyC7xlpIZXJLIFmzBpITBbn8GCQZFYAjAlqlpwX
-         D8C0/VRNWOpcP3ICgM3A0Rjxes3M6wZyijIBQLxW74EOoYr/WmRML20SDOCf3Yjk7r17
-         nfodbfShsABn03+iqAeeCfK8q+NNeHgrHDTE55PdIgLJygGt3t3/j8I+MMtYlHJDmjoW
-         BeNA==
+        bh=3BeysMzI6zwGD6joEXhhGssagLKkCvhT6RVRv5CKQ4U=;
+        b=ia4rDgIVryf5m2oOrdfFBT76QzGVfvptTvSdOGEMqexvfF3Fao6Pah6eQrniBxhLXu
+         WupB4x4PM+J4NGPhoXUg3KXd1xFrLfqF9kIA9kAt0CbvxD+PJnE0cA1cWe0BkKSPlDGo
+         DO/pB6Hrx6O4+1Q+IQw1zIYlBa20YePJZGl+l+29dPIpARvopOEKNTRBvzfiBgP5pFPV
+         K89gaAXmvrzOc9oAfyyQMT6EN8G1kOcvsDl7iBI8RWjYLUnPLlS3OVSTKMM+U0HWvkfs
+         oKKjDFuVd7pSZv3bdXYQsic0/f1DNQV5cEVIUNaIc5xHQHO4K46BiaZezLWN8+G3ZRQK
+         eTQg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776773429; x=1777378229;
+        d=1e100.net; s=20251104; t=1776773437; x=1777378237;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=SIf376OZyXcpY0mdrIrP1nTWV/VE0v5g8114Fjjgl84=;
-        b=UePVg5ooAsQYFg7v18fA6WamnqwocjutJ0zs14Gp1WuBoss1v2yQZu650dUz6Wqu71
-         i8I0togkM98Ys49aw2PgqvtauZiNdx+FQIH7XAG0IKRt26ZgR23hh5/XHByMCqDQ0EyB
-         vWxvXbm9VSnLpbj/fy+O6LhzGwNxHPEP+Qx77HDKIbM0EhyI/45zpf9VxLGWR2lrESiq
-         oTECc71Q8i2bKf9cH2XXbQFdG8sgpin+jBDaUyazBwv3iID6O6JYZQ7etBQvlPgmoe/y
-         JYCBuE7sxrwvsKW7WT+/gXtXjUxgqkmny4VikyxcvcPpy3MDpl0JoqeBkPuSnXU8mj6W
-         molw==
-X-Forwarded-Encrypted: i=1; AFNElJ/Sooro8c3o7aViuN+gePe4rgjs9svLR59AxnDMHepc0GoqEfIxjabWPQmVLkyxbRGVlqgNQR+DjBtlTfA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwPFQzyjLicGfoRjRKGjLzwaqaav+N5QBDfBt086hzeE2Uc2ogL
-	hIUjFijSO/Jc9+JJYdusZKtJgFlTPXEgGEunZW1I8fo7diMUMpKGBXYF
-X-Gm-Gg: AeBDieuRd2yS7VJNuFFe0i9qyuZOGL5ap9kDquC8mSRJtG3vHp5P1LsBV2gCnvFUHw+
-	zKh+8nEv/EPFdnlSNI6g01vGAEW79LIW3/bST1rxpcy4CtUlWjpp9sipuVqc6SIe8/cBiFdBEga
-	zD7mQutaB9Xb4mG4mrQM7wBMKm6Fy5SiCCg4/ADNChElASKt8dcDyRTDmS+v7A+thkT6jUZEjLP
-	jjFvV+ryMw8QJ+bITZV1EXLxLgS68r3+jnTjLSRSzYNyPCBKx3HdYilfzrZKk1gP8M0PjUxWJYi
-	JFQd6f19fWBHK27AEMgX9/yYuIvZefXhOUBnP7cTNHo/0ltCpZHMH3+ZJDY2Iz/bOKm3DJVQhu1
-	Lgu7HdR22emqwliWSeDvd1a0PkV4d4uiQLOg5boZ9KK5Bs+xYQO4P/CsjPhcR5PVKX97ie2Du5a
-	I3q/I3ythBXIqTIw3HNbCOgoSUcDqWMOKIM+j1BVXBoDJCgMkNfkRUkMQtkuzuQsOMIuhkxJ4SC
-	baX52tomiIXsqsNaJUfngIwlw==
-X-Received: by 2002:a05:6a20:6a10:b0:3a2:edff:296b with SMTP id adf61e73a8af0-3a2edff3a32mr1965327637.21.1776773428601;
-        Tue, 21 Apr 2026 05:10:28 -0700 (PDT)
+        bh=3BeysMzI6zwGD6joEXhhGssagLKkCvhT6RVRv5CKQ4U=;
+        b=btP6iplsQRLeYYB32B8VB827P3SONje0bxbH0F1q8L2cWzjyr/cSrnxCy0Or502nVF
+         mf78wcNyLCYRz00cE1LGwvU7RmOVfEQ7nub+aI1LN+pxKfxV0Uaru/YCZsdTOAy0B2h3
+         rEAaDODWRPdWw01F5FWpW0RN/OHyQYYOMuEaPxZGxbiNGTjyYLPks39KQ2gP6vRNp8tM
+         d1qdNK56mV5BVV9BieBDNTjsK+O3VbH8bjMaqulYv/z8T4l6c4GgufsTLi8xpaQ7TOxE
+         zGXV663ViAO5Y6KcDXVtyS3IBOIIGr7Ik2t5ddZMk6Ff9uzx8EWKj8TGcx58W5S4X3GP
+         QWTg==
+X-Forwarded-Encrypted: i=1; AFNElJ9lSx/Sz6FPHTtWRWw2MuWoBCrrXuD7Lzxae1dYpKnuKnkeIq0rmKEwZF7+ntrL8hW9DhAaCnRvNdDay+c=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyJNbFuXxupVwmIQVWopDwSH/IxBfCu2iAhDGB2Fqsjx3tJNQiO
+	aHSd47UXnejY0J3czyU5yHdC8vicTRdRMtKxiE32fl8MjYIBNYC1pRpE
+X-Gm-Gg: AeBDieuCOu4XyZVPDCMLz5DXTMCs8N7aTEc0NGr5oW0aoP+Spaq3Q/OaNTTQtIskhwc
+	Uqx8muKpGz9D0rD7Ni4KrBkPvfYU9bhsOgSj90D5k1B6Qys+Au58g3AvarJHc5y94GQ1RM/p6p1
+	VONGmMtxxXo/4Lks/orkGbUSjcen++B5Wuy0yjQuRGmoqyjSeSRrJrOf4FxDU3v9JiV36/zQF+p
+	8Z9QKOCskA58DIxA4suscnLl2uaIBO75Ckghmh4ztj2tbT05tSHDI7NQpcvO9JK1fSnBt6rAFTW
+	vH2t3WMMPW3+ejb9ZAWQYDz1+ymUZiNKwPBhQ2sC2wc7+KimHcykE4XVouehdWbned7OjjvxYZU
+	D10V0kSQ9+5LfInBD2F4UtbyryBfEsmYSIZulWD9JvsL5EIxJ3J4aGIEmi0EZSEM/kQS3+RGrkj
+	Fd7NUSEkZ1xfZalkV00mDUJ4kFhXdcAryg01bcpC8dAG+ZVyyX0iya8yT99X6g5FGdSqFkOpO7g
+	fjNkySMMp+r5ks=
+X-Received: by 2002:a05:6a20:e211:b0:39c:783:e42b with SMTP id adf61e73a8af0-3a08d6eee6fmr19057917637.21.1776773436940;
+        Tue, 21 Apr 2026 05:10:36 -0700 (PDT)
 Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.bl1-in.ibm.com ([129.41.58.4])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c797701d9bfsm10045274a12.16.2026.04.21.05.10.20
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c797701d9bfsm10045274a12.16.2026.04.21.05.10.28
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 21 Apr 2026 05:10:27 -0700 (PDT)
+        Tue, 21 Apr 2026 05:10:36 -0700 (PDT)
 From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
 To: maddy@linux.ibm.com,
 	mpe@ellerman.id.au,
@@ -99,10 +99,11 @@ To: maddy@linux.ibm.com,
 	linux-kernel@vger.kernel.org,
 	rust-for-linux@vger.kernel.org,
 	llvm@lists.linux.dev
-Cc: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
-Subject: [PATCH V12 2/4] powerpc/jump_label: adjust inline asm to be consistent
-Date: Tue, 21 Apr 2026 17:39:56 +0530
-Message-ID: <20260421120958.190430-3-mkchauras@gmail.com>
+Cc: Link Mauve <linkmauve@linkmauve.fr>,
+	"Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+Subject: [PATCH V12 3/4] rust: Add PowerPC support
+Date: Tue, 21 Apr 2026 17:39:57 +0530
+Message-ID: <20260421120958.190430-4-mkchauras@gmail.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260421120958.190430-1-mkchauras@gmail.com>
 References: <20260421120958.190430-1-mkchauras@gmail.com>
@@ -119,67 +120,78 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Added support for a new macro ARCH_STATIC_BRANCH_ASM in powerpc
-to avoid duplication of inline asm between C and Rust. This is
-inline with 'commit aecaf181651c ("jump_label: adjust inline asm to be consistent")'
+From: Link Mauve <linkmauve@linkmauve.fr>
 
-Co-developed-by: Madhavan Srinivasan <maddy@linux.ibm.com>
-Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
-Reviewed-by: Alice Ryhl <aliceryhl@google.com>
-Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-Reviewed-by: Gary Guo <gary@garyguo.net>
+For now only Big Endian 32-bit PowerPC is supported, as that is the only
+hardware I have.  This has been tested on the Nintendo Wii so far, but I
+plan on also using it on the GameCube, Wii U and Apple G4.
+
+These changes aren’t the only ones required to get the kernel to compile
+and link on PowerPC, libcore will also have to be changed to not use
+integer division to format u64, u128 and core::time::Duration, otherwise
+__udivdi3() and __umoddi3() will have to be added.  I have tested this
+change by replacing the three implementations with unimplemented!() and
+it linked just fine.
+
+Signed-off-by: Link Mauve <linkmauve@linkmauve.fr>
 Link: https://github.com/Rust-for-Linux/linux/issues/105
 Link: https://github.com/linuxppc/issues/issues/451
 Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
 ---
- arch/powerpc/include/asm/jump_label.h | 23 +++++++++++++----------
- 1 file changed, 13 insertions(+), 10 deletions(-)
+ arch/powerpc/Kconfig  | 1 +
+ arch/powerpc/Makefile | 2 ++
+ rust/Makefile         | 4 +++-
+ 3 files changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/jump_label.h b/arch/powerpc/include/asm/jump_label.h
-index d4eaba459a0e..3016e9c8d6bc 100644
---- a/arch/powerpc/include/asm/jump_label.h
-+++ b/arch/powerpc/include/asm/jump_label.h
-@@ -15,14 +15,20 @@
- #define JUMP_ENTRY_TYPE		stringify_in_c(FTR_ENTRY_LONG)
- #define JUMP_LABEL_NOP_SIZE	4
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index e93df95b79e7..4ac897b650d4 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -285,6 +285,7 @@ config PPC
+ 	select HAVE_REGS_AND_STACK_ACCESS_API
+ 	select HAVE_RELIABLE_STACKTRACE
+ 	select HAVE_RSEQ
++	select HAVE_RUST			if PPC32
+ 	select HAVE_SAMPLE_FTRACE_DIRECT	if HAVE_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
+ 	select HAVE_SAMPLE_FTRACE_DIRECT_MULTI	if HAVE_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
+ 	select HAVE_SETUP_PER_CPU_AREA		if PPC64
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index a58b1029592c..589613eaa5dc 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -61,6 +61,8 @@ else
+ KBUILD_LDFLAGS_MODULE += $(objtree)/arch/powerpc/lib/crtsavres.o
+ endif
  
-+#define JUMP_TABLE_ENTRY(key, label)			\
-+	".pushsection __jump_table,  \"aw\"	\n\t"	\
-+	".long 1b - ., " label " - .		\n\t"	\
-+	JUMP_ENTRY_TYPE key " - .		\n\t"	\
-+	".popsection 				\n\t"
++KBUILD_RUSTFLAGS 	+= --target=powerpc-unknown-linux-gnu
 +
-+#define ARCH_STATIC_BRANCH_ASM(key, label)		\
-+	"1:	nop				\n\t"	\
-+	JUMP_TABLE_ENTRY(key, label)
-+
- static __always_inline bool arch_static_branch(struct static_key *key, bool branch)
- {
--	asm goto("1:\n\t"
--		 "nop # arch_static_branch\n\t"
--		 ".pushsection __jump_table,  \"aw\"\n\t"
--		 ".long 1b - ., %l[l_yes] - .\n\t"
--		 JUMP_ENTRY_TYPE "%c0 - .\n\t"
--		 ".popsection \n\t"
-+	asm goto(
-+		 ARCH_STATIC_BRANCH_ASM("%c0", "%l[l_yes]")
- 		 : :  "i" (&((char *)key)[branch]) : : l_yes);
+ ifdef CONFIG_CPU_LITTLE_ENDIAN
+ KBUILD_CPPFLAGS	+= -mlittle-endian
+ KBUILD_LDFLAGS	+= -EL
+diff --git a/rust/Makefile b/rust/Makefile
+index 2a5428a5503d..c90811a2f564 100644
+--- a/rust/Makefile
++++ b/rust/Makefile
+@@ -400,13 +400,15 @@ bindgen_skip_c_flags := -mno-fp-ret-in-387 -mpreferred-stack-boundary=% \
+ 	-fstrict-flex-arrays=% -fmin-function-alignment=% \
+ 	-fzero-init-padding-bits=% -mno-fdpic \
+ 	-fdiagnostics-show-context -fdiagnostics-show-context=% \
+-	--param=% --param asan-% -fno-isolate-erroneous-paths-dereference
++	--param=% --param asan-% -fno-isolate-erroneous-paths-dereference \
++	-ffixed-r2 -mmultiple -mno-readonly-in-sdata
  
- 	return false;
-@@ -34,10 +40,7 @@ static __always_inline bool arch_static_branch_jump(struct static_key *key, bool
- {
- 	asm goto("1:\n\t"
- 		 "b %l[l_yes] # arch_static_branch_jump\n\t"
--		 ".pushsection __jump_table,  \"aw\"\n\t"
--		 ".long 1b - ., %l[l_yes] - .\n\t"
--		 JUMP_ENTRY_TYPE "%c0 - .\n\t"
--		 ".popsection \n\t"
-+		 JUMP_TABLE_ENTRY("%c0", "%l[l_yes]")
- 		 : :  "i" (&((char *)key)[branch]) : : l_yes);
+ # Derived from `scripts/Makefile.clang`.
+ BINDGEN_TARGET_x86	:= x86_64-linux-gnu
+ BINDGEN_TARGET_arm64	:= aarch64-linux-gnu
+ BINDGEN_TARGET_arm	:= arm-linux-gnueabi
+ BINDGEN_TARGET_loongarch	:= loongarch64-linux-gnusf
++BINDGEN_TARGET_powerpc	:= powerpc-linux-gnu
+ BINDGEN_TARGET_um	:= $(BINDGEN_TARGET_$(SUBARCH))
+ BINDGEN_TARGET		:= $(BINDGEN_TARGET_$(SRCARCH))
  
- 	return false;
 -- 
 2.53.0
 
