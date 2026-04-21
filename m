@@ -1,103 +1,108 @@
-Return-Path: <linuxppc-dev+bounces-19861-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19862-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B361F5A8D1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2026 02:21:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 943BAF5A8DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2026 03:45:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g05hD2N8vz2yv4;
-	Tue, 21 Apr 2026 12:21:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776738092;
-	cv=none; b=m6XK6rDmU9+ejE4XJP8Es4qgXDzdyhbMEiwll1ebsO1JVIT09RZnaDagPW3/5/UVYlDQ1QDuTm+DomWVlnX/Q4z/djEtbYiQU37G4P8zja64Uh4OnzL42kSDLLFWBHeeuhhiRBeMHGnZPO2IsoFXXg1y4EEJpUDUbhQufzTZhzWO8ogq8UXnMZXsHButs6Mbgjw6Eljuj9340l0olQ7TAnUkqfQQQ2dzefzZ34t0z04qR9u2X2i9lh1PiKRQJ7P8dONuj0bv6xHP+KscZWtaZCK3Xd9I30VC0rlIeoOznGXrQoDAPE/NuIVb6Sox35VGy25p9eNQs/HXPJ8Vm3iuFg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g07YY0XN3z2yfS;
+	Tue, 21 Apr 2026 13:45:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776743152;
+	cv=none; b=Hj/Ds4RV5vDgUkmUHY4m/ku7wlEbXwWkhdI9DOTNR9vS1NdtaLgsYEUy7GAcQBhamltyJc3+CiGutBB7dwYNzLAXl7EosWDY/95g8LEYxgvsc3Ee9WzvmGq8qy4QoXtl3RYz9FGjOr5//mSY9TRYlDTF8bsrl20+hv0iRq35D0+PJZKCuni+6B7AM4pQHRPrku9UhixHwppIJFWdDLGYDMDm27/MnKipm1S5sLw1J6my7nI2xAUtumiM759PWZ1KZENfr9Rt7scUjTq1IPUiV0c6mcwu7SOyZSW09+YqFlhe4tTy0Ax97lcjme9Uor2WCNNB8nLpDBJPKtyCYFI58Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776738092; c=relaxed/relaxed;
-	bh=AHmsLfWP4VqB6EidVCtZitT2oU+Ddzspq2XDJx69+hM=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=B4kZiH9oU7NhuO6lfLwdORGMWdlj0B9PX4QB8bZYa2lMsLQDHWLRNPwvaquVf8BwtjuvPdXMFCE+OGZskmaHoRdv+b/ocKOJ9cOfWyCGZ10gUMdhoaHxPf1ZTl+JRslsSeqEWBhRYxSwfcbvuGKg7+Pwd6cKBPwET1nbe55YkZeSrN9uV1gpaS0SHS7TkQONTBHVTP1zKAGgq309Q/FTHp3KCEndtlkjeGt1GzTrbkXZ21rYcmIBQm9VIh7pr3tU516q99716NFFwGFT2wxCN8B8ikKkSLNBdDmUPc+p+Imrezp1kZC5PYkY4ODo3Oc3WxXgHyz2YG5HGFVxi1gj7Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=WR/GTrB7; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
+	t=1776743152; c=relaxed/relaxed;
+	bh=cJfTWXk1mSbZKfRW0DNvuHTmZm6Tw2gEEwGye/AIRbg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=je7xj/lHoPioc9dYzwEaE8IZTUsQWVscJAI5toWY+x2KvuPsrawLj5YQ+KQpPxl4kppeMvAuOKCd1pmZJ7dDuO4zy8/wKWcOsK4NbfkoZnCdqAhv5SkRaPfS+2ws9xUImcTfw4a+9euHMu+9fCgDyadgDpBOdzA0X4KZBngUqb2uZB++CU6VpAj90ySA5wV7k/mRJnN1gze8lN3gJ6/rKgbBnbxZ221Gqa3LZPKsSDKA3yWBVuFc/dgycKKvzXZxV49EFAiOi8iTz3R2aWWbDe0hb9bteFbXlydVvt8CBaPEknqYy0TwK6sdAQ993CwN4hefUQwQacRCY/lIhhODLg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=FwnwfsJN; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=0g7slwHV; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=FwnwfsJN; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=0g7slwHV; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=osalvador@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=WR/GTrB7;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=FwnwfsJN;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=0g7slwHV;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=FwnwfsJN;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=0g7slwHV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com [IPv6:2607:f8b0:4864:20::42e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=osalvador@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g05hC4805z2xT6
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2026 12:21:31 +1000 (AEST)
-Received: by mail-pf1-x42e.google.com with SMTP id d2e1a72fcca58-82f8bf96b46so1783640b3a.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2026 19:21:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1776738090; x=1777342890; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=AHmsLfWP4VqB6EidVCtZitT2oU+Ddzspq2XDJx69+hM=;
-        b=WR/GTrB7pLUyhu83NsY3oUsGhT3DgfaGzp9JF0dO9ugqVs6XNOOM59qkT2Dy/84Mjy
-         cFeiCwb6YH1qFxYf+5kOXqyumrG5ocA25mKOBtX7L65SitbLs1NTLwuS+rTRpz38GK9I
-         7Segg7CgCg11e9mjr0jfJKF/Z461k75flpZeq5Ft/shgcIVghu0vTY/n4Ol6jjy0APUz
-         B82aEqR8rlqzwjW1yYLgwGyPvTESfvp5bR4VnZgJXoA0RrkXfG7ZhNc6XNprMDcDb7nH
-         3Bwx0aWS/VjeqIHogj7PIm6Z+jpVSQwVJwx9tR94K/C3JYVty+kxCQ4TadJvmnIfXXNu
-         50nw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776738090; x=1777342890;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=AHmsLfWP4VqB6EidVCtZitT2oU+Ddzspq2XDJx69+hM=;
-        b=RDTz068SRIknMN2k6A295xhO3PTuhUQvPsnZB6SI++Df061TCusrauU8SUxgymVB6s
-         6S4HSOJtAKGzp/pfcvMOL7MA7FCm7pRul4hbA/5uIedfWyQLeM9KPp6ol28ON7x1f6Wk
-         /tDyuf4OX2zqMQg6vRT9waljTL3Ly+B0r/7XYeH8AfXcTdrHyf6aGmteKoPuG16bu/qo
-         do23kmQuiPVk9DIDYd+vh62DeuKJgg4bO+vuZtFNaOS/13lqdoEEb6Nx2C+VViiv6uij
-         YT6yl0zx0QvP4bC4cGhlzSSjUTzyCp27mvzwERnmb6azZmMKCuU06xmjqePo1D1u9pFA
-         0tIw==
-X-Forwarded-Encrypted: i=1; AFNElJ8cNW8aBaqsM+nH4bIxcJaYzu/K17Hey4r10h5ON5nt7CGXYVNk/cIBKS7Wcqs3pI2OkrNVBEmtI59kS/A=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yyl59T8W52t9gH6obR/DVf4lb1yi+C/Sppv15pEy/MKbGsc6Bde
-	kMUYuxbs+1kwt25x5/psqD0BDdSz5/jO11uDpIhwSf6qV2OWHyBY9TvT392tknHHDR0=
-X-Gm-Gg: AeBDiesx3ReoBRMU2ZzxU6RJQJhF4yZGscAfUaLKTe0NhqmSpZ/F6FspBmuoEvZBBoW
-	3YqV3emr8rArHk9XS+RGGAGYZTjW1xeGaQgwsukA8JHRVwFWSaQ3ZMfVjLox16T0qS+dLGLoldU
-	2SZzT80S+Cd9IXPdX+He/gWnMJZ6OAxTjFJ4GMuWG2XZKzYb5TZDIFrMVPGYsveKTPuJgcgnOIk
-	Y1y75mLfBqR8dSw7WquI9lTfIJMt96Ki3e49FeT8C6qOzRRcSDkacYpVV8KVZgQS34ckaL9keHa
-	v0UVHvsBESwUrXwJJEPRCw6b8KdV+Ai3lm38AyUsW4dIPSzBoiqnkjkCrnX+NIfmp68mkzD1zic
-	vB/+iLqwBn41tpFSYjEinBOSKtJCoR45LqpAkPLdbXRnjmLQ+CDfhnM3pR5uQzRh9cJ+nNatiFS
-	/xRODmNtrJ2uHsYELuz1INJEOYyhRLEmmYZqf2pnQ=
-X-Received: by 2002:a05:6a00:2993:b0:82a:6461:6d1e with SMTP id d2e1a72fcca58-82f8c92a5fbmr15190526b3a.46.1776738089510;
-        Mon, 20 Apr 2026 19:21:29 -0700 (PDT)
-Received: from n232-176-004.byted.org ([240e:83:200::340])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82f932dabd4sm11538780b3a.51.2026.04.20.19.21.24
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 20 Apr 2026 19:21:29 -0700 (PDT)
-From: Muchun Song <songmuchun@bytedance.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g07YW0BCLz2ySk
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2026 13:45:50 +1000 (AEST)
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 46DCF6A7EA;
+	Tue, 21 Apr 2026 03:45:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1776743147; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=cJfTWXk1mSbZKfRW0DNvuHTmZm6Tw2gEEwGye/AIRbg=;
+	b=FwnwfsJNvJQyvE7l3cZfssEq4WjipWOchHPpCqYz8LwmH6Lmo4/24QiaMzyyBHixkRk2Oa
+	MwuJTB0IcEOhwQzhpCCeVMOh9sNxCCEzpo4GLEbJ0KtsHSY19OyMkQDAofkMXzyNPLSRgK
+	xGKCMsBZAoyXj6XV7ATB+ZIxX6pv6qM=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1776743147;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=cJfTWXk1mSbZKfRW0DNvuHTmZm6Tw2gEEwGye/AIRbg=;
+	b=0g7slwHVd1GI62pXsPEDF4i5WYqsG2QxlBjPi3h2Aoz/fswC+9NDUJM0gq63WiR24nZtWp
+	RNRv9RnJqNtv4xCw==
+Authentication-Results: smtp-out1.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1776743147; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=cJfTWXk1mSbZKfRW0DNvuHTmZm6Tw2gEEwGye/AIRbg=;
+	b=FwnwfsJNvJQyvE7l3cZfssEq4WjipWOchHPpCqYz8LwmH6Lmo4/24QiaMzyyBHixkRk2Oa
+	MwuJTB0IcEOhwQzhpCCeVMOh9sNxCCEzpo4GLEbJ0KtsHSY19OyMkQDAofkMXzyNPLSRgK
+	xGKCMsBZAoyXj6XV7ATB+ZIxX6pv6qM=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1776743147;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=cJfTWXk1mSbZKfRW0DNvuHTmZm6Tw2gEEwGye/AIRbg=;
+	b=0g7slwHVd1GI62pXsPEDF4i5WYqsG2QxlBjPi3h2Aoz/fswC+9NDUJM0gq63WiR24nZtWp
+	RNRv9RnJqNtv4xCw==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 58617593AF;
+	Tue, 21 Apr 2026 03:45:46 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id U/DjEury5ml4VwAAD6G6ig
+	(envelope-from <osalvador@suse.de>); Tue, 21 Apr 2026 03:45:46 +0000
+Date: Tue, 21 Apr 2026 05:45:40 +0200
+From: Oscar Salvador <osalvador@suse.de>
+To: Muchun Song <songmuchun@bytedance.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
 	David Hildenbrand <david@kernel.org>,
 	Muchun Song <muchun.song@linux.dev>,
-	Oscar Salvador <osalvador@suse.de>,
 	Michael Ellerman <mpe@ellerman.id.au>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Muchun Song <songmuchun@bytedance.com>,
-	Mike Rapoport <rppt@kernel.org>,
-	Lorenzo Stoakes <ljs@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Mike Rapoport <rppt@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>,
 	"Liam R . Howlett" <Liam.Howlett@oracle.com>,
 	Vlastimil Babka <vbabka@kernel.org>,
 	Suren Baghdasaryan <surenb@google.com>,
-	Michal Hocko <mhocko@suse.com>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	aneesh.kumar@linux.ibm.com,
-	joao.m.martins@oracle.com,
-	linux-mm@kvack.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v3 4/4] mm/mm_init: Fix pageblock migratetype for ZONE_DEVICE compound pages
-Date: Tue, 21 Apr 2026 10:20:44 +0800
-Message-Id: <20260421022044.1217503-5-songmuchun@bytedance.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20260421022044.1217503-1-songmuchun@bytedance.com>
+	Michal Hocko <mhocko@suse.com>, Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>, aneesh.kumar@linux.ibm.com,
+	joao.m.martins@oracle.com, linux-mm@kvack.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 1/4] mm/sparse-vmemmap: Fix vmemmap accounting
+ underflow
+Message-ID: <aeby5KB7E8Hr8l6G@localhost.localdomain>
 References: <20260421022044.1217503-1-songmuchun@bytedance.com>
+ <20260421022044.1217503-2-songmuchun@bytedance.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -111,101 +116,60 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260421022044.1217503-2-songmuchun@bytedance.com>
+X-Spamd-Result: default: False [-4.30 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MISSING_XM_UA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	RCPT_COUNT_TWELVE(0.00)[19];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	ARC_NA(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[linux-foundation.org,kernel.org,linux.dev,ellerman.id.au,linux.ibm.com,oracle.com,google.com,suse.com,gmail.com,kvack.org,lists.ozlabs.org,vger.kernel.org];
+	TO_DN_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[bytedance.com:email,imap1.dmz-prg2.suse.org:helo,suse.de:email]
 
-The memmap_init_zone_device() function only initializes the migratetype
-of the first pageblock of a compound page. If the compound page size
-exceeds pageblock_nr_pages (e.g., 1GB hugepages with 2MB pageblocks),
-subsequent pageblocks in the compound page remain uninitialized.
+On Tue, Apr 21, 2026 at 10:20:41AM +0800, Muchun Song wrote:
+> In section_activate(), if populate_section_memmap() fails, the error
+> handling path calls section_deactivate() to roll back the state. This
+> causes a vmemmap accounting imbalance.
+> 
+> Since commit c3576889d87b ("mm: fix accounting of memmap pages"),
+> memmap pages are accounted for only after populate_section_memmap()
+> succeeds. However, the failure path unconditionally calls
+> section_deactivate(), which decreases the vmemmap count. Consequently,
+> a failure in populate_section_memmap() leads to an accounting underflow,
+> incorrectly reducing the system's tracked vmemmap usage.
+> 
+> Fix this more thoroughly by moving all accounting calls into the lower
+> level functions that actually perform the vmemmap allocation and freeing:
+> 
+>   - populate_section_memmap() accounts for newly allocated vmemmap pages
+>   - depopulate_section_memmap() unaccounts when vmemmap is freed
+> 
+> This ensures proper accounting in all code paths, including error
+> handling and early section cases.
+> 
+> Fixes: c3576889d87b ("mm: fix accounting of memmap pages")
+> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 
-Move the migratetype initialization out of __init_zone_device_page()
-and into a separate pageblock_migratetype_init_range() function. This
-iterates over the entire PFN range of the memory, ensuring that all
-pageblocks are correctly initialized.
+Acked-by: Oscar Salvador <osalvador@suse.de>
 
-Fixes: c4386bd8ee3a ("mm/memremap: add ZONE_DEVICE support for compound pages")
-Signed-off-by: Muchun Song <songmuchun@bytedance.com>
-Reviewed-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
----
- mm/mm_init.c | 43 ++++++++++++++++++++++++++++---------------
- 1 file changed, 28 insertions(+), 15 deletions(-)
 
-diff --git a/mm/mm_init.c b/mm/mm_init.c
-index f9f8e1af921c..e2d8eae23aa3 100644
---- a/mm/mm_init.c
-+++ b/mm/mm_init.c
-@@ -674,6 +674,19 @@ static inline void fixup_hashdist(void)
- static inline void fixup_hashdist(void) {}
- #endif /* CONFIG_NUMA */
- 
-+static __meminit void pageblock_migratetype_init_range(unsigned long pfn,
-+						       unsigned long nr_pages,
-+						       int migratetype)
-+{
-+	unsigned long end = pfn + nr_pages;
-+
-+	for (pfn = pageblock_align(pfn); pfn < end; pfn += pageblock_nr_pages) {
-+		init_pageblock_migratetype(pfn_to_page(pfn), migratetype, false);
-+		if (IS_ALIGNED(pfn, PAGES_PER_SECTION))
-+			cond_resched();
-+	}
-+}
-+
- /*
-  * Initialize a reserved page unconditionally, finding its zone first.
-  */
-@@ -1011,21 +1024,6 @@ static void __ref __init_zone_device_page(struct page *page, unsigned long pfn,
- 	page_folio(page)->pgmap = pgmap;
- 	page->zone_device_data = NULL;
- 
--	/*
--	 * Mark the block movable so that blocks are reserved for
--	 * movable at startup. This will force kernel allocations
--	 * to reserve their blocks rather than leaking throughout
--	 * the address space during boot when many long-lived
--	 * kernel allocations are made.
--	 *
--	 * Please note that MEMINIT_HOTPLUG path doesn't clear memmap
--	 * because this is done early in section_activate()
--	 */
--	if (pageblock_aligned(pfn)) {
--		init_pageblock_migratetype(page, MIGRATE_MOVABLE, false);
--		cond_resched();
--	}
--
- 	/*
- 	 * ZONE_DEVICE pages other than MEMORY_TYPE_GENERIC are released
- 	 * directly to the driver page allocator which will set the page count
-@@ -1122,6 +1120,9 @@ void __ref memmap_init_zone_device(struct zone *zone,
- 
- 		__init_zone_device_page(page, pfn, zone_idx, nid, pgmap);
- 
-+		if (IS_ALIGNED(pfn, PAGES_PER_SECTION))
-+			cond_resched();
-+
- 		if (pfns_per_compound == 1)
- 			continue;
- 
-@@ -1129,6 +1130,18 @@ void __ref memmap_init_zone_device(struct zone *zone,
- 				     compound_nr_pages(altmap, pgmap));
- 	}
- 
-+	/*
-+	 * Mark the block movable so that blocks are reserved for
-+	 * movable at startup. This will force kernel allocations
-+	 * to reserve their blocks rather than leaking throughout
-+	 * the address space during boot when many long-lived
-+	 * kernel allocations are made.
-+	 *
-+	 * Please note that MEMINIT_HOTPLUG path doesn't clear memmap
-+	 * because this is done early in section_activate()
-+	 */
-+	pageblock_migratetype_init_range(start_pfn, nr_pages, MIGRATE_MOVABLE);
-+
- 	pr_debug("%s initialised %lu pages in %ums\n", __func__,
- 		nr_pages, jiffies_to_msecs(jiffies - start));
- }
 -- 
-2.20.1
-
+Oscar Salvador
+SUSE Labs
 
