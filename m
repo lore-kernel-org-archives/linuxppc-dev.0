@@ -1,109 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-19866-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19867-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 633E0F5A8DA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2026 04:15:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A769F327AB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2026 06:28:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g08CZ0QRZz2yfS;
-	Tue, 21 Apr 2026 14:15:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776744921;
-	cv=none; b=SPCUavdhbv7dGPgBFwJJOnV8TBWbttFO2FXyH5N57DRHwWUYA8AUDwX6uuwW22mfV14/fx6/jVUi07daU2VvO+A2/cLiLqSOxxccxeu1SFRtavVtzVVwM5sL6++oUIbbrQgw79S7C0+ZL0OymyPnqUqbXt1K/Vh8zXbKPydB8HOuFszxVpGCivl0r1MQcc9l0NYQLVdVYN7j1UfxvUx16FzyKpX1iJHd/CzXgj8F6+fTAheIrsTDZc8FEn2x4O/4kfB2lL83jpvDo1/wPu9JIkK3WPmTXZaiuV6E8CWYSTrAsGscx5kuJdlIRq8TaTZe5TO3Uu+ddXimdBr5ZAVENg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g0C9Q5Y2cz2yL8;
+	Tue, 21 Apr 2026 16:28:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776752922;
+	cv=none; b=Wo9vbwh2YwhHUiTRbN+GWkFUK9UgCt2cV4iHvyMIabcrnV7G3jlWt56lgfZcffehMFwesG7tGEkAEpmfVU7xbZBrW1LzOdLdxmcz6n9bDldBXaSiZ4DZrSbMuE+gwYa19j6CQcQrGGEOkQ5xAtGCHL/kHra+1Zs1z8Ev5j3bDCD1LYvOSUKTmi778Bv7otzNrYjN3Cl9m6yNlmp5WpGzK7o/bQclBhaes3QmxXxVJew+8Vqece8afjkFpPMn7tiCYwAmaLF8E8GDPf+/Q4EmKu/qWtOXVBb4q86caCKrSTTZ1Mv040Ve/40ehwWwZUAlGIaF/xBwgeJmd/31MDgn3g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776744921; c=relaxed/relaxed;
-	bh=uYdfvAwxiyPMyDiaQbfwV8KtgdCe2VZI2NMXSwdaNgE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=VNx0ZvSje2z8L7Qwx4G+CAI71aBNY9S8NX0YZwY6mBJ5dYLXvzOqhkBK+X5m66+7JYKn3B8og4zmr0w6ZPVlsotMS2ExtqDmYgeaNOUYVD3ocYU4fSCrR2m3YPOgOZHusihLqSLjg2vlmY6AQVFmYoSsuu8Eef3ApXic86SYCxZZwZQoqMkU9YcxLMlbbkTzTQj+DSTiW0I5c2nFgvZHUtQru0KMSWL416c1YGSNfrqazBkwBS2fGrisRfRV98Qd2ic4IAG1L04zEleQz81Rs/sMDdpFwW6KrOygKudHNuVKAmFu4EArtm0QYz3fOFoTroE3FoWajRBsBu3Lfy05fg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=uS9iGCHG; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=p7mef9cN; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=cpuTQ+E+; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=kOVwBphL; dkim-atps=neutral; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=osalvador@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1776752922; c=relaxed/relaxed;
+	bh=c0Maqhoq8dLjZM4LdYz0ZlFUgDU62xwhwPlaS3BjoiE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=W2+SpOde+TC4VXYCioz0Y6bHCKB9jmwhVIxpO/NFz8Q2iCcJjHbkeppibxWSBjfazfHEPkEK1WyJF4PPALGnl4vWFzzXEn+DTxkBa0MG+M3k7+sV/n0ju3PRpM8f5WQHcFWos19csDdh2nw1o3dwCrXDMe0fGYoeed0PRqIO+NLxA0G0GfCv6g+mU14+CNe03txl1kCZvtRlUkeoDjUuKcla1DXcu7mFiJqPgDx9/rJu0CIlrTmMtg2uP61rPCtbV0SWR2PjMAl85QOXC3B6QurY0w8J/aOVVbHWb5DJStuRBcSJ/oYOsUqnXrJKewbk25TluDhmEjgVb9+Bzr0R6g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=N8sOAJN/; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=uS9iGCHG;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=p7mef9cN;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=cpuTQ+E+;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=kOVwBphL;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=N8sOAJN/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=osalvador@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g08CX70v4z2xc8
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2026 14:15:20 +1000 (AEST)
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 081445BCDE;
-	Tue, 21 Apr 2026 04:15:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1776744918; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=uYdfvAwxiyPMyDiaQbfwV8KtgdCe2VZI2NMXSwdaNgE=;
-	b=uS9iGCHGvQBvNjSEu7edu6oNLt8+F8xuB14yELkLOpQXxsadBzPWYhYrLFMWJ5xeP4RXPy
-	7fK1+lMia3dCqF6jVB1s2fI5UMUZ4ohsPgZkvCopOhhOIWKfQx1tcb/zHmuP0a+DFD3yyP
-	qXGIELXY2L6XxYIpuhKHMEqYU5b2gkg=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1776744918;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=uYdfvAwxiyPMyDiaQbfwV8KtgdCe2VZI2NMXSwdaNgE=;
-	b=p7mef9cNPGGWOlV5QoGVD8FI4gSIyoIfKK84yBtIOL5JQayGTZOAicEdBbzu9La5ub8ohx
-	jo5vIKxwS5L9X5Cg==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=cpuTQ+E+;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=kOVwBphL
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1776744917; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=uYdfvAwxiyPMyDiaQbfwV8KtgdCe2VZI2NMXSwdaNgE=;
-	b=cpuTQ+E+r7kTV8su6DV45tSpkDqiqAmOUrQLPENj4/AZz9HS4NLvUWR3OHW35ULaAeCxPE
-	oKRpodFPNyB6j0ipMhOXQ0/Bh61IgyRSZRnHDMqfwsuXp+Gv5FHQve2aC+hX2NAwU7nI9c
-	StPlzoQgu0KV8rWMEml9gGVzcJwxZw4=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1776744917;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=uYdfvAwxiyPMyDiaQbfwV8KtgdCe2VZI2NMXSwdaNgE=;
-	b=kOVwBphL1mwqz+a1WqHY8SR63zj4AFkCC6JimPdReMUw2CHVWxLTudR1U48kpj8Zu/Dv7g
-	209xASf4ob/zMYAg==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 3596C593AF;
-	Tue, 21 Apr 2026 04:15:16 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id XgNfCtT55mlKcQAAD6G6ig
-	(envelope-from <osalvador@suse.de>); Tue, 21 Apr 2026 04:15:16 +0000
-Date: Tue, 21 Apr 2026 06:15:14 +0200
-From: Oscar Salvador <osalvador@suse.de>
-To: Muchun Song <songmuchun@bytedance.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-	David Hildenbrand <david@kernel.org>,
-	Muchun Song <muchun.song@linux.dev>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Mike Rapoport <rppt@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>,
-	"Liam R . Howlett" <Liam.Howlett@oracle.com>,
-	Vlastimil Babka <vbabka@kernel.org>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Michal Hocko <mhocko@suse.com>, Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>, aneesh.kumar@linux.ibm.com,
-	joao.m.martins@oracle.com, linux-mm@kvack.org,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 4/4] mm/mm_init: Fix pageblock migratetype for
- ZONE_DEVICE compound pages
-Message-ID: <aeb50jwoCBvgEnec@localhost.localdomain>
-References: <20260421022044.1217503-1-songmuchun@bytedance.com>
- <20260421022044.1217503-5-songmuchun@bytedance.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0C9P5lGYz2xc8
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2026 16:28:41 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id B90996011F;
+	Tue, 21 Apr 2026 06:28:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 806D7C2BCB0;
+	Tue, 21 Apr 2026 06:28:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776752918;
+	bh=dHS0gPZI0H1Mm3DBnxFHJRq1QTSVEk6PBiQCtoOUiRM=;
+	h=From:To:Cc:Subject:Date:From;
+	b=N8sOAJN/m9DLUmvktUQYI5VhDyt7bWPL6cUKLY0QqBIrL4bf2hm5v2ODzNt7waL+8
+	 V9iJniP7ewPdb6UGrS5rRj3t4dk+feOrWRnyu6Gp+bvsNn3zDLHrIQCI5HEldYTOzs
+	 cLOotQOJzgRfVMQN8VJlZMEo+VQ1RNtkhbvK4BWkNVWuwqH00L8Cl0WdaH6UTilDK1
+	 iI6gvT4YzDpx2PtQiqg+KZaJAuf5ge7geOpNDNY1nQGlvOF5fY53EMaHfbg7KJU2vH
+	 Ry50Q+UQLUbA7ACikWMgr/9jFio3B3xn8cG5H+5nQoaHfdAC3C3NFKB6pFMqD3bLQU
+	 na9oqY+TaQ0Cg==
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/8xx: Fix interrupt mask in cpm1_gpiochip_add16()
+Date: Tue, 21 Apr 2026 08:26:08 +0200
+Message-ID: <bb0b6d6c4543238c38d5d29a776d0674a8c0c180.1776752750.git.chleroy@kernel.org>
+X-Mailer: git-send-email 2.49.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -117,62 +67,48 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260421022044.1217503-5-songmuchun@bytedance.com>
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Spamd-Result: default: False [-4.51 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	ARC_NA(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[19];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	FREEMAIL_CC(0.00)[linux-foundation.org,kernel.org,linux.dev,ellerman.id.au,linux.ibm.com,oracle.com,google.com,suse.com,gmail.com,kvack.org,lists.ozlabs.org,vger.kernel.org];
-	RCVD_TLS_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	TO_DN_SOME(0.00)[];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received,2a07:de40:b281:104:10:150:64:97:from];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	DKIM_TRACE(0.00)[suse.de:+];
-	MISSING_XM_UA(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[bytedance.com:email,suse.de:dkim,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns,localhost.localdomain:mid]
-X-Rspamd-Queue-Id: 081445BCDE
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1358; i=chleroy@kernel.org; h=from:subject:message-id; bh=dHS0gPZI0H1Mm3DBnxFHJRq1QTSVEk6PBiQCtoOUiRM=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWQ+l2gUfvrA0u7+nc1sGjaLFmSs0NfeNPmijkf1pIBDL fWXb+Yd6ihlYRDjYpAVU2Q5/p9714yuL6n5U3fpw8xhZQIZwsDFKQATOSTA8L+m9cWqk7qCU41W Z0xf4lZXJ3n909YND3tFjvo8truUvaedkeHMm7+MNQKsT707n3ufyHTfffLmUp63/CkrpzQe1jc tv8QOAA==
+X-Developer-Key: i=chleroy@kernel.org; a=openpgp; fpr=10FFE6F8B390DE17ACC2632368A92FEB01B8DD78
+Content-Transfer-Encoding: 8bit
 
-On Tue, Apr 21, 2026 at 10:20:44AM +0800, Muchun Song wrote:
-> The memmap_init_zone_device() function only initializes the migratetype
-> of the first pageblock of a compound page. If the compound page size
-> exceeds pageblock_nr_pages (e.g., 1GB hugepages with 2MB pageblocks),
-> subsequent pageblocks in the compound page remain uninitialized.
-> 
-> Move the migratetype initialization out of __init_zone_device_page()
-> and into a separate pageblock_migratetype_init_range() function. This
-> iterates over the entire PFN range of the memory, ensuring that all
-> pageblocks are correctly initialized.
-> 
-> Fixes: c4386bd8ee3a ("mm/memremap: add ZONE_DEVICE support for compound pages")
-> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
-> Reviewed-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+Allthough fsl,cpm1-gpio-irq-mask always contains a 16 bits value,
+it is a standard u32 OF property as documented in
+Documentation/devicetree/bindings/soc/fsl/cpm_qe/gpio.txt
 
-Would not the call to __init_zone_device_page() from
-memmap_init_compound() take care of the subsequent pageblocks?
+The driver erroneously uses of_property_read_u16() leading to a
+mask which is always 0.
 
+Fix it by using of_property_read_u32() instead.
+
+Fixes: 726bd223105c ("powerpc/8xx: Adding support of IRQ in MPC8xx GPIO")
+Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+---
+ arch/powerpc/platforms/8xx/cpm1.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/8xx/cpm1.c b/arch/powerpc/platforms/8xx/cpm1.c
+index 7433be7d66ee..f00734f0590c 100644
+--- a/arch/powerpc/platforms/8xx/cpm1.c
++++ b/arch/powerpc/platforms/8xx/cpm1.c
+@@ -477,7 +477,7 @@ int cpm1_gpiochip_add16(struct device *dev)
+ 	struct device_node *np = dev->of_node;
+ 	struct cpm1_gpio16_chip *cpm1_gc;
+ 	struct gpio_chip *gc;
+-	u16 mask;
++	u32 mask;
  
-
+ 	cpm1_gc = devm_kzalloc(dev, sizeof(*cpm1_gc), GFP_KERNEL);
+ 	if (!cpm1_gc)
+@@ -485,7 +485,7 @@ int cpm1_gpiochip_add16(struct device *dev)
+ 
+ 	spin_lock_init(&cpm1_gc->lock);
+ 
+-	if (!of_property_read_u16(np, "fsl,cpm1-gpio-irq-mask", &mask)) {
++	if (!of_property_read_u32(np, "fsl,cpm1-gpio-irq-mask", &mask)) {
+ 		int i, j;
+ 
+ 		for (i = 0, j = 0; i < 16; i++)
 -- 
-Oscar Salvador
-SUSE Labs
+2.49.0
+
 
