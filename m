@@ -1,46 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-19873-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19874-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CAB52F327CD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2026 09:32:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C981F327CD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2026 09:38:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g0HFn6Xmxz2ytx;
-	Tue, 21 Apr 2026 19:32:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::ae"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776763965;
-	cv=none; b=Fn27usUU7LDeOAEYlw9pwj2CZd07mXWKwV8hfNY0oYLyT/kpFUn49FmD2Wdn+yLnNlYUXH3e2awemNIgQ9/wUs6l4iYior70v+iccVFZ96h5ksynsQtVMdg+bUSibtQGEqr7ztWChsFIjcb+mkhM4UVoYe2OSJUJu3ZWjmaZaERGJhRrv658XMxQz9SYXpVjLm7JWsEIF1SOQFHi3PBAdahd8VoYWCptECFyO0cTVXUjiNh/ECdJ+a6d1wCyJrj7YNY0Ds09CQM0OiBdAEakrjwBQGVn7PGNu8ecwUchnf2mLVlCuggLBUm3Dy8dJsYC0MIulGpGR8D88JxveGKxIA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g0HNB506Tz2ytx;
+	Tue, 21 Apr 2026 19:38:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=82.65.109.163
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776764298;
+	cv=none; b=LLt3OiJ34CE0lN6rFZd4e9uCt95fldkXXJa7yc6i/NorM5M7t+Y4Qqr28n5B7cdPcfFwLsqKWIB9CLc1kRG8uaFmsDTRiLH6Jqi2bY2Q3sSpu0uqnegVHip7sDps7fVDvez5efPn48qHtlaVJaW3aZQsmWQckG6XjmB2RyLI38S1eI3Lx5j8h7JUBvMjuUi7HD731WcAPpBEcZ9bZjBvkMQZCEzsTiBHEzUQwmlyaC3LS7b7t6yoUfkgsSKT3j4g83AqGX7J6vNDKMJu4OMSEj6Z5YjDAJNTxk7qXk5qqSyUN+eSP7Wl0uIOxxu7/ab46QngIwZXeDC3KHb88axYuw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776763965; c=relaxed/relaxed;
-	bh=H7VXEbbN0/EFAsyspDHjyOjj9f+YNV767eZ9TvCWrBw=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=QL9TSwXpcXPSMOTKQNgIperiVv5dP0ICqmvV5/uZmbIp1XGk9zfehzxZC1qFIfU3SdM3jH8nsW4t/eazqfpRJTdwFoxr7YxIgaREsmSJg7OtNsx1eREDeJ3WlYbjWFqqTlRDuDYQGkdzTMzPO4kTPH0fBtMyp7F1kgV/iskB/iEy6u+PZC71RKRLx4Dclu5OxAtzCgbNxPCthuioOQ6TcTksIOKWZ36jDkDHO4KyzCYFs1f1xPWdYWB8dP85YYQV/ngfB+cSEc+XZ12hOxReKEUvUa817/LtsNGHsiGASv1dLj+dxvlOrKONw5w64i08CKUgsnw2GUK9OIsSTEZuzA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=bF6yocuu; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::ae; helo=out-174.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=bF6yocuu;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::ae; helo=out-174.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-174.mta0.migadu.com (out-174.mta0.migadu.com [IPv6:2001:41d0:1004:224b::ae])
+	t=1776764298; c=relaxed/relaxed;
+	bh=hDroTMjglCpi13BA/D1fjt+h+/a1WAzk3r/B7ObFTTY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=QIgVggXBo8LgbR5pKPJb42yeiwpe/xQWxEQwQ0f+X48UEW+agM1u2XWV0YWAfeXKGIloVDYW9pOhzOzrAxRv+0N0DoG7iG7RzlD5MCV8yJnhd/2/vned0p3JxugwjCWlzdCOgZOb/j5dJlMtj0VZ26QUdXVLB/al9lzP9z+esUPyztOTMjkrUKY5NQN+DtnjslNoKZ6R1oHgVItDdvfBFYjS8SMzjnWC2ZhS0HsbDiMgvVGfjIymz0ju4sWrrzDcURYwkgkBGnDU7Z6dqlJml3/pM9FE/YdsqvEIDmn51fnK7ul2OB3axFdFKVNY7BpLHupu5sXKcTfQYnchBlNCPA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linkmauve.fr; spf=pass (client-ip=82.65.109.163; helo=luna.linkmauve.fr; envelope-from=linkmauve@linkmauve.fr; receiver=lists.ozlabs.org) smtp.mailfrom=linkmauve.fr
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linkmauve.fr
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linkmauve.fr (client-ip=82.65.109.163; helo=luna.linkmauve.fr; envelope-from=linkmauve@linkmauve.fr; receiver=lists.ozlabs.org)
+Received: from luna.linkmauve.fr (82-65-109-163.subs.proxad.net [82.65.109.163])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0HFk2D1tz2ypk
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2026 19:32:41 +1000 (AEST)
-Content-Type: text/plain;
-	charset=us-ascii
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1776763936;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=H7VXEbbN0/EFAsyspDHjyOjj9f+YNV767eZ9TvCWrBw=;
-	b=bF6yocuuZ5+0H8Fj7WvzL919cWKgFPNL8PdSdWurzXEOJq1H1pY/1J/qvHbN+HJ1tcyOns
-	0TRyXPw7yhE8WRPiIeS845fY2+SuhVVLrT/9htCQjcZl2S2MUjm4PP27xLcp0mCQOqZcFn
-	wLmMzaDq8QJtPO4YC1f8nb4g+n+Pv4E=
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0HN93t26z2yfS
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2026 19:38:16 +1000 (AEST)
+Received: by luna.linkmauve.fr (Postfix, from userid 1000)
+	id 608E7F40843; Tue, 21 Apr 2026 11:38:09 +0200 (CEST)
+Date: Tue, 21 Apr 2026 11:38:08 +0200
+From: Link Mauve <linkmauve@linkmauve.fr>
+To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+	chleroy@kernel.org, peterz@infradead.org, jpoimboe@kernel.org,
+	jbaron@akamai.com, aliceryhl@google.com, rostedt@goodmis.org,
+	ardb@kernel.org, ojeda@kernel.org, boqun@kernel.org,
+	gary@garyguo.net, bjorn3_gh@protonmail.com, lossin@kernel.org,
+	a.hindborg@kernel.org, tmgross@umich.edu, dakr@kernel.org,
+	nathan@kernel.org, nick.desaulniers+lkml@gmail.com,
+	morbo@google.com, justinstitt@google.com,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	rust-for-linux@vger.kernel.org, llvm@lists.linux.dev
+Subject: Re: [PATCH V11 1/4] rust: Fix "multiple candidates for rmeta
+ dependency core" error
+Message-ID: <aedFgEicDW6LAcuq@luna>
+References: <20260417152253.2312961-1-mkchauras@gmail.com>
+ <20260417152253.2312961-2-mkchauras@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -53,93 +58,97 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.500.181\))
-Subject: Re: [PATCH v3 4/4] mm/mm_init: Fix pageblock migratetype for
- ZONE_DEVICE compound pages
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Muchun Song <muchun.song@linux.dev>
-In-Reply-To: <20260421022044.1217503-5-songmuchun@bytedance.com>
-Date: Tue, 21 Apr 2026 17:31:36 +0800
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- David Hildenbrand <david@kernel.org>,
- Oscar Salvador <osalvador@suse.de>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Mike Rapoport <rppt@kernel.org>,
- Lorenzo Stoakes <ljs@kernel.org>,
- "Liam R . Howlett" <Liam.Howlett@oracle.com>,
- Vlastimil Babka <vbabka@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>,
- Michal Hocko <mhocko@suse.com>,
- Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <chleroy@kernel.org>,
- aneesh.kumar@linux.ibm.com,
- joao.m.martins@oracle.com,
- linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <67CABBD2-FA75-40D0-909D-9B6A523CCC8C@linux.dev>
-References: <20260421022044.1217503-1-songmuchun@bytedance.com>
- <20260421022044.1217503-5-songmuchun@bytedance.com>
-To: Muchun Song <songmuchun@bytedance.com>
-X-Migadu-Flow: FLOW_OUT
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260417152253.2312961-2-mkchauras@gmail.com>
+Jabber-ID: linkmauve@linkmauve.fr
 
+Hi Mukesh,
 
+This patch doesn’t apply on top of mainline, which tree did you base it
+off?
 
-> On Apr 21, 2026, at 10:20, Muchun Song <songmuchun@bytedance.com> =
-wrote:
->=20
-> The memmap_init_zone_device() function only initializes the =
-migratetype
-> of the first pageblock of a compound page. If the compound page size
-> exceeds pageblock_nr_pages (e.g., 1GB hugepages with 2MB pageblocks),
-> subsequent pageblocks in the compound page remain uninitialized.
->=20
-> Move the migratetype initialization out of __init_zone_device_page()
-> and into a separate pageblock_migratetype_init_range() function. This
-> iterates over the entire PFN range of the memory, ensuring that all
-> pageblocks are correctly initialized.
->=20
-> Fixes: c4386bd8ee3a ("mm/memremap: add ZONE_DEVICE support for =
-compound pages")
-> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
-> Reviewed-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+On Fri, Apr 17, 2026 at 08:52:50PM +0530, Mukesh Kumar Chaurasiya (IBM) wrote:
+> When building Rust code for powerpc64le with LLVM=1 and -j1, rustc
+> encounters an error: "multiple candidates for `rmeta` dependency `core`
+> found", with two candidates:
+> 1. The host's standard library from the rustup toolchain
+> 2. The kernel's custom libcore.rmeta in the rust/ directory
+> 
+> This occurs because the build system uses `-L$(objtree)/rust` for host
+> library builds (proc_macro2, quote, syn), which causes rustc to search
+> the rust/ directory. During this search, rustc finds both the kernel's
+> custom libcore.rmeta and gains access to the host's standard library,
+> creating a conflict.
+> 
+> The solution is to separate host libraries into a dedicated rust/host/
+> subdirectory and use `-L$(objtree)/rust/host` for host builds instead
+> of `-L$(objtree)/rust`. This ensures that:
+> 
+> 1. Host library builds (proc_macro2, quote, syn) only search rust/host/
+>    and never encounter the kernel's libcore.rmeta
+> 2. Proc macro builds use `-L$(objtree)/rust/host` to find their
+>    dependencies
+> 
+> Special handling is added for rustdoc-pin_init, which is a host build
+> (to access the alloc crate) but depends on proc macros from the main
+> rust/ directory. It uses explicit `--extern` paths to reference the
+> proc macros without adding `-L$(objtree)/rust`, which would reintroduce
+> the conflict.
+> 
+> The rust/host/ directory is added to clean-files to ensure it's removed
+> during `make clean`.
+> 
+> Link: https://github.com/Rust-for-Linux/linux/issues/105
+> Link: https://github.com/linuxppc/issues/issues/451
+> Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
 > ---
-> mm/mm_init.c | 43 ++++++++++++++++++++++++++++---------------
-> 1 file changed, 28 insertions(+), 15 deletions(-)
->=20
-> diff --git a/mm/mm_init.c b/mm/mm_init.c
-> index f9f8e1af921c..e2d8eae23aa3 100644
-> --- a/mm/mm_init.c
-> +++ b/mm/mm_init.c
-> @@ -674,6 +674,19 @@ static inline void fixup_hashdist(void)
-> static inline void fixup_hashdist(void) {}
-> #endif /* CONFIG_NUMA */
->=20
-> +static __meminit void pageblock_migratetype_init_range(unsigned long =
-pfn,
-> +       unsigned long nr_pages,
-> +       int migratetype)
-> +{
-> + 	unsigned long end =3D pfn + nr_pages;
+>  rust/Makefile | 38 +++++++++++++++++++++-----------------
+>  1 file changed, 21 insertions(+), 17 deletions(-)
+> 
+> diff --git a/rust/Makefile b/rust/Makefile
+> index 9801af2e1e02..e234b8a39358 100644
+> --- a/rust/Makefile
+> +++ b/rust/Makefile
+> @@ -3,6 +3,9 @@
+>  # Where to place rustdoc generated documentation
+>  rustdoc_output := $(objtree)/Documentation/output/rust/rustdoc
+>  
+> +# Clean generated host directory
+> +clean-files := host/
 > +
-> + 	for (pfn =3D pageblock_align(pfn); pfn < end; pfn +=3D =
-pageblock_nr_pages) {
-> + 		init_pageblock_migratetype(pfn_to_page(pfn), =
-migratetype, false);
-> + 		if (IS_ALIGNED(pfn, PAGES_PER_SECTION))
-> + 			cond_resched();
-> + 	}
-> +}
+>  obj-$(CONFIG_RUST) += core.o compiler_builtins.o ffi.o
+>  always-$(CONFIG_RUST) += exports_core_generated.h
+>  
+> @@ -27,7 +30,7 @@ endif
+>  
+>  obj-$(CONFIG_RUST) += exports.o
+>  
+> -always-$(CONFIG_RUST) += libproc_macro2.rlib libquote.rlib libsyn.rlib
+> +always-$(CONFIG_RUST) += host/libproc_macro2.rlib host/libquote.rlib host/libsyn.rlib
+>  
+>  always-$(CONFIG_RUST_KERNEL_DOCTESTS) += doctests_kernel_generated.rs
+>  always-$(CONFIG_RUST_KERNEL_DOCTESTS) += doctests_kernel_generated_kunit.c
+> @@ -150,7 +153,7 @@ quiet_cmd_rustdoc = RUSTDOC $(if $(rustdoc_host),H, ) $<
+>  	OBJTREE=$(abspath $(objtree)) \
+>  	$(RUSTDOC) $(filter-out $(skip_flags) --remap-path-prefix=% --remap-path-scope=%, \
+>  			$(if $(rustdoc_host),$(rust_common_flags),$(rust_flags))) \
 
-I found a positive comment from AI review:
+The issue is here ↑, --remap-path-prefix=% got removed and the two
+previous lines got merged into one.
 
-This trigger a -Wunused-function warning when CONFIG_ZONE_DEVICE is
-disabled.
+> -		$(rustc_target_flags) -L$(objtree)/$(obj) \
+> +		$(rustc_target_flags) -L$(objtree)/$(obj)$(if $(rustdoc_host),/host) \
+>  		-Zunstable-options --generate-link-to-definition \
+>  		--output $(rustdoc_output) \
+>  		--crate-name $(subst rustdoc-,,$@) \
+[…]
 
-I'll fix it in the next version.
+Thanks anyway for iterating on this series!  I’ve started writing a DRM
+driver based off a previous version. :)
 
-Thanks.
-
+-- 
+Link Mauve
 
