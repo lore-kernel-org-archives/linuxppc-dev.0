@@ -1,94 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-19910-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19911-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1EEEAF94CA4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2026 18:16:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9378F94CA7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2026 18:43:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g0Vsz5NFlz30Wd;
-	Wed, 22 Apr 2026 04:16:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::1336" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776795383;
-	cv=pass; b=H5Ae9BvPBtQHSN4oqJl/L36NwcStLTG6WgkPFn9ZrRIAO0Yv/MxtE7HhheijQVK9eT4ymXZZOC4WTwEk18ttrzEq1BhDK2SngJUBlVUbTTcbALpZ6KH056bDj04Mv+65Ki+XvXDRQUCTv0YCamqn7+VdtT+hqU0zqHp7E5mA2NEKrdg+lxu+h0ZfzorY/Tg5rkKCGb2AJ5l3bhcyBSNPmMzVUOR2mKYcqA0CSKPOieZkwKeQbTety/45d0ZwyDQ/KqjMra/3sr/ujdEKbaAQMn5yzNdJ7PvktYwVprkD3h4Ie7nr6+h0sTeZaCu/zirbSuKf0KBfbKR4vMq1bMfUeQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776795383; c=relaxed/relaxed;
-	bh=3GaZDx0rQ9Fksiy9siV3i5pz9Hl2Ce5uUtde21t7sAA=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=SkBtdhbgIvqrc33MleST/64zI53T/Z1lFl6/x25AAq8a59qWBJ1Up1wRzEj1asBR2QRvmFOrgV4yLL//vpQiSSMNlxdd9Z52b/X9FGZMKUyESbXSinqqwSLFXrqmnPACc8LPvCiUuvH3YtkkxFeeChUIPVpvHr6P9/M3nTNS6d2LYdFae7ny9KjmKqIkVQlaQFn2l5qshdHjIgQ12Upd00OMJCB9wVjBfyaW3bcmMWDRP7dRP1xFjB/5pAjdXIe0DXJoxDL6xxf+l2zzbSazbL7aUWSJF86gjpUKKdkNEVVMDYP97xadTYr+ksEQVfAOvw2ov2/jhSRy03QgeISQqQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=BurLZPCx; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1336; helo=mail-dy1-x1336.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g0WTd4ll9z30Wd;
+	Wed, 22 Apr 2026 04:43:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776797029;
+	cv=none; b=R+vMuMSD6sHmu3MvwFW2/tQ46PObQ2nChvKOseAhetHlcuzMHfvjgTN1EXOpSoY79xs3Tc8gGNFrb+uy7v6VE69x7yal2PfIRlE2ORifo8j8FXiRsrsZTASzrxxi1l8PskwAuMcILt/mWuUD2M5stQce1JGcyFuiZX8a2dDBPCcz9ixUpht8hrnELabDCfKth/lQ98HY4eHGWM/8ctThgkIgdR+TG7KI/paLuDmXb2Z2NqlZ9+wqjDvS4PTU3X0JxHZZxkM9T1pHM9OomfJZSip4hHfbg997qlySX7CPH5RdMv/XNEYQ/x/+rpTOCOJwj+79uGc1GpVWNrpEAvly4A==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1776797029; c=relaxed/relaxed;
+	bh=dafv+LxlgIEBCjf0rt5o7BeB8mB5Swbf2MnqaAmIlBw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=lzwW2LvVG+ChZwnfEHRzA+KqYeFyAM2p5t1Op+62PEfWSU3I4CF0TLRz6rXWE47ySTuXYMwD1eBekN3n02E/DynuCsImO9kXZKu0HQcECGCt7oUMx/s4TA7DekMX2kPyUdzv8HZYh5jufOITHFLhGrdEABw6ayH2ipFsW/1H0iXmz1eonY21Ha2GoMmzZR1CHx/KQs6FRrBnwZAjq1UMKri3TaED4XtNMqlBXjSarwbxtrLN5tJ50QkwM6vv1gDI/bxhnY8HuEubVlMdtoV9b9ywDIAEwi1lTcxCpgpFilLrrOvs0A3Y7YDjschYdqL46stF+q7LXaKEpCpdCW8lHw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fJitTr6I; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=BurLZPCx;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fJitTr6I;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1336; helo=mail-dy1-x1336.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x1336.google.com (mail-dy1-x1336.google.com [IPv6:2607:f8b0:4864:20::1336])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0Vsy69sTz30Wb
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 04:16:22 +1000 (AEST)
-Received: by mail-dy1-x1336.google.com with SMTP id 5a478bee46e88-2d9472c97dbso425282eec.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2026 11:16:22 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1776795380; cv=none;
-        d=google.com; s=arc-20240605;
-        b=Uvx4dplX2oQ8zc/5rwG62wIZgf3rFqTI+bSfYQZ1RGs57Df9vKoBl2c0sWFY3BJhec
-         UHGWnduIXBf+HphNWywz49EH7Rw2GMBX87baNmthl+Shyu/k3gGH9mKQRxG/eCG683jd
-         4iy6XPbYe+trcWY7gdLmsHLjqjdhz5zBePw+V0DwiENglhiNofiNS1AJlnHd4SkLrRdv
-         9KshtKLi3MiFhm/Nx0GBnamaCycOayx+Nk/u+SIq5oqrIiS1c7sHPO1Umvyp2YUg6BzQ
-         ju/N++hknbbKkWyWCTIrF8wI+F0nurwl66hBGXly4FzZSYlrmdw9uxaHvBh4OiTuUdDN
-         tYew==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=3GaZDx0rQ9Fksiy9siV3i5pz9Hl2Ce5uUtde21t7sAA=;
-        fh=GFGXZR2MCydPM2U9Et89ijf2YWQOGACWrcLkarWosgg=;
-        b=QykUIRzKZEeNJoNQW+0Qd7kCYZ72kgWFSLzyYkoc8S75/No4MdeWVlIjkfiZsHcMTS
-         Iv5vsFICRAISwrgK2QLWMakpyKtpJTTdH2nDb89db+GghK0I032jR/Xff+3CMRLOHbKR
-         ut+XcUHNm71ycU3LNZSn9XtR4FYTFagSa/Jnf6nbSjMyPXB1fvs1tVvvDpR6xRfKWSep
-         i2V7aDHTEEm524chJzforp9M1Qk0vuzRHXXbr1OgA2ZAw895JvkBXZ4B8CVrvfeXd/VZ
-         +7o6OquuaA5cl8jOUHYrGUPrXfdnRufm7hyknunlPj1mLL9oNIkT8WsNDrJKd6xxU8oF
-         HrSQ==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1776795380; x=1777400180; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=3GaZDx0rQ9Fksiy9siV3i5pz9Hl2Ce5uUtde21t7sAA=;
-        b=BurLZPCxVOHpW1fOQLiWGQ0y3iMN+Z4VP2+4FXYpGxpHNeDW3MJeK420CcnthyTDVy
-         Ecw80U7ZlZchvMURCSL0I+Dw3z/Yu54g+S7gVBfq40TTKmTqBQUpSVtAyRLhDQEhKtyf
-         0u5ErY4SuyyQWC3pJXT6/gmOVccnLdyQ21i5H7HxRb9JbDHihhJgiZdFJd+SryMV+axr
-         xBWsVT9gyiRfmKrSOIQAKxz0u0jph4Z32OHGfIcExkZswf+wMDJYUix0s/ApV+z5AMRr
-         vDqY19qShX/ScUUijf3MHmFuBpFiJyCAkGN+xb27Wn3FL7z6MBROKRIv9EmtLQHu01YT
-         Mstg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776795380; x=1777400180;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=3GaZDx0rQ9Fksiy9siV3i5pz9Hl2Ce5uUtde21t7sAA=;
-        b=ZoNA+JpkusKW6Uzopb2u/B9UDlIG4OTEKMBLDK5E5VPYfsPppdIubdwhERNdJmTdj5
-         qil5wt2cNlKO7jOR3HxV93w+/4maQMKot2l+m08iTtV8cwoBAGbbvjhI6On3dmeI8ltA
-         Kr00tXcaF217J6sW+OJeRJRPN4lnfy8vLddWFkAn3q4VO2XXlSNTmC9X7ioRhhkeYtUU
-         QzdkRD4opAYqM/jKzI+1tzNq4Ctse05gUGygyy9fmQKQktLwnm/2fRjPowx+DXLcX1Pa
-         easAtJ42+6k89omCjrHuUk66+v8lHFXETh3Ymp75NqjK6i2NOHnNzrnOuuMtBtU1QWbv
-         M5Rw==
-X-Forwarded-Encrypted: i=1; AFNElJ9u74tT0ldPAQYahHfXNBLoRShDXim5c5Yf3g27KiGHLbhRf69aM/D3uJ8FKFbzc3+RCXun6twFjtwPXhc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxeX/57Lnqxm8R84ed166dJ91jzMNVUsmz4OzP6aB3uELY28oR0
-	YTNUDz0Wkf8eWBDh4u6izJaIvEpRi5pZ7GygRoNOdU1/1tN1F1DyRhup6SqmyLTZYVrQqwiDeHa
-	xZHPGMKNZoTOQWXgd9xWvghqdGli4gMg=
-X-Gm-Gg: AeBDieu9ydFlS1lsWluFSkbMef6KakNJZ5KX8HL16ejAp0oTmhJqcyWTAialVY5Feif
-	3hFI59Y72HajLffnLOcwGvZlbRLwF2bh8kues5lIp7kXQ4y5HGwlr/GfQES/cnzlbL7DcsI/cH1
-	D1iamHG+bIqfHZbQHEl/1+D/IqWDGp14N2T38TwJBXjif6sezVCIvpOHZVR/bMhAlhPoCK/9dbe
-	FSbaqyCGtQl7YHDpAyIdoUH8TLuVXF4o/ZzdgqdYoLxzcBMqv3/hA9OxqDSqGtgfjf5Ypgaz+G8
-	3AJ2toW2k5UI5vXC2DlbqcL4MH8Z8KjfNrND24dKvhRM3pd/9oGvn3mnfK7GXDVUYyQPp3DkavA
-	ep8gVIZGiphI2kHCTwJyxYMSckv7iEtgiBg==
-X-Received: by 2002:a05:693c:414c:20b0:2e5:5bf4:886c with SMTP id
- 5a478bee46e88-2e55bf49d87mr2808147eec.5.1776795380309; Tue, 21 Apr 2026
- 11:16:20 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0WTd0570z30Wb
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 04:43:48 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 1C8AE60172;
+	Tue, 21 Apr 2026 18:43:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 69228C2BCB0;
+	Tue, 21 Apr 2026 18:43:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776797025;
+	bh=BFCiiwYB2BfaBR4mT2g9t7Kw8VFChQxWQ4H/FZPW50M=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=fJitTr6ITExrD8mrJxI4gAOrG22qGPHzGF3Q98prdiK9OcWdRTzFPi2Z4y355oNbp
+	 M2V6HDlHOM4FTXgdbd5mpp5ypWI7taXeUErXVwTYUGbZyAWwrK5mQi2YPoPMiSbHkD
+	 6HAzLufn/FlvD1QDS0rIeYUCA+MLi7lzgsdsFe8kMqF4D0zwy82Tz6fILBvxXa54eN
+	 WWmY1oXBcGAxIa4330SI+9lEKMadaxKm1CJd3wzwR80jgllgbMxEEyAd5vw5WwuIMq
+	 dpQ531CS5BsdnUWYzAZk/h+xHZbc5JAh5x/JWPr7CayOcQkhkFqy9fJ7YvOUo1q/nl
+	 5FTO+oqknr1Sg==
+Date: Wed, 22 Apr 2026 03:43:43 +0900
+From: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Bjorn Helgaas <helgaas@kernel.org>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Magnus Lindholm <linmag7@gmail.com>,
+	Matt Turner <mattst88@gmail.com>,
+	Richard Henderson <richard.henderson@linaro.org>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Dexuan Cui <decui@microsoft.com>,
+	Krzysztof =?utf-8?Q?Ha=C5=82asa?= <khalasa@piap.pl>,
+	Lukas Wunner <lukas@wunner.de>,
+	Oliver O'Halloran <oohall@gmail.com>,
+	Saurabh Singh Sengar <ssengar@microsoft.com>,
+	Shuan He <heshuan@bytedance.com>,
+	Srivatsa Bhat <srivatsabhat@microsoft.com>,
+	Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
+	linux-pci@vger.kernel.org, linux-alpha@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v5 13/23] alpha/PCI: Use PCI resource accessor macros
+Message-ID: <20260421184343.GB1684602@rocinante>
+References: <20260416180107.777065-1-kwilczynski@kernel.org>
+ <20260416180107.777065-14-kwilczynski@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,43 +84,22 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260417152253.2312961-1-mkchauras@gmail.com> <20260417152253.2312961-2-mkchauras@gmail.com>
- <aedFgEicDW6LAcuq@luna> <aedJGuF9P2V1lOCZ@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
- <aedQ629D0x-5KuKw@luna> <aedpk1iaeYyKPSOI@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
- <aeds6_8Mr_w38oYI@luna> <aeec_IzVJwlfarN5@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
- <DHYYG7A745M5.VQY4GMDJNC1Y@garyguo.net> <aee3ivM9VkbqdQby@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-In-Reply-To: <aee3ivM9VkbqdQby@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Date: Tue, 21 Apr 2026 20:16:06 +0200
-X-Gm-Features: AQROBzC9mHOnbDZIzSWs7JSPScbJTWmOkJB9BCTbBPzo_hv4xsJtqwnMLc9zKx0
-Message-ID: <CANiq72k7HXYE+1hhbT8xfL+pwhBwVqCQaN=1xXUuTnMhH0J7QQ@mail.gmail.com>
-Subject: Re: [PATCH V11 1/4] rust: Fix "multiple candidates for rmeta
- dependency core" error
-To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-Cc: Gary Guo <gary@garyguo.net>, Link Mauve <linkmauve@linkmauve.fr>, maddy@linux.ibm.com, 
-	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, 
-	peterz@infradead.org, jpoimboe@kernel.org, jbaron@akamai.com, 
-	aliceryhl@google.com, rostedt@goodmis.org, ardb@kernel.org, ojeda@kernel.org, 
-	boqun@kernel.org, bjorn3_gh@protonmail.com, lossin@kernel.org, 
-	a.hindborg@kernel.org, tmgross@umich.edu, dakr@kernel.org, nathan@kernel.org, 
-	nick.desaulniers+lkml@gmail.com, morbo@google.com, justinstitt@google.com, 
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
-	rust-for-linux@vger.kernel.org, llvm@lists.linux.dev
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260416180107.777065-14-kwilczynski@kernel.org>
 
-On Tue, Apr 21, 2026 at 7:47=E2=80=AFPM Mukesh Kumar Chaurasiya
-<mkchauras@gmail.com> wrote:
->
-> There are some other build errors apart from this on 1.85. So few months
-> back in the meeting with LLVM team we concluded that for sometime
-> powerpc will be ahead of other archs at 1.95 till others catch up.
+Hello,
 
-In that case you may want to modify `scripts/min-tool-version.sh` in
-this series too.
+> Replace direct pdev->resource[] accesses with pci_resource_n(),
+> and pdev->resource[].flags accesses with pci_resource_flags().
 
-I hope that helps!
+Will update the commit message when sending next version, as the
+pci_resource_flags() was replaced with the new helpers.
 
-Cheers,
-Miguel
+> Also, replace open-coded res->flags type checks with new
+> pci_resource_is_mem() and pci_resource_start() helpers.
+
+Thank you!
+
+	Krzysztof
 
