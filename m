@@ -1,56 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-19890-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19891-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72164F8FA6D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2026 12:26:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5454DF8FA6D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2026 12:27:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g0M696GH8z2xQB;
-	Tue, 21 Apr 2026 22:26:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:e0a:1040:9780:49:5ff:fe41:d261"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776774385;
-	cv=none; b=gcV9rQcL/aMywJwPdONEDMw0MeLiITAyHBH9bZt7Ln7ZcyqVDaex8Q1IPFw/lEVhxRCu7Niabawxw8Nqi2naYPrwF7tUOjWARuC8sPK7tGiIdvZR/+kQMjZq1LMU4ClGAyCyVTktrFZf5PblzHRVsaA1lB+vhmb0LRwEeNyHkXrAHbFrtT3yIj3h5p6UlZQD8OS31h62hqfTKSrlwhIEBbYw1vkDZmxJKUc1W0VC86fXSCGM5cut9Y9yMky9baAaBekuixU7JvpFonkG/8URWMkIJ4v8jZbKXY7MJ3yZF0HmUyCLvJb5FPpIzpJeDJ24lxB913IUGeH/sv0T7FnWxg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g0M6w73Yrz2ytx;
+	Tue, 21 Apr 2026 22:27:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776774424;
+	cv=none; b=e/QYsTD1+9F37hxXvnlZpjVhmVugQ0TCxrkZKP2rgG5GOc13ieoxvXSVfcs0B+pMZjAhA/tMYLiQK4lgfRmLFlbLM5wBlSI4Mt4tu7UAmT9tgVZggIJV4QE4hZ7y+00Z45caS67z+gXBVPba9Kar8XFwXu1GBcHlKHnaFZ40V2WxyWfLH0C02zglfmHQoloI/i/6tYxYwZ6XH3SgwNQycKxK52zXBbbQpU6EsQKni6GYn0xHWAYGgKPJGBHkmtePQjs/aafiHJTRqPUVyA0NdUnK0XlQFucluLa6AySqicP8TFOOuGNKSvwg59KRkspLubfrBizF1Ldf7agpzx68TQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776774385; c=relaxed/relaxed;
-	bh=PU7xhzIRUMcyUpAvL3KnXdYSuhFIm7ToDlPt+lpJdmQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=e0ToNcRUOkoNBEiWaQMlFgUA5cu7sfil+xmB1d6S3/yp/7T70M7tVZFseyl2mtP1bH9iL7KjqMAgKvW1pouwGrQA0cFuIwTR9/qfC50BTwhFE4lq4NKQDUpHwehA4AN8XiipKTug+BQV0aTWrhyYHI77rVI+AMjds/vmFu6HHtEkCy4gKDDH/aa17/Hrq8DSUxsFn89PjzA29pYx/zLD24/pI9BRXSI86mtS/14SU8C+NBBMTw++FlQPRcD0ZIk7+0Ev/2U3HhOKa0OqPCTE13xy+GRJataSLCDWOcIM88WbR3ehDLeROmcEicgRvlnswJpED5CTrDbpIK46V16WYg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linkmauve.fr; spf=pass (client-ip=2a01:e0a:1040:9780:49:5ff:fe41:d261; helo=luna.linkmauve.fr; envelope-from=linkmauve@linkmauve.fr; receiver=lists.ozlabs.org) smtp.mailfrom=linkmauve.fr
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linkmauve.fr
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linkmauve.fr (client-ip=2a01:e0a:1040:9780:49:5ff:fe41:d261; helo=luna.linkmauve.fr; envelope-from=linkmauve@linkmauve.fr; receiver=lists.ozlabs.org)
-Received: from luna.linkmauve.fr (unknown [IPv6:2a01:e0a:1040:9780:49:5ff:fe41:d261])
+	t=1776774424; c=relaxed/relaxed;
+	bh=vGXxEWCTuVWA7VrKQQDYVQpXizf8EtBIBYtC7nGY7Sk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ZmTEduVV0Isb+ewLAkor9vI0vFj7Ht2IthmGTzNaPdU4BJsO/cv8hN/3P7aB1HwWHpdC6pIZAptdVe5ocx71Dh4Cs0I4O5jTcmc99qDAco4idlS9P1ayaGIgQCHAqa9OmakWwn4cyK0UFOFS2M8hpntb2snWP/9u/qfAT6Cbw0jaB1SEtsBmE9eZsyPWeI8swv4te5vhswEJAdVOAsS8XVwHP6PrUXriQFYffFaWhwm1RAW0iCo0aVQHSIiisio+3w3qKXcDbw58ZQNsyEcakvxBboMC0jTlPepenRKjYRWhpZgmI3dWbMIpQvvaX3nwEgigB6qhNOpvSfrnQ2AbuQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IfI9Jb9g; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IfI9Jb9g;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0M6873bmz2xPL
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2026 22:26:24 +1000 (AEST)
-Received: by luna.linkmauve.fr (Postfix, from userid 1000)
-	id C7310F40864; Tue, 21 Apr 2026 14:26:19 +0200 (CEST)
-Date: Tue, 21 Apr 2026 14:26:19 +0200
-From: Link Mauve <linkmauve@linkmauve.fr>
-To: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-Cc: Link Mauve <linkmauve@linkmauve.fr>, maddy@linux.ibm.com,
-	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
-	peterz@infradead.org, jpoimboe@kernel.org, jbaron@akamai.com,
-	aliceryhl@google.com, rostedt@goodmis.org, ardb@kernel.org,
-	ojeda@kernel.org, boqun@kernel.org, gary@garyguo.net,
-	bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org,
-	tmgross@umich.edu, dakr@kernel.org, nathan@kernel.org,
-	nick.desaulniers+lkml@gmail.com, morbo@google.com,
-	justinstitt@google.com, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org,
-	llvm@lists.linux.dev
-Subject: Re: [PATCH V11 1/4] rust: Fix "multiple candidates for rmeta
- dependency core" error
-Message-ID: <aeds6_8Mr_w38oYI@luna>
-References: <20260417152253.2312961-1-mkchauras@gmail.com>
- <20260417152253.2312961-2-mkchauras@gmail.com>
- <aedFgEicDW6LAcuq@luna>
- <aedJGuF9P2V1lOCZ@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
- <aedQ629D0x-5KuKw@luna>
- <aedpk1iaeYyKPSOI@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0M6v6jYhz2ySW
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2026 22:27:03 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id A39B460121;
+	Tue, 21 Apr 2026 12:27:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B5B97C2BCB0;
+	Tue, 21 Apr 2026 12:26:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776774420;
+	bh=ZaGWM8jA4mMH9NwO+YqwAWjdiVWdlYlvmNHObCEIt6k=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=IfI9Jb9gKqz+z+jxmbqO6X6SzZtsSqVQArsbwBQxWe62W+RTooyaT3ghb7Me8n5V4
+	 z0M2A0w8RDm2rHw2yGhmhcsg02rGaSBg1IJ2xJCeSRULv7XvNbWHgO25wR3yL56Y2m
+	 DYgdPHlTj9+y32EzGWMtZjnfvnL/KH254IDnPgRXGW0Wk+l3HPdwgERwEN4zIui4R3
+	 baXKtsdlysBs0yk13sxZlyF6ed5iih8ie2NzrkDNwF3OzQnOn9rAKOv+pj+iLgM4Bd
+	 wbVrOG5S+xzIHWl/w+oBedgHWZ6eK2eyUazcS9rTqv0QvV6PjNyDoLJvmraSwkXDFh
+	 bwtSbxOIiPvlw==
+Message-ID: <215f12d6-62c1-4837-9f78-ef270684950c@kernel.org>
+Date: Tue, 21 Apr 2026 14:26:35 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,297 +59,138 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <aedpk1iaeYyKPSOI@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-Jabber-ID: linkmauve@linkmauve.fr
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/2] powerpc: Add a typos.toml file
+To: Link Mauve <linkmauve@linkmauve.fr>, linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Herbert Xu
+ <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>,
+ Juergen Gross <jgross@suse.com>, Ajay Kaher <ajay.kaher@broadcom.com>,
+ Alexey Makhalov <alexey.makhalov@broadcom.com>,
+ Broadcom internal kernel review list
+ <bcm-kernel-feedback-list@broadcom.com>, Geoff Levand <geoff@infradead.org>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+ Oliver O'Halloran <oohall@gmail.com>, Anatolij Gustschin <agust@denx.de>,
+ =?UTF-8?Q?Breno_Leit=C3=A3o?= <leitao@debian.org>,
+ Nayna Jain <nayna@linux.ibm.com>,
+ Paulo Flabiano Smorigo <pfsmorigo@gmail.com>,
+ Eric Biggers <ebiggers@kernel.org>, "Jason A. Donenfeld" <Jason@zx2c4.com>,
+ Ard Biesheuvel <ardb@kernel.org>, Thorsten Blum <thorsten.blum@linux.dev>,
+ Thomas Huth <thuth@redhat.com>, Jason Gunthorpe <jgg@ziepe.ca>,
+ David Hildenbrand <david@kernel.org>, Alistair Popple <apopple@nvidia.com>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ Donet Tom <donettom@linux.ibm.com>, Andrew Morton
+ <akpm@linux-foundation.org>, =?UTF-8?B?QmrDtnJuIFTDtnBlbA==?=
+ <bjorn@rivosinc.com>, Will Deacon <will@kernel.org>,
+ "Lorenzo Stoakes (Oracle)" <ljs@kernel.org>, Paul Moore
+ <paul@paul-moore.com>, Nam Cao <namcao@linutronix.de>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Sourabh Jain <sourabhjain@linux.ibm.com>,
+ Hari Bathini <hbathini@linux.ibm.com>,
+ Srikar Dronamraju <srikar@linux.ibm.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>, Jiri Bohac <jbohac@suse.cz>,
+ "Mike Rapoport (Microsoft)" <rppt@kernel.org>,
+ "Jiri Slaby (SUSE)" <jirislaby@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+ Kees Cook <kees@kernel.org>, Stephen Rothwell <sfr@cab.auug.org.au>,
+ Xichao Zhao <zhao.xichao@vivo.com>, Gautam Menghani <gautam@linux.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ K Prateek Nayak <kprateek.nayak@amd.com>,
+ Guangshuo Li <lgs201920130244@gmail.com>, Li Chen
+ <chenl311@chinatelecom.cn>, Aboorva Devarajan <aboorvad@linux.ibm.com>,
+ Petr Mladek <pmladek@suse.com>, Feng Tang <feng.tang@linux.alibaba.com>,
+ "Nysal Jan K.A." <nysal@linux.ibm.com>, Aditya Gupta
+ <adityag@linux.ibm.com>, Sayali Patil <sayalip@linux.ibm.com>,
+ Rohan McLure <rmclure@linux.ibm.com>,
+ Pasha Tatashin <pasha.tatashin@soleen.com>, Yeoreum Yun
+ <yeoreum.yun@arm.com>, Kevin Brodsky <kevin.brodsky@arm.com>,
+ "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+ Andrew Donnellan <andrew+kernel@donnellan.id.au>,
+ "Vishal Moola (Oracle)" <vishal.moola@gmail.com>,
+ =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
+ Athira Rajeev <atrajeev@linux.ibm.com>, Kajol Jain <kjain@linux.ibm.com>,
+ Thomas Gleixner <tglx@kernel.org>, Chen Ni <nichen@iscas.ac.cn>,
+ Haren Myneni <haren@linux.ibm.com>,
+ Jonathan Greental <yonatan02greental@gmail.com>,
+ Ingo Molnar <mingo@kernel.org>, "Yury Norov (NVIDIA)"
+ <yury.norov@gmail.com>, Gaurav Batra <gbatra@linux.ibm.com>,
+ Nilay Shroff <nilay@linux.ibm.com>, Vivian Wang <wangruikang@iscas.ac.cn>,
+ =?UTF-8?Q?Adrian_Barna=C5=9B?= <abarnas@google.com>,
+ "Rafael J. Wysocki (Intel)" <rafael@kernel.org>,
+ Thierry Reding <treding@nvidia.com>, Yury Norov <ynorov@nvidia.com>,
+ "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
+ Ruben Wauters <rubenru09@aol.com>, linux-kernel@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-crypto@vger.kernel.org,
+ kvm@vger.kernel.org, virtualization@lists.linux.dev, x86@kernel.org
+References: <20260421121420.26079-1-linkmauve@linkmauve.fr>
+ <20260421121420.26079-2-linkmauve@linkmauve.fr>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 a/A=
+In-Reply-To: <20260421121420.26079-2-linkmauve@linkmauve.fr>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Tue, Apr 21, 2026 at 05:49:32PM +0530, Mukesh Kumar Chaurasiya wrote:
-> On Tue, Apr 21, 2026 at 12:26:51PM +0200, Link Mauve wrote:
-> > On Tue, Apr 21, 2026 at 03:25:22PM +0530, Mukesh Kumar Chaurasiya wrote:
-> > > On Tue, Apr 21, 2026 at 11:38:08AM +0200, Link Mauve wrote:
-> > > > Hi Mukesh,
-> > > > 
-> > > > This patch doesn’t apply on top of mainline, which tree did you base it
-> > > > off?
-> > > > 
-> > > It was on mainline v7.0 tag.
-> > 
-> > Great thanks, they do apply there!
-> > 
-> > I needed three more patches for the kernel to build on PPC32, I’ve
-> > attached them but they are absolutely not patches which could go into
-> > the kernel (except for the second, enabling asm_experimental_arch).
-> > 
-> > What do you think we should do about them?
-> > 
-> Regarding the 2nd patch you sent, As the support is experimental as of
-> now, Let's wait till we get everything stablized, till then we'll use
-> nightly build for all variants of powerpc. Once we mark it as
-> maintained, then we can try to push that patch.
+On 21/04/2026 14:14, Link Mauve wrote:
+> This file is used by the typos tool[1] to determine which words to fix,
+> which ones not to fix, and what the target word should be.
+> 
+> [1] https://github.com/crate-ci/typos
+> 
+> Signed-off-by: Link Mauve <linkmauve@linkmauve.fr>
 
-Enabling the feature is mandatory even on nightly or with
-RUSTC_BOOTSTRAP=1, otherwise no asm!() macro can be called and so the
-kernel crate can’t be built.
+This typos.toml file does not belong to the kernel, IMO, but that's up
+to PowerPC folks.
 
-> 
-> Maybe Miguel can comment better on this.
-> 
-> Regarding other patches, I am planning to work on ppc32 once ppc64le
-> stabilizes.
+My note here is: please use your real, full name. See submitting patches.
 
-Thanks!
-
-> 
-> Regards,
-> Mukesh
-> 
-> > > On latest there is a confilict. I'll send out a rebased version.
-> > > 
-> > > > On Fri, Apr 17, 2026 at 08:52:50PM +0530, Mukesh Kumar Chaurasiya (IBM) wrote:
-> > > > > When building Rust code for powerpc64le with LLVM=1 and -j1, rustc
-> > > > > encounters an error: "multiple candidates for `rmeta` dependency `core`
-> > > > > found", with two candidates:
-> > > > > 1. The host's standard library from the rustup toolchain
-> > > > > 2. The kernel's custom libcore.rmeta in the rust/ directory
-> > > > > 
-> > > > > This occurs because the build system uses `-L$(objtree)/rust` for host
-> > > > > library builds (proc_macro2, quote, syn), which causes rustc to search
-> > > > > the rust/ directory. During this search, rustc finds both the kernel's
-> > > > > custom libcore.rmeta and gains access to the host's standard library,
-> > > > > creating a conflict.
-> > > > > 
-> > > > > The solution is to separate host libraries into a dedicated rust/host/
-> > > > > subdirectory and use `-L$(objtree)/rust/host` for host builds instead
-> > > > > of `-L$(objtree)/rust`. This ensures that:
-> > > > > 
-> > > > > 1. Host library builds (proc_macro2, quote, syn) only search rust/host/
-> > > > >    and never encounter the kernel's libcore.rmeta
-> > > > > 2. Proc macro builds use `-L$(objtree)/rust/host` to find their
-> > > > >    dependencies
-> > > > > 
-> > > > > Special handling is added for rustdoc-pin_init, which is a host build
-> > > > > (to access the alloc crate) but depends on proc macros from the main
-> > > > > rust/ directory. It uses explicit `--extern` paths to reference the
-> > > > > proc macros without adding `-L$(objtree)/rust`, which would reintroduce
-> > > > > the conflict.
-> > > > > 
-> > > > > The rust/host/ directory is added to clean-files to ensure it's removed
-> > > > > during `make clean`.
-> > > > > 
-> > > > > Link: https://github.com/Rust-for-Linux/linux/issues/105
-> > > > > Link: https://github.com/linuxppc/issues/issues/451
-> > > > > Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-> > > > > ---
-> > > > >  rust/Makefile | 38 +++++++++++++++++++++-----------------
-> > > > >  1 file changed, 21 insertions(+), 17 deletions(-)
-> > > > > 
-> > > > > diff --git a/rust/Makefile b/rust/Makefile
-> > > > > index 9801af2e1e02..e234b8a39358 100644
-> > > > > --- a/rust/Makefile
-> > > > > +++ b/rust/Makefile
-> > > > > @@ -3,6 +3,9 @@
-> > > > >  # Where to place rustdoc generated documentation
-> > > > >  rustdoc_output := $(objtree)/Documentation/output/rust/rustdoc
-> > > > >  
-> > > > > +# Clean generated host directory
-> > > > > +clean-files := host/
-> > > > > +
-> > > > >  obj-$(CONFIG_RUST) += core.o compiler_builtins.o ffi.o
-> > > > >  always-$(CONFIG_RUST) += exports_core_generated.h
-> > > > >  
-> > > > > @@ -27,7 +30,7 @@ endif
-> > > > >  
-> > > > >  obj-$(CONFIG_RUST) += exports.o
-> > > > >  
-> > > > > -always-$(CONFIG_RUST) += libproc_macro2.rlib libquote.rlib libsyn.rlib
-> > > > > +always-$(CONFIG_RUST) += host/libproc_macro2.rlib host/libquote.rlib host/libsyn.rlib
-> > > > >  
-> > > > >  always-$(CONFIG_RUST_KERNEL_DOCTESTS) += doctests_kernel_generated.rs
-> > > > >  always-$(CONFIG_RUST_KERNEL_DOCTESTS) += doctests_kernel_generated_kunit.c
-> > > > > @@ -150,7 +153,7 @@ quiet_cmd_rustdoc = RUSTDOC $(if $(rustdoc_host),H, ) $<
-> > > > >  	OBJTREE=$(abspath $(objtree)) \
-> > > > >  	$(RUSTDOC) $(filter-out $(skip_flags) --remap-path-prefix=% --remap-path-scope=%, \
-> > > > >  			$(if $(rustdoc_host),$(rust_common_flags),$(rust_flags))) \
-> > > > 
-> > > > The issue is here ↑, --remap-path-prefix=% got removed and the two
-> > > > previous lines got merged into one.
-> > > > 
-> > > Yeah will fix this.
-> > > > > -		$(rustc_target_flags) -L$(objtree)/$(obj) \
-> > > > > +		$(rustc_target_flags) -L$(objtree)/$(obj)$(if $(rustdoc_host),/host) \
-> > > > >  		-Zunstable-options --generate-link-to-definition \
-> > > > >  		--output $(rustdoc_output) \
-> > > > >  		--crate-name $(subst rustdoc-,,$@) \
-> > > > […]
-> > > > 
-> > > > Thanks anyway for iterating on this series!  I’ve started writing a DRM
-> > > > driver based off a previous version. :)
-> > > > 
-> > > That's cool. Thanks.
-> > > 
-> > > Regards,
-> > > Mukesh
-> > > > -- 
-> > > > Link Mauve
-> > > > 
-> > 
-> > -- 
-> > Link Mauve
-> 
-> > From 79b614dd7be16a1108e1f0176a7bc235fa163a4e Mon Sep 17 00:00:00 2001
-> > From: Link Mauve <linkmauve@linkmauve.fr>
-> > Date: Wed, 8 Apr 2026 14:16:04 +0200
-> > Subject: [PATCH 1/3] XXX: Workaround sstep.c
-> > 
-> > These variables are used only on CONFIG_PPC64, which causes compilation
-> > to fail on PPC32.
-> > ---
-> >  arch/powerpc/lib/sstep.c | 8 ++++----
-> >  1 file changed, 4 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-> > index ac3ee19531d8..dc129f0cb6a0 100644
-> > --- a/arch/powerpc/lib/sstep.c
-> > +++ b/arch/powerpc/lib/sstep.c
-> > @@ -1354,15 +1354,15 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
-> >  #ifdef CONFIG_PPC64
-> >  	unsigned int suffixopcode, prefixtype, prefix_r;
-> >  #endif
-> > -	unsigned int opcode, ra, rb, rc, rd, spr, u;
-> > +	unsigned int opcode, ra, rb/*, rc*/, rd, spr, u;
-> >  	unsigned long int imm;
-> >  	unsigned long int val, val2;
-> >  	unsigned int mb, me, sh;
-> > -	unsigned int word, suffix;
-> > +	unsigned int word/*, suffix*/;
-> >  	long ival;
-> >  
-> >  	word = ppc_inst_val(instr);
-> > -	suffix = ppc_inst_suffix(instr);
-> > +	//suffix = ppc_inst_suffix(instr);
-> >  
-> >  	op->type = COMPUTE;
-> >  
-> > @@ -1480,7 +1480,7 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
-> >  	rd = (word >> 21) & 0x1f;
-> >  	ra = (word >> 16) & 0x1f;
-> >  	rb = (word >> 11) & 0x1f;
-> > -	rc = (word >> 6) & 0x1f;
-> > +	//rc = (word >> 6) & 0x1f;
-> >  
-> >  	switch (opcode) {
-> >  #ifdef __powerpc64__
-> > -- 
-> > 2.54.0
-> > 
-> 
-> > From d4e72fad43175bde99287b8efdece900e5b53444 Mon Sep 17 00:00:00 2001
-> > From: Link Mauve <linkmauve@linkmauve.fr>
-> > Date: Fri, 10 Apr 2026 13:05:24 +0200
-> > Subject: [PATCH 2/3] XXX: Enable asm_experimental_arch for PowerPC asm!()
-> > 
-> > This is needed to compile the kernel crate, otherwise this error
-> > happens:
-> > 
-> > error[E0658]: inline assembly is not stable yet on this architecture
-> >   --> ../rust/kernel/sync/barrier.rs:19:14
-> >    |
-> > 19 |     unsafe { core::arch::asm!("") };
-> >    |              ^^^^^^^^^^^^^^^^^^^^
-> >    |
-> >    = note: see issue #93335 <https://github.com/rust-lang/rust/issues/93335> for more information
-> >    = help: add `#![feature(asm_experimental_arch)]` to the crate attributes to enable
-> >    = note: this compiler was built on 2026-03-25; consider upgrading it if it is out of date
-> > 
-> > error: aborting due to 1 previous error
-> > 
-> > For more information about this error, try `rustc --explain E0658`.
-> > ---
-> >  rust/kernel/lib.rs     | 3 +++
-> >  scripts/Makefile.build | 2 +-
-> >  2 files changed, 4 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/rust/kernel/lib.rs b/rust/kernel/lib.rs
-> > index d93292d47420..92ccd47dc3ee 100644
-> > --- a/rust/kernel/lib.rs
-> > +++ b/rust/kernel/lib.rs
-> > @@ -47,6 +47,9 @@
-> >  // To be determined.
-> >  #![feature(used_with_arg)]
-> >  //
-> > +// Needed for PowerPC inline assembly.
-> > +#![feature(asm_experimental_arch)]
-> > +//
-> >  // `feature(derive_coerce_pointee)` is expected to become stable. Before Rust
-> >  // 1.84.0, it did not exist, so enable the predecessor features.
-> >  #![cfg_attr(CONFIG_RUSTC_HAS_COERCE_POINTEE, feature(derive_coerce_pointee))]
-> > diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-> > index 3652b85be545..c7cc21994c5a 100644
-> > --- a/scripts/Makefile.build
-> > +++ b/scripts/Makefile.build
-> > @@ -321,7 +321,7 @@ $(obj)/%.lst: $(obj)/%.c FORCE
-> >  #
-> >  # Please see https://github.com/Rust-for-Linux/linux/issues/2 for details on
-> >  # the unstable features in use.
-> > -rust_allowed_features := asm_const,asm_goto,arbitrary_self_types,lint_reasons,offset_of_nested,raw_ref_op,slice_ptr_len,strict_provenance,used_with_arg
-> > +rust_allowed_features := asm_const,asm_goto,asm_experimental_arch,arbitrary_self_types,lint_reasons,offset_of_nested,raw_ref_op,slice_ptr_len,strict_provenance,used_with_arg
-> >  
-> >  # `--out-dir` is required to avoid temporaries being created by `rustc` in the
-> >  # current working directory, which may be not accessible in the out-of-tree
-> > -- 
-> > 2.54.0
-> > 
-> 
-> > From 2c0a3ec3da6fa1f0151225c05159f7a812317d32 Mon Sep 17 00:00:00 2001
-> > From: Link Mauve <linkmauve@linkmauve.fr>
-> > Date: Fri, 10 Apr 2026 13:51:24 +0200
-> > Subject: [PATCH 3/3] XXX: Workaround for __udivdi3() and __umoddi3()
-> > MIME-Version: 1.0
-> > Content-Type: text/plain; charset=UTF-8
-> > Content-Transfer-Encoding: 8bit
-> > 
-> > The core crate currently depends on these two functions for i64/u64/
-> > i128/u128/core::time::Duration formatting, but we shouldn’t use that in
-> > the kernel so let’s panic if they are ever called.
-> > ---
-> >  rust/exports.c | 9 +++++++++
-> >  1 file changed, 9 insertions(+)
-> > 
-> > diff --git a/rust/exports.c b/rust/exports.c
-> > index 587f0e776aba..5f1cdf13882e 100644
-> > --- a/rust/exports.c
-> > +++ b/rust/exports.c
-> > @@ -12,6 +12,7 @@
-> >   */
-> >  
-> >  #include <linux/export.h>
-> > +#include <linux/panic.h>
-> >  
-> >  #define EXPORT_SYMBOL_RUST_GPL(sym) extern int sym; EXPORT_SYMBOL_GPL(sym)
-> >  
-> > @@ -20,6 +21,14 @@
-> >  #include "exports_bindings_generated.h"
-> >  #include "exports_kernel_generated.h"
-> >  
-> > +void __udivdi3(void) {
-> > +	panic("__udivdi3() called but shouldn’t be made available on this architecture!\n");
-> > +}
-> > +
-> > +void __umoddi3(void) {
-> > +	panic("__umoddi3() called but shouldn’t be made available on this architecture!\n");
-> > +}
-> > +
-> >  // For modules using `rust/build_error.rs`.
-> >  #ifdef CONFIG_RUST_BUILD_ASSERT_ALLOW
-> >  EXPORT_SYMBOL_RUST_GPL(rust_build_error);
-> > -- 
-> > 2.54.0
-> > 
-> 
-> 
-
--- 
-Link Mauve
+Best regards,
+Krzysztof
 
