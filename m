@@ -1,76 +1,107 @@
-Return-Path: <linuxppc-dev+bounces-19880-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19881-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CAB0F8FA69
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2026 12:07:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DDA6CF8FA65
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2026 12:10:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g0Lh632rcz2ytx;
-	Tue, 21 Apr 2026 22:07:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1:d65d:64ff:fe57:4e05"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776773238;
-	cv=none; b=Ua8xOf+ODWQv3pboTsVut4KgeHdUJaFN9LNC1FN+/aCLlwG6KxpY3NskdyrJ/XEdpU0p/VocLhGSlzOk6L6tFwmv4EYqN+4LBIVCJe++FgA8mRYRy+gcayxHgjB5i/5ksbQXP/7iDHQ4ihF55Y7aa91pIL14MTU8CcuTq3XocrgjZTen8KJAJ/V3jzS8wkOJIPrB9QTqP5zA3clBDlBBISEVwOMzugO8V3dvAvogDKsBGm9IiSuAMn3BGYpQ7+f8M8OOyYm+XiSODYn5FJ0ej4W8IPLxUy1Biyo06kbImaKaqlgG8i6KS8E+bgs2uH3qCe8kZhV+f78ni9ahDFITSw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g0LlX2rhqz2ytx;
+	Tue, 21 Apr 2026 22:10:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1034"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776773416;
+	cv=none; b=hfEHFRmV0E5jxMCIgD+vbMIagaofd3akL3OonZngsFX8Euf5zN+gV50TQXyb2KRrp7N3JkgqNodHcz19z4QwsB2HduBwilNe5KqrKh1az6uF0jQ88//u1TZbAHWC0A9kYcaYgVMQtM1pDsDi6yNYGiHUFpiftjX58pqFQhNu37fB+u6SGyycUw66uJsGpSxWe+42zdv5ijDEhLOk1+gsjoEly+dfhc4YPQNjqAwZ8Q8+bD+ycl/VwMeL58EBFvdDbaS0hc20hQuKDTJUv1eTUBp0sgx2g2lMWijoV3E4R2NGLQU+hudAQXz1aipkU/khBKB9SSGQRXXQvsAQenWLkw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776773238; c=relaxed/relaxed;
-	bh=PNPmGlZC+yKOIjYYTwsUftsaSEF+Y62itbzem4MiqCw=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=ahr2qTf3aLr5WzF+3wjy38Ynsa3nSmw5svaSZcmdK+cCOY7L++rZiT53nwFS+jYmawOs9QkwTndZtC3mfMrQwl7a6UWJdDmGgDeAUQCBfK8NppJJTmhaeXTPJdO/US/uby7QjY3M1qZWxoimuHzm3zZFuvbrHY/eluXdikF28GiNbq0/jRMuvHfPbAVzmUAZT8FV9InaB47GSpKdDmVXmHhlfDiH/8gFh4WUeiTTIF60PvTvpt4zlujvQ7gD+y4M7LgY310LSTHG/pRHCAD9WaKxRLSiPnixaAHW2XAr/HCy30eLxo8UQZVH029qPZvsctn7BAlw5KKMLhJgeQQ5Yw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=HEiBlf68; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=batv+8a42a9c20075cf38facb+8276+infradead.org+dwmw2@desiato.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=desiato.srs.infradead.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+	t=1776773416; c=relaxed/relaxed;
+	bh=mYvELhLaqGtSokpfPVRkmugugq4w5jY0uoduoY+P08E=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Wh2mE6maNfaN4wejhk1RpIGdNJDI63gDf+6bV9HN/O4YoTGdnJav0yjq30Ye6eTMjMMC5TLJB2LJd2TznQMFgSSsZmout57xwyxtFjHYSIkLx3AY+RpcgPkdfKtz80H7s67PRkeVA/kNA7zjjVfIygEvwVqu2KVtHE+kl3npPY3Bk98QiSZkjHmzEukwHedjvYMqwgJpBqIeZ4nGzjUhfqG+DP3S42wrOGGmlEinerNeywQSLL+GjR/b0qascdLqlltdiYZUk5Ng1qo4RwszT55T252yx9VMhfsvgaPGMzp7ijc1FMiZacSEJ2tA48JLX2twcV7UKvdniWwFniVSvQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=hRQTGHIu; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=HEiBlf68;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=hRQTGHIu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=desiato.srs.infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=batv+8a42a9c20075cf38facb+8276+infradead.org+dwmw2@desiato.srs.infradead.org; receiver=lists.ozlabs.org)
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com [IPv6:2607:f8b0:4864:20::1034])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0Lh454RTz2ySW
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2026 22:07:15 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=MIME-Version:Content-Type:References:
-	In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=PNPmGlZC+yKOIjYYTwsUftsaSEF+Y62itbzem4MiqCw=; b=HEiBlf68XY594ugioZkZsYwri4
-	zPqxWGgjUFUCLCCBEfedLY36EjXej/x4768JmHvqEzor+qtnbwY++kwQH9jLcy6xry1AvhnY63xvW
-	9f0A0sAlgiL4fudXzeiGzXPULermcxunWHepjSdkqErAiPIZltbEn9djUNekKqPAcwMBWSbAtLKC1
-	MKGeoSgIvytl3oCLsbDZhOyF+PNd7vqlDQqbVS2kweCZeP5keC9d++uzKklRiY28qYYpdXlyPfP7W
-	tdovRG0y3xvvoUw6FWvqjGbjgnaGvh0UC+u/+7TssfF3H1SMKzBMFbQrIoxhoHmXRgcT6cdIElo3l
-	2BY0c3rw==;
-Received: from [172.31.31.148] (helo=u09cd745991455d.ant.amazon.com)
-	by desiato.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wF9sT-00000009h1D-3jWj;
-	Tue, 21 Apr 2026 12:06:54 +0000
-Message-ID: <6f7f93d389a0d209886a34898badd7d59908fe0f.camel@infradead.org>
-Subject: Re: [PATCH net-deletions] net: remove unused ATM protocols and
- legacy ATM device drivers
-From: David Woodhouse <dwmw2@infradead.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Herbert Xu
-	 <herbert@gondor.apana.org.au>
-Cc: Jakub Kicinski <kuba@kernel.org>, davem@davemloft.net, 
- netdev@vger.kernel.org, edumazet@google.com, pabeni@redhat.com, 
- andrew+netdev@lunn.ch, horms@kernel.org, corbet@lwn.net,
- skhan@linuxfoundation.org,  linux@armlinux.org.uk,
- tsbogend@alpha.franken.de, maddy@linux.ibm.com,  mpe@ellerman.id.au,
- npiggin@gmail.com, chleroy@kernel.org, 3chas3@gmail.com, 
- razor@blackwall.org, idosch@nvidia.com, jani.nikula@intel.com, 
- mchehab+huawei@kernel.org, tytso@mit.edu, ebiggers@kernel.org, 
- johannes.berg@intel.com, jonathan.cameron@huawei.com, kees@kernel.org, 
- kuniyu@google.com, fourier.thomas@gmail.com, andriy.shevchenko@intel.com, 
- rdunlap@infradead.org, akpm@linux-foundation.org,
- linux-doc@vger.kernel.org,  linux-mips@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,  bridge@lists.linux.dev
-Date: Tue, 21 Apr 2026 13:06:53 +0100
-In-Reply-To: <CAMuHMdU96F_42faeqNzDwaXks7mFrLrkPSJB_QTwxEn9HmVWpQ@mail.gmail.com>
-References: <20260421021943.1295109-1-kuba@kernel.org>
-	 <c7506c225ce22a71c03abc2673823cf84bbb5b0d.camel@infradead.org>
-	 <aedkZ5bizasuBPI8@gondor.apana.org.au>
-	 <CAMuHMdU96F_42faeqNzDwaXks7mFrLrkPSJB_QTwxEn9HmVWpQ@mail.gmail.com>
-Content-Type: multipart/signed; micalg="sha-256"; protocol="application/pkcs7-signature";
-	boundary="=-pkxpaXNCHGUYkmCZd6V2"
-User-Agent: Evolution 3.52.3-0ubuntu1.1 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0LlW40DFz2ySW
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2026 22:10:14 +1000 (AEST)
+Received: by mail-pj1-x1034.google.com with SMTP id 98e67ed59e1d1-35d95017a68so2708645a91.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2026 05:10:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1776773412; x=1777378212; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=mYvELhLaqGtSokpfPVRkmugugq4w5jY0uoduoY+P08E=;
+        b=hRQTGHIuORWFAUX5WE3LGL8g8Zh26i8t0HTBGjp+HzgBrIhAjbR9Qe9vf8KE0JGW/T
+         9uhs9s6/KLJAfKIkVliQzkw0NCCmsiWfv8RxnBXhib3Nt4BmCofYrS0E1JwRSeGe3qXu
+         UeXw3CnPMTUBxqaQ975gF6lkmsFfps45vPsZNXAdejWYO08ARseWxbV3c2oaUHkPLSgI
+         gobSLaIFfh+T+A5mNnI8uBwyjtAO+jhmcqxCG6DcFvbISOqUALulaqSETDehbw83Y+z2
+         GEDJ7NkTgV7oo0f0jSAPW07U1Pw1ywqraRuLVGrBpAgo6XLj+xR52tw3nUwyvOKPkijq
+         OXyg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1776773412; x=1777378212;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=mYvELhLaqGtSokpfPVRkmugugq4w5jY0uoduoY+P08E=;
+        b=pAAKh0DXfTVHRk+ZPs53cZ+HxaAAlhXutTkq7Kj2AuWWSAdyfcZoij/fN3KAba0qif
+         gxnPR35im1sMggILWQcBLBqFdQ8qpb2WUzIeKaZRqe9DbuAZjIEfV9lXZm1GTwlLAnna
+         480YIgnhGkyWN68i5iQ+y7FDOdFxWAJSrDxEf0Nb96xo9lNN9MJCcKj3u3AM0JYXh9oZ
+         cDN5NbqWuBM8xPME6Hn4XnBHfw/B8khg6KG8MCMq5dTgSwel5apNjpsneZwd6u2NxVTQ
+         fRnSO0HhnkImDXk9GOJA3Wsf09FE3caYueBl3QYHWeZH9UgP/h+5RQvpTPvhICTPc/Rs
+         r4Qw==
+X-Forwarded-Encrypted: i=1; AFNElJ//8kE8/ODxkyOrBV5Ci8HK8GO48qDipR4Pj7/MOsKYTUnhiV3uGnzQH50Y75xbkamVHSmMv+cGFT8h7tY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwivojvlGW+Bc1Ym+zy/PSf33PpILhJ/y+yihToPv6q9uc+bC8q
+	4vD3XKEfAE4Y36zVPtyhd766+JgzzNK1GP1jyo88kEicw7WhiwYarga+
+X-Gm-Gg: AeBDieuT1vyULeESX3VzDVQr2TyQk5OSfxJ1g8l83Dk29CGca+3NRmzBmVKbGVdG4C9
+	7HOEA/j7dgh0JCcbUbeL/GKDFDtxI5B8v5t1Xc2nRqyj31IvjuuLtieWiXbjzwsOTD2zf+sid+B
+	tKXD+mD0YMsVcoj21jb/G5Ak3se+MnWYq8g14PS/3DEj4N/dYaRJIxR4PCIMX48Sozz9YKqulmN
+	0G01jpEyOKxxCh+Aqi2QBhSsb2aXqF/4DlpeyhziKgVa9dnZY8c/lrVsqkAAEcdE7QCVHgP/y8D
+	ZRjt4SWR25vHaHVDp5L7AgmOIdAh0Xb0g+V+Q4kthBa7wOl5nRxFVqRUIdVi/PJ0D9CMbT4b3kh
+	hnBRCd81eMyVJLFpUz39T91ja8ZltnIysVhB3/JAttaCDJCR9EHMba3xHSl6c1Q2sXNDYXiew35
+	Qe5bkJkhspns5OUhQZ+qTYASkwkdn7x6R2aYBQpUUaM/qfMSH9hc/pKW5Q9U5WabARBbkO6uhYT
+	ZXaBaAJj1+GOvM=
+X-Received: by 2002:a17:90b:384e:b0:35b:952c:43b9 with SMTP id 98e67ed59e1d1-3614040b2c7mr18545775a91.10.1776773412415;
+        Tue, 21 Apr 2026 05:10:12 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.bl1-in.ibm.com ([129.41.58.4])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c797701d9bfsm10045274a12.16.2026.04.21.05.10.04
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 21 Apr 2026 05:10:11 -0700 (PDT)
+From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+To: maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	chleroy@kernel.org,
+	peterz@infradead.org,
+	jpoimboe@kernel.org,
+	jbaron@akamai.com,
+	aliceryhl@google.com,
+	rostedt@goodmis.org,
+	ardb@kernel.org,
+	ojeda@kernel.org,
+	boqun@kernel.org,
+	gary@garyguo.net,
+	bjorn3_gh@protonmail.com,
+	lossin@kernel.org,
+	a.hindborg@kernel.org,
+	tmgross@umich.edu,
+	dakr@kernel.org,
+	nathan@kernel.org,
+	nick.desaulniers+lkml@gmail.com,
+	morbo@google.com,
+	justinstitt@google.com,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	rust-for-linux@vger.kernel.org,
+	llvm@lists.linux.dev
+Cc: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+Subject: [PATCH V12 0/4] Rust support for powerpc
+Date: Tue, 21 Apr 2026 17:39:54 +0530
+Message-ID: <20260421120958.190430-1-mkchauras@gmail.com>
+X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -84,133 +115,102 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by desiato.infradead.org. See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Enable experimental rust support for ppc64le and ppc32be. The patch for
+ppc32 has been provided by Link Mauve[1] and ppc64le support[2] has been
+merged over it. ppc32 needs some toolchain fixes mentioned in the patch
+`rust: Add PowerPC support` and the discussion for that is done here[1].
+
+This has been tested on
+- powernv9 hardware
+- pseries P11 hardware
+- pseries(9, 10) qemu
+- powernv(9, 10) qemu
+- rustdoc on x86 and powerpc64le
+- rusttest on x86 and powerpc64le
+
+We are actively working with our LLVM team to get the target for ppc,
+ppc64 and ppc64le in the rust compiler.
 
 
---=-pkxpaXNCHGUYkmCZd6V2
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+[1] https://lore.kernel.org/all/20260204030507.8203-1-linkmauve@linkmauve.fr
+[2] https://lore.kernel.org/all/20260204042417.83903-1-mkchauras@gmail.com
 
-On Tue, 2026-04-21 at 13:57 +0200, Geert Uytterhoeven wrote:
-> Hi Herbert,
->=20
-> On Tue, 21 Apr 2026 at 13:51, Herbert Xu <herbert@gondor.apana.org.au> wr=
-ote:
-> > On Tue, Apr 21, 2026 at 10:26:18AM +0100, David Woodhouse wrote:
-> > > I suspect they don't have a huge amount of interest in the Solos any
-> > > more, or the Geode-based SBC they sold with two of them on-board. But
-> > > OpenWrt does still support them, and I even have one here (although n=
-o
-> > > ADSL line to test it with). They were briefly popular as fully Linux-
-> > > supported ADSL routers.
-> >=20
-> > ADSL is history, it only ever made sense in rich countries where
-> > physical copper cables were pre-installed in homes.=C2=A0 While rich
-> > countries have moved to fibre, the rest of the world won't use
-> > ADSL either because there is no copper cable to begin with.=C2=A0 So
-> > it's actually cheaper to just lay a fibre cable for a new install.
->=20
-> I am afraid the move to fibre hasn't been completed yet.
-> ADSL (VDSL2?) is still being used.
+Changelog:
+V11 -> V12:
+- Rebased to mainline (rust/Makefile conflict resolved)
+V11: https://lore.kernel.org/all/20260417152253.2312961-1-mkchauras@gmail.com/
 
-VSDL is different, and isn't ATM-based. But even ADSL is still in use;
-in the UK some rural areas haven't got fibre yet.
+V10 -> V11:
+- Updated `rust/Makefile`
+- Not all libraries are move to `rust/host` directory now. Only
+  proc_macro2, quote and syn are moved
+- Special handling for pin init is added. Details in commit
+- Removed mkdir for `rust/host`, this is now handled by toolchain.
+V10: https://lore.kernel.org/all/20260406200149.3727922-1-mkchauras@gmail.com/
 
---=-pkxpaXNCHGUYkmCZd6V2
-Content-Type: application/pkcs7-signature; name="smime.p7s"
-Content-Disposition: attachment; filename="smime.p7s"
-Content-Transfer-Encoding: base64
+V9 -> V10:
+- rust/Makefile updated with review comments from Miguel
+- Patch 1/4 updated with commit message and subject
+V9: https://lore.kernel.org/all/20260404121610.1956528-1-mkchauras@gmail.com/
 
-MIAGCSqGSIb3DQEHAqCAMIACAQExDzANBglghkgBZQMEAgEFADCABgkqhkiG9w0BBwEAAKCCD9Aw
-ggSOMIIDdqADAgECAhAOmiw0ECVD4cWj5DqVrT9PMA0GCSqGSIb3DQEBCwUAMGUxCzAJBgNVBAYT
-AlVTMRUwEwYDVQQKEwxEaWdpQ2VydCBJbmMxGTAXBgNVBAsTEHd3dy5kaWdpY2VydC5jb20xJDAi
-BgNVBAMTG0RpZ2lDZXJ0IEFzc3VyZWQgSUQgUm9vdCBDQTAeFw0yNDAxMzAwMDAwMDBaFw0zMTEx
-MDkyMzU5NTlaMEExCzAJBgNVBAYTAkFVMRAwDgYDVQQKEwdWZXJva2V5MSAwHgYDVQQDExdWZXJv
-a2V5IFNlY3VyZSBFbWFpbCBHMjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMjvgLKj
-jfhCFqxYyRiW8g3cNFAvltDbK5AzcOaR7yVzVGadr4YcCVxjKrEJOgi7WEOH8rUgCNB5cTD8N/Et
-GfZI+LGqSv0YtNa54T9D1AWJy08ZKkWvfGGIXN9UFAPMJ6OLLH/UUEgFa+7KlrEvMUupDFGnnR06
-aDJAwtycb8yXtILj+TvfhLFhafxroXrflspavejQkEiHjNjtHnwbZ+o43g0/yxjwnarGI3kgcak7
-nnI9/8Lqpq79tLHYwLajotwLiGTB71AGN5xK+tzB+D4eN9lXayrjcszgbOv2ZCgzExQUAIt98mre
-8EggKs9mwtEuKAhYBIP/0K6WsoMnQCcCAwEAAaOCAVwwggFYMBIGA1UdEwEB/wQIMAYBAf8CAQAw
-HQYDVR0OBBYEFIlICOogTndrhuWByNfhjWSEf/xwMB8GA1UdIwQYMBaAFEXroq/0ksuCMS1Ri6en
-IZ3zbcgPMA4GA1UdDwEB/wQEAwIBhjAdBgNVHSUEFjAUBggrBgEFBQcDBAYIKwYBBQUHAwIweQYI
-KwYBBQUHAQEEbTBrMCQGCCsGAQUFBzABhhhodHRwOi8vb2NzcC5kaWdpY2VydC5jb20wQwYIKwYB
-BQUHMAKGN2h0dHA6Ly9jYWNlcnRzLmRpZ2ljZXJ0LmNvbS9EaWdpQ2VydEFzc3VyZWRJRFJvb3RD
-QS5jcnQwRQYDVR0fBD4wPDA6oDigNoY0aHR0cDovL2NybDMuZGlnaWNlcnQuY29tL0RpZ2lDZXJ0
-QXNzdXJlZElEUm9vdENBLmNybDARBgNVHSAECjAIMAYGBFUdIAAwDQYJKoZIhvcNAQELBQADggEB
-ACiagCqvNVxOfSd0uYfJMiZsOEBXAKIR/kpqRp2YCfrP4Tz7fJogYN4fxNAw7iy/bPZcvpVCfe/H
-/CCcp3alXL0I8M/rnEnRlv8ItY4MEF+2T/MkdXI3u1vHy3ua8SxBM8eT9LBQokHZxGUX51cE0kwa
-uEOZ+PonVIOnMjuLp29kcNOVnzf8DGKiek+cT51FvGRjV6LbaxXOm2P47/aiaXrDD5O0RF5SiPo6
-xD1/ClkCETyyEAE5LRJlXtx288R598koyFcwCSXijeVcRvBB1cNOLEbg7RMSw1AGq14fNe2cH1HG
-W7xyduY/ydQt6gv5r21mDOQ5SaZSWC/ZRfLDuEYwggWbMIIEg6ADAgECAhAH5JEPagNRXYDiRPdl
-c1vgMA0GCSqGSIb3DQEBCwUAMEExCzAJBgNVBAYTAkFVMRAwDgYDVQQKEwdWZXJva2V5MSAwHgYD
-VQQDExdWZXJva2V5IFNlY3VyZSBFbWFpbCBHMjAeFw0yNDEyMzAwMDAwMDBaFw0yODAxMDQyMzU5
-NTlaMB4xHDAaBgNVBAMME2R3bXcyQGluZnJhZGVhZC5vcmcwggIiMA0GCSqGSIb3DQEBAQUAA4IC
-DwAwggIKAoICAQDali7HveR1thexYXx/W7oMk/3Wpyppl62zJ8+RmTQH4yZeYAS/SRV6zmfXlXaZ
-sNOE6emg8WXLRS6BA70liot+u0O0oPnIvnx+CsMH0PD4tCKSCsdp+XphIJ2zkC9S7/yHDYnqegqt
-w4smkqUqf0WX/ggH1Dckh0vHlpoS1OoxqUg+ocU6WCsnuz5q5rzFsHxhD1qGpgFdZEk2/c//ZvUN
-i12vPWipk8TcJwHw9zoZ/ZrVNybpMCC0THsJ/UEVyuyszPtNYeYZAhOJ41vav1RhZJzYan4a1gU0
-kKBPQklcpQEhq48woEu15isvwWh9/+5jjh0L+YNaN0I//nHSp6U9COUG9Z0cvnO8FM6PTqsnSbcc
-0j+GchwOHRC7aP2t5v2stVx3KbptaYEzi4MQHxm/0+HQpMEVLLUiizJqS4PWPU6zfQTOMZ9uLQRR
-ci+c5xhtMEBszlQDOvEQcyEG+hc++fH47K+MmZz21bFNfoBxLP6bjR6xtPXtREF5lLXxp+CJ6KKS
-blPKeVRg/UtyJHeFKAZXO8Zeco7TZUMVHmK0ZZ1EpnZbnAhKE19Z+FJrQPQrlR0gO3lBzuyPPArV
-hvWxjlO7S4DmaEhLzarWi/ze7EGwWSuI2eEa/8zU0INUsGI4ywe7vepQz7IqaAovAX0d+f1YjbmC
-VsAwjhLmveFjNwIDAQABo4IBsDCCAawwHwYDVR0jBBgwFoAUiUgI6iBOd2uG5YHI1+GNZIR//HAw
-HQYDVR0OBBYEFFxiGptwbOfWOtMk5loHw7uqWUOnMDAGA1UdEQQpMCeBE2R3bXcyQGluZnJhZGVh
-ZC5vcmeBEGRhdmlkQHdvb2Rob3Uuc2UwFAYDVR0gBA0wCzAJBgdngQwBBQEBMA4GA1UdDwEB/wQE
-AwIF4DAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYBBQUHAwQwewYDVR0fBHQwcjA3oDWgM4YxaHR0
-cDovL2NybDMuZGlnaWNlcnQuY29tL1Zlcm9rZXlTZWN1cmVFbWFpbEcyLmNybDA3oDWgM4YxaHR0
-cDovL2NybDQuZGlnaWNlcnQuY29tL1Zlcm9rZXlTZWN1cmVFbWFpbEcyLmNybDB2BggrBgEFBQcB
-AQRqMGgwJAYIKwYBBQUHMAGGGGh0dHA6Ly9vY3NwLmRpZ2ljZXJ0LmNvbTBABggrBgEFBQcwAoY0
-aHR0cDovL2NhY2VydHMuZGlnaWNlcnQuY29tL1Zlcm9rZXlTZWN1cmVFbWFpbEcyLmNydDANBgkq
-hkiG9w0BAQsFAAOCAQEAQXc4FPiPLRnTDvmOABEzkIumojfZAe5SlnuQoeFUfi+LsWCKiB8Uextv
-iBAvboKhLuN6eG/NC6WOzOCppn4mkQxRkOdLNThwMHW0d19jrZFEKtEG/epZ/hw/DdScTuZ2m7im
-8ppItAT6GXD3aPhXkXnJpC/zTs85uNSQR64cEcBFjjoQDuSsTeJ5DAWf8EMyhMuD8pcbqx5kRvyt
-JPsWBQzv1Dsdv2LDPLNd/JUKhHSgr7nbUr4+aAP2PHTXGcEBh8lTeYea9p4d5k969pe0OHYMV5aL
-xERqTagmSetuIwolkAuBCzA9vulg8Y49Nz2zrpUGfKGOD0FMqenYxdJHgDCCBZswggSDoAMCAQIC
-EAfkkQ9qA1FdgOJE92VzW+AwDQYJKoZIhvcNAQELBQAwQTELMAkGA1UEBhMCQVUxEDAOBgNVBAoT
-B1Zlcm9rZXkxIDAeBgNVBAMTF1Zlcm9rZXkgU2VjdXJlIEVtYWlsIEcyMB4XDTI0MTIzMDAwMDAw
-MFoXDTI4MDEwNDIzNTk1OVowHjEcMBoGA1UEAwwTZHdtdzJAaW5mcmFkZWFkLm9yZzCCAiIwDQYJ
-KoZIhvcNAQEBBQADggIPADCCAgoCggIBANqWLse95HW2F7FhfH9bugyT/danKmmXrbMnz5GZNAfj
-Jl5gBL9JFXrOZ9eVdpmw04Tp6aDxZctFLoEDvSWKi367Q7Sg+ci+fH4KwwfQ8Pi0IpIKx2n5emEg
-nbOQL1Lv/IcNiep6Cq3DiyaSpSp/RZf+CAfUNySHS8eWmhLU6jGpSD6hxTpYKye7PmrmvMWwfGEP
-WoamAV1kSTb9z/9m9Q2LXa89aKmTxNwnAfD3Ohn9mtU3JukwILRMewn9QRXK7KzM+01h5hkCE4nj
-W9q/VGFknNhqfhrWBTSQoE9CSVylASGrjzCgS7XmKy/BaH3/7mOOHQv5g1o3Qj/+cdKnpT0I5Qb1
-nRy+c7wUzo9OqydJtxzSP4ZyHA4dELto/a3m/ay1XHcpum1pgTOLgxAfGb/T4dCkwRUstSKLMmpL
-g9Y9TrN9BM4xn24tBFFyL5znGG0wQGzOVAM68RBzIQb6Fz758fjsr4yZnPbVsU1+gHEs/puNHrG0
-9e1EQXmUtfGn4InoopJuU8p5VGD9S3Ikd4UoBlc7xl5yjtNlQxUeYrRlnUSmdlucCEoTX1n4UmtA
-9CuVHSA7eUHO7I88CtWG9bGOU7tLgOZoSEvNqtaL/N7sQbBZK4jZ4Rr/zNTQg1SwYjjLB7u96lDP
-sipoCi8BfR35/ViNuYJWwDCOEua94WM3AgMBAAGjggGwMIIBrDAfBgNVHSMEGDAWgBSJSAjqIE53
-a4blgcjX4Y1khH/8cDAdBgNVHQ4EFgQUXGIam3Bs59Y60yTmWgfDu6pZQ6cwMAYDVR0RBCkwJ4ET
-ZHdtdzJAaW5mcmFkZWFkLm9yZ4EQZGF2aWRAd29vZGhvdS5zZTAUBgNVHSAEDTALMAkGB2eBDAEF
-AQEwDgYDVR0PAQH/BAQDAgXgMB0GA1UdJQQWMBQGCCsGAQUFBwMCBggrBgEFBQcDBDB7BgNVHR8E
-dDByMDegNaAzhjFodHRwOi8vY3JsMy5kaWdpY2VydC5jb20vVmVyb2tleVNlY3VyZUVtYWlsRzIu
-Y3JsMDegNaAzhjFodHRwOi8vY3JsNC5kaWdpY2VydC5jb20vVmVyb2tleVNlY3VyZUVtYWlsRzIu
-Y3JsMHYGCCsGAQUFBwEBBGowaDAkBggrBgEFBQcwAYYYaHR0cDovL29jc3AuZGlnaWNlcnQuY29t
-MEAGCCsGAQUFBzAChjRodHRwOi8vY2FjZXJ0cy5kaWdpY2VydC5jb20vVmVyb2tleVNlY3VyZUVt
-YWlsRzIuY3J0MA0GCSqGSIb3DQEBCwUAA4IBAQBBdzgU+I8tGdMO+Y4AETOQi6aiN9kB7lKWe5Ch
-4VR+L4uxYIqIHxR7G2+IEC9ugqEu43p4b80LpY7M4KmmfiaRDFGQ50s1OHAwdbR3X2OtkUQq0Qb9
-6ln+HD8N1JxO5nabuKbymki0BPoZcPdo+FeRecmkL/NOzzm41JBHrhwRwEWOOhAO5KxN4nkMBZ/w
-QzKEy4PylxurHmRG/K0k+xYFDO/UOx2/YsM8s138lQqEdKCvudtSvj5oA/Y8dNcZwQGHyVN5h5r2
-nh3mT3r2l7Q4dgxXlovERGpNqCZJ624jCiWQC4ELMD2+6WDxjj03PbOulQZ8oY4PQUyp6djF0keA
-MYIDuzCCA7cCAQEwVTBBMQswCQYDVQQGEwJBVTEQMA4GA1UEChMHVmVyb2tleTEgMB4GA1UEAxMX
-VmVyb2tleSBTZWN1cmUgRW1haWwgRzICEAfkkQ9qA1FdgOJE92VzW+AwDQYJYIZIAWUDBAIBBQCg
-ggE3MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTI2MDQyMTEyMDY1
-M1owLwYJKoZIhvcNAQkEMSIEILdzQKtvQhnfI/s6FrUj3fn29zIqzC9j/DH4dx7FW9VoMGQGCSsG
-AQQBgjcQBDFXMFUwQTELMAkGA1UEBhMCQVUxEDAOBgNVBAoTB1Zlcm9rZXkxIDAeBgNVBAMTF1Zl
-cm9rZXkgU2VjdXJlIEVtYWlsIEcyAhAH5JEPagNRXYDiRPdlc1vgMGYGCyqGSIb3DQEJEAILMVeg
-VTBBMQswCQYDVQQGEwJBVTEQMA4GA1UEChMHVmVyb2tleTEgMB4GA1UEAxMXVmVyb2tleSBTZWN1
-cmUgRW1haWwgRzICEAfkkQ9qA1FdgOJE92VzW+AwDQYJKoZIhvcNAQEBBQAEggIAeVuv9br9naNR
-eeKf7+C+rMVqiUQonOL6inI+VFS1U2Vca0tNCvETyZOG9TxUProznhSqLK5fqwDrLmHpc9RRsTlP
-FsU2jf9/s6yhAxra5cHidHzkGsIzJRpIYpl4zsSbcqH99xiGL9R6s6hJzfVljMzFRGrks7FROsv7
-FwhH9pbzQaerkGlsRTGkzy9R3+K0YErGmXxkLrOH6bcI1EXv/GvExNyuM7le7DZbi5FF3Nw5t88U
-k139iPbD1cYo2Nh/Hh0nZggEFXOgBh/zgV+8SM04HoOo4iWZ5zhhZrwDMsH2m3vQUDuT2efvVCs5
-1oWR5iwaWqg5bcLdeE42q2prmlAtKAIb8jTWukfOodipucLfn+SNh/UzsKx/7QqI0488UREV9ks6
-AQV9EzN0XuOXGkJuBXG42yjLgEHrY4sLk0a4zDPUftbcB4QdJxKjp2rWIgXGK4HdK3O/06ZGeTkP
-aXEtibuJjAhQ1K5+0fXIozcPYKwjfinOwuhTpINpcwjPYiIB2gYDTpgBrQdf1suXjHi46acGkVDT
-4ueZcyJ+iBLtM31Vj2Yh0kbwbQ9OnaGWAzM+cNSGoD70tyJdBctWrk0iYKMSn+Bto2jsQBegpzGo
-vu4VRlnPbEBNlMMTkgO3hkqh8LHkpm+UBrNavAzvIlnGxYps3DhE7rTAvz/2L5sAAAAAAAA=
+V8 -> V9:
+- rust/Makefile updated with a directory instead of abspath
+V8: https://lore.kernel.org/all/20260403145308.1042622-1-mkchauras@gmail.com/
 
+V7 -> V8:
+- rust/Makefile updated to separate host libraries from target
+V7: https://lore.kernel.org/all/20260329160254.2592207-1-mkchauras@gmail.com/
 
---=-pkxpaXNCHGUYkmCZd6V2--
+Changelog:
+V6 -> V7:
+- Documentation removed as powerpc is still under development
+- Added a fix for race condition in rust/Makefile
+V6: https://lore.kernel.org/all/20260210090023.2587534-1-mkchauras@gmail.com
+
+V5 -> V6:
+- Added a missing Tested by from Venkat which got missed since V3
+- Support is marked as Maintained instead of experimental
+V5: https://lore.kernel.org/all/20260210053756.2088302-1-mkchauras@gmail.com
+
+V4 -> V5:
+- Removed a nested ifdef from PPC64 for Little endian toolchain
+V4: https://lore.kernel.org/all/20260209105456.1551677-1-mkchauras@gmail.com
+
+V3 -> V4:
+- Co-developed-by header added in patch 1
+V3: https://lore.kernel.org/all/20260205180429.3280657-1-mkchauras@gmail.com
+
+V2 -> V3:
+- Splited HAVE_RUST in 2 lines
+- BINDGEN_TARGET_powerpc initialized before assigning the same to
+  BINDGEN_TARGET
+V2: https://lore.kernel.org/all/20260204210125.613350-1-mkchauras@gmail.com
+
+V1 -> V2:
+- jump label fix for rust has been moved to a separate patch
+- PPC32 support has been taken
+- rust support has been marked experimental
+- target.json dependency has been removed
+- HAVE_RUST now depends on CPU_LITTLE_ENDIAN for PPC64
+
+Link Mauve (1):
+  rust: Add PowerPC support
+
+Mukesh Kumar Chaurasiya (IBM) (3):
+  rust: Fix "multiple candidates for rmeta dependency core" error
+  powerpc/jump_label: adjust inline asm to be consistent
+  powerpc: Enable Rust for ppc64le
+
+ arch/powerpc/Kconfig                  |  2 ++
+ arch/powerpc/Makefile                 |  7 ++++
+ arch/powerpc/include/asm/jump_label.h | 23 +++++++------
+ rust/Makefile                         | 48 +++++++++++++++++----------
+ 4 files changed, 52 insertions(+), 28 deletions(-)
+
+-- 
+2.53.0
+
 
