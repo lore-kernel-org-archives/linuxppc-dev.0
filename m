@@ -1,78 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-19972-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19973-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF9D8FA1FD1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2026 16:17:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB7D3FA1FD6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2026 17:36:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g148H3l90z2yvZ;
-	Thu, 23 Apr 2026 02:15:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776874543;
-	cv=none; b=ZtdxJDH8t07A+2EXw9/wThcFfiJ5HyzzBMC8ImqkEK+0VXbXrxCNMIAkSmihupZgaHX9hvT6Fqs0hWenr+KqOBZxNFehTfPOWH/kWowrhNIExgerAV5OPPE2tgQBDwWbpzSGT6y8p0iYc/n5k3KDvlsA1QBWOj3mL8Scge6SbA5cN/GOK06XOnUb33l/KqBRgtG2WGLLzRl3v171bcTbVc403CY2n7SKPUuktXZ19jJfE7P1veRflZwfYlSCpDGkN1ExD5j1DBN/kiKZCa1Fh4akSi3g/sjFYpxo0qH1BbeM1NqVarfcHKJCUnwdevS9dq9PWsvRr71DoAQT7sliDA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g15xR1tRHz2yrT;
+	Thu, 23 Apr 2026 03:36:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776879387;
+	cv=none; b=ZOpvfpcFFGVjdi25dn2wVOJHNqtbLYK1T+OSGY1Ytt1dZlmvfw0FMRRFx/iydPJzs/xZ0cqH7Ow5MwIxiiFg+U7FMWDinbMDnswFd4lF3WqZP7mVOsnOdKovZYmr+AEfgCN+2s7IbBe8TGNIyvumybHSZfwCyVWBKKi2RbE+rCoR865eZh7kalTaBjhqaZBh8VfiioPZh+FLdvUIDO8zm9ZctSahv6j9G2uVuL6MHIJTkGUNQbMo7z9BKYnCL5undCuD+mKC3NlG1veWX+Pa7r875mdIemGGQLNlp11Az7Evjss9Ss9B4UJEZRke5L1FkWB7kk5dqd2NfzVrpc1+0Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776874543; c=relaxed/relaxed;
-	bh=SQaBGCS8CXAgsSL+WPVn+u1IKv5zmqboGM0+4ToKWUc=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Cq33AvpBO3RwokmhnDwkqcq6Jzp+xC9RjSbUumYnjkheAyDDovv1SaSgaXtLxj+9vqTe1h6vJ6+Fn0mIqZE7KG0tR++F8BggKeOk8QqZzI7fCmXcPWzOapOAq+ZTRQObIAUgOFqGTatX6DzTNGH5+kHUdPkizOMLhJv33bEpAE83SaXO9WYWQc6y845AqkoY4yuZuvg5mZ9isnCvKvZ6WWZo186fzBAUPHRubobbTvLgZNSO5y+s3PjgY3/0NVizDGG/3//r4DLJZPkqLUptBVi9P/ZHdBaudmeHPlB/sWNk/EA1b+aQ3p55v6/DOqmkizBXTzTs/BexbCIvYByFuw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=m8QdmUHE; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1776879387; c=relaxed/relaxed;
+	bh=s2BqK87P3busZvwnKMqLZKct+u+esfha5cyZCzHRZkU=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=OMHtNXOKsIjFo3bbvns3NxmO1BcvP4mnSgiESkn7aCLA7tMu2/yXq+/9MOTDn1TIjuneAiIVZ8dJoy3be686eJE3jrNyrdCQs9kBVilYL/uLiWEMf2ub38tM0d3WgtesEIQQAEWDZ1EE+LaiA8c6Zq9GYjjjONge7Rg8UER/dJE8Z7seb6RYJPiwuKrpl15ElHJWozfC4y4tCPCzRVXZP7ydTtAOFzh3ux/Ctns9B5q6pFiDxTVTtVw0YwdTr+CKHLH7N3fUQZ6R+TdYZ8Ny+l1FgXb6NS0WV0tydqmY65W8pDRjdzHz6Fz5G3tdz+A/pjckaWwzcUMFS611aA27Pg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=i7EOUKez; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=m8QdmUHE;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=i7EOUKez;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g148B1nG4z3d8p
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 02:15:38 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id B560C433EE;
-	Wed, 22 Apr 2026 16:15:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7B917C19425;
-	Wed, 22 Apr 2026 16:15:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776874536;
-	bh=dFCDzhXA2zUSnlj0+jJsCYTv9upJPkAyBg063oGGGK4=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=m8QdmUHE22S/biCkSxFIOC14JtXTSxgA4FYN2o0neiedaWK8dLMHPunLd4X2UIExa
-	 fbzI4bOnwaWE+ngvwJt6ZeJzCYXsZ4kO6kjIWY0MAg3MFhCWc5CzEN0nOs9p93y47Y
-	 zdwWd97wxcDcfUK95xpLmLs/yrQiEK5HAcFdj6zOR1/cUGAmz+OT8pWQEyqwEm6gYs
-	 sBAMXyqoPbDKR5h4lD0HI4LpjIEnV7b1fkvWyMLYXG3zJvzNLMVek/O0P9fSknydP0
-	 /TI104uBsJeLPyuRiCg9eg9mkSmplBo9QzuAoD80kRIv1cbfgTbffByeVS7VwniOQ/
-	 NF2QAwy85F9Dw==
-From: =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kwilczynski@kernel.org>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Bjorn Helgaas <helgaas@kernel.org>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>,
-	Magnus Lindholm <linmag7@gmail.com>,
-	Matt Turner <mattst88@gmail.com>,
-	Richard Henderson <richard.henderson@linaro.org>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Dexuan Cui <decui@microsoft.com>,
-	=?UTF-8?q?Krzysztof=20Ha=C5=82asa?= <khalasa@piap.pl>,
-	Lukas Wunner <lukas@wunner.de>,
-	"Oliver O'Halloran" <oohall@gmail.com>,
-	Saurabh Singh Sengar <ssengar@microsoft.com>,
-	Shuan He <heshuan@bytedance.com>,
-	Srivatsa Bhat <srivatsabhat@microsoft.com>,
-	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	linux-pci@vger.kernel.org,
-	linux-alpha@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v6 24/24] PCI/sysfs: Limit BAR resize attribute scope to platforms with PCI mmap
-Date: Wed, 22 Apr 2026 16:14:07 +0000
-Message-ID: <20260422161407.118748-25-kwilczynski@kernel.org>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260422161407.118748-1-kwilczynski@kernel.org>
-References: <20260422161407.118748-1-kwilczynski@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g15xP5Cp2z2yrM
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 03:36:24 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63MGMep03515444;
+	Wed, 22 Apr 2026 17:36:20 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=s2BqK87P3busZvwnKMqLZKct+u+esfha5cyZCzHRZ
+	kU=; b=i7EOUKezNPThLibWCTqm9JzX1lp+JxOtgcYWCSBB1wbgsfCWv/UaWSP6K
+	jLKePsQCWhRTl/MSS/ouZVuZ5nccm1Tof1388I+qHgnZzpc0i4A9RpiVyOtGmZVJ
+	BrsvBSc2tWKiYp+lLW7T85f+xwNOOlV+H4FoVoev8BkM/URWLsx4LOrxxTv4k2vS
+	G3i8oKknqQYcoBb9ncdN1dMC91bvoQpNzhWBg4hd1xZTN8PEuRTZsgjdDiXWZjSQ
+	Mklf0qrLz1PAllob4kW/29/0IrW5DzJ/jT9526QobFAvEeG+za6+FGpiPvpcRMTu
+	yNz2FbyatguckwVrSQyQ0mXOcKD4A==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dpeu24sgp-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 22 Apr 2026 17:36:19 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 63MHZKeV003564;
+	Wed, 22 Apr 2026 17:36:18 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dpjkxu7kv-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 22 Apr 2026 17:36:18 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63MHaEo130409064
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 22 Apr 2026 17:36:14 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A613820043;
+	Wed, 22 Apr 2026 17:36:14 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C721020040;
+	Wed, 22 Apr 2026 17:36:11 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.39.30.235])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 22 Apr 2026 17:36:11 +0000 (GMT)
+From: Athira Rajeev <atrajeev@linux.ibm.com>
+To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
+        mpetlan@redhat.com, tmricht@linux.ibm.com, maddy@linux.ibm.com,
+        irogers@google.com, namhyung@kernel.org
+Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        atrajeev@linux.ibm.com, hbathini@linux.vnet.ibm.com,
+        Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com
+Subject: [PATCH] perf sched: Fix crash in sched stats diff due to uninitialized perf_data structure
+Date: Wed, 22 Apr 2026 23:05:45 +0530
+Message-Id: <20260422173545.73144-1-atrajeev@linux.ibm.com>
+X-Mailer: git-send-email 2.39.5 (Apple Git-154)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,66 +88,150 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDIyMDE2NyBTYWx0ZWRfXz7XoSV/kWtvR
+ YznATFeblMFplDhVI5eegDomNE30dm7QopcRBNthuIZSQ26z0MDEYeF3gw3m/SPoAy6CyfmRx0Y
+ lgMUCRaJpyetNy/6ib6yhDOL14Srp0o3Xaos5r9xScB1HOVfNTNOoRXA77pSEDymYuwgOb/SRyT
+ QULz66Z4YbiQhj/5q7Psdkr3/dx1k4YwNtifVks0/Q+CeS1TNsU4nyl2tcicY6cRFdyPriq7Yjj
+ dAj+KkgbhP/W5S1vKj1qC+FM6MI6SPFsjnMn7QfvBJj61JPz56zgAUQOnCCHSo5SFDgKJRIBodL
+ 5urd01EUcKWxXGI79+bpQLMfv8oPQywlncjGEKBACGLDB9zJQTn4iH6mQP77owVuWq6mpMpbm4z
+ dBU4YMfswRY+uhp0CfhmhJaNL1RUo4q8yLUddU4nDYyMmkwRPgoPChnDKrD1+eXd5V0PgvdKPVv
+ sZURajTxo+zFlOmHcjg==
+X-Proofpoint-ORIG-GUID: kO37_hnscnMYR81Tnn_nPId96kExk12C
+X-Proofpoint-GUID: NM2Xa-JT7Lu4q0-Md1peximJP9oTjLfd
+X-Authority-Analysis: v=2.4 cv=XMUAjwhE c=1 sm=1 tr=0 ts=69e90713 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8 a=gqBEGFNiBRC4Mxh7sp8A:9
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-22_02,2026-04-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 clxscore=1015 priorityscore=1501 impostorscore=0 bulkscore=0
+ spamscore=0 lowpriorityscore=0 phishscore=0 adultscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2604220167
 
-The resourceN_resize sysfs attributes allow users to resize
-Resizable BARs (ReBAR).  After a successful resize, the resource
-attribute groups are removed and recreated so that the updated
-BAR sizes are reflected in the sysfs files.
+perf sched stats diff fails sometimes with below logs:
 
-Resizable BARs are a PCI Express extended capability
-(PCI_EXT_CAP_ID_REBAR), which requires PCIe extended config
-space.
+ # perf sched stats record ls
 
-Every PCIe-capable architecture defines either HAVE_PCI_MMAP or
-ARCH_GENERIC_PCI_MMAP_RESOURCE (via the relevant arch headers
-or the generic asm-generic/pci.h fallback).  On platforms that
-define neither, the resource files are not created and the sysfs
-group remove and create calls in __resource_resize_store() are
-no-ops.
+ # perf sched stats diff
+  *** invalid open64 call: O_CREAT or O_TMPFILE without mode ***: terminated
+  Aborted (core dumped)
 
-Thus, move the resize show and store helpers, the per-BAR attribute
-definitions, and the attribute group behind the existing #ifdef
-HAVE_PCI_MMAP || ARCH_GENERIC_PCI_MMAP_RESOURCE guard, and fold
-the group reference in pci_dev_groups[] into the existing #if block.
+Also in some runs, perf sched stats tests fails
 
-Signed-off-by: Krzysztof Wilczyński <kwilczynski@kernel.org>
+ ./perf test "perf sched stats tests"
+ 92: perf sched stats tests                                          : FAILED!
+
+==172375== Conditional jump or move depends on uninitialised value(s)
+==172375==    at 0x10393BD0: open_file_read (data.c:264)
+==172375==    by 0x10393F63: open_file (data.c:317)
+==172375==    by 0x10394067: open_file_dup (data.c:334)
+==172375==    by 0x103942DF: perf_data__open (data.c:379)
+==172375==    by 0x102F7CAF: __perf_session__new (session.c:169)
+==172375==    by 0x100B5E63: perf_session__new (session.h:116)
+==172375==    by 0x100D5D37: perf_sched__schedstat_diff (builtin-sched.c:4568)
+==172375==    by 0x100D7D6F: cmd_sched (builtin-sched.c:5061)
+==172375==    by 0x1010231F: run_builtin (perf.c:348)
+==172375==    by 0x1010262F: handle_internal_command (perf.c:398)
+==172375==    by 0x1010286F: run_argv (perf.c:442)
+==172375==    by 0x10102C67: main (perf.c:549)
+==172375==
+==172375== Conditional jump or move depends on uninitialised value(s)
+==172375==    at 0x10393D20: open_file_read (data.c:282)
+==172375==    by 0x10393F63: open_file (data.c:317)
+==172375==    by 0x10394067: open_file_dup (data.c:334)
+==172375==    by 0x103942DF: perf_data__open (data.c:379)
+==172375==    by 0x102F7CAF: __perf_session__new (session.c:169)
+==172375==    by 0x100B5E63: perf_session__new (session.h:116)
+==172375==    by 0x100D5D37: perf_sched__schedstat_diff (builtin-sched.c:4568)
+==172375==    by 0x100D7D6F: cmd_sched (builtin-sched.c:5061)
+==172375==    by 0x1010231F: run_builtin (perf.c:348)
+==172375==    by 0x1010262F: handle_internal_command (perf.c:398)
+==172375==    by 0x1010286F: run_argv (perf.c:442)
+==172375==    by 0x10102C67: main (perf.c:549)
+
+The valgrind logs and error message from the logs points to
+below snippet:
+
+     static int open_file_read(struct perf_data *data)
+     {
+            int flags = data->in_place_update ? O_RDWR : O_RDONLY;
+            struct stat st;
+            int fd;
+
+            fd = open(data->file.path, flags);
+
+The "struct perf_data" is defined here :
+
+    static int perf_sched__schedstat_diff(struct perf_sched *sched,
+                                      int argc, const char **argv)
+    {
+        struct cpu_domain_map **cd_map0 = NULL, **cd_map1 = NULL;
+        struct list_head cpu_head_ses0, cpu_head_ses1;
+        struct perf_session *session[2];
+        struct perf_data data[2];
+        int ret = 0, err = 0;
+        static const char *defaults[] = {
+                "perf.data.old",
+                "perf.data",
+        };
+
+Here due to uninitialized "struct perf_data", the arguments to "open"
+is getting wrongly passed sometimes depending on value in stack.
+When perf_data__open() function calls open_file_read(),the
+"in_place_update" could contain garbage value.
+
+After initializing "struct perf_data" in perf_sched__schedstat_diff() function,
+perf sched stats tests runs without issues in multiple attempts and also
+"perf sched stats diff" ran individual without issues.
+
+for i in {0..20}; do ./perf test "perf sched stats tests"; done
+ 92: perf sched stats tests                                          : Ok
+ 92: perf sched stats tests                                          : Ok
+ 92: perf sched stats tests                                          : Ok
+ 92: perf sched stats tests                                          : Ok
+ 92: perf sched stats tests                                          : Ok
+ 92: perf sched stats tests                                          : Ok
+ 92: perf sched stats tests                                          : Ok
+ 92: perf sched stats tests                                          : Ok
+ 92: perf sched stats tests                                          : Ok
+ 92: perf sched stats tests                                          : Ok
+ 92: perf sched stats tests                                          : Ok
+ 92: perf sched stats tests                                          : Ok
+ 92: perf sched stats tests                                          : Ok
+ 92: perf sched stats tests                                          : Ok
+ 92: perf sched stats tests                                          : Ok
+ 92: perf sched stats tests                                          : Ok
+ 92: perf sched stats tests                                          : Ok
+ 92: perf sched stats tests                                          : Ok
+ 92: perf sched stats tests                                          : Ok
+ 92: perf sched stats tests                                          : Ok
+ 92: perf sched stats tests                                          : Ok
+
+Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
 ---
- drivers/pci/pci-sysfs.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ tools/perf/builtin-sched.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
-index b167e32d55ac..37c1990124d0 100644
---- a/drivers/pci/pci-sysfs.c
-+++ b/drivers/pci/pci-sysfs.c
-@@ -1690,6 +1690,7 @@ static const struct attribute_group pci_dev_reset_method_attr_group = {
- 	.is_visible = pci_dev_reset_attr_is_visible,
- };
- 
-+#if defined(HAVE_PCI_MMAP) || defined(ARCH_GENERIC_PCI_MMAP_RESOURCE)
- static ssize_t __resource_resize_show(struct device *dev, int n, char *buf)
- {
- 	struct pci_dev *pdev = to_pci_dev(dev);
-@@ -1804,6 +1805,7 @@ static const struct attribute_group pci_dev_resource_resize_attr_group = {
- 	.attrs = resource_resize_attrs,
- 	.is_visible = resource_resize_attr_is_visible,
- };
-+#endif
- 
- static struct attribute *pci_dev_dev_attrs[] = {
- 	&dev_attr_boot_vga.attr,
-@@ -1878,8 +1880,8 @@ const struct attribute_group *pci_dev_groups[] = {
- 	&pci_dev_resource_io_attr_group,
- 	&pci_dev_resource_uc_attr_group,
- 	&pci_dev_resource_wc_attr_group,
--#endif
- 	&pci_dev_resource_resize_attr_group,
-+#endif
- 	&pci_dev_config_attr_group,
- 	&pci_dev_rom_attr_group,
- 	&pci_dev_reset_attr_group,
+diff --git a/tools/perf/builtin-sched.c b/tools/perf/builtin-sched.c
+index 555247568e7a..5d2740099eed 100644
+--- a/tools/perf/builtin-sched.c
++++ b/tools/perf/builtin-sched.c
+@@ -4538,7 +4538,7 @@ static int perf_sched__schedstat_diff(struct perf_sched *sched,
+ 	struct cpu_domain_map **cd_map0 = NULL, **cd_map1 = NULL;
+ 	struct list_head cpu_head_ses0, cpu_head_ses1;
+ 	struct perf_session *session[2];
+-	struct perf_data data[2];
++	struct perf_data data[2] = { 0 };
+ 	int ret = 0, err = 0;
+ 	static const char *defaults[] = {
+ 		"perf.data.old",
 -- 
-2.54.0
+2.47.3
 
 
