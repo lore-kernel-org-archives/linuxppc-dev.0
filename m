@@ -1,81 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-19943-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19944-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58AC6F9B5E7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2026 08:55:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54EDDF9B5EE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2026 09:09:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g0tNJ6wMwz2yr6;
-	Wed, 22 Apr 2026 18:55:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.18
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776848128;
-	cv=none; b=jwIIr52jneLrwfDgYBFkf68DPTwKChFmZXB8Cj2SKWS9t1qstvTpdj8l128aavTVAJmjuY+oAkxzasKlgKUYJglpIeMe3U9b3/hX3YNYwDTr15GL17r0yKoPkX5L5I4xDSkqAQ7ANC9SuafkvNsbnCiSX0HOxbjfWX3uFm8LFv1H4S4TrgYH0SidSrNLBpTOQl0kAhjq8ZLK1nmHCLulF4MSjXEn+/pBuQAubj4/T95W2u3ZJeSAM0xDCTjkU1Q2YZr1FbCWyIc4Y+vdz9kbWPXUrO9j8cBzFXq0D9XC/T9CxO80yhjrXiMgBRHQ1zwueJC1clE/kpmFQVNN9N8uiQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g0tj105NKz2yr6;
+	Wed, 22 Apr 2026 19:09:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776848996;
+	cv=none; b=ja3kh3pFjfHyKveh2d2sQpeqx+ixd0LUT6lq4ojHouL1+M2g1jPApgRxhQ34kl2SSbVCHwm2eDkSOMtYfuTH+3KleexiJPGTE+zepyYMiV5kiW66Wm2P2JsgzkW2BStnAKmijX9cKm9SZrQrUI9Cq3iGiovIa4h8x7DmLgUYqv9iRNSzKdv91JITd9SftbEQ+Ef0TgTb4V+wBz3JpgVIQZYKtQE+Xc/pVOwdF3Taf6xxBoPnnlFshfB2KeQ3uUMyQjzeP4bqrlAumZgfM64nbZHqBZyjjm9MRAgjfp1wsdTRyTn/fUVAN+Gb4xSdrlB0Sa8e3Ak3NZ8+e3tx8Q221A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776848128; c=relaxed/relaxed;
-	bh=cS1onSEoWT3bwYC+pq9zeyFLgj+o/rV0W5+Uf30+b1E=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ISVVXPheBmz/GJgoj17U62b1Xs2ifnK26w51qK0w1ZZ9IjVhGNqELitayr7odREBke4Tylos0LJMk7+WRW/6myZaX/AKcqpU1qMmRn72m7cC0HG4toFoF6B+XZdJfsQ9HYrjXJ/R2nzJEJuOm3/LkyBydgRrhWgVRYPUNVvT9VzfHcYObRhZW/PIz8LJr92/XBttJqweeUhYAHVs/+Xn02QdNoo0EY6aTDiubsYNEZdlS5eEuqamRyMhFvOlvxGBgNFW09qaLYMKla3a7CdChduMDBt5qAgHzvpKDX2CZZ+KdTujYT4dMSFw4DXqwefED0lgRyIMc5PBI95aLHmhWg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=iRf9ynAx; dkim-atps=neutral; spf=pass (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1776848996; c=relaxed/relaxed;
+	bh=Xr8QxbYshkOJjMrSj7nRCdGJ+EKCV/0wXnSEvRwBPSg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=hOkaxo0OrZIIkJn0gP9725Sh4Nja5Ad4PN7LGujp8Fp/D7SRBdXKoti26abvGRpDrKtocGcqLJvSmwAnl948wQAdszTl4jF3jSKJXRL19hrxF4FqFczjG1R/+fFxfbqLfbS9CW1Rs+TphsVJIM1WubToorbrUeGM0+lmopFvVOZulnwjs7c3a2U4Yg3Gcm/RcebZCTfeztIhvd94IowKFAHBeQ8GQvOEEn6nUnHD4tnu7tqbomQtagCvizbRHEij+qVjjcSHFdLw23MXMG2IB6srLAOAKV+vg6q/h5ycttLdlTBj37o7SIpVJD/o4LLCSp+r4ekA95UXZ7sdgPs2Kw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bW4Len4g; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=iRf9ynAx;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bW4Len4g;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0tNF68t9z2xc8
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 18:55:23 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1776848126; x=1808384126;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=eOkmPRPYTp5oCLIg6v7jpCiPYUCRmqpat94cyp5tfUg=;
-  b=iRf9ynAxhuLza1IFAis/LaioOEdYzHg/3TGN6JOWnkdXjW+xZdqzXrQU
-   w0VaEoSIC0kLOktT57jcePwzw+sRBiaE9torzsWeJRn9yvZd24FUFooM7
-   8B2nj5H8pMjXqdpmbJyvpni4VNyk4q/wFx6MRXP06r1yfq7AQ+xYESyit
-   7223M+PGbc/1BLbpX1SYguD3qbAHW1G60RxaZGQEHTzWwM4lDjMCe+Ng2
-   8TC4BiMNYYhdE8Fj0alwMA0D1Eg+yVuX9vHSQmErUtVGh/T0XOboKTi+P
-   39t+OPk2+or6gxfCDOVkKXMFAMGzC8Jy17ezBRSUDns6auIcjCxpTGTdm
-   g==;
-X-CSE-ConnectionGUID: 9vaK50lRQSyZQe7p4aTkeQ==
-X-CSE-MsgGUID: yVoh9VDfR4G5/xJCcIQODg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11763"; a="76958552"
-X-IronPort-AV: E=Sophos;i="6.23,192,1770624000"; 
-   d="scan'208";a="76958552"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
-  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Apr 2026 01:55:19 -0700
-X-CSE-ConnectionGUID: BufUmKSQSnqvnke0qTAdQA==
-X-CSE-MsgGUID: YFpuhfBWSr+3MjDBZSbH1A==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,192,1770624000"; 
-   d="scan'208";a="232204588"
-Received: from lkp-server01.sh.intel.com (HELO aa799cca880d) ([10.239.97.150])
-  by orviesa008.jf.intel.com with ESMTP; 22 Apr 2026 01:55:16 -0700
-Received: from kbuild by aa799cca880d with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1wFTMX-000000000Ll-0gKp;
-	Wed, 22 Apr 2026 08:55:13 +0000
-Date: Wed, 22 Apr 2026 16:54:41 +0800
-From: kernel test robot <lkp@intel.com>
-To: Guangshuo Li <lgs201920130244@gmail.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Mahesh Salgaonkar <mahesh@linux.ibm.com>,
-	Haren Myneni <haren@linux.ibm.com>,
-	Tyrel Datwyler <tyreld@linux.ibm.com>,
-	Christian Brauner <brauner@kernel.org>, Kees Cook <kees@kernel.org>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: oe-kbuild-all@lists.linux.dev, stable@vger.kernel.org
-Subject: Re: [PATCH v2] powerpc/pseries/papr-hvpipe: fix NULL dereference in
- handle creation
-Message-ID: <202604221653.KzDQsCY8-lkp@intel.com>
-References: <20260420132429.128075-1-lgs201920130244@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0thz1Yjvz2xc8
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 19:09:55 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 1A518600AE;
+	Wed, 22 Apr 2026 09:09:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D4049C2BCB3;
+	Wed, 22 Apr 2026 09:09:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776848991;
+	bh=1eBiYpZdYpgrWMNpR3shEhEFDXlBwGOvrMbmmwxsIng=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=bW4Len4g/CMaeDxoMwtPt5R0RQC6dQ/fVnbzypeBRlJOlhNA+pUi8PAMQYJOR/9zm
+	 GoJYKV0iZ+dSVl8Ev3deBLJZMqSRmR8yI5+4ctzahOrVIm5c4RdoPXVFvaDx74rE7p
+	 N4Fa7ypy2ukD8f0VgT6QBvoBIGKH3uSwVlWjF8jErom+1x5BSOm+2K3VXo7HXsA6pF
+	 cIrTfTcVJDl+uw6Iu3GnwuUwWvMPReXw5s1w5/MawkFfJ7okgEUjY8bqpZqSIXiQyB
+	 50zfeRm5ixn6y9AuxBGVBknQUSDr7/Xzx5h1RXvb1toUQZbaP3LmsdwZ+CyfY3ChyF
+	 Y5y3UxY/lwGTw==
+Message-ID: <f23f863a-38ed-4e28-8df9-a592638c9fda@kernel.org>
+Date: Wed, 22 Apr 2026 11:09:49 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,95 +59,159 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260420132429.128075-1-lgs201920130244@gmail.com>
-
-Hi Guangshuo,
-
-kernel test robot noticed the following build errors:
-
-[auto build test ERROR on powerpc/next]
-[also build test ERROR on powerpc/fixes linus/master v7.0 next-20260421]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Guangshuo-Li/powerpc-pseries-papr-hvpipe-fix-NULL-dereference-in-handle-creation/20260420-224327
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-patch link:    https://lore.kernel.org/r/20260420132429.128075-1-lgs201920130244%40gmail.com
-patch subject: [PATCH v2] powerpc/pseries/papr-hvpipe: fix NULL dereference in handle creation
-config: powerpc-allmodconfig (https://download.01.org/0day-ci/archive/20260422/202604221653.KzDQsCY8-lkp@intel.com/config)
-compiler: powerpc64-linux-gcc (GCC) 15.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260422/202604221653.KzDQsCY8-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202604221653.KzDQsCY8-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
-   arch/powerpc/platforms/pseries/papr-hvpipe.c: In function 'papr_hvpipe_dev_create_handle':
->> arch/powerpc/platforms/pseries/papr-hvpipe.c:513:24: error: invalid use of void expression
-     513 |         owned_src_info = retain_and_null_ptr(src_info);
-         |                        ^
+User-Agent: Mozilla Thunderbird
+Subject: Re: New warning in linus/master
+To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
+ Ricardo Ribalda <ribalda@chromium.org>
+Cc: linux-arm-kernel@lists.infradead.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
+References: <CANiDSCsOy0P1if-gJZqOM5pTJ0RDcwVfru1B7KFbTOEMqjPKJw@mail.gmail.com>
+ <20260422071541-9a295128-d913-418f-a21c-1386fca30290@linutronix.de>
+ <CANiDSCviww1L1p2+MvF59Biqb6hc7WdL1J37kBjFd1NXz-Yt8A@mail.gmail.com>
+ <20260422092713-4021a1a5-3a54-4260-878a-aec1bef3f8c7@linutronix.de>
+ <CANiDSCtfiPDiqzhjZGoCJbLC0fRoH1HLKrvYUt7jLDYEBQHqgg@mail.gmail.com>
+ <20260422103218-1efdbb73-51fa-48c9-ae92-75306147d61f@linutronix.de>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20260422103218-1efdbb73-51fa-48c9-ae92-75306147d61f@linutronix.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
 
-vim +513 arch/powerpc/platforms/pseries/papr-hvpipe.c
 
-   479	
-   480	static int papr_hvpipe_dev_create_handle(u32 srcID)
-   481	{
-   482		struct hvpipe_source_info *src_info __free(kfree) = NULL;
-   483		struct hvpipe_source_info *owned_src_info;
-   484	
-   485		spin_lock(&hvpipe_src_list_lock);
-   486		/*
-   487		 * Do not allow more than one process communicates with
-   488		 * each source.
-   489		 */
-   490		src_info = hvpipe_find_source(srcID);
-   491		if (src_info) {
-   492			spin_unlock(&hvpipe_src_list_lock);
-   493			pr_err("pid(%d) is already using the source(%d)\n",
-   494					src_info->tsk->pid, srcID);
-   495			return -EALREADY;
-   496		}
-   497		spin_unlock(&hvpipe_src_list_lock);
-   498	
-   499		src_info = kzalloc_obj(*src_info, GFP_KERNEL_ACCOUNT);
-   500		if (!src_info)
-   501			return -ENOMEM;
-   502	
-   503		src_info->srcID = srcID;
-   504		src_info->tsk = current;
-   505		init_waitqueue_head(&src_info->recv_wqh);
-   506	
-   507		FD_PREPARE(fdf, O_RDONLY | O_CLOEXEC,
-   508			   anon_inode_getfile("[papr-hvpipe]", &papr_hvpipe_handle_ops,
-   509					      (void *)src_info, O_RDWR));
-   510		if (fdf.err)
-   511			return fdf.err;
-   512	
- > 513		owned_src_info = retain_and_null_ptr(src_info);
-   514		spin_lock(&hvpipe_src_list_lock);
-   515		/*
-   516		 * If two processes are executing ioctl() for the same
-   517		 * source ID concurrently, prevent the second process to
-   518		 * acquire FD.
-   519		 */
-   520		if (hvpipe_find_source(srcID)) {
-   521			spin_unlock(&hvpipe_src_list_lock);
-   522			return -EALREADY;
-   523		}
-   524		list_add(&owned_src_info->list, &hvpipe_src_list);
-   525		spin_unlock(&hvpipe_src_list_lock);
-   526		return fd_publish(fdf);
-   527	}
-   528	
+Le 22/04/2026 à 10:45, Thomas Weißschuh a écrit :
+> On Wed, Apr 22, 2026 at 04:06:45PM +0800, Ricardo Ribalda wrote:
+>> On Wed, 22 Apr 2026 at 15:32, Thomas Weißschuh
+>> <thomas.weissschuh@linutronix.de> wrote:
+>>>
+>>> On Wed, Apr 22, 2026 at 03:00:11PM +0800, Ricardo Ribalda wrote:
+>>>> On Wed, 22 Apr 2026 at 13:57, Thomas Weißschuh
+>>>> <thomas.weissschuh@linutronix.de> wrote:
+>>>>> On Wed, Apr 22, 2026 at 11:51:45AM +0800, Ricardo Ribalda wrote:
+>>>>>> Media-CI has found a couple of new warnings in the latest kernel
+>>>>>> version for aarch64 and powerpc. They get fixed with this patch and
+>>>>>> before moving I wanted to know if this was under your radar.
+>>>>>
+>>>>> Thanks for the report. I was not aware of these so far.
+>>>>>
+>>>>>> diff --git a/arch/arm64/kernel/vdso/Makefile b/arch/arm64/kernel/vdso/Makefile
+>>>>>> index 7dec05dd33b7..65914842fae0 100644
+>>>>>> --- a/arch/arm64/kernel/vdso/Makefile
+>>>>>> +++ b/arch/arm64/kernel/vdso/Makefile
+>>>>>> @@ -50,7 +50,7 @@ CFLAGS_vgettimeofday.o = $(CC_FLAGS_ADD_VDSO)
+>>>>>>   CFLAGS_vgetrandom.o = $(CC_FLAGS_ADD_VDSO)
+>>>>>>
+>>>>>>   ifneq ($(c-gettimeofday-y),)
+>>>>>> -  CFLAGS_vgettimeofday.o += -include $(c-gettimeofday-y)
+>>>>>> +  CFLAGS_vgettimeofday.o += -include $(c-gettimeofday-y)
+>>>>>> -Wno-maybe-uninitialized
+>>>>>>   endif
+>>>>>
+>>>>> (...)
+>>>>>
+>>>>> I'd like to know exactly what is going on before suppressing the warning.
+>>>>> It is a non-standard warning, only enabled by *some* of the vDSO builds
+>>>>> for some reason.
+>>>>>
+>>>>>> https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgitlab.freedesktop.org%2Flinux-media%2Fusers%2Fribalda%2F-%2Fpipelines%2F1649144%2Ftest_report%3Fjob_name%3Dcross-gcc&data=05%7C02%7Cchristophe.leroy2%40cs-soprasteria.com%7C7cbf9009269d4ddc16d208dea04b86f1%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639124443421115079%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=O4r8HjaUn7KEgW8tDE9GEC9e8CWyJBpCfhVTJZZ%2BFHs%3D&reserved=0
+>>>>>
+>>>>> While I was able to download a configuration from this job and also use the
+>>>>> same container image, I can not reproduce the issue. Is the configuration the
+>>>>> full one or only the template?
+>>>>>
+>>>>> Could you provide full reproduction steps?
+>>>>
+>>>> You can try repro with:
+>>>>
+>>>> work/linux $ podman run -v .:/workdir/ --rm -it
+>>>> registry.freedesktop.org/linux-media/media-ci/build:latest
+>>>> $ cd /workdir
+>>>> $ CROSS_COMPILE=aarch64-linux-gnu- ARCH=arm64 make allyesconfig
+>>>> $ CROSS_COMPILE=aarch64-linux-gnu- ARCH=arm64 make
+>>>> arch/arm64/kernel/vdso/vgettimeofday.o
+>>>>
+>>>> The gcc version discrepancy is because I the error was due to old gcc
+>>>> version and I was playing around with that... but it fails in both
+>>>> gcc14 and gcc15
+>>>
+>>> Ack.
+>>>
+>>>> You can try with debian testing with
+>>>> work/linux$ podman run -v .:/workdir/ --rm -it debian:testing
+>>>> $ apt-get update
+>>>> $ apt-get install gcc-aarch64-linux-gnu build-essential flex bison libssl-dev bc
+>>>> $ cd /workdir
+>>>> $ CROSS_COMPILE=aarch64-linux-gnu- ARCH=arm64 make allyesconfig
+>>>> $ CROSS_COMPILE=aarch64-linux-gnu- ARCH=arm64 make
+>>>> arch/arm64/kernel/vdso/vgettimeofday.o
+>>>
+>>> Both reproducers do *not* reproduce the issue for me.
+>>> (It is more or less exactly what I tried before)
+>>
+>>
+>> Ok, I think I found what is going on. media-ci was forcing
+>> KCFLAGS=-Wmaybe-uninitialized
+>>
+>> https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgitlab.freedesktop.org%2Flinux-media%2Fmedia-ci%2F-%2Fblob%2Fmain%2Ftest-build.sh%3Fref_type%3Dheads%23L29&data=05%7C02%7Cchristophe.leroy2%40cs-soprasteria.com%7C7cbf9009269d4ddc16d208dea04b86f1%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639124443421146576%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=%2FpTHYfCn5ob42%2Fm6FVOZ32PVzuXBNBT3rlMVWslCfhw%3D&reserved=0
+>>
+>> And something has changed in the kernel in the last version that
+>> triggers a (hopefully) false positive.
+>>
+>> can you try with:
+>>
+>> CROSS_COMPILE=aarch64-linux-gnu- ARCH=arm64 make
+>> KCFLAGS=-Wmaybe-uninitialized  allyesconfig
+>> CROSS_COMPILE=aarch64-linux-gnu- ARCH=arm64 make
+>> KCFLAGS=-Wmaybe-uninitialized  prepare
+> 
+> That works!
+> 
+> The warning was introduced in ed78b7b2c5ae ("vdso/gettimeofday: Add a helper to
+> read the sequence lock of a time namespace aware clock").
+> 
+> It is *not* a false-positive, specifically:
+> 
+> do {
+> 	if (vdso_read_begin_timens(vc, &seq)) {
+> 		vd = __arch_get_vdso_u_timens_data(vd);
+> 		vc = &vd->aux_clock_data[idx];
+> 		/* Re-read from the real time data page */
+> 		continue;
+> 
+> This 'continue' jumps to the end of the loop body and if the real vDSO datapage
+> by chance has a sequence counter of '1' will exit the loop, leaving 'sec' and
+> 'nsec' uninitialized. My believe was that the 'continue' would jump to the
+> *beginning* of the loop body, which is cleary wrong. Previously there was an
+> inner while loop() which would make the 'continue' effectively start at the
+> beginning of the outer do-while loop.
 
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Well spotted. I missed it too while reviewing.
+
+A 'retry:' label at the begining of the loop with a 'goto retry' instead 
+of the 'continue' should make it.
+
+Christophe
+
+> 
+> 	}
+> 
+> 	/* Auxclock disabled? */
+> 	if (vc->clock_mode == VDSO_CLOCKMODE_NONE)
+> 		return false;
+> 
+> 	if (!vdso_get_timestamp(vd, vc, VDSO_BASE_AUX, &sec, &ns))
+> 		return false;
+> 
+> } while (vdso_read_retry(vc, seq));
+> 
+> vdso_set_timespec(ts, sec, ns);
+> 
+> 
+> I'm working on a fix.
+> 
+> 
+> Thomas
+> 
+
 
