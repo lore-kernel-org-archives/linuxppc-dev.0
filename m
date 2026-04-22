@@ -1,66 +1,101 @@
-Return-Path: <linuxppc-dev+bounces-19932-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19933-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE523F94CDB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2026 07:32:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1813F94CD8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2026 07:54:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g0rXK37Fpz2yZN;
-	Wed, 22 Apr 2026 17:32:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776843137;
-	cv=none; b=oFyMRt5vIm0t6Gz60YkrvJjTxtUc7KVRRKQnRuxThNyBUCYVUBSMQVSWLwOX7eQtpitETDy5lzSn3vUMUL931MVQhDJW/y87jmLF9jXEWfukP2YyIESbI1Toy9AJQBLahJtbbnnDi0qsK8W7H7jRcY7Y8f8WPcgT3bGTsh09YnuY59gfsEcNzBuqz7+Z+pMTM0/4euJOx5Nel+O6WFT/vgbD24FDS6Xt9kB17jPgRbAxcZK4dxIjOEpsYrnHGvoskZ7yoX7UirqxXUxA9MoFaEWdiIjLydMbLfAZXzp8+aqLphsSSewbvncrMovhKmXcvFDXWrazYTj+I51Pf1cNYA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g0s1N2RFFz2yqs;
+	Wed, 22 Apr 2026 17:54:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::431"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776844440;
+	cv=none; b=lSqMaQayWXzcB43iIVK5Rj8nsvQuvFIADrqJYvAQzP3OK5L9r7/G+5TVIoimEpJBenU5V5p5KIOKJlF+4vzuZSuLuWDuLpn8IkhLqSZysP/5poApyWf3yHI6Hd3fCszlmA/S2uvDEBE1qbfw/7jVS7HYCZ1LeW35wtxr+nkjytz7X2ubiqLvjd2uWEnjWgWz5kpAdZyJc7vdBX/zJYl4raJvASV0FOgvR4CYzafjP6n0e1Rz4/VX0pVxPzf3NZJkRgXUUef40FEXx+wGqTjoYdm55vAHBf570t2Um+j8iyXHFryxUzJcql4LzDMIuAG3mb3Ex9CIkN1UWW5LN5VpuQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776843137; c=relaxed/relaxed;
-	bh=nqWPSH9orhqk1QAO9hwmlkYDMAf9Dazei8dWQ2yLik0=;
+	t=1776844440; c=relaxed/relaxed;
+	bh=CjbD5DAtK575buPNI+qG/w2afm0sso4VcbZ59zXJsdU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=hQ87/y3AMXPvb4PQY59rVsuVyeLIaD0BmC46pq1H6xdPunEiLI7AF7yULSIIbVRdEAjel4wOR8hGR939j+OoP7Rj8OGobeSL+/9oTUqeHxQsZiTSGOHEbEBA6w2v6adYEU29dQGUunq0F0zI/3ZCxAHYgrFnBGkDBOMC9iNawGhCPPca9J0QBL9SmxpLwg5nZXrJfT2Kys/D1+fkpQk+iqjvb7l1nWo9m2Sp8oPLgtWBMFXSV0GnBEsyWPbdvnbGOwlq7WEBuAMwqou4yDDAfZzFQxYJ2BQ6IIf6UFqZph269Ll2/4YL4zoF+7BvW/+kC4dqtNx/4GVQlTe48oCa4g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=HGuqX591; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=vA6bVzJf; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+	 Content-Type:Content-Disposition:In-Reply-To; b=meq0KWOyQfjIKUJazW+rqOXy8bhBr1HBc1KJ1q8hwHlcbmyGHJfr3axAaQDJo8CifnxT+rNZrSCYTlQ5MWGMcJIiJ2snadhTjQPPH1NQdz/GJjCTcWWgi5C416QpOkmtxTlldN4sgvfNSVbCBDv9PNj6YlZF19VyktuaxGICZtr3vH5FVW1dybmvCLFZeh6t3adW3efi3LIFWS/uyQ2hBnvwrqtGQxlNYBobAsyGyPor0xFXjtAkI7Pk1ckYwvdz+jh0j54eA4hkPyOTc76xE0aAqYX4qJjPaL2iU7alPZzTD4h6CY017pmmPs8029NYEPbudV3PEdN/b5S6tPEtvg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=HmIDx1Kk; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=HGuqX591;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=vA6bVzJf;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=HmIDx1Kk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com [IPv6:2607:f8b0:4864:20::431])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0rXJ3wjbz2xSN
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 17:32:16 +1000 (AEST)
-Date: Wed, 22 Apr 2026 09:32:06 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1776843131;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=nqWPSH9orhqk1QAO9hwmlkYDMAf9Dazei8dWQ2yLik0=;
-	b=HGuqX591fOx4yUoKbPFM3AFnEj4TNUtdJlqS+09QNrk+lg6EdJ54hu0hlVKN9TC//Dlb/B
-	z9yH4pYM6L62+z/gkWjipQflovPh3Oa/xEF1N+j+y2xTjOTqMOEPbWaxmniMSiLlXtsfX/
-	HZuudN0IQpcRD+DnLrzVQ/ZoSoDVwstsv8/LLrZFEsO+A7ZdG2/HtljUDkAgkwcdW9jHa6
-	bLRPitpEl2B+or7HlfZHV2Xh6UWQFOLA264zEm+aoj1RtROfTLHu9eZ/4HIK09RNlygdDp
-	E4sAlAMH/7rgRYiKYn9gW2QvyiRzgJxilh7GS8AVmz0tkai8d7+IuH3xssRiMw==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1776843131;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=nqWPSH9orhqk1QAO9hwmlkYDMAf9Dazei8dWQ2yLik0=;
-	b=vA6bVzJf/I9G8QEzLBWv5aZcIXcu70EFV/3tqET1xHv2nKF+Jj51HQlj7efTfkGBhadOmY
-	b/J/+85f8+H7QcDA==
-From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-To: Ricardo Ribalda <ribalda@chromium.org>
-Cc: linux-arm-kernel@lists.infradead.org, 
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: New warning in linus/master
-Message-ID: <20260422092713-4021a1a5-3a54-4260-878a-aec1bef3f8c7@linutronix.de>
-References: <CANiDSCsOy0P1if-gJZqOM5pTJ0RDcwVfru1B7KFbTOEMqjPKJw@mail.gmail.com>
- <20260422071541-9a295128-d913-418f-a21c-1386fca30290@linutronix.de>
- <CANiDSCviww1L1p2+MvF59Biqb6hc7WdL1J37kBjFd1NXz-Yt8A@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0s1L4CQrz2yql
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 17:53:57 +1000 (AEST)
+Received: by mail-pf1-x431.google.com with SMTP id d2e1a72fcca58-82f69adeecbso2209952b3a.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 00:53:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1776844433; x=1777449233; darn=lists.ozlabs.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=CjbD5DAtK575buPNI+qG/w2afm0sso4VcbZ59zXJsdU=;
+        b=HmIDx1Kk3GLlXIMTk3oqrvcB+sWnG4dlx/01kbbxm+49fOEo013K3+B58DATvZ1mBk
+         IyTczId24bYW8A0asYHrwarFqb8JuD1DiQCuAgfssHstkHexUK/krobkh3GxfWPMdpss
+         eDNIQVr+KYZ3SbeIIoj34hmenA8B74pv6R0y2dBpJkgMCAVYehHGdOJq53J56FY3j/Ut
+         u0hQ5ZzZGAMssrwAjruELRfxdjDnOFc2NKTbsKJsPhmnXOjmDfnR+Li3/jMYfPIiQGRI
+         Uo40iP6J/X7zdzsyxNa2NSwwdNNG4uaUkZkto0Xrae3QzFyBJmTjlweRkg1ovSzTk6j8
+         pNxA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1776844433; x=1777449233;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=CjbD5DAtK575buPNI+qG/w2afm0sso4VcbZ59zXJsdU=;
+        b=Kaqt5ycsSiOM4T4HOHp6Ep9Qf0M3Tb/VVdgy4F75AtBktKeRuMqe9mQVajQtXCln3O
+         c/sGO0+NtpWA+yWCFpD63jLxK/pV5TjOQNwGQvw48eVHSeWG1qHwbfW3+t0RQns+vi0f
+         5OIBMKAZ4oYwKD+bXI5IMkcV3VE/AGWhIrZNboo0xVB1Dy1mC3YC5+Us+Jk4rposXcKX
+         XoV4Tb+u6MtPQzqXh72b6dcxc7gTlGvr+J9ksmVwb5Egs2/5zi/qYv8wi0z7qI08AQzB
+         auVUGDD6T8Z0MAcgHf2ud0aCFhTZHs+3W+MvGYDSLEykQ6TpjjSnKvdJidUv2GNU3mfj
+         +ueg==
+X-Forwarded-Encrypted: i=1; AFNElJ9cS9OZ4M/JKuzTQzVoU/nsiMAYIMPzotr/3lU33P89evIJB5HLZbPH5+hCL2buKOR7vWh/yU8yWhh+d+M=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzhnaKhzyzfYHsrCbj4yLARdMScRl+X/3DgGvtCDLqSi1xsEIXC
+	dFQJU5oIj0I0caoRlv1h3wDBBcpFTmsmhCPgEHlIaTSiwyvbCeOD4kkc
+X-Gm-Gg: AeBDiesS9k6WgZnhp/VzNUTsaIs9uZDuf7vkfn/jDvqRMENDAKzsg86zr6T7yx1iWQ0
+	0ng3dgDC+R+OI4cK5eVZHW3POt1d9SpoFIyfrmyu/Zz7+yvIjhjhOUrDEGnHQNhHpa5EWLhdmyK
+	I5bxQIjTnXYBr7eAUHCU70/F+BoYVrPpY8gtOp1IglNGc+CCysWfLM2HQ6negOiuyQXTjOJ5PpI
+	U7WQRcoTTNzEhCpEgu1BXJHwkhXwUXMVwXfP/mm10rFrpTCXUcx/DGzBbjmuQBqjustBK6YN6DY
+	gzRUu90CnQQuDyv5v8alDocz7MEhHwB+EAqgUgyEiDapm1ft+hEYu7fSYY/7KiUgraztQQahwlv
+	1EivBrCjUogMYWu3nPzftSzvTVch7wph31hJtNdd7p0O63ydJMH0mB90YdZ22e8zgJkRSKGvU2C
+	sP11nP3CDFwZhxVKoOIavOsjybwhSoRgwbLiGw7ibkgZ+gK4xcvby3wqQApT7g//xDwdc/TRuQy
+	E13uw==
+X-Received: by 2002:a05:6a00:3315:b0:82c:d6d3:3190 with SMTP id d2e1a72fcca58-82f8c99bb55mr21216994b3a.38.1776844433042;
+        Wed, 22 Apr 2026 00:53:53 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([129.41.58.4])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82f8e9cbb1dsm17662514b3a.14.2026.04.22.00.53.44
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 22 Apr 2026 00:53:52 -0700 (PDT)
+Date: Wed, 22 Apr 2026 13:23:41 +0530
+From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Cc: Gary Guo <gary@garyguo.net>, Link Mauve <linkmauve@linkmauve.fr>, 
+	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, 
+	peterz@infradead.org, jpoimboe@kernel.org, jbaron@akamai.com, aliceryhl@google.com, 
+	rostedt@goodmis.org, ardb@kernel.org, ojeda@kernel.org, boqun@kernel.org, 
+	bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org, tmgross@umich.edu, 
+	dakr@kernel.org, nathan@kernel.org, nick.desaulniers+lkml@gmail.com, 
+	morbo@google.com, justinstitt@google.com, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, rust-for-linux@vger.kernel.org, llvm@lists.linux.dev
+Subject: Re: [PATCH V11 1/4] rust: Fix "multiple candidates for rmeta
+ dependency core" error
+Message-ID: <aeh-QhEGO7ZiwQZ7@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <20260417152253.2312961-2-mkchauras@gmail.com>
+ <aedFgEicDW6LAcuq@luna>
+ <aedJGuF9P2V1lOCZ@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+ <aedQ629D0x-5KuKw@luna>
+ <aedpk1iaeYyKPSOI@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+ <aeds6_8Mr_w38oYI@luna>
+ <aeec_IzVJwlfarN5@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+ <DHYYG7A745M5.VQY4GMDJNC1Y@garyguo.net>
+ <aee3ivM9VkbqdQby@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+ <CANiq72k7HXYE+1hhbT8xfL+pwhBwVqCQaN=1xXUuTnMhH0J7QQ@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -74,85 +109,30 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CANiDSCviww1L1p2+MvF59Biqb6hc7WdL1J37kBjFd1NXz-Yt8A@mail.gmail.com>
+In-Reply-To: <CANiq72k7HXYE+1hhbT8xfL+pwhBwVqCQaN=1xXUuTnMhH0J7QQ@mail.gmail.com>
 
-On Wed, Apr 22, 2026 at 03:00:11PM +0800, Ricardo Ribalda wrote:
-> On Wed, 22 Apr 2026 at 13:57, Thomas Weißschuh
-> <thomas.weissschuh@linutronix.de> wrote:
-> > On Wed, Apr 22, 2026 at 11:51:45AM +0800, Ricardo Ribalda wrote:
-> > > Media-CI has found a couple of new warnings in the latest kernel
-> > > version for aarch64 and powerpc. They get fixed with this patch and
-> > > before moving I wanted to know if this was under your radar.
+On Tue, Apr 21, 2026 at 08:16:06PM +0200, Miguel Ojeda wrote:
+> On Tue, Apr 21, 2026 at 7:47â€¯PM Mukesh Kumar Chaurasiya
+> <mkchauras@gmail.com> wrote:
 > >
-> > Thanks for the report. I was not aware of these so far.
-> >
-> > > diff --git a/arch/arm64/kernel/vdso/Makefile b/arch/arm64/kernel/vdso/Makefile
-> > > index 7dec05dd33b7..65914842fae0 100644
-> > > --- a/arch/arm64/kernel/vdso/Makefile
-> > > +++ b/arch/arm64/kernel/vdso/Makefile
-> > > @@ -50,7 +50,7 @@ CFLAGS_vgettimeofday.o = $(CC_FLAGS_ADD_VDSO)
-> > >  CFLAGS_vgetrandom.o = $(CC_FLAGS_ADD_VDSO)
-> > >
-> > >  ifneq ($(c-gettimeofday-y),)
-> > > -  CFLAGS_vgettimeofday.o += -include $(c-gettimeofday-y)
-> > > +  CFLAGS_vgettimeofday.o += -include $(c-gettimeofday-y)
-> > > -Wno-maybe-uninitialized
-> > >  endif
-> >
-> > (...)
-> >
-> > I'd like to know exactly what is going on before suppressing the warning.
-> > It is a non-standard warning, only enabled by *some* of the vDSO builds
-> > for some reason.
-> >
-> > > https://gitlab.freedesktop.org/linux-media/users/ribalda/-/pipelines/1649144/test_report?job_name=cross-gcc
-> >
-> > While I was able to download a configuration from this job and also use the
-> > same container image, I can not reproduce the issue. Is the configuration the
-> > full one or only the template?
-> >
-> > Could you provide full reproduction steps?
+> > There are some other build errors apart from this on 1.85. So few months
+> > back in the meeting with LLVM team we concluded that for sometime
+> > powerpc will be ahead of other archs at 1.95 till others catch up.
 > 
-> You can try repro with:
+> In that case you may want to modify `scripts/min-tool-version.sh` in
+> this series too.
 > 
-> work/linux $ podman run -v .:/workdir/ --rm -it
-> registry.freedesktop.org/linux-media/media-ci/build:latest
-> $ cd /workdir
-> $ CROSS_COMPILE=aarch64-linux-gnu- ARCH=arm64 make allyesconfig
-> $ CROSS_COMPILE=aarch64-linux-gnu- ARCH=arm64 make
-> arch/arm64/kernel/vdso/vgettimeofday.o
+> I hope that helps!
 > 
-> The gcc version discrepancy is because I the error was due to old gcc
-> version and I was playing around with that... but it fails in both
-> gcc14 and gcc15
+Yeah this helps, Thanks :) 
 
-Ack.
+Will post out a new series soon.
 
-> You can try with debian testing with
-> work/linux$ podman run -v .:/workdir/ --rm -it debian:testing
-> $ apt-get update
-> $ apt-get install gcc-aarch64-linux-gnu build-essential flex bison libssl-dev bc
-> $ cd /workdir
-> $ CROSS_COMPILE=aarch64-linux-gnu- ARCH=arm64 make allyesconfig
-> $ CROSS_COMPILE=aarch64-linux-gnu- ARCH=arm64 make
-> arch/arm64/kernel/vdso/vgettimeofday.o
-
-Both reproducers do *not* reproduce the issue for me.
-(It is more or less exactly what I tried before)
-
-Please note that this line does not work in general:
-$ CROSS_COMPILE=aarch64-linux-gnu- ARCH=arm64 make arch/arm64/kernel/vdso/vgettimeofday.o
-
-The vDSO object files can not be built in this way like regular kernel object
-files and will produce a compiler error, but not the one under discussion.
-Instead the vDSO on arm64 is built during the 'make prepare' phase.
-(Other architectures work differently, of course...)
-
-(...)
-
-
-Thomas
+Regards,
+Mukesh
+> Cheers,
+> Miguel
 
