@@ -1,46 +1,46 @@
-Return-Path: <linuxppc-dev+bounces-19856-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19924-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18B7FF5A8A2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Apr 2026 02:19:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4AB45F94CC6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2026 04:19:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g05fL1PJ7z2xc8;
-	Tue, 21 Apr 2026 12:19:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776737994;
-	cv=none; b=mG+0cwwzb5RKCn0jZA7gx842NDN8SyZLKLHyZqkjLf5SxYIKuf3fHiWAnt1PoC/OFnDl5leGkdvbW2pA8jWghn9H5TiFdUNQWkNRXqpZm9AUpWQ+uoK4ofLgH6lAm3Tw9P9TFz2hssnWRFALPvaR6f6bwoiUBWpQCPLMe31VQb/SZh115fE8qbubiIZd3sNBnksQ/Jjr9JBn0zyiYFqvtZEkZDRdLA46P92//NYRJCnqcwSG4jWm6+lUYApGhYXeSIhmDqvjjPZEFi3La3SMgj7kB/YshTNFoaRBm79i9wmRpWArp7jHoj+MjgtcIBtyf5HOSP8w5FowVu+4eCHyUA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g0mFL3szXz2yZN;
+	Wed, 22 Apr 2026 14:19:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776831542;
+	cv=none; b=lUnq21PNofvGnfDCs2Lg3ML3Z3erz8Ck/x7AOxvTSLwXgEqUiYPqAPgl4l3uWie9uTuS7xk10hIOD3g30OohXYPLp67cTa/8o/VRFBN9BdjPPTgEfgHyr2l9AmW5OR23iX3lJdnMvFNTTI7h8hFx/3RdCBlkUhwSSmhHI9qdrQiCTZCxeUkmbtLsEitJ7dKeTFFKQ7D1NJMxMgDnJ/hYGDmb3wHZt8uDR+A+lFqj7GyamjHnMWorm/haE3+iX4efpYhqNxjUmpl0hr2Rvym4IzR++GkMWbjny8BPwFaiZGLhfPR0WVWciigHFcIMwSaSVCk+NZ0GSHIX5J2w9jdwQQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776737994; c=relaxed/relaxed;
-	bh=dniwdJOnJOhZbp1XOxDAthCEfmogr1R829SP3I+fbbk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=GWxjnyWB7Faq/oZDhhaOQ9KQF3arVjOiuioH+d5wDWOGoJB+cg7laW3g7oRIJca6pEGf1w41aSlUIaL70Mkt8wbu9+qvVqwl/mpbPiPpf2k2Qy3/gdrxB1G8y1VNqro9F9c8FDjpygyr0FrTC3md4t9mkkoybQsGqMq5YaFivxoM2PYmESyBHPCHBkOhojSYSgWtIMvP/fzWAjR8h8KFpllfKRKxc95H0cSPXpTCF8+FE4zeLqIHgyA3PEoDaSYosVBeAfYF00vmGDmtXG2kC4LPddH7lEqHlEmmK9So7LcevLJs+GutIR1wCQkyaRFTh0baB4HypRtDXny1SoafPQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gqThTMPS; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1776831542; c=relaxed/relaxed;
+	bh=NM73kcNGs5NiJCsKnUfpmwLL2Xeujh2EHkD5f/MtIlI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Sy+GMJiKqLFNRsYXoqovSdYmP0Jo9FRS07Ws+rvk/7f7Ih0v10mgoUceB+gd/LURdLHoP7XIy25VeeDg0wWR3E3+n6301F42ZvOYxgaGPiarjlmLICwk3siHl+Z4RmDX9lnngIbY3CnNsftgBkHERbfzubjoSNqeaRnyEp/V40/GFphGilO0qWz8QD8PkPHD29mMIH7s1egHBUcC/NuxqJRwxURFneY/NsDwmqRb8CwwZ3E5Zzw/57ISBHjC+n6U+3j/2np/0zy3vwPsmECbezwbqmB6u+Nd3mrErPcfZGSdx7Nw1HCpo+1ucUTKQ8LK1cJqGxL6F3ImVnuAc2PffQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RLCNNIay; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gqThTMPS;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RLCNNIay;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g05fG5Nyrz2xT6
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2026 12:19:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0mFG1w1Xz2xc8
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 14:18:58 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 59A50416F4;
-	Tue, 21 Apr 2026 02:19:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 65920C19425;
-	Tue, 21 Apr 2026 02:19:45 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 707AB60018;
+	Wed, 22 Apr 2026 04:18:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B1B68C19425;
+	Wed, 22 Apr 2026 04:18:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776737987;
-	bh=oyCOntGA5kaGyJUcflW/913yfBHTfkgh5wXF+JiOas4=;
+	s=k20201202; t=1776831532;
+	bh=fA41cJ+obcn3U+YwhP4f0bQZw8YCu5MM621lrRLrpOg=;
 	h=From:To:Cc:Subject:Date:From;
-	b=gqThTMPSY4pRkuBoG8sTW/W+mZTIzK3CN+fV6J6+IcKFUbEMFNyaA6le9fSMalOCT
-	 fi35dB7mMgcM1oys2forLhpdkyiveMPbiX5O6zOcLFa9wAh0VWfc/fG6Dd5pwr7oAJ
-	 RYQCOElls0vSi6PnoHGQVPQqbIwf3+HePcvX4XSCItvVQxqxkFbD2yJBk8AtzlFk0e
-	 DdHzb58MQQzu4vUXkTfOqzV3x1OTHbTMjqQLrHfPRwyrndUOiIvGu+pcalPiB5bL3M
-	 vkfO1tdstmrrS8mqFynhD2SFMeeb3Qo8Kp/nNfNik3haM3hUvrJFfHvRd3ctUpak82
-	 BMTPAGg5FmyYw==
+	b=RLCNNIayLuSLQikPsSTPuwPvoL803somGPJkdVMnIzDRsG30GslpbBg7gg7hXBxyL
+	 30aRGuXOjnwXErqE3DaJ6ZynCVKP68fZ83Ri2KRuHQs10UOmHjd/QEwZvMdeV019aP
+	 +6YZnhlB+6BVBnztn1E9XyfLFOQniQL5sWedaPBNbMb4rPR6sXpW1irTffqtvqSHRX
+	 3dVOXC1upDSSB+u7PWTuYlsYghEoKvn8jlaLAltqIcwYpqAWBKmPrx4OJLGXR0lWEh
+	 4VQwgUh0iml2M4ij0Gj95prDbp67plC8+3shgvhE6zvNbLHcfTfWC8iWJ6MFxtTc3f
+	 9W1ewrNJmsBvg==
 From: Jakub Kicinski <kuba@kernel.org>
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org,
@@ -77,10 +77,11 @@ Cc: netdev@vger.kernel.org,
 	linux-doc@vger.kernel.org,
 	linux-mips@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
-	bridge@lists.linux.dev
-Subject: [PATCH net-deletions] net: remove unused ATM protocols and legacy ATM device drivers
-Date: Mon, 20 Apr 2026 19:19:42 -0700
-Message-ID: <20260421021943.1295109-1-kuba@kernel.org>
+	bridge@lists.linux.dev,
+	dwmw2@infradead.org
+Subject: [PATCH net-deletions v2] net: remove unused ATM protocols and legacy ATM device drivers
+Date: Tue, 21 Apr 2026 21:18:44 -0700
+Message-ID: <20260422041846.2035118-1-kuba@kernel.org>
 X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -105,13 +106,12 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-25) on lists.ozlabs.org
 Remove the ATM protocol modules and PCI/SBUS ATM device drivers
 that are no longer in active use.
 
-The ATM core protocol stack, PPPoATM, and USB DSL modem drivers
-(drivers/usb/atm/) are retained in-tree to maintain PPP over ATM
-(PPPoA) support for DSL connections.
+The ATM core protocol stack, PPPoATM, BR2684, and USB DSL modem
+drivers (drivers/usb/atm/) are retained in-tree to maintain PPP
+over ATM (PPPoA) and PPPoE-over-BR2684 support for DSL connections.
 
 Removed ATM protocol modules:
  - net/atm/clip.c - Classical IP over ATM (RFC 2225)
- - net/atm/br2684.c - RFC 2684 bridged protocols
  - net/atm/lec.c - LAN Emulation Client (LANE)
  - net/atm/mpc.c, mpoa_caches.c, mpoa_proc.c - Multi-Protocol Over ATM
 
@@ -125,7 +125,7 @@ Removed PCI/SBUS ATM device drivers (drivers/atm/):
  - iphase - Interphase ATM PCI (OC-3/DS3/E3)
  - lanai - Efficient Networks Speedstream 3010
  - nicstar - IDT 77201 NICStAR (155/25 Mbps, ~1999)
- - solos-pci - Traverse Technologies ADSL2+ PCI (defunct vendor)
+ - solos-pci - Traverse Technologies ADSL2+ PCI
  - suni - PMC S/UNI SONET PHY library
 
 Also clean up references in:
@@ -138,6 +138,15 @@ The removed code is moved to an out-of-tree module package (mod-orphan).
 
 Signed-off-by: Jakub Kicinski <kuba@kernel.org>
 ---
+v2:
+ - keep BR2684
+ - correct the claim that Traverse Technologies is defunct,
+   I'm still deleting the solos driver, chances are nobody uses it.
+   Easy enough to revert back in since core is still around.
+   The guiding principle is to keep USB modems and delete
+   the rest as USB ADSL2+ CPEs were most popular historically.
+v1: https://lore.kernel.org/20260421021943.1295109-1-kuba@kernel.org
+
 CC: corbet@lwn.net
 CC: skhan@linuxfoundation.org
 CC: linux@armlinux.org.uk
@@ -167,6 +176,8 @@ CC: linux-doc@vger.kernel.org
 CC: linux-mips@vger.kernel.org
 CC: linuxppc-dev@lists.ozlabs.org
 CC: bridge@lists.linux.dev
+CC: dwmw2@infradead.org
+CC: herbert@gondor.apana.org.au
 ---
  MAINTAINERS                                   |    3 +-
  Documentation/.renames.txt                    |    2 -
@@ -175,10 +186,10 @@ CC: bridge@lists.linux.dev
  .../networking/device_drivers/atm/iphase.rst  |  193 -
  drivers/atm/Kconfig                           |  325 --
  drivers/net/Kconfig                           |    2 -
- net/atm/Kconfig                               |   58 -
+ net/atm/Kconfig                               |   37 -
  drivers/Makefile                              |    1 -
  drivers/atm/Makefile                          |   32 -
- net/atm/Makefile                              |    8 +-
+ net/atm/Makefile                              |    4 -
  drivers/atm/eni.h                             |  136 -
  drivers/atm/fore200e.h                        |  973 -----
  drivers/atm/he.h                              |  845 ----
@@ -210,7 +221,6 @@ CC: bridge@lists.linux.dev
  drivers/atm/solos-attrlist.c                  |   83 -
  drivers/atm/solos-pci.c                       | 1496 -------
  drivers/atm/suni.c                            |  391 --
- net/atm/br2684.c                              |  872 ----
  net/atm/clip.c                                |  960 -----
  net/atm/lec.c                                 | 2274 ----------
  net/atm/mpc.c                                 | 1538 -------
@@ -225,7 +235,7 @@ CC: bridge@lists.linux.dev
  arch/powerpc/configs/ppc6xx_defconfig         |    9 -
  drivers/atm/.gitignore                        |    5 -
  drivers/atm/nicstarmac.copyright              |   61 -
- 57 files changed, 3 insertions(+), 38133 deletions(-)
+ 56 files changed, 2 insertions(+), 37237 deletions(-)
  delete mode 100644 Documentation/networking/device_drivers/atm/fore200e.rst
  delete mode 100644 Documentation/networking/device_drivers/atm/iphase.rst
  delete mode 100644 drivers/atm/Kconfig
@@ -260,7 +270,6 @@ CC: bridge@lists.linux.dev
  delete mode 100644 drivers/atm/solos-attrlist.c
  delete mode 100644 drivers/atm/solos-pci.c
  delete mode 100644 drivers/atm/suni.c
- delete mode 100644 net/atm/br2684.c
  delete mode 100644 net/atm/clip.c
  delete mode 100644 net/atm/lec.c
  delete mode 100644 net/atm/mpc.c
@@ -270,10 +279,10 @@ CC: bridge@lists.linux.dev
  delete mode 100644 drivers/atm/nicstarmac.copyright
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 867ca44422d8..cfcf422dd40a 100644
+index e7dc9e6fad2e..e51c85a2fa87 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -4150,11 +4150,12 @@ L:	linux-atm-general@lists.sourceforge.net (moderated for non-subscribers)
+@@ -4156,11 +4156,12 @@ L:	linux-atm-general@lists.sourceforge.net (moderated for non-subscribers)
  L:	netdev@vger.kernel.org
  S:	Maintained
  W:	http://linux-atm.sourceforge.net
@@ -288,10 +297,10 @@ index 867ca44422d8..cfcf422dd40a 100644
  ATMEL MACB ETHERNET DRIVER
  M:	Nicolas Ferre <nicolas.ferre@microchip.com>
 diff --git a/Documentation/.renames.txt b/Documentation/.renames.txt
-index e5f2f7447914..df4db1121995 100644
+index a37d68471d50..c4de5200abdb 100644
 --- a/Documentation/.renames.txt
 +++ b/Documentation/.renames.txt
-@@ -835,14 +835,12 @@ networking/e100 networking/device_drivers/ethernet/intel/e100
+@@ -836,14 +836,12 @@ networking/e100 networking/device_drivers/ethernet/intel/e100
  networking/e1000 networking/device_drivers/ethernet/intel/e1000
  networking/e1000e networking/device_drivers/ethernet/intel/e1000e
  networking/fm10k networking/device_drivers/ethernet/intel/fm10k
@@ -919,7 +928,7 @@ index 63cdb46a3439..000000000000
 -
 -endif # ATM
 diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index 8ec98f6dfef9..19cc389028ba 100644
+index edaab759dc50..f3764818b68a 100644
 --- a/drivers/net/Kconfig
 +++ b/drivers/net/Kconfig
 @@ -501,8 +501,6 @@ config SUNGEM_PHY
@@ -928,22 +937,17 @@ index 8ec98f6dfef9..19cc389028ba 100644
  
 -source "drivers/atm/Kconfig"
 -
- source "drivers/net/dsa/Kconfig"
+ source "drivers/net/caif/Kconfig"
  
- source "drivers/net/ethernet/Kconfig"
+ source "drivers/net/dsa/Kconfig"
 diff --git a/net/atm/Kconfig b/net/atm/Kconfig
-index 77343d57ff2a..9a2f376d3d2b 100644
+index 77343d57ff2a..dfdc3a8553ba 100644
 --- a/net/atm/Kconfig
 +++ b/net/atm/Kconfig
-@@ -14,61 +14,3 @@ config ATM
- 	  In order to participate in an ATM network, your Linux box needs an
- 	  ATM networking card. If you have that, say Y here and to the driver
- 	  of your ATM card below.
--
--	  Note that you need a set of user-space programs to actually make use
--	  of ATM.  See the file <file:Documentation/networking/atm.rst> for
--	  further details.
--
+@@ -19,43 +19,6 @@ config ATM
+ 	  of ATM.  See the file <file:Documentation/networking/atm.rst> for
+ 	  further details.
+ 
 -config ATM_CLIP
 -	tristate "Classical IP over ATM"
 -	depends on ATM && INET
@@ -981,24 +985,11 @@ index 77343d57ff2a..9a2f376d3d2b 100644
 -	  subnetwork boundaries. These shortcut connections bypass routers
 -	  enhancing overall network performance.
 -
--config ATM_BR2684
--	tristate "RFC1483/2684 Bridged protocols"
--	depends on ATM && INET
--	help
--	  ATM PVCs can carry ethernet PDUs according to RFC2684 (formerly 1483)
--	  This device will act like an ethernet from the kernels point of view,
--	  with the traffic being carried by ATM PVCs (currently 1 PVC/device).
--	  This is sometimes used over DSL lines.  If in doubt, say N.
--
--config ATM_BR2684_IPFILTER
--	bool "Per-VC IP filter kludge"
--	depends on ATM_BR2684
--	help
--	  This is an experimental mechanism for users who need to terminate a
--	  large number of IP-only vcc's.  Do not enable this unless you are sure
--	  you know what you are doing.
+ config ATM_BR2684
+ 	tristate "RFC1483/2684 Bridged protocols"
+ 	depends on ATM && INET
 diff --git a/drivers/Makefile b/drivers/Makefile
-index 0841ea851847..cc5fdb1ef79f 100644
+index 53fbd2e0acdd..c902fe94f6e8 100644
 --- a/drivers/Makefile
 +++ b/drivers/Makefile
 @@ -90,7 +90,6 @@ obj-$(CONFIG_SPMI)		+= spmi/
@@ -1048,23 +1039,22 @@ index c9eade92019b..000000000000
 -  obj-$(CONFIG_ATM_HE)		+= suni.o
 -endif
 diff --git a/net/atm/Makefile b/net/atm/Makefile
-index bfec0f2d83b5..226eecbe3825 100644
+index bfec0f2d83b5..484a1b1552cc 100644
 --- a/net/atm/Makefile
 +++ b/net/atm/Makefile
-@@ -4,13 +4,7 @@
+@@ -4,13 +4,9 @@
  #
  
  atm-y		:= addr.o pvc.o signaling.o svc.o ioctl.o common.o atm_misc.o raw.o resources.o atm_sysfs.o
 -mpoa-objs	:= mpc.o mpoa_caches.o mpoa_proc.o
--
--obj-$(CONFIG_ATM) += atm.o
+ 
+ obj-$(CONFIG_ATM) += atm.o
 -obj-$(CONFIG_ATM_CLIP) += clip.o
--obj-$(CONFIG_ATM_BR2684) += br2684.o
+ obj-$(CONFIG_ATM_BR2684) += br2684.o
  atm-$(CONFIG_PROC_FS) += proc.o
  
 -obj-$(CONFIG_ATM_LANE) += lec.o
 -obj-$(CONFIG_ATM_MPOA) += mpoa.o
-+obj-$(CONFIG_ATM) += atm.o
  obj-$(CONFIG_PPPOATM) += pppoatm.o
 diff --git a/drivers/atm/eni.h b/drivers/atm/eni.h
 deleted file mode 100644
@@ -32043,884 +32033,6 @@ index bb588c98216d..000000000000
 -
 -MODULE_DESCRIPTION("S/UNI PHY driver");
 -MODULE_LICENSE("GPL");
-diff --git a/net/atm/br2684.c b/net/atm/br2684.c
-deleted file mode 100644
-index 6580d67c3456..000000000000
---- a/net/atm/br2684.c
-+++ /dev/null
-@@ -1,872 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * Ethernet netdevice using ATM AAL5 as underlying carrier
-- * (RFC1483 obsoleted by RFC2684) for Linux
-- *
-- * Authors: Marcell GAL, 2000, XDSL Ltd, Hungary
-- *          Eric Kinzie, 2006-2007, US Naval Research Laboratory
-- */
--
--#define pr_fmt(fmt) KBUILD_MODNAME ":%s: " fmt, __func__
--
--#include <linux/module.h>
--#include <linux/init.h>
--#include <linux/kernel.h>
--#include <linux/list.h>
--#include <linux/netdevice.h>
--#include <linux/skbuff.h>
--#include <linux/etherdevice.h>
--#include <linux/rtnetlink.h>
--#include <linux/ip.h>
--#include <linux/uaccess.h>
--#include <linux/slab.h>
--#include <net/arp.h>
--#include <linux/atm.h>
--#include <linux/atmdev.h>
--#include <linux/capability.h>
--#include <linux/seq_file.h>
--
--#include <linux/atmbr2684.h>
--
--#include "common.h"
--
--static void skb_debug(const struct sk_buff *skb)
--{
--#ifdef SKB_DEBUG
--#define NUM2PRINT 50
--	print_hex_dump(KERN_DEBUG, "br2684: skb: ", DUMP_OFFSET,
--		       16, 1, skb->data, min(NUM2PRINT, skb->len), true);
--#endif
--}
--
--#define BR2684_ETHERTYPE_LEN	2
--#define BR2684_PAD_LEN		2
--
--#define LLC		0xaa, 0xaa, 0x03
--#define SNAP_BRIDGED	0x00, 0x80, 0xc2
--#define SNAP_ROUTED	0x00, 0x00, 0x00
--#define PID_ETHERNET	0x00, 0x07
--#define ETHERTYPE_IPV4	0x08, 0x00
--#define ETHERTYPE_IPV6	0x86, 0xdd
--#define PAD_BRIDGED	0x00, 0x00
--
--static const unsigned char ethertype_ipv4[] = { ETHERTYPE_IPV4 };
--static const unsigned char ethertype_ipv6[] = { ETHERTYPE_IPV6 };
--static const unsigned char llc_oui_pid_pad[] =
--			{ LLC, SNAP_BRIDGED, PID_ETHERNET, PAD_BRIDGED };
--static const unsigned char pad[] = { PAD_BRIDGED };
--static const unsigned char llc_oui_ipv4[] = { LLC, SNAP_ROUTED, ETHERTYPE_IPV4 };
--static const unsigned char llc_oui_ipv6[] = { LLC, SNAP_ROUTED, ETHERTYPE_IPV6 };
--
--enum br2684_encaps {
--	e_vc = BR2684_ENCAPS_VC,
--	e_llc = BR2684_ENCAPS_LLC,
--};
--
--struct br2684_vcc {
--	struct atm_vcc *atmvcc;
--	struct net_device *device;
--	/* keep old push, pop functions for chaining */
--	void (*old_push)(struct atm_vcc *vcc, struct sk_buff *skb);
--	void (*old_pop)(struct atm_vcc *vcc, struct sk_buff *skb);
--	void (*old_release_cb)(struct atm_vcc *vcc);
--	struct module *old_owner;
--	enum br2684_encaps encaps;
--	struct list_head brvccs;
--#ifdef CONFIG_ATM_BR2684_IPFILTER
--	struct br2684_filter filter;
--#endif /* CONFIG_ATM_BR2684_IPFILTER */
--	unsigned int copies_needed, copies_failed;
--	atomic_t qspace;
--};
--
--struct br2684_dev {
--	struct net_device *net_dev;
--	struct list_head br2684_devs;
--	int number;
--	struct list_head brvccs;	/* one device <=> one vcc (before xmas) */
--	int mac_was_set;
--	enum br2684_payload payload;
--};
--
--/*
-- * This lock should be held for writing any time the list of devices or
-- * their attached vcc's could be altered.  It should be held for reading
-- * any time these are being queried.  Note that we sometimes need to
-- * do read-locking under interrupting context, so write locking must block
-- * the current CPU's interrupts.
-- */
--static DEFINE_RWLOCK(devs_lock);
--
--static LIST_HEAD(br2684_devs);
--
--static inline struct br2684_dev *BRPRIV(const struct net_device *net_dev)
--{
--	return netdev_priv(net_dev);
--}
--
--static inline struct net_device *list_entry_brdev(const struct list_head *le)
--{
--	return list_entry(le, struct br2684_dev, br2684_devs)->net_dev;
--}
--
--static inline struct br2684_vcc *BR2684_VCC(const struct atm_vcc *atmvcc)
--{
--	return (struct br2684_vcc *)(atmvcc->user_back);
--}
--
--static inline struct br2684_vcc *list_entry_brvcc(const struct list_head *le)
--{
--	return list_entry(le, struct br2684_vcc, brvccs);
--}
--
--/* Caller should hold read_lock(&devs_lock) */
--static struct net_device *br2684_find_dev(const struct br2684_if_spec *s)
--{
--	struct list_head *lh;
--	struct net_device *net_dev;
--	switch (s->method) {
--	case BR2684_FIND_BYNUM:
--		list_for_each(lh, &br2684_devs) {
--			net_dev = list_entry_brdev(lh);
--			if (BRPRIV(net_dev)->number == s->spec.devnum)
--				return net_dev;
--		}
--		break;
--	case BR2684_FIND_BYIFNAME:
--		list_for_each(lh, &br2684_devs) {
--			net_dev = list_entry_brdev(lh);
--			if (!strncmp(net_dev->name, s->spec.ifname, IFNAMSIZ))
--				return net_dev;
--		}
--		break;
--	}
--	return NULL;
--}
--
--static int atm_dev_event(struct notifier_block *this, unsigned long event,
--		 void *arg)
--{
--	struct atm_dev *atm_dev = arg;
--	struct list_head *lh;
--	struct net_device *net_dev;
--	struct br2684_vcc *brvcc;
--	struct atm_vcc *atm_vcc;
--	unsigned long flags;
--
--	pr_debug("event=%ld dev=%p\n", event, atm_dev);
--
--	read_lock_irqsave(&devs_lock, flags);
--	list_for_each(lh, &br2684_devs) {
--		net_dev = list_entry_brdev(lh);
--
--		list_for_each_entry(brvcc, &BRPRIV(net_dev)->brvccs, brvccs) {
--			atm_vcc = brvcc->atmvcc;
--			if (atm_vcc && brvcc->atmvcc->dev == atm_dev) {
--
--				if (atm_vcc->dev->signal == ATM_PHY_SIG_LOST)
--					netif_carrier_off(net_dev);
--				else
--					netif_carrier_on(net_dev);
--
--			}
--		}
--	}
--	read_unlock_irqrestore(&devs_lock, flags);
--
--	return NOTIFY_DONE;
--}
--
--static struct notifier_block atm_dev_notifier = {
--	.notifier_call = atm_dev_event,
--};
--
--/* chained vcc->pop function.  Check if we should wake the netif_queue */
--static void br2684_pop(struct atm_vcc *vcc, struct sk_buff *skb)
--{
--	struct br2684_vcc *brvcc = BR2684_VCC(vcc);
--
--	pr_debug("(vcc %p ; net_dev %p )\n", vcc, brvcc->device);
--	brvcc->old_pop(vcc, skb);
--
--	/* If the queue space just went up from zero, wake */
--	if (atomic_inc_return(&brvcc->qspace) == 1)
--		netif_wake_queue(brvcc->device);
--}
--
--/*
-- * Send a packet out a particular vcc.  Not to useful right now, but paves
-- * the way for multiple vcc's per itf.  Returns true if we can send,
-- * otherwise false
-- */
--static int br2684_xmit_vcc(struct sk_buff *skb, struct net_device *dev,
--			   struct br2684_vcc *brvcc)
--{
--	struct br2684_dev *brdev = BRPRIV(dev);
--	struct atm_vcc *atmvcc;
--	int minheadroom = (brvcc->encaps == e_llc) ?
--		((brdev->payload == p_bridged) ?
--			sizeof(llc_oui_pid_pad) : sizeof(llc_oui_ipv4)) :
--		((brdev->payload == p_bridged) ? BR2684_PAD_LEN : 0);
--
--	if (skb_headroom(skb) < minheadroom) {
--		struct sk_buff *skb2 = skb_realloc_headroom(skb, minheadroom);
--		brvcc->copies_needed++;
--		dev_kfree_skb(skb);
--		if (skb2 == NULL) {
--			brvcc->copies_failed++;
--			return 0;
--		}
--		skb = skb2;
--	}
--
--	if (brvcc->encaps == e_llc) {
--		if (brdev->payload == p_bridged) {
--			skb_push(skb, sizeof(llc_oui_pid_pad));
--			skb_copy_to_linear_data(skb, llc_oui_pid_pad,
--						sizeof(llc_oui_pid_pad));
--		} else if (brdev->payload == p_routed) {
--			unsigned short prot = ntohs(skb->protocol);
--
--			skb_push(skb, sizeof(llc_oui_ipv4));
--			switch (prot) {
--			case ETH_P_IP:
--				skb_copy_to_linear_data(skb, llc_oui_ipv4,
--							sizeof(llc_oui_ipv4));
--				break;
--			case ETH_P_IPV6:
--				skb_copy_to_linear_data(skb, llc_oui_ipv6,
--							sizeof(llc_oui_ipv6));
--				break;
--			default:
--				dev_kfree_skb(skb);
--				return 0;
--			}
--		}
--	} else { /* e_vc */
--		if (brdev->payload == p_bridged) {
--			skb_push(skb, 2);
--			memset(skb->data, 0, 2);
--		}
--	}
--	skb_debug(skb);
--
--	ATM_SKB(skb)->vcc = atmvcc = brvcc->atmvcc;
--	pr_debug("atm_skb(%p)->vcc(%p)->dev(%p)\n", skb, atmvcc, atmvcc->dev);
--	atm_account_tx(atmvcc, skb);
--	dev->stats.tx_packets++;
--	dev->stats.tx_bytes += skb->len;
--
--	if (atomic_dec_return(&brvcc->qspace) < 1) {
--		/* No more please! */
--		netif_stop_queue(brvcc->device);
--		/* We might have raced with br2684_pop() */
--		if (unlikely(atomic_read(&brvcc->qspace) > 0))
--			netif_wake_queue(brvcc->device);
--	}
--
--	/* If this fails immediately, the skb will be freed and br2684_pop()
--	   will wake the queue if appropriate. Just return an error so that
--	   the stats are updated correctly */
--	return !atmvcc->send(atmvcc, skb);
--}
--
--static void br2684_release_cb(struct atm_vcc *atmvcc)
--{
--	struct br2684_vcc *brvcc = BR2684_VCC(atmvcc);
--
--	if (atomic_read(&brvcc->qspace) > 0)
--		netif_wake_queue(brvcc->device);
--
--	if (brvcc->old_release_cb)
--		brvcc->old_release_cb(atmvcc);
--}
--
--static inline struct br2684_vcc *pick_outgoing_vcc(const struct sk_buff *skb,
--						   const struct br2684_dev *brdev)
--{
--	return list_empty(&brdev->brvccs) ? NULL : list_entry_brvcc(brdev->brvccs.next);	/* 1 vcc/dev right now */
--}
--
--static netdev_tx_t br2684_start_xmit(struct sk_buff *skb,
--				     struct net_device *dev)
--{
--	struct br2684_dev *brdev = BRPRIV(dev);
--	struct br2684_vcc *brvcc;
--	struct atm_vcc *atmvcc;
--	netdev_tx_t ret = NETDEV_TX_OK;
--
--	pr_debug("skb_dst(skb)=%p\n", skb_dst(skb));
--	read_lock(&devs_lock);
--	brvcc = pick_outgoing_vcc(skb, brdev);
--	if (brvcc == NULL) {
--		pr_debug("no vcc attached to dev %s\n", dev->name);
--		dev->stats.tx_errors++;
--		dev->stats.tx_carrier_errors++;
--		/* netif_stop_queue(dev); */
--		dev_kfree_skb(skb);
--		goto out_devs;
--	}
--	atmvcc = brvcc->atmvcc;
--
--	bh_lock_sock(sk_atm(atmvcc));
--
--	if (test_bit(ATM_VF_RELEASED, &atmvcc->flags) ||
--	    test_bit(ATM_VF_CLOSE, &atmvcc->flags) ||
--	    !test_bit(ATM_VF_READY, &atmvcc->flags)) {
--		dev->stats.tx_dropped++;
--		dev_kfree_skb(skb);
--		goto out;
--	}
--
--	if (sock_owned_by_user(sk_atm(atmvcc))) {
--		netif_stop_queue(brvcc->device);
--		ret = NETDEV_TX_BUSY;
--		goto out;
--	}
--
--	if (!br2684_xmit_vcc(skb, dev, brvcc)) {
--		/*
--		 * We should probably use netif_*_queue() here, but that
--		 * involves added complication.  We need to walk before
--		 * we can run.
--		 *
--		 * Don't free here! this pointer might be no longer valid!
--		 */
--		dev->stats.tx_errors++;
--		dev->stats.tx_fifo_errors++;
--	}
-- out:
--	bh_unlock_sock(sk_atm(atmvcc));
-- out_devs:
--	read_unlock(&devs_lock);
--	return ret;
--}
--
--/*
-- * We remember when the MAC gets set, so we don't override it later with
-- * the ESI of the ATM card of the first VC
-- */
--static int br2684_mac_addr(struct net_device *dev, void *p)
--{
--	int err = eth_mac_addr(dev, p);
--	if (!err)
--		BRPRIV(dev)->mac_was_set = 1;
--	return err;
--}
--
--#ifdef CONFIG_ATM_BR2684_IPFILTER
--/* this IOCTL is experimental. */
--static int br2684_setfilt(struct atm_vcc *atmvcc, void __user * arg)
--{
--	struct br2684_vcc *brvcc;
--	struct br2684_filter_set fs;
--
--	if (copy_from_user(&fs, arg, sizeof fs))
--		return -EFAULT;
--	if (fs.ifspec.method != BR2684_FIND_BYNOTHING) {
--		/*
--		 * This is really a per-vcc thing, but we can also search
--		 * by device.
--		 */
--		struct br2684_dev *brdev;
--		read_lock(&devs_lock);
--		brdev = BRPRIV(br2684_find_dev(&fs.ifspec));
--		if (brdev == NULL || list_empty(&brdev->brvccs) ||
--		    brdev->brvccs.next != brdev->brvccs.prev)	/* >1 VCC */
--			brvcc = NULL;
--		else
--			brvcc = list_entry_brvcc(brdev->brvccs.next);
--		read_unlock(&devs_lock);
--		if (brvcc == NULL)
--			return -ESRCH;
--	} else
--		brvcc = BR2684_VCC(atmvcc);
--	memcpy(&brvcc->filter, &fs.filter, sizeof(brvcc->filter));
--	return 0;
--}
--
--/* Returns 1 if packet should be dropped */
--static inline int
--packet_fails_filter(__be16 type, struct br2684_vcc *brvcc, struct sk_buff *skb)
--{
--	if (brvcc->filter.netmask == 0)
--		return 0;	/* no filter in place */
--	if (type == htons(ETH_P_IP) &&
--	    (((struct iphdr *)(skb->data))->daddr & brvcc->filter.
--	     netmask) == brvcc->filter.prefix)
--		return 0;
--	if (type == htons(ETH_P_ARP))
--		return 0;
--	/*
--	 * TODO: we should probably filter ARPs too.. don't want to have
--	 * them returning values that don't make sense, or is that ok?
--	 */
--	return 1;		/* drop */
--}
--#endif /* CONFIG_ATM_BR2684_IPFILTER */
--
--static void br2684_close_vcc(struct br2684_vcc *brvcc)
--{
--	pr_debug("removing VCC %p from dev %p\n", brvcc, brvcc->device);
--	write_lock_irq(&devs_lock);
--	list_del(&brvcc->brvccs);
--	write_unlock_irq(&devs_lock);
--	brvcc->atmvcc->user_back = NULL;	/* what about vcc->recvq ??? */
--	brvcc->atmvcc->release_cb = brvcc->old_release_cb;
--	brvcc->old_push(brvcc->atmvcc, NULL);	/* pass on the bad news */
--	module_put(brvcc->old_owner);
--	kfree(brvcc);
--}
--
--/* when AAL5 PDU comes in: */
--static void br2684_push(struct atm_vcc *atmvcc, struct sk_buff *skb)
--{
--	struct br2684_vcc *brvcc = BR2684_VCC(atmvcc);
--	struct net_device *net_dev = brvcc->device;
--	struct br2684_dev *brdev = BRPRIV(net_dev);
--
--	pr_debug("\n");
--
--	if (unlikely(skb == NULL)) {
--		/* skb==NULL means VCC is being destroyed */
--		br2684_close_vcc(brvcc);
--		if (list_empty(&brdev->brvccs)) {
--			write_lock_irq(&devs_lock);
--			list_del(&brdev->br2684_devs);
--			write_unlock_irq(&devs_lock);
--			unregister_netdev(net_dev);
--			free_netdev(net_dev);
--		}
--		return;
--	}
--
--	skb_debug(skb);
--	atm_return(atmvcc, skb->truesize);
--	pr_debug("skb from brdev %p\n", brdev);
--	if (brvcc->encaps == e_llc) {
--
--		if (skb->len > 7 && skb->data[7] == 0x01)
--			__skb_trim(skb, skb->len - 4);
--
--		/* accept packets that have "ipv[46]" in the snap header */
--		if ((skb->len >= (sizeof(llc_oui_ipv4))) &&
--		    (memcmp(skb->data, llc_oui_ipv4,
--			    sizeof(llc_oui_ipv4) - BR2684_ETHERTYPE_LEN) == 0)) {
--			if (memcmp(skb->data + 6, ethertype_ipv6,
--				   sizeof(ethertype_ipv6)) == 0)
--				skb->protocol = htons(ETH_P_IPV6);
--			else if (memcmp(skb->data + 6, ethertype_ipv4,
--					sizeof(ethertype_ipv4)) == 0)
--				skb->protocol = htons(ETH_P_IP);
--			else
--				goto error;
--			skb_pull(skb, sizeof(llc_oui_ipv4));
--			skb_reset_network_header(skb);
--			skb->pkt_type = PACKET_HOST;
--		/*
--		 * Let us waste some time for checking the encapsulation.
--		 * Note, that only 7 char is checked so frames with a valid FCS
--		 * are also accepted (but FCS is not checked of course).
--		 */
--		} else if ((skb->len >= sizeof(llc_oui_pid_pad)) &&
--			   (memcmp(skb->data, llc_oui_pid_pad, 7) == 0)) {
--			skb_pull(skb, sizeof(llc_oui_pid_pad));
--			skb->protocol = eth_type_trans(skb, net_dev);
--		} else
--			goto error;
--
--	} else { /* e_vc */
--		if (brdev->payload == p_routed) {
--			struct iphdr *iph;
--
--			skb_reset_network_header(skb);
--			iph = ip_hdr(skb);
--			if (iph->version == 4)
--				skb->protocol = htons(ETH_P_IP);
--			else if (iph->version == 6)
--				skb->protocol = htons(ETH_P_IPV6);
--			else
--				goto error;
--			skb->pkt_type = PACKET_HOST;
--		} else { /* p_bridged */
--			/* first 2 chars should be 0 */
--			if (memcmp(skb->data, pad, BR2684_PAD_LEN) != 0)
--				goto error;
--			skb_pull(skb, BR2684_PAD_LEN);
--			skb->protocol = eth_type_trans(skb, net_dev);
--		}
--	}
--
--#ifdef CONFIG_ATM_BR2684_IPFILTER
--	if (unlikely(packet_fails_filter(skb->protocol, brvcc, skb)))
--		goto dropped;
--#endif /* CONFIG_ATM_BR2684_IPFILTER */
--	skb->dev = net_dev;
--	ATM_SKB(skb)->vcc = atmvcc;	/* needed ? */
--	pr_debug("received packet's protocol: %x\n", ntohs(skb->protocol));
--	skb_debug(skb);
--	/* sigh, interface is down? */
--	if (unlikely(!(net_dev->flags & IFF_UP)))
--		goto dropped;
--	net_dev->stats.rx_packets++;
--	net_dev->stats.rx_bytes += skb->len;
--	memset(ATM_SKB(skb), 0, sizeof(struct atm_skb_data));
--	netif_rx(skb);
--	return;
--
--dropped:
--	net_dev->stats.rx_dropped++;
--	goto free_skb;
--error:
--	net_dev->stats.rx_errors++;
--free_skb:
--	dev_kfree_skb(skb);
--}
--
--/*
-- * Assign a vcc to a dev
-- * Note: we do not have explicit unassign, but look at _push()
-- */
--static int br2684_regvcc(struct atm_vcc *atmvcc, void __user * arg)
--{
--	struct br2684_vcc *brvcc;
--	struct br2684_dev *brdev;
--	struct net_device *net_dev;
--	struct atm_backend_br2684 be;
--	int err;
--
--	if (copy_from_user(&be, arg, sizeof be))
--		return -EFAULT;
--	brvcc = kzalloc_obj(struct br2684_vcc);
--	if (!brvcc)
--		return -ENOMEM;
--	/*
--	 * Allow two packets in the ATM queue. One actually being sent, and one
--	 * for the ATM 'TX done' handler to send. It shouldn't take long to get
--	 * the next one from the netdev queue, when we need it. More than that
--	 * would be bufferbloat.
--	 */
--	atomic_set(&brvcc->qspace, 2);
--	write_lock_irq(&devs_lock);
--	net_dev = br2684_find_dev(&be.ifspec);
--	if (net_dev == NULL) {
--		pr_err("tried to attach to non-existent device\n");
--		err = -ENXIO;
--		goto error;
--	}
--	brdev = BRPRIV(net_dev);
--	if (atmvcc->push == NULL) {
--		err = -EBADFD;
--		goto error;
--	}
--	if (!list_empty(&brdev->brvccs)) {
--		/* Only 1 VCC/dev right now */
--		err = -EEXIST;
--		goto error;
--	}
--	if (be.fcs_in != BR2684_FCSIN_NO ||
--	    be.fcs_out != BR2684_FCSOUT_NO ||
--	    be.fcs_auto || be.has_vpiid || be.send_padding ||
--	    (be.encaps != BR2684_ENCAPS_VC &&
--	     be.encaps != BR2684_ENCAPS_LLC) ||
--	    be.min_size != 0) {
--		err = -EINVAL;
--		goto error;
--	}
--	pr_debug("vcc=%p, encaps=%d, brvcc=%p\n", atmvcc, be.encaps, brvcc);
--	if (list_empty(&brdev->brvccs) && !brdev->mac_was_set) {
--		unsigned char *esi = atmvcc->dev->esi;
--		const u8 one = 1;
--
--		if (esi[0] | esi[1] | esi[2] | esi[3] | esi[4] | esi[5])
--			dev_addr_set(net_dev, esi);
--		else
--			dev_addr_mod(net_dev, 2, &one, 1);
--	}
--	list_add(&brvcc->brvccs, &brdev->brvccs);
--	write_unlock_irq(&devs_lock);
--	brvcc->device = net_dev;
--	brvcc->atmvcc = atmvcc;
--	atmvcc->user_back = brvcc;
--	brvcc->encaps = (enum br2684_encaps)be.encaps;
--	brvcc->old_push = atmvcc->push;
--	brvcc->old_pop = atmvcc->pop;
--	brvcc->old_release_cb = atmvcc->release_cb;
--	brvcc->old_owner = atmvcc->owner;
--	barrier();
--	atmvcc->push = br2684_push;
--	atmvcc->pop = br2684_pop;
--	atmvcc->release_cb = br2684_release_cb;
--	atmvcc->owner = THIS_MODULE;
--
--	/* initialize netdev carrier state */
--	if (atmvcc->dev->signal == ATM_PHY_SIG_LOST)
--		netif_carrier_off(net_dev);
--	else
--		netif_carrier_on(net_dev);
--
--	__module_get(THIS_MODULE);
--
--	/* re-process everything received between connection setup and
--	   backend setup */
--	vcc_process_recv_queue(atmvcc);
--	return 0;
--
--error:
--	write_unlock_irq(&devs_lock);
--	kfree(brvcc);
--	return err;
--}
--
--static const struct net_device_ops br2684_netdev_ops = {
--	.ndo_start_xmit 	= br2684_start_xmit,
--	.ndo_set_mac_address	= br2684_mac_addr,
--	.ndo_validate_addr	= eth_validate_addr,
--};
--
--static const struct net_device_ops br2684_netdev_ops_routed = {
--	.ndo_start_xmit 	= br2684_start_xmit,
--	.ndo_set_mac_address	= br2684_mac_addr,
--};
--
--static void br2684_setup(struct net_device *netdev)
--{
--	struct br2684_dev *brdev = BRPRIV(netdev);
--
--	ether_setup(netdev);
--	netdev->hard_header_len += sizeof(llc_oui_pid_pad); /* worst case */
--	brdev->net_dev = netdev;
--
--	netdev->netdev_ops = &br2684_netdev_ops;
--
--	INIT_LIST_HEAD(&brdev->brvccs);
--}
--
--static void br2684_setup_routed(struct net_device *netdev)
--{
--	struct br2684_dev *brdev = BRPRIV(netdev);
--
--	brdev->net_dev = netdev;
--	netdev->hard_header_len = sizeof(llc_oui_ipv4); /* worst case */
--	netdev->netdev_ops = &br2684_netdev_ops_routed;
--	netdev->addr_len = 0;
--	netdev->mtu = ETH_DATA_LEN;
--	netdev->min_mtu = 0;
--	netdev->max_mtu = ETH_MAX_MTU;
--	netdev->type = ARPHRD_PPP;
--	netdev->flags = IFF_POINTOPOINT | IFF_NOARP | IFF_MULTICAST;
--	netdev->tx_queue_len = 100;
--	INIT_LIST_HEAD(&brdev->brvccs);
--}
--
--static int br2684_create(void __user *arg)
--{
--	int err;
--	struct net_device *netdev;
--	struct br2684_dev *brdev;
--	struct atm_newif_br2684 ni;
--	enum br2684_payload payload;
--
--	pr_debug("\n");
--
--	if (copy_from_user(&ni, arg, sizeof ni))
--		return -EFAULT;
--
--	if (ni.media & BR2684_FLAG_ROUTED)
--		payload = p_routed;
--	else
--		payload = p_bridged;
--	ni.media &= 0xffff;	/* strip flags */
--
--	if (ni.media != BR2684_MEDIA_ETHERNET || ni.mtu != 1500)
--		return -EINVAL;
--
--	netdev = alloc_netdev(sizeof(struct br2684_dev),
--			      ni.ifname[0] ? ni.ifname : "nas%d",
--			      NET_NAME_UNKNOWN,
--			      (payload == p_routed) ? br2684_setup_routed : br2684_setup);
--	if (!netdev)
--		return -ENOMEM;
--
--	brdev = BRPRIV(netdev);
--
--	pr_debug("registered netdev %s\n", netdev->name);
--	/* open, stop, do_ioctl ? */
--	err = register_netdev(netdev);
--	if (err < 0) {
--		pr_err("register_netdev failed\n");
--		free_netdev(netdev);
--		return err;
--	}
--
--	write_lock_irq(&devs_lock);
--
--	brdev->payload = payload;
--
--	if (list_empty(&br2684_devs)) {
--		/* 1st br2684 device */
--		brdev->number = 1;
--	} else
--		brdev->number = BRPRIV(list_entry_brdev(br2684_devs.prev))->number + 1;
--
--	list_add_tail(&brdev->br2684_devs, &br2684_devs);
--	write_unlock_irq(&devs_lock);
--	return 0;
--}
--
--/*
-- * This handles ioctls actually performed on our vcc - we must return
-- * -ENOIOCTLCMD for any unrecognized ioctl
-- */
--static int br2684_ioctl(struct socket *sock, unsigned int cmd,
--			unsigned long arg)
--{
--	struct atm_vcc *atmvcc = ATM_SD(sock);
--	void __user *argp = (void __user *)arg;
--	atm_backend_t b;
--
--	int err;
--	switch (cmd) {
--	case ATM_SETBACKEND:
--	case ATM_NEWBACKENDIF:
--		err = get_user(b, (atm_backend_t __user *) argp);
--		if (err)
--			return -EFAULT;
--		if (b != ATM_BACKEND_BR2684)
--			return -ENOIOCTLCMD;
--		if (!capable(CAP_NET_ADMIN))
--			return -EPERM;
--		if (cmd == ATM_SETBACKEND) {
--			if (sock->state != SS_CONNECTED)
--				return -EINVAL;
--			return br2684_regvcc(atmvcc, argp);
--		} else {
--			return br2684_create(argp);
--		}
--#ifdef CONFIG_ATM_BR2684_IPFILTER
--	case BR2684_SETFILT:
--		if (atmvcc->push != br2684_push)
--			return -ENOIOCTLCMD;
--		if (!capable(CAP_NET_ADMIN))
--			return -EPERM;
--		err = br2684_setfilt(atmvcc, argp);
--
--		return err;
--#endif /* CONFIG_ATM_BR2684_IPFILTER */
--	}
--	return -ENOIOCTLCMD;
--}
--
--static struct atm_ioctl br2684_ioctl_ops = {
--	.owner = THIS_MODULE,
--	.ioctl = br2684_ioctl,
--};
--
--#ifdef CONFIG_PROC_FS
--static void *br2684_seq_start(struct seq_file *seq, loff_t * pos)
--	__acquires(devs_lock)
--{
--	read_lock(&devs_lock);
--	return seq_list_start(&br2684_devs, *pos);
--}
--
--static void *br2684_seq_next(struct seq_file *seq, void *v, loff_t * pos)
--{
--	return seq_list_next(v, &br2684_devs, pos);
--}
--
--static void br2684_seq_stop(struct seq_file *seq, void *v)
--	__releases(devs_lock)
--{
--	read_unlock(&devs_lock);
--}
--
--static int br2684_seq_show(struct seq_file *seq, void *v)
--{
--	const struct br2684_dev *brdev = list_entry(v, struct br2684_dev,
--						    br2684_devs);
--	const struct net_device *net_dev = brdev->net_dev;
--	const struct br2684_vcc *brvcc;
--
--	seq_printf(seq, "dev %.16s: num=%d, mac=%pM (%s)\n",
--		   net_dev->name,
--		   brdev->number,
--		   net_dev->dev_addr,
--		   brdev->mac_was_set ? "set" : "auto");
--
--	list_for_each_entry(brvcc, &brdev->brvccs, brvccs) {
--		seq_printf(seq, "  vcc %d.%d.%d: encaps=%s payload=%s"
--			   ", failed copies %u/%u"
--			   "\n", brvcc->atmvcc->dev->number,
--			   brvcc->atmvcc->vpi, brvcc->atmvcc->vci,
--			   (brvcc->encaps == e_llc) ? "LLC" : "VC",
--			   (brdev->payload == p_bridged) ? "bridged" : "routed",
--			   brvcc->copies_failed, brvcc->copies_needed);
--#ifdef CONFIG_ATM_BR2684_IPFILTER
--		if (brvcc->filter.netmask != 0)
--			seq_printf(seq, "    filter=%pI4/%pI4\n",
--				   &brvcc->filter.prefix,
--				   &brvcc->filter.netmask);
--#endif /* CONFIG_ATM_BR2684_IPFILTER */
--	}
--	return 0;
--}
--
--static const struct seq_operations br2684_seq_ops = {
--	.start = br2684_seq_start,
--	.next = br2684_seq_next,
--	.stop = br2684_seq_stop,
--	.show = br2684_seq_show,
--};
--
--extern struct proc_dir_entry *atm_proc_root;	/* from proc.c */
--#endif /* CONFIG_PROC_FS */
--
--static int __init br2684_init(void)
--{
--#ifdef CONFIG_PROC_FS
--	struct proc_dir_entry *p;
--	p = proc_create_seq("br2684", 0, atm_proc_root, &br2684_seq_ops);
--	if (p == NULL)
--		return -ENOMEM;
--#endif
--	register_atm_ioctl(&br2684_ioctl_ops);
--	register_atmdevice_notifier(&atm_dev_notifier);
--	return 0;
--}
--
--static void __exit br2684_exit(void)
--{
--	struct net_device *net_dev;
--	struct br2684_dev *brdev;
--	struct br2684_vcc *brvcc;
--	deregister_atm_ioctl(&br2684_ioctl_ops);
--
--#ifdef CONFIG_PROC_FS
--	remove_proc_entry("br2684", atm_proc_root);
--#endif
--
--
--	unregister_atmdevice_notifier(&atm_dev_notifier);
--
--	while (!list_empty(&br2684_devs)) {
--		net_dev = list_entry_brdev(br2684_devs.next);
--		brdev = BRPRIV(net_dev);
--		while (!list_empty(&brdev->brvccs)) {
--			brvcc = list_entry_brvcc(brdev->brvccs.next);
--			br2684_close_vcc(brvcc);
--		}
--
--		list_del(&brdev->br2684_devs);
--		unregister_netdev(net_dev);
--		free_netdev(net_dev);
--	}
--}
--
--module_init(br2684_init);
--module_exit(br2684_exit);
--
--MODULE_AUTHOR("Marcell GAL");
--MODULE_DESCRIPTION("RFC2684 bridged protocols over ATM/AAL5");
--MODULE_LICENSE("GPL");
 diff --git a/net/atm/clip.c b/net/atm/clip.c
 deleted file mode 100644
 index 516b2214680b..000000000000
@@ -38702,7 +37814,7 @@ index 81199dddcde7..950b48c3b111 100644
  CONFIG_WAN=y
  CONFIG_HDLC=y
 diff --git a/arch/mips/configs/gpr_defconfig b/arch/mips/configs/gpr_defconfig
-index 261730af75c7..ad80ad2eae6b 100644
+index fdd28a89e336..8097974489e3 100644
 --- a/arch/mips/configs/gpr_defconfig
 +++ b/arch/mips/configs/gpr_defconfig
 @@ -87,10 +87,6 @@ CONFIG_BRIDGE_EBT_LOG=m
@@ -38716,7 +37828,7 @@ index 261730af75c7..ad80ad2eae6b 100644
  CONFIG_BRIDGE=m
  CONFIG_VLAN_8021Q=m
  CONFIG_LLC2=m
-@@ -156,15 +152,6 @@ CONFIG_SCSI_SAS_LIBSAS=m
+@@ -167,15 +163,6 @@ CONFIG_SCSI_SAS_LIBSAS=m
  CONFIG_NETDEVICES=y
  CONFIG_NET_FC=y
  CONFIG_NETCONSOLE=m
@@ -38733,7 +37845,7 @@ index 261730af75c7..ad80ad2eae6b 100644
  CONFIG_CICADA_PHY=m
  CONFIG_DAVICOM_PHY=m
 diff --git a/arch/mips/configs/mtx1_defconfig b/arch/mips/configs/mtx1_defconfig
-index 315650c6fe0b..1295164af08e 100644
+index 72568f8ae653..63787b8b733e 100644
 --- a/arch/mips/configs/mtx1_defconfig
 +++ b/arch/mips/configs/mtx1_defconfig
 @@ -133,10 +133,6 @@ CONFIG_BRIDGE_EBT_LOG=m
@@ -38747,7 +37859,7 @@ index 315650c6fe0b..1295164af08e 100644
  CONFIG_BRIDGE=m
  CONFIG_VLAN_8021Q=m
  CONFIG_LLC2=m
-@@ -232,15 +228,6 @@ CONFIG_ARCNET_RIM_I=m
+@@ -243,15 +239,6 @@ CONFIG_ARCNET_RIM_I=m
  CONFIG_ARCNET_COM20020=m
  CONFIG_ARCNET_COM20020_PCI=m
  CONFIG_ARCNET_COM20020_CS=m
