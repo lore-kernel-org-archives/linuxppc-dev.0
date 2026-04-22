@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-19956-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19957-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5873CFA1FC7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2026 16:15:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9BE37FA1FD0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2026 16:15:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g147C4Jcqz2yrl;
-	Thu, 23 Apr 2026 02:14:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776874487;
-	cv=none; b=CnpbU0LWieMt8iE9yxJW4dpJTqF7sv5v5sEz5f7ZetT9o+IIKEnV2AzUBebaYIwhN5uGBCKkpmLteN+cRhS3XbYp90F38Byb/04wffs/UCQUnPqsutSPA1/bfytsBBpnpuAZqWXHzZK74RfFzfUJW/9vTsj6cSbDq8t/rEOP0/5hzue2saJ7Z7V8rsLiJ0qmdHNKkB58SQxSWrOdGXONQ5Wn8hh2xJOSdWwSRr2vgLUfCXpl5DVBxuXhM4TOhTbIQNVuONgMpp9DUmEZgvorEMNsfhfR2AiU1OCR7rZPH/qxJNHFFqw5zunwFAllN8X+SFFzlbPWGBOAqBTPzDD5Kg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g147G2F6Dz2yv1;
+	Thu, 23 Apr 2026 02:14:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776874490;
+	cv=none; b=hZ4FLOePicAvEEAmqCyt8CyZkuAF1WNQdeEUkkDhu1qXsRH3Fo9vG4T42TszQJRj/gcMciY+2VQpegaHTHIBKqbAms9HbN3MNk9Q+/4yPg+OCPtOg9j5spA9d/+EYfp/SKr7wFKW3bKtP75exteU/8wI5qTIbnph4GRjB5h9fvRsPTub92wllS7qjbbDhHc8DnAcE3v5MV7il/K8MQHfdt8J1WbjiI5PRwmquKgNm1zXToJB24GG1o+e6mMCK+bmK/Z5p8WAU5vXFGdOv/IpfXcsGCn8slxWhMhjzRnRLF+MaT8TQ5e1PgA49jdFmMQOChZtodQBaqlLDaBIvAQsOw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776874487; c=relaxed/relaxed;
-	bh=KWYtbmJf3a3UDl6fsni42j/4SglEWy2e1noV/d07org=;
+	t=1776874490; c=relaxed/relaxed;
+	bh=FH2enVJfojk0S8f0iHm5FkqZGprmPyA/zCXyFyjpwiM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=SJZ7F4f01s+Xba5652oZYSgh5TodowCRF1gubQzaboBiAKMAVIxHP1nSdAQREKZqL0gAUYsZ4/haScjZw0atsVqYBHlgWmwDfcvf6lb8RHgeNrg4VBTbFgRuk3q1q850Hi1MstA0bMl/6woHu6M8g0H9F8Zw1NOkOffEgHHuU4euzvAbppkPeoItv0cDiSAJtOzBHY/ZyU1fJmhmb4mOcKF+RSuVRQc/M/IS0rFHvJKXXNd9zX7Jl0GtiGXZ8FMD5qbe5sXgtAp8yCrLG32B+jN6vnzjE3+NI8ZGFFWzOJ6tc81XcEgRUByel+Q5UQ8u6474xRfLNWvodquy3YgrwQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eIy7Urip; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=lNVkqahCHciaY4klbc/EZ4+V6JPwu5P3y6x3+cAE9914+8wtpyJ0vUz+YywvKGwG02iNABbA7Xxhp5xhR4/TpsFoSkyGDpW7S5troDsgFx6fYFhfDORjKlkpplJ0uJQbvrJEBjdgAaNHwxfAjCRqI/rg+XV4AGD1EjO7vWbzla8+/W+Yr9U6sS2qnMQTNbaRjEnmqHHM8dJWcfoJO7sQPHH2zhEA5qU4D3X4UlQKSHKXgSHZFXaX6heLpOsn1s70YKp8k+zuzyrQyMf50oU17gD/SrL/tIp4rTQN3qJq9I/5otAU1kcT+/vkd+5Xpwltn8XSTdiqBzK10Am14WupiA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=go0jltm9; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eIy7Urip;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=go0jltm9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g14761Ylfz2yv1
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 02:14:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g147909yHz2yr9
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 02:14:45 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 2CBC36057A;
+	by sea.source.kernel.org (Postfix) with ESMTP id 78DD744002;
+	Wed, 22 Apr 2026 16:14:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3907FC19425;
 	Wed, 22 Apr 2026 16:14:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B7FA2C2BCB2;
-	Wed, 22 Apr 2026 16:14:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776874479;
-	bh=tPC3J3ZhBEH6py/uCTWgJRVGCTKnpjJlJA0/I3j9P2E=;
+	s=k20201202; t=1776874483;
+	bh=2awDDsHgKBR5YLN7vFnp7yjonylM4FPzN2pRnPvj4Aw=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=eIy7UripanPcwv0lcuvpN+LC+hvGpFWR4gvFU0nG+S4dMTz0zbh0L0Rro2gNPgIqU
-	 MQgN/EIbpsPzR2bfNN5K4/GxS/7qge8+CTlD8vA1Kr990ZENvd73NqkFRZigpT4Juv
-	 mtx7SGoHAu4WtHEnmEhNvDJhqsWPzBfRshYvQURZyR3ckGX2rZOtGQiIkOEVmQQYGo
-	 7zAodRktmezQzJRsQVYUp8Dq+oJfmNwREDfqbDAKSU+JJUkt/apjGg7+alxm75ODF4
-	 gQanKXWrYMI1XPIlfvagSjJJitwmQWqgZadMoayLQWWtYzdEHn3EdJ9GrBwFM4wS6F
-	 sE0wogHvrgNzQ==
+	b=go0jltm9zA8j6jZC4t8S4Orln0Tj/7btaG5mzBOncVpBJKPiVyMzV/d4Ud3DObxDl
+	 anDvBcU6EUCe/RcOIFmS73HCEtl41etrsWn+oGUBFFIMN/9jit4ITGN9E9MqBz1uxD
+	 XGDix0I06JJdoGzgvg4VFZgABb+cYSG8+Ir2uvq/tQCfr0gQ/u72fQ2L28LaHjh09b
+	 VMvl4tRm8xnxT9CUFYHeuiKdvx+ysdcer4pIccLMLgNwWXk6NEcEo6j8FJA79WrX+o
+	 gmZncktz4J8MI/aPFdMSPFKIiSVfI5kRztmqk16OAWxQzi6tUhxH1Kd441/ZIyavhZ
+	 3Rspt2DNaCogA==
 From: =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kwilczynski@kernel.org>
 To: Bjorn Helgaas <bhelgaas@google.com>
 Cc: Bjorn Helgaas <helgaas@kernel.org>,
@@ -67,9 +67,9 @@ Cc: Bjorn Helgaas <helgaas@kernel.org>,
 	linux-pci@vger.kernel.org,
 	linux-alpha@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v6 08/24] PCI/sysfs: Warn about BAR resize failure in __resource_resize_store()
-Date: Wed, 22 Apr 2026 16:13:51 +0000
-Message-ID: <20260422161407.118748-9-kwilczynski@kernel.org>
+Subject: [PATCH v6 09/24] PCI/sysfs: Add stubs for pci_{create,remove}_sysfs_dev_files()
+Date: Wed, 22 Apr 2026 16:13:52 +0000
+Message-ID: <20260422161407.118748-10-kwilczynski@kernel.org>
 X-Mailer: git-send-email 2.54.0
 In-Reply-To: <20260422161407.118748-1-kwilczynski@kernel.org>
 References: <20260422161407.118748-1-kwilczynski@kernel.org>
@@ -89,74 +89,107 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Add a pci_warn() to __resource_resize_store(), so that BAR resize
-failures are visible to the user, which can help troubleshoot any
-potential resource resize issues.
+On platforms with HAVE_PCI_MMAP or ARCH_GENERIC_PCI_MMAP_RESOURCE,
+resource files are now handled by static attribute groups registered
+via pci_dev_groups[].
 
-While at it, rename the resource_resize_is_visible() to
-resource_resize_attr_is_visible() along with the corresponding
-group variable to align with the naming convention used by the
-resource attribute groups.
+Thus, the pci_create_sysfs_dev_files() and pci_remove_sysfs_dev_files()
+can now be stubbed out, as the dynamic resource file creation is no
+longer needed.
 
-Also, change the order of pci_dev_groups[] such that the resize
-group is now located alongside the other resource groups.
+Also, simplify pci_sysfs_init() on these platforms to only iterate
+buses for legacy attributes creation, skipping the per-device loop.
+
+Move the __weak stubs for pci_create_resource_files() and
+pci_remove_resource_files() into the #else branch since only platforms
+without HAVE_PCI_MMAP (such as Alpha architecture) still need them.
+Guard the res_attr[] and res_attr_wc[] fields in struct pci_dev the
+same way.
 
 Signed-off-by: Krzysztof Wilczyński <kwilczynski@kernel.org>
 ---
- drivers/pci/pci-sysfs.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+ drivers/pci/pci-sysfs.c | 15 ++++++++++++---
+ include/linux/pci.h     |  4 ++++
+ 2 files changed, 16 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
-index 3508e29f6ad1..c0925bdc9ecd 100644
+index c0925bdc9ecd..517efb6d71cc 100644
 --- a/drivers/pci/pci-sysfs.c
 +++ b/drivers/pci/pci-sysfs.c
-@@ -1703,6 +1703,9 @@ static ssize_t __resource_resize_store(struct device *dev, int n,
- 	sysfs_remove_groups(&pdev->dev.kobj, pci_dev_resource_attr_groups);
+@@ -1394,10 +1394,9 @@ static const struct attribute_group *pci_dev_resource_attr_groups[] = {
+ };
+ #else
+ #define pci_dev_resource_attr_groups NULL
+-#endif
+-
+ int __weak pci_create_resource_files(struct pci_dev *dev) { return 0; }
+ void __weak pci_remove_resource_files(struct pci_dev *dev) { }
++#endif
  
- 	ret = pci_resize_resource(pdev, n, size, 0);
-+	if (ret)
-+		pci_warn(pdev, "Failed to resize BAR %d: %pe\n",
-+			 n, ERR_PTR(ret));
- 
- 	pci_assign_unassigned_bus_resources(bus);
- 
-@@ -1750,7 +1753,7 @@ static struct attribute *resource_resize_attrs[] = {
- 	NULL,
+ /**
+  * pci_write_rom - used to enable access to the PCI ROM display
+@@ -1766,6 +1765,10 @@ static const struct attribute_group pci_dev_resource_resize_attr_group = {
+ 	.is_visible = resource_resize_attr_is_visible,
  };
  
--static umode_t resource_resize_is_visible(struct kobject *kobj,
-+static umode_t resource_resize_attr_is_visible(struct kobject *kobj,
- 					  struct attribute *a, int n)
- {
- 	struct pci_dev *pdev = to_pci_dev(kobj_to_dev(kobj));
-@@ -1758,9 +1761,9 @@ static umode_t resource_resize_is_visible(struct kobject *kobj,
- 	return pci_rebar_get_current_size(pdev, n) < 0 ? 0 : a->mode;
- }
- 
--static const struct attribute_group pci_dev_resource_resize_group = {
-+static const struct attribute_group pci_dev_resource_resize_attr_group = {
- 	.attrs = resource_resize_attrs,
--	.is_visible = resource_resize_is_visible,
-+	.is_visible = resource_resize_attr_is_visible,
- };
- 
++#if defined(HAVE_PCI_MMAP) || defined(ARCH_GENERIC_PCI_MMAP_RESOURCE)
++int pci_create_sysfs_dev_files(struct pci_dev *pdev) { return 0; }
++void pci_remove_sysfs_dev_files(struct pci_dev *pdev) { }
++#else
  int __must_check pci_create_sysfs_dev_files(struct pci_dev *pdev)
-@@ -1881,6 +1884,7 @@ const struct attribute_group *pci_dev_groups[] = {
- 	&pci_dev_resource_uc_attr_group,
- 	&pci_dev_resource_wc_attr_group,
- #endif
-+	&pci_dev_resource_resize_attr_group,
- 	&pci_dev_config_attr_group,
- 	&pci_dev_rom_attr_group,
- 	&pci_dev_reset_attr_group,
-@@ -1892,7 +1896,6 @@ const struct attribute_group *pci_dev_groups[] = {
- #ifdef CONFIG_ACPI
- 	&pci_dev_acpi_attr_group,
- #endif
--	&pci_dev_resource_resize_group,
- 	ARCH_PCI_DEV_GROUPS
- 	NULL,
- };
+ {
+ 	if (!sysfs_initialized)
+@@ -1787,9 +1790,15 @@ void pci_remove_sysfs_dev_files(struct pci_dev *pdev)
+ 
+ 	pci_remove_resource_files(pdev);
+ }
++#endif
+ 
+ static int __init pci_sysfs_init(void)
+ {
++#if defined(HAVE_PCI_MMAP) || defined(ARCH_GENERIC_PCI_MMAP_RESOURCE)
++	struct pci_bus *pbus = NULL;
++
++	sysfs_initialized = 1;
++#else
+ 	struct pci_dev *pdev = NULL;
+ 	struct pci_bus *pbus = NULL;
+ 	int retval;
+@@ -1802,7 +1811,7 @@ static int __init pci_sysfs_init(void)
+ 			return retval;
+ 		}
+ 	}
+-
++#endif
+ 	while ((pbus = pci_find_next_bus(pbus)))
+ 		pci_create_legacy_files(pbus);
+ 
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 9c0782899ef9..30aeb8e02b7b 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -507,8 +507,10 @@ struct pci_dev {
+ 	spinlock_t	pcie_cap_lock;		/* Protects RMW ops in capability accessors */
+ 	u32		saved_config_space[16]; /* Config space saved at suspend time */
+ 	struct hlist_head saved_cap_space;
++#if !defined(HAVE_PCI_MMAP) && !defined(ARCH_GENERIC_PCI_MMAP_RESOURCE)
+ 	struct bin_attribute *res_attr[DEVICE_COUNT_RESOURCE]; /* sysfs file for resources */
+ 	struct bin_attribute *res_attr_wc[DEVICE_COUNT_RESOURCE]; /* sysfs file for WC mapping of resources */
++#endif
+ 
+ #ifdef CONFIG_HOTPLUG_PCI_PCIE
+ 	unsigned int	broken_cmd_compl:1;	/* No compl for some cmds */
+@@ -2526,8 +2528,10 @@ int pcibios_alloc_irq(struct pci_dev *dev);
+ void pcibios_free_irq(struct pci_dev *dev);
+ resource_size_t pcibios_default_alignment(void);
+ 
++#if !defined(HAVE_PCI_MMAP) && !defined(ARCH_GENERIC_PCI_MMAP_RESOURCE)
+ extern int pci_create_resource_files(struct pci_dev *dev);
+ extern void pci_remove_resource_files(struct pci_dev *dev);
++#endif
+ 
+ #if defined(CONFIG_PCI_MMCONFIG) || defined(CONFIG_ACPI_MCFG)
+ void __init pci_mmcfg_early_init(void);
 -- 
 2.54.0
 
