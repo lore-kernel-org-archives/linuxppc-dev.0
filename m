@@ -1,81 +1,99 @@
-Return-Path: <linuxppc-dev+bounces-19935-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19936-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45E5DF94CDF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2026 08:07:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6F84F94CDF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2026 08:14:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g0sJX6dQ7z2yqs;
-	Wed, 22 Apr 2026 18:07:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::630"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776845228;
-	cv=none; b=UkNSvwRntuz/WeI7moqMpn3tY/jPsZw5FE/MTAp3Ck90JUjpiwAmIGn4N0leJATU3QoHYJSsksmsfzbMSzONMfE3kn/q2Dw4Yb59LTVyURBI7TDq1+gk1IxsOZuIzEYrIkkD7421zfV8U1PQMK1mSlGXvM5XUHT+8HuCTzCiUWGHoRZPUi0iLXjZhDv+cddsQjmLPBDqnY6b2KuTewKHv/U2z875yJltAlKZGXs3yPwyHn3EXBGOb7kbsbSo3pWCmCy52R8R9ozEoTr76p3Qs6zP96767Ua59KsZQT13uX3grCbXo448oAHHzwWK4no71id1qfaR50yCWM5ExafXzw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g0sTR3HRTz2yqs;
+	Wed, 22 Apr 2026 18:14:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::430"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776845691;
+	cv=none; b=DVnc5OBJb7xwRbJZ5dlEvTa7jB5b/Ata1k2QOd5Kj0gr5qnrMvFLIsx12wo+u3KwdUWJgR0FPuYccKgM8qlh3+1pQobrYZFRVGs6LU91KEtCjCihQY7gUqSN5rNGPjk+x/3IkN2da4S3vx7c/x7DMJgSVFJCQEhNTt3NYor4MaPixLCDfmAkev4bRJ9p5EczaO5JvrwySxO48fETDr4sVP7uaL3UPX04YxmkdNxaJJwj6CYNJygusxhTHnOERQMFScA43GWdnYcFDepB7fJlekW2eHwCKNIidBIl8Gwn8A2gOX+AcnBwHQ1Qm487PQgS7zRo2nWDhZfmD2kInbhDHg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776845228; c=relaxed/relaxed;
-	bh=+xnVaF+973Zb7xN4UvEz+8ZuM5TVrO0nSR9bASc5gWw=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=FIG6f3sZIO4lNhgu7z+7PM5gwoWOikH4SoFtdyGJbsU50pF+eRguIk2vpLqoYSt11msTCSPqRyjPXPP9qPQ2eqo4hJtNe11wegX0M2XhAZNOzrEVr2a8A3F27DG7SvtV1N88DiwWRe+a7VvEyBRbc9Ti4SIBxmjAjxG4t373orjMrXIAKH9HS77WbxxZ6BImZBnWNmG92XUsCiULqwOWowkmYPKt51e230ovBXRCYTgAJd/94NHyt3Q94A00DWuyqOaJ4ZvupvI4KYYXKEEvNv055dAdx02ZMsEJ3MqtwU/H1j0Js61kOUoCGspVhInWHnRvQqFKXYeSaSFQYvlCeQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org; dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=ICgTSCxi; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::630; helo=mail-ej1-x630.google.com; envelope-from=ribalda@chromium.org; receiver=lists.ozlabs.org) smtp.mailfrom=chromium.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org
+	t=1776845691; c=relaxed/relaxed;
+	bh=Bl8Z+WQHqHX+qQjnRU0ICkmrP9C1SwKb8blByh5RwmA=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=ZN6A2ii8iym8aW+g2MoV+Y4oqO9iSp2q8XIzpSYUDC+w5EjJf/ZY10huMuENCpqH+gDoqQNWd7g3GwQ93exzuBPxTLbKfl10M+mCdd7/cK+5jmzS1mWioMxCgR8i/+DXrnQvID/FrDlRQ6Dba9FjtpKaYByrcbl0hp0/MhANnGuo3lfjTcfK+eNG67J9162C9A5PiybJjCiD7SGDhqeXyalGzfc0an39zYKJykQjJuc8+p0xcOpkBVRub72pNwoH0liEUbi4Xy2PQby1jqWCZZ53pHMQlA5+fZs/MFnn2Qkl0xnl5uR4qTeDV6rDWiQ2eknxifgXKR6Lv0ErbZ67Ew==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=KHjuJtM5; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::430; helo=mail-pf1-x430.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=ICgTSCxi;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=KHjuJtM5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2a00:1450:4864:20::630; helo=mail-ej1-x630.google.com; envelope-from=ribalda@chromium.org; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com [IPv6:2a00:1450:4864:20::630])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::430; helo=mail-pf1-x430.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x430.google.com (mail-pf1-x430.google.com [IPv6:2607:f8b0:4864:20::430])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0sJW0NK3z2yql
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 18:07:06 +1000 (AEST)
-Received: by mail-ej1-x630.google.com with SMTP id a640c23a62f3a-ba36357195bso604812766b.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 01:07:05 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0sTP3L1Zz2yql
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 18:14:46 +1000 (AEST)
+Received: by mail-pf1-x430.google.com with SMTP id d2e1a72fcca58-82fb2d0c5d1so2046051b3a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 01:14:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1776845221; x=1777450021; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=+xnVaF+973Zb7xN4UvEz+8ZuM5TVrO0nSR9bASc5gWw=;
-        b=ICgTSCxicEZKAgx/8OL/2KPC/yck9LOZVNQQqL5LgsECCYm2vmq1cH+UWND4Y3yNng
-         6SSABnDb3ItL4omMgTaF35fKvS2J5x4Gtncgp63Zx4LMUB+a34Rd5/wfcnk1XNhsKrSq
-         NSJtWFf9LIJd939sFbSnoOFbvJGE7qhFwH0Wg=
+        d=bytedance.com; s=google; t=1776845684; x=1777450484; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=Bl8Z+WQHqHX+qQjnRU0ICkmrP9C1SwKb8blByh5RwmA=;
+        b=KHjuJtM51qb86N3uHjMfPHjS/FfYlIyHdbGTojJLRk9fSsu+GVaFn7oYYdHtXHQFaO
+         8uSEOnvVWp/p8cNqXPpi08Kj/PmvhJw7gFHVuEx0y5ZS3+cFUhGtYBEg/Z5c80ZXMT5E
+         tubmVZLCnWIUBS3Li23GTIWI0hCyRlyb+QGGhsUaF2xaA5Hk2JUVsHtKd4AC9uOBV6zR
+         D8TKFAe4qPrDh1cv7CbBzE6jMhHznlOznIewRfD3E0KAwg+q6MayQIXQFbMKvUfqQzc6
+         fdQZgS5ATOHYRQco3xe00eMx/mo7UGrpnBz6GLgEsy757z7wH7l0qxJ6PBi3WcfbVsXR
+         1ncg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776845221; x=1777450021;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=+xnVaF+973Zb7xN4UvEz+8ZuM5TVrO0nSR9bASc5gWw=;
-        b=VY6fBZl3GaaDguae47w7v04iEreYmwmWocXf9S0hYMCBV+znJg1LwN+mIgAP5tYfBp
-         OX5Cv1iaeDSrBxy/qfjBbcJiAIiwWnppw7prUIoa/jsJTpRMECZGDXLWac0fdyiUZCG5
-         5jdEu5/CosST9hsd3JnNxAZMxI8a8Pu1qFQarXLG8huqrgi/Pkm7W01GW530XG07uhbE
-         l++NrNgDeEFGlHMvCWrIh+f/J5L+OfnteAiSk1RsIZYOwf5XgXUn/5YOI1kC/essAL+R
-         eKyTo9wWAMexwPUi0vFxul6ESyIDcHP9GFGZ1yxNk9lemyS1hmxlJIUq2fdFE3Lq87l+
-         nQ5g==
-X-Forwarded-Encrypted: i=1; AFNElJ/Bi+OzTiGE7vB/6t2O8XaJiw4wyp7AmrxnFD1iTi4hPFiwJabTQuCjlpp0Ejlt8g2WXHskhG3SnCxMZDI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyX8o4kqjgXpfegF69xhLg34we09gxs4anfvjmQ1P42dWpgcM5k
-	pQ7guZ9Ww0jlen74+11i5JTnPRII6FQhDf7Ot8wePr97jXMb+zfMOnzC6jI9LXpUfEYGCfpRcz3
-	25l8EJA==
-X-Gm-Gg: AeBDies3XUiYj7uyEHAiyI+XFqcxgYbMomCNSNFa1DG8XCNrsZ3RD0xLxVhb5M1SIst
-	UNO+PV/wg6JWHDIM0SEbXso87bktYy3qNtebPONAmwDRv8Rph++mZ6gjf1lZTPtbGyEQrSDasRT
-	ZjzHJVFEIO0+77zxS+k3LTlVDJBGphthovEVCrG/tCpaX++uGVTVpgYKfqC4aXM3fqj3fXzSdIF
-	7kB1PmU+wAjR8YtP1CymQLjaL9TYY0CFjwpGpQ1kN0yESpn1K8DgOLMY89tPH5CW1tvsUiLczEq
-	zXVBsgLtK8Izb10BBTfOP3+qlyjZcvYCyN5nFN9IOj7f7ojrhVRiaZWIJ4S7axyzvMx7AYPfg8t
-	XbInktaI+CJdjZM6rCHvBD7agDzy/CYSmyqYgDDa6iotT5+3DA02cgV1BU6YI/+V0k0Thk2witV
-	wLL9tRgDirepgn004gk2u/7nU/5mwR4TKcQaZR3VEPT4992U6tJAgzDbAm+DElHuktVyp+KCc=
-X-Received: by 2002:a17:907:806:b0:b9b:4519:7914 with SMTP id a640c23a62f3a-ba41a82618emr1078507066b.33.1776845221125;
-        Wed, 22 Apr 2026 01:07:01 -0700 (PDT)
-Received: from mail-ej1-f46.google.com (mail-ej1-f46.google.com. [209.85.218.46])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ba6366452c6sm379524666b.11.2026.04.22.01.07.00
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 22 Apr 2026 01:07:00 -0700 (PDT)
-Received: by mail-ej1-f46.google.com with SMTP id a640c23a62f3a-b9d9971d059so758799866b.2
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 01:07:00 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ9/8km1g50M1DGmnV4ipmUjODuWiFL96C/DIytsTZMza1gO8+gkMcad8T+gy7qbpUByt0Xy6CjgHZjNcJc=@lists.ozlabs.org
-X-Received: by 2002:a17:906:4fc5:b0:b9b:ddb2:b1c1 with SMTP id
- a640c23a62f3a-ba418f7f625mr936456766b.21.1776845219289; Wed, 22 Apr 2026
- 01:06:59 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1776845685; x=1777450485;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Bl8Z+WQHqHX+qQjnRU0ICkmrP9C1SwKb8blByh5RwmA=;
+        b=ostkc1AGMDFXGJ6RdwLDRGjw72Z7RPUZkPrTAZobjdp27G89uaLlO3gQTUfttPP3U6
+         nXACr+suLIysRsd5mU2sM/ZsAeo2WnrrRpiAkgWVmsfqNNeXZbmQ+LQ/ULcl3D4G5Csu
+         XS+UTU25p3lXxNqVSKuE3RyoH9p4r73D6U8qjxbEUg/BpSDc36CEdvV0VpuN7ZgiIgLz
+         2s9fG+lgXbtsO6lfjypug09eWq6vaQcapP4PC+AW2yJEYzNEW3bl7c+83U60IOJT6/T0
+         DnKyQvpsc7scxfontG67Idz43stPs0bTdHD53MoX3OcEjT7vNVzQbMg9gDBxcu1NFlFZ
+         +8cw==
+X-Forwarded-Encrypted: i=1; AFNElJ8UgvurvHXxSZJE5F7UM7th4c61hd3tOzpC3LU+Wj28cA7Piv4I76bLc3QEjHA9yfe5W/u/+KSYrrw1ojY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxTmmim9esoPnuwiEWR4eR57QwWntew0DvNktO8dE8w9tzoCP1Y
+	+KPgO7at4PhgzMvDPVpmVBLpSToeNvijE9JA1M5SVjXcY95bx0uF3PRVmpC9d0Qtgoo=
+X-Gm-Gg: AeBDievlyjNRRv83Gc6OwoWq7VHWd6e/HsDZApURbW1bO6bxW2MUw1N3ygZuwO9Wo0A
+	Yahw5gWL2rJUpZZMEx538FcDFX4ydZxtKNZuIRPTa6a0XZtvQdh+CuoeG0Se6PDKe2OxcN8XdGy
+	5DwVejU5NJ51Y5zsVp8UeKBzCM0HOZKuvQgDdz4HkrM8Tm5pYc7XA99uogiGRJI0LtJVsLL3FIU
+	F4hGjMttyA1oAvP4LbOt6R3kndJsFBNWktkxIDvLU7yPhUwFFlmGF2WJbWZk6XpcKP6RxKzETsN
+	gpR2KFj71sKLqMl8vZlqBBsjh8uxZ/JUmVC8mfssjeyHCKoc7yD6O4v1Yc4yBKcuO3EltwbzcVd
+	X4hxU90Tnejb/NZxNDKNWN8wS8PlICV9RD89vC/wbfHTtGyOjulxqpMareQoGqM4DDv0GYt30p9
+	iOnmcBQrjl2D3BIj2YV47ZyTJ2fa+c
+X-Received: by 2002:a05:6a00:a254:b0:82f:6d4a:df3e with SMTP id d2e1a72fcca58-82f8b32d44emr16671789b3a.5.1776845684472;
+        Wed, 22 Apr 2026 01:14:44 -0700 (PDT)
+Received: from n232-176-004.byted.org ([240e:83:200::34f])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82f8ec0307esm16522874b3a.53.2026.04.22.01.14.39
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 22 Apr 2026 01:14:43 -0700 (PDT)
+From: Muchun Song <songmuchun@bytedance.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+	David Hildenbrand <david@kernel.org>,
+	Muchun Song <muchun.song@linux.dev>,
+	Oscar Salvador <osalvador@suse.de>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Muchun Song <songmuchun@bytedance.com>,
+	Lorenzo Stoakes <ljs@kernel.org>,
+	"Liam R . Howlett" <Liam.Howlett@oracle.com>,
+	Vlastimil Babka <vbabka@kernel.org>,
+	Mike Rapoport <rppt@kernel.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	aneesh.kumar@linux.ibm.com,
+	joao.m.martins@oracle.com,
+	linux-mm@kvack.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v4 0/5] mm: Fix vmemmap optimization accounting and initialization
+Date: Wed, 22 Apr 2026 16:14:15 +0800
+Message-Id: <20260422081420.4009847-1-songmuchun@bytedance.com>
+X-Mailer: git-send-email 2.20.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,137 +107,53 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <CANiDSCsOy0P1if-gJZqOM5pTJ0RDcwVfru1B7KFbTOEMqjPKJw@mail.gmail.com>
- <20260422071541-9a295128-d913-418f-a21c-1386fca30290@linutronix.de>
- <CANiDSCviww1L1p2+MvF59Biqb6hc7WdL1J37kBjFd1NXz-Yt8A@mail.gmail.com> <20260422092713-4021a1a5-3a54-4260-878a-aec1bef3f8c7@linutronix.de>
-In-Reply-To: <20260422092713-4021a1a5-3a54-4260-878a-aec1bef3f8c7@linutronix.de>
-From: Ricardo Ribalda <ribalda@chromium.org>
-Date: Wed, 22 Apr 2026 16:06:45 +0800
-X-Gmail-Original-Message-ID: <CANiDSCtfiPDiqzhjZGoCJbLC0fRoH1HLKrvYUt7jLDYEBQHqgg@mail.gmail.com>
-X-Gm-Features: AQROBzA7vfrwO2plpLpwVGaJQHR2MKiQUcm7cyVmWYAcKsQQIyoUjhDJYfCBMLg
-Message-ID: <CANiDSCtfiPDiqzhjZGoCJbLC0fRoH1HLKrvYUt7jLDYEBQHqgg@mail.gmail.com>
-Subject: Re: New warning in linus/master
-To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-Cc: linux-arm-kernel@lists.infradead.org, 
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-Hi Thomas
+The series fixes several bugs in vmemmap optimization, mainly around
+incorrect page accounting and memmap initialization in DAX and memory
+hotplug paths. It also fixes pageblock migratetype initialization and
+struct page initialization for ZONE_DEVICE compound pages.
 
-On Wed, 22 Apr 2026 at 15:32, Thomas Wei=C3=9Fschuh
-<thomas.weissschuh@linutronix.de> wrote:
->
-> On Wed, Apr 22, 2026 at 03:00:11PM +0800, Ricardo Ribalda wrote:
-> > On Wed, 22 Apr 2026 at 13:57, Thomas Wei=C3=9Fschuh
-> > <thomas.weissschuh@linutronix.de> wrote:
-> > > On Wed, Apr 22, 2026 at 11:51:45AM +0800, Ricardo Ribalda wrote:
-> > > > Media-CI has found a couple of new warnings in the latest kernel
-> > > > version for aarch64 and powerpc. They get fixed with this patch and
-> > > > before moving I wanted to know if this was under your radar.
-> > >
-> > > Thanks for the report. I was not aware of these so far.
-> > >
-> > > > diff --git a/arch/arm64/kernel/vdso/Makefile b/arch/arm64/kernel/vd=
-so/Makefile
-> > > > index 7dec05dd33b7..65914842fae0 100644
-> > > > --- a/arch/arm64/kernel/vdso/Makefile
-> > > > +++ b/arch/arm64/kernel/vdso/Makefile
-> > > > @@ -50,7 +50,7 @@ CFLAGS_vgettimeofday.o =3D $(CC_FLAGS_ADD_VDSO)
-> > > >  CFLAGS_vgetrandom.o =3D $(CC_FLAGS_ADD_VDSO)
-> > > >
-> > > >  ifneq ($(c-gettimeofday-y),)
-> > > > -  CFLAGS_vgettimeofday.o +=3D -include $(c-gettimeofday-y)
-> > > > +  CFLAGS_vgettimeofday.o +=3D -include $(c-gettimeofday-y)
-> > > > -Wno-maybe-uninitialized
-> > > >  endif
-> > >
-> > > (...)
-> > >
-> > > I'd like to know exactly what is going on before suppressing the warn=
-ing.
-> > > It is a non-standard warning, only enabled by *some* of the vDSO buil=
-ds
-> > > for some reason.
-> > >
-> > > > https://gitlab.freedesktop.org/linux-media/users/ribalda/-/pipeline=
-s/1649144/test_report?job_name=3Dcross-gcc
-> > >
-> > > While I was able to download a configuration from this job and also u=
-se the
-> > > same container image, I can not reproduce the issue. Is the configura=
-tion the
-> > > full one or only the template?
-> > >
-> > > Could you provide full reproduction steps?
-> >
-> > You can try repro with:
-> >
-> > work/linux $ podman run -v .:/workdir/ --rm -it
-> > registry.freedesktop.org/linux-media/media-ci/build:latest
-> > $ cd /workdir
-> > $ CROSS_COMPILE=3Daarch64-linux-gnu- ARCH=3Darm64 make allyesconfig
-> > $ CROSS_COMPILE=3Daarch64-linux-gnu- ARCH=3Darm64 make
-> > arch/arm64/kernel/vdso/vgettimeofday.o
-> >
-> > The gcc version discrepancy is because I the error was due to old gcc
-> > version and I was playing around with that... but it fails in both
-> > gcc14 and gcc15
->
-> Ack.
->
-> > You can try with debian testing with
-> > work/linux$ podman run -v .:/workdir/ --rm -it debian:testing
-> > $ apt-get update
-> > $ apt-get install gcc-aarch64-linux-gnu build-essential flex bison libs=
-sl-dev bc
-> > $ cd /workdir
-> > $ CROSS_COMPILE=3Daarch64-linux-gnu- ARCH=3Darm64 make allyesconfig
-> > $ CROSS_COMPILE=3Daarch64-linux-gnu- ARCH=3Darm64 make
-> > arch/arm64/kernel/vdso/vgettimeofday.o
->
-> Both reproducers do *not* reproduce the issue for me.
-> (It is more or less exactly what I tried before)
+The first three patches fix vmemmap accounting issues. The first patch
+fixes an accounting underflow in the section activation failure path.
+The second patch passes pgmap through memory deactivation paths so the
+teardown side can determine whether vmemmap optimization was in effect.
+The third patch uses that information to account the optimized DAX
+vmemmap size correctly.
 
+The last two patches fix initialization issues in mm/mm_init. One makes
+sure all pageblocks in ZONE_DEVICE compound pages get their migratetype
+initialized. The other fixes a case where DAX memory hotplug reuses an
+unoptimized early-section memmap while compound_nr_pages() still assumes
+vmemmap optimization, leaving tail struct pages uninitialized.
 
-Ok, I think I found what is going on. media-ci was forcing
-KCFLAGS=3D-Wmaybe-uninitialized
+v3 -> v4:
+- Collect Acked-by and Reviewed-by tags from Oscar Salvador.
+- Fix the build issue reported by Sashiko.
+- Add a fix for uninitialized struct pages for ZONE_DEVICE, based on
+  analysis from Sashiko and verified locally.
 
-https://gitlab.freedesktop.org/linux-media/media-ci/-/blob/main/test-build.=
-sh?ref_type=3Dheads#L29
+Muchun Song (5):
+  mm/sparse-vmemmap: Fix vmemmap accounting underflow
+  mm/sparse-vmemmap: Pass @pgmap argument to memory deactivation paths
+  mm/sparse-vmemmap: Fix DAX vmemmap accounting with optimization
+  mm/mm_init: Fix pageblock migratetype for ZONE_DEVICE compound pages
+  mm/mm_init: Fix uninitialized struct pages for ZONE_DEVICE
 
-And something has changed in the kernel in the last version that
-triggers a (hopefully) false positive.
+ arch/arm64/mm/mmu.c            |  5 +--
+ arch/loongarch/mm/init.c       |  5 +--
+ arch/powerpc/mm/mem.c          |  5 +--
+ arch/riscv/mm/init.c           |  5 +--
+ arch/s390/mm/init.c            |  5 +--
+ arch/x86/mm/init_64.c          |  5 +--
+ include/linux/memory_hotplug.h |  8 +++--
+ mm/memory_hotplug.c            | 13 ++++----
+ mm/memremap.c                  |  4 +--
+ mm/mm_init.c                   | 58 +++++++++++++++++++++++-----------
+ mm/sparse-vmemmap.c            | 56 ++++++++++++++++++++++++--------
+ 11 files changed, 114 insertions(+), 55 deletions(-)
 
-can you try with:
+-- 
+2.20.1
 
-CROSS_COMPILE=3Daarch64-linux-gnu- ARCH=3Darm64 make
-KCFLAGS=3D-Wmaybe-uninitialized  allyesconfig
-CROSS_COMPILE=3Daarch64-linux-gnu- ARCH=3Darm64 make
-KCFLAGS=3D-Wmaybe-uninitialized  prepare
-
-?
-
-
->
-> Please note that this line does not work in general:
-> $ CROSS_COMPILE=3Daarch64-linux-gnu- ARCH=3Darm64 make arch/arm64/kernel/=
-vdso/vgettimeofday.o
->
-> The vDSO object files can not be built in this way like regular kernel ob=
-ject
-> files and will produce a compiler error, but not the one under discussion=
-.
-> Instead the vDSO on arm64 is built during the 'make prepare' phase.
-> (Other architectures work differently, of course...)
->
-> (...)
->
->
-> Thomas
-
-
-
---=20
-Ricardo Ribalda
 
