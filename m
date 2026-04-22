@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-19977-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19978-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4BA3BFA1FE9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2026 19:03:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9EC2BFA1FE3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2026 19:12:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g17sv06VFz2ytT;
-	Thu, 23 Apr 2026 05:03:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776884610;
-	cv=none; b=hiGdZcXoeYHihVB3+A1W0Cv4yD5Q+3nTd/qf4fg6/lo3ZZ9W9qxYWrjeXq8O6DArvaiiN7GXvbNkePrd4vdH6lCt0mMedTpSBrQR5IYjsokpmgEgJcVNVJf5rHSZHidAZCHjXhEuokJ3flWN4Uy/gJ3y2Lksjx3rpLMzSysYR0ZO0zoJMWZPZscvhTGnztbFZIU/tw4dJWIZXbyRoBang9mzoe3eLAwrte4doz/bJVYw1E5mX5LD2AfzUeBgNz/bDp0FyVfEwuRr+bnGMPXUYJQXABEMebJZPYH1t+AjPrwX+R1Dt2cifecKwxCC6eJlXIUbkkRUbqU3mNi80rwO2Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g18481hxYz2ytT;
+	Thu, 23 Apr 2026 05:12:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776885144;
+	cv=none; b=eJfAeeqnquHMGCeWGht4dfWAEyBpNfqAe6oYuzI/pB41s85vIzdN+djnapCo1Cp28q9173N3j7sEZC/VrNVkEW+4tXTVgd9sMXY8QpSX5taBC3vXWwjbagCTcHU7YNVDxjlSvdUNQuhUGXAAFl3hY95zJaSjJH4eTDNHOWwbabYfOzI70mLN1f3qBq+N2tnZzLfH7EX1QHXzLkfguLjZMkccUfjPpHcSUqGb3UkdT22A2R24zUiG3kVqQHdfjr+742lJV1d440IscnpttxI0HiAJ8xQDJDNosmX6j7BVnqFxc6uxBrLuUEyWuPJzOtMMiG8vE+JVI3CWrbUGbhuFyA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776884610; c=relaxed/relaxed;
-	bh=CEaWsbQrJvSk/911kBqo5YudSDmXcxCu82kwMtkWoUo=;
+	t=1776885144; c=relaxed/relaxed;
+	bh=mGVKYKKpt3fqUJPzWGuT7XPO04NRkoaxLUpzTEEjFIQ=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=YG/HcoMiZw4mEwSxIMZ2aMp6VsEeeebmkHn+Dpajy82/FhXv22ZaiowhbvoJvfHYRuu/yBPAZq/VfrMIEQqByNQG+Xx87f+uCIpq+N3SC0jQUUXYF3ZdEHtQOVcAXf+YxG7JDQ2BHG2pXmU7it3Q9B4DO3Mpx0Lzmt1u/k36/TkgwFQKQoAXzkk0rBmJ3jB/5ZRdRppQClga/GAMh91qH8VJE9fLVnJ+SQu6zdx5ZAOFivM8MMahODtnIY5O5OZquQd6zm091jogKtDIDbB76cjJcTjowPeTBCPb3Zs7/nOk0qC5P4u3OvyRjOMNklY3kNtPckxfiAK6dgz6o5sz2A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BOzDZ1C5; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=F3T7BpLEpWxBXows+rj3bea14M/gTC7zKsV4qjeyejQV2JKBAXcphglMKz0aL0TVK7ylqLahcLJffLQnXmzMUeycO0CM5WGOihEddUxYeF+P+zbflAAyP5iCqCCIbX5MQNCivuciFwCYUcu2CcxLSshsqZeO2yoGCFD2/85V+LuxBCWwl04T1zAsab6ZoRWBuN+0V3F8oIbmpXbMX37q9h7T1eMb3oARjVaawesAvpTLtvQXMPQw+YFC0eV3xq5ndIYjBYPUt72jmTm9OaFL9EPaehX1M3XvNPW8pvES3L/h+WyJBtqSt3rkSDgpBGIjYRSnJRP8ZrZp1fFR2PIKWw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=I/r2+Oco; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BOzDZ1C5;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=I/r2+Oco;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g17ss6GFMz2yrl
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 05:03:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g18472P9Tz2yrl
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 05:12:23 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 20D0861868;
-	Wed, 22 Apr 2026 19:03:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 20B9CC19425;
-	Wed, 22 Apr 2026 19:03:20 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 2559C61863;
+	Wed, 22 Apr 2026 19:12:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 41490C19425;
+	Wed, 22 Apr 2026 19:12:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776884606;
-	bh=7Y3OgaV9t+Pb9LH2uQohBSE5AYWE9s5cd0J/voxeBWM=;
+	s=k20201202; t=1776885140;
+	bh=soo6QUGKM77sfvtH8onoPyYjoKLrihsrqjzIxYqu+FA=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=BOzDZ1C5pt/R88NEe81p72strH0ZOBDeY1A9a4C5oAJDK2Iwha9ZkkalNvl3mQS2c
-	 n2knUAp+YKEwiq6VZMi1VL+jHrbrlumjNI9Fs/3U3tpUDnVI4xboP8MHJu6fYiKeum
-	 ASU2wJrZdn5kd03g23OmyLYM4ySJPohWnn7GrO2Qlwp6kkMsb84ubW2D9WmiLWyNMC
-	 wUaCL3WpiP/C8rp7GCTXHhS0HZ3sQ+omQFSJw+95X0AeQx9C7TuD7+anFzdFF4Pu1x
-	 rJxeD/WdFMIxFh3ohu3WBjoD6+E24Zkf62Qm8GHdPeY/oyjJvXfZty7Nlg7xkIainB
-	 s1WQ0yCbeCqtQ==
-Message-ID: <95d59eee-a4fe-4d11-b335-07f3b3ef2e66@kernel.org>
-Date: Wed, 22 Apr 2026 21:03:19 +0200
+	b=I/r2+Ocol0HVb6piUtmzScYnaDu6PTEfqHd1Ph8H0LIzUEXxcGrm3jONjMYaoW+x7
+	 VlldFwjZWbZwe+dwXs2BmDRzMib1sV0yrkmpbtg6h7xK1U5TQfkY8F/OwcSiO2Hdcz
+	 gCYCcs0m+kIBWh70H5m/ELxl8dpZxrIV/PwPXtxKbGhtCiVtqV5cTVj8nueQTprsLM
+	 7+CazLdNqTpMdp4HI+VArEHAncvIsQ9OctzbWOxDFRGgQspQCtklZw8XX5vI+rCwhH
+	 9wH3U7OK/0H5ADnjadagi2LpyhIaIM88uWjtb98kVuRwiu9Ci0DGr62tqCPhiDHbpj
+	 CcK6cXwu0e87g==
+Message-ID: <229d2191-afd3-4206-8ccb-002f93d2c4c0@kernel.org>
+Date: Wed, 22 Apr 2026 21:12:13 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,8 +60,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 4/5] mm/mm_init: Fix pageblock migratetype for
- ZONE_DEVICE compound pages
+Subject: Re: [PATCH v4 5/5] mm/mm_init: Fix uninitialized struct pages for
+ ZONE_DEVICE
 To: Muchun Song <songmuchun@bytedance.com>,
  Andrew Morton <akpm@linux-foundation.org>,
  Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>,
@@ -75,7 +75,7 @@ Cc: Lorenzo Stoakes <ljs@kernel.org>,
  aneesh.kumar@linux.ibm.com, joao.m.martins@oracle.com, linux-mm@kvack.org,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 References: <20260422081420.4009847-1-songmuchun@bytedance.com>
- <20260422081420.4009847-5-songmuchun@bytedance.com>
+ <20260422081420.4009847-6-songmuchun@bytedance.com>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -122,135 +122,64 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260422081420.4009847-5-songmuchun@bytedance.com>
+In-Reply-To: <20260422081420.4009847-6-songmuchun@bytedance.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 4/22/26 10:14, Muchun Song wrote:
-> The memmap_init_zone_device() function only initializes the migratetype
-> of the first pageblock of a compound page. If the compound page size
-> exceeds pageblock_nr_pages (e.g., 1GB hugepages with 2MB pageblocks),
-> subsequent pageblocks in the compound page remain uninitialized.
+> If DAX memory is hotplugged into an unoccupied subsection of an early
+> section, section_activate() reuses the unoptimized boot memmap.
+> However, compound_nr_pages() still assumes that vmemmap optimization is
+> in effect and initializes only the reduced number of struct pages. As a
+> result, the remaining tail struct pages are left uninitialized, which
+> can later lead to unexpected behavior or crashes.
 > 
-> Move the migratetype initialization out of __init_zone_device_page()
-> and into a separate pageblock_migratetype_init_range() function. This
-> iterates over the entire PFN range of the memory, ensuring that all
-> pageblocks are correctly initialized.
+> Fix this by treating early sections as unoptimized when calculating how
+> many struct pages to initialize.
 > 
-> Fixes: c4386bd8ee3a ("mm/memremap: add ZONE_DEVICE support for compound pages")
+> Fixes: 6fd3620b3428 ("mm/page_alloc: reuse tail struct pages for compound devmaps")
 > Signed-off-by: Muchun Song <songmuchun@bytedance.com>
-> Reviewed-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> Reviewed-by: Oscar Salvador <osalvador@suse.de>
 > ---
->  mm/mm_init.c | 45 ++++++++++++++++++++++++++++++---------------
->  1 file changed, 30 insertions(+), 15 deletions(-)
+>  mm/mm_init.c | 13 ++++++++++---
+>  1 file changed, 10 insertions(+), 3 deletions(-)
 > 
 > diff --git a/mm/mm_init.c b/mm/mm_init.c
-> index f9f8e1af921c..9d0fe79a94de 100644
+> index 9d0fe79a94de..3d5af40d0943 100644
 > --- a/mm/mm_init.c
 > +++ b/mm/mm_init.c
-> @@ -674,6 +674,21 @@ static inline void fixup_hashdist(void)
->  static inline void fixup_hashdist(void) {}
->  #endif /* CONFIG_NUMA */
->  
-> +#ifdef CONFIG_ZONE_DEVICE
-> +static __meminit void pageblock_migratetype_init_range(unsigned long pfn,
-> +						       unsigned long nr_pages,
-> +						       int migratetype)
-
-Two-tab indent says hi :)
-
-> +{
-> +	unsigned long end = pfn + nr_pages;
-
-Can be const.
-
-> +
-> +	for (pfn = pageblock_align(pfn); pfn < end; pfn += pageblock_nr_pages) {
-> +		init_pageblock_migratetype(pfn_to_page(pfn), migratetype, false);
-> +		if (IS_ALIGNED(pfn, PAGES_PER_SECTION))
-> +			cond_resched();
-> +	}
-> +}
-> +#endif
-> +
->  /*
->   * Initialize a reserved page unconditionally, finding its zone first.
+> @@ -1056,10 +1056,17 @@ static void __ref __init_zone_device_page(struct page *page, unsigned long pfn,
+>   * of how the sparse_vmemmap internals handle compound pages in the lack
+>   * of an altmap. See vmemmap_populate_compound_pages().
 >   */
-> @@ -1011,21 +1026,6 @@ static void __ref __init_zone_device_page(struct page *page, unsigned long pfn,
->  	page_folio(page)->pgmap = pgmap;
->  	page->zone_device_data = NULL;
+> -static inline unsigned long compound_nr_pages(struct vmem_altmap *altmap,
+> +static inline unsigned long compound_nr_pages(unsigned long pfn,
+> +					      struct vmem_altmap *altmap,
+>  					      struct dev_pagemap *pgmap)
+>  {
+> -	if (!vmemmap_can_optimize(altmap, pgmap))
+> +	/*
+> +	 * If DAX memory is hot-plugged into an unoccupied subsection
+> +	 * of an early section, the unoptimized boot memmap is reused.
+> +	 * See section_activate().
+> +	 */
+> +	if (early_section(__pfn_to_section(pfn)) ||
+> +	    !vmemmap_can_optimize(altmap, pgmap))
+>  		return pgmap_vmemmap_nr(pgmap);
 >  
-> -	/*
-> -	 * Mark the block movable so that blocks are reserved for
-> -	 * movable at startup. This will force kernel allocations
-> -	 * to reserve their blocks rather than leaking throughout
-> -	 * the address space during boot when many long-lived
-> -	 * kernel allocations are made.
-> -	 *
-> -	 * Please note that MEMINIT_HOTPLUG path doesn't clear memmap
-> -	 * because this is done early in section_activate()
-> -	 */
-> -	if (pageblock_aligned(pfn)) {
-> -		init_pageblock_migratetype(page, MIGRATE_MOVABLE, false);
-> -		cond_resched();
-> -	}
-> -
->  	/*
->  	 * ZONE_DEVICE pages other than MEMORY_TYPE_GENERIC are released
->  	 * directly to the driver page allocator which will set the page count
-> @@ -1122,6 +1122,9 @@ void __ref memmap_init_zone_device(struct zone *zone,
->  
->  		__init_zone_device_page(page, pfn, zone_idx, nid, pgmap);
->  
-> +		if (IS_ALIGNED(pfn, PAGES_PER_SECTION))
-> +			cond_resched();
-> +
->  		if (pfns_per_compound == 1)
+>  	return VMEMMAP_RESERVE_NR * (PAGE_SIZE / sizeof(struct page));
+> @@ -1129,7 +1136,7 @@ void __ref memmap_init_zone_device(struct zone *zone,
 >  			continue;
 >  
-> @@ -1129,6 +1132,18 @@ void __ref memmap_init_zone_device(struct zone *zone,
->  				     compound_nr_pages(altmap, pgmap));
+>  		memmap_init_compound(page, pfn, zone_idx, nid, pgmap,
+> -				     compound_nr_pages(altmap, pgmap));
+> +				     compound_nr_pages(pfn, altmap, pgmap));
 >  	}
 >  
-> +	/*
-> +	 * Mark the block movable so that blocks are reserved for
-> +	 * movable at startup. This will force kernel allocations
-> +	 * to reserve their blocks rather than leaking throughout
-> +	 * the address space during boot when many long-lived
-> +	 * kernel allocations are made.
-> +	 *
-> +	 * Please note that MEMINIT_HOTPLUG path doesn't clear memmap
-> +	 * because this is done early in section_activate()
-> +	 */
+>  	/*
 
-I am deeply confused about the "memmap" comment here.
+Nasty, but yes, we cannot really optimize in that case.
 
-There is no MEMINIT_HOTPLUG special-casing. Nobody "clears memmap".
-
-
-That comment was introduced in
-
-commit 966cf44f637e6aeea7e3d01ba004bf8b5beac78f
-Author: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-Date:   Fri Oct 26 15:07:52 2018 -0700
-
-    mm: defer ZONE_DEVICE page initialization to the point where we init pgmap
-
-Where we added memmap_init_zone_device().
-
-
-
-Is that commit still valid, and this it actually belong here, above the
-migratetype setting?
-
-
-> +	pageblock_migratetype_init_range(start_pfn, nr_pages, MIGRATE_MOVABLE);
-> +
->  	pr_debug("%s initialised %lu pages in %ums\n", __func__,
->  		nr_pages, jiffies_to_msecs(jiffies - start));
->  }
-
+Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 
 -- 
 Cheers,
