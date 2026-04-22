@@ -1,80 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-19973-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19974-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB7D3FA1FD6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2026 17:36:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68BB3FA1FDC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2026 18:47:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g15xR1tRHz2yrT;
-	Thu, 23 Apr 2026 03:36:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776879387;
-	cv=none; b=ZOpvfpcFFGVjdi25dn2wVOJHNqtbLYK1T+OSGY1Ytt1dZlmvfw0FMRRFx/iydPJzs/xZ0cqH7Ow5MwIxiiFg+U7FMWDinbMDnswFd4lF3WqZP7mVOsnOdKovZYmr+AEfgCN+2s7IbBe8TGNIyvumybHSZfwCyVWBKKi2RbE+rCoR865eZh7kalTaBjhqaZBh8VfiioPZh+FLdvUIDO8zm9ZctSahv6j9G2uVuL6MHIJTkGUNQbMo7z9BKYnCL5undCuD+mKC3NlG1veWX+Pa7r875mdIemGGQLNlp11Az7Evjss9Ss9B4UJEZRke5L1FkWB7kk5dqd2NfzVrpc1+0Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g17Wg6jj9z2yrT;
+	Thu, 23 Apr 2026 04:47:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776883663;
+	cv=none; b=kg7/RMZcAY9G+p2+9aZX6K8jqX5SzOEKyhPqnHUyYRwmrbnd1wIadkAsSWQ7WzcBL/OwzRR8yPwQQLtNchiJ/tUH9m5CrVZPdmXKRsjkTu8Pz0b1NF+/npHGPiP74gNvnFuaHogDELdWtQ+TSSN8FZAJo/XU9Fz/PPed2FOgdYTVFZRN0rgBIA3COdm0QkZqiM5xfYl0bCm1PTbq4jE5nE4r/jnVa4Mz4cZ/sm0CL7aJc/56WuAC8cT9uilYCe1SbZz1BPG51lx5zMk1HMPBF36lPQzk1bMiHud7b0V3K8DU3LDoXo6/wfyTPx+OseKvjCY1FidS0TBAeo45WglmuQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776879387; c=relaxed/relaxed;
-	bh=s2BqK87P3busZvwnKMqLZKct+u+esfha5cyZCzHRZkU=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=OMHtNXOKsIjFo3bbvns3NxmO1BcvP4mnSgiESkn7aCLA7tMu2/yXq+/9MOTDn1TIjuneAiIVZ8dJoy3be686eJE3jrNyrdCQs9kBVilYL/uLiWEMf2ub38tM0d3WgtesEIQQAEWDZ1EE+LaiA8c6Zq9GYjjjONge7Rg8UER/dJE8Z7seb6RYJPiwuKrpl15ElHJWozfC4y4tCPCzRVXZP7ydTtAOFzh3ux/Ctns9B5q6pFiDxTVTtVw0YwdTr+CKHLH7N3fUQZ6R+TdYZ8Ny+l1FgXb6NS0WV0tydqmY65W8pDRjdzHz6Fz5G3tdz+A/pjckaWwzcUMFS611aA27Pg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=i7EOUKez; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1776883663; c=relaxed/relaxed;
+	bh=1MP9Zidfne70C2EnzYkLaYupf+5+jzE+B7PuijPZ0Jo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ALtgC4NRm40Z++/TNtPid25e/KLzQiR+NdUTtspdaCDp0qGVmcq1O5T5iThpUCYHyQ5pcCsdHPSF4YJ5+UKM0DryDNmXt7KK1t02qseI9KYS3mPXpyLrEqU0MAES2wusxZN0wEw64L0RqRATqzpYrRwRMuFGXmiiiAXBwUWrQUvjZZ+l/HUBUkTgehLgoiNMEKdGD/2r1Q7O1PDpOK/981VK5yL7eZjc74XKRe9nkcc/Xh14NaCpBE1UfKxo8TnZ2VqMde37iasVfAoZ4+ogAyQYN/THSgNVKojBWRO7z6dLlbYLS1r8Wd7FBuftB0oerRdx0PM9d5p9uYYoth4Szg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Pg9rErma; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=i7EOUKez;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Pg9rErma;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g15xP5Cp2z2yrM
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 03:36:24 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63MGMep03515444;
-	Wed, 22 Apr 2026 17:36:20 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=s2BqK87P3busZvwnKMqLZKct+u+esfha5cyZCzHRZ
-	kU=; b=i7EOUKezNPThLibWCTqm9JzX1lp+JxOtgcYWCSBB1wbgsfCWv/UaWSP6K
-	jLKePsQCWhRTl/MSS/ouZVuZ5nccm1Tof1388I+qHgnZzpc0i4A9RpiVyOtGmZVJ
-	BrsvBSc2tWKiYp+lLW7T85f+xwNOOlV+H4FoVoev8BkM/URWLsx4LOrxxTv4k2vS
-	G3i8oKknqQYcoBb9ncdN1dMC91bvoQpNzhWBg4hd1xZTN8PEuRTZsgjdDiXWZjSQ
-	Mklf0qrLz1PAllob4kW/29/0IrW5DzJ/jT9526QobFAvEeG+za6+FGpiPvpcRMTu
-	yNz2FbyatguckwVrSQyQ0mXOcKD4A==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dpeu24sgp-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 22 Apr 2026 17:36:19 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 63MHZKeV003564;
-	Wed, 22 Apr 2026 17:36:18 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dpjkxu7kv-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 22 Apr 2026 17:36:18 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63MHaEo130409064
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 22 Apr 2026 17:36:14 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A613820043;
-	Wed, 22 Apr 2026 17:36:14 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C721020040;
-	Wed, 22 Apr 2026 17:36:11 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.39.30.235])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 22 Apr 2026 17:36:11 +0000 (GMT)
-From: Athira Rajeev <atrajeev@linux.ibm.com>
-To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
-        mpetlan@redhat.com, tmricht@linux.ibm.com, maddy@linux.ibm.com,
-        irogers@google.com, namhyung@kernel.org
-Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        atrajeev@linux.ibm.com, hbathini@linux.vnet.ibm.com,
-        Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com
-Subject: [PATCH] perf sched: Fix crash in sched stats diff due to uninitialized perf_data structure
-Date: Wed, 22 Apr 2026 23:05:45 +0530
-Message-Id: <20260422173545.73144-1-atrajeev@linux.ibm.com>
-X-Mailer: git-send-email 2.39.5 (Apple Git-154)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g17Wf5zpKz2yYK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 04:47:42 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 5C6F443312;
+	Wed, 22 Apr 2026 18:47:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C007CC19425;
+	Wed, 22 Apr 2026 18:47:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776883660;
+	bh=JyVpL0hRh7RspmbLsNFTlpg/7QFk3I3or11RgPUYkD8=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=Pg9rErmasItlxx+XZ/hFgV6+sAPWZpnrlTYc2QtwS+P+alOZv7lW4Yn88JbE0OLmm
+	 xdFd/+ako3CdS0qbw7MR8TLOdoY/ArpRjsN5bW3dkAYQ0JUnPOEjmc4IyDYhogWuAf
+	 j8/zddCVT5bUYWq1tsVtCzpdLfpqp8FBr2CHFuOUgOm0gHXh2BRD6MpnHxM3UTgqMM
+	 T6iry4ukW5zdx+c6U1GjkaauGODieTlV8kq6Cy4MLYI9aOsqQWeTYfIWitL0coDhp+
+	 6xw7yU6UOeAp9UoPUcj25ZRvOn6pgOqgBgTZxb1yxGM02I1Fh8gJdH+0zJwz9UzGIG
+	 JpAjWp4IuaiRw==
+Message-ID: <7d62ff3f-de92-4d63-89e7-5774484321c1@kernel.org>
+Date: Wed, 22 Apr 2026 20:47:33 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,150 +59,106 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDIyMDE2NyBTYWx0ZWRfXz7XoSV/kWtvR
- YznATFeblMFplDhVI5eegDomNE30dm7QopcRBNthuIZSQ26z0MDEYeF3gw3m/SPoAy6CyfmRx0Y
- lgMUCRaJpyetNy/6ib6yhDOL14Srp0o3Xaos5r9xScB1HOVfNTNOoRXA77pSEDymYuwgOb/SRyT
- QULz66Z4YbiQhj/5q7Psdkr3/dx1k4YwNtifVks0/Q+CeS1TNsU4nyl2tcicY6cRFdyPriq7Yjj
- dAj+KkgbhP/W5S1vKj1qC+FM6MI6SPFsjnMn7QfvBJj61JPz56zgAUQOnCCHSo5SFDgKJRIBodL
- 5urd01EUcKWxXGI79+bpQLMfv8oPQywlncjGEKBACGLDB9zJQTn4iH6mQP77owVuWq6mpMpbm4z
- dBU4YMfswRY+uhp0CfhmhJaNL1RUo4q8yLUddU4nDYyMmkwRPgoPChnDKrD1+eXd5V0PgvdKPVv
- sZURajTxo+zFlOmHcjg==
-X-Proofpoint-ORIG-GUID: kO37_hnscnMYR81Tnn_nPId96kExk12C
-X-Proofpoint-GUID: NM2Xa-JT7Lu4q0-Md1peximJP9oTjLfd
-X-Authority-Analysis: v=2.4 cv=XMUAjwhE c=1 sm=1 tr=0 ts=69e90713 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8 a=gqBEGFNiBRC4Mxh7sp8A:9
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-22_02,2026-04-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 clxscore=1015 priorityscore=1501 impostorscore=0 bulkscore=0
- spamscore=0 lowpriorityscore=0 phishscore=0 adultscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2604220167
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 1/5] mm/sparse-vmemmap: Fix vmemmap accounting
+ underflow
+To: Muchun Song <songmuchun@bytedance.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Lorenzo Stoakes <ljs@kernel.org>,
+ "Liam R . Howlett" <Liam.Howlett@oracle.com>,
+ Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>,
+ aneesh.kumar@linux.ibm.com, joao.m.martins@oracle.com, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20260422081420.4009847-1-songmuchun@bytedance.com>
+ <20260422081420.4009847-2-songmuchun@bytedance.com>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=david@kernel.org; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <20260422081420.4009847-2-songmuchun@bytedance.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-perf sched stats diff fails sometimes with below logs:
+On 4/22/26 10:14, Muchun Song wrote:
+> In section_activate(), if populate_section_memmap() fails, the error
+> handling path calls section_deactivate() to roll back the state. This
+> causes a vmemmap accounting imbalance.
+> 
+> Since commit c3576889d87b ("mm: fix accounting of memmap pages"),
+> memmap pages are accounted for only after populate_section_memmap()
+> succeeds. However, the failure path unconditionally calls
+> section_deactivate(), which decreases the vmemmap count. Consequently,
+> a failure in populate_section_memmap() leads to an accounting underflow,
+> incorrectly reducing the system's tracked vmemmap usage.
+> 
+> Fix this more thoroughly by moving all accounting calls into the lower
+> level functions that actually perform the vmemmap allocation and freeing:
+> 
+>   - populate_section_memmap() accounts for newly allocated vmemmap pages
+>   - depopulate_section_memmap() unaccounts when vmemmap is freed
+> 
+> This ensures proper accounting in all code paths, including error
+> handling and early section cases.
+> 
+> Fixes: c3576889d87b ("mm: fix accounting of memmap pages")
+> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> Acked-by: Oscar Salvador <osalvador@suse.de>
+> ---
 
- # perf sched stats record ls
+Much clearer, thanks!
 
- # perf sched stats diff
-  *** invalid open64 call: O_CREAT or O_TMPFILE without mode ***: terminated
-  Aborted (core dumped)
+Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 
-Also in some runs, perf sched stats tests fails
-
- ./perf test "perf sched stats tests"
- 92: perf sched stats tests                                          : FAILED!
-
-==172375== Conditional jump or move depends on uninitialised value(s)
-==172375==    at 0x10393BD0: open_file_read (data.c:264)
-==172375==    by 0x10393F63: open_file (data.c:317)
-==172375==    by 0x10394067: open_file_dup (data.c:334)
-==172375==    by 0x103942DF: perf_data__open (data.c:379)
-==172375==    by 0x102F7CAF: __perf_session__new (session.c:169)
-==172375==    by 0x100B5E63: perf_session__new (session.h:116)
-==172375==    by 0x100D5D37: perf_sched__schedstat_diff (builtin-sched.c:4568)
-==172375==    by 0x100D7D6F: cmd_sched (builtin-sched.c:5061)
-==172375==    by 0x1010231F: run_builtin (perf.c:348)
-==172375==    by 0x1010262F: handle_internal_command (perf.c:398)
-==172375==    by 0x1010286F: run_argv (perf.c:442)
-==172375==    by 0x10102C67: main (perf.c:549)
-==172375==
-==172375== Conditional jump or move depends on uninitialised value(s)
-==172375==    at 0x10393D20: open_file_read (data.c:282)
-==172375==    by 0x10393F63: open_file (data.c:317)
-==172375==    by 0x10394067: open_file_dup (data.c:334)
-==172375==    by 0x103942DF: perf_data__open (data.c:379)
-==172375==    by 0x102F7CAF: __perf_session__new (session.c:169)
-==172375==    by 0x100B5E63: perf_session__new (session.h:116)
-==172375==    by 0x100D5D37: perf_sched__schedstat_diff (builtin-sched.c:4568)
-==172375==    by 0x100D7D6F: cmd_sched (builtin-sched.c:5061)
-==172375==    by 0x1010231F: run_builtin (perf.c:348)
-==172375==    by 0x1010262F: handle_internal_command (perf.c:398)
-==172375==    by 0x1010286F: run_argv (perf.c:442)
-==172375==    by 0x10102C67: main (perf.c:549)
-
-The valgrind logs and error message from the logs points to
-below snippet:
-
-     static int open_file_read(struct perf_data *data)
-     {
-            int flags = data->in_place_update ? O_RDWR : O_RDONLY;
-            struct stat st;
-            int fd;
-
-            fd = open(data->file.path, flags);
-
-The "struct perf_data" is defined here :
-
-    static int perf_sched__schedstat_diff(struct perf_sched *sched,
-                                      int argc, const char **argv)
-    {
-        struct cpu_domain_map **cd_map0 = NULL, **cd_map1 = NULL;
-        struct list_head cpu_head_ses0, cpu_head_ses1;
-        struct perf_session *session[2];
-        struct perf_data data[2];
-        int ret = 0, err = 0;
-        static const char *defaults[] = {
-                "perf.data.old",
-                "perf.data",
-        };
-
-Here due to uninitialized "struct perf_data", the arguments to "open"
-is getting wrongly passed sometimes depending on value in stack.
-When perf_data__open() function calls open_file_read(),the
-"in_place_update" could contain garbage value.
-
-After initializing "struct perf_data" in perf_sched__schedstat_diff() function,
-perf sched stats tests runs without issues in multiple attempts and also
-"perf sched stats diff" ran individual without issues.
-
-for i in {0..20}; do ./perf test "perf sched stats tests"; done
- 92: perf sched stats tests                                          : Ok
- 92: perf sched stats tests                                          : Ok
- 92: perf sched stats tests                                          : Ok
- 92: perf sched stats tests                                          : Ok
- 92: perf sched stats tests                                          : Ok
- 92: perf sched stats tests                                          : Ok
- 92: perf sched stats tests                                          : Ok
- 92: perf sched stats tests                                          : Ok
- 92: perf sched stats tests                                          : Ok
- 92: perf sched stats tests                                          : Ok
- 92: perf sched stats tests                                          : Ok
- 92: perf sched stats tests                                          : Ok
- 92: perf sched stats tests                                          : Ok
- 92: perf sched stats tests                                          : Ok
- 92: perf sched stats tests                                          : Ok
- 92: perf sched stats tests                                          : Ok
- 92: perf sched stats tests                                          : Ok
- 92: perf sched stats tests                                          : Ok
- 92: perf sched stats tests                                          : Ok
- 92: perf sched stats tests                                          : Ok
- 92: perf sched stats tests                                          : Ok
-
-Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
----
- tools/perf/builtin-sched.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/tools/perf/builtin-sched.c b/tools/perf/builtin-sched.c
-index 555247568e7a..5d2740099eed 100644
---- a/tools/perf/builtin-sched.c
-+++ b/tools/perf/builtin-sched.c
-@@ -4538,7 +4538,7 @@ static int perf_sched__schedstat_diff(struct perf_sched *sched,
- 	struct cpu_domain_map **cd_map0 = NULL, **cd_map1 = NULL;
- 	struct list_head cpu_head_ses0, cpu_head_ses1;
- 	struct perf_session *session[2];
--	struct perf_data data[2];
-+	struct perf_data data[2] = { 0 };
- 	int ret = 0, err = 0;
- 	static const char *defaults[] = {
- 		"perf.data.old",
 -- 
-2.47.3
+Cheers,
 
+David
 
