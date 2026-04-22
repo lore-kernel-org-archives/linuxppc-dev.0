@@ -1,68 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-19980-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19981-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 280F4FA1FF0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2026 20:34:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD090F94CC1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2026 21:44:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g19tz3sq4z2yv1;
-	Thu, 23 Apr 2026 06:34:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::104a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776890075;
-	cv=none; b=dGTgxNvNBnn4O7Zs40TyyvdlEVuiq/+IMBDKkVdpaZ4r6Pywrn+x0hei0JPcR+jsQsdVvXmHEW5OQeBFB1tYO2TNG78rSfYnDcab8fUnfhN4SsaWGGKmg0eXm3yypy2lYEfEzinxp2Dm6+lkX9WNMVUGmpC59vwrSuAKbNE6QmSURK+MqDRXZ9vn96HHUb72p4LcJiFcaVIsV93jXSnGfjMhE/01afs1w1cMXL1J5MabINDtrTkxLIlWZ18MZM6lNXJchHLzb5rdJF43NrzV6h/TDy44yOTE+WgmrZ/1qDAynBphdi4PlcAOeYt6IW2eQoLUkdomLgAtxKA+a8dsfQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g1CS90h1Qz2yv1;
+	Thu, 23 Apr 2026 07:44:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776894297;
+	cv=none; b=Lq2cEfC0mfOHnPtTMTuUBghdJWTqYUvgJxSceaHphsoGffL5Ljkox4v8W7Zw+f0M06GSHXV4+0YIR0QStZ7P9dZBKWLY2/3tBGV8zNf7pILeBzFmD+YP3n8OyDWMrpeL0M6dyeI+lcm5LZiLkk8u9QEkyzvBWX1uH9tNK/6TcVN4eFAZcntTy5NkNwGD7UiGamnXVbWuejuek6Rmw39Ww424y8xy73IZ9O7BJc1ZR84So+EXExK4vCYJiWxtktnzRg03RrfylnSkiD8GzXFRRugaVrRP+AWqzVB7dQNJ/UP2UmSpEIpzO4Tq/E+u+Bwjn80V1tvbMXMwX6hK/ZUGqg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776890075; c=relaxed/relaxed;
-	bh=r6cKYb2nrrVr10xS0LVArs9DazD2S5XwOnl2A2OaOrk=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=ebGr+8l8iKtsWt747k4SkX9p6hoUZZMCeRogVpD1a1h1GA5LIT0EGWfo4IpQTnFA+uf9/1YsfSBHZWp4N9cHDW49VHwxjweMwOn0NT5rt9zYtY7vdrnSW5n4qLVcqlrCacJVJ4hAkbdzd+pbCsmU1SihkP5eeW0rCQdDb1DcNC+i8zOOSvJ8V1U7E5NSf5QaoVcfUOpMPKDSNolCdWyfXbs0bYG4jNhk/IrXrAe2ykDf7Czlln0Zp3f8EP6hpKmfMj1lTEkgRGse2JtlfJQvormXX2K3XlmOY9/jR9jse2H1URxVSl9zrOR5UWUJ9+XfIyghvft7rrwEQu/pQt0hrQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=H19Zl46s; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::104a; helo=mail-pj1-x104a.google.com; envelope-from=31jdpaqykddmhtpcyrvddvat.rdbaxcjmeer-stkaxhih.doapqh.dgv@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1776894297; c=relaxed/relaxed;
+	bh=IALx1m8qyqKrGikW0Tzjst8D14JkPu800L1K3GgQjRw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=UDNux39swF27eCeSWuVtFUl9WwZvlNilW6FTH6KUY9LL1H591WmoZzO4erbuTfRmyuWDhHCDyiwVPYoAacJln6NNSbm5YWxM9mU0ocviJZYUl7VmFBBDOOvhP6KhaG0oWWCS3Tti3yb4PsAKeVv/xG79GWtaDGPScYUvkmx1xiwKez3u1VBt7BCmAB+ZIMHo3WQagNmUrOdEU0maKua0AWvjD2cIZsUEHLF/5OVjOC5EI8J2XTT0oqQMKSY9LSkdKJdy5mrJ/j48lk9wQyyZtrdcqnYVt12WL4xHsX2kpipFGrgYHVWreKMzYWfwiTvHOfJ8xMZ5zI08KAKWyQR0Bw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AOP6RuAC; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=yosry@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20251104 header.b=H19Zl46s;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AOP6RuAC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::104a; helo=mail-pj1-x104a.google.com; envelope-from=31jdpaqykddmhtpcyrvddvat.rdbaxcjmeer-stkaxhih.doapqh.dgv@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x104a.google.com (mail-pj1-x104a.google.com [IPv6:2607:f8b0:4864:20::104a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=yosry@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g19ty00lmz2xc8
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 06:34:33 +1000 (AEST)
-Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-35845fcf0f5so6397373a91.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 13:34:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20251104; t=1776890071; x=1777494871; darn=lists.ozlabs.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=r6cKYb2nrrVr10xS0LVArs9DazD2S5XwOnl2A2OaOrk=;
-        b=H19Zl46sUz4pwjlzxBm2Qi7RjoHWun7nZiFgdID/WOnTfCsHcrHvEKkB2MUovSNZuD
-         tsYzPEy5v2jDJOamnzV+Y0SMsRj++fEdtRERdIzQvgO1U/TBMN6H1RAWVQ8Cm2cmSjSD
-         +k8QBvdvESOhEVD7ptgL4ozz/aoYxqMZRehoUV/UW95awZpm2p2h/IrxIbks3PMQpgA1
-         0fjksHb3bFv96MFcYDsxkCL076CderR9zrsBRagxpFkVY5Pl+rNwmFvQ0w4WaOLBZN0g
-         YwXxsuamcH/M7/ON1eRBcir57ZosjPzg9InDWn9BakSfOairrGlBKSAL7Hv6mswEKh6x
-         QHxw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776890071; x=1777494871;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=r6cKYb2nrrVr10xS0LVArs9DazD2S5XwOnl2A2OaOrk=;
-        b=XFXeHLtYO9bYRCAD6uBY7u8A14KCKQhHDQBVwjBhyNSiXvOAm3qxozP5D9Fw4TQlWR
-         DPAnccwhbOk0H2CAntdJDpepiJUnSZy8u+CGlchO8nBfcC9U/Wh96jxRvoFxQmgReCdK
-         IXI6KG6pVj3W0TZIUi+TNbVs+POzbVfdhn+CGEJVWNEX+ByUHOLgybV/fyjrvqVtdJPh
-         An5sKpBFcMsMDFiMZznzxv5KXXSmAGQshTMIZT9sawotfO4bYOOm2zvJ3nWdSyfGwipN
-         1SCuiDP57eutaxQ7TNPWSilq0LFI3Uu2mCoHHoh6morJh5Cy6FPNNYXs9JOT5RdWIOD1
-         kigQ==
-X-Forwarded-Encrypted: i=1; AFNElJ+QGoUtGEUqd68D5KGsrnbF2mecEgx3LCUBflgJ0p9PgJ2zg7fqVBTCeM4v6jf7+v09IdDO7v0yGs+yUTg=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxvrTa0DlOKu1QxB6YtHbm5j4EM0u4/xUdJ2DtHgmy5gZVGAu2g
-	YOB4DHJREQtf0rKxUnpoJ8D/BpOJl5T0GbCNyXBeTgtKBFZgt/nQGbEpER05+e9j5zG4obuSe1j
-	K9YGVuQ==
-X-Received: from pjvi16.prod.google.com ([2002:a17:90a:dc10:b0:35e:591b:3591])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:3ec5:b0:35f:b4c1:91ea
- with SMTP id 98e67ed59e1d1-361402ee818mr18770329a91.13.1776890070624; Wed, 22
- Apr 2026 13:34:30 -0700 (PDT)
-Date: Wed, 22 Apr 2026 13:34:29 -0700
-In-Reply-To: <aekrJrSRoclZoBo9@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g1CS81RVCz2ytV
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 07:44:56 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 8FC846186B
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 21:44:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3E593C4AF0C
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 21:44:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776894293;
+	bh=tHYNhcrXG1XEwoPAwoxoq/s4pgG+IT1N0bFfoOKoqYs=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=AOP6RuACIcZPxmkODQRmn51eVuQsVRiEJcut386x6NOsrYmiHyskQl7Jq0zUUVP07
+	 06TVvhaDrdL3tQil/TDZ27cGazRldtqJSmPPRZtgM7Qng8r34cU4wDgxZTRcJqKgRs
+	 9WIZi6IOsyL9WAPsPmRFVfQzx5PDX2the7vuheOaqgNahXmQgi1RAONrqWwbGeiV1H
+	 1Mwr3R/hGjqWg/VbH8AceVNSSuekskl0bu8sWEPAM2IPh5uXeT2rMBF41cfArSOkQa
+	 yV4MbHRy57U/hvGYhFxF+vyBZM6/R3teZaDh2zGTdixZLlDF19XlSwKqYdyVbIpYAb
+	 +TieqYwxquvsQ==
+Received: by mail-ej1-f52.google.com with SMTP id a640c23a62f3a-b9d9971d059so879204666b.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 14:44:53 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AFNElJ+NTW5Pz117v0kojdiJ7V6+54T606T+wFvEzqOGNgMwHWeKyXK+GOst5fIwfHqOuMgy9NrhIgGKHfSvLds=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwhC/t/T+76NCPUVSOzG9bBZwPt56+ZVu77jTNAmF3b/RL+bjOC
+	pScgBV98D9TCPC3ZTObbqb+SCCB/t32GP+8sy9VLR+CVQBlUIKCnrmFwRTm0X8AcyjsTT4ePkKi
+	oVxrOfasPHtgd5R+MxIYzNQ5YjtM5dX8=
+X-Received: by 2002:a17:907:6091:b0:bab:7f2b:c5d1 with SMTP id
+ a640c23a62f3a-bab7f2bc736mr177582266b.9.1776894291977; Wed, 22 Apr 2026
+ 14:44:51 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,16 +65,20 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
+MIME-Version: 1.0
 References: <20260408001137.3290444-1-peter.fang@intel.com>
  <20260408001137.3290444-4-peter.fang@intel.com> <aegDJssx-ZvbfggI@google.com>
  <aegF59gToidudIUC@google.com> <aegIPGYPH-nxGsua@google.com>
  <CAO9r8zOsHdsMuyjWr3XafjNnMKDci1OOdw8eJHrH-O+jrDH10Q@mail.gmail.com>
- <aegV3ELp20DlC5Ge@google.com> <aekrJrSRoclZoBo9@google.com>
-Message-ID: <aekw1S5Gdkyx8teC@google.com>
+ <aegV3ELp20DlC5Ge@google.com> <aekrJrSRoclZoBo9@google.com> <aekw1S5Gdkyx8teC@google.com>
+In-Reply-To: <aekw1S5Gdkyx8teC@google.com>
+From: Yosry Ahmed <yosry@kernel.org>
+Date: Wed, 22 Apr 2026 14:44:38 -0700
+X-Gmail-Original-Message-ID: <CAO9r8zPhxn9dUKoXwM2JHF4TwG+PeTd8GhDO_kqG+kuwRW1g=g@mail.gmail.com>
+X-Gm-Features: AQROBzCKceysO9ivAzqon0z-yXd-OerC3R6DcybrV6wprQiol2CvCARtsqKQBy4
+Message-ID: <CAO9r8zPhxn9dUKoXwM2JHF4TwG+PeTd8GhDO_kqG+kuwRW1g=g@mail.gmail.com>
 Subject: Re: [PATCH v2 3/3] KVM: Take gpa_t in kvm_vcpu_map[_readonly]()
-From: Sean Christopherson <seanjc@google.com>
-To: Yosry Ahmed <yosry@kernel.org>
+To: Sean Christopherson <seanjc@google.com>
 Cc: Peter Fang <peter.fang@intel.com>, Paolo Bonzini <pbonzini@redhat.com>, 
 	Madhavan Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, 
 	Ritesh Harjani <ritesh.list@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, 
@@ -92,58 +86,36 @@ Cc: Peter Fang <peter.fang@intel.com>, Paolo Bonzini <pbonzini@redhat.com>,
 	Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
 	"H. Peter Anvin" <hpa@zytor.com>, kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
 	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Apr 22, 2026, Yosry Ahmed wrote:
-> > > Perhaps we just need to rename the functions (e.g.
-> > > kvm_vcpu_map_page()), or more intrusively pass in a size and do bounds
-> > > checking.
-> > 
-> > Definitely the latter.  Or both I guess, but probably just the latter.
-> 
-> I think both. I think renaming to kvm_vcpu_map_page() (and similar for
-> others) would further clarify things, especially with the introduction
-> of kvm_vcpu_map_ptr() below.
+On Wed, Apr 22, 2026 at 1:34=E2=80=AFPM Sean Christopherson <seanjc@google.=
+com> wrote:
+>
+> On Wed, Apr 22, 2026, Yosry Ahmed wrote:
+> > > > Perhaps we just need to rename the functions (e.g.
+> > > > kvm_vcpu_map_page()), or more intrusively pass in a size and do bou=
+nds
+> > > > checking.
+> > >
+> > > Definitely the latter.  Or both I guess, but probably just the latter=
+.
+> >
+> > I think both. I think renaming to kvm_vcpu_map_page() (and similar for
+> > others) would further clarify things, especially with the introduction
+> > of kvm_vcpu_map_ptr() below.
+>
+> I don't like "page" it's too easy to incorrectly assume "page" means "str=
+uct page".
+> There are KVM APIs that do use "page" generically, e.g. kvm_read_guest_pa=
+ge(),
+> but for this particular case I'd like to stay away from "page; there's a =
+_lot_
+> of ugly history around mapping "struct page" vs. "other" memory in KVM.
 
-I don't like "page" it's too easy to incorrectly assume "page" means "struct page".
-There are KVM APIs that do use "page" generically, e.g. kvm_read_guest_page(),
-but for this particular case I'd like to stay away from "page; there's a _lot_
-of ugly history around mapping "struct page" vs. "other" memory in KVM.
+Maybe kvm_vcpu_map_guest_page()? or if you reaaaally wanna be clear
+about it kvm_vcpu_map_page_sized_chunk_of_guest_memory() :P
 
-> > diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> > index 9093251beb39..e8d2e98b0068 100644
-> > --- a/virt/kvm/kvm_main.c
-> > +++ b/virt/kvm/kvm_main.c
-> > @@ -3114,9 +3114,10 @@ struct page *__gfn_to_page(struct kvm *kvm, gfn_t gfn, bool write)
-> >  }
-> >  EXPORT_SYMBOL_FOR_KVM_INTERNAL(__gfn_to_page);
-> >  
-> > -int __kvm_vcpu_map(struct kvm_vcpu *vcpu, gfn_t gfn, struct kvm_host_map *map,
-> > -		   bool writable)
-> > +int __kvm_vcpu_map(struct kvm_vcpu *vcpu, gpa_t gpa, gpa_t len,
-> > +		   struct kvm_host_map *map, bool writable)
-> >  {
-> > +	gfn_t gfn = gpa_to_gfn(gpa);
-> >  	struct kvm_follow_pfn kfp = {
-> >  		.slot = kvm_vcpu_gfn_to_memslot(vcpu, gfn),
-> >  		.gfn = gfn,
-> > @@ -3124,6 +3125,10 @@ int __kvm_vcpu_map(struct kvm_vcpu *vcpu, gfn_t gfn, struct kvm_host_map *map,
-> >  		.refcounted_page = &map->pinned_page,
-> >  		.pin = true,
-> >  	};
-> > +	kvm_pfn_t pfn;
-> > +
-> > +	if (WARN_ON_ONCE(offset_in_page(gpa) + len > PAGE_SIZE))
-> > +		return -EINVAL;
-> 
-> Maybe do the bounds checking after initializing 'map', then
-> kvm_vcpu_map_ptr() wouldn't need to explicitly set the pointer to NULL
-> on failure? 
-
-Hmm, no.  I don't want to encourage the caller to rely on the state of @map if
-the call fails.
-
-> There is already possibility of failure after initialization anyway.
-
-Sure, but the caller shouldn't rely on that.
+I don't feel strongly but I prefer we put "page" in there somewhere,
+up to you :)
 
