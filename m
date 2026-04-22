@@ -1,51 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-19931-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19932-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38B69F94CD9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2026 07:26:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE523F94CDB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2026 07:32:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g0rPG5Lkgz2yZN;
-	Wed, 22 Apr 2026 17:26:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776842770;
-	cv=none; b=cUtM3kDUkYxMarvAHpyDfhombTGG6dyhr6G/1N+i3DsfvVsC6fOufyAd2ktPm4bwFWBW9RVeazO7w790fjl1E4321bhNvIIYcdBpxldU6o0XUNyLcRrEtCbvmPUo512UoCZhxCZseG9bR4E5GshE03LnLXJxTfCE3AvnjwX5jEGHwIx46iox8bmOXCNTYoTNemmH8b3vZsADZJ4X8QER8yCQ6kAEc6oQneg/QW4btoxKkpLPGa4+GAAOpmXBx7pkDhjk0sBk8jgdgeyQC+CKY8mtcoYOYptUw4oQPgyBIfNZs0T7nKjPg/ADO5w8wiyrc+TK4eWVgd1BgnsXiu18Mg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g0rXK37Fpz2yZN;
+	Wed, 22 Apr 2026 17:32:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776843137;
+	cv=none; b=oFyMRt5vIm0t6Gz60YkrvJjTxtUc7KVRRKQnRuxThNyBUCYVUBSMQVSWLwOX7eQtpitETDy5lzSn3vUMUL931MVQhDJW/y87jmLF9jXEWfukP2YyIESbI1Toy9AJQBLahJtbbnnDi0qsK8W7H7jRcY7Y8f8WPcgT3bGTsh09YnuY59gfsEcNzBuqz7+Z+pMTM0/4euJOx5Nel+O6WFT/vgbD24FDS6Xt9kB17jPgRbAxcZK4dxIjOEpsYrnHGvoskZ7yoX7UirqxXUxA9MoFaEWdiIjLydMbLfAZXzp8+aqLphsSSewbvncrMovhKmXcvFDXWrazYTj+I51Pf1cNYA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776842770; c=relaxed/relaxed;
-	bh=7lK25W7+Mcjv1QQUKw5l94ZN7yEGQLyRTS4aEO3CXdU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=BJDH47VIVUefV91K3JbxMkKjJy8Z60kH/j3cSntqhdMK1T+sfXIjrRzkM+zziBxlylNWLoQoYD0uyBtRKf9NB02cxg17Reo8HouOk3IAFKTSwJ/tQDX6frLC2duiCXdm2hKOdnkOl1MkuckIw3GgV/f770GifpAwPeEJ1n8ODSFu+DuX5n+TE6UCDZPbCwRCZl+a0lq5LBlmMIAggKajvuoq6F3NB/St62/DIb+Y8H+AXqybyeZoQ/bteTS7NpoPGCTyZM1jDyH9Yz4ywpGb4Zz8aH7wlpjJ4WuhvRm5Kqm+xQfPTLKUdY4NpKOr7mhJPNMwWqbH0I7Xm83aLmN0EQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EzBqLzuO; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1776843137; c=relaxed/relaxed;
+	bh=nqWPSH9orhqk1QAO9hwmlkYDMAf9Dazei8dWQ2yLik0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=hQ87/y3AMXPvb4PQY59rVsuVyeLIaD0BmC46pq1H6xdPunEiLI7AF7yULSIIbVRdEAjel4wOR8hGR939j+OoP7Rj8OGobeSL+/9oTUqeHxQsZiTSGOHEbEBA6w2v6adYEU29dQGUunq0F0zI/3ZCxAHYgrFnBGkDBOMC9iNawGhCPPca9J0QBL9SmxpLwg5nZXrJfT2Kys/D1+fkpQk+iqjvb7l1nWo9m2Sp8oPLgtWBMFXSV0GnBEsyWPbdvnbGOwlq7WEBuAMwqou4yDDAfZzFQxYJ2BQ6IIf6UFqZph269Ll2/4YL4zoF+7BvW/+kC4dqtNx/4GVQlTe48oCa4g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=HGuqX591; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=vA6bVzJf; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EzBqLzuO;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=HGuqX591;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=vA6bVzJf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0rPF401kz2xc8
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 17:26:09 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 87AF460018;
-	Wed, 22 Apr 2026 07:26:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4C7F7C19425;
-	Wed, 22 Apr 2026 07:26:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776842765;
-	bh=IvSjzT4GEYNAHFGcrljPx1kOL3wXhKmoqPv4Tv8CkaU=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=EzBqLzuONJJv0ldtemEnj0bXdUh9Q6jzanPurHh8Miflfd8barSPM45kdHimemhIt
-	 1eMFfC5fT848W+2iwSmKEnYavFqS3uq5Azd6rGxw0rP59V+eJy3bOVzvbsFXDS33WC
-	 mjJh2LRhXVMpQr97ZfguumkupzTHXoJ2J2RPpSWRVsxNZLt+L2c6OoxcMztVwNnh7X
-	 uiPZT0XNuZhd6gP48BoVOaHIojh6QR7HcqrMDL5pzMXXLYiJZsj4WVVj/qRUHgmtjn
-	 tNkCp+X4hCKUScXVf1gd3/4RrgzyMhcQvtV8NoXRLtRATX5ltBsI67PYcF1YVNifaV
-	 RymlAA9f3ksEQ==
-Message-ID: <5d16def3-3bad-49b1-866d-94a522e8d394@kernel.org>
-Date: Wed, 22 Apr 2026 09:26:02 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0rXJ3wjbz2xSN
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 17:32:16 +1000 (AEST)
+Date: Wed, 22 Apr 2026 09:32:06 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1776843131;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=nqWPSH9orhqk1QAO9hwmlkYDMAf9Dazei8dWQ2yLik0=;
+	b=HGuqX591fOx4yUoKbPFM3AFnEj4TNUtdJlqS+09QNrk+lg6EdJ54hu0hlVKN9TC//Dlb/B
+	z9yH4pYM6L62+z/gkWjipQflovPh3Oa/xEF1N+j+y2xTjOTqMOEPbWaxmniMSiLlXtsfX/
+	HZuudN0IQpcRD+DnLrzVQ/ZoSoDVwstsv8/LLrZFEsO+A7ZdG2/HtljUDkAgkwcdW9jHa6
+	bLRPitpEl2B+or7HlfZHV2Xh6UWQFOLA264zEm+aoj1RtROfTLHu9eZ/4HIK09RNlygdDp
+	E4sAlAMH/7rgRYiKYn9gW2QvyiRzgJxilh7GS8AVmz0tkai8d7+IuH3xssRiMw==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1776843131;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=nqWPSH9orhqk1QAO9hwmlkYDMAf9Dazei8dWQ2yLik0=;
+	b=vA6bVzJf/I9G8QEzLBWv5aZcIXcu70EFV/3tqET1xHv2nKF+Jj51HQlj7efTfkGBhadOmY
+	b/J/+85f8+H7QcDA==
+From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
+To: Ricardo Ribalda <ribalda@chromium.org>
+Cc: linux-arm-kernel@lists.infradead.org, 
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: New warning in linus/master
+Message-ID: <20260422092713-4021a1a5-3a54-4260-878a-aec1bef3f8c7@linutronix.de>
+References: <CANiDSCsOy0P1if-gJZqOM5pTJ0RDcwVfru1B7KFbTOEMqjPKJw@mail.gmail.com>
+ <20260422071541-9a295128-d913-418f-a21c-1386fca30290@linutronix.de>
+ <CANiDSCviww1L1p2+MvF59Biqb6hc7WdL1J37kBjFd1NXz-Yt8A@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,91 +74,85 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: New warning in linus/master
-To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
- Ricardo Ribalda <ribalda@chromium.org>
-Cc: linux-arm-kernel@lists.infradead.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org
-References: <CANiDSCsOy0P1if-gJZqOM5pTJ0RDcwVfru1B7KFbTOEMqjPKJw@mail.gmail.com>
- <20260422071541-9a295128-d913-418f-a21c-1386fca30290@linutronix.de>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <20260422071541-9a295128-d913-418f-a21c-1386fca30290@linutronix.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <CANiDSCviww1L1p2+MvF59Biqb6hc7WdL1J37kBjFd1NXz-Yt8A@mail.gmail.com>
+
+On Wed, Apr 22, 2026 at 03:00:11PM +0800, Ricardo Ribalda wrote:
+> On Wed, 22 Apr 2026 at 13:57, Thomas Wei�schuh
+> <thomas.weissschuh@linutronix.de> wrote:
+> > On Wed, Apr 22, 2026 at 11:51:45AM +0800, Ricardo Ribalda wrote:
+> > > Media-CI has found a couple of new warnings in the latest kernel
+> > > version for aarch64 and powerpc. They get fixed with this patch and
+> > > before moving I wanted to know if this was under your radar.
+> >
+> > Thanks for the report. I was not aware of these so far.
+> >
+> > > diff --git a/arch/arm64/kernel/vdso/Makefile b/arch/arm64/kernel/vdso/Makefile
+> > > index 7dec05dd33b7..65914842fae0 100644
+> > > --- a/arch/arm64/kernel/vdso/Makefile
+> > > +++ b/arch/arm64/kernel/vdso/Makefile
+> > > @@ -50,7 +50,7 @@ CFLAGS_vgettimeofday.o = $(CC_FLAGS_ADD_VDSO)
+> > >  CFLAGS_vgetrandom.o = $(CC_FLAGS_ADD_VDSO)
+> > >
+> > >  ifneq ($(c-gettimeofday-y),)
+> > > -  CFLAGS_vgettimeofday.o += -include $(c-gettimeofday-y)
+> > > +  CFLAGS_vgettimeofday.o += -include $(c-gettimeofday-y)
+> > > -Wno-maybe-uninitialized
+> > >  endif
+> >
+> > (...)
+> >
+> > I'd like to know exactly what is going on before suppressing the warning.
+> > It is a non-standard warning, only enabled by *some* of the vDSO builds
+> > for some reason.
+> >
+> > > https://gitlab.freedesktop.org/linux-media/users/ribalda/-/pipelines/1649144/test_report?job_name=cross-gcc
+> >
+> > While I was able to download a configuration from this job and also use the
+> > same container image, I can not reproduce the issue. Is the configuration the
+> > full one or only the template?
+> >
+> > Could you provide full reproduction steps?
+> 
+> You can try repro with:
+> 
+> work/linux $ podman run -v .:/workdir/ --rm -it
+> registry.freedesktop.org/linux-media/media-ci/build:latest
+> $ cd /workdir
+> $ CROSS_COMPILE=aarch64-linux-gnu- ARCH=arm64 make allyesconfig
+> $ CROSS_COMPILE=aarch64-linux-gnu- ARCH=arm64 make
+> arch/arm64/kernel/vdso/vgettimeofday.o
+> 
+> The gcc version discrepancy is because I the error was due to old gcc
+> version and I was playing around with that... but it fails in both
+> gcc14 and gcc15
+
+Ack.
+
+> You can try with debian testing with
+> work/linux$ podman run -v .:/workdir/ --rm -it debian:testing
+> $ apt-get update
+> $ apt-get install gcc-aarch64-linux-gnu build-essential flex bison libssl-dev bc
+> $ cd /workdir
+> $ CROSS_COMPILE=aarch64-linux-gnu- ARCH=arm64 make allyesconfig
+> $ CROSS_COMPILE=aarch64-linux-gnu- ARCH=arm64 make
+> arch/arm64/kernel/vdso/vgettimeofday.o
+
+Both reproducers do *not* reproduce the issue for me.
+(It is more or less exactly what I tried before)
+
+Please note that this line does not work in general:
+$ CROSS_COMPILE=aarch64-linux-gnu- ARCH=arm64 make arch/arm64/kernel/vdso/vgettimeofday.o
+
+The vDSO object files can not be built in this way like regular kernel object
+files and will produce a compiler error, but not the one under discussion.
+Instead the vDSO on arm64 is built during the 'make prepare' phase.
+(Other architectures work differently, of course...)
+
+(...)
 
 
-
-Le 22/04/2026 à 07:56, Thomas Weißschuh a écrit :
-> Hi Ricardo,
-> 
-> On Wed, Apr 22, 2026 at 11:51:45AM +0800, Ricardo Ribalda wrote:
->> Media-CI has found a couple of new warnings in the latest kernel
->> version for aarch64 and powerpc. They get fixed with this patch and
->> before moving I wanted to know if this was under your radar.
-> 
-> Thanks for the report. I was not aware of these so far.
-> 
->> diff --git a/arch/arm64/kernel/vdso/Makefile b/arch/arm64/kernel/vdso/Makefile
->> index 7dec05dd33b7..65914842fae0 100644
->> --- a/arch/arm64/kernel/vdso/Makefile
->> +++ b/arch/arm64/kernel/vdso/Makefile
->> @@ -50,7 +50,7 @@ CFLAGS_vgettimeofday.o = $(CC_FLAGS_ADD_VDSO)
->>   CFLAGS_vgetrandom.o = $(CC_FLAGS_ADD_VDSO)
->>
->>   ifneq ($(c-gettimeofday-y),)
->> -  CFLAGS_vgettimeofday.o += -include $(c-gettimeofday-y)
->> +  CFLAGS_vgettimeofday.o += -include $(c-gettimeofday-y)
->> -Wno-maybe-uninitialized
->>   endif
-> 
-> (...)
-> 
-> I'd like to know exactly what is going on before suppressing the warning.
-> It is a non-standard warning, only enabled by *some* of the vDSO builds
-> for some reason.
-> 
->> https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgitlab.freedesktop.org%2Flinux-media%2Fusers%2Fribalda%2F-%2Fpipelines%2F1649144%2Ftest_report%3Fjob_name%3Dcross-gcc&data=05%7C02%7Cchristophe.leroy2%40cs-soprasteria.com%7C5c0f15ee20a44072f47108dea0340304%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639124342424606113%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=9Tvp2aYfB02ijxVGLzCOYcMwZlPvqVDufxEporLl1mc%3D&reserved=0
-> 
-> While I was able to download a configuration from this job and also use the
-> same container image, I can not reproduce the issue. Is the configuration the
-> full one or only the template?
-> 
-> Could you provide full reproduction steps?
-> 
->> CONFIG_CC_VERSION_TEXT="aarch64-linux-gnu-gcc (Debian 15.2.0-16) 15.2.0"
-> 
-> The linked test log shows GCC 14.2, not 15.2.
-> Not that I could reproduce it with either one...
-> 
->>    SYNC    include/config/auto.conf
->>    CC      arch/arm64/kernel/vdso/vgettimeofday.o
->> In file included from <command-line>:
->> In function ‘vdso_set_timespec’,
->>      inlined from ‘do_aux’ at /workdir/lib/vdso/gettimeofday.c:266:2,
->>      inlined from ‘__cvdso_clock_gettime_common’ at
->> /workdir/lib/vdso/gettimeofday.c:293:10,
->>      inlined from ‘__cvdso_clock_gettime_data.constprop’ at
->> /workdir/lib/vdso/gettimeofday.c:306:7:
->> /workdir/lib/vdso/gettimeofday.c:104:26: warning: ‘sec’ may be used
->> uninitialized [-Wmaybe-uninitialized]
->>    104 |         ts->tv_sec = sec + __iter_div_u64_rem(ns, NSEC_PER_SEC, &ns);
->>        |                      ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->> /workdir/lib/vdso/gettimeofday.c: In function
->> ‘__cvdso_clock_gettime_data.constprop’:
->> /workdir/lib/vdso/gettimeofday.c:242:13: note: ‘sec’ was declared here
->>    242 |         u64 sec, ns;
->>        |             ^~~
-> 
-> The same pattern is used in some other do_ handlers, which do not generate this
-> warning. I also can't immediately see what is wrong.
-
-You are likely in a special case where vdso_get_timestamp() returns 
-false without setting &sec, and some versions of GCC and/or CLANG fail 
-to see that vdso_set_timespec() is not called when vdso_get_timestamp() 
-returns false.
-
-Christophe
+Thomas
 
