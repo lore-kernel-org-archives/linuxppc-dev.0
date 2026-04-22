@@ -1,150 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-19930-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19931-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 638CAF94CD9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2026 07:13:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38B69F94CD9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2026 07:26:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g0r7B0l7xz2yZN;
-	Wed, 22 Apr 2026 17:13:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.20
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776842038;
-	cv=none; b=fhocvKBFfJUzb2Eff8yilwsh8moQsc0cMjmBhEd8xhZPuiv2akfS7gewuKYYnf7DEWhhVQA9oXqTu9IWSok+1bRbQWVFzrn4FRioJNSoaH+EjCvwFUPY4ih5By0qYF/H7PsY7iixPFn641N1Ffd3yq8i7WkzF/r4FMY6eoHTJ67Lqyfkx8/cgN+fh6J6OHeddMagINw4XGZW9tScw98JxQmeorbxY7pjBbwMv33sYn0WaO1utKT5zrH/PQZcGoYJXPmLWITizB1VP3QT9Z1khScd9nEryTOCSD8SGy7t9nYPGo0ZR/aDj7pppzngcBq8+cr+fcMnGeHigPp6qhassg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g0rPG5Lkgz2yZN;
+	Wed, 22 Apr 2026 17:26:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776842770;
+	cv=none; b=cUtM3kDUkYxMarvAHpyDfhombTGG6dyhr6G/1N+i3DsfvVsC6fOufyAd2ktPm4bwFWBW9RVeazO7w790fjl1E4321bhNvIIYcdBpxldU6o0XUNyLcRrEtCbvmPUo512UoCZhxCZseG9bR4E5GshE03LnLXJxTfCE3AvnjwX5jEGHwIx46iox8bmOXCNTYoTNemmH8b3vZsADZJ4X8QER8yCQ6kAEc6oQneg/QW4btoxKkpLPGa4+GAAOpmXBx7pkDhjk0sBk8jgdgeyQC+CKY8mtcoYOYptUw4oQPgyBIfNZs0T7nKjPg/ADO5w8wiyrc+TK4eWVgd1BgnsXiu18Mg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776842038; c=relaxed/relaxed;
-	bh=u6VpsgmCXU921ccCM+rxS9Re8awywwK9qScDhKikl/o=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AgjQjt5AY3zJPqZI/N9GZVvt3flitqGt5zBKRNO84aJBXOhkmTHA3M2munb++IFqO7VfI7zd/duDw5NTISIorNA0vr0/Dn2LuPQazQ4FgtP+4w3uvEAV9aJJ3SiNiQ+uEpflt1TEPWzS62Of8cwN6K9NvfI7UtWAhe3Ph10fQU9ttEoKE2rL8EB0fCbXhqMO1X8EUkOEvx431nURi30HLeQcze/IOUhlD7PFScPHaxziO9Q+X++qyM/iPutjFIjE8fcbeZa14ZX/CbIcQG/Yp2g2gKI2poZGrKBkC0cRi7ZNYN4CfnMH19ck8yvr/Q7EP9Xb81R6025+xd7xZpJ4iQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=PfhZYA3h; dkim-atps=neutral; spf=pass (client-ip=198.175.65.20; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	t=1776842770; c=relaxed/relaxed;
+	bh=7lK25W7+Mcjv1QQUKw5l94ZN7yEGQLyRTS4aEO3CXdU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=BJDH47VIVUefV91K3JbxMkKjJy8Z60kH/j3cSntqhdMK1T+sfXIjrRzkM+zziBxlylNWLoQoYD0uyBtRKf9NB02cxg17Reo8HouOk3IAFKTSwJ/tQDX6frLC2duiCXdm2hKOdnkOl1MkuckIw3GgV/f770GifpAwPeEJ1n8ODSFu+DuX5n+TE6UCDZPbCwRCZl+a0lq5LBlmMIAggKajvuoq6F3NB/St62/DIb+Y8H+AXqybyeZoQ/bteTS7NpoPGCTyZM1jDyH9Yz4ywpGb4Zz8aH7wlpjJ4WuhvRm5Kqm+xQfPTLKUdY4NpKOr7mhJPNMwWqbH0I7Xm83aLmN0EQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EzBqLzuO; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=PfhZYA3h;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EzBqLzuO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.20; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0r782f2Kz2xc8
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 17:13:54 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1776842037; x=1808378037;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=2fkao8ArefIYQIbLZPL2ShMrSXc6ICRKryHIhWNINls=;
-  b=PfhZYA3h3dgYFV5Jy68YDF3xVkDfTETRzZCh0gJfZL6YkTEjVBbazNkR
-   5vRvbHC8Bt0Mr8xNNfEaoLsW4Wo5iuox/pGp2ZJvpy2TZ+m1AUYhXbbdl
-   ba14C8IPBUtJrcdv5LQTaXd8j7VQCU6Lh65e6KUY1u0f8I9Z5C+fmexn0
-   x/q5zost+EWH7dFqfyKfqePjBQVv2WYlQXd+vGn8uPoFl2UfmOtNwctCI
-   tcSe9Fv7BbQUkgxaG92WCyndJJQi/WRJxz4N+RXjUAZCTsZAUGlv9cSdg
-   48Vyfmjo7jTWrmMA1lUQqplASrSRFypNHBgsoMw6rUM7PTNK+Zvb/S3xk
-   Q==;
-X-CSE-ConnectionGUID: pDIqIx0bQhysBlIl2NYMHA==
-X-CSE-MsgGUID: 1fl5aLjHRT68sAspxzx/MQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11763"; a="77491891"
-X-IronPort-AV: E=Sophos;i="6.23,192,1770624000"; 
-   d="scan'208";a="77491891"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
-  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Apr 2026 00:13:51 -0700
-X-CSE-ConnectionGUID: 8bjn/CoeRfmR+ZxM9NIV9g==
-X-CSE-MsgGUID: b/tjYM8wT72QHDuE4PxnmQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,192,1770624000"; 
-   d="scan'208";a="227681986"
-Received: from smoticic-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.201])
-  by fmviesa006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Apr 2026 00:13:32 -0700
-Date: Wed, 22 Apr 2026 10:13:31 +0300
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Link Mauve <linkmauve@linkmauve.fr>, linuxppc-dev@lists.ozlabs.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	"David S. Miller" <davem@davemloft.net>,
-	Juergen Gross <jgross@suse.com>,
-	Ajay Kaher <ajay.kaher@broadcom.com>,
-	Alexey Makhalov <alexey.makhalov@broadcom.com>,
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
-	Geoff Levand <geoff@infradead.org>,
-	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Oliver O'Halloran <oohall@gmail.com>,
-	Anatolij Gustschin <agust@denx.de>,
-	Breno =?iso-8859-1?Q?Leit=E3o?= <leitao@debian.org>,
-	Nayna Jain <nayna@linux.ibm.com>,
-	Paulo Flabiano Smorigo <pfsmorigo@gmail.com>,
-	Eric Biggers <ebiggers@kernel.org>,
-	"Jason A. Donenfeld" <Jason@zx2c4.com>,
-	Ard Biesheuvel <ardb@kernel.org>,
-	Thorsten Blum <thorsten.blum@linux.dev>,
-	Thomas Huth <thuth@redhat.com>, Jason Gunthorpe <jgg@ziepe.ca>,
-	David Hildenbrand <david@kernel.org>,
-	Alistair Popple <apopple@nvidia.com>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Donet Tom <donettom@linux.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	=?iso-8859-1?Q?Bj=F6rn_T=F6pel?= <bjorn@rivosinc.com>,
-	Will Deacon <will@kernel.org>,
-	"Lorenzo Stoakes (Oracle)" <ljs@kernel.org>,
-	Paul Moore <paul@paul-moore.com>, Nam Cao <namcao@linutronix.de>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Sourabh Jain <sourabhjain@linux.ibm.com>,
-	Hari Bathini <hbathini@linux.ibm.com>,
-	Srikar Dronamraju <srikar@linux.ibm.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Jiri Bohac <jbohac@suse.cz>,
-	"Mike Rapoport (Microsoft)" <rppt@kernel.org>,
-	"Jiri Slaby (SUSE)" <jirislaby@kernel.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	Kees Cook <kees@kernel.org>, Stephen Rothwell <sfr@cab.auug.org.au>,
-	Xichao Zhao <zhao.xichao@vivo.com>,
-	Gautam Menghani <gautam@linux.ibm.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	K Prateek Nayak <kprateek.nayak@amd.com>,
-	Guangshuo Li <lgs201920130244@gmail.com>,
-	Li Chen <chenl311@chinatelecom.cn>,
-	Aboorva Devarajan <aboorvad@linux.ibm.com>,
-	Petr Mladek <pmladek@suse.com>,
-	Feng Tang <feng.tang@linux.alibaba.com>,
-	"Nysal Jan K.A." <nysal@linux.ibm.com>,
-	Aditya Gupta <adityag@linux.ibm.com>,
-	Sayali Patil <sayalip@linux.ibm.com>,
-	Rohan McLure <rmclure@linux.ibm.com>,
-	Pasha Tatashin <pasha.tatashin@soleen.com>,
-	Yeoreum Yun <yeoreum.yun@arm.com>,
-	Kevin Brodsky <kevin.brodsky@arm.com>,
-	"Matthew Wilcox (Oracle)" <willy@infradead.org>,
-	Andrew Donnellan <andrew+kernel@donnellan.id.au>,
-	"Vishal Moola (Oracle)" <vishal.moola@gmail.com>,
-	Thomas =?iso-8859-1?Q?Wei=DFschuh?= <thomas.weissschuh@linutronix.de>,
-	Athira Rajeev <atrajeev@linux.ibm.com>,
-	Kajol Jain <kjain@linux.ibm.com>, Thomas Gleixner <tglx@kernel.org>,
-	Chen Ni <nichen@iscas.ac.cn>, Haren Myneni <haren@linux.ibm.com>,
-	Jonathan Greental <yonatan02greental@gmail.com>,
-	Ingo Molnar <mingo@kernel.org>,
-	"Yury Norov (NVIDIA)" <yury.norov@gmail.com>,
-	Gaurav Batra <gbatra@linux.ibm.com>,
-	Nilay Shroff <nilay@linux.ibm.com>,
-	Vivian Wang <wangruikang@iscas.ac.cn>,
-	Adrian =?utf-8?Q?Barna=C5=9B?= <abarnas@google.com>,
-	"Rafael J. Wysocki (Intel)" <rafael@kernel.org>,
-	Thierry Reding <treding@nvidia.com>, Yury Norov <ynorov@nvidia.com>,
-	"Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
-	Ruben Wauters <rubenru09@aol.com>, linux-kernel@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-crypto@vger.kernel.org,
-	kvm@vger.kernel.org, virtualization@lists.linux.dev, x86@kernel.org
-Subject: Re: [PATCH 1/2] powerpc: Add a typos.toml file
-Message-ID: <aeh1GzpdvGjRdMdd@ashevche-desk.local>
-References: <20260421121420.26079-1-linkmauve@linkmauve.fr>
- <20260421121420.26079-2-linkmauve@linkmauve.fr>
- <215f12d6-62c1-4837-9f78-ef270684950c@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0rPF401kz2xc8
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 17:26:09 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 87AF460018;
+	Wed, 22 Apr 2026 07:26:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4C7F7C19425;
+	Wed, 22 Apr 2026 07:26:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776842765;
+	bh=IvSjzT4GEYNAHFGcrljPx1kOL3wXhKmoqPv4Tv8CkaU=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=EzBqLzuONJJv0ldtemEnj0bXdUh9Q6jzanPurHh8Miflfd8barSPM45kdHimemhIt
+	 1eMFfC5fT848W+2iwSmKEnYavFqS3uq5Azd6rGxw0rP59V+eJy3bOVzvbsFXDS33WC
+	 mjJh2LRhXVMpQr97ZfguumkupzTHXoJ2J2RPpSWRVsxNZLt+L2c6OoxcMztVwNnh7X
+	 uiPZT0XNuZhd6gP48BoVOaHIojh6QR7HcqrMDL5pzMXXLYiJZsj4WVVj/qRUHgmtjn
+	 tNkCp+X4hCKUScXVf1gd3/4RrgzyMhcQvtV8NoXRLtRATX5ltBsI67PYcF1YVNifaV
+	 RymlAA9f3ksEQ==
+Message-ID: <5d16def3-3bad-49b1-866d-94a522e8d394@kernel.org>
+Date: Wed, 22 Apr 2026 09:26:02 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -158,41 +59,91 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <215f12d6-62c1-4837-9f78-ef270684950c@kernel.org>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+User-Agent: Mozilla Thunderbird
+Subject: Re: New warning in linus/master
+To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
+ Ricardo Ribalda <ribalda@chromium.org>
+Cc: linux-arm-kernel@lists.infradead.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
+References: <CANiDSCsOy0P1if-gJZqOM5pTJ0RDcwVfru1B7KFbTOEMqjPKJw@mail.gmail.com>
+ <20260422071541-9a295128-d913-418f-a21c-1386fca30290@linutronix.de>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20260422071541-9a295128-d913-418f-a21c-1386fca30290@linutronix.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Tue, Apr 21, 2026 at 02:26:35PM +0200, Krzysztof Kozlowski wrote:
-> On 21/04/2026 14:14, Link Mauve wrote:
-> > This file is used by the typos tool[1] to determine which words to fix,
-> > which ones not to fix, and what the target word should be.
 
-It's a little too many people in Cc list...
 
-> > [1] https://github.com/crate-ci/typos
-
-You may do it as Link tag in a form of
-
-Link: $URL [1]
-
-> > Signed-off-by: Link Mauve <linkmauve@linkmauve.fr>
+Le 22/04/2026 à 07:56, Thomas Weißschuh a écrit :
+> Hi Ricardo,
 > 
-> This typos.toml file does not belong to the kernel, IMO, but that's up
-> to PowerPC folks.
+> On Wed, Apr 22, 2026 at 11:51:45AM +0800, Ricardo Ribalda wrote:
+>> Media-CI has found a couple of new warnings in the latest kernel
+>> version for aarch64 and powerpc. They get fixed with this patch and
+>> before moving I wanted to know if this was under your radar.
+> 
+> Thanks for the report. I was not aware of these so far.
+> 
+>> diff --git a/arch/arm64/kernel/vdso/Makefile b/arch/arm64/kernel/vdso/Makefile
+>> index 7dec05dd33b7..65914842fae0 100644
+>> --- a/arch/arm64/kernel/vdso/Makefile
+>> +++ b/arch/arm64/kernel/vdso/Makefile
+>> @@ -50,7 +50,7 @@ CFLAGS_vgettimeofday.o = $(CC_FLAGS_ADD_VDSO)
+>>   CFLAGS_vgetrandom.o = $(CC_FLAGS_ADD_VDSO)
+>>
+>>   ifneq ($(c-gettimeofday-y),)
+>> -  CFLAGS_vgettimeofday.o += -include $(c-gettimeofday-y)
+>> +  CFLAGS_vgettimeofday.o += -include $(c-gettimeofday-y)
+>> -Wno-maybe-uninitialized
+>>   endif
+> 
+> (...)
+> 
+> I'd like to know exactly what is going on before suppressing the warning.
+> It is a non-standard warning, only enabled by *some* of the vDSO builds
+> for some reason.
+> 
+>> https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgitlab.freedesktop.org%2Flinux-media%2Fusers%2Fribalda%2F-%2Fpipelines%2F1649144%2Ftest_report%3Fjob_name%3Dcross-gcc&data=05%7C02%7Cchristophe.leroy2%40cs-soprasteria.com%7C5c0f15ee20a44072f47108dea0340304%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639124342424606113%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=9Tvp2aYfB02ijxVGLzCOYcMwZlPvqVDufxEporLl1mc%3D&reserved=0
+> 
+> While I was able to download a configuration from this job and also use the
+> same container image, I can not reproduce the issue. Is the configuration the
+> full one or only the template?
+> 
+> Could you provide full reproduction steps?
+> 
+>> CONFIG_CC_VERSION_TEXT="aarch64-linux-gnu-gcc (Debian 15.2.0-16) 15.2.0"
+> 
+> The linked test log shows GCC 14.2, not 15.2.
+> Not that I could reproduce it with either one...
+> 
+>>    SYNC    include/config/auto.conf
+>>    CC      arch/arm64/kernel/vdso/vgettimeofday.o
+>> In file included from <command-line>:
+>> In function ‘vdso_set_timespec’,
+>>      inlined from ‘do_aux’ at /workdir/lib/vdso/gettimeofday.c:266:2,
+>>      inlined from ‘__cvdso_clock_gettime_common’ at
+>> /workdir/lib/vdso/gettimeofday.c:293:10,
+>>      inlined from ‘__cvdso_clock_gettime_data.constprop’ at
+>> /workdir/lib/vdso/gettimeofday.c:306:7:
+>> /workdir/lib/vdso/gettimeofday.c:104:26: warning: ‘sec’ may be used
+>> uninitialized [-Wmaybe-uninitialized]
+>>    104 |         ts->tv_sec = sec + __iter_div_u64_rem(ns, NSEC_PER_SEC, &ns);
+>>        |                      ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>> /workdir/lib/vdso/gettimeofday.c: In function
+>> ‘__cvdso_clock_gettime_data.constprop’:
+>> /workdir/lib/vdso/gettimeofday.c:242:13: note: ‘sec’ was declared here
+>>    242 |         u64 sec, ns;
+>>        |             ^~~
+> 
+> The same pattern is used in some other do_ handlers, which do not generate this
+> warning. I also can't immediately see what is wrong.
 
-In kernel we use codespell. If we want to have another tool to welcome, we
-need to setup infrastructure in parallel, so it will be `make` option with
-the fixed name and choose the tool based on availability, et cetera.
+You are likely in a special case where vdso_get_timestamp() returns 
+false without setting &sec, and some versions of GCC and/or CLANG fail 
+to see that vdso_set_timespec() is not called when vdso_get_timestamp() 
+returns false.
 
-> My note here is: please use your real, full name. See submitting patches.
-
-+1.
-
--- 
-With Best Regards,
-Andy Shevchenko
-
-
+Christophe
 
