@@ -1,58 +1,46 @@
-Return-Path: <linuxppc-dev+bounces-19983-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-19984-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F558F9B5F3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Apr 2026 22:19:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6446AFAD3EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2026 02:15:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g1DCr2vR7z2xls;
-	Thu, 23 Apr 2026 08:19:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776896360;
-	cv=none; b=jrte5VY22zqI2QZVPUlo92w1CbJDuRiNgSpiUC0zG9+ABPWX7cVeec6yqOfWeCj2SC+oz5DJRe1Kv37aFF1ISxoQAdosvjWESR4fowUasxFZ6QwGrajgTqDN+lHcXAM2QyT+akVgZhmV4cOQGSjMolWmt+12WinTYEjKqecdunwvWULXUUGEz+XG4HvmQQmAGW+9YnxbfFb/ZxE1abohr+8SgLwTAwK8G7GHufAYKLhxte9bDfgcMSYyra3ujgCeEC6JFtiQKz+1Re/P08R3M8fYfeDPArB9pNWnKFIly1QYeU2p0URoBh7t+Ljl2BM3LLDgYkUrSUVGtTMvmrpRzQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g1KSG5ZfGz2ygh;
+	Thu, 23 Apr 2026 12:15:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.176
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776910526;
+	cv=none; b=BVy59V+ICNV5bTFi9s99snzARxkfTeoC1h6fEJ9nkeTjjBKvMMFrE+j+CITvI7+NdWfSOrM3O6Y7fQ6mqCChM/NlHCDSU5P4wKWcnXzaMhxJByasGcDWcN/xHznSs65Ha6Yt7qL/6mY8a5IGqDRRLJKJ440sSRmlSop4pWp2vJ+GVGA0fg3lFgwPujrlCD0hwbOvUcoHkFJZ7YoHBhTQ2x3l0s45Ap5BBbnAZSIkM0Xw+NaBU+TiLfa7FfT9yIkzYUwjIezIVjohOAp1OywXP33qTJMr9s8FUDMQcGgnKUO/EclbCplS8ZnXt4HK1TxW7tL5tRZnfANjUrX6OplghQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776896360; c=relaxed/relaxed;
-	bh=2AHoV66EKkqE7Fw5nwOFrbncWQLlebSbyNeoUJ8s4a8=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=SUgzRxUctBW6ZulSCyLoVje+owKMUiQAF3Td2DCAcqKl8tBtjdLXznF/CuRQ31/SWygAsu4F7kblJVkZW8KzGUYtiW/X1wbQWClLro8/gwEVvLDTzEPj/LZmyOG5WYoeNEnpGPExqKEEPN/4NT0DlbUNobvPsBrRnkPQewMPDjOiLpGh+vvxlFt20ehYxAOytGcRf2IUTermmVCWvnn8PKm2QBhYJtgX2EU0kF00f7qKKq+61A08xu/A89+iHv8TKV7xHpUTmZ+4nPZ3cxG+NjyRVrhOKkgS1802/s3xjy7qK8pdrcadEWjXaHcu1QqnUrD/n070DldRppn86lh35A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VND6/Q0x; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=yosry@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1776910526; c=relaxed/relaxed;
+	bh=n0/01H4xiCJnfs36bIwGAXpJVzm4AGBrMPoyje3Rvz4=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=li0vPi4B2UkO4mieMF/YeXYBkhM1+amDA0RCUM8saKbBMPVSqN5IjCmG7/1RBhObJyPVvr3cTRFu+zyrzcx5kYDzfkolYZBjq9nLepw/zbEkYrXmOQyhrMEOwCHHhyhzCYDW6TZH3d1LSvvcLzOTTq9DwepGwkczbx7cdKjeOntraF2rpfrpL9/PWrVpwWr3tuk4T3r5/kmcpK5SQXPidhS2uz8blQDgPIBH/LdvQ29TmSTDLgu32EfdxC+HDDm2/21JN40Wc0uIwIPVw5sjlyBNp4/sRkJGoqvZmB18B2rMXGukKT3YXNeoY97c4B8hR4WrWaZNLV1r/l17bt5R3Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=ba9Y5yxV; dkim-atps=neutral; spf=pass (client-ip=95.215.58.176; helo=out-176.mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VND6/Q0x;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=ba9Y5yxV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=yosry@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.176; helo=out-176.mta1.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-176.mta1.migadu.com (out-176.mta1.migadu.com [95.215.58.176])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g1DCq2G4Cz2xll
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 08:19:19 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id E468A44748
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 22:19:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CA0BAC2BCB3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 22:19:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776896356;
-	bh=3WTHeSeyj1uSyMyVXTGvKd+qQIkqa8yvnPyPSQt84wc=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=VND6/Q0x5gKtDizHyEGZN6xhd/qs7aeqPuPlogPFoQW+oqwpYwC81C4HSrPayJETm
-	 +G+OvyiThNx/l1518orVbtouSCS0TCMDM6gER1FnKlvDmuNdQQLQRsZ5rohnWscRxH
-	 /Z/yuZe51Y1eBp1BPbsR1Sy6LGxuq56DMZCE+MLWnQBjw4gtsTf5f8RL9IQ6y/ZcmN
-	 SvuQW6zW4huZWKxrWcX783gSkWGxbQ0S3KzC0C5bwTkqjq3Lo1NgB8UAb3Zhs58+Xq
-	 5O3Y3rF7odsO+uA8XcPs5u1cg/tWw2Jw9x929tGfzDbi7DYE2B9j0J2iC/L4BebKFn
-	 504VnpOkIZGaw==
-Received: by mail-ej1-f49.google.com with SMTP id a640c23a62f3a-ba922426c5cso579995766b.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2026 15:19:16 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ+0d+SFaJRVOBWLS/Rtp/JO+gUMcJaSsf0/361hYHp3/Y161Cj4AGgWzQiH5jdKZdnLcqzF+w15l96m+yw=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Ywpe0UUaYMWygJaOjeL35QRSxm1pbPuVsYhJ8aQNLoBO2VBvQR1
-	cbpaKvaauLan6haFv0VnPTuY5urZ+iAx5IwRF+IeCUnqhwXUrOxL9tvGupQKSBq5z6qdJukx5J2
-	nXS+uO6D9uJs1ehpn0giHHJFTU5MB4Ao=
-X-Received: by 2002:a17:907:cd09:b0:b9d:94af:10fc with SMTP id
- a640c23a62f3a-ba41afe9d6fmr1546883966b.25.1776896355511; Wed, 22 Apr 2026
- 15:19:15 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g1KSD07XNz2xpg
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 12:15:22 +1000 (AEST)
+Content-Type: text/plain;
+	charset=us-ascii
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1776910501;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=n0/01H4xiCJnfs36bIwGAXpJVzm4AGBrMPoyje3Rvz4=;
+	b=ba9Y5yxVcom61fXlDbNnPGxckX72Wg1DbZmfHjnu0lMfj/YISK/8hzvjV9zBBmkDvDlXmc
+	SbmfdF/oUXqzKRiVmBSDlEqxaH+CHmnwrQ4CWf04UEYAcEGyU3JbHjLzN4e806O8Lolewg
+	chajDmzvd9vVnRWQ7EpP9ylApOsyss0=
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,75 +53,138 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-References: <20260408001137.3290444-1-peter.fang@intel.com>
- <20260408001137.3290444-4-peter.fang@intel.com> <aegDJssx-ZvbfggI@google.com>
- <aegF59gToidudIUC@google.com> <aegIPGYPH-nxGsua@google.com>
- <CAO9r8zOsHdsMuyjWr3XafjNnMKDci1OOdw8eJHrH-O+jrDH10Q@mail.gmail.com>
- <aegV3ELp20DlC5Ge@google.com> <aekrJrSRoclZoBo9@google.com>
- <aekw1S5Gdkyx8teC@google.com> <CAO9r8zPhxn9dUKoXwM2JHF4TwG+PeTd8GhDO_kqG+kuwRW1g=g@mail.gmail.com>
- <aelI9_CAcZjGXj7v@google.com>
-In-Reply-To: <aelI9_CAcZjGXj7v@google.com>
-From: Yosry Ahmed <yosry@kernel.org>
-Date: Wed, 22 Apr 2026 15:19:04 -0700
-X-Gmail-Original-Message-ID: <CAO9r8zO1p6tvT3BYaU+XvcqEBu-Dga=Ew_qvgzHk_q8P7fjyTQ@mail.gmail.com>
-X-Gm-Features: AQROBzC0p0NpkLDMwb7vpD2dftYRsH_jFUFOETXLw6fnxs8RoojZv-m7XcDuopk
-Message-ID: <CAO9r8zO1p6tvT3BYaU+XvcqEBu-Dga=Ew_qvgzHk_q8P7fjyTQ@mail.gmail.com>
-Subject: Re: [PATCH v2 3/3] KVM: Take gpa_t in kvm_vcpu_map[_readonly]()
-To: Sean Christopherson <seanjc@google.com>
-Cc: Peter Fang <peter.fang@intel.com>, Paolo Bonzini <pbonzini@redhat.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, 
-	Ritesh Harjani <ritesh.list@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, 
-	Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
-	"H. Peter Anvin" <hpa@zytor.com>, kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.500.181\))
+Subject: Re: [PATCH v4 2/5] mm/sparse-vmemmap: Pass @pgmap argument to memory
+ deactivation paths
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Muchun Song <muchun.song@linux.dev>
+In-Reply-To: <fc80afb9-6e97-481f-8136-d684ff3690a7@kernel.org>
+Date: Thu, 23 Apr 2026 10:14:16 +0800
+Cc: Muchun Song <songmuchun@bytedance.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Oscar Salvador <osalvador@suse.de>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Lorenzo Stoakes <ljs@kernel.org>,
+ "Liam R . Howlett" <Liam.Howlett@oracle.com>,
+ Vlastimil Babka <vbabka@kernel.org>,
+ Mike Rapoport <rppt@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>,
+ Michal Hocko <mhocko@suse.com>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <chleroy@kernel.org>,
+ aneesh.kumar@linux.ibm.com,
+ joao.m.martins@oracle.com,
+ linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: quoted-printable
+Message-Id: <3745D308-DF29-477C-A25F-CDA63400D5ED@linux.dev>
+References: <20260422081420.4009847-1-songmuchun@bytedance.com>
+ <20260422081420.4009847-3-songmuchun@bytedance.com>
+ <fc80afb9-6e97-481f-8136-d684ff3690a7@kernel.org>
+To: "David Hildenbrand (Arm)" <david@kernel.org>
+X-Migadu-Flow: FLOW_OUT
 
-On Wed, Apr 22, 2026 at 3:17=E2=80=AFPM Sean Christopherson <seanjc@google.=
-com> wrote:
->
-> On Wed, Apr 22, 2026, Yosry Ahmed wrote:
-> > On Wed, Apr 22, 2026 at 1:34=E2=80=AFPM Sean Christopherson <seanjc@goo=
-gle.com> wrote:
-> > >
-> > > On Wed, Apr 22, 2026, Yosry Ahmed wrote:
-> > > > > > Perhaps we just need to rename the functions (e.g.
-> > > > > > kvm_vcpu_map_page()), or more intrusively pass in a size and do=
- bounds
-> > > > > > checking.
-> > > > >
-> > > > > Definitely the latter.  Or both I guess, but probably just the la=
-tter.
-> > > >
-> > > > I think both. I think renaming to kvm_vcpu_map_page() (and similar =
-for
-> > > > others) would further clarify things, especially with the introduct=
-ion
-> > > > of kvm_vcpu_map_ptr() below.
-> > >
-> > > I don't like "page" it's too easy to incorrectly assume "page" means =
-"struct page".
-> > > There are KVM APIs that do use "page" generically, e.g. kvm_read_gues=
-t_page(),
-> > > but for this particular case I'd like to stay away from "page; there'=
-s a _lot_
-> > > of ugly history around mapping "struct page" vs. "other" memory in KV=
-M.
-> >
-> > Maybe kvm_vcpu_map_guest_page()? or if you reaaaally wanna be clear
-> > about it kvm_vcpu_map_page_sized_chunk_of_guest_memory() :P
->
-> And rename all the extensions to .java while we're at it.
 
-Lovely.
 
-> I can live with kvm_vcpu_map_guest_page().  kvm_vcpu_map_ptr() becomes a =
-bit
-> odd, but kvm_vcpu_map_guest_ptr() is even worse.
+> On Apr 23, 2026, at 02:50, David Hildenbrand (Arm) <david@kernel.org> =
+wrote:
+>=20
+> On 4/22/26 10:14, Muchun Song wrote:
+>> Currently, the memory hot-remove call chain -- arch_remove_memory(),
+>> __remove_pages(), sparse_remove_section() and section_deactivate() --
+>> does not carry the struct dev_pagemap pointer. This prevents the =
+lower
+>> levels from knowing whether the section was originally populated with
+>> vmemmap optimizations (e.g., DAX with vmemmap optimization enabled).
+>>=20
+>> Without this information, we cannot call vmemmap_can_optimize() to
+>> determine if the vmemmap pages were optimized. As a result, the =
+vmemmap
+>> page accounting during teardown will mistakenly assume a =
+non-optimized
+>> allocation, leading to incorrect memmap statistics.
+>>=20
+>> To lay the groundwork for fixing the vmemmap page accounting, we need
+>> to pass the @pgmap pointer down to the deactivation location. Plumb =
+the
+>> @pgmap argument through the APIs of arch_remove_memory(), =
+__remove_pages()
+>> and sparse_remove_section(), mirroring the corresponding *_activate()
+>> paths.
+>>=20
+>> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+>> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+>> Reviewed-by: Oscar Salvador <osalvador@suse.de>
+>=20
+>=20
+> [...]
+>=20
+>> static void depopulate_section_memmap(unsigned long pfn, unsigned =
+long nr_pages,
+>> - 		struct vmem_altmap *altmap)
+>> + 		struct vmem_altmap *altmap, struct dev_pagemap *pgmap)
+>> {
+>> 	unsigned long start =3D (unsigned long) pfn_to_page(pfn);
+>> 	unsigned long end =3D start + nr_pages * sizeof(struct page);
+>> @@ -746,7 +746,7 @@ static int fill_subsection_map(unsigned long pfn, =
+unsigned long nr_pages)
+>>  * usage map, but still need to free the vmemmap range.
+>>  */
+>> static void section_deactivate(unsigned long pfn, unsigned long =
+nr_pages,
+>> - 		struct vmem_altmap *altmap)
+>> + 		struct vmem_altmap *altmap, struct dev_pagemap *pgmap)
+>> {
+>> 	struct mem_section *ms =3D __pfn_to_section(pfn);
+>> 	bool section_is_early =3D early_section(ms);
+>> @@ -784,7 +784,7 @@ static void section_deactivate(unsigned long pfn, =
+unsigned long nr_pages,
+>>  * section_activate() and pfn_valid() .
+>>  */
+>> 	if (!section_is_early)
+>> - 		depopulate_section_memmap(pfn, nr_pages, altmap);
+>> + 		depopulate_section_memmap(pfn, nr_pages, altmap, pgmap);
+>> 	else if (memmap)
+>> 		free_map_bootmem(memmap);
+>>=20
+>> @@ -828,7 +828,7 @@ static struct page * __meminit =
+section_activate(int nid, unsigned long pfn,
+>>=20
+>> 	memmap =3D populate_section_memmap(pfn, nr_pages, nid, altmap, =
+pgmap);
+>> 	if (!memmap) {
+>> - 		section_deactivate(pfn, nr_pages, altmap);
+>> + 		section_deactivate(pfn, nr_pages, altmap, pgmap);
+>> 		return ERR_PTR(-ENOMEM);
+>> 	}
+>>=20
+>> @@ -889,13 +889,13 @@ int __meminit sparse_add_section(int nid, =
+unsigned long start_pfn,
+>> }
+>>=20
+>> void sparse_remove_section(unsigned long pfn, unsigned long nr_pages,
+>> -    			   struct vmem_altmap *altmap)
+>> +    			   struct vmem_altmap *altmap, struct =
+dev_pagemap *pgmap)
+>=20
+> While at it, could switch to two-tab indent here as well.
 
-FWIW I still think kvm_vcpu_map_page() and kvm_vcpu_map_ptr() are the
-best options. kvm_vcpu_map_guest_page() and kvm_vcpu_map_ptr() are
-also fine imo.
+OK.
+
+>=20
+> Acked-by: David Hildenbrand (Arm) <david@kernel.org>
+
+Thanks.
+
+Muchun.
+
+>=20
+> --=20
+> Cheers,
+>=20
+> David
+
+
 
