@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-20002-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20003-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88FA9F9936C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2026 10:40:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5612AF99368
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2026 10:41:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g1Xg7645Rz2yF7;
-	Thu, 23 Apr 2026 20:40:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g1Xgr6G70z2yF7;
+	Thu, 23 Apr 2026 20:41:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776940835;
-	cv=none; b=G2dWwDgoy3JjZgKe4fvGRbjeKqQzkr4R6WOsLduvjMxpMibyqdPVHdKUgPHJWdDWUFt1jpSVZQ/5drA83c967KZ1p4UXaFzKX2qiJBb5MRwWNuD6J/tVwR1uKFzhj7AbznS1u3WpeXKI5Vi774yuID86Efto2tvw4e71w+1UbWuUf1VkZxPBSVxdR77pspn7lXSBK6T/n9aESl9DW1ff556LBxO/Y/6LuPptVm6Ym11pmdL6FtYgVE3Lx1OBSgCP9yGUCJ7KDMgAw+t5f7WHXg8GnF0LUbFECX98+xKf0sR7GXxw6qkt7h7cn9lymYjDXUXgWpdUHP8k/W73gJJ+NQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776940872;
+	cv=none; b=E+okxG42lckVvl2dJKktrUwqytTfWmfEX7QO6oBsKra6k0arhK86DoWllGtMt88qOjXH/fDka/unnIMuc5se290ePCVDQpOtSzSF3Qn8qOTuEmqAnImNBoxMSL1Lz08JR9IaSD5SwP8EO0HiRyndxixV4a0uy9fbIrgNRY+5N21bbVQvFDFylwiN783zDhHq1PomnvSAlRBVUt4/wBMaUB8PWkOADxrzIoiQrvHj301CX83Yunl5GFAnra5DRQ/ARJ9bWJ7LWlSRQUSiYujkh2U+UAd8o2fFseDui5HXI3LjWAyUdSpohJiTAknhM2/WLt5t2frZ8anZBr1t/TOL5g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776940835; c=relaxed/relaxed;
-	bh=2Y8S77J+oll0C3v8c6IwEV3VuOTGfRCVAy7vQUUTqXQ=;
+	t=1776940872; c=relaxed/relaxed;
+	bh=wrWFeAqappEvsHyHiM1opcwy4+CKVvlf8ke7UyR6S5A=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=XfW3SSc62vDw0EmPzj4dPOLhG8VCFmPJeWjLhkQo7Z4oBLYshy44Ve4JJHDNuGo4bTHG2NxTsoqDhi/bQa9fpWmkjJr3tSdh45RHlDlzm91Sr4qq5ZcUid253YPifbHj/hdl9tUvXgI8d+D5rCThiekWBtTiqXshZggMz0etK58psjim/I8En/OFwZJgYyUPwv0ZiInL1RiVbabBZBzggl/VqwlSJbWvjL3zRZZwXLiCuxCYKjOIQNKbviWNODMzrXrZkan98fYOcwX3MduFqIkV9TptRuzbXXR09U+Qx+IqO7zRUDO/n4rtzzI/28jJ5/00paF6Yy6jUwk6mSVKCw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SyDXjw67; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=nDHa9ycEEF+8HHpBKYeqTQNdvUAUkVO/gLvRpJthp3qYMvAqXimlO7cg+/gzmojxh5XdFVvfyS+hLh0oKYpMbmPp+26ILIRdL+57Ezkkdqi76YUTYWWdamA2frdBx0IuiBWA/599gw9i5vKoyP+mtTNjxP/2gSG/7m4BJeoYKhPNESzvK3/npOF+RaAizzQhv97HcDmEkzGkHubU7ZH3As7j9KTTfnAwknn7w82NsSPxxJdFZqu/2ou17889Ye8ge7mZwT5hl9qP1d+LdrN5dwMeNzFtwHKw9gI0b+zwPsMuMUOYPkAzH8BaWkgiHj0hJe5XwP4jCT2qbroDny3rPw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=R1nFHnWF; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SyDXjw67;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=R1nFHnWF;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g1Xg7019rz2y8d
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 20:40:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g1Xgr0hm6z2y8d
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 20:41:12 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 64764409DC;
-	Thu, 23 Apr 2026 10:40:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 367B3C2BCAF;
-	Thu, 23 Apr 2026 10:40:27 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 8FEF243526;
+	Thu, 23 Apr 2026 10:41:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7380BC2BCAF;
+	Thu, 23 Apr 2026 10:41:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776940833;
-	bh=ldBC+Ysj0hCLJEg88xc/mTOy0nXdrmU3TEgqL4XJ3Lw=;
+	s=k20201202; t=1776940870;
+	bh=Bi0JKllmc8EsuTFVoWIS7hebjAew4hxnm0zhHQlaF5Y=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=SyDXjw67eKz4ElrNUAP3vrz40SZ2nZyRbGXglliuF6pdnreTSXlzdzAOThBUatOPb
-	 pT2wKGzPScqcH4H2w4YyFCSnwUgJ/OR/4Wu4n7J3pbp1AsUj+vm5iHr9QHeHqsvqwR
-	 233gi2TE6bMnZ14GO9a14IrHPga1EVJ7K/2z5mlc6w0/QbLp6YnJzyE9c6sUCzjQau
-	 PjL6mihpztsJFUeDKJLw3clRAq2Sm2Sqkx5z4NtVFEzNbXsj3jQemSJne51QZKPkrR
-	 EAdxX/bqB839XJZyJ3IkLG5UllO7X1eQlFOUAlPypulDb26ovc0kAkC7Hjz7+k1LqP
-	 koClPQSbDNUkA==
-Message-ID: <1cbae635-a115-4270-bae2-64145d16f936@kernel.org>
-Date: Thu, 23 Apr 2026 12:40:25 +0200
+	b=R1nFHnWFi6JiIUWL60faGZIP3/hDO1R12xZ/Ub/HIJvhp/ZLJJUndzXe2l7oIfkW8
+	 DvcvPzHs0epRiENLhVmIskMbigjGQb0fHjj9lOstZ7yjPNALz/upNHJr9ZHkAULqNZ
+	 oT3gpMlowjJJXYzmJ41Ij7ozC3fH+U7nMhgdQxOVfULIrMN7DwP1Mjltu+lcwNHyBv
+	 OSXsNgJp21t5QSzfuHps/eKej/w7rizHW6mVIRf8q2LD6ByrBNPov/KoAZrFRSlUgY
+	 6IKlIulIuumqCaaQbH8WO525fzDWT08ktKSzpd0Xpngv/3HVXZgUVHp4ljy450u/eD
+	 /nht8rOBJcuTg==
+Message-ID: <2483c24d-8674-422a-82a0-5c839f72e82d@kernel.org>
+Date: Thu, 23 Apr 2026 12:41:03 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,8 +60,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 v5 4/6] mm/sparse-vmemmap: Fix DAX vmemmap accounting
- with optimization
+Subject: Re: [PATCH v5 v5 5/6] mm/mm_init: Fix pageblock migratetype for
+ ZONE_DEVICE compound pages
 To: Muchun Song <songmuchun@bytedance.com>,
  Andrew Morton <akpm@linux-foundation.org>,
  Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>,
@@ -75,7 +75,7 @@ Cc: Lorenzo Stoakes <ljs@kernel.org>,
  aneesh.kumar@linux.ibm.com, joao.m.martins@oracle.com, linux-mm@kvack.org,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 References: <20260423071911.1962859-1-songmuchun@bytedance.com>
- <20260423071911.1962859-5-songmuchun@bytedance.com>
+ <20260423071911.1962859-6-songmuchun@bytedance.com>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -122,48 +122,33 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260423071911.1962859-5-songmuchun@bytedance.com>
+In-Reply-To: <20260423071911.1962859-6-songmuchun@bytedance.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 4/23/26 09:19, Muchun Song wrote:
-> When vmemmap optimization is enabled for DAX, the nr_memmap_pages
-> counter in /proc/vmstat is incorrect. The current code always accounts
-> for the full, non-optimized vmemmap size, but vmemmap optimization
-> reduces the actual number of vmemmap pages by reusing tail pages. This
-> causes the system to overcount vmemmap usage, leading to inaccurate
-> page statistics in /proc/vmstat.
+> The memmap_init_zone_device() function only initializes the migratetype
+> of the first pageblock of a compound page. If the compound page size
+> exceeds pageblock_nr_pages (e.g., 1GB hugepages with 2MB pageblocks),
+> subsequent pageblocks in the compound page remain uninitialized.
 > 
-> Fix this by introducing section_vmemmap_pages(), which returns the exact
-> vmemmap page count for a given pfn range based on whether optimization
-> is in effect.
+> Move the migratetype initialization out of __init_zone_device_page()
+> and into a separate pageblock_migratetype_init_range() function. This
+> iterates over the entire PFN range of the memory, ensuring that all
+> pageblocks are correctly initialized.
 > 
-> Fixes: 15995a352474 ("mm: report per-page metadata information")
+> Also remove the stale confusing comment about MEMINIT_HOTPLUG above
+> the migratetype setting since it is an obsolete relic from commit
+> 966cf44f637e ("mm: defer ZONE_DEVICE page initialization to the point
+> where we init pgmap") and no longer makes sense here.
+> 
+> Fixes: c4386bd8ee3a ("mm/memremap: add ZONE_DEVICE support for compound pages")
 > Signed-off-by: Muchun Song <songmuchun@bytedance.com>
-> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> Acked-by: Oscar Salvador <osalvador@suse.de>
+> Reviewed-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> Reviewed-by: Oscar Salvador <osalvador@suse.de>
 > ---
->  mm/sparse-vmemmap.c | 31 +++++++++++++++++++++++++++----
->  1 file changed, 27 insertions(+), 4 deletions(-)
-> 
-> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
-> index 3340f6d30b01..979d71158c9b 100644
-> --- a/mm/sparse-vmemmap.c
-> +++ b/mm/sparse-vmemmap.c
-> @@ -652,6 +652,28 @@ void offline_mem_sections(unsigned long start_pfn, unsigned long end_pfn)
->  	}
->  }
->  
-> +static int __meminit section_nr_vmemmap_pages(unsigned long pfn, unsigned long nr_pages,
-> +		struct vmem_altmap *altmap, struct dev_pagemap *pgmap)
-> +{
-> +	const unsigned int order = pgmap ? pgmap->vmemmap_shift : 0;
-> +	const unsigned long pages_per_compound = 1UL << order;
-> +
-> +	VM_WARN_ON_ONCE(!IS_ALIGNED(pfn | nr_pages, pages_per_compound));
-> +	VM_WARN_ON_ONCE(!IS_ALIGNED(pfn | nr_pages, PAGES_PER_SECTION));
 
-Thinking about the PAGES_PER_SECTION, can't we get called for sub-sections?
+Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 
 -- 
 Cheers,
