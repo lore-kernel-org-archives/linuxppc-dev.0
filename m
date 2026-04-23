@@ -1,72 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-20007-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20008-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD03FF589AD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2026 12:23:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02D43F589AE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2026 12:23:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g1Zxq2kZgz2yGX;
-	Thu, 23 Apr 2026 22:23:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g1Zy13h2Gz2yWK;
+	Thu, 23 Apr 2026 22:23:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776947007;
-	cv=none; b=IQLeVu1NYxE9t3jODAPfHQvDad29+EmkWffDbdflhR237+AKCMxh/3VpcdNsPQ24vrciRXnvh1mTQ5YRqXFSoX3u6pH9NAqlT4kmI7eKXKcZg5GcThMoa4yccbpAlE3LZlrUJaXn1TabkFXn1vj3FW1lO9A89e27GiesWrJBsQKwO2FDKgmSb2Xg/VVL8/un6b87kViL6BTajU8AVWlnKKeq3Q68SoZOVRN6FM4ly+PShUkfNUhbnCt33YWWgl4YdBBAfrR4er3dl9N8dgNXA0z0O4KInS2WUAo4oNy/rVosJhwGdH1qmVeMxj5J5VH11sInNeUNl0pB95KkN5e/WA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776947017;
+	cv=none; b=DKBEfvQgFv5N0ePDBlBJyeXqjyOiEBhnh/4aw5T6bvvuQxhl8oszZRTjOEx4HPO5tVAxAwLwrF7P0Dg0Arjjh+fK4Df+RotLLhcrqIOsxVkkQte7rAkUFUaknszlvskFx3OYBDB/TeAqgkRAPc9ucIRO5t/gWiBT3+OrMbpU2qqnqRMEIUKWbS6KIdBxrksiysH0+IR3a588422gbU1CtUY4u52xjAbsqZTxkZKbatBweCk2PwqoS4SHw4XIxxdSWmVKyMannObcC9Q9x6Xt6FsirWObDiQHQiQ0ocKb2MUAeCGtaEjJKjF14iMWl5tPU5UVhStQXMdhYrV5QxCGPw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776947007; c=relaxed/relaxed;
-	bh=dflg1zqNhobVhe6pi7TgM9V2UGOi2n7RbM2W2pxKbbc=;
-	h=Content-Type:Message-ID:Date:MIME-Version:To:Cc:From:Subject; b=iIxOUUz9OkgYeZgPtEkr8z10hr5snWPeruX/e/fl87E/BSH/B08UANIpk90aAuHpGyYXBvhUC+JN/6GV4DYwy4piaJGxZSmaLxgNvNTNDKkEZYHiiA9fwhNHliNJ/+GieRmZCbDt1hwIQq4THK4hdlt+ta9YmXplH2VQ6wLwXHAiPGqICq5OHKm7SxDxXegN/V4PmSbjjiuexDT66AwNSRAhquItchoAJawGC3q/X/eED8va2yS3k3j7TdOEYYCjlJM9dQQ9+69s3YBftvfcHwRpmQJG93UNWXjekOBNmtQwkht+OkNrsoRFROrvZD3E02BeZjWxXJ8oUmq+3/YWFw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BDsEZPBH; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1776947017; c=relaxed/relaxed;
+	bh=2dQ32CSe+KGUwkNriYT7Hm0bTlkVysU+6aUumDxIDe8=;
+	h=Content-Type:Message-ID:Date:MIME-Version:Subject:From:To:Cc:
+	 References:In-Reply-To; b=ASjwY+tSYeBtQusvvDNNkdTZlYMyG+qeJ51WqhT4DfVbbyhS6iEmnCHU/DhGBVvEE2nGVxrt/MWOBLfZZ5LpPRmCu2sxR9/sNhHvtruGmybkJ0Zv1H9HlWDlzNEVlEq1zkgdFQi/Jiq/Vhb7nthNAuPJ8T2rrRN605mVMpfrBgaVj02kS2B9y2m6qQkGbD5cP1peKmMtiqoQkt51mzGQch4OrhqJX55WAG4bYW+JA5aHENi/XbrLtt4GfBAxabyGRG0EYVgnA9t6Ap8X+CLbXJ0oS7d3IiGz/yZj7L+gbABv8ts4zgGnjGedD93qmUS+J14f0X989nP1elnDkILX2Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ddoOChJ/; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BDsEZPBH;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ddoOChJ/;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g1Zxh2JxBz2y8d
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 22:23:19 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63N7sorx3944061;
-	Thu, 23 Apr 2026 12:23:17 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g1Zxy2VXgz2y8d
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 22:23:34 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63N83w1D3657869;
+	Thu, 23 Apr 2026 12:23:30 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:message-id:mime-version:subject:to; s=
-	pp1; bh=dflg1zqNhobVhe6pi7TgM9V2UGOi2n7RbM2W2pxKbbc=; b=BDsEZPBH
-	xHurutcg1uvsFkYDmc1OOnE9NDwCUcf82pUXcKZFSzYxrZNXtec/85pR9Kkdclhl
-	6tWjGPAdAKNMz5g6knNFFaiOiZ9NkQewi4X125ms+z0B63M0D6SkuSVZqrJoJsn6
-	bn9ANSVAu92oNMLf23MmrxPL9HA9huJtqDlXjBmJE4onU/9suBvuH770XkBlkzmr
-	ZOjjBwslf5qsfnpdMn9ZvwrVWUm5KPtLjdBsH3v0UBqpkGu8w41HsT2PC5DZhlrx
-	qKcb2PnI5kV1WlrpYnyzu3XQmof2/zm851Y2ejijfJWrWurOXOfaLBRab6atuHP2
-	wVZG3qviHipYhg==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dpeu3qyjf-1
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=2dQ32CSe+KGUwkNriYT7Hm0bTlkVys
+	U+6aUumDxIDe8=; b=ddoOChJ/sMpoAlC8yaabnTBPnX2MicJoBDaaMMsfbN+TZg
+	qsRO+od7ULjyBCU6bYvw7VbgoAr7eDaKf/PKuW+F002oNS4CM+bTVOj5auajDsz+
+	Q24lRyYK+wfXL76JUJLtnwtTIiv/dsemF9FdAKKRBPgc5utckOdMt+GZ8raBRXkk
+	PBYma1TDhJdBkxr48TuWg7hhb8rjWXBjQi46nwkCjikQh/gBV1NFtqq+yjR19ixG
+	rWqaFQcaJOqY3Zp1gYqu+kOr8B+MZFXgl+VAAykRBDAKYm5/gqRqeJay4DZoPZ5Q
+	cH3opfJMTqEkfvKIAkFX24lY5bIxoDeoRCz1FtXw==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dpeu7r0n2-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 23 Apr 2026 12:23:16 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 63NCKRQP004726;
-	Thu, 23 Apr 2026 12:23:16 GMT
-Received: from smtprelay02.wdc07v.mail.ibm.com ([172.16.1.69])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dpjky6hj2-1
+	Thu, 23 Apr 2026 12:23:29 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 63NCKYsa002519;
+	Thu, 23 Apr 2026 12:23:29 GMT
+Received: from smtprelay04.dal12v.mail.ibm.com ([172.16.1.6])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dpjkyphjr-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 23 Apr 2026 12:23:15 +0000 (GMT)
+	Thu, 23 Apr 2026 12:23:28 +0000 (GMT)
 Received: from smtpav05.dal12v.mail.ibm.com (smtpav05.dal12v.mail.ibm.com [10.241.53.104])
-	by smtprelay02.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63NCNDoU63439340
+	by smtprelay04.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63NCNRWj21758712
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 23 Apr 2026 12:23:13 GMT
+	Thu, 23 Apr 2026 12:23:27 GMT
 Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6B09758065;
-	Thu, 23 Apr 2026 12:23:13 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 4B93758056;
+	Thu, 23 Apr 2026 12:23:27 +0000 (GMT)
 Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5804758052;
-	Thu, 23 Apr 2026 12:23:10 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id B702658052;
+	Thu, 23 Apr 2026 12:23:23 +0000 (GMT)
 Received: from [9.123.12.79] (unknown [9.123.12.79])
 	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 23 Apr 2026 12:23:10 +0000 (GMT)
-Content-Type: multipart/mixed; boundary="------------jo69hJnPk0U8cm17zn19p1Ys"
-Message-ID: <d352c3fa-e584-461d-ac95-1ac6dfb4b589@linux.ibm.com>
-Date: Thu, 23 Apr 2026 17:53:09 +0530
+	Thu, 23 Apr 2026 12:23:23 +0000 (GMT)
+Content-Type: multipart/mixed; boundary="------------fyf2XYO8sAjV30pzxZ0anqPM"
+Message-ID: <5ceaae3e-444b-488d-9027-1a3c05e0726e@linux.ibm.com>
+Date: Thu, 23 Apr 2026 17:53:22 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,139 +82,247 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
+Subject: Re: [mainline]kdump fails to save vmcore when crash is manually
+ triggered
 Content-Language: en-GB
+From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>,
         Ritesh Harjani <riteshh@linux.ibm.com>,
         Sourabh Jain <sourabhjain@linux.ibm.com>,
         Hari Bathini <hbathini@linux.ibm.com>
 Cc: LKML <linux-kernel@vger.kernel.org>,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: [mainline]ppc64le: NULL pointer dereference in
- sparse_init_subsection_map when crash is triggered with FADUMP enabled
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>
+References: <c6b26023-c629-4f09-a449-dffeaba06082@linux.ibm.com>
+In-Reply-To: <c6b26023-c629-4f09-a449-dffeaba06082@linux.ibm.com>
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: PRBvWytje-KKMDJktN7_ng066ReJ-u4Z
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDIzMDEyMiBTYWx0ZWRfX3BCA0RqXMRwU
- DaFHkSEtdkbyNc2bTQbpJkghVmUJdGKFwbYZDEonVhO68urkKdFwIxtrxHJDBadx1xZ8Qy5ZsRY
- SajqQ/2ds2iTqWj0gRlm+v054W++Wc5/tAmg1eTAt+hqP0Rk7WzjGRKS/+8SrHO4IKvdrNNkHSY
- 8b807AdahSxAslOmidEn0PKXxLb4Hfo5ZvbHdtIi+lvStFQBjRrzu5yznEUAi8KoQqxy0sROl0K
- evsQM8mD1G8xd6qiwrmBh/7SQNk0WRmGzQUTRaigccoy671W1rV9/WVApLAThcMbe0C88VpKI3a
- iwwmLSflwHRnYBO4RtD8Gn7D5pjM5DWLuGBa4sf6qIPzBo93hb3ZiS9ATN3kxgfZ4YLy+oadPQh
- btL+UXUBKPWjEU7PR3qL9OjrQ0wRIB/u3WLrhFswOyJR4nkOQkL1nsA4X8kGqKI08ryPma8s/l2
- YNqIB51cw/bzGX23zCw==
-X-Authority-Analysis: v=2.4 cv=a6kAM0SF c=1 sm=1 tr=0 ts=69ea0f35 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+X-Proofpoint-ORIG-GUID: PLoJTOLD1GK7n0iW0nBwxr1F4jIuIles
+X-Authority-Analysis: v=2.4 cv=Ksp9H2WN c=1 sm=1 tr=0 ts=69ea0f41 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
  a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=r77TgQKjGQsHNAKrUKIA:9 a=VnNF1IyMAAAA:8
- a=YpS5cAcgm0N0_-8T5d8A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=Y2IxJ9c9Rs8Kov3niI8_:22 a=r77TgQKjGQsHNAKrUKIA:9 a=VnNF1IyMAAAA:8
+ a=DaGGpS_0SGLYHTwpNIkA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
  a=6S6ryUQWYVQw0-NGFgkA:9
-X-Proofpoint-ORIG-GUID: PRBvWytje-KKMDJktN7_ng066ReJ-u4Z
+X-Proofpoint-GUID: PLoJTOLD1GK7n0iW0nBwxr1F4jIuIles
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDIzMDEyMiBTYWx0ZWRfX8liecNF0Pcfy
+ Nbpc1RxY0AUovJ8R3lB0E/aL3fAWr5WoAIpTuptf9mSt5LFrqPPPNF+Z2DV5AxvfSEUQ1EHqIdp
+ /lJmKTBw+iN02uWCZEWAM8zKk8eslCL1Cc5cABe8t2s6zFNDt4wE4GRmt6/EcCkFefx4yTj57Jp
+ g5Y2BIyzOZmrQM+OTSLsjrd6LQGCmNjsfwt78VhdqICxSn5HoDow6Tf8kjnJCxspKuOoqKEvfOC
+ ZQwpG5pHFk4kIKbEyb3tWXfj2pYd6gk5dZtnOlQf26Eo7fA8OBOzCNQxVX6W8x2/ygVlIhfrkBK
+ uL+ze7mqvUqDTrTK+OR4qDOuoDPIy22NDyVnDf2jAOIjXcckMkg0XWl5pq08q70tZ0tP14x8IuC
+ WEuwDGz/RgXNtfOGn//i64y7SeyQF8eGGjB8LZGPLerUYxE0jsBbIVPkphNwv4TrUNe8KW/Fj8b
+ hP7CBv0+sg7LdEl158g==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-04-23_03,2026-04-21_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 suspectscore=0 spamscore=0 adultscore=0 bulkscore=0
- lowpriorityscore=0 impostorscore=0 clxscore=1015 phishscore=0
- priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
- definitions=main-2604230122
+ bulkscore=0 impostorscore=0 malwarescore=0 phishscore=0 priorityscore=1501
+ lowpriorityscore=0 clxscore=1015 adultscore=0 suspectscore=0 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2604230122
 
 This is a multi-part message in MIME format.
---------------jo69hJnPk0U8cm17zn19p1Ys
+--------------fyf2XYO8sAjV30pzxZ0anqPM
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-Hello,
+Attaching the .config file.
 
-IBM CI has observed a kernel crash when testing FADUMP on ppc64le.
-i.e., when a crash is explicitly triggered while FADUMP is active.
+And this is seen on
 
-System details:
---------------
-Architecture      : ppc64le
-Platform          : IBM Power11 (pSeries)
-Machine           : 9080-HEX
-Firmware          : FW1110.01 (NH1110_069)
-MMU               : Radix
-Kernel            : 7.0.0+
-Boot mode         : FADUMP enabled
+Hardware name: IBM Power
+MMU=RADIX
 
-Upstream kernel version: 7.0.0+
-Upstream kernel commit-id: 2e68039281932e6dc37718a1ea7cbb8e2cda42e6
-
-kexec-tools 2.0.32.git
-makedumpfile: version 1.7.9 (released on 20 Apr 2026)
-
-
-Attached is the .config file.
-
-Crash Logs:
-
-[    0.000000] BUG: Kernel NULL pointer dereference on read at 0x00000010
-[    0.000000] Faulting instruction address: 0xc000000000aba3d0
-[    0.000000] Oops: Kernel access of bad area, sig: 7 [#1]
-[    0.000000] LE PAGE_SIZE=4K MMU=Radix  SMP NR_CPUS=8192 NUMA pSeries
-[    0.000000] Modules linked in:
-[    0.000000] CPU: 0 UID: 0 PID: 0 Comm: swapper Not tainted 7.0.0+ #1 
-PREEMPT(undef)
-[    0.000000] Hardware name: IBM,9080-HEX Power11 (architected) 
-0x820200 0xf000007 of:IBM,FW1110.01 (NH1110_069) hv:phyp pSeries
-[    0.000000] NIP:  c000000000aba3d0 LR: c000000000708c38 CTR: 
-0000000000000000
-[    0.000000] REGS: c000000002d6fb10 TRAP: 0300   Not tainted (7.0.0+)
-[    0.000000] MSR:  8000000000001033 <SF,ME,IR,DR,RI,LE> CR: 44000248  
-XER: 20040001
-[    0.000000] CFAR: c000000000aba41c DAR: 0000000000000010 DSISR: 
-00080000 IRQMASK: 1
-[    0.000000] GPR00: c0000000020548b8 c000000002d6fdb0 c000000001a9a100 
-0000000000000010
-[    0.000000] GPR04: 0000000000000000 0000000000000008 c000000002d6fcc8 
-0000000000000000
-[    0.000000] GPR08: ffffffffffffffff ffffffffffffffff 0000000000000008 
-ffffffffffffffc8
-[    0.000000] GPR12: c000000002b30cd0 c00000000307a000 0000000000000000 
-0000000000000000
-[    0.000000] GPR16: 0000000000000000 0000000000000000 0000000000000000 
-0000000000000000
-[    0.000000] GPR20: 0000000000c00000 0000000000000008 0000000000000000 
-0000000000306000
-[    0.000000] GPR24: 0000000000000eff 0000000000000bfa c000000001461398 
-c000000001891c58
-[    0.000000] GPR28: c000000002d44230 c000000002d44268 0000000000bfa000 
-0000000000001000
-[    0.000000] NIP [c000000000aba3d0] __bitmap_set+0x90/0xe0
-[    0.000000] LR [c000000000708c38] subsection_mask_set+0x38/0x50
-[    0.000000] Call Trace:
-[    0.000000] [c000000002d6fdb0] [c000000002744280] 
-init_task+0x0/0x1d80 (unreliable)
-[    0.000000] [c000000002d6fdd0] [c0000000020548b8] 
-sparse_init_subsection_map+0xac/0x138
-[    0.000000] [c000000002d6fe80] [c00000000204aa8c] 
-free_area_init+0x258/0x4f4
-[    0.000000] [c000000002d6ff50] [c000000002004f5c] start_kernel+0x98/0x5fc
-[    0.000000] [c000000002d6ffe0] [c00000000000e998] 
-start_here_common+0x1c/0x20
-[    0.000000] Code: f92afff8 4200ffe4 55893032 38630008 798c18e8 
-7d295850 7c636214 7d2907b4 2c290000 4d820020 7d452214 3920ffff 
-<e8e30000> 7d4a00d0 554a06be 7d295436
-[    0.000000] ---[ end trace 0000000000000000 ]---
-[    0.000000]
-[    0.000000] Kernel panic - not syncing: Fatal exception
-
-
-If you happen to fix this, please add below tag.
-
-
-Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-
-
-Regards,
-
-Venkat.
-
-
-
---------------jo69hJnPk0U8cm17zn19p1Ys
+On 23/04/26 5:29 pm, Venkat Rao Bagalkote wrote:
+> Hello!!
+>
+> IBM CI has reported vmcore save failures when kdump is tested by 
+> triggering a kernel crash via sysrq.
+>
+>
+> Below are the kernel and tool details:
+>
+> Upstream kernel version: 7.0.0+
+> Upstream kernel commit-id: 2e68039281932e6dc37718a1ea7cbb8e2cda42e6
+>
+> kexec-tools 2.0.32.git
+> makedumpfile: version 1.7.9 (released on 20 Apr 2026)
+>
+>
+> Error:
+>
+> While booting to crash kernel, I see below continous prints in console 
+> logs:
+>
+>
+> [    0.037177] vmcore: Warning: Zero PT_NOTE entries found
+> [    0.037181] vmcore: Warning: Zero PT_NOTE entries found
+> [    0.037184] vmcore: Warning: Zero PT_NOTE entries found
+> [    0.037186] vmcore: Warning: Zero PT_NOTE entries found
+>
+>
+> And During vmcore collection, I see below error.
+>
+>
+> [    9.948432] systemd[1]: Starting kdump-capture.service - Kdump 
+> Vmcore Save Service...
+>          Starting [0;1;39mkdump-capture.service[0m - Kdump Vmcore 
+> Save Service...
+>
+> [    9.992306] kdump[408]: [0;1;38:5:185mKdump is using the default 
+> log level(3).[0m
+> [   10.158555] kdump[526]: saving to 
+> /sysroot/var/crash/127.0.0.1-2026-04-23-06:06:27/
+> [   10.164060] kdump[531]: saving vmcore-dmesg.txt to 
+> /sysroot/var/crash/127.0.0.1-2026-04-23-06:06:27/
+> [   10.198598] kdump[537]: saving vmcore-dmesg.txt complete
+> [   10.200376] kdump[539]: saving vmcore
+>
+> Checking for memory holes                         : [  0.0 %] /
+> Checking for memory holes                         : [100.0 %] |
+> Excluding unnecessary pages                       : [  6.3 %] \       
+>       WARNING: Invalid free page order: pfn=5a45fc, order=64424509439, 
+> max order=12
+> WARNING: Invalid free page order: pfn=621a02, 
+> order=2166518513861132288, max order=12
+> WARNING: Invalid free page order: pfn=6697b3, 
+> order=6706141453275365419, max order=12
+> WARNING: Invalid free page order: pfn=669b5d, order=69335804542976, 
+> max order=12
+> WARNING: Invalid free page order: pfn=66c5a8, 
+> order=14125543804861677568, max order=12
+> WARNING: Invalid free page order: pfn=66c661, order=845524441759747, 
+> max order=12
+> WARNING: Invalid free page order: pfn=67dadc, 
+> order=17224182427472101376, max order=12
+> WARNING: Invalid free page order: pfn=682b38, 
+> order=3103260797896228864, max order=12
+> WARNING: Invalid free page order: pfn=682efa, 
+> order=14269216714183933953, max order=12
+> WARNING: Invalid free page order: pfn=682efe, order=134217728, max 
+> order=12
+> WARNING: Invalid free page order: pfn=68c0a0, 
+> order=3031209642551148544, max order=12
+> WARNING: Invalid free page order: pfn=69709d, 
+> order=17296239995740225536, max order=12
+> WARNING: Invalid free page order: pfn=6aa909, 
+> order=2166511968028983296, max order=12
+> WARNING: Invalid free page order: pfn=6ae921, 
+> order=6273236509957029888, max order=12
+> WARNING: Invalid free page order: pfn=6c1456, 
+> order=17296239987150290944, max order=12
+> WARNING: Invalid free page order: pfn=6c35a4, 
+> order=14197601399000268800, max order=12
+> WARNING: Invalid free page order: pfn=6c5de2, 
+> order=2166511933669244928, max order=12
+> WARNING: Invalid free page order: pfn=6d58da, 
+> order=17296239987150290944, max order=12
+> WARNING: Invalid free page order: pfn=6d7987, 
+> order=14557325072076374016, max order=12
+> WARNING: Invalid free page order: pfn=6dbb95, 
+> order=17944838645085110272, max order=12
+> WARNING: Invalid free page order: pfn=709d7d, 
+> order=6273234623090655232, max order=12
+> WARNING: Invalid free page order: pfn=709e11, 
+> order=3031203148023726080, max order=12
+> WARNING: Invalid free page order: pfn=70c02f, 
+> order=6705580187335000064, max order=12
+> WARNING: Invalid free page order: pfn=715384, 
+> order=14990794317172375552, max order=12
+> WARNING: Invalid free page order: pfn=715aef, 
+> order=5048255524311662592, max order=12
+> WARNING: Invalid free page order: pfn=71a51e, 
+> order=6199767839173706752, max order=12
+> WARNING: Invalid free page order: pfn=71aab5, 
+> order=5048255524311662592, max order=12
+> WARNING: Invalid free page order: pfn=732e19, order=28147502510048512, 
+> max order=12
+> WARNING: Invalid free page order: pfn=739896, 
+> order=17296239987150290944, max order=12
+> WARNING: Invalid free page order: pfn=73b956, 
+> order=17296239991445258240, max order=12
+> WARNING: Invalid free page order: pfn=73e043, 
+> order=2166511933669244928, max order=12
+> WARNING: Invalid free page order: pfn=740049, 
+> order=6705582074453032960, max order=12
+> WARNING: Invalid free page order: pfn=760109, 
+> order=6345294104196284416, max order=12
+> WARNING: Invalid free page order: pfn=760260, 
+> order=2166511968028983296, max order=12
+> WARNING: Invalid free page order: pfn=774eb8, 
+> order=3103267236521967616, max order=12
+> WARNING: Invalid free page order: pfn=77949f, 
+> order=3103260802191196160, max order=12
+> WARNING: Invalid free page order: pfn=784ac6, order=1971974104455872, 
+> max order=12
+> WARNING: Invalid free page order: pfn=785196, 
+> order=2166518513861132288, max order=12
+> WARNING: Invalid free page order: pfn=790654, 
+> order=14557325072177037312, max order=12
+> WARNING: Invalid free page order: pfn=792cbe, 
+> order=13837309858646983424, max order=12
+> WARNING: Invalid free page order: pfn=792dbe, 
+> order=13837309859722035968, max order=12
+> WARNING: Invalid free page order: pfn=793779, 
+> order=15351363758810792960, max order=12
+> WARNING: Invalid free page order: pfn=7963af, 
+> order=2166511933669244928, max order=12
+> WARNING: Invalid free page order: pfn=7bda8a, 
+> order=13837313428760297472, max order=12
+> WARNING: Invalid free page order: pfn=7bfbfa, 
+> order=14269094696377647104, max order=12
+> WARNING: Invalid free page order: pfn=7c8498, 
+> order=18088873534452400128, max order=12
+> WARNING: Invalid free page order: pfn=7d4bf7, order=1441792, max order=12
+> WARNING: Invalid free page order: pfn=7db498, 
+> order=18088873534452400128, max order=12
+> WARNING: Invalid free page order: pfn=7dba0d, 
+> order=6345292217329909760, max order=12
+> WARNING: Invalid free page order: pfn=7dc618, 
+> order=3319440018652528640, max order=12
+> WARNING: Invalid free page order: pfn=7e8788, 
+> order=1113619897082537567, max order=12
+> readpage_elf: Attempt to read non-existent page at 0x20000000.
+> readmem: type_addr: 0, addr:c00c000020000000, size:32768
+> __exclude_unnecessary_pages: Can't read the buffer of struct page.
+> create_2nd_bitmap: Can't exclude unnecessary pages.
+>
+> makedumpfile Failed.
+> [   10.687238] kdump[542]: [0;1;31msaving vmcore failed, exitcode:1[0m
+> [   10.689073] kdump[544]: [0;1;31msaving vmcore failed[0m
+> [   10.699975] kdump[549]: saving the /run/initramfs/kexec-dmesg.log 
+> to /sysroot/var/crash/127.0.0.1-2026-04-23-06:06:27///
+> [   10.701749] systemd[1]: [0;1;39mkdump-capture.service: Main 
+> process exited, code=exited, status=1/FAILURE[0m
+> [   10.701933] systemd[1]: [0;1;38:5:185mkdump-capture.service: 
+> Failed with result 'exit-code'.[0m
+> [[0;1;31mFAILED[0m] Failed to start 
+> [0;1;39mkdump-capture.service[0m - Kdump Vmcore Save Service.
+>
+> [   10.702090] systemd[1]: [0;1;31mFailed to start 
+> kdump-capture.service - Kdump Vmcore Save Service.[0m
+> See 'systemctl status kdump-capture.service' for details.
+>
+> [   10.702249] systemd[1]: Startup finished in 3.351s (kernel) + 0 
+> (initrd) + 7.350s (userspace) = 10.702s.
+> [   10.702388] systemd[1]: kdump-capture.service: Triggering 
+> OnFailure= dependencies.
+> [   10.703543] systemd[1]: Stopped target timers.target - Timer Units.
+>
+>
+>
+> If you happen to fix, this please add below tag.
+>
+>
+> Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+>
+>
+> Regards,
+>
+> Venkat.
+>
+>
+--------------fyf2XYO8sAjV30pzxZ0anqPM
 Content-Type: text/plain; charset=UTF-8; name="kdump_config"
 Content-Disposition: attachment; filename="kdump_config"
 Content-Transfer-Encoding: base64
@@ -3713,6 +3822,6 @@ ZW5kIG9mIEtlcm5lbCBUZXN0aW5nIGFuZCBDb3ZlcmFnZQoKIwojIFJ1c3QgaGFja2luZwoj
 CiMgZW5kIG9mIFJ1c3QgaGFja2luZwojIGVuZCBvZiBLZXJuZWwgaGFja2luZwoKQ09ORklH
 X0lPX1VSSU5HX1pDUlg9eQpDT05GSUdfSU9fVVJJTkdfQlBGPXkK
 
---------------jo69hJnPk0U8cm17zn19p1Ys--
+--------------fyf2XYO8sAjV30pzxZ0anqPM--
 
 
