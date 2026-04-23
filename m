@@ -1,86 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-20019-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20020-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C57A2FDEE2F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2026 17:46:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30B3BFDEE2F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2026 17:51:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g1k6s2zvMz2xlt;
-	Fri, 24 Apr 2026 03:46:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=85.215.255.54 arc.chain=strato.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776966405;
-	cv=pass; b=X3c8Lz4jNefpaGPU/sNGxdGMX/8TkOXCF2f1Rq8siEgloCwFhN1bwAIlYmB/uybapZHJFAST1NvTOK4lTIncedXXccByomraHLNZoyJUo+GCyZ5emmL0z517CH4MsX+pIjMJYnip3bFrK60BTC3MUAXWJG7QNOyQlpFWl7uoFtaiBb5BZU/ap6/E4ir11pGPJB2T5SSvEoVzTgSfvEijqd/09G9Xz6qhKnzcil0ZgS6a/Yel89LEQH31DPVNooWIqbR756jByaThAZKBw3YboQAIz7v1FfwRsfAoZnc+ddhNwOJ/aotzz2ZiyYwVmKunTjshXOcRoKHeGQRYZyWbMA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776966405; c=relaxed/relaxed;
-	bh=4F9oyUj8BckTc2ElH/y4DhuW77gpVC4jgKYE3XcJY1E=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=myLEPo4YM45PdXz0h3nNhowJLeZSnsvIETF5BIY3bVZrixfiMR+r9KQX9bPOAAuAnwEtGKuLQLby9Fver75S90nQi9Wmv5v82oaeKZTxxC77DGNvko64as/tF0zeie0H0AiDAr2ApoGuObNhqRRXjsLZhZup8/9zYTBxMfTUxdO0/al2b9K+iyIXXVNnPswZVsAhBhRInLqr3nH3b1P4pSjU6Gt6ACd/VgeJJ2XfCyvmoiInqrORXqgiuRTK0iEk9eHPIR5SR9qjVnFfdqlwbM+fRyjgftLeGZ/vUWJ/5Tn+rxpkwHMb/VkqP1TjIh9xLrzx+m2aBgoIXMuf9glk+Q==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=NgmW4nU9; dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=p5rczCnY; dkim-atps=neutral; spf=pass (client-ip=85.215.255.54; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p01-ob.smtp.rzone.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g1kCr5Hmfz2yGX;
+	Fri, 24 Apr 2026 03:51:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776966664;
+	cv=none; b=JqBVKc+3sJER5cNjkeY6z9xNuD5bbpLsjxwXF7xc/JY4V5hExSoNMPBeM5fQqzVJL8okrg0hvTLOsVHjpk4YvKN34BqYHlqlZtbOorSvjrb/oZF18XEnIWJP4HXHGjOmhniVICfEM5R+G0Hd0JgyUD45k33lUV0y+0AjSWgT5d57HcMUZ9gow6wszP8kTTlb8Xh57rAItw1+sRQTaTjQUtWHuVnBa0FOepv4ZCC1eYQ1DHupw3xseKAzoBu48yGPKiQgGnHsmjrMUAHqQVGWQ4T2Tv6uqfEQYZDB7/lZy7/Dks7Vn9KTWfI0AOhY1VPVNNpv6DKtNBHZ342o8wLoaQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1776966664; c=relaxed/relaxed;
+	bh=RIE5IgQMeA4flYFcQpRXGd2GSu6nBWGTKiEkaZkxZxI=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=j2G+ltzTxvKXdHYDPMnzP5F/sRKowsnkJL48V7/bM050xugfXq5DGGR6i6/IYiG5wyt01cXd94441OpPz+4IcPhv5ui8R7s5cWk0VBDCAHgDKz2VspFPugO1Fd1++68wHpHrzEq0YzUPelWybOkm8SURenVg/sYOr8pFPY/Nbgx57KAYwE8UELsjT17DKIMIV3ZyJ4Pf3ZdjZ+TpnUK0Dk4SnnD6zTy1AQZpWD216938dURS/HfHzatOaMjlAgtjgiO+vAm19lkWFi5ylxIJJa8RU9ZjrdY/H0K+ksQRfytTPWgLzp+ZpmiFjsbZyQji/Ac8aXJtObHwYtsLsLe19A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=elwx7Z+U; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=NgmW4nU9;
-	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=p5rczCnY;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=elwx7Z+U;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=85.215.255.54; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 3176 seconds by postgrey-1.37 at boromir; Fri, 24 Apr 2026 03:46:41 AEST
-Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [85.215.255.54])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g1k6n6xPKz2xPL
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 03:46:40 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; t=1776966372; cv=none;
-    d=strato.com; s=strato-dkim-0002;
-    b=aUa3w9LXObSiDXJr2Jhk89XH7g/n4JdTySogpGIYuFcnuxlhi6zcscl3T+2zI7P+g8
-    Gjlzy/54Csbdx2U1YgO3Wd9JagWqnLYViuHri3tGEjtqiq0KxjapB8P1OuqGctHHMyEg
-    jnXWSTy3bd2ms+16i3ighApbuIKYC+UEWYYZyvGEpjjDU+P3oUQf+IFSRE6/aoVbg0Ro
-    +86OntlsebXCE2YD/LbE6Gl7+XVTSpYJXjfQ5vEGm6wysQeER4m8kMTQF3RlIvUoSd5O
-    HDV+OZYiGcJ0/0C5gYHz/EihzByI1EAdQLGDl8DSfdX9T/9EuzisgCcjR9ipmA8Z/6h6
-    aZtw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1776966372;
-    s=strato-dkim-0002; d=strato.com;
-    h=In-Reply-To:From:References:Cc:To:Subject:Date:Message-ID:Cc:Date:
-    From:Subject:Sender;
-    bh=4F9oyUj8BckTc2ElH/y4DhuW77gpVC4jgKYE3XcJY1E=;
-    b=L0ctOigX7CzXjlM6Vy2P6jm6z3Hwor1fsPWIT3966k1lqgWj+ylKfcqk6XWob03/yC
-    DKu0851zw5S3/zODFrl/M1bDwXSVLOc40kZzgWGTyQgnmKyk5WqlwbIHjtb97M2vJTlv
-    O7RIbHr3XZensv2h0ge388/+0whGI5Q5ZEiExmEieFDBoBSTzPEJZ1DmLtc6dq7tv4KQ
-    CwVnobi96QZnVAYqTIbARc3ElK5LR6xZwNECYLiyv9b/42njdxs4pCHHABnqr9aTw2QS
-    eLhYPoFfDqxzR6jYj276MgZVO8IOk5UbGyYl73usnVuzhA1rzLJBBh+Sh9pp6o4sjvmc
-    s2tA==
-ARC-Authentication-Results: i=1; strato.com;
-    arc=none;
-    dkim=none
-X-RZG-CLASS-ID: mo01
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1776966372;
-    s=strato-dkim-0002; d=xenosoft.de;
-    h=In-Reply-To:From:References:Cc:To:Subject:Date:Message-ID:Cc:Date:
-    From:Subject:Sender;
-    bh=4F9oyUj8BckTc2ElH/y4DhuW77gpVC4jgKYE3XcJY1E=;
-    b=NgmW4nU9VRS/xMu37ekuhwTF6RhwiJDEfUERgz4QvHTV3gjC38ZWv+PutW/u+h9eKK
-    H3rMXb5E2P41yO13ojT8TVmHi7wphDT9BNKccL/MZlAOnX8eBvyQ9PjU6S161NEDo/Q/
-    nSfqH+sckf4tbHTVdBlxnkMf0OKBISvzIdGHfY98dISMIPygYGLPB4rYzGzi0YPUHhO5
-    mPCM18M1WDPFQ8Hpd4WJbnfr4I6MixpftguEAjO0wopd5eaVHuD+ZHoviEEXVOI7QKX5
-    xxHljg5Ufs03WvP4v5btvdP0iplOgzFgFlIMZqltUSqmMZVuNFZ3gzadRGdWrXdSPQAv
-    yH+w==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1776966372;
-    s=strato-dkim-0003; d=xenosoft.de;
-    h=In-Reply-To:From:References:Cc:To:Subject:Date:Message-ID:Cc:Date:
-    From:Subject:Sender;
-    bh=4F9oyUj8BckTc2ElH/y4DhuW77gpVC4jgKYE3XcJY1E=;
-    b=p5rczCnY9raPhC7ydBZGEe4Hoe0JZ5UWcDN8awJrXaER1Z+5FqmY1p5K6c0kgd2XPd
-    cNGh6Z6KUs7WVmCKiYDA==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr4thIFiqT9BURIC+l5B/g"
-Received: from [192.168.178.48]
-    by smtp.strato.de (RZmta 55.0.1 DYNA|AUTH)
-    with ESMTPSA id e7876023NHkBugR
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-	(Client did not present a certificate);
-    Thu, 23 Apr 2026 19:46:11 +0200 (CEST)
-Message-ID: <5da12382-5424-4bd9-981f-359e4dc1fa67@xenosoft.de>
-Date: Thu, 23 Apr 2026 19:46:11 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g1kCq2Sklz2yFm
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 03:51:02 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63N81mft3108221
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 17:51:00 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=RIE5Ig
+	QMeA4flYFcQpRXGd2GSu6nBWGTKiEkaZkxZxI=; b=elwx7Z+UrXjWyQtV33uSGq
+	bXAtb02RlE30QHmM9hJBbS2TymZYoAMVrb7H11iqR1qnUwwDmk0WCNAY31/7+bDq
+	poQv4VGz67EP97/VZgUZkOFYGPk+4ywvn5wAmkfSpzO4dq7YwdUUpGWhpaah9pEL
+	zE47Cog5ACMTprTqvoT5YuDvMD3j3+cpeKO3rDQ8zkV9wI4FTY5jxk7nWsfxfJgt
+	5r81zbQbvg2r+vwSfRa+vuBPTv1Xgmm2RenYddjIOu6NKS/lioLOLlqeS3Xffq+L
+	tUsOpDT32T0XuLaQvJY9E9LjyEWEueL46oLxr7BUjxtkYMSMvSqmthPZQQyJjkVA
+	==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dpeu6hev5-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 17:51:00 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 63NHobJr014002
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 17:50:59 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dpjkyfnmg-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 17:50:59 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63NHotMR27132390
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 23 Apr 2026 17:50:55 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id AF45A20040;
+	Thu, 23 Apr 2026 17:50:55 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9ADA62004B;
+	Thu, 23 Apr 2026 17:50:54 +0000 (GMT)
+Received: from smtpclient.apple (unknown [9.39.30.158])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Thu, 23 Apr 2026 17:50:54 +0000 (GMT)
+Content-Type: text/plain;
+	charset=utf-8
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,88 +80,112 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: KVM-PR no longer works when compiled with new GCC compilers
-To: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, kvm@vger.kernel.org,
- "debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
-Cc: "R.T.Dickinson" <rtd2@xtra.co.nz>, hypexed@yahoo.com.au,
- mad skateman <madskateman@gmail.com>, Christian Zigotzky <info@xenosoft.de>
-References: <cfd779d6-9440-46b2-9ed5-752f1ae6b5d1@xenosoft.de>
- <588ada6c-bcc4-e93b-1beb-4f7f859e3d5c@xenosoft.de>
- <eee732904c2a7ccce9b496b05f988a36d8a9883e.camel@physik.fu-berlin.de>
-Content-Language: de-DE
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-In-Reply-To: <eee732904c2a7ccce9b496b05f988a36d8a9883e.camel@physik.fu-berlin.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.300.41.1.7\))
+Subject: Re: [PATCH] powerpc/perf: Update check for PERF_SAMPLE_DATA_SRC
+ marked events
+From: Athira Rajeev <atrajeev@linux.ibm.com>
+In-Reply-To: <20260421150628.96500-1-shivani@linux.ibm.com>
+Date: Thu, 23 Apr 2026 23:20:42 +0530
+Cc: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
+        hbathini@linux.vnet.ibm.com, Tejas.Manhas1@ibm.com
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <02211194-CC8D-496B-A701-41453A01FB48@linux.ibm.com>
+References: <20260421150628.96500-1-shivani@linux.ibm.com>
+To: Shivani Nittor <shivani@linux.ibm.com>
+X-Mailer: Apple Mail (2.3864.300.41.1.7)
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDIzMDE3MyBTYWx0ZWRfXyfa0rWF9vPOF
+ WN0HsS7qvWXWK9rfuwnL7lAMaOr4kohqArC3hH3YDJ/fjfCuT+20776do7L5A+LU8HJJZjms5bu
+ 4PA97a7830lERabyL6DmlNRUO/wDxgXNUPSpG1JEmNL1ZUL/mNcHiScb6+UaUaEZYGg0hZgP3Gi
+ bhvGEo9poxZfaQF9rW0n1d0iQjM2EBm/jepgkNRs838fWcun1tb7/ufqJFeHdNG84DQ8k1TpUEF
+ bNjPBu9SqJSbybkj9L0W5d7cIP7j48hUJScc/Mb3xVWXGrkCFo1FxpJwvkigtPiH93FWRu1ThGi
+ BDiQQGBIzCjp7zA/fQzdonSNuufoW2n2Tijrh/ibhDVNV1z4Yj0I1PD/gRDgZHJWu45sgcjnRxs
+ xEMZY/8jGOV050jXsgVNuo9eWPWTmGJcxwSKZjmiGN/mD0tezDzaiD/3EkHA9bPZsSKgLLzNj8V
+ +zfnuGadiwXzk32Oahw==
+X-Proofpoint-ORIG-GUID: tqLDWfuDlpvydnFx8mkAdyB2uZPZwDK-
+X-Proofpoint-GUID: tqLDWfuDlpvydnFx8mkAdyB2uZPZwDK-
+X-Authority-Analysis: v=2.4 cv=BYfoFLt2 c=1 sm=1 tr=0 ts=69ea5c04 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8
+ a=b0JcJouLdBaXTkySTX0A:9 a=lqcHg5cX4UMA:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-23_03,2026-04-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 impostorscore=0 malwarescore=0 suspectscore=0
+ lowpriorityscore=0 adultscore=0 spamscore=0 clxscore=1015 bulkscore=0
+ phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
+ definitions=main-2604230173
 
-On 23 April 2026 at 07:35 pm, John Paul Adrian Glaubitz wrote:
-> Hi Christian,
->
-> On Thu, 2026-04-23 at 18:50 +0200, Christian Zigotzky wrote:
->> On 02/10/25 08:37, Christian Zigotzky wrote:
->>> Hello,
->>>
->>> KVM-PR (-enable-kvm) doesn't work anymore on our PA Semi Nemo boards
->>> [1] if we compiled it with new GCC compilers.
->>> The VM can't boot. There aren't any messages on the serial console of
->>> QEMU.
->>>
->>> It boots without KVM-PR.
->>>
->>> Kernel config with new GCC compiler [2]:
->>>
->>> - CONFIG_CC_VERSION_TEXT="powerpc64-suse-linux-gcc (SUSE Linux) 11.5.0"
->>> - CONFIG_TARGET_CPU="power4"
->>> - CONFIG_TUNE_CPU="-mtune=power10"
->>>
->>> It works if I compile it with an old GCC compiler [3]:
->>>
->>> - CONFIG_CC_VERSION_TEXT="powerpc-linux-gnu-gcc (Ubuntu
->>> 9.4.0-1ubuntu1~20.04.1) 9.4.0"
->>> - CONFIG_TARGET_CPU="power4"
->>> - CONFIG_TUNE_CPU="-mtune=power9"
->>>
->>> Mtune changes to power9 automatically if I compiled it with an old GCC
->>> compiler. If I compile it with a new GCC compiler again it changes
->>> automatically to mtune=power10.
->>>
->>> Is mtune the reason of the KVM-PR issue? I think the issue is the new
->>> GCC. [4]
->>>
->>> Could you please check whether KVM-PR is compatible with new versions
->>> of GCC compilers?
->>>
->>> Thanks in advance,
->>>
->>> Christian
->>>
->>>
->>>
->>> [1] https://en.wikipedia.org/wiki/AmigaOne_X1000
->>>
->>> [2]
->>> https://github.com/chzigotzky/kernels/blob/45186997e6f347fd092f9ab629d62d6041426227/configs/x1000_defconfig
->>>
->>> [3]
->>> https://github.com/chzigotzky/kernels/blob/bc7a3e27b3fcdee52a8135435f02cf807a43872a/configs/x1000_defconfig
->>>
->>> [4] KVM-PR no longer works on an X1000 if the kernel has been compiled
->>> with a new GCC:
->>> https://forum.hyperion-entertainment.com/viewtopic.php?p=57146#p57146
->>>
->> Error messages (kvm-pr compiled with powerpc64-linux-gnu-gcc 14.1.1
->> 20240507 Red Hat Cross 14.1.1-1, GNU ld version 2.41-2.el10_0):
->>
->> [  800.274759] Couldn't emulate instruction 0x00000000 (op 0 xop 0)
->> [  800.274767] kvmppc_exit_pr_progint: emulation at 100 failed (00000000)
-> I don't think "mtune=power9" or "mtune=power10" will work. Did you try "mtune=power4"?
->
-> Adrian
->
-I haven't tried it yet, but I'm going to give it a try.
 
-Christian
+
+> On 21 Apr 2026, at 8:36=E2=80=AFPM, Shivani Nittor =
+<shivani@linux.ibm.com> wrote:
+>=20
+> The core-book3s PMU sampling code validates the SIER TYPE field
+> when PERF_SAMPLE_DATA_SRC is requested. The SIER TYPE field
+> indicates the instruction type and is only valid for
+> random sampling (marked events). To handle cases observed where
+> SIER TYPE could be zero even for marked events,validation was
+> added to drop such samples and increment event->lost_samples.
+>=20
+> However, this validation was applied to all samples,
+> including continuous sampling. In continuous sampling mode,
+> the PMU does not set the SIER TYPE field, so it remains zero.
+> As a result, valid continuous samples were incorrectly
+> treated as invalid and dropped. Fixed this by gating the
+> SIER TYPE validation with mark_event, so the check runs only
+> for marked (random) events. Continuous samples now skip this
+> check and are recorded normally in the final data recording path.
+>=20
+> Fixes: 2ffb26afa642 ("arch/powerpc/perf: Check the instruction type =
+before creating sample with perf_mem_data_src")
+> Signed-off-by: Shivani Nittor <shivani@linux.ibm.com>
+
+The changes looks good to me.
+
+Reviewed-by : Athira Rajeev <atrajeev@linux.ibm.com =
+<mailto:atrajeev@linux.ibm.com>>
+
+Thanks
+Athira
+> ---
+>=20
+> arch/powerpc/perf/core-book3s.c | 5 +++--
+> 1 file changed, 3 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/arch/powerpc/perf/core-book3s.c =
+b/arch/powerpc/perf/core-book3s.c
+> index 8b0081441f85..2e6adf5b95c4 100644
+> --- a/arch/powerpc/perf/core-book3s.c
+> +++ b/arch/powerpc/perf/core-book3s.c
+> @@ -2242,6 +2242,7 @@ static void record_and_restart(struct perf_event =
+*event, unsigned long val,
+> const u64 last_period =3D event->hw.last_period;
+> s64 prev, delta, left;
+> int record =3D 0;
+> + int mark_event =3D regs->dsisr & MMCRA_SAMPLE_ENABLE;
+>=20
+> if (event->hw.state & PERF_HES_STOPPED) {
+> write_pmc(event->hw.idx, 0);
+> @@ -2304,9 +2305,9 @@ static void record_and_restart(struct perf_event =
+*event, unsigned long val,
+> * In ISA v3.0 and before values "0" and "7" are considered reserved.
+> * In ISA v3.1, value "7" has been used to indicate "larx/stcx".
+> * Drop the sample if "type" has reserved values for this field with a
+> - * ISA version check.
+> + * ISA version check for marked events.
+> */
+> - if (event->attr.sample_type & PERF_SAMPLE_DATA_SRC &&
+> + if (mark_event && event->attr.sample_type & PERF_SAMPLE_DATA_SRC &&
+> ppmu->get_mem_data_src) {
+> val =3D (regs->dar & SIER_TYPE_MASK) >> SIER_TYPE_SHIFT;
+> if (val =3D=3D 0 || (val =3D=3D 7 && =
+!cpu_has_feature(CPU_FTR_ARCH_31))) {
+> --=20
+> 2.47.3
+>=20
+
 
