@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-20001-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20002-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09C69F9936B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2026 10:38:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88FA9F9936C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2026 10:40:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g1Xct2jBdz2yF7;
-	Thu, 23 Apr 2026 20:38:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g1Xg7645Rz2yF7;
+	Thu, 23 Apr 2026 20:40:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776940718;
-	cv=none; b=iS2ta2QUZvVrhd1dN78th6GkcednAhlYoLi4De6JcY/pfqMMNbG4oZeh07TZOhKOkJC50/23CSZRkeDCP6BTgVxLemqbHcq5m8zZUMUys/yJoubPjChTtLO1u+Kc3rskcoYr4TWELIzmb/aanDxki80ghvVBmbQIbyPOqB7gF+vvcPLnqhYUQ67fHQzmyGvP1IntvJbvykamyK4NgRRuNuxNfkRaEHuUoI7jCuRcC2WEKfQW1hWdMTNnCkvvycS0b6Ip8bewRW9VL5b7Dc6lVF1SUXwP/1OTbzO/Wuz7DccXm00ICCs5oksXgj+KPSPkoYY3siMPg+eMxxIu5DDFqA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776940835;
+	cv=none; b=G2dWwDgoy3JjZgKe4fvGRbjeKqQzkr4R6WOsLduvjMxpMibyqdPVHdKUgPHJWdDWUFt1jpSVZQ/5drA83c967KZ1p4UXaFzKX2qiJBb5MRwWNuD6J/tVwR1uKFzhj7AbznS1u3WpeXKI5Vi774yuID86Efto2tvw4e71w+1UbWuUf1VkZxPBSVxdR77pspn7lXSBK6T/n9aESl9DW1ff556LBxO/Y/6LuPptVm6Ym11pmdL6FtYgVE3Lx1OBSgCP9yGUCJ7KDMgAw+t5f7WHXg8GnF0LUbFECX98+xKf0sR7GXxw6qkt7h7cn9lymYjDXUXgWpdUHP8k/W73gJJ+NQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776940718; c=relaxed/relaxed;
-	bh=haIdrYWGrTuwiLse2hZYYcuWW2obGUZovwL6KO1WjhQ=;
+	t=1776940835; c=relaxed/relaxed;
+	bh=2Y8S77J+oll0C3v8c6IwEV3VuOTGfRCVAy7vQUUTqXQ=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=OAhd9rpqr4Q9TujVqCJUzppHDi4zAtR0AUvtVerz/aMTHGlF7WSWXK3gzSk19FIq8MlkOTqGy61VocuU7s01IBvS2JJoRi05dtScvF3e92x2ShY1uVS4MVIts9RRQqGqqKP51J5wkXkk5BPwUpUBasW38BzNA7n864qBl4TZUee2U5rD5J3ANcmtuEtk89T2fDsNIeRwKN5KggVGWRoOcaB1bBLH4epJto79V5QVK6M4G99VwtdfGXliNcFoVmUa1y2/ykUTUSszQ5VRD8XegAvOuWAWYHbbDKQLECJSmla81Us1lmrHnjBAuRWsdPQ8ItsN8gmra7B4L9ZBboofsg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NOGs+0Jr; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=XfW3SSc62vDw0EmPzj4dPOLhG8VCFmPJeWjLhkQo7Z4oBLYshy44Ve4JJHDNuGo4bTHG2NxTsoqDhi/bQa9fpWmkjJr3tSdh45RHlDlzm91Sr4qq5ZcUid253YPifbHj/hdl9tUvXgI8d+D5rCThiekWBtTiqXshZggMz0etK58psjim/I8En/OFwZJgYyUPwv0ZiInL1RiVbabBZBzggl/VqwlSJbWvjL3zRZZwXLiCuxCYKjOIQNKbviWNODMzrXrZkan98fYOcwX3MduFqIkV9TptRuzbXXR09U+Qx+IqO7zRUDO/n4rtzzI/28jJ5/00paF6Yy6jUwk6mSVKCw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SyDXjw67; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NOGs+0Jr;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SyDXjw67;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g1Xcs1mLtz2y8d
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 20:38:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g1Xg7019rz2y8d
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 20:40:34 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 562DD40566;
-	Thu, 23 Apr 2026 10:38:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 206FFC2BCAF;
-	Thu, 23 Apr 2026 10:38:28 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 64764409DC;
+	Thu, 23 Apr 2026 10:40:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 367B3C2BCAF;
+	Thu, 23 Apr 2026 10:40:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776940714;
-	bh=OykCGngjeVXxh+S5FhihKYrlA0mMJyXZVqRb3yjbltQ=;
+	s=k20201202; t=1776940833;
+	bh=ldBC+Ysj0hCLJEg88xc/mTOy0nXdrmU3TEgqL4XJ3Lw=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=NOGs+0JrJ4V2SyqOjrtFCQhLPr6YNzdn9bI3as6PXFB7UQwCHKiLnzRPHyEUcB7ZN
-	 VKGOTXW/gkIMWlDZFdEi6oECp+yHwo4lAx3NokhIMuokGolZjyGr/nsVX3mbl/27Vo
-	 v7/vhuCEqkUK7uPz7wPEiT6mcRIUBnH2DMkpiEu/tktjWePw9DsAs0KodWlI72iVDz
-	 H0ITnKBGxvzcxasSWRZcfAXV5DGRFsTtMbzeNb5VyCC7xt43PWdQ0Qj1iPKl7saBqy
-	 3FJRdZzjsfdBx5KUS9/me1V0pBiumh481fCG5n7UpmfcuKvquCsHIESxS8bpeMWIdr
-	 KGrBrssiZK2cA==
-Message-ID: <e0ed4524-36d5-41ff-8ded-ba036d6ff6e4@kernel.org>
-Date: Thu, 23 Apr 2026 12:38:27 +0200
+	b=SyDXjw67eKz4ElrNUAP3vrz40SZ2nZyRbGXglliuF6pdnreTSXlzdzAOThBUatOPb
+	 pT2wKGzPScqcH4H2w4YyFCSnwUgJ/OR/4Wu4n7J3pbp1AsUj+vm5iHr9QHeHqsvqwR
+	 233gi2TE6bMnZ14GO9a14IrHPga1EVJ7K/2z5mlc6w0/QbLp6YnJzyE9c6sUCzjQau
+	 PjL6mihpztsJFUeDKJLw3clRAq2Sm2Sqkx5z4NtVFEzNbXsj3jQemSJne51QZKPkrR
+	 EAdxX/bqB839XJZyJ3IkLG5UllO7X1eQlFOUAlPypulDb26ovc0kAkC7Hjz7+k1LqP
+	 koClPQSbDNUkA==
+Message-ID: <1cbae635-a115-4270-bae2-64145d16f936@kernel.org>
+Date: Thu, 23 Apr 2026 12:40:25 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,8 +60,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 v5 2/6] mm/memory_hotplug: Fix incorrect altmap passing
- in error path
+Subject: Re: [PATCH v5 v5 4/6] mm/sparse-vmemmap: Fix DAX vmemmap accounting
+ with optimization
 To: Muchun Song <songmuchun@bytedance.com>,
  Andrew Morton <akpm@linux-foundation.org>,
  Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>,
@@ -75,7 +75,7 @@ Cc: Lorenzo Stoakes <ljs@kernel.org>,
  aneesh.kumar@linux.ibm.com, joao.m.martins@oracle.com, linux-mm@kvack.org,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 References: <20260423071911.1962859-1-songmuchun@bytedance.com>
- <20260423071911.1962859-3-songmuchun@bytedance.com>
+ <20260423071911.1962859-5-songmuchun@bytedance.com>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -122,114 +122,48 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260423071911.1962859-3-songmuchun@bytedance.com>
+In-Reply-To: <20260423071911.1962859-5-songmuchun@bytedance.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 4/23/26 09:19, Muchun Song wrote:
-> In create_altmaps_and_memory_blocks(), when arch_add_memory() succeeds
-> with memmap_on_memory enabled, the vmemmap pages are allocated from
-> params.altmap. If create_memory_block_devices() subsequently fails, the
-> error path calls arch_remove_memory() with a NULL altmap instead of
-> params.altmap.
+> When vmemmap optimization is enabled for DAX, the nr_memmap_pages
+> counter in /proc/vmstat is incorrect. The current code always accounts
+> for the full, non-optimized vmemmap size, but vmemmap optimization
+> reduces the actual number of vmemmap pages by reusing tail pages. This
+> causes the system to overcount vmemmap usage, leading to inaccurate
+> page statistics in /proc/vmstat.
 > 
-> This is a bug that could lead to memory corruption. Since altmap is
-> NULL, vmemmap_free() falls back to freeing the vmemmap pages into the
-> system buddy allocator via free_pages() instead of the altmap.
-> arch_remove_memory() then immediately destroys the physical linear
-> mapping for this memory. This injects unowned pages into the buddy
-> allocator, causing machine checks or memory corruption if the system
-> later attempts to allocate and use those freed pages.
+> Fix this by introducing section_vmemmap_pages(), which returns the exact
+> vmemmap page count for a given pfn range based on whether optimization
+> is in effect.
 > 
-> Fix this by passing params.altmap to arch_remove_memory() in the error
-> path.
-> 
-> Fixes: 6b8f0798b85a ("mm/memory_hotplug: split memmap_on_memory requests across memblocks")
+> Fixes: 15995a352474 ("mm: report per-page metadata information")
 > Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> Acked-by: Oscar Salvador <osalvador@suse.de>
 > ---
->  mm/memory_hotplug.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  mm/sparse-vmemmap.c | 31 +++++++++++++++++++++++++++----
+>  1 file changed, 27 insertions(+), 4 deletions(-)
 > 
-> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-> index 2a943ec57c85..0bad2aed2bde 100644
-> --- a/mm/memory_hotplug.c
-> +++ b/mm/memory_hotplug.c
-> @@ -1468,7 +1468,7 @@ static int create_altmaps_and_memory_blocks(int nid, struct memory_group *group,
->  		ret = create_memory_block_devices(cur_start, memblock_size, nid,
->  						  params.altmap, group);
->  		if (ret) {
-> -			arch_remove_memory(cur_start, memblock_size, NULL);
-> +			arch_remove_memory(cur_start, memblock_size, params.altmap);
->  			kfree(params.altmap);
->  			goto out;
->  		}
+> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
+> index 3340f6d30b01..979d71158c9b 100644
+> --- a/mm/sparse-vmemmap.c
+> +++ b/mm/sparse-vmemmap.c
+> @@ -652,6 +652,28 @@ void offline_mem_sections(unsigned long start_pfn, unsigned long end_pfn)
+>  	}
+>  }
+>  
+> +static int __meminit section_nr_vmemmap_pages(unsigned long pfn, unsigned long nr_pages,
+> +		struct vmem_altmap *altmap, struct dev_pagemap *pgmap)
+> +{
+> +	const unsigned int order = pgmap ? pgmap->vmemmap_shift : 0;
+> +	const unsigned long pages_per_compound = 1UL << order;
+> +
+> +	VM_WARN_ON_ONCE(!IS_ALIGNED(pfn | nr_pages, pages_per_compound));
+> +	VM_WARN_ON_ONCE(!IS_ALIGNED(pfn | nr_pages, PAGES_PER_SECTION));
 
-Yeah, that's nasty. We should CC stable.
-
-Acked-by: David Hildenbrand (Arm) <david@kernel.org>
-
-
-
-Should we extend the safety checks we already have on the other path?
-
-
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 2a943ec57c85..1c304468af08 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -1402,6 +1402,12 @@ bool mhp_supports_memmap_on_memory(void)
- }
- EXPORT_SYMBOL_GPL(mhp_supports_memmap_on_memory);
- 
-+static void altmap_free(struct vmemmap_altmap *altmap)
-+{
-+       WARN(altmap->alloc, "Altmap not fully unmapped");
-+       kfree(altmap);
-+}
-+
- static void remove_memory_blocks_and_altmaps(u64 start, u64 size)
- {
-        unsigned long memblock_size = memory_block_size_bytes();
-@@ -1426,10 +1432,7 @@ static void remove_memory_blocks_and_altmaps(u64 start, u64 size)
-                remove_memory_block_devices(cur_start, memblock_size);
- 
-                arch_remove_memory(cur_start, memblock_size, altmap);
--
--               /* Verify that all vmemmap pages have actually been freed. */
--               WARN(altmap->alloc, "Altmap not fully unmapped");
--               kfree(altmap);
-+               altmap_free(altmap);
-        }
- }
- 
-@@ -1460,7 +1463,7 @@ static int create_altmaps_and_memory_blocks(int nid, struct memory_group *group,
-                /* call arch's memory hotadd */
-                ret = arch_add_memory(nid, cur_start, memblock_size, &params);
-                if (ret < 0) {
--                       kfree(params.altmap);
-+                       altmap_free(params.altmap);
-                        goto out;
-                }
- 
-@@ -1469,13 +1472,12 @@ static int create_altmaps_and_memory_blocks(int nid, struct memory_group *group,
-                                                  params.altmap, group);
-                if (ret) {
-                        arch_remove_memory(cur_start, memblock_size, NULL);
--                       kfree(params.altmap);
-+                       altmap_free(params.altmap);
-                        goto out;
-                }
-        }
- 
-        return 0;
--out:
-        if (ret && cur_start != start)
-                remove_memory_blocks_and_altmaps(start, cur_start - start);
-        return ret;
-
-
-Maybe the helper should even go into altmap code? Not sure.
-
+Thinking about the PAGES_PER_SECTION, can't we get called for sub-sections?
 
 -- 
 Cheers,
