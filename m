@@ -1,73 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-20020-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20021-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30B3BFDEE2F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2026 17:51:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D598FDEE43
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2026 18:24:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g1kCr5Hmfz2yGX;
-	Fri, 24 Apr 2026 03:51:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776966664;
-	cv=none; b=JqBVKc+3sJER5cNjkeY6z9xNuD5bbpLsjxwXF7xc/JY4V5hExSoNMPBeM5fQqzVJL8okrg0hvTLOsVHjpk4YvKN34BqYHlqlZtbOorSvjrb/oZF18XEnIWJP4HXHGjOmhniVICfEM5R+G0Hd0JgyUD45k33lUV0y+0AjSWgT5d57HcMUZ9gow6wszP8kTTlb8Xh57rAItw1+sRQTaTjQUtWHuVnBa0FOepv4ZCC1eYQ1DHupw3xseKAzoBu48yGPKiQgGnHsmjrMUAHqQVGWQ4T2Tv6uqfEQYZDB7/lZy7/Dks7Vn9KTWfI0AOhY1VPVNNpv6DKtNBHZ342o8wLoaQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g1kxw5zX4z2yHT;
+	Fri, 24 Apr 2026 04:24:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776968644;
+	cv=none; b=PGNNVEjWwvmDtErpX5nyVia6yoqyhK+8/4pBubDlIcSUtYM/pE1pZqaqTNQwvaOwBFfQRqn2Ig3kBqG8cPHtb62wDEY42lZfzj9ca7CGzVxfpAmNeaqHYrLLZf6QMlhM4uKyyBbrqgjNvB+ar7zqo4ZPbLmeIkVpgND4KEatFnilvexwpROAiLClSC2TyGETY2AcfPuigZU3gSY0Uecn5rkrYQRfVnqftJgXHdb3dRpoGmX4O7SbTx/q20s744MoKiaLYhUvuYhQLIRHTOfCJs2DAOWu1rUgGrU1hA7PySzRmKdLMylT0zu2MuotHCdPTFrIXBeHMLCwITZXI/35qA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776966664; c=relaxed/relaxed;
-	bh=RIE5IgQMeA4flYFcQpRXGd2GSu6nBWGTKiEkaZkxZxI=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=j2G+ltzTxvKXdHYDPMnzP5F/sRKowsnkJL48V7/bM050xugfXq5DGGR6i6/IYiG5wyt01cXd94441OpPz+4IcPhv5ui8R7s5cWk0VBDCAHgDKz2VspFPugO1Fd1++68wHpHrzEq0YzUPelWybOkm8SURenVg/sYOr8pFPY/Nbgx57KAYwE8UELsjT17DKIMIV3ZyJ4Pf3ZdjZ+TpnUK0Dk4SnnD6zTy1AQZpWD216938dURS/HfHzatOaMjlAgtjgiO+vAm19lkWFi5ylxIJJa8RU9ZjrdY/H0K+ksQRfytTPWgLzp+ZpmiFjsbZyQji/Ac8aXJtObHwYtsLsLe19A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=elwx7Z+U; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1776968644; c=relaxed/relaxed;
+	bh=o02Bwsh302zqDKJS/WLJ/nmTDtHUYY+SPWMRJUajIQ8=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=E/24jYVnH5hia9jhsdg/7tFA+rRmoo6geFsPoRv4MrMKppjTgZGHc2CXToUnUTeI1QcuKGbFePn7xcRJsnR5bCM4dl+0HekGeNuXzRMmiEjJfqpwPdhEnt+1fnj3Bn4OQmWRtDaOxFO/NsBpHuWnNW1AkkTG8x+0oW6Zv8bO0kC2q4qAuQaQm7jGbE/NsiKmUj+PquISgl07mrFoW95LaS7g4YZjXXBxB+XZwI3vAhK+5VUgc2xUr16C3xOtNtGGEzgDoTSwkXpv/LqiQLf/xLyXyiwK8gVgR1e9tszFQfUxwl0ttbA2GYK45ejUnAhMrd3knhbS7Qvbnog3X2Z3iQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QQQ3e4R1; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=elwx7Z+U;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QQQ3e4R1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g1kCq2Sklz2yFm
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 03:51:02 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63N81mft3108221
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 17:51:00 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=RIE5Ig
-	QMeA4flYFcQpRXGd2GSu6nBWGTKiEkaZkxZxI=; b=elwx7Z+UrXjWyQtV33uSGq
-	bXAtb02RlE30QHmM9hJBbS2TymZYoAMVrb7H11iqR1qnUwwDmk0WCNAY31/7+bDq
-	poQv4VGz67EP97/VZgUZkOFYGPk+4ywvn5wAmkfSpzO4dq7YwdUUpGWhpaah9pEL
-	zE47Cog5ACMTprTqvoT5YuDvMD3j3+cpeKO3rDQ8zkV9wI4FTY5jxk7nWsfxfJgt
-	5r81zbQbvg2r+vwSfRa+vuBPTv1Xgmm2RenYddjIOu6NKS/lioLOLlqeS3Xffq+L
-	tUsOpDT32T0XuLaQvJY9E9LjyEWEueL46oLxr7BUjxtkYMSMvSqmthPZQQyJjkVA
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dpeu6hev5-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 17:51:00 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 63NHobJr014002
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 17:50:59 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4dpjkyfnmg-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 17:50:59 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63NHotMR27132390
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 23 Apr 2026 17:50:55 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id AF45A20040;
-	Thu, 23 Apr 2026 17:50:55 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9ADA62004B;
-	Thu, 23 Apr 2026 17:50:54 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.39.30.158])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Thu, 23 Apr 2026 17:50:54 +0000 (GMT)
-Content-Type: text/plain;
-	charset=utf-8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g1kxt6jy2z2yGf
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 04:24:02 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 9E682435EA;
+	Thu, 23 Apr 2026 18:24:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 649CDC2BCAF;
+	Thu, 23 Apr 2026 18:24:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776968640;
+	bh=3d8ZmDarkOjA6NU39EQhXgpDDN9j4UEKZX4Zr+EHhQU=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:From;
+	b=QQQ3e4R15vnbbLmeHFfc8Fgth2tXRh//j2AAnWfZE1Io/yra+UAMjc/h5nO9Rvf5B
+	 gHCVH2SxYRYuHnmibB4mqBxdstkQWH/o/mrJ7dm9gvAJY1mxdbuAS55UWccXnbC50i
+	 Jw/32ZWL+qsezg+VzVMRQBpho0mGoyXtL8E3aJ8SsMDxUWnusoZH/TAePrVSW4bsjh
+	 VXABUT5WE9kgNyP+T5kTfZkoc8viylzymJLKRsSGkPpPhd3HifSqoEB9HifV46PFCI
+	 0flrXvdE9rmgPAis8fozbhynnW+fHNXqf9Dr7Xn35QLdWsGg0sQmGHjhyvI7mUwK8/
+	 26rN80B7YH3qw==
+Date: Thu, 23 Apr 2026 13:23:59 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>
+Cc: Bjorn Helgaas <bhelgaas@google.com>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Magnus Lindholm <linmag7@gmail.com>,
+	Matt Turner <mattst88@gmail.com>,
+	Richard Henderson <richard.henderson@linaro.org>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Dexuan Cui <decui@microsoft.com>,
+	Krzysztof =?utf-8?Q?Ha=C5=82asa?= <khalasa@piap.pl>,
+	Lukas Wunner <lukas@wunner.de>,
+	Oliver O'Halloran <oohall@gmail.com>,
+	Saurabh Singh Sengar <ssengar@microsoft.com>,
+	Shuan He <heshuan@bytedance.com>,
+	Srivatsa Bhat <srivatsabhat@microsoft.com>,
+	Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
+	linux-pci@vger.kernel.org, linux-alpha@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v6 00/24] PCI: Convert all dynamic sysfs attributes to
+ static
+Message-ID: <20260423182359.GA33696@bhelgaas>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,112 +82,65 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.300.41.1.7\))
-Subject: Re: [PATCH] powerpc/perf: Update check for PERF_SAMPLE_DATA_SRC
- marked events
-From: Athira Rajeev <atrajeev@linux.ibm.com>
-In-Reply-To: <20260421150628.96500-1-shivani@linux.ibm.com>
-Date: Thu, 23 Apr 2026 23:20:42 +0530
-Cc: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
-        hbathini@linux.vnet.ibm.com, Tejas.Manhas1@ibm.com
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <02211194-CC8D-496B-A701-41453A01FB48@linux.ibm.com>
-References: <20260421150628.96500-1-shivani@linux.ibm.com>
-To: Shivani Nittor <shivani@linux.ibm.com>
-X-Mailer: Apple Mail (2.3864.300.41.1.7)
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDIzMDE3MyBTYWx0ZWRfXyfa0rWF9vPOF
- WN0HsS7qvWXWK9rfuwnL7lAMaOr4kohqArC3hH3YDJ/fjfCuT+20776do7L5A+LU8HJJZjms5bu
- 4PA97a7830lERabyL6DmlNRUO/wDxgXNUPSpG1JEmNL1ZUL/mNcHiScb6+UaUaEZYGg0hZgP3Gi
- bhvGEo9poxZfaQF9rW0n1d0iQjM2EBm/jepgkNRs838fWcun1tb7/ufqJFeHdNG84DQ8k1TpUEF
- bNjPBu9SqJSbybkj9L0W5d7cIP7j48hUJScc/Mb3xVWXGrkCFo1FxpJwvkigtPiH93FWRu1ThGi
- BDiQQGBIzCjp7zA/fQzdonSNuufoW2n2Tijrh/ibhDVNV1z4Yj0I1PD/gRDgZHJWu45sgcjnRxs
- xEMZY/8jGOV050jXsgVNuo9eWPWTmGJcxwSKZjmiGN/mD0tezDzaiD/3EkHA9bPZsSKgLLzNj8V
- +zfnuGadiwXzk32Oahw==
-X-Proofpoint-ORIG-GUID: tqLDWfuDlpvydnFx8mkAdyB2uZPZwDK-
-X-Proofpoint-GUID: tqLDWfuDlpvydnFx8mkAdyB2uZPZwDK-
-X-Authority-Analysis: v=2.4 cv=BYfoFLt2 c=1 sm=1 tr=0 ts=69ea5c04 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8
- a=b0JcJouLdBaXTkySTX0A:9 a=lqcHg5cX4UMA:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-23_03,2026-04-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 impostorscore=0 malwarescore=0 suspectscore=0
- lowpriorityscore=0 adultscore=0 spamscore=0 clxscore=1015 bulkscore=0
- phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
- definitions=main-2604230173
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20260423172200.GA2271460@rocinante>
 
+On Fri, Apr 24, 2026 at 02:22:00AM +0900, Krzysztof Wilczyński wrote:
+> Hello,
+> 
+> > This series converts every dynamically allocated PCI sysfs attribute to
+> > a static const definition.  After the full series, pci_sysfs_init() and
+> > sysfs_initialized are gone, and every sysfs file is created by the
+> > driver model at device_add() time.
+> 
+> A note on testing:
+> 
+>   0-day bot (recent test runs; newer builds will arrive later):
+>     - https://lore.kernel.org/linux-pci/202604231622.DgR0zih3-lkp@intel.com
+>     - https://lore.kernel.org/linux-pci/202604161928.DzuHQmeM-lkp@intel.com
+>     - https://lore.kernel.org/linux-pci/202604121312.sF0Ua4gP-lkp@intel.com
+>     - https://lore.kernel.org/linux-pci/202604111631.lrwAylMM-lkp@intel.com
+>     - https://lore.kernel.org/linux-pci/202603170336.zSLrDvlj-lkp@intel.com
+>     - https://lore.kernel.org/linux-pci/202603122052.tMV5rzNq-lkp@intel.com
+>     - https://lore.kernel.org/linux-pci/202603081334.b91RGVS6-lkp@intel.com
+>     - https://lore.kernel.org/linux-pci/202603060207.pnGfKgGa-lkp@intel.com
+> 
+>   KernelCI (for the "for-kernelci" branch):
+>     - https://dashboard.kernelci.org/tree/linux-pci/for-kernelci/941dd7c3e16840724dc961f10b84e193d13cdb57
+>     - https://dashboard.kernelci.org/tree/linux-pci/for-kernelci/683e66b11da157f730101f6919c7468a09cf3e3f
+>     - https://dashboard.kernelci.org/tree/linux-pci/for-kernelci/209e2cfd205a8aad4bae32e6f82b96b20902aa74
+>     - https://dashboard.kernelci.org/tree/linux-pci/for-kernelci/70293477e2c0ae8cbc250098818e726e1d658b53
+>     - https://dashboard.kernelci.org/tree?ts=pci
+> 
+>   Sashiko's feedback:
+>     - https://sashiko.dev/#/patchset/20260422161407.118748-1-kwilczynski%40kernel.org
+>     - https://sashiko.dev/#/patchset/20260416180107.777065-1-kwilczynski%40kernel.org
+>     - https://sashiko.dev/#/patchset/20260411080148.471335-1-kwilczynski%40kernel.org
+>     - https://sashiko.dev/#/patchset/20260410055040.39233-1-kwilczynski%40kernel.org
 
+Thanks for all this work!  I think this will be a great step forward.
+I assume you've probably looked at the sashiko feedback and concluded
+that no changes are needed, e.g., the feedback is out of scope for
+this series?  Your thoughts there would help me out.
 
-> On 21 Apr 2026, at 8:36=E2=80=AFPM, Shivani Nittor =
-<shivani@linux.ibm.com> wrote:
->=20
-> The core-book3s PMU sampling code validates the SIER TYPE field
-> when PERF_SAMPLE_DATA_SRC is requested. The SIER TYPE field
-> indicates the instruction type and is only valid for
-> random sampling (marked events). To handle cases observed where
-> SIER TYPE could be zero even for marked events,validation was
-> added to drop such samples and increment event->lost_samples.
->=20
-> However, this validation was applied to all samples,
-> including continuous sampling. In continuous sampling mode,
-> the PMU does not set the SIER TYPE field, so it remains zero.
-> As a result, valid continuous samples were incorrectly
-> treated as invalid and dropped. Fixed this by gating the
-> SIER TYPE validation with mark_event, so the check runs only
-> for marked (random) events. Continuous samples now skip this
-> check and are recorded normally in the final data recording path.
->=20
-> Fixes: 2ffb26afa642 ("arch/powerpc/perf: Check the instruction type =
-before creating sample with perf_mem_data_src")
-> Signed-off-by: Shivani Nittor <shivani@linux.ibm.com>
-
-The changes looks good to me.
-
-Reviewed-by : Athira Rajeev <atrajeev@linux.ibm.com =
-<mailto:atrajeev@linux.ibm.com>>
-
-Thanks
-Athira
-> ---
->=20
-> arch/powerpc/perf/core-book3s.c | 5 +++--
-> 1 file changed, 3 insertions(+), 2 deletions(-)
->=20
-> diff --git a/arch/powerpc/perf/core-book3s.c =
-b/arch/powerpc/perf/core-book3s.c
-> index 8b0081441f85..2e6adf5b95c4 100644
-> --- a/arch/powerpc/perf/core-book3s.c
-> +++ b/arch/powerpc/perf/core-book3s.c
-> @@ -2242,6 +2242,7 @@ static void record_and_restart(struct perf_event =
-*event, unsigned long val,
-> const u64 last_period =3D event->hw.last_period;
-> s64 prev, delta, left;
-> int record =3D 0;
-> + int mark_event =3D regs->dsisr & MMCRA_SAMPLE_ENABLE;
->=20
-> if (event->hw.state & PERF_HES_STOPPED) {
-> write_pmc(event->hw.idx, 0);
-> @@ -2304,9 +2305,9 @@ static void record_and_restart(struct perf_event =
-*event, unsigned long val,
-> * In ISA v3.0 and before values "0" and "7" are considered reserved.
-> * In ISA v3.1, value "7" has been used to indicate "larx/stcx".
-> * Drop the sample if "type" has reserved values for this field with a
-> - * ISA version check.
-> + * ISA version check for marked events.
-> */
-> - if (event->attr.sample_type & PERF_SAMPLE_DATA_SRC &&
-> + if (mark_event && event->attr.sample_type & PERF_SAMPLE_DATA_SRC &&
-> ppmu->get_mem_data_src) {
-> val =3D (regs->dar & SIER_TYPE_MASK) >> SIER_TYPE_SHIFT;
-> if (val =3D=3D 0 || (val =3D=3D 7 && =
-!cpu_has_feature(CPU_FTR_ARCH_31))) {
-> --=20
-> 2.47.3
->=20
-
+> I sadly do not own any Alpha or PowerPC hardware, so when I was testing
+> these architectures while working on the series, it would be only under
+> QEMU.
+> 
+> That said, Magnus Lindholm was able to test the series on the Alpha
+> hardware he owns, see:
+> 
+>   - https://lore.kernel.org/linux-pci/CA+=Fv5Q1tZQwnanw99NbvzT-QenfYz7vUdY02_TuPqHX32ZAiA@mail.gmail.com
+> 
+> Lorenzo Pieralisi did some testing reported outside the mailing list (we
+> talked on IRC), on the platform he had issues before, and while the issues
+> were more with procfs races, similar to the sysfs ones this series aims to
+> fix, he didn't notice regressions when having this series applied.
+> 
+> Thank you!
+> 
+>         Krzysztof
 
