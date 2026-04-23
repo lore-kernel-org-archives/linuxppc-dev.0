@@ -1,70 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-20023-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20024-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 064B3FDEE3F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2026 19:22:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3CB8FDEE4D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Apr 2026 22:44:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g1mFP3hkpz2yGf;
-	Fri, 24 Apr 2026 05:22:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776972153;
-	cv=none; b=gh3EJCcmlqOZY+hmZ3iDoYlDQeTnZZo0huUCueGUHMXM97/zf4TdWXETE6Pec6DibHX2wiiGIE4g+HFl3cIu4G7Pwf46Fn+BgQAkL/yj7RGpxxXQRsHrscxRbPUV/i7qe0NoqCvQmwuPJtbWYK37hXRecpPVCCYff+C9Lcrv8i6iEGXhnfhUFNlh8Bsr+bMQztXjDgAjd0XzGexgYOsqttXHrxyohCRdFzykgEPNik56VegMNL0sJRvqWxTjQ8I/2tcKXB/eLQLQullLImFluZV3KCFLfMvEvuK8xO5nZXj4aamCq2NbFt8djXcK3uXylfafpZoogCWlB7KJXyUQIw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g1rkV3gJrz2xlr;
+	Fri, 24 Apr 2026 08:44:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.25
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776984274;
+	cv=none; b=b4U9xI/Hm0sBZlGN0IsE7wqSEln6RT/p4m5J5Cp0+R+rTg+M6arO9L2UEjVkZMMnKL5X8n9gdAmfjSn2BozPiP05yMo6GG+EliUbmRt1fWWOSy6BRP7A+lixla6ln3fNtZoxMJiNVfwPyYgtImZOKpmy8kYpXfJm4rvtrTrRxdu29j8I5aM+NKUVgBkuk+j87FBKqb3sy11ES4eO4mi0tFZRgcefxdXOHCd1cX0JqoKLLIBWSFOamzHB+LAWSKUyhapFjLp9cFvkNNvWy6rTSVxqr6quUuB4DOlGai1CudeKRJFMW8/x6kkxtwb6KDUZX3l/Gy4K6BLFS/Mc1uHnRg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776972153; c=relaxed/relaxed;
-	bh=j0GPDBAm0I4zxAqI6YWcxfV5/1mdBezPe3eBd3FNm2U=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=T/lfVYRLDjb34+mU7NKlpqDsIwBVtqpdAaEqcrGzHa5ADwDMWx5rWgy9frIHiTd36sFi2C7jVz5Rnj8gV3hnQ243QHZjq41Y/x+il8ncar/Q55HhgEtyUU1b3tYd2j3l5NcgkV/SB7ninvfHrIRGv4RRF5elNjNwCPLuRxTFD1NAZFZpzyoxnSWALXq4KNMhBrhdAGEwMFj46f8F2MaI6workreZtUifejcctr5S4GrO7fb10SswNY9DRqkanGcIoeklpOhhrfapJLpAHXmt/F6GVY1d0VYTaMqDh4RzbsQfEPBDK9OBbB7gkseB5P8tX7vN2oAZUI+KDQ+8cLt5jw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jkcJgQ3H; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jkcJgQ3H;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+	t=1776984274; c=relaxed/relaxed;
+	bh=wRhGLU8l2WDuwEYGPvevLodPqc2GVxa/gMx/U4sI6X4=;
+	h=From:Date:Message-ID:To:Cc:Subject:In-Reply-To:References; b=X9a6c+x7mZm+LAUfN9PeTSSaqseaNpwvO4jOMEtY/mIBH73jEZoQH0J4jqDZBWW5FC5UH4jGO4lG7LFGJPnjhyuyGQblKYE2xf6FyWogviaYEorhC2kAZlmDe/cpuZEAgsE6MP0XUN5u7QQUeX3IV3LYsOn5bukfZFd5KXVo8Gkd5FS/4hvEzozA8EI6NvPEgjRKQ8atQUEa5DCBQy2woLWz2LcdHAzbOTAj/oPTKu8O3nZH/P+5cVMy6c/sMuY5pbWPcwBcU5+NfKFFo7mNP31wmw6O1W4IDir9tNXesd5GPsTsG5UgPilxDKdGAQtVQVuFxZPVBxBum2xNwmm6og==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass (client-ip=159.226.251.25; helo=cstnet.cn; envelope-from=pengpeng@iscas.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=iscas.ac.cn
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iscas.ac.cn (client-ip=159.226.251.25; helo=cstnet.cn; envelope-from=pengpeng@iscas.ac.cn; receiver=lists.ozlabs.org)
+Received: from cstnet.cn (smtp25.cstnet.cn [159.226.251.25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g1mFN6G0dz2yFm
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 05:22:32 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 528A160018;
-	Thu, 23 Apr 2026 19:22:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6F940C2BCAF;
-	Thu, 23 Apr 2026 19:22:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776972150;
-	bh=j0GPDBAm0I4zxAqI6YWcxfV5/1mdBezPe3eBd3FNm2U=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=jkcJgQ3HiRK14i/gFeArWLm8dfXNLDyZb/CpBpi/bg2TjV1D156Iw7VojatmxrCTw
-	 Uk4tMSO0ptQJ3yEQ0ywEKSb1noOxH3OwK1MnLTfCM/vq9XfmghTzfaPgRrnppZ1Xgc
-	 kFGzSEE8ml9Lbt3IukhfRveZZvqCqsyklMKvJD9kYlTLUyI39eU5IDbvCjRrrN4D+e
-	 q1PAjGln/6wuqEz86fqtMAJMuyI2Y/8d/SXUWnZV3HJ0AWUZwmmzs7/C/dV6JI9dze
-	 fRINV2aLL+GLGFZ48Gg+iryNpEsCaDM6wS6VAlLzaTOEQrnL0UAwaNb1jnF63pRK1a
-	 pr6UfVB7Bhukg==
-Date: Thu, 23 Apr 2026 12:22:27 -0700
-From: Jakub Kicinski <kuba@kernel.org>
-To: Andy Shevchenko <andriy.shevchenko@intel.com>
-Cc: davem@davemloft.net, netdev@vger.kernel.org, edumazet@google.com,
- pabeni@redhat.com, andrew+netdev@lunn.ch, horms@kernel.org, corbet@lwn.net,
- skhan@linuxfoundation.org, linux@armlinux.org.uk,
- tsbogend@alpha.franken.de, maddy@linux.ibm.com, mpe@ellerman.id.au,
- npiggin@gmail.com, chleroy@kernel.org, 3chas3@gmail.com,
- razor@blackwall.org, idosch@nvidia.com, jani.nikula@intel.com,
- mchehab+huawei@kernel.org, tytso@mit.edu, herbert@gondor.apana.org.au,
- geert@linux-m68k.org, ebiggers@kernel.org, johannes.berg@intel.com,
- jonathan.cameron@huawei.com, kees@kernel.org, kuniyu@google.com,
- fourier.thomas@gmail.com, rdunlap@infradead.org, akpm@linux-foundation.org,
- linux-doc@vger.kernel.org, linux-mips@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, bridge@lists.linux.dev, dwmw2@infradead.org
-Subject: Re: [PATCH net-deletions v2] net: remove unused ATM protocols and
- legacy ATM device drivers
-Message-ID: <20260423122227.1454f68c@kernel.org>
-In-Reply-To: <aeh0CV3UQw1quCXv@ashevche-desk.local>
-References: <20260422041846.2035118-1-kuba@kernel.org>
-	<aeh0CV3UQw1quCXv@ashevche-desk.local>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g1rkT0jPhz2xfR
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 08:44:30 +1000 (AEST)
+Received: from 03-hv-gpci-v2.eml (unknown [111.196.245.116])
+	by APP-05 (Coremail) with SMTP id zQCowADXZQnEoOppH3RsDg--.36943S2;
+	Fri, 24 Apr 2026 06:44:20 +0800 (CST)
+From: Pengpeng Hou <pengpeng@iscas.ac.cn>
+Date: Thu, 23 Apr 2026 23:32:00 +0800
+Message-ID: <20260424070103.1-hv-gpci-v2-pengpeng@iscas.ac.cn>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <chleroy@kernel.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>, Kees Cook <kees@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, pengpeng@iscas.ac.cn
+Subject: [PATCH v2] powerpc/perf/hv-gpci: bound sysfs output with helpers
+In-Reply-To: <20260417074825.22967-1-pengpeng@iscas.ac.cn>
+References: <20260417074825.22967-1-pengpeng@iscas.ac.cn>
+X-CM-TRANSID:zQCowADXZQnEoOppH3RsDg--.36943S2
+X-Coremail-Antispam: 1UD129KBjvJXoW3GF1UKrWxKF4DCrykZw45GFg_yoWxXF48pF
+	4rCr47Kw45Gw1UurW0k3Z7Zr13u39Fy347Jay8Kr9ayrs7A39FkFyIyFyYkryxCrWxCFy8
+	CrZxtws8CanrXa7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUvK14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2jI8I6cxK6x804I0_JFv_Gryl8cAvFVAK0II2c7
+	xJM28CjxkF64kEwVA0rcxSw2x7M28EF7xvwVC0I7IYx2IY67AKxVW5JVW7JwA2z4x0Y4vE
+	2Ix0cI8IcVCY1x0267AKxVWxJVW8Jr1l84ACjcxK6I8E87Iv67AKxVWxJr0_GcWl84ACjc
+	xK6I8E87Iv6xkF7I0E14v26F4UJVW0owAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40E
+	FcxC0VAKzVAqx4xG6I80ewAv7VC0I7IYx2IY67AKxVWUXVWUAwAv7VC2z280aVAFwI0_Jr
+	0_Gr1lOx8S6xCaFVCjc4AY6r1j6r4UM4x0Y48IcVAKI48JM4x0x7Aq67IIx4CEVc8vx2IE
+	rcIFxwCY1x0262kKe7AKxVWUtVW8ZwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbV
+	WUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF
+	67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42
+	IY6xIIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF
+	0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxh
+	VjvjDU0xZFpf9x0JUpwZcUUUUU=
+X-Originating-IP: [111.196.245.116]
+X-CM-SenderInfo: pshqw1xhqjqxpvfd2hldfou0/
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,14 +67,207 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
 
-On Wed, 22 Apr 2026 10:08:57 +0300 Andy Shevchenko wrote:
-> Since it's almost removal and it will go via netdev tree (same tree you are
-> maintaining, I suppose) the -D would have a big help to review the changes
-> (and not see removals at all, as 32k lines of one email is too much).
+systeminfo_gpci_request() and
+affinity_domain_via_partition_result_parse() hex-encode hypervisor data
+into the single-page sysfs read buffer with sprintf(buf + *n, ...).
+Both helpers only check PAGE_SIZE after the formatting loops have
+already advanced past the end of the buffer.
 
-Good point, I'll remember for the future deletions
+Add small helpers around sysfs_emit_at() for hex-byte and newline
+appends, and stop once the sysfs buffer is full. This keeps the repeated
+bounds handling local instead of open-coding it at each append site.
+
+Fixes: 71f1c39647d8 ("powerpc/hv_gpci: Add sysfs file inside hv_gpci device to show processor bus topology information")
+Fixes: a15e0d6a6929 ("powerpc/hv_gpci: Add sysfs file inside hv_gpci device to show affinity domain via partition information")
+Signed-off-by: Pengpeng Hou <pengpeng@iscas.ac.cn>
+---
+Changes since v1:
+- refactor the repeated sysfs_emit_at() handling into helpers as suggested
+  by Christophe Leroy
+
+diff --git a/arch/powerpc/perf/hv-gpci.c b/arch/powerpc/perf/hv-gpci.c
+index 5cac2cf3bd1e..2f543f0671ba 100644
+--- a/arch/powerpc/perf/hv-gpci.c
++++ b/arch/powerpc/perf/hv-gpci.c
+@@ -11,6 +11,7 @@
+ 
+ #include <linux/init.h>
+ #include <linux/perf_event.h>
++#include <linux/sysfs.h>
+ #include <asm/firmware.h>
+ #include <asm/hvcall.h>
+ #include <asm/io.h>
+@@ -129,11 +130,36 @@ static int sysinfo_counter_request[] = {
+ 
+ static DEFINE_PER_CPU(char, hv_gpci_reqb[HGPCI_REQ_BUFFER_SIZE]) __aligned(sizeof(uint64_t));
+ 
++static int hv_gpci_emit_hex_byte(char *buf, size_t *n, u8 byte)
++{
++	int len;
++
++	len = sysfs_emit_at(buf, *n, "%02x", byte);
++	if (len <= 0)
++		return -EFBIG;
++
++	*n += len;
++	return 0;
++}
++
++static int hv_gpci_emit_newline(char *buf, size_t *n)
++{
++	int len;
++
++	len = sysfs_emit_at(buf, *n, "\n");
++	if (len <= 0)
++		return -EFBIG;
++
++	*n += len;
++	return 0;
++}
++
+ static unsigned long systeminfo_gpci_request(u32 req, u32 starting_index,
+ 			u16 secondary_index, char *buf,
+ 			size_t *n, struct hv_gpci_request_buffer *arg)
+ {
+ 	unsigned long ret;
++	int rc;
+ 	size_t i, j;
+ 
+ 	arg->params.counter_request = cpu_to_be32(req);
+@@ -176,9 +202,14 @@ static unsigned long systeminfo_gpci_request(u32 req, u32 starting_index,
+ 	for (i = 0; i < be16_to_cpu(arg->params.returned_values); i++) {
+ 		j = i * be16_to_cpu(arg->params.cv_element_size);
+ 
+-		for (; j < (i + 1) * be16_to_cpu(arg->params.cv_element_size); j++)
+-			*n += sprintf(buf + *n,  "%02x", (u8)arg->bytes[j]);
+-		*n += sprintf(buf + *n,  "\n");
++		for (; j < (i + 1) * be16_to_cpu(arg->params.cv_element_size); j++) {
++			rc = hv_gpci_emit_hex_byte(buf, n, (u8)arg->bytes[j]);
++			if (rc)
++				return rc;
++		}
++		rc = hv_gpci_emit_newline(buf, n);
++		if (rc)
++			return rc;
+ 	}
+ 
+ 	if (*n >= PAGE_SIZE) {
+@@ -461,10 +492,14 @@ static ssize_t affinity_domain_via_domain_show(struct device *dev, struct device
+ 	return ret;
+ }
+ 
+-static void affinity_domain_via_partition_result_parse(int returned_values,
+-			int element_size, char *buf, size_t *last_element,
+-			size_t *n, struct hv_gpci_request_buffer *arg)
++static int affinity_domain_via_partition_result_parse(int returned_values,
++						      int element_size,
++						      char *buf,
++						      size_t *last_element,
++						      size_t *n,
++						      struct hv_gpci_request_buffer *arg)
+ {
++	int rc;
+ 	size_t i = 0, j = 0;
+ 	size_t k, l, m;
+ 	uint16_t total_affinity_domain_ele, size_of_each_affinity_domain_ele;
+@@ -483,27 +518,40 @@ static void affinity_domain_via_partition_result_parse(int returned_values,
+ 	 */
+ 	while (i < returned_values) {
+ 		k = j;
+-		for (; k < j + element_size; k++)
+-			*n += sprintf(buf + *n,  "%02x", (u8)arg->bytes[k]);
+-		*n += sprintf(buf + *n,  "\n");
++		for (; k < j + element_size; k++) {
++			rc = hv_gpci_emit_hex_byte(buf, n, (u8)arg->bytes[k]);
++			if (rc)
++				return rc;
++		}
++		rc = hv_gpci_emit_newline(buf, n);
++		if (rc)
++			return rc;
+ 
+ 		total_affinity_domain_ele = (u8)arg->bytes[k - 2] << 8 | (u8)arg->bytes[k - 3];
+ 		size_of_each_affinity_domain_ele = (u8)arg->bytes[k] << 8 | (u8)arg->bytes[k - 1];
+ 
+ 		for (l = 0; l < total_affinity_domain_ele; l++) {
+ 			for (m = 0; m < size_of_each_affinity_domain_ele; m++) {
+-				*n += sprintf(buf + *n,  "%02x", (u8)arg->bytes[k]);
++				rc = hv_gpci_emit_hex_byte(buf, n, (u8)arg->bytes[k]);
++				if (rc)
++					return rc;
+ 				k++;
+ 			}
+-			*n += sprintf(buf + *n,  "\n");
++			rc = hv_gpci_emit_newline(buf, n);
++			if (rc)
++				return rc;
+ 		}
+ 
+-		*n += sprintf(buf + *n,  "\n");
++		rc = hv_gpci_emit_newline(buf, n);
++		if (rc)
++			return rc;
+ 		i++;
+ 		j = k;
+ 	}
+ 
+ 	*last_element = k;
++
++	return 0;
+ }
+ 
+ static ssize_t affinity_domain_via_partition_show(struct device *dev, struct device_attribute *attr,
+@@ -514,6 +562,7 @@ static ssize_t affinity_domain_via_partition_show(struct device *dev, struct dev
+ 	size_t n = 0;
+ 	size_t last_element = 0;
+ 	u32 starting_index;
++	int element_size, rc, returned_values;
+ 
+ 	arg = (void *)get_cpu_var(hv_gpci_reqb);
+ 	memset(arg, 0, HGPCI_REQ_BUFFER_SIZE);
+@@ -546,10 +595,16 @@ static ssize_t affinity_domain_via_partition_show(struct device *dev, struct dev
+ 	 * to buffer util we get all the information.
+ 	 */
+ 	while (ret == H_PARAMETER) {
+-		affinity_domain_via_partition_result_parse(
+-			be16_to_cpu(arg->params.returned_values) - 1,
+-			be16_to_cpu(arg->params.cv_element_size), buf,
+-			&last_element, &n, arg);
++		returned_values = be16_to_cpu(arg->params.returned_values);
++		element_size = be16_to_cpu(arg->params.cv_element_size);
++		rc = affinity_domain_via_partition_result_parse(returned_values - 1,
++								element_size, buf,
++								&last_element, &n,
++								arg);
++		if (rc) {
++			put_cpu_var(hv_gpci_reqb);
++			return rc;
++		}
+ 
+ 		if (n >= PAGE_SIZE) {
+ 			put_cpu_var(hv_gpci_reqb);
+@@ -578,10 +633,15 @@ static ssize_t affinity_domain_via_partition_show(struct device *dev, struct dev
+ 	}
+ 
+ parse_result:
+-	affinity_domain_via_partition_result_parse(
+-		be16_to_cpu(arg->params.returned_values),
+-		be16_to_cpu(arg->params.cv_element_size),
+-		buf, &last_element, &n, arg);
++	returned_values = be16_to_cpu(arg->params.returned_values);
++	element_size = be16_to_cpu(arg->params.cv_element_size);
++	rc = affinity_domain_via_partition_result_parse(returned_values,
++							element_size, buf,
++							&last_element, &n, arg);
++	if (rc) {
++		put_cpu_var(hv_gpci_reqb);
++		return rc;
++	}
+ 
+ 	put_cpu_var(hv_gpci_reqb);
+ 	return n;
+-- 
+2.50.1 (Apple Git-155)
+
 
