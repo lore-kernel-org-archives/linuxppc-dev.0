@@ -1,103 +1,116 @@
-Return-Path: <linuxppc-dev+bounces-20033-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20034-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B147EF589DF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2026 02:56:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6317FB44B1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2026 05:48:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g1yKG52FFz2xGF;
-	Fri, 24 Apr 2026 12:56:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::634"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776999394;
-	cv=none; b=CftczBrR74Hwg+yUp5g6aXJtZQqPTz1ZWHkrTbuQaSNt+yhZLrrzqCsO3XmUUIbPKHUTPEzTghXs/uXGBrVzDNZWzBnMwZJDcPrjdSgAOqIzubRGYzrUAXI9XuL5Q5a+mFM3Y15RrYOE8AuHB7sSebvozJV3czAxJzK2G9gsJW+nm/cYTDufJP7BoAslzua0vuOGNAHl1VpAtnixJUcx6SRnDIK+ehQeFdiv2zp2RXbK0D43iv2U6Mn2GDFWkew1lcpizaXSBSh1Z9PtVAw4x6ZB8hDR6Eegj4n5rtfjbPHBxGQ0Uwm4wEyJjRijhwzTotc+TYvPIGQKDc9fx6cTAg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g22772vmRz2xnl;
+	Fri, 24 Apr 2026 15:48:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::636"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777009683;
+	cv=none; b=Q4qntf4Pq0PHzPt5wI3t1YD8532+rrNx8XdCJ2a1iATg7MvymJTj1czzl1QkKSZ+yuUEvvj2IDXHZfroV3XiiwNUusIfS4WxG43QPYw+OAtRGY8TF/cSiHlMzufB0hMQ8CefCRBV57iYzpiZgcgG9Mqb90E3jnrrAzOf8S98YUBOvYelgm3iKneAPTP0SOVrwG9dZSaq7JqegRmXFN+H/Ejr8/vWBnGPGK3yUrmCpyleUCFXbKHZgoFZlMNjkfnf6+hvYXjBmzdeaYk3nj51F77K9xmxrllxLDHYp8mXA8aJVx/PPpGMSgs0AZQcsAWY2WjS4N17uuWZhNJy09pT7g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776999394; c=relaxed/relaxed;
-	bh=ETx/tSKnTC+n/nV2wgCSbp2pIhIkVNUTkv0q633meJ0=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=FK1xhJY8JoSw7rThYlieBcXmKbMVIy01cFlqOFrArorCDgNWG1Gj8y7Jacy8wgwSpfDWjPg2TswsIrvrc+XwjjYAiwQeg7rQ5D3VoWbMY6lK9QqGT/Cnkq//uwPgAuiY///pI30Ho7AAMAXaJJh43fmYAnOw21wV0wgDhejIkyr4FL1Rcx5ujG341AfSUIGKYkFqDoQVez1/I8TdAWnSMeVVj+NpDInCKfXmS0y8ZJjPo0BpdV9NgKP+uasmWVlwkWcrNEnie+nd0SarxO150iv028/EpuayqRz56SGCcztYYUT7xeLs1chWFcU++fPrQp65+qoolIua/uP0LlRgzg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=U0ge4YEf; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
+	t=1777009683; c=relaxed/relaxed;
+	bh=Q7M2fwY604nxmRG1YIO02Z14fgzwwg1Pa67qHupVFxk=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Cup1YoG+Y17u6llAJVF1CfNnebjOX83tj+BnlWuKhr4iXT4HrXd2gZRuzL+Z3xhB8c/qeeJ769RxBKXuu8thx4i3a9x5V2M1wuuocujWwfgjCAoF6nBMzz6EaYtMv1T8XTXQ2Q5Ga7KV04cCEOiVLuxdy3KHbYAQQ5gxRDwqflMgYBWCE7z5vMGQIMn11+Bs5ARM+/mV7BsDbBW3CmTgRSjpxeYJYDxqwA1LYg0sVVi26yEMq3Aqsm7Hcune3bC5jd5emKfFw7No2S/XP36Q/byF7iFz7DoE9DTuIMcuvJzUkignl5HFJR8xRt7vJePc0jNIA9IXO59CIlD+m5+Tog==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=saPKta14; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::636; helo=mail-pl1-x636.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=U0ge4YEf;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=saPKta14;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=songmuchun@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::636; helo=mail-pl1-x636.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g1yKG0Q2yz2x99
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 12:56:33 +1000 (AEST)
-Received: by mail-pl1-x634.google.com with SMTP id d9443c01a7336-2aaf59c4f7cso34588325ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 19:56:33 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g22754SVQz2xfR
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 15:48:01 +1000 (AEST)
+Received: by mail-pl1-x636.google.com with SMTP id d9443c01a7336-2a871daa98fso49354215ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2026 22:48:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1776999392; x=1777604192; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ETx/tSKnTC+n/nV2wgCSbp2pIhIkVNUTkv0q633meJ0=;
-        b=U0ge4YEf6bGOF3Xljvak8zdXqTlWJqNNcqJmcKa5Rw7KSVDEx/rsrIQIhXHJHumt4U
-         RwljA1EeaNn6Is5nVadYY3KDlger15pIVTNdNpL+K6UCYu830W5/wHB2kSRdsAZGREp2
-         8EiLsfAfEZ+Gjw03TpBS624+cKaCy/fKgrk1z9U2xawAmCFjjrXWghtoCqi6TeRVwECs
-         Xgv9vLjoHfWZTQmuXeIZpNDCEjAhGWDEQ6ltprYWP6FcyTuzWywgArGaT/S1akJR9zLN
-         CeBEJZYodAZKTRwkgkE3w2UYmYfay7Uv1zWCoquCIRvoYAYXa4f5bII787KTZ+nhfe0j
-         gNyA==
+        d=gmail.com; s=20251104; t=1777009679; x=1777614479; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:to
+         :from:from:to:cc:subject:date:message-id:reply-to;
+        bh=Q7M2fwY604nxmRG1YIO02Z14fgzwwg1Pa67qHupVFxk=;
+        b=saPKta14ZHnIR27uUqMiMxhlxVC5Od5JzPyEfh3Ip38as08DZQ+/+7M7xN0KBokmT9
+         Vy6FmhvwRlhwplUt7KHmNCgG4mmr2SLjJG7V2iCG94gwz4E5o6PZoOjYiXWHI31I8ZT4
+         G9FWj+emoXXqckpcqdMymYulJlvnsnIfB5PEIxspE4u02DDW1SoQLLQxkTBUYGF7BbU8
+         DJcZq7sLYy7fHM5CDS3FL22Jvrcej9pbhLaMrU88e8xhpJXrHrrZThm3wDuQxF9tTnZq
+         0LAyMQjnzooKN7Rdv7Zi6Zi4hQTUDVINPGIM76ANVEINJympaTbP7D6MWTICUNzxHOhZ
+         LoYg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776999392; x=1777604192;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=ETx/tSKnTC+n/nV2wgCSbp2pIhIkVNUTkv0q633meJ0=;
-        b=CJJQMdD4wTiMaNSyFtVnwVeYZcmkQoqxMvXeZ7KdIVF7J2jmvDJIeWqH9+6rKSjScG
-         1PP/cHa+uS9h7iF2QDb7ZRb/5hB27liGJEtRdluTbkNIdx66SSov0u6uhv0q14YF/Fkr
-         DXc/rUswqU6Ao4eECIxZ9JdAfsS1vO7L5AYozqy/N/3o2cBtvNs68IpRQ12/kImXNl+F
-         a0o9VegxWiSjwQnKz5dGcwgv+r+q46JnhXA2dTIHiX3d9Sjo8/T0LF59dhe8IBOAEMg4
-         Z+aYCUGt+JQdcF5U69sOwiFFXPrFF9KBG0DZOJnGo8sI3S/qc726MzMeb7u7HON6ysG5
-         1Fjg==
-X-Forwarded-Encrypted: i=1; AFNElJ/v8auEGESWXmwvGnR+KiodBPOuAKDOefah3NzdwkR0qH7s4/eZfC/+csal0/U4b6uRVBrdLog7PoOYHTE=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwMSQ/OEYGYci018+HgCTfZvhbcL/ckAhcX/FNZaEYErBIZmiFu
-	/s5/CqvPT5DtcaWRjp43qvyQkRK5KbQTUi7+13sCzzsJAzJxdiEdCQzGk6T/PlR0UJo=
-X-Gm-Gg: AeBDieuHB/yp81ea04xOuvD2vBOXLoH9Cq27TVBaVlhl+7P1l7GtWXMqRPvo7L9Hh6h
-	aoF5lvHKjeFB5hjgYfocTnXEIL4gxJ6MYC6Gh3BxCRGiaf3VmdvL2RULVSWefqQbnhaf1I0NtAd
-	qAA7he/tE5Or00K1JDd5m62KTb5+WTcY5k9lbXqyqGHHOc2FVevOcol/OGIEpGIWX0kUNcaFTdM
-	ypbgWhOBYZAOODZALz+Vob3SWTO7qzJLWL0u5bFRYv1MKw7AGupg64U11eZ8JSl0f94LlNZ7NEo
-	xiEUa5qAl7LFoQyH4iiRQLWnJgFTcUmBiRvfiLRcWNV3U1WX5KS8Px8Ain1SMImKJOro45yes7g
-	vK0OEVdD5/gU1gUO1bkNgqspvh4YHg6mj7apsbwh3g8aqHIf7wKU9ug0D8snMPvYxNI8Tw9OYeP
-	zfU3tPkzvvkFr7F0hJVMEnzLHEIrtcRUrE9lIS5J6ypd4A3I8Tok3eJ0F9QGvnlQdmWQ==
-X-Received: by 2002:a17:902:6bc2:b0:2b0:9101:1b77 with SMTP id d9443c01a7336-2b5f9eaf6a6mr216777385ad.17.1776999392104;
-        Thu, 23 Apr 2026 19:56:32 -0700 (PDT)
-Received: from n232-176-004.byted.org ([36.110.163.102])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b5fab20d33sm221668325ad.63.2026.04.23.19.56.27
+        d=1e100.net; s=20251104; t=1777009679; x=1777614479;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:to
+         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=Q7M2fwY604nxmRG1YIO02Z14fgzwwg1Pa67qHupVFxk=;
+        b=svVDjXtfhaHr9dHEGVHcL09jFWdfBfPjsz6ROpM5OKeRHAg8SNnT1QR383pcUHMZNQ
+         fLM45wOy6yrwS0ED4Vf7v6yYRBXlj0tRWtN9nhdJrt4P8kxHYVXziii/kdb+EjC4vfUb
+         EBNMelR6fXaBvOjaGv1a2rmnCf5wS2IkXqeK6J6VGLD2rjv+iNoHmwszPliRJaXnDZ4J
+         CQXHJQ/lAigHhSk/oul9qMk9bhaIF/H87LCtyYw2Ca1QDd4RCIt5s/bIX03ZOCizFV1O
+         D06CsFoaCNshfvyHPoqge7R+9onexJP2kfCKgCpOzRGr59gaw2hq+nxHSUeBy/gODxCJ
+         6Jxg==
+X-Forwarded-Encrypted: i=1; AFNElJ/3mL/CgBQXynk5yGh9+NAhoARzHhcPJrACwTj3BDkrkJpVh77MLt5rLkPm+H7A8aNHG/bv442lfrjpXlk=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YytrkgE2p8+oGI8LC8wYMpOubZbTeifmHW/DLR/A2Ynuaxx1MdV
+	cP3ZG+9BwdePxjZtPW1UzmCj7i5zIBiTG0spd4KppotTYm0+H0bkMh03
+X-Gm-Gg: AeBDieu3HflwrW3RuhBVFmI27xZGJqpLOaZv59KBdqiR1E8bgb7Zx442aXI038+rsSZ
+	8qp0Yh28rGnyFC/p2EF5ZLqBdXwYrBdrzEWT59MvxgIofwLzFv0BZKGUF7EvQURt/rgVm0oHgbT
+	FuSXKZVVM6V4i2lqukCbzBYw7pSvxYqsiocEurC4BvE7nGv+UVmXHQpkyWK4L1z1iyeRIFDAwhK
+	N0VZ9YM6azFfcTAHsLL67wvUVdGSxtf/UU2udasnuqWQQpumDT0D3RG+JuMliJyUGZ3f/QbAJfT
+	NdnGOO+drCr0+FkEv69rwROIao0KhHVzieoYDjnVxgV/dglOKsjgCAi0DpgcgPD12LxLy5ON3TR
+	+HMBK7blBpvhLZvC58iAouX4tZAZzZicGyGSAcH+J4lIXMfXH3r6PDYL+2yp5koGzf5gbAycizE
+	7hzO5BsSnGEbr2CUFXFPLnpeFIRlSgxg7iHfc1tOjl09wB0XjFA3evOmNzDy7Xf4IeJ3xiLploa
+	TY/Y+votqL817A=
+X-Received: by 2002:a17:903:28e:b0:2b0:7531:b61e with SMTP id d9443c01a7336-2b5f9f9f125mr305572665ad.41.1777009679150;
+        Thu, 23 Apr 2026 22:47:59 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.bl1-in.ibm.com ([129.41.58.4])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b5faa176e9sm208778245ad.20.2026.04.23.22.47.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 23 Apr 2026 19:56:31 -0700 (PDT)
-From: Muchun Song <songmuchun@bytedance.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-	David Hildenbrand <david@kernel.org>,
-	Muchun Song <muchun.song@linux.dev>,
-	Oscar Salvador <osalvador@suse.de>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Lorenzo Stoakes <ljs@kernel.org>,
-	"Liam R . Howlett" <Liam.Howlett@oracle.com>,
-	Vlastimil Babka <vbabka@kernel.org>,
-	Mike Rapoport <rppt@kernel.org>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Michal Hocko <mhocko@suse.com>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	aneesh.kumar@linux.ibm.com,
-	joao.m.martins@oracle.com,
-	linux-mm@kvack.org,
+        Thu, 23 Apr 2026 22:47:58 -0700 (PDT)
+From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+To: maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	chleroy@kernel.org,
+	peterz@infradead.org,
+	jpoimboe@kernel.org,
+	jbaron@akamai.com,
+	aliceryhl@google.com,
+	rostedt@goodmis.org,
+	ardb@kernel.org,
+	sumit.semwal@linaro.org,
+	christian.koenig@amd.com,
+	ojeda@kernel.org,
+	boqun@kernel.org,
+	gary@garyguo.net,
+	bjorn3_gh@protonmail.com,
+	lossin@kernel.org,
+	a.hindborg@kernel.org,
+	tmgross@umich.edu,
+	dakr@kernel.org,
+	nathan@kernel.org,
+	nick.desaulniers+lkml@gmail.com,
+	morbo@google.com,
+	justinstitt@google.com,
+	tamird@kernel.org,
+	arnd@arndb.de,
+	nsc@kernel.org,
+	mkchauras@gmail.com,
+	simona.vetter@ffwll.ch,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org,
-	Muchun Song <songmuchun@bytedance.com>
-Subject: [PATCH v6 7/7] mm/memory_hotplug: Factor out altmap freeing checks
-Date: Fri, 24 Apr 2026 10:55:47 +0800
-Message-Id: <20260424025547.3806072-8-songmuchun@bytedance.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20260424025547.3806072-1-songmuchun@bytedance.com>
-References: <20260424025547.3806072-1-songmuchun@bytedance.com>
+	linux-media@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	linaro-mm-sig@lists.linaro.org,
+	rust-for-linux@vger.kernel.org,
+	llvm@lists.linux.dev
+Subject: [PATCH V13 0/7] Rust support for powerpc
+Date: Fri, 24 Apr 2026 11:17:35 +0530
+Message-ID: <20260424054742.45832-1-mkchauras@gmail.com>
+X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -111,68 +124,114 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Use a small helper to centralize altmap freeing after verifying that all
-vmemmap pages were released. This keeps the check consistent between the
-normal teardown path and the memory hotplug error paths.
+Enable experimental rust support for ppc64le and ppc32be. The patch for
+ppc32 has been provided by Link Mauve[1] and ppc64le support[2] has been
+merged over it. ppc32 needs some toolchain fixes mentioned in the patch
+`rust: Add PowerPC support` and the discussion for that is done here[1].
 
-Suggested-by: David Hildenbrand (Arm) <david@kernel.org>
-Signed-off-by: Muchun Song <songmuchun@bytedance.com>
----
- mm/memory_hotplug.c | 16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+This has been tested on
+- powernv9 hardware
+- pseries P11 hardware
+- pseries(9, 10) qemu
+- powernv(9, 10) qemu
+- rustdoc on x86 and powerpc64le
+- rusttest on x86 and powerpc64le
 
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 7bfdc3a99688..ee150d312bd9 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -1403,6 +1403,12 @@ bool mhp_supports_memmap_on_memory(void)
- }
- EXPORT_SYMBOL_GPL(mhp_supports_memmap_on_memory);
- 
-+static void altmap_free(struct vmem_altmap *altmap)
-+{
-+	WARN_ONCE(altmap->alloc, "Altmap not fully unmapped");
-+	kfree(altmap);
-+}
-+
- static void remove_memory_blocks_and_altmaps(u64 start, u64 size)
- {
- 	unsigned long memblock_size = memory_block_size_bytes();
-@@ -1425,12 +1431,8 @@ static void remove_memory_blocks_and_altmaps(u64 start, u64 size)
- 		mem->altmap = NULL;
- 
- 		remove_memory_block_devices(cur_start, memblock_size);
--
- 		arch_remove_memory(cur_start, memblock_size, altmap, NULL);
--
--		/* Verify that all vmemmap pages have actually been freed. */
--		WARN(altmap->alloc, "Altmap not fully unmapped");
--		kfree(altmap);
-+		altmap_free(altmap);
- 	}
- }
- 
-@@ -1461,7 +1463,7 @@ static int create_altmaps_and_memory_blocks(int nid, struct memory_group *group,
- 		/* call arch's memory hotadd */
- 		ret = arch_add_memory(nid, cur_start, memblock_size, &params);
- 		if (ret < 0) {
--			kfree(params.altmap);
-+			altmap_free(params.altmap);
- 			goto out;
- 		}
- 
-@@ -1470,7 +1472,7 @@ static int create_altmaps_and_memory_blocks(int nid, struct memory_group *group,
- 						  params.altmap, group);
- 		if (ret) {
- 			arch_remove_memory(cur_start, memblock_size, params.altmap, NULL);
--			kfree(params.altmap);
-+			altmap_free(params.altmap);
- 			goto out;
- 		}
- 	}
+We are actively working with our LLVM team to get the target for ppc,
+ppc64 and ppc64le in the rust compiler.
+
+[1] https://lore.kernel.org/all/20260204030507.8203-1-linkmauve@linkmauve.fr
+[2] https://lore.kernel.org/all/20260204042417.83903-1-mkchauras@gmail.com
+
+Changelog:
+V12 -> V13:
+- Added a patch for fixing build issue on ppc32 by Link Mauve
+- Added another patch to fix a build issue in dma-buf
+- Added another patch to enforce minimum `rustc` version for powerpc
+V12: https://lore.kernel.org/all/20260421120958.190430-1-mkchauras@gmail.com/
+
+V11 -> V12:
+- Rebased to mainline (rust/Makefile conflict resolved)
+V11: https://lore.kernel.org/all/20260417152253.2312961-1-mkchauras@gmail.com/
+
+V10 -> V11:
+- Updated `rust/Makefile`
+- Not all libraries are move to `rust/host` directory now. Only
+  proc_macro2, quote and syn are moved
+- Special handling for pin init is added. Details in commit
+- Removed mkdir for `rust/host`, this is now handled by toolchain.
+V10: https://lore.kernel.org/all/20260406200149.3727922-1-mkchauras@gmail.com/
+
+V9 -> V10:
+- rust/Makefile updated with review comments from Miguel
+- Patch 1/4 updated with commit message and subject
+V9: https://lore.kernel.org/all/20260404121610.1956528-1-mkchauras@gmail.com/
+
+V8 -> V9:
+- rust/Makefile updated with a directory instead of abspath
+V8: https://lore.kernel.org/all/20260403145308.1042622-1-mkchauras@gmail.com/
+
+V7 -> V8:
+- rust/Makefile updated to separate host libraries from target
+V7: https://lore.kernel.org/all/20260329160254.2592207-1-mkchauras@gmail.com/
+
+Changelog:
+V6 -> V7:
+- Documentation removed as powerpc is still under development
+- Added a fix for race condition in rust/Makefile
+V6: https://lore.kernel.org/all/20260210090023.2587534-1-mkchauras@gmail.com
+
+V5 -> V6:
+- Added a missing Tested by from Venkat which got missed since V3
+- Support is marked as Maintained instead of experimental
+V5: https://lore.kernel.org/all/20260210053756.2088302-1-mkchauras@gmail.com
+
+V4 -> V5:
+- Removed a nested ifdef from PPC64 for Little endian toolchain
+V4: https://lore.kernel.org/all/20260209105456.1551677-1-mkchauras@gmail.com
+
+V3 -> V4:
+- Co-developed-by header added in patch 1
+V3: https://lore.kernel.org/all/20260205180429.3280657-1-mkchauras@gmail.com
+
+V2 -> V3:
+- Splited HAVE_RUST in 2 lines
+- BINDGEN_TARGET_powerpc initialized before assigning the same to
+  BINDGEN_TARGET
+V2: https://lore.kernel.org/all/20260204210125.613350-1-mkchauras@gmail.com
+
+V1 -> V2:
+- jump label fix for rust has been moved to a separate patch
+- PPC32 support has been taken
+- rust support has been marked experimental
+- target.json dependency has been removed
+- HAVE_RUST now depends on CPU_LITTLE_ENDIAN for PPC64
+
+Link Mauve (2):
+  rust: Make __udivdi3() and __umoddi3() panic
+  rust: Add PowerPC support
+
+Mukesh Kumar Chaurasiya (IBM) (5):
+  rust: Fix "multiple candidates for rmeta dependency core" error
+  dma-resv: Fix undefined symbol when CONFIG_DMA_SHARED_BUFFER is
+    disabled
+  powerpc/jump_label: adjust inline asm to be consistent
+  rust/powerpc: Set min rustc version for powerpc
+  powerpc: Enable Rust for ppc64le
+
+ arch/powerpc/Kconfig                  |  2 ++
+ arch/powerpc/Makefile                 |  7 ++++
+ arch/powerpc/include/asm/jump_label.h | 23 ++++++------
+ include/linux/dma-resv.h              |  2 +-
+ rust/Makefile                         | 52 +++++++++++++++++----------
+ rust/compiler_builtins.rs             |  6 ++++
+ scripts/min-tool-version.sh           |  6 +++-
+ 7 files changed, 68 insertions(+), 30 deletions(-)
+
 -- 
-2.20.1
+2.53.0
 
 
