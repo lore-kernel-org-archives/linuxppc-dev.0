@@ -1,78 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-20076-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20077-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 358C2FE5211
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2026 11:49:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62A6CFE5215
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2026 11:55:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g2B7n5FH2z2yYs;
-	Fri, 24 Apr 2026 21:49:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777022782;
-	cv=none; b=i2B9/q1jjjhtmqn30Qe1r8t5CI9DvxXq3uUHaBNJ0elyij6se06KdeJ5BFaOWFqoS+SM2ZCUCfGfdPq2rkjTW5Gd2Yi08cSIBLmuTNBEoZQHZddTn+2gj0ONvY7OTTo0yMMo8qjBgjmqYWICmyyhLNRS88GbHhLWHts9T1zgoD773oLd0PGoYouZEFcBZcndHWy0ObkcMo1EhyDAfBjq7poaGPa1sffDbfkR2uno12QewVibIe6LZ+o9lO82Ig44IxpF7K6jHdHUKFs1YE6MpkTU8oUVT+jRB7tvH8Wlvo/mrmAsb6SJPdRXXj/OJOX5iDI9DVqs0wM37aFtUpEeHg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g2BH20GHBz2yYs;
+	Fri, 24 Apr 2026 21:55:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=63.228.1.57
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777031725;
+	cv=none; b=L+OWITL7WELTyOs0LA/ZQLDX1kIOMRUFXiEqhGOCM5AolGR7OvWATs4kLSsjciKvZAjN4TluTGux4mQS5N/4D/HSiS87Aq34ufBugmV0+nMom9tSDgorMmSmKg6+Qi0grqSWMZSOKDiyef9iKU0qDPkly/SfEDTcZgGhkleTmsFv7IbuEdHzTWYoTsUA231B4630azHzrO7q5v/YnbAag73BFGYvcP2imlyX2+dFB29riToDLNOwJNBK2gNgruCdUGjL7S7haq2cyzdfRBCLRT/RSt1ckJjfF4jsIkIXA2bTvatzjZU8x7SV4iLKzDxuppmzjjzKy+g0YvEZhr69pA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777022782; c=relaxed/relaxed;
-	bh=5Z+IcA+wgQgfLjrABjUdZIUTQa/L6I9t9shLlrmRclA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NQazTJJX40mrcYQYyjh45QrY0yQosGjfu8oNq3Fk0j7klzOD9I6jcv8Finv58uMxTqNGt+6VNqZjkBtFtZAyNlTZnXXF+lovUvUU57csHyBjQPhHTmIn3qBOGoTuk81rmxDlyArwvRWjTgO+J8EwzZ//qlIfj40y+qVIfhTtASdhGRk4E+GqYdJfJQIwXSrHwX9mQ/fK72PjtkNLU/aiTOpjOc2d7xPpJGz+lWxqC1GIMzeQpYu90N5tEYaYNItHdc/no1cNuDMmusSyGbWEg+S0ID7N5xtrR+Y3CPMQ4R3Nlnjn+rKEYYcPsmSm22+yLbsiFDh3/UpdGgMGnhgMRg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=idxy5bdW; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam.menghani@ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=idxy5bdW;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam.menghani@ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g26z10jwgz2xZK
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 19:26:20 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63NJ4qcc3514965;
-	Fri, 24 Apr 2026 09:26:10 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=5Z+IcA+wgQgfLjrABjUdZIUTQa/L6I9t9shLlrmRc
-	lA=; b=idxy5bdWMC+9p2E+Sdv2+9tP3/aTxR3UwikISKb8MvTsO2wsg5/b/kFKE
-	ZyyrwR3hEfkyXORuJTTVCiLdTfmzmjoaPbK9JR/FJuVdeMtbGiv4cNGoV/4ef6RA
-	0isaksGSHYpBHgOUGiHbg+B2h+tFGItaZ/O7ScsF3P5ZvnpphQgx3iY91rn5AsIt
-	w/gF27aVOyTsccElWEYXlYjGa2WITVp3sqKFXEc8nHxuE+pK8MzxXN9Htg0A5GMj
-	dum3OaqvUk1N2ntP0NC/dFYOcWvlYTRdUboylRiMlxW2P+Q6aCFtqPlVxdkHWX+R
-	NOdvXKOYk6ceHW/gmTECmUBlCQ0iQ==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dpeu2d3t1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 24 Apr 2026 09:26:09 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 63O9KMm7005825;
-	Fri, 24 Apr 2026 09:26:08 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dpjky26kv-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 24 Apr 2026 09:26:08 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63O9Q4JJ52429208
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 24 Apr 2026 09:26:04 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 998BA2004D;
-	Fri, 24 Apr 2026 09:26:04 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5967720040;
-	Fri, 24 Apr 2026 09:26:02 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.43.77.7])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 24 Apr 2026 09:26:02 +0000 (GMT)
-From: Gautam Menghani <Gautam.Menghani@ibm.com>
-To: maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au,
-        chleroy@kernel.org
-Cc: Gautam Menghani <gautam@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] KVM: PPC: Book3S HV: Add H_FAC_UNAVAIL mapping for tracing exits
-Date: Fri, 24 Apr 2026 14:55:55 +0530
-Message-ID: <20260424092558.31798-1-Gautam.Menghani@ibm.com>
-X-Mailer: git-send-email 2.50.1
+	t=1777031725; c=relaxed/relaxed;
+	bh=Zoa8xDzDFfTvmikOTgDdxryJpcM8WMB+6mWIMsZcFeM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=DaVV/xmv/FfpNB/wzEYNLaOPAiHQu0r2gUmsNHj5B8yt1yBHN6WGzDrQaYJdiMxLkxYNLJCzlJ36zBbT9cJ7hJyHxEECJ5/wDatK4DgacqaSfcAy+x5FToeY272WW74XGd7zG03yJY0U+dktket2JiDnb+lF8v+o6xVzzgKFSooH+sMBsAMNG3XMCw5kTcm+5QpZH3g1py/lEtXIq3TSETDzx+eUdjPthqaEkGvIj/DzABz7HmiGFkCb2P/AnnX084hcjanETXMQYhprvGdJ4/sRQC18SRjEsmY2J6HHaO5i4WkRejR3K0fq8bQvUunGBqAJN9JJn3y1TsqDVwOIUQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org; spf=pass (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.crashing.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g2BH02vlTz2yTQ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 21:55:23 +1000 (AEST)
+Received: from gate.crashing.org (localhost [127.0.0.1])
+	by gate.crashing.org (8.18.1/8.18.1/Debian-2) with ESMTP id 63OBs8ib185599;
+	Fri, 24 Apr 2026 06:54:08 -0500
+Received: (from segher@localhost)
+	by gate.crashing.org (8.18.1/8.18.1/Submit) id 63OBs5hd185566;
+	Fri, 24 Apr 2026 06:54:05 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
+Date: Fri, 24 Apr 2026 06:54:05 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        chleroy@kernel.org, peterz@infradead.org, jpoimboe@kernel.org,
+        jbaron@akamai.com, aliceryhl@google.com, rostedt@goodmis.org,
+        ardb@kernel.org, sumit.semwal@linaro.org, christian.koenig@amd.com,
+        ojeda@kernel.org, boqun@kernel.org, gary@garyguo.net,
+        bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org,
+        tmgross@umich.edu, dakr@kernel.org, nathan@kernel.org,
+        nick.desaulniers+lkml@gmail.com, morbo@google.com,
+        justinstitt@google.com, tamird@kernel.org, arnd@arndb.de,
+        nsc@kernel.org, simona.vetter@ffwll.ch, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org,
+        rust-for-linux@vger.kernel.org, llvm@lists.linux.dev,
+        Link Mauve <linkmauve@linkmauve.fr>
+Subject: Re: [PATCH V13 5/7] rust: Make __udivdi3() and __umoddi3() panic
+Message-ID: <aetZ3VX_Y9sop-SO@gate>
+References: <20260424054742.45832-1-mkchauras@gmail.com>
+ <20260424054742.45832-6-mkchauras@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,58 +64,39 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI0MDA4NiBTYWx0ZWRfX/8u8Wq8WJHyV
- 2M2XPrpWTJRReyRDzVgmBt0TTsUyb39hfiSMqeSWzNNZZ4dlUcuEUDHq2u69k0gXKBsGg4AqKvs
- 8laECAH0iux1Dbwmj/pNuG0Mkm2vSq7qkdnh/EwgxPhgRfHXgIpCj1r7l9IO4tmN6V7HV5bjylu
- iLk3XESM3+HfOVJtIjG1qpGRT0bTfURNtjsQlynGsQyIoqe5rH8zq+/yowrnKtLt5YYaHUZ6LjW
- IvyqZvnwgRZ5D3KE1M1Eljqqj/NVhQjnt92qPAiYZDFl1CuzsmpZf6YZZ2CAAkvoPaT0WUp+kaM
- ECjmNECvFOhBMpq1PXLlfIruX51pBTys8mmXFBDeYogOv18iO4C3rlnmruZ4I3NrnTRxihxXYpD
- MB0lnZZQQFm+6GOsAohd+JRqhcNOPiPJ+lmOBVf7ysZeQzp6ysWQGNYRNbaKX6zToGwTHqQIjli
- 8RjX5LPsDIGWFOSJnFg==
-X-Proofpoint-ORIG-GUID: o7uEaCyfViQqFKy7o4knqUKzxo38Z72Q
-X-Proofpoint-GUID: cBRmFAgo3auae0Kg-O3dNlC0_UqYGQdj
-X-Authority-Analysis: v=2.4 cv=XMUAjwhE c=1 sm=1 tr=0 ts=69eb3731 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8 a=HaZPnmESgsJLTL5AR_AA:9
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-23_03,2026-04-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 clxscore=1011 priorityscore=1501 impostorscore=0 bulkscore=0
- spamscore=0 lowpriorityscore=0 phishscore=0 adultscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2604240086
+In-Reply-To: <20260424054742.45832-6-mkchauras@gmail.com>
 
-From: Gautam Menghani <gautam@linux.ibm.com>
+Hi!
 
-The macro kvm_trace_symbol_exit is used for providing the mappings
-for the trap vectors and their names. Add mapping for H_FAC_UNAVAIL so that
-trap reason is displayed as string instead of a vector number when using
-the kvm_guest_exit tracepoint.
+On Fri, Apr 24, 2026 at 11:17:40AM +0530, Mukesh Kumar Chaurasiya (IBM) wrote:
+> The core crate currently depends on these two functions for i64/u64/
+> i128/u128/core::time::Duration formatting, but we shouldn’t use that in
+> the kernel so let’s panic if they are ever called.
+> 
+> This doesn’t yet fix drm_panic_qr.rs, which also uses __udivdi3 when
+> CONFIG_CC_OPTIMIZE_FOR_SIZE=y, but at least makes the rest of the kernel
+> build on PPC32.
 
-Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
----
- arch/powerpc/kvm/trace_book3s.h | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+GCC uses calls to functions like even __addsi3 whenever the (sub-)target
+does not implement some RTL, doesn't have a define_insn and the like for
+it.  When you write a new port you only *have* to implement a very few
+things, the rest is done in libgcc (you might still have to write some
+of that for your target, no free lunch etc.)
 
-diff --git a/arch/powerpc/kvm/trace_book3s.h b/arch/powerpc/kvm/trace_book3s.h
-index 9260ddbd557f..eafbaeb5a9db 100644
---- a/arch/powerpc/kvm/trace_book3s.h
-+++ b/arch/powerpc/kvm/trace_book3s.h
-@@ -28,6 +28,7 @@
- 	{0xea0, "H_VIRT"}, \
- 	{0xf00, "PERFMON"}, \
- 	{0xf20, "ALTIVEC"}, \
--	{0xf40, "VSX"}
-+	{0xf40, "VSX"}, \
-+	{0xf80, "H_FAC_UNAVAIL"},
- 
- #endif
--- 
-2.52.0
+32-bit PowerPC has no instructions for 64-bit divisions, nor
+instructions that help implementing it in software.  It still very often
+helps to hand-write machine code for it, it very easily can usually be
+more than twice as fast for example (for example if the divisor is less
+than half a word big, the common case -- it can be made tens of times
+faster then).
 
+There can be many reasons why a GCC backend decides to call a libgcc
+routine.  For __udivdi3 on -m32 rs6000 you'll be good AFAICS :-)
+(but poisoning functions like you do is a terrible idea in general!)
+
+
+Segher
 
