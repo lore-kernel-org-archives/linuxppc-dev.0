@@ -1,98 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-20083-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20084-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5DAC8FED3D6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2026 14:48:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FCCAFED3EC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2026 15:48:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g2G6S5lqMz2yFm;
-	Sat, 25 Apr 2026 00:48:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=81.169.146.164 arc.chain=strato.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777042096;
-	cv=pass; b=Tr+DFgCQx2jMY7KjmotNlxqN3y8TCc7p7tGfwzCQK1JQFVaTSkJ6MzRtnwInCOA7XbDYNhGhhAqJnmIkXruQgzW2tdhgcD6az2941Xch2kxg0LmPYr8YtnD3i0wUZFA5V9pyjIVtA1Y8jvp0iQ+FeWS2OKg/FiZHr2VjSMXa18CSA4gu7FQc0E/VjvQ7/cCXmQ87PsgaO+J6I6jR+U4noyME/GkYqqm6dtXhW6fz8n3Ho1Km2NREL4a6uVbLA/kf1S3xihJDfv5fyxHCNjn97Bjp1T1PPG3KepDLV/w5EU4xPrtLF02YyDz9pmVDrzkq5oGsMcFF8HuHVmhbHBD+WA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777042096; c=relaxed/relaxed;
-	bh=AxqLW8EPOEFlnjj49t6Ck8WlSYjtqj1YnihzRrcoLe4=;
-	h=Subject:From:To:Cc:References:Message-ID:Date:MIME-Version:
-	 In-Reply-To:Content-Type; b=RlJvPUBuFtX27JSBWiKUDfLj9qkG0WAiqynO3cwry3I8iWi03Gg0GNzLIyserBYrBTBhov5wEnqFSdv3xmwomI0FKrKcKiiZO+ksNAcbDAAad3zzsYkISuIftJG1J0wQCDdsn0We3Wt6cVTVL8ijm9r3hNotEksAqqnPa3b3A4W84S4FLvwQz5rAK53FdMUHAduAkHcFJDueQEKGXmKOGgOmF0H9b+XEF6WzcVtEScL+ClkOuctQ5ZAl1kaBc71EPhGQtmUbdP9cgm2AVRQi/Ulrl3VZowm2GjPkJOv1RwCfIgdhMV6k+gfok3ej9hpI0qXVOOZUgtqf280s8dYnRw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=ZQCimJAo; dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=tpy4+zWG; dkim-atps=neutral; spf=pass (client-ip=81.169.146.164; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p01-ob.smtp.rzone.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g2HSG5yFgz2yWK;
+	Sat, 25 Apr 2026 01:48:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=130.133.4.66
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777045726;
+	cv=none; b=Mqs0pRGErLe/aSi7WQR73i/iuhsyP5BtEus4t81yfcsJ/pzbT915xQKkIyEW/5r04KybprNGi76UR8ITQIx03WE09XLFVFL71ju62Dd37Im1D7zXQSSuiU0vZyYaPvvVd69RIxbl1iZn6oW7XggLcSjaVYJL8ZnaZcqw7PLN30V2w0fKXmW1qnZsH+kgCf0uQajvMGyfOXAfVRZWJlRTfktsAKenjWfEk8HtMjKJHazOfRLMp+FVrqu/kmAJAGLPN8RvigOO320QJsZddyB2mazruhMWWsvhvHW5ZtJpLMNYgSzUfOGlXOPKPqJdrUwfk17fbgcEa5JbrQDGmwlnqw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1777045726; c=relaxed/relaxed;
+	bh=sR7PWVzDNl0Tt491SxI4OxCz/9aFZbKZgaCBkHzdKEE=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=Xtp9EVkpKOBq6wuKeuCEfhcpsDrgeXoxq2sBDwg2ltIQsIfb6SOSADAWEPoB2KQ1MZjrVrkk6wcDb3NRGWBfqQrmcuDGj16J3GUDijBBkJhdS1OUEA80QlTDDx5aP3UXXmprXEMzmPOihwfsmQJ5fs3CdmmP7zy9txBhIyFmFA4GoEUrfyyEMQhUMF28OjFNHix0py6sRo5hNW6rB4gpzu6/mgfKqjyEwIRpqG01NvTHgULJ/fUvTFoklByZ0B0AQyqoIXZ8zys8eUgFW02zMwa7jfO5xuRfLREYe7RlkzntCXhLDASFDMqwHa/EZCtRuvFqtsB6wZHAJZIfuRFLKw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=physik.fu-berlin.de; dkim=pass (2048-bit key; unprotected) header.d=fu-berlin.de header.i=@fu-berlin.de header.a=rsa-sha256 header.s=fub01 header.b=P1jDrlBY; dkim-atps=neutral; spf=pass (client-ip=130.133.4.66; helo=outpost1.zedat.fu-berlin.de; envelope-from=glaubitz@zedat.fu-berlin.de; receiver=lists.ozlabs.org) smtp.mailfrom=zedat.fu-berlin.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=physik.fu-berlin.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=ZQCimJAo;
-	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=tpy4+zWG;
+	dkim=pass (2048-bit key; unprotected) header.d=fu-berlin.de header.i=@fu-berlin.de header.a=rsa-sha256 header.s=fub01 header.b=P1jDrlBY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=81.169.146.164; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
-Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [81.169.146.164])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zedat.fu-berlin.de (client-ip=130.133.4.66; helo=outpost1.zedat.fu-berlin.de; envelope-from=glaubitz@zedat.fu-berlin.de; receiver=lists.ozlabs.org)
+Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de [130.133.4.66])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g2G6N1gSCz2xwH
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Apr 2026 00:48:09 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; t=1777042079; cv=none;
-    d=strato.com; s=strato-dkim-0002;
-    b=sY3+JyxOHH35fbBxp2GDkpTGsBGnsW1n3ENA5u3iiSmya0N7jp4SAJl40c46nImZ5O
-    u/rUC5/ID75tsbPl1y1SgVN8HZB1U/Yc1FYfsGACcz7Z2J1WIE+KOk8sq5pJ3YDw8S9n
-    xuufLMf2VKueGKsIj+4g+1+Y2+CSVcASj+lJgz2tTDVgcBNEM5sHiLmWO2T7tmNRo6SY
-    mMZDk+lxcZk3wEcjWh85D78cYrMuVSIm18PscKQ+7L+F7y+5/PWiXIZtooOYH5CS33Fp
-    ruBjySSGhJJS1wNzde/sojAShth1EAL+3DEkwJbLqQHBuOLPl+Qg2UJCDvz4aktCPtdE
-    PxvQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1777042079;
-    s=strato-dkim-0002; d=strato.com;
-    h=In-Reply-To:Date:Message-ID:References:Cc:To:From:Subject:Cc:Date:
-    From:Subject:Sender;
-    bh=AxqLW8EPOEFlnjj49t6Ck8WlSYjtqj1YnihzRrcoLe4=;
-    b=h94z/3dJGm0VuDZc+rJZtJQlA2IYBz0wVuIjw7gBPIhdY4aXEbwtREg3YBzKnx7W4I
-    QoYSgXGyMFrn19toXHGgiSFshBiXavFDF8ZXwkCxXGb/ESaTWi1VR8qDJ4l8KhS9ExAd
-    RatXXOyqQMTA+dJ5VkxXjU3sTj91Ebl1I91XJSueD1IresF5KW7vEuQHd6P5wxBW7iXL
-    dvGKEqV6T3TRGqkcOzd2SK+C02XE0qkz8jmpqrV+TrAP7r3ZqBQSz4ZMy35F5P177A1H
-    Kx+kfNEzF9+x4N0CShYuVGmIOuO7k2NBqBm4WmSlWv5umo0bv0pJ+ZNBBrKXKSc/7Chl
-    VGYA==
-ARC-Authentication-Results: i=1; strato.com;
-    arc=none;
-    dkim=none
-X-RZG-CLASS-ID: mo01
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1777042079;
-    s=strato-dkim-0002; d=xenosoft.de;
-    h=In-Reply-To:Date:Message-ID:References:Cc:To:From:Subject:Cc:Date:
-    From:Subject:Sender;
-    bh=AxqLW8EPOEFlnjj49t6Ck8WlSYjtqj1YnihzRrcoLe4=;
-    b=ZQCimJAoxEebAKTmorkVldtEq8aby6XBh8g3Z/6oYcn4QnUT0wafCcIKfEMO3MRBdi
-    p/PjWCVwElv2vN1n/T00gmQZuuUMrjwLmA/LKghl9MhzJL3qvclCMgNfX2HkpCwuVvWT
-    0yhnDayggijzkMthn0m0zcN5Z1xJeppw1V96e/CFAfTVkgSph0aYh9idbw2pcACS/vnA
-    K8Yd1xJ610S4j8WWEzIPG8vh3QMFFeE8xBi5yLRbvxkmGvq8g1j3hJNV6MLUwRLWYBku
-    vTZYWdEn9HBnyfUeK02l9GyMTruKF38j8wAbGpLL5bS3SvacUw3xc7dScPqa836xD5eN
-    prVA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1777042079;
-    s=strato-dkim-0003; d=xenosoft.de;
-    h=In-Reply-To:Date:Message-ID:References:Cc:To:From:Subject:Cc:Date:
-    From:Subject:Sender;
-    bh=AxqLW8EPOEFlnjj49t6Ck8WlSYjtqj1YnihzRrcoLe4=;
-    b=tpy4+zWGZNmPwLvXtsCIVEH4OP0LcOcIecU3E65WmvxHZxHCPtfXprceHIGElMgCfd
-    DqzOK1r1eKRYxDynLeDQ==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr4thIFiqT9BURIi+l7x/g"
-Received: from void-ppc.a-eon.tld
-    by smtp.strato.de (RZmta 55.0.1 DYNA|AUTH)
-    with ESMTPSA id e7876023OElwxiU
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-	(Client did not present a certificate);
-    Fri, 24 Apr 2026 16:47:58 +0200 (CEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g2HSD69lcz2yC9
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Apr 2026 01:48:43 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=fu-berlin.de; s=fub01; h=MIME-Version:Content-Transfer-Encoding:
+	Content-Type:References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:From:
+	Reply-To:Subject:Date:Message-ID:To:Cc:MIME-Version:Content-Type:
+	Content-Transfer-Encoding:Content-ID:Content-Description:In-Reply-To:
+	References; bh=sR7PWVzDNl0Tt491SxI4OxCz/9aFZbKZgaCBkHzdKEE=; t=1777045724;
+	x=1777650524; b=P1jDrlBYB0iZr4wM0Fk2wnlkvkL2wYxCaLKkuXeO6C/ZKMwJcDh636dRowMOY
+	dC93JPngUSGUs8nga0UWG4GOPe7rptEBuoBimQNODIizJbiiOVpMh7kmNoYOx2HLlDtiwyW5pI8SN
+	gwW5ktBxnafxI1zdUSDT9xqxI15EEkmlg4OtNLuvhky0tTKy7rBtmwK/mWYMEEA876QiS2kxuP0VA
+	nfm+RuflEMm0/spHN4UHt+srLgbr2J1gmTaKvecA2gB7fBxu+JP7GoJJpTLKJqJu80CQkBlZB790c
+	eAgWdq+YDjMPQI+itDkU/FWw8FCiQXTHUeFKtqTIFCFEYx0n6Q==;
+Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
+          by outpost.zedat.fu-berlin.de (Exim 4.99)
+          with esmtps (TLS1.3)
+          tls TLS_AES_256_GCM_SHA384
+          (envelope-from <glaubitz@zedat.fu-berlin.de>)
+          id 1wGIli-00000000k6X-3PRH; Fri, 24 Apr 2026 17:48:38 +0200
+Received: from dynamic-002-242-158-062.2.242.pool.telefonica.de ([2.242.158.62] helo=suse-laptop.fritz.box)
+          by inpost2.zedat.fu-berlin.de (Exim 4.99)
+          with esmtpsa (TLS1.3)
+          tls TLS_AES_256_GCM_SHA384
+          (envelope-from <glaubitz@physik.fu-berlin.de>)
+          id 1wGIli-000000007EX-2Trq; Fri, 24 Apr 2026 17:48:38 +0200
+Message-ID: <d9ad0cd6fa640f23c396778bce2aa322e40e7e88.camel@physik.fu-berlin.de>
 Subject: Re: KVM-PR no longer works when compiled with new GCC compilers
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-To: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, kvm@vger.kernel.org,
- "debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>
-Cc: "R.T.Dickinson" <rtd2@xtra.co.nz>, hypexed@yahoo.com.au,
- mad skateman <madskateman@gmail.com>, Christian Zigotzky <info@xenosoft.de>
+From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+To: Christian Zigotzky <chzigotzky@xenosoft.de>, linuxppc-dev
+	 <linuxppc-dev@lists.ozlabs.org>, kvm@vger.kernel.org, 
+ "debian-powerpc@lists.debian.org"
+	 <debian-powerpc@lists.debian.org>
+Cc: "R.T.Dickinson" <rtd2@xtra.co.nz>, hypexed@yahoo.com.au, mad skateman
+	 <madskateman@gmail.com>, Christian Zigotzky <info@xenosoft.de>
+Date: Fri, 24 Apr 2026 17:48:37 +0200
+In-Reply-To: <a584b7a1-fc25-a475-099a-634159b6ffe8@xenosoft.de>
 References: <cfd779d6-9440-46b2-9ed5-752f1ae6b5d1@xenosoft.de>
- <588ada6c-bcc4-e93b-1beb-4f7f859e3d5c@xenosoft.de>
- <eee732904c2a7ccce9b496b05f988a36d8a9883e.camel@physik.fu-berlin.de>
- <5da12382-5424-4bd9-981f-359e4dc1fa67@xenosoft.de>
-Organization: A-EON Open Source
-Message-ID: <a584b7a1-fc25-a475-099a-634159b6ffe8@xenosoft.de>
-Date: Fri, 24 Apr 2026 16:47:58 +0200
-X-Mailer: BrassMonkey/34.1.0
+	 <588ada6c-bcc4-e93b-1beb-4f7f859e3d5c@xenosoft.de>
+	 <eee732904c2a7ccce9b496b05f988a36d8a9883e.camel@physik.fu-berlin.de>
+	 <5da12382-5424-4bd9-981f-359e4dc1fa67@xenosoft.de>
+	 <a584b7a1-fc25-a475-099a-634159b6ffe8@xenosoft.de>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.60.1 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -106,93 +84,28 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-In-Reply-To: <5da12382-5424-4bd9-981f-359e4dc1fa67@xenosoft.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+X-Original-Sender: glaubitz@physik.fu-berlin.de
+X-Originating-IP: 2.242.158.62
+X-ZEDAT-Hint: PO
 
-On 23/04/26 19:46, Christian Zigotzky wrote:
-> On 23 April 2026 at 07:35 pm, John Paul Adrian Glaubitz wrote:
->> Hi Christian,
->>
->> On Thu, 2026-04-23 at 18:50 +0200, Christian Zigotzky wrote:
->>> On 02/10/25 08:37, Christian Zigotzky wrote:
->>>> Hello,
->>>>
->>>> KVM-PR (-enable-kvm) doesn't work anymore on our PA Semi Nemo boards
->>>> [1] if we compiled it with new GCC compilers.
->>>> The VM can't boot. There aren't any messages on the serial console of
->>>> QEMU.
->>>>
->>>> It boots without KVM-PR.
->>>>
->>>> Kernel config with new GCC compiler [2]:
->>>>
->>>> - CONFIG_CC_VERSION_TEXT="powerpc64-suse-linux-gcc (SUSE Linux) 
->>>> 11.5.0"
->>>> - CONFIG_TARGET_CPU="power4"
->>>> - CONFIG_TUNE_CPU="-mtune=power10"
->>>>
->>>> It works if I compile it with an old GCC compiler [3]:
->>>>
->>>> - CONFIG_CC_VERSION_TEXT="powerpc-linux-gnu-gcc (Ubuntu
->>>> 9.4.0-1ubuntu1~20.04.1) 9.4.0"
->>>> - CONFIG_TARGET_CPU="power4"
->>>> - CONFIG_TUNE_CPU="-mtune=power9"
->>>>
->>>> Mtune changes to power9 automatically if I compiled it with an old GCC
->>>> compiler. If I compile it with a new GCC compiler again it changes
->>>> automatically to mtune=power10.
->>>>
->>>> Is mtune the reason of the KVM-PR issue? I think the issue is the new
->>>> GCC. [4]
->>>>
->>>> Could you please check whether KVM-PR is compatible with new versions
->>>> of GCC compilers?
->>>>
->>>> Thanks in advance,
->>>>
->>>> Christian
->>>>
->>>>
->>>>
->>>> [1] https://en.wikipedia.org/wiki/AmigaOne_X1000
->>>>
->>>> [2]
->>>> https://github.com/chzigotzky/kernels/blob/45186997e6f347fd092f9ab629d62d6041426227/configs/x1000_defconfig 
->>>>
->>>>
->>>> [3]
->>>> https://github.com/chzigotzky/kernels/blob/bc7a3e27b3fcdee52a8135435f02cf807a43872a/configs/x1000_defconfig 
->>>>
->>>>
->>>> [4] KVM-PR no longer works on an X1000 if the kernel has been compiled
->>>> with a new GCC:
->>>> https://forum.hyperion-entertainment.com/viewtopic.php?p=57146#p57146
->>>>
->>> Error messages (kvm-pr compiled with powerpc64-linux-gnu-gcc 14.1.1
->>> 20240507 Red Hat Cross 14.1.1-1, GNU ld version 2.41-2.el10_0):
->>>
->>> [  800.274759] Couldn't emulate instruction 0x00000000 (op 0 xop 0)
->>> [  800.274767] kvmppc_exit_pr_progint: emulation at 100 failed 
->>> (00000000)
->> I don't think "mtune=power9" or "mtune=power10" will work. Did you 
->> try "mtune=power4"?
->>
->> Adrian
->>
-> I haven't tried it yet, but I'm going to give it a try.
->
-> Christian
-I compiled it with "mtune=power4" today but without any success.
+On Fri, 2026-04-24 at 16:47 +0200, Christian Zigotzky wrote:
+> I compiled it with "mtune=3Dpower4" today but without any success.
+>=20
+> Error messages:
+>=20
+> [=C2=A0 800.274759] Couldn't emulate instruction 0x00000000 (op 0 xop 0)
+> [=C2=A0 800.274767] kvmppc_exit_pr_progint: emulation at 100 failed (0000=
+0000)
 
-Error messages:
+What exactly are you running inside the KVM? 0x00000000 doesn't seem like
+a valid instruction and a quick Google research reveals that this triggers
+a SIGLL trap.
 
-[  800.274759] Couldn't emulate instruction 0x00000000 (op 0 xop 0)
-[  800.274767] kvmppc_exit_pr_progint: emulation at 100 failed (00000000)
+Adrian
 
-Christian
-
--- 
-Sent with BrassMonkey 34.1.0 (https://github.com/chzigotzky/Web-Browsers-and-Suites-for-Linux-PPC/releases/tag/BrassMonkey_34.1.0)
-
+--=20
+ .''`.  John Paul Adrian Glaubitz
+: :' :  Debian Developer
+`. `'   Physicist
+  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
 
