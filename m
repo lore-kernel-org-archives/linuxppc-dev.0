@@ -1,67 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-20060-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20061-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4CE9FFE5201
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2026 10:20:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2CDCFE51FF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2026 10:21:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g289n5Y3Qz2yTQ;
-	Fri, 24 Apr 2026 20:20:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777026045;
-	cv=none; b=eF+00553HQ+K/Fuj0FNSTb0S74mtrwKVkefDls0J8Myb4+v6k87ZpPN0p0gi5OkzyIn1RZzCLqty/xnGj98fuHuTB6bTZtxaJwZZu7iR/Etitnh7L/5YDKN3UQOykKN3mnzFaAPUIXtQ9IERjJiZARwdEZ09XIt32FfACa2XAJg3I3QqpBq/BUCHf18zUAzDI/qfaw751iiARmJaejMN+hN2e3vt0DDZwB9VXx+Uzk3mpcuojNCEL1VKigIwjtF2ksUyWrgngmld+drZRpa0VvfaRfuGien+45U4om8iB7bplgW52VTNmfMXxxNkOSYcebBRV1tDloMPuQ5vjv6CUg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g28BL3hPSz2yTQ;
+	Fri, 24 Apr 2026 20:21:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=202.12.124.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777026074;
+	cv=none; b=b+3NwuRCRDeccqJltGCx/RBMxbatxWlsR33ALsmFPTc7QZCg5U0aRbuiKgKaC5jVFGwePnqSrnhqXyl5/+U2r5nVyO8lM2c1CzSOxBZKCqVT9X9a9LDfJKhR21ddj7Bibw56wHW+z36HARHlulFxEz1OSQ6PuQbwIgke5qA+cqnfeZQYy2tsI4x4z/tMV2IJYnEazG3zg7ezhzElZmLuGTZNDFtA5PQiV/mYGaxjcAWx4HgomwT6XO+KSfoarjftsdsBgAt7l6udbtL2aOLFu4ie9f1+aHNFLrKID0O1FILex8bxEazYZM0r+c3XLENme3l8YUMyv7OO+H7jpc6Cug==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777026045; c=relaxed/relaxed;
-	bh=v7HsCofWu1Fj4KM5mfTpvHEQ8XWMsqEKDLZEW1mgiAw=;
-	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=g6RJkO+48ceCSitWNlDXTZIzw8K9AQVWUUiDTgfYDZccpwvKIVrzNYev4z2PxVx1+d/WCSwoxDX1qDW2l8ZlQ9gfeP6uEipelXupIUgskPLw2SsHZGCcrivgDHSgQMTnhAAJGydIczPAicc4yxh4+5UkaicEnV9FgXOc/AvjgErEKJ554RJWa+OqhDycAaAc8IITET0EC+0YCyIwOhCdlEE14ZenG5xY1c47MAxU9jjGj2GTUHUwPrVDg6jWX0RAxSXNQRkD2j32qeMESM5ksctfAz8kythlfFdWXzEXYyO74lh8TbitmPH0jMPqW4uGeHcrN8U68HUB1q7M7/ULRw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=KBJaGO89; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	t=1777026074; c=relaxed/relaxed;
+	bh=w2de/s2AwmjIkqgLfGJWj9+HNtcuQscOiCuhi0QGHvI=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=QoxnaadkGU/NKK0iKm5elMbzqVJLP6gqTk3q1NtV3KtB5OwhPwcsTUQc9TrIpT9XW+NnF+siQ0zoFAXAdO4lUWihrHie0eGo8/tYnRiqX4KLEZ0Was7D5Np/afcR+ZUge56Ocf1yyYycnOQULWrTzboFTBQJmLemyIlWxaPDz4DRtv135ArmvhTkpMWGJpWbLiXWhO757xAFyP+qk20aQJYiImyHAT4981WCrUjZltl+FUkx1lV8nWNpnuQexj8/LP9+/g9NcnukQszim2ne7xbfrVIGzVXH2G/QFT1HrKqEVENnpcgrU+Vic1d9ofgHU+Y5iPun1Js7StJymeMqpw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=B+mbviNm; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=EvjUS9vn; dkim-atps=neutral; spf=pass (client-ip=202.12.124.158; helo=fhigh-b7-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=KBJaGO89;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=B+mbviNm;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=EvjUS9vn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=202.12.124.158; helo=fhigh-b7-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
+Received: from fhigh-b7-smtp.messagingengine.com (fhigh-b7-smtp.messagingengine.com [202.12.124.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g289m5lJTz2xnl
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 20:20:43 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 366686001A;
-	Fri, 24 Apr 2026 10:20:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 53ADBC19425;
-	Fri, 24 Apr 2026 10:20:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
-	s=korg; t=1777026040;
-	bh=0RadErNyVmV3gi8KLyDo2YKUadazcNECWm6ket0mhpw=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=KBJaGO89V8KafZomOFN7DV16OlCVvzwC7VKvSQQilKTbrOJuibl2b3+ADa2f1ziq4
-	 RmfX6P7YFFkox0Lnq6RqR/GLRf087p374Y7C+2E8ZHRH3MoEzmu10z+fTHqYsBl9xK
-	 4834ULDinadjU00M0zGkABFZBA64qCd2z1++Z5YM=
-Date: Fri, 24 Apr 2026 03:20:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "David Hildenbrand (Arm)" <david@kernel.org>
-Cc: Muchun Song <songmuchun@bytedance.com>, Muchun Song
- <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, Michael
- Ellerman <mpe@ellerman.id.au>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Lorenzo Stoakes <ljs@kernel.org>, "Liam R . Howlett"
- <Liam.Howlett@oracle.com>, Vlastimil Babka <vbabka@kernel.org>, Mike
- Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal
- Hocko <mhocko@suse.com>, Nicholas Piggin <npiggin@gmail.com>, Christophe
- Leroy <chleroy@kernel.org>, aneesh.kumar@linux.ibm.com,
- joao.m.martins@oracle.com, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v6 7/7] mm/memory_hotplug: Factor out altmap freeing
- checks
-Message-Id: <20260424032039.a43516455eb1ef7c7fd7867e@linux-foundation.org>
-In-Reply-To: <6dd8e62b-97e3-4261-92c7-ba3a02ae6397@kernel.org>
-References: <20260424025547.3806072-1-songmuchun@bytedance.com>
-	<20260424025547.3806072-8-songmuchun@bytedance.com>
-	<6dd8e62b-97e3-4261-92c7-ba3a02ae6397@kernel.org>
-X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g28BG0PNFz2xnl
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 20:21:09 +1000 (AEST)
+Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
+	by mailfhigh.stl.internal (Postfix) with ESMTP id 6530A7A0202;
+	Fri, 24 Apr 2026 06:21:05 -0400 (EDT)
+Received: from phl-imap-02 ([10.202.2.81])
+  by phl-compute-04.internal (MEProxy); Fri, 24 Apr 2026 06:21:06 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm2; t=1777026065;
+	 x=1777112465; bh=w2de/s2AwmjIkqgLfGJWj9+HNtcuQscOiCuhi0QGHvI=; b=
+	B+mbviNmF9wq74f8/lvFylh2LL/ywyLUaboT2KdejP8+I+M57VP/d1HUt7AwypMq
+	qaeOu1Xppm7uHREC6EuqmB4jQy0BchcaxNRJzQSqU8kMxsMxC8zj+FHAaMZd9HXN
+	Le0vS+k4ZeVAPRSBwN+SZznIRJFMcYAjVB/HMnXZbvMBSLMvMXVvgnQ7K6jvCB2W
+	1Ov4fAbacwhTJl1nFoXWx1UyViKeYs+/Y0XWxYaPjb8IpWHJBX0u6+irQDiNmSjN
+	aVE8gd42KYQEw0HVVVFw3YOsBrotrRTZlrMeoW82y1XGRkVchLLJNDuRxAsFrlUI
+	UfN/m7UDmtiXo2GiVmYdyA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=1777026065; x=
+	1777112465; bh=w2de/s2AwmjIkqgLfGJWj9+HNtcuQscOiCuhi0QGHvI=; b=E
+	vjUS9vnPFGVt0akajaJyWtOEP3igkDnGryoMmKtC+4gJcYWCLkBaL5yF1rrOrgwy
+	gXOtiWTIxCSKXYS/M3AFOJHDw4Bs421sbwuxJodC4BVzgIof9uAVXn7P+2tYOaOk
+	CFxzWP8DCsGv9Kq58wtYzv39IcRC3z5eImSpwX9IWWZjNAiv19xarXqUMTWdP7c4
+	Sjv4AHktsSJksuV9KiNSJrA/lJxTAyjND0zIz0Awgrtq1dmZ5CEyxUFkZuN9R+yu
+	HVIfP7GP0FEF3XwDJoJcDXjWPPX9qLIqOzZPKAhTJy5OPIyuyAxQP890sPwvmJKY
+	blSL+l+DF2KnTekchZDKg==
+X-ME-Sender: <xms:D0Trae19MjTG_za4-q6tI3IYukIc3qi3IM-4gsy0ZI7NA0sIlvhZcQ>
+    <xme:D0Trab5frQ6BPQUr6fQGYLUjtZxK2x-yKx1MZiA5iKL4ixvKLGbxrdzmcfoIMR8lQ
+    U7W2GMHzzu6UP2SV595C6RuMeS1q1NZzSN5pa75raHKng3oJLedNcY>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefhedrtddtgdeileejjecutefuodetggdotefrod
+    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpuffrtefokffrpgfnqfghnecuuegr
+    ihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjug
+    hrpefoggffhffvvefkjghfufgtgfesthhqredtredtjeenucfhrhhomhepfdetrhhnugcu
+    uegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrghtthgvrh
+    hnpedvhfdvkeeuudevfffftefgvdevfedvleehvddvgeejvdefhedtgeegveehfeeljeen
+    ucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpegrrhhnug
+    esrghrnhgusgdruggvpdhnsggprhgtphhtthhopeefjedpmhhouggvpehsmhhtphhouhht
+    pdhrtghpthhtohepjhgsrghrohhnsegrkhgrmhgrihdrtghomhdprhgtphhtthhopegthh
+    hrihhsthhirghnrdhkohgvnhhighesrghmugdrtghomhdprhgtphhtthhopehmphgvsegv
+    lhhlvghrmhgrnhdrihgurdgruhdprhgtphhtthhopehsihhmohhnrgdrvhgvthhtvghrse
+    hffhiflhhlrdgthhdprhgtphhtthhopehgrghrhiesghgrrhihghhuohdrnhgvthdprhgt
+    phhtthhopegurghvihgurdhlrghighhhthdrlhhinhhugiesghhmrghilhdrtghomhdprh
+    gtphhtthhopehmkhgthhgruhhrrghssehgmhgrihhlrdgtohhmpdhrtghpthhtohepnhhi
+    tghkrdguvghsrghulhhnihgvrhhsodhlkhhmlhesghhmrghilhdrtghomhdprhgtphhtth
+    hopehnphhighhgihhnsehgmhgrihhlrdgtohhm
+X-ME-Proxy: <xmx:EETrabWiu3Q4TKvBFiT-sC4gHXQTtatPtyMUsrhrNVGBzlFu-Yb58w>
+    <xmx:EETraW4pyJGCDNQiU_FGAV1NORAvBgkhoz31Kuzm7HZA31Wp9TnvJQ>
+    <xmx:EETraTNmbHOygZe1GbvWONAPt3n1uBYwe4Ukor476cerA33kURAYpw>
+    <xmx:EETraZj_NAivBLsOtToh9Y2ogcA225k_V99MUmvMXWwNQU7wqhLDbQ>
+    <xmx:EUTraRI7sgO1747jdWIkY_dPJ1VToHV6U6hOWdjaLuAyw7okPuTQVZnk>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id DE31E700069; Fri, 24 Apr 2026 06:21:03 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -74,59 +99,85 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+X-ThreadId: ADiin7Vigcc3
+Date: Fri, 24 Apr 2026 12:20:31 +0200
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Link Mauve" <linkmauve@linkmauve.fr>,
+ "David Laight" <david.laight.linux@gmail.com>
+Cc: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
+ "Madhavan Srinivasan" <maddy@linux.ibm.com>,
+ "Michael Ellerman" <mpe@ellerman.id.au>,
+ "Nicholas Piggin" <npiggin@gmail.com>,
+ "Christophe Leroy" <chleroy@kernel.org>,
+ "Peter Zijlstra" <peterz@infradead.org>,
+ "Josh Poimboeuf" <jpoimboe@kernel.org>,
+ "Jason Baron" <jbaron@akamai.com>, "Alice Ryhl" <aliceryhl@google.com>,
+ "Steven Rostedt" <rostedt@goodmis.org>,
+ "Ard Biesheuvel" <ardb@kernel.org>,
+ "Sumit Semwal" <sumit.semwal@linaro.org>,
+ =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
+ "Miguel Ojeda" <ojeda@kernel.org>, boqun@kernel.org,
+ "Gary Guo" <gary@garyguo.net>,
+ =?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>,
+ "Benno Lossin" <lossin@kernel.org>,
+ "Andreas Hindborg" <a.hindborg@kernel.org>,
+ "Trevor Gross" <tmgross@umich.edu>, "Danilo Krummrich" <dakr@kernel.org>,
+ "Nathan Chancellor" <nathan@kernel.org>,
+ "Nick Desaulniers" <nick.desaulniers+lkml@gmail.com>,
+ "Bill Wendling" <morbo@google.com>,
+ "Justin Stitt" <justinstitt@google.com>, tamird@kernel.org,
+ "Nicolas Schier" <nsc@kernel.org>, simona.vetter@ffwll.ch,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linaro-mm-sig@lists.linaro.org, rust-for-linux@vger.kernel.org,
+ llvm@lists.linux.dev
+Message-Id: <0a81f510-7b49-4879-b0bb-3b24dbfc0788@app.fastmail.com>
+In-Reply-To: <aes7L3M1d_LvvGKa@luna>
+References: <20260424054742.45832-1-mkchauras@gmail.com>
+ <20260424054742.45832-6-mkchauras@gmail.com>
+ <20260424101425.6bde0e17@pumpkin> <aes7L3M1d_LvvGKa@luna>
+Subject: Re: [PATCH V13 5/7] rust: Make __udivdi3() and __umoddi3() panic
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, 24 Apr 2026 09:34:43 +0200 "David Hildenbrand (Arm)" <david@kernel.org> wrote:
+On Fri, Apr 24, 2026, at 11:43, Link Mauve wrote:
+> On Fri, Apr 24, 2026 at 10:14:25AM +0100, David Laight wrote:
+>> On Fri, 24 Apr 2026 11:17:40 +0530
+>> "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com> wrote:
+>>=20
+>> > From: Link Mauve <linkmauve@linkmauve.fr>
+>> >=20
+>> > The core crate currently depends on these two functions for i64/u64/
+>> > i128/u128/core::time::Duration formatting, but we shouldn=E2=80=99t=
+ use that in
+>> > the kernel so let=E2=80=99s panic if they are ever called.
+>>=20
+>> Ugg.
+>> Surely you can make it a link-time failure?
+>> Or change the underlying code to avoid the divide.
+>
+> This is currently a link-time failure, which means if any of the core
+> crate or drm_panic_qr are linked in, the kernel will fail to link.
+>
+> And since we rely on core, that means no kernel can be built on PowerPC
+> without this patch.
+>
+> A possible solution would be to change the core crate to not divide
+> u64s, but the last time I tried to do that I couldn=E2=80=99t quite fi=
+gure out
+> how to do formatting without it, maybe I will just open an issue again=
+st
+> Rust.
 
-> On 4/24/26 04:55, Muchun Song wrote:
-> > Use a small helper to centralize altmap freeing after verifying that all
-> > vmemmap pages were released. This keeps the check consistent between the
-> > normal teardown path and the memory hotplug error paths.
-> > 
-> > Suggested-by: David Hildenbrand (Arm) <david@kernel.org>
-> > Signed-off-by: Muchun Song <songmuchun@bytedance.com>
-> > ---
-> 
-> Thanks!
-> 
-> Acked-by: David Hildenbrand (Arm) <david@kernel.org>
-> 
-> Andrew usually prefers sending non-fixes separately,
+How hard would it be to have a private copy of the parts of the core
+crate that the kernel actually needs? Since Linux is neither quite
+hosted (using a full libc) nor entirely freestanding (still using
+some library interfaces), the C implementation on most architectures
+has a small subset of the libgcc that we ship with the kernel.
 
-Patches which are destined for the current -rc cycle (and possibly
--stable) (aka "hotfixes") take a different route into mainline from
-regular next-merge-window material.  They go into different branches
-and they have different timing.
+I assume the core crate is larger than libgcc, but I don't know how
+much of it is actually needed here.
 
-If a patchset has a mixture of hotfixes (upstream next week) and
-regular patches (upstream mid June) then I have to pull the series
-apart, stage some things into one branch and other things in another
-branch, rework the cover letter etc etc.  Problems with this are:
-
-- what goes upstream doesn't map well onto what was presented on the
-  mailing list.
-
-- the hotfixes (upstream next week) may have dependencies on the
-  regular patches (upstream mid June).  This is backwards.
-
-Much depends on the urgency of the hotfixes.
-
-In this case, iirc, the determination is "not very urgent at all".  So
-the series is OK as-is - it's all "upstream mid June".
-
-This is still a bit suboptimal because when the -stable maintainers get
-onto backporting the cc:stable patches (after mid June), they may
-encounter merge/build/runtime issues due to the absence of the
-non-hotfix patches from this series.
-
-So generally, it is best for authors to have a think about these
-timing/priority issues and to present the patches in a suitable fashion
-- hotfixes/-stable patches in one series then non-hotfixes in a second,
-later series.  This way their presentation matches what goes upstream
-and we reduce the possibility of problems when the -stable maintainers
-get onto backporting.
-
-
+       Arnd
 
