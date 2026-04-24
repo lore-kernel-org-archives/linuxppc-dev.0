@@ -1,69 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-20063-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20064-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9EFA3FE5202
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2026 10:27:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF996FE5204
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2026 10:34:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g28Kh2Q18z2yTQ;
-	Fri, 24 Apr 2026 20:27:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1:d65d:64ff:fe57:4e05"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777026456;
-	cv=none; b=bl9ONEBjOcNYIfvvdivu4qdQe0JAiZImnIx14MzZuj+hUQe7RRfSCNWzAGCkW8ny2L0GnvE3HNzWlOFnjCalfKbwP4/2QPSd95SQBWOSAqKOtGpv0c4Q4l3j0MdJZQOLGfmO9ATQ8kMHGc3Vq3TwNzkpg++8+9v4CW6KbYUPZYgUxEyJN0TVKIqR37aS6hS/e7psJbtQj7qSJjEQLS7x0VZVFsG6SLWbO4egJv7VbUJb7h5jspFzJ1s0ECNvOs31JrY3PMZtNXuvkqNwYxeqC6YH02RyXhzkUcXhlbGoZ9oh21Lj3+NU3bcZLBcyhFZsO9p+qxuCJ8oPZT7glrZmrw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777026456; c=relaxed/relaxed;
-	bh=Yq0E5Y22mnSrei+WA0S7287xcZRgNxXEtToRIMDxfFY=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=kuL7LHkgNAkstJwnmy9WVBNnZqnAt1A7gm6ukxbpLHouOP2akjU5kP/s0T49albZEo3Re7oBcKW/fyFejHfgHztZysTeGBrYFDhHr/CiERBaQ3+Cbr7OnUofGDoFbfc7DPAbODAn7cXRLGYjl3A8fEOUMPOqg9FaEOda0r+84QBmL9AEaqTgEjG/gRbv7oeWLPLnb/xigGuOlkfSv6Cfx20Pp5ugVaIWXMzTbUXlLSOidVV0vVSuI1mmB6JGsF+FvnATpzjyzywpg1zda+SB2daar3PaWyvn0d3t+PSwO80p9eSFWnptFqVQJX4cJBpGmQ88H4E4EWgv5qnGTxmIbw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=ekM+qOKY; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=batv+b6389c66e4e1a18c0406+8279+infradead.org+dwmw2@desiato.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=desiato.srs.infradead.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g28Tw21bcz2yTQ;
+	Fri, 24 Apr 2026 20:34:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::1336" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777026884;
+	cv=pass; b=kGpkzSmqaqNlJXvv+24SwjYWD7nriYLmceWW4/17AWa1rhxxD7t8vzgXlVEdu7YlpP186u9DizFMnc9dHQjmtP2Jt5LqS8cECXlIeBYQ+KgAGeSEdvV8RP+GFebD4Xsv4lsd+naMbdLcLSEGfS57H7RCgL+GeFWfHY0QBweAc+LdOkqJxnKYRRMH4pacEtGbEyftFFfRGAEwU84AA57MQ11In4xZLDrKOU26kGjb9fpZJ4mAPtRYf8zKIk6Ca07qKgUIs1fkXUsVc1EzQ66NdCHRA+fBKbHRfCv7vxl44Z7PJ8xRbAMLonr/sigFan1Wva9wnRfx/rxn/Z/EeGbH3w==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1777026884; c=relaxed/relaxed;
+	bh=yTJizOE+aTFx68oE3PlVDChTaWYKzRYowl6JulRmua4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ih5KTkeZ9jJ6J0licEut0pqe/3NNZooxe7R1R8WYZaRPhV1/ZZpzGVqEGeHXFkqlSUbEYphIIazMi7tl8SEWiFilhs1T2gbpwEi8vV1ACQ3JLmJAe/2kFq/a5z6PKUpmaVSa7caCHgcgOVOBoN/NdgI4ZcUQrAvoCpgqcX5iENM2zWoORHr6FGO0UQWETr04BWaOFzxF9639jvy4AjsuTJhcfYGBUuaGgHvftXGh+reBh6nVN70jMufEsEe/RUgNz5oWdSYWeS7feXvnp2PfG3yCWUYiOsDe4oT5tNB/EZbUoK7+OCR24V0UWyuWZE/xmqmiKjn7hw9sJBtFfmpgjQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=dP727mik; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1336; helo=mail-dy1-x1336.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=ekM+qOKY;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=dP727mik;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=desiato.srs.infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=batv+b6389c66e4e1a18c0406+8279+infradead.org+dwmw2@desiato.srs.infradead.org; receiver=lists.ozlabs.org)
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1336; helo=mail-dy1-x1336.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x1336.google.com (mail-dy1-x1336.google.com [IPv6:2607:f8b0:4864:20::1336])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g28KW6j8rz2xnl
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 20:27:25 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=MIME-Version:Content-Type:References:
-	In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=Yq0E5Y22mnSrei+WA0S7287xcZRgNxXEtToRIMDxfFY=; b=ekM+qOKYctJ0tgYco+QmcgMi0j
-	DIL2Fr0kODsGhxtN92B6X1teKN5byHpQOpwm6NlZ7BHTOd8snfwHdufXH3GCl3gXtuh7btr9/zqMX
-	lXe2tLrlEDOh6VrI/yhjmyL9jgbWqdAncfesrpgEyNxMV32ApRSPyJ3Tnv2xdi74vllwbUwWZ7QQX
-	T/UUJz4WOCr1+1Z4DUtAyfKfyLLjKuyGm0tUnEmw3LjmX4xip63pL4ZziB5FohOfe2l6Qv/fxMIim
-	CBDnIFuCu4HLiPC9StQw1PJ7voMAEM+xHjTNG/GCbbOG+Tlby7WaWmBKf99gcdKjg+DAoTxxIbs5H
-	XjMVhSwQ==;
-Received: from [172.31.31.148] (helo=u09cd745991455d.lumleys.internal)
-	by desiato.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wGDkV-0000000Eafz-2NpH;
-	Fri, 24 Apr 2026 10:27:03 +0000
-Message-ID: <c2fad21764d2561469151f5dd5d35833ae8f76e6.camel@infradead.org>
-Subject: Re: [PATCH v2 0/3] KVM: Fix and clean up kvm_vcpu_map[_readonly]()
- usages
-From: David Woodhouse <dwmw2@infradead.org>
-To: Peter Fang <peter.fang@intel.com>, Paolo Bonzini <pbonzini@redhat.com>, 
- Sean Christopherson <seanjc@google.com>, Madhavan Srinivasan
- <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, "Griffoul,
- Fred" <fgriffo@amazon.com>
-Cc: Yosry Ahmed <yosry@kernel.org>, Ritesh Harjani <ritesh.list@gmail.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)"
- <chleroy@kernel.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar
- <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,  Dave Hansen
- <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin"
- <hpa@zytor.com>,  kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Date: Fri, 24 Apr 2026 11:27:03 +0100
-In-Reply-To: <20260408001137.3290444-1-peter.fang@intel.com>
-References: <20260408001137.3290444-1-peter.fang@intel.com>
-Content-Type: multipart/signed; micalg="sha-256"; protocol="application/pkcs7-signature";
-	boundary="=-XgoUOdys/5sPEXn/rgmJ"
-User-Agent: Evolution 3.52.3-0ubuntu1.1 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g28Tv1rbKz2xnl
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 20:34:42 +1000 (AEST)
+Received: by mail-dy1-x1336.google.com with SMTP id 5a478bee46e88-2e92c54bab4so798206eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 03:34:42 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1777026880; cv=none;
+        d=google.com; s=arc-20240605;
+        b=NmU9vmLNDw4xnrmJwqEy3wnTTAS/czSmw9SM9gsT5LWtX/GyIKmKtH8w9IeOan+5Ld
+         uv9TqH9c6sJ1zrpds9eJ8sd171iKS0kDlwzKmfJb8ott4cK40/TM3OjLmVwZUHk/BxFP
+         7oSJykMILCYnynfH9ISQ+e0Yh6Fm1IhLZhkzlV8FMO8Y/8mtj98/1glBNTJYd0A+V05w
+         NDXsCrANHrzx0O5FBnJOH/1OPqP2mFitUR7sFQICiO+4YRaPTe7RuACH2OU0Gl5L0BL5
+         krzXgxmGZ3IvU3EawwWB4mgxNQIxpaykMtbEbgGB78yDyp4W+J9ZAj0/3iJ0OWXMv3uz
+         HY4A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=yTJizOE+aTFx68oE3PlVDChTaWYKzRYowl6JulRmua4=;
+        fh=oLfGVKWlJYkmeFlg5XZ3jQKsvJAp2EKamQYI3lT6R5s=;
+        b=FwLmUvfw41svScWC4W+UCZrq3gNtt8aNp+gSaaDhOfrH9G4L1zcU4TQWDYDU+sCst1
+         uEHboSjjfjuskWYNboYElRWE9vZJlYQJNZpIE5RpO0DHDLuBYzYFH5RHG/msOoU+VeFq
+         +0s11x6OtfKb5hVhG9JLriu9rvKvXUENCOvujPhiDFvlK5+N5ouMKK45b4uexV/Hi5en
+         m9xeUjoK/e5+B2xTR3kh3T/HJgic68hiYFYPQwYFpcfNfmlyVjHnxvTUSlCEWcnYsEKk
+         mOmsp+tQko3KQkjLvow3ZtSPjb1DfnENhs8BcUEEKPqBcnlLS7mj6OjcGoRuLpnwhmdQ
+         EUXQ==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1777026880; x=1777631680; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=yTJizOE+aTFx68oE3PlVDChTaWYKzRYowl6JulRmua4=;
+        b=dP727mikmjPmM3d2sNexSDiBrTyX8M34xTxalpehaxvrW2iiAyF5O0hIoT6/GQdW6q
+         B1paB+i+hVGvOwNSideCki3MOuyApS7KR/hGdeIyEgnSRoc49s7uWPAc9bPRRgP+4q8s
+         nxEIyl8fAwDNQIM4Mto0uDbHPWbU3+JIDBsKgDaNAiYbgdRW+Oet/oElkOwo4HBbtrPh
+         +I6rjBMkhW1R3oJLXZZZh1cEqsvwQQ8tWWa492aa9WAMq9w1w5160DkM/rLfoH2pXOQ+
+         4Cusj4i3tfRd7KwpO146uXENygPzHzSEttfuiZRwd01V/phu27GsSYYBWNwtOJi6OF6X
+         609Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1777026880; x=1777631680;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=yTJizOE+aTFx68oE3PlVDChTaWYKzRYowl6JulRmua4=;
+        b=qfBBx0Pjqc0elO6S1eqOZgCt5CF9y+ms3ScQgU/TTsiYcyuPvT6p6J2zVCmQY8ZER7
+         O4AtyNbzsKovTSQj3psLMkgw339PCPXx9NW/xxOSb4fb8htLmo7z6OtNMU1Q5B+AuEL/
+         v86UC2Qlygzv4TfssCSri3ETkt4iw2gmWM1Umpz9Ftn7KbzohpnIOF37GMIcx/LQgT/m
+         0i5Z5k3EwDaXiG0RgWEBsPqDAdHih+Els7YIZa36RxDs37FG3jgRHE6DyaCAUBMk+rfZ
+         18nQs8tOKKbZAGFcRmYss1vvsHrBpCo6AhpLVGCFZCrbSXvzaFiKfiv9WguRmmXtpOQ4
+         Ys0Q==
+X-Forwarded-Encrypted: i=1; AFNElJ8MytrcTrL5r6L6JoO6LPMj8pki8exzFF0bAts++IfMo44PvpgxY0kuIHN69sal9mSP+6F9BHL/NePYIpg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yy08jsvfZSaYwjsQg5NtV+8rgGyNO74KtoyWuG84G3JVDXKjpZ6
+	Eb+r7AjEWITwR2gZITaOW6HOFE0xo30FfNiOa8KMaVdcSN0cMJ7fZSnGSdHlzSEuMRQ5U8krNDj
+	g9kLcVjfFQqEY2PRNx06AKXbYX9MjRts=
+X-Gm-Gg: AeBDievTuRiCVXo3jvjGh9PGg6lJ87l3rkpf7psP+DW8rJ+j6xVBa4EJGIR5NDiJZg/
+	yECR557SFnN1qGHPVDjjIQ6kF9OyXRH/hcofTioSSx1ac+yWcHyhWqTDTuyv8n2SyHPDWyTIZyk
+	VD2Hy14fUZKDIbQZoKJBeO5zf46zT2/wFpk4aOwnmU8WhyxWOAMARLOxdM44wZ+W2jZVxLGK6Ex
+	9W7Xqoeif1dDhEE2HHsHsgZwnpku+s8BnVzl+vemHI8uZJDDkGOcSBjBiWsNv8CuxK3vYi0BCJh
+	HpG7OCGhqy64rtst7eyTsYPkuTSFIXZG8vmJFeGsgeLFxj26yUlP8hQ9tjL1nd+YcQVfbm/2m9F
+	aoQqkQglIxvTbFbSmKkWIyOEs4Sc1ZmxQ3A==
+X-Received: by 2002:a05:7300:d50e:b0:2bd:d8e6:90a0 with SMTP id
+ 5a478bee46e88-2e478936a32mr6682650eec.3.1777026880251; Fri, 24 Apr 2026
+ 03:34:40 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,132 +102,62 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by desiato.infradead.org. See http://www.infradead.org/rpr.html
-
-
---=-XgoUOdys/5sPEXn/rgmJ
+References: <20260424054742.45832-1-mkchauras@gmail.com> <20260424054742.45832-6-mkchauras@gmail.com>
+ <20260424101425.6bde0e17@pumpkin> <aes7L3M1d_LvvGKa@luna> <0a81f510-7b49-4879-b0bb-3b24dbfc0788@app.fastmail.com>
+In-Reply-To: <0a81f510-7b49-4879-b0bb-3b24dbfc0788@app.fastmail.com>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Fri, 24 Apr 2026 12:34:27 +0200
+X-Gm-Features: AQROBzBsdDZLB2GUpMgvGgFgU1KPjXwk3TMpDFKjffQGyp1lulncbpRBZafhAFU
+Message-ID: <CANiq72mZGb+mTwP-8pTLe81oM0QnK-WtQeVjKPiP5m8zK_tOnw@mail.gmail.com>
+Subject: Re: [PATCH V13 5/7] rust: Make __udivdi3() and __umoddi3() panic
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Link Mauve <linkmauve@linkmauve.fr>, David Laight <david.laight.linux@gmail.com>, 
+	"Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	Christophe Leroy <chleroy@kernel.org>, Peter Zijlstra <peterz@infradead.org>, 
+	Josh Poimboeuf <jpoimboe@kernel.org>, Jason Baron <jbaron@akamai.com>, 
+	Alice Ryhl <aliceryhl@google.com>, Steven Rostedt <rostedt@goodmis.org>, 
+	Ard Biesheuvel <ardb@kernel.org>, Sumit Semwal <sumit.semwal@linaro.org>, 
+	=?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, 
+	Miguel Ojeda <ojeda@kernel.org>, boqun@kernel.org, Gary Guo <gary@garyguo.net>, 
+	=?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
+	Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
+	Trevor Gross <tmgross@umich.edu>, Danilo Krummrich <dakr@kernel.org>, 
+	Nathan Chancellor <nathan@kernel.org>, Nick Desaulniers <nick.desaulniers+lkml@gmail.com>, 
+	Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>, tamird@kernel.org, 
+	Nicolas Schier <nsc@kernel.org>, simona.vetter@ffwll.ch, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, 
+	dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, 
+	rust-for-linux@vger.kernel.org, llvm@lists.linux.dev
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2026-04-07 at 17:11 -0700, Peter Fang wrote:
-> kvm_vcpu_map() and kvm_vcpu_map_readonly() are declared to take a gpa_t
-> in kvm_host.h when they're supposed to take a gfn_t. First fix the
-> function prototypes, and then refactor them to correctly take a gpa_t,
-> reducing boilerplate gpa->gfn conversions at all call sites.
->=20
-> No actual harm has been done yet as all of the call sites are correctly
-> passing in a gfn.
->=20
-> No functional change intended. All changes are compile-tested on x86 and
-> ppc, which are the current users of these APIs.
+On Fri, Apr 24, 2026 at 12:21=E2=80=AFPM Arnd Bergmann <arnd@arndb.de> wrot=
+e:
+>
+> How hard would it be to have a private copy of the parts of the core
+> crate that the kernel actually needs? Since Linux is neither quite
+> hosted (using a full libc) nor entirely freestanding (still using
+> some library interfaces), the C implementation on most architectures
+> has a small subset of the libgcc that we ship with the kernel.
+>
+> I assume the core crate is larger than libgcc, but I don't know how
+> much of it is actually needed here.
 
-Fred is already removing all the usage of kvm_vcpu_map() in nested VMX=C2=
-=B9
-and nested SVM probably wants the same treatment. And the PowerPC one
-looks like it could just as easily operate on the userspace address?=20
+It is fairly tied to the compiler version, so it would be a
+substantial effort to support across a bunch of versions. Instead of
+that, initially we asked to have some `cfg`s (i.e. conditional
+compilation) to customize it in the few places we need. We already
+pass `--cfg no_fp_fmt_parse` for instance.
 
-Could we just kill kvm_vcpu_map() completely?
+There were concerns about combinatorial explosion of `cfg`s, so we
+suggested `cfg(linux_kernel)` or similar instead, though nothing
+happened so far.
 
+The other option is to at least lint against certain operations, but I
+think it would be better to have a way to tell the compiler we really
+don't want them generated to begin with.
 
-
-=C2=B9 https://lore.kernel.org/kvm/20260102142429.896101-1-griffoul@gmail.c=
-om/
-
---=-XgoUOdys/5sPEXn/rgmJ
-Content-Type: application/pkcs7-signature; name="smime.p7s"
-Content-Disposition: attachment; filename="smime.p7s"
-Content-Transfer-Encoding: base64
-
-MIAGCSqGSIb3DQEHAqCAMIACAQExDzANBglghkgBZQMEAgEFADCABgkqhkiG9w0BBwEAAKCCD9Aw
-ggSOMIIDdqADAgECAhAOmiw0ECVD4cWj5DqVrT9PMA0GCSqGSIb3DQEBCwUAMGUxCzAJBgNVBAYT
-AlVTMRUwEwYDVQQKEwxEaWdpQ2VydCBJbmMxGTAXBgNVBAsTEHd3dy5kaWdpY2VydC5jb20xJDAi
-BgNVBAMTG0RpZ2lDZXJ0IEFzc3VyZWQgSUQgUm9vdCBDQTAeFw0yNDAxMzAwMDAwMDBaFw0zMTEx
-MDkyMzU5NTlaMEExCzAJBgNVBAYTAkFVMRAwDgYDVQQKEwdWZXJva2V5MSAwHgYDVQQDExdWZXJv
-a2V5IFNlY3VyZSBFbWFpbCBHMjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMjvgLKj
-jfhCFqxYyRiW8g3cNFAvltDbK5AzcOaR7yVzVGadr4YcCVxjKrEJOgi7WEOH8rUgCNB5cTD8N/Et
-GfZI+LGqSv0YtNa54T9D1AWJy08ZKkWvfGGIXN9UFAPMJ6OLLH/UUEgFa+7KlrEvMUupDFGnnR06
-aDJAwtycb8yXtILj+TvfhLFhafxroXrflspavejQkEiHjNjtHnwbZ+o43g0/yxjwnarGI3kgcak7
-nnI9/8Lqpq79tLHYwLajotwLiGTB71AGN5xK+tzB+D4eN9lXayrjcszgbOv2ZCgzExQUAIt98mre
-8EggKs9mwtEuKAhYBIP/0K6WsoMnQCcCAwEAAaOCAVwwggFYMBIGA1UdEwEB/wQIMAYBAf8CAQAw
-HQYDVR0OBBYEFIlICOogTndrhuWByNfhjWSEf/xwMB8GA1UdIwQYMBaAFEXroq/0ksuCMS1Ri6en
-IZ3zbcgPMA4GA1UdDwEB/wQEAwIBhjAdBgNVHSUEFjAUBggrBgEFBQcDBAYIKwYBBQUHAwIweQYI
-KwYBBQUHAQEEbTBrMCQGCCsGAQUFBzABhhhodHRwOi8vb2NzcC5kaWdpY2VydC5jb20wQwYIKwYB
-BQUHMAKGN2h0dHA6Ly9jYWNlcnRzLmRpZ2ljZXJ0LmNvbS9EaWdpQ2VydEFzc3VyZWRJRFJvb3RD
-QS5jcnQwRQYDVR0fBD4wPDA6oDigNoY0aHR0cDovL2NybDMuZGlnaWNlcnQuY29tL0RpZ2lDZXJ0
-QXNzdXJlZElEUm9vdENBLmNybDARBgNVHSAECjAIMAYGBFUdIAAwDQYJKoZIhvcNAQELBQADggEB
-ACiagCqvNVxOfSd0uYfJMiZsOEBXAKIR/kpqRp2YCfrP4Tz7fJogYN4fxNAw7iy/bPZcvpVCfe/H
-/CCcp3alXL0I8M/rnEnRlv8ItY4MEF+2T/MkdXI3u1vHy3ua8SxBM8eT9LBQokHZxGUX51cE0kwa
-uEOZ+PonVIOnMjuLp29kcNOVnzf8DGKiek+cT51FvGRjV6LbaxXOm2P47/aiaXrDD5O0RF5SiPo6
-xD1/ClkCETyyEAE5LRJlXtx288R598koyFcwCSXijeVcRvBB1cNOLEbg7RMSw1AGq14fNe2cH1HG
-W7xyduY/ydQt6gv5r21mDOQ5SaZSWC/ZRfLDuEYwggWbMIIEg6ADAgECAhAH5JEPagNRXYDiRPdl
-c1vgMA0GCSqGSIb3DQEBCwUAMEExCzAJBgNVBAYTAkFVMRAwDgYDVQQKEwdWZXJva2V5MSAwHgYD
-VQQDExdWZXJva2V5IFNlY3VyZSBFbWFpbCBHMjAeFw0yNDEyMzAwMDAwMDBaFw0yODAxMDQyMzU5
-NTlaMB4xHDAaBgNVBAMME2R3bXcyQGluZnJhZGVhZC5vcmcwggIiMA0GCSqGSIb3DQEBAQUAA4IC
-DwAwggIKAoICAQDali7HveR1thexYXx/W7oMk/3Wpyppl62zJ8+RmTQH4yZeYAS/SRV6zmfXlXaZ
-sNOE6emg8WXLRS6BA70liot+u0O0oPnIvnx+CsMH0PD4tCKSCsdp+XphIJ2zkC9S7/yHDYnqegqt
-w4smkqUqf0WX/ggH1Dckh0vHlpoS1OoxqUg+ocU6WCsnuz5q5rzFsHxhD1qGpgFdZEk2/c//ZvUN
-i12vPWipk8TcJwHw9zoZ/ZrVNybpMCC0THsJ/UEVyuyszPtNYeYZAhOJ41vav1RhZJzYan4a1gU0
-kKBPQklcpQEhq48woEu15isvwWh9/+5jjh0L+YNaN0I//nHSp6U9COUG9Z0cvnO8FM6PTqsnSbcc
-0j+GchwOHRC7aP2t5v2stVx3KbptaYEzi4MQHxm/0+HQpMEVLLUiizJqS4PWPU6zfQTOMZ9uLQRR
-ci+c5xhtMEBszlQDOvEQcyEG+hc++fH47K+MmZz21bFNfoBxLP6bjR6xtPXtREF5lLXxp+CJ6KKS
-blPKeVRg/UtyJHeFKAZXO8Zeco7TZUMVHmK0ZZ1EpnZbnAhKE19Z+FJrQPQrlR0gO3lBzuyPPArV
-hvWxjlO7S4DmaEhLzarWi/ze7EGwWSuI2eEa/8zU0INUsGI4ywe7vepQz7IqaAovAX0d+f1YjbmC
-VsAwjhLmveFjNwIDAQABo4IBsDCCAawwHwYDVR0jBBgwFoAUiUgI6iBOd2uG5YHI1+GNZIR//HAw
-HQYDVR0OBBYEFFxiGptwbOfWOtMk5loHw7uqWUOnMDAGA1UdEQQpMCeBE2R3bXcyQGluZnJhZGVh
-ZC5vcmeBEGRhdmlkQHdvb2Rob3Uuc2UwFAYDVR0gBA0wCzAJBgdngQwBBQEBMA4GA1UdDwEB/wQE
-AwIF4DAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYBBQUHAwQwewYDVR0fBHQwcjA3oDWgM4YxaHR0
-cDovL2NybDMuZGlnaWNlcnQuY29tL1Zlcm9rZXlTZWN1cmVFbWFpbEcyLmNybDA3oDWgM4YxaHR0
-cDovL2NybDQuZGlnaWNlcnQuY29tL1Zlcm9rZXlTZWN1cmVFbWFpbEcyLmNybDB2BggrBgEFBQcB
-AQRqMGgwJAYIKwYBBQUHMAGGGGh0dHA6Ly9vY3NwLmRpZ2ljZXJ0LmNvbTBABggrBgEFBQcwAoY0
-aHR0cDovL2NhY2VydHMuZGlnaWNlcnQuY29tL1Zlcm9rZXlTZWN1cmVFbWFpbEcyLmNydDANBgkq
-hkiG9w0BAQsFAAOCAQEAQXc4FPiPLRnTDvmOABEzkIumojfZAe5SlnuQoeFUfi+LsWCKiB8Uextv
-iBAvboKhLuN6eG/NC6WOzOCppn4mkQxRkOdLNThwMHW0d19jrZFEKtEG/epZ/hw/DdScTuZ2m7im
-8ppItAT6GXD3aPhXkXnJpC/zTs85uNSQR64cEcBFjjoQDuSsTeJ5DAWf8EMyhMuD8pcbqx5kRvyt
-JPsWBQzv1Dsdv2LDPLNd/JUKhHSgr7nbUr4+aAP2PHTXGcEBh8lTeYea9p4d5k969pe0OHYMV5aL
-xERqTagmSetuIwolkAuBCzA9vulg8Y49Nz2zrpUGfKGOD0FMqenYxdJHgDCCBZswggSDoAMCAQIC
-EAfkkQ9qA1FdgOJE92VzW+AwDQYJKoZIhvcNAQELBQAwQTELMAkGA1UEBhMCQVUxEDAOBgNVBAoT
-B1Zlcm9rZXkxIDAeBgNVBAMTF1Zlcm9rZXkgU2VjdXJlIEVtYWlsIEcyMB4XDTI0MTIzMDAwMDAw
-MFoXDTI4MDEwNDIzNTk1OVowHjEcMBoGA1UEAwwTZHdtdzJAaW5mcmFkZWFkLm9yZzCCAiIwDQYJ
-KoZIhvcNAQEBBQADggIPADCCAgoCggIBANqWLse95HW2F7FhfH9bugyT/danKmmXrbMnz5GZNAfj
-Jl5gBL9JFXrOZ9eVdpmw04Tp6aDxZctFLoEDvSWKi367Q7Sg+ci+fH4KwwfQ8Pi0IpIKx2n5emEg
-nbOQL1Lv/IcNiep6Cq3DiyaSpSp/RZf+CAfUNySHS8eWmhLU6jGpSD6hxTpYKye7PmrmvMWwfGEP
-WoamAV1kSTb9z/9m9Q2LXa89aKmTxNwnAfD3Ohn9mtU3JukwILRMewn9QRXK7KzM+01h5hkCE4nj
-W9q/VGFknNhqfhrWBTSQoE9CSVylASGrjzCgS7XmKy/BaH3/7mOOHQv5g1o3Qj/+cdKnpT0I5Qb1
-nRy+c7wUzo9OqydJtxzSP4ZyHA4dELto/a3m/ay1XHcpum1pgTOLgxAfGb/T4dCkwRUstSKLMmpL
-g9Y9TrN9BM4xn24tBFFyL5znGG0wQGzOVAM68RBzIQb6Fz758fjsr4yZnPbVsU1+gHEs/puNHrG0
-9e1EQXmUtfGn4InoopJuU8p5VGD9S3Ikd4UoBlc7xl5yjtNlQxUeYrRlnUSmdlucCEoTX1n4UmtA
-9CuVHSA7eUHO7I88CtWG9bGOU7tLgOZoSEvNqtaL/N7sQbBZK4jZ4Rr/zNTQg1SwYjjLB7u96lDP
-sipoCi8BfR35/ViNuYJWwDCOEua94WM3AgMBAAGjggGwMIIBrDAfBgNVHSMEGDAWgBSJSAjqIE53
-a4blgcjX4Y1khH/8cDAdBgNVHQ4EFgQUXGIam3Bs59Y60yTmWgfDu6pZQ6cwMAYDVR0RBCkwJ4ET
-ZHdtdzJAaW5mcmFkZWFkLm9yZ4EQZGF2aWRAd29vZGhvdS5zZTAUBgNVHSAEDTALMAkGB2eBDAEF
-AQEwDgYDVR0PAQH/BAQDAgXgMB0GA1UdJQQWMBQGCCsGAQUFBwMCBggrBgEFBQcDBDB7BgNVHR8E
-dDByMDegNaAzhjFodHRwOi8vY3JsMy5kaWdpY2VydC5jb20vVmVyb2tleVNlY3VyZUVtYWlsRzIu
-Y3JsMDegNaAzhjFodHRwOi8vY3JsNC5kaWdpY2VydC5jb20vVmVyb2tleVNlY3VyZUVtYWlsRzIu
-Y3JsMHYGCCsGAQUFBwEBBGowaDAkBggrBgEFBQcwAYYYaHR0cDovL29jc3AuZGlnaWNlcnQuY29t
-MEAGCCsGAQUFBzAChjRodHRwOi8vY2FjZXJ0cy5kaWdpY2VydC5jb20vVmVyb2tleVNlY3VyZUVt
-YWlsRzIuY3J0MA0GCSqGSIb3DQEBCwUAA4IBAQBBdzgU+I8tGdMO+Y4AETOQi6aiN9kB7lKWe5Ch
-4VR+L4uxYIqIHxR7G2+IEC9ugqEu43p4b80LpY7M4KmmfiaRDFGQ50s1OHAwdbR3X2OtkUQq0Qb9
-6ln+HD8N1JxO5nabuKbymki0BPoZcPdo+FeRecmkL/NOzzm41JBHrhwRwEWOOhAO5KxN4nkMBZ/w
-QzKEy4PylxurHmRG/K0k+xYFDO/UOx2/YsM8s138lQqEdKCvudtSvj5oA/Y8dNcZwQGHyVN5h5r2
-nh3mT3r2l7Q4dgxXlovERGpNqCZJ624jCiWQC4ELMD2+6WDxjj03PbOulQZ8oY4PQUyp6djF0keA
-MYIDuzCCA7cCAQEwVTBBMQswCQYDVQQGEwJBVTEQMA4GA1UEChMHVmVyb2tleTEgMB4GA1UEAxMX
-VmVyb2tleSBTZWN1cmUgRW1haWwgRzICEAfkkQ9qA1FdgOJE92VzW+AwDQYJYIZIAWUDBAIBBQCg
-ggE3MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTI2MDQyNDEwMjcw
-M1owLwYJKoZIhvcNAQkEMSIEICY0KRgMOPyqrVqgE1O4F+JMvGYmTNuy8y4AU5cL+KadMGQGCSsG
-AQQBgjcQBDFXMFUwQTELMAkGA1UEBhMCQVUxEDAOBgNVBAoTB1Zlcm9rZXkxIDAeBgNVBAMTF1Zl
-cm9rZXkgU2VjdXJlIEVtYWlsIEcyAhAH5JEPagNRXYDiRPdlc1vgMGYGCyqGSIb3DQEJEAILMVeg
-VTBBMQswCQYDVQQGEwJBVTEQMA4GA1UEChMHVmVyb2tleTEgMB4GA1UEAxMXVmVyb2tleSBTZWN1
-cmUgRW1haWwgRzICEAfkkQ9qA1FdgOJE92VzW+AwDQYJKoZIhvcNAQEBBQAEggIADGH8DIuW6NO7
-b8Ayexb5UM4jXde4s+gnSbb0uGnBw5VtFaqIExZDgEvRak48Xe9uksvPD+ctVqPCPX5XO4TwLkb5
-mN/Bxxefx/8IJkJzx3oQLJCKtok7we0oftqctgB5diDfEDYrLUmN8zhrhgclhXuslAhoj26z7GBH
-6ETBvIm+Xted6a5Elyr5yuRwZHZ3yyPkDKs3YTyBVkXp066afuAuzBQeXADcRuIJJb1Dl7VEApBN
-h6o4tKjVu1DrUrSSFLSZSdZIaAd+jfQVTwlwEjppKDWkBLhU9Z9Faqt37jRUKc0azj4rjGrMPfJG
-rWdTzuWydfuzC3Rju+QHZ+OUwdNF+9VvBAPnCgqH0jVMUaGN9XnVbphc4y/kziw9OXg09VaXu6RV
-OfBuycEqmbO/+Q1spA1IFiYe7+vAcUlh0jqZ7Wx31ymFbNse77WL4DGwYGeEQjMZPFusrIo9mNDz
-hYau+iZlC+gaIq4MosMEH30EaeZUidc+gosJrXmtH1vwHcSREsP8nFYkiUF548DIZPOVS5GXPH69
-2hAxFMs1rwhcMpSNTgkfc+AVbvFhm9ldat8KehL067boyOCOIlJMmwjgtC1m9CVCr34b1eiKTi9V
-0KFmK/sbSq8eovYCQxpKgbhm6jhGvgiIlS7vzbc9gtmj3aVDc0Ne6tuhgBf8q34AAAAAAAA=
-
-
---=-XgoUOdys/5sPEXn/rgmJ--
+Cheers,
+Miguel
 
