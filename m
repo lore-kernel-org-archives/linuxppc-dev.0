@@ -1,76 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-20084-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20085-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FCCAFED3EC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2026 15:48:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE1F0FED3EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2026 16:03:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g2HSG5yFgz2yWK;
-	Sat, 25 Apr 2026 01:48:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=130.133.4.66
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777045726;
-	cv=none; b=Mqs0pRGErLe/aSi7WQR73i/iuhsyP5BtEus4t81yfcsJ/pzbT915xQKkIyEW/5r04KybprNGi76UR8ITQIx03WE09XLFVFL71ju62Dd37Im1D7zXQSSuiU0vZyYaPvvVd69RIxbl1iZn6oW7XggLcSjaVYJL8ZnaZcqw7PLN30V2w0fKXmW1qnZsH+kgCf0uQajvMGyfOXAfVRZWJlRTfktsAKenjWfEk8HtMjKJHazOfRLMp+FVrqu/kmAJAGLPN8RvigOO320QJsZddyB2mazruhMWWsvhvHW5ZtJpLMNYgSzUfOGlXOPKPqJdrUwfk17fbgcEa5JbrQDGmwlnqw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g2Hnl6lzYz2ybQ;
+	Sat, 25 Apr 2026 02:03:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777046635;
+	cv=none; b=i8hc7JEKSNfGv4IlLDrdyb/u5UMfw12rlp6iCyE2fE3vPREgzIHS94fnb4MaWm1BbXuyYxD5HXglbt4xEoGvGYu5KO6KgqG+pSLfSQipColRG3FgIRBGPVqAe1U1UXKbL3fEV/Vohnir4Xop38DECPeGO82nWCMKNs6F6flbUjSkSoz0YfPJVX5RiQHl6CHjydPMk93OhYWltwNM9CuheshbvzNZ5AkwtUDsmjmZ5bWxhg3YFckgObZQN7d27VxktHSb6/KBS4pD6cHtQezRvMupnXFqvhxVJv0xyGuGILqiADb8TfzHBWcgvfzVmrgqmruMx17FLlIQjJPUiacOXw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777045726; c=relaxed/relaxed;
-	bh=sR7PWVzDNl0Tt491SxI4OxCz/9aFZbKZgaCBkHzdKEE=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Xtp9EVkpKOBq6wuKeuCEfhcpsDrgeXoxq2sBDwg2ltIQsIfb6SOSADAWEPoB2KQ1MZjrVrkk6wcDb3NRGWBfqQrmcuDGj16J3GUDijBBkJhdS1OUEA80QlTDDx5aP3UXXmprXEMzmPOihwfsmQJ5fs3CdmmP7zy9txBhIyFmFA4GoEUrfyyEMQhUMF28OjFNHix0py6sRo5hNW6rB4gpzu6/mgfKqjyEwIRpqG01NvTHgULJ/fUvTFoklByZ0B0AQyqoIXZ8zys8eUgFW02zMwa7jfO5xuRfLREYe7RlkzntCXhLDASFDMqwHa/EZCtRuvFqtsB6wZHAJZIfuRFLKw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=physik.fu-berlin.de; dkim=pass (2048-bit key; unprotected) header.d=fu-berlin.de header.i=@fu-berlin.de header.a=rsa-sha256 header.s=fub01 header.b=P1jDrlBY; dkim-atps=neutral; spf=pass (client-ip=130.133.4.66; helo=outpost1.zedat.fu-berlin.de; envelope-from=glaubitz@zedat.fu-berlin.de; receiver=lists.ozlabs.org) smtp.mailfrom=zedat.fu-berlin.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=physik.fu-berlin.de
+	t=1777046635; c=relaxed/relaxed;
+	bh=P1nJG/WlxpA7oGG2+Q8e3ef+sd4zfXvCwzoI+e/Kg3c=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=AMsghu19jD53h/lEMJvs/FsfD6NrEa29mao2y/OsQdwGSId7ymXfCMPkqseiL02jueNesEpkBZCTvZd3tlsbCsCCsrDXu9pzZUWd3dH7QOrYitwys4yd6WjD7Ta9TiB3bh1CYYLZbuJMF8aWMfPqZYOtfzsfdTH6527L/hLxDGKrA89QLhYfUBkHC88Dl07dOOVscnoX6DdOZW+TsWA4Sj6I7J1YJG2Q06DfjIebOrKdIaJb9khLQLE+hafxuEDUvM8HMPjFOxqDViySYE8lyeheQIVtfiQE0A21kDMF6naHKhRt+usiR+x63xxIDQR8K/EbcvHkwjCa7rsiz7/1DA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kHPx5zDe; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=johan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=fu-berlin.de header.i=@fu-berlin.de header.a=rsa-sha256 header.s=fub01 header.b=P1jDrlBY;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kHPx5zDe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zedat.fu-berlin.de (client-ip=130.133.4.66; helo=outpost1.zedat.fu-berlin.de; envelope-from=glaubitz@zedat.fu-berlin.de; receiver=lists.ozlabs.org)
-Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de [130.133.4.66])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=johan@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g2HSD69lcz2yC9
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Apr 2026 01:48:43 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=fu-berlin.de; s=fub01; h=MIME-Version:Content-Transfer-Encoding:
-	Content-Type:References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:From:
-	Reply-To:Subject:Date:Message-ID:To:Cc:MIME-Version:Content-Type:
-	Content-Transfer-Encoding:Content-ID:Content-Description:In-Reply-To:
-	References; bh=sR7PWVzDNl0Tt491SxI4OxCz/9aFZbKZgaCBkHzdKEE=; t=1777045724;
-	x=1777650524; b=P1jDrlBYB0iZr4wM0Fk2wnlkvkL2wYxCaLKkuXeO6C/ZKMwJcDh636dRowMOY
-	dC93JPngUSGUs8nga0UWG4GOPe7rptEBuoBimQNODIizJbiiOVpMh7kmNoYOx2HLlDtiwyW5pI8SN
-	gwW5ktBxnafxI1zdUSDT9xqxI15EEkmlg4OtNLuvhky0tTKy7rBtmwK/mWYMEEA876QiS2kxuP0VA
-	nfm+RuflEMm0/spHN4UHt+srLgbr2J1gmTaKvecA2gB7fBxu+JP7GoJJpTLKJqJu80CQkBlZB790c
-	eAgWdq+YDjMPQI+itDkU/FWw8FCiQXTHUeFKtqTIFCFEYx0n6Q==;
-Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
-          by outpost.zedat.fu-berlin.de (Exim 4.99)
-          with esmtps (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@zedat.fu-berlin.de>)
-          id 1wGIli-00000000k6X-3PRH; Fri, 24 Apr 2026 17:48:38 +0200
-Received: from dynamic-002-242-158-062.2.242.pool.telefonica.de ([2.242.158.62] helo=suse-laptop.fritz.box)
-          by inpost2.zedat.fu-berlin.de (Exim 4.99)
-          with esmtpsa (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@physik.fu-berlin.de>)
-          id 1wGIli-000000007EX-2Trq; Fri, 24 Apr 2026 17:48:38 +0200
-Message-ID: <d9ad0cd6fa640f23c396778bce2aa322e40e7e88.camel@physik.fu-berlin.de>
-Subject: Re: KVM-PR no longer works when compiled with new GCC compilers
-From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>, linuxppc-dev
-	 <linuxppc-dev@lists.ozlabs.org>, kvm@vger.kernel.org, 
- "debian-powerpc@lists.debian.org"
-	 <debian-powerpc@lists.debian.org>
-Cc: "R.T.Dickinson" <rtd2@xtra.co.nz>, hypexed@yahoo.com.au, mad skateman
-	 <madskateman@gmail.com>, Christian Zigotzky <info@xenosoft.de>
-Date: Fri, 24 Apr 2026 17:48:37 +0200
-In-Reply-To: <a584b7a1-fc25-a475-099a-634159b6ffe8@xenosoft.de>
-References: <cfd779d6-9440-46b2-9ed5-752f1ae6b5d1@xenosoft.de>
-	 <588ada6c-bcc4-e93b-1beb-4f7f859e3d5c@xenosoft.de>
-	 <eee732904c2a7ccce9b496b05f988a36d8a9883e.camel@physik.fu-berlin.de>
-	 <5da12382-5424-4bd9-981f-359e4dc1fa67@xenosoft.de>
-	 <a584b7a1-fc25-a475-099a-634159b6ffe8@xenosoft.de>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.60.1 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g2Hnl0Lb1z2yC9
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Apr 2026 02:03:55 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 1FA334096E;
+	Fri, 24 Apr 2026 16:03:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EAF7CC19425;
+	Fri, 24 Apr 2026 16:03:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1777046632;
+	bh=OpjYnvUINC0m/fERNUlL4a3+lpA8IFC0Re5p9y/suRY=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=kHPx5zDeAWeJIGcgZA6QqcJE9toft/blPMdaDaFKnu4DQf+K7B8fuF1ef4m2JhmKb
+	 9t2l4/TtcsBjz+6bsUaSGseDixTCFT3GOqugf+F7o9a7Oy7EWNkJQ2eSuy5v/eHeco
+	 a0Xm4Dfzos6CG+I9ttnvmRpAluFfu+zIxB9kA8hvrn6WRlHMB+Y8risu8KQMznvdfj
+	 obiDYVOKkAbBlUJjhpqk+qbGwF50onmRd1MvmeOdj+7fKoG7OG0PL8F28aIcOOCG2x
+	 WC6NeRazMriMZ7eREcgtG+C/AMlxpbGbstDeaV8oXVU1nSvZD2pZeN67z65FrHXayE
+	 kts7z/a9NB3iQ==
+Received: from johan by xi.lan with local (Exim 4.98.2)
+	(envelope-from <johan@kernel.org>)
+	id 1wGJ0P-0000000BDJd-3H6m;
+	Fri, 24 Apr 2026 18:03:49 +0200
+From: Johan Hovold <johan@kernel.org>
+To: Geoff Levand <geoff@infradead.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	Johan Hovold <johan@kernel.org>
+Subject: [PATCH v2 1/3] powerpc/ps3: switch to dynamic system bus root device
+Date: Fri, 24 Apr 2026 18:02:57 +0200
+Message-ID: <20260424160259.2672722-2-johan@kernel.org>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260424160259.2672722-1-johan@kernel.org>
+References: <20260424160259.2672722-1-johan@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -84,28 +77,56 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Original-Sender: glaubitz@physik.fu-berlin.de
-X-Originating-IP: 2.242.158.62
-X-ZEDAT-Hint: PO
+Content-Transfer-Encoding: 8bit
 
-On Fri, 2026-04-24 at 16:47 +0200, Christian Zigotzky wrote:
-> I compiled it with "mtune=3Dpower4" today but without any success.
->=20
-> Error messages:
->=20
-> [=C2=A0 800.274759] Couldn't emulate instruction 0x00000000 (op 0 xop 0)
-> [=C2=A0 800.274767] kvmppc_exit_pr_progint: emulation at 100 failed (0000=
-0000)
+Driver core expects devices to be dynamically allocated and will, for
+example, complain loudly if a device that lacks a release function
+is ever freed.
 
-What exactly are you running inside the KVM? 0x00000000 doesn't seem like
-a valid instruction and a quick Google research reveals that this triggers
-a SIGLL trap.
+Use root_device_register() to allocate and register the root device
+instead of open coding using a static device.
 
-Adrian
+Signed-off-by: Johan Hovold <johan@kernel.org>
+---
+ arch/powerpc/platforms/ps3/system-bus.c | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
---=20
- .''`.  John Paul Adrian Glaubitz
-: :' :  Debian Developer
-`. `'   Physicist
-  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
+diff --git a/arch/powerpc/platforms/ps3/system-bus.c b/arch/powerpc/platforms/ps3/system-bus.c
+index 0537a678a32f..4ead6ccea259 100644
+--- a/arch/powerpc/platforms/ps3/system-bus.c
++++ b/arch/powerpc/platforms/ps3/system-bus.c
+@@ -20,9 +20,7 @@
+ 
+ #include "platform.h"
+ 
+-static struct device ps3_system_bus = {
+-	.init_name = "ps3_system",
+-};
++static struct device *ps3_system_bus;
+ 
+ /* FIXME: need device usage counters! */
+ static struct {
+@@ -486,8 +484,8 @@ static int __init ps3_system_bus_init(void)
+ 
+ 	mutex_init(&usage_hack.mutex);
+ 
+-	result = device_register(&ps3_system_bus);
+-	BUG_ON(result);
++	ps3_system_bus = root_device_register("ps3_system");
++	BUG_ON(IS_ERR(ps3_system_bus));
+ 
+ 	result = bus_register(&ps3_system_bus_type);
+ 	BUG_ON(result);
+@@ -744,7 +742,7 @@ int ps3_system_bus_device_register(struct ps3_system_bus_device *dev)
+ 	static unsigned int dev_lpm_count;
+ 
+ 	if (!dev->core.parent)
+-		dev->core.parent = &ps3_system_bus;
++		dev->core.parent = ps3_system_bus;
+ 	dev->core.bus = &ps3_system_bus_type;
+ 	dev->core.release = ps3_system_bus_release_device;
+ 
+-- 
+2.53.0
+
 
