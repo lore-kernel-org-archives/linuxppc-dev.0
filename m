@@ -1,89 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-20081-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20082-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04B95FED3C0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2026 12:44:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B44D1FED3C5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2026 12:54:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g2CMJ4J2xz2xwH;
-	Fri, 24 Apr 2026 22:44:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c206::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777034652;
-	cv=pass; b=Z4grptivZhVBY5/hXmtPO1XBsig5GKOPwhoO+e6VVU1ywciJXT+0UkvjNY5/z+/2v/7nIU+DZL/AbKYwO32rrTKkp17/Ek3MHJQTomJ2U6pRzq1x0QACjk3V2VdS3yy7r0yzGuFOpy8fkLv2ie55Xu9c38YnpOnjs+/+t20nzNUVTWFRhzkMPUkzgOV4EWDN1JhzZ78LfKd3aPCU1e2GRI/X+T875433ePLd6HPxqwEzzS6fSKfwX8hmYTSBZfcv2+kazbmYktirAetz1CWWJ9Skae20BsKuZALF6Y0tZIybMFXDtXiRzl9J9IpFEXytvcW5YZkds+lCFn3EWyEy3A==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777034652; c=relaxed/relaxed;
-	bh=yM2KVpbeXVKYgSfEiEsPee0AccJ+OUQ3jbc1h7inrC0=;
-	h=Content-Type:Date:Message-Id:Cc:Subject:From:To:References:
-	 In-Reply-To:MIME-Version; b=cc9au38yMkknkTdo3vqeMIaHr9CQeOOtjTXjr6d1jSmWpDqwxvpa7xGdJvLssi5wsedb4XoPStHmeX/EQqkV/a5s8NoS+bGMz3D9JWZ22nfA5alJ8I7kO4vMf1SEgdU8n0m5xiNTOFnDQAF42k9KfQlKtaYh5d4/fJzKWJdk+2EUhyWhWTmPXN95rDZuIbAGSFEWyxF4wh24elZouhk+4ihdT60Zg4jBa3Z+4w8TY/5GNS9H0tHUrYQSvJPEQar/GvrrbcQeMbl6nZs8FBRWsZniWs24o8iqhL14iUZtiocuDZiHeUi7PS37ok2ACtVaFzgC0KWZV6Qlet3uzWHNag==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=garyguo.net; dkim=pass (1024-bit key; unprotected) header.d=garyguo.net header.i=@garyguo.net header.a=rsa-sha256 header.s=selector1 header.b=NEqO1q6f; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c206::3; helo=cwxp265cu009.outbound.protection.outlook.com; envelope-from=gary@garyguo.net; receiver=lists.ozlabs.org) smtp.mailfrom=garyguo.net
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=garyguo.net
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=garyguo.net header.i=@garyguo.net header.a=rsa-sha256 header.s=selector1 header.b=NEqO1q6f;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=garyguo.net (client-ip=2a01:111:f403:c206::3; helo=cwxp265cu009.outbound.protection.outlook.com; envelope-from=gary@garyguo.net; receiver=lists.ozlabs.org)
-Received: from CWXP265CU009.outbound.protection.outlook.com (mail-ukwestazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c206::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g2CMG4RwPz2xQC
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 22:44:09 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=NigBRx1yEkVD33IbDA4vFt4eHJUN1TvF0X6D2JG+40c5YJ/fXwNLs9Di5O0dlgmjZFuWwvIIcjNv87ptlFqpGAn75z5sa9pOIXEl13SUzrv2onUgkr74mM5xwnIvj54nvWQk72mKwJD3R+MeodsRa1CHAQcCi3YQrDJfuFaCeuWaa04dSdgNyuelzAIVbrIGN96WN62q1rNCyqu3jsgf7C3g5MXjTtwx0Sb1GJ61jppWl8ru0naZU1x5+qy7xjoaxiIiFv8HoJif7UYttqQ9he5DIs4TDc1/BqJYU0Zzt9VuS1RAHRzeru5RJUDKi89kEOfIn+HyzIRJ4RoPUALvaQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=yM2KVpbeXVKYgSfEiEsPee0AccJ+OUQ3jbc1h7inrC0=;
- b=hFamBzZUeedjkS7Zf1QtkFDqv6yGgn1yZDWBul02fnEERgNe6suDnXpHyq92ClUa4XCh7idWEqS2SC6JwKW2LmX7APxZ6ZBLD3y3LwxjlxgRl3cIoCjQ9q/0RY3WhcLQoz0gbT1muUjj5r5KcJCsRBy9msGiwxRMBF+04pSlEbQJsPymGe1YmlFniW9zeiiSC33JPFAECgyHwKyWImj9xAgxnUoGgrpKjDhAnQhnvI9V4FkEcdr3BaAbRMzz9C5fHTA48DNGpNf3OzUI7Eh1isM3Bjq5IUVfgbZ4mK2fsbE8disa6A1FKHVw7bleE6eB1G+U7wDZqrg91yoaayPAGw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=garyguo.net; dmarc=pass action=none header.from=garyguo.net;
- dkim=pass header.d=garyguo.net; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=garyguo.net;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=yM2KVpbeXVKYgSfEiEsPee0AccJ+OUQ3jbc1h7inrC0=;
- b=NEqO1q6fN+YFKLS2FZBm37UU1P1kOOZAG2BVDmexX5j31Sz1eHLhrEJ9K9RXqcXwtqxxi8qdOw5gWSTQrO2Agxx8gcMtDWNNW9y2UXUvDf9LFIirZwyYyLv7uRdiaDH7tmaBO9wWi85sTrN2FmJezSooNALesP9SkpLVLDlOI3U=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=garyguo.net;
-Received: from LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:488::16)
- by LO0P265MB7026.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:2eb::14) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9846.22; Fri, 24 Apr
- 2026 12:43:44 +0000
-Received: from LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
- ([fe80::1c3:ceba:21b4:9986]) by LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
- ([fe80::1c3:ceba:21b4:9986%4]) with mapi id 15.20.9846.021; Fri, 24 Apr 2026
- 12:43:44 +0000
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 24 Apr 2026 13:43:43 +0100
-Message-Id: <DI1E781QPU8F.1C28PL0089NP6@garyguo.net>
-Cc: "Link Mauve" <linkmauve@linkmauve.fr>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g2CbH0jsJz2xwH;
+	Fri, 24 Apr 2026 22:54:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=63.228.1.57
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777035275;
+	cv=none; b=cCuoUXsiImrX/Z/DWzl5fgAx1N5PDkiDv2qFhCf/wk3J8dQvBa+mOGFyq47rT1DdqOouPc2hmBiPR0nNpq1wcrBUQTnKw8YrFAYk9jpuJPtANGTkLwT5LT9C2gNjo2ggQYcNcQPjLfoi9lTeka8Pa03KkP+gpNNqyqFjDuVQKRjifbkKmH+vV/5eiS9bwgqxKok+lHxwsWskE02JBqxpygTFYSRD+3L3IMf9ErGs/AtMBC8lp5zHXMlB2rqQqL2r0F93JXAlTGYba5Y6DT2kBpB1l5gFO2uQIpWF7ay0cSwLVuV8zkZ9AXdM3/snjOOSVEkhfnbuUIjfz9jyP0efGQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1777035275; c=relaxed/relaxed;
+	bh=kAR6eWHeLAHdfiZel9idOKhb7FZJp/1ZVQ+s0RseUhQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=VHMVDrAOUFVrsPvCKq2fc8hz/7YgJIp4r2/qUZixWeY1bjb8UzUsTbwm+3ggngDxLNH3KTjBKdVEATNALhDfL5ZJ3+MvPLMtZ5OH7aCNLs/fDxOcqYYavu8xpdzLK87YwXEXioaHL8cVamiMvx6V7Px4F7dMC6UOHtv+dX5HX3LMRiDUoyTP1mq6Q7zuJ9Ti93vmx87O5AagA7dP5ID7qYtYJl5UzV0vrlU9hq3MEiQgn/v641r6sF+ArU4VfFWS1h6MX6obG3ycB5dSxTSKlnMW95zKQcwjj5dexXsIeFUXdoo+SZec8LOAqDoX+SWhDnusQCxszuMOWxmrG2jUwg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org; spf=pass (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.crashing.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g2CbF1vj1z2xQC
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 22:54:32 +1000 (AEST)
+Received: from gate.crashing.org (localhost [127.0.0.1])
+	by gate.crashing.org (8.18.1/8.18.1/Debian-2) with ESMTP id 63OCrj9o193708;
+	Fri, 24 Apr 2026 07:53:45 -0500
+Received: (from segher@localhost)
+	by gate.crashing.org (8.18.1/8.18.1/Submit) id 63OCrhor193703;
+	Fri, 24 Apr 2026 07:53:43 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
+Date: Fri, 24 Apr 2026 07:53:43 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        chleroy@kernel.org, peterz@infradead.org, jpoimboe@kernel.org,
+        jbaron@akamai.com, aliceryhl@google.com, rostedt@goodmis.org,
+        ardb@kernel.org, sumit.semwal@linaro.org, christian.koenig@amd.com,
+        ojeda@kernel.org, boqun@kernel.org, gary@garyguo.net,
+        bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org,
+        tmgross@umich.edu, dakr@kernel.org, nathan@kernel.org,
+        nick.desaulniers+lkml@gmail.com, morbo@google.com,
+        justinstitt@google.com, tamird@kernel.org, arnd@arndb.de,
+        nsc@kernel.org, simona.vetter@ffwll.ch, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org,
+        rust-for-linux@vger.kernel.org, llvm@lists.linux.dev,
+        Link Mauve <linkmauve@linkmauve.fr>
 Subject: Re: [PATCH V13 5/7] rust: Make __udivdi3() and __umoddi3() panic
-From: "Gary Guo" <gary@garyguo.net>
-To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
- <maddy@linux.ibm.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
- <chleroy@kernel.org>, <peterz@infradead.org>, <jpoimboe@kernel.org>,
- <jbaron@akamai.com>, <aliceryhl@google.com>, <rostedt@goodmis.org>,
- <ardb@kernel.org>, <sumit.semwal@linaro.org>, <christian.koenig@amd.com>,
- <ojeda@kernel.org>, <boqun@kernel.org>, <gary@garyguo.net>,
- <bjorn3_gh@protonmail.com>, <lossin@kernel.org>, <a.hindborg@kernel.org>,
- <tmgross@umich.edu>, <dakr@kernel.org>, <nathan@kernel.org>,
- <nick.desaulniers+lkml@gmail.com>, <morbo@google.com>,
- <justinstitt@google.com>, <tamird@kernel.org>, <arnd@arndb.de>,
- <nsc@kernel.org>, <simona.vetter@ffwll.ch>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <linux-media@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
- <linaro-mm-sig@lists.linaro.org>, <rust-for-linux@vger.kernel.org>,
- <llvm@lists.linux.dev>
-X-Mailer: aerc 0.21.0
+Message-ID: <aetn16xR-uy7M7WA@gate>
 References: <20260424054742.45832-1-mkchauras@gmail.com>
  <20260424054742.45832-6-mkchauras@gmail.com>
-In-Reply-To: <20260424054742.45832-6-mkchauras@gmail.com>
-X-ClientProxiedBy: LO4P265CA0028.GBRP265.PROD.OUTLOOK.COM
- (2603:10a6:600:2ae::20) To LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
- (2603:10a6:600:488::16)
+ <aetZ3VX_Y9sop-SO@gate>
+ <aetamPA_SsWcwC4M@gate>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,132 +66,47 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: LOVP265MB8871:EE_|LO0P265MB7026:EE_
-X-MS-Office365-Filtering-Correlation-Id: 3cf2ce5d-0c7e-4354-218e-08dea1ff1ee9
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|10070799003|1800799024|366016|7416014|376014|921020|18002099003|56012099003|22082099003;
-X-Microsoft-Antispam-Message-Info:
-	qZxuI9vt5qSeLsyrg9zmyJOM/CEX42j7kuAUtj8gBfLFAU38bw3Oae3ceSTgI6jh+sfFJKFIl28itXW5SS2Ubcuft6krOLaAqX6wlUr2XRq2u+HJghwErPBSzf0wedOoJHXPGmnbCFqYNr4q12AsQmTrFvjR2rAzLaaFmWmRn/UbbOvrLj2V/+fy1DfEBFGcKeIW8LPS707iJXyarkkhbiWIz3pvoHSPGVu+Q3TzbwTk2oD3KC9HRvtHlFtv5nydOTcG2JVdRayes42fMfaF9O64XmIh0KrkPiLX/G2JWP8FpL+MhQqrzPUynUZdP1mdCDJRuqfHJC04KxExZ0XBPV1C/vzfgW7nrevjdQno9pM9Hr5ZeFIPIIFefTomna5Wp5C4RaJcBkXbPtK4i3KmP76I/nuRZnK7yYqRvG3hsgKW37hrYQfRQxIAfhu+bK3q2mW4wIoQoZnWe+fvAh63ujEVJXDioNO9pvop5s4h/FUzdjxd49dqIp760z84ThMFcCNubJpMBURW27kSP2WdXsy38e5VedJYcjTHXENAnBcoV54kjPTQNz87nVbDqs/h4e+hjNKyCHklwxnsva/fkFFRxQYgGgFwbU6GgwJZB8W4Nz3mScVa1YPBMOldxjtkHYonQhHB1TNkKPjY2Dz9GAZp78Sg7Y/raDgLQKUTz5I26lWn2J7zGMiNh9+/UIM2JuiIJLoF3Uh7QdjeyQk5ge86kOIon6RRJrdpsdIqL4FqeZCHuAeQx3wHz7yEjiwbbcZU2wEyhAwFRgW7EKp9BA==
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(10070799003)(1800799024)(366016)(7416014)(376014)(921020)(18002099003)(56012099003)(22082099003);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?dDdVTTRJYW1VU3pTU2JyWXdmWUNDQVpIbVd6RnlYVnlLa0VYT3kwK3RRditU?=
- =?utf-8?B?YVBIRFlSUjcvS1VIR3YvM2dOR3g3bFpTT2haWUdRYVB3anM5bnd5ckpuVDNx?=
- =?utf-8?B?NkgzWW9QZ0NPbjQ1V0xGY2xDd1BRV0hDbFlKSHhMZUR0MU04cGREMDBQb2R1?=
- =?utf-8?B?NjVENkRDcTVFR1pCZUJ2ZGdVUTF5WjNTdlRub3Z1UjVkTXg5bjU0Zm4rOFpD?=
- =?utf-8?B?eSttaTJqUE1UaDB2UlE3V1d3ZFRiZHhtWUxXT1dvejNwTFA4VitDWHY2eHAw?=
- =?utf-8?B?NEhoVXQ0WVE1WjRKU1g0WVVDOUIwTUdmSWZuMFFUR2paRjlERCtmSU1tMGVl?=
- =?utf-8?B?ZmlhRWxEb0lWSEg2eXRRUEpMb3lRdHJaUVRORnp5UlJUWnpVdGg4UFZieXdh?=
- =?utf-8?B?NnJwVXdBdHdTa3h2bWZ3WmJydmJoZlNjS1p6NVpBM2cvNGlRbUEvNkdicTMw?=
- =?utf-8?B?Nk5QVEZVQ0lRR1JrQmY4RUV3aUZ6SDFDN0kzaGFjZnk3YlVjQnoxeE8zQXp4?=
- =?utf-8?B?cE11b1BtT3MzeG9GSDlpVXJPdG85L2F1aERaMGR1MG0xRkg4RDJxNDdKK3Jl?=
- =?utf-8?B?ZEQwTVVOSkduK0pnQXEvU01FS1hVRUdEWmpIRnFVdm5ySlNYMlJtelVLM3Fz?=
- =?utf-8?B?QW12T0N0NkhhTk1wSXJ4SjJaRGUvWDB1MmV6bUZHaDhvRnNzbUdHNmtsUmtN?=
- =?utf-8?B?TjhhQTFaUlY3ME04TzdIQWZsenFLYzJHVU50RVdWN292M1lVbWcwck1QWkFP?=
- =?utf-8?B?c2NNaTR1RG9WZFlNUkpJVnRwWDZ5ckl5Wnh5c2hjVlBLc3lIOTNXWGJ4VFJV?=
- =?utf-8?B?anVTVlkvUHY2czljSHBsSXI5R2ZhVWczRmVuREFlaDhrQVZQcjBsbTU0Sk81?=
- =?utf-8?B?Y2hRMXBvOVpJdGlGbDJrQjJBMGk0dzJqNzhqMWNrWExzTXRjL0ZxTytBcURW?=
- =?utf-8?B?YklaZElTMFdkY0VHVS9pRDhRc3AyanpER0FraUJCRlJFS1BRd3FwWjRSOUxw?=
- =?utf-8?B?bkI5UEgzS3BhKyt4ZjE5bWdmM0Mrc0VXTXZvV3paRWxyUmFRODRSY21QTG9x?=
- =?utf-8?B?cWRvbkJmdVVEaEw2ZWdGV2t2aHBJUFhzWEIvaGVLMUlCcWVKUERwRUNLMEtL?=
- =?utf-8?B?K1BqVU9HTnVnL01TWFpGU1UrdEZiaE90ZXk4NjUvSUFtRERVT0FVWFd6aXJZ?=
- =?utf-8?B?U0NZdjZuVlRIS25xc0FIRzZSSXpobHNhKzg4WnlaUHZCc3BETEJLekNBMjVE?=
- =?utf-8?B?K1ZFemZEVlN6OGRMUVg3Q09EbHo1azRMd3VkRTkyckdxRDg2aXB6ejFFaDNz?=
- =?utf-8?B?TXJCYThId1hOU0UyMXdnU0ZPSnFmTjNRclg2NExhSk5vQ2haNjVPcVVpRllv?=
- =?utf-8?B?Ti90VnkvdmhtNERDMGN2SVhxMkMyYWlPREhrQTdqRys5KytmNlNDWVh3aUp4?=
- =?utf-8?B?Q1lKa2ZsZG15YUxsZUFnUjZMVy9zRUNkbDRsVHNDUGFDMXdMZ0s5Qk5kZjcr?=
- =?utf-8?B?WFIrcjN3SnNIK0tGdmxMUUZ4eFNHUFhuL09DdHpJREVqWnI4YlRpM3VnelVE?=
- =?utf-8?B?M3RIcHlYWWJ0c0ZNbkJsVkRwUlljb1pvNVVUNjVxMjlpQjFuMmhjcU9LMGln?=
- =?utf-8?B?eS8yeGxINUFqVlh5S0V3a1djYjFQT3grT28zTWJYQ2JFdG5YOUo3VFFvekxB?=
- =?utf-8?B?RTlxWGFjSC9oVTh2a1d6RHMwZ2NxcGtoOFJzV3JLdkxqNlBpR1Q0SkhXNVVQ?=
- =?utf-8?B?bzVIZDh4bTVjU2o1bUlxdTJYZTYrYXZwbmFlVGYrdmRQN2JzUXQ5YlI4ZmIx?=
- =?utf-8?B?LzAvS0tWdmhTbFJremppSzgxNk5QSjFPWjRaZTN1N0xTUERlZUhRKzdrM0kx?=
- =?utf-8?B?bEZMZEdHdmloMHcwcC92ZFBiV0xJL3dOOFRUQVNWaW00VWNjWHRPdjFCZTdz?=
- =?utf-8?B?U0lZL211NWFTODJ3K1ZPZWVRVHBHWFpnaVA3VWc0U2N1UmlDWU9MRjdXU1FH?=
- =?utf-8?B?R3M5VjZ3cS83QjZMSXVOd1puOWFkZmFQdTJlV1ZrOEUva2ZRV21VWGtiRnFu?=
- =?utf-8?B?c290TTZwNGNpVEVwK3dkOVg4clRvRHpCZDJsWjFvWTFqbzZHY3N0RFlteWNZ?=
- =?utf-8?B?MXB1SzNjSTRwUUwyMVluc255cGhNOXVlbFBkL0VZeHZYeGpMSnUzZWpqN3k4?=
- =?utf-8?B?MlNjWTRLU2FKZllVNk5mMS8vY1pLY1lpUDF0amw1QXNDdktKSVdCTmo3allQ?=
- =?utf-8?B?VHNMQWxSNm1BWXlWTkFxUHRZc1FKQmtONFJjaGhQV1FBaDFCYlg3Zml3eEhQ?=
- =?utf-8?B?Z0JHUGFZNUlyclFPL3pTOVU4MDdPZzQ3MzhZbnRJTmkxVDVUWTlwZz09?=
-X-OriginatorOrg: garyguo.net
-X-MS-Exchange-CrossTenant-Network-Message-Id: 3cf2ce5d-0c7e-4354-218e-08dea1ff1ee9
-X-MS-Exchange-CrossTenant-AuthSource: LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Apr 2026 12:43:44.1297
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: bbc898ad-b10f-4e10-8552-d9377b823d45
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: wYzL+1TKZSabyrdAizLf0SgY/fCe51GNVaxudBMtsXwZ+zeR8n9ErHV4WLwE0vIkd0wm+6lAV1eTdy1/XTYL7g==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: LO0P265MB7026
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <aetamPA_SsWcwC4M@gate>
 
-On Fri Apr 24, 2026 at 6:47 AM BST, Mukesh Kumar Chaurasiya (IBM) wrote:
-> From: Link Mauve <linkmauve@linkmauve.fr>
->
-> The core crate currently depends on these two functions for i64/u64/
-> i128/u128/core::time::Duration formatting, but we shouldn=E2=80=99t use t=
-hat in
-> the kernel so let=E2=80=99s panic if they are ever called.
->
-> This doesn=E2=80=99t yet fix drm_panic_qr.rs, which also uses __udivdi3 w=
-hen
-> CONFIG_CC_OPTIMIZE_FOR_SIZE=3Dy, but at least makes the rest of the kerne=
-l
-> build on PPC32.
+On Fri, Apr 24, 2026 at 06:57:12AM -0500, Segher Boessenkool wrote:
+> On Fri, Apr 24, 2026 at 06:54:05AM -0500, Segher Boessenkool wrote:
+> > Hi!
+> > 
+> > On Fri, Apr 24, 2026 at 11:17:40AM +0530, Mukesh Kumar Chaurasiya (IBM) wrote:
+> > > The core crate currently depends on these two functions for i64/u64/
+> > > i128/u128/core::time::Duration formatting, but we shouldn’t use that in
+> > > the kernel so let’s panic if they are ever called.
+> > > 
+> > > This doesn’t yet fix drm_panic_qr.rs, which also uses __udivdi3 when
+> > > CONFIG_CC_OPTIMIZE_FOR_SIZE=y, but at least makes the rest of the kernel
+> > > build on PPC32.
+> > 
+> > GCC uses calls to functions like even __addsi3 whenever the (sub-)target
+> > does not implement some RTL, doesn't have a define_insn and the like for
+> > it.  When you write a new port you only *have* to implement a very few
+> > things, the rest is done in libgcc (you might still have to write some
+> > of that for your target, no free lunch etc.)
+> > 
+> > 32-bit PowerPC has no instructions for 64-bit divisions, nor
+> > instructions that help implementing it in software.  It still very often
+> > helps to hand-write machine code for it, it very easily can usually be
+> > more than twice as fast for example (for example if the divisor is less
+> > than half a word big, the common case -- it can be made tens of times
+> > faster then).
+> > 
+> > There can be many reasons why a GCC backend decides to call a libgcc
+> > routine.  For __udivdi3 on -m32 rs6000 you'll be good AFAICS :-)
+> > (but poisoning functions like you do is a terrible idea in general!)
+> 
+> Whoopsie, I forgot to mention:
+> 
+> Approved for trunk.
 
-Can we always build libcore with `-C opt-level=3D2` even if
-`CONFIG_CC_OPTIMIZE_FOR_SIZE` is specified? It feels like a better fix than
-stubbing things out.
+Ugh, for some reason I thought this is a GCC patch :-(
 
-Best,
-Gary
 
->
-> Signed-off-by: Link Mauve <linkmauve@linkmauve.fr>
-> Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-> ---
->  rust/Makefile             | 4 ++++
->  rust/compiler_builtins.rs | 6 ++++++
->  2 files changed, 10 insertions(+)
->
-> diff --git a/rust/Makefile b/rust/Makefile
-> index 2a5428a5503d..ee11fba7a03d 100644
-> --- a/rust/Makefile
-> +++ b/rust/Makefile
-> @@ -616,6 +616,10 @@ ifneq ($(or $(CONFIG_ARM64),$(and $(CONFIG_RISCV),$(=
-CONFIG_64BIT))),)
->  		__ashrti3 \
->  		__ashlti3 __lshrti3
->  endif
-> +ifdef CONFIG_PPC32
-> +	redirect-intrinsics +=3D \
-> +		__udivdi3 __umoddi3
-> +endif
-> =20
->  ifdef CONFIG_MODVERSIONS
->  cmd_gendwarfksyms =3D $(if $(skip_gendwarfksyms),, \
-> diff --git a/rust/compiler_builtins.rs b/rust/compiler_builtins.rs
-> index dd16c1dc899c..fc6b54636dd5 100644
-> --- a/rust/compiler_builtins.rs
-> +++ b/rust/compiler_builtins.rs
-> @@ -97,5 +97,11 @@ pub extern "C" fn $ident() {
->      __aeabi_uldivmod,
->  });
-> =20
-> +#[cfg(target_arch =3D "powerpc")]
-> +define_panicking_intrinsics!("`u64` division/modulo should not be used",=
- {
-> +    __udivdi3,
-> +    __umoddi3,
-> +});
-> +
->  // NOTE: if you are adding a new intrinsic here, you should also add it =
-to
->  // `redirect-intrinsics` in `rust/Makefile`.
-
+Segher
 
