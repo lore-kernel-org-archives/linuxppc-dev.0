@@ -1,96 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-20047-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20048-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A1E6FB44C8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2026 08:06:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E7D7FB44CA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2026 08:12:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g25C52P1wz2xly;
-	Fri, 24 Apr 2026 18:06:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777018001;
-	cv=none; b=Z5T5qbvFBFNKpUB7Wc+W7FGIwlugcWL9T1j+ZwfnV2b9w9gUO0QIOgfMs154zLaIxPru5UPdW5dHcuSzt1HTPSIAKy0hPNgu8R6d2rB2gQYcfaxtx5klkinqNjsq11xasEAlhXLIcY6rlap1+LpMtlI+qZChOiAQvFReZyppZSlKK3+RiG7PASDVmQ5HUoiU4PNeexkV/d8PnynyK5Dxz45uBQM0k2ehBGjHbYoWkV/Bd0qi2zfWfzEyL1s9KFXU3vzI2EBEchp7t25tcPB2KPjwpTYfbwvQUoGrvlpzSzn31WXA4z0zsczog5LJWmBZmUl45QTBJo9y05Xh4VoSPQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777018001; c=relaxed/relaxed;
-	bh=/RCpdNlcyc5wjzZkBzWIIC1nFpk179iwlYkDekoHWOw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=hZeQSzDm379QWH+aNQFI3iJ0p6iYQu0kWSawIVnN4XSklgQi0WFnsWQkjVrpzG2D0/LWAO/e20vL/4C8bLJUr9KhlmdFQdcBfKf9CSKapSmk1z0wIaq3jTLANqC8UnMQAjtxxPzH3uz3xAz+dtFQp4hbjDb70eY6Dnu9PHuHaZUhwEGW/4M+OeIWFDhSP9F/cRpi3ju04o6J3prnOnFcVpGbSg2ngp7PZyRKtMUqzNkYVBDctZg4egnv9lgLAqtiMX1s7mNbUAxxMXFeQ9+Vduu/tURmQGVza61uNJhX0vk8/nPKywJeTqMGeqhilOJtx4TmQb5VpsKU8RvzGxXy7g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=IzuzDeu/; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102f; helo=mail-pj1-x102f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g25KZ14pLz2xwH;
+	Fri, 24 Apr 2026 18:12:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::b133" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777018338;
+	cv=pass; b=ek4pQ6dRaLhilfd/NHniKcBPBH0YX7piQ1GRuWxZ/3IcCf8fDXUaSTLVzQKgqKuiirJuBq8UWyO3zy/7ljNW0z0W0d/HJCASq6mxM6Q6VHsrWv4I4ypxV6cauPXqZzUt1kuv0FM4vFJVnXsxEWu+DBR5invOQukAcJc8Pxl5Jfy7vxa5BWksr5DpS52VjxRTX15NILBZopUl9EFVi1Oi09MD3FUgrx1atmb3qEwH275frvtp+YVrk9E8bq+qPQkPf/9lojD1OdYuv6QctB98lGQ7InepO+hOcldHmSeuTngo0QrmmaFjhGAv+jKGNT2JTbauphZB3bpObfTn8kyICw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1777018338; c=relaxed/relaxed;
+	bh=PghHXsaUvPB2FGmxVpPAYNm3E4Qd+tT/tA4p8BC2Akg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=dK7LGaUhAk3ZqwQwEqKOjDOrZZyivzXgjIZqkZyjMw1n+e5iSUklj95JTNaenFvzA1QJzrmOoN0gSot/gRXteF3Jlt2YkhnlKYNSjJ7eVDtxD3s/7hcC0sMuTSujeD7mQ8wEs4+pDHwkLzx9aMxFSqbYuD3LAV9l6nYrQFfF+Z59s7YVFeUWZ+Aqvfk2vhAmn0pfAqlAO6UiDyybcQ3hUGEDYf9HQgu1DnXsIfgTnTvR3gPpfNk9r7IRFcuGtL+qUhj1ku+iCHxDJQPGETRv8pCVFRDW3QZ7R6g8/wRwTBr+bLFhfh98KoYaCisTsb2LNTCQVEOlriTrwGCUZtYQcg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=S7xDWJfb; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b133; helo=mail-yx1-xb133.google.com; envelope-from=lgs201920130244@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=IzuzDeu/;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=S7xDWJfb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102f; helo=mail-pj1-x102f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com [IPv6:2607:f8b0:4864:20::102f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b133; helo=mail-yx1-xb133.google.com; envelope-from=lgs201920130244@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yx1-xb133.google.com (mail-yx1-xb133.google.com [IPv6:2607:f8b0:4864:20::b133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g25C01SN5z2xPL
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 18:06:35 +1000 (AEST)
-Received: by mail-pj1-x102f.google.com with SMTP id 98e67ed59e1d1-35e576110adso5257636a91.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 01:06:35 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g25KS5RYSz2xly
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 18:12:11 +1000 (AEST)
+Received: by mail-yx1-xb133.google.com with SMTP id 956f58d0204a3-65075c2ba66so5814152d50.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 01:12:11 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1777018329; cv=none;
+        d=google.com; s=arc-20240605;
+        b=JdtOaJBBMCy1i2lU854nwsUKQ1g0ajw9UIeTgm02rZJhVIQ+ieQ35XfputuOvmFwrR
+         hX43i82Z3RjSfBPKfz773dby20xWcsu+5Z1q7er9tZ2XgWo8YU9Ue191TnGoMuSJeg+y
+         oaYHfwCGqXpxQBeH03kcJF6y5XOMdZbucUDd0ykn6DA3DWPZRGEeDxeTsVfUXDT1ADZ3
+         7E2lh7hSN5/S/ETQcEZVWAatR2MZbrgpxxMUfzTL1RppM/Kk/Yv/x8DnsEp+BKD74pGe
+         /xWq9sqwQBVkE1RXaplQvZ0HtHnRrv1/pgeIOc+KVoxzHiLaA8jqJ6PS/eWPuzxc0ArY
+         aPkg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=PghHXsaUvPB2FGmxVpPAYNm3E4Qd+tT/tA4p8BC2Akg=;
+        fh=2s4zQS0jQ/gn5Nc4JPtQyVwpfjhq+tZ5FMD4poHFgmM=;
+        b=LRmyVDckRx8tRS9LIhnNObk960E8B9gR85un3pkwqVhxx3yPXh09jwknmlWfZn6grH
+         rlFhjfJXkRTwfng6f2OD0XddQ1aYHo27GAD8ZvVXIT8uB7C8uXLDpHSosVKFKK84hoSp
+         mDFMGOQg3lgGt8/+SPlydYPKESIo8LrLkyKVbi5XigQbQ1cD9XpZ/uINFlmk++331dgA
+         39cdGTzUXMyJ128BZ4qGUVVKVaj9ALCkTWTNHPvpvS4jVd4Z6nhDAeAny/w2k1Kn+I7o
+         00LBwRi9hfL13xaXZSHkk+0f5TPrGIpkSBqFRY1emQNwA5/Vbk9Ny6qcm/FxUFX57bGk
+         ySng==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1777017994; x=1777622794; darn=lists.ozlabs.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=/RCpdNlcyc5wjzZkBzWIIC1nFpk179iwlYkDekoHWOw=;
-        b=IzuzDeu/wsEQMY6dVCUJQ4NdqXiixGNdRw7CotdVSFsDec7zRughwK4YgQ6qbT0nz9
-         jPHeEvNJRbCdVbugIC5Pej2ZWESfa6eeNp2yuxOxUL/Oxbt42xfdnR2x3cbhgoNmr42p
-         ME8jk2+xH6AOc+KVmR/tNasny+lOcA0RPY1BuLRqX1+2HzotgeY/mv4aQqNqMGQg0bwM
-         lFFgJCvEpIaFWQHeEZ/pAjmsnTBL+3sLljTMWnF5Btw6nSgzNK5Oxpmbjo76pN22x5/B
-         CDh5omLQp8mZzpT1aPxWrJ2U/8wxM75CA6I/PcS0HjCtH6OBts/lp7kBaaBBc2iKzeTL
-         JxLg==
+        d=gmail.com; s=20251104; t=1777018329; x=1777623129; darn=lists.ozlabs.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=PghHXsaUvPB2FGmxVpPAYNm3E4Qd+tT/tA4p8BC2Akg=;
+        b=S7xDWJfboeUWRK7+TBzTKvgBSxkD782c+3pLputvy0fp8Sc2svdVLXV2C0hPYxcIpG
+         FgU/Q5ijkdiH3pmN8uOCViQvBFJU2QchqZ39hQpKoIXC5Mm+V2YRiX0T5Q8EL6pj9+yE
+         dPQ/QwBId2NTbFRwUZeD1NAwsig7TZ7Yj8BwbNlxiBwU5c1Jhcai+viIvAnMa621obu4
+         GGBzkkh/w9q7EGwTU6q6HX67cH5cAbZS0t+5cmpUkQ50+YB+CZumrR7Ye4l7BDGpUTkL
+         WYYKHKkBk44kuXytZXfSyO08iqq44QCDWV2gyRvxcR1oAg12Ksgh3WSMOcMUgF82x1sq
+         cbjA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777017994; x=1777622794;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=/RCpdNlcyc5wjzZkBzWIIC1nFpk179iwlYkDekoHWOw=;
-        b=G0FUzFJjYZDEMcoI/4mzgL9iAItbAh+u1wtj4iHjMyEAtzBmFDMs3ou2g5AF28Gy8f
-         QxNGMguEs7irtg+Jhr6pwtv5+siPRlpgjb5mN4Uh91+HsRe2evAKa2CPG79HRrjZsLid
-         tcpxoDyPOf67kEaksslomzYJdJhUKJNxniFKzeZTOkq9pfaVIFEJQVbUvTjb9Yckd05i
-         3vzkrfwG30Oa+XZVyWCtjk1L8rGzi4FZSv75YqMcrpxwcjorKClkW/cmsXbDW9LN8ElO
-         evHztgROTOxxuuIvRTKi2ioUN/8U+wMqx6Dr5uXj8DBHRA5Oqf/XTrHHqRFT5AN5uhuO
-         oU3w==
-X-Forwarded-Encrypted: i=1; AFNElJ9RLkAnsbvnWzj9d3maG5wTQfhIbAJvskyIYt8l+zaD5BqDSapCZTgkSdVtfpc4030bRzlA4zIrELqp28k=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxwXp98OB3jz8n2NuRvoJ4UzOsXPc2w4z9s0aaNNsP/enidga3B
-	Fapv69jPhBj/KeUYaB2oYrnYzCZcIwjoUzIo5GNXfJgzY7jn/izoB/bS
-X-Gm-Gg: AeBDievG32s/XUeWTR2lIkr7lc/KuLyf0DTo5p98U5Nywx9zxOAybLBXAod99k09vG9
-	fNuG1o3o+k4TH7m8ygVf+fv7mef88wS08libruP65ABB7hF7jib/65XPd3c7jphaycqxF5+kywU
-	l6Es4k4G6z3VbvIlT+Y5LG022bnCvlTTbMU3s5cjWdZzhEFhoeuFNHrUjihOCLm4bS81h73Wk0n
-	5A5jgeUjMCT5enQEOisqwBF42mkMFY4IqCIzj8CQz/gXMRAbjOwKt2trwOrn3UTipHLUGAKf4Qy
-	j1icGNymcaVFMnzyv1F4B5ZJnD2pakxzaMJxwqdD6ASR9IeG5iCJxbuqVuL71Ia+UnMFynci8Y8
-	etVImD868tBx73xiQvTkuKTr+0SpZAQsZg1d+XRoObghEYP6QpgYEG3EiH65WbY4fmVHJOuvVpg
-	78EJKE0SWc3JaNfBI6wu08Evr17cn22TcuJjIhU3hZy8X4nA25Zbgeb06COo9XSWks6O80ki1H1
-	TGl9A==
-X-Received: by 2002:a17:90b:3ec5:b0:35f:b4c1:91ea with SMTP id 98e67ed59e1d1-361402ee818mr23969038a91.13.1777017993532;
-        Fri, 24 Apr 2026 01:06:33 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([129.41.58.4])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-361419739dfsm23565688a91.13.2026.04.24.01.06.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 24 Apr 2026 01:06:32 -0700 (PDT)
-Date: Fri, 24 Apr 2026 13:36:18 +0530
-From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: Christian =?utf-8?B?S8O2bmln?= <christian.koenig@amd.com>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-	chleroy@kernel.org, peterz@infradead.org, jpoimboe@kernel.org, jbaron@akamai.com, 
-	aliceryhl@google.com, rostedt@goodmis.org, ardb@kernel.org, sumit.semwal@linaro.org, 
-	ojeda@kernel.org, boqun@kernel.org, gary@garyguo.net, bjorn3_gh@protonmail.com, 
-	lossin@kernel.org, a.hindborg@kernel.org, tmgross@umich.edu, dakr@kernel.org, 
-	nathan@kernel.org, nick.desaulniers+lkml@gmail.com, morbo@google.com, 
-	justinstitt@google.com, tamird@kernel.org, arnd@arndb.de, nsc@kernel.org, 
-	simona.vetter@ffwll.ch, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
-	linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, 
-	rust-for-linux@vger.kernel.org, llvm@lists.linux.dev
-Subject: Re: [PATCH V13 2/7] dma-resv: Fix undefined symbol when
- CONFIG_DMA_SHARED_BUFFER is disabled
-Message-ID: <aeskOeb9uBiPptEJ@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <20260424054742.45832-1-mkchauras@gmail.com>
- <20260424054742.45832-3-mkchauras@gmail.com>
- <b4dcb464-7784-47e2-a973-6d731ab9ccf8@amd.com>
+        d=1e100.net; s=20251104; t=1777018329; x=1777623129;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=PghHXsaUvPB2FGmxVpPAYNm3E4Qd+tT/tA4p8BC2Akg=;
+        b=ULyGbScNTFuVkXDL6Soy5SuzUowsZPrp09+wUFk9IhLP1XErdSt8amhpSP6hovsUHG
+         BiRr1vfgXQJjr9fUmk3PCaJuSX1qpPtGZ9URD5EBp9GGNCZaEq8UqDhWozg98DF0o2Yv
+         6n3w2BED5l+SinbkisES/hUHbZLXNFC8HzD2y0VNVMeCs88OG1CI31ZLGPA/Ie31MCE+
+         Vh/bP+p3oBmjdNmu8jufzJL4qaaiH/NNLg+TkFpIbr2Ubc1uH2VRsb6wpH77WPgdsOuP
+         bB0NsUK7q7xjLHOuyPL3JrSaFpe+fskj63rgmMssXTxdnVrorNNFufr3JjY3xhcbAG3I
+         FTGw==
+X-Forwarded-Encrypted: i=1; AFNElJ8QUKKTTZ1DlXd3Oj1RksFtfuQq9kvQcvqwYFK6d83d9TOksLq9gIzAHij3y4pcJht9LtO7yiI3FHtitEs=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzrPxp4UievKxRNjkAyi+OYoo0CyFAKfYv3glpSxbrjy+/sW7Cy
+	VBJ8V+cXcaR4ScwMWiNYwnQX0LTIlUPKTP3cDOnLhC3VwxSmxQaJyY3ZRRBFcpX+zeCiY4flLUS
+	vQKg1ISci+kAKFtkoXTcFGoMV/8w6gsQ=
+X-Gm-Gg: AeBDiesJ1dIkCzZJfJiHmYts4GsaLfm5rwcj/wgn5Q7x34I7SrckZNPmVA5Qhx8hFqR
+	L2BdtPpKKBQhWtp6qHD0B2v47eeDduIkzx6o+gHWJCVQP8aP/ab1K8HIfC86jq8MkCwGHsJeYp+
+	tFtc8HgqYuYwT4/x/uyIPU+CIC2cKGhRvUWkwiD/N4P1lUzwQ9EfaiYDFWvC0KoYJa2+JKGQbt6
+	vr2ziAARlClq9+IG1UAPIzq05tShuBFl+cZGODnyaH4qFaWmCOIb33aths8x7yh0Ig3W5CledVj
+	H3Z6c0c8i236INnDnEl8
+X-Received: by 2002:a05:690e:4199:b0:64c:a0c6:da93 with SMTP id
+ 956f58d0204a3-6531089af70mr25686233d50.28.1777018329042; Fri, 24 Apr 2026
+ 01:12:09 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,92 +100,93 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <b4dcb464-7784-47e2-a973-6d731ab9ccf8@amd.com>
+References: <20260415143701.3309681-1-lgs201920130244@gmail.com>
+In-Reply-To: <20260415143701.3309681-1-lgs201920130244@gmail.com>
+From: Guangshuo Li <lgs201920130244@gmail.com>
+Date: Fri, 24 Apr 2026 16:11:55 +0800
+X-Gm-Features: AQROBzBc5qXvUTrDC5JalkEZi1O-Zxl9G-jCas25GxZKqJns4L1d-RV9sUSyvKw
+Message-ID: <CANUHTR-YL+ZBWA13vYgOfs-YjKRyG_60ZjFbpPa-Dh8P8Mixmw@mail.gmail.com>
+Subject: Re: [PATCH] macintosh: adb: fix reference leak on failed platform
+ device registration
+To: Guangshuo Li <lgs201920130244@gmail.com>, Kees Cook <kees@kernel.org>, 
+	Johannes Berg <johannes@sipsolutions.net>, Paul Mackerras <paulus@ozlabs.org>, 
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: stable@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On Fri, Apr 24, 2026 at 09:56:16AM +0200, Christian König wrote:
-> On 4/24/26 07:47, Mukesh Kumar Chaurasiya (IBM) wrote:
-> > When building with LLVM=1 for architectures like powerpc where
-> > CONFIG_DMA_SHARED_BUFFER is not enabled, the build fails with:
-> > 
-> >   ld.lld: error: undefined symbol: dma_resv_reset_max_fences
-> >   >>> referenced by helpers.c
-> >   >>>               rust/helpers/helpers.o:(rust_helper_dma_resv_unlock)
-> > 
-> > The issue occurs because:
-> > 1. CONFIG_DEBUG_MUTEXES=y is enabled
-> > 2. CONFIG_DMA_SHARED_BUFFER is not enabled
-> > 3. dma_resv_reset_max_fences() is declared in the header when
-> >    CONFIG_DEBUG_MUTEXES is set
-> > 4. But the function is only compiled in drivers/dma-buf/dma-resv.c,
-> >    which is only built when CONFIG_DMA_SHARED_BUFFER is enabled
-> > 5. Rust helpers call dma_resv_unlock() which calls
-> >    dma_resv_reset_max_fences(), causing an undefined symbol
-> > 
-> > Fix this by making the function declaration conditional on both
-> > CONFIG_DEBUG_MUTEXES and CONFIG_DMA_SHARED_BUFFER. When either is
-> > disabled, use a static inline stub instead.
-> 
-> Well we are clearly missing something here, but of hand that doesn't looks like the right fix.
-> 
-> When CONFIG_DMA_SHARED_BUFFER isn't enabled then the whole dma-resv.h header can't be used at all.
-> 
-> So you also can't call dma_resv_unlock() from the Rust helpers. Which means that we need to make the Rust helpers somehow depend on CONFIG_DMA_SHARED_BUFFER.
-> 
-> Alternative would be to provide dummies for the functions in dma-resv.h when CONFIG_DMA_SHARED_BUFFER isn't set, but that looks a bit like it just hides the issue.
-> 
-> Regards,
-> Christian.
-> 
-What about something like this:
+Hi,
 
-diff --git a/rust/helpers/dma-resv.c b/rust/helpers/dma-resv.c
-index 71914d8241e2..53c119f1b144 100644
---- a/rust/helpers/dma-resv.c
-+++ b/rust/helpers/dma-resv.c
-@@ -2,6 +2,7 @@
- 
- #include <linux/dma-resv.h>
- 
-+#ifdef CONFIG_DMA_SHARED_BUFFER
- __rust_helper
- int rust_helper_dma_resv_lock(struct dma_resv *obj, struct ww_acquire_ctx *ctx)
- {
-@@ -12,3 +13,4 @@ __rust_helper void rust_helper_dma_resv_unlock(struct dma_resv *obj)
- {
-        dma_resv_unlock(obj);
- }
-+#endif
+Please disregard this patch.
 
-This seems to fix the issue and makes sense, whoever wants to use the
-dma shared buffer will anyway enable the config
+On Wed, 15 Apr 2026 at 22:37, Guangshuo Li <lgs201920130244@gmail.com> wrote:
+>
+> When platform_device_register() fails in adbdev_init(), the embedded
+> struct device in adb_pfdev has already been initialized by
+> device_initialize(), but the failure path does not drop the device
+> reference for the current platform device:
+>
+>   adbdev_init()
+>     platform_device_register(&adb_pfdev)
+>       device_initialize(&adb_pfdev.dev)
+>       setup_pdev_dma_masks(&adb_pfdev)
+>       return platform_device_add(&adb_pfdev)
+>
+> As documented in platform_device_register(), the caller must use
+> platform_device_put() to give up the reference initialized in this
+> function when registration fails.
+>
+> This leads to a reference leak when platform_device_register() fails.
+> Fix this by checking the return value and calling platform_device_put().
+>
+> The issue was identified by a static analysis tool I developed and
+> confirmed by manual review.
+>
+> Fixes: c9f6d3d5c6d4f ("[POWERPC] adb: Replace sleep notifier with platform driver suspend/resume hooks")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
+> ---
+>  drivers/macintosh/adb.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
+> index fe150125e099..eff06f78aa80 100644
+> --- a/drivers/macintosh/adb.c
+> +++ b/drivers/macintosh/adb.c
+> @@ -883,6 +883,8 @@ adb_dummy_probe(struct platform_device *dev)
+>  static void __init
+>  adbdev_init(void)
+>  {
+> +       int err;
+> +
+>         if (register_chrdev(ADB_MAJOR, "adb", &adb_fops)) {
+>                 pr_err("adb: unable to get major %d\n", ADB_MAJOR);
+>                 return;
+> @@ -893,6 +895,9 @@ adbdev_init(void)
+>
+>         device_create(&adb_dev_class, NULL, MKDEV(ADB_MAJOR, 0), NULL, "adb");
+>
+> -       platform_device_register(&adb_pfdev);
+> +       err = platform_device_register(&adb_pfdev);
+> +       if (err)
+> +               platform_device_put(&adb_pfdev);
+> +
+>         platform_driver_probe(&adb_pfdrv, adb_dummy_probe);
+>  }
+> --
+> 2.43.0
+>
 
-Regards,
-Mukesh
-> > 
-> > Fixes: 0c6b522abc2a ("dma-buf: cleanup dma-resv shared fence debugging a bit v2")
-> > Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-> > ---
-> >  include/linux/dma-resv.h | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/include/linux/dma-resv.h b/include/linux/dma-resv.h
-> > index c5ab6fd9ebe8..23c8db0b5214 100644
-> > --- a/include/linux/dma-resv.h
-> > +++ b/include/linux/dma-resv.h
-> > @@ -311,7 +311,7 @@ static inline bool dma_resv_iter_is_restarted(struct dma_resv_iter *cursor)
-> >  #define dma_resv_held(obj) lockdep_is_held(&(obj)->lock.base)
-> >  #define dma_resv_assert_held(obj) lockdep_assert_held(&(obj)->lock.base)
-> > 
-> > -#ifdef CONFIG_DEBUG_MUTEXES
-> > +#if IS_ENABLED(CONFIG_DEBUG_MUTEXES) && IS_ENABLED(CONFIG_DMA_SHARED_BUFFER)
-> >  void dma_resv_reset_max_fences(struct dma_resv *obj);
-> >  #else
-> >  static inline void dma_resv_reset_max_fences(struct dma_resv *obj) {}
-> > --
-> > 2.53.0
-> > 
-> 
+After re-checking it, adb_pfdev is a static platform_device and it does
+not provide a dev.release callback. Therefore calling
+platform_device_put() on the platform_device_register() failure path is
+not appropriate here and can trigger the missing release callback
+warning.
+
+This falls into the same static platform_device pattern pointed out in
+the other reviews, so I will drop this patch.
+
+Sorry for the noise.
+
+Best regards,
+Guangshuo Li
 
