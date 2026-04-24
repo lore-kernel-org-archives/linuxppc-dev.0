@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-20042-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20043-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19587FB44C6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2026 07:34:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E7ACFB44C6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2026 07:34:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g24TR2Ns1z2xly;
-	Fri, 24 Apr 2026 17:34:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777016043;
-	cv=none; b=d+wmVD7EzFMqZsX3/jEvdFtmYPCQaLgecoIavA024zGdG2utjymqg0ZlmS9dZqOMHEyrgQfPzKadZvtQ1uVKccGIj6NXjGvz+hBZ3wcKYFVufjBYN96Kt6kgOjypalyuDx+cR+BWBzqhqGQs06b+1NjJbldX1jrf9EDIpqWF9e2UfQtFwQDH4iSBY4skwaqmpApIl3Yl2zWZ5NjawdllIDqGGJvXDuD5dyBHDTxveS6Rfnpupammm0BXlnHuEw/KIg+8ZJYuD6EL5z0wCFwSbhqXFy5zVHiUQNIcoKsxUxKPwBxZFPrZwrIzyoDaUN/x1Agro2kd6LjqCy5vtXQ/+Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g24VV0VDYz2xly;
+	Fri, 24 Apr 2026 17:34:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777016098;
+	cv=none; b=isvuMlTrwXqkPN/dvhnR2VTaEUD5NUsh0DdNaJJ1fdwbQn3CkzaURUabMiGQ5BMo6et8QIK0YKyuKUZFqwKoKokKwRdGyjrzLiFFsMzotSQ6Ke7EpC1Q5qR/91wFSFnzKqSFgy/Ty+gseatala36bwVpy2M0La8CJ1tQXkgfB01komYPL9VziayaIOjuXV5Pbbh0wr4LIpoTVxyTzyCGb+V/0qDp/Ru+myQ+OSA4co2nY/y2CJX0X1DkA1D0L1yfZR2dw3MEHtz/zA0FNKxugemRQsrj3Ov3ZhxV5cWn6a2k2qex8y5k63K7ge5eifIqUF9FT61tfrb/81quBeyodA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777016043; c=relaxed/relaxed;
-	bh=i3emymLQKMW5KNMhf0/v5WxkXv+ccDytIAO46/7sqmQ=;
+	t=1777016098; c=relaxed/relaxed;
+	bh=dJdObXEbkahQYZLDnmZ+m0VPGz1sbGsEE1rZKCn5pOs=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=GXfHBuE+j/Ziru6iY6NVAQxUIuTDO8Qh//7mmbEwHU7nqXh5PMD7Ulle0TBVZHj2PpB4tLmOiElVLdORcn/3+9dUFOsAsa/MRELoMZkQUmC0E/dnfCd4cEtv0EaO2OeW/mWspsnnJ1gCPpadZLYcqCYX57xfsBfaDB89gZHNOgMcIVDnmR64JB3PGzJUKpZK/ml7ogTU2BNef1aXURSfIHKB+IMKYQbOk2Y3mZuIswDnAf+ZfMST3KTOlKpQOiDAQ2prlxxLHbte//emkeB9rDj/6yq0PzopL1tqol+nbv14vKxkKdOie0fcf8FOYEGS44mwF6uA4nqhTQS/6HqJCw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ET2IVhVP; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=l6l0COZs4rW+fCJkbQvH0q2Pt3Pz66AqWzma3b2XDUaZI3P1lBAaNKKmxJdy8PKdHPk972v6JIxx6r6P2UTCxkcjurcOpygpqGklfj7pxjRffIFtiKZzubdqcy6uCXNIOtznWTmLCRdHkzLR6tzO1vhMR9yCr5FWeNnMBTUakzt0cy3Z7H544zx03DQ/h9woWoI82fFpiZjKK+/lCWyCJdqMzgg/Zj39iNRLHX3w//x3zlsr7vYNlnCqocu6flBY7Ahv4ERsjFefatUgkmlGFrvmd4G88XhpmaKto8e3wd03WEHh3Yi2pIzRrJ270FgVP+li9F8UvH1KZKPxOAKa1w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oJIR4PtA; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ET2IVhVP;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oJIR4PtA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g24TH6XCxz2xfR
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 17:33:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g24VN5TJ0z2xfR
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 17:34:52 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 06B366001A;
-	Fri, 24 Apr 2026 07:33:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4E265C19425;
-	Fri, 24 Apr 2026 07:33:47 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 122FF4449D;
+	Fri, 24 Apr 2026 07:34:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EA5D6C19425;
+	Fri, 24 Apr 2026 07:34:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777016032;
-	bh=FWUCIjlRnfU0ETPJAkdUekHGrm29nbNvT4ou3u2ZJrI=;
+	s=k20201202; t=1777016089;
+	bh=NGQdePNFp6hyo74+R+XMpXlJRT/ZhqyV2fpxjwJ+zcc=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=ET2IVhVPW1Je/rflovdV0szP2Nft7DLDtK4Cjt8gOa3tlrF0PYvVAsdr0AtKcI2nw
-	 Nq+tRJktHRoOnrRgLjk5Kv3ysZ2GmBvgxsuvvvVS0TTGEE7lrAaIzb149j1fee4kf4
-	 suHj+w2LF9Z9O8b/zefIcUsWF1YP8BPRUf94MHKp5vYpn5HZl+5iwfqHVhO9BKX13G
-	 TokYxhGt++juL6hzDh2Tme7OW4r63MYtWKGLTq0MG3pu3l2XBFHr7Tbi8btjUy7Nuu
-	 Gn8N/LHbYUCbRCqqvn8DuTdr5+LOL4DK+dRWxwDt3pTs3GTdLY10KD3DuG7COGtHP1
-	 QTWokFnUqoNtw==
-Message-ID: <0fe62163-cdfd-47e4-bc88-df7a69dc5a6d@kernel.org>
-Date: Fri, 24 Apr 2026 09:33:45 +0200
+	b=oJIR4PtAGwQD47DsXDZcjQwU406yilrd7N07yZZWCTThqtXZ+E8VMJIMyxVQcIUm/
+	 nxI1l2rdPNJYsCBYEl5PhsfAL6UI+U1KwzjOmLV0jGP7VvBb7vP9H7DViktrFZXg0/
+	 326lMtT/SxGyrzSPICixgGw6fqKsRZXmeIJokaqS4g8uBHiEg6hCyEjbjDrVLVIEEr
+	 dk/HqmnYYuJvk1ePSWInp4PFWW5LYcxbAvyjfrmyZ+YZsfnc3JfiPJFm4X9LvX80q8
+	 js8PYKWZZsLmL+TQeeoJEfF+/qG/s5BLOteVgmMsxVY16Virerc4SNo7UaousfS8KQ
+	 26QG2mT0/xlTQ==
+Message-ID: <6dd8e62b-97e3-4261-92c7-ba3a02ae6397@kernel.org>
+Date: Fri, 24 Apr 2026 09:34:43 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,8 +60,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 4/7] mm/sparse-vmemmap: Fix DAX vmemmap accounting with
- optimization
+Subject: Re: [PATCH v6 7/7] mm/memory_hotplug: Factor out altmap freeing
+ checks
 To: Muchun Song <songmuchun@bytedance.com>,
  Andrew Morton <akpm@linux-foundation.org>,
  Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>,
@@ -73,10 +73,9 @@ Cc: Lorenzo Stoakes <ljs@kernel.org>,
  Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
  Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>,
  aneesh.kumar@linux.ibm.com, joao.m.martins@oracle.com, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 References: <20260424025547.3806072-1-songmuchun@bytedance.com>
- <20260424025547.3806072-5-songmuchun@bytedance.com>
+ <20260424025547.3806072-8-songmuchun@bytedance.com>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -123,67 +122,25 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20260424025547.3806072-5-songmuchun@bytedance.com>
+In-Reply-To: <20260424025547.3806072-8-songmuchun@bytedance.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 4/24/26 04:55, Muchun Song wrote:
-> When vmemmap optimization is enabled for DAX, the nr_memmap_pages
-> counter in /proc/vmstat is incorrect. The current code always accounts
-> for the full, non-optimized vmemmap size, but vmemmap optimization
-> reduces the actual number of vmemmap pages by reusing tail pages. This
-> causes the system to overcount vmemmap usage, leading to inaccurate
-> page statistics in /proc/vmstat.
+> Use a small helper to centralize altmap freeing after verifying that all
+> vmemmap pages were released. This keeps the check consistent between the
+> normal teardown path and the memory hotplug error paths.
 > 
-> Fix this by introducing section_vmemmap_pages(), which returns the exact
-> vmemmap page count for a given pfn range based on whether optimization
-> is in effect.
-> 
-> Fixes: 15995a352474 ("mm: report per-page metadata information")
-> Cc: stable@vger.kernel.org
+> Suggested-by: David Hildenbrand (Arm) <david@kernel.org>
 > Signed-off-by: Muchun Song <songmuchun@bytedance.com>
-> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> Acked-by: Oscar Salvador <osalvador@suse.de>
 > ---
->  mm/sparse-vmemmap.c | 31 +++++++++++++++++++++++++++----
->  1 file changed, 27 insertions(+), 4 deletions(-)
-> 
-> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
-> index 3340f6d30b01..2e642c5ff3f2 100644
-> --- a/mm/sparse-vmemmap.c
-> +++ b/mm/sparse-vmemmap.c
-> @@ -652,6 +652,28 @@ void offline_mem_sections(unsigned long start_pfn, unsigned long end_pfn)
->  	}
->  }
->  
-> +static int __meminit section_nr_vmemmap_pages(unsigned long pfn, unsigned long nr_pages,
-> +		struct vmem_altmap *altmap, struct dev_pagemap *pgmap)
-> +{
-> +	const unsigned int order = pgmap ? pgmap->vmemmap_shift : 0;
-> +	const unsigned long pages_per_compound = 1UL << order;
-> +
-> +	VM_WARN_ON_ONCE(!IS_ALIGNED(pfn | nr_pages,
-> +				    min(pages_per_compound, PAGES_PER_SECTION)));
 
-FWIW, I though the right thing to do here would be:
+Thanks!
 
-	VM_WARN_ON_ONCE(!IS_ALIGNED(pfn | nr_pages, pages_per_compound);
-	VM_WARN_ON_ONCE(!IS_ALIGNED(pfn | nr_pages, PAGES_PER_SUBSECTION);
+Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 
-I don't really see how PAGES_PER_SECTION make sense given that
-PAGES_PER_SUBSECTION are the smallest granularity we allow adding/removing.
-
-Also, the "min()" implies that there is a connection between both properties,
-but there isn't to that degree.
-
-If order == 0, then you'd only ever check alignment for ... 1, not
-PAGES_PER_SUBSECTION, which already looks weird.
-
-So you really want to check "max(pages_per_compound, PAGES_PER_SUBSECTION)", but
-just having two statements is clearer.
-
-Or am I getting something very wrong here? :)
-
+Andrew usually prefers sending non-fixes separately, but he can tell us how he
+prefers it in this case here.
 
 -- 
 Cheers,
