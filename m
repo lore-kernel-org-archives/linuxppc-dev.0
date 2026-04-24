@@ -1,92 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-20048-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20049-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E7D7FB44CA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2026 08:12:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 091F6FB44CA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2026 08:15:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g25KZ14pLz2xwH;
-	Fri, 24 Apr 2026 18:12:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::b133" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777018338;
-	cv=pass; b=ek4pQ6dRaLhilfd/NHniKcBPBH0YX7piQ1GRuWxZ/3IcCf8fDXUaSTLVzQKgqKuiirJuBq8UWyO3zy/7ljNW0z0W0d/HJCASq6mxM6Q6VHsrWv4I4ypxV6cauPXqZzUt1kuv0FM4vFJVnXsxEWu+DBR5invOQukAcJc8Pxl5Jfy7vxa5BWksr5DpS52VjxRTX15NILBZopUl9EFVi1Oi09MD3FUgrx1atmb3qEwH275frvtp+YVrk9E8bq+qPQkPf/9lojD1OdYuv6QctB98lGQ7InepO+hOcldHmSeuTngo0QrmmaFjhGAv+jKGNT2JTbauphZB3bpObfTn8kyICw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g25P44sTkz2xwH;
+	Fri, 24 Apr 2026 18:15:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::b131" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777018520;
+	cv=pass; b=aH1Kn+t+/JaMUrjqw5xLHTJbve/39+v1T/AXID4WVDCe0F8eu6EwmYpivbsJpKD/s8QzuByzT7cK+96RClco5BEhO/XG2i5jDM09BFD/oH4L4CUekuJoRIekoHapNimp3mPSZBb40IKbzhUfcqpXG/nQ0FOE2HrHMJcffCIYafbGGjiV4Kw21hDddo35fYYk4eYxYoNbOj/pyog2RFo0GszD+sPPfNlUlykO2dEFULOpIF4ZslAjYw0OS/Ge6X0cxXR0xuQ178vJsoj6lBxuGwqVCMUILqiZ7RwTuleG9nFE1+YHPLYuX4exVdkxuQ74ALt2HTv46XD/j6gYGms55Q==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777018338; c=relaxed/relaxed;
-	bh=PghHXsaUvPB2FGmxVpPAYNm3E4Qd+tT/tA4p8BC2Akg=;
+	t=1777018520; c=relaxed/relaxed;
+	bh=XoTQ4s/qNuwga1dSku+5JUJ8IacqDxrPAbEtqeudZ8E=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=dK7LGaUhAk3ZqwQwEqKOjDOrZZyivzXgjIZqkZyjMw1n+e5iSUklj95JTNaenFvzA1QJzrmOoN0gSot/gRXteF3Jlt2YkhnlKYNSjJ7eVDtxD3s/7hcC0sMuTSujeD7mQ8wEs4+pDHwkLzx9aMxFSqbYuD3LAV9l6nYrQFfF+Z59s7YVFeUWZ+Aqvfk2vhAmn0pfAqlAO6UiDyybcQ3hUGEDYf9HQgu1DnXsIfgTnTvR3gPpfNk9r7IRFcuGtL+qUhj1ku+iCHxDJQPGETRv8pCVFRDW3QZ7R6g8/wRwTBr+bLFhfh98KoYaCisTsb2LNTCQVEOlriTrwGCUZtYQcg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=S7xDWJfb; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b133; helo=mail-yx1-xb133.google.com; envelope-from=lgs201920130244@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 To:Cc:Content-Type; b=L9/W7KqkGbx7RMLgMagiZVubcnVl8MRUQVJmh6llJw7y4hbg2rvLaUk7O1i60sa/6byzx8ifz3tO/Ux1u+Eo145FlpXJb9YLnC6dWGm42YwX+GmjmNqfXIfEP8f1zHkfeVWHZDxoxCBpTClkibiKHtHkQDNgsUE+fqaE0UhOLpkobp3xlGK/tw4Bckg63QSMMWD6nztAMiQHdErb7C+JIZfufbRHCqxZ83/VfNCaWoFE5Z8yR3WsX//EoWJZPRTC1pD+0bN7yrNb7z/YM9/CBuU8jtYcTSn/zhfwfVsgNtDOivhAPz2bUXKbrSyTz/CllZUcY5Z1Qfikqrbs5+/TZQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=NApUXd2r; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b131; helo=mail-yx1-xb131.google.com; envelope-from=lgs201920130244@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=S7xDWJfb;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=NApUXd2r;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b133; helo=mail-yx1-xb133.google.com; envelope-from=lgs201920130244@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yx1-xb133.google.com (mail-yx1-xb133.google.com [IPv6:2607:f8b0:4864:20::b133])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b131; helo=mail-yx1-xb131.google.com; envelope-from=lgs201920130244@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yx1-xb131.google.com (mail-yx1-xb131.google.com [IPv6:2607:f8b0:4864:20::b131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g25KS5RYSz2xly
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 18:12:11 +1000 (AEST)
-Received: by mail-yx1-xb133.google.com with SMTP id 956f58d0204a3-65075c2ba66so5814152d50.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 01:12:11 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1777018329; cv=none;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g25Nx6J8Pz2xly
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 18:15:13 +1000 (AEST)
+Received: by mail-yx1-xb131.google.com with SMTP id 956f58d0204a3-651b4d09141so10204790d50.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 01:15:13 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1777018511; cv=none;
         d=google.com; s=arc-20240605;
-        b=JdtOaJBBMCy1i2lU854nwsUKQ1g0ajw9UIeTgm02rZJhVIQ+ieQ35XfputuOvmFwrR
-         hX43i82Z3RjSfBPKfz773dby20xWcsu+5Z1q7er9tZ2XgWo8YU9Ue191TnGoMuSJeg+y
-         oaYHfwCGqXpxQBeH03kcJF6y5XOMdZbucUDd0ykn6DA3DWPZRGEeDxeTsVfUXDT1ADZ3
-         7E2lh7hSN5/S/ETQcEZVWAatR2MZbrgpxxMUfzTL1RppM/Kk/Yv/x8DnsEp+BKD74pGe
-         /xWq9sqwQBVkE1RXaplQvZ0HtHnRrv1/pgeIOc+KVoxzHiLaA8jqJ6PS/eWPuzxc0ArY
-         aPkg==
+        b=JXQnkMWrSZy4GME0p3LBD1/AAtvEZycnXhqvWW1plPZDdAsoMbvYCeVRXT4Wat484Y
+         iKCn9ZgYReh6aI2S436a6wy6/7ULsOA4YIgt64tsSgNxTz3zv1SxVNMs8gPIQgZEt1iB
+         8GMT00DyvAXUDLqE8v74QAdesB+9uJoZvlqhnzvfccjsAH3bO+SSgB/nBkDePmJxJfgq
+         hteJVh9GfsQ1FWFJJaI4QZB0ZXDX2a3phN9azxszMjc3dGL5RlTwfFipOv6GrfSz1j9+
+         tah83gAOR/HzI2ikGbwli7vpA+6zc4bLyagf+xLDm4caVae6m95b3833vE4JPWL2yQ1X
+         x6Cg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:dkim-signature;
-        bh=PghHXsaUvPB2FGmxVpPAYNm3E4Qd+tT/tA4p8BC2Akg=;
-        fh=2s4zQS0jQ/gn5Nc4JPtQyVwpfjhq+tZ5FMD4poHFgmM=;
-        b=LRmyVDckRx8tRS9LIhnNObk960E8B9gR85un3pkwqVhxx3yPXh09jwknmlWfZn6grH
-         rlFhjfJXkRTwfng6f2OD0XddQ1aYHo27GAD8ZvVXIT8uB7C8uXLDpHSosVKFKK84hoSp
-         mDFMGOQg3lgGt8/+SPlydYPKESIo8LrLkyKVbi5XigQbQ1cD9XpZ/uINFlmk++331dgA
-         39cdGTzUXMyJ128BZ4qGUVVKVaj9ALCkTWTNHPvpvS4jVd4Z6nhDAeAny/w2k1Kn+I7o
-         00LBwRi9hfL13xaXZSHkk+0f5TPrGIpkSBqFRY1emQNwA5/Vbk9Ny6qcm/FxUFX57bGk
-         ySng==;
+        bh=XoTQ4s/qNuwga1dSku+5JUJ8IacqDxrPAbEtqeudZ8E=;
+        fh=5+XltSyDGWNj6OF8HXrDD+zIqHHS09zgcRlbGGJF1eU=;
+        b=gPlEfUntZb3+mQt8IXKFvfA/6kc7e+Pt1KO2eUi3fs0DfqyvMfhJHkeYRHNHtxQUhp
+         KHnv79utN9UrLVmJ0OtTpn1cSne7HeQboFHRN2zVxu4otfMA0LKxwcuxBMNAIeNMoeP0
+         Rq2V5ebrcTPx4QjsVRsymuug20v+W3m9CuDYsz3nZ9soKTzgFX5YKN5JimlOFM9eUSZK
+         4QlrHvjQ7iUyjLBDSVZ0blfqTntN4/iY6C+dz3PrfY1bB5GqXAs2qxoC8c5XNBVivQGk
+         C5wBl36wuLugaXp5TdlrWYcVlrVlmxsI587Mc1ncEQlHT02qAklNAxGHGyeTPHazBgQm
+         zgfg==;
         darn=lists.ozlabs.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1777018329; x=1777623129; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1777018511; x=1777623311; darn=lists.ozlabs.org;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=PghHXsaUvPB2FGmxVpPAYNm3E4Qd+tT/tA4p8BC2Akg=;
-        b=S7xDWJfboeUWRK7+TBzTKvgBSxkD782c+3pLputvy0fp8Sc2svdVLXV2C0hPYxcIpG
-         FgU/Q5ijkdiH3pmN8uOCViQvBFJU2QchqZ39hQpKoIXC5Mm+V2YRiX0T5Q8EL6pj9+yE
-         dPQ/QwBId2NTbFRwUZeD1NAwsig7TZ7Yj8BwbNlxiBwU5c1Jhcai+viIvAnMa621obu4
-         GGBzkkh/w9q7EGwTU6q6HX67cH5cAbZS0t+5cmpUkQ50+YB+CZumrR7Ye4l7BDGpUTkL
-         WYYKHKkBk44kuXytZXfSyO08iqq44QCDWV2gyRvxcR1oAg12Ksgh3WSMOcMUgF82x1sq
-         cbjA==
+        bh=XoTQ4s/qNuwga1dSku+5JUJ8IacqDxrPAbEtqeudZ8E=;
+        b=NApUXd2rhM6k7sTGFUxkYhIZw/ktop0DGXp1xBiKYi5boZ1vk8S3BuLQRvwOXrPjdh
+         wWU62vG9Z8EZHVE4p4ZRgKqmQTCLRicoycMd8zobLGvCgZnPohSAprGbeFE4RThfq1EA
+         Pzhc9SwP5gjC7nMuOdrDTk07kGOBAZFmCW4qDrgoDGPOXg9cncnA8sDO3ZU5u7/LNf5O
+         EKZVAE17DWBnWkCr9OlGHcikdKbpEcUoflih4nskYiyI5+xXYSUVPKfXq+NRpJOff/Kl
+         psNw/xlfWYXNKM+UE3vpNw6mwE9awoWo0C7Z5xaxQrx4WvKScs47vtHLsvBNGMXTBhe7
+         Dl/g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777018329; x=1777623129;
+        d=1e100.net; s=20251104; t=1777018511; x=1777623311;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=PghHXsaUvPB2FGmxVpPAYNm3E4Qd+tT/tA4p8BC2Akg=;
-        b=ULyGbScNTFuVkXDL6Soy5SuzUowsZPrp09+wUFk9IhLP1XErdSt8amhpSP6hovsUHG
-         BiRr1vfgXQJjr9fUmk3PCaJuSX1qpPtGZ9URD5EBp9GGNCZaEq8UqDhWozg98DF0o2Yv
-         6n3w2BED5l+SinbkisES/hUHbZLXNFC8HzD2y0VNVMeCs88OG1CI31ZLGPA/Ie31MCE+
-         Vh/bP+p3oBmjdNmu8jufzJL4qaaiH/NNLg+TkFpIbr2Ubc1uH2VRsb6wpH77WPgdsOuP
-         bB0NsUK7q7xjLHOuyPL3JrSaFpe+fskj63rgmMssXTxdnVrorNNFufr3JjY3xhcbAG3I
-         FTGw==
-X-Forwarded-Encrypted: i=1; AFNElJ8QUKKTTZ1DlXd3Oj1RksFtfuQq9kvQcvqwYFK6d83d9TOksLq9gIzAHij3y4pcJht9LtO7yiI3FHtitEs=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzrPxp4UievKxRNjkAyi+OYoo0CyFAKfYv3glpSxbrjy+/sW7Cy
-	VBJ8V+cXcaR4ScwMWiNYwnQX0LTIlUPKTP3cDOnLhC3VwxSmxQaJyY3ZRRBFcpX+zeCiY4flLUS
-	vQKg1ISci+kAKFtkoXTcFGoMV/8w6gsQ=
-X-Gm-Gg: AeBDiesJ1dIkCzZJfJiHmYts4GsaLfm5rwcj/wgn5Q7x34I7SrckZNPmVA5Qhx8hFqR
-	L2BdtPpKKBQhWtp6qHD0B2v47eeDduIkzx6o+gHWJCVQP8aP/ab1K8HIfC86jq8MkCwGHsJeYp+
-	tFtc8HgqYuYwT4/x/uyIPU+CIC2cKGhRvUWkwiD/N4P1lUzwQ9EfaiYDFWvC0KoYJa2+JKGQbt6
-	vr2ziAARlClq9+IG1UAPIzq05tShuBFl+cZGODnyaH4qFaWmCOIb33aths8x7yh0Ig3W5CledVj
-	H3Z6c0c8i236INnDnEl8
-X-Received: by 2002:a05:690e:4199:b0:64c:a0c6:da93 with SMTP id
- 956f58d0204a3-6531089af70mr25686233d50.28.1777018329042; Fri, 24 Apr 2026
- 01:12:09 -0700 (PDT)
+        bh=XoTQ4s/qNuwga1dSku+5JUJ8IacqDxrPAbEtqeudZ8E=;
+        b=DzvoKqldrxJ+4NgeXaBYuD2CCcAps2zJNEj01QtdE9u8nGU4sIP43qKVARQJxKR7je
+         ivsmV3MSPjXYBr3iEdk0yqGz/KxmZhw2E1MnkMuNO9rzjglkF8OEzMVEYG1TLPtOmx1g
+         IJdoYTnb3Qwo3/jJKbL59QV492F9eMf0xzAv+rhOr+OBvXLzMAx7lFJRLrj6O7cI8H7r
+         S63fHCNrObYgZ241azq+K2edjHN6fh9icP3jl+LFOe0NUtJB3upFQSm3DqhlZbA0AqUg
+         h+jF9DJIu/HnI8Wf+CivLKFm6qX84mV1lJhyC9tCM+agbzJ8/PtzDt5IirkVhArn7CxU
+         L1rA==
+X-Forwarded-Encrypted: i=1; AFNElJ9hREmxJ5nXVSnWBYL41Qj22xMQjTDniYA+mwYNfmX0Weuv80q+dBzKwyeIg4RA8hu1yX1cymFaggGUa1o=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxJ38cT2nQrxAugJPh3VVh+RZq6VcNvR+XmYLWEx//u6Z+4Slde
+	WJ5R3hBWtKYv+VQMRQb8qZ6d+RA4uP7Yy7SO8UqkrO922W0p4UGzjWp6PdqdL6uARHnttnK3NXN
+	gKMffbJj1iSDtIPPfKoH4NgQKNfGrU/Zfcxzp/ZY=
+X-Gm-Gg: AeBDieunITEa+5eWP3MJ5iKVd5HvYocMmdqA6O3+7MqNT4L58dZXik78+CaNwqHQhGQ
+	kJ3nnC40HWXJQFeSOadH6iFNb5hFASo8Gwx8V1ggYOnH9pcl8nHOFUurp9LCbJMIoR79dQKBZ8G
+	sJj287JAvg1nPgI++qK+/BCL0gpxroela+/s6CN9kzlt7Sq1j0hOGmMP1iRxNIY/I3ltefelrGV
+	o74/Vti5ywiTb7zyt/H1fC5GlI9QggZEyt7ski1hHqiDn40x27nqLXPy7TbpJ7AupdcsADbNk2n
+	3h0UZqB7u6abMF8lNwOa
+X-Received: by 2002:a05:690e:2486:b0:654:3fca:3515 with SMTP id
+ 956f58d0204a3-6543fca3bcdmr7674478d50.30.1777018511504; Fri, 24 Apr 2026
+ 01:15:11 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,17 +100,17 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260415143701.3309681-1-lgs201920130244@gmail.com>
-In-Reply-To: <20260415143701.3309681-1-lgs201920130244@gmail.com>
+References: <20260415144635.3318697-1-lgs201920130244@gmail.com>
+In-Reply-To: <20260415144635.3318697-1-lgs201920130244@gmail.com>
 From: Guangshuo Li <lgs201920130244@gmail.com>
-Date: Fri, 24 Apr 2026 16:11:55 +0800
-X-Gm-Features: AQROBzBc5qXvUTrDC5JalkEZi1O-Zxl9G-jCas25GxZKqJns4L1d-RV9sUSyvKw
-Message-ID: <CANUHTR-YL+ZBWA13vYgOfs-YjKRyG_60ZjFbpPa-Dh8P8Mixmw@mail.gmail.com>
-Subject: Re: [PATCH] macintosh: adb: fix reference leak on failed platform
+Date: Fri, 24 Apr 2026 16:14:56 +0800
+X-Gm-Features: AQROBzAFZKMpsNmPGDIOC_UCfbe-Rxj_nU9Bws4LOoucZmHnDsWY6cx-wzEa2m8
+Message-ID: <CANUHTR-CH=rfsfm5ezNBHW__4d+TU-EVOC7M-vDkf=nB-N_mkg@mail.gmail.com>
+Subject: Re: [PATCH] macintosh: windfarm_core: fix reference leak on failed
  device registration
-To: Guangshuo Li <lgs201920130244@gmail.com>, Kees Cook <kees@kernel.org>, 
-	Johannes Berg <johannes@sipsolutions.net>, Paul Mackerras <paulus@ozlabs.org>, 
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+To: Guangshuo Li <lgs201920130244@gmail.com>, Paul Mackerras <paulus@ozlabs.org>, 
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org
 Cc: stable@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 
@@ -118,22 +118,18 @@ Hi,
 
 Please disregard this patch.
 
-On Wed, 15 Apr 2026 at 22:37, Guangshuo Li <lgs201920130244@gmail.com> wrote:
+On Wed, 15 Apr 2026 at 22:46, Guangshuo Li <lgs201920130244@gmail.com> wrote:
 >
-> When platform_device_register() fails in adbdev_init(), the embedded
-> struct device in adb_pfdev has already been initialized by
-> device_initialize(), but the failure path does not drop the device
-> reference for the current platform device:
+> When platform_device_register() fails in windfarm_core_init(), the
+> embedded struct device in wf_platform_device has already been
+> initialized by device_initialize(), but the failure path does not drop
+> the device reference for the current platform device:
 >
->   adbdev_init()
->     platform_device_register(&adb_pfdev)
->       device_initialize(&adb_pfdev.dev)
->       setup_pdev_dma_masks(&adb_pfdev)
->       return platform_device_add(&adb_pfdev)
->
-> As documented in platform_device_register(), the caller must use
-> platform_device_put() to give up the reference initialized in this
-> function when registration fails.
+>   windfarm_core_init()
+>     platform_device_register(&wf_platform_device)
+>       device_initialize(&wf_platform_device.dev)
+>       setup_pdev_dma_masks(&wf_platform_device)
+>       return platform_device_add(&wf_platform_device)
 >
 > This leads to a reference leak when platform_device_register() fails.
 > Fix this by checking the return value and calling platform_device_put().
@@ -141,43 +137,39 @@ On Wed, 15 Apr 2026 at 22:37, Guangshuo Li <lgs201920130244@gmail.com> wrote:
 > The issue was identified by a static analysis tool I developed and
 > confirmed by manual review.
 >
-> Fixes: c9f6d3d5c6d4f ("[POWERPC] adb: Replace sleep notifier with platform driver suspend/resume hooks")
+> Fixes: 75722d3992f57 ("[PATCH] ppc64: Thermal control for SMU based machines")
 > Cc: stable@vger.kernel.org
 > Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
 > ---
->  drivers/macintosh/adb.c | 7 ++++++-
+>  drivers/macintosh/windfarm_core.c | 7 ++++++-
 >  1 file changed, 6 insertions(+), 1 deletion(-)
 >
-> diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
-> index fe150125e099..eff06f78aa80 100644
-> --- a/drivers/macintosh/adb.c
-> +++ b/drivers/macintosh/adb.c
-> @@ -883,6 +883,8 @@ adb_dummy_probe(struct platform_device *dev)
->  static void __init
->  adbdev_init(void)
+> diff --git a/drivers/macintosh/windfarm_core.c b/drivers/macintosh/windfarm_core.c
+> index 5307b1e34261..4003e72f3a57 100644
+> --- a/drivers/macintosh/windfarm_core.c
+> +++ b/drivers/macintosh/windfarm_core.c
+> @@ -436,9 +436,14 @@ EXPORT_SYMBOL_GPL(wf_clear_overtemp);
+>
+>  static int __init windfarm_core_init(void)
 >  {
 > +       int err;
 > +
->         if (register_chrdev(ADB_MAJOR, "adb", &adb_fops)) {
->                 pr_err("adb: unable to get major %d\n", ADB_MAJOR);
->                 return;
-> @@ -893,6 +895,9 @@ adbdev_init(void)
+>         DBG("wf: core loaded\n");
 >
->         device_create(&adb_dev_class, NULL, MKDEV(ADB_MAJOR, 0), NULL, "adb");
->
-> -       platform_device_register(&adb_pfdev);
-> +       err = platform_device_register(&adb_pfdev);
+> -       platform_device_register(&wf_platform_device);
+> +       err = platform_device_register(&wf_platform_device);
 > +       if (err)
-> +               platform_device_put(&adb_pfdev);
+> +               platform_device_put(&wf_platform_device);
 > +
->         platform_driver_probe(&adb_pfdrv, adb_dummy_probe);
+>         return 0;
 >  }
+>
 > --
 > 2.43.0
 >
 
-After re-checking it, adb_pfdev is a static platform_device and it does
-not provide a dev.release callback. Therefore calling
+After re-checking it, wf_platform_device is a static platform_device and
+it does not provide a dev.release callback. Therefore calling
 platform_device_put() on the platform_device_register() failure path is
 not appropriate here and can trigger the missing release callback
 warning.
