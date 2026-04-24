@@ -1,51 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-20067-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20068-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84784FE5204
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2026 10:36:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F1AFFE5205
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Apr 2026 10:36:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g28Wn2wh8z2ypV;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g28Wp00Y0z2yql;
 	Fri, 24 Apr 2026 20:36:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777026981;
-	cv=none; b=g4Tif5lx1hx6xHQukUYlGFOI3GpI8Mz5fYbN2in6uDtRHUk4vKzzghMVmSD7vJrhYCvu62NbBxks6yWs+fmMH3qoNZiwXXE5HDEOO8iPiQEs8pPhXbiFrYl9OAlh3KANtUgk4WXdADTPdQwgaHwOYGQAp2OwYHvmRtVzgzx0TN1xEmeuQI599buq1BcKJuDg9Sn6GQ2Yb4ae28xUnViQhibAzUbWgTgDXbT+4fmDNDinWI3gsrX7oX4dYtwhjX3sm9xjeFQvdgdECGELudAGVcdKqTxjPNNQ40e1EFDyOgr7D9MXWMBPbHxRwQ8Dt1ksDPIqYKNwKKPqW1HxrWDwAA==
+	cv=none; b=HQk+aJQ1iiGwJVqXKkPuAdORz0CG/oNi7EYUGzsqalSePH/vNawfpS+Xj2fEDA4Oc9SBqpis2v6W8P/wGdmGEHLL0n8bmwhK/AhBUI2XqYAbOogRLArRvwzPKiWllKpGh+3LqCp7ElnKOEQnz2sIcr4IfapIBLPIoT3ek7q1PQt3v1y6shUlS0ptK19a/UBlxJYT3FYF1pXSB2Z1kj6AvUVrXe9ca4O5JwXf8GyO68fF5/XzLp+uDvGjPmJO6UyQbmXC2MjLscUUs8HdavPEaSgeO4bgia6lfeC/10QIxLhYs+uHzroeL/TZDeXKgD+wYPI9KW3uO8geuj7FvGr4mg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1777026981; c=relaxed/relaxed;
-	bh=swanGyyHRnhkz3mBV65rrTG3fNZhjUZNTL4EhPwa10A=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=HB4GAzvc/E1hUk0YgM0R1zWmpuU67tSlMBf3vptdWrB2/EzHCyjdqS/N21xfWbdgmBYfTmH0DSXTF0S40PdJXMsmdKkeOvGg6FEe7lQVkFpL1ZZl/Lmo/PF7ZSp947QWeaPcN2aaqCjT4EMPXdTT5/Xa8AmTuA8mAZnjQqkox1hRuYqK3LpnP17iQ11f7DZqG142wHMQ0O71yoYjm1IrNSPQrnLXjcA4i301yYpRFExqknEnLj7divnnyzbgTKTBJK3HkMdN5MqhNdrHf4J55fI4Xxzn6z8NQiv2BNuv7HqyUtQqadnjX138RaPKYj/HxkU2y4kN5jogYqcm5Yrv4g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ig1zxbmG; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=johan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	bh=m5pjwrWvtX8hEGA84jOB2WzPkwcVIwZUE/Ac5wsJqXI=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=OjFj0znGHqNSa/hL7pDC48I6VYbTcSTMZJBOSQZbulB9DU4ux9oz03+oUKvMyYTJlUF+9jGKKYLp+QKp2l4OmS5q+RvI4ejDgK8qeFBr/cl05b9IbyqaMrBGlyFj5ObMhuRfB3SlhpAFOXhphc4bxFYXIzgBNsLCs57GEYM2oEGSv52dhg2tqOGXocgaiQd1gG61c/ZCHzxcCEj3VqGv++lkQBKgH0R+VXumJKjFOAwt6SmThcAt+jwWSus2CC4QNUDPpFejVj9RIF5TmjLjrBkhk6qeWBQ5fnFsBXnQs4f27vA6TvybpTVDnsztvVngqEaHKLLfXJGlX4o7GMs0IQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uhuDpIl9; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=johan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ig1zxbmG;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uhuDpIl9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=johan@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=johan@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g28Wm1s8Jz2yYs
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g28Wm1zkmz2ybQ
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2026 20:36:19 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id A7B4060121;
+	by sea.source.kernel.org (Postfix) with ESMTP id CA06E44453;
 	Fri, 24 Apr 2026 10:36:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 59704C2BCB6;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 64713C19425;
 	Fri, 24 Apr 2026 10:36:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1777026977;
-	bh=J5JHKULmi+OYKTLmnufD8fAye9o4hGx73PlE0mD4LOo=;
-	h=From:To:Cc:Subject:Date:From;
-	b=ig1zxbmG10kjNRfMlYUJ7X6aMVc9cZVmWUC4cWXsrH6c/dPAVRUYK5K7JYLyf6bh6
-	 eSZCtvGCWPqSp3CcUhIyuAokyP+bT55jnx5zNl/N0ksFw6uyv43clZgO3eA02B34Lu
-	 Fhv2TmR3RErIoazhwa+9fKB1HApVAAagPSkQpdTY/6bbFEHb608CQ3yo6BxzhGDuWm
-	 U08cRxlGecQtEduFwu72Gy0XEMJqLSvigYbdqaz5iQ//B4ha4dLKJFTMrpv2al787B
-	 5rxJF3pY0CPJRNnTq1rddgEPQG7qh8KO31l0hjIZIyfQZRIqk16odTR04e+p+vva6d
-	 +k262blxWnuDQ==
+	bh=r7t9IjXKXmo4brGWblnNZdlBkkZXdXtKpLhAebYCUJw=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=uhuDpIl9/P8W25DmD4zGUUPjIEs4PGArX3GqU0qqG/dKcu1QBbVK620WbzuOcV0Fh
+	 mCArJVLlL4ksuM5CeqEkwLLc7LzEzeiUr6wJ0hh4guRWrl/ZcXYjoG17Lr2PVF5Gkq
+	 QyO4uEkytfkD3h1cIWYoRU/A0oA7krXkrDvNZDl4d9bh3YFHjuGFtWSmKCWRQySn3y
+	 UKQrbZs+yEKodPgcs+/hP0NRQe04fiq0qs9PeLsgPBTN0WDht3cN1HLygdra6eo4Lu
+	 NaZoehxIPU2hdr59PKcHb4x1ZIGnDetoOQBWfqO42Cu0Wo+LjZiRHqd85kApa1zRGv
+	 ZwC10VgN//vjg==
 Received: from johan by xi.lan with local (Exim 4.98.2)
 	(envelope-from <johan@kernel.org>)
-	id 1wGDtP-0000000AyiX-0jVD;
+	id 1wGDtP-0000000Ayid-0ttq;
 	Fri, 24 Apr 2026 12:36:15 +0200
 From: Johan Hovold <johan@kernel.org>
 To: Geoff Levand <geoff@infradead.org>,
@@ -57,10 +58,12 @@ Cc: Nicholas Piggin <npiggin@gmail.com>,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org,
 	Johan Hovold <johan@kernel.org>
-Subject: [PATCH 0/3] powerpc: switch to dynamic root devices
-Date: Fri, 24 Apr 2026 12:36:01 +0200
-Message-ID: <20260424103604.2616657-1-johan@kernel.org>
+Subject: [PATCH 3/3] powerpc/pseries: clean up ibmebus printks
+Date: Fri, 24 Apr 2026 12:36:04 +0200
+Message-ID: <20260424103604.2616657-4-johan@kernel.org>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260424103604.2616657-1-johan@kernel.org>
+References: <20260424103604.2616657-1-johan@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,21 +79,83 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This series replaces static root devices with dynamically allocated
-ones. Included is also a related printk cleanup.
+Clean up the imbebus printks by switching to pr_warn() and pr_err(),
+adding a missing newline and making the error messages a bit more
+uniform.
 
-Johan
+Signed-off-by: Johan Hovold <johan@kernel.org>
+---
+ arch/powerpc/platforms/pseries/ibmebus.c | 20 +++++++-------------
+ 1 file changed, 7 insertions(+), 13 deletions(-)
 
-
-Johan Hovold (3):
-  powerpc/ps3: switch to dynamic system bus root device
-  powerpc/pseries: switch to dynamic ibmebus root device
-  powerpc/pseries: clean up ibmebus printks
-
- arch/powerpc/platforms/ps3/system-bus.c  | 10 +++----
- arch/powerpc/platforms/pseries/ibmebus.c | 34 +++++++++---------------
- 2 files changed, 17 insertions(+), 27 deletions(-)
-
+diff --git a/arch/powerpc/platforms/pseries/ibmebus.c b/arch/powerpc/platforms/pseries/ibmebus.c
+index e3b41e2d844f..8797b2137d9c 100644
+--- a/arch/powerpc/platforms/pseries/ibmebus.c
++++ b/arch/powerpc/platforms/pseries/ibmebus.c
+@@ -203,8 +203,7 @@ static int ibmebus_create_devices(const struct of_device_id *matches)
+ 
+ 		ret = ibmebus_create_device(child);
+ 		if (ret) {
+-			printk(KERN_ERR "%s: failed to create device (%i)",
+-			       __func__, ret);
++			pr_err("%s: failed to create device: %d\n", __func__, ret);
+ 			of_node_put(child);
+ 			break;
+ 		}
+@@ -282,8 +281,7 @@ static ssize_t probe_store(const struct bus_type *bus, const char *buf, size_t c
+ 			      ibmebus_match_path);
+ 	if (dev) {
+ 		put_device(dev);
+-		printk(KERN_WARNING "%s: %s has already been probed\n",
+-		       __func__, path);
++		pr_warn("%s: %s has already been probed\n", __func__, path);
+ 		rc = -EEXIST;
+ 		goto out;
+ 	}
+@@ -292,8 +290,7 @@ static ssize_t probe_store(const struct bus_type *bus, const char *buf, size_t c
+ 		rc = ibmebus_create_device(dn);
+ 		of_node_put(dn);
+ 	} else {
+-		printk(KERN_WARNING "%s: no such device node: %s\n",
+-		       __func__, path);
++		pr_warn("%s: no such device node: %s\n", __func__, path);
+ 		rc = -ENODEV;
+ 	}
+ 
+@@ -322,8 +319,7 @@ static ssize_t remove_store(const struct bus_type *bus, const char *buf, size_t
+ 		kfree(path);
+ 		return count;
+ 	} else {
+-		printk(KERN_WARNING "%s: %s not on the bus\n",
+-		       __func__, path);
++		pr_warn("%s: %s not on the bus\n", __func__, path);
+ 
+ 		kfree(path);
+ 		return -ENODEV;
+@@ -447,20 +443,18 @@ static int __init ibmebus_bus_init(void)
+ {
+ 	int err;
+ 
+-	printk(KERN_INFO "IBM eBus Device Driver\n");
++	pr_info("IBM eBus Device Driver\n");
+ 
+ 	err = bus_register(&ibmebus_bus_type);
+ 	if (err) {
+-		printk(KERN_ERR "%s: failed to register IBM eBus.\n",
+-		       __func__);
++		pr_err("%s: failed to register IBM eBus\n", __func__);
+ 		return err;
+ 	}
+ 
+ 	ibmebus_bus_device = root_device_register("ibmebus");
+ 	if (IS_ERR(ibmebus_bus_device)) {
+ 		err = PTR_ERR(ibmebus_bus_device);
+-		printk(KERN_WARNING "%s: root_device_register returned %i\n",
+-		       __func__, err);
++		pr_err("%s: failed to register root device: %d\n", __func__, err);
+ 		bus_unregister(&ibmebus_bus_type);
+ 
+ 		return err;
 -- 
 2.53.0
 
