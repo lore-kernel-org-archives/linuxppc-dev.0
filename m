@@ -1,77 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-20107-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20108-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 246FFFF885D
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2026 08:58:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80C48FF885C
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2026 08:58:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g3LFY4pKxz2yjm;
-	Sun, 26 Apr 2026 18:58:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777193889;
-	cv=none; b=JCOQ/abkBbrv4pv33NL/HmE6jv6juBFAaosjyBI0XoSoHwhsZYYt9sHAe54qUJ8ec8gxjdvM895r6CX9jilU0EMf7pbV5n/0zehBd7n9zdA/d2Jx6S9maqQdCD3bRjuNpwzdZxP9sR7YjGpuzkGeGZjVmU1TF+kOZp4SrauAeY2CQ9g092A7lCRE36j94bESh21BvoFeizLXppOrMvm50BkQulztdoKrlnpTqRY/uAOutdtwWBqmp6Va54zoKUj8Ya9jsy0Krxi64YnapghmgizESqR2zB/XHrL6SlkGlG71DyEUWEwDjOgoEHl8NDVPjFm39WeMuMwyYId6ICrmbg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g3LFp1ZtYz2yng;
+	Sun, 26 Apr 2026 18:58:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777193902;
+	cv=none; b=CXVJIiFaNiW70YjzET8bYfCBzzgV0DiGQrPQ0Tc/Ekde60EztFIMGYQqLl9Ugyte39zQ2v2KcbuGsp6cxTJubiD6Sp115T1DjsbFB1jcVCXXyBZ1L9ANpw7JcfHMn4/05rw/HcFXiffiboOoO7Ebs2OsEYAbprDW0942ecWbnBE8buPWvdTfiebWCY0U12QpOW8p2jm7oMpu2W9J+mNQsAYGZsYuHRQa5IPiCfzhZcmIoejJQ++1hGu5I79uPHFiVsTyzegkqK+ACnhuxzaAvrDUeoWJ3wdNiOAdSwkWSKYg0N3O2KKnGvP/oJ/YVbU+e6ofSJdpcl0aIWo6+oBO6g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777193889; c=relaxed/relaxed;
-	bh=3XNHcqPiS87Phn06IpxO8T5jrJVeHx6CGab+nQaKnDs=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=TIzEGZ4VkRtN9rOn727tpUSWKUuYn/k5nGerWeWSH+j5spLEaQiz4n/PTL719vdQVDNgDdsIwbBMfAKcR0p2OrPov6LUJri4xLtFZTZP9+xL2HPAgawETd7zDz8oH1aZgeE9ZlLaNt2lQCNlu3W9lLlcguOE7p8hUz1PZ+kfYClDwK+fUsa/RdVxKeOTtdVfHHl5xKprGeaUYJc4rxYif6gLLC36uXImyoYbIN1HnuLw2rtvczA7m90nMpV5AXAIcNdQkuGbwIDhnKKP+XP2GYx5x8RbmrKdQz5pY1RM4tnP1weR6WUk+bvvuzYz1u+OzxZakuey6IGZ9vmk6MWF0A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Ax1JXHpM; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1777193902; c=relaxed/relaxed;
+	bh=SIf376OZyXcpY0mdrIrP1nTWV/VE0v5g8114Fjjgl84=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=ZjaFwTJxSZkJ4nKUAX7nyyG+MhfisO9I7b+uhjnHDcOf624AJtT2j1x66+rX/IwfGHyHfHEBs4Oog9RxMyZL3uDjBaG0rUXZt/2NDkNtds57bvx1fPp2wgcjHugJ2J47vH+ipm8/IOEi6HEr0AJYfO9sHWiJ6A84hsAAiwb3I9f5D5OEr2StBOIRr4vN6k4tboHFMzItR5YFo+qFp8grFHvEz6VspIwRz4HMT8Z1etpqHRILcTzvGK1FrGL3siH35aKfQwfdIkwkLTFasAJXSzQGMht/5S9QuYceB4lXFKDLOyAc2HR8HBfgLAdNd4HyH/oxuLlBl3jccySivLHqmA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Hz1QDeEv; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102a; helo=mail-pj1-x102a.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Ax1JXHpM;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Hz1QDeEv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102a; helo=mail-pj1-x102a.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102a.google.com (mail-pj1-x102a.google.com [IPv6:2607:f8b0:4864:20::102a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g3LFY0ZXKz2ygY
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2026 18:58:08 +1000 (AEST)
-Received: by mail-pj1-x102b.google.com with SMTP id 98e67ed59e1d1-35da2d35eccso6259988a91.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2026 01:58:08 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g3LFn4N9Lz2ygY
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2026 18:58:21 +1000 (AEST)
+Received: by mail-pj1-x102a.google.com with SMTP id 98e67ed59e1d1-362e30526f8so1200881a91.3
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2026 01:58:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1777193887; x=1777798687; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1777193899; x=1777798699; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=3XNHcqPiS87Phn06IpxO8T5jrJVeHx6CGab+nQaKnDs=;
-        b=Ax1JXHpMZqfle8OD1gTpwYBFauSm37d1rQY6a+JqerKWalJc+8Xw1vTbGxYMNB0GYL
-         fSuHWtDFCiR8f4QZK7mK8Wy5JWZSUtnumVjEC2H1KAX11aWpYUcvSNFY5anWccqo4uEC
-         Ln3z4TvHtxKICPh3SeSJPRHFKS+BnBlyGNmdGjmLLHow32+xz9iIzfBo0dDIFFsUtzPa
-         TxYkJai3Xbzu89RQ9jIdCxct1VXGNDnBqu0is8fbC1/HNM+FF7rHFqIic5S57FmYGjHo
-         exCbeMV4c5FR2z7ei2sGQjovWq9dFVes7MlZeDWR/gHc4g3FxStC3cNo6FzAmefas8Jz
-         lE4A==
+         :message-id:date:subject:to:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=SIf376OZyXcpY0mdrIrP1nTWV/VE0v5g8114Fjjgl84=;
+        b=Hz1QDeEvFYKppmQPolS0whae1jPg+v+uPa0QuXYl8a0fQq5xvh375UBWksWXTkVyyt
+         nFYQ6xAiK8U/Hpq6UWfeW2sci5lITdUR6mJTabgkbZdmSaHlWUfasy7TBrw7ivNqAk0O
+         MyMedsfgDLBFu9buu58AaBZwi+PSTQd8qmsC/gzOEpOpechRQS0vFjeoRlI3Xbu2ACG7
+         l6Mn7YT4RCPRkkT85kH0tkQ2nmPtsZ7ihFuUk7aP8AJtiJcUdcOtZ4S24EI6G6QwVvFt
+         VRBTDX9XskfTbEN/7HMkrdbvA5uWGtU+zXng0do6RELSB4QHQFRBlrTiRTT53h1vVjPG
+         5WiA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777193887; x=1777798687;
+        d=1e100.net; s=20251104; t=1777193899; x=1777798699;
         h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=3XNHcqPiS87Phn06IpxO8T5jrJVeHx6CGab+nQaKnDs=;
-        b=TfkH3b/iG2ACJxFKqHWukWfiacFTyh8/3bd5oAZiY39rEElvuqJnI75i7+96EYkyRK
-         Avm1j3BRn1FZ7Lvex0z3eL3N4BQc+zKFXoL/0eFeE9SqlA+ZLZGkgGL7hwoRkuvj53zk
-         h3jAlcJ82MDKAwxZht7tgSLX7Z8NN+PR3OVCDxSH0lroASL2s5kYuM+wvjG3pZ3lfFsX
-         dLbqLtmt57+tSXc8fSCxkwgT9f7w38z7kVWGP41e3Qbfn2BBACH4P9ygo8tf/TIvLdre
-         3WQhFvnSTHfT3izlH+SGS0FZd1yT72bqqA5U6SkR9w5cOrxhX2/yCatCflb6hYL6Au3G
-         2SqA==
-X-Forwarded-Encrypted: i=1; AFNElJ8Az8U1XXapPkMkItY90G9YQwg7JT6WUnw5htxBwXepiYxF3xe0Pt2yIxDzSQow+UIJBwZpLhcHnjAG2Vo=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Ywy+qGxSBE5r/cWqs6KxMEKHTvW8xFQFYjZD/ae8ECGZ+PBcpNM
-	NrJe7wga23WO4wv8FagfcrRmPi5dD/LMIxjEn7XX8Ugg0yKg1iEt7kvG
-X-Gm-Gg: AeBDiet30hShT3LPBw8OgAWG3SpfPokUUMIomfDZMkeu3lT0vi+DSaEV67N/tLUvycf
-	31HtLcuMz/UI9D6xEppH4CvP40V/5RTWsUyiJA9w9pEUf9LctWsfJlQzGbnkbI0sf5MNR7gAH2/
-	/4Bjt/NoEnNR32SQs/EFotoxRhKzwEWxnBKNudHB3jtMGC53Z8lI6ZtpRl+DSWij9koab1MkixS
-	U86IPzD+s3/GpC1Y0YQk9TSw6EnTpKmsDIGB+zE1jlTNDxjdHxT7HeqyofrXY6hUt4yz839aOR7
-	hAiZI3JgCCbc+IoCNS8+ShJ5g/DpisZCYvbhc5Zt5WhUJ5uAR4IGkaO+a3DmILDXvP/DnKcoaOX
-	+R+R84aSKrKp/pLsPLi582ataxVkdX4p/Oqc375mtAMWJ3mLjJuRsigywY+r+q7Yoou6RbI8W75
-	mUCQSFaEMLFQiwaUHLIpEE+4VLIEMvYZNqwqoFd37ma3msO8A+z5svmJ6K6SiQ9YepsKrsA3MgP
-	YPrYCssRZDTTEs=
-X-Received: by 2002:a17:90b:4ccf:b0:35f:b647:d973 with SMTP id 98e67ed59e1d1-36140229b13mr38654992a91.0.1777193887102;
-        Sun, 26 Apr 2026 01:58:07 -0700 (PDT)
+         :message-id:date:subject:to:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=SIf376OZyXcpY0mdrIrP1nTWV/VE0v5g8114Fjjgl84=;
+        b=PczEey4LTZK2OFyEl5+9ufJ4EulpREsJitYdSuCmMATUeRJ+J7DVOG/vgijJ7HHRPV
+         H/xQrtqGdGHW1JfSQ/DJYugljzQFFA/xteh9ZJkGXX3+RBjgxchAMpKUiHAM94aE+8on
+         OLXU7zyBicFOkGFKkYw6Nhy3dUbkUq82MOmo402qfDYWOCrERpJ2htTf1U/AU/iS0IzA
+         zmxA5mW7MZtmexm61TD4Ae6Smn3o9beR2kj+eJocKXGyLdzYxLC85SPZm4RTBppg9a+S
+         RSi8Yni8rvbEtLO+EYavC/uQokdBEN8TLqTD28/Pwcl/WRI1E/5hBfTcJONJ5i1bykmM
+         lVBw==
+X-Forwarded-Encrypted: i=1; AFNElJ92G2Q5a3tVTIB3heykCqWNMMb718b0CGD9UPUHZ9OjMfamWZtReG5IPsW1xjbhA0UL/SdTAminp0+OM5c=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyFFU/oEqaEtJcqNDqn0a819CUpEr7gZp+kBdrV3e+a/F/uqLQX
+	cQfl8hEvyJoJtHuskD/FfmU2mwSaZ4mHg6KhgZfCkteMZRxaRTWgTyey
+X-Gm-Gg: AeBDievLu0/gW5KKue2H63vvxCQAT+6uXXfemAnC6DFF1ob8M/MoaXoXlWstS0B1zef
+	H9wbxSf2H7HgvOD6BgQxVYBgNgriC7ysTKj4nlIiVkzXqoHh55ViOQngMlgH96BEB1+84dndTnm
+	hNNFucMEspIZ+ohN+OkG1ZuRPE5jA3jjWaK+A8jLRGx/Ud0QOxz8PIThAyiJ+aZj18A2xTHUK5K
+	CQNkDqKveZJCqvVccYkRofUq4ATKd+JYBqdxlHP9FYIkqwuEyh16qjfA5+QyJKcVU87C+3JV5mP
+	ajrLH+rqO+IFHgh6XeUA735Ka+aIofxbUkXin0zo6HtW6Al9yFR8HY7yDt9FiR1X5cTBDQWcv5E
+	5lOlFduhFRezsTNkrK0Otll8ysuTHV3wBE1BHFQDrC5IyGSleHL4xJhsxX3QXxxNOv+Nw+d8gpA
+	z7GS/ii9ftLHfxtUSeav52E+hHXJKm54zvKF3+HK2kOgOJUv8YE81SjeDK9re3Myv/rGXbXIWyb
+	77L3t9bI0mfen4=
+X-Received: by 2002:a17:90b:3f47:b0:35f:b1ad:fded with SMTP id 98e67ed59e1d1-36140474686mr40098125a91.18.1777193899315;
+        Sun, 26 Apr 2026 01:58:19 -0700 (PDT)
 Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com.com ([106.51.164.157])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-36141868906sm27718937a91.3.2026.04.26.01.57.54
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-36141868906sm27718937a91.3.2026.04.26.01.58.07
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 26 Apr 2026 01:58:06 -0700 (PDT)
+        Sun, 26 Apr 2026 01:58:18 -0700 (PDT)
 From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
 To: maddy@linux.ibm.com,
 	mpe@ellerman.id.au,
@@ -110,10 +110,9 @@ To: maddy@linux.ibm.com,
 	linux-kernel@vger.kernel.org,
 	rust-for-linux@vger.kernel.org,
 	llvm@lists.linux.dev
-Cc: =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>
-Subject: [PATCH V14 2/7] dma-resv: Fix undefined symbol when CONFIG_DMA_SHARED_BUFFER is disabled
-Date: Sun, 26 Apr 2026 14:27:20 +0530
-Message-ID: <20260426085725.2090827-3-mkchauras@gmail.com>
+Subject: [PATCH V14 3/7] powerpc/jump_label: adjust inline asm to be consistent
+Date: Sun, 26 Apr 2026 14:27:21 +0530
+Message-ID: <20260426085725.2090827-4-mkchauras@gmail.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260426085725.2090827-1-mkchauras@gmail.com>
 References: <20260426085725.2090827-1-mkchauras@gmail.com>
@@ -130,50 +129,67 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-When building with LLVM=1 for architectures like powerpc where
-CONFIG_DMA_SHARED_BUFFER is not enabled, the build fails with:
+Added support for a new macro ARCH_STATIC_BRANCH_ASM in powerpc
+to avoid duplication of inline asm between C and Rust. This is
+inline with 'commit aecaf181651c ("jump_label: adjust inline asm to be consistent")'
 
-  ld.lld: error: undefined symbol: dma_resv_reset_max_fences
-  >>> referenced by helpers.c
-  >>>               rust/helpers/helpers.o:(rust_helper_dma_resv_unlock)
-
-The issue occurs because:
-1. CONFIG_DEBUG_MUTEXES=y is enabled
-2. CONFIG_DMA_SHARED_BUFFER is not enabled
-3. dma_resv_reset_max_fences() is declared in the header when
-   CONFIG_DEBUG_MUTEXES is set
-4. But the function is only compiled in drivers/dma-buf/dma-resv.c,
-   which is only built when CONFIG_DMA_SHARED_BUFFER is enabled
-5. Rust helpers call dma_resv_unlock() which calls
-   dma_resv_reset_max_fences(), causing an undefined symbol
-
-Fix this by compiling `dma-resv.c` file only when CONFIG_DMA_SHARED_BUFFER
-is enabled.
-
-Fixes: 9b836641d3bf ("rust: helpers: Add bindings/wrappers for dma_resv_lock")
-Reviewed-by: Christian König <christian.koenig@amd.com>
+Co-developed-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+Reviewed-by: Alice Ryhl <aliceryhl@google.com>
+Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+Reviewed-by: Gary Guo <gary@garyguo.net>
+Link: https://github.com/Rust-for-Linux/linux/issues/105
+Link: https://github.com/linuxppc/issues/issues/451
 Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
 ---
- rust/helpers/helpers.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/include/asm/jump_label.h | 23 +++++++++++++----------
+ 1 file changed, 13 insertions(+), 10 deletions(-)
 
-diff --git a/rust/helpers/helpers.c b/rust/helpers/helpers.c
-index 625921e27dfb..09ee5cac600d 100644
---- a/rust/helpers/helpers.c
-+++ b/rust/helpers/helpers.c
-@@ -57,7 +57,9 @@
- #include "cred.c"
- #include "device.c"
- #include "dma.c"
-+#ifdef CONFIG_DMA_SHARED_BUFFER
- #include "dma-resv.c"
-+#endif
- #include "drm.c"
- #include "err.c"
- #include "irq.c"
+diff --git a/arch/powerpc/include/asm/jump_label.h b/arch/powerpc/include/asm/jump_label.h
+index d4eaba459a0e..3016e9c8d6bc 100644
+--- a/arch/powerpc/include/asm/jump_label.h
++++ b/arch/powerpc/include/asm/jump_label.h
+@@ -15,14 +15,20 @@
+ #define JUMP_ENTRY_TYPE		stringify_in_c(FTR_ENTRY_LONG)
+ #define JUMP_LABEL_NOP_SIZE	4
+ 
++#define JUMP_TABLE_ENTRY(key, label)			\
++	".pushsection __jump_table,  \"aw\"	\n\t"	\
++	".long 1b - ., " label " - .		\n\t"	\
++	JUMP_ENTRY_TYPE key " - .		\n\t"	\
++	".popsection 				\n\t"
++
++#define ARCH_STATIC_BRANCH_ASM(key, label)		\
++	"1:	nop				\n\t"	\
++	JUMP_TABLE_ENTRY(key, label)
++
+ static __always_inline bool arch_static_branch(struct static_key *key, bool branch)
+ {
+-	asm goto("1:\n\t"
+-		 "nop # arch_static_branch\n\t"
+-		 ".pushsection __jump_table,  \"aw\"\n\t"
+-		 ".long 1b - ., %l[l_yes] - .\n\t"
+-		 JUMP_ENTRY_TYPE "%c0 - .\n\t"
+-		 ".popsection \n\t"
++	asm goto(
++		 ARCH_STATIC_BRANCH_ASM("%c0", "%l[l_yes]")
+ 		 : :  "i" (&((char *)key)[branch]) : : l_yes);
+ 
+ 	return false;
+@@ -34,10 +40,7 @@ static __always_inline bool arch_static_branch_jump(struct static_key *key, bool
+ {
+ 	asm goto("1:\n\t"
+ 		 "b %l[l_yes] # arch_static_branch_jump\n\t"
+-		 ".pushsection __jump_table,  \"aw\"\n\t"
+-		 ".long 1b - ., %l[l_yes] - .\n\t"
+-		 JUMP_ENTRY_TYPE "%c0 - .\n\t"
+-		 ".popsection \n\t"
++		 JUMP_TABLE_ENTRY("%c0", "%l[l_yes]")
+ 		 : :  "i" (&((char *)key)[branch]) : : l_yes);
+ 
+ 	return false;
 -- 
 2.53.0
 
