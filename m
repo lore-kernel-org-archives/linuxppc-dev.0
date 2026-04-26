@@ -1,75 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-20121-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20122-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4385FF885C
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2026 10:59:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E580FF885C
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2026 11:00:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g3Ny26G9kz2y2B;
-	Sun, 26 Apr 2026 20:59:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777201194;
-	cv=none; b=H9cVIiDq/jbhkiGYR6veaO8gJhcJ1aKyQouVRg0nbRrMvmr3FL2PN6k/wdz9V1w4xFBWNWTT++0bjSVhIOHsjcmgFVzymi+3IeHfBGqniePPpR0K6LtFHCUWseUTfF8hft7j/shb6457FDDuO5YLBiI4UDblbE5B2NZ7ef/C3w87JYXcXCPAnwBHHJc8mid8TOtlMALUiyC49PI2jUYidt9VSj8DNEPQiqPq5Tke+sMZmuzS9N9+MtQLuLhB/d2N1OpwyDNcLNP7iU+P+yDhURIQq75RoXNazjFgJXfU2odqzjgaV+4bqImnLWYyo8MOr0CU0PsBX79hxYDkxWbFAA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g3NyD6v0Fz2y2B;
+	Sun, 26 Apr 2026 21:00:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777201204;
+	cv=none; b=aS++4d7yZQO6KNHZpFWK40Qq7tdpTsCPmuaeLASeahXEwT3sDTti327xcv/qTmO8PI4WPs/+YhdEGOBd40X6evcqFLuyNd5qAtm9dM39CGvMXlCVeABf59GdCFhfTT+sRdVco+LNpiSV2DtHfE0NkF7JTLXYZQmoNsO7Hrj8ZjEU/zauvo9Jb2ykA1v35AlJ52k3ba4q4eDcUvsD/9WOXOVYT9mUooLsO+WEJk8sxtqYb8W5nuvuEunBPKM9PpETaaoRTggNERQNC2QGYQk5dEkSC2MqCzEqp97B1/Dkxp45wN1EcjGhg16IpcorKLC2o24brCiQaxrMZsj4D/n4gg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777201194; c=relaxed/relaxed;
-	bh=U1VDIUYAAbGhNNmqVpBAywUG0DbqRnlLtXCpqzu1q0E=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ZIup3FwRcwGnOHmQX5HeoJvvdXzZ18I2zjKKrFUn0S4qQ0mQwDFT+MxxaDQ7SEjg+SWYshYIPFgtN3dXF3szeeNRycRmwbmT9FhZ1PDawGZAQFVlqBKWe7J8XezjmU2HjQllCaqntMcNbj96rcoiKEY0YPBa3nZwSjW22nKAId7PHFhzKXPf8Zinw4vTk54lmy/NMd4fg3smUSCEb1dPzfhwxj1aRfIlxo6Blzmu91bhT9hgU/IgvWZEo5ZLcwDqJ5cC47LaBdqTCYbPtMMYvFi/PpIRDXJAcTW5e6cTVSCTENC4Y8CFAZtr5QPxRmwk8SLG8gwU+gxc2h3N6orA/A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=q1WzA3gm; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1777201204; c=relaxed/relaxed;
+	bh=xY7w8LnDIE8HyaiKiCv1wqAMXYWCbDMiA1p0Co9KMuY=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=mMuUVsnSZWADiRTUbVbltZUi2mkKHbvh2VPBeV27HT7RySx4ErGdqFbHZ1/n0LGHh9G29Rl7S6GgUfgO+fN9aljlJnhH0Q+62xUt/nld6WRhfvbxG9DAHuJyo7TPhhc1EeYOO+/0uEAhEfvce9tEDDOzt0SftYG3+TcjsMrGqutLEXscFPrajNCC1mBEs3ad9Az5c6F263bIjw0w8v8KGVU9Tl2Bul+1XixSj9TXz+NzuZbVvOm4xMaFqcIJgwgW7755oQrYjBYlYciiQm1gVrP43Jql75HcbZGFCNeM+xeQhDOhGWLc6rdNkdT31h2txLH4GvdI+J/7hszvnSXDzQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=aBftWdoo; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62e; helo=mail-pl1-x62e.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=q1WzA3gm;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=aBftWdoo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com [IPv6:2607:f8b0:4864:20::62d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62e; helo=mail-pl1-x62e.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62e.google.com (mail-pl1-x62e.google.com [IPv6:2607:f8b0:4864:20::62e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g3Ny12pQvz2xfX
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2026 20:59:52 +1000 (AEST)
-Received: by mail-pl1-x62d.google.com with SMTP id d9443c01a7336-2b2589c26e3so87171965ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2026 03:59:52 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g3NyD0KXVz2xfX
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2026 21:00:03 +1000 (AEST)
+Received: by mail-pl1-x62e.google.com with SMTP id d9443c01a7336-2b7adb38d65so31233255ad.2
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2026 04:00:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1777201189; x=1777805989; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:to
-         :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=U1VDIUYAAbGhNNmqVpBAywUG0DbqRnlLtXCpqzu1q0E=;
-        b=q1WzA3gmWNDXe4Qti/JksVMOV0JO1Td+PvQzsKKbWtOSpIMka3Z/k5TxzR+qnip+lL
-         NtZVhzi+CjQVg2ImjKwO0Pw0Pwey7Vkri05POnu72e1PATCZ29UUTCEt1IJsc0JPrtmm
-         nM0spQBXvTt5YmfkhK9RucB+fEDW25NcjtabOpNcvXfFUjvEaZ40DrYzulp/Trwv0Vh6
-         XF3mEtqtl28ZRo/LDX5dBBrhGPl17J+g0moR4DCbZUsGrBK6LhSEIxQNsM7/vHhPHaq/
-         jA1HZIJq8Ei/2LqLt2WzJv990z++i/Ng4jtkktbyTmO0GAxTwNhFg/gTbNHeJ2xVEnCA
-         IIfw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777201189; x=1777805989;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:to
-         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=gmail.com; s=20251104; t=1777201202; x=1777806002; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:to:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=U1VDIUYAAbGhNNmqVpBAywUG0DbqRnlLtXCpqzu1q0E=;
-        b=e89TkotOYfdnPo/7h/7/PxnmEMrgr8vQ1/EpwfZFUb0yz0ko1CCi4W+GiiVjILCW7K
-         jkQdffnnRkno9sosoH1K8D0OQCbn0ZfXmnTtJ87t/9UH1BFxC8TSzbFKuT1njx+I9Sd2
-         DkWOSn7xlGVzPGZxdTso1xRghB7yBY4Uvojk6BWYM1PWq4INks2e//FK8dbH7EUAqo/2
-         DrBAUo13jSwouWAPyKgfA0T2fdmHabUY5VbUhvD/P6qwO/t//F84u2K2ySVpPqkBEy+B
-         VcjNCQcCOnHHEE28cUDOP32cda7FNhm1fUxiQJK+Jwr/CvOaMVPIX+lcvkgt9TmeaEIL
-         SsGg==
-X-Forwarded-Encrypted: i=1; AFNElJ9b5aFGWqpd9T/WMsrK6a3CdkWT6NH41qiQ7GtjYGCx3Ntz2HLz0jVSLAsbiOVmxxPHXd7UEtU1/POSd+I=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwfTA5fUdDjWVyrRCzkh99NQxbmuAkfRfg1v43DUazZZEqmOgBy
-	qNyE5gqVPbYohVfzvGDVSrMCuHuuw6canE7HvLABQhC99+hme8txt5/5
-X-Gm-Gg: AeBDiesMYI2jKuBph27J5dU1Wra+3lhh9wFV1nzBgVAQCEVScqTPDta8Q4bEeYXGxib
-	4claz852kRyLN527M+WcgezetopLmY7j/kY1bnaBpOjDIz6Ecrtdp0MfOGKDIqJn/6QMDHK0NZ+
-	eibtaHCnO7oDi0mZyjbeDgN2YhimbMvvVHnWlhIOQaUWFc7vvOrXi1/vfr1NXvAf4jYTnEp9fL3
-	RHJSK5z1WaXVNF++S6XXw+nCShQakQv77KWqyasFCPi8LR1snqrEzvVOF9nRGocy6C+F8dduTVH
-	fR7mPYHdebCxZV26EQjfXnMrvfX0ryaJ0aWZxidF5f7nRyM5j18/rH4NME4pg3TpXjEqZmeELGU
-	HXKWceD+b83BFuXzhYyXfYtd0ZEFKZgRUeSx7/CF/OWoM5pPKWMfRUFhwl9Kjm+YwPxvYYqioHP
-	i21uOpPxEV2GSnNtVvNorSQePp6hL7BTQIgzCWz/E/cUKoBm8tYuVkV6emUHk6eGdhVTW4EJMRT
-	epE6KhChGezHVQ=
-X-Received: by 2002:a17:903:3585:b0:2b2:42f8:1a45 with SMTP id d9443c01a7336-2b5fa013092mr465462375ad.39.1777201189497;
-        Sun, 26 Apr 2026 03:59:49 -0700 (PDT)
+        bh=xY7w8LnDIE8HyaiKiCv1wqAMXYWCbDMiA1p0Co9KMuY=;
+        b=aBftWdooO7REh29WeblVRn2mof3vaDSkjc0KkoW+Pm0xd9r8lutNf6WA9tIag5uWna
+         HPKOVgDTw2FUYiMVQpRLANYSjCLl5CKFtQQIs8vxxFO4lLlSmrEDU08L50W94yJDk4ef
+         9KBc6vlznTfviYX8D5cYAYe8fa6PXOCzXogbM7ZT65kP4oH8g199j3oH+vmm5Z40bqKl
+         wnim+zQpmLKe4/UMPJAX3ZI8zN5QyOF9+0cES6csAXwEsQfXhXmhhTT3B8EcUZQsmYOy
+         q76OrT8yISdX0l69LoJtzkit5pwzp2DcigjFMU4dlUer/UuUUYVw6gWYqDIWyzR/SheI
+         qK2A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1777201202; x=1777806002;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:to:from:x-gm-gg:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=xY7w8LnDIE8HyaiKiCv1wqAMXYWCbDMiA1p0Co9KMuY=;
+        b=RT1Ckiq3CkmmqMDodiAF9AqGGjDpuDi7qGt/vVfKPsvUps8mRTnBHd0ANoqqpdUeSu
+         W1WOOvtlRKAseag7v0VBM5Sd+ddM1WI1libfC5OXlSH7LwJq2BBo/LMflznpYQJDFGFh
+         a08PhMl1l17Ymg9Vs5HwCSBNmXRc500JBpltAkicL7x1wAeEBum/eS1qxFhhyrnW5jLO
+         urd1cKRqWaikXgpzK4Uu0wOBXWDebM2boEicMt8+D68W0+AhlL5G/HrVkBzpP1fxn53e
+         xi4/ily6ZjJ5ndNM/vP8A3XdMohZnm54oANFBsgLitA5HKiaUydpg3vhy9MwVhimqo+R
+         gNDw==
+X-Forwarded-Encrypted: i=1; AFNElJ+QPnhMIciOVV3pXxqPv5vJZ9FYWqr38JJgAbmmHdkA2Ej20L8t8pd8SnnQwK9A3+uv8qRpbRwU7EX4G4A=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxSX7imEE1nl8HGtyecdp1C5LLoF6RwpgkWqtygI5NawB18Kx+5
+	p7c3ipLbYSCXBcx15GPy5CEk8SS4cPaDjOzjAl5ebzSA2YTgbPkaur/T
+X-Gm-Gg: AeBDieuwGiAcl7kTwO7319g8vaZ4LSCDn13pNeRdxn4BzO3LG2UE6KxIngTVDoB3x3c
+	iMI/9rJrXlxWJXYnB8QAlKrtYTbIgC0bjLYFYsESkfBPjFY1JG08PIRphz8cUm8ZMLr/d/V3ZOZ
+	FWITnBI6eOkRT/XckK6QIBm84iCoKRsc/C8SWeyfiKhkrOiNJ4srafIy50OiRFc9UqaQtVQJ1/s
+	zI88QgkMYl+fdYH2Zg5AP74PEH6orMVQQj32YT++PPcUosq+YZ+0DgOBjWcmSkE1Ujl69j4kKqs
+	QoT0LQBBzo8hVNRomQJG7RsoKAl4Y3Wx60e/crzM6oVipd5t22PEWH1V2GUhLy4SpzvMezNTDwS
+	BrIZrE5SyD4TXrJn6eDQewA3+PWOsYn7G1d7M8yPXRNwI5IOn0dwEVGt/UME62c2zMhpZxERrxm
+	kVauL9BmuAJkHVADGf+LvugSPQcr+OxcjhkmbEgq1seG+ha7I50mLyjQZyJRPCqFR5jCcq5v6Fq
+	EclW0MrRYUAJQI=
+X-Received: by 2002:a17:903:b06:b0:2b2:5491:e32b with SMTP id d9443c01a7336-2b5f9f2bd43mr403518485ad.23.1777201202017;
+        Sun, 26 Apr 2026 04:00:02 -0700 (PDT)
 Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com.com ([106.51.164.157])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b5faa2f129sm256667235ad.29.2026.04.26.03.59.37
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b5faa2f129sm256667235ad.29.2026.04.26.03.59.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 26 Apr 2026 03:59:49 -0700 (PDT)
+        Sun, 26 Apr 2026 04:00:01 -0700 (PDT)
 From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
 To: maddy@linux.ibm.com,
 	mpe@ellerman.id.au,
@@ -108,10 +110,12 @@ To: maddy@linux.ibm.com,
 	linux-kernel@vger.kernel.org,
 	rust-for-linux@vger.kernel.org,
 	llvm@lists.linux.dev
-Subject: [PATCH V15 0/7] Rust support for powerpc
-Date: Sun, 26 Apr 2026 16:29:25 +0530
-Message-ID: <20260426105932.2270364-1-mkchauras@gmail.com>
+Subject: [PATCH V15 1/7] rust: Fix "multiple candidates for rmeta dependency core" error
+Date: Sun, 26 Apr 2026 16:29:26 +0530
+Message-ID: <20260426105932.2270364-2-mkchauras@gmail.com>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20260426105932.2270364-1-mkchauras@gmail.com>
+References: <20260426105932.2270364-1-mkchauras@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -125,124 +129,145 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Enable experimental rust support for ppc64le and ppc32be. The patch for
-ppc32 has been provided by Link Mauve[1] and ppc64le support[2] has been
-merged over it. ppc32 needs some toolchain fixes mentioned in the patch
-`rust: Add PowerPC support` and the discussion for that is done here[1].
+When building Rust code for powerpc64le with LLVM=1 and -j1, rustc
+encounters an error: "multiple candidates for `rmeta` dependency `core`
+found", with two candidates:
+1. The host's standard library from the rustup toolchain
+2. The kernel's custom libcore.rmeta in the rust/ directory
 
-This has been tested on
-- powernv9 hardware
-- pseries P11 hardware
-- pseries(9, 10) qemu
-- powernv(9, 10) qemu
-- rustdoc on x86 and powerpc64le
-- rusttest on x86 and powerpc64le
+This occurs because the build system uses `-L$(objtree)/rust` for host
+library builds (proc_macro2, quote, syn), which causes rustc to search
+the rust/ directory. During this search, rustc finds both the kernel's
+custom libcore.rmeta and gains access to the host's standard library,
+creating a conflict.
 
-We are actively working with our LLVM team to get the target for ppc,
-ppc64 and ppc64le in the rust compiler.
+The solution is to separate host libraries into a dedicated rust/host/
+subdirectory and use `-L$(objtree)/rust/host` for host builds instead
+of `-L$(objtree)/rust`. This ensures that:
 
-[1] https://lore.kernel.org/all/20260204030507.8203-1-linkmauve@linkmauve.fr
-[2] https://lore.kernel.org/all/20260204042417.83903-1-mkchauras@gmail.com
+1. Host library builds (proc_macro2, quote, syn) only search rust/host/
+   and never encounter the kernel's libcore.rmeta
+2. Proc macro builds use `-L$(objtree)/rust/host` to find their
+   dependencies
 
-Changelog:
-V14 -> V15:
-- Fix an issue with rustdoc build on ppc64le
-V14: https://lore.kernel.org/all/20260426085725.2090827-1-mkchauras@gmail.com/
+Special handling is added for rustdoc-pin_init, which is a host build
+(to access the alloc crate) but depends on proc macros from the main
+rust/ directory. It uses explicit `--extern` paths to reference the
+proc macros without adding `-L$(objtree)/rust`, which would reintroduce
+the conflict.
 
-V13 -> V14:
-- 2nd patch is rewritten (Christian)
-- Fixed a small typo in rust/Makefile (Sashiko)
-- Fixed commit message in Patch 4 (Sashiko)
-V13: https://lore.kernel.org/all/20260424054742.45832-1-mkchauras@gmail.com/
+The rust/host/ directory is added to clean-files to ensure it's removed
+during `make clean`.
 
-V12 -> V13:
-- Added a patch for fixing build issue on ppc32 by Link Mauve
-- Added another patch to fix a build issue in dma-buf
-- Added another patch to enforce minimum `rustc` version for powerpc
-V12: https://lore.kernel.org/all/20260421120958.190430-1-mkchauras@gmail.com/
+Link: https://github.com/Rust-for-Linux/linux/issues/105
+Link: https://github.com/linuxppc/issues/issues/451
+Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+---
+ rust/Makefile | 38 +++++++++++++++++++++-----------------
+ 1 file changed, 21 insertions(+), 17 deletions(-)
 
-V11 -> V12:
-- Rebased to mainline (rust/Makefile conflict resolved)
-V11: https://lore.kernel.org/all/20260417152253.2312961-1-mkchauras@gmail.com/
-
-V10 -> V11:
-- Updated `rust/Makefile`
-- Not all libraries are move to `rust/host` directory now. Only
-  proc_macro2, quote and syn are moved
-- Special handling for pin init is added. Details in commit
-- Removed mkdir for `rust/host`, this is now handled by toolchain.
-V10: https://lore.kernel.org/all/20260406200149.3727922-1-mkchauras@gmail.com/
-
-V9 -> V10:
-- rust/Makefile updated with review comments from Miguel
-- Patch 1/4 updated with commit message and subject
-V9: https://lore.kernel.org/all/20260404121610.1956528-1-mkchauras@gmail.com/
-
-V8 -> V9:
-- rust/Makefile updated with a directory instead of abspath
-V8: https://lore.kernel.org/all/20260403145308.1042622-1-mkchauras@gmail.com/
-
-V7 -> V8:
-- rust/Makefile updated to separate host libraries from target
-V7: https://lore.kernel.org/all/20260329160254.2592207-1-mkchauras@gmail.com/
-
-Changelog:
-V6 -> V7:
-- Documentation removed as powerpc is still under development
-- Added a fix for race condition in rust/Makefile
-V6: https://lore.kernel.org/all/20260210090023.2587534-1-mkchauras@gmail.com
-
-V5 -> V6:
-- Added a missing Tested by from Venkat which got missed since V3
-- Support is marked as Maintained instead of experimental
-V5: https://lore.kernel.org/all/20260210053756.2088302-1-mkchauras@gmail.com
-
-V4 -> V5:
-- Removed a nested ifdef from PPC64 for Little endian toolchain
-V4: https://lore.kernel.org/all/20260209105456.1551677-1-mkchauras@gmail.com
-
-V3 -> V4:
-- Co-developed-by header added in patch 1
-V3: https://lore.kernel.org/all/20260205180429.3280657-1-mkchauras@gmail.com
-
-V2 -> V3:
-- Splited HAVE_RUST in 2 lines
-- BINDGEN_TARGET_powerpc initialized before assigning the same to
-  BINDGEN_TARGET
-V2: https://lore.kernel.org/all/20260204210125.613350-1-mkchauras@gmail.com
-
-V1 -> V2:
-- jump label fix for rust has been moved to a separate patch
-- PPC32 support has been taken
-- rust support has been marked experimental
-- target.json dependency has been removed
-- HAVE_RUST now depends on CPU_LITTLE_ENDIAN for PPC64
-V1: https://lore.kernel.org/all/20260204042417.83903-1-mkchauras@gmail.com 
-
-Link Mauve (2):
-  rust: Make __udivdi3() and __umoddi3() panic
-  rust: Add PowerPC support
-
-Mukesh Kumar Chaurasiya (IBM) (5):
-  rust: Fix "multiple candidates for rmeta dependency core" error
-  dma-resv: Fix undefined symbol when CONFIG_DMA_SHARED_BUFFER is
-    disabled
-  powerpc/jump_label: adjust inline asm to be consistent
-  rust/powerpc: Set min rustc version for powerpc
-  powerpc: Enable Rust for ppc64le
-
- arch/powerpc/Kconfig                  |  2 ++
- arch/powerpc/Makefile                 |  7 ++++
- arch/powerpc/include/asm/jump_label.h | 23 ++++++------
- rust/Makefile                         | 52 +++++++++++++++++----------
- rust/compiler_builtins.rs             |  6 ++++
- rust/helpers/helpers.c                |  2 ++
- scripts/min-tool-version.sh           |  6 +++-
- 7 files changed, 69 insertions(+), 29 deletions(-)
-
+diff --git a/rust/Makefile b/rust/Makefile
+index b361bfedfdf0..44ec1634714a 100644
+--- a/rust/Makefile
++++ b/rust/Makefile
+@@ -3,6 +3,9 @@
+ # Where to place rustdoc generated documentation
+ rustdoc_output := $(objtree)/Documentation/output/rust/rustdoc
+ 
++# Clean generated host directory
++clean-files := host/
++
+ obj-$(CONFIG_RUST) += core.o compiler_builtins.o ffi.o
+ always-$(CONFIG_RUST) += exports_core_generated.h
+ 
+@@ -31,7 +34,7 @@ endif
+ 
+ obj-$(CONFIG_RUST) += exports.o
+ 
+-always-$(CONFIG_RUST) += libproc_macro2.rlib libquote.rlib libsyn.rlib
++always-$(CONFIG_RUST) += host/libproc_macro2.rlib host/libquote.rlib host/libsyn.rlib
+ 
+ always-$(CONFIG_RUST_KERNEL_DOCTESTS) += doctests_kernel_generated.rs
+ always-$(CONFIG_RUST_KERNEL_DOCTESTS) += doctests_kernel_generated_kunit.c
+@@ -146,7 +149,7 @@ quiet_cmd_rustdoc = RUSTDOC $(if $(rustdoc_host),H, ) $<
+       cmd_rustdoc = \
+ 	OBJTREE=$(abspath $(objtree)) \
+ 	$(RUSTDOC) $(filter-out $(skip_flags) --remap-path-scope=%,$(if $(rustdoc_host),$(rust_common_flags),$(rust_flags))) \
+-		$(rustc_target_flags) -L$(objtree)/$(obj) \
++		$(rustc_target_flags) -L$(objtree)/$(obj)$(if $(rustdoc_host),/host) \
+ 		-Zunstable-options --generate-link-to-definition \
+ 		--output $(rustdoc_output) \
+ 		--crate-name $(subst rustdoc-,,$@) \
+@@ -231,6 +234,7 @@ rustdoc-pin_init_internal: $(src)/pin-init/internal/src/lib.rs \
+ 
+ rustdoc-pin_init: private rustdoc_host = yes
+ rustdoc-pin_init: private rustc_target_flags = $(pin_init-flags) \
++    --extern pin_init_internal=$(objtree)/$(obj)/$(libpin_init_internal_name) \
+     --extern alloc --cfg feature=\"alloc\"
+ rustdoc-pin_init: $(src)/pin-init/src/lib.rs rustdoc-pin_init_internal \
+     rustdoc-macros FORCE
+@@ -520,23 +524,23 @@ quiet_cmd_rustc_procmacrolibrary = $(RUSTC_OR_CLIPPY_QUIET) PL $@
+ 	$(if $(skip_clippy),$(RUSTC),$(RUSTC_OR_CLIPPY)) \
+ 		$(filter-out $(skip_flags),$(rust_common_flags) $(rustc_target_flags)) \
+ 		--emit=dep-info=$(depfile) --emit=link=$@ --crate-type rlib -O \
+-		--out-dir $(objtree)/$(obj) -L$(objtree)/$(obj) \
++		--out-dir $(objtree)/$(obj)/host -L$(objtree)/$(obj)/host \
+ 		--crate-name $(patsubst lib%.rlib,%,$(notdir $@)) $<
+ 
+-$(obj)/libproc_macro2.rlib: private skip_clippy = 1
+-$(obj)/libproc_macro2.rlib: private rustc_target_flags = $(proc_macro2-flags)
+-$(obj)/libproc_macro2.rlib: $(src)/proc-macro2/lib.rs FORCE
++$(obj)/host/libproc_macro2.rlib: private skip_clippy = 1
++$(obj)/host/libproc_macro2.rlib: private rustc_target_flags = $(proc_macro2-flags)
++$(obj)/host/libproc_macro2.rlib: $(src)/proc-macro2/lib.rs FORCE
+ 	+$(call if_changed_dep,rustc_procmacrolibrary)
+ 
+-$(obj)/libquote.rlib: private skip_clippy = 1
+-$(obj)/libquote.rlib: private skip_flags = $(quote-skip_flags)
+-$(obj)/libquote.rlib: private rustc_target_flags = $(quote-flags)
+-$(obj)/libquote.rlib: $(src)/quote/lib.rs $(obj)/libproc_macro2.rlib FORCE
++$(obj)/host/libquote.rlib: private skip_clippy = 1
++$(obj)/host/libquote.rlib: private skip_flags = $(quote-skip_flags)
++$(obj)/host/libquote.rlib: private rustc_target_flags = $(quote-flags)
++$(obj)/host/libquote.rlib: $(src)/quote/lib.rs $(obj)/host/libproc_macro2.rlib FORCE
+ 	+$(call if_changed_dep,rustc_procmacrolibrary)
+ 
+-$(obj)/libsyn.rlib: private skip_clippy = 1
+-$(obj)/libsyn.rlib: private rustc_target_flags = $(syn-flags)
+-$(obj)/libsyn.rlib: $(src)/syn/lib.rs $(obj)/libquote.rlib FORCE
++$(obj)/host/libsyn.rlib: private skip_clippy = 1
++$(obj)/host/libsyn.rlib: private rustc_target_flags = $(syn-flags)
++$(obj)/host/libsyn.rlib: $(src)/syn/lib.rs $(obj)/host/libquote.rlib FORCE
+ 	+$(call if_changed_dep,rustc_procmacrolibrary)
+ 
+ quiet_cmd_rustc_procmacro = $(RUSTC_OR_CLIPPY_QUIET) P $@
+@@ -545,20 +549,20 @@ quiet_cmd_rustc_procmacro = $(RUSTC_OR_CLIPPY_QUIET) P $@
+ 		-Clinker-flavor=gcc -Clinker=$(HOSTCC) \
+ 		-Clink-args='$(call escsq,$(KBUILD_PROCMACROLDFLAGS))' \
+ 		--emit=dep-info=$(depfile) --emit=link=$@ --extern proc_macro \
+-		--crate-type proc-macro -L$(objtree)/$(obj) \
++		--crate-type proc-macro -L$(objtree)/$(obj)/host \
+ 		--crate-name $(patsubst lib%.$(libmacros_extension),%,$(notdir $@)) \
+ 		@$(objtree)/include/generated/rustc_cfg $<
+ 
+ # Procedural macros can only be used with the `rustc` that compiled it.
+ $(obj)/$(libmacros_name): private rustc_target_flags = \
+     --extern proc_macro2 --extern quote --extern syn
+-$(obj)/$(libmacros_name): $(src)/macros/lib.rs $(obj)/libproc_macro2.rlib \
+-    $(obj)/libquote.rlib $(obj)/libsyn.rlib FORCE
++$(obj)/$(libmacros_name): $(src)/macros/lib.rs $(obj)/host/libproc_macro2.rlib \
++    $(obj)/host/libquote.rlib $(obj)/host/libsyn.rlib FORCE
+ 	+$(call if_changed_dep,rustc_procmacro)
+ 
+ $(obj)/$(libpin_init_internal_name): private rustc_target_flags = $(pin_init_internal-flags)
+ $(obj)/$(libpin_init_internal_name): $(src)/pin-init/internal/src/lib.rs \
+-    $(obj)/libproc_macro2.rlib $(obj)/libquote.rlib $(obj)/libsyn.rlib FORCE
++    $(obj)/host/libproc_macro2.rlib $(obj)/host/libquote.rlib $(obj)/host/libsyn.rlib FORCE
+ 	+$(call if_changed_dep,rustc_procmacro)
+ 
+ # `rustc` requires `-Zunstable-options` to use custom target specifications
 -- 
 2.53.0
 
