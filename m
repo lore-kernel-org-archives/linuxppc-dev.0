@@ -1,80 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-20102-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20103-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80DDBFF8850
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2026 06:43:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 544A4FF885C
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2026 07:52:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g3HGC1BjSz2ySC;
-	Sun, 26 Apr 2026 16:43:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777185811;
-	cv=none; b=NKlS3cQfmro4Mh9Kh/XjN7CGBbvUqIBMaKk/PMlw/4xxoLWQ/jltBLiT/Xo9IaCzRiBjhjr8dlXvDymGgiqJ/fyec6YZtrdbZABZBS0mxcfknM+BR/PzEO2Vbkm/NXi1ckbJODTJwa89n6jCe++scqnekcAlaJZA1CaZhGhDDdEDW0Y1NHCc7qdI8ORE8izN8N4CRqNfa4Z7anbAAWfehABoqWjRlddhbikkx1Xn75/iqc+XwfpzY5wfOBW5V1DGzyLlQAzM6GbCxPiqQYZWHBM9c0U2tMpFrQ+2zMal886UEeImKw5ZTDy2u8RoFijE0u1YhzSr5jxGwpJLfrpGjA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g3Jp43y9zz2yhP;
+	Sun, 26 Apr 2026 17:52:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777189964;
+	cv=none; b=EIjoO5jb1XKdZrwsa349pDeR7cSS85oibBuhNBAfmkPiwuJABdGIUB8qCD6p+0rt4O2eGEsO1npYVHw5wpxhiRhMc2PoslLdTBP7SAX/JLfeNI5yxpY97ajhQRXR5/NJjV/R665SNsKJgo3Z4XUVpct9L1DQNyyJLEBrqD04GapR8riHmEjfYmoHueO4gge5zIbh+uPQYPrAzNg/jo66NJcTSE52ySZymusqUUJ5HWDVMjyvla82s44UUC2jph6x6nS8LABYTV1N5bozvghIvu4WNvYamP2wohk7OWInNC93X9Fpi8vM2eYQCtVHwGNL0HqAAX3k/YILP6k3MdXjMg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777185811; c=relaxed/relaxed;
-	bh=BvtwsbBAQmFfsApxt3IjotvrGVZq0fRyTEkJQ6H4GiA=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=JaqaPyE8rHstnL9LB8VfWSpJmV07gNug7/c2VbK8GlvZo0EXjHK4MI1RNNtnS+sgjxEH2oWGMmPM0vgjirZ/3zBo5+NnsUFhTN1baHItVu28Xyx6ThO8r6W/P529IV8jQPUyedcNtWMHTOO4k7+hjxi+jue3c7nIX0k7CLUPYzIA7cqNZMsNurOtU8UDn4+x6SEjMLrLTTTMYD+1VA7xZwvBEqEB16EJKZI0ABuAWq/WdcHFWEcD72t3ynUl5I6maDtvIIfqOyM5tbpvKJdVzNOJvVRQioXVg7G8go8oe326Br+8QzXK2NI3uJNLSQRF6S/78tr5Ps/fscNaZlcayA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gH9QY3Pj; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1777189964; c=relaxed/relaxed;
+	bh=8zTG+Dw6oqSR8kg/1RMP0Ayk7RcQFqZXb8XQS8VS+9A=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=GILAR+A20XcEe//vClnPm5OLVcSAjQN1apwZKXBT9vH231u8b63jjzGUKX97+vK/TciD/yz2oL7vz0NE1cAzvKo2206t1CZDxJxTx8fgU+AsC+i3UWsFdHmq0syJ+5DKYyg8PyBjz9t9CpO2C2o8QGVkAE8YGSK7FhHJiHMEM37FiPtokp2K2LwAI4PbR7Cvl+2arcf0eBIrdNl4Olni9PSEJILTzCcKICLd6YFfBlv4hf50GdjwUqJ/hyWsm91OKl0pzBmwc7sJLhVXw1IWqNFkUc5CG1xepe6UPlWHkY9ZmcGF19vGgG1HtGh2fcxL7jqq+WoYqJ2m/J9lVLijIg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=UyGaxm7y; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gH9QY3Pj;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=UyGaxm7y;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g3HG954LSz2y2B
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2026 16:43:28 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63Q5U6UX759455;
-	Sun, 26 Apr 2026 06:43:16 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=BvtwsbBAQmFfsApxt3IjotvrGVZq0fRyTEkJQ6H4G
-	iA=; b=gH9QY3Pj/ypuBGLPX2eiahLyRYZMm8aTQ2N/WfftcQ9RCZWmYbHSh38JW
-	1TodbPkKmrUNTUcknwVguvYpJuCtkOF1uF74cP/dftBK1sAF3N6tGjeJvSJYgWK+
-	kMGdELbQbG2TYl0xSa6nO19yIDdduwStFO5BZM1BEHa0CRuj41mBXU5DcRYmucJV
-	IVx7Wxhhlt2Vc0qRGkQ6FZa4i4NHxvyssN3y25x31qUWg7+VTa13B/y+yzsJbHuz
-	uDsr9Ug+YwqsgMOJ8D8aPrVWtQYmtmuZOutBxBhABy4JGeyInbeUM4qF+HX7/jI1
-	kT4NQX59DAZLLb2AUyv4vYH8OCCbA==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4drn8v3955-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 26 Apr 2026 06:43:16 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 63Q6cx19020166;
-	Sun, 26 Apr 2026 06:43:15 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ds9eh0jtj-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 26 Apr 2026 06:43:15 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63Q6hBfs19858120
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 26 Apr 2026 06:43:11 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8A05D20043;
-	Sun, 26 Apr 2026 06:43:11 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5457620040;
-	Sun, 26 Apr 2026 06:43:06 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.124.219.109])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sun, 26 Apr 2026 06:43:05 +0000 (GMT)
-From: Athira Rajeev <atrajeev@linux.ibm.com>
-To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
-        mpetlan@redhat.com, tmricht@linux.ibm.com, maddy@linux.ibm.com,
-        irogers@google.com, namhyung@kernel.org
-Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        atrajeev@linux.ibm.com, hbathini@linux.vnet.ibm.com,
-        Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com
-Subject: [PATCH] powerpc tools perf: Initialize error code in auxtrace_record_init function
-Date: Sun, 26 Apr 2026 12:13:01 +0530
-Message-Id: <20260426064301.90614-1-atrajeev@linux.ibm.com>
-X-Mailer: git-send-email 2.39.5 (Apple Git-154)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g3Jp26YlSz2xfX
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2026 17:52:41 +1000 (AEST)
+Received: by mail-pj1-x102e.google.com with SMTP id 98e67ed59e1d1-35f9ab079bdso6102101a91.2
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2026 00:52:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1777189959; x=1777794759; darn=lists.ozlabs.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=8zTG+Dw6oqSR8kg/1RMP0Ayk7RcQFqZXb8XQS8VS+9A=;
+        b=UyGaxm7ycvT1hp2qCFeAdgdEZEkSQ4wVOSqKmY3dZZrnbtKcmB8wj7rswiYtYrSOh8
+         fjUFSK3vohjWCVVsTBK0MCx0+KJ1bWnp2/2dzr7UlQBluYzn0T9IFBN8zTSDWpUTQr2e
+         Ki1wbVcL1SUp6T+gCDoCtfVGWj6j5eDkm5BfSMYFX2lWFZLlvBo4u7Tu/gO1DoOmH7Fd
+         77pYkF3F97s3RRTMdP3dcsfCgFMyWgKm1a+eOW2YIVFAuCm+Il8Bl9dYac115WFocOL2
+         85bcBrU5rsuKWSpSLdtng6N+DNufNs4w28lgX8rhhSptLbtH1R+Mq2Fea7gZx12mrExo
+         D52g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1777189959; x=1777794759;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=8zTG+Dw6oqSR8kg/1RMP0Ayk7RcQFqZXb8XQS8VS+9A=;
+        b=XqCcwNcMOd13yAmcmXGrc9ohJUBFKjvYGgNT3UjXEBEv+NObnG+X12P7jh/f2C3klu
+         07mT+bsGwwqK5mynupe7AN7EfAV7/t/OKyuPajtLW36hU0zur40N6SJsezTUR739rg+n
+         OSaFgguWBFGfdR0vpe2/I/5GMxmKLWE378x3HSdW5e31gtMKWmUzZfRrmPNhlXGIuwll
+         +78oje8VQgrWfZ9nSavu+139MUAf0qJsYUfIjiZ1nfIzpgkAswSrdHtiNBWMlNUf1LPW
+         fGCuW7xS8YE6+kNvJBNKLU0SudgrHd7aKNW7c7jQ/brDILwbl0l7zBpHTGZ/N5cxUgER
+         UONg==
+X-Forwarded-Encrypted: i=1; AFNElJ/ztKbskmSy5gdadEL3oZPySk/ozYbK+sW/ZHwvQMB0mYSZQfDz14cO6HTBqvQz51G/wQuHbPc7Y6+yceI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yyx94ZTwwZj0vL/vWeG5GI5zP3vY1VVvECIUm9mKSA7PBPqv6Rj
+	oEkMcAMc+q0eEdxQcrzaK1FbohGYL7YJMa3B+Nl61AI/8RUohNqkdS4R
+X-Gm-Gg: AeBDies2VerpiLDZK7BylHkHqgHeQgUBchcvqL27HrcHanVzcRcdijIcnfUYBhgx7ll
+	uSFWPzLY6ihbUjkK0pHOQ7oyDN0yKw6f9Dxij5ih9CQLq+O771dru6/p6BSMz+TvNUJ5J+vdO12
+	LZxUfjaIwckGnOyBbNYPN1PtQtnPXCYxskd3zkEBRIyRXzuWjOBhxyCsIEjQL7FqseNJFUNFnAv
+	gTBy8Cv2YtQE0JZnKHsW6vzV/W9ZIId0zagIcmLbx9LMWZKTVBnv0RDQNGyYAkQ7J0PV/olGoWy
+	SpGi7OCo1Em4nQHN3oHC271m2J2nV6y8wS3HTG1AR9NJWRQAR3+9IbJhycoTwj4xq3dLmmCRNRP
+	m68PUPMkqnd+wzn7QRg3i/F0pNtM2zOujHI7xstOjUMukLTJ5ppGNSFY79Ni0fp1oLX5pxb2nsB
+	CqLnxUVfA6h+rImUAXTml2P69Tc1S2zm4RLWjSOoVuZ4aOw3sY/WvOK35Yn/I04CRLWdm0BRFbJ
+	l3TwBP9LA==
+X-Received: by 2002:a17:90b:52cf:b0:35e:577c:c9f with SMTP id 98e67ed59e1d1-361403fb305mr37768192a91.9.1777189958672;
+        Sun, 26 Apr 2026 00:52:38 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([106.51.164.157])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3613fba1436sm10396034a91.11.2026.04.26.00.52.26
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 26 Apr 2026 00:52:38 -0700 (PDT)
+Date: Sun, 26 Apr 2026 13:22:24 +0530
+From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+To: Gary Guo <gary@garyguo.net>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
+	chleroy@kernel.org, peterz@infradead.org, jpoimboe@kernel.org, jbaron@akamai.com, 
+	aliceryhl@google.com, rostedt@goodmis.org, ardb@kernel.org, sumit.semwal@linaro.org, 
+	christian.koenig@amd.com, ojeda@kernel.org, boqun@kernel.org, bjorn3_gh@protonmail.com, 
+	lossin@kernel.org, a.hindborg@kernel.org, tmgross@umich.edu, dakr@kernel.org, 
+	nathan@kernel.org, nick.desaulniers+lkml@gmail.com, morbo@google.com, 
+	justinstitt@google.com, tamird@kernel.org, arnd@arndb.de, nsc@kernel.org, 
+	simona.vetter@ffwll.ch, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+	linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org, linaro-mm-sig@lists.linaro.org, 
+	rust-for-linux@vger.kernel.org, llvm@lists.linux.dev, Link Mauve <linkmauve@linkmauve.fr>
+Subject: Re: [PATCH V13 5/7] rust: Make __udivdi3() and __umoddi3() panic
+Message-ID: <ae3C2gqzoVaovY-h@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <20260424054742.45832-1-mkchauras@gmail.com>
+ <20260424054742.45832-6-mkchauras@gmail.com>
+ <DI1E781QPU8F.1C28PL0089NP6@garyguo.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,111 +103,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=CIIamxrD c=1 sm=1 tr=0 ts=69edb404 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8 a=ftuLF5Up4WlwXrOVWlAA:9
-X-Proofpoint-ORIG-GUID: bYUMPJ6H1heoRJh39AfiN_fYqvVf61Ci
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI2MDA2NCBTYWx0ZWRfXy+Aal/eGWTsM
- uqngYrTbES04FSB8FNE4WSD68/HBXt0Vnkt4Dvl7Ov0KQsKHG/mxWdH2ebypf8/UNNPh79T3Bmw
- 02idVCyeZlNJmq8z1l8RenLJSpllNoOrYs2+hTfDftPqBTaQ4AcL3mWrD+dJxtpW9t4r9qaaefJ
- xMxMSiiSj8sgGxtxtzda09QiBhGmb04r+oFdRCAXg4sGYv7mVR3SIUQwZ63xLxywO3MZ8HdO5qB
- B43rgCSCwJ2IP0CWqGTHZam863m1ZnQa0mBM/KugpvCG7TpKDwLUJHeR6cEOA9NbCOUhp0w2th5
- K/ebcjxpC0qjxs0Ifozh9XZ5SaQ5MaKNHQUFQSwnY4E2yAcgt4mCwmNdrMNTBMXRrvV7Oteh07U
- 7ZBh0lojKHSI3WokHyHH5v/hHgBA/OgF0MpEKiw6lhQycjcOo2Lw1Ir/Jah/CXytrl8Z9wOu+ub
- hYliZIycl1C1OdSxjbg==
-X-Proofpoint-GUID: bWpierwrhwraEXgfOg4amxVOG0XjDD88
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-26_02,2026-04-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 phishscore=0 malwarescore=0 suspectscore=0 adultscore=0
- impostorscore=0 lowpriorityscore=0 clxscore=1015 bulkscore=0
- priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
- definitions=main-2604260064
+In-Reply-To: <DI1E781QPU8F.1C28PL0089NP6@garyguo.net>
 
-perf trace record fails some cases in powerpc
+On Fri, Apr 24, 2026 at 01:43:43PM +0100, Gary Guo wrote:
+> On Fri Apr 24, 2026 at 6:47 AM BST, Mukesh Kumar Chaurasiya (IBM) wrote:
+> > From: Link Mauve <linkmauve@linkmauve.fr>
+> >
+> > The core crate currently depends on these two functions for i64/u64/
+> > i128/u128/core::time::Duration formatting, but we shouldn’t use that in
+> > the kernel so let’s panic if they are ever called.
+> >
+> > This doesn’t yet fix drm_panic_qr.rs, which also uses __udivdi3 when
+> > CONFIG_CC_OPTIMIZE_FOR_SIZE=y, but at least makes the rest of the kernel
+> > build on PPC32.
+> 
+> Can we always build libcore with `-C opt-level=2` even if
+> `CONFIG_CC_OPTIMIZE_FOR_SIZE` is specified? It feels like a better fix than
+> stubbing things out.
+> 
+> Best,
+> Gary
+> 
+The issue is not coming from libcore itself. It's the driver that's
+causing this.
 
- # ./perf test "perf trace record and replay"
- 128: perf trace record and replay                                    : FAILED!
-
- # ./perf trace record sleep 1
- # echo $?
-   32
-
-This is happening because of non-zero err value from
-auxtrace_record__init() function.
-
- static int record__auxtrace_init(struct record *rec)
- {
-        int err;
-
-        if ((rec->opts.auxtrace_snapshot_opts || rec->opts.auxtrace_sample_opts)
-            && record__threads_enabled(rec)) {
-                pr_err("AUX area tracing options are not available in parallel streaming mode.\n");
-                return -EINVAL;
-        }
-
-        if (!rec->itr) {
-                rec->itr = auxtrace_record__init(rec->evlist, &err);
-                if (err)
-                        return err;
-        }
-
-Here "int err" is not initialised. The code expects "err" to be set
-from auxtrace_record__init() function.
-
-Update auxtrace_record__init() in arch/powerpc/util/auxtrace.c to clear
-err value in the beginning.
-
-- Clear err value in beginning of function. Any fail later will
-set appropriate return code to err.
-- Even if we haven't found any event for auxtrace, perf record
-should continue for other events. NULL return
-will indicate that there is no auxtrace record initialized.
-- Not having "err" set here will affect monitoring of other events
-also because perf record will fail seeing random value in err.
-
-With the fix,
-
- # ./perf trace record sleep 1
- [ perf record: Woken up 2 times to write data ]
- [ perf record: Captured and wrote 0.033 MB perf.data (228 samples) ]
-
-Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
----
- tools/perf/arch/powerpc/util/auxtrace.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
-
-diff --git a/tools/perf/arch/powerpc/util/auxtrace.c b/tools/perf/arch/powerpc/util/auxtrace.c
-index e39deff6c857..fe1ea4e222f3 100644
---- a/tools/perf/arch/powerpc/util/auxtrace.c
-+++ b/tools/perf/arch/powerpc/util/auxtrace.c
-@@ -71,6 +71,19 @@ struct auxtrace_record *auxtrace_record__init(struct evlist *evlist,
- 	struct evsel *pos;
- 	int found = 0;
- 
-+	/*
-+	 * Assign err value to zero here. Any fail later
-+	 * will set appropriate return code to err.
-+	 * Even if we haven't found any event for auxtrace, perf
-+	 * record should continue for other events. NULL return
-+	 * will indicate that there is no auxtrace record initialized.
-+	 *
-+	 * Not having "err" set here will affect monitoring
-+	 * of other events also because perf record will fail seeing
-+	 * random value in err.
-+	 */
-+	*err = 0;
-+
- 	evlist__for_each_entry(evlist, pos) {
- 		if (strstarts(pos->name, "vpa_dtl")) {
- 			found = 1;
--- 
-2.47.3
-
+Regards,
+Mukesh
+> >
+> > Signed-off-by: Link Mauve <linkmauve@linkmauve.fr>
+> > Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+> > ---
+> >  rust/Makefile             | 4 ++++
+> >  rust/compiler_builtins.rs | 6 ++++++
+> >  2 files changed, 10 insertions(+)
+> >
+> > diff --git a/rust/Makefile b/rust/Makefile
+> > index 2a5428a5503d..ee11fba7a03d 100644
+> > --- a/rust/Makefile
+> > +++ b/rust/Makefile
+> > @@ -616,6 +616,10 @@ ifneq ($(or $(CONFIG_ARM64),$(and $(CONFIG_RISCV),$(CONFIG_64BIT))),)
+> >  		__ashrti3 \
+> >  		__ashlti3 __lshrti3
+> >  endif
+> > +ifdef CONFIG_PPC32
+> > +	redirect-intrinsics += \
+> > +		__udivdi3 __umoddi3
+> > +endif
+> >  
+> >  ifdef CONFIG_MODVERSIONS
+> >  cmd_gendwarfksyms = $(if $(skip_gendwarfksyms),, \
+> > diff --git a/rust/compiler_builtins.rs b/rust/compiler_builtins.rs
+> > index dd16c1dc899c..fc6b54636dd5 100644
+> > --- a/rust/compiler_builtins.rs
+> > +++ b/rust/compiler_builtins.rs
+> > @@ -97,5 +97,11 @@ pub extern "C" fn $ident() {
+> >      __aeabi_uldivmod,
+> >  });
+> >  
+> > +#[cfg(target_arch = "powerpc")]
+> > +define_panicking_intrinsics!("`u64` division/modulo should not be used", {
+> > +    __udivdi3,
+> > +    __umoddi3,
+> > +});
+> > +
+> >  // NOTE: if you are adding a new intrinsic here, you should also add it to
+> >  // `redirect-intrinsics` in `rust/Makefile`.
+> 
 
