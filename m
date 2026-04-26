@@ -1,80 +1,117 @@
-Return-Path: <linuxppc-dev+bounces-20120-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20121-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67630FF885C
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2026 09:39:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4385FF885C
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2026 10:59:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g3M9k0WKrz2yFl;
-	Sun, 26 Apr 2026 19:39:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777196393;
-	cv=none; b=LebCdNhimGqY1ARtYCyOu60pH4YGfDpZ2DErpno6Ci7VMVFbjvEJ0BV5tfARIsaVFF4V54qjBguPooYDnow6d/t43TMUdLMdARGtWgXfhR9HO+CC0C2g7yEU6LnZ0k4/Uzlps+N5QHk7fRwG14TI34ECV1IutQzmLCqC3ZaOgT3EB1rkcM/vsu0dmzDL/6S4OYVBMrgenAJvFiSdB6lOOiIMeDxrpcKqkFC8Niru/9Z9ySa3fFYYmZdwukDkpjJiv7vJii4E/r3MUyQ/AYadJl0g2AWXr2vepg6RO2U4jo1CRULrpmS18blVYrMqRvu1zW7t231KvWW+lbml2SHc6g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g3Ny26G9kz2y2B;
+	Sun, 26 Apr 2026 20:59:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777201194;
+	cv=none; b=H9cVIiDq/jbhkiGYR6veaO8gJhcJ1aKyQouVRg0nbRrMvmr3FL2PN6k/wdz9V1w4xFBWNWTT++0bjSVhIOHsjcmgFVzymi+3IeHfBGqniePPpR0K6LtFHCUWseUTfF8hft7j/shb6457FDDuO5YLBiI4UDblbE5B2NZ7ef/C3w87JYXcXCPAnwBHHJc8mid8TOtlMALUiyC49PI2jUYidt9VSj8DNEPQiqPq5Tke+sMZmuzS9N9+MtQLuLhB/d2N1OpwyDNcLNP7iU+P+yDhURIQq75RoXNazjFgJXfU2odqzjgaV+4bqImnLWYyo8MOr0CU0PsBX79hxYDkxWbFAA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777196393; c=relaxed/relaxed;
-	bh=Rzji9qKGrPdQU8n/vuCu/SOzBClb11q0e3ag7y2Rt6I=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=OPN2tue2uVD0Q+sXBQLZbURu5Op1Q4r39E9egscPPIuwbnUtOiZb0GYZYWXUj+DIFZfLgjF365jbVZz5RT4uy1xsDv57FPrGSIJelQOgBKEaGpWAQBYG8632nT91SJQwYuiz3iZoOWCJSp8uXNfcuGWViu1N0n7bo206OGQv3VXjjE7EeFsXKfhvHrSk5545zxG4QOe877OVBka9HkEFEuyO1u9X+J7sQZavCPklskMlbPXsZcW7zOyCHT/Sm8k/SWdMfC+HUAvRB9So1xz09IToTdn+RQL6urq4AVY/H/FdtF1c1Mv0YdrTS5LEDFz9dGsObNmJILA+UsPQqQ7wVA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cTmad9Aa; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1777201194; c=relaxed/relaxed;
+	bh=U1VDIUYAAbGhNNmqVpBAywUG0DbqRnlLtXCpqzu1q0E=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ZIup3FwRcwGnOHmQX5HeoJvvdXzZ18I2zjKKrFUn0S4qQ0mQwDFT+MxxaDQ7SEjg+SWYshYIPFgtN3dXF3szeeNRycRmwbmT9FhZ1PDawGZAQFVlqBKWe7J8XezjmU2HjQllCaqntMcNbj96rcoiKEY0YPBa3nZwSjW22nKAId7PHFhzKXPf8Zinw4vTk54lmy/NMd4fg3smUSCEb1dPzfhwxj1aRfIlxo6Blzmu91bhT9hgU/IgvWZEo5ZLcwDqJ5cC47LaBdqTCYbPtMMYvFi/PpIRDXJAcTW5e6cTVSCTENC4Y8CFAZtr5QPxRmwk8SLG8gwU+gxc2h3N6orA/A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=q1WzA3gm; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cTmad9Aa;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=q1WzA3gm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com [IPv6:2607:f8b0:4864:20::62d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g3M9h6vzfz2xlK
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2026 19:39:52 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63Q4A79U1150119;
-	Sun, 26 Apr 2026 09:39:44 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=Rzji9qKGrPdQU8n/vuCu/SOzBClb11q0e3ag7y2Rt
-	6I=; b=cTmad9Aaa7IMs3MVuHomJCNXcJ316XXbhjwdtepMyJ/dSN7QKm3ByGw4p
-	7ALzdNDQPaxhjK50J68fog1W72G6mmWXp8gE0P3qOJmch3lBPBCLAAhLcswK7nM7
-	8S8Xml2D1VLCp4f/n5pOnIoGHMeMOPf8smBuFbg8seM5vQLzHj7CmUbMdPxoNqAY
-	IkMM4sV3TjxiJM//TBvJ+ZNusK994HrJhB/GGsPBoI+aP8eLA+9/TlKXk6TWDBwM
-	lFd/Y/LB5Lf4aytmVDnofq62RNa+FmCBM/4e+rkZfhxlTM1h/af8+yASRSOkAZqC
-	11aMZs7dL2ldSYqXRL3qZ6N2iyZiQ==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4drk1jbw0s-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 26 Apr 2026 09:39:44 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 63Q9O5jg029691;
-	Sun, 26 Apr 2026 09:39:43 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ds8avh4n6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 26 Apr 2026 09:39:43 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63Q9ddmw51315160
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 26 Apr 2026 09:39:39 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id BA6952004D;
-	Sun, 26 Apr 2026 09:39:39 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8018820040;
-	Sun, 26 Apr 2026 09:39:34 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.124.219.109])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sun, 26 Apr 2026 09:39:34 +0000 (GMT)
-From: Athira Rajeev <atrajeev@linux.ibm.com>
-To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
-        mpetlan@redhat.com, tmricht@linux.ibm.com, maddy@linux.ibm.com,
-        irogers@google.com, namhyung@kernel.org
-Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        atrajeev@linux.ibm.com, hbathini@linux.vnet.ibm.com,
-        Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com
-Subject: [PATCH] tools/perf/sched: Update process names of processes in zombie state for both -s and -S options
-Date: Sun, 26 Apr 2026 15:09:30 +0530
-Message-Id: <20260426093930.47809-1-atrajeev@linux.ibm.com>
-X-Mailer: git-send-email 2.39.5 (Apple Git-154)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g3Ny12pQvz2xfX
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2026 20:59:52 +1000 (AEST)
+Received: by mail-pl1-x62d.google.com with SMTP id d9443c01a7336-2b2589c26e3so87171965ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2026 03:59:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1777201189; x=1777805989; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:to
+         :from:from:to:cc:subject:date:message-id:reply-to;
+        bh=U1VDIUYAAbGhNNmqVpBAywUG0DbqRnlLtXCpqzu1q0E=;
+        b=q1WzA3gmWNDXe4Qti/JksVMOV0JO1Td+PvQzsKKbWtOSpIMka3Z/k5TxzR+qnip+lL
+         NtZVhzi+CjQVg2ImjKwO0Pw0Pwey7Vkri05POnu72e1PATCZ29UUTCEt1IJsc0JPrtmm
+         nM0spQBXvTt5YmfkhK9RucB+fEDW25NcjtabOpNcvXfFUjvEaZ40DrYzulp/Trwv0Vh6
+         XF3mEtqtl28ZRo/LDX5dBBrhGPl17J+g0moR4DCbZUsGrBK6LhSEIxQNsM7/vHhPHaq/
+         jA1HZIJq8Ei/2LqLt2WzJv990z++i/Ng4jtkktbyTmO0GAxTwNhFg/gTbNHeJ2xVEnCA
+         IIfw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1777201189; x=1777805989;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:to
+         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=U1VDIUYAAbGhNNmqVpBAywUG0DbqRnlLtXCpqzu1q0E=;
+        b=e89TkotOYfdnPo/7h/7/PxnmEMrgr8vQ1/EpwfZFUb0yz0ko1CCi4W+GiiVjILCW7K
+         jkQdffnnRkno9sosoH1K8D0OQCbn0ZfXmnTtJ87t/9UH1BFxC8TSzbFKuT1njx+I9Sd2
+         DkWOSn7xlGVzPGZxdTso1xRghB7yBY4Uvojk6BWYM1PWq4INks2e//FK8dbH7EUAqo/2
+         DrBAUo13jSwouWAPyKgfA0T2fdmHabUY5VbUhvD/P6qwO/t//F84u2K2ySVpPqkBEy+B
+         VcjNCQcCOnHHEE28cUDOP32cda7FNhm1fUxiQJK+Jwr/CvOaMVPIX+lcvkgt9TmeaEIL
+         SsGg==
+X-Forwarded-Encrypted: i=1; AFNElJ9b5aFGWqpd9T/WMsrK6a3CdkWT6NH41qiQ7GtjYGCx3Ntz2HLz0jVSLAsbiOVmxxPHXd7UEtU1/POSd+I=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwfTA5fUdDjWVyrRCzkh99NQxbmuAkfRfg1v43DUazZZEqmOgBy
+	qNyE5gqVPbYohVfzvGDVSrMCuHuuw6canE7HvLABQhC99+hme8txt5/5
+X-Gm-Gg: AeBDiesMYI2jKuBph27J5dU1Wra+3lhh9wFV1nzBgVAQCEVScqTPDta8Q4bEeYXGxib
+	4claz852kRyLN527M+WcgezetopLmY7j/kY1bnaBpOjDIz6Ecrtdp0MfOGKDIqJn/6QMDHK0NZ+
+	eibtaHCnO7oDi0mZyjbeDgN2YhimbMvvVHnWlhIOQaUWFc7vvOrXi1/vfr1NXvAf4jYTnEp9fL3
+	RHJSK5z1WaXVNF++S6XXw+nCShQakQv77KWqyasFCPi8LR1snqrEzvVOF9nRGocy6C+F8dduTVH
+	fR7mPYHdebCxZV26EQjfXnMrvfX0ryaJ0aWZxidF5f7nRyM5j18/rH4NME4pg3TpXjEqZmeELGU
+	HXKWceD+b83BFuXzhYyXfYtd0ZEFKZgRUeSx7/CF/OWoM5pPKWMfRUFhwl9Kjm+YwPxvYYqioHP
+	i21uOpPxEV2GSnNtVvNorSQePp6hL7BTQIgzCWz/E/cUKoBm8tYuVkV6emUHk6eGdhVTW4EJMRT
+	epE6KhChGezHVQ=
+X-Received: by 2002:a17:903:3585:b0:2b2:42f8:1a45 with SMTP id d9443c01a7336-2b5fa013092mr465462375ad.39.1777201189497;
+        Sun, 26 Apr 2026 03:59:49 -0700 (PDT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com.com ([106.51.164.157])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b5faa2f129sm256667235ad.29.2026.04.26.03.59.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 26 Apr 2026 03:59:49 -0700 (PDT)
+From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+To: maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	chleroy@kernel.org,
+	peterz@infradead.org,
+	jpoimboe@kernel.org,
+	jbaron@akamai.com,
+	aliceryhl@google.com,
+	rostedt@goodmis.org,
+	ardb@kernel.org,
+	ojeda@kernel.org,
+	boqun@kernel.org,
+	gary@garyguo.net,
+	bjorn3_gh@protonmail.com,
+	lossin@kernel.org,
+	a.hindborg@kernel.org,
+	tmgross@umich.edu,
+	dakr@kernel.org,
+	nathan@kernel.org,
+	nick.desaulniers+lkml@gmail.com,
+	morbo@google.com,
+	justinstitt@google.com,
+	daniel.almeida@collabora.com,
+	fujita.tomonori@gmail.com,
+	viresh.kumar@linaro.org,
+	prafulrai522@gmail.com,
+	gregkh@linuxfoundation.org,
+	arnd@arndb.de,
+	tamird@kernel.org,
+	mark.rutland@arm.com,
+	mkchauras@gmail.com,
+	lyude@redhat.com,
+	lina+kernel@asahilina.net,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	rust-for-linux@vger.kernel.org,
+	llvm@lists.linux.dev
+Subject: [PATCH V15 0/7] Rust support for powerpc
+Date: Sun, 26 Apr 2026 16:29:25 +0530
+Message-ID: <20260426105932.2270364-1-mkchauras@gmail.com>
+X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,117 +125,125 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI2MDA5OSBTYWx0ZWRfX/8+LjuHDFXki
- dtU7ns7jpK1cb6Fdv94IFoUfNQcOg9pizjsRxGvYpafg53EHU9oYZh7P3+It2oIKofk7w6Ni3vT
- ls9+KMP5obKOyl4We5AYNUbrWHP39gQm3TK4xAFUbXzWvDrn8jB6Bu2d2HpqS9OsEaE4VEaMj+b
- 3bzsamCVHtvUupwB3ApzR/MPPYmSH4Q10SRRe+jCGCV7Unagbc3FqBi8IMwrukIBEs+3INkBnsD
- vkvwNOWBX7CnqehtTFgsj9zDXMyYA6FmkqHNNBCYiBzPVDyu90Dt66FclhSDFdwjMLLrwErq47+
- 5t0FbKrNHySDFl/hGHtSc6CshloSUKR7H82YvbDFVWkuXNx6lG55pavOAiPR2TIF6mO5dp+pQ6H
- Brtkv27nkcy1qfZ2xUliLzgQ3O3ICtOPKyWBBcm43s0PmztKwBn6Xh3JCoPqB5VEYmYb2GTF+Hh
- 1YZdXp2QAsh+7ATgu7w==
-X-Proofpoint-GUID: VA2OYQ8NSMqxzS-t4DUpBhtFlq7NHEgQ
-X-Proofpoint-ORIG-GUID: 1qfgpkasp8_3e0-KPL2UHD0bI7UgIUOs
-X-Authority-Analysis: v=2.4 cv=MohiLWae c=1 sm=1 tr=0 ts=69eddd60 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=x5QCPqNzQhPJdF4W:21 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8
- a=Fhc_E1mSigePmb3TSNAA:9
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-26_03,2026-04-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 adultscore=0 suspectscore=0 bulkscore=0 spamscore=0
- priorityscore=1501 malwarescore=0 clxscore=1015 lowpriorityscore=0
- impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
- definitions=main-2604260099
 
-In redhat perftool testsuite, observed fail for this test:
-    -- [ FAIL ] -- perf_sched :: test_timehist :: --with-summary (output regexp parsing)
+Enable experimental rust support for ppc64le and ppc32be. The patch for
+ppc32 has been provided by Link Mauve[1] and ppc64le support[2] has been
+merged over it. ppc32 needs some toolchain fixes mentioned in the patch
+`rust: Add PowerPC support` and the discussion for that is done here[1].
 
-This led to analysis of "perf sched timehist" summary options.
+This has been tested on
+- powernv9 hardware
+- pseries P11 hardware
+- pseries(9, 10) qemu
+- powernv(9, 10) qemu
+- rustdoc on x86 and powerpc64le
+- rusttest on x86 and powerpc64le
 
-  # perf sched record -a -o ./perf.data -- sleep 0.1
-   This will record using perf sched record
+We are actively working with our LLVM team to get the target for ppc,
+ppc64 and ppc64le in the rust compiler.
 
-perf sched timeliest has two options "-s" and "-S"
-  # perf sched -i ./perf.data timehist -S
- -S : Captures summary also at the end
+[1] https://lore.kernel.org/all/20260204030507.8203-1-linkmauve@linkmauve.fr
+[2] https://lore.kernel.org/all/20260204042417.83903-1-mkchauras@gmail.com
 
-  # perf sched -i ./perf.data timehist -s
- -s : Captures only summary
+Changelog:
+V14 -> V15:
+- Fix an issue with rustdoc build on ppc64le
+V14: https://lore.kernel.org/all/20260426085725.2090827-1-mkchauras@gmail.com/
 
-The test saves -s result which has only summary and compares with
-summary which comes at the end from -S . Since there is a difference
-in these two, test fails.
+V13 -> V14:
+- 2nd patch is rewritten (Christian)
+- Fixed a small typo in rust/Makefile (Sashiko)
+- Fixed commit message in Patch 4 (Sashiko)
+V13: https://lore.kernel.org/all/20260424054742.45832-1-mkchauras@gmail.com/
 
-Checking the behaviour change in -S and -s results, difference is:
+V12 -> V13:
+- Added a patch for fixing build issue on ppc32 by Link Mauve
+- Added another patch to fix a build issue in dma-buf
+- Added another patch to enforce minimum `rustc` version for powerpc
+V12: https://lore.kernel.org/all/20260421120958.190430-1-mkchauras@gmail.com/
 
-                  rcu_sched[16]       2          4        0.013      0.001       0.003       0.006   33.23       0
-               migration/11[73]       2          1        0.006      0.006       0.006       0.006    0.00       0
-                migration/3[33]       2          1        0.006      0.006       0.006       0.006    0.00       0
- -               :216753[216753]      -1          1        0.041      0.041       0.041       0.041    0.00       0
- +                 sleep[216753]      -1          1        0.041      0.041       0.041       0.041    0.00       0
-                migration/8[58]       2          1        0.005      0.005       0.005       0.005    0.00       0
-            NetworkManager[811]       1          2        0.089      0.028       0.044       0.060   36.06       0
-               migration/13[83]       2          1        0.005      0.005       0.005       0.005    0.00       0
+V11 -> V12:
+- Rebased to mainline (rust/Makefile conflict resolved)
+V11: https://lore.kernel.org/all/20260417152253.2312961-1-mkchauras@gmail.com/
 
-Here 216753 is pid for sleep which is a zombie process. This is
-happening in latest kernel due to an update in "-S" result.
-In -S, the process name appears in the results "sleep[216753]",
-where as in the -s, only pid is present in the summary result
-":216753[216753]".
+V10 -> V11:
+- Updated `rust/Makefile`
+- Not all libraries are move to `rust/host` directory now. Only
+  proc_macro2, quote and syn are moved
+- Special handling for pin init is added. Details in commit
+- Removed mkdir for `rust/host`, this is now handled by toolchain.
+V10: https://lore.kernel.org/all/20260406200149.3727922-1-mkchauras@gmail.com/
 
-After commit 39f473f6d0b2 ("perf sched timehist: decode process names
-of processes in zombie state")
-for -S option, if process name is using pid, it uses different way to
-set it. So that we get the process name and not just Pid.
+V9 -> V10:
+- rust/Makefile updated with review comments from Miguel
+- Patch 1/4 updated with commit message and subject
+V9: https://lore.kernel.org/all/20260404121610.1956528-1-mkchauras@gmail.com/
 
-This change went in only for timehist_print_sample() function.
-Add this improvement in generic place so that even -s option (which
-captures summary) also will have meaningful information.
+V8 -> V9:
+- rust/Makefile updated with a directory instead of abspath
+V8: https://lore.kernel.org/all/20260403145308.1042622-1-mkchauras@gmail.com/
 
-Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
----
- tools/perf/builtin-sched.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+V7 -> V8:
+- rust/Makefile updated to separate host libraries from target
+V7: https://lore.kernel.org/all/20260329160254.2592207-1-mkchauras@gmail.com/
 
-diff --git a/tools/perf/builtin-sched.c b/tools/perf/builtin-sched.c
-index 555247568e7a..ee1b89a6af50 100644
---- a/tools/perf/builtin-sched.c
-+++ b/tools/perf/builtin-sched.c
-@@ -2197,11 +2197,6 @@ static void timehist_print_sample(struct perf_sched *sched,
- 		printf(" ");
- 	}
- 
--	if (!thread__comm_set(thread)) {
--                const char *prev_comm = evsel__strval(evsel, sample, "prev_comm");
--                thread__set_comm(thread, prev_comm, sample->time);
--        }
--
- 	printf(" %-*s ", comm_width, timehist_get_commstr(thread));
- 
- 	if (sched->show_prio)
-@@ -2890,6 +2885,15 @@ static int timehist_sched_change_event(const struct perf_tool *tool,
- 			itr->last_thread = NULL;
- 		}
- 
-+		/*
-+		 * If the process name is not set for the thread, use "prev_comm"
-+		 * to set it. Otherwise the sched summary will have just pid information
-+		 */
-+		if (!thread__comm_set(thread)) {
-+			const char *prev_comm = evsel__strval(evsel, sample, "prev_comm");
-+			thread__set_comm(thread, prev_comm, sample->time);
-+		}
-+
- 		if (!sched->summary_only)
- 			timehist_print_sample(sched, evsel, sample, &al, thread, t, state);
- 	}
+Changelog:
+V6 -> V7:
+- Documentation removed as powerpc is still under development
+- Added a fix for race condition in rust/Makefile
+V6: https://lore.kernel.org/all/20260210090023.2587534-1-mkchauras@gmail.com
+
+V5 -> V6:
+- Added a missing Tested by from Venkat which got missed since V3
+- Support is marked as Maintained instead of experimental
+V5: https://lore.kernel.org/all/20260210053756.2088302-1-mkchauras@gmail.com
+
+V4 -> V5:
+- Removed a nested ifdef from PPC64 for Little endian toolchain
+V4: https://lore.kernel.org/all/20260209105456.1551677-1-mkchauras@gmail.com
+
+V3 -> V4:
+- Co-developed-by header added in patch 1
+V3: https://lore.kernel.org/all/20260205180429.3280657-1-mkchauras@gmail.com
+
+V2 -> V3:
+- Splited HAVE_RUST in 2 lines
+- BINDGEN_TARGET_powerpc initialized before assigning the same to
+  BINDGEN_TARGET
+V2: https://lore.kernel.org/all/20260204210125.613350-1-mkchauras@gmail.com
+
+V1 -> V2:
+- jump label fix for rust has been moved to a separate patch
+- PPC32 support has been taken
+- rust support has been marked experimental
+- target.json dependency has been removed
+- HAVE_RUST now depends on CPU_LITTLE_ENDIAN for PPC64
+V1: https://lore.kernel.org/all/20260204042417.83903-1-mkchauras@gmail.com 
+
+Link Mauve (2):
+  rust: Make __udivdi3() and __umoddi3() panic
+  rust: Add PowerPC support
+
+Mukesh Kumar Chaurasiya (IBM) (5):
+  rust: Fix "multiple candidates for rmeta dependency core" error
+  dma-resv: Fix undefined symbol when CONFIG_DMA_SHARED_BUFFER is
+    disabled
+  powerpc/jump_label: adjust inline asm to be consistent
+  rust/powerpc: Set min rustc version for powerpc
+  powerpc: Enable Rust for ppc64le
+
+ arch/powerpc/Kconfig                  |  2 ++
+ arch/powerpc/Makefile                 |  7 ++++
+ arch/powerpc/include/asm/jump_label.h | 23 ++++++------
+ rust/Makefile                         | 52 +++++++++++++++++----------
+ rust/compiler_builtins.rs             |  6 ++++
+ rust/helpers/helpers.c                |  2 ++
+ scripts/min-tool-version.sh           |  6 +++-
+ 7 files changed, 69 insertions(+), 29 deletions(-)
+
 -- 
-2.47.3
+2.53.0
 
 
