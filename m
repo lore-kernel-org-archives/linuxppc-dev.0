@@ -1,123 +1,100 @@
-Return-Path: <linuxppc-dev+bounces-20128-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20129-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8EB7FF885C
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2026 11:01:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D058FF885C
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2026 11:49:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g3Nzn48n4z2yl2;
-	Sun, 26 Apr 2026 21:01:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777201285;
-	cv=none; b=fuBxxcW1mRP8VCBMr6JiDj4JQLjt1BNQtYHppJQT/5HIWM1TKojuPFFStjPVD8hSLWO7TsHha/M3HOYlsI/Edc7WvO8CZyQlmgwfc2XuAiVw0eE3xDHTeiGpG5Jeq4wnOAiXWxyhiPs941GJrSBtkBepuPtV49ulFOLC9kQQGwLvgWsI5P9/9U9Au5FEfconyBiEjFy2z+1GBfTmw98ZDZhZhQx1tVcR1vkZ23mhRitN2DTkEpFDebyo1KMUwf2eXUfrHNQxwAk9YYxFRoJpHtTprW4CqUENeAgUX/ueQWyI6JtxXc3XoDXuIu8WpUTYl6rMccCIEyYvZF7M4dF2zg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g3Q3F0TSVz2ygY;
+	Sun, 26 Apr 2026 21:49:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::331"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777204168;
+	cv=none; b=c0Ze4HAYJoxhKMI1W4WjX2iNUl//ujkr2+14AcKqvh4RVG5bOtzFAdHE+xSRpadStRw8Sl3tu6T4Dgl1AtaWGp6uW2TCJQZJfoPIliPaeDo2KTibb3O8LHaAXXVOXDcMjk2Z23mLLLZ0AezOP1mLTG1oVCS5EFDsrdm5uDUdpZmTSQvBdO2lg9gr9n3gkRQsiD/EM0vTaw13pjb3KsCqChzTZV+qWatWgey3fuutuI6CtFFtxQn2M/20vdvffmX8M/XsJ7/0ViRXzS7+B1I/nzFvYQo02QinQ2dwo89AvHgQ6Evi4hibKejzFJEKaqBQegEVceFnzxj2yX46ulJNeQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777201285; c=relaxed/relaxed;
-	bh=nVCy+fRcM1H3k57gN4SHcc3eo5iNGuSvVrAbRBe/Co8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=XdSRIswplBi0s2nhrFiLEgK6jV24IxEJSTTXoY6U19bVbbV1FzUq9c2vPaky/ZyXWsfqIHn/pUUWtbQoih1a2dyzl1Ky9wF2gaVSQvDA4L0aB3D2xn8TK03giUdDWr3Cui1V0Vgnhacm+R6nqZIrc4K4L62loC3cEQyPzE/WoqwuNuTWWBGGx71yrkpeZPh6Lyy1bcEGUKOas9md1h+rOzyFCQ+PWR47M8QGw6VN+sm/WSMHOrrgL4DQM1b/UDYhGpbb+Mp2JWrsuRfxEdt5RDPMF2/n68IbDYkQDj79dP7c6Cy+z5TEBLbZ7BnbztxR8QxlqYVLkEYwz+WmtyIRCg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=TJbOynEq; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1777204168; c=relaxed/relaxed;
+	bh=IywXIO5DH2wY+7oMRMtv2QIoyGhfedV6T5nXUSTMOdE=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=ZyLrzUhHOOxLmnfGBcysT5sZp6rtxqvsPPLeYR3uqL+3CLju5PaPB+DHLqHMibg1FeFo7D+CsdqniRf7UIdIAVnVFUlJlrFA2HaiW8bjfCrWmcoV1lg+ApoZqrdgphKa3f6RDBGf/oMHj3gn//GdcEvxCbE4NARUXsfkzMTwQBh4aw4YxM4mlcaUFJYY61Y8NwN0LGmW9R652EYnFm+DRK0/n1dvQvJWjbhzma1Jf+STkXnPBtKigGv89+7KnwJM92e65peykKB+kzarcsQKQbBW2gzKuX5m0jhzZ7g7Eg8RIWkHqDG2iDo7AGoZsQ9E6ftMaDtoNu8j/dkIIFFcqg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=A2/TSrH4; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::331; helo=mail-wm1-x331.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=TJbOynEq;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=A2/TSrH4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::331; helo=mail-wm1-x331.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g3Nzm61j7z2yjm
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2026 21:01:24 +1000 (AEST)
-Received: by mail-pl1-x62f.google.com with SMTP id d9443c01a7336-2adff872068so45055205ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2026 04:01:24 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g3Q3C5vRyz2ySV
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2026 21:49:27 +1000 (AEST)
+Received: by mail-wm1-x331.google.com with SMTP id 5b1f17b1804b1-488ab2db91aso130616905e9.3
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2026 04:49:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1777201283; x=1777806083; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1777204164; x=1777808964; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=nVCy+fRcM1H3k57gN4SHcc3eo5iNGuSvVrAbRBe/Co8=;
-        b=TJbOynEqaWXEcTHwxjTs+UdEWR0J2kJn769NbrCRe7U+OJqO9hbXuvjyfQDdrFsWnn
-         B49WKe7We8kPYI3nNIGHFjFE+ZSnHylE8Ayxta9NeEZdWKY5xXfMSPfHfRhbLqmcUfaC
-         bSJuXFiQR5k0Em/GqWQc5JDPIbzFosAob4RbEfj5kHzvYTiccQKCRwK6A/uVhm4yIVuu
-         WXvxGvErIaGbqfoED/7dGX+Af/XxOMiqYwI4/OXaWdr/e4PKd2MSRty0pdMkOp23XEw5
-         519EofLzKisqxqU7iglHf3Q7IKdEUq+VEGlcCs9V8OJxq3P82gNE/cmfpxm9QYTUKuXM
-         2k1Q==
+        bh=IywXIO5DH2wY+7oMRMtv2QIoyGhfedV6T5nXUSTMOdE=;
+        b=A2/TSrH4+AsNZ7cNKS1Lcvq/e09BksnNZ2vXKxqatiEcUufS7QqnJ0N5mL9xbJ5i6k
+         N4azEFFJjsJrKDW7gkZjS1tWReeu8tf9jnA+UdFLsJX/GCZggpz4GdRZc/ZmVGWqCwsn
+         GK68NHnAf8wkU1C7vFy45rRY/eGjplKZeiBUOkRKzqkikYvBldT3SvbDIWIP0DCYRogJ
+         cwPc2wzmTME63UTlpBtrqsv40vtlif8K+yv+C466ZMvxFCo1mmS3vvuLT9XT/gx7obCT
+         +ZqCzULfntkkc9IsiKjP0swftlP8wL37iOrBtjX5veREAZg2ff/sIQRJqrkxSZHWfvqk
+         zINw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777201283; x=1777806083;
+        d=1e100.net; s=20251104; t=1777204164; x=1777808964;
         h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=nVCy+fRcM1H3k57gN4SHcc3eo5iNGuSvVrAbRBe/Co8=;
-        b=KKwloxMxsyZvewTN1YZEecycQpi0/AB8BOTmHQxtkssSxIpjAfN0mtji1Y9a5r0160
-         GQj6KkHJrZFYfhna0AqTIwNwSO/CULD70sjOpwah92HQR4R9P9Y+uLvTrLnGM/B3r/wj
-         Bg+UPcL53dP+6sQTkMRQAh0pC3Yyrx/iMKow4VyDc2J0yAFdX0yTeu5hEQZQcnlXjvIc
-         C1G1sM5aDWa4qsmT1/03dKkiB7iv+Yc8CwJ1ssg7ytGiOPzpbp5zhzkP2k45PzhCVBgv
-         T7YSGQiV9AeZ5q9a6Jhm5ayjSKuwErpER7ASTVoxoWcdlBM3r6KXkJ2AP7LJo7I9GlsF
-         /9EQ==
-X-Forwarded-Encrypted: i=1; AFNElJ9LdrW1qziVCNJOpZotkHss2+AK2PdToKGFhvDmAjIGC3nczN4Li6QdgplEerc6wUg9NZ4YOLLf5T0u3rI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwifgFDilXo1lsOYx0T09ngyfA6qSO6X8QmBp5JAEmj7h05cXZv
-	GhAJcFgLiAj9CrkyHq8QaUSUe/2d3ZUz6MRUimzboBa9cLltcFfxt5lh
-X-Gm-Gg: AeBDietrIMY3qIQBmf+JWB8zTvrImeLU9okA9KCaZSJ9R5WrxHkQ2e2bBrZpIQXE9bZ
-	xkqR9LgTSZJ5SI2srz9HNz9P5qM1gMTb+B8hXi7R+CKlPJOUUbhE9K3rXvoJINDEiGxs5fmrldU
-	Qj9894nHBHLyO8vDEugLOxp0eqanEhSwGld+CHrZcA6L+k4zVUjxbenmjIoCidVw8Qt1mtwFaQX
-	WIUiDF60GFDGveKmDtr4NtPIepzx5VGwvRlqMUJII4yF9bBKvts14zks920XNbr2cKMepdRGrSP
-	b1obvTmbNfiLZLjVgMPBC5P/BAU+4tGTyjwCxmjWwit+jZjg+vI2b1LaS+eEuuLAOpvEUUeZdNo
-	mSBgFooVjE7y9Mw16yWKycX/z1oO4wY1v29tz7kIOwsBFkH8/S9/CP9D7d/EYfd5XbMK9Oer/vd
-	+UT0gArRlPgQYqwSXVIToiMIitHXhInjSB81oq9NOkyKX0JmaSn7s4cdv9nJb3qUvXDvcOXvP8W
-	54xiC2rUecC7tk=
-X-Received: by 2002:a17:903:1ac6:b0:2b2:5840:808e with SMTP id d9443c01a7336-2b5f9ee9487mr384368245ad.10.1777201282662;
-        Sun, 26 Apr 2026 04:01:22 -0700 (PDT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com.com ([106.51.164.157])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b5faa2f129sm256667235ad.29.2026.04.26.04.01.09
+        bh=IywXIO5DH2wY+7oMRMtv2QIoyGhfedV6T5nXUSTMOdE=;
+        b=JLoFn3Z43BjERIlme0s0n9lpdsN9SGgcHqt7/eY4LOkKcBci3czsaYfdxbhUs3tj/1
+         hvOpsVQ9r62Lc5jRlvQQNCjQLI1KaA457NesPjNRJcf+5iWL09h5GEd2IXE9wAfxypnK
+         Qyy8VrEKdJV78Hq6w7dcWHhWQ5wWa5baBUpzGq8AsSfRsr+bz6cHEsKNOB0ALWp2hnQH
+         GIhJm1Z7PmWoj+1Q2ETH6T1BqR8aSXrL0+IRwnJUa8LiNmMh1ptUgIS3lQtl3c0jSCoA
+         R4zIYaHcATn1SJxF2d/SjOTiM/gp0V3Q3+RQfevnBO98GkoReG8ASh5kzHgH1sFY93KS
+         50Eg==
+X-Forwarded-Encrypted: i=1; AFNElJ+QjUb4p+OIqmDmVDjz6QlEf+s5QVWnhOew4Uvh8smtw2wPAVcF8TC98oV2EE+bZlJzH5HiXi5rdp9J/oE=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyxNsb+OEELhIzGgWwvaKI3Q/Kfey/txax4kt+fhpQS3rmumi7B
+	9sWyNpn7Bw+h8CC2Na9cda0BhZU9K+UFWUAi5f9UTqXGJcsUKZBjWA+Z
+X-Gm-Gg: AeBDies6b3WkNAfTi2J9ifFvbL+6dCvFNQmbfjW1WAtKEjMOnP223vts6f4qu/Lusqw
+	OxIA2YnE/lULsAreSfB3BIzdmKSWnGPuHew2jmNGQT44rVvaEqlT4/jICXMLmtiSZ6V6mONy1PB
+	LtirKf2SP1+Rw23E1YW0zerL5ga6WQxBYg2uQTbbG+2KvC+Oy+zULpVr2Afz4AvPiw9fdOAhrB3
+	Ih7dGlSkmYgaV1UxRfkPB4Hz/a6yMISISViG8wT6KpA/pH9iUtEgGkUODcEmCvdNbRhwiKez17O
+	RKk5EAuBUFjtEimuFoHknmuNQxscdRgzEUZDCEPcRufU0gwlvRrlHub89KVLDcNo+YFrsaQMitA
+	LKLR2SEfDIbBBQSIu/onW2+Hp8+fNYWHjgm4gwHrLkGrKnw1M6lv2fcF6j3Euhq+HZg3eCasCVl
+	Gk1m8rjZyf6lNpCN5B6Cir5ti82xqb+xwb7ju+rOfztn0TNgtPRxohNaczBjrVik3F+lZcnPqQ/
+	AE=
+X-Received: by 2002:a05:600c:64c7:b0:488:a2ac:a334 with SMTP id 5b1f17b1804b1-488fb73aa3bmr565343015e9.3.1777204163630;
+        Sun, 26 Apr 2026 04:49:23 -0700 (PDT)
+Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-488fb754842sm222683295e9.8.2026.04.26.04.49.22
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 26 Apr 2026 04:01:22 -0700 (PDT)
-From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
-To: maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	peterz@infradead.org,
-	jpoimboe@kernel.org,
-	jbaron@akamai.com,
-	aliceryhl@google.com,
-	rostedt@goodmis.org,
-	ardb@kernel.org,
-	ojeda@kernel.org,
-	boqun@kernel.org,
-	gary@garyguo.net,
-	bjorn3_gh@protonmail.com,
-	lossin@kernel.org,
-	a.hindborg@kernel.org,
-	tmgross@umich.edu,
-	dakr@kernel.org,
-	nathan@kernel.org,
-	nick.desaulniers+lkml@gmail.com,
-	morbo@google.com,
-	justinstitt@google.com,
-	daniel.almeida@collabora.com,
-	fujita.tomonori@gmail.com,
-	viresh.kumar@linaro.org,
-	prafulrai522@gmail.com,
-	gregkh@linuxfoundation.org,
-	arnd@arndb.de,
-	tamird@kernel.org,
-	mark.rutland@arm.com,
-	mkchauras@gmail.com,
-	lyude@redhat.com,
-	lina+kernel@asahilina.net,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	rust-for-linux@vger.kernel.org,
-	llvm@lists.linux.dev
-Cc: Link Mauve <linkmauve@linkmauve.fr>,
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: [PATCH V15 7/7] powerpc: Enable Rust for ppc64le
-Date: Sun, 26 Apr 2026 16:29:32 +0530
-Message-ID: <20260426105932.2270364-8-mkchauras@gmail.com>
-X-Mailer: git-send-email 2.53.0
-In-Reply-To: <20260426105932.2270364-1-mkchauras@gmail.com>
-References: <20260426105932.2270364-1-mkchauras@gmail.com>
+        Sun, 26 Apr 2026 04:49:23 -0700 (PDT)
+Date: Sun, 26 Apr 2026 12:49:21 +0100
+From: David Laight <david.laight.linux@gmail.com>
+To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+ chleroy@kernel.org, peterz@infradead.org, jpoimboe@kernel.org,
+ jbaron@akamai.com, aliceryhl@google.com, rostedt@goodmis.org,
+ ardb@kernel.org, ojeda@kernel.org, boqun@kernel.org, gary@garyguo.net,
+ bjorn3_gh@protonmail.com, lossin@kernel.org, a.hindborg@kernel.org,
+ tmgross@umich.edu, dakr@kernel.org, nathan@kernel.org,
+ nick.desaulniers+lkml@gmail.com, morbo@google.com, justinstitt@google.com,
+ daniel.almeida@collabora.com, fujita.tomonori@gmail.com,
+ viresh.kumar@linaro.org, prafulrai522@gmail.com,
+ gregkh@linuxfoundation.org, arnd@arndb.de, tamird@kernel.org,
+ lyude@redhat.com, airlied@gmail.com, j@jannau.net,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ rust-for-linux@vger.kernel.org, llvm@lists.linux.dev, Link Mauve
+ <linkmauve@linkmauve.fr>
+Subject: Re: [PATCH V14 5/7] rust: Make __udivdi3() and __umoddi3() panic
+Message-ID: <20260426124921.28eb433f@pumpkin>
+In-Reply-To: <20260426085725.2090827-6-mkchauras@gmail.com>
+References: <20260426085725.2090827-1-mkchauras@gmail.com>
+	<20260426085725.2090827-6-mkchauras@gmail.com>
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -132,108 +109,66 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
 
-Enabling rust support for ppc64le.
+On Sun, 26 Apr 2026 14:27:23 +0530
+"Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com> wrote:
 
-Tested on pseries Power11:
-╰─❯ dmesg | grep rust
-[    0.225728] Initialise system trusted keyrings
-[    0.270961] rust_minimal: Rust minimal sample (init)
-[    0.270968] rust_minimal: Am I built-in? true
-[    0.270974] rust_minimal: test_parameter: 1
-[    0.270983] rust_misc_device: Initialising Rust Misc Device Sample
-[    0.271012] rust_print: Rust printing macros sample (init)
-[    0.271019] rust_print: Emergency message (level 0) without args
-[    0.271023] rust_print: Alert message (level 1) without args
-[    0.271026] rust_print: Critical message (level 2) without args
-[    0.271030] rust_print: Error message (level 3) without args
-[    0.271033] rust_print: Warning message (level 4) without args
-[    0.271037] rust_print: Notice message (level 5) without args
-[    0.271040] rust_print: Info message (level 6) without args
-[    0.271043] rust_print: A line that is continued without args
-[    0.271054] rust_print: Emergency message (level 0) with args
-[    0.271064] rust_print: Alert message (level 1) with args
-[    0.271072] rust_print: Critical message (level 2) with args
-[    0.271077] rust_print: Error message (level 3) with args
-[    0.271083] rust_print: Warning message (level 4) with args
-[    0.271091] rust_print: Notice message (level 5) with args
-[    0.271097] rust_print: Info message (level 6) with args
-[    0.271102] rust_print: A line that is continued with args
-[    0.271110] rust_print: 1
-[    0.271113] rust_print: "hello, world"
-[    0.271121] rust_print: [samples/rust/rust_print_main.rs:35:5] c = "hello, world"
-[    0.271129] rust_print: Arc<dyn Display> says 42
-[    0.271130] rust_print: Arc<dyn Display> says hello, world
-[    0.271136] rust_print: "hello, world"
-[    0.271198] usbcore: registered new interface driver rust_driver_usb
-[    0.271207] rust_faux_driver: Initialising Rust Faux Device Sample
-[    0.271227] faux_driver rust-faux-sample-device: Hello from faux device!
-[    0.271297] rust_configfs: Rust configfs sample (init)
+> From: Link Mauve <linkmauve@linkmauve.fr>
+>=20
+> The core crate currently depends on these two functions for i64/u64/
+> i128/u128/core::time::Duration formatting, but we shouldn=E2=80=99t use t=
+hat in
+> the kernel so let=E2=80=99s panic if they are ever called.
+>=20
+> This doesn=E2=80=99t yet fix drm_panic_qr.rs, which also uses __udivdi3 w=
+hen
+> CONFIG_CC_OPTIMIZE_FOR_SIZE=3Dy, but at least makes the rest of the kernel
+> build on PPC32.
 
-Reviewed-by: Link Mauve <linkmauve@linkmauve.fr>
-Tested-by: Link Mauve <linkmauve@linkmauve.fr>
-Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Link: https://github.com/Rust-for-Linux/linux/issues/105
-Link: https://github.com/linuxppc/issues/issues/451
-Acked-by: Gary Guo <gary@garyguo.net>
-Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
----
- arch/powerpc/Kconfig  | 1 +
- arch/powerpc/Makefile | 7 ++++++-
- rust/Makefile         | 6 ++++++
- 3 files changed, 13 insertions(+), 1 deletion(-)
+This needs resolving properly.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 4ac897b650d4..2e3065bce9cd 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -286,6 +286,7 @@ config PPC
- 	select HAVE_RELIABLE_STACKTRACE
- 	select HAVE_RSEQ
- 	select HAVE_RUST			if PPC32
-+	select HAVE_RUST			if PPC64 && CPU_LITTLE_ENDIAN
- 	select HAVE_SAMPLE_FTRACE_DIRECT	if HAVE_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
- 	select HAVE_SAMPLE_FTRACE_DIRECT_MULTI	if HAVE_DYNAMIC_FTRACE_WITH_DIRECT_CALLS
- 	select HAVE_SETUP_PER_CPU_AREA		if PPC64
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 589613eaa5dc..9385db478c59 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -61,7 +61,12 @@ else
- KBUILD_LDFLAGS_MODULE += $(objtree)/arch/powerpc/lib/crtsavres.o
- endif
- 
--KBUILD_RUSTFLAGS 	+= --target=powerpc-unknown-linux-gnu
-+ifdef CONFIG_PPC64
-+KBUILD_RUSTFLAGS	+= --target=powerpc64le-unknown-linux-gnu
-+KBUILD_RUSTFLAGS	+= -Ctarget-feature=-mma,-vsx,-hard-float,-altivec
-+else
-+KBUILD_RUSTFLAGS	+= --target=powerpc-unknown-linux-gnu
-+endif
- 
- ifdef CONFIG_CPU_LITTLE_ENDIAN
- KBUILD_CPPFLAGS	+= -mlittle-endian
-diff --git a/rust/Makefile b/rust/Makefile
-index 54096ce8a675..068b6fc3e0aa 100644
---- a/rust/Makefile
-+++ b/rust/Makefile
-@@ -408,7 +408,13 @@ BINDGEN_TARGET_x86	:= x86_64-linux-gnu
- BINDGEN_TARGET_arm64	:= aarch64-linux-gnu
- BINDGEN_TARGET_arm	:= arm-linux-gnueabi
- BINDGEN_TARGET_loongarch	:= loongarch64-linux-gnusf
-+
-+ifdef CONFIG_PPC64
-+BINDGEN_TARGET_powerpc	:= powerpc64le-linux-gnu
-+else
- BINDGEN_TARGET_powerpc	:= powerpc-linux-gnu
-+endif
-+
- BINDGEN_TARGET_um	:= $(BINDGEN_TARGET_$(SUBARCH))
- BINDGEN_TARGET		:= $(BINDGEN_TARGET_$(SRCARCH))
- 
--- 
-2.53.0
+>=20
+> Signed-off-by: Link Mauve <linkmauve@linkmauve.fr>
+> Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+> ---
+>  rust/Makefile             | 4 ++++
+>  rust/compiler_builtins.rs | 6 ++++++
+>  2 files changed, 10 insertions(+)
+>=20
+> diff --git a/rust/Makefile b/rust/Makefile
+> index f6369d121c50..9aa18cff2fae 100644
+> --- a/rust/Makefile
+> +++ b/rust/Makefile
+> @@ -615,6 +615,10 @@ ifneq ($(or $(CONFIG_ARM64),$(and $(CONFIG_RISCV),$(=
+CONFIG_64BIT))),)
+>  		__ashrti3 \
+>  		__ashlti3 __lshrti3
+>  endif
+> +ifdef CONFIG_PPC32
+> +	redirect-intrinsics +=3D \
+> +		__udivdi3 __umoddi3
+> +endif
+> =20
+>  ifdef CONFIG_MODVERSIONS
+>  cmd_gendwarfksyms =3D $(if $(skip_gendwarfksyms),, \
+> diff --git a/rust/compiler_builtins.rs b/rust/compiler_builtins.rs
+> index dd16c1dc899c..fc6b54636dd5 100644
+> --- a/rust/compiler_builtins.rs
+> +++ b/rust/compiler_builtins.rs
+> @@ -97,5 +97,11 @@ pub extern "C" fn $ident() {
+>      __aeabi_uldivmod,
+>  });
+> =20
+> +#[cfg(target_arch =3D "powerpc")]
+> +define_panicking_intrinsics!("`u64` division/modulo should not be used",=
+ {
+> +    __udivdi3,
+> +    __umoddi3,
+> +});
+> +
+>  // NOTE: if you are adding a new intrinsic here, you should also add it =
+to
+>  // `redirect-intrinsics` in `rust/Makefile`.
 
 
