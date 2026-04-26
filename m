@@ -1,77 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-20122-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20123-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E580FF885C
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2026 11:00:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 569FDFF885C
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2026 11:00:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g3NyD6v0Fz2y2B;
-	Sun, 26 Apr 2026 21:00:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777201204;
-	cv=none; b=aS++4d7yZQO6KNHZpFWK40Qq7tdpTsCPmuaeLASeahXEwT3sDTti327xcv/qTmO8PI4WPs/+YhdEGOBd40X6evcqFLuyNd5qAtm9dM39CGvMXlCVeABf59GdCFhfTT+sRdVco+LNpiSV2DtHfE0NkF7JTLXYZQmoNsO7Hrj8ZjEU/zauvo9Jb2ykA1v35AlJ52k3ba4q4eDcUvsD/9WOXOVYT9mUooLsO+WEJk8sxtqYb8W5nuvuEunBPKM9PpETaaoRTggNERQNC2QGYQk5dEkSC2MqCzEqp97B1/Dkxp45wN1EcjGhg16IpcorKLC2o24brCiQaxrMZsj4D/n4gg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g3NyW06jRz2yjm;
+	Sun, 26 Apr 2026 21:00:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777201218;
+	cv=none; b=JVrgl32H+PPp/o1cGYM49MRfi+RCrAriheb12zKQce8AHGgjEqUEcIVnBQRslUit1z8K1vEPbQXfG0Ui20tlxapNJT6ehuo2qAiVRahWZLkN0EwC4aLFnIzGca3LYasUiRXqMFCgwKh6G85PkU5F16Z8gDEUC+nKUhr3kV6CgAgTjoG0uC29GZhZh36cCxLz1O+Mh8EL0u27bmpgZTvFo49n5o7fiiNqHdBBcVoNntWbzp0MIev0hUaTgfNRXtHpMI5I2wUrBSuw9NNBNGGvZoPwFDhyE8XrVjUctXaIFOrBRAFpCVoeaMdOW33OaPpBfwK1oWLB5HbSsNGhcs7vkQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777201204; c=relaxed/relaxed;
-	bh=xY7w8LnDIE8HyaiKiCv1wqAMXYWCbDMiA1p0Co9KMuY=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=mMuUVsnSZWADiRTUbVbltZUi2mkKHbvh2VPBeV27HT7RySx4ErGdqFbHZ1/n0LGHh9G29Rl7S6GgUfgO+fN9aljlJnhH0Q+62xUt/nld6WRhfvbxG9DAHuJyo7TPhhc1EeYOO+/0uEAhEfvce9tEDDOzt0SftYG3+TcjsMrGqutLEXscFPrajNCC1mBEs3ad9Az5c6F263bIjw0w8v8KGVU9Tl2Bul+1XixSj9TXz+NzuZbVvOm4xMaFqcIJgwgW7755oQrYjBYlYciiQm1gVrP43Jql75HcbZGFCNeM+xeQhDOhGWLc6rdNkdT31h2txLH4GvdI+J/7hszvnSXDzQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=aBftWdoo; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62e; helo=mail-pl1-x62e.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1777201218; c=relaxed/relaxed;
+	bh=3XNHcqPiS87Phn06IpxO8T5jrJVeHx6CGab+nQaKnDs=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=NQh1RXCEpgKV7VrFXeuLR4MSnAL25j+1kV9Dgd7rklpbQIAEnSRGsu8mWQtIBWfUq+JlPEpEKHqYV9uu4NXV44mSAsEn+i7QDWpGWanmIX06GbaJxbXuRnZqE6sHg5A3UFl3EBZ4mgNmy5AU93wpKdsdQl0mgF/fAKlUDaDebnb8OP+qxOw6dBkl18/gJf43tQJhvvqkAIml0e8XOWBmCLUH9ePRXMYfFgq0jTVe775kbQ4KgD5XD00L/q2nA4Bq/xObv8ebk1fFqCwi2HyXPLdWTAfgqHfeOr0syKnay/RCuYktmo+1FW8ExFNonkYnIy/YBvwglvvneFZkYgdBaA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Zpk5sER5; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52f; helo=mail-pg1-x52f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=aBftWdoo;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Zpk5sER5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62e; helo=mail-pl1-x62e.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62e.google.com (mail-pl1-x62e.google.com [IPv6:2607:f8b0:4864:20::62e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52f; helo=mail-pg1-x52f.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x52f.google.com (mail-pg1-x52f.google.com [IPv6:2607:f8b0:4864:20::52f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g3NyD0KXVz2xfX
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2026 21:00:03 +1000 (AEST)
-Received: by mail-pl1-x62e.google.com with SMTP id d9443c01a7336-2b7adb38d65so31233255ad.2
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2026 04:00:03 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g3NyV2Kw9z2ygY
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2026 21:00:18 +1000 (AEST)
+Received: by mail-pg1-x52f.google.com with SMTP id 41be03b00d2f7-c797d5ad36bso2977224a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2026 04:00:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1777201202; x=1777806002; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1777201216; x=1777806016; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:to:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=xY7w8LnDIE8HyaiKiCv1wqAMXYWCbDMiA1p0Co9KMuY=;
-        b=aBftWdooO7REh29WeblVRn2mof3vaDSkjc0KkoW+Pm0xd9r8lutNf6WA9tIag5uWna
-         HPKOVgDTw2FUYiMVQpRLANYSjCLl5CKFtQQIs8vxxFO4lLlSmrEDU08L50W94yJDk4ef
-         9KBc6vlznTfviYX8D5cYAYe8fa6PXOCzXogbM7ZT65kP4oH8g199j3oH+vmm5Z40bqKl
-         wnim+zQpmLKe4/UMPJAX3ZI8zN5QyOF9+0cES6csAXwEsQfXhXmhhTT3B8EcUZQsmYOy
-         q76OrT8yISdX0l69LoJtzkit5pwzp2DcigjFMU4dlUer/UuUUYVw6gWYqDIWyzR/SheI
-         qK2A==
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=3XNHcqPiS87Phn06IpxO8T5jrJVeHx6CGab+nQaKnDs=;
+        b=Zpk5sER5WLzL1UXC9TvxIRsmQ1E0/UeRWfx99ha7v0KvBeGZ4QFn8mXTwYPMTDH96L
+         PlRLd30l6uTekT7CVll06LQQEhzCMWt1e2j+up+XXHbwyAjcwVRpLVNF/6qWIJvyf786
+         o9JX8IWzbnuZtO71/42vfDXTC6c+G1OaR6GbNF36fHXnJGfbjKXHUUFtqvCbPZAjrKyA
+         AsIQsIzpJxPlRQr+gc05YutF11eErmIee+FSQWiNxv4DzmaAey52W4Lkmo9HRM+lDveB
+         pnNf/mLCr9p9l40wkHhEd8KvjjI62+sKAkt/ElNmX0Z3WGVdqIF6p17KpTKyAUYkZxTU
+         ebXw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777201202; x=1777806002;
+        d=1e100.net; s=20251104; t=1777201216; x=1777806016;
         h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:to:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=xY7w8LnDIE8HyaiKiCv1wqAMXYWCbDMiA1p0Co9KMuY=;
-        b=RT1Ckiq3CkmmqMDodiAF9AqGGjDpuDi7qGt/vVfKPsvUps8mRTnBHd0ANoqqpdUeSu
-         W1WOOvtlRKAseag7v0VBM5Sd+ddM1WI1libfC5OXlSH7LwJq2BBo/LMflznpYQJDFGFh
-         a08PhMl1l17Ymg9Vs5HwCSBNmXRc500JBpltAkicL7x1wAeEBum/eS1qxFhhyrnW5jLO
-         urd1cKRqWaikXgpzK4Uu0wOBXWDebM2boEicMt8+D68W0+AhlL5G/HrVkBzpP1fxn53e
-         xi4/ily6ZjJ5ndNM/vP8A3XdMohZnm54oANFBsgLitA5HKiaUydpg3vhy9MwVhimqo+R
-         gNDw==
-X-Forwarded-Encrypted: i=1; AFNElJ+QPnhMIciOVV3pXxqPv5vJZ9FYWqr38JJgAbmmHdkA2Ej20L8t8pd8SnnQwK9A3+uv8qRpbRwU7EX4G4A=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxSX7imEE1nl8HGtyecdp1C5LLoF6RwpgkWqtygI5NawB18Kx+5
-	p7c3ipLbYSCXBcx15GPy5CEk8SS4cPaDjOzjAl5ebzSA2YTgbPkaur/T
-X-Gm-Gg: AeBDieuwGiAcl7kTwO7319g8vaZ4LSCDn13pNeRdxn4BzO3LG2UE6KxIngTVDoB3x3c
-	iMI/9rJrXlxWJXYnB8QAlKrtYTbIgC0bjLYFYsESkfBPjFY1JG08PIRphz8cUm8ZMLr/d/V3ZOZ
-	FWITnBI6eOkRT/XckK6QIBm84iCoKRsc/C8SWeyfiKhkrOiNJ4srafIy50OiRFc9UqaQtVQJ1/s
-	zI88QgkMYl+fdYH2Zg5AP74PEH6orMVQQj32YT++PPcUosq+YZ+0DgOBjWcmSkE1Ujl69j4kKqs
-	QoT0LQBBzo8hVNRomQJG7RsoKAl4Y3Wx60e/crzM6oVipd5t22PEWH1V2GUhLy4SpzvMezNTDwS
-	BrIZrE5SyD4TXrJn6eDQewA3+PWOsYn7G1d7M8yPXRNwI5IOn0dwEVGt/UME62c2zMhpZxERrxm
-	kVauL9BmuAJkHVADGf+LvugSPQcr+OxcjhkmbEgq1seG+ha7I50mLyjQZyJRPCqFR5jCcq5v6Fq
-	EclW0MrRYUAJQI=
-X-Received: by 2002:a17:903:b06:b0:2b2:5491:e32b with SMTP id d9443c01a7336-2b5f9f2bd43mr403518485ad.23.1777201202017;
-        Sun, 26 Apr 2026 04:00:02 -0700 (PDT)
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=3XNHcqPiS87Phn06IpxO8T5jrJVeHx6CGab+nQaKnDs=;
+        b=d7CqGHS+iYFvPUECiNnissgzir65GBiOHpzAIWvsCOg8expe9eE+cWQ4VxwkdPsiH6
+         Os6/HHqyVqdWWhaHp6vu1hAWFrjYHx3KyjZfpGF7ZNDgWLKtaRI55jWIcScPRQzwMD0N
+         +ecuP1ihH0a9EY76Zq7iVUBKRuqaz2Z5SkZ4F+GtCc2lik22FBbxEC1TldIDlfY8jbIN
+         lS4IOds7jbYbbbz+GvOdoFqrymk1eem7hvkKxZtOqxxp8Y6U6pzatCLHa10bL6Km6wWI
+         L2YDjCGNN4ZCdHQTUgE17F5CkfWfrWAVEaW7+nw8ShVvMqP14twIN6lDHUGRyTTpoXCQ
+         Oang==
+X-Forwarded-Encrypted: i=1; AFNElJ8ZZWI2TFamATqhAKaXVoeQShWG1AGxUE0/l3cYaq0JuaHQwd07f9NPrq80LosYzvvbEzPBwODMJHHAKUY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzAVZ8ie89xiGvRhCElAv5cV+CWDi/3pHrPo0higIQ73jVpKmA+
+	q15lhlQEzCp0/vVfcnbtgo8v7n/8dryeIAa05sw0W6NabVQ4tqFe/SR/
+X-Gm-Gg: AeBDievSgNINYnBU90yxsueQ6eAEEtsgxEnzwoSFU13x5v1A3sidL8zJ2jlosaRI/2L
+	1Swfku7NvSmliKHf3dHxCPSdhRcs0/xl/oHBBuSY+reHQWPN5IBlRTXxo+9ZO2I1QMBl4i11n6S
+	5eIya63L/59CTsc6tykB3QBtM8WmgDrKCMIWHVR9ytHVb2aCI5+5WZ9MhN6m77w8T7LrczvFs+N
+	IG7xmEUJrZLNfuKrWJKvf4kdIH+fQ9NmtI0QfPnVj2uoHEQF2z1rxmp09OfPUiOG9MBBb6HEZ9B
+	LRoRkEFP9gdJdHwuvQL/Vv50INncq++su57C96vkh0be1PzHciD2oETnfMovRUrONW+Z/7hTGsU
+	5tMmacHqgqjeanohf/v6CT61sa5gnBsIgRYe8DcegJGqKjNZnX0JBXkZVwtB4gWXQpQ/n5tQYSK
+	Y9AppVPPFAk8m5rKtBTRyX+vT0iPyRzCkZwdEgNqWZPiwnKswZxvx4WKZPqfhlLHdDgMQxYyMoN
+	Q2HbTwrUPCIgAY=
+X-Received: by 2002:a17:903:2acc:b0:2b2:497e:3f6d with SMTP id d9443c01a7336-2b5f9e8cdb3mr378037025ad.8.1777201214089;
+        Sun, 26 Apr 2026 04:00:14 -0700 (PDT)
 Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com.com ([106.51.164.157])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b5faa2f129sm256667235ad.29.2026.04.26.03.59.49
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b5faa2f129sm256667235ad.29.2026.04.26.04.00.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 26 Apr 2026 04:00:01 -0700 (PDT)
+        Sun, 26 Apr 2026 04:00:13 -0700 (PDT)
 From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
 To: maddy@linux.ibm.com,
 	mpe@ellerman.id.au,
@@ -110,9 +110,10 @@ To: maddy@linux.ibm.com,
 	linux-kernel@vger.kernel.org,
 	rust-for-linux@vger.kernel.org,
 	llvm@lists.linux.dev
-Subject: [PATCH V15 1/7] rust: Fix "multiple candidates for rmeta dependency core" error
-Date: Sun, 26 Apr 2026 16:29:26 +0530
-Message-ID: <20260426105932.2270364-2-mkchauras@gmail.com>
+Cc: =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>
+Subject: [PATCH V15 2/7] dma-resv: Fix undefined symbol when CONFIG_DMA_SHARED_BUFFER is disabled
+Date: Sun, 26 Apr 2026 16:29:27 +0530
+Message-ID: <20260426105932.2270364-3-mkchauras@gmail.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260426105932.2270364-1-mkchauras@gmail.com>
 References: <20260426105932.2270364-1-mkchauras@gmail.com>
@@ -129,145 +130,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-When building Rust code for powerpc64le with LLVM=1 and -j1, rustc
-encounters an error: "multiple candidates for `rmeta` dependency `core`
-found", with two candidates:
-1. The host's standard library from the rustup toolchain
-2. The kernel's custom libcore.rmeta in the rust/ directory
+When building with LLVM=1 for architectures like powerpc where
+CONFIG_DMA_SHARED_BUFFER is not enabled, the build fails with:
 
-This occurs because the build system uses `-L$(objtree)/rust` for host
-library builds (proc_macro2, quote, syn), which causes rustc to search
-the rust/ directory. During this search, rustc finds both the kernel's
-custom libcore.rmeta and gains access to the host's standard library,
-creating a conflict.
+  ld.lld: error: undefined symbol: dma_resv_reset_max_fences
+  >>> referenced by helpers.c
+  >>>               rust/helpers/helpers.o:(rust_helper_dma_resv_unlock)
 
-The solution is to separate host libraries into a dedicated rust/host/
-subdirectory and use `-L$(objtree)/rust/host` for host builds instead
-of `-L$(objtree)/rust`. This ensures that:
+The issue occurs because:
+1. CONFIG_DEBUG_MUTEXES=y is enabled
+2. CONFIG_DMA_SHARED_BUFFER is not enabled
+3. dma_resv_reset_max_fences() is declared in the header when
+   CONFIG_DEBUG_MUTEXES is set
+4. But the function is only compiled in drivers/dma-buf/dma-resv.c,
+   which is only built when CONFIG_DMA_SHARED_BUFFER is enabled
+5. Rust helpers call dma_resv_unlock() which calls
+   dma_resv_reset_max_fences(), causing an undefined symbol
 
-1. Host library builds (proc_macro2, quote, syn) only search rust/host/
-   and never encounter the kernel's libcore.rmeta
-2. Proc macro builds use `-L$(objtree)/rust/host` to find their
-   dependencies
+Fix this by compiling `dma-resv.c` file only when CONFIG_DMA_SHARED_BUFFER
+is enabled.
 
-Special handling is added for rustdoc-pin_init, which is a host build
-(to access the alloc crate) but depends on proc macros from the main
-rust/ directory. It uses explicit `--extern` paths to reference the
-proc macros without adding `-L$(objtree)/rust`, which would reintroduce
-the conflict.
-
-The rust/host/ directory is added to clean-files to ensure it's removed
-during `make clean`.
-
-Link: https://github.com/Rust-for-Linux/linux/issues/105
-Link: https://github.com/linuxppc/issues/issues/451
+Fixes: 9b836641d3bf ("rust: helpers: Add bindings/wrappers for dma_resv_lock")
+Reviewed-by: Christian König <christian.koenig@amd.com>
 Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
 ---
- rust/Makefile | 38 +++++++++++++++++++++-----------------
- 1 file changed, 21 insertions(+), 17 deletions(-)
+ rust/helpers/helpers.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/rust/Makefile b/rust/Makefile
-index b361bfedfdf0..44ec1634714a 100644
---- a/rust/Makefile
-+++ b/rust/Makefile
-@@ -3,6 +3,9 @@
- # Where to place rustdoc generated documentation
- rustdoc_output := $(objtree)/Documentation/output/rust/rustdoc
- 
-+# Clean generated host directory
-+clean-files := host/
-+
- obj-$(CONFIG_RUST) += core.o compiler_builtins.o ffi.o
- always-$(CONFIG_RUST) += exports_core_generated.h
- 
-@@ -31,7 +34,7 @@ endif
- 
- obj-$(CONFIG_RUST) += exports.o
- 
--always-$(CONFIG_RUST) += libproc_macro2.rlib libquote.rlib libsyn.rlib
-+always-$(CONFIG_RUST) += host/libproc_macro2.rlib host/libquote.rlib host/libsyn.rlib
- 
- always-$(CONFIG_RUST_KERNEL_DOCTESTS) += doctests_kernel_generated.rs
- always-$(CONFIG_RUST_KERNEL_DOCTESTS) += doctests_kernel_generated_kunit.c
-@@ -146,7 +149,7 @@ quiet_cmd_rustdoc = RUSTDOC $(if $(rustdoc_host),H, ) $<
-       cmd_rustdoc = \
- 	OBJTREE=$(abspath $(objtree)) \
- 	$(RUSTDOC) $(filter-out $(skip_flags) --remap-path-scope=%,$(if $(rustdoc_host),$(rust_common_flags),$(rust_flags))) \
--		$(rustc_target_flags) -L$(objtree)/$(obj) \
-+		$(rustc_target_flags) -L$(objtree)/$(obj)$(if $(rustdoc_host),/host) \
- 		-Zunstable-options --generate-link-to-definition \
- 		--output $(rustdoc_output) \
- 		--crate-name $(subst rustdoc-,,$@) \
-@@ -231,6 +234,7 @@ rustdoc-pin_init_internal: $(src)/pin-init/internal/src/lib.rs \
- 
- rustdoc-pin_init: private rustdoc_host = yes
- rustdoc-pin_init: private rustc_target_flags = $(pin_init-flags) \
-+    --extern pin_init_internal=$(objtree)/$(obj)/$(libpin_init_internal_name) \
-     --extern alloc --cfg feature=\"alloc\"
- rustdoc-pin_init: $(src)/pin-init/src/lib.rs rustdoc-pin_init_internal \
-     rustdoc-macros FORCE
-@@ -520,23 +524,23 @@ quiet_cmd_rustc_procmacrolibrary = $(RUSTC_OR_CLIPPY_QUIET) PL $@
- 	$(if $(skip_clippy),$(RUSTC),$(RUSTC_OR_CLIPPY)) \
- 		$(filter-out $(skip_flags),$(rust_common_flags) $(rustc_target_flags)) \
- 		--emit=dep-info=$(depfile) --emit=link=$@ --crate-type rlib -O \
--		--out-dir $(objtree)/$(obj) -L$(objtree)/$(obj) \
-+		--out-dir $(objtree)/$(obj)/host -L$(objtree)/$(obj)/host \
- 		--crate-name $(patsubst lib%.rlib,%,$(notdir $@)) $<
- 
--$(obj)/libproc_macro2.rlib: private skip_clippy = 1
--$(obj)/libproc_macro2.rlib: private rustc_target_flags = $(proc_macro2-flags)
--$(obj)/libproc_macro2.rlib: $(src)/proc-macro2/lib.rs FORCE
-+$(obj)/host/libproc_macro2.rlib: private skip_clippy = 1
-+$(obj)/host/libproc_macro2.rlib: private rustc_target_flags = $(proc_macro2-flags)
-+$(obj)/host/libproc_macro2.rlib: $(src)/proc-macro2/lib.rs FORCE
- 	+$(call if_changed_dep,rustc_procmacrolibrary)
- 
--$(obj)/libquote.rlib: private skip_clippy = 1
--$(obj)/libquote.rlib: private skip_flags = $(quote-skip_flags)
--$(obj)/libquote.rlib: private rustc_target_flags = $(quote-flags)
--$(obj)/libquote.rlib: $(src)/quote/lib.rs $(obj)/libproc_macro2.rlib FORCE
-+$(obj)/host/libquote.rlib: private skip_clippy = 1
-+$(obj)/host/libquote.rlib: private skip_flags = $(quote-skip_flags)
-+$(obj)/host/libquote.rlib: private rustc_target_flags = $(quote-flags)
-+$(obj)/host/libquote.rlib: $(src)/quote/lib.rs $(obj)/host/libproc_macro2.rlib FORCE
- 	+$(call if_changed_dep,rustc_procmacrolibrary)
- 
--$(obj)/libsyn.rlib: private skip_clippy = 1
--$(obj)/libsyn.rlib: private rustc_target_flags = $(syn-flags)
--$(obj)/libsyn.rlib: $(src)/syn/lib.rs $(obj)/libquote.rlib FORCE
-+$(obj)/host/libsyn.rlib: private skip_clippy = 1
-+$(obj)/host/libsyn.rlib: private rustc_target_flags = $(syn-flags)
-+$(obj)/host/libsyn.rlib: $(src)/syn/lib.rs $(obj)/host/libquote.rlib FORCE
- 	+$(call if_changed_dep,rustc_procmacrolibrary)
- 
- quiet_cmd_rustc_procmacro = $(RUSTC_OR_CLIPPY_QUIET) P $@
-@@ -545,20 +549,20 @@ quiet_cmd_rustc_procmacro = $(RUSTC_OR_CLIPPY_QUIET) P $@
- 		-Clinker-flavor=gcc -Clinker=$(HOSTCC) \
- 		-Clink-args='$(call escsq,$(KBUILD_PROCMACROLDFLAGS))' \
- 		--emit=dep-info=$(depfile) --emit=link=$@ --extern proc_macro \
--		--crate-type proc-macro -L$(objtree)/$(obj) \
-+		--crate-type proc-macro -L$(objtree)/$(obj)/host \
- 		--crate-name $(patsubst lib%.$(libmacros_extension),%,$(notdir $@)) \
- 		@$(objtree)/include/generated/rustc_cfg $<
- 
- # Procedural macros can only be used with the `rustc` that compiled it.
- $(obj)/$(libmacros_name): private rustc_target_flags = \
-     --extern proc_macro2 --extern quote --extern syn
--$(obj)/$(libmacros_name): $(src)/macros/lib.rs $(obj)/libproc_macro2.rlib \
--    $(obj)/libquote.rlib $(obj)/libsyn.rlib FORCE
-+$(obj)/$(libmacros_name): $(src)/macros/lib.rs $(obj)/host/libproc_macro2.rlib \
-+    $(obj)/host/libquote.rlib $(obj)/host/libsyn.rlib FORCE
- 	+$(call if_changed_dep,rustc_procmacro)
- 
- $(obj)/$(libpin_init_internal_name): private rustc_target_flags = $(pin_init_internal-flags)
- $(obj)/$(libpin_init_internal_name): $(src)/pin-init/internal/src/lib.rs \
--    $(obj)/libproc_macro2.rlib $(obj)/libquote.rlib $(obj)/libsyn.rlib FORCE
-+    $(obj)/host/libproc_macro2.rlib $(obj)/host/libquote.rlib $(obj)/host/libsyn.rlib FORCE
- 	+$(call if_changed_dep,rustc_procmacro)
- 
- # `rustc` requires `-Zunstable-options` to use custom target specifications
+diff --git a/rust/helpers/helpers.c b/rust/helpers/helpers.c
+index 625921e27dfb..09ee5cac600d 100644
+--- a/rust/helpers/helpers.c
++++ b/rust/helpers/helpers.c
+@@ -57,7 +57,9 @@
+ #include "cred.c"
+ #include "device.c"
+ #include "dma.c"
++#ifdef CONFIG_DMA_SHARED_BUFFER
+ #include "dma-resv.c"
++#endif
+ #include "drm.c"
+ #include "err.c"
+ #include "irq.c"
 -- 
 2.53.0
 
