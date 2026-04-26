@@ -1,57 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-20100-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20101-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2DB41FF885C
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Apr 2026 10:17:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0EAFFF8867
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Apr 2026 04:30:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g2m2y2Ft0z2ynZ;
-	Sat, 25 Apr 2026 20:16:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=78.133.224.34
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777112218;
-	cv=none; b=A8BF1s1n2pfPMH2zOM4q6gvh1YRehDqu1z2RxEVC+WYdXNhGhEk/5WG+VyudZZJQmXIn5XQHAPo8hwsgPYGPT3wfuzqcwOZgZbdIxCd26Vn/nCg0VN+4ZNqlwogNtlRwl/EOZAyPygBD7Q2atsudhidqkDJDOkvFDDRsoLIi/gryssltTZCJci87msZOlSzc+ZnmmRnC7EEwXyGoUJKokcN8y/WM3QLyngA5ETgeXupTPjMYtGli1W7SJloz1KoHjbqk2VkVSB32mhw7a/gVfb4HP6ETy44re25BX56LHYOrLPC3VQVHkC+gSIxYB5+EMBdwEWVS/gB2RH/nFiLnpA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g3DJl2qFCz2yhP;
+	Sun, 26 Apr 2026 14:30:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777177831;
+	cv=none; b=bsHF++G0RF+I3WL/Al3jqJF/ZW8opdUCYfrn8QHn7uUHxkT2MZQ0BqyzJ0PPzgJ3hVQfYF766+R8ZbQxlyMVxfcY6hmu5WICSFE21tviPfxJ5eJdPoPaqjqf8Yx+i/WUf56Y/cv4VmzpSXXj8n8mrYSgFkS9pOBqLLifypp6Zn7LF1+Bje/5HqmPm115ZboDWHBImAcr8LqkJFgrsvWstor2aok5edFH01abFdhlV7a/fQdsInZ8DsQCgT2ima09oo+pXI6kb1ZsEjloePEtkhtovVJ8CBKko1GLmpqo2nL1aTaGdOAgy0A+dsyY/avFR5DR2H/zDYc7S/ynT2evtg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777112218; c=relaxed/relaxed;
-	bh=ay27/xgbcRteRj2szFYkH2f2Qgi8oI435FfF5sau420=;
-	h=Date:From:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=c5yA7ie85DK0OzpaskyoHMK2xKMPzZG7UOnwBQ8F2IVp5X6ny1P7ntK1C74f8RIOkLh16yDZfsj4ELufS3dXsXGb5lyhkoX+w1z50CiCWnID4zNCJSU9nXMbW44m7HdkUGeAHQkRAD8jb9OvE46PwUPc3bRqD23HVUZP7bN8o8oTxi4Q09UEN5b1POwb8vdbFgirj9laa64UA0bDj7iT8TNxmdhuNbkk4WGyKZHhJHZmNB1Dn9Sl4vcOhljYGnV4iuDOEFBaTkVn9MWdC/3ZkWrHRQKIhSJHd4ygBRb9+8duInO4+g0URFR5RX99d5bs3bqDr3LscfH9e+2l8GKmBw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=orcam.me.uk; spf=none (client-ip=78.133.224.34; helo=angie.orcam.me.uk; envelope-from=macro@orcam.me.uk; receiver=lists.ozlabs.org) smtp.mailfrom=orcam.me.uk
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=orcam.me.uk
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=orcam.me.uk (client-ip=78.133.224.34; helo=angie.orcam.me.uk; envelope-from=macro@orcam.me.uk; receiver=lists.ozlabs.org)
-Received: from angie.orcam.me.uk (angie.orcam.me.uk [78.133.224.34])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g2m2x0BBGz2ydj
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Apr 2026 20:16:55 +1000 (AEST)
-Received: by angie.orcam.me.uk (Postfix, from userid 500)
-	id 1C9A99200B3; Sat, 25 Apr 2026 12:16:50 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by angie.orcam.me.uk (Postfix) with ESMTP id 17A9992009D;
-	Sat, 25 Apr 2026 11:16:50 +0100 (BST)
-Date: Sat, 25 Apr 2026 11:16:50 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@orcam.me.uk>
-To: Jakub Kicinski <kuba@kernel.org>
-cc: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org, 
-    edumazet@google.com, pabeni@redhat.com, andrew+netdev@lunn.ch, 
-    horms@kernel.org, corbet@lwn.net, skhan@linuxfoundation.org, 
-    linux@armlinux.org.uk, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
-    maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, 
-    chleroy@kernel.org, 3chas3@gmail.com, razor@blackwall.org, 
-    idosch@nvidia.com, jani.nikula@intel.com, mchehab+huawei@kernel.org, 
-    tytso@mit.edu, herbert@gondor.apana.org.au, 
-    Geert Uytterhoeven <geert@linux-m68k.org>, ebiggers@kernel.org, 
-    johannes.berg@intel.com, jonathan.cameron@huawei.com, kees@kernel.org, 
-    kuniyu@google.com, fourier.thomas@gmail.com, andriy.shevchenko@intel.com, 
-    rdunlap@infradead.org, Andrew Morton <akpm@linux-foundation.org>, 
-    linux-doc@vger.kernel.org, linux-mips@vger.kernel.org, 
-    linuxppc-dev@lists.ozlabs.org, bridge@lists.linux.dev, 
-    David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH net-deletions v2] net: remove unused ATM protocols and
- legacy ATM device drivers
-In-Reply-To: <20260422041846.2035118-1-kuba@kernel.org>
-Message-ID: <alpine.DEB.2.21.2604251104030.28583@angie.orcam.me.uk>
-References: <20260422041846.2035118-1-kuba@kernel.org>
-User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
+	t=1777177831; c=relaxed/relaxed;
+	bh=UbpnkkD17mjRaoD/hBY4G1yToQSHbb1q74evgOmCHtc=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=DfeL8T/sDRo/Si4xFcZ20j/rFdlTyfCKeNfcP/hrDRbUJ+p/0CNlJmyja+UV8hU3zR6bx/45uIegbD1UCfjri3z046AEG7hXRUDngSn+lq1cB4uCTLdhjQEUud81kZWJhQ5QIDNWkvE8MxZU9mkvjgMVvHM6KU89K5XhkkB+Nec4lHKOwIjw/V5QKPo64u5m+pwiVb0EDPywW52WfDc1s/8C82E/KkWs5WoZVNtq1812HKs15PQvAPU9DI2EXt2Hts7N8Szg+Gvh8NMKLylSXHr0DG6v83TyAlejKeRN22EY6Fm0opdo+32LenYc5KtvLOuIEPo2P5X9nICy4gTDFw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=F6nXxNSl; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=F6nXxNSl;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g3DJj486vz2y8F
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Apr 2026 14:30:28 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63Q3GNnc914057;
+	Sun, 26 Apr 2026 04:30:24 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=UbpnkkD17mjRaoD/hBY4G1yToQSHbb1q74evgOmCH
+	tc=; b=F6nXxNSlkl/OXVDMjOMjQS4lXCb9s3+febEB3V7NL9J5c07lXoxbVzCu+
+	3rmsC/tR7XiRkaI5l0hDDAH+9Lex56rFMi/zx5giSmxTdDmJrwFF8wxahDLsyMP1
+	fKdbOGGfYtrLKFxxZdPMcq2TxhfMr2nwb3Irbpjj5dK81FSDol4UA8xVt5+gm422
+	LHUi2yfjxXV05yWZaNdhAlhsSlMJl8RL5lf4C5peQ2acvl7lwzVH/sBjuaI4p3Mr
+	Rkzhi3qFNquS3PMczeNMKVitdmSJyD+IJAcwlN4lqJbNOKvgyAA085O4hMOBldzu
+	lJP7n6Bg6qBPF0PYErZZsfuxuApYw==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4drn44bfd8-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 26 Apr 2026 04:30:23 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 63Q4NkY1024125;
+	Sun, 26 Apr 2026 04:30:22 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ds9eh0a4u-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 26 Apr 2026 04:30:22 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63Q4UIxX51904986
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sun, 26 Apr 2026 04:30:18 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 863B72004B;
+	Sun, 26 Apr 2026 04:30:18 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7A12D20040;
+	Sun, 26 Apr 2026 04:30:13 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.124.219.109])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Sun, 26 Apr 2026 04:30:13 +0000 (GMT)
+From: Athira Rajeev <atrajeev@linux.ibm.com>
+To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
+        mpetlan@redhat.com, tmricht@linux.ibm.com, maddy@linux.ibm.com,
+        irogers@google.com, namhyung@kernel.org
+Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        atrajeev@linux.ibm.com, hbathini@linux.vnet.ibm.com,
+        Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com
+Subject: [PATCH V2] tools/perf: Fix the check for parameterized field in event term
+Date: Sun, 26 Apr 2026 10:00:06 +0530
+Message-Id: <20260426043006.48113-1-atrajeev@linux.ibm.com>
+X-Mailer: git-send-email 2.39.5 (Apple Git-154)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,35 +88,119 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: qXGTHI65qyGxKZWnTTR4wM6lfjFZt84Z
+X-Authority-Analysis: v=2.4 cv=Ft81OWrq c=1 sm=1 tr=0 ts=69ed94e0 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=KlCRr-_lrQmZq1rU:21 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8
+ a=MfJl6_LkDses9f4lsXYA:9
+X-Proofpoint-GUID: Mkut2OD8pt8J4TwjODCmICOj1IDEMz7y
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI2MDA0MSBTYWx0ZWRfX5LwI0sjURNYf
+ iBO8r66/cfwkG09UmCxmG5mbXEOohGNXO05oLiOiy9C8KEI6a7nEbCzUHfiKh/KePcjHnRlI05r
+ 7eA0frEaTZl+OYCj7wQGwen7B7p44ZUzRAxsE717Z3K4pOnEMlUqSjSOSKDffnWqGmChzxqtx1r
+ 1abRkY1FbQY62+HvtnT2RVV5Lsr2OgsAXFKc/kZlgnAl33Kx7LAosNNSb6w3AL4X6OccGlHA/rb
+ YdG0S1wl6Myaws8GhaffMbDM8gTPFYT1t+vT4XqtWIl8QVQQ3O80mQUZhlhT7K3sh6KlkYQE0GG
+ jnGrvQ65h4FfJrrUZiN0sk0QlL1j7pBAcueaFpWCVUWsabeDKX9tfrvwk5Hoj1eGgBd8Uw/6XJk
+ dx0OlYz6Dk9RmwdqwfftOiy+OJ/djNZx/3itbt6tRcxFbJ3DsjZkUc4W4t8euKyVeUczPcsEMYx
+ 4RK24GljN0oB6Y4ExRg==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-26_02,2026-04-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 lowpriorityscore=0 bulkscore=0 spamscore=0 impostorscore=0
+ clxscore=1015 malwarescore=0 phishscore=0 suspectscore=0 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2604260041
 
-On Tue, 21 Apr 2026, Jakub Kicinski wrote:
+The format_alias() function in util/pmu.c has a check to
+detect whether the event has parameterized field ( =? ).
+The string alias->terms contains the event and if the event
+has user configurable parameter, there will be presence of
+sub string "=?" in the alias->terms.
 
-> Removed PCI/SBUS ATM device drivers (drivers/atm/):
->  - adummy, atmtcp - software/testing ATM devices
->  - eni - Efficient Networks ENI155P (OC-3, ~1995)
+Snippet of code:
 
- I have one of those though sadly it broke a couple years back and doesn't 
-work anymore.
+ /* Paramemterized events have the parameters shown. */
+       if (strstr(alias->terms, "=?")) {
+               /* No parameters. */
+               snprintf(buf, len, "%.*s/%s/", (int)pmu_name_len, pmu->name, alias->name);
 
->  - fore200e - FORE Systems 200E PCI/SBUS (OC-3, ~1999)
->  - he - ForeRunner HE (OC-3/OC-12, ~2000)
->  - idt77105 - IDT 77105 25 Mbps ATM PHY
->  - idt77252 - IDT 77252 NICStAR II (OC-3, ~2000)
->  - iphase - Interphase ATM PCI (OC-3/DS3/E3)
->  - lanai - Efficient Networks Speedstream 3010
->  - nicstar - IDT 77201 NICStAR (155/25 Mbps, ~1999)
+if "strstr" contains the substring, it returns a pointer
+and hence enters the above check which is not the expected
+check. And hence "perf list" doesn't have the parameterized
+fields in the result.
 
- And I have a number of these, both 77201 and 77211 variants, scattered 
-across several systems of various architectures in my lab.
+Fix this check to use:
 
->  - solos-pci - Traverse Technologies ADSL2+ PCI
->  - suni - PMC S/UNI SONET PHY library
+if (str_ends_with(alias->terms, "=?")) {
 
- Plus a bunch of TURBOchannel ATM interfaces, a couple of LightStream ATM 
-switches and some Ethernet switches with LANE ports.  Never found time to 
-get this all set up, so I guess I can't complain really to see this stuff 
-go.  Still sad to see the continuous trend to strip Linux of features. :(
+With this change, perf list shows the events correctly with
+the strings showing parameters.
 
-  Maciej
+Other changes in this patch:
+- Replace snprintf with scnprintf in buffer offset calculations to
+ensure the 'used' count will not exceed the "len"
+- If a parameterized event uses a built-in perf keyword for its
+parameter name (eg, config=?), the lexer parses it as a predefined
+term token, which sets term->config to NULL. Add check to use
+parse_events__term_type_str() if term->config is NULL
+
+Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
+---
+Changelog:
+v1 -> v2:
+After review from Sashiko, added below changes:
+Replace snprintf with scnprintf in buffer offset calculations to
+ensure the 'used' count will not exceed the "len"
+- If a parameterized event uses a built-in perf keyword for its
+parameter name (eg, config=?), the lexer parses it as a predefined
+term token, which sets term->config to NULL. Add check to use
+parse_events__term_type_str() if term->config is NULL
+
+ tools/perf/util/pmu.c | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/tools/perf/util/pmu.c b/tools/perf/util/pmu.c
+index 23337d2fa281..fad7ef4c8e5d 100644
+--- a/tools/perf/util/pmu.c
++++ b/tools/perf/util/pmu.c
+@@ -2117,7 +2117,7 @@ static char *format_alias(char *buf, int len, const struct perf_pmu *pmu,
+ 						   skip_duplicate_pmus);
+ 
+ 	/* Paramemterized events have the parameters shown. */
+-	if (strstr(alias->terms, "=?")) {
++	if (!strstr(alias->terms, "=?")) {
+ 		/* No parameters. */
+ 		snprintf(buf, len, "%.*s/%s/", (int)pmu_name_len, pmu->name, alias->name);
+ 		return buf;
+@@ -2129,15 +2129,19 @@ static char *format_alias(char *buf, int len, const struct perf_pmu *pmu,
+ 		pr_err("Failure to parse '%s' terms '%s': %d\n",
+ 			alias->name, alias->terms, ret);
+ 		parse_events_terms__exit(&terms);
+-		snprintf(buf, len, "%.*s/%s/", (int)pmu_name_len, pmu->name, alias->name);
++		scnprintf(buf, len, "%.*s/%s/", (int)pmu_name_len, pmu->name, alias->name);
+ 		return buf;
+ 	}
+-	used = snprintf(buf, len, "%.*s/%s", (int)pmu_name_len, pmu->name, alias->name);
++	used = scnprintf(buf, len, "%.*s/%s", (int)pmu_name_len, pmu->name, alias->name);
+ 
+ 	list_for_each_entry(term, &terms.terms, list) {
++		const char *name = term->config;
++
++		if (!name)
++			name = parse_events__term_type_str(term->type_term);
+ 		if (term->type_val == PARSE_EVENTS__TERM_TYPE_STR)
+-			used += snprintf(buf + used, sub_non_neg(len, used),
+-					",%s=%s", term->config,
++			used += scnprintf(buf + used, sub_non_neg(len, used),
++					",%s=%s", name,
+ 					term->val.str);
+ 	}
+ 	parse_events_terms__exit(&terms);
+-- 
+2.47.3
+
 
