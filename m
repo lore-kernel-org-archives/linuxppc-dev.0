@@ -1,71 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-20153-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20154-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9277FFF885E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2026 10:02:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CA37FF8861
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2026 10:18:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g3zdh27Vcz2xcD;
-	Mon, 27 Apr 2026 20:02:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777284168;
-	cv=none; b=YHsO7dBXL/e2JQr3Hun7qkoSbJYKzJ2CBj/HJYafTwopKuI3d6MfrfCqsFr8hd0a6nXfWNYJLSbu1kP8E322NsJ5a2Cck09cFikCyAWMfz/fsCg7KGc3cDyaaqy4v70Aa59QuYZ//SpxK81uDrKOxuLFbniBHdA7NV9fB/X00V/dpSe7R+9CIgOdK5a7ZWlrz56mlO+D+yh0iVphju9XYuctH8HVLamWzPTNQhnRe4X1q/EbCZvl1Bv09Rwrx89Nk8NJ21ni1qgt28alV6s6LEUkMCnhvlpoxWkx+ww0NbvZvC+yDthvEzBKLGew4v80vWK5U4c020kZC7HgW8ukYg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g3zzS2SJlz2y2B;
+	Mon, 27 Apr 2026 20:18:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777285092;
+	cv=none; b=lGSshymMY1I0AGq/q7ERSC8OURL7uQNFL05wvXLiEGL85tGg45ZafXeg2rj/LBHACUKBQhQIX3EIkc3Ri1yZmBcsnojfHKNqH24lAIQK2FJ5SKKg1kAFmpodIf368NVGeOsqc/lMRQ8lAAvTcvOifS0Q6gZPbes10n5qCF/gx/W460zFgJE7fVXK0KcS/uS/IfKwbOMeHNSTZlqYJSXJ8qWYOZQ2TCFZvMoIpVZ3ZN1Pdp8BowCMhbOBkUkqEtDRogyQ49wd+MnqWHedayJGyL4mwrPeHNxrS/4xYfowBa1k/loC/0J/ikaIhyMoDfpDXivuYEvdRpbFw7pB2awCrg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777284168; c=relaxed/relaxed;
-	bh=Znih/pJeOJMi8TAnvU9tkRa6JIl4Kdte8FUXQ8cFhuE=;
-	h=Message-ID:Date:MIME-Version:From:To:Cc:Subject:Content-Type; b=d9g0Pzx5RTErWoLHIHafjQKK0FmTykrEUTGC4LpQ9YOxv5m+Oft+b4BFywMoU9yyZkKLG/dvutrjy/4OoGbehP8Xhz6lBQdJ3XYl3c1IOfpvYs7FwTk5ubw3oUMzguichrl7FhIt1oCe7paE00HABuHE4WYAJoah4Q6tzFjlVnZpm2zw0jHelcmsC7nx3aF1ZfZcnt+I+PHe8Vivuyx0BU2QnZet/jNkFm6dYvf/Rv7FEoLvhNu6I1rv3FOHKTtqGHtohgYLnt7UE78dCrNziSqHzWW1RtllSFec4H0FEKayKqybb4f4OVKESsy/3AFfOAjVjQhStF24PbTqOYktjA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nMBTnbEn; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=samir@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1777285092; c=relaxed/relaxed;
+	bh=wKk2ll1D3ZJ6s4IP6sE45BcGF90ItdkcTm+IkNnd13k=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=mRuAqjLtX6cFYV7w+yK0rlqputpWsXCHMLEFdWsJmTA/1Nyt0yr2DXSXz385Sv8+nwwgClfQ/ua7SuWkVJIICRUfeft2bTdJkb6ICzXX0L43pvntDhyDlCragVWyKvq1trXEeHa5GiJB8/50jy4rNORA2idcEJ7fTqE+wm24SQvnuSs36HxId+7cpVN8qGTx9mEGA2rqu2WXdMcUoVo4j9jfbqy8arzQYmP8u0wmk3o2zsRC/2MWxBhloWM73yM+hzz/7aQPGaK0vBQsYOwwcAbr+dzcS3L29peqpD+WZQqS0CGk8WN4hz6BYSwM6XldbBF+lwdw7My0Ct2PkrG+gA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QM1aJHxz; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nMBTnbEn;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QM1aJHxz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=samir@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g3zdg2pwBz2xb3
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2026 20:02:46 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63QLjOUD2819432;
-	Mon, 27 Apr 2026 10:02:42 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=pp1; bh=Znih/pJeOJMi8TAnvU9tkRa6JIl4
-	Kdte8FUXQ8cFhuE=; b=nMBTnbEnuw3zjSXKfF6PRTx5/4iHacMVBtJpi5rXph1C
-	lVKWebdZXPJZfRUr+QluVYIsmLEXh2ZmYL+R878YoajciytK84S7zvi81Cm5wEeO
-	HtQC/O+1VISCfEkwjsyTSUcoYtQW2OwfJp8Epp5mjOUxKq5SFpsdk9/Ho+jOZmlp
-	UikHyiFC1RpM/t2EcRuULN26h6wdt0ZBgV8y9QXBUuXmgx6g9Ane0lE5G3kkb1jK
-	CYPAqIAZ/krbj1mjy+kysAht5Yip+f9lons5mQGEz9NcSDKIH+tTTCBUbdaDgbtO
-	ZPTGXAd3YXWzxOfRxkqH60Ip5vRei6X90vUREbbHPg==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4drn9qyrd7-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 27 Apr 2026 10:02:42 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 63R9rnuo011538;
-	Mon, 27 Apr 2026 10:02:41 GMT
-Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ds9eh4jar-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 27 Apr 2026 10:02:40 +0000 (GMT)
-Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
-	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63RA2e7n25821850
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 27 Apr 2026 10:02:40 GMT
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E862658054;
-	Mon, 27 Apr 2026 10:02:39 +0000 (GMT)
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 55F6E5805C;
-	Mon, 27 Apr 2026 10:02:37 +0000 (GMT)
-Received: from [9.123.0.247] (unknown [9.123.0.247])
-	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 27 Apr 2026 10:02:37 +0000 (GMT)
-Message-ID: <97a7d011-d573-4754-9e5d-68b562c64089@linux.ibm.com>
-Date: Mon, 27 Apr 2026 15:32:35 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g3zzR0Czwz2xcD
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2026 20:18:10 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id E0C63441E7;
+	Mon, 27 Apr 2026 10:18:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4A365C19425;
+	Mon, 27 Apr 2026 10:18:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1777285087;
+	bh=vA1+mJeHSLbEw9npbrF1VPrAm7bpS8jJonX0Sr709CA=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=QM1aJHxz3I2TspVV/exFtiRcUTjqKti6h/o6CHk6fa7ZyK8bGGqvct7rd2MsGDN+F
+	 EP9LaRlTpYVPKw4D9ygb1icNmMC7arKZVGGR9rdESvLqByR0hDMB8aW6AQhRK5LFvJ
+	 5PbZJago1asJ5kOUOiwYO+W8BqXlAh16tNBBZrzgwsmvgbV1OlGHJKP48xdzQHzfpE
+	 45v4uAVV22E6fZuwbiNXUEnWFHFXv3fLPiax9M9lZaz8Fq9q8+trTOtMAfFAm3x+Sc
+	 C98xM1Gt5JUyS+4wSUKjC4GPR0pRv8tC9FtRNpo/G3E8wAE215HYzzwdmchHG5pYua
+	 IoI6GLfMAhrmA==
+Message-ID: <09298afa-9a36-4f29-a8e1-d4750c338df2@kernel.org>
+Date: Mon, 27 Apr 2026 12:17:59 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,147 +60,130 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v7 4/6] mm/sparse-vmemmap: Fix DAX vmemmap accounting with
+ optimization
+To: Muchun Song <songmuchun@bytedance.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Lorenzo Stoakes <ljs@kernel.org>,
+ "Liam R . Howlett" <Liam.Howlett@oracle.com>,
+ Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>,
+ aneesh.kumar@linux.ibm.com, joao.m.martins@oracle.com, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ stable@vger.kernel.org
+References: <20260426092640.375967-1-songmuchun@bytedance.com>
+ <20260426092640.375967-5-songmuchun@bytedance.com>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
-From: Samir M <samir@linux.ibm.com>
-To: "Paul E . McKenney" <paulmck@kernel.org>
-Cc: Boqun Feng <boqun.feng@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-        Tejun Heo <tj@kernel.org>, RCU <rcu@vger.kernel.org>,
-        linuxppc-dev@lists.ozlabs.org, Shrikanth Hegde <sshegde@linux.ibm.com>
-Subject: [mainline][BUG] Observed Workqueue lockups on offline CPUs.
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: kfY6-BHPr3iX7WqKtuE3bxPj1S_bGaaT
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI3MDEwNCBTYWx0ZWRfXyXMO7hDysoE5
- waVy5FmzEGg7FWtav++P/4k0TCYd/XwrLpORS5Z7SOBI/F5Z2zS7ISfokRCsOD94/3or0WHUe/e
- m5sfAIejdAgI6sZSFAehzmXBxt8cbnGLz54Hl/Cr/XYfyq4X+xtCGE/mLDIXxHdJ3WmwN0Q+tQ+
- FNvCAutH1YfPtHz+uRxxsnQXpw13UTnL0ndIa3EY5J7+DKmz2B3YGL5ZmfMoRcG1RjCFIQk7+9p
- SMKYsNXiQaha2tvP+k0c/uLt5joXIQuS5Knq3ikg6isYaxxuZtTKAb/xI6cUxq4MYU9ci/ZzlOQ
- 8e4zL0psS0kZgXzgItVOhvmnS9uTjGXTxRWzFxmnVEO3HfMxjGrSS762p39eWi3IASUdg/2k8HW
- MbHoyRI+qlTltQUYnUiOJhMMn83cikp+jQRSsp/dAZvOr+0ZlziAcv3K6H3y88BxTqzuQj52MDY
- zqS3ZpKtix6Rxo8eZZg==
-X-Authority-Analysis: v=2.4 cv=Kc7idwYD c=1 sm=1 tr=0 ts=69ef3442 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=zxL4xWjsNMRmpE90RzwA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: 0v7www1rMIWq9_xkwRN5gMHCmV8llu_L
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-27_02,2026-04-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1011 phishscore=0 bulkscore=0 adultscore=0 spamscore=0
- malwarescore=0 impostorscore=0 priorityscore=1501 lowpriorityscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
- definitions=main-2604270104
+Autocrypt: addr=david@kernel.org; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <20260426092640.375967-5-songmuchun@bytedance.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Hi Paul,
+On 4/26/26 11:26, Muchun Song wrote:
+> When vmemmap optimization is enabled for DAX, the nr_memmap_pages
+> counter in /proc/vmstat is incorrect. The current code always accounts
+> for the full, non-optimized vmemmap size, but vmemmap optimization
+> reduces the actual number of vmemmap pages by reusing tail pages. This
+> causes the system to overcount vmemmap usage, leading to inaccurate
+> page statistics in /proc/vmstat.
+> 
+> Fix this by introducing section_nr_vmemmap_pages(), which returns the exact
+> vmemmap page count for a given pfn range based on whether optimization
+> is in effect.
+> 
+> Fixes: 15995a352474 ("mm: report per-page metadata information")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> Acked-by: Oscar Salvador <osalvador@suse.de>
+> ---
+> v6 -> v7:
+> - Refine the alignment assertions in section_nr_vmemmap_pages().
+> ---
+>  mm/sparse-vmemmap.c | 34 ++++++++++++++++++++++++++++++----
+>  1 file changed, 30 insertions(+), 4 deletions(-)
+> 
+> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
+> index 3340f6d30b01..01f448607bad 100644
+> --- a/mm/sparse-vmemmap.c
+> +++ b/mm/sparse-vmemmap.c
+> @@ -652,6 +652,31 @@ void offline_mem_sections(unsigned long start_pfn, unsigned long end_pfn)
+>  	}
+>  }
+>  
+> +static int __meminit section_nr_vmemmap_pages(unsigned long pfn, unsigned long nr_pages,
+> +		struct vmem_altmap *altmap, struct dev_pagemap *pgmap)
+> +{
+> +	const unsigned int order = pgmap ? pgmap->vmemmap_shift : 0;
+> +	const unsigned long pages_per_compound = 1UL << order;
+> +
+> +	VM_WARN_ON_ONCE(!IS_ALIGNED(pfn | nr_pages, PAGES_PER_SUBSECTION));
+> +
+> +	if (!vmemmap_can_optimize(altmap, pgmap))
+> +		return DIV_ROUND_UP(nr_pages * sizeof(struct page), PAGE_SIZE);
+> +
+> +	if (order < PFN_SECTION_SHIFT) {
+> +		VM_WARN_ON_ONCE(!IS_ALIGNED(pfn | nr_pages, pages_per_compound));
+> +		return VMEMMAP_RESERVE_NR * nr_pages / pages_per_compound;
+> +	}
+> +
+> +	VM_WARN_ON_ONCE(!IS_ALIGNED(pfn | nr_pages, PAGES_PER_SECTION));
+> +	VM_WARN_ON_ONCE(nr_pages > PAGES_PER_SECTION);
 
-I've been testing the latest upstream kernel on a PowerPC system and 
-encountered workqueue lockup issues that I've bisected to commit 
-61bbcfb50514 ("srcu: Push srcu_node allocation to GP when non-preemptible").
-After booting, I'm seeing workqueue lockup warnings for CPUs 81-96, 
-which are offline on my system. The workqueues remain stuck for over 237 
-seconds:
+I would just have done that at the very top, as this check applies to all cases.
 
-[  243.309302][    C0] BUG: workqueue lockup - pool cpus=81 node=0 
-flags=0x4 nice=0 stuck for 237s!
-[  243.309311][    C0] BUG: workqueue lockup - pool cpus=82 node=0 
-flags=0x4 nice=0 stuck for 237s!
-[  243.309318][    C0] BUG: workqueue lockup - pool cpus=83 node=0 
-flags=0x4 nice=0 stuck for 237s!
-[  243.309326][    C0] BUG: workqueue lockup - pool cpus=84 node=0 
-flags=0x4 nice=0 stuck for 237s!
-[  243.309333][    C0] BUG: workqueue lockup - pool cpus=85 node=0 
-flags=0x4 nice=0 stuck for 237s!
-[  243.309341][    C0] BUG: workqueue lockup - pool cpus=86 node=0 
-flags=0x4 nice=0 stuck for 237s!
-[  243.309348][    C0] BUG: workqueue lockup - pool cpus=87 node=0 
-flags=0x4 nice=0 stuck for 237s!
-[  243.309355][    C0] BUG: workqueue lockup - pool cpus=88 node=0 
-flags=0x4 nice=0 stuck for 237s!
-[  243.309363][    C0] BUG: workqueue lockup - pool cpus=89 node=0 
-flags=0x4 nice=0 stuck for 237s!
-[  243.309370][    C0] BUG: workqueue lockup - pool cpus=90 node=0 
-flags=0x4 nice=0 stuck for 237s!
-[  243.309377][    C0] BUG: workqueue lockup - pool cpus=91 node=0 
-flags=0x4 nice=0 stuck for 237s!
-[  243.309384][    C0] BUG: workqueue lockup - pool cpus=92 node=0 
-flags=0x4 nice=0 stuck for 237s!
-[  243.309392][    C0] BUG: workqueue lockup - pool cpus=93 node=0 
-flags=0x4 nice=0 stuck for 237s!
-[  243.309399][    C0] BUG: workqueue lockup - pool cpus=94 node=0 
-flags=0x4 nice=0 stuck for 237s!
-[  243.309406][    C0] BUG: workqueue lockup - pool cpus=95 node=0 
-flags=0x4 nice=0 stuck for 237s!
-[  243.309413][    C0] BUG: workqueue lockup - pool cpus=96 node=0 
-flags=0x4 nice=0 stuck for 237s!
+Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 
-Git bisect identified this as the first bad commit:
+-- 
+Cheers,
 
-commit 61bbcfb50514a8a94e035a7349697a3790ab4783
-Author: Paul E. McKenney <paulmck@kernel.org>
-Date:   Fri Mar 20 20:29:20 2026 -0700
-
-     srcu: Push srcu_node allocation to GP when non-preemptible
-
-     When the srcutree.convert_to_big and srcutree.big_cpu_lim kernel boot
-     parameters specify initialization-time allocation of the srcu_node
-     tree for statically allocated srcu_struct structures (for example, in
-     DEFINE_SRCU() at build time instead of init_srcu_struct() at runtime),
-     init_srcu_struct_nodes() will attempt to dynamically allocate this tree
-     at the first run-time update-side use of this srcu_struct structure,
-     but while holding a raw spinlock. Because the memory allocator can
-     acquire non-raw spinlocks, this can result in lockdep splats.
-
-     This commit therefore uses the same SRCU_SIZE_ALLOC trick that is used
-     when the first run-time update-side use of this srcu_struct structure
-     happens before srcu_init() is called. The actual allocation then takes
-     place from workqueue context at the ends of upcoming SRCU grace 
-periods.
-
-     [boqun: Adjust the sha1 of the Fixes tag]
-
-     Fixes: 175b45ed343a ("srcu: Use raw spinlocks so call_srcu() can be 
-used under preempt_disable()")
-     Signed-off-by: Paul E. McKenney <paulmck@kernel.org>
-     Signed-off-by: Boqun Feng <boqun@kernel.org>
-
-  kernel/rcu/srcutree.c | 7 +++++--
-  1 file changed, 5 insertions(+), 2 deletions(-)
-
-Reverting this commit resolves the issue.
-
-The problem appears to be that the workqueue is attempting to execute on 
-offline CPUs. The commit moves SRCU node allocation to workqueue context 
-to avoid lockdep issues with memory allocation under raw spinlocks, 
-which makes sense. However, it seems the workqueue scheduling doesn't 
-properly account for CPU online/offline state in this code path.
-
-My test environment:
-- Architecture: PowerPC
-- Kernel version: Latest upstream (7.1-rc1)
-- CPUs 81-96 are offline at boot time
-
-I suspect the issue might be related to:
-1. Workqueue not checking CPU online status before scheduling SRCU 
-allocation work
-2. Missing CPU hotplug awareness in the new workqueue-based allocation path
-3. Possible race condition with CPU hotplug events
-
-Would it make sense to use queue_work_on() with explicit online CPU 
-selection, or add CPU hotplug handlers for this workqueue? I'm not 
-deeply familiar with the workqueue internals, so I might be missing 
-something.
-Please let me know if you need any additional details or if you'd like 
-me to test any patches.
-
-If you happen to fix the above issue, then please add below tag.
-Reported-by: Samir M <samir@linux.ibm.com>
-
-
-Thanks,
-Samir
+David
 
