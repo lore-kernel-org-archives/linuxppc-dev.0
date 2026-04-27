@@ -1,77 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-20141-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20142-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EAE8FFF8860
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2026 04:47:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4973FF8861
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2026 04:47:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g3rfB2Mx5z2yr0;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g3rfB63Vmz2yrT;
 	Mon, 27 Apr 2026 14:47:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777265266;
-	cv=none; b=cE2Y3DNaEfwFwu0qGXQ6darLzJlu74ILdbBiPnYj2Lql37RnsaD+tBIFPq7gORc6ipSWu1Sle63aLfh/SpgE2A4RPSqOUq/qGGwS1ZD6q/AoGrnEMlcYIpBvNBy9uzX2U2LFW1l1eFEp5/aNtlIai6s3o+TFXLqcFQV8/W8HPqjvdxgyktkP1q5rz3HDySjZUgoYup+z/4gyV7WjzvwQxcKeiS7026LWyxBvT+nqq8cslqhI3RGk7PjLzUzd24I7WTMpQayAjROkOm95KaJEnk8wiL1I8/afGKQEOGS8DYqnvTyQJlYQkFKNMSm9r2DHp1LNEBAB3Ebqk9HIqK3K9A==
+	cv=none; b=kScrJzXdDsCwVUb1GOXvgkeKsabz5JaJyuTBWJMRlAgJaRZMhCUjCM5Qmqs7CB7xEglRlmag7OQIwyJJOH45Npo5kknvNf/FVk73hnQE3fpANR5+OMkjomZ3qJlUMIbt7xaynugbjFHp1pmEvEDAs5UMKDYOByDrLNwJZyIctDCNLY7Rutz8Vz6bZVlXF31IllazEuZBhYiH3KSjemhHSNCJX6L3hYr8fiX4d+8tS0Mz1gn9X7VQbNIZDGKRG/znpKX+/5dNMYDrP5pmM/97Mt8XkRiXx965WxiIIak1gc2ogHUjcOp/rqy37RzeRYM3VdkDAlvZuO/RF1K1Pg86eg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1777265266; c=relaxed/relaxed;
-	bh=78ndu7eUGmfubw6W2rI7Ewwj6YgAOPRj8w6DmpeRpfo=;
+	bh=dGiRNOyVUmIWVk4F1dtCEHUVSdZD9zV14kqCI+HQ5tE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=LKcH4QSfOqR+QEnnwOFiLxJdCza4Wh2jvQU4aBZA36pymNgMylOCDyycsIB1Kj5M+429lHW7bBvOWxwgqG/X7s8XsigKo1SioF7+HW0MiaafUdkc9tjR4FjdIUbGYB2QX4C4PQzTr546Bwq9GydjgK1kFIyxu/FF7JmM4fmeNKBaRWFibMefwC0rbDXFPvu9uCD5rRNnooLhBGmB4RrG7D9Qm14NOAN8I9t1cIfhfMaScqwig0tydD2lfbPJx+QQ4+0d6D9PE2qKfwm+JbBTSL7jfU0tspRez5ZoDIxWVHRrJ3+qPL4NFg/UO5aWoVrRs8Az2lyZmSi7zZ/8iO7Llw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JClJBrDx; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=L0SkfOJEfZRJHCpGXtudxI41mZE9xvXrVMlPKuNT+uRUutFmYtKzjhpyGoGFJknC58xhdHmhC72KBCB9z+J5ceAT/tOIAw8620e5N54Qq9LNfF7JZH9vdg80uTs8R3whohNgm9NxB8xf+DH1PJF/o785o8nEnncGh9wfplDtpJU1vXU43An4h6ZeX0iRfbK32LeKGpmde4OG2lU9OnngEqZnmLVhU59fEjOCgBlQF0Pugr5fBrHeQTOsesHNg+VKiFW82gHO5KNHxFFkfoO0xUfG9IhAeFDde/taxOGcCi3vo3E+iVsuGerICY1mVjqNzeoFzDK5KIg4SGcfJl1s+g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=j9vDzH0F; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JClJBrDx;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=j9vDzH0F;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g3rf93GqPz2xlm
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2026 14:47:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g3rf973HFz2yqt
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2026 14:47:45 +1000 (AEST)
 Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63QMtHx33309760;
-	Mon, 27 Apr 2026 04:47:39 GMT
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63QNF8BG3347495;
+	Mon, 27 Apr 2026 04:47:41 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=78ndu7eUGmfubw6W2
-	rI7Ewwj6YgAOPRj8w6DmpeRpfo=; b=JClJBrDx7iaNQL7iytYQRQgG1BKSvgpV1
-	K6yBDuQGvhW4OM6n121G1Jns4ENXzI/5lDnCht4fdF4Sm2dDhkzjrL/dylOv8myc
-	9ebLQDoiH2YR3rPRDICcBSPNIe/yxR7xB6a+R2rny6KT74QW4+CIkOVGm9h/ELnl
-	dinWebx+z9pX6Yx5KS36ZiL1Y/PGiR/DZh62fFnojdsemI61q9dxYL6rkAAk3dhR
-	eMruoLUAW+KSJd/X3EuRKqApOXcAIAbqcl5H7sTCwF1LjmHeXihh8o8U9v9luLL3
-	KYCgTAAfrQLtQHvURpoupyfHHVeHrKEze9Wt8i2tcY+oX25+ynBZQ==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4drk1je71t-1
+	:mime-version:references:subject:to; s=pp1; bh=dGiRNOyVUmIWVk4F1
+	dtCEHUVSdZD9zV14kqCI+HQ5tE=; b=j9vDzH0Fda/eFHVX4iYVNv2yKFbuCOz/2
+	na3A1WqLU9gPP/XRiwijt3U2ijUEU+mxLD/DRSWlpdaUpwuyBR02Re92Q3+56gyd
+	tLFr0g9Ej5yOEC0QyXleQ1k6+nA3iJyKxJkSZMpoUAvie5oYAOEYmhR6YIylIsxi
+	LWG1cICU0nYEb9UrghpCf2O2F5wetzPOfD79HmBa8sHyqc63CLN6dWgjbyAD4dK+
+	AqZKFaZDtSYcAWcpY7HP9Lr/p48iqgbn/S7AGEHzA/TN8ImMnScgfwNs+HZxDfzZ
+	51P20+GgxiBVkhkHkcsC/ywn6TWd86JZEtsNFtlx4ZQCNqNY4R17Q==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4drk1je725-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 27 Apr 2026 04:47:38 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 63R4ciPW017055;
-	Mon, 27 Apr 2026 04:47:37 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dsa5g3h0j-1
+	Mon, 27 Apr 2026 04:47:40 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 63R4cjdo028421;
+	Mon, 27 Apr 2026 04:47:40 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ds8xjupew-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 27 Apr 2026 04:47:37 +0000 (GMT)
+	Mon, 27 Apr 2026 04:47:40 +0000 (GMT)
 Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63R4lYpc25100718
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63R4laZa55247294
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 27 Apr 2026 04:47:34 GMT
+	Mon, 27 Apr 2026 04:47:36 GMT
 Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5625720043;
+	by IMSVA (Postfix) with ESMTP id 7A85620043;
+	Mon, 27 Apr 2026 04:47:36 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A461E20040;
 	Mon, 27 Apr 2026 04:47:34 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8B76620040;
-	Mon, 27 Apr 2026 04:47:32 +0000 (GMT)
 Received: from li-7bb28a4c-2dab-11b2-a85c-887b5c60d769.ibm.com (unknown [9.123.5.233])
 	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 27 Apr 2026 04:47:32 +0000 (GMT)
+	Mon, 27 Apr 2026 04:47:34 +0000 (GMT)
 From: Shrikanth Hegde <sshegde@linux.ibm.com>
 To: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, yury.norov@gmail.com,
         linux@rasmusvillemoes.dk, linux-kernel@vger.kernel.org
 Cc: sshegde@linux.ibm.com, chleroy@kernel.org, Yury Norov <ynorov@nvidia.com>
-Subject: [PATCH v2 1/4] powerpc: Use cpumask_next_wrap instead
-Date: Mon, 27 Apr 2026 10:17:12 +0530
-Message-ID: <20260427044715.559137-2-sshegde@linux.ibm.com>
+Subject: [PATCH v2 2/4] powerpc: Simplify cpumask api usage for cpuinfo display
+Date: Mon, 27 Apr 2026 10:17:13 +0530
+Message-ID: <20260427044715.559137-3-sshegde@linux.ibm.com>
 X-Mailer: git-send-email 2.51.0
 In-Reply-To: <20260427044715.559137-1-sshegde@linux.ibm.com>
 References: <20260427044715.559137-1-sshegde@linux.ibm.com>
@@ -91,79 +91,69 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI3MDA0OCBTYWx0ZWRfX6Wg8xyUMudNR
- r1AHEBiMNDups3u8EhHWs9cvL7DthLLU1z4FL9KyRVLnlNeRL5rzw5cAZqZcMD1zNrzWlNvIwEZ
- DUhEdP4zlfW5V6e/mny6+bgPjiJOf4m/nKMVOFcppa3ADS2I+3rLjzH5xMId8O1ZGt6xCiZl2Yw
- roDs/IMfzMBYK5QkwvG2bX9M8wi3adhbexXBrIxhd9BRj7kBt/hjt2tRFdn+ryBUARKAHRoLIwY
- SQPYcIGEnfobZg1qne85Q4pHURb4J4efhBL93w1tXBsaKA7jdte4a14wbLkHZyEeiVuiO7QamYO
- lUBYq9TEbDDuTFLga2geR95S3qhyt6dKfT0cd2pbyWkqqmTPRKNW3O15aytFPWAneuhSbIBNe5N
- w16ZRsbsHS9scIQlRl4OfKUUopTal/tO3z5hva8vkV8JW+5dt8jHAUwi5/yt3o8h4fJ5xk2EPdO
- L6oh0lsR7W/EsfhlcBQ==
-X-Proofpoint-GUID: KFXTZrPnqT85lnGg5SS8bjLHyT-drC2b
-X-Proofpoint-ORIG-GUID: UkwPpNIjt16_QiddZzAt1P3xPH1XlK6E
-X-Authority-Analysis: v=2.4 cv=MohiLWae c=1 sm=1 tr=0 ts=69eeea6b cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI3MDA0OCBTYWx0ZWRfX0OaDGhOeNei1
+ iLIY4ThYGYegtUXewLql1PHQi4upCvjm4o2pWMUqY368MLpBTd3ejfZwFlK0NGEUlBS5vcanyN5
+ 2A4iAUR+HC3OMoMfjEFN8YKCxee4o2jOL5+1+YlXhNLAiqsIWhEha/9QaTc8gyQNicIkp5wC5Kh
+ L5afj2yF8TuEf29kDIPlIkQq9J6WQnHjmwM92HJcDw8VtZ2eGd18mxiL0/AvjV4yn6fwXE916uc
+ 4gviuaRALt6Q2gFnQNipX7r6m3Xh+sWDvYGtzIFK37K9TRSymRUByndcODAIzvXnml4vqBbpNVS
+ VvQ6BTKETBixMcaC0Sk/ABc1sDeF7LtSm4oktkoscg1a4b6IyE77IwRaMPDCIADyIMrgsjF9fUu
+ t7q7ef3u6pKm1v6y2w6fZCLpDOSS0Gmpcxs73WDWo1pz9iwzWkoFggvPFX4LimEnI6IcfINa1ub
+ ORVGT10s7Bjveqd+F0g==
+X-Proofpoint-GUID: Upc1uyxRodZwEuuCzkjlZBPKai3cfcaD
+X-Proofpoint-ORIG-GUID: 07IOpZuYhTq1HjwiYw6gPJX601WCmKBm
+X-Authority-Analysis: v=2.4 cv=MohiLWae c=1 sm=1 tr=0 ts=69eeea6d cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
  a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
  a=Y2IxJ9c9Rs8Kov3niI8_:22 a=Ikd4Dj_1AAAA:8 a=VnNF1IyMAAAA:8
- a=ekXyIRwq0AQAqslM44EA:9
+ a=1TO9j2vGO00jYUTp9YQA:9
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-04-27_01,2026-04-21_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  phishscore=0 adultscore=0 suspectscore=0 bulkscore=0 spamscore=0
- priorityscore=1501 malwarescore=0 clxscore=1015 lowpriorityscore=0
+ priorityscore=1501 malwarescore=0 clxscore=1011 lowpriorityscore=0
  impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
  route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
  definitions=main-2604270048
 
-cpu = cpumask_next(cpu, mask)
-if (cpu >= nr_cpu_ids)
-    cpu = cpumask_first(mask)
+- cpumask_next can take -1 as valid argument. So simplify cpuinfo
+  iterator.
 
-Above block is identical to:
-cpu = cpumask_next_wrap(cpu, mask)
+- Use cpumask_last to find if this_cpu is last online CPU.
 
-Replace it, No change in functionality or performance.
-Slightly simpler code.
+/proc/cpuinfo shows same info with patch.
 
 Reviewed-by: Yury Norov <ynorov@nvidia.com>
 Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
 ---
- arch/powerpc/kernel/irq.c             | 5 +----
- arch/powerpc/mm/book3s64/hash_utils.c | 4 +---
- 2 files changed, 2 insertions(+), 7 deletions(-)
+ arch/powerpc/kernel/setup-common.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index a0e8b998c9b5..f69de08ad347 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -370,10 +370,7 @@ int irq_choose_cpu(const struct cpumask *mask)
- do_round_robin:
- 		raw_spin_lock_irqsave(&irq_rover_lock, flags);
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 8a86b0efcb1c..aecabe9cf139 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -323,7 +323,7 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 	seq_putc(m, '\n');
  
--		irq_rover = cpumask_next(irq_rover, cpu_online_mask);
--		if (irq_rover >= nr_cpu_ids)
--			irq_rover = cpumask_first(cpu_online_mask);
--
-+		irq_rover = cpumask_next_wrap(irq_rover, cpu_online_mask);
- 		cpuid = irq_rover;
+ 	/* If this is the last cpu, print the summary */
+-	if (cpumask_next(cpu_id, cpu_online_mask) >= nr_cpu_ids)
++	if (cpu_id == cpumask_last(cpu_online_mask))
+ 		show_cpuinfo_summary(m);
  
- 		raw_spin_unlock_irqrestore(&irq_rover_lock, flags);
-diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
-index 9dc5889d6ecb..e4fcf929cb33 100644
---- a/arch/powerpc/mm/book3s64/hash_utils.c
-+++ b/arch/powerpc/mm/book3s64/hash_utils.c
-@@ -1299,9 +1299,7 @@ static void stress_hpt_timer_fn(struct timer_list *timer)
- 	if (!firmware_has_feature(FW_FEATURE_LPAR))
- 		tlbiel_all();
+ 	return 0;
+@@ -331,10 +331,7 @@ static int show_cpuinfo(struct seq_file *m, void *v)
  
--	next_cpu = cpumask_next(raw_smp_processor_id(), cpu_online_mask);
--	if (next_cpu >= nr_cpu_ids)
--		next_cpu = cpumask_first(cpu_online_mask);
-+	next_cpu = cpumask_next_wrap(raw_smp_processor_id(), cpu_online_mask);
- 	stress_hpt_timer.expires = jiffies + msecs_to_jiffies(10);
- 	add_timer_on(&stress_hpt_timer, next_cpu);
- }
+ static void *c_start(struct seq_file *m, loff_t *pos)
+ {
+-	if (*pos == 0)	/* just in case, cpu 0 is not the first */
+-		*pos = cpumask_first(cpu_online_mask);
+-	else
+-		*pos = cpumask_next(*pos - 1, cpu_online_mask);
++	*pos = cpumask_next(*pos - 1, cpu_online_mask);
+ 	if ((*pos) < nr_cpu_ids)
+ 		return (void *)(unsigned long)(*pos + 1);
+ 	return NULL;
 -- 
 2.47.3
 
