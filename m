@@ -1,73 +1,118 @@
-Return-Path: <linuxppc-dev+bounces-20149-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20150-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B10A1FF8850
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2026 06:44:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57087FF8862
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2026 08:06:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g3vDP7208z2yZ6;
-	Mon, 27 Apr 2026 16:44:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777272245;
-	cv=none; b=aDKKHooVVqGKEOgGP8GTO6qkA9KiyqvQlTpLLtsNq7CdEpHGuGZ8oX3ZZL9SiBjhAwKBWIShR35TVOeF2DvLV+FfyMyaubMOR/+NuGI+g0vZlPUn+xqMSy9MhCZXHCc3mJHbXC31rzyyqIsHkyA2EPSrObMwPn1sXLtZdIudSipf7/FbHSGdgiFfdx31ZjX3KjMjHoqPVDI4w0CDw16SAYgGeIg93dbb6k4OPVa7Gq1S+JNR3cG/Ne6KDlPdiWMMHewE/UHLWFLONs12YGtOnj7O0KwrlNassn/YizJoVHI3On3WVGA94ZwII2brVOzL1HxivT1gyrZU6GqjKkx6Zw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777272245; c=relaxed/relaxed;
-	bh=vFs/+SO0NRdI8sfQelYmqfDL7iSOEjFuente3HGsLak=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=aArJb4VVoBIrE5l+P65S7likN8OsNYJaPE9pNUMOZlUTAi4/0q0OY6Rl8gfjIdCigEgSW1sHavHX0IgWPXc9H1SG3HKVA1JmsXMBNYsaeN1SX7nBRQaAK9nQIq+6W7wuif2l7E49KLYaP3/UmxhjpwmzciDDM+tB1tm+xhcmf96L99hTGO7d6p1vkCKr0VHi3G50RGlyMzd9dBZ7gk4q3QgY3/E1IYBNSoNKu0ZAqFrD5+29+YnG4b+IclgFPkql8XFWV0cjLdV4UZDQbZYVb3FulIIfe3OGvWMIYuB2kGvRBrw5CEfMakD2YWwh81PtPhQAo1bLjAt0uqvnErJzcQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kiRqxa42; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g3x383mFxz2yZ6;
+	Mon, 27 Apr 2026 18:06:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip=198.175.65.9
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777277172;
+	cv=fail; b=l939OAfO3+gXcuCFxZfQC8iyKzlCeO93qydvQkqmnjMz4XDx4owd/OJzuqmDkx2B89tYmK0BkgAOODlouJIYwkXVGxAaEURtbBH4Pen0M6IzrimsWCNlTJX3rn1RZ6XhH6ZL+qci675eVNeOLsr/Ht6a9BKxHoSrWQSQ4tP5GvQL4G35DQQ0vr20jIqKfpnuYkGdiHgISfAVfz0C6jrlG0paJ29sm5mxvlUxMprQHFYvhfULpN0unDuweP3VKrXqflbRsOFnp/08xUAHBl+Jw5vbLg4wOGMBGmodzXCM88laZ/jyarAO9JtM702ZAcg4qSdVlvhIf2rP+Owyc3w2pQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1777277172; c=relaxed/relaxed;
+	bh=k9lZG1fDrLaEU+xqWgV49c793ZF9m4YDmQfq747vjdw=;
+	h=Date:From:To:CC:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=PrLs8Ho9Hzonj5ENCrl+ZgRN/ZENG58bl4p19i9toxLsmS3AWGj5jePUu7sTgniuhsuCXcFt7uV4SokWqgKnmkPFHYFmpKvGOrrTYIhuMVUDA+GciirE1k1/fFMUkky2J0O807lq23Z8UmHgspD6o3AK281KgQ1Yr8aq+AGQpDMhsE8aMdBTOA1JxFQ5p8vGp+HMpgzIWGAvJaEZfrU9wRPK+RI/f5x7Lu2S69eaV+jxy8agG6JFdsvfSlfC8wyx51BQzV3qLFgEBq0N3Yc/M03PNuFujhuXYHhmZxqcVcLw/UlGMeSmw8fV2xMuU3SZjW3KgwyO/0xzT+IfQnB5+A==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=VfO37KX9; dkim-atps=neutral; spf=pass (client-ip=198.175.65.9; helo=mgamail.intel.com; envelope-from=peter.fang@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kiRqxa42;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=VfO37KX9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.9; helo=mgamail.intel.com; envelope-from=peter.fang@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g3vDN50X9z2yGX
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2026 16:44:04 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63R5YvwC584793;
-	Mon, 27 Apr 2026 06:43:59 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=vFs/+S
-	O0NRdI8sfQelYmqfDL7iSOEjFuente3HGsLak=; b=kiRqxa42NRaC7N8CBJUHJg
-	eeCGu/cJRJblqjRkGoNk5WeF6tKFQEeaNRlRldvALWHF2YIUHh1hAnYhmI8IXs75
-	iLsvmTJ4G1jaER5JODo/1O9PXteNddvFijHHo1oF9k7pvYLiXaUu9RLMuWR4KTWB
-	0qNnEEBdMxxIS7Q4sBlbG2qG9TrHPDQPXT5p1BcSMu1wniKaHH62mdHzXValEfdl
-	qNgw30Ehq8jZGOJ/4PvvE8Ckew87xeeH4r8Dh8FkgxnnydyG612CcGcgRx6zt5Mj
-	URXj/pi80yabfaXfuifZkxT91oK0y0ra6DXAOXNlGpYkVGiK2Bx3U3izOyFhouWQ
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4drn9qy17x-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 27 Apr 2026 06:43:58 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 63R6cpMK005884;
-	Mon, 27 Apr 2026 06:43:57 GMT
-Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dsa5g3u4p-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 27 Apr 2026 06:43:57 +0000 (GMT)
-Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
-	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63R6hsv814615088
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 27 Apr 2026 06:43:54 GMT
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id BFC8758062;
-	Mon, 27 Apr 2026 06:43:54 +0000 (GMT)
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B290958055;
-	Mon, 27 Apr 2026 06:43:49 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.61.240.24])
-	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTPS;
-	Mon, 27 Apr 2026 06:43:49 +0000 (GMT)
-Content-Type: text/plain;
-	charset=utf-8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g3x3470hSz2yLG
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2026 18:06:05 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1777277170; x=1808813170;
+  h=date:from:to:cc:subject:message-id:references:
+   content-transfer-encoding:in-reply-to:mime-version;
+  bh=ChkMv22SkCmmtOPTScYbmZRIT1BWS/QCUL4igZqKIqk=;
+  b=VfO37KX9lh+5LtPDUXKl+0lKHvf2gnX4eShyMgPXCwCD18IRk0TLAb60
+   9BLPr/7K6jB82Ntld1yaSFVQ0thRLuM711o0DAGuAJkiE7yUTWF5koeop
+   72XryS8Q2xUw/mSgrRhsIF/J+jncQ4bihSL6iD4/tj+q2CBX0ad2x0O/0
+   bL6LCmApdZE4oFWc0mgtJ6jyEjnMq/w8cVkcljPSNiXxaf4Be7bEMHXzG
+   tDynGfEKWveXn/G1YFtngMNWS1Qer3ozU47bzd+kLq5+xlviGGuNpja0J
+   d5aiIZ91B7LZDTynizjCETYTTxaiBVaE0BKNtHcTqOpVrTmaU5135e5Qg
+   Q==;
+X-CSE-ConnectionGUID: nbZYJvQaTWmnftjmqhFeHw==
+X-CSE-MsgGUID: 7ZnJHlJ6RaK8ZAWqWZfW0A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11768"; a="100812555"
+X-IronPort-AV: E=Sophos;i="6.23,201,1770624000"; 
+   d="scan'208";a="100812555"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Apr 2026 01:06:02 -0700
+X-CSE-ConnectionGUID: poSHdGWtRPWmaoAEmAKxjw==
+X-CSE-MsgGUID: 2U2XBiI5QlGmj4xok+kKPw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,201,1770624000"; 
+   d="scan'208";a="230939113"
+Received: from orsmsx902.amr.corp.intel.com ([10.22.229.24])
+  by fmviesa008.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Apr 2026 01:06:01 -0700
+Received: from ORSMSX902.amr.corp.intel.com (10.22.229.24) by
+ ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Mon, 27 Apr 2026 01:06:00 -0700
+Received: from ORSEDG903.ED.cps.intel.com (10.7.248.13) by
+ ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37 via Frontend Transport; Mon, 27 Apr 2026 01:06:00 -0700
+Received: from SN4PR0501CU005.outbound.protection.outlook.com (40.93.194.38)
+ by edgegateway.intel.com (134.134.137.113) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.37; Mon, 27 Apr 2026 01:05:59 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=M+bZtkmJVjcgh9eiTvl7VgVdRzg+Wk/66/3+Y0yhvjEoBLt24fA+7EPgg3NX2D2baktQCzvernJ+OnQxcgoDiEMbuBnGKpSQN/IUHPg/5yFsNWsb3plNtIU+PKe9ed/+Mf5teTXu8JnXdHfWF+A/AnBsHhpR1ko4onf1jaVDCEeNxaRswOBnH2sT6JeRGpvyT3s64bT7G0Ekyr4yC2RxoKTKOKKAk3RtuZisL0NrFuEn1AIuYmTQRkh0iqwFYjHkgtyR1ZUomPbmUiCopiUBOP6wrGwcLrjKdKUZLovnm+969gMauz33kRWBpL6isZND+Yw4sI/egRZwJWBMBapVoA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=k9lZG1fDrLaEU+xqWgV49c793ZF9m4YDmQfq747vjdw=;
+ b=j+FwSMa01vPuOe8/VM+UR1xFbGYLuParPiT2X7+7h+xO66bhn10sx1APFBv74odQRianhhutU8lXhESTqz3ciLBQJX8IR1ZMKwH8NxO5gDpa3yTsgP58cDEfmQCHFP9sXJj0wGb4Z0DadY3Jjpp2FvD+1oRv6pe4M+7PVn0HzjllpljwynVPZgigTE3sSwtSKfo6m/CL7qiQLT6fbui5PT1WbYC7Xb0+rVSBFX8vcmh0dI0/n2izWsalaP8ksRjge3oXxwxtX84dPq1LCe1xDAXqIT9RLI0Gon1eLHjKFadKzvhpdn13I1AhbJMnA+s8r0KUKjyCG/xP7m/7adgKCQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from SJ0PR11MB5645.namprd11.prod.outlook.com (2603:10b6:a03:3b9::19)
+ by MW4PR11MB6786.namprd11.prod.outlook.com (2603:10b6:303:20b::12) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9870.16; Mon, 27 Apr
+ 2026 08:05:57 +0000
+Received: from SJ0PR11MB5645.namprd11.prod.outlook.com
+ ([fe80::fb19:f933:8bb3:b42e]) by SJ0PR11MB5645.namprd11.prod.outlook.com
+ ([fe80::fb19:f933:8bb3:b42e%4]) with mapi id 15.20.9870.013; Mon, 27 Apr 2026
+ 08:05:57 +0000
+Date: Mon, 27 Apr 2026 01:05:54 -0700
+From: Peter Fang <peter.fang@intel.com>
+To: David Woodhouse <dwmw2@infradead.org>
+CC: Paolo Bonzini <pbonzini@redhat.com>, Sean Christopherson
+	<seanjc@google.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, "Nicholas
+ Piggin" <npiggin@gmail.com>, "Griffoul, Fred" <fgriffo@amazon.com>, "Yosry
+ Ahmed" <yosry@kernel.org>, Ritesh Harjani <ritesh.list@gmail.com>, "Michael
+ Ellerman" <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)"
+	<chleroy@kernel.org>, Thomas Gleixner <tglx@kernel.org>, Ingo Molnar
+	<mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen
+	<dave.hansen@linux.intel.com>, <x86@kernel.org>, "H. Peter Anvin"
+	<hpa@zytor.com>, <kvm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+	<linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 0/3] KVM: Fix and clean up kvm_vcpu_map[_readonly]()
+ usages
+Message-ID: <20260427080554.GD1733452@pedri>
+References: <20260408001137.3290444-1-peter.fang@intel.com>
+ <c2fad21764d2561469151f5dd5d35833ae8f76e6.camel@infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c2fad21764d2561469151f5dd5d35833ae8f76e6.camel@infradead.org>
+X-ClientProxiedBy: SJ0PR03CA0375.namprd03.prod.outlook.com
+ (2603:10b6:a03:3a1::20) To SJ0PR11MB5645.namprd11.prod.outlook.com
+ (2603:10b6:a03:3b9::19)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,303 +125,90 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.300.41.1.7\))
-Subject: Re: [PATCH] tools/perf/sched: Update process names of processes in
- zombie state for both -s and -S options
-From: Venkat <venkat88@linux.ibm.com>
-In-Reply-To: <20260426093930.47809-1-atrajeev@linux.ibm.com>
-Date: Mon, 27 Apr 2026 12:13:36 +0530
-Cc: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
-        mpetlan@redhat.com, tmricht@linux.ibm.com, maddy@linux.ibm.com,
-        irogers@google.com, namhyung@kernel.org,
-        linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        hbathini@linux.vnet.ibm.com, Tejas.Manhas1@ibm.com,
-        Tanushree.Shah@ibm.com, Shivani.Nittor@ibm.com
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <E3D252E5-528C-4BAD-918B-019FEBAF1FA1@linux.ibm.com>
-References: <20260426093930.47809-1-atrajeev@linux.ibm.com>
-To: Athira Rajeev <atrajeev@linux.ibm.com>
-X-Mailer: Apple Mail (2.3864.300.41.1.7)
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: KXS8qzrwiyW76t5UYD_xPsskatCRYP_P
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI3MDA2NSBTYWx0ZWRfXzP+tSAGd7q4O
- KdTd93OAb+dVfZgmVNGqtgAHqto7hqEVsq7dEWGg2ttn5TvtGgruq2+M1delg1b/B2gjondww78
- oIFIDFF9oIjHbfIvFtx/y+cJirwExHXbTHpyqrZZH2pY6t8Q7md0kDYacDfb/qmrGTcALba2s3G
- r69YD5L/yj05FfyolkiyCFtdr77zImsXf8kIGEMa43ci0Pj7LDJtottz/5XdNM5hQl0CveseH9m
- 0ezzcHD2bGThM9IbXDqq4xVovbIliOoQ8CDemTenst/xNEhm156a/H8H6nmQqKd8d8n0VDk+EQA
- rSuHUYpS+tj7l0EpWN0jtDUQLXqnQ01qlyTmkeW768048ycRiW/WdANBp6ppPdAOBWou8oJEskx
- 8QgxbNcYBABzmQsIKZc/a6hZ2ONLp50VMXYdLJVw1jBJj+bqUbJnlRuyllGkRROFJFTyRV92XkG
- cJvNVWR03HEKKe3gx3A==
-X-Authority-Analysis: v=2.4 cv=Kc7idwYD c=1 sm=1 tr=0 ts=69ef05ae cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=x5QCPqNzQhPJdF4W:21 a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22
- a=VnNF1IyMAAAA:8 a=rtiepFT_uq_YKlmCwo4A:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: XUngkgV6DXmt6tFHEB2xAgSlJ73PC-5Q
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-27_01,2026-04-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 phishscore=0 bulkscore=0 adultscore=0 spamscore=0
- malwarescore=0 impostorscore=0 priorityscore=1501 lowpriorityscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
- definitions=main-2604270065
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SJ0PR11MB5645:EE_|MW4PR11MB6786:EE_
+X-MS-Office365-Filtering-Correlation-Id: 5cc1c24d-41a1-4b77-d525-08dea433cfbd
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|376014|7416014|1800799024|366016|22082099003|56012099003|18002099003;
+X-Microsoft-Antispam-Message-Info: H7BRzKkZ9ZjYq1epOu0uFLXnAic3IFSgSPhtw7wI3YbyR5RpqqKJmUZprZCAvkJ6Y0FTCasyN6zeEmvcHPenwlzK2aOwDp4pY78LiMYbS/cuN4g3a3wgOTCvSRibvK/Yf/UkgVw6kbV9Zkj+h77HNDBokZnP0sL+o5b/Y3oAWv4ek4LyVVzQc1inLOzCar0ChRuZJDba2AWz3u4wv6HCO3+Nj/NlI3qFZkBuuT99L93kc565uXq9dr+Pij2EN+hGf+8jqlYvMJl0lYkf9dGfoMRmzjIkf6Cn+/phxYzN4PwoS0+9dTjvK+mRuQHD5CXPCirAdGY2Efn25PIBzFWE13gJpOa76WX0VoISZ/+0SO6iKuOxW7pbYZG8KoZlDChhOKWjY46XodrL645iGjJvoaVB78DD7hxr7UJXIIGliKwyUgTanCyZFgrnz/VJs9nKHwxLjAGvyDTjK1bMFB1qLlpGBFQKYMKKfQesUjKlAmemc9KrZaLdCIwBkmJHTpgN5/ZsLcCEb5Cwoo+ZqM02UnhWuHtpcONd85jNetWxocScJb2PbvL2FaY5OlpmsgvWwmepxIrFXu25DLbtRpy38HZs1RPYju4Q5iecVSwJUBkaQ5c4qSKUxboye5YIdlkqDH8ZM3LhH3+gEqklTNVlvq912XQ1iBTz5f705MXJXTUxTOgRIYtwvNE1h2XkiWJTQAuLJlNbM4TLietii7TyWW0lfXzBIfRQ2ZV4sOgy+0TW4nTy74QoWDYoowv1o9SF
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ0PR11MB5645.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(366016)(22082099003)(56012099003)(18002099003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?Vyt4dXhFUHorOU5CQjRUTUhwWGdSaE4zdVBHT1JRVXk0dEk5V1BYOWRuc1Fh?=
+ =?utf-8?B?Y2hGRUcrWFl0VEtTdXlQd0xhc2szZE05cDhjeHJnN1psNzRwWTk5M0MzMW1v?=
+ =?utf-8?B?RUdJNjlVa2RBam45WDBISnNNaWQrc2laZkROMXFzNHY3ajRwRTQzdWZFZXRV?=
+ =?utf-8?B?cVdBZWtiNGZtWmsvOGloOGFCRjRCa2pJbFRkakh2WVNOZElBRVArR3R0S1hV?=
+ =?utf-8?B?eVhrRWJzemV5Nmg2Sk83L3d1SC9TMnRHRlBma2VOYiswVXQwNnR6d3NaVnlp?=
+ =?utf-8?B?d0dCWjgwMUtUSSt2T1hTNWpSeEJPQnBNREZrTGowZ0VyVE5LclJmK0tEanRI?=
+ =?utf-8?B?amgzY1VKRU5QNUJLa2xGcEFGT0JCcXJWekt0NHpGTXJKM2ZZa1dFL2FtMnR1?=
+ =?utf-8?B?WFNDWVQwTWRNZktWdVpOdkpvcFBJeFVVMEpQWEMrL2hXWmMxYjdCbHN4UXhX?=
+ =?utf-8?B?elI5Zk5JZEtKRTlHUEdkVnptMXJpUnArbUhBNHNiTFpoWkd4TnlIQ2wxTURv?=
+ =?utf-8?B?eXBySFdCWGRjNHYzNTYxRG1kTFhZQWhnTnc3dzlZV0R4ZGlzVXR1eDZlVGNp?=
+ =?utf-8?B?eFUvbEE3Mlc3YVJrQ21peTZ1bkFaSWllWE1OZUN4bitWNy9TR2hUWS96Q0dV?=
+ =?utf-8?B?MU5qblU5Y2JHczJpT3cyRjRTQURLdDRSMXh2bTRvSHVkeUFNV3JvRGlid1JZ?=
+ =?utf-8?B?SWFwaWRCT05qTlFTOS80RW1UTnRIVnNTbkp5RDNCaGU1TUFVVVptRkoxbk9K?=
+ =?utf-8?B?MkpRNDQ1eFdRamxKU2tUUjVCTDNmVDdHV0tiMnprUFlTZWF6MUFmS3puZXhO?=
+ =?utf-8?B?UXRzak54bWNXd0M3TmxJKzdRWWV1VStYUHdlOFYwQjhMODlXMVNvTHhzSWlH?=
+ =?utf-8?B?NTgrSUpSb201S09xSzdZZVNodlNTYllka0ozWjErS285RXhtRlYySS9ReUd1?=
+ =?utf-8?B?VVhidU9nSEtZUStCNDFDRWFkeFNtLzBRTEJxckhIUUNrRXMzYmVvdlp6THpN?=
+ =?utf-8?B?K3hiQ21lYXpTUUlWYjZ1MStEY1A2TWp0OFpWUDR4d3VhUEloTkNldlZtaTlU?=
+ =?utf-8?B?OXNLemZ3Q3lyTGt2bjhCWGhZUEVXUTI2Z2hCU241Vis3c0dBWXE5NWRvQ2ZH?=
+ =?utf-8?B?MEwvTTJnWkpINFgrWXZNSk1VRVJDSTBJMUNaSWR4TmcxbDU5MWV3SUxuZmpD?=
+ =?utf-8?B?SGhHeDdYOEN2aWU2WUlOR29IYzNDRXdCREttSjI5cGRUV2txUWJWSyt5QTNC?=
+ =?utf-8?B?TEs4Q3BNZkpybzBrcEZtUnN6R2hvMkZHajRHMjhvU3dEM25XcElSWTVYU0VO?=
+ =?utf-8?B?RnAxREkwbk9hdUo2TnZ0eHBRNFBkZXl0NVlqc09UdkM3dWVkTy9SQk11dUNl?=
+ =?utf-8?B?SDJja216cVQxaXR2dmRhY1NVRVJRWjg4UzBtU3UrTlBPTlBVUm9HWUhzRjE4?=
+ =?utf-8?B?MEcwRGkzRitDdGtCNHcrdTU4clNmZzdyM3hzN2JPSWU4NHhzWnN5RlhkdG9W?=
+ =?utf-8?B?cDYwWTd2czJGTEF1a3VjVlVsczdXSnpKZGUzQnpodzAva0QyVjc0aXlDNklL?=
+ =?utf-8?B?M0dWL1BIU3hVa04wTFJMTm4yOWdac1hqV2lGWVc0NVFRQi83TUxBOGdDNWg2?=
+ =?utf-8?B?MzVGcEttdnhTcEppRVlZeG9YMm41cnZmbFgzU3FZR2l3bk9Gd1RRbmZqdXBC?=
+ =?utf-8?B?NHdjL1UrcXAvUjBwbnVKNHZ0REtLdVY1a0g1UDNRb3NJajBQblVNSXpESkFk?=
+ =?utf-8?B?cEFxNkt2UWhhV092cXRYTEFPcnNyT0UvOG9DWXVUNW1Fck9BWUJHUUNobG5N?=
+ =?utf-8?B?ck1XM1RPOHdkSkJqWTRmKzgyMmxqMHVhUWdUUDhMbGVPeUZxMlQ5Q3lxOFBi?=
+ =?utf-8?B?WGZsdW5Ka3pzek5TZUR5WHRQL2Jkd2Nya1BzTnBqVWFnS2VCb3FpSHYzQTM4?=
+ =?utf-8?B?ZDRkcUlnbTM2WXFSckVnQjMyUXc4R1ZoM3Yya3AveTk1K3BnN1M3dHMxbDkz?=
+ =?utf-8?B?VUxERXlXU04yNTFXT2o3RE5OS2NtSWhDVWljTEx4Y0pLbVpHQ2lISFlaUDVs?=
+ =?utf-8?B?YWtBN28rQUxqRGF2KzVXcWV5cmtwSG90c1NBZzNUWnM4V0lyOVQwRkU2S09t?=
+ =?utf-8?B?UmNNK3NLYkhGZndvV0NUYU4rQjFyREplYUdzcHUreUJ2NTdpUG9QWlFJSzZM?=
+ =?utf-8?B?Sk1YY1krMVZuQlFKVlRKN2ZlRnhlaVRuaUwzT2lHV1NZZmFhc2ZOYTl3TTYw?=
+ =?utf-8?B?b2pMTzRndXN0dHRVcHBxSzNLdHV6UzlzbmVIenRQeFFEcTgyOWpqM1FVRStM?=
+ =?utf-8?B?VGowQUkzTXV2SXA1YUlOMlE2eEhOR096Z2VocXBQOVFDRnpyb1Ywdz09?=
+X-Exchange-RoutingPolicyChecked: CIVYxbzkY/vpJ5z9KGetbmDmPzi28zecvvc3N0zZJyLvd0S32q+wlvzTiiqTA0CBAXMaHuae/qTnv5veX7jGTzWCBoi0hhdVDvl3Z5H5RltGaMxuRygvDd23ym+3VedKM68xIQ1jFBzme5ElLhPq3IDKW2E5IxLBlvnyJ4vB/jhHi57QJEkqlvIVF0T8tT8AstBXlvXpixhDTg643YR+AL+5egoWCtFVdNuYJvVAVWxMi+fwQxrEimoSPdcA7PK62tqctnzmMaIY6KxILNJlSCLqcnE25dMEv633T4Z0NdClr7s2TsUlu/JnMLqjMpMRaqZU13qJv9idUkkRRBjCxw==
+X-MS-Exchange-CrossTenant-Network-Message-Id: 5cc1c24d-41a1-4b77-d525-08dea433cfbd
+X-MS-Exchange-CrossTenant-AuthSource: SJ0PR11MB5645.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Apr 2026 08:05:57.0301
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: wzBdz3xgseIzFezllfmTlzNVT0CeQa9YmM7aLfSbIhbhHDigdZxfYFRs/JCygF/7eEQR+fbK+GyM7IPIwvv4YQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR11MB6786
+X-OriginatorOrg: intel.com
 
+On Fri, Apr 24, 2026 at 11:27:03AM +0100, David Woodhouse wrote:
+> 
+> Fred is already removing all the usage of kvm_vcpu_map() in nested VMX¹
+> and nested SVM probably wants the same treatment. And the PowerPC one
+> looks like it could just as easily operate on the userspace address? 
+> 
+> Could we just kill kvm_vcpu_map() completely?
 
+Thanks David!
 
-> On 26 Apr 2026, at 3:09=E2=80=AFPM, Athira Rajeev =
-<atrajeev@linux.ibm.com> wrote:
->=20
-> In redhat perftool testsuite, observed fail for this test:
->    -- [ FAIL ] -- perf_sched :: test_timehist :: --with-summary =
-(output regexp parsing)
->=20
-> This led to analysis of "perf sched timehist" summary options.
->=20
->  # perf sched record -a -o ./perf.data -- sleep 0.1
->   This will record using perf sched record
->=20
-> perf sched timeliest has two options "-s" and "-S"
->  # perf sched -i ./perf.data timehist -S
-> -S : Captures summary also at the end
->=20
->  # perf sched -i ./perf.data timehist -s
-> -s : Captures only summary
->=20
-> The test saves -s result which has only summary and compares with
-> summary which comes at the end from -S . Since there is a difference
-> in these two, test fails.
->=20
-> Checking the behaviour change in -S and -s results, difference is:
->=20
->                  rcu_sched[16]       2          4        0.013      =
-0.001       0.003       0.006   33.23       0
->               migration/11[73]       2          1        0.006      =
-0.006       0.006       0.006    0.00       0
->                migration/3[33]       2          1        0.006      =
-0.006       0.006       0.006    0.00       0
-> -               :216753[216753]      -1          1        0.041      =
-0.041       0.041       0.041    0.00       0
-> +                 sleep[216753]      -1          1        0.041      =
-0.041       0.041       0.041    0.00       0
->                migration/8[58]       2          1        0.005      =
-0.005       0.005       0.005    0.00       0
->            NetworkManager[811]       1          2        0.089      =
-0.028       0.044       0.060   36.06       0
->               migration/13[83]       2          1        0.005      =
-0.005       0.005       0.005    0.00       0
->=20
-> Here 216753 is pid for sleep which is a zombie process. This is
-> happening in latest kernel due to an update in "-S" result.
-> In -S, the process name appears in the results "sleep[216753]",
-> where as in the -s, only pid is present in the summary result
-> ":216753[216753]".
->=20
-> After commit 39f473f6d0b2 ("perf sched timehist: decode process names
-> of processes in zombie state")
-> for -S option, if process name is using pid, it uses different way to
-> set it. So that we get the process name and not just Pid.
->=20
-> This change went in only for timehist_print_sample() function.
-> Add this improvement in generic place so that even -s option (which
-> captures summary) also will have meaningful information.
->=20
-> Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
-> ---
+I think I'd need at least input from the maintainers on this but just by
+code inspection, the kvm_vcpu_map() usage in sev.c seems a bit tricky.
+Unmapping doesn't happen until right before switching to the guest, so
+this might fall into the "keep the mapping around for a longer time"
+category [1].
 
-Tested this patch, by applying on top of mainline kernel.
+[1] https://lore.kernel.org/kvm/20211115165030.7422-8-dwmw2@infradead.org/
 
-WithOut Fix:
+> 
+> 
+> 
+> ¹ https://lore.kernel.org/kvm/20260102142429.896101-1-griffoul@gmail.com/
 
-# ./perf sched -i perf.data timehist -s
-Samples of sched_switch event do not have callchains.
-
-Runtime summary
-                          comm  parent   sched-in     run-time    =
-min-run     avg-run     max-run  stddev  migrations
-                                          (count)       (msec)     =
-(msec)      (msec)      (msec)       %
-=
---------------------------------------------------------------------------=
--------------------------------------------
-              migration/14[88]       2          1        0.006      =
-0.006       0.006       0.006    0.00       0
-               migration/6[48]       2          1        0.008      =
-0.008       0.008       0.008    0.00       0
-               rcu_preempt[16]       2          7        0.042      =
-0.003       0.006       0.014   23.80       0
-              migration/11[73]       2          1        0.010      =
-0.010       0.010       0.010    0.00       0
-               migration/3[33]       2          1        0.009      =
-0.009       0.009       0.009    0.00       0
-          sshd-session[384033]   384025          4        0.104      =
-0.023       0.026       0.032    8.14       0
-       kworker/u68:3-e[316378]       2          1        0.003      =
-0.003       0.003       0.003    0.00       0
-               kcompactd3[114]       2          1        0.003      =
-0.003       0.003       0.003    0.00       0
-               migration/8[58]       2          1        0.012      =
-0.012       0.012       0.012    0.00       0
-              migration/13[83]       2          1        0.008      =
-0.008       0.008       0.008    0.00       0
-               migration/5[43]       2          1        0.007      =
-0.007       0.007       0.007    0.00       0
-               migration/0[19]       2          1        0.010      =
-0.010       0.010       0.010    0.00       0
-              migration/10[68]       2          1        0.007      =
-0.007       0.007       0.007    0.00       0
-               ksoftirqd/5[44]       2          1        0.184      =
-0.184       0.184       0.184    0.00       0
-               migration/2[28]       2          1        0.008      =
-0.008       0.008       0.008    0.00       0
-       kworker/4:0-mm_[383676]       2          1        0.013      =
-0.013       0.013       0.013    0.00       0
-                  perf[390116]   384034         17        0.065      =
-0.000       0.003       0.065   100.00       0
-             xfsaild/dm-2[861]       2          1        0.008      =
-0.008       0.008       0.008    0.00       0
-              migration/15[93]       2          1        0.009      =
-0.009       0.009       0.009    0.00       0
-               :390117[390117]      -1          1        0.124      =
-0.124       0.124       0.124    0.00       0
-       kworker/9:4-mm_[390101]       2          1        0.069      =
-0.069       0.069       0.069    0.00       0
-               migration/7[53]       2          1        0.008      =
-0.008       0.008       0.008    0.00       0
-       kworker/5:0-xfs[390077]       2          1        0.015      =
-0.015       0.015       0.015    0.00       0
-              migration/12[78]       2          1        0.007      =
-0.007       0.007       0.007    0.00       0
-               migration/4[38]       2          1        0.005      =
-0.005       0.005       0.005    0.00       0
-           NetworkManager[903]       1          4        0.275      =
-0.032       0.068       0.105   29.66       0
-               migration/1[23]       2          1        0.010      =
-0.010       0.010       0.010    0.00       0
-               migration/9[63]       2          1        0.011      =
-0.011       0.011       0.011    0.00       0
-
-
-
-With FIX:
-
-# ./perf sched -i perf.data timehist -s
-Samples of sched_switch event do not have callchains.
-
-Runtime summary
-                          comm  parent   sched-in     run-time    =
-min-run     avg-run     max-run  stddev  migrations
-                                          (count)       (msec)     =
-(msec)      (msec)      (msec)       %
-=
---------------------------------------------------------------------------=
--------------------------------------------
-              migration/14[88]       2          1        0.006      =
-0.006       0.006       0.006    0.00       0
-               migration/6[48]       2          1        0.008      =
-0.008       0.008       0.008    0.00       0
-               rcu_preempt[16]       2          7        0.042      =
-0.003       0.006       0.014   23.80       0
-              migration/11[73]       2          1        0.010      =
-0.010       0.010       0.010    0.00       0
-               migration/3[33]       2          1        0.009      =
-0.009       0.009       0.009    0.00       0
-          sshd-session[384033]   384025          4        0.104      =
-0.023       0.026       0.032    8.14       0
-       kworker/u68:3-e[316378]       2          1        0.003      =
-0.003       0.003       0.003    0.00       0
-               kcompactd3[114]       2          1        0.003      =
-0.003       0.003       0.003    0.00       0
-               migration/8[58]       2          1        0.012      =
-0.012       0.012       0.012    0.00       0
-              migration/13[83]       2          1        0.008      =
-0.008       0.008       0.008    0.00       0
-               migration/5[43]       2          1        0.007      =
-0.007       0.007       0.007    0.00       0
-               migration/0[19]       2          1        0.010      =
-0.010       0.010       0.010    0.00       0
-              migration/10[68]       2          1        0.007      =
-0.007       0.007       0.007    0.00       0
-               ksoftirqd/5[44]       2          1        0.184      =
-0.184       0.184       0.184    0.00       0
-               migration/2[28]       2          1        0.008      =
-0.008       0.008       0.008    0.00       0
-       kworker/4:0-mm_[383676]       2          1        0.013      =
-0.013       0.013       0.013    0.00       0
-                  perf[390116]   384034         17        0.065      =
-0.000       0.003       0.065   100.00       0
-             xfsaild/dm-2[861]       2          1        0.008      =
-0.008       0.008       0.008    0.00       0
-              migration/15[93]       2          1        0.009      =
-0.009       0.009       0.009    0.00       0
-                 sleep[390117]      -1          1        0.124      =
-0.124       0.124       0.124    0.00       0
-       kworker/9:4-mm_[390101]       2          1        0.069      =
-0.069       0.069       0.069    0.00       0
-               migration/7[53]       2          1        0.008      =
-0.008       0.008       0.008    0.00       0
-       kworker/5:0-xfs[390077]       2          1        0.015      =
-0.015       0.015       0.015    0.00       0
-              migration/12[78]       2          1        0.007      =
-0.007       0.007       0.007    0.00       0
-               migration/4[38]       2          1        0.005      =
-0.005       0.005       0.005    0.00       0
-           NetworkManager[903]       1          4        0.275      =
-0.032       0.068       0.105   29.66       0
-               migration/1[23]       2          1        0.010      =
-0.010       0.010       0.010    0.00       0
-               migration/9[63]       2          1        0.011      =
-0.011       0.011       0.011    0.00       0
-
-Please add below tag.
-
-Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-
-Regards,
-Venkat.
-> tools/perf/builtin-sched.c | 14 +++++++++-----
-> 1 file changed, 9 insertions(+), 5 deletions(-)
->=20
-> diff --git a/tools/perf/builtin-sched.c b/tools/perf/builtin-sched.c
-> index 555247568e7a..ee1b89a6af50 100644
-> --- a/tools/perf/builtin-sched.c
-> +++ b/tools/perf/builtin-sched.c
-> @@ -2197,11 +2197,6 @@ static void timehist_print_sample(struct =
-perf_sched *sched,
-> printf(" ");
-> }
->=20
-> - if (!thread__comm_set(thread)) {
-> -                const char *prev_comm =3D evsel__strval(evsel, =
-sample, "prev_comm");
-> -                thread__set_comm(thread, prev_comm, sample->time);
-> -        }
-> -
-> printf(" %-*s ", comm_width, timehist_get_commstr(thread));
->=20
-> if (sched->show_prio)
-> @@ -2890,6 +2885,15 @@ static int timehist_sched_change_event(const =
-struct perf_tool *tool,
-> itr->last_thread =3D NULL;
-> }
->=20
-> + /*
-> + * If the process name is not set for the thread, use "prev_comm"
-> + * to set it. Otherwise the sched summary will have just pid =
-information
-> + */
-> + if (!thread__comm_set(thread)) {
-> + const char *prev_comm =3D evsel__strval(evsel, sample, "prev_comm");
-> + thread__set_comm(thread, prev_comm, sample->time);
-> + }
-> +
-> if (!sched->summary_only)
-> timehist_print_sample(sched, evsel, sample, &al, thread, t, state);
-> }
-> --=20
-> 2.47.3
->=20
 
 
