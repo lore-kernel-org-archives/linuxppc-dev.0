@@ -1,93 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-20156-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20157-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B238AFF8861
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2026 10:48:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CE63FF8860
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2026 11:30:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g40ds2D89z2y7r;
-	Mon, 27 Apr 2026 20:48:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::630" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777286881;
-	cv=pass; b=Z8QL1jehYMZRtTSKjnpZg+bxTMshP1dIPn4cxAbtBO0WumxqOkKdPNm3WBtX6ALmSzRfkaI7/cE1BN+2FCCsEtYk/xsh56bb0O9fnnxIzPFp9+TmnrzpmH04qGpHOBlZSHWpe/ccJpPdHsk9FeYTW4piAJHVLKYlEdoiXuGJtp1LjGZRkFOxu92i2vkr2hy8HpGB0kpf6ePqxkNfzrS3gfGZeH8udidGEJ1mORyfWsTrfdeWnqptIzaTYNnYJiG1JGJx94c6g6UokDT/ztO98Ebr907rhvou7qePjU7o4rbxpLIiHp2CRBVTby7WCiJ4OySaCm0LGocyuN16KIVI+A==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777286881; c=relaxed/relaxed;
-	bh=O7WIXV3vy7glDtk0NEp5Cspv2KG7UzeIls2bJ47h0Z0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=UPJktss9/fZzqKO4Xj/Pki6KP0+MS6uaVAU02Ww/4GVhyAklvp20858vm+Ynm2ZUDu08DZKgIGQNGdYTU3M57Gzd6l0Peuz3+f6jDaZEOsifo5F+WBeXX7kFAW9VxUi3X64tZD9P2MSMN/cbrMB7JGf9OCt7GI8twbtXCm2siUJHR3jOjPyo24TuaSod7Lf0+WRAtRu+gJz27CTBBJAds1wskVgBqtcdlnS/PB0uieC8p2uYgTX8Rt3BB5AmWuECNcDoJcS2AOJS+530CP60mPTlegtGix6ZjWKvFYgOm+styxDgLBlC/1oqsc4FIAQgNAvJ9MqJfidQF+DBC7qAEA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=avfzTSzE; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::630; helo=mail-pl1-x630.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g41Zm0C5Vz2y7r;
+	Mon, 27 Apr 2026 21:30:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777289423;
+	cv=none; b=i/jMWesGeWRVdu7tb5s699XpodxZ4dYiLM9sVW/cAaW4yjeet64jdp09AzuvmfV5igkxSwn6QaPq83K/psr37cz7FXR+y5Kg/5B6lONIg0b8kcD5SFp+qyJpEzkTX6GsNTWIodCOeb7cN75GK8npL61Y7VyI1Pwiy2cW2cxV3ibDUWAPYAG/UuQ3ASRWFNuVHX60MGj13vW5y0cbrhA8WmarcdH71JGypizvu4D//ytfXVk7WIxtGM4l6LUcCTrUw/PxZVeVf2Z4v3J1Q2zJGXEfrMMTSGiIrCVcWZOPHhQN2owch0rQeJU0g5Fh1U2HdBSBJ/RyNbzRNwpNl02u3Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1777289423; c=relaxed/relaxed;
+	bh=UrHKDVM3BS8sf5gvBwvFiqkukFSvz3CAG6VxJPknp54=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=LRCSAnzJnxF6SfQbSoXDeTUyp5RQ3BWPhm9sK48dLQTsPzz2jeeLfSho1spXi14UL0k2FgtrWLMqghEiv/H+DenXekOpDCRvO9bheDubHf/YD40pEZyuN6IsQOcHrp90qxiy1w+Q70E/5EzjhoKT8FBMo7V5hn09gy5/PtOme3jmM+tJ/cwiU4YCFBkR6wQtiVogmpHJmC8r01RzV0uBPp/VfT4U7IIPbz0+8581JlcW9HzOeCPUloPVzZRJy4SUxdleDChB2TSy4axXhG2MfL+pWo6xuNde4ZLCTZATIdEaDu05QJeUPn6/5brms1nYDmqpBK13oYVwlouHAf65Wg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qq+lCB9E; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=samir@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=avfzTSzE;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qq+lCB9E;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::630; helo=mail-pl1-x630.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x630.google.com (mail-pl1-x630.google.com [IPv6:2607:f8b0:4864:20::630])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=samir@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g40dq6PYdz2y2B
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2026 20:47:58 +1000 (AEST)
-Received: by mail-pl1-x630.google.com with SMTP id d9443c01a7336-2b2429f98d0so58268785ad.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2026 03:47:58 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1777286877; cv=none;
-        d=google.com; s=arc-20240605;
-        b=E+81cgpuB0AbL3i6MWlcKImxRT4WlK3+EIb/PnC4LWG5mxjG4O2kTbMCILK+AiJmMr
-         /x+gmKeRw6wCdJsbvM3bjKTCz/46W87i8mDDwlO4ncVxHd5e7PYhxXHgWjgUYujgqVCj
-         1nR0CLaijMHx4NwvQOVUrYLvY5Dx5oO3MbYgl5RNtXXm5DWgwD+e/h5/b53PKgCnFlx1
-         8ZZkiBqTsPvwF/cFcF1CN6vxaCvTy1/xTkRkqiw7qIRCK67Zn7VNbJbKR2aKyL0+040J
-         jTIDzpFn3fJuaP8nimYocqmAhEFwyIgQK6miSXAgOxN7nYB60BB7fASWjk7sCtO+Kfai
-         2ExA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=O7WIXV3vy7glDtk0NEp5Cspv2KG7UzeIls2bJ47h0Z0=;
-        fh=cFphU1tddMwpQFmop1aNU+o/nv3xOht8+ljxylfcOrI=;
-        b=dZB69wv+qK+BjfND1Bl7xJ31iLpQ/1+PNisywJcPo1/NynGyQFUAHqoT2ofQ2BB9lF
-         h4TawibHREnO4hBQ962SxNamqOTUYYRb6+EKDy1Wwt6V+oEcx+c/sbycS+uL8ia5jaG9
-         Q/U3QIdUdrx3SHGDTLolmikhBEgUTo2ytUp356mZrIXjkU0kLkcmGNQSzGxEhxNkHj25
-         6DoXbOuzRg2NP0X+A2Pktfk4FzcenfS99X6WcUoAwcXsJQclTbJSvCIpJXiwxglfq5/b
-         Knklhvx4Q9eoca3X4zhGjeqFaZCNTvy/OeuwFBh3z1OJB6izu+cLj3QiHHmkjvJf5SR/
-         4F7Q==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1777286877; x=1777891677; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=O7WIXV3vy7glDtk0NEp5Cspv2KG7UzeIls2bJ47h0Z0=;
-        b=avfzTSzElEeZ2cI1RgdFxyOq0/i7OwVNh932UUFZkQD0XqULonXsqrvYAhIFkyVaDg
-         Rip5VzuItEHYyX8inLJw8gZIqJV1LqSoyzMPoJOd4mJgmA2DfkPFS5vVxlMyLCRUroeG
-         uC8d2vfv2go71CRT8GjNTk8S5WD1Vn9YQsHtXC8t2qWZ0xEG72zWNzwTe3s3HPR92fey
-         PAbUvN6Wgj9F3oOGK4jOsnloftWuvObqCWd+P95tqpIEdaq0O/ZctK5O73hW+RF+zRae
-         K88/8ON5HuSg8HXu0X1O6o4opCXol7hGyqe+hcMk/6olISkQz6hnB1xrrtVD1C2PXHuG
-         4BtA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777286877; x=1777891677;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=O7WIXV3vy7glDtk0NEp5Cspv2KG7UzeIls2bJ47h0Z0=;
-        b=ClGxrKoBSAJwEne2d7W9R0t320oJQ7zeiKtjeW/uQ6ckauMkZgoa2FqQxhJTsS29NH
-         7LwZXhAB15u+khPE7Z/Mi6/7oz7BdLll5F4XnCowSH5co+OJAARO4j5Yt6Lx9GDqr3Rw
-         6LYHISxiVBRRV+Yo0WH6bqdPhkjaXNQfdpPRukK/bS5NS1MsfCKNveJutPxsAhq1icCD
-         apxHL2dVhEXsRHkFSY+pO2d1Fn8u4+qcH44vB5qL1eMOz33S0/yVOQ3JxQbtnyvPJv3U
-         U0Tjjp+EMMm7GSTledgFaFrTon4aelcO2QFdLeD8onlOe9h3JuRJnXxed7PWFa8oJ6Gf
-         bLHg==
-X-Forwarded-Encrypted: i=1; AFNElJ9weuynEnREu2lK4DbnGtz7aPTEywOQ9Pdq/SOaBkpgJ+ar6IMCr3KqLRcTK5z6GUuPtrPvf4EwLQyFA/U=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxFBS3iGtkWK9EvKz3zCw4sCalW0O/V3zkwOHbjdrTXXwncrTU6
-	CuVrkq7A0b1B7e2dGiWieuA8/3iPu/BycVR3H+hrjgFAI8PW4e5n/E/Zbpg/dmFyq1RtX4cJ1y8
-	93baWXW8/7S95kbLQh8u5ppnp/i/DTH4=
-X-Gm-Gg: AeBDieu5Tl7NTI1NAS65SkmAA/xY7gv7jVK1rERQL5whlhAlwKZ0231ptvm9+COKM7r
-	kxhdfexRrQBWbDqu4zcJs7xOw2PAVPdZab7rr9dJww04zwwQmcNQx/EG2B7cDTMEA+jaZ7VN8GK
-	Sis1+fhhrYQRl3XR6Dt4MBwqS4GVS45E6v9wvCAXx7b415eOdZU78eFiSCBzGbt7tpTKN7OXUrV
-	dLK4reiZ2B/rE5MipQSqhkVIoPK2KGVdWTsw0ULpH4iJrJ6y2gauwGtPLJmm7C/R8qVvaaSSDDi
-	fPR8xwUuq5KpSG8cUQ==
-X-Received: by 2002:a17:903:48f:b0:2b5:ffc2:b8d with SMTP id
- d9443c01a7336-2b5ffc20c6cmr288496845ad.40.1777286876631; Mon, 27 Apr 2026
- 03:47:56 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g41Zj6mYrz2xb3
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2026 21:30:21 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63R1stLK3289925;
+	Mon, 27 Apr 2026 11:30:17 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=UrHKDV
+	M3BS8sf5gvBwvFiqkukFSvz3CAG6VxJPknp54=; b=qq+lCB9ESam1RxCvrLUQYX
+	aXRX39tF+ulD/Sz+MhiurtP7QJQoazQZMsYX7uE/FsL1wK3K321+wLR0GeVWod3C
+	juDLKOySAHQ0OUJupCDT4JL986cMCAcluXEJOIhkI2k84uU4fCm2/EyG/RaDPMny
+	yBDBKe+u40VxXhaiSHou4xYUQ9gY4c6CASa0Pc4JvlSzZYVZDd3Ui6DXC9gmEDy7
+	63/X/GoP3/EJF4HC0vZHf+yQlGKSDAl5ZIOldevThQk6yAvM5dBGLPkAatN/cuzr
+	06ni9P9YhUHjRO8O66C9BnheKQIC/fZOhFtdF1P4lnQUhz8wq1erNSeSu7/Twjvw
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4drn9r038h-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 27 Apr 2026 11:30:16 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 63RBNlvu009117;
+	Mon, 27 Apr 2026 11:30:15 GMT
+Received: from smtprelay03.wdc07v.mail.ibm.com ([172.16.1.70])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ds9eh4ud6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 27 Apr 2026 11:30:15 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
+	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63RBTmcZ5046954
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 27 Apr 2026 11:29:48 GMT
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 221E658062;
+	Mon, 27 Apr 2026 11:30:15 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4D9885805C;
+	Mon, 27 Apr 2026 11:30:12 +0000 (GMT)
+Received: from [9.123.0.247] (unknown [9.123.0.247])
+	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 27 Apr 2026 11:30:11 +0000 (GMT)
+Message-ID: <688280dc-78a2-4796-9eaf-e1c058836012@linux.ibm.com>
+Date: Mon, 27 Apr 2026 17:00:10 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,49 +81,212 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260424103806.2276780-1-shengjiu.wang@nxp.com>
- <20260424103806.2276780-4-shengjiu.wang@nxp.com> <c925e9e6-934d-4b07-aaef-a7f737c687a2@sirena.org.uk>
-In-Reply-To: <c925e9e6-934d-4b07-aaef-a7f737c687a2@sirena.org.uk>
-From: Shengjiu Wang <shengjiu.wang@gmail.com>
-Date: Mon, 27 Apr 2026 18:47:44 +0800
-X-Gm-Features: AVHnY4IckQd0kNOio5AaSh11MDWGsTPIgl8JS33ob56G8t0YqSY5T0f6WsqJIBs
-Message-ID: <CAA+D8AOUVbSmWpr4+KhHC+9zmvj2M-BE_bpYEOUByGUv-wdHMA@mail.gmail.com>
-Subject: Re: [PATCH 3/5] ASoC: fsl-asoc-card: add channel and rate constraints
- for CS42888
-To: Mark Brown <broonie@kernel.org>
-Cc: Shengjiu Wang <shengjiu.wang@nxp.com>, Xiubo.Lee@gmail.com, festevam@gmail.com, 
-	nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, 
-	linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [mainline][BUG] Observed Workqueue lockups on offline CPUs.
+From: Samir M <samir@linux.ibm.com>
+To: "Paul E . McKenney" <paulmck@kernel.org>
+Cc: Boqun Feng <boqun.feng@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+        Tejun Heo <tj@kernel.org>, RCU <rcu@vger.kernel.org>,
+        linuxppc-dev@lists.ozlabs.org, Shrikanth Hegde <sshegde@linux.ibm.com>
+References: <97a7d011-d573-4754-9e5d-68b562c64089@linux.ibm.com>
+Content-Language: en-US
+In-Reply-To: <97a7d011-d573-4754-9e5d-68b562c64089@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: 8m-66Hp9T_nGTzfFySpGQ2mNf0Tx20GD
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI3MDEyMCBTYWx0ZWRfX3qHLwSAlwc0V
+ IenjyKY+KuhRXK8irba7Jjazt+fSvwTqDbnqIYKeCuZfH0DyOHNtLdWFUoI+adJeiXh3wkZOnff
+ WMmtKxuu5CgChnaHgsCYX9sQPI7exInlZs2IeFWxQ0Ac1LIwNhXuNDMys+pLygNnrOdgJpMxnr7
+ I3xktgAk+ni8kT9pcqNqsjWHpy6Ar/IqZHNiA+YD7+Xr4/xJLeL33e9IfbArzH4yEB/8qZYGIPL
+ rHlPSOsq/s8GM0Lm+Ab+y+6pA2TzyPnuNrU3i3ch+FC6fy/nJjr16yVI4RQnpqmP2NgVPkDKYuY
+ /Y/V82mMSFu8kfz3g3Bu8Qs9TSDuxqj9/3f680IHsBRHaen8dCPib5+oMV6BRqEEzBebuFevUOD
+ g+CNx8JINHlDSiFARLdRCc8nWef03paynQNvNExTkCdp6y/pTRx938nArhnXSj6VYwQYQcZ5jJj
+ PWrEhCNMUMyaGBQSTIQ==
+X-Authority-Analysis: v=2.4 cv=Kc7idwYD c=1 sm=1 tr=0 ts=69ef48c8 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=XUFyTfre3SylLFWlK3QA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: HpOUvCYn5WwccEah4xODF4KHYNyapTI8
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-27_03,2026-04-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 phishscore=0 bulkscore=0 adultscore=0 spamscore=0
+ malwarescore=0 impostorscore=0 priorityscore=1501 lowpriorityscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
+ definitions=main-2604270120
 
-On Sat, Apr 25, 2026 at 12:09=E2=80=AFAM Mark Brown <broonie@kernel.org> wr=
-ote:
->
-> On Fri, Apr 24, 2026 at 06:38:04PM +0800, Shengjiu Wang wrote:
->
-> > The CS42888 codec has 4 I2S lanes with 2 channels per lane. Using odd
-> > channel counts (3, 5, 7) causes data misalignment in the I2S frame,
-> > resulting in incorrect channel mapping. Only mono and even channel
-> > counts (1, 2, 4, 6, 8) work correctly.
->
-> > +static int fsl_asoc_card_startup(struct snd_pcm_substream *substream)
-> > +{
-> > +     struct snd_soc_pcm_runtime *rtd =3D substream->private_data;
-> > +     struct fsl_asoc_card_priv *priv =3D snd_soc_card_get_drvdata(rtd-=
->card);
-> > +     struct snd_pcm_runtime *runtime =3D substream->runtime;
-> > +     static struct snd_pcm_hw_constraint_list constraint_rates;
-> > +     static struct snd_pcm_hw_constraint_list constraint_channels;
->
-> This makes the constraints global for all substreams, given that the
-> Freescale SoCs tend to have multiple DAIs and have things like direct
-> PDM inputs I'd expect it'd be relatively common to have disjoint
-> constraints.
 
-Thanks for the comments.  I will refine it.
+On 27/04/26 3:32 pm, Samir M wrote:
+> Hi Paul,
+>
+> I've been testing the latest upstream kernel on a PowerPC system and 
+> encountered workqueue lockup issues that I've bisected to commit 
+> 61bbcfb50514 ("srcu: Push srcu_node allocation to GP when 
+> non-preemptible").
+> After booting, I'm seeing workqueue lockup warnings for CPUs 81-96, 
+> which are offline on my system. The workqueues remain stuck for over 
+> 237 seconds:
+>
+> [  243.309302][    C0] BUG: workqueue lockup - pool cpus=81 node=0 
+> flags=0x4 nice=0 stuck for 237s!
+> [  243.309311][    C0] BUG: workqueue lockup - pool cpus=82 node=0 
+> flags=0x4 nice=0 stuck for 237s!
+> [  243.309318][    C0] BUG: workqueue lockup - pool cpus=83 node=0 
+> flags=0x4 nice=0 stuck for 237s!
+> [  243.309326][    C0] BUG: workqueue lockup - pool cpus=84 node=0 
+> flags=0x4 nice=0 stuck for 237s!
+> [  243.309333][    C0] BUG: workqueue lockup - pool cpus=85 node=0 
+> flags=0x4 nice=0 stuck for 237s!
+> [  243.309341][    C0] BUG: workqueue lockup - pool cpus=86 node=0 
+> flags=0x4 nice=0 stuck for 237s!
+> [  243.309348][    C0] BUG: workqueue lockup - pool cpus=87 node=0 
+> flags=0x4 nice=0 stuck for 237s!
+> [  243.309355][    C0] BUG: workqueue lockup - pool cpus=88 node=0 
+> flags=0x4 nice=0 stuck for 237s!
+> [  243.309363][    C0] BUG: workqueue lockup - pool cpus=89 node=0 
+> flags=0x4 nice=0 stuck for 237s!
+> [  243.309370][    C0] BUG: workqueue lockup - pool cpus=90 node=0 
+> flags=0x4 nice=0 stuck for 237s!
+> [  243.309377][    C0] BUG: workqueue lockup - pool cpus=91 node=0 
+> flags=0x4 nice=0 stuck for 237s!
+> [  243.309384][    C0] BUG: workqueue lockup - pool cpus=92 node=0 
+> flags=0x4 nice=0 stuck for 237s!
+> [  243.309392][    C0] BUG: workqueue lockup - pool cpus=93 node=0 
+> flags=0x4 nice=0 stuck for 237s!
+> [  243.309399][    C0] BUG: workqueue lockup - pool cpus=94 node=0 
+> flags=0x4 nice=0 stuck for 237s!
+> [  243.309406][    C0] BUG: workqueue lockup - pool cpus=95 node=0 
+> flags=0x4 nice=0 stuck for 237s!
+> [  243.309413][    C0] BUG: workqueue lockup - pool cpus=96 node=0 
+> flags=0x4 nice=0 stuck for 237s!
+>
+> Git bisect identified this as the first bad commit:
+>
+> commit 61bbcfb50514a8a94e035a7349697a3790ab4783
+> Author: Paul E. McKenney <paulmck@kernel.org>
+> Date:   Fri Mar 20 20:29:20 2026 -0700
+>
+>     srcu: Push srcu_node allocation to GP when non-preemptible
+>
+>     When the srcutree.convert_to_big and srcutree.big_cpu_lim kernel boot
+>     parameters specify initialization-time allocation of the srcu_node
+>     tree for statically allocated srcu_struct structures (for example, in
+>     DEFINE_SRCU() at build time instead of init_srcu_struct() at 
+> runtime),
+>     init_srcu_struct_nodes() will attempt to dynamically allocate this 
+> tree
+>     at the first run-time update-side use of this srcu_struct structure,
+>     but while holding a raw spinlock. Because the memory allocator can
+>     acquire non-raw spinlocks, this can result in lockdep splats.
+>
+>     This commit therefore uses the same SRCU_SIZE_ALLOC trick that is 
+> used
+>     when the first run-time update-side use of this srcu_struct structure
+>     happens before srcu_init() is called. The actual allocation then 
+> takes
+>     place from workqueue context at the ends of upcoming SRCU grace 
+> periods.
+>
+>     [boqun: Adjust the sha1 of the Fixes tag]
+>
+>     Fixes: 175b45ed343a ("srcu: Use raw spinlocks so call_srcu() can 
+> be used under preempt_disable()")
+>     Signed-off-by: Paul E. McKenney <paulmck@kernel.org>
+>     Signed-off-by: Boqun Feng <boqun@kernel.org>
+>
+>  kernel/rcu/srcutree.c | 7 +++++--
+>  1 file changed, 5 insertions(+), 2 deletions(-)
+>
+> Reverting this commit resolves the issue.
+>
+> The problem appears to be that the workqueue is attempting to execute 
+> on offline CPUs. The commit moves SRCU node allocation to workqueue 
+> context to avoid lockdep issues with memory allocation under raw 
+> spinlocks, which makes sense. However, it seems the workqueue 
+> scheduling doesn't properly account for CPU online/offline state in 
+> this code path.
+>
+> My test environment:
+> - Architecture: PowerPC
+> - Kernel version: Latest upstream (7.1-rc1)
+> - CPUs 81-96 are offline at boot time
+>
+> I suspect the issue might be related to:
+> 1. Workqueue not checking CPU online status before scheduling SRCU 
+> allocation work
+> 2. Missing CPU hotplug awareness in the new workqueue-based allocation 
+> path
+> 3. Possible race condition with CPU hotplug events
+>
+> Would it make sense to use queue_work_on() with explicit online CPU 
+> selection, or add CPU hotplug handlers for this workqueue? I'm not 
+> deeply familiar with the workqueue internals, so I might be missing 
+> something.
+> Please let me know if you need any additional details or if you'd like 
+> me to test any patches.
+>
+> If you happen to fix the above issue, then please add below tag.
+> Reported-by: Samir M <samir@linux.ibm.com>
+>
+>
+> Thanks,
+> Samir
 
-Best regards
-Shengjiu Wang
+Hi Paul,
+
+
+I worked on fixing the issue and introduced the changes below. With 
+these updates, I no longer observe any workqueue lockup messages for 
+offline CPUs.
+Could you please review the changes and share your feedback?
+
+The commit 61bbcfb50514 ("srcu: Push srcu_node allocation to GP when
+non-preemptible") introduced workqueue lockups on systems with offline
+CPUs. The issue occurs because srcu_queue_delayed_work_on() calls
+queue_work_on() with sdp->cpu, which may be offline, causing the
+workqueue to spin indefinitely on that CPU.
+
+This patch fixes the issue by checking if the target CPU is online
+before queuing work on it. If the CPU is offline, we fall back to
+using queue_work() which will schedule the work on any available
+online CPU.
+
+Fixes: 61bbcfb50514 ("srcu: Push srcu_node allocation to GP when 
+non-preemptible")
+
+Signed-off-by: Samir <samir@linux.ibm.com>
+---
+  kernel/rcu/srcutree.c | 7 ++++++-
+  1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/kernel/rcu/srcutree.c b/kernel/rcu/srcutree.c
+index 0d01cd8c4b4a..55a90dd4a030 100644
+--- a/kernel/rcu/srcutree.c
++++ b/kernel/rcu/srcutree.c
+@@ -869,10 +869,15 @@ static void srcu_delay_timer(struct timer_list *t)
+  static void srcu_queue_delayed_work_on(struct srcu_data *sdp,
+  unsigned long delay)
+  {
+-       if (!delay) {
++       if (!delay && cpu_online(sdp->cpu)) {
+                 queue_work_on(sdp->cpu, rcu_gp_wq, &sdp->work);
+                 return;
++       } else if (!delay) {
++               /* CPU is offline, queue on any available CPU */
++               queue_work(rcu_gp_wq, &sdp->work);
++               return;
++       }
+
+         timer_reduce(&sdp->delay_work, jiffies + delay);
+  }
+--
+
+
+Thanks,
+Samir
 
