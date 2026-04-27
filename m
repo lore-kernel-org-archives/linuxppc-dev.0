@@ -1,77 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-20165-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20166-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DAFA5FF8860
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2026 12:29:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B2EDFF8860
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2026 12:29:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g42th4PWhz2yr9;
-	Mon, 27 Apr 2026 22:29:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::431"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777292956;
-	cv=none; b=cnIjT10mYj2nNo2TciQIA2HVRwdhKmg5VSKG4Ol7iV4M/OV8sXHPOfyKiGnGv8oM6n07rgLM7pgvXmR5Z0C+7OIskVkkaY15tkYYYcTaQ65Z/JqDUieeZ2SvdXAWdENp7TEa1bx6S1pOB3EzNi6gruttbm2TmpotX1R5+RYomDbewrclUSYceoj4P93Kk+7aKDbp1CtadrTsyj4EKXPFe9lWInSLrK7fv/KGa59bQIpazUz94duFyoFvOBbPjLzyVhmYcAmrsLK/0/J/fiAXCYJNUho+uXn9dELNH7+Qj3GQtH2r4G8tIHcX7WdH74JOnQWhzOGAkQMYwy1/wKEqLg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g42ty6pmBz2ypV;
+	Mon, 27 Apr 2026 22:29:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777292970;
+	cv=none; b=VYiLN4TRCo6B85/pj5D+bT/wPn+JfVoBvfoy3SPiEIPDC/i4aBWVgen+IKFE44oJj4Jg7guRoio+T4KLsivN2JpSBTCtlsDYtCIi351XA3rXYpDURtXC7rIpmV2snLCGgSWaeQLvqMCSD+zLUhXLM6PlXRCtS+5B4qXAkvQS97bTrbXt/o4xSFfjgl26IsRYje3801RedHGT8E8leKVtomNXi+p9ZXNwZBDbPipKLbTWe23tCyzVIcQZfz2VwgBTh5nMWE+JtqMKj917vKfQ+HPCmbzKeQmPggg4fn0OUzXzH20ODP0fUtgbNVBJW+YUGKjQ4SBNLU7YMouVLLy5kg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777292956; c=relaxed/relaxed;
-	bh=XARyapmtrilvR5w12XJiFpVGShufbq9BKuLcUgswpko=;
+	t=1777292970; c=relaxed/relaxed;
+	bh=BcERRxmHDEF5joRyKsvM8IXhICq8izEhRkUJG7EtPXQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=B+DsmEO6CikgD4pTjyYrHz6WOUtaR6JY3W+mYg/5vxiuw2kK1ugHPd00xPOA1uETF/d9HXe3qA5uWdSBuyS1L7Py4IcNBGEkOUoYHUeBzCZZzMOiCfvFqFgRB/5OFPIitj1/7WrTlZTN1zk8YO9mobdZnkAkRNmmu3VgPoxZli2VYCCsAP0jFHCmkisUcmWWuE6tqVp5XunTh8568FcIJrvboL+sCOPZO/1Zndtyy1MIEprMdjK1AJxx9apsUc1YdKFeF0T0nnuWDGrCKtKrKvFgesT2xwzJqIJ/GmOTvQ35iHqXZ1dGPMRmjaWAiXKavDNZ2YC+j7+kosb/kQxURg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=RdikmkhT; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version:Content-Type; b=kCOmY89qnW1IUYij6N7KY/1JmpFX7e0bjPe7OuWddeO6Ydpnl/G0ncneYHgLGu8W/zeuuCClKEMJtBlE60A8ZGtJ7AOGwVCEgRi1SNMIEi308ITE4vWr6CHW0kwyNoBSguLT74Tu1DBVEZBZQFt2d2/yfT2P9MTtUhPVoXQSmJ3GpAd2MHnKyiDYOAHmQ6UJQUdlJWEkqBFuWoA0SKDl/YM40gB5YZPG9Rkp3tVM91hyk5feBGA53OwgKgyAVrcnT6OIieWcQv4PG0pzOT0QJCrPthO6EXrczxSsIMMR9YqlVMYBdgomYVgMGY92BEg+jWQmM+41hSx+SCcb0WFDIA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=P5vfBb4O; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42d; helo=mail-pf1-x42d.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=RdikmkhT;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=P5vfBb4O;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com [IPv6:2607:f8b0:4864:20::431])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42d; helo=mail-pf1-x42d.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42d.google.com (mail-pf1-x42d.google.com [IPv6:2607:f8b0:4864:20::42d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g42tg5rYhz2y2B
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2026 22:29:15 +1000 (AEST)
-Received: by mail-pf1-x431.google.com with SMTP id d2e1a72fcca58-82f8cebc935so4331069b3a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2026 05:29:15 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g42tx1pGSz2y2B
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2026 22:29:29 +1000 (AEST)
+Received: by mail-pf1-x42d.google.com with SMTP id d2e1a72fcca58-82f0884bcfaso6898025b3a.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2026 05:29:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1777292954; x=1777897754; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1777292967; x=1777897767; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=XARyapmtrilvR5w12XJiFpVGShufbq9BKuLcUgswpko=;
-        b=RdikmkhTi5xWZWXTxnXHxoXX++R8v64nOMqOzg9caV2OJXjmOlznAGL6l0JYlBXxQg
-         wTqMdBDWQCPqN2vTJBYI9INfw4ccipvwhIhRzjPVIhcJ6HZvC2XNGGAVbV3zW+UVPIoC
-         E0cANJdEhYY1wKsYBjLSa1abEAsuVn9qwfsjh5ayOYlhC/Yybi5HgY0MhfBEibRy3HYH
-         KlAKbnNa3669sEKS1I0A8oUNPyER6DGc5EwGjFQqoAXZdA34N5rQcZFFjKSqRwP8VzWj
-         pZ1pNuiq7TipobZDVs02h2M4PoceWwa/ivShq84TW9n7jwmoEGBEoyRN+HClOE6yRSjy
-         IL5w==
+        bh=BcERRxmHDEF5joRyKsvM8IXhICq8izEhRkUJG7EtPXQ=;
+        b=P5vfBb4OFY+5eZrO/83EOAdof5SM3mdZ3blo2CZdNzY3GHYaLrd82Mb9kIeKTWtY0v
+         SbKL8Ox4upLQ8gRf/5tEGQgvsJMEK4uMsVv7Z9bDZ8NHF6uxzQ7FoBQinu1RZsqTlqfA
+         eEqSlaPkcOpnvca3ov3iJb6hxqXkgVhFV7AifDm7s7TcaVI7LjDYuY9y+so9jBWHgW4t
+         ldtvcHfk6PFLNJ42oplgW9JO0vacHLC6caQC1uHMduptVzOLAasWA01bbnp4HWf/R2zG
+         r5HbSer7IWVgKl8q+R92Q1wO9QzAI6kZnQa90g9ulQ0hzkwVntg/gXLEk65kFiHJji36
+         VIKw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777292954; x=1777897754;
+        d=1e100.net; s=20251104; t=1777292967; x=1777897767;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=XARyapmtrilvR5w12XJiFpVGShufbq9BKuLcUgswpko=;
-        b=C10Q23AKcZsxottXNT0UkkhkxCMH+2S27f2tFow2ZachwmMedOcIsLAzEhl4CjTrbI
-         RiSfvyTThXK2angNlXMXVwqsF+eBqPrOJNBcB/CunCeMuei4seiBgPBP+bEvGPxqUqPk
-         R6YiamKrc0vCz/3wd3BIPGvDJUDNOQahNprfLF/7RTKEjjDV4+trkvcE8BmhA5hAxAQR
-         yW8/qqpCBmcktsQwksMg74q59TDfsveLp+yRz2zlhV4UCw7Wqhh2RPxuUlEEFS6iT7Ic
-         FDxBQIVb+BpkrjoCGQqelzEr6547PDIzhnHkguDaWL9Tn0RUTuvBXQeShWdGsYFQlIA8
-         +qGg==
-X-Forwarded-Encrypted: i=1; AFNElJ+SD7a7n8+fD1MrsUQZEQMiTygBCT2M3lWz/el4poSuDUSmNRXAOuGFtsIQzJc/adHAbTONjoQfht/Apbo=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx9eIJLRLnB25tjsincUygiQwmVG89bGdGOcJTtu3dE59B5OoXX
-	9Sy78ykfS9C6z9kCaL9FJX7Trknco7QCaNoGFxaxe6zwnSmI1T5fsrGf
-X-Gm-Gg: AeBDievyBS0s/fyHWwCpPNFX5a9YQbICwwXoL2k7/UdHIsKdiOvkpxwolPSijsxgsvS
-	wzeKstpL7NYgbzl6Ytn4kfk7EOWs2VOwjqNbwSS4QKG5nbI1RsvSadTMZ3kh7sU1MVDd/6wDsaQ
-	hcM9UWFcJj7B6LnhaS0GQQP645AK8Neejx2UTSJvlLr97GYcvB/R1/3JzMke5GopfQdkOVaMoq9
-	6Dn+mCS5ldd5P2VjPDqRhTWtNuO1u5ZFiIH5YE07ukG5F/swyMzPyAcyKx1p/jrokmlSfwuJxtu
-	YoioP0EAOV4HO+YMwG8Qchc/+vafdx1Pm0/z/MNYq+QqAx4KKOi38BmYW1Lc1bsQQTJmuOqMZf8
-	N3l7I32WPLRPkNnLAB7xRKTD5RS7huZU41uyd2INRc96JAeZ1pfTLNia4D6DmPH81JmwiEAKSoh
-	dq55dNg+iVv0yG+KfXqQs1rjPEq6QY9IYtq+afRhV5AOpvVGif8P5wnOPfdWN0jpSwe6y+a7aV3
-	HU/Yg==
-X-Received: by 2002:a05:6a00:1307:b0:82a:7046:86a2 with SMTP id d2e1a72fcca58-82f8c7d1011mr43021858b3a.10.1777292953443;
-        Mon, 27 Apr 2026 05:29:13 -0700 (PDT)
+        bh=BcERRxmHDEF5joRyKsvM8IXhICq8izEhRkUJG7EtPXQ=;
+        b=gFdXZtjM5xyc2Bs9kML8PTZf3vNkfIALTdsTgw0hDZievKQxFn8i2qwo5Rlg2XhlbR
+         fmgBDJe0T7Ygtu2mQWS2AyVYprrU/v73XB5cvYw42HB9+CmRxEIA2dV9e8jeAGJY/7Wz
+         YgMQhs+ox7zhGLXV9xmLgLOJPHoy2IyYFrIYm44IIqoc6aHVlzfSZb8tStTPC11RyEJ0
+         TeYET338e5LNuqJsJoj7cQAKqih9Ne4NfZ6nX3Mqxyc3rFz5yf65q6Oj5EH3YB47qHNF
+         1Fj/ZF7elRrcSXj624ob76Jeu7dZmQ6zp+JgTAzRQpMYRJVgmjl2yb4FCzIphLkDEfie
+         yxRQ==
+X-Forwarded-Encrypted: i=1; AFNElJ95zc70hSV/mDB/sX8G8F43X72K/Wq8+eK5dxXAx2+TuEgbyHFsQrnfUTAkzDiHvlc1Mim5FTYspqGdmm4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx+g+PQz6OhwfNmtOCc2HkjSycTlz2q1vCvbdwm/SwiK7wJKFe1
+	VhRMAOPspiYwUOLYNa3whCv+cerGkPSrAPO9+mCHF5na7FBc09dxb9es
+X-Gm-Gg: AeBDiesI4JKg7DZrVi9ay6HM8HDr6XYIg7FiESm3oafMGtleizwszAAXQyg6mY5oIwj
+	+Q2KDDmO+OBjAGiZVNReTX1XyPjDYuv58pGQRMV2WSdZq+bN0HB148+IdXnI5DH6/N+ErY5PQ/u
+	4Ni+Q3VGJNdaCEoo0MkWnYWT5pHQe+MFKN5siDXaoanDG05YCVhsk2IAOVZLo37zJnHeYpkW+gZ
+	OR5+qOMqtKdFPFDMKR2c8qBCUFqfrERL0LzLPluEx+Y/mbodd4SvJIGa8Y455VRQt4Chov2d1a8
+	E/SaNDFa1BuA+to4P/2DyqgSVxb/a8377vlKtjKZ3QkqVQpeHUctcKDIUGX5trLJGwJnqfIWA/f
+	qg8E6VJ2EaIPbKUrdArcOUafueo6CQfxRJg6JB2LtmOfIlhIX7MP7qtXVm3DxUO6Ew9JOYwgppv
+	DVJYdXmcBTTVtHimGbZ6ITr7d4mB3cf8O8/pa1G3I76Y0gtik0Pl/5UXssWXNa2m5CkZISXQ+UT
+	E+nrw==
+X-Received: by 2002:a05:6a00:1d88:b0:82d:24f:2510 with SMTP id d2e1a72fcca58-82f8c9512c8mr45441683b3a.50.1777292966884;
+        Mon, 27 Apr 2026 05:29:26 -0700 (PDT)
 Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([129.41.58.4])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82f8e9f7735sm32733466b3a.21.2026.04.27.05.29.00
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82f8e9f7735sm32733466b3a.21.2026.04.27.05.29.13
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 27 Apr 2026 05:29:13 -0700 (PDT)
+        Mon, 27 Apr 2026 05:29:26 -0700 (PDT)
 From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
 To: maddy@linux.ibm.com,
 	mpe@ellerman.id.au,
@@ -109,12 +109,13 @@ To: maddy@linux.ibm.com,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org,
 	kasan-dev@googlegroups.com
-Cc: Samir M <samir@linux.ibm.com>,
+Cc: Mukesh Kumar Chaurasiya <mkchauras@linux.ibm.com>,
+	Samir M <samir@linux.ibm.com>,
 	David Gow <davidgow@google.com>,
 	Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: [PATCH v5 6/8] powerpc: Prepare for IRQ entry exit
-Date: Mon, 27 Apr 2026 17:57:40 +0530
-Message-ID: <20260427122742.210074-7-mkchauras@gmail.com>
+Subject: [PATCH v5 7/8] powerpc: Enable GENERIC_ENTRY feature
+Date: Mon, 27 Apr 2026 17:57:41 +0530
+Message-ID: <20260427122742.210074-8-mkchauras@gmail.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260427122742.210074-1-mkchauras@gmail.com>
 References: <20260427122742.210074-1-mkchauras@gmail.com>
@@ -131,419 +132,1088 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-From: Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
+From: Mukesh Kumar Chaurasiya <mkchauras@linux.ibm.com>
 
-Move interrupt entry and exit helper routines from interrupt.h into the
-PowerPC-specific entry-common.h header as a preparatory step for enabling
-the generic entry/exit framework.
+Enable the generic IRQ entry/exit infrastructure on PowerPC by selecting
+GENERIC_ENTRY and integrating the architecture-specific interrupt and
+syscall handlers with the generic entry/exit APIs.
 
-This consolidation places all PowerPC interrupt entry/exit handling in a
-single common header, aligning with the generic entry infrastructure.
-The helpers provide architecture-specific handling for interrupt and NMI
-entry/exit sequences, including:
+This change replaces PowerPC’s local interrupt entry/exit handling with
+calls to the generic irqentry_* helpers, aligning the architecture with
+the common kernel entry model. The macros that define interrupt, async,
+and NMI handlers are updated to use irqentry_enter()/irqentry_exit()
+and irqentry_nmi_enter()/irqentry_nmi_exit() where applicable also
+convert the PowerPC syscall entry and exit paths to use the generic
+entry/exit framework and integrating with the common syscall handling
+routines.
 
- - arch_interrupt_enter/exit_prepare()
- - arch_interrupt_async_enter/exit_prepare()
- - arch_interrupt_nmi_enter/exit_prepare()
- - Supporting helpers such as nap_adjust_return(), check_return_regs_valid(),
-   debug register maintenance, and soft mask handling.
+Key updates include:
+ - The architecture now selects GENERIC_ENTRY in Kconfig.
+ - Replace interrupt_enter/exit_prepare() with arch_interrupt_* helpers.
+ - Integrate irqentry_enter()/exit() in standard and async interrupt paths.
+ - Integrate irqentry_nmi_enter()/exit() in NMI handlers.
+ - Remove redundant irq_enter()/irq_exit() calls now handled generically.
+ - Use irqentry_exit_cond_resched() for preemption checks.
+ - interrupt.c and syscall.c are simplified to delegate context
+   management and user exit handling to the generic entry path.
+ - The new pt_regs field `exit_flags` introduced earlier is now used
+   to carry per-syscall exit state flags (e.g. _TIF_RESTOREALL).
+ - Remove unused code.
 
-The functions are copied verbatim from interrupt.h.Subsequent patches will
-integrate these routines into the generic entry/exit flow.
+This change establishes the necessary wiring for PowerPC to use the
+generic IRQ entry/exit framework while maintaining existing semantics.
+This aligns PowerPC with the common entry code used by other
+architectures and reduces duplicated logic around syscall tracing,
+context tracking, and signal handling.
 
-No functional change intended.
+The performance benchmarks from perf bench basic syscall are below:
 
-Signed-off-by: Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
+perf bench syscall usec/op (-ve is improvement)
+
+| Syscall | Base        | test        | change % |
+| ------- | ----------- | ----------- | -------- |
+| basic   | 0.093543    | 0.093023    | -0.56    |
+| execve  | 446.557781  | 450.107172  | +0.79    |
+| fork    | 1142.204391 | 1156.377214 | +1.24    |
+| getpgid | 0.097666    | 0.092677    | -5.11    |
+
+perf bench syscall ops/sec (+ve is improvement)
+
+| Syscall | Base     | New      | change % |
+| ------- | -------- | -------- | -------- |
+| basic   | 10690548 | 10750140 | +0.56    |
+| execve  | 2239     | 2221     | -0.80    |
+| fork    | 875      | 864      | -1.26    |
+| getpgid | 10239026 | 10790324 | +5.38    |
+
+IPI latency benchmark (-ve is improvement)
+
+| Metric         | Base (ns)     | New (ns)      | % Change |
+| -------------- | ------------- | ------------- | -------- |
+| Dry run        | 583136.56     | 584136.35     | 0.17%    |
+| Self IPI       | 4167393.42    | 4149093.90    | -0.44%   |
+| Normal IPI     | 61769347.82   | 61753728.39   | -0.03%   |
+| Broadcast IPI  | 2235584825.02 | 2227521401.45 | -0.36%   |
+| Broadcast lock | 2164964433.31 | 2125658641.76 | -1.82%   |
+
+Thats very close to performance earlier with arch specific handling.
+
+Signed-off-by: Mukesh Kumar Chaurasiya <mkchauras@linux.ibm.com>
 Tested-by: Samir M <samir@linux.ibm.com>
 Tested-by: David Gow <davidgow@google.com>
 Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
 Reviewed-by: Shrikanth Hegde <sshegde@linux.ibm.com>
 ---
- arch/powerpc/include/asm/entry-common.h | 358 ++++++++++++++++++++++++
- 1 file changed, 358 insertions(+)
+ arch/powerpc/Kconfig                 |   1 +
+ arch/powerpc/include/asm/interrupt.h | 384 +++++----------------------
+ arch/powerpc/include/asm/kasan.h     |  15 +-
+ arch/powerpc/kernel/interrupt.c      | 250 +++--------------
+ arch/powerpc/kernel/ptrace/ptrace.c  |   3 -
+ arch/powerpc/kernel/signal.c         |   8 +
+ arch/powerpc/kernel/syscall.c        | 119 +--------
+ 7 files changed, 124 insertions(+), 656 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/entry-common.h b/arch/powerpc/include/asm/entry-common.h
-index ff0625e04778..de5601282755 100644
---- a/arch/powerpc/include/asm/entry-common.h
-+++ b/arch/powerpc/include/asm/entry-common.h
-@@ -5,10 +5,75 @@
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index e93df95b79e7..81642206f7de 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -206,6 +206,7 @@ config PPC
+ 	select GENERIC_CPU_AUTOPROBE
+ 	select GENERIC_CPU_VULNERABILITIES	if PPC_BARRIER_NOSPEC
+ 	select GENERIC_EARLY_IOREMAP
++	select GENERIC_ENTRY
+ 	select GENERIC_GETTIMEOFDAY
+ 	select GENERIC_IDLE_POLL_SETUP
+ 	select GENERIC_IOREMAP
+diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
+index 0e2cddf8bd21..fb42a664ae54 100644
+--- a/arch/powerpc/include/asm/interrupt.h
++++ b/arch/powerpc/include/asm/interrupt.h
+@@ -66,11 +66,9 @@
  
- #include <asm/cputime.h>
- #include <asm/interrupt.h>
-+#include <asm/runlatch.h>
- #include <asm/stacktrace.h>
- #include <asm/switch_to.h>
- #include <asm/tm.h>
+ #ifndef __ASSEMBLER__
  
-+#ifdef CONFIG_PPC_IRQ_SOFT_MASK_DEBUG
-+/*
-+ * WARN/BUG is handled with a program interrupt so minimise checks here to
-+ * avoid recursion and maximise the chance of getting the first oops handled.
-+ */
-+#define INT_SOFT_MASK_BUG_ON(regs, cond)				\
-+do {									\
-+	if ((user_mode(regs) || (TRAP(regs) != INTERRUPT_PROGRAM)))	\
-+		BUG_ON(cond);						\
-+} while (0)
-+#else
-+#define INT_SOFT_MASK_BUG_ON(regs, cond)
-+#endif
+-#include <linux/context_tracking.h>
+-#include <linux/hardirq.h>
+-#include <asm/cputime.h>
+-#include <asm/firmware.h>
+-#include <asm/ftrace.h>
++#include <linux/sched/debug.h> /* for show_regs */
++#include <linux/irq-entry-common.h>
 +
-+#ifdef CONFIG_PPC_BOOK3S_64
-+extern char __end_soft_masked[];
-+bool search_kernel_soft_mask_table(unsigned long addr);
-+unsigned long search_kernel_restart_table(unsigned long addr);
-+
-+DECLARE_STATIC_KEY_FALSE(interrupt_exit_not_reentrant);
-+
-+static inline bool is_implicit_soft_masked(struct pt_regs *regs)
-+{
-+	if (user_mode(regs))
-+		return false;
-+
-+	if (regs->nip >= (unsigned long)__end_soft_masked)
-+		return false;
-+
-+	return search_kernel_soft_mask_table(regs->nip);
-+}
-+
-+static inline void srr_regs_clobbered(void)
-+{
-+	local_paca->srr_valid = 0;
-+	local_paca->hsrr_valid = 0;
-+}
-+#else
-+static inline unsigned long search_kernel_restart_table(unsigned long addr)
-+{
-+	return 0;
-+}
-+
-+static inline bool is_implicit_soft_masked(struct pt_regs *regs)
-+{
-+	return false;
-+}
-+
-+static inline void srr_regs_clobbered(void)
-+{
-+}
-+#endif
-+
-+static inline void nap_adjust_return(struct pt_regs *regs)
-+{
-+#ifdef CONFIG_PPC_970_NAP
-+	if (unlikely(test_thread_local_flags(_TLF_NAPPING))) {
-+		/* Can avoid a test-and-clear because NMIs do not call this */
-+		clear_thread_local_flags(_TLF_NAPPING);
-+		regs_set_return_ip(regs, (unsigned long)power4_idle_nap_return);
-+	}
-+#endif
-+}
-+
- static __always_inline void booke_load_dbcr0(void)
- {
- #ifdef CONFIG_PPC_ADV_DEBUG_REGS
-@@ -31,6 +96,299 @@ static __always_inline void booke_load_dbcr0(void)
+ #include <asm/kprobes.h>
+ #include <asm/runlatch.h>
+ 
+@@ -88,308 +86,6 @@ do {									\
+ #define INT_SOFT_MASK_BUG_ON(regs, cond)
  #endif
+ 
+-#ifdef CONFIG_PPC_BOOK3S_64
+-extern char __end_soft_masked[];
+-bool search_kernel_soft_mask_table(unsigned long addr);
+-unsigned long search_kernel_restart_table(unsigned long addr);
+-
+-DECLARE_STATIC_KEY_FALSE(interrupt_exit_not_reentrant);
+-
+-static inline bool is_implicit_soft_masked(struct pt_regs *regs)
+-{
+-	if (user_mode(regs))
+-		return false;
+-
+-	if (regs->nip >= (unsigned long)__end_soft_masked)
+-		return false;
+-
+-	return search_kernel_soft_mask_table(regs->nip);
+-}
+-
+-static inline void srr_regs_clobbered(void)
+-{
+-	local_paca->srr_valid = 0;
+-	local_paca->hsrr_valid = 0;
+-}
+-#else
+-static inline unsigned long search_kernel_restart_table(unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-static inline bool is_implicit_soft_masked(struct pt_regs *regs)
+-{
+-	return false;
+-}
+-
+-static inline void srr_regs_clobbered(void)
+-{
+-}
+-#endif
+-
+-static inline void nap_adjust_return(struct pt_regs *regs)
+-{
+-#ifdef CONFIG_PPC_970_NAP
+-	if (unlikely(test_thread_local_flags(_TLF_NAPPING))) {
+-		/* Can avoid a test-and-clear because NMIs do not call this */
+-		clear_thread_local_flags(_TLF_NAPPING);
+-		regs_set_return_ip(regs, (unsigned long)power4_idle_nap_return);
+-	}
+-#endif
+-}
+-
+-static inline void booke_restore_dbcr0(void)
+-{
+-#ifdef CONFIG_PPC_ADV_DEBUG_REGS
+-	unsigned long dbcr0 = current->thread.debug.dbcr0;
+-
+-	if (IS_ENABLED(CONFIG_PPC32) && unlikely(dbcr0 & DBCR0_IDM)) {
+-		mtspr(SPRN_DBSR, -1);
+-		mtspr(SPRN_DBCR0, global_dbcr0[smp_processor_id()]);
+-	}
+-#endif
+-}
+-
+-static inline void interrupt_enter_prepare(struct pt_regs *regs)
+-{
+-#ifdef CONFIG_PPC64
+-	irq_soft_mask_set(IRQS_ALL_DISABLED);
+-
+-	/*
+-	 * If the interrupt was taken with HARD_DIS clear, then enable MSR[EE].
+-	 * Asynchronous interrupts get here with HARD_DIS set (see below), so
+-	 * this enables MSR[EE] for synchronous interrupts. IRQs remain
+-	 * soft-masked. The interrupt handler may later call
+-	 * interrupt_cond_local_irq_enable() to achieve a regular process
+-	 * context.
+-	 */
+-	if (!(local_paca->irq_happened & PACA_IRQ_HARD_DIS)) {
+-		INT_SOFT_MASK_BUG_ON(regs, !(regs->msr & MSR_EE));
+-		__hard_irq_enable();
+-	} else {
+-		__hard_RI_enable();
+-	}
+-	/* Enable MSR[RI] early, to support kernel SLB and hash faults */
+-#endif
+-
+-	if (!regs_irqs_disabled(regs))
+-		trace_hardirqs_off();
+-
+-	if (user_mode(regs)) {
+-		kuap_lock();
+-		CT_WARN_ON(ct_state() != CT_STATE_USER);
+-		user_exit_irqoff();
+-
+-		account_cpu_user_entry();
+-		account_stolen_time();
+-	} else {
+-		kuap_save_and_lock(regs);
+-		/*
+-		 * CT_WARN_ON comes here via program_check_exception,
+-		 * so avoid recursion.
+-		 */
+-		if (TRAP(regs) != INTERRUPT_PROGRAM)
+-			CT_WARN_ON(ct_state() != CT_STATE_KERNEL &&
+-				   ct_state() != CT_STATE_IDLE);
+-		INT_SOFT_MASK_BUG_ON(regs, is_implicit_soft_masked(regs));
+-		INT_SOFT_MASK_BUG_ON(regs, regs_irqs_disabled(regs) &&
+-				     search_kernel_restart_table(regs->nip));
+-	}
+-	INT_SOFT_MASK_BUG_ON(regs, !regs_irqs_disabled(regs) &&
+-			     !(regs->msr & MSR_EE));
+-
+-	booke_restore_dbcr0();
+-}
+-
+-/*
+- * Care should be taken to note that interrupt_exit_prepare and
+- * interrupt_async_exit_prepare do not necessarily return immediately to
+- * regs context (e.g., if regs is usermode, we don't necessarily return to
+- * user mode). Other interrupts might be taken between here and return,
+- * context switch / preemption may occur in the exit path after this, or a
+- * signal may be delivered, etc.
+- *
+- * The real interrupt exit code is platform specific, e.g.,
+- * interrupt_exit_user_prepare / interrupt_exit_kernel_prepare for 64s.
+- *
+- * However interrupt_nmi_exit_prepare does return directly to regs, because
+- * NMIs do not do "exit work" or replay soft-masked interrupts.
+- */
+-static inline void interrupt_exit_prepare(struct pt_regs *regs)
+-{
+-}
+-
+-static inline void interrupt_async_enter_prepare(struct pt_regs *regs)
+-{
+-#ifdef CONFIG_PPC64
+-	/* Ensure interrupt_enter_prepare does not enable MSR[EE] */
+-	local_paca->irq_happened |= PACA_IRQ_HARD_DIS;
+-#endif
+-	interrupt_enter_prepare(regs);
+-#ifdef CONFIG_PPC_BOOK3S_64
+-	/*
+-	 * RI=1 is set by interrupt_enter_prepare, so this thread flags access
+-	 * has to come afterward (it can cause SLB faults).
+-	 */
+-	if (cpu_has_feature(CPU_FTR_CTRL) &&
+-	    !test_thread_local_flags(_TLF_RUNLATCH))
+-		__ppc64_runlatch_on();
+-#endif
+-	irq_enter();
+-}
+-
+-static inline void interrupt_async_exit_prepare(struct pt_regs *regs)
+-{
+-	/*
+-	 * Adjust at exit so the main handler sees the true NIA. This must
+-	 * come before irq_exit() because irq_exit can enable interrupts, and
+-	 * if another interrupt is taken before nap_adjust_return has run
+-	 * here, then that interrupt would return directly to idle nap return.
+-	 */
+-	nap_adjust_return(regs);
+-
+-	irq_exit();
+-	interrupt_exit_prepare(regs);
+-}
+-
+-struct interrupt_nmi_state {
+-#ifdef CONFIG_PPC64
+-	u8 irq_soft_mask;
+-	u8 irq_happened;
+-	u8 ftrace_enabled;
+-	u64 softe;
+-#endif
+-};
+-
+-static inline bool nmi_disables_ftrace(struct pt_regs *regs)
+-{
+-	/* Allow DEC and PMI to be traced when they are soft-NMI */
+-	if (IS_ENABLED(CONFIG_PPC_BOOK3S_64)) {
+-		if (TRAP(regs) == INTERRUPT_DECREMENTER)
+-		       return false;
+-		if (TRAP(regs) == INTERRUPT_PERFMON)
+-		       return false;
+-	}
+-	if (IS_ENABLED(CONFIG_PPC_BOOK3E_64)) {
+-		if (TRAP(regs) == INTERRUPT_PERFMON)
+-			return false;
+-	}
+-
+-	return true;
+-}
+-
+-static inline void interrupt_nmi_enter_prepare(struct pt_regs *regs, struct interrupt_nmi_state *state)
+-{
+-#ifdef CONFIG_PPC64
+-	state->irq_soft_mask = local_paca->irq_soft_mask;
+-	state->irq_happened = local_paca->irq_happened;
+-	state->softe = regs->softe;
+-
+-	/*
+-	 * Set IRQS_ALL_DISABLED unconditionally so irqs_disabled() does
+-	 * the right thing, and set IRQ_HARD_DIS. We do not want to reconcile
+-	 * because that goes through irq tracing which we don't want in NMI.
+-	 */
+-	local_paca->irq_soft_mask = IRQS_ALL_DISABLED;
+-	local_paca->irq_happened |= PACA_IRQ_HARD_DIS;
+-
+-	if (!(regs->msr & MSR_EE) || is_implicit_soft_masked(regs)) {
+-		/*
+-		 * Adjust regs->softe to be soft-masked if it had not been
+-		 * reconcied (e.g., interrupt entry with MSR[EE]=0 but softe
+-		 * not yet set disabled), or if it was in an implicit soft
+-		 * masked state. This makes regs_irqs_disabled(regs)
+-		 * behave as expected.
+-		 */
+-		regs->softe = IRQS_ALL_DISABLED;
+-	}
+-
+-	__hard_RI_enable();
+-
+-	/* Don't do any per-CPU operations until interrupt state is fixed */
+-
+-	if (nmi_disables_ftrace(regs)) {
+-		state->ftrace_enabled = this_cpu_get_ftrace_enabled();
+-		this_cpu_set_ftrace_enabled(0);
+-	}
+-#endif
+-
+-	/* If data relocations are enabled, it's safe to use nmi_enter() */
+-	if (mfmsr() & MSR_DR) {
+-		nmi_enter();
+-		return;
+-	}
+-
+-	/*
+-	 * But do not use nmi_enter() for pseries hash guest taking a real-mode
+-	 * NMI because not everything it touches is within the RMA limit.
+-	 */
+-	if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) &&
+-	    firmware_has_feature(FW_FEATURE_LPAR) &&
+-	    !radix_enabled())
+-		return;
+-
+-	/*
+-	 * Likewise, don't use it if we have some form of instrumentation (like
+-	 * KASAN shadow) that is not safe to access in real mode (even on radix)
+-	 */
+-	if (IS_ENABLED(CONFIG_KASAN))
+-		return;
+-
+-	/*
+-	 * Likewise, do not use it in real mode if percpu first chunk is not
+-	 * embedded. With CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK enabled there
+-	 * are chances where percpu allocation can come from vmalloc area.
+-	 */
+-	if (percpu_first_chunk_is_paged)
+-		return;
+-
+-	/* Otherwise, it should be safe to call it */
+-	nmi_enter();
+-}
+-
+-static inline void interrupt_nmi_exit_prepare(struct pt_regs *regs, struct interrupt_nmi_state *state)
+-{
+-	if (mfmsr() & MSR_DR) {
+-		// nmi_exit if relocations are on
+-		nmi_exit();
+-	} else if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) &&
+-		   firmware_has_feature(FW_FEATURE_LPAR) &&
+-		   !radix_enabled()) {
+-		// no nmi_exit for a pseries hash guest taking a real mode exception
+-	} else if (IS_ENABLED(CONFIG_KASAN)) {
+-		// no nmi_exit for KASAN in real mode
+-	} else if (percpu_first_chunk_is_paged) {
+-		// no nmi_exit if percpu first chunk is not embedded
+-	} else {
+-		nmi_exit();
+-	}
+-
+-	/*
+-	 * nmi does not call nap_adjust_return because nmi should not create
+-	 * new work to do (must use irq_work for that).
+-	 */
+-
+-#ifdef CONFIG_PPC64
+-#ifdef CONFIG_PPC_BOOK3S
+-	if (regs_irqs_disabled(regs)) {
+-		unsigned long rst = search_kernel_restart_table(regs->nip);
+-		if (rst)
+-			regs_set_return_ip(regs, rst);
+-	}
+-#endif
+-
+-	if (nmi_disables_ftrace(regs))
+-		this_cpu_set_ftrace_enabled(state->ftrace_enabled);
+-
+-	/* Check we didn't change the pending interrupt mask. */
+-	WARN_ON_ONCE((state->irq_happened | PACA_IRQ_HARD_DIS) != local_paca->irq_happened);
+-	regs->softe = state->softe;
+-	local_paca->irq_happened = state->irq_happened;
+-	local_paca->irq_soft_mask = state->irq_soft_mask;
+-#endif
+-}
+-
+ /*
+  * Don't use noinstr here like x86, but rather add NOKPROBE_SYMBOL to each
+  * function definition. The reason for this is the noinstr section is placed
+@@ -470,11 +166,14 @@ static __always_inline void ____##func(struct pt_regs *regs);		\
+ 									\
+ interrupt_handler void func(struct pt_regs *regs)			\
+ {									\
+-	interrupt_enter_prepare(regs);					\
+-									\
++	irqentry_state_t state;						\
++	arch_interrupt_enter_prepare(regs);				\
++	state = irqentry_enter(regs);					\
++	instrumentation_begin();					\
+ 	____##func (regs);						\
+-									\
+-	interrupt_exit_prepare(regs);					\
++	instrumentation_end();						\
++	arch_interrupt_exit_prepare(regs);				\
++	irqentry_exit(regs, state);					\
+ }									\
+ NOKPROBE_SYMBOL(func);							\
+ 									\
+@@ -504,12 +203,15 @@ static __always_inline long ____##func(struct pt_regs *regs);		\
+ interrupt_handler long func(struct pt_regs *regs)			\
+ {									\
+ 	long ret;							\
++	irqentry_state_t state;						\
+ 									\
+-	interrupt_enter_prepare(regs);					\
+-									\
++	arch_interrupt_enter_prepare(regs);				\
++	state = irqentry_enter(regs);					\
++	instrumentation_begin();					\
+ 	ret = ____##func (regs);					\
+-									\
+-	interrupt_exit_prepare(regs);					\
++	instrumentation_end();						\
++	arch_interrupt_exit_prepare(regs);				\
++	irqentry_exit(regs, state);					\
+ 									\
+ 	return ret;							\
+ }									\
+@@ -538,11 +240,16 @@ static __always_inline void ____##func(struct pt_regs *regs);		\
+ 									\
+ interrupt_handler void func(struct pt_regs *regs)			\
+ {									\
+-	interrupt_async_enter_prepare(regs);				\
+-									\
++	irqentry_state_t state;						\
++	arch_interrupt_async_enter_prepare(regs);			\
++	state = irqentry_enter(regs);					\
++	instrumentation_begin();					\
++	irq_enter_rcu();						\
+ 	____##func (regs);						\
+-									\
+-	interrupt_async_exit_prepare(regs);				\
++	irq_exit_rcu();							\
++	instrumentation_end();						\
++	arch_interrupt_async_exit_prepare(regs);			\
++	irqentry_exit(regs, state);					\
+ }									\
+ NOKPROBE_SYMBOL(func);							\
+ 									\
+@@ -572,14 +279,43 @@ ____##func(struct pt_regs *regs);					\
+ 									\
+ interrupt_handler long func(struct pt_regs *regs)			\
+ {									\
+-	struct interrupt_nmi_state state;				\
++	irqentry_state_t state;						\
++	struct interrupt_nmi_state nmi_state;				\
+ 	long ret;							\
+ 									\
+-	interrupt_nmi_enter_prepare(regs, &state);			\
+-									\
++	arch_interrupt_nmi_enter_prepare(regs, &nmi_state);		\
++	if (mfmsr() & MSR_DR) {						\
++		/* nmi_entry if relocations are on */			\
++		state = irqentry_nmi_enter(regs);			\
++	} else if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) &&			\
++		   firmware_has_feature(FW_FEATURE_LPAR) &&		\
++		   !radix_enabled()) {					\
++		/* no nmi_entry for a pseries hash guest		\
++		 * taking a real mode exception */			\
++	} else if (IS_ENABLED(CONFIG_KASAN)) {				\
++		/* no nmi_entry for KASAN in real mode */		\
++	} else if (percpu_first_chunk_is_paged) {			\
++		/* no nmi_entry if percpu first chunk is not embedded */\
++	} else {							\
++		state = irqentry_nmi_enter(regs);			\
++	}								\
+ 	ret = ____##func (regs);					\
+-									\
+-	interrupt_nmi_exit_prepare(regs, &state);			\
++	arch_interrupt_nmi_exit_prepare(regs, &nmi_state);		\
++	if (mfmsr() & MSR_DR) {						\
++		/* nmi_exit if relocations are on */			\
++		irqentry_nmi_exit(regs, state);				\
++	} else if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) &&			\
++		   firmware_has_feature(FW_FEATURE_LPAR) &&		\
++		   !radix_enabled()) {					\
++		/* no nmi_exit for a pseries hash guest			\
++		 * taking a real mode exception */			\
++	} else if (IS_ENABLED(CONFIG_KASAN)) {				\
++		/* no nmi_exit for KASAN in real mode */		\
++	} else if (percpu_first_chunk_is_paged) {			\
++		/* no nmi_exit if percpu first chunk is not embedded */	\
++	} else {							\
++		irqentry_nmi_exit(regs, state);				\
++	}								\
+ 									\
+ 	return ret;							\
+ }									\
+diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
+index 045804a86f98..a690e7da53c2 100644
+--- a/arch/powerpc/include/asm/kasan.h
++++ b/arch/powerpc/include/asm/kasan.h
+@@ -3,14 +3,19 @@
+ #define __ASM_KASAN_H
+ 
+ #if defined(CONFIG_KASAN) && !defined(CONFIG_CC_HAS_KASAN_MEMINTRINSIC_PREFIX)
+-#define _GLOBAL_KASAN(fn)	_GLOBAL(__##fn)
+-#define _GLOBAL_TOC_KASAN(fn)	_GLOBAL_TOC(__##fn)
+-#define EXPORT_SYMBOL_KASAN(fn)	EXPORT_SYMBOL(__##fn)
+-#else
++#define _GLOBAL_KASAN(fn)			\
++	_GLOBAL(fn);				\
++	_GLOBAL(__##fn)
++#define _GLOBAL_TOC_KASAN(fn)			\
++	_GLOBAL_TOC(fn);			\
++	_GLOBAL_TOC(__##fn)
++#define EXPORT_SYMBOL_KASAN(fn)			\
++	EXPORT_SYMBOL(__##fn)
++#else /* CONFIG_KASAN && !CONFIG_CC_HAS_KASAN_MEMINTRINSIC_PREFIX */
+ #define _GLOBAL_KASAN(fn)	_GLOBAL(fn)
+ #define _GLOBAL_TOC_KASAN(fn)	_GLOBAL_TOC(fn)
+ #define EXPORT_SYMBOL_KASAN(fn)
+-#endif
++#endif /* CONFIG_KASAN && !CONFIG_CC_HAS_KASAN_MEMINTRINSIC_PREFIX */
+ 
+ #ifndef __ASSEMBLER__
+ 
+diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
+index 666eadb589a5..89a999be1352 100644
+--- a/arch/powerpc/kernel/interrupt.c
++++ b/arch/powerpc/kernel/interrupt.c
+@@ -1,6 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ 
+ #include <linux/context_tracking.h>
++#include <linux/entry-common.h>
+ #include <linux/err.h>
+ #include <linux/compat.h>
+ #include <linux/rseq.h>
+@@ -25,10 +26,6 @@
+ unsigned long global_dbcr0[NR_CPUS];
+ #endif
+ 
+-#if defined(CONFIG_PREEMPT_DYNAMIC)
+-DEFINE_STATIC_KEY_TRUE(sk_dynamic_irqentry_exit_cond_resched);
+-#endif
+-
+ #ifdef CONFIG_PPC_BOOK3S_64
+ DEFINE_STATIC_KEY_FALSE(interrupt_exit_not_reentrant);
+ static inline bool exit_must_hard_disable(void)
+@@ -78,181 +75,6 @@ static notrace __always_inline bool prep_irq_for_enabled_exit(bool restartable)
+ 	return true;
  }
  
-+static inline void booke_restore_dbcr0(void)
-+{
-+#ifdef CONFIG_PPC_ADV_DEBUG_REGS
-+	unsigned long dbcr0 = current->thread.debug.dbcr0;
-+
-+	if (IS_ENABLED(CONFIG_PPC32) && unlikely(dbcr0 & DBCR0_IDM)) {
-+		mtspr(SPRN_DBSR, -1);
-+		mtspr(SPRN_DBCR0, global_dbcr0[smp_processor_id()]);
-+	}
-+#endif
-+}
-+
-+static inline void check_return_regs_valid(struct pt_regs *regs)
-+{
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	unsigned long trap, srr0, srr1;
-+	static bool warned;
-+	u8 *validp;
-+	char *h;
-+
-+	if (trap_is_scv(regs))
-+		return;
-+
-+	trap = TRAP(regs);
-+	// EE in HV mode sets HSRRs like 0xea0
-+	if (cpu_has_feature(CPU_FTR_HVMODE) && trap == INTERRUPT_EXTERNAL)
-+		trap = 0xea0;
-+
-+	switch (trap) {
-+	case 0x980:
-+	case INTERRUPT_H_DATA_STORAGE:
-+	case 0xe20:
-+	case 0xe40:
-+	case INTERRUPT_HMI:
-+	case 0xe80:
-+	case 0xea0:
-+	case INTERRUPT_H_FAC_UNAVAIL:
-+	case 0x1200:
-+	case 0x1500:
-+	case 0x1600:
-+	case 0x1800:
-+		validp = &local_paca->hsrr_valid;
-+		if (!READ_ONCE(*validp))
-+			return;
-+
-+		srr0 = mfspr(SPRN_HSRR0);
-+		srr1 = mfspr(SPRN_HSRR1);
-+		h = "H";
-+
-+		break;
-+	default:
-+		validp = &local_paca->srr_valid;
-+		if (!READ_ONCE(*validp))
-+			return;
-+
-+		srr0 = mfspr(SPRN_SRR0);
-+		srr1 = mfspr(SPRN_SRR1);
-+		h = "";
-+		break;
-+	}
-+
-+	if (srr0 == regs->nip && srr1 == regs->msr)
-+		return;
-+
-+	/*
-+	 * A NMI / soft-NMI interrupt may have come in after we found
-+	 * srr_valid and before the SRRs are loaded. The interrupt then
-+	 * comes in and clobbers SRRs and clears srr_valid. Then we load
-+	 * the SRRs here and test them above and find they don't match.
-+	 *
-+	 * Test validity again after that, to catch such false positives.
-+	 *
-+	 * This test in general will have some window for false negatives
-+	 * and may not catch and fix all such cases if an NMI comes in
-+	 * later and clobbers SRRs without clearing srr_valid, but hopefully
-+	 * such things will get caught most of the time, statistically
-+	 * enough to be able to get a warning out.
-+	 */
-+	if (!READ_ONCE(*validp))
-+		return;
-+
-+	if (!data_race(warned)) {
-+		data_race(warned = true);
-+		pr_warn("%sSRR0 was: %lx should be: %lx\n", h, srr0, regs->nip);
-+		pr_warn("%sSRR1 was: %lx should be: %lx\n", h, srr1, regs->msr);
-+		show_regs(regs);
-+	}
-+
-+	WRITE_ONCE(*validp, 0); /* fixup */
-+#endif
-+}
-+
-+static inline void arch_interrupt_enter_prepare(struct pt_regs *regs)
-+{
-+#ifdef CONFIG_PPC64
-+	irq_soft_mask_set(IRQS_ALL_DISABLED);
-+
-+	/*
-+	 * If the interrupt was taken with HARD_DIS clear, then enable MSR[EE].
-+	 * Asynchronous interrupts get here with HARD_DIS set (see below), so
-+	 * this enables MSR[EE] for synchronous interrupts. IRQs remain
-+	 * soft-masked. The interrupt handler may later call
-+	 * interrupt_cond_local_irq_enable() to achieve a regular process
-+	 * context.
-+	 */
-+	if (!(local_paca->irq_happened & PACA_IRQ_HARD_DIS)) {
-+		INT_SOFT_MASK_BUG_ON(regs, !(regs->msr & MSR_EE));
-+		__hard_irq_enable();
-+	} else {
-+		__hard_RI_enable();
-+	}
-+	/* Enable MSR[RI] early, to support kernel SLB and hash faults */
-+#endif
-+
-+	if (!regs_irqs_disabled(regs))
-+		trace_hardirqs_off();
-+
-+	if (user_mode(regs)) {
-+		kuap_lock();
-+		account_cpu_user_entry();
-+		account_stolen_time();
-+	} else {
-+		kuap_save_and_lock(regs);
-+		/*
-+		 * CT_WARN_ON comes here via program_check_exception,
-+		 * so avoid recursion.
-+		 */
-+		if (TRAP(regs) != INTERRUPT_PROGRAM)
-+			CT_WARN_ON(ct_state() != CT_STATE_KERNEL &&
-+				   ct_state() != CT_STATE_IDLE);
-+		INT_SOFT_MASK_BUG_ON(regs, is_implicit_soft_masked(regs));
-+		INT_SOFT_MASK_BUG_ON(regs, regs_irqs_disabled(regs) &&
-+				     search_kernel_restart_table(regs->nip));
-+	}
-+	INT_SOFT_MASK_BUG_ON(regs, !regs_irqs_disabled(regs) &&
-+			     !(regs->msr & MSR_EE));
-+
-+	booke_restore_dbcr0();
-+}
-+
-+/*
-+ * Care should be taken to note that arch_interrupt_exit_prepare and
-+ * arch_interrupt_async_exit_prepare do not necessarily return immediately to
-+ * regs context (e.g., if regs is usermode, we don't necessarily return to
-+ * user mode). Other interrupts might be taken between here and return,
-+ * context switch / preemption may occur in the exit path after this, or a
-+ * signal may be delivered, etc.
-+ *
-+ * The real interrupt exit code is platform specific, e.g.,
-+ * interrupt_exit_user_prepare / interrupt_exit_kernel_prepare for 64s.
-+ *
-+ * However arch_interrupt_nmi_exit_prepare does return directly to regs, because
-+ * NMIs do not do "exit work" or replay soft-masked interrupts.
-+ */
-+static inline void arch_interrupt_exit_prepare(struct pt_regs *regs)
-+{
-+	if (user_mode(regs)) {
-+		BUG_ON(regs_is_unrecoverable(regs));
-+		BUG_ON(regs_irqs_disabled(regs));
-+		/*
-+		 * We don't need to restore AMR on the way back to userspace for KUAP.
-+		 * AMR can only have been unlocked if we interrupted the kernel.
-+		 */
-+		kuap_assert_locked();
-+
-+		local_irq_disable();
-+	}
-+}
-+
-+static inline void arch_interrupt_async_enter_prepare(struct pt_regs *regs)
-+{
-+#ifdef CONFIG_PPC64
-+	/* Ensure arch_interrupt_enter_prepare does not enable MSR[EE] */
-+	local_paca->irq_happened |= PACA_IRQ_HARD_DIS;
-+#endif
-+	arch_interrupt_enter_prepare(regs);
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	/*
-+	 * RI=1 is set by arch_interrupt_enter_prepare, so this thread flags access
-+	 * has to come afterward (it can cause SLB faults).
-+	 */
-+	if (cpu_has_feature(CPU_FTR_CTRL) &&
-+	    !test_thread_local_flags(_TLF_RUNLATCH))
-+		__ppc64_runlatch_on();
-+#endif
-+}
-+
-+static inline void arch_interrupt_async_exit_prepare(struct pt_regs *regs)
-+{
-+	/*
-+	 * Adjust at exit so the main handler sees the true NIA. This must
-+	 * come before irq_exit() because irq_exit can enable interrupts, and
-+	 * if another interrupt is taken before nap_adjust_return has run
-+	 * here, then that interrupt would return directly to idle nap return.
-+	 */
-+	nap_adjust_return(regs);
-+
-+	arch_interrupt_exit_prepare(regs);
-+}
-+
-+struct interrupt_nmi_state {
-+#ifdef CONFIG_PPC64
-+	u8 irq_soft_mask;
-+	u8 irq_happened;
-+	u8 ftrace_enabled;
-+	u64 softe;
-+#endif
-+};
-+
-+static inline bool nmi_disables_ftrace(struct pt_regs *regs)
-+{
-+	/* Allow DEC and PMI to be traced when they are soft-NMI */
-+	if (IS_ENABLED(CONFIG_PPC_BOOK3S_64)) {
-+		if (TRAP(regs) == INTERRUPT_DECREMENTER)
-+			return false;
-+		if (TRAP(regs) == INTERRUPT_PERFMON)
-+			return false;
-+	}
-+	if (IS_ENABLED(CONFIG_PPC_BOOK3E_64)) {
-+		if (TRAP(regs) == INTERRUPT_PERFMON)
-+			return false;
-+	}
-+
-+	return true;
-+}
-+
-+static inline void arch_interrupt_nmi_enter_prepare(struct pt_regs *regs,
-+						    struct interrupt_nmi_state *state)
-+{
-+#ifdef CONFIG_PPC64
-+	state->irq_soft_mask = local_paca->irq_soft_mask;
-+	state->irq_happened = local_paca->irq_happened;
-+	state->softe = regs->softe;
-+
-+	/*
-+	 * Set IRQS_ALL_DISABLED unconditionally so irqs_disabled() does
-+	 * the right thing, and set IRQ_HARD_DIS. We do not want to reconcile
-+	 * because that goes through irq tracing which we don't want in NMI.
-+	 */
-+	local_paca->irq_soft_mask = IRQS_ALL_DISABLED;
-+	local_paca->irq_happened |= PACA_IRQ_HARD_DIS;
-+
-+	if (!(regs->msr & MSR_EE) || is_implicit_soft_masked(regs)) {
-+		/*
-+		 * Adjust regs->softe to be soft-masked if it had not been
-+		 * reconcied (e.g., interrupt entry with MSR[EE]=0 but softe
-+		 * not yet set disabled), or if it was in an implicit soft
-+		 * masked state. This makes regs_irqs_disabled(regs)
-+		 * behave as expected.
-+		 */
-+		regs->softe = IRQS_ALL_DISABLED;
-+	}
-+
-+	__hard_RI_enable();
-+
-+	/* Don't do any per-CPU operations until interrupt state is fixed */
-+
-+	if (nmi_disables_ftrace(regs)) {
-+		state->ftrace_enabled = this_cpu_get_ftrace_enabled();
-+		this_cpu_set_ftrace_enabled(0);
-+	}
-+#endif
-+}
-+
-+static inline void arch_interrupt_nmi_exit_prepare(struct pt_regs *regs,
-+						   struct interrupt_nmi_state *state)
-+{
-+	/*
-+	 * nmi does not call nap_adjust_return because nmi should not create
-+	 * new work to do (must use irq_work for that).
-+	 */
-+
-+#ifdef CONFIG_PPC64
-+#ifdef CONFIG_PPC_BOOK3S
-+	if (regs_irqs_disabled(regs)) {
-+		unsigned long rst = search_kernel_restart_table(regs->nip);
-+
-+		if (rst)
-+			regs_set_return_ip(regs, rst);
-+	}
-+#endif
-+
-+	if (nmi_disables_ftrace(regs))
-+		this_cpu_set_ftrace_enabled(state->ftrace_enabled);
-+
-+	/* Check we didn't change the pending interrupt mask. */
-+	WARN_ON_ONCE((state->irq_happened | PACA_IRQ_HARD_DIS) != local_paca->irq_happened);
-+	regs->softe = state->softe;
-+	local_paca->irq_happened = state->irq_happened;
-+	local_paca->irq_soft_mask = state->irq_soft_mask;
-+#endif
-+}
-+
- static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs)
+-static notrace void booke_load_dbcr0(void)
+-{
+-#ifdef CONFIG_PPC_ADV_DEBUG_REGS
+-	unsigned long dbcr0 = current->thread.debug.dbcr0;
+-
+-	if (likely(!(dbcr0 & DBCR0_IDM)))
+-		return;
+-
+-	/*
+-	 * Check to see if the dbcr0 register is set up to debug.
+-	 * Use the internal debug mode bit to do this.
+-	 */
+-	mtmsr(mfmsr() & ~MSR_DE);
+-	if (IS_ENABLED(CONFIG_PPC32)) {
+-		isync();
+-		global_dbcr0[smp_processor_id()] = mfspr(SPRN_DBCR0);
+-	}
+-	mtspr(SPRN_DBCR0, dbcr0);
+-	mtspr(SPRN_DBSR, -1);
+-#endif
+-}
+-
+-static notrace void check_return_regs_valid(struct pt_regs *regs)
+-{
+-#ifdef CONFIG_PPC_BOOK3S_64
+-	unsigned long trap, srr0, srr1;
+-	static bool warned;
+-	u8 *validp;
+-	char *h;
+-
+-	if (trap_is_scv(regs))
+-		return;
+-
+-	trap = TRAP(regs);
+-	// EE in HV mode sets HSRRs like 0xea0
+-	if (cpu_has_feature(CPU_FTR_HVMODE) && trap == INTERRUPT_EXTERNAL)
+-		trap = 0xea0;
+-
+-	switch (trap) {
+-	case 0x980:
+-	case INTERRUPT_H_DATA_STORAGE:
+-	case 0xe20:
+-	case 0xe40:
+-	case INTERRUPT_HMI:
+-	case 0xe80:
+-	case 0xea0:
+-	case INTERRUPT_H_FAC_UNAVAIL:
+-	case 0x1200:
+-	case 0x1500:
+-	case 0x1600:
+-	case 0x1800:
+-		validp = &local_paca->hsrr_valid;
+-		if (!READ_ONCE(*validp))
+-			return;
+-
+-		srr0 = mfspr(SPRN_HSRR0);
+-		srr1 = mfspr(SPRN_HSRR1);
+-		h = "H";
+-
+-		break;
+-	default:
+-		validp = &local_paca->srr_valid;
+-		if (!READ_ONCE(*validp))
+-			return;
+-
+-		srr0 = mfspr(SPRN_SRR0);
+-		srr1 = mfspr(SPRN_SRR1);
+-		h = "";
+-		break;
+-	}
+-
+-	if (srr0 == regs->nip && srr1 == regs->msr)
+-		return;
+-
+-	/*
+-	 * A NMI / soft-NMI interrupt may have come in after we found
+-	 * srr_valid and before the SRRs are loaded. The interrupt then
+-	 * comes in and clobbers SRRs and clears srr_valid. Then we load
+-	 * the SRRs here and test them above and find they don't match.
+-	 *
+-	 * Test validity again after that, to catch such false positives.
+-	 *
+-	 * This test in general will have some window for false negatives
+-	 * and may not catch and fix all such cases if an NMI comes in
+-	 * later and clobbers SRRs without clearing srr_valid, but hopefully
+-	 * such things will get caught most of the time, statistically
+-	 * enough to be able to get a warning out.
+-	 */
+-	if (!READ_ONCE(*validp))
+-		return;
+-
+-	if (!data_race(warned)) {
+-		data_race(warned = true);
+-		printk("%sSRR0 was: %lx should be: %lx\n", h, srr0, regs->nip);
+-		printk("%sSRR1 was: %lx should be: %lx\n", h, srr1, regs->msr);
+-		show_regs(regs);
+-	}
+-
+-	WRITE_ONCE(*validp, 0); /* fixup */
+-#endif
+-}
+-
+-static notrace unsigned long
+-interrupt_exit_user_prepare_main(unsigned long ret, struct pt_regs *regs)
+-{
+-	unsigned long ti_flags;
+-
+-again:
+-	ti_flags = read_thread_flags();
+-	while (unlikely(ti_flags & (_TIF_USER_WORK_MASK & ~_TIF_RESTORE_TM))) {
+-		local_irq_enable();
+-		if (ti_flags & (_TIF_NEED_RESCHED | _TIF_NEED_RESCHED_LAZY)) {
+-			schedule();
+-		} else {
+-			/*
+-			 * SIGPENDING must restore signal handler function
+-			 * argument GPRs, and some non-volatiles (e.g., r1).
+-			 * Restore all for now. This could be made lighter.
+-			 */
+-			if (ti_flags & _TIF_SIGPENDING)
+-				ret |= _TIF_RESTOREALL;
+-			do_notify_resume(regs, ti_flags);
+-		}
+-		local_irq_disable();
+-		ti_flags = read_thread_flags();
+-	}
+-
+-	if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) && IS_ENABLED(CONFIG_PPC_FPU)) {
+-		if (IS_ENABLED(CONFIG_PPC_TRANSACTIONAL_MEM) &&
+-				unlikely((ti_flags & _TIF_RESTORE_TM))) {
+-			restore_tm_state(regs);
+-		} else {
+-			unsigned long mathflags = MSR_FP;
+-
+-			if (cpu_has_feature(CPU_FTR_VSX))
+-				mathflags |= MSR_VEC | MSR_VSX;
+-			else if (cpu_has_feature(CPU_FTR_ALTIVEC))
+-				mathflags |= MSR_VEC;
+-
+-			/*
+-			 * If userspace MSR has all available FP bits set,
+-			 * then they are live and no need to restore. If not,
+-			 * it means the regs were given up and restore_math
+-			 * may decide to restore them (to avoid taking an FP
+-			 * fault).
+-			 */
+-			if ((regs->msr & mathflags) != mathflags)
+-				restore_math(regs);
+-		}
+-	}
+-
+-	check_return_regs_valid(regs);
+-
+-	user_enter_irqoff();
+-	if (!prep_irq_for_enabled_exit(true)) {
+-		user_exit_irqoff();
+-		local_irq_enable();
+-		local_irq_disable();
+-		goto again;
+-	}
+-
+-#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-	local_paca->tm_scratch = regs->msr;
+-#endif
+-
+-	booke_load_dbcr0();
+-
+-	account_cpu_user_exit();
+-
+-	/* Restore user access locks last */
+-	kuap_user_restore(regs);
+-
+-	return ret;
+-}
+-
+ /*
+  * This should be called after a syscall returns, with r3 the return value
+  * from the syscall. If this function returns non-zero, the system call
+@@ -267,17 +89,12 @@ notrace unsigned long syscall_exit_prepare(unsigned long r3,
+ 					   long scv)
  {
- 	kuap_lock();
+ 	unsigned long ti_flags;
+-	unsigned long ret = 0;
+ 	bool is_not_scv = !IS_ENABLED(CONFIG_PPC_BOOK3S_64) || !scv;
+ 
+-	CT_WARN_ON(ct_state() == CT_STATE_USER);
+-
+ 	kuap_assert_locked();
+ 
+ 	regs->result = r3;
+-
+-	/* Check whether the syscall is issued inside a restartable sequence */
+-	rseq_syscall(regs);
++	regs->exit_flags = 0;
+ 
+ 	ti_flags = read_thread_flags();
+ 
+@@ -290,7 +107,7 @@ notrace unsigned long syscall_exit_prepare(unsigned long r3,
+ 
+ 	if (unlikely(ti_flags & _TIF_PERSYSCALL_MASK)) {
+ 		if (ti_flags & _TIF_RESTOREALL)
+-			ret = _TIF_RESTOREALL;
++			regs->exit_flags = _TIF_RESTOREALL;
+ 		else
+ 			regs->gpr[3] = r3;
+ 		clear_bits(_TIF_PERSYSCALL_MASK, &current_thread_info()->flags);
+@@ -299,18 +116,28 @@ notrace unsigned long syscall_exit_prepare(unsigned long r3,
+ 	}
+ 
+ 	if (unlikely(ti_flags & _TIF_SYSCALL_DOTRACE)) {
+-		do_syscall_trace_leave(regs);
+-		ret |= _TIF_RESTOREALL;
++		regs->exit_flags |= _TIF_RESTOREALL;
+ 	}
+ 
+-	local_irq_disable();
+-	ret = interrupt_exit_user_prepare_main(ret, regs);
++	syscall_exit_to_user_mode(regs);
++
++again:
++	user_enter_irqoff();
++	if (!prep_irq_for_enabled_exit(true)) {
++		user_exit_irqoff();
++		local_irq_enable();
++		local_irq_disable();
++		goto again;
++	}
++
++	/* Restore user access locks last */
++	kuap_user_restore(regs);
+ 
+ #ifdef CONFIG_PPC64
+-	regs->exit_result = ret;
++	regs->exit_result = regs->exit_flags;
+ #endif
+ 
+-	return ret;
++	return regs->exit_flags;
+ }
+ 
+ #ifdef CONFIG_PPC64
+@@ -330,13 +157,16 @@ notrace unsigned long syscall_exit_restart(unsigned long r3, struct pt_regs *reg
+ 	set_kuap(AMR_KUAP_BLOCKED);
+ #endif
+ 
+-	trace_hardirqs_off();
+-	user_exit_irqoff();
+-	account_cpu_user_entry();
+-
+-	BUG_ON(!user_mode(regs));
++again:
++	user_enter_irqoff();
++	if (!prep_irq_for_enabled_exit(true)) {
++		user_exit_irqoff();
++		local_irq_enable();
++		local_irq_disable();
++		goto again;
++	}
+ 
+-	regs->exit_result = interrupt_exit_user_prepare_main(regs->exit_result, regs);
++	regs->exit_result |= regs->exit_flags;
+ 
+ 	return regs->exit_result;
+ }
+@@ -348,7 +178,6 @@ notrace unsigned long interrupt_exit_user_prepare(struct pt_regs *regs)
+ 
+ 	BUG_ON(regs_is_unrecoverable(regs));
+ 	BUG_ON(regs_irqs_disabled(regs));
+-	CT_WARN_ON(ct_state() == CT_STATE_USER);
+ 
+ 	/*
+ 	 * We don't need to restore AMR on the way back to userspace for KUAP.
+@@ -357,8 +186,21 @@ notrace unsigned long interrupt_exit_user_prepare(struct pt_regs *regs)
+ 	kuap_assert_locked();
+ 
+ 	local_irq_disable();
++	regs->exit_flags = 0;
++again:
++	check_return_regs_valid(regs);
++	user_enter_irqoff();
++	if (!prep_irq_for_enabled_exit(true)) {
++		user_exit_irqoff();
++		local_irq_enable();
++		local_irq_disable();
++		goto again;
++	}
++
++	/* Restore user access locks last */
++	kuap_user_restore(regs);
+ 
+-	ret = interrupt_exit_user_prepare_main(0, regs);
++	ret = regs->exit_flags;
+ 
+ #ifdef CONFIG_PPC64
+ 	regs->exit_result = ret;
+@@ -400,13 +242,6 @@ notrace unsigned long interrupt_exit_kernel_prepare(struct pt_regs *regs)
+ 		/* Returning to a kernel context with local irqs enabled. */
+ 		WARN_ON_ONCE(!(regs->msr & MSR_EE));
+ again:
+-		if (need_irq_preemption()) {
+-			/* Return to preemptible kernel context */
+-			if (unlikely(read_thread_flags() & _TIF_NEED_RESCHED)) {
+-				if (preempt_count() == 0)
+-					preempt_schedule_irq();
+-			}
+-		}
+ 
+ 		check_return_regs_valid(regs);
+ 
+@@ -479,7 +314,6 @@ notrace unsigned long interrupt_exit_user_restart(struct pt_regs *regs)
+ #endif
+ 
+ 	trace_hardirqs_off();
+-	user_exit_irqoff();
+ 	account_cpu_user_entry();
+ 
+ 	BUG_ON(!user_mode(regs));
+diff --git a/arch/powerpc/kernel/ptrace/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
+index 2134b6d155ff..f006a03a0211 100644
+--- a/arch/powerpc/kernel/ptrace/ptrace.c
++++ b/arch/powerpc/kernel/ptrace/ptrace.c
+@@ -21,9 +21,6 @@
+ #include <asm/switch_to.h>
+ #include <asm/debug.h>
+ 
+-#define CREATE_TRACE_POINTS
+-#include <trace/events/syscalls.h>
+-
+ #include "ptrace-decl.h"
+ 
+ /*
+diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
+index aa17e62f3754..9f1847b4742e 100644
+--- a/arch/powerpc/kernel/signal.c
++++ b/arch/powerpc/kernel/signal.c
+@@ -6,6 +6,7 @@
+  *    Extracted from signal_32.c and signal_64.c
+  */
+ 
++#include <linux/entry-common.h>
+ #include <linux/resume_user_mode.h>
+ #include <linux/signal.h>
+ #include <linux/uprobes.h>
+@@ -368,3 +369,10 @@ void signal_fault(struct task_struct *tsk, struct pt_regs *regs,
+ 		printk_ratelimited(regs->msr & MSR_64BIT ? fm64 : fm32, tsk->comm,
+ 				   task_pid_nr(tsk), where, ptr, regs->nip, regs->link);
+ }
++
++void arch_do_signal_or_restart(struct pt_regs *regs)
++{
++	BUG_ON(regs != current->thread.regs);
++	regs->exit_flags |= _TIF_RESTOREALL;
++	do_signal(current);
++}
+diff --git a/arch/powerpc/kernel/syscall.c b/arch/powerpc/kernel/syscall.c
+index 52d6e10eab22..a9da2af6efa8 100644
+--- a/arch/powerpc/kernel/syscall.c
++++ b/arch/powerpc/kernel/syscall.c
+@@ -3,6 +3,7 @@
+ #include <linux/compat.h>
+ #include <linux/context_tracking.h>
+ #include <linux/randomize_kstack.h>
++#include <linux/entry-common.h>
+ 
+ #include <asm/interrupt.h>
+ #include <asm/kup.h>
+@@ -18,124 +19,10 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
+ 	long ret;
+ 	syscall_fn f;
+ 
+-	kuap_lock();
+-
+-	if (IS_ENABLED(CONFIG_PPC_IRQ_SOFT_MASK_DEBUG))
+-		BUG_ON(irq_soft_mask_return() != IRQS_ALL_DISABLED);
+-
+-	trace_hardirqs_off(); /* finish reconciling */
+-
+-	CT_WARN_ON(ct_state() == CT_STATE_KERNEL);
+-	user_exit_irqoff();
+-
+ 	add_random_kstack_offset();
++	r0 = syscall_enter_from_user_mode(regs, r0);
+ 
+-	BUG_ON(regs_is_unrecoverable(regs));
+-	BUG_ON(!user_mode(regs));
+-	BUG_ON(regs_irqs_disabled(regs));
+-
+-#ifdef CONFIG_PPC_PKEY
+-	if (mmu_has_feature(MMU_FTR_PKEY)) {
+-		unsigned long amr, iamr;
+-		bool flush_needed = false;
+-		/*
+-		 * When entering from userspace we mostly have the AMR/IAMR
+-		 * different from kernel default values. Hence don't compare.
+-		 */
+-		amr = mfspr(SPRN_AMR);
+-		iamr = mfspr(SPRN_IAMR);
+-		regs->amr  = amr;
+-		regs->iamr = iamr;
+-		if (mmu_has_feature(MMU_FTR_KUAP)) {
+-			mtspr(SPRN_AMR, AMR_KUAP_BLOCKED);
+-			flush_needed = true;
+-		}
+-		if (mmu_has_feature(MMU_FTR_BOOK3S_KUEP)) {
+-			mtspr(SPRN_IAMR, AMR_KUEP_BLOCKED);
+-			flush_needed = true;
+-		}
+-		if (flush_needed)
+-			isync();
+-	} else
+-#endif
+-		kuap_assert_locked();
+-
+-	booke_restore_dbcr0();
+-
+-	account_cpu_user_entry();
+-
+-	account_stolen_time();
+-
+-	/*
+-	 * This is not required for the syscall exit path, but makes the
+-	 * stack frame look nicer. If this was initialised in the first stack
+-	 * frame, or if the unwinder was taught the first stack frame always
+-	 * returns to user with IRQS_ENABLED, this store could be avoided!
+-	 */
+-	irq_soft_mask_regs_set_state(regs, IRQS_ENABLED);
+-
+-	/*
+-	 * If system call is called with TM active, set _TIF_RESTOREALL to
+-	 * prevent RFSCV being used to return to userspace, because POWER9
+-	 * TM implementation has problems with this instruction returning to
+-	 * transactional state. Final register values are not relevant because
+-	 * the transaction will be aborted upon return anyway. Or in the case
+-	 * of unsupported_scv SIGILL fault, the return state does not much
+-	 * matter because it's an edge case.
+-	 */
+-	if (IS_ENABLED(CONFIG_PPC_TRANSACTIONAL_MEM) &&
+-			unlikely(MSR_TM_TRANSACTIONAL(regs->msr)))
+-		set_bits(_TIF_RESTOREALL, &current_thread_info()->flags);
+-
+-	/*
+-	 * If the system call was made with a transaction active, doom it and
+-	 * return without performing the system call. Unless it was an
+-	 * unsupported scv vector, in which case it's treated like an illegal
+-	 * instruction.
+-	 */
+-#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-	if (unlikely(MSR_TM_TRANSACTIONAL(regs->msr)) &&
+-	    !trap_is_unsupported_scv(regs)) {
+-		/* Enable TM in the kernel, and disable EE (for scv) */
+-		hard_irq_disable();
+-		mtmsr(mfmsr() | MSR_TM);
+-
+-		/* tabort, this dooms the transaction, nothing else */
+-		asm volatile(".long 0x7c00071d | ((%0) << 16)"
+-				:: "r"(TM_CAUSE_SYSCALL|TM_CAUSE_PERSISTENT));
+-
+-		/*
+-		 * Userspace will never see the return value. Execution will
+-		 * resume after the tbegin. of the aborted transaction with the
+-		 * checkpointed register state. A context switch could occur
+-		 * or signal delivered to the process before resuming the
+-		 * doomed transaction context, but that should all be handled
+-		 * as expected.
+-		 */
+-		return -ENOSYS;
+-	}
+-#endif // CONFIG_PPC_TRANSACTIONAL_MEM
+-
+-	local_irq_enable();
+-
+-	if (unlikely(read_thread_flags() & _TIF_SYSCALL_DOTRACE)) {
+-		if (unlikely(trap_is_unsupported_scv(regs))) {
+-			/* Unsupported scv vector */
+-			_exception(SIGILL, regs, ILL_ILLOPC, regs->nip);
+-			return regs->gpr[3];
+-		}
+-		/*
+-		 * We use the return value of do_syscall_trace_enter() as the
+-		 * syscall number. If the syscall was rejected for any reason
+-		 * do_syscall_trace_enter() returns an invalid syscall number
+-		 * and the test against NR_syscalls will fail and the return
+-		 * value to be used is in regs->gpr[3].
+-		 */
+-		r0 = do_syscall_trace_enter(regs);
+-		if (unlikely(r0 >= NR_syscalls))
+-			return regs->gpr[3];
+-
+-	} else if (unlikely(r0 >= NR_syscalls)) {
++	if (unlikely(r0 >= NR_syscalls)) {
+ 		if (unlikely(trap_is_unsupported_scv(regs))) {
+ 			/* Unsupported scv vector */
+ 			_exception(SIGILL, regs, ILL_ILLOPC, regs->nip);
 -- 
 2.53.0
 
