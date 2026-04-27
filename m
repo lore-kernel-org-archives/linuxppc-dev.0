@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-20182-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20183-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73205FF8868
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2026 17:19:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62A08FF886C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2026 17:19:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g49K20tKQz2yvP;
-	Tue, 28 Apr 2026 03:19:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777310342;
-	cv=none; b=Y8j5jYtklvAV8vCdGEJC8a3WxIUs9YydXvqBjFCYhy/RCVPffU64sMsDUqrF5bvVZ6eiqgV4telb3CLGy56YpvbCHZD54Qhniega1UA0Rr8B0pHKCUTWMGzakmYNRvdcAGVmyVg7kNJ1CEWX9NbK0maYvRnoiY/S1/Mqyf2+aG6nUhTtM0NPdFTLgSwZAgG3c256jjVkwTfNV1/4+3rS+YV8roTBzU3yPTJo6uYj0MxWFL6Zzp7YwJ/SbMfhv2mFKfXo9yE/myN527m/NLO03w0ZuA8Bz3vVcF8i5yA3pg1DnrKvrWbZQ1NCE8pgddX267+vSStDhJQWaBaDxbLDFw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g49KH0ZR3z30BR;
+	Tue, 28 Apr 2026 03:19:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777310355;
+	cv=none; b=WGBOxdiz3U8LXNBYBZGYoru9APobxTN0Uox43jBBGmGJT8D07OXdJqeqjKU0i3RB4FPZrj4BqfF8sANQJ2lim0DsNIFr3CnEiB//IlHcDsbFIstrshg53FFnFxhiy0rUkwoUn/2HJHjv+52is7Bdgp8ZHpb3pHkB59W1dI5eUrccr5ltalNfTcUPed5eL+90GmNk+ljN1mPd0k7hVfXNTF/YRGwZjbrKDk9Mz21I1mMrDqCkwY5Tl13m+KniiIw8cxt2u7ovu2+NXdjd6TV9+RuXNey3tEhhh+w/C9CXtGALI0F4g9ntW1tZ3pDG/68lur984YlEQhMzTGyHiiqg5w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777310342; c=relaxed/relaxed;
-	bh=mhZ9NMxuum/7eEE1gQi0nXMq4NB/M40iUHyNchfsiT4=;
+	t=1777310355; c=relaxed/relaxed;
+	bh=pZNMFYuU8CchD1nM5e7lml3XtY3zMVnrOrvqbhM+lqI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=oF8sPt2dxd7F3JmsuT0KjllFH4wE2pW8/4o8Pa7ztVGCWPKD7guQy3jBLQhaqM2io6ZfbixkM7Tz3cbAGhnsN+3B9fjP/mJLs/lRLpUXO3x4ULRabBMrqRxZ8/F03LoCy9t5baSEXtJXxIpNYT1gNW+Xg/KijXrXHbFg/kKJLjr0lRW2RhcTYii+nsOIRkJbycU81WMYb5fkwU3oqUVgmCql+tsxAsfuwJeT5uXQKKa7mBdUgolWcSoptV+al4aCpGK6YVT/6Z8Xkqm/kZT+yg9iWDCC1Zrv6r1UDlonlQYKcMla1UMSJll/73P6bDuluQbe1jJ+Yo+zuy7vnyeLqw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kdO2kRaq; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=FXilYBQYzWH02QFwihUILDI+v6jbMO1qVYWkcxHMb7UiGnpe/C/f7NRrjjElTuWFYlX2F3JsStFyb+aAWwJnBa3V1xIwI08fniqg9ua831xW624b9Nhx7QOOYRXYKLI9wkismiIp5qh9WUjK69SYr3PpXNZFZhOqSnzf2KYTPYxDRxNJxEwi+1fdhHUXZmZHOXDPSgDVhElzLKlzXdkQqxpWtAIn2Qon3wNPTxWHhaDk54b61qM/n8c0mhxO1Z85WNXlR0U+TWsEoLKPEdJ9IME8BxBnfmXn8bb6XMw0G2eaaqLne0PzZC3Bkg7ldejBsAjDNmY2vrGRMilK2Iyh0Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lp9wELlr; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kdO2kRaq;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lp9wELlr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g49K12GnXz2yqP;
-	Tue, 28 Apr 2026 03:19:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g49KG1lJYz302l;
+	Tue, 28 Apr 2026 03:19:14 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 9368940C54;
+	by tor.source.kernel.org (Postfix) with ESMTP id 5077960139;
+	Mon, 27 Apr 2026 17:19:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1FAFFC2BCB4;
 	Mon, 27 Apr 2026 17:18:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 59C90C2BCB4;
-	Mon, 27 Apr 2026 17:18:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777310339;
-	bh=VVuQn2YnZFi2JH9uh9hmEqXb1BpygsXabSyFGnhBvmI=;
+	s=k20201202; t=1777310352;
+	bh=vbZIj5I8a11ig9c375SeIMkNInKGe+jckYb8HPag1tw=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=kdO2kRaqrKnrRzE/uOUoSc+QuIvBLF9bEcfUYb9jTJLWJk0AT883/0gLUkpYyvhxW
-	 JwKLSaa6O8znPG+ygzo4nQLM8J0f65SbAuU342P7t8CFNHOEuyufyC86uU6TKB6BuB
-	 gSew3oyOMPJ8ALphDrpzU/JPmVzf88NlkSTCpSsq0dGpC1oXnkppqU6so9I0ayHunG
-	 vmD6szQq9NnauXryTPXCD0GLKF95gnwZ47owOPgIM468cdafyYqaGorVn/T0ZUPF41
-	 utCUjd396YBehKkYMEmrRy4GP6QkmxuYFD7L2LBro+x9SzGKxh5BvzwrXlX1jpWNJG
-	 /RZq8/R9DjgcA==
+	b=lp9wELlrvJvoeuCK0/zMI5UANnrsQ+T4se/gBOunN8iQDrEi1RstW5G65/9vUEPmI
+	 U9UXqoktuU7EViGdT+8yzDZHjl2N0E5vd9veY8uQePuAD9x0oGHf4CotQwSmAD24go
+	 gSXTECesL9+kQmgNOk7myjSgr8UboLxcnh/OrEADTLSIqRqZRx4YwXDl6QWc3wVNsO
+	 sB/2ZwfKCyhos7Vj9aXXCgNggtmoXoIYLpWXmI9TjsLctEcOG8w3vDT/K6+fVh16nS
+	 /UcGgkCV5vp5qC1VRJeMqVPGsaV7+wscOAZaxlqKS8j4DsLjsIu1iQmtuFIX3tL+zm
+	 kvFBNXQR3j5iw==
 From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
 To: Yury Norov <ynorov@nvidia.com>,
 	Andrew Morton <akpm@linux-foundation.org>,
@@ -94,9 +94,9 @@ Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
 	linux-parisc@vger.kernel.org,
 	linux-sh@vger.kernel.org,
 	linux-arch@vger.kernel.org
-Subject: [RFC PATCH v1 7/9] x86: Add unsafe_copy_from_user()
-Date: Mon, 27 Apr 2026 19:13:48 +0200
-Message-ID: <0ee46bb228d97163fbdc14f2a7c52b93d8bc34ce.1777306795.git.chleroy@kernel.org>
+Subject: [RFC PATCH v1 8/9] arm64: Add unsafe_copy_from_user()
+Date: Mon, 27 Apr 2026 19:13:49 +0200
+Message-ID: <5b09e58a84c9edcfe5724db5cd57e45d96a96bfa.1777306795.git.chleroy@kernel.org>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <cover.1777306795.git.chleroy@kernel.org>
 References: <cover.1777306795.git.chleroy@kernel.org>
@@ -113,7 +113,7 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2390; i=chleroy@kernel.org; h=from:subject:message-id; bh=VVuQn2YnZFi2JH9uh9hmEqXb1BpygsXabSyFGnhBvmI=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWS+nxljeGSBfXj99HCNy2WTVFXXC9z/Hmi+//aE1/MbC +50nw1Q6ChlYRDjYpAVU2Q5/p9714yuL6n5U3fpw8xhZQIZwsDFKQAT2djH8D+e3yYgNP/F6xtd z9QNXjIccVycwR574E38S3tWp2uq95Yy/M9xKJ2hYJCUJV9391rVwmlfl7x6GzD19bqwZeyVdgF fZ3MAAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2498; i=chleroy@kernel.org; h=from:subject:message-id; bh=vbZIj5I8a11ig9c375SeIMkNInKGe+jckYb8HPag1tw=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWS+nxmbKDOhb/vkF5+62Iv+nzi0lmWmkWf+tSO3HK9yP D89hV+LoaOUhUGMi0FWTJHl+H/uXTO6vqTmT92lDzOHlQlkCAMXpwBMJCKWkeGFnFP5dUbGE1cO pXr18eg3ndoc9ubDcl2tYxbdt9o1nmkyMvQuDCp+FV4TvfDP3c6+r/YFCyvUNTZlcrea/2SZ/OM dBwcA
 X-Developer-Key: i=chleroy@kernel.org; a=openpgp; fpr=10FFE6F8B390DE17ACC2632368A92FEB01B8DD78
 Content-Transfer-Encoding: 8bit
 
@@ -123,14 +123,14 @@ Add it.
 
 Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
 ---
- arch/x86/include/asm/uaccess.h | 29 ++++++++++++++++++++++++-----
+ arch/arm64/include/asm/uaccess.h | 29 ++++++++++++++++++++++++-----
  1 file changed, 24 insertions(+), 5 deletions(-)
 
-diff --git a/arch/x86/include/asm/uaccess.h b/arch/x86/include/asm/uaccess.h
-index 3a0dd3c2b233..10c458ffa399 100644
---- a/arch/x86/include/asm/uaccess.h
-+++ b/arch/x86/include/asm/uaccess.h
-@@ -598,7 +598,7 @@ _label:									\
+diff --git a/arch/arm64/include/asm/uaccess.h b/arch/arm64/include/asm/uaccess.h
+index 1e20ec91b56f..adfdb52cd82b 100644
+--- a/arch/arm64/include/asm/uaccess.h
++++ b/arch/arm64/include/asm/uaccess.h
+@@ -437,7 +437,7 @@ static inline void user_access_restore(unsigned long enabled) { }
   * We want the unsafe accessors to always be inlined and use
   * the error labels - thus the macro games.
   */
@@ -139,7 +139,7 @@ index 3a0dd3c2b233..10c458ffa399 100644
  	while (len >= sizeof(type)) {						\
  		unsafe_put_user(*(type *)(src),(type __user *)(dst),label);	\
  		dst += sizeof(type);						\
-@@ -611,10 +611,29 @@ do {									\
+@@ -450,10 +450,29 @@ do {									\
  	char __user *__ucu_dst = (_dst);				\
  	const char *__ucu_src = (_src);					\
  	size_t __ucu_len = (_len);					\
@@ -172,7 +172,7 @@ index 3a0dd3c2b233..10c458ffa399 100644
 +	unsafe_get_loop(__ucu_dst, __ucu_src, __ucu_len, u8, label);	\
  } while (0)
  
- #ifdef CONFIG_CC_HAS_ASM_GOTO_OUTPUT
+ extern unsigned long __must_check __arch_clear_user(void __user *to, unsigned long n);
 -- 
 2.49.0
 
