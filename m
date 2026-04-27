@@ -1,73 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-20171-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20172-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F84EFF8868
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2026 14:21:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF011FF8868
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2026 14:21:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g45Mg596Hz2xcD;
-	Tue, 28 Apr 2026 00:21:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777287345;
-	cv=none; b=bpBAz9JndsjvBao8615LtXazg+zhMJLx63Z/gV0+XyrObpLXb0MHf87ob7cizBqjMPRThCEmwTkt1JIPg4y7JdNns+icYKWnJc0zrt5fGXj1KxeBnPKdBrDv8m2JuaXnT9XVP+5z4NtESlbCI0fmP/wY38A7g9v6kP7K7lsCU4Ea5PsIy4vWiHBhz2lSaLa1MAg79ZAAdF2tBs4eU7cbjyeu0xfn4rUBW6HWkdNh/zAJ6huqV0z4jsU5rXCztHJFbbBWSS+jil4n571z3vCyVmpf+oqGDMwNPZGKOyexjzMY4DbBwL2SgTGoiopSkWX1PiOMKWe9Murt5ySESYMgUA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g45N02pmnz2xcD;
+	Tue, 28 Apr 2026 00:21:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777286938;
+	cv=none; b=QrpUCKYRnuBC/3N7mIkraXCUPm9ZFm3khzuE4FuJ5nBB1mW95jVdaHxyGYNZJ5z8ISHZgoNCtJ8lhQNwRgyvCmxmhdUGbprulYIg+kLatVNXt6Ei0+slHw/+1zGrslCvAT7OrLzopzgaLAPXBx+7g1DwTflOQsjlJzW/Q5Rjeabk6R4E1cDZ/lJiPrpFdQh7j7LlQEmnmNd/iJvu2e8HF4ukg6VPxYo/te8uvAQcED5ikUdtIiSEXgxYCmsQ9lSGVBMANhCbIjVRVoMfwCXJiiHHcI/7tvedeWBrqj2gCgvTu6q0xQzZA6Z858Rh/2CIjF3H85GYtWlcUB4hBrV+vw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777287345; c=relaxed/relaxed;
-	bh=uvzTMxkV/XE92xkNTeViIJTfsF+11Z7yKzXtzAT5MjY=;
+	t=1777286938; c=relaxed/relaxed;
+	bh=GgFq8k94DJnhQjVxRzwzzM5CQ9n+B/KDyqhHDEdSFK4=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=YKF/parSom5OPgJ74FiMRBlgbgpETfGkv2cWa2Y5hnAXtEl94dJ9OuR8blSToIvubkIFEXLQ6vwEVuyptcq9G+Z+IOA3hQBLuCcgqzFwjoG+7rFbZ+KVeAWr/SqaW1n27MbJAbuVmxKmRCsbDFd0hS1LINZcIzjQfHd5McvVLIDYUiPko1CFss1/gkQZkH+zRJIwspEKYKRlnsW9G2YpU91HLq6C29pA+fqWEwK5Ymlcq5xAv1LrwAE7ekiCJ2qHNW0MZWFDq4RHrimXkFgL9yC6Qpj76QfnncYXr4cxG/a6gZsf1rJCwoIuGA4mIVL+Svno8MdpQvV6eYsL8bX+Qw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZDXC+RCa; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=anushree.mathur@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 In-Reply-To:Content-Type; b=igI7MOnQULZYdlSAmvCxv1DtIoBZxpC7iLbOiBgRAvzJkzmR1pdmfejfZDi1rS5r3KVC4YnoQpyYI5c2UJwOw7WyiHorNr3Jhj99dKyfuE8zFFgOU4LpyJUbmOOqoHFk6wfwJ3xV+YaVNKzmuOjJujMQ8nHn8YXWk9LuAxC3xrFxSckjH41VevCuD5k+0uIgqbknjE86CFs9k1vrdkFTWvfc/qKmWjcXbURVKxSqI6gVwLGpThuZkS/l+ZZxeBGcMQlGoXn7QoLAc66QQvYH/0BPw8r4RMDgwKwvdBvRkCsQOlrSDKscvuZGDcPlcYwp+gJG55jpmfhE8GAT8wz4UA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Hq4HHKnN; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=anushree.mathur@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZDXC+RCa;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Hq4HHKnN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=anushree.mathur@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=anushree.mathur@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g40pm1pg0z2y2B
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2026 20:55:43 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63QMHE8c3239715;
-	Mon, 27 Apr 2026 10:55:32 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g40fx5Mxxz2y2B
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2026 20:48:57 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63R9t4we1672847;
+	Mon, 27 Apr 2026 10:48:47 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=uvzTMx
-	kV/XE92xkNTeViIJTfsF+11Z7yKzXtzAT5MjY=; b=ZDXC+RCaWWoSmaxHKySsFC
-	R8q9w2fGJAsiDmIOuGohfKsUegw4XGGzPey6n+LLrJttI+8UwY86x5qALlsCD999
-	p9kznZFF4w0n5mc3PywI0lF/K6IRbN6hONh+U1FwKns8DGK+TOCZ9uzcW6Xe0yun
-	Hm/EH1fw807ZfnfVWWY+RUxDdn/LNAIxia0HThFAhararYj6XgL1OaLE4GGlaEJt
-	DD16i7GEWCKC+F5204qnTQ7q1he1aLn+aATPdB70gl5t6wpgcQ8iQljBGNLoAHs8
-	cdoXsyjjsw0OhWpRUpGKWt/6JI/OO9d8sqdRt5ITNsQ5VBscRSwM1U+ATejbcDqQ
+	:message-id:mime-version:references:subject:to; s=pp1; bh=GgFq8k
+	94DJnhQjVxRzwzzM5CQ9n+B/KDyqhHDEdSFK4=; b=Hq4HHKnNQEAKQUydDQ/tLJ
+	kEsn9y0Kp8JY8uQYEzX0w6Ldz2yZOk6o0KGI33siGuWjmpaWbiWVR0mSzDUyQGhz
+	7cyiU67SfBTnXrkavsLcfkDEzfGNPiq5gvH4R0kGnGizLmIBwMcQ9W+ptatjemBW
+	69os2KRiOU/P7wXGlPzPeUNboQ8p4xew7cwIqbC22gXQXscj0xTlvFPZptXkLy8u
+	wvDacO6ZWzqcURtLTjbBdwmzhDnl+Y+w3XrOaHS7fqHBb96/Nlq7PiUreZj9ydUf
+	WA1g/k7iKwRZDYCLVPyezzNfDXXQ0gz+d4s4M++oheiYFbhiGO9CdYr6vM1PcqSg
 	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4drk1jfe8n-1
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4drnb4yxa0-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 27 Apr 2026 10:55:32 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 63RArsjG001092;
-	Mon, 27 Apr 2026 10:55:31 GMT
-Received: from smtprelay04.dal12v.mail.ibm.com ([172.16.1.6])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dsamy4k9p-1
+	Mon, 27 Apr 2026 10:48:46 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 63RAcsYh025383;
+	Mon, 27 Apr 2026 10:48:45 GMT
+Received: from smtprelay04.wdc07v.mail.ibm.com ([172.16.1.71])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ds7xq4wtb-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 27 Apr 2026 10:55:31 +0000 (GMT)
+	Mon, 27 Apr 2026 10:48:45 +0000 (GMT)
 Received: from smtpav05.dal12v.mail.ibm.com (smtpav05.dal12v.mail.ibm.com [10.241.53.104])
-	by smtprelay04.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63RAtUIu30999138
+	by smtprelay04.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63RAmhPl41222676
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 27 Apr 2026 10:55:30 GMT
+	Mon, 27 Apr 2026 10:48:43 GMT
 Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 79F0158065;
-	Mon, 27 Apr 2026 10:55:30 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 6B47E58065;
+	Mon, 27 Apr 2026 10:48:43 +0000 (GMT)
 Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5447A58056;
-	Mon, 27 Apr 2026 10:55:26 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 7B13D58052;
+	Mon, 27 Apr 2026 10:48:39 +0000 (GMT)
 Received: from [9.61.240.94] (unknown [9.61.240.94])
 	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 27 Apr 2026 10:55:26 +0000 (GMT)
-Message-ID: <32d1324d-cfe1-4380-9c5c-91da4b1e2457@linux.ibm.com>
-Date: Mon, 27 Apr 2026 16:25:24 +0530
+	Mon, 27 Apr 2026 10:48:39 +0000 (GMT)
+Message-ID: <a599a37c-99ab-45b7-9b9c-1f809d4d5e94@linux.ibm.com>
+Date: Mon, 27 Apr 2026 16:18:37 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -109,30 +109,29 @@ Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI3MDExNCBTYWx0ZWRfXxV3KYKWDKFd3
- Hj5ZwKlOnonVdpmHzjkMxxBCQpUFLDmt4DRcLwa7NfrXvfrpYx39HHd1t8CEao4d9JzBoWOVLea
- ejHyBufryMpQofnB7/EgkFxVbMf0lDtvdX+fH6Xptr4jBOv79agtBJRWDGrMclGPgC4XiQZ7IxI
- NuUqRk35fq9s3exa0wNLMGtkGxVNoapGTzSBQygKrQis7t3xRMYqD/lKRXG/7ShfKEclxNYVW5L
- waWn+X3teLQ2vAeygW1dlqcMwetOceBASGuFrx3dK0RhmQWJroWU9YJyVBF7yH3m+uy4QcQ6k2L
- pIsav6WtzQntShbgKZVJQJGMtCgfI1L2xUX/vwQt/9OMJ0oATsVg6J5dUdJu/z9R7oglzYtE4It
- IoDKCVHGbsyWcQglbs1Jew4a+qGLCf0xwdBT/KUD2FSUn135HYBmmRHU2yqgVjPzcMxS9hemy7M
- VFAs/1AgVQCIrhT48Ig==
-X-Proofpoint-GUID: wpSnAxKzXMpzmavP8zIS3Vd7Bdov71f7
-X-Proofpoint-ORIG-GUID: 4gxXAtu1Ls5tVUw-rK7U9PFB__2JqR-p
-X-Authority-Analysis: v=2.4 cv=MohiLWae c=1 sm=1 tr=0 ts=69ef40a4 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+X-Authority-Analysis: v=2.4 cv=AqDeGu9P c=1 sm=1 tr=0 ts=69ef3f0e cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
  a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=pGLkceISAAAA:8
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=pGLkceISAAAA:8
  a=9QMS5lc2VQEYQecy0VUA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI3MDExNCBTYWx0ZWRfX7UE6cPUVzrcq
+ a2NjPPup3AI7rmtjGHdvDJIuvV44RXz1ZRc8m8AOCHpk124OrG8nTQtJOs3CULnmjfCeu5WE03k
+ EDFDMTB679+k9ke+/pdxEDS0KBMF/GqGkpgcqCA/qmcncGJW53TE0jo2FGm6wSYpsMk8ciTemq/
+ GqMFiW46jQPjC9d27I0pPqtEAnAC9S7fRdi/IJA2swHvLrXe/ND8X1lJGzzqOTz3da21dqpYzwn
+ LiFc4IFtkDp6wMZ9FWNNxT0ZmV8Jjyzikxa6K2ACG51d7srovUjZgLdMb7NNZuZickI23qHuCcL
+ 8HOoroni1wMSwHs+chIju/L4ode9nZ1AaMfdb+BHel4ThlIMt6Z3kUucPbI+2a56t1K/qBm4iOb
+ hswWzBxqg1/7fmXJs6VjN0DQkdwlrUyclJK5bIPMTBv8P7wJY9NMPjITuJ/rlDmDMVbfFjkj3pN
+ ThSPQ0hZiSFztnBd2xw==
+X-Proofpoint-GUID: C9z-uKdVDSl3_qnmQ53EnIJixOCGAqSh
+X-Proofpoint-ORIG-GUID: -zUrTSFPV03gthasgi8Dt9hP_d5EvlHC
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-04-27_03,2026-04-21_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 adultscore=0 suspectscore=0 bulkscore=0 spamscore=0
- priorityscore=1501 malwarescore=0 clxscore=1015 lowpriorityscore=0
- impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
- definitions=main-2604270114
+ adultscore=0 priorityscore=1501 phishscore=0 suspectscore=0 clxscore=1011
+ lowpriorityscore=0 spamscore=0 bulkscore=0 impostorscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2604270114
 
 
 
@@ -223,17 +222,13 @@ On 07/04/26 3:55 PM, Vishal Chourasia wrote:
 >> Thanks.
 >> ~Shivang.
 >>
+>> Hi Vishal/Shivang,
 >>
+>> I have tested this qemu patch mentioned here, after applying this the 
+>> issue is getting fixed.
 >>
-
-
-Hi Vishal/Shivang,
-
-I have tested this qemu patch mentioned here, after applying this the 
-issue is getting fixed. Will update all the logs once the new patch is 
-sent out to qemu mailing list!
-
-Thank you!
-Anushree Mathur
+>> Thank you!
+>> Anushree Mathur
+>>
 
 
