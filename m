@@ -1,73 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-20172-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20173-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF011FF8868
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2026 14:21:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C85EFF8868
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2026 16:05:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g45N02pmnz2xcD;
-	Tue, 28 Apr 2026 00:21:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777286938;
-	cv=none; b=QrpUCKYRnuBC/3N7mIkraXCUPm9ZFm3khzuE4FuJ5nBB1mW95jVdaHxyGYNZJ5z8ISHZgoNCtJ8lhQNwRgyvCmxmhdUGbprulYIg+kLatVNXt6Ei0+slHw/+1zGrslCvAT7OrLzopzgaLAPXBx+7g1DwTflOQsjlJzW/Q5Rjeabk6R4E1cDZ/lJiPrpFdQh7j7LlQEmnmNd/iJvu2e8HF4ukg6VPxYo/te8uvAQcED5ikUdtIiSEXgxYCmsQ9lSGVBMANhCbIjVRVoMfwCXJiiHHcI/7tvedeWBrqj2gCgvTu6q0xQzZA6Z858Rh/2CIjF3H85GYtWlcUB4hBrV+vw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g47hG1vHwz2xlK;
+	Tue, 28 Apr 2026 02:05:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.146
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777305934;
+	cv=none; b=RgMmXMP/rlTEHOKDWz1sdL8bUTuXbG65L+SkM7RKat+HUe0nPsSDRvjhjUwtVTEmWU27UBvn3qyupnm6Kz+Rf0uPuv7L6Rl3msBtOr0B1qv7EW1g4dK0H2E+EC1H6+OS3VwD3HkBNeViJywTLMLbjnOwXKOlFvHFuSsyAUMOa4lRlzXTQ6nGitHDbpSMJ4prEwWZUF8SRkaiPwHJziE0y4P5ekMJ+tIPffquQVUniEGP6dzM6+O4H7m4RtaHCXzB7pO+DkJHm9wsot1QfZznDscvzyik0f6Q7X5p6imkraksBFkL+1c3nevhqLmZNv14D2gnPMNeZhp36ilSEM5X9g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777286938; c=relaxed/relaxed;
-	bh=GgFq8k94DJnhQjVxRzwzzM5CQ9n+B/KDyqhHDEdSFK4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=igI7MOnQULZYdlSAmvCxv1DtIoBZxpC7iLbOiBgRAvzJkzmR1pdmfejfZDi1rS5r3KVC4YnoQpyYI5c2UJwOw7WyiHorNr3Jhj99dKyfuE8zFFgOU4LpyJUbmOOqoHFk6wfwJ3xV+YaVNKzmuOjJujMQ8nHn8YXWk9LuAxC3xrFxSckjH41VevCuD5k+0uIgqbknjE86CFs9k1vrdkFTWvfc/qKmWjcXbURVKxSqI6gVwLGpThuZkS/l+ZZxeBGcMQlGoXn7QoLAc66QQvYH/0BPw8r4RMDgwKwvdBvRkCsQOlrSDKscvuZGDcPlcYwp+gJG55jpmfhE8GAT8wz4UA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Hq4HHKnN; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=anushree.mathur@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1777305934; c=relaxed/relaxed;
+	bh=ZCtou/cEXXCW2EAHTSeZgopr0M/VLaS4+NUan7nzjpo=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=MZ1YmjU/5Wj9Qau5QAPbx08p6RSB+TkmeJprq7SCk6Igg0cOPLRQxQbSBfoPxJ5q9Qams6VrjRSfTRZ2tl2OcU0DSLRo5gsVqz/7A4S6U5AF7PNBR32VIuW+tB5lhUVpqvrmAvBGCGUz2es2joMug7WsywC5Bvbx2e7g3Perrtp4hODoN2m7Rf4zdS5ZmoSlFCk4vlpswGIcc8XQKoROxHHVTQu8TOkgWMZtYjS4zJSNceGwxYGsYVZz24oyV+kjE5y7zLzM7ybNweUM8CrkYDjBckRRb+mVmRntiG3Q22G09ElnacYsXDndsiJKloSZLoDpB2iMzJhWXfWCw5CuKw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=LM+1WQZb; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=rcp5e0Yz; dkim-atps=neutral; spf=pass (client-ip=103.168.172.146; helo=fout-a3-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Hq4HHKnN;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=LM+1WQZb;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=rcp5e0Yz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=anushree.mathur@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=103.168.172.146; helo=fout-a3-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
+Received: from fout-a3-smtp.messagingengine.com (fout-a3-smtp.messagingengine.com [103.168.172.146])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g40fx5Mxxz2y2B
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2026 20:48:57 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63R9t4we1672847;
-	Mon, 27 Apr 2026 10:48:47 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=GgFq8k
-	94DJnhQjVxRzwzzM5CQ9n+B/KDyqhHDEdSFK4=; b=Hq4HHKnNQEAKQUydDQ/tLJ
-	kEsn9y0Kp8JY8uQYEzX0w6Ldz2yZOk6o0KGI33siGuWjmpaWbiWVR0mSzDUyQGhz
-	7cyiU67SfBTnXrkavsLcfkDEzfGNPiq5gvH4R0kGnGizLmIBwMcQ9W+ptatjemBW
-	69os2KRiOU/P7wXGlPzPeUNboQ8p4xew7cwIqbC22gXQXscj0xTlvFPZptXkLy8u
-	wvDacO6ZWzqcURtLTjbBdwmzhDnl+Y+w3XrOaHS7fqHBb96/Nlq7PiUreZj9ydUf
-	WA1g/k7iKwRZDYCLVPyezzNfDXXQ0gz+d4s4M++oheiYFbhiGO9CdYr6vM1PcqSg
-	==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4drnb4yxa0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 27 Apr 2026 10:48:46 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 63RAcsYh025383;
-	Mon, 27 Apr 2026 10:48:45 GMT
-Received: from smtprelay04.wdc07v.mail.ibm.com ([172.16.1.71])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ds7xq4wtb-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 27 Apr 2026 10:48:45 +0000 (GMT)
-Received: from smtpav05.dal12v.mail.ibm.com (smtpav05.dal12v.mail.ibm.com [10.241.53.104])
-	by smtprelay04.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63RAmhPl41222676
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 27 Apr 2026 10:48:43 GMT
-Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6B47E58065;
-	Mon, 27 Apr 2026 10:48:43 +0000 (GMT)
-Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7B13D58052;
-	Mon, 27 Apr 2026 10:48:39 +0000 (GMT)
-Received: from [9.61.240.94] (unknown [9.61.240.94])
-	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 27 Apr 2026 10:48:39 +0000 (GMT)
-Message-ID: <a599a37c-99ab-45b7-9b9c-1f809d4d5e94@linux.ibm.com>
-Date: Mon, 27 Apr 2026 16:18:37 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g47h94Pbwz2xb3
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2026 02:05:28 +1000 (AEST)
+Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
+	by mailfout.phl.internal (Postfix) with ESMTP id D7ECAEC0FC1;
+	Mon, 27 Apr 2026 12:05:24 -0400 (EDT)
+Received: from phl-imap-02 ([10.202.2.81])
+  by phl-compute-04.internal (MEProxy); Mon, 27 Apr 2026 12:05:24 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm2; t=1777305924;
+	 x=1777392324; bh=ZCtou/cEXXCW2EAHTSeZgopr0M/VLaS4+NUan7nzjpo=; b=
+	LM+1WQZbjg5FBMii6wK/sxZP2lOaFxRnk3u5Y3RPRDCzwUmZITJVrJYqecL2ip3a
+	4zzSTLCelWjFhL013m4iJHoxS6Qryrlltr0l0KcnCsF0zd8QPA8q6pUln4acYa8M
+	54nuREiojIbbaBaMFMLGNK8a5NR9/kuocofwyDkZm5DW7GuZ/jmqkNE5M3f46zKo
+	5QaTkvQGYhoJdysVmGamXRQKrpuIz7P+dDEeMSCkxebmSIF11REtmkrF47cpziZe
+	zenSKG9DiD44E7jJxT04sOGvo0Hmconj/mNLbJlmwwqDLCfLgJ3JyiScecfLsZYk
+	HjdD77kIDYfokvaUaH6FTQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=1777305924; x=
+	1777392324; bh=ZCtou/cEXXCW2EAHTSeZgopr0M/VLaS4+NUan7nzjpo=; b=r
+	cp5e0YzGwabDnLbX/xXlbtzzv9e8OX0XRwm69dlgxbBAO3PGQDnv+gLQ9iNaw41t
+	wiog0CQMhPF+ACfM6DLMRENiyAYiJeJm1+ICJB+8quz+E31tQ6nPNQPc/XBiA0pw
+	n/cJg9b/IcMhSBopBJbLrEhhxyEQYKBBRMOIyStsB49kW1o929ihCOJ9oxPJS4yR
+	mklaN+1vMJ3XdBzCPiiHtUvU0bqlp9z4Q7AZjFEMVRW4SXSTRkvgkYb2ToIN4omR
+	5t/JFUxGzDJDq0qYmldtbIqsLrBi89KCkPrVSmT1gzvgREkXP55VsmGOAjNpoHa2
+	dL7fdzim8Bm97btgfIZ5Q==
+X-ME-Sender: <xms:Q4nvabvgD-Y0-q21rj0xIevp3vYtWZ1cxKFvIuxKRHMaTtQTxjGz5A>
+    <xme:Q4nvaXSFnWpwpLdH3gTHczIdKeqNIYEdHjDNHzryu4ch2F0apyFIXLg61RMHMZ-b3
+    304p_cMmvtBQBKrtHOzNpIgGPl-vyiY4uum6i7My8pPO5wY649nPVo>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefhedrtddtgdejleduvdcutefuodetggdotefrod
+    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpuffrtefokffrpgfnqfghnecuuegr
+    ihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjug
+    hrpefoggffhffvvefkjghfufgtgfesthhqredtredtjeenucfhrhhomhepfdetrhhnugcu
+    uegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrghtthgvrh
+    hnpedvhfdvkeeuudevfffftefgvdevfedvleehvddvgeejvdefhedtgeegveehfeeljeen
+    ucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpegrrhhnug
+    esrghrnhgusgdruggvpdhnsggprhgtphhtthhopeefjedpmhhouggvpehsmhhtphhouhht
+    pdhrtghpthhtohepjhgsrghrohhnsegrkhgrmhgrihdrtghomhdprhgtphhtthhopegthh
+    hrihhsthhirghnrdhkohgvnhhighesrghmugdrtghomhdprhgtphhtthhopehmphgvsegv
+    lhhlvghrmhgrnhdrihgurdgruhdprhgtphhtthhopehsihhmohhnrgdrvhgvthhtvghrse
+    hffhiflhhlrdgthhdprhgtphhtthhopehgrghrhiesghgrrhihghhuohdrnhgvthdprhgt
+    phhtthhopegurghvihgurdhlrghighhhthdrlhhinhhugiesghhmrghilhdrtghomhdprh
+    gtphhtthhopehmkhgthhgruhhrrghssehgmhgrihhlrdgtohhmpdhrtghpthhtohepnhhi
+    tghkrdguvghsrghulhhnihgvrhhsodhlkhhmlhesghhmrghilhdrtghomhdprhgtphhtth
+    hopehnphhighhgihhnsehgmhgrihhlrdgtohhm
+X-ME-Proxy: <xmx:Q4nvacXMD2rgkFYfQT6xRfjCHHzuIur5ewWkYvLB3s1CPfPeONk9Yg>
+    <xmx:Q4nvaY2Is8kGpnqdtzP_bEIxpw2iOsohNjjdyy0uXHi_Xq7T0TrmMg>
+    <xmx:Q4nvaeM0ht2htEmAr3ZLvSR44Fg_2_9W52RbXTZcjuamGIomTUJOMg>
+    <xmx:Q4nvaQS7xdW9MU6arMT9qKha7QhqS-7qn5T0fzYzrfcy_Nars0aFfg>
+    <xmx:RInvaRzrTfYEHKqKGtWlisXUYFSpPribsTZQ5DAa5owond2lsXUold8G>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id 3B6AE700065; Mon, 27 Apr 2026 12:05:23 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,154 +100,91 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] pseries/kexec: skip resetting CPUs added by firmware
- but not started by the kernel
-To: Vishal Chourasia <vishalc@linux.ibm.com>,
-        Shivang Upadhyay <shivangu@linux.ibm.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Srikar Dronamraju <srikar@linux.ibm.com>,
-        Shrikanth Hegde <sshegde@linux.ibm.com>,
-        "Nysal Jan K.A."
- <nysal@linux.ibm.com>,
-        Ritesh Harjani <ritesh.list@gmail.com>,
-        Sourabh Jain <sourabhjain@linux.ibm.com>,
-        Anushree Mathur <anushree.mathur@linux.vnet.ibm.com>,
-        linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <20260330062206.170437-1-shivangu@linux.ibm.com>
- <da6f75a7-8a68-46a9-9897-1aef11d33829@linux.ibm.com>
- <3075019f74969b25e3ab7f6b3f51ee54ed455aaf.camel@linux.ibm.com>
- <0732de44-964c-4e0f-b4fd-dcc631ba70fa@linux.ibm.com>
-Content-Language: en-US
-From: Anushree Mathur <anushree.mathur@linux.ibm.com>
-In-Reply-To: <0732de44-964c-4e0f-b4fd-dcc631ba70fa@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=AqDeGu9P c=1 sm=1 tr=0 ts=69ef3f0e cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=pGLkceISAAAA:8
- a=9QMS5lc2VQEYQecy0VUA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI3MDExNCBTYWx0ZWRfX7UE6cPUVzrcq
- a2NjPPup3AI7rmtjGHdvDJIuvV44RXz1ZRc8m8AOCHpk124OrG8nTQtJOs3CULnmjfCeu5WE03k
- EDFDMTB679+k9ke+/pdxEDS0KBMF/GqGkpgcqCA/qmcncGJW53TE0jo2FGm6wSYpsMk8ciTemq/
- GqMFiW46jQPjC9d27I0pPqtEAnAC9S7fRdi/IJA2swHvLrXe/ND8X1lJGzzqOTz3da21dqpYzwn
- LiFc4IFtkDp6wMZ9FWNNxT0ZmV8Jjyzikxa6K2ACG51d7srovUjZgLdMb7NNZuZickI23qHuCcL
- 8HOoroni1wMSwHs+chIju/L4ode9nZ1AaMfdb+BHel4ThlIMt6Z3kUucPbI+2a56t1K/qBm4iOb
- hswWzBxqg1/7fmXJs6VjN0DQkdwlrUyclJK5bIPMTBv8P7wJY9NMPjITuJ/rlDmDMVbfFjkj3pN
- ThSPQ0hZiSFztnBd2xw==
-X-Proofpoint-GUID: C9z-uKdVDSl3_qnmQ53EnIJixOCGAqSh
-X-Proofpoint-ORIG-GUID: -zUrTSFPV03gthasgi8Dt9hP_d5EvlHC
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-27_03,2026-04-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 priorityscore=1501 phishscore=0 suspectscore=0 clxscore=1011
- lowpriorityscore=0 spamscore=0 bulkscore=0 impostorscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2604270114
+X-ThreadId: ADiin7Vigcc3
+Date: Mon, 27 Apr 2026 18:05:01 +0200
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Link Mauve" <linkmauve@linkmauve.fr>,
+ "David Laight" <david.laight.linux@gmail.com>
+Cc: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
+ "Madhavan Srinivasan" <maddy@linux.ibm.com>,
+ "Michael Ellerman" <mpe@ellerman.id.au>,
+ "Nicholas Piggin" <npiggin@gmail.com>,
+ "Christophe Leroy" <chleroy@kernel.org>,
+ "Peter Zijlstra" <peterz@infradead.org>,
+ "Josh Poimboeuf" <jpoimboe@kernel.org>,
+ "Jason Baron" <jbaron@akamai.com>, "Alice Ryhl" <aliceryhl@google.com>,
+ "Steven Rostedt" <rostedt@goodmis.org>,
+ "Ard Biesheuvel" <ardb@kernel.org>,
+ "Sumit Semwal" <sumit.semwal@linaro.org>,
+ =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
+ "Miguel Ojeda" <ojeda@kernel.org>, boqun@kernel.org,
+ "Gary Guo" <gary@garyguo.net>,
+ =?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>,
+ "Benno Lossin" <lossin@kernel.org>,
+ "Andreas Hindborg" <a.hindborg@kernel.org>,
+ "Trevor Gross" <tmgross@umich.edu>, "Danilo Krummrich" <dakr@kernel.org>,
+ "Nathan Chancellor" <nathan@kernel.org>,
+ "Nick Desaulniers" <nick.desaulniers+lkml@gmail.com>,
+ "Bill Wendling" <morbo@google.com>,
+ "Justin Stitt" <justinstitt@google.com>, tamird@kernel.org,
+ "Nicolas Schier" <nsc@kernel.org>, simona.vetter@ffwll.ch,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linaro-mm-sig@lists.linaro.org, rust-for-linux@vger.kernel.org,
+ llvm@lists.linux.dev
+Message-Id: <21348763-ff78-46c6-b0eb-eedce69a839a@app.fastmail.com>
+In-Reply-To: <aes7L3M1d_LvvGKa@luna>
+References: <20260424054742.45832-1-mkchauras@gmail.com>
+ <20260424054742.45832-6-mkchauras@gmail.com>
+ <20260424101425.6bde0e17@pumpkin> <aes7L3M1d_LvvGKa@luna>
+Subject: Re: [Linaro-mm-sig] Re: [PATCH V13 5/7] rust: Make __udivdi3() and __umoddi3()
+ panic
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
+On Fri, Apr 24, 2026, at 11:43, Link Mauve wrote:
+> On Fri, Apr 24, 2026 at 10:14:25AM +0100, David Laight wrote:
+>> On Fri, 24 Apr 2026 11:17:40 +0530
+>> "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com> wrote:
+>>=20
+>> > From: Link Mauve <linkmauve@linkmauve.fr>
+>> >=20
+>> > The core crate currently depends on these two functions for i64/u64/
+>> > i128/u128/core::time::Duration formatting, but we shouldn=E2=80=99t=
+ use that in
+>> > the kernel so let=E2=80=99s panic if they are ever called.
+>>=20
+>> Ugg.
+>> Surely you can make it a link-time failure?
+>> Or change the underlying code to avoid the divide.
+>
+> This is currently a link-time failure, which means if any of the core
+> crate or drm_panic_qr are linked in, the kernel will fail to link.
+>
+> And since we rely on core, that means no kernel can be built on PowerPC
+> without this patch.
+>
+> A possible solution would be to change the core crate to not divide
+> u64s, but the last time I tried to do that I couldn=E2=80=99t quite fi=
+gure out
+> how to do formatting without it, maybe I will just open an issue again=
+st
+> Rust.
 
+I think you just need to rewrite the patch description, it appears
+that everyone misunderstands what you are doing in the patch:
 
-On 07/04/26 3:55 PM, Vishal Chourasia wrote:
-> On 07/04/26 15:49, Shivang Upadhyay wrote:
->> Hi,
->> Thanks for your review.
->>
->> On Mon, 2026-04-06 at 14:22 +0530, Vishal Chourasia wrote:
->>> Hi Shivang,
->>>
->>> Thanks for working on this issue.
->>> A few questions and concerns about the approach:
->>>
->>> 1. Was this issue only observed with QEMU-based virtualization, or
->>> does
->>> it also reproduce on PowerVM/phyp? The commit message and sample logs
->>> don't clarify this. If this is QEMU-specific, I think we should fix
->>> this
->>> in QEMU rather than working around it in the kernel.
->> Currently this is only happening in Qemu (both tcg and kvm mode). But I
->> think this should be reproducible on phyp also. Ill confirm wheather it
->> is really the case or not.
->>
->>> 2. The approach taken here moves away from the PAPR interface. The
->>> kernel currently uses H_SIGNAL_SYS_RESET_ALL_OTHERS, which is the
->>> architecturally defined hcall for this purpose. Replacing it with a
->>> per-CPU loop that checks internal kernel state (paca cpu_start)
->>> breaks
->>> the clean abstraction between guest and
->>> QEMU's sPAPR implementation should behave the same way. The
->>> hypervisor
->> Yeah it is a valid concern about ownership for this resets. Ill try to
->> see if this fix is possible in qemu itself.
->>
->>> (QEMU) should maintain a list of CPUs that have been
->>> activated/online/started and given to the guest. When
->>> H_SIGNAL_SYS_RESET_ALL_OTHERS is called, QEMU should only reset those
->>> CPUs that the guest has actually started. Unless the guest makes the
->>> RTAS start-cpu call for a CPU, QEMU should not include that CPU in
->>> the
->>> set of CPUs to be reset.
->>>
->>> I think discussing this would help determine the right fix location.
->>>
->>> Can you refer to the following commit in QEMU to see if help in this
->>> case.
->>>
->>> commit fb802acdc8b162084e9e60d42aeba79097d14d2b
->>> Author: Nicholas Piggin <npiggin@gmail.com>
->>> Date:   Tue Mar 18 15:03:48 2025 +1000
->>>
->>>       ppc/spapr: Fix RTAS stopped state
->>>
->> Thanks for this reference. cpu->quiesced state was introduced in this
->> patch, for modelling "RTAS stopped" state.
->>
->> as per the commit message:
->> A KVM spapr guest boots with all secondary CPUs defined to be in the
->> RTAS stopped" state. In this state, the CPU is only responsive to the
->> start-cpu RTAS call.
->>
->> So, we should be able to use this to check wheather cpu is started or
->> not. Only other concern here would be about phyp's implementation for
->> this.
->
-> Yes, something like this.
->
-> diff --git a/hw/ppc/spapr_hcall.c b/hw/ppc/spapr_hcall.c
->
-> index 032805a8d0..8c51372cf8 100644
-> --- a/hw/ppc/spapr_hcall.c
-> +++ b/hw/ppc/spapr_hcall.c
-> @@ -1105,6 +1105,9 @@ static target_ulong 
-> h_signal_sys_reset(PowerPCCPU *cpu,
->                      continue;
->                  }
->              }
-> +
-> +            if (c->env.quiesced) continue;
-> +
->              run_on_cpu(cs, spapr_do_system_reset_on_cpu, 
-> RUN_ON_CPU_NULL);
->          }
->          return H_SUCCESS;
->
->>
->> Thanks.
->> ~Shivang.
->>
->> Hi Vishal/Shivang,
->>
->> I have tested this qemu patch mentioned here, after applying this the 
->> issue is getting fixed.
->>
->> Thank you!
->> Anushree Mathur
->>
+Like on arm32, normal kernel code will continue to cause
+a link failure the same way in Rust as it does in C, and your
+patch does not change that. When you (or Link Mauve) "let's panic",
+I assume this is was just a mistake in summarizing the logic
+that turns the unreachable code from the Rust core crate
+into a runtime assertion since it would be impossible to link
+the kernel otherwise.
 
+Silently turning a 64-bit division into a panic() for normal
+code would of course be unacceptable, but that's not what
+you are doing here.
+
+    Arnd
 
