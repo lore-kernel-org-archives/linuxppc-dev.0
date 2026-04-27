@@ -1,77 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-20164-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20165-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F053FF8860
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2026 12:29:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DAFA5FF8860
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2026 12:29:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g42tR25DQz2ygY;
-	Mon, 27 Apr 2026 22:29:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::433"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777292943;
-	cv=none; b=AhsYhosIBLm9f5Yk7YNJleJa2kGsVURaP34+ycVhhHIzN7g1LNy/88WXztaNGJSfdd/sG5D6N5koHlu/TNUFcY67DDUsePsvpBvpy/EOHJLemV9Qr8DI4GG9Vx2HWaFjp9bkyMcppCbw5mep0iyxwj+5BjZkfP8ZFCkX1KR5G8aA+r5nutUAJcibNuR/wINg+wB9dFw8daLAGGVoba/856Z4Y6zJpwBI6sJkepeqgJjR1OHtUTe59yLhc0E+D7l9qkGrpXONXbHYeM92oQFFs0G/rI6RQ92dAi+u2lsLUqyxf/Rw1f09UrTYiVp6Epkvcou3rZuFJOhKHjBZ/VfEGA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g42th4PWhz2yr9;
+	Mon, 27 Apr 2026 22:29:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::431"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777292956;
+	cv=none; b=cnIjT10mYj2nNo2TciQIA2HVRwdhKmg5VSKG4Ol7iV4M/OV8sXHPOfyKiGnGv8oM6n07rgLM7pgvXmR5Z0C+7OIskVkkaY15tkYYYcTaQ65Z/JqDUieeZ2SvdXAWdENp7TEa1bx6S1pOB3EzNi6gruttbm2TmpotX1R5+RYomDbewrclUSYceoj4P93Kk+7aKDbp1CtadrTsyj4EKXPFe9lWInSLrK7fv/KGa59bQIpazUz94duFyoFvOBbPjLzyVhmYcAmrsLK/0/J/fiAXCYJNUho+uXn9dELNH7+Qj3GQtH2r4G8tIHcX7WdH74JOnQWhzOGAkQMYwy1/wKEqLg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777292943; c=relaxed/relaxed;
-	bh=Adw8Ukg8Z1VgthZeBUplRBYQ4WVreFSnBBYdxTE8gIg=;
+	t=1777292956; c=relaxed/relaxed;
+	bh=XARyapmtrilvR5w12XJiFpVGShufbq9BKuLcUgswpko=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=GnO+x/5fWzXYB5sY4ESC4StZK3WnFWWMpdO8Xv7JVw1rzpY/OyhG6lDxNhspFlA8JoIvbRqLuIAZUiXrlD05Pla9T8DPQYyU3Cb/2VZauo8J7o/SOfbYF6pD6hKHlcFWNXEUwE6GW3EFxe9VXutmqaZiYRH1Mq18q3j/A1gBk+Hk/zQshUzwYiPl7DQpG2HTe9sMEm5OFf1VUrV8UJxSJq4JNH7UCXBh4nVJk8GEaFQ3QL3WGW5ykxmpcYgBfwJ5s/VHSQgRQbOI5+xCutIHlq38mmRNlyKZJb6Zg5j80a+XC+mC4ny5BrFXfp5vL32pdnUipWWgdoqwFi5gW6ROjQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=VrJvvZj9; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::433; helo=mail-pf1-x433.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=B+DsmEO6CikgD4pTjyYrHz6WOUtaR6JY3W+mYg/5vxiuw2kK1ugHPd00xPOA1uETF/d9HXe3qA5uWdSBuyS1L7Py4IcNBGEkOUoYHUeBzCZZzMOiCfvFqFgRB/5OFPIitj1/7WrTlZTN1zk8YO9mobdZnkAkRNmmu3VgPoxZli2VYCCsAP0jFHCmkisUcmWWuE6tqVp5XunTh8568FcIJrvboL+sCOPZO/1Zndtyy1MIEprMdjK1AJxx9apsUc1YdKFeF0T0nnuWDGrCKtKrKvFgesT2xwzJqIJ/GmOTvQ35iHqXZ1dGPMRmjaWAiXKavDNZ2YC+j7+kosb/kQxURg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=RdikmkhT; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=VrJvvZj9;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=RdikmkhT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::433; helo=mail-pf1-x433.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com [IPv6:2607:f8b0:4864:20::431])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g42tQ4W66z2y2B
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2026 22:29:02 +1000 (AEST)
-Received: by mail-pf1-x433.google.com with SMTP id d2e1a72fcca58-83178c0f29cso2788309b3a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2026 05:29:02 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g42tg5rYhz2y2B
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2026 22:29:15 +1000 (AEST)
+Received: by mail-pf1-x431.google.com with SMTP id d2e1a72fcca58-82f8cebc935so4331069b3a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2026 05:29:15 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1777292940; x=1777897740; darn=lists.ozlabs.org;
+        d=gmail.com; s=20251104; t=1777292954; x=1777897754; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=Adw8Ukg8Z1VgthZeBUplRBYQ4WVreFSnBBYdxTE8gIg=;
-        b=VrJvvZj9P2t81KvDAp/87J1iQbOUKfYC8h6srM892N1FwajY34Sg+sZc1EiDcdbfhm
-         rFQ5IWt3pV2ddHxvSXV+ikAX10ELWg/HfMKZfB5roF6pGbpF8TLtMJ+O84CD54hbLACD
-         q0++LTaY4aakf1mFUOu8sq9Mk6cc2IsL1A1sIqMkxT7Clf3gCOmz2ToBipVG/x8Cj+XX
-         hc813jfG89BwYFezePny+YZIP7OM9r1rl7eJlp3IJJueIhEy4HsGQwqXD5xrPjGz54Fh
-         swe1wnLenp2HOq+eS52F2VpowP/u0cMxJZUdGiUL/60Ha0eArEAijwF7hGiTx3NBYdDW
-         CCiA==
+        bh=XARyapmtrilvR5w12XJiFpVGShufbq9BKuLcUgswpko=;
+        b=RdikmkhTi5xWZWXTxnXHxoXX++R8v64nOMqOzg9caV2OJXjmOlznAGL6l0JYlBXxQg
+         wTqMdBDWQCPqN2vTJBYI9INfw4ccipvwhIhRzjPVIhcJ6HZvC2XNGGAVbV3zW+UVPIoC
+         E0cANJdEhYY1wKsYBjLSa1abEAsuVn9qwfsjh5ayOYlhC/Yybi5HgY0MhfBEibRy3HYH
+         KlAKbnNa3669sEKS1I0A8oUNPyER6DGc5EwGjFQqoAXZdA34N5rQcZFFjKSqRwP8VzWj
+         pZ1pNuiq7TipobZDVs02h2M4PoceWwa/ivShq84TW9n7jwmoEGBEoyRN+HClOE6yRSjy
+         IL5w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777292940; x=1777897740;
+        d=1e100.net; s=20251104; t=1777292954; x=1777897754;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=Adw8Ukg8Z1VgthZeBUplRBYQ4WVreFSnBBYdxTE8gIg=;
-        b=mIuX9qPupIbgeYGGPQZplpoRV4zUVzJExfaO4polvhz/ckEzZYmRQoTQpQfXSLaTRu
-         Uupv6DxBGRXCHIhz527nAiejyhJkEGWdJdZcXGBnqm7gL7bydcBbnH1DIm5dv+OS928k
-         4MAbQIuhnmkaHzjIHoD5nNQ32Mq73uMXczptDqYC3lDyRJ7E0CrAqRiQM9f5UbF2Wt0g
-         b7Ue6I/KTY/0VtpiyUQaBiShHMLG9LjCwCgYfwEPUeYKo4/EltKqfsg7dRtGv6dwSMZa
-         7TYyvaOV2NXcW/mv/Iqub8nVaMS9h8OrlY1BbkE1y0VSyb8v1RkqTXjNImyzSvL3pWEf
-         E1NA==
-X-Forwarded-Encrypted: i=1; AFNElJ+nohbbxe032yj+1y0DrW5shkDX33ticaMD5JrcEpL0QhF5PSvMYBveSYuarRFRWRVyVYxTKHBAZws3cmQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yzh1mYdWVEP5oQF9PxKrkqp5evRiLTxbINts1uIs4m0eDQ6PNrf
-	GAf2Lg39zgYVrWPSW0jVqBa6+jx1Ei5owZSGU6bzRMGlpJ+Rg5gBfqzC
-X-Gm-Gg: AeBDievylCb3KEWB7/nCnvj9TJ6Nbd99k0pKoLKmpTEBJ9j/UdTNy17Ne/TE6pRoHdi
-	yYaiJNBswJA8sSnWJ25Goz/ULe9GPECiaTiZhM6IMs1CxOpec+ft/stTEPISSJYFOwQT8TN/ApM
-	BUODCwyEZDwIz9XJBrjavv3Vy8D7XhmYthUYKvCk6YZDNEfq43UHUaCaII6GIELCeJ/lmEbBszV
-	QakXeRILH3X0k7Ahw8Oa8DNy+jq5/p32qc2DpHwvtRg5dkOdBBPsrRle+Xam81+Swv1QQJUwRmv
-	tJOQBbyqcaNxiEza3Y1fKmyQqHGD9qRw190Y83hz7qfagJn3U1PB+UR+SMrT/8ndZZTX91hW0PP
-	PeoIv+6bXATlq3GD5C+uf1uQIYS7tmKjpF4LmT2gZH2lQ/KPndBXNZP0CMmeAFOJvp2Lqj+vID7
-	1uJWXBKo1MHlhP+MxaCil1p6jqEnPUOOYi7Oh4QIaDPadY5DWQV7wsRyDZ4MVsQ9wl3YM0+AB0E
-	KKzSQ==
-X-Received: by 2002:a05:6a00:cc1:b0:82c:2555:b9b2 with SMTP id d2e1a72fcca58-82f8c7db2b1mr47085497b3a.10.1777292940292;
-        Mon, 27 Apr 2026 05:29:00 -0700 (PDT)
+        bh=XARyapmtrilvR5w12XJiFpVGShufbq9BKuLcUgswpko=;
+        b=C10Q23AKcZsxottXNT0UkkhkxCMH+2S27f2tFow2ZachwmMedOcIsLAzEhl4CjTrbI
+         RiSfvyTThXK2angNlXMXVwqsF+eBqPrOJNBcB/CunCeMuei4seiBgPBP+bEvGPxqUqPk
+         R6YiamKrc0vCz/3wd3BIPGvDJUDNOQahNprfLF/7RTKEjjDV4+trkvcE8BmhA5hAxAQR
+         yW8/qqpCBmcktsQwksMg74q59TDfsveLp+yRz2zlhV4UCw7Wqhh2RPxuUlEEFS6iT7Ic
+         FDxBQIVb+BpkrjoCGQqelzEr6547PDIzhnHkguDaWL9Tn0RUTuvBXQeShWdGsYFQlIA8
+         +qGg==
+X-Forwarded-Encrypted: i=1; AFNElJ+SD7a7n8+fD1MrsUQZEQMiTygBCT2M3lWz/el4poSuDUSmNRXAOuGFtsIQzJc/adHAbTONjoQfht/Apbo=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx9eIJLRLnB25tjsincUygiQwmVG89bGdGOcJTtu3dE59B5OoXX
+	9Sy78ykfS9C6z9kCaL9FJX7Trknco7QCaNoGFxaxe6zwnSmI1T5fsrGf
+X-Gm-Gg: AeBDievyBS0s/fyHWwCpPNFX5a9YQbICwwXoL2k7/UdHIsKdiOvkpxwolPSijsxgsvS
+	wzeKstpL7NYgbzl6Ytn4kfk7EOWs2VOwjqNbwSS4QKG5nbI1RsvSadTMZ3kh7sU1MVDd/6wDsaQ
+	hcM9UWFcJj7B6LnhaS0GQQP645AK8Neejx2UTSJvlLr97GYcvB/R1/3JzMke5GopfQdkOVaMoq9
+	6Dn+mCS5ldd5P2VjPDqRhTWtNuO1u5ZFiIH5YE07ukG5F/swyMzPyAcyKx1p/jrokmlSfwuJxtu
+	YoioP0EAOV4HO+YMwG8Qchc/+vafdx1Pm0/z/MNYq+QqAx4KKOi38BmYW1Lc1bsQQTJmuOqMZf8
+	N3l7I32WPLRPkNnLAB7xRKTD5RS7huZU41uyd2INRc96JAeZ1pfTLNia4D6DmPH81JmwiEAKSoh
+	dq55dNg+iVv0yG+KfXqQs1rjPEq6QY9IYtq+afRhV5AOpvVGif8P5wnOPfdWN0jpSwe6y+a7aV3
+	HU/Yg==
+X-Received: by 2002:a05:6a00:1307:b0:82a:7046:86a2 with SMTP id d2e1a72fcca58-82f8c7d1011mr43021858b3a.10.1777292953443;
+        Mon, 27 Apr 2026 05:29:13 -0700 (PDT)
 Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([129.41.58.4])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82f8e9f7735sm32733466b3a.21.2026.04.27.05.28.48
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82f8e9f7735sm32733466b3a.21.2026.04.27.05.29.00
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 27 Apr 2026 05:29:00 -0700 (PDT)
+        Mon, 27 Apr 2026 05:29:13 -0700 (PDT)
 From: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>
 To: maddy@linux.ibm.com,
 	mpe@ellerman.id.au,
@@ -112,9 +112,9 @@ To: maddy@linux.ibm.com,
 Cc: Samir M <samir@linux.ibm.com>,
 	David Gow <davidgow@google.com>,
 	Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: [PATCH v5 5/8] powerpc: add exit_flags field in pt_regs
-Date: Mon, 27 Apr 2026 17:57:39 +0530
-Message-ID: <20260427122742.210074-6-mkchauras@gmail.com>
+Subject: [PATCH v5 6/8] powerpc: Prepare for IRQ entry exit
+Date: Mon, 27 Apr 2026 17:57:40 +0530
+Message-ID: <20260427122742.210074-7-mkchauras@gmail.com>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20260427122742.210074-1-mkchauras@gmail.com>
 References: <20260427122742.210074-1-mkchauras@gmail.com>
@@ -135,21 +135,25 @@ Content-Transfer-Encoding: 8bit
 
 From: Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
 
-Add a new field `exit_flags` in the pt_regs structure. This field will hold
-the flags set during interrupt or syscall execution that are required during
-exit to user mode.
+Move interrupt entry and exit helper routines from interrupt.h into the
+PowerPC-specific entry-common.h header as a preparatory step for enabling
+the generic entry/exit framework.
 
-Specifically, the `TIF_RESTOREALL` flag, stored in this field, helps the
-exit routine determine if any NVGPRs were modified and need to be restored
-before returning to userspace.
+This consolidation places all PowerPC interrupt entry/exit handling in a
+single common header, aligning with the generic entry infrastructure.
+The helpers provide architecture-specific handling for interrupt and NMI
+entry/exit sequences, including:
 
-This addition ensures a clean and architecture-specific mechanism to track
-per-syscall or per-interrupt state transitions related to register restore.
+ - arch_interrupt_enter/exit_prepare()
+ - arch_interrupt_async_enter/exit_prepare()
+ - arch_interrupt_nmi_enter/exit_prepare()
+ - Supporting helpers such as nap_adjust_return(), check_return_regs_valid(),
+   debug register maintenance, and soft mask handling.
 
-Changes:
- - Add `exit_flags` and `__pt_regs_pad` to maintain 16-byte stack alignment
- - Update asm-offsets.c and ptrace.c for offset and validation
- - Update PT_* constants in uapi header to reflect the new layout
+The functions are copied verbatim from interrupt.h.Subsequent patches will
+integrate these routines into the generic entry/exit flow.
+
+No functional change intended.
 
 Signed-off-by: Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
 Tested-by: Samir M <samir@linux.ibm.com>
@@ -157,84 +161,389 @@ Tested-by: David Gow <davidgow@google.com>
 Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
 Reviewed-by: Shrikanth Hegde <sshegde@linux.ibm.com>
 ---
- arch/powerpc/include/asm/ptrace.h      |  3 +++
- arch/powerpc/include/uapi/asm/ptrace.h | 14 +++++++++-----
- arch/powerpc/kernel/ptrace/ptrace.c    |  1 +
- 3 files changed, 13 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/entry-common.h | 358 ++++++++++++++++++++++++
+ 1 file changed, 358 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
-index 94aa1de2b06e..2e741ea57b80 100644
---- a/arch/powerpc/include/asm/ptrace.h
-+++ b/arch/powerpc/include/asm/ptrace.h
-@@ -53,6 +53,9 @@ struct pt_regs
- 				unsigned long esr;
- 			};
- 			unsigned long result;
-+			unsigned long exit_flags;
-+			/* Maintain 16 byte interrupt stack alignment */
-+			unsigned long __pt_regs_pad[3];
- 		};
- 	};
- #if defined(CONFIG_PPC64) || defined(CONFIG_PPC_KUAP)
-diff --git a/arch/powerpc/include/uapi/asm/ptrace.h b/arch/powerpc/include/uapi/asm/ptrace.h
-index 01e630149d48..a393b7f2760a 100644
---- a/arch/powerpc/include/uapi/asm/ptrace.h
-+++ b/arch/powerpc/include/uapi/asm/ptrace.h
-@@ -55,6 +55,8 @@ struct pt_regs
- 	unsigned long dar;		/* Fault registers */
- 	unsigned long dsisr;		/* on 4xx/Book-E used for ESR */
- 	unsigned long result;		/* Result of a system call */
-+	unsigned long exit_flags;	/* System call exit flags */
-+	unsigned long __pt_regs_pad[3];	/* Maintain 16 byte interrupt stack alignment */
- };
+diff --git a/arch/powerpc/include/asm/entry-common.h b/arch/powerpc/include/asm/entry-common.h
+index ff0625e04778..de5601282755 100644
+--- a/arch/powerpc/include/asm/entry-common.h
++++ b/arch/powerpc/include/asm/entry-common.h
+@@ -5,10 +5,75 @@
  
- #endif /* __ASSEMBLER__ */
-@@ -114,10 +116,12 @@ struct pt_regs
- #define PT_DAR	41
- #define PT_DSISR 42
- #define PT_RESULT 43
--#define PT_DSCR 44
--#define PT_REGS_COUNT 44
-+#define PT_EXIT_FLAGS 44
-+#define PT_PAD 47 /* 3 times */
-+#define PT_DSCR 48
-+#define PT_REGS_COUNT 48
+ #include <asm/cputime.h>
+ #include <asm/interrupt.h>
++#include <asm/runlatch.h>
+ #include <asm/stacktrace.h>
+ #include <asm/switch_to.h>
+ #include <asm/tm.h>
  
--#define PT_FPR0	48	/* each FP reg occupies 2 slots in this space */
-+#define PT_FPR0	(PT_REGS_COUNT + 4)	/* each FP reg occupies 2 slots in this space */
++#ifdef CONFIG_PPC_IRQ_SOFT_MASK_DEBUG
++/*
++ * WARN/BUG is handled with a program interrupt so minimise checks here to
++ * avoid recursion and maximise the chance of getting the first oops handled.
++ */
++#define INT_SOFT_MASK_BUG_ON(regs, cond)				\
++do {									\
++	if ((user_mode(regs) || (TRAP(regs) != INTERRUPT_PROGRAM)))	\
++		BUG_ON(cond);						\
++} while (0)
++#else
++#define INT_SOFT_MASK_BUG_ON(regs, cond)
++#endif
++
++#ifdef CONFIG_PPC_BOOK3S_64
++extern char __end_soft_masked[];
++bool search_kernel_soft_mask_table(unsigned long addr);
++unsigned long search_kernel_restart_table(unsigned long addr);
++
++DECLARE_STATIC_KEY_FALSE(interrupt_exit_not_reentrant);
++
++static inline bool is_implicit_soft_masked(struct pt_regs *regs)
++{
++	if (user_mode(regs))
++		return false;
++
++	if (regs->nip >= (unsigned long)__end_soft_masked)
++		return false;
++
++	return search_kernel_soft_mask_table(regs->nip);
++}
++
++static inline void srr_regs_clobbered(void)
++{
++	local_paca->srr_valid = 0;
++	local_paca->hsrr_valid = 0;
++}
++#else
++static inline unsigned long search_kernel_restart_table(unsigned long addr)
++{
++	return 0;
++}
++
++static inline bool is_implicit_soft_masked(struct pt_regs *regs)
++{
++	return false;
++}
++
++static inline void srr_regs_clobbered(void)
++{
++}
++#endif
++
++static inline void nap_adjust_return(struct pt_regs *regs)
++{
++#ifdef CONFIG_PPC_970_NAP
++	if (unlikely(test_thread_local_flags(_TLF_NAPPING))) {
++		/* Can avoid a test-and-clear because NMIs do not call this */
++		clear_thread_local_flags(_TLF_NAPPING);
++		regs_set_return_ip(regs, (unsigned long)power4_idle_nap_return);
++	}
++#endif
++}
++
+ static __always_inline void booke_load_dbcr0(void)
+ {
+ #ifdef CONFIG_PPC_ADV_DEBUG_REGS
+@@ -31,6 +96,299 @@ static __always_inline void booke_load_dbcr0(void)
+ #endif
+ }
  
- #ifndef __powerpc64__
- 
-@@ -129,7 +133,7 @@ struct pt_regs
- #define PT_FPSCR (PT_FPR0 + 32)	/* each FP reg occupies 1 slot in 64-bit space */
- 
- 
--#define PT_VR0 82	/* each Vector reg occupies 2 slots in 64-bit */
-+#define PT_VR0	(PT_FPSCR + 2)	/* <82> each Vector reg occupies 2 slots in 64-bit */
- #define PT_VSCR (PT_VR0 + 32*2 + 1)
- #define PT_VRSAVE (PT_VR0 + 33*2)
- 
-@@ -137,7 +141,7 @@ struct pt_regs
- /*
-  * Only store first 32 VSRs here. The second 32 VSRs in VR0-31
-  */
--#define PT_VSR0 150	/* each VSR reg occupies 2 slots in 64-bit */
-+#define PT_VSR0	(PT_VRSAVE + 2)	/* each VSR reg occupies 2 slots in 64-bit */
- #define PT_VSR31 (PT_VSR0 + 2*31)
- #endif /* __powerpc64__ */
- 
-diff --git a/arch/powerpc/kernel/ptrace/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
-index c6997df63287..2134b6d155ff 100644
---- a/arch/powerpc/kernel/ptrace/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace/ptrace.c
-@@ -432,6 +432,7 @@ void __init pt_regs_check(void)
- 	CHECK_REG(PT_DAR, dar);
- 	CHECK_REG(PT_DSISR, dsisr);
- 	CHECK_REG(PT_RESULT, result);
-+	CHECK_REG(PT_EXIT_FLAGS, exit_flags);
- 	#undef CHECK_REG
- 
- 	BUILD_BUG_ON(PT_REGS_COUNT != sizeof(struct user_pt_regs) / sizeof(unsigned long));
++static inline void booke_restore_dbcr0(void)
++{
++#ifdef CONFIG_PPC_ADV_DEBUG_REGS
++	unsigned long dbcr0 = current->thread.debug.dbcr0;
++
++	if (IS_ENABLED(CONFIG_PPC32) && unlikely(dbcr0 & DBCR0_IDM)) {
++		mtspr(SPRN_DBSR, -1);
++		mtspr(SPRN_DBCR0, global_dbcr0[smp_processor_id()]);
++	}
++#endif
++}
++
++static inline void check_return_regs_valid(struct pt_regs *regs)
++{
++#ifdef CONFIG_PPC_BOOK3S_64
++	unsigned long trap, srr0, srr1;
++	static bool warned;
++	u8 *validp;
++	char *h;
++
++	if (trap_is_scv(regs))
++		return;
++
++	trap = TRAP(regs);
++	// EE in HV mode sets HSRRs like 0xea0
++	if (cpu_has_feature(CPU_FTR_HVMODE) && trap == INTERRUPT_EXTERNAL)
++		trap = 0xea0;
++
++	switch (trap) {
++	case 0x980:
++	case INTERRUPT_H_DATA_STORAGE:
++	case 0xe20:
++	case 0xe40:
++	case INTERRUPT_HMI:
++	case 0xe80:
++	case 0xea0:
++	case INTERRUPT_H_FAC_UNAVAIL:
++	case 0x1200:
++	case 0x1500:
++	case 0x1600:
++	case 0x1800:
++		validp = &local_paca->hsrr_valid;
++		if (!READ_ONCE(*validp))
++			return;
++
++		srr0 = mfspr(SPRN_HSRR0);
++		srr1 = mfspr(SPRN_HSRR1);
++		h = "H";
++
++		break;
++	default:
++		validp = &local_paca->srr_valid;
++		if (!READ_ONCE(*validp))
++			return;
++
++		srr0 = mfspr(SPRN_SRR0);
++		srr1 = mfspr(SPRN_SRR1);
++		h = "";
++		break;
++	}
++
++	if (srr0 == regs->nip && srr1 == regs->msr)
++		return;
++
++	/*
++	 * A NMI / soft-NMI interrupt may have come in after we found
++	 * srr_valid and before the SRRs are loaded. The interrupt then
++	 * comes in and clobbers SRRs and clears srr_valid. Then we load
++	 * the SRRs here and test them above and find they don't match.
++	 *
++	 * Test validity again after that, to catch such false positives.
++	 *
++	 * This test in general will have some window for false negatives
++	 * and may not catch and fix all such cases if an NMI comes in
++	 * later and clobbers SRRs without clearing srr_valid, but hopefully
++	 * such things will get caught most of the time, statistically
++	 * enough to be able to get a warning out.
++	 */
++	if (!READ_ONCE(*validp))
++		return;
++
++	if (!data_race(warned)) {
++		data_race(warned = true);
++		pr_warn("%sSRR0 was: %lx should be: %lx\n", h, srr0, regs->nip);
++		pr_warn("%sSRR1 was: %lx should be: %lx\n", h, srr1, regs->msr);
++		show_regs(regs);
++	}
++
++	WRITE_ONCE(*validp, 0); /* fixup */
++#endif
++}
++
++static inline void arch_interrupt_enter_prepare(struct pt_regs *regs)
++{
++#ifdef CONFIG_PPC64
++	irq_soft_mask_set(IRQS_ALL_DISABLED);
++
++	/*
++	 * If the interrupt was taken with HARD_DIS clear, then enable MSR[EE].
++	 * Asynchronous interrupts get here with HARD_DIS set (see below), so
++	 * this enables MSR[EE] for synchronous interrupts. IRQs remain
++	 * soft-masked. The interrupt handler may later call
++	 * interrupt_cond_local_irq_enable() to achieve a regular process
++	 * context.
++	 */
++	if (!(local_paca->irq_happened & PACA_IRQ_HARD_DIS)) {
++		INT_SOFT_MASK_BUG_ON(regs, !(regs->msr & MSR_EE));
++		__hard_irq_enable();
++	} else {
++		__hard_RI_enable();
++	}
++	/* Enable MSR[RI] early, to support kernel SLB and hash faults */
++#endif
++
++	if (!regs_irqs_disabled(regs))
++		trace_hardirqs_off();
++
++	if (user_mode(regs)) {
++		kuap_lock();
++		account_cpu_user_entry();
++		account_stolen_time();
++	} else {
++		kuap_save_and_lock(regs);
++		/*
++		 * CT_WARN_ON comes here via program_check_exception,
++		 * so avoid recursion.
++		 */
++		if (TRAP(regs) != INTERRUPT_PROGRAM)
++			CT_WARN_ON(ct_state() != CT_STATE_KERNEL &&
++				   ct_state() != CT_STATE_IDLE);
++		INT_SOFT_MASK_BUG_ON(regs, is_implicit_soft_masked(regs));
++		INT_SOFT_MASK_BUG_ON(regs, regs_irqs_disabled(regs) &&
++				     search_kernel_restart_table(regs->nip));
++	}
++	INT_SOFT_MASK_BUG_ON(regs, !regs_irqs_disabled(regs) &&
++			     !(regs->msr & MSR_EE));
++
++	booke_restore_dbcr0();
++}
++
++/*
++ * Care should be taken to note that arch_interrupt_exit_prepare and
++ * arch_interrupt_async_exit_prepare do not necessarily return immediately to
++ * regs context (e.g., if regs is usermode, we don't necessarily return to
++ * user mode). Other interrupts might be taken between here and return,
++ * context switch / preemption may occur in the exit path after this, or a
++ * signal may be delivered, etc.
++ *
++ * The real interrupt exit code is platform specific, e.g.,
++ * interrupt_exit_user_prepare / interrupt_exit_kernel_prepare for 64s.
++ *
++ * However arch_interrupt_nmi_exit_prepare does return directly to regs, because
++ * NMIs do not do "exit work" or replay soft-masked interrupts.
++ */
++static inline void arch_interrupt_exit_prepare(struct pt_regs *regs)
++{
++	if (user_mode(regs)) {
++		BUG_ON(regs_is_unrecoverable(regs));
++		BUG_ON(regs_irqs_disabled(regs));
++		/*
++		 * We don't need to restore AMR on the way back to userspace for KUAP.
++		 * AMR can only have been unlocked if we interrupted the kernel.
++		 */
++		kuap_assert_locked();
++
++		local_irq_disable();
++	}
++}
++
++static inline void arch_interrupt_async_enter_prepare(struct pt_regs *regs)
++{
++#ifdef CONFIG_PPC64
++	/* Ensure arch_interrupt_enter_prepare does not enable MSR[EE] */
++	local_paca->irq_happened |= PACA_IRQ_HARD_DIS;
++#endif
++	arch_interrupt_enter_prepare(regs);
++#ifdef CONFIG_PPC_BOOK3S_64
++	/*
++	 * RI=1 is set by arch_interrupt_enter_prepare, so this thread flags access
++	 * has to come afterward (it can cause SLB faults).
++	 */
++	if (cpu_has_feature(CPU_FTR_CTRL) &&
++	    !test_thread_local_flags(_TLF_RUNLATCH))
++		__ppc64_runlatch_on();
++#endif
++}
++
++static inline void arch_interrupt_async_exit_prepare(struct pt_regs *regs)
++{
++	/*
++	 * Adjust at exit so the main handler sees the true NIA. This must
++	 * come before irq_exit() because irq_exit can enable interrupts, and
++	 * if another interrupt is taken before nap_adjust_return has run
++	 * here, then that interrupt would return directly to idle nap return.
++	 */
++	nap_adjust_return(regs);
++
++	arch_interrupt_exit_prepare(regs);
++}
++
++struct interrupt_nmi_state {
++#ifdef CONFIG_PPC64
++	u8 irq_soft_mask;
++	u8 irq_happened;
++	u8 ftrace_enabled;
++	u64 softe;
++#endif
++};
++
++static inline bool nmi_disables_ftrace(struct pt_regs *regs)
++{
++	/* Allow DEC and PMI to be traced when they are soft-NMI */
++	if (IS_ENABLED(CONFIG_PPC_BOOK3S_64)) {
++		if (TRAP(regs) == INTERRUPT_DECREMENTER)
++			return false;
++		if (TRAP(regs) == INTERRUPT_PERFMON)
++			return false;
++	}
++	if (IS_ENABLED(CONFIG_PPC_BOOK3E_64)) {
++		if (TRAP(regs) == INTERRUPT_PERFMON)
++			return false;
++	}
++
++	return true;
++}
++
++static inline void arch_interrupt_nmi_enter_prepare(struct pt_regs *regs,
++						    struct interrupt_nmi_state *state)
++{
++#ifdef CONFIG_PPC64
++	state->irq_soft_mask = local_paca->irq_soft_mask;
++	state->irq_happened = local_paca->irq_happened;
++	state->softe = regs->softe;
++
++	/*
++	 * Set IRQS_ALL_DISABLED unconditionally so irqs_disabled() does
++	 * the right thing, and set IRQ_HARD_DIS. We do not want to reconcile
++	 * because that goes through irq tracing which we don't want in NMI.
++	 */
++	local_paca->irq_soft_mask = IRQS_ALL_DISABLED;
++	local_paca->irq_happened |= PACA_IRQ_HARD_DIS;
++
++	if (!(regs->msr & MSR_EE) || is_implicit_soft_masked(regs)) {
++		/*
++		 * Adjust regs->softe to be soft-masked if it had not been
++		 * reconcied (e.g., interrupt entry with MSR[EE]=0 but softe
++		 * not yet set disabled), or if it was in an implicit soft
++		 * masked state. This makes regs_irqs_disabled(regs)
++		 * behave as expected.
++		 */
++		regs->softe = IRQS_ALL_DISABLED;
++	}
++
++	__hard_RI_enable();
++
++	/* Don't do any per-CPU operations until interrupt state is fixed */
++
++	if (nmi_disables_ftrace(regs)) {
++		state->ftrace_enabled = this_cpu_get_ftrace_enabled();
++		this_cpu_set_ftrace_enabled(0);
++	}
++#endif
++}
++
++static inline void arch_interrupt_nmi_exit_prepare(struct pt_regs *regs,
++						   struct interrupt_nmi_state *state)
++{
++	/*
++	 * nmi does not call nap_adjust_return because nmi should not create
++	 * new work to do (must use irq_work for that).
++	 */
++
++#ifdef CONFIG_PPC64
++#ifdef CONFIG_PPC_BOOK3S
++	if (regs_irqs_disabled(regs)) {
++		unsigned long rst = search_kernel_restart_table(regs->nip);
++
++		if (rst)
++			regs_set_return_ip(regs, rst);
++	}
++#endif
++
++	if (nmi_disables_ftrace(regs))
++		this_cpu_set_ftrace_enabled(state->ftrace_enabled);
++
++	/* Check we didn't change the pending interrupt mask. */
++	WARN_ON_ONCE((state->irq_happened | PACA_IRQ_HARD_DIS) != local_paca->irq_happened);
++	regs->softe = state->softe;
++	local_paca->irq_happened = state->irq_happened;
++	local_paca->irq_soft_mask = state->irq_soft_mask;
++#endif
++}
++
+ static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs)
+ {
+ 	kuap_lock();
 -- 
 2.53.0
 
