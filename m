@@ -1,90 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-20169-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20170-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E619FF885E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2026 13:40:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6358CFF8868
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2026 14:10:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g44SK08pSz2xlK;
-	Mon, 27 Apr 2026 23:40:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c206::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777297200;
-	cv=pass; b=DzxlQpR3yKNbR/qD7D6SUt++e3fmtie9CNtjzzySJXPsOPwC9tvsZIaq0nVfw0q131JQRr5CiAnq1qcK6kV0F+XZYMY2oFGOuFzYqbRBSXV/29BWyYF0HvkA7MyvaQ4AoFD6WwFzsplDNeDYimMhIku63rtks6UvCEqgwN92lbgJmLuvfIhy5EKNoD8TOQn+gMqkdy5grCC0v9x249tvQUPxzwpzj7WHLe92muMk9UjF9olK/tXtWOKMpzJsLc1HUbnCRZRhZ3ouobmm/dsljuEPb5ELQCtgzTXiRM18XZudYLjf4MSSVcpS2N9FJJm1BmFC0NsNZ5PtRyxwcd6aPQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777297200; c=relaxed/relaxed;
-	bh=Mz6Q6Vet4WtSSpzzCPiqs4M4vi/DowaAEwPM7iGZ5xE=;
-	h=Content-Type:Date:Message-Id:Cc:Subject:From:To:References:
-	 In-Reply-To:MIME-Version; b=nHpvsqK6SR2W5ltj2C+OSy0ayE2rdRJ74q4fz/R8PtT8nge5PeRJKN3S9Yw8wRzHAMgV1LpbgQFRQ42rgUzpto8MPrp3dS8LHCZmdUEuGqU3IVK5Ybns5WX2I7R/QvkvdswxxAvhx3b9rC5jvVVVK8tpgFWciKYoHXOlEWjgPamD1khjRGj4SYIzxeGfgRdQMbnSJEqVRzv/P8mpfGFnSuV6T8jOmIy8DddFZq3GMIfn8pDfGWltxnWKFaRGfctbNdJk/L72NesCsd60fziS2gdSOAWeLganPowjjrYvaMQ9I4djPtJlab24R2Uu7qjTIdGExN/ekGkKNwZ13QrpJQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=garyguo.net; dkim=pass (1024-bit key; unprotected) header.d=garyguo.net header.i=@garyguo.net header.a=rsa-sha256 header.s=selector1 header.b=KhnmXXyn; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c206::1; helo=cwxp265cu008.outbound.protection.outlook.com; envelope-from=gary@garyguo.net; receiver=lists.ozlabs.org) smtp.mailfrom=garyguo.net
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=garyguo.net
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g457Z42n6z2xcD;
+	Tue, 28 Apr 2026 00:10:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777299034;
+	cv=none; b=C7wRSWPJhcW6xtjxsj879c3wo0zez7g2COniyYzIHoBjiz+wyz9QNDtxmux65gvyD2tlhmGrXyfAPEUfGZwaXide0Gl5YFWS3zwwHyuA0lcaFIrzArKBtLMR6/Y+iwDWz9m9NA2CllhJ478vhFZwvtzWUgNgi4m8viCR2zxcfIAbjUPp8TJf/YdybcTlxEUADE1VRyJky60Dsj4JbPBbKyqpVPEO8nZELGA0ywHKbVSYqVE5FgYtZ0SFhO7qOHk6JteReEzZCTafDQUm+O3we9qEJJQf/rtziBQtNPr9RggWZmQGKQnfQscPJcRNlqZ86Oze+8k0cRXdspfhQ8pafg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1777299034; c=relaxed/relaxed;
+	bh=a7JaMqhDSTtKP1nxs8mIWHrE2LNBA2J8QRTcf6ZYiH4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=cB2FxdNyDKmjDzDv0pZ/9ZejmMwrHG6qkwqHMu+lphkUVeuJNgey/jB7lvXMyJIHO4BDR7nCktpquZ7owXF5VnCLqblRYunvMzqOHf1f8r6SILTItZ5YGbDEMwHqs9jyiiSbVvFK91eU1zt6Zf1C1scslM8ryge8laNpnu61UPpHL3xnUg7I61QwrHge813P1aUgQ4HhyCYyqrpK4bAEskRS2FGHQ8rxLQmxe1NLD95jJIXMRW1hW7ZQygyOZotSrnGes5vSBCwmF4d38TMs9Qlx9WQ8IBZWJmDnsrHf/SBLCinR7AG/qebZvxifaf01a7DnB1pujb7S6NTAQGjvXg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oo3sGO51; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sbhat@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=garyguo.net header.i=@garyguo.net header.a=rsa-sha256 header.s=selector1 header.b=KhnmXXyn;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oo3sGO51;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=garyguo.net (client-ip=2a01:111:f403:c206::1; helo=cwxp265cu008.outbound.protection.outlook.com; envelope-from=gary@garyguo.net; receiver=lists.ozlabs.org)
-Received: from CWXP265CU008.outbound.protection.outlook.com (mail-ukwestazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c206::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sbhat@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g44SH6lb5z2xcD
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2026 23:39:59 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Dz4f/767BsEds9W3e4PFyEM3JSE7R/vNsPI8XpbNrj3C8L03+H92zJdJoACdxnCP4LVlFk+ofPcE+a6Yup93K9GzFB/Icoy9rSEEhM4yD9PZqrqndQYhidMCmGgJsFmAZaHrFZQuKBc5YYJUac95TwC37watwNhpneGLh3t4FeDPUh5Kp2ra73yRy0njGtFldyocJIcpfjD7SKYl/p1R/Bb8+BPqp+1nLlIuccZ2gIS7M3nL5NUYgoe0fawOIYcuc5X9gxBOKuzKPcA/HgGC0WzQfGdrmAQkZJIvTpfhmsketeJ72FtLD5SnYUoZM7wsSIRD4Pc53rNAIUwsCFLzfA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Mz6Q6Vet4WtSSpzzCPiqs4M4vi/DowaAEwPM7iGZ5xE=;
- b=xfOQR8TpPa6fJnUo5+XPG4NYzNbEAxLGPQw0MHoj89JxhP2MSLbzZhKHORbt4DtG3pVWxeKEn7k8dbws3RJ4Wdl1nUx/xyLIUAeBVak1sPC//mLtWOVea/GY/UEWrZHN7wzZadHYIgkhg4xHZeTeVDBuvqC9+kSX/pdgGv0HGkNwIUQo1DfHWx0RgiYM+QVTXyUh5mBZVDxThs6FFmttmYlnI66mEprkhwlNUr3P0877fZOAaHgAU/PBt835IHvyLwFJ5UioGfxNA8BeCQ5iYA6NPgAFYsOOVTwex2KhsEQHf4GCa8qJgIEYFkeGGhPd2ZnfVrK3i0hfbW/nmSv2HQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=garyguo.net; dmarc=pass action=none header.from=garyguo.net;
- dkim=pass header.d=garyguo.net; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=garyguo.net;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Mz6Q6Vet4WtSSpzzCPiqs4M4vi/DowaAEwPM7iGZ5xE=;
- b=KhnmXXynQmKt5NTZG6s43RQXOVSt8THbNGnMhin0RRTaCFPebW4aACDKNYzDEWmhJwb+QCAqV7j8/RC8Z35nU0Q/h91y2rF8kZWnm6T24V00xmORHtYqYzkMAd82drbceP0CAdXm5/I0OjkCLfZVmj+2C6yApqUgeY2JniqTypw=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=garyguo.net;
-Received: from LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM (2603:10a6:600:488::16)
- by CWXP265MB1944.GBRP265.PROD.OUTLOOK.COM (2603:10a6:400:82::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9846.26; Mon, 27 Apr
- 2026 13:39:35 +0000
-Received: from LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
- ([fe80::1c3:ceba:21b4:9986]) by LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
- ([fe80::1c3:ceba:21b4:9986%4]) with mapi id 15.20.9846.025; Mon, 27 Apr 2026
- 13:39:35 +0000
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 27 Apr 2026 14:39:34 +0100
-Message-Id: <DI3Z9MKH147K.3C2RZSDKIAGGP@garyguo.net>
-Cc: =?utf-8?q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
-Subject: Re: [PATCH V15 2/7] dma-resv: Fix undefined symbol when
- CONFIG_DMA_SHARED_BUFFER is disabled
-From: "Gary Guo" <gary@garyguo.net>
-To: "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
- <maddy@linux.ibm.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
- <chleroy@kernel.org>, <peterz@infradead.org>, <jpoimboe@kernel.org>,
- <jbaron@akamai.com>, <aliceryhl@google.com>, <rostedt@goodmis.org>,
- <ardb@kernel.org>, <ojeda@kernel.org>, <boqun@kernel.org>,
- <gary@garyguo.net>, <bjorn3_gh@protonmail.com>, <lossin@kernel.org>,
- <a.hindborg@kernel.org>, <tmgross@umich.edu>, <dakr@kernel.org>,
- <nathan@kernel.org>, <nick.desaulniers+lkml@gmail.com>, <morbo@google.com>,
- <justinstitt@google.com>, <daniel.almeida@collabora.com>,
- <fujita.tomonori@gmail.com>, <viresh.kumar@linaro.org>,
- <prafulrai522@gmail.com>, <gregkh@linuxfoundation.org>, <arnd@arndb.de>,
- <tamird@kernel.org>, <mark.rutland@arm.com>, <lyude@redhat.com>,
- <lina+kernel@asahilina.net>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-kernel@vger.kernel.org>, <rust-for-linux@vger.kernel.org>,
- <llvm@lists.linux.dev>
-X-Mailer: aerc 0.21.0
-References: <20260426105932.2270364-1-mkchauras@gmail.com>
- <20260426105932.2270364-3-mkchauras@gmail.com>
-In-Reply-To: <20260426105932.2270364-3-mkchauras@gmail.com>
-X-ClientProxiedBy: LO6P123CA0037.GBRP123.PROD.OUTLOOK.COM
- (2603:10a6:600:2fe::9) To LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
- (2603:10a6:600:488::16)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g457X6Jhrz2xb3
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2026 00:10:32 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63R4PgGb358063;
+	Mon, 27 Apr 2026 14:10:05 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=a7JaMq
+	hDSTtKP1nxs8mIWHrE2LNBA2J8QRTcf6ZYiH4=; b=oo3sGO51pv6OKG5DFjukmj
+	iJ+8UF7BuKWfWDsSRHJMJxXgbPEEaG0+NCa56T7iqBcjX2VmfU/wrGxNQZeUgeDf
+	sPsNzBb/bCL7ZPGyUV5LerJYiuEDnd+1zpJyCrRJZ04DRqveh0zN79+N82cfpwrU
+	OgDM4OTh2aJ5VtVPsBuaS9crOlYFAxjz2oYYRtgI9N5GpUjCRDCszZze+NaIe9Fz
+	wk66LEb0WotoYmtbx8Hwyvu39P8LEKY3DzYr8ZDovoLbCFQdfCMb6XRM++RfD5A9
+	wvM6ZbONZJNDQwI2Ny38uOxqo8NbL/BBwLcvU2oKTW1eLEQcnfM/vfwYarmHnxyg
+	==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4drnb50rpx-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 27 Apr 2026 14:10:04 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 63RE8pI3021819;
+	Mon, 27 Apr 2026 14:10:03 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ds7xq5khb-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 27 Apr 2026 14:10:03 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63REA1OJ53019092
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 27 Apr 2026 14:10:01 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 900132004B;
+	Mon, 27 Apr 2026 14:10:01 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6A01420040;
+	Mon, 27 Apr 2026 14:09:57 +0000 (GMT)
+Received: from [9.123.12.85] (unknown [9.123.12.85])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 27 Apr 2026 14:09:57 +0000 (GMT)
+Message-ID: <56ce57ca-b5ce-415c-b17e-bdcddf93770e@linux.ibm.com>
+Date: Mon, 27 Apr 2026 19:39:56 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,101 +81,134 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: LOVP265MB8871:EE_|CWXP265MB1944:EE_
-X-MS-Office365-Filtering-Correlation-Id: ab02506c-42da-4340-b364-08dea4626bec
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|7416014|376014|1800799024|10070799003|56012099003|18002099003|22082099003|921020;
-X-Microsoft-Antispam-Message-Info:
-	rXjwgYjUHQz5rYfHI7pfC1wVIzb9153q/7zxbvxub5cNw44NAGGcsfgqhwTBpv/D763SeKb8/AiFiRcVZ57TxKYNY9ETumlzpDPvr2oAnl4T670zjUzq8QEdHBwfT8GePKl5XPZqey5vCINNIrgT79GN7GS1B3qjHf52HcQZL2JmnmGWVxhpUjyMFGn+jm+/pWP64vqO9gGURVOJSf5Gv1zVe1Hi02/1oeAnmh8Eb3QySHdHlpJwIhZ22Uk8ZOvMGMJiCHHwnQUqFgVn9TYZh3VkgQVsFeXipGjwG4jYElktmSMiTzdxKY5oMZMSOuJQF7/KNxpy28nNe0oCEeGRtUcnX4yuX9A0wMbkf+kgIGtAos0MDi2K320OImhaYsFJgZHvD+TrVG9gkFQyVSDaRl/L6m7rZmuyjA/hgse950uSeA7pyHHGjoq7CJWqn/EAvE/Yn2reQliI4QVP/1aBV+Vo7bD6BLEGh2kZttQkva4Pb01qiPPAUbUG8zs38VHQ0l5Qe4wS5QCleVNSt3rvDwAqn4svEHlHyDFeZsAM85VbqvFmEQXrW2hHCgVNEvaaDtF2reSwfmmFk9DcmlUlY0etqrWQsnRJaCVfyFoCwNKu/rtGNOYoKbhn7Zi2zi8NixOPRqm1JOtzOgXVMdBmAdFI2E+nsUvucmRvnCH8cP683o9xmMDkFL4apR08p8U+RevmrnNyW4Z/z+R2MTKG1OToVpyXwUgG40SQ6TmNR5PJ0AShE7ldky4cjGpg+jgNKuuMR8cF9cPjAzWDigIb1Q==
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(366016)(7416014)(376014)(1800799024)(10070799003)(56012099003)(18002099003)(22082099003)(921020);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?VmkyQWYvV1N4MFVPbExsVE1DS0RxOVIwM0g3dzVFS1NOTXBxNmVScnFrajl4?=
- =?utf-8?B?dVRQVUM5Ni9MK3RlT0VZeHlaOGFYUHhqN3ovdzFpbHB5ZEJXOFpPZmVOYVp2?=
- =?utf-8?B?ejJuMmJ1SkNpTG9zUFZjUlVXU2dNRlZkS3RpQy9lV2ViM2tLZGVvcmdZVjN2?=
- =?utf-8?B?ZzNjMmoxYzBuK0REcCtsOVJFY29qSTl0blB6MmhHcVlNT0pva0JlY2dIVGNr?=
- =?utf-8?B?SVBqTDltcy9lUkI1bnRYYmlMdmVtdzZnVjN6eWxrb3VsbmpTZkplUVZPWWRG?=
- =?utf-8?B?K1NRd3UwOVMrODRBZHgxclpSWHNkMzFITzhGMzYxVWN6VjFINGpqODV6dkF2?=
- =?utf-8?B?UmlWb1ZHOTdMZjF2Q1lncFVyY2RlbC9VYk1vYnhMRTB2Q1BqaFhZZlEzUlhQ?=
- =?utf-8?B?ZGVaZm1zbkk5b0RJYXh4QUttajN0R1JlWXNoSE5ITFV0eklXUGo4WkRoUm1G?=
- =?utf-8?B?VHlld1NaZk05WEhKUWFqdWZrejFTZi9EMVR5aThXVVlDem5IMGw0Wmg0UWU1?=
- =?utf-8?B?NlN1cTV1QTRuWk9Pb3VkSnExRmlYb1BMVGRqeGl5dFRGTkVDUHgrV1ZkMXpo?=
- =?utf-8?B?RWZNODNTVkxnWm40a1htKzltRW1lM3BRdCtnUUVHcDROSGZaaHVONkExQmlM?=
- =?utf-8?B?eDRPNUZNZTZ0VnVMdVJNeHhDQ1E0cWJKdGM0b3BRRUloNUhpMmQyS2piWjVT?=
- =?utf-8?B?Z29VZEpkVG45MjR4VVVWcnVpdUYwb0ZqdUU2dlpHcXZCQ2t6OVJlSnpCZXJ2?=
- =?utf-8?B?em5NTU4yaFc1c0MvMWxMak1UTjNwSnBSRTV0K0FKQUM4S3kwZ3RiVVRENzN5?=
- =?utf-8?B?RUdLZE1XcEpEcmU5WHJhN2lIMVhDYUhScGc0RktJb0M1ZVEwUUdQcHZ1dnY1?=
- =?utf-8?B?a05HZmxHeklWSUNxNjY2QjhhTXBhZXBzOFN2a1VKbkZXclU3cUVnSFJXMUR0?=
- =?utf-8?B?cGZPMWtuTFkreENpdVFUYlY5SGhiT1crU25zQlp3MjZWMXRxQ3Btc241QUlH?=
- =?utf-8?B?d3FEVjRSUnFLaThhUE0xc29ETXFBQ3pQdUlxNEtwSnBGN0RjaXFhblFqcEtr?=
- =?utf-8?B?ckVpKytkN2I1bU90U1V5NmtQbGpWZElzWlBlcnF4VHBaNDRvbWJKUGpwQXRK?=
- =?utf-8?B?MEMvejVKMkhNQk40N2dTM1BNa2UwU3JHRlZaeTdCOER3MW5YUGpXckZsN1BQ?=
- =?utf-8?B?VzRoc0FmZUNPZWlObU1wa05uYW9EaTE5SWNURm8xdDZkVFI0VHpHRTBYTHI1?=
- =?utf-8?B?QUhsWUNROGxmbitZbEpZR1BOb0M0VC9RN2JiQmVrVlJRZWcrZm1lSnBzU0R1?=
- =?utf-8?B?amUzaVdPRjJmUnpQQW5QcGhLdWFOQ1Y1MjlXcHoycjRxVkRHeVRBaDJjVktW?=
- =?utf-8?B?cnNMSXNuQnZ5YWcvMzdpTkpEbmgxMlFqaE45NCswZ1RKVE5lMk9wcXRFQlNr?=
- =?utf-8?B?OTNQZ20zMGgwRGJkNFgyZTBIczZGSWRRc3c5WE5BZkxwQ1F4N2Q5MHJGVFpN?=
- =?utf-8?B?V3NaRDRSZUorVHdQUktXRWFFWWRma0wvbFBwL3BIRXA5eFJwenNLS2ViUk5l?=
- =?utf-8?B?MEdZZXhZQkpuS2hzVDJsbFIzYmgwK2tUMURVcTQ0R2JVSzdwZFVQUUdtaFNR?=
- =?utf-8?B?VXp2QytlQ3FYSVU4eStUbUp4SzJzT2tqNWVsclByMHFuaFJyNll4LzA1bTR0?=
- =?utf-8?B?Q2hQaVVoWFBYY0FrdlR2cDhiTmVLaGJJMnhxOXkwUWdmM2JFdFJFbGUwRGc5?=
- =?utf-8?B?OVZPWGZ0TENodVdhQjBWMGkwTno1bmhMR21VTHlNeVZCUmpsUklNcUxpelg5?=
- =?utf-8?B?YkNqOGN3bnJid2hiUVdXM0NiZ1hLWW5QNXFueGxRNTRGc0NRK0k5UnJKRzVh?=
- =?utf-8?B?M29uS1VJdUxvV3FSYmRJaTEvUHEzODZFRE80bDU3VCszMDFxS0RRbTkxTlNC?=
- =?utf-8?B?QjA1NmVadEV3alJacXZhRy9OMk1rVDNSV29WbnBtcU5mM3p0OHFpNW5FNCtp?=
- =?utf-8?B?UlRKcVFQcVh4TWlQT1k2U0tCcXVOandYSVNXTWVRaWVWVHNEemx6cjJVcFln?=
- =?utf-8?B?QlNvSDFsaHB3aGpFbDVxQzBkU3ZLTytkY3hkSlZaN2t0NG5xRUhwVWlDTnJn?=
- =?utf-8?B?YytucXF5WTFZVXhsUXc0dWswc1VDc1lQQ25DY1QwK1l1TkkrSVRpV2JueitN?=
- =?utf-8?B?MTJ3QnYwM24rUzU0UTF2TXdDejVNaHhZR1JsRysvSnJYZUxqK0lXQ2pMdWNP?=
- =?utf-8?B?VE9PSXozcnRhRk5YYkJvNHVxN3Mrb3dPaWpqRitMdkxmRGtnZ0E0N1dzdXJt?=
- =?utf-8?B?aWMxMzd5Z2kraXA2NzNmRDZ0Q0JXb3F4MzdGY2VDZ2RqeS9pcnY4QT09?=
-X-OriginatorOrg: garyguo.net
-X-MS-Exchange-CrossTenant-Network-Message-Id: ab02506c-42da-4340-b364-08dea4626bec
-X-MS-Exchange-CrossTenant-AuthSource: LOVP265MB8871.GBRP265.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Apr 2026 13:39:35.8602
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: bbc898ad-b10f-4e10-8552-d9377b823d45
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: gvbyGbacvqTztL7pVt5s9Rz6BxJtO99luCP6mstY0xgeWi088IzgCSd9kcmvW7Uu7I3T9PvXEedu4oWiuaafBQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CWXP265MB1944
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6 00/24] PCI: Convert all dynamic sysfs attributes to
+ static
+To: =?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kwilczynski@kernel.org>,
+        Bjorn Helgaas <bhelgaas@google.com>
+Cc: Bjorn Helgaas <helgaas@kernel.org>,
+        Manivannan Sadhasivam <mani@kernel.org>,
+        Lorenzo Pieralisi <lpieralisi@kernel.org>,
+        Magnus Lindholm <linmag7@gmail.com>, Matt Turner <mattst88@gmail.com>,
+        Richard Henderson <richard.henderson@linaro.org>,
+        Christophe Leroy <chleroy@kernel.org>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>, Dexuan Cui <decui@microsoft.com>,
+        =?UTF-8?Q?Krzysztof_Ha=C5=82asa?=
+ <khalasa@piap.pl>,
+        Lukas Wunner <lukas@wunner.de>, "Oliver O'Halloran" <oohall@gmail.com>,
+        Saurabh Singh Sengar <ssengar@microsoft.com>,
+        Shuan He <heshuan@bytedance.com>,
+        Srivatsa Bhat
+ <srivatsabhat@microsoft.com>,
+        =?UTF-8?Q?Ilpo_J=C3=A4rvinen?=
+ <ilpo.jarvinen@linux.intel.com>,
+        linux-pci@vger.kernel.org, linux-alpha@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org
+References: <20260422161407.118748-1-kwilczynski@kernel.org>
+ <20260423172200.GA2271460@rocinante>
+Content-Language: en-US
+From: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+In-Reply-To: <20260423172200.GA2271460@rocinante>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=AqDeGu9P c=1 sm=1 tr=0 ts=69ef6e3c cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
+ a=QyXUC8HyAAAA:8 a=U0zfkUukAAAA:8 a=c92rfblmAAAA:8 a=pGLkceISAAAA:8
+ a=VnNF1IyMAAAA:8 a=FB4Pc6ld7FYhm39QvKAA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=rXRU1dkEVDZ1dOovDhQH:22 a=GvGzcOZaWPEFPQC_NcjD:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI3MDE0NyBTYWx0ZWRfX//TWFSeXRnVQ
+ 0Vb2Ne8wBPwL+E2dHkJB/vamFXPlWjwAD7TSU06HSAoLS0azKdsodeYcl8oMO0Ggofnvi5CnOW/
+ JUrANq0WXc/vHB154jrY1IvKHoqeXGxSWuCFU9OlTEFNC0cvhlHjjWtNkG0dNFKOWMdcAfDr2ui
+ hotabDQ1XhHrj/48+yP2Di6OWmbW5e+gvz7FJvlr7R3bshxUnvmYo9QzBpwicbsbO0Q5bXPK0ck
+ bTtavvSV59s3yvVqmJEIpLGrDW94ERAjB2NvU5j22GV+hNyXnklJ3tvpX4PqRsGtGNnlpyB80Jv
+ cfZLGnIInmSM/aXEsd2LnrnwM6rJ9IfhkYN+1e7Igh/1hYqqlx4a1x6ZE7NPqbi/4jE9XdHgvIY
+ CvT4CYzb6WhYgfMTDChqgXeTeoYbuVYpWy/qaydo+usT4XKF5BUCNYWJPCRFlDGxR/+uFqwewH8
+ 7EcigXeXdlCRcMvDDOQ==
+X-Proofpoint-GUID: s2eXEFhHAfT8LQSe00gQCaa5KhkOWOqg
+X-Proofpoint-ORIG-GUID: CSDA3wBC8VPYGjsnSimM148BH4m3RJ0m
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-27_04,2026-04-21_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 priorityscore=1501 phishscore=0 suspectscore=0 clxscore=1011
+ lowpriorityscore=0 spamscore=0 bulkscore=0 impostorscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2604270147
 
-On Sun Apr 26, 2026 at 11:59 AM BST, Mukesh Kumar Chaurasiya (IBM) wrote:
-> When building with LLVM=3D1 for architectures like powerpc where
-> CONFIG_DMA_SHARED_BUFFER is not enabled, the build fails with:
->=20
->   ld.lld: error: undefined symbol: dma_resv_reset_max_fences
->   >>> referenced by helpers.c
->   >>>               rust/helpers/helpers.o:(rust_helper_dma_resv_unlock)
->=20
-> The issue occurs because:
-> 1. CONFIG_DEBUG_MUTEXES=3Dy is enabled
-> 2. CONFIG_DMA_SHARED_BUFFER is not enabled
-> 3. dma_resv_reset_max_fences() is declared in the header when
->    CONFIG_DEBUG_MUTEXES is set
-> 4. But the function is only compiled in drivers/dma-buf/dma-resv.c,
->    which is only built when CONFIG_DMA_SHARED_BUFFER is enabled
-> 5. Rust helpers call dma_resv_unlock() which calls
->    dma_resv_reset_max_fences(), causing an undefined symbol
->=20
-> Fix this by compiling `dma-resv.c` file only when CONFIG_DMA_SHARED_BUFFE=
-R
-> is enabled.
->=20
-> Fixes: 9b836641d3bf ("rust: helpers: Add bindings/wrappers for dma_resv_l=
-ock")
-> Reviewed-by: Christian K=C3=B6nig <christian.koenig@amd.com>
-> Signed-off-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+Hi Krzysztof,
 
-Reviewed-by: Gary Guo <gary@garyguo.net>
 
-> ---
->  rust/helpers/helpers.c | 2 ++
->  1 file changed, 2 insertions(+)
+On 4/23/26 10:52 PM, Krzysztof Wilczyński wrote:
+> Hello,
+>
+>> This series converts every dynamically allocated PCI sysfs attribute to
+>> a static const definition.  After the full series, pci_sysfs_init() and
+>> sysfs_initialized are gone, and every sysfs file is created by the
+>> driver model at device_add() time.
+> A note on testing:
+>
+>    0-day bot (recent test runs; newer builds will arrive later):
+>      - https://lore.kernel.org/linux-pci/202604231622.DgR0zih3-lkp@intel.com
+>      - https://lore.kernel.org/linux-pci/202604161928.DzuHQmeM-lkp@intel.com
+>      - https://lore.kernel.org/linux-pci/202604121312.sF0Ua4gP-lkp@intel.com
+>      - https://lore.kernel.org/linux-pci/202604111631.lrwAylMM-lkp@intel.com
+>      - https://lore.kernel.org/linux-pci/202603170336.zSLrDvlj-lkp@intel.com
+>      - https://lore.kernel.org/linux-pci/202603122052.tMV5rzNq-lkp@intel.com
+>      - https://lore.kernel.org/linux-pci/202603081334.b91RGVS6-lkp@intel.com
+>      - https://lore.kernel.org/linux-pci/202603060207.pnGfKgGa-lkp@intel.com
+>
+>    KernelCI (for the "for-kernelci" branch):
+>      - https://dashboard.kernelci.org/tree/linux-pci/for-kernelci/941dd7c3e16840724dc961f10b84e193d13cdb57
+>      - https://dashboard.kernelci.org/tree/linux-pci/for-kernelci/683e66b11da157f730101f6919c7468a09cf3e3f
+>      - https://dashboard.kernelci.org/tree/linux-pci/for-kernelci/209e2cfd205a8aad4bae32e6f82b96b20902aa74
+>      - https://dashboard.kernelci.org/tree/linux-pci/for-kernelci/70293477e2c0ae8cbc250098818e726e1d658b53
+>      - https://dashboard.kernelci.org/tree?ts=pci
+>
+>    Sashiko's feedback:
+>      - https://sashiko.dev/#/patchset/20260422161407.118748-1-kwilczynski%40kernel.org
+>      - https://sashiko.dev/#/patchset/20260416180107.777065-1-kwilczynski%40kernel.org
+>      - https://sashiko.dev/#/patchset/20260411080148.471335-1-kwilczynski%40kernel.org
+>      - https://sashiko.dev/#/patchset/20260410055040.39233-1-kwilczynski%40kernel.org
+>
+> I sadly do not own any Alpha or PowerPC hardware, so when I was testing
+> these architectures while working on the series, it would be only under
+> QEMU.
 
+I tested the patches on PPC64 machines running as pSeries(on PowerVM and 
+KVM) also PowerNV.
+
+The sysfs attributes looks normal on boot, and on hotplug/unplug of 
+devices and SRIOV use cases.
+
+I see no warnings/errors in dmesg during PCI scans, initialization.
+
+
+Tested-By: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+
+
+Thanks,
+
+Shivaprasad
+
+
+> That said, Magnus Lindholm was able to test the series on the Alpha
+> hardware he owns, see:
+>
+>    - https://lore.kernel.org/linux-pci/CA+=Fv5Q1tZQwnanw99NbvzT-QenfYz7vUdY02_TuPqHX32ZAiA@mail.gmail.com
+>
+> Lorenzo Pieralisi did some testing reported outside the mailing list (we
+> talked on IRC), on the platform he had issues before, and while the issues
+> were more with procfs races, similar to the sysfs ones this series aims to
+> fix, he didn't notice regressions when having this series applied.
+>
+> Thank you!
+>
+>          Krzysztof
+>
 
