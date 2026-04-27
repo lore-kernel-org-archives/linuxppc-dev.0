@@ -1,103 +1,96 @@
-Return-Path: <linuxppc-dev+bounces-20198-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20199-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2937FF8864
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2026 22:30:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13585FF8867
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Apr 2026 23:31:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g4JDx00w8z2xcD;
-	Tue, 28 Apr 2026 08:30:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c110::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777329056;
-	cv=pass; b=eRGR0tM0t6hZfqcd/AnEqOD02jgIQbnaqt0ptUwVADvyKp5uqxwjvcrxFipCS0ciN+bTJsQmr14ZdvphxOKM21uKsEOFTK93KJiyOObBtiNwc254xhFtIOIoY74e9VlsLsnUXHM6VmtxNC1cMNxkZXNpFBZypOEuuSdnuIBn6BnrbLUkEjmr5uZLJyDBTvVneTCBNB2+NMlFVSsuVC7pELEcJnmKrc+2v1Jc88PMfv675wmQopqr90boJzPjNGfKPQpO0o8B/2ggkmoboT+k/TfAQzbW6ki0E0vCPT4kp/2CoQbfKC12Et1PBUAl42yMvbrb2TG+WR/K9VPnBF1HRQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777329056; c=relaxed/relaxed;
-	bh=INTDocwjeOkxaSI4e6JrPlp7Kh7b3u8/5GXqjyNfeUk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=d2al8IylkZi7qm70pDkNW+fF/+mDt3tP4i8rnmJphjh35LB9gC7i1egjag7WVTtOGSY3kS3FX4kpPOzrECkkqOxxjCWvA4/fHjuxdDycMDdgP2chaw6zG2Ri1euDtSXVJYK0QFXEZ4IpA9xM7g1oxsfTqjLiE7zUYj2irPIY9Cj7kdFaM0Yq2KhTzHua9mgNrNAOJHe7uySugeufpAFIR+oYM04LzSDWscelZn+BYYgz7pXul9UsBt1rg+KZiTdgAeC+jtBxQXEpsFkg8WrGtPepKs34LNsqzukZd4VFGhaA2mm+Mj/jMEbXV7SvHp9KPRNlrS2Fh5Nv4f8Ng4phyw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=nMn9Mg2e; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c110::1; helo=bn1pr04cu002.outbound.protection.outlook.com; envelope-from=ynorov@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g4KZF335Lz2xYw;
+	Tue, 28 Apr 2026 09:31:01 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777304646;
+	cv=none; b=NLFFA/FWgRwKsyZD5qPSj755980rwK5QPADVO3KSSsD/JSCIM7xm7ZrJE+a0qZAfq/wgOzKgzkwNtgY8s5Ft0tkuRX+5kniOR1yOvK6gEHfLoEVeXUdAYB3naj+6f8gEW5XnsKu/x5t+3FPP6JdFB5y0YsEdSoUtn6kyFXC+THW8CegAUXnopAxopc1e8EkWwUEQXRAJrQDFNxQlNf1T4WG7vKUSVHeSxLJZ/tSLuYWxZgoxhRc8gnMaGzWozczFpwjcYCRReqiw0NnXAFxKtptxOnxyX5hSGOaE/26BCqfGUswj4DihWy+6KdrokGB3Mf5x5CDIWQJsVxEVF4Xn6Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1777304646; c=relaxed/relaxed;
+	bh=R3VvLzU7Vkt+NIodPaRJoxQXwkmwFuDEX0x8xQpIwHE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=kAviEI6d1NCPo7du2W0cXg54vgu9umBbStKZ8jE/GsU7y2x9kbpZoy/l1pPznntoTEB8gzBfJ/hMy00M507Q1yZaN02grNmZ5h/GckA5yxrJ7XQh9f2dJqcZyb5obbar08Z0Z6HzeWn1djMmllEKbbegWcdxxojfiHp3kXfEvf48cqa8s6m+TgoLQh2QSjOJbkozZtfLTREQ/qRoiGmnaU+XkuxjfB7rEgMEM41bxi0qH81BXNbwl6uOWYX0iIDzOO41a0gpH+e5L9jOPWFh6zuR5ZtEvWS1xkZpxEZn0BAd6yAiP1JMAUByD5q/Fhzh8xlm28X8LEcNmAdmr+GooQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=B9yTiIM8; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=boqun@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=nMn9Mg2e;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=B9yTiIM8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c110::1; helo=bn1pr04cu002.outbound.protection.outlook.com; envelope-from=ynorov@nvidia.com; receiver=lists.ozlabs.org)
-Received: from BN1PR04CU002.outbound.protection.outlook.com (mail-eastus2azlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c110::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=boqun@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g4JDv2sJ5z2xMY;
-	Tue, 28 Apr 2026 08:30:54 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=cw2dkYic0VXH1kOjwz3jIZQqr8NTQVH9DBTRDd+uRIJW8uYvfM3m58iBDy5zpHYFWzEy5HurjZ12uATc9tuoWjt6/VUzJQgYZAXBZYTEWP2XEmKALhwnH1ENaA8Ac3CwlRTLvFMEwZgba4b3Efi2fsBGQWsShlfVbk+iphjAE+Pk8XuV/eyWjUpmRM4Y9HTRa5iR9RbjMNZZynCz9AHHff0s05EhkIWAfnApXK/qNRqGYLDiFlw7SNnaj3GyeIXPMO8znU+1Kcc/CMVRnCsFx/w1kA7TU7UcIRQb+Rb580j65fMEeEArkSpCjuQa2ek7DCgnd0gLF6jXF9N06qZxtg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=INTDocwjeOkxaSI4e6JrPlp7Kh7b3u8/5GXqjyNfeUk=;
- b=SqLxt4MZPnahGOYqHMCjywU0/HSF4waA/vwnt9ydy1Lm3yrvjNZmkOwuRl93fy6RdmE6bPOC0ZQH4p62+pUUajNd8KxX3yJjBZ746IuQ8gH2tmJrktf9NUD/vrVHw11Y2NBVtrlIsVl9bi7Gqi3ZmgASKvtgOkWY/PmrmgA8udiJVCjbw3br3CieEjsiA/YIbcoZFACykvsdKe3H0iQEMKywElW7FGY/qQYU/hi4PYicWTB3SL3zcJzUqBCWxEiVibRndteACQ6BsdcLI27Rvh553IDZD+jPGF6v9qtpISs3YncftmVw4ldPrz0yQOOExCWF0vjzgVzKvTwuTXEdYA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=INTDocwjeOkxaSI4e6JrPlp7Kh7b3u8/5GXqjyNfeUk=;
- b=nMn9Mg2etjSkCULYpJ5Rnl9/tmBSYad+HpQiMXeFiB6hdvpkrBodtOjFqLvvae82lTwKkV5GAhUHMYupb9utCbBt74zqUto3WQW72bithMtImxRQVa6G6ZaLkW4OIEKHFvEKJ+4xMIBslyesZGqZr4aXMhT6ctHxrHNz0lcJuSDOtu83n51qwHc7wWb/LGrn5RUMmskk9za8NlV0oTff8Bpmfg6PDqFInZvOWRUYF9K6Lc76NhEMq83jHNyESr4la6NDuNth/60Y4SeDe0uNCU02GfnTMD1so+hMFearXgJnH1poNP4yUWzDn8gizO53kHtparXBSnIxAyJtXuIfFA==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from CY8PR12MB8300.namprd12.prod.outlook.com (2603:10b6:930:7d::16)
- by SA1PR12MB6871.namprd12.prod.outlook.com (2603:10b6:806:25f::22) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9870.16; Mon, 27 Apr
- 2026 22:30:21 +0000
-Received: from CY8PR12MB8300.namprd12.prod.outlook.com
- ([fe80::ce75:8187:3ac3:c5de]) by CY8PR12MB8300.namprd12.prod.outlook.com
- ([fe80::ce75:8187:3ac3:c5de%3]) with mapi id 15.20.9870.013; Mon, 27 Apr 2026
- 22:30:18 +0000
-Date: Mon, 27 Apr 2026 18:30:16 -0400
-From: Yury Norov <ynorov@nvidia.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Laight <david.laight.linux@gmail.com>,
-	Thomas Gleixner <tglx@linutronix.de>, linux-alpha@vger.kernel.org,
-	Yury Norov <yury.norov@gmail.com>, linux-kernel@vger.kernel.org,
-	linux-snps-arc@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org, linux-mips@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
-	dmaengine@vger.kernel.org, linux-efi@vger.kernel.org,
-	linux-fsi@lists.ozlabs.org, amd-gfx@lists.freedesktop.org,
-	dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org,
-	linux-wpan@vger.kernel.org, netdev@vger.kernel.org,
-	linux-wireless@vger.kernel.org, linux-spi@vger.kernel.org,
-	linux-media@vger.kernel.org, linux-staging@lists.linux.dev,
-	linux-serial@vger.kernel.org, linux-usb@vger.kernel.org,
-	xen-devel@lists.xenproject.org, linux-fsdevel@vger.kernel.org,
-	ocfs2-devel@lists.linux.dev, bpf@vger.kernel.org,
-	kasan-dev@googlegroups.com, linux-mm@kvack.org,
-	linux-x25@vger.kernel.org, rust-for-linux@vger.kernel.org,
-	linux-sound@vger.kernel.org, sound-open-firmware@alsa-project.org,
-	linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
-	loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
-	linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org,
-	linux-sh@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [RFC PATCH v1 7/9] x86: Add unsafe_copy_from_user()
-Message-ID: <ae_jeJLlVWjJ4sOY@yury>
-References: <cover.1777306795.git.chleroy@kernel.org>
- <0ee46bb228d97163fbdc14f2a7c52b93d8bc34ce.1777306795.git.chleroy@kernel.org>
- <ae-j2_QirCySZD02@yury>
- <63a4d0f6-0eb3-48cd-9f98-bf7b223b2606@kernel.org>
- <ae-2yLWSGnfeTvh1@yury>
- <CAHk-=wgPrLy0FR3sEWBYQuNAac1axDASYMnTuPuxEU0WytzL7w@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAHk-=wgPrLy0FR3sEWBYQuNAac1axDASYMnTuPuxEU0WytzL7w@mail.gmail.com>
-X-ClientProxiedBy: BN0PR04CA0197.namprd04.prod.outlook.com
- (2603:10b6:408:e9::22) To CY8PR12MB8300.namprd12.prod.outlook.com
- (2603:10b6:930:7d::16)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g47CT42XZz2xcD
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2026 01:44:05 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 7C0A260139;
+	Mon, 27 Apr 2026 15:44:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EB20EC4AF0C;
+	Mon, 27 Apr 2026 15:44:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1777304642;
+	bh=Y0m4lfVka5tIgD8TebgzyuHkC9SbM/oEcDxBQLbgk48=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=B9yTiIM819kfF4AqtE3Ts8cxL1uUeddFTUfpkn1Tg3/p51P5v+KP8Rbw/Ijny72u4
+	 kd4iJpYck74XIq8bVOelJ49GL6Ec50j5Gjb9iJO9vtXfeHKwr3NIt0XBhJ0BsTuUGk
+	 WS16gQ/ahwfZyttd0i1dqvbt2myBNg5nUtMBWSlJiUYdxBXB5OJLgabgbAVRxCT6BG
+	 s7bWMcx5TDjScDJqGPil+/Tn0BeHulcS/d2pBRmm/Bd5pAnQMC5tdtAVVvMfLCjXiL
+	 s1RZdAOmWi6dD8295iTb5uv/7DCAM+Uw9Q3QOqrQ4hYvD9sOFmlflvc6TL7zcyCvkx
+	 u06DljfpNZn4w==
+Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
+	by mailfauth.phl.internal (Postfix) with ESMTP id EC70AF40075;
+	Mon, 27 Apr 2026 11:44:00 -0400 (EDT)
+Received: from phl-frontend-03 ([10.202.2.162])
+  by phl-compute-04.internal (MEProxy); Mon, 27 Apr 2026 11:44:00 -0400
+X-ME-Sender: <xms:QITvac-l_EHI-ECjsKgtiKMWuKRS13h2-xjfvROIW9vnGVzMFvuLcg>
+    <xme:QITvaXyU06JGnq-E6Z7-Ttmzqtj92r3aHJuv_jPn770vd8yoJz5jq_gowS7AjGmIv
+    WNFGSLuwNSc8hNiUxZuxmLnzXM0935ma3caGKHSxknzPOgX1NIpdQo>
+X-ME-Received: <xmr:QITvacp46zHbDRfaO_VjOl62TcdrzKUkujt5a_ykvqwZ6xXOxQZaJvsS8JmiCVSwFK8inCTU3heaNYtxM1TKyj4EdLB-JEz7>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefhedrtddtgdejledtkecutefuodetggdotefrod
+    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpuffrtefokffrpgfnqfghnecuuegr
+    ihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjug
+    hrpeffhffvvefukfhfgggtugfgjgesthekredttddtudenucfhrhhomhepuehoqhhunhcu
+    hfgvnhhguceosghoqhhunheskhgvrhhnvghlrdhorhhgqeenucggtffrrghtthgvrhhnpe
+    eiffevjeegvdefhfeiveejjeeihfehgfejtdfhueegheehvdehveelieelkedutdenucff
+    ohhmrghinhepkhgvrhhnvghlrdhorhhgnecuvehluhhsthgvrhfuihiivgeptdenucfrrg
+    hrrghmpehmrghilhhfrhhomhepsghoqhhunhdomhgvshhmthhprghuthhhphgvrhhsohhn
+    rghlihhthidqudeijedtleekgeejuddqudejjeekheehhedvqdgsohhquhhnpeepkhgvrh
+    hnvghlrdhorhhgsehfihigmhgvrdhnrghmvgdpnhgspghrtghpthhtohepledpmhhouggv
+    pehsmhhtphhouhhtpdhrtghpthhtohepshgrmhhirheslhhinhhugidrihgsmhdrtghomh
+    dprhgtphhtthhopehprghulhhmtghksehkvghrnhgvlhdrohhrghdprhgtphhtthhopegs
+    ohhquhhnrdhfvghnghesghhmrghilhdrtghomhdprhgtphhtthhopehlihhnuhigqdhkvg
+    hrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehtjheskhgvrhhn
+    vghlrdhorhhgpdhrtghpthhtoheprhgtuhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprh
+    gtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhg
+    pdhrtghpthhtohepshhshhgvghguvgeslhhinhhugidrihgsmhdrtghomhdprhgtphhtth
+    hopegsohhquhhnsehfihigmhgvrdhnrghmvg
+X-ME-Proxy: <xmx:QITvaYphAi8BuLB7nuuWYSUE1F20CYjQxz_PCnWK6V6bX7-Ter5pvw>
+    <xmx:QITvacDsnVJv5L35cYuiWeeE5OH_-E2e0eA3ImfuYc4NAhvf47j5IA>
+    <xmx:QITvaWteZJOrR4miG1MzHPWOa0fR-41lqp48i09eEv3S_lUtBWiuzA>
+    <xmx:QITvabIXr0wb6IyYmG0cWfGaoINODwVA7IVouYz3aGlzUbYWk4a06Q>
+    <xmx:QITvadaIZ4w-XzwpW_01paghiofamfqbq9OIG9ifmrqITsiRdFijsXEh>
+Feedback-ID: i8dbe485b:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
+ 27 Apr 2026 11:44:00 -0400 (EDT)
+Date: Mon, 27 Apr 2026 08:43:59 -0700
+From: Boqun Feng <boqun@kernel.org>
+To: Samir M <samir@linux.ibm.com>
+Cc: "Paul E . McKenney" <paulmck@kernel.org>,
+	Boqun Feng <boqun.feng@gmail.com>,
+	LKML <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
+	RCU <rcu@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
+	Shrikanth Hegde <sshegde@linux.ibm.com>
+Subject: Re: [mainline][BUG] Observed Workqueue lockups on offline CPUs.
+Message-ID: <ae-EP1BpXgnEWCt4@tardis.local>
+References: <97a7d011-d573-4754-9e5d-68b562c64089@linux.ibm.com>
+ <688280dc-78a2-4796-9eaf-e1c058836012@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -111,86 +104,198 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CY8PR12MB8300:EE_|SA1PR12MB6871:EE_
-X-MS-Office365-Filtering-Correlation-Id: 1f3655ce-20ef-4e2c-2fe2-08dea4ac8fa5
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|10070799003|376014|7416014|366016|1800799024|56012099003|22082099003|18002099003;
-X-Microsoft-Antispam-Message-Info:
-	/PUX5wTJGMs/KBsNviNpWA288jfovgZeFH/D5rlo4Ft68PLkNzRu+VJLbwZPVL7WMTmGE/7sGAUjidmOrf6PO7cVfcrQe6QT08Oqm4vVTbq+1kk8SU+vprwEBmYwG+gAfH2qmWzaQJsEm7YpHDRuW/7Cs1/Xk+BrlRiawZrKiyZzPhbDmpZp82G1md2nBR6MipihlTfUyQ+saizppq6JVvqKLc5dE++LYGjddOZxiO3yutMfU07Cp5tvF3yobREfTw/fDdOZgk2+rMoVASDdUVkAaqH0FXJ28Bm6NVJs+NSRjDYnMLXVfJoJcrsNuF4W22tsLIY5w3wDLjkrtfUAaGwMnqXvKgmEE1qpibH4HaSjxrWfCswHPCx7Vc7oELIEGKApXlepMVtafKQ1eBm0bnWKqspLr19ifmkOBqioMXptCdlJ75n5gVcLiBzfflllkv55OjNYGzmu/P23vn89/MqFVHCPYaOOw1vjLjy3Olm5/wQLP++hGKYxXIrZ64iQpyo+GIlD3HGQMFC+oPQ+4alqqHQ0+kc6l4epUtSsHVmWOEFWpRzFBafriU8ilGCl8/f8jCwsnB3t+/+q8pFFXiilqgDF9lWOw60zcIbP7xO24Ozxdu5GXF2ThaRP8NVaPA/4be0MJgysKa4xa0hnonHdTiIDcF4SkkqpHjiJ5qwmY2Gce2PdYuEwEpTf8TjR66psUlL2DcOZVs8sQNjcffnyedzo5Nat0VSDOW7wgzk=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CY8PR12MB8300.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(10070799003)(376014)(7416014)(366016)(1800799024)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?y1CvQpZYZ2eMHe2MhRl9jMjiWbPAKKWXFKb0rNr6P2FKNpuYqlm0vHnj/c+p?=
- =?us-ascii?Q?etrijvKck7MltKVOhuLlrUk/4maEie31AAuCO4vEDEQz7eLSMhE+LXqZ7580?=
- =?us-ascii?Q?/dTzhhd6ZXj5MAUt3SGOfXeBZ9mnjjf2uZ2zVl0944wpMj1aPR6bhJJsKwkp?=
- =?us-ascii?Q?VUL5kcdJLltj/bbXdIYt5R4Q5sFcreBO2t2YjdncWBk9awGhHkshgH2+xQK3?=
- =?us-ascii?Q?KZ9jZvFRcaTs7WARWb/cK4emdp6bDzM7GZoacpZC4jFUpUOAzU++q1cUqbIp?=
- =?us-ascii?Q?IcojDKNgAE9HncwAue719JnQVeUjYbuQfI9vFrEzSJwqQkAaJNY/N9KIqHH5?=
- =?us-ascii?Q?gb6ElO029nGL4z2hh5SKSqKFAJYfJvd6N318L3xLFXMXoREhQbz05reO9kR7?=
- =?us-ascii?Q?GWI0NeihuZjKnE/Ak2IoeTePP++KCVgyuhiSD0PXj7MCcQGFIfSjdMtsrSD0?=
- =?us-ascii?Q?qpof8HORPaHefDg6xtvU0Ls17iRCuj1Xtuu5fBcRshNrriAJmj0nlZqzlPp0?=
- =?us-ascii?Q?oq96Gm2fPd5N0qcJLOIB4vfutS46eOW3OBK4BlzxlMwOHl6WCEd/wmb2kDAK?=
- =?us-ascii?Q?VPTN1pR756Yxc8PWdgyvhKBLft+N8lDJQGyoSrLOClJEovN6quxxF5UrmLgl?=
- =?us-ascii?Q?BSzU4GMBOjLU5qQqVVM1fzFPiQJrPzyeuGPUF6s5eWsZMUNFhY8uESY52c+S?=
- =?us-ascii?Q?SE6TQJUy1lWTLGmxVFeFQgD9qZCVc47lVZv/tMLN8sA71HzeCfL2tx6zUAP1?=
- =?us-ascii?Q?hu81S/ywLrBvCHKaffr0P8d1j0edNWOzngwXYnwimWLWnJ+OOYH82yO8AfMj?=
- =?us-ascii?Q?9OG00BjXZXIsalWG80IQlBy27WpQ84/1c9oAnvbNeJfjdgOz4uIbM6FHkYyA?=
- =?us-ascii?Q?MupGlptk1Xu50YbzeOZ03kGiMKX0VxGdprIqVjtikQtw3BlYFt0IIGwsWiy8?=
- =?us-ascii?Q?wb6reRFBF6KZAnTmSERVS8uD68yLvuu4uDhGLoBqPxQofaxbHl5bqyIHeiVZ?=
- =?us-ascii?Q?JmIJF4RPeAJ5/v6RFBLjGohX5ZjyNkXJb9RZjSdHP1ziqpItJ3rcJG2ZFZJT?=
- =?us-ascii?Q?TOtNJUdl8MYzQUzieK78aUKDOyKuWpAWh2Jep6/sVe9CBZ2NlHHJGqtGJ0+6?=
- =?us-ascii?Q?owwVe4C6J1ikL7yn0gdEWIiiyjuOxoCdI3+hulZemm7LK5thRU+ZyJaPjQR+?=
- =?us-ascii?Q?YK+iuiqW4QYnqG8Bp71RoCe6giJoTJeiqfcGpFeX0h22VmfkFjYMyp/W8nb3?=
- =?us-ascii?Q?mBn+6WSNLOLGrrznB6jKXoRf6cnQ1xEMeJxPdXY/BnX2sOfoIY42tLqAScbN?=
- =?us-ascii?Q?LtZ7qBEv6zip7I8sQ5//f4FDcyaAHJDISd0ze+LMD1SGCz1vUejeBGt5jNwE?=
- =?us-ascii?Q?iyPDDoJ3VJHJ8aGIrV8p6MgUo+UO94WHdRtz/JHe7JLmdPqflsqW5Z53kqYw?=
- =?us-ascii?Q?MP/nGig0/bW+qSUHZi0ybA7U9qUULzBtAdJ3gf4NkhxIRHImljJP3sZS+AbG?=
- =?us-ascii?Q?VX+xV6ny9hftAe82VJ9ewoJIvZ1jOdavxAo38YgxrnhYM4VA4PLlPxMJgrFB?=
- =?us-ascii?Q?bl95emjkBX7MxnGkfKrgN0u2MtTSs3sO1Wdm6BH6ZQ9kazGSKdvWqMQAmcgZ?=
- =?us-ascii?Q?2TAXsG9f2jiTJy/XjYe+XqDYMz+09yazlugWhbXrIX8heUtqQqlD4RBq2C5J?=
- =?us-ascii?Q?CuCIR2G+UzaeT6rHBATVfYnF1JfQa1er7U7HJW5PSDW8XBt5cyY/COXOF+YI?=
- =?us-ascii?Q?h6yFwkKGk0zfxpHpRxxXg2KPpUtDCbrrUbX4jMC5IsdF387MIWjR?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1f3655ce-20ef-4e2c-2fe2-08dea4ac8fa5
-X-MS-Exchange-CrossTenant-AuthSource: CY8PR12MB8300.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Apr 2026 22:30:18.5780
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 8yVCjxcKtFstGt67IdVeO9hT/qCk0UDq0EBYtz0042ex6ttmtrXzmmIlGerSzGsUENgCE8ayV5UchO391MZbfA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR12MB6871
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <688280dc-78a2-4796-9eaf-e1c058836012@linux.ibm.com>
 
-On Mon, Apr 27, 2026 at 02:52:05PM -0700, Linus Torvalds wrote:
-> On Mon, 27 Apr 2026 at 12:19, Yury Norov <ynorov@nvidia.com> wrote:
-> >
-> > This is what Linus said when added x86 implementation for copy_from_user()
-> > in c512c69187197:
+On Mon, Apr 27, 2026 at 05:00:10PM +0530, Samir M wrote:
 > 
-> Note that some things have happily changed in the six+ years since...
-> 
-> >   That's partly because we have no current users of it, but also partly
-> >   because the copy_from_user() case is slightly different and cannot
-> >   efficiently be implemented in terms of a unsafe_get_user() loop (because
-> >   gcc can't do asm goto with outputs).
-> 
-> now everybody can do asm goto with outputs.
-> 
-> Yes, it's disabled on older versions, so it's not *always* available,
-> but all modern versions do it. And if you care about performance, you
-> won't be using an old compiler.
 
-The minimal GCC version is 8.1, and asm goto with outputs is supported
-since GCC-11. That would brake the build, if we just switch to using it
-without "CC_IS_GCC && (GCC_VERSION >= 110100)" guard.
+Hi Samir,
 
-Is it worth to maintain 2 version of the function? I don't know...
+> On 27/04/26 3:32 pm, Samir M wrote:
+> > Hi Paul,
+> > 
+> > I've been testing the latest upstream kernel on a PowerPC system and
+> > encountered workqueue lockup issues that I've bisected to commit
+> > 61bbcfb50514 ("srcu: Push srcu_node allocation to GP when
+> > non-preemptible").
+> > After booting, I'm seeing workqueue lockup warnings for CPUs 81-96,
+> > which are offline on my system. The workqueues remain stuck for over 237
+> > seconds:
+> > 
+> > [  243.309302][    C0] BUG: workqueue lockup - pool cpus=81 node=0
+> > flags=0x4 nice=0 stuck for 237s!
+> > [  243.309311][    C0] BUG: workqueue lockup - pool cpus=82 node=0
+> > flags=0x4 nice=0 stuck for 237s!
+> > [  243.309318][    C0] BUG: workqueue lockup - pool cpus=83 node=0
+> > flags=0x4 nice=0 stuck for 237s!
+> > [  243.309326][    C0] BUG: workqueue lockup - pool cpus=84 node=0
+> > flags=0x4 nice=0 stuck for 237s!
+> > [  243.309333][    C0] BUG: workqueue lockup - pool cpus=85 node=0
+> > flags=0x4 nice=0 stuck for 237s!
+> > [  243.309341][    C0] BUG: workqueue lockup - pool cpus=86 node=0
+> > flags=0x4 nice=0 stuck for 237s!
+> > [  243.309348][    C0] BUG: workqueue lockup - pool cpus=87 node=0
+> > flags=0x4 nice=0 stuck for 237s!
+> > [  243.309355][    C0] BUG: workqueue lockup - pool cpus=88 node=0
+> > flags=0x4 nice=0 stuck for 237s!
+> > [  243.309363][    C0] BUG: workqueue lockup - pool cpus=89 node=0
+> > flags=0x4 nice=0 stuck for 237s!
+> > [  243.309370][    C0] BUG: workqueue lockup - pool cpus=90 node=0
+> > flags=0x4 nice=0 stuck for 237s!
+> > [  243.309377][    C0] BUG: workqueue lockup - pool cpus=91 node=0
+> > flags=0x4 nice=0 stuck for 237s!
+> > [  243.309384][    C0] BUG: workqueue lockup - pool cpus=92 node=0
+> > flags=0x4 nice=0 stuck for 237s!
+> > [  243.309392][    C0] BUG: workqueue lockup - pool cpus=93 node=0
+> > flags=0x4 nice=0 stuck for 237s!
+> > [  243.309399][    C0] BUG: workqueue lockup - pool cpus=94 node=0
+> > flags=0x4 nice=0 stuck for 237s!
+> > [  243.309406][    C0] BUG: workqueue lockup - pool cpus=95 node=0
+> > flags=0x4 nice=0 stuck for 237s!
+> > [  243.309413][    C0] BUG: workqueue lockup - pool cpus=96 node=0
+> > flags=0x4 nice=0 stuck for 237s!
+> > 
+> > Git bisect identified this as the first bad commit:
+> > 
+> > commit 61bbcfb50514a8a94e035a7349697a3790ab4783
+> > Author: Paul E. McKenney <paulmck@kernel.org>
+> > Date:   Fri Mar 20 20:29:20 2026 -0700
+> > 
+> >     srcu: Push srcu_node allocation to GP when non-preemptible
+> > 
+> >     When the srcutree.convert_to_big and srcutree.big_cpu_lim kernel boot
+> >     parameters specify initialization-time allocation of the srcu_node
+> >     tree for statically allocated srcu_struct structures (for example, in
+> >     DEFINE_SRCU() at build time instead of init_srcu_struct() at
+> > runtime),
+> >     init_srcu_struct_nodes() will attempt to dynamically allocate this
+> > tree
+> >     at the first run-time update-side use of this srcu_struct structure,
+> >     but while holding a raw spinlock. Because the memory allocator can
+> >     acquire non-raw spinlocks, this can result in lockdep splats.
+> > 
+> >     This commit therefore uses the same SRCU_SIZE_ALLOC trick that is
+> > used
+> >     when the first run-time update-side use of this srcu_struct structure
+> >     happens before srcu_init() is called. The actual allocation then
+> > takes
+> >     place from workqueue context at the ends of upcoming SRCU grace
+> > periods.
+> > 
+> >     [boqun: Adjust the sha1 of the Fixes tag]
+> > 
+> >     Fixes: 175b45ed343a ("srcu: Use raw spinlocks so call_srcu() can be
+> > used under preempt_disable()")
+> >     Signed-off-by: Paul E. McKenney <paulmck@kernel.org>
+> >     Signed-off-by: Boqun Feng <boqun@kernel.org>
+> > 
+> >  kernel/rcu/srcutree.c | 7 +++++--
+> >  1 file changed, 5 insertions(+), 2 deletions(-)
+> > 
+> > Reverting this commit resolves the issue.
+> > 
+> > The problem appears to be that the workqueue is attempting to execute on
+> > offline CPUs. The commit moves SRCU node allocation to workqueue context
+> > to avoid lockdep issues with memory allocation under raw spinlocks,
+> > which makes sense. However, it seems the workqueue scheduling doesn't
+> > properly account for CPU online/offline state in this code path.
+> > 
+> > My test environment:
+> > - Architecture: PowerPC
+> > - Kernel version: Latest upstream (7.1-rc1)
+> > - CPUs 81-96 are offline at boot time
+> > 
+> > I suspect the issue might be related to:
+> > 1. Workqueue not checking CPU online status before scheduling SRCU
+> > allocation work
+> > 2. Missing CPU hotplug awareness in the new workqueue-based allocation
+> > path
+> > 3. Possible race condition with CPU hotplug events
+> > 
+> > Would it make sense to use queue_work_on() with explicit online CPU
+> > selection, or add CPU hotplug handlers for this workqueue? I'm not
+> > deeply familiar with the workqueue internals, so I might be missing
+> > something.
+> > Please let me know if you need any additional details or if you'd like
+> > me to test any patches.
+> > 
+> > If you happen to fix the above issue, then please add below tag.
+> > Reported-by: Samir M <samir@linux.ibm.com>
+> > 
+> > 
+> > Thanks,
+> > Samir
+> 
+> Hi Paul,
+> 
+> 
+> I worked on fixing the issue and introduced the changes below. With these
+> updates, I no longer observe any workqueue lockup messages for offline CPUs.
+> Could you please review the changes and share your feedback?
+> 
+> The commit 61bbcfb50514 ("srcu: Push srcu_node allocation to GP when
+> non-preemptible") introduced workqueue lockups on systems with offline
+> CPUs. The issue occurs because srcu_queue_delayed_work_on() calls
+> queue_work_on() with sdp->cpu, which may be offline, causing the
+> workqueue to spin indefinitely on that CPU.
+> 
+> This patch fixes the issue by checking if the target CPU is online
+> before queuing work on it. If the CPU is offline, we fall back to
+> using queue_work() which will schedule the work on any available
+> online CPU.
+> 
+> Fixes: 61bbcfb50514 ("srcu: Push srcu_node allocation to GP when
+> non-preemptible")
+> 
+> Signed-off-by: Samir <samir@linux.ibm.com>
 
-Thanks,
-Yury
+Thanks for the patch, but I wonder: have you checked this email thread:
+
+	https://lore.kernel.org/rcu/ttd89ul@ub.hpns/	
+
+Paul had a fix [1], and TJ had a "fix" [2] on workqueue side.
+
+In general I think we discovered that as long as a CPU has been onlined
+once, it's OK to queue the work on that CPU (which may be offlined) even
+with our TJ's patch (whether we should do that is a different problem
+;-)). Please do check whether Paul's fix works for your case, thanks!
+
+[1]: https://lore.kernel.org/rcu/ed1fa6cd-7343-4ca3-8b9d-d699ca496f83@paulmck-laptop/
+[2]: https://lore.kernel.org/rcu/adlHKowvhn8AGXCc@slm.duckdns.org/
+
+Regards,
+Boqun
+
+> ---
+>  kernel/rcu/srcutree.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+> diff --git a/kernel/rcu/srcutree.c b/kernel/rcu/srcutree.c
+> index 0d01cd8c4b4a..55a90dd4a030 100644
+> --- a/kernel/rcu/srcutree.c
+> +++ b/kernel/rcu/srcutree.c
+> @@ -869,10 +869,15 @@ static void srcu_delay_timer(struct timer_list *t)
+>  static void srcu_queue_delayed_work_on(struct srcu_data *sdp,
+>  unsigned long delay)
+>  {
+> -       if (!delay) {
+> +       if (!delay && cpu_online(sdp->cpu)) {
+>                 queue_work_on(sdp->cpu, rcu_gp_wq, &sdp->work);
+>                 return;
+> +       } else if (!delay) {
+> +               /* CPU is offline, queue on any available CPU */
+> +               queue_work(rcu_gp_wq, &sdp->work);
+> +               return;
+> +       }
+> 
+>         timer_reduce(&sdp->delay_work, jiffies + delay);
+>  }
+> --
+> 
+> 
+> Thanks,
+> Samir
 
