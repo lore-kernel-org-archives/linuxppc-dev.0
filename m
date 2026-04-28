@@ -1,78 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-20204-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20205-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2024FF8867
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2026 03:07:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 972DDFF8864
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2026 03:30:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g4QMx4Zxdz2yqt;
-	Tue, 28 Apr 2026 13:07:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::112b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777345645;
-	cv=none; b=W/CnIQSJmRX11yEiHScHV0z92uUrmrkSOmPhZy2OoA/KuNG91DpS3Db13ng48F0FHhXXPGu/nWOGy61EmlFrTP2c/rpH7IreczzkG4B/lYE+tfmpiTYJH/I9gpTTeip8blmAxbXDAXU8V8Nk0P2xTX1Z4iQSQuf9eih6QwFGW7vOdjnvAJ105NK59+xjK4tFwyQe4VJlcxrHMC8izG4Zo6cOqz6UHuvVax5NZwM7pmA+CUem4Zbb63Xqj7dyyNWakebxsOlBaf0q0wdDVniblUPx+FzaHlIgdSGFiFj4ttTJPrYwg076bG8njsMsb8u3HJDB7b+TtyGRkVbmSLZDaA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g4QtX0Q9jz2yqt;
+	Tue, 28 Apr 2026 13:30:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.223
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777347027;
+	cv=none; b=J1Votfx0vJmvoMM0DEjAJyYUfziRrKDIXpnbEyJb1Q431PsKxpz0aQOwq6t3OOM2C+vcLy+2CDZbqgjMmW5Iit5Ry4c5cMyvG95o/jz/ajM5LIkdrQVV8plmCRThJ6UjNL+330jFycaM5NT04Vo6uawAqKlwxBFUXs/qw9wg/496hScv6jBGhOdb2/rXZAwTEfFtoWpb509u5GaF7x1OrIwxKP0NPRveQ4dQ6O2SZGfQQSVNIWEtKzCRtpbA80EehO+3//06t0y2dDuICrTdeMyBlv5Lu9VyIHFoXIvrD6Gfamswe0K4ejEYl3M0mvjpdFrJVFJKAodzHebw9R+bIQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777345645; c=relaxed/relaxed;
-	bh=xy+tm9bENqCqZp9SYs+pOo5djm/sVYYFvKa2wEp3fzY=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=hlCwxYy1oDIkdUzOg9zNsQ1UyLatI28Z3ApJJtR1bj64QAxq6faxWiaFF9hvyIjNfjOPBJnrYlTVvVkHCpnKr59xgNOw76/AzvhtqC20PqqgRargw0ZRzj03MOBP5no8kLE8O4wmp0n7DSVq6GOtfVVOfmcQHK7b4w8twgxEWNtyGU4+/DyQGLx/++icWSoSrnLyt3xK2Gqmsrz0PzKhpfDAmt80uGnvfJTxI1aeLVfhysb5kCtu3sYDnjPB/lzw3IBtcO2aFHXft14BgUVOWTWV/urGNnwrBeHzAj011qvA/JRQPhdprbhOMKal9x+iMhI9rHh2Nb1P6ZynbA1Sug==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=cWxElCeO; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::112b; helo=mail-yw1-x112b.google.com; envelope-from=cassiogabrielcontato@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1777347027; c=relaxed/relaxed;
+	bh=53v80o50pdZvZamiU87690P2YfIvRYFux+/+SYSB+8A=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=exYtWCRgws5pLtjQ24MKlSCqie6YnV7TuOZ0M4FPSHqh8Wmz/98ivIebzLoK8mtYW6UVaK0BiWdK/5MU1VmUNW22Ngh6oS6i4CWTl/xN2xjNdAqY01OwYhRfEtsEO1iIlkEbSh39mUpg+nyWJt7xZ1VOUQN2oArl1WrH3NnQfjbXDLlcvMwpdBrhao/JmtoMJO6gL1PTHWlEc5bJkULc5OJPUCiePunW2FX51/iXFuSeVBl+/EAz0sKZ+yQjbruO/zL50ov8nPPee3HNM4HXA+29kimkLUJrivrh0XGYTCATy/oRJZSQDmrzNyjozQxEa07WHOR9/JRfqabjQZbDeA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=Ax7zlBnD; dkim-atps=neutral; spf=pass (client-ip=113.46.200.223; helo=canpmsgout08.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=cWxElCeO;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=Ax7zlBnD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::112b; helo=mail-yw1-x112b.google.com; envelope-from=cassiogabrielcontato@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x112b.google.com (mail-yw1-x112b.google.com [IPv6:2607:f8b0:4864:20::112b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.223; helo=canpmsgout08.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout08.his.huawei.com (canpmsgout08.his.huawei.com [113.46.200.223])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g4QMv6NBLz2yVZ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2026 13:07:22 +1000 (AEST)
-Received: by mail-yw1-x112b.google.com with SMTP id 00721157ae682-79a60975dc5so116227527b3.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2026 20:07:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1777345640; x=1777950440; darn=lists.ozlabs.org;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=xy+tm9bENqCqZp9SYs+pOo5djm/sVYYFvKa2wEp3fzY=;
-        b=cWxElCeOZlWlg9V7Bo8Ogu6ABYI/uvbWiexf75UPAswBojONAxj8uEFXcu2nr2iVPe
-         NmYOY5fllGvOXfq7KRUzHWL2rw+XuReZa8iUmTwUTzkLD3L9rhhS2w/WnFPTOtiI4Jnu
-         6Mgq+7dhA5xqulHT7dlwEBgqxURPCpSiLVyMNlIkYe2biZZNrwEAzA622hjhNPzYqTFF
-         6/rkr1a9f2ZnSv89zOPsESqEvGgoYBZZQXsIu7MIxeAqE2jC0O3DwNZoVnZuFDf/WtRX
-         qAFNg1VpuhHfnlTHJRXBnS3UPgm/4Gu68OY6xAIXF71PiWCdJDTDomGHOA4fMBfVnoNk
-         8xTQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777345640; x=1777950440;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=xy+tm9bENqCqZp9SYs+pOo5djm/sVYYFvKa2wEp3fzY=;
-        b=s6IKO2DzuRDEYNgipzWEzx4UjO3/9SUA5D/SmOkYeq2Q0VVMjw3xpPmK1GAGN9kLuC
-         ciive5bIvZm8dc4VjC1oWTdpQqkVhB/BU+YQoZGM/Bu2HKqHWtUl9gwX3rFdok+KefuY
-         Gp8epDFCIXHYPvcY8v0iqsCKRwVazJP/YPdLFYhezRJzCVioRH5hsfnY0P0NjfKQ4UVj
-         0VxgANt2tkaIc727KWIVJtlL9mayi7hTkLTJpuHJFU0V2rqpuAtB6kyuJLSottNCsbi/
-         hLdoOJF5CTZw0UydcM+UzdfYw7e6mNPeylvCjEEsykdKVDPovMritXPHG4wJX8+GMe9c
-         rPCA==
-X-Forwarded-Encrypted: i=1; AFNElJ8Odqrw74LBCX+P2TIeFM6n984AsfEoR3BVL5SSb/foLDvttbtkc4V7SgRcsvVXHbjjOLzNNLm+nf2KwKY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyF0SqijBLtMZ0lwjl3YAU+UXCy8U7eDuxOvvVnlFMMDvdVVpcw
-	49+nqf7FRMA7yKgtChrATgjKbrRVqul9eUPFF8xYByT8PRIRACQG2Spyn0P7WJ9d
-X-Gm-Gg: AeBDievYkRw3rL/EvIvMexMEqV0MrDy3eKjFW73NjDMja/+UF3hp6128XISsy+SUt6L
-	IrrnEsfpeKTRzj3WNzCHO+qWHHBQMSrfsUmWOVT+j2Kifxkkhate8S5jTpu7rbAlsJDbCb+4xqP
-	MUe8qAfzVxYOuUZeWjD6q1IIGQNMPF5TqQJ6T168sEFBUzOvOQT4bYliYd3SOQXaTLA3Idi3/fB
-	f+FsBWoadjZyfOf4rpmOPLTZtfNQ3Mj30+N+TXC/X76dT/nSzqtKBedZRSTpEMXtuIM8vDIVIcr
-	kFCJvNTkAscWt5OHUN3dc1AXFp7VS8pFyGKjNjdM89Nee5a3eqFcYQRNmEroJZKFIN9YbSlAoA2
-	abz5K8uCsLdXaIOiQALmZyhRcHuxM542Gk3TcjWDJG5EaGFuFZVHeF1TrZkseqto5WueCHFC1L6
-	tvYxo8+3NiNg3dqiAiOzhP43xHfO8tr0EMu69V55lgk2HyZqywdwO2/Ec8eHBNWq6Byk1qnOFtH
-	vZynbf68j/P
-X-Received: by 2002:a05:690c:c24d:b0:7ba:eefe:9fa1 with SMTP id 00721157ae682-7bcf52207camr11515787b3.6.1777345639900;
-        Mon, 27 Apr 2026 20:07:19 -0700 (PDT)
-Received: from [192.168.1.18] (177-4-161-87.user3p.v-tal.net.br. [177.4.161.87])
-        by smtp.gmail.com with ESMTPSA id 00721157ae682-7bcf05e622esm8834257b3.17.2026.04.27.20.07.15
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 27 Apr 2026 20:07:19 -0700 (PDT)
-From: =?utf-8?q?C=C3=A1ssio_Gabriel?= <cassiogabrielcontato@gmail.com>
-Date: Tue, 28 Apr 2026 00:07:08 -0300
-Subject: [PATCH] ASoC: fsl_xcvr: Fix event generation for cached controls
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g4QtS3f7hz2xly
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2026 13:30:22 +1000 (AEST)
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=53v80o50pdZvZamiU87690P2YfIvRYFux+/+SYSB+8A=;
+	b=Ax7zlBnDvsHBrG11SUZ1Pks+cdQ09GMnJHUeJDFPnJ+emSKulfDm5/phFAybcSONUZOz7Zmdk
+	JuXPr9JubkLETkbEhoVW7TASFkDw2eI7slX9Rgg90k2o6zU9Md1T0fRV5pJf4I+L2IYefJy2p2S
+	PTql3k7K5Kbuffhny79gszs=
+Received: from mail.maildlp.com (unknown [172.19.162.92])
+	by canpmsgout08.his.huawei.com (SkyGuard) with ESMTPS id 4g4Qks3tnTzmV7c;
+	Tue, 28 Apr 2026 11:23:49 +0800 (CST)
+Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
+	by mail.maildlp.com (Postfix) with ESMTPS id 25E5F40562;
+	Tue, 28 Apr 2026 11:30:17 +0800 (CST)
+Received: from [10.67.109.254] (10.67.109.254) by
+ dggpemf500011.china.huawei.com (7.185.36.131) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.11; Tue, 28 Apr 2026 11:30:14 +0800
+Message-ID: <dfa24c4b-a423-4c80-9a8f-28c577c9ec11@huawei.com>
+Date: Tue, 28 Apr 2026 11:30:13 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,93 +61,152 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20260428-asoc-fsl-xcvr-event-generation-v1-1-f21cf0812c4f@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXNwQrCMBCE4Vcpe3ahRmvVVxEPcTupEUllN4ZC6
- bsb9fgd5p+FDBphdG4WUpRocUoV201DcvdpBMehmlzrDu3e9extEg725FmKMgpS5hEJ6nOdsgt
- dL93uNMAdqUZeihDn38Hl+re9bw9I/lZpXT8IVeqlggAAAA==
-X-Change-ID: 20260427-asoc-fsl-xcvr-event-generation-2f57c539de28
-To: Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>, 
- Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, 
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, 
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
- Viorel Suman <viorel.suman@nxp.com>
-Cc: linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- linux-kernel@vger.kernel.org, 
- =?utf-8?q?C=C3=A1ssio_Gabriel?= <cassiogabrielcontato@gmail.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2246;
- i=cassiogabrielcontato@gmail.com; h=from:subject:message-id;
- bh=M/DH4mZdkREffdwKLGoyCTZnaJGwxzLtvZ0z5kxN6cI=;
- b=owGbwMvMwCV2IdZeKur/u2bG02pJDJkfVJKXHzPrqixb3+9XfsVgqkItf7+RfpXZtTP9Deq/S
- jZfifPrKGVhEONikBVTZFmdtMhyT9eDq/VxKzxg5rAygQxh4OIUgIm8tGdk2Lwz0nZ2ey1L96Iz
- u3XPnJoS4KWwbMpO/92bpKpvuPkHSjH8d2rKLBb46RjkuLldvGmG3OGflg65Mp08TbM53vQbC1c
- yAQA=
-X-Developer-Key: i=cassiogabrielcontato@gmail.com; a=openpgp;
- fpr=AB62A239BC8AE0D57F5EA848D05D3F1A5AFFEE83
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v12 00/15] arm64/riscv: Add support for crashkernel CMA
+ reservation
+To: <corbet@lwn.net>, <skhan@linuxfoundation.org>, <catalin.marinas@arm.com>,
+	<will@kernel.org>, <chenhuacai@kernel.org>, <kernel@xen0n.name>,
+	<maddy@linux.ibm.com>, <mpe@ellerman.id.au>, <npiggin@gmail.com>,
+	<chleroy@kernel.org>, <pjw@kernel.org>, <palmer@dabbelt.com>,
+	<aou@eecs.berkeley.edu>, <alex@ghiti.fr>, <tglx@kernel.org>,
+	<mingo@redhat.com>, <bp@alien8.de>, <dave.hansen@linux.intel.com>,
+	<hpa@zytor.com>, <robh@kernel.org>, <saravanak@kernel.org>,
+	<akpm@linux-foundation.org>, <bhe@redhat.com>, <vgoyal@redhat.com>,
+	<dyoung@redhat.com>, <rdunlap@infradead.org>, <peterz@infradead.org>,
+	<pawan.kumar.gupta@linux.intel.com>, <feng.tang@linux.alibaba.com>,
+	<dapeng1.mi@linux.intel.com>, <kees@kernel.org>, <elver@google.com>,
+	<paulmck@kernel.org>, <lirongqing@baidu.com>, <rppt@kernel.org>,
+	<leitao@debian.org>, <ardb@kernel.org>, <jbohac@suse.cz>,
+	<cfsworks@gmail.com>, <tangyouling@kylinos.cn>, <sourabhjain@linux.ibm.com>,
+	<ritesh.list@gmail.com>, <hbathini@linux.ibm.com>, <eajames@linux.ibm.com>,
+	<guoren@kernel.org>, <songshuaishuai@tinylab.org>, <kevin.brodsky@arm.com>,
+	<vishal.moola@gmail.com>, <junhui.liu@pigmoral.tech>, <coxu@redhat.com>,
+	<fuqiang.wang@easystack.cn>, <liaoyuanhong@vivo.com>,
+	<takahiro.akashi@linaro.org>, <james.morse@arm.com>, <lizhengyu3@huawei.com>,
+	<x86@kernel.org>, <linux-doc@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<loongarch@lists.linux.dev>, <linuxppc-dev@lists.ozlabs.org>,
+	<linux-riscv@lists.infradead.org>, <devicetree@vger.kernel.org>,
+	<kexec@lists.infradead.org>
+References: <20260402072701.628293-1-ruanjinjie@huawei.com>
+From: Jinjie Ruan <ruanjinjie@huawei.com>
+In-Reply-To: <20260402072701.628293-1-ruanjinjie@huawei.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.67.109.254]
+X-ClientProxiedBy: kwepems100001.china.huawei.com (7.221.188.238) To
+ dggpemf500011.china.huawei.com (7.185.36.131)
 
-ALSA controls should return 1 from a put callback when the control
-value changes. fsl_xcvr_capds_put() and fsl_xcvr_tx_cs_put() both
-update cached control data but always return 0, so ALSA suppresses
-change notifications for the Capabilities Data Structure and playback
-IEC958 channel status controls.
 
-Compare the old and new cached values before copying the new data,
-and return whether the control value changed.
 
-Fixes: 28564486866f ("ASoC: fsl_xcvr: Add XCVR ASoC CPU DAI driver")
-Signed-off-by: Cássio Gabriel <cassiogabrielcontato@gmail.com>
----
- sound/soc/fsl/fsl_xcvr.c | 17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
+On 4/2/2026 3:26 PM, Jinjie Ruan wrote:
+> The crash memory allocation, and the exclude of crashk_res, crashk_low_res
+> and crashk_cma memory are almost identical across different architectures,
+> This patch set handle them in crash core in a general way, which eliminate
+> a lot of duplication code.
+> 
+> And add support for crashkernel CMA reservation for arm64 and riscv.
+> 
+> Rebased on v7.0-rc1.
+> 
+> Basic second kernel boot test were performed on QEMU platforms for x86,
+> ARM64, and RISC-V architectures with the following parameters:
+> 
+> 	"cma=256M crashkernel=256M crashkernel=64M,cma"
+> 
+> Changes in v12:
+> - Remove the unused "nr_mem_ranges" for x86.
+> - Add "Fix crashk_low_res not exclude bug" test log.
+> - Provide a separate patch for each architecture for using
+>   crash_prepare_headers(), which will make the review more convenient.
+> - Add Reviewed-by and Tested-by.
+> - Link to v11: https://lore.kernel.org/all/20260328074013.3589544-1-ruanjinjie@huawei.com/
+> 
+> Changes in v11:
+> - Avoid silently drop crash memory if the crash kernel is built without
+>   CONFIG_CMA.
+> - Remove unnecessary "cmem->nr_ranges = 0" for arch_crash_populate_cmem()
+>   as we use kvzalloc().
+> - Provide a separate patch for each architecture to fix the existing
+>   buffer overflow issue.
+> - Add Acked-bys for arm64.
+> 
+> Changes in v10:
+> - Fix crashk_low_res not excluded bug in the existing
+>   RISC-V code.
+> - Fix an existing memory leak issue in the existing PowerPC code.
+> - Fix the ordering issue of adding CMA ranges to
+>   "linux,usable-memory-range".
+> - Fix an existing concurrency issue. A Concurrent memory hotplug may occur
+>   between reading memblock and attempting to fill cmem during kexec_load()
+>   for almost all existing architectures.
+> - Link to v9: https://lore.kernel.org/all/20260323072745.2481719-1-ruanjinjie@huawei.com/
+> 
+> Changes in v9:
+> - Collect Reviewed-by and Acked-by, and prepare for Sashiko AI review.
+> - Link to v8: https://lore.kernel.org/all/20260302035315.3892241-1-ruanjinjie@huawei.com/
+> 
+> Changes in v8:
+> - Fix the build issues reported by kernel test robot and Sourabh.
+> - Link to v7: https://lore.kernel.org/all/20260226130437.1867658-1-ruanjinjie@huawei.com/
+> 
+> Changes in v7:
+> - Correct the inclusion of CMA-reserved ranges for kdump kernel in of/kexec
+>   for arm64 and riscv.
+> - Add Acked-by.
+> - Link to v6: https://lore.kernel.org/all/20260224085342.387996-1-ruanjinjie@huawei.com/
+> 
+> Changes in v6:
+> - Update the crash core exclude code as Mike suggested.
+> - Rebased on v7.0-rc1.
+> - Add acked-by.
+> - Link to v5: https://lore.kernel.org/all/20260212101001.343158-1-ruanjinjie@huawei.com/
+> 
+> Jinjie Ruan (14):
+>   riscv: kexec_file: Fix crashk_low_res not exclude bug
+>   powerpc/crash: Fix possible memory leak in update_crash_elfcorehdr()
+>   x86/kexec: Fix potential buffer overflow in prepare_elf_headers()
+>   arm64: kexec_file: Fix potential buffer overflow in
+>     prepare_elf_headers()
+>   riscv: kexec_file: Fix potential buffer overflow in
+>     prepare_elf_headers()
+>   LoongArch: kexec: Fix potential buffer overflow in
+>     prepare_elf_headers()
+>   crash: Add crash_prepare_headers() to exclude crash kernel memory
+>   arm64: kexec_file: Use crash_prepare_headers() helper to simplify code
+>   x86/kexec: Use crash_prepare_headers() helper to simplify code
+>   riscv: kexec_file: Use crash_prepare_headers() helper to simplify code
+>   LoongArch: kexec: Use crash_prepare_headers() helper to simplify code
+>   crash: Use crash_exclude_core_ranges() on powerpc
+>   arm64: kexec: Add support for crashkernel CMA reservation
+>   riscv: kexec: Add support for crashkernel CMA reservation
 
-diff --git a/sound/soc/fsl/fsl_xcvr.c b/sound/soc/fsl/fsl_xcvr.c
-index ee16cf681488..6677d3bf36ec 100644
---- a/sound/soc/fsl/fsl_xcvr.c
-+++ b/sound/soc/fsl/fsl_xcvr.c
-@@ -228,10 +228,14 @@ static int fsl_xcvr_capds_put(struct snd_kcontrol *kcontrol,
- {
- 	struct snd_soc_dai *dai = snd_kcontrol_chip(kcontrol);
- 	struct fsl_xcvr *xcvr = snd_soc_dai_get_drvdata(dai);
-+	int changed;
- 
--	memcpy(xcvr->cap_ds, ucontrol->value.bytes.data, FSL_XCVR_CAPDS_SIZE);
-+	changed = memcmp(xcvr->cap_ds, ucontrol->value.bytes.data,
-+			 sizeof(xcvr->cap_ds)) != 0;
-+	memcpy(xcvr->cap_ds, ucontrol->value.bytes.data,
-+	       sizeof(xcvr->cap_ds));
- 
--	return 0;
-+	return changed;
- }
- 
- static struct snd_kcontrol_new fsl_xcvr_earc_capds_kctl = {
-@@ -1040,10 +1044,15 @@ static int fsl_xcvr_tx_cs_put(struct snd_kcontrol *kcontrol,
- {
- 	struct snd_soc_dai *dai = snd_kcontrol_chip(kcontrol);
- 	struct fsl_xcvr *xcvr = snd_soc_dai_get_drvdata(dai);
-+	int changed;
- 
--	memcpy(xcvr->tx_iec958.status, ucontrol->value.iec958.status, 24);
-+	changed = memcmp(xcvr->tx_iec958.status,
-+			 ucontrol->value.iec958.status,
-+			 sizeof(xcvr->tx_iec958.status)) != 0;
-+	memcpy(xcvr->tx_iec958.status, ucontrol->value.iec958.status,
-+	       sizeof(xcvr->tx_iec958.status));
- 
--	return 0;
-+	return changed;
- }
- 
- static struct snd_kcontrol_new fsl_xcvr_rx_ctls[] = {
+Hi, every one,
 
----
-base-commit: 98421d94a1a6dcc3e8582eb62bedeccecda93339
-change-id: 20260427-asoc-fsl-xcvr-event-generation-2f57c539de28
+It seems the patches for crash core rework, powerpc, riscv, and arm64
+are mostly ready to be merged. Could any maintainer help pick these up,
+or should I rebase the entire series against v7.1-rc1?
 
-Best regards,
---  
-Cássio Gabriel <cassiogabrielcontato@gmail.com>
+> 
+> Sourabh Jain (1):
+>   powerpc/crash: sort crash memory ranges before preparing elfcorehdr
+> 
+>  .../admin-guide/kernel-parameters.txt         |  16 +--
+>  arch/arm64/kernel/machine_kexec_file.c        |  43 +++-----
+>  arch/arm64/mm/init.c                          |   5 +-
+>  arch/loongarch/kernel/machine_kexec_file.c    |  43 +++-----
+>  arch/powerpc/include/asm/kexec_ranges.h       |   1 -
+>  arch/powerpc/kexec/crash.c                    |   7 +-
+>  arch/powerpc/kexec/ranges.c                   | 101 +-----------------
+>  arch/riscv/kernel/machine_kexec_file.c        |  42 +++-----
+>  arch/riscv/mm/init.c                          |   5 +-
+>  arch/x86/kernel/crash.c                       |  92 +++-------------
+>  drivers/of/fdt.c                              |   9 +-
+>  drivers/of/kexec.c                            |   9 ++
+>  include/linux/crash_core.h                    |   9 ++
+>  include/linux/crash_reserve.h                 |   4 +-
+>  kernel/crash_core.c                           |  89 ++++++++++++++-
+>  15 files changed, 193 insertions(+), 282 deletions(-)
+> 
 
 
