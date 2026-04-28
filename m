@@ -1,78 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-20228-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20229-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 920A8FF885D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2026 08:45:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5EDCFF886C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2026 08:48:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g4YtZ10T4z2ySf;
-	Tue, 28 Apr 2026 18:45:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777365958;
-	cv=none; b=kuGUhZXu7pq/b0/f+8JSMN+PsS2l+xZWOQxx2Y1epO4RQnmqnv6Vzgq02lqqCsCKBql2S9byCJuRzTqTGLQ+IpBfi9MAq8m62inUeUQn2ClAfQfB85qwY8NMLfGC+6Lgm69/x3rrauoyHxujZKr9c+AR0H77o4JQm+ymWFAQ3r6rJJpxkfmZ7+G+ni3RMPNgPkC4IksQpQQfKqgqeOVBXDp6Gx7/i4ytmMczoNI/9vrUoX4CKpBoddfuhScjn4r/UsCnDaYZ4EgpJ5qtgC++0euGn0Sf/E24YznC/0oBmgknN0PGRuhFNHqUjIcSyNeGZ8iHvY94pYvKBE9+t0inKg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g4YxW3v4bz2ySf;
+	Tue, 28 Apr 2026 18:48:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777366111;
+	cv=none; b=Inj+1VNUU+dhBmmXbLxg9uI1YoMwqHvMF9vOgS3DHPt0qZbQPX587fVlCPEYz1Zh6IR4pdvspIjpI5669Gg9f7aO7ngY5h6k2qAOkm4Hnq4GM8AUdBTHszLryxblARULwDDQtyfpvrzPDxkqoWi0Ec7cybCPr5QFcY1Q2LtznXnc6ALfpYZ1m2qU7JD7/ZdSpgjWfMcRd260jpzXkjHCJ1T921sKPD86KqNs/XBXC9+bjSh/33Jz8uKj/gI4nJqA0iL8/hLoj8IQzzudoV9rErelhj56xefIqm+itTXVUMF7UM99JCbegDfe4Zry91Z2D0j6drqAqmELgL/zjeCOWQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777365958; c=relaxed/relaxed;
-	bh=2oM9ZUK8Yw9T0FTGW9SPFwR/OUqAGn0tAJHGRHZ4mIY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=T/raNuTQLu5ESXDB7I2T2ZggUyQJelE7JixEbygTYYSq2gpH2Le56FF6tDymAio524D4g3+mtkEeT0OCUta8ySbXJbI8o4M92XtVu3msW7AetkNTTUMN0lgRG++2V06myZ9WRKwJgAh8l0g2Pa1nfvV3MGVKC2Vxpo3nUNdlCV5Qm4kBcPf5QJ8lu25CDMpbrVlDztsCLdhwvF8nUkMVIV9TIRHp9esCjENVEkCLXbcgX0JiKpWnxfpTsbnB+hZQgoFQblPAP1+4Fi9/eAISWqsaADX09fcNwYvqFKEe4R/KonUl4wo0D7L0eKLZPovckmC5WXcWltNm8VfG1f52Mw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=s2mLWQrx; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam.menghani@ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=ibm.com
+	t=1777366111; c=relaxed/relaxed;
+	bh=yRm2k79xTisXBIWWt8D5usInaBAOhjC3Ue5G7GGc7y0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=LRp3LGom05UKC98ociuuXSh5eqdu6OU3u0n8ecHhfhVpOk0cwfxRyuLfWTGCyrxI9ZWgq+3W08dsZgDct/7ym8Z1zJyA5QE2ArkKI4Mvzhi1K6sfzpyu9KT2mAwu32M64j/Ukq5PVbgxe3xqewbr0B5Q2ou6ypOqFNjtTQxP6tkXdu3PCHNoz2EjOgLn8Sl0p2tHagSBym/QLELom3sO12v5UcSyp+fGky/hCWBOZ0EnO9zOk0NfzFDG05Ep1X9yF4Tv3STzheJ5ocKiC598RqW2RQfKb+da7CBYLUdadigTUMsTS5U+FX9JVLawyXhF0py5DTK69rnW+jgV/Rlq9g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Z1UvRjJE; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=s2mLWQrx;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Z1UvRjJE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gautam.menghani@ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g4YtX5w1mz2xld
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2026 18:45:56 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63S6cRlH3060766;
-	Tue, 28 Apr 2026 08:45:45 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=2oM9ZUK8Yw9T0FTGW9SPFwR/OUqAGn0tAJHGRHZ4m
-	IY=; b=s2mLWQrxvYSp90wbsZbLQrxyd2RtnKwrWcmLalOU/xB6YvlG/5qo6dHEg
-	2nOGZmtVc1s9bgH0XT0gS0wT+8RMHeKu123aIO8axfPBuUVotQrdiYEyEzaY9VgS
-	Cyg9WXi/rVLqjUzn66/1syEh/qzB16u4x7jSGFrS+gXxXM2jMtnqrsPfFki/DpBR
-	FLXveHHBv1x5tSUmPrZP7SqH0z7Ld4Y0XO4lIS6cldpoisKVWAqtrYMOH7BQ+/1I
-	mT4NKle4hcYf+HCnsh9PglJBfCElu0ecx5OdfMkLMfabEa1/H2ActKUG1m2AzeeD
-	Zc36dpU85hUyp0MrdKgSo/24NstNA==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4drn9r4hrt-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 28 Apr 2026 08:45:44 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 63S8cwxp028537;
-	Tue, 28 Apr 2026 08:45:43 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4ds8xk0w1p-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 28 Apr 2026 08:45:43 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63S8jd9i47120676
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 28 Apr 2026 08:45:39 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7FC6E20049;
-	Tue, 28 Apr 2026 08:45:39 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8307A20040;
-	Tue, 28 Apr 2026 08:45:37 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.43.36.19])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 28 Apr 2026 08:45:37 +0000 (GMT)
-From: Gautam Menghani <Gautam.Menghani@ibm.com>
-To: maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au,
-        chleroy@kernel.org
-Cc: Gautam Menghani <gautam@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2] KVM: PPC: Book3S HV: Add H_FAC_UNAVAIL mapping for tracing exits
-Date: Tue, 28 Apr 2026 14:15:33 +0530
-Message-ID: <20260428084534.49781-1-Gautam.Menghani@ibm.com>
-X-Mailer: git-send-email 2.50.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g4YxV5MYRz2xld
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2026 18:48:30 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id A5CA660141;
+	Tue, 28 Apr 2026 08:48:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3A22AC2BCAF;
+	Tue, 28 Apr 2026 08:48:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1777366107;
+	bh=mYuU6MXaswUtoHhacsBHyqLEb3RQrKd2tVDX/wlE3eI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Z1UvRjJE6dflfyQhl8JY3L4hVKRTdb2yQn2oMGAXOIbVRq0ZE7yZrHlCJiQWzyqOO
+	 Ayl4xpG2K9JvWcjNz6M84OnOonhmyhzMHQSWPUKF70T+ZedmFx4i6rIq8l1oGhDjJH
+	 /p4D/qUIvM2cdbG/6+bIUxDPrDJSn+Dl6gwmVi0oh6fY9PCddZGxaVzSLwgaA7sSzQ
+	 j/F8H1o4gReMWS3wfLhSk+uW2mBiTSAYnrRi/6PWHd+4xq4UuHFidugqYKbhaopTOD
+	 ndEHGwLH3UfYPox7uUHMjZullYmSdqb+weGzUd5oNgqJovNthw4Vr8OTgr38Myi8q9
+	 NFTyzHQvLk4Yg==
+Received: by finisterre.sirena.org.uk (Postfix, from userid 1000)
+	id EB9C01AC5841; Tue, 28 Apr 2026 09:48:24 +0100 (BST)
+Date: Tue, 28 Apr 2026 17:48:24 +0900
+From: Mark Brown <broonie@kernel.org>
+To: Chancel Liu <chancel.liu@nxp.com>
+Cc: lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com,
+	shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com,
+	nicoleotsuka@gmail.com, Frank.Li@nxp.com, s.hauer@pengutronix.de,
+	kernel@pengutronix.de, shumingf@realtek.com,
+	rander.wang@linux.intel.com, pierre-louis.bossart@linux.dev,
+	linux-sound@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v2 3/3] ASoC: fsl: imx-rpmsg: Switch to core
+ ignore-suspend-widgets support
+Message-ID: <afB0WHueZ5AGF3Vi@sirena.co.uk>
+References: <20260415081942.4183108-1-chancel.liu@nxp.com>
+ <20260415081942.4183108-4-chancel.liu@nxp.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,62 +75,53 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: Qow9ZXYMgiiZmAeXIL36goCJmfQgFKS0
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI4MDA3NiBTYWx0ZWRfXxCqLGLxKdCn/
- tBi7hLt3YR8B3PDSpCE3QTYNaa3a88x0ndo7lSFzAoD8YO1oeVc2/hKDrbkn2knv6yrc9gjumtW
- aDTgtbeixvgXnxiyLlJdmMpXmhO/M3veC6UrBU1elj56jEoztO0afqOWXUoEuALA6D1LFjrAIOE
- 0QXy9n1+6w5z78GZ4zc3rB+S44nBqClFA6HZQCHilffKsbUoPqjOAQ8BZfJGiKxxJM2FoKzxPpM
- 5ylp9lslUH+35lUF3I+TNUZ8l50rsZ8csC4qLaDTFdp3yjZintTCl76XP0n8WtNXRmE9QrQXR+/
- d9aRWbqnSawByR9MAo9D0gKh/fNEME+sDGfD+51eIYSyF4T6dNbqGYBnyjqYYZscYA9jKuTERg6
- PWXkekVO0xGWVbXZ/C4mogEHTrLYU6oEq7PN/uKwEigSzJ7jiQF27jevdRVrsj7Wedx77HRCAeV
- Nm3R8p5QXHKzeV1UHmA==
-X-Authority-Analysis: v=2.4 cv=Kc7idwYD c=1 sm=1 tr=0 ts=69f073b8 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8 a=HaZPnmESgsJLTL5AR_AA:9
-X-Proofpoint-ORIG-GUID: cMAJkuGQsHnZrBxSyViz107S60p7Mqxi
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-28_02,2026-04-21_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 phishscore=0 bulkscore=0 adultscore=0 spamscore=0
- malwarescore=0 impostorscore=0 priorityscore=1501 lowpriorityscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
- definitions=main-2604280076
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="9UPrFDxvpRfQw9KX"
+Content-Disposition: inline
+In-Reply-To: <20260415081942.4183108-4-chancel.liu@nxp.com>
+X-Cookie: Victory uber allies!
 
-From: Gautam Menghani <gautam@linux.ibm.com>
 
-The macro kvm_trace_symbol_exit is used for providing the mappings
-for the trap vectors and their names. Add mapping for H_FAC_UNAVAIL so that
-trap reason is displayed as string instead of a vector number when using
-the kvm_guest_exit tracepoint.
+--9UPrFDxvpRfQw9KX
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
----
-v2:
-1. Remove the trailing comma after last element
+On Wed, Apr 15, 2026 at 05:19:42PM +0900, Chancel Liu wrote:
 
- arch/powerpc/kvm/trace_book3s.h | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+> @@ -274,6 +257,15 @@ static int imx_rpmsg_probe(struct platform_device *p=
+dev)
+>  		}
+>  	}
+> =20
+> +	if (data->lpa && of_property_present(np, "ignore-suspend-widgets")) {
+> +		ret =3D snd_soc_of_parse_ignore_suspend_widgets(&data->card,
+> +							      "ignore-suspend-widgets");
+> +		if (ret) {
+> +			dev_err(&pdev->dev, "failed to parse ignore-suspend-widgets: %d\n", r=
+et);
+> +			return ret;
+> +		}
+> +	}
+> +
 
-diff --git a/arch/powerpc/kvm/trace_book3s.h b/arch/powerpc/kvm/trace_book3s.h
-index 9260ddbd557f..5d272c115331 100644
---- a/arch/powerpc/kvm/trace_book3s.h
-+++ b/arch/powerpc/kvm/trace_book3s.h
-@@ -28,6 +28,7 @@
- 	{0xea0, "H_VIRT"}, \
- 	{0xf00, "PERFMON"}, \
- 	{0xf20, "ALTIVEC"}, \
--	{0xf40, "VSX"}
-+	{0xf40, "VSX"}, \
-+	{0xf80, "H_FAC_UNAVAIL"}
- 
- #endif
--- 
-2.52.0
+The other error handling paths here have a goto fail to do cleanup of
+the of_node in the platform device.
 
+--9UPrFDxvpRfQw9KX
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmnwdFgACgkQJNaLcl1U
+h9A7RQf/QUn+qnt2gIgZyXelbB3F/TVFy2HzRTJNgNigI/pP+0D9evGIAfFSilHe
+bY/DChXlgzVcbleDy0tYinjOEJCFWMFbM5geexzQDCeLBVttOFJBxGFg+6miD3ny
+XBfA3eBsgWML7fjtuVl8L9VvSoY/VqAxOlVd0ezQQhdPv1/+OTZ6tKMC2sfijJQi
+OEo5m8hZpyStL9ez+64ZtCGJp8YjUa4yCqjEnqqCRvVAiJZCySLZHY3qQx19x4F/
+biWimRE9KOg4o7MaSjodS1el8vIllMT13FpJMud9r3TnHhIgG9IRNrUdtdgBtriI
+lVH1KxPbEDVL6hP8ny9Ick5+7MOiaQ==
+=7KNo
+-----END PGP SIGNATURE-----
+
+--9UPrFDxvpRfQw9KX--
 
