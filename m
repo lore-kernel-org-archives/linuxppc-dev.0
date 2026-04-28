@@ -1,83 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-20239-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20240-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D597FF8868
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2026 12:53:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C989FF8868
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2026 13:07:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g4gNB2Skgz2xld;
-	Tue, 28 Apr 2026 22:53:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777380810;
-	cv=none; b=FnfZzlKIkQzZs3XFTdFudqGjD4Rlx4q7UyDB1N2w0kvLqMP7h+tSrQnXzstuzYjQE91n6UNZFMNB8QYTLtp7aBGXSGxMmg75jxfdov02dADqOPU1tHl/ZaSlFsjy6pRMqItSRQVQrzVxzaRUAWb3tmGFdlImATRguIKjIzdxHxFBx/4nEw/5cREcTaKdjajf8jJY8tUY/n3uBQWefWPzZK90470qSeQw1nr8NFMqxUynGX6yBdq2hJK7fcS9mWHGbhmhWaeK5ZZcpE5yIfQt8djeTygBBeI4i0xVUMb+LX3Au01ay/Ev9XCjV1jeoT3Kj1eW8PC/g26M5AUzo41y5Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g4ghV5wN3z2xld;
+	Tue, 28 Apr 2026 23:07:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777381658;
+	cv=none; b=kiA8a6S/TaUPjNSqz4CC01Cjd+XpkGClY+ram7yxrnn1elPRGnTHNIVVVFCMUGH3ILdiWzXZojTw2CTrnRnuPZ0kHdowOQtAogHG5bMxmpB1nuE61iAnqUKRFknPGHpZQzZ9q/WERc3L+/Cg7TYYf/6l9TVbBjrtw4UDpSvesAgVh55jvZ/Auk7p7rQcfYUIdM4SYq0ihK0emZV0U8dqHU7sGDB9kORfL4xZQIy1JX3p9AGIvrcGuXjCOiR9BfRVlcs+a7bZd66iLA4lxHA5bV1HDy4jAIYrrvfkI/gzfQ1GG7J22VD0+Arz9jmJWUf5fSfd9A3XqVdxdRD+naxUww==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777380810; c=relaxed/relaxed;
-	bh=o3e+e3CqMXXEJPbiX3zpHjjoz6jJp/fI4BVPAx39btw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=EB2HbZIFLuiAcBGgERckGFqsjkpSVJa6A0zcbmusoHiHPjztD5NIBds118yvG+3CVqDD/bYM3B4nEEnWThHMh4RB6tBTOOTYihf4TeDunK6CDU+qz/Tvyr8DE68i3OrmnW4/2scT7odnfy4XG11UYJdZf7mP02VtA/WlH6+XlyxJ2X1E6QZUEuk+4MuwcFP8HqNvKansm/lf2ROM6ERbATv6EMUlz2gLJrexREhVuL0pz4T9Iw025PxjUzI+9re4n9GOnXWu1lXf1ZXYPvGMaKE/pbk0qHQsJu1YL4Zs/fE0U5j+PcY5G99r6WKmt3wivUSqjvu+BmMhP2UO6DQVRA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Q2H9r0W1; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1777381658; c=relaxed/relaxed;
+	bh=gCPr4yBhBB7M8hYyxwfQYfDGMLYQtxXEbNoae5c28Rg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=RCjmmzJoV8tC3ieAKmfnbTCsD23z1bdsyKb2BokEveqHyZpMJ5MvnyeuhvT9i0DzTkMBJCxvzoODSKwljRCqBWsBhOqKG3YUueQ9Bw7nmYGAYYNbhKoZTwx85PkqUtajfAYk1Xgb6fLB93hi0r3pJBo5IzJ4vaDo8DhyUwS6b2HKMG4RrpvJk+xSQWMuw2LFeiRqLBGxQpNMzwvulTM9O5Es3BE8mKRSWczZheFvJNHjuCsUPOmJd159sMPpJgPtkMlXnxLSpJsJb/sr2xF9ZjLzVasW3bmibSHiAU/kch7SMmrGBagARl5Ds1eQg8RFPRizPxfQ/YuWbXskcCubwg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=G/ocJf4z; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Q2H9r0W1;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=G/ocJf4z;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g4gN91l2Pz2xWP
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2026 22:53:29 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id E11EF6111B;
-	Tue, 28 Apr 2026 12:53:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DA3A7C2BCB7;
-	Tue, 28 Apr 2026 12:53:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777380805;
-	bh=MFTHBWIVPPds/6umCo+/GsrLJiT9dmnX5t+TJKOu5mg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Q2H9r0W1pFFOcIVTMHsruFr/GMxPujb4LuXdLrJe3uKYcZNxQlHL325YdzeYIaqGb
-	 YgUJCml9iD59Ml9MwxFlDl8g45HE5SHDfQGNKeas7kf1pYmKZ8jVqRDzf6HHicsR74
-	 sZhFSzs8Ra8AOxlyR0j8SYeZmmbjYyl+cqItSnBMh0HfeU971hN2OffDpUKu+aAFBj
-	 GLEtiSpFA8P4RWzmvn81yKRR+hygNgh10efvXltfAPPC4wXMVhE51Jp4/oUrhxxohi
-	 717FMNQI5CLuRE78CHCswC/iUhsYlDYFPjyu26ZyBg3OTRsdTyrq/yecTvXuGJxsmB
-	 j+0ksBK4wyZcg==
-Date: Tue, 28 Apr 2026 14:53:01 +0200
-From: Mike Rapoport <rppt@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jinjie Ruan <ruanjinjie@huawei.com>, corbet@lwn.net,
-	skhan@linuxfoundation.org, catalin.marinas@arm.com, will@kernel.org,
-	chenhuacai@kernel.org, kernel@xen0n.name, maddy@linux.ibm.com,
-	mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
-	pjw@kernel.org, palmer@dabbelt.com, aou@eecs.berkeley.edu,
-	alex@ghiti.fr, tglx@kernel.org, mingo@redhat.com, bp@alien8.de,
-	dave.hansen@linux.intel.com, hpa@zytor.com, robh@kernel.org,
-	saravanak@kernel.org, bhe@redhat.com, vgoyal@redhat.com,
-	dyoung@redhat.com, rdunlap@infradead.org, peterz@infradead.org,
-	pawan.kumar.gupta@linux.intel.com, feng.tang@linux.alibaba.com,
-	dapeng1.mi@linux.intel.com, kees@kernel.org, elver@google.com,
-	paulmck@kernel.org, lirongqing@baidu.com, leitao@debian.org,
-	ardb@kernel.org, jbohac@suse.cz, cfsworks@gmail.com,
-	tangyouling@kylinos.cn, sourabhjain@linux.ibm.com,
-	ritesh.list@gmail.com, hbathini@linux.ibm.com,
-	eajames@linux.ibm.com, guoren@kernel.org,
-	songshuaishuai@tinylab.org, kevin.brodsky@arm.com,
-	vishal.moola@gmail.com, junhui.liu@pigmoral.tech, coxu@redhat.com,
-	fuqiang.wang@easystack.cn, liaoyuanhong@vivo.com,
-	takahiro.akashi@linaro.org, james.morse@arm.com,
-	lizhengyu3@huawei.com, x86@kernel.org, linux-doc@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, devicetree@vger.kernel.org,
-	kexec@lists.infradead.org, Baoquan He <baoquan.he@linux.dev>
-Subject: Re: [PATCH v12 00/15] arm64/riscv: Add support for crashkernel CMA
- reservation
-Message-ID: <afCtrXaUAGDcseq3@kernel.org>
-References: <20260402072701.628293-1-ruanjinjie@huawei.com>
- <dfa24c4b-a423-4c80-9a8f-28c577c9ec11@huawei.com>
- <20260428035256.cbb3ac77c4bbb89bb7efcc19@linux-foundation.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g4ghT1w8Nz2xWP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2026 23:07:36 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63S649rX2992108;
+	Tue, 28 Apr 2026 13:07:25 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=gCPr4yBhBB7M8hYyxwfQYfDGMLYQtxXEbNoae5c28
+	Rg=; b=G/ocJf4ziA5T/3LpfPXebLIXEtK/sgre4GzIGPFuJdnzbE4herI51opM8
+	l+3g1JXTVbLs6Fk2LtUtCQevM0p8cXrkdEooECNwV7OyIdn6nN8F2WD4F6rEBJRf
+	6Tci7uU8Zk4vUxQfiG/rb2MJKn1qUlckDA9IR8ccV+HnbVNqLj1rtw4JgOV9JGlZ
+	thftnVL1HuAtVTz0TsJVAsEXenerFBIZNFHCIvuKMyKnMtaW2GI2b0SbIp8N9Hb+
+	HOMx5igRvFWS5dqWck4OCpyJhr0KIHdG8v/nhD1lOPcB2WuTq1ECzVA0oMBpP6rz
+	ZiZXULreqwikdqfTnZAhJwY1F0ilg==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4drn44nnn7-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 28 Apr 2026 13:07:24 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 63SCw4p9032349;
+	Tue, 28 Apr 2026 13:07:23 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dsamy9hvk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 28 Apr 2026 13:07:23 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63SD7JbA29491768
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 28 Apr 2026 13:07:19 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7B40420043;
+	Tue, 28 Apr 2026 13:07:19 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9C48420040;
+	Tue, 28 Apr 2026 13:07:17 +0000 (GMT)
+Received: from ltcd48-lp3.ltc.tadn.ibm.com (unknown [9.5.7.39])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 28 Apr 2026 13:07:17 +0000 (GMT)
+From: Narayana Murty N <nnmlinux@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au,
+        npiggin@gmail.com
+Cc: christophe.leroy@csgroup.eu, linux-kernel@vger.kernel.org,
+        nnmlinux@linux.ibm.com, mahesh@linux.ibm.com, vaibhav@linux.ibm.com,
+        sbhat@linux.ibm.com
+Subject: [PATCH 1/1] powerpc/pseries/pci: quirks: Add pseries TG3 D3hot delay quirk for EEH stability
+Date: Tue, 28 Apr 2026 05:35:29 -0400
+Message-ID: <20260428093529.7618-1-nnmlinux@linux.ibm.com>
+X-Mailer: git-send-email 2.51.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,48 +87,83 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260428035256.cbb3ac77c4bbb89bb7efcc19@linux-foundation.org>
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: JjcOzpQw7GYec8_6uW_jwYi9_NycNbR0
+X-Authority-Analysis: v=2.4 cv=Ft81OWrq c=1 sm=1 tr=0 ts=69f0b10c cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8 a=aqhxxquPscKkPkbc_e4A:9
+X-Proofpoint-GUID: FrrUsR-Y5D1ACdhaXo4TKElw8BYYDCfS
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI4MDExOCBTYWx0ZWRfX7OK290+s3wjC
+ /SqUA9UQrQBSHlgoA9YPqHao6cr4pApyoMNAVueAIhN4ahzVwQl7/I4KqKNAX3f6FHSMP0KGPm/
+ yfljAZc+mF3nqWZKJ+pQa2seuXGJvrzdtDmg18hSUUOvJejhM+9CMJja05rRfL2wBiHxP7vIag5
+ /p6LcOKsrZgoo237AXvlR8QuVZawbei4FYPzCkRXvrw3K6MkkrRwY2ayl3Ks4C3POdMweEb8uSU
+ cxOlkjaHnMjr91umKBtUNEtm5Y01K+PkJyeVNggGUFI4eNSBSGJpVImzZAE9BeVKFfRh8WRVj/r
+ +XgJW/xfpszhSqaP0kCH8GPD1ARnFXMDQy91kmjQBhPR3n+p5D7Vc64NRahtRUvYPDdkRJgE9JI
+ vATpHeF+VEryxW8IMX+Vi84pn1HTCZucCxuw2S6q9CI6dNNy+bFZ85EC8gqkqEpK+Y7AGl5CAoC
+ c6sw1m/im8sJUCy3+mA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-28_04,2026-04-28_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 lowpriorityscore=0 bulkscore=0 spamscore=0 impostorscore=0
+ clxscore=1011 malwarescore=0 phishscore=0 suspectscore=0 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2604280118
 
-(added new Baoquan's email)
+On pseries platforms, binding Broadcom PCIe NIC devices to the vfio-pci
+driver frequently triggers an unintended EEH (Extended Error Handling)
+isolation event.
 
-On Tue, Apr 28, 2026 at 03:52:56AM -0700, Andrew Morton wrote:
-> On Tue, 28 Apr 2026 11:30:13 +0800 Jinjie Ruan <ruanjinjie@huawei.com> wrote:
-> 
-> > It seems the patches for crash core rework, powerpc, riscv, and arm64
-> > are mostly ready to be merged. Could any maintainer help pick these up,
-> > or should I rebase the entire series against v7.1-rc1?
-> 
-> April 2 is prehistoric ;)
-> 
-> Yes, refresh, retest, resend.  Note that there have been maintainership
-> shuffles in this area.  
-> 
-> KDUMP
-> M:	Andrew Morton <akpm@linux-foundation.org>
-> M:	Baoquan He <bhe@redhat.com>
-> M:	Mike Rapoport <rppt@kernel.org>
-> M:	Pasha Tatashin <pasha.tatashin@soleen.com>
-> M:	Pratyush Yadav <pratyush@kernel.org>
-> R:	Dave Young <ruirui.yang@linux.dev>
-> L:	kexec@lists.infradead.org
-> S:	Maintained
-> F:	Documentation/admin-guide/kdump/
-> F:	fs/proc/vmcore.c
-> F:	include/linux/crash_core.h
-> F:	include/linux/crash_dump.h
-> F:	include/uapi/linux/vmcore.h
-> F:	kernel/crash_*.c
-> 
-> I believe that Pasha/Mike/Pratyush are setting up a git tree, but there
-> isn't one listed here?
+This occurs because the device firmware violates PCIe specification
+recovery timings when transitioning from the D3hot to D0 power state
+during the binding process. The strict pseries PHB catches the
+resulting Unsupported Request during the subsequent configuration
+space read, assuming a device failure.
 
-On it:
-https://lore.kernel.org/all/20260428124833.1903302-1-rppt@kernel.org/
-https://lore.kernel.org/all/20260428124325.4189486-1-pratyush@kernel.org/
+Add a pseries-specific PCI fixup quirk for Broadcom devices to
+explicitly extend the `d3hot_delay` to 200ms. This forces the PCI
+core to sleep long enough for the firmware to safely complete the
+D0 transition before attempting config reads, ensuring a clean VFIO
+passthrough initialization.
 
+Signed-off-by: Narayana Murty N <nnmlinux@linux.ibm.com>
+---
+ arch/powerpc/platforms/pseries/pci.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
+index 84e4ffe957a8..5f3cf9a7bdd3 100644
+--- a/arch/powerpc/platforms/pseries/pci.c
++++ b/arch/powerpc/platforms/pseries/pci.c
+@@ -291,3 +291,24 @@ int pseries_root_bridge_prepare(struct pci_host_bridge *bridge)
+ 	bus->cur_bus_speed = prop_to_pci_speed(pcie_link_speed_stats[1]);
+ 	return 0;
+ }
++
++/*
++ * Workaround for sluggish PCIe device firmware.
++ *
++ * The device violates the PCIe spec recovery timing when transitioning
++ * from D3hot to D0. On standard architectures this is often ignored, but
++ * the strict PowerPC pseries PHB catches the Unsupported Request during
++ * the subsequent config read and triggers an EEH.
++ *
++ * We inject a longer delay to ensure the device is ready before the PCI
++ * core attempts to access configuration space.
++ */
++static void quirk_pseries_d0_wake_delay(struct pci_dev *dev)
++{
++	dev->d3hot_delay = 200;
++	pci_info(dev, "pseries  Quirk:D3hot->D0 delay %d ms to prevent EEH\n",
++		 dev->d3hot_delay);
++}
++/* Blanket application to ALL Broadcom PCI devices */
++DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_BROADCOM,
++			PCI_ANY_ID, quirk_pseries_d0_wake_delay);
 -- 
-Sincerely yours,
-Mike.
+2.51.1
+
 
