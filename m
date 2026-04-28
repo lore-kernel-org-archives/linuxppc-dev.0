@@ -1,41 +1,42 @@
-Return-Path: <linuxppc-dev+bounces-20234-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20235-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DEFA6FF8868
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2026 11:21:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22792FF8868
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Apr 2026 11:34:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g4dKq2Tnnz2xlt;
-	Tue, 28 Apr 2026 21:21:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g4dd754JBz2xlt;
+	Tue, 28 Apr 2026 21:34:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=63.228.1.57
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777375279;
-	cv=none; b=MFn8a+YeH8CkRef6+O/M6FsnO+lhQcXYT3O5/qbX/4hA4jgBsMIeVKV+0ZGgpYBbYeG12UnQmYeLYTTHOQdXNr7iWcEg1fB2MnH0BoilEpSp4UIWVdPsTsu2bvj9qbP7xQoZzHwsZS2/wAs6IqZAOjcK/wqFNC2FsvsshkUEEwNudMd+e48b3c8EdlYSI2ysRmvi5GmGoKBYjwXRRlsUd8c6+26e4DxsJw2DVay01S034Rk0lHcz8cnFGaNu9Tq0OjoEMx0MB/FAz/gL936hV/h7z91apyG4D7E3B08bnF5KOUGHibLm+5guDgIs+ioxz3CeMQ1K6vJhRg0aqNsGBA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777376075;
+	cv=none; b=RVuvQUSp8EFoeX97DMwYNGty7Y8hdNGcYlVXu7QgVgMH/HwhmyuiWt9YLqis6KXZoEiM5lpgpn5BO3PMg/P2cMY6lwT9HWm23Mmfx0dwVhUomKW0Aun+HpwWY9dTHamXB4WErtumGMP8T4KhSApERAfWFpNx8ZEEK8L9LaBLa/FY3MRxkhuLVAt6NXWSwuqJ/2Z5kCnWuHpBPaeGadcZcMxotOEh7lCVr4EFJGwN5U28DIjDfezbhBV08Mcog2mUOHPkVANgoRX8m0Nd8FrZlUZxWvs3wd4Ok76ddfaO+VK4mqD2yq7GQawmS1XO0ZRA9NalpZNrqdWzuDJDh0mRsA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777375279; c=relaxed/relaxed;
-	bh=wVlN3F/adnpU3EbVMRovr5PQ7UzNKrgvugpJLXSzjvA=;
+	t=1777376075; c=relaxed/relaxed;
+	bh=r2VT2v38m41OJS5IqZzssjeRJKc2hKIY8tTqzqnq+aM=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=P9YUmD8KgbgD4fXFuC2sANP9EqnkRNWrQZ/8j3DoUpEV4E5x7TxbYdtWJOK+6J1h3V1dhpE8GgkTVjwrn+HHZ+UZBKWzlZ06dZjzmd0nhQYyDu5QbFC3gm1KOwfTkdfWS+VM5TYGXp9B51p9ZPTwB4DsWKiGpxKHxN4NNJW/nDkVFTxNS0oJN90S51xmFLAdxSYrl3qmPYEFqFRt0nlWIuPCv2zfurRCbRPaXEUQ5tRbzDr+ev8hrES/9L7PSQO9dySDIKDawjC/sjysYwKCMztf2OiL3X2RKO6X/Fur5QzeRrgTkCTQZxbFewbptFraZE6J358CxjINXBdSGDWFGw==
+	 Content-Type:Content-Disposition:In-Reply-To; b=lU5+CRAoIWPmexk1TUyNB3qMZphIECF4+PqWyTM2V9jcK4MW5Q5BNsOE1cB85ANc2w2HZs6F10mVOFdflqTdxG+Ey3h9AbqBQtMoYC/1wSaWZSjbu5YRRb5iHQAMAwJNZc8AWtyxwDZrX+dG0dhgCA7YOC/ndipUSz18cnHilQsOjxvmHaXZmKKEJLheP7Xki9TVzq1M5H+dCdCA/Puhy7HS6XLEtKgmBEdW1ioPAoDsw6M+buAZM03TuE9z8Tb6I6Fw8JD88F5+z6oiBJPTppQp88hzCzJr9Jq5Jgdqp2J2UbPiKH0SUcHxaUIFAFBpQjzZMxhlH6tShGFKRaFuSQ==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org; spf=pass (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.crashing.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g4dKn6PSyz2xYw;
-	Tue, 28 Apr 2026 21:21:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g4dd62sZ4z2xYw;
+	Tue, 28 Apr 2026 21:34:33 +1000 (AEST)
 Received: from gate.crashing.org (localhost [127.0.0.1])
-	by gate.crashing.org (8.18.1/8.18.1/Debian-2) with ESMTP id 63SBKIxF1057213;
-	Tue, 28 Apr 2026 06:20:18 -0500
+	by gate.crashing.org (8.18.1/8.18.1/Debian-2) with ESMTP id 63SBY0U31059939;
+	Tue, 28 Apr 2026 06:34:00 -0500
 Received: (from segher@localhost)
-	by gate.crashing.org (8.18.1/8.18.1/Submit) id 63SBKHXo1057211;
-	Tue, 28 Apr 2026 06:20:17 -0500
+	by gate.crashing.org (8.18.1/8.18.1/Submit) id 63SBY0B51059937;
+	Tue, 28 Apr 2026 06:34:00 -0500
 X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
-Date: Tue, 28 Apr 2026 06:20:17 -0500
+Date: Tue, 28 Apr 2026 06:34:00 -0500
 From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Yury Norov <ynorov@nvidia.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+To: Andrew Cooper <andrew.cooper3@citrix.com>
+Cc: Yury Norov <ynorov@nvidia.com>,
         "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
         Andrew Morton <akpm@linux-foundation.org>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
         David Laight <david.laight.linux@gmail.com>,
         Thomas Gleixner <tglx@linutronix.de>, linux-alpha@vger.kernel.org,
         Yury Norov <yury.norov@gmail.com>, linux-kernel@vger.kernel.org,
@@ -60,15 +61,13 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
         loongarch@lists.linux.dev, linux-m68k@vger.kernel.org,
         linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org,
         linux-sh@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [RFC PATCH v1 7/9] x86: Add unsafe_copy_from_user()
-Message-ID: <afCX8WlnEFUei1y6@gate>
+Subject: Re: [RFC PATCH v1 2/9] uaccess: Convert INLINE_COPY_{TO/FROM}_USER
+ to kconfig and reduce ifdefery
+Message-ID: <afCbKJg_Cq7yNO9j@gate>
 References: <cover.1777306795.git.chleroy@kernel.org>
- <0ee46bb228d97163fbdc14f2a7c52b93d8bc34ce.1777306795.git.chleroy@kernel.org>
- <ae-j2_QirCySZD02@yury>
- <63a4d0f6-0eb3-48cd-9f98-bf7b223b2606@kernel.org>
- <ae-2yLWSGnfeTvh1@yury>
- <CAHk-=wgPrLy0FR3sEWBYQuNAac1axDASYMnTuPuxEU0WytzL7w@mail.gmail.com>
- <ae_jeJLlVWjJ4sOY@yury>
+ <9fe875d2f55af59c12708336c571a46038528678.1777306795.git.chleroy@kernel.org>
+ <ae-tVFVfx72oCC_i@yury>
+ <f54c3c2b-33da-42a0-80b7-0f6615d930ce@citrix.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,45 +81,29 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <ae_jeJLlVWjJ4sOY@yury>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <f54c3c2b-33da-42a0-80b7-0f6615d930ce@citrix.com>
 
-Hi!
-
-On Mon, Apr 27, 2026 at 06:30:16PM -0400, Yury Norov wrote:
-> On Mon, Apr 27, 2026 at 02:52:05PM -0700, Linus Torvalds wrote:
-> > On Mon, 27 Apr 2026 at 12:19, Yury Norov <ynorov@nvidia.com> wrote:
-> > >
-> > > This is what Linus said when added x86 implementation for copy_from_user()
-> > > in c512c69187197:
-> > 
-> > Note that some things have happily changed in the six+ years since...
-> > 
-> > >   That's partly because we have no current users of it, but also partly
-> > >   because the copy_from_user() case is slightly different and cannot
-> > >   efficiently be implemented in terms of a unsafe_get_user() loop (because
-> > >   gcc can't do asm goto with outputs).
-> > 
-> > now everybody can do asm goto with outputs.
-> > 
-> > Yes, it's disabled on older versions, so it's not *always* available,
-> > but all modern versions do it. And if you care about performance, you
-> > won't be using an old compiler.
+On Mon, Apr 27, 2026 at 09:39:33PM +0100, Andrew Cooper wrote:
+> On 27/04/2026 7:39 pm, Yury Norov wrote:
+> > On Mon, Apr 27, 2026 at 07:13:43PM +0200, Christophe Leroy (CS GROUP) wrote:
+> >> Among the 21 architectures supported by the kernel, 16 define both
+> >> INLINE_COPY_TO_USER and INLINE_COPY_FROM_USER while the 5 other ones
+> >> don't define any of the two.
+> >>
+> >> To simplify and reduce risk of mistakes, convert them to a single
+> >> kconfig item named CONFIG_ARCH_WANTS_NOINLINE_COPY which will be
+> > We've got a special word for it: outline. Can you name it
+> > CONFIG_OUTLINE_USERCOPY, or similar?
 > 
-> The minimal GCC version is 8.1, and asm goto with outputs is supported
-> since GCC-11. That would brake the build, if we just switch to using it
-> without "CC_IS_GCC && (GCC_VERSION >= 110100)" guard.
-> 
-> Is it worth to maintain 2 version of the function? I don't know...
+> You can't swap the "in" for "out" like this.  "out of line" is the
+> opposite of "inline" in this context, while "outline" means something
+> different and unrelated.
 
-GCC 11 was released five years and a day ago.  The last GCC 11 release
-(that of 11.5) is not even two years ago though (but there will be no
-more!)
-
-So it would be not conservative at all to require GCC 11 as minimum now,
-some people might even call it a bit aggressive.  But in a year (or
-maybe two) the lay of the land will be rather different.
+Yeah.  Technically much more correct for it is inline vs. functional.
+Not that that term won't be misunderstood as well :-)
 
 
 Segher
