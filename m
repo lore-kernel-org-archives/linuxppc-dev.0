@@ -1,52 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-20260-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20261-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43E59FF8867
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2026 06:03:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28115FF8867
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2026 06:53:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g56DW4tjjz2ySf;
-	Wed, 29 Apr 2026 16:03:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777442603;
-	cv=none; b=n4zak7iIKMW8+hpk1prM/rH9+bgHy2vNO8RmT5+MmnBtW8Wf7pxI5d14Ve8yHa53hNz5yTUrtYDpO7EQ2xjbEfXUPbzRwIyTMkp33IA5H2xq846cNMHl+qFMt+HTEG9EW9XlJVvT5P++LcZTt5Sn6YU41KYC0PU/wm86L2nEwhVZv38rVtLVHmkM8Kx13OpJ/MH+w9iajc7/inKYOPCwpd6EsEtcaEakpZUF3lmoiunwiSF5jJi4kg786r52AMTj3kQLQu6EOZEt+/BiEHT263CYGA/zyhQzd8WNZsoQowwnOC7+/dj4TQPLioBUW5MIugaP7EyxY0kaEjWRxLft7g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g57LW5GMdz2ySf;
+	Wed, 29 Apr 2026 16:53:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777445619;
+	cv=none; b=i+0ullLvvsYF6ih5J/zbIGqyp6U/a+Jwb+4+RZf3bLMi6p6QGoRTYQ6Uxt/GClsQ4IhGtBBoPqxfrBfYPmkxjJK/XMVlCtO+Y8hBjgB1FuAdZyFgCuoPwCOp54DaOip3emahLGLfP1VEIIt6afalhe6ODTglOekpU8Y44NzJ2ZDA6dWhN2lkpe0CQEN3PqUfxBj6bxFIWqbHSjZnEAs4Y/1WloQj6bSkrn3Q4/CQj4dZ4ywadT/mXtnViGEsrED1LH+1NB7aDZztOSHuobsFRX37n0ocHnBFOk1csj9tE+hEwVn8cc36W1b7Ct+6ZyarLEvbc6X30ILOliLG7rrbSA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777442603; c=relaxed/relaxed;
-	bh=/RRTW6GJMQFD74GRMm5qCHethywFoA6NvTHxdjnYDRo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=TWgomKtmNmi5PlDJKelcARNycV9kIFkx1kxY5vfKELkwqDVl+/EWZhbmUr/skSEXfiXXG6vpp06jJYVAkemppZKX62LnuUjZfOi3YjvXcGZp5ZbTobaQU6jsMJRbJTteBN3NlepXekbaPFIsEtKqQgSDgshtk1P+nG4PiRoSe3alJ0X9mtOqRFJaORNATHo+ZWvpQdMggIb677ZRAOfQmxJoXYIdEsp6W7/mh8tINetyweS1Cpjd4MrvtRKR9/icxoKvI3uD2qzx3JMOh5fxkUR3UYqMvDNlUyBN7Hp7RpaNKOCad4XTuJrRo08dKOk4todv8KgUBWArBtSb+UVnLA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=OJ7/bHzd; dkim-atps=neutral; spf=pass (client-ip=2404:9400:2221:ea00::3; helo=mail.ozlabs.org; envelope-from=mpe@ellerman.id.au; receiver=lists.ozlabs.org) smtp.mailfrom=ellerman.id.au
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	t=1777445619; c=relaxed/relaxed;
+	bh=mwtMkfT+6sltnF7j1cEJxZhmiEFv2uzDyIODaaF3YcE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=XQLL++MrwYX9RJROcdIaDIy+N7Wt/ZfeRngnQvsg1ypWm/E+froHoEKRGYvBV+ZA7cI01tSiGTB0rwo56eu81RA0hVKkVDlVtks47McMWVi05+kyPxIxBjSkEK+Y6/Ik6K+yNCZ+zp6vmODAB7T3xz1OqIjO2iQcRSXT+Oq6MPGz+jZq+ADO8KM4sLxKQSqNKmCrBPNkwiXKiQJA5WGk9Rs/XSQGhexqHnL/TpH+rIML9OUxQYWUt0Ea6mc/8Ectf7d3v+hmlfOrCLGOSow8IOxcR57yMqZfKYLLCZCuz5IkJhcKTNBx0mm6IKtnB2Qybe7c4IYdWwIF5djujiVf9w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=B6o7uOCV; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=OJ7/bHzd;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=B6o7uOCV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ellerman.id.au (client-ip=2404:9400:2221:ea00::3; helo=mail.ozlabs.org; envelope-from=mpe@ellerman.id.au; receiver=lists.ozlabs.org)
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bit raw public key) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g56DV10Vjz2ySW
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2026 16:03:21 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1777442600;
-	bh=/RRTW6GJMQFD74GRMm5qCHethywFoA6NvTHxdjnYDRo=;
-	h=Date:Subject:To:References:From:In-Reply-To:From;
-	b=OJ7/bHzdqP/D/PBwqvTeqWZi/62SIyIkSFycBqGDuKddM02BTqzdlmY06gX8IFrzj
-	 f7szli7NQY3+uJxDmDPwgXgmKCWCJ4VFW4Vxz7k7JPherp2pox/udntYGtCk9c8HWY
-	 FkKjYE0+9CC64y+0L3n/Q33VkMcYL7LQhS1WXsGQapF/wsagr3uY2refEn9/E6LSrN
-	 PdT8Ht5BDFFsbhZSp2hvhBlebRqLjoijmf4LHV3idy8swZR7I3nC6/T0XYhSqjbs/1
-	 u5Nc+TgLJnbJz9d6iBelpLu79DlNQWnZD7cYUeDakUbEaRzrE/SI5QcMkEP5XpZvv+
-	 WTDcbiZlsg9QQ==
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(Client did not present a certificate)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4g56DQ1KV7z4wj5;
-	Wed, 29 Apr 2026 16:03:18 +1000 (AEST)
-Message-ID: <946b79c2-ae4c-40ed-997b-ac654e148d47@ellerman.id.au>
-Date: Wed, 29 Apr 2026 16:03:17 +1000
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g57LV5sYhz2xQD
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2026 16:53:38 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id EF7E043E6A;
+	Wed, 29 Apr 2026 06:53:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 70ACCC19425;
+	Wed, 29 Apr 2026 06:53:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1777445615;
+	bh=ry4QTtQg8gXjbztYVBm6zJYokjTwMcboL55Qdm43+vE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=B6o7uOCVUGVofvTMhOIRKEpYQrDDYTS40KrJjZi1lZcjCMWOmBvECYESWQWo2FVEm
+	 CHgBOcMLdJr+CPQ9pEgOcUNxvZ0eJonTtXQ1ivm9OO4VTt9xQrU7ffBl3GntJgk9jJ
+	 N6zPTFijjshuRS327HvfZssZt7OhHRanMs8zr0NXFlTvbmDSz/8t+Oyw/dxAIS5XBl
+	 WQz2fBkof+CazOSWappmrULhQbSwMfZfv4+C0djEyjZDHCHzmVU5jlOMGG2ggTX8jD
+	 evzy9JnKbuFXrAYVJ/RJPq6+lbLGkAdZW//k3DqHjytTypZiqpjWUR78XvjEllPR6y
+	 XUBdn9/v7X7gA==
+Date: Wed, 29 Apr 2026 08:53:25 +0200
+From: Mike Rapoport <rppt@kernel.org>
+To: Muchun Song <muchun.song@linux.dev>
+Cc: Muchun Song <songmuchun@bytedance.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Hildenbrand <david@kernel.org>,
+	Oscar Salvador <osalvador@suse.de>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Lorenzo Stoakes <ljs@kernel.org>,
+	"Liam R . Howlett" <Liam.Howlett@oracle.com>,
+	Vlastimil Babka <vbabka@kernel.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>, Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>, aneesh.kumar@linux.ibm.com,
+	joao.m.martins@oracle.com, linux-mm@kvack.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 09/49] mm: panic on memory allocation failure in
+ sparse_init_nid()
+Message-ID: <afGq5Qa21NOumdwp@kernel.org>
+References: <20260405125240.2558577-1-songmuchun@bytedance.com>
+ <20260405125240.2558577-10-songmuchun@bytedance.com>
+ <afBaMEBoR_35Fblc@kernel.org>
+ <9FD13495-58E8-4183-AAC0-48E50A694ADE@linux.dev>
+ <afCxZ5vYDeAlzTK2@kernel.org>
+ <408EDCB4-7F65-4595-BE44-E23300FBD397@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,53 +83,38 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RESEND 1/2] powerpc/ps3: Drop redundant result assignment
-To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Geoff Levand <geoff@infradead.org>, Nathan Chancellor <nathan@kernel.org>,
- Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
- Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- llvm@lists.linux.dev
-References: <20260317130823.240279-3-krzysztof.kozlowski@oss.qualcomm.com>
- <90c122bc-3067-4e3d-8083-dd94844c31f2@oss.qualcomm.com>
-Content-Language: en-US
-From: Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <90c122bc-3067-4e3d-8083-dd94844c31f2@oss.qualcomm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <408EDCB4-7F65-4595-BE44-E23300FBD397@linux.dev>
 
-On 28/4/2026 23:22, Krzysztof Kozlowski wrote:
-> On 17/03/2026 14:08, Krzysztof Kozlowski wrote:
->> Return value of ps3_start_probe_thread() is not used, so code can be
->> simplified to fix W=1 clang warnings:
->>
->>    arch/powerpc/platforms/ps3/device-init.c:953:6: error: variable 'result' set but not used [-Werror,-Wunused-but-set-variable]
->>
->> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
->> ---
->>
->> Resend after ~2.5 months
->>
->>   arch/powerpc/platforms/ps3/device-init.c | 4 +---
->>   1 file changed, 1 insertion(+), 3 deletions(-)
+On Wed, Apr 29, 2026 at 11:14:14AM +0800, Muchun Song wrote:
+> > On Apr 28, 2026, at 21:08, Mike Rapoport <rppt@kernel.org> wrote:
+> >>>> 
+> >>>> +  if (sparse_usage_init(nid, map_count))
+> >>>> +  panic("The node[%d] usemap allocation failed\n", nid);
+> >>> 
+> >>> Please consider using memblock_alloc_or_panic() in sparse_usage_init(), it
+> >>> would simplify the code even more.
+> >> 
+> >> Hi Mike,
+> >> 
+> >> Should we add a new function like memblock_alloc_node_or_panic? Because
+> >> we want to allocate vmemmap pages on the same node.
+> > 
+> > Heh, I missed the nid part :) 
+> > There are a few _node_ or _nid_ allocation helpers in memblock, starting to
+> > add _nopanic for them would be overkill. Let's keep panic()s at call sites.
 > 
-> Ping. This also got a review.
-> 
-> I do not plan to resend second time... And I also understand if this is
-> somehow legacy and fixing warnings is not desired, but then it would be
-> great if you just responded "don't send such patches" and I would not
-> waste my time.
+> We can add a panic inside memmap_alloc() because it is used specifically for
+> memmap allocation. To some extent, this also reduces the number of places where
+> callers need to add a panic. What do you think?
 
-Thanks for the patch, sorry it hasn't been picked up.
+Right, with sparse_buffer_alloc() and with this change memmap_alloc() can
+panic(). I like the idea.
+ 
+> Thanks.
 
-I have been AWOL, and I suspect Maddy is not sure about taking PS3 
-patches directly without hearing from Geoff.
-
-Maddy this is fine to pick up for next.
-
-cheers
+-- 
+Sincerely yours,
+Mike.
 
