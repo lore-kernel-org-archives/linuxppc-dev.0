@@ -1,81 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-20268-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20269-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BDB45FF8877
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2026 09:59:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4EAAFF8875
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2026 10:16:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g5CSL0Nygz3048;
-	Wed, 29 Apr 2026 19:58:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777456738;
-	cv=pass; b=lPggNepefP9qJ8aNHOPuW4gPlXohtZk5Lco4IGxL7GDrOk2qtUIFhSEyKK1lErCF5JQGeegEozbdLSp8HclKyCDb6aISErjTNnIxDo6QEjOZhElyAuQp1FnxVRdsq7ecPdLyaJkGmvO0x1bG2RtqDuu1otJGR8Pr63SGm/8DrZRUH/KmNymVT44mzWYMsbhuexbdaMr79LrcoYEcSDu94Sk6Ve79CH87T3ODx0U9HXiDDJegEWAk8Ou0ebuFgePYQ1/wbx+FYuDukXC0VRPo0uIi0+76iHfy7g79gC6hpF3dcPFOl+TVkoibWfHEqFYx5G/6zBpbCJh0w4cvLY57dw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777456738; c=relaxed/relaxed;
-	bh=t0Qx/JKN7UCYKtrFKJOHk4u2zJLqGN6fxPhI9K+8mX0=;
-	h=From:To:Subject:Date:Message-Id:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=cAURmaLrY0+xHcCavq6fSK6cNTdaOSLIPkREO3DyO6Z0UgLXov5YQhjSbBBXW63tV9EhiKd5CYzcwW7t9ALLB1Ux6dSZbQlYtPyCq3gFQTxWwpH0zOVDxn3u2QQgMNdCpPeuAhH1mldBQGiPE1Xnm9tjhjCx7S4RCTQezc+4y44iGx4Y2wd1Vor1tvQNVaruezzWmD6bJWDbP1BYuBe3z5TroCjyzwdaO6lU2osiNvtRNgTSyFfUFymeEakn5TUVSjXI3cVIW2BGPc+aw0/lencu6ILTbAKtMWbxUHJkH3O0FeytnXIKvz2o7er2EGGWptvdcX/nsyqp5x1vBNPuzQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=GlPuKi3x; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::3; helo=du2pr03cu002.outbound.protection.outlook.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g5Crk3Jn3z2yVL;
+	Wed, 29 Apr 2026 20:16:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777457798;
+	cv=none; b=gOSikCKUv3TAYCK4IVZnn+dEc4gPiXVWSXJasyVg0Tw8kqQwy3HKbToV9IpoGefpb+tcBaFsCS+iwEoKvz6p94yJjtZuoQi0B2XF7FOB4IghplH6nQeHdjtKH/UmZ3Abe/dgyDurB+YVuhHWigusndYLgKtzd5iOjRc/mLFijefSIa3dLMqZNThXG/Pr3T8V98s9fWH/FTUECH3P87NudIVrLsX8Iq/vSzGWtUKV6eBRYRv3JCFTA+zqvAGz8ZqgfAx7kDZMV8r1DmSm9AOTYWll/+vwu8adsMUV529Q0dN0AODrkqs9958OSo7F1eN+CgYIdwy1BbzYmd22pcuIlg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1777457798; c=relaxed/relaxed;
+	bh=F/lT+9gq3vxflXRL0Qzbxq9y7PHWIm46jZMnKsw2Ke4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=aNJPZT7vMt5nq6fUj622EDv5Q/dw3KYUTIWpddsdRNYgXpVHLYXiLbErRHUMQicB98KhKwnp0QfWAH+Sar8GW3OXiW1syPX41ZX/vFiHOJ8WZK3JN64ddka5XT8/X42V9B30TedrtxH7sgZZfS8w46BgIpqIc5waCpSGe8GsvUKXPgqYNMZqqqQbGtRyaCQFsfG67CExZ2Qz9FsV445/zyjUNpTJY4Ojxa93jJp0PpuJjqeYNMMK1tWc0G4IjbVVr62BWBKvGYZBAP6LNF5Y7WlK2B+LD1+HV26TtMRogR9a4NMLY1pCGp0M26/50TDpiTosLAyGxdnAse7tPy0wkQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=J66TijRI; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=samir@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=GlPuKi3x;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=J66TijRI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c200::3; helo=du2pr03cu002.outbound.protection.outlook.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
-Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=samir@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g5CSK2F4cz2yyy
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2026 19:58:57 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=KA4nUr/ph4QUs7AVr1M4qN4KAyIYwq23tSrMAPUTAGBv8p+PZnj8g300lJiTjfTulebe5Rde0oCEeDTIZfKoDIMCuqtB+CVPOs+QD9frneUaGwrs7u5fnibRII50P5ifqLFjocy8O4qkfkctfel1bEDjOMswKb78atr3QUL3GW0FR8/Skf8rK5kT4zv+ZtAiKaLCrzwv1yKytv6wclHyUhDQ7FyJ/ym90dQvTGk0aFl11pF0iXyu8EhnSVE50ApGvjm+c7m4Avb+Btkr2EYOG715gWAq58J0OAmg8aVlqN75oNDc9IFZJpETWxTqxFXuIJUbkBNPtErDLrE6vHyUlA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=t0Qx/JKN7UCYKtrFKJOHk4u2zJLqGN6fxPhI9K+8mX0=;
- b=wNqiNYtcSfVVVqBJIJyaE5in/W/2j21sxBswD8J4EiDKVlVBhXYa+CXCBfRE67Pn9y+ye9WtBa+LJJERu6FYAOXD4UNwo5OGMNQJUvZczaNwikYbRW9dx1tm0eBFOAB/XJ4uximwkGNjQhApMOYyQDQigRqwAfNVzC4v3LVHyLibySD5mQ+kt71zcdLuih+BmX/JtSs0GIKp3tXZAB1g3my+m9HNDV0uNMj9IXcFHE2uaFfaboFRx2Wd7uF1r5iovIhNlm3npmT3qVZ+1/W9xHJTafvNQpfCvlwG6/tn5XaYIvkKnGuUFdng5/JsxoVaH+Xa/wiuvqRnxXCzlmMKUw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=t0Qx/JKN7UCYKtrFKJOHk4u2zJLqGN6fxPhI9K+8mX0=;
- b=GlPuKi3x/68JVOoaEANKnr97hBvhMG0sqh+vGYevVwCr9JYx08zdO4wyOuFetoEYZfZVvbcNdGTwXknJbRqOtxJ7iTv5jfP+qWndd0EbSDe8AyIGHkwo0p5w3o/aF9rCkqW8AN0hPn1L699Ht0QQz4XgZd2VjTbaodRydUTWXgZT8lToc/1H2QhZgaHZBVs5CQhV7YSx0CuJtEfI0853tT3sq6Rfpe7sSY/6BTHLk1lVE4DHjFMjaZW+U+pFaQL08Yfo3NSvIPahzvGnSwRKr5Wm5ojeMszNasoeoUrNuqCgRqkV8fqImwdVDpK2X2VLXp5OEoBp6plNh3mh/0X9LA==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Received: from AM0PR04MB7044.eurprd04.prod.outlook.com (2603:10a6:208:191::20)
- by PAXPR04MB8269.eurprd04.prod.outlook.com (2603:10a6:102:1c4::15) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9870.19; Wed, 29 Apr
- 2026 09:58:50 +0000
-Received: from AM0PR04MB7044.eurprd04.prod.outlook.com
- ([fe80::bab2:d15c:fcf8:ef2b]) by AM0PR04MB7044.eurprd04.prod.outlook.com
- ([fe80::bab2:d15c:fcf8:ef2b%4]) with mapi id 15.20.9846.025; Wed, 29 Apr 2026
- 09:58:50 +0000
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: shengjiu.wang@gmail.com,
-	Xiubo.Lee@gmail.com,
-	festevam@gmail.com,
-	nicoleotsuka@gmail.com,
-	lgirdwood@gmail.com,
-	broonie@kernel.org,
-	perex@perex.cz,
-	tiwai@suse.com,
-	linux-sound@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v2 5/5] ASoC: fsl-asoc-card: reduce WM8904 PLL ratio to meet frequency limit
-Date: Wed, 29 Apr 2026 18:00:27 +0800
-Message-Id: <20260429100028.2739711-6-shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.37.1
-In-Reply-To: <20260429100028.2739711-1-shengjiu.wang@nxp.com>
-References: <20260429100028.2739711-1-shengjiu.wang@nxp.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: SG2P153CA0005.APCP153.PROD.OUTLOOK.COM (2603:1096::15) To
- AM0PR04MB7044.eurprd04.prod.outlook.com (2603:10a6:208:191::20)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g5Crj2x0fz2yD6
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2026 20:16:36 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63SNJHBM358063;
+	Wed, 29 Apr 2026 10:16:31 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=F/lT+9
+	gq3vxflXRL0Qzbxq9y7PHWIm46jZMnKsw2Ke4=; b=J66TijRI2beebcxwBtnUpz
+	nkscDZTO4Ci0/M0vagqjAdt6um1m6v1SSK1041tCrR0ucAyi1N1NDoJ6FLhDFBha
+	jzvRDXQStOkPcV72qb7wXSBKgKJQSsrK+AgB5AquRXXotQQA9pzHGDIuGcSrWI65
+	cGuV8lTmxGwDhQvjrkKGnymp/D0nnnOv83T+HOMrJVEiCFVonKCxumP9xZUpHyhY
+	DFZ8eiImFB/PjywFdEkiq+zqyhGOFxuwYF/8qt75oGhvJ5olsF5rkimgcZ5HmUD0
+	D5WtFHo+w+cEj93RIJF6wVVpzcBrUWP8UTXfKLzcflZi8TsgJsDKJBwdcJKVvDuA
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4drnb59w8s-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 29 Apr 2026 10:16:31 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 63TA8l5G030771;
+	Wed, 29 Apr 2026 10:16:30 GMT
+Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dsa5gdpb9-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 29 Apr 2026 10:16:30 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
+	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 63TAGTtf7537564
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 29 Apr 2026 10:16:29 GMT
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4302458043;
+	Wed, 29 Apr 2026 10:16:29 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C72EB5805D;
+	Wed, 29 Apr 2026 10:16:18 +0000 (GMT)
+Received: from [9.123.0.247] (unknown [9.123.0.247])
+	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 29 Apr 2026 10:16:18 +0000 (GMT)
+Message-ID: <1b89c25b-7c1d-4ed8-adf3-ac504b6f086a@linux.ibm.com>
+Date: Wed, 29 Apr 2026 15:46:09 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,132 +81,260 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: AM0PR04MB7044:EE_|PAXPR04MB8269:EE_
-X-MS-Office365-Filtering-Correlation-Id: 68b85a09-15b9-4349-f0c4-08dea5d5e98a
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|19092799006|376014|52116014|7416014|1800799024|56012099003|22082099003|18002099003|921020|38350700014;
-X-Microsoft-Antispam-Message-Info:
-	Ll+egqkJjs+4totX7qTYygz4sAxodZPoF6gQOolZAapW/Pmp345Y2rftBrmxZGJTgEiuDj5g9dB/JgllX90R5ZET+wE7597Z9jf23ODHq5/n3xedcIv+fNpw+2UWm5ojY6sxJaLMNeLpSEZ8mkwrKce8cEmmZSSQJZJnig80/dlyGwAY7blWpGIWe99wHOM9wbkWSFgWvWv3sbO9FJfjrIXeIlvC4Pe4CFgYM08cxvJ7/Zari3wBabXExRNNMP6n9bXDdvf0EaN3A3o0MiL8y8LhdGXGNW3oPnu1ze5mmhA76EpqTq10uRqb2Txw8JNAnS68edCkNgzXTZauFXYAFv8/k6L/QTI40nNOi/zPW50sBOuqIal+wrN2wrJmyHaIsfbXgy7rvBpa2y8R1wto+u21p3rwJv8leQj4+1C+MMvC5wVF+As+aR1HEhdOCmUyKIRUfb5ZhQqtUTRsy5ugfkDuOUvbld6R1iDVqFJ2TefBQ9Bzyq5hbF2LKw8PB9IL7MH/Lt6Hc2qpSqRgrNiO5he39G20S0G0x7ceuJLQozC0K2VIIUCPgC5okfKC0symwiqUvUWYz9YOmzVQ69beclBbZhHt9zZuybKT9k6L37LhO11NyyPHj7MAg99+9W+md0r/BAPwRbsGAoBEsZYDIhB43uWNNdlpjXSGDNDotr/nVx4rWO9CwrkgY855eDkrI8SlOS6CmBo1U+PkVz81Yak4KMcvhKpjjm3bik727YWOixY/ChWFHTLh9qOWtkaR9U76pT8FCK01+yYwyNDzCv7Ik9UlOgPaKe2m3RDVb7PXx/8T3KQA6pcKtHgy5CiA
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR04MB7044.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(19092799006)(376014)(52116014)(7416014)(1800799024)(56012099003)(22082099003)(18002099003)(921020)(38350700014);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?OC9Gdnkva3VxYjJQMEMrWXZYcUdhNHkvZVhHL0ZJOUM2bFZBZUV4aHNoRlUx?=
- =?utf-8?B?VXMzZ1NSMGIyVnc4NisrNnQ0TDFYVStkNkQvQ01XcHJGQVd6c0lDckhmV3FG?=
- =?utf-8?B?RmRVSE5XZENEZ3RlMmJtRGZ3V01LdWpIV3V2N0lFOG9nWWVrVzRwMTRoSU5v?=
- =?utf-8?B?KzNoeEs2YXZsaWhXNjhxb1AyTHYzRTAxT2phM0VFUVNQZmZWbDZqZzF5OElq?=
- =?utf-8?B?WFZ1MWE1dE54bkV5U2lDeiszalI3M2puU1p0OXRpNmhLeS9meWx0c0hMSlZ4?=
- =?utf-8?B?M3IvYjhRY1djRGZCL283dEQ0NUJHNUgxWGxCUlBlR29ZcXZBL1J1SzIwanMx?=
- =?utf-8?B?ZmdIcEJ5ZjBQRTF3cm1BZGNPY09za0lzZnJUVGw4bmNEdUZvZGNNeDN5MW5j?=
- =?utf-8?B?QWRhc1MzbzNzak1lK3pZZm0zUnVZb0RtVXVROWkxSEtxUW1JcC81dk1ub0Vq?=
- =?utf-8?B?NHdSb3NVTDVRdnJrVTlVaG4xK2JabE9jcUlOQWlvcnNRYnErbkJVYVVVa1Fl?=
- =?utf-8?B?M05vNnRJam4yZzBUVjUvZGRzNzJmeVpqSjYwL204TS9IemV6L3FkYzA2eDVj?=
- =?utf-8?B?Wk15RkJuTllSSjVNcmJFL2ZneXd2eUkxS1lyMUlOK3M2S0RxTWhjaGhZQlh4?=
- =?utf-8?B?ZUVPdVhTZjFOSWpxWWVlS0N5TEE0WjJ5cXZqYmF4SHBnMUpjcDNkMFJkNEZR?=
- =?utf-8?B?TlcxWWFhRVY2SHVUUUZDSkp0Vm1rejIrSW9oeWM1MlVMRklDSjA0cm5BaDFs?=
- =?utf-8?B?ZnFSTFpmNXJ0SUxGM2lxWTRCMjE0NGVpUmxqUnVBSVdCRWQxUVhxek9GZitP?=
- =?utf-8?B?M3AzYUZQYklEZmsydm45dkNBQndKcWY0c21VaFZiRk5IVnc2dTZSY1ZyaTl5?=
- =?utf-8?B?VzRQTHpqSnNxNXZrdmZqTGx2YjQycmdZS1c3eGlheFh2eHVlMTdDdW9mbTRv?=
- =?utf-8?B?U1REYkFxeUFQQnlFUWIzK0V0bng3WXJ1QmxXNTFNTFhKZUlVTlVwenRpMGc2?=
- =?utf-8?B?dEZoVkwyVUd0SUFBeFA0d0Z6NlNqVDBDUjdDcTFDZ2hyQmlZK1ZGZDUzeFJI?=
- =?utf-8?B?NlhRcFFOT0R1bnFoT1dDU2NncGFnMGwycmRweXdzWit1akxSWlJuL2ZjdDFF?=
- =?utf-8?B?RWR1NUdxNDlpMGtIdzNhMDZvT2Rod0ViOTZVa3Nvcjk5YWN6c0VqTFFVMUxF?=
- =?utf-8?B?dEE5VUJadHlSUVFjWHBiMytpR3lZeGxGT1JGUG83ZkRKQlpSQjN2ZkpNM1Ex?=
- =?utf-8?B?cjVoYUN2cnpGWjd6OFhIR2lUUVBWUFpqYUIzS3dQMEVFZjRIbzMxejlZaXlO?=
- =?utf-8?B?L0grbHVTOU5adCtTdENkdGFSbURHQk9hWGtYS0F5WUhPYVNHT0lFcnVhek0z?=
- =?utf-8?B?N1lTYW9iUlJSejF0OExmVTEyeUM4ZE84dXRGcStuQkhqQUxSOGp4aVkxVmcv?=
- =?utf-8?B?NSsyVGxtcU1CaFg1SFhZRW1URnlLYlRpeEJGeDBoOEdVV2xzRXVTRDAveVVO?=
- =?utf-8?B?YTVkaCtQcDBWcHUraDFCNzZvdDJESmZvVm5MRjNMQzZRbUU2ZnppYWM4ZjlD?=
- =?utf-8?B?eWhuTWdvNW5NSVpwUXZzbXU2S0YvMzRab1ZqUzZ5dEJNSXNxZTF1N1Y4Z0xF?=
- =?utf-8?B?NTI5R1g4QkZQVGsrNWExL29ta0tod0FKNlVNSHpVQ3gyY3hibFVsTDJvM041?=
- =?utf-8?B?V2NrM0xaajI4T2ZoUHBRL2dvWEVHZ0hKVG1kUXdmWHBpbnZpUDJreVlzMVJL?=
- =?utf-8?B?UmdMbVpSQ2J1czBFUHZjeDF6Z0xKdkVLOEpjMm1WOHdYc0JBYmQ0WHBOWHlV?=
- =?utf-8?B?RFNEWHhFeEVTSmNqNGtkMTk3em55NGFQcTluUHY5bkVXR2tJV2haK0pmZGV3?=
- =?utf-8?B?YmZoemdEQ3M3aUN2UlRHYThBdzNzc2hRMHViYkVjNGxJRGVuMWhJaTE0YmJP?=
- =?utf-8?B?NjMrekE2UTRxUkhFV3BjcUphTEIrT2JaYktzcW51ZzBOSVE0ZFArN25UWXBT?=
- =?utf-8?B?bWxBVjNqRVpUN2FzMjRyaGZXNFRsZ0lTK2lONUE2c3V1cUlDdFJqSHBjUDI1?=
- =?utf-8?B?ZkZQOEhUNUQ3ZE5oQ3FzL09KNEhBREYwcTlwM1FXbzRjd2ZFSGlFUjRNa3Vo?=
- =?utf-8?B?U2NpN1FIZzREb3hMbCs3U2lzUjN0SEpSWmhYV3JrTmRXcnp3S0RBOWJGT1BK?=
- =?utf-8?B?UkpLaGNrMjN1azBIVENIZjlxL3JOZHVlSjZSUEVlMTNiN1l6VGdSSmFqd3hQ?=
- =?utf-8?B?Q2l3SXBiYjg5dmdnMkJwb1lDWGF0OHJ3Q2FCVldPMlA5RXhkUHp5NXNaQXc5?=
- =?utf-8?B?K0JDai9wREtJcWZEekMzd0FGZmVhNGhxSlBWUFJjUUJXYm1xSWQwQT09?=
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 68b85a09-15b9-4349-f0c4-08dea5d5e98a
-X-MS-Exchange-CrossTenant-AuthSource: AM0PR04MB7044.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Apr 2026 09:58:49.9406
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: iM1fd8q2Oj90H07XPcIeNShPU8UfoslYVpNYVSoM3wPk/WFDdURstqh70yv0xjTii/ME0osIq8sTE9NRTle2rQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR04MB8269
+User-Agent: Mozilla Thunderbird
+Subject: Re: [mainline][BUG] Observed Workqueue lockups on offline CPUs.
+To: Boqun Feng <boqun@kernel.org>
+Cc: "Paul E . McKenney" <paulmck@kernel.org>,
+        Boqun Feng <boqun.feng@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+        Tejun Heo <tj@kernel.org>, RCU <rcu@vger.kernel.org>,
+        linuxppc-dev@lists.ozlabs.org, Shrikanth Hegde <sshegde@linux.ibm.com>
+References: <97a7d011-d573-4754-9e5d-68b562c64089@linux.ibm.com>
+ <688280dc-78a2-4796-9eaf-e1c058836012@linux.ibm.com>
+ <ae-EP1BpXgnEWCt4@tardis.local>
+Content-Language: en-US
+From: Samir M <samir@linux.ibm.com>
+In-Reply-To: <ae-EP1BpXgnEWCt4@tardis.local>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=AqDeGu9P c=1 sm=1 tr=0 ts=69f1da7f cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
+ a=qCof3rqyAAAA:8 a=VnNF1IyMAAAA:8 a=o1-_AkJ4wEVZsbxAFwQA:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10 a=sGiMcuukUhmiu4iKGgn_:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI5MDA5OCBTYWx0ZWRfX9/X6ZMaNEKtL
+ q/IT55ewwFm4hD09MZ1ALH8c2FESDpfveQ7m8301scb4vjUfSammr8x13vlig9Koe9ZOdsdUPor
+ n5V7AffGRjD16DjTOLXXILyBxxkZyJE3rjiyIUpTaUCT0Y4c60qQawTzMh7171RzAA3/d+Dgpwr
+ EI8fMAt+TiRmf0a1g3faA5WFiRukLAZLUy5pZltqwZVsIpewEhjBiWwOEvlANrQB9qKnztGObWi
+ +BGDsrSit9hpVmpSuQZQN/GCnS98r2JovT2RIvQFy/i4h4A7LRXs6nfMCRaXim6zo7Y6HjRkVRp
+ kgxPSe/qmSXBMTngWRuYxO7XelRRAXNFg/079a3KRVNE4/606KTYoiyKG9j0MQ/F3fNd+YrGQ3F
+ 3q8oDX9aVLg+wn1HdlXjgQRfnH10qeUCvR4D1uxitqg4n1jgddzsWNlP7H1cXOaYVPz+WAkXDvn
+ uJQnh92h6nMWnXSd0dg==
+X-Proofpoint-GUID: Wpocfkr4VUVxzzU8Hg7kuHWMEsHKFXJX
+X-Proofpoint-ORIG-GUID: 7jpyQkmcGJ1EwzTPshgboXQKOhaIFgeK
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-28_05,2026-04-28_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 priorityscore=1501 phishscore=0 suspectscore=0 clxscore=1011
+ lowpriorityscore=0 spamscore=0 bulkscore=0 impostorscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2604290098
 
-WM8904 has a 27 MHz PLL frequency limit. The current S24_LE PLL ratio
-of 384 exceeds this at high sample rates (96 kHz × 384 = 36.864 MHz).
 
-Reduce the ratio to 192 for WM8904, keeping PLL within limits at all
-supported rates (96 kHz × 192 = 18.432 MHz).
+On 27/04/26 9:13 pm, Boqun Feng wrote:
+> On Mon, Apr 27, 2026 at 05:00:10PM +0530, Samir M wrote:
+> Hi Samir,
+>
+>> On 27/04/26 3:32 pm, Samir M wrote:
+>>> Hi Paul,
+>>>
+>>> I've been testing the latest upstream kernel on a PowerPC system and
+>>> encountered workqueue lockup issues that I've bisected to commit
+>>> 61bbcfb50514 ("srcu: Push srcu_node allocation to GP when
+>>> non-preemptible").
+>>> After booting, I'm seeing workqueue lockup warnings for CPUs 81-96,
+>>> which are offline on my system. The workqueues remain stuck for over 237
+>>> seconds:
+>>>
+>>> [  243.309302][    C0] BUG: workqueue lockup - pool cpus=81 node=0
+>>> flags=0x4 nice=0 stuck for 237s!
+>>> [  243.309311][    C0] BUG: workqueue lockup - pool cpus=82 node=0
+>>> flags=0x4 nice=0 stuck for 237s!
+>>> [  243.309318][    C0] BUG: workqueue lockup - pool cpus=83 node=0
+>>> flags=0x4 nice=0 stuck for 237s!
+>>> [  243.309326][    C0] BUG: workqueue lockup - pool cpus=84 node=0
+>>> flags=0x4 nice=0 stuck for 237s!
+>>> [  243.309333][    C0] BUG: workqueue lockup - pool cpus=85 node=0
+>>> flags=0x4 nice=0 stuck for 237s!
+>>> [  243.309341][    C0] BUG: workqueue lockup - pool cpus=86 node=0
+>>> flags=0x4 nice=0 stuck for 237s!
+>>> [  243.309348][    C0] BUG: workqueue lockup - pool cpus=87 node=0
+>>> flags=0x4 nice=0 stuck for 237s!
+>>> [  243.309355][    C0] BUG: workqueue lockup - pool cpus=88 node=0
+>>> flags=0x4 nice=0 stuck for 237s!
+>>> [  243.309363][    C0] BUG: workqueue lockup - pool cpus=89 node=0
+>>> flags=0x4 nice=0 stuck for 237s!
+>>> [  243.309370][    C0] BUG: workqueue lockup - pool cpus=90 node=0
+>>> flags=0x4 nice=0 stuck for 237s!
+>>> [  243.309377][    C0] BUG: workqueue lockup - pool cpus=91 node=0
+>>> flags=0x4 nice=0 stuck for 237s!
+>>> [  243.309384][    C0] BUG: workqueue lockup - pool cpus=92 node=0
+>>> flags=0x4 nice=0 stuck for 237s!
+>>> [  243.309392][    C0] BUG: workqueue lockup - pool cpus=93 node=0
+>>> flags=0x4 nice=0 stuck for 237s!
+>>> [  243.309399][    C0] BUG: workqueue lockup - pool cpus=94 node=0
+>>> flags=0x4 nice=0 stuck for 237s!
+>>> [  243.309406][    C0] BUG: workqueue lockup - pool cpus=95 node=0
+>>> flags=0x4 nice=0 stuck for 237s!
+>>> [  243.309413][    C0] BUG: workqueue lockup - pool cpus=96 node=0
+>>> flags=0x4 nice=0 stuck for 237s!
+>>>
+>>> Git bisect identified this as the first bad commit:
+>>>
+>>> commit 61bbcfb50514a8a94e035a7349697a3790ab4783
+>>> Author: Paul E. McKenney <paulmck@kernel.org>
+>>> Date:   Fri Mar 20 20:29:20 2026 -0700
+>>>
+>>>      srcu: Push srcu_node allocation to GP when non-preemptible
+>>>
+>>>      When the srcutree.convert_to_big and srcutree.big_cpu_lim kernel boot
+>>>      parameters specify initialization-time allocation of the srcu_node
+>>>      tree for statically allocated srcu_struct structures (for example, in
+>>>      DEFINE_SRCU() at build time instead of init_srcu_struct() at
+>>> runtime),
+>>>      init_srcu_struct_nodes() will attempt to dynamically allocate this
+>>> tree
+>>>      at the first run-time update-side use of this srcu_struct structure,
+>>>      but while holding a raw spinlock. Because the memory allocator can
+>>>      acquire non-raw spinlocks, this can result in lockdep splats.
+>>>
+>>>      This commit therefore uses the same SRCU_SIZE_ALLOC trick that is
+>>> used
+>>>      when the first run-time update-side use of this srcu_struct structure
+>>>      happens before srcu_init() is called. The actual allocation then
+>>> takes
+>>>      place from workqueue context at the ends of upcoming SRCU grace
+>>> periods.
+>>>
+>>>      [boqun: Adjust the sha1 of the Fixes tag]
+>>>
+>>>      Fixes: 175b45ed343a ("srcu: Use raw spinlocks so call_srcu() can be
+>>> used under preempt_disable()")
+>>>      Signed-off-by: Paul E. McKenney <paulmck@kernel.org>
+>>>      Signed-off-by: Boqun Feng <boqun@kernel.org>
+>>>
+>>>   kernel/rcu/srcutree.c | 7 +++++--
+>>>   1 file changed, 5 insertions(+), 2 deletions(-)
+>>>
+>>> Reverting this commit resolves the issue.
+>>>
+>>> The problem appears to be that the workqueue is attempting to execute on
+>>> offline CPUs. The commit moves SRCU node allocation to workqueue context
+>>> to avoid lockdep issues with memory allocation under raw spinlocks,
+>>> which makes sense. However, it seems the workqueue scheduling doesn't
+>>> properly account for CPU online/offline state in this code path.
+>>>
+>>> My test environment:
+>>> - Architecture: PowerPC
+>>> - Kernel version: Latest upstream (7.1-rc1)
+>>> - CPUs 81-96 are offline at boot time
+>>>
+>>> I suspect the issue might be related to:
+>>> 1. Workqueue not checking CPU online status before scheduling SRCU
+>>> allocation work
+>>> 2. Missing CPU hotplug awareness in the new workqueue-based allocation
+>>> path
+>>> 3. Possible race condition with CPU hotplug events
+>>>
+>>> Would it make sense to use queue_work_on() with explicit online CPU
+>>> selection, or add CPU hotplug handlers for this workqueue? I'm not
+>>> deeply familiar with the workqueue internals, so I might be missing
+>>> something.
+>>> Please let me know if you need any additional details or if you'd like
+>>> me to test any patches.
+>>>
+>>> If you happen to fix the above issue, then please add below tag.
+>>> Reported-by: Samir M <samir@linux.ibm.com>
+>>>
+>>>
+>>> Thanks,
+>>> Samir
+>> Hi Paul,
+>>
+>>
+>> I worked on fixing the issue and introduced the changes below. With these
+>> updates, I no longer observe any workqueue lockup messages for offline CPUs.
+>> Could you please review the changes and share your feedback?
+>>
+>> The commit 61bbcfb50514 ("srcu: Push srcu_node allocation to GP when
+>> non-preemptible") introduced workqueue lockups on systems with offline
+>> CPUs. The issue occurs because srcu_queue_delayed_work_on() calls
+>> queue_work_on() with sdp->cpu, which may be offline, causing the
+>> workqueue to spin indefinitely on that CPU.
+>>
+>> This patch fixes the issue by checking if the target CPU is online
+>> before queuing work on it. If the CPU is offline, we fall back to
+>> using queue_work() which will schedule the work on any available
+>> online CPU.
+>>
+>> Fixes: 61bbcfb50514 ("srcu: Push srcu_node allocation to GP when
+>> non-preemptible")
+>>
+>> Signed-off-by: Samir <samir@linux.ibm.com>
+> Thanks for the patch, but I wonder: have you checked this email thread:
+>
+> 	https://lore.kernel.org/rcu/ttd89ul@ub.hpns/	
+>
+> Paul had a fix [1], and TJ had a "fix" [2] on workqueue side.
+>
+> In general I think we discovered that as long as a CPU has been onlined
+> once, it's OK to queue the work on that CPU (which may be offlined) even
+> with our TJ's patch (whether we should do that is a different problem
+> ;-)). Please do check whether Paul's fix works for your case, thanks!
+>
+> [1]: https://lore.kernel.org/rcu/ed1fa6cd-7343-4ca3-8b9d-d699ca496f83@paulmck-laptop/
+> [2]: https://lore.kernel.org/rcu/adlHKowvhn8AGXCc@slm.duckdns.org/
+>
+> Regards,
+> Boqun
+>
+>> ---
+>>   kernel/rcu/srcutree.c | 7 ++++++-
+>>   1 file changed, 6 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/kernel/rcu/srcutree.c b/kernel/rcu/srcutree.c
+>> index 0d01cd8c4b4a..55a90dd4a030 100644
+>> --- a/kernel/rcu/srcutree.c
+>> +++ b/kernel/rcu/srcutree.c
+>> @@ -869,10 +869,15 @@ static void srcu_delay_timer(struct timer_list *t)
+>>   static void srcu_queue_delayed_work_on(struct srcu_data *sdp,
+>>   unsigned long delay)
+>>   {
+>> -       if (!delay) {
+>> +       if (!delay && cpu_online(sdp->cpu)) {
+>>                  queue_work_on(sdp->cpu, rcu_gp_wq, &sdp->work);
+>>                  return;
+>> +       } else if (!delay) {
+>> +               /* CPU is offline, queue on any available CPU */
+>> +               queue_work(rcu_gp_wq, &sdp->work);
+>> +               return;
+>> +       }
+>>
+>>          timer_reduce(&sdp->delay_work, jiffies + delay);
+>>   }
+>> --
+>>
+>>
+>> Thanks,
+>> Samir
+Hi Boqun,
 
-Add codec-specific pll_ratio_s24 field, default 384, override to 192
-for WM8904.
+Thank you for pointing me to the existing patches. I have tested both 
+Paul's patch [1] and TJ's workqueue patch [2] on my PowerPC system (80 
+CPUs), and can confirm that the workqueue lockup issue is not observed.
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
----
- sound/soc/fsl/fsl-asoc-card.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+Test Environment:
+- System: PowerPC with 80 CPUs ( e.g. PowerPC LPARs with 80 online and 
+384 possible CPUs)
+- Kernel version: Latest upstream (7.1-rc1)
 
-diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
-index 44083d15f6e5..709543308fe9 100644
---- a/sound/soc/fsl/fsl-asoc-card.c
-+++ b/sound/soc/fsl/fsl-asoc-card.c
-@@ -75,6 +75,9 @@ static const struct snd_pcm_hw_constraint_list cs42888_channel_constraints = {
-  * @mclk_id: MCLK (or main clock) id for set_sysclk()
-  * @fll_id: FLL (or secordary clock) id for set_sysclk()
-  * @pll_id: PLL id for set_pll()
-+ * @pll_ratio_s24: PLL output ratio for S24_LE format (PLL_freq = sample_rate × ratio)
-+ *                 Default is 384, but some codecs (e.g., WM8904) require lower values
-+ *                 to stay within PLL frequency limits
-  */
- struct codec_priv {
- 	struct clk *mclk;
-@@ -83,6 +86,7 @@ struct codec_priv {
- 	u32 mclk_id;
- 	int fll_id;
- 	int pll_id;
-+	int pll_ratio_s24;
- };
- 
- /**
-@@ -255,7 +259,7 @@ static int fsl_asoc_card_hw_params(struct snd_pcm_substream *substream,
- 
- 		if (codec_priv->pll_id >= 0 && codec_priv->fll_id >= 0) {
- 			if (priv->sample_format == SNDRV_PCM_FORMAT_S24_LE)
--				pll_out = priv->sample_rate * 384;
-+				pll_out = priv->sample_rate * codec_priv->pll_ratio_s24;
- 			else
- 				pll_out = priv->sample_rate * 256;
- 
-@@ -815,6 +819,7 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
- 	for (codec_idx = 0; codec_idx < 2; codec_idx++) {
- 		priv->codec_priv[codec_idx].fll_id = -1;
- 		priv->codec_priv[codec_idx].pll_id = -1;
-+		priv->codec_priv[codec_idx].pll_ratio_s24 = 384;
- 	}
- 
- 	/* Diversify the card configurations */
-@@ -935,6 +940,7 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
- 		priv->codec_priv[0].mclk_id = WM8904_FLL_MCLK;
- 		priv->codec_priv[0].fll_id = WM8904_CLK_FLL;
- 		priv->codec_priv[0].pll_id = WM8904_FLL_MCLK;
-+		priv->codec_priv[0].pll_ratio_s24 = 192;
- 		priv->dai_fmt |= SND_SOC_DAIFMT_CBP_CFP;
- 	} else if (of_device_is_compatible(np, "fsl,imx-audio-spdif")) {
- 		ret = fsl_asoc_card_spdif_init(codec_np, cpu_np, codec_dai_name, priv);
--- 
-2.34.1
+Regression Testing Results:
+All tests completed successfully with no issues observed:
+- Hackbench
+- Kernel selftests
+- LTP scheduler tests
 
+The workqueue lockup that was previously occurring is no longer present 
+with the patches applied.
+
+References:
+[1]: 
+https://lore.kernel.org/rcu/ed1fa6cd-7343-4ca3-8b9d-d699ca496f83@paulmck-laptop/
+[2]: https://lore.kernel.org/rcu/adlHKowvhn8AGXCc@slm.duckdns.org/
+
+Best regards,
+Samir
 
