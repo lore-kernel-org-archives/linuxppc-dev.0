@@ -1,75 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-20299-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20300-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26C15FF8873
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2026 20:49:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CB5EFF8873
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2026 20:53:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g5Tv43Fm5z2yZc;
-	Thu, 30 Apr 2026 06:49:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777495776;
-	cv=none; b=SRSXvPAEwbmpPjFykuryC60iG7A4/NWXQEUnPMA674PIkOloaAOpQKRj2FORevRZIxVwoHSmegav9vCNQc5CJp52Sn3eXvuJdlMA+bGih5oUJkNzET2wnwaFihFzD7JB6QHaT1XJsFFpqVkC1gG+A5Cm9uxF++NMCFI1u8txdupKU95PYieu3AF9Uko019gyqbmP2l59OKtxpb2O52zqcvCQ5HUWYzRypDD7flLt5/DKL5CN4YV9mn09pUxnVDx6kxm+S4pgxeLZCxyz+G8ubQ3g4ERIWIRIqALWKKaNpEBiZmiU1T8xRSuAtBOVkK4JwKctQDWmpprU1t4WOxx/2Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g5V034kCDz2yZc;
+	Thu, 30 Apr 2026 06:53:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777496035;
+	cv=none; b=MttcTUB1zG42Q2wQveeT7J9OL1VQzq4BcdUf+WIkPC/7TSOfQhHcnrVevhNbOD57assPFkJp+G1CP5plUS0KB0Cd2be4lcdtusuPn+B1sw7IIFT4jsQlJpRbe7nXgotoq/+KlwHU6R2sBvU+jcccRrT0fpT7qwJQH82YtacYH0Cf3uQALO4F+xRtSwvbYUXKDzzN9pAu3n/DnSU7Dkzp3B9ql2k01LzG0D4NyotPSLlFlabU8399t0KuRRTKDjy8YtBXknrd98jWm54BXbUou639oAZfl0nQK1AF7nPVxNbq9xsU4USJJnOJ+DRTmJ7XMJtCb5xeavpoOMXf0fWE1Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777495776; c=relaxed/relaxed;
-	bh=NEDouma71c2n6zNv2KMEApG8IEqfSu9azzyXMfIz4cY=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=dXsvm5rzwawTmxqkVUS3u0tPnKhpgrU9yK5uVuWr+p47vUHKa+k6iL866cHjTaYoYvYgCsAzmShH40sr8bgsAreLjIQ8D2kD+Hg8gnt+IucMvhs4Ye3hp5PUBUf8jq7YOCwOr2WEiCZoYxr0efK6mnVCMzDbjZhIq+SBM2qXXFZ2e7LK6gQeW10MX8M3JhEyHbmrjRD4g+jUiqCSpjsyfE0UIvtNBlrubmN939m9CmgBtwu5m9ATWwLQ5zslPdKHMI46qOAjJ/ny6PE48gnEnk+6z+2Snb+kFB2Qdwr2i9Lnyq3xx5daVUhSKhalDhiADWLqfD0lpo7uO+FUcvdXIg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ttxcvPt7; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1777496035; c=relaxed/relaxed;
+	bh=8mcKw+kLlbwESBI1VJ+v5iDRe8hKc5GtNkrLjTHkwIk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Iqb6wyJ4GYMkt7NUfBAELJGRkuaa0Qf2pHHdFFd8rdnBDl+X4Nd7Q8cnT73c5vTPAwQmrqILNTC8ECcW1ZSAYWM9hKLS+5CX+R78ZAienrk9eaJvsLmfn/XPreSsbugJhY/Q0DDNGwH/KOBdSOTrbynte7z0j2nHuxbDB9sVqfQr3V3PDklXwZxzHWok4mVBio5CuL2eRbGW+N5jJMmTs/bEpFnVNoOc1GWWGtRlCN7c3DZz6/952iTTIIxue/+2WBf7lmcwgDSiZVgXzCE0mMYf4Vc4gmM/lVkSjtq5U8I0jXQHdIDRA7FwWwkpGCNnYPtnLyPJAI1sceYVZxusWQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DkeE2Q5P; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ttxcvPt7;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DkeE2Q5P;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=kwilczynski@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g5Tv34QRBz2yF1
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2026 06:49:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g5V024WZWz2yF1
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2026 06:53:54 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 89EAB417FF;
-	Wed, 29 Apr 2026 20:49:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 47799C19425;
-	Wed, 29 Apr 2026 20:49:33 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 5B0896015B;
+	Wed, 29 Apr 2026 20:53:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C8BB2C19425;
+	Wed, 29 Apr 2026 20:53:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777495773;
-	bh=hhWce80xtkHe1p6XGUP4jloFGHxw1eJP7unPLtQxBLM=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:From;
-	b=ttxcvPt7HKlxoKj403eCf5tce8r3HsoFRNryWFmrlcsSscvbNHulMxO56IvyZfAPp
-	 F6h6h/FLoE43FcJYCBVgPdkZHXZ7GrmpB4AxkPXMUnmZ5BNxMC9vBNvOdQWxdsUtyq
-	 GoUP3yuxup6mW4bzGir/gbkaRyWhGIxIbwoDrlP5TPQPuvCio/k9tvSkKwxUyxwGhz
-	 Nc3+JmQLjgQ54OK6iQGpFlav0GRDTal7uBh+EEP0LCMTbQAKTB35si5hVSv8uvIjMY
-	 8Hf2NXDzcs0JB4o8Idxb2f5Fpr+Q1JSYM9ipPNerga22zTFLvrVEfxgGMUnq4YudZz
-	 R/QHbikzguxiQ==
-Date: Wed, 29 Apr 2026 15:49:32 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>
-Cc: Bjorn Helgaas <bhelgaas@google.com>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>,
-	Magnus Lindholm <linmag7@gmail.com>,
-	Matt Turner <mattst88@gmail.com>,
-	Richard Henderson <richard.henderson@linaro.org>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Dexuan Cui <decui@microsoft.com>,
-	Krzysztof =?utf-8?Q?Ha=C5=82asa?= <khalasa@piap.pl>,
-	Lukas Wunner <lukas@wunner.de>,
-	Oliver O'Halloran <oohall@gmail.com>,
-	Saurabh Singh Sengar <ssengar@microsoft.com>,
-	Shuan He <heshuan@bytedance.com>,
-	Srivatsa Bhat <srivatsabhat@microsoft.com>,
-	Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
-	linux-pci@vger.kernel.org, linux-alpha@vger.kernel.org,
+	s=k20201202; t=1777496031;
+	bh=ySSBeMm1fA1RqiRnJDthA9J3oUOKBjzNQoryOMt06sQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=DkeE2Q5PhSo1fLSwyOU6Rr7oJ1LJJ07F7M8zpbaloBd1Fns+uvPnbZqXbnI6B64yd
+	 geGahp3c3jNFI7tNH4Y3a+vlogeM02AF1B8DYyp160evSx4JLFlRM9ckCGys/vq8Cb
+	 ZQz8ED+SBqW4kMFcwKs29vunitwRU+sP3ZYSDGi2YCokCrjkqDhzgMvIIYZo7pQFju
+	 Zs0RMd/siKPi8ncNePAxh4GA2xJqMOeoVBxdw7DegLWJbgf3Iiomi5cVJWv3RmULbv
+	 9YmJrAu7h1McIEZlu/kUUCAjF6AnyxZMWfLVXHJG3hhZmOFimv2Lf5s1oacHm84ceC
+	 lLMiNDI6Wp6xg==
+Date: Thu, 30 Apr 2026 05:53:49 +0900
+From: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, 
+	Manivannan Sadhasivam <mani@kernel.org>, Lorenzo Pieralisi <lpieralisi@kernel.org>, 
+	Magnus Lindholm <linmag7@gmail.com>, Matt Turner <mattst88@gmail.com>, 
+	Richard Henderson <richard.henderson@linaro.org>, Christophe Leroy <chleroy@kernel.org>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, Dexuan Cui <decui@microsoft.com>, 
+	Krzysztof =?utf-8?Q?Ha=C5=82asa?= <khalasa@piap.pl>, Lukas Wunner <lukas@wunner.de>, 
+	Oliver O'Halloran <oohall@gmail.com>, Saurabh Singh Sengar <ssengar@microsoft.com>, 
+	Shuan He <heshuan@bytedance.com>, Srivatsa Bhat <srivatsabhat@microsoft.com>, 
+	Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>, linux-pci@vger.kernel.org, linux-alpha@vger.kernel.org, 
 	linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v6 24/24] PCI/sysfs: Limit BAR resize attribute scope to
- platforms with PCI mmap
-Message-ID: <20260429204932.GA318462@bhelgaas>
+Subject: Re: [PATCH v6 04/24] PCI/sysfs: Use BAR length in
+ pci_llseek_resource() when attr->size is zero
+Message-ID: <20260429203625.GA3724801@rocinante>
+References: <20260422161407.118748-5-kwilczynski@kernel.org>
+ <20260429195055.GA312811@bhelgaas>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -83,80 +76,82 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260422161407.118748-25-kwilczynski@kernel.org>
+In-Reply-To: <20260429195055.GA312811@bhelgaas>
 
-On Wed, Apr 22, 2026 at 04:14:07PM +0000, Krzysztof Wilczyński wrote:
-> The resourceN_resize sysfs attributes allow users to resize
-> Resizable BARs (ReBAR).  After a successful resize, the resource
-> attribute groups are removed and recreated so that the updated
-> BAR sizes are reflected in the sysfs files.
+Hello,
 
-Out of curiosity, where does this removal/recreation happen?  I don't
-see it in pci_resize_resource() or
-pci_do_resource_release_and_resize().
+> > @@ -909,11 +909,21 @@ static const struct attribute_group pci_dev_config_attr_group = {
+> >   */
+> >  static __maybe_unused loff_t
+> >  pci_llseek_resource(struct file *filep,
+> > -		    struct kobject *kobj __always_unused,
+> > +		    struct kobject *kobj,
+> >  		    const struct bin_attribute *attr,
+> >  		    loff_t offset, int whence)
+> >  {
+> > -	return fixed_size_llseek(filep, offset, whence, attr->size);
+> > +	struct pci_dev *pdev;
+> > +	int bar;
+> > +
+> > +	if (attr->size)
+> > +		return fixed_size_llseek(filep, offset, whence, attr->size);
+> > +
+> > +	pdev = to_pci_dev(kobj_to_dev(kobj));
+> > +	bar = (unsigned long)attr->private;
+> > +
+> > +	return fixed_size_llseek(filep, offset, whence,
+> > +				 pci_resource_len(pdev, bar));
+>
+> Is there a case where using "attr->size" is better than using
+> "pci_resource_len(pdev, bar)"?
+>
+> In other words, would the following be equivalent?
+>
+>   pci_llseek_resource(...)
+>   {
+>     ...
+>     pdev = to_pci_dev(kobj_to_dev(kobj));
+>     bar = (unsigned long)attr->private;
+>
+>     return fixed_size_llseek(filep, offset, whence,
+>                              pci_resource_len(pdev, bar));
+>   }
 
-> Resizable BARs are a PCI Express extended capability
-> (PCI_EXT_CAP_ID_REBAR), which requires PCIe extended config
-> space.
+Sadly, the simplified version would break legacy attributes.
 
-It sounds like the fact that ReBAR requires extended config space is
-important somehow (beyond just the fact that we can't discover ReBAR
-without it)?  Is there some connection between extended config space
-and mmap?
+pci_llseek_resource() is shared between device-level resource
+attributes and bus-level legacy attributes, both have different
+semantics:
 
-> Every PCIe-capable architecture defines either HAVE_PCI_MMAP or
-> ARCH_GENERIC_PCI_MMAP_RESOURCE (via the relevant arch headers
-> or the generic asm-generic/pci.h fallback).  On platforms that
-> define neither, the resource files are not created and the sysfs
-> group remove and create calls in __resource_resize_store() are
-> no-ops.
+  - Resource attributes (resource0, resource0_wc, ...) are per-device,
+    carry a BAR index in attr->private, and will have .size == 0 with
+    the static conversion.
+  
+  - Legacy attributes (legacy_io, legacy_mem, ...) are per-bus, have
+    no BAR index in attr->private, and carry a fixed .size
+    (PCI_LEGACY_IO_SIZE, PCI_LEGACY_MEM_SIZE, etc.).
 
-What's the connection between ReBAR and mmap?
+The if (attr->size) check distinguishes the two cases, where legacy
+attributes have size set at compile time (no BAR index), and the
+resource attributes derive it from the BAR at runtime.
 
-> Thus, move the resize show and store helpers, the per-BAR attribute
-> definitions, and the attribute group behind the existing #ifdef
-> HAVE_PCI_MMAP || ARCH_GENERIC_PCI_MMAP_RESOURCE guard, and fold
-> the group reference in pci_dev_groups[] into the existing #if block.
-> 
-> Signed-off-by: Krzysztof Wilczyński <kwilczynski@kernel.org>
-> ---
->  drivers/pci/pci-sysfs.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
-> index b167e32d55ac..37c1990124d0 100644
-> --- a/drivers/pci/pci-sysfs.c
-> +++ b/drivers/pci/pci-sysfs.c
-> @@ -1690,6 +1690,7 @@ static const struct attribute_group pci_dev_reset_method_attr_group = {
->  	.is_visible = pci_dev_reset_attr_is_visible,
->  };
->  
-> +#if defined(HAVE_PCI_MMAP) || defined(ARCH_GENERIC_PCI_MMAP_RESOURCE)
->  static ssize_t __resource_resize_show(struct device *dev, int n, char *buf)
->  {
->  	struct pci_dev *pdev = to_pci_dev(dev);
-> @@ -1804,6 +1805,7 @@ static const struct attribute_group pci_dev_resource_resize_attr_group = {
->  	.attrs = resource_resize_attrs,
->  	.is_visible = resource_resize_attr_is_visible,
->  };
-> +#endif
->  
->  static struct attribute *pci_dev_dev_attrs[] = {
->  	&dev_attr_boot_vga.attr,
-> @@ -1878,8 +1880,8 @@ const struct attribute_group *pci_dev_groups[] = {
->  	&pci_dev_resource_io_attr_group,
->  	&pci_dev_resource_uc_attr_group,
->  	&pci_dev_resource_wc_attr_group,
-> -#endif
->  	&pci_dev_resource_resize_attr_group,
-> +#endif
->  	&pci_dev_config_attr_group,
->  	&pci_dev_rom_attr_group,
->  	&pci_dev_reset_attr_group,
-> -- 
-> 2.54.0
-> 
+For legacy attributes, the kobj belongs to a struct pci_bus, not a
+struct pci_dev, so to_pci_dev(kobj_to_dev(kobj)) would be a wrong
+type for container_of().  Also, the pci_resource_len() helper would
+not work there either.
+
+Thus, dropping the attr->size check and always using pci_resource_len()
+would break the legacy attributes case.
+
+The alternative would be separate llseek callbacks for both the legacy
+and resource attributes, which we can add if this would be the preference
+here.
+
+I hope this clears this up a little bit.
+
+Thank you!
+
+	Krzysztof
 
