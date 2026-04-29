@@ -1,61 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-20286-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20287-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CCFD8FF8867
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2026 12:29:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DA36FF8875
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2026 12:29:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g5GpG47xwz2yVL;
-	Wed, 29 Apr 2026 22:29:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g5GpJ2kGzz2ySf;
+	Wed, 29 Apr 2026 22:29:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.12
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777465782;
-	cv=none; b=cC+YL0QDqTBggkgZXxigs4C05WvHM87mD792AXs/ZLEb+9rvfxVcHO7FQZkTlVc0LPWlBwu8oyE39V+lMmYLYBrVgqFwj53jAx0eGOHwbzd6+Kcw4NbBq9d/GZm7MKFMBam+Qq/nzfk7IjU94PyDWlo8e06hCqqctrPPjeFlGMUVMr+6XwMbXSyVgreGzifpL8xWYaY3FQR/u6EJwYSKxxbH8tRHoyT9O+Ue8H7m/gqqmJh1e1OyNAZk/GGVABRiDs2vti5V3+bJBCtDnWYRCo55EdB54a5ht+jIF5bR6hsBR5XFz8KU4uIOtk0XJgLqA4lqUJHKJjz1iQaUlghEEA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777465784;
+	cv=none; b=OHR7FqtXVHtipEHA+Dakz9R2l+P/ep4hO9tHMB8FCzUbghnyyOE46n6djapLKpopFt6MYnHeiIeFXwDnZIiCIjMLQSDQXogYdfabaIA5ug5LIJH26shUIG96dMkHwkBRY+8yO9vQMjEQ2mpuZcAdusuoOYecrQJ6pSj2B09jVvfEgae+p8xtEkKodGcOzkc07uR9UErJodRZ88UioL8H7QdHvOyok01lqtPstPZKqvoXyqpgVkmRmidTc+o/e3SRnRZbYJZcxKTNm+pGsUD4DL4CfdG6yp+N1GNKXAXnRl3YlGcFT08jUKbQRrAFwy0ffNLsZZFcY4S7BynB2iTlgg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777465782; c=relaxed/relaxed;
-	bh=7IhhC7Vo1n0pUixItwd3TBALOlTK4aOxR3OhWmz6me4=;
+	t=1777465784; c=relaxed/relaxed;
+	bh=kblWfe9kTibuhrRU5efH3gDMw18eS1z20lnTSnESx6k=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=BcaFU/TicgECqxdpGkOpQByWHpzi6jl+yRgBFHb84VYbQCmW09BD6C7LT8I9Kz0esvIl6fhUeXEfqOJ/BPdXu8XqD5A3jBfcD97b+TZOfJqwePrt6jzYacu9Cjgv7jyjeiFBN+xMXFhHFUwPVt3k/EEDTDchW+QjfexgW+HH37AecGATb7YbxnTtvQP7EtnUSTkBSGDJQgChdd1DcTOakIis8NsS5vbj+CNDoR18QtL03jGQVWqzJkmjOlzqoE6Z72sAgAxM93zVKSctAq+4+tB9P1GcIaFfUt60y8m9+/X/SxoP6A57g6oknNXVEPTSIxWhs9ChD7eFI2udF6LpPg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=dlIlnp1P; dkim-atps=neutral; spf=pass (client-ip=198.175.65.12; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+	 MIME-Version:Content-Type; b=R42rOVEeO5ee5evRt21j6vj2KHU5kmn5eMyxDq9QfxYHjhcvTnRI8uO2iE/XwHYk1B5gtHQ64aawGD0PyFFIHLCgEF9iyfqzNrzKRPiHb9ngiKBHWlqcshhJPVnGJMOpNrLLEs+BUWAODhGZkT6N62PlnvmOhGsjY3+uus+zoIG2rD3ej+oCvb5owqjpXBP5UE+9SU1mGOQJNGO7iiw1E+lUAOAoSa6Bz4xDDmYD8ITIHXcdv+2xbxux13+/SXoWSI5wxnFtSsehKELxUVArR2V/G3XG6QAal74E8vAceZPEW7cvtkFJnc9uGrj0iYTNahjSfZQzWDiHAq8sR2sAyg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Rz7bv+4s; dkim-atps=neutral; spf=pass (client-ip=198.175.65.12; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=dlIlnp1P;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Rz7bv+4s;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.12; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 65 seconds by postgrey-1.37 at boromir; Wed, 29 Apr 2026 22:29:41 AEST
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g5GpF2SlCz2ySf
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2026 22:29:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g5GpH22Nnz2ytV
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2026 22:29:42 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1777465782; x=1809001782;
+  t=1777465784; x=1809001784;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=fqkZl+gRhl4cKQbh+rABk9mPSNA9e1YAdoDCW18qzQY=;
-  b=dlIlnp1PPjXkFhrhGjyF5sPjW3bG0Svjv6UatwoOWGszzjV0+DIDDEW2
-   9R1S/AM1Yf9fq3TVHybrI8wlK+8PHa7cHV9YDH63gJNj+scPMXfWMsyS2
-   UlSlxiyQXKDI+P1U4Zvt4934QKinrPy6jhGbWlI4pQ1/b0Q+ds/foFOWM
-   cu7AaKqZ4nNdnV1l6Q97xZHhF7dJ4SLJt5MF6H4vvcJVOwxuGsYKmCxJ0
-   4FgWtpbegj5vjUxaMaoEBUo3vHJLvEH0DGyNvF3w/+CowgKwUx2/+hcq5
-   vMmNMTWS3RXA8ImD59AELwiqBTqhC121pz/G+iKlL+C/sCPNeG7aqxw0C
-   w==;
-X-CSE-ConnectionGUID: c+WMKdboRSWg3iijy5Dbdg==
-X-CSE-MsgGUID: kzBLuxrZS0q625bgv2xdiA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11770"; a="89853543"
+  bh=GKXpXP0HLpIzXt9FVzTWoltHAc5rYgaa1I20ERAvp2k=;
+  b=Rz7bv+4shmMBpxa7imBuP1+bJy9EpetkMooa8aS08Vty+wirFcWxrgew
+   FAx7gqbXvSYaQ4ejEy/sYlnvlGitXLv1PTlmnhzkHIw5K5M/76JOdAet0
+   WVylXaocGUP+QVJ/fHJtGSubO8hAUnEcgS6espO1vIoKUENg0tQF8JUAS
+   FWg+IYhLgvQ/ZuPq1ybgSFFNoB+galtU6vGr3/zZgGmZPXJJ8ZDVU0zOe
+   fKTTh6KrCypUU2TRg0ogfnf474VgjbPrf9oqEAGn83B03MS1iwO9PLtnz
+   bSJN0XYs9OmjMe+zfi2XuVkOx46NZWeCl6od9/DbybYNMf5+V7UslEIUE
+   Q==;
+X-CSE-ConnectionGUID: VAKngYhsRruYprushhlp3g==
+X-CSE-MsgGUID: G2Jtn3QZRMmG0QochOB1lA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11770"; a="89853560"
 X-IronPort-AV: E=Sophos;i="6.23,206,1770624000"; 
-   d="scan'208";a="89853543"
+   d="scan'208";a="89853560"
 Received: from orviesa002.jf.intel.com ([10.64.159.142])
-  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Apr 2026 05:28:25 -0700
-X-CSE-ConnectionGUID: 0b2tYkpVQgm1CLfL2p4dAw==
-X-CSE-MsgGUID: uI4xITOIRG2N/6phtyIxUw==
+  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Apr 2026 05:28:36 -0700
+X-CSE-ConnectionGUID: wGp35jvkToyaC0AQ8zhvVw==
+X-CSE-MsgGUID: vJjmMR20RrCYutR71IFsrQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.23,206,1770624000"; 
-   d="scan'208";a="264639555"
+   d="scan'208";a="264639579"
 Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.212])
-  by orviesa002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Apr 2026 05:28:22 -0700
+  by orviesa002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Apr 2026 05:28:33 -0700
 From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
 To: linux-pci@vger.kernel.org,
 	Bjorn Helgaas <bhelgaas@google.com>,
@@ -66,9 +65,9 @@ To: linux-pci@vger.kernel.org,
 	Nicholas Piggin <npiggin@gmail.com>,
 	linux-kernel@vger.kernel.org
 Cc: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Subject: [PATCH 10/11] PCI: Lower bound bridge window alignment
-Date: Wed, 29 Apr 2026 15:26:16 +0300
-Message-Id: <20260429122617.7324-11-ilpo.jarvinen@linux.intel.com>
+Subject: [PATCH 11/11] PCI: Return valid alignment for assigned resources
+Date: Wed, 29 Apr 2026 15:26:17 +0300
+Message-Id: <20260429122617.7324-12-ilpo.jarvinen@linux.intel.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <20260429122617.7324-1-ilpo.jarvinen@linux.intel.com>
 References: <20260429122617.7324-1-ilpo.jarvinen@linux.intel.com>
@@ -88,54 +87,52 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-pci_resource_alignment() does not consider bridge windows special,
-yet their alignment is subject to different requirements from BAR
-alignment.
+When a resource is assigned, IORESOURCE_STARTALIGN flag is cleared,
+resulting in pci_resource_alignment() returning 0 in some situations
+(at least for bridge windows).
 
-Add lower bound to bridge window alignment to help callers out to
-always have large enough alignment.
+Add heuristic to pci_resource_alignment() which mimics start and size
+alignment by taking minimum of those for an assigned resource. It may
+overestimate alignment when start has large alignment but the exact
+alignment information is not available and regenerating it by sizing
+the bridge again is costly.
 
 Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
 ---
- drivers/pci/setup-res.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ drivers/pci/setup-res.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
 diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
-index 18e8775ea848..c15bce20815d 100644
+index c15bce20815d..03098f159ec9 100644
 --- a/drivers/pci/setup-res.c
 +++ b/drivers/pci/setup-res.c
-@@ -19,7 +19,10 @@
- #include <linux/errno.h>
- #include <linux/ioport.h>
- #include <linux/cache.h>
-+#include <linux/minmax.h>
- #include <linux/slab.h>
-+#include <linux/types.h>
-+
- #include "pci.h"
+@@ -13,6 +13,7 @@
+  *	     Resource sorting
+  */
  
- static void pci_std_update_resource(struct pci_dev *dev, int resno)
-@@ -250,12 +253,19 @@ resource_size_t pci_resource_alignment(const struct pci_dev *dev,
- 				       const struct resource *res)
- {
- 	int resno = pci_resource_num(dev, res);
-+	resource_size_t min_align = 0;
++#include <linux/bitops.h>
+ #include <linux/kernel.h>
+ #include <linux/export.h>
+ #include <linux/pci.h>
+@@ -265,6 +266,18 @@ resource_size_t pci_resource_alignment(const struct pci_dev *dev,
+ 	    (res->flags & (IORESOURCE_IO|IORESOURCE_MEM)))
+ 		min_align = pci_min_window_alignment(dev->bus, res->flags);
  
- 	if (pci_resource_is_iov(resno))
- 		return pci_sriov_resource_alignment(dev, resno);
++	if (resource_assigned(res)) {
++		resource_size_t start_align = 1, size_align;
 +
- 	if (dev->class >> 8 == PCI_CLASS_BRIDGE_CARDBUS)
- 		return pci_cardbus_resource_alignment(res);
--	return resource_alignment(res);
++		size_align = roundup_pow_of_two(resource_size(res));
++		if (res->start)
++			start_align <<= __ffs(res->start);
++		else
++			start_align = size_align;
 +
-+	if (pci_resource_is_bridge_win(resno) &&
-+	    (res->flags & (IORESOURCE_IO|IORESOURCE_MEM)))
-+		min_align = pci_min_window_alignment(dev->bus, res->flags);
++		return max(min(start_align, size_align), min_align);
++	}
 +
-+	return max(resource_alignment(res), min_align);
+ 	return max(resource_alignment(res), min_align);
  }
  
- /*
 -- 
 2.39.5
 
