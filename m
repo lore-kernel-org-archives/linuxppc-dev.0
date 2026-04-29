@@ -1,81 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-20275-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20276-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3772AFF8875
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2026 12:03:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C3AE0FF8867
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Apr 2026 12:26:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g5GDL0JwGz2yVL;
-	Wed, 29 Apr 2026 22:03:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=18.158.144.38
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777464225;
-	cv=none; b=Fx1NoexrVgCldxOSVi7Ph+PdzJF36J8yIvB2cnARqQWrzkNLWGpNZdwUtgW3YLKDl72zhaYuBtQarD09gTGSZJLSlTfF012h4nKNVcEKBMZC1I26alhe0VbD00IuWD5mzIQz5XjhdwIbyFT33dNcHrEn31545xXvX7Ujzed6YvlMilPNhXOFZ2Xk66CW7PiIJWgV9diodkGbwpNgjxjiYtD+1swp5v9l1Idjf8pKnGz1NOukCWKdzXRTLKZAWTwaoFsfE7lJyLUCIq0ymn2e9vm3OyScpewPXSOw7c9hpfLJz6t2dMCJwYZrub8gHhWUvOd8Yo0TUU2qXQd5WrFjlA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g5Gkk1BvBz2yVL;
+	Wed, 29 Apr 2026 22:26:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.18
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777465598;
+	cv=none; b=f+ysgLYWmwNPxuO9OCYxRy6RX1azvtBx3VSrtlE2zt+ybcJCkvHOmYtkL30IhF2uk7FgPsNnYHEWMLjhtF4st5COCHZkWFp98WHppD9IUpihMJy0Ulo6rv9c7apQGXSeDPBHq9bsQ4F9Ik3M/ARVFM9ZcQ+jxrvNd4hqBx2OnVECk3h8zjvNLkmZ0DFn9XPa08D8WNGpuzw6TR80RgsD0kbRtdF02phs+sWfu0dp6XFx8QSZ2i7n3M573gMgUU8MvpBvxnUA+mF3QelcAY7jusNCDHIlGF5qDjDbw4tQJ6tj+wRbnDy2DXaTgh+BEKCN5ZLIKAOVzmyOD99KJUurvg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777464225; c=relaxed/relaxed;
-	bh=dTVmkDqISXk7x13mQynSnLZ/iRnnoPVhJt0i9GNoi3E=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=bbWLf5+BzNI4YgKt6rhYIq2sWylJSEyKotjHcrVIPuyi0H6Xe1pZRvFZULfGciuzjJoHxlef0I2K7VOkBT6bNgY9jX3Q5nGaYOasVtz1IzOJSX/uR3RUI8AcilYPoI9aN5Y1KGtUm6N2nDN1nJn/wkdegpIahwaJ6mwunOkSxmK0FvMmCzgm1ymSKKUxm7otxvtwjCdE5xIHiERDwoxUrDl8lM/xYxk3j6xgXOFrd4Yv+hWD8jc9cwUUxumK4BByjdB0Iwf5JufPajAdjct/cyni6xCjFZSg9co3H3QP0zvTwdNqWYNE+67mrd9lgzrM01N3WTJfC29rVv8z75o+1w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=hitachienergy.com; dkim=pass (1024-bit key; unprotected) header.d=hitachienergy.com header.i=@hitachienergy.com header.a=rsa-sha256 header.s=duo-1630306886989-947ac67a header.b=ZGTD+XNz; dkim=pass (2048-bit key; unprotected) header.d=outbound.mailhop.org header.i=@outbound.mailhop.org header.a=rsa-sha256 header.s=dkim-high header.b=gJV5pOTh; dkim-atps=neutral; spf=pass (client-ip=18.158.144.38; helo=out-ip0052.fra.mailhop.org; envelope-from=holger.brunck@hitachienergy.com; receiver=lists.ozlabs.org) smtp.mailfrom=hitachienergy.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=hitachienergy.com
+	t=1777465598; c=relaxed/relaxed;
+	bh=blSVM7WjU1kRlDj3TK9DsSHo6TzO87ZSZqqbWB5NS9c=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=aOqrYzXWXmPIBQHuYOXciHdT+e4xm8vLmPn/8yB1XUmi9mndGnsrfAS+TU5OdWIbW7SJATK1Bc6EzCle/CoCV56pM6a97gX7nXSWFeJyvxHfCmGs56+YoyJywyalHbBWJ7zjBYlGe3cZMF7Dnv/o2KdVumgnsr2TDaXH3atGb4NIqxkhYp5f9+xMgFaGLNpDCUm1NwBVQxd4diA3G/S9gtD3CuYWalCP5CF2mZ54pVP2j9CZtssD1B/msjbw3wsrxRbvwfQRsX+ax+EW3nuwKWAnA5K37DdM/J1pFVSkXd4bzUXvwBlBy/JcfdM4gINGyu3XR9QuQJBsMVGponzU5w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ffDzJNUX; dkim-atps=neutral; spf=pass (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=hitachienergy.com header.i=@hitachienergy.com header.a=rsa-sha256 header.s=duo-1630306886989-947ac67a header.b=ZGTD+XNz;
-	dkim=pass (2048-bit key; unprotected) header.d=outbound.mailhop.org header.i=@outbound.mailhop.org header.a=rsa-sha256 header.s=dkim-high header.b=gJV5pOTh;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ffDzJNUX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=hitachienergy.com (client-ip=18.158.144.38; helo=out-ip0052.fra.mailhop.org; envelope-from=holger.brunck@hitachienergy.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 1209 seconds by postgrey-1.37 at boromir; Wed, 29 Apr 2026 22:03:41 AEST
-Received: from out-ip0052.fra.mailhop.org (out-ip0052.fra.mailhop.org [18.158.144.38])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g5GDF05qkz2ySf
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2026 22:03:40 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=hitachienergy.com; s=duo-1630306886989-947ac67a;
-	h=content-transfer-encoding:mime-version:message-id:date:subject:cc:to:from:
-	 cfbl-address:cfbl-feedback-id:from;
-	bh=dTVmkDqISXk7x13mQynSnLZ/iRnnoPVhJt0i9GNoi3E=;
-	b=ZGTD+XNzAA0enB8AMBQIHtnH04p0HXB5bRl7VsRwfesHyydsfWitH9d2AFW2dGv5tsYpnyABm6ubT
-	 MOFCSpggCiVVT5iuSbKyVO6ylmqdi4ntRPLwiDDzHPvADI794WZF6kk16Bb9zrlgNd6i2a+LAMuySW
-	 yRmSKgJ+QpLuWC0Q=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=outbound.mailhop.org; s=dkim-high;
-	h=content-transfer-encoding:mime-version:message-id:date:subject:cc:to:from:
-	 cfbl-address:cfbl-feedback-id:from;
-	bh=dTVmkDqISXk7x13mQynSnLZ/iRnnoPVhJt0i9GNoi3E=;
-	b=gJV5pOThWdVKrQZ0Qj6zJ26354/jUJ/c7mdArCYGLiJY5yiPUtR/KaWaR4ussEsYc2B7jANs7x8Lr
-	 7e74M/uRR14h4iCJz1rajHslcxw4No51RPgiCR1A0bIfKq/119xyKczaH7UrDhdQ8m7Swb3jRMerPs
-	 fhBTZjsSJAHXPBkcouL+RVqXLmqWE36i3E0J/W3GwJP42GaHFtvfywD3rUrJqOhynblU6u3LoEMB3k
-	 yoqr8TqfgSUJToibLp+52ymriHsj4yPaa8Z9xLDwjxr5LH4bSNNp1qiF+HWe+JK63ZLYJlxHQs77Ev
-	 TXuTrr1g2oiyCLNGKEFx8ji7qkvyD8A==
-X-Originating-IP: 20.62.140.138
-X-MHO-RoutePath: aGVkY3NtdHA=
-X-MHO-User: 7752593b-43c0-11f1-8259-bda8640e0fbb
-X-Report-Abuse-To: https://support.duocircle.com/support/solutions/articles/5000540958-duocircle-standard-smtp-abuse-information
-X-Mail-Handler: DuoCircle Outbound SMTP
-CFBL-Feedback-ID: 7752593b-43c0-11f1-8259-bda8640e0fbb:5
-CFBL-Address: prvs=057955d709=abuse@outbound.mailhop.org; report=arf
-Received: from HPG0000000548.corp.hitachi-powergrids.com (unknown [20.62.140.138])
-	by outbound2.eu.mailhop.org (Halon) with ESMTPSA
-	id 7752593b-43c0-11f1-8259-bda8640e0fbb;
-	Wed, 29 Apr 2026 11:42:16 +0000 (UTC)
-Received: from gitsiv.hitachienergy.com (unknown [10.54.139.14])
-	by HPG0000000548.corp.hitachi-powergrids.com (Postfix) with ESMTP id A9D4E1614;
-	Wed, 29 Apr 2026 11:42:13 +0000 (UTC)
-Received: from chbrn3-p-dev015.keymile.net (chbrn3-p-dev015.keymile.net [172.31.41.201])
-	by gitsiv.hitachienergy.com (Postfix) with ESMTP id 3563E60B7D47;
-	Wed, 29 Apr 2026 13:42:13 +0200 (CEST)
-From: Holger Brunck <holger.brunck@hitachienergy.com>
-To: netdev@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Cc: andrew+netdev@lunn.ch,
-	chleroy@kernel.org,
-	qiang.zhao@nxp.com,
-	Holger Brunck <holger.brunck@hitachienergy.com>
-Subject: [PATCH 1/2] net: wan: fsl_ucc_hdlc: fix uhdlc_memclean
-Date: Wed, 29 Apr 2026 13:42:07 +0200
-Message-ID: <20260429114208.941011-1-holger.brunck@hitachienergy.com>
-X-Mailer: git-send-email 2.52.0.120.gb31ab939fe
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g5Gkg0Zgtz2ySf
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2026 22:26:32 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1777465595; x=1809001595;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=StUIvDAZe7jSwmt+KbusiTw3cp/VUh8LhDiUJd1ZEnM=;
+  b=ffDzJNUXi4Jr+UuhOsZEXR6lFprxd2ZG/FNcOY13E+68VPUmf/2rUUD+
+   YuMeOnUtQUpuOZ0c3s6cVBXmNu/LbTFeSWcNcZXe6M1J201t5jtw9G4y6
+   mUdbpSUnlW+Rs2q9NpLPWZ+GLohw64GHtLFkS2X4a9glh17zH22de86Cp
+   mdEBxuWwqNP10+M917eHKZzf2K2BDqSW0JB2IgjT2Oeo10r8sUHxuqOXA
+   Aul0Nkgnx/r2EouBNptYD9nrbG+oxP3jjLU9RsX8TbIkO1zCkXaQimnni
+   Y2ezrc9quzQNMkVcFrWGete5o1qZloOfFKmUhjcERn17av26pa8G14vPj
+   Q==;
+X-CSE-ConnectionGUID: 4T1jU3C2QgKjOOdeu2qnNg==
+X-CSE-MsgGUID: XplUtCQFTa6Cl15KsG3NpQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11770"; a="77557647"
+X-IronPort-AV: E=Sophos;i="6.23,206,1770624000"; 
+   d="scan'208";a="77557647"
+Received: from fmviesa006.fm.intel.com ([10.60.135.146])
+  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Apr 2026 05:26:28 -0700
+X-CSE-ConnectionGUID: e2ynKkGnQ/mCfV7EGabTDQ==
+X-CSE-MsgGUID: UMOQ/jvuTpGe6w8nQEajNg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,206,1770624000"; 
+   d="scan'208";a="229669615"
+Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.212])
+  by fmviesa006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Apr 2026 05:26:24 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+To: linux-pci@vger.kernel.org,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Shawn Jin <shawn.jin@asteralabs.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Subject: [PATCH 00/11] PCI: pci_resource_alignment() improvement + cleanups
+Date: Wed, 29 Apr 2026 15:26:06 +0300
+Message-Id: <20260429122617.7324-1-ilpo.jarvinen@linux.intel.com>
+X-Mailer: git-send-email 2.39.5
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,33 +81,70 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Unmapping of uf_regs is done from ucc_fast_free and doesn't need to be
-done explicitly. If already unmapped ucc_fast_free will crash.
+pci_resource_alignment() returns 0 when resource is already assigned
+and in case of disabled bridge windows. This has caused problems to
+calculations relying on pci_resource_alignment():
 
-Signed-off-by: Holger Brunck <holger.brunck@hitachienergy.com>
----
- drivers/net/wan/fsl_ucc_hdlc.c | 5 -----
- 1 file changed, 5 deletions(-)
+https://lore.kernel.org/linux-pci/LV8P221MB1472A24B9975F7C8E8D6BF929947A@LV8P221MB1472.NAMP221.PROD.OUTLOOK.COM/
 
-diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
-index 3bd57527b1be..8155e92af14e 100644
---- a/drivers/net/wan/fsl_ucc_hdlc.c
-+++ b/drivers/net/wan/fsl_ucc_hdlc.c
-@@ -773,11 +773,6 @@ static void uhdlc_memclean(struct ucc_hdlc_private *priv)
- 	kfree(priv->tx_skbuff);
- 	priv->tx_skbuff = NULL;
- 
--	if (priv->uf_regs) {
--		iounmap(priv->uf_regs);
--		priv->uf_regs = NULL;
--	}
--
- 	if (priv->uccf) {
- 		ucc_fast_free(priv->uccf);
- 		priv->uccf = NULL;
+This series reworks pci_resource_alignment() interface to return always
+non-zero alignment if the resource exists. For assigned bridge windows,
+the calculation is using heuristic based on size and start address
+alignment as calculating the alignment again is costly (would require
+sizing the entire sub-hierarchy).
+
+As pci_resource_alignment() is becoming more complicated, it's also
+moved to setup-res.c. While moving pci_resource_alignment()'s arguments
+are converted into const to tell compiler it can rely on resource
+remaining the same across the call.
+
+This was intended to be part of a larger series that addresses some
+shortcomings in pci=realloc. The pci=realloc changes will recalculate
+bridge window sizes considering also assigned resources which required
+making these changes to pci_resource_alignment().
+
+As this also relates to the issue linked above, I'm sending it already
+now without pci=realloc changes that are still incomplete. The first
+patches originate from the large pci=realloc work but seem generally
+useful even if independent of the alignment improvements so I've
+included them here without reorganizing the series to contain only
+alignment related changes.
+
+Ilpo Järvinen (11):
+  PCI: Log all resource claims
+  PCI: Rename added to add_list
+  PCI: Consolidate add_list (aka realloc_head) empty sanity checks
+  PCI: Remove const removal cast
+  resource: Make resource_alignment() input const resource
+  powerpc/pseries: Make pseries_get_iov_fw_value() & pnv_iov_get()
+    pci_dev const
+  PCI: Make pci_sriov_resource_alignment() pci_dev const
+  PCI: Convert pci_resource_alignment() input parameters to const
+  PCI: Move pci_resource_alignment() to setup-res.c file
+  PCI: Lower bound bridge windown alignment
+  PCI: Return valid alignment for assigned resources
+
+ arch/powerpc/include/asm/machdep.h         |  2 +-
+ arch/powerpc/kernel/pci-common.c           |  2 +-
+ arch/powerpc/platforms/powernv/pci-sriov.c |  4 +-
+ arch/powerpc/platforms/powernv/pci.h       |  5 ++-
+ arch/powerpc/platforms/pseries/setup.c     |  5 ++-
+ drivers/pci/iov.c                          |  7 +--
+ drivers/pci/pci.h                          | 24 ++++-------
+ drivers/pci/setup-bus.c                    | 50 ++++++++++++----------
+ drivers/pci/setup-cardbus.c                |  2 +-
+ drivers/pci/setup-res.c                    | 37 ++++++++++++++++
+ include/linux/ioport.h                     |  2 +-
+ include/linux/pci.h                        |  8 ++--
+ kernel/resource.c                          |  2 +-
+ 13 files changed, 94 insertions(+), 56 deletions(-)
+
+
+base-commit: 254f49634ee16a731174d2ae34bc50bd5f45e731
 -- 
-2.52.0.120.gb31ab939fe
+2.39.5
 
 
