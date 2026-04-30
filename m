@@ -1,64 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-20343-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20344-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90F96FF8873
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2026 12:37:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07FFBFF8873
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2026 15:00:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g5twt1xCwz2xpk;
-	Thu, 30 Apr 2026 22:37:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777552654;
-	cv=none; b=ay5tB4mfotaz3EU6MVq01jHWswtngyr6LGi0vIfxjXu7wMjYelzbUIEicGcToPZhxjD6ilEMxIqLFv841EHm43FASgIGtwqjtLmusNmdViouVNeInvA3uwhIM9mId6qRgntKEMunkzxhCQGkr0aXWYyM6L9KWAhdy3va8T2oxo5WN2S+PAsLZ7RX/oAjyaflyfhYxIRPOYE6W9TNAuBEq7o2E72zIBxvbkMmGxvwZj4CS6YPZ6gFmP8JFK2H0JrNmGrDcnL6Pff0r4uNIsYTJkZ85gbIYhNLzH7oGDQXSEqmL6+XX7dON+rUTtNtf4Ofi2WWWIlwiD0Ecs/mHiOnuA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g5y5n2vVnz2xKh;
+	Fri, 01 May 2026 01:00:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777561229;
+	cv=none; b=J7zwvkxeJptsvTJyqtm3dgqeZTQ3c/zTfBG12TKDcX9siaT/7vyRidoD1vxIX1wwYeemWtkhJ4N8li+eKg80QDlFhsNI+87iDVuj7Aol9rsX0ZaA4P2h5DJVmTYoUUCbnTZ/V+vxoqIwVIwTGNSAAmcK49b15IMgvE39Wo10eX+ux9pRUjsCBSHi3xrzcwV69UA7akoYb9iyO6PVySgp9hLMTXj28lr7t32LtDbSaukNIWZVvj6pmbY3sa9R1XtEIevfoRGeIhlZxLqJXFkAHEBhLozCGGAhthTqeAnA7198AwWu8t35XLatvMBH2m41FZANI43ufixqqfHSdqPpTQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777552654; c=relaxed/relaxed;
-	bh=z/YmOm364MLgKTekAQcMcyvI8WeWgw/tah25yx/smkI=;
+	t=1777561229; c=relaxed/relaxed;
+	bh=R3Dmfxje96M0Qcg1Qv3id0BFsms3q4fmv4N2CerTyEg=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=R5HSmLxBkR7BVtQVMH9aQzro14E4BC3sHy8kcXPzEi1gytNK7LTBDWzAhoHfrSLjIAmbgvZSyiIICpOA9rFqbI57VQfvEsfGBVllV9tP26K38EVTT4lOjjHVehmjOA7xqdegsgDRuizj9YF+ziLXqhbwKXIWk8HX41FwRGMqXvfwOYLrcJ1rpQ3QcKAdqXWAOYWRRor7918NfgJV3TihjheAYX90AmQehKfrPbjuf27GF3YSkH4JCIUv2rRsOy3h/Wpl3zr0MBN8UlWXUFfwq1FfwAZrbrE9MR2UnaEJbS8seNMyJD4Q/t3Q+5+FhfX2V/TTJ7aGfR+P644IfvsiJQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=OVEuy04Z; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=A0Et1DpwjnMuJ3sOE9J+CiDkXE7ZON+uBrzYnoPelFGINqnDfkFNvWsxYoLukbQC8Gn19luEB0UtK+yDc/iOTv6YwXkRXkAgd+A4+3oDR4eHA1CoegxeNoQnVZvcqvlTUhUvrrJ7ttwrgChuvqZtjz9wLqyR6GglvQWHbe0dlLUPyaOzYP2JLur36tld2F186MBTAGA5UIFXoC90iWf+gECDCT/E1Fl0fs0DJcW6OMlNP63JmAMy1lhIAfrUFnwKHkL3AtYtchHgOO1ayMD+XVyvP05LwmbLpNPsv1kRCNcxV1CzcEeXpScJRxEp5GCbCTJLxMP3su7dowF47yBggA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=t55mjbee; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=jnmd=c5=paulmck-thinkpad-p17-gen-1.home=paulmck@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=OVEuy04Z;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=t55mjbee;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org)
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=jnmd=c5=paulmck-thinkpad-p17-gen-1.home=paulmck@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g5tws46W2z2xnt
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2026 22:37:33 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=z/YmOm364MLgKTekAQcMcyvI8WeWgw/tah25yx/smkI=; b=OVEuy04ZJAcBaKwk8cxrvq7Tt5
-	XT82G1jqIw0PkdnsdUVlw+7QCza/twzfpnsx2kAqSxg7PTBm0kBexRmE2xwQdNMnRyEnteCqgWzIn
-	pGkT+4EL2ASd9E3W3zW7yYDg3jwhiv9VQjK8KHyhy+eeJpz4dqkaLDP6PuXP1J2eRrmKWTk8F9tKW
-	CawTIBqH87INZkKlSIMhv2zjWwFJnSYo+4xe4HesOWqi4rik/G82R6PqrkV5YTcbPWHu29MwOaGgj
-	jzKa0vAXrEAUkOYciTPNLGggQqRFBNNvsXY3E40Q+hwIcMj9vZmSiwG6RsfdSJ+eO9OpzQbCzsngB
-	wKLRaGvg==;
-Received: from willy by casper.infradead.org with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1wIQdn-00000007Dwg-0sn0;
-	Thu, 30 Apr 2026 12:37:15 +0000
-Date: Thu, 30 Apr 2026 13:37:14 +0100
-From: Matthew Wilcox <willy@infradead.org>
-To: "Barry Song (Xiaomi)" <baohua@kernel.org>
-Cc: akpm@linux-foundation.org, linux-mm@kvack.org, david@kernel.org,
-	ljs@kernel.org, liam@infradead.org, vbabka@kernel.org,
-	rppt@kernel.org, surenb@google.com, mhocko@suse.com, jack@suse.cz,
-	pfalcato@suse.de, wanglian@kylinos.cn, chentao@kylinos.cn,
-	lianux.mm@gmail.com, kunwu.chan@gmail.com, liyangouwen1@oppo.com,
-	chrisl@kernel.org, kasong@tencent.com, shikemeng@huaweicloud.com,
-	nphamcs@gmail.com, bhe@redhat.com, youngjun.park@lge.com,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org
-Subject: Re: [PATCH v2 0/5] mm: reduce mmap_lock contention and improve page
- fault performance
-Message-ID: <afNM-gIqxpyJ6ro7@casper.infradead.org>
-References: <20260430040427.4672-1-baohua@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g5y5m0Wd3z2xKQ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 May 2026 01:00:27 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id A76886015B;
+	Thu, 30 Apr 2026 15:00:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 56644C2BCB3;
+	Thu, 30 Apr 2026 15:00:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1777561220;
+	bh=NIpBbsTVJAPA1LbGLLmEMRWHJX+8fdw+OfgAkskpcEQ=;
+	h=Date:From:To:Cc:Subject:Reply-To:References:In-Reply-To:From;
+	b=t55mjbee1vXMVJyHEeEn0P8FI8bsYPXfabVw7eCjPFiizXuDUdAK/L+jI9fQK9KS7
+	 qvG9ZEwKvSc1VWEGNWZC4tFLsGO6/CSezgvxys2Vjxm1G9BCqC8ftD1SUdpZUjv2sS
+	 O0xlD15qrjow9JwOs5diImGaL8cq7hyzFtgo7ocohp1gkXIAOlDXqtyuc+cYjfJKuS
+	 xDoeFDB3chbtG5AtdvfOui0E7Pe5vBlgQYBWWP6k5cacldnVikQobM16nG3lcB4wtQ
+	 KMk5vRqwaUXQsYN/gOZwPJgrOtCg03D2Vk0AkdqvQEWcLDuZl48VXtEImepCQYumks
+	 Bs5cgZ4Kab1Pg==
+Received: by paulmck-ThinkPad-P17-Gen-1.home (Postfix, from userid 1000)
+	id D31DCCE04A5; Thu, 30 Apr 2026 08:00:19 -0700 (PDT)
+Date: Thu, 30 Apr 2026 08:00:19 -0700
+From: "Paul E. McKenney" <paulmck@kernel.org>
+To: Samir M <samir@linux.ibm.com>
+Cc: Shrikanth Hegde <sshegde@linux.ibm.com>, Tejun Heo <tj@kernel.org>,
+	Boqun Feng <boqun.feng@gmail.com>,
+	LKML <linux-kernel@vger.kernel.org>, RCU <rcu@vger.kernel.org>,
+	linuxppc-dev@lists.ozlabs.org, Boqun Feng <boqun@kernel.org>
+Subject: Re: [mainline][BUG] Observed Workqueue lockups on offline CPUs.
+Message-ID: <16676927-5a4a-4007-9ece-593a4699adb0@paulmck-laptop>
+Reply-To: paulmck@kernel.org
+References: <97a7d011-d573-4754-9e5d-68b562c64089@linux.ibm.com>
+ <688280dc-78a2-4796-9eaf-e1c058836012@linux.ibm.com>
+ <ae-EP1BpXgnEWCt4@tardis.local>
+ <1b89c25b-7c1d-4ed8-adf3-ac504b6f086a@linux.ibm.com>
+ <5ab8d72e-1a93-4d50-b097-0dde35d81f25@linux.ibm.com>
+ <6c51cebc-3b98-439d-adcd-a0f382b98f40@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,19 +75,62 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260430040427.4672-1-baohua@kernel.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <6c51cebc-3b98-439d-adcd-a0f382b98f40@linux.ibm.com>
 
-On Thu, Apr 30, 2026 at 12:04:22PM +0800, Barry Song (Xiaomi) wrote:
-> (1) If we need to wait for I/O completion, we still drop the per-VMA lock, as
-> current page fault handling already does. Holding it for too long may introduce
-> various priority inversion issues on mobile devices. After I/O completes, we
-> retry the page fault with the per-VMA lock, rather than falling back to
-> mmap_lock.
+On Thu, Apr 30, 2026 at 11:49:02AM +0530, Samir M wrote:
+> 
+> On 29/04/26 11:21 pm, Shrikanth Hegde wrote:
+> > Hi Samir.
+> > 
+> > On 4/29/26 3:46 PM, Samir M wrote:
+> > > 
+> > > Hi Boqun,
+> > > 
+> > > Thank you for pointing me to the existing patches. I have tested
+> > > both Paul's patch [1] and TJ's workqueue patch [2] on my PowerPC
+> > > system (80 CPUs), and can confirm that the workqueue lockup issue is
+> > > not observed.
+> > > 
+> > 
+> > Can you try only paul's patch and confirm if the issue is fixed?
+> > 
+> 
+> Hi Shrikanth,
+> 
+> I have verified Paul’s “alone” patch, and it resolves the issue no workqueue
+> lockups are observed.
 
-You're going to have to do better than that.  You know I hate the
-additional complexity you're adding.  You need to explain why my idea of
-ripping out all the complexity now that we have per-VMA locks doesn't
-work.
+Thank you, Samir!  May I add your Tested-by?
+
+							Thanx, Paul
+
+> Regards,
+> Samir.
+> 
+> 
+> > > Test Environment:
+> > > - System: PowerPC with 80 CPUs ( e.g. PowerPC LPARs with 80 online
+> > > and 384 possible CPUs)
+> > > - Kernel version: Latest upstream (7.1-rc1)
+> > > 
+> > > Regression Testing Results:
+> > > All tests completed successfully with no issues observed:
+> > > - Hackbench
+> > > - Kernel selftests
+> > > - LTP scheduler tests
+> > > 
+> > > The workqueue lockup that was previously occurring is no longer
+> > > present with the patches applied.
+> > > 
+> > > References:
+> > > [1]: https://lore.kernel.org/rcu/ed1fa6cd-7343-4ca3-8b9d-
+> > > d699ca496f83@paulmck-laptop/
+> > > [2]: https://lore.kernel.org/rcu/adlHKowvhn8AGXCc@slm.duckdns.org/
+> > > 
+> > > Best regards,
+> > > Samir
+> > 
 
