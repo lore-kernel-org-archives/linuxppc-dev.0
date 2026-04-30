@@ -1,52 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-20322-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20323-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8292FCD1297
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2026 03:26:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2AAD1FF8875
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2026 03:26:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g5fhN584Fz2xll;
-	Thu, 30 Apr 2026 13:25:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g5fhY3d7Jz2xl5;
+	Thu, 30 Apr 2026 13:26:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777519556;
-	cv=none; b=azFavau3iqMqnjd8H0Ff5jEYhWuh6uDYgpqusKKWA4HrmcpMvC37G3TXoZ0clqUEysXLhXD85a8UZioWioYD0sNMPv5YrBn43UMRCyVKVAovtalBIhsDXo6LZyTaIm28UkxugAIH7kGz7UpbVV2aZlLPFUW9z3NQ898M2/NVFPO1Os5Yd1BiRLiUvgmnCgLfG+y49N49yc81s7HO/j+/ITPVZ40cq0hepWhQcJpU6AVMLjYX3iBUKPkSrb11mul7j2iTqxs+luV/pUW1hAaH6aUc3Sq/l7nrd3JPzwN9xmNjmAYe7CypGAFFWLE3atU8jPA4y1HnYIF0aQy20pyStw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777519565;
+	cv=none; b=lKl6ceUaTX63zFjSUjszQDyuMNVeLUo3e7lc1lFtySTzW/uZYEIaPcaDI/mIA5c/NU3+AinGD8xUa0detpVvtDx6PuNMl+SPH//3u9lqgSdhc1169hnU/lDOQ505znxTCqmSTG1ma7pMdP4lzBtzZl1daBpdXCkhA6+E3gWUc6PTuaW/Q7CnupQyY5K/DFU7PJ+D0FU1mGsP48p0jN3PLX5PxZ0xqiFeZILM3eVtYiXUcQRPbGN2E17ObcSNIOi4PiTrwYfi7Iib4aY4lykeuBeFZ6dyfdzuG8eCYuWpdkqB9l/tIP8oCWh3u/JeCRZrW1Dz4YI3rNIC/zBHiwPhqw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777519556; c=relaxed/relaxed;
-	bh=9h+2+l6YOgSv4xQuuSp6Pxc+vCf1Cm2WPNMAxO5dvrY=;
+	t=1777519565; c=relaxed/relaxed;
+	bh=xtZvvFsn7ntOWmU+f+LKjcOxYAtpK4lZ2ZorwARbkMQ=;
 	h=Content-Type:MIME-Version:Subject:From:Message-Id:Date:References:
-	 In-Reply-To:To:Cc; b=HwxaLmGuJYnXvAWxIXrPHQFmZEFe9/zlx5QRQAv+8sEcYBY9yJY1gXZz5xV4eSSvFv/mWY315Xb65PvCHhymh0LV25IHPpN16Ko+TRJBN2mGTBA0DvTHvUmjJdteO6KVJqhUojhQCLmf8EDsquUQMhocT+X6xJSstsToOSEWq9cgwUyrxTE6W0evVaFTkGLO+TrUKJdvv4mvF11IjXsS993vsTLBEvHn6DMxG1csn8QHfnDhuCkTw7PDoltX2nglU7k4iAe58VpYQvM3Gh3m9yvKpzKQlBRiXmMjxfIZoueLSbkgZJgHTG2nJjqgPm5rO1PXCzZclhjOOziomRFcfw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=S3K5G1Xo; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=CkKXk4j+npa57iz714sn6fFKbzTYgnqp+hKkVjEbadtl6VO7CR5phGA9kLLbSHDDRUOkaNnoL3jKp+CdAcRjn88akSuvN7xDums7gCPmXR5aaR7wzjtjiZw02AAQgRjSlUkym4U+jY1Od0Bjz8k8YgDj91F9VUQ+G9G76fUk0I6pivVDzyXZJHo8BTfmv+X670iwuWgnc8KT11xRG0OtfpwF1oyK5Mi4vjMf+CfE/vEk74xP/IEXPQ07L0kDi6vUnowLSMejekDYll1pyRFdF66C2Z9by/2mGuyoMtDNleusYDQKnimgFSq39L4JPMGoAj7uMKGe3dnn/TUqGDnx1w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=V2/IHGrf; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=S3K5G1Xo;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=V2/IHGrf;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g5fhN177Dz2xNT
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2026 13:25:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g5fhX6sPgz2xNT
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2026 13:26:04 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 9D8204457C;
-	Thu, 30 Apr 2026 03:25:54 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 67F0EC2BCB8;
-	Thu, 30 Apr 2026 03:25:54 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 40E9243B2D;
+	Thu, 30 Apr 2026 03:26:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2178CC2BCC6;
+	Thu, 30 Apr 2026 03:26:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777519554;
-	bh=7DUN2QuqQEe+BONI1ESG4SkIz1fzsjbqa3ckTuuKON0=;
+	s=k20201202; t=1777519563;
+	bh=uKdK5DO8u2N0tp/g6YrMeqTyIWEtsNmEtR2OQZOamME=;
 	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
-	b=S3K5G1XovhD07R5O5Cfcy7lVvTxvdUAegkMVL4L8Mtzf9fKcNC7CadGfDm94ncYW3
-	 /b3gcg0/YcLg9Als2F8ssWaUxHQUhQMOrsInNGp23YyNVEoZesnW9na1KfzAJGwADp
-	 KTU1UQLuwoaLC0FxYgCBT9ErRd1+nqtKD6J1vJmiEmkbMPNMtG+lgotURJHsePS61S
-	 RLCqfSNYiEnZojyCuQbicPLDo3ywac2PmflqikQdR6Ir9LNvsPRYjNWI6Ol8jDiw5K
-	 s6K1opc7+K/SSJ8ToRvLUcMAZC9t1wDEJ2EBfwZ5oF2rytHLJHY/YtizCxlNq2AgJI
-	 UMoMxqu7YBolw==
+	b=V2/IHGrfyciCnZ68jtYyLcCX+9M7ThJMZaRbPHBvBmKoRk+K76qcgOuTXYyo/kQf/
+	 h5OTplRTliCc4X63Y6FlfrVyvAdg5KYdnsvxSXwm9hkZAf8pdGxkdX/t+wSKmPKykm
+	 3o2z+7QFO6wUIvvg+B0mdIk+nx1z6uoJGIDFvup9VAMO4drdvfxfJ8iFN05E11UcZy
+	 rOwhunXd1D1ig0KRo5uu1vq5DA20gcZZ1Y5ckR+SNFRn+SNJ3mB2LionwukPg6k1ck
+	 b3Kp9ZgtCTOh6fyut2FuoH+jqJa7iiIMSyJ3HPmYm6RuG1wUntuJYtMYTQhd5hUjoS
+	 OIP4lynLo8F1w==
 Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id BA0123809A07;
-	Thu, 30 Apr 2026 03:25:10 +0000 (UTC)
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 7CFE43809A07;
+	Thu, 30 Apr 2026 03:25:19 +0000 (UTC)
 Content-Type: text/plain; charset="utf-8"
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -62,61 +62,50 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH v3 0/4] arch, mm: consolidate empty_zero_page
+Subject: Re: [PATCH v2 0/6] change young flag check functions to return bool
 From: patchwork-bot+linux-riscv@kernel.org
 Message-Id: 
- <177751950929.2274119.3965174046465654804.git-patchwork-notify@kernel.org>
-Date: Thu, 30 Apr 2026 03:25:09 +0000
-References: <20260211103141.3215197-1-rppt@kernel.org>
-In-Reply-To: <20260211103141.3215197-1-rppt@kernel.org>
-To: Mike Rapoport <rppt@kernel.org>
+ <177751951805.2274119.14382362682727203864.git-patchwork-notify@kernel.org>
+Date: Thu, 30 Apr 2026 03:25:18 +0000
+References: <cover.1774075004.git.baolin.wang@linux.alibaba.com>
+In-Reply-To: <cover.1774075004.git.baolin.wang@linux.alibaba.com>
+To: Baolin Wang <baolin.wang@linux.alibaba.com>
 Cc: linux-riscv@lists.infradead.org, akpm@linux-foundation.org,
- andreas@gaisler.com, bp@alien8.de, bcain@kernel.org, catalin.marinas@arm.com,
- chleroy@kernel.org, davem@davemloft.net, dave.hansen@linux.intel.com,
- david@kernel.org, dinguyen@kernel.org, geert@linux-m68k.org,
- guoren@kernel.org, deller@gmx.de, chenhuacai@kernel.org, mingo@redhat.com,
- johannes@sipsolutions.net, glaubitz@physik.fu-berlin.de,
- Liam.Howlett@oracle.com, lorenzo.stoakes@oracle.com, maddy@linux.ibm.com,
- linmag7@gmail.com, mattst88@gmail.com, jcmvbkbc@gmail.com,
- mpe@ellerman.id.au, mhocko@suse.com, monstr@monstr.eu, palmer@dabbelt.com,
- richard@nod.at, linux@armlinux.org.uk, shorne@gmail.com, surenb@google.com,
- tglx@kernel.org, vgupta@kernel.org, vbabka@suse.cz, will@kernel.org,
- linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
- loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
- linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-um@lists.infradead.org, linux-mm@kvack.org,
- x86@kernel.org
+ david@kernel.org, ljs@kernel.org, Liam.Howlett@oracle.com, vbabka@kernel.org,
+ rppt@kernel.org, surenb@google.com, mhocko@suse.com,
+ linux-arm-kernel@lists.infradead.org, x86@kernel.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, kvm@vger.kernel.org, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org
 
 Hello:
 
 This series was applied to riscv/linux.git (fixes)
 by Andrew Morton <akpm@linux-foundation.org>:
 
-On Wed, 11 Feb 2026 12:31:37 +0200 you wrote:
-> From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
+On Sat, 21 Mar 2026 14:42:48 +0800 you wrote:
+> This is a cleanup patchset to change all young flag check functions to
+> return bool, as discussed with David in the previous thread[1]. Since
+> callers only care about whether the young flag was set, returning bool
+> makes the intention clearer. No functional changes intended.
 > 
-> Hi,
-> 
-> These patches cleanup handling of ZERO_PAGE() and zero_pfn.
-> 
-> v3 changes:
-> * move zero_page_pfn extern declaration back inside the helpers
-> * add tags, thanks all!
+> Ran mm selftests on Arm64 and x86 machines, and no issues were found.
 > 
 > [...]
 
 Here is the summary with links:
-  - [v3,1/4] mm: don't special case !MMU for is_zero_pfn() and my_zero_pfn()
-    https://git.kernel.org/riscv/c/652d12bc74a0
-  - [v3,2/4] mm: rename my_zero_pfn() to zero_pfn()
-    https://git.kernel.org/riscv/c/9a1d0c738b45
-  - [v3,3/4] arch, mm: consolidate empty_zero_page
-    https://git.kernel.org/riscv/c/6215d9f4470f
-  - [v3,4/4] mm: cache struct page for empty_zero_page and return it from ZERO_PAGE()
-    https://git.kernel.org/riscv/c/26513781d1b3
+  - [v2,1/6] mm: change to return bool for ptep_test_and_clear_young()
+    https://git.kernel.org/riscv/c/a62ca3f40fea
+  - [v2,2/6] mm: change to return bool for ptep_clear_flush_young()/clear_flush_young_ptes()
+    https://git.kernel.org/riscv/c/06c4dfa3ced6
+  - [v2,3/6] mm: change to return bool for pmdp_test_and_clear_young()
+    https://git.kernel.org/riscv/c/42e26354c4ef
+  - [v2,4/6] mm: change to return bool for pmdp_clear_flush_young()
+    https://git.kernel.org/riscv/c/2d46a3974721
+  - [v2,5/6] mm: change to return bool for pudp_test_and_clear_young()
+    https://git.kernel.org/riscv/c/fb87c8827297
+  - [v2,6/6] mm: change to return bool for the MMU notifier's young flag check
+    https://git.kernel.org/riscv/c/1fc7dc675e26
 
 You are awesome, thank you!
 -- 
