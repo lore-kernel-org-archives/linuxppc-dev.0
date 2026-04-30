@@ -1,52 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-20321-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20322-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25B51FF8864
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2026 03:25:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8292FCD1297
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2026 03:26:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g5fhG1mChz2xnK;
-	Thu, 30 Apr 2026 13:25:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777519550;
-	cv=none; b=Zf9hoBn2g8c+xRHdtzsyzzkuokTUsjN3j2T0mZZi7C33SI5rqEyrxTWH7aauW3Yqoc3Uwa6HC5l0Ufd5my0otb1jaVWsWhr9W7bdWQTRq6WWh9vw6feYq2m1cVCUicM8vawbjm32j8SbKo03uIhWehZX1f37P+PVJgYTtoAMVMOCg8kFHKJkJ0B7j3A9LaAsPgn1wDfrsroovATm07/mHrYiIASRqmPoGVTyQjPPz/5PULd1mQXEQ0pb0AzFYgdbu4DHf5N6VPRJXFcBtpPZIV2Woiy+hBK9rZti7U4MA6ptX1jEuSJebRCJAdac11GCzwT8UdaolPzbMaWcbjYQSg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g5fhN584Fz2xll;
+	Thu, 30 Apr 2026 13:25:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777519556;
+	cv=none; b=azFavau3iqMqnjd8H0Ff5jEYhWuh6uDYgpqusKKWA4HrmcpMvC37G3TXoZ0clqUEysXLhXD85a8UZioWioYD0sNMPv5YrBn43UMRCyVKVAovtalBIhsDXo6LZyTaIm28UkxugAIH7kGz7UpbVV2aZlLPFUW9z3NQ898M2/NVFPO1Os5Yd1BiRLiUvgmnCgLfG+y49N49yc81s7HO/j+/ITPVZ40cq0hepWhQcJpU6AVMLjYX3iBUKPkSrb11mul7j2iTqxs+luV/pUW1hAaH6aUc3Sq/l7nrd3JPzwN9xmNjmAYe7CypGAFFWLE3atU8jPA4y1HnYIF0aQy20pyStw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777519550; c=relaxed/relaxed;
-	bh=e5TaI9M8cOEzzxA3yKmeoFjtnYXZChCt4lKYDYwQv14=;
+	t=1777519556; c=relaxed/relaxed;
+	bh=9h+2+l6YOgSv4xQuuSp6Pxc+vCf1Cm2WPNMAxO5dvrY=;
 	h=Content-Type:MIME-Version:Subject:From:Message-Id:Date:References:
-	 In-Reply-To:To:Cc; b=ioYak0CTVz6TmKQ377HT3yk3sjP4iEb1f+nhwmo+4LlmCZ1LP9QO2WKqQ3rUB9KVXU9h5ZnvLzEfG6ZdR09JryV1ci2Ga93T/ZNgiBfwGjtFiMcF65BBvlvq6VkhCMBZ4AzdWP0+PJm0pcndRkc3JWP9ubkG7nMYRpHZSFq+U9BowhifGFy6KanZGwRMtGRzwgCc52tGkBBZKw+ntpuK1Aok5rYGZVJRKaHQtLSrYUppbQSNb9YKpBEHMXXQi9EG1ekmRWsf8WsQHP+ycu3fSltWpkDWerihVVhl8d7gNriHs1sqndhY8aQbeIcMbepQop2ujeMCH9mWYtO3DlDb8w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oK4W1kKQ; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=HwxaLmGuJYnXvAWxIXrPHQFmZEFe9/zlx5QRQAv+8sEcYBY9yJY1gXZz5xV4eSSvFv/mWY315Xb65PvCHhymh0LV25IHPpN16Ko+TRJBN2mGTBA0DvTHvUmjJdteO6KVJqhUojhQCLmf8EDsquUQMhocT+X6xJSstsToOSEWq9cgwUyrxTE6W0evVaFTkGLO+TrUKJdvv4mvF11IjXsS993vsTLBEvHn6DMxG1csn8QHfnDhuCkTw7PDoltX2nglU7k4iAe58VpYQvM3Gh3m9yvKpzKQlBRiXmMjxfIZoueLSbkgZJgHTG2nJjqgPm5rO1PXCzZclhjOOziomRFcfw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=S3K5G1Xo; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oK4W1kKQ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=S3K5G1Xo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g5fhF48CSz2xll
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2026 13:25:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g5fhN177Dz2xNT
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2026 13:25:56 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 146F844455;
-	Thu, 30 Apr 2026 03:25:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DDE62C2BCB9;
-	Thu, 30 Apr 2026 03:25:46 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 9D8204457C;
+	Thu, 30 Apr 2026 03:25:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 67F0EC2BCB8;
+	Thu, 30 Apr 2026 03:25:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777519547;
-	bh=dFN6b0A1gSAjmpxBdfCzLd7sjLkkLRUt90cBNTEzJS4=;
+	s=k20201202; t=1777519554;
+	bh=7DUN2QuqQEe+BONI1ESG4SkIz1fzsjbqa3ckTuuKON0=;
 	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
-	b=oK4W1kKQ5frD7xBp2Peo4k+zymjuUiJnLNz1vcnh5EFW4Atm0o1eacKZFX3kxsdMB
-	 Z/9Bybkbt3e4DSKls2D0XjOElY/uAFwJmkXI/D33yiz2mgpn1fh1pHq8wwtdcupk2H
-	 lxsRxcmcLT6uUAPcxQs3YzTqZheDJf8qP4uhFGhGgLv/DTlHLkFL3nUxAt6MFMm3Wn
-	 udAWzPlFVeqX0qf5lNmUGifS42MtZaKyGgO3cIqnJJYyJsJWf51lM0MqpG8QFB2ry2
-	 1jlaoCGMchkNV4IFNSmAKO5kJWwGEnpPKMc5ZEWOTjjRj0oKTos1CMGgTRvfcPXQMF
-	 j0NI9CkIJOSPQ==
+	b=S3K5G1XovhD07R5O5Cfcy7lVvTxvdUAegkMVL4L8Mtzf9fKcNC7CadGfDm94ncYW3
+	 /b3gcg0/YcLg9Als2F8ssWaUxHQUhQMOrsInNGp23YyNVEoZesnW9na1KfzAJGwADp
+	 KTU1UQLuwoaLC0FxYgCBT9ErRd1+nqtKD6J1vJmiEmkbMPNMtG+lgotURJHsePS61S
+	 RLCqfSNYiEnZojyCuQbicPLDo3ywac2PmflqikQdR6Ir9LNvsPRYjNWI6Ol8jDiw5K
+	 s6K1opc7+K/SSJ8ToRvLUcMAZC9t1wDEJ2EBfwZ5oF2rytHLJHY/YtizCxlNq2AgJI
+	 UMoMxqu7YBolw==
 Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 3FDA63809A07;
-	Thu, 30 Apr 2026 03:25:03 +0000 (UTC)
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id BA0123809A07;
+	Thu, 30 Apr 2026 03:25:10 +0000 (UTC)
 Content-Type: text/plain; charset="utf-8"
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -62,54 +62,61 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH 0/2] mm: remove CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE and
- cleanup CONFIG_MIGRATION
+Subject: Re: [PATCH v3 0/4] arch, mm: consolidate empty_zero_page
 From: patchwork-bot+linux-riscv@kernel.org
 Message-Id: 
- <177751950193.2274119.6306882784421764696.git-patchwork-notify@kernel.org>
-Date: Thu, 30 Apr 2026 03:25:01 +0000
-References: <20260319-config_migration-v1-0-42270124966f@kernel.org>
-In-Reply-To: <20260319-config_migration-v1-0-42270124966f@kernel.org>
-To: David Hildenbrand (Arm) <david@kernel.org>
-Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
- catalin.marinas@arm.com, will@kernel.org, chenhuacai@kernel.org,
- kernel@xen0n.name, maddy@linux.ibm.com, mpe@ellerman.id.au,
- npiggin@gmail.com, chleroy@kernel.org, pjw@kernel.org, palmer@dabbelt.com,
- aou@eecs.berkeley.edu, alex@ghiti.fr, hca@linux.ibm.com, gor@linux.ibm.com,
- agordeev@linux.ibm.com, borntraeger@linux.ibm.com, svens@linux.ibm.com,
- tglx@kernel.org, mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com,
- x86@kernel.org, hpa@zytor.com, akpm@linux-foundation.org, ljs@kernel.org,
- Liam.Howlett@oracle.com, vbabka@kernel.org, rppt@kernel.org,
- surenb@google.com, mhocko@suse.com, ziy@nvidia.com, matthew.brost@intel.com,
- joshua.hahnjy@gmail.com, rakie.kim@sk.com, byungchul@sk.com,
- gourry@gourry.net, ying.huang@linux.alibaba.com, apopple@nvidia.com,
- bigeasy@linutronix.de, clrkwllms@kernel.org, rostedt@goodmis.org,
- linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-mm@kvack.org, linux-rt-devel@lists.linux.dev
+ <177751950929.2274119.3965174046465654804.git-patchwork-notify@kernel.org>
+Date: Thu, 30 Apr 2026 03:25:09 +0000
+References: <20260211103141.3215197-1-rppt@kernel.org>
+In-Reply-To: <20260211103141.3215197-1-rppt@kernel.org>
+To: Mike Rapoport <rppt@kernel.org>
+Cc: linux-riscv@lists.infradead.org, akpm@linux-foundation.org,
+ andreas@gaisler.com, bp@alien8.de, bcain@kernel.org, catalin.marinas@arm.com,
+ chleroy@kernel.org, davem@davemloft.net, dave.hansen@linux.intel.com,
+ david@kernel.org, dinguyen@kernel.org, geert@linux-m68k.org,
+ guoren@kernel.org, deller@gmx.de, chenhuacai@kernel.org, mingo@redhat.com,
+ johannes@sipsolutions.net, glaubitz@physik.fu-berlin.de,
+ Liam.Howlett@oracle.com, lorenzo.stoakes@oracle.com, maddy@linux.ibm.com,
+ linmag7@gmail.com, mattst88@gmail.com, jcmvbkbc@gmail.com,
+ mpe@ellerman.id.au, mhocko@suse.com, monstr@monstr.eu, palmer@dabbelt.com,
+ richard@nod.at, linux@armlinux.org.uk, shorne@gmail.com, surenb@google.com,
+ tglx@kernel.org, vgupta@kernel.org, vbabka@suse.cz, will@kernel.org,
+ linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
+ linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
+ loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
+ linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-um@lists.infradead.org, linux-mm@kvack.org,
+ x86@kernel.org
 
 Hello:
 
 This series was applied to riscv/linux.git (fixes)
 by Andrew Morton <akpm@linux-foundation.org>:
 
-On Thu, 19 Mar 2026 09:19:39 +0100 you wrote:
-> While working on memory hotplug code cleanups, I realized that
-> CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE is not really required anymore.
+On Wed, 11 Feb 2026 12:31:37 +0200 you wrote:
+> From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
 > 
-> Changing that revealed some rather nasty looking CONFIG_MIGRATION
-> handling.
+> Hi,
 > 
-> Let's clean that up by introducing a dedicated CONFIG_NUMA_MIGRATION
-> option and reducing the dependencies that CONFIG_MIGRATION has.
+> These patches cleanup handling of ZERO_PAGE() and zero_pfn.
+> 
+> v3 changes:
+> * move zero_page_pfn extern declaration back inside the helpers
+> * add tags, thanks all!
 > 
 > [...]
 
 Here is the summary with links:
-  - [1/2] mm: remove CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE
-    https://git.kernel.org/riscv/c/078f80f909ba
-  - [2/2] mm: introduce CONFIG_NUMA_MIGRATION and simplify CONFIG_MIGRATION
-    https://git.kernel.org/riscv/c/6ebf98d71f9b
+  - [v3,1/4] mm: don't special case !MMU for is_zero_pfn() and my_zero_pfn()
+    https://git.kernel.org/riscv/c/652d12bc74a0
+  - [v3,2/4] mm: rename my_zero_pfn() to zero_pfn()
+    https://git.kernel.org/riscv/c/9a1d0c738b45
+  - [v3,3/4] arch, mm: consolidate empty_zero_page
+    https://git.kernel.org/riscv/c/6215d9f4470f
+  - [v3,4/4] mm: cache struct page for empty_zero_page and return it from ZERO_PAGE()
+    https://git.kernel.org/riscv/c/26513781d1b3
 
 You are awesome, thank you!
 -- 
