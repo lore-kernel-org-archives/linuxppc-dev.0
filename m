@@ -1,83 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-20366-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20367-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71B3ACD3423
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 May 2026 14:55:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E17CBCD3423
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 May 2026 14:57:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g6Yx315c0z30PJ;
-	Sat, 02 May 2026 00:55:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777647303;
-	cv=none; b=AIprDN/Vkeg3p0IPLkUPNhX0lNi4CH7v8FpAD7fiY/NSnnl2AnNLv3Y3a/HoolbvFrx01WU3OOAH51+ro26yg1tern7kV0LqMeQwdcflLPNYHplmB2wpuquo4M7/r3VT7Tg1HUb69pv1lP/rH8ztpp6jtl8lTzEZUvyQ2vGZrasxOEgO6V2k27WjQhhk4HXJ/IhKwfM+eq/WUdIZa5MpVY2DtJNxErCTHwY1KqEqNgfbkjBcRSW70Rz0GuFfUvjdVZcp94Fm1EyzCIuFP8PdFZU515I/CKvnR9Tv3uIKf3NurZJN7Enkz3I0dD8W9vTKp7HZOIuPP2BGk7pmgBB8PA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g6Yzr4dGzz2y8d;
+	Sat, 02 May 2026 00:57:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777647448;
+	cv=none; b=SqCRhCMRCv3s29eAXYHsuu9Fh3yvNEjU13X2Jcfab4mcJtllup0agHx6dzalacsqDl/ej2/skVtGVTIaT1YORij7MzzRVFDIJr48LNIMgfBoW/EjkZmyHb6v0qZ5SWkFwdrLk84WTxej6d/GFetW1fNLIQkQoxB72mcxx0s0K6p3K9PRzvx9ZevJ5cePWb4J3RuDNpG7PaTWt+bsz6cLpCVrB1RQ3uE+oWLqHNhAZwWUk5FhIC0cIxcMtqEYuBNsqsby25cDtxrzK7118flh7S57XRSvvynwAthLXxipdO1cpCRp91eosB+QOKSIrLMRuSuncBNP8SXE27p2B6DVtg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777647303; c=relaxed/relaxed;
-	bh=PaUPb61T35gRamkyqo/ocyRJdv5JEcgJkkvFNjCMw6E=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=fkFtfk3wgraeTWiizIu9CF9YW7oKc3fge9l0HEYQSZiUDBntGgwywX5b2q42PHhKDnp1s6BpiZBfnDjeRY18PzmdbbUZc+SKIC+Xr1l6XTht6UKAxthO3Ruo8dW2Z6gfqI8Lu4xH6PN/aZAT3AaQAutl++LsJY/UDBgHv9i3kQrN0TvH2X7QDScmgMcuVrl2M2hwxtgJOFNCveGJ4gO/5ojkzWG8nEEXV/BO8FXQHEkSJu9H76bd+zhGMcfeo0ORycclW0/N74bV7q+MUg2vwm8veWmiDQziBh1CZHex9Xw7m+hyeUrFgkKeHQAZE6txJwRUbJoLDW9icSJH7AEqAw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WKMJSrPM; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1777647448; c=relaxed/relaxed;
+	bh=GWaEOZ6T8RZshC5VNeX+VR+c38seOstsZgFtVZK1Yb0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=MNRn7PD7RdHdhGXDQIe2Fhe0gE5/Py7AjOGO7TorRluX2QA6a8PvVQrV4n780qClEz4somQuKCJJFW79SZfxwTi9nitXHjoPZmXP8fpU4yBwKtK2xubCFiLGYQ7LyAY9OjcVfDEgT7fOXiPiFO0Ysxg06hYgs7yIfB1avotU+0gV62zZEAa6FIxdEJnPTuDN90eL9zgFeDbwRtAKFMUzy/TAP/I0TpMkczRF5lft2r4KwCZWiOvkoKl4blvXjGKqoq9az8obTNW4BJFh5lxUPN/SO61MmQkw84HyuY9FzkDAPYb08nhVTIlIg9lJY8rbtdO2eqEaYSzrrAqjNz0uBA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=Er8GF8z4; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WKMJSrPM;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=Er8GF8z4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org)
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g6Yx22zK2z309S
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 02 May 2026 00:55:01 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6418Iuh61694171;
-	Fri, 1 May 2026 14:54:58 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=PaUPb61T35gRamkyq
-	o/ocyRJdv5JEcgJkkvFNjCMw6E=; b=WKMJSrPMUAoerRxCUtinTc1qyfNtfgsSI
-	azTITfG6aNQpczF4jgTOZma9VisUCvVrFmjzB9y1Yz82MfR5MqH5AUiW5lpW1ALE
-	MSJpTK8aJRlbCFUcmTVIHJqIKvTG3DOmQkxEA0/MGo8TIl0j9vKIHQjASnrnVHyH
-	fpQvPK0fu/sOsM7tVtxt3aZ/R4+v7jFl5jN8YOpaiHaJKsvMCQxbb/KGiX9Tkp4j
-	047AyPutVEbDq1kJADY3luIN0hK5ZTtN9nwkBmnWlp2jnTrtUgPSY9HWEHUgb6gv
-	25rfwFBJlziuXx9cGd4KA7T2zC4rMHxw/V9kNvnbtIfR9Ar0CIZVQ==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4drnb5n25c-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 01 May 2026 14:54:57 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 641ErpE3015302;
-	Fri, 1 May 2026 14:54:56 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ds7xqr05j-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 01 May 2026 14:54:56 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 641EsrLq24052036
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 1 May 2026 14:54:53 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F172E20043;
-	Fri,  1 May 2026 14:54:52 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A902720040;
-	Fri,  1 May 2026 14:54:46 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.39.19.167])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri,  1 May 2026 14:54:46 +0000 (GMT)
-From: Athira Rajeev <atrajeev@linux.ibm.com>
-To: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
-        mpetlan@redhat.com, tmricht@linux.ibm.com, maddy@linux.ibm.com,
-        irogers@google.com, namhyung@kernel.org
-Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        atrajeev@linux.ibm.com, hbathini@linux.vnet.ibm.com,
-        Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com, shivani@linux.ibm.com
-Subject: [PATCH V2 2/2] tools/perf: Add kernel-doc comment to auxtrace_record__init() function
-Date: Fri,  1 May 2026 20:24:36 +0530
-Message-Id: <20260501145436.1327-2-atrajeev@linux.ibm.com>
-X-Mailer: git-send-email 2.39.5 (Apple Git-154)
-In-Reply-To: <20260501145436.1327-1-atrajeev@linux.ibm.com>
-References: <20260501145436.1327-1-atrajeev@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g6Yzj6ygFz2xnZ
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 02 May 2026 00:57:19 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=GWaEOZ6T8RZshC5VNeX+VR+c38seOstsZgFtVZK1Yb0=; b=Er8GF8z4i4fcdoqldcSz6UdIrK
+	0uV2fMmb401OPsbWUDQlEgY0WImYvRoaOS/51Kt7cci4PwM0IwWZmDRUbGXw7O9IkTUTcXx4Dq2Om
+	1ySnKP5ZPsmA0cdTKwQEUsbejJKOkDxp+xsnqOc9et7bCG9WzZFKFYNxcz4UjijcH9lNIaYGg9axV
+	D8CvZuRnVnBvGs0WeFCpwaRxMrcj+ZmM+kVA2Q+aDmR35tDfpqtDlNjfzVDU0ieNT7dT3nkuFY8KO
+	oBaeuIlQkfSbM8D3+gtqA/Kl4BULEQcG2OPtDBswRpN88NbjoIlZE7bl29JItAlrzNVWRNazfWERT
+	lB1uWyaw==;
+Received: from willy by casper.infradead.org with local (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1wIpIN-00000008wbR-3iIK;
+	Fri, 01 May 2026 14:56:48 +0000
+Date: Fri, 1 May 2026 15:56:47 +0100
+From: Matthew Wilcox <willy@infradead.org>
+To: Barry Song <baohua@kernel.org>
+Cc: akpm@linux-foundation.org, linux-mm@kvack.org, david@kernel.org,
+	ljs@kernel.org, liam@infradead.org, vbabka@kernel.org,
+	rppt@kernel.org, surenb@google.com, mhocko@suse.com, jack@suse.cz,
+	pfalcato@suse.de, wanglian@kylinos.cn, chentao@kylinos.cn,
+	lianux.mm@gmail.com, kunwu.chan@gmail.com, liyangouwen1@oppo.com,
+	chrisl@kernel.org, kasong@tencent.com, shikemeng@huaweicloud.com,
+	nphamcs@gmail.com, bhe@redhat.com, youngjun.park@lge.com,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org
+Subject: Re: [PATCH v2 0/5] mm: reduce mmap_lock contention and improve page
+ fault performance
+Message-ID: <afS_L-5XeWIldTXA@casper.infradead.org>
+References: <20260430040427.4672-1-baohua@kernel.org>
+ <afNM-gIqxpyJ6ro7@casper.infradead.org>
+ <CAGsJ_4w0qcYmukHqsyRd0jomoyYkJjOt8b-Cgp53BgP-8QQghw@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,77 +74,21 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=AqDeGu9P c=1 sm=1 tr=0 ts=69f4bec1 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8 a=rIN8eMsy0-pcsuMf_RkA:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTAxMDE0NCBTYWx0ZWRfX4RGGXf5sQWQs
- zgJnySMOQGmDKdYDndPklFEHkx1mTXRDccYqId4LbfHkIkjmXKnH7Yx5vRAZiYEqYt7TnKVn3Ll
- eJs2JwjqmskkC1zN91x4SdBAkSFjcqjYnnvEY18VusAtFAk38MLmxJSlzR137hAjtVuMZ3g27wz
- 5M6HLKf+SJ+b1o9jq9BxdZj0vETXIsjsb/yQ8GT4MASg66Inf7RHNRrOL4ztxCMptpaInGBicP1
- 1K8TsYIploU/XTAMC+g/LOAMr3mhalrU/OmEWaPo67hNliLbD3h3KiqpIjklGhRNQ4Ny2PQMs75
- 3TtDkdyRni/hRObvwLR6MoePbVMU625fuOZy+nRqLhLGTQlSQPvWRmyQA36K27eTMn7UE5Jf7Jn
- +fT1FByviRWOfjbasUjNslQGU/PHVOXUBJo+i1qNGFHS/u7Y+RGoSHttQ07dUTExyZjonHvM3Jc
- WZn+N0eccW/LAEcOk3A==
-X-Proofpoint-GUID: j7-9lroufTt8fT8PR_LhIWeGphBGGj0m
-X-Proofpoint-ORIG-GUID: pseR7_Cu_uKjSUU7-m2QyVgNJ7bh7rTu
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-05-01_04,2026-04-30_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 priorityscore=1501 phishscore=0 suspectscore=0 clxscore=1015
- lowpriorityscore=0 spamscore=0 bulkscore=0 impostorscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604200000 definitions=main-2605010144
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAGsJ_4w0qcYmukHqsyRd0jomoyYkJjOt8b-Cgp53BgP-8QQghw@mail.gmail.com>
 
-Add documentation comment describing the parameters
-and return code for auxtrace_record__init() in util/auxtrace.c
+On Fri, May 01, 2026 at 06:49:58AM +0800, Barry Song wrote:
+> 1. There is no deterministic latency for I/O completion. It depends on
+> both the hardware and the software stack (bio/request queues and the
+> block scheduler). Sometimes the latency is short; at other times it can
+> be quite long. In such cases, a high-priority thread performing operations
+> such as mprotect, unmap, prctl_set_vma, or madvise may be forced to wait
+> for an unpredictable amount of time.
 
-Using "struct evlist *evlist __maybe_unused", gives below
-warning with "scripts/kernel-doc".
-
- # ./scripts/kernel-doc -none tools/perf/util/auxtrace.c
- Warning: tools/perf/util/auxtrace.c:912 function parameter '__maybe_unused' not described in 'auxtrace_record__init'
- Warning: tools/perf/util/auxtrace.c:912 function parameter '__maybe_unused' not described in 'auxtrace_record__init'
-
-Updated  parameter as "struct evlist __maybe_unused *evlist"
-With the change, there is no erros/warnings with kernel-doc
-
-Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
----
- tools/perf/util/auxtrace.c | 14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
-
-diff --git a/tools/perf/util/auxtrace.c b/tools/perf/util/auxtrace.c
-index a224687ffbc1..8c0447c54003 100644
---- a/tools/perf/util/auxtrace.c
-+++ b/tools/perf/util/auxtrace.c
-@@ -896,8 +896,20 @@ int auxtrace_parse_aux_action(struct evlist *evlist)
- 	return 0;
- }
- 
-+/**
-+ * auxtrace_record__init - Initialize an AUX area tracing record.
-+ * @evlist: The list of events to check for AUX area tracing event.
-+ * @err: Pointer to an integer to store return code.
-+ *
-+ * This function looks through the @evlist to determine which AUX area
-+ * tracing hardware is being used and initializes the auxtrace_record
-+ * structure.
-+ *
-+ * Return: A pointer to the struct auxtrace_record on success, or NULL on
-+ * failure (@err needs to be set).
-+ */
- struct auxtrace_record *__weak
--auxtrace_record__init(struct evlist *evlist __maybe_unused, int *err)
-+auxtrace_record__init(struct evlist __maybe_unused *evlist, int *err)
- {
- 	*err = 0;
- 	return NULL;
--- 
-2.47.3
+But does that actually happen?  I find it hard to believe that thread A
+unmaps a VMA while thread B is in the middle of taking a page fault in
+that same VMA.  mprotect() and madvise() are more likely to happen, but
+it still seems really unlikely to me.
 
 
