@@ -1,58 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-20363-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20364-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C895CD3424
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 May 2026 12:36:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8EC2CCFA13
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 May 2026 13:06:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g6Vrf2RByz2xnZ;
-	Fri, 01 May 2026 22:36:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777638962;
-	cv=none; b=otPTm4H28l38edC2ZIerhW9stT2CxdxXSkWB4P8OfivOlxgjm8ax+ld7T0U82swaD8vktyXWiIo0sYUvA4NB1VQ3WY27Os+SsrndKZv+Q0upz24f6PR5xMXkZCirnF8w/VSufI6CB4MitG3c01vfIt7RFux6/rqGN1rakw2X3ClXUPz0K7pI4WR6KgwS3nn2LZGtgzuvxH8zcCrlEM7Ac/5r+Liv1DuV3MBDny0n68i2ov/nK5yqSbq0IuUqdhwTzhV/a7QJPrfIhQs6DpvDxid+KjgOdSPPXrJz/rsOGt0A8SBxIJKolkbQTK1VG6TFu3SuP/tc5EDgBbq1+6nf4Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g6WXB1zn8z2xnZ;
+	Fri, 01 May 2026 23:06:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777639466;
+	cv=none; b=XLG6pgyDuQzrf7KOaEZb4gxeYZCnljZ9PJH8O4jafkkDFjlAQ57WVsuEgeqGgLYbUueniyXk+++LwVRYSGBmNNV6uHF2PO6EgznbD9bYhudqRCAyn4Er90pQnIShvdrGD0Tw/VDPbJmi5j+C79NCRo3bIgdCCs7znoekXYThbtk7AJpeE1oZCGC9oURrqv5wnqss8twcdSB1pefTx+zEHpgwooTQCgyehQ9eY/UjzGpPFQokdvjqLnRp7i8oFYsvAjsZ6CkwAQlbCzh/DZXnJBFLdn4yyqSdXd8ykH1SXfgBndNd3Lbo+7ysFSZGG4DukqdOr1JmQlXJX7aZyf16FQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777638962; c=relaxed/relaxed;
-	bh=+K2jQAl8Hv/LPmM5NOSPiAMmtoZuqIiApcMhc4jYUBw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=iZ7q4kRISEW44LgTSNmIat19QzqoEUcMNf7H86mrlBZ4nCRMDLvRWO8DkZOUQNbJlf537sS3H8hqlbdC8mSnBTHAr6K3rs6dkRn0lVn7ZrvIHmd44bLw5kccKMUdtBCm4ajw9m/lXvmkrEcWL1HQb2TeFasE3EnhjwheT0l+spmUjW5se32DSgR9fWG6JAGp4DIdsaXUK4Szh+EsyfHdQE5HbD2p+8vz9BbWeA/IWq79km4/B5IYv31YAOM10ZAPk1a1DnIp2d6xkAtmbNas64FfFdjHx1zdV15JTpGH915WeYNrNCBqxt8YiNaqHmvL0hgmoOFRl9C+y9NFNH8MLw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=P24Mo1II; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=horms@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1777639466; c=relaxed/relaxed;
+	bh=WDJ5agURbFUqib/Y5f6nEczqKk4PcA/SMngvEMv0JI8=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=TdAGgc7AZA0P47MDCfn639VOnEYn12+ePYHa0jiobgBI7xIIpXQ3xyjbRb8Y+BerTOncdWqZKC0Kqt/lYcYVjtOMLZgHjLvwEKi2Cmlnk4dfiNA1fCVo/YH4qp87ue1p32FEGATFd/Sy5bxnauOT5fcvm3z0SLmfHIjxfpe7r0fUUlbszxZqvNmTImm/9jEa+J6kfCDu3rQj9HkBkTgLZSr91BHE3tA+rol7EimmTAXc7epiZD4q/tU9JhRZuqPhsA3iXDWE79hyA/OLZOWkn6JuyGA09kbrYoHXlU0AANo8LMthRerqcp93tQttm6XjZ4OMTMTxNhWokHLE6lQftQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LBPygiff; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=cel@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=P24Mo1II;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LBPygiff;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=horms@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=cel@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g6Vrd54wWz2xWY
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 May 2026 22:36:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g6W2K6bL7z2xWY
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 May 2026 22:44:25 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id B002160126;
-	Fri,  1 May 2026 12:35:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 24CD0C2BCB4;
-	Fri,  1 May 2026 12:35:57 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id B7BF060142;
+	Fri,  1 May 2026 12:44:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 32744C2BCC4;
+	Fri,  1 May 2026 12:44:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777638959;
-	bh=zs6x/LEwnR68uhk/ijWwQApW1jJL4t87b71Ve+6e4Zc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=P24Mo1IIqSwDbUdn19Cf3/oy2Ut72ojBWwp/ETMZXT91XiN4IRr1onQu6mCobGA0K
-	 BszQ1jEhWnGELgzCquvA+Iqg42LzKc4+zgSMY8dzFSPQ8OF7Uh+Q2iNVVQjSzZq4id
-	 dwvxelJYGFxlbPce3b3+628jh6eAetX0gOva1fitNc2iuFGmBO0/EGRFEEfGoNrVQr
-	 nSvF/rv/vfCH8mrM7wG4PcV76z8HeTkEuwv4U0gRkC6u3YnD2mCPxPO3hOvuOb82h8
-	 AbTAoSMOyKEkgvHq1UhelRZmWeosM1EjYDxyAzWGSXN72XJa2uV3O1AS2KxFvVS9rw
-	 bRAuL2nDh5jIQ==
-Date: Fri, 1 May 2026 13:35:55 +0100
-From: Simon Horman <horms@kernel.org>
-To: Holger Brunck <holger.brunck@hitachienergy.com>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	andrew+netdev@lunn.ch, chleroy@kernel.org, qiang.zhao@nxp.com
-Subject: Re: [PATCH 2/2] net: wan: fsl_ucc_hdlc: fix ucc_hdlc_remove
-Message-ID: <20260501123555.GC15617@horms.kernel.org>
-References: <20260429114208.941011-1-holger.brunck@hitachienergy.com>
- <20260429114208.941011-2-holger.brunck@hitachienergy.com>
+	s=k20201202; t=1777639463;
+	bh=tOQURC2lOBxx2B37R+W14tFAK4b6ua+v1BIBDO25iGY=;
+	h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
+	b=LBPygiffx0JtHpCrM7wj7xR3bXkb7oJzWnSiONJHFvDtsXFeuKu6AeJtS6/bAsxFl
+	 Ijx465GWMs8sVlmOVatb++6ZEpw3R8RKPpTAhSCsm608dnf+dLm+P6bu+44LmRifBj
+	 qSs6vUAC991+/ilaCCgEZRFfgUemE70qsiRgsuSh91z85yXBS7Klz5YEDMwutgNGZ6
+	 Urn2uDW/X6v/x3VkcjYO4xfGmKmOd23ladCqxES8o8Xtk3NgcuqSYzuwhPLjbi9L1s
+	 kFgfyDvVj0YGbigk8RUf9WXeDNo0wKdhwJB/GcEBeZZf3y3FfIIV2Muipl87r1g73Y
+	 DRSKBEZKIVjpA==
+Received: from phl-compute-10.internal (phl-compute-10.internal [10.202.2.50])
+	by mailfauth.phl.internal (Postfix) with ESMTP id 262F8F4006D;
+	Fri,  1 May 2026 08:44:22 -0400 (EDT)
+Received: from phl-imap-15 ([10.202.2.104])
+  by phl-compute-10.internal (MEProxy); Fri, 01 May 2026 08:44:22 -0400
+X-ME-Sender: <xms:JqD0af-dsW1UXIKGFbOiCBlshGCGBxMKKb8ZI1eFeMCLu8-KIhW2mA>
+    <xme:JqD0aWgzNu3SCDqvf3k8TeYQ0VFCxA_vAaYloCaVB9vT4R_v6GpW0O3MgV0xQd1OG
+    hyMiZim3ssy4qSwox82eF9xw3VNMB-CqtH7cZNOkRcAYxb3mz4q>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefhedrtddtgdeltddvfecutefuodetggdotefrod
+    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpuffrtefokffrpgfnqfghnecuuegr
+    ihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjug
+    hrpefoggffhffvvefkjghfufgtgfesthhqredtredtjeenucfhrhhomhepfdevhhhutghk
+    ucfnvghvvghrfdcuoegtvghlsehkvghrnhgvlhdrohhrgheqnecuggftrfgrthhtvghrnh
+    epgeehudeiieevveehleehleeugefhhfdttdehlefhuddttdehieelteekleevtdejnecu
+    ffhomhgrihhnpehkvghrnhgvlhdrohhrghenucevlhhushhtvghrufhiiigvpedtnecurf
+    grrhgrmhepmhgrihhlfhhrohhmpegthhhutghklhgvvhgvrhdomhgvshhmthhprghuthhh
+    phgvrhhsohhnrghlihhthidqudeifeegleelleehledqfedvleekgeegvdefqdgtvghlpe
+    epkhgvrhhnvghlrdhorhhgsehfrghsthhmrghilhdrtghomhdpnhgspghrtghpthhtohep
+    kedpmhhouggvpehsmhhtphhouhhtpdhrtghpthhtohepjhhlrgihthhonheskhgvrhhnvg
+    hlrdhorhhgpdhrtghpthhtohepmhhishgrnhhjuhhmsehlihhnuhigrdhisghmrdgtohhm
+    pdhrtghpthhtohepvhgvnhhkrghtkeeksehlihhnuhigrdhisghmrdgtohhmpdhrtghpth
+    htoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrghdprhgt
+    phhtthhopegthhhutghkrdhlvghvvghrsehorhgrtghlvgdrtghomhdprhgtphhtthhope
+    hlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthho
+    pehlihhnuhigqdhnvgigthesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhope
+    hlihhnuhigqdhnfhhssehvghgvrhdrkhgvrhhnvghlrdhorhhg
+X-ME-Proxy: <xmx:JqD0aZ-eFMMT6v1KtExUvT6w0MVa-AGRyUautOMYlbZSFZ0vq-U--Q>
+    <xmx:JqD0aaRKqirODqnZgL7zXQSn6YLEL_7TT0RNqFCBqv0tkomx4eub6g>
+    <xmx:JqD0abdYZ6RoWS_8dTiAOa_bbY3m5TEekj0vAk_5nCGaxIaN29ghQg>
+    <xmx:JqD0aUQx3oRrUvGvAwS3Q2FbkCtlv152yBi0Idd0V3HWPH92UpL-LQ>
+    <xmx:JqD0afLpq_HMJjX5wXeWl1zdOxy6ewWTpmc6m8NihfDAjXM2FdbzBk2u>
+Feedback-ID: ifa6e4810:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id F3F34780070; Fri,  1 May 2026 08:44:21 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,45 +92,84 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260429114208.941011-2-holger.brunck@hitachienergy.com>
+Date: Fri, 01 May 2026 08:44:01 -0400
+From: "Chuck Lever" <cel@kernel.org>
+To: "Jeff Layton" <jlayton@kernel.org>,
+ "Misbah Anjum N" <misanjum@linux.ibm.com>,
+ "Linux Kernel" <linux-kernel@vger.kernel.org>,
+ "Linux Nfs" <linux-nfs@vger.kernel.org>
+Cc: "Linuxppc Dev" <linuxppc-dev@lists.ozlabs.org>,
+ "Chuck Lever" <chuck.lever@oracle.com>, venkat88@linux.ibm.com,
+ "Linux Next" <linux-next@vger.kernel.org>
+Message-Id: <8e8847fb-0eff-46b0-97dc-fe683c706db3@app.fastmail.com>
+In-Reply-To: <d6701b40b8b7c143f87ecec0afb08af8a2867358.camel@kernel.org>
+References: <dcd371d3a95815a84ba7de52cef447b8@linux.ibm.com>
+ <8cf80f450085ac17164e8fa1391e9635@linux.ibm.com>
+ <d6701b40b8b7c143f87ecec0afb08af8a2867358.camel@kernel.org>
+Subject: Re: [BUG] [powerpc] [next-20260216/17] nfsd: use-after-free in
+ cache_check_rcu() triggered by sosreport on ppc64le
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, Apr 29, 2026 at 01:42:08PM +0200, Holger Brunck wrote:
-> If the driver is used in a non tdm mode priv->utdm is a NULL pointer.
-> Therefore we need to check this pointer first before checking si_regs.
-> 
-> Signed-off-by: Holger Brunck <holger.brunck@hitachienergy.com>
 
-Hi Holger,
 
-I have the same feedback as for patch 1/2:
+On Fri, May 1, 2026, at 3:06 AM, Jeff Layton wrote:
+> On Fri, 2026-05-01 at 02:15 +0530, Misbah Anjum N wrote:
+>> Hi,
+>>=20
+>> Following up on my bug report, I have completed a git bisect and have=20
+>> critical new findings to report.
+>> Ref:=20
+>> https://lore.kernel.org/linux-next/dcd371d3a95815a84ba7de52cef447b8@l=
+inux.ibm.com/T/#u
+>>=20
+>> Current Status: Bug Has Propagated from linux-next to Mainline.
+>> First Bad commit identified: da6b5aae84beb0917ecb0c9fbc71169d145397ff
+>>=20
+>> The use-after-free bug in cache_check_rcu() that I originally reporte=
+d=20
+>> in linux-next (6.19.0-next-20260216/17) has now propagated into mainl=
+ine=20
+>> and is confirmed present in:
+>> - mainline (Tested on Latest kernel as of 2026-04-30 - commit=20
+>> 08d0d3466664)
+>> - linux-next (Tested on Latest kernel as of 2026-04-30)
+>>=20
+>> This bug is causing failures on ppc64le systems:
+>> 1. Kernel panics: 100% reproducible crashes when sosreport runs
+>> 2. CI/Testing failures: All automated Avocado-vt KVM testing on ppc64=
+le=20
+>> is failing
+>> 3. Use-after-free corruption: Memory corruption with corrupted pointe=
+rs=20
+>> containing
+>>     ASCII strings ("libz.so.", "export_cap") or poison patterns=20
+>> (0xcccccccccccccccc)
+>>=20
+>
+> Thanks for the bug report. I must have missed your earlier email.
 
-As a fix for code present in net, this warrants a fixes tag
-that cites the commit that introduced this bug.
-Perhaps this one is appropriate.
+You didn=E2=80=99t miss it. We responded to that report in February with
+a fix that you and Neil both reviewed and it is in v7.0 now.
 
-Fixes: ca20e191eed0 ("net: wan: fsl_ucc_hdlc: fix ucc_hdlc_remove")
+That fix addressed one instance of this problem; there are actually
+several more, all in the same UAF class. I have a patch series nearly
+complete to address these issues.
 
-Also, as a fix for net it would be best to explicitly target that branch,
-like this:
+The issue Misbah reports here is not the same as the February issue,
+though it is very similar.
 
-Subject: [PATCH net 2/2] ...
 
-I don't think it's necessary to repost to just to address either of the
-above.  But for reference more information on the Netdev development
-process can be found here:
+> The commit you landed on is a merge commit and is not likely to be the
+> cause, particularly since that merge was for x86 drivers and you're
+> seeing this on PPC. Is this reproducible on other architectures?
 
-https://docs.kernel.org/process/maintainer-netdev.html
+We have an internal bug reporting the same stack trace on ARM64. Now
+that we have both a reproducer and a platform that is easily accessible
+it will be straightforward to confirm these issues are fully addressed
+before we merge the new fixes.
 
-The above not withstanding, this looks good to me.
 
-Reviewed-by: Simon Horman <horms@kernel.org>
-
-FTR, an AI generated review of this patch is available on sashiko.dev.
-All the issues flagged there seem to be pre-existing and I do not
-believe they should block progress of this patch. But you may want to
-look into then in the context of follow-up.
-
-...
+--=20
+Chuck Lever
 
