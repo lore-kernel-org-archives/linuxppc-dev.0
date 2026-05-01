@@ -1,59 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-20350-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20351-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B586FF886F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Apr 2026 23:51:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78D6EFF885A
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 May 2026 04:12:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g69tL2fvXz2xwH;
-	Fri, 01 May 2026 09:51:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777593082;
-	cv=none; b=Ao2lYJD2itL1Yui8os2Kmao5MZgXZlMWqZ/AnjMQqgiypp+kGsRB1ED7alxy25tr8oK5oqrO12ZoY0BUowIONzWxuQfbzI4+CtZ4lmq2SLQz/AK4op5COIF4dJMh6b1Whgcq2NM6bt/JTOLkCRMwwEtsQDuvVQn4Wqyji/bDWaDhWEpgL0Mjb1fgc6sZA+3V5U9Nudnr8kmkbg/8Otz+BbqX1wmYL98YcyceIw1wWy25G9bDJpJOQVbqG0/+LDaLs8KfBv9XIYvYDx21oXmJ7mixktgpwIwlClI4SO6bxDEpzOh9d48cw8+7suzPHtViXmyVv7aAER0073BjehtkVA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g6HgV689Kz2ygf;
+	Fri, 01 May 2026 14:12:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777608742;
+	cv=none; b=UPnvt3+k17No5LVSw+bXMhGyU3qrZblY9ffY10aBRrJL8pn0AUjt6fdehdjFB6XEXx4Is0182zrtGjpos3Jq79jUfnJx+I3GXgKshOih+/hYF+1RljZBRZ/locUWyXPd/t14i2BZm4sLpKnSDKVNvlGvqFqafSAyBPOjeTJESS2pZhtYl4yGVEksAZhEw55UCz/xT9SLIhnzQK60YL7/lDznK14N8S/pIOEgXty0Izv+xa9PPSU1qRItgnTlRiSheFJiOJOK4PPcTmGdIdxpduCCpECuEoKAQz89hwneiPHSBJ3Jtmy8x+URYEcN9wM7gMIMrYSpUS8/APx7IA+FZw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777593082; c=relaxed/relaxed;
-	bh=14xYoFpuwR5otSDhfT9CvCFfzCpLajGdBVkQonsXAPs=;
-	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=G4L4+18EJE01Uey2RfFz53yULUu4UUFQW7/vIM97Lfy/3SoiUX6bsjJxQfRtgO/pem8nVraKfob36+sUncK7ddxu3kz3KubdnxsIHHcuOe8PoXUXF1D3RzTblSfEmuTE1CDhiUwe72kparFnt7QgvtnTA7ab8vP2ZSQB5fTel5h3ktSk5/646E0vvdMEVDtEG/fmfyyH4a1uM1Rtsicesk2KjAsgSpEuplgfycxKVPyn2mpAz40roVcRoj2d2aUB+cSf1Wc6SjnhxTDwv9XehQ9ai78s4qrFKXzmLS2qdYbViQWPBgzOpH5f1iIqpHK47sEYQYB9eHUBM1ljAPbcBw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Db15ui54; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1777608742; c=relaxed/relaxed;
+	bh=4YsBlJc4jNUJBo+7TVpNvISQUlC/MjEmtJwMDNQlOeY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=OYCaBRhZI3OG5uZQJhrlLLQWO1PTjqbZlxMwuL/FmzX4JPdVnxCDZ5zoX22dEdn71+SikKxwTWTLWrKpDX6dWor+ZsAXjp6IuXoeQPDKsez4yyaCBlXVJ/MnHLi/rCxC9q8evio7YmfFPj57OvUQyzAKe3ErzHrpbsXP7m45Ay7twmfuNnatvdSLo4xeT2/zO9eQSPvNGN3I4JCAtf7wkWUNPVaDu4sLFDVpXIeRpgA+u8rXnIBwUGpU9iA6qarGg6cl+eJd9z/65vrUzY5O7pAOwRiKUWEMZmaMQxwNuZXpb8+lfChmBGNw8iQiuS+2ejLeQ9LtCBxnNcGx6j9VXg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=slQ041kH; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52a; helo=mail-pg1-x52a.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Db15ui54;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=slQ041kH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52a; helo=mail-pg1-x52a.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x52a.google.com (mail-pg1-x52a.google.com [IPv6:2607:f8b0:4864:20::52a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g69tK1GGSz2xvH
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 May 2026 09:51:20 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 5B5B44329D;
-	Thu, 30 Apr 2026 23:51:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0BA70C2BCB3;
-	Thu, 30 Apr 2026 23:51:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777593078;
-	bh=JvafTrDOUTNbsv8vnx7ex86phNvggiWY6OT9/LP5/Nc=;
-	h=From:To:In-Reply-To:References:Subject:Date:From;
-	b=Db15ui54483FZjnBZlbUr3eO8etE/4h3okqw9prbMX+bIHls1vUacTn4a5hB2AS1p
-	 V+CdHi9+VEsGUJ5hlEeeFYdWiMRMiCko9HT047XU0DjCNu1zv23TOaHiBAoeyne19c
-	 WoQy6qm+pRZ13rOvszGCBVNCAjeXizo+lerdRKhy/pypuEUuSMdeRwW2aFzfsrjbcV
-	 GttKP0ZmRGoAsq0Aa89wHducoGxsa5KfOzt+JuoGJcbnxy9ihW2/ePliHpMldwUjPH
-	 Pd2+lnx+Hgp74Ia6lbuWza2XRDuq5xgjLnl4ALkasLRruTVQIKxQ/gUyUhpIWkb/5O
-	 cE8+WkgY1nSZw==
-From: Mark Brown <broonie@kernel.org>
-To: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com, 
- nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, 
- linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- linux-kernel@vger.kernel.org, Shengjiu Wang <shengjiu.wang@nxp.com>
-In-Reply-To: <20260429100028.2739711-1-shengjiu.wang@nxp.com>
-References: <20260429100028.2739711-1-shengjiu.wang@nxp.com>
-Subject: Re: [PATCH v2 0/5] ASoC: fsl-asoc-card: Add some improvements
-Message-Id: <177755089814.458539.1076703312564291362.b4-ty@b4>
-Date: Thu, 30 Apr 2026 21:08:18 +0900
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g6HgS6MWLz2xPW
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 May 2026 14:12:20 +1000 (AEST)
+Received: by mail-pg1-x52a.google.com with SMTP id 41be03b00d2f7-c796163fac5so940372a12.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2026 21:12:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1777608735; x=1778213535; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=4YsBlJc4jNUJBo+7TVpNvISQUlC/MjEmtJwMDNQlOeY=;
+        b=slQ041kH5puPK7QBKEStS/hfZJ6ojM/SBAd1XAhQdN/sxgT2QQO8M4zY034lxZsZak
+         Klz+HmUCnCq4YQBHoD7wfp14CxxZEkezBJZkGpqEeFz6Lkank3mzTvunHVdKjpfEBp0d
+         fG4AHcQ0BFEPsO3hFM3o8TyzPEAxAEPU7YBoOAL9nI1wNdnbTj7FnclIw03TV37sI11S
+         RSuROzb+z7jJYI3FWHsm8CIz+27LTvFregMZP3nHJ0IX72/XgVVAWgTAuzMqzbMNbFPW
+         9VNQl9qkBVaIAGBdFPVMuiOFu9E5Sofdot0DkAtxaq5KOSw3ur1zlQBf6cSQ3qHk2Fka
+         F3OQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1777608735; x=1778213535;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=4YsBlJc4jNUJBo+7TVpNvISQUlC/MjEmtJwMDNQlOeY=;
+        b=dYgt9l3fWVutrItxJ8sHZHHXKUzR59RaxLVkgZ8ba48KDZJXOW3/Q7KtE6Q7wV3APx
+         2Dl7qLlxylLu13fipT4sFqf/I8tfX3BgCfKyE1Rvrg24XZB8UyVr+DgFWiTtkz584GmM
+         8MpggxO5pU/Twl5F1HCo/Rl3AH8xmVGxFe52ktxXeHvqeFX8D9cFXBWc0sSyY0iLny7i
+         Kwk7H57G5hCumqu1Pcv2QWzL+gtUxxA5TRqMzo1753mHXqMbPghWCqHt9d9ykDi9Up4S
+         a4Yi8ajNcGeY3pRQXhbXFbxTprmMcYR3gT2MHivCO3KlqdoNrjnPaKfWsyHnuzeO44CV
+         7qdw==
+X-Gm-Message-State: AOJu0YxExvZV8stZaHXRM5L27JzXZBpP2mpc69c6kXKsjYc3LInz3Pwi
+	QOJXJmt6hbP8WHWmFY861p4wNpRhBqE6VQ1muSULyZHP+MYhNvnua0jHjekgt4hu
+X-Gm-Gg: AeBDiesmBelMomcuuUqiGALH9e+zU45JkFxYqiYGUw125J2uVUuiBEIVRLXxec2zDtw
+	t3Ugfb1/DL6fcBNsISK4qC5/rJOrg/boWo+aKIgauc4zRhzMozXewkO9Jo/+GamKzR2lv8I0zpy
+	3WedH/t4ByqOfvHOlCqXqdTsvv905JbGklLfklalbu41YSFFC0XcRtbB2VFfewBv51vO7Gyv+uq
+	KL9HCAFGBE3S9A9UU/nhbwiSVquhFyRkpMx/vSGNPeCZyLtaSx+n8ppWrDU9rwIOJpxpB+7r+AF
+	v8esccvGWndudsb7QLpIkryqgDxFY+OputXtLkWM3JpQI/OSfLuxK0Ug3fHXs6VQkH1K0p0OxRB
+	b/7jGNB3kgZmdKpr3F+WHEp87ND6t90ebpR/jVNOuKxpZfG+1djX+5sBk3bloYmOIcd2yRPH/5s
+	BaGdGhDwadX0HlzxProTLmNzZy/rp6k7ODCBpVOUrN2IN0W0UlJKGeEMpHryJmg/k=
+X-Received: by 2002:a05:6a00:3e0c:b0:82f:8a29:e3b4 with SMTP id d2e1a72fcca58-8351a6077b2mr1546695b3a.50.1777608735185;
+        Thu, 30 Apr 2026 21:12:15 -0700 (PDT)
+Received: from localhost.localdomain ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-83515b485eesm1159428b3a.48.2026.04.30.21.12.11
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Thu, 30 Apr 2026 21:12:14 -0700 (PDT)
+From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org,
+	Haren Myneni <haren@linux.ibm.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	linux-kernel@vger.kernel.org,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Subject: [PATCH v3 0/9] pseries/papr-hvpipe: Fix deadlock, races and misc cleanups
+Date: Fri,  1 May 2026 09:41:39 +0530
+Message-ID: <cover.1777606826.git.ritesh.list@gmail.com>
+X-Mailer: git-send-email 2.50.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -67,69 +94,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.16-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2105; i=broonie@kernel.org;
- h=from:subject:message-id; bh=JvafTrDOUTNbsv8vnx7ex86phNvggiWY6OT9/LP5/Nc=;
- b=owEBbQGS/pANAwAKASTWi3JdVIfQAcsmYgBp8+ry5p1Ma8K+HKR46uX6X8vXt0kIWBUXHkhhY
- KgGK69uXYOJATMEAAEKAB0WIQSt5miqZ1cYtZ/in+ok1otyXVSH0AUCafPq8gAKCRAk1otyXVSH
- 0NYYB/9uhp3a0I/QRWCOUBDCuS5nPeizCw0iU4HnFAUasL/nl8C7Bsz/LlLkaLndjl7Csw3gvBC
- snPLnSziSlAm8eLfBtY9cv2hZCEpFth22hreez6ipJGeosvgzbGizrk9zG1vDJAPzzUJvT+KIUT
- adzso8aIy6AzOQ7RPBFTZpDjXYtZ+edyByLPx80o9DWzb01nCB3Ohkl82+mvSSU72jJFfWXOa7Z
- JAFlx3MVfvg298MNFLdj51W3ibocimdAf6xpELUQAKsBTpsDkVjtyIZM/IPKrwtZhlBMwBHfDRU
- c8OoJoa3M/j0Oz2M0Kyjwj0K9EwM3MJix9i4nwHzpbyvhWXq
-X-Developer-Key: i=broonie@kernel.org; a=openpgp;
- fpr=3F2568AAC26998F9E813A1C5C3F436CA30F5D8EB
+Content-Transfer-Encoding: 8bit
 
-On Wed, 29 Apr 2026 18:00:22 +0800, Shengjiu Wang wrote:
-> ASoC: fsl-asoc-card: Add some improvements
-> 
-> This patch series addresses several issues in the Freescale Generic ASoC
-> Sound Card driver related to hardware limitations, DPCM path switching,
-> and codec-specific constraints.
-> 
-> The fsl-asoc-card driver provides a generic machine driver for i.MX SoCs,
-> supporting various codecs and optional ASRC (Asynchronous Sample Rate
-> Converter) for sample rate conversion. During testing several issues were
-> identified:
-> 
-> [...]
+While going over papr-hvpipe code, there were a few fixes which were identified.
+This patch series is an attempt to fix those along with some misc cleanups.
+Me and Haren are trying to get these patches verified on a real HW. The tests
+are not straight forward and we are waiting for the results.
+Will update on the test results once we hear back from the internal test team.
 
-Applied to
+v2->v3:
+======
+1. Rearranged the patches in such a way that it is easier to backport the fixes
+   if required.
+2. Clubbed patch-8 and patch-10 (of v2) since they both were changing the same function.
+3. Handled ret>=0 case in copy_to_user patch, when the user itself may request
+   for 0 effective bytes (after the HDR_LEN).
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-7.2
+[v2]: https://lore.kernel.org/linuxppc-dev/cover.1775648406.git.ritesh.list@gmail.com/
 
-Thanks!
+v1->v2:
+========
+1. Fix a possible deadlock due to use of spin_lock instead of spin_lock_irqsave.
+2. Prevent kernel stack uninit memory leak to userspace
+3. Fix the race condition in null-ptr-deref case where there may be an
+   msg pending to be consumed from the hvpipe.
+4. Fixed error handling in init routine in patch-10
 
-[1/5] ASoC: fsl-asoc-card: enable dpcm_merged_chan flag for ASRC frontend
-      https://git.kernel.org/broonie/sound/c/3b9c088aeabf
-[2/5] ASoC: fsl-asoc-card: enable ignore_pmdown_time for ASRC case
-      https://git.kernel.org/broonie/sound/c/d611feb52de8
-[3/5] ASoC: fsl-asoc-card: add channel and rate constraints for CS42888
-      https://git.kernel.org/broonie/sound/c/e78abe395d30
-[4/5] ASoC: fsl-asoc-card: exclude S20_3LE format for WM8960/WM8962 + SAI
-      https://git.kernel.org/broonie/sound/c/fa7d8ea56c58
-[5/5] ASoC: fsl-asoc-card: reduce WM8904 PLL ratio to meet frequency limit
-      https://git.kernel.org/broonie/sound/c/99b5316f08f3
+[v1]: https://lore.kernel.org/linuxppc-dev/cover.1775569027.git.ritesh.list@gmail.com/#t
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
+Ritesh Harjani (IBM) (9):
+  pseries/papr-hvpipe: Fix race with interrupt handler
+  pseries/papr-hvpipe: Prevent kernel stack memory leak to userspace
+  pseries/papr-hvpipe: Fix null ptr deref in papr_hvpipe_dev_create_handle()
+  pseries/papr-hvpipe: Fix & simplify error handling in papr_hvpipe_init()
+  pseries/papr-hvpipe: Fix the usage of copy_to_user()
+  pseries/papr-hvpipe: Simplify spin unlock usage in papr_hvpipe_handle_release()
+  pseries/papr-hvpipe: Kill task_struct pointer from struct hvpipe_source_info
+  pseries/papr-hvpipe: Refactor and simplify hvpipe_rtas_recv_msg()
+  pseries/papr-hvpipe: Fix style and checkpatch issues in enable_hvpipe_IRQ()
 
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
+ arch/powerpc/platforms/pseries/papr-hvpipe.c | 181 ++++++++++---------
+ arch/powerpc/platforms/pseries/papr-hvpipe.h |   1 -
+ 2 files changed, 97 insertions(+), 85 deletions(-)
 
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
+--
+2.39.5
 
 
