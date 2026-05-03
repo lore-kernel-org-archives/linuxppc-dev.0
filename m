@@ -1,51 +1,114 @@
-Return-Path: <linuxppc-dev+bounces-20388-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20389-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F101BCD3426
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 May 2026 10:58:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22BF5CD342F
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 May 2026 18:17:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g7hZj2gnKz2yZ3;
-	Sun, 03 May 2026 20:58:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777805885;
-	cv=none; b=Z8Apa8jTugWQiCRM0o+jPWq/Txv4n8o3vwvHD4GsXqL4GdjA0XxgUkz39Fx+OrxvZA0AMqf0Tb0D9uP8boUsjwIum9PUYBaNedkeq2cyNR98N/uU2iYklvV1ZgyFYRWmJTLBlNCFpS4VIBMnmxxaYw1SyH++WyKchIZsW/QNDfhCRcTIjZ0LXDHNUczLuwpGs8CLU+VsY/xJKegqc4ExFyrjrvd6G2AsN+QEtfJXryh07ifguHl8sxcQNLD6VjG4B4Su02VYBUNjXKfDjawzKQqTGDPSA5b7kIGcUSWGcBNbfLa89fyyXC24ZUo2reoizB487dyJ8XsNobVSS3aCiA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g7tKy3Ht8z2yZ3;
+	Mon, 04 May 2026 04:17:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777832262;
+	cv=none; b=dXvTPylk5yB3azpSz3ZgAwi5741VfZPfBfdrcOePouyDoEXclOfzKOwAWTmAx/dWTuXASGYpJkhWjtZ2kcjlT5582kmPuDCWcBGYM/wqeDxwpG9sncuyDOrp9OHTBwZxAFNTa17+OJwYAvtFTsnwoYHbCJGCELwfYtD3H67JQVJojVuBWdEcYBd2eIvwtAJSrzS7KAmk55mR3EPQbCriusiBFrwwBtooxwNXwZ31JOKP0RzsIooPbv1xRi69mjRhTyJcLYxifclC17CiehlQKT/ETaWIuzzMmH8pUE7BQsl5ubTVOanX9C01DD7cBIVXyEg952wUK9WYthVqAiZefg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777805885; c=relaxed/relaxed;
-	bh=aFh/V0tObD3PJuwjx4gAXluUY184w7bsPrHcVkDm3Wg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=I9M+iHNz2C9WmzGtCPh0izIwjM+Q/lH16s3DouTJbkEWAEjSSZBiw1Ci4vSWLToNilQY+L65gQ7TBUOkZPipOgU0IHR5NXDt2+82mWwUOxCmKKUUOAfoHlaM5kD79j06kJtdfcInKCYZSuQxwYG7tYFleBTy+wxq74Stxx8ajJmXLJlhHcXNfPaT1jxlHQ9GdvRYCfmYMX+N4WKxMuQST2cf0aDCEmLKFmr9Bxwh8mFH+yA4tXXkcpE40GbzNSGThReFpZKvlr5iWEdQ4GB0Cykw2WTPmfbMowy4gfH8SIcI7mI08uRnpXZicJAlwqTf/ht8pxQhRtVOZ7yg7Ko2kQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Hp/9IPnW; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1777832262; c=relaxed/relaxed;
+	bh=AsKSGKv1gbQ1kxj3oO+fSJmap4EgBc+0PTi6YnXpoZE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=TrNguXGeMeTNrOUITsOU2JSrQCYNCnGXuUX9qgXD+q8sBXcMGPfRkdqYuApnIjd2VKDNstmeDYjvsOEtdpv1sLvCGT4VtL30nv5lfT+BhrMAOpJKViA7/cJm0VrzE+tEa1oTevtNKXWcRFxaPkAVBlTlerVpioEo4Im8HQxj6bK40ARKcR/AbSf8V5ENwGZJjq1sfM2aZCCH02xetAa2jUVKBXwqJRmSVk55+eOJOiQhwecvIp2/UiQ/QxvMAg04reLOEPTDXg2B//McGQ3i38iEhftr34XoKkjJHExiKQRRNnvCCimMgN7JzCU7Y6c+NnWuxvjUFd3EdZ8SCbZDeA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz; dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=OoNHn3y4; dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=q7pHytij; dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=OoNHn3y4; dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=q7pHytij; dkim-atps=neutral; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=jack@suse.cz; receiver=lists.ozlabs.org) smtp.mailfrom=suse.cz
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Hp/9IPnW;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=OoNHn3y4;
+	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=q7pHytij;
+	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=OoNHn3y4;
+	dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=q7pHytij;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=jack@suse.cz; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g7hZg6xnwz2xBb
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 May 2026 20:58:03 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 635C860123;
-	Sun,  3 May 2026 10:58:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2AB8CC2BCB4;
-	Sun,  3 May 2026 10:57:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777805881;
-	bh=pUFh7ax1SHAZJQGwHKzzLHlpwPvkNCzqKUI0KyRRC2M=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=Hp/9IPnWoH00j/ehHzGFM0jTIT5wYmrvQCFbvE5hLbeNuRe81ufd6kWib+fY+ZPNM
-	 T1hEFE5NkQ7KqRPojiNKmhx3Ht810uBQYDpKU9upotkgAVMLy721KPCzr8iX8SryAD
-	 q/+j2WtnWhzBW6oiYkczdNUoMIhtzOHXQOi4VnnG+awNK7bK88MVDmBqJiOb9350xH
-	 dwrY/oq+yMfxu9nGvIgo7pSIEn1wJ0WzrB6bafF4922PUC9fPH8kw8ALfx+8r1bsTd
-	 VdruR/zJHssy3eEYvymBlCI6sFJ35umGVMZZG58xooczE28vrWvq67crYPubUZz/sq
-	 BcMHCbx/H3GWA==
-Message-ID: <a0cb90c6-3aba-46f0-a26f-0dcf13a3e66b@kernel.org>
-Date: Sun, 3 May 2026 12:57:57 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g7tKx0rMSz2xKh
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 May 2026 04:17:40 +1000 (AEST)
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id A9BB95C010;
+	Sun,  3 May 2026 18:17:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+	t=1777832255; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=AsKSGKv1gbQ1kxj3oO+fSJmap4EgBc+0PTi6YnXpoZE=;
+	b=OoNHn3y4rN894Hek56TAHXPlCqi/IQ1Uo/ALP1kQg3A/6zShv94jQjNfaUtelYYh+YOGMu
+	YeRcyoqLNAZBC2BP6OBIZWp0DepiBiJDwjmpOTSysVRWSzDWf2mNm6RtcDBCZaXZCcT03y
+	JNuY4E27lqaHD9OEaIdKjcy6iTWHDa0=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+	s=susede2_ed25519; t=1777832255;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=AsKSGKv1gbQ1kxj3oO+fSJmap4EgBc+0PTi6YnXpoZE=;
+	b=q7pHytijoJfoB1JUwtZq+JLzu+1pit499ofgLxkX0CU8I3YxZ3scCg1SxCoipgJc/00K6j
+	CBR8iE/NRq1ZfJBQ==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+	t=1777832255; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=AsKSGKv1gbQ1kxj3oO+fSJmap4EgBc+0PTi6YnXpoZE=;
+	b=OoNHn3y4rN894Hek56TAHXPlCqi/IQ1Uo/ALP1kQg3A/6zShv94jQjNfaUtelYYh+YOGMu
+	YeRcyoqLNAZBC2BP6OBIZWp0DepiBiJDwjmpOTSysVRWSzDWf2mNm6RtcDBCZaXZCcT03y
+	JNuY4E27lqaHD9OEaIdKjcy6iTWHDa0=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+	s=susede2_ed25519; t=1777832255;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=AsKSGKv1gbQ1kxj3oO+fSJmap4EgBc+0PTi6YnXpoZE=;
+	b=q7pHytijoJfoB1JUwtZq+JLzu+1pit499ofgLxkX0CU8I3YxZ3scCg1SxCoipgJc/00K6j
+	CBR8iE/NRq1ZfJBQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 93C8F593A8;
+	Sun,  3 May 2026 18:17:35 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id a28LJD+R92kuFQAAD6G6ig
+	(envelope-from <jack@suse.cz>); Sun, 03 May 2026 18:17:35 +0000
+Received: by quack3.suse.cz (Postfix, from userid 1000)
+	id 2B30FA078B; Sun, 03 May 2026 15:13:04 +0200 (CEST)
+Date: Sun, 3 May 2026 15:13:04 +0200
+From: Jan Kara <jack@suse.cz>
+To: Matthew Wilcox <willy@infradead.org>
+Cc: Barry Song <baohua@kernel.org>, akpm@linux-foundation.org, 
+	linux-mm@kvack.org, david@kernel.org, ljs@kernel.org, liam@infradead.org, 
+	vbabka@kernel.org, rppt@kernel.org, surenb@google.com, mhocko@suse.com, 
+	jack@suse.cz, pfalcato@suse.de, wanglian@kylinos.cn, chentao@kylinos.cn, 
+	lianux.mm@gmail.com, kunwu.chan@gmail.com, liyangouwen1@oppo.com, chrisl@kernel.org, 
+	kasong@tencent.com, shikemeng@huaweicloud.com, nphamcs@gmail.com, bhe@redhat.com, 
+	youngjun.park@lge.com, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org
+Subject: Re: [PATCH v2 0/5] mm: reduce mmap_lock contention and improve page
+ fault performance
+Message-ID: <yezmezj26xntushmylductlmytfgvwsnbnzlhffkfwugfxkt6m@gleq22spziyk>
+References: <20260430040427.4672-1-baohua@kernel.org>
+ <afNM-gIqxpyJ6ro7@casper.infradead.org>
+ <CAGsJ_4w0qcYmukHqsyRd0jomoyYkJjOt8b-Cgp53BgP-8QQghw@mail.gmail.com>
+ <afS_L-5XeWIldTXA@casper.infradead.org>
+ <CAGsJ_4wk=SDtgin+84Ev2TamU-JFfmrg_SUay=-tcYmnFvK6Nw@mail.gmail.com>
+ <afTpoL3FklpQZNMM@casper.infradead.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,78 +122,75 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] powerpc: Run typos -w to fix typos
-To: Link Mauve <linkmauve@linkmauve.fr>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
- Shrikanth Hegde <sshegde@linux.ibm.com>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Segher Boessenkool <segher@kernel.crashing.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-References: <20260501233800.16573-1-linkmauve@linkmauve.fr>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <20260501233800.16573-1-linkmauve@linkmauve.fr>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <afTpoL3FklpQZNMM@casper.infradead.org>
+X-Spamd-Result: default: False [-2.30 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	MID_RHS_NOT_FQDN(0.50)[];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	ARC_NA(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	TO_DN_SOME(0.00)[];
+	MISSING_XM_UA(0.00)[];
+	RCPT_COUNT_TWELVE(0.00)[30];
+	TAGGED_RCPT(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	R_RATELIMIT(0.00)[to_ip_from(RLhrg5631p11qpq785u7koq73u)];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[kernel.org,linux-foundation.org,kvack.org,infradead.org,google.com,suse.com,suse.cz,suse.de,kylinos.cn,gmail.com,oppo.com,tencent.com,huaweicloud.com,redhat.com,lge.com,lists.infradead.org,vger.kernel.org,lists.linux.dev,lists.ozlabs.org];
+	RCVD_COUNT_THREE(0.00)[3];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_TLS_LAST(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DKIM_SIGNED(0.00)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:email,infradead.org:email,imap1.dmz-prg2.suse.org:helo]
 
-On 02/05/2026 01:37, Link Mauve wrote:
-> From: Emmanuel Gil Peyrot “Link Mauve” <linkmauve@linkmauve.fr>
+On Fri 01-05-26 18:57:52, Matthew Wilcox wrote:
+> On Sat, May 02, 2026 at 01:44:34AM +0800, Barry Song wrote:
+> > On Fri, May 1, 2026 at 10:57 PM Matthew Wilcox <willy@infradead.org> wrote:
+> > >
+> > > On Fri, May 01, 2026 at 06:49:58AM +0800, Barry Song wrote:
+> > > > 1. There is no deterministic latency for I/O completion. It depends on
+> > > > both the hardware and the software stack (bio/request queues and the
+> > > > block scheduler). Sometimes the latency is short; at other times it can
+> > > > be quite long. In such cases, a high-priority thread performing operations
+> > > > such as mprotect, unmap, prctl_set_vma, or madvise may be forced to wait
+> > > > for an unpredictable amount of time.
+> > >
+> > > But does that actually happen?  I find it hard to believe that thread A
+> > > unmaps a VMA while thread B is in the middle of taking a page fault in
+> > > that same VMA.  mprotect() and madvise() are more likely to happen, but
+> > > it still seems really unlikely to me.
+> > 
+> > It doesn’t have to involve unmapping or applying mprotect to
+> > the entire VMA—just a portion of it is sufficient.
 > 
-> I have manually reviewed every single of these changes, and tested that
-> the kernel still builds and boots on the Wii, but this obviously doesn’t
-> exercises all paths.
-> 
-> I’ve used typos 1.46.0, released on 2026-04-30, I expect future versions
-> to catch more typos but we can run them periodically.
-> 
-> Signed-off-by: Link Mauve <linkmauve@linkmauve.fr>
+> Yes, but that still fails to answer "does this actually happen".  How much
+> performance is all this complexity in the page fault handler buying us?
+> If you don't answer this question, I'm just going to go in and rip it
+> all out.
 
-Please implement previous comment. Your DCO is pretty messed up.
+I fully agree with you we should verify whether the retry code still brings
+in real-world advantage today with VMA locks. After all the retry logic has
+been introduced in 2010. That being said if there are realistic loads where
+one thread needs VMA write lock while another thread is faulting the VMA,
+then the latencies can be indeed extreme. For example things like cgroup IO
+throttling happen on the IO path and thus can throttle IO of a low-priority
+thread for a long time.
 
-Best regards,
-Krzysztof
+BTW I'm not sure I quite understand Barry's priority inversion problem
+since I'd expect all threads of a task to generally be treated with the
+same priority...
+
+								Honza
+-- 
+Jan Kara <jack@suse.com>
+SUSE Labs, CR
 
