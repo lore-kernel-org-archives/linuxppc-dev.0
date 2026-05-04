@@ -1,62 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-20393-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20394-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2428ACD3424
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 May 2026 01:49:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 326C7CD3423
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 May 2026 04:16:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g84MG4f8Hz2xnk;
-	Mon, 04 May 2026 11:49:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777859370;
-	cv=none; b=LrQVJO21K4trqIewuc9JUJQ3Ra92TtnlvArAPdEUVOq/E8lZY0mIhnlk71M8a/CsnvPI+Umu7OSMISJYHfGobYQN7mMhKFJRMfpvJlqXPdJGbPOfA/TrbxBXDAItXQ52kRQ93CheOh71YhhLJ31kpDgDP4FgYbuSaQfEupu99XtaKrSnxcNXwlW5eT+jxOEvAz9m7crop/3jz02iJhjeknmNTSi08V2X1zfLiZG1/gM7K5aOl5aOvJKZOYnqLZS/Hi/uCgv9KyJRYMNbSD+n+yDGdxKUMBwE/7AzwYxrgszdqmxv0n6ZFm0A/TIxySEHHAdemedfYi78rdN1IheclA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g87dL2bRFz2yZ3;
+	Mon, 04 May 2026 14:16:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777868214;
+	cv=none; b=TKaR6eES8iFUDR8I9n+ITtALJqu71W6v/5dT1zA1YWhmi/Bh1UC2ygxZyQVYDpr1xwlptYXyrXC/IBJWLfre5NnCmGH5M9XI/WxJ8kNP12hxVxBa3SjLOngMrc6ml/ALE8K4gvBlKWJbYS40L5m9YelfbJGt4D2GBWqiy3oL/2ypJDWSRcKy4Vd4iNeVGJCQdhzdvyO9MtaYqEwC/C4kXbMUxDsUZWoF117SK5g0QV/UrDpieeykwzHVGOzeXAejMqpNVCCRLmcTPCJ+oVPKO7WEvWa1jXow0DzoX+h3qMjEcPFPhi8naDB4/u93T7DqJ7lPLd93Zh8LaEdKeTv0aw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777859370; c=relaxed/relaxed;
-	bh=Qt81eO8NNS2KfY346h3c7m4OLVhwp1AcpRVIMvcwKH8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=WfIYFImLKHQ8Mi7ZgtddD+csnczgh7yHZC05UUhiQ2j4WVfU0tlCLngbmgFgwwZI+huJDcBqRz2jwgWgpw2WG4Sq23nSN8NqZSYM6X4EJovA0p88++0EufK4Tf+5T51xNQ0KM+54Nr0YYiJsf/7KaVBEkbQwBKFCwGi9ULlBlmXR3JR4KV6dHHnIFjau8/17irrByC2MLWCGvuTBo5RozzmugPK5jfB7X2NxGOOM1Mpi0FlKriH3u99uo6LmsZQjqEE18dPcbZzd6RtwasBB13vwINHet7NiVs5EdrPy6lJSfgg44fygAHTwEgXT4icpbbw5kKNofkyc9tt+etNsjg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kJncZUcT; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=namhyung@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1777868214; c=relaxed/relaxed;
+	bh=zDxygFY2dV2Ovgu2bRY8uj9jJ+BumT9Gmg2J16axPu8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ZxIOgDxCZXe6fT9UKJ/iNkvtunSXxPJl0DwuJlvZ3GziuFK3HK7pag+rtV6YaDkVYDRawsBIyNq1mJqcT+zgKgrT+kxxVbDI7RQHMhbNwir3azCLcQ+menKDNM2VjYINX/Lqr5+eF5jP4ledaE+dDxmat00LbT4V+9kCiz/V4nLPV7YLWKfT0Z0JvFsqY47foF2F5w+YyU1UiZEMXihFF9Q9UY99gz5tuXCGuGEn7hY+DQq4ftimI5l+13GEUsEdKA2ShYs8zGInOleaC8ajab3f6VrLMOFDkCec+GcXEWAjpvxWoKQp4O2WxTxvmSvq4UYq4aww+E6asgorkk2qIQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YYwVZuyB; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kJncZUcT;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YYwVZuyB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=namhyung@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g84MF71Hlz2xS3
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 May 2026 11:49:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g87dK224Tz2xZK
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 May 2026 14:16:53 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 4DB32436C4;
-	Mon,  4 May 2026 01:49:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A7D21C2BCB4;
-	Mon,  4 May 2026 01:49:27 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id B8BBB60008;
+	Mon,  4 May 2026 04:16:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 03914C2BCB8;
+	Mon,  4 May 2026 04:16:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777859368;
-	bh=UxNq48/xbu0OvKDwkGIsg6liRabxxjbEHw+/9JiWl3o=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=kJncZUcTdPQY5pjU3vl2D7/Zzm4ANjgyl8Al7X26x4TXYHwAMNXdBCIICyb7s/L9G
-	 YP6X2CicFiinb14LdH2JW+195aOaA0Rj0GgYkFde83r3MfvVj7qIWN5UY5cljgs0AB
-	 l0rORGmOOxg1dhL/99CC+QJWgNTQSBwedNi1JMflEnl1gVN7Emc1LEZ+8IEH73l5Xv
-	 Yod4f/aH7Joak6kKk7VGnWN2EZmQIQMfeImh6gcnE6K4tY4oOSFkMsbxZ+0sKoNGSm
-	 PPMP1gLMsSqAtgG0aD2iQkdD91dPeJAyWzeXPFXYUW57tEx5Xh6FKgRIcXbhhVLnVM
-	 uHVT54pRnBsdw==
-Date: Sun, 3 May 2026 18:49:26 -0700
-From: Namhyung Kim <namhyung@kernel.org>
-To: Athira Rajeev <atrajeev@linux.ibm.com>
-Cc: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
-	mpetlan@redhat.com, tmricht@linux.ibm.com, maddy@linux.ibm.com,
-	irogers@google.com, linux-perf-users@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, hbathini@linux.vnet.ibm.com,
-	Tejas.Manhas1@ibm.com, Tanushree.Shah@ibm.com,
-	shivani@linux.ibm.com
-Subject: Re: [PATCH V3 1/2] tools/perf: Fix the check for parameterized field
- in event term
-Message-ID: <aff7JnNuWpj4Mvss@z2>
-References: <20260502141258.17128-1-atrajeev@linux.ibm.com>
+	s=k20201202; t=1777868210;
+	bh=2qTFNfaYMJyy1ie9DH2LN5N/zDt1ma9a7qyx7DY0dQk=;
+	h=From:To:Cc:Subject:Date:From;
+	b=YYwVZuyBrnLRTB+8vvgAB/Y1eDKZ945ziP2WnHA7kzQK8+AvucpfheS/2LkOqtwUN
+	 J+zXeCd/mfmXw5lra5Itxb/2hjXAoJPj+1NPaatfj7Yqb5XL1CWIrf29iimHQNFOdu
+	 NZNp/5kmW/Mwdo9eZuAJfIO2Eza6HiJTRCkhxehIMXjVUEU7zsGWgVp6GlKZ+v43Yy
+	 tFUVbRpsSsYC4WSWw+P//Yo/NWJmVe+zq56h95RW5MC3X3tm96I1NcA43s/2DgDGGV
+	 N7PY+pAPKUuhoYRoJTld4N1Oba03c48f0J2UPRXoBMhp2RBy/Lha+Y2407kv5WNDdZ
+	 c4WCC4xh47xCw==
+From: Eric Biggers <ebiggers@kernel.org>
+To: linux-crypto@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org,
+	Ard Biesheuvel <ardb@kernel.org>,
+	"Jason A . Donenfeld" <Jason@zx2c4.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	linuxppc-dev@lists.ozlabs.org,
+	Christophe Leroy <chleroy@kernel.org>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Eric Biggers <ebiggers@kernel.org>
+Subject: [PATCH] lib/crypto: powerpc/md5: Drop powerpc optimized MD5 code
+Date: Sun,  3 May 2026 21:14:48 -0700
+Message-ID: <20260504041448.15820-1-ebiggers@kernel.org>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,65 +72,403 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20260502141258.17128-1-atrajeev@linux.ibm.com>
+Content-Transfer-Encoding: 8bit
 
-On Sat, May 02, 2026 at 07:42:57PM +0530, Athira Rajeev wrote:
-> The format_alias() function in util/pmu.c has a check to
-> detect whether the event has parameterized field ( =? ).
-> The string alias->terms contains the event and if the event
-> has user configurable parameter, there will be presence of
-> sub string "=?" in the alias->terms.
-> 
-> Snippet of code:
-> 
->  /* Paramemterized events have the parameters shown. */
->        if (strstr(alias->terms, "=?")) {
->                /* No parameters. */
->                snprintf(buf, len, "%.*s/%s/", (int)pmu_name_len, pmu->name, alias->name);
-> 
-> if "strstr" contains the substring, it returns a pointer
-> and hence enters the above check which is not the expected
-> check. And hence "perf list" doesn't have the parameterized
-> fields in the result.
-> 
-> Fix this check to use:
-> 
-> if (!strstr(alias->terms, "=?")) {
-> 
-> With this change, perf list shows the events correctly with
-> the strings showing parameters.
+Earlier the decision was made to keep this code for a while, despite no
+other architectures having optimized MD5 code anymore, because of
+someone using it via AF_ALG via libkcapi-hasher
+(https://lore.kernel.org/r/f0d771d5-ed70-444c-957a-ad4c16f6c115@csgroup.eu/)
 
-Any real examples?
+However, with AF_ALG itself now being on its way out due to its
+continuous stream of security vulnerabilities
+(https://lore.kernel.org/r/20260430011544.31823-1-ebiggers@kernel.org/),
+it's time to be a bit more forceful with nudging people towards
+userspace crypto code.  It's always been the better solution anyway, and
+it's much more efficient if properly optimized code is used.
 
-Thanks,
-Namhyung
+Thus, drop the PowerPC optimized MD5 code.  Note that this code contains
+no privileged instructions and could be run in userspace just fine.
 
-> 
-> Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
-> ---
-> Changelog:
-> v2 -> v3:
-> Split the strstr correction in a single patch
-> 
->  tools/perf/util/pmu.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/tools/perf/util/pmu.c b/tools/perf/util/pmu.c
-> index 23337d2fa281..0b8d58543f17 100644
-> --- a/tools/perf/util/pmu.c
-> +++ b/tools/perf/util/pmu.c
-> @@ -2117,7 +2117,7 @@ static char *format_alias(char *buf, int len, const struct perf_pmu *pmu,
->  						   skip_duplicate_pmus);
->  
->  	/* Paramemterized events have the parameters shown. */
-> -	if (strstr(alias->terms, "=?")) {
-> +	if (!strstr(alias->terms, "=?")) {
->  		/* No parameters. */
->  		snprintf(buf, len, "%.*s/%s/", (int)pmu_name_len, pmu->name, alias->name);
->  		return buf;
-> -- 
-> 2.47.3
-> 
+MD5 is still supported, just with the generic code only.  I.e., this
+commit only changes performance; it isn't a hard break.
+
+This also has no effect on implementations of md5sum that already just
+use userspace code (as they should), for example the coreutils one.
+
+Signed-off-by: Eric Biggers <ebiggers@kernel.org>
+---
+ lib/crypto/Kconfig           |   5 -
+ lib/crypto/Makefile          |   4 -
+ lib/crypto/md5.c             |  20 ++-
+ lib/crypto/powerpc/md5-asm.S | 235 -----------------------------------
+ lib/crypto/powerpc/md5.h     |  12 --
+ 5 files changed, 7 insertions(+), 269 deletions(-)
+ delete mode 100644 lib/crypto/powerpc/md5-asm.S
+ delete mode 100644 lib/crypto/powerpc/md5.h
+
+diff --git a/lib/crypto/Kconfig b/lib/crypto/Kconfig
+index d3904b72dae7..591c1c2a7fb3 100644
+--- a/lib/crypto/Kconfig
++++ b/lib/crypto/Kconfig
+@@ -129,15 +129,10 @@ config CRYPTO_LIB_MD5
+ 	tristate
+ 	help
+ 	  The MD5 and HMAC-MD5 library functions.  Select this if your module
+ 	  uses any of the functions from <crypto/md5.h>.
+ 
+-config CRYPTO_LIB_MD5_ARCH
+-	bool
+-	depends on CRYPTO_LIB_MD5 && !UML
+-	default y if PPC
+-
+ config CRYPTO_LIB_MLDSA
+ 	tristate
+ 	select CRYPTO_LIB_SHA3
+ 	help
+ 	  The ML-DSA library functions.  Select this if your module uses any of
+diff --git a/lib/crypto/Makefile b/lib/crypto/Makefile
+index 4ad91f390038..f1e9bf89785f 100644
+--- a/lib/crypto/Makefile
++++ b/lib/crypto/Makefile
+@@ -185,14 +185,10 @@ clean-files += powerpc/ghashp8-ppc.S
+ 
+ ################################################################################
+ 
+ obj-$(CONFIG_CRYPTO_LIB_MD5) += libmd5.o
+ libmd5-y := md5.o
+-ifeq ($(CONFIG_CRYPTO_LIB_MD5_ARCH),y)
+-CFLAGS_md5.o += -I$(src)/$(SRCARCH)
+-libmd5-$(CONFIG_PPC) += powerpc/md5-asm.o
+-endif # CONFIG_CRYPTO_LIB_MD5_ARCH
+ 
+ ################################################################################
+ 
+ obj-$(CONFIG_CRYPTO_LIB_MLDSA) += libmldsa.o
+ libmldsa-y := mldsa.o
+diff --git a/lib/crypto/md5.c b/lib/crypto/md5.c
+index c4af57db0ea8..6bf130cfbbf9 100644
+--- a/lib/crypto/md5.c
++++ b/lib/crypto/md5.c
+@@ -1,11 +1,11 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ /*
+  * MD5 and HMAC-MD5 library functions
+  *
+- * md5_block_generic() is derived from cryptoapi implementation, originally
+- * based on the public domain implementation written by Colin Plumb in 1993.
++ * md5_block() is derived from cryptoapi implementation, originally based on the
++ * public domain implementation written by Colin Plumb in 1993.
+  *
+  * Copyright (c) Cryptoapi developers.
+  * Copyright (c) 2002 James Morris <jmorris@intercode.com.au>
+  * Copyright 2025 Google LLC
+  */
+@@ -29,12 +29,12 @@ static const struct md5_block_state md5_iv = {
+ #define F4(x, y, z) (y ^ (x | ~z))
+ 
+ #define MD5STEP(f, w, x, y, z, in, s) \
+ 	(w += f(x, y, z) + in, w = rol32(w, s) + x)
+ 
+-static void md5_block_generic(struct md5_block_state *state,
+-			      const u8 data[MD5_BLOCK_SIZE])
++static void md5_block(struct md5_block_state *state,
++		      const u8 data[MD5_BLOCK_SIZE])
+ {
+ 	u32 in[MD5_BLOCK_WORDS];
+ 	u32 a, b, c, d;
+ 
+ 	memcpy(in, data, MD5_BLOCK_SIZE);
+@@ -117,25 +117,19 @@ static void md5_block_generic(struct md5_block_state *state,
+ 	state->h[1] += b;
+ 	state->h[2] += c;
+ 	state->h[3] += d;
+ }
+ 
+-static void __maybe_unused md5_blocks_generic(struct md5_block_state *state,
+-					      const u8 *data, size_t nblocks)
++static void md5_blocks(struct md5_block_state *state,
++		       const u8 *data, size_t nblocks)
+ {
+ 	do {
+-		md5_block_generic(state, data);
++		md5_block(state, data);
+ 		data += MD5_BLOCK_SIZE;
+ 	} while (--nblocks);
+ }
+ 
+-#ifdef CONFIG_CRYPTO_LIB_MD5_ARCH
+-#include "md5.h" /* $(SRCARCH)/md5.h */
+-#else
+-#define md5_blocks md5_blocks_generic
+-#endif
+-
+ void md5_init(struct md5_ctx *ctx)
+ {
+ 	ctx->state = md5_iv;
+ 	ctx->bytecount = 0;
+ }
+diff --git a/lib/crypto/powerpc/md5-asm.S b/lib/crypto/powerpc/md5-asm.S
+deleted file mode 100644
+index fa6bc440cf4a..000000000000
+--- a/lib/crypto/powerpc/md5-asm.S
++++ /dev/null
+@@ -1,235 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-or-later */
+-/*
+- * Fast MD5 implementation for PPC
+- *
+- * Copyright (c) 2015 Markus Stockhausen <stockhausen@collogia.de>
+- */
+-#include <asm/ppc_asm.h>
+-#include <asm/asm-offsets.h>
+-#include <asm/asm-compat.h>
+-
+-#define rHP	r3
+-#define rWP	r4
+-
+-#define rH0	r0
+-#define rH1	r6
+-#define rH2	r7
+-#define rH3	r5
+-
+-#define rW00	r8
+-#define rW01	r9
+-#define rW02	r10
+-#define rW03	r11
+-#define rW04	r12
+-#define rW05	r14
+-#define rW06	r15
+-#define rW07	r16
+-#define rW08	r17
+-#define rW09	r18
+-#define rW10	r19
+-#define rW11	r20
+-#define rW12	r21
+-#define rW13	r22
+-#define rW14	r23
+-#define rW15	r24
+-
+-#define rT0	r25
+-#define rT1	r26
+-
+-#define INITIALIZE \
+-	PPC_STLU r1,-INT_FRAME_SIZE(r1); \
+-	SAVE_GPRS(14, 26, r1)		/* push registers onto stack	*/
+-
+-#define FINALIZE \
+-	REST_GPRS(14, 26, r1);		/* pop registers from stack	*/ \
+-	addi	r1,r1,INT_FRAME_SIZE
+-
+-#ifdef __BIG_ENDIAN__
+-#define LOAD_DATA(reg, off) \
+-	lwbrx		reg,0,rWP;	/* load data			*/
+-#define INC_PTR \
+-	addi		rWP,rWP,4;	/* increment per word		*/
+-#define NEXT_BLOCK			/* nothing to do		*/
+-#else
+-#define LOAD_DATA(reg, off) \
+-	lwz		reg,off(rWP);	/* load data			*/
+-#define INC_PTR				/* nothing to do		*/
+-#define NEXT_BLOCK \
+-	addi		rWP,rWP,64;	/* increment per block		*/
+-#endif
+-
+-#define R_00_15(a, b, c, d, w0, w1, p, q, off, k0h, k0l, k1h, k1l) \
+-	LOAD_DATA(w0, off)		/*    W				*/ \
+-	and		rT0,b,c;	/* 1: f = b and c		*/ \
+-	INC_PTR				/*    ptr++			*/ \
+-	andc		rT1,d,b;	/* 1: f' = ~b and d		*/ \
+-	LOAD_DATA(w1, off+4)		/*    W				*/ \
+-	or		rT0,rT0,rT1;	/* 1: f = f or f'		*/ \
+-	addi		w0,w0,k0l;	/* 1: wk = w + k		*/ \
+-	add		a,a,rT0;	/* 1: a = a + f			*/ \
+-	addis		w0,w0,k0h;	/* 1: wk = w + k'		*/ \
+-	addis		w1,w1,k1h;	/* 2: wk = w + k		*/ \
+-	add		a,a,w0;		/* 1: a = a + wk		*/ \
+-	addi		w1,w1,k1l;	/* 2: wk = w + k'		*/ \
+-	rotrwi		a,a,p;		/* 1: a = a rotl x		*/ \
+-	add		d,d,w1;		/* 2: a = a + wk		*/ \
+-	add		a,a,b;		/* 1: a = a + b			*/ \
+-	and		rT0,a,b;	/* 2: f = b and c		*/ \
+-	andc		rT1,c,a;	/* 2: f' = ~b and d		*/ \
+-	or		rT0,rT0,rT1;	/* 2: f = f or f'		*/ \
+-	add		d,d,rT0;	/* 2: a = a + f			*/ \
+-	INC_PTR				/*    ptr++			*/ \
+-	rotrwi		d,d,q;		/* 2: a = a rotl x		*/ \
+-	add		d,d,a;		/* 2: a = a + b			*/
+-
+-#define R_16_31(a, b, c, d, w0, w1, p, q, k0h, k0l, k1h, k1l) \
+-	andc		rT0,c,d;	/* 1: f = c and ~d		*/ \
+-	and		rT1,b,d;	/* 1: f' = b and d		*/ \
+-	addi		w0,w0,k0l;	/* 1: wk = w + k		*/ \
+-	or		rT0,rT0,rT1;	/* 1: f = f or f'		*/ \
+-	addis		w0,w0,k0h;	/* 1: wk = w + k'		*/ \
+-	add		a,a,rT0;	/* 1: a = a + f			*/ \
+-	addi		w1,w1,k1l;	/* 2: wk = w + k		*/ \
+-	add		a,a,w0;		/* 1: a = a + wk		*/ \
+-	addis		w1,w1,k1h;	/* 2: wk = w + k'		*/ \
+-	andc		rT0,b,c;	/* 2: f = c and ~d		*/ \
+-	rotrwi		a,a,p;		/* 1: a = a rotl x		*/ \
+-	add		a,a,b;		/* 1: a = a + b			*/ \
+-	add		d,d,w1;		/* 2: a = a + wk		*/ \
+-	and		rT1,a,c;	/* 2: f' = b and d		*/ \
+-	or		rT0,rT0,rT1;	/* 2: f = f or f'		*/ \
+-	add		d,d,rT0;	/* 2: a = a + f			*/ \
+-	rotrwi		d,d,q;		/* 2: a = a rotl x		*/ \
+-	add		d,d,a;		/* 2: a = a +b			*/
+-
+-#define R_32_47(a, b, c, d, w0, w1, p, q, k0h, k0l, k1h, k1l) \
+-	xor		rT0,b,c;	/* 1: f' = b xor c		*/ \
+-	addi		w0,w0,k0l;	/* 1: wk = w + k		*/ \
+-	xor		rT1,rT0,d;	/* 1: f = f xor f'		*/ \
+-	addis		w0,w0,k0h;	/* 1: wk = w + k'		*/ \
+-	add		a,a,rT1;	/* 1: a = a + f			*/ \
+-	addi		w1,w1,k1l;	/* 2: wk = w + k		*/ \
+-	add		a,a,w0;		/* 1: a = a + wk		*/ \
+-	addis		w1,w1,k1h;	/* 2: wk = w + k'		*/ \
+-	rotrwi		a,a,p;		/* 1: a = a rotl x		*/ \
+-	add		d,d,w1;		/* 2: a = a + wk		*/ \
+-	add		a,a,b;		/* 1: a = a + b			*/ \
+-	xor		rT1,rT0,a;	/* 2: f = b xor f'		*/ \
+-	add		d,d,rT1;	/* 2: a = a + f			*/ \
+-	rotrwi		d,d,q;		/* 2: a = a rotl x		*/ \
+-	add		d,d,a;		/* 2: a = a + b			*/
+-
+-#define R_48_63(a, b, c, d, w0, w1, p, q, k0h, k0l, k1h, k1l) \
+-	addi		w0,w0,k0l;	/* 1: w = w + k			*/ \
+-	orc		rT0,b,d;	/* 1: f = b or ~d		*/ \
+-	addis		w0,w0,k0h;	/* 1: w = w + k'		*/ \
+-	xor		rT0,rT0,c;	/* 1: f = f xor c		*/ \
+-	add		a,a,w0;		/* 1: a = a + wk		*/ \
+-	addi		w1,w1,k1l;	/* 2: w = w + k			*/ \
+-	add		a,a,rT0;	/* 1: a = a + f			*/ \
+-	addis		w1,w1,k1h;	/* 2: w = w + k'		*/ \
+-	rotrwi		a,a,p;		/* 1: a = a rotl x		*/ \
+-	add		a,a,b;		/* 1: a = a + b			*/ \
+-	orc		rT0,a,c;	/* 2: f = b or ~d		*/ \
+-	add		d,d,w1;		/* 2: a = a + wk		*/ \
+-	xor		rT0,rT0,b;	/* 2: f = f xor c		*/ \
+-	add		d,d,rT0;	/* 2: a = a + f			*/ \
+-	rotrwi		d,d,q;		/* 2: a = a rotl x		*/ \
+-	add		d,d,a;		/* 2: a = a + b			*/
+-
+-_GLOBAL(ppc_md5_transform)
+-	INITIALIZE
+-
+-	mtctr		r5
+-	lwz		rH0,0(rHP)
+-	lwz		rH1,4(rHP)
+-	lwz		rH2,8(rHP)
+-	lwz		rH3,12(rHP)
+-
+-ppc_md5_main:
+-	R_00_15(rH0, rH1, rH2, rH3, rW00, rW01, 25, 20, 0,
+-		0xd76b, -23432, 0xe8c8, -18602)
+-	R_00_15(rH2, rH3, rH0, rH1, rW02, rW03, 15, 10, 8,
+-		0x2420, 0x70db, 0xc1be, -12562)
+-	R_00_15(rH0, rH1, rH2, rH3, rW04, rW05, 25, 20, 16,
+-		0xf57c, 0x0faf, 0x4788, -14806)
+-	R_00_15(rH2, rH3, rH0, rH1, rW06, rW07, 15, 10, 24,
+-		0xa830, 0x4613, 0xfd47, -27391)
+-	R_00_15(rH0, rH1, rH2, rH3, rW08, rW09, 25, 20, 32,
+-		0x6981, -26408, 0x8b45,  -2129)
+-	R_00_15(rH2, rH3, rH0, rH1, rW10, rW11, 15, 10, 40,
+-		0xffff, 0x5bb1, 0x895d, -10306)
+-	R_00_15(rH0, rH1, rH2, rH3, rW12, rW13, 25, 20, 48,
+-		0x6b90, 0x1122, 0xfd98, 0x7193)
+-	R_00_15(rH2, rH3, rH0, rH1, rW14, rW15, 15, 10, 56,
+-		0xa679, 0x438e, 0x49b4, 0x0821)
+-
+-	R_16_31(rH0, rH1, rH2, rH3, rW01, rW06, 27, 23,
+-		0x0d56, 0x6e0c, 0x1810, 0x6d2d)
+-	R_16_31(rH2, rH3, rH0, rH1, rW11, rW00, 18, 12,
+-		0x9d02, -32109, 0x124c, 0x2332)
+-	R_16_31(rH0, rH1, rH2, rH3, rW05, rW10, 27, 23,
+-		0x8ea7, 0x4a33, 0x0245, -18270)
+-	R_16_31(rH2, rH3, rH0, rH1, rW15, rW04, 18, 12,
+-		0x8eee,  -8608, 0xf258,  -5095)
+-	R_16_31(rH0, rH1, rH2, rH3, rW09, rW14, 27, 23,
+-		0x969d, -10697, 0x1cbe, -15288)
+-	R_16_31(rH2, rH3, rH0, rH1, rW03, rW08, 18, 12,
+-		0x3317, 0x3e99, 0xdbd9, 0x7c15)
+-	R_16_31(rH0, rH1, rH2, rH3, rW13, rW02, 27, 23,
+-		0xac4b, 0x7772, 0xd8cf, 0x331d)
+-	R_16_31(rH2, rH3, rH0, rH1, rW07, rW12, 18, 12,
+-		0x6a28, 0x6dd8, 0x219a, 0x3b68)
+-
+-	R_32_47(rH0, rH1, rH2, rH3, rW05, rW08, 28, 21,
+-		0x29cb, 0x28e5, 0x4218,  -7788)
+-	R_32_47(rH2, rH3, rH0, rH1, rW11, rW14, 16,  9,
+-		0x473f, 0x06d1, 0x3aae, 0x3036)
+-	R_32_47(rH0, rH1, rH2, rH3, rW01, rW04, 28, 21,
+-		0xaea1, -15134, 0x640b, -11295)
+-	R_32_47(rH2, rH3, rH0, rH1, rW07, rW10, 16,  9,
+-		0x8f4c, 0x4887, 0xbc7c, -22499)
+-	R_32_47(rH0, rH1, rH2, rH3, rW13, rW00, 28, 21,
+-		0x7eb8, -27199, 0x00ea, 0x6050)
+-	R_32_47(rH2, rH3, rH0, rH1, rW03, rW06, 16,  9,
+-		0xe01a, 0x22fe, 0x4447, 0x69c5)
+-	R_32_47(rH0, rH1, rH2, rH3, rW09, rW12, 28, 21,
+-		0xb7f3, 0x0253, 0x59b1, 0x4d5b)
+-	R_32_47(rH2, rH3, rH0, rH1, rW15, rW02, 16,  9,
+-		0x4701, -27017, 0xc7bd, -19859)
+-
+-	R_48_63(rH0, rH1, rH2, rH3, rW00, rW07, 26, 22,
+-		0x0988,  -1462, 0x4c70, -19401)
+-	R_48_63(rH2, rH3, rH0, rH1, rW14, rW05, 17, 11,
+-		0xadaf,  -5221, 0xfc99, 0x66f7)
+-	R_48_63(rH0, rH1, rH2, rH3, rW12, rW03, 26, 22,
+-		0x7e80, -16418, 0xba1e, -25587)
+-	R_48_63(rH2, rH3, rH0, rH1, rW10, rW01, 17, 11,
+-		0x4130, 0x380d, 0xe0c5, 0x738d)
+-	lwz		rW00,0(rHP)
+-	R_48_63(rH0, rH1, rH2, rH3, rW08, rW15, 26, 22,
+-		0xe837, -30770, 0xde8a, 0x69e8)
+-	lwz		rW14,4(rHP)
+-	R_48_63(rH2, rH3, rH0, rH1, rW06, rW13, 17, 11,
+-		0x9e79, 0x260f, 0x256d, -27941)
+-	lwz		rW12,8(rHP)
+-	R_48_63(rH0, rH1, rH2, rH3, rW04, rW11, 26, 22,
+-		0xab75, -20775, 0x4f9e, -28397)
+-	lwz		rW10,12(rHP)
+-	R_48_63(rH2, rH3, rH0, rH1, rW02, rW09, 17, 11,
+-		0x662b, 0x7c56, 0x11b2, 0x0358)
+-
+-	add		rH0,rH0,rW00
+-	stw		rH0,0(rHP)
+-	add		rH1,rH1,rW14
+-	stw		rH1,4(rHP)
+-	add		rH2,rH2,rW12
+-	stw		rH2,8(rHP)
+-	add		rH3,rH3,rW10
+-	stw		rH3,12(rHP)
+-	NEXT_BLOCK
+-
+-	bdnz		ppc_md5_main
+-
+-	FINALIZE
+-	blr
+diff --git a/lib/crypto/powerpc/md5.h b/lib/crypto/powerpc/md5.h
+deleted file mode 100644
+index 540b08e34d1d..000000000000
+--- a/lib/crypto/powerpc/md5.h
++++ /dev/null
+@@ -1,12 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-or-later */
+-/*
+- * MD5 optimized for PowerPC
+- */
+-
+-void ppc_md5_transform(u32 *state, const u8 *data, size_t nblocks);
+-
+-static void md5_blocks(struct md5_block_state *state,
+-		       const u8 *data, size_t nblocks)
+-{
+-	ppc_md5_transform(state->h, data, nblocks);
+-}
+
+base-commit: 7fd2df204f342fc17d1a0bfcd474b24232fb0f32
+-- 
+2.54.0
+
 
