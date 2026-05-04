@@ -1,58 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-20419-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20420-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6CED3CD3430
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 May 2026 13:35:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9FC63CD3430
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 May 2026 13:57:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g8N2L6gLtz2yZ3;
-	Mon, 04 May 2026 23:35:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777901754;
-	cv=none; b=nr4BMtYIYRrSlz9D0vNwek0hsB6bhzlTBX9F5mRBxJvpTvvv8WjyJ4dNJjpjXW5IhBp/CoDTvBRQVTNZWD2i5DhMJJYG6DgXEt1rPG+PJq0WcOm3scx6DD5fwehgTZCwi06HO/EUXyBCGbWFw8X4Mwm2PgSWiEhcUrS69R5luRodivPnnxABipdD7J0p8hsHLg2DAqbipaqb4djDDSr7OG19kayUpqGUl4krBVZaFTiEJRT66Fs2Qqhjj1XD17BXV8rTwCh/LfqtN1JNmLHQEczLn+YN0iZVS1IA+MawlkI2rqkXOUXNklMKJ0z8ZizsV8lr30xMhmWwKItegWxlUQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g8NW20fn0z2yZ3;
+	Mon, 04 May 2026 23:57:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777903038;
+	cv=none; b=YjhWrECtpBA4iDeTgaFnxvPlLIGrIXHjW7rrTcfTqWXV72pZZEameBwcsFl5f8fBd78+3m4TKDIeZpx8muKs/1zp59Kfo18y4dL0K1oJeHyAP7elXJlFYV0Vsr3W8at/650uk10H8HhJotaVpN3fYxjG02U9reAEwJRgkgKbU+uCdISslIES1xxg8Myvlf8RIJckYluvCkoHVpWGUnpnqGejCtgdbgiCuSaa3k9Ha+FOS64gYz6X0zldp58/E5ez3GUAvdzpcDKvzz5elv8cCCFf5res/iifGIAoPhAAXn8JD/YL01ry5CR4erSv94H7G0h0WQFf6BTw9uNTqlp/cw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777901754; c=relaxed/relaxed;
-	bh=anAXTn2WVNJfQBijdvlVjx89L+KjLxZQUrMBMBAvn58=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=oQD6Anm3K4ML8V1s7PNAv6lLwCmdzqFgbzb8B0zw/MfaHfJOYd/42h6TfxAvlsp7S0YhAmMqbxVClWBc4UK/flOrHszaba6zXOJQqjpAjT5X3uaj7c1PwVvKhV6l9mWQnUZWjV3zVF3SwnR9Ycxko+6VZnI5kntsbaPKpWxnuQe7ynk1UxCgP5QTVuxhesaMG0oNLyvpmYI+1uU4jSAIPqryeBEDoUMPHEVj4DIf2O4UXOn2cp3gg1BnmFIug07a/dlz5IOzEM8t4K56tYr5FjU78Fx35HXk8KJcXHle9N6S2udiDo8P6sVcnQKh5AEWO/X2Py76pRI9ytxBbsjg7A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lm8czak3; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1777903038; c=relaxed/relaxed;
+	bh=C+ilZnUq4wzQcFY/QmlLKUsuoycB9KLagi0FNdHMd44=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=NUwPXUYc82oBYewSdTV6ZKO+q7eSVA88YCK0fOBaXHVWCuBSTXm9ZRVykRd/tEc5E7y3dXMvC3B8BzjI+1hmeNqCeHxWJXpC1d8PiIH30Vd2+FcjJYCOcwhsi0Kd6NfQuY/FZdJmiMPXvyKbIVyrCFDAGx5ykn5HhRBOKGHuNHeWVqYIatCA1lDkXjQcOYl/CITkutB2HaATqPdmGFamzqGewIAgQ9BYGmjz242mT+OM64w9OYpObyLDJf/beUf0tHCJVeuGETxj43Iu5nrA5j9PGhHxp1jPPrRYOpdUqgAdmbD6LtGqU+FQ+tBI+nv1Y7RycKlZBTmnG8zde9a97g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ox5CY1Pt; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ardb@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lm8czak3;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ox5CY1Pt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=baohua@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ardb@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g8N2K75Lwz2xS2
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 May 2026 23:35:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g8NW06Vk9z2xS2
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 May 2026 23:57:16 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 9DB5044122
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2026 13:35:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 79593C2BCFF
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2026 13:35:51 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 485DA60133;
+	Mon,  4 May 2026 13:57:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9C575C2BCB8;
+	Mon,  4 May 2026 13:57:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1777901751;
-	bh=anAXTn2WVNJfQBijdvlVjx89L+KjLxZQUrMBMBAvn58=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=lm8czak3ojKL/iSeFyCXKqI7NTDydVsOyB2+Hmt8nIK2EusB+d4Z4frGvii94dCYM
-	 jWu0DSEVVN+bGYmtnqjUZ613RrBl279QTX5Q4GXGY/7uhrANxd69oXqVhg4v9RhlDr
-	 j0Bf6ACKU0YROCTpFS5awmkcjdKqVuM+Cdbkq4OknL3HDQb1DpvjyXBC7KufyhvzqD
-	 7zI8a4XUxzPdXMbnVIlJrXSGL14ML23Gg2KG7zpTnsaZSKWHibluTUhcKe4kIIwY+6
-	 YESTlho5Ct6TbII6iOg1nmDm+rg+TnF6JT9MWtZidEiRLMooEyQHzB5HaaV3YK9SH9
-	 zy3fy169eVGyw==
-Received: by mail-qv1-f48.google.com with SMTP id 6a1803df08f44-8b8e98fd885so8862476d6.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 May 2026 06:35:51 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AFNElJ8JrPq9WH+xBCWVkkTKBlNVF3YjCLRyCi1sAqulJ9orDWwmJl6G3YCjLUHytVuCQVSNn54KOrQaSXOZr0w=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz66al/Pkkm8NjIOfLsAETzjIg6WOTkeI+5HMpuHOhyckxLg16r
-	IAk2Oe4P9tjykWXNkfTxTseMOPKPY+ytamn+hAHVdhMjrN+zUSKA87tqbSdfHlRscZroubdPvNe
-	lu2CUDC+UumqC2eYmTbOPROTDoGt1CkM=
-X-Received: by 2002:a05:6214:260a:b0:8ac:4fd1:2d4a with SMTP id
- 6a1803df08f44-8b668a259e6mr167277966d6.33.1777901750649; Mon, 04 May 2026
- 06:35:50 -0700 (PDT)
+	s=k20201202; t=1777903034;
+	bh=YWPDXoMAmmrhqB96B1dvHxpf3zUskuMZ18eGdn0GY2w=;
+	h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
+	b=ox5CY1Ptk7jvc6uGVAK0AEFf4fY/eVuqZ5aA1WcU/xv/MYHnmJUG/G379EQffxJQh
+	 mWXF8As/MeRomThcZFaFeJhSAr9ioZ4HyYO2PoAHVaXe7O4VByznZQ70p08sjq0jfy
+	 zEpQYPjmeAkIESGY+BxSjxtjkAuLNo9mxcnB6rCCAiX3/h6eLensDOzAdCQuDQJOjg
+	 ZGAnlzm9fTZEAEeF6NLa1NjkwKZ/Iaaa7QDMMt/EXo+U3WaNv+1ggusJqQX3RWrlPN
+	 tKWGhXqlapVjHmzEQCDpFWWgqTyv1XAqCLxGBGDZ3d3OrORSnhDnflNHoebHfrKVSd
+	 V6k/NW6fQfaYA==
+Received: from phl-compute-01.internal (phl-compute-01.internal [10.202.2.41])
+	by mailfauth.phl.internal (Postfix) with ESMTP id 9F3C8F40076;
+	Mon,  4 May 2026 09:57:12 -0400 (EDT)
+Received: from phl-imap-02 ([10.202.2.81])
+  by phl-compute-01.internal (MEProxy); Mon, 04 May 2026 09:57:12 -0400
+X-ME-Sender: <xms:uKX4aVbphX3bueqjHkPzAnjJsUjan9XSSjyQS3V9aPfIRJlcKabw7w>
+    <xme:uKX4aXNxfkwx7RRmuabgb9rsjcSAO-p0sBS6oxizJpTzOjXVLRu28k92kKIwdKtbz
+    xwhxpHn8UZgeNdBjLKe-rBHnL0xiwsD6ZhE64AiC0d5X8KBfmtuwFBj>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefhedrtddtgdelledtudcutefuodetggdotefrod
+    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpuffrtefokffrpgfnqfghnecuuegr
+    ihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjug
+    hrpefoggffhffvvefkjghfufgtgfesthejredtredttdenucfhrhhomhepfdetrhguuceu
+    ihgvshhhvghuvhgvlhdfuceorghruggssehkvghrnhgvlhdrohhrgheqnecuggftrfgrth
+    htvghrnhepvdeuheeitdevtdelkeduudetgffftdelteefteevjeevjeeiheefhfejieej
+    fedunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomheprg
+    hrugdomhgvshhmthhprghuthhhphgvrhhsohhnrghlihhthidqudeijedthedttdejledq
+    feefvdduieegudehqdgrrhgusgeppehkvghrnhgvlhdrohhrghesfihorhhkohhfrghrug
+    drtghomhdpnhgspghrtghpthhtohepuddtpdhmohguvgepshhmthhpohhuthdprhgtphht
+    thhopehmphgvsegvlhhlvghrmhgrnhdrihgurdgruhdprhgtphhtthhopehnphhighhgih
+    hnsehgmhgrihhlrdgtohhmpdhrtghpthhtohephhgvrhgsvghrthesghhonhguohhrrdgr
+    phgrnhgrrdhorhhgrdgruhdprhgtphhtthhopegthhhlvghrohihsehkvghrnhgvlhdroh
+    hrghdprhgtphhtthhopegvsghighhgvghrsheskhgvrhhnvghlrdhorhhgpdhrtghpthht
+    ohepmhgrugguhieslhhinhhugidrihgsmhdrtghomhdprhgtphhtthhopehlihhnuhigph
+    hptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhgpdhrtghpthhtoheplhhinhhu
+    gidqtghrhihpthhosehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinh
+    hugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhnvghlrdhorhhg
+X-ME-Proxy: <xmx:uKX4aX_cimOx7Q9XHUcgFEd8VLiR8vx7N6o9gVSTY3BkmhJWrPe2og>
+    <xmx:uKX4aVQ5_L1TE5H6yJohvsN8whHw4sLH7pjUy0xfKntjxtMMbf-9xw>
+    <xmx:uKX4aUR34HetQYP-eIxmRSv64rGgH4Ld9LGkkkMGDQ_cf5Com123qA>
+    <xmx:uKX4aZ6xaMtnXeCsVfBguusB1Zeu-ghp94nEB2f2jTw-t6rxdgnW-Q>
+    <xmx:uKX4aRWiaDaOizpsFO6nXnv69b-g0dtwA4-uwADuwGXeUKsEGB1uKqC2>
+Feedback-ID: ice86485a:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id 7DAAE700065; Mon,  4 May 2026 09:57:12 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,72 +92,77 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260430040427.4672-1-baohua@kernel.org> <afNM-gIqxpyJ6ro7@casper.infradead.org>
- <CAGsJ_4w0qcYmukHqsyRd0jomoyYkJjOt8b-Cgp53BgP-8QQghw@mail.gmail.com>
- <afS_L-5XeWIldTXA@casper.infradead.org> <CAGsJ_4wk=SDtgin+84Ev2TamU-JFfmrg_SUay=-tcYmnFvK6Nw@mail.gmail.com>
- <afTpoL3FklpQZNMM@casper.infradead.org> <yezmezj26xntushmylductlmytfgvwsnbnzlhffkfwugfxkt6m@gleq22spziyk>
- <CAGsJ_4y8JtCxEy9hVxVd8eaf8D9WC8BcRQp9afUVu=FJA1-awA@mail.gmail.com> <n5vsmp6ingbhfztl6wzcwmrz56gkkfbpzardk43scr7rcgqsw5@evtnov34c5bt>
-In-Reply-To: <n5vsmp6ingbhfztl6wzcwmrz56gkkfbpzardk43scr7rcgqsw5@evtnov34c5bt>
-From: Barry Song <baohua@kernel.org>
-Date: Mon, 4 May 2026 21:35:38 +0800
-X-Gmail-Original-Message-ID: <CAGsJ_4zBiRTttf1nR0Ni9BRT3Cv5XFZhyYP8oipFodpS7saGwQ@mail.gmail.com>
-X-Gm-Features: AVHnY4I0u-Qbkg0vrggpRHSUVs_cQpUa3gydJwrEbvTBOzz3MxeuFlaWucVZXHg
-Message-ID: <CAGsJ_4zBiRTttf1nR0Ni9BRT3Cv5XFZhyYP8oipFodpS7saGwQ@mail.gmail.com>
-Subject: Re: [PATCH v2 0/5] mm: reduce mmap_lock contention and improve page
- fault performance
-To: Jan Kara <jack@suse.cz>
-Cc: Matthew Wilcox <willy@infradead.org>, akpm@linux-foundation.org, linux-mm@kvack.org, 
-	david@kernel.org, ljs@kernel.org, liam@infradead.org, vbabka@kernel.org, 
-	rppt@kernel.org, surenb@google.com, mhocko@suse.com, pfalcato@suse.de, 
-	wanglian@kylinos.cn, chentao@kylinos.cn, lianux.mm@gmail.com, 
-	kunwu.chan@gmail.com, liyangouwen1@oppo.com, chrisl@kernel.org, 
-	kasong@tencent.com, shikemeng@huaweicloud.com, nphamcs@gmail.com, 
-	bhe@redhat.com, youngjun.park@lge.com, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, loongarch@lists.linux.dev, 
-	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, 
-	linux-s390@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Date: Mon, 04 May 2026 15:56:52 +0200
+From: "Ard Biesheuvel" <ardb@kernel.org>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ "Eric Biggers" <ebiggers@kernel.org>, linux-crypto@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, "Jason A . Donenfeld" <Jason@zx2c4.com>,
+ "Herbert Xu" <herbert@gondor.apana.org.au>, linuxppc-dev@lists.ozlabs.org,
+ "Nicholas Piggin" <npiggin@gmail.com>,
+ "Michael Ellerman" <mpe@ellerman.id.au>,
+ "Madhavan Srinivasan" <maddy@linux.ibm.com>
+Message-Id: <112bf0af-1551-4d3e-ab15-e5dea3fc2435@app.fastmail.com>
+In-Reply-To: <111ea924-fef5-441e-9849-83f938c913a7@kernel.org>
+References: <20260504041448.15820-1-ebiggers@kernel.org>
+ <111ea924-fef5-441e-9849-83f938c913a7@kernel.org>
+Subject: Re: [PATCH] lib/crypto: powerpc/md5: Drop powerpc optimized MD5 code
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-On Mon, May 4, 2026 at 9:04=E2=80=AFPM Jan Kara <jack@suse.cz> wrote:
-[...]
+Hello Christophe,
+
+On Mon, 4 May 2026, at 15:28, Christophe Leroy (CS GROUP) wrote:
+...
+> I'm really concerned with the optimised MD5 going away now, and I'm also 
+> wondering what will be the way to splice a file into the kernel and get 
+> it's MD-5 hash from the TALITOS if AF_ALG goes away in medium-term.
 >
-> > > BTW I'm not sure I quite understand Barry's priority inversion proble=
-m
-> > > since I'd expect all threads of a task to generally be treated with t=
-he
-> > > same priority...
-> >
-> > Exactly not. Maybe these slides[2] and this project[3] can give
-> > you a hint=E2=80=94they aim to standardize things on Linux by
-> > learning from Apple OS. Basically, tasks are classified
-> > into five types:
-> >
-> > USER_INTERACTIVE: Requires immediate response.
-> > USER_INITIATED: Tolerates a short delay, but must respond quickly still=
-.
-> > UTILITY: Tolerates long delays, but not prolonged ones.
-> > BACKGROUND: Doesn=E2=80=99t mind prolonged delays.
-> > DEFAULT: System default behavior.
+> What is the way forward ? I'm open to any suggestion as I really can't 
+> see where to go for now.
 >
-> Again, this is a clasification of tasks but not really of threads in a ta=
-sk
-> so at least for VMA lock there's no inversion so have?
 
-I=E2=80=99m specifically referring to a task (i.e., a thread) when
-discussing scheduler context. It may be clearer to use the
-terms process and thread explicitly.
+AF_ALG was created to give user space access to crypto accelerators that
+require privileged execution, for sharing between clients, and for managing
+DMA etc.
 
-In a typical process sharing an mm_struct, each thread can
-have a different priority.
+The fact that kernel crypto code that does not have this requirement was
+exposed via AF_ALG too is a historical accident, and this is causing the
+pain that Eric describes wrt attack surface etc.
 
-In an Android app, some threads handle the UI and require
-higher priority, such as the main thread and RenderThread;
-otherwise, frame drops may occur.
+It sounds like you have constructed a vertically integrated system where
+the kernel provides the fallback when the Talitos engine is not available
+via AF_ALG.
 
-The Linux scheduler can control scheduling policy and
-priority for each thread.
+This fallback does not need to live in the kernel, and it would be much
+better (as well as more efficient) if user space would implemented MD5
+itself if the Talitos cannot be accessed via AF_ALG. In user space, you
+can use any implementation you like, generic or asm accelerated. This is
+what all other architectures already implement, in OpenSSL etc.
 
-Thanks
-Barry
+Claiming that your user space software must only implement one code path,
+and that punting this to the kernel is therefore required is not a
+technical argument: this is just policy on your part that the community
+is not bound to.
+
+However, deprecating AF_ALG does not mean that we will ever be able to
+remove it entirely. Especially the crypto accelerators that cannot be
+accessed by user space in any other way will remain supported as long
+as needed for legacy use cases.
+
+But I think we should consider libkcapi as a general purpose crypto
+library deprecated too, as well as any other use of AF_ALG in lieu of
+user space libraries. It is not the kernel's job to execute user space
+code that can easily execute non-privileged as well.
+
+I suppose there will be more discussion soon about AF_ALG deprecation
+for software crypto. It is likely that we will need to come up with
+an allowlist of algorithms, in order to limit the attack surface to those
+algorithms (such as your MD5) that are known to be relied upon by user space,
+rather than any random combination of all the buggy template code and
+null_ciphers etc.
+
+Do you have any use cases where MD5 is a bottle neck, and the generic
+implementation is too slow?
+
+
 
