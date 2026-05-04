@@ -1,70 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-20403-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20404-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6126FF885A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 May 2026 08:26:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC73ACD3423
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 May 2026 08:26:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g8F8N1XZWz30fh;
-	Mon, 04 May 2026 18:25:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777883140;
-	cv=none; b=kGMGJUjD6PvMUKI5c1eod1bPdpg/DStYQWXE37PGSJ9W90bXxzchdCAuisirXZGgfANQ/Knq4EdmCb5xHN+2HpWy8MTXGgZph5LJlH2YdKPhlXEEiZ0pL1Q8R7qeZABRl7vfBVkjryNXvUSY8JhBKLt+Y/xhEpsWid2DHgYZo2Ohysn1VhdTAA03xVWVKQmxZnFZB4H97+lDco01duXW/QaM+6Eztgz3wBCQGPL6b4SyfIGJGHahI8BgU5glB3Yf/oY89J2HFRvHYBgP7HiqpOlcQgAj7cESrrZxac+Orj8rbm3IhF7CON/3jiJ55EhsWzZn8zq+rCYK74BfE+ASPg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g8F8T4PLjz2ygf;
+	Mon, 04 May 2026 18:25:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777883145;
+	cv=none; b=Ygqi+kR0TEdtgLwBSyXUNZgeAh10U+lIrCKfE57fKfLSmsQSmVRWzmRUZq0sSivjolbh32ZzNQKTTsqnI9CXWN+VxcPsooUJNtJwaZ1NzPUqefagqFmbr3+ZBadv4BlLNBqRXvz7ruwDAKvHBUcPGY8xzzy18DZwbtFmdqNNPaJunabdDXLCmULMPdmUvyMthQocAt28WFcvX5yldLsBodMdcTAG9/U9pMPzB0OizRsKBJwdWFmfz4umO90pVBG7CxR4URC5ojvS32Y4635gZ+e/XB1x3e2WLshQjK8kNekQlCfuAK+WYi/jkM8AyI03Exyr4q05Xu375EIodd7TyA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777883140; c=relaxed/relaxed;
-	bh=9bpngp4LuWeNJI7hhOZ15/SZJ6KlaN1MsO0YmwThcC0=;
+	t=1777883145; c=relaxed/relaxed;
+	bh=qLoytzKAJrXb86n4y25lLTNIOtZZSNJIuVfwc68Am2M=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=lBoT8lTg77aIzQl9yixpBsjHNR1gWmCpwOTtgHxAD9E2Ed+TZxvccmlurweL0rc1An2kcE8XD2bxHKiD0Fzw0IrMw/nvET7g7hpOsWQ88lBZsuCFRGLM/ChPiJneCLrYp7M+XZAWXoSI++Vn0xEi5uc1jAs31kOdEj460l5iTStbxpQ1/K51+6eKAq62oOethssqaeFt0N3gr0nN4U2QJjMXbXzO1yZuka6QBKlOto1Ds4NVx0bDQmMj8Y6QUL2qCzMhSpI9AyOPSY9BUhoTP5YAaMV8sQtvbMTqJqi0THt4G/cpmEzCErAP5p3o99B6GSmty0wzMfRfcb6tyJMBjQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oZ4fuRzI; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=Ks9ZMc/FaYtz4tyTKmoEZIdQXQBXgdqys8Fk0rKSlhf7dk8WBd7Axi6e4f4IV6rsRJCS8naSBujON5JREPT1WmqNWlyJW+odbHJlCkIaF7dk13PzUvzt7ayi2DWIIe6ZaRAuNGNRV7/LUubWrrH3mnN3Q4rZNRjmN77AaaMfteanCwFJCYz7FuLiVywITlVODLWQDWgCTDuWwqHT7e3MHdUpRX7Px59eedayi2/3PcfFlyikh6cNpphAywvonaa8ynhyhLCQClvXZGDAAe0tyg2Al8IH8M5DYePTnjden9BCafcQYR8s3xlTp9TIwh4Cvobj0EtMEld65h5NmyN9NA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HTG2SQwt; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oZ4fuRzI;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HTG2SQwt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sayalip@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g8F8M3K7kz30Vy
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 May 2026 18:25:39 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 643MxN1j2752196;
-	Mon, 4 May 2026 08:25:24 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g8F8S5Cnqz2yZ6
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 May 2026 18:25:44 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 643AG0hO2080466;
+	Mon, 4 May 2026 08:25:31 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=9bpngp4LuWeNJI7hh
-	OZ15/SZJ6KlaN1MsO0YmwThcC0=; b=oZ4fuRzITjJH9yzaPPZC1eU8nPJ05ty6b
-	jWtq8og1I6QHUxiqsy/aPXDwPWcfoho1TlTo8uJfAbMBAX7R55VgSbSsy5X2G2ki
-	CgZ5KRKozEK8hzzGRjUW7sQe6nZoadqF+UOwImO6unWu0VEvPthBlBF0oxLEJY0j
-	R4ZbnUwBlcVAfZfk2O4R7OKI0W3OduyW0cFMxWtvF9+DAdMuyC2c8i0LQ33V9INf
-	Q6ByXi+dIMbfhuJ2bQR7ww4ZGuWhT8CdMyZcXg9tfjQTb1DH+RfrNXp+MZOLvvFw
-	obzdIHB0J3FThvfRTFykG6IYDE7zjMIf0H4710Cw4g3QkmjwdBLfQ==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dw9x4e3r7-1
+	:mime-version:references:subject:to; s=pp1; bh=qLoytzKAJrXb86n4y
+	25lLTNIOtZZSNJIuVfwc68Am2M=; b=HTG2SQwtiwSPiN5W6yzBbAKYDx6scYfKV
+	gmLwDIhBLfYcLDL7h+zkLU5a7AaJqkkDecaH4tGxQ5YKVSjlBxEXUSzhoLEkHzZS
+	McgiyEq63g1NubRuMbOQDnGFNz1aHBpOBsBR4HQJ77ew1KoRLvw4rsOQiJfR3oPh
+	A9LUQt4BiVCWEhYhv2E0KMHnQ4bv/N0PGccIgJlwmX5oCYmc0edZyVl1TrR9bnq6
+	sSRVAQalFTjZbauPRCq7ClGMTfEKvoVtxoi55AWbBlepm+asjBugl0DN3JaRMNWP
+	qN747XgDsSj5bUEmD4Z3MXBDeGFyrDHMQ5v4a3qvQDvwGHKVXos2Q==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4dw9xxdwm9-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 04 May 2026 08:25:23 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6448OQh3012985;
-	Mon, 4 May 2026 08:25:22 GMT
+	Mon, 04 May 2026 08:25:30 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.7/8.18.1.7) with ESMTP id 6448OROa000545;
+	Mon, 4 May 2026 08:25:29 GMT
 Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dwx9y42j9-1
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4dwukq4fra-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 04 May 2026 08:25:22 +0000 (GMT)
+	Mon, 04 May 2026 08:25:29 +0000 (GMT)
 Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6448PJj350987460
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6448PQOS50856368
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 4 May 2026 08:25:19 GMT
+	Mon, 4 May 2026 08:25:26 GMT
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2C72E20043;
-	Mon,  4 May 2026 08:25:19 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 22CD120043;
+	Mon,  4 May 2026 08:25:26 +0000 (GMT)
 Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3100D2004E;
-	Mon,  4 May 2026 08:25:16 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 0EDD520040;
+	Mon,  4 May 2026 08:25:23 +0000 (GMT)
 Received: from li-3f69264c-2ce6-11b2-a85c-c3f414d24014.bl1-in.ibm.com (unknown [9.123.3.209])
 	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  4 May 2026 08:25:15 +0000 (GMT)
+	Mon,  4 May 2026 08:25:22 +0000 (GMT)
 From: Sayali Patil <sayalip@linux.ibm.com>
 To: Andrew Morton <akpm@linux-foundation.org>, Shuah Khan <shuah@kernel.org>,
         linux-mm@kvack.org, linux-kernel@vger.kernel.org,
@@ -77,9 +77,9 @@ Cc: David Hildenbrand <david@kernel.org>, Zi Yan <ziy@nvidia.com>,
         linuxppc-dev@lists.ozlabs.org, Miaohe Lin <linmiaohe@huawei.com>,
         Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
         Sayali Patil <sayalip@linux.ibm.com>
-Subject: [PATCH v6 04/14] selftests/mm: fix hugetlb pathname construction in hugetlb_reparenting_test.sh
-Date: Mon,  4 May 2026 13:54:41 +0530
-Message-ID: <5479a9ce82c07899b95101e20984e10b2f3f853a.1777877814.git.sayalip@linux.ibm.com>
+Subject: [PATCH v6 06/14] selftests/mm: size tmpfs according to PMD page size in split_huge_page_test
+Date: Mon,  4 May 2026 13:54:43 +0530
+Message-ID: <4f690c32f5b0948ac50a45a067a2186fbf084ee6.1777877814.git.sayalip@linux.ibm.com>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <cover.1777877814.git.sayalip@linux.ibm.com>
 References: <cover.1777877814.git.sayalip@linux.ibm.com>
@@ -99,98 +99,125 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA0MDA4NyBTYWx0ZWRfXywl9X1qEtJHc
- Oczw2pCL4lBdIqeH1SHgl9hcBI87egrg131kbstLMqTMHX5Bo3L5JXaFMdv+EyZEpTjV5tbDjE7
- P8wE2I+fTaMnNzwh7A6+dCk9upi1osg59K+EFHsVvoKXKVjTXVIvIlkwIUYNrPs1ulN+L7D13X+
- frL5WzutqKjtLlEWKHK1Scu4PGeQga9f5LAFq39N+8uV3974Vo+OcRcv09kX3MR3VHZ2Xeb4/yN
- vtcQX/Loq0gb432/ezKA7PovazlCKzGjtkV3FAgX8VBkibFIqaHaJ0dFLUEy53HtHHW+3ghpSlc
- wwJneFcGPUUQadBRs0hhlXnMXlxFUVYTPX4ZRgeeAsQ8EvVZy1b7p46ATLS3vlA1S5nxP8wThtl
- t4mZTt9ODpcoZfg3rCCZfxTD1f1AeX1oSbpyODTbZvcZPy/7PArUlKIa8CWZT5pLz2IlNnZUtx3
- FCkXZhskgrBs5L99FSw==
-X-Proofpoint-ORIG-GUID: _2-e7eOnbPa6i_3hbfvQf-8BMk2rYVbP
-X-Proofpoint-GUID: 4OiJ5OPHpstloc0H0cI0s2lbxDnPBXL7
-X-Authority-Analysis: v=2.4 cv=W7UIkxWk c=1 sm=1 tr=0 ts=69f857f4 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNTA0MDA4NyBTYWx0ZWRfX8upt1mGXYHKE
+ MshnLX1JyyFdq7QysKpZ0ZeAqJMu26Sq4W0sAqyDfSDtYhLYtTMs6bQTuQLNFJnFcKbcu+YaWmM
+ qlRRwPQ0jan6CDJqI31B+WBGr37ElUiBBpe8GnbpjxprW2LMpjjT9N8cr6wQN9svbVx2xJRYoHT
+ bddLCY4gd1kmYzfEvEJe2u9gdxEv3On1MhNE8+0acpjdbvQmS8bZU8XTUOw8dGlwypKWox/rt7N
+ 9hbieWuZKKDTHv9F+TSiJCy4qYVtQPSw30HV8X76qpRyz3Ag1CCz8jP201Hb/nq7PQ84NemMqA2
+ D2kLT/m6o1txTgBelIYqdTqu3emPcXjFOmdxVBHspVon5YdJWBL9DFNvFaInqkMWyJk0QuG8Opk
+ v5bnQjVqUCl8sYI/D7W3b/g4Mz+BeNcz3VBWOKC8V2LgrVTS28NTyXt7PyYByRKD4XfaoQ+64nr
+ ysvYv/P4SuTvjUYTUGg==
+X-Proofpoint-ORIG-GUID: HxJxplt_wNg9Yf6gWbjzQPxjYGFJPXxt
+X-Proofpoint-GUID: Y8-BYe3-MdiAjFE2BGYFKeO53fCTVIgB
+X-Authority-Analysis: v=2.4 cv=ctWrVV4i c=1 sm=1 tr=0 ts=69f857fb cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
  a=NGcC8JguVDcA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=uAbxVGIbfxUO_5tXvNgY:22 a=Ikd4Dj_1AAAA:8 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=7yu59zDboRqKFyXxuvEA:9
+ a=V8glGbnc2Ofi9Qvn3v5h:22 a=Ikd4Dj_1AAAA:8 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=2DqBuDyFdJ_AORcY0zkA:9
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
  definitions=2026-05-04_03,2026-04-30_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 adultscore=0 lowpriorityscore=0 malwarescore=0
- suspectscore=0 spamscore=0 clxscore=1015 phishscore=0 bulkscore=0
- impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
+ priorityscore=1501 lowpriorityscore=0 adultscore=0 clxscore=1015
+ suspectscore=0 impostorscore=0 spamscore=0 malwarescore=0 phishscore=0
+ bulkscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
  definitions=main-2605040087
 
-The hugetlb_reparenting_test.sh script constructs hugetlb cgroup
-memory interface file names based on the configured huge page size. The
-script formats the size only in MB units, which causes mismatches on
-systems using larger huge pages where the kernel exposes normalized
-units (e.g. "1GB" instead of "1024MB").
+The split_file_backed_thp() test mounts a tmpfs with a fixed size of
+"4m". This works on systems with smaller PMD page sizes,
+but fails on configurations where the PMD huge page size is
+larger (e.g. 16MB).
 
-As a result, the test fails to locate the corresponding cgroup files
-when 1GB huge pages are configured.
+On such systems, the fixed 4MB tmpfs is insufficient to allocate even
+a single PMD-sized THP, causing the test to fail.
 
-Update the script to detect the huge page size and select the
-appropriate unit (MB or GB) so that the constructed paths match the
-kernel's hugetlb controller naming.
+Fix this by sizing the tmpfs dynamically based on the runtime
+pmd_pagesize, allocating space for two PMD-sized pages.
 
-Also print an explicit "Fail" message when a test failure occurs to
-improve result visibility.
+Before patch:
+  running ./split_huge_page_test /tmp/xfs_dir_YTrI5E
+  --------------------------------------------------
+  TAP version 13
+  1..55
+  ok 1 Split zero filled huge pages successful
+  ok 2 Split huge pages to order 0 successful
+  ok 3 Split huge pages to order 2 successful
+  ok 4 Split huge pages to order 3 successful
+  ok 5 Split huge pages to order 4 successful
+  ok 6 Split huge pages to order 5 successful
+  ok 7 Split huge pages to order 6 successful
+  ok 8 Split huge pages to order 7 successful
+  ok 9 Split PTE-mapped huge pages successful
+   Please enable pr_debug in split_huge_pages_in_file() for more info.
+   Failed to write data to testing file: Success (0)
+  Bail out! Error occurred
+   Planned tests != run tests (55 != 9)
+   Totals: pass:9 fail:0 xfail:0 xpass:0 skip:0 error:0
+ [FAIL]
 
-Fixes: e487a5d513cb ("selftest/mm: make hugetlb_reparenting_test tolerant to async reparenting")
+After patch:
+  running ./split_huge_page_test /tmp/xfs_dir_bMvj6o
+  --------------------------------------------------
+  TAP version 13
+  1..55
+  ok 1 Split zero filled huge pages successful
+  ok 2 Split huge pages to order 0 successful
+  ok 3 Split huge pages to order 2 successful
+  ok 4 Split huge pages to order 3 successful
+  ok 5 Split huge pages to order 4 successful
+  ok 6 Split huge pages to order 5 successful
+  ok 7 Split huge pages to order 6 successful
+  ok 8 Split huge pages to order 7 successful
+  ok 9 Split PTE-mapped huge pages successful
+   Please enable pr_debug in split_huge_pages_in_file() for more info.
+   Please check dmesg for more information
+  ok 10 File-backed THP split to order 0 test done
+   Please enable pr_debug in split_huge_pages_in_file() for more info.
+   Please check dmesg for more information
+  ok 11 File-backed THP split to order 1 test done
+   Please enable pr_debug in split_huge_pages_in_file() for more info.
+   Please check dmesg for more information
+  ok 12 File-backed THP split to order 2 test done
+...
+  ok 55 Split PMD-mapped pagecache folio to order 7 at
+    in-folio offset 128 passed
+   Totals: pass:55 fail:0 xfail:0 xpass:0 skip:0 error:0
+   [PASS]
+ok 1 split_huge_page_test /tmp/xfs_dir_bMvj6o
+
+Fixes: fbe37501b252 ("mm: huge_memory: debugfs for file-backed THP split")
 Reviewed-by: Zi Yan <ziy@nvidia.com>
-Acked-by: David Hildenbrand (Arm) <david@kernel.org>
+Reviewed-by: David Hildenbrand (Arm) <david@kernel.org>
 Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
 Signed-off-by: Sayali Patil <sayalip@linux.ibm.com>
 ---
- .../selftests/mm/hugetlb_reparenting_test.sh       | 14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
+ tools/testing/selftests/mm/split_huge_page_test.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/tools/testing/selftests/mm/hugetlb_reparenting_test.sh b/tools/testing/selftests/mm/hugetlb_reparenting_test.sh
-index 11f914831146..d724b6e45432 100755
---- a/tools/testing/selftests/mm/hugetlb_reparenting_test.sh
-+++ b/tools/testing/selftests/mm/hugetlb_reparenting_test.sh
-@@ -48,6 +48,13 @@ function get_machine_hugepage_size() {
- }
+diff --git a/tools/testing/selftests/mm/split_huge_page_test.c b/tools/testing/selftests/mm/split_huge_page_test.c
+index 500d07c4938b..02938f38b880 100644
+--- a/tools/testing/selftests/mm/split_huge_page_test.c
++++ b/tools/testing/selftests/mm/split_huge_page_test.c
+@@ -470,6 +470,8 @@ static void split_file_backed_thp(int order)
+ 	char tmpfs_template[] = "/tmp/thp_split_XXXXXX";
+ 	const char *tmpfs_loc = mkdtemp(tmpfs_template);
+ 	char testfile[INPUT_MAX];
++	unsigned long size = 2 * pmd_pagesize;
++	char opts[64];
+ 	ssize_t num_written, num_read;
+ 	char *file_buf1, *file_buf2;
+ 	uint64_t pgoff_start = 0, pgoff_end = 1024;
+@@ -489,7 +491,8 @@ static void split_file_backed_thp(int order)
+ 		file_buf1[i] = (char)i;
+ 	memset(file_buf2, 0, pmd_pagesize);
  
- MB=$(get_machine_hugepage_size)
-+if (( MB >= 1024 )); then
-+  UNIT="GB"
-+  MB_DISPLAY=$((MB / 1024))
-+else
-+  UNIT="MB"
-+  MB_DISPLAY=$MB
-+fi
+-	status = mount("tmpfs", tmpfs_loc, "tmpfs", 0, "huge=always,size=4m");
++	snprintf(opts, sizeof(opts), "huge=always,size=%lu", size);
++	status = mount("tmpfs", tmpfs_loc, "tmpfs", 0, opts);
  
- function cleanup() {
-   echo cleanup
-@@ -88,6 +95,7 @@ function assert_with_retry() {
-     if [[ $elapsed -ge $timeout ]]; then
-       echo "actual = $((${actual%% *} / 1024 / 1024)) MB"
-       echo "expected = $((${expected%% *} / 1024 / 1024)) MB"
-+      echo FAIL
-       cleanup
-       exit 1
-     fi
-@@ -108,11 +116,13 @@ function assert_state() {
-   fi
- 
-   assert_with_retry "$CGROUP_ROOT/a/memory.$usage_file" "$expected_a"
--  assert_with_retry "$CGROUP_ROOT/a/hugetlb.${MB}MB.$usage_file" "$expected_a_hugetlb"
-+  assert_with_retry \
-+	  "$CGROUP_ROOT/a/hugetlb.${MB_DISPLAY}${UNIT}.$usage_file" "$expected_a_hugetlb"
- 
-   if [[ -n "$expected_b" && -n "$expected_b_hugetlb" ]]; then
-     assert_with_retry "$CGROUP_ROOT/a/b/memory.$usage_file" "$expected_b"
--    assert_with_retry "$CGROUP_ROOT/a/b/hugetlb.${MB}MB.$usage_file" "$expected_b_hugetlb"
-+    assert_with_retry \
-+	  "$CGROUP_ROOT/a/b/hugetlb.${MB_DISPLAY}${UNIT}.$usage_file" "$expected_b_hugetlb"
-   fi
- }
- 
+ 	if (status)
+ 		ksft_exit_fail_msg("Unable to create a tmpfs for testing\n");
 -- 
 2.52.0
 
