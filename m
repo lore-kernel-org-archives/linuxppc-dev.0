@@ -1,116 +1,125 @@
-Return-Path: <linuxppc-dev+bounces-20397-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20398-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0E9A8CD3423
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 May 2026 05:15:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4631ACD3423
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 May 2026 05:59:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g88wh2L0Lz2yZ3;
-	Mon, 04 May 2026 15:15:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip=198.175.65.19
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777871716;
-	cv=fail; b=K8wEQA546kYX2kNT+B+n8uUlPTQZBEunU1S2zBnmgxOPF/KqWfhR6UFCu7eudYO7d8avkfoCz79G14gheAQ20gw3XFCKAX/x8qOE1OueJLc/9MgN88mjbgdnSr7y5M+pvQ2R1Rzjt7Pv5SW79ZOAnMzV1bpVD5PNtCU81SEJWIvcS617+L7/mNcgGoCDNrKxZtk+KZbm6SqU01VKE5MOfG5v31Vqk/LAZEBqZsXBa/nna7Se/2tKy0MS/gwZnB8ZYW8PIJlgsMjU7FLzOHE13SRF7cQycoe9G0nyPxyUOZhhG7OOQjb47aIczBPAj3Lf0/5zOBF1SptKlKQhejdOCQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g89vB5B6Bz2yZ3;
+	Mon, 04 May 2026 15:59:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20f::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777874342;
+	cv=pass; b=GUvW5aD0QuFT4yz1QD5eGXJtl7cRR2vr5Fo3t5QGiC44aN/UbBLsy5gpJEhkdxgnwHFtGt9/tM1JCkbteTtzhZhtQh9CDy2JzA6PWTfqjnhnD0nZNakPI+4MZGPDF2TjRej2fo+Rnp2IHkmpGmnJHQ1f5riohpoxjDugJ4XRJnyEwoY4Py91CsJR5umk+fHF6RPVFJn0vZ0fzC6g52w2AlrEJQc5/w8y5Vix+cWu2uebbeceMgg34A/QZFTpbWVyi+QJA2ZbZG7gVgl9pIZ7Siqa7eeAocTKL0h3dpjGVg8t1eufKBouwbH65I/y3Mk8z25e2ifVnnJ6hoU0FM2afg==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777871716; c=relaxed/relaxed;
-	bh=nraTbdexcqi7G4WH/h2BIIalP1I4FsW+udMl6f/86bY=;
-	h=Message-ID:Date:Subject:To:CC:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=YhHgkqQI9JBltdDOPm1y5vPG8yqBgtLQ7SyfPdzXBHH6zuosJUIAs0t4yhAgeBZ8o+Gok0E/azcRKgpHKW+mE1AqbFFJWx/RZCZQ7GsMYuFKI3ltMsqsgrOzu2YnWTFNCs/Yi1dj8X+E1Qi9/jCWANPOjtSYs7yiNKDiLl85QGg3ZApgeab4mqAm9Fj9IbcTIMBKDghtPgt1AZV+cpr0Ve7beRIxy+6OYyo/KtrWE55J7QM9nESFyxtg5R0UoCc+XRO0BxHPo6YljiNYEkUXKJiG3EKaEA2pTlgI7w5lRKW9EojHN0kmPvwjNyI41tYucIFW4bd5JluDjx2LA69vMw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=T9ugF8yA; dkim-atps=neutral; spf=pass (client-ip=198.175.65.19; helo=mgamail.intel.com; envelope-from=adrian.hunter@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1777874342; c=relaxed/relaxed;
+	bh=goS/RWqTYCu+aSndrQeOOU2qMmF5HP0unuX6icaaVbQ=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=oySzlUnFhv+L8a+4ukU7P32qHzDgV6s8CiDkVjP02m5aLNIIFnytdfcblYkPL+YEfRlY04cx3Hv8tSwnfYMd5hfHImJELc2Pf/oZVclhf1lJA7IlZYpwcoPHCZj+uP5gOl2Hbs31Ukp0eLPYjP6EEB1W4iEvW9O0TrEMwBVwpskFOaN3/YOCAtvQOQtb49imTICz5+/OJVeaYau94xzJ/XjELUY1rSsRYFx2LfwJSeXBpsvdnqqEPuLYxi4lf5AZP3a31joEPxjMolY6EFkoksb9o3ngiVUYCLsplcFiy5eAhWQHjk10NYiWZmTJvmAzm6ZuMsRxL91oub2SCd8wbw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=hitachienergy.com; dkim=pass (2048-bit key; unprotected) header.d=hitachienergy.com header.i=@hitachienergy.com header.a=rsa-sha256 header.s=selector1 header.b=FL/eEEfO; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=holger.brunck@hitachienergy.com; receiver=lists.ozlabs.org) smtp.mailfrom=hitachienergy.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=hitachienergy.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=T9ugF8yA;
+	dkim=pass (2048-bit key; unprotected) header.d=hitachienergy.com header.i=@hitachienergy.com header.a=rsa-sha256 header.s=selector1 header.b=FL/eEEfO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.19; helo=mgamail.intel.com; envelope-from=adrian.hunter@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.19])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=hitachienergy.com (client-ip=2a01:111:f403:c20f::7; helo=osppr02cu001.outbound.protection.outlook.com; envelope-from=holger.brunck@hitachienergy.com; receiver=lists.ozlabs.org)
+Received: from OSPPR02CU001.outbound.protection.outlook.com (mail-norwayeastazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20f::7])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g88wc3WWBz2xnQ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 May 2026 15:15:09 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1777871713; x=1809407713;
-  h=message-id:date:subject:to:cc:references:from:
-   in-reply-to:content-transfer-encoding:mime-version;
-  bh=cJYe9SRPhxJsvqVmfSYon+HasJV4TcZT01E1Nzxe724=;
-  b=T9ugF8yAZ7Waug6dFO+jzkUcVTf4cze3Pt/95qQrnnUjY/lpeIk3Z2Y/
-   OzSCCgA0Pp6fgcEn9OyQffG/YvfWeuPBUJamILzzzafzSxgNTyh3OPxFi
-   tI36YsT29zE9qo8TDEZnbhk8sOngHud+6narz2zcQ+IQXUASreQLePLkt
-   4hugVMgdZKGyqWA27Q5had0M6i5oCodTIXlQu+wQLZOfb3UymgIT8ZIbN
-   Iv686ViXmf/e8DJ6sjUgrg93sRDMKuGYQp3cHDHK/JghwBTBlg8r5hyX8
-   L4QjBt7B+MuRyQBBSRL4j1ytVEpCGEPOdFJgn7i8ZNtinYvgixncfqrXR
-   g==;
-X-CSE-ConnectionGUID: Me34Oi87SE6kI4wY46SLPw==
-X-CSE-MsgGUID: tHoyiiRSQoysefZMyCs1oQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11775"; a="78659214"
-X-IronPort-AV: E=Sophos;i="6.23,214,1770624000"; 
-   d="scan'208";a="78659214"
-Received: from fmviesa009.fm.intel.com ([10.60.135.149])
-  by orvoesa111.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 May 2026 22:15:05 -0700
-X-CSE-ConnectionGUID: YhNGT0g/SrmpHvXX8actDQ==
-X-CSE-MsgGUID: +ciTwBYzQjaS8a0uuDCPRQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,214,1770624000"; 
-   d="scan'208";a="228915246"
-Received: from orsmsx902.amr.corp.intel.com ([10.22.229.24])
-  by fmviesa009.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 May 2026 22:15:04 -0700
-Received: from ORSMSX901.amr.corp.intel.com (10.22.229.23) by
- ORSMSX902.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37; Sun, 3 May 2026 22:15:03 -0700
-Received: from ORSEDG901.ED.cps.intel.com (10.7.248.11) by
- ORSMSX901.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37 via Frontend Transport; Sun, 3 May 2026 22:15:03 -0700
-Received: from BN1PR04CU002.outbound.protection.outlook.com (52.101.56.35) by
- edgegateway.intel.com (134.134.137.111) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37; Sun, 3 May 2026 22:15:03 -0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g89v9094Vz2xnQ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 May 2026 15:59:00 +1000 (AEST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=ob93DoafvVJk0KvpwzvB+1gLfSeVBiiUHRG82wCRW1s1nKxnzBybWloVciZBn3I6FrcBiHWumRjQzBoIBMU4V95IKIX17kMB2hukCERDowphj4LAA4sVdrElI2QozUwX+e0IVg3lkT/rV7BDIRQK+8BKqzTPTMxIWg3pFHEwbpAE5KBZ9GDUC1Vn6C2frXWx3raaWxy9GF5UgxBLPVUB07n3LdZj/hm1CZVUaLLoI/tE99xncDVt++L6XX1KkSurvE6ZwLGpq7TiIq1P9mXxhrHeizgzqpNrJckcmhYdw0dUJ5tdtpYRy8K+OS74Eqwh9lu3mfm1rx/JyrOfvE+ZJg==
+ b=vO2v6XbQJHyd0r6tzCYFo/4Zh81nzyknI/5WLphX68Wipw0qRB5dkHbW1lJr9S5b/t4kbWP2dR7iTQ02FWbH6OA5n1uXq3LH2JNSgixCmlJGvU6F75W69XIBck0K6y24sST0w7/pfkD32p3kcsBP9cICGjAmrs2wpWASSYww10gu7NM9AU9pPatlBu/pdKkMeLhc0l/e/vHDCDiOp1Hol4faX/JON7BLeCRsE2bL3wewDgQQy4d1WBNbsmQN+1zSN2Kn3elIWnbESXGItVkARsQPeigi5OZjQRTtqhMiRO4pyu/pXGAHLSPmzKtx9tu7XQ1juTqsH0wsZESBF53SqA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=nraTbdexcqi7G4WH/h2BIIalP1I4FsW+udMl6f/86bY=;
- b=XuTQ7ZWI+RV4Q4cJmNvwyWolk5bLwxKod0okJLP2DziIx51dmX3LbZhZK7xWotL8+oWlHETRyk8GT3l7hwnDe+pD4euCWWanzv9+nJvL2Eo8Z2wiZnEizebmxChUhJZXuEt6/Z/uOlORgQEdofT6cNStDuKerOhv7oG+eIvkzgrvR4flAPD/Ail5Twf/tcJNh6enh7bPuJPDFJa4ciyQh0al74rlqXgAEnOOMOAJNznMrS3nZ2xOCotAQqFpAaSg0euSHHR02Q1xXy7cdhtKQpClrGQRvnM02EIp3yha47nPcJZSMZbk7uPgPt7N00vEAeFX+M4D8YuVmbe5QtQ2/w==
+ bh=goS/RWqTYCu+aSndrQeOOU2qMmF5HP0unuX6icaaVbQ=;
+ b=MeGEY2katqWHvHoonP7JLz5Lazi3cHNgu4OMWE88hubR6ZE9UuElpx/mLIC+JhqJGPwC+/SaBMl0EL/Ap2V6XQGU0zAzlLfa50Zpz2cI3Z7W1gov7mcwQeBySG99ZddsjKfJy9vpPA55AGTioKzGiMZ/E/HINMILFPwgqv4I8XdWRZGRW25SlsJGdUivCZ6vI77wJh/agLgr71gW/6LIYabs0x2y1Oh5ozxFq6v/R22C0SPsQ/o7mcbZhNLoqRBTn3DleOjvFYkEwwesCYZ5U/6WVrMVUAxUwyo92K4NWIP3KEUd1+OnDWxmedc4WYZNLhg/MezwlFmCzlfpI4B7Ug==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Received: from IA1PR11MB7198.namprd11.prod.outlook.com (2603:10b6:208:419::15)
- by SA1PR11MB9660.namprd11.prod.outlook.com (2603:10b6:806:4df::17) with
+ smtp.mailfrom=hitachienergy.com; dmarc=pass action=none
+ header.from=hitachienergy.com; dkim=pass header.d=hitachienergy.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hitachienergy.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=goS/RWqTYCu+aSndrQeOOU2qMmF5HP0unuX6icaaVbQ=;
+ b=FL/eEEfOsY1VrgDQTwalWACxBhBwM4vq6EZYGHdTMN/CtSr14Aydogwq4x924StAIi0LvKK8OXMzsrykqtHq3PPtdnCckCQ5Mp/oWlFIs1Nvd16k7M6CuT0MX7WLIVNppPeMq82z58HophGcH7mU0V3smMAZM+9ucK0d8OpLuS5Ab0SkT/INq43mVGlXeuiLmgo9T+M/5OCOICiv2wfNGp5xtWqMoIuIzmgsCCHDkEIIMTqHnn7tE44Jdz5H4tOEnff/R3UJ84drHaU3DxvckR1K9eGEPXFGpabMTUAF85TYV1BrHw21Auk4GhZIgiLfjQCb1cFO0ayZWh+Lqwi3ag==
+Received: from AM0PR06MB10396.eurprd06.prod.outlook.com (2603:10a6:20b:6fd::9)
+ by GV2PR06MB11048.eurprd06.prod.outlook.com (2603:10a6:150:343::22) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9870.25; Mon, 4 May
- 2026 05:15:01 +0000
-Received: from IA1PR11MB7198.namprd11.prod.outlook.com
- ([fe80::2c4e:e92a:4fa:a456]) by IA1PR11MB7198.namprd11.prod.outlook.com
- ([fe80::2c4e:e92a:4fa:a456%3]) with mapi id 15.20.9870.023; Mon, 4 May 2026
- 05:15:01 +0000
-Message-ID: <712411ec-80af-4ac1-a27d-10866340bfe9@intel.com>
-Date: Mon, 4 May 2026 08:14:56 +0300
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH V4 1/2] powerpc tools perf: Initialize error code in
- auxtrace_record_init function
-To: Athira Rajeev <atrajeev@linux.ibm.com>, <acme@kernel.org>,
-	<jolsa@kernel.org>, <mpetlan@redhat.com>, <tmricht@linux.ibm.com>,
-	<maddy@linux.ibm.com>, <irogers@google.com>, <namhyung@kernel.org>
-CC: <linux-perf-users@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
-	<hbathini@linux.vnet.ibm.com>, <Tejas.Manhas1@ibm.com>,
-	<Tanushree.Shah@ibm.com>, <shivani@linux.ibm.com>
-References: <20260502143237.23456-1-atrajeev@linux.ibm.com>
+ 2026 05:58:33 +0000
+Received: from AM0PR06MB10396.eurprd06.prod.outlook.com
+ ([fe80::f64e:6a20:6d85:183f]) by AM0PR06MB10396.eurprd06.prod.outlook.com
+ ([fe80::f64e:6a20:6d85:183f%5]) with mapi id 15.20.9870.023; Mon, 4 May 2026
+ 05:58:33 +0000
+From: Holger Brunck <holger.brunck@hitachienergy.com>
+To: Simon Horman <horms@kernel.org>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>, "chleroy@kernel.org"
+	<chleroy@kernel.org>, "qiang.zhao@nxp.com" <qiang.zhao@nxp.com>
+Subject: RE: [PATCH 1/2] net: wan: fsl_ucc_hdlc: fix uhdlc_memclean
+Thread-Topic: [PATCH 1/2] net: wan: fsl_ucc_hdlc: fix uhdlc_memclean
+Thread-Index: AQHc181CUlbpXlMAkUeEM17nC2/SEbX5HEUAgARIxcA=
+Date: Mon, 4 May 2026 05:58:33 +0000
+Message-ID:
+ <AM0PR06MB10396EA1DB3F5A3DD966704D5F7312@AM0PR06MB10396.eurprd06.prod.outlook.com>
+References: <20260429114208.941011-1-holger.brunck@hitachienergy.com>
+ <20260501122756.GB15617@horms.kernel.org>
+In-Reply-To: <20260501122756.GB15617@horms.kernel.org>
+Accept-Language: en-GB, en-US
 Content-Language: en-US
-From: Adrian Hunter <adrian.hunter@intel.com>
-Organization: Intel Finland Oy, Registered Address: c/o Alberga Business Park,
- 6 krs, Bertel Jungin Aukio 5, 02600 Espoo, Business Identity Code: 0357606 -
- 4, Domiciled in Helsinki
-In-Reply-To: <20260502143237.23456-1-atrajeev@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: DUZPR01CA0289.eurprd01.prod.exchangelabs.com
- (2603:10a6:10:4b7::20) To IA1PR11MB7198.namprd11.prod.outlook.com
- (2603:10b6:208:419::15)
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=hitachienergy.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: AM0PR06MB10396:EE_|GV2PR06MB11048:EE_
+x-ms-office365-filtering-correlation-id: 612c9450-7b6b-433e-2d17-08dea9a22cca
+x-he-o365-outbound: HEO365Out
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|366016|1800799024|376014|38070700021|18002099003|22082099003|56012099003;
+x-microsoft-antispam-message-info:
+ be+eak+D5pOXe8ojbyIE57FSvdbbSTQMrap7F1CFewjYMsIbv0KGNnIQIglurGefK90Ao45T3xCv9LWCmNf6iFThDQVVDN3XaebsvpRIQCqFzCsXHlHMoVt8BNe9Yqq2DDx57c4W+2RWbYt6yhe1DgTG30Zy345Ri13/1KyRJ/HA2OZ0iYkwMVbxcYB4F1mlFY1ftX9DkaAYpWZNrNmcx66a93nsHHcbC+hmkz5lI0bP1bXmiXk39HgV+CN6XZrZdRjLRqtk02oHbdKnHMO+3KJ6wYH29nnj1oAkEKD/YV0DofSm4SOuw2e+/t67HsE0QPQGNBNtIbqAc3sZYsggXqPsw9TE8asrBZVwDD33SqS1APL0oRYjr7eMipKfN8vFHyMH21kIpbugY8zVMDJwrDmE+r8iCzB1cUTJhVa/qozHFlCv2zYoXQThjqvi5t6C777Zi5jRDOpJm1rhtMitYIdQDrMqMu4e/g4li4NYx40SmjYIxXIESF4zyJfvoeEHtDJf7FqDFVCSWzDESFgEQlmKPMnckCmdPrG+COmnf//xdz2NkhsknVNXMyClgKS4nhVw0SQdnRLrRXtJnuHsQS/P3DHEwyiUO1Nf8PadcTheb77xwGy0hxqDWsgHIlG6q4xPnmcFrtw0I0CsexaVrrJI/BwxIfD778ZKY65vnIeKwOQ6Q0EX8IEpxQLFrD8dN6Lve0LqVXM+h7rsWGBqf8SJK+LXQlXJ4OMfGm7prxSzWfPaSiV/1fX5QKGOUkDn
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR06MB10396.eurprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(38070700021)(18002099003)(22082099003)(56012099003);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?us-ascii?Q?ggyXwVxrY/dARRcDPxgt5KaMe+/2P58iuUe1RggaRB3z84b1zkBOOMqDBsT5?=
+ =?us-ascii?Q?Ifos8qkOu4ojfOvwZHethekE6bQnEIT05eYup4Uc4YkrPKPm+sCLVCPZTZ/5?=
+ =?us-ascii?Q?p3iUiuJ9SYkqiOcqc5s9NR2B2Sg/95x3X1hS40uw9BgGzrkZP+JJTfrk2lRN?=
+ =?us-ascii?Q?c9HtO7hvQ6BZQChjRgQAuN6Ck2DXsS/ve8VRrUoZ3UaX2yRb974oFoqurRCc?=
+ =?us-ascii?Q?XANrkk0LOgRuv18d/YsJS2mF7Q16Tso1p+CzPPDharg+DR+ZpefGYpfdw5FO?=
+ =?us-ascii?Q?dtrDkOdvK8/meW3YXys0k2zR2+hkEb0CD8pjBGnM5vmiT6xAF9W2U6Q8ZXlp?=
+ =?us-ascii?Q?1qOEOd6Y/Y5Wq3Fs3QfgJzQxry1Vcmy+cFfEEvVpxOqP9aejhmNQXL1mnhw3?=
+ =?us-ascii?Q?9z/ZAzQdg8W3AXAPtKjNafoTRDNICdGPzR3gAqXRnKGUKA4EXGBOAkAt45cl?=
+ =?us-ascii?Q?/L44gfGVf3PHymt4SGivWfkLje/4OI0qcoi/AxVrUr/fUDBLQEq95W0cSy21?=
+ =?us-ascii?Q?w75E+DqwmmcNhqIPuNbaDjG8pKQOPJRpYWJmuz8yIpnFPQaOl1qwhVD3Yq1f?=
+ =?us-ascii?Q?owprCtzT5GSw5xQyrG1nY+G0lNsDq9Uiepkw2Z88C47l0P/AqtDOvnU89+OC?=
+ =?us-ascii?Q?ad4nK24D2dxlXPIaf+wF+EgNRjIRxCUazzZ5AsH9Qglbi1jkdlqqkA6Ad2VS?=
+ =?us-ascii?Q?kZJNs1zSWwpyxn0ozL3zKZ2e+hFNGA3etX5KInJihQPChNPlVLegXumRWI3P?=
+ =?us-ascii?Q?ZBOTLFy9Rxl1H32vEciLmOAeEYkv7EnuF0/ITCesvc5yZcLEmQ1JEjFPXf+A?=
+ =?us-ascii?Q?kkUD3hWzGqttavf6hSI6o76Sv1j0zl/ZwzyMePHESnXa/8wr4PSFKAEd9nLt?=
+ =?us-ascii?Q?K9hEMS7X0d81ctYiVkqIzZ0zhvQPQcer0q852asn7ut/vAMdVH7R/F88nhLy?=
+ =?us-ascii?Q?xiNS1lAQWaCfJDXTkEJKCeLHcY4ZPHIy6IK7tDu1TQ11mA6NG6YEKDaYNdJS?=
+ =?us-ascii?Q?6qCGIAhKQ9iCQXZsytbfjElFP7Izyrnzb8P3AG42auGq5fIIgJfRXzNx7zdP?=
+ =?us-ascii?Q?t2UwyYo3X1vrM13G5K6ZACbx8RUZc8o+Jc+hgSh5A35PGrDz8Gy8DEMMPB60?=
+ =?us-ascii?Q?tk6Tvmp/UYQK4Ya2ceZJVhBWjNpYr6+xWy0KBfK3cC0yd7CXvcRnghXnkea7?=
+ =?us-ascii?Q?vJ66gGa5N9TEEDbb6CJkW8auuRXQ9ykaLkwJu2WoUnxNAOUccc/JpEPE7UFM?=
+ =?us-ascii?Q?NFDPHt9lTj3+ROceiBqYjpJDJSynGLsKYe1nQ4vnNwwQQxnaG9QiAR+HwK/9?=
+ =?us-ascii?Q?I2j64cP2mx/dErMBq9PyxP79m4e5KAhRzupparQiBGUMemOh84arIoMJwbIe?=
+ =?us-ascii?Q?jBDLpGBYKCah8rSEjkq9Gkb/ORv7rNHlz2lnbL34d6GiePwGGRs5FkVbQKe8?=
+ =?us-ascii?Q?Lw+Ie4ptzTFILNLqC75HDmPOqefUTi5shEnnDOnuF9v0NqpMgHit18n4CgYT?=
+ =?us-ascii?Q?5+n2mGpaR5aT9wvHvdJT2pE1IqEH5VMtZs/Xi7IWUUYHE6IR9jol1aFNcUlP?=
+ =?us-ascii?Q?cDvZDacnYPqHtE5fOWUyIikaLoGX1ebS4SfbZyNO/xDzvZ7G6zFv9VMFdsrb?=
+ =?us-ascii?Q?3pFyjmcDYfe2Itri49WTgZ9dPXwsUx/c7W8VYlNjLX/zatkqkntG7ijqeNyH?=
+ =?us-ascii?Q?1DcpV9WVttRLc2j0QDXNjMe2e9PhxbELAvqqVqi8ywdSAMqZfBqDICABJzmT?=
+ =?us-ascii?Q?OLCr6KRVVJelqcVrxtC86iSokF/lDrE=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -124,168 +133,61 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: IA1PR11MB7198:EE_|SA1PR11MB9660:EE_
-X-MS-Office365-Filtering-Correlation-Id: 88b01014-94da-4b86-4af3-08dea99c17aa
-X-LD-Processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|7416014|1800799024|376014|366016|22082099003|56012099003|18002099003;
-X-Microsoft-Antispam-Message-Info: r2+1NtawlIS6b3f7EpIPWYxBLsD5DQHByKpMUq2p/OnXfkycteOKmpT24Hdmbc3li5AQQir092TfRQ2H1iZn0c8SkuKufm1YI5wUjbItJPZEDzkoNnVGF3SmdqtDqWNp/bfTbmVAasGxlBYR3aAVpu6Hl4HxgvUUEC130Xb2QJRN/e/AsilmAA092DCsmVzqDRzbXyoiZgJ+bLEJ1pl1OFV2h/FRNXbeITTxT0D7uen8HiMib6AhYalHj4TXsOBXRq+HXl8CxL19ivQ78wRXjlio86tHa7kabzN3+ONqkXMMGt66od+JIQdu5LrDMoFUM0sgaBO/cqlY0Zqu4+9NG0TdpKSvoVy3VxLnG8RoHx8I4d31va9ODjTJoQEAy2tsDYeufmTNVE+/aIVtFfSp1AViuN0EC9JaE8KBqaz3HDS/XXndUgoVR5A2zGvk74e/IdpfxUfJfD4MnChgX0GrYR4Yej5tPSuVsQS6ONPAt4lZxOFXBgpQ88/W5pg2JpSjwk/JEoarpbDzFUkLKLD3PByPujbU1eowQEob2nbhL2tW+ku7hSrF+LzZqU/Ps6x9/IbApKYs9pc/jte4n8h/4+/XqJyCgjnOEOf3m1P4bTf1+emuIv+qBYwtbcrr/MNGvKyNRUajTxAhtgujLPROI5DQAxduM91HOWGVBx1wUKs26CjG0+C0dtEbRvNaOosa
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:IA1PR11MB7198.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(1800799024)(376014)(366016)(22082099003)(56012099003)(18002099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?QTNoR3l3eW15WlRlM3R3Y2pndGtQUitldnBMNEp4cTBnZ1BteGVVc01LVHlu?=
- =?utf-8?B?czRTVFJNQitiTDJnb2lzcEltT1JNZHJPalcydUVwNlgyWVJDRG4wS2I0ZWEx?=
- =?utf-8?B?ZFM0OXpOSXlxbk5keGJQRWVHb3BrNVR2MEgxYTZoR2VKWXgxY2dlbjhKRm5L?=
- =?utf-8?B?Q2U5aXJXWXBRWVRTWkN1V1p6OHBNd21USTN1TlFJY3BtcG1EeE1NZnFHZW1I?=
- =?utf-8?B?clU3TGtXMjErek1Wb2xyY1NPSWFWVW1mVGU4Q2VGNDBsOURtYW1TQVRvKzNW?=
- =?utf-8?B?UkF2U0ZlOG5YU0tpWFZaL1NvdlpEZW8yMGZWVmk2RDlzdWc3dktLZnJLR3Uv?=
- =?utf-8?B?RklxR2lTTko2Nm5OMlltQ0JzYSswYk1tZW9WNXV4SXlQY0tlcW0vb0F0QnAx?=
- =?utf-8?B?MzdueVBxVzZBRm84RzB2ZWJhRVpBL01OWUxIVTZlNDZPN2hnWHpBSkdlMFpU?=
- =?utf-8?B?Vk1tdm5uWXIyVGFHdHpKTjVoQW5PaENsYWlZZUZ6QVNXdG12VTVVZEVTTnBQ?=
- =?utf-8?B?TDJjalZtVUowenpWWWtkNy9BS21xcjJ6cGUraFRaTXU4bHVacC9KbkxrM3o3?=
- =?utf-8?B?QmQ2NUFQRm40K1UxVFZORUp2d0dpSng2S1hpMTEzSFBwbHVlL1BRSkVSQWNU?=
- =?utf-8?B?d0lhSm1jRHlhNlk0WmljbFJVNVpYSmRCeDNrTmRPUHQyeElpM0k0NTM4Zk1s?=
- =?utf-8?B?RjhwSjVpc0JrMENmYTJvaWZ5djBXTENVeXpYNERwbEZKSlYrU3BZQ01qanZQ?=
- =?utf-8?B?U29ST3haMVFTeVpEaUZYdkxlOUU5RFNLeEdMdTdrZGZRTXlwdFdlVkx5YnJN?=
- =?utf-8?B?bk5Sb0trT2tpaHV1TVNibVB6Vy9TdDYzUzFBT0VoVmJJZ3YzVFNNL1R6OHJG?=
- =?utf-8?B?elU1elB0Sy9lVFZ5VG1yZ0RoVGlJT1RHOHdtMDFlN005VnNDcTFQVW05MHND?=
- =?utf-8?B?RXNGZ1JvVS9jNmp2SGRBQnVmeWxBUXR0SVZuWEtPU0FPS3NydG5rbjROZlV2?=
- =?utf-8?B?RXVJbC9VT0taT013WjhmNmpRMmRrYmREdjJGdHZzVlFPNTRHMWdjandkQVlT?=
- =?utf-8?B?U1IrRlBzNHoyOHYwSzFhQVdJenZ3QlBWT2x5Q0ZYd25YL05veC96VFlTTXMr?=
- =?utf-8?B?QmFsaWF6VHhjUlRTYmtKRGUrRzhyZFJEdXozaEY5bllaOE1WYnVkeUFvQjNq?=
- =?utf-8?B?c0pRaUpSQnZZUXFkUkJXdThlb1ZQVHdKdFVDbnNZaFl4ZjRvR0VDS3ByMXFD?=
- =?utf-8?B?dGR2RkFJQlJRRE04YzlOWjNGMTdyTS9zZUJrakxyZzFuc3Q5ZUZGYjRhT1Zs?=
- =?utf-8?B?cktENys0R1BTZEhrQ2oreHJOc2NEbGxNZGdJbGkwWWVqc05UNWVDd3pEMFc5?=
- =?utf-8?B?SzVMckpVNHRmdS9aNXhzM1NJaUdnR3kzdkJOajhpNktnbkVCbFV6QTQxMHBn?=
- =?utf-8?B?VXVtMDZRZmxINlc4S0xwZkVaL1U2OFZlNlliU2hVbFFYRnhPNlYwaXNOY3lv?=
- =?utf-8?B?ZUxmanI3eDNJV0oyQ1JrS3lOY00zWWFWZ1pBbXJJR2FwN01ZNTlkVGIwYVhh?=
- =?utf-8?B?U3N1c2xaTnBIMEMraDY5QWRCQkl0YnQ0aWdoMXZrUVZKNWd1YTY5R3U0cHQ0?=
- =?utf-8?B?SG9sRm5DWWJrOWtnRU5xbnRONmlNOE9NRlVTbW1PWkExUS9WOE9DZWl2Zjd0?=
- =?utf-8?B?UkpEMVVtb3lIM3VpNWE2SjJQRURYdTlLaHppV3UwYkxNNEhWR1Vlb01LbnE1?=
- =?utf-8?B?R3pJSW9wcDRnV2Z5b0xYcDhTUjhTQVZGNCtlVGZWMnBBb1hBZWZsem5PV05P?=
- =?utf-8?B?UXYvNmFsNVJVajNWb0pFNmdkWXo3MCtZblFMSzdrNm5SekswWHdjYmZ6dFU5?=
- =?utf-8?B?aGhDM1pJY1hBVmhPa29RQTVNSjRncDBod0RMWUVKdWlGWlNEaGlHRFYvcGd4?=
- =?utf-8?B?Tk1MMWRpaEh1Rm1VM0c4bGNEbzFnUTNPQ0FGNFJaOWRsRWtraEhOenh1c0FR?=
- =?utf-8?B?bXVhSEg3UzVndW5VQ3QxajRORXhQNGliS2c2VVRmVjlIZEhTUk5EbzZ0Vzla?=
- =?utf-8?B?YzVUbHRCTXl6RXpjdFlqcnlYWUhORkcvT1ZBaWxpcXNBeENpSkpIL1hLNmNx?=
- =?utf-8?B?UHc3M21ERWxaWUhrTHBSS0pucFNyd0RDcVRJSWtzeStVc2ZLcDY2MnUydmRI?=
- =?utf-8?B?VmZ1RjFzZXlWYnp1Y3lDSDBGNFlXckVBbk1sMHpwalcydDFUaEJwTi83MFZJ?=
- =?utf-8?B?UGtDaGg2TVJjQXFFbkQ5a0pLbTRBN2tIK2dIZmVUZzQ5Q3dJVS9pY014MzV6?=
- =?utf-8?B?bkQ2clQ3cnBJR01UTTZvWFNjcENseHV0a1RyT21YQnpOb0NMUWV4MThCbmRB?=
- =?utf-8?Q?6GOs5j0F1nLUQXAk=3D?=
-X-Exchange-RoutingPolicyChecked: s4XsKjsqlFMk1+2dyAWYBSY0rhEn4cgtbRwl4+mTQNkPz0zcInWIhOzMaDEKGrkmaZZ6pxpbseWMwbsuLXYttafwsaTcvK/rKmNTqlE9PmSojGwl7NyQ7+xeKMYFsilK7WDGwZuYo5GSiY+n4sq5lgf5IIkUwDhgQ/7r876hh2irsdizjk6Ccv5NLA11TGIaZ6EmKkzPBXVwjiKB/5XNs5vJbBqbJtJFHlBorBzFiEBYLqqlyzLKY1HODCzcgCHN+05k2Q0NUCxlWakMwKF2uVbM+VRZxEUZQijbkmcYnlvFAX2oLHHrZXFVghgNPl4oQYbKUGPkm6SL+kdyTcLO+Q==
-X-MS-Exchange-CrossTenant-Network-Message-Id: 88b01014-94da-4b86-4af3-08dea99c17aa
-X-MS-Exchange-CrossTenant-AuthSource: IA1PR11MB7198.namprd11.prod.outlook.com
+X-OriginatorOrg: hitachienergy.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 May 2026 05:15:01.1979
+X-MS-Exchange-CrossTenant-AuthSource: AM0PR06MB10396.eurprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 612c9450-7b6b-433e-2d17-08dea9a22cca
+X-MS-Exchange-CrossTenant-originalarrivaltime: 04 May 2026 05:58:33.4036
  (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: qTed62l/1LhrB9yJwmef/Eoy8OMHytEylXIB7Lzbp97rrNkYGEIHt9fDu21nn9cL022oMI0UC5EmdPa0r9obsg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR11MB9660
-X-OriginatorOrg: intel.com
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 7831e6d9-dc6c-4cd1-9ec6-1dc2b4133195
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: VAdVORKISYmfwpVyVK8ueKG8T6m4LBArpxSvgvcE2wMDcGjQhFYxzODgcv+p7b2yrnb1qZ57h+0Pq3ZEv4iGwM3kw0bxCrpCEYT2puCH+Xg=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: GV2PR06MB11048
 
-On 02/05/2026 17:32, Athira Rajeev wrote:
-> perf trace record fails some cases in powerpc
-> 
->  # ./perf test "perf trace record and replay"
->  128: perf trace record and replay                                    : FAILED!
-> 
->  # ./perf trace record sleep 1
->  # echo $?
->    32
-> 
-> This is happening because of non-zero err value from
-> auxtrace_record__init() function.
-> 
->  static int record__auxtrace_init(struct record *rec)
->  {
->         int err;
-> 
->         if ((rec->opts.auxtrace_snapshot_opts || rec->opts.auxtrace_sample_opts)
->             && record__threads_enabled(rec)) {
->                 pr_err("AUX area tracing options are not available in parallel streaming mode.\n");
->                 return -EINVAL;
->         }
-> 
->         if (!rec->itr) {
->                 rec->itr = auxtrace_record__init(rec->evlist, &err);
->                 if (err)
->                         return err;
->         }
-> 
-> Here "int err" is not initialised. The code expects "err" to be set
-> from auxtrace_record__init() function.
-> 
-> Update auxtrace_record__init() in arch/powerpc/util/auxtrace.c to clear
-> err value in the beginning.
-> 
-> - Clear err value in beginning of function. Any fail later will
-> set appropriate return code to err.
-> - Even if we haven't found any event for auxtrace, perf record
-> should continue for other events. NULL return
-> will indicate that there is no auxtrace record initialized.
-> - Not having "err" set here will affect monitoring of other events
-> also because perf record will fail seeing random value in err.
-> 
-> Set err to -EINVAL before invoking auxtrace_record__init() in
-> builtin-record.c
-> 
-> With the fix,
-> 
->  # ./perf trace record sleep 1
->  [ perf record: Woken up 2 times to write data ]
->  [ perf record: Captured and wrote 0.033 MB perf.data (228 samples) ]
-> 
-> Fixes: 1dbfaf94cf66 ("perf powerpc: Add basic CONFIG_AUXTRACE support for VPA pmu on powerpc")
-> Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
+>=20
+> On Wed, Apr 29, 2026 at 01:42:07PM +0200, Holger Brunck wrote:
+> > Unmapping of uf_regs is done from ucc_fast_free and doesn't need to be
+> > done explicitly. If already unmapped ucc_fast_free will crash.
+> >
+> > Signed-off-by: Holger Brunck <holger.brunck@hitachienergy.com>
+>=20
+> As a fix for code present in net, this warrants a fixes tag that cites th=
+e commit
+> that introduced this bug.
+> Perhaps this one is appropriate.
+>=20
+> Fixes: ca20e191eed0 ("net: wan: fsl_ucc_hdlc: fix ucc_hdlc_remove")
+>=20
+> Also, as a fix for net it would be best to explicitly target that branch,=
+ like this:
+>=20
+> Subject: [PATCH net 1/2] ...
+>=20
+> I don't think it's necessary to repost to just to address either of the a=
+bove.  But for
+> reference more information on the Netdev development process can be found
+> here:
+>=20
 
-Reviewed-by: Adrian Hunter <adrian.hunter@intel.com>
+ok I will take care of this next time.
 
-> ---
-> Changelog:
-> v1 -> v2
-> Addressed review comment from Adrian:
-> - Set err to -EINVAL before invoking auxtrace_record__init() in
->   builtin-record.c
-> - Added kernel-doc to auxtrace_record__init() in tools/perf/util/auxtrace.c
-> Addressed review comment from Namhyung:
-> - Added fixes tag
-> 
->  tools/perf/arch/powerpc/util/auxtrace.c | 6 ++++++
->  tools/perf/builtin-record.c             | 1 +
->  2 files changed, 7 insertions(+)
-> 
-> diff --git a/tools/perf/arch/powerpc/util/auxtrace.c b/tools/perf/arch/powerpc/util/auxtrace.c
-> index e39deff6c857..4600a1661b4f 100644
-> --- a/tools/perf/arch/powerpc/util/auxtrace.c
-> +++ b/tools/perf/arch/powerpc/util/auxtrace.c
-> @@ -71,6 +71,12 @@ struct auxtrace_record *auxtrace_record__init(struct evlist *evlist,
->  	struct evsel *pos;
->  	int found = 0;
->  
-> +	/*
-> +	 * Set err value to zero here. Any fail later
-> +	 * will set appropriate return code to err.
-> +	 */
-> +	*err = 0;
-> +
->  	evlist__for_each_entry(evlist, pos) {
->  		if (strstarts(pos->name, "vpa_dtl")) {
->  			found = 1;
-> diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-> index 4a5eba498c02..708825747af5 100644
-> --- a/tools/perf/builtin-record.c
-> +++ b/tools/perf/builtin-record.c
-> @@ -865,6 +865,7 @@ static int record__auxtrace_init(struct record *rec)
->  	}
->  
->  	if (!rec->itr) {
-> +		err = -EINVAL;
->  		rec->itr = auxtrace_record__init(rec->evlist, &err);
->  		if (err)
->  			return err;
+>=20
+> The above not withstanding, this looks good to me.
+>=20
+> Reviewed-by: Simon Horman <horms@kernel.org>
+>=20
+> FTR, an AI generated review of this patch is available on sashiko.dev.
+> All the issues flagged there seem to be pre-existing and I do not believe=
+ they
+> should block progress of this patch. But you may want to look into then i=
+n the
+> context of follow-up.
+>
+
+Thanks, I will have a look at this.
+
+Best regards
+Holger
 
 
