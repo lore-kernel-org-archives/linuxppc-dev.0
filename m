@@ -1,55 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-20481-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-20483-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46475CD3427
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2026 15:58:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD079FF8855
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 May 2026 16:34:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g938g5Smlz2xfB;
-	Wed, 06 May 2026 01:58:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=63.228.1.57
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777996723;
-	cv=none; b=KS1azfh1NN09/5bgDnaflplzWbA3+rrq+srpwzqkcwUNqIyj1NLe8iaOL3yz7pQkhno/gD4lQdJmIm2a0csFXv0Pa1hnW1QkDsB6L8XgFzEaZeYVE6pKKftkhV8GGZpIdYYbJqeD0bXm28YQKQw9ylqKeyYJltsUVl1c6OYMzuRS/CZDjWpO7lIk8KUtajk6cDGihVZsrBa7uWlvcn0sVV84xK13W1q3vLJZ3RbcW+fOW/oLv9vaBlSaFEN8V+hsMDufDD57lNJlqQdQ73G4LVU3ZJnBo7KNVRPB4ptrVnTWn+zOfz1bIx7fMs6HJp6eOfhMPJvl5Sgp0ySMV0gexw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g93xf1s26z30DR;
+	Wed, 06 May 2026 02:34:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777998854;
+	cv=none; b=BjHEkZykdZzfXbBR/pYbC2dQ+JOpSNRZMxs9B76/OuJ6OEKYtjAHUr46inCexE/2bbPa2reabu/7+IsEdIc2jGF5ow00X4+n9mIPo7fwrkGOCWS5Jh0no/y2+NbjLxxrOs9KyqEaH9UGD0Bmv7ludoRYF1kxuvFt2nWKca8h289H5KzadegWNbvN5O8Q1N6jTIfGY1SktgOD9QoDjH5G0XxvtU81JxBFa4JrBUqKC30oDkt///B+htrIM2V8KFUDgTw5NAtPguVhebE7eyIhmJkcSvOh9ACAHpU8BgkLy2DfAr6HJgFfJWq8SqA9Z3HhrXVVzn2I3IvkT/Ufmhje6w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777996723; c=relaxed/relaxed;
-	bh=rSFnuj2S2pOktYS6KR8pu0EM6XWflOBaN/tj/8NJgMk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=NFNjg/pJx6AKr5m9tF5kJcNGKeoyiq2MMaEmovSD0mhqJVrgi3lmErRTVKD7zMHsyxpvDrpft89VAYQ1NFaK8jitUEYCpdaeOJy7t3ewOdKkDvSE6D0NoqNzxSlEj2JRYVJSGBpnJ5nldJcJq35+EkjbV7NXw8Yn7/ULhSmTnA58OtCy86B/GuIdONGKxZuNOMLWJXwmXKQb2cKEzUn9TL7hyVBQOcac1PgrFLtNlQc4eu7cwjWeFTtRPAzEr0MKZSWiU0ODP78Yg3SulQtKQCTCY155rSQJIfvxM7aWPaLR0LxezHDtIeTVc8SScyy/Y6dHqwUVY9fj/f0BgXFSqg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org; spf=pass (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.crashing.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g938f0JHPz2xMV
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 May 2026 01:58:41 +1000 (AEST)
-Received: from gate.crashing.org (localhost [127.0.0.1])
-	by gate.crashing.org (8.18.1/8.18.1/Debian-2) with ESMTP id 645Fv4oO164706;
-	Tue, 5 May 2026 10:57:04 -0500
-Received: (from segher@localhost)
-	by gate.crashing.org (8.18.1/8.18.1/Submit) id 645Fuwtk164700;
-	Tue, 5 May 2026 10:56:58 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
-Date: Tue, 5 May 2026 10:56:58 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Sathvika Vasireddy <sv@linux.ibm.com>, nathan@kernel.org, nsc@kernel.org,
-        maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        chleroy@kernel.org, jpoimboe@kernel.org, ojeda@kernel.org,
-        masahiroy@kernel.org, lossin@kernel.org, tamird@kernel.org,
-        thomas.weissschuh@linutronix.de, rostedt@goodmis.org,
-        ihor.solodrai@linux.dev, thuth@redhat.com, pmladek@suse.com,
-        aliceryhl@google.com, elver@google.com, kees@kernel.org,
-        legion@kernel.org, ardb@kernel.org, yuxuan.zuo@outlook.com,
-        alexghiti@rivosinc.com, alexandre.chartre@oracle.com, bp@alien8.de,
-        linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v1 1/6] objtool/powerpc: Add build-time fixup of
- alternate feature branch targets
-Message-ID: <afoTSvawD4CXCCy1@gate>
-References: <20260505084628.17940-1-sv@linux.ibm.com>
- <20260505084628.17940-2-sv@linux.ibm.com>
- <20260505144539.GX3126523@noisy.programming.kicks-ass.net>
+	t=1777998854; c=relaxed/relaxed;
+	bh=ZZnWOGfkHpJ4gSLwOU65/vbywBHazKwyVwSBc58KETI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=F/04BjZG4dwfPRluhhqP71DqgK0Cj39GDD+yB2gqOEby4BPPilIhx8CRIaZiYfposGr+fSsHDq/brRmWNyI81pEZDa/7sKvF0gAKJwSaNDVpdqoefyXNHWBUkELKCay3uHNFVlTThagxkZFsLklifjxW8uKTr67wcYdVrCO8yVtw49rgUExVP38ECx4VCEk0Rvpez0yQDvo4vrrnSpxCxTlNrLgwNIhatgxZyXCR4ftaxK5G8sSMSevD5dR7tacTWN4lp4KBkOzf4uF/uMUHV8HA3d+GeaeouWxY0/KihxQH3BBMFCVqykiyudpyjXysOjqCcZmpEgvX6zh4+O6Mpg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aGqHCpme; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aGqHCpme;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g93xd1XGNz2xfB
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 May 2026 02:34:13 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 81AA1441AA;
+	Tue,  5 May 2026 16:34:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A6E6EC2BCC7;
+	Tue,  5 May 2026 16:34:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1777998851;
+	bh=cVcfbLM3oOOyr4PSilEGrrxmebjeKHe6vnGyG+zyCQM=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=aGqHCpmenkupNMpAB65SsLcKFlhftkIXCwWsFuzzDqD4zTibLd05hRq1MVZox0ocM
+	 GkQg2p/bqZrn4jy/LrVSfM0akpHTEwlT5hCv/maC4mRu7jrKRlHYX+IKxfVfKjERTx
+	 QLboXgb/baZ7yjJN9Qfh72uRDRGaQ7/HjbMy3gj5N1XcBZmYye6jZ26HCtwgLVrlw7
+	 cOLXLqksxDy63Sb+um8KusGV3gSzZI0PjdBopMOlr0Cuy3ifiAOiHEXtRbzThVYRrG
+	 GMKwrvzQent7tw1q85yWUL0558FlpQNqmc+TeXmtAezDK+0EnxMNVFX/C/vZMFHoiv
+	 jupzwXuY9XrHQ==
+Message-ID: <56abbf15-2a2a-4f65-81ae-fcfb5e1d9601@kernel.org>
+Date: Tue, 5 May 2026 18:34:08 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,32 +59,84 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260505144539.GX3126523@noisy.programming.kicks-ass.net>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] lib/crypto: powerpc/md5: Drop powerpc optimized MD5 code
+To: Ard Biesheuvel <ardb@kernel.org>, Eric Biggers <ebiggers@kernel.org>,
+ linux-crypto@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, "Jason A . Donenfeld" <Jason@zx2c4.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>, linuxppc-dev@lists.ozlabs.org,
+ Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>
+References: <20260504041448.15820-1-ebiggers@kernel.org>
+ <111ea924-fef5-441e-9849-83f938c913a7@kernel.org>
+ <112bf0af-1551-4d3e-ab15-e5dea3fc2435@app.fastmail.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <112bf0af-1551-4d3e-ab15-e5dea3fc2435@app.fastmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-Hi!
 
-On Tue, May 05, 2026 at 04:45:39PM +0200, Peter Zijlstra wrote:
-> On Tue, May 05, 2026 at 02:16:23PM +0530, Sathvika Vasireddy wrote:
-> >  	switch (opcode) {
-> > +	case 16:
+
+Le 04/05/2026 à 15:56, Ard Biesheuvel a écrit :
+> Hello Christophe,
 > 
-> Like case 18 below, this wants a comment describing which instruction
-> this is; bclr ?
+> On Mon, 4 May 2026, at 15:28, Christophe Leroy (CS GROUP) wrote:
+> ...
+>> I'm really concerned with the optimised MD5 going away now, and I'm also
+>> wondering what will be the way to splice a file into the kernel and get
+>> it's MD-5 hash from the TALITOS if AF_ALG goes away in medium-term.
+>>
+>> What is the way forward ? I'm open to any suggestion as I really can't
+>> see where to go for now.
+>>
+> 
+> AF_ALG was created to give user space access to crypto accelerators that
+> require privileged execution, for sharing between clients, and for managing
+> DMA etc.
+> 
+> The fact that kernel crypto code that does not have this requirement was
+> exposed via AF_ALG too is a historical accident, and this is causing the
+> pain that Eric describes wrt attack surface etc.
+> 
+> It sounds like you have constructed a vertically integrated system where
+> the kernel provides the fallback when the Talitos engine is not available
+> via AF_ALG.
+> 
+> This fallback does not need to live in the kernel, and it would be much
+> better (as well as more efficient) if user space would implemented MD5
+> itself if the Talitos cannot be accessed via AF_ALG. In user space, you
+> can use any implementation you like, generic or asm accelerated. This is
+> what all other architectures already implement, in OpenSSL etc.
+> 
+> Claiming that your user space software must only implement one code path,
+> and that punting this to the kernel is therefore required is not a
+> technical argument: this is just policy on your part that the community
+> is not bound to.
+> 
+> However, deprecating AF_ALG does not mean that we will ever be able to
+> remove it entirely. Especially the crypto accelerators that cannot be
+> accessed by user space in any other way will remain supported as long
+> as needed for legacy use cases.
+> 
+> But I think we should consider libkcapi as a general purpose crypto
+> library deprecated too, as well as any other use of AF_ALG in lieu of
+> user space libraries. It is not the kernel's job to execute user space
+> code that can easily execute non-privileged as well.
+> 
+> I suppose there will be more discussion soon about AF_ALG deprecation
+> for software crypto. It is likely that we will need to come up with
+> an allowlist of algorithms, in order to limit the attack surface to those
+> algorithms (such as your MD5) that are known to be relied upon by user space,
+> rather than any random combination of all the buggy template code and
+> null_ciphers etc.
+> 
+> Do you have any use cases where MD5 is a bottle neck, and the generic
+> implementation is too slow?
 
-Yes.  It is 19/16, b[c]lr (primary opcode 19, secondary opcode 16).
+Well, our boards are used in air trafic control voice communication 
+systems, every millisecond is worth it and every performance degradation 
+must be explained, justified, etc ....
 
-Where is it described what INSN_RETURN actually means for objtool?  Not
-in the header file :-(
-
-For PowerPC, all three of b[c]lr[l], b[c]ctr[l], and b[c]tar[l] are
-indirect jumps, to an address in a register.  They do absolutely nothing
-typically done in a function epilog, like "return" insns in some other
-archs do.  But the BH field ("branch hint") in the instruction helps
-predict the control flow involving the insn as something in a call and
-return pattern :-)
-
-
-Segher
+Christophe
 
